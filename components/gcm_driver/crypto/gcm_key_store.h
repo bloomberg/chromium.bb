@@ -40,7 +40,6 @@ class GCMKeyStore {
  public:
   using KeysCallback = base::Callback<void(const KeyPair& pair,
                                            const std::string& auth_secret)>;
-  using DeleteCallback = base::Callback<void(bool success)>;
 
   GCMKeyStore(
       const base::FilePath& key_store_path,
@@ -55,9 +54,9 @@ class GCMKeyStore {
   // |callback| when they are available, or when an error occurred.
   void CreateKeys(const std::string& app_id, const KeysCallback& callback);
 
-  // Deletes the keys associated with |app_id|, and invokes |callback| when
-  // the deletion has finished, or when an error occurred.
-  void DeleteKeys(const std::string& app_id, const DeleteCallback& callback);
+  // Removes the keys associated with |app_id|, and invokes |callback| when
+  // the operation has finished.
+  void RemoveKeys(const std::string& app_id, const base::Closure& callback);
 
  private:
   // Initializes the database if necessary, and runs |done_closure| when done.
@@ -73,8 +72,8 @@ class GCMKeyStore {
                     const KeysCallback& callback,
                     bool success);
 
-  void DidDeleteKeys(const std::string& app_id,
-                     const DeleteCallback& callback,
+  void DidRemoveKeys(const std::string& app_id,
+                     const base::Closure& callback,
                      bool success);
 
   // Private implementations of the API that will be executed when the database
@@ -84,8 +83,8 @@ class GCMKeyStore {
                               const KeysCallback& callback);
   void CreateKeysAfterInitialize(const std::string& app_id,
                                  const KeysCallback& callback);
-  void DeleteKeysAfterInitialize(const std::string& app_id,
-                                 const DeleteCallback& callback);
+  void RemoveKeysAfterInitialize(const std::string& app_id,
+                                 const base::Closure& callback);
 
   // Path in which the key store database will be saved.
   base::FilePath key_store_path_;

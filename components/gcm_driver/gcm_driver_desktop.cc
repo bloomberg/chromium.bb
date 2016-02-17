@@ -201,7 +201,7 @@ void GCMDriverDesktop::IOWorker::OnUnregisterFinished(
   if (gcm_registration_info) {
     ui_thread_->PostTask(
         FROM_HERE,
-        base::Bind(&GCMDriverDesktop::UnregisterFinished,
+        base::Bind(&GCMDriverDesktop::RemoveEncryptionInfoAfterUnregister,
                    service_,
                    gcm_registration_info->app_id,
                    result));

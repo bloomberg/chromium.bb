@@ -5,6 +5,7 @@
 #include "components/gcm_driver/crypto/gcm_key_store.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -49,13 +50,6 @@ class GCMKeyStoreTest : public ::testing::Test {
                const KeyPair& pair, const std::string& auth_secret) {
     *pair_out = pair;
     *auth_secret_out = auth_secret;
-  }
-
-  // Callback to use with GCMKeyStore::DeleteKeys calls.
-  void DeletedKeys(bool* success_out, bool success) {
-    DCHECK(success_out);
-
-    *success_out = success;
   }
 
  protected:
@@ -149,7 +143,7 @@ TEST_F(GCMKeyStoreTest, KeysPersistenceBetweenInstances) {
   EXPECT_GT(read_auth_secret.size(), 0u);
 }
 
-TEST_F(GCMKeyStoreTest, CreateAndDeleteKeys) {
+TEST_F(GCMKeyStoreTest, CreateAndRemoveKeys) {
   KeyPair pair;
   std::string auth_secret;
   gcm_key_store()->CreateKeys(kFakeAppId,
@@ -173,14 +167,9 @@ TEST_F(GCMKeyStoreTest, CreateAndDeleteKeys) {
   ASSERT_TRUE(read_pair.IsInitialized());
   EXPECT_TRUE(read_pair.has_type());
 
-  bool success = false;
-  gcm_key_store()->DeleteKeys(kFakeAppId,
-                              base::Bind(&GCMKeyStoreTest::DeletedKeys,
-                                         base::Unretained(this), &success));
+  gcm_key_store()->RemoveKeys(kFakeAppId, base::Bind(&base::DoNothing));
 
   base::RunLoop().RunUntilIdle();
-
-  ASSERT_TRUE(success);
 
   gcm_key_store()->GetKeys(kFakeAppId,
                            base::Bind(&GCMKeyStoreTest::GotKeys,

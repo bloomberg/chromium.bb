@@ -120,6 +120,8 @@ class GCMDriverTest : public testing::Test {
   GCMClient::Result unregistration_result() const {
     return unregistration_result_;
   }
+  const std::string& p256dh() const { return p256dh_; }
+  const std::string& auth_secret() const { return auth_secret_; }
 
   void PumpIOLoop();
 
@@ -140,6 +142,8 @@ class GCMDriverTest : public testing::Test {
             const std::string& receiver_id,
             const OutgoingMessage& message,
             WaitToFinish wait_to_finish);
+  void GetEncryptionInfo(const std::string& app_id,
+                         WaitToFinish wait_to_finish);
   void Unregister(const std::string& app_id, WaitToFinish wait_to_finish);
 
   void WaitForAsyncOperation();
@@ -147,6 +151,8 @@ class GCMDriverTest : public testing::Test {
   void RegisterCompleted(const std::string& registration_id,
                          GCMClient::Result result);
   void SendCompleted(const std::string& message_id, GCMClient::Result result);
+  void GetEncryptionInfoCompleted(const std::string& p256dh,
+                                  const std::string& auth_secret);
   void UnregisterCompleted(GCMClient::Result result);
 
   const base::Closure& async_operation_completed_callback() const {
@@ -159,7 +165,6 @@ class GCMDriverTest : public testing::Test {
  private:
   base::ScopedTempDir temp_dir_;
   TestingPrefServiceSimple prefs_;
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::MessageLoopForUI message_loop_;
   base::Thread io_thread_;
   base::FieldTrialList field_trial_list_;
@@ -174,13 +179,14 @@ class GCMDriverTest : public testing::Test {
   std::string send_message_id_;
   GCMClient::Result send_result_;
   GCMClient::Result unregistration_result_;
+  std::string p256dh_;
+  std::string auth_secret_;
 
   DISALLOW_COPY_AND_ASSIGN(GCMDriverTest);
 };
 
 GCMDriverTest::GCMDriverTest()
-    : task_runner_(new base::TestSimpleTaskRunner()),
-      io_thread_("IOThread"),
+    : io_thread_("IOThread"),
       field_trial_list_(NULL),
       registration_result_(GCMClient::UNKNOWN_ERROR),
       send_result_(GCMClient::UNKNOWN_ERROR),
@@ -235,14 +241,13 @@ FakeGCMClient* GCMDriverTest::GetGCMClient() {
 void GCMDriverTest::CreateDriver() {
   scoped_refptr<net::URLRequestContextGetter> request_context =
       new net::TestURLRequestContextGetter(io_thread_.task_runner());
-  // TODO(johnme): Need equivalent test coverage of GCMDriverAndroid.
   driver_.reset(new GCMDriverDesktop(
       scoped_ptr<GCMClientFactory>(new FakeGCMClientFactory(
           base::ThreadTaskRunnerHandle::Get(), io_thread_.task_runner())),
       GCMClient::ChromeBuildInfo(), "http://channel.status.request.url",
       "user-agent-string", &prefs_, temp_dir_.path(), request_context,
       base::ThreadTaskRunnerHandle::Get(), io_thread_.task_runner(),
-      task_runner_));
+      message_loop_.task_runner()));
 
   gcm_app_handler_.reset(new FakeGCMAppHandler);
   gcm_connection_observer_.reset(new FakeGCMConnectionObserver);
@@ -294,6 +299,17 @@ void GCMDriverTest::Send(const std::string& app_id,
     run_loop.Run();
 }
 
+void GCMDriverTest::GetEncryptionInfo(const std::string& app_id,
+                                      WaitToFinish wait_to_finish) {
+  base::RunLoop run_loop;
+  async_operation_completed_callback_ = run_loop.QuitClosure();
+  driver_->GetEncryptionInfo(
+      app_id, base::Bind(&GCMDriverTest::GetEncryptionInfoCompleted,
+                         base::Unretained(this)));
+  if (wait_to_finish == WAIT)
+    run_loop.Run();
+}
+
 void GCMDriverTest::Unregister(const std::string& app_id,
                                WaitToFinish wait_to_finish) {
   base::RunLoop run_loop;
@@ -323,6 +339,14 @@ void GCMDriverTest::SendCompleted(const std::string& message_id,
                                   GCMClient::Result result) {
   send_message_id_ = message_id;
   send_result_ = result;
+  if (!async_operation_completed_callback_.is_null())
+    async_operation_completed_callback_.Run();
+}
+
+void GCMDriverTest::GetEncryptionInfoCompleted(const std::string& p256dh,
+                                               const std::string& auth_secret) {
+  p256dh_ = p256dh;
+  auth_secret_ = auth_secret;
   if (!async_operation_completed_callback_.is_null())
     async_operation_completed_callback_.Run();
 }
@@ -656,6 +680,41 @@ TEST_F(GCMDriverFunctionalTest, UnregisterExplicitly) {
   Unregister(kTestAppID1, GCMDriverTest::WAIT);
 
   EXPECT_EQ(GCMClient::SUCCESS, unregistration_result());
+}
+
+TEST_F(GCMDriverFunctionalTest, UnregisterRemovesEncryptionInfo) {
+  std::vector<std::string> sender_ids;
+  sender_ids.push_back("sender1");
+  Register(kTestAppID1, sender_ids, GCMDriverTest::WAIT);
+
+  EXPECT_FALSE(registration_id().empty());
+  EXPECT_EQ(GCMClient::SUCCESS, registration_result());
+
+  GetEncryptionInfo(kTestAppID1, GCMDriverTest::WAIT);
+
+  EXPECT_FALSE(p256dh().empty());
+  EXPECT_FALSE(auth_secret().empty());
+
+  const std::string app_p256dh = p256dh();
+  const std::string app_auth_secret = auth_secret();
+
+  GetEncryptionInfo(kTestAppID1, GCMDriverTest::WAIT);
+
+  EXPECT_EQ(app_p256dh, p256dh());
+  EXPECT_EQ(app_auth_secret, auth_secret());
+
+  Unregister(kTestAppID1, GCMDriverTest::WAIT);
+
+  EXPECT_EQ(GCMClient::SUCCESS, unregistration_result());
+
+  GetEncryptionInfo(kTestAppID1, GCMDriverTest::WAIT);
+
+  // The GCMKeyStore eagerly creates new keying material for registrations that
+  // don't have any associated with them, so the most appropriate check to do is
+  // to verify that the returned material is different from before.
+
+  EXPECT_NE(app_p256dh, p256dh());
+  EXPECT_NE(app_auth_secret, auth_secret());
 }
 
 TEST_F(GCMDriverFunctionalTest, UnregisterWhenAsyncOperationPending) {

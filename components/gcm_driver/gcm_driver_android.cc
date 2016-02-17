@@ -67,7 +67,7 @@ void GCMDriverAndroid::OnUnregisterFinished(
 
   recorder_.RecordUnregistrationResponse(app_id, success);
 
-  UnregisterFinished(app_id, result);
+  RemoveEncryptionInfoAfterUnregister(app_id, result);
 }
 
 void GCMDriverAndroid::OnMessageReceived(

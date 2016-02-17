@@ -76,6 +76,11 @@ class GCMEncryptionProvider {
   void GetEncryptionInfo(const std::string& app_id,
                          const EncryptionInfoCallback& callback);
 
+  // Removes all encryption information associated with the |app_id|. Will
+  // invoke the |callback| when this has finished.
+  void RemoveEncryptionInfo(const std::string& app_id,
+                            const base::Closure& callback);
+
   // Determines whether |message| contains encrypted content.
   bool IsEncryptedMessage(const IncomingMessage& message) const;
 

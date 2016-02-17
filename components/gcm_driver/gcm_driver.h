@@ -109,14 +109,15 @@ class GCMDriver {
                 const std::vector<std::string>& sender_ids,
                 const RegisterCallback& callback);
 
-  // Unregisters all sender_ids for an app. Only works on non-Android.
+  // Unregisters all sender_ids for an app. Only works on non-Android. Will also
+  // remove any encryption keys associated with the |app_id|.
   // |app_id|: application ID.
   // |callback|: to be called once the asynchronous operation is done.
   void Unregister(const std::string& app_id,
                   const UnregisterCallback& callback);
 
   // Unregisters an (app_id, sender_id) pair from using GCM. Only works on
-  // Android.
+  // Android. Will also remove any encryption keys associated with the |app_id|.
   // TODO(jianli): Switch to using GCM's unsubscribe API.
   // |app_id|: application ID.
   // |sender_id|: the sender ID that was passed when registering.
@@ -266,9 +267,14 @@ class GCMDriver {
                         const std::string& registration_id,
                         GCMClient::Result result);
 
+  // To be called when a registration for |app_id| has been unregistered, having
+  // |result| as the result of the unregistration. Will remove any encryption
+  // information associated with the |app_id| and then calls UnregisterFinished.
+  void RemoveEncryptionInfoAfterUnregister(const std::string& app_id,
+                                           GCMClient::Result result);
+
   // Runs the Unregister callback.
-  void UnregisterFinished(const std::string& app_id,
-                          GCMClient::Result result);
+  void UnregisterFinished(const std::string& app_id, GCMClient::Result result);
 
   // Runs the Send callback.
   void SendFinished(const std::string& app_id,

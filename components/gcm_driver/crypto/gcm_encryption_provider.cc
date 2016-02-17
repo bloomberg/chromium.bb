@@ -82,6 +82,13 @@ void GCMEncryptionProvider::GetEncryptionInfo(
                          weak_ptr_factory_.GetWeakPtr(), app_id, callback));
 }
 
+void GCMEncryptionProvider::RemoveEncryptionInfo(
+    const std::string& app_id,
+    const base::Closure& callback) {
+  DCHECK(key_store_);
+  key_store_->RemoveKeys(app_id, callback);
+}
+
 bool GCMEncryptionProvider::IsEncryptedMessage(const IncomingMessage& message)
     const {
   // The Web Push protocol requires the encryption and crypto-key properties to

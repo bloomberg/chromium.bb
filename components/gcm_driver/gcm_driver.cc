@@ -187,6 +187,13 @@ void GCMDriver::RegisterFinished(const std::string& app_id,
   callback.Run(registration_id, result);
 }
 
+void GCMDriver::RemoveEncryptionInfoAfterUnregister(const std::string& app_id,
+                                                    GCMClient::Result result) {
+  encryption_provider_.RemoveEncryptionInfo(
+      app_id, base::Bind(&GCMDriver::UnregisterFinished,
+                         weak_ptr_factory_.GetWeakPtr(), app_id, result));
+}
+
 void GCMDriver::UnregisterFinished(const std::string& app_id,
                                    GCMClient::Result result) {
   std::map<std::string, UnregisterCallback>::iterator callback_iter =

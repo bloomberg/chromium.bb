@@ -142,18 +142,18 @@ void GCMKeyStore::DidStoreKeys(const std::string& app_id,
   callback.Run(key_pairs_[app_id], auth_secret);
 }
 
-void GCMKeyStore::DeleteKeys(const std::string& app_id,
-                             const DeleteCallback& callback) {
-  LazyInitialize(base::Bind(&GCMKeyStore::DeleteKeysAfterInitialize,
+void GCMKeyStore::RemoveKeys(const std::string& app_id,
+                             const base::Closure& callback) {
+  LazyInitialize(base::Bind(&GCMKeyStore::RemoveKeysAfterInitialize,
                             weak_factory_.GetWeakPtr(), app_id, callback));
 }
 
-void GCMKeyStore::DeleteKeysAfterInitialize(const std::string& app_id,
-                                            const DeleteCallback& callback) {
+void GCMKeyStore::RemoveKeysAfterInitialize(const std::string& app_id,
+                                            const base::Closure& callback) {
   DCHECK(state_ == State::INITIALIZED || state_ == State::FAILED);
   const auto iter = key_pairs_.find(app_id);
   if (iter == key_pairs_.end() || state_ != State::INITIALIZED) {
-    callback.Run(true /* success */);
+    callback.Run();
     return;
   }
 
@@ -166,23 +166,23 @@ void GCMKeyStore::DeleteKeysAfterInitialize(const std::string& app_id,
 
   database_->UpdateEntries(
       std::move(entries_to_save), std::move(keys_to_remove),
-      base::Bind(&GCMKeyStore::DidDeleteKeys, weak_factory_.GetWeakPtr(),
+      base::Bind(&GCMKeyStore::DidRemoveKeys, weak_factory_.GetWeakPtr(),
                  app_id, callback));
 }
 
-void GCMKeyStore::DidDeleteKeys(const std::string& app_id,
-                                const DeleteCallback& callback,
+void GCMKeyStore::DidRemoveKeys(const std::string& app_id,
+                                const base::Closure& callback,
                                 bool success) {
-  if (!success) {
+  // TODO(peter): Add a histogram for tracking |success|.
+
+  if (success) {
+    key_pairs_.erase(app_id);
+    auth_secrets_.erase(app_id);
+  } else {
     DVLOG(1) << "Unable to delete a key from the GCM Key Store.";
-    callback.Run(false /* success */);
-    return;
   }
 
-  key_pairs_.erase(app_id);
-  auth_secrets_.erase(app_id);
-
-  callback.Run(true /* success */);
+  callback.Run();
 }
 
 void GCMKeyStore::LazyInitialize(const base::Closure& done_closure) {
