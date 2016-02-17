@@ -53,7 +53,8 @@ class ResourceResponse;
 struct CrossThreadResourceResponseData;
 struct CrossThreadResourceRequestData;
 
-template<typename T> struct CrossThreadCopierPassThrough {
+template <typename T>
+struct CrossThreadCopierPassThrough {
     STATIC_ONLY(CrossThreadCopierPassThrough);
     typedef T Type;
     static Type copy(const T& parameter)
@@ -62,30 +63,18 @@ template<typename T> struct CrossThreadCopierPassThrough {
     }
 };
 
-template<bool isConvertibleToInteger, bool isThreadSafeRefCounted, bool isGarbageCollected, typename T> struct CrossThreadCopierBase;
+template <bool isConvertibleToInteger, bool isThreadSafeRefCounted, bool isGarbageCollected, typename T>
+struct CrossThreadCopierBase;
 
 // Integers get passed through without any changes.
-template<typename T> struct CrossThreadCopierBase<true, false, false, T> : public CrossThreadCopierPassThrough<T> {
-    STATIC_ONLY(CrossThreadCopierBase);
-};
-
-// nullptr_t can be passed through without any changes.
-template<> struct CrossThreadCopierBase<false, false, false, std::nullptr_t> : public CrossThreadCopierPassThrough<std::nullptr_t> {
-    STATIC_ONLY(CrossThreadCopierBase);
-};
-
-// To allow a type to be passed across threads using its copy constructor, add a forward declaration of the type and
-// a CopyThreadCopierBase<false, false, TypeName> : public CrossThreadCopierPassThrough<TypeName> { }; to this file.
-template<> struct CrossThreadCopierBase<false, false, false, IntRect> : public CrossThreadCopierPassThrough<IntRect> {
-    STATIC_ONLY(CrossThreadCopierBase);
-};
-
-template<> struct CrossThreadCopierBase<false, false, false, IntSize> : public CrossThreadCopierPassThrough<IntSize> {
+template <typename T>
+struct CrossThreadCopierBase<true, false, false, T> : public CrossThreadCopierPassThrough<T> {
     STATIC_ONLY(CrossThreadCopierBase);
 };
 
 // Custom copy methods.
-template<typename T> struct CrossThreadCopierBase<false, true, false, T> {
+template <typename T>
+struct CrossThreadCopierBase<false, true, false, T> {
     STATIC_ONLY(CrossThreadCopierBase);
     typedef typename WTF::RemoveTemplate<T, RefPtr>::Type TypeWithoutRefPtr;
     typedef typename WTF::RemoveTemplate<TypeWithoutRefPtr, PassRefPtr>::Type TypeWithoutPassRefPtr;
@@ -104,55 +93,8 @@ template<typename T> struct CrossThreadCopierBase<false, true, false, T> {
     }
 };
 
-template<typename T> struct CrossThreadCopierBase<false, false, false, PassOwnPtr<T>> {
-    STATIC_ONLY(CrossThreadCopierBase);
-    typedef PassOwnPtr<T> Type;
-    static Type copy(Type ownPtr)
-    {
-        return ownPtr;
-    }
-};
-
-template<typename T> struct CrossThreadCopierBase<false, false, false, WeakMember<T>*> {
-    STATIC_ONLY(CrossThreadCopierBase);
-    typedef WeakMember<T>* Type;
-    static Type copy(Type ptr)
-    {
-        return ptr;
-    }
-};
-
-template<> struct CrossThreadCopierBase<false, false, false, KURL> {
-    STATIC_ONLY(CrossThreadCopierBase);
-    typedef KURL Type;
-    PLATFORM_EXPORT static Type copy(const KURL&);
-};
-
-template<> struct CrossThreadCopierBase<false, false, false, String> {
-    STATIC_ONLY(CrossThreadCopierBase);
-    typedef String Type;
-    PLATFORM_EXPORT static Type copy(const String&);
-};
-
-template<> struct CrossThreadCopierBase<false, false, false, ResourceError> {
-    STATIC_ONLY(CrossThreadCopierBase);
-    typedef ResourceError Type;
-    PLATFORM_EXPORT static Type copy(const ResourceError&);
-};
-
-template<> struct CrossThreadCopierBase<false, false, false, ResourceRequest> {
-    STATIC_ONLY(CrossThreadCopierBase);
-    typedef PassOwnPtr<CrossThreadResourceRequestData> Type;
-    PLATFORM_EXPORT static Type copy(const ResourceRequest&);
-};
-
-template<> struct CrossThreadCopierBase<false, false, false, ResourceResponse> {
-    STATIC_ONLY(CrossThreadCopierBase);
-    typedef PassOwnPtr<CrossThreadResourceResponseData> Type;
-    PLATFORM_EXPORT static Type copy(const ResourceResponse&);
-};
-
-template<typename T> struct CrossThreadCopierBase<false, false, true, T> {
+template <typename T>
+struct CrossThreadCopierBase<false, false, true, T> {
     STATIC_ONLY(CrossThreadCopierBase);
     typedef typename std::remove_pointer<T>::type TypeWithoutPointer;
     typedef RawPtr<TypeWithoutPointer> Type;
@@ -162,8 +104,95 @@ template<typename T> struct CrossThreadCopierBase<false, false, true, T> {
     }
 };
 
-template<typename T> struct CrossThreadCopierBase<false, false, true, RawPtr<T>> {
-    STATIC_ONLY(CrossThreadCopierBase);
+template <typename T>
+struct CrossThreadCopier : public CrossThreadCopierBase<std::is_convertible<T, int>::value,
+    WTF::IsSubclassOfTemplate<typename WTF::RemoveTemplate<T, RefPtr>::Type, ThreadSafeRefCounted>::value
+    || WTF::IsSubclassOfTemplate<typename std::remove_pointer<T>::type, ThreadSafeRefCounted>::value
+    || WTF::IsSubclassOfTemplate<typename WTF::RemoveTemplate<T, PassRefPtr>::Type, ThreadSafeRefCounted>::value,
+    WTF::IsSubclassOfTemplate<typename std::remove_pointer<T>::type, GarbageCollected>::value,
+    T> {
+    STATIC_ONLY(CrossThreadCopier);
+};
+
+// CrossThreadCopier specializations follow.
+
+// nullptr_t can be passed through without any changes.
+template <>
+struct CrossThreadCopier<std::nullptr_t> : public CrossThreadCopierPassThrough<std::nullptr_t> {
+    STATIC_ONLY(CrossThreadCopier);
+};
+
+// To allow a type to be passed across threads using its copy constructor, add a forward declaration of the type and
+// provide a specialization of CrossThreadCopier<T> in this file, like IntRect below.
+template <>
+struct CrossThreadCopier<IntRect> : public CrossThreadCopierPassThrough<IntRect> {
+    STATIC_ONLY(CrossThreadCopier);
+};
+
+template <>
+struct CrossThreadCopier<IntSize> : public CrossThreadCopierPassThrough<IntSize> {
+    STATIC_ONLY(CrossThreadCopier);
+};
+
+template <typename T>
+struct CrossThreadCopier<PassOwnPtr<T>> {
+    STATIC_ONLY(CrossThreadCopier);
+    typedef PassOwnPtr<T> Type;
+    static Type copy(Type ownPtr)
+    {
+        return ownPtr;
+    }
+};
+
+template <typename T>
+struct CrossThreadCopier<WeakMember<T>*> {
+    STATIC_ONLY(CrossThreadCopier);
+    typedef WeakMember<T>* Type;
+    static Type copy(Type ptr)
+    {
+        return ptr;
+    }
+};
+
+template <>
+struct CrossThreadCopier<KURL> {
+    STATIC_ONLY(CrossThreadCopier);
+    typedef KURL Type;
+    PLATFORM_EXPORT static Type copy(const KURL&);
+};
+
+template <>
+struct CrossThreadCopier<String> {
+    STATIC_ONLY(CrossThreadCopier);
+    typedef String Type;
+    PLATFORM_EXPORT static Type copy(const String&);
+};
+
+template <>
+struct CrossThreadCopier<ResourceError> {
+    STATIC_ONLY(CrossThreadCopier);
+    typedef ResourceError Type;
+    PLATFORM_EXPORT static Type copy(const ResourceError&);
+};
+
+template <>
+struct CrossThreadCopier<ResourceRequest> {
+    STATIC_ONLY(CrossThreadCopier);
+    typedef PassOwnPtr<CrossThreadResourceRequestData> Type;
+    PLATFORM_EXPORT static Type copy(const ResourceRequest&);
+};
+
+template <>
+struct CrossThreadCopier<ResourceResponse> {
+    STATIC_ONLY(CrossThreadCopier);
+    typedef PassOwnPtr<CrossThreadResourceResponseData> Type;
+    PLATFORM_EXPORT static Type copy(const ResourceResponse&);
+};
+
+template <typename T>
+struct CrossThreadCopier<RawPtr<T>> {
+    STATIC_ONLY(CrossThreadCopier);
+    static_assert(IsGarbageCollectedType<T>::value, "T must be a garbage-collected type.");
     typedef RawPtr<T> Type;
     static Type copy(const Type& ptr)
     {
@@ -171,8 +200,10 @@ template<typename T> struct CrossThreadCopierBase<false, false, true, RawPtr<T>>
     }
 };
 
-template<typename T> struct CrossThreadCopierBase<false, false, true, Member<T>> {
-    STATIC_ONLY(CrossThreadCopierBase);
+template <typename T>
+struct CrossThreadCopier<Member<T>> {
+    STATIC_ONLY(CrossThreadCopier);
+    static_assert(IsGarbageCollectedType<T>::value, "T must be a garbage-collected type.");
     typedef RawPtr<T> Type;
     static Type copy(const Member<T>& ptr)
     {
@@ -180,8 +211,10 @@ template<typename T> struct CrossThreadCopierBase<false, false, true, Member<T>>
     }
 };
 
-template<typename T> struct CrossThreadCopierBase<false, false, true, WeakMember<T>> {
-    STATIC_ONLY(CrossThreadCopierBase);
+template <typename T>
+struct CrossThreadCopier<WeakMember<T>> {
+    STATIC_ONLY(CrossThreadCopier);
+    static_assert(IsGarbageCollectedType<T>::value, "T must be a garbage-collected type.");
     typedef RawPtr<T> Type;
     static Type copy(const WeakMember<T>& ptr)
     {
@@ -189,20 +222,9 @@ template<typename T> struct CrossThreadCopierBase<false, false, true, WeakMember
     }
 };
 
-template<typename T> struct CrossThreadCopier : public CrossThreadCopierBase<std::is_convertible<T, int>::value,
-    WTF::IsSubclassOfTemplate<typename WTF::RemoveTemplate<T, RefPtr>::Type, ThreadSafeRefCounted>::value
-    || WTF::IsSubclassOfTemplate<typename std::remove_pointer<T>::type, ThreadSafeRefCounted>::value
-    || WTF::IsSubclassOfTemplate<typename WTF::RemoveTemplate<T, PassRefPtr>::Type, ThreadSafeRefCounted>::value,
-    WTF::IsSubclassOfTemplate<typename std::remove_pointer<T>::type, GarbageCollected>::value
-    || WTF::IsSubclassOfTemplate<typename WTF::RemoveTemplate<T, RawPtr>::Type, GarbageCollected>::value
-    || WTF::IsSubclassOfTemplate<typename WTF::RemoveTemplate<T, Member>::Type, GarbageCollected>::value
-    || WTF::IsSubclassOfTemplate<typename WTF::RemoveTemplate<T, WeakMember>::Type, GarbageCollected>::value,
-    T> {
-    STATIC_ONLY(CrossThreadCopier);
-};
-
 // |T| is |C*| or |const WeakPtr<C>&|.
-template<typename T> struct AllowCrossThreadAccessWrapper {
+template <typename T>
+struct AllowCrossThreadAccessWrapper {
     STACK_ALLOCATED();
 public:
     explicit AllowCrossThreadAccessWrapper(T value) : m_value(value) { }
@@ -217,18 +239,21 @@ private:
     T m_value;
 };
 
-template<typename T> struct CrossThreadCopierBase<false, false, false, AllowCrossThreadAccessWrapper<T>> {
-    STATIC_ONLY(CrossThreadCopierBase);
+template <typename T>
+struct CrossThreadCopier<AllowCrossThreadAccessWrapper<T>> {
+    STATIC_ONLY(CrossThreadCopier);
     typedef T Type;
     static Type copy(const AllowCrossThreadAccessWrapper<T>& wrapper) { return wrapper.value(); }
 };
 
-template<typename T> AllowCrossThreadAccessWrapper<T*> AllowCrossThreadAccess(T* value)
+template <typename T>
+AllowCrossThreadAccessWrapper<T*> AllowCrossThreadAccess(T* value)
 {
     return AllowCrossThreadAccessWrapper<T*>(value);
 }
 
-template<typename T> AllowCrossThreadAccessWrapper<const WeakPtr<T>&> AllowCrossThreadAccess(const WeakPtr<T>& value)
+template <typename T>
+AllowCrossThreadAccessWrapper<const WeakPtr<T>&> AllowCrossThreadAccess(const WeakPtr<T>& value)
 {
     return AllowCrossThreadAccessWrapper<const WeakPtr<T>&>(value);
 }

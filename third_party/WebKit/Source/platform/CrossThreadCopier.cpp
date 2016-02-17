@@ -38,27 +38,27 @@
 
 namespace blink {
 
-CrossThreadCopierBase<false, false, false, KURL>::Type CrossThreadCopierBase<false, false, false, KURL>::copy(const KURL& url)
+CrossThreadCopier<KURL>::Type CrossThreadCopier<KURL>::copy(const KURL& url)
 {
     return url.copy();
 }
 
-CrossThreadCopierBase<false, false, false, String>::Type CrossThreadCopierBase<false, false, false, String>::copy(const String& str)
+CrossThreadCopier<String>::Type CrossThreadCopier<String>::copy(const String& str)
 {
     return str.isolatedCopy();
 }
 
-CrossThreadCopierBase<false, false, false, ResourceError>::Type CrossThreadCopierBase<false, false, false, ResourceError>::copy(const ResourceError& error)
+CrossThreadCopier<ResourceError>::Type CrossThreadCopier<ResourceError>::copy(const ResourceError& error)
 {
     return error.copy();
 }
 
-CrossThreadCopierBase<false, false, false, ResourceRequest>::Type CrossThreadCopierBase<false, false, false, ResourceRequest>::copy(const ResourceRequest& request)
+CrossThreadCopier<ResourceRequest>::Type CrossThreadCopier<ResourceRequest>::copy(const ResourceRequest& request)
 {
     return request.copyData();
 }
 
-CrossThreadCopierBase<false, false, false, ResourceResponse>::Type CrossThreadCopierBase<false, false, false, ResourceResponse>::copy(const ResourceResponse& response)
+CrossThreadCopier<ResourceResponse>::Type CrossThreadCopier<ResourceResponse>::copy(const ResourceResponse& response)
 {
     return response.copyData();
 }

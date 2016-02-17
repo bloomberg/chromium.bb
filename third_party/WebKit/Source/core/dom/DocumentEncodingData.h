@@ -55,7 +55,8 @@ private:
     bool m_sawDecodingError;
 };
 
-template<> struct CrossThreadCopierBase<false, false, false, DocumentEncodingData> : public CrossThreadCopierPassThrough<DocumentEncodingData> {
+template <>
+struct CrossThreadCopier<DocumentEncodingData> : public CrossThreadCopierPassThrough<DocumentEncodingData> {
 };
 
 inline bool operator!=(const DocumentEncodingData& a, const DocumentEncodingData& b)

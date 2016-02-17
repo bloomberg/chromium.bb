@@ -117,7 +117,8 @@ public:
     bool m_isMainResource;
 };
 
-template<> struct CrossThreadCopierBase<false, false, false, ResourceTimingInfo> {
+template <>
+struct CrossThreadCopier<ResourceTimingInfo> {
     typedef PassOwnPtr<CrossThreadResourceTimingInfoData> Type;
     static Type copy(const ResourceTimingInfo& info) { return info.copyData(); }
 };

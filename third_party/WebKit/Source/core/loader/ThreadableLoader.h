@@ -108,7 +108,8 @@ struct CrossThreadThreadableLoaderOptionsData {
     unsigned long timeoutMilliseconds;
 };
 
-template<> struct CrossThreadCopierBase<false, false, false, ThreadableLoaderOptions> {
+template <>
+struct CrossThreadCopier<ThreadableLoaderOptions> {
     typedef CrossThreadThreadableLoaderOptionsData Type;
     static Type copy(const ThreadableLoaderOptions& options)
     {

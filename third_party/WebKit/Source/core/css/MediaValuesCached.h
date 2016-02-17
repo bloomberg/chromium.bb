@@ -111,7 +111,8 @@ protected:
     MediaValuesCachedData m_data;
 };
 
-template<> struct CrossThreadCopierBase<false, false, false, MediaValuesCached::MediaValuesCachedData> {
+template <>
+struct CrossThreadCopier<MediaValuesCached::MediaValuesCachedData> {
     typedef MediaValuesCached::MediaValuesCachedData Type;
     static Type copy(const MediaValuesCached::MediaValuesCachedData& data) { return data.deepCopy(); }
 };
