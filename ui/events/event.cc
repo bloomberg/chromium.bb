@@ -37,6 +37,10 @@
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"  // nogncheck
 #endif
 
+#if defined(OS_WIN)
+#include "ui/events/keycodes/platform_key_map_win.h"
+#endif
+
 namespace {
 
 std::string EventTypeName(ui::EventType type) {
@@ -760,6 +764,8 @@ KeyEvent::KeyEvent(const base::NativeEvent& native_event)
   // Only Windows has native character events.
   if (is_char_)
     key_ = DomKey::FromCharacter(native_event.wParam);
+  else
+    key_ = PlatformKeyMap::DomCodeAndFlagsToDomKeyStatic(code_, flags());
 #endif
 }
 

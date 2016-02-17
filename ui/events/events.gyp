@@ -66,6 +66,8 @@
         'keycodes/keyboard_code_conversion_x.cc',
         'keycodes/keyboard_code_conversion_x.h',
         'keycodes/keyboard_codes.h',
+        'keycodes/platform_key_map_win.cc',
+        'keycodes/platform_key_map_win.h',
         'latency_info.cc',
         'latency_info.h',
         'x/keysym_to_unicode.cc',
