@@ -71,6 +71,7 @@
 
 namespace autofill {
 
+using base::StartsWith;
 using base::TimeTicks;
 
 namespace {
@@ -1074,14 +1075,28 @@ bool AutofillManager::GetProfilesForCreditCardUpload(
   // any other non-empty zip, then the candidate set is invalid.
   base::string16 verified_zip;
   for (const AutofillProfile& profile : candidate_profiles) {
+    // TODO(jdonnelly): Use GetInfo instead of GetRawInfo once zip codes are
+    // canonicalized. See http://crbug.com/587465.
     base::string16 zip = profile.GetRawInfo(ADDRESS_HOME_ZIP);
     if (!zip.empty()) {
       if (verified_zip.empty()) {
         verified_zip = zip;
-      } else if (verified_zip != zip) {
-        AutofillMetrics::LogCardUploadDecisionMetric(
-            AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_ZIPS);
-        return false;
+      } else {
+        // To compare two zips, we check to see if either is a prefix of the
+        // other. This allows us to consider a 5-digit zip and a zip+4 to be a
+        // match if the first 5 digits are the same without hardcoding any
+        // specifics of how postal codes are represented. (They can be numeric
+        // or alphanumeric and vary from 3 to 10 digits long by country. See
+        // https://en.wikipedia.org/wiki/Postal_code#Presentation.) The Payments
+        // backend will apply a more sophisticated address-matching procedure.
+        // This check is simply meant to avoid offering upload in cases that are
+        // likely to fail.
+        if (!(StartsWith(verified_zip, zip, base::CompareCase::SENSITIVE) ||
+              StartsWith(zip, verified_zip, base::CompareCase::SENSITIVE))) {
+          AutofillMetrics::LogCardUploadDecisionMetric(
+              AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_ZIPS);
+          return false;
+        }
       }
     }
   }
