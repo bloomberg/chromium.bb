@@ -296,23 +296,22 @@ size_t GetLevenshteinDistance(const std::string& str1,
     return str2.size();
   if (str2.size() == 0)
     return str1.size();
-  std::vector<size_t> kFirstRow(str2.size() + 1, 0);
-  std::vector<size_t> kSecondRow(str2.size() + 1, 0);
 
-  for (size_t i = 0; i < kFirstRow.size(); ++i)
-    kFirstRow[i] = i;
+  std::vector<size_t> row(str2.size() + 1);
+  for (size_t i = 0; i < row.size(); ++i)
+    row[i] = i;
+
   for (size_t i = 0; i < str1.size(); ++i) {
-    kSecondRow[0] = i + 1;
+    row[0] = i + 1;
+    size_t previous = i;
     for (size_t j = 0; j < str2.size(); ++j) {
+      size_t old_row = row[j + 1];
       int cost = str1[i] == str2[j] ? 0 : 1;
-      kSecondRow[j + 1] =
-          std::min(std::min(kSecondRow[j] + 1, kFirstRow[j + 1] + 1),
-                   kFirstRow[j] + cost);
+      row[j + 1] = std::min(std::min(row[j], row[j + 1]) + 1, previous + cost);
+      previous = old_row;
     }
-    for (size_t j = 0; j < kFirstRow.size(); j++)
-      kFirstRow[j] = kSecondRow[j];
   }
-  return kSecondRow[str2.size()];
+  return row[str2.size()];
 }
 
 bool IsSubDomainOutsideWildcard(const GURL& request_url,
@@ -380,11 +379,11 @@ bool IsCertLikelyFromMultiTenantHosting(const GURL& request_url,
   // considered as a shared certificate. Include the host name in the URL also
   // while comparing.
   dns_names.push_back(host_name);
-  static const size_t kMinimumEditDsitance = 5;
+  static const size_t kMinimumEditDistance = 5;
   for (size_t i = 0; i < dns_names_size; ++i) {
     for (size_t j = i + 1; j < dns_names_size; ++j) {
       size_t edit_distance = GetLevenshteinDistance(dns_names[i], dns_names[j]);
-      if (edit_distance < kMinimumEditDsitance)
+      if (edit_distance < kMinimumEditDistance)
         return false;
     }
   }
