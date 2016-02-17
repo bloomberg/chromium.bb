@@ -177,6 +177,74 @@ def FindAndroidCandidates(package_dir):
   return portage_util.BestEBuild(unstable_ebuilds), stable_ebuilds
 
 
+def CopyToArcBucket(android_bucket_url, build_branch, build_id, subpaths,
+                    arc_bucket_url, acls):
+  """Copies from source Android bucket to ARC++ specific bucket.
+
+  Copies each build to the ARC bucket eliminating the subpath.
+  Applies build specific ACLs for each file.
+
+  Args:
+    android_bucket_url: URL of Android build gs bucket
+    build_branch: branch of Android builds
+    build_id: A string. The Android build id number to check.
+    subpaths: Subpath dictionary for each build to copy.
+    arc_bucket_url: URL of the target ARC build gs bucket
+    acls: ACLs dictionary for each build to copy.
+  """
+  gs_context = gs.GSContext()
+  for build, subpath in subpaths.iteritems():
+    target = constants.ANDROID_BUILD_TARGETS[build]
+    build_dir = '%s-%s' % (build_branch, target)
+    android_dir = os.path.join(android_bucket_url, build_dir, build_id, subpath)
+    arc_dir = os.path.join(arc_bucket_url, build_dir, build_id)
+
+    # Copy all zip files from android_dir to arc_dir, setting ACLs.
+    for zipfile in gs_context.List(android_dir):
+      if zipfile.url.endswith('-%s.zip' % (build_id)):
+        zipname = os.path.basename(zipfile.url)
+        arc_path = os.path.join(arc_dir, zipname)
+        acl = acls[build]
+        needs_copy = True
+
+        # Check a pre-existing file with the original source.
+        if gs_context.Exists(arc_path):
+          if (gs_context.Stat(zipfile.url).hash_md5 !=
+              gs_context.Stat(arc_path).hash_md5):
+            logging.warn('Removing incorrect file %s', arc_path)
+            gs_context.Remove(arc_path)
+          else:
+            logging.info('Skipping already copied file %s', arc_path)
+            needs_copy = False
+
+        # Copy if necessary, and set the ACL unconditionally.
+        # The Stat() call above doesn't verify the ACL is correct and
+        # the ChangeACL should be relatively cheap compared to the copy.
+        # This covers the following caes:
+        # - handling an interrupted copy from a previous run.
+        # - rerunning the copy in case one of the googlestorage_acl_X.txt
+        #   files changes (e.g. we add a new variant which reuses a build).
+        if needs_copy:
+          logging.info('Copying %s -> %s (acl %s)', zipfile.url, arc_path, acl)
+          gs_context.Copy(zipfile.url, arc_path, version=0)
+        gs_context.ChangeACL(arc_path, acl_args_file=acl)
+
+
+def MakeAclDict(package_dir):
+  """Creates a dictionary of acl files for each build type.
+
+  Args:
+    package_dir: The path to where the package acl files are stored.
+
+  Returns:
+    Returns acls dictionary.
+  """
+  return dict(
+      (k, os.path.join(package_dir, v))
+      for k, v in constants.ARC_BUCKET_ACLS.items()
+  )
+
+
 def GetAndroidRevisionListLink(build_branch, old_android, new_android):
   """Returns a link to the list of revisions between two Android versions
 
@@ -197,8 +265,8 @@ def GetAndroidRevisionListLink(build_branch, old_android, new_android):
 
 
 def MarkAndroidEBuildAsStable(stable_candidate, unstable_ebuild, android_pn,
-                              android_version, subpaths_dict,
-                              package_dir, build_branch):
+                              android_version, package_dir, build_branch,
+                              arc_bucket_url):
   r"""Uprevs the Android ebuild.
 
   This is the main function that uprevs from a stable candidate
@@ -211,9 +279,9 @@ def MarkAndroidEBuildAsStable(stable_candidate, unstable_ebuild, android_pn,
     unstable_ebuild: ebuild corresponding to the unstable ebuild for Android.
     android_pn: package name.
     android_version: The \d+ build id of Android.
-    subpaths_dict: Mapping of build to subpath
     package_dir: Path to the android-container package dir.
-    build_branch: branch of Android builds
+    build_branch: branch of Android builds.
+    arc_bucket_url: URL of the target ARC build gs bucket.
 
   Returns:
     Full portage version atom (including rc's, etc) that was revved.
@@ -240,9 +308,9 @@ def MarkAndroidEBuildAsStable(stable_candidate, unstable_ebuild, android_pn,
     pf = '%s-%s-r1' % (android_pn, android_version)
     new_ebuild_path = os.path.join(package_dir, '%s.ebuild' % pf)
 
-  variables = {'ANDROID_BUILD_ID': android_version}
-  for build, subpath in subpaths_dict.iteritems():
-    variables[build + '_SUBPATH'] = subpath
+  variables = {'BASE_URL': arc_bucket_url}
+  for build, target in constants.ANDROID_BUILD_TARGETS.iteritems():
+    variables[build + '_TARGET'] = '%s-%s' % (build_branch, target)
 
   portage_util.EBuild.MarkAsStable(
       unstable_ebuild.ebuild_path, new_ebuild_path,
@@ -285,9 +353,13 @@ def GetParser():
   parser = commandline.ArgumentParser()
   parser.add_argument('-b', '--boards')
   parser.add_argument('--android_bucket_url',
-                      default=constants.ANDROID_BUCKET_URL)
+                      default=constants.ANDROID_BUCKET_URL,
+                      type='gs_path')
   parser.add_argument('--android_build_branch',
                       default=constants.ANDROID_BUILD_BRANCH)
+  parser.add_argument('--arc_bucket_url',
+                      default=constants.ARC_BUCKET_URL,
+                      type='gs_path')
   parser.add_argument('-f', '--force_version',
                       help='Android build id to use')
   parser.add_argument('-s', '--srcroot',
@@ -320,6 +392,10 @@ def main(argv):
     version_to_uprev, subpaths = GetLatestBuild(options.android_bucket_url,
                                                 options.android_build_branch)
 
+  acls = MakeAclDict(android_package_dir)
+  CopyToArcBucket(options.android_bucket_url, options.android_build_branch,
+                  version_to_uprev, subpaths, options.arc_bucket_url, acls)
+
   stable_candidate = portage_util.BestEBuild(stable_ebuilds)
 
   if stable_candidate:
@@ -341,8 +417,8 @@ def main(argv):
 
   android_version_atom = MarkAndroidEBuildAsStable(
       stable_candidate, unstable_ebuild, constants.ANDROID_PN,
-      version_to_uprev, subpaths, android_package_dir,
-      options.android_build_branch)
+      version_to_uprev, android_package_dir,
+      options.android_build_branch, options.arc_bucket_url)
   if android_version_atom:
     if options.boards:
       cros_mark_as_stable.CleanStalePackages(options.srcroot,

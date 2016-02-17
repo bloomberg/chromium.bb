@@ -11,11 +11,13 @@ import os
 
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import gs_unittest
 from chromite.lib import osutils
+from chromite.lib import partial_mock
 from chromite.lib import portage_util
 from chromite.scripts import cros_mark_android_as_stable
 
@@ -31,6 +33,18 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
 
   unstable_data = 'KEYWORDS="~x86 ~arm"'
   stable_data = 'KEYWORDS="x86 arm"'
+
+  STAT_OUTPUT = """%s:
+        Creation time:    Sat, 23 Aug 2014 06:53:20 GMT
+        Content-Language: en
+        Content-Length:   74
+        Content-Type:   application/octet-stream
+        Hash (crc32c):    BBPMPA==
+        Hash (md5):   ms+qSYvgI9SjXn8tW/5UpQ==
+        ETag:     CNCgocbmqMACEAE=
+        Generation:   1408776800850000
+        Metageneration:   1
+      """
 
   def setUp(self):
     """Setup vars and create mock dir."""
@@ -53,9 +67,24 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     osutils.WriteFile(self.old, self.stable_data, makedirs=True)
     osutils.WriteFile(self.old2, self.stable_data, makedirs=True)
 
+    self.arm_acl_data = '-g google.com:READ'
+    self.x86_acl_data = '-g google.com:WRITE'
+    self.arm_acl = os.path.join(self.mock_android_dir,
+                                'googlestorage_arm_acl.txt')
+    self.x86_acl = os.path.join(self.mock_android_dir,
+                                'googlestorage_x86_acl.txt')
+    self.acls = {
+        'ARM': self.arm_acl,
+        'X86': self.x86_acl,
+    }
+
+    osutils.WriteFile(self.arm_acl, self.arm_acl_data, makedirs=True)
+    osutils.WriteFile(self.x86_acl, self.x86_acl_data, makedirs=True)
+
     self.bucket_url = 'gs://u'
     self.build_branch = 'x'
     self.gs_mock = self.StartPatcher(gs_unittest.GSContextMock())
+    self.arc_bucket_url = 'gs://a'
 
     builds = {
         'ARM': [
@@ -65,13 +94,17 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
         'X86': [self.old_version, self.old2_version, self.new_version],
     }
     for build_type, builds in builds.iteritems():
-      url = self.makeTargetUrl(constants.ANDROID_BUILD_TARGETS[build_type])
+      url = self.makeSrcTargetUrl(constants.ANDROID_BUILD_TARGETS[build_type])
       builds = '\n'.join(os.path.join(url, version) for version in builds)
       self.gs_mock.AddCmdResult(['ls', '--', url], output=builds)
 
     for version in [self.old_version, self.old2_version, self.new_version]:
       for target in constants.ANDROID_BUILD_TARGETS.itervalues():
         self.setupMockBuild(target, version)
+    self.new_subpaths = {
+        'ARM': 'linux-cheets_arm-userdebug100',
+        'X86': 'linux-cheets_x86-userdebug100',
+    }
 
     self.setupMockBuild(constants.ANDROID_BUILD_TARGETS['ARM'],
                         self.partial_new_version)
@@ -83,26 +116,51 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
 
   def setupMockBuild(self, target, version, valid=True):
     """Helper to mock a build."""
-    url = self.makeUrl(target, version)
+    def _RaiseGSNoSuchKey(*_args, **_kwargs):
+      raise gs.GSNoSuchKey('file does not exist')
+    src_url = self.makeSrcUrl(target, version)
     if valid:
-      subdir = os.path.join(url, self.makeSubpath(target, version))
-      self.gs_mock.AddCmdResult(['ls', '--', url], output=subdir)
-      zipfile = os.path.join(subdir, 'file-%s.zip' % version)
-      self.gs_mock.AddCmdResult(['ls', '--', subdir], output=zipfile)
+      # Show source subpath directory.
+      src_subdir = os.path.join(src_url, self.makeSubpath(target, version))
+      self.gs_mock.AddCmdResult(['ls', '--', src_url], output=src_subdir)
+
+      # Show zipfile.
+      zipname = 'file-%s.zip' % version
+      src_zip = os.path.join(src_subdir, zipname)
+      self.gs_mock.AddCmdResult(['ls', '--', src_subdir], output=src_zip)
+      self.gs_mock.AddCmdResult(['stat', '--', src_zip],
+                                output=(self.STAT_OUTPUT) % src_url)
+
+      # Show nothing in destination.
+      dst_url = self.makeDstUrl(target, version)
+      dst_zip = os.path.join(dst_url, zipname)
+      self.gs_mock.AddCmdResult(['stat', '--', dst_zip],
+                                side_effect=_RaiseGSNoSuchKey)
+      logging.warn('mocking no %s', dst_url)
+
+      # Allow copying of source to dest.
+      self.gs_mock.AddCmdResult(['cp', '-v', '--', src_zip, dst_zip])
     else:
-      def _RaiseGSNoSuchKey(*_args, **_kwargs):
-        raise gs.GSNoSuchKey('file does not exist')
-      self.gs_mock.AddCmdResult(['ls', '--', url],
+      self.gs_mock.AddCmdResult(['ls', '--', src_url],
                                 side_effect=_RaiseGSNoSuchKey)
 
-  def makeTargetUrl(self, target):
+  def makeSrcTargetUrl(self, target):
     """Helper to return the url for a target."""
     return os.path.join(self.bucket_url,
                         '%s-%s' % (self.build_branch, target))
 
-  def makeUrl(self, target, version):
+  def makeSrcUrl(self, target, version):
     """Helper to return the url for a build."""
-    return os.path.join(self.makeTargetUrl(target), version)
+    return os.path.join(self.makeSrcTargetUrl(target), version)
+
+  def makeDstTargetUrl(self, target):
+    """Helper to return the url for a target."""
+    return os.path.join(self.arc_bucket_url,
+                        '%s-%s' % (self.build_branch, target))
+
+  def makeDstUrl(self, target, version):
+    """Helper to return the url for a build."""
+    return os.path.join(self.makeDstTargetUrl(target), version)
 
   def makeSubpath(self, target, version):
     """Helper to return the subpath for a build."""
@@ -121,10 +179,7 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     subpaths = cros_mark_android_as_stable.IsBuildIdValid(self.bucket_url,
                                                           self.build_branch,
                                                           self.new_version)
-    self.assertTrue(subpaths)
-    self.assertEquals(len(subpaths), 2)
-    self.assertEquals(subpaths['ARM'], 'linux-cheets_arm-userdebug100')
-    self.assertEquals(subpaths['X86'], 'linux-cheets_x86-userdebug100')
+    self.assertEquals(subpaths, self.new_subpaths)
 
     subpaths = cros_mark_android_as_stable.IsBuildIdValid(
         self.bucket_url, self.build_branch, self.partial_new_version)
@@ -156,6 +211,25 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     self.assertEquals(subpaths['ARM'], 'linux-cheets_arm-userdebug100')
     self.assertEquals(subpaths['X86'], 'linux-cheets_x86-userdebug100')
 
+  def testCopyToArcBucket(self):
+    """Test copying of images to ARC bucket."""
+    # Allow setting of dest acls.
+    self.gs_mock.AddCmdResult(partial_mock.In('acl'))
+    cros_mark_android_as_stable.CopyToArcBucket(self.bucket_url,
+                                                self.build_branch,
+                                                self.new_version,
+                                                self.new_subpaths,
+                                                self.arc_bucket_url,
+                                                self.acls)
+
+  def testMakeAclDict(self):
+    """Test generation of acls dictionary."""
+    acls = cros_mark_android_as_stable.MakeAclDict(self.mock_android_dir)
+    self.assertEquals(acls['ARM'], os.path.join(self.mock_android_dir,
+                                                'googlestorage_acl_arm.txt'))
+    self.assertEquals(acls['X86'], os.path.join(self.mock_android_dir,
+                                                'googlestorage_acl_x86.txt'))
+
   def testGetAndroidRevisionListLink(self):
     """Test generation of revision diff list."""
     old_ebuild = portage_util.EBuild(self.old)
@@ -174,14 +248,9 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     unstable = portage_util.EBuild(self.unstable)
     android_version = self.new_version
     package_dir = self.mock_android_dir
-    subpaths_dict = {
-        'ARM': 'linux-cheets_arm-userdebug100',
-        'X86': 'linux-cheets_x86-userdebug100',
-    }
     version_atom = cros_mark_android_as_stable.MarkAndroidEBuildAsStable(
-        stable_candidate, unstable, constants.ANDROID_PN,
-        android_version, subpaths_dict, package_dir,
-        self.build_branch)
+        stable_candidate, unstable, constants.ANDROID_PN, android_version,
+        package_dir, self.build_branch, self.arc_bucket_url)
     git_mock.assert_has_calls([
         mock.call(package_dir, ['add', self.new]),
         mock.call(package_dir, ['add', 'Manifest']),

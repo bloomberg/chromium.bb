@@ -259,6 +259,11 @@ ANDROID_BUILD_TARGETS = {
     'ARM': 'linux-cheets_arm-userdebug',
     'X86': 'linux-cheets_x86-userdebug',
 }
+ARC_BUCKET_URL = 'gs://chromeos-arc-images/builds'
+ARC_BUCKET_ACLS = {
+    'ARM': 'googlestorage_acl_arm.txt',
+    'X86': 'googlestorage_acl_x86.txt',
+}
 
 GOB_COOKIE_PATH = os.path.expanduser('~/.git-credential-cache/cookie')
 GITCOOKIES_PATH = os.path.expanduser('~/.gitcookies')
