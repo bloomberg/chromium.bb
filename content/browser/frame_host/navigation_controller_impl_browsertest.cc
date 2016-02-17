@@ -127,6 +127,35 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, LoadDataWithBaseURL) {
   EXPECT_EQ(data_url, reload_entry->GetURL());
 }
 
+#if defined(OS_ANDROID)
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       LoadDataWithInvalidBaseURL) {
+  const GURL base_url("http://");  // Invalid.
+  const GURL history_url("http://historyurl");
+  const std::string title = "invalid_base_url";
+  const std::string data = base::StringPrintf(
+      "<html><head><title>%s</title></head><body>foo</body></html>",
+      title.c_str());
+  const GURL data_url = GURL("data:text/html;charset=utf-8," + data);
+
+  const NavigationControllerImpl& controller =
+      static_cast<const NavigationControllerImpl&>(
+          shell()->web_contents()->GetController());
+
+  TestNavigationObserver same_tab_observer(shell()->web_contents(), 1);
+  TitleWatcher title_watcher(shell()->web_contents(), base::UTF8ToUTF16(title));
+  shell()->LoadDataAsStringWithBaseURL(history_url, data, base_url);
+  same_tab_observer.Wait();
+  base::string16 actual_title = title_watcher.WaitAndGetTitle();
+  EXPECT_EQ(title, base::UTF16ToUTF8(actual_title));
+
+  NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
+  // What the base URL ends up being is really implementation defined, as
+  // using an invalid base URL is already undefined behavior.
+  EXPECT_EQ(base_url, entry->GetBaseURLForDataURL());
+}
+#endif  // defined(OS_ANDROID)
+
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        NavigateFromLoadDataWithBaseURL) {
   const GURL base_url("http://baseurl");

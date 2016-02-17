@@ -171,6 +171,17 @@ public class LoadDataWithBaseUrlTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView"})
+    public void testInvalidBaseUrl() throws Throwable {
+        final String invalidBaseUrl = "http://";
+        getAwSettingsOnUiThread(mAwContents).setJavaScriptEnabled(true);
+        loadDataWithBaseUrlSync(
+                CommonResources.ABOUT_HTML, "text/html", false, invalidBaseUrl, null);
+        // Verify that the load succeeds. The actual base url is undefined.
+        assertEquals(CommonResources.ABOUT_TITLE, getTitleOnUiThread(mAwContents));
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
     public void testloadDataWithBaseUrlCallsOnPageStarted() throws Throwable {
         final String baseUrl = "http://base.com/";
         TestCallbackHelperContainer.OnPageStartedHelper onPageStartedHelper =

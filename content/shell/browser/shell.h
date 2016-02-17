@@ -60,6 +60,13 @@ class Shell : public WebContentsDelegate,
   void LoadDataWithBaseURL(const GURL& url,
                            const std::string& data,
                            const GURL& base_url);
+
+#if defined(OS_ANDROID)
+  // Android-only path to allow loading long data strings.
+  void LoadDataAsStringWithBaseURL(const GURL& url,
+                                   const std::string& data,
+                                   const GURL& base_url);
+#endif
   void GoBackOrForward(int offset);
   void Reload();
   void Stop();
@@ -203,6 +210,12 @@ class Shell : public WebContentsDelegate,
   bool PlatformIsFullscreenForTabOrPending(
       const WebContents* web_contents) const;
 #endif
+
+  // Helper method for the two public LoadData methods.
+  void LoadDataWithBaseURLInternal(const GURL& url,
+                                   const std::string& data,
+                                   const GURL& base_url,
+                                   bool load_as_string);
 
   gfx::NativeView GetContentView();
 

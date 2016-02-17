@@ -204,8 +204,40 @@ void Shell::LoadURLForFrame(const GURL& url, const std::string& frame_name) {
 
 void Shell::LoadDataWithBaseURL(const GURL& url, const std::string& data,
     const GURL& base_url) {
-  const GURL data_url = GURL("data:text/html;charset=utf-8," + data);
-  NavigationController::LoadURLParams params(data_url);
+  bool load_as_string = false;
+  LoadDataWithBaseURLInternal(url, data, base_url, load_as_string);
+}
+
+#if defined(OS_ANDROID)
+void Shell::LoadDataAsStringWithBaseURL(const GURL& url,
+                                        const std::string& data,
+                                        const GURL& base_url) {
+  bool load_as_string = true;
+  LoadDataWithBaseURLInternal(url, data, base_url, load_as_string);
+}
+#endif
+
+void Shell::LoadDataWithBaseURLInternal(const GURL& url,
+                                        const std::string& data,
+                                        const GURL& base_url,
+                                        bool load_as_string) {
+#if !defined(OS_ANDROID)
+  DCHECK(!load_as_string);  // Only supported on Android.
+#endif
+
+  NavigationController::LoadURLParams params(GURL::EmptyGURL());
+  const std::string data_url_header = "data:text/html;charset=utf-8,";
+  if (load_as_string) {
+    params.url = GURL(data_url_header);
+    std::string data_url_as_string = data_url_header + data;
+#if defined(OS_ANDROID)
+    params.data_url_as_string =
+        base::RefCountedString::TakeString(&data_url_as_string);
+#endif
+  } else {
+    params.url = GURL(data_url_header + data);
+  }
+
   params.load_type = NavigationController::LOAD_TYPE_DATA;
   params.base_url_for_data_url = base_url;
   params.virtual_url_for_data_url = url;
