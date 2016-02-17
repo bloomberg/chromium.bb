@@ -22,10 +22,11 @@ public class BuildConfig {
 #endif
     }
 
+    // Debug does not change between targets, can be final and optimized out.
 #if defined(NDEBUG)
-    public static boolean sIsDebug = true;
+    public static final boolean sIsDebug = true;
 #else
-    public static boolean sIsDebug = false;
+    public static final boolean sIsDebug = false;
 #endif
 
 }
