@@ -11,6 +11,7 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "content/browser/android/in_process/synchronous_compositor_factory_impl.h"
+#include "content/browser/android/in_process/synchronous_compositor_renderer_statics.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/android/sync_compositor_messages.h"
@@ -28,13 +29,15 @@ namespace content {
 
 SynchronousCompositorHost::SynchronousCompositorHost(
     RenderWidgetHostViewAndroid* rwhva,
-    SynchronousCompositorClient* client)
+    SynchronousCompositorClient* client,
+    bool use_in_proc_software_draw)
     : rwhva_(rwhva),
       client_(client),
       ui_task_runner_(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)),
       routing_id_(rwhva_->GetRenderWidgetHost()->GetRoutingID()),
       sender_(rwhva_->GetRenderWidgetHost()),
+      use_in_process_zero_copy_software_draw_(use_in_proc_software_draw),
       is_active_(false),
       bytes_limit_(0u),
       root_scroll_offset_updated_by_browser_(false),
@@ -101,6 +104,44 @@ void SynchronousCompositorHost::UpdateFrameMetaData(
   rwhva_->SynchronousFrameMetadata(frame_metadata);
 }
 
+namespace {
+
+class ScopedSetSkCanvas {
+ public:
+  explicit ScopedSetSkCanvas(SkCanvas* canvas) {
+    SynchronousCompositorSetSkCanvas(canvas);
+  }
+
+  ~ScopedSetSkCanvas() {
+    SynchronousCompositorSetSkCanvas(nullptr);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScopedSetSkCanvas);
+};
+
+}
+
+bool SynchronousCompositorHost::DemandDrawSwInProc(SkCanvas* canvas) {
+  SyncCompositorCommonBrowserParams common_browser_params;
+  PopulateCommonParams(&common_browser_params);
+  SyncCompositorCommonRendererParams common_renderer_params;
+  bool success = false;
+  scoped_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
+  ScopedSetSkCanvas set_sk_canvas(canvas);
+  SyncCompositorDemandDrawSwParams params;  // Unused.
+  if (!sender_->Send(new SyncCompositorMsg_DemandDrawSw(
+          routing_id_, common_browser_params, params, &success,
+          &common_renderer_params, frame.get()))) {
+    return false;
+  }
+  if (!success)
+    return false;
+  ProcessCommonParams(common_renderer_params);
+  UpdateFrameMetaData(frame->metadata);
+  return true;
+}
+
 class SynchronousCompositorHost::ScopedSendZeroMemory {
  public:
   ScopedSendZeroMemory(SynchronousCompositorHost* host) : host_(host) {}
@@ -125,6 +166,9 @@ struct SynchronousCompositorHost::SharedMemoryWithSize {
 };
 
 bool SynchronousCompositorHost::DemandDrawSw(SkCanvas* canvas) {
+  if (use_in_process_zero_copy_software_draw_)
+    return DemandDrawSwInProc(canvas);
+
   SyncCompositorDemandDrawSwParams params;
   params.size = gfx::Size(canvas->getBaseLayerSize().width(),
                           canvas->getBaseLayerSize().height());

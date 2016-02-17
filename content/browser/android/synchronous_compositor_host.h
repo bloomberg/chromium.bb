@@ -62,7 +62,8 @@ class SynchronousCompositorHost : public SynchronousCompositorBase {
   friend class SynchronousCompositorBase;
 
   SynchronousCompositorHost(RenderWidgetHostViewAndroid* rwhva,
-                            SynchronousCompositorClient* client);
+                            SynchronousCompositorClient* client,
+                            bool use_in_proc_software_draw);
   void PopulateCommonParams(SyncCompositorCommonBrowserParams* params);
   void ProcessCommonParams(const SyncCompositorCommonRendererParams& params);
   void UpdateNeedsBeginFrames();
@@ -71,6 +72,7 @@ class SynchronousCompositorHost : public SynchronousCompositorBase {
                     const DidOverscrollParams& over_scroll_params);
   void SendAsyncCompositorStateIfNeeded();
   void UpdateStateTask();
+  bool DemandDrawSwInProc(SkCanvas* canvas);
   void SetSoftwareDrawSharedMemoryIfNeeded(size_t stride, size_t buffer_size);
   void SendZeroMemory();
 
@@ -79,6 +81,7 @@ class SynchronousCompositorHost : public SynchronousCompositorBase {
   const scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   const int routing_id_;
   IPC::Sender* const sender_;
+  const bool use_in_process_zero_copy_software_draw_;
 
   bool is_active_;
   size_t bytes_limit_;

@@ -17,6 +17,8 @@
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/size_f.h"
 
+class SkCanvas;
+
 namespace IPC {
 class Message;
 class Sender;
@@ -44,6 +46,9 @@ class SynchronousCompositorProxy
       public SynchronousCompositorExternalBeginFrameSourceClient,
       public SynchronousCompositorOutputSurfaceClient {
  public:
+  // Called by browser side.
+  static void SetSkCanvasForDraw(SkCanvas* canvas);
+
   SynchronousCompositorProxy(
       int routing_id,
       IPC::Sender* sender,
@@ -122,6 +127,7 @@ class SynchronousCompositorProxy
   SynchronousCompositorExternalBeginFrameSource* const begin_frame_source_;
   ui::SynchronousInputHandlerProxy* const input_handler_proxy_;
   InputHandlerManagerClient::Handler* const input_handler_;
+  const bool use_in_process_zero_copy_software_draw_;
   bool inside_receive_;
   IPC::Message* hardware_draw_reply_;
   IPC::Message* software_draw_reply_;

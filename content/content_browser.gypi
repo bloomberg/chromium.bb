@@ -1662,6 +1662,8 @@
       'browser/android/in_process/synchronous_compositor_impl.h',
       'browser/android/in_process/synchronous_compositor_registry_in_proc.cc',
       'browser/android/in_process/synchronous_compositor_registry_in_proc.h',
+      'browser/android/in_process/synchronous_compositor_renderer_statics.cc',
+      'browser/android/in_process/synchronous_compositor_renderer_statics.h',
       'browser/android/in_process/synchronous_input_event_filter.cc',
       'browser/android/in_process/synchronous_input_event_filter.h',
       'browser/android/synchronous_compositor_base.cc',

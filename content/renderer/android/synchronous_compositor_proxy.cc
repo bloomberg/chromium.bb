@@ -5,9 +5,11 @@
 #include "content/renderer/android/synchronous_compositor_proxy.h"
 
 #include "base/auto_reset.h"
+#include "base/command_line.h"
 #include "base/memory/shared_memory.h"
 #include "content/common/android/sync_compositor_messages.h"
 #include "content/common/cc_messages.h"
+#include "content/public/common/content_switches.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -32,6 +34,9 @@ SynchronousCompositorProxy::SynchronousCompositorProxy(
       begin_frame_source_(begin_frame_source),
       input_handler_proxy_(input_handler_proxy),
       input_handler_(handler),
+      use_in_process_zero_copy_software_draw_(
+          base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kSingleProcess)),
       inside_receive_(false),
       hardware_draw_reply_(nullptr),
       software_draw_reply_(nullptr),
@@ -274,6 +279,19 @@ void SynchronousCompositorProxy::SetSharedMemory(
   *success = true;
 }
 
+namespace {
+SkCanvas* g_sk_canvas_for_draw = nullptr;
+}
+
+// static
+void SynchronousCompositorProxy::SetSkCanvasForDraw(SkCanvas* canvas) {
+  DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSingleProcess));
+  DCHECK(canvas || g_sk_canvas_for_draw) << !!canvas;
+  DCHECK(!canvas || !g_sk_canvas_for_draw) << !!canvas;
+  g_sk_canvas_for_draw = canvas;
+}
+
 void SynchronousCompositorProxy::ZeroSharedMemory() {
   DCHECK(!software_draw_shm_->zeroed);
   memset(software_draw_shm_->shm.memory(), 0, software_draw_shm_->buffer_size);
@@ -290,7 +308,13 @@ void SynchronousCompositorProxy::DemandDrawSw(
   {
     base::AutoReset<IPC::Message*> scoped_software_draw_reply(
         &software_draw_reply_, reply_message);
-    DoDemandDrawSw(params);
+    if (use_in_process_zero_copy_software_draw_) {
+      DCHECK(g_sk_canvas_for_draw);
+      output_surface_->DemandDrawSw(g_sk_canvas_for_draw);
+    } else {
+      DCHECK(!g_sk_canvas_for_draw);
+      DoDemandDrawSw(params);
+    }
   }
   if (inside_receive_) {
     // Did not swap.
