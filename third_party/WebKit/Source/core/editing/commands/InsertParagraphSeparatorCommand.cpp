@@ -439,8 +439,8 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
             Node* splitTo = insertionPosition.computeContainerNode();
             if (splitTo->isTextNode() && insertionPosition.offsetInContainerNode() >= caretMaxOffset(splitTo))
                 splitTo = NodeTraversal::next(*splitTo, startBlock.get());
-            ASSERT(splitTo);
-            splitTreeToNode(splitTo, startBlock.get());
+            if (splitTo)
+                splitTreeToNode(splitTo, startBlock.get());
 
             for (n = startBlock->firstChild(); n; n = n->nextSibling()) {
                 VisiblePosition beforeNodePosition = createVisiblePosition(positionBeforeNode(n));
