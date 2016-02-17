@@ -22,7 +22,6 @@
 #include "components/update_client/crx_update_item.h"
 #include "components/update_client/request_sender.h"
 #include "components/update_client/utils.h"
-#include "net/url_request/url_fetcher.h"
 #include "url/gurl.h"
 
 namespace update_client {
@@ -86,13 +85,12 @@ class UpdateCheckerImpl : public UpdateChecker {
       const UpdateCheckCallback& update_check_callback) override;
 
  private:
-  void OnRequestSenderComplete(const net::URLFetcher* source);
+  void OnRequestSenderComplete(int error, const std::string& response);
+  base::ThreadChecker thread_checker_;
 
   const scoped_refptr<Configurator> config_;
   UpdateCheckCallback update_check_callback_;
   scoped_ptr<RequestSender> request_sender_;
-
-  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateCheckerImpl);
 };
@@ -119,6 +117,7 @@ bool UpdateCheckerImpl::CheckForUpdates(
 
   request_sender_.reset(new RequestSender(config_));
   request_sender_->Send(
+      config_->UseCupSigning(),
       BuildUpdateCheckRequest(*config_, items_to_check, additional_attributes),
       config_->UpdateUrl(),
       base::Bind(&UpdateCheckerImpl::OnRequestSenderComplete,
@@ -126,42 +125,26 @@ bool UpdateCheckerImpl::CheckForUpdates(
   return true;
 }
 
-void UpdateCheckerImpl::OnRequestSenderComplete(const net::URLFetcher* source) {
+void UpdateCheckerImpl::OnRequestSenderComplete(int error,
+                                                const std::string& response) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  GURL original_url;
-  int error = 0;
-  std::string error_message;
-  UpdateResponse update_response;
-
-  if (source) {
-    original_url = source->GetOriginalURL();
-    VLOG(1) << "Update check request went to: " << original_url.spec();
-    if (FetchSuccess(*source)) {
-      std::string xml;
-      source->GetResponseAsString(&xml);
-      if (!update_response.Parse(xml)) {
-        error = -1;
-        error_message = update_response.errors();
-      }
-    } else {
-      error = GetFetchError(*source);
-      error_message.assign("network error");
+  if (!error) {
+    UpdateResponse update_response;
+    if (update_response.Parse(response)) {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::Bind(update_check_callback_, error, update_response.results()));
+      return;
     }
-  } else {
+
     error = -1;
-    error_message = "no fetcher";
+    VLOG(1) << "Parse failed " << update_response.errors();
   }
-
-  if (error) {
-    VLOG(1) << "Update request failed: " << error_message;
-  }
-
-  request_sender_.reset();
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(update_check_callback_, original_url, error,
-                            error_message, update_response.results()));
+      FROM_HERE,
+      base::Bind(update_check_callback_, error, UpdateResponse::Results()));
 }
 
 }  // namespace

@@ -87,6 +87,10 @@ bool ChromeUpdateClientConfig::UseBackgroundDownloader() const {
   return impl_.UseBackgroundDownloader();
 }
 
+bool ChromeUpdateClientConfig::UseCupSigning() const {
+  return false;
+}
+
 ChromeUpdateClientConfig::~ChromeUpdateClientConfig() {}
 
 }  // namespace extensions

@@ -47,10 +47,7 @@ class UpdateCheckerTest : public testing::Test {
   void SetUp() override;
   void TearDown() override;
 
-  void UpdateCheckComplete(const GURL& original_url,
-                           int error,
-                           const std::string& error_message,
-                           const UpdateResponse::Results& results);
+  void UpdateCheckComplete(int error, const UpdateResponse::Results& results);
 
  protected:
   void Quit();
@@ -66,9 +63,7 @@ class UpdateCheckerTest : public testing::Test {
   scoped_ptr<InterceptorFactory> interceptor_factory_;
   URLRequestPostInterceptor* post_interceptor_;  // Owned by the factory.
 
-  GURL original_url_;
   int error_;
-  std::string error_message_;
   UpdateResponse::Results results_;
 
  private:
@@ -95,7 +90,6 @@ void UpdateCheckerTest::SetUp() {
   update_checker_.reset();
 
   error_ = 0;
-  error_message_.clear();
   results_ = UpdateResponse::Results();
 }
 
@@ -134,13 +128,9 @@ void UpdateCheckerTest::Quit() {
 }
 
 void UpdateCheckerTest::UpdateCheckComplete(
-    const GURL& original_url,
     int error,
-    const std::string& error_message,
     const UpdateResponse::Results& results) {
-  original_url_ = original_url;
   error_ = error;
-  error_message_ = error_message;
   results_ = results;
   Quit();
 }
@@ -199,10 +189,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckSuccess) {
             post_interceptor_->GetRequests()[0].find("<hw physmemory="));
 
   // Sanity check the arguments of the callback after parsing.
-  ASSERT_FALSE(config_->UpdateUrl().empty());
-  EXPECT_EQ(config_->UpdateUrl().front(), original_url_);
   EXPECT_EQ(0, error_);
-  EXPECT_TRUE(error_message_.empty());
   EXPECT_EQ(1ul, results_.list.size());
   EXPECT_STREQ("jebgalgnebhfojomionfpkfelancnnkf",
                results_.list[0].extension_id.c_str());
@@ -223,7 +210,6 @@ TEST_F(UpdateCheckerTest, UpdateCheckError) {
   update_checker_->CheckForUpdates(
       items_to_check, "", base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
                                      base::Unretained(this)));
-
   RunThreads();
 
   EXPECT_EQ(1, post_interceptor_->GetHitCount())
@@ -231,10 +217,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckError) {
   EXPECT_EQ(1, post_interceptor_->GetCount())
       << post_interceptor_->GetRequestsAsString();
 
-  ASSERT_FALSE(config_->UpdateUrl().empty());
-  EXPECT_EQ(config_->UpdateUrl().front(), original_url_);
   EXPECT_EQ(403, error_);
-  EXPECT_STREQ("network error", error_message_.c_str());
   EXPECT_EQ(0ul, results_.list.size());
 }
 
@@ -260,6 +243,43 @@ TEST_F(UpdateCheckerTest, UpdateCheckDownloadPreference) {
   // The request must contain dlpref="cacheable".
   EXPECT_NE(string::npos,
             post_interceptor_->GetRequests()[0].find(" dlpref=\"cacheable\""));
+}
+
+// This test is checking that an update check signed with CUP fails, since there
+// is currently no entity that can respond with a valid signed response.
+// A proper CUP test requires network mocks, which are not available now.
+TEST_F(UpdateCheckerTest, UpdateCheckCupError) {
+  EXPECT_TRUE(post_interceptor_->ExpectRequest(
+      new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
+
+  config_->SetUseCupSigning(true);
+  update_checker_ = UpdateChecker::Create(config_);
+
+  CrxUpdateItem item(BuildCrxUpdateItem());
+  std::vector<CrxUpdateItem*> items_to_check;
+  items_to_check.push_back(&item);
+
+  update_checker_->CheckForUpdates(
+      items_to_check, "", base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
+                                     base::Unretained(this)));
+
+  RunThreads();
+
+  EXPECT_EQ(1, post_interceptor_->GetHitCount())
+      << post_interceptor_->GetRequestsAsString();
+  ASSERT_EQ(1, post_interceptor_->GetCount())
+      << post_interceptor_->GetRequestsAsString();
+
+  // Sanity check the request.
+  EXPECT_NE(
+      string::npos,
+      post_interceptor_->GetRequests()[0].find(
+          "app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"0.9\">"
+          "<updatecheck /><packages><package fp=\"fp1\"/></packages></app>"));
+
+  // Expect an error since the response is not trusted.
+  EXPECT_EQ(-10000, error_);
+  EXPECT_EQ(0ul, results_.list.size());
 }
 
 }  // namespace update_client

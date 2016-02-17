@@ -17,10 +17,6 @@
 
 class GURL;
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace update_client {
 
 class Configurator;
@@ -29,10 +25,7 @@ struct CrxUpdateItem;
 class UpdateChecker {
  public:
   using UpdateCheckCallback =
-      base::Callback<void(const GURL& original_url,
-                          int error,
-                          const std::string& error_message,
-                          const UpdateResponse::Results& results)>;
+      base::Callback<void(int error, const UpdateResponse::Results& results)>;
 
   using Factory =
       scoped_ptr<UpdateChecker> (*)(const scoped_refptr<Configurator>& config);

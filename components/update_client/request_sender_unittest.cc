@@ -6,6 +6,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
+#include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/update_client/request_sender.h"
 #include "components/update_client/test_configurator.h"
@@ -22,6 +23,17 @@ const char kUrl2[] = "https://localhost2/path2";
 const char kUrlPath1[] = "path1";
 const char kUrlPath2[] = "path2";
 
+// TODO(sorin): refactor as a utility function for unit tests.
+base::FilePath test_file(const char* file) {
+  base::FilePath path;
+  PathService::Get(base::DIR_SOURCE_ROOT, &path);
+  return path.AppendASCII("components")
+      .AppendASCII("test")
+      .AppendASCII("data")
+      .AppendASCII("update_client")
+      .AppendASCII(file);
+}
+
 }  // namespace
 
 class RequestSenderTest : public testing::Test {
@@ -33,7 +45,7 @@ class RequestSenderTest : public testing::Test {
   void SetUp() override;
   void TearDown() override;
 
-  void RequestSenderComplete(const net::URLFetcher* source);
+  void RequestSenderComplete(int error, const std::string& response);
 
  protected:
   void Quit();
@@ -47,7 +59,8 @@ class RequestSenderTest : public testing::Test {
   URLRequestPostInterceptor* post_interceptor_1_;  // Owned by the factory.
   URLRequestPostInterceptor* post_interceptor_2_;  // Owned by the factory.
 
-  const net::URLFetcher* url_fetcher_source_;
+  int error_;
+  std::string response_;
 
  private:
   base::MessageLoopForIO loop_;
@@ -57,13 +70,9 @@ class RequestSenderTest : public testing::Test {
 };
 
 RequestSenderTest::RequestSenderTest()
-    : post_interceptor_1_(nullptr),
-      post_interceptor_2_(nullptr),
-      url_fetcher_source_(nullptr) {
-}
+    : post_interceptor_1_(nullptr), post_interceptor_2_(nullptr), error_(0) {}
 
-RequestSenderTest::~RequestSenderTest() {
-}
+RequestSenderTest::~RequestSenderTest() {}
 
 void RequestSenderTest::SetUp() {
   config_ = new TestConfigurator(base::ThreadTaskRunnerHandle::Get(),
@@ -114,21 +123,25 @@ void RequestSenderTest::Quit() {
     quit_closure_.Run();
 }
 
-void RequestSenderTest::RequestSenderComplete(const net::URLFetcher* source) {
-  url_fetcher_source_ = source;
+void RequestSenderTest::RequestSenderComplete(int error,
+                                              const std::string& response) {
+  error_ = error;
+  response_ = response;
+
   Quit();
 }
 
 // Tests that when a request to the first url succeeds, the subsequent urls are
 // not tried.
 TEST_F(RequestSenderTest, RequestSendSuccess) {
-  EXPECT_TRUE(post_interceptor_1_->ExpectRequest(new PartialMatch("test")));
+  EXPECT_TRUE(post_interceptor_1_->ExpectRequest(
+      new PartialMatch("test"), test_file("updatecheck_reply_1.xml")));
 
   std::vector<GURL> urls;
   urls.push_back(GURL(kUrl1));
   urls.push_back(GURL(kUrl2));
   request_sender_.reset(new RequestSender(config_));
-  request_sender_->Send("test", urls,
+  request_sender_->Send(false, "test", urls,
                         base::Bind(&RequestSenderTest::RequestSenderComplete,
                                    base::Unretained(this)));
   RunThreads();
@@ -138,9 +151,15 @@ TEST_F(RequestSenderTest, RequestSendSuccess) {
   EXPECT_EQ(1, post_interceptor_1_->GetCount())
       << post_interceptor_1_->GetRequestsAsString();
 
+  // Sanity check the request.
   EXPECT_STREQ("test", post_interceptor_1_->GetRequests()[0].c_str());
-  EXPECT_EQ(GURL(kUrl1), url_fetcher_source_->GetOriginalURL());
-  EXPECT_EQ(200, url_fetcher_source_->GetResponseCode());
+
+  // Check the response post conditions.
+  EXPECT_EQ(0, error_);
+  EXPECT_TRUE(base::StartsWith(response_,
+                               "<?xml version='1.0' encoding='UTF-8'?>",
+                               base::CompareCase::SENSITIVE));
+  EXPECT_EQ(443ul, response_.size());
 }
 
 // Tests that the request succeeds using the second url after the first url
@@ -154,7 +173,7 @@ TEST_F(RequestSenderTest, RequestSendSuccessWithFallback) {
   urls.push_back(GURL(kUrl1));
   urls.push_back(GURL(kUrl2));
   request_sender_.reset(new RequestSender(config_));
-  request_sender_->Send("test", urls,
+  request_sender_->Send(false, "test", urls,
                         base::Bind(&RequestSenderTest::RequestSenderComplete,
                                    base::Unretained(this)));
   RunThreads();
@@ -170,8 +189,7 @@ TEST_F(RequestSenderTest, RequestSendSuccessWithFallback) {
 
   EXPECT_STREQ("test", post_interceptor_1_->GetRequests()[0].c_str());
   EXPECT_STREQ("test", post_interceptor_2_->GetRequests()[0].c_str());
-  EXPECT_EQ(GURL(kUrl2), url_fetcher_source_->GetOriginalURL());
-  EXPECT_EQ(200, url_fetcher_source_->GetResponseCode());
+  EXPECT_EQ(0, error_);
 }
 
 // Tests that the request fails when both urls have failed.
@@ -185,7 +203,7 @@ TEST_F(RequestSenderTest, RequestSendFailed) {
   urls.push_back(GURL(kUrl1));
   urls.push_back(GURL(kUrl2));
   request_sender_.reset(new RequestSender(config_));
-  request_sender_->Send("test", urls,
+  request_sender_->Send(false, "test", urls,
                         base::Bind(&RequestSenderTest::RequestSenderComplete,
                                    base::Unretained(this)));
   RunThreads();
@@ -201,20 +219,42 @@ TEST_F(RequestSenderTest, RequestSendFailed) {
 
   EXPECT_STREQ("test", post_interceptor_1_->GetRequests()[0].c_str());
   EXPECT_STREQ("test", post_interceptor_2_->GetRequests()[0].c_str());
-  EXPECT_EQ(GURL(kUrl2), url_fetcher_source_->GetOriginalURL());
-  EXPECT_EQ(403, url_fetcher_source_->GetResponseCode());
+  EXPECT_EQ(403, error_);
 }
 
 // Tests that the request fails when no urls are provided.
 TEST_F(RequestSenderTest, RequestSendFailedNoUrls) {
   std::vector<GURL> urls;
   request_sender_.reset(new RequestSender(config_));
-  request_sender_->Send("test", urls,
+  request_sender_->Send(false, "test", urls,
                         base::Bind(&RequestSenderTest::RequestSenderComplete,
                                    base::Unretained(this)));
   RunThreads();
 
-  EXPECT_EQ(nullptr, url_fetcher_source_);
+  EXPECT_EQ(-1, error_);
+}
+
+// Tests that a CUP request fails if the response is not signed.
+TEST_F(RequestSenderTest, RequestSendCupError) {
+  EXPECT_TRUE(post_interceptor_1_->ExpectRequest(
+      new PartialMatch("test"), test_file("updatecheck_reply_1.xml")));
+
+  std::vector<GURL> urls;
+  urls.push_back(GURL(kUrl1));
+  request_sender_.reset(new RequestSender(config_));
+  request_sender_->Send(true, "test", urls,
+                        base::Bind(&RequestSenderTest::RequestSenderComplete,
+                                   base::Unretained(this)));
+  RunThreads();
+
+  EXPECT_EQ(1, post_interceptor_1_->GetHitCount())
+      << post_interceptor_1_->GetRequestsAsString();
+  EXPECT_EQ(1, post_interceptor_1_->GetCount())
+      << post_interceptor_1_->GetRequestsAsString();
+
+  EXPECT_STREQ("test", post_interceptor_1_->GetRequests()[0].c_str());
+  EXPECT_EQ(RequestSender::kErrorResponseNotTrusted, error_);
+  EXPECT_TRUE(response_.empty());
 }
 
 }  // namespace update_client

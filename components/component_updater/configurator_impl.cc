@@ -178,4 +178,8 @@ bool ConfiguratorImpl::UseBackgroundDownloader() const {
   return background_downloads_enabled_;
 }
 
+bool ConfiguratorImpl::UseCupSigning() const {
+  return true;
+}
+
 }  // namespace component_updater

@@ -50,6 +50,7 @@ class ChromeConfigurator : public update_client::Configurator {
       const override;
   bool DeltasEnabled() const override;
   bool UseBackgroundDownloader() const override;
+  bool UseCupSigning() const override;
   scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner()
       const override;
 
@@ -142,6 +143,10 @@ bool ChromeConfigurator::DeltasEnabled() const {
 
 bool ChromeConfigurator::UseBackgroundDownloader() const {
   return configurator_impl_.UseBackgroundDownloader();
+}
+
+bool ChromeConfigurator::UseCupSigning() const {
+  return configurator_impl_.UseCupSigning();
 }
 
 // Returns a task runner to run blocking tasks. The task runner continues to run

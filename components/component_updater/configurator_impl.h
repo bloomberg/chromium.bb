@@ -81,6 +81,9 @@ class ConfiguratorImpl {
   // non on-demand components.
   bool UseBackgroundDownloader() const;
 
+  // True if signing of update checks is enabled.
+  bool UseCupSigning() const;
+
  private:
   net::URLRequestContextGetter* url_request_getter_;
   std::string extra_info_;

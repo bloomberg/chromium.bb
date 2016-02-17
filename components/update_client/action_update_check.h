@@ -36,13 +36,10 @@ class ActionUpdateCheck : public Action, private ActionImpl {
   void Run(UpdateContext* update_context, Callback callback) override;
 
  private:
-  void UpdateCheckComplete(const GURL& original_url,
-                           int error,
-                           const std::string& error_message,
-                           const UpdateResponse::Results& results);
+  void UpdateCheckComplete(int error, const UpdateResponse::Results& results);
 
   void OnUpdateCheckSucceeded(const UpdateResponse::Results& results);
-  void OnUpdateCheckFailed(int error, const std::string& error_message);
+  void OnUpdateCheckFailed(int error);
 
   scoped_ptr<UpdateChecker> update_checker_;
   const base::Version browser_version_;

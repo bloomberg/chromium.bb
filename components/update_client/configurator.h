@@ -98,6 +98,9 @@ class Configurator : public base::RefCountedThreadSafe<Configurator> {
   // non on-demand components.
   virtual bool UseBackgroundDownloader() const = 0;
 
+  // True if signing of update checks is enabled.
+  virtual bool UseCupSigning() const = 0;
+
   // Gets a task runner to a blocking pool of threads suitable for worker jobs.
   virtual scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner()
       const = 0;

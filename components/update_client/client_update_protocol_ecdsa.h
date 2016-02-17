@@ -13,6 +13,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 
+namespace update_client {
+
 // Client Update Protocol v2, or CUP-ECDSA, is used by Google Update (Omaha)
 // servers to ensure freshness and authenticity of update checks over HTTP,
 // without the overhead of HTTPS -- namely, no PKI, no guarantee of privacy,
@@ -80,5 +82,7 @@ class ClientUpdateProtocolEcdsa {
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ClientUpdateProtocolEcdsa);
 };
+
+}  // namespace update_client
 
 #endif  // COMPONENTS_UPDATE_CLIENT_CLIENT_UPDATE_PROTOCOL_ECDSA_H_

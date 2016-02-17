@@ -179,7 +179,7 @@ class PingSender {
   bool SendPing(const CrxUpdateItem* item);
 
  private:
-  void OnRequestSenderComplete(const net::URLFetcher* source);
+  void OnRequestSenderComplete(int error, const std::string& response);
 
   const scoped_refptr<Configurator> config_;
   scoped_ptr<RequestSender> request_sender_;
@@ -195,7 +195,8 @@ PingSender::~PingSender() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-void PingSender::OnRequestSenderComplete(const net::URLFetcher* source) {
+void PingSender::OnRequestSenderComplete(int error,
+                                         const std::string& response) {
   DCHECK(thread_checker_.CalledOnValidThread());
   delete this;
 }
@@ -211,7 +212,7 @@ bool PingSender::SendPing(const CrxUpdateItem* item) {
 
   request_sender_.reset(new RequestSender(config_));
   request_sender_->Send(
-      BuildPing(*config_, item), urls,
+      false, BuildPing(*config_, item), urls,
       base::Bind(&PingSender::OnRequestSenderComplete, base::Unretained(this)));
   return true;
 }

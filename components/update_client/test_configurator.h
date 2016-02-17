@@ -73,12 +73,14 @@ class TestConfigurator : public Configurator {
   scoped_refptr<OutOfProcessPatcher> CreateOutOfProcessPatcher() const override;
   bool DeltasEnabled() const override;
   bool UseBackgroundDownloader() const override;
+  bool UseCupSigning() const override;
   scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner()
       const override;
 
   void SetOnDemandTime(int seconds);
   void SetInitialDelay(int seconds);
   void SetDownloadPreference(const std::string& download_preference);
+  void SetUseCupSigning(bool use_cup_signing);
 
  private:
   friend class base::RefCountedThreadSafe<TestConfigurator>;
@@ -90,6 +92,7 @@ class TestConfigurator : public Configurator {
   int initial_time_;
   int ondemand_time_;
   std::string download_preference_;
+  bool use_cup_signing_;
 
   scoped_refptr<net::TestURLRequestContextGetter> context_;
 

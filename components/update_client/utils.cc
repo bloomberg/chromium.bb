@@ -133,6 +133,8 @@ scoped_ptr<net::URLFetcher> SendProtocolRequest(
     net::URLRequestContextGetter* url_request_context_getter) {
   scoped_ptr<net::URLFetcher> url_fetcher = net::URLFetcher::Create(
       0, url, net::URLFetcher::POST, url_fetcher_delegate);
+  if (!url_fetcher.get())
+    return url_fetcher;
 
   url_fetcher->SetUploadData("application/xml", protocol_request);
   url_fetcher->SetRequestContext(url_request_context_getter);

@@ -226,8 +226,8 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
         const std::string& additional_attributes,
         const UpdateCheckCallback& update_check_callback) override {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(update_check_callback, GURL(), 0, "",
-                                UpdateResponse::Results()));
+          FROM_HERE,
+          base::Bind(update_check_callback, 0, UpdateResponse::Results()));
       return true;
     }
   };
@@ -368,7 +368,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
       results.list.push_back(result);
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(update_check_callback, GURL(), 0, "", results));
+          FROM_HERE, base::Bind(update_check_callback, 0, results));
       return true;
     }
   };
@@ -580,7 +580,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
       results.list.push_back(result2);
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(update_check_callback, GURL(), 0, "", results));
+          FROM_HERE, base::Bind(update_check_callback, 0, results));
       return true;
     }
   };
@@ -827,7 +827,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
       results.list.push_back(result2);
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(update_check_callback, GURL(), 0, "", results));
+          FROM_HERE, base::Bind(update_check_callback, 0, results));
       return true;
     }
   };
@@ -1099,7 +1099,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
       }
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(update_check_callback, GURL(), 0, "", results));
+          FROM_HERE, base::Bind(update_check_callback, 0, results));
       return true;
     }
   };
@@ -1340,7 +1340,7 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
       results.list.push_back(result);
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(update_check_callback, GURL(), 0, "", results));
+          FROM_HERE, base::Bind(update_check_callback, 0, results));
       return true;
     }
   };
@@ -1573,7 +1573,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
       }
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(update_check_callback, GURL(), 0, "", results));
+          FROM_HERE, base::Bind(update_check_callback, 0, results));
       return true;
     }
   };
@@ -1777,8 +1777,8 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
         const std::string& additional_attributes,
         const UpdateCheckCallback& update_check_callback) override {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(update_check_callback, GURL(), 0, "",
-                                UpdateResponse::Results()));
+          FROM_HERE,
+          base::Bind(update_check_callback, 0, UpdateResponse::Results()));
       return true;
     }
   };
@@ -1911,7 +1911,7 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
       results.list.push_back(result);
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(update_check_callback, GURL(), 0, "", results));
+          FROM_HERE, base::Bind(update_check_callback, 0, results));
       return true;
     }
   };
@@ -2062,8 +2062,8 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
         const std::string& additional_attributes,
         const UpdateCheckCallback& update_check_callback) override {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(update_check_callback, GURL(), 0, "",
-                                UpdateResponse::Results()));
+          FROM_HERE,
+          base::Bind(update_check_callback, 0, UpdateResponse::Results()));
       return true;
     }
   };

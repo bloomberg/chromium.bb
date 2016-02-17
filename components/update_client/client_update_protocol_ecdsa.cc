@@ -5,6 +5,7 @@
 #include "components/update_client/client_update_protocol_ecdsa.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -13,6 +14,8 @@
 #include "crypto/random.h"
 #include "crypto/sha2.h"
 #include "crypto/signature_verifier.h"
+
+namespace update_client {
 
 namespace {
 
@@ -46,7 +49,7 @@ std::vector<uint8_t> SHA256HashVec(const std::vector<uint8_t>& vec) {
       reinterpret_cast<const char*>(&vec.front()), vec.size()));
 }
 
-bool ParseETagHeader(const base::StringPiece& etag_header_value,
+bool ParseETagHeader(const base::StringPiece& etag_header_value_in,
                      std::vector<uint8_t>* ecdsa_signature_out,
                      std::vector<uint8_t>* request_hash_out) {
   DCHECK(ecdsa_signature_out);
@@ -55,6 +58,20 @@ bool ParseETagHeader(const base::StringPiece& etag_header_value,
   // The ETag value is a UTF-8 string, formatted as "S:H", where:
   // * S is the ECDSA signature in DER-encoded ASN.1 form, converted to hex.
   // * H is the SHA-256 hash of the observed request body, standard hex format.
+  // A Weak ETag is formatted as W/"S:H". This function treats it the same as a
+  // strong ETag.
+  base::StringPiece etag_header_value(etag_header_value_in);
+
+  // Remove the weak prefix, then remove the begin and the end quotes.
+  const char kWeakETagPrefix[] = "W/";
+  if (etag_header_value.starts_with(kWeakETagPrefix))
+    etag_header_value.remove_prefix(arraysize(kWeakETagPrefix) - 1);
+  if (etag_header_value.size() >= 2 && etag_header_value.starts_with("\"") &&
+      etag_header_value.ends_with("\"")) {
+    etag_header_value.remove_prefix(1);
+    etag_header_value.remove_suffix(1);
+  }
+
   const base::StringPiece::size_type delim_pos = etag_header_value.find(':');
   if (delim_pos == base::StringPiece::npos || delim_pos == 0 ||
       delim_pos == etag_header_value.size() - 1)
@@ -188,3 +205,5 @@ bool ClientUpdateProtocolEcdsa::ValidateResponse(
                         static_cast<int>(signed_message_hash.size()));
   return verifier.VerifyFinal();
 }
+
+}  // namespace update_client

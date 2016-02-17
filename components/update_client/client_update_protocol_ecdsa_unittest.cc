@@ -16,6 +16,8 @@
 #include "crypto/secure_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace update_client {
+
 namespace {
 
 std::string GetPublicKeyForTesting() {
@@ -292,3 +294,5 @@ TEST_F(CupEcdsaTest, ValidateResponse_TestSigning) {
       "bf022100dd7d41d467be2af98d9116b0c7ba09740d54578c02a02f74da5f089834be3403"
       ":2727bc2b3c33feb6800a830f4055901dd87d65a84184c5fbeb3f816db0a243f5"));
 }
+
+}  // namespace update_client

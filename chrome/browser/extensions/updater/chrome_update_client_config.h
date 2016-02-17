@@ -41,6 +41,7 @@ class ChromeUpdateClientConfig : public UpdateClientConfig {
       const override;
   bool DeltasEnabled() const override;
   bool UseBackgroundDownloader() const override;
+  bool UseCupSigning() const override;
 
  protected:
   friend class base::RefCountedThreadSafe<ChromeUpdateClientConfig>;
