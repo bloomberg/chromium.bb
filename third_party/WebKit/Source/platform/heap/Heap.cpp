@@ -414,7 +414,7 @@ void Heap::collectGarbage(BlinkGC::StackState stackState, BlinkGC::GCType gcType
     ResumeThreadScope resumeThreads(gcType);
     ScriptForbiddenIfMainThreadScope scriptForbidden;
 
-    TRACE_EVENT2("blink_gc", "Heap::collectGarbage",
+    TRACE_EVENT2("blink_gc,devtools.timeline", "Heap::collectGarbage",
         "lazySweeping", gcType == BlinkGC::GCWithoutSweep,
         "gcReason", gcReasonString(reason));
     TRACE_EVENT_SCOPED_SAMPLING_STATE("blink_gc", "BlinkGC");

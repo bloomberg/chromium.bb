@@ -756,7 +756,7 @@ void ThreadState::performIdleLazySweep(double deadlineSeconds)
     if (sweepForbidden())
         return;
 
-    TRACE_EVENT1("blink_gc", "ThreadState::performIdleLazySweep", "idleDeltaInSeconds", deadlineSeconds - monotonicallyIncreasingTime());
+    TRACE_EVENT1("blink_gc,devtools.timeline", "ThreadState::performIdleLazySweep", "idleDeltaInSeconds", deadlineSeconds - monotonicallyIncreasingTime());
 
     bool sweepCompleted = true;
     SweepForbiddenScope scope(this);
@@ -1082,7 +1082,7 @@ void ThreadState::completeSweep()
     {
         ScriptForbiddenIfMainThreadScope scriptForbiddenScope;
 
-        TRACE_EVENT0("blink_gc", "ThreadState::completeSweep");
+        TRACE_EVENT0("blink_gc,devtools.timeline", "ThreadState::completeSweep");
         double startTime = WTF::currentTimeMS();
 
         static_assert(BlinkGC::EagerSweepHeapIndex == 0, "Eagerly swept heaps must be processed first.");
