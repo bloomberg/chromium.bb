@@ -168,8 +168,14 @@ ContentMetadataProvider.prototype.getFromMediaGalleries_ =
       }
       chrome.mediaGalleries.getMetadata(blob, {metadataType: metadataType},
           function(metadata) {
-            self.convertMediaMetadataToMetadataItem_(entry, metadata)
-                .then(resolve, reject);
+            if (chrome.runtime.lastError) {
+              resolve(self.createError_(entry.toURL(),
+                  'resolving metadata',
+                  chrome.runtime.lastError.toString()));
+            } else {
+              self.convertMediaMetadataToMetadataItem_(entry, metadata)
+                  .then(resolve, reject);
+            }
           });
     }, function(err) {
       resolve(self.createError_(entry.toURL(),
