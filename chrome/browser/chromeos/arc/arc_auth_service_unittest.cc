@@ -71,10 +71,18 @@ class ArcAuthServiceTest : public testing::Test {
   Profile* profile() { return profile_.get(); }
   FakeArcBridgeService* bridge_service() { return bridge_service_.get(); }
   ArcAuthService* auth_service() { return auth_service_.get(); }
-  net::FakeURLFetcherFactory& url_fetcher_factory() {
-    return url_fetcher_factory_;
+
+  void PrepareURLResponse(net::HttpStatusCode code, bool enable_auth_code) {
+    const GURL gaia_gurl = ArcAuthFetcher::CreateURL();
+    url_fetcher_factory_.SetFakeResponse(gaia_gurl, std::string(), code,
+                                         net::URLRequestStatus::SUCCESS);
+    if (enable_auth_code) {
+      std::string cookie = "oauth_code=";
+      cookie += kTestAuthCode;
+      cookie += "; Path=/o/oauth2/programmatic_auth; Secure; HttpOnly";
+      rt_cookie_ = cookie;
+    }
   }
-  void set_cookie(const std::string& cookie) { rt_cookie_ = cookie; }
 
  private:
   scoped_ptr<net::FakeURLFetcher> FakeURLFetcherCreator(
@@ -115,11 +123,7 @@ TEST_F(ArcAuthServiceTest, PrefChangeTriggersService) {
   auth_service()->OnPrimaryUserProfilePrepared(profile());
   ASSERT_EQ(ArcAuthService::State::DISABLE, auth_service()->state());
 
-  // Need to initialize URLFetcher for test framework.
-  const GURL gaia_gurl = ArcAuthFetcher::CreateURL();
-  url_fetcher_factory().SetFakeResponse(gaia_gurl, std::string(), net::HTTP_OK,
-                                        net::URLRequestStatus::SUCCESS);
-
+  PrepareURLResponse(net::HTTP_OK, false);
   pref->SetBoolean(prefs::kArcEnabled, true);
   ASSERT_EQ(ArcAuthService::State::FETCHING_CODE, auth_service()->state());
 
@@ -135,13 +139,7 @@ TEST_F(ArcAuthServiceTest, BaseWorkflow) {
   ASSERT_EQ(ArcAuthService::State::DISABLE, auth_service()->state());
   ASSERT_EQ(std::string(), auth_service()->GetAndResetAuthCode());
 
-  const GURL gaia_gurl = ArcAuthFetcher::CreateURL();
-  url_fetcher_factory().SetFakeResponse(gaia_gurl, std::string(), net::HTTP_OK,
-                                        net::URLRequestStatus::SUCCESS);
-  std::string cookie = "oauth_code=";
-  cookie += kTestAuthCode;
-  cookie += "; Path=/o/oauth2/programmatic_auth; Secure; HttpOnly";
-  set_cookie(cookie);
+  PrepareURLResponse(net::HTTP_OK, true);
   auth_service()->OnPrimaryUserProfilePrepared(profile());
 
   // By default ARC is not enabled.
@@ -179,9 +177,7 @@ TEST_F(ArcAuthServiceTest, BaseWorkflow) {
   ASSERT_EQ(ArcAuthService::State::FETCHING_CODE, auth_service()->state());
 
   // Send error response.
-  url_fetcher_factory().SetFakeResponse(gaia_gurl, std::string(),
-                                        net::HTTP_BAD_REQUEST,
-                                        net::URLRequestStatus::SUCCESS);
+  PrepareURLResponse(net::HTTP_BAD_REQUEST, false);
   auth_service()->Shutdown();
   ASSERT_EQ(ArcAuthService::State::DISABLE, auth_service()->state());
   auth_service()->OnPrimaryUserProfilePrepared(profile());
@@ -191,6 +187,42 @@ TEST_F(ArcAuthServiceTest, BaseWorkflow) {
   base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(ArcAuthService::State::NO_CODE, auth_service()->state());
+
+  // Correctly stop service.
+  auth_service()->Shutdown();
+}
+
+TEST_F(ArcAuthServiceTest, CancelFetchingDisablesArc) {
+  PrepareURLResponse(net::HTTP_OK, false);
+  PrefService* pref = profile()->GetPrefs();
+
+  auth_service()->OnPrimaryUserProfilePrepared(profile());
+  pref->SetBoolean(prefs::kArcEnabled, true);
+  ASSERT_EQ(ArcAuthService::State::FETCHING_CODE, auth_service()->state());
+
+  auth_service()->CancelAuthCode();
+  ASSERT_EQ(ArcAuthService::State::DISABLE, auth_service()->state());
+  ASSERT_EQ(false, pref->GetBoolean(prefs::kArcEnabled));
+
+  // Correctly stop service.
+  auth_service()->Shutdown();
+}
+
+TEST_F(ArcAuthServiceTest, CloseUIKeepsArcEnabled) {
+  PrepareURLResponse(net::HTTP_OK, true);
+  PrefService* pref = profile()->GetPrefs();
+
+  auth_service()->OnPrimaryUserProfilePrepared(profile());
+  pref->SetBoolean(prefs::kArcEnabled, true);
+
+  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(ArcAuthService::State::ENABLE, auth_service()->state());
+
+  auth_service()->CancelAuthCode();
+  ASSERT_EQ(ArcAuthService::State::ENABLE, auth_service()->state());
+  ASSERT_EQ(true, pref->GetBoolean(prefs::kArcEnabled));
 
   // Correctly stop service.
   auth_service()->Shutdown();

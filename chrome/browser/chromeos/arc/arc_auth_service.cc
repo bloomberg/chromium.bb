@@ -7,13 +7,24 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "chrome/browser/chromeos/arc/arc_auth_ui.h"
+#include "base/strings/stringprintf.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/ui/extensions/app_launch_params.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/signin/core/browser/signin_manager_base.h"
+#include "content/public/browser/storage_partition.h"
+#include "content/public/common/url_constants.h"
+#include "extensions/browser/extension_registry.h"
+#include "google_apis/gaia/gaia_constants.h"
 
 namespace arc {
 
@@ -21,6 +32,9 @@ namespace {
 
 // Weak pointer.  This class is owned by ArcServiceManager.
 ArcAuthService* arc_auth_service = nullptr;
+
+const char kArcSupportExtensionId[] = "cnbgggchhmkkdmeppjobngjoejnihlei";
+const char kArcSupportStorageId[] = "arc_support";
 
 // Skip creating UI in unit tests
 bool disable_ui_for_testing = false;
@@ -40,7 +54,7 @@ ArcAuthService::ArcAuthService(ArcBridgeService* bridge_service)
 }
 
 ArcAuthService::~ArcAuthService() {
-  DCHECK(!auth_ui_ && !profile_);
+  DCHECK(!profile_);
   arc_bridge_service()->RemoveObserver(this);
 
   DCHECK(arc_auth_service == this);
@@ -112,6 +126,13 @@ void ArcAuthService::OnPrimaryUserProfilePrepared(Profile* profile) {
   Shutdown();
 
   profile_ = profile;
+  // Reuse storage used in ARC OptIn platform app.
+  const std::string site_url =
+      base::StringPrintf("%s://%s/persist?%s", content::kGuestScheme,
+                         kArcSupportExtensionId, kArcSupportStorageId);
+  storage_partition_ = content::BrowserContext::GetStoragePartitionForSite(
+      profile_, GURL(site_url));
+  CHECK(storage_partition_);
 
   // In case UI is disabled we assume that ARC is opted-in.
   if (!IsOptInVerificationDisabled()) {
@@ -122,7 +143,9 @@ void ArcAuthService::OnPrimaryUserProfilePrepared(Profile* profile) {
                    base::Unretained(this)));
     OnOptInPreferenceChanged();
   } else {
-    SetAuthCodeAndStartArc(std::string());
+    auth_code_.clear();
+    ArcBridgeService::Get()->HandleStartup();
+    SetState(State::ENABLE);
   }
 }
 
@@ -132,20 +155,51 @@ void ArcAuthService::Shutdown() {
   pref_change_registrar_.RemoveAll();
 }
 
+void ArcAuthService::OnMergeSessionSuccess(const std::string& data) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(profile_)->GetInstalledExtension(
+          kArcSupportExtensionId);
+  CHECK(extension &&
+        extensions::util::IsAppLaunchable(kArcSupportExtensionId, profile_));
+
+  AppLaunchParams params(profile_, extension, NEW_WINDOW,
+                         extensions::SOURCE_CHROME_INTERNAL);
+  OpenApplication(params);
+}
+
+void ArcAuthService::OnMergeSessionFailure(
+    const GoogleServiceAuthError& error) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  VLOG(2) << "Failed to merge gaia session " << error.ToString() << ".";
+  OnAuthCodeFailed();
+}
+
+void ArcAuthService::OnUbertokenSuccess(const std::string& token) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  merger_fetcher_.reset(
+      new GaiaAuthFetcher(this, GaiaConstants::kChromeOSSource,
+                          storage_partition_->GetURLRequestContext()));
+  merger_fetcher_->StartMergeSession(token, std::string());
+}
+
+void ArcAuthService::OnUbertokenFailure(const GoogleServiceAuthError& error) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  VLOG(2) << "Failed to get ubertoken " << error.ToString() << ".";
+  OnAuthCodeFailed();
+}
+
 void ArcAuthService::OnOptInPreferenceChanged() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(profile_);
 
   if (profile_->GetPrefs()->GetBoolean(prefs::kArcEnabled)) {
-    switch (state_) {
-      case State::DISABLE:
-        FetchAuthCode();
-        break;
-      case State::NO_CODE:  // Retry
-        FetchAuthCode();
-        break;
-      default:
-        break;
+    if (state_ != State::ENABLE) {
+      CloseUI();
+      auth_code_.clear();
+      SetState(State::FETCHING_CODE);
+      FetchAuthCode();
     }
   } else {
     ShutdownBridgeAndCloseUI();
@@ -155,6 +209,8 @@ void ArcAuthService::OnOptInPreferenceChanged() {
 void ArcAuthService::ShutdownBridgeAndCloseUI() {
   CloseUI();
   auth_fetcher_.reset();
+  ubertoken_fethcher_.reset();
+  merger_fetcher_.reset();
   ArcBridgeService::Get()->Shutdown();
   SetState(State::DISABLE);
 }
@@ -170,35 +226,44 @@ void ArcAuthService::RemoveObserver(Observer* observer) {
 }
 
 void ArcAuthService::CloseUI() {
-  if (auth_ui_) {
-    auth_ui_->Close();
-    DCHECK(!auth_ui_);
-  }
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnOptInUINeedToClose());
 }
 
 void ArcAuthService::SetAuthCodeAndStartArc(const std::string& auth_code) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!auth_code.empty() || IsOptInVerificationDisabled());
-  DCHECK_NE(state_, State::ENABLE);
+  DCHECK(!auth_code.empty());
+
+  State state = state_;
 
   ShutdownBridgeAndCloseUI();
 
+  if (state != State::FETCHING_CODE)
+    return;
+
   auth_code_ = auth_code;
   ArcBridgeService::Get()->HandleStartup();
-
   SetState(State::ENABLE);
 }
 
 void ArcAuthService::FetchAuthCode() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(state_ == State::DISABLE || state_ == State::NO_CODE);
 
-  CloseUI();
-  auth_code_.clear();
+  if (state_ != State::FETCHING_CODE)
+    return;
 
-  SetState(State::FETCHING_CODE);
+  auth_fetcher_.reset(
+      new ArcAuthFetcher(storage_partition_->GetURLRequestContext(), this));
+}
 
-  auth_fetcher_.reset(new ArcAuthFetcher(profile_->GetRequestContext(), this));
+void ArcAuthService::CancelAuthCode() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (state_ != State::FETCHING_CODE)
+    return;
+
+  ShutdownBridgeAndCloseUI();
+
+  profile_->GetPrefs()->SetBoolean(prefs::kArcEnabled, false);
 }
 
 void ArcAuthService::OnAuthCodeFetched(const std::string& auth_code) {
@@ -206,10 +271,29 @@ void ArcAuthService::OnAuthCodeFetched(const std::string& auth_code) {
   SetAuthCodeAndStartArc(auth_code);
 }
 
+void ArcAuthService::ShowUI() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Get auth token to continue.
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile_);
+  CHECK(token_service && signin_manager);
+  const std::string& account_id = signin_manager->GetAuthenticatedAccountId();
+  ubertoken_fethcher_.reset(
+      new UbertokenFetcher(token_service, this, GaiaConstants::kChromeOSSource,
+                           storage_partition_->GetURLRequestContext()));
+  ubertoken_fethcher_->StartFetchingToken(account_id);
+}
+
 void ArcAuthService::OnAuthCodeNeedUI() {
-  CloseUI();
-  if (!disable_ui_for_testing && !IsOptInVerificationDisabled())
-    auth_ui_ = new ArcAuthUI(profile_, this);
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (disable_ui_for_testing || IsOptInVerificationDisabled())
+    return;
+
+  ShowUI();
 }
 
 void ArcAuthService::OnAuthCodeFailed() {
@@ -217,11 +301,6 @@ void ArcAuthService::OnAuthCodeFailed() {
   CloseUI();
 
   SetState(State::NO_CODE);
-}
-
-void ArcAuthService::OnAuthUIClosed() {
-  DCHECK(auth_ui_);
-  auth_ui_ = nullptr;
 }
 
 std::ostream& operator<<(std::ostream& os, const ArcAuthService::State& state) {

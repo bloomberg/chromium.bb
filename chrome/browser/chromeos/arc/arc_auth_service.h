@@ -10,16 +10,25 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/browser/chromeos/arc/arc_auth_ui.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/auth/arc_auth_fetcher.h"
 #include "components/arc/common/auth.mojom.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "google_apis/gaia/gaia_auth_consumer.h"
+#include "google_apis/gaia/ubertoken_fetcher.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
-class PrefService;
+class GaiaAuthFetcher;
 class Profile;
+
+namespace content {
+class StoragePartition;
+}
+
+namespace net {
+class URLRequestContextGetter;
+}
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -33,7 +42,8 @@ class ArcAuthService : public ArcService,
                        public AuthHost,
                        public ArcBridgeService::Observer,
                        public ArcAuthFetcher::Delegate,
-                       public ArcAuthUI::Delegate {
+                       public UbertokenConsumer,
+                       public GaiaAuthConsumer {
  public:
   enum class State {
     DISABLE,        // ARC is not allowed to run (default).
@@ -47,7 +57,10 @@ class ArcAuthService : public ArcService,
     virtual ~Observer() = default;
 
     // Called whenever Opt-In state of the ARC has been changed.
-    virtual void OnOptInChanged(State state) = 0;
+    virtual void OnOptInChanged(State state) {}
+
+    // Called to notify that OptIn UI needs to be closed.
+    virtual void OnOptInUINeedToClose() {}
   };
 
   explicit ArcAuthService(ArcBridgeService* bridge_service);
@@ -68,10 +81,6 @@ class ArcAuthService : public ArcService,
 
   State state() const { return state_; }
 
-  // Sets the auth code. Can be set from internally or from external component
-  // that accepts user's credentials. This actually starts ARC bridge service.
-  void SetAuthCodeAndStartArc(const std::string& auth_code);
-
   std::string GetAndResetAuthCode();
 
   // Adds or removes observers.
@@ -87,16 +96,29 @@ class ArcAuthService : public ArcService,
       const GetAuthCodeDeprecatedCallback& callback) override;
   void GetAuthCode(const GetAuthCodeCallback& callback) override;
 
+  // May be called internally as response to on Arc OptIn preference change
+  // or externally from Arc support platform app.
+  void FetchAuthCode();
+
+  // Called from Arc support platform app when user cancels signing.
+  void CancelAuthCode();
+
   // ArcAuthFetcher::Delegate:
   void OnAuthCodeFetched(const std::string& auth_code) override;
   void OnAuthCodeNeedUI() override;
   void OnAuthCodeFailed() override;
 
-  // ArcAuthUI::Delegate:
-  void OnAuthUIClosed() override;
+  // UbertokenConsumer:
+  void OnUbertokenSuccess(const std::string& token) override;
+  void OnUbertokenFailure(const GoogleServiceAuthError& error) override;
+
+  // GaiaAuthConsumer:
+  void OnMergeSessionSuccess(const std::string& data) override;
+  void OnMergeSessionFailure(const GoogleServiceAuthError& error) override;
 
  private:
-  void FetchAuthCode();
+  void SetAuthCodeAndStartArc(const std::string& auth_code);
+  void ShowUI();
   void CloseUI();
   void SetState(State state);
   void ShutdownBridgeAndCloseUI();
@@ -104,9 +126,9 @@ class ArcAuthService : public ArcService,
 
   // Unowned pointer. Keeps current profile.
   Profile* profile_ = nullptr;
-
-  // Owned by view hierarchy.
-  ArcAuthUI* auth_ui_ = nullptr;
+  // Owned by content::BrowserContent. Used to isolate cookies for auth server
+  // communication and shared with Arc OptIn UI platform app.
+  content::StoragePartition* storage_partition_ = nullptr;
 
   // Registrar used to monitor ARC opt-in state.
   PrefChangeRegistrar pref_change_registrar_;
@@ -116,6 +138,8 @@ class ArcAuthService : public ArcService,
   State state_ = State::DISABLE;
   base::ObserverList<Observer> observer_list_;
   scoped_ptr<ArcAuthFetcher> auth_fetcher_;
+  scoped_ptr<GaiaAuthFetcher> merger_fetcher_;
+  scoped_ptr<UbertokenFetcher> ubertoken_fethcher_;
   std::string auth_code_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAuthService);
