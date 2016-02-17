@@ -339,10 +339,10 @@ int StreamMixerAlsa::SetAlsaPlaybackParams() {
   RETURN_ERROR_CODE(PcmHwParamsSetRateNear, pcm_, pcm_hw_params_,
                     &unsigned_output_samples_per_second, kAlsaDirDontCare);
   if (requested_rate != unsigned_output_samples_per_second) {
-    LOG(ERROR) << "Requested sample rate (" << requested_rate
-               << " Hz) does not match the actual sample rate ("
-               << unsigned_output_samples_per_second
-               << " Hz). This may lead to lower audio quality.";
+    LOG(WARNING) << "Requested sample rate (" << requested_rate
+                 << " Hz) does not match the actual sample rate ("
+                 << unsigned_output_samples_per_second
+                 << " Hz). This may lead to lower audio quality.";
   }
   LOG(INFO) << "Sample rate changed from " << output_samples_per_second_
             << " to " << unsigned_output_samples_per_second;
@@ -353,11 +353,11 @@ int StreamMixerAlsa::SetAlsaPlaybackParams() {
   RETURN_ERROR_CODE(PcmHwParamsSetBufferSizeNear, pcm_, pcm_hw_params_,
                     &alsa_buffer_size_);
   if (requested_buffer_size != alsa_buffer_size_) {
-    LOG(ERROR) << "Requested buffer size (" << requested_buffer_size
-               << " frames) does not match the actual buffer size ("
-               << alsa_buffer_size_
-               << " frames). This may lead to an increase in "
-                  "either audio latency or audio underruns.";
+    LOG(WARNING) << "Requested buffer size (" << requested_buffer_size
+                 << " frames) does not match the actual buffer size ("
+                 << alsa_buffer_size_
+                 << " frames). This may lead to an increase in "
+                    "either audio latency or audio underruns.";
 
     // Always try to use the value for period_size that was passed in on the
     // command line, if any.
@@ -382,11 +382,11 @@ int StreamMixerAlsa::SetAlsaPlaybackParams() {
   RETURN_ERROR_CODE(PcmHwParamsSetPeriodSizeNear, pcm_, pcm_hw_params_,
                     &alsa_period_size_, kAlsaDirDontCare);
   if (requested_period_size != alsa_period_size_) {
-    LOG(ERROR) << "Requested period size (" << requested_period_size
-               << " frames) does not match the actual period size ("
-               << alsa_period_size_
-               << " frames). This may lead to an increase in "
-                  "CPU usage or an increase in audio latency.";
+    LOG(WARNING) << "Requested period size (" << requested_period_size
+                 << " frames) does not match the actual period size ("
+                 << alsa_period_size_
+                 << " frames). This may lead to an increase in "
+                    "CPU usage or an increase in audio latency.";
   }
   RETURN_ERROR_CODE(PcmHwParams, pcm_, pcm_hw_params_);
 
@@ -450,8 +450,8 @@ void StreamMixerAlsa::Start() {
   // b/24747205
   int err = SetAlsaPlaybackParams();
   if (err < 0) {
-    LOG(ERROR) << "32-bit playback is not supported on this device, falling "
-                  "back to 16-bit playback. This can degrade audio quality.";
+    LOG(WARNING) << "32-bit playback is not supported on this device, falling "
+                 "back to 16-bit playback. This can degrade audio quality.";
     pcm_format_ = SND_PCM_FORMAT_S16;
     // Free pcm_hw_params_, which is re-allocated in SetAlsaPlaybackParams().
     // See b/25572466.
