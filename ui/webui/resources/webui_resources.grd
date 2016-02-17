@@ -450,7 +450,9 @@ without changes to the corresponding grd file. -->
                    type="chrome_html" />
       </if>
       <part file="cr_elements_resources.grdp" />
-      <part file="polymer_resources.grdp" />
+      <if expr="not is_android">
+        <part file="polymer_resources.grdp" />
+      </if>
     </structures>
   </release>
 </grit>
