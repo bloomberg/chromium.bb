@@ -150,7 +150,8 @@ public:
         ScrollFirst,
         ScrollPaintPhaseFirst = ScrollFirst,
         ScrollPaintPhaseLast = ScrollPaintPhaseFirst + PaintPhaseMax,
-        ScrollLast = ScrollPaintPhaseLast,
+        ScrollOverflowControls,
+        ScrollLast = ScrollOverflowControls,
         EndScrollFirst,
         EndScrollLast = EndScrollFirst + ScrollLast - ScrollFirst,
 

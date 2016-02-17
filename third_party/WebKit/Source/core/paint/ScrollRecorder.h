@@ -20,6 +20,7 @@ class GraphicsContext;
 class CORE_EXPORT ScrollRecorder {
     USING_FAST_MALLOC(ScrollRecorder);
 public:
+    ScrollRecorder(GraphicsContext&, const DisplayItemClient&, DisplayItem::Type, const IntSize& currentOffset);
     ScrollRecorder(GraphicsContext&, const DisplayItemClient&, PaintPhase, const IntSize& currentOffset);
     ~ScrollRecorder();
 private:

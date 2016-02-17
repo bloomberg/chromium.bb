@@ -148,6 +148,15 @@ static WTF::String clipTypeAsDebugString(DisplayItem::Type type)
     }
 }
 
+static String scrollTypeAsDebugString(DisplayItem::Type type)
+{
+    PAINT_PHASE_BASED_DEBUG_STRINGS(Scroll);
+    switch (type) {
+        DEBUG_STRING_CASE(ScrollOverflowControls);
+        DEFAULT_CASE;
+    }
+}
+
 static String transform3DTypeAsDebugString(DisplayItem::Type type)
 {
     switch (type) {
@@ -174,9 +183,10 @@ WTF::String DisplayItem::typeAsDebugString(Type type)
     if (isEndFloatClipType(type))
         return "End" + typeAsDebugString(endFloatClipTypeToFloatClipType(type));
 
-    PAINT_PHASE_BASED_DEBUG_STRINGS(Scroll);
+    if (isScrollType(type))
+        return scrollTypeAsDebugString(type);
     if (isEndScrollType(type))
-        return "End" + typeAsDebugString(endScrollTypeToScrollType(type));
+        return "End" + scrollTypeAsDebugString(endScrollTypeToScrollType(type));
 
     if (isTransform3DType(type))
         return transform3DTypeAsDebugString(type);
