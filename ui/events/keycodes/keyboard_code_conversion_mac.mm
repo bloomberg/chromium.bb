@@ -463,11 +463,11 @@ DomKey DomKeyFromKeyCode(unsigned short keyCode) {
     case kVK_Function:
       return DomKey::FN;
     case kVK_VolumeUp:
-      return DomKey::VOLUME_UP;
+      return DomKey::AUDIO_VOLUME_UP;
     case kVK_VolumeDown:
-      return DomKey::VOLUME_DOWN;
+      return DomKey::AUDIO_VOLUME_DOWN;
     case kVK_Mute:
-      return DomKey::VOLUME_MUTE;
+      return DomKey::AUDIO_VOLUME_MUTE;
     case kVK_F1:
       return DomKey::F1;
     case kVK_F2:

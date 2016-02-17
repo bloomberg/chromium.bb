@@ -24,8 +24,6 @@ int ModifierDomKeyToEventFlag(DomKey key) {
     case DomKey::CONTROL:
       return EF_CONTROL_DOWN;
     case DomKey::META:
-      return EF_ALT_DOWN;
-    case DomKey::OS:
       return EF_COMMAND_DOWN;
     case DomKey::SHIFT:
       return EF_SHIFT_DOWN;

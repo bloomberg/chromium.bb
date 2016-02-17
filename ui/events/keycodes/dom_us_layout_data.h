@@ -105,6 +105,7 @@ const struct NonPrintableCodeEntry {
     {DomCode::ARROW_RIGHT, DomKey::ARROW_RIGHT},
     {DomCode::ARROW_UP, DomKey::ARROW_UP},
     {DomCode::BACKSPACE, DomKey::BACKSPACE},
+    {DomCode::BASS_BOOST, DomKey::AUDIO_BASS_BOOST_TOGGLE},
     {DomCode::BRIGHTNESS_DOWN, DomKey::BRIGHTNESS_DOWN},
     {DomCode::BRIGHTNESS_UP, DomKey::BRIGHTNESS_UP},
     // {DomCode::BRIGHTNESS_AUTO, DomKey::_}
@@ -119,6 +120,10 @@ const struct NonPrintableCodeEntry {
     {DomCode::BROWSER_SEARCH, DomKey::BROWSER_SEARCH},
     {DomCode::BROWSER_STOP, DomKey::BROWSER_STOP},
     {DomCode::CAPS_LOCK, DomKey::CAPS_LOCK},
+    {DomCode::CHANNEL_DOWN, DomKey::CHANNEL_DOWN},
+    {DomCode::CHANNEL_UP, DomKey::CHANNEL_UP},
+    {DomCode::CLOSE, DomKey::CLOSE},
+    {DomCode::CLOSED_CAPTION_TOGGLE, DomKey::CLOSED_CAPTION_TOGGLE},
     {DomCode::CONTEXT_MENU, DomKey::CONTEXT_MENU},
     {DomCode::CONTROL_LEFT, DomKey::CONTROL},
     {DomCode::CONTROL_RIGHT, DomKey::CONTROL},
@@ -130,6 +135,7 @@ const struct NonPrintableCodeEntry {
     {DomCode::END, DomKey::END},
     {DomCode::ENTER, DomKey::ENTER},
     {DomCode::ESCAPE, DomKey::ESCAPE},
+    {DomCode::EXIT, DomKey::EXIT},
     {DomCode::F1, DomKey::F1},
     {DomCode::F2, DomKey::F2},
     {DomCode::F3, DomKey::F3},
@@ -160,6 +166,7 @@ const struct NonPrintableCodeEntry {
     {DomCode::HELP, DomKey::HELP},
     {DomCode::HOME, DomKey::HOME},
     {DomCode::HYPER, DomKey::HYPER},
+    {DomCode::INFO, DomKey::INFO},
     {DomCode::INSERT, DomKey::INSERT},
     // {DomCode::INTL_RO, DomKey::_}
     {DomCode::KANA_MODE, DomKey::KANA_MODE},
@@ -170,21 +177,36 @@ const struct NonPrintableCodeEntry {
     {DomCode::LANG5, DomKey::ZENKAKU_HANKAKU},
     {DomCode::LAUNCH_APP1, DomKey::LAUNCH_MY_COMPUTER},
     {DomCode::LAUNCH_APP2, DomKey::LAUNCH_CALCULATOR},
+    {DomCode::LAUNCH_AUDIO_BROWSER, DomKey::LAUNCH_MUSIC_PLAYER},
+    {DomCode::LAUNCH_CALENDAR, DomKey::LAUNCH_CALENDAR},
+    {DomCode::LAUNCH_CONTACTS, DomKey::LAUNCH_CONTACTS},
+    {DomCode::LAUNCH_CONTROL_PANEL, DomKey::SETTINGS},
+    {DomCode::LAUNCH_INTERNET_BROWSER, DomKey::LAUNCH_WEB_BROWSER},
     {DomCode::LAUNCH_MAIL, DomKey::LAUNCH_MAIL},
+    {DomCode::LAUNCH_PHONE, DomKey::LAUNCH_PHONE},
     {DomCode::LAUNCH_SCREEN_SAVER, DomKey::LAUNCH_SCREEN_SAVER},
+    {DomCode::LAUNCH_SPREADSHEET, DomKey::LAUNCH_SPREADSHEET},
     // {DomCode::LAUNCH_DOCUMENTS, DomKey::_}
     // {DomCode::LAUNCH_FILE_BROWSER, DomKey::_}
     // {DomCode::LAUNCH_KEYBOARD_LAYOUT, DomKey::_}
     {DomCode::LOCK_SCREEN, DomKey::LAUNCH_SCREEN_SAVER},
+    {DomCode::LOG_OFF, DomKey::LOG_OFF},
     {DomCode::MAIL_FORWARD, DomKey::MAIL_FORWARD},
     {DomCode::MAIL_REPLY, DomKey::MAIL_REPLY},
     {DomCode::MAIL_SEND, DomKey::MAIL_SEND},
+    {DomCode::MEDIA_FAST_FORWARD, DomKey::MEDIA_FAST_FORWARD},
+    {DomCode::MEDIA_LAST, DomKey::MEDIA_LAST},
+    // {DomCode::MEDIA_PAUSE, DomKey::MEDIA_PAUSE},
+    {DomCode::MEDIA_PLAY, DomKey::MEDIA_PLAY},
     {DomCode::MEDIA_PLAY_PAUSE, DomKey::MEDIA_PLAY_PAUSE},
-    {DomCode::MEDIA_SELECT, DomKey::MEDIA_SELECT},
+    {DomCode::MEDIA_RECORD, DomKey::MEDIA_RECORD},
+    {DomCode::MEDIA_REWIND, DomKey::MEDIA_REWIND},
+    {DomCode::MEDIA_SELECT, DomKey::LAUNCH_MEDIA_PLAYER},
     {DomCode::MEDIA_STOP, DomKey::MEDIA_STOP},
     {DomCode::MEDIA_TRACK_NEXT, DomKey::MEDIA_TRACK_NEXT},
     {DomCode::MEDIA_TRACK_PREVIOUS, DomKey::MEDIA_TRACK_PREVIOUS},
     // {DomCode::MENU, DomKey::_}
+    {DomCode::NEW, DomKey::NEW},
     {DomCode::NON_CONVERT, DomKey::NON_CONVERT},
     {DomCode::NUM_LOCK, DomKey::NUM_LOCK},
     {DomCode::NUMPAD_BACKSPACE, DomKey::BACKSPACE},
@@ -197,28 +219,35 @@ const struct NonPrintableCodeEntry {
     // {DomCode::NUMPAD_MEMORY_STORE, DomKey::_}
     // {DomCode::NUMPAD_MEMORY_SUBTRACT, DomKey::_}
     {DomCode::OPEN, DomKey::OPEN},
-    {DomCode::OS_LEFT, DomKey::OS},
-    {DomCode::OS_RIGHT, DomKey::OS},
+    {DomCode::OS_LEFT, DomKey::META},
+    {DomCode::OS_RIGHT, DomKey::META},
     {DomCode::PAGE_DOWN, DomKey::PAGE_DOWN},
     {DomCode::PAGE_UP, DomKey::PAGE_UP},
     {DomCode::PASTE, DomKey::PASTE},
     {DomCode::PAUSE, DomKey::PAUSE},
     {DomCode::POWER, DomKey::POWER},
+    {DomCode::PRINT, DomKey::PRINT},
     {DomCode::PRINT_SCREEN, DomKey::PRINT_SCREEN},
+    {DomCode::PROGRAM_GUIDE, DomKey::GUIDE},
     {DomCode::PROPS, DomKey::PROPS},
+    {DomCode::REDO, DomKey::REDO},
+    {DomCode::SAVE, DomKey::SAVE},
     {DomCode::SCROLL_LOCK, DomKey::SCROLL_LOCK},
     {DomCode::SELECT, DomKey::SELECT},
-    // {DomCode::SELECT_TASK, DomKey::_}
+    {DomCode::SELECT_TASK, DomKey::APP_SWITCH},
     {DomCode::SHIFT_LEFT, DomKey::SHIFT},
     {DomCode::SHIFT_RIGHT, DomKey::SHIFT},
+    {DomCode::SPEECH_INPUT_TOGGLE, DomKey::SPEECH_INPUT_TOGGLE},
+    {DomCode::SPELL_CHECK, DomKey::SPELL_CHECK},
     {DomCode::SUPER, DomKey::SUPER},
     {DomCode::TAB, DomKey::TAB},
     {DomCode::UNDO, DomKey::UNDO},
-    // {DomCode::VOICE_COMMAND, DomKey::_}
-    {DomCode::VOLUME_DOWN, DomKey::VOLUME_DOWN},
-    {DomCode::VOLUME_MUTE, DomKey::VOLUME_MUTE},
-    {DomCode::VOLUME_UP, DomKey::VOLUME_UP},
+    {DomCode::VOLUME_DOWN, DomKey::AUDIO_VOLUME_DOWN},
+    {DomCode::VOLUME_MUTE, DomKey::AUDIO_VOLUME_MUTE},
+    {DomCode::VOLUME_UP, DomKey::AUDIO_VOLUME_UP},
     {DomCode::WAKE_UP, DomKey::WAKE_UP},
+    {DomCode::ZOOM_IN, DomKey::ZOOM_IN},
+    {DomCode::ZOOM_OUT, DomKey::ZOOM_OUT},
     {DomCode::ZOOM_TOGGLE, DomKey::ZOOM_TOGGLE},
 };
 
@@ -239,13 +268,12 @@ const struct DomKeyToKeyboardCodeEntry {
     {DomKey::CAPS_LOCK, VKEY_CAPITAL},
     {DomKey::CONTROL, VKEY_CONTROL},
     {DomKey::NUM_LOCK, VKEY_NUMLOCK},
-    {DomKey::OS, VKEY_LWIN},
+    {DomKey::META, VKEY_LWIN},
     {DomKey::SCROLL_LOCK, VKEY_SCROLL},
     {DomKey::SHIFT, VKEY_SHIFT},
     // Whitespace Keys
     // http://www.w3.org/TR/DOM-Level-3-Events-key/#keys-whitespace
     {DomKey::ENTER, VKEY_RETURN},
-    {DomKey::SEPARATOR, VKEY_SEPARATOR},
     {DomKey::TAB, VKEY_TAB},
     // Navigation Keys
     // http://www.w3.org/TR/DOM-Level-3-Events-key/#keys-navigation
@@ -334,18 +362,18 @@ const struct DomKeyToKeyboardCodeEntry {
     // Multimedia Keys
     // http://www.w3.org/TR/DOM-Level-3-Events-key/#keys-multimedia
     {DomKey::MEDIA_PLAY_PAUSE, VKEY_MEDIA_PLAY_PAUSE},
-    {DomKey::MEDIA_SELECT, VKEY_MEDIA_LAUNCH_MEDIA_SELECT},
     {DomKey::MEDIA_STOP, VKEY_MEDIA_STOP},
     {DomKey::MEDIA_TRACK_NEXT, VKEY_MEDIA_NEXT_TRACK},
     {DomKey::MEDIA_TRACK_PREVIOUS, VKEY_MEDIA_PREV_TRACK},
     {DomKey::PRINT, VKEY_PRINT},
-    {DomKey::VOLUME_DOWN, VKEY_VOLUME_DOWN},
-    {DomKey::VOLUME_MUTE, VKEY_VOLUME_MUTE},
-    {DomKey::VOLUME_UP, VKEY_VOLUME_UP},
+    {DomKey::AUDIO_VOLUME_DOWN, VKEY_VOLUME_DOWN},
+    {DomKey::AUDIO_VOLUME_MUTE, VKEY_VOLUME_MUTE},
+    {DomKey::AUDIO_VOLUME_UP, VKEY_VOLUME_UP},
     // Application Keys
     // http://www.w3.org/TR/DOM-Level-3-Events-key/#keys-apps
     {DomKey::LAUNCH_CALCULATOR, VKEY_MEDIA_LAUNCH_APP2},
     {DomKey::LAUNCH_MAIL, VKEY_MEDIA_LAUNCH_MAIL},
+    {DomKey::LAUNCH_MEDIA_PLAYER, VKEY_MEDIA_LAUNCH_MEDIA_SELECT},
     {DomKey::LAUNCH_MY_COMPUTER, VKEY_MEDIA_LAUNCH_APP1},
     // Browser Keys
     // http://www.w3.org/TR/DOM-Level-3-Events-key/#keys-browser

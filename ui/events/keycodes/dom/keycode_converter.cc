@@ -231,7 +231,6 @@ bool KeycodeConverter::IsDomKeyForModifier(DomKey dom_key) {
     case DomKey::HYPER:
     case DomKey::META:
     case DomKey::NUM_LOCK:
-    case DomKey::OS:
     case DomKey::SCROLL_LOCK:
     case DomKey::SHIFT:
     case DomKey::SUPER:

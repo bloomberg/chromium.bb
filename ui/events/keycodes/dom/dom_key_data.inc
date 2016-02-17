@@ -10,7 +10,8 @@
 // (enums) and string tables. These names are defined by:
 //
 //   [0] DOM Level 3 KeyboardEvent key Values,
-//       http://www.w3.org/TR/DOM-Level-3-Events-key/
+//       http://www.w3.org/TR/uievents-key/
+//       (current as of W3C Working Draft 15 December 2015)
 //
 // That reference should be consulted on the meaning and usage of these
 // values; this file does not attempt to describe that.
@@ -39,7 +40,7 @@ DOM_KEY_MAP_DECLARATION {
 
   // =========================================================
   // Special Key Values
-  // http://www.w3.org/TR/DOM-Level-3-Events-key/#keys-special
+  // http://www.w3.org/TR/uievents-key/#keys-special
   // =========================================================
 
   // Unable to identify another key value
@@ -47,7 +48,7 @@ DOM_KEY_MAP_DECLARATION {
 
   // ==========================================================
   // Modifier Keys
-  // http://www.w3.org/TR/DOM-Level-3-Events-key/#keys-modifier
+  // http://www.w3.org/TR/uievents-key/#keys-modifier
   // ==========================================================
 
   //          Key                     Enum                      Value
@@ -62,7 +63,8 @@ DOM_KEY_MAP_DECLARATION {
   DOM_KEY_MAP("Hyper",                HYPER,                    0x0108),
   DOM_KEY_MAP("Meta",                 META,                     0x0109),
   DOM_KEY_MAP("NumLock",              NUM_LOCK,                 0x010A),
-  DOM_KEY_MAP("OS",                   OS,                       0x010B),
+  //          "OS" was removed from the spec.
+  //         ("OS",                   OS,                       0x010B),
   DOM_KEY_MAP("ScrollLock",           SCROLL_LOCK,              0x010C),
   DOM_KEY_MAP("Shift",                SHIFT,                    0x010D),
   DOM_KEY_MAP("Super",                SUPER,                    0x010E),
@@ -85,17 +87,18 @@ DOM_KEY_MAP_DECLARATION {
 
   // ============================================================
   // Whitespace Keys
-  // http://www.w3.org/TR/DOM-Level-3-Events-key/#keys-whitespace
+  // http://www.w3.org/TR/uievents-key/#keys-whitespace
   // ============================================================
 
   //          Key                     Enum                      Value
   //          "Enter" is encoded in the Unicode space (at the top of this list).
-  DOM_KEY_MAP("Separator",            SEPARATOR,                0x0201),
+  //          "Separator" was removed from the spec.
+  //         ("Separator",            SEPARATOR,                0x0201),
   //          "Tab" is encoded in the Unicode space.
 
   // ============================================================
   // Navigation Keys
-  // http://www.w3.org/TR/DOM-Level-3-Events-key/#keys-navigation
+  // http://www.w3.org/TR/uievents-key/#keys-navigation
   // ============================================================
 
   //          Key                     Enum                      Value
@@ -110,7 +113,7 @@ DOM_KEY_MAP_DECLARATION {
 
   // =========================================================
   // Editing Keys
-  // http://www.w3.org/TR/DOM-Level-3-Events-key/#keys-editing
+  // http://www.w3.org/TR/uievents-key/#keys-editing
   // =========================================================
 
   //          Key                     Enum                      Value
@@ -132,7 +135,7 @@ DOM_KEY_MAP_DECLARATION {
 
   // ====================================================
   // UI Keys
-  // http://www.w3.org/TR/DOM-Level-3-Events-key/#keys-ui
+  // http://www.w3.org/TR/uievents-key/#keys-ui
   // ====================================================
 
   //          Key                     Enum                      Value
@@ -160,13 +163,14 @@ DOM_KEY_MAP_DECLARATION {
 
   // ========================================================
   // Device Keys
-  // http://www.w3.org/TR/DOM-Level-3-Events-key/#keys-device
+  // http://www.w3.org/TR/uievents-key/#keys-device
   // ========================================================
 
   //          Key                     Enum                      Value
   DOM_KEY_MAP("BrightnessDown",       BRIGHTNESS_DOWN,          0x0601),
   DOM_KEY_MAP("BrightnessUp",         BRIGHTNESS_UP,            0x0602),
-  DOM_KEY_MAP("Camera",               CAMERA,                   0x0603),
+  //          "Camera" moved to Mobile Phone Keys section.
+  //         ("Camera",               CAMERA,                   0x0603),
   DOM_KEY_MAP("Eject",                EJECT,                    0x0604),
   DOM_KEY_MAP("LogOff",               LOG_OFF,                  0x0605),
   DOM_KEY_MAP("Power",                POWER,                    0x0606),
@@ -178,7 +182,7 @@ DOM_KEY_MAP_DECLARATION {
 
   // =============================================================
   // IME and Composition Keys
-  // http://www.w3.org/TR/DOM-Level-3-Events-key/#keys-composition
+  // http://www.w3.org/TR/uievents-key/#keys-composition
   // =============================================================
 
   //          Key                     Enum                      Value
@@ -219,7 +223,7 @@ DOM_KEY_MAP_DECLARATION {
 
   // ==========================================================
   // General-Purpose Function Keys
-  // http://www.w3.org/TR/DOM-Level-3-Events-key/#keys-function
+  // http://www.w3.org/TR/uievents-key/#keys-function
   // ==========================================================
 
   // DOM defines open-ended sets, but if we want a finite numeric encoding we
@@ -262,16 +266,27 @@ DOM_KEY_MAP_DECLARATION {
 
   // ============================================================
   // Multimedia Keys
-  // http://www.w3.org/TR/DOM-Level-3-Events-key/#keys-multimedia
+  // http://www.w3.org/TR/uievents-key/#keys-multimedia
   // ============================================================
 
+  // Note: some keys were previously listed in the Media Controller Keys
+  // section of the spec, and retain their original numbering (0x0D__).
+
   //          Key                     Enum                      Value
+  DOM_KEY_MAP("ChannelDown",          CHANNEL_DOWN,             0x0D0A),
+  DOM_KEY_MAP("ChannelUp",            CHANNEL_UP,               0x0D0B),
   DOM_KEY_MAP("Close",                CLOSE,                    0x0A01),
   DOM_KEY_MAP("MailForward",          MAIL_FORWARD,             0x0A02),
   DOM_KEY_MAP("MailReply",            MAIL_REPLY,               0x0A03),
   DOM_KEY_MAP("MailSend",             MAIL_SEND,                0x0A04),
+  DOM_KEY_MAP("MediaFastForward",     MEDIA_FAST_FORWARD,       0x0D2C),
+  DOM_KEY_MAP("MediaPause",           MEDIA_PAUSE,              0x0D2E),
+  DOM_KEY_MAP("MediaPlay",            MEDIA_PLAY,               0x0D2F),
   DOM_KEY_MAP("MediaPlayPause",       MEDIA_PLAY_PAUSE,         0x0A05),
-  DOM_KEY_MAP("MediaSelect",          MEDIA_SELECT,             0x0A06),
+  DOM_KEY_MAP("MediaRecord",          MEDIA_RECORD,             0x0D30),
+  DOM_KEY_MAP("MediaRewind",          MEDIA_REWIND,             0x0D31),
+  //          "MediaSelect" was removed from the spec.
+  //         ("MediaSelect",          MEDIA_SELECT,             0x0A06),
   DOM_KEY_MAP("MediaStop",            MEDIA_STOP,               0x0A07),
   DOM_KEY_MAP("MediaTrackNext",       MEDIA_TRACK_NEXT,         0x0A08),
   DOM_KEY_MAP("MediaTrackPrevious",   MEDIA_TRACK_PREVIOUS,     0x0A09),
@@ -280,24 +295,70 @@ DOM_KEY_MAP_DECLARATION {
   DOM_KEY_MAP("Print",                PRINT,                    0x0A0C),
   DOM_KEY_MAP("Save",                 SAVE,                     0x0A0D),
   DOM_KEY_MAP("SpellCheck",           SPELL_CHECK,              0x0A0E),
-  DOM_KEY_MAP("VolumeDown",           VOLUME_DOWN,              0x0A0F),
-  DOM_KEY_MAP("VolumeUp",             VOLUME_UP,                0x0A10),
-  DOM_KEY_MAP("VolumeMute",           VOLUME_MUTE,              0x0A11),
+
+  // ============================================================
+  // Multimedia Numpad Keys
+  // http://www.w3.org/TR/uievents-key/#keys-multimedia-numpad
+  // ============================================================
+
+  DOM_KEY_MAP("Key11",                KEY11,                    0x1201),
+  DOM_KEY_MAP("Key12",                KEY12,                    0x1202),
+
+  // =======================================================
+  // Audio Keys
+  // http://www.w3.org/TR/uievents-key/#keys-audio
+  // =======================================================
+
+  // Note: some keys were previously listed in the Multimedia Keys
+  // (0x0A__) or Media Controller Keys (0x0D__) sections of the spec,
+  // and retain their original numbering.
+
+  //          Key                     Enum                      Value
+  DOM_KEY_MAP("AudioBalanceLeft",     AUDIO_BALANCE_LEFT,       0x0D01),
+  DOM_KEY_MAP("AudioBalanceRight",    AUDIO_BALANCE_RIGHT,      0x0D02),
+  DOM_KEY_MAP("AudioBassDown",        AUDIO_BASS_DOWN,          0x0E01),
+  DOM_KEY_MAP("AudioBassBoostDown",   AUDIO_BASS_BOOST_DOWN,    0x0D03),
+  DOM_KEY_MAP("AudioBassBoostToggle", AUDIO_BASS_BOOST_TOGGLE,  0x0E02),
+  DOM_KEY_MAP("AudioBassBoostUp",     AUDIO_BASS_BOOST_UP,      0x0D04),
+  DOM_KEY_MAP("AudioBassUp",          AUDIO_BASS_UP,            0x0E03),
+  DOM_KEY_MAP("AudioFaderFront",      AUDIO_FADER_FRONT,        0x0D05),
+  DOM_KEY_MAP("AudioFaderRear",       AUDIO_FADER_REAR,         0x0D06),
+  DOM_KEY_MAP("AudioSurroundModeNext",AUDIO_SURROUND_MODE_NEXT, 0x0D07),
+  DOM_KEY_MAP("AudioTrebleDown",      AUDIO_TREBLE_DOWN,        0x0E04),
+  DOM_KEY_MAP("AudioTrebleUp",        AUDIO_TREBLE_UP,          0x0E05),
+  DOM_KEY_MAP("AudioVolumeDown",      AUDIO_VOLUME_DOWN,        0x0A0F),
+  DOM_KEY_MAP("AudioVolumeUp",        AUDIO_VOLUME_UP,          0x0A10),
+  DOM_KEY_MAP("AudioVolumeMute",      AUDIO_VOLUME_MUTE,        0x0A11),
+  DOM_KEY_MAP("MicrophoneToggle",     MICROPHONE_TOGGLE,        0x0E06),
+  DOM_KEY_MAP("MicrophoneVolumeDown", MICROPHONE_VOLUME_DOWN,   0x0E07),
+  DOM_KEY_MAP("MicrophoneVolumeUp",   MICROPHONE_VOLUME_UP,     0x0E08),
+  DOM_KEY_MAP("MicrophoneVolumeMute", MICROPHONE_VOLUME_MUTE,   0x0E09),
+
+  // ========================================================
+  // Speech Keys
+  // http://www.w3.org/TR/uievents-key/#keys-speech
+  // ========================================================
+
+  //          Key                     Enum                      Value
+  DOM_KEY_MAP("SpeechCorrectionList", SPEECH_CORRECTION_LIST,   0x0F01),
+  DOM_KEY_MAP("SpeechInputToggle",    SPEECH_INPUT_TOGGLE,      0x0F02),
 
   // ======================================================
   // Application Keys
-  // http://www.w3.org/TR/DOM-Level-3-Events-key/#keys-apps
+  // http://www.w3.org/TR/uievents-key/#keys-apps
   // ======================================================
 
   //          Key                     Enum                      Value
   //          "LaunchCalculator" is equivalent to "Launch Application 2":
   DOM_KEY_MAP("LaunchCalculator",     LAUNCH_CALCULATOR,        0x0B01),
   DOM_KEY_MAP("LaunchCalendar",       LAUNCH_CALENDAR,          0x0B02),
+  DOM_KEY_MAP("LaunchContacts",       LAUNCH_CONTACTS,          0x0B0C),
   DOM_KEY_MAP("LaunchMail",           LAUNCH_MAIL,              0x0B03),
   DOM_KEY_MAP("LaunchMediaPlayer",    LAUNCH_MEDIA_PLAYER,      0x0B04),
   DOM_KEY_MAP("LaunchMusicPlayer",    LAUNCH_MUSIC_PLAYER,      0x0B05),
   //          "LaunchMyComputer" is equivalent to "Launch Application 1":
   DOM_KEY_MAP("LaunchMyComputer",     LAUNCH_MY_COMPUTER,       0x0B06),
+  DOM_KEY_MAP("LaunchPhone",          LAUNCH_PHONE,             0x0B0D),
   DOM_KEY_MAP("LaunchScreenSaver",    LAUNCH_SCREEN_SAVER,      0x0B07),
   DOM_KEY_MAP("LaunchSpreadsheet",    LAUNCH_SPREADSHEET,       0x0B08),
   DOM_KEY_MAP("LaunchWebBrowser",     LAUNCH_WEB_BROWSER,       0x0B09),
@@ -306,7 +367,7 @@ DOM_KEY_MAP_DECLARATION {
 
   // =========================================================
   // Browser Keys
-  // http://www.w3.org/TR/DOM-Level-3-Events-key/#keys-browser
+  // http://www.w3.org/TR/uievents-key/#keys-browser
   // =========================================================
 
   //          Key                     Enum                      Value
@@ -318,23 +379,81 @@ DOM_KEY_MAP_DECLARATION {
   DOM_KEY_MAP("BrowserSearch",        BROWSER_SEARCH,           0x0C06),
   DOM_KEY_MAP("BrowserStop",          BROWSER_STOP,             0x0C07),
 
+  // =========================================================
+  // Mobile Phone Keys
+  // http://www.w3.org/TR/uievents-key/#keys-mobile
+  // =========================================================
+
+  // Note: some keys were previously listed in the Device Keys (0x06__)
+  // section and retain their original numbering.
+
+  //          Key                     Enum                      Value
+  DOM_KEY_MAP("AppSwitch",            APP_SWITCH,               0x1001),
+  DOM_KEY_MAP("Call",                 CALL,                     0x1002),
+  DOM_KEY_MAP("Camera",               CAMERA,                   0x0603),
+  DOM_KEY_MAP("CameraFocus",          CAMERA_FOCUS,             0x1003),
+  DOM_KEY_MAP("EndCall",              END_CALL,                 0x1004),
+  DOM_KEY_MAP("GoBack",               GO_BACK,                  0x1005),
+  DOM_KEY_MAP("GoHome",               GO_HOME,                  0x1006),
+  DOM_KEY_MAP("HeadsetHook",          HEADSET_HOOK,             0x1007),
+  DOM_KEY_MAP("LastNumberRedial",     LAST_NUMBER_REDIAL,       0x1008),
+  DOM_KEY_MAP("Notification",         NOTIFICATION,             0x1009),
+  DOM_KEY_MAP("MannerMode",           MANNER_MODE,              0x100A),
+  DOM_KEY_MAP("VoiceDial",            VOICE_DIAL,               0x100B),
+
+  // =========================================================
+  // TV Keys
+  // http://www.w3.org/TR/uievents-key/#keys-tv
+  // =========================================================
+
+  // Note: some keys were previously listed in the Media Controller
+  // Keys (0x0D__) section and retain their original numbering.
+
+  //          Key                     Enum                      Value
+  DOM_KEY_MAP("TV",                   TV,                       0x0D49),
+  DOM_KEY_MAP("TV3DMode",             TV_3D_MODE,               0x1101),
+  DOM_KEY_MAP("TVAntennaCable",       TV_ANTENNA_CABLE,         0x1102),
+  DOM_KEY_MAP("TVAudioDescription",   TV_AUDIO_DESCRIPTION,     0x1103),
+  DOM_KEY_MAP("TVAudioDescriptionMixDown", TV_AUDIO_DESCRIPTION_MIX_DOWN,
+                                                                0x1104),
+  DOM_KEY_MAP("TVAudioDescriptionMixUp", TV_AUDIO_DESCRIPTION_MIX_UP,
+                                                                0x1105),
+  DOM_KEY_MAP("TVContentsMenu",       TV_CONTENTS_MENU,         0x1106),
+  DOM_KEY_MAP("TVDataService",        TV_DATA_SERVICE,          0x1107),
+  DOM_KEY_MAP("TVInput",              TV_INPUT,                 0x0D4A),
+  DOM_KEY_MAP("TVInputComponent1",    TV_INPUT_COMPONENT1,      0x1108),
+  DOM_KEY_MAP("TVInputComponent2",    TV_INPUT_COMPONENT2,      0x1109),
+  DOM_KEY_MAP("TVInputComposite1",    TV_INPUT_COMPOSITE1,      0x110A),
+  DOM_KEY_MAP("TVInputComposite2",    TV_INPUT_COMPOSITE2,      0x110B),
+  DOM_KEY_MAP("TVInputHDMI1",         TV_INPUT_HDMI1,           0x110C),
+  DOM_KEY_MAP("TVInputHDMI2",         TV_INPUT_HDMI2,           0x110D),
+  DOM_KEY_MAP("TVInputHDMI3",         TV_INPUT_HDMI3,           0x110E),
+  DOM_KEY_MAP("TVInputHDMI4",         TV_INPUT_HDMI4,           0x110F),
+  DOM_KEY_MAP("TVInputVGA1",          TV_INPUT_VGA1,            0x1110),
+  DOM_KEY_MAP("TVMediaContext",       TV_MEDIA_CONTEXT,         0x1111),
+  DOM_KEY_MAP("TVNetwork",            TV_NETWORK,               0x1112),
+  DOM_KEY_MAP("TVNumberEntry",        TV_NUMBER_ENTRY,          0x1113),
+  DOM_KEY_MAP("TVPower",              TV_POWER,                 0x0D4B),
+  DOM_KEY_MAP("TVRadioService",       TV_RADIO_SERVICE,         0x1114),
+  DOM_KEY_MAP("TVSatellite",          TV_SATELLITE,             0x1115),
+  DOM_KEY_MAP("TVSatelliteBC",        TV_SATELLITE_BC,          0x1116),
+  DOM_KEY_MAP("TVSatelliteCS",        TV_SATELLITE_CS,          0x1117),
+  DOM_KEY_MAP("TVSatelliteToggle",    TV_SATELLITE_TOGGLE,      0x1118),
+  DOM_KEY_MAP("TVTerrestrialAnalog",  TV_TERRESTRIAL_ANALOG,    0x1119),
+  DOM_KEY_MAP("TVTerrestrialDigital", TV_TERRESTRIAL_DIGITAL,   0x111A),
+  DOM_KEY_MAP("TVTimer",              TV_TIMER,                 0x111B),
+
   // ==================================================================
   // Media Controller Keys
-  // http://www.w3.org/TR/DOM-Level-3-Events-key/#keys-media-controller
+  // http://www.w3.org/TR/uievents-key/#keys-media-controller
   // ==================================================================
 
   //          Key                     Enum                      Value
-  DOM_KEY_MAP("AudioBalanceLeft",     AUDIO_BALANCE_LEFT,       0x0D01),
-  DOM_KEY_MAP("AudioBalanceRight",    AUDIO_BALANCE_RIGHT,      0x0D02),
-  DOM_KEY_MAP("AudioBassBoostDown",   AUDIO_BASS_BOOST_DOWN,    0x0D03),
-  DOM_KEY_MAP("AudioBassBoostUp",     AUDIO_BASS_BOOST_UP,      0x0D04),
-  DOM_KEY_MAP("AudioFaderFront",      AUDIO_FADER_FRONT,        0x0D05),
-  DOM_KEY_MAP("AudioFaderRear",       AUDIO_FADER_REAR,         0x0D06),
-  DOM_KEY_MAP("AudioSurroundModeNext",AUDIO_SURROUND_MODE_NEXT, 0x0D07),
   DOM_KEY_MAP("AVRInput",             AVR_INPUT,                0x0D08),
   DOM_KEY_MAP("AVRPower",             AVR_POWER,                0x0D09),
-  DOM_KEY_MAP("ChannelDown",          CHANNEL_DOWN,             0x0D0A),
-  DOM_KEY_MAP("ChannelUp",            CHANNEL_UP,               0x0D0B),
+  // Moved to Multimedia Keys section:
+  //         ("ChannelDown",          CHANNEL_DOWN,             0x0D0A),
+  //         ("ChannelUp",            CHANNEL_UP,               0x0D0B),
   DOM_KEY_MAP("ColorF0Red",           COLOR_F0_RED,             0x0D0C),
   DOM_KEY_MAP("ColorF1Green",         COLOR_F1_GREEN,           0x0D0D),
   DOM_KEY_MAP("ColorF2Yellow",        COLOR_F2_YELLOW,          0x0D0E),
@@ -344,6 +463,7 @@ DOM_KEY_MAP_DECLARATION {
   DOM_KEY_MAP("ClosedCaptionToggle",  CLOSED_CAPTION_TOGGLE,    0x0D12),
   DOM_KEY_MAP("Dimmer",               DIMMER,                   0x0D13),
   DOM_KEY_MAP("DisplaySwap",          DISPLAY_SWAP,             0x0D14),
+  DOM_KEY_MAP("DVR",                  DVR,                      0x0D4F),
   DOM_KEY_MAP("Exit",                 EXIT,                     0x0D15),
   DOM_KEY_MAP("FavoriteClear0",       FAVORITE_CLEAR0,          0x0D16),
   DOM_KEY_MAP("FavoriteClear1",       FAVORITE_CLEAR1,          0x0D17),
@@ -367,16 +487,29 @@ DOM_KEY_MAP_DECLARATION {
   DOM_KEY_MAP("LiveContent",          LIVE_CONTENT,             0x0D29),
   DOM_KEY_MAP("Lock",                 LOCK,                     0x0D2A),
   DOM_KEY_MAP("MediaApps",            MEDIA_APPS,               0x0D2B),
-  DOM_KEY_MAP("MediaFastForward",     MEDIA_FAST_FORWARD,       0x0D2C),
+  DOM_KEY_MAP("MediaAudioTrack",      MEDIA_AUDIO_TRACK,        0x0D50),
+  // Moved to Multimedia Keys section:
+  //         ("MediaFastForward",     MEDIA_FAST_FORWARD,       0x0D2C),
   DOM_KEY_MAP("MediaLast",            MEDIA_LAST,               0x0D2D),
-  DOM_KEY_MAP("MediaPause",           MEDIA_PAUSE,              0x0D2E),
-  DOM_KEY_MAP("MediaPlay",            MEDIA_PLAY,               0x0D2F),
-  DOM_KEY_MAP("MediaRecord",          MEDIA_RECORD,             0x0D30),
-  DOM_KEY_MAP("MediaRewind",          MEDIA_REWIND,             0x0D31),
+  // Moved to Multimedia Keys section:
+  //         ("MediaPause",           MEDIA_PAUSE,              0x0D2E),
+  //         ("MediaPlay",            MEDIA_PLAY,               0x0D2F),
+  //         ("MediaRecord",          MEDIA_RECORD,             0x0D30),
+  //         ("MediaRewind",          MEDIA_REWIND,             0x0D31),
+  DOM_KEY_MAP("MediaSkipBackward",    MEDIA_SKIP_BACKWARD,      0x0D51),
+  DOM_KEY_MAP("MediaSkipForward",     MEDIA_SKIP_FORWARD,       0x0D52),
   DOM_KEY_MAP("MediaSkip",            MEDIA_SKIP,               0x0D32),
+  DOM_KEY_MAP("MediaStepBackward",    MEDIA_STEP_BACKWARD,      0x0D53),
+  DOM_KEY_MAP("MediaStepForward",     MEDIA_STEP_FORWARD,       0x0D54),
+  DOM_KEY_MAP("MediaTopMenu",         MEDIA_TOP_MENU,           0x0D55),
+  DOM_KEY_MAP("NavigateIn",           NAVIGATE_IN,              0x0D56),
+  DOM_KEY_MAP("NavigateNext",         NAVIGATE_NEXT,            0x0D57),
+  DOM_KEY_MAP("NavigateOut",          NAVIGATE_OUT,             0x0D58),
+  DOM_KEY_MAP("NavigatePrevious",     NAVIGATE_PREVIOUS,        0x0D59),
   DOM_KEY_MAP("NextFavoriteChannel",  NEXT_FAVORITE_CHANNEL,    0x0D33),
   DOM_KEY_MAP("NextUserProfile",      NEXT_USER_PROFILE,        0x0D34),
   DOM_KEY_MAP("OnDemand",             ON_DEMAND,                0x0D35),
+  DOM_KEY_MAP("Pairing",              PAIRING,                  0x0D5A),
   DOM_KEY_MAP("PinPDown",             PINP_DOWN,                0x0D36),
   DOM_KEY_MAP("PinPMove",             PINP_MOVE,                0x0D37),
   DOM_KEY_MAP("PinPToggle",           PINP_TOGGLE,              0x0D38),
@@ -396,9 +529,6 @@ DOM_KEY_MAP_DECLARATION {
   DOM_KEY_MAP("STBPower",             STB_POWER,                0x0D46),
   DOM_KEY_MAP("Subtitle",             SUBTITLE,                 0x0D47),
   DOM_KEY_MAP("Teletext",             TELETEXT,                 0x0D48),
-  DOM_KEY_MAP("TV",                   T_V,                      0x0D49),
-  DOM_KEY_MAP("TVInput",              TV_INPUT,                 0x0D4A),
-  DOM_KEY_MAP("TVPower",              TV_POWER,                 0x0D4B),
   DOM_KEY_MAP("VideoModeNext",        VIDEO_MODE_NEXT,          0x0D4C),
   DOM_KEY_MAP("Wink",                 WINK,                     0x0D4D),
   DOM_KEY_MAP("ZoomToggle",           ZOOM_TOGGLE,              0x0D4E),

@@ -75,9 +75,9 @@ DomKey GetDomKeyFromAndroidKeycode(int keycode) {
     case AKEYCODE_DPAD_RIGHT:
       return DomKey::ARROW_RIGHT;
     case AKEYCODE_VOLUME_UP:
-      return DomKey::VOLUME_UP;
+      return DomKey::AUDIO_VOLUME_UP;
     case AKEYCODE_VOLUME_DOWN:
-      return DomKey::VOLUME_DOWN;
+      return DomKey::AUDIO_VOLUME_DOWN;
     case AKEYCODE_POWER:
       return DomKey::POWER;
     case AKEYCODE_CAMERA:
@@ -119,7 +119,7 @@ DomKey GetDomKeyFromAndroidKeycode(int keycode) {
     case AKEYCODE_MEDIA_FAST_FORWARD:
       return DomKey::MEDIA_FAST_FORWARD;
     case AKEYCODE_MUTE:
-      return DomKey::VOLUME_MUTE;
+      return DomKey::AUDIO_VOLUME_MUTE;
     case AKEYCODE_PAGE_UP:
       return DomKey::PAGE_UP;
     case AKEYCODE_PAGE_DOWN:
@@ -189,7 +189,7 @@ DomKey GetDomKeyFromAndroidKeycode(int keycode) {
     case AKEYCODE_NUM_LOCK:
       return DomKey::NUM_LOCK;
     case AKEYCODE_VOLUME_MUTE:
-      return DomKey::VOLUME_MUTE;
+      return DomKey::AUDIO_VOLUME_MUTE;
     case AKEYCODE_INFO:
       return DomKey::INFO;
     case AKEYCODE_CHANNEL_UP:
@@ -201,7 +201,7 @@ DomKey GetDomKeyFromAndroidKeycode(int keycode) {
     case AKEYCODE_ZOOM_OUT:
       return DomKey::ZOOM_OUT;
     case AKEYCODE_TV:
-      return DomKey::T_V;
+      return DomKey::TV;
     case AKEYCODE_GUIDE:
       return DomKey::GUIDE;
     case AKEYCODE_CAPTIONS:

@@ -246,11 +246,11 @@ TEST(KeyboardCodeConversion, ControlCharacters) {
        {true, ui::DomKey::ALT, ui::VKEY_MENU},
        {true, ui::DomKey::ALT, ui::VKEY_MENU}},
       {ui::DomCode::OS_LEFT,
-       {true, ui::DomKey::OS, ui::VKEY_LWIN},
-       {true, ui::DomKey::OS, ui::VKEY_LWIN}},
+       {true, ui::DomKey::META, ui::VKEY_LWIN},
+       {true, ui::DomKey::META, ui::VKEY_LWIN}},
       {ui::DomCode::OS_RIGHT,
-       {true, ui::DomKey::OS, ui::VKEY_LWIN},
-       {true, ui::DomKey::OS, ui::VKEY_LWIN}},
+       {true, ui::DomKey::META, ui::VKEY_LWIN},
+       {true, ui::DomKey::META, ui::VKEY_LWIN}},
       {ui::DomCode::DIGIT1,
        {true, ui::DomKey::Constant<'1'>::Character, ui::VKEY_1},
        {true, ui::DomKey::Constant<'!'>::Character, ui::VKEY_1}},
@@ -264,8 +264,8 @@ TEST(KeyboardCodeConversion, ControlCharacters) {
        {true, ui::DomKey::F1, ui::VKEY_F1},
        {true, ui::DomKey::F1, ui::VKEY_F1}},
       {ui::DomCode::VOLUME_UP,
-       {true, ui::DomKey::VOLUME_UP, ui::VKEY_VOLUME_UP},
-       {true, ui::DomKey::VOLUME_UP, ui::VKEY_VOLUME_UP}},
+       {true, ui::DomKey::AUDIO_VOLUME_UP, ui::VKEY_VOLUME_UP},
+       {true, ui::DomKey::AUDIO_VOLUME_UP, ui::VKEY_VOLUME_UP}},
   };
   for (const auto& it : kNonControlCharacters) {
     // Verify |DomCodeToControlCharacter()|.

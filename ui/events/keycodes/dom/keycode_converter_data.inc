@@ -10,7 +10,7 @@
 //  [0] USB HID Usage Tables,
 //      http://www.usb.org/developers/hidpage/Hut1_12v2.pdf
 //  [1] DOM Level 3 KeyboardEvent code Values,
-//      http://www.w3.org/TR/DOM-Level-3-Events-code/
+//      http://www.w3.org/TR/uievents-code/
 //  [2] OS X <HIToolbox/Events.h>
 //  [3] Linux <linux/input.h> and hid-input.c
 //  [4] USB HID to PS/2 Scan Code Translation Table
@@ -54,6 +54,10 @@
 //        are distinct from UI Events' "ContextMenu", which corresponds to
 //        USB 0x070065 [Keyboard Application] via evdev 0x7F KEY_COMPOSE,
 //        following Windows convention.)
+//
+//  [L3]  Linux flattens both USB 0x070048 [Keyboard Pause] and 0x0C00B1
+//        [Media Pause] to 0x77 KEY_PAUSE. We map the former, since [1]
+//        defines a 'Pause' code but no 'MediaPause' code.
 
 // Windows notes:
 //
@@ -89,8 +93,7 @@ USB_KEYMAP_DECLARATION {
   USB_KEYMAP(0x000010, 0x0000, 0x0000, 0x0000, 0xffff, "Hyper", HYPER),
   USB_KEYMAP(0x000011, 0x0000, 0x0000, 0x0000, 0xffff, "Super", SUPER),
   USB_KEYMAP(0x000012, 0x0000, 0x0000, 0x0000, 0xffff, "Fn", FN),
-  // FLock is named FN_LOCK because F_LOCK conflicts with <fcntl.h>
-  USB_KEYMAP(0x000013, 0x0000, 0x0000, 0x0000, 0xffff, "FLock", FN_LOCK),
+  USB_KEYMAP(0x000013, 0x0000, 0x0000, 0x0000, 0xffff, "FnLock", FN_LOCK),
   USB_KEYMAP(0x000014, 0x0000, 0x0000, 0x0000, 0xffff, "Suspend", SUSPEND),
   USB_KEYMAP(0x000015, 0x0000, 0x0000, 0x0000, 0xffff, "Resume", RESUME),
   USB_KEYMAP(0x000016, 0x0000, 0x0000, 0x0000, 0xffff, "Turbo", TURBO),
@@ -453,7 +456,9 @@ USB_KEYMAP_DECLARATION {
 
   // KEY_BRIGHTNESS* added in Linux 3.16
   // http://www.usb.org/developers/hidpage/HUTRR41.pdf
-  //            USB      XKB     Win     Mac
+  //            USB     evdev    XKB     Win     Mac   Code
+  USB_KEYMAP(0x0c0060, 0x0166, 0x016e, 0x0000, 0xffff, NULL, INFO),
+  USB_KEYMAP(0x0c0061, 0x0172, 0x017a, 0x0000, 0xffff, NULL, CLOSED_CAPTION_TOGGLE),
   USB_KEYMAP(0x0c006f, 0x00e1, 0x00e9, 0x0000, 0xffff, "BrightnessUp", BRIGHTNESS_UP),
   USB_KEYMAP(0x0c0070, 0x00e0, 0x00e8, 0x0000, 0xffff, "BrightnessDown",
              BRIGHTNESS_DOWN),  // Display Brightness Decrement
@@ -461,14 +466,19 @@ USB_KEYMAP_DECLARATION {
   USB_KEYMAP(0x0c0073, 0x0250, 0x0258, 0x0000, 0xffff, NULL, BRIGHTNESS_MINIMIUM),
   USB_KEYMAP(0x0c0074, 0x0251, 0x0259, 0x0000, 0xffff, NULL, BRIGHTNESS_MAXIMUM),
   USB_KEYMAP(0x0c0075, 0x00f4, 0x00fc, 0x0000, 0xffff, NULL, BRIGHTNESS_AUTO),
+  USB_KEYMAP(0x0c0083, 0x0195, 0x019d, 0x0000, 0xffff, NULL, MEDIA_LAST),
+  USB_KEYMAP(0x0c008c, 0x00a9, 0x00b1, 0x0000, 0xffff, NULL, LAUNCH_PHONE),
+  USB_KEYMAP(0x0c008d, 0x016a, 0x0172, 0x0000, 0xffff, NULL, PROGRAM_GUIDE),
+  USB_KEYMAP(0x0c0094, 0x00ae, 0x00b6, 0x0000, 0xffff, NULL, EXIT),
+  USB_KEYMAP(0x0c009c, 0x019a, 0x01a2, 0x0000, 0xffff, NULL, CHANNEL_UP),
+  USB_KEYMAP(0x0c009d, 0x019b, 0x01a3, 0x0000, 0xffff, NULL, CHANNEL_DOWN),
 
   //              USB     evdev    XKB     Win     Mac
-  //USB_KEYMAP(0x0c00b0, 0x00cf, 0x00d7, 0x????, 0x????, "MediaPlay", MEDIA_PLAY),
-  //USB_KEYMAP(0x0c00b1, 0x0077, 0x007f, 0x????, 0x????, "MediaPause", MEDIA_PAUSE),
-  //USB_KEYMAP(0x0c00b2, 0x00a7, 0x00af, 0x????, 0x????, "MediaRecord", MEDIA_RECORD),
-  //USB_KEYMAP(0x0c00b3, 0x00d0, 0x00d8, 0x????, 0x????, "MediaFastForward",
-  //           MEDIA_FAST_FORWARD),
-  //USB_KEYMAP(0x0c00b4, 0x00a8, 0x00b0, 0x????, 0x????, "MediaRewind", MEDIA_REWIND),
+  USB_KEYMAP(0x0c00b0, 0x00cf, 0x00d7, 0x0000, 0xffff, "MediaPlay", MEDIA_PLAY),
+  //USB_KEYMAP(0x0c00b1, 0x0077, 0x007f, 0x0000, 0xffff, "MediaPause", MEDIA_PAUSE),
+  USB_KEYMAP(0x0c00b2, 0x00a7, 0x00af, 0x0000, 0xffff, "MediaRecord", MEDIA_RECORD),
+  USB_KEYMAP(0x0c00b3, 0x00d0, 0x00d8, 0x0000, 0xffff, "MediaFastForward", MEDIA_FAST_FORWARD),
+  USB_KEYMAP(0x0c00b4, 0x00a8, 0x00b0, 0x0000, 0xffff, "MediaRewind", MEDIA_REWIND),
   USB_KEYMAP(0x0c00b5, 0x00a3, 0x00ab, 0xe019, 0xffff, "MediaTrackNext",
              MEDIA_TRACK_NEXT),
   USB_KEYMAP(0x0c00b6, 0x00a5, 0x00ad, 0xe010, 0xffff, "MediaTrackPrevious",
@@ -477,15 +487,25 @@ USB_KEYMAP_DECLARATION {
   USB_KEYMAP(0x0c00b8, 0x00a1, 0x00a9, 0xe02c, 0xffff, "Eject", EJECT),
   USB_KEYMAP(0x0c00cd, 0x00a4, 0x00ac, 0xe022, 0xffff, "MediaPlayPause",
              MEDIA_PLAY_PAUSE),
-  USB_KEYMAP(0x0c00cf, 0x0246, 0x024e, 0x0000, 0xffff, NULL, VOICE_COMMAND),
+  USB_KEYMAP(0x0c00cf, 0x0246, 0x024e, 0x0000, 0xffff, NULL, SPEECH_INPUT_TOGGLE),
+  USB_KEYMAP(0x0c00e5, 0x00d1, 0x00d9, 0x0000, 0xffff, NULL, BASS_BOOST),
+  //USB_KEYMAP(0x0c00e6, 0x0000, 0x0000, 0x0000, 0xffff, NULL, SURROUND_MODE),
+  //USB_KEYMAP(0x0c0150, 0x0000, 0x0000, 0x0000, 0xffff, NULL, AUDIO_BALANCE_RIGHT),
+  //USB_KEYMAP(0x0c0151, 0x0000, 0x0000, 0x0000, 0xffff, NULL, AUDIO_BALANCE_LEFT ),
+  //USB_KEYMAP(0x0c0152, 0x0000, 0x0000, 0x0000, 0xffff, NULL, AUDIO_BASS_INCREMENT),
+  //USB_KEYMAP(0x0c0153, 0x0000, 0x0000, 0x0000, 0xffff, NULL, AUDIO_BASS_DECREMENT),
+  //USB_KEYMAP(0x0c0154, 0x0000, 0x0000, 0x0000, 0xffff, NULL, AUDIO_TREBLE_INCREMENT),
+  //USB_KEYMAP(0x0c0155, 0x0000, 0x0000, 0x0000, 0xffff, NULL, AUDIO_TREBLE_DECREMENT),
   // USB#0c0183: AL Consumer Control Configuration
   USB_KEYMAP(0x0c0183, 0x00ab, 0x00b3, 0xe06d, 0xffff, "MediaSelect", MEDIA_SELECT),
+  USB_KEYMAP(0x0c0184, 0x01a5, 0x01ad, 0x0000, 0xffff, NULL, LAUNCH_WORD_PROCESSOR),
+  USB_KEYMAP(0x0c0186, 0x01a7, 0x01af, 0x0000, 0xffff, NULL, LAUNCH_SPREADSHEET),
   // USB#0x0c018a AL_EmailReader
-  USB_KEYMAP(0x0c018a, 0x009b, 0x018a, 0xe06c, 0xffff, "LaunchMail", LAUNCH_MAIL),
+  USB_KEYMAP(0x0c018a, 0x009b, 0x00a3, 0xe06c, 0xffff, "LaunchMail", LAUNCH_MAIL),
   // USB#0x0c018d: AL Contacts/Address Book
-  //USB_KEYMAP(0x0c018d, 0x01ad, 0x01b5, 0x0000, 0xffff, NULL, LAUNCH_CONTACTS),
+  USB_KEYMAP(0x0c018d, 0x01ad, 0x01b5, 0x0000, 0xffff, NULL, LAUNCH_CONTACTS),
   // USB#0x0c018e: AL Calendar/Schedule
-  //USB_KEYMAP(0x0c018e, 0x018d, 0x0195, 0x0000, 0xffff, NULL, LAUNCH_CALENDAR),
+  USB_KEYMAP(0x0c018e, 0x018d, 0x0195, 0x0000, 0xffff, NULL, LAUNCH_CALENDAR),
   // USB#0x0c018f AL Task/Project Manager
   //USB_KEYMAP(0x0c018f, 0x0241, 0x0249, 0x0000, 0xffff, NULL, LAUNCH_TASK_MANAGER),
   // USB#0x0c0190: AL Log/Journal/Timecard
@@ -494,15 +514,17 @@ USB_KEYMAP_DECLARATION {
   USB_KEYMAP(0x0c0192, 0x008c, 0x0094, 0xe021, 0xffff, "LaunchApp2", LAUNCH_APP2),
   // USB#0c0194: My Computer (AL_LocalMachineBrowser)
   USB_KEYMAP(0x0c0194, 0x0090, 0x0098, 0xe06b, 0xffff, "LaunchApp1", LAUNCH_APP1),
-  //USB_KEYMAP(0x0c0196, 0x0096, 0x009e, 0x0000, 0xffff, NULL, LAUNCH_INTERNET_BROWSER),
+  USB_KEYMAP(0x0c0196, 0x0096, 0x009e, 0x0000, 0xffff, NULL, LAUNCH_INTERNET_BROWSER),
+  USB_KEYMAP(0x0c019C, 0x01b1, 0x01b9, 0x0000, 0xffff, NULL, LOG_OFF),
   // USB#0x0c019e: AL Terminal Lock/Screensaver
   USB_KEYMAP(0x0c019e, 0x0098, 0x00a0, 0x0000, 0xffff, NULL, LOCK_SCREEN),
   // USB#0x0c019f AL Control Panel
-  //USB_KEYMAP(0x0c019f, 0x0243, 0x024b, 0x0000, 0xffff, NULL, LAUNCH_CONTROL_PANEL),
+  USB_KEYMAP(0x0c019f, 0x0243, 0x024b, 0x0000, 0xffff, NULL, LAUNCH_CONTROL_PANEL),
   // USB#0x0c01a2: AL Select Task/Application
   USB_KEYMAP(0x0c01a2, 0x0244, 0x024c, 0x0000, 0xffff, "SelectTask", SELECT_TASK),
   // USB#0x0c01a7: AL_Documents
   USB_KEYMAP(0x0c01a7, 0x00eb, 0x00f3, 0x0000, 0xffff, NULL, LAUNCH_DOCUMENTS),
+  USB_KEYMAP(0x0c01ab, 0x01b0, 0x01b8, 0x0000, 0xffff, NULL, SPELL_CHECK),
   // USB#0x0c01ae: AL Keyboard Layout
   USB_KEYMAP(0x0c01ae, 0x0176, 0x017e, 0x0000, 0xffff, NULL, LAUNCH_KEYBOARD_LAYOUT),
   USB_KEYMAP(0x0c01b1, 0x0245, 0x024d, 0x0000, 0xffff, "LaunchScreenSaver",
@@ -510,9 +532,15 @@ USB_KEYMAP_DECLARATION {
   // USB#0c01b4: Home Directory (AL_FileBrowser) (Explorer)
   //USB_KEYMAP(0x0c01b4, 0x0000, 0x0000, 0x0000, 0xffff, NULL, LAUNCH_FILE_BROWSER),
   // USB#0x0c01b7: AL Audio Browser
-  //USB_KEYMAP(0x0c01b7, 0x0188, 0x0190, 0x0000, 0xffff, NULL, LAUNCH_AUDIO_BROWSER),
+  USB_KEYMAP(0x0c01b7, 0x0188, 0x0190, 0x0000, 0xffff, NULL, LAUNCH_AUDIO_BROWSER),
+  // USB#0x0c0201: AC New
+  USB_KEYMAP(0x0c0201, 0x00b5, 0x00bd, 0x0000, 0xffff, NULL, NEW),
+  // USB#0x0c0203: AC Close
+  USB_KEYMAP(0x0c0203, 0x00ce, 0x00d6, 0x0000, 0xffff, NULL, CLOSE),
+  // USB#0x0c0207: AC Close
+  USB_KEYMAP(0x0c0207, 0x00ea, 0x00f2, 0x0000, 0xffff, NULL, SAVE),
   // USB#0x0c0208: AC Print
-  //USB_KEYMAP(0x0c0208, 0x00d2, 0x00da, 0x0000, 0xffff, NULL, PRINT),
+  USB_KEYMAP(0x0c0208, 0x00d2, 0x00da, 0x0000, 0xffff, NULL, PRINT),
   // USB#0x0c0221:  AC_Search
   USB_KEYMAP(0x0c0221, 0x00d9, 0x00e1, 0xe065, 0xffff, "BrowserSearch", BROWSER_SEARCH),
   // USB#0x0c0223:  AC_Home
@@ -530,12 +558,16 @@ USB_KEYMAP_DECLARATION {
   // USB#0x0c022a:  AC_Bookmarks (Favorites)
   USB_KEYMAP(0x0c022a, 0x009c, 0x00a4, 0xe066, 0xffff, "BrowserFavorites",
              BROWSER_FAVORITES),
+  USB_KEYMAP(0x0c022d, 0x01a2, 0x01aa, 0x0000, 0xffff, NULL, ZOOM_IN),
+  USB_KEYMAP(0x0c022e, 0x01a3, 0x01ab, 0x0000, 0xffff, NULL, ZOOM_OUT),
   // USB#0x0c0230:  AC Full Screen View
   //USB_KEYMAP(0x0c0230, 0x0000, 0x0000, 0x0000, 0xffff, NULL, ZOOM_FULL),
   // USB#0x0c0231:  AC Normal View
   //USB_KEYMAP(0x0c0231, 0x0000, 0x0000, 0x0000, 0xffff, NULL, ZOOM_NORMAL),
   // USB#0x0c0232:  AC View Toggle
   USB_KEYMAP(0x0c0232, 0x0000, 0x0000, 0x0000, 0xffff, "ZoomToggle", ZOOM_TOGGLE),
+  // USB#0x0c0279:  AC Redo/Repeat
+  USB_KEYMAP(0x0c0279, 0x00b6, 0x00be, 0x0000, 0xffff, NULL, REDO),
   // USB#0x0c0289:  AC_Reply
   USB_KEYMAP(0x0c0289, 0x00e8, 0x00f0, 0x0000, 0xffff, "MailReply", MAIL_REPLY),
   // USB#0x0c028b:  AC_ForwardMsg (MailForward)
