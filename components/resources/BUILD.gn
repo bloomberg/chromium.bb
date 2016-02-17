@@ -75,6 +75,7 @@ action("about_credits") {
   ]
 
   args = [
+    "--target-os=$target_os",
     "credits",
     rebase_path(about_credits_file, root_build_dir),
   ]

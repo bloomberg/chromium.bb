@@ -64,6 +64,7 @@
           ],
           'action': ['python',
                      '<(generator_path)',
+                     '--target-os=<(OS)',
                      'credits',
                      '<(about_credits_file)',
           ],

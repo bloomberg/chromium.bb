@@ -253,6 +253,71 @@ SPECIAL_CASES = {
 # should not be used in about:credits.
 NOT_SHIPPED = "NOT_SHIPPED"
 
+# Paths for libraries that we have checked are not shipped on iOS. These are
+# left out of the licenses file primarily because we don't want to cause a
+# firedrill due to someone thinking that Chrome for iOS is using LGPL code
+# when it isn't.
+# This is a temporary hack; the real solution is crbug.com/178215
+KNOWN_NON_IOS_LIBRARIES = set([
+    os.path.join('base', 'third_party', 'symbolize'),
+    os.path.join('base', 'third_party', 'xdg_mime'),
+    os.path.join('base', 'third_party', 'xdg_user_dirs'),
+    os.path.join('chrome', 'installer', 'mac', 'third_party', 'bsdiff'),
+    os.path.join('chrome', 'installer', 'mac', 'third_party', 'xz'),
+    os.path.join('chrome', 'test', 'data', 'third_party', 'kraken'),
+    os.path.join('chrome', 'test', 'data', 'third_party', 'spaceport'),
+    os.path.join('chrome', 'third_party', 'mock4js'),
+    os.path.join('chrome', 'third_party', 'mozilla_security_manager'),
+    os.path.join('third_party', 'WebKit'),
+    os.path.join('third_party', 'angle'),
+    os.path.join('third_party', 'apple_apsl'),
+    os.path.join('third_party', 'apple_sample_code'),
+    os.path.join('third_party', 'ashmem'),
+    os.path.join('third_party', 'bspatch'),
+    os.path.join('third_party', 'cacheinvalidation'),
+    os.path.join('third_party', 'cld'),
+    os.path.join('third_party', 'codesighs'),
+    os.path.join('third_party', 'flot'),
+    os.path.join('third_party', 'gtk+'),
+    os.path.join('third_party', 'iaccessible2'),
+    os.path.join('third_party', 'iccjpeg'),
+    os.path.join('third_party', 'isimpledom'),
+    os.path.join('third_party', 'jsoncpp'),
+    os.path.join('third_party', 'khronos'),
+    os.path.join('third_party', 'libXNVCtrl'),
+    os.path.join('third_party', 'libevent'),
+    os.path.join('third_party', 'libjpeg'),
+    os.path.join('third_party', 'libusb'),
+    os.path.join('third_party', 'libva'),
+    os.path.join('third_party', 'libxslt'),
+    os.path.join('third_party', 'lss'),
+    os.path.join('third_party', 'lzma_sdk'),
+    os.path.join('third_party', 'mesa'),
+    os.path.join('third_party', 'molokocacao'),
+    os.path.join('third_party', 'motemplate'),
+    os.path.join('third_party', 'mozc'),
+    os.path.join('third_party', 'mozilla'),
+    os.path.join('third_party', 'npapi'),
+    os.path.join('third_party', 'ots'),
+    os.path.join('third_party', 'pdfsqueeze'),
+    os.path.join('third_party', 'ppapi'),
+    os.path.join('third_party', 'qcms'),
+    os.path.join('third_party', 're2'),
+    os.path.join('third_party', 'safe_browsing'),
+    os.path.join('third_party', 'sfntly'),
+    os.path.join('third_party', 'smhasher'),
+    os.path.join('third_party', 'sudden_motion_sensor'),
+    os.path.join('third_party', 'swiftshader'),
+    os.path.join('third_party', 'swig'),
+    os.path.join('third_party', 'talloc'),
+    os.path.join('third_party', 'tcmalloc'),
+    os.path.join('third_party', 'usb_ids'),
+    os.path.join('third_party', 'v8-i18n'),
+    os.path.join('third_party', 'wtl'),
+    os.path.join('third_party', 'yasm'),
+    os.path.join('v8', 'strongtalk'),
+])
+
 
 class LicenseError(Exception):
     """We raise this exception when a directory's licensing info isn't
@@ -418,7 +483,8 @@ def ScanThirdPartyDirs(root=None):
     return len(errors) == 0
 
 
-def GenerateCredits(file_template_file, entry_template_file, output_file):
+def GenerateCredits(
+        file_template_file, entry_template_file, output_file, target_os):
     """Generate about:credits."""
 
     def EvaluateTemplate(template, env, escape=True):
@@ -451,6 +517,10 @@ def GenerateCredits(file_template_file, entry_template_file, output_file):
             continue
         if metadata['License File'] == NOT_SHIPPED:
             continue
+        if target_os == 'ios':
+            # Skip over files that are known not to be used on iOS.
+            if path in KNOWN_NON_IOS_LIBRARIES:
+                continue
         env = {
             'name': metadata['Name'],
             'url': metadata['URL'],
@@ -485,6 +555,8 @@ def main():
                         help='Template HTML to use for the license page.')
     parser.add_argument('--entry-template',
                         help='Template HTML to use for each license.')
+    parser.add_argument('--target-os',
+                        help='OS that this build is targeting.')
     parser.add_argument('command', choices=['help', 'scan', 'credits'])
     parser.add_argument('output_file', nargs='?')
     args = parser.parse_args()
@@ -494,7 +566,7 @@ def main():
             return 1
     elif args.command == 'credits':
         if not GenerateCredits(args.file_template, args.entry_template,
-                               args.output_file):
+                               args.output_file, args.target_os):
             return 1
     else:
         print __doc__
