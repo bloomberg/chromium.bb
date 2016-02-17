@@ -77,7 +77,7 @@ def PrintTopSymbols(symbol_reports, top_count):
   boring_symbols=['malloc', '_Znw*', 'TestBody']
   sorted_reports = sorted(filter(lambda x:x[0] not in boring_symbols,
                                  symbol_reports.iteritems()),
-                          key=lambda x:len(x[1]), reverse=True)
+                          key=lambda x:len(set(x[1])), reverse=True)
   symbols = symbol_reports.keys()
   demangled = Demangle(symbols)
   assert len(demangled) == len(symbols)
@@ -86,7 +86,7 @@ def PrintTopSymbols(symbol_reports, top_count):
   print "\n"
   print "Top %d symbols" % top_count
   for (symbol, suppressions) in sorted_reports[:top_count]:
-    print "%4d occurrences : %s" % (len(suppressions), symboltable[symbol])
+    print "%4d occurrences : %s" % (len(set(suppressions)), symboltable[symbol])
 
 def ReadHashExclusions(exclusions):
   input_file = file(exclusions, 'r')
