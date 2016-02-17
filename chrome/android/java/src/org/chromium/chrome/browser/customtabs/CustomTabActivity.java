@@ -64,6 +64,10 @@ import java.util.List;
  * The activity for custom tabs. It will be launched on top of a client's task.
  */
 public class CustomTabActivity extends ChromeActivity {
+    public static final int RESULT_BACK_PRESSED = 1;
+    public static final int RESULT_STOPPED = 2;
+    public static final int RESULT_CLOSED = 3;
+
     private static final String TAG = "CustomTabActivity";
 
     private static CustomTabContentHandler sActiveContentHandler;
@@ -167,6 +171,10 @@ public class CustomTabActivity extends ChromeActivity {
         super.onStop();
         CustomTabsConnection.getInstance(getApplication())
                 .dontKeepAliveForSession(mIntentDataProvider.getSession());
+        if (mIntentDataProvider.isOpenedByBrowser()) {
+            createHerbResultIntent(RESULT_STOPPED);
+            finish();
+        }
     }
 
     @Override
@@ -225,6 +233,9 @@ public class CustomTabActivity extends ChromeActivity {
                 new OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        if (mIntentDataProvider.isOpenedByBrowser()) {
+                            createHerbResultIntent(RESULT_CLOSED);
+                        }
                         CustomTabActivity.this.finish();
                     }
                 });
@@ -434,6 +445,9 @@ public class CustomTabActivity extends ChromeActivity {
             if (getCurrentTabModel().getCount() > 1) {
                 getCurrentTabModel().closeTab(getActivityTab(), false, false, false);
             } else {
+                if (mIntentDataProvider.isOpenedByBrowser()) {
+                    createHerbResultIntent(RESULT_BACK_PRESSED);
+                }
                 finish();
             }
         }
@@ -632,5 +646,29 @@ public class CustomTabActivity extends ChromeActivity {
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
+    }
+
+    /**
+     * Lets the original Activity know how this {@link CustomTabActivity} was finished.
+     */
+    private void createHerbResultIntent(int result) {
+        Intent resultIntent = new Intent();
+
+        switch (result) {
+            case RESULT_STOPPED:
+                // Send the URL to the browser.  Should pass the Tab in the future.
+                resultIntent.setAction(Intent.ACTION_VIEW);
+                resultIntent.setData(Uri.parse(getActivityTab().getUrl()));
+                break;
+
+            case RESULT_BACK_PRESSED:
+            case RESULT_CLOSED:
+                break;
+
+            default:
+                assert false;
+        }
+
+        setResult(result, resultIntent);
     }
 }

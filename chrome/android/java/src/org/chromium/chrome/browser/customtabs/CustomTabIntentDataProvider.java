@@ -52,6 +52,9 @@ public class CustomTabIntentDataProvider {
     public static final String EXTRA_FINISH_AFTER_OPENING_IN_BROWSER =
             "org.chromium.chrome.browser.customtabs.FINISH_AFTER_OPENING_IN_BROWSER";
 
+    public static final String EXTRA_OPENED_BY_BROWSER =
+            "org.chromium.chrome.browser.customtabs.OPENED_BY_BROWSER";
+
     private static final int MAX_CUSTOM_MENU_ITEMS = 5;
     private static final String ANIMATION_BUNDLE_PREFIX =
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? "android:activity." : "android:";
@@ -71,11 +74,16 @@ public class CustomTabIntentDataProvider {
     private List<Pair<String, PendingIntent>> mMenuEntries = new ArrayList<>();
     private Bundle mAnimationBundle;
     private boolean mShowShareItem;
-    private boolean mFinishAfterOpeningInBrowser;
     private CustomButtonParams mToolbarButton;
     private List<CustomButtonParams> mBottombarButtons = new ArrayList<>(2);
     // OnFinished listener for PendingIntents. Used for testing only.
     private PendingIntent.OnFinished mOnFinished;
+
+    /** Herb: "Open in Browser" will send the Tab to the Browser and kill this Activity. */
+    private boolean mFinishAfterOpeningInBrowser;
+
+    /** Herb: Whether or not this CustomTabActivity was opened by the Browser directly. */
+    private boolean mIsOpenedByBrowser;
 
     /**
      * Constructs a {@link CustomTabIntentDataProvider}.
@@ -83,9 +91,7 @@ public class CustomTabIntentDataProvider {
     public CustomTabIntentDataProvider(Intent intent, Context context) {
         if (intent == null) assert false;
         mSession = IntentUtils.safeGetBinderExtra(intent, CustomTabsIntent.EXTRA_SESSION);
-        mFinishAfterOpeningInBrowser = !TextUtils.isEmpty(ChromePreferenceManager.getHerbFlavor())
-                && IntentUtils.safeGetBooleanExtra(
-                        intent, EXTRA_FINISH_AFTER_OPENING_IN_BROWSER, false);
+        parseHerbExtras(intent);
 
         retrieveCustomButtons(intent, context);
         retrieveToolbarColor(intent, context);
@@ -376,7 +382,28 @@ public class CustomTabIntentDataProvider {
     /**
      * @return See {@link #EXTRA_FINISH_AFTER_OPENING_IN_BROWSER}.
      */
-    public boolean finishAfterOpeningInBrowser() {
+    boolean finishAfterOpeningInBrowser() {
         return mFinishAfterOpeningInBrowser;
+    }
+
+    /**
+     * @return See {@link #EXTRA_OPENED_BY_BROWSER}.
+     */
+    boolean isOpenedByBrowser() {
+        return mIsOpenedByBrowser;
+    }
+
+    /**
+     * Parses out extras specifically added for Herb.
+     *
+     * @param intent Intent fired to open the CustomTabActivity.
+     */
+    private void parseHerbExtras(Intent intent) {
+        if (TextUtils.isEmpty(ChromePreferenceManager.getHerbFlavor())) return;
+
+        mFinishAfterOpeningInBrowser =  IntentUtils.safeGetBooleanExtra(
+                intent, EXTRA_FINISH_AFTER_OPENING_IN_BROWSER, false);
+        mIsOpenedByBrowser = IntentUtils.safeGetBooleanExtra(
+                intent, EXTRA_OPENED_BY_BROWSER, false);
     }
 }
