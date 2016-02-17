@@ -40,6 +40,7 @@
 #include "core/html/CrossOriginAttribute.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutVideo.h"
 #include "core/layout/svg/LayoutSVGImage.h"
@@ -92,6 +93,8 @@ public:
         , m_weakFactory(this)
         , m_referrerPolicy(referrerPolicy)
     {
+        ExecutionContext& context = m_loader->element()->document();
+        m_operationId = InspectorInstrumentation::traceAsyncOperationStarting(&context, "Load image");
         v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
         v8::HandleScope scope(isolate);
         // If we're invoked from C++ without a V8 context on the stack, we should
@@ -112,12 +115,15 @@ public:
     {
         if (!m_loader)
             return;
+        ExecutionContext& context = m_loader->element()->document();
+        InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncOperationCompletedCallbackStarting(&context, m_operationId);
         if (m_scriptState->contextIsValid()) {
             ScriptState::Scope scope(m_scriptState.get());
             m_loader->doUpdateFromElement(m_shouldBypassMainWorldCSP, m_updateBehavior, m_referrerPolicy);
         } else {
             m_loader->doUpdateFromElement(m_shouldBypassMainWorldCSP, m_updateBehavior, m_referrerPolicy);
         }
+        InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
     }
 
     void clearLoader()
@@ -138,6 +144,7 @@ private:
     RefPtr<ScriptState> m_scriptState;
     WeakPtrFactory<Task> m_weakFactory;
     ReferrerPolicy m_referrerPolicy;
+    int m_operationId;
 };
 
 ImageLoader::ImageLoader(Element* element)

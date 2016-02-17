@@ -358,6 +358,7 @@ void AsyncCallTracker::willPerformExecutionContextTask(ExecutionContext* context
 
 int AsyncCallTracker::traceAsyncOperationStarting(ExecutionContext* context, const String& operationName, int prevOperationId)
 {
+    ScriptForbiddenScope::AllowUserAgentScript allowScripting;
     ASSERT(context);
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
     if (prevOperationId)

@@ -1,0 +1,42 @@
+<html>
+<head>
+<script src="/inspector/inspector-test.js"></script>
+<script src="/inspector/debugger-test.js"></script>
+<script src="/inspector/console-test.js"></script>
+<script>
+
+function testFunction()
+{
+    var image = document.createElement("img");
+    image.src = "resources/image.png";
+    document.body.appendChild(image);
+}
+
+function test()
+{
+    WebInspector.settingForTest("enableAsyncStackTraces").set(true);
+    InspectorTest.evaluateInPage("testFunction()");
+    InspectorTest.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestFinished, reuestFinished);
+
+    function reuestFinished(event)
+    {
+        if (!event.data.url.endsWith("resources/image.png"))
+            return;
+
+        var initiatorInfo = event.data.initiatorInfo();
+        var element = new WebInspector.Linkifier().linkifyScriptLocation(InspectorTest.mainTarget, initiatorInfo.scriptId, initiatorInfo.url, initiatorInfo.lineNumber - 1, initiatorInfo.columnNumber - 1);
+        InspectorTest.addResult(element.textContent);
+        WebInspector.settingForTest("enableAsyncStackTraces").set(false);
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests asynchronous network initiator for image loaded from JS.
+</p>
+</body>
+</html>
