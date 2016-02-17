@@ -26,9 +26,7 @@
 class WebAppLeftHeaderViewTest : public TestWithBrowserView {
  public:
   WebAppLeftHeaderViewTest()
-      : TestWithBrowserView(Browser::TYPE_TABBED,
-                            chrome::HOST_DESKTOP_TYPE_ASH,
-                            true),
+      : TestWithBrowserView(Browser::TYPE_TABBED, true),
         frame_view_(nullptr),
         test_toolbar_model_(nullptr) {}
   ~WebAppLeftHeaderViewTest() override {}
@@ -58,7 +56,6 @@ class WebAppLeftHeaderViewTest : public TestWithBrowserView {
   Browser* CreateBrowser(Profile* profile,
                          Browser::Type browser_type,
                          bool hosted_app,
-                         chrome::HostDesktopType host_desktop_type,
                          BrowserWindow* browser_window) override {
     RegisterExtension(profile);
 

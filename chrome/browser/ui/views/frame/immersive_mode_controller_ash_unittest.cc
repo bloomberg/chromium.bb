@@ -27,18 +27,9 @@
 class ImmersiveModeControllerAshTest : public TestWithBrowserView {
  public:
   ImmersiveModeControllerAshTest()
-      : TestWithBrowserView(Browser::TYPE_TABBED,
-                            chrome::HOST_DESKTOP_TYPE_ASH,
-                            false) {
-  }
-  ImmersiveModeControllerAshTest(
-      Browser::Type browser_type,
-      chrome::HostDesktopType host_desktop_type,
-      bool hosted_app)
-      : TestWithBrowserView(browser_type,
-                            host_desktop_type,
-                            hosted_app) {
-  }
+      : TestWithBrowserView(Browser::TYPE_TABBED, false) {}
+  ImmersiveModeControllerAshTest(Browser::Type browser_type, bool hosted_app)
+      : TestWithBrowserView(browser_type, hosted_app) {}
   ~ImmersiveModeControllerAshTest() override {}
 
   // TestWithBrowserView override:
@@ -276,10 +267,7 @@ class ImmersiveModeControllerAshTestHostedApp
     : public ImmersiveModeControllerAshTest {
  public:
   ImmersiveModeControllerAshTestHostedApp()
-      : ImmersiveModeControllerAshTest(Browser::TYPE_POPUP,
-                                       chrome::HOST_DESKTOP_TYPE_ASH,
-                                       true) {
-  }
+      : ImmersiveModeControllerAshTest(Browser::TYPE_POPUP, true) {}
   ~ImmersiveModeControllerAshTestHostedApp() override {}
 
  private:

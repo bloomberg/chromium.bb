@@ -63,14 +63,9 @@ scoped_ptr<KeyedService> CreateAutocompleteClassifier(
 TestWithBrowserView::TestWithBrowserView() {
 }
 
-TestWithBrowserView::TestWithBrowserView(
-    Browser::Type browser_type,
-    chrome::HostDesktopType host_desktop_type,
-    bool hosted_app)
-    : BrowserWithTestWindowTest(browser_type,
-                                host_desktop_type,
-                                hosted_app) {
-}
+TestWithBrowserView::TestWithBrowserView(Browser::Type browser_type,
+                                         bool hosted_app)
+    : BrowserWithTestWindowTest(browser_type, hosted_app) {}
 
 TestWithBrowserView::~TestWithBrowserView() {
 }

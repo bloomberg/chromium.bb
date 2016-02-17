@@ -10,7 +10,6 @@
 #include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -76,9 +75,7 @@ class BrowserWithTestWindowTest : public testing::Test {
 
   // Creates a BrowserWithTestWindowTest for which the initial window will be
   // the specified type.
-  BrowserWithTestWindowTest(Browser::Type browser_type,
-                            chrome::HostDesktopType host_desktop_type,
-                            bool hosted_app);
+  BrowserWithTestWindowTest(Browser::Type browser_type, bool hosted_app);
 
   ~BrowserWithTestWindowTest() override;
 
@@ -144,12 +141,11 @@ class BrowserWithTestWindowTest : public testing::Test {
   // value. Can return NULL to use the default window created by Browser.
   virtual BrowserWindow* CreateBrowserWindow();
 
-  // Creates the browser given |profile|, |browser_type|, |hosted_app|,
-  // |host_desktop_type| and |browser_window|. The caller owns the return value.
+  // Creates the browser given |profile|, |browser_type|, |hosted_app|, and
+  // |browser_window|. The caller owns the return value.
   virtual Browser* CreateBrowser(Profile* profile,
                                  Browser::Type browser_type,
                                  bool hosted_app,
-                                 chrome::HostDesktopType host_desktop_type,
                                  BrowserWindow* browser_window);
 
  private:
@@ -186,9 +182,6 @@ class BrowserWithTestWindowTest : public testing::Test {
 
   // The type of browser to create (tabbed or popup).
   Browser::Type browser_type_;
-
-  // The desktop to create the initial window on.
-  chrome::HostDesktopType host_desktop_type_;
 
   // Whether the browser is part of a hosted app.
   bool hosted_app_;

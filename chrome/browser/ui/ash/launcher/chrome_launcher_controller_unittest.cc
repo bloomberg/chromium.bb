@@ -272,13 +272,9 @@ class TestV2AppLauncherItemController : public LauncherItemController {
 class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
  protected:
   ChromeLauncherControllerTest()
-      : BrowserWithTestWindowTest(
-            Browser::TYPE_TABBED,
-            chrome::HOST_DESKTOP_TYPE_ASH,
-            false),
+      : BrowserWithTestWindowTest(Browser::TYPE_TABBED, false),
         test_controller_(NULL),
-        extension_service_(NULL) {
-  }
+        extension_service_(NULL) {}
 
   ~ChromeLauncherControllerTest() override {}
 
@@ -443,11 +439,10 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   }
 
   scoped_ptr<Browser> CreateBrowserWithTestWindowForProfile(Profile* profile) {
-    TestBrowserWindow* browser_widnow = CreateTestBrowserWindowAura();
-    new TestBrowserWindowOwner(browser_widnow);
-    return make_scoped_ptr(CreateBrowser(profile, Browser::TYPE_TABBED, false,
-                                         chrome::HOST_DESKTOP_TYPE_ASH,
-                                         browser_widnow));
+    TestBrowserWindow* browser_window = CreateTestBrowserWindowAura();
+    new TestBrowserWindowOwner(browser_window);
+    return make_scoped_ptr(
+        CreateBrowser(profile, Browser::TYPE_TABBED, false, browser_window));
   }
 
   void AddAppListLauncherItem() {

@@ -22,11 +22,7 @@ const char kTestAppName[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 class IdleAppNameNotificationViewTest : public BrowserWithTestWindowTest {
  public:
   IdleAppNameNotificationViewTest()
-      : BrowserWithTestWindowTest(
-            Browser::TYPE_TABBED,
-            chrome::HOST_DESKTOP_TYPE_ASH,
-            false) {
-  }
+      : BrowserWithTestWindowTest(Browser::TYPE_TABBED, false) {}
 
   ~IdleAppNameNotificationViewTest() override {}
 

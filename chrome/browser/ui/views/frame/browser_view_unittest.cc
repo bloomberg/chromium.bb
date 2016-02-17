@@ -161,11 +161,7 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
 
 class BrowserViewHostedAppTest : public TestWithBrowserView {
  public:
-  BrowserViewHostedAppTest()
-      : TestWithBrowserView(Browser::TYPE_POPUP,
-                            chrome::HOST_DESKTOP_TYPE_NATIVE,
-                            true) {
-  }
+  BrowserViewHostedAppTest() : TestWithBrowserView(Browser::TYPE_POPUP, true) {}
   ~BrowserViewHostedAppTest() override {}
 
  private:

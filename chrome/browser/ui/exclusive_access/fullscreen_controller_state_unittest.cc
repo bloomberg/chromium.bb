@@ -841,12 +841,9 @@ TEST_F(FullscreenControllerStateUnitTest,
 
   // Create the second browser window.
   const scoped_ptr<BrowserWindow> second_browser_window(CreateBrowserWindow());
-  const scoped_ptr<Browser> second_browser(CreateBrowser(
-      browser()->profile(),
-      browser()->type(),
-      false,
-      browser()->host_desktop_type(),
-      second_browser_window.get()));
+  const scoped_ptr<Browser> second_browser(
+      CreateBrowser(browser()->profile(), browser()->type(), false,
+                    second_browser_window.get()));
   AddTab(second_browser.get(), GURL(url::kAboutBlankURL));
   content::WebContentsDelegate* const second_wc_delegate =
       static_cast<content::WebContentsDelegate*>(second_browser.get());

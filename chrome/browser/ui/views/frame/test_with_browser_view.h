@@ -26,9 +26,7 @@ class ScopedTestingLocalState;
 class TestWithBrowserView : public BrowserWithTestWindowTest {
  public:
   TestWithBrowserView();
-  TestWithBrowserView(Browser::Type browser_type,
-                      chrome::HostDesktopType host_desktop_type,
-                      bool hosted_app);
+  TestWithBrowserView(Browser::Type browser_type, bool hosted_app);
   ~TestWithBrowserView() override;
 
   // BrowserWithTestWindowTest overrides:

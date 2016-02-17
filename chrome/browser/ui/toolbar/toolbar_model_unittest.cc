@@ -146,9 +146,7 @@ struct TestItem {
 class ToolbarModelTest : public BrowserWithTestWindowTest {
  public:
   ToolbarModelTest();
-  ToolbarModelTest(Browser::Type browser_type,
-                   chrome::HostDesktopType host_desktop_type,
-                   bool hosted_app);
+  ToolbarModelTest(Browser::Type browser_type, bool hosted_app);
   ~ToolbarModelTest() override;
 
   // BrowserWithTestWindowTest:
@@ -170,14 +168,8 @@ class ToolbarModelTest : public BrowserWithTestWindowTest {
 ToolbarModelTest::ToolbarModelTest() {
 }
 
-ToolbarModelTest::ToolbarModelTest(
-    Browser::Type browser_type,
-    chrome::HostDesktopType host_desktop_type,
-    bool hosted_app)
-    : BrowserWithTestWindowTest(browser_type,
-                                host_desktop_type,
-                                hosted_app) {
-}
+ToolbarModelTest::ToolbarModelTest(Browser::Type browser_type, bool hosted_app)
+    : BrowserWithTestWindowTest(browser_type, hosted_app) {}
 
 ToolbarModelTest::~ToolbarModelTest() {
 }
@@ -261,10 +253,7 @@ class PopupToolbarModelTest : public ToolbarModelTest {
 };
 
 PopupToolbarModelTest::PopupToolbarModelTest()
-      : ToolbarModelTest(Browser::TYPE_POPUP,
-                         chrome::HOST_DESKTOP_TYPE_NATIVE,
-                         false) {
-}
+    : ToolbarModelTest(Browser::TYPE_POPUP, false) {}
 
 PopupToolbarModelTest::~PopupToolbarModelTest() {
 }
