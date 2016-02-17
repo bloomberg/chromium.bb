@@ -27652,6 +27652,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.SSL_Connection_Latency_Full_Handshake" units="ms">
+  <owner>agl@chromium.org</owner>
+  <summary>
+    Time from when the Connect() starts until it completes for full handshakes.
+  </summary>
+</histogram>
+
 <histogram name="Net.SSL_Connection_Latency_Google" units="ms">
   <obsolete>
     Replaced by Net.SSL_Connection_Latency_Google2 on 2014-10-21.
@@ -27671,6 +27678,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.SSL_Connection_Latency_Google_Full_Handshake" units="ms">
+  <owner>agl@chromium.org</owner>
+  <summary>
+    Time from when the Connect() starts until it completes for google.com and
+    any subdomain of it for full handshakes.
+  </summary>
+</histogram>
+
 <histogram name="Net.SSL_Connection_Latency_Google_No_Revocation_Checking"
     units="ms">
   <obsolete>
@@ -27684,6 +27699,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.SSL_Connection_Latency_Google_Resume_Handshake" units="ms">
+  <owner>agl@chromium.org</owner>
+  <summary>
+    Time from when the Connect() starts until it completes for google.com and
+    any subdomain of it for resumption handshakes.
+  </summary>
+</histogram>
+
 <histogram name="Net.SSL_Connection_Latency_Google_Revocation_Checking"
     units="ms">
   <obsolete>
@@ -27694,6 +27717,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Time from when the Connect() starts until it completes for google.com and
     any subdomain of it. This only includes users not in a 50% field trail that
     disables revocation for certificate pinned sites.
+  </summary>
+</histogram>
+
+<histogram name="Net.SSL_Connection_Latency_Resume_Handshake" units="ms">
+  <owner>agl@chromium.org</owner>
+  <summary>
+    Time from when the Connect() starts until it completes for resumption
+    handshakes.
   </summary>
 </histogram>
 
@@ -87607,21 +87638,15 @@ To add a new entry, add it with any value and run test to compute valid value.
 </histogram_suffixes>
 
 <histogram_suffixes name="SSLFalseStart">
+  <obsolete>
+    Removed 2011-06-01.
+  </obsolete>
   <suffix name="FalseStart_enabled"/>
   <suffix name="FalseStart_disabled"/>
   <affected-histogram name="Net.SSL_Connection_Latency"/>
   <affected-histogram name="Net.SSL_Connection_Latency_2"/>
   <affected-histogram name="PLT.BeginToFinish_LinkLoadNormal"/>
   <affected-histogram name="PLT.BeginToFinish_NormalLoad"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="SSLResumption">
-  <suffix name="Resume_Handshake" label="Session Resumption"/>
-  <suffix name="Full_Handshake" label="Full"/>
-  <affected-histogram name="Net.SSL_Connection_Latency"/>
-  <affected-histogram name="Net.SSL_Connection_Latency_2"/>
-  <affected-histogram name="Net.SSL_Connection_Latency_Google"/>
-  <affected-histogram name="Net.SSL_Connection_Latency_Google2"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="StartupProfilingAbandonState">
