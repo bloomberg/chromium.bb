@@ -578,8 +578,9 @@ static bool executeInsertNewline(LocalFrame& frame, Event* event, EditorCommandS
 static bool executeInsertNewlineInQuotedContent(LocalFrame& frame, Event*, EditorCommandSource, const String&)
 {
     ASSERT(frame.document());
-    TypingCommand::insertParagraphSeparatorInQuotedContent(*frame.document());
-    return true;
+    EditingState editingState;
+    TypingCommand::insertParagraphSeparatorInQuotedContent(*frame.document(), &editingState);
+    return !editingState.isAborted();
 }
 
 static bool executeInsertOrderedList(LocalFrame& frame, Event*, EditorCommandSource, const String&)
@@ -592,8 +593,9 @@ static bool executeInsertOrderedList(LocalFrame& frame, Event*, EditorCommandSou
 static bool executeInsertParagraph(LocalFrame& frame, Event*, EditorCommandSource, const String&)
 {
     ASSERT(frame.document());
-    TypingCommand::insertParagraphSeparator(*frame.document(), 0);
-    return true;
+    EditingState editingState;
+    TypingCommand::insertParagraphSeparator(*frame.document(), 0, &editingState);
+    return !editingState.isAborted();
 }
 
 static bool executeInsertTab(LocalFrame& frame, Event* event, EditorCommandSource, const String&)

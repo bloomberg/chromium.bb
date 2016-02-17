@@ -63,15 +63,16 @@ public:
     static void insertText(Document&, const String&, Options, TextCompositionType = TextCompositionNone);
     static void insertText(Document&, const String&, const VisibleSelection&, Options, TextCompositionType = TextCompositionNone);
     static void insertLineBreak(Document&, Options, EditingState*);
-    static void insertParagraphSeparator(Document&, Options);
-    static void insertParagraphSeparatorInQuotedContent(Document&);
+    // TODO(tkent): |Options| argument should be removed. It's always 0.
+    static void insertParagraphSeparator(Document&, Options, EditingState*);
+    static void insertParagraphSeparatorInQuotedContent(Document&, EditingState*);
     static void closeTyping(LocalFrame*);
 
     void insertText(const String &text, bool selectInsertedText, EditingState*);
     void insertTextRunWithoutNewlines(const String &text, bool selectInsertedText, EditingState*);
     void insertLineBreak(EditingState*);
-    void insertParagraphSeparatorInQuotedContent();
-    void insertParagraphSeparator();
+    void insertParagraphSeparatorInQuotedContent(EditingState*);
+    void insertParagraphSeparator(EditingState*);
     void deleteKeyPressed(TextGranularity, bool killRing, EditingState*);
     void forwardDeleteKeyPressed(TextGranularity, bool killRing, EditingState*);
     void deleteSelection(bool smartDelete, EditingState*);

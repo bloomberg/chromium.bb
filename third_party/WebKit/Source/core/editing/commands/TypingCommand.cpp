@@ -70,7 +70,7 @@ public:
                 if (editingState->isAborted())
                     return;
             }
-            m_typingCommand->insertParagraphSeparator();
+            m_typingCommand->insertParagraphSeparator(editingState);
         }
     }
 
@@ -219,24 +219,28 @@ void TypingCommand::insertLineBreak(Document& document, Options options, Editing
     TypingCommand::create(document, InsertLineBreak, "", options)->apply();
 }
 
-void TypingCommand::insertParagraphSeparatorInQuotedContent(Document& document)
+void TypingCommand::insertParagraphSeparatorInQuotedContent(Document& document, EditingState* editingState)
 {
     if (RefPtrWillBeRawPtr<TypingCommand> lastTypingCommand = lastTypingCommandIfStillOpenForTyping(document.frame())) {
-        lastTypingCommand->insertParagraphSeparatorInQuotedContent();
+        lastTypingCommand->insertParagraphSeparatorInQuotedContent(editingState);
         return;
     }
 
+    // TODO(tkent): apply() should take an EditingState argument, or return a
+    // bool value.
     TypingCommand::create(document, InsertParagraphSeparatorInQuotedContent)->apply();
 }
 
-void TypingCommand::insertParagraphSeparator(Document& document, Options options)
+void TypingCommand::insertParagraphSeparator(Document& document, Options options, EditingState* editingState)
 {
     if (RefPtrWillBeRawPtr<TypingCommand> lastTypingCommand = lastTypingCommandIfStillOpenForTyping(document.frame())) {
         lastTypingCommand->setShouldRetainAutocorrectionIndicator(options & RetainAutocorrectionIndicator);
-        lastTypingCommand->insertParagraphSeparator();
+        lastTypingCommand->insertParagraphSeparator(editingState);
         return;
     }
 
+    // TODO(tkent): apply() should take an EditingState argument, or return a
+    // bool value.
     TypingCommand::create(document, InsertParagraphSeparator, "", options)->apply();
 }
 
@@ -281,10 +285,10 @@ void TypingCommand::doApply(EditingState* editingState)
         insertLineBreak(editingState);
         return;
     case InsertParagraphSeparator:
-        insertParagraphSeparator();
+        insertParagraphSeparator(editingState);
         return;
     case InsertParagraphSeparatorInQuotedContent:
-        insertParagraphSeparatorInQuotedContent();
+        insertParagraphSeparatorInQuotedContent(editingState);
         return;
     case InsertText:
         insertText(m_textToInsert, m_selectInsertedText, editingState);
@@ -377,25 +381,29 @@ void TypingCommand::insertLineBreak(EditingState* editingState)
     typingAddedToOpenCommand(InsertLineBreak);
 }
 
-void TypingCommand::insertParagraphSeparator()
+void TypingCommand::insertParagraphSeparator(EditingState* editingState)
 {
     if (!canAppendNewLineFeedToSelection(endingSelection()))
         return;
 
-    applyCommandToComposite(InsertParagraphSeparatorCommand::create(document()));
+    applyCommandToComposite(InsertParagraphSeparatorCommand::create(document()), editingState);
+    if (editingState->isAborted())
+        return;
     typingAddedToOpenCommand(InsertParagraphSeparator);
 }
 
-void TypingCommand::insertParagraphSeparatorInQuotedContent()
+void TypingCommand::insertParagraphSeparatorInQuotedContent(EditingState* editingState)
 {
     // If the selection starts inside a table, just insert the paragraph separator normally
     // Breaking the blockquote would also break apart the table, which is unecessary when inserting a newline
     if (enclosingNodeOfType(endingSelection().start(), &isTableStructureNode)) {
-        insertParagraphSeparator();
+        insertParagraphSeparator(editingState);
         return;
     }
 
-    applyCommandToComposite(BreakBlockquoteCommand::create(document()));
+    applyCommandToComposite(BreakBlockquoteCommand::create(document()), editingState);
+    if (editingState->isAborted())
+        return;
     typingAddedToOpenCommand(InsertParagraphSeparatorInQuotedContent);
 }
 

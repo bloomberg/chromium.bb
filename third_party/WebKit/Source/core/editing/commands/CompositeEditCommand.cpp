@@ -385,7 +385,7 @@ void CompositeEditCommand::appendNode(PassRefPtrWillBeRawPtr<Node> node, PassRef
     ASSERT_IN_EDITING_COMMAND(canHaveChildrenForEditing(parent.get())
         || (parent->isElementNode() && toElement(parent.get())->tagQName() == objectTag));
     ASSERT_IN_EDITING_COMMAND(parent->hasEditableStyle() || !parent->inActiveDocument());
-    applyCommandToComposite(AppendNodeCommand::create(parent, node));
+    applyCommandToComposite(AppendNodeCommand::create(parent, node), editingState);
 }
 
 void CompositeEditCommand::removeChildrenInRange(PassRefPtrWillBeRawPtr<Node> node, unsigned from, unsigned to, EditingState* editingState)
@@ -460,7 +460,8 @@ HTMLSpanElement* CompositeEditCommand::replaceElementWithSpanPreservingChildrenA
     // as a series of existing smaller edit commands.  Someone who wanted to
     // reduce the number of edit commands could do so here.
     RefPtrWillBeRawPtr<ReplaceNodeWithSpanCommand> command = ReplaceNodeWithSpanCommand::create(node);
-    applyCommandToComposite(command);
+    // ReplaceNodeWithSpanCommand is never aborted.
+    applyCommandToComposite(command, ASSERT_NO_EDITING_ABORT);
     // Returning a raw pointer here is OK because the command is retained by
     // applyCommandToComposite (thus retaining the span), and the span is also
     // in the DOM tree, and thus alive whie it has a parent.
@@ -476,12 +477,14 @@ void CompositeEditCommand::prune(PassRefPtrWillBeRawPtr<Node> node, EditingState
 
 void CompositeEditCommand::splitTextNode(PassRefPtrWillBeRawPtr<Text> node, unsigned offset)
 {
-    applyCommandToComposite(SplitTextNodeCommand::create(node, offset));
+    // SplitTextNodeCommand is never aborted.
+    applyCommandToComposite(SplitTextNodeCommand::create(node, offset), ASSERT_NO_EDITING_ABORT);
 }
 
 void CompositeEditCommand::splitElement(PassRefPtrWillBeRawPtr<Element> element, PassRefPtrWillBeRawPtr<Node> atChild)
 {
-    applyCommandToComposite(SplitElementCommand::create(element, atChild));
+    // SplitElementCommand is never aborted.
+    applyCommandToComposite(SplitElementCommand::create(element, atChild), ASSERT_NO_EDITING_ABORT);
 }
 
 void CompositeEditCommand::mergeIdenticalElements(PassRefPtrWillBeRawPtr<Element> prpFirst, PassRefPtrWillBeRawPtr<Element> prpSecond, EditingState* editingState)
@@ -502,31 +505,37 @@ void CompositeEditCommand::mergeIdenticalElements(PassRefPtrWillBeRawPtr<Element
 
 void CompositeEditCommand::wrapContentsInDummySpan(PassRefPtrWillBeRawPtr<Element> element)
 {
-    applyCommandToComposite(WrapContentsInDummySpanCommand::create(element));
+    // WrapContentsInDummySpanCommand is never aborted.
+    applyCommandToComposite(WrapContentsInDummySpanCommand::create(element), ASSERT_NO_EDITING_ABORT);
 }
 
 void CompositeEditCommand::splitTextNodeContainingElement(PassRefPtrWillBeRawPtr<Text> text, unsigned offset)
 {
-    applyCommandToComposite(SplitTextNodeContainingElementCommand::create(text, offset));
+    // SplitTextNodeContainingElementCommand is never aborted.
+    applyCommandToComposite(SplitTextNodeContainingElementCommand::create(text, offset), ASSERT_NO_EDITING_ABORT);
 }
 
 void CompositeEditCommand::insertTextIntoNode(PassRefPtrWillBeRawPtr<Text> node, unsigned offset, const String& text)
 {
+    // InsertIntoTextNodeCommand is never aborted.
     if (!text.isEmpty())
-        applyCommandToComposite(InsertIntoTextNodeCommand::create(node, offset, text));
+        applyCommandToComposite(InsertIntoTextNodeCommand::create(node, offset, text), ASSERT_NO_EDITING_ABORT);
 }
 
 void CompositeEditCommand::deleteTextFromNode(PassRefPtrWillBeRawPtr<Text> node, unsigned offset, unsigned count)
 {
-    applyCommandToComposite(DeleteFromTextNodeCommand::create(node, offset, count));
+    // DeleteFromTextNodeCommand is never aborted.
+    applyCommandToComposite(DeleteFromTextNodeCommand::create(node, offset, count), ASSERT_NO_EDITING_ABORT);
 }
 
 void CompositeEditCommand::replaceTextInNode(PassRefPtrWillBeRawPtr<Text> prpNode, unsigned offset, unsigned count, const String& replacementText)
 {
     RefPtrWillBeRawPtr<Text> node(prpNode);
-    applyCommandToComposite(DeleteFromTextNodeCommand::create(node, offset, count));
+    // DeleteFromTextNodeCommand and InsertIntoTextNodeCommand are never
+    // aborted.
+    applyCommandToComposite(DeleteFromTextNodeCommand::create(node, offset, count), ASSERT_NO_EDITING_ABORT);
     if (!replacementText.isEmpty())
-        applyCommandToComposite(InsertIntoTextNodeCommand::create(node, offset, replacementText));
+        applyCommandToComposite(InsertIntoTextNodeCommand::create(node, offset, replacementText), ASSERT_NO_EDITING_ABORT);
 }
 
 Position CompositeEditCommand::replaceSelectedTextInNode(const String& text)
@@ -619,7 +628,8 @@ void CompositeEditCommand::deleteSelection(const VisibleSelection &selection, Ed
 
 void CompositeEditCommand::removeCSSProperty(PassRefPtrWillBeRawPtr<Element> element, CSSPropertyID property)
 {
-    applyCommandToComposite(RemoveCSSPropertyCommand::create(document(), element, property));
+    // RemoveCSSPropertyCommand is never aborted.
+    applyCommandToComposite(RemoveCSSPropertyCommand::create(document(), element, property), ASSERT_NO_EDITING_ABORT);
 }
 
 void CompositeEditCommand::removeElementAttribute(PassRefPtrWillBeRawPtr<Element> element, const QualifiedName& attribute)
@@ -629,7 +639,8 @@ void CompositeEditCommand::removeElementAttribute(PassRefPtrWillBeRawPtr<Element
 
 void CompositeEditCommand::setNodeAttribute(PassRefPtrWillBeRawPtr<Element> element, const QualifiedName& attribute, const AtomicString& value)
 {
-    applyCommandToComposite(SetNodeAttributeCommand::create(element, attribute, value));
+    // SetNodeAttributeCommand is never aborted.
+    applyCommandToComposite(SetNodeAttributeCommand::create(element, attribute, value), ASSERT_NO_EDITING_ABORT);
 }
 
 static inline bool containsOnlyWhitespace(const String& text)

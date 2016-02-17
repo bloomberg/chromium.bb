@@ -1044,7 +1044,9 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
     // out of any surrounding Mail blockquotes. Unless we're inserting in a table, in which case
     // breaking the blockquote will prevent the content from actually being inserted in the table.
     if (enclosingNodeOfType(insertionPos, isMailHTMLBlockquoteElement, CanCrossEditingBoundary) && m_preventNesting && !(enclosingNodeOfType(insertionPos, &isTableStructureNode))) {
-        applyCommandToComposite(BreakBlockquoteCommand::create(document()));
+        applyCommandToComposite(BreakBlockquoteCommand::create(document()), editingState);
+        if (editingState->isAborted())
+            return;
         // This will leave a br between the split.
         Node* br = endingSelection().start().anchorNode();
         ASSERT(isHTMLBRElement(br));
@@ -1238,8 +1240,11 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
     if (editingState->isAborted())
         return;
 
-    if (m_sanitizeFragment)
-        applyCommandToComposite(SimplifyMarkupCommand::create(document(), insertedNodes.firstNodeInserted(), insertedNodes.pastLastLeaf()));
+    if (m_sanitizeFragment) {
+        applyCommandToComposite(SimplifyMarkupCommand::create(document(), insertedNodes.firstNodeInserted(), insertedNodes.pastLastLeaf()), editingState);
+        if (editingState->isAborted())
+            return;
+    }
 
     // Setup m_startOfInsertedContent and m_endOfInsertedContent. This should be the last two lines of code that access insertedNodes.
     m_startOfInsertedContent = firstPositionInOrBeforeNode(insertedNodes.firstNodeInserted());

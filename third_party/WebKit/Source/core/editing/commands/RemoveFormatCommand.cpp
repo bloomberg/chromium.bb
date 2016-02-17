@@ -77,7 +77,7 @@ static bool isElementForRemoveFormatCommand(const Element* element)
     return elements.contains(element->tagQName());
 }
 
-void RemoveFormatCommand::doApply(EditingState*)
+void RemoveFormatCommand::doApply(EditingState* editingState)
 {
     LocalFrame* frame = document().frame();
 
@@ -93,7 +93,7 @@ void RemoveFormatCommand::doApply(EditingState*)
     // FIXME: We shouldn't access style().
     defaultStyle->style()->setProperty(CSSPropertyBackgroundColor, CSSValueTransparent);
 
-    applyCommandToComposite(ApplyStyleCommand::create(document(), defaultStyle.get(), isElementForRemoveFormatCommand, editingAction()));
+    applyCommandToComposite(ApplyStyleCommand::create(document(), defaultStyle.get(), isElementForRemoveFormatCommand, editingAction()), editingState);
 }
 
 } // namespace blink

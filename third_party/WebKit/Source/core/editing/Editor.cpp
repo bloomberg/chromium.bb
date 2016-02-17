@@ -850,7 +850,10 @@ bool Editor::insertParagraphSeparator()
     VisiblePosition caret = frame().selection().selection().visibleStart();
     bool alignToEdge = isEndOfEditableOrNonEditableContent(caret);
     ASSERT(frame().document());
-    TypingCommand::insertParagraphSeparator(*frame().document(), 0);
+    EditingState editingState;
+    TypingCommand::insertParagraphSeparator(*frame().document(), 0, &editingState);
+    if (editingState.isAborted())
+        return false;
     revealSelectionAfterEditingOperation(alignToEdge ? ScrollAlignment::alignToEdgeIfNeeded : ScrollAlignment::alignCenterIfNeeded);
 
     return true;

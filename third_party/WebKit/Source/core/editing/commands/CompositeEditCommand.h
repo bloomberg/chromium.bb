@@ -95,11 +95,9 @@ protected:
     //
     // sugary-sweet convenience functions to help create and apply edit commands in composite commands
     //
-    // TODO(yosin): EditingState arguments for the following functions should
-    // not be optional.
     void appendNode(PassRefPtrWillBeRawPtr<Node>, PassRefPtrWillBeRawPtr<ContainerNode> parent, EditingState*);
-    void applyCommandToComposite(PassRefPtrWillBeRawPtr<EditCommand>, EditingState* = ASSERT_NO_EDITING_ABORT);
-    void applyCommandToComposite(PassRefPtrWillBeRawPtr<CompositeEditCommand>, const VisibleSelection&, EditingState* = ASSERT_NO_EDITING_ABORT);
+    void applyCommandToComposite(PassRefPtrWillBeRawPtr<EditCommand>, EditingState*);
+    void applyCommandToComposite(PassRefPtrWillBeRawPtr<CompositeEditCommand>, const VisibleSelection&, EditingState*);
     void applyStyle(const EditingStyle*, EditingState*);
     void applyStyle(const EditingStyle*, const Position& start, const Position& end, EditingState*);
     void applyStyledElement(PassRefPtrWillBeRawPtr<Element>, EditingState*);
