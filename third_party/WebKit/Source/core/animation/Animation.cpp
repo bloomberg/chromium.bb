@@ -82,8 +82,6 @@ Animation::Animation(ExecutionContext* executionContext, AnimationTimeline& time
     , m_playbackRate(1)
     , m_startTime(nullValue())
     , m_holdTime(0)
-    , m_startClip(-std::numeric_limits<double>::infinity())
-    , m_endClip(std::numeric_limits<double>::infinity())
     , m_sequenceNumber(nextSequenceNumber())
     , m_content(content)
     , m_timeline(&timeline)
@@ -435,12 +433,6 @@ void Animation::setStartTimeInternal(double newStartTime)
         // infinity until start time is set.
         m_timeline->wake();
     }
-}
-
-bool Animation::clipped(double time)
-{
-    ASSERT(!isNull(time));
-    return time <= m_startClip || time > m_endClip + effectEnd();
 }
 
 void Animation::setEffect(AnimationEffect* newEffect)
@@ -809,15 +801,6 @@ bool Animation::update(TimingUpdateReason reason)
             ? nullValue()
             : currentTimeInternal();
 
-        if (!isNull(inheritedTime)) {
-            double timeForClipping = m_held && (!limited(inheritedTime) || isNull(m_startTime))
-                // Use hold time when there is no start time.
-                ? inheritedTime
-                // Use calculated current time when the animation is limited.
-                : calculateCurrentTime();
-            if (clipped(timeForClipping))
-                inheritedTime = nullValue();
-        }
         // Special case for end-exclusivity when playing backwards.
         if (inheritedTime == 0 && m_playbackRate < 0)
             inheritedTime = -1;
@@ -855,19 +838,8 @@ bool Animation::update(TimingUpdateReason reason)
 double Animation::timeToEffectChange()
 {
     ASSERT(!m_outdated);
-    if (!hasStartTime())
+    if (!hasStartTime() || m_held)
         return std::numeric_limits<double>::infinity();
-
-    double currentTime = calculateCurrentTime();
-    if (m_held) {
-        if (limited(currentTime)) {
-            if (m_playbackRate > 0 && m_endClip + effectEnd() > currentTime)
-                return m_endClip + effectEnd() - currentTime;
-            if (m_playbackRate < 0 && m_startClip <= currentTime)
-                return m_startClip - currentTime;
-        }
-        return std::numeric_limits<double>::infinity();
-    }
 
     if (!m_content)
         return -currentTimeInternal() / m_playbackRate;
@@ -877,24 +849,7 @@ double Animation::timeToEffectChange()
 
     return !hasActiveAnimationsOnCompositor() && m_content->phase() == AnimationEffect::PhaseActive
         ? 0
-        : clipTimeToEffectChange(result);
-}
-
-double Animation::clipTimeToEffectChange(double result) const
-{
-    double currentTime = calculateCurrentTime();
-    if (m_playbackRate > 0) {
-        if (currentTime <= m_startClip)
-            result = std::min(result, (m_startClip - currentTime) / m_playbackRate);
-        else if (currentTime < m_endClip + effectEnd())
-            result = std::min(result, (m_endClip + effectEnd() - currentTime) / m_playbackRate);
-    } else {
-        if (currentTime >= m_endClip + effectEnd())
-            result = std::min(result, (currentTime - m_endClip + effectEnd()) / -m_playbackRate);
-        else if (currentTime > m_startClip)
-            result = std::min(result, (currentTime - m_startClip) / -m_playbackRate);
-    }
-    return result;
+        : result;
 }
 
 void Animation::cancel()
