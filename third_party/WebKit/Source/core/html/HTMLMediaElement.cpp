@@ -67,6 +67,7 @@
 #include "core/page/NetworkStateNotifier.h"
 #include "platform/ContentType.h"
 #include "platform/Histogram.h"
+#include "platform/LayoutTestSupport.h"
 #include "platform/Logging.h"
 #include "platform/MIMETypeFromURL.h"
 #include "platform/MIMETypeRegistry.h"
@@ -3103,6 +3104,9 @@ void HTMLMediaElement::didBecomeFullscreenElement()
 {
     if (mediaControls())
         mediaControls()->enteredFullscreen();
+    // FIXME: There is no embedder-side handling in layout test mode.
+    if (webMediaPlayer() && !LayoutTestSupport::isRunningLayoutTest())
+        webMediaPlayer()->enteredFullscreen();
     // Cache this in case the player is destroyed before leaving fullscreen.
     m_inOverlayFullscreenVideo = usesOverlayFullscreenVideo();
     if (m_inOverlayFullscreenVideo)
@@ -3113,6 +3117,8 @@ void HTMLMediaElement::willStopBeingFullscreenElement()
 {
     if (mediaControls())
         mediaControls()->exitedFullscreen();
+    if (webMediaPlayer())
+        webMediaPlayer()->exitedFullscreen();
     if (m_inOverlayFullscreenVideo)
         document().layoutView()->compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
     m_inOverlayFullscreenVideo = false;

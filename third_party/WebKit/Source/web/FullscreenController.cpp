@@ -36,7 +36,6 @@
 #include "core/frame/PageScaleConstraintsSet.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLVideoElement.h"
-#include "platform/LayoutTestSupport.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/WebLayerTreeView.h"
 #include "public/web/WebFrameClient.h"
@@ -84,15 +83,8 @@ void FullscreenController::didEnterFullScreen()
 
     if (isHTMLVideoElement(element)) {
         HTMLVideoElement* videoElement = toHTMLVideoElement(element);
-        if (videoElement->usesOverlayFullscreenVideo()) {
-            if (videoElement->webMediaPlayer()
-                // FIXME: There is no embedder-side handling in layout test mode.
-                && !LayoutTestSupport::isRunningLayoutTest()) {
-                videoElement->webMediaPlayer()->enterFullscreen();
-            }
-            if (m_webViewImpl->layerTreeView())
-                m_webViewImpl->layerTreeView()->setHasTransparentBackground(true);
-        }
+        if (videoElement->usesOverlayFullscreenVideo() && m_webViewImpl->layerTreeView())
+            m_webViewImpl->layerTreeView()->setHasTransparentBackground(true);
     }
 }
 

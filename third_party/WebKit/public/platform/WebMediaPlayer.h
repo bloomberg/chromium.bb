@@ -197,10 +197,11 @@ public:
     // Whether the WebMediaPlayer supports overlay fullscreen video mode. When
     // this is true, the video layer will be removed from the layer tree when
     // entering fullscreen, and the WebMediaPlayer is responsible for displaying
-    // the video in enterFullscreen().
+    // the video in enteredFullscreen().
     virtual bool supportsOverlayFullscreenVideo() { return false; }
-    // Instruct WebMediaPlayer to enter/exit fullscreen.
-    virtual void enterFullscreen() { }
+    // Inform WebMediaPlayer when the element has entered/exited fullscreen.
+    virtual void enteredFullscreen() { }
+    virtual void exitedFullscreen() { }
 
     virtual void enabledAudioTracksChanged(const WebVector<TrackId>& enabledTrackIds) { }
     // |selectedTrackId| is null if no track is selected.

@@ -1906,7 +1906,7 @@ bool WebMediaPlayerAndroid::supportsOverlayFullscreenVideo() {
   return true;
 }
 
-void WebMediaPlayerAndroid::enterFullscreen() {
+void WebMediaPlayerAndroid::enteredFullscreen() {
   if (is_player_initialized_)
     player_manager_->EnterFullscreen(player_id_);
   SetNeedsEstablishPeer(false);

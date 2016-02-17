@@ -88,7 +88,7 @@ class WebMediaPlayerAndroid
   // MediaPlayerAndroid object in the browser process through |proxy|.
   // TODO(qinmin): |frame| argument is used to determine whether the current
   // player can enter fullscreen. This logic should probably be moved into
-  // blink, so that enterFullscreen() will not be called if another video is
+  // blink, so that enteredFullscreen() will not be called if another video is
   // already in fullscreen.
   WebMediaPlayerAndroid(
       blink::WebFrame* frame,
@@ -105,7 +105,7 @@ class WebMediaPlayerAndroid
 
   // blink::WebMediaPlayer implementation.
   bool supportsOverlayFullscreenVideo() override;
-  void enterFullscreen() override;
+  void enteredFullscreen() override;
 
   // Resource loading.
   void load(LoadType load_type,
