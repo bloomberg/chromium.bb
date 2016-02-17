@@ -358,6 +358,8 @@
         'base/media_util.h',
         'base/mime_util.cc',
         'base/mime_util.h',
+        'base/mime_util_internal.cc',
+        'base/mime_util_internal.h',
         'base/moving_average.cc',
         'base/moving_average.h',
         'base/multi_channel_resampler.cc',

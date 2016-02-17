@@ -130,6 +130,8 @@ source_set("base") {
     "media_util.h",
     "mime_util.cc",
     "mime_util.h",
+    "mime_util_internal.cc",
+    "mime_util_internal.h",
     "moving_average.cc",
     "moving_average.h",
     "multi_channel_resampler.cc",
