@@ -1536,7 +1536,7 @@ void Document::scheduleLayoutTreeUpdate()
     ASSERT(shouldScheduleLayoutTreeUpdate());
     ASSERT(needsLayoutTreeUpdate());
 
-    if (!view()->shouldThrottleRendering())
+    if (!view()->canThrottleRendering())
         page()->animator().scheduleVisualUpdate(frame());
     m_lifecycle.ensureStateAtMost(DocumentLifecycle::VisualUpdatePending);
 
@@ -1811,9 +1811,7 @@ void Document::updateLayoutTree(StyleRecalcChange change)
 
 void Document::updateStyle(StyleRecalcChange change)
 {
-    if (view()->shouldThrottleRendering())
-        return;
-
+    ASSERT(!view()->shouldThrottleRendering());
     TRACE_EVENT_BEGIN0("blink,blink_style", "Document::updateStyle");
     unsigned initialElementCount = styleEngine().styleForElementCount();
 
@@ -1917,7 +1915,6 @@ void Document::updateLayoutTreeForNodeIfNeeded(Node* node)
     ASSERT(node);
     if (!needsLayoutTreeUpdateForNode(*node))
         return;
-    DocumentLifecycle::PreventThrottlingScope preventThrottling(lifecycle());
     updateLayoutTreeIfNeeded();
 }
 
@@ -2002,7 +1999,6 @@ void Document::clearFocusedElementTimerFired(Timer<Document>*)
 void Document::updateLayoutTreeIgnorePendingStylesheets()
 {
     StyleEngine::IgnoringPendingStylesheet ignoring(styleEngine());
-    DocumentLifecycle::PreventThrottlingScope preventThrottling(lifecycle());
 
     if (styleEngine().hasPendingSheets()) {
         // FIXME: We are willing to attempt to suppress painting with outdated style info only once.
@@ -2028,8 +2024,6 @@ void Document::updateLayoutTreeIgnorePendingStylesheets()
 
 void Document::updateLayoutIgnorePendingStylesheets(Document::RunPostLayoutTasks runPostLayoutTasks)
 {
-    DocumentLifecycle::PreventThrottlingScope preventThrottling(lifecycle());
-
     updateLayoutTreeIgnorePendingStylesheets();
     updateLayout();
 

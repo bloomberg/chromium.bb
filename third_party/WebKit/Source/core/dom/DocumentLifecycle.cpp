@@ -39,7 +39,7 @@ static DocumentLifecycle::DeprecatedTransition* s_deprecatedTransitionStack = 0;
 
 // TODO(skyostil): Come up with a better way to store cross-frame lifecycle
 // related data to avoid this being a global setting.
-static unsigned s_preventThrottlingCount = 0;
+static unsigned s_allowThrottlingCount = 0;
 
 DocumentLifecycle::Scope::Scope(DocumentLifecycle& lifecycle, State finalState)
     : m_lifecycle(lifecycle)
@@ -65,15 +65,15 @@ DocumentLifecycle::DeprecatedTransition::~DeprecatedTransition()
     s_deprecatedTransitionStack = m_previous;
 }
 
-DocumentLifecycle::PreventThrottlingScope::PreventThrottlingScope(DocumentLifecycle& lifecycle)
+DocumentLifecycle::AllowThrottlingScope::AllowThrottlingScope(DocumentLifecycle& lifecycle)
 {
-    s_preventThrottlingCount++;
+    s_allowThrottlingCount++;
 }
 
-DocumentLifecycle::PreventThrottlingScope::~PreventThrottlingScope()
+DocumentLifecycle::AllowThrottlingScope::~AllowThrottlingScope()
 {
-    ASSERT(s_preventThrottlingCount > 0);
-    s_preventThrottlingCount--;
+    ASSERT(s_allowThrottlingCount > 0);
+    s_allowThrottlingCount--;
 }
 
 DocumentLifecycle::DocumentLifecycle()
@@ -283,7 +283,7 @@ void DocumentLifecycle::ensureStateAtMost(State state)
 
 bool DocumentLifecycle::throttlingAllowed() const
 {
-    return !s_preventThrottlingCount;
+    return s_allowThrottlingCount;
 }
 
 #if ENABLE(ASSERT)

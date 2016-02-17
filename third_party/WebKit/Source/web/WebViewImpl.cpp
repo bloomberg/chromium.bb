@@ -1945,6 +1945,7 @@ void WebViewImpl::beginFrame(double lastFrameTimeMonotonic)
     if (!m_page)
         return;
 
+    DocumentLifecycle::AllowThrottlingScope throttlingScope(mainFrameImpl()->frame()->document()->lifecycle());
     PageWidgetDelegate::animate(*m_page, lastFrameTimeMonotonic);
 }
 
@@ -1954,6 +1955,7 @@ void WebViewImpl::updateAllLifecyclePhases()
     if (!mainFrameImpl())
         return;
 
+    DocumentLifecycle::AllowThrottlingScope throttlingScope(mainFrameImpl()->frame()->document()->lifecycle());
     updateLayerTreeBackgroundColor();
 
     PageWidgetDelegate::updateAllLifecyclePhases(*m_page, *mainFrameImpl()->frame());
@@ -3530,6 +3532,7 @@ WebHitTestResult WebViewImpl::hitTestResultAt(const WebPoint& point)
 
 HitTestResult WebViewImpl::coreHitTestResultAt(const WebPoint& pointInViewport)
 {
+    DocumentLifecycle::AllowThrottlingScope throttlingScope(mainFrameImpl()->frame()->document()->lifecycle());
     FrameView* view = mainFrameImpl()->frameView();
     IntPoint pointInRootFrame = view->contentsToFrame(view->viewportToContents(pointInViewport));
     return hitTestResultForRootFramePos(pointInRootFrame);

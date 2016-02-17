@@ -230,7 +230,7 @@ public:
     Color documentBackgroundColor() const;
 
     // Run all needed lifecycle stages. After calling this method, all frames will be in the lifecycle state PaintInvalidationClean.
-    // If lifecycle throttling is allowed (see DocumentLifecycle::PreventThrottlingScope), some frames may skip the lifecycle update
+    // If lifecycle throttling is allowed (see DocumentLifecycle::AllowThrottlingScope), some frames may skip the lifecycle update
     // (e.g., based on visibility) and will not end up being PaintInvalidationClean.
     void updateAllLifecyclePhases();
 

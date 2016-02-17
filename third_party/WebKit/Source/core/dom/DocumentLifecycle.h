@@ -130,12 +130,12 @@ public:
         DocumentLifecycle& m_documentLifecycle;
     };
 
-    class PreventThrottlingScope {
+    class CORE_EXPORT AllowThrottlingScope {
         STACK_ALLOCATED();
-        WTF_MAKE_NONCOPYABLE(PreventThrottlingScope);
+        WTF_MAKE_NONCOPYABLE(AllowThrottlingScope);
     public:
-        PreventThrottlingScope(DocumentLifecycle&);
-        ~PreventThrottlingScope();
+        AllowThrottlingScope(DocumentLifecycle&);
+        ~AllowThrottlingScope();
     };
 
     DocumentLifecycle();
