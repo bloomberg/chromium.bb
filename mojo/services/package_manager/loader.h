@@ -20,7 +20,7 @@ namespace package_manager {
 
 class Loader : public mojo::shell::ApplicationLoader {
  public:
-  explicit Loader(base::TaskRunner* blocking_pool);
+  Loader(base::TaskRunner* blocking_pool, bool register_mojo_url_schemes);
   ~Loader() override;
 
   // mojo::shell::ApplicationLoader:
@@ -29,6 +29,7 @@ class Loader : public mojo::shell::ApplicationLoader {
 
  private:
   base::TaskRunner* blocking_pool_;
+  bool register_mojo_url_schemes_;
   scoped_ptr<mojo::ShellClient> client_;
   scoped_ptr<mojo::ShellConnection> connection_;
 

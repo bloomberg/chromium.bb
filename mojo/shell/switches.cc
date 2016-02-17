@@ -7,6 +7,9 @@
 namespace mojo {
 namespace switches {
 
+// Uses the mojo:package_manager application instead of the builtin one.
+const char kDontUseRemotePackageManager[] = "dont-use-remote-package-manager";
+
 // Disables the sandbox for debugging.
 const char kNoSandbox[] = "no-sandbox";
 
@@ -19,9 +22,6 @@ const char kPredictableAppFilenames[] = "predictable-app-filenames";
 
 // Load apps in a single processes.
 const char kSingleProcess[] = "single-process";
-
-// Uses the mojo:package_manager application instead of the builtin one.
-const char kUseRemotePackageManager[] = "use-remote-package-manager";
 
 }  // namespace switches
 }  // namespace mojo

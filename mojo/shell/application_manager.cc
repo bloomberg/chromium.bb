@@ -60,13 +60,16 @@ bool ApplicationManager::TestAPI::HasRunningInstanceForURL(
 }
 
 ApplicationManager::ApplicationManager(
-    scoped_ptr<PackageManager> package_manager)
-    : ApplicationManager(std::move(package_manager), nullptr, nullptr) {}
+    scoped_ptr<PackageManager> package_manager,
+    bool register_mojo_url_schemes)
+    : ApplicationManager(std::move(package_manager), nullptr, nullptr,
+                         register_mojo_url_schemes) {}
 
 ApplicationManager::ApplicationManager(
     scoped_ptr<PackageManager> package_manager,
     scoped_ptr<NativeRunnerFactory> native_runner_factory,
-    base::TaskRunner* task_runner)
+    base::TaskRunner* task_runner,
+    bool register_mojo_url_schemes)
     : use_remote_package_manager_(false),
       package_manager_(std::move(package_manager)),
       task_runner_(task_runner),
@@ -75,9 +78,9 @@ ApplicationManager::ApplicationManager(
   package_manager_->SetApplicationManager(this);
   SetLoaderForURL(make_scoped_ptr(new ShellApplicationLoader(this)),
                   GURL("mojo:shell"));
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-         switches::kUseRemotePackageManager)) {
-    UseRemotePackageManager();
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+         switches::kDontUseRemotePackageManager)) {
+    UseRemotePackageManager(register_mojo_url_schemes);
   }
 }
 
@@ -103,6 +106,7 @@ void ApplicationManager::ConnectToApplication(
   if (ConnectToRunningApplication(&params))
     return;
 
+  // TODO(beng): seems like this should be able to move to OnGotResolvedURL().
   ApplicationLoader* loader = GetLoaderForURL(params->target().url());
   if (loader) {
     GURL url = params->target().url();
@@ -132,13 +136,14 @@ void ApplicationManager::ConnectToApplication(
   }
 }
 
-void ApplicationManager::UseRemotePackageManager() {
+void ApplicationManager::UseRemotePackageManager(
+    bool register_mojo_url_schemes) {
   use_remote_package_manager_ = true;
 
   GURL package_manager_url("mojo://package_manager/");
 
-  SetLoaderForURL(make_scoped_ptr(new package_manager::Loader(task_runner_)),
-                  package_manager_url);
+  SetLoaderForURL(make_scoped_ptr(new package_manager::Loader(
+      task_runner_, register_mojo_url_schemes)), package_manager_url);
 
   shell::mojom::InterfaceProviderPtr interfaces;
   scoped_ptr<ConnectToApplicationParams> params(new ConnectToApplicationParams);
