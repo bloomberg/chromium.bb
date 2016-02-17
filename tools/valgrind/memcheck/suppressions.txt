@@ -3499,3 +3499,16 @@
    fun:_XConnectXCB
    fun:XOpenDisplay
 }
+{
+   bug_587270
+   Memcheck:Uninitialized
+   ...
+   fun:_ZN5blink21LayoutObjectChildList15removeChildNodeEPNS_12LayoutObjectES2_b
+   fun:_ZN5blink12LayoutObject11removeChildEPS0_
+   ...
+   fun:_ZN5blink12LayoutObject6removeEv
+   fun:_ZN5blink12LayoutObject15willBeDestroyedEv
+   ...
+   fun:_ZN5blink12LayoutObject34destroyAndCleanupAnonymousWrappersEv
+   fun:_ZN5blink4Node6detachERKNS0_13AttachContextE
+}
