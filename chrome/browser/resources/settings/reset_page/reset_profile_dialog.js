@@ -28,9 +28,6 @@ Polymer({
 
         setFeedbackInfo: function(data) {
           this.set('feedbackInfo_', data.feedbackInfo);
-          this.async(function() {
-            this.$.dialog.center();
-          });
         }.bind(this),
       };
     }.bind(this));
