@@ -4063,12 +4063,10 @@ void RenderFrameImpl::reportFindInPageSelection(
 }
 
 void RenderFrameImpl::requestStorageQuota(
-    blink::WebLocalFrame* frame,
     blink::WebStorageQuotaType type,
     unsigned long long requested_size,
     blink::WebStorageQuotaCallbacks callbacks) {
-  DCHECK_EQ(frame_, frame);
-  WebSecurityOrigin origin = frame->document().securityOrigin();
+  WebSecurityOrigin origin = frame_->document().securityOrigin();
   if (origin.isUnique()) {
     // Unique origins cannot store persistent state.
     callbacks.didFail(blink::WebStorageQuotaErrorAbort);
@@ -4112,11 +4110,9 @@ blink::WebPushClient* RenderFrameImpl::pushClient() {
 }
 
 void RenderFrameImpl::willStartUsingPeerConnectionHandler(
-    blink::WebLocalFrame* frame,
     blink::WebRTCPeerConnectionHandler* handler) {
-  DCHECK_EQ(frame_, frame);
 #if defined(ENABLE_WEBRTC)
-  static_cast<RTCPeerConnectionHandler*>(handler)->associateWithFrame(frame);
+  static_cast<RTCPeerConnectionHandler*>(handler)->associateWithFrame(frame_);
 #endif
 }
 
@@ -4183,9 +4179,7 @@ bool RenderFrameImpl::willCheckAndDispatchMessageEvent(
   return true;
 }
 
-blink::WebString RenderFrameImpl::userAgentOverride(
-    blink::WebLocalFrame* frame) {
-  DCHECK_EQ(frame_, frame);
+blink::WebString RenderFrameImpl::userAgentOverride() {
   if (!render_view_->webview() || !render_view_->webview()->mainFrame() ||
       render_view_->renderer_preferences_.user_agent_override.empty()) {
     return blink::WebString();
@@ -4214,33 +4208,28 @@ blink::WebString RenderFrameImpl::userAgentOverride(
   return blink::WebString();
 }
 
-blink::WebString RenderFrameImpl::doNotTrackValue(blink::WebLocalFrame* frame) {
-  DCHECK_EQ(frame_, frame);
+blink::WebString RenderFrameImpl::doNotTrackValue() {
   if (render_view_->renderer_preferences_.enable_do_not_track)
     return WebString::fromUTF8("1");
   return WebString();
 }
 
-bool RenderFrameImpl::allowWebGL(blink::WebLocalFrame* frame,
-                                 bool default_value) {
-  DCHECK_EQ(frame_, frame);
+bool RenderFrameImpl::allowWebGL(bool default_value) {
   if (!default_value)
     return false;
 
   bool blocked = true;
   Send(new FrameHostMsg_Are3DAPIsBlocked(
       routing_id_,
-      blink::WebStringToGURL(frame->top()->securityOrigin().toString()),
+      blink::WebStringToGURL(frame_->top()->securityOrigin().toString()),
       THREE_D_API_TYPE_WEBGL,
       &blocked));
   return !blocked;
 }
 
-void RenderFrameImpl::didLoseWebGLContext(blink::WebLocalFrame* frame,
-                                          int arb_robustness_status_code) {
-  DCHECK_EQ(frame_, frame);
+void RenderFrameImpl::didLoseWebGLContext(int arb_robustness_status_code) {
   Send(new FrameHostMsg_DidLose3DContext(
-      blink::WebStringToGURL(frame->top()->securityOrigin().toString()),
+      blink::WebStringToGURL(frame_->top()->securityOrigin().toString()),
       THREE_D_API_TYPE_WEBGL,
       arb_robustness_status_code));
 }

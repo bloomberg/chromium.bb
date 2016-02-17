@@ -528,7 +528,7 @@ public:
     // Note that the requesting quota size may not always be granted and
     // a smaller amount of quota than requested might be returned.
     virtual void requestStorageQuota(
-        WebLocalFrame*, WebStorageQuotaType,
+        WebStorageQuotaType,
         unsigned long long newQuotaInBytes,
         WebStorageQuotaCallbacks) { }
 
@@ -550,7 +550,7 @@ public:
     // MediaStream -----------------------------------------------------
 
     // A new WebRTCPeerConnectionHandler is created.
-    virtual void willStartUsingPeerConnectionHandler(WebLocalFrame*, WebRTCPeerConnectionHandler*) { }
+    virtual void willStartUsingPeerConnectionHandler(WebRTCPeerConnectionHandler*) { }
 
     virtual WebUserMediaClient* userMediaClient() { return 0; }
 
@@ -579,25 +579,25 @@ public:
     // Asks the embedder if a specific user agent should be used. Non-empty
     // strings indicate an override should be used. Otherwise,
     // Platform::current()->userAgent() will be called to provide one.
-    virtual WebString userAgentOverride(WebLocalFrame*) { return WebString(); }
+    virtual WebString userAgentOverride() { return WebString(); }
 
     // Asks the embedder what value the network stack will send for the DNT
     // header. An empty string indicates that no DNT header will be send.
-    virtual WebString doNotTrackValue(WebLocalFrame*) { return WebString(); }
+    virtual WebString doNotTrackValue() { return WebString(); }
 
 
     // WebGL ------------------------------------------------------
 
-    // Asks the embedder whether WebGL is allowed for the given WebFrame.
-    // This call is placed here instead of WebContentSettingsClient because this
-    // class is implemented in content/, and putting it here avoids adding
-    // more public content/ APIs.
-    virtual bool allowWebGL(WebLocalFrame*, bool defaultValue) { return defaultValue; }
+    // Asks the embedder whether WebGL is allowed for the WebFrame. This call is
+    // placed here instead of WebContentSettingsClient because this class is
+    // implemented in content/, and putting it here avoids adding more public
+    // content/ APIs.
+    virtual bool allowWebGL(bool defaultValue) { return defaultValue; }
 
     // Notifies the client that a WebGL context was lost on this page with the
     // given reason (one of the GL_ARB_robustness status codes; see
     // Extensions3D.h in WebCore/platform/graphics).
-    virtual void didLoseWebGLContext(WebLocalFrame*, int) { }
+    virtual void didLoseWebGLContext(int) { }
 
 
     // Screen Orientation --------------------------------------------------

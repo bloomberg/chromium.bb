@@ -557,8 +557,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void reportFindInPageSelection(int request_id,
                                  int active_match_ordinal,
                                  const blink::WebRect& sel) override;
-  void requestStorageQuota(blink::WebLocalFrame* frame,
-                           blink::WebStorageQuotaType type,
+  void requestStorageQuota(blink::WebStorageQuotaType type,
                            unsigned long long requested_size,
                            blink::WebStorageQuotaCallbacks callbacks) override;
   void willOpenWebSocket(blink::WebSocketHandle* handle) override;
@@ -567,7 +566,6 @@ class CONTENT_EXPORT RenderFrameImpl
   blink::WebPushClient* pushClient() override;
   blink::WebPresentationClient* presentationClient() override;
   void willStartUsingPeerConnectionHandler(
-      blink::WebLocalFrame* frame,
       blink::WebRTCPeerConnectionHandler* handler) override;
   blink::WebUserMediaClient* userMediaClient() override;
   blink::WebEncryptedMediaClient* encryptedMediaClient() override;
@@ -577,11 +575,10 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebFrame* target_frame,
       blink::WebSecurityOrigin target_origin,
       blink::WebDOMMessageEvent event) override;
-  blink::WebString userAgentOverride(blink::WebLocalFrame* frame) override;
-  blink::WebString doNotTrackValue(blink::WebLocalFrame* frame) override;
-  bool allowWebGL(blink::WebLocalFrame* frame, bool default_value) override;
-  void didLoseWebGLContext(blink::WebLocalFrame* frame,
-                           int arb_robustness_status_code) override;
+  blink::WebString userAgentOverride() override;
+  blink::WebString doNotTrackValue() override;
+  bool allowWebGL(bool default_value) override;
+  void didLoseWebGLContext(int arb_robustness_status_code) override;
   blink::WebScreenOrientationClient* webScreenOrientationClient() override;
   bool isControlledByServiceWorker(blink::WebDataSource& data_source) override;
   int64_t serviceWorkerID(blink::WebDataSource& data_source) override;

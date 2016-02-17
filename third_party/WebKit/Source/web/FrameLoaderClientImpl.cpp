@@ -730,7 +730,7 @@ PassRefPtrWillBeRawPtr<DocumentLoader> FrameLoaderClientImpl::createDocumentLoad
 
 String FrameLoaderClientImpl::userAgent()
 {
-    WebString override = m_webFrame->client()->userAgentOverride(m_webFrame);
+    WebString override = m_webFrame->client()->userAgentOverride();
     if (!override.isEmpty())
         return override;
 
@@ -739,7 +739,7 @@ String FrameLoaderClientImpl::userAgent()
 
 String FrameLoaderClientImpl::doNotTrackValue()
 {
-    WebString doNotTrack = m_webFrame->client()->doNotTrackValue(m_webFrame);
+    WebString doNotTrack = m_webFrame->client()->doNotTrackValue();
     if (!doNotTrack.isEmpty())
         return doNotTrack;
     return String();
@@ -936,7 +936,7 @@ void FrameLoaderClientImpl::dispatchWillOpenWebSocket(WebSocketHandle* handle)
 
 void FrameLoaderClientImpl::dispatchWillStartUsingPeerConnectionHandler(WebRTCPeerConnectionHandler* handler)
 {
-    m_webFrame->client()->willStartUsingPeerConnectionHandler(webFrame(), handler);
+    m_webFrame->client()->willStartUsingPeerConnectionHandler(handler);
 }
 
 void FrameLoaderClientImpl::didRequestAutocomplete(HTMLFormElement* form)
@@ -948,7 +948,7 @@ void FrameLoaderClientImpl::didRequestAutocomplete(HTMLFormElement* form)
 bool FrameLoaderClientImpl::allowWebGL(bool enabledPerSettings)
 {
     if (m_webFrame->client())
-        return m_webFrame->client()->allowWebGL(m_webFrame, enabledPerSettings);
+        return m_webFrame->client()->allowWebGL(enabledPerSettings);
 
     return enabledPerSettings;
 }
@@ -956,7 +956,7 @@ bool FrameLoaderClientImpl::allowWebGL(bool enabledPerSettings)
 void FrameLoaderClientImpl::didLoseWebGLContext(int arbRobustnessContextLostReason)
 {
     if (m_webFrame->client())
-        m_webFrame->client()->didLoseWebGLContext(m_webFrame, arbRobustnessContextLostReason);
+        m_webFrame->client()->didLoseWebGLContext(arbRobustnessContextLostReason);
 }
 
 void FrameLoaderClientImpl::dispatchWillInsertBody()

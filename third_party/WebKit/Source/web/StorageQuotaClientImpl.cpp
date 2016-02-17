@@ -65,7 +65,7 @@ void StorageQuotaClientImpl::requestQuota(ExecutionContext* executionContext, We
         Document* document = toDocument(executionContext);
         WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(document->frame());
         StorageQuotaCallbacks* callbacks = DeprecatedStorageQuotaCallbacksImpl::create(successCallback, errorCallback);
-        webFrame->client()->requestStorageQuota(webFrame, storageType, newQuotaInBytes, callbacks);
+        webFrame->client()->requestStorageQuota(storageType, newQuotaInBytes, callbacks);
     } else {
         // Requesting quota in Worker is not supported.
         executionContext->postTask(BLINK_FROM_HERE, StorageErrorCallback::CallbackTask::create(errorCallback, NotSupportedError));
@@ -81,7 +81,7 @@ ScriptPromise StorageQuotaClientImpl::requestPersistentQuota(ScriptState* script
         Document* document = toDocument(scriptState->executionContext());
         WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(document->frame());
         StorageQuotaCallbacks* callbacks = StorageQuotaCallbacksImpl::create(resolver);
-        webFrame->client()->requestStorageQuota(webFrame, WebStorageQuotaTypePersistent, newQuotaInBytes, callbacks);
+        webFrame->client()->requestStorageQuota(WebStorageQuotaTypePersistent, newQuotaInBytes, callbacks);
     } else {
         // Requesting quota in Worker is not supported.
         resolver->reject(DOMError::create(NotSupportedError));

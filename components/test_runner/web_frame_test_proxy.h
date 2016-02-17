@@ -243,7 +243,6 @@ class WebFrameTestProxy : public Base {
   }
 
   virtual void willStartUsingPeerConnectionHandler(
-      blink::WebLocalFrame* frame,
       blink::WebRTCPeerConnectionHandler* handler) {
     // RenderFrameImpl::willStartUsingPeerConnectionHandler can not be mocked.
     // See http://crbug/363285.
