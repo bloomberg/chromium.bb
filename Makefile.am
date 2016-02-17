@@ -338,7 +338,9 @@ bin_PROGRAMS += \
 endif !DISABLE_PROCESSOR
 
 if LINUX_HOST
-bin_PROGRAMS += \
+EXTRA_PROGRAMS += \
+	src/client/linux/linux_dumper_unittest_helper
+CLEANFILES += \
 	src/client/linux/linux_dumper_unittest_helper
 
 if !DISABLE_TOOLS
