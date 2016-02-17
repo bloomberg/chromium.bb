@@ -28,38 +28,58 @@
 namespace gl {
 namespace {
 
-std::string PrependFragmentSamplerType(unsigned target,
-                                       std::string shader_string) {
+// Compiles a fragment shader for sampling out of a texture of |size| bound to
+// |target| and checks for compilation errors.
+GLuint LoadFragmentShader(unsigned target, const gfx::Size& size) {
+  // clang-format off
+  const char kFragmentShader[] = STRINGIZE(
+    uniform SamplerType a_texture;
+    varying vec2 v_texCoord;
+    void main() {
+      gl_FragColor = TextureLookup(a_texture, v_texCoord * TextureScale);
+    }
+  );
+  const char kShaderFloatPrecision[] = STRINGIZE(
+    precision mediump float;
+  );
+  // clang-format on
+
+  bool is_gles = gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2;
   switch (target) {
     case GL_TEXTURE_2D:
-      DCHECK_NE(shader_string.find("SamplerType"), std::string::npos);
-      DCHECK_NE(shader_string.find("TextureLookup"), std::string::npos);
-      return "#define SamplerType sampler2D\n"
-             "#define TextureLookup texture2D\n" +
-             shader_string;
+      return gfx::GLHelper::LoadShader(
+          GL_FRAGMENT_SHADER,
+          base::StringPrintf("%s\n"
+                             "#define SamplerType sampler2D\n"
+                             "#define TextureLookup texture2D\n"
+                             "#define TextureScale vec2(1.0, 1.0)\n"
+                             "%s",
+                             is_gles ? kShaderFloatPrecision : "",
+                             kFragmentShader)
+              .c_str());
     case GL_TEXTURE_RECTANGLE_ARB:
-      DCHECK_NE(shader_string.find("SamplerType"), std::string::npos);
-      DCHECK_NE(shader_string.find("TextureLookup"), std::string::npos);
-      return "#extension GL_ARB_texture_rectangle : require\n"
-             "#define SamplerType sampler2DRect\n"
-             "#define TextureLookup texture2DRect\n" +
-             shader_string;
+      return gfx::GLHelper::LoadShader(
+          GL_FRAGMENT_SHADER,
+          base::StringPrintf("%s\n"
+                             "#extension GL_ARB_texture_rectangle : require\n"
+                             "#define SamplerType sampler2DRect\n"
+                             "#define TextureLookup texture2DRect\n"
+                             "#define TextureScale vec2(%f, %f)\n"
+                             "%s",
+                             is_gles ? kShaderFloatPrecision : "",
+                             static_cast<double>(size.width()),
+                             static_cast<double>(size.height()),
+                             kFragmentShader)
+              .c_str());
     default:
       NOTREACHED();
-      break;
+      return 0;
   }
-  return shader_string;
 }
 
-struct ProgramAndShaders {
-  GLuint program;
-  GLuint vertex_shader;
-  GLuint fragment_shader;
-};
-
-// Creates a shader that reads from a texture.
-// Returns the newly created programs and shaders.
-void SetUpVertexAndFragmentShader(GLenum target, ProgramAndShaders* pas) {
+// Draws texture bound to |target| of texture unit 0 to the currently bound
+// frame buffer.
+void DrawTextureQuad(GLenum target, const gfx::Size& size) {
   // clang-format off
   const char kVertexShader[] = STRINGIZE(
     attribute vec2 a_position;
@@ -69,27 +89,11 @@ void SetUpVertexAndFragmentShader(GLenum target, ProgramAndShaders* pas) {
       v_texCoord = (a_position + vec2(1.0, 1.0)) * 0.5;
     }
   );
-  const char kFragmentShader[] = STRINGIZE(
-    uniform SamplerType a_texture;
-    varying vec2 v_texCoord;
-    void main() {
-      gl_FragColor = TextureLookup(a_texture, v_texCoord);
-    }
-  );
-  const char kShaderFloatPrecision[] = STRINGIZE(
-    precision mediump float;
-  );
   // clang-format on
 
   GLuint vertex_shader =
       gfx::GLHelper::LoadShader(GL_VERTEX_SHADER, kVertexShader);
-  bool is_gles = gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2;
-  GLuint fragment_shader = gfx::GLHelper::LoadShader(
-      GL_FRAGMENT_SHADER,
-      base::StringPrintf(
-          "%s\n%s", is_gles ? kShaderFloatPrecision : "",
-          PrependFragmentSamplerType(target, kFragmentShader).c_str())
-          .c_str());
+  GLuint fragment_shader = LoadFragmentShader(target, size);
   GLuint program = gfx::GLHelper::SetupProgram(vertex_shader, fragment_shader);
   EXPECT_NE(program, 0u);
   glUseProgram(program);
@@ -98,9 +102,13 @@ void SetUpVertexAndFragmentShader(GLenum target, ProgramAndShaders* pas) {
   ASSERT_NE(sampler_location, -1);
   glUniform1i(sampler_location, 0);
 
-  pas->program = program;
-  pas->vertex_shader = vertex_shader;
-  pas->fragment_shader = fragment_shader;
+  GLuint vertex_buffer = gfx::GLHelper::SetupQuadVertexBuffer();
+  gfx::GLHelper::DrawQuad(vertex_buffer);
+
+  glDeleteShader(vertex_shader);
+  glDeleteShader(fragment_shader);
+  glDeleteProgram(program);
+  glDeleteBuffersARB(1, &vertex_buffer);
 }
 
 }  // namespace
@@ -173,36 +181,40 @@ TYPED_TEST_CASE_P(GLImageZeroInitializeTest);
 // https://crbug.com/584760.
 TYPED_TEST_P(GLImageZeroInitializeTest, DISABLED_ZeroInitialize) {
   const gfx::Size image_size(256, 256);
-  scoped_refptr<gl::GLImage> image = this->delegate_.CreateImage(image_size);
-  GLenum target = this->delegate_.GetTextureTarget();
-  GLuint uninitialized_texture = GLTestHelper::CreateTexture(target);
 
-  glBindTexture(target, uninitialized_texture);
-  ASSERT_TRUE(image->BindTexImage(target));
   GLuint framebuffer =
       GLTestHelper::SetupFramebuffer(image_size.width(), image_size.height());
   ASSERT_TRUE(framebuffer);
   glBindFramebufferEXT(GL_FRAMEBUFFER, framebuffer);
   glViewport(0, 0, image_size.width(), image_size.height());
-  GLuint vertex_buffer = gfx::GLHelper::SetupQuadVertexBuffer();
 
-  ProgramAndShaders pas;
-  SetUpVertexAndFragmentShader(target, &pas);
-  gfx::GLHelper::DrawQuad(vertex_buffer);
+  // Create an uninitialized image of preferred format.
+  scoped_refptr<gl::GLImage> image = this->delegate_.CreateImage(image_size);
 
+  // Create a texture that |image| will be bound to.
+  GLenum target = this->delegate_.GetTextureTarget();
+  GLuint texture = GLTestHelper::CreateTexture(target);
+  glBindTexture(target, texture);
+
+  // Bind |image| to |texture|.
+  bool rv = image->BindTexImage(target);
+  EXPECT_TRUE(rv);
+
+  // Draw |texture| to viewport.
+  DrawTextureQuad(target, image_size);
+
+  // Release |image| from |texture|.
+  image->ReleaseTexImage(target);
+
+  // Read back pixels to check expectations.
   const uint8_t zero_color[] = {0, 0, 0, 0};
   GLTestHelper::CheckPixels(0, 0, image_size.width(), image_size.height(),
                             zero_color);
 
-  glDeleteProgram(pas.program);
-  glDeleteShader(pas.vertex_shader);
-  glDeleteShader(pas.fragment_shader);
-  glDeleteBuffersARB(1, &vertex_buffer);
+  // Clean up.
+  glDeleteTextures(1, &texture);
   glDeleteFramebuffersEXT(1, &framebuffer);
-
-  image->ReleaseTexImage(target);
-  image->Destroy(true);
-  glDeleteTextures(1, &uninitialized_texture);
+  image->Destroy(true /* have_context */);
 }
 
 REGISTER_TYPED_TEST_CASE_P(GLImageZeroInitializeTest, DISABLED_ZeroInitialize);
@@ -248,27 +260,19 @@ TYPED_TEST_P(GLImageCopyTest, CopyTexImage) {
 
   // Copy |image| to |texture|.
   bool rv = image->CopyTexImage(target);
-
   EXPECT_TRUE(rv);
 
-  ProgramAndShaders pas;
-  SetUpVertexAndFragmentShader(target, &pas);
+  // Draw |texture| to viewport.
+  DrawTextureQuad(target, image_size);
 
-  GLuint vertex_buffer = gfx::GLHelper::SetupQuadVertexBuffer();
-  // Draw |texture| to viewport and read back pixels to check expectations.
-  gfx::GLHelper::DrawQuad(vertex_buffer);
-
+  // Read back pixels to check expectations.
   GLTestHelper::CheckPixels(0, 0, image_size.width(), image_size.height(),
                             image_color);
 
   // Clean up.
-  glDeleteProgram(pas.program);
-  glDeleteShader(pas.vertex_shader);
-  glDeleteShader(pas.fragment_shader);
-  glDeleteBuffersARB(1, &vertex_buffer);
   glDeleteTextures(1, &texture);
   glDeleteFramebuffersEXT(1, &framebuffer);
-  image->Destroy(true);
+  image->Destroy(true /* have_context */);
 }
 
 // The GLImageCopyTest test case verifies that the GLImage implementation
