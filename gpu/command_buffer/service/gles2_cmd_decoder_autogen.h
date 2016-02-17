@@ -2902,7 +2902,7 @@ error::Error GLES2DecoderImpl::HandleTexStorage3D(uint32_t immediate_data_size,
   GLsizei width = static_cast<GLsizei>(c.width);
   GLsizei height = static_cast<GLsizei>(c.height);
   GLsizei depth = static_cast<GLsizei>(c.depth);
-  glTexStorage3D(target, levels, internalFormat, width, height, depth);
+  DoTexStorage3D(target, levels, internalFormat, width, height, depth);
   return error::kNoError;
 }
 

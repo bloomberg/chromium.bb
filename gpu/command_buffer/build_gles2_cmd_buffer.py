@@ -3712,6 +3712,8 @@ _FUNCTION_INFO = {
   },
   'TexStorage3D': {
     'unsafe': True,
+    'unit_test': False,
+    'decoder_func': 'DoTexStorage3D',
     'trace_level': 2,
   },
   'TexSubImage2D': {

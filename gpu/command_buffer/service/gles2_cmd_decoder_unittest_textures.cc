@@ -3356,6 +3356,36 @@ TEST_P(GLES2DecoderManualInitTest, GetNoCompressedTextureFormats) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
+TEST_P(GLES3DecoderTest, TexStorage3DValidArgs) {
+  DoBindTexture(GL_TEXTURE_3D, client_texture_id_, kServiceTextureId);
+  EXPECT_CALL(*gl_, TexStorage3D(GL_TEXTURE_3D, 2, GL_RGB565, 4, 5, 6))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
+  cmds::TexStorage3D cmd;
+  cmd.Init(GL_TEXTURE_3D, 2, GL_RGB565, 4, 5, 6);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_P(GLES3DecoderTest, TexImage3DValidArgs) {
+  const GLenum kTarget = GL_TEXTURE_3D;
+  const GLint kLevel = 2;
+  const GLint kInternalFormat = GL_RGBA8;
+  const GLsizei kWidth = 2;
+  const GLsizei kHeight = 2;
+  const GLsizei kDepth = 2;
+  const GLenum kFormat = GL_RGBA;
+  const GLenum kType = GL_UNSIGNED_BYTE;
+
+  DoBindTexture(GL_TEXTURE_3D, client_texture_id_, kServiceTextureId);
+  DoTexImage3D(kTarget, kLevel, kInternalFormat, kWidth, kHeight, kDepth, 0,
+               kFormat, kType, kSharedMemoryId, kSharedMemoryOffset);
+}
+
 // TODO(gman): Complete this test.
 // TEST_P(GLES2DecoderTest, CompressedTexImage2DGLError) {
 // }

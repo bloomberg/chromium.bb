@@ -1850,9 +1850,12 @@ GLsizei TextureManager::ComputeMipMapCount(GLenum target,
   switch (target) {
     case GL_TEXTURE_EXTERNAL_OES:
       return 1;
-    default:
+    case GL_TEXTURE_3D:
       return 1 +
              base::bits::Log2Floor(std::max(std::max(width, height), depth));
+    default:
+      return 1 +
+             base::bits::Log2Floor(std::max(width, height));
   }
 }
 
@@ -2127,7 +2130,10 @@ bool TextureManager::ValidateTexSubImage(ContextState* state,
   ErrorState* error_state = state->GetErrorState();
   const Validators* validators = feature_info_->validators();
 
-  if (!validators->texture_target.IsValid(args.target)) {
+  if ((args.command_type == DoTexSubImageArguments::kTexSubImage2D &&
+       !validators->texture_target.IsValid(args.target)) ||
+      (args.command_type == DoTexSubImageArguments::kTexSubImage3D &&
+       !validators->texture_3_d_target.IsValid(args.target))) {
     ERRORSTATE_SET_GL_ERROR_INVALID_ENUM(error_state, function_name,
                                          args.target, "target");
     return false;
@@ -2140,6 +2146,11 @@ bool TextureManager::ValidateTexSubImage(ContextState* state,
   if (args.height < 0) {
     ERRORSTATE_SET_GL_ERROR(error_state, GL_INVALID_VALUE, function_name,
                             "height < 0");
+    return false;
+  }
+  if (args.depth < 0) {
+    ERRORSTATE_SET_GL_ERROR(error_state, GL_INVALID_VALUE, function_name,
+                            "depth < 0");
     return false;
   }
   TextureRef* local_texture_ref = GetTextureInfoForTarget(state, args.target);
@@ -2162,12 +2173,15 @@ bool TextureManager::ValidateTexSubImage(ContextState* state,
     return false;
   }
   if (args.type != current_type && !feature_info_->IsES3Enabled()) {
+    // It isn't explicitly required in the ES2 spec, but some drivers generate
+    // an error. It is better to be consistent across drivers.
     ERRORSTATE_SET_GL_ERROR(error_state, GL_INVALID_OPERATION, function_name,
                             "type does not match type of texture.");
     return false;
   }
-  if (!texture->ValidForTexture(args.target, args.level, args.xoffset,
-                                args.yoffset, 0, args.width, args.height, 1)) {
+  if (!texture->ValidForTexture(args.target, args.level,
+                                args.xoffset, args.yoffset, args.zoffset,
+                                args.width, args.height, args.depth)) {
     ERRORSTATE_SET_GL_ERROR(error_state, GL_INVALID_VALUE, function_name,
                             "bad dimensions.");
     return false;
@@ -2201,11 +2215,14 @@ void TextureManager::ValidateAndDoTexSubImage(
   Texture* texture = texture_ref->texture();
   GLsizei tex_width = 0;
   GLsizei tex_height = 0;
+  GLsizei tex_depth = 0;
   bool ok = texture->GetLevelSize(args.target, args.level, &tex_width,
-                                  &tex_height, nullptr);
+                                  &tex_height, &tex_depth);
   DCHECK(ok);
-  if (args.xoffset != 0 || args.yoffset != 0 || args.width != tex_width ||
-      args.height != tex_height) {
+  if (args.xoffset != 0 || args.yoffset != 0 || args.zoffset != 0 ||
+      args.width != tex_width || args.height != tex_height ||
+      args.depth != tex_depth) {
+    // TODO(zmo): Implement clearing of 3D textures. crbug.com/597201.
     gfx::Rect cleared_rect;
     if (CombineAdjacentRects(
             texture->GetLevelClearedRect(args.target, args.level),
@@ -2220,15 +2237,21 @@ void TextureManager::ValidateAndDoTexSubImage(
       // Otherwise clear part of texture level that is not already cleared.
       if (!ClearTextureLevel(decoder, texture_ref, args.target, args.level)) {
         ERRORSTATE_SET_GL_ERROR(error_state, GL_OUT_OF_MEMORY,
-                                "glTexSubImage2D", "dimensions too big");
+                                function_name, "dimensions too big");
         return;
       }
     }
     ScopedTextureUploadTimer timer(texture_state);
-    glTexSubImage2D(args.target, args.level, args.xoffset, args.yoffset,
-                    args.width, args.height, AdjustTexFormat(args.format),
-                    args.type, args.pixels);
-    return;
+    if (args.command_type == DoTexSubImageArguments::kTexSubImage3D) {
+      glTexSubImage3D(args.target, args.level, args.xoffset, args.yoffset,
+                      args.zoffset, args.width, args.height, args.depth,
+                      AdjustTexFormat(args.format), args.type, args.pixels);
+    } else {
+      glTexSubImage2D(args.target, args.level, args.xoffset, args.yoffset,
+                      args.width, args.height, AdjustTexFormat(args.format),
+                      args.type, args.pixels);
+      return;
+    }
   }
 
   if (!texture_state->texsubimage_faster_than_teximage &&
@@ -2237,16 +2260,28 @@ void TextureManager::ValidateAndDoTexSubImage(
     GLenum internal_format;
     GLenum tex_type;
     texture->GetLevelType(args.target, args.level, &tex_type, &internal_format);
-    // NOTE: In OpenGL ES 2.0 border is always zero. If that changes we'll need
+    // NOTE: In OpenGL ES 2/3 border is always zero. If that changes we'll need
     // to look it up.
-    glTexImage2D(args.target, args.level, internal_format, args.width,
-                 args.height, 0, AdjustTexFormat(args.format), args.type,
-                 args.pixels);
+    if (args.command_type == DoTexSubImageArguments::kTexSubImage3D) {
+      glTexImage3D(args.target, args.level, internal_format, args.width,
+                   args.height, args.depth, 0, AdjustTexFormat(args.format),
+                   args.type, args.pixels);
+    } else {
+      glTexImage2D(args.target, args.level, internal_format, args.width,
+                   args.height, 0, AdjustTexFormat(args.format), args.type,
+                   args.pixels);
+    }
   } else {
     ScopedTextureUploadTimer timer(texture_state);
-    glTexSubImage2D(args.target, args.level, args.xoffset, args.yoffset,
-                    args.width, args.height, AdjustTexFormat(args.format),
-                    args.type, args.pixels);
+    if (args.command_type == DoTexSubImageArguments::kTexSubImage3D) {
+      glTexSubImage3D(args.target, args.level, args.xoffset, args.yoffset,
+                      args.zoffset, args.width, args.height, args.depth,
+                      AdjustTexFormat(args.format), args.type, args.pixels);
+    } else {
+      glTexSubImage2D(args.target, args.level, args.xoffset, args.yoffset,
+                      args.width, args.height, AdjustTexFormat(args.format),
+                      args.type, args.pixels);
+    }
   }
   SetLevelCleared(texture_ref, args.target, args.level, true);
   return;
@@ -2287,9 +2322,13 @@ void TextureManager::DoTexImage(
 
   if (level_is_same && !args.pixels) {
     // Just set the level texture but mark the texture as uncleared.
-    SetLevelInfo(texture_ref, args.target, args.level, args.internal_format,
-                 args.width, args.height, args.depth, args.border, args.format,
-                 args.type, gfx::Rect());
+    // TODO(zmo): Implement clearing of 3D textures. crbug.com/597201.
+    bool set_as_cleared =
+        (args.command_type == DoTexImageArguments::kTexImage3D);
+    SetLevelInfo(
+        texture_ref, args.target, args.level, args.internal_format, args.width,
+        args.height, args.depth, args.border, args.format, args.type,
+        set_as_cleared ? gfx::Rect(args.width, args.height) : gfx::Rect());
     texture_state->tex_image_failed = false;
     return;
   }
@@ -2340,10 +2379,13 @@ void TextureManager::DoTexImage(
         GetAllGLErrors());
   }
   if (error == GL_NO_ERROR) {
+    // TODO(zmo): Implement clearing of 3D textures. crbug.com/597201.
+    bool set_as_cleared = (args.pixels != nullptr ||
+        args.command_type == DoTexImageArguments::kTexImage3D);
     SetLevelInfo(
         texture_ref, args.target, args.level, args.internal_format, args.width,
         args.height, args.depth, args.border, args.format, args.type,
-        args.pixels != NULL ? gfx::Rect(args.width, args.height) : gfx::Rect());
+        set_as_cleared ? gfx::Rect(args.width, args.height) : gfx::Rect());
     texture_state->tex_image_failed = false;
   }
 }

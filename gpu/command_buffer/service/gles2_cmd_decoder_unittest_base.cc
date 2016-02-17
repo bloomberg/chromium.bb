@@ -1250,6 +1250,33 @@ void GLES2DecoderTestBase::DoCompressedTexImage2D(GLenum target,
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
+void GLES2DecoderTestBase::DoTexImage3D(GLenum target,
+                                        GLint level,
+                                        GLenum internal_format,
+                                        GLsizei width,
+                                        GLsizei height,
+                                        GLsizei depth,
+                                        GLint border,
+                                        GLenum format,
+                                        GLenum type,
+                                        uint32_t shared_memory_id,
+                                        uint32_t shared_memory_offset) {
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, TexImage3D(target, level, internal_format,
+                               width, height, depth, border, format, type, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
+  cmds::TexImage3D cmd;
+  cmd.Init(target, level, internal_format, width, height, depth, format, type,
+           shared_memory_id, shared_memory_offset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
 void GLES2DecoderTestBase::DoRenderbufferStorage(
     GLenum target, GLenum internal_format, GLenum actual_format,
     GLsizei width, GLsizei height,  GLenum error) {

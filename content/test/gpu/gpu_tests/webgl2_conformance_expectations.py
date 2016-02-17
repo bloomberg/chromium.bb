@@ -69,10 +69,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Note that this test fails on ['win', 'intel'] with bug=483282
     self.Fail('conformance2/buffers/uniform-buffers.html', bug=577368)
 
-    # Command buffer side handling of TexSubImage3D is incorrect.
-    self.Fail('conformance2/textures/misc/tex-storage-and-subimage-3d.html',
-        bug=570453)
-
     # Windows only.
     self.Fail('conformance2/textures/canvas/tex-image-and-sub-image-2d' +
         '-with-canvas-r8-red-unsigned_byte.html',

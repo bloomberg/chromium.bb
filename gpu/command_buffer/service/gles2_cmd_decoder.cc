@@ -917,20 +917,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
       GLsizei width,
       GLsizei height);
 
-  // Wrapper for TexSubImage3D.
-  error::Error DoTexSubImage3D(
-      GLenum target,
-      GLint level,
-      GLint xoffset,
-      GLint yoffset,
-      GLint zoffset,
-      GLsizei width,
-      GLsizei height,
-      GLsizei depth,
-      GLenum format,
-      GLenum type,
-      const void * data);
-
   // Wrapper for TexImageIOSurface2DCHROMIUM.
   void DoTexImageIOSurface2DCHROMIUM(
       GLenum target,
@@ -968,6 +954,15 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
       GLenum internal_format,
       GLsizei width,
       GLsizei height);
+
+  // Wrapper for TexStorage3D.
+  void DoTexStorage3D(
+      GLenum target,
+      GLint levels,
+      GLenum internal_format,
+      GLsizei width,
+      GLsizei height,
+      GLsizei depth);
 
   void DoProduceTextureCHROMIUM(GLenum target, const GLbyte* key);
   void DoProduceTextureDirectCHROMIUM(GLuint texture, GLenum target,
@@ -10088,6 +10083,8 @@ bool GLES2DecoderImpl::ClearLevel(Texture* texture,
                                   int yoffset,
                                   int width,
                                   int height) {
+  // TODO(zmo): Implement clearing of 3D textures. crbug.com/597201.
+  DCHECK(target != GL_TEXTURE_3D && target != GL_TEXTURE_2D_ARRAY);
   uint32_t channels = GLES2Util::GetChannelsForFormat(format);
   if ((feature_info_->feature_flags().angle_depth_texture ||
        feature_info_->IsES3Enabled())
@@ -11497,47 +11494,12 @@ error::Error GLES2DecoderImpl::HandleTexSubImage2D(uint32_t immediate_data_size,
     return error::kOutOfBounds;
 
   TextureManager::DoTexSubImageArguments args = {
-      target, level,  xoffset, yoffset, width,
-      height, format, type,    pixels,  data_size};
+      target, level, xoffset, yoffset, 0, width, height, 1,
+      format, type, pixels, data_size,
+      TextureManager::DoTexSubImageArguments::kTexSubImage2D};
   texture_manager()->ValidateAndDoTexSubImage(this, &texture_state_, &state_,
                                               &framebuffer_state_,
                                               "glTexSubImage2D", args);
-
-  // This may be a slow command.  Exit command processing to allow for
-  // context preemption and GPU watchdog checks.
-  ExitCommandProcessingEarly();
-  return error::kNoError;
-}
-
-error::Error GLES2DecoderImpl::DoTexSubImage3D(
-    GLenum target,
-    GLint level,
-    GLint xoffset,
-    GLint yoffset,
-    GLint zoffset,
-    GLsizei width,
-    GLsizei height,
-    GLsizei depth,
-    GLenum format,
-    GLenum type,
-    const void * data) {
-  TextureRef* texture_ref = texture_manager()->GetTextureInfoForTarget(
-      &state_, target);
-  if (!texture_ref) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_ENUM, "glTexSubImage3D", "invalid target");
-  }
-
-  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glTexSubImage3D");
-  ScopedTextureUploadTimer timer(&texture_state_);
-  glTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height,
-                  depth, format, type, data);
-  GLenum error = LOCAL_PEEK_GL_ERROR("glTexSubImage3D");
-  if (error == GL_NO_ERROR) {
-    // TODO(zmo): This is not 100% correct because only part of the level
-    // image is cleared.
-    texture_manager()->SetLevelCleared(texture_ref, target, level, true);
-  }
 
   // This may be a slow command.  Exit command processing to allow for
   // context preemption and GPU watchdog checks.
@@ -11574,10 +11536,24 @@ error::Error GLES2DecoderImpl::HandleTexSubImage3D(uint32_t immediate_data_size,
       NULL, NULL)) {
     return error::kOutOfBounds;
   }
+
   const void* pixels = GetSharedMemoryAs<const void*>(
       c.pixels_shm_id, c.pixels_shm_offset, data_size);
-  return DoTexSubImage3D(target, level, xoffset, yoffset, zoffset, width,
-                         height, depth, format, type, pixels);
+  if (!pixels)
+    return error::kOutOfBounds;
+
+  TextureManager::DoTexSubImageArguments args = {
+      target, level, xoffset, yoffset, zoffset, width, height, depth,
+      format, type, pixels, data_size,
+      TextureManager::DoTexSubImageArguments::kTexSubImage3D};
+  texture_manager()->ValidateAndDoTexSubImage(this, &texture_state_, &state_,
+                                              &framebuffer_state_,
+                                              "glTexSubImage3D", args);
+
+  // This may be a slow command.  Exit command processing to allow for
+  // context preemption and GPU watchdog checks.
+  ExitCommandProcessingEarly();
+  return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleGetVertexAttribPointerv(
@@ -13845,6 +13821,122 @@ void GLES2DecoderImpl::DoTexStorage2DEXT(
       }
       level_width = std::max(1, level_width >> 1);
       level_height = std::max(1, level_height >> 1);
+    }
+    texture->SetImmutable(true);
+  }
+}
+
+void GLES2DecoderImpl::DoTexStorage3D(
+    GLenum target,
+    GLint levels,
+    GLenum internal_format,
+    GLsizei width,
+    GLsizei height,
+    GLsizei depth) {
+  TRACE_EVENT2("gpu", "GLES2DecoderImpl::DoTexStorage3D",
+      "widthXheight", width * height, "depth", depth);
+  if (!validators_->texture_3_d_target.IsValid(target)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM("glTexStorage3D", target, "target");
+    return;
+  }
+  if (levels <= 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexStorage3D", "levels <= 0");
+    return;
+  }
+  if (!validators_->texture_internal_format_storage.IsValid(internal_format)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM("glTexStorage3D", internal_format,
+                                    "internal_format");
+    return;
+  }
+  if (width <= 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexStorage3D", "width <= 0");
+    return;
+  }
+  if (height <= 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexStorage3D", "height <= 0");
+    return;
+  }
+  if (depth <= 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexStorage3D", "depth <= 0");
+    return;
+  }
+  if (!texture_manager()->ValidForTarget(target, 0, width, height, depth) ||
+      TextureManager::ComputeMipMapCount(
+          target, width, height, depth) < levels) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_VALUE, "glTexStorage3D", "dimensions out of range");
+    return;
+  }
+  TextureRef* texture_ref = texture_manager()->GetTextureInfoForTarget(
+      &state_, target);
+  if (!texture_ref) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_OPERATION,
+        "glTexStorage3D", "unknown texture for target");
+    return;
+  }
+  Texture* texture = texture_ref->texture();
+  if (texture->IsAttachedToFramebuffer()) {
+    framebuffer_state_.clear_state_dirty = true;
+  }
+  if (texture->IsImmutable()) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_OPERATION, "glTexStorage3D", "texture is immutable");
+    return;
+  }
+
+  GLenum format = TextureManager::ExtractFormatFromStorageFormat(
+      internal_format);
+  GLenum type = TextureManager::ExtractTypeFromStorageFormat(internal_format);
+
+  {
+    GLsizei level_width = width;
+    GLsizei level_height = height;
+    GLsizei level_depth = depth;
+    uint32_t estimated_size = 0;
+    for (int ii = 0; ii < levels; ++ii) {
+      uint32_t level_size = 0;
+      if (!GLES2Util::ComputeImageDataSizes(
+          level_width, level_height, level_depth, format, type,
+          state_.unpack_alignment,
+          &estimated_size, NULL, NULL) ||
+          !SafeAddUint32(estimated_size, level_size, &estimated_size)) {
+        LOCAL_SET_GL_ERROR(
+            GL_OUT_OF_MEMORY, "glTexStorage3D", "dimensions too large");
+        return;
+      }
+      level_width = std::max(1, level_width >> 1);
+      level_height = std::max(1, level_height >> 1);
+      if (target == GL_TEXTURE_3D)
+        level_depth = std::max(1, level_depth >> 1);
+    }
+    if (!EnsureGPUMemoryAvailable(estimated_size)) {
+      LOCAL_SET_GL_ERROR(
+          GL_OUT_OF_MEMORY, "glTexStorage3D", "out of memory");
+      return;
+    }
+  }
+
+  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glTexStorage3D");
+  glTexStorage3D(target, levels, internal_format, width, height, depth);
+  GLenum error = LOCAL_PEEK_GL_ERROR("glTexStorage3D");
+  if (error == GL_NO_ERROR) {
+    GLsizei level_width = width;
+    GLsizei level_height = height;
+    GLsizei level_depth = depth;
+
+    GLenum cur_format = feature_info_->IsES3Enabled() ?
+                        internal_format : format;
+    for (int ii = 0; ii < levels; ++ii) {
+      // TODO(zmo): Implement clearing of 3D textures. crbug.com/597201.
+      texture_manager()->SetLevelInfo(texture_ref, target, ii, cur_format,
+                                      level_width, level_height, level_depth, 0,
+                                      format, type,
+                                      gfx::Rect(level_width, level_height));
+      level_width = std::max(1, level_width >> 1);
+      level_height = std::max(1, level_height >> 1);
+      if (target == GL_TEXTURE_3D)
+        level_depth = std::max(1, level_depth >> 1);
     }
     texture->SetImmutable(true);
   }

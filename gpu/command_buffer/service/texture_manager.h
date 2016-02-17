@@ -910,17 +910,24 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
     const DoTexImageArguments& args);
 
   struct DoTexSubImageArguments {
+    enum TexSubImageCommandType {
+      kTexSubImage2D,
+      kTexSubImage3D,
+    };
+
     GLenum target;
     GLint level;
     GLint xoffset;
     GLint yoffset;
+    GLint zoffset;
     GLsizei width;
     GLsizei height;
+    GLsizei depth;
     GLenum format;
     GLenum type;
     const void* pixels;
     uint32_t pixels_size;
-    // TODO(kkinnunen): currently this is used only for TexSubImage2D.
+    TexSubImageCommandType command_type;
   };
 
   bool ValidateTexSubImage(

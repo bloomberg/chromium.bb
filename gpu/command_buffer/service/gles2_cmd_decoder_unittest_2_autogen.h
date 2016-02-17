@@ -1211,18 +1211,6 @@ TEST_P(GLES2DecoderTest2, TexParameterivImmediateInvalidArgs1_0) {
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
-TEST_P(GLES2DecoderTest2, TexStorage3DValidArgs) {
-  EXPECT_CALL(*gl_, TexStorage3D(GL_TEXTURE_3D, 2, GL_RGB565, 4, 5, 6));
-  SpecializedSetup<cmds::TexStorage3D, 0>(true);
-  cmds::TexStorage3D cmd;
-  cmd.Init(GL_TEXTURE_3D, 2, GL_RGB565, 4, 5, 6);
-  decoder_->set_unsafe_es3_apis_enabled(true);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  decoder_->set_unsafe_es3_apis_enabled(false);
-  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
-}
-
 TEST_P(GLES2DecoderTest2, TransformFeedbackVaryingsBucketValidArgs) {
   const uint32_t kBucketId = 123;
   const char kSource0[] = "hello";
