@@ -109,7 +109,7 @@ class NetworkLocationProvider
   bool is_wifi_data_complete_;
 
   // The timestamp for the latest wifi data update.
-  base::Time wifi_data_updated_timestamp_;
+  base::Time wifi_timestamp_;
 
   // Cached value loaded from the token store or set by a previous server
   // response, and sent in each subsequent network request.

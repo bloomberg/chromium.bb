@@ -47,7 +47,7 @@ class NetworkLocationRequest : private net::URLFetcherDelegate {
   // started. In all cases, any currently pending request will be canceled.
   bool MakeRequest(const base::string16& access_token,
                    const WifiData& wifi_data,
-                   const base::Time& timestamp);
+                   const base::Time& wifi_timestamp);
 
   bool is_request_pending() const { return url_fetcher_ != NULL; }
   const GURL& url() const { return url_; }
@@ -64,7 +64,7 @@ class NetworkLocationRequest : private net::URLFetcherDelegate {
   // Keep a copy of the data sent in the request, so we can refer back to it
   // when the response arrives.
   WifiData wifi_data_;
-  base::Time wifi_data_timestamp_;
+  base::Time wifi_timestamp_;
 
   // The start time for the request.
   base::TimeTicks request_start_time_;

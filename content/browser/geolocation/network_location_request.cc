@@ -74,7 +74,7 @@ void RecordUmaAccessPoints(int count) {
 GURL FormRequestURL(const GURL& url);
 
 void FormUploadData(const WifiData& wifi_data,
-                    const base::Time& timestamp,
+                    const base::Time& wifi_timestamp,
                     const base::string16& access_token,
                     std::string* upload_data);
 
@@ -83,7 +83,7 @@ void FormUploadData(const WifiData& wifi_data,
 void GetLocationFromResponse(bool http_post_result,
                              int status_code,
                              const std::string& response_body,
-                             const base::Time& timestamp,
+                             const base::Time& wifi_timestamp,
                              const GURL& server_url,
                              Geoposition* position,
                              base::string16* access_token);
@@ -92,7 +92,7 @@ void GetLocationFromResponse(bool http_post_result,
 // Sets |*position| to the parsed location if a valid fix was received,
 // otherwise leaves it unchanged.
 bool ParseServerResponse(const std::string& response_body,
-                         const base::Time& timestamp,
+                         const base::Time& wifi_timestamp,
                          Geoposition* position,
                          base::string16* access_token);
 void AddWifiData(const WifiData& wifi_data,
@@ -114,7 +114,7 @@ NetworkLocationRequest::~NetworkLocationRequest() {
 
 bool NetworkLocationRequest::MakeRequest(const base::string16& access_token,
                                          const WifiData& wifi_data,
-                                         const base::Time& timestamp) {
+                                         const base::Time& wifi_timestamp) {
   RecordUmaEvent(NETWORK_LOCATION_REQUEST_EVENT_REQUEST_START);
   RecordUmaAccessPoints(wifi_data.access_point_data.size());
   if (url_fetcher_ != NULL) {
@@ -123,14 +123,14 @@ bool NetworkLocationRequest::MakeRequest(const base::string16& access_token,
     url_fetcher_.reset();
   }
   wifi_data_ = wifi_data;
-  wifi_data_timestamp_ = timestamp;
+  wifi_timestamp_ = wifi_timestamp;
 
   GURL request_url = FormRequestURL(url_);
   url_fetcher_ = net::URLFetcher::Create(url_fetcher_id_for_tests, request_url,
                                          net::URLFetcher::POST, this);
   url_fetcher_->SetRequestContext(url_context_.get());
   std::string upload_data;
-  FormUploadData(wifi_data, timestamp, access_token, &upload_data);
+  FormUploadData(wifi_data, wifi_timestamp, access_token, &upload_data);
   url_fetcher_->SetUploadData("application/json", upload_data);
   url_fetcher_->SetLoadFlags(
       net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
@@ -154,12 +154,8 @@ void NetworkLocationRequest::OnURLFetchComplete(
   base::string16 access_token;
   std::string data;
   source->GetResponseAsString(&data);
-  GetLocationFromResponse(status.is_success(),
-                          response_code,
-                          data,
-                          wifi_data_timestamp_,
-                          source->GetURL(),
-                          &position,
+  GetLocationFromResponse(status.is_success(), response_code, data,
+                          wifi_timestamp_, source->GetURL(), &position,
                           &access_token);
   const bool server_error =
       !status.is_success() || (response_code >= 500 && response_code < 600);
@@ -209,14 +205,14 @@ GURL FormRequestURL(const GURL& url) {
 }
 
 void FormUploadData(const WifiData& wifi_data,
-                    const base::Time& timestamp,
+                    const base::Time& wifi_timestamp,
                     const base::string16& access_token,
                     std::string* upload_data) {
   int age = std::numeric_limits<int32_t>::min();  // Invalid so AddInteger()
                                                   // will ignore.
-  if (!timestamp.is_null()) {
+  if (!wifi_timestamp.is_null()) {
     // Convert absolute timestamps into a relative age.
-    int64_t delta_ms = (base::Time::Now() - timestamp).InMilliseconds();
+    int64_t delta_ms = (base::Time::Now() - wifi_timestamp).InMilliseconds();
     if (delta_ms >= 0 && delta_ms < std::numeric_limits<int32_t>::max())
       age = static_cast<int>(delta_ms);
   }
@@ -285,7 +281,7 @@ void FormatPositionError(const GURL& server_url,
 void GetLocationFromResponse(bool http_post_result,
                              int status_code,
                              const std::string& response_body,
-                             const base::Time& timestamp,
+                             const base::Time& wifi_timestamp,
                              const GURL& server_url,
                              Geoposition* position,
                              base::string16* access_token) {
@@ -308,7 +304,8 @@ void GetLocationFromResponse(bool http_post_result,
   }
   // We use the timestamp from the wifi data that was used to generate
   // this position fix.
-  if (!ParseServerResponse(response_body, timestamp, position, access_token)) {
+  if (!ParseServerResponse(response_body, wifi_timestamp, position,
+                           access_token)) {
     // We failed to parse the repsonse.
     FormatPositionError(server_url, "Response was malformed", position);
     RecordUmaEvent(NETWORK_LOCATION_REQUEST_EVENT_RESPONSE_MALFORMED);
@@ -346,14 +343,14 @@ bool GetAsDouble(const base::DictionaryValue& object,
 }
 
 bool ParseServerResponse(const std::string& response_body,
-                         const base::Time& timestamp,
+                         const base::Time& wifi_timestamp,
                          Geoposition* position,
                          base::string16* access_token) {
   DCHECK(position);
   DCHECK(!position->Validate());
   DCHECK(position->error_code == Geoposition::ERROR_CODE_NONE);
   DCHECK(access_token);
-  DCHECK(!timestamp.is_null());
+  DCHECK(!wifi_timestamp.is_null());
 
   if (response_body.empty()) {
     LOG(WARNING) << "ParseServerResponse() : Response was empty.";
@@ -416,7 +413,7 @@ bool ParseServerResponse(const std::string& response_body,
   // All error paths covered: now start actually modifying postion.
   position->latitude = latitude;
   position->longitude = longitude;
-  position->timestamp = timestamp;
+  position->timestamp = wifi_timestamp;
 
   // Other fields are optional.
   GetAsDouble(*response_object, kAccuracyString, &position->accuracy);
