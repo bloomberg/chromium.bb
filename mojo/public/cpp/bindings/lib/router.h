@@ -10,11 +10,11 @@
 #include <map>
 
 #include "base/logging.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/lib/connector.h"
 #include "mojo/public/cpp/bindings/lib/filter_chain.h"
-#include "mojo/public/cpp/bindings/lib/shared_data.h"
 #include "mojo/public/cpp/environment/environment.h"
 
 namespace mojo {
@@ -104,10 +104,12 @@ class Router : public MessageReceiverWithResponder {
   // Returns true if this Router has any pending callbacks.
   bool has_pending_responders() const {
     DCHECK(thread_checker_.CalledOnValidThread());
-    return !responders_.empty();
+    return !async_responders_.empty() || !sync_responders_.empty();
   }
 
  private:
+  // Maps from the id of a response to the MessageReceiver that handles the
+  // response.
   typedef std::map<uint64_t, MessageReceiver*> ResponderMap;
 
   class HandleIncomingMessageThunk : public MessageReceiver {
@@ -127,14 +129,13 @@ class Router : public MessageReceiverWithResponder {
   HandleIncomingMessageThunk thunk_;
   FilterChain filters_;
   Connector connector_;
-  SharedData<Router*> weak_self_;
   MessageReceiverWithResponderStatus* incoming_receiver_;
-  // Maps from the id of a response to the MessageReceiver that handles the
-  // response.
-  ResponderMap responders_;
+  ResponderMap async_responders_;
+  ResponderMap sync_responders_;
   uint64_t next_request_id_;
   bool testing_mode_;
   base::ThreadChecker thread_checker_;
+  base::WeakPtrFactory<Router> weak_factory_;
 };
 
 }  // namespace internal

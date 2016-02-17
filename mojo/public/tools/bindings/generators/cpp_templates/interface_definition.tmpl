@@ -26,8 +26,8 @@ p_{{param.name}}
 {%-   endfor %}
 {%- endmacro %}
 
-{%- macro build_message(struct, struct_display_name) -%}
-  {{struct_macros.serialize(struct, struct_display_name, "in_%s", "params", "builder.buffer()")}}
+{%- macro build_message(struct, input_pattern, struct_display_name) -%}
+  {{struct_macros.serialize(struct, struct_display_name, input_pattern, "params", "builder.buffer()")}}
   params->EncodePointersAndHandles(builder.message()->mutable_handles());
 {%- endmacro %}
 
@@ -47,6 +47,51 @@ MOJO_STATIC_CONST_MEMBER_DEFINITION const {{constant.kind|cpp_pod_type}} {{inter
 {#--- ForwardToCallback definition #}
 {%- for method in interface.methods -%}
 {%-   if method.response_parameters != None %}
+{%-     if method.sync %}
+class {{class_name}}_{{method.name}}_HandleSyncResponse
+    : public mojo::MessageReceiver {
+ public:
+  {{class_name}}_{{method.name}}_HandleSyncResponse(
+      scoped_refptr<mojo::internal::MultiplexRouter> router, bool* result
+{%-       for param in method.response_parameters -%}
+      , {{param.kind|cpp_wrapper_type}}* out_{{param.name}}
+{%-       endfor %})
+      : serialization_context_(std::move(router)), result_(result)
+{%-       for param in method.response_parameters -%}
+        , out_{{param.name}}_(out_{{param.name}})
+{%-       endfor %} {
+    DCHECK(!*result_);
+  }
+  bool Accept(mojo::Message* message) override;
+ private:
+  mojo::internal::SerializationContext serialization_context_;
+  bool* result_;
+{%-       for param in method.response_parameters %}
+  {{param.kind|cpp_wrapper_type}}* out_{{param.name}}_;
+{%-       endfor -%}
+  DISALLOW_COPY_AND_ASSIGN({{class_name}}_{{method.name}}_HandleSyncResponse);
+};
+bool {{class_name}}_{{method.name}}_HandleSyncResponse::Accept(
+    mojo::Message* message) {
+  internal::{{class_name}}_{{method.name}}_ResponseParams_Data* params =
+      reinterpret_cast<internal::{{class_name}}_{{method.name}}_ResponseParams_Data*>(
+          message->mutable_payload());
+
+  params->DecodePointersAndHandles(message->mutable_handles());
+  {{alloc_params(method.response_param_struct, "&serialization_context_")}}
+
+{%-       for param in method.response_parameters %}
+{%-         if param.kind|is_move_only_kind %}
+  *out_{{param.name}}_ = std::move(p_{{param.name}});
+{%-         else %}
+  *out_{{param.name}}_ = p_{{param.name}};
+{%-         endif %}
+{%-       endfor %}
+  *result_ = true;
+  return true;
+}
+{%-     endif %}
+
 class {{class_name}}_{{method.name}}_ForwardToCallback
     : public mojo::MessageReceiver {
  public:
@@ -59,7 +104,7 @@ class {{class_name}}_{{method.name}}_ForwardToCallback
  private:
   {{class_name}}::{{method.name}}Callback callback_;
   mojo::internal::SerializationContext serialization_context_;
-  MOJO_DISALLOW_COPY_AND_ASSIGN({{class_name}}_{{method.name}}_ForwardToCallback);
+  DISALLOW_COPY_AND_ASSIGN({{class_name}}_{{method.name}}_ForwardToCallback);
 };
 bool {{class_name}}_{{method.name}}_ForwardToCallback::Accept(
     mojo::Message* message) {
@@ -87,6 +132,29 @@ bool {{class_name}}_{{method.name}}_ForwardToCallback::Accept(
 {%-   set params_struct = method.param_struct %}
 {%-   set params_description =
           "%s.%s request"|format(interface.name, method.name) %}
+{%-   if method.sync %}
+bool {{proxy_name}}::{{method.name}}(
+    {{interface_macros.declare_sync_method_params("param_", method)}}) {
+  {{struct_macros.get_serialized_size(params_struct, "param_%s")}}
+
+  mojo::internal::RequestMessageBuilder builder({{message_name}}, size,
+                                                mojo::internal::kMessageIsSync);
+
+  {{build_message(params_struct, "param_%s", params_description)}}
+
+  bool result = false;
+  mojo::MessageReceiver* responder =
+      new {{class_name}}_{{method.name}}_HandleSyncResponse(
+          serialization_context_.router, &result
+{%-     for param in method.response_parameters -%}
+          , param_{{param.name}}
+{%-     endfor %});
+  if (!receiver_->AcceptWithResponder(builder.message(), responder))
+    delete responder;
+  return result;
+}
+{%-   endif %}
+
 void {{proxy_name}}::{{method.name}}(
     {{interface_macros.declare_request_params("in_", method)}}) {
   {{struct_macros.get_serialized_size(params_struct, "in_%s")}}
@@ -97,7 +165,7 @@ void {{proxy_name}}::{{method.name}}(
   mojo::internal::MessageBuilder builder({{message_name}}, size);
 {%- endif %}
 
-  {{build_message(params_struct, params_description)}}
+  {{build_message(params_struct, "in_%s", params_description)}}
 
 {%- if method.response_parameters != None %}
   mojo::MessageReceiver* responder =
@@ -138,8 +206,10 @@ class {{class_name}}_{{method.name}}_ProxyToResponder
 
   {{class_name}}_{{method.name}}_ProxyToResponder(
       uint64_t request_id,
+      bool is_sync,
       mojo::MessageReceiverWithStatus* responder)
       : request_id_(request_id),
+        is_sync_(is_sync),
         responder_(responder) {
   }
 
@@ -147,15 +217,17 @@ class {{class_name}}_{{method.name}}_ProxyToResponder
 
  private:
   uint64_t request_id_;
+  bool is_sync_;
   mutable mojo::MessageReceiverWithStatus* responder_;
-  MOJO_DISALLOW_COPY_AND_ASSIGN({{class_name}}_{{method.name}}_ProxyToResponder);
+  DISALLOW_COPY_AND_ASSIGN({{class_name}}_{{method.name}}_ProxyToResponder);
 };
 void {{class_name}}_{{method.name}}_ProxyToResponder::Run(
     {{interface_macros.declare_params("in_", method.response_parameters)}}) const {
   {{struct_macros.get_serialized_size(response_params_struct, "in_%s")}}
   mojo::internal::ResponseMessageBuilder builder(
-      {{message_name}}, size, request_id_);
-  {{build_message(response_params_struct, params_description)}}
+      {{message_name}}, size, request_id_,
+      is_sync_ ? mojo::internal::kMessageIsSync : 0);
+  {{build_message(response_params_struct, "in_%s", params_description)}}
   bool ok = responder_->Accept(builder.message());
   MOJO_ALLOW_UNUSED_LOCAL(ok);
   // TODO(darin): !ok returned here indicates a malformed message, and that may
@@ -222,7 +294,9 @@ bool {{class_name}}Stub::AcceptWithResponder(
       {{alloc_params(method.param_struct, "&serialization_context_")|indent(4)}}
       {{class_name}}::{{method.name}}Callback::Runnable* runnable =
           new {{class_name}}_{{method.name}}_ProxyToResponder(
-              message->request_id(), responder);
+              message->request_id(),
+              message->has_flag(mojo::internal::kMessageIsSync),
+              responder);
       {{class_name}}::{{method.name}}Callback callback(runnable);
       // A null |sink_| means no implementation was bound.
       assert(sink_);

@@ -14,7 +14,11 @@ namespace internal {
 
 #pragma pack(push, 1)
 
-enum { kMessageExpectsResponse = 1 << 0, kMessageIsResponse = 1 << 1 };
+enum {
+  kMessageExpectsResponse = 1 << 0,
+  kMessageIsResponse = 1 << 1,
+  kMessageIsSync = 1 << 2
+};
 
 struct MessageHeader : internal::StructHeader {
   // Interface ID for identifying multiple interfaces running on the same

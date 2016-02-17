@@ -322,6 +322,14 @@ def MethodFromData(module, data, interface):
         lambda parameter: ParameterFromData(module, parameter, interface),
                           data['response_parameters'])
   method.attributes = data.get('attributes')
+
+  # Enforce that only methods with response can have a [Sync] attribute.
+  if method.sync and method.response_parameters is None:
+    raise Exception("Only methods with response can include a [Sync] "
+                    "attribute. If no response parameters are needed, you "
+                    "could use an empty response parameter list, i.e., "
+                    "\"=> ()\".")
+
   return method
 
 def InterfaceToData(interface):

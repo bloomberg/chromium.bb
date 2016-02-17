@@ -135,6 +135,7 @@ PRIMITIVES = (
 
 ATTRIBUTE_MIN_VERSION = 'MinVersion'
 ATTRIBUTE_EXTENSIBLE = 'Extensible'
+ATTRIBUTE_SYNC = 'Sync'
 
 
 class NamedValue(object):
@@ -374,6 +375,11 @@ class Method(object):
   @property
   def min_version(self):
     return self.attributes.get(ATTRIBUTE_MIN_VERSION) \
+        if self.attributes else None
+
+  @property
+  def sync(self):
+    return self.attributes.get(ATTRIBUTE_SYNC) \
         if self.attributes else None
 
 

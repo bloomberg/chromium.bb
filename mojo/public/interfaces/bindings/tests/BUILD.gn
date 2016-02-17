@@ -22,6 +22,7 @@ mojom("test_interfaces") {
     "test_constants.mojom",
     "test_native_types.mojom",
     "test_structs.mojom",
+    "test_sync_methods.mojom",
     "validation_test_interfaces.mojom",
   ]
 

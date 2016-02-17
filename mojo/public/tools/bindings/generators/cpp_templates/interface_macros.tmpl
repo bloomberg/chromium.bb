@@ -21,3 +21,14 @@ mojo::Callback<void(
 const {{method.name}}Callback& callback
 {%-   endif -%}
 {%- endmacro -%}
+
+{%- macro declare_sync_method_params(prefix, method) -%}
+{{declare_params(prefix, method.parameters)}}
+{%-   if method.response_parameters %}
+{%-     if method.parameters %}, {% endif %}
+{%-     for param in method.response_parameters -%}
+{{param.kind|cpp_wrapper_type}}* {{prefix}}{{param.name}}
+{%-       if not loop.last %}, {% endif %}
+{%-     endfor %}
+{%-   endif -%}
+{%- endmacro -%}

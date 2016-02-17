@@ -48,6 +48,14 @@ class RequestMessageBuilder : public MessageWithRequestIDBuilder {
                                     payload_size,
                                     kMessageExpectsResponse,
                                     0) {}
+
+  RequestMessageBuilder(uint32_t name,
+                        size_t payload_size,
+                        uint32_t extra_flags)
+      : MessageWithRequestIDBuilder(name,
+                                    payload_size,
+                                    kMessageExpectsResponse | extra_flags,
+                                    0) {}
 };
 
 class ResponseMessageBuilder : public MessageWithRequestIDBuilder {
@@ -58,6 +66,15 @@ class ResponseMessageBuilder : public MessageWithRequestIDBuilder {
       : MessageWithRequestIDBuilder(name,
                                     payload_size,
                                     kMessageIsResponse,
+                                    request_id) {}
+
+  ResponseMessageBuilder(uint32_t name,
+                         size_t payload_size,
+                         uint64_t request_id,
+                         uint32_t extra_flags)
+      : MessageWithRequestIDBuilder(name,
+                                    payload_size,
+                                    kMessageIsResponse | extra_flags,
                                     request_id) {}
 };
 

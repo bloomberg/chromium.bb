@@ -94,6 +94,7 @@
         'public/cpp/bindings/tests/string_unittest.cc',
         'public/cpp/bindings/tests/struct_traits_unittest.cc',
         'public/cpp/bindings/tests/struct_unittest.cc',
+        'public/cpp/bindings/tests/sync_method_unittest.cc',
         'public/cpp/bindings/tests/type_conversion_unittest.cc',
         'public/cpp/bindings/tests/union_unittest.cc',
         'public/cpp/bindings/tests/validation_unittest.cc',

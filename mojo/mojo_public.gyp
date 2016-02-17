@@ -366,6 +366,7 @@
           'public/interfaces/bindings/tests/test_constants.mojom',
           'public/interfaces/bindings/tests/test_native_types.mojom',
           'public/interfaces/bindings/tests/test_structs.mojom',
+          'public/interfaces/bindings/tests/test_sync_methods.mojom',
           'public/interfaces/bindings/tests/test_unions.mojom',
           'public/interfaces/bindings/tests/validation_test_interfaces.mojom',
         ],

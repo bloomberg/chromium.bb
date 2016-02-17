@@ -161,6 +161,13 @@ bool InterfaceEndpointClient::AcceptWithResponder(Message* message,
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(message->has_flag(kMessageExpectsResponse));
 
+  // TODO(yzshen): Sync method call using assoicated interfaces or master
+  // interfaces that serve associated interfaces hasn't been supported yet.
+  if (message->has_flag(kMessageIsSync)) {
+    NOTIMPLEMENTED();
+    return false;
+  }
+
   if (encountered_error_)
     return false;
 
