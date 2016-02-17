@@ -1557,8 +1557,7 @@ void BookmarkBarView::Init() {
       base::Bind(&BookmarkBarView::OnShowManagedBookmarksPrefChanged,
                  base::Unretained(this)));
   apps_page_shortcut_->SetVisible(
-      chrome::ShouldShowAppsShortcutInBookmarkBar(
-          browser_->profile(), browser_->host_desktop_type()));
+      chrome::ShouldShowAppsShortcutInBookmarkBar(browser_->profile()));
 
   bookmarks_separator_view_ = new ButtonSeparatorView();
   AddChildView(bookmarks_separator_view_);
@@ -2060,8 +2059,8 @@ void BookmarkBarView::UpdateBookmarksSeparatorVisibility() {
 void BookmarkBarView::OnAppsPageShortcutVisibilityPrefChanged() {
   DCHECK(apps_page_shortcut_);
   // Only perform layout if required.
-  bool visible = chrome::ShouldShowAppsShortcutInBookmarkBar(
-      browser_->profile(), browser_->host_desktop_type());
+  bool visible =
+      chrome::ShouldShowAppsShortcutInBookmarkBar(browser_->profile());
   if (apps_page_shortcut_->visible() == visible)
     return;
   apps_page_shortcut_->SetVisible(visible);

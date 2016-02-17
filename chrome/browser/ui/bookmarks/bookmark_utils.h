@@ -63,13 +63,10 @@ base::string16 FormatBookmarkURLForDisplay(const GURL& url,
 // Returns whether the Apps shortcut is enabled. If true, then the visibility
 // of the Apps shortcut should be controllable via an item in the bookmark
 // context menu.
-bool IsAppsShortcutEnabled(Profile* profile,
-                           chrome::HostDesktopType host_desktop_type);
+bool IsAppsShortcutEnabled(Profile* profile);
 
 // Returns true if the Apps shortcut should be displayed in the bookmark bar.
-bool ShouldShowAppsShortcutInBookmarkBar(
-    Profile* profile,
-    chrome::HostDesktopType host_desktop_type);
+bool ShouldShowAppsShortcutInBookmarkBar(Profile* profile);
 
 // Whether the menu item and shortcut to bookmark a page should be removed from
 // the user interface.
