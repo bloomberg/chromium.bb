@@ -21,10 +21,10 @@ import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.test.util.InfoBarUtil;
-import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TouchCommon;
+import org.chromium.net.test.EmbeddedTestServer;
 
 import java.io.File;
 
@@ -36,6 +36,25 @@ public class DownloadTest extends DownloadTestBase {
     private static final String SUPERBO_CONTENTS =
             "plain text response from a POST";
 
+    private EmbeddedTestServer mTestServer;
+
+    public DownloadTest() {
+        mSkipCheckHttpServer = true;
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        mTestServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        mTestServer.stopAndDestroyServer();
+        super.tearDown();
+    }
+
     @Override
     public void startMainActivity() throws InterruptedException {
         startMainActivityOnBlankPage();
@@ -44,7 +63,7 @@ public class DownloadTest extends DownloadTestBase {
     @MediumTest
     @Feature({"Downloads"})
     public void testHttpGetDownload() throws Exception {
-        loadUrl(TestHttpServerClient.getUrl("chrome/test/data/android/download/get.html"));
+        loadUrl(mTestServer.getURL("/chrome/test/data/android/download/get.html"));
         waitForFocus();
         View currentView = getActivity().getActivityTab().getView();
 
@@ -53,14 +72,14 @@ public class DownloadTest extends DownloadTestBase {
         singleClickView(currentView);
         callbackHelper.waitForCallback(callCount);
 
-        assertEquals(TestHttpServerClient.getUrl("chrome/test/data/android/download/test.gzip"),
+        assertEquals(mTestServer.getURL("/chrome/test/data/android/download/test.gzip"),
                 callbackHelper.getDownloadInfo().getUrl());
     }
 
     @MediumTest
     @Feature({"Downloads"})
     public void testDangerousDownload() throws Exception {
-        loadUrl(TestHttpServerClient.getUrl("chrome/test/data/android/download/dangerous.html"));
+        loadUrl(mTestServer.getURL("/chrome/test/data/android/download/dangerous.html"));
         waitForFocus();
         View currentView = getActivity().getActivityTab().getView();
         singleClickView(currentView);
@@ -70,14 +89,14 @@ public class DownloadTest extends DownloadTestBase {
         int callCount = callbackHelper.getCallCount();
         assertTrue("OK button wasn't found", InfoBarUtil.clickPrimaryButton(getInfoBars().get(0)));
         callbackHelper.waitForCallback(callCount);
-        assertEquals(TestHttpServerClient.getUrl("chrome/test/data/android/download/test.apk"),
+        assertEquals(mTestServer.getURL("/chrome/test/data/android/download/test.apk"),
                 callbackHelper.getDownloadInfo().getUrl());
     }
 
     @MediumTest
     @Feature({"Downloads"})
     public void testHttpPostDownload() throws Exception {
-        loadUrl(TestHttpServerClient.getUrl("chrome/test/data/android/download/post.html"));
+        loadUrl(mTestServer.getURL("/chrome/test/data/android/download/post.html"));
         waitForFocus();
         View currentView = getActivity().getActivityTab().getView();
 
@@ -94,7 +113,7 @@ public class DownloadTest extends DownloadTestBase {
     */
     @DisabledTest
     public void testCloseEmptyDownloadTab() throws Exception {
-        loadUrl(TestHttpServerClient.getUrl("chrome/test/data/android/download/get.html"));
+        loadUrl(mTestServer.getURL("/chrome/test/data/android/download/get.html"));
         waitForFocus();
         final int initialTabCount = getActivity().getCurrentTabModel().getCount();
         View currentView = getActivity().getActivityTab().getView();
@@ -105,7 +124,7 @@ public class DownloadTest extends DownloadTestBase {
         getInstrumentation().invokeContextMenuAction(getActivity(),
                 R.id.contextmenu_open_in_new_tab, 0);
         callbackHelper.waitForCallback(callCount);
-        assertEquals(TestHttpServerClient.getUrl("chrome/test/data/android/download/test.gzip"),
+        assertEquals(mTestServer.getURL("/chrome/test/data/android/download/test.gzip"),
                 callbackHelper.getDownloadInfo().getUrl());
 
         CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
@@ -120,7 +139,7 @@ public class DownloadTest extends DownloadTestBase {
     @Feature({"Downloads"})
     public void testDuplicateHttpPostDownload_Overwrite() throws Exception {
         // Download a file.
-        loadUrl(TestHttpServerClient.getUrl("chrome/test/data/android/download/post.html"));
+        loadUrl(mTestServer.getURL("/chrome/test/data/android/download/post.html"));
         waitForFocus();
         View currentView = getActivity().getActivityTab().getView();
         int callCount = getChromeDownloadCallCount();
@@ -129,7 +148,7 @@ public class DownloadTest extends DownloadTestBase {
                 waitForChromeDownloadToFinish(callCount));
 
         // Download a file with the same name.
-        loadUrl(TestHttpServerClient.getUrl("chrome/test/data/android/download/post.html"));
+        loadUrl(mTestServer.getURL("/chrome/test/data/android/download/post.html"));
         waitForFocus();
         currentView = getActivity().getActivityTab().getView();
         callCount = getChromeDownloadCallCount();
@@ -149,7 +168,7 @@ public class DownloadTest extends DownloadTestBase {
     @Feature({"Downloads"})
     public void testDuplicateHttpPostDownload_CreateNew() throws Exception {
         // Download a file.
-        loadUrl(TestHttpServerClient.getUrl("chrome/test/data/android/download/post.html"));
+        loadUrl(mTestServer.getURL("/chrome/test/data/android/download/post.html"));
         waitForFocus();
         View currentView = getActivity().getActivityTab().getView();
         int callCount = getChromeDownloadCallCount();
@@ -158,7 +177,7 @@ public class DownloadTest extends DownloadTestBase {
                 waitForChromeDownloadToFinish(callCount));
 
         // Download a file with the same name.
-        loadUrl(TestHttpServerClient.getUrl("chrome/test/data/android/download/post.html"));
+        loadUrl(mTestServer.getURL("/chrome/test/data/android/download/post.html"));
         waitForFocus();
         currentView = getActivity().getActivityTab().getView();
         callCount = getChromeDownloadCallCount();
@@ -181,7 +200,7 @@ public class DownloadTest extends DownloadTestBase {
     @Feature({"Downloads"})
     public void testDuplicateHttpPostDownload_Dismiss() throws Exception {
         // Download a file.
-        loadUrl(TestHttpServerClient.getUrl("chrome/test/data/android/download/post.html"));
+        loadUrl(mTestServer.getURL("/chrome/test/data/android/download/post.html"));
         waitForFocus();
         View currentView = getActivity().getActivityTab().getView();
         int callCount = getChromeDownloadCallCount();
@@ -190,7 +209,7 @@ public class DownloadTest extends DownloadTestBase {
                 waitForChromeDownloadToFinish(callCount));
 
         // Download a file with the same name.
-        loadUrl(TestHttpServerClient.getUrl("chrome/test/data/android/download/post.html"));
+        loadUrl(mTestServer.getURL("/chrome/test/data/android/download/post.html"));
         waitForFocus();
         currentView = getActivity().getActivityTab().getView();
         callCount = getChromeDownloadCallCount();
@@ -211,7 +230,7 @@ public class DownloadTest extends DownloadTestBase {
     public void testDuplicateHttpPostDownload_AllowMultipleInfoBars() throws Exception {
         assertFalse(hasDownload("superbo.txt", SUPERBO_CONTENTS));
         // Download a file.
-        loadUrl(TestHttpServerClient.getUrl("chrome/test/data/android/download/post.html"));
+        loadUrl(mTestServer.getURL("/chrome/test/data/android/download/post.html"));
         waitForFocus();
         View currentView = getActivity().getActivityTab().getView();
         int callCount = getChromeDownloadCallCount();
@@ -220,14 +239,14 @@ public class DownloadTest extends DownloadTestBase {
                 waitForChromeDownloadToFinish(callCount));
 
         // Download the file for the second time.
-        loadUrl(TestHttpServerClient.getUrl("chrome/test/data/android/download/post.html"));
+        loadUrl(mTestServer.getURL("/chrome/test/data/android/download/post.html"));
         waitForFocus();
         currentView = getActivity().getActivityTab().getView();
         singleClickView(currentView);
         assertPollForInfoBarSize(1);
 
         // Download the file for the third time.
-        loadUrl(TestHttpServerClient.getUrl("chrome/test/data/android/download/post.html"));
+        loadUrl(mTestServer.getURL("/chrome/test/data/android/download/post.html"));
         waitForFocus();
         currentView = getActivity().getActivityTab().getView();
         singleClickView(currentView);
@@ -305,7 +324,7 @@ public class DownloadTest extends DownloadTestBase {
     @Feature({"Downloads"})
     public void testDuplicateHttpPostDownload_OpenNewTabAndReplace() throws Exception {
         final String url =
-                TestHttpServerClient.getUrl("chrome/test/data/android/download/get.html");
+                mTestServer.getURL("/chrome/test/data/android/download/get.html");
 
         // Create the file in advance so that duplicate download infobar can show up.
         File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
@@ -342,7 +361,7 @@ public class DownloadTest extends DownloadTestBase {
     @MediumTest
     @Feature({"Downloads"})
     public void testUrlEscaping() throws Exception {
-        loadUrl(TestHttpServerClient.getUrl("chrome/test/data/android/download/urlescaping.html"));
+        loadUrl(mTestServer.getURL("/chrome/test/data/android/download/urlescaping.html"));
         waitForFocus();
         View currentView = getActivity().getActivityTab().getView();
 
@@ -350,8 +369,8 @@ public class DownloadTest extends DownloadTestBase {
         int callCount = callbackHelper.getCallCount();
         singleClickView(currentView);
         callbackHelper.waitForCallback(callCount);
-        assertEquals(TestHttpServerClient.getUrl(
-                             "chrome/test/data/android/download/[large]wallpaper.dm"),
+        assertEquals(mTestServer.getURL(
+                             "/chrome/test/data/android/download/[large]wallpaper.dm"),
                 callbackHelper.getDownloadInfo().getUrl());
     }
 

@@ -38,6 +38,10 @@ std::string GetContentType(const base::FilePath& path) {
     return "application/octet-stream";
   if (path.MatchesExtension(FILE_PATH_LITERAL(".gif")))
     return "image/gif";
+  if (path.MatchesExtension(FILE_PATH_LITERAL(".gzip")) ||
+      path.MatchesExtension(FILE_PATH_LITERAL(".gz"))) {
+    return "application/x-gzip";
+  }
   if (path.MatchesExtension(FILE_PATH_LITERAL(".jpeg")) ||
       path.MatchesExtension(FILE_PATH_LITERAL(".jpg"))) {
     return "image/jpeg";
