@@ -15,15 +15,12 @@
 
 // A class on top of ASTConsumer that forwards classes defined in Chromium
 // headers to subclasses which implement CheckChromeClass().
-class ChromeClassTester : public clang::ASTConsumer {
+// TODO(vmpstr): Fold this class into FindBadConstructsConsumer.
+class ChromeClassTester {
  public:
   ChromeClassTester(clang::CompilerInstance& instance,
                     const chrome_checker::Options& options);
   virtual ~ChromeClassTester();
-
-  // clang::ASTConsumer:
-  virtual void HandleTagDeclDefinition(clang::TagDecl* tag);
-  virtual bool HandleTopLevelDecl(clang::DeclGroupRef group_ref);
 
   void CheckTag(clang::TagDecl*);
 
@@ -96,9 +93,6 @@ class ChromeClassTester : public clang::ASTConsumer {
 
   // List of types that we don't check.
   std::set<std::string> ignored_record_names_;
-
-  // List of decls to check once the current top-level decl is parsed.
-  std::vector<clang::TagDecl*> pending_class_decls_;
 };
 
 #endif  // TOOLS_CLANG_PLUGINS_CHROMECLASSTESTER_H_

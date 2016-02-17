@@ -8,21 +8,15 @@
 namespace chrome_checker {
 
 struct Options {
-  Options()
-      : check_base_classes(false),
-        enforce_in_pdf(false),
-        enforce_in_thirdparty_webkit(false),
-        check_enum_last_value(false),
-        with_ast_visitor(false),
-        check_templates(false) {}
-
-  bool check_base_classes;
-  bool enforce_in_pdf;
-  bool enforce_in_thirdparty_webkit;  // Use in Blink code itself
-  bool check_enum_last_value;
-  bool with_ast_visitor;
-  bool check_templates;
+  bool check_base_classes = false;
+  bool enforce_in_pdf = false;
+  bool enforce_in_thirdparty_webkit = false;  // Use in Blink code itself
+  bool check_enum_last_value = false;
+  bool check_templates = false;
   bool follow_macro_expansion = false;
+  // This is needed during the migration from ASTConsumer approach to the
+  // RecursiveASTVisitor approach. See https://crbug.com/436357 for details.
+  bool check_implicit_copy_ctors = false;
 };
 
 }  // namespace chrome_checker
