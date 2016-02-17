@@ -395,7 +395,7 @@ class ApplicationManagerTest : public testing::Test {
 
   void SetUp() override {
     application_manager_.reset(new ApplicationManager(
-        make_scoped_ptr(new TestPackageManager), true));
+        make_scoped_ptr(new TestPackageManager)));
     test_loader_ = new TestApplicationLoader;
     test_loader_->set_context(&context_);
     application_manager_->set_default_loader(
@@ -452,7 +452,7 @@ TEST_F(ApplicationManagerTest, ClientError) {
 
 TEST_F(ApplicationManagerTest, Deletes) {
   {
-    ApplicationManager am(make_scoped_ptr(new TestPackageManager), true);
+    ApplicationManager am(make_scoped_ptr(new TestPackageManager));
     TestApplicationLoader* default_loader = new TestApplicationLoader;
     default_loader->set_context(&context_);
     TestApplicationLoader* url_loader1 = new TestApplicationLoader;

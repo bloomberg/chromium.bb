@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/at_exit.h"
-#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -23,7 +22,6 @@
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
 #include "mojo/shell/public/interfaces/content_handler.mojom.h"
-#include "mojo/shell/switches.h"
 #include "mojo/util/filename_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -130,8 +128,6 @@ class AboutFetcherTest : public testing::Test {
 
   // Overridden from testing::Test:
   void SetUp() override {
-    if (!ShouldRunTest())
-      return;
     base::FilePath shell_dir;
     PathService::Get(base::DIR_MODULE, &shell_dir);
     scoped_ptr<PackageManagerImpl> package_manager(
@@ -139,18 +135,13 @@ class AboutFetcherTest : public testing::Test {
     package_manager->RegisterContentHandler(
         "text/html", GURL("test:html_content_handler"));
     application_manager_.reset(
-        new ApplicationManager(std::move(package_manager), true));
+        new ApplicationManager(std::move(package_manager)));
     application_manager_->SetLoaderForURL(
         make_scoped_ptr(new TestLoader(&html_content_handler_)),
         GURL("test:html_content_handler"));
   }
 
   void TearDown() override { application_manager_.reset(); }
-
-  bool ShouldRunTest() const {
-    return base::CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kDontUseRemotePackageManager);
-  }
 
  private:
   base::ShadowingAtExitManager at_exit_;
@@ -162,9 +153,6 @@ class AboutFetcherTest : public testing::Test {
 };
 
 TEST_F(AboutFetcherTest, AboutBlank) {
-  if (!ShouldRunTest())
-    return;
-
   ConnectAndWait("about:blank");
 
   ASSERT_EQ(1u, html_content_handler()->response_number());
@@ -177,9 +165,6 @@ TEST_F(AboutFetcherTest, AboutBlank) {
 }
 
 TEST_F(AboutFetcherTest, UnrecognizedURL) {
-  if (!ShouldRunTest())
-    return;
-
   ConnectAndWait("about:some_unrecognized_url");
 
   ASSERT_EQ(1u, html_content_handler()->response_number());

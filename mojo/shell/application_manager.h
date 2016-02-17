@@ -61,20 +61,16 @@ class ApplicationManager {
   // Creates an ApplicationManager.
   // |package_manager| is an instance of an object that handles URL resolution,
   // fetching and updating of applications. See package_manager.h.
-  ApplicationManager(scoped_ptr<PackageManager> package_manager,
-                     bool register_mojo_url_schemes);
+  explicit ApplicationManager(scoped_ptr<PackageManager> package_manager);
   // |native_runner_factory| is an instance of an object capable of vending
   // implementations of NativeRunner, e.g. for in or out-of-process execution.
   // See native_runner.h and RunNativeApplication().
   // |task_runner| provides access to a thread to perform file copy operations
   // on. This may be null only in testing environments where applications are
   // loaded via ApplicationLoader implementations.
-  // When |register_mojo_url_schemes| is true, mojo: and exe: URL schems are
-  // registered as "standard" which faciliates resolving.
   ApplicationManager(scoped_ptr<PackageManager> package_manager,
                      scoped_ptr<NativeRunnerFactory> native_runner_factory,
-                     base::TaskRunner* task_runner,
-                     bool register_mojo_url_schemes);
+                     base::TaskRunner* task_runner);
   ~ApplicationManager();
 
   // Loads a service if necessary and establishes a new client connection.
@@ -113,7 +109,7 @@ class ApplicationManager {
   using IdentityToInstanceMap = std::map<Identity, ApplicationInstance*>;
   using URLToLoaderMap = std::map<GURL, ApplicationLoader*>;
 
-  void UseRemotePackageManager(bool register_mojo_url_schemes);
+  void UseRemotePackageManager();
 
   // Takes the contents of |params| only when it returns true.
   bool ConnectToRunningApplication(

@@ -67,13 +67,10 @@ ApplicationInfo::~ApplicationInfo() {}
 
 ApplicationCatalogStore::~ApplicationCatalogStore() {}
 
-PackageManager::PackageManager(base::TaskRunner* blocking_pool,
-                               bool register_schemes)
+PackageManager::PackageManager(base::TaskRunner* blocking_pool)
     : blocking_pool_(blocking_pool), catalog_store_(nullptr) {
-  if (register_schemes) {
-    url::AddStandardScheme("mojo", url::SCHEME_WITHOUT_AUTHORITY);
-    url::AddStandardScheme("exe", url::SCHEME_WITHOUT_AUTHORITY);
-  }
+  url::AddStandardScheme("mojo", url::SCHEME_WITHOUT_AUTHORITY);
+  url::AddStandardScheme("exe", url::SCHEME_WITHOUT_AUTHORITY);
 
   base::FilePath shell_dir;
   PathService::Get(base::DIR_MODULE, &shell_dir);
@@ -272,14 +269,10 @@ void PackageManager::OnReadManifest(const GURL& url,
     base::DictionaryValue* dictionary = nullptr;
     CHECK(manifest->GetAsDictionary(&dictionary));
     DeserializeApplication(dictionary);
-  } else {
-    ApplicationInfo info;
-    info.url = url.spec();
-    info.name = url.spec();
-    catalog_[info.url] = info;
+    SerializeCatalog();
   }
-  SerializeCatalog();
   CompleteResolveMojoURL(url, callback);
 }
+
 
 }  // namespace package_manager

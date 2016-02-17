@@ -282,7 +282,7 @@ void CapabilityFilterTest::RunWildcardTest() {
 
 void CapabilityFilterTest::SetUp() {
   application_manager_.reset(
-      new ApplicationManager(make_scoped_ptr(CreatePackageManager()), true));
+      new ApplicationManager(make_scoped_ptr(CreatePackageManager())));
   CreateLoader<ServiceApplication>("test:service");
   CreateLoader<ServiceApplication>("test:service2");
 }

@@ -171,7 +171,7 @@ class ContentHandlerTest : public testing::Test {
     test_package_manager_->RegisterContentHandler(kTestMimeType,
                                                   content_handler_url_);
     application_manager_.reset(new ApplicationManager(
-        make_scoped_ptr(test_package_manager_), true));
+        make_scoped_ptr(test_package_manager_)));
   }
 
   void TearDown() override {

@@ -191,7 +191,7 @@ void Context::Init(const base::FilePath& shell_file_root) {
   }
   application_manager_.reset(new ApplicationManager(
       make_scoped_ptr(package_manager_), std::move(runner_factory),
-      task_runners_->blocking_pool(), true));
+      task_runners_->blocking_pool()));
 
   shell::mojom::InterfaceProviderPtr tracing_remote_interfaces;
   shell::mojom::InterfaceProviderPtr tracing_local_interfaces;

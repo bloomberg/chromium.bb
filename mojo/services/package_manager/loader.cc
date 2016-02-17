@@ -10,16 +10,13 @@
 
 namespace package_manager {
 
-Loader::Loader(base::TaskRunner* blocking_pool,
-               bool register_mojo_url_schemes)
-    : blocking_pool_(blocking_pool),
-      register_mojo_url_schemes_(register_mojo_url_schemes) {}
+Loader::Loader(base::TaskRunner* blocking_pool)
+    : blocking_pool_(blocking_pool) {}
 Loader::~Loader() {}
 
 void Loader::Load(const GURL& url,
                   mojo::shell::mojom::ShellClientRequest request) {
-  client_.reset(new package_manager::PackageManager(
-      blocking_pool_, register_mojo_url_schemes_));
+  client_.reset(new package_manager::PackageManager(blocking_pool_));
   connection_.reset(new mojo::ShellConnection(client_.get(),
                                               std::move(request)));
 }
