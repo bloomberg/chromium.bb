@@ -9,6 +9,7 @@ import("//build/config/features.gni")
 import("//build/config/linux/pkg_config.gni")
 import("//build/config/ui.gni")
 import("//media/media_options.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 
 buildflag_header("media_features") {
@@ -925,6 +926,17 @@ if (media_use_ffmpeg && !is_android) {
       "//third_party/ffmpeg",
       "//ui/gfx:test_support",
       "//ui/gfx/geometry",
+    ]
+  }
+}
+
+if (proprietary_codecs) {
+  fuzzer_test("media_cenc_utils_fuzzer") {
+    sources = [
+      "cdm/cenc_utils_fuzzertest.cc",
+    ]
+    deps = [
+      ":media",
     ]
   }
 }
