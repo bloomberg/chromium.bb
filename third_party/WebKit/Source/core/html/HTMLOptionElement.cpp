@@ -388,6 +388,13 @@ bool HTMLOptionElement::isDisabledFormControl() const
     return false;
 }
 
+String HTMLOptionElement::defaultToolTip() const
+{
+    if (HTMLSelectElement* select = ownerSelectElement())
+        return select->defaultToolTip();
+    return String();
+}
+
 Node::InsertionNotificationRequest HTMLOptionElement::insertedInto(ContainerNode* insertionPoint)
 {
     HTMLElement::insertedInto(insertionPoint);

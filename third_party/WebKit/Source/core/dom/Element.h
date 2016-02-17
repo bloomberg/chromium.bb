@@ -438,6 +438,7 @@ public:
     String textFromChildren();
 
     virtual String title() const { return String(); }
+    virtual String defaultToolTip() const { return String(); }
 
     virtual const AtomicString& shadowPseudoId() const;
     void setShadowPseudoId(const AtomicString&);

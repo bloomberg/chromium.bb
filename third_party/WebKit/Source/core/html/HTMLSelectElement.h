@@ -60,6 +60,7 @@ public:
     String validationMessage() const override;
     bool valueMissing() const override;
 
+    String defaultToolTip() const override;
     void resetImpl() override;
 
     unsigned length() const;

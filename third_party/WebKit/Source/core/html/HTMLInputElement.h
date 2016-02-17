@@ -224,7 +224,7 @@ public:
     void selectColorInColorChooser(const Color&);
     void endColorChooser();
 
-    String defaultToolTip() const;
+    String defaultToolTip() const override;
 
     static const int maximumLength;
 

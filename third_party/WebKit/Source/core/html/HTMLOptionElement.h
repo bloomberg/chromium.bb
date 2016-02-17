@@ -70,6 +70,7 @@ public:
     bool ownElementDisabled() const;
 
     bool isDisabledFormControl() const override;
+    String defaultToolTip() const override;
 
     String textIndentedToRespectGroupLabel() const;
 

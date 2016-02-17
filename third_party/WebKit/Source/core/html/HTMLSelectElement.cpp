@@ -201,6 +201,13 @@ bool HTMLSelectElement::valueMissing() const
     return firstSelectionIndex < 0 || (!firstSelectionIndex && hasPlaceholderLabelOption());
 }
 
+String HTMLSelectElement::defaultToolTip() const
+{
+    if (form() && form()->noValidate())
+        return String();
+    return validationMessage();
+}
+
 void HTMLSelectElement::listBoxSelectItem(int listIndex, bool allowMultiplySelections, bool shift, bool fireOnChangeNow)
 {
     if (!multiple()) {

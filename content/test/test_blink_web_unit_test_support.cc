@@ -242,6 +242,8 @@ blink::WebString TestBlinkWebUnitTestSupport::queryLocalizedString(
       return base::ASCIIToUTF16("<<ThisWeekLabel>>");
     case blink::WebLocalizedString::ValidationValueMissing:
       return base::ASCIIToUTF16("<<ValidationValueMissing>>");
+    case blink::WebLocalizedString::ValidationValueMissingForSelect:
+      return base::ASCIIToUTF16("<<ValidationValueMissingForSelect>>");
     case blink::WebLocalizedString::WeekFormatTemplate:
       return base::ASCIIToUTF16("Week $2, $1");
     default:
