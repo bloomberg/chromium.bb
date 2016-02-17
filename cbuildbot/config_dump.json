@@ -11127,6 +11127,7 @@
         "boards": [],
         "branch_util_test": true,
         "build_type": "toolchain",
+        "buildslave_type": "gce_wimpy",
         "description": "Toolchain master (all others are slaves).",
         "health_alert_recipients": [
             "c-compiler-chrome@google.com"
