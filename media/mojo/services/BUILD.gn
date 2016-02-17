@@ -245,24 +245,16 @@ mojo_native_application("media_pipeline_integration_apptests") {
 
 group("services") {
   public_deps = [
+    ":media",
     ":proxy",
   ]
-
-  if (!is_component_build) {
-    public_deps += [ ":media" ]
-  }
 }
 
 group("tests") {
   testonly = true
   deps = [
+    ":media_apptests",
     ":media_mojo_unittests",
+    ":media_pipeline_integration_apptests",
   ]
-
-  if (!is_component_build) {
-    deps += [
-      ":media_apptests",
-      ":media_pipeline_integration_apptests",
-    ]
-  }
 }
