@@ -37,6 +37,9 @@
                   '|testing/android/' \
                   '|tools/android/'
     },
+    'android_loading': {
+      'filepath': 'tools/android/loading/'
+    },
     'android_media': {
       'filepath': 'content/browser/media/android' \
                   '|content/renderer/media/android' \
@@ -1221,6 +1224,7 @@
     'android_infobars': ['dfalcantara+watch@chromium.org'],
     'android_infra': ['jbudorick+watch@chromium.org',
                       'mikecase+watch@chromium.org'],
+    'android_loading': ['gabadie+watch@chromium.org'],
     'android_media': ['avayvod+watch@chromium.org',
                       'mlamouri+watch-media@chromium.org'],
     'android_tab': ['avayvod+watch@chromium.org', 'dtrainor@chromium.org'],
