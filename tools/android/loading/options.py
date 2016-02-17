@@ -30,7 +30,7 @@ class Options(object):
              'chrome binary for local runs'),
             ('local_noisy', False,
              'Enable local chrome console output'),
-            ('local_profile_dir', '',
+            ('local_profile_dir', None,
              'profile directory to use for local runs'),
             ('no_sandbox', False,
              'pass --no-sandbox to browser (local run only; see also '

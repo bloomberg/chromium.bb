@@ -55,8 +55,8 @@ def DevToolsConnectionForLocalBinary(flags):
   """
   binary_filename = OPTIONS.local_binary
   profile_dir = OPTIONS.local_profile_dir
-  temp_profile_dir = profile_dir is None
-  if temp_profile_dir:
+  using_temp_profile_dir = profile_dir is None
+  if using_temp_profile_dir:
     profile_dir = tempfile.mkdtemp()
   flags.append('--user-data-dir=%s' % profile_dir)
   chrome_out = None if OPTIONS.local_noisy else file('/dev/null', 'w')
@@ -68,8 +68,8 @@ def DevToolsConnectionForLocalBinary(flags):
         OPTIONS.devtools_hostname, OPTIONS.devtools_port)
   finally:
     process.kill()
-    if temp_profile_dir:
-      shutil.rmtree(temp_profile_dir)
+    if using_temp_profile_dir:
+      shutil.rmtree(profile_dir)
 
 
 def SetUpEmulationAndReturnMetadata(connection, emulated_device_name,
