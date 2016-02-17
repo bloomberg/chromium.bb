@@ -63,9 +63,6 @@ public class TabPersistentStore extends TabPersister {
     /** Prevents two copies of the Migration task from being created. */
     private static final Object MIGRATION_LOCK = new Object();
 
-    /** Prevents race conditions when setting the sBaseStateDirectory. */
-    private static final Object BASE_STATE_DIRECTORY_LOCK = new Object();
-
     /** Prevents two TabPersistentStores from saving the same file simultaneously. */
     private static final Object SAVE_LIST_LOCK = new Object();
 
@@ -205,9 +202,7 @@ public class TabPersistentStore extends TabPersister {
      */
     @VisibleForTesting
     public static void setBaseStateDirectory(File directory) {
-        synchronized (BASE_STATE_DIRECTORY_LOCK) {
-            sBaseStateDirectory = directory;
-        }
+        sBaseStateDirectory = directory;
     }
 
     /**
