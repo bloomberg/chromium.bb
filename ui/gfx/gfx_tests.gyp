@@ -63,6 +63,7 @@
         'image/image_util_unittest.cc',
         'mac/coordinate_conversion_unittest.mm',
         'nine_image_painter_unittest.cc',
+        'path_mac_unittest.mm',
         'platform_font_linux_unittest.cc',
         'platform_font_mac_unittest.mm',
         'range/range_mac_unittest.mm',

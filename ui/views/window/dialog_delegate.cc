@@ -200,12 +200,7 @@ NonClientFrameView* DialogDelegate::CreateDialogFrameView(Widget* widget) {
       new BubbleFrameView(gfx::Insets(kPanelVertMargin, kButtonHEdgeMarginNew,
                                       0, kButtonHEdgeMarginNew),
                           gfx::Insets());
-#if defined(OS_MACOSX)
-  // On Mac, dialogs have no border stroke and use a shadow provided by the OS.
-  const BubbleBorder::Shadow kShadow = BubbleBorder::NO_ASSETS;
-#else
   const BubbleBorder::Shadow kShadow = BubbleBorder::SMALL_SHADOW;
-#endif
   scoped_ptr<BubbleBorder> border(
       new BubbleBorder(BubbleBorder::FLOAT, kShadow, gfx::kPlaceholderColor));
   border->set_use_theme_background_color(true);

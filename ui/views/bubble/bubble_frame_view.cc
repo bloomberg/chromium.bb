@@ -155,30 +155,42 @@ int BubbleFrameView::NonClientHitTest(const gfx::Point& point) {
 
 void BubbleFrameView::GetWindowMask(const gfx::Size& size,
                                     gfx::Path* window_mask) {
-  // NOTE: this only provides implementations for the types used by dialogs.
-  if ((bubble_border_->arrow() != BubbleBorder::NONE &&
-       bubble_border_->arrow() != BubbleBorder::FLOAT) ||
-      (bubble_border_->shadow() != BubbleBorder::SMALL_SHADOW &&
-       bubble_border_->shadow() != BubbleBorder::NO_SHADOW_OPAQUE_BORDER))
+  if (bubble_border_->shadow() != BubbleBorder::SMALL_SHADOW &&
+      bubble_border_->shadow() != BubbleBorder::NO_SHADOW_OPAQUE_BORDER &&
+      bubble_border_->shadow() != BubbleBorder::NO_ASSETS)
+    return;
+
+  // We don't return a mask for windows with arrows unless they use
+  // BubbleBorder::NO_ASSETS.
+  if (bubble_border_->shadow() != BubbleBorder::NO_ASSETS &&
+      bubble_border_->arrow() != BubbleBorder::NONE &&
+      bubble_border_->arrow() != BubbleBorder::FLOAT)
     return;
 
   // Use a window mask roughly matching the border in the image assets.
-  static const int kBorderStrokeSize = 1;
-  static const SkScalar kCornerRadius = SkIntToScalar(6);
+  const int kBorderStrokeSize =
+      bubble_border_->shadow() == BubbleBorder::NO_ASSETS ? 0 : 1;
+  const SkScalar kCornerRadius =
+      SkIntToScalar(bubble_border_->GetBorderCornerRadius());
   const gfx::Insets border_insets = bubble_border_->GetInsets();
-  SkRect rect = { SkIntToScalar(border_insets.left() - kBorderStrokeSize),
-                  SkIntToScalar(border_insets.top() - kBorderStrokeSize),
-                  SkIntToScalar(size.width() - border_insets.right() +
-                                kBorderStrokeSize),
-                  SkIntToScalar(size.height() - border_insets.bottom() +
-                                kBorderStrokeSize) };
-  if (bubble_border_->shadow() == BubbleBorder::NO_SHADOW_OPAQUE_BORDER) {
+  SkRect rect = {
+      SkIntToScalar(border_insets.left() - kBorderStrokeSize),
+      SkIntToScalar(border_insets.top() - kBorderStrokeSize),
+      SkIntToScalar(size.width() - border_insets.right() + kBorderStrokeSize),
+      SkIntToScalar(size.height() - border_insets.bottom() +
+                    kBorderStrokeSize)};
+
+  if (bubble_border_->shadow() == BubbleBorder::NO_SHADOW_OPAQUE_BORDER ||
+      bubble_border_->shadow() == BubbleBorder::NO_ASSETS) {
     window_mask->addRoundRect(rect, kCornerRadius, kCornerRadius);
   } else {
     static const int kBottomBorderShadowSize = 2;
     rect.fBottom += SkIntToScalar(kBottomBorderShadowSize);
     window_mask->addRect(rect);
   }
+  gfx::Path arrow_path;
+  if (bubble_border_->GetArrowPath(gfx::Rect(size), &arrow_path))
+    window_mask->addPath(arrow_path, 0, 0);
 }
 
 void BubbleFrameView::ResetWindowControls() {

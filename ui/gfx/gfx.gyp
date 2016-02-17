@@ -233,6 +233,8 @@
         'paint_throbber.h',
         'path.cc',
         'path.h',
+        'path_mac.h',
+        'path_mac.mm',
         'path_win.cc',
         'path_win.h',
         'path_x11.cc',

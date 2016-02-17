@@ -47,6 +47,9 @@ class View;
 
   // Whether dragging on the view moves the window.
   BOOL mouseDownCanMoveWindow_;
+
+  // The cached window mask. Only used for non-rectangular windows on 10.9.
+  base::scoped_nsobject<NSBezierPath> windowMask_;
 }
 
 @property(readonly, nonatomic) views::View* hostedView;
@@ -72,6 +75,9 @@ class View;
 // |locationInContent| is the position from the top left of the window's
 // contentRect (also this NSView's frame), as given by a ui::LocatedEvent.
 - (void)updateTooltipIfRequiredAt:(const gfx::Point&)locationInContent;
+
+// Update windowMask_ depending on the current view bounds.
+- (void)updateWindowMask;
 
 @end
 

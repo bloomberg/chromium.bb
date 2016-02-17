@@ -682,6 +682,14 @@ void BridgedNativeWidget::OnSizeChanged() {
     if ([window_ inLiveResize])
       MaybeWaitForFrame(new_size);
   }
+
+  // 10.9 is unable to generate a window shadow from the composited CALayer, so
+  // use Quartz.
+  // We don't update the window mask during a live resize, instead it is done
+  // after the resize is completed in viewDidEndLiveResize: in
+  // BridgedContentView.
+  if (base::mac::IsOSMavericksOrEarlier() && ![window_ inLiveResize])
+    [bridged_view_ updateWindowMask];
 }
 
 void BridgedNativeWidget::OnVisibilityChanged() {
@@ -865,7 +873,12 @@ void BridgedNativeWidget::CreateLayer(ui::LayerType layer_type,
   // native shape is what's most appropriate for displaying sheets on Mac.
   if (translucent && !native_widget_mac_->IsWindowModalSheet()) {
     [window_ setOpaque:NO];
-    [window_ setBackgroundColor:[NSColor clearColor]];
+    // For Mac OS versions earlier than Yosemite, the Window server isn't able
+    // to generate a window shadow from the composited CALayer. To get around
+    // this, let the window background remain opaque and clip the window
+    // boundary in drawRect method of BridgedContentView. See crbug.com/543671.
+    if (base::mac::IsOSYosemiteOrLater())
+      [window_ setBackgroundColor:[NSColor clearColor]];
   }
 
   UpdateLayerProperties();
