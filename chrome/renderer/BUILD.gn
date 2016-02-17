@@ -91,6 +91,7 @@ static_library("renderer") {
         rebase_path(gypi_values.chrome_renderer_plugin_sources, ".", "..")
     deps += [
       "//components/pdf/renderer",
+      "//components/strings",
       "//ppapi/host",
       "//ppapi/proxy",
       "//ppapi/proxy:ipc",

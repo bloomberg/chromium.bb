@@ -226,6 +226,9 @@
       <message name="IDS_OK" desc="Used for OK on buttons">
         OK
       </message>
+      <message name="IDS_PLUGIN_NOT_SUPPORTED" desc="The placeholder text for an unsupported plugin.">
+        This plugin is not supported.
+      </message>
       <if expr="not is_android">
         <if expr="not use_titlecase">
           <message name="IDS_PRINT" desc="The text label of the Print... menu item. Opens a dialog box to select print settings">
@@ -237,6 +240,16 @@
             &amp;Print...
           </message>
         </if>
+      </if>
+      <if expr="not use_titlecase">
+        <message name="IDS_RECENTLY_CLOSED" desc="The section header for the Recently Closed section of the Recent Tabs menu.">
+          Recently closed
+        </message>
+      </if>
+      <if expr="use_titlecase">
+        <message name="IDS_RECENTLY_CLOSED" desc="In Title Case: The section header for the Recently Closed section of the Recent Tabs menu.">
+          Recently Closed
+        </message>
       </if>
 
       <!-- Accessibility labels for generic items -->

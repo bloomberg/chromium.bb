@@ -10,6 +10,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/renderer_resources.h"
 #include "components/plugins/renderer/plugin_placeholder.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/app/strings/grit/content_strings.h"
 #include "content/public/renderer/render_thread.h"
 #include "ui/base/l10n/l10n_util.h"

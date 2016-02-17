@@ -303,6 +303,7 @@
           ],
           'dependencies': [
             '../components/components.gyp:pdf_renderer',
+            '../components/components_strings.gyp:components_strings',
             '../ppapi/ppapi_internal.gyp:ppapi_host',
             '../ppapi/ppapi_internal.gyp:ppapi_proxy',
             '../ppapi/ppapi_internal.gyp:ppapi_ipc',
