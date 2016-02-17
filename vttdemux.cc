@@ -26,7 +26,7 @@ namespace vttdemux {
 
 typedef long long mkvtime_t;  // NOLINT
 typedef long long mkvpos_t;  // NOLINT
-typedef std::unique_ptr<mkvparser::Segment> segment_ptr_t;
+typedef std::auto_ptr<mkvparser::Segment> segment_ptr_t;
 
 // WebVTT metadata tracks have a type (encoded in the CodecID for the track).
 // We use |type| to synthesize a filename for the out-of-band WebVTT |file|.

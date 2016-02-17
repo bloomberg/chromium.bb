@@ -358,7 +358,7 @@ int main(int argc, char* argv[]) {
     return EXIT_FAILURE;
   }
 
-  const std::unique_ptr<mkvparser::Segment> parser_segment(parser_segment_);
+  const std::auto_ptr<mkvparser::Segment> parser_segment(parser_segment_);
   ret = parser_segment->Load();
   if (ret < 0) {
     printf("\n Segment::Load() failed.");
