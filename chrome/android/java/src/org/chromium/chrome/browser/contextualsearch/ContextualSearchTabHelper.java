@@ -25,13 +25,7 @@ public class ContextualSearchTabHelper extends EmptyTabObserver {
     /**
      * Notification handler for Contextual Search events.
      */
-    private final TemplateUrlServiceObserver mTemplateUrlObserver =
-            new TemplateUrlServiceObserver() {
-                @Override
-                public void onTemplateURLServiceChanged() {
-                    onContextualSearchPrefChanged();
-                }
-            };
+    private TemplateUrlServiceObserver mTemplateUrlObserver;
 
     /**
      * The current ContentViewCore for the Tab which this helper is monitoring.
@@ -85,6 +79,16 @@ public class ContextualSearchTabHelper extends EmptyTabObserver {
         if (mNativeHelper == 0) {
             mNativeHelper = nativeInit(tab.getProfile());
         }
+        if (mTemplateUrlObserver == null) {
+            mTemplateUrlObserver =
+                    new TemplateUrlServiceObserver() {
+                        @Override
+                        public void onTemplateURLServiceChanged() {
+                            onContextualSearchPrefChanged();
+                        }
+                    };
+            TemplateUrlService.getInstance().addObserver(mTemplateUrlObserver);
+        }
         updateHooksForNewContentViewCore(tab);
     }
 
@@ -98,6 +102,9 @@ public class ContextualSearchTabHelper extends EmptyTabObserver {
         if (mNativeHelper != 0) {
             nativeDestroy(mNativeHelper);
             mNativeHelper = 0;
+        }
+        if (mTemplateUrlObserver != null) {
+            TemplateUrlService.getInstance().removeObserver(mTemplateUrlObserver);
         }
         removeContextualSearchHooks(mBaseContentViewCore);
         mBaseContentViewCore = null;
@@ -146,7 +153,6 @@ public class ContextualSearchTabHelper extends EmptyTabObserver {
             mGestureStateListener = getContextualSearchManager().getGestureStateListener();
             cvc.addGestureStateListener(mGestureStateListener);
             cvc.setContextualSearchClient(getContextualSearchManager());
-            TemplateUrlService.getInstance().addObserver(mTemplateUrlObserver);
         }
     }
 
@@ -161,7 +167,6 @@ public class ContextualSearchTabHelper extends EmptyTabObserver {
             cvc.removeGestureStateListener(mGestureStateListener);
             mGestureStateListener = null;
             cvc.setContextualSearchClient(null);
-            TemplateUrlService.getInstance().removeObserver(mTemplateUrlObserver);
         }
     }
 
