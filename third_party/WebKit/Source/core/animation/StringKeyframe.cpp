@@ -87,28 +87,16 @@ PassRefPtr<Keyframe> StringKeyframe::clone() const
     return adoptRef(new StringKeyframe(*this));
 }
 
-PassOwnPtr<Keyframe::PropertySpecificKeyframe> StringKeyframe::createPropertySpecificKeyframe(PropertyHandle property) const
+PassRefPtr<Keyframe::PropertySpecificKeyframe> StringKeyframe::createPropertySpecificKeyframe(PropertyHandle property) const
 {
     if (property.isCSSProperty())
-        return adoptPtr(new CSSPropertySpecificKeyframe(offset(), &easing(), cssPropertyValue(property.cssProperty()), composite()));
+        return CSSPropertySpecificKeyframe::create(offset(), &easing(), cssPropertyValue(property.cssProperty()), composite());
 
     if (property.isPresentationAttribute())
-        return adoptPtr(new CSSPropertySpecificKeyframe(offset(), &easing(), presentationAttributeValue(property.presentationAttribute()), composite()));
+        return CSSPropertySpecificKeyframe::create(offset(), &easing(), presentationAttributeValue(property.presentationAttribute()), composite());
 
     ASSERT(property.isSVGAttribute());
-    return adoptPtr(new SVGPropertySpecificKeyframe(offset(), &easing(), svgPropertyValue(property.svgAttribute()), composite()));
-}
-
-StringKeyframe::CSSPropertySpecificKeyframe::CSSPropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, CSSValue* value, EffectModel::CompositeOperation op)
-    : Keyframe::PropertySpecificKeyframe(offset, easing, op)
-    , m_value(value)
-{ }
-
-StringKeyframe::CSSPropertySpecificKeyframe::CSSPropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, CSSValue* value)
-    : Keyframe::PropertySpecificKeyframe(offset, easing, EffectModel::CompositeReplace)
-    , m_value(value)
-{
-    ASSERT(!isNull(m_offset));
+    return SVGPropertySpecificKeyframe::create(offset(), &easing(), svgPropertyValue(property.svgAttribute()), composite());
 }
 
 bool StringKeyframe::CSSPropertySpecificKeyframe::populateAnimatableValue(CSSPropertyID property, Element& element, const ComputedStyle* baseStyle, bool force) const
@@ -143,7 +131,7 @@ PassRefPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyframe::maybeCrea
 {
     const InterpolationTypes* applicableTypes = PropertyInterpolationTypesMapping::get(propertyHandle);
     if (applicableTypes)
-        return InvalidatableInterpolation::create(propertyHandle, *applicableTypes, *this, end);
+        return InvalidatableInterpolation::create(propertyHandle, *applicableTypes, const_cast<CSSPropertySpecificKeyframe*>(this), &end);
 
     // TODO(alancutter): Remove the remainder of this function.
 
@@ -284,46 +272,33 @@ PassRefPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyframe::maybeCrea
 
 }
 
-PassOwnPtr<Keyframe::PropertySpecificKeyframe> StringKeyframe::CSSPropertySpecificKeyframe::neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const
+PassRefPtr<Keyframe::PropertySpecificKeyframe> StringKeyframe::CSSPropertySpecificKeyframe::neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const
 {
-    return adoptPtr(new CSSPropertySpecificKeyframe(offset, easing, static_cast<CSSValue*>(0), EffectModel::CompositeAdd));
+    return create(offset, easing, nullptr, EffectModel::CompositeAdd);
 }
 
-PassOwnPtr<Keyframe::PropertySpecificKeyframe> StringKeyframe::CSSPropertySpecificKeyframe::cloneWithOffset(double offset) const
+PassRefPtr<Keyframe::PropertySpecificKeyframe> StringKeyframe::CSSPropertySpecificKeyframe::cloneWithOffset(double offset) const
 {
-    Keyframe::PropertySpecificKeyframe* theClone = new CSSPropertySpecificKeyframe(offset, m_easing, m_value.get());
-    toCSSPropertySpecificKeyframe(theClone)->m_animatableValueCache = m_animatableValueCache;
-    return adoptPtr(theClone);
+    RefPtr<CSSPropertySpecificKeyframe> clone = create(offset, m_easing, m_value.get(), m_composite);
+    clone->m_animatableValueCache = m_animatableValueCache;
+    return clone.release();
 }
 
-SVGPropertySpecificKeyframe::SVGPropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, const String& value, EffectModel::CompositeOperation op)
-    : Keyframe::PropertySpecificKeyframe(offset, easing, op)
-    , m_value(value)
+PassRefPtr<Keyframe::PropertySpecificKeyframe> SVGPropertySpecificKeyframe::cloneWithOffset(double offset) const
 {
+    return create(offset, m_easing, m_value, m_composite);
 }
 
-SVGPropertySpecificKeyframe::SVGPropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, const String& value)
-    : Keyframe::PropertySpecificKeyframe(offset, easing, EffectModel::CompositeReplace)
-    , m_value(value)
+PassRefPtr<Keyframe::PropertySpecificKeyframe> SVGPropertySpecificKeyframe::neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const
 {
-    ASSERT(!isNull(m_offset));
-}
-
-PassOwnPtr<Keyframe::PropertySpecificKeyframe> SVGPropertySpecificKeyframe::cloneWithOffset(double offset) const
-{
-    return adoptPtr(new SVGPropertySpecificKeyframe(offset, m_easing, m_value));
-}
-
-PassOwnPtr<Keyframe::PropertySpecificKeyframe> SVGPropertySpecificKeyframe::neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const
-{
-    return adoptPtr(new SVGPropertySpecificKeyframe(offset, easing, String(), EffectModel::CompositeAdd));
+    return create(offset, easing, String(), EffectModel::CompositeAdd);
 }
 
 PassRefPtr<Interpolation> SVGPropertySpecificKeyframe::maybeCreateInterpolation(PropertyHandle propertyHandle, Keyframe::PropertySpecificKeyframe& end, Element*, const ComputedStyle*) const
 {
     const InterpolationTypes* applicableTypes = PropertyInterpolationTypesMapping::get(propertyHandle);
     ASSERT(applicableTypes);
-    return InvalidatableInterpolation::create(propertyHandle, *applicableTypes, *this, end);
+    return InvalidatableInterpolation::create(propertyHandle, *applicableTypes, const_cast<SVGPropertySpecificKeyframe*>(this), &end);
 }
 
 } // namespace blink

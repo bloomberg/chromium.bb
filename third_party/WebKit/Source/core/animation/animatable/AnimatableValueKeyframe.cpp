@@ -30,26 +30,14 @@ PassRefPtr<Keyframe> AnimatableValueKeyframe::clone() const
     return adoptRef(new AnimatableValueKeyframe(*this));
 }
 
-PassOwnPtr<Keyframe::PropertySpecificKeyframe> AnimatableValueKeyframe::createPropertySpecificKeyframe(PropertyHandle property) const
+PassRefPtr<Keyframe::PropertySpecificKeyframe> AnimatableValueKeyframe::createPropertySpecificKeyframe(PropertyHandle property) const
 {
-    return adoptPtr(new PropertySpecificKeyframe(offset(), &easing(), propertyValue(property.cssProperty()), composite()));
+    return PropertySpecificKeyframe::create(offset(), &easing(), propertyValue(property.cssProperty()), composite());
 }
 
-AnimatableValueKeyframe::PropertySpecificKeyframe::PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, const AnimatableValue* value, EffectModel::CompositeOperation op)
-    : Keyframe::PropertySpecificKeyframe(offset, easing, op)
-    , m_value(const_cast<AnimatableValue*>(value))
-{ }
-
-AnimatableValueKeyframe::PropertySpecificKeyframe::PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, PassRefPtr<AnimatableValue> value)
-    : Keyframe::PropertySpecificKeyframe(offset, easing, EffectModel::CompositeReplace)
-    , m_value(value)
+PassRefPtr<Keyframe::PropertySpecificKeyframe> AnimatableValueKeyframe::PropertySpecificKeyframe::cloneWithOffset(double offset) const
 {
-    ASSERT(!isNull(m_offset));
-}
-
-PassOwnPtr<Keyframe::PropertySpecificKeyframe> AnimatableValueKeyframe::PropertySpecificKeyframe::cloneWithOffset(double offset) const
-{
-    return adoptPtr(new PropertySpecificKeyframe(offset, m_easing, m_value));
+    return create(offset, m_easing, m_value, m_composite);
 }
 
 PassRefPtr<Interpolation> AnimatableValueKeyframe::PropertySpecificKeyframe::maybeCreateInterpolation(PropertyHandle property, Keyframe::PropertySpecificKeyframe& end, Element*, const ComputedStyle*) const
@@ -58,9 +46,9 @@ PassRefPtr<Interpolation> AnimatableValueKeyframe::PropertySpecificKeyframe::may
     return LegacyStyleInterpolation::create(value(), to.value(), property.cssProperty());
 }
 
-PassOwnPtr<Keyframe::PropertySpecificKeyframe> AnimatableValueKeyframe::PropertySpecificKeyframe::neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const
+PassRefPtr<Keyframe::PropertySpecificKeyframe> AnimatableValueKeyframe::PropertySpecificKeyframe::neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const
 {
-    return adoptPtr(new AnimatableValueKeyframe::PropertySpecificKeyframe(offset, easing, AnimatableValue::neutralValue(), EffectModel::CompositeAdd));
+    return create(offset, easing, AnimatableValue::neutralValue(), EffectModel::CompositeAdd);
 }
 
 } // namespace blink

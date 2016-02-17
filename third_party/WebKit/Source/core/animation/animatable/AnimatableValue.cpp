@@ -36,7 +36,7 @@
 
 namespace blink {
 
-const AnimatableValue* AnimatableValue::neutralValue()
+PassRefPtr<AnimatableValue> AnimatableValue::neutralValue()
 {
     DEFINE_STATIC_REF(AnimatableNeutral, neutralSentinelValue, (AnimatableNeutral::create()));
     return neutralSentinelValue;

@@ -42,7 +42,7 @@ class CORE_EXPORT AnimatableValue : public RefCounted<AnimatableValue> {
 public:
     virtual ~AnimatableValue() { }
 
-    static const AnimatableValue* neutralValue();
+    static PassRefPtr<AnimatableValue> neutralValue();
 
     static PassRefPtr<AnimatableValue> interpolate(const AnimatableValue*, const AnimatableValue*, double fraction);
     static bool usesDefaultInterpolation(const AnimatableValue* from, const AnimatableValue* to)

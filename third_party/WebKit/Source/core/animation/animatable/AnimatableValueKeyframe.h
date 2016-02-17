@@ -31,18 +31,24 @@ public:
 
     class PropertySpecificKeyframe : public Keyframe::PropertySpecificKeyframe {
     public:
-        PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, const AnimatableValue*, EffectModel::CompositeOperation);
+        static PassRefPtr<PropertySpecificKeyframe> create(double offset, PassRefPtr<TimingFunction> easing, PassRefPtr<AnimatableValue> value, EffectModel::CompositeOperation composite)
+        {
+            return adoptRef(new PropertySpecificKeyframe(offset, easing, value, composite));
+        }
 
         AnimatableValue* value() const { return m_value.get(); }
         const PassRefPtr<AnimatableValue> getAnimatableValue() const final { return m_value; }
 
-        PassOwnPtr<Keyframe::PropertySpecificKeyframe> neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const final;
+        PassRefPtr<Keyframe::PropertySpecificKeyframe> neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const final;
         PassRefPtr<Interpolation> maybeCreateInterpolation(PropertyHandle, Keyframe::PropertySpecificKeyframe& end, Element*, const ComputedStyle*) const final;
 
     private:
-        PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, PassRefPtr<AnimatableValue>);
+        PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, PassRefPtr<AnimatableValue> value, EffectModel::CompositeOperation composite)
+            : Keyframe::PropertySpecificKeyframe(offset, easing, composite)
+            , m_value(value)
+        { }
 
-        PassOwnPtr<Keyframe::PropertySpecificKeyframe> cloneWithOffset(double offset) const override;
+        PassRefPtr<Keyframe::PropertySpecificKeyframe> cloneWithOffset(double offset) const override;
         bool isAnimatableValuePropertySpecificKeyframe() const override { return true; }
 
         RefPtr<AnimatableValue> m_value;
@@ -54,7 +60,7 @@ private:
     AnimatableValueKeyframe(const AnimatableValueKeyframe& copyFrom);
 
     PassRefPtr<Keyframe> clone() const override;
-    PassOwnPtr<Keyframe::PropertySpecificKeyframe> createPropertySpecificKeyframe(PropertyHandle) const override;
+    PassRefPtr<Keyframe::PropertySpecificKeyframe> createPropertySpecificKeyframe(PropertyHandle) const override;
 
     bool isAnimatableValueKeyframe() const override { return true; }
 

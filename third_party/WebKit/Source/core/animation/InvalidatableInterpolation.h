@@ -20,8 +20,8 @@ public:
     static PassRefPtr<InvalidatableInterpolation> create(
         PropertyHandle property,
         const InterpolationTypes& interpolationTypes,
-        const PropertySpecificKeyframe& startKeyframe,
-        const PropertySpecificKeyframe& endKeyframe)
+        PassRefPtr<PropertySpecificKeyframe> startKeyframe,
+        PassRefPtr<PropertySpecificKeyframe> endKeyframe)
     {
         return adoptRef(new InvalidatableInterpolation(property, interpolationTypes, startKeyframe, endKeyframe));
     }
@@ -38,13 +38,13 @@ private:
     InvalidatableInterpolation(
         PropertyHandle property,
         const InterpolationTypes& interpolationTypes,
-        const PropertySpecificKeyframe& startKeyframe,
-        const PropertySpecificKeyframe& endKeyframe)
+        PassRefPtr<PropertySpecificKeyframe> startKeyframe,
+        PassRefPtr<PropertySpecificKeyframe> endKeyframe)
         : Interpolation(nullptr, nullptr)
         , m_property(property)
         , m_interpolationTypes(interpolationTypes)
-        , m_startKeyframe(&startKeyframe)
-        , m_endKeyframe(&endKeyframe)
+        , m_startKeyframe(startKeyframe)
+        , m_endKeyframe(endKeyframe)
         , m_currentFraction(std::numeric_limits<double>::quiet_NaN())
         , m_isCached(false)
     { }
@@ -64,8 +64,8 @@ private:
 
     const PropertyHandle m_property;
     const InterpolationTypes& m_interpolationTypes;
-    const PropertySpecificKeyframe* m_startKeyframe;
-    const PropertySpecificKeyframe* m_endKeyframe;
+    RefPtr<PropertySpecificKeyframe> m_startKeyframe;
+    RefPtr<PropertySpecificKeyframe> m_endKeyframe;
     double m_currentFraction;
     mutable bool m_isCached;
     mutable OwnPtr<PrimitiveInterpolation> m_cachedPairConversion;

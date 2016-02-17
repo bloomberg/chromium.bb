@@ -146,8 +146,8 @@ void InvalidatableInterpolation::setFlagIfInheritUsed(InterpolationEnvironment& 
         return;
     if (!environment.state().parentStyle())
         return;
-    const CSSValue* startValue = toCSSPropertySpecificKeyframe(m_startKeyframe)->value();
-    const CSSValue* endValue = toCSSPropertySpecificKeyframe(m_endKeyframe)->value();
+    const CSSValue* startValue = toCSSPropertySpecificKeyframe(*m_startKeyframe).value();
+    const CSSValue* endValue = toCSSPropertySpecificKeyframe(*m_endKeyframe).value();
     if ((startValue && startValue->isInheritedValue())
         || (endValue && endValue->isInheritedValue())) {
         environment.state().parentStyle()->setHasExplicitlyInheritedProperties();

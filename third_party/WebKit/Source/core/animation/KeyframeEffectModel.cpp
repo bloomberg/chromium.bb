@@ -235,12 +235,13 @@ Keyframe::PropertySpecificKeyframe::PropertySpecificKeyframe(double offset, Pass
     , m_easing(easing)
     , m_composite(composite)
 {
+    ASSERT(!isNull(offset));
 }
 
-void KeyframeEffectModelBase::PropertySpecificKeyframeGroup::appendKeyframe(PassOwnPtr<Keyframe::PropertySpecificKeyframe> keyframe)
+void KeyframeEffectModelBase::PropertySpecificKeyframeGroup::appendKeyframe(PassRefPtr<Keyframe::PropertySpecificKeyframe> keyframe)
 {
     ASSERT(m_keyframes.isEmpty() || m_keyframes.last()->offset() <= keyframe->offset());
-    m_keyframes.append(std::move(keyframe));
+    m_keyframes.append(keyframe);
 }
 
 void KeyframeEffectModelBase::PropertySpecificKeyframeGroup::removeRedundantKeyframes()

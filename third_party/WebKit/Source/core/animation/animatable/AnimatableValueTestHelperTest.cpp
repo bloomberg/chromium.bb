@@ -62,7 +62,7 @@ TEST_F(AnimationAnimatableValueTestHelperTest, PrintTo)
         PrintToString(AnimatableColor::create(Color(0x000000FF), Color(0xFFFF0000))));
 
     EXPECT_THAT(
-        PrintToString(const_cast<AnimatableValue*>(AnimatableValue::neutralValue())),
+        PrintToString(AnimatableValue::neutralValue().get()),
         testing::StartsWith("AnimatableNeutral@"));
 
     EXPECT_THAT(

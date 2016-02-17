@@ -42,7 +42,6 @@
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 
@@ -55,10 +54,10 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
 public:
     // FIXME: Implement accumulation.
 
-    using PropertySpecificKeyframeVector = Vector<OwnPtr<Keyframe::PropertySpecificKeyframe>>;
+    using PropertySpecificKeyframeVector = Vector<RefPtr<Keyframe::PropertySpecificKeyframe>>;
     class PropertySpecificKeyframeGroup {
     public:
-        void appendKeyframe(PassOwnPtr<Keyframe::PropertySpecificKeyframe>);
+        void appendKeyframe(PassRefPtr<Keyframe::PropertySpecificKeyframe>);
         const PropertySpecificKeyframeVector& keyframes() const { return m_keyframes; }
 
     private:
