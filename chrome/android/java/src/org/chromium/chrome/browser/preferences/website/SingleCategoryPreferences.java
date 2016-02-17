@@ -219,7 +219,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
         } else if (mCategory.showPopupSites()) {
             return website.site().getPopupPermission() == ContentSetting.BLOCK;
         } else if (mCategory.showNotificationsSites()) {
-            return website.site().getPushNotificationPermission() == ContentSetting.BLOCK;
+            return website.site().getNotificationPermission() == ContentSetting.BLOCK;
         } else if (mCategory.showProtectedMediaSites()) {
             return website.site().getProtectedMediaIdentifierPermission() == ContentSetting.BLOCK;
         }
@@ -388,7 +388,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
             } else if (mCategory.showPopupSites()) {
                 PrefServiceBridge.getInstance().setAllowPopupsEnabled((boolean) newValue);
             } else if (mCategory.showNotificationsSites()) {
-                PrefServiceBridge.getInstance().setPushNotificationsEnabled((boolean) newValue);
+                PrefServiceBridge.getInstance().setNotificationsEnabled((boolean) newValue);
             } else if (mCategory.showProtectedMediaSites()) {
                 PrefServiceBridge.getInstance().setProtectedMediaIdentifierEnabled(
                         (boolean) newValue);
@@ -581,7 +581,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
                     globalToggle.setChecked(PrefServiceBridge.getInstance().popupsEnabled());
                 } else if (mCategory.showNotificationsSites()) {
                     globalToggle.setChecked(
-                            PrefServiceBridge.getInstance().isPushNotificationsEnabled());
+                            PrefServiceBridge.getInstance().isNotificationsEnabled());
                 } else if (mCategory.showProtectedMediaSites()) {
                     globalToggle.setChecked(
                             PrefServiceBridge.getInstance().isProtectedMediaIdentifierEnabled());

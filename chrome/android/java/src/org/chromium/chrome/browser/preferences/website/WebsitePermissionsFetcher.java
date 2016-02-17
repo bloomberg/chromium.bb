@@ -76,8 +76,8 @@ public class WebsitePermissionsFetcher {
         queue.add(new JavaScriptExceptionInfoFetcher());
         // Protected media identifier permission is per-origin and per-embedder.
         queue.add(new ProtectedMediaIdentifierInfoFetcher());
-        // Push notification permission is per-origin and per-embedder.
-        queue.add(new PushNotificationInfoFetcher());
+        // Notification permission is per-origin.
+        queue.add(new NotificationInfoFetcher());
         // Camera capture permission is per-origin and per-embedder.
         queue.add(new CameraCaptureInfoFetcher());
         // Micropohone capture permission is per-origin and per-embedder.
@@ -127,8 +127,8 @@ public class WebsitePermissionsFetcher {
             // JavaScript exceptions are host-based patterns.
             queue.add(new JavaScriptExceptionInfoFetcher());
         } else if (category.showNotificationsSites()) {
-            // Push notification permission is per-origin and per-embedder.
-            queue.add(new PushNotificationInfoFetcher());
+            // Push notification permission is per-origin.
+            queue.add(new NotificationInfoFetcher());
         } else if (category.showProtectedMediaSites()) {
             // Protected media identifier permission is per-origin and per-embedder.
             queue.add(new ProtectedMediaIdentifierInfoFetcher());
@@ -345,13 +345,13 @@ public class WebsitePermissionsFetcher {
         }
     }
 
-    private class PushNotificationInfoFetcher extends Task {
+    private class NotificationInfoFetcher extends Task {
         @Override
         public void run() {
-            for (PushNotificationInfo info : WebsitePreferenceBridge.getPushNotificationInfo()) {
+            for (NotificationInfo info : WebsitePreferenceBridge.getNotificationInfo()) {
                 WebsiteAddress address = WebsiteAddress.create(info.getOrigin());
                 if (address == null) continue;
-                createSiteByOriginAndHost(address).setPushNotificationInfo(info);
+                createSiteByOriginAndHost(address).setNotificationInfo(info);
             }
         }
     }

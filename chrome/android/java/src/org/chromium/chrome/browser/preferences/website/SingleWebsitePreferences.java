@@ -77,11 +77,10 @@ public class SingleWebsitePreferences extends PreferenceFragment
     public static final String PREF_LOCATION_ACCESS = "location_access_list";
     public static final String PREF_MIC_CAPTURE_PERMISSION = "microphone_permission_list";
     public static final String PREF_MIDI_SYSEX_PERMISSION = "midi_sysex_permission_list";
+    public static final String PREF_NOTIFICATIONS_PERMISSION = "push_notifications_list";
     public static final String PREF_POPUP_PERMISSION = "popup_permission_list";
     public static final String PREF_PROTECTED_MEDIA_IDENTIFIER_PERMISSION =
             "protected_media_identifier_permission_list";
-    public static final String PREF_PUSH_NOTIFICATIONS_PERMISSION =
-            "push_notifications_list";
 
     // All permissions from the permissions preference category must be listed here.
     // TODO(mvanouwerkerk): Use this array in more places to reduce verbosity.
@@ -94,9 +93,9 @@ public class SingleWebsitePreferences extends PreferenceFragment
         PREF_LOCATION_ACCESS,
         PREF_MIC_CAPTURE_PERMISSION,
         PREF_MIDI_SYSEX_PERMISSION,
+        PREF_NOTIFICATIONS_PERMISSION,
         PREF_POPUP_PERMISSION,
         PREF_PROTECTED_MEDIA_IDENTIFIER_PERMISSION,
-        PREF_PUSH_NOTIFICATIONS_PERMISSION,
     };
 
     // The website this page is displaying details about.
@@ -229,11 +228,11 @@ public class SingleWebsitePreferences extends PreferenceFragment
                                    other.getProtectedMediaIdentifierInfo(), origin)) {
                     merged.setProtectedMediaIdentifierInfo(other.getProtectedMediaIdentifierInfo());
                 }
-                if (merged.getPushNotificationInfo() == null
-                        && other.getPushNotificationInfo() != null
+                if (merged.getNotificationInfo() == null
+                        && other.getNotificationInfo() != null
                         && permissionInfoIsForTopLevelOrigin(
-                                   other.getPushNotificationInfo(), origin)) {
-                    merged.setPushNotificationInfo(other.getPushNotificationInfo());
+                                   other.getNotificationInfo(), origin)) {
+                    merged.setNotificationInfo(other.getNotificationInfo());
                 }
                 if (merged.getCameraInfo() == null && other.getCameraInfo() != null) {
                     if (origin.equals(other.getCameraInfo().getOrigin())
@@ -318,12 +317,12 @@ public class SingleWebsitePreferences extends PreferenceFragment
                 setUpListPreference(preference, mSite.getMicrophonePermission());
             } else if (PREF_MIDI_SYSEX_PERMISSION.equals(preference.getKey())) {
                 setUpListPreference(preference, mSite.getMidiPermission());
+            } else if (PREF_NOTIFICATIONS_PERMISSION.equals(preference.getKey())) {
+                setUpListPreference(preference, mSite.getNotificationPermission());
             } else if (PREF_POPUP_PERMISSION.equals(preference.getKey())) {
                 setUpListPreference(preference, mSite.getPopupPermission());
             } else if (PREF_PROTECTED_MEDIA_IDENTIFIER_PERMISSION.equals(preference.getKey())) {
                 setUpListPreference(preference, mSite.getProtectedMediaIdentifierPermission());
-            } else if (PREF_PUSH_NOTIFICATIONS_PERMISSION.equals(preference.getKey())) {
-                setUpListPreference(preference, mSite.getPushNotificationPermission());
             }
         }
 
@@ -544,12 +543,12 @@ public class SingleWebsitePreferences extends PreferenceFragment
                 return ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC;
             case PREF_MIDI_SYSEX_PERMISSION:
                 return ContentSettingsType.CONTENT_SETTINGS_TYPE_MIDI_SYSEX;
+            case PREF_NOTIFICATIONS_PERMISSION:
+                return ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
             case PREF_POPUP_PERMISSION:
                 return ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS;
             case PREF_PROTECTED_MEDIA_IDENTIFIER_PERMISSION:
                 return ContentSettingsType.CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER;
-            case PREF_PUSH_NOTIFICATIONS_PERMISSION:
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
             default:
                 return 0;
         }
@@ -604,12 +603,12 @@ public class SingleWebsitePreferences extends PreferenceFragment
             mSite.setMicrophonePermission(permission);
         } else if (PREF_MIDI_SYSEX_PERMISSION.equals(preference.getKey())) {
             mSite.setMidiPermission(permission);
+        } else if (PREF_NOTIFICATIONS_PERMISSION.equals(preference.getKey())) {
+            mSite.setNotificationPermission(permission);
         } else if (PREF_POPUP_PERMISSION.equals(preference.getKey())) {
             mSite.setPopupPermission(permission);
         } else if (PREF_PROTECTED_MEDIA_IDENTIFIER_PERMISSION.equals(preference.getKey())) {
             mSite.setProtectedMediaIdentifierPermission(permission);
-        } else if (PREF_PUSH_NOTIFICATIONS_PERMISSION.equals(preference.getKey())) {
-            mSite.setPushNotificationPermission(permission);
         }
 
         return true;
@@ -654,9 +653,9 @@ public class SingleWebsitePreferences extends PreferenceFragment
         mSite.setKeygenPermission(ContentSetting.DEFAULT);
         mSite.setMicrophonePermission(ContentSetting.DEFAULT);
         mSite.setMidiPermission(ContentSetting.DEFAULT);
+        mSite.setNotificationPermission(ContentSetting.DEFAULT);
         mSite.setPopupPermission(ContentSetting.DEFAULT);
         mSite.setProtectedMediaIdentifierPermission(ContentSetting.DEFAULT);
-        mSite.setPushNotificationPermission(ContentSetting.DEFAULT);
 
         // Clear the storage and finish the activity if necessary.
         if (mSite.getTotalUsage() > 0) {

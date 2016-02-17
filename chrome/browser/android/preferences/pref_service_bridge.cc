@@ -346,8 +346,8 @@ static jboolean GetProtectedMediaIdentifierEnabled(
       CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER);
 }
 
-static jboolean GetPushNotificationsEnabled(JNIEnv* env,
-                                            const JavaParamRef<jobject>& obj) {
+static jboolean GetNotificationsEnabled(JNIEnv* env,
+                                        const JavaParamRef<jobject>& obj) {
   return GetBooleanForContentSetting(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
 }
 
@@ -670,9 +670,9 @@ static void SetFullscreenAllowed(JNIEnv* env,
       allow ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_ASK);
 }
 
-static void SetPushNotificationsEnabled(JNIEnv* env,
-                                        const JavaParamRef<jobject>& obj,
-                                        jboolean allow) {
+static void SetNotificationsEnabled(JNIEnv* env,
+                                    const JavaParamRef<jobject>& obj,
+                                    jboolean allow) {
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   host_content_settings_map->SetDefaultContentSetting(

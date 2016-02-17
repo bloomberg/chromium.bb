@@ -35,7 +35,7 @@ public class Website implements Serializable {
     private ContentSettingException mJavaScriptException;
     private ContentSettingException mPopupException;
     private ProtectedMediaIdentifierInfo mProtectedMediaIdentifierInfo;
-    private PushNotificationInfo mPushNotificationInfo;
+    private NotificationInfo mNotificationInfo;
     private LocalStorageInfo mLocalStorageInfo;
     private final List<StorageInfo> mStorageInfo = new ArrayList<StorageInfo>();
     private int mStorageInfoCallbacksLeft;
@@ -280,29 +280,29 @@ public class Website implements Serializable {
     }
 
     /**
-     * Sets Push Notification access permission information class.
+     * Sets Notification access permission information class.
      */
-    public void setPushNotificationInfo(PushNotificationInfo info) {
-        mPushNotificationInfo = info;
+    public void setNotificationInfo(NotificationInfo info) {
+        mNotificationInfo = info;
     }
 
-    public PushNotificationInfo getPushNotificationInfo() {
-        return mPushNotificationInfo;
-    }
-
-    /**
-     * Returns what setting governs push notification access.
-     */
-    public ContentSetting getPushNotificationPermission() {
-        return mPushNotificationInfo != null ? mPushNotificationInfo.getContentSetting() : null;
+    public NotificationInfo getNotificationInfo() {
+        return mNotificationInfo;
     }
 
     /**
-     * Configure push notification setting for this site.
+     * Returns what setting governs notification access.
      */
-    public void setPushNotificationPermission(ContentSetting value) {
-        if (mPushNotificationInfo != null) {
-            mPushNotificationInfo.setContentSetting(value);
+    public ContentSetting getNotificationPermission() {
+        return mNotificationInfo != null ? mNotificationInfo.getContentSetting() : null;
+    }
+
+    /**
+     * Configure notification setting for this site.
+     */
+    public void setNotificationPermission(ContentSetting value) {
+        if (mNotificationInfo != null) {
+            mNotificationInfo.setContentSetting(value);
         }
     }
 

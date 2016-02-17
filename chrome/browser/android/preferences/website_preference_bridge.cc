@@ -308,15 +308,15 @@ static void SetProtectedMediaIdentifierSettingForOrigin(
                       (ContentSetting) value, is_incognito);
 }
 
-static void GetPushNotificationOrigins(JNIEnv* env,
-                                       const JavaParamRef<jclass>& clazz,
-                                       const JavaParamRef<jobject>& list) {
+static void GetNotificationOrigins(JNIEnv* env,
+                                   const JavaParamRef<jclass>& clazz,
+                                   const JavaParamRef<jobject>& list) {
   GetOrigins(env, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-             &Java_WebsitePreferenceBridge_insertPushNotificationIntoList, list,
+             &Java_WebsitePreferenceBridge_insertNotificationIntoList, list,
              false);
 }
 
-static jint GetPushNotificationSettingForOrigin(
+static jint GetNotificationSettingForOrigin(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& origin,
@@ -327,14 +327,14 @@ static jint GetPushNotificationSettingForOrigin(
       GURL(ConvertJavaStringToUTF8(env, origin)));
 }
 
-static void SetPushNotificationSettingForOrigin(
+static void SetNotificationSettingForOrigin(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& origin,
     const JavaParamRef<jstring>& embedder,
     jint value,
     jboolean is_incognito) {
-  // TODO(peter): Web Notification permission behaves differently from all other
+  // Note: Web Notification permission behaves differently from all other
   // permission types. See https://crbug.com/416894.
   Profile* profile = GetActiveUserProfile(is_incognito);
   GURL url = GURL(ConvertJavaStringToUTF8(env, origin));

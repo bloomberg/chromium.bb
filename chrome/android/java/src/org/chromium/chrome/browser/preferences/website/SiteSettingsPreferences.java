@@ -110,7 +110,7 @@ public class SiteSettingsPreferences extends PreferenceFragment
             } else if (COOKIES_KEY.equals(prefName)) {
                 checked = PrefServiceBridge.getInstance().isAcceptCookiesEnabled();
             } else if (NOTIFICATIONS_KEY.equals(prefName)) {
-                checked = PrefServiceBridge.getInstance().isPushNotificationsEnabled();
+                checked = PrefServiceBridge.getInstance().isNotificationsEnabled();
             } else if (POPUPS_KEY.equals(prefName)) {
                 checked = PrefServiceBridge.getInstance().popupsEnabled();
             } else if (FULLSCREEN_KEY.equals(prefName)) {

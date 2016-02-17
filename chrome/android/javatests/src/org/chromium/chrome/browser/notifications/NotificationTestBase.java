@@ -11,7 +11,7 @@ import android.os.Environment;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
-import org.chromium.chrome.browser.preferences.website.PushNotificationInfo;
+import org.chromium.chrome.browser.preferences.website.NotificationInfo;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy.NotificationEntry;
@@ -71,9 +71,8 @@ public class NotificationTestBase extends ChromeTabbedActivityTestBase {
             @Override
             public void run() {
                 // The notification content setting does not consider the embedder origin.
-                PushNotificationInfo pushNotificationInfo =
-                        new PushNotificationInfo(origin, "", false);
-                pushNotificationInfo.setContentSetting(setting);
+                NotificationInfo notificationInfo = new NotificationInfo(origin, "", false);
+                notificationInfo.setContentSetting(setting);
             }
         });
 

@@ -155,20 +155,19 @@ public abstract class WebsitePreferenceBridge {
     }
 
     /**
-     * @return the list of all origins that have push notification permissions in
-     *         non-incognito mode.
+     * @return the list of all origins that have notification permissions in non-incognito mode.
      */
     @SuppressWarnings("unchecked")
-    public static List<PushNotificationInfo> getPushNotificationInfo() {
-        ArrayList<PushNotificationInfo> list = new ArrayList<PushNotificationInfo>();
-        nativeGetPushNotificationOrigins(list);
+    public static List<NotificationInfo> getNotificationInfo() {
+        ArrayList<NotificationInfo> list = new ArrayList<NotificationInfo>();
+        nativeGetNotificationOrigins(list);
         return list;
     }
 
     @CalledByNative
-    private static void insertPushNotificationIntoList(
-            ArrayList<PushNotificationInfo> list, String origin, String embedder) {
-        list.add(new PushNotificationInfo(origin, embedder, false));
+    private static void insertNotificationIntoList(
+            ArrayList<NotificationInfo> list, String origin, String embedder) {
+        list.add(new NotificationInfo(origin, embedder, false));
     }
 
     /**
@@ -283,10 +282,10 @@ public abstract class WebsitePreferenceBridge {
             String origin, String embedder, boolean isIncognito);
     static native void nativeSetMidiSettingForOrigin(
             String origin, String embedder, int value, boolean isIncognito);
-    private static native void nativeGetPushNotificationOrigins(Object list);
-    static native int nativeGetPushNotificationSettingForOrigin(
+    private static native void nativeGetNotificationOrigins(Object list);
+    static native int nativeGetNotificationSettingForOrigin(
             String origin, String embedder, boolean isIncognito);
-    static native void nativeSetPushNotificationSettingForOrigin(
+    static native void nativeSetNotificationSettingForOrigin(
             String origin, String embedder, int value, boolean isIncognito);
     private static native void nativeGetProtectedMediaIdentifierOrigins(Object list);
     static native int nativeGetProtectedMediaIdentifierSettingForOrigin(

@@ -5,23 +5,23 @@
 package org.chromium.chrome.browser.preferences.website;
 
 /**
- * Push Notification information for a given origin.
+ * Notification information for a given origin.
  */
-public class PushNotificationInfo extends PermissionInfo {
-    public PushNotificationInfo(String origin, String embedder, boolean isIncognito) {
+public class NotificationInfo extends PermissionInfo {
+    public NotificationInfo(String origin, String embedder, boolean isIncognito) {
         super(origin, embedder, isIncognito);
     }
 
     @Override
     protected int getNativePreferenceValue(String origin, String embedder, boolean isIncognito) {
-        return WebsitePreferenceBridge.nativeGetPushNotificationSettingForOrigin(
+        return WebsitePreferenceBridge.nativeGetNotificationSettingForOrigin(
                 origin, embedder, isIncognito);
     }
 
     @Override
     protected void setNativePreferenceValue(
             String origin, String embedder, ContentSetting value, boolean isIncognito) {
-        WebsitePreferenceBridge.nativeSetPushNotificationSettingForOrigin(
+        WebsitePreferenceBridge.nativeSetNotificationSettingForOrigin(
                 origin, embedder, value.toInt(), isIncognito);
     }
 }
