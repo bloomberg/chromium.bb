@@ -286,6 +286,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=570453)
     self.Fail('conformance2/textures/misc/copy-texture-image.html',
         ['mac'], bug=577144)
+    self.Fail('conformance2/textures/misc/tex-storage-and-subimage-3d.html',
+        ['mac'], bug=483282)
     # The following failure is 10.10 only, but we don't have a keyword yet.
     self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
         ['mac'], bug=584994)
