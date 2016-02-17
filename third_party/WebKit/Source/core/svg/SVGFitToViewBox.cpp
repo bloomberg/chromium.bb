@@ -49,7 +49,7 @@ protected:
 
 SVGParsingError SVGAnimatedViewBoxRect::setBaseValueAsString(const String& value)
 {
-    SVGParsingError parseStatus = baseValue()->setValueAsString(value);
+    SVGParsingError parseStatus = SVGAnimatedRect::setBaseValueAsString(value);
 
     if (parseStatus == SVGParseStatus::NoError && (baseValue()->width() < 0 || baseValue()->height() < 0)) {
         parseStatus = SVGParseStatus::NegativeValue;

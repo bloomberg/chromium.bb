@@ -188,6 +188,9 @@ void SVGElement::reportAttributeParsingError(SVGParsingError error, const Qualif
 {
     if (error == SVGParseStatus::NoError)
         return;
+    // Don't report any errors on attribute removal.
+    if (value.isNull())
+        return;
     document().accessSVGExtensions().reportError(error.format(tagName(), name, value));
 }
 
