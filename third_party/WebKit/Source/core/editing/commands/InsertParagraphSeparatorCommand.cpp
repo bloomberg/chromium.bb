@@ -191,7 +191,14 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
         insertionPosition = mostForwardCaretPosition(insertionPosition);
 
     // Adjust the insertion position after the delete
+    const Position originalInsertionPosition = insertionPosition;
+    const Element* enclosingAnchor = enclosingAnchorElement(originalInsertionPosition);
     insertionPosition = positionAvoidingSpecialElementBoundary(insertionPosition, ASSERT_NO_EDITING_ABORT);
+    if (listChild == enclosingAnchor) {
+        // |positionAvoidingSpecialElementBoundary()| creates new A element and
+        // move to another place.
+        listChild = toHTMLElement(enclosingAnchorElement(originalInsertionPosition));
+    }
     VisiblePosition visiblePos = createVisiblePosition(insertionPosition, affinity);
     calculateStyleBeforeInsertion(insertionPosition);
 
