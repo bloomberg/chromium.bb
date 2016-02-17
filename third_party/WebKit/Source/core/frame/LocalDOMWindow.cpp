@@ -114,14 +114,14 @@ void LocalDOMWindow::WindowFrameObserver::contextDestroyed()
 class PostMessageTimer final : public NoBaseWillBeGarbageCollectedFinalized<PostMessageTimer>, public SuspendableTimer {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PostMessageTimer);
 public:
-    PostMessageTimer(LocalDOMWindow& window, PassRefPtrWillBeRawPtr<MessageEvent> event, PassRefPtrWillBeRawPtr<LocalDOMWindow> source, SecurityOrigin* targetOrigin, PassRefPtr<ScriptCallStack> stackTrace, UserGestureToken* userGestureToken)
+    PostMessageTimer(LocalDOMWindow& window, PassRefPtrWillBeRawPtr<MessageEvent> event, SecurityOrigin* targetOrigin, PassRefPtr<ScriptCallStack> stackTrace, UserGestureToken* userGestureToken)
         : SuspendableTimer(window.document())
         , m_event(event)
         , m_window(&window)
         , m_targetOrigin(targetOrigin)
         , m_stackTrace(stackTrace)
         , m_userGestureToken(userGestureToken)
-        , m_preventDestruction(false)
+        , m_disposalAllowed(true)
     {
         m_asyncOperationId = InspectorInstrumentation::traceAsyncOperationStarting(executionContext(), "postMessage");
     }
@@ -134,10 +134,8 @@ public:
     {
         SuspendableTimer::stop();
 
-        if (!m_preventDestruction) {
-            // Will destroy this object
-            m_window->removePostMessageTimer(this);
-        }
+        if (m_disposalAllowed)
+            dispose();
     }
 
     // Eager finalization is needed to promptly stop this timer object.
@@ -156,13 +154,19 @@ private:
     void fired() override
     {
         InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncOperationCompletedCallbackStarting(executionContext(), m_asyncOperationId);
-        // Prevent calls to stop triggered from the event handler to
-        // kill this object.
-        m_preventDestruction = true;
+        m_disposalAllowed = false;
         m_window->postMessageTimerFired(this);
-        // Will destroy this object
-        m_window->removePostMessageTimer(this);
+        dispose();
         InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
+    }
+
+    void dispose()
+    {
+        // Oilpan optimization: unregister as an observer right away.
+        clearContext();
+        // Will destroy this object, now or after the next GC depending
+        // on whether Oilpan is disabled or not.
+        m_window->removePostMessageTimer(this);
     }
 
     RefPtrWillBeMember<MessageEvent> m_event;
@@ -171,7 +175,7 @@ private:
     RefPtr<ScriptCallStack> m_stackTrace;
     RefPtr<UserGestureToken> m_userGestureToken;
     int m_asyncOperationId;
-    bool m_preventDestruction;
+    bool m_disposalAllowed;
 };
 
 static void updateSuddenTerminationStatus(LocalDOMWindow* domWindow, bool addedListener, FrameLoaderClient::SuddenTerminationDisablerType disablerType)
@@ -675,10 +679,14 @@ Navigator* LocalDOMWindow::navigator() const
     return m_navigator.get();
 }
 
-void LocalDOMWindow::schedulePostMessage(PassRefPtrWillBeRawPtr<MessageEvent> event, LocalDOMWindow* source, SecurityOrigin* target, PassRefPtr<ScriptCallStack> stackTrace)
+void LocalDOMWindow::schedulePostMessage(PassRefPtrWillBeRawPtr<MessageEvent> event, SecurityOrigin* target, PassRefPtr<ScriptCallStack> stackTrace)
 {
+    // Allowing unbounded amounts of messages to build up for a suspended context
+    // is problematic; consider imposing a limit or other restriction if this
+    // surfaces often as a problem (see crbug.com/587012).
+
     // Schedule the message.
-    OwnPtrWillBeRawPtr<PostMessageTimer> timer = adoptPtrWillBeNoop(new PostMessageTimer(*this, event, source, target, stackTrace, UserGestureIndicator::currentToken()));
+    OwnPtrWillBeRawPtr<PostMessageTimer> timer = adoptPtrWillBeNoop(new PostMessageTimer(*this, event, target, stackTrace, UserGestureIndicator::currentToken()));
     timer->startOneShot(0, BLINK_FROM_HERE);
     timer->suspendIfNeeded();
     m_postMessageTimers.add(timer.release());
@@ -686,9 +694,8 @@ void LocalDOMWindow::schedulePostMessage(PassRefPtrWillBeRawPtr<MessageEvent> ev
 
 void LocalDOMWindow::postMessageTimerFired(PostMessageTimer* timer)
 {
-    if (!isCurrentlyDisplayedInFrame()) {
+    if (!isCurrentlyDisplayedInFrame())
         return;
-    }
 
     RefPtrWillBeRawPtr<MessageEvent> event = timer->event();
 

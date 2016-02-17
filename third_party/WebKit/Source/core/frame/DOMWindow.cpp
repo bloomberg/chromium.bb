@@ -208,19 +208,19 @@ void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message, const Mes
     else if (MixedContentChecker::isMixedContent(frame()->securityContext()->securityOrigin(), sourceDocument->url()))
         UseCounter::count(frame(), UseCounter::PostMessageFromInsecureToSecure);
 
+    RefPtrWillBeRawPtr<MessageEvent> event = MessageEvent::create(channels.release(), message, sourceOrigin, String(), source, sourceSuborigin);
     // Give the embedder a chance to intercept this postMessage.  If the
     // target is a remote frame, the message will be forwarded through the
     // browser process.
-    RefPtrWillBeRawPtr<MessageEvent> event = MessageEvent::create(channels.release(), message, sourceOrigin, String(), source, sourceSuborigin);
-    bool didHandleMessageEvent = frame()->client()->willCheckAndDispatchMessageEvent(target.get(), event.get(), source->document()->frame());
-    if (!didHandleMessageEvent) {
-        // Capture stack trace only when inspector front-end is loaded as it may be time consuming.
-        RefPtr<ScriptCallStack> stackTrace;
-        if (InspectorInstrumentation::consoleAgentEnabled(sourceDocument))
-            stackTrace = ScriptCallStack::capture();
+    if (frame()->client()->willCheckAndDispatchMessageEvent(target.get(), event.get(), source->document()->frame()))
+        return;
 
-        toLocalDOMWindow(this)->schedulePostMessage(event, source, target.get(), stackTrace.release());
-    }
+    // Capture stack trace only when inspector front-end is loaded as it may be time consuming.
+    RefPtr<ScriptCallStack> stackTrace;
+    if (InspectorInstrumentation::consoleAgentEnabled(sourceDocument))
+        stackTrace = ScriptCallStack::capture();
+
+    toLocalDOMWindow(this)->schedulePostMessage(event, target.get(), stackTrace.release());
 }
 
 // FIXME: Once we're throwing exceptions for cross-origin access violations, we will always sanitize the target
