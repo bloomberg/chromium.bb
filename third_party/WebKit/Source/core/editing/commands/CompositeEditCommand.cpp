@@ -275,14 +275,14 @@ void CompositeEditCommand::applyCommandToComposite(PassRefPtrWillBeRawPtr<Compos
         m_commands.append(command);
 }
 
-void CompositeEditCommand::applyStyle(const EditingStyle* style, EditingState* editingState, EditAction editingAction)
+void CompositeEditCommand::applyStyle(const EditingStyle* style, EditingState* editingState)
 {
-    applyCommandToComposite(ApplyStyleCommand::create(document(), style, editingAction), editingState);
+    applyCommandToComposite(ApplyStyleCommand::create(document(), style, EditActionChangeAttributes), editingState);
 }
 
-void CompositeEditCommand::applyStyle(const EditingStyle* style, const Position& start, const Position& end, EditingState* editingState, EditAction editingAction)
+void CompositeEditCommand::applyStyle(const EditingStyle* style, const Position& start, const Position& end, EditingState* editingState)
 {
-    applyCommandToComposite(ApplyStyleCommand::create(document(), style, start, end, editingAction), editingState);
+    applyCommandToComposite(ApplyStyleCommand::create(document(), style, start, end), editingState);
 }
 
 void CompositeEditCommand::applyStyledElement(PassRefPtrWillBeRawPtr<Element> element, EditingState* editingState)

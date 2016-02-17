@@ -126,11 +126,11 @@ ApplyStyleCommand::ApplyStyleCommand(Document& document, const EditingStyle* sty
 {
 }
 
-ApplyStyleCommand::ApplyStyleCommand(Document& document, const EditingStyle* style, const Position& start, const Position& end, EditAction editingAction, EPropertyLevel propertyLevel)
+ApplyStyleCommand::ApplyStyleCommand(Document& document, const EditingStyle* style, const Position& start, const Position& end)
     : CompositeEditCommand(document)
     , m_style(style->copy())
-    , m_editingAction(editingAction)
-    , m_propertyLevel(propertyLevel)
+    , m_editingAction(EditActionChangeAttributes)
+    , m_propertyLevel(PropertyDefault)
     , m_start(start)
     , m_end(end)
     , m_useEndingSelection(false)
@@ -140,10 +140,10 @@ ApplyStyleCommand::ApplyStyleCommand(Document& document, const EditingStyle* sty
 {
 }
 
-ApplyStyleCommand::ApplyStyleCommand(PassRefPtrWillBeRawPtr<Element> element, bool removeOnly, EditAction editingAction)
+ApplyStyleCommand::ApplyStyleCommand(PassRefPtrWillBeRawPtr<Element> element, bool removeOnly)
     : CompositeEditCommand(element->document())
     , m_style(EditingStyle::create())
-    , m_editingAction(editingAction)
+    , m_editingAction(EditActionChangeAttributes)
     , m_propertyLevel(PropertyDefault)
     , m_start(mostForwardCaretPosition(endingSelection().start()))
     , m_end(mostBackwardCaretPosition(endingSelection().end()))

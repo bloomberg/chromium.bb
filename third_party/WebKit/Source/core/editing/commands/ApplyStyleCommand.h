@@ -48,19 +48,19 @@ public:
     enum EAddStyledElement { AddStyledElement, DoNotAddStyledElement };
     typedef bool (*IsInlineElementToRemoveFunction)(const Element*);
 
-    static PassRefPtrWillBeRawPtr<ApplyStyleCommand> create(Document& document, const EditingStyle* style, EditAction action = EditActionChangeAttributes, EPropertyLevel level = PropertyDefault)
+    static PassRefPtrWillBeRawPtr<ApplyStyleCommand> create(Document& document, const EditingStyle* style, EditAction action, EPropertyLevel level = PropertyDefault)
     {
         return adoptRefWillBeNoop(new ApplyStyleCommand(document, style, action, level));
     }
-    static PassRefPtrWillBeRawPtr<ApplyStyleCommand> create(Document& document, const EditingStyle* style, const Position& start, const Position& end, EditAction action = EditActionChangeAttributes, EPropertyLevel level = PropertyDefault)
+    static PassRefPtrWillBeRawPtr<ApplyStyleCommand> create(Document& document, const EditingStyle* style, const Position& start, const Position& end)
     {
-        return adoptRefWillBeNoop(new ApplyStyleCommand(document, style, start, end, action, level));
+        return adoptRefWillBeNoop(new ApplyStyleCommand(document, style, start, end));
     }
-    static PassRefPtrWillBeRawPtr<ApplyStyleCommand> create(PassRefPtrWillBeRawPtr<Element> element, bool removeOnly = false, EditAction action = EditActionChangeAttributes)
+    static PassRefPtrWillBeRawPtr<ApplyStyleCommand> create(PassRefPtrWillBeRawPtr<Element> element, bool removeOnly)
     {
-        return adoptRefWillBeNoop(new ApplyStyleCommand(element, removeOnly, action));
+        return adoptRefWillBeNoop(new ApplyStyleCommand(element, removeOnly));
     }
-    static PassRefPtrWillBeRawPtr<ApplyStyleCommand> create(Document& document, const EditingStyle* style, IsInlineElementToRemoveFunction isInlineElementToRemoveFunction, EditAction action = EditActionChangeAttributes)
+    static PassRefPtrWillBeRawPtr<ApplyStyleCommand> create(Document& document, const EditingStyle* style, IsInlineElementToRemoveFunction isInlineElementToRemoveFunction, EditAction action)
     {
         return adoptRefWillBeNoop(new ApplyStyleCommand(document, style, isInlineElementToRemoveFunction, action));
     }
@@ -69,8 +69,8 @@ public:
 
 private:
     ApplyStyleCommand(Document&, const EditingStyle*, EditAction, EPropertyLevel);
-    ApplyStyleCommand(Document&, const EditingStyle*, const Position& start, const Position& end, EditAction, EPropertyLevel);
-    ApplyStyleCommand(PassRefPtrWillBeRawPtr<Element>, bool removeOnly, EditAction);
+    ApplyStyleCommand(Document&, const EditingStyle*, const Position& start, const Position& end);
+    ApplyStyleCommand(PassRefPtrWillBeRawPtr<Element>, bool removeOnly);
     ApplyStyleCommand(Document&, const EditingStyle*, bool (*isInlineElementToRemove)(const Element*), EditAction);
 
     void doApply(EditingState*) override;
