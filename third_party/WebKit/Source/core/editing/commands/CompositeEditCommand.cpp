@@ -599,10 +599,10 @@ Position CompositeEditCommand::positionOutsideTabSpan(const Position& pos)
     return positionInParentBeforeNode(*tabSpan);
 }
 
-void CompositeEditCommand::insertNodeAtTabSpanPosition(PassRefPtrWillBeRawPtr<Node> node, const Position& pos)
+void CompositeEditCommand::insertNodeAtTabSpanPosition(PassRefPtrWillBeRawPtr<Node> node, const Position& pos, EditingState* editingState)
 {
     // insert node before, after, or at split of tab span
-    insertNodeAt(node, positionOutsideTabSpan(pos));
+    insertNodeAt(node, positionOutsideTabSpan(pos), editingState);
 }
 
 void CompositeEditCommand::deleteSelection(EditingState* editingState, bool smartDelete, bool mergeBlocksAfterDelete, bool expandForSpecialElements, bool sanitizeMarkup)
@@ -893,7 +893,7 @@ PassRefPtrWillBeRawPtr<HTMLBRElement> CompositeEditCommand::appendBlockPlacehold
     return placeholder.release();
 }
 
-PassRefPtrWillBeRawPtr<HTMLBRElement> CompositeEditCommand::insertBlockPlaceholder(const Position& pos)
+PassRefPtrWillBeRawPtr<HTMLBRElement> CompositeEditCommand::insertBlockPlaceholder(const Position& pos, EditingState* editingState)
 {
     if (pos.isNull())
         return nullptr;
@@ -902,7 +902,9 @@ PassRefPtrWillBeRawPtr<HTMLBRElement> CompositeEditCommand::insertBlockPlacehold
     ASSERT(pos.anchorNode()->layoutObject());
 
     RefPtrWillBeRawPtr<HTMLBRElement> placeholder = HTMLBRElement::create(document());
-    insertNodeAt(placeholder, pos);
+    insertNodeAt(placeholder, pos, editingState);
+    if (editingState->isAborted())
+        return nullptr;
     return placeholder.release();
 }
 
@@ -941,11 +943,13 @@ void CompositeEditCommand::removePlaceholderAt(const Position& p)
     deleteTextFromNode(toText(p.anchorNode()), p.offsetInContainerNode(), 1);
 }
 
-PassRefPtrWillBeRawPtr<HTMLElement> CompositeEditCommand::insertNewDefaultParagraphElementAt(const Position& position)
+PassRefPtrWillBeRawPtr<HTMLElement> CompositeEditCommand::insertNewDefaultParagraphElementAt(const Position& position, EditingState* editingState)
 {
     RefPtrWillBeRawPtr<HTMLElement> paragraphElement = createDefaultParagraphElement(document());
     paragraphElement->appendChild(HTMLBRElement::create(document()));
-    insertNodeAt(paragraphElement, position);
+    insertNodeAt(paragraphElement, position, editingState);
+    if (editingState->isAborted())
+        return nullptr;
     return paragraphElement.release();
 }
 
@@ -979,7 +983,7 @@ PassRefPtrWillBeRawPtr<HTMLElement> CompositeEditCommand::moveParagraphContentsT
             // If the block is the root editable element and it contains no visible content, create a new
             // block but don't try and move content into it, since there's nothing for moveParagraphs to move.
             if (!hasRenderedNonAnonymousDescendantsWithHeight(upstreamStart.anchorNode()->layoutObject()))
-                return insertNewDefaultParagraphElementAt(upstreamStart);
+                return insertNewDefaultParagraphElementAt(upstreamStart, editingState);
         } else if (isEnclosingBlock(upstreamEnd.anchorNode())) {
             if (!upstreamEnd.anchorNode()->isDescendantOf(upstreamStart.anchorNode())) {
                 // If the paragraph end is a descendant of paragraph start, then we need to run
@@ -999,7 +1003,9 @@ PassRefPtrWillBeRawPtr<HTMLElement> CompositeEditCommand::moveParagraphContentsT
     if (visibleParagraphEnd.isNull())
         return nullptr;
 
-    RefPtrWillBeRawPtr<HTMLElement> newBlock = insertNewDefaultParagraphElementAt(upstreamStart);
+    RefPtrWillBeRawPtr<HTMLElement> newBlock = insertNewDefaultParagraphElementAt(upstreamStart, editingState);
+    if (editingState->isAborted())
+        return nullptr;
 
     bool endWasBr = isHTMLBRElement(*visibleParagraphEnd.deepEquivalent().anchorNode());
 
@@ -1218,7 +1224,7 @@ void CompositeEditCommand::moveParagraphWithClones(const VisiblePosition& startO
     if (beforeParagraph.isNotNull() && !isDisplayInsideTable(beforeParagraph.deepEquivalent().anchorNode())
         && ((!isEndOfParagraph(beforeParagraph) && !isStartOfParagraph(beforeParagraph)) || beforeParagraph.deepEquivalent() == afterParagraph.deepEquivalent())) {
         // FIXME: Trim text between beforeParagraph and afterParagraph if they aren't equal.
-        insertNodeAt(HTMLBRElement::create(document()), beforeParagraph.deepEquivalent());
+        insertNodeAt(HTMLBRElement::create(document()), beforeParagraph.deepEquivalent(), editingState);
     }
 }
 
@@ -1308,7 +1314,9 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
     afterParagraph = createVisiblePosition(afterParagraph.deepEquivalent());
     if (beforeParagraph.isNotNull() && (!isEndOfParagraph(beforeParagraph) || beforeParagraph.deepEquivalent() == afterParagraph.deepEquivalent())) {
         // FIXME: Trim text between beforeParagraph and afterParagraph if they aren't equal.
-        insertNodeAt(HTMLBRElement::create(document()), beforeParagraph.deepEquivalent());
+        insertNodeAt(HTMLBRElement::create(document()), beforeParagraph.deepEquivalent(), editingState);
+        if (editingState->isAborted())
+            return;
         // Need an updateLayout here in case inserting the br has split a text node.
         document().updateLayoutIgnorePendingStylesheets();
     }

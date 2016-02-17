@@ -345,7 +345,9 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
     // content will move down a line.
     if (isStartOfParagraph(visiblePos)) {
         RefPtrWillBeRawPtr<HTMLBRElement> br = HTMLBRElement::create(document());
-        insertNodeAt(br.get(), insertionPosition);
+        insertNodeAt(br.get(), insertionPosition, editingState);
+        if (editingState->isAborted())
+            return;
         insertionPosition = positionInParentAfterNode(*br);
         // If the insertion point is a break element, there is nothing else
         // we need to do.

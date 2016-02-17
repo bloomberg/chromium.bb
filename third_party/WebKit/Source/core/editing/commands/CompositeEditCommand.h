@@ -109,8 +109,8 @@ protected:
     virtual void deleteTextFromNode(PassRefPtrWillBeRawPtr<Text>, unsigned offset, unsigned count);
     bool isRemovableBlock(const Node*);
     void insertNodeAfter(PassRefPtrWillBeRawPtr<Node>, PassRefPtrWillBeRawPtr<Node> refChild, EditingState*);
-    void insertNodeAt(PassRefPtrWillBeRawPtr<Node>, const Position&, EditingState* = ASSERT_NO_EDITING_ABORT);
-    void insertNodeAtTabSpanPosition(PassRefPtrWillBeRawPtr<Node>, const Position&);
+    void insertNodeAt(PassRefPtrWillBeRawPtr<Node>, const Position&, EditingState*);
+    void insertNodeAtTabSpanPosition(PassRefPtrWillBeRawPtr<Node>, const Position&, EditingState*);
     void insertNodeBefore(PassRefPtrWillBeRawPtr<Node>, PassRefPtrWillBeRawPtr<Node> refChild, EditingState*, ShouldAssumeContentIsAlwaysEditable = DoNotAssumeContentIsAlwaysEditable);
     void insertParagraphSeparator(EditingState*, bool useDefaultParagraphElement = false, bool pasteBlockqutoeIntoUnquotedArea = false);
     void insertTextIntoNode(PassRefPtrWillBeRawPtr<Text>, unsigned offset, const String& text);
@@ -147,11 +147,11 @@ protected:
     void deleteInsignificantTextDownstream(const Position&);
 
     PassRefPtrWillBeRawPtr<HTMLBRElement> appendBlockPlaceholder(PassRefPtrWillBeRawPtr<Element>, EditingState*);
-    PassRefPtrWillBeRawPtr<HTMLBRElement> insertBlockPlaceholder(const Position&);
+    PassRefPtrWillBeRawPtr<HTMLBRElement> insertBlockPlaceholder(const Position&, EditingState*);
     PassRefPtrWillBeRawPtr<HTMLBRElement> addBlockPlaceholderIfNeeded(Element*, EditingState*);
     void removePlaceholderAt(const Position&);
 
-    PassRefPtrWillBeRawPtr<HTMLElement> insertNewDefaultParagraphElementAt(const Position&);
+    PassRefPtrWillBeRawPtr<HTMLElement> insertNewDefaultParagraphElementAt(const Position&, EditingState*);
 
     PassRefPtrWillBeRawPtr<HTMLElement> moveParagraphContentsToNewBlockIfNecessary(const Position&, EditingState*);
 

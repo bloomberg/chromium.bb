@@ -152,7 +152,9 @@ void InsertLineBreakCommand::doApply(EditingState* editingState)
                 insertTextIntoNode(textNode, 0, nonBreakingSpaceString());
             } else {
                 RefPtrWillBeRawPtr<Text> nbspNode = document().createTextNode(nonBreakingSpaceString());
-                insertNodeAt(nbspNode.get(), positionBeforeTextNode);
+                insertNodeAt(nbspNode.get(), positionBeforeTextNode, editingState);
+                if (editingState->isAborted())
+                    return;
                 endingPosition = firstPositionInNode(nbspNode.get());
             }
         }

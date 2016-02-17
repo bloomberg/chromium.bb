@@ -388,7 +388,7 @@ void DeleteSelectionCommand::removeNode(PassRefPtrWillBeRawPtr<Node> node, Editi
         if (r && r->isTableCell() && toLayoutTableCell(r)->contentHeight() <= 0) {
             Position firstEditablePosition = firstEditablePositionInNode(node.get());
             if (firstEditablePosition.isNotNull())
-                insertBlockPlaceholder(firstEditablePosition);
+                insertBlockPlaceholder(firstEditablePosition, editingState);
         }
         return;
     }
@@ -916,8 +916,11 @@ void DeleteSelectionCommand::doApply(EditingState* editingState)
         }
         // handleGeneralDelete cause DOM mutation events so |m_endingPosition|
         // can be out of document.
-        if (m_endingPosition.inDocument())
-            insertNodeAt(placeholder.get(), m_endingPosition);
+        if (m_endingPosition.inDocument()) {
+            insertNodeAt(placeholder.get(), m_endingPosition, editingState);
+            if (editingState->isAborted())
+                return;
+        }
     }
 
     rebalanceWhitespaceAt(m_endingPosition);

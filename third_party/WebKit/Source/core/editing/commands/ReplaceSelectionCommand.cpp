@@ -1210,8 +1210,11 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
 
     // We inserted before the enclosingBlockOfInsertionPos to prevent nesting, and the content before the enclosingBlockOfInsertionPos wasn't in its own block and
     // didn't have a br after it, so the inserted content ended up in the same paragraph.
-    if (!startOfInsertedContent.isNull() && enclosingBlockOfInsertionPos && insertionPos.anchorNode() == enclosingBlockOfInsertionPos->parentNode() && (unsigned)insertionPos.computeEditingOffset() < enclosingBlockOfInsertionPos->nodeIndex() && !isStartOfParagraph(startOfInsertedContent))
-        insertNodeAt(HTMLBRElement::create(document()).get(), startOfInsertedContent.deepEquivalent());
+    if (!startOfInsertedContent.isNull() && enclosingBlockOfInsertionPos && insertionPos.anchorNode() == enclosingBlockOfInsertionPos->parentNode() && (unsigned)insertionPos.computeEditingOffset() < enclosingBlockOfInsertionPos->nodeIndex() && !isStartOfParagraph(startOfInsertedContent)) {
+        insertNodeAt(HTMLBRElement::create(document()).get(), startOfInsertedContent.deepEquivalent(), editingState);
+        if (editingState->isAborted())
+            return;
+    }
 
     if (endBR && (plainTextFragment || (shouldRemoveEndBR(endBR, originalVisPosBeforeEndBR) && !(fragment.hasInterchangeNewlineAtEnd() && selectionIsPlainText)))) {
         RefPtrWillBeRawPtr<ContainerNode> parent = endBR->parentNode();

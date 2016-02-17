@@ -443,7 +443,9 @@ void InsertListCommand::listifyParagraph(const VisiblePosition& originalStart, c
     // a placeholder and then recompute start and end.
     Position startPos = start.deepEquivalent();
     if (start.deepEquivalent() == end.deepEquivalent() && isEnclosingBlock(start.deepEquivalent().anchorNode())) {
-        const RefPtrWillBeRawPtr<HTMLBRElement> placeholder = insertBlockPlaceholder(startPos);
+        const RefPtrWillBeRawPtr<HTMLBRElement> placeholder = insertBlockPlaceholder(startPos, editingState);
+        if (editingState->isAborted())
+            return;
         startPos = Position::beforeNode(placeholder.get());
     }
 

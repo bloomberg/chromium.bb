@@ -882,8 +882,11 @@ void ApplyStyleCommand::applyInlineStyleToNodeRange(EditingStyle* style, PassRef
         removeConflictingInlineStyleFromRun(style, run.start, run.end, run.pastEndNode, editingState);
         if (editingState->isAborted())
             return;
-        if (run.startAndEndAreStillInDocument())
-            run.positionForStyleComputation = positionToComputeInlineStyleChange(run.start, run.dummyElement);
+        if (run.startAndEndAreStillInDocument()) {
+            run.positionForStyleComputation = positionToComputeInlineStyleChange(run.start, run.dummyElement, editingState);
+            if (editingState->isAborted())
+                return;
+        }
     }
 
     document().updateLayoutIgnorePendingStylesheets();
@@ -1516,7 +1519,9 @@ void ApplyStyleCommand::addInlineStyleIfNeeded(EditingStyle* style, PassRefPtrWi
 
     RefPtrWillBeRawPtr<Node> start = passedStart;
     RefPtrWillBeMember<HTMLSpanElement> dummyElement = nullptr;
-    StyleChange styleChange(style, positionToComputeInlineStyleChange(start, dummyElement));
+    StyleChange styleChange(style, positionToComputeInlineStyleChange(start, dummyElement, editingState));
+    if (editingState->isAborted())
+        return;
 
     if (dummyElement) {
         removeNode(dummyElement, editingState);
@@ -1527,12 +1532,14 @@ void ApplyStyleCommand::addInlineStyleIfNeeded(EditingStyle* style, PassRefPtrWi
     applyInlineStyleChange(start, passedEnd, styleChange, DoNotAddStyledElement, editingState);
 }
 
-Position ApplyStyleCommand::positionToComputeInlineStyleChange(PassRefPtrWillBeRawPtr<Node> startNode, RefPtrWillBeMember<HTMLSpanElement>& dummyElement)
+Position ApplyStyleCommand::positionToComputeInlineStyleChange(PassRefPtrWillBeRawPtr<Node> startNode, RefPtrWillBeMember<HTMLSpanElement>& dummyElement, EditingState* editingState)
 {
     // It's okay to obtain the style at the startNode because we've removed all relevant styles from the current run.
     if (!startNode->isElementNode()) {
         dummyElement = HTMLSpanElement::create(document());
-        insertNodeAt(dummyElement, positionBeforeNode(startNode.get()));
+        insertNodeAt(dummyElement, positionBeforeNode(startNode.get()), editingState);
+        if (editingState->isAborted())
+            return Position();
         return positionBeforeNode(dummyElement.get());
     }
 

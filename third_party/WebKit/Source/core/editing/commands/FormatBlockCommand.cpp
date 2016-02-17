@@ -109,7 +109,7 @@ void FormatBlockCommand::formatRange(const Position& start, const Position& end,
         blockElement->setAttribute(styleAttr, toHTMLElement(nodeAfterInsertionPosition.get())->getAttribute(styleAttr));
 
     if (wasEndOfParagraph && !isEndOfParagraph(createVisiblePosition(lastParagraphInBlockNode)) && !isStartOfParagraph(createVisiblePosition(lastParagraphInBlockNode)))
-        insertBlockPlaceholder(lastParagraphInBlockNode);
+        insertBlockPlaceholder(lastParagraphInBlockNode, editingState);
 }
 
 Element* FormatBlockCommand::elementForFormatBlockCommand(Range* range)

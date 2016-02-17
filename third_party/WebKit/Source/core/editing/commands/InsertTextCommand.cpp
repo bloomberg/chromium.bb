@@ -44,12 +44,14 @@ InsertTextCommand::InsertTextCommand(Document& document, const String& text, boo
 {
 }
 
-Position InsertTextCommand::positionInsideTextNode(const Position& p)
+Position InsertTextCommand::positionInsideTextNode(const Position& p, EditingState* editingState)
 {
     Position pos = p;
     if (isTabHTMLSpanElementTextNode(pos.anchorNode())) {
         RefPtrWillBeRawPtr<Text> textNode = document().createEditingTextNode("");
-        insertNodeAtTabSpanPosition(textNode.get(), pos);
+        insertNodeAtTabSpanPosition(textNode.get(), pos, editingState);
+        if (editingState->isAborted())
+            return Position();
         return firstPositionInNode(textNode.get());
     }
 
@@ -57,7 +59,9 @@ Position InsertTextCommand::positionInsideTextNode(const Position& p)
     // It may be necessary to insert a text node to receive characters.
     if (!pos.computeContainerNode()->isTextNode()) {
         RefPtrWillBeRawPtr<Text> textNode = document().createEditingTextNode("");
-        insertNodeAt(textNode.get(), pos);
+        insertNodeAt(textNode.get(), pos, editingState);
+        if (editingState->isAborted())
+            return Position();
         return firstPositionInNode(textNode.get());
     }
 
@@ -198,7 +202,9 @@ void InsertTextCommand::doApply(EditingState* editingState)
             removePlaceholderAt(placeholder);
     } else {
         // Make sure the document is set up to receive m_text
-        startPosition = positionInsideTextNode(startPosition);
+        startPosition = positionInsideTextNode(startPosition, editingState);
+        if (editingState->isAborted())
+            return;
         ASSERT(startPosition.isOffsetInAnchor());
         ASSERT(startPosition.computeContainerNode());
         ASSERT(startPosition.computeContainerNode()->isTextNode());
