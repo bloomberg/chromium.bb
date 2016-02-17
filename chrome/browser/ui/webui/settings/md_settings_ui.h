@@ -10,7 +10,9 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 #include "base/values.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
@@ -36,13 +38,26 @@ class SettingsPageUIHandler : public content::WebUIMessageHandler {
 };
 
 // The WebUI handler for chrome://md-settings.
-class MdSettingsUI : public content::WebUIController {
+class MdSettingsUI : public content::WebUIController,
+                     public content::WebContentsObserver {
  public:
   explicit MdSettingsUI(content::WebUI* web_ui);
   ~MdSettingsUI() override;
 
+  // Overridden from content::WebContentsObserver:
+  void DidStartProvisionalLoadForFrame(
+      content::RenderFrameHost* render_frame_host,
+      const GURL& validated_url,
+      bool is_error_page,
+      bool is_iframe_srcdoc) override;
+  void DocumentLoadedInFrame(
+      content::RenderFrameHost *render_frame_host) override;
+  void DocumentOnLoadCompletedInMainFrame() override;
+
  private:
   void AddSettingsPageUIHandler(content::WebUIMessageHandler* handler);
+
+  base::Time load_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(MdSettingsUI);
 };

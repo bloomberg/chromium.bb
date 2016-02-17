@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/settings/appearance_handler.h"
 #include "chrome/browser/ui/webui/settings/downloads_handler.h"
@@ -49,7 +50,8 @@ void SettingsPageUIHandler::CallJavascriptCallback(
 }
 
 MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
-    : content::WebUIController(web_ui) {
+    : content::WebUIController(web_ui),
+      WebContentsObserver(web_ui->GetWebContents()) {
   Profile* profile = Profile::FromWebUI(web_ui);
   AddSettingsPageUIHandler(new AppearanceHandler(web_ui));
   AddSettingsPageUIHandler(new ClearBrowsingDataHandler(web_ui));
@@ -95,6 +97,25 @@ void MdSettingsUI::AddSettingsPageUIHandler(
   DCHECK(handler.get());
 
   web_ui()->AddMessageHandler(handler.release());
+}
+
+void MdSettingsUI::DidStartProvisionalLoadForFrame(
+    content::RenderFrameHost* render_frame_host,
+    const GURL& validated_url,
+    bool is_error_page,
+    bool is_iframe_srcdoc) {
+  load_start_time_ = base::Time::Now();
+}
+
+void MdSettingsUI::DocumentLoadedInFrame(
+    content::RenderFrameHost* render_frame_host) {
+  UMA_HISTOGRAM_TIMES("Settings.LoadDocumentTime.MD",
+                      base::Time::Now() - load_start_time_);
+}
+
+void MdSettingsUI::DocumentOnLoadCompletedInMainFrame() {
+  UMA_HISTOGRAM_TIMES("Settings.LoadCompletedTime.MD",
+                      base::Time::Now() - load_start_time_);
 }
 
 }  // namespace settings

@@ -14,6 +14,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -141,6 +142,9 @@ class OptionsUI : public content::WebUIController,
       const GURL& validated_url,
       bool is_error_page,
       bool is_iframe_srcdoc) override;
+  void DocumentLoadedInFrame(
+      content::RenderFrameHost *render_frame_host) override;
+  void DocumentOnLoadCompletedInMainFrame() override;
 
   // Overridden from OptionsPageUIHandlerHost:
   void InitializeHandlers() override;
@@ -160,6 +164,8 @@ class OptionsUI : public content::WebUIController,
   scoped_ptr<chromeos::system::PointerDeviceObserver>
       pointer_device_observer_;
 #endif
+
+  base::Time load_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(OptionsUI);
 };
