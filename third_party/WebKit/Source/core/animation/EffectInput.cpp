@@ -33,6 +33,7 @@
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/UnionTypesCore.h"
 #include "core/animation/AnimationInputHelpers.h"
+#include "core/animation/CompositorAnimations.h"
 #include "core/animation/KeyframeEffectModel.h"
 #include "core/animation/StringKeyframe.h"
 #include "core/css/CSSStyleSheet.h"
@@ -51,13 +52,10 @@ EffectModel* EffectInput::convert(Element* element, const Vector<Dictionary>& ke
     if (!element)
         return nullptr;
 
-    // TODO(alancutter): Remove this once composited animations no longer depend on AnimatableValues.
-    if (element->inActiveDocument())
-        element->document().updateLayoutTreeForNodeIfNeeded(element);
-
     StyleSheetContents* styleSheetContents = element->document().elementSheet().contents();
     StringKeyframeVector keyframes;
     double lastOffset = 0;
+    bool encounteredCompositableProperty = false;
 
     for (const auto& keyframeDictionary : keyframeDictionaryVector) {
         RefPtr<StringKeyframe> keyframe = StringKeyframe::create();
@@ -110,6 +108,9 @@ EffectModel* EffectInput::convert(Element* element, const Vector<Dictionary>& ke
 
             CSSPropertyID cssProperty = AnimationInputHelpers::keyframeAttributeToCSSProperty(property);
             if (cssProperty != CSSPropertyInvalid) {
+                if (!encounteredCompositableProperty && CompositorAnimations::isCompositableProperty(cssProperty))
+                    encounteredCompositableProperty = true;
+
                 keyframe->setCSSPropertyValue(cssProperty, value, element, styleSheetContents);
                 continue;
             }
@@ -131,6 +132,10 @@ EffectModel* EffectInput::convert(Element* element, const Vector<Dictionary>& ke
                 keyframe->setSVGAttributeValue(*svgAttribute, value);
         }
     }
+
+    // TODO(alancutter): Remove this once composited animations no longer depend on AnimatableValues.
+    if (encounteredCompositableProperty && element->inActiveDocument())
+        element->document().updateLayoutTreeForNodeIfNeeded(element);
 
     StringKeyframeEffectModel* keyframeEffectModel = StringKeyframeEffectModel::create(keyframes);
     if (!RuntimeEnabledFeatures::cssAdditiveAnimationsEnabled()) {
