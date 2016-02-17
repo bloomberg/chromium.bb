@@ -41,8 +41,6 @@ private:
     SinkDocument(const DocumentInit&);
 
     PassRefPtrWillBeRawPtr<DocumentParser> createParser() override;
-
-    String debugName() const override { return "SinkDocument"; }
 };
 
 

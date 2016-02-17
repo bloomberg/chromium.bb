@@ -31,7 +31,7 @@ namespace blink {
 
 class HTMLBodyElement;
 
-class CORE_EXPORT HTMLDocument : public Document, public ResourceClient {
+class CORE_EXPORT HTMLDocument : public Document {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLDocument> create(const DocumentInit& initializer = DocumentInit())
@@ -79,8 +79,6 @@ private:
 
     void addItemToMap(HashCountedSet<AtomicString>&, const AtomicString&);
     void removeItemFromMap(HashCountedSet<AtomicString>&, const AtomicString&);
-
-    String debugName() const override { return "HTMLDocument"; }
 
     HashCountedSet<AtomicString> m_namedItemCounts;
     HashCountedSet<AtomicString> m_extraNamedItemCounts;

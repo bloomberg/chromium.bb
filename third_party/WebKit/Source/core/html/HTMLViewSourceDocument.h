@@ -75,8 +75,6 @@ private:
     PassRefPtrWillBeRawPtr<Element> addLink(const AtomicString& url, bool isAnchor);
     PassRefPtrWillBeRawPtr<Element> addBase(const AtomicString& href);
 
-    String debugName() const override { return "HTMLViewSourceDocument"; }
-
     String m_type;
     RefPtrWillBeMember<Element> m_current;
     RefPtrWillBeMember<HTMLTableSectionElement> m_tbody;

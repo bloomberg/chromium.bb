@@ -40,8 +40,6 @@ private:
     TextDocument(const DocumentInit&);
 
     PassRefPtrWillBeRawPtr<DocumentParser> createParser() override;
-
-    String debugName() const override { return "TextDocument"; }
 };
 
 } // namespace blink
