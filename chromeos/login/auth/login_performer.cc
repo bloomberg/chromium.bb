@@ -58,8 +58,8 @@ void LoginPerformer::OnAuthFailure(const AuthFailure& failure) {
                             failure.reason(),
                             AuthFailure::NUM_FAILURE_REASONS);
 
-  DVLOG(1) << "failure.reason " << failure.reason();
-  DVLOG(1) << "failure.error.state " << failure.error().state();
+  LOG(ERROR) << "Login failure, reason=" << failure.reason()
+             << ", error.state=" << failure.error().state();
 
   last_login_failure_ = failure;
   if (delegate_) {
@@ -261,7 +261,7 @@ void LoginPerformer::EnsureExtendedAuthenticator() {
 }
 
 void LoginPerformer::StartLoginCompletion() {
-  DVLOG(1) << "Login completion started";
+  VLOG(1) << "Online login completion started.";
   chromeos::LoginEventRecorder::Get()->AddLoginTimeMarker("AuthStarted", false);
   content::BrowserContext* browser_context = GetSigninContext();
   EnsureAuthenticator();
@@ -274,7 +274,7 @@ void LoginPerformer::StartLoginCompletion() {
 }
 
 void LoginPerformer::StartAuthentication() {
-  DVLOG(1) << "Auth started";
+  VLOG(1) << "Offline auth started.";
   chromeos::LoginEventRecorder::Get()->AddLoginTimeMarker("AuthStarted", false);
   if (delegate_) {
     EnsureAuthenticator();

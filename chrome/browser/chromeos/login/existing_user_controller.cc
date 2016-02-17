@@ -376,10 +376,11 @@ void ExistingUserController::PerformLogin(
 
 void ExistingUserController::MigrateUserData(const std::string& old_password) {
   // LoginPerformer instance has state of the user so it should exist.
-  if (login_performer_.get())
+  if (login_performer_.get()) {
+    VLOG(1) << "Migrate the existing cryptohome to new password.";
     login_performer_->RecoverEncryptedData(old_password);
+  }
 }
-
 
 void ExistingUserController::OnSigninScreenReady() {
   signin_screen_ready_ = true;
@@ -416,8 +417,10 @@ void ExistingUserController::OnStartKioskAutolaunchScreen() {
 
 void ExistingUserController::ResyncUserData() {
   // LoginPerformer instance has state of the user so it should exist.
-  if (login_performer_.get())
+  if (login_performer_.get()) {
+    VLOG(1) << "Create a new cryptohome and resync user data.";
     login_performer_->ResyncEncryptedData();
+  }
 }
 
 void ExistingUserController::SetDisplayEmail(const std::string& email) {
@@ -674,6 +677,9 @@ void ExistingUserController::OnPasswordChangeDetected() {
   // True if user has already made an attempt to enter old password and failed.
   bool show_invalid_old_password_error =
       login_performer_->password_changed_callback_count() > 1;
+
+  VLOG(1) << "Show password changed dialog"
+          << ", count=" << login_performer_->password_changed_callback_count();
 
   // Note: We allow owner using "full sync" mode which will recreate
   // cryptohome and deal with owner private key being lost. This also allows
