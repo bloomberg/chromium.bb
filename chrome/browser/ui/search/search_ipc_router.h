@@ -46,8 +46,7 @@ class SearchIPCRouter : public content::WebContentsObserver {
     // navigate to URLs that are hidden from the page using Restricted IDs (rid
     // in the API).
     virtual void NavigateToURL(const GURL& url,
-                               WindowOpenDisposition disposition,
-                               bool is_most_visited_item_url) = 0;
+                               WindowOpenDisposition disposition) = 0;
 
     // Called when the SearchBox wants to delete a Most Visited item.
     virtual void OnDeleteMostVisitedItem(const GURL& url) = 0;
@@ -190,8 +189,7 @@ class SearchIPCRouter : public content::WebContentsObserver {
   void OnFocusOmnibox(int page_id, OmniboxFocusState state) const;
   void OnSearchBoxNavigate(int page_id,
                            const GURL& url,
-                           WindowOpenDisposition disposition,
-                           bool is_most_visited_item_url) const;
+                           WindowOpenDisposition disposition) const;
   void OnDeleteMostVisitedItem(int page_seq_no, const GURL& url) const;
   void OnUndoMostVisitedDeletion(int page_seq_no, const GURL& url) const;
   void OnUndoAllMostVisitedDeletions(int page_seq_no) const;

@@ -111,9 +111,7 @@ class SearchBox : public content::RenderViewObserver,
   void Focus();
 
   // Sends ChromeViewHostMsg_SearchBoxNavigate to the browser.
-  void NavigateToURL(const GURL& url,
-                     WindowOpenDisposition disposition,
-                     bool is_most_visited_item_url);
+  void NavigateToURL(const GURL& url, WindowOpenDisposition disposition);
 
   // Sends ChromeViewHostMsg_SearchBoxPaste to the browser.
   void Paste(const base::string16& text);

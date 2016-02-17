@@ -5113,6 +5113,7 @@ should be able to be added at any place in this file.
 <action name="InstantExtended.MostVisitedClicked">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated as of 2/2016</obsolete>
 </action>
 
 <action name="InstantExtended.ShowNTP">

@@ -1146,19 +1146,17 @@ void SearchBoxExtensionWrapper::NavigateContentWindow(
   }
 
   GURL destination_url;
-  bool is_most_visited_item_url = false;
   // Check if the url is a rid
   if (args[0]->IsNumber()) {
     InstantMostVisitedItem item;
     if (SearchBox::Get(render_view)->GetMostVisitedItemWithID(
             args[0]->IntegerValue(), &item)) {
       destination_url = item.url;
-      is_most_visited_item_url = true;
     }
   } else {
     // Resolve the URL
     const base::string16& possibly_relative_url = V8ValueToUTF16(args[0]);
-  GURL current_url = GetCurrentURL(render_view);
+    GURL current_url = GetCurrentURL(render_view);
     destination_url = internal::ResolveURL(current_url, possibly_relative_url);
   }
 
@@ -1173,8 +1171,7 @@ void SearchBoxExtensionWrapper::NavigateContentWindow(
     if (args[1]->IsNumber()) {
       disposition = (WindowOpenDisposition) args[1]->Uint32Value();
     }
-    SearchBox::Get(render_view)->NavigateToURL(destination_url, disposition,
-                                               is_most_visited_item_url);
+    SearchBox::Get(render_view)->NavigateToURL(destination_url, disposition);
   }
 }
 

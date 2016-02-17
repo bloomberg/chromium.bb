@@ -210,8 +210,7 @@ void SearchIPCRouter::OnFocusOmnibox(int page_seq_no,
 void SearchIPCRouter::OnSearchBoxNavigate(
     int page_seq_no,
     const GURL& url,
-    WindowOpenDisposition disposition,
-    bool is_most_visited_item_url) const {
+    WindowOpenDisposition disposition) const {
   if (page_seq_no != commit_counter_)
     return;
 
@@ -219,7 +218,7 @@ void SearchIPCRouter::OnSearchBoxNavigate(
   if (!policy_->ShouldProcessNavigateToURL(is_active_tab_))
     return;
 
-  delegate_->NavigateToURL(url, disposition, is_most_visited_item_url);
+  delegate_->NavigateToURL(url, disposition);
 }
 
 void SearchIPCRouter::OnDeleteMostVisitedItem(int page_seq_no,
