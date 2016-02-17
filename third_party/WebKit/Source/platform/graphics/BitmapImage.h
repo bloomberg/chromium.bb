@@ -56,7 +56,7 @@ public:
 
     ~BitmapImage() override;
 
-    bool isBitmapImage() const override;
+    bool isBitmapImage() const override { return true; }
 
     bool currentFrameHasSingleSecurityOrigin() const override;
 

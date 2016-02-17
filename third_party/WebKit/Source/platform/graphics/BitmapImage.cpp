@@ -102,11 +102,6 @@ BitmapImage::~BitmapImage()
     stopAnimation();
 }
 
-bool BitmapImage::isBitmapImage() const
-{
-    return true;
-}
-
 bool BitmapImage::currentFrameHasSingleSecurityOrigin() const
 {
     return true;
