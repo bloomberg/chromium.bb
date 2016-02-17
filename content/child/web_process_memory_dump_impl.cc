@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/memory/discardable_memory.h"
+#include "base/strings/stringprintf.h"
 #include "base/trace_event/heap_profiler_heap_dump_writer.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event_argument.h"
@@ -177,7 +178,9 @@ void WebProcessMemoryDumpImpl::dumpHeapUsage(
       session_state->stack_frame_deduplicator(),
       session_state->type_name_deduplicator());
   process_memory_dump_->AddHeapDump(allocator_name, heap_dump);
-  overhead.DumpInto("tracing/heap_profiler", process_memory_dump_);
+  std::string base_name = base::StringPrintf("tracing/heap_profiler_%s",
+                                             allocator_name);
+  overhead.DumpInto(base_name.c_str(), process_memory_dump_);
 }
 
 }  // namespace content

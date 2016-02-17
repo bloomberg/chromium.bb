@@ -6,10 +6,20 @@
 #define BlinkGCMemoryDumpProvider_h
 
 #include "platform/PlatformExport.h"
+#include "platform/heap/BlinkGC.h"
 #include "public/platform/WebMemoryDumpProvider.h"
 #include "wtf/Allocator.h"
 #include "wtf/OwnPtr.h"
+#include "wtf/ThreadingPrimitives.h"
 #include "wtf/text/WTFString.h"
+
+namespace base {
+namespace trace_event {
+
+class AllocationRegister;
+
+} // namespace trace_event
+} // namespace base
 
 namespace blink {
 class WebMemoryAllocatorDump;
@@ -22,6 +32,8 @@ public:
 
     // WebMemoryDumpProvider implementation.
     bool onMemoryDump(WebMemoryDumpLevelOfDetail, WebProcessMemoryDump*) override;
+    bool supportsHeapProfiling() override { return true; }
+    void onHeapProfilingEnabled(bool) override;
 
     // The returned WebMemoryAllocatorDump is owned by
     // BlinkGCMemoryDumpProvider, and should not be retained (just used to
@@ -34,10 +46,16 @@ public:
 
     WebProcessMemoryDump* currentProcessMemoryDump() { return m_currentProcessMemoryDump.get(); }
 
+    void insert(Address, size_t);
+    void remove(Address);
+
 private:
     BlinkGCMemoryDumpProvider();
 
+    Mutex m_allocationRegisterMutex;
+    OwnPtr<base::trace_event::AllocationRegister> m_allocationRegister;
     OwnPtr<WebProcessMemoryDump> m_currentProcessMemoryDump;
+    bool m_isHeapProfilingEnabled;
 };
 
 } // namespace blink
