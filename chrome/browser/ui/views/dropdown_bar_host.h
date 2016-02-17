@@ -154,10 +154,6 @@ class DropdownBarHost : public ui::AcceleratorTarget,
   // The BrowserView that created us.
   BrowserView* browser_view_;
 
-  // A parent View to |view_| that is used to clip when animating the bar
-  // between the shown and hidden states.
-  views::View* clip_view_;
-
   // Our view, which is responsible for drawing the UI.
   views::View* view_;
   DropdownBarHostDelegate* delegate_;

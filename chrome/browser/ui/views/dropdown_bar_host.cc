@@ -26,18 +26,11 @@ bool DropdownBarHost::disable_animations_during_testing_ = false;
 
 DropdownBarHost::DropdownBarHost(BrowserView* browser_view)
     : browser_view_(browser_view),
-      clip_view_(new views::View()),
-      view_(NULL),
-      delegate_(NULL),
-      focus_manager_(NULL),
+      view_(nullptr),
+      delegate_(nullptr),
+      focus_manager_(nullptr),
       esc_accel_target_registered_(false),
-      is_visible_(false) {
-  // The |clip_view_| must paint to a layer so that it can clip descendent Views
-  // which also paint to a Layer.
-  clip_view_->SetPaintToLayer(true);
-  clip_view_->SetFillsBoundsOpaquely(false);
-  clip_view_->layer()->SetMasksToBounds(true);
-}
+      is_visible_(false) {}
 
 void DropdownBarHost::Init(views::View* host_view,
                            views::View* view,
@@ -48,6 +41,14 @@ void DropdownBarHost::Init(views::View* host_view,
   view_ = view;
   delegate_ = delegate;
 
+  // The |clip_view| exists to paint to a layer so that it can clip descendent
+  // Views which also paint to a Layer.
+  scoped_ptr<views::View> clip_view(new views::View());
+  clip_view->SetPaintToLayer(true);
+  clip_view->SetFillsBoundsOpaquely(false);
+  clip_view->layer()->SetMasksToBounds(true);
+  clip_view->AddChildView(view_);
+
   // Initialize the host.
   host_.reset(new ThemeCopyingWidget(browser_view_->GetWidget()));
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
@@ -55,8 +56,7 @@ void DropdownBarHost::Init(views::View* host_view,
   params.parent = browser_view_->GetWidget()->GetNativeView();
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   host_->Init(params);
-  host_->SetContentsView(clip_view_);
-  clip_view_->AddChildView(view_);
+  host_->SetContentsView(clip_view.release());
 
   SetHostViewNative(host_view);
 

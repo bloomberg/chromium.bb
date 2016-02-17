@@ -78,12 +78,24 @@ const int InfoBarView::kEndOfLabelSpacing = views::kItemLabelSpacing;
 
 InfoBarView::InfoBarView(scoped_ptr<infobars::InfoBarDelegate> delegate)
     : infobars::InfoBar(std::move(delegate)),
-      views::ExternalFocusTracker(this, NULL),
-      icon_(NULL),
-      close_button_(NULL) {
+      views::ExternalFocusTracker(this, nullptr),
+      child_container_(new views::View()),
+      icon_(nullptr),
+      close_button_(nullptr) {
   set_owned_by_client();  // InfoBar deletes itself at the appropriate time.
   set_background(
       new InfoBarBackground(infobars::InfoBar::delegate()->GetInfoBarType()));
+
+  AddChildView(child_container_);
+
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    child_container_->SetPaintToLayer(true);
+    child_container_->layer()->SetMasksToBounds(true);
+    // Since MD doesn't use a gradient, we can set a solid bg color.
+    child_container_->set_background(
+        views::Background::CreateSolidBackground(infobars::InfoBar::GetTopColor(
+            infobars::InfoBar::delegate()->GetInfoBarType())));
+  }
 }
 
 InfoBarView::~InfoBarView() {
@@ -208,6 +220,12 @@ void InfoBarView::Layout() {
             height() - InfoBarContainerDelegate::kSeparatorLineHeight));
   }
 
+  child_container_->SetBounds(0, arrow_height(), width(), bar_height());
+  // |child_container_| should be the only child.
+  DCHECK_EQ(1, child_count());
+
+  // Even though other views are technically grandchildren, we'll lay them out
+  // here on behalf of |child_container_|.
   int start_x = kEdgeItemPadding;
   if (icon_ != NULL) {
     icon_->SetPosition(gfx::Point(start_x, OffsetY(icon_)));
@@ -233,7 +251,7 @@ void InfoBarView::ViewHierarchyChanged(
       icon_ = new views::ImageView;
       icon_->SetImage(image.ToImageSkia());
       icon_->SizeToPreferredSize();
-      AddChildView(icon_);
+      child_container_->AddChildView(icon_);
     }
 
     if (ui::MaterialDesignController::IsModeMaterial()) {
@@ -256,13 +274,13 @@ void InfoBarView::ViewHierarchyChanged(
     close_button_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
     close_button_->SetFocusable(true);
-    AddChildView(close_button_);
+    child_container_->AddChildView(close_button_);
   } else if ((close_button_ != NULL) && (details.parent == this) &&
       (details.child != close_button_) && (close_button_->parent() == this) &&
       (child_at(child_count() - 1) != close_button_)) {
     // For accessibility, ensure the close button is the last child view.
     RemoveChildView(close_button_);
-    AddChildView(close_button_);
+    child_container_->AddChildView(close_button_);
   }
 
   // Ensure the infobar is tall enough to display its contents.
@@ -275,19 +293,6 @@ void InfoBarView::ViewHierarchyChanged(
     height = std::max(height, child_height + kMinimumVerticalPadding);
   }
   SetBarTargetHeight(height);
-}
-
-void InfoBarView::PaintChildren(const ui::PaintContext& context) {
-  // TODO(scr): This really should be the |fill_path_|, but the clipPath seems
-  // broken on non-Windows platforms (crbug.com/75154). For now, just clip to
-  // the bar bounds.
-  //
-  // canvas->sk_canvas()->clipPath(fill_path_);
-  DCHECK_EQ(total_height(), height())
-      << "Infobar piecewise heights do not match overall height";
-  ui::ClipRecorder clip_recorder(context);
-  clip_recorder.ClipRect(gfx::Rect(0, arrow_height(), width(), bar_height()));
-  views::View::PaintChildren(context);
 }
 
 void InfoBarView::ButtonPressed(views::Button* sender,
@@ -317,9 +322,8 @@ int InfoBarView::EndX() const {
 }
 
 int InfoBarView::OffsetY(views::View* view) const {
-  return arrow_height() +
-      std::max((bar_target_height() - view->height()) / 2, 0) -
-      (bar_target_height() - bar_height());
+  return std::max((bar_target_height() - view->height()) / 2, 0) -
+         (bar_target_height() - bar_height());
 }
 
 const infobars::InfoBarContainer::Delegate* InfoBarView::container_delegate()
@@ -342,6 +346,10 @@ void InfoBarView::RunMenuAt(ui::MenuModel* menu_model,
                                         gfx::Rect(screen_point, button->size()),
                                         anchor,
                                         ui::MENU_SOURCE_NONE));
+}
+
+void InfoBarView::AddViewToContentArea(views::View* view) {
+  child_container_->AddChildView(view);
 }
 
 // static

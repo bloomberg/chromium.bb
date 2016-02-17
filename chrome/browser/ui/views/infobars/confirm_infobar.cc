@@ -67,7 +67,7 @@ void ConfirmInfoBar::ViewHierarchyChanged(
   if (details.is_add && details.child == this && (label_ == NULL)) {
     ConfirmInfoBarDelegate* delegate = GetDelegate();
     label_ = CreateLabel(delegate->GetMessageText());
-    AddChildView(label_);
+    AddViewToContentArea(label_);
 
     if (delegate->GetButtons() & ConfirmInfoBarDelegate::BUTTON_OK) {
       if (delegate->OKButtonTriggersUACPrompt()) {
@@ -82,7 +82,7 @@ void ConfirmInfoBar::ViewHierarchyChanged(
         ok_button_ = CreateTextButton(
             this, delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK));
       }
-      AddChildView(ok_button_);
+      AddViewToContentArea(ok_button_);
       ok_button_->SizeToPreferredSize();
     }
 
@@ -90,13 +90,13 @@ void ConfirmInfoBar::ViewHierarchyChanged(
       cancel_button_ = CreateTextButton(
           this,
           delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL));
-      AddChildView(cancel_button_);
+      AddViewToContentArea(cancel_button_);
       cancel_button_->SizeToPreferredSize();
     }
 
     base::string16 link_text(delegate->GetLinkText());
     link_ = CreateLink(link_text, this);
-    AddChildView(link_);
+    AddViewToContentArea(link_);
   }
 
   // This must happen after adding all other children so InfoBarView can ensure
