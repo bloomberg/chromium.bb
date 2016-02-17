@@ -56,102 +56,47 @@ namespace blink {
 HeapAllocHooks::AllocationHook* HeapAllocHooks::m_allocationHook = nullptr;
 HeapAllocHooks::FreeHook* HeapAllocHooks::m_freeHook = nullptr;
 
-class GCForbiddenScope final {
-    DISALLOW_NEW();
-public:
-    explicit GCForbiddenScope(ThreadState* state)
-        : m_state(state)
-    {
-        // Prevent nested collectGarbage() invocations.
-        m_state->enterGCForbiddenScope();
-    }
-
-    ~GCForbiddenScope()
-    {
-        m_state->leaveGCForbiddenScope();
-    }
-
-private:
-    ThreadState* m_state;
-};
-
-class GCScope final {
+class ParkThreadsScope final {
     STACK_ALLOCATED();
 public:
-    GCScope(ThreadState* state, BlinkGC::StackState stackState, BlinkGC::GCType gcType)
-        : m_state(state)
-        , m_gcForbiddenScope(state)
-    {
-        ASSERT(m_state->checkThread());
-
-        switch (gcType) {
-        case BlinkGC::GCWithSweep:
-        case BlinkGC::GCWithoutSweep:
-            m_visitor = adoptPtr(new MarkingVisitor<Visitor::GlobalMarking>());
-            break;
-        case BlinkGC::TakeSnapshot:
-            m_visitor = adoptPtr(new MarkingVisitor<Visitor::SnapshotMarking>());
-            break;
-        case BlinkGC::ThreadTerminationGC:
-            m_visitor = adoptPtr(new MarkingVisitor<Visitor::ThreadLocalMarking>());
-            break;
-        default:
-            ASSERT_NOT_REACHED();
-        }
-    }
-
-    ~GCScope()
+    ParkThreadsScope()
+        : m_shouldResumeThreads(false)
     {
     }
 
-    bool parkAllThreads(BlinkGC::StackState stackState, BlinkGC::GCType gcType)
+    bool parkThreads(ThreadState* state)
     {
-        TRACE_EVENT0("blink_gc", "Heap::GCScope");
+        TRACE_EVENT0("blink_gc", "Heap::ParkThreadsScope");
         const char* samplingState = TRACE_EVENT_GET_SAMPLING_STATE();
-        if (m_state->isMainThread())
+        if (state->isMainThread())
             TRACE_EVENT_SET_SAMPLING_STATE("blink_gc", "BlinkGCWaiting");
 
         // TODO(haraken): In an unlikely coincidence that two threads decide
         // to collect garbage at the same time, avoid doing two GCs in
         // a row and return false.
         double startTime = WTF::currentTimeMS();
-        bool allParked = gcType != BlinkGC::ThreadTerminationGC && ThreadState::stopThreads();
+
+        m_shouldResumeThreads = ThreadState::stopThreads();
+
         double timeForStoppingThreads = WTF::currentTimeMS() - startTime;
         DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, timeToStopThreadsHistogram, new CustomCountHistogram("BlinkGC.TimeForStoppingThreads", 1, 1000, 50));
         timeToStopThreadsHistogram.count(timeForStoppingThreads);
 
-        if (m_state->isMainThread())
+        if (state->isMainThread())
             TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(samplingState);
-
-        return allParked;
+        return m_shouldResumeThreads;
     }
 
-    Visitor* visitor() const { return m_visitor.get(); }
-
-private:
-    ThreadState* m_state;
-    // See ThreadState::runScheduledGC() why we need to already be in a
-    // GCForbiddenScope before any safe point is entered.
-    GCForbiddenScope m_gcForbiddenScope;
-    OwnPtr<Visitor> m_visitor;
-};
-
-class ResumeThreadScope final {
-    STACK_ALLOCATED();
-public:
-    explicit ResumeThreadScope(BlinkGC::GCType gcType)
-        : m_resumeThreads(gcType != BlinkGC::ThreadTerminationGC)
-    {
-    }
-    ~ResumeThreadScope()
+    ~ParkThreadsScope()
     {
         // Only cleanup if we parked all threads in which case the GC happened
         // and we need to resume the other threads.
-        if (m_resumeThreads)
+        if (m_shouldResumeThreads)
             ThreadState::resumeThreads();
     }
+
 private:
-    bool m_resumeThreads;
+    bool m_shouldResumeThreads;
 };
 
 void Heap::flushHeapDoesNotContainCache()
@@ -396,22 +341,24 @@ const char* Heap::gcReasonString(BlinkGC::GCReason reason)
 
 void Heap::collectGarbage(BlinkGC::StackState stackState, BlinkGC::GCType gcType, BlinkGC::GCReason reason)
 {
+    ASSERT(gcType != BlinkGC::ThreadTerminationGC);
+
     ThreadState* state = ThreadState::current();
     // Nested collectGarbage() invocations aren't supported.
     RELEASE_ASSERT(!state->isGCForbidden());
     state->completeSweep();
 
-    GCScope gcScope(state, stackState, gcType);
-    // See collectGarbageForTerminatingThread() comment on why a
-    // safepoint scope isn't entered for it.
-    SafePointScope safePointScope(stackState, gcType != BlinkGC::ThreadTerminationGC ? state : nullptr);
+    VisitorScope visitorScope(state, gcType);
 
-    // Try to park the other threads. If we're unable to, bail out of the GC.
-    if (!gcScope.parkAllThreads(stackState, gcType))
-        return;
+    SafePointScope safePointScope(stackState, state);
 
     // Resume all parked threads upon leaving this scope.
-    ResumeThreadScope resumeThreads(gcType);
+    ParkThreadsScope parkThreadsScope;
+
+    // Try to park the other threads. If we're unable to, bail out of the GC.
+    if (!parkThreadsScope.parkThreads(state))
+        return;
+
     ScriptForbiddenIfMainThreadScope scriptForbidden;
 
     TRACE_EVENT2("blink_gc,devtools.timeline", "Heap::collectGarbage",
@@ -424,7 +371,7 @@ void Heap::collectGarbage(BlinkGC::StackState stackState, BlinkGC::GCType gcType
         BlinkGCMemoryDumpProvider::instance()->clearProcessDumpForCurrentGC();
 
     // Disallow allocation during garbage collection (but not during the
-    // finalization that happens when the gcScope is torn down).
+    // finalization that happens when the visitorScope is torn down).
     ThreadState::NoAllocationScope noAllocationScope(state);
 
     preGC();
@@ -436,17 +383,17 @@ void Heap::collectGarbage(BlinkGC::StackState stackState, BlinkGC::GCType gcType
         Heap::resetHeapCounters();
 
     // 1. Trace persistent roots.
-    ThreadState::visitPersistentRoots(gcScope.visitor());
+    ThreadState::visitPersistentRoots(visitorScope.visitor());
 
     // 2. Trace objects reachable from the stack.  We do this independent of the
     // given stackState since other threads might have a different stack state.
-    ThreadState::visitStackRoots(gcScope.visitor());
+    ThreadState::visitStackRoots(visitorScope.visitor());
 
     // 3. Transitive closure to trace objects including ephemerons.
-    processMarkingStack(gcScope.visitor());
+    processMarkingStack(visitorScope.visitor());
 
-    postMarkingProcessing(gcScope.visitor());
-    globalWeakProcessing(gcScope.visitor());
+    postMarkingProcessing(visitorScope.visitor());
+    globalWeakProcessing(visitorScope.visitor());
 
     // Now we can delete all orphaned pages because there are no dangling
     // pointers to the orphaned pages.  (If we have such dangling pointers,
@@ -487,9 +434,9 @@ void Heap::collectGarbageForTerminatingThread(ThreadState* state)
     {
         // A thread-specific termination GC must not allow other global GCs to go
         // ahead while it is running, hence the termination GC does not enter a
-        // safepoint. GCScope will not enter also a safepoint scope for
+        // safepoint. VisitorScope will not enter also a safepoint scope for
         // ThreadTerminationGC.
-        GCScope gcScope(state, BlinkGC::NoHeapPointersOnStack, BlinkGC::ThreadTerminationGC);
+        VisitorScope visitorScope(state, BlinkGC::ThreadTerminationGC);
 
         ThreadState::NoAllocationScope noAllocationScope(state);
 
@@ -505,14 +452,14 @@ void Heap::collectGarbageForTerminatingThread(ThreadState* state)
         // global GC finds a "pointer" on the stack or due to a programming
         // error where an object has a dangling cross-thread pointer to an
         // object on this heap.
-        state->visitPersistents(gcScope.visitor());
+        state->visitPersistents(visitorScope.visitor());
 
         // 2. Trace objects reachable from the thread's persistent roots
         // including ephemerons.
-        processMarkingStack(gcScope.visitor());
+        processMarkingStack(visitorScope.visitor());
 
-        postMarkingProcessing(gcScope.visitor());
-        globalWeakProcessing(gcScope.visitor());
+        postMarkingProcessing(visitorScope.visitor());
+        globalWeakProcessing(visitorScope.visitor());
 
         state->postGC(BlinkGC::GCWithSweep);
     }

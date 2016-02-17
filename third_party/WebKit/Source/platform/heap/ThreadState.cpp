@@ -37,8 +37,8 @@
 #include "platform/heap/CallbackStack.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/Heap.h"
-#include "platform/heap/MarkingVisitor.h"
 #include "platform/heap/SafePoint.h"
+#include "platform/heap/Visitor.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebMemoryAllocatorDump.h"
 #include "public/platform/WebProcessMemoryDump.h"
@@ -480,10 +480,10 @@ void ThreadState::threadLocalWeakProcessing()
     // Due to the complexity, we just forbid allocations.
     NoAllocationScope noAllocationScope(this);
 
-    MarkingVisitor<Visitor::WeakProcessing> weakProcessingVisitor;
+    VisitorScope visitorScope(this, BlinkGC::ThreadLocalWeakProcessing);
 
     // Perform thread-specific weak processing.
-    while (popAndInvokeThreadLocalWeakCallback(&weakProcessingVisitor)) { }
+    while (popAndInvokeThreadLocalWeakCallback(visitorScope.visitor())) { }
 
     if (isMainThread()) {
         double timeForThreadLocalWeakProcessing = WTF::currentTimeMS() - startTime;

@@ -61,6 +61,11 @@ public:
         // The marking task does not mark objects outside the heap of the GCing
         // thread.
         ThreadTerminationGC,
+        // Just run thread-local weak processing. The weak processing may trace
+        // already marked objects but it must not trace any unmarked object.
+        // It's unfortunate that the thread-local weak processing requires
+        // a marking visitor. See TODO in HashTable::process.
+        ThreadLocalWeakProcessing,
     };
 
     enum GCReason {
