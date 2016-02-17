@@ -630,6 +630,7 @@ class BASE_EXPORT MessageLoopForIO : public MessageLoop {
   // Returns the MessageLoopForIO of the current thread.
   static MessageLoopForIO* current() {
     MessageLoop* loop = MessageLoop::current();
+    DCHECK(loop);
     DCHECK_EQ(MessageLoop::TYPE_IO, loop->type());
     return static_cast<MessageLoopForIO*>(loop);
   }
