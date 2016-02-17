@@ -52,7 +52,7 @@ endif(WIN32)
 
 include_directories("${LIBWEBM_SRC_DIR}")
 
-# Sample section.
+# Sample (mkvparser) section.
 add_executable(sample
                "${LIBWEBM_SRC_DIR}/sample.cpp")
 target_link_libraries(sample LINK_PUBLIC webm)
@@ -75,25 +75,23 @@ add_executable(vttdemux
                "${LIBWEBM_SRC_DIR}/webvttparser.h")
 target_link_libraries(vttdemux LINK_PUBLIC webm)
 
+# webmts (PES/TS support) library section.
+add_library(webmts
+            "${LIBWEBM_SRC_DIR}/common/libwebm_utils.cc"
+            "${LIBWEBM_SRC_DIR}/common/libwebm_utils.h"
+            "${LIBWEBM_SRC_DIR}/webm2pes.cc"
+            "${LIBWEBM_SRC_DIR}/webm2pes.h"
+            "${LIBWEBM_SRC_DIR}/vpxpes2ts.cc"
+            "${LIBWEBM_SRC_DIR}/vpxpes2ts.h")
+
 # webm2pes section.
 add_executable(webm2pes
-               "${LIBWEBM_SRC_DIR}/common/libwebm_utils.cc"
-               "${LIBWEBM_SRC_DIR}/common/libwebm_utils.h"
-               "${LIBWEBM_SRC_DIR}/webm2pes.cc"
-               "${LIBWEBM_SRC_DIR}/webm2pes.h"
                "${LIBWEBM_SRC_DIR}/webm2pes_main.cc")
-target_link_libraries(webm2pes LINK_PUBLIC webm)
+target_link_libraries(webm2pes LINK_PUBLIC webm webmts)
 
 # webm2ts section.
-add_executable(webm2ts
-               "${LIBWEBM_SRC_DIR}/common/libwebm_utils.cc"
-               "${LIBWEBM_SRC_DIR}/common/libwebm_utils.h"
-               "${LIBWEBM_SRC_DIR}/vpxpes2ts.cc"
-               "${LIBWEBM_SRC_DIR}/vpxpes2ts.h"
-               "${LIBWEBM_SRC_DIR}/webm2pes.cc"
-               "${LIBWEBM_SRC_DIR}/webm2pes.h"
-               "${LIBWEBM_SRC_DIR}/vpxpes2ts_main.cc")
-target_link_libraries(webm2ts LINK_PUBLIC webm)
+add_executable(webm2ts "${LIBWEBM_SRC_DIR}/vpxpes2ts_main.cc")
+target_link_libraries(webm2ts LINK_PUBLIC webm webmts)
 
 if (ENABLE_TESTS)
   add_subdirectory("${GTEST_SRC_DIR}" "${GTEST_BUILD_DIR}")
@@ -103,22 +101,18 @@ if (ENABLE_TESTS)
                  "${LIBWEBM_SRC_DIR}/testing/muxer_tests.cc"
                  "${LIBWEBM_SRC_DIR}/testing/test_util.cc"
                  "${LIBWEBM_SRC_DIR}/testing/test_util.h")
-  target_link_libraries(muxer_tests LINK_PUBLIC webm gtest)
+  target_link_libraries(muxer_tests LINK_PUBLIC gtest webm)
 
   add_executable(parser_tests
                  "${LIBWEBM_SRC_DIR}/testing/parser_tests.cc"
                  "${LIBWEBM_SRC_DIR}/testing/test_util.cc"
                  "${LIBWEBM_SRC_DIR}/testing/test_util.h")
-  target_link_libraries(parser_tests LINK_PUBLIC webm gtest)
+  target_link_libraries(parser_tests LINK_PUBLIC gtest webm)
 
   add_executable(webm2pes_tests
-                 "${LIBWEBM_SRC_DIR}/common/libwebm_utils.cc"
-                 "${LIBWEBM_SRC_DIR}/common/libwebm_utils.h"
                  "${LIBWEBM_SRC_DIR}/testing/test_util.cc"
                  "${LIBWEBM_SRC_DIR}/testing/test_util.h"
-                 "${LIBWEBM_SRC_DIR}/webm2pes.cc"
-                 "${LIBWEBM_SRC_DIR}/webm2pes.h"
                  "${LIBWEBM_SRC_DIR}/testing/webm2pes_tests.cc")
-  target_link_libraries(webm2pes_tests LINK_PUBLIC webm gtest)
+  target_link_libraries(webm2pes_tests LINK_PUBLIC gtest webm webmts)
 endif (ENABLE_TESTS)
 
