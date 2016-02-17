@@ -44,7 +44,7 @@ const int kModifierFlagsCombinations = (1 << arraysize(modifier_flags)) - 1;
 
 int GetModifierFlags(int combination) {
   int flags = EF_NONE;
-  for (int i = 0; i < arraysize(modifier_flags); ++i) {
+  for (size_t i = 0; i < arraysize(modifier_flags); ++i) {
     if (combination & (1 << i))
       flags |= modifier_flags[i];
   }
@@ -112,6 +112,8 @@ PlatformKeyMap::PlatformKeyMap() {}
 PlatformKeyMap::PlatformKeyMap(HKL layout) {
   UpdateLayout(layout);
 }
+
+PlatformKeyMap::~PlatformKeyMap() {}
 
 DomKey PlatformKeyMap::DomCodeAndFlagsToDomKey(DomCode code, int flags) const {
   const int flags_to_try[] = {

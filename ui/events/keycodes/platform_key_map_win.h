@@ -22,6 +22,7 @@ class EVENTS_BASE_EXPORT PlatformKeyMap {
  public:
   // Create and load key map table with specified keyboard layout.
   explicit PlatformKeyMap(HKL layout);
+  ~PlatformKeyMap();
 
   // Returns the DomKey 'meaning' of |code| in the context of specified
   // |ui_event_flags| and stored keyboard layout.
