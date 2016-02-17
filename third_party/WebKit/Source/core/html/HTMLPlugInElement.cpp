@@ -403,7 +403,7 @@ bool HTMLPlugInElement::layoutObjectIsFocusable() const
 
     if (useFallbackContent() || !HTMLFrameOwnerElement::layoutObjectIsFocusable())
         return false;
-    return layoutObject()->isEmbeddedObject() && !toLayoutEmbeddedObject(layoutObject())->showsUnavailablePluginIndicator();
+    return layoutObject() && layoutObject()->isEmbeddedObject() && !toLayoutEmbeddedObject(layoutObject())->showsUnavailablePluginIndicator();
 }
 
 NPObject* HTMLPlugInElement::getNPObject()
