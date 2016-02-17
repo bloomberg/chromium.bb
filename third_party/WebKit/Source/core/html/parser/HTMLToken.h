@@ -27,6 +27,7 @@
 #define HTMLToken_h
 
 #include "core/dom/Attribute.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -84,10 +85,29 @@ public:
             int end;
         };
 
-        Range nameRange;
-        Range valueRange;
-        Vector<UChar, 32> name;
-        Vector<UChar, 32> value;
+        AtomicString name() const { return AtomicString(m_name); }
+        String nameAttemptStaticStringCreation() const { return attemptStaticStringCreation(m_name, Likely8Bit); }
+        const Vector<UChar, 32>& nameAsVector() const { return m_name; }
+
+        void appendToName(UChar c) { m_name.append(c); }
+
+        PassRefPtr<StringImpl> value8BitIfNecessary() const { return StringImpl::create8BitIfPossible(m_value); }
+        String value() const { return String(m_value); }
+
+        void appendToValue(UChar c) { m_value.append(c); }
+        void appendToValue(const String& value) { append(m_value, value); }
+        void clearValue() { m_value.clear(); }
+
+        const Range& nameRange() const { return m_nameRange; }
+        const Range& valueRange() const { return m_valueRange; }
+        Range& mutableNameRange() { return m_nameRange; }
+        Range& mutableValueRange() { return m_valueRange; }
+
+    private:
+        Vector<UChar, 32> m_name;
+        Vector<UChar, 32> m_value;
+        Range m_nameRange;
+        Range m_valueRange;
     };
 
     typedef Vector<Attribute, 10> AttributeList;
@@ -295,60 +315,60 @@ public:
         m_attributes.grow(m_attributes.size() + 1);
         m_currentAttribute = &m_attributes.last();
 #if ENABLE(ASSERT)
-        m_currentAttribute->nameRange.start = 0;
-        m_currentAttribute->nameRange.end = 0;
-        m_currentAttribute->valueRange.start = 0;
-        m_currentAttribute->valueRange.end = 0;
+        m_currentAttribute->mutableNameRange().start = 0;
+        m_currentAttribute->mutableNameRange().end = 0;
+        m_currentAttribute->mutableValueRange().start = 0;
+        m_currentAttribute->mutableValueRange().end = 0;
 #endif
     }
 
     void beginAttributeName(int offset)
     {
-        m_currentAttribute->nameRange.start = offset - m_baseOffset;
+        m_currentAttribute->mutableNameRange().start = offset - m_baseOffset;
     }
 
     void endAttributeName(int offset)
     {
         int index = offset - m_baseOffset;
-        m_currentAttribute->nameRange.end = index;
-        m_currentAttribute->valueRange.start = index;
-        m_currentAttribute->valueRange.end = index;
+        m_currentAttribute->mutableNameRange().end = index;
+        m_currentAttribute->mutableValueRange().start = index;
+        m_currentAttribute->mutableValueRange().end = index;
     }
 
     void beginAttributeValue(int offset)
     {
-        m_currentAttribute->valueRange.start = offset - m_baseOffset;
+        m_currentAttribute->mutableValueRange().start = offset - m_baseOffset;
 #if ENABLE(ASSERT)
-        m_currentAttribute->valueRange.end = 0;
+        m_currentAttribute->mutableValueRange().end = 0;
 #endif
     }
 
     void endAttributeValue(int offset)
     {
-        m_currentAttribute->valueRange.end = offset - m_baseOffset;
+        m_currentAttribute->mutableValueRange().end = offset - m_baseOffset;
     }
 
     void appendToAttributeName(UChar character)
     {
         ASSERT(character);
         ASSERT(m_type == StartTag || m_type == EndTag);
-        ASSERT(m_currentAttribute->nameRange.start);
-        m_currentAttribute->name.append(character);
+        ASSERT(m_currentAttribute->nameRange().start);
+        m_currentAttribute->appendToName(character);
     }
 
     void appendToAttributeValue(UChar character)
     {
         ASSERT(character);
         ASSERT(m_type == StartTag || m_type == EndTag);
-        ASSERT(m_currentAttribute->valueRange.start);
-        m_currentAttribute->value.append(character);
+        ASSERT(m_currentAttribute->valueRange().start);
+        m_currentAttribute->appendToValue(character);
     }
 
     void appendToAttributeValue(size_t i, const String& value)
     {
         ASSERT(!value.isEmpty());
         ASSERT(m_type == StartTag || m_type == EndTag);
-        append(m_attributes[i].value, value);
+        m_attributes[i].appendToValue(value);
     }
 
     const AttributeList& attributes() const
@@ -360,7 +380,7 @@ public:
     const Attribute* getAttributeItem(const QualifiedName& name) const
     {
         for (unsigned i = 0; i < m_attributes.size(); ++i) {
-            if (AtomicString(m_attributes.at(i).name) == name.localName())
+            if (m_attributes.at(i).name() == name.localName())
                 return &m_attributes.at(i);
         }
         return 0;
@@ -370,7 +390,7 @@ public:
     void eraseValueOfAttribute(size_t i)
     {
         ASSERT(m_type == StartTag || m_type == EndTag);
-        m_attributes[i].value.clear();
+        m_attributes[i].clearValue();
     }
 
     /* Character Tokens */

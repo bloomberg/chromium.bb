@@ -155,8 +155,8 @@ public:
         if (!m_tagImpl)
             return;
         for (const HTMLToken::Attribute& htmlTokenAttribute : attributes) {
-            AtomicString attributeName(htmlTokenAttribute.name);
-            String attributeValue = StringImpl::create8BitIfPossible(htmlTokenAttribute.value);
+            AtomicString attributeName(htmlTokenAttribute.name());
+            String attributeValue = htmlTokenAttribute.value8BitIfNecessary();
             processAttribute(attributeName, attributeValue);
         }
     }
@@ -166,7 +166,7 @@ public:
         if (!m_tagImpl)
             return;
         for (const CompactHTMLToken::Attribute& htmlTokenAttribute : attributes)
-            processAttribute(htmlTokenAttribute.name, htmlTokenAttribute.value);
+            processAttribute(htmlTokenAttribute.name(), htmlTokenAttribute.value());
     }
 
     void handlePictureSourceURL(PictureData& pictureData)
@@ -517,12 +517,12 @@ static void handleMetaNameAttribute(const Token& token, CachedDocumentParameters
     if (!nameAttribute)
         return;
 
-    String nameAttributeValue(nameAttribute->value);
+    String nameAttributeValue(nameAttribute->value());
     const typename Token::Attribute* contentAttribute = token.getAttributeItem(contentAttr);
     if (!contentAttribute)
         return;
 
-    String contentAttributeValue(contentAttribute->value);
+    String contentAttributeValue(contentAttribute->value());
     if (equalIgnoringCase(nameAttributeValue, "viewport")) {
         handleMetaViewport(contentAttributeValue, documentParameters, mediaValues);
         return;
@@ -597,13 +597,13 @@ void TokenPreloadScanner::scanCommon(const Token& token, const SegmentedString& 
         if (match(tagImpl, metaTag)) {
             const typename Token::Attribute* equivAttribute = token.getAttributeItem(http_equivAttr);
             if (equivAttribute) {
-                String equivAttributeValue(equivAttribute->value);
+                String equivAttributeValue(equivAttribute->value());
                 if (equalIgnoringCase(equivAttributeValue, "content-security-policy")) {
                     m_isCSPEnabled = true;
                 } else if (equalIgnoringCase(equivAttributeValue, "accept-ch")) {
                     const typename Token::Attribute* contentAttribute = token.getAttributeItem(contentAttr);
                     if (contentAttribute)
-                        m_clientHintsPreferences.updateFromAcceptClientHintsHeader(String(contentAttribute->value), nullptr);
+                        m_clientHintsPreferences.updateFromAcceptClientHintsHeader(contentAttribute->value(), nullptr);
                 }
                 return;
             }
@@ -637,7 +637,7 @@ void TokenPreloadScanner::updatePredictedBaseURL(const Token& token)
 {
     ASSERT(m_predictedBaseElementURL.isEmpty());
     if (const typename Token::Attribute* hrefAttribute = token.getAttributeItem(hrefAttr)) {
-        KURL url(m_documentURL, stripLeadingAndTrailingHTMLSpaces(hrefAttribute->value));
+        KURL url(m_documentURL, stripLeadingAndTrailingHTMLSpaces(hrefAttribute->value8BitIfNecessary()));
         m_predictedBaseElementURL = url.isValid() ? url.copy() : KURL();
     }
 }

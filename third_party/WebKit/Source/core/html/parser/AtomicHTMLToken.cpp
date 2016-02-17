@@ -8,7 +8,7 @@ namespace blink {
 
 QualifiedName AtomicHTMLToken::nameForAttribute(const HTMLToken::Attribute& attribute) const
 {
-    return QualifiedName(nullAtom, AtomicString(attribute.name), nullAtom);
+    return QualifiedName(nullAtom, attribute.name(), nullAtom);
 }
 
 bool AtomicHTMLToken::usesName() const

@@ -147,19 +147,19 @@ void HTMLViewSourceDocument::processTagToken(const String& source, HTMLToken& to
             break;
         }
 
-        AtomicString name(iter->name);
-        AtomicString value(StringImpl::create8BitIfPossible(iter->value));
+        AtomicString name(iter->name());
+        AtomicString value(iter->value8BitIfNecessary());
 
-        index = addRange(source, index, iter->nameRange.start - token.startIndex(), emptyAtom);
-        index = addRange(source, index, iter->nameRange.end - token.startIndex(), "html-attribute-name");
+        index = addRange(source, index, iter->nameRange().start - token.startIndex(), emptyAtom);
+        index = addRange(source, index, iter->nameRange().end - token.startIndex(), "html-attribute-name");
 
         if (tagName == baseTag && name == hrefAttr)
             addBase(value);
 
-        index = addRange(source, index, iter->valueRange.start - token.startIndex(), emptyAtom);
+        index = addRange(source, index, iter->valueRange().start - token.startIndex(), emptyAtom);
 
         bool isLink = name == srcAttr || name == hrefAttr;
-        index = addRange(source, index, iter->valueRange.end - token.startIndex(), "html-attribute-value", isLink, tagName == aTag, value);
+        index = addRange(source, index, iter->valueRange().end - token.startIndex(), "html-attribute-value", isLink, tagName == aTag, value);
 
         ++iter;
     }
