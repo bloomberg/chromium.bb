@@ -953,10 +953,6 @@ bool SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineImmediately()
   return false;
 }
 
-bool SchedulerStateMachine::main_thread_missed_last_deadline() const {
-  return main_thread_missed_last_deadline_;
-}
-
 bool SchedulerStateMachine::SwapThrottled() const {
   return pending_swaps_ >= kMaxPendingSwaps;
 }
@@ -1068,6 +1064,11 @@ void SchedulerStateMachine::NotifyReadyToCommit() {
 
 void SchedulerStateMachine::BeginMainFrameAborted(CommitEarlyOutReason reason) {
   DCHECK_EQ(begin_main_frame_state_, BEGIN_MAIN_FRAME_STATE_STARTED);
+
+  // If the main thread aborted, it doesn't matter if the  main thread missed
+  // the last deadline since it didn't have an update anyway.
+  main_thread_missed_last_deadline_ = false;
+
   switch (reason) {
     case CommitEarlyOutReason::ABORTED_OUTPUT_SURFACE_LOST:
     case CommitEarlyOutReason::ABORTED_NOT_VISIBLE:

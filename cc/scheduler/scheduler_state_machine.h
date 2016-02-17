@@ -166,7 +166,9 @@ class CC_EXPORT SchedulerStateMachine {
 
   // If the main thread didn't manage to produce a new frame in time for the
   // impl thread to draw, it is in a high latency mode.
-  bool main_thread_missed_last_deadline() const;
+  bool main_thread_missed_last_deadline() const {
+    return main_thread_missed_last_deadline_;
+  }
 
   bool SwapThrottled() const;
 
