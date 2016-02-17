@@ -55,7 +55,7 @@ struct MakeUnboundRunTypeImpl {
       typename BindState<
           typename FunctorTraits<Functor>::RunnableType,
           typename FunctorTraits<Functor>::RunType,
-          typename std::decay<Args>::type...>::UnboundRunType;
+          Args...>::UnboundRunType;
 };
 
 }  // namespace internal
@@ -100,8 +100,7 @@ Bind(Functor functor, Args&&... args) {
       !internal::HasRefCountedParamAsRawPtr<is_method, Args...>::value,
       "a parameter is a refcounted type and needs scoped_refptr");
 
-  using BindState = internal::BindState<
-      RunnableType, RunType, typename std::decay<Args>::type...>;
+  using BindState = internal::BindState<RunnableType, RunType, Args...>;
 
   return Callback<typename BindState::UnboundRunType>(
       new BindState(internal::MakeRunnable(functor),

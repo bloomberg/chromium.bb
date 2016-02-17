@@ -425,50 +425,6 @@ T Unwrap(PassedWrapper<T>& o) {
   return o.Take();
 }
 
-// Utility for handling different refcounting semantics in the Bind()
-// function.
-template <bool is_method, typename... T>
-struct MaybeScopedRefPtr;
-
-template <bool is_method>
-struct MaybeScopedRefPtr<is_method> {
-  MaybeScopedRefPtr() {}
-};
-
-template <typename T, typename... Rest>
-struct MaybeScopedRefPtr<false, T, Rest...> {
-  MaybeScopedRefPtr(const T&, const Rest&...) {}
-};
-
-template <typename T, size_t n, typename... Rest>
-struct MaybeScopedRefPtr<false, T[n], Rest...> {
-  MaybeScopedRefPtr(const T*, const Rest&...) {}
-};
-
-template <typename T, typename... Rest>
-struct MaybeScopedRefPtr<true, T, Rest...> {
-  MaybeScopedRefPtr(const T& o, const Rest&...) {}
-};
-
-template <typename T, typename... Rest>
-struct MaybeScopedRefPtr<true, T*, Rest...> {
-  MaybeScopedRefPtr(T* o, const Rest&...) : ref_(o) {}
-  scoped_refptr<T> ref_;
-};
-
-// No need to additionally AddRef() and Release() since we are storing a
-// scoped_refptr<> inside the storage object already.
-template <typename T, typename... Rest>
-struct MaybeScopedRefPtr<true, scoped_refptr<T>, Rest...> {
-  MaybeScopedRefPtr(const scoped_refptr<T>&, const Rest&...) {}
-};
-
-template <typename T, typename... Rest>
-struct MaybeScopedRefPtr<true, const T*, Rest...> {
-  MaybeScopedRefPtr(const T* o, const Rest&...) : ref_(o) {}
-  scoped_refptr<const T> ref_;
-};
-
 // IsWeakMethod is a helper that determine if we are binding a WeakPtr<> to a
 // method.  It is used internally by Bind() to select the correct
 // InvokeHelper that will no-op itself in the event the WeakPtr<> for

@@ -355,6 +355,24 @@ struct Invoker<IndexSequence<bound_indices...>, StorageType,
   }
 };
 
+// Used to implement MakeArgsStorage.
+template <bool is_method, typename... BoundArgs>
+struct MakeArgsStorageImpl {
+  using Type = std::tuple<BoundArgs...>;
+};
+
+template <typename Obj, typename... BoundArgs>
+struct MakeArgsStorageImpl<true, Obj*, BoundArgs...> {
+  using Type = std::tuple<scoped_refptr<Obj>, BoundArgs...>;
+};
+
+// Constructs a tuple type to store BoundArgs into BindState.
+// This wraps the first argument into a scoped_refptr if |is_method| is true and
+// the first argument is a raw pointer.
+// Other arguments are adjusted for store and packed into a tuple.
+template <bool is_method, typename... BoundArgs>
+using MakeArgsStorage = typename MakeArgsStorageImpl<
+  is_method, typename std::decay<BoundArgs>::type...>::Type;
 
 // BindState<>
 //
@@ -380,10 +398,12 @@ struct BindState<Runnable, R(Args...), BoundArgs...> final
   using StorageType = BindState<Runnable, R(Args...), BoundArgs...>;
   using RunnableType = Runnable;
 
+  enum { is_method = HasIsMethodTag<Runnable>::value };
+
   // true_type if Runnable is a method invocation and the first bound argument
   // is a WeakPtr.
   using IsWeakCall =
-      IsWeakMethod<HasIsMethodTag<Runnable>::value, BoundArgs...>;
+      IsWeakMethod<is_method, typename std::decay<BoundArgs>::type...>;
 
   using BoundIndices = MakeIndexSequence<sizeof...(BoundArgs)>;
   using UnboundForwardArgs = DropTypeListItem<
@@ -403,12 +423,10 @@ struct BindState<Runnable, R(Args...), BoundArgs...> final
   BindState(const Runnable& runnable, ForwardArgs&&... bound_args)
       : BindStateBase(&Destroy),
         runnable_(runnable),
-        ref_(bound_args...),
         bound_args_(std::forward<ForwardArgs>(bound_args)...) {}
 
   RunnableType runnable_;
-  MaybeScopedRefPtr<HasIsMethodTag<Runnable>::value, BoundArgs...> ref_;
-  Tuple<BoundArgs...> bound_args_;
+  MakeArgsStorage<is_method, BoundArgs...> bound_args_;
 
  private:
   ~BindState() {}
