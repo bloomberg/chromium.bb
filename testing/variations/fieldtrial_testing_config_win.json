@@ -1,9 +1,4 @@
 {
-    "AsyncSetAsDefault": [
-        {
-            "group_name": "Enabled"
-        }
-    ],
     "AutofillClassifier": [
         {
             "group_name": "Enabled"
