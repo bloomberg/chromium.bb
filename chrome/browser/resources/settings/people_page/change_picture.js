@@ -199,6 +199,9 @@ Polymer({
       case 'camera':
         // Nothing needs to be done.
         break;
+      case 'file':
+        settings.ChangePicturePrivateApi.chooseFile();
+        break;
       case 'profile':
         settings.ChangePicturePrivateApi.selectProfileImage();
         break;

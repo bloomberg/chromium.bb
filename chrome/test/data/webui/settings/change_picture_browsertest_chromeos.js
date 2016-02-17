@@ -81,7 +81,7 @@ TEST_F('SettingsChangePictureBrowserTest', 'MAYBE_ChangePicture', function() {
     });
 
     test('select camera image', function() {
-      var cameraIcon = changePicture.$$('img[data-type="camera"]');
+      var cameraIcon = changePicture.$.cameraImage;
       assertTrue(!!cameraIcon);
 
       // Force the camera to be absent, even if it's actually present.
@@ -107,7 +107,7 @@ TEST_F('SettingsChangePictureBrowserTest', 'MAYBE_ChangePicture', function() {
     });
 
     test('select profile image', function() {
-      var profileImage = changePicture.$$('img[data-type="profile"]');
+      var profileImage = changePicture.$.profileImage;
       assertTrue(!!profileImage);
 
       return runAndResolveWhenSelectedItemChanged(function() {
@@ -122,7 +122,7 @@ TEST_F('SettingsChangePictureBrowserTest', 'MAYBE_ChangePicture', function() {
 
     test('select old images', function() {
       // By default there is no old image and the element is hidden.
-      var oldImage = changePicture.$$('img[data-type="old"]');
+      var oldImage = changePicture.$.oldImage;
       assertTrue(!!oldImage);
       assertTrue(oldImage.hidden);
 

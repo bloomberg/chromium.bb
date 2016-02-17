@@ -77,6 +77,14 @@ cr.define('settings', function() {
     chrome.send('photoTaken', [photoDataUrl]);
   };
 
+  /**
+   * Called from JavaScript. Requests a file chooser to select a new user image.
+   * No response is expected.
+   */
+  ChangePicturePrivateApi.chooseFile = function() {
+    chrome.send('chooseFile');
+  };
+
   return {
     ChangePicturePrivateApi: ChangePicturePrivateApi,
   };

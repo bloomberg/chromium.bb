@@ -8,22 +8,36 @@
   padding-top: 16px;
 }
 
-#availableIcons img {
+#availableIcons img,
+#availableIcons iron-icon {
   border-radius: 4px;
-  height: 64px;
   margin: 8px;
+}
+
+#availableIcons img {
+  height: 64px;
   padding: 2px;
+  vertical-align: top;
   width: 64px;
 }
 
-#availableIcons img.bordered-image {
+#availableIcons iron-icon {
   border: 1px solid var(--google-grey-500);
-  padding: 1px;
+  height: 32px;
+  padding: 17px;
+  width: 32px;
+}
+
+#availableIcons .iron-selected {
+  border: 2px solid var(--google-blue-500);
 }
 
 #availableIcons img.iron-selected {
-  border: 2px solid var(--google-blue-500);
   padding: 0;
+}
+
+#availableIcons iron-icon.iron-selected {
+  padding: 16px;
 }
 
 #previewPane {
