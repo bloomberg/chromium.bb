@@ -47,6 +47,7 @@
 #include <unistd.h>
 #endif  // _WIN32
 
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <limits>
@@ -2054,7 +2055,8 @@ string MinidumpModule::debug_identifier() const {
       // The full build id is available by calling code_identifier.
       MDGUID guid = {0};
       memcpy(&guid, &cv_record_elf->build_id,
-             cv_record_->size() - MDCVInfoELF_minsize);
+             std::min(cv_record_->size() - MDCVInfoELF_minsize,
+                      sizeof(MDGUID)));
       identifier = guid_and_age_to_debug_id(guid, 0);
     }
   }
