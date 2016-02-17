@@ -45,14 +45,16 @@ class Page2(WebrtcPage):
         page_set=page_set)
 
   def RunPageInteractions(self, action_runner):
-    action_runner.ExecuteJavaScript('minWidthInput.value = 1280')
-    action_runner.ExecuteJavaScript('maxWidthInput.value = 1280')
-    action_runner.ExecuteJavaScript('minHeightInput.value = 720')
-    action_runner.ExecuteJavaScript('maxHeightInput.value = 720')
-    action_runner.ClickElement('button[id="getMedia"]')
-    action_runner.Wait(2)
-    action_runner.ClickElement('button[id="connect"]')
-    action_runner.Wait(45)
+    with action_runner.CreateInteraction('Action_Create_PeerConnection',
+                                         repeatable=False):
+      action_runner.ExecuteJavaScript('minWidthInput.value = 1280')
+      action_runner.ExecuteJavaScript('maxWidthInput.value = 1280')
+      action_runner.ExecuteJavaScript('minHeightInput.value = 720')
+      action_runner.ExecuteJavaScript('maxHeightInput.value = 720')
+      action_runner.ClickElement('button[id="getMedia"]')
+      action_runner.Wait(2)
+      action_runner.ClickElement('button[id="connect"]')
+      action_runner.Wait(45)
 
 
 class Page3(WebrtcPage):
