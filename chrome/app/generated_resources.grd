@@ -13482,12 +13482,15 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         <ph name="APP_NAME">$1<ex>Google Hangouts</ex></ph> would like to share the content of your screen with <ph name="TARGET_NAME">$2<ex>https://google.com</ex></ph>. Choose what you'd like to share.
       </message>
       <message name="IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE" desc="Text for the checkbox on the window picker dialog, when checked, audio will be shared, otherwise just video sharing">
-        Also share audio
+        Share audio
       </message>
-      <message name="IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE_TOOLTIP_WINDOW" desc="Tooltip text for the checkbox on the window picker dialog, explaining why the checkbox is disabled">
-        Audio sharing is not supported for individual windows.
+      <message name="IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE_TOOLTIP_MAC" desc="Tooltip text for the checkbox on the window picker dialog, explaining why the checkbox to share audio is disabled">
+        To share audio, select a tab.
       </message>
-      <message name="IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE_TOOLTIP_NONE" desc="Tooltip text for the checkbox on the window picker dialog, explaining why the checkbox is disabled">
+      <message name="IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE_TOOLTIP_WINDOW" desc="Tooltip text for the checkbox on the window picker dialog, explaining why the checkbox to share audio is disabled">
+        To share audio, select a tab or entire screen.
+      </message>
+      <message name="IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE_TOOLTIP_NONE" desc="Tooltip text for the checkbox on the window picker dialog, explaining why the checkbox for audio sharing is disabled">
         Please select what to share first.
       </message>
       <message name="IDS_DESKTOP_MEDIA_PICKER_SINGLE_SCREEN_NAME" desc="Name for screens in the desktop media picker UI when there is only one monitor.">

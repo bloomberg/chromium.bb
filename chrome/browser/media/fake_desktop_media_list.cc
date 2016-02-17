@@ -12,9 +12,15 @@ FakeDesktopMediaList::FakeDesktopMediaList() : observer_(NULL) {}
 FakeDesktopMediaList::~FakeDesktopMediaList() {}
 
 void FakeDesktopMediaList::AddSource(int id) {
+  AddSourceByFullMediaID(
+      content::DesktopMediaID(content::DesktopMediaID::TYPE_WINDOW, id));
+}
+
+void FakeDesktopMediaList::AddSourceByFullMediaID(
+    content::DesktopMediaID media_id) {
   Source source;
-  source.id = content::DesktopMediaID(content::DesktopMediaID::TYPE_WINDOW, id);
-  source.name = base::Int64ToString16(id);
+  source.id = media_id;
+  source.name = base::Int64ToString16(media_id.id);
 
   sources_.push_back(source);
   observer_->OnSourceAdded(this, sources_.size() - 1);

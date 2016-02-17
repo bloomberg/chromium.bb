@@ -16,6 +16,7 @@
 @interface DesktopMediaPickerController (ExposedForTesting)
 - (IKImageBrowserView*)sourceBrowser;
 - (NSButton*)shareButton;
+- (NSButton*)audioShareCheckbox;
 - (NSArray*)items;
 @end
 
@@ -30,6 +31,10 @@
 
 - (NSButton*)cancelButton {
   return cancelButton_;
+}
+
+- (NSButton*)audioShareCheckbox {
+  return audioShareCheckbox_;
 }
 
 - (NSArray*)items {
@@ -52,13 +57,13 @@ class DesktopMediaPickerControllerTest : public CocoaTest {
         base::Bind(&DesktopMediaPickerControllerTest::OnResult,
                    base::Unretained(this));
 
-    controller_.reset(
-        [[DesktopMediaPickerController alloc]
-            initWithMediaList:scoped_ptr<DesktopMediaList>(media_list_)
-                       parent:nil
-                     callback:callback
-                      appName:base::ASCIIToUTF16("Screenshare Test")
-                   targetName:base::ASCIIToUTF16("https://foo.com")]);
+    controller_.reset([[DesktopMediaPickerController alloc]
+        initWithMediaList:scoped_ptr<DesktopMediaList>(media_list_)
+                   parent:nil
+                 callback:callback
+                  appName:base::ASCIIToUTF16("Screenshare Test")
+               targetName:base::ASCIIToUTF16("https://foo.com")
+             requestAudio:true]);
   }
 
   void TearDown() override {
@@ -208,4 +213,43 @@ TEST_F(DesktopMediaPickerControllerTest, MoveSource) {
 
   media_list_->MoveSource(0, 1);
   EXPECT_NSEQ(@"foo", [[items objectAtIndex:1] imageTitle]);
+}
+
+// Make sure the audio share checkbox' state reacts correctly with
+// the source selection. Namely the checkbox is enabled only for tab
+// sharing on Mac.
+TEST_F(DesktopMediaPickerControllerTest, AudioShareCheckboxState) {
+  [controller_ showWindow:nil];
+
+  media_list_->AddSourceByFullMediaID(
+      content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN, 0));
+  media_list_->AddSourceByFullMediaID(
+      content::DesktopMediaID(content::DesktopMediaID::TYPE_WINDOW, 1));
+  media_list_->AddSourceByFullMediaID(
+      content::DesktopMediaID(content::DesktopMediaID::TYPE_WEB_CONTENTS, 2));
+
+  NSButton* checkbox = [controller_ audioShareCheckbox];
+  EXPECT_EQ(NO, [checkbox isEnabled]);
+
+  NSIndexSet* index_set = [NSIndexSet indexSetWithIndex:0];
+  [checkbox setEnabled:YES];
+  [[controller_ sourceBrowser] setSelectionIndexes:index_set
+                              byExtendingSelection:NO];
+  EXPECT_EQ(NO, [checkbox isEnabled]);
+
+  index_set = [NSIndexSet indexSetWithIndex:1];
+  [checkbox setEnabled:YES];
+  [[controller_ sourceBrowser] setSelectionIndexes:index_set
+                              byExtendingSelection:NO];
+  EXPECT_EQ(NO, [checkbox isEnabled]);
+
+  index_set = [NSIndexSet indexSetWithIndex:2];
+  [[controller_ sourceBrowser] setSelectionIndexes:index_set
+                              byExtendingSelection:NO];
+  EXPECT_EQ(YES, [checkbox isEnabled]);
+
+  index_set = [NSIndexSet indexSet];
+  [[controller_ sourceBrowser] setSelectionIndexes:index_set
+                              byExtendingSelection:NO];
+  EXPECT_EQ(NO, [checkbox isEnabled]);
 }

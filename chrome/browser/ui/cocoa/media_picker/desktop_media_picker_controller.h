@@ -31,6 +31,9 @@
   // The button used to cancel and close the dialog.
   NSButton* cancelButton_;  // weak; owned by contentView
 
+  // The checkbox for audio share.
+  base::scoped_nsobject<NSButton> audioShareCheckbox_;
+
   // Provides source information (including thumbnails) to fill up |items_| and
   // to render in |sourceBrowser_|.
   scoped_ptr<DesktopMediaList> media_list_;
@@ -60,7 +63,8 @@
                  parent:(NSWindow*)parent
                callback:(const DesktopMediaPicker::DoneCallback&)callback
                 appName:(const base::string16&)appName
-             targetName:(const base::string16&)targetName;
+             targetName:(const base::string16&)targetName
+           requestAudio:(bool)requestAudio;
 
 @end
 

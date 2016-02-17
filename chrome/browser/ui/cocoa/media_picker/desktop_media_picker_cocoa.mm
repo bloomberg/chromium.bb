@@ -27,7 +27,8 @@ void DesktopMediaPickerCocoa::Show(content::WebContents* web_contents,
                  parent:parent
                callback:done_callback
                 appName:app_name
-             targetName:target_name]);
+             targetName:target_name
+           requestAudio:request_audio]);
   [controller_ showWindow:nil];
 }
 

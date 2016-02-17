@@ -64,7 +64,8 @@ const int kExcessButtonPadding = 6;
                  parent:(NSWindow*)parent
                callback:(const DesktopMediaPicker::DoneCallback&)callback
                 appName:(const base::string16&)appName
-             targetName:(const base::string16&)targetName {
+             targetName:(const base::string16&)targetName
+           requestAudio:(bool)requestAudio {
   const NSUInteger kStyleMask =
       NSTitledWindowMask | NSClosableWindowMask | NSResizableWindowMask;
   base::scoped_nsobject<NSWindow> window(
@@ -76,7 +77,9 @@ const int kExcessButtonPadding = 6;
   if ((self = [super initWithWindow:window])) {
     [parent addChildWindow:window ordered:NSWindowAbove];
     [window setDelegate:self];
-    [self initializeContentsWithAppName:appName targetName:targetName];
+    [self initializeContentsWithAppName:appName
+                             targetName:targetName
+                           requestAudio:requestAudio];
     media_list_ = std::move(media_list);
     media_list_->SetViewDialogWindowId(content::DesktopMediaID(
        content::DesktopMediaID::TYPE_WINDOW, [window windowNumber]));
@@ -97,7 +100,8 @@ const int kExcessButtonPadding = 6;
 }
 
 - (void)initializeContentsWithAppName:(const base::string16&)appName
-                           targetName:(const base::string16&)targetName {
+                           targetName:(const base::string16&)targetName
+                         requestAudio:(bool)requestAudio {
   // Use flipped coordinates to facilitate manual layout.
   const CGFloat kPaddedWidth = kInitialContentWidth - (kFramePadding * 2);
   base::scoped_nsobject<FlippedView> content(
@@ -146,6 +150,24 @@ const int kExcessButtonPadding = 6;
       NSViewWidthSizable | NSViewHeightSizable];
   [content addSubview:imageBrowserScroll];
   origin.y += NSHeight(imageBrowserScrollFrame) + kControlSpacing;
+
+  // Create a checkbox for audio sharing.
+  if (requestAudio) {
+    audioShareCheckbox_.reset([[NSButton alloc] initWithFrame:NSZeroRect]);
+    [audioShareCheckbox_ setFrameOrigin:origin];
+    [audioShareCheckbox_
+        setAutoresizingMask:NSViewMaxXMargin | NSViewMinYMargin];
+    [audioShareCheckbox_ setButtonType:NSSwitchButton];
+    [audioShareCheckbox_
+        setTitle:l10n_util::GetNSString(IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE)];
+    [audioShareCheckbox_ sizeToFit];
+    [audioShareCheckbox_ setEnabled:NO];
+    [audioShareCheckbox_
+        setToolTip:l10n_util::GetNSString(
+                       IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE_TOOLTIP_MAC)];
+    [content addSubview:audioShareCheckbox_];
+    origin.y += NSHeight([audioShareCheckbox_ frame]) + kControlSpacing;
+  }
 
   // Create the share button.
   shareButton_ = [self createButtonWithTitle:l10n_util::GetNSString(
@@ -199,6 +221,9 @@ const int kExcessButtonPadding = 6;
   if (doneCallback_.is_null()) {
     return;
   }
+
+  sourceID.audio_share = [audioShareCheckbox_ isEnabled] &&
+                         [audioShareCheckbox_ state] == NSOnState;
 
   // Notify the |callback_| asynchronously because it may release the
   // controller.
@@ -280,9 +305,41 @@ const int kExcessButtonPadding = 6;
   [self close];
 }
 
-- (void)imageBrowserSelectionDidChange:(IKImageBrowserView*) aBrowser {
+- (void)imageBrowserSelectionDidChange:(IKImageBrowserView*)browser {
+  NSIndexSet* indexes = [sourceBrowser_ selectionIndexes];
+
   // Enable or disable the OK button based on whether we have a selection.
-  [shareButton_ setEnabled:([[sourceBrowser_ selectionIndexes] count] > 0)];
+  [shareButton_ setEnabled:([indexes count] > 0)];
+
+  // Enable or disable the checkbox based on whether we can support audio for
+  // the selected source.
+  // On Mac, the checkbox will enabled for tab sharing, namely
+  // TYPE_WEB_CONTENTS.
+  if ([indexes count] == 0) {
+    [audioShareCheckbox_ setEnabled:NO];
+    [audioShareCheckbox_
+        setToolTip:l10n_util::GetNSString(
+                       IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE_TOOLTIP_MAC)];
+    return;
+  }
+
+  NSUInteger selectedIndex = [indexes firstIndex];
+  DesktopMediaPickerItem* item = [items_ objectAtIndex:selectedIndex];
+  switch ([item sourceID].type) {
+    case content::DesktopMediaID::TYPE_SCREEN:
+    case content::DesktopMediaID::TYPE_WINDOW:
+      [audioShareCheckbox_ setEnabled:NO];
+      [audioShareCheckbox_
+          setToolTip:l10n_util::GetNSString(
+                         IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE_TOOLTIP_MAC)];
+      break;
+    case content::DesktopMediaID::TYPE_WEB_CONTENTS:
+      [audioShareCheckbox_ setEnabled:YES];
+      [audioShareCheckbox_ setToolTip:@""];
+      break;
+    case content::DesktopMediaID::TYPE_NONE:
+      NOTREACHED();
+  }
 }
 
 #pragma mark DesktopMediaPickerObserver
