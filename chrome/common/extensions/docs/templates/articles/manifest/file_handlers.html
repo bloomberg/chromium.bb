@@ -20,7 +20,6 @@ Here's an example of specifying file handlers:
     "types": [
       "text/*"
     ],
-    "title": "{Name of app}"
   },
   "image": {
     "types": [
@@ -30,23 +29,14 @@ Here's an example of specifying file handlers:
     "extensions": [
       "tiff"
     ],
-    "title": "{Name of app}"
   },
   "any": {
     "extensions": [
       "*"
     ],
-    "title": "{Name of app}"
   }
 }
 </pre>
-
-<p class="note">
-The <code>title</code> attribute is mandatory on Chrome
-version 37 and earlier. As of Chrome version 38, it is deprecated and
-will be ignored (the app's name will be used instead). For
-compatibility, <code>title</code> should always be the name of the app.
-</p>
 
 <p>
 To handle files, apps also need to declare the $(ref:fileSystem)
