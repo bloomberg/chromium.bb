@@ -264,11 +264,36 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   virtual bool UseRootScrollOffsetsWhenComputingBounds();
 
   // Walk the tree.
-  BrowserAccessibility* NextInTreeOrder(BrowserAccessibility* node) const;
-  BrowserAccessibility* PreviousInTreeOrder(BrowserAccessibility* node) const;
-  BrowserAccessibility* NextTextOnlyObject(BrowserAccessibility* node) const;
-  BrowserAccessibility* PreviousTextOnlyObject(
-      BrowserAccessibility* node) const;
+  static BrowserAccessibility* NextInTreeOrder(
+      const BrowserAccessibility* object);
+  static BrowserAccessibility* PreviousInTreeOrder(
+      const BrowserAccessibility* object);
+  static BrowserAccessibility* NextTextOnlyObject(
+      const BrowserAccessibility* object);
+  static BrowserAccessibility* PreviousTextOnlyObject(
+      const BrowserAccessibility* object);
+
+  // If the two objects provided have a common ancestor returns both the
+  // common ancestor and the child indices of the two subtrees in which the
+  // objects are located.
+  // Returns false if a common ancestor cannot be found.
+  static bool FindIndicesInCommonParent(const BrowserAccessibility& object1,
+                                        const BrowserAccessibility& object2,
+                                        BrowserAccessibility** common_parent,
+                                        int* child_index1,
+                                        int* child_index2);
+
+  // Returns all the text found between the given start and end locations.
+  // If start and end offsets are greater than the text's length, returns all
+  // the text until text length.
+  static base::string16 GetTextForRange(
+      const BrowserAccessibility& start_object,
+      int start_offset,
+      const BrowserAccessibility& end_object,
+      int end_offset);
+
+  // Accessors.
+  AXTreeIDRegistry::AXTreeID ax_tree_id() const { return ax_tree_id_; }
 
   // AXTreeDelegate implementation.
   void OnTreeDataChanged(ui::AXTree* tree) override;

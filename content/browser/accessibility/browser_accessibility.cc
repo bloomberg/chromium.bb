@@ -88,11 +88,14 @@ bool BrowserAccessibility::IsNative() const {
 
 bool BrowserAccessibility::IsDescendantOf(
     const BrowserAccessibility* ancestor) const {
-  if (this == ancestor) {
+  if (!ancestor)
+    return false;
+
+  if (this == ancestor)
     return true;
-  } else if (GetParent()) {
+
+  if (GetParent())
     return GetParent()->IsDescendantOf(ancestor);
-  }
 
   return false;
 }
@@ -132,6 +135,16 @@ bool BrowserAccessibility::PlatformIsChildOfLeaf() const {
   return false;
 }
 
+BrowserAccessibility* BrowserAccessibility::GetClosestPlatformObject() const {
+  BrowserAccessibility* platform_object =
+      const_cast<BrowserAccessibility*>(this);
+  while (platform_object && platform_object->PlatformIsChildOfLeaf())
+    platform_object = platform_object->InternalGetParent();
+
+  DCHECK(platform_object);
+  return platform_object;
+}
+
 BrowserAccessibility* BrowserAccessibility::GetPreviousSibling() const {
   if (GetParent() && GetIndexInParent() > 0)
     return GetParent()->InternalGetChild(GetIndexInParent() - 1);
@@ -154,7 +167,7 @@ BrowserAccessibility* BrowserAccessibility::PlatformDeepestFirstChild() const {
   if (!PlatformChildCount())
     return nullptr;
 
-  auto deepest_child = PlatformGetChild(0);
+  BrowserAccessibility* deepest_child = PlatformGetChild(0);
   while (deepest_child->PlatformChildCount())
     deepest_child = deepest_child->PlatformGetChild(0);
 
@@ -165,10 +178,36 @@ BrowserAccessibility* BrowserAccessibility::PlatformDeepestLastChild() const {
   if (!PlatformChildCount())
     return nullptr;
 
-  auto deepest_child = PlatformGetChild(PlatformChildCount() - 1);
+  BrowserAccessibility* deepest_child =
+      PlatformGetChild(PlatformChildCount() - 1);
   while (deepest_child->PlatformChildCount()) {
     deepest_child = deepest_child->PlatformGetChild(
         deepest_child->PlatformChildCount() - 1);
+  }
+
+  return deepest_child;
+}
+
+BrowserAccessibility* BrowserAccessibility::InternalDeepestFirstChild() const {
+  if (!InternalChildCount())
+    return nullptr;
+
+  BrowserAccessibility* deepest_child = InternalGetChild(0);
+  while (deepest_child->InternalChildCount())
+    deepest_child = deepest_child->InternalGetChild(0);
+
+  return deepest_child;
+}
+
+BrowserAccessibility* BrowserAccessibility::InternalDeepestLastChild() const {
+  if (!InternalChildCount())
+    return nullptr;
+
+  BrowserAccessibility* deepest_child =
+      InternalGetChild(InternalChildCount() - 1);
+  while (deepest_child->InternalChildCount()) {
+    deepest_child = deepest_child->InternalGetChild(
+        deepest_child->InternalChildCount() - 1);
   }
 
   return deepest_child;

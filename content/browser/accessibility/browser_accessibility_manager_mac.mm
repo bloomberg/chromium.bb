@@ -303,6 +303,7 @@ NSDictionary* BrowserAccessibilityManagerMac::
   int32_t focus_id = GetTreeData().sel_focus_object_id;
   BrowserAccessibility* focus_object = GetFromID(focus_id);
   if (focus_object) {
+    focus_object = focus_object->GetClosestPlatformObject();
     auto native_focus_object = focus_object->ToBrowserAccessibilityCocoa();
     if (native_focus_object)
       [user_info setObject:native_focus_object

@@ -1720,25 +1720,29 @@ TEST_F(BrowserAccessibilityTest, TestIAccessibleHyperlink) {
   EXPECT_EQ(7, end_index);
 }
 
-TEST_F(BrowserAccessibilityTest, TestPlatformDeepestFirstLastChild) {
+TEST_F(BrowserAccessibilityTest, TestDeepestFirstLastChild) {
   ui::AXNodeData root;
   root.id = 1;
   root.role = ui::AX_ROLE_ROOT_WEB_AREA;
 
   ui::AXNodeData child1;
   child1.id = 2;
+  child1.role = ui::AX_ROLE_STATIC_TEXT;
   root.child_ids.push_back(2);
 
   ui::AXNodeData child2;
   child2.id = 3;
+  child2.role = ui::AX_ROLE_STATIC_TEXT;
   root.child_ids.push_back(3);
 
   ui::AXNodeData child2_child1;
   child2_child1.id = 4;
+  child2_child1.role = ui::AX_ROLE_INLINE_TEXT_BOX;
   child2.child_ids.push_back(4);
 
   ui::AXNodeData child2_child2;
   child2_child2.id = 5;
+  child2_child2.role = ui::AX_ROLE_INLINE_TEXT_BOX;
   child2.child_ids.push_back(5);
 
   scoped_ptr<BrowserAccessibilityManager> manager(
@@ -1746,32 +1750,53 @@ TEST_F(BrowserAccessibilityTest, TestPlatformDeepestFirstLastChild) {
           MakeAXTreeUpdate(root, child1, child2, child2_child1, child2_child2),
           nullptr, new CountedBrowserAccessibilityFactory()));
 
-  auto root_accessible = manager->GetRoot();
+  BrowserAccessibility* root_accessible = manager->GetRoot();
   ASSERT_NE(nullptr, root_accessible);
   ASSERT_EQ(2U, root_accessible->PlatformChildCount());
-  auto child1_accessible = root_accessible->PlatformGetChild(0);
+  BrowserAccessibility* child1_accessible =
+      root_accessible->PlatformGetChild(0);
   ASSERT_NE(nullptr, child1_accessible);
-  auto child2_accessible = root_accessible->PlatformGetChild(1);
+  BrowserAccessibility* child2_accessible =
+      root_accessible->PlatformGetChild(1);
   ASSERT_NE(nullptr, child2_accessible);
-  ASSERT_EQ(2U, child2_accessible->PlatformChildCount());
-  auto child2_child1_accessible = child2_accessible->PlatformGetChild(0);
+  ASSERT_EQ(0U, child2_accessible->PlatformChildCount());
+  ASSERT_EQ(2U, child2_accessible->InternalChildCount());
+  BrowserAccessibility* child2_child1_accessible =
+      child2_accessible->InternalGetChild(0);
   ASSERT_NE(nullptr, child2_child1_accessible);
-  auto child2_child2_accessible = child2_accessible->PlatformGetChild(1);
+  BrowserAccessibility* child2_child2_accessible =
+      child2_accessible->InternalGetChild(1);
   ASSERT_NE(nullptr, child2_child2_accessible);
 
   EXPECT_EQ(child1_accessible, root_accessible->PlatformDeepestFirstChild());
+  EXPECT_EQ(child1_accessible, root_accessible->InternalDeepestFirstChild());
+
+  EXPECT_EQ(child2_accessible, root_accessible->PlatformDeepestLastChild());
   EXPECT_EQ(child2_child2_accessible,
-            root_accessible->PlatformDeepestLastChild());
+            root_accessible->InternalDeepestLastChild());
+
   EXPECT_EQ(nullptr, child1_accessible->PlatformDeepestFirstChild());
+  EXPECT_EQ(nullptr, child1_accessible->InternalDeepestFirstChild());
+
   EXPECT_EQ(nullptr, child1_accessible->PlatformDeepestLastChild());
+  EXPECT_EQ(nullptr, child1_accessible->InternalDeepestLastChild());
+
+  EXPECT_EQ(nullptr, child2_accessible->PlatformDeepestFirstChild());
   EXPECT_EQ(child2_child1_accessible,
-            child2_accessible->PlatformDeepestFirstChild());
+            child2_accessible->InternalDeepestFirstChild());
+
+  EXPECT_EQ(nullptr, child2_accessible->PlatformDeepestLastChild());
   EXPECT_EQ(child2_child2_accessible,
-            child2_accessible->PlatformDeepestLastChild());
+            child2_accessible->InternalDeepestLastChild());
+
   EXPECT_EQ(nullptr, child2_child1_accessible->PlatformDeepestFirstChild());
+  EXPECT_EQ(nullptr, child2_child1_accessible->InternalDeepestFirstChild());
   EXPECT_EQ(nullptr, child2_child1_accessible->PlatformDeepestLastChild());
+  EXPECT_EQ(nullptr, child2_child1_accessible->InternalDeepestLastChild());
   EXPECT_EQ(nullptr, child2_child2_accessible->PlatformDeepestFirstChild());
+  EXPECT_EQ(nullptr, child2_child2_accessible->InternalDeepestFirstChild());
   EXPECT_EQ(nullptr, child2_child2_accessible->PlatformDeepestLastChild());
+  EXPECT_EQ(nullptr, child2_child2_accessible->InternalDeepestLastChild());
 }
 
 TEST_F(BrowserAccessibilityTest, TestSanitizeStringAttributeForIA2) {

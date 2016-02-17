@@ -496,33 +496,35 @@ gfx::Rect BrowserAccessibilityManager::GetViewBounds() {
   return gfx::Rect();
 }
 
+// Static
 BrowserAccessibility* BrowserAccessibilityManager::NextInTreeOrder(
-    BrowserAccessibility* node) const {
-  if (!node)
+    const BrowserAccessibility* object) {
+  if (!object)
     return nullptr;
 
-  if (node->PlatformChildCount())
-    return node->PlatformGetChild(0);
+  if (object->PlatformChildCount())
+    return object->PlatformGetChild(0);
 
-  while (node) {
-    const auto sibling = node->GetNextSibling();
+  while (object) {
+    BrowserAccessibility* sibling = object->GetNextSibling();
     if (sibling)
       return sibling;
 
-    node = node->GetParent();
+    object = object->GetParent();
   }
 
   return nullptr;
 }
 
+// Static
 BrowserAccessibility* BrowserAccessibilityManager::PreviousInTreeOrder(
-    BrowserAccessibility* node) const {
-  if (!node)
+    const BrowserAccessibility* object) {
+  if (!object)
     return nullptr;
 
-  const auto sibling = node->GetPreviousSibling();
+  BrowserAccessibility* sibling = object->GetPreviousSibling();
   if (!sibling)
-    return node->GetParent();
+    return object->GetParent();
 
   if (sibling->PlatformChildCount())
     return sibling->PlatformDeepestLastChild();
@@ -530,22 +532,144 @@ BrowserAccessibility* BrowserAccessibilityManager::PreviousInTreeOrder(
   return sibling;
 }
 
+// Static
 BrowserAccessibility* BrowserAccessibilityManager::PreviousTextOnlyObject(
-    BrowserAccessibility* node) const {
-      BrowserAccessibility* previous_node = PreviousInTreeOrder(node);
-  while (previous_node && !previous_node->IsTextOnlyObject())
-    previous_node = PreviousInTreeOrder(previous_node);
+    const BrowserAccessibility* object) {
+  BrowserAccessibility* previous_object = PreviousInTreeOrder(object);
+  while (previous_object && !previous_object->IsTextOnlyObject())
+    previous_object = PreviousInTreeOrder(previous_object);
 
-  return previous_node;
+  return previous_object;
 }
 
+// Static
 BrowserAccessibility* BrowserAccessibilityManager::NextTextOnlyObject(
-    BrowserAccessibility* node) const {
-  BrowserAccessibility* next_node = NextInTreeOrder(node);
-  while (next_node && !next_node->IsTextOnlyObject())
-    next_node = NextInTreeOrder(next_node);
+    const BrowserAccessibility* object) {
+  BrowserAccessibility* next_object = NextInTreeOrder(object);
+  while (next_object && !next_object->IsTextOnlyObject())
+    next_object = NextInTreeOrder(next_object);
 
-  return next_node;
+  return next_object;
+}
+
+// Static
+bool BrowserAccessibilityManager::FindIndicesInCommonParent(
+    const BrowserAccessibility& object1,
+    const BrowserAccessibility& object2,
+    BrowserAccessibility** common_parent,
+    int* child_index1,
+    int* child_index2) {
+  DCHECK(common_parent && child_index1 && child_index2);
+  auto ancestor1 = const_cast<BrowserAccessibility*>(&object1);
+  auto ancestor2 = const_cast<BrowserAccessibility*>(&object2);
+  do {
+    *child_index1 = ancestor1->GetIndexInParent();
+    ancestor1 = ancestor1->GetParent();
+  } while (
+      ancestor1 &&
+      // |BrowserAccessibility::IsAncestorOf| returns true if objects are equal.
+      (ancestor1 == ancestor2 || !ancestor2->IsDescendantOf(ancestor1)));
+
+  if (!ancestor1) {
+    *common_parent = nullptr;
+    *child_index1 = -1;
+    *child_index2 = -1;
+    return false;
+  }
+
+  do {
+    *child_index2 = ancestor2->GetIndexInParent();
+    ancestor2 = ancestor2->GetParent();
+  } while (ancestor1 != ancestor2);
+
+  *common_parent = ancestor1;
+  return true;
+}
+
+// Static
+base::string16 BrowserAccessibilityManager::GetTextForRange(
+    const BrowserAccessibility& start_object,
+    int start_offset,
+    const BrowserAccessibility& end_object,
+    int end_offset) {
+  DCHECK_GE(start_offset, 0);
+  DCHECK_GE(end_offset, 0);
+
+  int child_index1 = -1;
+  int child_index2 = -1;
+  if (&start_object != &end_object) {
+    BrowserAccessibility* common_parent;
+    if (!FindIndicesInCommonParent(start_object, end_object, &common_parent,
+                                   &child_index1, &child_index2)) {
+      return base::string16();
+    }
+
+    DCHECK(common_parent);
+    DCHECK_GE(child_index1, 0);
+    DCHECK_GE(child_index2, 0);
+    // If the child indices are equal, one object is a descendant of the other.
+    DCHECK(child_index1 != child_index2 ||
+           start_object.IsDescendantOf(&end_object) ||
+           end_object.IsDescendantOf(&start_object));
+  }
+
+  const BrowserAccessibility* start_text_object = nullptr;
+  const BrowserAccessibility* end_text_object = nullptr;
+  if (child_index1 <= child_index2 ||
+      end_object.IsDescendantOf(&start_object)) {
+    start_text_object = &start_object;
+    end_text_object = &end_object;
+  } else if (child_index1 > child_index2 ||
+             start_object.IsDescendantOf(&end_object)) {
+    start_text_object = &end_object;
+    end_text_object = &start_object;
+  }
+
+  if (!start_text_object->PlatformIsLeaf())
+    start_text_object = start_text_object->PlatformDeepestFirstChild();
+  if (!end_text_object->PlatformIsLeaf())
+    end_text_object = end_text_object->PlatformDeepestLastChild();
+
+  if (!start_text_object->IsTextOnlyObject())
+    start_text_object = NextTextOnlyObject(start_text_object);
+  if (!end_text_object->IsTextOnlyObject())
+    end_text_object = PreviousTextOnlyObject(end_text_object);
+
+  if (!start_text_object || !end_text_object)
+    return base::string16();
+
+  // Be a little permissive with the start and end offsets.
+  if (start_text_object == end_text_object) {
+    if (start_offset <
+            static_cast<int>(start_text_object->GetText().length()) &&
+        end_offset <= static_cast<int>(end_text_object->GetText().length())) {
+      if (start_offset <= end_offset) {
+        return start_text_object->GetText().substr(start_offset,
+                                                   end_offset - start_offset);
+      } else {
+        return start_text_object->GetText().substr(end_offset,
+                                                   start_offset - end_offset);
+      }
+    }
+    return start_text_object->GetText();
+  }
+
+  base::string16 text;
+  if (start_offset < static_cast<int>(start_text_object->GetText().length()))
+    text += start_text_object->GetText().substr(start_offset);
+  else
+    text += start_text_object->GetText();
+  start_text_object = NextTextOnlyObject(start_text_object);
+  while (start_text_object && start_text_object != end_text_object) {
+    text += start_text_object->GetText();
+    start_text_object = NextTextOnlyObject(start_text_object);
+  }
+  if (end_offset <= static_cast<int>(end_text_object->GetText().length()))
+    text += end_text_object->GetText().substr(0, end_offset);
+  else
+    text += end_text_object->GetText();
+
+  return text;
 }
 
 void BrowserAccessibilityManager::OnTreeDataChanged(ui::AXTree* tree) {

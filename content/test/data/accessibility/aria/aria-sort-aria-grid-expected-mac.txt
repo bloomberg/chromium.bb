@@ -25,7 +25,7 @@ AXWebArea
 ++++AXGroup
 ++AXTable
 ++++AXRow
-++++++AXCell AXSortDirection='AXSortDirectionAscending'
+++++++AXCell AXSortDirection='AXAscendingSortDirection'
 ++++++++AXStaticText AXValue='Alphabet'
 ++++AXRow
 ++++++AXCell
@@ -37,7 +37,7 @@ AXWebArea
 ++++AXGroup
 ++AXTable
 ++++AXRow
-++++++AXCell AXSortDirection='AXSortDirectionDescending'
+++++++AXCell AXSortDirection='AXDescendingSortDirection'
 ++++++++AXStaticText AXValue='Alphabet'
 ++++AXRow
 ++++++AXCell
@@ -49,7 +49,7 @@ AXWebArea
 ++++AXGroup
 ++AXTable
 ++++AXRow
-++++++AXCell AXSortDirection='AXSortDirectionUnknown'
+++++++AXCell AXSortDirection='AXUnknownSortDirection'
 ++++++++AXStaticText AXValue='Alphabet'
 ++++AXRow
 ++++++AXCell
@@ -57,18 +57,6 @@ AXWebArea
 ++++AXRow
 ++++++AXCell
 ++++++++AXStaticText AXValue='A'
-++++AXColumn
-++++AXGroup
-++AXTable
-++++AXRow
-++++++AXCell
-++++++++AXStaticText AXValue='Alphabet'
-++++++AXCell
-++++++++AXStaticText AXValue='A'
-++++++AXCell
-++++++++AXStaticText AXValue='B'
-++++AXColumn
-++++AXColumn
 ++++AXColumn
 ++++AXGroup
 ++AXTable
@@ -85,7 +73,7 @@ AXWebArea
 ++++AXGroup
 ++AXTable
 ++++AXRow
-++++++AXCell AXSortDirection='AXSortDirectionAscending'
+++++++AXCell
 ++++++++AXStaticText AXValue='Alphabet'
 ++++++AXCell
 ++++++++AXStaticText AXValue='A'
@@ -97,7 +85,19 @@ AXWebArea
 ++++AXGroup
 ++AXTable
 ++++AXRow
-++++++AXCell AXSortDirection='AXSortDirectionDescending'
+++++++AXCell AXSortDirection='AXAscendingSortDirection'
+++++++++AXStaticText AXValue='Alphabet'
+++++++AXCell
+++++++++AXStaticText AXValue='A'
+++++++AXCell
+++++++++AXStaticText AXValue='B'
+++++AXColumn
+++++AXColumn
+++++AXColumn
+++++AXGroup
+++AXTable
+++++AXRow
+++++++AXCell AXSortDirection='AXDescendingSortDirection'
 ++++++++AXStaticText AXValue='Alphabet'
 ++++++AXCell
 ++++++++AXStaticText AXValue='B'
@@ -109,7 +109,7 @@ AXWebArea
 ++++AXGroup
 ++AXTable
 ++++AXRow
-++++++AXCell AXSortDirection='AXSortDirectionUnknown'
+++++++AXCell AXSortDirection='AXUnknownSortDirection'
 ++++++++AXStaticText AXValue='Alphabet'
 ++++++AXCell
 ++++++++AXStaticText AXValue='A'

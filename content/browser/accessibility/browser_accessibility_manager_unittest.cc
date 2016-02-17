@@ -967,17 +967,18 @@ TEST(BrowserAccessibilityManagerTest, TestNextPreviousInTreeOrder) {
           nullptr,
           new CountedBrowserAccessibilityFactory()));
 
-  auto root_accessible = manager->GetRoot();
+  BrowserAccessibility* root_accessible = manager->GetRoot();
   ASSERT_NE(nullptr, root_accessible);
   ASSERT_EQ(3U, root_accessible->PlatformChildCount());
-  auto node2_accessible = root_accessible->PlatformGetChild(0);
+  BrowserAccessibility* node2_accessible = root_accessible->PlatformGetChild(0);
   ASSERT_NE(nullptr, node2_accessible);
-  auto node3_accessible = root_accessible->PlatformGetChild(1);
+  BrowserAccessibility* node3_accessible = root_accessible->PlatformGetChild(1);
   ASSERT_NE(nullptr, node3_accessible);
   ASSERT_EQ(1U, node3_accessible->PlatformChildCount());
-  auto node4_accessible = node3_accessible->PlatformGetChild(0);
+  BrowserAccessibility* node4_accessible =
+      node3_accessible->PlatformGetChild(0);
   ASSERT_NE(nullptr, node4_accessible);
-  auto node5_accessible = root_accessible->PlatformGetChild(2);
+  BrowserAccessibility* node5_accessible = root_accessible->PlatformGetChild(2);
   ASSERT_NE(nullptr, node5_accessible);
 
   EXPECT_EQ(nullptr, manager->NextInTreeOrder(nullptr));
@@ -1042,26 +1043,30 @@ TEST(BrowserAccessibilityManagerTest, TestNextPreviousTextOnlyObject) {
           nullptr,
           new CountedBrowserAccessibilityFactory()));
 
-  auto root_accessible = manager->GetRoot();
+  BrowserAccessibility* root_accessible = manager->GetRoot();
   ASSERT_NE(nullptr, root_accessible);
   ASSERT_EQ(4U, root_accessible->PlatformChildCount());
-  auto node2_accessible = root_accessible->PlatformGetChild(0);
+  BrowserAccessibility* node2_accessible = root_accessible->PlatformGetChild(0);
   ASSERT_NE(nullptr, node2_accessible);
-  auto text1_accessible = root_accessible->PlatformGetChild(1);
+  BrowserAccessibility* text1_accessible = root_accessible->PlatformGetChild(1);
   ASSERT_NE(nullptr, text1_accessible);
-  auto node3_accessible = root_accessible->PlatformGetChild(2);
+  BrowserAccessibility* node3_accessible = root_accessible->PlatformGetChild(2);
   ASSERT_NE(nullptr, node3_accessible);
   ASSERT_EQ(3U, node3_accessible->PlatformChildCount());
-  auto text2_accessible = node3_accessible->PlatformGetChild(0);
+  BrowserAccessibility* text2_accessible =
+      node3_accessible->PlatformGetChild(0);
   ASSERT_NE(nullptr, text2_accessible);
-  auto node4_accessible = node3_accessible->PlatformGetChild(1);
+  BrowserAccessibility* node4_accessible =
+      node3_accessible->PlatformGetChild(1);
   ASSERT_NE(nullptr, node4_accessible);
-  auto text3_accessible = node3_accessible->PlatformGetChild(2);
+  BrowserAccessibility* text3_accessible =
+      node3_accessible->PlatformGetChild(2);
   ASSERT_NE(nullptr, text3_accessible);
-  auto node5_accessible = root_accessible->PlatformGetChild(3);
+  BrowserAccessibility* node5_accessible = root_accessible->PlatformGetChild(3);
   ASSERT_NE(nullptr, node5_accessible);
   ASSERT_EQ(1U, node5_accessible->PlatformChildCount());
-  auto text4_accessible = node5_accessible->PlatformGetChild(0);
+  BrowserAccessibility* text4_accessible =
+      node5_accessible->PlatformGetChild(0);
   ASSERT_NE(nullptr, text4_accessible);
 
   EXPECT_EQ(nullptr, manager->NextTextOnlyObject(nullptr));
@@ -1090,6 +1095,295 @@ TEST(BrowserAccessibilityManagerTest, TestNextPreviousTextOnlyObject) {
       text1_accessible, manager->PreviousTextOnlyObject(node3_accessible));
   EXPECT_EQ(nullptr, manager->PreviousTextOnlyObject(node2_accessible));
   EXPECT_EQ(nullptr, manager->PreviousTextOnlyObject(root_accessible));
+}
+
+TEST(BrowserAccessibilityManagerTest, TestFindIndicesInCommonParent) {
+  ui::AXNodeData root;
+  root.id = 1;
+  root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+
+  ui::AXNodeData div;
+  div.id = 2;
+  div.role = ui::AX_ROLE_DIV;
+  root.child_ids.push_back(div.id);
+
+  ui::AXNodeData button;
+  button.id = 3;
+  button.role = ui::AX_ROLE_BUTTON;
+  div.child_ids.push_back(button.id);
+
+  ui::AXNodeData button_text;
+  button_text.id = 4;
+  button_text.role = ui::AX_ROLE_STATIC_TEXT;
+  button_text.SetName("Button");
+  button.child_ids.push_back(button_text.id);
+
+  ui::AXNodeData line_break;
+  line_break.id = 5;
+  line_break.role = ui::AX_ROLE_LINE_BREAK;
+  line_break.SetName("\n");
+  div.child_ids.push_back(line_break.id);
+
+  ui::AXNodeData paragraph;
+  paragraph.id = 6;
+  paragraph.role = ui::AX_ROLE_PARAGRAPH;
+  root.child_ids.push_back(paragraph.id);
+
+  ui::AXNodeData paragraph_text;
+  paragraph_text.id = 7;
+  paragraph_text.role = ui::AX_ROLE_STATIC_TEXT;
+  paragraph.child_ids.push_back(paragraph_text.id);
+
+  ui::AXNodeData paragraph_line1;
+  paragraph_line1.id = 8;
+  paragraph_line1.role = ui::AX_ROLE_INLINE_TEXT_BOX;
+  paragraph_line1.SetName("Hello ");
+  paragraph_text.child_ids.push_back(paragraph_line1.id);
+
+  ui::AXNodeData paragraph_line2;
+  paragraph_line2.id = 9;
+  paragraph_line2.role = ui::AX_ROLE_INLINE_TEXT_BOX;
+  paragraph_line2.SetName("world.");
+  paragraph_text.child_ids.push_back(paragraph_line2.id);
+
+  scoped_ptr<BrowserAccessibilityManager> manager(
+      BrowserAccessibilityManager::Create(
+          MakeAXTreeUpdate(root, div, button, button_text, line_break,
+                           paragraph, paragraph_text, paragraph_line1,
+                           paragraph_line2),
+          nullptr, new CountedBrowserAccessibilityFactory()));
+
+  BrowserAccessibility* root_accessible = manager->GetRoot();
+  ASSERT_NE(nullptr, root_accessible);
+  ASSERT_EQ(2U, root_accessible->PlatformChildCount());
+  BrowserAccessibility* div_accessible = root_accessible->PlatformGetChild(0);
+  ASSERT_NE(nullptr, div_accessible);
+  ASSERT_EQ(2U, div_accessible->PlatformChildCount());
+  BrowserAccessibility* button_accessible = div_accessible->PlatformGetChild(0);
+  ASSERT_NE(nullptr, button_accessible);
+  BrowserAccessibility* button_text_accessible =
+      button_accessible->PlatformGetChild(0);
+  ASSERT_NE(nullptr, button_text_accessible);
+  BrowserAccessibility* line_break_accessible =
+      div_accessible->PlatformGetChild(1);
+  ASSERT_NE(nullptr, line_break_accessible);
+  BrowserAccessibility* paragraph_accessible =
+      root_accessible->PlatformGetChild(1);
+  ASSERT_NE(nullptr, paragraph_accessible);
+  BrowserAccessibility* paragraph_text_accessible =
+      paragraph_accessible->PlatformGetChild(0);
+  ASSERT_NE(nullptr, paragraph_text_accessible);
+  ASSERT_EQ(2U, paragraph_text_accessible->InternalChildCount());
+  BrowserAccessibility* paragraph_line1_accessible =
+      paragraph_text_accessible->InternalGetChild(0);
+  ASSERT_NE(nullptr, paragraph_line1_accessible);
+  BrowserAccessibility* paragraph_line2_accessible =
+      paragraph_text_accessible->InternalGetChild(1);
+  ASSERT_NE(nullptr, paragraph_line2_accessible);
+
+  BrowserAccessibility* common_parent = nullptr;
+  int child_index1, child_index2;
+  EXPECT_FALSE(BrowserAccessibilityManager::FindIndicesInCommonParent(
+      *root_accessible, *root_accessible, &common_parent, &child_index1,
+      &child_index2));
+  EXPECT_EQ(nullptr, common_parent);
+  EXPECT_EQ(-1, child_index1);
+  EXPECT_EQ(-1, child_index2);
+
+  EXPECT_TRUE(BrowserAccessibilityManager::FindIndicesInCommonParent(
+      *div_accessible, *paragraph_accessible, &common_parent, &child_index1,
+      &child_index2));
+  EXPECT_EQ(root_accessible, common_parent);
+  EXPECT_EQ(0, child_index1);
+  EXPECT_EQ(1, child_index2);
+
+  EXPECT_TRUE(BrowserAccessibilityManager::FindIndicesInCommonParent(
+      *div_accessible, *paragraph_line1_accessible, &common_parent,
+      &child_index1, &child_index2));
+  EXPECT_EQ(root_accessible, common_parent);
+  EXPECT_EQ(0, child_index1);
+  EXPECT_EQ(1, child_index2);
+
+  EXPECT_TRUE(BrowserAccessibilityManager::FindIndicesInCommonParent(
+      *line_break_accessible, *paragraph_text_accessible, &common_parent,
+      &child_index1, &child_index2));
+  EXPECT_EQ(root_accessible, common_parent);
+  EXPECT_EQ(0, child_index1);
+  EXPECT_EQ(1, child_index2);
+
+  EXPECT_TRUE(BrowserAccessibilityManager::FindIndicesInCommonParent(
+      *button_text_accessible, *line_break_accessible, &common_parent,
+      &child_index1, &child_index2));
+  EXPECT_EQ(div_accessible, common_parent);
+  EXPECT_EQ(0, child_index1);
+  EXPECT_EQ(1, child_index2);
+
+  EXPECT_TRUE(BrowserAccessibilityManager::FindIndicesInCommonParent(
+      *paragraph_accessible, *paragraph_line2_accessible, &common_parent,
+      &child_index1, &child_index2));
+  EXPECT_EQ(root_accessible, common_parent);
+  EXPECT_EQ(1, child_index1);
+  EXPECT_EQ(1, child_index2);
+
+  EXPECT_TRUE(BrowserAccessibilityManager::FindIndicesInCommonParent(
+      *paragraph_text_accessible, *paragraph_line1_accessible, &common_parent,
+      &child_index1, &child_index2));
+  EXPECT_EQ(paragraph_accessible, common_parent);
+  EXPECT_EQ(0, child_index1);
+  EXPECT_EQ(0, child_index2);
+
+  EXPECT_TRUE(BrowserAccessibilityManager::FindIndicesInCommonParent(
+      *paragraph_line1_accessible, *paragraph_line2_accessible, &common_parent,
+      &child_index1, &child_index2));
+  EXPECT_EQ(paragraph_text_accessible, common_parent);
+  EXPECT_EQ(0, child_index1);
+  EXPECT_EQ(1, child_index2);
+}
+
+TEST(BrowserAccessibilityManagerTest, TestGetTextForRange) {
+  ui::AXNodeData root;
+  root.id = 1;
+  root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+
+  ui::AXNodeData div;
+  div.id = 2;
+  div.role = ui::AX_ROLE_DIV;
+  root.child_ids.push_back(div.id);
+
+  ui::AXNodeData button;
+  button.id = 3;
+  button.role = ui::AX_ROLE_BUTTON;
+  div.child_ids.push_back(button.id);
+
+  ui::AXNodeData button_text;
+  button_text.id = 4;
+  button_text.role = ui::AX_ROLE_STATIC_TEXT;
+  button_text.SetName("Button");
+  button.child_ids.push_back(button_text.id);
+
+  ui::AXNodeData line_break;
+  line_break.id = 5;
+  line_break.role = ui::AX_ROLE_LINE_BREAK;
+  line_break.SetName("\n");
+  div.child_ids.push_back(line_break.id);
+
+  ui::AXNodeData paragraph;
+  paragraph.id = 6;
+  paragraph.role = ui::AX_ROLE_PARAGRAPH;
+  root.child_ids.push_back(paragraph.id);
+
+  ui::AXNodeData paragraph_text;
+  paragraph_text.id = 7;
+  paragraph_text.role = ui::AX_ROLE_STATIC_TEXT;
+  paragraph_text.SetName("Hello world.");
+  paragraph.child_ids.push_back(paragraph_text.id);
+
+  ui::AXNodeData paragraph_line1;
+  paragraph_line1.id = 8;
+  paragraph_line1.role = ui::AX_ROLE_INLINE_TEXT_BOX;
+  paragraph_line1.SetName("Hello ");
+  paragraph_text.child_ids.push_back(paragraph_line1.id);
+
+  ui::AXNodeData paragraph_line2;
+  paragraph_line2.id = 9;
+  paragraph_line2.role = ui::AX_ROLE_INLINE_TEXT_BOX;
+  paragraph_line2.SetName("world.");
+  paragraph_text.child_ids.push_back(paragraph_line2.id);
+
+  scoped_ptr<BrowserAccessibilityManager> manager(
+      BrowserAccessibilityManager::Create(
+          MakeAXTreeUpdate(root, div, button, button_text, line_break,
+                           paragraph, paragraph_text, paragraph_line1,
+                           paragraph_line2),
+          nullptr, new CountedBrowserAccessibilityFactory()));
+
+  BrowserAccessibility* root_accessible = manager->GetRoot();
+  ASSERT_NE(nullptr, root_accessible);
+  ASSERT_EQ(2U, root_accessible->PlatformChildCount());
+  BrowserAccessibility* div_accessible = root_accessible->PlatformGetChild(0);
+  ASSERT_NE(nullptr, div_accessible);
+  ASSERT_EQ(2U, div_accessible->PlatformChildCount());
+  BrowserAccessibility* button_accessible = div_accessible->PlatformGetChild(0);
+  ASSERT_NE(nullptr, button_accessible);
+  BrowserAccessibility* button_text_accessible =
+      button_accessible->PlatformGetChild(0);
+  ASSERT_NE(nullptr, button_text_accessible);
+  BrowserAccessibility* line_break_accessible =
+      div_accessible->PlatformGetChild(1);
+  ASSERT_NE(nullptr, line_break_accessible);
+  BrowserAccessibility* paragraph_accessible =
+      root_accessible->PlatformGetChild(1);
+  ASSERT_NE(nullptr, paragraph_accessible);
+  BrowserAccessibility* paragraph_text_accessible =
+      paragraph_accessible->PlatformGetChild(0);
+  ASSERT_NE(nullptr, paragraph_text_accessible);
+  ASSERT_EQ(2U, paragraph_text_accessible->InternalChildCount());
+  BrowserAccessibility* paragraph_line1_accessible =
+      paragraph_text_accessible->InternalGetChild(0);
+  ASSERT_NE(nullptr, paragraph_line1_accessible);
+  BrowserAccessibility* paragraph_line2_accessible =
+      paragraph_text_accessible->InternalGetChild(1);
+  ASSERT_NE(nullptr, paragraph_line2_accessible);
+
+  EXPECT_EQ(base::ASCIIToUTF16("Button\nHello world."),
+            BrowserAccessibilityManager::GetTextForRange(*root_accessible, 0,
+                                                         *root_accessible, 19));
+  EXPECT_EQ(base::ASCIIToUTF16("ton\nHello world."),
+            BrowserAccessibilityManager::GetTextForRange(*root_accessible, 3,
+                                                         *root_accessible, 19));
+  EXPECT_EQ(base::ASCIIToUTF16("Button\nHello world."),
+            BrowserAccessibilityManager::GetTextForRange(
+                *div_accessible, 0, *paragraph_accessible, 12));
+  EXPECT_EQ(base::ASCIIToUTF16("ton\nHello world."),
+            BrowserAccessibilityManager::GetTextForRange(
+                *div_accessible, 3, *paragraph_accessible, 12));
+
+  EXPECT_EQ(base::ASCIIToUTF16("Button\n"),
+            BrowserAccessibilityManager::GetTextForRange(*div_accessible, 0,
+                                                         *div_accessible, 1));
+  EXPECT_EQ(base::ASCIIToUTF16("Button\n"),
+            BrowserAccessibilityManager::GetTextForRange(
+                *button_accessible, 0, *line_break_accessible, 1));
+
+  EXPECT_EQ(base::ASCIIToUTF16("Hello world."),
+            BrowserAccessibilityManager::GetTextForRange(
+                *paragraph_accessible, 0, *paragraph_accessible, 12));
+  EXPECT_EQ(base::ASCIIToUTF16("Hello wor"),
+            BrowserAccessibilityManager::GetTextForRange(
+                *paragraph_accessible, 0, *paragraph_accessible, 9));
+  EXPECT_EQ(base::ASCIIToUTF16("Hello world."),
+            BrowserAccessibilityManager::GetTextForRange(
+                *paragraph_text_accessible, 0, *paragraph_text_accessible, 12));
+  EXPECT_EQ(base::ASCIIToUTF16(" world."),
+            BrowserAccessibilityManager::GetTextForRange(
+                *paragraph_text_accessible, 5, *paragraph_text_accessible, 12));
+  EXPECT_EQ(base::ASCIIToUTF16("Hello world."),
+            BrowserAccessibilityManager::GetTextForRange(
+                *paragraph_accessible, 0, *paragraph_text_accessible, 12));
+  EXPECT_EQ(
+      base::ASCIIToUTF16("Hello "),
+      BrowserAccessibilityManager::GetTextForRange(
+          *paragraph_line1_accessible, 0, *paragraph_line1_accessible, 6));
+  EXPECT_EQ(
+      base::ASCIIToUTF16("Hello"),
+      BrowserAccessibilityManager::GetTextForRange(
+          *paragraph_line1_accessible, 0, *paragraph_line1_accessible, 5));
+  EXPECT_EQ(
+      base::ASCIIToUTF16("ello "),
+      BrowserAccessibilityManager::GetTextForRange(
+          *paragraph_line1_accessible, 1, *paragraph_line1_accessible, 6));
+  EXPECT_EQ(
+      base::ASCIIToUTF16("world."),
+      BrowserAccessibilityManager::GetTextForRange(
+          *paragraph_line2_accessible, 0, *paragraph_line2_accessible, 6));
+  EXPECT_EQ(
+      base::ASCIIToUTF16("orld"),
+      BrowserAccessibilityManager::GetTextForRange(
+          *paragraph_line2_accessible, 1, *paragraph_line2_accessible, 5));
+  EXPECT_EQ(
+      base::ASCIIToUTF16("Hello world."),
+      BrowserAccessibilityManager::GetTextForRange(
+          *paragraph_line1_accessible, 0, *paragraph_line2_accessible, 6));
 }
 
 TEST(BrowserAccessibilityManagerTest, DeletingFocusedNodeDoesNotCrash) {

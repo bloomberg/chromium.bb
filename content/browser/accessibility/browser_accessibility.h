@@ -116,6 +116,10 @@ class CONTENT_EXPORT BrowserAccessibility {
   // platform.
   bool PlatformIsChildOfLeaf() const;
 
+  // If this object is exposed to the platform, returns this object. Otherwise,
+  // returns the platform leaf under which this object is found.
+  BrowserAccessibility* GetClosestPlatformObject() const;
+
   BrowserAccessibility* GetPreviousSibling() const;
   BrowserAccessibility* GetNextSibling() const;
 
@@ -123,6 +127,11 @@ class CONTENT_EXPORT BrowserAccessibility {
   BrowserAccessibility* PlatformDeepestFirstChild() const;
   // Returns nullptr if there are no children.
   BrowserAccessibility* PlatformDeepestLastChild() const;
+
+  // Returns nullptr if there are no children.
+  BrowserAccessibility* InternalDeepestFirstChild() const;
+  // Returns nullptr if there are no children.
+  BrowserAccessibility* InternalDeepestLastChild() const;
 
   // Returns the bounds of this object in coordinates relative to the
   // top-left corner of the overall web area.
