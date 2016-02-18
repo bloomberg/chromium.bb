@@ -8,7 +8,7 @@ import sys
 import unittest
 
 _SRC_DIR = os.path.abspath(os.path.join(
-    os.path.dirname(__file__), '..', '..', '..'))
+    os.path.dirname(__file__), '..', '..', '..', '..'))
 sys.path.append(os.path.join(_SRC_DIR, 'tools', 'android', 'loading'))
 
 import options
@@ -48,3 +48,7 @@ class TracingTrackTestCase(unittest.TestCase):
 
       sock.close()
       self.assertTrue(server.Stop())
+
+
+if __name__ == '__main__':
+  unittest.main()
