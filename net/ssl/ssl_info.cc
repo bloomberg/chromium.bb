@@ -6,6 +6,7 @@
 
 #include "base/pickle.h"
 #include "net/cert/cert_status_flags.h"
+#include "net/cert/ct_policy_status.h"
 #include "net/cert/signed_certificate_timestamp.h"
 #include "net/cert/x509_certificate.h"
 
@@ -36,8 +37,10 @@ SSLInfo& SSLInfo::operator=(const SSLInfo& info) {
   token_binding_key_param = info.token_binding_key_param;
   handshake_type = info.handshake_type;
   public_key_hashes = info.public_key_hashes;
-  signed_certificate_timestamps = info.signed_certificate_timestamps;
   pinning_failure_log = info.pinning_failure_log;
+  signed_certificate_timestamps = info.signed_certificate_timestamps;
+  ct_compliance_details_available = info.ct_compliance_details_available;
+  ct_ev_policy_compliance = info.ct_ev_policy_compliance;
 
   return *this;
 }
@@ -56,15 +59,17 @@ void SSLInfo::Reset() {
   token_binding_key_param = TB_PARAM_ECDSAP256;
   handshake_type = HANDSHAKE_UNKNOWN;
   public_key_hashes.clear();
-  signed_certificate_timestamps.clear();
   pinning_failure_log.clear();
+  signed_certificate_timestamps.clear();
+  ct_compliance_details_available = false;
+  ct_ev_policy_compliance = ct::EVPolicyCompliance::EV_POLICY_DOES_NOT_APPLY;
 }
 
 void SSLInfo::SetCertError(int error) {
   cert_status |= MapNetErrorToCertStatus(error);
 }
 
-void SSLInfo::UpdateSignedCertificateTimestamps(
+void SSLInfo::UpdateCertificateTransparencyInfo(
     const ct::CTVerifyResult& ct_verify_result) {
   for (const auto& sct : ct_verify_result.verified_scts) {
     signed_certificate_timestamps.push_back(
@@ -78,6 +83,9 @@ void SSLInfo::UpdateSignedCertificateTimestamps(
     signed_certificate_timestamps.push_back(
         SignedCertificateTimestampAndStatus(sct, ct::SCT_STATUS_LOG_UNKNOWN));
   }
+
+  ct_compliance_details_available = ct_verify_result.ct_policies_applied;
+  ct_ev_policy_compliance = ct_verify_result.ev_policy_compliance;
 }
 
 }  // namespace net

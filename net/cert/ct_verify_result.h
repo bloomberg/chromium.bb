@@ -7,17 +7,20 @@
 
 #include <vector>
 
+#include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/signed_certificate_timestamp.h"
 
 namespace net {
 
 namespace ct {
 
+enum class EVPolicyCompliance;
+
 typedef std::vector<scoped_refptr<SignedCertificateTimestamp> > SCTList;
 
-// Holds Signed Certificate Timestamps, depending on their verification results.
-// More information could be tracked here about SCTs, but for the current UI
-// this categorization is enough.
+// Holds Signed Certificate Timestamps, depending on their verification
+// results, and information about CT policies that were applied on the
+// connection.
 struct NET_EXPORT CTVerifyResult {
   CTVerifyResult();
   ~CTVerifyResult();
@@ -28,6 +31,12 @@ struct NET_EXPORT CTVerifyResult {
   SCTList invalid_scts;
   // SCTs from unknown logs and as such are unverifiable.
   SCTList unknown_logs_scts;
+
+  // True if any CT policies were applied on this connection.
+  bool ct_policies_applied;
+  // The result of evaluating whether the connection complies with the
+  // EV CT policy.
+  EVPolicyCompliance ev_policy_compliance;
 };
 
 }  // namespace ct

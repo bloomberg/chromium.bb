@@ -18,6 +18,12 @@
 
 namespace net {
 
+namespace ct {
+
+enum class EVPolicyCompliance;
+
+}  // namespace ct
+
 class X509Certificate;
 
 // SSL connection info.
@@ -44,12 +50,14 @@ class NET_EXPORT SSLInfo {
   // Adds the specified |error| to the cert status.
   void SetCertError(int error);
 
-  // Adds the SignedCertificateTimestamps from ct_verify_result to
-  // |signed_certificate_timestamps|.  SCTs are held in three separate vectors
-  // in ct_verify_result, each vetor representing a particular verification
-  // state, this method associates each of the SCTs with the corresponding
-  // SCTVerifyStatus as it adds it to the |signed_certificate_timestamps| list.
-  void UpdateSignedCertificateTimestamps(
+  // Adds the SignedCertificateTimestamps and policy compliance details
+  // from ct_verify_result to |signed_certificate_timestamps| and
+  // |ct_policy_compliance_details|. SCTs are held in three separate
+  // vectors in ct_verify_result, each vetor representing a particular
+  // verification state, this method associates each of the SCTs with
+  // the corresponding SCTVerifyStatus as it adds it to the
+  // |signed_certificate_timestamps| list.
+  void UpdateCertificateTransparencyInfo(
       const ct::CTVerifyResult& ct_verify_result);
 
   // The SSL certificate.
@@ -115,6 +123,18 @@ class NET_EXPORT SSLInfo {
   // List of SignedCertificateTimestamps and their corresponding validation
   // status.
   SignedCertificateTimestampAndStatusList signed_certificate_timestamps;
+
+  // True if Certificate Transparency policies were applied on this
+  // connection and results are available. If true, the field below
+  // (|ev_policy_compliance|) will contain information about whether
+  // the connection complied with the policy and why the connection
+  // was considered non-compliant, if applicable.
+  bool ct_compliance_details_available;
+
+  // Whether the connection complied with the CT EV policy, and if not,
+  // why not. Only meaningful if |ct_compliance_details_available| is
+  // true.
+  ct::EVPolicyCompliance ct_ev_policy_compliance;
 };
 
 }  // namespace net

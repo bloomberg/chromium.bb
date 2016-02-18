@@ -12,6 +12,7 @@
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_log_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
+#include "net/cert/ct_policy_status.h"
 #include "net/cert/ct_serialization.h"
 #include "net/cert/ct_verify_result.h"
 #include "net/cert/mock_cert_verifier.h"
@@ -56,13 +57,14 @@ class FailsTestCTPolicyEnforcer : public CTPolicyEnforcer {
   FailsTestCTPolicyEnforcer() {}
   ~FailsTestCTPolicyEnforcer() override {}
 
-  bool DoesConformToCTEVPolicy(X509Certificate* cert,
-                               const ct::EVCertsWhitelist* ev_whitelist,
-                               const ct::CTVerifyResult& ct_result,
-                               const BoundNetLog& net_log) override {
+  ct::EVPolicyCompliance DoesConformToCTEVPolicy(
+      X509Certificate* cert,
+      const ct::EVCertsWhitelist* ev_whitelist,
+      const ct::SCTList& verified_scts,
+      const BoundNetLog& net_log) override {
     ADD_FAILURE() << "CTPolicyEnforcer::DoesConformToCTEVPolicy() should "
                   << "not be called";
-    return false;
+    return ct::EVPolicyCompliance::EV_POLICY_DOES_NOT_APPLY;
   }
 };
 
@@ -73,11 +75,13 @@ class MockCTPolicyEnforcer : public CTPolicyEnforcer {
   MockCTPolicyEnforcer(bool is_ev) : is_ev_(is_ev) {}
   ~MockCTPolicyEnforcer() override {}
 
-  bool DoesConformToCTEVPolicy(X509Certificate* cert,
-                               const ct::EVCertsWhitelist* ev_whitelist,
-                               const ct::CTVerifyResult& ct_result,
-                               const BoundNetLog& net_log) override {
-    return is_ev_;
+  ct::EVPolicyCompliance DoesConformToCTEVPolicy(
+      X509Certificate* cert,
+      const ct::EVCertsWhitelist* ev_whitelist,
+      const ct::SCTList& verified_scts,
+      const BoundNetLog& net_log) override {
+    return is_ev_ ? ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_SCTS
+                  : ct::EVPolicyCompliance::EV_POLICY_NOT_ENOUGH_SCTS;
   }
 
  private:

@@ -88,6 +88,7 @@
       'cert/ct_known_logs_static.h',
       'cert/ct_policy_enforcer.cc',
       'cert/ct_policy_enforcer.h',
+      'cert/ct_policy_status.h',
       'cert/ct_verifier.h',
       'cert/ct_verify_result.cc',
       'cert/ct_verify_result.h',

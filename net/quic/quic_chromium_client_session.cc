@@ -510,7 +510,7 @@ bool QuicChromiumClientSession::GetSSLInfo(SSLInfo* ssl_info) const {
   ssl_info->handshake_type = SSLInfo::HANDSHAKE_FULL;
   ssl_info->pinning_failure_log = pinning_failure_log_;
 
-  ssl_info->UpdateSignedCertificateTimestamps(*ct_verify_result_);
+  ssl_info->UpdateCertificateTransparencyInfo(*ct_verify_result_);
 
   return true;
 }

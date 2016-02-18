@@ -22,6 +22,7 @@
 #include "net/base/test_data_directory.h"
 #include "net/cert/asn1_util.h"
 #include "net/cert/ct_policy_enforcer.h"
+#include "net/cert/ct_policy_status.h"
 #include "net/cert/ct_verifier.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/test_root_certs.h"
@@ -699,10 +700,10 @@ class MockCTVerifier : public CTVerifier {
 class MockCTPolicyEnforcer : public CTPolicyEnforcer {
  public:
   MOCK_METHOD4(DoesConformToCTEVPolicy,
-               bool(X509Certificate* cert,
-                    const ct::EVCertsWhitelist*,
-                    const ct::CTVerifyResult&,
-                    const BoundNetLog&));
+               ct::EVPolicyCompliance(X509Certificate* cert,
+                                      const ct::EVCertsWhitelist*,
+                                      const ct::SCTList&,
+                                      const BoundNetLog&));
 };
 
 class SSLClientSocketTest : public PlatformTest {
@@ -2349,7 +2350,8 @@ TEST_F(SSLClientSocketTest, EVCertStatusMaintainedForCompliantCert) {
   MockCTPolicyEnforcer policy_enforcer;
   SetCTPolicyEnforcer(&policy_enforcer);
   EXPECT_CALL(policy_enforcer, DoesConformToCTEVPolicy(_, _, _, _))
-      .WillRepeatedly(Return(true));
+      .WillRepeatedly(
+          Return(ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_SCTS));
 
   int rv;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
@@ -2381,7 +2383,8 @@ TEST_F(SSLClientSocketTest, EVCertStatusRemovedForNonCompliantCert) {
   MockCTPolicyEnforcer policy_enforcer;
   SetCTPolicyEnforcer(&policy_enforcer);
   EXPECT_CALL(policy_enforcer, DoesConformToCTEVPolicy(_, _, _, _))
-      .WillRepeatedly(Return(false));
+      .WillRepeatedly(
+          Return(ct::EVPolicyCompliance::EV_POLICY_NOT_ENOUGH_SCTS));
 
   int rv;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));

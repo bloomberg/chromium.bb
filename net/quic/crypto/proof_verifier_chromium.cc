@@ -23,6 +23,7 @@
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/ct_policy_enforcer.h"
+#include "net/cert/ct_policy_status.h"
 #include "net/cert/ct_verifier.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
@@ -284,12 +285,25 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
   const CertVerifyResult& cert_verify_result =
       verify_details_->cert_verify_result;
   const CertStatus cert_status = cert_verify_result.cert_status;
+  verify_details_->ct_verify_result.ct_policies_applied =
+      (result == OK && policy_enforcer_ != nullptr);
+  verify_details_->ct_verify_result.ev_policy_compliance =
+      ct::EVPolicyCompliance::EV_POLICY_DOES_NOT_APPLY;
   if (result == OK && policy_enforcer_ &&
       (cert_verify_result.cert_status & CERT_STATUS_IS_EV)) {
-    if (!policy_enforcer_->DoesConformToCTEVPolicy(
+    ct::EVPolicyCompliance ev_policy_compliance =
+        policy_enforcer_->DoesConformToCTEVPolicy(
             cert_verify_result.verified_cert.get(),
             SSLConfigService::GetEVCertsWhitelist().get(),
-            verify_details_->ct_verify_result, net_log_)) {
+            verify_details_->ct_verify_result.verified_scts, net_log_);
+    verify_details_->ct_verify_result.ev_policy_compliance =
+        ev_policy_compliance;
+    if (ev_policy_compliance !=
+            ct::EVPolicyCompliance::EV_POLICY_DOES_NOT_APPLY &&
+        ev_policy_compliance !=
+            ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_WHITELIST &&
+        ev_policy_compliance !=
+            ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_SCTS) {
       verify_details_->cert_verify_result.cert_status |=
           CERT_STATUS_CT_COMPLIANCE_FAILED;
       verify_details_->cert_verify_result.cert_status &= ~CERT_STATUS_IS_EV;

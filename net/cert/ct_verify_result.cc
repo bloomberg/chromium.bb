@@ -4,11 +4,15 @@
 
 #include "net/cert/ct_verify_result.h"
 
+#include "net/cert/ct_policy_status.h"
+
 namespace net {
 
 namespace ct {
 
-CTVerifyResult::CTVerifyResult() {}
+CTVerifyResult::CTVerifyResult()
+    : ct_policies_applied(false),
+      ev_policy_compliance(ct::EVPolicyCompliance::EV_POLICY_DOES_NOT_APPLY) {}
 
 CTVerifyResult::~CTVerifyResult() {}
 

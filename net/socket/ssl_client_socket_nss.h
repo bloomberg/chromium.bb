@@ -146,7 +146,7 @@ class SSLClientSocketNSS : public SSLClientSocket {
   // vetor representing a particular verification state, this method associates
   // each of the SCTs with the corresponding SCTVerifyStatus as it adds it to
   // the |ssl_info|.signed_certificate_timestamps list.
-  void AddSCTInfoToSSLInfo(SSLInfo* ssl_info) const;
+  void AddCTInfoToSSLInfo(SSLInfo* ssl_info) const;
 
   // Move last protocol to first place: SSLConfig::next_protos has protocols in
   // decreasing order of preference with NPN fallback protocol at the end, but

@@ -19,6 +19,7 @@
 #include "base/version.h"
 #include "net/cert/ct_ev_whitelist.h"
 #include "net/cert/ct_known_logs.h"
+#include "net/cert/ct_policy_status.h"
 #include "net/cert/ct_verify_result.h"
 #include "net/cert/signed_certificate_timestamp.h"
 #include "net/cert/x509_certificate.h"
@@ -78,11 +79,10 @@ void RoundedDownMonthDifference(const base::Time& start,
 }
 
 bool HasRequiredNumberOfSCTs(const X509Certificate& cert,
-                             const ct::CTVerifyResult& ct_result) {
-  size_t num_valid_scts = ct_result.verified_scts.size();
+                             const ct::SCTList& verified_scts) {
+  size_t num_valid_scts = verified_scts.size();
   size_t num_embedded_scts = base::checked_cast<size_t>(
-      std::count_if(ct_result.verified_scts.begin(),
-                    ct_result.verified_scts.end(), IsEmbeddedSCT));
+      std::count_if(verified_scts.begin(), verified_scts.end(), IsEmbeddedSCT));
 
   size_t num_non_embedded_scts = num_valid_scts - num_embedded_scts;
   // If at least two valid SCTs were delivered by means other than embedding
@@ -166,8 +166,8 @@ enum EVWhitelistStatus {
   EV_WHITELIST_MAX,
 };
 
-void LogCTComplianceStatusToUMA(CTComplianceStatus status,
-                                const ct::EVCertsWhitelist* ev_whitelist) {
+void LogCTEVComplianceStatusToUMA(CTComplianceStatus status,
+                                  const ct::EVCertsWhitelist* ev_whitelist) {
   UMA_HISTOGRAM_ENUMERATION("Net.SSL_EVCertificateCTCompliance", status,
                             CT_COMPLIANCE_MAX);
   if (status == CT_NOT_COMPLIANT) {
@@ -185,18 +185,11 @@ void LogCTComplianceStatusToUMA(CTComplianceStatus status,
 }
 
 struct ComplianceDetails {
-  ComplianceDetails()
-      : ct_presence_required(false),
-        build_timely(false),
-        status(CT_NOT_COMPLIANT) {}
+  ComplianceDetails() : build_timely(false), status(CT_NOT_COMPLIANT) {}
 
-  // Whether enforcement of the policy was required or not.
-  bool ct_presence_required;
-  // Whether the build is not older than 10 weeks. The value is meaningful only
-  // if |ct_presence_required| is true.
+  // Whether the build is not older than 10 weeks.
   bool build_timely;
-  // Compliance status - meaningful only if |ct_presence_required| and
-  // |build_timely| are true.
+  // Compliance status - meaningful only if |build_timely| is true.
   CTComplianceStatus status;
   // EV whitelist version.
   base::Version whitelist_version;
@@ -208,17 +201,14 @@ scoped_ptr<base::Value> NetLogComplianceCheckResultCallback(
     NetLogCaptureMode capture_mode) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->Set("certificate", NetLogX509CertificateCallback(cert, capture_mode));
-  dict->SetBoolean("policy_enforcement_required",
-                   details->ct_presence_required);
-  if (details->ct_presence_required) {
-    dict->SetBoolean("build_timely", details->build_timely);
-    if (details->build_timely) {
-      dict->SetString("ct_compliance_status",
-                      ComplianceStatusToString(details->status));
-      if (details->whitelist_version.IsValid())
-        dict->SetString("ev_whitelist_version",
-                        details->whitelist_version.GetString());
-    }
+  dict->SetBoolean("policy_enforcement_required", true);
+  dict->SetBoolean("build_timely", details->build_timely);
+  if (details->build_timely) {
+    dict->SetString("ct_compliance_status",
+                    ComplianceStatusToString(details->status));
+    if (details->whitelist_version.IsValid())
+      dict->SetString("ev_whitelist_version",
+                      details->whitelist_version.GetString());
   }
   return std::move(dict);
 }
@@ -259,10 +249,8 @@ bool IsCertificateInWhitelist(const X509Certificate& cert,
 
 void CheckCTEVPolicyCompliance(X509Certificate* cert,
                                const ct::EVCertsWhitelist* ev_whitelist,
-                               const ct::CTVerifyResult& ct_result,
+                               const ct::SCTList& verified_scts,
                                ComplianceDetails* result) {
-  result->ct_presence_required = true;
-
   if (!IsBuildTimely())
     return;
   result->build_timely = true;
@@ -275,14 +263,13 @@ void CheckCTEVPolicyCompliance(X509Certificate* cert,
     return;
   }
 
-  if (!HasRequiredNumberOfSCTs(*cert, ct_result)) {
+  if (!HasRequiredNumberOfSCTs(*cert, verified_scts)) {
     result->status = CT_NOT_COMPLIANT;
     return;
   }
 
-  if (AllSCTsPastDistinctSCTRequirementEnforcementDate(
-          ct_result.verified_scts) &&
-      !HasEnoughDiverseSCTs(ct_result.verified_scts)) {
+  if (AllSCTsPastDistinctSCTRequirementEnforcementDate(verified_scts) &&
+      !HasEnoughDiverseSCTs(verified_scts)) {
     result->status = CT_NOT_ENOUGH_DIVERSE_SCTS;
     return;
   }
@@ -292,14 +279,14 @@ void CheckCTEVPolicyCompliance(X509Certificate* cert,
 
 }  // namespace
 
-bool CTPolicyEnforcer::DoesConformToCTEVPolicy(
+ct::EVPolicyCompliance CTPolicyEnforcer::DoesConformToCTEVPolicy(
     X509Certificate* cert,
     const ct::EVCertsWhitelist* ev_whitelist,
-    const ct::CTVerifyResult& ct_result,
+    const ct::SCTList& verified_scts,
     const BoundNetLog& net_log) {
   ComplianceDetails details;
 
-  CheckCTEVPolicyCompliance(cert, ev_whitelist, ct_result, &details);
+  CheckCTEVPolicyCompliance(cert, ev_whitelist, verified_scts, &details);
 
   NetLog::ParametersCallback net_log_callback =
       base::Bind(&NetLogComplianceCheckResultCallback, base::Unretained(cert),
@@ -308,18 +295,25 @@ bool CTPolicyEnforcer::DoesConformToCTEVPolicy(
   net_log.AddEvent(NetLog::TYPE_EV_CERT_CT_COMPLIANCE_CHECKED,
                    net_log_callback);
 
-  if (!details.ct_presence_required)
-    return true;
-
   if (!details.build_timely)
-    return false;
+    return ct::EVPolicyCompliance::EV_POLICY_BUILD_NOT_TIMELY;
 
-  LogCTComplianceStatusToUMA(details.status, ev_whitelist);
+  LogCTEVComplianceStatusToUMA(details.status, ev_whitelist);
 
-  if (details.status == CT_IN_WHITELIST || details.status == CT_ENOUGH_SCTS)
-    return true;
+  switch (details.status) {
+    case CT_NOT_COMPLIANT:
+      return ct::EVPolicyCompliance::EV_POLICY_NOT_ENOUGH_SCTS;
+    case CT_IN_WHITELIST:
+      return ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_WHITELIST;
+    case CT_ENOUGH_SCTS:
+      return ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_SCTS;
+    case CT_NOT_ENOUGH_DIVERSE_SCTS:
+      return ct::EVPolicyCompliance::EV_POLICY_NOT_DIVERSE_SCTS;
+    case CT_COMPLIANCE_MAX:
+      return ct::EVPolicyCompliance::EV_POLICY_DOES_NOT_APPLY;
+  }
 
-  return false;
+  return ct::EVPolicyCompliance::EV_POLICY_DOES_NOT_APPLY;
 }
 
 }  // namespace net

@@ -197,12 +197,13 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   // Called from the SSL layer whenever a new session is established.
   int NewSessionCallback(SSL_SESSION* session);
 
-  // Adds the SignedCertificateTimestamps from ct_verify_result_ to |ssl_info|.
+  // Adds the Certificate Transparency info from ct_verify_result_ to
+  // |ssl_info|.
   // SCTs are held in three separate vectors in ct_verify_result, each
   // vetor representing a particular verification state, this method associates
   // each of the SCTs with the corresponding SCTVerifyStatus as it adds it to
   // the |ssl_info|.signed_certificate_timestamps list.
-  void AddSCTInfoToSSLInfo(SSLInfo* ssl_info) const;
+  void AddCTInfoToSSLInfo(SSLInfo* ssl_info) const;
 
   // Returns a unique key string for the SSL session cache for
   // this socket.
