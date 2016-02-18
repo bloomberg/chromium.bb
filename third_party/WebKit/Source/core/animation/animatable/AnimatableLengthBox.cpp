@@ -42,6 +42,15 @@ PassRefPtr<AnimatableValue> AnimatableLengthBox::interpolateTo(const AnimatableV
         AnimatableValue::interpolate(this->bottom(), lengthBox->bottom(), fraction));
 }
 
+bool AnimatableLengthBox::usesDefaultInterpolationWith(const AnimatableValue* other) const
+{
+    const AnimatableLengthBox& otherBox = toAnimatableLengthBox(*other);
+    return usesDefaultInterpolation(left(), otherBox.left())
+        || usesDefaultInterpolation(right(), otherBox.right())
+        || usesDefaultInterpolation(top(), otherBox.top())
+        || usesDefaultInterpolation(bottom(), otherBox.bottom());
+}
+
 bool AnimatableLengthBox::equalTo(const AnimatableValue* value) const
 {
     const AnimatableLengthBox* lengthBox = toAnimatableLengthBox(value);

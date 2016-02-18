@@ -848,6 +848,8 @@
             'animation/AnimationStack.h',
             'animation/AnimationTimeline.cpp',
             'animation/AnimationTimeline.h',
+            'animation/CSSClipInterpolationType.cpp',
+            'animation/CSSClipInterpolationType.h',
             'animation/CSSColorInterpolationType.cpp',
             'animation/CSSColorInterpolationType.h',
             'animation/CSSFontWeightInterpolationType.cpp',
