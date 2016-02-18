@@ -1409,3 +1409,5 @@ crbug.com/583675 fast/dom/shadow/scoped-events-by-ua-stopped.html [ Failure ]
 crbug.com/585724 fast/js/JSON-parse.html [ NeedsManualRebaseline ]
 
 crbug.com/587593 [ Android ] fast/js/pic/cached-single-entry-transition.html [ Pass Failure ]
+
+crbug.com/587950 [ Mac Win ] virtual/threaded/animations/background-shorthand-crash.html [ Failure ]
