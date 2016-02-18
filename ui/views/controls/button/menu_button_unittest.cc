@@ -30,6 +30,7 @@ class MenuButtonTest : public ViewsTestBase {
   ~MenuButtonTest() override {}
 
   void TearDown() override {
+    generator_.reset();
     if (widget_ && !widget_->IsClosed())
       widget_->Close();
 
@@ -38,6 +39,7 @@ class MenuButtonTest : public ViewsTestBase {
 
   Widget* widget() { return widget_; }
   MenuButton* button() { return button_; }
+  ui::test::EventGenerator* generator() { return generator_.get(); }
 
  protected:
   // Creates a MenuButton with no button listener.
@@ -54,6 +56,11 @@ class MenuButtonTest : public ViewsTestBase {
  private:
   void CreateMenuButton(MenuButtonListener* menu_button_listener) {
     CreateWidget();
+    generator_.reset(new ui::test::EventGenerator(GetContext(),
+        widget_->GetNativeWindow()));
+    // Set initial mouse location in a consistent way so that the menu button we
+    // are about to create initializes its hover state in a consistent manner.
+    generator_->set_current_location(gfx::Point(10, 10));
 
     const base::string16 label(ASCIIToUTF16("button"));
     button_ = new MenuButton(label, menu_button_listener, false);
@@ -75,6 +82,9 @@ class MenuButtonTest : public ViewsTestBase {
 
   Widget* widget_;
   MenuButton* button_;
+  scoped_ptr<ui::test::EventGenerator> generator_;
+
+  DISALLOW_COPY_AND_ASSIGN(MenuButtonTest);
 };
 
 class TestButtonListener : public ButtonListener {
@@ -270,10 +280,7 @@ TEST_F(MenuButtonTest, ActivateDropDownOnMouseClick) {
   TestMenuButtonListener menu_button_listener;
   CreateMenuButtonWithMenuButtonListener(&menu_button_listener);
 
-  ui::test::EventGenerator generator(GetContext(), widget()->GetNativeWindow());
-
-  generator.set_current_location(gfx::Point(10, 10));
-  generator.ClickLeftButton();
+  generator()->ClickLeftButton();
 
   // Check that MenuButton has notified the listener, while it was in pressed
   // state.
@@ -286,8 +293,7 @@ TEST_F(MenuButtonTest, MenuButtonPressedLock) {
   CreateMenuButtonWithNoListener();
 
   // Move the mouse over the button; the button should be in a hovered state.
-  ui::test::EventGenerator generator(GetContext(), widget()->GetNativeWindow());
-  generator.MoveMouseTo(gfx::Point(10, 10));
+  generator()->MoveMouseTo(gfx::Point(10, 10));
   EXPECT_EQ(Button::STATE_HOVERED, button()->state());
 
   // Introduce a PressedLock, which should make the button pressed.
@@ -296,7 +302,7 @@ TEST_F(MenuButtonTest, MenuButtonPressedLock) {
   EXPECT_EQ(Button::STATE_PRESSED, button()->state());
 
   // Even if we move the mouse outside of the button, it should remain pressed.
-  generator.MoveMouseTo(gfx::Point(300, 10));
+  generator()->MoveMouseTo(gfx::Point(300, 10));
   EXPECT_EQ(Button::STATE_PRESSED, button()->state());
 
   // Creating a new lock should obviously keep the button pressed.
@@ -313,7 +319,7 @@ TEST_F(MenuButtonTest, MenuButtonPressedLock) {
   EXPECT_EQ(Button::STATE_NORMAL, button()->state());
 
   // ...And it should respond to mouse movement again.
-  generator.MoveMouseTo(gfx::Point(10, 10));
+  generator()->MoveMouseTo(gfx::Point(10, 10));
   EXPECT_EQ(Button::STATE_HOVERED, button()->state());
 
   // Test that the button returns to the appropriate state after the press; if
@@ -331,7 +337,7 @@ TEST_F(MenuButtonTest, MenuButtonPressedLock) {
   pressed_lock1.reset();
   EXPECT_EQ(Button::STATE_DISABLED, button()->state());
 
-  generator.MoveMouseTo(gfx::Point(300, 10));
+  generator()->MoveMouseTo(gfx::Point(300, 10));
 
   // Edge case: the button is disabled, a pressed lock is added, and then the
   // button is re-enabled. It should be enabled after the lock is removed.
@@ -349,10 +355,9 @@ TEST_F(MenuButtonTest, PressedStateWithSiblingMenu) {
   CreateMenuButtonWithMenuButtonListener(&listener);
 
   // Move the mouse over the button; the button should be in a hovered state.
-  ui::test::EventGenerator generator(GetContext(), widget()->GetNativeWindow());
-  generator.MoveMouseTo(gfx::Point(10, 10));
+  generator()->MoveMouseTo(gfx::Point(10, 10));
   EXPECT_EQ(Button::STATE_HOVERED, button()->state());
-  generator.ClickLeftButton();
+  generator()->ClickLeftButton();
   // Test is continued in TestShowSiblingButtonListener::OnMenuButtonClicked().
 }
 
@@ -364,13 +369,10 @@ TEST_F(MenuButtonTest, DraggableMenuButtonActivatesOnRelease) {
   TestDragController drag_controller;
   button()->set_drag_controller(&drag_controller);
 
-  ui::test::EventGenerator generator(GetContext(), widget()->GetNativeWindow());
-
-  generator.set_current_location(gfx::Point(10, 10));
-  generator.PressLeftButton();
+  generator()->PressLeftButton();
   EXPECT_EQ(nullptr, menu_button_listener.last_source());
 
-  generator.ReleaseLeftButton();
+  generator()->ReleaseLeftButton();
   EXPECT_EQ(button(), menu_button_listener.last_source());
   EXPECT_EQ(Button::STATE_HOVERED, menu_button_listener.last_source_state());
 }
@@ -389,9 +391,7 @@ TEST_F(MenuButtonTest, DraggableMenuButtonDoesNotActivateOnDrag) {
   SetDragDropClient(GetContext(), &drag_client);
   button()->PrependPreTargetHandler(&drag_client);
 
-  ui::test::EventGenerator generator(GetContext(), widget()->GetNativeWindow());
-  generator.set_current_location(gfx::Point(10, 10));
-  generator.DragMouseBy(10, 0);
+  generator()->DragMouseBy(10, 0);
   EXPECT_EQ(nullptr, menu_button_listener.last_source());
   EXPECT_EQ(Button::STATE_NORMAL, menu_button_listener.last_source_state());
 }
@@ -407,14 +407,12 @@ TEST_F(MenuButtonTest, ActivateDropDownOnGestureTap) {
   TestMenuButtonListener menu_button_listener;
   CreateMenuButtonWithMenuButtonListener(&menu_button_listener);
 
-  ui::test::EventGenerator generator(GetContext(), widget()->GetNativeWindow());
-
   // Move the mouse outside the menu button so that it doesn't impact the
   // button state.
-  generator.MoveMouseTo(400, 400);
+  generator()->MoveMouseTo(400, 400);
   EXPECT_FALSE(button()->IsMouseHovered());
 
-  generator.GestureTapAt(gfx::Point(10, 10));
+  generator()->GestureTapAt(gfx::Point(10, 10));
 
   // Check that MenuButton has notified the listener, while it was in pressed
   // state.
@@ -430,12 +428,10 @@ TEST_F(MenuButtonTest, ActivateDropDownOnGestureTap) {
 TEST_F(MenuButtonTest, TouchFeedbackDuringTap) {
   TestMenuButtonListener menu_button_listener;
   CreateMenuButtonWithMenuButtonListener(&menu_button_listener);
-  ui::test::EventGenerator generator(GetContext(), widget()->GetNativeWindow());
-  generator.set_current_location(gfx::Point(10, 10));
-  generator.PressTouch();
+  generator()->PressTouch();
   EXPECT_EQ(Button::STATE_HOVERED, button()->state());
 
-  generator.ReleaseTouch();
+  generator()->ReleaseTouch();
   EXPECT_EQ(Button::STATE_HOVERED, menu_button_listener.last_source_state());
 }
 
@@ -444,13 +440,11 @@ TEST_F(MenuButtonTest, TouchFeedbackDuringTap) {
 TEST_F(MenuButtonTest, TouchFeedbackDuringTapCancel) {
   TestMenuButtonListener menu_button_listener;
   CreateMenuButtonWithMenuButtonListener(&menu_button_listener);
-  ui::test::EventGenerator generator(GetContext(), widget()->GetNativeWindow());
-  generator.set_current_location(gfx::Point(10, 10));
-  generator.PressTouch();
+  generator()->PressTouch();
   EXPECT_EQ(Button::STATE_HOVERED, button()->state());
 
-  generator.MoveTouch(gfx::Point(10, 30));
-  generator.ReleaseTouch();
+  generator()->MoveTouch(gfx::Point(10, 30));
+  generator()->ReleaseTouch();
   EXPECT_EQ(Button::STATE_NORMAL, button()->state());
   EXPECT_EQ(nullptr, menu_button_listener.last_source());
 }
