@@ -1427,7 +1427,9 @@ PassRefPtr<protocol::TypeBuilder::CSS::CSSKeyframeRule> InspectorStyleSheet::bui
         return nullptr;
 
     RefPtr<protocol::TypeBuilder::CSS::Value> keyText = protocol::TypeBuilder::CSS::Value::create().setText(keyframeRule->keyText());
-    keyText->setRange(buildSourceRangeObject(sourceDataForRule(keyframeRule)->ruleHeaderRange));
+    RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = sourceDataForRule(keyframeRule);
+    if (sourceData)
+        keyText->setRange(buildSourceRangeObject(sourceData->ruleHeaderRange));
     RefPtr<protocol::TypeBuilder::CSS::CSSKeyframeRule> result = protocol::TypeBuilder::CSS::CSSKeyframeRule::create()
         // TODO(samli): keyText() normalises 'from' and 'to' keyword values.
         .setKeyText(keyText)

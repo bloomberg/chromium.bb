@@ -981,7 +981,8 @@ PassRefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::CSS::CSSKeyframes
         InspectorStyleSheet* inspectorStyleSheet = bindStyleSheet(cssKeyframesRule->parentStyleSheet());
         RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = inspectorStyleSheet->sourceDataForRule(cssKeyframesRule);
         RefPtr<protocol::TypeBuilder::CSS::Value> name = protocol::TypeBuilder::CSS::Value::create().setText(cssKeyframesRule->name());
-        name->setRange(inspectorStyleSheet->buildSourceRangeObject(sourceData->ruleHeaderRange));
+        if (sourceData)
+            name->setRange(inspectorStyleSheet->buildSourceRangeObject(sourceData->ruleHeaderRange));
         RefPtr<protocol::TypeBuilder::CSS::CSSKeyframesRule> keyframesRuleObject = protocol::TypeBuilder::CSS::CSSKeyframesRule::create()
             .setAnimationName(name.release())
             .setKeyframes(keyframes);
