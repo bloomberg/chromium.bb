@@ -87,7 +87,7 @@ static_assert((std::is_same<
 
 
 // Add a generic specialization which will let's us verify that no other template matches.
-template<typename T> struct CrossThreadCopierBase<false, false, false, T> {
+template<typename T> struct CrossThreadCopierBase<T, false, false, false> {
     typedef int Type;
 };
 
