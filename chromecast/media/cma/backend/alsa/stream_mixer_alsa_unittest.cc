@@ -179,8 +179,11 @@ class MockInputQueue : public StreamMixerAlsa::InputQueue {
   void DoGetResampledData(::media::AudioBus* dest, int frames) {
     CHECK(dest);
     CHECK_GE(dest->frames(), frames);
-    if (data_)
+    if (data_) {
       data_->CopyPartialFramesTo(0, frames, 0, dest);
+    } else {
+      dest->ZeroFramesPartial(0, frames);
+    }
   }
 
   void DoPrepareToDelete(const OnReadyToDeleteCb& delete_cb) {
