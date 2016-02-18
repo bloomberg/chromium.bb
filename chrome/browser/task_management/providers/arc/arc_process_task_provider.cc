@@ -162,6 +162,8 @@ void ArcProcessTaskProvider::AddTasks(
     }
     base::ProcessId pid = iter->second;
     scoped_ptr<ArcProcessTask>& task = nspid_to_task_[process.pid];
+    if (task.get())
+      NotifyObserverTaskRemoved(task.get());
     task.reset(new ArcProcessTask(pid, process.pid, process.process_name));
     NotifyObserverTaskAdded(task.get());
   }
