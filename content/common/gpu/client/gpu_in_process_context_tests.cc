@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "content/public/test/unittest_test_suite.h"
 #include "gpu/blink/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_surface.h"

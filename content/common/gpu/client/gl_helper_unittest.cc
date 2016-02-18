@@ -28,22 +28,15 @@
 #include "base/test/test_suite.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "build/build_config.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/client/gl_helper_readback_support.h"
 #include "content/common/gpu/client/gl_helper_scaling.h"
-#include "content/public/test/unittest_test_suite.h"
-#include "content/test/content_test_suite.h"
 #include "gpu/blink/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkTypes.h"
 #include "ui/gl/gl_implementation.h"
-
-#if defined(OS_MACOSX)
-#include "base/mac/scoped_nsautorelease_pool.h"
-#endif
 
 namespace content {
 
@@ -2000,28 +1993,3 @@ TEST_F(GLHelperTest, CheckOptimizations) {
 }
 
 }  // namespace content
-
-namespace {
-
-int RunHelper(base::TestSuite* test_suite) {
-  content::UnitTestTestSuite runner(test_suite);
-  base::MessageLoopForIO message_loop;
-  return runner.Run();
-}
-
-}  // namespace
-
-// These tests needs to run against a proper GL environment, so we
-// need to set it up before we can run the tests.
-int main(int argc, char** argv) {
-  base::CommandLine::Init(argc, argv);
-  base::TestSuite* suite = new content::ContentTestSuite(argc, argv);
-#if defined(OS_MACOSX)
-  base::mac::ScopedNSAutoreleasePool pool;
-#endif
-
-  return base::LaunchUnitTestsSerially(
-    argc,
-    argv,
-    base::Bind(&RunHelper, base::Unretained(suite)));
-}
