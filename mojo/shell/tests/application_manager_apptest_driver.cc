@@ -23,7 +23,6 @@
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/public/cpp/bindings/weak_binding_set.h"
-#include "mojo/shell/application_manager_apptests.mojom.h"
 #include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell.h"
@@ -32,6 +31,7 @@
 #include "mojo/shell/runner/child/test_native_main.h"
 #include "mojo/shell/runner/common/switches.h"
 #include "mojo/shell/runner/init.h"
+#include "mojo/shell/tests/application_manager_apptests.mojom.h"
 
 using mojo::shell::test::mojom::CreateInstanceForHandleTestPtr;
 using mojo::shell::test::mojom::Driver;
