@@ -47,10 +47,31 @@ class RequestTestCase(unittest.TestCase):
     # Parameters are filtered out.
     r.response_headers = {'Content-Type': 'application/javascript;bla'}
     self.assertEquals('application/javascript', r.GetContentType())
-    # MIME type takes precedence over headers.
+    # MIME type takes precedence over 'Content-Type' header.
     r.mime_type = 'image/webp'
     self.assertEquals('image/webp', r.GetContentType())
     r.mime_type = None
+    # Test for 'ping' type.
+    r.status = 204
+    self.assertEquals('ping', r.GetContentType())
+    r.status = None
+    r.response_headers = {'Content-Type': 'application/javascript',
+                          'content-length': '0'}
+    self.assertEquals('ping', r.GetContentType())
+    # Test for 'redirect' type.
+    r.response_headers = {'Content-Type': 'application/javascript',
+                          'location': 'http://foo',
+                          'content-length': '0'}
+    self.assertEquals('redirect', r.GetContentType())
+
+  def testGetHTTPResponseHeader(self):
+    r = Request()
+    r.response_headers = {}
+    self.assertEquals(None, r.GetHTTPResponseHeader('Foo'))
+    r.response_headers = {'Foo': 'Bar', 'Baz': 'Foo'}
+    self.assertEquals('Bar', r.GetHTTPResponseHeader('Foo'))
+    r.response_headers = {'foo': 'Bar', 'Baz': 'Foo'}
+    self.assertEquals('Bar', r.GetHTTPResponseHeader('Foo'))
 
 
 class RequestTrackTestCase(unittest.TestCase):

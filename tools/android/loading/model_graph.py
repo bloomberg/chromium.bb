@@ -37,6 +37,8 @@ class GraphVisualization(object):
       'gif':             'grey',
       'image':           'orange',
       'jpeg':            'orange',
+      'ping':            'cyan',  # Empty response
+      'redirect':        'forestgreen',
       'png':             'orange',
       'plain':           'brown3',
       'octet-stream':    'brown3',

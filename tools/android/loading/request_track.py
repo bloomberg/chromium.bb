@@ -179,19 +179,36 @@ class Request(object):
       result.timing = TimingFromDict({'requestTime': result.timestamp})
     return result
 
+  def GetHTTPResponseHeader(self, header_name):
+    """Gets the value of a HTTP response header.
+
+    Does a case-insensitive search for the header name in the HTTP response
+    headers, in order to support servers that use a wrong capitalization.
+    """
+    lower_case_name = header_name.lower()
+    result = None
+    for name, value in self.response_headers.iteritems():
+      if name.lower() == lower_case_name:
+        result = value
+        break
+    return result
+
   def GetContentType(self):
     """Returns the content type, or None."""
+    # Check for redirects. Use the "Location" header, because the HTTP status is
+    # not reliable.
+    if self.GetHTTPResponseHeader('Location') is not None:
+      return 'redirect'
+
+    # Check if the response is empty.
+    if (self.GetHTTPResponseHeader('Content-Length') == '0' or
+        self.status == 204):
+      return 'ping'
+
     if self.mime_type:
       return self.mime_type
 
-    # Case-insensitive search because servers sometimes use a wrong
-    # capitalization.
-    content_type = None
-    for header, value in self.response_headers.iteritems():
-      if header.lower() == 'content-type':
-        content_type = value
-        break
-
+    content_type = self.GetHTTPResponseHeader('Content-Type')
     if not content_type or ';' not in content_type:
       return content_type
     else:
@@ -207,14 +224,7 @@ class Request(object):
     if not self.response_headers:
       return -1
 
-    # Case-insensitive search because servers sometimes use a wrong
-    # capitalization.
-    cache_control_str = None
-    for header, value in self.response_headers.iteritems():
-      if header.lower() == 'cache-control':
-        cache_control_str = value
-        break
-
+    cache_control_str = self.GetHTTPResponseHeader('Cache-Control')
     if cache_control_str is not None:
       directives = [s.strip() for s in cache_control_str.split(',')]
       for directive in directives:
