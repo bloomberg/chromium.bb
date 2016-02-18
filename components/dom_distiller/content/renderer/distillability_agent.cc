@@ -23,6 +23,10 @@ using namespace blink;
 
 namespace {
 
+const char* const kBlacklist[] = {
+  "www.reddit.com"
+};
+
 // Returns whether it is necessary to send updates back to the browser.
 // The number of updates can be from 0 to 2. See the tests in
 // "distillable_page_utils_browsertest.cc".
@@ -50,6 +54,15 @@ bool IsLast(bool is_loaded) {
   return true;
 }
 
+bool IsBlacklisted(const GURL& url) {
+  for (size_t i = 0; i < arraysize(kBlacklist); ++i) {
+    if (base::LowerCaseEqualsASCII(url.host(), kBlacklist[i])) {
+      return true;
+    }
+  }
+  return false;
+}
+
 bool IsDistillablePageAdaboost(WebDocument& doc,
                                const DistillablePageDetector* detector,
                                bool is_last) {
@@ -68,6 +81,7 @@ bool IsDistillablePageAdaboost(WebDocument& doc,
     features.mozScoreAllSqrt,
     features.mozScoreAllLinear
   ));
+  bool blacklisted = IsBlacklisted(parsed_url);
 
   int bucket = static_cast<unsigned>(features.isMobileFriendly) |
       (static_cast<unsigned>(distillable) << 1);
@@ -78,7 +92,8 @@ bool IsDistillablePageAdaboost(WebDocument& doc,
     UMA_HISTOGRAM_ENUMERATION("DomDistiller.PageDistillableAfterParsing",
         bucket, 4);
   }
-  return distillable && (!features.isMobileFriendly);
+
+  return distillable && (!features.isMobileFriendly) && (!blacklisted);
 }
 
 bool IsDistillablePage(WebDocument& doc, bool is_last) {
