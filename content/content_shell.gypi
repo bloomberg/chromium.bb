@@ -543,7 +543,6 @@
           'sources': [
             'shell/tools/plugin/PluginObject.cpp',
             'shell/tools/plugin/PluginObject.h',
-            'shell/tools/plugin/PluginObjectMac.mm',
             'shell/tools/plugin/PluginTest.cpp',
             'shell/tools/plugin/PluginTest.h',
             'shell/tools/plugin/TestObject.cpp',

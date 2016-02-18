@@ -162,12 +162,6 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16_t mode, int16_t argc
     if (!supportsCoreGraphics)
         return NPERR_INCOMPATIBLE_VERSION_ERROR;
 
-    NPDrawingModel drawingModelToUse = NPDrawingModelCoreGraphics;
-
-    NPBool supportsCoreAnimation;
-    if (browser->getvalue(instance, NPNVsupportsCoreAnimationBool, &supportsCoreAnimation) != NPERR_NO_ERROR)
-        supportsCoreAnimation = false;
-
 #ifndef NP_NO_CARBON
     NPBool supportsCarbon = false;
 #endif
@@ -200,7 +194,6 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16_t mode, int16_t argc
 
 #ifdef XP_MACOSX
     obj->eventModel = eventModel;
-    obj->coreAnimationLayer = 0;
 #endif // XP_MACOSX
     obj->alwaysFilterEvents = false;
 
@@ -253,23 +246,7 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16_t mode, int16_t argc
             obj->onDestroy = base::strdup(argv[i]);
         else if (strcasecmp(argn[i], "testwindowopen") == 0)
             obj->testWindowOpen = true;
-        else if (strcasecmp(argn[i], "drawingmodel") == 0) {
-#ifdef XP_MACOSX
-            const char* value = argv[i];
-            if (strcasecmp(value, "coreanimation") == 0) {
-                if (supportsCoreAnimation)
-                    drawingModelToUse = NPDrawingModelCoreAnimation;
-                else
-                    return NPERR_INCOMPATIBLE_VERSION_ERROR;
-             } else if (strcasecmp(value, "coregraphics") == 0) {
-                if (supportsCoreGraphics)
-                    drawingModelToUse = NPDrawingModelCoreGraphics;
-                else
-                    return NPERR_INCOMPATIBLE_VERSION_ERROR;
-             } else
-                return NPERR_INCOMPATIBLE_VERSION_ERROR;
-#endif
-        } else if (strcasecmp(argn[i], "testGetURLOnDestroy") == 0) {
+        else if (strcasecmp(argn[i], "testGetURLOnDestroy") == 0) {
 #if defined(XP_WIN)
             // FIXME: When https://bugs.webkit.org/show_bug.cgi?id=41831 is fixed, this #ifdef can be removed.
             obj->testGetURLOnDestroy = TRUE;
@@ -302,9 +279,7 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16_t mode, int16_t argc
     }
 
 #ifdef XP_MACOSX
-    browser->setvalue(instance, NPPVpluginDrawingModel, (void *)drawingModelToUse);
-    if (drawingModelToUse == NPDrawingModelCoreAnimation)
-        obj->coreAnimationLayer = createCoreAnimationLayer();
+    browser->setvalue(instance, NPPVpluginDrawingModel, (void *)NPDrawingModelCoreGraphics);
 #endif
 
     obj->pluginTest = PluginTest::create(instance, testIdentifier);
@@ -357,11 +332,6 @@ NPError NPP_Destroy(NPP instance, NPSavedData **save)
             puts("PLUGIN: NPP_Destroy");
             fflush(stdout);
         }
-
-#ifdef XP_MACOSX
-        if (obj->coreAnimationLayer)
-            CFRelease(obj->coreAnimationLayer);
-#endif
 
         if (obj->pluginTest)
             obj->pluginTest->NPP_Destroy(save);
@@ -867,17 +837,6 @@ NPError NPP_GetValue(NPP instance, NPPVariable variable, void *value)
         *v = obj;
         return NPERR_NO_ERROR;
     }
-
-#ifdef XP_MACOSX
-    if (variable == NPPVpluginCoreAnimationLayer) {
-        if (!obj->coreAnimationLayer)
-            return NPERR_GENERIC_ERROR;
-
-        void **v = (void **)value;
-        *v = (void*)CFRetain(obj->coreAnimationLayer);
-        return NPERR_NO_ERROR;
-    }
-#endif
 
     return NPERR_GENERIC_ERROR;
 }
