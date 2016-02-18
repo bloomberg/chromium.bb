@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -99,9 +99,18 @@ const CTLogInfo kCTLogList[] = {
      "\x02\x03\x01\x00\x01",
      294,
      "Venafi log",
-     "https://ctlog.api.venafi.com/"}};
+     "https://ctlog.api.venafi.com/"},
+    {"\x30\x59\x30\x13\x06\x07\x2a\x86\x48\xce\x3d\x02\x01\x06\x08\x2a\x86"
+     "\x48\xce\x3d\x03\x01\x07\x03\x42\x00\x04\xea\x95\x9e\x02\xff\xee\xf1"
+     "\x33\x6d\x4b\x87\xbc\xcd\xfd\x19\x17\x62\xff\x94\xd3\xd0\x59\x07\x3f"
+     "\x02\x2d\x1c\x90\xfe\xc8\x47\x30\x3b\xf1\xdd\x0d\xb8\x11\x0c\x5d\x1d"
+     "\x86\xdd\xab\xd3\x2b\x46\x66\xfb\x6e\x65\xb7\x3b\xfd\x59\x68\xac\xdf"
+     "\xa6\xf8\xce\xd2\x18\x4d",
+     91,
+     "Symantec 'Vega' log",
+     "https://vega.ws.symantec.com/"}};
 
-const size_t kNumKnownCTLogs = 8;
+const size_t kNumKnownCTLogs = 9;
 
 // The list is sorted.
 const char kGoogleLogIDs[][33] = {
