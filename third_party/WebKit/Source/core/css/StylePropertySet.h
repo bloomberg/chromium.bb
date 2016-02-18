@@ -245,7 +245,7 @@ private:
 
     bool removeShorthandProperty(CSSPropertyID);
     bool removeShorthandProperty(const AtomicString& customPropertyName) { return false; }
-    CSSProperty* findCSSPropertyWithID(CSSPropertyID);
+    CSSProperty* findCSSPropertyWithID(CSSPropertyID, const AtomicString& customPropertyName = nullAtom);
     OwnPtrWillBeMember<PropertySetCSSStyleDeclaration> m_cssomWrapper;
 
     friend class StylePropertySet;

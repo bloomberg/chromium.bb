@@ -342,7 +342,9 @@ void MutableStylePropertySet::setProperty(CSSPropertyID propertyID, PassRefPtrWi
 bool MutableStylePropertySet::setProperty(const CSSProperty& property, CSSProperty* slot)
 {
     if (!removeShorthandProperty(property.id())) {
-        CSSProperty* toReplace = slot ? slot : findCSSPropertyWithID(property.id());
+        const AtomicString& name = (property.id() == CSSPropertyVariable) ?
+            toCSSCustomPropertyDeclaration(property.value())->name() : nullAtom;
+        CSSProperty* toReplace = slot ? slot : findCSSPropertyWithID(property.id(), name);
         if (toReplace && *toReplace == property)
             return false;
         if (toReplace) {
@@ -455,15 +457,17 @@ bool MutableStylePropertySet::removePropertiesInSet(const CSSPropertyID* set, un
     return false;
 }
 
-CSSProperty* MutableStylePropertySet::findCSSPropertyWithID(CSSPropertyID propertyID)
+CSSProperty* MutableStylePropertySet::findCSSPropertyWithID(CSSPropertyID propertyID, const AtomicString& customPropertyName)
 {
-    // TODO(leviw): Calling this with a custom property should probably assert, or this
-    // method should alternatively take a string used for custom properties and check it
-    // in that case.
-    if (propertyID == CSSPropertyVariable)
-        return nullptr;
-
-    int foundPropertyIndex = findPropertyIndex(propertyID);
+    int foundPropertyIndex = -1;
+    if (propertyID == CSSPropertyVariable && !customPropertyName.isNull()) {
+        // TODO(shanestephens): fix call sites so we always have a customPropertyName
+        // here.
+        foundPropertyIndex = findPropertyIndex(customPropertyName);
+    } else {
+        ASSERT(customPropertyName.isNull());
+        foundPropertyIndex = findPropertyIndex(propertyID);
+    }
     if (foundPropertyIndex == -1)
         return nullptr;
     return &m_propertyVector.at(foundPropertyIndex);
