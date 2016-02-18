@@ -15,6 +15,7 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "components/user_manager/user_manager.h"
 #endif
@@ -36,7 +37,7 @@ AccountId GetAccountIdFromEmail(const std::string& email) {
 Profile* GetProfileFromAccountId(const AccountId& account_id) {
   // Unit tests can end up here without a |g_browser_process|.
   if (!g_browser_process || !g_browser_process->profile_manager())
-    return NULL;
+    return nullptr;
 
   std::vector<Profile*> profiles =
       g_browser_process->profile_manager()->GetLoadedProfiles();
@@ -46,7 +47,21 @@ Profile* GetProfileFromAccountId(const AccountId& account_id) {
     if (GetAccountIdFromProfile(*profile_iterator) == account_id)
       return *profile_iterator;
   }
-  return NULL;
+
+#if defined(OS_CHROMEOS)
+  // If in a session the refresh token is revoked, GetAccountIdFromProfile()
+  // returns an empty account id which will cause the profile not being fetched
+  // properly. In this case we fall back to use GetProfileByUser() function.
+  // Note: If the refresh token is revoked because the user changes his GAIA
+  // password, we will force log out the user within 120 seconds. See crbug.com/
+  // 587318 for more detail.
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(account_id);
+  if (user)
+    return chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+#endif
+
+  return nullptr;
 }
 
 Profile* GetProfileFromWindow(aura::Window* window) {
