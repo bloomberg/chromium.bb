@@ -509,6 +509,8 @@ void InjectedScript::makeEvalCall(ErrorString* errorString, V8FunctionCall& func
 
 void InjectedScript::makeCallWithExceptionDetails(V8FunctionCall& function, RefPtr<JSONValue>* result, RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>* exceptionDetails)
 {
+    v8::HandleScope handles(m_isolate);
+    v8::Context::Scope scope(context());
     v8::TryCatch tryCatch(m_isolate);
     v8::Local<v8::Value> resultValue = function.callWithoutExceptionHandling();
     if (tryCatch.HasCaught()) {
