@@ -1423,7 +1423,7 @@ doc: $(DOXYGEN_INDICES)
 .SECONDEXPANSION:
 
 define protostability
-$(shell echo $1 | sed 's/.*\(\<unstable\>\|\<stable\>\).*/\1/')
+$(if $(findstring unstable,$1),unstable,stable)
 endef
 
 define protoname
