@@ -20,6 +20,12 @@ int64_t NanoToMicro(uint64_t nano_seconds) {
   return static_cast<int64_t>(up / base::Time::kNanosecondsPerMicrosecond);
 }
 
+int32_t QueryTimestampBits() {
+  GLint timestamp_bits;
+  glGetQueryiv(GL_TIMESTAMP, GL_QUERY_COUNTER_BITS, &timestamp_bits);
+  return static_cast<int32_t>(timestamp_bits);
+}
+
 class GPUTimingImpl : public GPUTiming {
  public:
    GPUTimingImpl(GLContextReal* context);
@@ -73,6 +79,7 @@ class GPUTimingImpl : public GPUTiming {
   int64_t offset_ = 0;  // offset cache when timer_type_ == kTimerTypeARB
   bool offset_valid_ = false;
   bool force_time_elapsed_query_ = false;
+  int32_t timestamp_bit_count_gl_ = -1;  // gl implementation timestamp bits
 
   uint32_t next_timer_query_id_ = 0;
   uint32_t next_good_timer_query_id_ = 0; // identify bad ids for disjoints.
@@ -318,6 +325,7 @@ GPUTimingImpl::GPUTimingImpl(GLContextReal* context) {
   } else if (context->HasExtension("GL_EXT_timer_query")) {
     timer_type_ = GPUTiming::kTimerTypeEXT;
     force_time_elapsed_query_ = true;
+    timestamp_bit_count_gl_ = 0;
   }
 }
 
@@ -391,6 +399,15 @@ void GPUTimingImpl::EndElapsedTimeQuery(scoped_refptr<QueryResult> result) {
 
 scoped_refptr<QueryResult> GPUTimingImpl::DoTimeStampQuery() {
   DCHECK(timer_type_ != GPUTiming::kTimerTypeInvalid);
+
+  // Certain GL drivers have timestamp bit count set to 0 which means timestamps
+  // aren't supported. Emulate them with time elapsed queries if that is the
+  // case.
+  if (timestamp_bit_count_gl_ == -1) {
+    DCHECK(timer_type_ != GPUTiming::kTimerTypeEXT);
+    timestamp_bit_count_gl_ = QueryTimestampBits();
+    force_time_elapsed_query_ = (timestamp_bit_count_gl_ == 0);
+  }
 
   if (force_time_elapsed_query_) {
     // Replace with elapsed timer queries instead.

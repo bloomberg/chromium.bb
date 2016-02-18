@@ -704,10 +704,9 @@ static void CheckBeginEndQueryBadMemoryFails(GLES2DecoderTestBase* test,
   error::Error error1 = error::kNoError;
   error::Error error2 = error::kNoError;
   if (query_type.is_counter) {
-    error1 = ExecuteQueryCounterCmd(test, gl, &gpu_timing_queries,
-                                    query_type.type,
-                                    client_id, service_id,
-                                    shm_id, shm_offset, 1);
+    error1 =
+        ExecuteQueryCounterCmd(test, gl, &gpu_timing_queries, query_type.type,
+                               client_id, service_id, shm_id, shm_offset, 1);
   } else {
     error1 = ExecuteBeginQueryCmd(test, gl, &gpu_timing_queries,
                                   query_type.type,
@@ -777,14 +776,11 @@ TEST_P(GLES2DecoderManualInitTest, QueryReuseTest) {
 
     // Query once.
     if (query_type.is_counter) {
-      EXPECT_EQ(error::kNoError, ExecuteQueryCounterCmd(this, gl,
-                                                        &gpu_timing_queries,
-                                                        query_type.type,
-                                                        kNewClientId,
-                                                        kNewServiceId,
-                                                        kSharedMemoryId,
-                                                        kSharedMemoryOffset,
-                                                        1));
+      EXPECT_EQ(
+          error::kNoError,
+          ExecuteQueryCounterCmd(this, gl, &gpu_timing_queries, query_type.type,
+                                 kNewClientId, kNewServiceId, kSharedMemoryId,
+                                 kSharedMemoryOffset, 1));
     } else {
       EXPECT_EQ(error::kNoError, ExecuteBeginQueryCmd(this, gl,
                                                       &gpu_timing_queries,
@@ -801,14 +797,11 @@ TEST_P(GLES2DecoderManualInitTest, QueryReuseTest) {
 
     // Reuse query.
     if (query_type.is_counter) {
-      EXPECT_EQ(error::kNoError, ExecuteQueryCounterCmd(this, gl,
-                                                        &gpu_timing_queries,
-                                                        query_type.type,
-                                                        kNewClientId,
-                                                        kNewServiceId,
-                                                        kSharedMemoryId,
-                                                        kSharedMemoryOffset,
-                                                        2));
+      EXPECT_EQ(
+          error::kNoError,
+          ExecuteQueryCounterCmd(this, gl, &gpu_timing_queries, query_type.type,
+                                 kNewClientId, kNewServiceId, kSharedMemoryId,
+                                 kSharedMemoryOffset, 2));
     } else {
       EXPECT_EQ(error::kNoError, ExecuteBeginQueryCmd(this, gl,
                                                       &gpu_timing_queries,
@@ -1028,6 +1021,9 @@ TEST_P(GLES2DecoderManualInitTest, QueryCounterEXTTimeStamp) {
 
   EXPECT_CALL(*gl_, GenQueries(1, _))
       .WillOnce(SetArgPointee<1>(kNewServiceId))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetQueryiv(GL_TIMESTAMP, GL_QUERY_COUNTER_BITS, _))
+      .WillOnce(SetArgPointee<2>(64))
       .RetiresOnSaturation();
   EXPECT_CALL(*gl_, QueryCounter(kNewServiceId, GL_TIMESTAMP))
       .Times(1)

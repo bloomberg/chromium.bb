@@ -274,7 +274,7 @@ class BaseGpuTraceTest : public BaseGpuTest {
     g_fakeCPUTime = expect_end_time;
     EXPECT_TRUE(trace->IsAvailable());
 
-    // Proces should output expected Trace results to MockOutputter
+    // Process should output expected Trace results to MockOutputter
     trace->Process();
 
     // Destroy trace after we are done.
