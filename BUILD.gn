@@ -604,7 +604,6 @@ group("mojo_apptests") {
       "//media/mojo/services:tests",
       "//mojo/services/network:apptests",
       "//mojo/shell:apptests",
-      "//sql/mojo:apptests",
       "//ui/views/mus:tests",
     ]
   }

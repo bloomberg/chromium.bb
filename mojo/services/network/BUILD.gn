@@ -59,8 +59,6 @@ source_set("lib") {
     "http_connection_impl.h",
     "http_server_impl.cc",
     "http_server_impl.h",
-    "mojo_persistent_cookie_store.cc",
-    "mojo_persistent_cookie_store.h",
     "net_adapters.cc",
     "net_adapters.h",
     "net_address_type_converters.cc",
@@ -92,7 +90,6 @@ source_set("lib") {
 
   deps = [
     "//base",
-    "//components/filesystem/public/interfaces",
     "//mojo/common:common_base",
     "//mojo/common:url_type_converters",
     "//mojo/message_pump",
@@ -104,7 +101,6 @@ source_set("lib") {
     "//net",
     "//net:extras",
     "//net:http_server",
-    "//sql/mojo",
     "//url",
   ]
 }

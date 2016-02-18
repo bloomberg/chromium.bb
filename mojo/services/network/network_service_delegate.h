@@ -7,7 +7,6 @@
 
 #include "base/observer_list.h"
 #include "base/threading/thread.h"
-#include "components/filesystem/public/interfaces/file_system.mojom.h"
 #include "mojo/services/network/network_context.h"
 #include "mojo/services/network/public/interfaces/cookie_store.mojom.h"
 #include "mojo/services/network/public/interfaces/network_service.mojom.h"
@@ -18,10 +17,6 @@
 #include "mojo/shell/public/cpp/shell.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 
-namespace sql {
-class ScopedMojoFilesystemVFS;
-}
-
 namespace mojo {
 class NetworkServiceDelegateObserver;
 
@@ -29,8 +24,7 @@ class NetworkServiceDelegate : public ShellClient,
                                public InterfaceFactory<NetworkService>,
                                public InterfaceFactory<CookieStore>,
                                public InterfaceFactory<WebSocketFactory>,
-                               public InterfaceFactory<URLLoaderFactory>,
-                               public filesystem::FileSystemClient {
+                               public InterfaceFactory<URLLoaderFactory> {
  public:
   NetworkServiceDelegate();
   ~NetworkServiceDelegate() override;
@@ -39,10 +33,6 @@ class NetworkServiceDelegate : public ShellClient,
   void RemoveObserver(NetworkServiceDelegateObserver* observer);
 
  private:
-  // Notifies all of our observers of a Shuts down our IO thread. Safe to call
-  // multiple times.
-  void EnsureIOThreadShutdown();
-
   // mojo::ShellClient implementation.
   void Initialize(Shell* shell, const std::string& url, uint32_t id) override;
   bool AcceptConnection(Connection* connection) override;
@@ -65,24 +55,12 @@ class NetworkServiceDelegate : public ShellClient,
   void Create(Connection* connection,
               InterfaceRequest<URLLoaderFactory> request) override;
 
-  // Overridden from FileSystemClient:
-  void OnFileSystemShutdown() override;
-
  private:
   Shell* shell_;
   mojo::TracingImpl tracing_;
 
   // Observers that want notifications that our worker thread is going away.
   base::ObserverList<NetworkServiceDelegateObserver> observers_;
-
-  Binding<filesystem::FileSystemClient> binding_;
-
-  // A worker thread that blocks for file IO.
-  scoped_ptr<base::Thread> io_worker_thread_;
-
-  // Our connection to the filesystem service, which stores our cookies and
-  // other data.
-  filesystem::FileSystemPtr files_;
 
   scoped_ptr<NetworkContext> context_;
 };

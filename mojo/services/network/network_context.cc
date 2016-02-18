@@ -19,7 +19,6 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "mojo/common/user_agent.h"
-#include "mojo/services/network/mojo_persistent_cookie_store.h"
 #include "mojo/services/network/url_loader_impl.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/dns/host_resolver.h"
@@ -110,10 +109,8 @@ NetworkContext::NetworkContext(
 
 NetworkContext::NetworkContext(
     const base::FilePath& base_path,
-    const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
     NetworkServiceDelegate* delegate)
-    : NetworkContext(MakeURLRequestContext(base_path, background_task_runner,
-                                           delegate)) {
+    : NetworkContext(MakeURLRequestContext(base_path, delegate)) {
 }
 
 NetworkContext::~NetworkContext() {
@@ -148,7 +145,6 @@ size_t NetworkContext::GetURLLoaderCountForTesting() {
 // static
 scoped_ptr<net::URLRequestContext> NetworkContext::MakeURLRequestContext(
     const base::FilePath& base_path,
-    const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
     NetworkServiceDelegate* delegate) {
   net::URLRequestContextBuilder builder;
   net::URLRequestContextBuilder::HttpNetworkSessionParams params;
@@ -196,23 +192,6 @@ scoped_ptr<net::URLRequestContext> NetworkContext::MakeURLRequestContext(
 
   builder.EnableHttpCache(cache_params);
   builder.set_file_enabled(true);
-
-  if (background_task_runner) {
-    // TODO(erg): This only gets run on non-android system. Currently, any
-    // attempts from the network_service trying to access the filesystem break
-    // the apptests on android. (And only the apptests on android. Mandoline
-    // shell works fine on android, as does apptests on desktop.)
-    MojoPersistentCookieStore* cookie_store =
-        new MojoPersistentCookieStore(
-            delegate,
-            base::FilePath(FILE_PATH_LITERAL("Cookies")),
-            base::MessageLoop::current()->task_runner(),
-            background_task_runner,
-            false,  // TODO(erg): Make RESTORED_SESSION_COOKIES configurable.
-            nullptr);
-    builder.SetCookieAndChannelIdStores(
-        new net::CookieMonster(cookie_store, nullptr), nullptr);
-  }
 
   return builder.Build();
 }
