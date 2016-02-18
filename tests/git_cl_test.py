@@ -602,7 +602,7 @@ class TestGitCl(TestCase):
     if squash:
       ref_to_push = 'abcdef0123456789'
       calls += [
-          ((['git', 'show', '--format=%s\n\n%b', '-s',
+          ((['git', 'show', '--format=%B', '-s',
             'refs/heads/git_cl_uploads/master'],),
            (description, 0)),
           ((['git', 'config', 'branch.master.merge'],),

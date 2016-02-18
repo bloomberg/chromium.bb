@@ -2021,7 +2021,7 @@ def GerritUpload(options, args, cl, change):
   if options.squash:
     # Try to get the message from a previous upload.
     shadow_branch = 'refs/heads/git_cl_uploads/' + cl.GetBranch()
-    message = RunGitSilent(['show', '--format=%s\n\n%b', '-s', shadow_branch])
+    message = RunGitSilent(['show', '--format=%B', '-s', shadow_branch])
     if not message:
       if not options.force:
         change_desc.prompt()
