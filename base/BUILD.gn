@@ -755,6 +755,8 @@ component("base") {
     "task_runner.cc",
     "task_runner.h",
     "task_runner_util.h",
+    "task_scheduler/task_traits.cc",
+    "task_scheduler/task_traits.h",
     "template_util.h",
     "third_party/dmg_fp/dmg_fp.h",
     "third_party/dmg_fp/dtoa_wrapper.cc",
