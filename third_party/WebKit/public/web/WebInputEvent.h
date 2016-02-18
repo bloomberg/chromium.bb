@@ -533,6 +533,12 @@ public:
         } scrollUpdate;
 
         struct {
+            // The original delta units the scrollBegin and scrollUpdates
+            // were sent as.
+            ScrollUnits deltaUnits;
+        } scrollEnd;
+
+        struct {
             float velocityX;
             float velocityY;
             // If true, this event will skip hit testing to find a scroll

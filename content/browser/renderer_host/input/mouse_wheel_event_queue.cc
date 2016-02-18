@@ -124,8 +124,9 @@ void MouseWheelEventQueue::OnGestureScrollEvent(
     // wheel based cancel current one by sending a ScrollEnd.
     if (scroll_end_timer_.IsRunning() &&
         gesture_event.event.sourceDevice != blink::WebGestureDeviceTouchpad) {
+      base::Closure task = scroll_end_timer_.user_task();
       scroll_end_timer_.Reset();
-      SendScrollEnd();
+      task.Run();
     }
     scrolling_device_ = gesture_event.event.sourceDevice;
   } else if (scrolling_device_ == gesture_event.event.sourceDevice &&
@@ -153,11 +154,13 @@ void MouseWheelEventQueue::TryForwardNextEventToRenderer() {
   client_->SendMouseWheelEventImmediately(send_event);
 }
 
-void MouseWheelEventQueue::SendScrollEnd() {
+void MouseWheelEventQueue::SendScrollEnd(
+    blink::WebGestureEvent::ScrollUnits units) {
   GestureEventWithLatencyInfo scroll_end;
   scroll_end.event.type = WebInputEvent::GestureScrollEnd;
   scroll_end.event.sourceDevice = blink::WebGestureDeviceTouchpad;
   scroll_end.event.resendingPluginId = -1;
+  scroll_end.event.data.scrollEnd.deltaUnits = units;
   SendGesture(scroll_end);
 }
 
@@ -181,9 +184,12 @@ void MouseWheelEventQueue::SendGesture(
       if (scroll_end_timer_.IsRunning()) {
         scroll_end_timer_.Reset();
       } else {
-        scroll_end_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(
-                                               scroll_transaction_ms_),
-                                this, &MouseWheelEventQueue::SendScrollEnd);
+        scroll_end_timer_.Start(
+            FROM_HERE,
+            base::TimeDelta::FromMilliseconds(scroll_transaction_ms_),
+            base::Bind(&MouseWheelEventQueue::SendScrollEnd,
+                       base::Unretained(this),
+                       gesture.event.data.scrollUpdate.deltaUnits));
       }
       break;
     case WebInputEvent::GestureScrollEnd:

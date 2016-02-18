@@ -74,7 +74,7 @@ class CONTENT_EXPORT MouseWheelEventQueue {
 
  private:
   void TryForwardNextEventToRenderer();
-  void SendScrollEnd();
+  void SendScrollEnd(blink::WebGestureEvent::ScrollUnits units);
   void SendGesture(const GestureEventWithLatencyInfo& gesture);
 
   MouseWheelEventQueueClient* client_;
