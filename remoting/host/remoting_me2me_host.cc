@@ -427,7 +427,8 @@ class HostProcess : public ConfigWatcher::Delegate,
 
   bool curtain_required_;
   ThirdPartyAuthConfig third_party_auth_config_;
-  bool enable_gnubby_auth_;
+  bool gnubby_auth_policy_enabled_;
+  bool gnubby_extension_supported_;
 
   // Boolean to change flow, where necessary, if we're
   // capturing a window instead of the entire desktop.
@@ -491,7 +492,8 @@ HostProcess::HostProcess(scoped_ptr<ChromotingHostContext> context,
       allow_relay_(true),
       allow_pairing_(true),
       curtain_required_(false),
-      enable_gnubby_auth_(false),
+      gnubby_auth_policy_enabled_(false),
+      gnubby_extension_supported_(false),
       enable_window_capture_(false),
       window_id_(0),
       self_(this),
@@ -886,8 +888,10 @@ void HostProcess::StartOnUiThread() {
 
   base::FilePath gnubby_socket_name = base::CommandLine::ForCurrentProcess()->
       GetSwitchValuePath(kAuthSocknameSwitchName);
-  if (!gnubby_socket_name.empty())
+  if (!gnubby_socket_name.empty()) {
     remoting::GnubbyAuthHandler::SetGnubbySocketName(gnubby_socket_name);
+    gnubby_extension_supported_ = true;
+  }
 #endif  // defined(OS_LINUX)
 
   // Create a desktop environment factory appropriate to the build type &
@@ -1395,11 +1399,11 @@ bool HostProcess::OnGnubbyAuthPolicyUpdate(base::DictionaryValue* policies) {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
   if (!policies->GetBoolean(policy::key::kRemoteAccessHostAllowGnubbyAuth,
-                            &enable_gnubby_auth_)) {
+                            &gnubby_auth_policy_enabled_)) {
     return false;
   }
 
-  if (enable_gnubby_auth_) {
+  if (gnubby_auth_policy_enabled_) {
     HOST_LOG << "Policy enables gnubby auth.";
   } else {
     HOST_LOG << "Policy disables gnubby auth.";
@@ -1536,7 +1540,7 @@ void HostProcess::StartHost() {
                                  context_->audio_task_runner(),
                                  context_->video_encode_task_runner()));
 
-  if (enable_gnubby_auth_) {
+  if (gnubby_auth_policy_enabled_ && gnubby_extension_supported_) {
     host_->AddExtension(make_scoped_ptr(new GnubbyExtension()));
   }
 
