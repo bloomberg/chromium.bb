@@ -45,24 +45,18 @@ class ConnectionImpl : public Connection {
   void SetRemoteInterfaceProviderConnectionErrorHandler(
       const Closure& handler) override;
   bool GetRemoteApplicationID(uint32_t* remote_id) const override;
-  bool GetRemoteShellClientFactoryID(
-      uint32_t* shell_client_factory_id) const override;
   void AddRemoteIDCallback(const Closure& callback) override;
   bool AllowsInterface(const std::string& interface_name) const override;
   shell::mojom::InterfaceProvider* GetRemoteInterfaces() override;
   InterfaceRegistry* GetLocalRegistry() override;
   base::WeakPtr<Connection> GetWeakPtr() override;
 
-  void OnGotRemoteIDs(uint32_t target_application_id,
-                      uint32_t shell_client_factory_id);
+  void OnGotInstanceID(uint32_t target_application_id);
 
   const std::string connection_url_;
   const std::string remote_url_;
 
   uint32_t remote_id_;
-  // The id of the shell_client_factory is only available once the callback from
-  // establishing the connection is made.
-  uint32_t shell_client_factory_id_;
   bool remote_ids_valid_;
   std::vector<Closure> remote_id_callbacks_;
 

@@ -9,5 +9,5 @@ import "mojo/shell/public/interfaces/shell_client.mojom";
 // Implemented by a package containing multiple applications identified by
 // unique URLs.
 interface ShellClientFactory {
-  CreateShellClient(ShellClient& shell_client, string url) => ();
+  CreateShellClient(ShellClient& shell_client, string url);
 };

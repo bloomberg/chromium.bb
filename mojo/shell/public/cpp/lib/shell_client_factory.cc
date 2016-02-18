@@ -32,18 +32,14 @@ class ApplicationThread : public base::PlatformThread::Delegate {
       const base::Callback<void(ApplicationThread*)>& termination_callback,
       ShellClientFactory::Delegate* handler_delegate,
       InterfaceRequest<shell::mojom::ShellClient> request,
-      const GURL& url,
-      const Callback<void()>& destruct_callback)
+      const GURL& url)
       : handler_thread_(handler_thread),
         termination_callback_(termination_callback),
         handler_delegate_(handler_delegate),
         request_(std::move(request)),
-        url_(url),
-        destruct_callback_(destruct_callback) {}
+        url_(url) {}
 
-  ~ApplicationThread() override {
-    destruct_callback_.Run();
-  }
+  ~ApplicationThread() override {}
 
  private:
   void ThreadMain() override {
@@ -57,7 +53,6 @@ class ApplicationThread : public base::PlatformThread::Delegate {
   ShellClientFactory::Delegate* handler_delegate_;
   InterfaceRequest<shell::mojom::ShellClient> request_;
   GURL url_;
-  Callback<void()> destruct_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ApplicationThread);
 };
@@ -84,14 +79,12 @@ class ShellClientFactoryImpl : public shell::mojom::ShellClientFactory {
  private:
   // Overridden from shell::mojom::ShellClientFactory:
   void CreateShellClient(shell::mojom::ShellClientRequest request,
-                         const String& url,
-                         const Callback<void()>& destruct_callback) override {
+                         const String& url) override {
     ApplicationThread* thread =
         new ApplicationThread(base::ThreadTaskRunnerHandle::Get(),
                               base::Bind(&ShellClientFactoryImpl::OnThreadEnd,
                                          weak_factory_.GetWeakPtr()),
-                              delegate_, std::move(request), url.To<GURL>(),
-                              destruct_callback);
+                              delegate_, std::move(request), url.To<GURL>());
     base::PlatformThreadHandle handle;
     bool launched = base::PlatformThread::Create(0, thread, &handle);
     DCHECK(launched);

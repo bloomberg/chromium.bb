@@ -36,18 +36,15 @@ class ProvidedShellClient
       public base::SimpleThread {
  public:
   ProvidedShellClient(const std::string& name,
-                      mojom::ShellClientRequest request,
-                      const Callback<void()>& destruct_callback)
+                      mojom::ShellClientRequest request)
       : base::SimpleThread(name),
         name_(name),
         request_(std::move(request)),
-        destruct_callback_(destruct_callback),
         shell_(nullptr) {
     Start();
   }
   ~ProvidedShellClient() override {
     Join();
-    destruct_callback_.Run();
   }
 
  private:
@@ -89,7 +86,6 @@ class ProvidedShellClient
 
   const std::string name_;
   mojom::ShellClientRequest request_;
-  const Callback<void()> destruct_callback_;
   Shell* shell_;
   WeakBindingSet<test::mojom::PackageTestService> bindings_;
 
@@ -134,12 +130,11 @@ class PackageTestShellClient
 
   // mojom::ShellClientFactory:
   void CreateShellClient(mojom::ShellClientRequest request,
-                         const String& url,
-                         const Callback<void()>& destruct_callback) override {
+                         const String& url) override {
     if (url == "mojo://package_test_a/")
-      new ProvidedShellClient("A", std::move(request), destruct_callback);
+      new ProvidedShellClient("A", std::move(request));
     else if (url == "mojo://package_test_b/")
-      new ProvidedShellClient("B", std::move(request), destruct_callback);
+      new ProvidedShellClient("B", std::move(request));
   }
 
   // test::mojom::PackageTestService:

@@ -398,8 +398,8 @@ class ApplicationManagerTest : public testing::Test {
         scoped_ptr<ApplicationLoader>(test_loader_));
 
     TestServicePtr service_proxy;
-    ConnectToInterface(application_manager_.get(), GURL(kTestURLString),
-                     &service_proxy);
+    ConnectToInterface(application_manager_.get(), CreateShellIdentity(),
+                       GURL(kTestURLString), &service_proxy);
     test_client_.reset(new TestClient(std::move(service_proxy)));
   }
 
@@ -475,14 +475,14 @@ TEST_F(ApplicationManagerTest, SetLoaders) {
 
   // test::test1 should go to url_loader.
   TestServicePtr test_service;
-  ConnectToInterface(application_manager_.get(), GURL("test:test1"),
-                     &test_service);
+  ConnectToInterface(application_manager_.get(), CreateShellIdentity(),
+                     GURL("test:test1"), &test_service);
   EXPECT_EQ(1, url_loader->num_loads());
   EXPECT_EQ(0, default_loader->num_loads());
 
   // http::test1 should go to default loader.
-  ConnectToInterface(application_manager_.get(), GURL("http:test1"),
-                     &test_service);
+  ConnectToInterface(application_manager_.get(), CreateShellIdentity(),
+                     GURL("http:test1"), &test_service);
   EXPECT_EQ(1, url_loader->num_loads());
   EXPECT_EQ(1, default_loader->num_loads());
 }
@@ -497,7 +497,8 @@ TEST_F(ApplicationManagerTest, ACallB) {
   AddLoaderForURL(GURL(kTestBURLString), kTestAURLString);
 
   TestAPtr a;
-  ConnectToInterface(application_manager_.get(), GURL(kTestAURLString), &a);
+  ConnectToInterface(application_manager_.get(), CreateShellIdentity(),
+                     GURL(kTestAURLString), &a);
   a->CallB();
   loop_.Run();
   EXPECT_EQ(1, tester_context_.num_b_calls());
@@ -513,7 +514,8 @@ TEST_F(ApplicationManagerTest, BCallC) {
   AddLoaderForURL(GURL(kTestBURLString), kTestAURLString);
 
   TestAPtr a;
-  ConnectToInterface(application_manager_.get(), GURL(kTestAURLString), &a);
+  ConnectToInterface(application_manager_.get(), CreateShellIdentity(),
+                     GURL(kTestAURLString), &a);
   a->CallCFromB();
   loop_.Run();
 
@@ -529,7 +531,8 @@ TEST_F(ApplicationManagerTest, BDeleted) {
   AddLoaderForURL(GURL(kTestBURLString), std::string());
 
   TestAPtr a;
-  ConnectToInterface(application_manager_.get(), GURL(kTestAURLString), &a);
+  ConnectToInterface(application_manager_.get(), CreateShellIdentity(),
+                     GURL(kTestAURLString), &a);
 
   a->CallB();
   loop_.Run();
@@ -552,7 +555,8 @@ TEST_F(ApplicationManagerTest, ANoLoadB) {
   AddLoaderForURL(GURL(kTestBURLString), "test:TestC");
 
   TestAPtr a;
-  ConnectToInterface(application_manager_.get(), GURL(kTestAURLString), &a);
+  ConnectToInterface(application_manager_.get(), CreateShellIdentity(),
+                     GURL(kTestAURLString), &a);
   a->CallB();
   loop_.Run();
   EXPECT_EQ(0, tester_context_.num_b_calls());
@@ -567,7 +571,8 @@ TEST_F(ApplicationManagerTest, NoServiceNoLoad) {
   // There is no TestC service implementation registered with
   // ApplicationManager, so this cannot succeed (but also shouldn't crash).
   TestCPtr c;
-  ConnectToInterface(application_manager_.get(), GURL(kTestAURLString), &c);
+  ConnectToInterface(application_manager_.get(), CreateShellIdentity(),
+                     GURL(kTestAURLString), &c);
   c.set_connection_error_handler(
       []() { base::MessageLoop::current()->QuitWhenIdle(); });
 
@@ -595,17 +600,17 @@ TEST_F(ApplicationManagerTest, SameIdentityShouldNotCauseDuplicateLoad) {
   EXPECT_EQ(1, test_loader_->num_loads());
 
   TestServicePtr test_service;
-  ConnectToInterface(application_manager_.get(),
+  ConnectToInterface(application_manager_.get(), CreateShellIdentity(),
                      GURL("mojo:foo"), &test_service);
   EXPECT_EQ(2, test_loader_->num_loads());
 
   // Exactly the same URL as above.
-  ConnectToInterface(application_manager_.get(),
+  ConnectToInterface(application_manager_.get(), CreateShellIdentity(),
                      GURL("mojo:foo"), &test_service);
   EXPECT_EQ(2, test_loader_->num_loads());
 
   // A different identity because the domain is different.
-  ConnectToInterface(application_manager_.get(),
+  ConnectToInterface(application_manager_.get(), CreateShellIdentity(),
                      GURL("mojo:bar"), &test_service);
   EXPECT_EQ(3, test_loader_->num_loads());
 }

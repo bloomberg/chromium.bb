@@ -56,16 +56,10 @@ interface Shell {
   // |filter| is a whitelist of application URLs and services that the target
   // application is permitted to connect to. See documentation for
   // CapabilityFilter above.
-  //
-  // If the connection to |application_url| involves a content handler, then
-  // |content_handler_id| is the id of the deepest content handler used to
-  // establish the connection to |application_url|. If no content handler is
-  // used |content_handler_id| is kInvalidApplicationID.
   ConnectToApplication(mojo.URLRequest application_url,
                        InterfaceProvider&? remote_interfaces,
                        InterfaceProvider? local_interfaces,
-                       CapabilityFilter filter) =>
-      (uint32 application_id, uint32 content_handler_id);
+                       CapabilityFilter filter) => (uint32 application_id);
 
   // When there are no more instantiated services in an application, it should
   // start its shutdown process by calling this method. Additionally, it should

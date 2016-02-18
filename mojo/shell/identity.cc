@@ -53,5 +53,10 @@ bool Identity::operator<(const Identity& other) const {
   return qualifier_ < other.qualifier_;
 }
 
+Identity CreateShellIdentity() {
+  return Identity(GURL("mojo://shell/"), std::string(),
+                  GetPermissiveCapabilityFilter());
+}
+
 }  // namespace shell
 }  // namespace mojo

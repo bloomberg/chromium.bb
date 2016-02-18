@@ -47,6 +47,10 @@ class Identity {
   CapabilityFilter filter_;
 };
 
+// Creates an identity for the Shell, used when the Shell connects to
+// applications.
+Identity CreateShellIdentity();
+
 }  // namespace shell
 }  // namespace mojo
 

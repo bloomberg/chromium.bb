@@ -36,8 +36,6 @@ source_set("shell") {
     "shell_application_delegate.h",
     "shell_application_loader.cc",
     "shell_application_loader.h",
-    "shell_client_factory_connection.cc",
-    "shell_client_factory_connection.h",
     "static_application_loader.cc",
     "static_application_loader.h",
     "switches.cc",

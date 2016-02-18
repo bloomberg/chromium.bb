@@ -29,8 +29,6 @@
       'shell/shell_application_delegate.h',
       'shell/shell_application_loader.cc',
       'shell/shell_application_loader.h',
-      'shell/shell_client_factory_connection.cc',
-      'shell/shell_client_factory_connection.h',
       'shell/static_application_loader.cc',
       'shell/static_application_loader.h',
       'shell/switches.cc',

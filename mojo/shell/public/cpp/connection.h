@@ -95,14 +95,6 @@ class Connection {
   // been established.
   virtual bool GetRemoteApplicationID(uint32_t* remote_id) const = 0;
 
-  // Returns the id of the deepest shell client factory used in connecting to
-  // the application. See GetRemoteApplicationID() for details about the return
-  // value. A |shell_client_factory_id| value of Shell::kInvalidApplicationID
-  // indicates no shell client factory was used in connecting to the
-  // application.
-  virtual bool GetRemoteShellClientFactoryID(
-      uint32_t* shell_client_factory_id) const = 0;
-
   // See description in GetRemoteApplicationID()/
   // GetRemoteShellClientFactoryID(). If the ids are available, |callback| is
   // run immediately.

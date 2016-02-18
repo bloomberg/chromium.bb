@@ -33,14 +33,10 @@ class NativeRunner;
 class ApplicationInstance : public mojom::Shell,
                             public mojom::PIDReceiver {
  public:
-  // |requesting_shell_client_factory_id| is the id of the factory that
-  // loaded this app. If the app was not loaded by a factory the id
-  // is kInvalidApplicationID.
   ApplicationInstance(
       mojom::ShellClientPtr shell_client,
       ApplicationManager* manager,
       const Identity& identity,
-      uint32_t requesting_shell_client_factory_id,
       const mojom::Shell::ConnectToApplicationCallback& connect_callback,
       const base::Closure& on_application_end,
       const String& application_name);
@@ -64,12 +60,6 @@ class ApplicationInstance : public mojom::Shell,
   base::ProcessId pid() const { return pid_; }
   void set_pid(base::ProcessId pid) { pid_ = pid; }
   base::Closure on_application_end() const { return on_application_end_; }
-  void set_requesting_shell_client_factory_id(uint32_t id) {
-    requesting_shell_client_factory_id_ = id;
-  }
-  uint32_t requesting_shell_client_factory_id() const {
-    return requesting_shell_client_factory_id_;
-  }
   const String& application_name() const { return application_name_; }
 
  private:
@@ -102,7 +92,6 @@ class ApplicationInstance : public mojom::Shell,
   const uint32_t id_;
   const Identity identity_;
   const bool allow_any_application_;
-  uint32_t requesting_shell_client_factory_id_;
   mojom::Shell::ConnectToApplicationCallback connect_callback_;
   base::Closure on_application_end_;
   mojom::ShellClientPtr shell_client_;

@@ -23,7 +23,6 @@
 #include "mojo/shell/connect_util.h"
 #include "mojo/shell/public/cpp/connect.h"
 #include "mojo/shell/shell_application_loader.h"
-#include "mojo/shell/shell_client_factory_connection.h"
 #include "mojo/shell/switches.h"
 #include "mojo/util/filename_util.h"
 
@@ -35,8 +34,7 @@ namespace {
 // Used by TestAPI.
 bool has_created_instance = false;
 
-void OnEmptyOnConnectCallback(uint32_t remote_id,
-                              uint32_t shell_client_factory_id) {
+void OnEmptyOnConnectCallback(uint32_t remote_id) {
 }
 
 }  // namespace
@@ -77,7 +75,8 @@ ApplicationManager::ApplicationManager(
   SetLoaderForURL(make_scoped_ptr(new package_manager::Loader(
       task_runner_, register_mojo_url_schemes)), package_manager_url);
 
-  ConnectToInterface(this, package_manager_url, &shell_resolver_);
+  ConnectToInterface(this, CreateShellIdentity(), package_manager_url,
+                     &shell_resolver_);
 }
 
 ApplicationManager::~ApplicationManager() {
@@ -219,9 +218,8 @@ ApplicationInstance* ApplicationManager::CreateInstance(
   mojom::ShellClientPtr shell_client;
   *request = GetProxy(&shell_client);
   ApplicationInstance* instance = new ApplicationInstance(
-      std::move(shell_client), this, target_id,
-      mojom::Shell::kInvalidApplicationID, connect_callback,on_application_end,
-      application_name);
+      std::move(shell_client), this, target_id, connect_callback,
+      on_application_end, application_name);
   DCHECK(identity_to_instance_.find(target_id) ==
          identity_to_instance_.end());
   identity_to_instance_[target_id] = instance;
@@ -235,41 +233,41 @@ ApplicationInstance* ApplicationManager::CreateInstance(
   return instance;
 }
 
-uint32_t ApplicationManager::StartShellClientFactory(
+void ApplicationManager::CreateShellClient(
     const Identity& source,
     const Identity& shell_client_factory,
     const GURL& url,
     mojom::ShellClientRequest request) {
-  ShellClientFactoryConnection* connection =
+  mojom::ShellClientFactory* factory =
       GetShellClientFactory(shell_client_factory, source);
-  connection->CreateShellClient(std::move(request), url);
-  return connection->id();
+  factory->CreateShellClient(std::move(request), url.spec());
 }
 
-ShellClientFactoryConnection* ApplicationManager::GetShellClientFactory(
+mojom::ShellClientFactory* ApplicationManager::GetShellClientFactory(
     const Identity& shell_client_factory_identity,
     const Identity& source_identity) {
-  auto it = identity_to_shell_client_factory_.find(
-      shell_client_factory_identity);
-  if (it != identity_to_shell_client_factory_.end())
-    return it->second;
+  auto it = shell_client_factories_.find(shell_client_factory_identity);
+  if (it != shell_client_factories_.end())
+    return it->second.get();
 
-  ShellClientFactoryConnection* connection = new ShellClientFactoryConnection(
-      this, source_identity,
-      shell_client_factory_identity,
-      ++shell_client_factory_id_counter_,
-      base::Bind(&ApplicationManager::OnShellClientFactoryConnectionClosed,
-                 weak_ptr_factory_.GetWeakPtr()));
-  identity_to_shell_client_factory_[shell_client_factory_identity] = connection;
-  return connection;
+  mojom::ShellClientFactoryPtr factory;
+  // TODO(beng): we should forward the original source identity!
+  ConnectToInterface(this, source_identity, shell_client_factory_identity.url(),
+                     &factory);
+  mojom::ShellClientFactory* factory_interface = factory.get();
+  factory.set_connection_error_handler(
+      base::Bind(&ApplicationManager::OnShellClientFactoryLost,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 shell_client_factory_identity));
+  shell_client_factories_[shell_client_factory_identity] = std::move(factory);
+  return factory_interface;
 }
 
-void ApplicationManager::OnShellClientFactoryConnectionClosed(
-    ShellClientFactoryConnection* connection) {
+void ApplicationManager::OnShellClientFactoryLost(const Identity& which) {
   // Remove the mapping.
-  auto it = identity_to_shell_client_factory_.find(connection->identity());
-  DCHECK(it != identity_to_shell_client_factory_.end());
-  identity_to_shell_client_factory_.erase(it);
+  auto it = shell_client_factories_.find(which);
+  DCHECK(it != shell_client_factories_.end());
+  shell_client_factories_.erase(it);
 }
 
 void ApplicationManager::OnGotResolvedURL(
@@ -298,12 +296,8 @@ void ApplicationManager::OnGotResolvedURL(
     mojom::ShellClientRequest request;
     ApplicationInstance* instance = CreateAndConnectToInstance(
         std::move(params), &source, &target, application_name, &request);
-
-    uint32_t shell_client_factory_id = StartShellClientFactory(
-        source, Identity(resolved_gurl, target.qualifier(), capability_filter),
-        target.url(), std::move(request));
-    CHECK(shell_client_factory_id != mojom::Shell::kInvalidApplicationID);
-    instance->set_requesting_shell_client_factory_id(shell_client_factory_id);
+    CreateShellClient(source, Identity(resolved_gurl, target.qualifier(),
+                      capability_filter), target.url(), std::move(request));
     instance->RunConnectCallback();
     return;
   }

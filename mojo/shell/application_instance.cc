@@ -22,7 +22,6 @@ ApplicationInstance::ApplicationInstance(
     mojom::ShellClientPtr shell_client,
     ApplicationManager* manager,
     const Identity& identity,
-    uint32_t requesting_shell_client_factory_id,
     const mojom::Shell::ConnectToApplicationCallback& connect_callback,
     const base::Closure& on_application_end,
     const String& application_name)
@@ -31,7 +30,6 @@ ApplicationInstance::ApplicationInstance(
       identity_(identity),
       allow_any_application_(identity.filter().size() == 1 &&
                              identity.filter().count("*") == 1),
-      requesting_shell_client_factory_id_(requesting_shell_client_factory_id),
       connect_callback_(connect_callback),
       on_application_end_(on_application_end),
       shell_client_(std::move(shell_client)),
@@ -45,10 +43,8 @@ ApplicationInstance::ApplicationInstance(
 }
 
 ApplicationInstance::~ApplicationInstance() {
-  for (auto request : queued_client_requests_) {
-    request->connect_callback().Run(kInvalidApplicationID,
-                                    kInvalidApplicationID);
-  }
+  for (auto request : queued_client_requests_)
+    request->connect_callback().Run(kInvalidApplicationID);
   STLDeleteElements(&queued_client_requests_);
 }
 
@@ -79,7 +75,7 @@ void ApplicationInstance::BindPIDReceiver(
 
 void ApplicationInstance::RunConnectCallback() {
   if (!connect_callback_.is_null())
-    connect_callback_.Run(id_, requesting_shell_client_factory_id_);
+    connect_callback_.Run(id_);
 }
 
 // Shell implementation:
@@ -93,7 +89,7 @@ void ApplicationInstance::ConnectToApplication(
   GURL url(url_string);
   if (!url.is_valid()) {
     LOG(ERROR) << "Error: invalid URL: " << url_string;
-    callback.Run(kInvalidApplicationID, kInvalidApplicationID);
+    callback.Run(kInvalidApplicationID);
     return;
   }
   if (allow_any_application_ ||
@@ -116,7 +112,7 @@ void ApplicationInstance::ConnectToApplication(
   } else {
     LOG(WARNING) << "CapabilityFilter prevented connection from: " <<
         identity_.url() << " to: " << url.spec();
-    callback.Run(kInvalidApplicationID, kInvalidApplicationID);
+    callback.Run(kInvalidApplicationID);
   }
 }
 
@@ -141,7 +137,7 @@ uint32_t ApplicationInstance::GenerateUniqueID() const {
 
 void ApplicationInstance::CallAcceptConnection(
     scoped_ptr<ConnectToApplicationParams> params) {
-  params->connect_callback().Run(id_, requesting_shell_client_factory_id_);
+  params->connect_callback().Run(id_);
   AllowedInterfaces interfaces;
   interfaces.insert("*");
   if (!params->source().is_null())

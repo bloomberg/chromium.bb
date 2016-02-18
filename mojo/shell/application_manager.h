@@ -22,6 +22,7 @@
 #include "mojo/shell/public/interfaces/interface_provider.mojom.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
 #include "mojo/shell/public/interfaces/shell_client.mojom.h"
+#include "mojo/shell/public/interfaces/shell_client_factory.mojom.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -104,7 +105,7 @@ class ApplicationManager {
   using IdentityToInstanceMap = std::map<Identity, ApplicationInstance*>;
   using URLToLoaderMap = std::map<GURL, ApplicationLoader*>;
   using IdentityToShellClientFactoryMap =
-      std::map<Identity, ShellClientFactoryConnection*>;
+      std::map<Identity, mojom::ShellClientFactoryPtr>;
 
   // Takes the contents of |params| only when it returns true.
   bool ConnectToRunningApplication(
@@ -123,17 +124,16 @@ class ApplicationManager {
       const String& application_name,
       mojom::ShellClientRequest* request);
 
-  uint32_t StartShellClientFactory(const Identity& source,
-                                   const Identity& shell_client_factory,
-                                   const GURL& url,
-                                   mojom::ShellClientRequest request);
+  void CreateShellClient(const Identity& source,
+                         const Identity& shell_client_factory,
+                         const GURL& url,
+                         mojom::ShellClientRequest request);
   // Returns a running ShellClientFactory for |shell_client_factory_identity|,
   // if there is not one running one is started for |source_identity|.
-  ShellClientFactoryConnection* GetShellClientFactory(
+  mojom::ShellClientFactory* GetShellClientFactory(
       const Identity& shell_client_factory_identity,
       const Identity& source_identity);
-  void OnShellClientFactoryConnectionClosed(
-      ShellClientFactoryConnection* shell_client_factory);
+  void OnShellClientFactoryLost(const Identity& which);;
 
   // Callback when remote PackageManager resolves mojo:foo to mojo:bar.
   // |params| are the params passed to Connect().
@@ -180,7 +180,7 @@ class ApplicationManager {
 
   IdentityToInstanceMap identity_to_instance_;
 
-  IdentityToShellClientFactoryMap identity_to_shell_client_factory_;
+  IdentityToShellClientFactoryMap shell_client_factories_;
   // Counter used to assign ids to content handlers.
   uint32_t shell_client_factory_id_counter_;
 
