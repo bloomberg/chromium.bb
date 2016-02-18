@@ -49,7 +49,7 @@ void MediaErrorState::throwTypeError(const String& message)
 
 void MediaErrorState::throwDOMException(const ExceptionCode& code, const String& message)
 {
-    m_errorType = DOMError;
+    m_errorType = DOMException;
     m_code = code;
     m_message = message;
 }
@@ -73,7 +73,7 @@ bool MediaErrorState::hadException()
 
 bool MediaErrorState::canGenerateException()
 {
-    return m_errorType == TypeError || m_errorType == DOMError;
+    return m_errorType == TypeError || m_errorType == DOMException;
 }
 
 void MediaErrorState::raiseException(ExceptionState& target)
@@ -85,7 +85,7 @@ void MediaErrorState::raiseException(ExceptionState& target)
     case TypeError:
         target.throwTypeError(m_message);
         break;
-    case DOMError:
+    case DOMException:
         target.throwDOMException(m_code, m_message);
         break;
     case ConstraintError:
@@ -96,7 +96,32 @@ void MediaErrorState::raiseException(ExceptionState& target)
         // TODO(hta): Remove this code. https://crbug.com/576581
         target.throwDOMException(NotSupportedError, "Unsatisfiable constraint " + m_constraint);
         break;
+    default:
+        ASSERT_NOT_REACHED();
     }
+}
+
+String MediaErrorState::getErrorMessage()
+{
+    switch (m_errorType) {
+    case NoError:
+        ASSERT_NOT_REACHED();
+        break;
+    case TypeError:
+    case DOMException:
+        return m_message;
+    case ConstraintError:
+        // This is for the cases where we can't pass back a
+        // NavigatorUserMediaError.
+        // So far, we have this in the constructor of RTCPeerConnection,
+        // which is due to be deprecated.
+        // TODO(hta): Remove this code. https://crbug.com/576581
+        return "Unsatisfiable constraint " + m_constraint;
+    default:
+        ASSERT_NOT_REACHED();
+    }
+
+    return String();
 }
 
 NavigatorUserMediaError* MediaErrorState::createError()

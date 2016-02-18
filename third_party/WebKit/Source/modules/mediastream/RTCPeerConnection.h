@@ -50,10 +50,13 @@ class RTCConfiguration;
 class RTCDTMFSender;
 class RTCDataChannel;
 class RTCErrorCallback;
+class RTCIceCandidateInitOrRTCIceCandidate;
 class RTCOfferOptions;
 class RTCSessionDescription;
 class RTCSessionDescriptionCallback;
+class RTCSessionDescriptionInit;
 class RTCStatsCallback;
+class ScriptState;
 class VoidCallback;
 
 class RTCPeerConnection final
@@ -72,10 +75,12 @@ public:
 
     void createAnswer(ExecutionContext*, RTCSessionDescriptionCallback*, RTCErrorCallback*, const Dictionary&, ExceptionState&);
 
-    void setLocalDescription(ExecutionContext*, RTCSessionDescription*, VoidCallback*, RTCErrorCallback*, ExceptionState&);
+    ScriptPromise setLocalDescription(ScriptState*, const RTCSessionDescriptionInit&);
+    ScriptPromise setLocalDescription(ScriptState*, RTCSessionDescription*, VoidCallback*, RTCErrorCallback*);
     RTCSessionDescription* localDescription();
 
-    void setRemoteDescription(ExecutionContext*, RTCSessionDescription*, VoidCallback*, RTCErrorCallback*, ExceptionState&);
+    ScriptPromise setRemoteDescription(ScriptState*, const RTCSessionDescriptionInit&);
+    ScriptPromise setRemoteDescription(ScriptState*, RTCSessionDescription*, VoidCallback*, RTCErrorCallback*);
     RTCSessionDescription* remoteDescription();
 
     String signalingState() const;
@@ -86,10 +91,8 @@ public:
     // http://w3c.github.io/webrtc-pc/#sec.cert-mgmt
     static ScriptPromise generateCertificate(ScriptState*, const AlgorithmIdentifier& keygenAlgorithm, ExceptionState&);
 
-    // DEPRECATED
-    void addIceCandidate(RTCIceCandidate*, ExceptionState&);
-
-    void addIceCandidate(RTCIceCandidate*, VoidCallback*, RTCErrorCallback*, ExceptionState&);
+    ScriptPromise addIceCandidate(ScriptState*, const RTCIceCandidateInitOrRTCIceCandidate&);
+    ScriptPromise addIceCandidate(ScriptState*, RTCIceCandidate*, VoidCallback*, RTCErrorCallback*);
 
     String iceGatheringState() const;
 

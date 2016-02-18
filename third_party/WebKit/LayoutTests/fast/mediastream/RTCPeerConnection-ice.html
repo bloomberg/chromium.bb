@@ -25,10 +25,16 @@ function addIceCandidateSuccess()
     pc.close();
 }
 
-function addIceCandidateFailure()
+function unexpectedCallback()
 {
-    testFailed("addIceCandidateFailue was called.");
+    testFailed("unexpectedCallback was called.");
     finishJSTest();
+}
+
+function expectedTypeError(error)
+{
+  shouldBe(error.name, "TypeError")
+  testPassed("expectedTypeError was called.")
 }
 
 function onIceChange1()
@@ -36,13 +42,33 @@ function onIceChange1()
     if (pc.iceConnectionState === "completed") {
         testPassed("iceConnectionState is completed");
         iceCandidate = new RTCIceCandidate({candidate:"nano nano"});
-        shouldThrow('pc.addIceCandidate(null, addIceCandidateSuccess, addIceCandidateFailure);');
-        shouldThrow('pc.addIceCandidate(iceCandidate, null, addIceCandidateFailure);');
-        shouldThrow('pc.addIceCandidate(iceCandidate, addIceCandidateSuccess, null);');
-        shouldNotThrow('pc.addIceCandidate(iceCandidate, addIceCandidateSuccess, addIceCandidateFailure);');
+        shouldNotThrow('pc.addIceCandidate(null, addIceCandidateSuccess, unexpectedCallback).catch(expectedTypeError);');
+        shouldNotThrow('pc.addIceCandidate(iceCandidate, null, unexpectedCallback).catch(expectedTypeError);');
+        shouldNotThrow('pc.addIceCandidate(iceCandidate, addIceCandidateSuccess, null).catch(expectedTypeError);');
+        shouldNotThrow('pc.addIceCandidate(iceCandidate, addIceCandidateSuccess, unexpectedCallback);');
     }
 }
 
+function testExecutionOrderClosedConnection()
+{
+    var localPeerConnection = new webkitRTCPeerConnection(null, null);
+    localPeerConnection.close();
+    var counter = 0;
+    events = [];
+    Promise.resolve().then(_ => events[counter++] = 1);
+    var iceCandidate = new RTCIceCandidate({candidate:"nano nano"});
+    localPeerConnection.addIceCandidate(iceCandidate, unexpectedCallback, (error) => {
+        window.error = error;
+        shouldBe('error', '"The RTCPeerConnection\'s signalingState is \'closed\'."');
+        events[counter++] = 2;
+    });
+    Promise.resolve().then(_ => {
+        events[counter++] = 3; 
+        shouldBe('events', '[1,2,3]');
+    });
+}
+
+shouldNotThrow('testExecutionOrderClosedConnection()');
 shouldNotThrow('pc = new webkitRTCPeerConnection(null, null);');
 pc.oniceconnectionstatechange = onIceChange1;
 

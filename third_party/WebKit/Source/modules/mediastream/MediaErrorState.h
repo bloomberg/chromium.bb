@@ -39,7 +39,7 @@ class NavigatorUserMediaError;
 
 // A class that is able to be used like ExceptionState for carrying
 // information about an error up the stack, but it is up to the higher
-// level code whether it produces a DOMerror or a NavigatorUserMediaError.
+// level code whether it produces a DOMException or a NavigatorUserMediaError.
 class MediaErrorState {
 public:
     MediaErrorState();
@@ -51,12 +51,13 @@ public:
     bool hadException();
     bool canGenerateException();
     void raiseException(ExceptionState&);
+    String getErrorMessage();
     NavigatorUserMediaError* createError();
 private:
     enum ErrorType {
         NoError,
         TypeError,
-        DOMError,
+        DOMException,
         ConstraintError
     };
     ErrorType m_errorType;

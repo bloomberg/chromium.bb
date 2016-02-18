@@ -1245,6 +1245,8 @@
       'mediastream/RTCStatsResponse.h',
       'mediastream/RTCVoidRequestImpl.cpp',
       'mediastream/RTCVoidRequestImpl.h',
+      'mediastream/RTCVoidRequestPromiseImpl.cpp',
+      'mediastream/RTCVoidRequestPromiseImpl.h',
       'mediastream/SourceInfo.cpp',
       'mediastream/SourceInfo.h',
       'mediastream/URLMediaStream.cpp',
