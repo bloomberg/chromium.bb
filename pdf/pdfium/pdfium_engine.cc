@@ -651,79 +651,6 @@ PDFiumEngine::~PDFiumEngine() {
 
 #ifdef PDF_USE_XFA
 
-//  This is just for testing, needs to be removed later
-#if defined(WIN32)
-#define XFA_TESTFILE(filename) "E:/"#filename
-#else
-#define XFA_TESTFILE(filename) "/home/"#filename
-#endif
-
-struct FPDF_FILE {
-  FPDF_FILEHANDLER file_handler;
-  FILE* file;
-};
-
-void Sample_Release(FPDF_LPVOID client_data) {
-  if (!client_data)
-    return;
-  FPDF_FILE* file_wrapper = (FPDF_FILE*)client_data;
-  fclose(file_wrapper->file);
-  delete file_wrapper;
-}
-
-FPDF_DWORD Sample_GetSize(FPDF_LPVOID client_data) {
-  if (!client_data)
-    return 0;
-  FPDF_FILE* file_wrapper = (FPDF_FILE*)client_data;
-  long cur_pos = ftell(file_wrapper->file);
-  if (cur_pos == -1)
-    return 0;
-  if (fseek(file_wrapper->file, 0, SEEK_END))
-    return 0;
-  long size = ftell(file_wrapper->file);
-  fseek(file_wrapper->file, cur_pos, SEEK_SET);
-  return (FPDF_DWORD)size;
-}
-
-FPDF_RESULT Sample_ReadBlock(FPDF_LPVOID client_data,
-                             FPDF_DWORD offset,
-                             FPDF_LPVOID buffer,
-                             FPDF_DWORD size) {
-  if (!client_data)
-    return -1;
-  FPDF_FILE* file_wrapper = (FPDF_FILE*)client_data;
-  if (fseek(file_wrapper->file, (long)offset, SEEK_SET))
-    return -1;
-  size_t read_size = fread(buffer, 1, size, file_wrapper->file);
-  return read_size == size ? 0 : -1;
-}
-
-FPDF_RESULT Sample_WriteBlock(FPDF_LPVOID client_data,
-                              FPDF_DWORD offset,
-                              FPDF_LPCVOID buffer,
-                              FPDF_DWORD size) {
-  if (!client_data)
-    return -1;
-  FPDF_FILE* file_wrapper = (FPDF_FILE*)client_data;
-  if (fseek(file_wrapper->file, (long)offset, SEEK_SET))
-    return -1;
-  // Write data
-  size_t write_size = fwrite(buffer, 1, size, file_wrapper->file);
-  return write_size == size ? 0 : -1;
-}
-
-FPDF_RESULT Sample_Flush(FPDF_LPVOID client_data) {
-  if (!client_data)
-    return -1;
-  // Flush file
-  fflush(((FPDF_FILE*)client_data)->file);
-  return 0;
-}
-
-FPDF_RESULT Sample_Truncate(FPDF_LPVOID client_data, FPDF_DWORD size) {
-  return 0;
-}
-
 void PDFiumEngine::Form_EmailTo(FPDF_FORMFILLINFO* param,
                                 FPDF_FILEHANDLER* file_handler,
                                 FPDF_WIDESTRING to,
@@ -876,47 +803,18 @@ void PDFiumEngine::Form_UploadTo(FPDF_FORMFILLINFO* param,
 
 FPDF_LPFILEHANDLER PDFiumEngine::Form_DownloadFromURL(FPDF_FORMFILLINFO* param,
                                                       FPDF_WIDESTRING url) {
-  std::string url_str =
-      base::UTF16ToUTF8(reinterpret_cast<const base::char16*>(url));
-
-  // Now should get data from url.
-  // For testing purpose, use data read from file
-  // TODO: needs the full implementation here
-  FILE* file = fopen(XFA_TESTFILE("downloadtest.tem"), "w");
-
-  FPDF_FILE* file_wrapper = new FPDF_FILE;
-  file_wrapper->file = file;
-  file_wrapper->file_handler.clientData = file_wrapper;
-  file_wrapper->file_handler.Flush = Sample_Flush;
-  file_wrapper->file_handler.GetSize = Sample_GetSize;
-  file_wrapper->file_handler.ReadBlock = Sample_ReadBlock;
-  file_wrapper->file_handler.Release = Sample_Release;
-  file_wrapper->file_handler.Truncate = Sample_Truncate;
-  file_wrapper->file_handler.WriteBlock = Sample_WriteBlock;
-
-  return &file_wrapper->file_handler;
+  // NOTE: Think hard about the security implications before allowing
+  // a PDF file to perform this action.
+  return nullptr;
 }
 
 FPDF_FILEHANDLER* PDFiumEngine::Form_OpenFile(FPDF_FORMFILLINFO* param,
                                               int file_flag,
                                               FPDF_WIDESTRING url,
                                               const char* mode) {
-  std::string url_str = url ?
-      base::UTF16ToUTF8(reinterpret_cast<const base::char16*>(url)) : "NULL";
-
-  // TODO: need to implement open file from the url
-  // Use a file path for the ease of testing
-  FILE* file = fopen(XFA_TESTFILE("tem.txt"), mode);
-  FPDF_FILE* file_wrapper = new FPDF_FILE;
-  file_wrapper->file = file;
-  file_wrapper->file_handler.clientData = file_wrapper;
-  file_wrapper->file_handler.Flush = Sample_Flush;
-  file_wrapper->file_handler.GetSize = Sample_GetSize;
-  file_wrapper->file_handler.ReadBlock = Sample_ReadBlock;
-  file_wrapper->file_handler.Release = Sample_Release;
-  file_wrapper->file_handler.Truncate = Sample_Truncate;
-  file_wrapper->file_handler.WriteBlock = Sample_WriteBlock;
-  return &file_wrapper->file_handler;
+  // NOTE: Think hard about the security implications before allowing
+  // a PDF file to perform this action.
+  return nullptr;
 }
 
 void PDFiumEngine::Form_GotoURL(FPDF_FORMFILLINFO* param,
