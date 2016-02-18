@@ -1729,6 +1729,10 @@ void Document::updateLayoutTree(StyleRecalcChange change)
     ASSERT(isMainThread());
 
     ScriptForbiddenScope forbidScript;
+    // We should forbid script execution for plugins here because update while layout is changing,
+    // HTMLPlugin element can be reattached and plugin can be destroyed. Plugin can execute scripts
+    // on destroy. It produces crash without PluginScriptForbiddenScope: crbug.com/550427.
+    PluginScriptForbiddenScope pluginForbidScript;
 
     if (!view() || !isActive())
         return;
