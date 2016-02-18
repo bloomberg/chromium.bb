@@ -382,7 +382,8 @@ PassOwnPtr<FontPlatformData> FontCache::createFontPlatformData(const FontDescrip
         { L"simsun", 11 },
         { L"dotum", 12 },
         { L"gulim", 12 },
-        { L"pmingliu", 11 }
+        { L"pmingliu", 11 },
+        { L"pmingliu-extb", 11 }
     };
     size_t numFonts = WTF_ARRAY_LENGTH(minAntiAliasSizeForFont);
     for (size_t i = 0; i < numFonts; i++) {
