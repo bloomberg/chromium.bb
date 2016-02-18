@@ -4,7 +4,6 @@
 
 #include "base/macros.h"
 #include "mojo/shell/capability_filter_test.h"
-#include "mojo/shell/test_package_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -17,11 +16,6 @@ class CapabilityFilterApplicationTest : public CapabilityFilterTest {
   ~CapabilityFilterApplicationTest() override {}
 
  private:
-  // Overridden from CapabilityFilterTest:
-  PackageManager* CreatePackageManager() override {
-    return new TestPackageManager;
-  }
-
   DISALLOW_COPY_AND_ASSIGN(CapabilityFilterApplicationTest);
 };
 

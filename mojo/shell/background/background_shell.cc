@@ -173,7 +173,5 @@ InterfaceRequest<mojom::ShellClient> BackgroundShell::CreateShellClientRequest(
   return request;
 }
 
-void RegisterLocalAliases(PackageManagerImpl* manager) {}
-
 }  // namespace shell
 }  // namespace mojo

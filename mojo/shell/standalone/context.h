@@ -21,7 +21,6 @@
 namespace mojo {
 namespace shell {
 class NativeApplicationLoader;
-class PackageManagerImpl;
 
 // The "global" context for the shell's main process.
 class Context : public edk::ProcessDelegate {
@@ -52,8 +51,6 @@ class Context : public edk::ProcessDelegate {
     return application_manager_.get();
   }
 
-  PackageManagerImpl* package_manager() { return package_manager_; }
-
  private:
   class NativeViewportApplicationLoader;
 
@@ -68,8 +65,6 @@ class Context : public edk::ProcessDelegate {
   // Ensure this is destructed before task_runners_ since it owns a message pipe
   // that needs the IO thread to destruct cleanly.
   Tracer tracer_;
-  // Owned by |application_manager_|.
-  PackageManagerImpl* package_manager_;
   scoped_ptr<ApplicationManager> application_manager_;
   base::Closure app_complete_callback_;
   base::Time main_entry_time_;

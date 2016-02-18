@@ -26,7 +26,6 @@
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/connect_to_application_params.h"
 #include "mojo/shell/identity.h"
-#include "mojo/shell/package_manager/package_manager_impl.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/static_application_loader.h"
 
@@ -199,14 +198,9 @@ void MojoShellContext::SetApplicationsForTest(
 MojoShellContext::MojoShellContext() {
   proxy_.Get().reset(new Proxy(this));
 
-  // Construct with an empty filepath since mojo: urls can't be registered now
-  // the url scheme registry is locked.
-  scoped_ptr<mojo::shell::PackageManagerImpl> package_manager(
-      new mojo::shell::PackageManagerImpl(base::FilePath(), nullptr, nullptr));
   bool register_mojo_url_schemes = false;
   application_manager_.reset(
-      new mojo::shell::ApplicationManager(std::move(package_manager),
-                                          register_mojo_url_schemes));
+      new mojo::shell::ApplicationManager(register_mojo_url_schemes));
 
   application_manager_->set_default_loader(
       scoped_ptr<mojo::shell::ApplicationLoader>(new DefaultApplicationLoader));

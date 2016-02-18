@@ -74,10 +74,6 @@ class CapabilityFilterTest : public testing::Test {
   void RunBlockingTest();
   void RunWildcardTest();
 
-  // Implement to provide an implementation of PackageManager for the test's
-  // ApplicationManager.
-  virtual PackageManager* CreatePackageManager() = 0;
-
   // Overridden from testing::Test:
   void SetUp() override;
   void TearDown() override;

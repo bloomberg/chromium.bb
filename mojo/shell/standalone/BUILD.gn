@@ -11,12 +11,6 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-source_set("register_local_aliases_fwd") {
-  sources = [
-    "register_local_aliases.h",
-  ]
-}
-
 # main() entrypoint definition is structured into a static lib for Android's
 # benefit, as it is shared between the standalone executable and other
 # executables (e.g. Mandoline).
@@ -35,11 +29,7 @@ source_set("main_lib") {
   ]
 
   if (!is_android) {
-    sources += [
-      "desktop/main.cc",
-      "register_local_aliases.cc",
-      "register_local_aliases.h",
-    ]
+    sources += [ "desktop/main.cc" ]
     deps += [
       "//components/tracing:startup_tracing",
       "//third_party/icu:icudata",
@@ -74,12 +64,10 @@ executable("standalone") {
   if (is_android) {
     sources = [
       "android/context_init.cc",
-      "register_local_aliases.cc",
     ]
 
     deps += [
       ":lib",
-      ":register_local_aliases_fwd",
       "//mojo/edk/system",
     ]
 
@@ -112,7 +100,6 @@ source_set("lib") {
     "//mojo/services/tracing/public/cpp",
     "//mojo/services/tracing/public/interfaces",
     "//mojo/shell",
-    "//mojo/shell/package_manager",
     "//mojo/shell/public/cpp",
     "//mojo/shell/runner:init",
     "//mojo/shell/runner/child:interfaces",
@@ -204,8 +191,6 @@ if (is_android) {
   shared_library("bootstrap") {
     sources = [
       "android/bootstrap.cc",
-      "register_local_aliases.cc",
-      "register_local_aliases.h",
     ]
     deps = [
       ":jni_headers",

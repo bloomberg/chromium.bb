@@ -33,11 +33,8 @@
 #include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/connect_to_application_params.h"
-#include "mojo/shell/package_manager/package_manager_impl.h"
-#include "mojo/shell/query_util.h"
 #include "mojo/shell/runner/host/in_process_native_runner.h"
 #include "mojo/shell/runner/host/out_of_process_native_runner.h"
-#include "mojo/shell/standalone/register_local_aliases.h"
 #include "mojo/shell/standalone/switches.h"
 #include "mojo/shell/standalone/tracer.h"
 #include "mojo/shell/switches.h"
@@ -58,59 +55,6 @@ class Setup {
  private:
   DISALLOW_COPY_AND_ASSIGN(Setup);
 };
-
-void InitContentHandlers(PackageManagerImpl* manager,
-                         const base::CommandLine& command_line) {
-  // Default content handlers.
-  manager->RegisterContentHandler("application/javascript",
-                                  GURL("mojo:html_viewer"));
-  manager->RegisterContentHandler("application/pdf", GURL("mojo:pdf_viewer"));
-  manager->RegisterContentHandler("image/gif", GURL("mojo:html_viewer"));
-  manager->RegisterContentHandler("image/jpeg", GURL("mojo:html_viewer"));
-  manager->RegisterContentHandler("image/png", GURL("mojo:html_viewer"));
-  manager->RegisterContentHandler("text/css", GURL("mojo:html_viewer"));
-  manager->RegisterContentHandler("text/html", GURL("mojo:html_viewer"));
-  manager->RegisterContentHandler("text/plain", GURL("mojo:html_viewer"));
-
-  // Command-line-specified content handlers.
-  std::string handlers_spec =
-      command_line.GetSwitchValueASCII(switches::kContentHandlers);
-  if (handlers_spec.empty())
-    return;
-
-#if defined(OS_ANDROID)
-  // TODO(eseidel): On Android we pass command line arguments is via the
-  // 'parameters' key on the intent, which we specify during 'am shell start'
-  // via --esa, however that expects comma-separated values and says:
-  //   am shell --help:
-  //     [--esa <EXTRA_KEY> <EXTRA_STRING_VALUE>[,<EXTRA_STRING_VALUE...]]
-  //     (to embed a comma into a string escape it using "\,")
-  // Whatever takes 'parameters' and constructs a CommandLine is failing to
-  // un-escape the commas, we need to move this fix to that file.
-  base::ReplaceSubstringsAfterOffset(&handlers_spec, 0, "\\,", ",");
-#endif
-
-  std::vector<std::string> parts = base::SplitString(
-      handlers_spec, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  if (parts.size() % 2 != 0) {
-    LOG(ERROR) << "Invalid value for switch " << switches::kContentHandlers
-               << ": must be a comma-separated list of mimetype/url pairs."
-               << handlers_spec;
-    return;
-  }
-
-  for (size_t i = 0; i < parts.size(); i += 2) {
-    GURL url(parts[i + 1]);
-    if (!url.is_valid()) {
-      LOG(ERROR) << "Invalid value for switch " << switches::kContentHandlers
-                 << ": '" << parts[i + 1] << "' is not a valid URL.";
-      return;
-    }
-    // TODO(eseidel): We should also validate that the mimetype is valid
-    // net/base/mime_util.h could do this, but we don't want to depend on net.
-    manager->RegisterContentHandler(parts[i], url);
-  }
-}
 
 class TracingInterfaceProvider : public shell::mojom::InterfaceProvider {
  public:
@@ -137,8 +81,7 @@ class TracingInterfaceProvider : public shell::mojom::InterfaceProvider {
 
 }  // namespace
 
-Context::Context()
-    : package_manager_(nullptr), main_entry_time_(base::Time::Now()) {}
+Context::Context() : main_entry_time_(base::Time::Now()) {}
 
 Context::~Context() {
   DCHECK(!base::MessageLoop::current());
@@ -170,12 +113,6 @@ void Context::Init(const base::FilePath& shell_file_root) {
   // TODO(vtl): This should be MASTER, not NONE.
   edk::InitIPCSupport(this, task_runners_->io_runner());
 
-  package_manager_ = new PackageManagerImpl(
-      shell_file_root, task_runners_->blocking_pool(), nullptr);
-  InitContentHandlers(package_manager_, command_line);
-
-  RegisterLocalAliases(package_manager_);
-
   scoped_ptr<NativeRunnerFactory> runner_factory;
   if (command_line.HasSwitch(switches::kSingleProcess)) {
 #if defined(COMPONENT_BUILD)
@@ -190,8 +127,7 @@ void Context::Init(const base::FilePath& shell_file_root) {
         new OutOfProcessNativeRunnerFactory(task_runners_->blocking_pool()));
   }
   application_manager_.reset(new ApplicationManager(
-      make_scoped_ptr(package_manager_), std::move(runner_factory),
-      task_runners_->blocking_pool(), true));
+      std::move(runner_factory), task_runners_->blocking_pool(), true));
 
   shell::mojom::InterfaceProviderPtr tracing_remote_interfaces;
   shell::mojom::InterfaceProviderPtr tracing_local_interfaces;

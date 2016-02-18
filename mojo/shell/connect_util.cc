@@ -19,6 +19,8 @@ ScopedMessagePipeHandle ConnectToInterfaceByName(
     const std::string& interface_name) {
   shell::mojom::InterfaceProviderPtr remote_interfaces;
   scoped_ptr<ConnectToApplicationParams> params(new ConnectToApplicationParams);
+  params->set_source(Identity(GURL("mojo://shell/"), std::string(),
+                              GetPermissiveCapabilityFilter()));
   params->SetTarget(Identity(application_url, std::string(),
                              GetPermissiveCapabilityFilter()));
   params->set_remote_interfaces(GetProxy(&remote_interfaces));

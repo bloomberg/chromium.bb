@@ -6,20 +6,16 @@
 #define MOJO_SHELL_APPLICATION_MANAGER_H_
 
 #include <map>
-#include <utility>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "mojo/public/cpp/bindings/interface_ptr_info.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/weak_interface_ptr_set.h"
 #include "mojo/services/package_manager/public/interfaces/shell_resolver.mojom.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/capability_filter.h"
 #include "mojo/shell/connect_to_application_params.h"
-#include "mojo/shell/fetcher.h"
 #include "mojo/shell/identity.h"
 #include "mojo/shell/native_runner.h"
 #include "mojo/shell/public/interfaces/application_manager.mojom.h"
@@ -36,7 +32,6 @@ class SequencedWorkerPool;
 namespace mojo {
 namespace shell {
 
-class PackageManager;
 class ApplicationInstance;
 class ContentHandlerConnection;
 
@@ -59,10 +54,7 @@ class ApplicationManager {
   };
 
   // Creates an ApplicationManager.
-  // |package_manager| is an instance of an object that handles URL resolution,
-  // fetching and updating of applications. See package_manager.h.
-  ApplicationManager(scoped_ptr<PackageManager> package_manager,
-                     bool register_mojo_url_schemes);
+  explicit ApplicationManager(bool register_mojo_url_schemes);
   // |native_runner_factory| is an instance of an object capable of vending
   // implementations of NativeRunner, e.g. for in or out-of-process execution.
   // See native_runner.h and RunNativeApplication().
@@ -71,8 +63,7 @@ class ApplicationManager {
   // loaded via ApplicationLoader implementations.
   // When |register_mojo_url_schemes| is true, mojo: and exe: URL schems are
   // registered as "standard" which faciliates resolving.
-  ApplicationManager(scoped_ptr<PackageManager> package_manager,
-                     scoped_ptr<NativeRunnerFactory> native_runner_factory,
+  ApplicationManager(scoped_ptr<NativeRunnerFactory> native_runner_factory,
                      base::TaskRunner* task_runner,
                      bool register_mojo_url_schemes);
   ~ApplicationManager();
@@ -112,8 +103,8 @@ class ApplicationManager {
  private:
   using IdentityToInstanceMap = std::map<Identity, ApplicationInstance*>;
   using URLToLoaderMap = std::map<GURL, ApplicationLoader*>;
-
-  void UseRemotePackageManager(bool register_mojo_url_schemes);
+  using IdentityToContentHandlerMap =
+      std::map<Identity, ContentHandlerConnection*>;
 
   // Takes the contents of |params| only when it returns true.
   bool ConnectToRunningApplication(
@@ -131,6 +122,18 @@ class ApplicationManager {
       const base::Closure& on_application_end,
       const String& application_name,
       mojom::ShellClientRequest* request);
+
+  uint32_t StartContentHandler(const Identity& source,
+                               const Identity& content_handler,
+                               const GURL& url,
+                               mojom::ShellClientRequest request);
+  // Returns a running ContentHandler for |content_handler_identity|, if there
+  // is not one running one is started for |source_identity|.
+  ContentHandlerConnection* GetContentHandler(
+      const Identity& content_handler_identity,
+      const Identity& source_identity);
+  void OnContentHandlerConnectionClosed(
+      ContentHandlerConnection* content_handler);
 
   // Callback when remote PackageManager resolves mojo:foo to mojo:bar.
   // |params| are the params passed to Connect().
@@ -154,20 +157,10 @@ class ApplicationManager {
       const String& application_name,
       const GURL& file_url);
 
-  void AddListenerManifestsReady(mojom::ApplicationManagerListenerPtr listener);
-
-  // Called once |fetcher| has found app. |params->app_url()| is the url of
-  // the requested application before any mappings/resolution have been applied.
-  // The corresponding URLRequest struct in |params| has been taken.
-  void HandleFetchCallback(scoped_ptr<ConnectToApplicationParams> params,
-                           scoped_ptr<Fetcher> fetcher);
-
   void RunNativeApplication(InterfaceRequest<mojom::ShellClient> request,
                             bool start_sandboxed,
-                            scoped_ptr<Fetcher> fetcher,
                             ApplicationInstance* instance,
-                            const base::FilePath& file_path,
-                            bool path_exists);
+                            const base::FilePath& file_path);
 
   // Returns the appropriate loader for |url|, or the default loader if there is
   // no loader configured for the URL.
@@ -178,16 +171,18 @@ class ApplicationManager {
   mojom::ApplicationInfoPtr CreateApplicationInfoForInstance(
       ApplicationInstance* instance) const;
 
-  bool use_remote_package_manager_;
   package_manager::mojom::ShellResolverPtr shell_resolver_;
 
-  scoped_ptr<PackageManager> const package_manager_;
   // Loader management.
   // Loaders are chosen in the order they are listed here.
   URLToLoaderMap url_to_loader_;
   scoped_ptr<ApplicationLoader> default_loader_;
 
   IdentityToInstanceMap identity_to_instance_;
+
+  IdentityToContentHandlerMap identity_to_content_handler_;
+  // Counter used to assign ids to content handlers.
+  uint32_t content_handler_id_counter_;
 
   WeakInterfacePtrSet<mojom::ApplicationManagerListener> listeners_;
 

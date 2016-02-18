@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/shell/package_manager/content_handler_connection.h"
+#include "mojo/shell/content_handler_connection.h"
 
 #include <stdint.h>
 

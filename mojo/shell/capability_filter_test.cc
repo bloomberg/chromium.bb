@@ -12,7 +12,6 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/bindings/weak_binding_set.h"
 #include "mojo/shell/application_loader.h"
-#include "mojo/shell/package_manager.h"
 #include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
@@ -281,8 +280,7 @@ void CapabilityFilterTest::RunWildcardTest() {
 
 
 void CapabilityFilterTest::SetUp() {
-  application_manager_.reset(
-      new ApplicationManager(make_scoped_ptr(CreatePackageManager()), true));
+  application_manager_.reset(new ApplicationManager(true));
   CreateLoader<ServiceApplication>("test:service");
   CreateLoader<ServiceApplication>("test:service2");
 }

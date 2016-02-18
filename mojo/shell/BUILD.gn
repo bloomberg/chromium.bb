@@ -29,16 +29,11 @@ source_set("shell") {
     "connect_to_application_params.h",
     "connect_util.cc",
     "connect_util.h",
-    "data_pipe_peek.cc",
-    "data_pipe_peek.h",
-    "fetcher.cc",
-    "fetcher.h",
+    "content_handler_connection.cc",
+    "content_handler_connection.h",
     "identity.cc",
     "identity.h",
     "native_runner.h",
-    "package_manager.h",
-    "query_util.cc",
-    "query_util.h",
     "shell_application_delegate.cc",
     "shell_application_delegate.h",
     "shell_application_loader.cc",
@@ -79,8 +74,6 @@ source_set("test_support") {
   sources = [
     "capability_filter_test.cc",
     "capability_filter_test.h",
-    "test_package_manager.cc",
-    "test_package_manager.h",
   ]
 
   deps = [
@@ -98,12 +91,6 @@ test("mojo_shell_unittests") {
   sources = [
     "application_manager_unittest.cc",
     "capability_filter_unittest.cc",
-    "data_pipe_peek_unittest.cc",
-    "fetcher/about_fetcher_unittest.cc",
-    "fetcher/data_fetcher_unittest.cc",
-    "fetcher/network_fetcher_unittest.cc",
-    "fetcher/url_resolver_unittest.cc",
-    "query_util_unittest.cc",
   ]
 
   deps = [
@@ -114,8 +101,6 @@ test("mojo_shell_unittests") {
     "//mojo/edk/system:test_utils",
     "//mojo/edk/test:run_all_unittests",
     "//mojo/public/cpp/system",
-    "//mojo/shell/fetcher",
-    "//mojo/shell/package_manager",
     "//mojo/shell/public/cpp",
     "//mojo/util:filename_util",
     "//testing/gtest",

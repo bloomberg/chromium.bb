@@ -15,14 +15,11 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/connect_util.h"
-#include "mojo/shell/fetcher.h"
-#include "mojo/shell/package_manager.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
 #include "mojo/shell/public/interfaces/interface_provider.mojom.h"
 #include "mojo/shell/test.mojom.h"
-#include "mojo/shell/test_package_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -394,8 +391,7 @@ class ApplicationManagerTest : public testing::Test {
   ~ApplicationManagerTest() override {}
 
   void SetUp() override {
-    application_manager_.reset(new ApplicationManager(
-        make_scoped_ptr(new TestPackageManager), true));
+    application_manager_.reset(new ApplicationManager(true));
     test_loader_ = new TestApplicationLoader;
     test_loader_->set_context(&context_);
     application_manager_->set_default_loader(
@@ -452,7 +448,7 @@ TEST_F(ApplicationManagerTest, ClientError) {
 
 TEST_F(ApplicationManagerTest, Deletes) {
   {
-    ApplicationManager am(make_scoped_ptr(new TestPackageManager), true);
+    ApplicationManager am(true);
     TestApplicationLoader* default_loader = new TestApplicationLoader;
     default_loader->set_context(&context_);
     TestApplicationLoader* url_loader1 = new TestApplicationLoader;
@@ -600,29 +596,18 @@ TEST_F(ApplicationManagerTest, SameIdentityShouldNotCauseDuplicateLoad) {
 
   TestServicePtr test_service;
   ConnectToInterface(application_manager_.get(),
-                     GURL("http://www.example.org/abc?def"), &test_service);
+                     GURL("mojo:foo"), &test_service);
   EXPECT_EQ(2, test_loader_->num_loads());
 
   // Exactly the same URL as above.
   ConnectToInterface(application_manager_.get(),
-                     GURL("http://www.example.org/abc?def"), &test_service);
+                     GURL("mojo:foo"), &test_service);
   EXPECT_EQ(2, test_loader_->num_loads());
-
-  // The same identity as the one above because only the query string is
-  // different.
-  ConnectToInterface(application_manager_.get(),
-                     GURL("http://www.example.org/abc"), &test_service);
-  EXPECT_EQ(2, test_loader_->num_loads());
-
-  // A different identity because the path is different.
-  ConnectToInterface(application_manager_.get(),
-                     GURL("http://www.example.org/another_path"), &test_service);
-  EXPECT_EQ(3, test_loader_->num_loads());
 
   // A different identity because the domain is different.
   ConnectToInterface(application_manager_.get(),
-                     GURL("http://www.another_domain.org/abc"), &test_service);
-  EXPECT_EQ(4, test_loader_->num_loads());
+                     GURL("mojo:bar"), &test_service);
+  EXPECT_EQ(3, test_loader_->num_loads());
 }
 
 }  // namespace test

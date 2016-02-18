@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SHELL_PACKAGE_MANAGER_CONTENT_HANDLER_CONNECTION_H_
-#define MOJO_SHELL_PACKAGE_MANAGER_CONTENT_HANDLER_CONNECTION_H_
+#ifndef MOJO_SHELL_CONTENT_HANDLER_CONNECTION_H_
+#define MOJO_SHELL_CONTENT_HANDLER_CONNECTION_H_
 
 #include <stdint.h>
 
@@ -64,4 +64,4 @@ class ContentHandlerConnection {
 }  // namespace shell
 }  // namespace mojo
 
-#endif  // MOJO_SHELL_PACKAGE_MANAGER_CONTENT_HANDLER_CONNECTION_H_
+#endif  // MOJO_SHELL_CONTENT_HANDLER_CONNECTION_H_
