@@ -874,6 +874,7 @@
             'animation/CSSPathInterpolationType.h',
             'animation/CSSPositionAxisListInterpolationType.cpp',
             'animation/CSSPositionAxisListInterpolationType.h',
+            'animation/CSSPositionInterpolationType.h',
             'animation/CSSShadowListInterpolationType.cpp',
             'animation/CSSShadowListInterpolationType.h',
             'animation/CSSValueInterpolationType.cpp',

@@ -17,6 +17,7 @@
 #include "core/animation/CSSPaintInterpolationType.h"
 #include "core/animation/CSSPathInterpolationType.h"
 #include "core/animation/CSSPositionAxisListInterpolationType.h"
+#include "core/animation/CSSPositionInterpolationType.h"
 #include "core/animation/CSSShadowListInterpolationType.h"
 #include "core/animation/CSSValueInterpolationType.h"
 #include "core/animation/CSSVisibilityInterpolationType.h"
@@ -180,6 +181,10 @@ const InterpolationTypes* PropertyInterpolationTypesMapping::get(const PropertyH
         case CSSPropertyWebkitMaskPositionX:
         case CSSPropertyWebkitMaskPositionY:
             applicableTypes->append(adoptPtr(new CSSPositionAxisListInterpolationType(cssProperty)));
+            break;
+        case CSSPropertyPerspectiveOrigin:
+        case CSSPropertyObjectPosition:
+            applicableTypes->append(adoptPtr(new CSSPositionInterpolationType(cssProperty)));
             break;
         default:
             // TODO(alancutter): Support all interpolable CSS properties here so we can stop falling back to the old StyleInterpolation implementation.

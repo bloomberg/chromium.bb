@@ -15,6 +15,8 @@ public:
         : CSSLengthListInterpolationType(property)
     { }
 
+    static InterpolationValue convertPositionAxisCSSValue(const CSSValue&);
+
 private:
     InterpolationValue maybeConvertValue(const CSSValue&, const StyleResolverState&, ConversionCheckers&) const final;
 };
