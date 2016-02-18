@@ -660,27 +660,6 @@ cr.define('options', function() {
     },
 
     /**
-     * Creates a DisplayLayout object representing the display.
-     * @param {!options.DisplayInfo} display
-     * @param {!options.DisplayLayoutType} layoutType
-     * @param {string} parentId
-     * @return {!options.DisplayLayout}
-     * @private
-     */
-    createDisplayLayout_: function(display, layoutType, parentId) {
-      return {
-        bounds: display.bounds,
-        div: null,
-        id: display.id,
-        layoutType: layoutType,
-        name: display.name,
-        offset: 0,
-        originalPosition: {x: 0, y: 0},
-        parentId: parentId
-      };
-    },
-
-    /**
      * Layouts the display rectangles according to the current layout_.
      * @param {options.DisplayLayoutType} layoutType
      * @private
@@ -702,7 +681,8 @@ cr.define('options', function() {
       for (var i = 0; i < this.displays_.length; i++) {
         var display = this.displays_[i];
         var parentId = display.isPrimary ? '' : primaryDisplayId;
-        var layout = this.createDisplayLayout_(display, layoutType, parentId);
+        var layout = new options.DisplayLayout(
+            display.id, display.name, display.bounds, layoutType, parentId);
         this.displayLayoutManager_.addDisplayLayout(layout);
       }
 
