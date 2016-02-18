@@ -44,6 +44,7 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/LayoutTreeBuilderTraversal.h"
+#include "core/dom/Microtask.h"
 #include "core/dom/NodeRareData.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/ProcessingInstruction.h"
@@ -690,6 +691,11 @@ void Node::markAncestorsWithChildNeedsStyleInvalidation()
 void Node::markAncestorsWithChildNeedsDistributionRecalc()
 {
     ScriptForbiddenScope forbidScriptDuringRawIteration;
+    if (inDocument() && !document().childNeedsDistributionRecalc()) {
+        // TODO(hayato): Support a non-document composed tree.
+        // TODO(hayato): Enqueue a task only if a 'slotchange' event listner is registered in the document composed tree.
+        Microtask::enqueueMicrotask(WTF::bind(&Document::updateDistribution, PassRefPtrWillBeRawPtr<Document>(&document())));
+    }
     for (Node* node = this; node && !node->childNeedsDistributionRecalc(); node = node->parentOrShadowHostNode())
         node->setChildNeedsDistributionRecalc();
     document().scheduleLayoutTreeUpdateIfNeeded();

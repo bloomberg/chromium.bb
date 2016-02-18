@@ -201,6 +201,7 @@ selectionchange
 selectstart
 show
 signalingstatechange
+slotchange
 soundend
 soundstart
 sourceclose

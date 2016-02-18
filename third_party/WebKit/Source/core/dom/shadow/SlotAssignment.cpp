@@ -76,6 +76,8 @@ void SlotAssignment::resolveAssignment(ShadowRoot& shadowRoot)
     // Update each slot's distribution in reverse tree order so that a child slot is visited before its parent slot.
     for (auto slot = slots.rbegin(); slot != slots.rend(); ++slot)
         (*slot)->updateDistributedNodesWithFallback();
+    for (const auto& slot : slots)
+        slot->didUpdateDistribution();
 }
 
 void SlotAssignment::assign(Node& hostChild, HTMLSlotElement& slot)

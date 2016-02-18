@@ -58,7 +58,10 @@ public:
     void appendDistributedNodesFrom(const HTMLSlotElement& other);
     void clearDistribution();
 
+    bool hasSlotChangeEventListener();
+
     void updateDistributedNodesWithFallback();
+    void didUpdateDistribution();
 
     void attach(const AttachContext& = AttachContext()) override;
     void detach(const AttachContext& = AttachContext()) override;
@@ -74,9 +77,13 @@ private:
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
     void removedFrom(ContainerNode*) override;
 
+    void dispatchSlotChangeEvent();
+
     WillBeHeapVector<RefPtrWillBeMember<Node>> m_assignedNodes;
     WillBeHeapVector<RefPtrWillBeMember<Node>> m_distributedNodes;
     WillBeHeapHashMap<RawPtrWillBeMember<const Node>, size_t> m_distributedIndices;
+    // TODO(hayato): Remove m_oldDistibutedNodes and make SlotAssignment check the diffirence between old and new distributed nodes for each slot to save the memories.
+    WillBeHeapVector<RefPtrWillBeMember<Node>> m_oldDistributedNodes;
 };
 
 } // namespace blink
