@@ -3971,21 +3971,12 @@ compileBeforeAfter(FileInfo * nested)
 /* 1=before, 2=after, 0=error */
 	CharsString token;
 	CharsString tmp;
-	int ret = 0;
-	int i;
 	if (getToken(nested, &token, "lastword before or after"))
 		if (parseChars(nested, &tmp, &token)) {
-			char * s = malloc(sizeof(char) * (tmp.length + 1));
-			for (i = 0; i < tmp.length; i++)
-				s[i] = (char)tmp.chars[i];
-			s[tmp.length] = '\0';
-			if (strcmp(s, "before") == 0)
-				ret = 1;
-			else if (strcmp(s, "after") == 0)
-				ret = 2;
-			free(s);
+		  if (eqasc2uni((unsigned char *)"before", tmp.chars, 6)) return 1;
+		  if (eqasc2uni((unsigned char *)"after", tmp.chars, 5)) return 2;
 		}
-	return ret;
+	return 0;
 }
 
 static int
