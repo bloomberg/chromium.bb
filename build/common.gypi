@@ -474,12 +474,8 @@
       'asan%': 0,
       'asan_blacklist%': '<(PRODUCT_DIR)/../../tools/memory/asan/blacklist.txt',
       # Enable coverage gathering instrumentation in sanitizer tools. This flag
-      # also controls coverage granularity (1 for function-level coverage, 2
-      # for block-level coverage).
-      'sanitizer_coverage%': 0,
-      # Deprecated, only works if |sanitizer_coverage| isn't set.
-      # TODO(glider): remove this flag.
-      'asan_coverage%': 0,
+      # also controls coverage granularity.
+      'sanitizer_coverage%': '',
       # Enable intra-object-overflow detection in ASan (experimental).
       'asan_field_padding%': 0,
 
@@ -1205,7 +1201,6 @@
     'mac_want_real_dsym%': '<(mac_want_real_dsym)',
     'asan%': '<(asan)',
     'asan_blacklist%': '<(asan_blacklist)',
-    'asan_coverage%': '<(asan_coverage)',
     'sanitizer_coverage%': '<(sanitizer_coverage)',
     'asan_field_padding%': '<(asan_field_padding)',
     'use_sanitizer_options%': '<(use_sanitizer_options)',
@@ -4466,19 +4461,7 @@
               }],
             ],
           }],
-          ['asan_coverage!=0 and sanitizer_coverage==0', {
-            'target_conditions': [
-              ['_toolset=="target"', {
-                'cflags': [
-                  '-fsanitize-coverage=<(asan_coverage)',
-                ],
-                'defines': [
-                  'SANITIZER_COVERAGE',
-                ],
-              }],
-            ],
-          }],
-          ['sanitizer_coverage!=0', {
+          ['sanitizer_coverage!=""', {
             'target_conditions': [
               ['_toolset=="target"', {
                 'cflags': [
@@ -4490,7 +4473,7 @@
               }],
             ],
           }],
-          ['(asan_coverage>1 or sanitizer_coverage>1) and target_arch=="arm"', {
+          ['sanitizer_coverage!="" and target_arch=="arm"', {
             'target_conditions': [
               ['_toolset=="target"', {
                 'cflags': [
@@ -5132,19 +5115,7 @@
               ],
             },
           }],
-          ['asan_coverage!=0 and sanitizer_coverage==0', {
-            'target_conditions': [
-              ['_toolset=="target"', {
-                'cflags': [
-                  '-fsanitize-coverage=<(asan_coverage)',
-                ],
-                'defines': [
-                  'SANITIZER_COVERAGE',
-                ],
-              }],
-            ],
-          }],
-          ['sanitizer_coverage!=0', {
+          ['sanitizer_coverage!=""', {
             'target_conditions': [
               ['_toolset=="target"', {
                 'cflags': [
@@ -5978,7 +5949,7 @@
                     }],
                   ],
                 }],
-                ['sanitizer_coverage!=0', {
+                ['sanitizer_coverage!=""', {
                   # TODO(asan/win): Move this down into the general
                   # win-target_defaults section once the 64-bit asan runtime
                   # exists.  See crbug.com/345874.
@@ -5991,7 +5962,7 @@
               ],
             },
             'conditions': [
-              ['sanitizer_coverage!=0', {
+              ['sanitizer_coverage!=""', {
                 # TODO(asan/win): Move this down into the general
                 # win-target_defaults section once the 64-bit asan runtime
                 # exists.  See crbug.com/345874.
