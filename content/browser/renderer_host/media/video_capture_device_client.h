@@ -49,15 +49,6 @@ class CONTENT_EXPORT VideoCaptureDeviceClient
                               const media::VideoCaptureFormat& frame_format,
                               int rotation,
                               const base::TimeTicks& timestamp) override;
-  void OnIncomingCapturedYuvData(const uint8_t* y_data,
-                                 const uint8_t* u_data,
-                                 const uint8_t* v_data,
-                                 size_t y_stride,
-                                 size_t u_stride,
-                                 size_t v_stride,
-                                 const media::VideoCaptureFormat& frame_format,
-                                 int clockwise_rotation,
-                                 const base::TimeTicks& timestamp) override;
   scoped_ptr<Buffer> ReserveOutputBuffer(
       const gfx::Size& dimensions,
       media::VideoPixelFormat format,

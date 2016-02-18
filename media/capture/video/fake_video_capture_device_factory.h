@@ -41,7 +41,6 @@ class MEDIA_EXPORT FakeVideoCaptureDeviceFactory
 
   int number_of_devices_;
   FakeVideoCaptureDevice::BufferOwnership fake_vcd_ownership_;
-  FakeVideoCaptureDevice::BufferPlanarity fake_vcd_planarity_;
   float frame_rate_;
 };
 

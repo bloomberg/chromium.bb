@@ -122,7 +122,6 @@ TEST_F(MediaInternalsVideoCaptureDeviceTest,
   CaptureApiTypeStringMap m;
 #if defined(OS_LINUX)
   m[VideoCaptureDeviceName::V4L2_SINGLE_PLANE] = "V4L2 SPLANE";
-  m[VideoCaptureDeviceName::V4L2_MULTI_PLANE] = "V4L2 MPLANE";
 #elif defined(OS_WIN)
   m[VideoCaptureDeviceName::MEDIA_FOUNDATION] = "Media Foundation";
   m[VideoCaptureDeviceName::DIRECT_SHOW] = "Direct Show";

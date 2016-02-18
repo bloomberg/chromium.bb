@@ -55,7 +55,6 @@ class MEDIA_EXPORT VideoCaptureDevice {
     // Linux/CrOS targets Capture Api type: it can only be set on construction.
     enum CaptureApiType {
       V4L2_SINGLE_PLANE,
-      V4L2_MULTI_PLANE,
       API_TYPE_UNKNOWN
     };
 #elif defined(OS_WIN)
@@ -212,19 +211,6 @@ class MEDIA_EXPORT VideoCaptureDevice {
                                         const VideoCaptureFormat& frame_format,
                                         int clockwise_rotation,
                                         const base::TimeTicks& timestamp) = 0;
-
-    // Captured a 3 planar YUV frame. Planes are possibly disjoint.
-    // |frame_format| must indicate I420.
-    virtual void OnIncomingCapturedYuvData(
-        const uint8_t* y_data,
-        const uint8_t* u_data,
-        const uint8_t* v_data,
-        size_t y_stride,
-        size_t u_stride,
-        size_t v_stride,
-        const VideoCaptureFormat& frame_format,
-        int clockwise_rotation,
-        const base::TimeTicks& timestamp) = 0;
 
     // Reserve an output buffer into which contents can be captured directly.
     // The returned Buffer will always be allocated with a memory size suitable

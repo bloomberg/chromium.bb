@@ -28,28 +28,21 @@
 namespace media {
 
 static bool HasUsableFormats(int fd, uint32_t capabilities) {
+  if (!(capabilities & V4L2_CAP_VIDEO_CAPTURE))
+    return false;
+
   const std::list<uint32_t>& usable_fourccs =
       VideoCaptureDeviceLinux::GetListOfUsableFourCCs(false);
-
-  static const struct {
-    int capability;
-    v4l2_buf_type buf_type;
-  } kCapabilityAndBufferTypes[] = {
-      {V4L2_CAP_VIDEO_CAPTURE, V4L2_BUF_TYPE_VIDEO_CAPTURE},
-      {V4L2_CAP_VIDEO_CAPTURE_MPLANE, V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE}};
-
-  for (const auto& capability_and_buffer_type : kCapabilityAndBufferTypes) {
-    v4l2_fmtdesc fmtdesc = {};
-    if (capabilities & capability_and_buffer_type.capability) {
-      fmtdesc.type = capability_and_buffer_type.buf_type;
-      for (; HANDLE_EINTR(ioctl(fd, VIDIOC_ENUM_FMT, &fmtdesc)) == 0;
-           ++fmtdesc.index) {
-        if (std::find(usable_fourccs.begin(), usable_fourccs.end(),
-                      fmtdesc.pixelformat) != usable_fourccs.end())
-          return true;
-      }
+  v4l2_fmtdesc fmtdesc = {};
+  fmtdesc.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  for (; HANDLE_EINTR(ioctl(fd, VIDIOC_ENUM_FMT, &fmtdesc)) == 0;
+       ++fmtdesc.index) {
+    if (std::find(usable_fourccs.begin(), usable_fourccs.end(),
+                  fmtdesc.pixelformat) != usable_fourccs.end()) {
+      return true;
     }
   }
+
   DLOG(ERROR) << "No usable formats found";
   return false;
 }
@@ -89,10 +82,9 @@ static std::list<float> GetFrameRateList(int fd,
 
 static void GetSupportedFormatsForV4L2BufferType(
     int fd,
-    v4l2_buf_type buf_type,
     media::VideoCaptureFormats* supported_formats) {
   v4l2_fmtdesc v4l2_format = {};
-  v4l2_format.type = buf_type;
+  v4l2_format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   for (; HANDLE_EINTR(ioctl(fd, VIDIOC_ENUM_FMT, &v4l2_format)) == 0;
        ++v4l2_format.index) {
     VideoCaptureFormat supported_format;
@@ -182,16 +174,12 @@ void VideoCaptureDeviceFactoryLinux::GetDeviceNames(
     // http://crbug.com/139356.
     v4l2_capability cap;
     if ((HANDLE_EINTR(ioctl(fd.get(), VIDIOC_QUERYCAP, &cap)) == 0) &&
-        ((cap.capabilities & V4L2_CAP_VIDEO_CAPTURE ||
-          cap.capabilities & V4L2_CAP_VIDEO_CAPTURE_MPLANE) &&
-         !(cap.capabilities & V4L2_CAP_VIDEO_OUTPUT) &&
-         !(cap.capabilities & V4L2_CAP_VIDEO_OUTPUT_MPLANE)) &&
+        (cap.capabilities & V4L2_CAP_VIDEO_CAPTURE &&
+         !(cap.capabilities & V4L2_CAP_VIDEO_OUTPUT)) &&
         HasUsableFormats(fd.get(), cap.capabilities)) {
       device_names->push_back(VideoCaptureDevice::Name(
           reinterpret_cast<char*>(cap.card), unique_id,
-          (cap.capabilities & V4L2_CAP_VIDEO_CAPTURE_MPLANE)
-              ? VideoCaptureDevice::Name::V4L2_MULTI_PLANE
-              : VideoCaptureDevice::Name::V4L2_SINGLE_PLANE));
+          VideoCaptureDevice::Name::V4L2_SINGLE_PLANE));
     }
   }
 }
@@ -209,13 +197,7 @@ void VideoCaptureDeviceFactoryLinux::GetDeviceSupportedFormats(
 
   DCHECK_NE(device.capture_api_type(),
             VideoCaptureDevice::Name::API_TYPE_UNKNOWN);
-  const v4l2_buf_type buf_type =
-      (device.capture_api_type() == VideoCaptureDevice::Name::V4L2_MULTI_PLANE)
-          ? V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE
-          : V4L2_BUF_TYPE_VIDEO_CAPTURE;
-  GetSupportedFormatsForV4L2BufferType(fd.get(), buf_type, supported_formats);
-
-  return;
+  GetSupportedFormatsForV4L2BufferType(fd.get(), supported_formats);
 }
 
 // static

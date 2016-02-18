@@ -75,18 +75,6 @@ class MockClient : public VideoCaptureDevice::Client {
                               const base::TimeTicks& timestamp) {
     frame_cb_.Run(format);
   }
-  void OnIncomingCapturedYuvData(const uint8_t* y_data,
-                                 const uint8_t* u_data,
-                                 const uint8_t* v_data,
-                                 size_t y_stride,
-                                 size_t u_stride,
-                                 size_t v_stride,
-                                 const VideoCaptureFormat& frame_format,
-                                 int clockwise_rotation,
-                                 const base::TimeTicks& timestamp) {
-    frame_cb_.Run(frame_format);
-  }
-
   // Virtual methods for capturing using Client's Buffers.
   scoped_ptr<Buffer> ReserveOutputBuffer(const gfx::Size& dimensions,
                                          media::VideoPixelFormat format,
@@ -187,9 +175,7 @@ class FakeVideoCaptureDeviceBase : public ::testing::Test {
 class FakeVideoCaptureDeviceTest
     : public FakeVideoCaptureDeviceBase,
       public ::testing::WithParamInterface<
-          ::testing::tuple<FakeVideoCaptureDevice::BufferOwnership,
-                           FakeVideoCaptureDevice::BufferPlanarity,
-                           float>> {};
+          ::testing::tuple<FakeVideoCaptureDevice::BufferOwnership, float>> {};
 
 struct CommandLineTestData {
   // Command line argument
@@ -207,19 +193,18 @@ TEST_P(FakeVideoCaptureDeviceTest, CaptureUsing) {
   ASSERT_FALSE(names->empty());
 
   scoped_ptr<VideoCaptureDevice> device(new FakeVideoCaptureDevice(
-      testing::get<0>(GetParam()), testing::get<1>(GetParam()),
-      testing::get<2>(GetParam())));
+      testing::get<0>(GetParam()), testing::get<1>(GetParam())));
   ASSERT_TRUE(device);
 
   VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(640, 480);
-  capture_params.requested_format.frame_rate = testing::get<2>(GetParam());
+  capture_params.requested_format.frame_rate = testing::get<1>(GetParam());
   device->AllocateAndStart(capture_params, std::move(client_));
 
   WaitForCapturedFrame();
   EXPECT_EQ(last_format().frame_size.width(), 640);
   EXPECT_EQ(last_format().frame_size.height(), 480);
-  EXPECT_EQ(last_format().frame_rate, testing::get<2>(GetParam()));
+  EXPECT_EQ(last_format().frame_rate, testing::get<1>(GetParam()));
   device->StopAndDeAllocate();
 }
 
@@ -228,8 +213,6 @@ INSTANTIATE_TEST_CASE_P(
     FakeVideoCaptureDeviceTest,
     Combine(Values(FakeVideoCaptureDevice::BufferOwnership::OWN_BUFFERS,
                    FakeVideoCaptureDevice::BufferOwnership::CLIENT_BUFFERS),
-            Values(FakeVideoCaptureDevice::BufferPlanarity::PACKED,
-                   FakeVideoCaptureDevice::BufferPlanarity::TRIPLANAR),
             Values(20, 29.97, 30, 50, 60)));
 
 TEST_F(FakeVideoCaptureDeviceTest, GetDeviceSupportedFormats) {

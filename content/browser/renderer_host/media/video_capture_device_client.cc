@@ -188,10 +188,10 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
       NOTREACHED() << "RGB24 is only available in Linux and Windows platforms";
 #endif
 #if defined(OS_WIN)
-      // TODO(wjia): Currently, for RGB24 on WIN, capture device always
-      // passes in positive src_width and src_height. Remove this hardcoded
-      // value when nagative src_height is supported. The negative src_height
-      // indicates that vertical flipping is needed.
+      // TODO(wjia): Currently, for RGB24 on WIN, capture device always passes
+      // in positive src_width and src_height. Remove this hardcoded value when
+      // negative src_height is supported. The negative src_height indicates
+      // that vertical flipping is needed.
       flip = true;
 #endif
       break;
@@ -255,56 +255,6 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
       media::PIXEL_FORMAT_I420, output_pixel_storage);
   OnIncomingCapturedBuffer(std::move(buffer), output_format, timestamp);
 }
-
-void VideoCaptureDeviceClient::OnIncomingCapturedYuvData(
-    const uint8_t* y_data,
-    const uint8_t* u_data,
-    const uint8_t* v_data,
-    size_t y_stride,
-    size_t u_stride,
-    size_t v_stride,
-    const VideoCaptureFormat& frame_format,
-    int clockwise_rotation,
-    const base::TimeTicks& timestamp) {
-  TRACE_EVENT0("video", "VideoCaptureDeviceClient::OnIncomingCapturedYuvData");
-  DCHECK_EQ(media::PIXEL_FORMAT_I420, frame_format.pixel_format);
-  DCHECK_EQ(media::PIXEL_STORAGE_CPU, frame_format.pixel_storage);
-  DCHECK_EQ(0, clockwise_rotation) << "Rotation not supported";
-
-  uint8_t *y_plane_data, *u_plane_data, *v_plane_data;
-  scoped_ptr<Buffer> buffer(ReserveI420OutputBuffer(
-      frame_format.frame_size, frame_format.pixel_storage, &y_plane_data,
-      &u_plane_data, &v_plane_data));
-  if (!buffer.get())
-    return;
-
-  const size_t dst_y_stride =
-      VideoFrame::RowBytes(VideoFrame::kYPlane, media::PIXEL_FORMAT_I420,
-                           frame_format.frame_size.width());
-  const size_t dst_u_stride =
-      VideoFrame::RowBytes(VideoFrame::kUPlane, media::PIXEL_FORMAT_I420,
-                           frame_format.frame_size.width());
-  const size_t dst_v_stride =
-      VideoFrame::RowBytes(VideoFrame::kVPlane, media::PIXEL_FORMAT_I420,
-                           frame_format.frame_size.width());
-  DCHECK_GE(y_stride, dst_y_stride);
-  DCHECK_GE(u_stride, dst_u_stride);
-  DCHECK_GE(v_stride, dst_v_stride);
-
-  if (libyuv::I420Copy(y_data, y_stride,
-                       u_data, u_stride,
-                       v_data, v_stride,
-                       y_plane_data, dst_y_stride,
-                       u_plane_data, dst_u_stride,
-                       v_plane_data, dst_v_stride,
-                       frame_format.frame_size.width(),
-                       frame_format.frame_size.height())) {
-    DLOG(WARNING) << "Failed to copy buffer";
-    return;
-  }
-
-  OnIncomingCapturedBuffer(std::move(buffer), frame_format, timestamp);
-};
 
 scoped_ptr<media::VideoCaptureDevice::Client::Buffer>
 VideoCaptureDeviceClient::ReserveOutputBuffer(

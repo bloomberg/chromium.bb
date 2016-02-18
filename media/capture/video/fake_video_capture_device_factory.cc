@@ -24,7 +24,6 @@ static const float kFakeCaptureDefaultFrameRate = 20.0f;
 FakeVideoCaptureDeviceFactory::FakeVideoCaptureDeviceFactory()
     : number_of_devices_(1),
       fake_vcd_ownership_(FakeVideoCaptureDevice::BufferOwnership::OWN_BUFFERS),
-      fake_vcd_planarity_(FakeVideoCaptureDevice::BufferPlanarity::PACKED),
       frame_rate_(kFakeCaptureDefaultFrameRate) {}
 
 scoped_ptr<VideoCaptureDevice> FakeVideoCaptureDeviceFactory::Create(
@@ -36,8 +35,8 @@ scoped_ptr<VideoCaptureDevice> FakeVideoCaptureDeviceFactory::Create(
   for (int n = 0; n < number_of_devices_; ++n) {
     std::string possible_id = base::StringPrintf("/dev/video%d", n);
     if (device_name.id().compare(possible_id) == 0) {
-      return scoped_ptr<VideoCaptureDevice>(new FakeVideoCaptureDevice(
-          fake_vcd_ownership_, fake_vcd_planarity_, frame_rate_));
+      return scoped_ptr<VideoCaptureDevice>(
+          new FakeVideoCaptureDevice(fake_vcd_ownership_, frame_rate_));
     }
   }
   return scoped_ptr<VideoCaptureDevice>();
@@ -108,9 +107,6 @@ void FakeVideoCaptureDeviceFactory::parse_command_line() {
         base::EqualsCaseInsensitiveASCII(param.back(), "client")) {
       fake_vcd_ownership_ =
           FakeVideoCaptureDevice::BufferOwnership::CLIENT_BUFFERS;
-    } else if (base::EqualsCaseInsensitiveASCII(param.front(), "planarity") &&
-               base::EqualsCaseInsensitiveASCII(param.back(), "triplanar")) {
-      fake_vcd_planarity_ = FakeVideoCaptureDevice::BufferPlanarity::TRIPLANAR;
     } else if (base::EqualsCaseInsensitiveASCII(param.front(), "fps")) {
       double fps = 0;
       if (base::StringToDouble(param.back(), &fps)) {

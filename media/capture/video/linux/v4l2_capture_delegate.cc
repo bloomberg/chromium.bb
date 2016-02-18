@@ -16,8 +16,6 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "media/base/bind_to_current_loop.h"
-#include "media/capture/video/linux/v4l2_capture_delegate_multi_plane.h"
-#include "media/capture/video/linux/v4l2_capture_delegate_single_plane.h"
 #include "media/capture/video/linux/video_capture_device_linux.h"
 
 namespace media {
@@ -48,43 +46,75 @@ static struct {
     {V4L2_PIX_FMT_YUYV, PIXEL_FORMAT_YUY2, 1},
     {V4L2_PIX_FMT_UYVY, PIXEL_FORMAT_UYVY, 1},
     {V4L2_PIX_FMT_RGB24, PIXEL_FORMAT_RGB24, 1},
-#if !defined(OS_OPENBSD)
-    // TODO(mcasas): add V4L2_PIX_FMT_YVU420M when available in bots.
-    {V4L2_PIX_FMT_YUV420M, PIXEL_FORMAT_I420, 3},
-#endif
     // MJPEG is usually sitting fairly low since we don't want to have to
-    // decode.
-    // However, is needed for large resolutions due to USB bandwidth
-    // limitations,
-    // so GetListOfUsableFourCcs() can duplicate it on top, see that method.
+    // decode. However, it is needed for large resolutions due to USB bandwidth
+    // limitations, so GetListOfUsableFourCcs() can duplicate it on top, see
+    // that method.
     {V4L2_PIX_FMT_MJPEG, PIXEL_FORMAT_MJPEG, 1},
     // JPEG works as MJPEG on some gspca webcams from field reports, see
     // https://code.google.com/p/webrtc/issues/detail?id=529, put it as the
-    // least
-    // preferred format.
+    // least preferred format.
     {V4L2_PIX_FMT_JPEG, PIXEL_FORMAT_MJPEG, 1},
 };
 
-// static
-scoped_refptr<V4L2CaptureDelegate>
-V4L2CaptureDelegate::CreateV4L2CaptureDelegate(
-    const VideoCaptureDevice::Name& device_name,
-    const scoped_refptr<base::SingleThreadTaskRunner>& v4l2_task_runner,
-    int power_line_frequency) {
-  switch (device_name.capture_api_type()) {
-    case VideoCaptureDevice::Name::V4L2_SINGLE_PLANE:
-      return make_scoped_refptr(new V4L2CaptureDelegateSinglePlane(
-          device_name, v4l2_task_runner, power_line_frequency));
-    case VideoCaptureDevice::Name::V4L2_MULTI_PLANE:
-#if !defined(OS_OPENBSD)
-      return make_scoped_refptr(new V4L2CaptureDelegateMultiPlane(
-          device_name, v4l2_task_runner, power_line_frequency));
-    default:
-#endif
-      NOTIMPLEMENTED() << "Unknown V4L2 capture API type";
-      return scoped_refptr<V4L2CaptureDelegate>();
-  }
+// Fill in |format| with the given parameters.
+static void FillV4L2Format(v4l2_format* format,
+                           uint32_t width,
+                           uint32_t height,
+                           uint32_t pixelformat_fourcc) {
+  memset(format, 0, sizeof(*format));
+  format->type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  format->fmt.pix.width = width;
+  format->fmt.pix.height = height;
+  format->fmt.pix.pixelformat = pixelformat_fourcc;
 }
+
+// Fills all parts of |buffer|.
+static void FillV4L2Buffer(v4l2_buffer* buffer, int index) {
+  memset(buffer, 0, sizeof(*buffer));
+  buffer->memory = V4L2_MEMORY_MMAP;
+  buffer->index = index;
+  buffer->type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+}
+
+static void FillV4L2RequestBuffer(v4l2_requestbuffers* request_buffer,
+                                  int count) {
+  memset(request_buffer, 0, sizeof(*request_buffer));
+  request_buffer->type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  request_buffer->memory = V4L2_MEMORY_MMAP;
+  request_buffer->count = count;
+}
+
+// Returns the input |fourcc| as a std::string four char representation.
+static std::string FourccToString(uint32_t fourcc) {
+  return base::StringPrintf("%c%c%c%c", fourcc & 0xFF, (fourcc >> 8) & 0xFF,
+                            (fourcc >> 16) & 0xFF, (fourcc >> 24) & 0xFF);
+}
+
+// Class keeping track of a SPLANE V4L2 buffer, mmap()ed on construction and
+// munmap()ed on destruction.
+class V4L2CaptureDelegate::BufferTracker
+    : public base::RefCounted<BufferTracker> {
+ public:
+  BufferTracker();
+  // Abstract method to mmap() given |fd| according to |buffer|.
+  bool Init(int fd, const v4l2_buffer& buffer);
+
+  const uint8_t* start() const { return start_; }
+  size_t payload_size() const { return payload_size_; }
+  void set_payload_size(size_t payload_size) {
+    DCHECK_LE(payload_size, length_);
+    payload_size_ = payload_size;
+  }
+
+ private:
+  friend class base::RefCounted<BufferTracker>;
+  virtual ~BufferTracker();
+
+  uint8_t* start_;
+  size_t length_;
+  size_t payload_size_;
+};
 
 // static
 size_t V4L2CaptureDelegate::GetNumPlanesForFourCc(uint32_t fourcc) {
@@ -124,51 +154,16 @@ std::list<uint32_t> V4L2CaptureDelegate::GetListOfUsableFourCcs(
   return supported_formats;
 }
 
-// static
-std::string V4L2CaptureDelegate::FourccToString(uint32_t fourcc) {
-  return base::StringPrintf("%c%c%c%c", fourcc & 0xFF, (fourcc >> 8) & 0xFF,
-                            (fourcc >> 16) & 0xFF, (fourcc >> 24) & 0xFF);
-}
-
-V4L2CaptureDelegate::BufferTracker::BufferTracker() {
-}
-
-V4L2CaptureDelegate::BufferTracker::~BufferTracker() {
-  for (const auto& plane : planes_) {
-    if (plane.start == nullptr)
-      continue;
-    const int result = munmap(plane.start, plane.length);
-    PLOG_IF(ERROR, result < 0) << "Error munmap()ing V4L2 buffer";
-  }
-}
-
-void V4L2CaptureDelegate::BufferTracker::AddMmapedPlane(uint8_t* const start,
-                                                        size_t length) {
-  Plane plane;
-  plane.start = start;
-  plane.length = length;
-  plane.payload_size = 0;
-  planes_.push_back(plane);
-}
-
 V4L2CaptureDelegate::V4L2CaptureDelegate(
     const VideoCaptureDevice::Name& device_name,
     const scoped_refptr<base::SingleThreadTaskRunner>& v4l2_task_runner,
     int power_line_frequency)
-    : capture_type_((device_name.capture_api_type() ==
-                     VideoCaptureDevice::Name::V4L2_SINGLE_PLANE)
-                        ? V4L2_BUF_TYPE_VIDEO_CAPTURE
-                        : V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE),
-      v4l2_task_runner_(v4l2_task_runner),
+    : v4l2_task_runner_(v4l2_task_runner),
       device_name_(device_name),
       power_line_frequency_(power_line_frequency),
       is_capturing_(false),
       timeout_count_(0),
-      rotation_(0) {
-}
-
-V4L2CaptureDelegate::~V4L2CaptureDelegate() {
-}
+      rotation_(0) {}
 
 void V4L2CaptureDelegate::AllocateAndStart(
     int width,
@@ -188,23 +183,21 @@ void V4L2CaptureDelegate::AllocateAndStart(
 
   v4l2_capability cap = {};
   if (!((HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_QUERYCAP, &cap)) == 0) &&
-        ((cap.capabilities & V4L2_CAP_VIDEO_CAPTURE ||
-          cap.capabilities & V4L2_CAP_VIDEO_CAPTURE_MPLANE) &&
-         !(cap.capabilities & V4L2_CAP_VIDEO_OUTPUT) &&
-         !(cap.capabilities & V4L2_CAP_VIDEO_OUTPUT_MPLANE)))) {
+        ((cap.capabilities & V4L2_CAP_VIDEO_CAPTURE) &&
+         !(cap.capabilities & V4L2_CAP_VIDEO_OUTPUT)))) {
     device_fd_.reset();
     SetErrorState(FROM_HERE, "This is not a V4L2 video capture device");
     return;
   }
 
-  // Get supported video formats in preferred order.
-  // For large resolutions, favour mjpeg over raw formats.
+  // Get supported video formats in preferred order. For large resolutions,
+  // favour mjpeg over raw formats.
   const std::list<uint32_t>& desired_v4l2_formats =
       GetListOfUsableFourCcs(width > kMjpegWidth || height > kMjpegHeight);
   std::list<uint32_t>::const_iterator best = desired_v4l2_formats.end();
 
   v4l2_fmtdesc fmtdesc = {};
-  fmtdesc.type = capture_type_;
+  fmtdesc.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   for (; HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_ENUM_FMT, &fmtdesc)) == 0;
        ++fmtdesc.index) {
     best = std::find(desired_v4l2_formats.begin(), best, fmtdesc.pixelformat);
@@ -215,12 +208,7 @@ void V4L2CaptureDelegate::AllocateAndStart(
   }
 
   DVLOG(1) << "Chosen pixel format is " << FourccToString(*best);
-
-  video_fmt_.type = capture_type_;
-  if (!FillV4L2Format(&video_fmt_, width, height, *best)) {
-    SetErrorState(FROM_HERE, "Failed filling in V4L2 Format");
-    return;
-  }
+  FillV4L2Format(&video_fmt_, width, height, *best);
 
   if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_S_FMT, &video_fmt_)) < 0) {
     SetErrorState(FROM_HERE, "Failed to set video capture format");
@@ -235,7 +223,7 @@ void V4L2CaptureDelegate::AllocateAndStart(
 
   // Set capture framerate in the form of capture interval.
   v4l2_streamparm streamparm = {};
-  streamparm.type = capture_type_;
+  streamparm.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   // The following line checks that the driver knows about framerate get/set.
   if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_G_PARM, &streamparm)) >= 0) {
     // Now check if the device is able to accept a capture framerate set.
@@ -279,10 +267,8 @@ void V4L2CaptureDelegate::AllocateAndStart(
   capture_format_.frame_rate = frame_rate;
   capture_format_.pixel_format = pixel_format;
 
-  v4l2_requestbuffers r_buffer = {};
-  r_buffer.type = capture_type_;
-  r_buffer.memory = V4L2_MEMORY_MMAP;
-  r_buffer.count = kNumVideoBuffers;
+  v4l2_requestbuffers r_buffer;
+  FillV4L2RequestBuffer(&r_buffer, kNumVideoBuffers);
   if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_REQBUFS, &r_buffer)) < 0) {
     SetErrorState(FROM_HERE, "Error requesting MMAP buffers from V4L2");
     return;
@@ -294,7 +280,8 @@ void V4L2CaptureDelegate::AllocateAndStart(
     }
   }
 
-  if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_STREAMON, &capture_type_)) <
+  v4l2_buf_type capture_type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_STREAMON, &capture_type)) <
       0) {
     SetErrorState(FROM_HERE, "VIDIOC_STREAMON failed");
     return;
@@ -310,7 +297,8 @@ void V4L2CaptureDelegate::StopAndDeAllocate() {
   DCHECK(v4l2_task_runner_->BelongsToCurrentThread());
   // The order is important: stop streaming, clear |buffer_pool_|,
   // thus munmap()ing the v4l2_buffers, and then return them to the OS.
-  if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_STREAMOFF, &capture_type_)) <
+  v4l2_buf_type capture_type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_STREAMOFF, &capture_type)) <
       0) {
     SetErrorState(FROM_HERE, "VIDIOC_STREAMOFF failed");
     return;
@@ -318,10 +306,8 @@ void V4L2CaptureDelegate::StopAndDeAllocate() {
 
   buffer_tracker_pool_.clear();
 
-  v4l2_requestbuffers r_buffer = {};
-  r_buffer.type = capture_type_;
-  r_buffer.memory = V4L2_MEMORY_MMAP;
-  r_buffer.count = 0;
+  v4l2_requestbuffers r_buffer;
+  FillV4L2RequestBuffer(&r_buffer, 0);
   if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_REQBUFS, &r_buffer)) < 0)
     SetErrorState(FROM_HERE, "Failed to VIDIOC_REQBUFS with count = 0");
 
@@ -338,6 +324,8 @@ void V4L2CaptureDelegate::SetRotation(int rotation) {
   rotation_ = rotation;
 }
 
+V4L2CaptureDelegate::~V4L2CaptureDelegate() {}
+
 bool V4L2CaptureDelegate::MapAndQueueBuffer(int index) {
   v4l2_buffer buffer;
   FillV4L2Buffer(&buffer, index);
@@ -347,7 +335,7 @@ bool V4L2CaptureDelegate::MapAndQueueBuffer(int index) {
     return false;
   }
 
-  const scoped_refptr<BufferTracker>& buffer_tracker = CreateBufferTracker();
+  const scoped_refptr<BufferTracker> buffer_tracker(new BufferTracker());
   if (!buffer_tracker->Init(device_fd_.get(), buffer)) {
     DLOG(ERROR) << "Error creating BufferTracker";
     return false;
@@ -360,13 +348,6 @@ bool V4L2CaptureDelegate::MapAndQueueBuffer(int index) {
     return false;
   }
   return true;
-}
-
-void V4L2CaptureDelegate::FillV4L2Buffer(v4l2_buffer* buffer, int i) const {
-  memset(buffer, 0, sizeof(*buffer));
-  buffer->memory = V4L2_MEMORY_MMAP;
-  buffer->index = i;
-  FinishFillingV4L2Buffer(buffer);
 }
 
 void V4L2CaptureDelegate::DoCapture() {
@@ -406,8 +387,12 @@ void V4L2CaptureDelegate::DoCapture() {
       return;
     }
 
-    SetPayloadSize(buffer_tracker_pool_[buffer.index], buffer);
-    SendBuffer(buffer_tracker_pool_[buffer.index], video_fmt_);
+    buffer_tracker_pool_[buffer.index]->set_payload_size(buffer.bytesused);
+    const scoped_refptr<BufferTracker>& buffer_tracker =
+        buffer_tracker_pool_[buffer.index];
+    client_->OnIncomingCapturedData(
+        buffer_tracker->start(), buffer_tracker->payload_size(),
+        capture_format_, rotation_, base::TimeTicks::Now());
 
     if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_QBUF, &buffer)) < 0) {
       SetErrorState(FROM_HERE, "Failed to enqueue capture buffer");
@@ -425,6 +410,31 @@ void V4L2CaptureDelegate::SetErrorState(
   DCHECK(v4l2_task_runner_->BelongsToCurrentThread());
   is_capturing_ = false;
   client_->OnError(from_here, reason);
+}
+
+V4L2CaptureDelegate::BufferTracker::BufferTracker() {}
+
+V4L2CaptureDelegate::BufferTracker::~BufferTracker() {
+  if (start_ == nullptr)
+    return;
+  const int result = munmap(start_, length_);
+  PLOG_IF(ERROR, result < 0) << "Error munmap()ing V4L2 buffer";
+}
+
+bool V4L2CaptureDelegate::BufferTracker::Init(int fd,
+                                              const v4l2_buffer& buffer) {
+  // Some devices require mmap() to be called with both READ and WRITE.
+  // See http://crbug.com/178582.
+  void* const start = mmap(NULL, buffer.length, PROT_READ | PROT_WRITE,
+                           MAP_SHARED, fd, buffer.m.offset);
+  if (start == MAP_FAILED) {
+    DLOG(ERROR) << "Error mmap()ing a V4L2 buffer into userspace";
+    return false;
+  }
+  start_ = static_cast<uint8_t*>(start);
+  length_ = buffer.length;
+  payload_size_ = 0;
+  return true;
 }
 
 }  // namespace media
