@@ -866,6 +866,8 @@
             'animation/CSSLengthListInterpolationType.h',
             'animation/CSSNumberInterpolationType.cpp',
             'animation/CSSNumberInterpolationType.h',
+            'animation/CSSMotionRotationInterpolationType.cpp',
+            'animation/CSSMotionRotationInterpolationType.h',
             'animation/CSSPaintInterpolationType.cpp',
             'animation/CSSPaintInterpolationType.h',
             'animation/CSSPathInterpolationType.cpp',

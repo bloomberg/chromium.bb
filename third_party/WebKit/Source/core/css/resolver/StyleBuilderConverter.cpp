@@ -630,6 +630,11 @@ float StyleBuilderConverter::convertNumberOrPercentage(StyleResolverState& state
 
 StyleMotionRotation StyleBuilderConverter::convertMotionRotation(StyleResolverState&, const CSSValue& value)
 {
+    return convertMotionRotation(value);
+}
+
+StyleMotionRotation StyleBuilderConverter::convertMotionRotation(const CSSValue& value)
+{
     StyleMotionRotation result(0, MotionRotationFixed);
 
     const CSSValueList& list = toCSSValueList(value);

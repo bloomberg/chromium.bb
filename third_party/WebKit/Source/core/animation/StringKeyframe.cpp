@@ -175,13 +175,6 @@ PassRefPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyframe::maybeCrea
 
         break;
 
-    case CSSPropertyMotionRotation: {
-        RefPtr<Interpolation> interpolation = DoubleStyleInterpolation::maybeCreateFromMotionRotation(*fromCSSValue, *toCSSValue, property);
-        if (interpolation)
-            return interpolation.release();
-        break;
-    }
-
     case CSSPropertyBorderBottomLeftRadius:
     case CSSPropertyBorderBottomRightRadius:
     case CSSPropertyBorderTopLeftRadius:

@@ -12,6 +12,7 @@
 #include "core/animation/CSSImageListInterpolationType.h"
 #include "core/animation/CSSLengthInterpolationType.h"
 #include "core/animation/CSSLengthListInterpolationType.h"
+#include "core/animation/CSSMotionRotationInterpolationType.h"
 #include "core/animation/CSSNumberInterpolationType.h"
 #include "core/animation/CSSPaintInterpolationType.h"
 #include "core/animation/CSSPathInterpolationType.h"
@@ -169,6 +170,9 @@ const InterpolationTypes* PropertyInterpolationTypesMapping::get(const PropertyH
             break;
         case CSSPropertyClip:
             applicableTypes->append(adoptPtr(new CSSClipInterpolationType(cssProperty)));
+            break;
+        case CSSPropertyMotionRotation:
+            applicableTypes->append(adoptPtr(new CSSMotionRotationInterpolationType(cssProperty)));
             break;
         default:
             // TODO(alancutter): Support all interpolable CSS properties here so we can stop falling back to the old StyleInterpolation implementation.
