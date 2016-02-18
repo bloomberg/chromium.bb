@@ -6,6 +6,7 @@
 #define COMPONENTS_FONT_SERVICE_FONT_SERVICE_APP_H_
 
 #include <stdint.h>
+#include <vector>
 
 #include "base/macros.h"
 #include "components/font_service/public/interfaces/font_service.mojom.h"
@@ -49,7 +50,7 @@ class FontServiceApp : public mojo::ShellClient,
 
   // We don't want to leak paths to our callers; we thus enumerate the paths of
   // fonts.
-  SkTDArray<SkString*> paths_;
+  std::vector<SkString> paths_;
 
   DISALLOW_COPY_AND_ASSIGN(FontServiceApp);
 };

@@ -106,20 +106,20 @@ void FontServiceApp::MatchFamilyName(const mojo::String& family_name,
 void FontServiceApp::OpenStream(uint32_t id_number,
                                 const OpenStreamCallback& callback) {
   mojo::ScopedHandle handle;
-  if (id_number < static_cast<uint32_t>(paths_.count())) {
-    handle = GetHandleForPath(base::FilePath(paths_[id_number]->c_str()));
+  if (id_number < static_cast<uint32_t>(paths_.size())) {
+    handle = GetHandleForPath(base::FilePath(paths_[id_number].c_str()));
   }
 
   callback.Run(std::move(handle));
 }
 
 int FontServiceApp::FindOrAddPath(const SkString& path) {
-  int count = paths_.count();
+  int count = paths_.size();
   for (int i = 0; i < count; ++i) {
-    if (path == *paths_[i])
+    if (path == paths_[i])
       return i;
   }
-  *paths_.append() = new SkString(path);
+  paths_.emplace_back(path);
   return count;
 }
 

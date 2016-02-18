@@ -167,12 +167,12 @@ void SandboxIPCHandler::HandleRequestFromRenderer(int fd) {
 }
 
 int SandboxIPCHandler::FindOrAddPath(const SkString& path) {
-  int count = paths_.count();
+  int count = paths_.size();
   for (int i = 0; i < count; ++i) {
-    if (path == *paths_[i])
+    if (path == paths_[i])
       return i;
   }
-  *paths_.append() = new SkString(path);
+  paths_.emplace_back(path);
   return count;
 }
 
@@ -221,9 +221,9 @@ void SandboxIPCHandler::HandleFontOpenRequest(
   uint32_t index;
   if (!iter.ReadUInt32(&index))
     return;
-  if (index >= static_cast<uint32_t>(paths_.count()))
+  if (index >= static_cast<uint32_t>(paths_.size()))
     return;
-  const int result_fd = open(paths_[index]->c_str(), O_RDONLY);
+  const int result_fd = open(paths_[index].c_str(), O_RDONLY);
 
   base::Pickle reply;
   if (result_fd == -1) {
@@ -434,7 +434,6 @@ void SandboxIPCHandler::SendRendererReply(
 }
 
 SandboxIPCHandler::~SandboxIPCHandler() {
-  paths_.deleteAll();
   if (blink_platform_impl_)
     blink::shutdownWithoutV8();
 

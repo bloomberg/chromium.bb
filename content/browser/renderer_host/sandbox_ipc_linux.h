@@ -71,7 +71,7 @@ class SandboxIPCHandler : public base::DelegateSimpleThread::Delegate {
   const int lifeline_fd_;
   const int browser_socket_;
   scoped_ptr<BlinkPlatformImpl> blink_platform_impl_;
-  SkTDArray<SkString*> paths_;
+  std::vector<SkString> paths_;
 
   DISALLOW_COPY_AND_ASSIGN(SandboxIPCHandler);
 };
