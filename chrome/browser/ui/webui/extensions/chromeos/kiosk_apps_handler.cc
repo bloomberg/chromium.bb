@@ -28,8 +28,10 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "extensions/common/extension_urls.h"
+#include "extensions/grit/extensions_browser_resources.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "url/gurl.h"
 
@@ -40,11 +42,14 @@ namespace {
 // Populates app info dictionary with |app_data|.
 void PopulateAppDict(const KioskAppManager::App& app_data,
                      base::DictionaryValue* app_dict) {
-  std::string icon_url("chrome://theme/IDR_APP_DEFAULT_ICON");
-
-  // TODO(xiyuan): Replace data url with a URLDataSource.
-  if (!app_data.icon.isNull())
+  std::string icon_url;
+  if (app_data.icon.isNull()) {
+    icon_url = webui::GetBitmapDataUrl(*ResourceBundle::GetSharedInstance()
+                                            .GetImageNamed(IDR_APP_DEFAULT_ICON)
+                                            .ToSkBitmap());
+  } else {
     icon_url = webui::GetBitmapDataUrl(*app_data.icon.bitmap());
+  }
 
   // The items which are to be written into app_dict are also described in
   // chrome/browser/resources/extensions/chromeos/kiosk_app_list.js in @typedef

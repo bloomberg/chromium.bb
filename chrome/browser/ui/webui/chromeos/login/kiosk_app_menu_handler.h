@@ -51,6 +51,7 @@ class KioskAppMenuHandler
   // KioskAppManagerObserver overrides:
   void OnKioskAppsSettingsChanged() override;
   void OnKioskAppDataChanged(const std::string& app_id) override;
+  void OnKioskAppDataLoadFailure(const std::string& app_id) override;
 
   // NetworkStateInformer::NetworkStateInformerObserver overrides:
   void UpdateState(NetworkError::ErrorReason reason) override;

@@ -130,11 +130,17 @@ class KioskAppData::CrxLoader : public extensions::SandboxedUnpackerClient {
                        const SkBitmap& install_icon) override {
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
-    success_ = true;
-    name_ = extension->name();
-    icon_ = install_icon;
-    required_platform_version_ =
-        extensions::KioskModeInfo::Get(extension)->required_platform_version;
+    const extensions::KioskModeInfo* info =
+        extensions::KioskModeInfo::Get(extension);
+    if (info == nullptr) {
+      LOG(ERROR) << extension->id() << " is not a valid kiosk app.";
+      success_ = false;
+    } else {
+      success_ = true;
+      name_ = extension->name();
+      icon_ = install_icon;
+      required_platform_version_ = info->required_platform_version;
+    }
     NotifyFinishedOnBlockingPool();
   }
   void OnUnpackFailure(const extensions::CrxInstallError& error) override {
