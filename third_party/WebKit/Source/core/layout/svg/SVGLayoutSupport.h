@@ -108,6 +108,8 @@ public:
     static AffineTransform deprecatedCalculateTransformToLayer(const LayoutObject*);
     static float calculateScreenFontSizeScalingFactor(const LayoutObject*);
 
+    static LayoutObject* findClosestLayoutSVGText(LayoutObject*, const FloatPoint&);
+
 private:
     static void updateObjectBoundingBox(FloatRect& objectBoundingBox, bool& objectBoundingBoxValid, LayoutObject* other, FloatRect otherBoundingBox);
     static bool layoutSizeOfNearestViewportChanged(const LayoutObject* start);

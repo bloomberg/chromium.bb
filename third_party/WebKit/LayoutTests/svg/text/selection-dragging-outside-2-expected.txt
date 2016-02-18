@@ -1,0 +1,31 @@
+PASS startElementId is "line1"
+PASS selection.anchorOffset is 7
+PASS endElementId is "line3"
+PASS selection.focusOffset is 11
+PASS startElementId is "line1"
+PASS selection.anchorOffset is 7
+PASS endElementId is "line2"
+PASS selection.focusOffset is 11
+PASS startElementId is "line2"
+PASS selection.anchorOffset is 7
+PASS endElementId is "line3"
+PASS selection.focusOffset is 11
+PASS startElementId is "line3"
+PASS selection.anchorOffset is 7
+PASS endElementId is "line1"
+PASS selection.focusOffset is 9
+PASS startElementId is "line2"
+PASS selection.anchorOffset is 7
+PASS endElementId is "line1"
+PASS selection.focusOffset is 9
+PASS startElementId is "line3"
+PASS selection.anchorOffset is 7
+PASS endElementId is "line2"
+PASS selection.focusOffset is 9
+PASS successfullyParsed is true
+
+TEST COMPLETE
+Hello World. Hello, SVG.
+Hello World. Hello, SVG.
+Hello World. Hello, SVG.
+

@@ -1,0 +1,40 @@
+PASS startElementId is "line"
+PASS selection.anchorOffset is 0
+PASS endElementId is "line"
+PASS selection.focusOffset is 24
+PASS startElementId is "line"
+PASS selection.anchorOffset is 7
+PASS endElementId is "line"
+PASS selection.focusOffset is 24
+PASS startElementId is "firsttext"
+PASS selection.anchorOffset is 0
+PASS endElementId is "firsttext"
+PASS selection.focusOffset is 4
+PASS startElementId is "firsttext"
+PASS selection.anchorOffset is 0
+PASS endElementId is "middletext"
+PASS selection.focusOffset is 4
+PASS startElementId is "firsttext"
+PASS selection.anchorOffset is 0
+PASS endElementId is "middletext"
+PASS selection.focusOffset is 4
+PASS startElementId is "firsttext"
+PASS selection.anchorOffset is 0
+PASS endElementId is "endtext"
+PASS selection.focusOffset is 4
+PASS startElementId is "firsttext"
+PASS selection.anchorOffset is 0
+PASS endElementId is "endtext"
+PASS selection.focusOffset is 4
+PASS startElementId is "firsttext"
+PASS selection.anchorOffset is 0
+PASS endElementId is "endtext"
+PASS selection.focusOffset is 4
+PASS successfullyParsed is true
+
+TEST COMPLETE
+Happy, Web
+Happy, SVG
+Happy, ;)link
+Hello World. Hello, SVG.
+

@@ -28,6 +28,7 @@
 #include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/svg/LayoutSVGText.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/paint/PaintLayer.h"
@@ -274,6 +275,30 @@ void LayoutSVGRoot::willBeRemovedFromTree()
 {
     SVGResourcesCache::clientWillBeRemovedFromTree(this);
     LayoutReplaced::willBeRemovedFromTree();
+}
+
+PositionWithAffinity LayoutSVGRoot::positionForPoint(const LayoutPoint& point)
+{
+    FloatPoint absolutePoint = FloatPoint(point);
+    absolutePoint = m_localToBorderBoxTransform.inverse().mapPoint(absolutePoint);
+    LayoutObject* closestDescendant = SVGLayoutSupport::findClosestLayoutSVGText(this, absolutePoint);
+
+    if (!closestDescendant)
+        return LayoutReplaced::positionForPoint(point);
+
+    LayoutObject* layoutObject = closestDescendant;
+    AffineTransform transform = closestDescendant->localToParentTransform();
+    transform.translate(toLayoutSVGText(closestDescendant)->location().x(), toLayoutSVGText(closestDescendant)->location().y());
+    while (layoutObject) {
+        layoutObject = layoutObject->parent();
+        if (layoutObject->isSVGRoot())
+            break;
+        transform = layoutObject->localToParentTransform() * transform;
+    }
+
+    absolutePoint = transform.inverse().mapPoint(absolutePoint);
+
+    return closestDescendant->positionForPoint(LayoutPoint(absolutePoint));
 }
 
 // LayoutBox methods will expect coordinates w/o any transforms in coordinates

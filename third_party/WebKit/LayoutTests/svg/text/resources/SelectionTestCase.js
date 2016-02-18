@@ -130,3 +130,28 @@ function selectRange(id, start, end, expectedText) {
         document.getElementById("container").appendChild(textElement);
     }
 }
+
+function selectTextFromCharToPoint(selectionInfo, mouse, expected) {
+  var element = document.getElementById(selectionInfo.id);
+  var startPos = element.getStartPositionOfChar(selectionInfo.offset);
+  var absStartPos = toAbsoluteCoordinates(startPos, element);
+  if (window.eventSender) {
+    eventSender.mouseMoveTo(absStartPos.x, absStartPos.y);
+    eventSender.mouseDown();
+    eventSender.mouseMoveTo(mouse.x, mouse.y);
+    eventSender.mouseUp();
+  }
+
+  selection = window.getSelection();
+  startElementId = selection.anchorNode.parentElement.id;
+  endElementId = selection.focusNode.parentElement.id;
+  shouldBeEqualToString("startElementId", expected.startElementId);
+  shouldBe("selection.anchorOffset", expected.start);
+  shouldBeEqualToString("endElementId", expected.endElementId);
+  shouldBe("selection.focusOffset", expected.end);
+  if (window.eventSender) {
+    eventSender.mouseMoveTo(0,0);
+    eventSender.mouseDown();
+    eventSender.mouseUp();
+  }
+}

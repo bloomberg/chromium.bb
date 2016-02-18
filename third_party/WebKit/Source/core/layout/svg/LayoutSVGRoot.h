@@ -114,6 +114,8 @@ private:
     void updateCachedBoundaries();
     void buildLocalToBorderBoxTransform();
 
+    PositionWithAffinity positionForPoint(const LayoutPoint&) final;
+
     LayoutObjectChildList m_children;
     IntSize m_containerSize;
     FloatRect m_objectBoundingBox;

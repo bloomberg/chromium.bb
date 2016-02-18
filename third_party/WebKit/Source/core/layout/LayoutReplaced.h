@@ -104,10 +104,10 @@ protected:
 
     virtual LayoutBox* embeddedContentBox() const { return nullptr; }
 
+    PositionWithAffinity positionForPoint(const LayoutPoint&) override;
+
 private:
     void computePreferredLogicalWidths() final;
-
-    PositionWithAffinity positionForPoint(const LayoutPoint&) final;
 
     bool canBeSelectionLeaf() const override { return true; }
 
