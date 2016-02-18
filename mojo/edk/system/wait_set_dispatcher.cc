@@ -246,6 +246,12 @@ MojoResult WaitSetDispatcher::AddAwakable(Awakable* awakable,
                                           uintptr_t context,
                                           HandleSignalsState* signals_state) {
   base::AutoLock lock(lock_);
+  // |awakable_lock_| is acquired here instead of immediately before adding to
+  // |awakable_list_| because we need to check the signals state and add to
+  // |awakable_list_| as an atomic operation. If the pair isn't atomic, it is
+  // possible for the signals state to change after it is checked, but before
+  // the awakable is added. In that case, the added awakable won't be signalled.
+  base::AutoLock awakable_locker(awakable_lock_);
   HandleSignalsState state(GetHandleSignalsStateNoLock());
   if (state.satisfies(signals)) {
     if (signals_state)
@@ -258,7 +264,6 @@ MojoResult WaitSetDispatcher::AddAwakable(Awakable* awakable,
     return MOJO_RESULT_FAILED_PRECONDITION;
   }
 
-  base::AutoLock locker(awakable_lock_);
   awakable_list_.Add(awakable, signals, context);
   return MOJO_RESULT_OK;
 }
