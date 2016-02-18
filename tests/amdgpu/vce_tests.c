@@ -65,6 +65,7 @@ static amdgpu_device_handle device_handle;
 static uint32_t major_version;
 static uint32_t minor_version;
 static uint32_t family_id;
+static uint32_t vce_harvest_config;
 
 static amdgpu_context_handle context_handle;
 static amdgpu_bo_handle ib_handle;
@@ -97,6 +98,7 @@ int suite_vce_tests_init(void)
 		return CUE_SINIT_FAILED;
 
 	family_id = device_handle->info.family_id;
+	vce_harvest_config = device_handle->info.vce_harvest_config;
 
 	r = amdgpu_cs_ctx_create(device_handle, &context_handle);
 	if (r)
@@ -440,14 +442,16 @@ static void amdgpu_cs_vce_encode(void)
 		check_result(&enc);
 
 		/* two instances */
-		enc.two_instance = true;
-		vce_taskinfo[2] = 0x83;
-		vce_taskinfo[4] = 1;
-		amdgpu_cs_vce_encode_idr(&enc);
-		vce_taskinfo[2] = 0xffffffff;
-		vce_taskinfo[4] = 2;
-		amdgpu_cs_vce_encode_p(&enc);
-		check_result(&enc);
+		if (vce_harvest_config == 0) {
+			enc.two_instance = true;
+			vce_taskinfo[2] = 0x83;
+			vce_taskinfo[4] = 1;
+			amdgpu_cs_vce_encode_idr(&enc);
+			vce_taskinfo[2] = 0xffffffff;
+			vce_taskinfo[4] = 2;
+			amdgpu_cs_vce_encode_p(&enc);
+			check_result(&enc);
+		}
 	} else {
 		vce_taskinfo[3] = 3;
 		vce_encode[16] = 0;
