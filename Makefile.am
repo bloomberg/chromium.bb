@@ -565,8 +565,6 @@ nodist_libtoytoolkit_la_SOURCES =			\
 	protocol/text-cursor-position-client-protocol.h	\
 	protocol/scaler-protocol.c			\
 	protocol/scaler-client-protocol.h		\
-	protocol/presentation_timing-protocol.c		\
-	protocol/presentation_timing-client-protocol.h	\
 	protocol/xdg-shell-unstable-v5-protocol.c			\
 	protocol/xdg-shell-unstable-v5-client-protocol.h		\
 	protocol/ivi-application-protocol.c		\
@@ -772,6 +770,8 @@ BUILT_SOURCES +=					\
 	protocol/weston-desktop-shell-protocol.c			\
 	protocol/scaler-client-protocol.h		\
 	protocol/scaler-protocol.c			\
+	protocol/presentation_timing-protocol.c				\
+	protocol/presentation_timing-client-protocol.h			\
 	protocol/fullscreen-shell-unstable-v1-protocol.c		\
 	protocol/fullscreen-shell-unstable-v1-client-protocol.h	\
 	protocol/xdg-shell-unstable-v5-protocol.c			\
