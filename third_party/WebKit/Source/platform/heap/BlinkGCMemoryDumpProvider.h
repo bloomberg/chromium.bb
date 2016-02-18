@@ -46,7 +46,7 @@ public:
 
     WebProcessMemoryDump* currentProcessMemoryDump() { return m_currentProcessMemoryDump.get(); }
 
-    void insert(Address, size_t);
+    void insert(Address, size_t, const char*);
     void remove(Address);
 
 private:

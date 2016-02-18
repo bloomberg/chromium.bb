@@ -31,9 +31,9 @@ void dumpMemoryTotals(blink::WebProcessMemoryDump* memoryDump)
     objectsDump->addScalar("size", "bytes", Heap::allocatedObjectSize() + Heap::markedObjectSize());
 }
 
-void reportAllocation(Address address, size_t size)
+void reportAllocation(Address address, size_t size, const char* typeName)
 {
-    BlinkGCMemoryDumpProvider::instance()->insert(address, size);
+    BlinkGCMemoryDumpProvider::instance()->insert(address, size, typeName);
 }
 
 void reportFree(Address address)
@@ -114,11 +114,10 @@ BlinkGCMemoryDumpProvider::BlinkGCMemoryDumpProvider()
 {
 }
 
-void BlinkGCMemoryDumpProvider::insert(Address address, size_t size)
+void BlinkGCMemoryDumpProvider::insert(Address address, size_t size, const char* typeName)
 {
     base::trace_event::AllocationContext context = base::trace_event::AllocationContextTracker::GetContextSnapshot();
-    // TODO(hajimehoshi): Implement to use a correct type name.
-    context.type_name = "";
+    context.type_name = typeName;
     MutexLocker locker(m_allocationRegisterMutex);
     if (m_allocationRegister)
         m_allocationRegister->Insert(address, size, context);
