@@ -14,6 +14,11 @@
 static_assert(XDG_SHELL_VERSION_CURRENT == 5, "Unsupported xdg-shell version");
 
 namespace ui {
+namespace {
+const uint32_t kMaxCompositorVersion = 4;
+const uint32_t kMaxShmVersion = 1;
+const uint32_t kMaxXdgShellVersion = 1;
+}  // namespace
 
 WaylandDisplay::WaylandDisplay() {}
 
@@ -105,15 +110,18 @@ void WaylandDisplay::Global(void* data,
 
   WaylandDisplay* display = static_cast<WaylandDisplay*>(data);
   if (!display->compositor_ && strcmp(interface, "wl_compositor") == 0) {
-    display->compositor_ = wl::Bind<wl_compositor>(registry, name, version);
+    display->compositor_ = wl::Bind<wl_compositor>(
+        registry, name, std::min(version, kMaxCompositorVersion));
     if (!display->compositor_)
       LOG(ERROR) << "Failed to bind to wl_compositor global";
   } else if (!display->shm_ && strcmp(interface, "wl_shm") == 0) {
-    display->shm_ = wl::Bind<wl_shm>(registry, name, version);
+    display->shm_ =
+        wl::Bind<wl_shm>(registry, name, std::min(version, kMaxShmVersion));
     if (!display->shm_)
       LOG(ERROR) << "Failed to bind to wl_shm global";
   } else if (!display->shell_ && strcmp(interface, "xdg_shell") == 0) {
-    display->shell_ = wl::Bind<xdg_shell>(registry, name, version);
+    display->shell_ = wl::Bind<xdg_shell>(
+        registry, name, std::min(version, kMaxXdgShellVersion));
     if (!display->shell_) {
       LOG(ERROR) << "Failed to  bind to xdg_shell global";
       return;

@@ -16,9 +16,7 @@ namespace wl {
 namespace {
 
 const uint32_t kCompositorVersion = 4;
-const uint32_t kSurfaceVersion = 4;
 const uint32_t kXdgShellVersion = 1;
-const uint32_t kXdgSurfaceVersion = 1;
 
 void DestroyResource(wl_client* client, wl_resource* resource) {
   wl_resource_destroy(resource);
@@ -29,8 +27,8 @@ void DestroyResource(wl_client* client, wl_resource* resource) {
 void CreateSurface(wl_client* client, wl_resource* resource, uint32_t id) {
   auto compositor =
       static_cast<MockCompositor*>(wl_resource_get_user_data(resource));
-  wl_resource* surface_resource =
-      wl_resource_create(client, &wl_surface_interface, kSurfaceVersion, id);
+  wl_resource* surface_resource = wl_resource_create(
+      client, &wl_surface_interface, wl_resource_get_version(resource), id);
   if (!surface_resource) {
     wl_client_post_no_memory(client);
     return;
@@ -78,6 +76,7 @@ const struct wl_surface_interface surface_impl = {
     &Commit,           // commit
     nullptr,           // set_buffer_transform
     nullptr,           // set_buffer_scale
+    nullptr,           // damage_buffer
 };
 
 // xdg_shell
@@ -101,7 +100,7 @@ void GetXdgSurface(wl_client* client,
     return;
   }
   wl_resource* xdg_surface_resource = wl_resource_create(
-      client, &xdg_surface_interface, kXdgSurfaceVersion, id);
+      client, &xdg_surface_interface, wl_resource_get_version(resource), id);
   if (!xdg_surface_resource) {
     wl_client_post_no_memory(client);
     return;
@@ -232,8 +231,8 @@ void Global::Bind(wl_client* client,
                   uint32_t version,
                   uint32_t id) {
   auto global = static_cast<Global*>(data);
-  wl_resource* resource =
-      wl_resource_create(client, global->interface_, global->version_, id);
+  wl_resource* resource = wl_resource_create(
+      client, global->interface_, std::min(version, global->version_), id);
   if (!resource) {
     wl_client_post_no_memory(client);
     return;
