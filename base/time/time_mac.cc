@@ -181,8 +181,6 @@ Time Time::FromExploded(bool is_local, const Exploded& exploded) {
       gregorian, &absolute_time, "yMdHmsS", exploded.year, exploded.month,
       exploded.day_of_month, exploded.hour, exploded.minute, exploded.second,
       exploded.millisecond);
-  // Milliseconds from |exploded| is added back to |absolute_time| here
-  // because CFCalendar parameters are integer values.
   CFAbsoluteTime seconds = absolute_time + kCFAbsoluteTimeIntervalSince1970;
   return Time(static_cast<int64_t>(seconds * kMicrosecondsPerSecond) +
               kWindowsEpochDeltaMicroseconds);
