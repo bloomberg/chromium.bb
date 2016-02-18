@@ -179,6 +179,11 @@ source_set("ffmpeg_internal") {
     # a lot of unresolved symbols. The only supported mode is 'size' (see
     # crbug.com/264459).
     configs += [ "//build/config/compiler:optimize" ]
+
+    # /analyze must be disabled for ffmpeg because of an internal compiler
+    # error in VS 2015 Update 1, fixed in Update 2.
+    # https://connect.microsoft.com/VisualStudio/feedback/details/2299303
+    configs -= [ "//build/config/win:vs_code_analysis" ]
   } else {
     configs += [ "//build/config/compiler:optimize_max" ]
   }
