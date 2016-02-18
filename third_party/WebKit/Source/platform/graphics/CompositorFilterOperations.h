@@ -21,29 +21,28 @@ class PLATFORM_EXPORT CompositorFilterOperations {
     WTF_MAKE_NONCOPYABLE(CompositorFilterOperations);
 public:
     CompositorFilterOperations();
-    virtual ~CompositorFilterOperations();
 
     const cc::FilterOperations& asFilterOperations() const;
 
-    virtual void appendGrayscaleFilter(float amount);
-    virtual void appendSepiaFilter(float amount);
-    virtual void appendSaturateFilter(float amount);
-    virtual void appendHueRotateFilter(float amount);
-    virtual void appendInvertFilter(float amount);
-    virtual void appendBrightnessFilter(float amount);
-    virtual void appendContrastFilter(float amount);
-    virtual void appendOpacityFilter(float amount);
-    virtual void appendBlurFilter(float amount);
-    virtual void appendDropShadowFilter(IntPoint offset, float stdDeviation, Color);
-    virtual void appendColorMatrixFilter(SkScalar matrix[20]);
-    virtual void appendZoomFilter(float amount, int inset);
-    virtual void appendSaturatingBrightnessFilter(float amount);
+    void appendGrayscaleFilter(float amount);
+    void appendSepiaFilter(float amount);
+    void appendSaturateFilter(float amount);
+    void appendHueRotateFilter(float amount);
+    void appendInvertFilter(float amount);
+    void appendBrightnessFilter(float amount);
+    void appendContrastFilter(float amount);
+    void appendOpacityFilter(float amount);
+    void appendBlurFilter(float amount);
+    void appendDropShadowFilter(IntPoint offset, float stdDeviation, Color);
+    void appendColorMatrixFilter(SkScalar matrix[20]);
+    void appendZoomFilter(float amount, int inset);
+    void appendSaturatingBrightnessFilter(float amount);
 
     // This grabs a ref on the passed-in filter.
-    virtual void appendReferenceFilter(SkImageFilter*);
+    void appendReferenceFilter(SkImageFilter*);
 
-    virtual void clear();
-    virtual bool isEmpty() const;
+    void clear();
+    bool isEmpty() const;
 
 private:
     cc::FilterOperations m_filterOperations;

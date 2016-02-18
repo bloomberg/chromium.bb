@@ -13,10 +13,6 @@ CompositorTransformOperations::CompositorTransformOperations()
 {
 }
 
-CompositorTransformOperations::~CompositorTransformOperations()
-{
-}
-
 const cc::TransformOperations& CompositorTransformOperations::asTransformOperations() const
 {
     return m_transformOperations;

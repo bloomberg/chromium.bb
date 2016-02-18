@@ -17,24 +17,23 @@ class PLATFORM_EXPORT CompositorTransformOperations {
     WTF_MAKE_NONCOPYABLE(CompositorTransformOperations);
 public:
     CompositorTransformOperations();
-    virtual ~CompositorTransformOperations();
 
     const cc::TransformOperations& asTransformOperations() const;
 
     // Returns true if these operations can be blended. It will only return
     // false if we must resort to matrix interpolation, and matrix interpolation
     // fails (this can happen if either matrix cannot be decomposed).
-    virtual bool canBlendWith(const CompositorTransformOperations& other) const;
+    bool canBlendWith(const CompositorTransformOperations& other) const;
 
-    virtual void appendTranslate(double x, double y, double z);
-    virtual void appendRotate(double x, double y, double z, double degrees);
-    virtual void appendScale(double x, double y, double z);
-    virtual void appendSkew(double x, double y);
-    virtual void appendPerspective(double depth);
-    virtual void appendMatrix(const SkMatrix44&);
-    virtual void appendIdentity();
+    void appendTranslate(double x, double y, double z);
+    void appendRotate(double x, double y, double z, double degrees);
+    void appendScale(double x, double y, double z);
+    void appendSkew(double x, double y);
+    void appendPerspective(double depth);
+    void appendMatrix(const SkMatrix44&);
+    void appendIdentity();
 
-    virtual bool isIdentity() const;
+    bool isIdentity() const;
 
 private:
     cc::TransformOperations m_transformOperations;

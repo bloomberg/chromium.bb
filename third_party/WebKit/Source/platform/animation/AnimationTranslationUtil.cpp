@@ -23,7 +23,7 @@
  */
 
 
-#include "core/animation/AnimationTranslationUtil.h"
+#include "platform/animation/AnimationTranslationUtil.h"
 
 #include "platform/animation/CompositorTransformOperations.h"
 #include "platform/graphics/filters/FilterOperations.h"
@@ -41,7 +41,7 @@
 
 namespace blink {
 
-void toCompositorTransformOperations(const TransformOperations& transformOperations, CompositorTransformOperations* webTransformOperations)
+void toCompositorTransformOperations(const TransformOperations& transformOperations, CompositorTransformOperations* outTransformOperations)
 {
     // We need to do a deep copy the transformOperations may contain ref pointers to TransformOperation objects.
     for (size_t j = 0; j < transformOperations.size(); ++j) {
@@ -52,7 +52,7 @@ void toCompositorTransformOperations(const TransformOperations& transformOperati
         case TransformOperation::Scale3D:
         case TransformOperation::Scale: {
             ScaleTransformOperation* transform = static_cast<ScaleTransformOperation*>(transformOperations.operations()[j].get());
-            webTransformOperations->appendScale(transform->x(), transform->y(), transform->z());
+            outTransformOperations->appendScale(transform->x(), transform->y(), transform->z());
             break;
         }
         case TransformOperation::TranslateX:
@@ -62,7 +62,7 @@ void toCompositorTransformOperations(const TransformOperations& transformOperati
         case TransformOperation::Translate: {
             TranslateTransformOperation* transform = static_cast<TranslateTransformOperation*>(transformOperations.operations()[j].get());
             ASSERT(transform->x().isFixed() && transform->y().isFixed());
-            webTransformOperations->appendTranslate(transform->x().value(), transform->y().value(), transform->z());
+            outTransformOperations->appendTranslate(transform->x().value(), transform->y().value(), transform->z());
             break;
         }
         case TransformOperation::RotateX:
@@ -70,41 +70,41 @@ void toCompositorTransformOperations(const TransformOperations& transformOperati
         case TransformOperation::Rotate3D:
         case TransformOperation::Rotate: {
             RotateTransformOperation* transform = static_cast<RotateTransformOperation*>(transformOperations.operations()[j].get());
-            webTransformOperations->appendRotate(transform->x(), transform->y(), transform->z(), transform->angle());
+            outTransformOperations->appendRotate(transform->x(), transform->y(), transform->z(), transform->angle());
             break;
         }
         case TransformOperation::SkewX:
         case TransformOperation::SkewY:
         case TransformOperation::Skew: {
             SkewTransformOperation* transform = static_cast<SkewTransformOperation*>(transformOperations.operations()[j].get());
-            webTransformOperations->appendSkew(transform->angleX(), transform->angleY());
+            outTransformOperations->appendSkew(transform->angleX(), transform->angleY());
             break;
         }
         case TransformOperation::Matrix: {
             MatrixTransformOperation* transform = static_cast<MatrixTransformOperation*>(transformOperations.operations()[j].get());
             TransformationMatrix m = transform->matrix();
-            webTransformOperations->appendMatrix(TransformationMatrix::toSkMatrix44(m));
+            outTransformOperations->appendMatrix(TransformationMatrix::toSkMatrix44(m));
             break;
         }
         case TransformOperation::Matrix3D: {
             Matrix3DTransformOperation* transform = static_cast<Matrix3DTransformOperation*>(transformOperations.operations()[j].get());
             TransformationMatrix m = transform->matrix();
-            webTransformOperations->appendMatrix(TransformationMatrix::toSkMatrix44(m));
+            outTransformOperations->appendMatrix(TransformationMatrix::toSkMatrix44(m));
             break;
         }
         case TransformOperation::Perspective: {
             PerspectiveTransformOperation* transform = static_cast<PerspectiveTransformOperation*>(transformOperations.operations()[j].get());
-            webTransformOperations->appendPerspective(transform->perspective());
+            outTransformOperations->appendPerspective(transform->perspective());
             break;
         }
         case TransformOperation::Interpolated: {
             TransformationMatrix m;
             transformOperations.operations()[j]->apply(m, FloatSize());
-            webTransformOperations->appendMatrix(TransformationMatrix::toSkMatrix44(m));
+            outTransformOperations->appendMatrix(TransformationMatrix::toSkMatrix44(m));
             break;
         }
         case TransformOperation::Identity:
-            webTransformOperations->appendIdentity();
+            outTransformOperations->appendIdentity();
             break;
         case TransformOperation::None:
             // Do nothing.

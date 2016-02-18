@@ -31,7 +31,7 @@
 #ifndef AnimationTranslationUtil_h
 #define AnimationTranslationUtil_h
 
-#include "core/CoreExport.h"
+#include "platform/PlatformExport.h"
 
 namespace blink {
 
@@ -40,8 +40,8 @@ class CompositorTransformOperations;
 class FilterOperations;
 class TransformOperations;
 
-CORE_EXPORT void toCompositorTransformOperations(const TransformOperations& inOperations, CompositorTransformOperations* outOperations);
-CORE_EXPORT void toCompositorFilterOperations(const FilterOperations& inOperations, CompositorFilterOperations* outOperations);
+PLATFORM_EXPORT void toCompositorTransformOperations(const TransformOperations& inOperations, CompositorTransformOperations* outOperations);
+PLATFORM_EXPORT void toCompositorFilterOperations(const FilterOperations& inOperations, CompositorFilterOperations* outOperations);
 
 } // namespace blink
 

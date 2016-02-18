@@ -22,7 +22,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/animation/AnimationTranslationUtil.h"
+#include "platform/animation/AnimationTranslationUtil.h"
 
 #include "platform/animation/CompositorTransformOperations.h"
 #include "platform/graphics/CompositorFilterOperations.h"
@@ -32,75 +32,73 @@
 #include "platform/transforms/ScaleTransformOperation.h"
 #include "platform/transforms/TransformOperations.h"
 #include "platform/transforms/TranslateTransformOperation.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
 
-class WebTransformOperationsMock : public CompositorTransformOperations {
-public:
-    MOCK_CONST_METHOD1(canBlendWith, bool(const CompositorTransformOperations&));
-    MOCK_METHOD3(appendTranslate, void(double, double, double));
-    MOCK_METHOD4(appendRotate, void(double, double, double, double));
-    MOCK_METHOD3(appendScale, void(double, double, double));
-    MOCK_METHOD2(appendSkew, void(double, double));
-    MOCK_METHOD1(appendPerspective, void(double));
-    MOCK_METHOD1(appendMatrix, void(const SkMatrix44&));
-    MOCK_METHOD0(appendIdentity, void());
-    MOCK_CONST_METHOD0(isIdentity, bool());
-};
-
-class WebFilterOperationsMock : public CompositorFilterOperations {
-public:
-    MOCK_METHOD1(appendGrayscaleFilter, void(float));
-    MOCK_METHOD1(appendSepiaFilter, void(float));
-    MOCK_METHOD1(appendSaturateFilter, void(float));
-    MOCK_METHOD1(appendHueRotateFilter, void(float));
-    MOCK_METHOD1(appendInvertFilter, void(float));
-    MOCK_METHOD1(appendBrightnessFilter, void(float));
-    MOCK_METHOD1(appendContrastFilter, void(float));
-    MOCK_METHOD1(appendOpacityFilter, void(float));
-    MOCK_METHOD1(appendBlurFilter, void(float));
-    MOCK_METHOD3(appendDropShadowFilter, void(IntPoint, float, Color));
-    MOCK_METHOD1(appendColorMatrixFilter, void(SkScalar[20]));
-    MOCK_METHOD2(appendZoomFilter, void(float, int));
-    MOCK_METHOD1(appendSaturatingBrightnessFilter, void(float));
-    MOCK_METHOD1(appendReferenceFilter, void(SkImageFilter*));
-    MOCK_METHOD0(clear, void());
-    MOCK_CONST_METHOD0(isEmpty, bool());
-};
-
 TEST(AnimationTranslationUtilTest, transformsWork)
 {
     TransformOperations ops;
-    WebTransformOperationsMock outOps;
-
-    EXPECT_CALL(outOps, appendTranslate(2, 0, 0));
-    EXPECT_CALL(outOps, appendRotate(0.1, 0.2, 0.3, 200000.4));
-    EXPECT_CALL(outOps, appendScale(50.2, 100, -4));
+    CompositorTransformOperations outOps;
 
     ops.operations().append(TranslateTransformOperation::create(Length(2, Fixed), Length(0, Fixed), TransformOperation::TranslateX));
     ops.operations().append(RotateTransformOperation::create(0.1, 0.2, 0.3, 200000.4, TransformOperation::Rotate3D));
     ops.operations().append(ScaleTransformOperation::create(50.2, 100, -4, TransformOperation::Scale3D));
     toCompositorTransformOperations(ops, &outOps);
+
+    EXPECT_EQ(3UL, outOps.asTransformOperations().size());
+    const float err = 0.0001;
+
+    auto& op0 = outOps.asTransformOperations().at(0);
+    EXPECT_EQ(cc::TransformOperation::TRANSFORM_OPERATION_TRANSLATE, op0.type);
+    EXPECT_NEAR(op0.translate.x, 2.0f, err);
+    EXPECT_NEAR(op0.translate.y, 0.0f, err);
+    EXPECT_NEAR(op0.translate.z, 0.0f, err);
+
+    auto& op1 = outOps.asTransformOperations().at(1);
+    EXPECT_EQ(cc::TransformOperation::TRANSFORM_OPERATION_ROTATE, op1.type);
+    EXPECT_NEAR(op1.rotate.axis.x, 0.1f, err);
+    EXPECT_NEAR(op1.rotate.axis.y, 0.2f, err);
+    EXPECT_NEAR(op1.rotate.axis.z, 0.3f, err);
+    EXPECT_NEAR(op1.rotate.angle, 200000.4f, 0.01f);
+
+    auto& op2 = outOps.asTransformOperations().at(2);
+    EXPECT_EQ(cc::TransformOperation::TRANSFORM_OPERATION_SCALE, op2.type);
+    EXPECT_NEAR(op2.scale.x, 50.2f, err);
+    EXPECT_NEAR(op2.scale.y, 100.0f, err);
+    EXPECT_NEAR(op2.scale.z, -4.0f, err);
 }
 
 TEST(AnimationTranslationUtilTest, filtersWork)
 {
     FilterOperations ops;
-    WebFilterOperationsMock outOps;
-
-    EXPECT_CALL(outOps, appendSaturateFilter(0.5));
-    EXPECT_CALL(outOps, appendGrayscaleFilter(0.2f));
-    EXPECT_CALL(outOps, appendSepiaFilter(0.8f));
-    EXPECT_CALL(outOps, appendOpacityFilter(0.1f));
+    CompositorFilterOperations outOps;
 
     ops.operations().append(BasicColorMatrixFilterOperation::create(0.5, FilterOperation::SATURATE));
     ops.operations().append(BasicColorMatrixFilterOperation::create(0.2, FilterOperation::GRAYSCALE));
     ops.operations().append(BasicColorMatrixFilterOperation::create(0.8, FilterOperation::SEPIA));
     ops.operations().append(BasicComponentTransferFilterOperation::create(0.1, FilterOperation::OPACITY));
     toCompositorFilterOperations(ops, &outOps);
+
+    EXPECT_EQ(4UL, outOps.asFilterOperations().size());
+    const float err = 0.0001;
+
+    auto& op0 = outOps.asFilterOperations().at(0);
+    EXPECT_EQ(cc::FilterOperation::SATURATE, op0.type());
+    EXPECT_NEAR(op0.amount(), 0.5f, err);
+
+    auto& op1 = outOps.asFilterOperations().at(1);
+    EXPECT_EQ(cc::FilterOperation::GRAYSCALE, op1.type());
+    EXPECT_NEAR(op1.amount(), 0.2f, err);
+
+    auto& op2 = outOps.asFilterOperations().at(2);
+    EXPECT_EQ(cc::FilterOperation::SEPIA, op2.type());
+    EXPECT_NEAR(op2.amount(), 0.8f, err);
+
+    auto& op3 = outOps.asFilterOperations().at(3);
+    EXPECT_EQ(cc::FilterOperation::OPACITY, op3.type());
+    EXPECT_NEAR(op3.amount(), 0.1f, err);
 }
 
 } // namespace blink

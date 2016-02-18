@@ -13,10 +13,6 @@ CompositorFilterOperations::CompositorFilterOperations()
 {
 }
 
-CompositorFilterOperations::~CompositorFilterOperations()
-{
-}
-
 const cc::FilterOperations& CompositorFilterOperations::asFilterOperations() const
 {
     return m_filterOperations;

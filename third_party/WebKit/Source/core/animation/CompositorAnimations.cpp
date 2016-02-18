@@ -31,7 +31,6 @@
 #include "core/animation/CompositorAnimations.h"
 
 #include "core/animation/AnimationEffect.h"
-#include "core/animation/AnimationTranslationUtil.h"
 #include "core/animation/CompositorAnimationsImpl.h"
 #include "core/animation/ElementAnimations.h"
 #include "core/animation/animatable/AnimatableDouble.h"
@@ -43,6 +42,7 @@
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/animation/AnimationTranslationUtil.h"
 #include "platform/animation/CompositorAnimation.h"
 #include "platform/animation/CompositorAnimationPlayer.h"
 #include "platform/animation/CompositorFilterAnimationCurve.h"
