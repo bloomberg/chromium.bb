@@ -494,6 +494,8 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("manageOtherPeople",
                                   IDS_SETTINGS_PEOPLE_MANAGE_OTHER_PEOPLE);
 #if defined(OS_CHROMEOS)
+  html_source->AddLocalizedString("enableScreenlock",
+                                  IDS_SETTINGS_PEOPLE_ENABLE_SCREENLOCK);
   html_source->AddLocalizedString("changePictureTitle",
                                   IDS_SETTINGS_CHANGE_PICTURE_DIALOG_TITLE);
   html_source->AddLocalizedString("changePicturePageDescription",

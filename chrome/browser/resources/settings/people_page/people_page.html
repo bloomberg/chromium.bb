@@ -4,6 +4,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-dialog/paper-dialog.html">
+<link rel="import" href="chrome://md-settings/controls/settings_checkbox.html">
 <link rel="import" href="chrome://md-settings/people_page/sync_page.html">
 <link rel="import" href="chrome://md-settings/people_page/sync_private_api.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_animated_pages.html">
@@ -77,6 +78,14 @@
             </paper-button>
           </div>
         </template>
+
+<if expr="chromeos">
+        <div class="settings-box">
+          <settings-checkbox pref="{{prefs.settings.enable_screen_lock}}"
+              i18n-values="label:enableScreenlock">
+          </settings-checkbox>
+        </div>
+</if>
 
         <div class="settings-box">
           <paper-button class="link-button" i18n-content="manageOtherPeople"

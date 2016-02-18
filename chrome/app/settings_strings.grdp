@@ -621,6 +621,9 @@
   </message>
 
   <if expr="chromeos">
+    <message name="IDS_SETTINGS_PEOPLE_ENABLE_SCREENLOCK" desc="The text on the checkbox to enable screenlocker for current user.">
+      Require password to wake from sleep
+    </message>
     <message name="IDS_SETTINGS_CHANGE_PICTURE_DIALOG_TITLE" desc="Title of the subpage shown when user wants to change his/her picture.">
       Change picture
     </message>
