@@ -14,7 +14,6 @@
 #include "mojo/common/common_type_converters.h"
 #include "mojo/common/url_type_converters.h"
 #include "mojo/shell/application_manager.h"
-#include "mojo/shell/public/interfaces/content_handler.mojom.h"
 
 namespace mojo {
 namespace shell {
@@ -23,7 +22,7 @@ ApplicationInstance::ApplicationInstance(
     mojom::ShellClientPtr shell_client,
     ApplicationManager* manager,
     const Identity& identity,
-    uint32_t requesting_content_handler_id,
+    uint32_t requesting_shell_client_factory_id,
     const mojom::Shell::ConnectToApplicationCallback& connect_callback,
     const base::Closure& on_application_end,
     const String& application_name)
@@ -32,7 +31,7 @@ ApplicationInstance::ApplicationInstance(
       identity_(identity),
       allow_any_application_(identity.filter().size() == 1 &&
                              identity.filter().count("*") == 1),
-      requesting_content_handler_id_(requesting_content_handler_id),
+      requesting_shell_client_factory_id_(requesting_shell_client_factory_id),
       connect_callback_(connect_callback),
       on_application_end_(on_application_end),
       shell_client_(std::move(shell_client)),
@@ -80,7 +79,7 @@ void ApplicationInstance::BindPIDReceiver(
 
 void ApplicationInstance::RunConnectCallback() {
   if (!connect_callback_.is_null())
-    connect_callback_.Run(id_, requesting_content_handler_id_);
+    connect_callback_.Run(id_, requesting_shell_client_factory_id_);
 }
 
 // Shell implementation:
@@ -142,7 +141,7 @@ uint32_t ApplicationInstance::GenerateUniqueID() const {
 
 void ApplicationInstance::CallAcceptConnection(
     scoped_ptr<ConnectToApplicationParams> params) {
-  params->connect_callback().Run(id_, requesting_content_handler_id_);
+  params->connect_callback().Run(id_, requesting_shell_client_factory_id_);
   AllowedInterfaces interfaces;
   interfaces.insert("*");
   if (!params->source().is_null())

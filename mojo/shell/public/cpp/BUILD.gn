@@ -62,19 +62,21 @@ source_set("init_commandline") {
   ]
 }
 
-source_set("content_handler") {
+source_set("shell_client_factory") {
   sources = [
-    "content_handler_factory.h",
-    "lib/content_handler_factory.cc",
+    "lib/shell_client_factory.cc",
+    "shell_client_factory.h",
   ]
   deps = [
     ":cpp",
 
     # TODO: this code should not depend on base.
     "//base",
+    "//mojo/common:url_type_converters",
     "//mojo/message_pump",
     "//mojo/services/network/public/interfaces",
     "//mojo/shell/public/interfaces:interfaces_cpp_sources",
+    "//url",
   ]
 }
 

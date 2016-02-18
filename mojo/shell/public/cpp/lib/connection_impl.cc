@@ -29,7 +29,7 @@ ConnectionImpl::ConnectionImpl(
     : connection_url_(connection_url),
       remote_url_(remote_url),
       remote_id_(remote_id),
-      content_handler_id_(0u),
+      shell_client_factory_id_(0u),
       remote_ids_valid_(false),
       local_registry_(std::move(local_interfaces), this),
       remote_interfaces_(std::move(remote_interfaces)),
@@ -40,7 +40,7 @@ ConnectionImpl::ConnectionImpl(
 
 ConnectionImpl::ConnectionImpl()
     : remote_id_(shell::mojom::Shell::kInvalidApplicationID),
-      content_handler_id_(shell::mojom::Shell::kInvalidApplicationID),
+      shell_client_factory_id_(shell::mojom::Shell::kInvalidApplicationID),
       remote_ids_valid_(false),
       local_registry_(shell::mojom::InterfaceProviderRequest(), this),
       allow_all_interfaces_(true),
@@ -78,12 +78,12 @@ bool ConnectionImpl::GetRemoteApplicationID(uint32_t* remote_id) const {
   return true;
 }
 
-bool ConnectionImpl::GetRemoteContentHandlerID(
-    uint32_t* content_handler_id) const {
+bool ConnectionImpl::GetRemoteShellClientFactoryID(
+    uint32_t* shell_client_factory_id) const {
   if (!remote_ids_valid_)
     return false;
 
-  *content_handler_id = content_handler_id_;
+  *shell_client_factory_id = shell_client_factory_id_;
   return true;
 }
 
@@ -115,12 +115,12 @@ base::WeakPtr<Connection> ConnectionImpl::GetWeakPtr() {
 // ConnectionImpl, private:
 
 void ConnectionImpl::OnGotRemoteIDs(uint32_t target_application_id,
-                                    uint32_t content_handler_id) {
+                                    uint32_t shell_client_factory_id) {
   DCHECK(!remote_ids_valid_);
   remote_ids_valid_ = true;
 
   remote_id_ = target_application_id;
-  content_handler_id_ = content_handler_id;
+  shell_client_factory_id_ = shell_client_factory_id;
   std::vector<Closure> callbacks;
   callbacks.swap(remote_id_callbacks_);
   for (auto callback : callbacks)

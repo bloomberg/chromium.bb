@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/shell/content_handler_connection.h"
+#include "mojo/shell/shell_client_factory_connection.h"
 
 #include <stdint.h>
 
@@ -17,14 +17,14 @@
 namespace mojo {
 namespace shell {
 
-ContentHandlerConnection::ContentHandlerConnection(
+ShellClientFactoryConnection::ShellClientFactoryConnection(
     ApplicationManager* manager,
     const Identity& source,
-    const Identity& content_handler,
+    const Identity& shell_client_factory,
     uint32_t id,
     const ClosedCallback& connection_closed_callback)
     : connection_closed_callback_(connection_closed_callback),
-      identity_(content_handler),
+      identity_(shell_client_factory),
       connection_closed_(false),
       id_(id),
       ref_count_(0) {
@@ -37,25 +37,25 @@ ContentHandlerConnection::ContentHandlerConnection(
   manager->ConnectToApplication(std::move(params));
 
   MessagePipe pipe;
-  content_handler_.Bind(
-      InterfacePtrInfo<mojom::ContentHandler>(std::move(pipe.handle0), 0u));
-  remote_interfaces->GetInterface(mojom::ContentHandler::Name_,
+  shell_client_factory_.Bind(
+      InterfacePtrInfo<mojom::ShellClientFactory>(std::move(pipe.handle0), 0u));
+  remote_interfaces->GetInterface(mojom::ShellClientFactory::Name_,
                                   std::move(pipe.handle1));
-  content_handler_.set_connection_error_handler(
+  shell_client_factory_.set_connection_error_handler(
       [this]() { CloseConnection(); });
 }
 
-void ContentHandlerConnection::StartApplication(
-    InterfaceRequest<mojom::ShellClient> request,
-    URLResponsePtr response) {
-  content_handler_->StartApplication(
-      std::move(request), std::move(response),
-      base::Bind(&ContentHandlerConnection::ApplicationDestructed,
+void ShellClientFactoryConnection::CreateShellClient(
+    mojom::ShellClientRequest request,
+    const GURL& url) {
+  shell_client_factory_->CreateShellClient(
+      std::move(request), url.spec(),
+      base::Bind(&ShellClientFactoryConnection::ApplicationDestructed,
                  base::Unretained(this)));
   ref_count_++;
 }
 
-void ContentHandlerConnection::CloseConnection() {
+void ShellClientFactoryConnection::CloseConnection() {
   if (connection_closed_)
     return;
   connection_closed_ = true;
@@ -63,13 +63,13 @@ void ContentHandlerConnection::CloseConnection() {
   delete this;
 }
 
-ContentHandlerConnection::~ContentHandlerConnection() {
+ShellClientFactoryConnection::~ShellClientFactoryConnection() {
   // If this DCHECK fails then something has tried to delete this object without
   // calling CloseConnection.
   DCHECK(connection_closed_);
 }
 
-void ContentHandlerConnection::ApplicationDestructed() {
+void ShellClientFactoryConnection::ApplicationDestructed() {
   if (!--ref_count_)
     CloseConnection();
 }

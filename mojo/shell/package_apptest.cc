@@ -15,7 +15,7 @@
 #include "mojo/shell/public/interfaces/application_manager.mojom.h"
 
 // Tests that multiple applications can be packaged in a single Mojo application
-// implementing ContentHandler; that these applications can be specified by
+// implementing ShellClientFactory; that these applications can be specified by
 // the package's manifest and are thus registered with the PackageManager.
 
 namespace mojo {

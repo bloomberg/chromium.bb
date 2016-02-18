@@ -137,7 +137,7 @@ source_set("lib") {
       ":jni_headers",
       ":run_android_application_function",
       "//components/mus/gles2",
-      "//mojo/shell/public/cpp:content_handler",
+      "//mojo/shell/public/cpp:shell_client_factory",
     ]
   } else {
     sources += [

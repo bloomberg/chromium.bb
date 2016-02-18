@@ -21,9 +21,9 @@
 #include "mojo/services/package_manager/loader.h"
 #include "mojo/shell/application_instance.h"
 #include "mojo/shell/connect_util.h"
-#include "mojo/shell/content_handler_connection.h"
 #include "mojo/shell/public/cpp/connect.h"
 #include "mojo/shell/shell_application_loader.h"
+#include "mojo/shell/shell_client_factory_connection.h"
 #include "mojo/shell/switches.h"
 #include "mojo/util/filename_util.h"
 
@@ -35,7 +35,8 @@ namespace {
 // Used by TestAPI.
 bool has_created_instance = false;
 
-void OnEmptyOnConnectCallback(uint32_t remote_id, uint32_t content_handler_id) {
+void OnEmptyOnConnectCallback(uint32_t remote_id,
+                              uint32_t shell_client_factory_id) {
 }
 
 }  // namespace
@@ -234,42 +235,41 @@ ApplicationInstance* ApplicationManager::CreateInstance(
   return instance;
 }
 
-uint32_t ApplicationManager::StartContentHandler(
+uint32_t ApplicationManager::StartShellClientFactory(
     const Identity& source,
-    const Identity& content_handler,
+    const Identity& shell_client_factory,
     const GURL& url,
     mojom::ShellClientRequest request) {
-  URLResponsePtr response(URLResponse::New());
-  response->url = url.spec();
-  ContentHandlerConnection* connection =
-      GetContentHandler(content_handler, source);
-  connection->StartApplication(std::move(request), std::move(response));
+  ShellClientFactoryConnection* connection =
+      GetShellClientFactory(shell_client_factory, source);
+  connection->CreateShellClient(std::move(request), url);
   return connection->id();
 }
 
-ContentHandlerConnection* ApplicationManager::GetContentHandler(
-    const Identity& content_handler_identity,
+ShellClientFactoryConnection* ApplicationManager::GetShellClientFactory(
+    const Identity& shell_client_factory_identity,
     const Identity& source_identity) {
-  auto it = identity_to_content_handler_.find(content_handler_identity);
-  if (it != identity_to_content_handler_.end())
+  auto it = identity_to_shell_client_factory_.find(
+      shell_client_factory_identity);
+  if (it != identity_to_shell_client_factory_.end())
     return it->second;
 
-  ContentHandlerConnection* connection = new ContentHandlerConnection(
+  ShellClientFactoryConnection* connection = new ShellClientFactoryConnection(
       this, source_identity,
-      content_handler_identity,
-      ++content_handler_id_counter_,
-      base::Bind(&ApplicationManager::OnContentHandlerConnectionClosed,
+      shell_client_factory_identity,
+      ++shell_client_factory_id_counter_,
+      base::Bind(&ApplicationManager::OnShellClientFactoryConnectionClosed,
                  weak_ptr_factory_.GetWeakPtr()));
-  identity_to_content_handler_[content_handler_identity] = connection;
+  identity_to_shell_client_factory_[shell_client_factory_identity] = connection;
   return connection;
 }
 
-void ApplicationManager::OnContentHandlerConnectionClosed(
-    ContentHandlerConnection* connection) {
+void ApplicationManager::OnShellClientFactoryConnectionClosed(
+    ShellClientFactoryConnection* connection) {
   // Remove the mapping.
-  auto it = identity_to_content_handler_.find(connection->identity());
-  DCHECK(it != identity_to_content_handler_.end());
-  identity_to_content_handler_.erase(it);
+  auto it = identity_to_shell_client_factory_.find(connection->identity());
+  DCHECK(it != identity_to_shell_client_factory_.end());
+  identity_to_shell_client_factory_.erase(it);
 }
 
 void ApplicationManager::OnGotResolvedURL(
@@ -291,7 +291,7 @@ void ApplicationManager::OnGotResolvedURL(
       capability_filter = base_filter->filter.To<CapabilityFilter>();
 
     // TODO(beng): For now, we just use the legacy PackageManagerImpl to manage
-    //             the ContentHandler connection. Once we get rid of the
+    //             the ShellClientFactory connection. Once we get rid of the
     //             non-remote package manager path we will have to fold this in
     //             here.
     Identity source, target;
@@ -299,11 +299,11 @@ void ApplicationManager::OnGotResolvedURL(
     ApplicationInstance* instance = CreateAndConnectToInstance(
         std::move(params), &source, &target, application_name, &request);
 
-    uint32_t content_handler_id = StartContentHandler(
+    uint32_t shell_client_factory_id = StartShellClientFactory(
         source, Identity(resolved_gurl, target.qualifier(), capability_filter),
         target.url(), std::move(request));
-    CHECK(content_handler_id != mojom::Shell::kInvalidApplicationID);
-    instance->set_requesting_content_handler_id(content_handler_id);
+    CHECK(shell_client_factory_id != mojom::Shell::kInvalidApplicationID);
+    instance->set_requesting_shell_client_factory_id(shell_client_factory_id);
     instance->RunConnectCallback();
     return;
   }

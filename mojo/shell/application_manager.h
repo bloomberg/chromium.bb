@@ -33,7 +33,7 @@ namespace mojo {
 namespace shell {
 
 class ApplicationInstance;
-class ContentHandlerConnection;
+class ShellClientFactoryConnection;
 
 class ApplicationManager {
  public:
@@ -103,8 +103,8 @@ class ApplicationManager {
  private:
   using IdentityToInstanceMap = std::map<Identity, ApplicationInstance*>;
   using URLToLoaderMap = std::map<GURL, ApplicationLoader*>;
-  using IdentityToContentHandlerMap =
-      std::map<Identity, ContentHandlerConnection*>;
+  using IdentityToShellClientFactoryMap =
+      std::map<Identity, ShellClientFactoryConnection*>;
 
   // Takes the contents of |params| only when it returns true.
   bool ConnectToRunningApplication(
@@ -123,17 +123,17 @@ class ApplicationManager {
       const String& application_name,
       mojom::ShellClientRequest* request);
 
-  uint32_t StartContentHandler(const Identity& source,
-                               const Identity& content_handler,
-                               const GURL& url,
-                               mojom::ShellClientRequest request);
-  // Returns a running ContentHandler for |content_handler_identity|, if there
-  // is not one running one is started for |source_identity|.
-  ContentHandlerConnection* GetContentHandler(
-      const Identity& content_handler_identity,
+  uint32_t StartShellClientFactory(const Identity& source,
+                                   const Identity& shell_client_factory,
+                                   const GURL& url,
+                                   mojom::ShellClientRequest request);
+  // Returns a running ShellClientFactory for |shell_client_factory_identity|,
+  // if there is not one running one is started for |source_identity|.
+  ShellClientFactoryConnection* GetShellClientFactory(
+      const Identity& shell_client_factory_identity,
       const Identity& source_identity);
-  void OnContentHandlerConnectionClosed(
-      ContentHandlerConnection* content_handler);
+  void OnShellClientFactoryConnectionClosed(
+      ShellClientFactoryConnection* shell_client_factory);
 
   // Callback when remote PackageManager resolves mojo:foo to mojo:bar.
   // |params| are the params passed to Connect().
@@ -180,9 +180,9 @@ class ApplicationManager {
 
   IdentityToInstanceMap identity_to_instance_;
 
-  IdentityToContentHandlerMap identity_to_content_handler_;
+  IdentityToShellClientFactoryMap identity_to_shell_client_factory_;
   // Counter used to assign ids to content handlers.
-  uint32_t content_handler_id_counter_;
+  uint32_t shell_client_factory_id_counter_;
 
   WeakInterfacePtrSet<mojom::ApplicationManagerListener> listeners_;
 

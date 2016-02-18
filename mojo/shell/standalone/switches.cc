@@ -7,10 +7,6 @@
 namespace mojo {
 namespace switches {
 
-// Comma separated list like:
-// text/html,mojo:html_viewer,application/bravo,https://abarth.com/bravo
-const char kContentHandlers[] = "content-handlers";
-
 // In multiprocess mode, force these apps to be loaded in the main process.
 // This is a comma-separated list of URLs. Example:
 // --force-in-process=mojo:native_viewport_service,mojo:network_service

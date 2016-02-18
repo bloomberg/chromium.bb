@@ -7,10 +7,10 @@
 
 #include <jni.h>
 
-#include "mojo/shell/public/cpp/content_handler_factory.h"
 #include "mojo/shell/public/cpp/interface_factory_impl.h"
 #include "mojo/shell/public/cpp/shell_client.h"
-#include "mojo/shell/public/interfaces/content_handler.mojom.h"
+#include "mojo/shell/public/cpp/shell_client_factory.h"
+#include "mojo/shell/public/interfaces/shell_client_factory.mojom.h"
 
 namespace base {
 class FilePath;
@@ -20,7 +20,7 @@ namespace mojo {
 namespace shell {
 
 class AndroidHandler : public ShellClient,
-                       public ContentHandlerFactory::Delegate {
+                       public ShellClientFactory::Delegate {
  public:
   AndroidHandler();
   ~AndroidHandler();
@@ -30,11 +30,11 @@ class AndroidHandler : public ShellClient,
   void Initialize(Shell* shell, const std::string& url, uint32_t id) override;
   bool AcceptConnection(Connection* connection) override;
 
-  // ContentHandlerFactory::Delegate:
-  void RunApplication(InterfaceRequest<mojom::ShellClient> request,
-                      URLResponsePtr response) override;
+  // ShellClientFactory::Delegate:
+  void CreateShellClient(mojom::ShellClientRequest request,
+                         const GURL& url) override;
 
-  ContentHandlerFactory content_handler_factory_;
+  ShellClientFactory shell_client_factory_;
   MOJO_DISALLOW_COPY_AND_ASSIGN(AndroidHandler);
 };
 

@@ -18,10 +18,10 @@
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell.h"
 #include "mojo/shell/public/cpp/shell_client.h"
-#include "mojo/shell/public/interfaces/content_handler.mojom.h"
+#include "mojo/shell/public/interfaces/shell_client_factory.mojom.h"
 
 // Tests that multiple applications can be packaged in a single Mojo application
-// implementing ContentHandler; that these applications can be specified by
+// implementing ShellClientFactory; that these applications can be specified by
 // the package's manifest and are thus registered with the PackageManager.
 
 namespace mojo {
@@ -98,9 +98,9 @@ class ProvidedShellClient
 
 class PackageTestShellClient
     : public ShellClient,
-      public InterfaceFactory<mojom::ContentHandler>,
+      public InterfaceFactory<mojom::ShellClientFactory>,
       public InterfaceFactory<test::mojom::PackageTestService>,
-      public mojom::ContentHandler,
+      public mojom::ShellClientFactory,
       public test::mojom::PackageTestService {
  public:
   PackageTestShellClient() : shell_(nullptr) {}
@@ -115,16 +115,15 @@ class PackageTestShellClient
                    base::Unretained(this)));
   }
   bool AcceptConnection(Connection* connection) override {
-    connection->AddInterface<ContentHandler>(this);
-    connection->AddInterface<test::mojom::PackageTestService>(
-        this);
+    connection->AddInterface<ShellClientFactory>(this);
+    connection->AddInterface<test::mojom::PackageTestService>(this);
     return true;
   }
 
-  // InterfaceFactory<mojom::ContentHandler>:
+  // InterfaceFactory<mojom::ShellClientFactory>:
   void Create(Connection* connection,
-              mojom::ContentHandlerRequest request) override {
-    content_handler_bindings_.AddBinding(this, std::move(request));
+              mojom::ShellClientFactoryRequest request) override {
+    shell_client_factory_bindings_.AddBinding(this, std::move(request));
   }
 
   // InterfaceFactory<test::mojom::PackageTestService>:
@@ -133,11 +132,10 @@ class PackageTestShellClient
     bindings_.AddBinding(this, std::move(request));
   }
 
-  // mojom::ContentHandler:
-  void StartApplication(mojom::ShellClientRequest request,
-                        URLResponsePtr response,
-                        const Callback<void()>& destruct_callback) override {
-    const std::string url = response->url;
+  // mojom::ShellClientFactory:
+  void CreateShellClient(mojom::ShellClientRequest request,
+                         const String& url,
+                         const Callback<void()>& destruct_callback) override {
     if (url == "mojo://package_test_a/")
       new ProvidedShellClient("A", std::move(request), destruct_callback);
     else if (url == "mojo://package_test_b/")
@@ -156,7 +154,7 @@ class PackageTestShellClient
 
   Shell* shell_;
   std::vector<scoped_ptr<ShellClient>> delegates_;
-  WeakBindingSet<mojom::ContentHandler> content_handler_bindings_;
+  WeakBindingSet<mojom::ShellClientFactory> shell_client_factory_bindings_;
   WeakBindingSet<test::mojom::PackageTestService> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(PackageTestShellClient);

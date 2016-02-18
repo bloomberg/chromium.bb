@@ -2,20 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SHELL_PUBLIC_CPP_CONTENT_HANDLER_FACTORY_H_
-#define MOJO_SHELL_PUBLIC_CPP_CONTENT_HANDLER_FACTORY_H_
+#ifndef MOJO_SHELL_PUBLIC_CPP_SHELL_CLIENT_FACTORY_H_
+#define MOJO_SHELL_PUBLIC_CPP_SHELL_CLIENT_FACTORY_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
-#include "mojo/shell/public/interfaces/content_handler.mojom.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
+#include "mojo/shell/public/interfaces/shell_client_factory.mojom.h"
+
+class GURL;
 
 namespace mojo {
 
-class ContentHandlerFactory
-    : public InterfaceFactory<shell::mojom::ContentHandler> {
+class ShellClientFactory
+    : public InterfaceFactory<shell::mojom::ShellClientFactory> {
  public:
   class HandledApplicationHolder {
    public:
@@ -27,9 +29,9 @@ class ContentHandlerFactory
     virtual ~Delegate() {}
     // Implement this method to create the Application. This method will be
     // called on a new thread. Leaving this method will quit the application.
-    virtual void RunApplication(
-        InterfaceRequest<shell::mojom::ShellClient> request,
-        URLResponsePtr response) = 0;
+    virtual void CreateShellClient(
+        shell::mojom::ShellClientRequest request,
+        const GURL& url) = 0;
   };
 
   class ManagedDelegate : public Delegate {
@@ -39,31 +41,31 @@ class ContentHandlerFactory
     // This method will be called on a new thread. The application will be run
     // on this new thread, and the returned value will be kept alive until the
     // application ends.
-    virtual scoped_ptr<HandledApplicationHolder> CreateApplication(
-        InterfaceRequest<shell::mojom::ShellClient> request,
-        URLResponsePtr response) = 0;
+    virtual scoped_ptr<HandledApplicationHolder> CreateShellClientManaged(
+        shell::mojom::ShellClientRequest request,
+        const GURL& url) = 0;
 
    private:
-    void RunApplication(InterfaceRequest<shell::mojom::ShellClient> request,
-                        URLResponsePtr response) override;
+    void CreateShellClient(shell::mojom::ShellClientRequest request,
+                           const GURL& url) override;
   };
 
-  explicit ContentHandlerFactory(Delegate* delegate);
-  ~ContentHandlerFactory() override;
+  explicit ShellClientFactory(Delegate* delegate);
+  ~ShellClientFactory() override;
 
  private:
-  // From InterfaceFactory:
+  // InterfaceFactory<shell::mojom::ShellClientFactory>:
   void Create(Connection* connection,
-              InterfaceRequest<shell::mojom::ContentHandler> request) override;
+              shell::mojom::ShellClientFactoryRequest request) override;
 
   Delegate* delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(ContentHandlerFactory);
+  DISALLOW_COPY_AND_ASSIGN(ShellClientFactory);
 };
 
 template <class A>
 class HandledApplicationHolderImpl
-    : public ContentHandlerFactory::HandledApplicationHolder {
+    : public ShellClientFactory::HandledApplicationHolder {
  public:
   explicit HandledApplicationHolderImpl(A* value) : value_(value) {}
 
@@ -72,11 +74,11 @@ class HandledApplicationHolderImpl
 };
 
 template <class A>
-scoped_ptr<ContentHandlerFactory::HandledApplicationHolder>
+scoped_ptr<ShellClientFactory::HandledApplicationHolder>
 make_handled_factory_holder(A* value) {
   return make_scoped_ptr(new HandledApplicationHolderImpl<A>(value));
 }
 
 }  // namespace mojo
 
-#endif  // MOJO_SHELL_PUBLIC_CPP_CONTENT_HANDLER_FACTORY_H_
+#endif  // MOJO_SHELL_PUBLIC_CPP_SHELL_CLIENT_FACTORY_H_

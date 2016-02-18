@@ -11,7 +11,6 @@ namespace switches {
 // All switches in alphabetical order. The switches should be documented
 // alongside the definition of their values in the .cc file.
 extern const char kApp[];
-extern const char kContentHandlers[];
 extern const char kForceInProcess[];
 extern const char kHelp[];
 extern const char kMapOrigin[];

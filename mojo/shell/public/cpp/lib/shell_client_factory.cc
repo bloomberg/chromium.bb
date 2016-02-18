@@ -13,11 +13,13 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/platform_thread.h"
+#include "mojo/common/url_type_converters.h"
 #include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/shell/public/cpp/connection.h"
-#include "mojo/shell/public/cpp/content_handler_factory.h"
 #include "mojo/shell/public/cpp/interface_factory_impl.h"
+#include "mojo/shell/public/cpp/shell_client_factory.h"
+#include "url/gurl.h"
 
 namespace mojo {
 
@@ -28,15 +30,15 @@ class ApplicationThread : public base::PlatformThread::Delegate {
   ApplicationThread(
       scoped_refptr<base::SingleThreadTaskRunner> handler_thread,
       const base::Callback<void(ApplicationThread*)>& termination_callback,
-      ContentHandlerFactory::Delegate* handler_delegate,
+      ShellClientFactory::Delegate* handler_delegate,
       InterfaceRequest<shell::mojom::ShellClient> request,
-      URLResponsePtr response,
+      const GURL& url,
       const Callback<void()>& destruct_callback)
       : handler_thread_(handler_thread),
         termination_callback_(termination_callback),
         handler_delegate_(handler_delegate),
         request_(std::move(request)),
-        response_(std::move(response)),
+        url_(url),
         destruct_callback_(destruct_callback) {}
 
   ~ApplicationThread() override {
@@ -45,30 +47,29 @@ class ApplicationThread : public base::PlatformThread::Delegate {
 
  private:
   void ThreadMain() override {
-    handler_delegate_->RunApplication(std::move(request_),
-                                      std::move(response_));
+    handler_delegate_->CreateShellClient(std::move(request_), url_);
     handler_thread_->PostTask(FROM_HERE,
                               base::Bind(termination_callback_, this));
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> handler_thread_;
   base::Callback<void(ApplicationThread*)> termination_callback_;
-  ContentHandlerFactory::Delegate* handler_delegate_;
+  ShellClientFactory::Delegate* handler_delegate_;
   InterfaceRequest<shell::mojom::ShellClient> request_;
-  URLResponsePtr response_;
+  GURL url_;
   Callback<void()> destruct_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ApplicationThread);
 };
 
-class ContentHandlerImpl : public shell::mojom::ContentHandler {
+class ShellClientFactoryImpl : public shell::mojom::ShellClientFactory {
  public:
-  ContentHandlerImpl(ContentHandlerFactory::Delegate* delegate,
-                     InterfaceRequest<shell::mojom::ContentHandler> request)
+  ShellClientFactoryImpl(mojo::ShellClientFactory::Delegate* delegate,
+                         shell::mojom::ShellClientFactoryRequest request)
       : delegate_(delegate),
         binding_(this, std::move(request)),
         weak_factory_(this) {}
-  ~ContentHandlerImpl() override {
+  ~ShellClientFactoryImpl() override {
     // We're shutting down and doing cleanup. Cleanup may trigger calls back to
     // OnThreadEnd(). As we're doing the cleanup here we don't want to do it in
     // OnThreadEnd() as well. InvalidateWeakPtrs() ensures we don't get any
@@ -81,16 +82,16 @@ class ContentHandlerImpl : public shell::mojom::ContentHandler {
   }
 
  private:
-  // Overridden from ContentHandler:
-  void StartApplication(InterfaceRequest<shell::mojom::ShellClient> request,
-                        URLResponsePtr response,
-                        const Callback<void()>& destruct_callback) override {
+  // Overridden from shell::mojom::ShellClientFactory:
+  void CreateShellClient(shell::mojom::ShellClientRequest request,
+                         const String& url,
+                         const Callback<void()>& destruct_callback) override {
     ApplicationThread* thread =
         new ApplicationThread(base::ThreadTaskRunnerHandle::Get(),
-                              base::Bind(&ContentHandlerImpl::OnThreadEnd,
+                              base::Bind(&ShellClientFactoryImpl::OnThreadEnd,
                                          weak_factory_.GetWeakPtr()),
-                              delegate_, std::move(request),
-                              std::move(response), destruct_callback);
+                              delegate_, std::move(request), url.To<GURL>(),
+                              destruct_callback);
     base::PlatformThreadHandle handle;
     bool launched = base::PlatformThread::Create(0, thread, &handle);
     DCHECK(launched);
@@ -105,37 +106,36 @@ class ContentHandlerImpl : public shell::mojom::ContentHandler {
     delete thread;
   }
 
-  ContentHandlerFactory::Delegate* delegate_;
+  mojo::ShellClientFactory::Delegate* delegate_;
   std::map<ApplicationThread*, base::PlatformThreadHandle> active_threads_;
-  StrongBinding<shell::mojom::ContentHandler> binding_;
-  base::WeakPtrFactory<ContentHandlerImpl> weak_factory_;
+  StrongBinding<shell::mojom::ShellClientFactory> binding_;
+  base::WeakPtrFactory<ShellClientFactoryImpl> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ContentHandlerImpl);
+  DISALLOW_COPY_AND_ASSIGN(ShellClientFactoryImpl);
 };
 
 }  // namespace
 
-ContentHandlerFactory::ContentHandlerFactory(Delegate* delegate)
+ShellClientFactory::ShellClientFactory(Delegate* delegate)
     : delegate_(delegate) {
 }
 
-ContentHandlerFactory::~ContentHandlerFactory() {
+ShellClientFactory::~ShellClientFactory() {
 }
 
-void ContentHandlerFactory::ManagedDelegate::RunApplication(
-    InterfaceRequest<shell::mojom::ShellClient> request,
-    URLResponsePtr response) {
+void ShellClientFactory::ManagedDelegate::CreateShellClient(
+    shell::mojom::ShellClientRequest request,
+    const GURL& url) {
   base::MessageLoop loop(common::MessagePumpMojo::Create());
-  auto application =
-      this->CreateApplication(std::move(request), std::move(response));
+  auto application = this->CreateShellClientManaged(std::move(request), url);
   if (application)
     loop.Run();
 }
 
-void ContentHandlerFactory::Create(
+void ShellClientFactory::Create(
     Connection* connection,
-    InterfaceRequest<shell::mojom::ContentHandler> request) {
-  new ContentHandlerImpl(delegate_, std::move(request));
+    shell::mojom::ShellClientFactoryRequest request) {
+  new ShellClientFactoryImpl(delegate_, std::move(request));
 }
 
 }  // namespace mojo

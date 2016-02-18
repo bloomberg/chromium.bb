@@ -8,10 +8,10 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("interfaces") {
   sources = [
     "application_manager.mojom",
-    "content_handler.mojom",
     "interface_provider.mojom",
     "shell.mojom",
     "shell_client.mojom",
+    "shell_client_factory.mojom",
   ]
 
   import_dirs = [ "//mojo/services" ]
