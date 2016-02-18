@@ -7,6 +7,7 @@
 #include "modules/geolocation/Geolocation.h"
 #include "modules/geolocation/PositionError.h"
 #include "modules/geolocation/PositionOptions.h"
+#include "platform/Histogram.h"
 
 namespace blink {
 
@@ -20,6 +21,9 @@ GeoNotifier::GeoNotifier(Geolocation* geolocation, PositionCallback* successCall
 {
     ASSERT(m_geolocation);
     ASSERT(m_successCallback);
+
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, timeoutHistogram, ("Geolocation.Timeout", 0, 1000 * 60 * 10 /* 10 minute max */, 20 /* buckets */));
+    timeoutHistogram.count(m_options.timeout());
 }
 
 DEFINE_TRACE(GeoNotifier)
@@ -94,6 +98,10 @@ void GeoNotifier::timerFired(Timer<GeoNotifier>*)
 
     if (m_errorCallback)
         m_errorCallback->handleEvent(PositionError::create(PositionError::TIMEOUT, "Timeout expired"));
+
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, timeoutExpiredHistogram, ("Geolocation.TimeoutExpired", 0, 1000 * 60 * 10 /* 10 minute max */, 20 /* buckets */));
+    timeoutExpiredHistogram.count(m_options.timeout());
+
     m_geolocation->requestTimedOut(this);
 }
 

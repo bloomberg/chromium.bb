@@ -15244,6 +15244,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Http response codes in NetworkLocationRequest.</summary>
 </histogram>
 
+<histogram name="Geolocation.Timeout">
+  <owner>mvanouwerkerk@chromium.org</owner>
+  <summary>
+    Counts Geolocation request timeout values, bucketing by timeout duration.
+    This is recorded for all requests upon creation, see
+    Geolocation.TimeoutExpired for timeouts that actually expired.
+  </summary>
+</histogram>
+
+<histogram name="Geolocation.TimeoutExpired">
+  <owner>mvanouwerkerk@chromium.org</owner>
+  <summary>
+    Counts Geolocation request timeout expirations, bucketing by timeout
+    duration. This means no position was received within the allowed time from
+    the browser process due to e.g. a slow network or an unresponsive system
+    location provider.
+  </summary>
+</histogram>
+
 <histogram name="GoogleNow.Card.Button.Clicked0" enum="GoogleNowCardTypeId">
   <owner>robliao@chromium.org</owner>
   <owner>skare@chromium.org</owner>
