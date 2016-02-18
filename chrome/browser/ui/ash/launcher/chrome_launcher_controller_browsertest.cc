@@ -377,26 +377,6 @@ class ShelfAppBrowserTestNoDefaultBrowser : public ShelfAppBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(ShelfAppBrowserTestNoDefaultBrowser);
 };
 
-// Since the default for minimizing on click might change, I added both classes
-// to either get the minimize on click or not.
-class ShelfAppBrowserNoMinimizeOnClick : public LauncherPlatformAppBrowserTest {
- protected:
-  ShelfAppBrowserNoMinimizeOnClick() {}
-  ~ShelfAppBrowserNoMinimizeOnClick() override {}
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    LauncherPlatformAppBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(
-        switches::kDisableMinimizeOnSecondLauncherItemClick);
-  }
-
- private:
-
-  DISALLOW_COPY_AND_ASSIGN(ShelfAppBrowserNoMinimizeOnClick);
-};
-
-typedef LauncherPlatformAppBrowserTest ShelfAppBrowserMinimizeOnClick;
-
 // Test that we can launch a platform app and get a running item.
 IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, LaunchUnpinned) {
   int item_count = shelf_model()->item_count();
@@ -690,45 +670,8 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, WindowActivation) {
   EXPECT_EQ(item_count, shelf_model()->item_count());
 }
 
-// Confirm that Click behavior for app windows is correnct.
-IN_PROC_BROWSER_TEST_F(ShelfAppBrowserNoMinimizeOnClick, AppClickBehavior) {
-  // Launch a platform app and create a window for it.
-  const Extension* extension1 = LoadAndLaunchPlatformApp("launch", "Launched");
-  AppWindow* window1 = CreateAppWindow(extension1);
-  EXPECT_TRUE(window1->GetNativeWindow()->IsVisible());
-  EXPECT_TRUE(window1->GetBaseWindow()->IsActive());
-  // Confirm that a controller item was created and is the correct state.
-  const ash::ShelfItem& item1 = GetLastLauncherItem();
-  LauncherItemController* item1_controller = GetItemController(item1.id);
-  EXPECT_EQ(ash::TYPE_PLATFORM_APP, item1.type);
-  EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
-  EXPECT_EQ(LauncherItemController::TYPE_APP, item1_controller->type());
-  // Clicking the item should have no effect.
-  TestEvent click_event(ui::ET_MOUSE_PRESSED);
-  item1_controller->ItemSelected(click_event);
-  EXPECT_TRUE(window1->GetNativeWindow()->IsVisible());
-  EXPECT_TRUE(window1->GetBaseWindow()->IsActive());
-  // Minimize the window and confirm that the controller item is updated.
-  window1->GetBaseWindow()->Minimize();
-  EXPECT_FALSE(window1->GetNativeWindow()->IsVisible());
-  EXPECT_FALSE(window1->GetBaseWindow()->IsActive());
-  EXPECT_EQ(ash::STATUS_RUNNING, item1.status);
-  // Clicking the item should activate the window.
-  item1_controller->ItemSelected(click_event);
-  EXPECT_TRUE(window1->GetNativeWindow()->IsVisible());
-  EXPECT_TRUE(window1->GetBaseWindow()->IsActive());
-  EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
-  // Maximizing a window should preserve state after minimize + click.
-  window1->GetBaseWindow()->Maximize();
-  window1->GetBaseWindow()->Minimize();
-  item1_controller->ItemSelected(click_event);
-  EXPECT_TRUE(window1->GetNativeWindow()->IsVisible());
-  EXPECT_TRUE(window1->GetBaseWindow()->IsActive());
-  EXPECT_TRUE(window1->GetBaseWindow()->IsMaximized());
-}
-
 // Confirm the minimizing click behavior for apps.
-IN_PROC_BROWSER_TEST_F(ShelfAppBrowserMinimizeOnClick,
+IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest,
                        PackagedAppClickBehaviorInMinimizeMode) {
   // Launch one platform app and create a window for it.
   const Extension* extension1 = LoadAndLaunchPlatformApp("launch", "Launched");

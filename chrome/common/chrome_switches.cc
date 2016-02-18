@@ -277,11 +277,6 @@ const char kDisableHttp2[]                   = "disable-http2";
 // Disables the Material Design version of chrome://downloads.
 const char kDisableMaterialDesignDownloads[] = "disable-md-downloads";
 
-// Disable the behavior that the second click on a launcher item (the click when
-// the item is already active) minimizes the item.
-const char kDisableMinimizeOnSecondLauncherItemClick[] =
-    "disable-minimize-on-second-launcher-item-click";
-
 // Disables the new bookmark app system.
 const char kDisableNewBookmarkApps[]        = "disable-new-bookmark-apps";
 

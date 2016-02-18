@@ -1158,20 +1158,13 @@ ChromeLauncherController::ActivateWindowOrMinimizeIfActive(
   }
 
   if (window->IsActive() && allow_minimize) {
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kDisableMinimizeOnSecondLauncherItemClick)) {
-      AnimateWindow(window->GetNativeWindow(),
-                    wm::WINDOW_ANIMATION_TYPE_BOUNCE);
-    } else {
-      window->Minimize();
-      return ash::ShelfItemDelegate::kExistingWindowMinimized;
-    }
-  } else {
-    window->Show();
-    window->Activate();
-    return ash::ShelfItemDelegate::kExistingWindowActivated;
+    window->Minimize();
+    return ash::ShelfItemDelegate::kNoAction;
   }
-  return ash::ShelfItemDelegate::kNoAction;
+
+  window->Show();
+  window->Activate();
+  return ash::ShelfItemDelegate::kExistingWindowActivated;
 }
 
 void ChromeLauncherController::OnShelfCreated(ash::Shelf* shelf) {

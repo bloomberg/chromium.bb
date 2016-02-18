@@ -81,7 +81,6 @@ extern const char kDisableFieldTrialTestingConfig[];
 extern const char kDisableHttp2[];
 extern const char kDisableJavaScriptHarmonyShipping[];
 extern const char kDisableMaterialDesignDownloads[];
-extern const char kDisableMinimizeOnSecondLauncherItemClick[];
 extern const char kDisableNewBookmarkApps[];
 extern const char kDisableNTPPopularSites[];
 extern const char kDisableOfflineAutoReload[];
