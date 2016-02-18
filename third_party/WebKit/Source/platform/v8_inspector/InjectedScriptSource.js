@@ -986,6 +986,14 @@ InjectedScript.prototype = {
     },
 
     /**
+     * @return {!CommandLineAPI}
+     */
+    commandLineAPI: function()
+    {
+        return new CommandLineAPI(this._commandLineAPIImpl, null);
+    },
+
+    /**
      * @param {!JavaScriptCallFrame} topCallFrame
      * @param {string} callFrameId
      * @return {?JavaScriptCallFrame}

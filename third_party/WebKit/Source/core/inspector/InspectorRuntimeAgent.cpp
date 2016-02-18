@@ -146,12 +146,12 @@ void InspectorRuntimeAgent::compileScript(ErrorString* errorString, const String
     m_v8RuntimeAgent->compileScript(errorString, inExpression, inSourceURL, inPersistScript, inExecutionContextId, optOutScriptId, optOutExceptionDetails);
 }
 
-void InspectorRuntimeAgent::runScript(ErrorString* errorString, const String& inScriptId, int inExecutionContextId, const String* inObjectGroup, const bool* inDoNotPauseOnExceptionsAndMuteConsole, RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>& outResult, RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>& optOutExceptionDetails)
+void InspectorRuntimeAgent::runScript(ErrorString* errorString, const String& inScriptId, int inExecutionContextId, const String* inObjectGroup, const bool* inDoNotPauseOnExceptionsAndMuteConsole, const bool* includeCommandLineAPI, RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>& outResult, RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>& optOutExceptionDetails)
 {
     MuteConsoleScope<InspectorRuntimeAgent> muteScope;
     if (asBool(inDoNotPauseOnExceptionsAndMuteConsole))
         muteScope.enter(this);
-    m_v8RuntimeAgent->runScript(errorString, inScriptId, inExecutionContextId, inObjectGroup, inDoNotPauseOnExceptionsAndMuteConsole, outResult, optOutExceptionDetails);
+    m_v8RuntimeAgent->runScript(errorString, inScriptId, inExecutionContextId, inObjectGroup, inDoNotPauseOnExceptionsAndMuteConsole, includeCommandLineAPI, outResult, optOutExceptionDetails);
 }
 
 void InspectorRuntimeAgent::enable(ErrorString* errorString)

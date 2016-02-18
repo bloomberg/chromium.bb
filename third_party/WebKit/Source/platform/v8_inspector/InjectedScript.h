@@ -94,6 +94,7 @@ public:
     void getProperties(ErrorString*, const String& objectId, bool ownProperties, bool accessorPropertiesOnly, bool generatePreview, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Runtime::PropertyDescriptor>>* result, RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>*);
     void getInternalProperties(ErrorString*, const String& objectId, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Runtime::InternalPropertyDescriptor>>* result, RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>*);
     void releaseObject(const String& objectId);
+    v8::MaybeLocal<v8::Value> runCompiledScript(v8::Local<v8::Script>, bool includeCommandLineAPI);
 
     PassRefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::CallFrame>> wrapCallFrames(v8::Local<v8::Object>, int asyncOrdinal);
 

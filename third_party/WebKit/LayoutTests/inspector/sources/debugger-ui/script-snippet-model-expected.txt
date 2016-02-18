@@ -58,6 +58,8 @@ Snippet execution result: function doesNothing() {
 }
 Last evaluation source url for snippet: snippets:///1_3
 Snippet execution result: undefined
+Last evaluation source url for snippet: snippets:///3_4
+Snippet execution result: 1
 
 Running: testEvaluateEditReload
 Snippet execution result: undefined

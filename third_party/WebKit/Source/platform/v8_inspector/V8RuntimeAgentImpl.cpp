@@ -215,7 +215,7 @@ void V8RuntimeAgentImpl::compileScript(ErrorString* errorString, const String& e
     *scriptId = scriptValueId;
 }
 
-void V8RuntimeAgentImpl::runScript(ErrorString* errorString, const ScriptId& scriptId, int executionContextId, const String* const objectGroup, const bool* const doNotPauseOnExceptionsAndMuteConsole, RefPtr<RemoteObject>& result, RefPtr<ExceptionDetails>& exceptionDetails)
+void V8RuntimeAgentImpl::runScript(ErrorString* errorString, const ScriptId& scriptId, int executionContextId, const String* const objectGroup, const bool* const doNotPauseOnExceptionsAndMuteConsole, const bool* includeCommandLineAPI, RefPtr<RemoteObject>& result, RefPtr<ExceptionDetails>& exceptionDetails)
 {
     if (!m_enabled) {
         *errorString = "Runtime agent is not enabled";
@@ -248,8 +248,9 @@ void V8RuntimeAgentImpl::runScript(ErrorString* errorString, const ScriptId& scr
         return;
     }
     v8::TryCatch tryCatch(isolate);
+
     v8::Local<v8::Value> value;
-    v8::MaybeLocal<v8::Value> maybeValue = m_debugger->client()->runCompiledScript(context, script);
+    v8::MaybeLocal<v8::Value> maybeValue = injectedScript->runCompiledScript(script, asBool(includeCommandLineAPI));
     if (maybeValue.IsEmpty()) {
         value = tryCatch.Exception();
         v8::Local<v8::Message> message = tryCatch.Message();

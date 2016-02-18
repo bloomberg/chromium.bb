@@ -342,6 +342,25 @@ void InjectedScript::releaseObject(const String& objectId)
     m_native->unbind(boundId);
 }
 
+v8::MaybeLocal<v8::Value> InjectedScript::runCompiledScript(v8::Local<v8::Script> script, bool includeCommandLineAPI)
+{
+    v8::Local<v8::Symbol> commandLineAPISymbolValue = V8Debugger::commandLineAPISymbol(m_isolate);
+    v8::Local<v8::Object> global = context()->Global();
+    if (includeCommandLineAPI) {
+        V8FunctionCall function(m_client, context(), v8Value(), "commandLineAPI");
+        bool hadException = false;
+        v8::Local<v8::Value> commandLineAPI = function.call(hadException, false);
+        if (!hadException)
+            global->Set(commandLineAPISymbolValue, commandLineAPI);
+    }
+
+    v8::MaybeLocal<v8::Value> maybeValue = m_client->runCompiledScript(context(), script);
+    if (includeCommandLineAPI)
+        global->Delete(context(), commandLineAPISymbolValue);
+
+    return maybeValue;
+}
+
 PassRefPtr<Array<CallFrame>> InjectedScript::wrapCallFrames(v8::Local<v8::Object> callFrames, int asyncOrdinal)
 {
     v8::HandleScope handles(m_isolate);

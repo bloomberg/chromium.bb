@@ -99,7 +99,7 @@ public:
     void isRunRequired(ErrorString*, bool* out_result) override;
     void setCustomObjectFormatterEnabled(ErrorString*, bool) final;
     void compileScript(ErrorString*, const String& inExpression, const String& inSourceURL, bool inPersistScript, int inExecutionContextId, protocol::TypeBuilder::OptOutput<protocol::TypeBuilder::Runtime::ScriptId>* optOutScriptId, RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>& optOutExceptionDetails) override;
-    void runScript(ErrorString*, const String& inScriptId, int inExecutionContextId, const String* inObjectGroup, const bool* inDoNotPauseOnExceptionsAndMuteConsole, RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>& outResult, RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>& optOutExceptionDetails) override;
+    void runScript(ErrorString*, const String& inScriptId, int inExecutionContextId, const String* inObjectGroup, const bool* inDoNotPauseOnExceptionsAndMuteConsole, const bool* includeCommandLineAPI, RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>& outResult, RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>& optOutExceptionDetails) override;
 
     virtual void muteConsole() = 0;
     virtual void unmuteConsole() = 0;

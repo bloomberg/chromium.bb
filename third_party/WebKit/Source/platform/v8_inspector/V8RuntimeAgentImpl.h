@@ -86,7 +86,7 @@ public:
     void isRunRequired(ErrorString*, bool* out_result) override;
     void setCustomObjectFormatterEnabled(ErrorString*, bool) override;
     void compileScript(ErrorString*, const String& expression, const String& sourceURL, bool persistScript, int executionContextId, protocol::TypeBuilder::OptOutput<protocol::TypeBuilder::Runtime::ScriptId>*, RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>&) override;
-    void runScript(ErrorString*, const protocol::TypeBuilder::Runtime::ScriptId&, int executionContextId, const String* objectGroup, const bool* doNotPauseOnExceptionsAndMuteConsole, RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>& result, RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>&) override;
+    void runScript(ErrorString*, const protocol::TypeBuilder::Runtime::ScriptId&, int executionContextId, const String* objectGroup, const bool* doNotPauseOnExceptionsAndMuteConsole, const bool* includeCommandLineAPI, RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>& result, RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>&) override;
 
     V8DebuggerImpl* debugger() { return m_debugger; }
     InjectedScriptManager* injectedScriptManager() { return m_injectedScriptManager.get(); }
