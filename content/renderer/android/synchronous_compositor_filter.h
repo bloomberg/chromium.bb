@@ -66,6 +66,8 @@ class SynchronousCompositorFilter : public IPC::MessageFilter,
   void DidOverscroll(int routing_id,
                      const DidOverscrollParams& params) override;
   void DidStopFlinging(int routing_id) override;
+  void NonBlockingInputEventHandled(int routing_id,
+                                    blink::WebInputEvent::Type type) override;
 
  private:
   ~SynchronousCompositorFilter() override;

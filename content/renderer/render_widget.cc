@@ -656,10 +656,11 @@ GURL RenderWidget::GetURLForGraphicsContext3D() {
 }
 
 void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
-                                      const ui::LatencyInfo& latency_info) {
+                                      const ui::LatencyInfo& latency_info,
+                                      InputEventDispatchType dispatch_type) {
   if (!input_event)
     return;
-  input_handler_->HandleInputEvent(*input_event, latency_info);
+  input_handler_->HandleInputEvent(*input_event, latency_info, dispatch_type);
 }
 
 void RenderWidget::OnCursorVisibilityChange(bool is_visible) {
@@ -957,6 +958,17 @@ void RenderWidget::OnDidOverscroll(const DidOverscrollParams& params) {
 
 void RenderWidget::OnInputEventAck(scoped_ptr<InputEventAck> input_event_ack) {
   Send(new InputHostMsg_HandleInputEvent_ACK(routing_id_, *input_event_ack));
+}
+
+void RenderWidget::NonBlockingInputEventHandled(
+    blink::WebInputEvent::Type handled_type) {
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  InputHandlerManager* input_handler_manager =
+      render_thread ? render_thread->input_handler_manager() : NULL;
+  if (input_handler_manager) {
+    input_handler_manager->NonBlockingInputEventHandledOnMainThread(
+        routing_id_, handled_type);
+  }
 }
 
 void RenderWidget::SetInputHandler(RenderWidgetInputHandler* input_handler) {

@@ -46,6 +46,8 @@ class RenderWidgetMusConnection : public RenderWidgetInputHandlerDelegate {
   void OnDidHandleKeyEvent() override;
   void OnDidOverscroll(const DidOverscrollParams& params) override;
   void OnInputEventAck(scoped_ptr<InputEventAck> input_event_ack) override;
+  void NonBlockingInputEventHandled(
+      blink::WebInputEvent::Type handled_type) override;
   void SetInputHandler(RenderWidgetInputHandler* input_handler) override;
   void UpdateTextInputState(ShowIme show_ime,
                             ChangeSource change_source) override;

@@ -50,16 +50,19 @@ class InputHandlerManager {
   ~InputHandlerManager();
 
   // Callable from the main thread only.
-  void AddInputHandler(
-      int routing_id,
-      const base::WeakPtr<cc::InputHandler>& input_handler,
-      const base::WeakPtr<RenderViewImpl>& render_view_impl,
-      bool enable_smooth_scrolling);
+  void AddInputHandler(int routing_id,
+                       const base::WeakPtr<cc::InputHandler>& input_handler,
+                       const base::WeakPtr<RenderViewImpl>& render_view_impl,
+                       bool enable_smooth_scrolling,
+                       bool enable_wheel_gestures);
 
   void ObserveWheelEventAndResultOnMainThread(
       int routing_id,
       const blink::WebMouseWheelEvent& wheel_event,
       const cc::InputHandlerScrollResult& scroll_result);
+
+  void NonBlockingInputEventHandledOnMainThread(int routing_id,
+                                                blink::WebInputEvent::Type);
 
   // Callback only from the compositor's thread.
   void RemoveInputHandler(int routing_id);
@@ -85,12 +88,17 @@ class InputHandlerManager {
       const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
       const base::WeakPtr<cc::InputHandler>& input_handler,
       const base::WeakPtr<RenderViewImpl>& render_view_impl,
-      bool enable_smooth_scrolling);
+      bool enable_smooth_scrolling,
+      bool enable_wheel_gestures);
 
   void ObserveWheelEventAndResultOnCompositorThread(
       int routing_id,
       const blink::WebMouseWheelEvent& wheel_event,
       const cc::InputHandlerScrollResult& scroll_result);
+
+  void NonBlockingInputEventHandledOnCompositorThread(
+      int routing_id,
+      blink::WebInputEvent::Type);
 
   typedef base::ScopedPtrHashMap<int,  // routing_id
                                  scoped_ptr<InputHandlerWrapper>>

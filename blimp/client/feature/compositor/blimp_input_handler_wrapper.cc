@@ -51,6 +51,7 @@ void BlimpInputHandlerWrapper::HandleWebGestureEvent(
     case ui::InputHandlerProxy::EventDisposition::DROP_EVENT:
       consumed = true;
       break;
+    case ui::InputHandlerProxy::EventDisposition::DID_HANDLE_NON_BLOCKING:
     case ui::InputHandlerProxy::EventDisposition::DID_NOT_HANDLE:
       consumed = false;
       break;

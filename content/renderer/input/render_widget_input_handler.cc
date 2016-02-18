@@ -131,7 +131,7 @@ void LogPassiveLatency(int64_t latency) {
 }
 
 void LogPassiveEventListenersUma(WebInputEventResult result,
-                                 bool passive,
+                                 bool non_blocking,
                                  bool cancelable,
                                  double event_timestamp,
                                  const ui::LatencyInfo& latency_info) {
@@ -145,7 +145,7 @@ void LogPassiveEventListenersUma(WebInputEventResult result,
   };
 
   int enum_value;
-  if (passive)
+  if (non_blocking)
     enum_value = PASSIVE_LISTENER_UMA_ENUM_PASSIVE;
   else if (!cancelable)
     enum_value = PASSIVE_LISTENER_UMA_ENUM_UNCANCELABLE;
@@ -191,9 +191,8 @@ RenderWidgetInputHandler::~RenderWidgetInputHandler() {}
 
 void RenderWidgetInputHandler::HandleInputEvent(
     const WebInputEvent& input_event,
-    const ui::LatencyInfo& latency_info) {
-  // TODO(dtapuska): Passive support not implemented yet crbug.com/489802
-  bool passive = false;
+    const ui::LatencyInfo& latency_info,
+    InputEventDispatchType dispatch_type) {
   base::AutoReset<bool> handling_input_event_resetter(&handling_input_event_,
                                                       true);
   base::AutoReset<WebInputEvent::Type> handling_event_type_resetter(
@@ -314,6 +313,8 @@ void RenderWidgetInputHandler::HandleInputEvent(
       processed = widget_->webwidget()->handleInputEvent(input_event);
   }
 
+  bool non_blocking =
+      dispatch_type == InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING;
   // TODO(dtapuska): Use the input_event.timeStampSeconds as the start
   // ideally this should be when the event was sent by the compositor to the
   // renderer. crbug.com/565348
@@ -321,11 +322,11 @@ void RenderWidgetInputHandler::HandleInputEvent(
       input_event.type == WebInputEvent::TouchMove ||
       input_event.type == WebInputEvent::TouchEnd) {
     LogPassiveEventListenersUma(
-        processed, passive,
+        processed, non_blocking,
         static_cast<const WebTouchEvent&>(input_event).cancelable,
         input_event.timeStampSeconds, latency_info);
   } else if (input_event.type == WebInputEvent::MouseWheel) {
-    LogPassiveEventListenersUma(processed, passive, !passive,
+    LogPassiveEventListenersUma(processed, non_blocking, !non_blocking,
                                 input_event.timeStampSeconds, latency_info);
   }
 
@@ -362,11 +363,15 @@ void RenderWidgetInputHandler::HandleInputEvent(
   // Send mouse wheel events and their disposition to the compositor thread, so
   // that they can be used to produce the elastic overscroll effect on Mac.
   if (input_event.type == WebInputEvent::MouseWheel) {
-    delegate_->ObserveWheelEventAndResult(
-        static_cast<const WebMouseWheelEvent&>(input_event),
-        event_overscroll ? event_overscroll->latest_overscroll_delta
-                         : gfx::Vector2dF(),
-        processed != WebInputEventResult::NotHandled);
+    const WebMouseWheelEvent& wheel_event =
+        static_cast<const WebMouseWheelEvent&>(input_event);
+    if (wheel_event.canScroll) {
+      delegate_->ObserveWheelEventAndResult(
+          wheel_event,
+          event_overscroll ? event_overscroll->latest_overscroll_delta
+                           : gfx::Vector2dF(),
+          processed != WebInputEventResult::NotHandled);
+    }
   }
 
   bool frame_pending =
@@ -390,7 +395,12 @@ void RenderWidgetInputHandler::HandleInputEvent(
   // by reentrant calls for events after the paused one.
   bool no_ack = ignore_ack_for_mouse_move_from_debugger_ &&
                 input_event.type == WebInputEvent::MouseMove;
-  if (WebInputEventTraits::WillReceiveAckFromRenderer(input_event) && !no_ack) {
+  if (non_blocking) {
+    // |non_blocking| means it was ack'd already by the InputHandlerProxy
+    // so let the delegate know the event has been handled.
+    delegate_->NonBlockingInputEventHandled(input_event.type);
+  } else if (WebInputEventTraits::WillReceiveAckFromRenderer(input_event) &&
+             !no_ack) {
     scoped_ptr<InputEventAck> response(new InputEventAck(
         input_event.type, ack_result, swap_latency_info,
         std::move(event_overscroll),

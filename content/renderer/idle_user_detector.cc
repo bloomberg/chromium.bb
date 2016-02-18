@@ -25,8 +25,10 @@ bool IdleUserDetector::OnMessageReceived(const IPC::Message& message) {
   return false;
 }
 
-void IdleUserDetector::OnHandleInputEvent(const blink::WebInputEvent* event,
-                                          const ui::LatencyInfo& latency_info) {
+void IdleUserDetector::OnHandleInputEvent(
+    const blink::WebInputEvent* event,
+    const ui::LatencyInfo& latency_info,
+    InputEventDispatchType dispatch_type) {
   if (GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden()) {
     RenderThreadImpl* render_thread = RenderThreadImpl::current();
     if (render_thread != NULL) {

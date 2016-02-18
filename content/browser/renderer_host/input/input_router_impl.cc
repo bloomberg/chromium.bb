@@ -53,6 +53,8 @@ const char* GetEventAckName(InputEventAckState ack_result) {
     case INPUT_EVENT_ACK_STATE_NOT_CONSUMED: return "NOT_CONSUMED";
     case INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS: return "NO_CONSUMER_EXISTS";
     case INPUT_EVENT_ACK_STATE_IGNORED: return "IGNORED";
+    case INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING:
+      return "SET_NON_BLOCKING";
   }
   DLOG(WARNING) << "Unhandled InputEventAckState in GetEventAckName.";
   return "";
@@ -410,8 +412,9 @@ bool InputRouterImpl::OfferToRenderer(const WebInputEvent& input_event,
   const WebInputEvent* event_to_send =
       event_in_viewport ? event_in_viewport.get() : &input_event;
 
-  if (Send(new InputMsg_HandleInputEvent(routing_id(), event_to_send,
-                                         latency_info))) {
+  if (Send(new InputMsg_HandleInputEvent(
+          routing_id(), event_to_send, latency_info,
+          InputEventDispatchType::DISPATCH_TYPE_NORMAL))) {
     // Ack messages for ignored ack event types should never be sent by the
     // renderer. Consequently, such event types should not affect event time
     // or in-flight event count metrics.

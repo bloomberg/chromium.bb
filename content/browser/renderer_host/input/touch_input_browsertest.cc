@@ -19,6 +19,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -88,54 +89,6 @@ const char kTouchEventDataURL[] =
 
 namespace content {
 
-class InputEventMessageFilter : public BrowserMessageFilter {
- public:
-  InputEventMessageFilter()
-      : BrowserMessageFilter(InputMsgStart),
-        type_(WebInputEvent::Undefined),
-        state_(INPUT_EVENT_ACK_STATE_UNKNOWN) {}
-
-  void WaitForAck(WebInputEvent::Type type) {
-    base::RunLoop run_loop;
-    base::AutoReset<base::Closure> reset_quit(&quit_, run_loop.QuitClosure());
-    base::AutoReset<WebInputEvent::Type> reset_type(&type_, type);
-    run_loop.Run();
-  }
-
-  InputEventAckState last_ack_state() const { return state_; }
-
- protected:
-  ~InputEventMessageFilter() override {}
-
- private:
-  void ReceivedEventAck(WebInputEvent::Type type, InputEventAckState state) {
-    if (type_ == type) {
-      state_ = state;
-      quit_.Run();
-    }
-  }
-
-  // BrowserMessageFilter:
-  bool OnMessageReceived(const IPC::Message& message) override {
-    if (message.type() == InputHostMsg_HandleInputEvent_ACK::ID) {
-      InputHostMsg_HandleInputEvent_ACK::Param params;
-      InputHostMsg_HandleInputEvent_ACK::Read(&message, &params);
-      WebInputEvent::Type type = base::get<0>(params).type;
-      InputEventAckState ack = base::get<0>(params).state;
-      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-          base::Bind(&InputEventMessageFilter::ReceivedEventAck,
-                     this, type, ack));
-    }
-    return false;
-  }
-
-  base::Closure quit_;
-  WebInputEvent::Type type_;
-  InputEventAckState state_;
-
-  DISALLOW_COPY_AND_ASSIGN(InputEventMessageFilter);
-};
-
 class TouchInputBrowserTest : public ContentBrowserTest {
  public:
   TouchInputBrowserTest() {}
@@ -146,33 +99,27 @@ class TouchInputBrowserTest : public ContentBrowserTest {
         shell()->web_contents()->GetRenderViewHost()->GetWidget());
   }
 
-  InputEventMessageFilter* filter() { return filter_.get(); }
+  scoped_refptr<InputMsgWatcher> AddFilter(blink::WebInputEvent::Type type) {
+    return new InputMsgWatcher(GetWidgetHost(), type);
+  }
 
  protected:
-  void LoadURLAndAddFilter() {
+  void LoadURL() {
     const GURL data_url(kTouchEventDataURL);
     NavigateToURL(shell(), data_url);
 
-    WebContentsImpl* web_contents =
-        static_cast<WebContentsImpl*>(shell()->web_contents());
-    RenderWidgetHostImpl* host = RenderWidgetHostImpl::From(
-        web_contents->GetRenderViewHost()->GetWidget());
+    RenderWidgetHostImpl* host = GetWidgetHost();
     host->GetView()->SetSize(gfx::Size(400, 400));
 
     // The page is loaded in the renderer, wait for a new frame to arrive.
     while (!host->ScheduleComposite())
       GiveItSomeTime();
-
-    filter_ = new InputEventMessageFilter();
-    host->GetProcess()->AddFilter(filter_.get());
   }
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
     cmd->AppendSwitchASCII(switches::kTouchEvents,
                            switches::kTouchEventsEnabled);
   }
-
-  scoped_refptr<InputEventMessageFilter> filter_;
 };
 
 #if defined(OS_MACOSX)
@@ -182,17 +129,16 @@ class TouchInputBrowserTest : public ContentBrowserTest {
 #define MAYBE_TouchNoHandler TouchNoHandler
 #endif
 IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, MAYBE_TouchNoHandler) {
-  LoadURLAndAddFilter();
+  LoadURL();
   SyntheticWebTouchEvent touch;
 
   // A press on |first| should be acked with NO_CONSUMER_EXISTS since there is
   // no touch-handler on it.
   touch.PressPoint(25, 25);
+  scoped_refptr<InputMsgWatcher> filter = AddFilter(WebInputEvent::TouchStart);
   GetWidgetHost()->ForwardTouchEventWithLatencyInfo(touch, ui::LatencyInfo());
-  filter()->WaitForAck(WebInputEvent::TouchStart);
 
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS,
-            filter()->last_ack_state());
+  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, filter->WaitForAck());
 
   // If a touch-press is acked with NO_CONSUMER_EXISTS, then subsequent
   // touch-points don't need to be dispatched until the touch point is released.
@@ -208,20 +154,21 @@ IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, MAYBE_TouchNoHandler) {
 #define MAYBE_TouchHandlerNoConsume TouchHandlerNoConsume
 #endif
 IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, MAYBE_TouchHandlerNoConsume) {
-  LoadURLAndAddFilter();
+  LoadURL();
   SyntheticWebTouchEvent touch;
 
   // Press on |second| should be acked with NOT_CONSUMED since there is a
   // touch-handler on |second|, but it doesn't consume the event.
   touch.PressPoint(125, 25);
+  scoped_refptr<InputMsgWatcher> filter = AddFilter(WebInputEvent::TouchStart);
   GetWidgetHost()->ForwardTouchEventWithLatencyInfo(touch, ui::LatencyInfo());
-  filter()->WaitForAck(WebInputEvent::TouchStart);
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, filter()->last_ack_state());
+  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, filter->WaitForAck());
 
+  filter = AddFilter(WebInputEvent::TouchEnd);
   touch.ReleasePoint(0);
   GetWidgetHost()->ForwardTouchEventWithLatencyInfo(touch, ui::LatencyInfo());
-  filter()->WaitForAck(WebInputEvent::TouchEnd);
   touch.ResetPoints();
+  filter->WaitForAck();
 }
 
 #if defined(OS_CHROMEOS)
@@ -231,19 +178,20 @@ IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, MAYBE_TouchHandlerNoConsume) {
 #define MAYBE_TouchHandlerConsume TouchHandlerConsume
 #endif
 IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, MAYBE_TouchHandlerConsume) {
-  LoadURLAndAddFilter();
+  LoadURL();
   SyntheticWebTouchEvent touch;
 
   // Press on |third| should be acked with CONSUMED since the touch-handler on
   // |third| consimes the event.
   touch.PressPoint(25, 125);
+  scoped_refptr<InputMsgWatcher> filter = AddFilter(WebInputEvent::TouchStart);
   GetWidgetHost()->ForwardTouchEventWithLatencyInfo(touch, ui::LatencyInfo());
-  filter()->WaitForAck(WebInputEvent::TouchStart);
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_CONSUMED, filter()->last_ack_state());
+  EXPECT_EQ(INPUT_EVENT_ACK_STATE_CONSUMED, filter->WaitForAck());
 
   touch.ReleasePoint(0);
+  filter = AddFilter(WebInputEvent::TouchEnd);
   GetWidgetHost()->ForwardTouchEventWithLatencyInfo(touch, ui::LatencyInfo());
-  filter()->WaitForAck(WebInputEvent::TouchEnd);
+  filter->WaitForAck();
 }
 
 #if defined(OS_CHROMEOS)
@@ -256,21 +204,20 @@ IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, MAYBE_TouchHandlerConsume) {
 #define MAYBE_MultiPointTouchPress MultiPointTouchPress
 #endif
 IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, MAYBE_MultiPointTouchPress) {
-  LoadURLAndAddFilter();
+  LoadURL();
   SyntheticWebTouchEvent touch;
 
   // Press on |first|, which sould be acked with NO_CONSUMER_EXISTS. Then press
   // on |third|. That point should be acked with CONSUMED.
   touch.PressPoint(25, 25);
+  scoped_refptr<InputMsgWatcher> filter = AddFilter(WebInputEvent::TouchStart);
   GetWidgetHost()->ForwardTouchEventWithLatencyInfo(touch, ui::LatencyInfo());
-  filter()->WaitForAck(WebInputEvent::TouchStart);
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS,
-            filter()->last_ack_state());
+  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, filter->WaitForAck());
 
   touch.PressPoint(25, 125);
+  filter = AddFilter(WebInputEvent::TouchStart);
   GetWidgetHost()->ForwardTouchEventWithLatencyInfo(touch, ui::LatencyInfo());
-  filter()->WaitForAck(WebInputEvent::TouchStart);
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_CONSUMED, filter()->last_ack_state());
+  EXPECT_EQ(INPUT_EVENT_ACK_STATE_CONSUMED, filter->WaitForAck());
 }
 
 }  // namespace content

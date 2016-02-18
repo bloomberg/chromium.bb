@@ -123,6 +123,11 @@ void RenderWidgetMusConnection::OnInputEventAck(
   pending_ack_.Reset();
 }
 
+void RenderWidgetMusConnection::NonBlockingInputEventHandled(
+    blink::WebInputEvent::Type handled_type) {
+  NOTIMPLEMENTED();
+}
+
 void RenderWidgetMusConnection::SetInputHandler(
     RenderWidgetInputHandler* input_handler) {
   DCHECK(!input_handler_);
@@ -171,7 +176,8 @@ void RenderWidgetMusConnection::OnWindowInputEvent(
   pending_ack_ = ack;
   // TODO(fsamuel, sadrul): Track real latency info.
   ui::LatencyInfo latency_info;
-  input_handler_->HandleInputEvent(*input_event, latency_info);
+  input_handler_->HandleInputEvent(*input_event, latency_info,
+                                   DISPATCH_TYPE_NORMAL);
 }
 
 }  // namespace content

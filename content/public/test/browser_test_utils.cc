@@ -25,6 +25,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
+#include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/histogram_fetcher.h"
@@ -1073,16 +1074,24 @@ FrameWatcher::FrameWatcher()
 FrameWatcher::~FrameWatcher() {
 }
 
-void FrameWatcher::ReceivedFrameSwap() {
+void FrameWatcher::ReceivedFrameSwap(cc::CompositorFrameMetadata metadata) {
   --frames_to_wait_;
+  last_metadata_ = metadata;
   if (frames_to_wait_ == 0)
     quit_.Run();
 }
 
 bool FrameWatcher::OnMessageReceived(const IPC::Message& message) {
   if (message.type() == ViewHostMsg_SwapCompositorFrame::ID) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(&FrameWatcher::ReceivedFrameSwap, this));
+    ViewHostMsg_SwapCompositorFrame::Param param;
+    if (!ViewHostMsg_SwapCompositorFrame::Read(&message, &param))
+      return false;
+    scoped_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
+    base::get<1>(param).AssignTo(frame.get());
+
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&FrameWatcher::ReceivedFrameSwap, this, frame->metadata));
   }
   return false;
 }
@@ -1101,6 +1110,10 @@ void FrameWatcher::WaitFrames(int frames_to_wait) {
   base::AutoReset<base::Closure> reset_quit(&quit_, run_loop.QuitClosure());
   base::AutoReset<int> reset_frames_to_wait(&frames_to_wait_, frames_to_wait);
   run_loop.Run();
+}
+
+const cc::CompositorFrameMetadata& FrameWatcher::LastMetadata() {
+  return last_metadata_;
 }
 
 MainThreadFrameObserver::MainThreadFrameObserver(
@@ -1138,6 +1151,50 @@ bool MainThreadFrameObserver::OnMessageReceived(const IPC::Message& msg) {
         base::Bind(&MainThreadFrameObserver::Quit, base::Unretained(this)));
   }
   return true;
+}
+
+InputMsgWatcher::InputMsgWatcher(RenderWidgetHost* render_widget_host,
+                                 blink::WebInputEvent::Type type)
+    : BrowserMessageFilter(InputMsgStart),
+      wait_for_type_(type),
+      ack_result_(INPUT_EVENT_ACK_STATE_UNKNOWN) {
+  render_widget_host->GetProcess()->AddFilter(this);
+}
+
+InputMsgWatcher::~InputMsgWatcher() {}
+
+void InputMsgWatcher::ReceivedAck(blink::WebInputEvent::Type ack_type,
+                                  uint32_t ack_state) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (wait_for_type_ == ack_type) {
+    ack_result_ = ack_state;
+    if (!quit_.is_null())
+      quit_.Run();
+  }
+}
+
+bool InputMsgWatcher::OnMessageReceived(const IPC::Message& message) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (message.type() == InputHostMsg_HandleInputEvent_ACK::ID) {
+    InputHostMsg_HandleInputEvent_ACK::Param params;
+    InputHostMsg_HandleInputEvent_ACK::Read(&message, &params);
+    blink::WebInputEvent::Type ack_type = base::get<0>(params).type;
+    InputEventAckState ack_state = base::get<0>(params).state;
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&InputMsgWatcher::ReceivedAck, this, ack_type, ack_state));
+  }
+  return false;
+}
+
+uint32_t InputMsgWatcher::WaitForAck() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (ack_result_ != INPUT_EVENT_ACK_STATE_UNKNOWN)
+    return ack_result_;
+  base::RunLoop run_loop;
+  base::AutoReset<base::Closure> reset_quit(&quit_, run_loop.QuitClosure());
+  run_loop.Run();
+  return ack_result_;
 }
 
 }  // namespace content

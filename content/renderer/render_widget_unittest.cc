@@ -38,7 +38,8 @@ class InteractiveRenderWidget : public RenderWidget {
   }
 
   void SendInputEvent(const blink::WebInputEvent& event) {
-    OnHandleInputEvent(&event, ui::LatencyInfo());
+    OnHandleInputEvent(&event, ui::LatencyInfo(),
+                       InputEventDispatchType::DISPATCH_TYPE_NORMAL);
   }
 
   void set_always_overscroll(bool overscroll) {

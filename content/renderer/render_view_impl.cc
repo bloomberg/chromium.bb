@@ -48,6 +48,7 @@
 #include "content/common/frame_messages.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
+#include "content/common/input/input_event_utils.h"
 #include "content/common/input_messages.h"
 #include "content/common/pepper_messages.h"
 #include "content/common/site_isolation_policy.h"
@@ -2161,7 +2162,8 @@ void RenderViewImpl::initializeLayerTreeView() {
     if (input_handler_manager) {
       input_handler_manager->AddInputHandler(
           routing_id(), rwc->GetInputHandler(), AsWeakPtr(),
-          webkit_preferences_.enable_scroll_animator);
+          webkit_preferences_.enable_scroll_animator,
+          UseGestureBasedWheelScrolling());
     }
   }
 }

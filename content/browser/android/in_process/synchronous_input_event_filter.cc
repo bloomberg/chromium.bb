@@ -80,4 +80,8 @@ void SynchronousInputEventFilter::DidStopFlinging(int routing_id) {
     compositor->DidStopFlinging();
 }
 
+void SynchronousInputEventFilter::NonBlockingInputEventHandled(
+    int routing_id,
+    blink::WebInputEvent::Type type) {}
+
 }  // namespace content

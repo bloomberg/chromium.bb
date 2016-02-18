@@ -58,6 +58,11 @@ class CONTENT_EXPORT RenderWidgetInputHandlerDelegate {
   // Called when an ACK is ready to be sent to the input event provider.
   virtual void OnInputEventAck(scoped_ptr<InputEventAck> input_event_ack) = 0;
 
+  // Called when a non-blocking event (DISPATCH_TYPE_NON_BLOCKING) of
+  // |handled_type| has been processed by the main thread.
+  virtual void NonBlockingInputEventHandled(
+      blink::WebInputEvent::Type handled_type) = 0;
+
   // Notifies the delegate of the |input_handler| managing it.
   virtual void SetInputHandler(RenderWidgetInputHandler* input_handler) = 0;
 

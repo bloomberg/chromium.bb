@@ -35,6 +35,8 @@ using blink::WebTouchPoint;
 
 namespace {
 
+const int32_t kEventDispositionUndefined = -1;
+
 // Maximum time between a fling event's timestamp and the first |Animate| call
 // for the fling curve to use the fling timestamp as the initial animation time.
 // Two frames allows a minor delay between event creation and the first animate.
@@ -227,7 +229,9 @@ InputHandlerProxy::InputHandlerProxy(cc::InputHandler* input_handler,
       disallow_vertical_fling_scroll_(false),
       has_fling_animation_started_(false),
       smooth_scroll_enabled_(false),
-      uma_latency_reporting_enabled_(base::TimeTicks::IsHighResolution()) {
+      uma_latency_reporting_enabled_(base::TimeTicks::IsHighResolution()),
+      use_gesture_events_for_mouse_wheel_(true),
+      touch_start_result_(kEventDispositionUndefined) {
   DCHECK(client);
   input_handler_->BindToClient(this);
   cc::ScrollElasticityHelper* scroll_elasticity_helper =
@@ -343,6 +347,12 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
     case WebInputEvent::TouchStart:
       return HandleTouchStart(static_cast<const WebTouchEvent&>(event));
 
+    case WebInputEvent::TouchMove:
+      return HandleTouchMove(static_cast<const WebTouchEvent&>(event));
+
+    case WebInputEvent::TouchEnd:
+      return HandleTouchEnd(static_cast<const WebTouchEvent&>(event));
+
     case WebInputEvent::MouseMove: {
       const WebMouseEvent& mouse_event =
           static_cast<const WebMouseEvent&>(event);
@@ -425,6 +435,28 @@ bool InputHandlerProxy::ShouldAnimate(
 }
 
 InputHandlerProxy::EventDisposition InputHandlerProxy::HandleMouseWheel(
+    const WebMouseWheelEvent& wheel_event) {
+  if (use_gesture_events_for_mouse_wheel_) {
+    cc::EventListenerProperties properties =
+        input_handler_->GetEventListenerProperties(
+            cc::EventListenerClass::kMouseWheel);
+    switch (properties) {
+      case cc::EventListenerProperties::kPassive:
+        return DID_HANDLE_NON_BLOCKING;
+      case cc::EventListenerProperties::kBlockingAndPassive:
+      case cc::EventListenerProperties::kBlocking:
+        return DID_NOT_HANDLE;
+      case cc::EventListenerProperties::kNone:
+        return DROP_EVENT;
+      default:
+        NOTREACHED();
+        return DROP_EVENT;
+    }
+  }
+  return ScrollByMouseWheel(wheel_event);
+}
+
+InputHandlerProxy::EventDisposition InputHandlerProxy::ScrollByMouseWheel(
     const WebMouseWheelEvent& wheel_event) {
   InputHandlerProxy::EventDisposition result = DID_NOT_HANDLE;
   cc::InputHandlerScrollResult scroll_result;
@@ -734,18 +766,67 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureFlingStart(
 
 InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchStart(
     const blink::WebTouchEvent& touch_event) {
+  EventDisposition result = DROP_EVENT;
   for (size_t i = 0; i < touch_event.touchesLength; ++i) {
     if (touch_event.touches[i].state != WebTouchPoint::StatePressed)
       continue;
     if (input_handler_->DoTouchEventsBlockScrollAt(
             gfx::Point(touch_event.touches[i].position.x,
                        touch_event.touches[i].position.y))) {
-      // TODO(rbyers): We should consider still sending the touch events to
-      // main asynchronously (crbug.com/455539).
-      return DID_NOT_HANDLE;
+      result = DID_NOT_HANDLE;
+      break;
     }
   }
-  return DROP_EVENT;
+
+  // If |result| is DROP_EVENT it wasn't processed above.
+  if (result == DROP_EVENT) {
+    switch (input_handler_->GetEventListenerProperties(
+        cc::EventListenerClass::kTouch)) {
+      case cc::EventListenerProperties::kPassive:
+        result = DID_HANDLE_NON_BLOCKING;
+        break;
+      case cc::EventListenerProperties::kBlocking:
+        // The touch area rects above already have checked whether it hits
+        // a blocking region. Since it does not the event can be dropped.
+        result = DROP_EVENT;
+        break;
+      case cc::EventListenerProperties::kBlockingAndPassive:
+        // There is at least one passive listener that needs to possibly
+        // be notified so it can't be dropped.
+        result = DID_HANDLE_NON_BLOCKING;
+        break;
+      case cc::EventListenerProperties::kNone:
+        result = DROP_EVENT;
+        break;
+      default:
+        NOTREACHED();
+        result = DROP_EVENT;
+        break;
+    }
+  }
+
+  // Merge |touch_start_result_| and |result| so the result has the highest
+  // priority value according to the sequence; (DROP_EVENT,
+  // DID_HANDLE_NON_BLOCKING, DID_NOT_HANDLE).
+  if (touch_start_result_ == kEventDispositionUndefined ||
+      touch_start_result_ == DROP_EVENT || result == DID_NOT_HANDLE)
+    touch_start_result_ = result;
+
+  return result;
+}
+
+InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchMove(
+    const blink::WebTouchEvent& touch_event) {
+  if (touch_start_result_ != kEventDispositionUndefined)
+    return static_cast<EventDisposition>(touch_start_result_);
+  return DID_NOT_HANDLE;
+}
+
+InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchEnd(
+    const blink::WebTouchEvent& touch_event) {
+  if (touch_event.touchesLength == 1)
+    touch_start_result_ = kEventDispositionUndefined;
+  return DID_NOT_HANDLE;
 }
 
 bool InputHandlerProxy::FilterInputEventForFlingBoosting(
@@ -1089,25 +1170,47 @@ void InputHandlerProxy::RequestAnimation() {
 
 bool InputHandlerProxy::TouchpadFlingScroll(
     const WebFloatSize& increment) {
-  WebMouseWheelEvent synthetic_wheel;
-  synthetic_wheel.type = WebInputEvent::MouseWheel;
-  synthetic_wheel.timeStampSeconds = InSecondsF(base::TimeTicks::Now());
-  synthetic_wheel.deltaX = increment.width;
-  synthetic_wheel.deltaY = increment.height;
-  synthetic_wheel.hasPreciseScrollingDeltas = true;
-  synthetic_wheel.x = fling_parameters_.point.x;
-  synthetic_wheel.y = fling_parameters_.point.y;
-  synthetic_wheel.globalX = fling_parameters_.globalPoint.x;
-  synthetic_wheel.globalY = fling_parameters_.globalPoint.y;
-  synthetic_wheel.modifiers = fling_parameters_.modifiers;
+  InputHandlerProxy::EventDisposition disposition;
+  cc::EventListenerProperties properties =
+      input_handler_->GetEventListenerProperties(
+          cc::EventListenerClass::kMouseWheel);
+  switch (properties) {
+    case cc::EventListenerProperties::kPassive:
+      disposition = DID_HANDLE_NON_BLOCKING;
+      break;
+    case cc::EventListenerProperties::kBlocking:
+      disposition = DID_NOT_HANDLE;
+      break;
+    case cc::EventListenerProperties::kNone: {
+      WebMouseWheelEvent synthetic_wheel;
+      synthetic_wheel.type = WebInputEvent::MouseWheel;
+      synthetic_wheel.timeStampSeconds = InSecondsF(base::TimeTicks::Now());
+      synthetic_wheel.deltaX = increment.width;
+      synthetic_wheel.deltaY = increment.height;
+      synthetic_wheel.hasPreciseScrollingDeltas = true;
+      synthetic_wheel.x = fling_parameters_.point.x;
+      synthetic_wheel.y = fling_parameters_.point.y;
+      synthetic_wheel.globalX = fling_parameters_.globalPoint.x;
+      synthetic_wheel.globalY = fling_parameters_.globalPoint.y;
+      synthetic_wheel.modifiers = fling_parameters_.modifiers;
 
-  InputHandlerProxy::EventDisposition disposition =
-      HandleInputEvent(synthetic_wheel);
+      disposition = ScrollByMouseWheel(synthetic_wheel);
+      break;
+    }
+    default:
+      NOTREACHED();
+      return false;
+  }
+
   switch (disposition) {
     case DID_HANDLE:
       return true;
     case DROP_EVENT:
       break;
+    case DID_HANDLE_NON_BLOCKING:
+    // TODO(dtapuska): Process the fling on the compositor thread
+    // but post the events to the main thread; for now just pass it to the
+    // main thread.
     case DID_NOT_HANDLE:
       TRACE_EVENT_INSTANT0("input",
                            "InputHandlerProxy::scrollBy::AbortFling",

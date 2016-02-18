@@ -46,10 +46,14 @@ class InputHandlerProxy
   }
 
   void set_smooth_scroll_enabled(bool value) { smooth_scroll_enabled_ = value; }
+  void set_use_gesture_events_for_mouse_wheel(bool value) {
+    use_gesture_events_for_mouse_wheel_ = value;
+  }
 
   enum EventDisposition {
     DID_HANDLE,
     DID_NOT_HANDLE,
+    DID_HANDLE_NON_BLOCKING,
     DROP_EVENT
   };
   EventDisposition HandleInputEventWithLatencyInfo(
@@ -91,6 +95,7 @@ class InputHandlerProxy
   // Helper functions for handling more complicated input events.
   EventDisposition HandleMouseWheel(
       const blink::WebMouseWheelEvent& event);
+  EventDisposition ScrollByMouseWheel(const blink::WebMouseWheelEvent& event);
   EventDisposition HandleGestureScrollBegin(
       const blink::WebGestureEvent& event);
   EventDisposition HandleGestureScrollUpdate(
@@ -99,8 +104,9 @@ class InputHandlerProxy
       const blink::WebGestureEvent& event);
   EventDisposition HandleGestureFlingStart(
       const blink::WebGestureEvent& event);
-  EventDisposition HandleTouchStart(
-      const blink::WebTouchEvent& event);
+  EventDisposition HandleTouchStart(const blink::WebTouchEvent& event);
+  EventDisposition HandleTouchMove(const blink::WebTouchEvent& event);
+  EventDisposition HandleTouchEnd(const blink::WebTouchEvent& event);
 
   // Returns true if the event should be suppressed due to to an active,
   // boost-enabled fling, in which case further processing should cease.
@@ -184,8 +190,13 @@ class InputHandlerProxy
   scoped_ptr<InputScrollElasticityController> scroll_elasticity_controller_;
 
   bool smooth_scroll_enabled_;
-
   bool uma_latency_reporting_enabled_;
+  bool use_gesture_events_for_mouse_wheel_;
+
+  // The merged result of the last touch start with previous touch starts.
+  // This value will get returned for subsequent TouchMove events to allow
+  // passive events not to block scrolling.
+  int32_t touch_start_result_;
 
   base::TimeTicks last_fling_animate_time_;
 

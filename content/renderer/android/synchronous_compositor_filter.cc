@@ -255,6 +255,10 @@ void SynchronousCompositorFilter::DidStopFlinging(int routing_id) {
   Send(new InputHostMsg_DidStopFlinging(routing_id));
 }
 
+void SynchronousCompositorFilter::NonBlockingInputEventHandled(
+    int routing_id,
+    blink::WebInputEvent::Type type) {}
+
 SynchronousCompositorFilter::Entry::Entry()
     : begin_frame_source(nullptr),
       output_surface(nullptr),
