@@ -180,7 +180,7 @@ camera.views.GalleryBase.prototype.exportSelection = function() {
         chrome.i18n.getMessage('errorMsgGalleryExportFailed'));
   }.bind(this);
 
-  var onSave = function(fileEntry, picture) {
+  var exportPicture = function(fileEntry, picture) {
     this.model.exportPicture(
         picture,
         fileEntry,
@@ -203,7 +203,7 @@ camera.views.GalleryBase.prototype.exportSelection = function() {
     }, function(fileEntry) {
         if (!fileEntry)
           return;
-        onSave(fileEntry, picture);
+        exportPicture(fileEntry, picture);
     });
   } else {
     chrome.fileSystem.chooseEntry({
@@ -211,14 +211,18 @@ camera.views.GalleryBase.prototype.exportSelection = function() {
     }, function(dirEntry) {
         if (!dirEntry)
           return;
-        var selectedPictures = this.selectedPictures();
-        for (var i = 0; i < selectedPictures.length; i++) {
-          var picture = selectedPictures[i].picture;
+
+        var savePictureAsFile = function(picture) {
           dirEntry.getFile(picture.imageEntry.name, {
             create: true, exclusive: false
           }, function(fileEntry) {
-              onSave(fileEntry, picture);
+              exportPicture(fileEntry, picture);
           });
+        };
+
+        var selectedPictures = this.selectedPictures();
+        for (var i = 0; i < selectedPictures.length; i++) {
+          savePictureAsFile(selectedPictures[i].picture);
         }
     }.bind(this));
   }
