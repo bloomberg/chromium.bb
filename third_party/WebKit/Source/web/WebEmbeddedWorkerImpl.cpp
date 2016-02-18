@@ -88,7 +88,6 @@ WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(PassOwnPtr<WebServiceWorkerContextC
     , m_mainFrame(nullptr)
     , m_loadingShadowPage(false)
     , m_askedToTerminate(false)
-    , m_pauseAfterDownloadState(DontPauseAfterDownload)
     , m_waitingForDebuggerState(NotWaitingForDebugger)
 {
     runningWorkerInstances().add(this);
@@ -125,10 +124,7 @@ void WebEmbeddedWorkerImpl::startWorkerContext(
 {
     ASSERT(!m_askedToTerminate);
     ASSERT(!m_mainScriptLoader);
-    ASSERT(m_pauseAfterDownloadState == DontPauseAfterDownload);
     m_workerStartData = data;
-    if (data.pauseAfterDownloadMode == WebEmbeddedWorkerStartData::PauseAfterDownload)
-        m_pauseAfterDownloadState = DoPauseAfterDownload;
     prepareShadowPageForLoader();
 }
 
@@ -151,23 +147,14 @@ void WebEmbeddedWorkerImpl::terminateWorkerContext()
     }
     if (!m_workerThread) {
         // The worker thread has not been created yet if the worker is asked to
-        // terminate during waiting for debugger or paused after download.
-        ASSERT(m_workerStartData.waitForDebuggerMode == WebEmbeddedWorkerStartData::WaitForDebugger || m_pauseAfterDownloadState == IsPausedAfterDownload);
+        // terminate during waiting for debugger.
+        ASSERT(m_workerStartData.waitForDebuggerMode == WebEmbeddedWorkerStartData::WaitForDebugger);
         // This deletes 'this'.
         m_workerContextClient->workerContextFailedToStart();
         return;
     }
     m_workerThread->terminate();
     m_workerInspectorProxy->workerThreadTerminated();
-}
-
-void WebEmbeddedWorkerImpl::resumeAfterDownload()
-{
-    ASSERT(!m_askedToTerminate);
-    ASSERT(m_pauseAfterDownloadState == IsPausedAfterDownload);
-
-    m_pauseAfterDownloadState = DontPauseAfterDownload;
-    startWorkerThread();
 }
 
 void WebEmbeddedWorkerImpl::attachDevTools(const WebString& hostId, int sessionId)
@@ -250,7 +237,7 @@ void WebEmbeddedWorkerImpl::prepareShadowPageForLoader()
     // If we were asked to wait for debugger then it is the good time to do that.
     m_workerContextClient->workerReadyForInspection();
     if (m_workerStartData.waitForDebuggerMode == WebEmbeddedWorkerStartData::WaitForDebugger) {
-        m_waitingForDebuggerState = WaitingForDebugger;
+        m_waitingForDebuggerState = WaitingForDebuggerBeforeLoadingScript;
         return;
     }
 
@@ -304,15 +291,18 @@ void WebEmbeddedWorkerImpl::sendProtocolMessage(int sessionId, int callId, const
 
 void WebEmbeddedWorkerImpl::resumeStartup()
 {
-    bool wasWaiting = (m_waitingForDebuggerState == WaitingForDebugger);
+    WaitingForDebuggerState waitingForDebuggerState = m_waitingForDebuggerState;
     m_waitingForDebuggerState = NotWaitingForDebugger;
-    if (wasWaiting)
+    if (waitingForDebuggerState == WaitingForDebuggerBeforeLoadingScript)
         loadShadowPage();
+    else if (waitingForDebuggerState == WaitingForDebuggerAfterScriptLoaded)
+        startWorkerThread();
 }
 
 void WebEmbeddedWorkerImpl::onScriptLoaderFinished()
 {
     ASSERT(m_mainScriptLoader);
+
     if (m_askedToTerminate)
         return;
 
@@ -331,16 +321,11 @@ void WebEmbeddedWorkerImpl::onScriptLoaderFinished()
         scriptCachedMetadataSizeHistogram.count(m_mainScriptLoader->cachedMetadata()->size());
     }
 
-    if (m_pauseAfterDownloadState == DoPauseAfterDownload) {
-        m_pauseAfterDownloadState = IsPausedAfterDownload;
-        return;
-    }
     startWorkerThread();
 }
 
 void WebEmbeddedWorkerImpl::startWorkerThread()
 {
-    ASSERT(m_pauseAfterDownloadState == DontPauseAfterDownload);
     ASSERT(!m_askedToTerminate);
 
     Document* document = m_mainFrame->frame()->document();

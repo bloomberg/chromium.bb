@@ -100,21 +100,18 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
                                         int line_number,
                                         const GURL& source_url) {}
     // Returns false if the message is not handled by this listener.
-    CONTENT_EXPORT virtual bool OnMessageReceived(const IPC::Message& message);
+    virtual bool OnMessageReceived(const IPC::Message& message) = 0;
   };
 
   ~EmbeddedWorkerInstance();
 
   // Starts the worker. It is invalid to call this when the worker is not in
   // STOPPED status. |callback| is invoked after the worker script has been
-  // started and evaluated, or when an error occurs. If |pause_after_download|
-  // is true, the worker pauses after loading until ResumeAfterDownload() is
-  // called.
+  // started and evaluated, or when an error occurs.
   void Start(int64_t service_worker_version_id,
              const GURL& scope,
              const GURL& script_url,
-             const StatusCallback& callback,
-             bool pause_after_download = false);
+             const StatusCallback& callback);
 
   // Stops the worker. It is invalid to call this when the worker is
   // not in STARTING or RUNNING status.
@@ -131,9 +128,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   // It is invalid to call this while the worker is not in STARTING or RUNNING
   // status.
   ServiceWorkerStatusCode SendMessage(const IPC::Message& message);
-
-  // Resumes the worker if it paused after download.
-  void ResumeAfterDownload();
 
   // Returns the ServiceRegistry for this worker. It is invalid to call this
   // when the worker is not in STARTING or RUNNING status.

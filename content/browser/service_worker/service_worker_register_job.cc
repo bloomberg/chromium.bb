@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <vector>
+
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -14,7 +16,6 @@
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_storage.h"
-#include "content/browser/service_worker/service_worker_write_to_cache_job.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -344,12 +345,7 @@ void ServiceWorkerRegisterJob::UpdateAndContinue() {
   set_new_version(new ServiceWorkerVersion(registration(), script_url_,
                                            version_id, context_));
   new_version()->set_force_bypass_cache_for_scripts(force_bypass_cache_);
-  if (registration()->has_installed_version() && !skip_script_comparison_) {
-    new_version()->set_pause_after_download(true);
-    new_version()->embedded_worker()->AddListener(this);
-  } else {
-    new_version()->set_pause_after_download(false);
-  }
+  new_version()->set_skip_script_comparison(skip_script_comparison_);
   new_version()->StartWorker(
       base::Bind(&ServiceWorkerRegisterJob::OnStartWorkerFinished,
                  weak_factory_.GetWeakPtr()));
@@ -367,12 +363,19 @@ void ServiceWorkerRegisterJob::OnStartWorkerFinished(
       registration()->last_update_check().is_null()) {
     registration()->set_last_update_check(base::Time::Now());
 
-    if (registration()->has_installed_version())
+    if (registration()->waiting_version() || registration()->active_version())
       context_->storage()->UpdateLastUpdateCheckTime(registration());
   }
 
   if (status == SERVICE_WORKER_OK) {
     InstallAndContinue();
+    return;
+  }
+
+  // The updated worker is identical to the incumbent.
+  if (status == SERVICE_WORKER_ERROR_EXISTS) {
+    ResolvePromise(SERVICE_WORKER_OK, std::string(), registration());
+    Complete(status, "The updated worker is identical to the incumbent.");
     return;
   }
 
@@ -504,12 +507,6 @@ void ServiceWorkerRegisterJob::CompleteInternal(
     ServiceWorkerStatusCode status,
     const std::string& status_message) {
   SetPhase(COMPLETE);
-
-  if (new_version()) {
-    new_version()->set_pause_after_download(false);
-    new_version()->embedded_worker()->RemoveListener(this);
-  }
-
   if (status != SERVICE_WORKER_OK) {
     if (registration()) {
       if (should_uninstall_on_failure_)
@@ -538,7 +535,7 @@ void ServiceWorkerRegisterJob::CompleteInternal(
   if (registration()) {
     context_->storage()->NotifyDoneInstallingRegistration(
         registration(), new_version(), status);
-    if (registration()->has_installed_version())
+    if (registration()->waiting_version() || registration()->active_version())
       registration()->set_is_uninstalled(false);
   }
 }
@@ -575,25 +572,6 @@ void ServiceWorkerRegisterJob::AddRegistrationToMatchingProviderHosts(
       continue;
     host->AddMatchingRegistration(registration);
   }
-}
-
-void ServiceWorkerRegisterJob::OnScriptLoaded() {
-  DCHECK(new_version()->pause_after_download());
-  new_version()->set_pause_after_download(false);
-  net::URLRequestStatus status =
-      new_version()->script_cache_map()->main_script_status();
-  if (!status.is_success()) {
-    // OnScriptLoaded signifies a successful network load, which translates into
-    // a script cache error only in the byte-for-byte identical case.
-    DCHECK_EQ(status.error(),
-              ServiceWorkerWriteToCacheJob::kIdenticalScriptError);
-    ResolvePromise(SERVICE_WORKER_OK, std::string(), registration());
-    Complete(SERVICE_WORKER_ERROR_EXISTS,
-             "The updated worker is identical to the incumbent.");
-    return;
-  }
-
-  new_version()->embedded_worker()->ResumeAfterDownload();
 }
 
 }  // namespace content

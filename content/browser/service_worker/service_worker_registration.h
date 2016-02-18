@@ -86,10 +86,6 @@ class CONTENT_EXPORT ServiceWorkerRegistration
     return installing_version_.get();
   }
 
-  bool has_installed_version() const {
-    return active_version() || waiting_version();
-  }
-
   ServiceWorkerVersion* GetNewestVersion() const;
 
   void AddListener(Listener* listener);

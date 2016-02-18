@@ -53,8 +53,6 @@ bool EmbeddedWorkerDispatcher::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(EmbeddedWorkerDispatcher, message)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerMsg_StartWorker, OnStartWorker)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerMsg_StopWorker, OnStopWorker)
-    IPC_MESSAGE_HANDLER(EmbeddedWorkerMsg_ResumeAfterDownload,
-                        OnResumeAfterDownload)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -99,10 +97,6 @@ void EmbeddedWorkerDispatcher::OnStartWorker(
           blink::WebEmbeddedWorkerStartData::DontWaitForDebugger;
   start_data.v8CacheOptions =
       static_cast<blink::WebSettings::V8CacheOptions>(params.v8_cache_options);
-  start_data.pauseAfterDownloadMode =
-      params.pause_after_download
-          ? blink::WebEmbeddedWorkerStartData::PauseAfterDownload
-          : blink::WebEmbeddedWorkerStartData::DontPauseAfterDownload;
 
   wrapper->worker()->startWorkerContext(start_data);
   workers_.AddWithID(wrapper.release(), params.embedded_worker_id);
@@ -121,17 +115,6 @@ void EmbeddedWorkerDispatcher::OnStopWorker(int embedded_worker_id) {
   // necessary)
   stop_worker_times_[embedded_worker_id] = base::TimeTicks::Now();
   wrapper->worker()->terminateWorkerContext();
-}
-
-void EmbeddedWorkerDispatcher::OnResumeAfterDownload(int embedded_worker_id) {
-  TRACE_EVENT0("ServiceWorker",
-               "EmbeddedWorkerDispatcher::OnResumeAfterDownload");
-  WorkerWrapper* wrapper = workers_.Lookup(embedded_worker_id);
-  if (!wrapper) {
-    LOG(WARNING) << "Got OnResumeAfterDownload for nonexistent worker";
-    return;
-  }
-  wrapper->worker()->resumeAfterDownload();
 }
 
 }  // namespace content

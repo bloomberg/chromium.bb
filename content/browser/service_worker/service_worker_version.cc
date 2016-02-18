@@ -1361,12 +1361,10 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   if (!timeout_timer_.IsRunning())
     StartTimeoutTimer();
   if (running_status() == STOPPED) {
-    DCHECK(!pause_after_download_ || !IsInstalled(status()));
     embedded_worker_->Start(
         version_id_, scope_, script_url_,
         base::Bind(&ServiceWorkerVersion::OnStartSentAndScriptEvaluated,
-                   weak_factory_.GetWeakPtr()),
-        pause_after_download_);
+                   weak_factory_.GetWeakPtr()));
   }
 }
 

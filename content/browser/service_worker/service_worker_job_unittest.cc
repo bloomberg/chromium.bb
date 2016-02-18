@@ -17,7 +17,6 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_registration_status.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
-#include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "ipc/ipc_test_sink.h"
@@ -362,8 +361,7 @@ class FailToStartWorkerTestHelper : public EmbeddedWorkerTestHelper {
   void OnStartWorker(int embedded_worker_id,
                      int64_t service_worker_version_id,
                      const GURL& scope,
-                     const GURL& script_url,
-                     bool pause_after_download) override {
+                     const GURL& script_url) override {
     EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
     registry()->OnWorkerStopped(worker->process_id(), embedded_worker_id);
   }
@@ -826,8 +824,7 @@ class UpdateJobTestHelper
   void OnStartWorker(int embedded_worker_id,
                      int64_t version_id,
                      const GURL& scope,
-                     const GURL& script,
-                     bool pause_after_download) override {
+                     const GURL& script) override {
     const std::string kMockScriptBody = "mock_script";
     const uint64_t kMockScriptSize = 19284;
     ServiceWorkerVersion* version = context()->GetLiveVersion(version_id);
@@ -841,7 +838,6 @@ class UpdateJobTestHelper
 
     if (force_bypass_cache_for_scripts())
       version->set_force_bypass_cache_for_scripts(true);
-
     if (!is_update) {
       // Spoof caching the script for the initial version.
       int64_t resource_id = storage()->NewResourceId();
@@ -863,15 +859,15 @@ class UpdateJobTestHelper
       version->script_cache_map()->NotifyFinishedCaching(
           script, kMockScriptSize, net::URLRequestStatus(), std::string());
     }
-
-    EmbeddedWorkerTestHelper::OnStartWorker(
-        embedded_worker_id, version_id, scope, script, pause_after_download);
-  }
-
-  void OnResumeAfterDownload(int embedded_worker_id) override {
     if (!force_start_worker_failure_) {
-      EmbeddedWorkerTestHelper::OnResumeAfterDownload(embedded_worker_id);
+      EmbeddedWorkerTestHelper::OnStartWorker(embedded_worker_id, version_id,
+                                              scope, script);
     } else {
+      (embedded_worker_id_service_worker_version_id_map())[embedded_worker_id] =
+          version_id;
+      SimulateWorkerReadyForInspection(embedded_worker_id);
+      SimulateWorkerScriptCached(embedded_worker_id);
+      SimulateWorkerScriptLoaded(embedded_worker_id);
       SimulateWorkerThreadStarted(GetNextThreadId(), embedded_worker_id);
       SimulateWorkerScriptEvaluated(embedded_worker_id, false);
     }
@@ -924,8 +920,7 @@ class EvictIncumbentVersionHelper : public UpdateJobTestHelper {
   void OnStartWorker(int embedded_worker_id,
                      int64_t version_id,
                      const GURL& scope,
-                     const GURL& script,
-                     bool pause_after_download) override {
+                     const GURL& script) override {
     ServiceWorkerVersion* version = context()->GetLiveVersion(version_id);
     ServiceWorkerRegistration* registration =
         context()->GetLiveRegistration(version->registration_id());
@@ -938,7 +933,7 @@ class EvictIncumbentVersionHelper : public UpdateJobTestHelper {
           make_scoped_refptr(registration->active_version()));
     }
     UpdateJobTestHelper::OnStartWorker(embedded_worker_id, version_id, scope,
-                                       script, pause_after_download);
+                                       script);
   }
 
   void OnRegistrationFailed(ServiceWorkerRegistration* registration) override {
@@ -1536,41 +1531,6 @@ TEST_F(ServiceWorkerJobTest, RemoveControlleeDuringInstall_RejectActivate) {
   EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, old_version->status());
 
   FindRegistrationForPattern(pattern, SERVICE_WORKER_OK);
-}
-
-TEST_F(ServiceWorkerJobTest, Update_PauseAfterDownload) {
-  UpdateJobTestHelper* update_helper = new UpdateJobTestHelper;
-  helper_.reset(update_helper);
-  IPC::TestSink* sink = update_helper->ipc_sink();
-
-  // The initial version should not pause after download.
-  scoped_refptr<ServiceWorkerRegistration> registration =
-      update_helper->SetupInitialRegistration(kNewVersionOrigin);
-  {
-    const IPC::Message* start_msg =
-        sink->GetUniqueMessageMatching(EmbeddedWorkerMsg_StartWorker::ID);
-    ASSERT_TRUE(start_msg);
-    EmbeddedWorkerMsg_StartWorker::Param param;
-    EmbeddedWorkerMsg_StartWorker::Read(start_msg, &param);
-    EmbeddedWorkerMsg_StartWorker_Params start_params = base::get<0>(param);
-    EXPECT_FALSE(start_params.pause_after_download);
-    sink->ClearMessages();
-  }
-
-  // The updated version should pause after download.
-  registration->AddListener(update_helper);
-  registration->active_version()->StartUpdate();
-  base::RunLoop().RunUntilIdle();
-  {
-    const IPC::Message* start_msg =
-        sink->GetUniqueMessageMatching(EmbeddedWorkerMsg_StartWorker::ID);
-    ASSERT_TRUE(start_msg);
-    EmbeddedWorkerMsg_StartWorker::Param param;
-    EmbeddedWorkerMsg_StartWorker::Read(start_msg, &param);
-    EmbeddedWorkerMsg_StartWorker_Params start_params = base::get<0>(param);
-    EXPECT_TRUE(start_params.pause_after_download);
-    sink->ClearMessages();
-  }
 }
 
 }  // namespace content

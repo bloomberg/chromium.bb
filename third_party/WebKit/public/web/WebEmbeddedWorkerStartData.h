@@ -39,10 +39,6 @@
 namespace blink {
 
 struct WebEmbeddedWorkerStartData {
-    enum PauseAfterDownloadMode {
-        DontPauseAfterDownload,
-        PauseAfterDownload,
-    };
     enum WaitForDebuggerMode {
         DontWaitForDebugger,
         WaitForDebugger
@@ -50,16 +46,12 @@ struct WebEmbeddedWorkerStartData {
 
     WebURL scriptURL;
     WebString userAgent;
-    PauseAfterDownloadMode pauseAfterDownloadMode;
     WaitForDebuggerMode waitForDebuggerMode;
     WebSettings::V8CacheOptions v8CacheOptions;
 
     WebEmbeddedWorkerStartData()
-        : pauseAfterDownloadMode(DontPauseAfterDownload)
-        , waitForDebuggerMode(DontWaitForDebugger)
-        , v8CacheOptions(WebSettings::V8CacheOptionsDefault)
-    {
-    }
+        : waitForDebuggerMode(DontWaitForDebugger)
+        , v8CacheOptions(WebSettings::V8CacheOptionsDefault) { }
 };
 
 } // namespace blink
