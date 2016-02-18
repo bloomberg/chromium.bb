@@ -351,9 +351,6 @@ are declared in build/common.gypi.
       <message name="IDS_WEBSITE_SETTINGS_SECURE_TRANSPORT" desc="Text that is displayed in the header of the Website Settings popup if the website uses secure transport.">
         Your connection to this site is private.
       </message>
-      <message name="IDS_WEBSITE_SETTINGS_NON_SECURE_TRANSPORT" desc="Text that is displayed in the header of the Website Settings popup if the website uses non-secure transport.">
-        Your connection to this site is not private.
-      </message>
       <message name="IDS_WEBSITE_DEPRECATED_SIGNATURE_ALGORITHM" desc="Text that is displayed in the header of the Website Settings popup if the website uses SHA-1 for certificate signatures, which are no longer considered secure.">
         This site uses a weak security configuration (SHA-1 signatures), so your connection may not be private.
       </message>
@@ -11024,9 +11021,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
 
       <!-- Advanced Section Titles -->
-      <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY">
-        Privacy
-      </message>
       <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_CONTENT">
         Web content
       </message>

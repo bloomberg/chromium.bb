@@ -274,6 +274,16 @@
       <message name="IDS_SESSION_CRASHED_VIEW_RESTORE_BUTTON" desc="Title of the restore button in the session crashed view.">
         Restore
       </message>
+
+      <!-- Website Settings UI -->
+      <message name="IDS_WEBSITE_SETTINGS_NON_SECURE_TRANSPORT" desc="Text that is displayed in the header of the Website Settings popup if the website uses non-secure transport.">
+        Your connection to this site is not private.
+      </message>
+
+      <!-- Advanced Section Titles -->
+      <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY">
+        Privacy
+      </message>
     </messages>
   </release>
 </grit>
