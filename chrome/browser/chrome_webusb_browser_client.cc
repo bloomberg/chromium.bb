@@ -60,9 +60,9 @@ Browser* GetBrowser() {
 }
 
 void OpenURL(const GURL& url) {
-  GetBrowser()->OpenURL(
-      content::OpenURLParams(url, content::Referrer(), NEW_FOREGROUND_TAB,
-                             ui::PAGE_TRANSITION_AUTO_TOPLEVEL, true));
+  GetBrowser()->OpenURL(content::OpenURLParams(
+      url, content::Referrer(), NEW_FOREGROUND_TAB,
+      ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false /* is_renderer_initialized */));
 }
 
 // Delegate for webusb notification
