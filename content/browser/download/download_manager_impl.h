@@ -78,7 +78,6 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
                                      base::Time remove_end) override;
   int RemoveDownloadsBetween(base::Time remove_begin,
                              base::Time remove_end) override;
-  int RemoveDownloads(base::Time remove_begin) override;
   int RemoveAllDownloads() override;
   void DownloadUrl(scoped_ptr<DownloadUrlParameters> params) override;
   void AddObserver(Observer* observer) override;

@@ -96,7 +96,6 @@ class MockDownloadManager : public DownloadManager {
                    base::Time remove_end));
   MOCK_METHOD2(RemoveDownloadsBetween,
                int(base::Time remove_begin, base::Time remove_end));
-  MOCK_METHOD1(RemoveDownloads, int(base::Time remove_begin));
   MOCK_METHOD0(RemoveAllDownloads, int());
   MOCK_METHOD1(DownloadUrlMock, void(DownloadUrlParameters*));
   void DownloadUrl(scoped_ptr<DownloadUrlParameters> params) override {

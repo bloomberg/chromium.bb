@@ -126,11 +126,6 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
   virtual int RemoveDownloadsBetween(base::Time remove_begin,
                                      base::Time remove_end) = 0;
 
-  // Remove downloads will delete all downloads that have a timestamp that is
-  // the same or more recent than |remove_begin|. The number of downloads
-  // deleted is returned back to the caller.
-  virtual int RemoveDownloads(base::Time remove_begin) = 0;
-
   // Remove all downloads will delete all downloads. The number of downloads
   // deleted is returned back to the caller.
   virtual int RemoveAllDownloads() = 0;

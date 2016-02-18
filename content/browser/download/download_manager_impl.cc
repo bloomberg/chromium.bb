@@ -604,10 +604,6 @@ int DownloadManagerImpl::RemoveDownloadsBetween(base::Time remove_begin,
       base::Bind(&RemoveDownloadBetween, remove_begin, remove_end));
 }
 
-int DownloadManagerImpl::RemoveDownloads(base::Time remove_begin) {
-  return RemoveDownloadsBetween(remove_begin, base::Time());
-}
-
 int DownloadManagerImpl::RemoveAllDownloads() {
   // The null times make the date range unbounded.
   int num_deleted = RemoveDownloadsBetween(base::Time(), base::Time());
