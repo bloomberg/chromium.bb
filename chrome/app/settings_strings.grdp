@@ -132,6 +132,12 @@
   <message name="IDS_SETTINGS_PASSWORDS_SAVED_HEADING" desc="The title for a list of username/site/password items. These items are already saved by the browser and can be deleted/edited.">
     Saved Passwords
   </message>
+  <message name="IDS_SETTINGS_PASSWORDS_EXCEPTIONS_HEADING" desc="The title for a list of sites where passwords will not be saved. These items are already saved by the browser and can only be deleted.">
+    Never Saved
+  </message>
+  <message name="IDS_SETTINGS_PASSWORDS_DELETE_EXCEPTION" desc="The alt text for a button that deletes a site for which passwords would not be saved.">
+    Delete this item
+  </message>
 
   <!-- Default Browser Page -->
   <if expr="not chromeos">

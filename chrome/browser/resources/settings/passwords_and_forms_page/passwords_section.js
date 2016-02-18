@@ -25,6 +25,24 @@ Polymer({
       type: Array,
       value: function() { return []; },
     },
+
+    /**
+     * An array of sites to display.
+     * @type {!Array<!string>}
+     */
+    passwordExceptions: {
+      type: Array,
+      value: function() { return []; },
+    },
+  },
+
+  /**
+   * Fires an event that should delete the passwordException.
+   * @param {!{model: !{item: !string}}} e The polymer event.
+   * @private
+   */
+  onRemovePasswordException_: function(e) {
+    this.fire('remove-password-exception', e.model.item);
   },
 
   /**
@@ -33,6 +51,6 @@ Polymer({
    * @return {string} password
    * @private
    */
-  getEmptyPassword_(length) { return ' '.repeat(length); },
+  getEmptyPassword_: function(length) { return ' '.repeat(length); },
 });
 })();

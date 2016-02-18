@@ -9,6 +9,8 @@
         'depends': [
           'compiled_resources.gyp:passwords_section',
           '../../../../../third_party/closure_compiler/externs/compiled_resources.gyp:passwords_private',
+          '../../../../../ui/webui/resources/js/compiled_resources.gyp:assert',
+          '../../../../../ui/webui/resources/js/compiled_resources.gyp:cr',
         ],
       },
       'includes': ['../../../../../third_party/closure_compiler/compile_js.gypi'],
