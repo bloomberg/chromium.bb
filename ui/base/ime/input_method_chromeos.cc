@@ -439,14 +439,6 @@ bool InputMethodChromeOS::HasInputMethodResult() const {
   return result_text_.length() || composition_changed_;
 }
 
-bool InputMethodChromeOS::SendFakeProcessKeyEvent(bool pressed) const {
-  KeyEvent evt(pressed ? ET_KEY_PRESSED : ET_KEY_RELEASED,
-               pressed ? VKEY_PROCESSKEY : VKEY_UNKNOWN,
-               EF_IME_FABRICATED_KEY);
-  ignore_result(DispatchKeyEventPostIME(&evt));
-  return evt.stopped_propagation();
-}
-
 void InputMethodChromeOS::CommitText(const std::string& text) {
   if (text.empty())
     return;

@@ -344,4 +344,28 @@ void InputMethodEngine::MenuItemToProperty(
   // TODO(nona): Support item.children.
 }
 
+void InputMethodEngine::UpdateComposition(
+    const ui::CompositionText& composition_text,
+    uint32_t cursor_pos,
+    bool is_visible) {
+  ui::IMEInputContextHandlerInterface* input_context =
+      ui::IMEBridge::Get()->GetInputContextHandler();
+  if (input_context)
+    input_context->UpdateCompositionText(composition_text, cursor_pos,
+                                         is_visible);
+}
+
+void InputMethodEngine::CommitTextToInputContext(int context_id,
+                                                 const std::string& text) {
+  ui::IMEBridge::Get()->GetInputContextHandler()->CommitText(text);
+
+  // Records histograms for committed characters.
+  if (!composition_text_->text.empty()) {
+    base::string16 wtext = base::UTF8ToUTF16(text);
+    UMA_HISTOGRAM_CUSTOM_COUNTS("InputMethod.CommitLength", wtext.length(), 1,
+                                25, 25);
+    composition_text_.reset(new ui::CompositionText());
+  }
+}
+
 }  // namespace chromeos

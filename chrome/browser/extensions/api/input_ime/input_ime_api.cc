@@ -10,6 +10,8 @@
 
 namespace input_ime = extensions::api::input_ime;
 namespace KeyEventHandled = extensions::api::input_ime::KeyEventHandled;
+namespace SetComposition = extensions::api::input_ime::SetComposition;
+namespace CommitText = extensions::api::input_ime::CommitText;
 using ui::IMEEngineHandlerInterface;
 using input_method::InputMethodEngineBase;
 
@@ -261,6 +263,70 @@ ExtensionFunction::ResponseAction InputImeKeyEventHandledFunction::Run() {
                             params->response);
   }
   return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction InputImeSetCompositionFunction::Run() {
+  bool success = false;
+  InputImeEventRouter* event_router =
+      GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()));
+  InputMethodEngineBase* engine =
+      event_router ? event_router->GetActiveEngine(extension_id()) : nullptr;
+  if (engine) {
+    scoped_ptr<SetComposition::Params> parent_params(
+        SetComposition::Params::Create(*args_));
+    const SetComposition::Params::Parameters& params =
+        parent_params->parameters;
+    std::vector<InputMethodEngineBase::SegmentInfo> segments;
+    if (params.segments) {
+      const std::vector<
+          linked_ptr<SetComposition::Params::Parameters::SegmentsType>>&
+          segments_args = *params.segments;
+      for (const auto& segments_arg : segments_args) {
+        EXTENSION_FUNCTION_VALIDATE(segments_arg->style !=
+                                    input_ime::UNDERLINE_STYLE_NONE);
+        InputMethodEngineBase::SegmentInfo segment_info;
+        segment_info.start = segments_arg->start;
+        segment_info.end = segments_arg->end;
+        if (segments_arg->style == input_ime::UNDERLINE_STYLE_UNDERLINE) {
+          segment_info.style = InputMethodEngineBase::SEGMENT_STYLE_UNDERLINE;
+        } else if (segments_arg->style ==
+                   input_ime::UNDERLINE_STYLE_DOUBLEUNDERLINE) {
+          segment_info.style =
+              InputMethodEngineBase::SEGMENT_STYLE_DOUBLE_UNDERLINE;
+        } else {
+          segment_info.style =
+              InputMethodEngineBase::SEGMENT_STYLE_NO_UNDERLINE;
+        }
+        segments.push_back(segment_info);
+      }
+    }
+    int selection_start =
+        params.selection_start ? *params.selection_start : params.cursor;
+    int selection_end =
+        params.selection_end ? *params.selection_end : params.cursor;
+    success = engine->SetComposition(params.context_id, params.text.c_str(),
+                                     selection_start, selection_end,
+                                     params.cursor, segments, &error_);
+  }
+  scoped_ptr<base::ListValue> output = SetComposition::Results::Create(success);
+  return RespondNow(ArgumentList(std::move(output)));
+}
+
+ExtensionFunction::ResponseAction InputImeCommitTextFunction::Run() {
+  bool success = false;
+  InputImeEventRouter* event_router =
+      GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()));
+  InputMethodEngineBase* engine =
+      event_router ? event_router->GetActiveEngine(extension_id()) : nullptr;
+  if (engine) {
+    scoped_ptr<CommitText::Params> parent_params(
+        CommitText::Params::Create(*args_));
+    const CommitText::Params::Parameters& params = parent_params->parameters;
+    success =
+        engine->CommitText(params.context_id, params.text.c_str(), &error_);
+  }
+  scoped_ptr<base::ListValue> output = CommitText::Results::Create(success);
+  return RespondNow(ArgumentList(std::move(output)));
 }
 
 InputImeAPI::InputImeAPI(content::BrowserContext* context)

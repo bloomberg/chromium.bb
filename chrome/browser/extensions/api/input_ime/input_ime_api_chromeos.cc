@@ -35,9 +35,7 @@ namespace SetCursorPosition = extensions::api::input_ime::SetCursorPosition;
 namespace SetCandidates = extensions::api::input_ime::SetCandidates;
 namespace SetCandidateWindowProperties =
     extensions::api::input_ime::SetCandidateWindowProperties;
-namespace CommitText = extensions::api::input_ime::CommitText;
 namespace ClearComposition = extensions::api::input_ime::ClearComposition;
-namespace SetComposition = extensions::api::input_ime::SetComposition;
 namespace OnCompositionBoundsChanged =
     extensions::api::input_method_private::OnCompositionBoundsChanged;
 using ui::IMEEngineHandlerInterface;
@@ -346,55 +344,6 @@ InputMethodEngineBase* InputImeEventRouter::GetActiveEngine(
                                                              : nullptr;
 }
 
-bool InputImeSetCompositionFunction::RunSync() {
-  InputMethodEngine* engine = GetActiveEngine(
-      Profile::FromBrowserContext(browser_context()), extension_id());
-  if (!engine) {
-    SetResult(new base::FundamentalValue(false));
-    return true;
-  }
-
-  scoped_ptr<SetComposition::Params> parent_params(
-      SetComposition::Params::Create(*args_));
-  const SetComposition::Params::Parameters& params = parent_params->parameters;
-  std::vector<InputMethodEngineBase::SegmentInfo> segments;
-  if (params.segments) {
-    const std::vector<linked_ptr<
-        SetComposition::Params::Parameters::SegmentsType> >&
-            segments_args = *params.segments;
-    for (size_t i = 0; i < segments_args.size(); ++i) {
-      EXTENSION_FUNCTION_VALIDATE(
-          segments_args[i]->style !=
-          input_ime::UNDERLINE_STYLE_NONE);
-      segments.push_back(InputMethodEngineBase::SegmentInfo());
-      segments.back().start = segments_args[i]->start;
-      segments.back().end = segments_args[i]->end;
-      if (segments_args[i]->style ==
-          input_ime::UNDERLINE_STYLE_UNDERLINE) {
-        segments.back().style = InputMethodEngineBase::SEGMENT_STYLE_UNDERLINE;
-      } else if (segments_args[i]->style ==
-                 input_ime::UNDERLINE_STYLE_DOUBLEUNDERLINE) {
-        segments.back().style =
-            InputMethodEngineBase::SEGMENT_STYLE_DOUBLE_UNDERLINE;
-      } else {
-        segments.back().style =
-            InputMethodEngineBase::SEGMENT_STYLE_NO_UNDERLINE;
-      }
-    }
-  }
-
-  int selection_start =
-      params.selection_start ? *params.selection_start : params.cursor;
-  int selection_end =
-      params.selection_end ? *params.selection_end : params.cursor;
-
-  SetResult(new base::FundamentalValue(
-      engine->SetComposition(params.context_id, params.text.c_str(),
-                             selection_start, selection_end, params.cursor,
-                             segments, &error_)));
-  return true;
-}
-
 bool InputImeClearCompositionFunction::RunSync() {
   InputMethodEngine* engine = GetActiveEngine(
       Profile::FromBrowserContext(browser_context()), extension_id());
@@ -410,24 +359,6 @@ bool InputImeClearCompositionFunction::RunSync() {
 
   SetResult(new base::FundamentalValue(
       engine->ClearComposition(params.context_id, &error_)));
-  return true;
-}
-
-bool InputImeCommitTextFunction::RunSync() {
-  InputMethodEngine* engine = GetActiveEngine(
-      Profile::FromBrowserContext(browser_context()), extension_id());
-  if (!engine) {
-    SetResult(new base::FundamentalValue(false));
-    return true;
-  }
-
-  scoped_ptr<CommitText::Params> parent_params(
-      CommitText::Params::Create(*args_));
-  const CommitText::Params::Parameters& params =
-      parent_params->parameters;
-
-  SetResult(new base::FundamentalValue(
-      engine->CommitText(params.context_id, params.text.c_str(), &error_)));
   return true;
 }
 

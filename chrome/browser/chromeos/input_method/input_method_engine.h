@@ -151,6 +151,13 @@ class InputMethodEngine : public ::input_method::InputMethodEngineBase {
   // Enables overriding input view page to Virtual Keyboard window.
   void EnableInputView();
 
+  // input_method::InputMethodEngineBase:
+  void UpdateComposition(const ui::CompositionText& composition_text,
+                         uint32_t cursor_pos,
+                         bool is_visible) override;
+  void CommitTextToInputContext(int context_id,
+                                const std::string& text) override;
+
   // The current candidate window.
   scoped_ptr<ui::CandidateWindow> candidate_window_;
 

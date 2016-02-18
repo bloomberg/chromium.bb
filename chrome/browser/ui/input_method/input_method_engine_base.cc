@@ -47,30 +47,6 @@ namespace {
 const char kErrorNotActive[] = "IME is not active";
 const char kErrorWrongContext[] = "Context is not active";
 
-// Notifies InputContextHandler that the composition is changed.
-void UpdateComposition(const ui::CompositionText& composition_text,
-                       uint32_t cursor_pos,
-                       bool is_visible) {
-  ui::IMEInputContextHandlerInterface* input_context =
-      ui::IMEBridge::Get()->GetInputContextHandler();
-  if (input_context)
-    input_context->UpdateCompositionText(composition_text, cursor_pos,
-                                         is_visible);
-}
-
-// Returns the length of characters of a UTF-8 string with unknown string
-// length. Cannot apply faster algorithm to count characters in an utf-8
-// string without knowing the string length,  so just does a full scan.
-size_t GetUtf8StringLength(const char* s) {
-  size_t ret = 0;
-  while (*s) {
-    if ((*s & 0xC0) != 0x80)
-      ret++;
-    ++s;
-  }
-  return ret;
-}
-
 #if defined(OS_CHROMEOS)
 std::string GetKeyFromEvent(const ui::KeyEvent& event) {
   const std::string code = event.GetCodeString();
@@ -181,7 +157,9 @@ InputMethodEngineBase::InputMethodEngineBase()
       composition_cursor_(0),
       sent_key_event_(nullptr),
       profile_(nullptr),
-      next_request_id_(1) {}
+      next_request_id_(1),
+      text_(""),
+      handling_key_event_(false) {}
 
 InputMethodEngineBase::~InputMethodEngineBase() {}
 
@@ -285,14 +263,7 @@ bool InputMethodEngineBase::CommitText(int context_id,
     return false;
   }
 
-  ui::IMEBridge::Get()->GetInputContextHandler()->CommitText(text);
-
-  // Records histograms for committed characters.
-  if (!composition_text_->text.empty()) {
-    size_t len = GetUtf8StringLength(text);
-    UMA_HISTOGRAM_CUSTOM_COUNTS("InputMethod.CommitLength", len, 1, 25, 25);
-    composition_text_.reset(new ui::CompositionText());
-  }
+  CommitTextToInputContext(context_id, std::string(text));
   return true;
 }
 
@@ -380,6 +351,10 @@ bool InputMethodEngineBase::IsInterestedInKeyEvent() const {
 
 void InputMethodEngineBase::ProcessKeyEvent(const ui::KeyEvent& key_event,
                                             KeyEventDoneCallback& callback) {
+  // Make true that we don't handle IME API calling of setComposition and
+  // commitText while the extension is handling key event.
+  handling_key_event_ = true;
+
   KeyboardEvent ext_event;
   GetExtensionKeyboardEventFromKeyEvent(key_event, &ext_event);
 
@@ -405,6 +380,25 @@ void InputMethodEngineBase::SetSurroundingText(const std::string& text,
 void InputMethodEngineBase::KeyEventHandled(const std::string& extension_id,
                                             const std::string& request_id,
                                             bool handled) {
+  handling_key_event_ = false;
+  // When finish handling key event, take care of the unprocessed setComposition
+  // and commitText calls.
+  ui::IMEInputContextHandlerInterface* input_context =
+      ui::IMEBridge::Get()->GetInputContextHandler();
+  if (!composition_.text.empty()) {
+    if (input_context) {
+      input_context->UpdateCompositionText(
+          composition_, composition_.selection.start(), true);
+    }
+    composition_.Clear();
+  }
+  if (!text_.empty()) {
+    if (input_context) {
+      input_context->CommitText(text_);
+    }
+    text_ = "";
+  }
+
   RequestMap::iterator request = request_map_.find(request_id);
   if (request == request_map_.end()) {
     LOG(ERROR) << "Request ID not found: " << request_id;

@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/utf_string_conversions.h"
+#include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/input_method_observer.h"
 #include "ui/base/ime/text_input_client.h"
@@ -15,14 +17,15 @@
 namespace ui {
 
 InputMethodBase::InputMethodBase()
-  : delegate_(NULL),
-    text_input_client_(NULL) {
-}
+    : delegate_(NULL), text_input_client_(NULL) {}
 
 InputMethodBase::~InputMethodBase() {
   FOR_EACH_OBSERVER(InputMethodObserver,
                     observer_list_,
                     OnInputMethodDestroyed(this));
+  if (ui::IMEBridge::Get() &&
+      ui::IMEBridge::Get()->GetInputContextHandler() == this)
+    ui::IMEBridge::Get()->SetInputContextHandler(nullptr);
 }
 
 void InputMethodBase::SetDelegate(internal::InputMethodDelegate* delegate) {
@@ -35,6 +38,8 @@ void InputMethodBase::OnBlur() {}
 
 void InputMethodBase::SetFocusedTextInputClient(TextInputClient* client) {
   SetFocusedTextInputClientInternal(client);
+  if (ui::IMEBridge::Get())
+    ui::IMEBridge::Get()->SetInputContextHandler(this);
 }
 
 void InputMethodBase::DetachTextInputClient(TextInputClient* client) {
@@ -147,5 +152,42 @@ std::vector<gfx::Rect> InputMethodBase::GetCompositionBounds(
   }
   return bounds;
 }
+
+bool InputMethodBase::SendFakeProcessKeyEvent(bool pressed) const {
+  KeyEvent evt(pressed ? ET_KEY_PRESSED : ET_KEY_RELEASED,
+               pressed ? VKEY_PROCESSKEY : VKEY_UNKNOWN, EF_IME_FABRICATED_KEY);
+  ignore_result(DispatchKeyEventPostIME(&evt));
+  return evt.stopped_propagation();
+}
+
+void InputMethodBase::CommitText(const std::string& text) {
+  if (text.empty() || !GetTextInputClient() || IsTextInputTypeNone())
+    return;
+
+  const base::string16 utf16_text = base::UTF8ToUTF16(text);
+  if (utf16_text.empty())
+    return;
+
+  if (!SendFakeProcessKeyEvent(true))
+    GetTextInputClient()->InsertText(utf16_text);
+  SendFakeProcessKeyEvent(false);
+}
+
+void InputMethodBase::UpdateCompositionText(const CompositionText& composition_,
+                                            uint32_t cursor_pos,
+                                            bool visible) {
+  if (IsTextInputTypeNone() || composition_.text.empty())
+    return;
+
+  if (!SendFakeProcessKeyEvent(true)) {
+    if (visible)
+      GetTextInputClient()->SetCompositionText(composition_);
+    else
+      GetTextInputClient()->ClearCompositionText();
+  }
+  SendFakeProcessKeyEvent(false);
+}
+
+void InputMethodBase::DeleteSurroundingText(int32_t offset, uint32_t length) {}
 
 }  // namespace ui

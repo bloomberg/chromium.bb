@@ -135,7 +135,7 @@
         "name": "setComposition",
         "type": "function",
         "description": "Set the current composition. If this extension does not own the active IME, this fails.",
-        "platforms": ["chromeos"],
+        "platforms": ["chromeos", "win", "linux"],
         "parameters": [
           {
             "name": "parameters",
@@ -235,7 +235,7 @@
         "name": "commitText",
         "type": "function",
         "description": "Commits the provided text to the current input.",
-        "platforms": ["chromeos"],
+        "platforms": ["chromeos", "win", "linux"],
         "parameters": [
           {
             "name": "parameters",

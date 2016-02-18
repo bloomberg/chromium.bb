@@ -10,6 +10,7 @@
 #include <vector>
 #include "base/time/time.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
+#include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/ime_engine_handler_interface.h"
 #include "url/gurl.h"
 
@@ -174,7 +175,18 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
       const std::string& component_id,
       ui::IMEEngineHandlerInterface::KeyEventDoneCallback& key_data);
 
+  // Called when a key event is handled.
+  void KeyEventHandled();
+
  protected:
+  // Notifies InputContextHandler that the composition is changed.
+  virtual void UpdateComposition(const ui::CompositionText& composition_text,
+                                 uint32_t cursor_pos,
+                                 bool is_visible) = 0;
+  // Notifies InputContextHanlder to commit |text|.
+  virtual void CommitTextToInputContext(int context_id,
+                                        const std::string& text) = 0;
+
   ui::TextInputType current_input_type_;
 
   // ID that is used for the current input context.  False if there is no focus.
@@ -209,6 +221,16 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
 
   unsigned int next_request_id_;
   RequestMap request_map_;
+
+  // The composition text to be set from calling input.ime.setComposition API.
+  ui::CompositionText composition_;
+
+  // The text to be committed from calling input.ime.commitText API.
+  std::string text_;
+
+  // Indicates whether the IME extension is currently handling a physical key
+  // event. This is used in CommitText/UpdateCompositionText/etc.
+  bool handling_key_event_;
 };
 
 }  // namespace input_method

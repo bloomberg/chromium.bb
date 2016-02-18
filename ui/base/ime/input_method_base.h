@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "ui/base/ime/ime_input_context_handler_interface.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/ui_base_ime_export.h"
 #include "ui/events/event_dispatcher.h"
@@ -29,7 +30,8 @@ class TextInputClient;
 // implementations.
 class UI_BASE_IME_EXPORT InputMethodBase
     : NON_EXPORTED_BASE(public InputMethod),
-      public base::SupportsWeakPtr<InputMethodBase> {
+      public base::SupportsWeakPtr<InputMethodBase>,
+      public IMEInputContextHandlerInterface {
  public:
   InputMethodBase();
   ~InputMethodBase() override;
@@ -60,6 +62,17 @@ class UI_BASE_IME_EXPORT InputMethodBase
                                          TextInputClient* focused) {}
   virtual void OnDidChangeFocusedClient(TextInputClient* focused_before,
                                         TextInputClient* focused) {}
+
+  // IMEInputContextHandlerInterface:
+  void CommitText(const std::string& text) override;
+  void UpdateCompositionText(const CompositionText& text,
+                             uint32_t cursor_pos,
+                             bool visible) override;
+  void DeleteSurroundingText(int32_t offset, uint32_t length) override;
+
+  // Sends a fake key event for IME composing without physical key events.
+  // Returns true if the faked key event is stopped propagation.
+  bool SendFakeProcessKeyEvent(bool pressed) const;
 
   // Returns true if |client| is currently focused.
   bool IsTextInputClientFocused(const TextInputClient* client);

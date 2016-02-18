@@ -128,6 +128,29 @@ class InputImeKeyEventHandledFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
+class InputImeSetCompositionFunction : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("input.ime.setComposition",
+                             INPUT_IME_SETCOMPOSITION)
+
+ protected:
+  ~InputImeSetCompositionFunction() override {}
+
+  // UIThreadExtensionFunction:
+  ResponseAction Run() override;
+};
+
+class InputImeCommitTextFunction : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("input.ime.commitText", INPUT_IME_COMMITTEXT)
+
+ protected:
+  ~InputImeCommitTextFunction() override {}
+
+  // UIThreadExtensionFunction:
+  ResponseAction Run() override;
+};
+
 class InputImeAPI : public BrowserContextKeyedAPI,
                     public ExtensionRegistryObserver,
                     public EventRouter::Observer {

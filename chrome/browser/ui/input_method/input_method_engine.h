@@ -24,6 +24,13 @@ class InputMethodEngine : public InputMethodEngineBase {
   std::string GetExtensionId() const override;
 
  private:
+  // input_method::InputMethodEngineBase:
+  void UpdateComposition(const ui::CompositionText& composition_text,
+                         uint32_t cursor_pos,
+                         bool is_visible) override;
+  void CommitTextToInputContext(int context_id,
+                                const std::string& text) override;
+
   DISALLOW_COPY_AND_ASSIGN(InputMethodEngine);
 };
 

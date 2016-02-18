@@ -21,18 +21,6 @@ class InputMethodEngine;
 
 namespace extensions {
 
-class InputImeSetCompositionFunction : public SyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("input.ime.setComposition",
-                             INPUT_IME_SETCOMPOSITION)
-
- protected:
-  ~InputImeSetCompositionFunction() override {}
-
-  // ExtensionFunction:
-  bool RunSync() override;
-};
-
 class InputImeClearCompositionFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.clearComposition",
@@ -40,17 +28,6 @@ class InputImeClearCompositionFunction : public SyncExtensionFunction {
 
  protected:
   ~InputImeClearCompositionFunction() override {}
-
-  // ExtensionFunction:
-  bool RunSync() override;
-};
-
-class InputImeCommitTextFunction : public SyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("input.ime.commitText", INPUT_IME_COMMITTEXT)
-
- protected:
-  ~InputImeCommitTextFunction() override {}
 
   // ExtensionFunction:
   bool RunSync() override;
