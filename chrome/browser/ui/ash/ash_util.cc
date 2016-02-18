@@ -19,7 +19,8 @@ namespace chrome {
 
 bool ShouldOpenAshOnStartup() {
 #if defined(OS_CHROMEOS) && defined(MOJO_SHELL_CLIENT)
-  return !content::MojoShellConnection::Get();
+  return !content::MojoShellConnection::Get() ||
+         !content::MojoShellConnection::Get()->UsingExternalShell();
 #elif defined(OS_CHROMEOS)
   return true;
 #else

@@ -190,7 +190,8 @@ void InitializeNetworkPortalDetector() {
 
 bool IsRunningAsMusClient() {
 #if defined(MOJO_SHELL_CLIENT)
-  return !!content::MojoShellConnection::Get();
+  return content::MojoShellConnection::Get() &&
+         content::MojoShellConnection::Get()->UsingExternalShell();
 #endif
   return false;
 }
