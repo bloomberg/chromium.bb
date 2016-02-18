@@ -15,7 +15,6 @@ import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListe
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ApplicationStateListener;
 import org.chromium.base.Log;
-import org.chromium.base.ThreadUtils;
 
 /**
  * Helps managing connections when using {@link GoogleApiClient}.
@@ -73,10 +72,10 @@ public class GoogleApiClientHelper
 
     private int mResolutionAttempts = 0;
     private boolean mWasConnectedBefore = false;
-    private final Handler mHandler = new Handler(ThreadUtils.getUiThreadLooper());
+    private Handler mHandler;
     private final GoogleApiClient mClient;
     private long mDisconnectionDelayMs = 0;
-    private Runnable mPendingDisconnect;
+
 
     /**
      * Creates a helper and enrolls it in the various connection management features.
@@ -94,19 +93,14 @@ public class GoogleApiClientHelper
      * Opts in or out of lifecycle management. The client's connection will be closed and reopened
      * when Chrome goes in and out of background.
      *
-     * It is safe to set it to the current state. Disabling lifecycle management also cancels
-     * pending disconnections.
+     * Enabling or disabling it while it is already enabled or disabled has no effect.
      */
     public void enableLifecycleManagement(final boolean enabled) {
         Log.d(TAG, "enableLifecycleManagement(%s)", enabled);
         LifecycleHook hook = LifecycleHook.getInstance();
 
-        if (enabled) {
-            hook.registerClientHelper(GoogleApiClientHelper.this);
-        } else {
-            cancelPendingDisconnection();
-            hook.unregisterClientHelper(GoogleApiClientHelper.this);
-        }
+        if (enabled) hook.registerClientHelper(GoogleApiClientHelper.this);
+        else hook.unregisterClientHelper(GoogleApiClientHelper.this);
     }
 
     /**
@@ -146,49 +140,23 @@ public class GoogleApiClientHelper
         setDisconnectionDelay(0);
     }
 
-    /**
-     * Tells the helper that we are going to use the connection. It should postpone disconnections
-     * and make sure the client is connected.
-     * This is useful if the client might be used when we are in the background.
-     */
-    public void willUseConnection() {
-        // Cancel and reschedule the disconnection if we are in the background. We do it early to
-        // avoid race conditions between a disconnect on the UI thread and the connect below.
-        if (!ApplicationStatus.hasVisibleActivities()) scheduleDisconnection();
-
-        // The client might be disconnected if we were idle in the background for too long.
-        if (!mClient.isConnected() && !mClient.isConnecting()) {
-            Log.d(TAG, "Reconnecting the client.");
-            mClient.connect();
-        }
-    }
-
     void restoreConnectedState() {
-        // If we go back to the foreground before a delayed disconnect happens, cancel it.
-        cancelPendingDisconnection();
-
         if (mWasConnectedBefore) {
             mClient.connect();
         }
     }
 
-    /**
-     * Schedule a disconnection of the client after the predefined delay. If there was a
-     * disconnection already planned, it will be rescheduled from now.
-     */
-    void scheduleDisconnection() {
-        cancelPendingDisconnection();
-
-        mPendingDisconnect = new Runnable() {
+    void disconnectWithDelay() {
+        new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                Log.d(TAG, "Disconnect delay expired.");
-                mPendingDisconnect = null;
-                disconnect();
-            }
-        };
+                // Double check that Chrome is still in the background
+                boolean skipDisconnect = ApplicationStatus.hasVisibleActivities();
 
-        mHandler.postDelayed(mPendingDisconnect, mDisconnectionDelayMs);
+                Log.d(TAG, "Disconnect delay expired. skipDisconnect=%s", skipDisconnect);
+                if (!skipDisconnect) disconnect();
+            }
+        }, mDisconnectionDelayMs);
     }
 
     private void disconnect() {
@@ -200,12 +168,6 @@ public class GoogleApiClientHelper
         mClient.disconnect();
     }
 
-    private void cancelPendingDisconnection() {
-        if (mPendingDisconnect == null) return;
-
-        mHandler.removeCallbacks(mPendingDisconnect);
-        mPendingDisconnect = null;
-    }
 
     @Override
     public void onConnectionFailed(ConnectionResult result) {
@@ -220,6 +182,7 @@ public class GoogleApiClientHelper
                     mResolutionAttempts, ConnectedTask.RETRY_NUMBER_LIMIT, result.getErrorCode());
             mResolutionAttempts += 1;
 
+            if (mHandler == null) mHandler = new Handler();
             mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {

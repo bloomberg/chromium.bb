@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.gcore;
 
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -55,11 +54,11 @@ public class GoogleApiClientHelperTest {
 
         Robolectric.pauseMainLooper();
         helper.onConnectionFailed(mockResult);
-        verify(mMockClient, never()).connect();
+        verify(mMockClient, times(0)).connect();
         Robolectric.unPauseMainLooper();
 
         Robolectric.runUiThreadTasksIncludingDelayedTasks();
-        verify(mMockClient).connect();
+        verify(mMockClient, times(1)).connect();
     }
 
     /** Tests that the connection handler gives up after a number of connection attempts. */
@@ -75,7 +74,7 @@ public class GoogleApiClientHelperTest {
         Robolectric.runUiThreadTasksIncludingDelayedTasks();
 
         // Should not retry on unrecoverable errors
-        verify(mMockClient, never()).connect();
+        verify(mMockClient, times(0)).connect();
 
         // Connection attempts
         when(mockResult.getErrorCode()).thenReturn(ConnectionResult.SERVICE_UPDATING);
@@ -141,12 +140,12 @@ public class GoogleApiClientHelperTest {
         ApplicationStatus.onStateChangeForTesting(mockActivity, ActivityState.CREATED);
 
         // The helper should have been registered to handle connectivity issues.
-        verify(mMockClient).registerConnectionCallbacks(helper);
-        verify(mMockClient).registerConnectionFailedListener(helper);
+        verify(mMockClient, times(1)).registerConnectionCallbacks(helper);
+        verify(mMockClient, times(1)).registerConnectionFailedListener(helper);
 
         // Client was not connected. Coming in the foreground should not change that.
         ApplicationStatus.onStateChangeForTesting(mockActivity, ActivityState.STARTED);
-        verify(mMockClient, never()).connect();
+        verify(mMockClient, times(0)).connect();
 
         // We now say we are connected
         when(mMockClient.isConnected()).thenReturn(true);
@@ -154,21 +153,21 @@ public class GoogleApiClientHelperTest {
         // Should be disconnected when we go in the background
         ApplicationStatus.onStateChangeForTesting(mockActivity, ActivityState.STOPPED);
         Robolectric.runUiThreadTasksIncludingDelayedTasks();
-        verify(mMockClient).disconnect();
+        verify(mMockClient, times(1)).disconnect();
 
         // Should be reconnected when we come in the foreground
         ApplicationStatus.onStateChangeForTesting(mockActivity, ActivityState.STARTED);
-        verify(mMockClient).connect();
+        verify(mMockClient, times(1)).connect();
 
         helper.disable();
 
         // The helper should have been unregistered from handling connectivity issues.
-        verify(mMockClient).unregisterConnectionCallbacks(helper);
-        verify(mMockClient).unregisterConnectionFailedListener(helper);
+        verify(mMockClient, times(1)).unregisterConnectionCallbacks(helper);
+        verify(mMockClient, times(1)).unregisterConnectionFailedListener(helper);
 
         // Should not be interacted with anymore when we stop managing it.
         ApplicationStatus.onStateChangeForTesting(mockActivity, ActivityState.STOPPED);
-        verify(mMockClient).disconnect();
+        verify(mMockClient, times(1)).disconnect();
     }
 
     @Test
@@ -186,102 +185,23 @@ public class GoogleApiClientHelperTest {
         // Should not be disconnected when we go in the background
         ApplicationStatus.onStateChangeForTesting(mockActivity, ActivityState.STOPPED);
         Robolectric.runUiThreadTasks();
-        verify(mMockClient, never()).disconnect();
+        verify(mMockClient, times(0)).disconnect();
 
         // Should be disconnected when we wait.
         Robolectric.runUiThreadTasksIncludingDelayedTasks();
-        verify(mMockClient).disconnect();
+        verify(mMockClient, times(1)).disconnect();
 
         // Should be reconnected when we come in the foreground
         ApplicationStatus.onStateChangeForTesting(mockActivity, ActivityState.STARTED);
-        verify(mMockClient).connect();
+        verify(mMockClient, times(1)).connect();
 
         // Should not disconnect when we became visible during the delay
         ApplicationStatus.onStateChangeForTesting(mockActivity, ActivityState.STOPPED);
         Robolectric.runUiThreadTasks();
-        verify(mMockClient).disconnect();
+        verify(mMockClient, times(1)).disconnect();
         ApplicationStatus.onStateChangeForTesting(mockActivity, ActivityState.STARTED);
         Robolectric.runUiThreadTasksIncludingDelayedTasks();
-        verify(mMockClient).disconnect();
+        verify(mMockClient, times(1)).disconnect();
     }
 
-    @Test
-    @Feature({"GCore"})
-    public void disconnectionCancellingTest() {
-        int disconnectionTimeout = 5000;
-        GoogleApiClientHelper helper = new GoogleApiClientHelper(mMockClient);
-        Robolectric.runUiThreadTasksIncludingDelayedTasks();
-        Activity mockActivity = mock(Activity.class);
-        ApplicationStatus.onStateChangeForTesting(mockActivity, ActivityState.CREATED);
-        helper.setDisconnectionDelay(disconnectionTimeout);
-
-        // We have a connected client
-        when(mMockClient.isConnected()).thenReturn(true);
-
-        // We go in the background and come back before the end of the timeout.
-        ApplicationStatus.onStateChangeForTesting(mockActivity, ActivityState.STOPPED);
-        Robolectric.idleMainLooper(disconnectionTimeout - 42);
-        ApplicationStatus.onStateChangeForTesting(mockActivity, ActivityState.STARTED);
-        Robolectric.runUiThreadTasksIncludingDelayedTasks();
-
-        // The client should not have been disconnected, which would drop requests otherwise.
-        verify(mMockClient, never()).disconnect();
-    }
-
-    @Test
-    @Feature({"GCore"})
-    public void willUseConnectionBackgroundTest() {
-        int disconnectionTimeout = 5000;
-        int arbitraryNumberOfSeconds = 42;
-        GoogleApiClientHelper helper = new GoogleApiClientHelper(mMockClient);
-        Robolectric.runUiThreadTasksIncludingDelayedTasks();
-        Activity mockActivity = mock(Activity.class);
-        ApplicationStatus.onStateChangeForTesting(mockActivity, ActivityState.CREATED);
-        helper.setDisconnectionDelay(disconnectionTimeout);
-
-        // We have a connected client
-        when(mMockClient.isConnected()).thenReturn(true);
-
-        // We go in the background and extend the delay
-        ApplicationStatus.onStateChangeForTesting(mockActivity, ActivityState.STOPPED);
-        Robolectric.idleMainLooper(disconnectionTimeout - arbitraryNumberOfSeconds);
-        helper.willUseConnection();
-
-        // The client should not have been disconnected.
-        Robolectric.idleMainLooper(disconnectionTimeout - arbitraryNumberOfSeconds);
-        verify(mMockClient, never()).disconnect();
-
-        // After the full timeout it should still disconnect though
-        Robolectric.idleMainLooper(arbitraryNumberOfSeconds);
-        verify(mMockClient).disconnect();
-
-        // The client is now disconnected then
-        when(mMockClient.isConnected()).thenReturn(false);
-
-        // The call should reconnect a disconnected client
-        helper.willUseConnection();
-        verify(mMockClient).connect();
-    }
-
-    @Test
-    @Feature({"GCore"})
-    public void willUseConnectionForegroundTest() {
-        GoogleApiClientHelper helper = new GoogleApiClientHelper(mMockClient);
-        Robolectric.runUiThreadTasksIncludingDelayedTasks();
-        Activity mockActivity = mock(Activity.class);
-        ApplicationStatus.onStateChangeForTesting(mockActivity, ActivityState.CREATED);
-        helper.setDisconnectionDelay(5000);
-
-        // We have a connected client
-        when(mMockClient.isConnected()).thenReturn(true);
-
-        // We are in the foreground
-        ApplicationStatus.onStateChangeForTesting(mockActivity, ActivityState.STARTED);
-        Robolectric.runUiThreadTasksIncludingDelayedTasks();
-
-        // Disconnections should not be scheduled when in the foreground.
-        helper.willUseConnection();
-        Robolectric.runUiThreadTasksIncludingDelayedTasks();
-        verify(mMockClient, never()).disconnect();
-    }
 }
