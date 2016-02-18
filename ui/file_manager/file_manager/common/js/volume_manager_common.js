@@ -9,6 +9,17 @@
 var VolumeManagerCommon = {};
 
 /**
+ * Paths that can be handled by the dialog opener in native code.
+ * @enum {string}
+ * @const
+ */
+var AllowedPaths = {
+  NATIVE_PATH: 'nativePath',
+  NATIVE_OR_DRIVE_PATH: 'nativeOrDrivePath',
+  ANY_PATH: 'anyPath'
+};
+
+/**
  * Type of a root directory.
  * @enum {string}
  * @const

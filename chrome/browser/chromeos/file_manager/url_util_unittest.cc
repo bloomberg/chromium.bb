@@ -50,18 +50,19 @@ TEST(FileManagerUrlUtilTest, GetFileManagerMainPageUrlWithParams_NoFileTypes) {
   EXPECT_TRUE(url.query().find("+") == std::string::npos);
   EXPECT_TRUE(url.query().find("%20") != std::string::npos);
   // The escaped query is hard to read. Pretty print the escaped JSON.
-  EXPECT_EQ("{\n"
-            "   \"currentDirectoryURL\": "
-            "\"filesystem:chrome-extension://abc/Downloads/\",\n"
-            "   \"defaultExtension\": \"txt\",\n"
-            "   \"selectionURL\": "
-            "\"filesystem:chrome-extension://abc/Downloads/foo.txt\",\n"
-            "   \"shouldReturnLocalPath\": true,\n"
-            "   \"targetName\": \"foo.txt\",\n"
-            "   \"title\": \"some title\",\n"
-            "   \"type\": \"open-file\"\n"
-            "}\n",
-            PrettyPrintEscapedJson(url.query()));
+  EXPECT_EQ(
+      "{\n"
+      "   \"allowedPaths\": \"nativePath\",\n"
+      "   \"currentDirectoryURL\": "
+      "\"filesystem:chrome-extension://abc/Downloads/\",\n"
+      "   \"defaultExtension\": \"txt\",\n"
+      "   \"selectionURL\": "
+      "\"filesystem:chrome-extension://abc/Downloads/foo.txt\",\n"
+      "   \"targetName\": \"foo.txt\",\n"
+      "   \"title\": \"some title\",\n"
+      "   \"type\": \"open-file\"\n"
+      "}\n",
+      PrettyPrintEscapedJson(url.query()));
 }
 
 TEST(FileManagerUrlUtilTest,
@@ -98,28 +99,29 @@ TEST(FileManagerUrlUtilTest,
   EXPECT_TRUE(url.query().find("+") == std::string::npos);
   EXPECT_TRUE(url.query().find("%20") != std::string::npos);
   // The escaped query is hard to read. Pretty print the escaped JSON.
-  EXPECT_EQ("{\n"
-            "   \"currentDirectoryURL\": "
-            "\"filesystem:chrome-extension://abc/Downloads/\",\n"
-            "   \"defaultExtension\": \"txt\",\n"
-            "   \"includeAllFiles\": false,\n"
-            "   \"selectionURL\": "
-            "\"filesystem:chrome-extension://abc/Downloads/foo.txt\",\n"
-            "   \"shouldReturnLocalPath\": false,\n"
-            "   \"targetName\": \"foo.txt\",\n"
-            "   \"title\": \"some title\",\n"
-            "   \"type\": \"open-file\",\n"
-            "   \"typeList\": [ {\n"
-            "      \"description\": \"HTML\",\n"
-            "      \"extensions\": [ \"htm\", \"html\" ],\n"
-            "      \"selected\": true\n"
-            "   }, {\n"
-            "      \"description\": \"TEXT\",\n"
-            "      \"extensions\": [ \"txt\" ],\n"
-            "      \"selected\": false\n"
-            "   } ]\n"
-            "}\n",
-            PrettyPrintEscapedJson(url.query()));
+  EXPECT_EQ(
+      "{\n"
+      "   \"allowedPaths\": \"anyPath\",\n"
+      "   \"currentDirectoryURL\": "
+      "\"filesystem:chrome-extension://abc/Downloads/\",\n"
+      "   \"defaultExtension\": \"txt\",\n"
+      "   \"includeAllFiles\": false,\n"
+      "   \"selectionURL\": "
+      "\"filesystem:chrome-extension://abc/Downloads/foo.txt\",\n"
+      "   \"targetName\": \"foo.txt\",\n"
+      "   \"title\": \"some title\",\n"
+      "   \"type\": \"open-file\",\n"
+      "   \"typeList\": [ {\n"
+      "      \"description\": \"HTML\",\n"
+      "      \"extensions\": [ \"htm\", \"html\" ],\n"
+      "      \"selected\": true\n"
+      "   }, {\n"
+      "      \"description\": \"TEXT\",\n"
+      "      \"extensions\": [ \"txt\" ],\n"
+      "      \"selected\": false\n"
+      "   } ]\n"
+      "}\n",
+      PrettyPrintEscapedJson(url.query()));
 }
 
 }  // namespace

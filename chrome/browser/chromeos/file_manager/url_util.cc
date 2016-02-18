@@ -15,7 +15,10 @@ namespace file_manager {
 namespace util {
 namespace {
 
-const char kShouldReturnLocalPath[] = "shouldReturnLocalPath";
+const char kAllowedPaths[] = "allowedPaths";
+const char kNativePath[] = "nativePath";
+const char kNativeOrDrivePath[] = "nativeOrDrivePath";
+const char kAnyPath[] = "anyPath";
 
 // Returns a file manager URL for the given |path|.
 GURL GetFileManagerUrl(const char* path) {
@@ -111,22 +114,20 @@ GURL GetFileManagerMainPageUrlWithParams(
 
   // If the caller cannot handle Drive path, the file chooser dialog need to
   // return resolved local native paths to the selected files.
-  // TODO(hirono): Turns the boolean into enum to pass support virtual path info
-  // to Javascript.
   if (file_types) {
     switch (file_types->allowed_paths) {
       case ui::SelectFileDialog::FileTypeInfo::NATIVE_PATH:
-        arg_value.SetBoolean(kShouldReturnLocalPath, true);
+        arg_value.SetString(kAllowedPaths, kNativePath);
         break;
       case ui::SelectFileDialog::FileTypeInfo::NATIVE_OR_DRIVE_PATH:
-        arg_value.SetBoolean(kShouldReturnLocalPath, false);
+        arg_value.SetString(kAllowedPaths, kNativeOrDrivePath);
         break;
       case ui::SelectFileDialog::FileTypeInfo::ANY_PATH:
-        arg_value.SetBoolean(kShouldReturnLocalPath, false);
+        arg_value.SetString(kAllowedPaths, kAnyPath);
         break;
     }
   } else {
-    arg_value.SetBoolean(kShouldReturnLocalPath, true);
+    arg_value.SetString(kAllowedPaths, kNativePath);
   }
 
   std::string json_args;

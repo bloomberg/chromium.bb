@@ -61,10 +61,11 @@ function LaunchParam(unformatted) {
   this.includeAllFiles = !!unformatted['includeAllFiles'];
 
   /**
-   * @type {boolean}
+   * @type {!AllowedPaths}
    * @const
    */
-  this.shouldReturnLocalPath = !!unformatted['shouldReturnLocalPath'];
+  this.allowedPaths = unformatted['allowedPaths'] ?
+      unformatted['allowedPaths'] : AllowedPaths.ANY_PATH;
 
   /**
    * @type {!SuggestAppDialogState}

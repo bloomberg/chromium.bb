@@ -745,24 +745,27 @@ FileManager.prototype = /** @struct */ {
    * @private
    */
   FileManager.prototype.initVolumeManager_ = function() {
-    // Auto resolving to local path does not work for folders (e.g., dialog for
-    // loading unpacked extensions).
-    var noLocalPathResolution =
-        DialogType.isFolderDialog(this.launchParams_.type);
+    var allowedPaths = this.launchParams_.allowedPaths;
+    // Files.app native implementation create snapshot files for non-native
+    // files. But it does not work for folders (e.g., dialog for loading
+    // unpacked extensions).
+    if (allowedPaths === AllowedPaths.NATIVE_PATH &&
+        !DialogType.isFolderDialog(this.launchParams_.type) &&
+        this.launchParams_.type != DialogType.SELECT_SAVEAS_FILE) {
+      allowedPaths = AllowedPaths.ANY_PATH;
+    }
 
-    // If this condition is false, VolumeManagerWrapper hides all drive
-    // related event and data, even if Drive is enabled on preference.
+    // VolumeManagerWrapper hides virtual file system related event and data
+    // even depends on the value of |supportVirtualPath|. If it is
+    // VirtualPathSupport.NO_VIRTUAL_PATH, it hides Drive even if Drive is
+    // enabled on preference.
     // In other words, even if Drive is disabled on preference but Files.app
     // should show Drive when it is re-enabled, then the value should be set to
     // true.
     // Note that the Drive enabling preference change is listened by
     // DriveIntegrationService, so here we don't need to take care about it.
-    var nonNativeEnabled =
-        !noLocalPathResolution || !this.launchParams_.shouldReturnLocalPath;
     this.volumeManager_ = new VolumeManagerWrapper(
-        /** @type {VolumeManagerWrapper.NonNativeVolumeStatus} */
-        (nonNativeEnabled),
-        this.backgroundPage_);
+        allowedPaths, this.backgroundPage_);
   };
 
   /**

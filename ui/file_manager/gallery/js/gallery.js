@@ -1059,8 +1059,7 @@ var loadTimeDataPromise = new Promise(function(fulfill, reject) {
  * @type {!Promise}
  */
 var volumeManagerPromise = new Promise(function(fulfill, reject) {
-  var volumeManager = new VolumeManagerWrapper(
-      VolumeManagerWrapper.NonNativeVolumeStatus.ENABLED);
+  var volumeManager = new VolumeManagerWrapper(AllowedPaths.ANY_PATH);
   volumeManager.ensureInitialized(fulfill.bind(null, volumeManager));
 });
 

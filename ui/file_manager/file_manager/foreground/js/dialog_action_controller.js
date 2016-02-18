@@ -94,11 +94,11 @@ function DialogActionController(
   this.fileTypes_ = launchParam.typeList || [];
 
   /**
-   * @type {boolean}
+   * @type {!AllowedPaths}
    * @const
    * @private
    */
-  this.shouldReturnLocalPath_ = launchParam.shouldReturnLocalPath;
+  this.allowedPaths_ = launchParam.allowedPaths;
 
   /**
    * Bound function for onCancel_.
@@ -287,14 +287,14 @@ DialogActionController.prototype.selectFilesAndClose_ = function(selection) {
     if (selection.multiple) {
       chrome.fileManagerPrivate.selectFiles(
           selection.urls,
-          this.shouldReturnLocalPath_,
+          this.allowedPaths_ === AllowedPaths.NATIVE_PATH,
           onFileSelected);
     } else {
       chrome.fileManagerPrivate.selectFile(
           selection.urls[0],
           selection.filterIndex,
           this.dialogType_ !== DialogType.SELECT_SAVEAS_FILE /* for opening */,
-          this.shouldReturnLocalPath_,
+          this.allowedPaths_ === AllowedPaths.NATIVE_PATH,
           onFileSelected);
     }
   }.bind(this);
