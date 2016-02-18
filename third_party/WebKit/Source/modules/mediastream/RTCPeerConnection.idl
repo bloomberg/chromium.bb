@@ -99,11 +99,9 @@ enum RTCIceConnectionState {
     // https://w3c.github.io/webrtc-pc/#legacy-interface-extensions
     // These methods return or will be changed to return Promise<void> because
     // having Promise-based versions requires that all overloads return Promises.
-    // TODO(guidou): The failureCallback argument should be non-optional.
-    [CallWith=ExecutionContext, RaisesException] void createOffer(RTCSessionDescriptionCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback, optional Dictionary rtcOfferOptions);
-    // TODO(guidou): The failureCallback argument should be non-optional, and
-    // there should be no mediaConstraints argument.
-    [CallWith=ExecutionContext, RaisesException] void createAnswer(RTCSessionDescriptionCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback, optional Dictionary mediaConstraints);
+    [CallWith=ExecutionContext, RaisesException] void createOffer(RTCSessionDescriptionCallback successCallback, RTCErrorCallback failureCallback, optional Dictionary rtcOfferOptions);
+    // TODO(guidou): There should be no mediaConstraints argument.
+    [CallWith=ExecutionContext, RaisesException] void createAnswer(RTCSessionDescriptionCallback successCallback, RTCErrorCallback failureCallback, optional Dictionary mediaConstraints);
     [CallWith=ScriptState] Promise<void> setLocalDescription(RTCSessionDescription description, VoidCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback);
     // TODO(guidou): The failureCallback argument should be non-optional.
     [CallWith=ScriptState] Promise<void> setRemoteDescription(RTCSessionDescription description, VoidCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback);

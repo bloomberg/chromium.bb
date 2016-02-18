@@ -49,6 +49,7 @@ function setupPeerConnection(stream) {
       remotePeerConnection.createAnswer(function(description) {
         remotePeerConnection.setLocalDescription(description);
         localPeerConnection.setRemoteDescription(description);
+      }, function(error) {
       });
     }
 
@@ -77,6 +78,7 @@ function setupPeerConnection(stream) {
       localPeerConnection.setLocalDescription(description);
       remotePeerConnection.setRemoteDescription(description);
       createAnswer(description);
+    }, function(error) {
     });
 
     document.getElementById("video").src = URL.createObjectURL(localStream);

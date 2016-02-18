@@ -191,7 +191,7 @@ function setServerRemoteDescription() {
 }
 
 function afterSetServerRemoteDescription() {
-  pcServer.createAnswer(onServerAnswer);
+  pcServer.createAnswer(onServerAnswer, function(error) {});
 }
 
 function onServerAnswer(desc) {
