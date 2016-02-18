@@ -22,3 +22,24 @@ source_set("xdg_shell_protocol") {
 
   public_configs = [ ":xdg_shell_protocol_config" ]
 }
+
+config("scaler_protocol_config") {
+  include_dirs = [ "include/protocol" ]
+}
+
+source_set("scaler_protocol") {
+  sources = [
+    "include/protocol/scaler-client-protocol.h",
+    "include/protocol/scaler-server-protocol.h",
+    "protocol/scaler-protocol.c",
+  ]
+
+  deps = [
+    "//third_party/wayland:wayland_util",
+  ]
+
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+
+  public_configs = [ ":scaler_protocol_config" ]
+}

@@ -13,7 +13,7 @@ protocol either in Wayland core, or some other protocol in
 wayland-protocols.
 
 Modifications:
-- None
+- Added src/unstable/scaler/scaler.xml
 
 To import a new snapshot of wayland-protocols:
 - Checkout the latest release tag: git checkout 1.1
@@ -22,4 +22,7 @@ To import a new snapshot of wayland-protocols:
     wayland-scanner code < src/*/xdg-shell/xdg-shell*.xml > protocol/xdg-shell-protocol.c
     wayland-scanner server-header < src/unstable/xdg-shell/xdg-shell-unstable-v5.xml > include/protocol/xdg-shell-unstable-v5-server-protocol.h
     wayland-scanner client-header < src/unstable/xdg-shell/xdg-shell-unstable-v5.xml > include/protocol/xdg-shell-unstable-v5-client-protocol.h
+    wayland-scanner code < src/*/scaler/scaler.xml > protocol/scaler-protocol.c
+    wayland-scanner server-header < src/unstable/scaler/scaler.xml > include/protocol/scaler-server-protocol.h
+    wayland-scanner client-header < src/unstable/scaler/scaler.xml > include/protocol/scaler-client-protocol.h
 - Update this README to reflect the new version number.
