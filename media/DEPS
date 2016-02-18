@@ -8,7 +8,6 @@ include_rules = [
   "+jni",
   "+skia/ext",
   "+third_party/ffmpeg",
-  "+third_party/libwebm",
   "+third_party/libvpx_new",
   "+third_party/libyuv",
   "+third_party/opus",

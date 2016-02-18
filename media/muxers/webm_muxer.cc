@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/capture/webm_muxer.h"
+#include "media/muxers/webm_muxer.h"
 
 #include "base/bind.h"
 #include "media/audio/audio_parameters.h"
@@ -59,8 +59,8 @@ static double GetFrameRate(const scoped_refptr<VideoFrame>& video_frame) {
   const double kDefaultFrameRate = 30.0;
 
   double frame_rate = kDefaultFrameRate;
-  if (!video_frame->metadata()->GetDouble(
-          VideoFrameMetadata::FRAME_RATE, &frame_rate) ||
+  if (!video_frame->metadata()->GetDouble(VideoFrameMetadata::FRAME_RATE,
+                                          &frame_rate) ||
       frame_rate <= kZeroFrameRate ||
       frame_rate > media::limits::kMaxFramesPerSecond) {
     frame_rate = kDefaultFrameRate;

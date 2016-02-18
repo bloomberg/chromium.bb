@@ -22,7 +22,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/mime_util.h"
 #include "media/base/video_frame.h"
-#include "media/capture/webm_muxer.h"
+#include "media/muxers/webm_muxer.h"
 #include "third_party/WebKit/public/platform/WebMediaRecorderHandlerClient.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_FILTERS_LIBWEBM_MUXER_H_
-#define MEDIA_FILTERS_LIBWEBM_MUXER_H_
+#ifndef MEDIA_MUXERS_WEBM_MUXER_H_
+#define MEDIA_MUXERS_WEBM_MUXER_H_
 
 #include <stdint.h>
 
@@ -139,4 +139,4 @@ class MEDIA_EXPORT WebmMuxer : public NON_EXPORTED_BASE(mkvmuxer::IMkvWriter) {
 
 }  // namespace media
 
-#endif  // MEDIA_FILTERS_LIBWEBM_MUXER_H_
+#endif  // MEDIA_MUXERS_WEBM_MUXER_H_

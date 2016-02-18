@@ -13,7 +13,7 @@
 #include "media/audio/audio_parameters.h"
 #include "media/base/channel_layout.h"
 #include "media/base/video_frame.h"
-#include "media/capture/webm_muxer.h"
+#include "media/muxers/webm_muxer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -41,11 +41,11 @@ struct kTestParams {
 class WebmMuxerTest : public TestWithParam<kTestParams> {
  public:
   WebmMuxerTest()
-      : webm_muxer_(GetParam().codec,
-                    GetParam().num_video_tracks,
-                    GetParam().num_audio_tracks,
-                    base::Bind(&WebmMuxerTest::WriteCallback,
-                               base::Unretained(this))),
+      : webm_muxer_(
+            GetParam().codec,
+            GetParam().num_video_tracks,
+            GetParam().num_audio_tracks,
+            base::Bind(&WebmMuxerTest::WriteCallback, base::Unretained(this))),
         last_encoded_length_(0),
         accumulated_position_(0) {
     EXPECT_EQ(webm_muxer_.Position(), 0);
@@ -110,8 +110,7 @@ TEST_P(WebmMuxerTest, OnEncodedVideoTwoFrames) {
           WithArgs<0>(Invoke(this, &WebmMuxerTest::SaveEncodedDataLen)));
   webm_muxer_.OnEncodedVideo(video_frame,
                              make_scoped_ptr(new std::string(encoded_data)),
-                             base::TimeTicks::Now(),
-                             false  /* keyframe */);
+                             base::TimeTicks::Now(), false /* keyframe */);
 
   // First time around WriteCallback() is pinged a number of times to write the
   // Matroska header, but at the end it dumps |encoded_data|.
@@ -127,8 +126,7 @@ TEST_P(WebmMuxerTest, OnEncodedVideoTwoFrames) {
           WithArgs<0>(Invoke(this, &WebmMuxerTest::SaveEncodedDataLen)));
   webm_muxer_.OnEncodedVideo(video_frame,
                              make_scoped_ptr(new std::string(encoded_data)),
-                             base::TimeTicks::Now(),
-                             false  /* keyframe */);
+                             base::TimeTicks::Now(), false /* keyframe */);
 
   // The second time around the callbacks should include a SimpleBlock header,
   // namely the track index, a timestamp and a flags byte, for a total of 6B.
