@@ -159,10 +159,6 @@ DesktopAutomationHandler.prototype = {
    * @param {Object} evt
    */
   onLoadComplete: function(evt) {
-    if (evt.target.docUrl.indexOf(
-        'chrome-extension://mndnfokpggljbaajbnioimlmbfngpief/' +
-            'cvox2/background/panel.html') == 0)
-      return;
     ChromeVoxState.instance.refreshMode(evt.target.docUrl);
 
     // Don't process nodes inside of web content if ChromeVox Next is inactive.

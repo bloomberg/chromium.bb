@@ -517,7 +517,7 @@ Background.prototype = {
         return true;
       case 'openChromeVoxMenus':
         (new PanelCommand(PanelCommandType.OPEN_MENUS)).send();
-        break;
+        return false;
       case 'decreaseTtsRate':
         this.increaseOrDecreaseSpeechProperty_(cvox.AbstractTts.RATE, false);
         break;
