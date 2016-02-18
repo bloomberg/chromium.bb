@@ -1788,9 +1788,9 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_WEBFONTS_INTERVENTION_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebFontsIntervention)},
     {"enable-webfonts-intervention-trigger",
-      IDS_FLAGS_ENABLE_WEBFONTS_INTERVENTION_TRIGGER_NAME,
-      IDS_FLAGS_ENABLE_WEBFONTS_INTERVENTION_TRIGGER_DESCRIPTION, kOsAll,
-      SINGLE_VALUE_TYPE(switches::kEnableWebFontsInterventionTrigger)},
+     IDS_FLAGS_ENABLE_WEBFONTS_INTERVENTION_TRIGGER_NAME,
+     IDS_FLAGS_ENABLE_WEBFONTS_INTERVENTION_TRIGGER_DESCRIPTION, kOsAll,
+     SINGLE_VALUE_TYPE(switches::kEnableWebFontsInterventionTrigger)},
     {"enable-grouped-history", IDS_FLAGS_ENABLE_GROUPED_HISTORY_NAME,
      IDS_FLAGS_ENABLE_GROUPED_HISTORY_DESCRIPTION, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kHistoryEnableGroupByDomain)},
@@ -1817,7 +1817,11 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAG_ENABLE_AUDIO_FOR_DESKTOP_SHARE_DESCRIPTION,
      kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableAudioSupportForDesktopShare)},
-
+#if defined(ENABLE_EXTENSIONS)
+    {"enable-tab-for-desktop-share", IDS_FLAG_ENABLE_TAB_FOR_DESKTOP_SHARE,
+     IDS_FLAG_ENABLE_TAB_FOR_DESKTOP_SHARE_DESCRIPTION, kOsAll,
+     SINGLE_VALUE_TYPE(extensions::switches::kEnableTabForDesktopShare)}
+#endif
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

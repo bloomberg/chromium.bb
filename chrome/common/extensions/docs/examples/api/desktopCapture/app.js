@@ -4,7 +4,7 @@
 
 'use strict';
 
-const DESKTOP_MEDIA = ['screen', 'window', 'audio'];
+const DESKTOP_MEDIA = ['screen', 'window', 'tab', 'audio'];
 
 var pending_request_id = null;
 var pc1 = null;
@@ -79,7 +79,7 @@ function gotStream(stream) {
 
   pc1.addStream(stream);
 
-  pc1.createOffer(onCreateOfferSuccess);
+  pc1.createOffer(onCreateOfferSuccess, function() {});
 }
 
 function onCreateOfferSuccess(desc) {

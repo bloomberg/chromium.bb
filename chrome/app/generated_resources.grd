@@ -5993,6 +5993,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAG_ENABLE_AUDIO_FOR_DESKTOP_SHARE_DESCRIPTION" desc="Description for the flag to enable Audio Sharing.">
         With this flag on, desktop share picker window will let the user to choose whether to share audio.
       </message>
+      <message name="IDS_FLAG_ENABLE_TAB_FOR_DESKTOP_SHARE" desc="Title for the flag to enable tab for desktop share.">
+        Enable tab For Desktop Share.
+      </message>
+      <message name="IDS_FLAG_ENABLE_TAB_FOR_DESKTOP_SHARE_DESCRIPTION" desc="Description for the flag to enable tab for desktop share.">
+        Enables user to chose a tab for desktop share.
+      </message>
       <message name="IDS_TRACE_UPLOAD_URL_CHOICE_OTHER">
         Other
       </message>
