@@ -670,6 +670,9 @@ bool AXLayoutObject::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReason
     if (roleValue() == DetailsRole)
         return false;
 
+    if (roleValue() == MarkRole)
+        return false;
+
     if (roleValue() == MathRole)
         return false;
 
@@ -679,10 +682,10 @@ bool AXLayoutObject::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReason
     if (roleValue() == RubyRole)
         return false;
 
-    if (roleValue() == TimeRole)
+    if (roleValue() == SplitterRole)
         return false;
 
-    if (roleValue() == MarkRole)
+    if (roleValue() == TimeRole)
         return false;
 
     // if this element has aria attributes on it, it should not be ignored.
