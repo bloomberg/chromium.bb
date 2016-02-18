@@ -878,6 +878,10 @@ button[disabled] {
   display: flex;
 }
 
+.edit-modal .range:not(:last-child) {
+  -webkit-margin-end: 16px;
+}
+
 .edit-modal .range > .icon {
   -webkit-margin-end: 8px;
   display: block;
