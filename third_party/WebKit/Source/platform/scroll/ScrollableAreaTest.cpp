@@ -177,6 +177,9 @@ TEST_F(ScrollableAreaTest, ScrollbarGraphicsLayerInvalidation)
     graphicsLayer.resetTrackedPaintInvalidations();
     scrollbar->setNeedsPaintInvalidation(NoPart);
     EXPECT_TRUE(graphicsLayer.hasTrackedPaintInvalidations());
+
+    // Forced GC in order to finalize objects depending on the mock object.
+    Heap::collectAllGarbage();
 }
 
 TEST_F(ScrollableAreaTest, InvalidatesNonCompositedScrollbarsWhenThumbMoves)
