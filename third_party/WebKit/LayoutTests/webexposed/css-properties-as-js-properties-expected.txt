@@ -67,6 +67,9 @@ borderWidth
 bottom
 boxShadow
 boxSizing
+breakAfter
+breakBefore
+breakInside
 bufferedRendering
 captionSide
 clear

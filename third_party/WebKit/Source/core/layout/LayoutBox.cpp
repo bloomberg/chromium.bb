@@ -1867,8 +1867,8 @@ bool LayoutBox::hasForcedBreakBefore() const
     LayoutFlowThread* flowThread = flowThreadContainingBlock();
     bool checkColumnBreaks = flowThread;
     bool checkPageBreaks = !checkColumnBreaks && view()->layoutState()->pageLogicalHeight(); // TODO(mstensho): Once columns can print, we have to check this.
-    bool checkBeforeAlways = (checkColumnBreaks && style()->columnBreakBefore() == PBALWAYS)
-        || (checkPageBreaks && style()->pageBreakBefore() == PBALWAYS);
+    bool checkBeforeAlways = (checkColumnBreaks && style()->breakBefore() == BreakColumn)
+        || (checkPageBreaks && style()->breakBefore() == BreakPage);
     return checkBeforeAlways && isForcedBreakAllowed(this);
 }
 
@@ -1877,8 +1877,8 @@ bool LayoutBox::hasForcedBreakAfter() const
     LayoutFlowThread* flowThread = flowThreadContainingBlock();
     bool checkColumnBreaks = flowThread;
     bool checkPageBreaks = !checkColumnBreaks && view()->layoutState()->pageLogicalHeight(); // TODO(mstensho): Once columns can print, we have to check this.
-    bool checkAfterAlways = (checkColumnBreaks && style()->columnBreakAfter() == PBALWAYS)
-        || (checkPageBreaks && style()->pageBreakAfter() == PBALWAYS);
+    bool checkAfterAlways = (checkColumnBreaks && style()->breakAfter() == BreakColumn)
+        || (checkPageBreaks && style()->breakAfter() == BreakPage);
     return checkAfterAlways && isForcedBreakAllowed(this);
 }
 
@@ -4184,8 +4184,9 @@ LayoutBox::PaginationBreakability LayoutBox::paginationBreakability() const
 
     bool checkColumnBreaks = flowThreadContainingBlock();
     bool checkPageBreaks = !checkColumnBreaks && view()->layoutState()->pageLogicalHeight();
-    bool isUnsplittable = (checkColumnBreaks && style()->columnBreakInside() == PBAVOID)
-        || (checkPageBreaks && style()->pageBreakInside() == PBAVOID);
+    EBreak breakInside = style()->breakInside();
+    bool isUnsplittable = (checkColumnBreaks && (breakInside == BreakAvoid || breakInside == BreakAvoidColumn))
+        || (checkPageBreaks && (breakInside == BreakAvoid || breakInside == BreakAvoidPage));
     if (isUnsplittable)
         return AvoidBreaks;
     return AllowAnyBreaks;

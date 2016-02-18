@@ -153,6 +153,9 @@ border-top-width interpolable, initial=initialBorderWidth, converter=convertLine
 bottom interpolable, initial=initialOffset, converter=convertLengthOrAuto
 box-shadow interpolable, converter=convertShadow
 box-sizing
+break-after type_name=EBreak
+break-before type_name=EBreak
+break-inside type_name=EBreak
 buffered-rendering svg
 caption-side inherited
 clear
@@ -246,9 +249,6 @@ padding-bottom interpolable, initial=initialPadding, converter=convertLength
 padding-left interpolable, initial=initialPadding, converter=convertLength
 padding-right interpolable, initial=initialPadding, converter=convertLength
 padding-top interpolable, initial=initialPadding, converter=convertLength
-page-break-after type_name=EPageBreak, initial=initialPageBreak
-page-break-before type_name=EPageBreak, initial=initialPageBreak
-page-break-inside type_name=EPageBreak, initial=initialPageBreak
 paint-order inherited, svg, converter=convertPaintOrder
 perspective interpolable, converter=convertPerspective
 perspective-origin interpolable, converter=convertPosition
@@ -337,9 +337,6 @@ y interpolable, svg, converter=convertLength
 -webkit-box-pack
 -webkit-box-reflect converter=convertBoxReflect
 -webkit-clip-path interpolable, custom_value
--webkit-column-break-after type_name=EPageBreak, initial=initialPageBreak
--webkit-column-break-before type_name=EPageBreak, initial=initialPageBreak
--webkit-column-break-inside type_name=EPageBreak, initial=initialPageBreak
 -webkit-column-count interpolable, type_name=unsigned short, custom_all
 -webkit-column-gap interpolable, converter=convertComputedLength<float>, custom_all
 -webkit-column-rule-color interpolable, custom_all
@@ -477,11 +474,17 @@ motion longhands=motion-path;motion-offset;motion-rotation
 outline longhands=outline-color;outline-style;outline-width
 overflow longhands=overflow-x;overflow-y
 padding longhands=padding-top;padding-right;padding-bottom;padding-left
+page-break-after longhands=break-after
+page-break-before longhands=break-before
+page-break-inside longhands=break-inside
 transition longhands=transition-property;transition-duration;transition-timing-function;transition-delay
 -webkit-border-after longhands=-webkit-border-after-width;-webkit-border-after-style;-webkit-border-after-color
 -webkit-border-before longhands=-webkit-border-before-width;-webkit-border-before-style;-webkit-border-before-color
 -webkit-border-end longhands=-webkit-border-end-width;-webkit-border-end-style;-webkit-border-end-color
 -webkit-border-start longhands=-webkit-border-start-width;-webkit-border-start-style;-webkit-border-start-color
+-webkit-column-break-after longhands=break-after
+-webkit-column-break-before longhands=break-before
+-webkit-column-break-inside longhands=break-inside
 -webkit-column-rule longhands=-webkit-column-rule-width;-webkit-column-rule-style;-webkit-column-rule-color
 -webkit-columns longhands=-webkit-column-width;-webkit-column-count
 -webkit-margin-collapse longhands=-webkit-margin-before-collapse;-webkit-margin-after-collapse

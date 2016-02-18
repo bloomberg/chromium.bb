@@ -1069,3 +1069,10 @@ auto-fit
 
 var
 -internal-variable-value
+
+// break-before, break-after, break-inside
+avoid-page
+page
+recto
+verso
+avoid-column

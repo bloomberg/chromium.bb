@@ -191,6 +191,8 @@ private:
 
     bool consumeFlex(bool important);
 
+    bool consumeLegacyBreakProperty(CSSPropertyID, bool important);
+
     // Image generators
     bool parseDeprecatedGradient(CSSParserValueList*, RefPtrWillBeRawPtr<CSSValue>&);
     bool parseDeprecatedLinearGradient(CSSParserValueList*, RefPtrWillBeRawPtr<CSSValue>&, CSSGradientRepeat repeating);

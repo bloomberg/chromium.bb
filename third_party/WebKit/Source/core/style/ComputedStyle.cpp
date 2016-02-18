@@ -67,7 +67,7 @@ struct SameSizeAsComputedStyle : public RefCounted<SameSizeAsComputedStyle> {
     } inherited_flags;
 
     struct NonInheritedFlags {
-        unsigned m_bitfields[2];
+        unsigned m_bitfields[3];
     } noninherited_flags;
 };
 
@@ -109,7 +109,7 @@ ALWAYS_INLINE ComputedStyle::ComputedStyle()
 {
     setBitDefaults(); // Would it be faster to copy this from the default style?
     static_assert((sizeof(InheritedFlags) <= 8), "InheritedFlags should not grow");
-    static_assert((sizeof(NonInheritedFlags) <= 8), "NonInheritedFlags should not grow");
+    static_assert((sizeof(NonInheritedFlags) <= 12), "NonInheritedFlags should not grow");
 }
 
 ALWAYS_INLINE ComputedStyle::ComputedStyle(InitialStyleTag)
@@ -290,9 +290,9 @@ void ComputedStyle::copyNonInheritedFromCached(const ComputedStyle& other)
     noninherited_flags.tableLayout = other.noninherited_flags.tableLayout;
     noninherited_flags.unicodeBidi = other.noninherited_flags.unicodeBidi;
     noninherited_flags.hasViewportUnits = other.noninherited_flags.hasViewportUnits;
-    noninherited_flags.pageBreakBefore = other.noninherited_flags.pageBreakBefore;
-    noninherited_flags.pageBreakAfter = other.noninherited_flags.pageBreakAfter;
-    noninherited_flags.pageBreakInside = other.noninherited_flags.pageBreakInside;
+    noninherited_flags.breakBefore = other.noninherited_flags.breakBefore;
+    noninherited_flags.breakAfter = other.noninherited_flags.breakAfter;
+    noninherited_flags.breakInside = other.noninherited_flags.breakInside;
     noninherited_flags.hasRemUnits = other.noninherited_flags.hasRemUnits;
 
     // Correctly set during selector matching:

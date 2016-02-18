@@ -22,9 +22,6 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 -webkit-box-pack: start
 -webkit-box-reflect: none
 -webkit-clip-path: none
--webkit-column-break-after: auto
--webkit-column-break-before: auto
--webkit-column-break-inside: auto
 -webkit-column-count: auto
 -webkit-column-gap: normal
 -webkit-column-rule-color: rgb(0, 0, 0)
@@ -124,6 +121,9 @@ border-top-width: 0px
 bottom: auto
 box-shadow: none
 box-sizing: content-box
+break-after: auto
+break-before: auto
+break-inside: auto
 buffered-rendering: auto
 caption-side: top
 clear: none
@@ -224,9 +224,6 @@ padding-bottom: 0px
 padding-left: 0px
 padding-right: 0px
 padding-top: 0px
-page-break-after: auto
-page-break-before: auto
-page-break-inside: auto
 paint-order: fill stroke markers
 perspective: none
 perspective-origin: 0px 0px

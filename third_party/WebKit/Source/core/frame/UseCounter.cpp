@@ -552,6 +552,9 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyContain: return 517;
     case CSSPropertyD: return 518;
     case CSSPropertySnapHeight: return 519;
+    case CSSPropertyBreakAfter: return 520;
+    case CSSPropertyBreakBefore: return 521;
+    case CSSPropertyBreakInside: return 522;
 
     // 1. Add new features above this line (don't change the assigned numbers of the existing
     // items).
@@ -568,7 +571,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     return 0;
 }
 
-static int maximumCSSSampleId() { return 519; }
+static int maximumCSSSampleId() { return 522; }
 
 static EnumerationHistogram& featureObserverHistogram()
 {

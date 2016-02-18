@@ -1755,41 +1755,78 @@ template<> inline EOverflow CSSPrimitiveValue::convertTo() const
     return OVISIBLE;
 }
 
-template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EPageBreak e)
+template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EBreak e)
     : CSSValue(PrimitiveClass)
 {
     init(UnitType::ValueID);
     switch (e) {
-    case PBAUTO:
+    default:
+        ASSERT_NOT_REACHED();
+    case BreakAuto:
         m_value.valueID = CSSValueAuto;
         break;
-    case PBALWAYS:
+    case BreakAlways:
         m_value.valueID = CSSValueAlways;
         break;
-    case PBAVOID:
+    case BreakAvoid:
         m_value.valueID = CSSValueAvoid;
+        break;
+    case BreakAvoidPage:
+        m_value.valueID = CSSValueAvoidPage;
+        break;
+    case BreakPage:
+        m_value.valueID = CSSValuePage;
+        break;
+    case BreakLeft:
+        m_value.valueID = CSSValueLeft;
+        break;
+    case BreakRight:
+        m_value.valueID = CSSValueRight;
+        break;
+    case BreakRecto:
+        m_value.valueID = CSSValueRecto;
+        break;
+    case BreakVerso:
+        m_value.valueID = CSSValueVerso;
+        break;
+    case BreakAvoidColumn:
+        m_value.valueID = CSSValueAvoidColumn;
+        break;
+    case BreakColumn:
+        m_value.valueID = CSSValueColumn;
         break;
     }
 }
 
-template<> inline EPageBreak CSSPrimitiveValue::convertTo() const
+template<> inline EBreak CSSPrimitiveValue::convertTo() const
 {
     ASSERT(isValueID());
     switch (m_value.valueID) {
-    case CSSValueAuto:
-        return PBAUTO;
-    case CSSValueLeft:
-    case CSSValueRight:
-    case CSSValueAlways:
-        return PBALWAYS; // CSS2.1: "Conforming user agents may map left/right to always."
-    case CSSValueAvoid:
-        return PBAVOID;
     default:
-        break;
+        ASSERT_NOT_REACHED();
+    case CSSValueAuto:
+        return BreakAuto;
+    case CSSValueAvoid:
+        return BreakAvoid;
+    case CSSValueAlways:
+        return BreakAlways;
+    case CSSValueAvoidPage:
+        return BreakAvoidPage;
+    case CSSValuePage:
+        return BreakPage;
+    case CSSValueLeft:
+        return BreakLeft;
+    case CSSValueRight:
+        return BreakRight;
+    case CSSValueRecto:
+        return BreakRecto;
+    case CSSValueVerso:
+        return BreakVerso;
+    case CSSValueAvoidColumn:
+        return BreakAvoidColumn;
+    case CSSValueColumn:
+        return BreakColumn;
     }
-
-    ASSERT_NOT_REACHED();
-    return PBAUTO;
 }
 
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EPosition e)

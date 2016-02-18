@@ -1323,6 +1323,45 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForScrollSnapCoordinate(const Vecto
     return list.release();
 }
 
+static EBreak mapToPageBreakValue(EBreak genericBreakValue)
+{
+    switch (genericBreakValue) {
+    case BreakAvoidColumn:
+    case BreakColumn:
+    case BreakRecto:
+    case BreakVerso:
+        return BreakAuto;
+    case BreakLeft:
+    case BreakRight:
+        // TODO(mstensho): "left" and "right" should simply be mapped to that, not "always", according to spec.
+    case BreakPage:
+        return BreakAlways;
+    case BreakAvoidPage:
+        return BreakAvoid;
+    default:
+        return genericBreakValue;
+    }
+}
+
+static EBreak mapToColumnBreakValue(EBreak genericBreakValue)
+{
+    switch (genericBreakValue) {
+    case BreakAvoidPage:
+    case BreakLeft:
+    case BreakPage:
+    case BreakRecto:
+    case BreakRight:
+    case BreakVerso:
+        return BreakAuto;
+    case BreakColumn:
+        return BreakAlways;
+    case BreakAvoidColumn:
+        return BreakAvoid;
+    default:
+        return genericBreakValue;
+    }
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(const AtomicString customPropertyName, const ComputedStyle& style)
 {
     StyleVariableData* variables = style.variables();
@@ -1537,11 +1576,11 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyWebkitColumnSpan:
         return cssValuePool().createIdentifierValue(style.columnSpan() ? CSSValueAll : CSSValueNone);
     case CSSPropertyWebkitColumnBreakAfter:
-        return cssValuePool().createValue(style.columnBreakAfter());
+        return cssValuePool().createValue(mapToColumnBreakValue(style.breakAfter()));
     case CSSPropertyWebkitColumnBreakBefore:
-        return cssValuePool().createValue(style.columnBreakBefore());
+        return cssValuePool().createValue(mapToColumnBreakValue(style.breakBefore()));
     case CSSPropertyWebkitColumnBreakInside:
-        return cssValuePool().createValue(style.columnBreakInside());
+        return cssValuePool().createValue(mapToColumnBreakValue(style.breakInside()));
     case CSSPropertyWebkitColumnWidth:
         if (style.hasAutoColumnWidth())
             return cssValuePool().createIdentifierValue(CSSValueAuto);
@@ -1884,17 +1923,18 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
             return zoomAdjustedPixelValueForLength(paddingLeft, style);
         return zoomAdjustedPixelValue(toLayoutBox(layoutObject)->computedCSSPaddingLeft(), style);
     }
+    case CSSPropertyBreakAfter:
+        return cssValuePool().createValue(style.breakAfter());
+    case CSSPropertyBreakBefore:
+        return cssValuePool().createValue(style.breakBefore());
+    case CSSPropertyBreakInside:
+        return cssValuePool().createValue(style.breakInside());
     case CSSPropertyPageBreakAfter:
-        return cssValuePool().createValue(style.pageBreakAfter());
+        return cssValuePool().createValue(mapToPageBreakValue(style.breakAfter()));
     case CSSPropertyPageBreakBefore:
-        return cssValuePool().createValue(style.pageBreakBefore());
-    case CSSPropertyPageBreakInside: {
-        EPageBreak pageBreak = style.pageBreakInside();
-        ASSERT(pageBreak != PBALWAYS);
-        if (pageBreak == PBALWAYS)
-            return nullptr;
-        return cssValuePool().createValue(style.pageBreakInside());
-    }
+        return cssValuePool().createValue(mapToPageBreakValue(style.breakBefore()));
+    case CSSPropertyPageBreakInside:
+        return cssValuePool().createValue(mapToPageBreakValue(style.breakInside()));
     case CSSPropertyPosition:
         return cssValuePool().createValue(style.position());
     case CSSPropertyQuotes:

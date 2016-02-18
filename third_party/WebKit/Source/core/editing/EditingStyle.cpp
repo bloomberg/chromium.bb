@@ -603,6 +603,9 @@ PassRefPtrWillBeRawPtr<EditingStyle> EditingStyle::copy() const
 
 // This is the list of CSS properties that apply specially to block-level elements.
 static const CSSPropertyID staticBlockProperties[] = {
+    CSSPropertyBreakAfter,
+    CSSPropertyBreakBefore,
+    CSSPropertyBreakInside,
     CSSPropertyOrphans,
     CSSPropertyOverflow, // This can be also be applied to replaced elements
     CSSPropertyWebkitColumnCount,

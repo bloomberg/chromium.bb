@@ -4273,6 +4273,99 @@ bool CSSPropertyParser::consumeBorderImage(CSSPropertyID property, bool importan
     return false;
 }
 
+static inline CSSValueID mapFromPageBreakBetween(CSSValueID value)
+{
+    if (value == CSSValueAlways)
+        return CSSValuePage;
+    // TODO(mstensho): "avoid" should just return "avoid", not "avoid-page", according to the spec.
+    if (value == CSSValueAvoid)
+        return CSSValueAvoidPage;
+    if (value == CSSValueAuto || value == CSSValueLeft || value == CSSValueRight)
+        return value;
+    return CSSValueInvalid;
+}
+
+static inline CSSValueID mapFromColumnBreakBetween(CSSValueID value)
+{
+    if (value == CSSValueAlways)
+        return CSSValueColumn;
+    // TODO(mstensho): "avoid" should just return "avoid", not "avoid-column".
+    if (value == CSSValueAvoid)
+        return CSSValueAvoidColumn;
+    // TODO(mstensho): column break properties shouldn't take 'left' and 'right' values (but
+    // allowing it for now, since that's what we've always done).
+    if (value == CSSValueAuto || value == CSSValueLeft || value == CSSValueRight)
+        return value;
+    return CSSValueInvalid;
+}
+
+static inline CSSValueID mapFromPageBreakInside(CSSValueID value)
+{
+    // TODO(mstensho): "avoid" should just return "avoid", not "avoid-page", according to the spec.
+    if (value == CSSValueAvoid)
+        return CSSValueAvoidPage;
+    if (value == CSSValueAuto)
+        return value;
+    return CSSValueInvalid;
+}
+
+static inline CSSValueID mapFromColumnBreakInside(CSSValueID value)
+{
+    // TODO(mstensho): "avoid" should just return "avoid", not "avoid-column".
+    if (value == CSSValueAvoid)
+        return CSSValueAvoidColumn;
+    if (value == CSSValueAuto)
+        return value;
+    return CSSValueInvalid;
+}
+
+static inline CSSPropertyID mapFromLegacyBreakProperty(CSSPropertyID property)
+{
+    if (property == CSSPropertyPageBreakAfter || property == CSSPropertyWebkitColumnBreakAfter)
+        return CSSPropertyBreakAfter;
+    if (property == CSSPropertyPageBreakBefore || property == CSSPropertyWebkitColumnBreakBefore)
+        return CSSPropertyBreakBefore;
+    ASSERT(property == CSSPropertyPageBreakInside || property == CSSPropertyWebkitColumnBreakInside);
+    return CSSPropertyBreakInside;
+}
+
+bool CSSPropertyParser::consumeLegacyBreakProperty(CSSPropertyID property, bool important)
+{
+    // The fragmentation spec says that page-break-(after|before|inside) are to be treated as
+    // shorthands for their break-(after|before|inside) counterparts. We'll do the same for the
+    // non-standard properties -webkit-column-break-(after|before|inside).
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> keyword = consumeIdent(m_range);
+    if (!keyword)
+        return false;
+    if (!m_range.atEnd())
+        return false;
+    CSSValueID value = keyword->getValueID();
+    switch (property) {
+    case CSSPropertyPageBreakAfter:
+    case CSSPropertyPageBreakBefore:
+        value = mapFromPageBreakBetween(value);
+        break;
+    case CSSPropertyWebkitColumnBreakAfter:
+    case CSSPropertyWebkitColumnBreakBefore:
+        value = mapFromColumnBreakBetween(value);
+        break;
+    case CSSPropertyPageBreakInside:
+        value = mapFromPageBreakInside(value);
+        break;
+    case CSSPropertyWebkitColumnBreakInside:
+        value = mapFromColumnBreakInside(value);
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+    }
+    if (value == CSSValueInvalid)
+        return false;
+
+    CSSPropertyID genericBreakProperty = mapFromLegacyBreakProperty(property);
+    addProperty(genericBreakProperty, cssValuePool().createIdentifierValue(value), important);
+    return true;
+}
+
 bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool important)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
@@ -4407,6 +4500,13 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool im
     case CSSPropertyBorderImage:
     case CSSPropertyWebkitMaskBoxImage:
         return consumeBorderImage(property, important);
+    case CSSPropertyPageBreakAfter:
+    case CSSPropertyPageBreakBefore:
+    case CSSPropertyPageBreakInside:
+    case CSSPropertyWebkitColumnBreakAfter:
+    case CSSPropertyWebkitColumnBreakBefore:
+    case CSSPropertyWebkitColumnBreakInside:
+        return consumeLegacyBreakProperty(property, important);
     default:
         m_currentShorthand = oldShorthand;
         CSSParserValueList valueList(m_range);

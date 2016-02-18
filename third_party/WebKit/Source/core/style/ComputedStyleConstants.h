@@ -321,8 +321,22 @@ enum TextUnderlinePosition {
     TextUnderlinePositionUnder
 };
 
-enum EPageBreak {
-    PBAUTO, PBALWAYS, PBAVOID
+enum EBreak {
+    BreakAuto,
+    BreakAvoid,
+    BreakAvoidColumn,
+    BreakAvoidPage,
+    // Values below are only allowed for break-after and break-before. Values above are also
+    // allowed for break-inside (in addition to break-after and break-before).
+    BreakValueLastAllowedForBreakInside = BreakAvoidPage,
+    BreakColumn,
+    BreakLeft,
+    BreakPage,
+    BreakRecto,
+    BreakRight,
+    BreakVerso,
+    BreakValueLastAllowedForBreakAfterAndBefore = BreakVerso,
+    BreakAlways // Only needed by {page,-webkit-column}-break-{after,before} shorthands.
 };
 
 enum EEmptyCell {
