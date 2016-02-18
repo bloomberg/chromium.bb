@@ -80,6 +80,7 @@
 #include "core/paint/FramePainter.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintPropertyTreeBuilder.h"
+#include "core/plugins/PluginView.h"
 #include "core/style/ComputedStyle.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGSVGElement.h"
@@ -2435,6 +2436,7 @@ void FrameView::scheduleVisualUpdateForPaintInvalidationIfNeeded()
     // Otherwise the paint invalidation will be handled in paint invalidation phase of this cycle.
 }
 
+// TODO(leviw): We don't assert lifecycle information from documents in child PluginViews.
 void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases)
 {
     Optional<TemporaryChange<bool>> isUpdatingAllLifecyclePhasesScope;
@@ -2621,6 +2623,17 @@ void FrameView::updateStyleAndLayoutIfNeededRecursive()
 
     if (needsLayout())
         layout();
+
+    // WebView plugins need to update regardless of whether the LayoutEmbeddedObject
+    // that owns them needed layout.
+    // TODO(leviw): This currently runs the entire lifecycle on plugin WebViews. We
+    // should have a way to only run these other Documents to the same lifecycle stage
+    // as this frame.
+    const ChildrenWidgetSet* viewChildren = children();
+    for (const RefPtrWillBeMember<Widget>& child : *viewChildren) {
+        if ((*child).isPluginContainer())
+            toPluginView(child.get())->layoutIfNeeded();
+    }
 
     // FIXME: Calling layout() shouldn't trigger script execution or have any
     // observable effects on the frame tree but we're not quite there yet.
