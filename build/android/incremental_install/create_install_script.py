@@ -37,13 +37,15 @@ def _ResolvePath(path):
 # Exported to allow test runner to be able to install incremental apks.
 def GetInstallParameters():
   apk_path = {apk_path}
-  native_libs = {native_libs}
   dex_files = {dex_files}
-  splits = {splits}
+  dont_even_try = {dont_even_try}
+  native_libs = {native_libs}
   show_proguard_warning = {show_proguard_warning}
+  splits = {splits}
 
   return dict(apk_path=_ResolvePath(apk_path),
               dex_files=[_ResolvePath(p) for p in dex_files],
+              dont_even_try=dont_even_try,
               native_libs=[_ResolvePath(p) for p in native_libs],
               show_proguard_warning=show_proguard_warning,
               splits=[_ResolvePath(p) for p in splits])
@@ -64,6 +66,8 @@ def main():
   for split in params['splits']:
     cmd_args.extend(('--split', split))
   cmd_args.append(params['apk_path'])
+  if params['dont_even_try']:
+    cmd_args.extend(('--dont-even-try', params['dont_even_try']))
   if params['show_proguard_warning']:
     cmd_args.append('--show-proguard-warning')
   return subprocess.call(cmd_args + sys.argv[1:])
@@ -108,6 +112,8 @@ def _ParseArgs(args):
                       action='store_true',
                       default=False,
                       help='Print a warning about proguard being disabled')
+  parser.add_argument('--dont-even-try',
+                      help='Prints this message and exits.')
 
   options = parser.parse_args(args)
   options.dex_files += build_utils.ParseGypList(options.dex_file_list)
@@ -134,6 +140,7 @@ def main(args):
       'output_directory': pformat(relativize(options.output_directory)),
       'native_libs': pformat([relativize(p) for p in options.native_libs]),
       'dex_files': pformat([relativize(p) for p in options.dex_files]),
+      'dont_even_try': pformat(options.dont_even_try),
       'show_proguard_warning': pformat(options.show_proguard_warning),
       'splits': pformat([relativize(p) for p in options.splits]),
   }

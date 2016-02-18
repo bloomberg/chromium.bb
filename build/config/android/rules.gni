@@ -1919,6 +1919,9 @@ template("android_apk") {
     if (_create_language_splits) {
       args += [ "--split=${_rebased_apk_path_no_ext}-language-*.apk" ]
     }
+    if (_load_library_from_apk) {
+      args += [ "--dont-even-try=Incremental builds do not work with load_library_from_apk. Try setting is_component_build=true in your GN args." ]
+    }
   }
 
   group(target_name) {

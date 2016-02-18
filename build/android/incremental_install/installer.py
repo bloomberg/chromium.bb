@@ -262,6 +262,8 @@ def main():
                       action='store_true',
                       default=False,
                       help='Print a warning about proguard being disabled')
+  parser.add_argument('--dont-even-try',
+                      help='Prints this message and exits.')
   parser.add_argument('-v',
                       '--verbose',
                       dest='verbose_count',
@@ -277,6 +279,10 @@ def main():
     constants.SetOutputDirectory(args.output_directory)
 
   devil_chromium.Initialize(output_directory=constants.GetOutDirectory())
+
+  if args.dont_even_try:
+    logging.fatal(args.dont_even_try)
+    return 1
 
   if args.device:
     # Retries are annoying when commands fail for legitimate reasons. Might want
