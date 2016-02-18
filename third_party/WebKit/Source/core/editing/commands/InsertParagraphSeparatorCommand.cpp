@@ -193,7 +193,9 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
     // Adjust the insertion position after the delete
     const Position originalInsertionPosition = insertionPosition;
     const Element* enclosingAnchor = enclosingAnchorElement(originalInsertionPosition);
-    insertionPosition = positionAvoidingSpecialElementBoundary(insertionPosition, ASSERT_NO_EDITING_ABORT);
+    insertionPosition = positionAvoidingSpecialElementBoundary(insertionPosition, editingState);
+    if (editingState->isAborted())
+        return;
     if (listChild == enclosingAnchor) {
         // |positionAvoidingSpecialElementBoundary()| creates new A element and
         // move to another place.
@@ -329,7 +331,10 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
         // Recreate the same structure in the new paragraph.
 
         WillBeHeapVector<RefPtrWillBeMember<Element>> ancestors;
-        getAncestorsInsideBlock(positionAvoidingSpecialElementBoundary(positionOutsideTabSpan(insertionPosition), ASSERT_NO_EDITING_ABORT).anchorNode(), startBlock.get(), ancestors);
+        insertionPosition = positionAvoidingSpecialElementBoundary(positionOutsideTabSpan(insertionPosition), editingState);
+        if (editingState->isAborted())
+            return;
+        getAncestorsInsideBlock(insertionPosition.anchorNode(), startBlock.get(), ancestors);
 
         RefPtrWillBeRawPtr<Element> placeholder = cloneHierarchyUnderNewBlock(ancestors, blockToInsert, editingState);
         if (editingState->isAborted())

@@ -1154,7 +1154,9 @@ void ApplyStyleCommand::pushDownInlineStyleAroundNode(EditingStyle* style, Node*
                     element->removeAttribute(HTMLNames::idAttr);
                     if (isHTMLAnchorElement(element))
                         element->removeAttribute(HTMLNames::nameAttr);
-                    surroundNodeRangeWithElement(child, child, wrapper, ASSERT_NO_EDITING_ABORT);
+                    surroundNodeRangeWithElement(child, child, wrapper, editingState);
+                    if (editingState->isAborted())
+                        return;
                 }
             }
 
