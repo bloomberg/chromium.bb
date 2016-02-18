@@ -75,6 +75,14 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
     base::FilePath exe_file;
     CHECK(PathService::Get(base::FILE_EXE, &exe_file));
 
+    bool is_per_user_install =
+        crash_reporter_client->GetIsPerUserInstall(exe_file);
+    if (crash_reporter_client->GetShouldDumpLargerDumps(is_per_user_install)) {
+      crashpad::CrashpadInfo::GetCrashpadInfo()
+          ->set_gather_indirectly_referenced_memory(
+              crashpad::TriState::kEnabled);
+    }
+
     // If the handler is embedded in the binary (e.g. chrome, setup), we
     // reinvoke it with --type=crashpad-handler. Otherwise, we use the
     // standalone crashpad_handler.exe (for tests, etc.).
