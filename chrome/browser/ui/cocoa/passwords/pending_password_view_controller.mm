@@ -109,15 +109,17 @@ const SkColor kWarmWelcomeColor = SkColorSetRGB(0x64, 0x64, 0x64);
 
   base::scoped_nsobject<NSTextField> warm_welcome;
   if ([self shouldShowGoogleSmartLockWelcome]) {
-    NSString* label_text =
-        l10n_util::GetNSString(IDS_PASSWORD_MANAGER_SMART_LOCK_WELCOME);
-    warm_welcome.reset([[self addLabel:label_text
-                                toView:view] retain]);
+    base::string16 label_text =
+        l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SMART_LOCK_WELCOME);
+    warm_welcome.reset([[NSTextField alloc] initWithFrame:NSZeroRect]);
+    InitLabel(warm_welcome.get(), label_text);
+    [[warm_welcome cell] setWraps:YES];
     [warm_welcome setFrameSize:NSMakeSize(kDesiredBubbleWidth - 2*kFramePadding,
                                           MAXFLOAT)];
     [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:warm_welcome];
-    NSColor* color = skia::SkColorToCalibratedNSColor(kWarmWelcomeColor);
+    NSColor* color = skia::SkColorToSRGBNSColor(kWarmWelcomeColor);
     [warm_welcome setTextColor:color];
+    [view addSubview:warm_welcome.get()];
   }
 
   NSArray* buttons = [self createButtonsAndAddThemToView:view];

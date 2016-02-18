@@ -31,7 +31,6 @@ class ManagePasswordsBubbleModel;
                 target:(id)target
                 action:(SEL)action;
 - (NSTextField*)addTitleLabel:(NSString*)title toView:(NSView*)view;
-- (NSTextField*)addLabel:(NSString*)title toView:(NSView*)view;
 - (void)bubbleWillDisappear;
 
 // Returns the default button for the bubble.
