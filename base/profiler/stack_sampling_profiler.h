@@ -113,6 +113,7 @@ class BASE_EXPORT StackSamplingProfiler {
   // CallStackProfile represents a set of samples.
   struct BASE_EXPORT CallStackProfile {
     CallStackProfile();
+    CallStackProfile(const CallStackProfile& other);
     ~CallStackProfile();
 
     std::vector<Module> modules;

@@ -29,6 +29,8 @@ ProcessMemoryMaps::VMRegion::VMRegion()
       byte_stats_proportional_resident(0) {
 }
 
+ProcessMemoryMaps::VMRegion::VMRegion(const VMRegion& other) = default;
+
 ProcessMemoryMaps::ProcessMemoryMaps() {
 }
 

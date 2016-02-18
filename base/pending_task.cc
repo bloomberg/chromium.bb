@@ -30,6 +30,8 @@ PendingTask::PendingTask(const tracked_objects::Location& posted_from,
       is_high_res(false) {
 }
 
+PendingTask::PendingTask(const PendingTask& other) = default;
+
 PendingTask::~PendingTask() {
 }
 

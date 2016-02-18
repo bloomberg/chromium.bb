@@ -107,6 +107,9 @@ StackSamplingProfiler::Frame::Frame() {}
 
 StackSamplingProfiler::CallStackProfile::CallStackProfile() {}
 
+StackSamplingProfiler::CallStackProfile::CallStackProfile(
+    const CallStackProfile& other) = default;
+
 StackSamplingProfiler::CallStackProfile::~CallStackProfile() {}
 
 // StackSamplingProfiler::SamplingThread --------------------------------------

@@ -795,6 +795,7 @@ class BASE_EXPORT TaskStopwatch {
 struct BASE_EXPORT ProcessDataPhaseSnapshot {
  public:
   ProcessDataPhaseSnapshot();
+  ProcessDataPhaseSnapshot(const ProcessDataPhaseSnapshot& other);
   ~ProcessDataPhaseSnapshot();
 
   std::vector<TaskSnapshot> tasks;

@@ -107,6 +107,7 @@ class BASE_EXPORT WeakReference {
   };
 
   WeakReference();
+  WeakReference(const WeakReference& other);
   explicit WeakReference(const Flag* flag);
   ~WeakReference();
 

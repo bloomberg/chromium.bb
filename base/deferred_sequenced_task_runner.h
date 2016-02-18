@@ -46,6 +46,7 @@ class BASE_EXPORT DeferredSequencedTaskRunner : public SequencedTaskRunner {
  private:
   struct DeferredTask  {
     DeferredTask();
+    DeferredTask(const DeferredTask& other);
     ~DeferredTask();
 
     tracked_objects::Location posted_from;

@@ -13,6 +13,9 @@ DeferredSequencedTaskRunner::DeferredTask::DeferredTask()
     : is_non_nestable(false) {
 }
 
+DeferredSequencedTaskRunner::DeferredTask::DeferredTask(
+    const DeferredTask& other) = default;
+
 DeferredSequencedTaskRunner::DeferredTask::~DeferredTask() {
 }
 

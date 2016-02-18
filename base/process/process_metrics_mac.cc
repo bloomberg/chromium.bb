@@ -84,6 +84,9 @@ SystemMemoryInfoKB::SystemMemoryInfoKB() {
   free = 0;
 }
 
+SystemMemoryInfoKB::SystemMemoryInfoKB(const SystemMemoryInfoKB& other) =
+    default;
+
 // Getting a mach task from a pid for another process requires permissions in
 // general, so there doesn't really seem to be a way to do these (and spinning
 // up ps to fetch each stats seems dangerous to put in a base api for anyone to

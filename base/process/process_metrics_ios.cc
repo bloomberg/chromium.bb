@@ -30,6 +30,9 @@ SystemMemoryInfoKB::SystemMemoryInfoKB() {
   free = 0;
 }
 
+SystemMemoryInfoKB::SystemMemoryInfoKB(const SystemMemoryInfoKB& other) =
+    default;
+
 ProcessMetrics::ProcessMetrics(ProcessHandle process) {}
 
 ProcessMetrics::~ProcessMetrics() {}

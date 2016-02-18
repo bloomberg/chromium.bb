@@ -31,6 +31,7 @@ class BASE_EXPORT StackFrameDeduplicator : public ConvertableToTraceFormat {
   // A node in the call tree.
   struct FrameNode {
     FrameNode(StackFrame frame, int parent_frame_index);
+    FrameNode(const FrameNode& other);
     ~FrameNode();
 
     StackFrame frame;

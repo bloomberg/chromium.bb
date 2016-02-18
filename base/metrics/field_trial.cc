@@ -132,6 +132,8 @@ FieldTrial::EntropyProvider::~EntropyProvider() {
 
 FieldTrial::State::State() : activated(false) {}
 
+FieldTrial::State::State(const State& other) = default;
+
 FieldTrial::State::~State() {}
 
 void FieldTrial::Disable() {

@@ -40,6 +40,8 @@ LaunchOptions::LaunchOptions()
     {
 }
 
+LaunchOptions::LaunchOptions(const LaunchOptions& other) = default;
+
 LaunchOptions::~LaunchOptions() {
 }
 

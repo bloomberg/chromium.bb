@@ -951,6 +951,9 @@ TaskSnapshot::~TaskSnapshot() {
 ProcessDataPhaseSnapshot::ProcessDataPhaseSnapshot() {
 }
 
+ProcessDataPhaseSnapshot::ProcessDataPhaseSnapshot(
+    const ProcessDataPhaseSnapshot& other) = default;
+
 ProcessDataPhaseSnapshot::~ProcessDataPhaseSnapshot() {
 }
 

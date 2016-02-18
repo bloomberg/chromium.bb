@@ -36,6 +36,9 @@ SystemMemoryInfoKB::SystemMemoryInfoKB() {
   swap_free = 0;
 }
 
+SystemMemoryInfoKB::SystemMemoryInfoKB(const SystemMemoryInfoKB& other) =
+    default;
+
 ProcessMetrics::~ProcessMetrics() { }
 
 // static

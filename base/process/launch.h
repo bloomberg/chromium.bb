@@ -59,6 +59,7 @@ struct BASE_EXPORT LaunchOptions {
 #endif  // defined(OS_POSIX)
 
   LaunchOptions();
+  LaunchOptions(const LaunchOptions&);
   ~LaunchOptions();
 
   // If true, wait for the process to complete.

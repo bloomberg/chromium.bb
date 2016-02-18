@@ -119,6 +119,7 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
     bool activated;
 
     State();
+    State(const State& other);
     ~State();
   };
 

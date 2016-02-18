@@ -24,6 +24,7 @@ struct BASE_EXPORT PendingTask : public TrackingInfo {
               const Closure& task,
               TimeTicks delayed_run_time,
               bool nestable);
+  PendingTask(const PendingTask& other);
   ~PendingTask();
 
   // Used to support sorting.
