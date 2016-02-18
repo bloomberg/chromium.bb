@@ -495,18 +495,20 @@ int BaseScrollBar::CalculateThumbPosition(int contents_scroll_offset) const {
   // In some combination of viewport_size and contents_size_, the result of
   // simple division can be rounded and there could be 1 pixel gap even when the
   // contents scroll down to the bottom. See crbug.com/244671
-  if (contents_scroll_offset + viewport_size_ == contents_size_) {
-    int track_size = GetTrackSize();
-    return track_size - (viewport_size_ * GetTrackSize() / contents_size_);
-  }
-  return (contents_scroll_offset * GetTrackSize()) / contents_size_;
+  int thumb_max = GetTrackSize() - thumb_->GetSize();
+  if (contents_scroll_offset + viewport_size_ == contents_size_)
+    return thumb_max;
+  return (contents_scroll_offset * thumb_max) /
+         (contents_size_ - viewport_size_);
 }
 
 int BaseScrollBar::CalculateContentsOffset(int thumb_position,
                                            bool scroll_to_middle) const {
+  int thumb_size = thumb_->GetSize();
   if (scroll_to_middle)
-    thumb_position = thumb_position - (thumb_->GetSize() / 2);
-  return (thumb_position * contents_size_) / GetTrackSize();
+    thumb_position = thumb_position - (thumb_size / 2);
+  return (thumb_position * (contents_size_ - viewport_size_)) /
+         (GetTrackSize() - thumb_size);
 }
 
 void BaseScrollBar::SetThumbTrackState(CustomButton::ButtonState state) {
