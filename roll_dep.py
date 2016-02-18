@@ -95,7 +95,7 @@ def roll(root, deps_dir, roll_to, key, reviewers, bug, no_log, log_limit,
     # It happens if the user checked out a branch in the dependency by himself.
     # Fall back to reading the DEPS to figure out the original commit.
     for i in deps_content.splitlines():
-      m = re.match(r'\s+"' + key + '": "([a-z0-9]{40})",', i)
+      m = re.match(r'\s+"' + key + '":.*"([a-z0-9]{40})",', i)
       if m:
         head = m.group(1)
         break
