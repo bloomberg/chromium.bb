@@ -19,7 +19,6 @@ class Point;
 
 // Returns the Window at the specified point, ignoring the windows in |ignore|.
 gfx::NativeWindow GetLocalProcessWindowAtPoint(
-    chrome::HostDesktopType host_desktop_type,
     const gfx::Point& screen_point,
     const std::set<gfx::NativeWindow>& ignore);
 

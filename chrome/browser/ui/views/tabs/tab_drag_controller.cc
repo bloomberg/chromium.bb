@@ -1814,8 +1814,5 @@ gfx::NativeWindow TabDragController::GetLocalProcessWindow(
       exclude.insert(browser->window()->GetNativeWindow());
   }
 #endif
-  return GetLocalProcessWindowAtPoint(host_desktop_type_,
-                                      screen_point,
-                                      exclude);
-
+  return GetLocalProcessWindowAtPoint(screen_point, exclude);
 }

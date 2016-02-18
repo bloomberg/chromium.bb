@@ -15,12 +15,6 @@
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_win.h"
 #include "ui/views/win/hwnd_util.h"
 
-#if defined(USE_ASH)
-gfx::NativeWindow GetLocalProcessWindowAtPointAsh(
-    const gfx::Point& screen_point,
-    const std::set<gfx::NativeWindow>& ignore);
-#endif
-
 namespace {
 
 // BaseWindowFinder -----------------------------------------------------------
@@ -240,13 +234,8 @@ std::set<HWND> RemapIgnoreSet(const std::set<gfx::NativeView>& ignore) {
 }  // namespace
 
 gfx::NativeWindow GetLocalProcessWindowAtPoint(
-    chrome::HostDesktopType host_desktop_type,
     const gfx::Point& screen_point,
     const std::set<gfx::NativeWindow>& ignore) {
-#if defined(USE_ASH)
-  if (host_desktop_type == chrome::HOST_DESKTOP_TYPE_ASH)
-    return GetLocalProcessWindowAtPointAsh(screen_point, ignore);
-#endif
   return LocalProcessWindowFinder::GetProcessWindowAtPoint(
-          screen_point, RemapIgnoreSet(ignore));
+      screen_point, RemapIgnoreSet(ignore));
 }
