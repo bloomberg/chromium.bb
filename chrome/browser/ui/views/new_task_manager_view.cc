@@ -47,7 +47,7 @@ namespace {
 NewTaskManagerView* g_task_manager_view = nullptr;
 
 // Opens the "about:memory" for the "stats for nerds" link.
-void OpenAboutMemory(chrome::HostDesktopType desktop_type) {
+void OpenAboutMemory() {
   Profile* profile = ProfileManager::GetLastUsedProfileAllowedByPolicy();
   if (profile->IsGuestSession() &&
       !g_browser_process->local_state()->GetBoolean(
@@ -62,7 +62,6 @@ void OpenAboutMemory(chrome::HostDesktopType desktop_type) {
                                 GURL(chrome::kChromeUIMemoryURL),
                                 ui::PAGE_TRANSITION_LINK);
   params.disposition = NEW_FOREGROUND_TAB;
-  params.host_desktop_type = desktop_type;
   chrome::Navigate(&params);
 }
 
@@ -81,12 +80,7 @@ void NewTaskManagerView::Show(Browser* browser) {
     return;
   }
 
-  // In ash we can come here through the ChromeShellDelegate. If there is no
-  // browser window at that time of the call, browser could be passed as NULL.
-  const chrome::HostDesktopType desktop_type =
-      browser ? browser->host_desktop_type() : chrome::HOST_DESKTOP_TYPE_ASH;
-
-  g_task_manager_view = new NewTaskManagerView(desktop_type);
+  g_task_manager_view = new NewTaskManagerView();
 
   gfx::NativeWindow window = browser ? browser->window()->GetNativeWindow()
                                      : nullptr;
@@ -304,7 +298,7 @@ void NewTaskManagerView::OnKeyDown(ui::KeyboardCode keycode) {
 
 void NewTaskManagerView::LinkClicked(views::Link* source, int event_flags) {
   DCHECK_EQ(about_memory_link_, source);
-  OpenAboutMemory(desktop_type_);
+  OpenAboutMemory();
 }
 
 void NewTaskManagerView::ShowContextMenuForView(
@@ -348,12 +342,11 @@ void NewTaskManagerView::ExecuteCommand(int id, int event_flags) {
   table_model_->ToggleColumnVisibility(id);
 }
 
-NewTaskManagerView::NewTaskManagerView(chrome::HostDesktopType desktop_type)
+NewTaskManagerView::NewTaskManagerView()
     : kill_button_(nullptr),
       about_memory_link_(nullptr),
       tab_table_(nullptr),
       tab_table_parent_(nullptr),
-      desktop_type_(desktop_type),
       is_always_on_top_(false) {
   Init();
 }

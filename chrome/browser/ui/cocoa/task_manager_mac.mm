@@ -177,7 +177,7 @@ class SortHelper {
 }
 
 - (IBAction)statsLinkClicked:(id)sender {
-  TaskManager::GetInstance()->OpenAboutMemory(chrome::HOST_DESKTOP_TYPE_NATIVE);
+  TaskManager::GetInstance()->OpenAboutMemory();
 }
 
 - (IBAction)killSelectedProcesses:(id)sender {

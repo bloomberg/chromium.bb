@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/task_manager/task_manager_table_model.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/models/table_model.h"
@@ -19,6 +18,8 @@
 #include "ui/views/controls/table/table_grouper.h"
 #include "ui/views/controls/table/table_view_observer.h"
 #include "ui/views/window/dialog_delegate.h"
+
+class Browser;
 
 namespace views {
 class LabelButton;
@@ -104,7 +105,7 @@ class NewTaskManagerView
  private:
   friend class NewTaskManagerViewTest;
 
-  explicit NewTaskManagerView(chrome::HostDesktopType desktop_type);
+  NewTaskManagerView();
 
   static NewTaskManagerView* GetInstanceForTests();
 
@@ -134,9 +135,6 @@ class NewTaskManagerView
 
   // all possible columns, not necessarily visible
   std::vector<ui::TableColumn> columns_;
-
-  // The host desktop type this task manager belongs to.
-  const chrome::HostDesktopType desktop_type_;
 
   // True when the Task Manager window should be shown on top of other windows.
   bool is_always_on_top_;

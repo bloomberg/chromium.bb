@@ -1557,7 +1557,7 @@ TaskManager* TaskManager::GetInstance() {
   return base::Singleton<TaskManager>::get();
 }
 
-void TaskManager::OpenAboutMemory(chrome::HostDesktopType desktop_type) {
+void TaskManager::OpenAboutMemory() {
   Profile* profile = ProfileManager::GetLastUsedProfileAllowedByPolicy();
   if (profile->IsGuestSession() && !g_browser_process->local_state()->
       GetBoolean(prefs::kBrowserGuestModeEnabled)) {
@@ -1570,7 +1570,6 @@ void TaskManager::OpenAboutMemory(chrome::HostDesktopType desktop_type) {
   chrome::NavigateParams params(
       profile, GURL(chrome::kChromeUIMemoryURL), ui::PAGE_TRANSITION_LINK);
   params.disposition = NEW_FOREGROUND_TAB;
-  params.host_desktop_type = desktop_type;
   chrome::Navigate(&params);
 }
 

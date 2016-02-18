@@ -84,7 +84,7 @@ class TaskManager {
 
   TaskManagerModel* model() const { return model_.get(); }
 
-  void OpenAboutMemory(chrome::HostDesktopType desktop_type);
+  void OpenAboutMemory();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(TaskManagerTest, Basic);
