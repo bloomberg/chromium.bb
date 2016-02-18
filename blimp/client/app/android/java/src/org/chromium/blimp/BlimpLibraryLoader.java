@@ -97,7 +97,7 @@ public final class BlimpLibraryLoader {
                     public void run() {
                         // Only run nativeStartBlimp if we properly initialized native.
                         boolean startResult = nativeStartBlimp();
-                        sLibraryLoadResult = new Boolean(startResult);
+                        sLibraryLoadResult = Boolean.valueOf(startResult);
 
                         // Notify any oustanding callers to #startAsync().
                         notifyCallbacksAndClear();

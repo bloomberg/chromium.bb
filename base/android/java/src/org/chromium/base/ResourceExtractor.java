@@ -263,11 +263,6 @@ public class ResourceExtractor {
         sResourcesToExtract = entries;
     }
 
-    // TODO(agrieve): Delete this method ones all usages of it are updated.
-    public static void setMandatoryPaksToExtract(String... paths) {
-        assert paths.length == 1 && "".equals(paths[0]);
-    }
-
     private ResourceExtractor(Context context) {
         mContext = context.getApplicationContext();
     }

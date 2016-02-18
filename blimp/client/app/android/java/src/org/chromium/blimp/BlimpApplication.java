@@ -22,7 +22,7 @@ public class BlimpApplication extends BaseChromiumApplication {
     @Override
     public void onCreate() {
         super.onCreate();
-        ResourceExtractor.setMandatoryPaksToExtract(MANDATORY_PAK_FILES);
+        ResourceExtractor.setResourcesToExtract(new ResourceExtractor.ResourceEntry[0]);
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, this);
         initCommandLine();
     }
