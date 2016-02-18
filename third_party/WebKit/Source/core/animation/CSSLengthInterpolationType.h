@@ -23,7 +23,6 @@ public:
 
     static Length resolveInterpolableLength(const InterpolableValue&, const NonInterpolableValue*, const CSSToLengthConversionData&, ValueRange = ValueRangeAll);
     static PassOwnPtr<InterpolableValue> createInterpolablePixels(double pixels);
-    static InterpolationValue createInterpolablePercent(double percent);
     static InterpolationValue maybeConvertCSSValue(const CSSValue&);
     static InterpolationValue maybeConvertLength(const Length&, float zoom);
     static PassOwnPtr<InterpolableList> createNeutralInterpolableValue();

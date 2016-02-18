@@ -12,34 +12,17 @@
 
 namespace blink {
 
-InterpolationValue CSSPositionAxisListInterpolationType::convertPositionAxisCSSValue(const CSSValue& value)
+static InterpolationValue convertPositionAxisCSSValue(const CSSValue& value)
 {
-    if (value.isValuePair()) {
-        const CSSValuePair& pair = toCSSValuePair(value);
-        InterpolationValue result = CSSLengthInterpolationType::maybeConvertCSSValue(pair.second());
-        CSSValueID side = toCSSPrimitiveValue(pair.first()).getValueID();
-        if (side == CSSValueRight || side == CSSValueBottom)
-            CSSLengthInterpolationType::subtractFromOneHundredPercent(result);
-        return result;
-    }
-
-    const CSSPrimitiveValue& primitveValue = toCSSPrimitiveValue(value);
-    if (!primitveValue.isValueID())
+    if (!value.isValuePair())
         return CSSLengthInterpolationType::maybeConvertCSSValue(value);
 
-    switch (primitveValue.getValueID()) {
-    case CSSValueLeft:
-    case CSSValueTop:
-        return CSSLengthInterpolationType::createInterpolablePercent(0);
-    case CSSValueRight:
-    case CSSValueBottom:
-        return CSSLengthInterpolationType::createInterpolablePercent(100);
-    case CSSValueCenter:
-        return CSSLengthInterpolationType::createInterpolablePercent(50);
-    default:
-        ASSERT_NOT_REACHED();
-        return nullptr;
-    }
+    const CSSValuePair& pair = toCSSValuePair(value);
+    InterpolationValue result = CSSLengthInterpolationType::maybeConvertCSSValue(pair.second());
+    CSSValueID side = toCSSPrimitiveValue(pair.first()).getValueID();
+    if (side == CSSValueRight || side == CSSValueBottom)
+        CSSLengthInterpolationType::subtractFromOneHundredPercent(result);
+    return result;
 }
 
 InterpolationValue CSSPositionAxisListInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState&, ConversionCheckers&) const

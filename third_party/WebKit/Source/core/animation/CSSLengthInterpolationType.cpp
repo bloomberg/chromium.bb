@@ -59,13 +59,6 @@ PassOwnPtr<InterpolableValue> CSSLengthInterpolationType::createInterpolablePixe
     return interpolableList.release();
 }
 
-InterpolationValue CSSLengthInterpolationType::createInterpolablePercent(double percent)
-{
-    OwnPtr<InterpolableList> interpolableList = createNeutralInterpolableValue();
-    interpolableList->set(CSSPrimitiveValue::UnitTypePercentage, InterpolableNumber::create(percent));
-    return InterpolationValue(interpolableList.release(), CSSLengthNonInterpolableValue::create(true));
-}
-
 InterpolationValue CSSLengthInterpolationType::maybeConvertLength(const Length& length, float zoom)
 {
     if (!length.isSpecified())
