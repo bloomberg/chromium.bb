@@ -8,14 +8,17 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "sync/api/metadata_batch.h"
 #include "sync/api/sync_error.h"
+#include "sync/internal_api/public/data_batch_impl.h"
 #include "sync/protocol/data_type_state.pb.h"
 #include "sync/protocol/sync.pb.h"
 
 namespace sync_driver_v2 {
 
 using syncer::SyncError;
+using syncer_v2::DataBatchImpl;
 using syncer_v2::EntityChangeList;
 using syncer_v2::EntityData;
 using syncer_v2::EntityDataList;
@@ -73,11 +76,40 @@ SyncError DeviceInfoService::ApplySyncChanges(
 
 void DeviceInfoService::GetData(ClientTagList client_tags,
                                 DataCallback callback) {
-  // TODO(skym): crbug.com/543405: Implementation.
+  if (!has_data_loaded_) {
+    callback.Run(SyncError(FROM_HERE, SyncError::DATATYPE_ERROR,
+                           "Cannot call GetData before data has loaded.",
+                           syncer::DEVICE_INFO),
+                 scoped_ptr<DataBatchImpl>());
+    return;
+  }
+
+  syncer::SyncError error;
+  scoped_ptr<DataBatchImpl> batch(new DataBatchImpl());
+  for (auto& tag : client_tags) {
+    auto iter = all_data_.find(tag);
+    if (iter != all_data_.end()) {
+      batch->Put(tag, CopyIntoNewEntityData(*iter->second));
+    }
+  }
+  callback.Run(error, std::move(batch));
 }
 
 void DeviceInfoService::GetAllData(DataCallback callback) {
-  // TODO(skym): crbug.com/543405: Implementation.
+  if (!has_data_loaded_) {
+    callback.Run(SyncError(FROM_HERE, SyncError::DATATYPE_ERROR,
+                           "Cannot call GetAllData before data has loaded.",
+                           syncer::DEVICE_INFO),
+                 scoped_ptr<DataBatchImpl>());
+    return;
+  }
+
+  syncer::SyncError error;
+  scoped_ptr<DataBatchImpl> batch(new DataBatchImpl());
+  for (auto& kv : all_data_) {
+    batch->Put(kv.first, CopyIntoNewEntityData(*kv.second));
+  }
+  callback.Run(error, std::move(batch));
 }
 
 std::string DeviceInfoService::GetClientTag(const EntityData& entity_data) {
@@ -160,6 +192,14 @@ scoped_ptr<DeviceInfo> DeviceInfoService::CreateDeviceInfo(
       specifics.cache_guid(), specifics.client_name(),
       specifics.chrome_version(), specifics.sync_user_agent(),
       specifics.device_type(), specifics.signin_scoped_device_id()));
+}
+
+// Static.
+scoped_ptr<EntityData> DeviceInfoService::CopyIntoNewEntityData(
+    const DeviceInfoSpecifics& specifics) {
+  scoped_ptr<EntityData> entity_data(new EntityData());
+  *entity_data->specifics.mutable_device_info() = specifics;
+  return entity_data;
 }
 
 void DeviceInfoService::StoreSpecifics(

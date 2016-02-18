@@ -13,6 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "components/sync_driver/local_device_info_provider_mock.h"
+#include "sync/api/data_batch.h"
 #include "sync/api/metadata_batch.h"
 #include "sync/api/model_type_store.h"
 #include "sync/internal_api/public/test/model_type_store_test_util.h"
@@ -21,12 +22,15 @@
 
 namespace sync_driver_v2 {
 
+using syncer_v2::DataBatch;
 using syncer_v2::EntityData;
 using syncer_v2::MetadataBatch;
 using syncer_v2::MetadataChangeList;
 using syncer_v2::ModelTypeChangeProcessor;
+using syncer_v2::ModelTypeService;
 using syncer_v2::ModelTypeStore;
 using syncer_v2::ModelTypeStoreTestUtil;
+using syncer_v2::TagAndData;
 using sync_driver::DeviceInfo;
 using sync_driver::DeviceInfoTracker;
 using sync_driver::LocalDeviceInfoProviderMock;
@@ -34,6 +38,7 @@ using sync_pb::DataTypeState;
 using sync_pb::DeviceInfoSpecifics;
 using sync_pb::EntitySpecifics;
 
+using ClientTagList = ModelTypeService::ClientTagList;
 using Result = ModelTypeStore::Result;
 using WriteBatch = ModelTypeStore::WriteBatch;
 
@@ -41,6 +46,16 @@ namespace {
 
 void AssertResultIsSuccess(Result result) {
   ASSERT_EQ(Result::SUCCESS, result);
+}
+
+void AssertEqual(const DeviceInfoSpecifics& s1, const DeviceInfoSpecifics& s2) {
+  ASSERT_EQ(s1.cache_guid(), s2.cache_guid());
+  ASSERT_EQ(s1.client_name(), s2.client_name());
+  ASSERT_EQ(s1.device_type(), s2.device_type());
+  ASSERT_EQ(s1.sync_user_agent(), s2.sync_user_agent());
+  ASSERT_EQ(s1.chrome_version(), s2.chrome_version());
+  ASSERT_EQ(s1.backup_timestamp(), s2.backup_timestamp());
+  ASSERT_EQ(s1.signin_scoped_device_id(), s2.signin_scoped_device_id());
 }
 
 void AssertEqual(const DeviceInfoSpecifics& specifics,
@@ -52,6 +67,29 @@ void AssertEqual(const DeviceInfoSpecifics& specifics,
   ASSERT_EQ(specifics.chrome_version(), model.chrome_version());
   ASSERT_EQ(specifics.signin_scoped_device_id(),
             model.signin_scoped_device_id());
+}
+
+void AssertErrorFromDataBatch(syncer::SyncError error,
+                              scoped_ptr<DataBatch> batch) {
+  ASSERT_TRUE(error.IsSet());
+}
+
+void AssertExpectedFromDataBatch(
+    std::map<std::string, DeviceInfoSpecifics> expected,
+    syncer::SyncError error,
+    scoped_ptr<DataBatch> batch) {
+  ASSERT_FALSE(error.IsSet());
+  while (batch->HasNext()) {
+    const TagAndData& pair = batch->Next();
+    std::map<std::string, DeviceInfoSpecifics>::iterator iter =
+        expected.find(pair.first);
+    ASSERT_NE(iter, expected.end());
+    AssertEqual(iter->second, pair.second->specifics.device_info());
+    // Removing allows us to verify we don't see the same item multiple times,
+    // and that we saw everything we expected.
+    expected.erase(iter);
+  }
+  ASSERT_TRUE(expected.empty());
 }
 
 DeviceInfoSpecifics TestSpecifics() {
@@ -303,6 +341,68 @@ TEST_F(DeviceInfoServiceTest, TestInitProcBeforeStoreFinishes) {
   ASSERT_TRUE(processor()->metadata());
   ASSERT_EQ(state.encryption_key_name(),
             processor()->metadata()->GetDataTypeState().encryption_key_name());
+}
+
+TEST_F(DeviceInfoServiceTest, GetData) {
+  scoped_ptr<WriteBatch> batch = store()->CreateWriteBatch();
+  DeviceInfoSpecifics specifics(TestSpecifics());
+  store()->WriteData(batch.get(), "tag1", specifics.SerializeAsString());
+  store()->WriteData(batch.get(), "tag2", specifics.SerializeAsString());
+  store()->WriteData(batch.get(), "tag3", specifics.SerializeAsString());
+  store()->CommitWriteBatch(std::move(batch),
+                            base::Bind(&AssertResultIsSuccess));
+
+  InitializeAndPump();
+
+  std::map<std::string, DeviceInfoSpecifics> expected;
+  expected["tag1"] = specifics;
+  expected["tag3"] = specifics;
+  ClientTagList client_tags;
+  client_tags.push_back("tag1");
+  client_tags.push_back("tag3");
+  service()->GetData(client_tags,
+                     base::Bind(&AssertExpectedFromDataBatch, expected));
+}
+
+TEST_F(DeviceInfoServiceTest, GetDataMissing) {
+  InitializeAndPump();
+  std::map<std::string, DeviceInfoSpecifics> expected;
+  ClientTagList client_tags;
+  client_tags.push_back("tag1");
+  service()->GetData(client_tags,
+                     base::Bind(&AssertExpectedFromDataBatch, expected));
+}
+
+TEST_F(DeviceInfoServiceTest, GetDataNotInitialized) {
+  InitializeService();
+  ClientTagList client_tags;
+  service()->GetData(client_tags, base::Bind(&AssertErrorFromDataBatch));
+}
+
+TEST_F(DeviceInfoServiceTest, GetAllData) {
+  scoped_ptr<WriteBatch> batch = store()->CreateWriteBatch();
+  DeviceInfoSpecifics specifics(TestSpecifics());
+
+  store()->WriteData(batch.get(), "tag1", specifics.SerializeAsString());
+  store()->WriteData(batch.get(), "tag2", specifics.SerializeAsString());
+  store()->CommitWriteBatch(std::move(batch),
+                            base::Bind(&AssertResultIsSuccess));
+
+  InitializeAndPump();
+
+  std::map<std::string, DeviceInfoSpecifics> expected;
+  expected["tag1"] = specifics;
+  expected["tag2"] = specifics;
+  ClientTagList client_tags;
+  client_tags.push_back("tag1");
+  client_tags.push_back("tag2");
+  service()->GetData(client_tags,
+                     base::Bind(&AssertExpectedFromDataBatch, expected));
+}
+
+TEST_F(DeviceInfoServiceTest, GetAllDataNotInitialized) {
+  InitializeService();
+  service()->GetAllData(base::Bind(&AssertErrorFromDataBatch));
 }
 
 }  // namespace

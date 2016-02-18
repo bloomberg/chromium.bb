@@ -80,6 +80,9 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
   // Allocate new DeviceInfo from SyncData.
   static scoped_ptr<sync_driver::DeviceInfo> CreateDeviceInfo(
       const sync_pb::DeviceInfoSpecifics& specifics);
+  // Conversion as we prepare to hand data to the processor.
+  static scoped_ptr<syncer_v2::EntityData> CopyIntoNewEntityData(
+      const sync_pb::DeviceInfoSpecifics& specifics);
 
   // Store SyncData in the cache.
   void StoreSpecifics(scoped_ptr<sync_pb::DeviceInfoSpecifics> specifics);

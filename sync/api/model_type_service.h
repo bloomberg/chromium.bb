@@ -19,7 +19,6 @@
 namespace syncer_v2 {
 
 class DataBatch;
-class MetadataBatch;
 class MetadataChangeList;
 
 // Interface implemented by model types to receive updates from sync via the
