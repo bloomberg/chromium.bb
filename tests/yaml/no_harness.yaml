@@ -176,7 +176,6 @@ tests:
   -
     - SVs landsmøte i 2007 ble avholdt i tiden 22.–25. mars.
     - ⠠⠠⠎⠧⠰⠎ ⠇⠁⠝⠙⠎⠍⠪⠞⠑ ⠊ ⠼⠃⠚⠚⠛ ⠃⠇⠑ ⠁⠧⠓⠕⠇⠙⠞ ⠊ ⠞⠊⠙⠑⠝ ⠼⠃⠃⠄⠤⠤⠼⠃⠑⠄ ⠍⠁⠗⠎⠄
-    - {xfail: true}
   - [NSBs rutetabeller finner du på Internett., ⠠⠠⠝⠎⠃⠰⠎ ⠗⠥⠞⠑⠞⠁⠃⠑⠇⠇⠑⠗ ⠋⠊⠝⠝⠑⠗ ⠙⠥ ⠏⠡ ⠠⠊⠝⠞⠑⠗⠝⠑⠞⠞⠄]
   - ['Alle CD-ene som var oppbevart i boden, ble stjålet.', ⠠⠁⠇⠇⠑ ⠠⠠⠉⠙⠤⠑⠝⠑ ⠎⠕⠍ ⠧⠁⠗ ⠕⠏⠏⠃⠑⠧⠁⠗⠞ ⠊ ⠃⠕⠙⠑⠝⠂ ⠃⠇⠑ ⠎⠞⠚⠡⠇⠑⠞⠄]
   -
@@ -262,7 +261,6 @@ tests:
     - typeform:
         bold:   '              +++++++++++++++++       '
         italic: '                    ++                '
-      xfail: true
   -
     - 'Romanen Tusen strålende soler av den afghansk-amerikanske forfatteren Khaled
       Hosseini tyder på å bli en like stor suksess som den forrige romanen, Drageløperen.

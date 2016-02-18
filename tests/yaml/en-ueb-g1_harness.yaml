@@ -52,14 +52,10 @@ tests:
     - ⠕⠝⠑ ⠨⠂⠊⠞⠁⠇⠊⠉ ⠺⠕⠗⠙
     - typeform:
         italic: '    ++++++     '
-      # Emphasis doesn't always work
-      xfail: true
   - - two italic words
     - ⠨⠂⠞⠺⠕ ⠨⠂⠊⠞⠁⠇⠊⠉ ⠺⠕⠗⠙⠎
     - typeform:
         italic: '++++++++++      '
-      # Emphasis doesn't always work
-      xfail: true
   - - three italic words
     - ⠨⠶⠞⠓⠗⠑⠑ ⠊⠞⠁⠇⠊⠉ ⠺⠕⠗⠙⠎⠨⠄
     - {typeform: {italic: '++++++++++++++++++'}}
@@ -67,14 +63,10 @@ tests:
     - ⠕⠝⠑ ⠘⠂⠃⠕⠇⠙ ⠺⠕⠗⠙
     - typeform:
         bold: '    ++++     '
-      # Emphasis doesn't always work
-      xfail: true
   - - two bold words
     - ⠘⠂⠞⠺⠕ ⠘⠂⠃⠕⠇⠙ ⠺⠕⠗⠙⠎
     - typeform:
         bold: '++++++++      '
-      # Emphasis doesn't always work
-      xfail: true
   - - three bold words
     - ⠘⠶⠞⠓⠗⠑⠑ ⠃⠕⠇⠙ ⠺⠕⠗⠙⠎⠘⠄
     - {typeform: {bold: '++++++++++++++++'}}
@@ -82,14 +74,10 @@ tests:
     - ⠕⠝⠑ ⠸⠂⠥⠝⠙⠑⠗⠇⠊⠝⠑⠙ ⠺⠕⠗⠙
     - typeform:
         underline: '    ++++++++++     '
-      # Emphasis doesn't always work
-      xfail: true
   - - two underlined words
     - ⠸⠂⠞⠺⠕ ⠸⠂⠥⠝⠙⠑⠗⠇⠊⠝⠑⠙ ⠺⠕⠗⠙⠎
     - typeform:
         underline: '++++++++++++++      '
-      # Emphasis doesn't always work
-      xfail: true
   - - three underlined words
     - ⠸⠶⠞⠓⠗⠑⠑ ⠥⠝⠙⠑⠗⠇⠊⠝⠑⠙ ⠺⠕⠗⠙⠎⠸⠄
     - {typeform: {underline: '++++++++++++++++++++++'}}
