@@ -625,17 +625,6 @@ void HandleGetHelp() {
   Shell::GetInstance()->new_window_delegate()->OpenGetHelp();
 }
 
-bool CanHandleSilenceSpokenFeedback() {
-  AccessibilityDelegate* delegate =
-      Shell::GetInstance()->accessibility_delegate();
-  return delegate->IsSpokenFeedbackEnabled();
-}
-
-void HandleSilenceSpokenFeedback() {
-  base::RecordAction(UserMetricsAction("Accel_Silence_Spoken_Feedback"));
-  Shell::GetInstance()->accessibility_delegate()->SilenceSpokenFeedback();
-}
-
 void HandleSwapPrimaryDisplay() {
   base::RecordAction(UserMetricsAction("Accel_Swap_Primary_Display"));
   Shell::GetInstance()->display_configuration_controller()->SetPrimaryDisplayId(
@@ -1051,8 +1040,6 @@ bool AcceleratorController::CanPerformAction(
       return CanHandleDisableCapsLock(previous_accelerator);
     case LOCK_SCREEN:
       return CanHandleLock();
-    case SILENCE_SPOKEN_FEEDBACK:
-      return CanHandleSilenceSpokenFeedback();
     case SWITCH_TO_PREVIOUS_USER:
     case SWITCH_TO_NEXT_USER:
       return CanHandleCycleUser();
@@ -1350,9 +1337,6 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       // D-BUS), but we consume them to prevent them from getting
       // passed to apps -- see http://crbug.com/146609.
       break;
-    case SILENCE_SPOKEN_FEEDBACK:
-      HandleSilenceSpokenFeedback();
-      break;
     case SWAP_PRIMARY_DISPLAY:
       HandleSwapPrimaryDisplay();
       break;
@@ -1405,11 +1389,6 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
 
 bool AcceleratorController::ShouldActionConsumeKeyEvent(
     AcceleratorAction action) {
-#if defined(OS_CHROMEOS)
-  if (action == SILENCE_SPOKEN_FEEDBACK)
-    return false;
-#endif
-
   // Adding new exceptions is *STRONGLY* discouraged.
   return true;
 }

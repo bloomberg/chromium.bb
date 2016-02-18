@@ -72,9 +72,6 @@ const AcceleratorData kAcceleratorData[] = {
   // spoken feedback is enabled.
   { true, ui::VKEY_Z, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
     TOGGLE_SPOKEN_FEEDBACK },
-  { true, ui::VKEY_CONTROL, ui::EF_CONTROL_DOWN, SILENCE_SPOKEN_FEEDBACK},
-  { true, ui::VKEY_LCONTROL, ui::EF_CONTROL_DOWN, SILENCE_SPOKEN_FEEDBACK},
-  { true, ui::VKEY_RCONTROL, ui::EF_CONTROL_DOWN, SILENCE_SPOKEN_FEEDBACK},
   { true, ui::VKEY_OEM_COMMA, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
     SWITCH_TO_PREVIOUS_USER },
   { true, ui::VKEY_OEM_PERIOD, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
@@ -538,7 +535,6 @@ const AcceleratorAction kActionsKeepingMenuOpen[] = {
     DISABLE_CAPS_LOCK,
     KEYBOARD_BRIGHTNESS_DOWN,
     KEYBOARD_BRIGHTNESS_UP,
-    SILENCE_SPOKEN_FEEDBACK,
     TOGGLE_CAPS_LOCK,
     TOGGLE_SPOKEN_FEEDBACK,
     TOGGLE_WIFI,

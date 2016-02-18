@@ -24,22 +24,19 @@ cvox.KbExplorer = function() { };
  */
 cvox.KbExplorer.init = function() {
   var backgroundWindow = chrome.extension.getBackgroundPage();
-  document.addEventListener('keydown', cvox.KbExplorer.onKeyDown, false);
   backgroundWindow.addEventListener(
-      'keydown', cvox.KbExplorer.onKeyDown, false);
-  document.addEventListener('keyup', cvox.KbExplorer.onKeyUp, false);
-  backgroundWindow.addEventListener('keyup', cvox.KbExplorer.onKeyUp, false);
-  document.addEventListener('keypress', cvox.KbExplorer.onKeyPress, false);
+      'keydown', cvox.KbExplorer.onKeyDown, true);
+  backgroundWindow.addEventListener('keyup', cvox.KbExplorer.onKeyUp, true);
   backgroundWindow.addEventListener(
-      'keypress', cvox.KbExplorer.onKeyPress, false);
+      'keypress', cvox.KbExplorer.onKeyPress, true);
 
   window.onbeforeunload = function(evt) {
     backgroundWindow.removeEventListener(
-        'keydown', cvox.KbExplorer.onKeyDown, false);
+        'keydown', cvox.KbExplorer.onKeyDown, true);
     backgroundWindow.removeEventListener(
-        'keyup', cvox.KbExplorer.onKeyUp, false);
+        'keyup', cvox.KbExplorer.onKeyUp, true);
     backgroundWindow.removeEventListener(
-        'keypress', cvox.KbExplorer.onKeyPress, false);
+        'keypress', cvox.KbExplorer.onKeyPress, true);
   };
 };
 

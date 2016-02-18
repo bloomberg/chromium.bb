@@ -122,8 +122,8 @@ Background = function() {
 
   cvox.ExtensionBridge.addMessageListener(this.onMessage_);
 
-  document.addEventListener('keydown', this.onKeyDown.bind(this), true);
-  document.addEventListener('keyup', this.onKeyUp.bind(this), true);
+  document.addEventListener('keydown', this.onKeyDown.bind(this), false);
+  document.addEventListener('keyup', this.onKeyUp.bind(this), false);
   cvox.ChromeVoxKbHandler.commandHandler = this.onGotCommand.bind(this);
 
   // Classic keymap.
@@ -518,6 +518,10 @@ Background.prototype = {
       case 'openChromeVoxMenus':
         (new PanelCommand(PanelCommandType.OPEN_MENUS)).send();
         return false;
+      case 'showKbExplorerPage':
+        var explorerPage = {url: 'chromevox/background/kbexplorer.html'};
+        chrome.tabs.create(explorerPage);
+        break;
       case 'decreaseTtsRate':
         this.increaseOrDecreaseSpeechProperty_(cvox.AbstractTts.RATE, false);
         break;
@@ -536,6 +540,10 @@ Background.prototype = {
       case 'increaseTtsVolume':
         this.increaseOrDecreaseSpeechProperty_(cvox.AbstractTts.VOLUME, true);
         break;
+      case 'stopSpeech':
+        cvox.ChromeVox.tts.stop();
+        global.isReadingContinuously = false;
+        return false;
       default:
         return true;
     }

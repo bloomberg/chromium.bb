@@ -404,6 +404,33 @@
           "keyCode": [222]
         }
       }
+    },
+    {
+      "command": "stopSpeech",
+      "sequence": {
+        "keys": {
+          "ctrlKey": [true],
+          "keyCode": [17]
+        }
+      }
+    },
+    {
+      "command": "showKbExplorerPage",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [79, 75]
+        }
+      }
+    },
+    {
+      "command": "showOptionsPage",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [79, 79]
+        }
+      }
     }
   ]
 }
