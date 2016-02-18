@@ -15,9 +15,7 @@ template <typename T>
 class RefVector : public RefCounted<RefVector<T>> {
 public:
     static PassRefPtr<RefVector> create() { return adoptRef(new RefVector<T>); }
-    static PassRefPtr<RefVector> create(const Vector<T>& vector) { return adoptRef(new RefVector<T>(vector)); }
-    static PassRefPtr<RefVector> create(Vector<T>&& vector) { return adoptRef(new RefVector<T>(vector)); }
-    PassRefPtr<RefVector> copy() { return create(vector()); }
+    PassRefPtr<RefVector> copy() { return adoptRef(new RefVector<T>(*this)); }
 
     const T& operator[](size_t i) const { return m_vector[i]; }
     T& operator[](size_t i) { return m_vector[i]; }
@@ -35,8 +33,7 @@ public:
 private:
     Vector<T> m_vector;
     RefVector() { }
-    RefVector(const Vector<T>& vector) : m_vector(vector) { }
-    RefVector(Vector<T>&& vector) : m_vector(vector) { }
+    RefVector(const RefVector& o) : m_vector(o.m_vector) { }
 };
 
 } // namespace blink

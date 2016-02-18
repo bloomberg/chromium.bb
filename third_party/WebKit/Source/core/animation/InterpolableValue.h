@@ -61,7 +61,6 @@ public:
     PassOwnPtr<InterpolableValue> cloneAndZero() const final { return create(0); }
     void scale(double scale) final;
     void scaleAndAdd(double scale, const InterpolableValue& other) final;
-    void set(double value) { m_value = value; }
 
 private:
     void interpolate(const InterpolableValue& to, const double progress, InterpolableValue& result) const final;
