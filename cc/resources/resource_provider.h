@@ -159,9 +159,9 @@ class CC_EXPORT ResourceProvider
                       const uint8_t* image,
                       const gfx::Size& image_size);
 
-  // Only flush the command buffer if supported.
-  // Returns true if the shallow flush occurred, false otherwise.
-  bool ShallowFlushIfSupported();
+  // Generates sync tokesn for resources which need a sync token.
+  void GenerateSyncTokenForResource(ResourceId resource_id);
+  void GenerateSyncTokenForResources(const ResourceIdArray& resource_ids);
 
   // Creates accounting for a child. Returns a child ID.
   int CreateChild(const ReturnCallback& return_callback);

@@ -753,6 +753,44 @@ void ResourceProvider::CopyToResource(ResourceId id,
   }
 }
 
+void ResourceProvider::GenerateSyncTokenForResource(ResourceId resource_id) {
+  Resource* resource = GetResource(resource_id);
+  if (!resource->needs_sync_token())
+    return;
+
+  gpu::SyncToken sync_token;
+  GLES2Interface* gl = ContextGL();
+  DCHECK(gl);
+
+  const uint64_t fence_sync = gl->InsertFenceSyncCHROMIUM();
+  gl->OrderingBarrierCHROMIUM();
+  gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
+
+  resource->UpdateSyncToken(sync_token);
+}
+
+void ResourceProvider::GenerateSyncTokenForResources(
+    const ResourceIdArray& resource_ids) {
+  gpu::SyncToken sync_token;
+  bool created_sync_token = false;
+  for (ResourceId id : resource_ids) {
+    Resource* resource = GetResource(id);
+    if (resource->needs_sync_token()) {
+      if (!created_sync_token) {
+        GLES2Interface* gl = ContextGL();
+        DCHECK(gl);
+
+        const uint64_t fence_sync = gl->InsertFenceSyncCHROMIUM();
+        gl->OrderingBarrierCHROMIUM();
+        gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
+        created_sync_token = true;
+      }
+
+      resource->UpdateSyncToken(sync_token);
+    }
+  }
+}
+
 ResourceProvider::Resource* ResourceProvider::InsertResource(
     ResourceId id,
     const Resource& resource) {

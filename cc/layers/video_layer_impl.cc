@@ -124,6 +124,8 @@ bool VideoLayerImpl::WillDraw(DrawMode draw_mode,
 
   DCHECK_EQ(external_resources.mailboxes.size(),
             external_resources.release_callbacks.size());
+  ResourceProvider::ResourceIdArray resource_ids;
+  resource_ids.reserve(external_resources.mailboxes.size());
   for (size_t i = 0; i < external_resources.mailboxes.size(); ++i) {
     unsigned resource_id = resource_provider->CreateResourceFromTextureMailbox(
         external_resources.mailboxes[i],
@@ -133,7 +135,9 @@ bool VideoLayerImpl::WillDraw(DrawMode draw_mode,
     frame_resources_.push_back(FrameResource(
         resource_id, external_resources.mailboxes[i].size_in_pixels(),
         external_resources.mailboxes[i].is_overlay_candidate()));
+    resource_ids.push_back(resource_id);
   }
+  resource_provider->GenerateSyncTokenForResources(resource_ids);
 
   return true;
 }

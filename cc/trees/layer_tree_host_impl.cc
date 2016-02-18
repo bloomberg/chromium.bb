@@ -3648,6 +3648,8 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
   AutoLockUIResourceBitmap bitmap_lock(bitmap);
   resource_provider_->CopyToResource(id, bitmap_lock.GetPixels(),
                                      bitmap.GetSize());
+
+  resource_provider_->GenerateSyncTokenForResource(id);
   MarkUIResourceNotEvicted(uid);
 }
 
