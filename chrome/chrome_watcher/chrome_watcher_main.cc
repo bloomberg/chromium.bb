@@ -251,16 +251,42 @@ void DumpHungBrowserProcess(DWORD main_thread_id,
   key_buffers.push_back(nullptr);
   value_buffers.push_back(nullptr);
 
-  // Synthesize an exception for the main thread.
+  // Synthesize an exception for the main thread. Populate the record with the
+  // current context of the thread to get the stack trace bucketed on the crash
+  // backend.
   CONTEXT thread_context = {};
   EXCEPTION_RECORD exception_record = {};
   exception_record.ExceptionCode = EXCEPTION_ARRAY_BOUNDS_EXCEEDED;
   EXCEPTION_POINTERS exception_pointers = {&exception_record, &thread_context};
 
+  base::win::ScopedHandle main_thread(::OpenThread(
+      THREAD_SUSPEND_RESUME | THREAD_GET_CONTEXT | THREAD_QUERY_INFORMATION,
+      FALSE, main_thread_id));
+
+  bool have_context = false;
+  if (main_thread.IsValid()) {
+    DWORD suspend_count = ::SuspendThread(main_thread.Get());
+    if (suspend_count != -1) {
+      // Best effort capture of the context.
+      thread_context.ContextFlags = CONTEXT_FLOATING_POINT | CONTEXT_SEGMENTS |
+                                    CONTEXT_INTEGER | CONTEXT_CONTROL;
+      if (::GetThreadContext(main_thread.Get(), &thread_context) == TRUE)
+        have_context = true;
+
+      ::ResumeThread(main_thread.Get());
+    }
+  }
+
   // TODO(erikwright): Make the dump-type channel-dependent.
-  kasko::api::SendReportForProcess(
-      process.Handle(), main_thread_id, &exception_pointers,
-      kasko::api::LARGER_DUMP_TYPE, key_buffers.data(), value_buffers.data());
+  if (have_context) {
+    kasko::api::SendReportForProcess(
+        process.Handle(), main_thread_id, &exception_pointers,
+        kasko::api::LARGER_DUMP_TYPE, key_buffers.data(), value_buffers.data());
+  } else {
+    kasko::api::SendReportForProcess(process.Handle(), 0, nullptr,
+                                     kasko::api::LARGER_DUMP_TYPE,
+                                     key_buffers.data(), value_buffers.data());
+  }
 }
 
 void LoggedDeregisterEventSource(HANDLE event_source_handle) {
