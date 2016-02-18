@@ -387,6 +387,7 @@ public class DownloadNotificationService extends Service {
      * @return true if the intent requires actions, or false otherwise.
      */
     static boolean isDownloadOperationIntent(Intent intent) {
+        if (intent == null) return false;
         if (!ACTION_DOWNLOAD_CANCEL.equals(intent.getAction())
                 && !ACTION_DOWNLOAD_RESUME.equals(intent.getAction())
                 && !ACTION_DOWNLOAD_PAUSE.equals(intent.getAction())) {
