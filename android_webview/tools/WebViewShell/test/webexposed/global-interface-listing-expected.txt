@@ -642,7 +642,6 @@ interface Document : Node
     getter contentType
     getter cookie
     getter currentScript
-    getter defaultCharset
     getter defaultView
     getter designMode
     getter dir

@@ -1107,13 +1107,6 @@ AtomicString Document::encodingName() const
     return AtomicString(encoding().name());
 }
 
-String Document::defaultCharset() const
-{
-    if (Settings* settings = this->settings())
-        return settings->defaultTextEncodingName();
-    return String();
-}
-
 void Document::setContentLanguage(const AtomicString& language)
 {
     if (m_contentLanguage == language)

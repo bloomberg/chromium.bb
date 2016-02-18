@@ -29,6 +29,7 @@ import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.ImagePageGenerator;
 import org.chromium.android_webview.test.util.VideoTestUtil;
 import org.chromium.android_webview.test.util.VideoTestWebServer;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
@@ -1603,8 +1604,12 @@ public class AwSettingsTest extends AwTestBase {
                     views.getContainer1(), views.getClient1(), new ImagePageGenerator(1, true)));
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "Preferences"})
+    /*
+     * Disabled due to document.defaultCharset removal. crbug.com/587484
+     * @SmallTest
+     * @Feature({"AndroidWebView", "Preferences"})
+     */
+    @DisabledTest
     public void testDefaultTextEncodingWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(

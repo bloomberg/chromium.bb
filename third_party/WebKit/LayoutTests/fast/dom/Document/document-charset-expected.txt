@@ -1,9 +1,6 @@
-CONSOLE WARNING: 'Document.defaultCharset' is deprecated and will be removed in M50, around April 2016. See https://www.chromestatus.com/features/6217124578066432 for more details.
 Initial
 
  document.charset: KOI8-R
-
- document.defaultCharset: defined
 
  document.characterSet: KOI8-R
 
@@ -12,8 +9,6 @@ Initial
 Setting charset to UTF-8... (expected to have no effect)
 
  document.charset: KOI8-R
-
- document.defaultCharset: defined
 
  document.characterSet: KOI8-R
 

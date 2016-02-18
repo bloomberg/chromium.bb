@@ -327,9 +327,6 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
     case UseCounter::MediaStreamTrackGetSources:
         return "MediaStreamTrack.getSources is deprecated. See https://www.chromestatus.com/feature/4765305641369600 for more details.";
 
-    case UseCounter::DocumentDefaultCharset:
-        return willBeRemoved("'Document.defaultCharset'", 50, "6217124578066432");
-
     case UseCounter::V8TouchEvent_InitTouchEvent_Method:
         return replacedWillBeRemoved("'TouchEvent.initTouchEvent'", "the TouchEvent constructor", 53, "5730982598541312");
 

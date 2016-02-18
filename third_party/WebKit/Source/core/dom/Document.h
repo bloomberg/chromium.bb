@@ -303,8 +303,6 @@ public:
 
     String readyState() const;
 
-    String defaultCharset() const;
-
     AtomicString characterSet() const { return Document::encodingName(); }
 
     AtomicString encodingName() const;

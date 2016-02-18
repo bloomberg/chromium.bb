@@ -88,8 +88,7 @@ message Fingerprint {
     // accept-languages.
     repeated string requested_language = 8;
 
-    // Default charset of the browser. (e.g. ISO-8859-1, obtained from
-    // document.defaultCharset)
+    // Default charset of the browser. (e.g. ISO-8859-1)
     optional string charset = 9;
 
     // The number of physical screens.
