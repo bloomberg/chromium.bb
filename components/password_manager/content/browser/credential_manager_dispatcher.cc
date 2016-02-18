@@ -99,7 +99,7 @@ void CredentialManagerDispatcher::OnRequireUserMediation(int request_id) {
   DCHECK(request_id);
 
   PasswordStore* store = GetPasswordStore();
-  if (!store) {
+  if (!store || !IsUpdatingCredentialAllowed()) {
     web_contents()->GetRenderViewHost()->Send(
         new CredentialManagerMsg_AcknowledgeRequireUserMediation(
             web_contents()->GetRenderViewHost()->GetRoutingID(), request_id));
@@ -228,6 +228,7 @@ void CredentialManagerDispatcher::SendCredential(int request_id,
   if (PasswordStore* store = GetPasswordStore()) {
     if (info.type != CredentialType::CREDENTIAL_TYPE_EMPTY &&
         IsZeroClickAllowed()) {
+      DCHECK(IsUpdatingCredentialAllowed());
       scoped_ptr<autofill::PasswordForm> form(
           CreatePasswordFormFromCredentialInfo(info,
                                                pending_request_->origin()));
@@ -261,6 +262,11 @@ CredentialManagerDispatcher::GetSynthesizedFormForOrigin() const {
 void CredentialManagerDispatcher::DoneRequiringUserMediation() {
   DCHECK(pending_require_user_mediation_);
   pending_require_user_mediation_.reset();
+}
+
+bool CredentialManagerDispatcher::IsUpdatingCredentialAllowed() const {
+  return !client_->DidLastPageLoadEncounterSSLErrors() &&
+         !client_->IsOffTheRecord();
 }
 
 }  // namespace password_manager
