@@ -82,10 +82,6 @@ ValueRange LengthListPropertyFunctions::valueRange(CSSPropertyID property)
     case CSSPropertyWebkitMaskPositionY:
         return ValueRangeAll;
 
-    case CSSPropertyBorderBottomLeftRadius:
-    case CSSPropertyBorderBottomRightRadius:
-    case CSSPropertyBorderTopLeftRadius:
-    case CSSPropertyBorderTopRightRadius:
     case CSSPropertyStrokeDasharray:
         return ValueRangeNonNegative;
 
@@ -100,47 +96,27 @@ Vector<Length> LengthListPropertyFunctions::getInitialLengthList(CSSPropertyID p
     return getLengthList(property, *ComputedStyle::initialStyle());
 }
 
-static Vector<Length> toVector(const LengthPoint& point)
-{
-    Vector<Length> result(2);
-    result[0] = point.x();
-    result[1] = point.y();
-    return result;
-}
-
-static Vector<Length> toVector(const LengthSize& size)
-{
-    Vector<Length> result(2);
-    result[0] = size.width();
-    result[1] = size.height();
-    return result;
-}
-
 Vector<Length> LengthListPropertyFunctions::getLengthList(CSSPropertyID property, const ComputedStyle& style)
 {
+    Vector<Length> result;
+
     switch (property) {
-    case CSSPropertyStrokeDasharray: {
+    case CSSPropertyStrokeDasharray:
         if (style.strokeDashArray())
-            return style.strokeDashArray()->vector();
-        return Vector<Length>();
-    }
+            result.appendVector(style.strokeDashArray()->vector());
+        return result;
     case CSSPropertyObjectPosition:
-        return toVector(style.objectPosition());
+        result.append(style.objectPosition().x());
+        result.append(style.objectPosition().y());
+        return result;
     case CSSPropertyPerspectiveOrigin:
-        return toVector(style.perspectiveOrigin());
-    case CSSPropertyBorderBottomLeftRadius:
-        return toVector(style.borderBottomLeftRadius());
-    case CSSPropertyBorderBottomRightRadius:
-        return toVector(style.borderBottomRightRadius());
-    case CSSPropertyBorderTopLeftRadius:
-        return toVector(style.borderTopLeftRadius());
-    case CSSPropertyBorderTopRightRadius:
-        return toVector(style.borderTopRightRadius());
+        result.append(style.perspectiveOrigin().x());
+        result.append(style.perspectiveOrigin().y());
+        return result;
     default:
         break;
     }
 
-    Vector<Length> result;
     const FillLayer* fillLayer = getFillLayer(property, style);
     FillLayerMethods fillLayerMethods(property);
     while (fillLayer && (fillLayer->*fillLayerMethods.isSet)()) {
@@ -150,18 +126,6 @@ Vector<Length> LengthListPropertyFunctions::getLengthList(CSSPropertyID property
     return result;
 }
 
-static LengthPoint pointFromVector(const Vector<Length>& list)
-{
-    ASSERT(list.size() == 2);
-    return LengthPoint(list[0], list[1]);
-}
-
-static LengthSize sizeFromVector(const Vector<Length>& list)
-{
-    ASSERT(list.size() == 2);
-    return LengthSize(list[0], list[1]);
-}
-
 void LengthListPropertyFunctions::setLengthList(CSSPropertyID property, ComputedStyle& style, Vector<Length>&& lengthList)
 {
     switch (property) {
@@ -169,22 +133,10 @@ void LengthListPropertyFunctions::setLengthList(CSSPropertyID property, Computed
         style.setStrokeDashArray(lengthList.isEmpty() ? nullptr : RefVector<Length>::create(std::move(lengthList)));
         return;
     case CSSPropertyObjectPosition:
-        style.setObjectPosition(pointFromVector(lengthList));
+        style.setObjectPosition(LengthPoint(lengthList[0], lengthList[1]));
         return;
     case CSSPropertyPerspectiveOrigin:
-        style.setPerspectiveOrigin(pointFromVector(lengthList));
-        return;
-    case CSSPropertyBorderBottomLeftRadius:
-        style.setBorderBottomLeftRadius(sizeFromVector(lengthList));
-        return;
-    case CSSPropertyBorderBottomRightRadius:
-        style.setBorderBottomRightRadius(sizeFromVector(lengthList));
-        return;
-    case CSSPropertyBorderTopLeftRadius:
-        style.setBorderTopLeftRadius(sizeFromVector(lengthList));
-        return;
-    case CSSPropertyBorderTopRightRadius:
-        style.setBorderTopRightRadius(sizeFromVector(lengthList));
+        style.setPerspectiveOrigin(LengthPoint(lengthList[0], lengthList[1]));
         return;
     default:
         break;
