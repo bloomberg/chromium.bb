@@ -2781,7 +2781,7 @@ void FrameView::forceLayoutForPagination(const FloatSize& pageSize, const FloatS
             LayoutUnit docLogicalRight = horizontalWritingMode ? updatedDocumentRect.maxX() : updatedDocumentRect.maxY();
             LayoutUnit clippedLogicalLeft;
             if (!layoutView->style()->isLeftToRightDirection())
-                clippedLogicalLeft = docLogicalRight - pageLogicalWidth;
+                clippedLogicalLeft = LayoutUnit(docLogicalRight - pageLogicalWidth);
             LayoutRect overflow(clippedLogicalLeft, docLogicalTop, pageLogicalWidth, docLogicalHeight);
 
             if (!horizontalWritingMode)

@@ -12,19 +12,19 @@
 
 namespace blink {
 
-static int computeEdgeWidth(const BorderImageLength& borderSlice, int borderSide, const LayoutUnit& imageSide,
-    const LayoutUnit& boxExtent)
+static int computeEdgeWidth(const BorderImageLength& borderSlice, int borderSide, int imageSide,
+    int boxExtent)
 {
     if (borderSlice.isNumber())
         return borderSlice.number() * borderSide;
     if (borderSlice.length().isAuto())
         return imageSide;
-    return valueForLength(borderSlice.length(), boxExtent);
+    return valueForLength(borderSlice.length(), LayoutUnit(boxExtent));
 }
 
-static int computeEdgeSlice(const Length& slice, LayoutUnit maximum)
+static int computeEdgeSlice(const Length& slice, int maximum)
 {
-    return std::min<int>(maximum, valueForLength(slice, maximum));
+    return std::min<int>(maximum, valueForLength(slice, LayoutUnit(maximum)));
 }
 
 NinePieceImageGrid::NinePieceImageGrid(const NinePieceImage& ninePieceImage, IntSize imageSize, IntRect borderImageArea,

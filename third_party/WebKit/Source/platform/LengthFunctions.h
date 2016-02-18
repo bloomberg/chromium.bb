@@ -33,7 +33,7 @@ class LayoutUnit;
 class Length;
 class LengthSize;
 
-PLATFORM_EXPORT int intValueForLength(const Length&, LayoutUnit maximumValue);
+PLATFORM_EXPORT int intValueForLength(const Length&, int maximumValue);
 PLATFORM_EXPORT float floatValueForLength(const Length&, float maximumValue);
 PLATFORM_EXPORT LayoutUnit minimumValueForLength(const Length&, LayoutUnit maximumValue);
 PLATFORM_EXPORT LayoutUnit roundedMinimumValueForLength(const Length&, LayoutUnit maximumValue);

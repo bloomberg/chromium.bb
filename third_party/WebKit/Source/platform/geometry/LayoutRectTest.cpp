@@ -18,7 +18,7 @@ TEST(LayoutRectTest, ToString)
     LayoutRect rect(1, 2, 3, 4);
     EXPECT_EQ(String("1.000000,2.000000 3.000000x4.000000"), rect.toString());
 
-    LayoutRect granularRect(1.6f, 2.7f, 3.8f, 4.9f);
+    LayoutRect granularRect(LayoutUnit(1.6f), LayoutUnit(2.7f), LayoutUnit(3.8f), LayoutUnit(4.9f));
     EXPECT_EQ(String("1.593750,2.687500 3.796875x4.890625"), granularRect.toString());
 }
 #endif

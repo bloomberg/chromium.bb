@@ -1919,14 +1919,14 @@ LayoutUnit HTMLSelectElement::clientPaddingLeft() const
 {
     if (layoutObject() && layoutObject()->isMenuList())
         return toLayoutMenuList(layoutObject())->clientPaddingLeft();
-    return 0;
+    return LayoutUnit();
 }
 
 LayoutUnit HTMLSelectElement::clientPaddingRight() const
 {
     if (layoutObject() && layoutObject()->isMenuList())
         return toLayoutMenuList(layoutObject())->clientPaddingRight();
-    return 0;
+    return LayoutUnit();
 }
 
 void HTMLSelectElement::popupDidHide()

@@ -46,6 +46,7 @@ class LayoutPoint {
 public:
     LayoutPoint() { }
     LayoutPoint(LayoutUnit x, LayoutUnit y) : m_x(x), m_y(y) { }
+    LayoutPoint(int x, int y) : m_x(LayoutUnit(x)), m_y(LayoutUnit(y)) { }
     LayoutPoint(const IntPoint& point) : m_x(point.x()), m_y(point.y()) { }
     explicit LayoutPoint(const FloatPoint& point) : m_x(point.x()), m_y(point.y()) { }
     explicit LayoutPoint(const DoublePoint& point) : m_x(point.x()), m_y(point.y()) { }

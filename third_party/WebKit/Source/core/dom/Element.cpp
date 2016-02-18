@@ -612,7 +612,7 @@ int Element::offsetLeft()
 {
     document().updateLayoutIgnorePendingStylesheets();
     if (LayoutBoxModelObject* layoutObject = layoutBoxModelObject())
-        return adjustLayoutUnitForAbsoluteZoom(layoutObject->pixelSnappedOffsetLeft(), *layoutObject).round();
+        return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutObject->pixelSnappedOffsetLeft()), layoutObject->styleRef()).round();
     return 0;
 }
 
@@ -620,7 +620,7 @@ int Element::offsetTop()
 {
     document().updateLayoutIgnorePendingStylesheets();
     if (LayoutBoxModelObject* layoutObject = layoutBoxModelObject())
-        return adjustLayoutUnitForAbsoluteZoom(layoutObject->pixelSnappedOffsetTop(), *layoutObject).round();
+        return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutObject->pixelSnappedOffsetTop()), layoutObject->styleRef()).round();
     return 0;
 }
 
@@ -628,7 +628,7 @@ int Element::offsetWidth()
 {
     document().updateLayoutIgnorePendingStylesheets();
     if (LayoutBoxModelObject* layoutObject = layoutBoxModelObject())
-        return adjustLayoutUnitForAbsoluteZoom(layoutObject->pixelSnappedOffsetWidth(), *layoutObject).round();
+        return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutObject->pixelSnappedOffsetWidth()), layoutObject->styleRef()).round();
     return 0;
 }
 
@@ -636,7 +636,7 @@ int Element::offsetHeight()
 {
     document().updateLayoutIgnorePendingStylesheets();
     if (LayoutBoxModelObject* layoutObject = layoutBoxModelObject())
-        return adjustLayoutUnitForAbsoluteZoom(layoutObject->pixelSnappedOffsetHeight(), *layoutObject).round();
+        return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutObject->pixelSnappedOffsetHeight()), layoutObject->styleRef()).round();
     return 0;
 }
 
@@ -663,7 +663,7 @@ int Element::clientLeft()
     document().updateLayoutIgnorePendingStylesheets();
 
     if (LayoutBox* layoutObject = layoutBox())
-        return adjustLayoutUnitForAbsoluteZoom(roundToInt(layoutObject->clientLeft()), *layoutObject);
+        return adjustLayoutUnitForAbsoluteZoom(layoutObject->clientLeft(), layoutObject->styleRef()).round();
     return 0;
 }
 
@@ -672,7 +672,7 @@ int Element::clientTop()
     document().updateLayoutIgnorePendingStylesheets();
 
     if (LayoutBox* layoutObject = layoutBox())
-        return adjustLayoutUnitForAbsoluteZoom(roundToInt(layoutObject->clientTop()), *layoutObject);
+        return adjustLayoutUnitForAbsoluteZoom(layoutObject->clientTop(), layoutObject->styleRef()).round();
     return 0;
 }
 
@@ -687,13 +687,13 @@ int Element::clientWidth()
         || (inQuirksMode && isHTMLElement() && document().body() == this)) {
         if (LayoutView* layoutView = document().layoutView()) {
             if (document().page()->settings().forceZeroLayoutHeight())
-                return adjustLayoutUnitForAbsoluteZoom(layoutView->overflowClipRect(LayoutPoint()).width(), *layoutView);
-            return adjustLayoutUnitForAbsoluteZoom(layoutView->layoutSize().width(), *layoutView);
+                return adjustLayoutUnitForAbsoluteZoom(layoutView->overflowClipRect(LayoutPoint()).width(), layoutView->styleRef()).round();
+            return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutView->layoutSize().width()), layoutView->styleRef()).round();
         }
     }
 
     if (LayoutBox* layoutObject = layoutBox())
-        return adjustLayoutUnitForAbsoluteZoom(layoutObject->pixelSnappedClientWidth(), *layoutObject).round();
+        return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutObject->pixelSnappedClientWidth()), layoutObject->styleRef()).round();
     return 0;
 }
 
@@ -709,13 +709,13 @@ int Element::clientHeight()
         || (inQuirksMode && isHTMLElement() && document().body() == this)) {
         if (LayoutView* layoutView = document().layoutView()) {
             if (document().page()->settings().forceZeroLayoutHeight())
-                return adjustLayoutUnitForAbsoluteZoom(layoutView->overflowClipRect(LayoutPoint()).height(), *layoutView);
-            return adjustLayoutUnitForAbsoluteZoom(layoutView->layoutSize().height(), *layoutView);
+                return adjustLayoutUnitForAbsoluteZoom(layoutView->overflowClipRect(LayoutPoint()).height(), layoutView->styleRef()).round();
+            return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutView->layoutSize().height()), layoutView->styleRef()).round();
         }
     }
 
     if (LayoutBox* layoutObject = layoutBox())
-        return adjustLayoutUnitForAbsoluteZoom(layoutObject->pixelSnappedClientHeight(), *layoutObject).round();
+        return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutObject->pixelSnappedClientHeight()), layoutObject->styleRef()).round();
     return 0;
 }
 

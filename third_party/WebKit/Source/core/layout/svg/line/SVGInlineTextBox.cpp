@@ -233,7 +233,7 @@ LayoutRect SVGInlineTextBox::calculateBoundaries() const
     LineLayoutSVGInlineText lineLayoutItem = LineLayoutSVGInlineText(this->lineLayoutItem());
     float scalingFactor = lineLayoutItem.scalingFactor();
     ASSERT(scalingFactor);
-    LayoutUnit baseline = lineLayoutItem.scaledFont().fontMetrics().floatAscent() / scalingFactor;
+    LayoutUnit baseline(lineLayoutItem.scaledFont().fontMetrics().floatAscent() / scalingFactor);
 
     LayoutRect textBoundingRect;
     for (const SVGTextFragment& fragment : m_textFragments)

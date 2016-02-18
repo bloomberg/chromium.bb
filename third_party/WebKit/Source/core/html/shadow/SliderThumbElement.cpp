@@ -154,8 +154,8 @@ void SliderThumbElement::setPositionFromPoint(const LayoutPoint& point)
     if (closest.isFinite()) {
         double closestFraction = stepRange.proportionFromValue(closest).toDouble();
         double closestRatio = isVertical || !isLeftToRightDirection ? 1.0 - closestFraction : closestFraction;
-        LayoutUnit closestPosition = trackSize * closestRatio;
-        const LayoutUnit snappingThreshold = 5;
+        LayoutUnit closestPosition(trackSize * closestRatio);
+        const LayoutUnit snappingThreshold(5);
         if ((closestPosition - position).abs() <= snappingThreshold)
             value = closest;
     }

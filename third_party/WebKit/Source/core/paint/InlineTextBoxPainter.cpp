@@ -108,7 +108,9 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
             // farther to the right.
             // NOTE: WebKit's behavior differs from that of IE which appears to just overlay the ellipsis on top of the
             // truncated string i.e.  |Hello|CBA| -> |...lo|CBA|
-            LayoutUnit widthOfVisibleText = m_inlineTextBox.lineLayoutItem().width(m_inlineTextBox.start(), m_inlineTextBox.truncation(), m_inlineTextBox.textPos(), m_inlineTextBox.isLeftToRightDirection() ? LTR : RTL, m_inlineTextBox.isFirstLineStyle());
+            LayoutUnit widthOfVisibleText = LayoutUnit(m_inlineTextBox.lineLayoutItem().width(
+                m_inlineTextBox.start(), m_inlineTextBox.truncation(), m_inlineTextBox.textPos(),
+                m_inlineTextBox.isLeftToRightDirection() ? LTR : RTL, m_inlineTextBox.isFirstLineStyle()));
             LayoutUnit widthOfHiddenText = m_inlineTextBox.logicalWidth() - widthOfVisibleText;
             // FIXME: The hit testing logic also needs to take this translation into account.
             LayoutSize truncationOffset(m_inlineTextBox.isLeftToRightDirection() ? widthOfHiddenText : -widthOfHiddenText, LayoutUnit());
@@ -410,7 +412,7 @@ void InlineTextBoxPainter::paintDocumentMarker(GraphicsContext& context, const L
         // FIXME: Convert the document markers to float rects.
         IntRect markerRect = enclosingIntRect(font.selectionRectForText(run, FloatPoint(startPoint), selHeight, startPosition, endPosition));
         start = markerRect.x() - startPoint.x();
-        width = markerRect.width();
+        width = LayoutUnit(markerRect.width());
     }
 
     // IMPORTANT: The misspelling underline is not considered when calculating the text bounds, so we have to
@@ -736,7 +738,9 @@ void InlineTextBoxPainter::paintDecoration(const PaintInfo& paintInfo, const Lay
 
     LayoutUnit width = m_inlineTextBox.logicalWidth();
     if (m_inlineTextBox.truncation() != cNoTruncation) {
-        width = m_inlineTextBox.lineLayoutItem().width(m_inlineTextBox.start(), m_inlineTextBox.truncation(), m_inlineTextBox.textPos(), m_inlineTextBox.isLeftToRightDirection() ? LTR : RTL, m_inlineTextBox.isFirstLineStyle());
+        width = LayoutUnit(m_inlineTextBox.lineLayoutItem().width(
+            m_inlineTextBox.start(), m_inlineTextBox.truncation(), m_inlineTextBox.textPos(),
+            m_inlineTextBox.isLeftToRightDirection() ? LTR : RTL, m_inlineTextBox.isFirstLineStyle()));
         if (!m_inlineTextBox.isLeftToRightDirection())
             localOrigin.move(m_inlineTextBox.logicalWidth() - width, LayoutUnit());
     }
@@ -799,7 +803,7 @@ void InlineTextBoxPainter::paintCompositionUnderline(GraphicsContext& context, c
         m_inlineTextBox.lineLayoutItem().width(m_inlineTextBox.start(), paintStart - m_inlineTextBox.start(), m_inlineTextBox.textPos(), m_inlineTextBox.isLeftToRightDirection() ? LTR : RTL, m_inlineTextBox.isFirstLineStyle());
     // how much line to draw
     float width = (paintStart == static_cast<unsigned>(m_inlineTextBox.start()) && paintEnd == static_cast<unsigned>(m_inlineTextBox.end()) + 1) ? m_inlineTextBox.logicalWidth().toFloat() :
-        m_inlineTextBox.lineLayoutItem().width(paintStart, paintEnd - paintStart, m_inlineTextBox.textPos() + start, m_inlineTextBox.isLeftToRightDirection() ? LTR : RTL, m_inlineTextBox.isFirstLineStyle());
+        m_inlineTextBox.lineLayoutItem().width(paintStart, paintEnd - paintStart, LayoutUnit(m_inlineTextBox.textPos() + start), m_inlineTextBox.isLeftToRightDirection() ? LTR : RTL, m_inlineTextBox.isFirstLineStyle());
     // In RTL mode, start and width are computed from the right end of the text box:
     // starting at |logicalWidth| - |start| and continuing left by |width| to
     // |logicalWidth| - |start| - |width|. We will draw that line, but

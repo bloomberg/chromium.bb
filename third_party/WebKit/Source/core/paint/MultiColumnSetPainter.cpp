@@ -40,7 +40,7 @@ void MultiColumnSetPainter::paintColumnRules(const PaintInfo& paintInfo, const L
     const Color& ruleColor = m_layoutMultiColumnSet.resolveColor(blockStyle, CSSPropertyWebkitColumnRuleColor);
     bool ruleTransparent = blockStyle.columnRuleIsTransparent();
     EBorderStyle ruleStyle = blockStyle.columnRuleStyle();
-    LayoutUnit ruleThickness = blockStyle.columnRuleWidth();
+    LayoutUnit ruleThickness(blockStyle.columnRuleWidth());
     LayoutUnit colGap = m_layoutMultiColumnSet.columnGap();
     bool renderRule = ruleStyle > BHIDDEN && !ruleTransparent;
     if (!renderRule)

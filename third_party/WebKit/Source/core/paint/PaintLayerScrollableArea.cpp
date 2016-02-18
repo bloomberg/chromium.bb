@@ -1281,7 +1281,7 @@ void PaintLayerScrollableArea::resize(const PlatformEvent& evt, const LayoutSize
             element->setInlineStyleProperty(CSSPropertyMarginRight, box().marginRight() / zoomFactor, CSSPrimitiveValue::UnitType::Pixels);
         }
         LayoutUnit baseWidth = box().size().width() - (isBoxSizingBorder ? LayoutUnit() : box().borderAndPaddingWidth());
-        baseWidth = baseWidth / zoomFactor;
+        baseWidth = LayoutUnit(baseWidth / zoomFactor);
         element->setInlineStyleProperty(CSSPropertyWidth, roundToInt(baseWidth + difference.width()), CSSPrimitiveValue::UnitType::Pixels);
     }
 
@@ -1292,7 +1292,7 @@ void PaintLayerScrollableArea::resize(const PlatformEvent& evt, const LayoutSize
             element->setInlineStyleProperty(CSSPropertyMarginBottom, box().marginBottom() / zoomFactor, CSSPrimitiveValue::UnitType::Pixels);
         }
         LayoutUnit baseHeight = box().size().height() - (isBoxSizingBorder ? LayoutUnit() : box().borderAndPaddingHeight());
-        baseHeight = baseHeight / zoomFactor;
+        baseHeight = LayoutUnit(baseHeight / zoomFactor);
         element->setInlineStyleProperty(CSSPropertyHeight, roundToInt(baseHeight + difference.height()), CSSPrimitiveValue::UnitType::Pixels);
     }
 

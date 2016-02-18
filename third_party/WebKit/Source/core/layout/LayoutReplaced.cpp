@@ -628,7 +628,7 @@ LayoutUnit LayoutReplaced::computeReplacedLogicalHeight() const
 
     // If 'height' and 'width' both have computed values of 'auto' and the element also has an intrinsic height, then that intrinsic height is the used value of 'height'.
     if (widthIsAuto && intrinsicSizingInfo.hasHeight)
-        return computeReplacedLogicalHeightRespectingMinMaxHeight(constrainedSize.height());
+        return computeReplacedLogicalHeightRespectingMinMaxHeight(LayoutUnit(constrainedSize.height()));
 
     // Otherwise, if 'height' has a computed value of 'auto', and the element has an intrinsic ratio then the used value of 'height' is:
     // (used width) / (intrinsic ratio)

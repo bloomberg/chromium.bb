@@ -249,7 +249,7 @@ void LayoutGeometryMap::push(const LayoutObject* layoutObject, const Transformat
     if (!t.isIntegerTranslation())
         step.m_transform = TransformationMatrix::create(t);
     else
-        step.m_offset = LayoutSize(t.e(), t.f());
+        step.m_offset = LayoutSize(LayoutUnit(t.e()), LayoutUnit(t.f()));
 
     stepInserted(step);
 }

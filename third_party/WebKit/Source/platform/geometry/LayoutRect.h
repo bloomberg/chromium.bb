@@ -52,6 +52,8 @@ public:
         : m_location(location), m_size(size) { }
     LayoutRect(LayoutUnit x, LayoutUnit y, LayoutUnit width, LayoutUnit height)
         : m_location(LayoutPoint(x, y)), m_size(LayoutSize(width, height)) { }
+    LayoutRect(int x, int y, int width, int height)
+        : m_location(LayoutPoint(x, y)), m_size(LayoutSize(width, height)) { }
     LayoutRect(const FloatPoint& location, const FloatSize& size)
         : m_location(location), m_size(size) { }
     LayoutRect(const DoublePoint& location, const DoubleSize& size)
@@ -98,6 +100,7 @@ public:
     void moveBy(const LayoutPoint& offset) { m_location.move(offset.x(), offset.y()); }
     void moveBy(const IntPoint& offset) { m_location.move(LayoutUnit(offset.x()), LayoutUnit(offset.y())); }
     void move(LayoutUnit dx, LayoutUnit dy) { m_location.move(dx, dy); }
+    void move(int dx, int dy) { m_location.move(LayoutUnit(dx), LayoutUnit(dy)); }
 
     void expand(const LayoutSize& size) { m_size += size; }
     void expand(const LayoutRectOutsets& box)
@@ -113,6 +116,7 @@ public:
     }
     void contract(const LayoutSize& size) { m_size -= size; }
     void contract(LayoutUnit dw, LayoutUnit dh) { m_size.expand(-dw, -dh); }
+    void contract(int dw, int dh) { m_size.expand(-dw, -dh); }
     void contractEdges(LayoutUnit top, LayoutUnit right, LayoutUnit bottom, LayoutUnit left)
     {
         m_location.move(left, top);
@@ -175,6 +179,7 @@ public:
         m_size.setHeight(m_size.height() + dy + dy);
     }
     void inflate(LayoutUnit d) { inflateX(d); inflateY(d); }
+    void inflate(int d) { inflate(LayoutUnit(d)); }
     void scale(float s);
     void scale(float xAxisScale, float yAxisScale);
 

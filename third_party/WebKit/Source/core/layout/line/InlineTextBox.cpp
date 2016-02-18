@@ -256,7 +256,7 @@ LayoutRect InlineTextBox::localSelectionRect(int startPos, int endPos) const
         height = selHeight;
         if (hasWrappedSelectionNewline()) {
             if (!isLeftToRightDirection())
-                topPoint.setX(topPoint.x() - newlineSpaceWidth());
+                topPoint.setX(LayoutUnit(topPoint.x() - newlineSpaceWidth()));
             width += newlineSpaceWidth();
         }
     } else {
@@ -359,7 +359,7 @@ LayoutUnit InlineTextBox::placeEllipsisBox(bool flowIsLTR, LayoutUnit visibleLef
 
         // If we got here that means that we were only partially truncated and we need to return the pixel offset at which
         // to place the ellipsis.
-        LayoutUnit widthOfVisibleText = lineLayoutItem().width(m_start, offset, textPos(), flowIsLTR ? LTR : RTL, isFirstLineStyle());
+        LayoutUnit widthOfVisibleText(lineLayoutItem().width(m_start, offset, textPos(), flowIsLTR ? LTR : RTL, isFirstLineStyle()));
 
         // The ellipsis needs to be placed just after the last visible character.
         // Where "after" is defined by the flow directionality, not the inline
@@ -506,7 +506,7 @@ LayoutUnit InlineTextBox::positionForOffset(int offset) const
     int from = !isLeftToRightDirection() ? offset - m_start : 0;
     int to = !isLeftToRightDirection() ? m_len : offset - m_start;
     // FIXME: Do we need to add rightBearing here?
-    return font.selectionRectForText(constructTextRun(styleToUse, font), IntPoint(logicalLeft(), 0), 0, from, to).maxX();
+    return LayoutUnit(font.selectionRectForText(constructTextRun(styleToUse, font), IntPoint(logicalLeft(), 0), 0, from, to).maxX());
 }
 
 bool InlineTextBox::containsCaretOffset(int offset) const

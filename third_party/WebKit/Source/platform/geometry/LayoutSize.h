@@ -52,6 +52,8 @@ public:
     LayoutSize() { }
     explicit LayoutSize(const IntSize& size) : m_width(size.width()), m_height(size.height()) { }
     LayoutSize(LayoutUnit width, LayoutUnit height) : m_width(width), m_height(height) { }
+    LayoutSize(int width, int height) : m_width(LayoutUnit(width)), m_height(LayoutUnit(height)) { }
+    LayoutSize(float width, float height) : m_width(LayoutUnit(width)), m_height(LayoutUnit(height)) { }
 
     explicit LayoutSize(const FloatSize& size) : m_width(size.width()), m_height(size.height()) { }
     explicit LayoutSize(const DoubleSize& size) : m_width(size.width()), m_height(size.height()) { }
@@ -72,6 +74,10 @@ public:
         m_width += width;
         m_height += height;
     }
+
+    void expand(int width, int height) { expand(LayoutUnit(width), LayoutUnit(height)); }
+
+    void shrink(int width, int height) { shrink(LayoutUnit(width), LayoutUnit(height)); }
 
     void shrink(LayoutUnit width, LayoutUnit height)
     {

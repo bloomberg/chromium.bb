@@ -242,11 +242,11 @@ void TableLayoutAlgorithmAuto::computeIntrinsicLogicalWidths(LayoutUnit& minWidt
 
     if (scaleColumns) {
         maxNonPercent = maxNonPercent * 100 / std::max(remainingPercent, epsilon);
-        maxWidth = std::max(maxWidth, LayoutUnit(std::min(maxNonPercent, static_cast<float>(tableMaxWidth)))).floor();
-        maxWidth = std::max(maxWidth, LayoutUnit(std::min(maxPercent, static_cast<float>(tableMaxWidth)))).floor();
+        maxWidth = std::max(maxWidth, LayoutUnit(std::min(maxNonPercent, static_cast<float>(tableMaxWidth))));
+        maxWidth = std::max(maxWidth, LayoutUnit(std::min(maxPercent, static_cast<float>(tableMaxWidth))));
     }
 
-    maxWidth = std::max(maxWidth.floor(), spanMaxLogicalWidth);
+    maxWidth = LayoutUnit(std::max(maxWidth.floor(), spanMaxLogicalWidth));
 }
 
 void TableLayoutAlgorithmAuto::applyPreferredLogicalWidthQuirks(LayoutUnit& minWidth, LayoutUnit& maxWidth) const
@@ -259,11 +259,11 @@ void TableLayoutAlgorithmAuto::applyPreferredLogicalWidthQuirks(LayoutUnit& minW
         // FIXME: This line looks REALLY suspicious as it could allow the minimum
         // preferred logical width to be smaller than the table content. This has
         // to be cross-checked against other browsers.
-        minWidth = maxWidth = std::max<int>(minWidth.floor(), tableLogicalWidth.value());
+        minWidth = maxWidth = LayoutUnit(std::max<int>(minWidth.floor(), tableLogicalWidth.value()));
 
         const Length& styleMaxLogicalWidth = m_table->style()->logicalMaxWidth();
         if (styleMaxLogicalWidth.isFixed() && !styleMaxLogicalWidth.isNegative()) {
-            minWidth = std::min<int>(minWidth.floor(), styleMaxLogicalWidth.value());
+            minWidth = LayoutUnit(std::min<int>(minWidth.floor(), styleMaxLogicalWidth.value()));
             minWidth = std::max(minWidth, minContentWidth);
             maxWidth = minWidth;
         }

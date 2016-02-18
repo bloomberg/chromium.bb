@@ -157,7 +157,7 @@ void LineWidth::wrapNextToShapeOutside(bool isFirstLine)
 
         newLineTop++;
     }
-    updateLineDimension(newLineTop, newLineWidth, newLineLeft, newLineRight);
+    updateLineDimension(newLineTop, LayoutUnit(newLineWidth), newLineLeft, newLineRight);
 }
 
 void LineWidth::fitBelowFloats(bool isFirstLine)
@@ -187,7 +187,7 @@ void LineWidth::fitBelowFloats(bool isFirstLine)
         if (newLineWidth >= m_uncommittedWidth)
             break;
     }
-    updateLineDimension(lastFloatLogicalBottom, newLineWidth, newLineLeft, newLineRight);
+    updateLineDimension(lastFloatLogicalBottom, LayoutUnit(newLineWidth), newLineLeft, newLineRight);
 }
 
 void LineWidth::computeAvailableWidthFromLeftAndRight()

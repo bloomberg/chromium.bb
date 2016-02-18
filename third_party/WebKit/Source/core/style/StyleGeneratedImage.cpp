@@ -53,14 +53,14 @@ LayoutSize StyleGeneratedImage::imageSize(const LayoutObject* layoutObject, floa
         if (multiplier == 1.0f)
             return fixedSize;
 
-        LayoutUnit width = fixedSize.width() * multiplier;
-        LayoutUnit height = fixedSize.height() * multiplier;
+        LayoutUnit width(fixedSize.width() * multiplier);
+        LayoutUnit height(fixedSize.height() * multiplier);
 
         // Don't let images that have a width/height >= 1 shrink below 1 when zoomed.
-        if (fixedSize.width() > 0)
+        if (fixedSize.width() > LayoutUnit())
             width = max(LayoutUnit(1), width);
 
-        if (fixedSize.height() > 0)
+        if (fixedSize.height() > LayoutUnit())
             height = max(LayoutUnit(1), height);
 
         return LayoutSize(width, height);

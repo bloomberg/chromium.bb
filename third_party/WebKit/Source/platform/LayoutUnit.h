@@ -71,13 +71,13 @@ class LayoutUnit {
 public:
     LayoutUnit() : m_value(0) { }
     // TODO(leviw): All of the below constructors should be explicit. crbug.com/581254
-    LayoutUnit(int value) { setValue(value); }
-    LayoutUnit(unsigned short value) { setValue(value); }
-    LayoutUnit(unsigned value) { setValue(value); }
-    LayoutUnit(unsigned long value) { m_value = clampTo<int>(value * kFixedPointDenominator); }
-    LayoutUnit(unsigned long long value) { m_value = clampTo<int>(value * kFixedPointDenominator); }
-    LayoutUnit(float value) { m_value = clampTo<int>(value * kFixedPointDenominator); }
-    LayoutUnit(double value) { m_value = clampTo<int>(value * kFixedPointDenominator); }
+    explicit LayoutUnit(int value) { setValue(value); }
+    explicit LayoutUnit(unsigned short value) { setValue(value); }
+    explicit LayoutUnit(unsigned value) { setValue(value); }
+    explicit LayoutUnit(unsigned long value) { m_value = clampTo<int>(value * kFixedPointDenominator); }
+    explicit LayoutUnit(unsigned long long value) { m_value = clampTo<int>(value * kFixedPointDenominator); }
+    explicit LayoutUnit(float value) { m_value = clampTo<int>(value * kFixedPointDenominator); }
+    explicit LayoutUnit(double value) { m_value = clampTo<int>(value * kFixedPointDenominator); }
 
     static LayoutUnit fromFloatCeil(float value)
     {
@@ -794,6 +794,11 @@ inline LayoutUnit absoluteValue(const LayoutUnit& value)
 inline LayoutUnit layoutMod(const LayoutUnit& numerator, const LayoutUnit& denominator)
 {
     return numerator % denominator;
+}
+
+inline LayoutUnit layoutMod(const LayoutUnit& numerator, int denominator)
+{
+    return numerator % LayoutUnit(denominator);
 }
 
 inline bool isIntegerValue(const LayoutUnit value)

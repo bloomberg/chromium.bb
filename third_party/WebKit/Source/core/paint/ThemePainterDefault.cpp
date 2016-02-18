@@ -378,7 +378,7 @@ bool ThemePainterDefault::paintSearchFieldCancelButton(const LayoutObject& cance
     LayoutRect inputContentBox = inputLayoutBox.contentBoxRect();
 
     // Make sure the scaled button stays square and will fit in its parent's box.
-    LayoutUnit cancelButtonSize = std::min(inputContentBox.width(), std::min<LayoutUnit>(inputContentBox.height(), r.height()));
+    LayoutUnit cancelButtonSize = std::min(inputContentBox.width(), std::min(inputContentBox.height(), LayoutUnit(r.height())));
     // Calculate cancel button's coordinates relative to the input element.
     // Center the button vertically.  Round up though, so if it has to be one pixel off-center, it will
     // be one pixel closer to the bottom of the field.  This tends to look better with the text.
@@ -406,7 +406,7 @@ bool ThemePainterDefault::paintSearchFieldResultsDecoration(const LayoutObject& 
     LayoutRect inputContentBox = inputLayoutBox.contentBoxRect();
 
     // Make sure the scaled decoration stays square and will fit in its parent's box.
-    LayoutUnit magnifierSize = std::min(inputContentBox.width(), std::min<LayoutUnit>(inputContentBox.height(), r.height()));
+    LayoutUnit magnifierSize = std::min(inputContentBox.width(), std::min(inputContentBox.height(), LayoutUnit(r.height())));
     // Calculate decoration's coordinates relative to the input element.
     // Center the decoration vertically.  Round up though, so if it has to be one pixel off-center, it will
     // be one pixel closer to the bottom of the field.  This tends to look better with the text.

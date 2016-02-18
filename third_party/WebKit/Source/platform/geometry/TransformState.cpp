@@ -109,7 +109,7 @@ void TransformState::applyTransform(const TransformationMatrix& transformFromCon
         *wasClamped = false;
 
     if (transformFromContainer.isIntegerTranslation()) {
-        move(LayoutSize(transformFromContainer.e(), transformFromContainer.f()), accumulate);
+        move(LayoutSize(LayoutUnit(transformFromContainer.e()), LayoutUnit(transformFromContainer.f())), accumulate);
         return;
     }
 

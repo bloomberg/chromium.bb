@@ -28,9 +28,9 @@
 
 namespace blink {
 
-int intValueForLength(const Length& length, LayoutUnit maximumValue)
+int intValueForLength(const Length& length, int maximumValue)
 {
-    return static_cast<int>(valueForLength(length, maximumValue));
+    return static_cast<int>(valueForLength(length, LayoutUnit(maximumValue)));
 }
 
 float floatValueForLength(const Length& length, float maximumValue)

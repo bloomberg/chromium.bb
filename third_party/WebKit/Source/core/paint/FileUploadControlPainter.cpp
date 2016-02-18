@@ -51,7 +51,7 @@ void FileUploadControlPainter::paintObject(const PaintInfo& paintInfo, const Lay
         if (m_layoutFileUploadControl.style()->isLeftToRightDirection())
             textX = contentLeft + buttonAndSpacingWidth;
         else
-            textX = contentLeft + m_layoutFileUploadControl.contentWidth() - buttonAndSpacingWidth - textWidth;
+            textX = LayoutUnit(contentLeft + m_layoutFileUploadControl.contentWidth() - buttonAndSpacingWidth - textWidth);
 
         LayoutUnit textY;
         // We want to match the button's baseline

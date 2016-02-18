@@ -389,7 +389,7 @@ void InlineFlowBox::placeBoxRangeInInlineDirection(InlineBox* firstChild, Inline
             LayoutUnit space;
             if (rt.textLength()) {
                 if (needsWordSpacing && isSpaceOrNewline(rt.characterAt(text->start())))
-                    space = rt.style(isFirstLineStyle())->font().fontDescription().wordSpacing();
+                    space = LayoutUnit(rt.style(isFirstLineStyle())->font().fontDescription().wordSpacing());
                 needsWordSpacing = !isSpaceOrNewline(rt.characterAt(text->end()));
             }
             if (isLeftToRightDirection()) {
@@ -547,7 +547,7 @@ void InlineFlowBox::computeLogicalBoxHeights(RootInlineBox* rootBox, LayoutUnit&
         int descent = 0;
         rootBox->ascentAndDescentForBox(curr, textBoxDataMap, ascent, descent, affectsAscent, affectsDescent);
 
-        LayoutUnit boxHeight = ascent + descent;
+        LayoutUnit boxHeight(ascent + descent);
         if (curr->verticalAlign() == TOP) {
             if (maxPositionTop < boxHeight)
                 maxPositionTop = boxHeight;
@@ -586,7 +586,7 @@ void InlineFlowBox::placeBoxesInBlockDirection(LayoutUnit top, LayoutUnit maxHei
         const FontMetrics& fontMetrics = lineLayoutItem().style(isFirstLineStyle())->fontMetrics();
         // RootInlineBoxes are always placed at pixel boundaries in their logical y direction. Not doing
         // so results in incorrect layout of text decorations, most notably underlines.
-        setLogicalTop(roundToInt(top + maxAscent - fontMetrics.ascent(baselineType)));
+        setLogicalTop(LayoutUnit(roundToInt(top + maxAscent - fontMetrics.ascent(baselineType))));
     }
 
     LayoutUnit adjustmentForChildrenWithSameLineHeightAndBaseline;
@@ -615,7 +615,7 @@ void InlineFlowBox::placeBoxesInBlockDirection(LayoutUnit top, LayoutUnit maxHei
             if (!noQuirksMode && inlineFlowBox && !inlineFlowBox->hasTextChildren() && !curr->boxModelObject().hasInlineDirectionBordersOrPadding()
                 && !(inlineFlowBox->descendantsHaveSameLineHeightAndBaseline() && inlineFlowBox->hasTextDescendants()))
                 childAffectsTopBottomPos = false;
-            LayoutUnit posAdjust = maxAscent - curr->baselinePosition(baselineType);
+            int posAdjust = maxAscent - curr->baselinePosition(baselineType);
             curr->setLogicalTop(curr->logicalTop() + top + posAdjust);
         }
 
@@ -698,14 +698,14 @@ void InlineFlowBox::placeBoxesInBlockDirection(LayoutUnit top, LayoutUnit maxHei
         if (noQuirksMode || hasTextChildren() || (descendantsHaveSameLineHeightAndBaseline() && hasTextDescendants())) {
             if (!setLineTop) {
                 setLineTop = true;
-                lineTop = pixelSnappedLogicalTop();
+                lineTop = LayoutUnit(pixelSnappedLogicalTop());
                 lineTopIncludingMargins = lineTop;
             } else {
-                lineTop = std::min<LayoutUnit>(lineTop, pixelSnappedLogicalTop());
+                lineTop = std::min(lineTop, LayoutUnit(pixelSnappedLogicalTop()));
                 lineTopIncludingMargins = std::min(lineTop, lineTopIncludingMargins);
             }
-            selectionBottom = std::max<LayoutUnit>(selectionBottom, pixelSnappedLogicalBottom());
-            lineBottom = std::max<LayoutUnit>(lineBottom, pixelSnappedLogicalBottom());
+            selectionBottom = std::max(selectionBottom, LayoutUnit(pixelSnappedLogicalBottom()));
+            lineBottom = std::max(lineBottom, LayoutUnit(pixelSnappedLogicalBottom()));
             lineBottomIncludingMargins = std::max(lineBottom, lineBottomIncludingMargins);
         }
 
@@ -856,20 +856,20 @@ inline void InlineFlowBox::addTextBoxVisualOverflow(InlineTextBox* textBox, Glyp
     LayoutUnit textShadowLogicalLeft = -textShadowLogicalOutsets.left();
     LayoutUnit textShadowLogicalRight = textShadowLogicalOutsets.right();
 
-    LayoutUnit childOverflowLogicalTop = std::min<LayoutUnit>(textShadowLogicalTop + topGlyphOverflow, topGlyphOverflow);
-    LayoutUnit childOverflowLogicalBottom = std::max<LayoutUnit>(textShadowLogicalBottom + bottomGlyphOverflow, bottomGlyphOverflow);
-    LayoutUnit childOverflowLogicalLeft = std::min<LayoutUnit>(textShadowLogicalLeft + leftGlyphOverflow, leftGlyphOverflow);
-    LayoutUnit childOverflowLogicalRight = std::max<LayoutUnit>(textShadowLogicalRight + rightGlyphOverflow, rightGlyphOverflow);
+    LayoutUnit childOverflowLogicalTop(std::min(textShadowLogicalTop + topGlyphOverflow, topGlyphOverflow));
+    LayoutUnit childOverflowLogicalBottom(std::max(textShadowLogicalBottom + bottomGlyphOverflow, bottomGlyphOverflow));
+    LayoutUnit childOverflowLogicalLeft(std::min(textShadowLogicalLeft + leftGlyphOverflow, leftGlyphOverflow));
+    LayoutUnit childOverflowLogicalRight(std::max(textShadowLogicalRight + rightGlyphOverflow, rightGlyphOverflow));
 
     int enclosingLogicalTopWithOverflow = (textBox->logicalTop() + childOverflowLogicalTop).floor();
     int enclosingLogicalBottomWithOverflow = (textBox->logicalBottom() + childOverflowLogicalBottom).ceil();
     int enclosingLogicalLeftWithOverflow = (textBox->logicalLeft() + childOverflowLogicalLeft).floor();
     int enclosingLogicalRightWithOverflow = (textBox->logicalRight() + childOverflowLogicalRight).ceil();
 
-    LayoutUnit logicalTopVisualOverflow = std::min<LayoutUnit>(enclosingLogicalTopWithOverflow, logicalVisualOverflow.y());
-    LayoutUnit logicalBottomVisualOverflow = std::max<LayoutUnit>(enclosingLogicalBottomWithOverflow, logicalVisualOverflow.maxY());
-    LayoutUnit logicalLeftVisualOverflow = std::min<LayoutUnit>(enclosingLogicalLeftWithOverflow, logicalVisualOverflow.x());
-    LayoutUnit logicalRightVisualOverflow = std::max<LayoutUnit>(enclosingLogicalRightWithOverflow, logicalVisualOverflow.maxX());
+    LayoutUnit logicalTopVisualOverflow = std::min(LayoutUnit(enclosingLogicalTopWithOverflow), logicalVisualOverflow.y());
+    LayoutUnit logicalBottomVisualOverflow = std::max(LayoutUnit(enclosingLogicalBottomWithOverflow), logicalVisualOverflow.maxY());
+    LayoutUnit logicalLeftVisualOverflow = std::min(LayoutUnit(enclosingLogicalLeftWithOverflow), logicalVisualOverflow.x());
+    LayoutUnit logicalRightVisualOverflow = std::max(LayoutUnit(enclosingLogicalRightWithOverflow), logicalVisualOverflow.maxX());
 
     logicalVisualOverflow = LayoutRect(logicalLeftVisualOverflow, logicalTopVisualOverflow, logicalRightVisualOverflow - logicalLeftVisualOverflow, logicalBottomVisualOverflow - logicalTopVisualOverflow);
 
@@ -1104,7 +1104,7 @@ bool InlineFlowBox::canAccommodateEllipsis(bool ltr, int blockEdge, int ellipsis
 
 LayoutUnit InlineFlowBox::placeEllipsisBox(bool ltr, LayoutUnit blockLeftEdge, LayoutUnit blockRightEdge, LayoutUnit ellipsisWidth, LayoutUnit &truncatedWidth, bool& foundBox)
 {
-    LayoutUnit result = -1;
+    LayoutUnit result(-1);
     // We iterate over all children, the foundBox variable tells us when we've found the
     // box containing the ellipsis.  All boxes after that one in the flow are hidden.
     // If our flow is ltr then iterate over the boxes from left to right, otherwise iterate
@@ -1116,9 +1116,10 @@ LayoutUnit InlineFlowBox::placeEllipsisBox(bool ltr, LayoutUnit blockLeftEdge, L
     int visibleRightEdge = blockRightEdge;
 
     while (box) {
-        int currResult = box->placeEllipsisBox(ltr, visibleLeftEdge, visibleRightEdge, ellipsisWidth, truncatedWidth, foundBox);
+        int currResult = box->placeEllipsisBox(ltr, LayoutUnit(visibleLeftEdge), LayoutUnit(visibleRightEdge),
+            ellipsisWidth, truncatedWidth, foundBox);
         if (currResult != -1 && result == -1)
-            result = currResult;
+            result = LayoutUnit(currResult);
 
         if (ltr) {
             visibleLeftEdge += box->logicalWidth().round();

@@ -285,7 +285,7 @@ LayoutUnit LayoutMultiColumnFlowThread::maxColumnLogicalHeight() const
     const LayoutBlockFlow* multicolBlock = multiColumnBlockFlow();
     Length logicalMaxHeight = multicolBlock->style()->logicalMaxHeight();
     if (!logicalMaxHeight.isMaxSizeNone()) {
-        LayoutUnit resolvedLogicalMaxHeight = multicolBlock->computeContentLogicalHeight(MaxSize, logicalMaxHeight, -1);
+        LayoutUnit resolvedLogicalMaxHeight = multicolBlock->computeContentLogicalHeight(MaxSize, logicalMaxHeight, LayoutUnit(-1));
         if (resolvedLogicalMaxHeight != -1)
             return resolvedLogicalMaxHeight;
     }
