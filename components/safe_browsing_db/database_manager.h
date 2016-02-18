@@ -20,7 +20,14 @@
 #include "content/public/common/resource_type.h"
 #include "url/gurl.h"
 
+namespace net {
+class URLRequestContextGetter;
+}  // namespace net
+
 namespace safe_browsing {
+
+struct V4GetHashProtocolConfig;
+class V4GetHashProtocolManager;
 
 // Base class to either the locally-managed or a remotely-managed database.
 class SafeBrowsingDatabaseManager
@@ -152,9 +159,19 @@ class SafeBrowsingDatabaseManager
   virtual void StopOnIOThread(bool shutdown) = 0;
 
  protected:
-  virtual ~SafeBrowsingDatabaseManager() {}
+  // Use this constructor for testing only.
+  SafeBrowsingDatabaseManager();
+
+  // Constructs the database manager.
+  SafeBrowsingDatabaseManager(
+      net::URLRequestContextGetter* request_context_getter,
+      const V4GetHashProtocolConfig& config);
+
+  virtual ~SafeBrowsingDatabaseManager();
 
   friend class base::RefCountedThreadSafe<SafeBrowsingDatabaseManager>;
+
+  std::unique_ptr<V4GetHashProtocolManager> v4_get_hash_protocol_manager_;
 };  // class SafeBrowsingDatabaseManager
 
 }  // namespace safe_browsing

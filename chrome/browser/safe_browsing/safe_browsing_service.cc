@@ -31,6 +31,7 @@
 #include "chrome/browser/safe_browsing/download_protection_service.h"
 #include "chrome/browser/safe_browsing/ping_manager.h"
 #include "chrome/browser/safe_browsing/protocol_manager.h"
+#include "chrome/browser/safe_browsing/protocol_manager_helper.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -40,10 +41,12 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing_db/database_manager.h"
+#include "components/safe_browsing_db/v4_get_hash_protocol_manager.h"
 #include "components/user_prefs/tracked/tracked_preference_validation_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/browser/notification_service.h"
+#include "google_apis/google_api_keys.h"
 #include "net/cookies/cookie_store.h"
 #include "net/extras/sqlite/cookie_crypto_delegate.h"
 #include "net/url_request/url_request_context.h"
@@ -399,10 +402,13 @@ SafeBrowsingUIManager* SafeBrowsingService::CreateUIManager() {
 }
 
 SafeBrowsingDatabaseManager* SafeBrowsingService::CreateDatabaseManager() {
+  V4GetHashProtocolConfig config = GetV4GetHashProtocolConfig();
 #if defined(SAFE_BROWSING_DB_LOCAL)
-  return new LocalSafeBrowsingDatabaseManager(this);
+  return new LocalSafeBrowsingDatabaseManager(this,
+      url_request_context_getter_.get(), config);
 #elif defined(SAFE_BROWSING_DB_REMOTE)
-  return new RemoteSafeBrowsingDatabaseManager();
+  return new RemoteSafeBrowsingDatabaseManager(
+      url_request_context_getter_.get(), config);
 #else
   return NULL;
 #endif
@@ -428,27 +434,8 @@ void SafeBrowsingService::RegisterAllDelayedAnalysis() {
 
 SafeBrowsingProtocolConfig SafeBrowsingService::GetProtocolConfig() const {
   SafeBrowsingProtocolConfig config;
-  // On Windows, get the safe browsing client name from the browser
-  // distribution classes in installer util. These classes don't yet have
-  // an analog on non-Windows builds so just keep the name specified here.
-#if defined(OS_WIN)
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  config.client_name = dist->GetSafeBrowsingName();
-#else
-#if defined(GOOGLE_CHROME_BUILD)
-  config.client_name = "googlechrome";
-#else
-  config.client_name = "chromium";
-#endif
+  config.client_name = GetProtocolConfigClientName();
 
-  // Mark client string to allow server to differentiate mobile.
-#if defined(OS_ANDROID)
-  config.client_name.append("-a");
-#elif defined(OS_IOS)
-  config.client_name.append("-i");
-#endif
-
-#endif  // defined(OS_WIN)
   base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
   config.disable_auto_update =
       cmdline->HasSwitch(switches::kSbDisableAutoUpdate) ||
@@ -459,6 +446,43 @@ SafeBrowsingProtocolConfig SafeBrowsingService::GetProtocolConfig() const {
   config.backup_network_error_url_prefix = kSbBackupNetworkErrorURLPrefix;
 
   return config;
+}
+
+V4GetHashProtocolConfig
+SafeBrowsingService::GetV4GetHashProtocolConfig() const {
+  V4GetHashProtocolConfig config;
+  config.client_name = GetProtocolConfigClientName();
+  config.version = SafeBrowsingProtocolManagerHelper::Version();
+  config.key_param = google_apis::GetAPIKey();;
+
+  return config;
+}
+
+std::string SafeBrowsingService::GetProtocolConfigClientName() const {
+  std::string client_name;
+  // On Windows, get the safe browsing client name from the browser
+  // distribution classes in installer util. These classes don't yet have
+  // an analog on non-Windows builds so just keep the name specified here.
+#if defined(OS_WIN)
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  client_name = dist->GetSafeBrowsingName();
+#else
+#if defined(GOOGLE_CHROME_BUILD)
+  client_name = "googlechrome";
+#else
+  client_name = "chromium";
+#endif
+
+  // Mark client string to allow server to differentiate mobile.
+#if defined(OS_ANDROID)
+  client_name.append("-a");
+#elif defined(OS_IOS)
+  client_name.append("-i");
+#endif
+
+#endif  // defined(OS_WIN)
+
+  return client_name;
 }
 
 // Any tests that create a DatabaseManager that isn't derived from
