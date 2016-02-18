@@ -3260,7 +3260,7 @@
           },
         },
         'conditions': [
-          ['OS=="win" and win_fastlink==1 and MSVS_VERSION != "2013"', {
+          ['OS=="win" and win_fastlink==1', {
             'msvs_settings': {
               'VCLinkerTool': {
                 # /PROFILE is incompatible with /debug:fastlink
