@@ -220,6 +220,12 @@
                    file="default_browser_page/default_browser_page.js"
                    type="chrome_html" />
       </if>
+      <structure name="IDR_SETTINGS_DIRECTION_DELEGATE_HTML"
+                 file="direction_delegate.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_DIRECTION_DELEGATE_JS"
+                 file="direction_delegate.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_DOWNLOADS_PAGE_CSS"
                  file="downloads_page/downloads_page.css"
                  type="chrome_html" />

@@ -24,9 +24,10 @@ CrSettingsBrowserTest.prototype = {
   /** @override */
   browsePreload: 'chrome://md-settings/prefs/prefs.html',
 
-  commandLineSwitches: [{switchName: 'enable-md-settings'}],
-
-  /** @override */
+  /**
+   * TODO(dbeam): these should not be required monolithically.
+   * @override
+   */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
     '../fake_chrome_event.js',
     'fake_settings_private.js',
@@ -53,9 +54,8 @@ GEN('#else');
 GEN('#define MAYBE_CrSettingsTest CrSettingsTest');
 GEN('#endif');
 
-// Runs all tests.
+// TODO(dbeam): these should be split into multiple TEST_F()s.
 TEST_F('CrSettingsBrowserTest', 'MAYBE_CrSettingsTest', function() {
-  // Register mocha tests for each element.
   settings_checkbox.registerTests();
   settings_dropdown_menu.registerTests();
   settings_prefUtil.registerTests();
@@ -69,9 +69,32 @@ TEST_F('CrSettingsBrowserTest', 'MAYBE_CrSettingsTest', function() {
   mocha.run();
 });
 
-
 TEST_F('CrSettingsBrowserTest', 'ResetPage', function() {
   settings_reset_page.registerDialogTests();
   settings_reset_page.registerBannerTests();
+  mocha.run();
+});
+
+/**
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsRtlTest() {}
+
+CrSettingsRtlTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/settings_ui/settings_ui.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'rtl_tests.js',
+  ]),
+};
+
+TEST_F('CrSettingsRtlTest', 'DrawerPanelFlips', function() {
+  settingsHidePagesByDefaultForTest = true;
+  settings_rtl_tests.registerDrawerPanelTests();
   mocha.run();
 });

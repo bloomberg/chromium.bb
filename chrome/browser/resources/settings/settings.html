@@ -7,6 +7,7 @@
   <link rel="import" href="chrome://resources/html/polymer_config.html">
   <link rel="import" href="chrome://md-settings/i18n_setup.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+  <link rel="import" href="chrome://md-settings/direction_delegate.html">
   <link rel="import" href="chrome://md-settings/settings_ui/settings_ui.html">
   <link rel="import" href="chrome://md-settings/prefs/prefs.html">
 </head>
@@ -15,12 +16,12 @@
   <dom-module id="cr-settings">
     <template>
       <settings-prefs id="prefs" prefs="{{prefs_}}"></settings-prefs>
-      <settings-ui prefs="{{prefs_}}"></settings-ui>
+      <settings-ui id="ui" prefs="{{prefs_}}"></settings-ui>
     </template>
     <script src="settings.js"></script>
   </dom-module>
 
   <cr-settings></cr-settings>
-  <script src="chrome://resources/js/i18n_template.js"></script>
+  <link rel="import" href="chrome://resources/html/i18n_template.html">
 </body>
 </html>
