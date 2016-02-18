@@ -22,21 +22,19 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
-import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserver;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.ActivityUtils;
+import org.chromium.chrome.test.util.BookmarkTestUtil;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
-import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
-import java.util.concurrent.TimeoutException;
 
 /**
  * Tests for the bookmark manager.
@@ -76,38 +74,10 @@ public class BookmarkTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mBookmarkModel = new BookmarkModel(
-                        getActivity().getActivityTab().getProfile());
+                mBookmarkModel = new BookmarkModel(getActivity().getActivityTab().getProfile());
             }
         });
-        waitForBookmarkModelLoaded();
-    }
-
-    private void waitForBookmarkModelLoaded() throws InterruptedException {
-        final CallbackHelper loadedCallback = new CallbackHelper();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                if (mBookmarkModel.isBookmarkModelLoaded()) loadedCallback.notifyCalled();
-                else {
-                    mBookmarkModel.addObserver(new BookmarkModelObserver() {
-                        @Override
-                        public void bookmarkModelChanged() {}
-
-                        @Override
-                        public void bookmarkModelLoaded() {
-                            loadedCallback.notifyCalled();
-                            mBookmarkModel.removeObserver(this);
-                        }
-                    });
-                }
-            }
-        });
-        try {
-            loadedCallback.waitForCallback(0);
-        } catch (TimeoutException e) {
-            Assert.fail("bookmark model did not load: Timeout.");
-        }
+        BookmarkTestUtil.waitForBookmarkModelLoaded();
     }
 
     private void openBookmarkManager() throws InterruptedException {
