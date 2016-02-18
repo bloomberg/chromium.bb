@@ -12,7 +12,7 @@
 #include "mojo/shell/static_application_loader.h"
 
 #if defined(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS)
-#include "media/mojo/services/mojo_media_application.h"
+#include "media/mojo/services/mojo_media_application_factory.h"
 #endif
 
 namespace content {
@@ -44,8 +44,7 @@ void UtilityProcessControlImpl::RegisterApplicationLoaders(
 
 #if defined(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS)
   map_ref[GURL("mojo:media")] = new mojo::shell::StaticApplicationLoader(
-      base::Bind(&media::MojoMediaApplication::CreateApp),
-      base::Bind(&QuitProcess));
+      base::Bind(&media::CreateMojoMediaApplication), base::Bind(&QuitProcess));
 #endif
 }
 

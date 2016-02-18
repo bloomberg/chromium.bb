@@ -246,7 +246,7 @@ static_library("content_shell_lib") {
     ]
   }
   if (enable_mojo_media == "browser") {
-    deps += [ "//media/mojo/services:application" ]
+    deps += [ "//media/mojo/services:application_factory" ]
   }
 
   if (is_win) {

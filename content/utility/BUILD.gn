@@ -32,6 +32,6 @@ source_set("utility") {
   ]
 
   if (enable_mojo_media == "utility") {
-    deps += [ "//media/mojo/services:application" ]
+    deps += [ "//media/mojo/services:application_factory" ]
   }
 }

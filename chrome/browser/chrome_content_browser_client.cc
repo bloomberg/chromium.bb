@@ -297,7 +297,7 @@
 #endif
 
 #if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-#include "media/mojo/services/mojo_media_application.h"
+#include "media/mojo/services/mojo_media_application_factory.h"
 #endif
 
 using base::FileDescriptor;
@@ -2729,8 +2729,8 @@ void ChromeContentBrowserClient::RegisterRenderFrameMojoServices(
 void ChromeContentBrowserClient::RegisterInProcessMojoApplications(
     StaticMojoApplicationMap* apps) {
 #if (ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-  apps->insert(std::make_pair(
-      GURL("mojo:media"), base::Bind(&media::MojoMediaApplication::CreateApp)));
+  apps->insert(std::make_pair(GURL("mojo:media"),
+                              base::Bind(&media::CreateMojoMediaApplication)));
 #endif
 }
 

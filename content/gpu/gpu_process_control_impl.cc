@@ -7,7 +7,7 @@
 #if defined(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "media/mojo/services/mojo_media_application.h"
+#include "media/mojo/services/mojo_media_application_factory.h"
 #include "mojo/shell/static_application_loader.h"
 #endif
 
@@ -22,7 +22,7 @@ void GpuProcessControlImpl::RegisterApplicationLoaders(
 #if defined(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
   (*url_to_loader_map)[GURL("mojo:media")] =
       new mojo::shell::StaticApplicationLoader(
-          base::Bind(&media::MojoMediaApplication::CreateApp),
+          base::Bind(&media::CreateMojoMediaApplication),
           base::Bind(&base::DoNothing));
 #endif
 }

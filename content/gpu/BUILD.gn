@@ -54,7 +54,7 @@ source_set("gpu_sources") {
   ]
 
   if (enable_mojo_media == "gpu") {
-    deps += [ "//media/mojo/services:application" ]
+    deps += [ "//media/mojo/services:application_factory" ]
   }
 
   if (is_win) {

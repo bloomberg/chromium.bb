@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef MEDIA_MOJO_SERVICES_MOJO_MEDIA_APPLICATION_H_
+#define MEDIA_MOJO_SERVICES_MOJO_MEDIA_APPLICATION_H_
+
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "media/mojo/interfaces/service_factory.mojom.h"
@@ -18,22 +21,10 @@ class MojoMediaApplication
     : public mojo::ShellClient,
       public mojo::InterfaceFactory<interfaces::ServiceFactory> {
  public:
-  // Callback to create a MojoMediaClient.
-  using CreateMojoMediaClientCB = base::Callback<scoped_ptr<MojoMediaClient>()>;
-
-  // Creates MojoMediaApplication using the default MojoMediaClient.
-  static scoped_ptr<mojo::ShellClient> CreateApp();
-
-  // Creates MojoMediaApplication using the MojoMediaClient provided by
-  // |create_mojo_media_client_cb|.
-  static scoped_ptr<mojo::ShellClient> CreateAppWithClient(
-      const CreateMojoMediaClientCB& create_mojo_media_client_cb);
-
+  explicit MojoMediaApplication(scoped_ptr<MojoMediaClient> mojo_media_client);
   ~MojoMediaApplication() final;
 
  private:
-  explicit MojoMediaApplication(scoped_ptr<MojoMediaClient> mojo_media_client);
-
   // mojo::ShellClient implementation.
   void Initialize(mojo::Shell* shell,
                   const std::string& url,
@@ -54,3 +45,5 @@ class MojoMediaApplication
 };
 
 }  // namespace media
+
+#endif  // MEDIA_MOJO_SERVICES_MOJO_MEDIA_APPLICATION_H_

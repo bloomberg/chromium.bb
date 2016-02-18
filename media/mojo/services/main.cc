@@ -4,6 +4,7 @@
 
 #include "base/at_exit.h"
 #include "media/mojo/services/mojo_media_application.h"
+#include "media/mojo/services/test_mojo_media_client.h"
 #include "mojo/logging/init_logging.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/shell/public/cpp/application_runner.h"
@@ -14,8 +15,7 @@ MojoResult MojoMain(MojoHandle mojo_handle) {
   mojo::ApplicationRunner::InitBaseCommandLine();
   mojo::InitLogging();
 
-  scoped_ptr<mojo::ShellClient> shell_client =
-      media::MojoMediaApplication::CreateApp();
-  mojo::ApplicationRunner runner(shell_client.release());
+  mojo::ApplicationRunner runner(new media::MojoMediaApplication(
+      make_scoped_ptr(new media::TestMojoMediaClient())));
   return runner.Run(mojo_handle, false /* init_base */);
 }

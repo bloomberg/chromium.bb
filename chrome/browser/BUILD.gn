@@ -965,7 +965,7 @@ source_set("browser") {
   }
 
   if (enable_mojo_media == "browser") {
-    deps += [ "//media/mojo/services:application" ]
+    deps += [ "//media/mojo/services:application_factory" ]
   } else if (enable_mojo_media != "none") {
     configs += [ "//media/mojo/services:enable_mojo_media_config" ]
   }

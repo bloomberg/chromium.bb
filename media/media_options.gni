@@ -52,6 +52,10 @@ declare_args() {
   # - "utility": Use mojo media application hosted in the utility process.
   enable_mojo_media = "none"
 
+  # Enable the TestMojoMediaClient to be used in MojoMediaApplication. This is
+  # for testing only and will override the default platform MojoMediaClient.
+  enable_test_mojo_media_client = false
+
   # TODO(GYP): This should be a platform define.
   is_openbsd = false
 }
