@@ -34,6 +34,12 @@ int main(void) {
       "movntdq %%xmm0, g_dest " MEM_SUFFIX "\n" : : : "xmm0");
   ASSERT_EQ(memcmp(g_dest, g_src, 16), 0);
 
+  /* Test prefetchnta.  This has no side effects that we can test for. */
+  asm("prefetchnta g_dest " MEM_SUFFIX "\n" :);
+
+  /* This compiles to prefetchnta on x86. */
+  __builtin_prefetch(&g_dest, /* rw= */ 0, /* locality= */ 0);
+
 #if defined(__i386__)
   /* Test movntq. */
   reset_test_vars();
@@ -78,8 +84,8 @@ int main(void) {
       "movnti %%rax, g_dest(%%rip)\n" : : : "rax");
   ASSERT_EQ(memcmp(g_dest, g_src, 8), 0);
 
-  /* Test prefetchnta.  This has no side effects that we can test for. */
-  asm("prefetchnta g_dest(%r15)\n");
+  /* Test prefetchnta using RIP-relative addressing. */
+  asm("prefetchnta g_dest(%rip)\n");
 #endif
 
   return 0;

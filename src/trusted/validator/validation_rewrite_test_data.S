@@ -37,6 +37,16 @@ GLOBAL_SYM(movntdq_code_post_rewrite)
     movdqa %xmm0, (%edx)
 GLOBAL_SYM(movntdq_code_post_rewrite_end)
 
+GLOBAL_SYM(prefetchnta_code)
+    prefetchnta (%eax)
+GLOBAL_SYM(prefetchnta_code_end)
+
+GLOBAL_SYM(prefetchnta_code_post_rewrite)
+    nop
+    nop
+    nop
+GLOBAL_SYM(prefetchnta_code_post_rewrite_end)
+
 #else
 
 GLOBAL_SYM(no_rewrite_code)
@@ -72,6 +82,22 @@ GLOBAL_SYM(prefetchnta_code_post_rewrite)
     nop
     nop
 GLOBAL_SYM(prefetchnta_code_post_rewrite_end)
+
+GLOBAL_SYM(prefetchnta_rip_relative_code)
+    mov %edi,%edi
+    prefetchnta (%rip)
+GLOBAL_SYM(prefetchnta_rip_relative_code_end)
+
+GLOBAL_SYM(prefetchnta_rip_relative_code_post_rewrite)
+    mov %edi,%edi
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+GLOBAL_SYM(prefetchnta_rip_relative_code_post_rewrite_end)
 
 GLOBAL_SYM(movntps_code)
     mov %ebx,%ebx

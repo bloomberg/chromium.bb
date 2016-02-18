@@ -39,9 +39,11 @@ DECLARE_TEMPLATE(no_rewrite_code)
 #if NACL_BUILD_SUBARCH == 32
 DECLARE_TEMPLATE(movntq_code)
 DECLARE_TEMPLATE(movntdq_code)
+DECLARE_TEMPLATE(prefetchnta_code)
 #else
 DECLARE_TEMPLATE(off_webstore_movnt_code)
 DECLARE_TEMPLATE(prefetchnta_code)
+DECLARE_TEMPLATE(prefetchnta_rip_relative_code)
 DECLARE_TEMPLATE(movntps_code)
 DECLARE_TEMPLATE(movnti_code)
 DECLARE_TEMPLATE(movnti_code2)
@@ -115,6 +117,10 @@ TEST_F(ValidationMovntRewriteTests, RewriteMovntdq) {
   TestRewrite(&t_movntdq_code);
 }
 
+TEST_F(ValidationMovntRewriteTests, RewritePrefetchnta) {
+  TestRewrite(&t_prefetchnta_code);
+}
+
 #else
 
 // In this test, the non-temporal write instruction is not found in x86-64
@@ -126,6 +132,10 @@ TEST_F(ValidationMovntRewriteTests, ForbidOffWebStoreMovntNoRewrite) {
 
 TEST_F(ValidationMovntRewriteTests, RewritePrefetchnta) {
   TestRewrite(&t_prefetchnta_code);
+}
+
+TEST_F(ValidationMovntRewriteTests, RewritePrefetchntaRipRelative) {
+  TestRewrite(&t_prefetchnta_rip_relative_code);
 }
 
 TEST_F(ValidationMovntRewriteTests, RewriteMovntps) {

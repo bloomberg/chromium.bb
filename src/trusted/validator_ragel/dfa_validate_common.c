@@ -69,8 +69,14 @@ static Bool RewriteNonTemporal(uint8_t *ptr, uint8_t *end, uint32_t info) {
    * are no other validation failures.
    */
   ptrdiff_t size = end - ptr;
+
+  if (size >= 2 && memcmp(ptr, "\x0f\x18", 2) == 0) {
+    /* prefetchnta => nop...nop */
+    memset(ptr, 0x90, size);
+    return TRUE;
+  }
+
 #if NACL_BUILD_SUBARCH == 32
-  UNREFERENCED_PARAMETER(end);
   UNREFERENCED_PARAMETER(info);
 
   if (size >= 2 && memcmp(ptr, "\x0f\xe7", 2) == 0) {
