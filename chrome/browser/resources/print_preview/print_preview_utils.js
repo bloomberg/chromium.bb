@@ -94,7 +94,7 @@ function removeDuplicates(inArray) {
  * Example: "1-4dsf, 11" is invalid regardless of |totalPageCount|.
  * @param {string} pageRangeText The text to be checked.
  * @param {number=} opt_totalPageCount The total number of pages.
- * @return {Array<{from: number, to: number}>} An array of page range objects.
+ * @return {?Array<{from: number, to: number}>} An array of page range objects.
  */
 function pageRangeTextToPageRanges(pageRangeText, opt_totalPageCount) {
   if (pageRangeText == '') {
@@ -118,7 +118,7 @@ function pageRangeTextToPageRanges(pageRangeText, opt_totalPageCount) {
         return null;
       var from = match[1] ? parseInt(match[1], 10) : 1;
       var to = match[2] ? parseInt(match[2], 10) : totalPageCount;
-      if (from > to || from > totalPageCount)
+      if (from > to || to > totalPageCount)
         return null;
       pageRanges.push({'from': from, 'to': to});
     } else {
