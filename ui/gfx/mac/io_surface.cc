@@ -148,7 +148,16 @@ IOSurfaceRef CreateIOSurface(const gfx::Size& size, gfx::BufferFormat format) {
                     BytesPerElement(format, 0));
   }
 
-  return IOSurfaceCreate(properties);
+  IOSurfaceRef surface = IOSurfaceCreate(properties);
+
+  // Zero-initialize the IOSurface. Calling IOSurfaceLock/IOSurfaceUnlock
+  // appears to be sufficient. https://crbug.com/584760#c17
+  IOReturn r = IOSurfaceLock(surface, 0, nullptr);
+  DCHECK_EQ(kIOReturnSuccess, r);
+  r = IOSurfaceUnlock(surface, 0, nullptr);
+  DCHECK_EQ(kIOReturnSuccess, r);
+
+  return surface;
 }
 
 }  // namespace gfx

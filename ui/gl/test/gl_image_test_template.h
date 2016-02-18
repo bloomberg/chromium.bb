@@ -177,9 +177,7 @@ class GLImageZeroInitializeTest : public GLImageTest<GLImageTestDelegate> {};
 // result is zero-initialized.
 TYPED_TEST_CASE_P(GLImageZeroInitializeTest);
 
-// TODO(erikchen): Enable this test when it actually passes on Mac.
-// https://crbug.com/584760.
-TYPED_TEST_P(GLImageZeroInitializeTest, DISABLED_ZeroInitialize) {
+TYPED_TEST_P(GLImageZeroInitializeTest, ZeroInitialize) {
   const gfx::Size image_size(256, 256);
 
   GLuint framebuffer =
@@ -217,7 +215,7 @@ TYPED_TEST_P(GLImageZeroInitializeTest, DISABLED_ZeroInitialize) {
   image->Destroy(true /* have_context */);
 }
 
-REGISTER_TYPED_TEST_CASE_P(GLImageZeroInitializeTest, DISABLED_ZeroInitialize);
+REGISTER_TYPED_TEST_CASE_P(GLImageZeroInitializeTest, ZeroInitialize);
 
 template <typename GLImageTestDelegate>
 class GLImageCopyTest : public GLImageTest<GLImageTestDelegate> {};
