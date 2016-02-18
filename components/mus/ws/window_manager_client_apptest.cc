@@ -1055,7 +1055,13 @@ TEST_F(WindowServerTest, EmbedRootSeesHierarchyChanged) {
   ASSERT_TRUE(WaitForTreeSizeToMatch(vm2_v1, 2));
 }
 
-TEST_F(WindowServerTest, EmbedFromEmbedRoot) {
+// Flaky failure: http://crbug.com/587868
+#if defined(OS_LINUX)
+#define MAYBE_EmbedFromEmbedRoot DISABLED_EmbedFromEmbedRoot
+#else
+#define MAYBE_EmbedFromEmbedRoot EmbedFromEmbedRoot
+#endif
+TEST_F(WindowServerTest, MAYBE_EmbedFromEmbedRoot) {
   Window* embed_window = window_manager()->NewWindow();
   GetFirstWMRoot()->AddChild(embed_window);
 
