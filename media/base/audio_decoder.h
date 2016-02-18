@@ -85,6 +85,9 @@ class MEDIA_EXPORT AudioDecoder {
   // aborted before |closure| is called.
   virtual void Reset(const base::Closure& closure) = 0;
 
+  // Returns true if the decoder needs bitstream conversion before decoding.
+  virtual bool NeedsBitstreamConversion() const;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioDecoder);
 };

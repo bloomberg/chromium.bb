@@ -37,7 +37,7 @@ struct DecoderStreamTraits<DemuxerStream::AUDIO> {
                                 CdmContext* cdm_context,
                                 const InitCB& init_cb,
                                 const OutputCB& output_cb);
-  static bool NeedsBitstreamConversion(DecoderType* decoder) { return false; }
+  static bool NeedsBitstreamConversion(DecoderType* decoder);
   static void ReportStatistics(const StatisticsCB& statistics_cb,
                                int bytes_decoded);
   static scoped_refptr<OutputType> CreateEOSOutput();

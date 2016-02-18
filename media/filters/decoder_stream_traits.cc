@@ -29,6 +29,11 @@ void DecoderStreamTraits<DemuxerStream::AUDIO>::InitializeDecoder(
                       output_cb);
 }
 
+bool DecoderStreamTraits<DemuxerStream::AUDIO>::NeedsBitstreamConversion(
+    DecoderType* decoder) {
+  return decoder->NeedsBitstreamConversion();
+}
+
 void DecoderStreamTraits<DemuxerStream::AUDIO>::ReportStatistics(
     const StatisticsCB& statistics_cb,
     int bytes_decoded) {

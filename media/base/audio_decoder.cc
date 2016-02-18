@@ -12,4 +12,8 @@ AudioDecoder::AudioDecoder() {}
 
 AudioDecoder::~AudioDecoder() {}
 
+bool AudioDecoder::NeedsBitstreamConversion() const {
+  return false;
+}
+
 }  // namespace media

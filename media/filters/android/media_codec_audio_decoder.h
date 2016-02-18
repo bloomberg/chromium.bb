@@ -112,6 +112,7 @@ class MediaCodecAudioDecoder : public AudioDecoder {
   void Decode(const scoped_refptr<DecoderBuffer>& buffer,
               const DecodeCB& decode_cb) override;
   void Reset(const base::Closure& closure) override;
+  bool NeedsBitstreamConversion() const override;
 
  private:
   // Possible states.

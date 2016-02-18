@@ -176,6 +176,12 @@ void MediaCodecAudioDecoder::Reset(const base::Closure& closure) {
   task_runner_->PostTask(FROM_HERE, closure);
 }
 
+bool MediaCodecAudioDecoder::NeedsBitstreamConversion() const {
+  // An AAC stream needs to be converted as ADTS stream.
+  DCHECK_NE(config_.codec(), kUnknownAudioCodec);
+  return config_.codec() == kCodecAAC;
+}
+
 void MediaCodecAudioDecoder::OnKeyAdded() {
   DVLOG(1) << __FUNCTION__;
 
