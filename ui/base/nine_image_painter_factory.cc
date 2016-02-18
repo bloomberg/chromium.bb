@@ -14,6 +14,7 @@ namespace ui {
 namespace {
 
 std::vector<gfx::ImageSkia> ImageIdsToImages(const int image_ids[]) {
+  DCHECK(image_ids);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   std::vector<gfx::ImageSkia> images(9);
   for (size_t i = 0; i < 9; ++i) {
