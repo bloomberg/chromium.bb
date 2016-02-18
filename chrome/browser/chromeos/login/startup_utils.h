@@ -24,7 +24,9 @@ class StartupUtils {
   // Returns true if EULA has been accepted.
   static bool IsEulaAccepted();
 
-  // Returns OOBE completion status.
+  // Returns OOBE completion status, i.e. whether the OOBE wizard should be run
+  // on next boot.  This is NOT what causes the .oobe_completed flag file to be
+  // written.
   static bool IsOobeCompleted();
 
   // Marks EULA status as accepted.
@@ -36,10 +38,13 @@ class StartupUtils {
   // Stores the next pending OOBE screen in case it will need to be resumed.
   static void SaveOobePendingScreen(const std::string& screen);
 
-  // Returns the time since the Oobe flag file was created.
+  // Returns the time since the OOBE flag file was created.
   static base::TimeDelta GetTimeSinceOobeFlagFileCreation();
 
   // Returns device registration completion status, i.e. second part of OOBE.
+  // It is triggered by enrolling the device, but also by logging in as a
+  // consumer owner or by logging in as guest.  This state change is announced
+  // to the system by writing the .oobe_completed flag file.
   static bool IsDeviceRegistered();
 
   // Marks device registered. i.e. second part of OOBE is completed.

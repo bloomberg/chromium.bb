@@ -47,6 +47,35 @@ void SaveStringPreferenceForced(const char* pref_name,
   prefs->CommitPendingWrite();
 }
 
+// Returns the path to flag file indicating that both parts of OOBE were
+// completed.
+// On chrome device, returns /home/chronos/.oobe_completed.
+// On Linux desktop, returns {DIR_USER_DATA}/.oobe_completed.
+base::FilePath GetOobeCompleteFlagPath() {
+  // The constant is defined here so it won't be referenced directly.
+  const char kOobeCompleteFlagFilePath[] = "/home/chronos/.oobe_completed";
+
+  if (base::SysInfo::IsRunningOnChromeOS()) {
+    return base::FilePath(kOobeCompleteFlagFilePath);
+  } else {
+    base::FilePath user_data_dir;
+    PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+    return user_data_dir.AppendASCII(".oobe_completed");
+  }
+}
+
+void CreateOobeCompleteFlagFile() {
+  // Create flag file for boot-time init scripts.
+  const base::FilePath oobe_complete_flag_path = GetOobeCompleteFlagPath();
+  if (!base::PathExists(oobe_complete_flag_path)) {
+    FILE* oobe_flag_file = base::OpenFile(oobe_complete_flag_path, "w+b");
+    if (oobe_flag_file == NULL)
+      DLOG(WARNING) << oobe_complete_flag_path.value() << " doesn't exist.";
+    else
+      base::CloseFile(oobe_flag_file);
+  }
+}
+
 }  // namespace
 
 namespace chromeos {
@@ -92,23 +121,6 @@ void StartupUtils::SaveOobePendingScreen(const std::string& screen) {
   SaveStringPreferenceForced(prefs::kOobeScreenPending, screen);
 }
 
-// Returns the path to flag file indicating that both parts of OOBE were
-// completed.
-// On chrome device, returns /home/chronos/.oobe_completed.
-// On Linux desktop, returns {DIR_USER_DATA}/.oobe_completed.
-static base::FilePath GetOobeCompleteFlagPath() {
-  // The constant is defined here so it won't be referenced directly.
-  const char kOobeCompleteFlagFilePath[] = "/home/chronos/.oobe_completed";
-
-  if (base::SysInfo::IsRunningOnChromeOS()) {
-    return base::FilePath(kOobeCompleteFlagFilePath);
-  } else {
-    base::FilePath user_data_dir;
-    PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-    return user_data_dir.AppendASCII(".oobe_completed");
-  }
-}
-
 // static
 base::TimeDelta StartupUtils::GetTimeSinceOobeFlagFileCreation() {
   const base::FilePath oobe_complete_flag_path = GetOobeCompleteFlagPath();
@@ -116,18 +128,6 @@ base::TimeDelta StartupUtils::GetTimeSinceOobeFlagFileCreation() {
   if (base::GetFileInfo(oobe_complete_flag_path, &file_info))
     return base::Time::Now() - file_info.creation_time;
   return base::TimeDelta();
-}
-
-static void CreateOobeCompleteFlagFile() {
-  // Create flag file for boot-time init scripts.
-  const base::FilePath oobe_complete_flag_path = GetOobeCompleteFlagPath();
-  if (!base::PathExists(oobe_complete_flag_path)) {
-    FILE* oobe_flag_file = base::OpenFile(oobe_complete_flag_path, "w+b");
-    if (oobe_flag_file == NULL)
-      DLOG(WARNING) << oobe_complete_flag_path.value() << " doesn't exist.";
-    else
-      base::CloseFile(oobe_flag_file);
-  }
 }
 
 // static
