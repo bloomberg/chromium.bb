@@ -1985,6 +1985,9 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, double x, do
         canvas()->disableDeferral(DisableDeferralReasonSubPixelTextAntiAliasingSupport);
 
     const Font& font = accessFont();
+    if (!font.primaryFont())
+        return;
+
     const FontMetrics& fontMetrics = font.fontMetrics();
 
     // FIXME: Need to turn off font smoothing.
