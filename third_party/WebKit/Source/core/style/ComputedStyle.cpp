@@ -1534,7 +1534,7 @@ Color ComputedStyle::colorIncludingFallback(int colorProperty, bool visitedLink)
     case CSSPropertyOutlineColor:
         result = visitedLink ? visitedLinkOutlineColor() : outlineColor();
         break;
-    case CSSPropertyWebkitColumnRuleColor:
+    case CSSPropertyColumnRuleColor:
         result = visitedLink ? visitedLinkColumnRuleColor() : columnRuleColor();
         break;
     case CSSPropertyWebkitTextEmphasisColor:
@@ -1738,7 +1738,7 @@ bool ComputedStyle::columnRuleEquivalent(const ComputedStyle* otherStyle) const
 {
     return columnRuleStyle() == otherStyle->columnRuleStyle()
         && columnRuleWidth() == otherStyle->columnRuleWidth()
-        && visitedDependentColor(CSSPropertyWebkitColumnRuleColor) == otherStyle->visitedDependentColor(CSSPropertyWebkitColumnRuleColor);
+        && visitedDependentColor(CSSPropertyColumnRuleColor) == otherStyle->visitedDependentColor(CSSPropertyColumnRuleColor);
 }
 
 TextEmphasisMark ComputedStyle::textEmphasisMark() const

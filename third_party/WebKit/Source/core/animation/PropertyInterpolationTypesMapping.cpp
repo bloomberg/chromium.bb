@@ -90,9 +90,9 @@ const InterpolationTypes* PropertyInterpolationTypesMapping::get(const PropertyH
         case CSSPropertyVerticalAlign:
         case CSSPropertyWebkitBorderHorizontalSpacing:
         case CSSPropertyWebkitBorderVerticalSpacing:
-        case CSSPropertyWebkitColumnGap:
-        case CSSPropertyWebkitColumnRuleWidth:
-        case CSSPropertyWebkitColumnWidth:
+        case CSSPropertyColumnGap:
+        case CSSPropertyColumnRuleWidth:
+        case CSSPropertyColumnWidth:
         case CSSPropertyWebkitPerspectiveOriginX:
         case CSSPropertyWebkitPerspectiveOriginY:
         case CSSPropertyWebkitTransformOriginX:
@@ -115,7 +115,7 @@ const InterpolationTypes* PropertyInterpolationTypesMapping::get(const PropertyH
         case CSSPropertyStopOpacity:
         case CSSPropertyStrokeMiterlimit:
         case CSSPropertyStrokeOpacity:
-        case CSSPropertyWebkitColumnCount:
+        case CSSPropertyColumnCount:
         case CSSPropertyWidows:
         case CSSPropertyZIndex:
             applicableTypes->append(adoptPtr(new CSSNumberInterpolationType(cssProperty)));
@@ -135,7 +135,7 @@ const InterpolationTypes* PropertyInterpolationTypesMapping::get(const PropertyH
         case CSSPropertyOutlineColor:
         case CSSPropertyStopColor:
         case CSSPropertyTextDecorationColor:
-        case CSSPropertyWebkitColumnRuleColor:
+        case CSSPropertyColumnRuleColor:
         case CSSPropertyWebkitTextStrokeColor:
             applicableTypes->append(adoptPtr(new CSSColorInterpolationType(cssProperty)));
             break;

@@ -435,10 +435,10 @@ String StylePropertySerializer::getPropertyValue(CSSPropertyID propertyID) const
         return get4Values(borderWidthShorthand());
     case CSSPropertyBorderStyle:
         return get4Values(borderStyleShorthand());
-    case CSSPropertyWebkitColumnRule:
-        return getShorthandValue(webkitColumnRuleShorthand());
-    case CSSPropertyWebkitColumns:
-        return getShorthandValue(webkitColumnsShorthand());
+    case CSSPropertyColumnRule:
+        return getShorthandValue(columnRuleShorthand());
+    case CSSPropertyColumns:
+        return getShorthandValue(columnsShorthand());
     case CSSPropertyFlex:
         return getShorthandValue(flexShorthand());
     case CSSPropertyFlexFlow:

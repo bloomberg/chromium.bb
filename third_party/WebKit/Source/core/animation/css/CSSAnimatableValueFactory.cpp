@@ -488,17 +488,17 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         if (ClipPathOperation* operation = style.clipPath())
             return AnimatableClipPathOperation::create(operation);
         return AnimatableUnknown::create(CSSValueNone);
-    case CSSPropertyWebkitColumnCount:
+    case CSSPropertyColumnCount:
         if (style.hasAutoColumnCount())
             return AnimatableUnknown::create(CSSValueAuto);
         return createFromDouble(style.columnCount());
-    case CSSPropertyWebkitColumnGap:
+    case CSSPropertyColumnGap:
         return createFromDouble(style.columnGap());
-    case CSSPropertyWebkitColumnRuleColor:
+    case CSSPropertyColumnRuleColor:
         return createFromColor(property, style);
-    case CSSPropertyWebkitColumnRuleWidth:
+    case CSSPropertyColumnRuleWidth:
         return createFromDouble(style.columnRuleWidth());
-    case CSSPropertyWebkitColumnWidth:
+    case CSSPropertyColumnWidth:
         if (style.hasAutoColumnWidth())
             return AnimatableUnknown::create(CSSValueAuto);
         return createFromDouble(style.columnWidth());

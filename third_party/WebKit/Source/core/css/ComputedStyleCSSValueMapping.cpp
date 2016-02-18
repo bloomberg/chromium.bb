@@ -1556,24 +1556,24 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         return cssValuePool().createColorValue(allowVisitedStyle ? style.visitedDependentColor(CSSPropertyColor).rgb() : style.color().rgb());
     case CSSPropertyWebkitPrintColorAdjust:
         return cssValuePool().createValue(style.printColorAdjust());
-    case CSSPropertyWebkitColumnCount:
+    case CSSPropertyColumnCount:
         if (style.hasAutoColumnCount())
             return cssValuePool().createIdentifierValue(CSSValueAuto);
         return cssValuePool().createValue(style.columnCount(), CSSPrimitiveValue::UnitType::Number);
     case CSSPropertyColumnFill:
         ASSERT(RuntimeEnabledFeatures::columnFillEnabled());
         return cssValuePool().createValue(style.columnFill());
-    case CSSPropertyWebkitColumnGap:
+    case CSSPropertyColumnGap:
         if (style.hasNormalColumnGap())
             return cssValuePool().createIdentifierValue(CSSValueNormal);
         return zoomAdjustedPixelValue(style.columnGap(), style);
-    case CSSPropertyWebkitColumnRuleColor:
+    case CSSPropertyColumnRuleColor:
         return allowVisitedStyle ? cssValuePool().createColorValue(style.visitedDependentColor(CSSPropertyOutlineColor).rgb()) : currentColorOrValidColor(style, style.columnRuleColor());
-    case CSSPropertyWebkitColumnRuleStyle:
+    case CSSPropertyColumnRuleStyle:
         return cssValuePool().createValue(style.columnRuleStyle());
-    case CSSPropertyWebkitColumnRuleWidth:
+    case CSSPropertyColumnRuleWidth:
         return zoomAdjustedPixelValue(style.columnRuleWidth(), style);
-    case CSSPropertyWebkitColumnSpan:
+    case CSSPropertyColumnSpan:
         return cssValuePool().createIdentifierValue(style.columnSpan() ? CSSValueAll : CSSValueNone);
     case CSSPropertyWebkitColumnBreakAfter:
         return cssValuePool().createValue(mapToColumnBreakValue(style.breakAfter()));
@@ -1581,7 +1581,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         return cssValuePool().createValue(mapToColumnBreakValue(style.breakBefore()));
     case CSSPropertyWebkitColumnBreakInside:
         return cssValuePool().createValue(mapToColumnBreakValue(style.breakInside()));
-    case CSSPropertyWebkitColumnWidth:
+    case CSSPropertyColumnWidth:
         if (style.hasAutoColumnWidth())
             return cssValuePool().createIdentifierValue(CSSValueAuto);
         return zoomAdjustedPixelValue(style.columnWidth(), style);
@@ -2445,10 +2445,10 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         return valuesForShorthandProperty(borderTopShorthand(), style, layoutObject, styledNode, allowVisitedStyle);
     case CSSPropertyBorderWidth:
         return valuesForSidesShorthand(borderWidthShorthand(), style, layoutObject, styledNode, allowVisitedStyle);
-    case CSSPropertyWebkitColumnRule:
-        return valuesForShorthandProperty(webkitColumnRuleShorthand(), style, layoutObject, styledNode, allowVisitedStyle);
-    case CSSPropertyWebkitColumns:
-        return valuesForShorthandProperty(webkitColumnsShorthand(), style, layoutObject, styledNode, allowVisitedStyle);
+    case CSSPropertyColumnRule:
+        return valuesForShorthandProperty(columnRuleShorthand(), style, layoutObject, styledNode, allowVisitedStyle);
+    case CSSPropertyColumns:
+        return valuesForShorthandProperty(columnsShorthand(), style, layoutObject, styledNode, allowVisitedStyle);
     case CSSPropertyListStyle:
         return valuesForShorthandProperty(listStyleShorthand(), style, layoutObject, styledNode, allowVisitedStyle);
     case CSSPropertyMargin:

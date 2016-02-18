@@ -22,13 +22,6 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 -webkit-box-pack: start
 -webkit-box-reflect: none
 -webkit-clip-path: none
--webkit-column-count: auto
--webkit-column-gap: normal
--webkit-column-rule-color: rgb(0, 0, 0)
--webkit-column-rule-style: none
--webkit-column-rule-width: 0px
--webkit-column-span: none
--webkit-column-width: auto
 -webkit-filter: none
 -webkit-font-smoothing: auto
 -webkit-highlight: none
@@ -134,6 +127,13 @@ color: rgb(0, 0, 0)
 color-interpolation: sRGB
 color-interpolation-filters: linearRGB
 color-rendering: auto
+column-count: auto
+column-gap: normal
+column-rule-color: rgb(0, 0, 0)
+column-rule-style: none
+column-rule-width: 0px
+column-span: none
+column-width: auto
 content: 
 cursor: auto
 cx: 0px

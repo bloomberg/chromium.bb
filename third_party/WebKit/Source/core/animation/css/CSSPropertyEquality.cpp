@@ -249,16 +249,16 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const ComputedStyl
         return a.verticalBorderSpacing() == b.verticalBorderSpacing();
     case CSSPropertyWebkitClipPath:
         return dataEquivalent(a.clipPath(), b.clipPath());
-    case CSSPropertyWebkitColumnCount:
+    case CSSPropertyColumnCount:
         return a.columnCount() == b.columnCount();
-    case CSSPropertyWebkitColumnGap:
+    case CSSPropertyColumnGap:
         return a.columnGap() == b.columnGap();
-    case CSSPropertyWebkitColumnRuleColor:
+    case CSSPropertyColumnRuleColor:
         return a.columnRuleColor() == b.columnRuleColor()
             && a.visitedLinkColumnRuleColor() == b.visitedLinkColumnRuleColor();
-    case CSSPropertyWebkitColumnRuleWidth:
+    case CSSPropertyColumnRuleWidth:
         return a.columnRuleWidth() == b.columnRuleWidth();
-    case CSSPropertyWebkitColumnWidth:
+    case CSSPropertyColumnWidth:
         return a.columnWidth() == b.columnWidth();
     case CSSPropertyWebkitFilter:
         return a.filter() == b.filter();

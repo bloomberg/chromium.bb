@@ -37,8 +37,8 @@ ValueRange LengthPropertyFunctions::valueRange(CSSPropertyID property)
     case CSSPropertyStrokeWidth:
     case CSSPropertyWebkitBorderHorizontalSpacing:
     case CSSPropertyWebkitBorderVerticalSpacing:
-    case CSSPropertyWebkitColumnGap:
-    case CSSPropertyWebkitColumnWidth:
+    case CSSPropertyColumnGap:
+    case CSSPropertyColumnWidth:
     case CSSPropertyWidth:
         return ValueRangeNonNegative;
     default:
@@ -64,7 +64,7 @@ bool LengthPropertyFunctions::getPixelsForKeyword(CSSPropertyID property, CSSVal
     case CSSPropertyBorderLeftWidth:
     case CSSPropertyBorderRightWidth:
     case CSSPropertyBorderTopWidth:
-    case CSSPropertyWebkitColumnRuleWidth:
+    case CSSPropertyColumnRuleWidth:
     case CSSPropertyOutlineWidth:
         if (valueID == CSSValueThin) {
             result = 1;
@@ -102,7 +102,7 @@ bool LengthPropertyFunctions::getInitialLength(CSSPropertyID property, Length& r
     // The computed value of "initial" for the following properties is 0px if the associated *-style property resolves to "none" or "hidden".
     // border-width: https://drafts.csswg.org/css-backgrounds-3/#the-border-width
     // outline-width: https://drafts.csswg.org/css-ui-3/#outline-width
-    // -webkit-column-rule-width: https://drafts.csswg.org/css-multicol-1/#crw
+    // column-rule-width: https://drafts.csswg.org/css-multicol-1/#crw
     // We ignore this value adjustment for animations and use the wrong value for hidden widths to avoid
     // having to restart our animations based on the computed *-style values.
     // This is acceptable since animations running on hidden widths are unobservable to the user, even via getComputedStyle().
@@ -115,7 +115,7 @@ bool LengthPropertyFunctions::getInitialLength(CSSPropertyID property, Length& r
     case CSSPropertyOutlineWidth:
         result = lengthFromUnsigned(ComputedStyle::initialOutlineWidth());
         return true;
-    case CSSPropertyWebkitColumnRuleWidth:
+    case CSSPropertyColumnRuleWidth:
         result = lengthFromUnsigned(ComputedStyle::initialColumnRuleWidth());
         return true;
 
@@ -257,10 +257,10 @@ bool LengthPropertyFunctions::getLength(CSSPropertyID property, const ComputedSt
     case CSSPropertyWebkitBorderVerticalSpacing:
         result = Length(style.verticalBorderSpacing(), Fixed);
         return true;
-    case CSSPropertyWebkitColumnGap:
+    case CSSPropertyColumnGap:
         result = Length(style.columnGap(), Fixed);
         return true;
-    case CSSPropertyWebkitColumnRuleWidth:
+    case CSSPropertyColumnRuleWidth:
         result = Length(style.columnRuleWidth(), Fixed);
         return true;
     case CSSPropertyWebkitTransformOriginZ:
@@ -295,7 +295,7 @@ bool LengthPropertyFunctions::getLength(CSSPropertyID property, const ComputedSt
             return false;
         result = style.verticalAlignLength();
         return true;
-    case CSSPropertyWebkitColumnWidth:
+    case CSSPropertyColumnWidth:
         if (style.hasAutoColumnWidth())
             return false;
         result = Length(style.columnWidth(), Fixed);
@@ -432,9 +432,9 @@ bool LengthPropertyFunctions::setLength(CSSPropertyID property, ComputedStyle& s
     case CSSPropertyVerticalAlign:
     case CSSPropertyWebkitBorderHorizontalSpacing:
     case CSSPropertyWebkitBorderVerticalSpacing:
-    case CSSPropertyWebkitColumnGap:
-    case CSSPropertyWebkitColumnRuleWidth:
-    case CSSPropertyWebkitColumnWidth:
+    case CSSPropertyColumnGap:
+    case CSSPropertyColumnRuleWidth:
+    case CSSPropertyColumnWidth:
     case CSSPropertyWebkitTransformOriginZ:
     case CSSPropertyWordSpacing:
         return false;

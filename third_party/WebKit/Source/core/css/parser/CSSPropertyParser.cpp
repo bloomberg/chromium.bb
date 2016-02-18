@@ -3501,13 +3501,13 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyWebkitHyphenateCharacter:
     case CSSPropertyWebkitLocale:
         return consumeLocale(m_range);
-    case CSSPropertyWebkitColumnWidth:
+    case CSSPropertyColumnWidth:
         return consumeColumnWidth(m_range);
-    case CSSPropertyWebkitColumnCount:
+    case CSSPropertyColumnCount:
         return consumeColumnCount(m_range);
-    case CSSPropertyWebkitColumnGap:
+    case CSSPropertyColumnGap:
         return consumeColumnGap(m_range, m_context.mode());
-    case CSSPropertyWebkitColumnSpan:
+    case CSSPropertyColumnSpan:
         return consumeColumnSpan(m_range, m_context.mode());
     case CSSPropertyZoom:
         return consumeZoom(m_range, m_context);
@@ -3552,7 +3552,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyStopColor:
     case CSSPropertyFloodColor:
     case CSSPropertyLightingColor:
-    case CSSPropertyWebkitColumnRuleColor:
+    case CSSPropertyColumnRuleColor:
         return consumeColor(m_range, m_context.mode());
     case CSSPropertyColor:
         return consumeColor(m_range, m_context.mode(), inQuirksMode());
@@ -3637,7 +3637,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeNumber(m_range, ValueRangeNonNegative);
     case CSSPropertyStrokeDasharray:
         return consumeStrokeDasharray(m_range);
-    case CSSPropertyWebkitColumnRuleWidth:
+    case CSSPropertyColumnRuleWidth:
         return consumeColumnRuleWidth(m_range, m_context.mode());
     case CSSPropertyStrokeOpacity:
     case CSSPropertyFillOpacity:
@@ -4088,8 +4088,8 @@ bool CSSPropertyParser::consumeColumns(bool important)
         columnWidth = cssValuePool().createIdentifierValue(CSSValueAuto);
     if (!columnCount)
         columnCount = cssValuePool().createIdentifierValue(CSSValueAuto);
-    addProperty(CSSPropertyWebkitColumnWidth, columnWidth.release(), important);
-    addProperty(CSSPropertyWebkitColumnCount, columnCount.release(), important);
+    addProperty(CSSPropertyColumnWidth, columnWidth.release(), important);
+    addProperty(CSSPropertyColumnCount, columnCount.release(), important);
     return true;
 }
 
@@ -4420,7 +4420,7 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool im
     }
     case CSSPropertyBorderSpacing:
         return consumeBorderSpacing(important);
-    case CSSPropertyWebkitColumns: {
+    case CSSPropertyColumns: {
         // TODO(rwlbuis): investigate if this shorthand hack can be removed.
         m_currentShorthand = oldShorthand;
         return consumeColumns(important);
@@ -4466,8 +4466,8 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool im
         return consumeFlex(important);
     case CSSPropertyFlexFlow:
         return consumeShorthandGreedily(flexFlowShorthand(), important);
-    case CSSPropertyWebkitColumnRule:
-        return consumeShorthandGreedily(webkitColumnRuleShorthand(), important);
+    case CSSPropertyColumnRule:
+        return consumeShorthandGreedily(columnRuleShorthand(), important);
     case CSSPropertyListStyle:
         return consumeShorthandGreedily(listStyleShorthand(), important);
     case CSSPropertyBorderRadius: {

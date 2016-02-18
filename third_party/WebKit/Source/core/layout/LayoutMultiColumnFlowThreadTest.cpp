@@ -58,8 +58,8 @@ void MultiColumnRenderingTest::setMulticolHTML(const String& html)
 {
     const char* style =
         "<style>"
-        "  #mc { -webkit-columns:2; }"
-        "  .s, #spanner, #spanner1, #spanner2 { -webkit-column-span:all; }"
+        "  #mc { columns:2; }"
+        "  .s, #spanner, #spanner1, #spanner2 { column-span:all; }"
         "</style>";
     setBodyInnerHTML(style + html);
 }

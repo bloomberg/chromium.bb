@@ -55,7 +55,7 @@ bool NumberPropertyFunctions::getNumber(CSSPropertyID property, const ComputedSt
             return false;
         result = style.fontSizeAdjust();
         return true;
-    case CSSPropertyWebkitColumnCount:
+    case CSSPropertyColumnCount:
         if (style.hasAutoColumnCount())
             return false;
         result = style.columnCount();
@@ -110,10 +110,10 @@ double NumberPropertyFunctions::clampNumber(CSSPropertyID property, double value
     case CSSPropertyWidows:
         return clampTo<short>(round(value), 1);
 
-    case CSSPropertyWebkitColumnCount:
+    case CSSPropertyColumnCount:
         return clampTo<unsigned short>(round(value), 1);
 
-    case CSSPropertyWebkitColumnRuleWidth:
+    case CSSPropertyColumnRuleWidth:
         return clampTo<unsigned short>(round(value));
 
     case CSSPropertyZIndex:
@@ -162,7 +162,7 @@ bool NumberPropertyFunctions::setNumber(CSSPropertyID property, ComputedStyle& s
     case CSSPropertyStrokeOpacity:
         style.setStrokeOpacity(value);
         return true;
-    case CSSPropertyWebkitColumnCount:
+    case CSSPropertyColumnCount:
         style.setColumnCount(value);
         return true;
     case CSSPropertyWidows:

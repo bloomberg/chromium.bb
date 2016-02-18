@@ -95,7 +95,7 @@ static inline bool isValidVisitedLinkProperty(CSSPropertyID id)
     case CSSPropertyOutlineColor:
     case CSSPropertyStroke:
     case CSSPropertyTextDecorationColor:
-    case CSSPropertyWebkitColumnRuleColor:
+    case CSSPropertyColumnRuleColor:
     case CSSPropertyWebkitTextEmphasisColor:
     case CSSPropertyWebkitTextFillColor:
     case CSSPropertyWebkitTextStrokeColor:

@@ -545,20 +545,20 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyWebkitClipPath:
         style->setClipPath(toAnimatableClipPathOperation(value)->clipPathOperation());
         return;
-    case CSSPropertyWebkitColumnCount:
+    case CSSPropertyColumnCount:
         style->setColumnCount(clampTo<unsigned short>(round(toAnimatableDouble(value)->toDouble()), 1));
         return;
-    case CSSPropertyWebkitColumnGap:
+    case CSSPropertyColumnGap:
         style->setColumnGap(clampTo(toAnimatableDouble(value)->toDouble(), 0));
         return;
-    case CSSPropertyWebkitColumnRuleColor:
+    case CSSPropertyColumnRuleColor:
         style->setColumnRuleColor(toAnimatableColor(value)->color());
         style->setVisitedLinkColumnRuleColor(toAnimatableColor(value)->visitedLinkColor());
         return;
-    case CSSPropertyWebkitColumnWidth:
+    case CSSPropertyColumnWidth:
         style->setColumnWidth(clampTo(toAnimatableDouble(value)->toDouble(), std::numeric_limits<float>::epsilon()));
         return;
-    case CSSPropertyWebkitColumnRuleWidth:
+    case CSSPropertyColumnRuleWidth:
         style->setColumnRuleWidth(animatableLineWidthClamp<unsigned short>(value));
         return;
     case CSSPropertyWebkitFilter:

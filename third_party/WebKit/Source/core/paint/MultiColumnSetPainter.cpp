@@ -37,7 +37,7 @@ void MultiColumnSetPainter::paintColumnRules(const PaintInfo& paintInfo, const L
         return;
 
     const ComputedStyle& blockStyle = m_layoutMultiColumnSet.multiColumnBlockFlow()->styleRef();
-    const Color& ruleColor = m_layoutMultiColumnSet.resolveColor(blockStyle, CSSPropertyWebkitColumnRuleColor);
+    const Color& ruleColor = m_layoutMultiColumnSet.resolveColor(blockStyle, CSSPropertyColumnRuleColor);
     bool ruleTransparent = blockStyle.columnRuleIsTransparent();
     EBorderStyle ruleStyle = blockStyle.columnRuleStyle();
     LayoutUnit ruleThickness(blockStyle.columnRuleWidth());

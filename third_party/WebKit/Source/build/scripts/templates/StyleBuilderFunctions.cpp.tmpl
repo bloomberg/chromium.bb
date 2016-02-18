@@ -148,9 +148,9 @@ namespace blink {
 {% endmacro %}
 {{apply_auto('CSSPropertyClip')}}
 {{apply_auto('CSSPropertyOrphans')}}
-{{apply_auto('CSSPropertyWebkitColumnCount')}}
-{{apply_auto('CSSPropertyWebkitColumnGap', auto_getter='hasNormalColumnGap', auto_setter='setHasNormalColumnGap', auto_identity='CSSValueNormal')}}
-{{apply_auto('CSSPropertyWebkitColumnWidth')}}
+{{apply_auto('CSSPropertyColumnCount')}}
+{{apply_auto('CSSPropertyColumnGap', auto_getter='hasNormalColumnGap', auto_setter='setHasNormalColumnGap', auto_identity='CSSValueNormal')}}
+{{apply_auto('CSSPropertyColumnWidth')}}
 {{apply_auto('CSSPropertyWidows')}}
 {{apply_auto('CSSPropertyZIndex')}}
 
@@ -304,7 +304,7 @@ static bool borderImageLengthMatchesAllSides(const BorderImageLengthBox& borderI
 {{apply_color('CSSPropertyBorderTopColor')}}
 {{apply_color('CSSPropertyOutlineColor')}}
 {{apply_color('CSSPropertyTextDecorationColor')}}
-{{apply_color('CSSPropertyWebkitColumnRuleColor')}}
+{{apply_color('CSSPropertyColumnRuleColor')}}
 {{apply_color('CSSPropertyWebkitTextEmphasisColor')}}
 {{apply_color('CSSPropertyWebkitTextFillColor')}}
 {{apply_color('CSSPropertyWebkitTextStrokeColor')}}

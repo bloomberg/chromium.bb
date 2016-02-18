@@ -257,16 +257,16 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyWebkitColumnBreakAfter: return 215;
     case CSSPropertyWebkitColumnBreakBefore: return 216;
     case CSSPropertyWebkitColumnBreakInside: return 217;
-    case CSSPropertyWebkitColumnCount: return 218;
-    case CSSPropertyWebkitColumnGap: return 219;
+    case CSSPropertyAliasWebkitColumnCount: return 218;
+    case CSSPropertyAliasWebkitColumnGap: return 219;
     // CSSPropertyWebkitColumnProgression was 220
-    case CSSPropertyWebkitColumnRule: return 221;
-    case CSSPropertyWebkitColumnRuleColor: return 222;
-    case CSSPropertyWebkitColumnRuleStyle: return 223;
-    case CSSPropertyWebkitColumnRuleWidth: return 224;
-    case CSSPropertyWebkitColumnSpan: return 225;
-    case CSSPropertyWebkitColumnWidth: return 226;
-    case CSSPropertyWebkitColumns: return 227;
+    case CSSPropertyAliasWebkitColumnRule: return 221;
+    case CSSPropertyAliasWebkitColumnRuleColor: return 222;
+    case CSSPropertyAliasWebkitColumnRuleStyle: return 223;
+    case CSSPropertyAliasWebkitColumnRuleWidth: return 224;
+    case CSSPropertyAliasWebkitColumnSpan: return 225;
+    case CSSPropertyAliasWebkitColumnWidth: return 226;
+    case CSSPropertyAliasWebkitColumns: return 227;
     // 228 was CSSPropertyWebkitBoxDecorationBreak (duplicated due to #ifdef).
     // 229 was CSSPropertyWebkitFilter (duplicated due to #ifdef).
     case CSSPropertyAlignContent: return 230;
@@ -555,6 +555,15 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyBreakAfter: return 520;
     case CSSPropertyBreakBefore: return 521;
     case CSSPropertyBreakInside: return 522;
+    case CSSPropertyColumnCount: return 523;
+    case CSSPropertyColumnGap: return 524;
+    case CSSPropertyColumnRule: return 525;
+    case CSSPropertyColumnRuleColor: return 526;
+    case CSSPropertyColumnRuleStyle: return 527;
+    case CSSPropertyColumnRuleWidth: return 528;
+    case CSSPropertyColumnSpan: return 529;
+    case CSSPropertyColumnWidth: return 530;
+    case CSSPropertyColumns: return 531;
 
     // 1. Add new features above this line (don't change the assigned numbers of the existing
     // items).
@@ -571,7 +580,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     return 0;
 }
 
-static int maximumCSSSampleId() { return 522; }
+static int maximumCSSSampleId() { return 531; }
 
 static EnumerationHistogram& featureObserverHistogram()
 {
