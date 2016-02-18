@@ -1696,22 +1696,6 @@ LayoutUnit LayoutBox::perpendicularContainingBlockLogicalHeight() const
 
 void LayoutBox::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
 {
-    if (ancestor == this)
-        return;
-
-    if (paintInvalidationState && paintInvalidationState->canMapToContainer(ancestor)) {
-        LayoutSize offset = paintInvalidationState->paintOffset() + locationOffset();
-        if (style()->hasInFlowPosition() && layer())
-            offset += layer()->offsetForInFlowPosition();
-        transformState.move(offset);
-        return;
-    }
-
-    bool ancestorSkipped;
-    LayoutObject* o = container(ancestor, &ancestorSkipped);
-    if (!o)
-        return;
-
     bool isFixedPos = style()->position() == FixedPosition;
     bool hasTransform = hasLayer() && layer()->transform();
     // If this box has a transform, it acts as a fixed position container for fixed descendants,
@@ -1721,31 +1705,7 @@ void LayoutBox::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, Transfo
     else if (isFixedPos)
         mode |= IsFixed;
 
-    if (wasFixed)
-        *wasFixed = mode & IsFixed;
-
-    LayoutSize containerOffset = offsetFromContainer(o, roundedLayoutPoint(transformState.mappedPoint()));
-
-    bool preserve3D = mode & UseTransforms && (o->style()->preserves3D() || style()->preserves3D());
-    if (mode & UseTransforms && shouldUseTransformFromContainer(o)) {
-        TransformationMatrix t;
-        getTransformFromContainer(o, containerOffset, t);
-        transformState.applyTransform(t, preserve3D ? TransformState::AccumulateTransform : TransformState::FlattenTransform);
-    } else {
-        transformState.move(containerOffset.width(), containerOffset.height(), preserve3D ? TransformState::AccumulateTransform : TransformState::FlattenTransform);
-    }
-
-    if (ancestorSkipped) {
-        // There can't be a transform between paintInvalidationContainer and o, because transforms create containers, so it should be safe
-        // to just subtract the delta between the paintInvalidationContainer and o.
-        LayoutSize containerOffset = ancestor->offsetFromAncestorContainer(o);
-        transformState.move(-containerOffset.width(), -containerOffset.height(), preserve3D ? TransformState::AccumulateTransform : TransformState::FlattenTransform);
-        return;
-    }
-
-    mode &= ~ApplyContainerFlip;
-
-    o->mapLocalToAncestor(ancestor, transformState, mode, wasFixed);
+    LayoutBoxModelObject::mapLocalToAncestor(ancestor, transformState, mode, wasFixed, paintInvalidationState);
 }
 
 void LayoutBox::mapAbsoluteToLocalPoint(MapCoordinatesFlags mode, TransformState& transformState) const

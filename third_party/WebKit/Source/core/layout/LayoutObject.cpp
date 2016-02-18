@@ -2205,23 +2205,32 @@ void LayoutObject::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, Tran
 
     if (paintInvalidationState && paintInvalidationState->canMapToContainer(ancestor)) {
         LayoutSize offset = paintInvalidationState->paintOffset();
+        if (const LayoutBox* layoutBox = isBox() ? toLayoutBox(this) : nullptr)
+            offset += layoutBox->locationOffset();
         if (const PaintLayer* layer = style()->hasInFlowPosition() && hasLayer() ? toLayoutBoxModelObject(this)->layer() : nullptr)
             offset += layer->offsetForInFlowPosition();
         transformState.move(offset);
         return;
     }
 
+    if (wasFixed)
+        *wasFixed = mode & IsFixed;
+
     bool containerSkipped;
     const LayoutObject* o = container(ancestor, &containerSkipped);
     if (!o)
         return;
 
-    if (mode & ApplyContainerFlip && o->isBox()) {
-        if (o->style()->isFlippedBlocksWritingMode()) {
-            IntPoint centerPoint = roundedIntPoint(transformState.mappedPoint());
-            transformState.move(toLayoutBox(o)->flipForWritingMode(LayoutPoint(centerPoint)) - centerPoint);
+    if (mode & ApplyContainerFlip) {
+        if (isBox()) {
+            mode &= ~ApplyContainerFlip;
+        } else if (o->isBox()) {
+            if (o->style()->isFlippedBlocksWritingMode()) {
+                IntPoint centerPoint = roundedIntPoint(transformState.mappedPoint());
+                transformState.move(toLayoutBox(o)->flipForWritingMode(LayoutPoint(centerPoint)) - centerPoint);
+            }
+            mode &= ~ApplyContainerFlip;
         }
-        mode &= ~ApplyContainerFlip;
     }
 
     LayoutSize containerOffset = offsetFromContainer(o, roundedLayoutPoint(transformState.mappedPoint()));
