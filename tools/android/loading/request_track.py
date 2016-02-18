@@ -491,12 +491,14 @@ class RequestTrack(devtools_monitor.Track):
                       # network stack.
                       ('requestHeaders', 'request_headers'),
                       ('headers', 'response_headers')))
-    # data URLs don't have a timing dict.
     timing_dict = {}
-    if r.protocol != 'data':
-      timing_dict = response['timing']
-    else:
+    # data URLs don't have a timing dict, and timings for cached requests are
+    # stale.
+    # TODO(droger): the timestamp is inacurate, get the real timings instead.
+    if r.protocol == 'data' or r.served_from_cache:
       timing_dict = {'requestTime': r.timestamp}
+    else:
+      timing_dict = response['timing']
     r.timing = TimingFromDict(timing_dict)
     self._requests_in_flight[request_id] = (r, RequestTrack._STATUS_RESPONSE)
     self._request_id_to_response_received[request_id] = params
