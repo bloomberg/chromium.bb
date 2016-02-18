@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <cmath>
 #include <deque>
 
 #include "base/macros.h"
@@ -89,8 +90,14 @@ class MEDIA_EXPORT AudioClock {
   // |start_timestamp| since no                  amount of media frames tracked
   // media data has been played yet.             by AudioClock, which would be
   //                                             1000 + 500 + 250 = 1750 ms.
-  base::TimeDelta front_timestamp() const { return front_timestamp_; }
-  base::TimeDelta back_timestamp() const { return back_timestamp_; }
+  base::TimeDelta front_timestamp() const {
+    return base::TimeDelta::FromMicroseconds(
+        std::round(front_timestamp_micros_));
+  }
+  base::TimeDelta back_timestamp() const {
+    return base::TimeDelta::FromMicroseconds(
+        std::round(back_timestamp_micros_));
+  }
 
   // Returns the amount of wall time until |timestamp| will be played by the
   // audio hardware.
@@ -117,7 +124,7 @@ class MEDIA_EXPORT AudioClock {
   // Helpers for operating on |buffered_|.
   void PushBufferedAudioData(int64_t frames, double playback_rate);
   void PopBufferedAudioData(int64_t frames);
-  base::TimeDelta ComputeBufferedMediaDuration() const;
+  double ComputeBufferedMediaDurationMicros() const;
 
   const base::TimeDelta start_timestamp_;
   const double microseconds_per_frame_;
@@ -125,8 +132,14 @@ class MEDIA_EXPORT AudioClock {
   std::deque<AudioData> buffered_;
   int64_t total_buffered_frames_;
 
-  base::TimeDelta front_timestamp_;
-  base::TimeDelta back_timestamp_;
+  // Use double rather than TimeDelta to avoid loss of partial microseconds when
+  // converting between frames-written/delayed and time-passed (see conversion
+  // in WroteAudio()). Particularly for |back_timestamp|, which accumulates more
+  // time with each call to WroteAudio(), the loss of precision can accumulate
+  // to create noticeable audio/video sync drift for longer (2-3 hr) videos.
+  // See http://crbug.com/564604.
+  double front_timestamp_micros_;
+  double back_timestamp_micros_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioClock);
 };

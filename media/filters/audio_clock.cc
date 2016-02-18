@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <cmath>
 
 #include "base/logging.h"
 
@@ -19,9 +20,8 @@ AudioClock::AudioClock(base::TimeDelta start_timestamp, int sample_rate)
           static_cast<double>(base::Time::kMicrosecondsPerSecond) /
           sample_rate),
       total_buffered_frames_(0),
-      front_timestamp_(start_timestamp),
-      back_timestamp_(start_timestamp) {
-}
+      front_timestamp_micros_(start_timestamp.InMicroseconds()),
+      back_timestamp_micros_(start_timestamp.InMicroseconds()) {}
 
 AudioClock::~AudioClock() {
 }
@@ -36,8 +36,10 @@ void AudioClock::WroteAudio(int frames_written,
   DCHECK_GE(playback_rate, 0);
 
   // First write: initialize buffer with silence.
-  if (start_timestamp_ == front_timestamp_ && buffered_.empty())
+  if (start_timestamp_.InMicroseconds() == front_timestamp_micros_ &&
+      buffered_.empty()) {
     PushBufferedAudioData(delay_frames, 0.0);
+  }
 
   // Move frames from |buffered_| into the computed timestamp based on
   // |delay_frames|.
@@ -53,14 +55,16 @@ void AudioClock::WroteAudio(int frames_written,
   // Update our front and back timestamps.  The back timestamp is considered the
   // authoritative source of truth, so base the front timestamp on range of data
   // buffered.  Doing so avoids accumulation errors on the front timestamp.
-  back_timestamp_ += base::TimeDelta::FromMicroseconds(
-      frames_written * playback_rate * microseconds_per_frame_);
+  back_timestamp_micros_ +=
+      frames_written * playback_rate * microseconds_per_frame_;
+
   // Don't let front timestamp move earlier in time, as could occur due to delay
   // frames pushed in the first write, above.
-  front_timestamp_ = std::max(front_timestamp_,
-                              back_timestamp_ - ComputeBufferedMediaDuration());
-  DCHECK_GE(front_timestamp_, start_timestamp_);
-  DCHECK_LE(front_timestamp_, back_timestamp_);
+  front_timestamp_micros_ =
+      std::max(front_timestamp_micros_,
+               back_timestamp_micros_ - ComputeBufferedMediaDurationMicros());
+  DCHECK_GE(front_timestamp_micros_, start_timestamp_.InMicroseconds());
+  DCHECK_LE(front_timestamp_micros_, back_timestamp_micros_);
 }
 
 void AudioClock::CompensateForSuspendedWrites(base::TimeDelta elapsed,
@@ -81,12 +85,15 @@ void AudioClock::CompensateForSuspendedWrites(base::TimeDelta elapsed,
 }
 
 base::TimeDelta AudioClock::TimeUntilPlayback(base::TimeDelta timestamp) const {
-  DCHECK_GE(timestamp, front_timestamp_);
-  DCHECK_LE(timestamp, back_timestamp_);
+  // Use front/back_timestamp() methods rather than internal members. The public
+  // methods round to the nearest microsecond for conversion to TimeDelta and
+  // the rounded value will likely be used by the caller.
+  DCHECK_GE(timestamp, front_timestamp());
+  DCHECK_LE(timestamp, back_timestamp());
 
   int64_t frames_until_timestamp = 0;
   double timestamp_us = timestamp.InMicroseconds();
-  double media_time_us = front_timestamp_.InMicroseconds();
+  double media_time_us = front_timestamp().InMicroseconds();
 
   for (size_t i = 0; i < buffered_.size(); ++i) {
     // Leading silence is always accounted prior to anything else.
@@ -113,8 +120,8 @@ base::TimeDelta AudioClock::TimeUntilPlayback(base::TimeDelta timestamp) const {
     frames_until_timestamp += buffered_[i].frames;
   }
 
-  return base::TimeDelta::FromMicroseconds(frames_until_timestamp *
-                                           microseconds_per_frame_);
+  return base::TimeDelta::FromMicroseconds(
+      std::round(frames_until_timestamp * microseconds_per_frame_));
 }
 
 void AudioClock::ContiguousAudioDataBufferedForTesting(
@@ -179,12 +186,11 @@ void AudioClock::PopBufferedAudioData(int64_t frames) {
   }
 }
 
-base::TimeDelta AudioClock::ComputeBufferedMediaDuration() const {
+double AudioClock::ComputeBufferedMediaDurationMicros() const {
   double scaled_frames = 0;
   for (const auto& buffer : buffered_)
     scaled_frames += buffer.frames * buffer.playback_rate;
-  return base::TimeDelta::FromMicroseconds(scaled_frames *
-                                           microseconds_per_frame_);
+  return scaled_frames * microseconds_per_frame_;
 }
 
 }  // namespace media

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "media/base/audio_timestamp_helper.h"
 #include "media/filters/audio_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -11,8 +12,7 @@ namespace media {
 
 class AudioClockTest : public testing::Test {
  public:
-  AudioClockTest()
-      : sample_rate_(10), clock_(base::TimeDelta(), sample_rate_) {}
+  AudioClockTest() { SetupClock(base::TimeDelta(), 10); }
 
   ~AudioClockTest() override {}
 
@@ -20,45 +20,51 @@ class AudioClockTest : public testing::Test {
                   int frames_requested,
                   int delay_frames,
                   double playback_rate) {
-    clock_.WroteAudio(
-        frames_written, frames_requested, delay_frames, playback_rate);
+    clock_->WroteAudio(frames_written, frames_requested, delay_frames,
+                       playback_rate);
   }
 
-  int FrontTimestampInDays() { return clock_.front_timestamp().InDays(); }
+  void SetupClock(base::TimeDelta start_time, int sample_rate) {
+    sample_rate_ = sample_rate;
+    clock_.reset(new AudioClock(start_time, sample_rate_));
+  }
+
+  int FrontTimestampInDays() { return clock_->front_timestamp().InDays(); }
 
   int FrontTimestampInMilliseconds() {
-    return clock_.front_timestamp().InMilliseconds();
+    return clock_->front_timestamp().InMilliseconds();
   }
 
   int BackTimestampInMilliseconds() {
-    return clock_.back_timestamp().InMilliseconds();
+    return clock_->back_timestamp().InMilliseconds();
   }
 
   int TimeUntilPlaybackInMilliseconds(int timestamp_ms) {
-    return clock_.TimeUntilPlayback(base::TimeDelta::FromMilliseconds(
-                                        timestamp_ms)).InMilliseconds();
+    return clock_
+        ->TimeUntilPlayback(base::TimeDelta::FromMilliseconds(timestamp_ms))
+        .InMilliseconds();
   }
 
   int ContiguousAudioDataBufferedInDays() {
     base::TimeDelta total, same_rate_total;
-    clock_.ContiguousAudioDataBufferedForTesting(&total, &same_rate_total);
+    clock_->ContiguousAudioDataBufferedForTesting(&total, &same_rate_total);
     return total.InDays();
   }
 
   int ContiguousAudioDataBufferedInMilliseconds() {
     base::TimeDelta total, same_rate_total;
-    clock_.ContiguousAudioDataBufferedForTesting(&total, &same_rate_total);
+    clock_->ContiguousAudioDataBufferedForTesting(&total, &same_rate_total);
     return total.InMilliseconds();
   }
 
   int ContiguousAudioDataBufferedAtSameRateInMilliseconds() {
     base::TimeDelta total, same_rate_total;
-    clock_.ContiguousAudioDataBufferedForTesting(&total, &same_rate_total);
+    clock_->ContiguousAudioDataBufferedForTesting(&total, &same_rate_total);
     return same_rate_total.InMilliseconds();
   }
 
-  const int sample_rate_;
-  AudioClock clock_;
+  int sample_rate_;
+  scoped_ptr<AudioClock> clock_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioClockTest);
@@ -337,8 +343,8 @@ TEST_F(AudioClockTest, CompensateForSuspendedWrites) {
   // Elapsing frames less than we have buffered should do nothing.
   const int kDelayFrames = 2;
   for (int i = 1000; i <= kBaseTimeMs; i += 1000) {
-    clock_.CompensateForSuspendedWrites(base::TimeDelta::FromMilliseconds(i),
-                                        kDelayFrames);
+    clock_->CompensateForSuspendedWrites(base::TimeDelta::FromMilliseconds(i),
+                                         kDelayFrames);
     EXPECT_EQ(kBaseTimeMs - (i - 1000), TimeUntilPlaybackInMilliseconds(0));
 
     // Write silence to simulate maintaining a 7s output buffer.
@@ -347,9 +353,26 @@ TEST_F(AudioClockTest, CompensateForSuspendedWrites) {
 
   // Exhausting all frames should advance timestamps and prime the buffer with
   // our delay frames value.
-  clock_.CompensateForSuspendedWrites(base::TimeDelta::FromMilliseconds(7000),
-                                      kDelayFrames);
+  clock_->CompensateForSuspendedWrites(base::TimeDelta::FromMilliseconds(7000),
+                                       kDelayFrames);
   EXPECT_EQ(kDelayFrames * 100, TimeUntilPlaybackInMilliseconds(1000));
+}
+
+TEST_F(AudioClockTest, FramesToTimePrecision) {
+  SetupClock(base::TimeDelta(), 48000);
+  double micros_per_frame = base::Time::kMicrosecondsPerSecond / 48000.0;
+  int frames_written = 0;
+
+  // Write ~2 hours of data to clock to give any error a significant chance to
+  // accumulate.
+  while (clock_->back_timestamp() <= base::TimeDelta::FromHours(2)) {
+    frames_written += 1024;
+    WroteAudio(1024, 1024, 0, 1);
+  }
+
+  // Verify no error accumulated.
+  EXPECT_EQ(std::round(frames_written * micros_per_frame),
+            clock_->back_timestamp().InMicroseconds());
 }
 
 }  // namespace media
