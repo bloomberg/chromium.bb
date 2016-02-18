@@ -10,9 +10,9 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "mojo/shell/package_test.mojom.h"
 #include "mojo/shell/public/cpp/application_test_base.h"
 #include "mojo/shell/public/interfaces/application_manager.mojom.h"
+#include "mojo/shell/tests/package_test.mojom.h"
 
 // Tests that multiple applications can be packaged in a single Mojo application
 // implementing ShellClientFactory; that these applications can be specified by

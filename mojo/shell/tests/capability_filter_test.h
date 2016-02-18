@@ -8,9 +8,9 @@
 #include "base/message_loop/message_loop.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/application_manager.h"
-#include "mojo/shell/capability_filter_unittest.mojom.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
+#include "mojo/shell/tests/capability_filter_unittest.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {

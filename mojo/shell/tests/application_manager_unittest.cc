@@ -19,7 +19,7 @@
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
 #include "mojo/shell/public/interfaces/interface_provider.mojom.h"
-#include "mojo/shell/test.mojom.h"
+#include "mojo/shell/tests/test.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {

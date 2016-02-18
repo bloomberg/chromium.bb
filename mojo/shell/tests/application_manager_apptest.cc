@@ -13,11 +13,11 @@
 #include "base/process/process_handle.h"
 #include "mojo/converters/network/network_type_converters.h"
 #include "mojo/public/cpp/bindings/weak_binding_set.h"
-#include "mojo/shell/application_manager_apptests.mojom.h"
 #include "mojo/shell/public/cpp/application_test_base.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell.h"
 #include "mojo/shell/public/interfaces/application_manager.mojom.h"
+#include "mojo/shell/tests/application_manager_apptests.mojom.h"
 
 using mojo::shell::test::mojom::CreateInstanceForHandleTest;
 

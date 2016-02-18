@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/shell/capability_filter_test.h"
+#include "mojo/shell/tests/capability_filter_test.h"
 
 #include <utility>
 

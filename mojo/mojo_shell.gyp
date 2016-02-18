@@ -50,8 +50,8 @@
     'target_name': 'mojo_shell_unittests',
     'type': 'executable',
     'sources': [
-      'shell/application_manager_unittest.cc',
-      'shell/capability_filter_unittest.cc',
+      'shell/tests/application_manager_unittest.cc',
+      'shell/tests/capability_filter_unittest.cc',
     ],
     'dependencies': [
       '<(DEPTH)/mojo/mojo_shell.gyp:mojo_shell_lib',
@@ -71,8 +71,8 @@
     'type': 'static_library',
     'variables': {
       'mojom_files': [
-        'shell/capability_filter_unittest.mojom',
-        'shell/test.mojom',
+        'shell/tests/capability_filter_unittest.mojom',
+        'shell/tests/test.mojom',
       ],
     },
     'includes': [

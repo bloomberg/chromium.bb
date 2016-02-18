@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
-#include "mojo/shell/capability_filter_test.h"
+#include "mojo/shell/tests/capability_filter_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
