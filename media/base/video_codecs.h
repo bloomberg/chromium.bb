@@ -5,6 +5,7 @@
 #ifndef MEDIA_BASE_VIDEO_CODECS_H_
 #define MEDIA_BASE_VIDEO_CODECS_H_
 
+#include <stdint.h>
 #include <string>
 #include "media/base/media_export.h"
 
@@ -64,6 +65,11 @@ enum VideoCodecProfile {
 
 std::string MEDIA_EXPORT GetCodecName(VideoCodec codec);
 std::string MEDIA_EXPORT GetProfileName(VideoCodecProfile profile);
+
+// Handle parsing AVC/H.264 codec ids as outlined in RFC 6381 and ISO-14496-10.
+MEDIA_EXPORT bool ParseAVCCodecId(const std::string& codec_id,
+                                  VideoCodecProfile* profile,
+                                  uint8_t* level_idc);
 
 }  // namespace media
 

@@ -8,6 +8,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "media/base/video_codecs.h"
 #include "media/media_features.h"
 
 #if defined(OS_ANDROID)
@@ -122,7 +123,7 @@ struct CodecIDMappings {
 // The "mp4a" strings come from RFC 6381.
 static const CodecIDMappings kUnambiguousCodecStringMap[] = {
     {"1", MimeUtil::PCM},  // We only allow this for WAV so it isn't ambiguous.
-    // avc1/avc3.XXXXXX may be unambiguous; handled by ParseH264CodecID().
+    // avc1/avc3.XXXXXX may be unambiguous; handled by ParseAVCCodecId().
     // hev1/hvc1.XXXXXX may be unambiguous; handled by ParseHEVCCodecID().
     {"mp3", MimeUtil::MP3},
     {"mp4a.66", MimeUtil::MPEG2_AAC_MAIN},
@@ -163,9 +164,9 @@ static const CodecIDMappings kUnambiguousCodecStringMap[] = {
 // we assume the user is trying to indicate.
 static const CodecIDMappings kAmbiguousCodecStringMap[] = {
     {"mp4a.40", MimeUtil::MPEG4_AAC_LC},
-    {"avc1", MimeUtil::H264_BASELINE},
-    {"avc3", MimeUtil::H264_BASELINE},
-    // avc1/avc3.XXXXXX may be ambiguous; handled by ParseH264CodecID().
+    {"avc1", MimeUtil::H264},
+    {"avc3", MimeUtil::H264},
+    // avc1/avc3.XXXXXX may be ambiguous; handled by ParseAVCCodecId().
 };
 
 #if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
@@ -217,67 +218,15 @@ static std::string TranslateLegacyAvc1CodecIds(const std::string& codec_id) {
 }
 #endif
 
-static bool IsValidH264Level(const std::string& level_str) {
-  uint32_t level;
-  if (level_str.size() != 2 || !base::HexStringToUInt(level_str, &level))
-    return false;
-
-  // Valid levels taken from Table A-1 in ISO-14496-10.
-  // Essentially |level_str| is toHex(10 * level).
-  return ((level >= 10 && level <= 13) || (level >= 20 && level <= 22) ||
-          (level >= 30 && level <= 32) || (level >= 40 && level <= 42) ||
-          (level >= 50 && level <= 51));
-}
-
-// Handle parsing H.264 codec IDs as outlined in RFC 6381 and ISO-14496-10.
-//   avc1.42x0yy - H.264 Baseline
-//   avc1.4Dx0yy - H.264 Main
-//   avc1.64x0yy - H.264 High
-//
-//   avc1.xxxxxx & avc3.xxxxxx are considered ambiguous forms that are trying to
-//   signal H.264 Baseline. For example, the idc_level, profile_idc and
-//   constraint_set3_flag pieces may explicitly require decoder to conform to
-//   baseline profile at the specified level (see Annex A and constraint_set0 in
-//   ISO-14496-10).
-static bool ParseH264CodecID(const std::string& codec_id,
-                             MimeUtil::Codec* codec,
-                             bool* is_ambiguous) {
-  // Make sure we have avc1.xxxxxx or avc3.xxxxxx , where xxxxxx are hex digits
-  if (!base::StartsWith(codec_id, "avc1.", base::CompareCase::SENSITIVE) &&
-      !base::StartsWith(codec_id, "avc3.", base::CompareCase::SENSITIVE)) {
-    return false;
-  }
-  if (codec_id.size() != 11 || !base::IsHexDigit(codec_id[5]) ||
-      !base::IsHexDigit(codec_id[6]) || !base::IsHexDigit(codec_id[7]) ||
-      !base::IsHexDigit(codec_id[8]) || !base::IsHexDigit(codec_id[9]) ||
-      !base::IsHexDigit(codec_id[10])) {
-    return false;
-  }
-
-  // Validate constraint flags and reserved bits.
-  if (!base::IsHexDigit(codec_id[7]) || codec_id[8] != '0') {
-    *codec = MimeUtil::H264_BASELINE;
-    *is_ambiguous = true;
-    return true;
-  }
-
-  // Extract the profile.
-  std::string profile = base::ToUpperASCII(codec_id.substr(5, 2));
-  if (profile == "42") {
-    *codec = MimeUtil::H264_BASELINE;
-  } else if (profile == "4D") {
-    *codec = MimeUtil::H264_MAIN;
-  } else if (profile == "64") {
-    *codec = MimeUtil::H264_HIGH;
-  } else {
-    *codec = MimeUtil::H264_BASELINE;
-    *is_ambiguous = true;
-    return true;
-  }
-
-  // Validate level.
-  *is_ambiguous = !IsValidH264Level(codec_id.substr(9));
-  return true;
+static bool IsValidH264Level(uint8_t level_idc) {
+  // Valid levels taken from Table A-1 in ISO/IEC 14496-10.
+  // Level_idc represents the standard level represented as decimal number
+  // multiplied by ten, e.g. level_idc==32 corresponds to level==3.2
+  return ((level_idc >= 10 && level_idc <= 13) ||
+          (level_idc >= 20 && level_idc <= 22) ||
+          (level_idc >= 30 && level_idc <= 32) ||
+          (level_idc >= 40 && level_idc <= 42) ||
+          (level_idc >= 50 && level_idc <= 51));
 }
 
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
@@ -480,7 +429,19 @@ bool MimeUtil::StringToCodec(const std::string& codec_id,
   }
 #endif
 
-  return ParseH264CodecID(codec_id, codec, is_ambiguous);
+  VideoCodecProfile profile = VIDEO_CODEC_PROFILE_UNKNOWN;
+  uint8_t level_idc = 0;
+  if (ParseAVCCodecId(codec_id, &profile, &level_idc)) {
+    *codec = MimeUtil::H264;
+    *is_ambiguous =
+        (profile != H264PROFILE_BASELINE && profile != H264PROFILE_MAIN &&
+         profile != H264PROFILE_HIGH) ||
+        !IsValidH264Level(level_idc);
+    return true;
+  }
+
+  DVLOG(4) << __FUNCTION__ << ": Unrecognized codec id " << codec_id;
+  return false;
 }
 
 bool MimeUtil::IsCodecSupported(Codec codec) const {
@@ -506,9 +467,7 @@ bool MimeUtil::IsCodecProprietary(Codec codec) const {
     case MPEG4_AAC_LC:
     case MPEG4_AAC_SBR_v1:
     case MPEG4_AAC_SBR_PS_v2:
-    case H264_BASELINE:
-    case H264_MAIN:
-    case H264_HIGH:
+    case H264:
     case HEVC_MAIN:
       return true;
 
@@ -561,9 +520,7 @@ bool MimeUtil::IsCodecSupportedOnAndroid(Codec codec) const {
     case MPEG4_AAC_SBR_v1:
     case MPEG4_AAC_SBR_PS_v2:
     case VORBIS:
-    case H264_BASELINE:
-    case H264_MAIN:
-    case H264_HIGH:
+    case H264:
     case VP8:
       return true;
 
