@@ -86,7 +86,9 @@ ResultExpr SandboxBPFBasePolicyAndroid::EvaluateSyscall(int sysno) const {
 #endif
     case __NR_openat:
     case __NR_pread64:
+    case __NR_pwrite64:
     case __NR_rt_sigtimedwait:
+    case __NR_sched_getparam:
     case __NR_setpriority:
     case __NR_set_tid_address:
     case __NR_sigaltstack:
@@ -103,8 +105,9 @@ ResultExpr SandboxBPFBasePolicyAndroid::EvaluateSyscall(int sysno) const {
     // is demultiplexed below.
 #if defined(__x86_64__) || defined(__arm__) || defined(__aarch64__) || \
       defined(__mips__)
-    case __NR_socket:
+    case __NR_getsockopt:
     case __NR_connect:
+    case __NR_socket:
 #endif
 
     // Ptrace is allowed so the Breakpad Microdumper can fork in a renderer
@@ -133,6 +136,7 @@ ResultExpr SandboxBPFBasePolicyAndroid::EvaluateSyscall(int sysno) const {
            .ElseIf(AllOf(socketcall == SYS_SOCKET,
                          RestrictSocketArguments(domain, type, protocol)),
                    Allow())
+           .ElseIf(socketcall == SYS_GETSOCKOPT, Allow())
            .Else(Error(EPERM));
   }
 #endif
