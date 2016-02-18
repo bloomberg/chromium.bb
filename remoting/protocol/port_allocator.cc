@@ -151,7 +151,8 @@ void PortAllocatorSession::TryCreateRelaySession() {
                     "&password=" +
                     net::EscapeUrlEncodedData(password(), false) + "&sn=1";
   scoped_ptr<UrlRequest> url_request =
-      transport_context_->url_request_factory()->CreateUrlRequest(url);
+      transport_context_->url_request_factory()->CreateUrlRequest(
+          UrlRequest::Type::GET, url);
   url_request->AddHeader("X-Talk-Google-Relay-Auth: " +
                          ice_config_.relay_token);
   url_request->AddHeader("X-Google-Relay-Auth: " + ice_config_.relay_token);

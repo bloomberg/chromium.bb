@@ -15,6 +15,11 @@ namespace remoting {
 // Abstract interface for URL requests.
 class UrlRequest {
  public:
+  enum class Type {
+    GET,
+    POST,
+  };
+
   struct Result {
     Result() = default;
     Result(int status, std::string response_body)
@@ -41,6 +46,10 @@ class UrlRequest {
   // Adds an HTTP header to the request. Has no effect if called after Start().
   virtual void AddHeader(const std::string& value) = 0;
 
+  // Sets data to be sent for POST requests.
+  virtual void SetPostData(const std::string& content_type,
+                           const std::string& post_data) = 0;
+
   // Sends a request to the server. |on_response_callback| will be called to
   // return result of the request.
   virtual void Start(const OnResultCallback& on_result_callback) = 0;
@@ -50,7 +59,8 @@ class UrlRequest {
 class UrlRequestFactory {
  public:
   virtual ~UrlRequestFactory() {}
-  virtual scoped_ptr<UrlRequest> CreateUrlRequest(const std::string& url) = 0;
+  virtual scoped_ptr<UrlRequest> CreateUrlRequest(UrlRequest::Type type,
+                                                  const std::string& url) = 0;
 };
 
 }  // namespace remoting

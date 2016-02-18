@@ -12,8 +12,18 @@ namespace remoting {
 
 ChromiumUrlRequest::ChromiumUrlRequest(
     scoped_refptr<net::URLRequestContextGetter> url_context,
+    UrlRequest::Type type,
     const std::string& url) {
-  url_fetcher_ = net::URLFetcher::Create(GURL(url), net::URLFetcher::GET, this);
+  net::URLFetcher::RequestType request_type = net::URLFetcher::GET;
+  switch (type) {
+    case Type::GET:
+      request_type = net::URLFetcher::GET;
+      break;
+    case Type::POST:
+      request_type = net::URLFetcher::POST;
+      break;
+  }
+  url_fetcher_ = net::URLFetcher::Create(GURL(url), request_type, this);
   url_fetcher_->SetRequestContext(url_context.get());
 }
 
@@ -21,6 +31,11 @@ ChromiumUrlRequest::~ChromiumUrlRequest() {}
 
 void ChromiumUrlRequest::AddHeader(const std::string& value) {
   url_fetcher_->AddExtraRequestHeader(value);
+}
+
+void ChromiumUrlRequest::SetPostData(const std::string& content_type,
+                                     const std::string& data) {
+  url_fetcher_->SetUploadData(content_type, data);
 }
 
 void ChromiumUrlRequest::Start(const OnResultCallback& on_result_callback) {
@@ -53,8 +68,9 @@ ChromiumUrlRequestFactory::ChromiumUrlRequestFactory(
 ChromiumUrlRequestFactory::~ChromiumUrlRequestFactory() {}
 
 scoped_ptr<UrlRequest> ChromiumUrlRequestFactory::CreateUrlRequest(
+    UrlRequest::Type type,
     const std::string& url) {
-  return make_scoped_ptr(new ChromiumUrlRequest(url_context_, url));
+  return make_scoped_ptr(new ChromiumUrlRequest(url_context_, type, url));
 }
 
 }  // namespace remoting

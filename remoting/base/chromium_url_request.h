@@ -22,11 +22,14 @@ namespace remoting {
 class ChromiumUrlRequest : public UrlRequest, public net::URLFetcherDelegate {
  public:
   ChromiumUrlRequest(scoped_refptr<net::URLRequestContextGetter> url_context,
+                     UrlRequest::Type type,
                      const std::string& url);
   ~ChromiumUrlRequest() override;
 
   // UrlRequest interface.
   void AddHeader(const std::string& value) override;
+  void SetPostData(const std::string& content_type,
+                   const std::string& data) override;
   void Start(const OnResultCallback& on_result_callback) override;
 
  private:
@@ -44,7 +47,8 @@ class ChromiumUrlRequestFactory : public UrlRequestFactory {
   ~ChromiumUrlRequestFactory() override;
 
   // UrlRequestFactory interface.
-  scoped_ptr<UrlRequest> CreateUrlRequest(const std::string& url) override;
+  scoped_ptr<UrlRequest> CreateUrlRequest(UrlRequest::Type type,
+                                          const std::string& url) override;
 
  private:
   scoped_refptr<net::URLRequestContextGetter> url_context_;

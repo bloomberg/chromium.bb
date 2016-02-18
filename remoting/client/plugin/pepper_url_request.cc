@@ -15,19 +15,33 @@ static const int kReadSize = 1024;
 namespace remoting {
 
 PepperUrlRequest::PepperUrlRequest(pp::InstanceHandle pp_instance,
+                                   UrlRequest::Type type,
                                    const std::string& url)
     : request_info_(pp_instance),
       url_loader_(pp_instance),
       url_(url),
       callback_factory_(this) {
-  request_info_.SetMethod("GET");
   request_info_.SetURL(url);
+  switch (type) {
+    case Type::GET:
+      request_info_.SetMethod("GET");
+      break;
+    case Type::POST:
+      request_info_.SetMethod("POST");
+      break;
+  }
 }
 
 PepperUrlRequest::~PepperUrlRequest() {}
 
 void PepperUrlRequest::AddHeader(const std::string& value) {
   headers_ += value + "\n\r";
+}
+
+void PepperUrlRequest::SetPostData(const std::string& content_type,
+                                   const std::string& data) {
+  AddHeader("Content-Type: " + content_type);
+  request_info_.AppendDataToBody(data.data(), data.length());
 }
 
 void PepperUrlRequest::Start(const OnResultCallback& on_result_callback) {
@@ -94,8 +108,9 @@ PepperUrlRequestFactory::PepperUrlRequestFactory(pp::InstanceHandle pp_instance)
 PepperUrlRequestFactory::~PepperUrlRequestFactory() {}
 
 scoped_ptr<UrlRequest> PepperUrlRequestFactory::CreateUrlRequest(
+    UrlRequest::Type type,
     const std::string& url) {
-  return make_scoped_ptr(new PepperUrlRequest(pp_instance_, url));
+  return make_scoped_ptr(new PepperUrlRequest(pp_instance_, type, url));
 }
 
 }  // namespace remoting

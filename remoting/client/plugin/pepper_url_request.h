@@ -17,11 +17,15 @@ namespace remoting {
 // UrlRequest implementation that uses URLLoader provided by Pepper.
 class PepperUrlRequest : public UrlRequest {
  public:
-  PepperUrlRequest(pp::InstanceHandle pp_instance, const std::string& url);
+  PepperUrlRequest(pp::InstanceHandle pp_instance,
+                   UrlRequest::Type type,
+                   const std::string& url);
   ~PepperUrlRequest() override;
 
   // UrlRequest interface.
   void AddHeader(const std::string& value) override;
+  void SetPostData(const std::string& content_type,
+                   const std::string& data) override;
   void Start(const OnResultCallback& on_result_callback) override;
 
  private:
@@ -50,7 +54,8 @@ class PepperUrlRequestFactory : public UrlRequestFactory {
   ~PepperUrlRequestFactory() override;
 
    // UrlRequestFactory interface.
-  scoped_ptr<UrlRequest> CreateUrlRequest(const std::string& url) override;
+  scoped_ptr<UrlRequest> CreateUrlRequest(UrlRequest::Type type,
+                                          const std::string& url) override;
 
  private:
   pp::InstanceHandle pp_instance_;
