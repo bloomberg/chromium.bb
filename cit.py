@@ -77,7 +77,7 @@ def get_available_tools():
   for root, _, files in os.walk(starting):
     if '__main__.py' in files:
       tools.append(root[len(starting)+1:].replace(os.path.sep, '.'))
-  return tools
+  return sorted(tools)
 
 
 def run(args):
