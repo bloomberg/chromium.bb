@@ -414,6 +414,7 @@ void CanvasRenderingContext2D::setStrokeStyle(const StringOrCanvasGradientOrCanv
 
     modifiableState().setStrokeStyle(canvasStyle);
     modifiableState().setUnparsedStrokeColor(colorString);
+    modifiableState().clearResolvedFilter();
 }
 
 void CanvasRenderingContext2D::fillStyle(StringOrCanvasGradientOrCanvasPattern& returnValue) const
@@ -454,6 +455,7 @@ void CanvasRenderingContext2D::setFillStyle(const StringOrCanvasGradientOrCanvas
     ASSERT(canvasStyle);
     modifiableState().setFillStyle(canvasStyle);
     modifiableState().setUnparsedFillColor(colorString);
+    modifiableState().clearResolvedFilter();
 }
 
 double CanvasRenderingContext2D::lineWidth() const
