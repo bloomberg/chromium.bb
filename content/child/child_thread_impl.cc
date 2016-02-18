@@ -567,18 +567,11 @@ scoped_ptr<base::SharedMemory> ChildThreadImpl::AllocateSharedMemory(
     size_t buf_size,
     IPC::Sender* sender) {
   scoped_ptr<base::SharedMemory> shared_buf;
-#if defined(OS_WIN)
-  shared_buf.reset(new base::SharedMemory);
-  if (!shared_buf->CreateAnonymous(buf_size)) {
-    NOTREACHED();
-    return nullptr;
-  }
-#else
-  // On POSIX, we need to ask the browser to create the shared memory for us,
-  // since this is blocked by the sandbox.
+  // Ask the browser to create the shared memory, since this is blocked by the
+  // sandbox on most platforms.
   base::SharedMemoryHandle shared_mem_handle;
   if (sender->Send(new ChildProcessHostMsg_SyncAllocateSharedMemory(
-                           buf_size, &shared_mem_handle))) {
+          buf_size, &shared_mem_handle))) {
     if (base::SharedMemory::IsHandleValid(shared_mem_handle)) {
       shared_buf.reset(new base::SharedMemory(shared_mem_handle, false));
     } else {
@@ -589,7 +582,6 @@ scoped_ptr<base::SharedMemory> ChildThreadImpl::AllocateSharedMemory(
     // Send is allowed to fail during shutdown. Return null in this case.
     return nullptr;
   }
-#endif
   return shared_buf;
 }
 
