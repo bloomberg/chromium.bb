@@ -53,6 +53,8 @@ public:
     {
         return m_name;
     }
+    virtual WebString toString() const = 0;
+
 private:
     const char* m_name;
 };
@@ -88,6 +90,7 @@ public:
     bool matches(long value) const;
     bool isEmpty() const override;
     bool hasMandatory() const override;
+    WebString toString() const override;
     bool hasMin() const { return m_hasMin; }
     long min() const { return m_min; }
     bool hasMax() const { return m_hasMax; }
@@ -140,6 +143,7 @@ public:
     bool matches(double value) const;
     bool isEmpty() const override;
     bool hasMandatory() const override;
+    WebString toString() const override;
     bool hasMin() const { return m_hasMin; }
     double min() const { return m_min; }
     bool hasMax() const { return m_hasMax; }
@@ -181,6 +185,7 @@ public:
     bool matches(WebString value) const;
     bool isEmpty() const override;
     bool hasMandatory() const override;
+    WebString toString() const override;
     const WebVector<WebString>& exact() const;
     const WebVector<WebString>& ideal() const;
 
@@ -193,6 +198,8 @@ class BLINK_PLATFORM_EXPORT BooleanConstraint : public BaseConstraint {
 public:
     explicit BooleanConstraint(const char* name);
 
+    bool exact() const { return m_exact; }
+    bool ideal() const { return m_ideal; }
     void setIdeal(bool value)
     {
         m_ideal = value;
@@ -208,6 +215,7 @@ public:
     bool matches(bool value) const;
     bool isEmpty() const override;
     bool hasMandatory() const override;
+    WebString toString() const override;
 
 private:
     unsigned m_ideal : 1;
@@ -277,6 +285,7 @@ public:
     BLINK_PLATFORM_EXPORT bool isEmpty() const;
     BLINK_PLATFORM_EXPORT bool hasMandatory() const;
     BLINK_PLATFORM_EXPORT bool hasMandatoryOutsideSet(const std::vector<std::string>&, std::string&) const;
+    BLINK_PLATFORM_EXPORT WebString toString() const;
 
 private:
     std::vector<const BaseConstraint*> allConstraints() const;
@@ -334,6 +343,8 @@ public:
 
     BLINK_PLATFORM_EXPORT const WebMediaTrackConstraintSet& basic() const;
     BLINK_PLATFORM_EXPORT const WebVector<WebMediaTrackConstraintSet>& advanced() const;
+
+    BLINK_PLATFORM_EXPORT const WebString toString() const;
 
 private:
     WebPrivatePtr<WebMediaConstraintsPrivate> m_private;

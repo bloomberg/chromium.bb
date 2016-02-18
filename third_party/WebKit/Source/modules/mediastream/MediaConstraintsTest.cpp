@@ -90,3 +90,27 @@ TEST(MediaTrackConstraintsTest, MandatoryChecks)
     EXPECT_TRUE(theSet.hasMandatoryOutsideSet({ "width" }, foundName));
     EXPECT_EQ("googPayloadPadding", foundName);
 }
+
+TEST(MediaTrackConstraintsTest, SetToString)
+{
+    blink::WebMediaTrackConstraintSet theSet;
+    EXPECT_EQ("", theSet.toString());
+    theSet.width.setMax(240);
+    EXPECT_EQ("width: {max: 240}", theSet.toString().utf8());
+    theSet.echoCancellation.setIdeal(true);
+    EXPECT_EQ("width: {max: 240}, echoCancellation: {ideal: true}", theSet.toString().utf8());
+}
+
+TEST(MediaTrackConstraintsTest, ConstraintsToString)
+{
+    blink::WebMediaConstraints theConstraints;
+    blink::WebMediaTrackConstraintSet basic;
+    blink::WebVector<blink::WebMediaTrackConstraintSet> advanced(static_cast<size_t>(1));
+    basic.width.setMax(240);
+    advanced[0].echoCancellation.setExact(true);
+    theConstraints.initialize(basic, advanced);
+    EXPECT_EQ("{width: {max: 240}, advanced: [{echoCancellation: {exact: true}}]}", theConstraints.toString().utf8());
+
+    blink::WebMediaConstraints nullConstraints;
+    EXPECT_EQ("", nullConstraints.toString().utf8());
+}

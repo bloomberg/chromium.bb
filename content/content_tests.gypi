@@ -788,6 +788,7 @@
       'renderer/media/mock_media_stream_video_sink.h',
       'renderer/media/mock_media_stream_video_source.cc',
       'renderer/media/mock_media_stream_video_source.h',
+      'renderer/media/peer_connection_tracker_unittest.cc',
       'renderer/media/rtc_data_channel_handler_unittest.cc',
       'renderer/media/rtc_peer_connection_handler_unittest.cc',
       'renderer/media/rtc_video_decoder_unittest.cc',

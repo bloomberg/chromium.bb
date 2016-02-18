@@ -13,6 +13,16 @@ WebRTCOfferOptions::WebRTCOfferOptions(RTCOfferOptions* options)
 {
 }
 
+WebRTCOfferOptions::WebRTCOfferOptions(int32_t offerToReceiveAudio,
+    int32_t offerToReceiveVideo, bool voiceActivityDetection,
+    bool iceRestart)
+    : m_private(RTCOfferOptions::create(offerToReceiveAudio,
+        offerToReceiveVideo,
+        voiceActivityDetection,
+        iceRestart))
+{
+}
+
 void WebRTCOfferOptions::assign(const WebRTCOfferOptions& other)
 {
     m_private = other.m_private;

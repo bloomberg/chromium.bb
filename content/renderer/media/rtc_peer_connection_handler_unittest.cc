@@ -140,10 +140,10 @@ class MockPeerConnectionTracker : public PeerConnectionTracker {
   // TODO(jiayl): add coverage for the following methods
   MOCK_METHOD2(TrackCreateOffer,
                void(RTCPeerConnectionHandler* pc_handler,
-                    const RTCMediaConstraints& constraints));
+                    const blink::WebMediaConstraints& constraints));
   MOCK_METHOD2(TrackCreateAnswer,
                void(RTCPeerConnectionHandler* pc_handler,
-                    const RTCMediaConstraints& constraints));
+                    const blink::WebMediaConstraints& constraints));
   MOCK_METHOD4(TrackSetSessionDescription,
                void(RTCPeerConnectionHandler* pc_handler,
                     const std::string& sdp, const std::string& type,
@@ -152,7 +152,7 @@ class MockPeerConnectionTracker : public PeerConnectionTracker {
       TrackUpdateIce,
       void(RTCPeerConnectionHandler* pc_handler,
            const webrtc::PeerConnectionInterface::RTCConfiguration& config,
-           const RTCMediaConstraints& options));
+           const blink::WebMediaConstraints& options));
   MOCK_METHOD4(TrackAddIceCandidate,
                void(RTCPeerConnectionHandler* pc_handler,
                     const blink::WebRTCICECandidate& candidate,

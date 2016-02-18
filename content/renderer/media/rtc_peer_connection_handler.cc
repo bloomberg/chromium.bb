@@ -892,8 +892,8 @@ bool RTCPeerConnectionHandler::initialize(
   }
 
   if (peer_connection_tracker_) {
-    peer_connection_tracker_->RegisterPeerConnection(
-        this, config, constraints, frame_);
+    peer_connection_tracker_->RegisterPeerConnection(this, config, options,
+                                                     frame_);
   }
 
   uma_observer_ = new rtc::RefCountedObject<PeerConnectionUMAObserver>();
@@ -938,7 +938,7 @@ void RTCPeerConnectionHandler::createOffer(
   native_peer_connection_->CreateOffer(description_request.get(), &constraints);
 
   if (peer_connection_tracker_)
-    peer_connection_tracker_->TrackCreateOffer(this, constraints);
+    peer_connection_tracker_->TrackCreateOffer(this, options);
 }
 
 void RTCPeerConnectionHandler::createOffer(
@@ -959,7 +959,7 @@ void RTCPeerConnectionHandler::createOffer(
   native_peer_connection_->CreateOffer(description_request.get(), &constraints);
 
   if (peer_connection_tracker_)
-    peer_connection_tracker_->TrackCreateOffer(this, constraints);
+    peer_connection_tracker_->TrackCreateOffer(this, options);
 }
 
 void RTCPeerConnectionHandler::createAnswer(
@@ -978,7 +978,7 @@ void RTCPeerConnectionHandler::createAnswer(
                                         &constraints);
 
   if (peer_connection_tracker_)
-    peer_connection_tracker_->TrackCreateAnswer(this, constraints);
+    peer_connection_tracker_->TrackCreateAnswer(this, options);
 }
 
 bool IsOfferOrAnswer(const webrtc::SessionDescriptionInterface* native_desc) {
@@ -1141,7 +1141,7 @@ bool RTCPeerConnectionHandler::updateICE(
   RTCMediaConstraints constraints(options);
 
   if (peer_connection_tracker_)
-    peer_connection_tracker_->TrackUpdateIce(this, config, constraints);
+    peer_connection_tracker_->TrackUpdateIce(this, config, options);
 
   return native_peer_connection_->UpdateIce(config.servers, &constraints);
 }

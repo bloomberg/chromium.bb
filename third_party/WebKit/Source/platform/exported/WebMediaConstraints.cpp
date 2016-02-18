@@ -32,9 +32,41 @@
 
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
+#include "wtf/text/StringBuilder.h"
+#include "wtf/text/WTFString.h"
 #include <math.h>
 
 namespace blink {
+
+namespace {
+
+template <typename T>
+void maybeEmitNamedValue(StringBuilder& builder, bool emit, const char* name, T value)
+{
+    if (!emit)
+        return;
+    if (builder.length() > 1)
+        builder.appendLiteral(", ");
+    builder.append(name);
+    builder.appendLiteral(": ");
+    builder.appendNumber(value);
+}
+
+void maybeEmitNamedBoolean(StringBuilder& builder, bool emit, const char* name, bool value)
+{
+    if (!emit)
+        return;
+    if (builder.length() > 1)
+        builder.appendLiteral(", ");
+    builder.append(name);
+    builder.appendLiteral(": ");
+    if (value)
+        builder.appendLiteral("true");
+    else
+        builder.appendLiteral("false");
+}
+
+} // namespace
 
 class WebMediaConstraintsPrivate final : public RefCounted<WebMediaConstraintsPrivate> {
 public:
@@ -49,6 +81,7 @@ public:
     bool getOptionalConstraintValue(const WebString& name, WebString& value);
     const WebMediaTrackConstraintSet& basic() const;
     const WebVector<WebMediaTrackConstraintSet>& advanced() const;
+    const String toString() const;
 
 private:
     WebMediaConstraintsPrivate(const WebVector<WebMediaConstraint>& optional, const WebVector<WebMediaConstraint>& mandatory, const WebMediaTrackConstraintSet& basic, const WebVector<WebMediaTrackConstraintSet>& advanced);
@@ -143,6 +176,32 @@ const WebVector<WebMediaTrackConstraintSet>& WebMediaConstraintsPrivate::advance
     return m_advanced;
 }
 
+const String WebMediaConstraintsPrivate::toString() const
+{
+    StringBuilder builder;
+    if (!isEmpty()) {
+        builder.append('{');
+        builder.append(basic().toString());
+        if (!advanced().isEmpty()) {
+            if (builder.length() > 1)
+                builder.appendLiteral(", ");
+            builder.appendLiteral("advanced: [");
+            bool first = true;
+            for (const auto& constraintSet : advanced()) {
+                if (!first)
+                    builder.appendLiteral(", ");
+                builder.append('{');
+                builder.append(constraintSet.toString());
+                builder.append('}');
+                first = false;
+            }
+            builder.append(']');
+        }
+        builder.append('}');
+    }
+    return builder.toString();
+}
+
 // *Constraints
 
 BaseConstraint::BaseConstraint(const char* name)
@@ -191,6 +250,18 @@ bool LongConstraint::hasMandatory() const
     return m_hasMin || m_hasMax || m_hasExact;
 }
 
+WebString LongConstraint::toString() const
+{
+    StringBuilder builder;
+    builder.append('{');
+    maybeEmitNamedValue(builder, m_hasMin, "min", m_min);
+    maybeEmitNamedValue(builder, m_hasMax, "max", m_max);
+    maybeEmitNamedValue(builder, m_hasExact, "exact", m_exact);
+    maybeEmitNamedValue(builder, m_hasIdeal, "ideal", m_ideal);
+    builder.append('}');
+    return builder.toString();
+}
+
 const double DoubleConstraint::kConstraintEpsilon = 0.00001;
 
 DoubleConstraint::DoubleConstraint(const char* name)
@@ -228,6 +299,18 @@ bool DoubleConstraint::isEmpty() const
 bool DoubleConstraint::hasMandatory() const
 {
     return m_hasMin || m_hasMax || m_hasExact;
+}
+
+WebString DoubleConstraint::toString() const
+{
+    StringBuilder builder;
+    builder.append('{');
+    maybeEmitNamedValue(builder, m_hasMin, "min", m_min);
+    maybeEmitNamedValue(builder, m_hasMax, "max", m_max);
+    maybeEmitNamedValue(builder, m_hasExact, "exact", m_exact);
+    maybeEmitNamedValue(builder, m_hasIdeal, "ideal", m_ideal);
+    builder.append('}');
+    return builder.toString();
 }
 
 StringConstraint::StringConstraint(const char* name)
@@ -270,6 +353,41 @@ const WebVector<WebString>& StringConstraint::ideal() const
     return m_ideal;
 }
 
+WebString StringConstraint::toString() const
+{
+    StringBuilder builder;
+    builder.append('{');
+    if (!m_ideal.isEmpty()) {
+        builder.appendLiteral("ideal: [");
+        bool first = true;
+        for (const auto& iter : m_ideal) {
+            if (!first)
+                builder.appendLiteral(", ");
+            builder.append('"');
+            builder.append(iter);
+            builder.append('"');
+            first = false;
+        }
+        builder.append(']');
+    }
+    if (!m_exact.isEmpty()) {
+        if (builder.length() > 1)
+            builder.appendLiteral(", ");
+        builder.appendLiteral("exact: [");
+        bool first = true;
+        for (const auto& iter : m_exact) {
+            if (!first)
+                builder.appendLiteral(", ");
+            builder.append('"');
+            builder.append(iter);
+            builder.append('"');
+        }
+        builder.append(']');
+    }
+    builder.append('}');
+    return builder.toString();
+}
+
 BooleanConstraint::BooleanConstraint(const char* name)
     : BaseConstraint(name)
     , m_ideal(false)
@@ -295,6 +413,16 @@ bool BooleanConstraint::isEmpty() const
 bool BooleanConstraint::hasMandatory() const
 {
     return m_hasExact;
+}
+
+WebString BooleanConstraint::toString() const
+{
+    StringBuilder builder;
+    builder.append('{');
+    maybeEmitNamedBoolean(builder, m_hasExact, "exact", exact());
+    maybeEmitNamedBoolean(builder, m_hasIdeal, "ideal", ideal());
+    builder.append('}');
+    return builder.toString();
 }
 
 WebMediaTrackConstraintSet::WebMediaTrackConstraintSet()
@@ -407,6 +535,23 @@ bool WebMediaTrackConstraintSet::hasMandatory() const
     return hasMandatoryOutsideSet(std::vector<std::string>(), dummyString);
 }
 
+WebString WebMediaTrackConstraintSet::toString() const
+{
+    StringBuilder builder;
+    bool first = true;
+    for (const auto& constraint : allConstraints()) {
+        if (!constraint->isEmpty()) {
+            if (!first)
+                builder.appendLiteral(", ");
+            builder.append(constraint->name());
+            builder.appendLiteral(": ");
+            builder.append(constraint->toString());
+            first = false;
+        }
+    }
+    return builder.toString();
+}
+
 // WebMediaConstraints
 
 void WebMediaConstraints::assign(const WebMediaConstraints& other)
@@ -476,6 +621,13 @@ const WebVector<WebMediaTrackConstraintSet>& WebMediaConstraints::advanced() con
 {
     ASSERT(!isNull());
     return m_private->advanced();
+}
+
+const WebString WebMediaConstraints::toString() const
+{
+    if (isNull())
+        return WebString("");
+    return m_private->toString();
 }
 
 } // namespace blink

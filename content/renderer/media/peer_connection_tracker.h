@@ -19,7 +19,9 @@
 
 namespace blink {
 class WebFrame;
+class WebMediaConstraints;
 class WebRTCICECandidate;
+class WebRTCOfferOptions;
 class WebString;
 class WebRTCSessionDescription;
 class WebUserMediaRequest;
@@ -32,6 +34,7 @@ class DataChannelInterface;
 namespace content {
 class RTCMediaConstraints;
 class RTCPeerConnectionHandler;
+class RenderThread;
 
 // This class collects data about each peer connection,
 // sends it to the browser process, and handles messages
@@ -75,7 +78,7 @@ class CONTENT_EXPORT PeerConnectionTracker
   void RegisterPeerConnection(
       RTCPeerConnectionHandler* pc_handler,
       const webrtc::PeerConnectionInterface::RTCConfiguration& config,
-      const RTCMediaConstraints& constraints,
+      const blink::WebMediaConstraints& constraints,
       const blink::WebFrame* frame);
 
   // Sends an update when a PeerConnection has been destroyed.
@@ -85,9 +88,12 @@ class CONTENT_EXPORT PeerConnectionTracker
   // The |pc_handler| is the handler object associated with the PeerConnection,
   // the |constraints| is the media constraints used to create the offer/answer.
   virtual void TrackCreateOffer(RTCPeerConnectionHandler* pc_handler,
-                                const RTCMediaConstraints& constraints);
+                                const blink::WebRTCOfferOptions& options);
+  // TODO(hta): Get rid of the version below.
+  virtual void TrackCreateOffer(RTCPeerConnectionHandler* pc_handler,
+                                const blink::WebMediaConstraints& options);
   virtual void TrackCreateAnswer(RTCPeerConnectionHandler* pc_handler,
-                                 const RTCMediaConstraints& constraints);
+                                 const blink::WebMediaConstraints& constraints);
 
   // Sends an update when setLocalDescription or setRemoteDescription is called.
   virtual void TrackSetSessionDescription(
@@ -98,7 +104,7 @@ class CONTENT_EXPORT PeerConnectionTracker
   virtual void TrackUpdateIce(
       RTCPeerConnectionHandler* pc_handler,
       const webrtc::PeerConnectionInterface::RTCConfiguration& config,
-      const RTCMediaConstraints& options);
+      const blink::WebMediaConstraints& options);
 
   // Sends an update when an Ice candidate is added.
   virtual void TrackAddIceCandidate(
@@ -160,6 +166,9 @@ class CONTENT_EXPORT PeerConnectionTracker
   virtual void TrackGetUserMedia(
       const blink::WebUserMediaRequest& user_media_request);
 
+  // For testing: Override the class that gets posted messages.
+  void OverrideSendTargetForTesting(RenderThread* target);
+
  private:
   // Assign a local ID to a peer connection so that the browser process can
   // uniquely identify a peer connection in the renderer process.
@@ -191,6 +200,8 @@ class CONTENT_EXPORT PeerConnectionTracker
                                 const char* callback_type,
                                 const std::string& value);
 
+  RenderThread* SendTarget();
+
   // This map stores the local ID assigned to each RTCPeerConnectionHandler.
   typedef std::map<RTCPeerConnectionHandler*, int> PeerConnectionIdMap;
   PeerConnectionIdMap peer_connection_id_map_;
@@ -198,6 +209,7 @@ class CONTENT_EXPORT PeerConnectionTracker
   // This keeps track of the next available local ID.
   int next_local_id_;
   base::ThreadChecker main_thread_;
+  RenderThread* send_target_for_test_;
 
   DISALLOW_COPY_AND_ASSIGN(PeerConnectionTracker);
 };
