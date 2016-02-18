@@ -405,7 +405,6 @@ V4L2SliceVideoDecodeAccelerator::V4L2SliceVideoDecodeAccelerator(
       decoder_resetting_(false),
       surface_set_change_pending_(false),
       picture_clearing_count_(0),
-      pictures_assigned_(false, false),
       make_context_current_(make_context_current),
       egl_display_(egl_display),
       egl_context_(egl_context),
@@ -546,11 +545,6 @@ void V4L2SliceVideoDecodeAccelerator::Destroy() {
     decoder_thread_task_runner_->PostTask(
         FROM_HERE, base::Bind(&V4L2SliceVideoDecodeAccelerator::DestroyTask,
                               base::Unretained(this)));
-
-    // Wake up decoder thread in case we are waiting in CreateOutputBuffers
-    // for client to provide pictures. Since this is Destroy, we won't be
-    // getting them anymore (AssignPictureBuffers won't be called).
-    pictures_assigned_.Signal();
 
     // Wait for tasks to finish/early-exit.
     decoder_thread_.Stop();
@@ -753,12 +747,6 @@ bool V4L2SliceVideoDecodeAccelerator::CreateOutputBuffers() {
                  client_, num_pictures, coded_size_,
                  device_->GetTextureTarget()));
 
-  // Wait for the client to call AssignPictureBuffers() on the Child thread.
-  // We do this, because if we continue decoding without finishing buffer
-  // allocation, we may end up Resetting before AssignPictureBuffers arrives,
-  // resulting in unnecessary complications and subtle bugs.
-  pictures_assigned_.Wait();
-
   return true;
 }
 
@@ -785,7 +773,7 @@ void V4L2SliceVideoDecodeAccelerator::DestroyInputBuffers() {
 }
 
 void V4L2SliceVideoDecodeAccelerator::DismissPictures(
-    std::vector<int32_t> picture_buffer_ids,
+    const std::vector<int32_t>& picture_buffer_ids,
     base::WaitableEvent* done) {
   DVLOGF(3);
   DCHECK(child_task_runner_->BelongsToCurrentThread());
@@ -966,11 +954,29 @@ void V4L2SliceVideoDecodeAccelerator::ProcessPendingEventsIfNeeded() {
   // We always first process the surface set change, as it is an internal
   // event from the decoder and interleaving it with external requests would
   // put the decoder in an undefined state.
-  FinishSurfaceSetChangeIfNeeded();
+  if (surface_set_change_pending_) {
+    if (!FinishSurfaceSetChange())
+      return;
+  }
+  DCHECK(!surface_set_change_pending_);
 
   // Process external (client) requests.
-  FinishFlushIfNeeded();
-  FinishResetIfNeeded();
+  if (decoder_flushing_) {
+    if (!FinishFlush())
+      return;
+  }
+  DCHECK(!decoder_flushing_);
+
+  if (decoder_resetting_) {
+    if (!FinishReset())
+      return;
+  }
+  DCHECK(!decoder_resetting_);
+
+  if (state_ == kIdle)
+    state_ = kDecoding;
+
+  ScheduleDecodeBufferTaskIfNeeded();
 }
 
 void V4L2SliceVideoDecodeAccelerator::ReuseInputBuffer(int index) {
@@ -1289,21 +1295,21 @@ void V4L2SliceVideoDecodeAccelerator::InitiateSurfaceSetChange() {
   DVLOGF(2);
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
 
-  DCHECK_EQ(state_, kDecoding);
   state_ = kIdle;
 
   DCHECK(!surface_set_change_pending_);
   surface_set_change_pending_ = true;
 
-  FinishSurfaceSetChangeIfNeeded();
+  ProcessPendingEventsIfNeeded();
 }
 
-void V4L2SliceVideoDecodeAccelerator::FinishSurfaceSetChangeIfNeeded() {
+bool V4L2SliceVideoDecodeAccelerator::FinishSurfaceSetChange() {
   DVLOGF(2);
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
 
-  if (!surface_set_change_pending_ || !surfaces_at_device_.empty())
-    return;
+  DCHECK(surface_set_change_pending_);
+  if (!surfaces_at_device_.empty())
+    return false;
 
   DCHECK_EQ(state_, kIdle);
   DCHECK(decoder_display_queue_.empty());
@@ -1316,7 +1322,7 @@ void V4L2SliceVideoDecodeAccelerator::FinishSurfaceSetChangeIfNeeded() {
   // Keep input queue running while we switch outputs.
   if (!StopDevicePoll(true)) {
     NOTIFY_ERROR(PLATFORM_FAILURE);
-    return;
+    return false;
   }
 
   // This will return only once all buffers are dismissed and destroyed.
@@ -1325,24 +1331,21 @@ void V4L2SliceVideoDecodeAccelerator::FinishSurfaceSetChangeIfNeeded() {
   // after displaying.
   if (!DestroyOutputs(true)) {
     NOTIFY_ERROR(PLATFORM_FAILURE);
-    return;
+    return false;
   }
 
   if (!CreateOutputBuffers()) {
     NOTIFY_ERROR(PLATFORM_FAILURE);
-    return;
+    return false;
   }
 
-  if (!StartDevicePoll()) {
-    NOTIFY_ERROR(PLATFORM_FAILURE);
-    return;
-  }
-
-  DVLOGF(3) << "Surface set change finished";
-
+  // At this point we can safely say the surface set has been changed, even
+  // though we haven't received the actual buffers via AssignPictureBuffers()
+  // yet. We will not start decoding without having surfaces available,
+  // and will schedule a decode task once the client provides the buffers.
   surface_set_change_pending_ = false;
-  state_ = kDecoding;
-  ScheduleDecodeBufferTaskIfNeeded();
+  DVLOG(3) << "Surface set change finished";
+  return true;
 }
 
 bool V4L2SliceVideoDecodeAccelerator::DestroyOutputs(bool dismiss) {
@@ -1432,6 +1435,18 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffers(
   DVLOGF(3);
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
+  decoder_thread_task_runner_->PostTask(
+      FROM_HERE, base::Bind(
+          &V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask,
+          base::Unretained(this), buffers));
+}
+
+void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
+    const std::vector<media::PictureBuffer>& buffers) {
+  DVLOGF(3);
+  DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
+  DCHECK_EQ(state_, kDecoding);
+
   const uint32_t req_buffer_count = decoder_->GetRequiredNumOfPictures();
 
   if (buffers.size() < req_buffer_count) {
@@ -1441,17 +1456,6 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffers(
     NOTIFY_ERROR(INVALID_ARGUMENT);
     return;
   }
-
-  if (!make_context_current_.Run()) {
-    DLOG(ERROR) << "could not make context current";
-    NOTIFY_ERROR(PLATFORM_FAILURE);
-    return;
-  }
-
-  gfx::ScopedTextureBinder bind_restore(GL_TEXTURE_EXTERNAL_OES, 0);
-
-  // It's safe to manipulate all the buffer state here, because the decoder
-  // thread is waiting on pictures_assigned_.
 
   // Allocate the output buffers.
   struct v4l2_requestbuffers reqbufs;
@@ -1467,9 +1471,66 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffers(
     return;
   }
 
-  output_buffer_map_.resize(buffers.size());
+  child_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&V4L2SliceVideoDecodeAccelerator::CreateEGLImages,
+                            weak_this_, buffers, output_format_fourcc_,
+                            output_planes_count_));
+}
+
+void V4L2SliceVideoDecodeAccelerator::CreateEGLImages(
+    const std::vector<media::PictureBuffer>& buffers,
+    uint32_t output_format_fourcc,
+    size_t output_planes_count) {
+  DVLOGF(3);
+  DCHECK(child_task_runner_->BelongsToCurrentThread());
+
+  if (!make_context_current_.Run()) {
+    DLOG(ERROR) << "could not make context current";
+    NOTIFY_ERROR(PLATFORM_FAILURE);
+    return;
+  }
+
+  gfx::ScopedTextureBinder bind_restore(GL_TEXTURE_EXTERNAL_OES, 0);
+
+  std::vector<EGLImageKHR> egl_images;
+  for (size_t i = 0; i < buffers.size(); ++i) {
+    EGLImageKHR egl_image = device_->CreateEGLImage(egl_display_,
+                                                    egl_context_,
+                                                    buffers[i].texture_id(),
+                                                    buffers[i].size(),
+                                                    i,
+                                                    output_format_fourcc,
+                                                    output_planes_count);
+    if (egl_image == EGL_NO_IMAGE_KHR) {
+      LOGF(ERROR) << "Could not create EGLImageKHR";
+      for (const auto& image_to_destroy : egl_images)
+        device_->DestroyEGLImage(egl_display_, image_to_destroy);
+
+      NOTIFY_ERROR(PLATFORM_FAILURE);
+      return;
+    }
+
+    egl_images.push_back(egl_image);
+  }
+
+  decoder_thread_task_runner_->PostTask(
+      FROM_HERE, base::Bind(
+          &V4L2SliceVideoDecodeAccelerator::AssignEGLImages,
+          base::Unretained(this), buffers, egl_images));
+}
+
+void V4L2SliceVideoDecodeAccelerator::AssignEGLImages(
+    const std::vector<media::PictureBuffer>& buffers,
+    const std::vector<EGLImageKHR>& egl_images) {
+  DVLOGF(3);
+  DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
+  DCHECK_EQ(buffers.size(), egl_images.size());
 
   DCHECK(free_output_buffers_.empty());
+  DCHECK(output_buffer_map_.empty());
+
+  output_buffer_map_.resize(buffers.size());
+
   for (size_t i = 0; i < output_buffer_map_.size(); ++i) {
     DCHECK(buffers[i].size() == coded_size_);
 
@@ -1481,29 +1542,18 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffers(
     DCHECK_EQ(output_record.picture_id, -1);
     DCHECK_EQ(output_record.cleared, false);
 
-    EGLImageKHR egl_image = device_->CreateEGLImage(egl_display_,
-                                                    egl_context_,
-                                                    buffers[i].texture_id(),
-                                                    coded_size_,
-                                                    i,
-                                                    output_format_fourcc_,
-                                                    output_planes_count_);
-    if (egl_image == EGL_NO_IMAGE_KHR) {
-      LOGF(ERROR) << "Could not create EGLImageKHR";
-      // Ownership of EGLImages allocated in previous iterations of this loop
-      // has been transferred to output_buffer_map_. After we error-out here
-      // the destructor will handle their cleanup.
-      NOTIFY_ERROR(PLATFORM_FAILURE);
-      return;
-    }
-
-    output_record.egl_image = egl_image;
+    output_record.egl_image = egl_images[i];
     output_record.picture_id = buffers[i].id();
     free_output_buffers_.push_back(i);
     DVLOGF(3) << "buffer[" << i << "]: picture_id=" << output_record.picture_id;
   }
 
-  pictures_assigned_.Signal();
+  if (!StartDevicePoll()) {
+    NOTIFY_ERROR(PLATFORM_FAILURE);
+    return;
+  }
+
+  ProcessPendingEventsIfNeeded();
 }
 
 void V4L2SliceVideoDecodeAccelerator::ReusePictureBuffer(
@@ -1617,18 +1667,17 @@ void V4L2SliceVideoDecodeAccelerator::InitiateFlush() {
 
   decoder_flushing_ = true;
 
-  decoder_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&V4L2SliceVideoDecodeAccelerator::FinishFlushIfNeeded,
-                 base::Unretained(this)));
+  ProcessPendingEventsIfNeeded();
 }
 
-void V4L2SliceVideoDecodeAccelerator::FinishFlushIfNeeded() {
+bool V4L2SliceVideoDecodeAccelerator::FinishFlush() {
   DVLOGF(3);
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
 
-  if (!decoder_flushing_ || !surfaces_at_device_.empty())
-    return;
+  DCHECK(decoder_flushing_);
+
+  if (!surfaces_at_device_.empty())
+    return false;
 
   DCHECK_EQ(state_, kIdle);
 
@@ -1646,14 +1695,13 @@ void V4L2SliceVideoDecodeAccelerator::FinishFlushIfNeeded() {
 
   SendPictureReady();
 
+  decoder_flushing_ = false;
+  DVLOGF(3) << "Flush finished";
+
   child_task_runner_->PostTask(FROM_HERE,
                                base::Bind(&Client::NotifyFlushDone, client_));
 
-  decoder_flushing_ = false;
-
-  DVLOGF(3) << "Flush finished";
-  state_ = kDecoding;
-  ScheduleDecodeBufferTaskIfNeeded();
+  return true;
 }
 
 void V4L2SliceVideoDecodeAccelerator::Reset() {
@@ -1689,15 +1737,16 @@ void V4L2SliceVideoDecodeAccelerator::ResetTask() {
   while (!decoder_input_queue_.empty())
     decoder_input_queue_.pop();
 
-  FinishResetIfNeeded();
+  ProcessPendingEventsIfNeeded();
 }
 
-void V4L2SliceVideoDecodeAccelerator::FinishResetIfNeeded() {
+bool V4L2SliceVideoDecodeAccelerator::FinishReset() {
   DVLOGF(3);
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
 
-  if (!decoder_resetting_ || !surfaces_at_device_.empty())
-    return;
+  DCHECK(decoder_resetting_);
+  if (!surfaces_at_device_.empty())
+    return false;
 
   DCHECK_EQ(state_, kIdle);
   DCHECK(!decoder_flushing_);
@@ -1721,14 +1770,12 @@ void V4L2SliceVideoDecodeAccelerator::FinishResetIfNeeded() {
   }
 
   decoder_resetting_ = false;
+  DVLOGF(3) << "Reset finished";
 
   child_task_runner_->PostTask(FROM_HERE,
                                base::Bind(&Client::NotifyResetDone, client_));
 
-  DVLOGF(3) << "Reset finished";
-
-  state_ = kDecoding;
-  ScheduleDecodeBufferTaskIfNeeded();
+  return true;
 }
 
 void V4L2SliceVideoDecodeAccelerator::SetErrorState(Error error) {

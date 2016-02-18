@@ -155,21 +155,21 @@ class CONTENT_EXPORT V4L2SliceVideoDecodeAccelerator
 
   // Dismiss all |picture_buffer_ids| via Client::DismissPictureBuffer()
   // and signal |done| after finishing.
-  void DismissPictures(std::vector<int32_t> picture_buffer_ids,
+  void DismissPictures(const std::vector<int32_t>& picture_buffer_ids,
                        base::WaitableEvent* done);
 
   // Task to finish initialization on decoder_thread_.
   void InitializeTask();
 
   // Surface set change (resolution change) flow.
-  // If we have no surfaces allocated, just allocate them and return.
-  // Otherwise mark us as pending for surface set change.
+  // If we have no surfaces allocated, start it immediately, otherwise mark
+  // ourselves as pending for surface set change.
   void InitiateSurfaceSetChange();
   // If a surface set change is pending and we are ready, stop the device,
   // destroy outputs, releasing resources and dismissing pictures as required,
-  // followed by allocating a new set for the new resolution/DPB size
-  // as provided by decoder. Finally, try to resume decoding.
-  void FinishSurfaceSetChangeIfNeeded();
+  // followed by starting the flow to allocate a new set for the current
+  // resolution/DPB size, as provided by decoder.
+  bool FinishSurfaceSetChange();
 
   void NotifyError(Error error);
   void DestroyTask();
@@ -187,20 +187,41 @@ class CONTENT_EXPORT V4L2SliceVideoDecodeAccelerator
   // Tell the decoder to flush all frames, reset it and mark us as scheduled
   // for flush, so that we can finish it once all pending decodes are finished.
   void InitiateFlush();
-  // If all pending frames are decoded and we are waiting to flush, perform it.
-  // This will send all pending pictures to client and notify the client that
-  // flush is complete and puts us in a state ready to resume.
-  void FinishFlushIfNeeded();
+  // To be called if decoder_flushing_ is true. If not all pending frames are
+  // decoded, return false, requesting the caller to try again later.
+  // Otherwise perform flush by sending all pending pictures to the client,
+  // notify it that flush is finished and return true, informing the caller
+  // that further progress can be made.
+  bool FinishFlush();
 
   // Reset flow when requested by client.
-  // Drop all inputs and reset the decoder and mark us as pending for reset.
+  // Drop all inputs, reset the decoder and mark us as pending for reset.
   void ResetTask();
-  // If all pending frames are decoded and we are waiting to reset, perform it.
-  // This drops all pending outputs (client is not interested anymore),
-  // notifies the client we are done and puts us in a state ready to resume.
-  void FinishResetIfNeeded();
+  // To be called if decoder_resetting_ is true. If not all pending frames are
+  // decoded, return false, requesting the caller to try again later.
+  // Otherwise perform reset by dropping all pending outputs (client is not
+  // interested anymore), notifying it that reset is finished, and return true,
+  // informing the caller that further progress can be made.
+  bool FinishReset();
 
-  // Process pending events if any.
+  // Allocate V4L2 buffers and assign them to |buffers| provided by the client
+  // via AssignPictureBuffers() on decoder thread.
+  void AssignPictureBuffersTask(
+    const std::vector<media::PictureBuffer>& buffers);
+
+  // Create EGLImages bound to textures in |buffers| for given
+  // |output_format_fourcc| and |output_planes_count|.
+  void CreateEGLImages(const std::vector<media::PictureBuffer>& buffers,
+                       uint32_t output_format_fourcc,
+                       size_t output_planes_count);
+
+  // Assign |egl_images| to previously-allocated V4L2 buffers in
+  // output_buffer_map_ and picture ids from |buffers| and finish the surface
+  // change sequence.
+  void AssignEGLImages(const std::vector<media::PictureBuffer>& buffers,
+                       const std::vector<EGLImageKHR>& egl_images);
+
+  // Process pending events, if any.
   void ProcessPendingEventsIfNeeded();
 
   // Performed on decoder_thread_ as a consequence of poll() on decoder_thread_
@@ -376,10 +397,6 @@ class CONTENT_EXPORT V4L2SliceVideoDecodeAccelerator
 
   // The number of pictures that are sent to PictureReady and will be cleared.
   int picture_clearing_count_;
-
-  // Used by the decoder thread to wait for AssignPictureBuffers to arrive
-  // to avoid races with potential Reset requests.
-  base::WaitableEvent pictures_assigned_;
 
   // Make the GL context current callback.
   base::Callback<bool(void)> make_context_current_;
