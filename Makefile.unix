@@ -3,6 +3,7 @@ CXXFLAGS  := -W -Wall -g -MMD -MP
 LIBWEBMA  := libwebm.a
 LIBWEBMSO := libwebm.so
 WEBMOBJS  := mkvparser.o mkvreader.o mkvmuxer.o mkvmuxerutil.o mkvwriter.o
+WEBMOBJS  += hdr_util.o
 OBJSA     := $(WEBMOBJS:.o=_a.o)
 OBJSSO    := $(WEBMOBJS:.o=_so.o)
 OBJECTS1  := sample.o
