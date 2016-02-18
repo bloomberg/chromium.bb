@@ -134,6 +134,10 @@ DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
       parent_(parent),
       mouse_watcher_(new views::MouseWatcherViewHost(this, gfx::Insets()),
                      this) {
+  // Start out hidden: the shelf might be created but never shown in some
+  // cases, like when installing a theme. See DownloadShelf::AddDownload().
+  SetVisible(false);
+
   mouse_watcher_.set_notify_on_exit_time(
       base::TimeDelta::FromMilliseconds(kNotifyOnExitTimeMS));
   set_id(VIEW_ID_DOWNLOAD_SHELF);
