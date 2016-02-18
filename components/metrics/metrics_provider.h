@@ -20,6 +20,9 @@ class MetricsProvider {
   MetricsProvider();
   virtual ~MetricsProvider();
 
+  // Called after initialiazation of MetricsService and field trials.
+  virtual void Init();
+
   // Called when a new MetricsLog is created.
   virtual void OnDidCreateMetricsLog();
 

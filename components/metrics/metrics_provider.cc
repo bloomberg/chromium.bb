@@ -12,6 +12,9 @@ MetricsProvider::MetricsProvider() {
 MetricsProvider::~MetricsProvider() {
 }
 
+void MetricsProvider::Init() {
+}
+
 void MetricsProvider::OnDidCreateMetricsLog() {
 }
 

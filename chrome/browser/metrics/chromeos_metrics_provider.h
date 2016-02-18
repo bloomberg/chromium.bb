@@ -52,6 +52,7 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
   void InitTaskGetHardwareClass(const base::Closure& callback);
 
   // metrics::MetricsProvider:
+  void Init() override;
   void OnDidCreateMetricsLog() override;
   void ProvideSystemProfileMetrics(
       metrics::SystemProfileProto* system_profile_proto) override;

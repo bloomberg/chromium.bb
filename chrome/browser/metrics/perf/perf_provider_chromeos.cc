@@ -222,6 +222,13 @@ PerfProvider::PerfProvider()
       login_observer_(this),
       next_profiling_interval_start_(base::TimeTicks::Now()),
       weak_factory_(this) {
+}
+
+PerfProvider::~PerfProvider() {
+  chromeos::LoginState::Get()->RemoveObserver(&login_observer_);
+}
+
+void PerfProvider::Init() {
   CHECK(command_selector_.SetOdds(
       internal::GetDefaultCommandsForCpu(GetCPUIdentity())));
   std::map<std::string, std::string> params;
@@ -247,10 +254,6 @@ PerfProvider::PerfProvider()
   // when this class is instantiated. By calling LoggedInStateChanged() here,
   // PerfProvider will recognize that the system is already logged in.
   login_observer_.LoggedInStateChanged();
-}
-
-PerfProvider::~PerfProvider() {
-  chromeos::LoginState::Get()->RemoveObserver(&login_observer_);
 }
 
 namespace internal {

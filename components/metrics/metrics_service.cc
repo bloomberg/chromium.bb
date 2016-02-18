@@ -324,6 +324,9 @@ void MetricsService::InitializeMetricsRecordingState() {
           // MetricsReportingScheduler is tied to the lifetime of |this|.
           base::Bind(&MetricsServiceClient::GetStandardUploadInterval,
                      base::Unretained(client_))));
+
+  for (size_t i = 0; i < metrics_providers_.size(); ++i)
+    metrics_providers_[i]->Init();
 }
 
 void MetricsService::Start() {

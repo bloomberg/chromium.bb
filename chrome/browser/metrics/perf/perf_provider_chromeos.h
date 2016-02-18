@@ -34,6 +34,8 @@ class PerfProvider : public base::NonThreadSafe,
   PerfProvider();
   ~PerfProvider() override;
 
+  void Init();
+
   // Stores collected perf data protobufs in |sampled_profiles|. Clears all the
   // stored profile data. Returns true if it wrote to |sampled_profiles|.
   bool GetSampledProfiles(std::vector<SampledProfile>* sampled_profiles);

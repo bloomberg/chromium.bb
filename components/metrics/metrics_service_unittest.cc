@@ -397,4 +397,17 @@ TEST_F(MetricsServiceTest,
   EXPECT_TRUE(test_provider->on_recording_disabled_called());
 }
 
+TEST_F(MetricsServiceTest, MetricsProvidersInitialized) {
+  TestMetricsServiceClient client;
+  TestMetricsService service(
+      GetMetricsStateManager(), &client, GetLocalState());
+
+  TestMetricsProvider* test_provider = new TestMetricsProvider();
+  service.RegisterMetricsProvider(scoped_ptr<MetricsProvider>(test_provider));
+
+  service.InitializeMetricsRecordingState();
+
+  EXPECT_TRUE(test_provider->init_called());
+}
+
 }  // namespace metrics

@@ -139,6 +139,10 @@ ChromeOSMetricsProvider::GetEnrollmentStatus() {
   return connector->IsEnterpriseManaged() ? MANAGED : NON_MANAGED;
 }
 
+void ChromeOSMetricsProvider::Init() {
+  perf_provider_.Init();
+}
+
 void ChromeOSMetricsProvider::OnDidCreateMetricsLog() {
   registered_user_count_at_log_initialization_ = false;
   if (user_manager::UserManager::IsInitialized()) {
