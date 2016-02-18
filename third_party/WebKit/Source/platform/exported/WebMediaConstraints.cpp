@@ -454,7 +454,6 @@ WebMediaTrackConstraintSet::WebMediaTrackConstraintSet()
     , googArrayGeometry("googArrayGeometry")
     , googAudioMirroring("googAudioMirroring")
     , googDAEchoCancellation("googDAEchoCancellation")
-    , googAecDump("googAecDump")
     , googNoiseReduction("googNoiseReduction")
     , offerToReceiveAudio("offerToReceiveAudio")
     , offerToReceiveVideo("offerToReceiveVideo")
@@ -492,7 +491,7 @@ std::vector<const BaseConstraint*> WebMediaTrackConstraintSet::allConstraints() 
         &googHighpassFilter, &googTypingNoiseDetection,
         &googExperimentalNoiseSuppression, &googBeamforming,
         &googArrayGeometry, &googAudioMirroring, &googDAEchoCancellation,
-        &googAecDump, &googNoiseReduction, &offerToReceiveAudio,
+        &googNoiseReduction, &offerToReceiveAudio,
         &offerToReceiveVideo, &voiceActivityDetection, &iceRestart,
         &googUseRtpMux, &enableDtlsSrtp, &enableRtpDataChannels,
         &enableDscp, &enableIPv6, &googEnableVideoSuspendBelowMinBitrate,

@@ -258,7 +258,6 @@ public:
     StringConstraint googArrayGeometry;
     BooleanConstraint googAudioMirroring;
     BooleanConstraint googDAEchoCancellation;
-    BooleanConstraint googAecDump;
     BooleanConstraint googNoiseReduction;
     StringConstraint offerToReceiveAudio;
     StringConstraint offerToReceiveVideo;
