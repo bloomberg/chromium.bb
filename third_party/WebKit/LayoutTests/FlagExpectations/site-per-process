@@ -78,9 +78,6 @@ http/tests/security/xssAuditor/full-block-script-tag-cross-domain.html [ Failure
 http/tests/security/xssAuditor/full-block-post-from-iframe.html [ Failure ]
 http/tests/security/xssAuditor/xss-protection-parsing-01.html [ Failure ]
 
-# https://crbug.com/582541 - MixedContentChecker::shouldBlockFetch returns false with --site-per-process
-http/tests/security/mixedContent/insecure-audio-video-in-main-frame.html [ Failure ]
-
 # https://crbug.com/582522 - extra mixedContent checks reported with --site-per-process
 http/tests/security/mixedContent/insecure-iframe-in-iframe.html [ Failure ]
 
