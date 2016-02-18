@@ -33,6 +33,9 @@ interface NetHost {
 
   // Sends a request to get enabled / disabled status of WiFi.
   GetWifiEnabledState@1() => (bool is_enabled);
+
+  // Sends a request to start scan of WiFi APs.
+  [MinVersion=1] StartScan@2();
 };
 
 interface NetInstance {

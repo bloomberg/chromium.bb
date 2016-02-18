@@ -25,6 +25,10 @@ const int kGetNetworksListLimit = 100;
 
 namespace arc {
 
+chromeos::NetworkStateHandler* GetStateHandler() {
+  return chromeos::NetworkHandler::Get()->network_state_handler();
+}
+
 ArcNetHostImpl::ArcNetHostImpl(ArcBridgeService* bridge_service)
     : ArcService(bridge_service), binding_(this) {
   arc_bridge_service()->AddObserver(this);
@@ -99,12 +103,14 @@ void ArcNetHostImpl::GetNetworks(bool configured_only,
 
 void ArcNetHostImpl::GetWifiEnabledState(
     const GetWifiEnabledStateCallback& callback) {
-  chromeos::NetworkStateHandler* handler =
-      chromeos::NetworkHandler::Get()->network_state_handler();
-  bool is_enabled =
-      handler->IsTechnologyEnabled(chromeos::NetworkTypePattern::WiFi());
+  bool is_enabled = GetStateHandler()->IsTechnologyEnabled(
+      chromeos::NetworkTypePattern::WiFi());
 
   callback.Run(is_enabled);
+}
+
+void ArcNetHostImpl::StartScan() {
+  GetStateHandler()->RequestScan();
 }
 
 }  // namespace arc
