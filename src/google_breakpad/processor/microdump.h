@@ -66,6 +66,7 @@ class MicrodumpContext : public DumpContext {
  public:
   virtual void SetContextARM(MDRawContextARM* arm);
   virtual void SetContextARM64(MDRawContextARM64* arm64);
+  virtual void SetContextX86(MDRawContextX86* x86);
 };
 
 // This class provides access to microdump memory regions.

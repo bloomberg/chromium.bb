@@ -60,6 +60,7 @@ static const char kStackKey[] = ": S ";
 static const char kStackFirstLineKey[] = ": S 0 ";
 static const char kArmArchitecture[] = "arm";
 static const char kArm64Architecture[] = "arm64";
+static const char kX86Architecture[] = "x86";
 static const char kGpuUnknown[] = "UNKNOWN";
 
 template<typename T>
@@ -121,6 +122,12 @@ void MicrodumpContext::SetContextARM(MDRawContextARM* arm) {
 void MicrodumpContext::SetContextARM64(MDRawContextARM64* arm64) {
   DumpContext::SetContextFlags(MD_CONTEXT_ARM64);
   DumpContext::SetContextARM64(arm64);
+  valid_ = true;
+}
+
+void MicrodumpContext::SetContextX86(MDRawContextX86* x86) {
+  DumpContext::SetContextFlags(MD_CONTEXT_X86);
+  DumpContext::SetContextX86(x86);
   valid_ = true;
 }
 
@@ -291,6 +298,15 @@ Microdump::Microdump(const string& contents)
         MDRawContextARM64* arm = new MDRawContextARM64();
         memcpy(arm, &cpu_state_raw[0], cpu_state_raw.size());
         context_->SetContextARM64(arm);
+      } else if (strcmp(arch.c_str(), kX86Architecture) == 0) {
+        if (cpu_state_raw.size() != sizeof(MDRawContextX86)) {
+          std::cerr << "Malformed CPU context. Got " << cpu_state_raw.size() <<
+              " bytes instead of " << sizeof(MDRawContextX86) << std::endl;
+          continue;
+        }
+        MDRawContextX86* x86 = new MDRawContextX86();
+        memcpy(x86, &cpu_state_raw[0], cpu_state_raw.size());
+        context_->SetContextX86(x86);
       } else {
         std::cerr << "Unsupported architecture: " << arch << std::endl;
       }
