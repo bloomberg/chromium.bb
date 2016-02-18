@@ -13,12 +13,12 @@
 #include "base/threading/simple_thread.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/bindings/weak_binding_set.h"
-#include "mojo/shell/package_test.mojom.h"
 #include "mojo/shell/public/cpp/application_runner.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/interfaces/shell_client_factory.mojom.h"
+#include "mojo/shell/tests/package_test.mojom.h"
 
 // Tests that multiple applications can be packaged in a single Mojo application
 // implementing ShellClientFactory; that these applications can be specified by
