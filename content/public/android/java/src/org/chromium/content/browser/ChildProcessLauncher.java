@@ -49,7 +49,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @JNINamespace("content")
 public class ChildProcessLauncher {
-    private static final String TAG = "cr.ChildProcLauncher";
+    private static final String TAG = "ChildProcLauncher";
 
     static final int CALLBACK_FOR_UNKNOWN_PROCESS = 0;
     static final int CALLBACK_FOR_GPU_PROCESS = 1;
@@ -236,6 +236,7 @@ public class ChildProcessLauncher {
 
     private static class PendingSpawnQueue {
         // The list of pending process spawn requests and its lock.
+        // Operations on this queue must be atomical w.r.t. free connections updates.
         private static Queue<PendingSpawnData> sPendingSpawns =
                 new LinkedList<PendingSpawnData>();
         static final Object sPendingSpawnsLock = new Object();
@@ -244,27 +245,24 @@ public class ChildProcessLauncher {
          * Queue up a spawn requests to be processed once a free service is available.
          * Called when a spawn is requested while we are at the capacity.
          */
-        public void enqueue(final PendingSpawnData pendingSpawn) {
-            synchronized (sPendingSpawnsLock) {
-                sPendingSpawns.add(pendingSpawn);
-            }
+        public void enqueueLocked(final PendingSpawnData pendingSpawn) {
+            assert Thread.holdsLock(sPendingSpawnsLock);
+            sPendingSpawns.add(pendingSpawn);
         }
 
         /**
          * Pop the next request from the queue. Called when a free service is available.
          * @return the next spawn request waiting in the queue.
          */
-        public PendingSpawnData dequeue() {
-            synchronized (sPendingSpawnsLock) {
-                return sPendingSpawns.poll();
-            }
+        public PendingSpawnData dequeueLocked() {
+            assert Thread.holdsLock(sPendingSpawnsLock);
+            return sPendingSpawns.poll();
         }
 
         /** @return the count of pending spawns in the queue */
-        public int size() {
-            synchronized (sPendingSpawnsLock) {
-                return sPendingSpawns.size();
-            }
+        public int sizeLocked() {
+            assert Thread.holdsLock(sPendingSpawnsLock);
+            return sPendingSpawns.size();
         }
     }
 
@@ -416,9 +414,7 @@ public class ChildProcessLauncher {
         ThreadUtils.postOnUiThreadDelayed(new Runnable() {
             @Override
             public void run() {
-                getConnectionAllocator(conn.isInSandbox()).free(conn);
-
-                final PendingSpawnData pendingSpawn = sPendingSpawnQueue.dequeue();
+                final PendingSpawnData pendingSpawn = freeConnectionAndDequeuePending(conn);
                 if (pendingSpawn != null) {
                     new Thread(new Runnable() {
                         @Override
@@ -432,6 +428,13 @@ public class ChildProcessLauncher {
                 }
             }
         }, FREE_CONNECTION_DELAY_MILLIS);
+    }
+
+    private static PendingSpawnData freeConnectionAndDequeuePending(ChildProcessConnection conn) {
+        synchronized (PendingSpawnQueue.sPendingSpawnsLock) {
+            getConnectionAllocator(conn.isInSandbox()).free(conn);
+            return sPendingSpawnQueue.dequeueLocked();
+        }
     }
 
     // Represents an invalid process handle; same as base/process/process.h kNullProcessHandle.
@@ -693,14 +696,16 @@ public class ChildProcessLauncher {
             if (allocatedConnection == null) {
                 boolean alwaysInForeground = false;
                 if (callbackType == CALLBACK_FOR_GPU_PROCESS) alwaysInForeground = true;
-                allocatedConnection = allocateBoundConnection(
-                        context, commandLine, inSandbox, alwaysInForeground);
-                if (allocatedConnection == null) {
-                    Log.d(TAG, "Allocation of new service failed. Queuing up pending spawn.");
-                    sPendingSpawnQueue.enqueue(new PendingSpawnData(context, commandLine,
-                            childProcessId, filesToBeMapped, clientContext, callbackType,
-                            inSandbox));
-                    return;
+                synchronized (PendingSpawnQueue.sPendingSpawnsLock) {
+                    allocatedConnection = allocateBoundConnection(
+                            context, commandLine, inSandbox, alwaysInForeground);
+                    if (allocatedConnection == null) {
+                        Log.d(TAG, "Allocation of new service failed. Queuing up pending spawn.");
+                        sPendingSpawnQueue.enqueueLocked(new PendingSpawnData(context, commandLine,
+                                childProcessId, filesToBeMapped, clientContext,
+                                callbackType, inSandbox));
+                        return;
+                    }
                 }
             }
 
@@ -890,8 +895,10 @@ public class ChildProcessLauncher {
      */
     @VisibleForTesting
     static void enqueuePendingSpawnForTesting(Context context, String[] commandLine) {
-        sPendingSpawnQueue.enqueue(new PendingSpawnData(context, commandLine, 1,
-                new FileDescriptorInfo[0], 0, CALLBACK_FOR_RENDERER_PROCESS, true));
+        synchronized (PendingSpawnQueue.sPendingSpawnsLock) {
+            sPendingSpawnQueue.enqueueLocked(new PendingSpawnData(context, commandLine, 1,
+                    new FileDescriptorInfo[0], 0, CALLBACK_FOR_RENDERER_PROCESS, true));
+        }
     }
 
     /** @return the count of sandboxed connections managed by the allocator */
@@ -910,7 +917,9 @@ public class ChildProcessLauncher {
     /** @return the count of pending spawns in the queue */
     @VisibleForTesting
     static int pendingSpawnsCountForTesting() {
-        return sPendingSpawnQueue.size();
+        synchronized (PendingSpawnQueue.sPendingSpawnsLock) {
+            return sPendingSpawnQueue.sizeLocked();
+        }
     }
 
     /**
