@@ -238,8 +238,9 @@ int main(int argc, char* argv[]) {
       const mkvparser::Colour* const colour = pVideoTrack->GetColour();
       if (colour) {
         printf("\t\tVideo Colour:\n");
-        if (ColourValuePresent(colour->matrix))
-          printf("\t\t\tMatrix: %lld\n", colour->matrix);
+        if (ColourValuePresent(colour->matrix_coefficients))
+          printf("\t\t\tMatrixCoefficients: %lld\n",
+                 colour->matrix_coefficients);
         if (ColourValuePresent(colour->bits_per_channel))
           printf("\t\t\tBitsPerChannel: %lld\n", colour->bits_per_channel);
         if (ColourValuePresent(colour->chroma_subsampling_horz))

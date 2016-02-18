@@ -437,7 +437,7 @@ struct Colour {
   // Unless otherwise noted all values assigned upon construction are the
   // equivalent of unspecified/default.
   Colour()
-      : matrix(kValueNotPresent),
+      : matrix_coefficients(kValueNotPresent),
         bits_per_channel(kValueNotPresent),
         chroma_subsampling_horz(kValueNotPresent),
         chroma_subsampling_vert(kValueNotPresent),
@@ -459,7 +459,7 @@ struct Colour {
   static bool Parse(IMkvReader* reader, long long element_start,
                     long long element_size, Colour** colour);
 
-  long long matrix;
+  long long matrix_coefficients;
   long long bits_per_channel;
   long long chroma_subsampling_horz;
   long long chroma_subsampling_vert;

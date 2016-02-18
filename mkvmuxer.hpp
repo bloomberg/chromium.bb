@@ -394,7 +394,7 @@ class Colour {
  public:
   static const uint64 kUnspecifiedColourValue;
   Colour()
-      : matrix(kUnspecifiedColourValue),
+      : matrix_coefficients(kUnspecifiedColourValue),
         bits_per_channel(kUnspecifiedColourValue),
         chroma_subsampling_horz(kUnspecifiedColourValue),
         chroma_subsampling_vert(kUnspecifiedColourValue),
@@ -421,7 +421,7 @@ class Colour {
     return mastering_metadata_;
   }
 
-  uint64 matrix;
+  uint64 matrix_coefficients;
   uint64 bits_per_channel;
   uint64 chroma_subsampling_horz;
   uint64 chroma_subsampling_vert;

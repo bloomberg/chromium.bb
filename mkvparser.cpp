@@ -5111,9 +5111,10 @@ bool Colour::Parse(IMkvReader* reader, long long colour_start,
     if (status < 0)
       return false;
 
-    if (child_id == mkvmuxer::kMkvMatrix) {
-      colour_ptr->matrix = UnserializeUInt(reader, read_pos, child_size);
-      if (colour_ptr->matrix < 0)
+    if (child_id == mkvmuxer::kMkvMatrixCoefficients) {
+      colour_ptr->matrix_coefficients =
+          UnserializeUInt(reader, read_pos, child_size);
+      if (colour_ptr->matrix_coefficients < 0)
         return false;
     } else if (child_id == mkvmuxer::kMkvBitsPerChannel) {
       colour_ptr->bits_per_channel =

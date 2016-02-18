@@ -201,8 +201,8 @@ bool CopyColour(const mkvparser::Colour& parser_colour,
   if (!muxer_colour)
     return false;
 
-  if (ColourValuePresent(parser_colour.matrix))
-    muxer_colour->matrix = parser_colour.matrix;
+  if (ColourValuePresent(parser_colour.matrix_coefficients))
+    muxer_colour->matrix_coefficients = parser_colour.matrix_coefficients;
   if (ColourValuePresent(parser_colour.bits_per_channel))
     muxer_colour->bits_per_channel = parser_colour.bits_per_channel;
   if (ColourValuePresent(parser_colour.chroma_subsampling_horz))

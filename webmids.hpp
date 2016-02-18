@@ -97,7 +97,7 @@ enum MkvId {
   // end video
   // colour
   kMkvColour = 0x55B0,
-  kMkvMatrix = 0x55B1,
+  kMkvMatrixCoefficients = 0x55B1,
   kMkvBitsPerChannel = 0x55B2,
   kMkvChromaSubsamplingHorz = 0x55B3,
   kMkvChromaSubsamplingVert = 0x55B4,

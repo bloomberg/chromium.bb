@@ -1003,8 +1003,8 @@ bool Colour::Write(IMkvWriter* writer) const {
   if (!WriteEbmlMasterElement(writer, kMkvColour, size))
     return false;
 
-  if (matrix != kUnspecifiedColourValue &&
-      !WriteEbmlElement(writer, kMkvMatrix, matrix)) {
+  if (matrix_coefficients != kUnspecifiedColourValue &&
+      !WriteEbmlElement(writer, kMkvMatrixCoefficients, matrix_coefficients)) {
     return false;
   }
   if (bits_per_channel != kUnspecifiedColourValue &&
@@ -1087,8 +1087,8 @@ bool Colour::SetMasteringMetadata(const MasteringMetadata& mastering_metadata) {
 uint64 Colour::PayloadSize() const {
   uint64 size = 0;
 
-  if (matrix != kUnspecifiedColourValue)
-    size += EbmlElementSize(kMkvMatrix, matrix);
+  if (matrix_coefficients != kUnspecifiedColourValue)
+    size += EbmlElementSize(kMkvMatrixCoefficients, matrix_coefficients);
   if (bits_per_channel != kUnspecifiedColourValue)
     size += EbmlElementSize(kMkvBitsPerChannel, bits_per_channel);
   if (chroma_subsampling_horz != kUnspecifiedColourValue)
@@ -1248,7 +1248,7 @@ bool VideoTrack::SetColour(const Colour& colour) {
       return false;
   }
 
-  colour_ptr->matrix = colour.matrix;
+  colour_ptr->matrix_coefficients = colour.matrix_coefficients;
   colour_ptr->bits_per_channel = colour.bits_per_channel;
   colour_ptr->chroma_subsampling_horz = colour.chroma_subsampling_horz;
   colour_ptr->chroma_subsampling_vert = colour.chroma_subsampling_vert;
