@@ -2561,30 +2561,6 @@
    fun:_ZN7content17UnitTestTestSuiteC1EPN4base9TestSuiteE
 }
 {
-   bug_381156
-   Memcheck:Uninitialized
-   ...
-   fun:_ZN*14SkTDynamicHashI10SkFlatData*
-   fun:_ZN16SkFlatDictionaryI7SkPaintNS0_16FlatteningTraitsEE24findAndReturnMutableFlatERKS0_
-   fun:_ZN16SkFlatDictionaryI7SkPaintNS0_16FlatteningTraitsEE17findAndReturnFlatERKS0_
-   fun:_ZN15SkPictureRecord16getFlatPaintDataERK7SkPaint
-   fun:_ZN15SkPictureRecord11addPaintPtrEPK7SkPaint
-   fun:_ZN15SkPictureRecord8addPaintERK7SkPaint
-   fun:_ZN15SkPictureRecord8drawPathERK6SkPathRK7SkPaint
-   fun:_ZN12SkBBoxRecord8drawPathERK6SkPathRK7SkPaint
-   fun:_ZN5blink15GraphicsContext8drawPathERK6SkPathRK7SkPaint
-   fun:_ZN5blink15GraphicsContext10strokePathERKNS_4PathE
-   fun:_ZNK7blink14RenderSVGShape11strokeShapeEPNS_15GraphicsContextE
-   fun:_ZNK7blink13RenderSVGPath11strokeShapeEPNS_15GraphicsContextE
-   fun:_ZN5blink27RenderSVGResourceSolidColor17postApplyResourceEPNS_12RenderObjectERPNS_15GraphicsContextEtPKNS_4PathEPKNS_14RenderSVGShapeE
-   fun:_ZN5blink14RenderSVGShape11strokeShapeEPNS_11RenderStyleEPNS_15GraphicsContextE
-   fun:_ZN5blink14RenderSVGShape5paintERNS_9PaintInfoERKNS_11LayoutPointE
-   fun:_ZN5blink9RenderBox5paintERNS_9PaintInfoERKNS_11LayoutPointE
-   fun:_ZN5blink13RenderSVGRoot13paintReplacedERNS_9PaintInfoERKNS_11LayoutPointE
-   fun:_ZN5blink14RenderReplaced5paintERNS_9PaintInfoERKNS_11LayoutPointE
-   fun:_ZN5blink11RenderBlock18paintAsInlineBlockEPNS_12RenderObjectERNS_9PaintInfoERKNS_11LayoutPointE
-}
-{
    bug_385381
    Memcheck:Unaddressable
    fun:_ZN5blink23FrameLoaderStateMachine9advanceToENS0_5StateE
