@@ -23487,6 +23487,7 @@
     },
     "whirlwind-paladin": {
         "_template": "paladin",
+        "active_waterfall": "chromeos",
         "boards": [
             "whirlwind"
         ],

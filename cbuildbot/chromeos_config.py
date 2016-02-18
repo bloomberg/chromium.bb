@@ -598,6 +598,7 @@ _waterfall_config_map = {
         # Experimental Paladins.
         'lakitu_next-paladin',
         'veyron_minnie-cheets-paladin',
+        'whirlwind-paladin',
 
         # Experimental Canaries (Group)
         'glados-release-group',
