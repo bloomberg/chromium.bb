@@ -446,7 +446,7 @@ struct Colour {
         chroma_siting_horz(kValueNotPresent),
         chroma_siting_vert(kValueNotPresent),
         range(kValueNotPresent),
-        transfer_function(kValueNotPresent),
+        transfer_characteristics(kValueNotPresent),
         primaries(kValueNotPresent),
         max_cll(kValueNotPresent),
         max_fall(kValueNotPresent),
@@ -468,7 +468,7 @@ struct Colour {
   long long chroma_siting_horz;
   long long chroma_siting_vert;
   long long range;
-  long long transfer_function;
+  long long transfer_characteristics;
   long long primaries;
   long long max_cll;
   long long max_fall;

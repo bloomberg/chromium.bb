@@ -5155,10 +5155,10 @@ bool Colour::Parse(IMkvReader* reader, long long colour_start,
       colour_ptr->range = UnserializeUInt(reader, read_pos, child_size);
       if (colour_ptr->range < 0)
         return false;
-    } else if (child_id == mkvmuxer::kMkvTransferFunction) {
-      colour_ptr->transfer_function =
+    } else if (child_id == mkvmuxer::kMkvTransferCharacteristics) {
+      colour_ptr->transfer_characteristics =
           UnserializeUInt(reader, read_pos, child_size);
-      if (colour_ptr->transfer_function < 0)
+      if (colour_ptr->transfer_characteristics < 0)
         return false;
     } else if (child_id == mkvmuxer::kMkvPrimaries) {
       colour_ptr->primaries = UnserializeUInt(reader, read_pos, child_size);

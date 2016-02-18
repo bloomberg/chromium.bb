@@ -403,7 +403,7 @@ class Colour {
         chroma_siting_horz(kUnspecifiedColourValue),
         chroma_siting_vert(kUnspecifiedColourValue),
         range(kUnspecifiedColourValue),
-        transfer_function(kUnspecifiedColourValue),
+        transfer_characteristics(kUnspecifiedColourValue),
         primaries(kUnspecifiedColourValue),
         max_cll(kUnspecifiedColourValue),
         max_fall(kUnspecifiedColourValue),
@@ -430,7 +430,7 @@ class Colour {
   uint64 chroma_siting_horz;
   uint64 chroma_siting_vert;
   uint64 range;
-  uint64 transfer_function;
+  uint64 transfer_characteristics;
   uint64 primaries;
   uint64 max_cll;
   uint64 max_fall;

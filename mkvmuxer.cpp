@@ -1042,8 +1042,9 @@ bool Colour::Write(IMkvWriter* writer) const {
       !WriteEbmlElement(writer, kMkvRange, range)) {
     return false;
   }
-  if (transfer_function != kUnspecifiedColourValue &&
-      !WriteEbmlElement(writer, kMkvTransferFunction, transfer_function)) {
+  if (transfer_characteristics != kUnspecifiedColourValue &&
+      !WriteEbmlElement(writer, kMkvTransferCharacteristics,
+                        transfer_characteristics)) {
     return false;
   }
   if (primaries != kUnspecifiedColourValue &&
@@ -1105,8 +1106,9 @@ uint64 Colour::PayloadSize() const {
     size += EbmlElementSize(kMkvChromaSitingVert, chroma_siting_vert);
   if (range != kUnspecifiedColourValue)
     size += EbmlElementSize(kMkvRange, range);
-  if (transfer_function != kUnspecifiedColourValue)
-    size += EbmlElementSize(kMkvTransferFunction, transfer_function);
+  if (transfer_characteristics != kUnspecifiedColourValue)
+    size +=
+        EbmlElementSize(kMkvTransferCharacteristics, transfer_characteristics);
   if (primaries != kUnspecifiedColourValue)
     size += EbmlElementSize(kMkvPrimaries, primaries);
   if (max_cll != kUnspecifiedColourValue)
@@ -1257,7 +1259,7 @@ bool VideoTrack::SetColour(const Colour& colour) {
   colour_ptr->chroma_siting_horz = colour.chroma_siting_horz;
   colour_ptr->chroma_siting_vert = colour.chroma_siting_vert;
   colour_ptr->range = colour.range;
-  colour_ptr->transfer_function = colour.transfer_function;
+  colour_ptr->transfer_characteristics = colour.transfer_characteristics;
   colour_ptr->primaries = colour.primaries;
   colour_ptr->max_cll = colour.max_cll;
   colour_ptr->max_fall = colour.max_fall;

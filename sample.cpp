@@ -261,8 +261,9 @@ int main(int argc, char* argv[]) {
           printf("\t\t\tChromaSitingVert: %lld\n", colour->chroma_siting_vert);
         if (ColourValuePresent(colour->range))
           printf("\t\t\tRange: %lld\n", colour->range);
-        if (ColourValuePresent(colour->transfer_function))
-          printf("\t\t\tTransferFunction: %lld\n", colour->transfer_function);
+        if (ColourValuePresent(colour->transfer_characteristics))
+          printf("\t\t\tTransferCharacteristics: %lld\n",
+                 colour->transfer_characteristics);
         if (ColourValuePresent(colour->primaries))
           printf("\t\t\tPrimaries: %lld\n", colour->primaries);
         if (ColourValuePresent(colour->max_cll))

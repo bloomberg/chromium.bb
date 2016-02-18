@@ -221,8 +221,9 @@ bool CopyColour(const mkvparser::Colour& parser_colour,
     muxer_colour->chroma_siting_vert = parser_colour.chroma_siting_vert;
   if (ColourValuePresent(parser_colour.range))
     muxer_colour->range = parser_colour.range;
-  if (ColourValuePresent(parser_colour.transfer_function))
-    muxer_colour->transfer_function = parser_colour.transfer_function;
+  if (ColourValuePresent(parser_colour.transfer_characteristics))
+    muxer_colour->transfer_characteristics =
+        parser_colour.transfer_characteristics;
   if (ColourValuePresent(parser_colour.primaries))
     muxer_colour->primaries = parser_colour.primaries;
   if (ColourValuePresent(parser_colour.max_cll))

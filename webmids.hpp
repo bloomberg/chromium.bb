@@ -106,7 +106,7 @@ enum MkvId {
   kMkvChromaSitingHorz = 0x55B7,
   kMkvChromaSitingVert = 0x55B8,
   kMkvRange = 0x55B9,
-  kMkvTransferFunction = 0x55BA,
+  kMkvTransferCharacteristics = 0x55BA,
   kMkvPrimaries = 0x55BB,
   kMkvMaxCLL = 0x55BC,
   kMkvMaxFALL = 0x55BD,
