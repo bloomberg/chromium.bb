@@ -84,7 +84,7 @@ class LifecycleHook implements ApplicationStateListener {
         synchronized (mClientHelpers) {
             for (GoogleApiClientHelper clientHelper : mClientHelpers) {
                 if (mIsApplicationVisible) clientHelper.restoreConnectedState();
-                else clientHelper.disconnectWithDelay();
+                else clientHelper.scheduleDisconnection();
             }
         }
     }
