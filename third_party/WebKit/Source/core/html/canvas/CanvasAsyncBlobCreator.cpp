@@ -9,6 +9,7 @@
 #include "platform/ThreadSafeFunctional.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/heap/Handle.h"
+#include "platform/image-encoders/skia/JPEGImageEncoder.h"
 #include "platform/image-encoders/skia/PNGImageEncoder.h"
 #include "platform/threading/BackgroundTaskRunner.h"
 #include "public/platform/Platform.h"
@@ -69,18 +70,32 @@ void CanvasAsyncBlobCreator::scheduleAsyncBlobCreation(bool canUseIdlePeriodSche
     // TODO(xlai): Progressive encoding on jpeg and webp image formats (crbug.com/571398, crbug.com/571399)
     if (canUseIdlePeriodScheduling) {
         ASSERT(m_mimeType == "image/png");
-        Platform::current()->mainThread()->scheduler()->postIdleTask(BLINK_FROM_HERE, WTF::bind<double>(&CanvasAsyncBlobCreator::initiatePngEncoding, this));
+        Platform::current()->mainThread()->scheduler()->postIdleTask(BLINK_FROM_HERE, bind<double>(&CanvasAsyncBlobCreator::initiatePngEncoding, this));
+    } else if (m_mimeType == "image/jpeg") {
+        Platform::current()->mainThread()->taskRunner()->postTask(BLINK_FROM_HERE, bind(&CanvasAsyncBlobCreator::initiateJpegEncoding, this, quality));
     } else {
         BackgroundTaskRunner::TaskSize taskSize = (m_size.height() * m_size.width() >= LongTaskImageSizeThreshold) ? BackgroundTaskRunner::TaskSizeLongRunningTask : BackgroundTaskRunner::TaskSizeShortRunningTask;
         BackgroundTaskRunner::postOnBackgroundThread(BLINK_FROM_HERE, threadSafeBind(&CanvasAsyncBlobCreator::encodeImageOnEncoderThread, AllowCrossThreadAccess(this), quality), taskSize);
     }
 }
 
+void CanvasAsyncBlobCreator::initiateJpegEncoding(const double& quality)
+{
+    m_jpegEncoderState = JPEGImageEncoderState::create(m_size, quality, m_encodedImage.get());
+    if (!m_jpegEncoderState) {
+        Platform::current()->mainThread()->taskRunner()->postTask(BLINK_FROM_HERE, bind(&BlobCallback::handleEvent, m_callback, nullptr));
+        m_selfRef.clear();
+        return;
+    }
+    BackgroundTaskRunner::TaskSize taskSize = (m_size.height() * m_size.width() >= LongTaskImageSizeThreshold) ? BackgroundTaskRunner::TaskSizeLongRunningTask : BackgroundTaskRunner::TaskSizeShortRunningTask;
+    BackgroundTaskRunner::postOnBackgroundThread(BLINK_FROM_HERE, threadSafeBind(&CanvasAsyncBlobCreator::encodeImageOnEncoderThread, AllowCrossThreadAccess(this), quality), taskSize);
+}
+
 void CanvasAsyncBlobCreator::initiatePngEncoding(double deadlineSeconds)
 {
     ASSERT(isMainThread());
-    m_encoderState = PNGImageEncoderState::create(m_size, m_encodedImage.get());
-    if (!m_encoderState) {
+    m_pngEncoderState = PNGImageEncoderState::create(m_size, m_encodedImage.get());
+    if (!m_pngEncoderState) {
         Platform::current()->mainThread()->taskRunner()->postTask(BLINK_FROM_HERE, bind(&BlobCallback::handleEvent, m_callback, nullptr));
         m_selfRef.clear();
         return;
@@ -105,11 +120,11 @@ void CanvasAsyncBlobCreator::idleEncodeRowsPng(double deadlineSeconds)
             CanvasAsyncBlobCreator::scheduleIdleEncodeRowsPng();
             return;
         }
-        PNGImageEncoder::writeOneRowToPng(inputPixels, m_encoderState.get());
+        PNGImageEncoder::writeOneRowToPng(inputPixels, m_pngEncoderState.get());
         inputPixels += m_pixelRowStride;
     }
     m_numRowsCompleted = m_size.height();
-    PNGImageEncoder::finalizePng(m_encoderState.get());
+    PNGImageEncoder::finalizePng(m_pngEncoderState.get());
 
     if (isDeadlineNearOrPassed(deadlineSeconds)) {
         Platform::current()->mainThread()->taskRunner()->postTask(BLINK_FROM_HERE, bind(&CanvasAsyncBlobCreator::createBlobAndCall, this));
@@ -130,11 +145,13 @@ void CanvasAsyncBlobCreator::encodeImageOnEncoderThread(double quality)
 {
     ASSERT(!isMainThread());
 
-    if (ImageDataBuffer(m_size, m_data->data()).encodeImage(m_mimeType, quality, m_encodedImage.get())) {
-        scheduleCreateBlobAndCallOnMainThread();
-    } else {
+    if (m_mimeType == "image/jpeg") {
+        JPEGImageEncoder::encodeWithPreInitializedState(m_jpegEncoderState.get(), m_data->data());
+    } else if (!ImageDataBuffer(m_size, m_data->data()).encodeImage(m_mimeType, quality, m_encodedImage.get())) {
         scheduleCreateNullptrAndCallOnMainThread();
     }
+
+    scheduleCreateBlobAndCallOnMainThread();
 }
 
 void CanvasAsyncBlobCreator::clearSelfReference()

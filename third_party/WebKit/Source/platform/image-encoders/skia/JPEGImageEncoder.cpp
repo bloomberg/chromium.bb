@@ -43,9 +43,28 @@ extern "C" {
 namespace blink {
 
 struct JPEGOutputBuffer : public jpeg_destination_mgr {
-    DISALLOW_NEW();
+    USING_FAST_MALLOC(JPEGOutputBuffer);
+    WTF_MAKE_NONCOPYABLE(JPEGOutputBuffer);
+public:
+    JPEGOutputBuffer() : jpeg_destination_mgr() {}
     Vector<unsigned char>* output;
     Vector<unsigned char> buffer;
+};
+
+class JPEGImageEncoderStateImpl : public JPEGImageEncoderState {
+public:
+    JPEGImageEncoderStateImpl(jpeg_compress_struct* jpeg, JPEGOutputBuffer* destination, jpeg_error_mgr* error)
+        : m_jpeg(jpeg)
+        , m_destination(destination)
+        , m_error(error) {}
+    ~JPEGImageEncoderStateImpl() override;
+    jpeg_compress_struct* jpeg() { ASSERT(m_jpeg); return m_jpeg; }
+    JPEGOutputBuffer* outputBuffer() { return m_destination; }
+    jpeg_error_mgr* error() { return m_error; }
+private:
+    jpeg_compress_struct* m_jpeg;
+    JPEGOutputBuffer* m_destination;
+    jpeg_error_mgr* m_error;
 };
 
 static void prepareOutput(j_compress_ptr cinfo)
@@ -108,64 +127,94 @@ static void disableSubsamplingForHighQuality(jpeg_compress_struct* cinfo, int qu
     }
 }
 
-static bool encodePixels(IntSize imageSize, const unsigned char* inputPixels, int quality, Vector<unsigned char>* output)
+PassOwnPtr<JPEGImageEncoderState> JPEGImageEncoderState::create(const IntSize& imageSize, const double& quality, Vector<unsigned char>* output)
 {
     if (imageSize.width() <= 0 || imageSize.height() <= 0)
-        return false;
+        return nullptr;
 
-    JPEGOutputBuffer destination;
-    destination.output = output;
-    Vector<JSAMPLE> row;
+    int compressionQuality = JPEGImageEncoder::computeCompressionQuality(quality);
+    JPEGOutputBuffer* destination = new JPEGOutputBuffer;
+    destination->output = output;
 
-    jpeg_compress_struct cinfo;
-    jpeg_error_mgr error;
-    cinfo.err = jpeg_std_error(&error);
-    error.error_exit = handleError;
+    jpeg_compress_struct* cinfo = new jpeg_compress_struct;
+    jpeg_error_mgr* error = new jpeg_error_mgr;
+
+    cinfo->err = jpeg_std_error(error);
+    error->error_exit = handleError;
     jmp_buf jumpBuffer;
-    cinfo.client_data = &jumpBuffer;
+    cinfo->client_data = &jumpBuffer;
 
     if (setjmp(jumpBuffer)) {
-        jpeg_destroy_compress(&cinfo);
-        return false;
+        jpeg_destroy_compress(cinfo);
+        return nullptr;
     }
 
-    jpeg_create_compress(&cinfo);
-    cinfo.dest = &destination;
-    cinfo.dest->init_destination = prepareOutput;
-    cinfo.dest->empty_output_buffer = writeOutput;
-    cinfo.dest->term_destination = finishOutput;
+    jpeg_create_compress(cinfo);
+    cinfo->dest = destination;
+    cinfo->dest->init_destination = prepareOutput;
+    cinfo->dest->empty_output_buffer = writeOutput;
+    cinfo->dest->term_destination = finishOutput;
 
-    cinfo.image_height = imageSize.height();
-    cinfo.image_width = imageSize.width();
-    cinfo.in_color_space = JCS_RGB;
-    cinfo.input_components = 3;
 
-    jpeg_set_defaults(&cinfo);
-    jpeg_set_quality(&cinfo, quality, TRUE);
-    disableSubsamplingForHighQuality(&cinfo, quality);
-    jpeg_start_compress(&cinfo, TRUE);
+    cinfo->image_height = imageSize.height();
+    cinfo->image_width = imageSize.width();
+    cinfo->in_color_space = JCS_RGB;
+    cinfo->input_components = 3;
 
+    jpeg_set_defaults(cinfo);
+    jpeg_set_quality(cinfo, compressionQuality, TRUE);
+    disableSubsamplingForHighQuality(cinfo, compressionQuality);
+    jpeg_start_compress(cinfo, TRUE);
+
+    return adoptPtr(new JPEGImageEncoderStateImpl(cinfo, destination, error));
+}
+
+JPEGImageEncoderStateImpl::~JPEGImageEncoderStateImpl()
+{
+    jpeg_destroy_compress(m_jpeg);
+}
+
+int JPEGImageEncoder::computeCompressionQuality(const double& quality)
+{
+    int compressionQuality = JPEGImageEncoder::DefaultCompressionQuality;
+    if (quality >= 0.0 && quality <= 1.0)
+        compressionQuality = static_cast<int>(quality * 100 + 0.5);
+    return compressionQuality;
+}
+
+void JPEGImageEncoder::encodeWithPreInitializedState(JPEGImageEncoderState* encoderState, const unsigned char* inputPixels)
+{
+    JPEGImageEncoderStateImpl* encoderStateImpl = static_cast<JPEGImageEncoderStateImpl *>(encoderState);
+
+    Vector<JSAMPLE> row;
     unsigned char* pixels = const_cast<unsigned char*>(inputPixels);
-    row.resize(cinfo.image_width * cinfo.input_components);
-    const size_t pixelRowStride = cinfo.image_width * 4;
-    while (cinfo.next_scanline < cinfo.image_height) {
+
+    row.resize(encoderStateImpl->jpeg()->image_width * encoderStateImpl->jpeg()->input_components);
+
+    const size_t pixelRowStride = encoderStateImpl->jpeg()->image_width * 4;
+    while (encoderStateImpl->jpeg()->next_scanline < encoderStateImpl->jpeg()->image_height) {
         JSAMPLE* rowData = row.data();
-        RGBAtoRGB(pixels, cinfo.image_width, rowData);
-        jpeg_write_scanlines(&cinfo, &rowData, 1);
+        RGBAtoRGB(pixels, encoderStateImpl->jpeg()->image_width, rowData);
+        jpeg_write_scanlines(encoderStateImpl->jpeg(), &rowData, 1);
         pixels += pixelRowStride;
     }
 
-    jpeg_finish_compress(&cinfo);
-    jpeg_destroy_compress(&cinfo);
-    return true;
+    jpeg_finish_compress(encoderStateImpl->jpeg());
 }
 
-bool JPEGImageEncoder::encode(const ImageDataBuffer& imageData, int quality, Vector<unsigned char>* output)
+bool JPEGImageEncoder::encode(const ImageDataBuffer& imageData, const double& quality, Vector<unsigned char>* output)
 {
     if (!imageData.pixels())
         return false;
+    IntSize imageSize(imageData.width(), imageData.height());
+    const unsigned char* inputPixels = imageData.pixels();
 
-    return encodePixels(IntSize(imageData.width(), imageData.height()), imageData.pixels(), quality, output);
+    OwnPtr<JPEGImageEncoderState> encoderState = JPEGImageEncoderState::create(imageSize, quality, output);
+    if (!encoderState.get())
+        return false;
+
+    JPEGImageEncoder::encodeWithPreInitializedState(encoderState.get(), inputPixels);
+    return true;
 }
 
 } // namespace blink

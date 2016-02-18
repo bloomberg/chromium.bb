@@ -31,19 +31,38 @@
 #ifndef JPEGImageEncoder_h
 #define JPEGImageEncoder_h
 
+#include "platform/geometry/IntSize.h"
 #include "wtf/Allocator.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
 struct ImageDataBuffer;
 
-class JPEGImageEncoder {
+class PLATFORM_EXPORT JPEGImageEncoderState {
+    USING_FAST_MALLOC(JPEGImageEncoderState);
+    WTF_MAKE_NONCOPYABLE(JPEGImageEncoderState);
+public:
+    static PassOwnPtr<JPEGImageEncoderState> create(const IntSize& imageSize, const double& quality, Vector<unsigned char>* output);
+    JPEGImageEncoderState() {}
+    virtual ~JPEGImageEncoderState() {}
+};
+
+class PLATFORM_EXPORT JPEGImageEncoder {
     STATIC_ONLY(JPEGImageEncoder);
 public:
     // Encode the image data with a compression quality in [0-100].
-    static bool encode(const ImageDataBuffer&, int quality, Vector<unsigned char>*);
+    // Warning: Calling this method off the main thread may result in data race
+    // problems; instead, call JPEGImageEncoderState::create on main thread
+    // first followed by encodeWithPreInitializedState off the main thread will
+    // be safer.
+    static bool encode(const ImageDataBuffer&, const double& quality, Vector<unsigned char>*);
 
+    static void encodeWithPreInitializedState(JPEGImageEncoderState*, const unsigned char*);
+    static int computeCompressionQuality(const double& quality);
+
+private:
     // For callers: provide a reasonable compression quality default.
     enum Quality { DefaultCompressionQuality = 92 };
 };

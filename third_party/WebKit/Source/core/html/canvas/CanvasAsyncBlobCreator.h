@@ -15,6 +15,7 @@
 namespace blink {
 
 class PNGImageEncoderState;
+class JPEGImageEncoderState;
 
 class CORE_EXPORT CanvasAsyncBlobCreator
     : public RefCounted<CanvasAsyncBlobCreator> {
@@ -28,7 +29,8 @@ private:
     void scheduleCreateBlobAndCallOnMainThread();
     void scheduleCreateNullptrAndCallOnMainThread();
 
-    OwnPtr<PNGImageEncoderState> m_encoderState;
+    OwnPtr<PNGImageEncoderState> m_pngEncoderState;
+    OwnPtr<JPEGImageEncoderState> m_jpegEncoderState;
     RefPtr<DOMUint8ClampedArray> m_data;
     OwnPtr<Vector<unsigned char>> m_encodedImage;
     int m_numRowsCompleted;
@@ -44,6 +46,8 @@ private:
     void initiatePngEncoding(double deadlineSeconds);
     void scheduleIdleEncodeRowsPng();
     void idleEncodeRowsPng(double deadlineSeconds);
+
+    void initiateJpegEncoding(const double& quality);
 
     void createBlobAndCall();
 
