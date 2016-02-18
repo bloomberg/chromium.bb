@@ -756,8 +756,12 @@ var Should = (function () {
         } else {
             var counter = 0;
             var failureMessage = 'is not equal to the array [' + arrStr + ']';
+            if (this.verbose)
+                failureMessage += '\nindex\tActual\t\tExpected';
             for (var index in mismatches) {
                 failureMessage += '\n[' + index + '] : ' + mismatches[index];
+                if (this.verbose)
+                    failureMessage += '\t' + array[index];
                 if (++counter >= this.NUM_ERRORS_LOG) {
                     failureMessage += '\nand ' + (numberOfmismatches - counter) +
                     ' more differences...';
