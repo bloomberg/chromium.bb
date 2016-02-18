@@ -15,17 +15,19 @@ namespace media {
 AudioRendererMixerInput::AudioRendererMixerInput(
     const GetMixerCB& get_mixer_cb,
     const RemoveMixerCB& remove_mixer_cb,
+    const GetHardwareParamsCB& get_hardware_params_cb,
     const std::string& device_id,
     const url::Origin& security_origin)
-    : initialized_(false),
+    : started_(false),
       playing_(false),
       volume_(1.0f),
       get_mixer_cb_(get_mixer_cb),
       remove_mixer_cb_(remove_mixer_cb),
+      get_hardware_params_cb_(get_hardware_params_cb),
       device_id_(device_id),
       security_origin_(security_origin),
-      mixer_(NULL),
-      callback_(NULL),
+      mixer_(nullptr),
+      callback_(nullptr),
       error_cb_(base::Bind(&AudioRendererMixerInput::OnRenderError,
                            base::Unretained(this))) {}
 
@@ -41,12 +43,14 @@ void AudioRendererMixerInput::Initialize(
 
   params_ = params;
   callback_ = callback;
-  initialized_ = true;
 }
 
 void AudioRendererMixerInput::Start() {
-  DCHECK(initialized_);
+  DCHECK(!started_);
   DCHECK(!mixer_);
+  DCHECK(callback_);  // Initialized.
+
+  started_ = true;
   mixer_ = get_mixer_cb_.Run(params_, device_id_, security_origin_, nullptr);
   if (!mixer_) {
     callback_->OnRenderError();
@@ -66,10 +70,7 @@ void AudioRendererMixerInput::Start() {
 void AudioRendererMixerInput::Stop() {
   // Stop() may be called at any time, if Pause() hasn't been called we need to
   // remove our mixer input before shutdown.
-  if (playing_) {
-    mixer_->RemoveMixerInput(params_, this);
-    playing_ = false;
-  }
+  Pause();
 
   if (mixer_) {
     // TODO(dalecurtis): This is required so that |callback_| isn't called after
@@ -77,8 +78,10 @@ void AudioRendererMixerInput::Stop() {
     // should instead have sane ownership semantics: http://crbug.com/151051
     mixer_->RemoveErrorCallback(error_cb_);
     remove_mixer_cb_.Run(params_, device_id_, security_origin_);
-    mixer_ = NULL;
+    mixer_ = nullptr;
   }
+
+  started_ = false;
 
   if (!pending_switch_callback_.is_null()) {
     base::ResetAndReturn(&pending_switch_callback_)
@@ -147,6 +150,7 @@ void AudioRendererMixerInput::SwitchOutputDevice(
   security_origin_ = security_origin;
   mixer_ = new_mixer;
   mixer_->AddErrorCallback(error_cb_);
+  started_ = true;
 
   if (was_playing)
     Play();
@@ -155,14 +159,19 @@ void AudioRendererMixerInput::SwitchOutputDevice(
 }
 
 AudioParameters AudioRendererMixerInput::GetOutputParameters() {
-  return mixer_->GetOutputDevice()->GetOutputParameters();
+  if (mixer_)
+    return mixer_->GetOutputDevice()->GetOutputParameters();
+  return get_hardware_params_cb_.Run(device_id_, security_origin_);
 }
 
 OutputDeviceStatus AudioRendererMixerInput::GetDeviceStatus() {
-  if (!mixer_)
+  if (mixer_)
+    return mixer_->GetOutputDevice()->GetDeviceStatus();
+
+  if (started_)
     return OUTPUT_DEVICE_STATUS_ERROR_INTERNAL;
 
-  return mixer_->GetOutputDevice()->GetDeviceStatus();
+  return OUTPUT_DEVICE_STATUS_OK;
 }
 
 double AudioRendererMixerInput::ProvideInput(AudioBus* audio_bus,

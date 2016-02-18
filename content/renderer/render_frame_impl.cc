@@ -94,7 +94,6 @@
 #include "content/renderer/internal_document_state_data.h"
 #include "content/renderer/manifest/manifest_manager.h"
 #include "content/renderer/media/audio_device_factory.h"
-#include "content/renderer/media/audio_renderer_mixer_manager.h"
 #include "content/renderer/media/cdm/render_cdm_factory.h"
 #include "content/renderer/media/media_permission_dispatcher.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
@@ -2476,8 +2475,9 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
 
   scoped_refptr<media::RestartableAudioRendererSink> audio_renderer_sink =
-      render_thread->GetAudioRendererMixerManager()->CreateInput(
-          routing_id_, sink_id.utf8(), frame_->securityOrigin());
+      AudioDeviceFactory::NewRestartableAudioRendererSink(
+          AudioDeviceFactory::kSourceMediaElement, routing_id_, 0,
+          sink_id.utf8(), frame_->securityOrigin());
   media::WebMediaPlayerParams::Context3DCB context_3d_cb =
       base::Bind(&GetSharedMainThreadContext3D);
 
@@ -6075,12 +6075,8 @@ void RenderFrameImpl::checkIfAudioSinkExistsAndIsAuthorized(
     blink::WebSetSinkIdCallbacks* web_callbacks) {
   media::SwitchOutputDeviceCB callback =
       media::ConvertToSwitchOutputDeviceCB(web_callbacks);
-  scoped_refptr<media::AudioOutputDevice> device =
-      AudioDeviceFactory::NewOutputDevice(routing_id_, 0, sink_id.utf8(),
-                                          security_origin);
-  media::OutputDeviceStatus status = device->GetDeviceStatus();
-  device->Stop();
-  callback.Run(status);
+  callback.Run(AudioDeviceFactory::GetOutputDeviceStatus(
+      routing_id_, 0, sink_id.utf8(), security_origin));
 }
 
 blink::WebPlugin* RenderFrameImpl::GetWebPluginForFind() {

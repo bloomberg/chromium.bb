@@ -25,10 +25,6 @@
 #include "media/base/output_device.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 
-namespace media {
-class AudioOutputDevice;
-}  // namespace media
-
 namespace webrtc {
 class AudioSourceInterface;
 }  // namespace webrtc
@@ -214,7 +210,7 @@ class CONTENT_EXPORT WebRtcAudioRenderer
   const scoped_refptr<base::SingleThreadTaskRunner> signaling_thread_;
 
   // The sink (destination) for rendered audio.
-  scoped_refptr<media::AudioOutputDevice> sink_;
+  scoped_refptr<media::AudioRendererSink> sink_;
 
   // The media stream that holds the audio tracks that this renderer renders.
   const blink::WebMediaStream media_stream_;

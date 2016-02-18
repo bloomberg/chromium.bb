@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "media/base/audio_converter.h"
 #include "media/base/audio_renderer_sink.h"
+#include "media/base/output_device.h"
 #include "url/origin.h"
 
 namespace media {
@@ -32,8 +33,13 @@ class MEDIA_EXPORT AudioRendererMixerInput
                               const url::Origin& security_origin)>
       RemoveMixerCB;
 
+  typedef base::Callback<AudioParameters(const std::string& device_id,
+                                         const url::Origin& security_origin)>
+      GetHardwareParamsCB;
+
   AudioRendererMixerInput(const GetMixerCB& get_mixer_cb,
                           const RemoveMixerCB& remove_mixer_cb,
+                          const GetHardwareParamsCB& get_hardware_params_cb,
                           const std::string& device_id,
                           const url::Origin& security_origin);
 
@@ -63,7 +69,7 @@ class MEDIA_EXPORT AudioRendererMixerInput
  private:
   friend class AudioRendererMixerInputTest;
 
-  bool initialized_;
+  bool started_;
   bool playing_;
   double volume_;
 
@@ -75,6 +81,10 @@ class MEDIA_EXPORT AudioRendererMixerInput
   // to retrieve a mixer during Initialize() and notify when it's done with it.
   const GetMixerCB get_mixer_cb_;
   const RemoveMixerCB remove_mixer_cb_;
+
+  // Callbacks provided during construction which allows AudioRendererMixerInput
+  // to access hardware output parameters when it is detached from the mixer.
+  const GetHardwareParamsCB get_hardware_params_cb_;
 
   // AudioParameters received during Initialize().
   AudioParameters params_;

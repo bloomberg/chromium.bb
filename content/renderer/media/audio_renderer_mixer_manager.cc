@@ -35,7 +35,10 @@ media::AudioRendererMixerInput* AudioRendererMixerManager::CreateInput(
                  source_render_frame_id),
       base::Bind(&AudioRendererMixerManager::RemoveMixer,
                  base::Unretained(this), source_render_frame_id),
-      device_id, security_origin);
+      base::Bind(&AudioRendererMixerManager::GetHardwareOutputParams,
+                 source_render_frame_id, 0),  // Session id is 0.
+      device_id,
+      security_origin);
 }
 
 void AudioRendererMixerManager::SetAudioRendererSinkForTesting(
@@ -135,6 +138,31 @@ void AudioRendererMixerManager::RemoveMixer(
     delete it->second.mixer;
     mixers_.erase(it);
   }
+}
+
+// static
+media::AudioParameters AudioRendererMixerManager::GetHardwareOutputParams(
+    int render_frame_id,
+    int session_id,
+    const std::string& device_id,
+    const url::Origin& security_origin) {
+  media::AudioParameters params;  // Invalid parameters to return by default.
+
+  // TODO(olka): First try to lookup an existing device (cached or belonging
+  // to some mixer) and reuse it. http://crbug.com/586161
+
+  // AudioOutputDevice is the only interface we have to communicate with output
+  // device via IPC. So, that's how we get the parameters when there is no
+  // AudioOutputDevice:
+  scoped_refptr<media::AudioOutputDevice> device =
+      AudioDeviceFactory::NewOutputDevice(render_frame_id, session_id,
+                                          device_id, security_origin);
+
+  if (device->GetDeviceStatus() == media::OUTPUT_DEVICE_STATUS_OK)
+    params = device->GetOutputParameters();
+
+  device->Stop();  // TODO(olka): temporary cash for future reuse.
+  return params;
 }
 
 AudioRendererMixerManager::MixerKey::MixerKey(

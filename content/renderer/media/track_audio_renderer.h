@@ -26,7 +26,6 @@
 namespace media {
 class AudioBus;
 class AudioShifter;
-class AudioOutputDevice;
 class AudioParameters;
 }
 
@@ -39,7 +38,7 @@ namespace content {
 // PeerConnection-sourced tracks are NOT rendered by this implementation (see
 // MediaStreamRendererFactoryImpl).
 //
-// This class uses AudioDeviceFactory to create media::AudioOutputDevices and
+// This class uses AudioDeviceFactory to create media::AudioRendererSink and
 // owns/manages their lifecycles.  Output devices are automatically re-created
 // in response to audio format changes, or use of the SwitchOutputDevice() API
 // by client code.
@@ -143,7 +142,7 @@ class CONTENT_EXPORT TrackAudioRenderer
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // The sink (destination) for rendered audio.
-  scoped_refptr<media::AudioOutputDevice> sink_;
+  scoped_refptr<media::AudioRendererSink> sink_;
 
   // This does all the synchronization/resampling/smoothing.
   scoped_ptr<media::AudioShifter> audio_shifter_;

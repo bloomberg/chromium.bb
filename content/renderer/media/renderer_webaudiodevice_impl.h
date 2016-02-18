@@ -22,7 +22,6 @@ class SingleThreadTaskRunner;
 }
 
 namespace media {
-class AudioOutputDevice;
 class NullAudioSink;
 }
 
@@ -61,7 +60,7 @@ class RendererWebAudioDeviceImpl
   base::ThreadChecker thread_checker_;
 
   // When non-NULL, we are started.  When NULL, we are stopped.
-  scoped_refptr<media::AudioOutputDevice> output_device_;
+  scoped_refptr<media::AudioRendererSink> sink_;
 
   // ID to allow browser to select the correct input device for unified IO.
   int session_id_;

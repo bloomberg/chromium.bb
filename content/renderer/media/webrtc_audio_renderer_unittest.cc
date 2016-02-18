@@ -8,18 +8,14 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "content/public/renderer/media_stream_audio_renderer.h"
 #include "content/renderer/media/audio_device_factory.h"
-#include "content/renderer/media/audio_message_filter.h"
-#include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
-#include "media/audio/audio_output_device.h"
-#include "media/audio/audio_output_ipc.h"
-#include "media/base/audio_bus.h"
-#include "media/base/mock_audio_renderer_sink.h"
+#include "media/base/audio_renderer_sink.h"
+#include "media/base/output_device.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
@@ -40,46 +36,23 @@ const char kDefaultOutputDeviceId[] = "";
 const char kOtherOutputDeviceId[] = "other-output-device";
 const char kInvalidOutputDeviceId[] = "invalid-device";
 
-class MockAudioOutputIPC : public media::AudioOutputIPC {
- public:
-  MockAudioOutputIPC() {}
-  virtual ~MockAudioOutputIPC() {}
-
-  MOCK_METHOD4(RequestDeviceAuthorization,
-               void(media::AudioOutputIPCDelegate* delegate,
-                    int session_id,
-                    const std::string& device_id,
-                    const url::Origin& security_origin));
-  MOCK_METHOD2(CreateStream,
-               void(media::AudioOutputIPCDelegate* delegate,
-                    const media::AudioParameters& params));
-  MOCK_METHOD0(PlayStream, void());
-  MOCK_METHOD0(PauseStream, void());
-  MOCK_METHOD0(CloseStream, void());
-  MOCK_METHOD1(SetVolume, void(double volume));
-  MOCK_METHOD2(SwitchOutputDevice,
-               void(const std::string& device_id,
-                    const url::Origin& security_origin));
-};
-
 class FakeAudioOutputDevice
-    : NON_EXPORTED_BASE(public media::AudioOutputDevice) {
+    : NON_EXPORTED_BASE(public media::AudioRendererSink),
+      NON_EXPORTED_BASE(public media::OutputDevice) {
  public:
-  FakeAudioOutputDevice(
-      scoped_ptr<media::AudioOutputIPC> ipc,
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
-      const std::string& device_id)
-      : AudioOutputDevice(std::move(ipc),
-                          io_task_runner,
-                          0,
-                          std::string(),
-                          url::Origin()),
-        device_id_(device_id) {}
+  FakeAudioOutputDevice(const std::string& device_id) : device_id_(device_id) {}
+  MOCK_METHOD2(Initialize,
+               void(const media::AudioParameters&, RenderCallback*));
   MOCK_METHOD0(Start, void());
   MOCK_METHOD0(Stop, void());
   MOCK_METHOD0(Pause, void());
   MOCK_METHOD0(Play, void());
   MOCK_METHOD1(SetVolume, bool(double volume));
+  OutputDevice* GetOutputDevice() { return this; }
+  MOCK_METHOD3(SwitchOutputDevice,
+               void(const std::string&,
+                    const url::Origin&,
+                    const media::SwitchOutputDeviceCB&));
 
   media::OutputDeviceStatus GetDeviceStatus() override {
     return device_id_ == kInvalidOutputDeviceId
@@ -129,7 +102,6 @@ class WebRtcAudioRendererTest : public testing::Test,
  protected:
   WebRtcAudioRendererTest()
       : message_loop_(new base::MessageLoopForIO),
-        mock_ipc_(nullptr),
         source_(new MockAudioRendererSource()) {
     blink::WebVector<blink::WebMediaStreamTrack> dummy_tracks;
     stream_.initialize("new stream", dummy_tracks, dummy_tracks);
@@ -138,35 +110,45 @@ class WebRtcAudioRendererTest : public testing::Test,
   void SetupRenderer(const std::string& device_id) {
     renderer_ = new WebRtcAudioRenderer(message_loop_->task_runner(), stream_,
                                         1, 1, device_id, url::Origin());
-    EXPECT_CALL(*this, MockCreateOutputDevice(1, _, device_id, _));
+    EXPECT_CALL(
+        *this, MockCreateAudioRendererSink(AudioDeviceFactory::kSourceWebRtc, _,
+                                           _, device_id, _));
     EXPECT_TRUE(renderer_->Initialize(source_.get()));
 
     renderer_proxy_ = renderer_->CreateSharedAudioRendererProxy(stream_);
   }
-
   MOCK_METHOD1(CreateInputDevice, media::AudioInputDevice*(int));
-  MOCK_METHOD4(MockCreateOutputDevice,
+  MOCK_METHOD4(CreateOutputDevice,
                media::AudioOutputDevice*(int,
                                          int,
                                          const std::string&,
                                          const url::Origin&));
-  media::AudioOutputDevice* CreateOutputDevice(
+  MOCK_METHOD5(CreateRestartableAudioRendererSink,
+               media::RestartableAudioRendererSink*(SourceType,
+                                                    int,
+                                                    int,
+                                                    const std::string&,
+                                                    const url::Origin&));
+  MOCK_METHOD5(MockCreateAudioRendererSink,
+               media::AudioRendererSink*(SourceType,
+                                         int,
+                                         int,
+                                         const std::string&,
+                                         const url::Origin&));
+  media::AudioRendererSink* CreateAudioRendererSink(
+      SourceType source_type,
       int render_frame_id,
       int session_id,
       const std::string& device_id,
       const url::Origin& security_origin) {
-    MockAudioOutputIPC* fake_ipc = new MockAudioOutputIPC();
-    FakeAudioOutputDevice* fake_device =
-        new FakeAudioOutputDevice(scoped_ptr<media::AudioOutputIPC>(fake_ipc),
-                                  message_loop_->task_runner(), device_id);
+    FakeAudioOutputDevice* fake_device = new FakeAudioOutputDevice(device_id);
     if (device_id != kInvalidOutputDeviceId) {
       mock_output_device_ = fake_device;
-      mock_ipc_ = fake_ipc;
       EXPECT_CALL(*mock_output_device_.get(), Start());
     }
 
-    MockCreateOutputDevice(render_frame_id, session_id, device_id,
-                           security_origin);
+    MockCreateAudioRendererSink(source_type, render_frame_id, session_id,
+                                device_id, security_origin);
     return fake_device;
   }
 
@@ -179,10 +161,7 @@ class WebRtcAudioRendererTest : public testing::Test,
     blink::WebHeap::collectAllGarbageForTesting();
   }
 
-  // Used to construct |mock_output_device_|.
   scoped_ptr<base::MessageLoopForIO> message_loop_;
-  MockAudioOutputIPC* mock_ipc_;  // Owned by AudioOuputDevice.
-
   scoped_refptr<FakeAudioOutputDevice> mock_output_device_;
   scoped_ptr<MockAudioRendererSource> source_;
   blink::WebMediaStream stream_;
@@ -281,7 +260,9 @@ TEST_F(WebRtcAudioRendererTest, SwitchOutputDevice) {
   renderer_proxy_->Start();
 
   EXPECT_CALL(*mock_output_device_.get(), Stop());
-  EXPECT_CALL(*this, MockCreateOutputDevice(_, _, kOtherOutputDeviceId, _));
+  EXPECT_CALL(*this,
+              MockCreateAudioRendererSink(AudioDeviceFactory::kSourceWebRtc, _,
+                                          _, kOtherOutputDeviceId, _));
   EXPECT_CALL(*source_.get(), AudioRendererThreadStopped());
   EXPECT_CALL(*this, MockSwitchDeviceCallback(media::OUTPUT_DEVICE_STATUS_OK));
   base::RunLoop loop;
@@ -302,7 +283,9 @@ TEST_F(WebRtcAudioRendererTest, SwitchOutputDeviceInvalidDevice) {
   EXPECT_EQ(kDefaultOutputDeviceId, mock_output_device_->GetDeviceId());
   renderer_proxy_->Start();
 
-  EXPECT_CALL(*this, MockCreateOutputDevice(_, _, kInvalidOutputDeviceId, _));
+  EXPECT_CALL(*this,
+              MockCreateAudioRendererSink(AudioDeviceFactory::kSourceWebRtc, _,
+                                          _, kInvalidOutputDeviceId, _));
   EXPECT_CALL(*this, MockSwitchDeviceCallback(
                          media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL));
   base::RunLoop loop;

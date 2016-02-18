@@ -95,6 +95,9 @@ class AudioRendererMixerTest
                     const std::string&,
                     const url::Origin&));
 
+  MOCK_METHOD2(GetOutputHWParams,
+               AudioParameters(const std::string&, const url::Origin&));
+
   void InitializeInputs(int inputs_per_sample_rate) {
     mixer_inputs_.reserve(inputs_per_sample_rate * input_parameters_.size());
     fake_callbacks_.reserve(inputs_per_sample_rate * input_parameters_.size());
@@ -115,6 +118,8 @@ class AudioRendererMixerTest
             base::Bind(&AudioRendererMixerTest::GetMixer,
                        base::Unretained(this)),
             base::Bind(&AudioRendererMixerTest::RemoveMixer,
+                       base::Unretained(this)),
+            base::Bind(&AudioRendererMixerTest::GetOutputHWParams,
                        base::Unretained(this)),
             // Default device ID and security origin.
             std::string(), url::Origin()));
@@ -468,6 +473,8 @@ TEST_P(AudioRendererMixerBehavioralTest, NoInitialize) {
       new AudioRendererMixerInput(
           base::Bind(&AudioRendererMixerTest::GetMixer, base::Unretained(this)),
           base::Bind(&AudioRendererMixerTest::RemoveMixer,
+                     base::Unretained(this)),
+          base::Bind(&AudioRendererMixerTest::GetOutputHWParams,
                      base::Unretained(this)),
           // Default device ID and security origin.
           std::string(), url::Origin());
