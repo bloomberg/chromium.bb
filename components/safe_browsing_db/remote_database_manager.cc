@@ -11,7 +11,6 @@
 #include "base/strings/string_split.h"
 #include "base/timer/elapsed_timer.h"
 #include "components/safe_browsing_db/safe_browsing_api_handler.h"
-#include "components/safe_browsing_db/v4_get_hash_protocol_manager.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -94,14 +93,7 @@ void RemoteSafeBrowsingDatabaseManager::ClientRequest::OnRequestDone(
 
 // TODO(nparker): Add more tests for this class
 RemoteSafeBrowsingDatabaseManager::RemoteSafeBrowsingDatabaseManager()
-    : RemoteSafeBrowsingDatabaseManager(NULL, V4GetHashProtocolConfig()) {
-}
-
-RemoteSafeBrowsingDatabaseManager::RemoteSafeBrowsingDatabaseManager(
-      net::URLRequestContextGetter* request_context_getter,
-      const V4GetHashProtocolConfig& config)
-    : SafeBrowsingDatabaseManager(request_context_getter, config),
-      enabled_(false) {
+    : enabled_(false) {
   // Decide which resource types to check. These two are the minimum.
   resource_types_to_check_.insert(content::RESOURCE_TYPE_MAIN_FRAME);
   resource_types_to_check_.insert(content::RESOURCE_TYPE_SUB_FRAME);

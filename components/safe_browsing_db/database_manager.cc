@@ -4,28 +4,9 @@
 
 #include "components/safe_browsing_db/database_manager.h"
 
-#include "components/safe_browsing_db/v4_get_hash_protocol_manager.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
 namespace safe_browsing {
-
-SafeBrowsingDatabaseManager::SafeBrowsingDatabaseManager()
-    : SafeBrowsingDatabaseManager(NULL, V4GetHashProtocolConfig()) {
-}
-
-SafeBrowsingDatabaseManager::SafeBrowsingDatabaseManager(
-    net::URLRequestContextGetter* request_context_getter,
-    const V4GetHashProtocolConfig& config) {
-  // Instantiate a V4GetHashProtocolManager.
-  if (request_context_getter) {
-    v4_get_hash_protocol_manager_.reset(V4GetHashProtocolManager::Create(
-        request_context_getter, config));
-  }
-}
-
-SafeBrowsingDatabaseManager::~SafeBrowsingDatabaseManager() {
-}
 
 void SafeBrowsingDatabaseManager::CheckApiBlacklistUrl(const GURL& url,
                                                        Client* client) {

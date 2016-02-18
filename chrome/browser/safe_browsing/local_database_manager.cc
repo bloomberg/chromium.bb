@@ -33,7 +33,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing_db/util.h"
-#include "components/safe_browsing_db/v4_get_hash_protocol_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "url/url_constants.h"
@@ -261,16 +260,8 @@ void LocalSafeBrowsingDatabaseManager::SafeBrowsingCheck::
 }
 
 LocalSafeBrowsingDatabaseManager::LocalSafeBrowsingDatabaseManager(
-    const scoped_refptr<SafeBrowsingService>& service) :
-    LocalSafeBrowsingDatabaseManager(service, NULL, V4GetHashProtocolConfig()) {
-}
-
-LocalSafeBrowsingDatabaseManager::LocalSafeBrowsingDatabaseManager(
-    const scoped_refptr<SafeBrowsingService>& service,
-    net::URLRequestContextGetter* request_context_getter,
-    const V4GetHashProtocolConfig& config)
-    : SafeBrowsingDatabaseManager(request_context_getter, config),
-      sb_service_(service),
+    const scoped_refptr<SafeBrowsingService>& service)
+    : sb_service_(service),
       database_(NULL),
       enabled_(false),
       enable_download_protection_(false),
