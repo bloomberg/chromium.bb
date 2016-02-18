@@ -1137,7 +1137,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         final boolean minimizeApp = !shouldCloseTab || currentTab.isCreatedForExternalApp();
 
         if (minimizeApp) {
-            sendToBackground(currentTab);
+            sendToBackground(shouldCloseTab ? currentTab : null);
         } else if (shouldCloseTab) {
             getCurrentTabModel().closeTab(currentTab, true, false, false);
         }
