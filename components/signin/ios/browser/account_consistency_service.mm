@@ -11,7 +11,6 @@
 #import "base/mac/foundation_util.h"
 #include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/time/time.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -26,6 +25,11 @@
 #include "url/gurl.h"
 
 namespace {
+
+// Threshold (in hours) used to control whether the X-CHROME-CONNECTED cookie
+// should be added again on a domain it was previously set.
+const int kHoursThresholdToReAddCookie = 24;
+
 // JavaScript template used to set (or delete) the X-CHROME-CONNECTED cookie.
 // It takes 3 arguments: the value of the cookie, its domain and its expiration
 // date.
@@ -79,7 +83,10 @@ bool AccountConsistencyHandler::ShouldAllowResponse(NSURLResponse* response) {
     // X-CHROME-CONNECTED cookie to the domain if necessary.
     std::string domain = net::registry_controlled_domains::GetDomainAndRegistry(
         url, net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
-    account_consistency_service_->AddXChromeConnectedCookieToDomain(domain);
+    account_consistency_service_->AddXChromeConnectedCookieToDomain(
+        domain, true /* force_update_if_too_old */);
+    account_consistency_service_->AddXChromeConnectedCookieToDomain(
+        "google.com", true /* force_update_if_too_old */);
   }
 
   if (!gaia::IsGaiaSignonRealm(url.GetOrigin()))
@@ -241,24 +248,42 @@ void AccountConsistencyService::RemoveWebStateHandler(
   web_state_handlers_.erase(web_state);
 }
 
+bool AccountConsistencyService::ShouldAddXChromeConnectedCookieToDomain(
+    const std::string& domain,
+    bool force_update_if_too_old) {
+  auto it = last_cookie_update_map_.find(domain);
+  if (it == last_cookie_update_map_.end()) {
+    // |domain| isn't in the map, always add the cookie.
+    return true;
+  }
+  if (!force_update_if_too_old) {
+    // |domain| is in the map and the cookie is considered valid. Don't add it
+    // again.
+    return false;
+  }
+  return (base::Time::Now() - it->second) >
+         base::TimeDelta::FromHours(kHoursThresholdToReAddCookie);
+}
+
 void AccountConsistencyService::AddXChromeConnectedCookieToDomain(
-    const std::string& domain) {
-  if (domains_with_cookies_.count(domain) > 0) {
-    // Cookie has recently been added. Nothing to do.
+    const std::string& domain,
+    bool force_update_if_too_old) {
+  if (!ShouldAddXChromeConnectedCookieToDomain(domain,
+                                               force_update_if_too_old)) {
     return;
   }
-  domains_with_cookies_.insert(domain);
+  last_cookie_update_map_[domain] = base::Time::Now();
   cookie_requests_.push_back(CookieRequest::CreateAddCookieRequest(domain));
   ApplyCookieRequests();
 }
 
 void AccountConsistencyService::RemoveXChromeConnectedCookieFromDomain(
     const std::string& domain) {
-  if (domains_with_cookies_.count(domain) == 0) {
+  if (last_cookie_update_map_.count(domain) == 0) {
     // Cookie is not on the domain. Nothing to do.
     return;
   }
-  domains_with_cookies_.erase(domain);
+  last_cookie_update_map_.erase(domain);
   cookie_requests_.push_back(CookieRequest::CreateRemoveCookieRequest(domain));
   ApplyCookieRequests();
 }
@@ -267,7 +292,7 @@ void AccountConsistencyService::LoadFromPrefs() {
   const base::DictionaryValue* dict =
       signin_client_->GetPrefs()->GetDictionary(kDomainsWithCookiePref);
   for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
-    domains_with_cookies_.insert(it.key());
+    last_cookie_update_map_[it.key()] = base::Time();
   }
 }
 
@@ -307,8 +332,8 @@ void AccountConsistencyService::ApplyCookieRequests() {
           url, signin_manager_->GetAuthenticatedAccountInfo().gaia,
           cookie_settings_.get(), signin::PROFILE_MODE_DEFAULT);
       if (cookie_value.empty()) {
-        // Don't add the cookie. Tentatively correct |domains_with_cookies_|.
-        domains_with_cookies_.erase(cookie_requests_.front().domain);
+        // Don't add the cookie. Tentatively correct |last_cookie_update_map_|.
+        last_cookie_update_map_.erase(cookie_requests_.front().domain);
         FinishedApplyingCookieRequest(false);
         return;
       }
@@ -386,15 +411,20 @@ void AccountConsistencyService::ResetWKWebView() {
 
 void AccountConsistencyService::AddXChromeConnectedCookies() {
   DCHECK(!browser_state_->IsOffTheRecord());
-  AddXChromeConnectedCookieToDomain("google.com");
-  AddXChromeConnectedCookieToDomain("youtube.com");
+  // These cookie request are preventive and not a strong signal (unlike
+  // navigation to a domain). Don't force update the old cookies in this case.
+  AddXChromeConnectedCookieToDomain("google.com",
+                                    false /* force_update_if_too_old */);
+  AddXChromeConnectedCookieToDomain("youtube.com",
+                                    false /* force_update_if_too_old */);
 }
 
 void AccountConsistencyService::RemoveXChromeConnectedCookies() {
   DCHECK(!browser_state_->IsOffTheRecord());
-  std::set<std::string> domains_with_cookies = domains_with_cookies_;
-  for (const std::string& domain : domains_with_cookies) {
-    RemoveXChromeConnectedCookieFromDomain(domain);
+  std::map<std::string, base::Time> last_cookie_update_map =
+      last_cookie_update_map_;
+  for (const auto& domain : last_cookie_update_map) {
+    RemoveXChromeConnectedCookieFromDomain(domain.first);
   }
 }
 
@@ -403,7 +433,7 @@ void AccountConsistencyService::OnBrowsingDataRemoved() {
   // accordingly.
   ResetWKWebView();
   cookie_requests_.clear();
-  domains_with_cookies_.clear();
+  last_cookie_update_map_.clear();
   base::DictionaryValue dict;
   signin_client_->GetPrefs()->Set(kDomainsWithCookiePref, dict);
 

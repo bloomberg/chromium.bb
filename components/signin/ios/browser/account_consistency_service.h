@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
@@ -66,9 +67,12 @@ class AccountConsistencyService : public KeyedService,
   // Removes the handler associated with |web_state|.
   void RemoveWebStateHandler(web::WebState* web_state);
 
-  // Enqueues a request to add the X-CHROME-CONNECTED cookie to |domain|. Does
-  // nothing if the cookie is already on |domain|.
-  void AddXChromeConnectedCookieToDomain(const std::string& domain);
+  // Enqueues a request to add the X-CHROME-CONNECTED cookie to |domain|. If the
+  // cookie is already on |domain|, this function will do nothing unless
+  // |force_update_if_too_old| is true. In this case, the cookie will be
+  // refreshed if it is considered too old.
+  void AddXChromeConnectedCookieToDomain(const std::string& domain,
+                                         bool force_update_if_too_old);
 
   // Enqueues a request to remove the X-CHROME-CONNECTED cookie to |domain|.
   // Does nothing if the cookie is not set on |domain|.
@@ -115,6 +119,13 @@ class AccountConsistencyService : public KeyedService,
   // Stops any page loading in the WKWebView currently in use and releases it.
   void ResetWKWebView();
 
+  // Returns whether the X-CHROME-CONNECTED cookie should be added to |domain|.
+  // If the cookie is already on |domain|, this function will return false
+  // unless |force_update_if_too_old| is true. In this case, it will return true
+  // if the cookie is considered to be too old.
+  bool ShouldAddXChromeConnectedCookieToDomain(const std::string& domain,
+                                               bool force_update_if_too_old);
+
   // Adds X-CHROME-CONNECTED cookies on all the main Google domains.
   void AddXChromeConnectedCookies();
   // Removes X-CHROME-CONNECTED cookies on all the Google domains where it was
@@ -160,8 +171,9 @@ class AccountConsistencyService : public KeyedService,
   bool applying_cookie_requests_;
   // The queue of X-CHROME-CONNECTED cookie requests to be applied.
   std::deque<CookieRequest> cookie_requests_;
-  // The set of domains where a X-CHROME-CONNECTED cookie is present.
-  std::set<std::string> domains_with_cookies_;
+  // The map between domains where a X-CHROME-CONNECTED cookie is present and
+  // the time when the cookie was last updated.
+  std::map<std::string, base::Time> last_cookie_update_map_;
 
   // Web view used to apply the X-CHROME-CONNECTED cookie requests.
   base::scoped_nsobject<WKWebView> web_view_;
