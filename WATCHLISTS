@@ -259,7 +259,7 @@
     },
     'closure': {
       'filepath': 'third_party/closure_(compiler|linter)/|'
-                  'compiled_resources.gyp',
+                  'compiled_resources2?.gyp',
     },
     'components_deps': {
       'filepath': 'components/([^/]*/)*DEPS',
@@ -323,7 +323,7 @@
                   'content/browser/download/',
     },
     'downloads_ui': {
-      'filepath': 'chrome/browser/resources/downloads/|' \
+      'filepath': 'chrome/browser/resources/(md_)?downloads/|' \
                   'chrome/browser/ui/webui/.*downloads|' \
                   'chrome/browser/ui/views/download/|' \
                   'chrome/browser/ui/cocoa/download/'
@@ -393,7 +393,8 @@
       'filepath': 'gpu/',
     },
     'history_ui': {
-      'filepath': 'chrome/browser/resources/history',
+      'filepath': 'chrome/browser/resources/(md_)?history|'\
+                  'chrome/browser/ui/webui/.*history',
     },
     'hotword': {
       'filepath': 'chrome/browser/extensions/api/hotword_private/'\
@@ -639,6 +640,7 @@
     },
     'polymer': {
       'filepath': 'third_party/polymer/|'\
+                  'tools/polymer|'\
                   'ui/webui/resources/polymer_resources.grdp',
     },
     'precache': {
@@ -1308,8 +1310,8 @@
                      'glider+clang@chromium.org'],
     'clipboard': ['dcheng@chromium.org'],
     'closure': ['dbeam+watch-closure@chromium.org',
-                'vitalyp+closure@chromium.org',
-                'jlklein+watch-closure@chromium.org'],
+                'jlklein+watch-closure@chromium.org',
+                'vitalyp+closure@chromium.org'],
     'components_deps': ['blundell+watchlist@chromium.org',
                         'droger+watchlist@chromium.org',
                         'sdefresne+watchlist@chromium.org'],
@@ -1338,7 +1340,8 @@
     'disk_cache': ['gavinp+disk@chromium.org'],
     'dns': ['mmenke@chromium.org'],
     'download': ['asanka@chromium.org'],
-    'downloads_ui': ['asanka@chromium.org'],
+    'downloads_ui': ['asanka@chromium.org',
+                     'dbeam+watch-downloads@chromium.org'],
     'drive': ['tfarina@chromium.org'],
     'drive_resource_metadata': ['hashimoto+watch@chromium.org'],
     'eme': ['eme-reviews@chromium.org'],
@@ -1359,7 +1362,9 @@
     'gfx_image': ['rsesek+watch@chromium.org'],
     'gn': ['tfarina@chromium.org'],
     'gpu': ['piman+watch@chromium.org'],
-    'history_ui': ['dubroy@chromium.org', 'pam+watch@chromium.org'],
+    'history_ui': ['dbeam+watch-history@chromium.org',
+                   'dubroy@chromium.org',
+                   'pam+watch@chromium.org'],
     'hotword': ['rlp+watch@chromium.org'],
     'i18n': ['jshin+watch@chromium.org'],
     'importer': ['tfarina@chromium.org'],
@@ -1437,7 +1442,8 @@
     'permissions': ['mlamouri+watch-permissions@chromium.org'],
     'plugin': ['jam@chromium.org'],
     'policy_definitions': ['tnagel+watch@chromium.org'],
-    'polymer': ['michaelpg+watch-polymer@chromium.org'],
+    'polymer': ['dbeam+watch-polymer@chromium.org',
+                'michaelpg+watch-polymer@chromium.org'],
     'precache': ['wifiprefetch-reviews@google.com'],
     'predictors': ['shishir+watch@chromium.org'],
     'prepopulated_engines': ['vasilii+watch@chromium.org'],
