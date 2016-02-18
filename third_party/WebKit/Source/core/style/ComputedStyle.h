@@ -935,6 +935,9 @@ public:
     TextCombine textCombine() const { return static_cast<TextCombine>(rareInheritedData->m_textCombine); }
     bool hasTextCombine() const { return textCombine() != TextCombineNone; }
 
+    uint8_t snapHeightPosition() const { return rareInheritedData->m_snapHeightPosition; }
+    uint8_t snapHeightUnit() const { return rareInheritedData->m_snapHeightUnit; }
+
     TabSize tabSize() const { return rareInheritedData->m_tabSize; }
 
     RespectImageOrientationEnum respectImageOrientation() const { return static_cast<RespectImageOrientationEnum>(rareInheritedData->m_respectImageOrientation); }
@@ -1439,6 +1442,9 @@ public:
 
     void setFilter(const FilterOperations& ops) { SET_NESTED_VAR(rareNonInheritedData, m_filter, m_operations, ops); }
     void setBackdropFilter(const FilterOperations& ops) { SET_NESTED_VAR(rareNonInheritedData, m_backdropFilter, m_operations, ops); }
+
+    void setSnapHeightPosition(uint8_t position) { SET_VAR(rareInheritedData, m_snapHeightPosition, position); }
+    void setSnapHeightUnit(uint8_t unit) { SET_VAR(rareInheritedData, m_snapHeightUnit, unit); }
 
     void setTabSize(TabSize size) { SET_VAR(rareInheritedData, m_tabSize, size); }
 

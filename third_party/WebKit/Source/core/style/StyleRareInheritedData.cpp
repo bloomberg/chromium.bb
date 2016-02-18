@@ -51,6 +51,7 @@ struct SameSizeAsStyleRareInheritedData : public RefCounted<SameSizeAsStyleRareI
     unsigned m_bitfields[2];
     short pagedMediaShorts[2];
     short hyphenationShorts[3];
+    uint8_t snapHeight;
 
     Color touchColors;
     TabSize tabSize;
@@ -96,9 +97,11 @@ StyleRareInheritedData::StyleRareInheritedData()
     , m_subtreeWillChangeContents(false)
     , m_selfOrAncestorHasDirAutoAttribute(false)
     , m_respectImageOrientation(false)
+    , m_snapHeightPosition(0)
     , hyphenationLimitBefore(-1)
     , hyphenationLimitAfter(-1)
     , hyphenationLimitLines(-1)
+    , m_snapHeightUnit(0)
     , tapHighlightColor(ComputedStyle::initialTapHighlightColor())
     , m_tabSize(ComputedStyle::initialTabSize())
 {
@@ -151,10 +154,12 @@ StyleRareInheritedData::StyleRareInheritedData(const StyleRareInheritedData& o)
     , m_subtreeWillChangeContents(o.m_subtreeWillChangeContents)
     , m_selfOrAncestorHasDirAutoAttribute(o.m_selfOrAncestorHasDirAutoAttribute)
     , m_respectImageOrientation(o.m_respectImageOrientation)
+    , m_snapHeightPosition(o.m_snapHeightPosition)
     , hyphenationString(o.hyphenationString)
     , hyphenationLimitBefore(o.hyphenationLimitBefore)
     , hyphenationLimitAfter(o.hyphenationLimitAfter)
     , hyphenationLimitLines(o.hyphenationLimitLines)
+    , m_snapHeightUnit(o.m_snapHeightUnit)
     , textEmphasisCustomMark(o.textEmphasisCustomMark)
     , tapHighlightColor(o.tapHighlightColor)
     , appliedTextDecorations(o.appliedTextDecorations)
@@ -214,7 +219,9 @@ bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const
         && m_subtreeWillChangeContents == o.m_subtreeWillChangeContents
         && m_selfOrAncestorHasDirAutoAttribute == o.m_selfOrAncestorHasDirAutoAttribute
         && m_respectImageOrientation == o.m_respectImageOrientation
+        && m_snapHeightPosition == o.m_snapHeightPosition
         && hyphenationString == o.hyphenationString
+        && m_snapHeightUnit == o.m_snapHeightUnit
         && textEmphasisCustomMark == o.textEmphasisCustomMark
         && quotesDataEquivalent(o)
         && m_tabSize == o.m_tabSize

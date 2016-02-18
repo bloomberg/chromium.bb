@@ -2697,6 +2697,15 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         ASSERT(list->length());
         return list.release();
     }
+    case CSSPropertySnapHeight: {
+        if (!style.snapHeightUnit())
+            return cssValuePool().createValue(0, CSSPrimitiveValue::UnitType::Pixels);
+        RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+        list->append(cssValuePool().createValue(style.snapHeightUnit(), CSSPrimitiveValue::UnitType::Pixels));
+        if (style.snapHeightPosition())
+            list->append(cssValuePool().createValue(style.snapHeightPosition(), CSSPrimitiveValue::UnitType::Integer));
+        return list.release();
+    }
     case CSSPropertyVariable:
         // Variables are retrieved via get(AtomicString).
         ASSERT_NOT_REACHED();

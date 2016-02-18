@@ -1289,6 +1289,23 @@ static PassRefPtrWillBeRawPtr<CSSValueList> consumeSize(CSSParserTokenRange& ran
     return result.release();
 }
 
+static PassRefPtrWillBeRawPtr<CSSValue> consumeSnapHeight(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+{
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> unit = consumeLength(range, cssParserMode, ValueRangeNonNegative);
+    if (!unit)
+        return nullptr;
+    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+    list->append(unit.release());
+
+    if (RefPtrWillBeRawPtr<CSSPrimitiveValue> position = consumePositiveInteger(range)) {
+        if (position->getIntValue() > 100)
+            return nullptr;
+        list->append(position.release());
+    }
+
+    return list.release();
+}
+
 static PassRefPtrWillBeRawPtr<CSSValue> consumeTextIndent(CSSParserTokenRange& range, CSSParserMode cssParserMode)
 {
     // [ <length> | <percentage> ] && hanging? && each-line?
@@ -3425,6 +3442,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeCounter(m_range, m_context.mode(), property == CSSPropertyCounterIncrement ? 1 : 0);
     case CSSPropertySize:
         return consumeSize(m_range, m_context.mode());
+    case CSSPropertySnapHeight:
+        return consumeSnapHeight(m_range, m_context.mode());
     case CSSPropertyTextIndent:
         return consumeTextIndent(m_range, m_context.mode());
     case CSSPropertyMaxWidth:

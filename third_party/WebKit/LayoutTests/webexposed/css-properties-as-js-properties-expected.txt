@@ -229,6 +229,7 @@ shapeMargin
 shapeOutside
 shapeRendering
 size
+snapHeight
 speak
 src
 stopColor

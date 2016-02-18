@@ -271,6 +271,7 @@ shape-margin interpolable, converter=convertLength
 shape-outside interpolable, converter=convertShapeValue
 shape-rendering inherited, svg
 size custom_all
+snap-height runtime_flag=CSSSnapSize, inherited, custom_all
 speak inherited
 stop-color interpolable, svg, converter=convertColor
 stop-opacity interpolable, svg, converter=convertNumberOrPercentage
