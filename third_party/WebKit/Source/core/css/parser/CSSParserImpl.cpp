@@ -61,7 +61,7 @@ bool CSSParserImpl::parseVariableValue(MutableStylePropertySet* declaration, con
     return declaration->addParsedProperties(parser.m_parsedProperties);
 }
 
-static inline void filterProperties(bool important, const WillBeHeapVector<CSSProperty, 256>& input, WillBeHeapVector<CSSProperty, 256>& output, size_t& unusedEntries, BitArray<numCSSProperties>& seenProperties)
+static inline void filterProperties(bool important, const WillBeHeapVector<CSSProperty, 256>& input, WillBeHeapVector<CSSProperty, 256>& output, size_t& unusedEntries, BitArray<numCSSProperties>& seenProperties, HashSet<AtomicString>& seenCustomProperties)
 {
     // Add properties in reverse order so that highest priority definitions are reached first. Duplicate definitions can then be ignored when found.
     for (size_t i = input.size(); i--; ) {
@@ -69,8 +69,13 @@ static inline void filterProperties(bool important, const WillBeHeapVector<CSSPr
         if (property.isImportant() != important)
             continue;
         const unsigned propertyIDIndex = property.id() - firstCSSProperty;
-        // All custom properties use the same CSSPropertyID so we can't remove repeated definitions
-        if (property.id() != CSSPropertyVariable) {
+
+        if (property.id() == CSSPropertyVariable) {
+            const AtomicString& name = toCSSCustomPropertyDeclaration(property.value())->name();
+            if (seenCustomProperties.contains(name))
+                continue;
+            seenCustomProperties.add(name);
+        } else {
             if (seenProperties.get(propertyIDIndex))
                 continue;
             seenProperties.set(propertyIDIndex);
@@ -84,9 +89,10 @@ static PassRefPtrWillBeRawPtr<ImmutableStylePropertySet> createStylePropertySet(
     BitArray<numCSSProperties> seenProperties;
     size_t unusedEntries = parsedProperties.size();
     WillBeHeapVector<CSSProperty, 256> results(unusedEntries);
+    HashSet<AtomicString> seenCustomProperties;
 
-    filterProperties(true, parsedProperties, results, unusedEntries, seenProperties);
-    filterProperties(false, parsedProperties, results, unusedEntries, seenProperties);
+    filterProperties(true, parsedProperties, results, unusedEntries, seenProperties, seenCustomProperties);
+    filterProperties(false, parsedProperties, results, unusedEntries, seenProperties, seenCustomProperties);
 
     RefPtrWillBeRawPtr<ImmutableStylePropertySet> result = ImmutableStylePropertySet::create(results.data() + unusedEntries, results.size() - unusedEntries, mode);
     parsedProperties.clear();
@@ -119,8 +125,9 @@ bool CSSParserImpl::parseDeclarationList(MutableStylePropertySet* declaration, c
     BitArray<numCSSProperties> seenProperties;
     size_t unusedEntries = parser.m_parsedProperties.size();
     WillBeHeapVector<CSSProperty, 256> results(unusedEntries);
-    filterProperties(true, parser.m_parsedProperties, results, unusedEntries, seenProperties);
-    filterProperties(false, parser.m_parsedProperties, results, unusedEntries, seenProperties);
+    HashSet<AtomicString> seenCustomProperties;
+    filterProperties(true, parser.m_parsedProperties, results, unusedEntries, seenProperties, seenCustomProperties);
+    filterProperties(false, parser.m_parsedProperties, results, unusedEntries, seenProperties, seenCustomProperties);
     if (unusedEntries)
         results.remove(0, unusedEntries);
     return declaration->addParsedProperties(results);
