@@ -82,6 +82,11 @@ class Crossdev(object):
 
   _CACHE_FILE = os.path.join(CROSSDEV_OVERLAY, '.configured.json')
   _CACHE = {}
+  # Packages that needs separate handling, in addition to what we have from
+  # crossdev.
+  MANUAL_PKGS = {
+      'llvm': 'sys-devel',
+  }
 
   @classmethod
   def Load(cls, reconfig):
@@ -121,7 +126,18 @@ class Crossdev(object):
       out = cros_build_lib.RunCommand(cmd, print_cmd=False,
                                       redirect_stdout=True).output.splitlines()
       # List of tuples split at the first '=', converted into dict.
-      val[target] = dict([x.split('=', 1) for x in out])
+      conf = dict((k, cros_build_lib.ShellUnquote(v))
+                  for k, v in (x.split('=', 1) for x in out))
+      conf['crosspkgs'] = conf['crosspkgs'].split()
+
+      for pkg, cat in cls.MANUAL_PKGS.iteritems():
+          conf[pkg + '_pn'] = pkg
+          conf[pkg + '_category'] = cat
+          if pkg not in conf['crosspkgs']:
+            conf['crosspkgs'].append(pkg)
+
+      val[target] = conf
+
     return val[target]
 
   @classmethod
@@ -161,6 +177,8 @@ class Crossdev(object):
         elif pkg == 'ex_go':
           # Go does not have selectable versions.
           cmd.extend(CROSSDEV_GO_ARGS)
+        elif pkg in cls.MANUAL_PKGS:
+          pass
         else:
           # The first of the desired versions is the "primary" one.
           version = GetDesiredPackageVersions(target, pkg)[0]
@@ -212,7 +230,7 @@ def GetTargetPackages(target):
   """Returns a list of packages for a given target."""
   conf = Crossdev.GetConfig(target)
   # Undesired packages are denoted by empty ${pkg}_pn variable.
-  return [x for x in conf['crosspkgs'].strip("'").split() if conf[x+'_pn']]
+  return [x for x in conf['crosspkgs'] if conf.get(x+'_pn')]
 
 
 # Portage helper functions:
@@ -220,7 +238,7 @@ def GetPortagePackage(target, package):
   """Returns a package name for the given target."""
   conf = Crossdev.GetConfig(target)
   # Portage category:
-  if target == 'host':
+  if target == 'host' or package in Crossdev.MANUAL_PKGS:
     category = conf[package + '_category']
   else:
     category = conf['category']
