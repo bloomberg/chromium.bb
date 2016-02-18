@@ -3078,6 +3078,47 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_TRUE(node3->current_frame_host()->IsRenderFrameLive());
 }
 
+// Ensure that the renderer does not crash when a local frame with a remote
+// parent frame is swapped from local to remote, then back to local again.
+// See https://crbug.com/585654.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       NavigateSiblingsToSameProcess) {
+  GURL main_url(
+      embedded_test_server()->GetURL("/frame_tree/page_with_two_frames.html"));
+  NavigateToURL(shell(), main_url);
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  FrameTreeNode* node2 = root->child_at(0);
+  FrameTreeNode* node3 = root->child_at(1);
+
+  // Navigate the second iframe to the same process as the first.
+  GURL frame_url = embedded_test_server()->GetURL("bar.com", "/title1.html");
+  NavigateFrameToURL(node3, frame_url);
+
+  // Verify that they are in the same process.
+  EXPECT_EQ(node2->current_frame_host()->GetSiteInstance(),
+            node3->current_frame_host()->GetSiteInstance());
+  EXPECT_NE(root->current_frame_host()->GetSiteInstance(),
+            node3->current_frame_host()->GetSiteInstance());
+
+  // Navigate the first iframe into its parent's process.
+  GURL title_url = embedded_test_server()->GetURL("/title2.html");
+  NavigateFrameToURL(node2, title_url);
+  EXPECT_NE(node2->current_frame_host()->GetSiteInstance(),
+            node3->current_frame_host()->GetSiteInstance());
+
+  // Return the first iframe to the same process as its sibling, and ensure
+  // that it does not crash.
+  NavigateFrameToURL(node2, frame_url);
+  EXPECT_EQ(node2->current_frame_host()->GetSiteInstance(),
+            node3->current_frame_host()->GetSiteInstance());
+  EXPECT_TRUE(node2->current_frame_host()->IsRenderFrameLive());
+}
+
 // Verify that load events for iframe elements work when the child frame is
 // out-of-process.  In such cases, the load event is forwarded from the child
 // frame to the parent frame via the browser process.

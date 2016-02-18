@@ -58,8 +58,18 @@ RenderFrameProxy* RenderFrameProxy::CreateProxyToReplaceFrame(
   // follow later.
   blink::WebRemoteFrame* web_frame =
       blink::WebRemoteFrame::create(scope, proxy.get());
-  proxy->Init(web_frame, frame_to_replace->render_view(),
-              frame_to_replace->GetRenderWidget());
+
+  // If frame_to_replace has a RenderFrameProxy parent, then its
+  // RenderWidget will be destroyed along with it, so the new
+  // RenderFrameProxy uses its parent's RenderWidget.
+  RenderWidget* widget =
+      (!frame_to_replace->GetWebFrame()->parent() ||
+       frame_to_replace->GetWebFrame()->parent()->isWebLocalFrame())
+          ? frame_to_replace->GetRenderWidget()
+          : RenderFrameProxy::FromWebFrame(
+                frame_to_replace->GetWebFrame()->parent())
+                ->render_widget();
+  proxy->Init(web_frame, frame_to_replace->render_view(), widget);
   return proxy.release();
 }
 
