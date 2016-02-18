@@ -184,6 +184,11 @@ public:
         EXPECT_EQ(count, m_ruleFeatureSet.siblingRules.size());
     }
 
+    void expectUncommonAttributeRuleCount(unsigned count)
+    {
+        EXPECT_EQ(count, m_ruleFeatureSet.uncommonAttributeRules.size());
+    }
+
     DEFINE_INLINE_TRACE()
     {
 #if ENABLE(OILPAN)
@@ -421,6 +426,54 @@ TEST_F(RuleFeatureSetTest, siblingRulesBeforeHostContext)
 {
     collectFeatures(".a + :host-context(.b)");
     expectSiblingRuleCount(0);
+}
+
+TEST_F(RuleFeatureSetTest, uncommonAttributeRulesAfterContentPseudo)
+{
+    collectFeatures("div ::content [attr]");
+    expectUncommonAttributeRuleCount(1);
+}
+
+TEST_F(RuleFeatureSetTest, uncommonAttributeRulesBeforeContentPseudo)
+{
+    collectFeatures("[attr] ::content div");
+    expectUncommonAttributeRuleCount(0);
+}
+
+TEST_F(RuleFeatureSetTest, uncommonAttributeRulesSlotted)
+{
+    collectFeatures("::slotted([attr])");
+    expectUncommonAttributeRuleCount(1);
+}
+
+TEST_F(RuleFeatureSetTest, uncommonAttributeRulesBeforeSlotted)
+{
+    collectFeatures("[attr]::slotted(*)");
+    expectUncommonAttributeRuleCount(0);
+}
+
+TEST_F(RuleFeatureSetTest, uncommonAttributeRulesHost)
+{
+    collectFeatures(":host([attr])");
+    expectUncommonAttributeRuleCount(1);
+}
+
+TEST_F(RuleFeatureSetTest, uncommonAttributeRulesBeforeHost)
+{
+    collectFeatures("[attr] :host");
+    expectUncommonAttributeRuleCount(0);
+}
+
+TEST_F(RuleFeatureSetTest, uncommonAttributeRulesHostContext)
+{
+    collectFeatures(":host-context([attr])");
+    expectUncommonAttributeRuleCount(1);
+}
+
+TEST_F(RuleFeatureSetTest, uncommonAttributeRulesBeforeHostContext)
+{
+    collectFeatures("[attr] :host-context(div)");
+    expectUncommonAttributeRuleCount(0);
 }
 
 } // namespace blink

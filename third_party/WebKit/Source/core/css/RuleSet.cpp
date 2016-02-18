@@ -78,6 +78,12 @@ static bool containsUncommonAttributeSelector(const CSSSelector& selector)
             return true;
         if (selectorListContainsUncommonAttributeSelector(current))
             return true;
+        if (current->relationIsAffectedByPseudoContent()
+            || current->pseudoType() == CSSSelector::PseudoHost
+            || current->pseudoType() == CSSSelector::PseudoHostContext
+            || current->pseudoType() == CSSSelector::PseudoSlotted) {
+            return false;
+        }
         if (current->relation() != CSSSelector::SubSelector) {
             current = current->tagHistory();
             break;
