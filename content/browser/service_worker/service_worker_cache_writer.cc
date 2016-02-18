@@ -115,14 +115,16 @@ int ServiceWorkerCacheWriter::DoLoop(int status) {
 }
 
 ServiceWorkerCacheWriter::ServiceWorkerCacheWriter(
-    const ResponseReaderCreator& reader_creator,
-    const ResponseWriterCreator& writer_creator)
+    scoped_ptr<ServiceWorkerResponseReader> compare_reader,
+    scoped_ptr<ServiceWorkerResponseReader> copy_reader,
+    scoped_ptr<ServiceWorkerResponseWriter> writer)
     : state_(STATE_START),
       io_pending_(false),
       comparing_(false),
       did_replace_(false),
-      reader_creator_(reader_creator),
-      writer_creator_(writer_creator),
+      compare_reader_(std::move(compare_reader)),
+      copy_reader_(std::move(copy_reader)),
+      writer_(std::move(writer)),
       weak_factory_(this) {}
 
 ServiceWorkerCacheWriter::~ServiceWorkerCacheWriter() {}
@@ -196,8 +198,7 @@ net::Error ServiceWorkerCacheWriter::MaybeWriteData(
 
 int ServiceWorkerCacheWriter::DoStart(int result) {
   bytes_written_ = 0;
-  compare_reader_ = reader_creator_.Run();
-  if (compare_reader_.get()) {
+  if (compare_reader_) {
     state_ = STATE_READ_HEADERS_FOR_COMPARE;
     comparing_ = true;
   } else {
@@ -306,8 +307,8 @@ int ServiceWorkerCacheWriter::DoReadDataForCompareDone(int result) {
 
 int ServiceWorkerCacheWriter::DoReadHeadersForCopy(int result) {
   DCHECK_GE(result, 0);
+  DCHECK(copy_reader_);
   bytes_copied_ = 0;
-  copy_reader_ = reader_creator_.Run();
   headers_to_read_ = new HttpResponseInfoIOBuffer;
   data_to_copy_ = new net::IOBuffer(kCopyBufferSize);
   state_ = STATE_READ_HEADERS_FOR_COPY_DONE;
@@ -324,14 +325,11 @@ int ServiceWorkerCacheWriter::DoReadHeadersForCopyDone(int result) {
 }
 
 // Write the just-read headers back to the cache.
-// Note that this method must create |writer_|, since the only paths to this
-// state never create a writer.
-// Also note that this *discards* the read headers and replaces them with the
-// net headers.
+// Note that this *discards* the read headers and replaces them with the net
+// headers.
 int ServiceWorkerCacheWriter::DoWriteHeadersForCopy(int result) {
   DCHECK_GE(result, 0);
-  DCHECK(!writer_);
-  writer_ = writer_creator_.Run();
+  DCHECK(writer_);
   state_ = STATE_WRITE_HEADERS_FOR_COPY_DONE;
   return WriteInfoHelper(writer_, headers_to_write_.get());
 }
@@ -388,7 +386,7 @@ int ServiceWorkerCacheWriter::DoWriteDataForCopyDone(int result) {
 
 int ServiceWorkerCacheWriter::DoWriteHeadersForPassthrough(int result) {
   DCHECK_GE(result, 0);
-  writer_ = writer_creator_.Run();
+  DCHECK(writer_);
   state_ = STATE_WRITE_HEADERS_FOR_PASSTHROUGH_DONE;
   return WriteInfoHelper(writer_, headers_to_write_.get());
 }

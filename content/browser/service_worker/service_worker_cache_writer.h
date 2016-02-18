@@ -41,22 +41,13 @@ class CONTENT_EXPORT ServiceWorkerCacheWriter {
  public:
   using OnWriteCompleteCallback = base::Callback<void(net::Error)>;
 
-  // The types for the factory functions passed into the constructor. These are
-  // responsible for creating readers from the existing cache entry and writers
-  // to the new cache entry when called. These are passed in as factories
-  // instead of passing readers and writers in directly to avoid creating
-  // writers to entries that won't be updated, and because this class may need
-  // multiple readers internally.
-  using ResponseReaderCreator =
-      base::Callback<scoped_ptr<ServiceWorkerResponseReader>(void)>;
-  using ResponseWriterCreator =
-      base::Callback<scoped_ptr<ServiceWorkerResponseWriter>(void)>;
-
-  // The existing reader may be null, in which case this instance will
+  // The |compare_reader| may be null, in which case this instance will
   // unconditionally write back data supplied to |MaybeWriteHeaders| and
   // |MaybeWriteData|.
-  ServiceWorkerCacheWriter(const ResponseReaderCreator& reader_creator,
-                           const ResponseWriterCreator& writer_creator);
+  ServiceWorkerCacheWriter(
+      scoped_ptr<ServiceWorkerResponseReader> compare_reader,
+      scoped_ptr<ServiceWorkerResponseReader> copy_reader,
+      scoped_ptr<ServiceWorkerResponseWriter> writer);
 
   ~ServiceWorkerCacheWriter();
 
@@ -219,8 +210,6 @@ class CONTENT_EXPORT ServiceWorkerCacheWriter {
 
   size_t compare_offset_;
 
-  ResponseReaderCreator reader_creator_;
-  ResponseWriterCreator writer_creator_;
   scoped_ptr<ServiceWorkerResponseReader> compare_reader_;
   scoped_ptr<ServiceWorkerResponseReader> copy_reader_;
   scoped_ptr<ServiceWorkerResponseWriter> writer_;

@@ -91,13 +91,9 @@ void ServiceWorkerWriteToCacheJob::StartAsync() {
     return;
   }
 
-  // These uses of Unretained are safe because this object is the sole owner of
-  // |cache_writer_|, which in turn is the sole user of these callbacks.
   cache_writer_.reset(new ServiceWorkerCacheWriter(
-      base::Bind(&ServiceWorkerWriteToCacheJob::CreateCacheResponseReader,
-                 base::Unretained(this)),
-      base::Bind(&ServiceWorkerWriteToCacheJob::CreateCacheResponseWriter,
-                 base::Unretained(this))));
+      CreateCacheResponseReader(), CreateCacheResponseReader(),
+      CreateCacheResponseWriter()));
   version_->script_cache_map()->NotifyStartedCaching(url_, resource_id_);
   did_notify_started_ = true;
   StartNetRequest();
