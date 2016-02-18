@@ -1015,8 +1015,8 @@ bool SelectorChecker::checkPseudoHost(const SelectorCheckingContext& context, Ma
         return false;
     ASSERT(element.shadow());
 
-    // For empty parameter case, i.e. just :host or :host().
-    if (!selector.selectorList()) // Use *'s specificity. So just 0.
+    // For the case with no parameters, i.e. just :host.
+    if (!selector.selectorList())
         return true;
 
     SelectorCheckingContext subContext(context);
