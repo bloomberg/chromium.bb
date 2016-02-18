@@ -136,6 +136,7 @@ should be able to be added at any place in this file.
   <description>
     User flag to disable smooth scroll animations on wheel and keyboard input.
   </description>
+  <obsolete>This flag no longer exists.</obsolete>
 </action>
 
 <action name="AboutFlags_disable-views-rect-based-targeting">
@@ -297,6 +298,13 @@ should be able to be added at any place in this file.
 <action name="AboutFlags_save-page-as-mhtml">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="AboutFlags_smooth-scrolling">
+  <owner>skobes@chromium.org</owner>
+  <description>
+    User flag to disable smooth scroll animations on wheel and keyboard input.
+  </description>
 </action>
 
 <action name="AboutFlags_snap-start">

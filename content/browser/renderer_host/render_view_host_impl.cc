@@ -479,8 +479,9 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
       !command_line.HasSwitch(switches::kDisableTouchAdjustment);
 
   prefs.enable_scroll_animator =
-      !command_line.HasSwitch(switches::kDisableSmoothScrolling) &&
-      gfx::Animation::ScrollAnimationsEnabledBySystem();
+      command_line.HasSwitch(switches::kEnableSmoothScrolling) ||
+      (!command_line.HasSwitch(switches::kDisableSmoothScrolling) &&
+      gfx::Animation::ScrollAnimationsEnabledBySystem());
 
   // Certain GPU features might have been blacklisted.
   GpuDataManagerImpl::GetInstance()->UpdateRendererWebPrefs(&prefs);

@@ -669,11 +669,12 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_SHOW_AUTOFILL_TYPE_PREDICTIONS_NAME,
      IDS_FLAGS_SHOW_AUTOFILL_TYPE_PREDICTIONS_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(autofill::switches::kShowAutofillTypePredictions)},
-    {"disable-smooth-scrolling",  // FLAGS:RECORD_UMA
+    {"smooth-scrolling",  // FLAGS:RECORD_UMA
      IDS_FLAGS_SMOOTH_SCROLLING_NAME, IDS_FLAGS_SMOOTH_SCROLLING_DESCRIPTION,
      // Mac has a separate implementation with its own setting to disable.
      kOsLinux | kOsCrOS | kOsWin | kOsAndroid,
-     SINGLE_DISABLE_VALUE_TYPE(switches::kDisableSmoothScrolling)},
+     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableSmoothScrolling,
+                               switches::kDisableSmoothScrolling)},
 #if defined(USE_AURA) || defined(OS_LINUX)
     {"overlay-scrollbars", IDS_FLAGS_OVERLAY_SCROLLBARS_NAME,
      IDS_FLAGS_OVERLAY_SCROLLBARS_DESCRIPTION,
