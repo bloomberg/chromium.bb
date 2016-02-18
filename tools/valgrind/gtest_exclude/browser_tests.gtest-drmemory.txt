@@ -119,3 +119,7 @@ TracingBrowserTest.TestMemoryInfra
 
 # https://crbug.com/581575
 PredictorBrowserTest.PreconnectCORSAndFetchNonCORS
+
+# https://crbug.com/587669
+ClipboardApiTest.ExtensionNoPermission
+
