@@ -147,19 +147,19 @@ emphclass underline
 emphclass bold
 
 begemphphrase underline 346-346
-lastwordemphbefore underline 346
+endemphphrase underline before 346
 begemph underline 346
 endemph underline 346
 lenemphphrase underline 3
 
 begemphphrase bold 346-346
-lastwordemphbefore bold 346
+endemphphrase bold before 346
 begemph bold 346
 endemph bold 346
 lenemphphrase bold 3
 
 begemphphrase italic 46-46
-lastwordemphbefore italic 46
+endemphphrase italic before 46
 begemph italic 46
 endemph italic 46
 lenemphphrase italic 3

@@ -148,21 +148,21 @@ lenemphphrase italic 4
 begemphword italic 456
 endemphword italic 6
 begemphphrase italic 456-456
-lastwordemphbefore italic 456
+endemphphrase italic before 456
 emphletter italic 456
 
 lenemphphrase bold 4
 begemphword bold 456
 endemphword bold 6
 begemphphrase bold 456-456
-lastwordemphbefore bold 456
+endemphphrase bold before 456
 emphletter bold 456
 
 lenemphphrase underline 4
 begemphword underline 456
 endemphword underline 6
 begemphphrase underline 456-456
-lastwordemphbefore underline 456
+endemphphrase underline before 456
 emphletter underline 456
 
 # §2.12 Hoofdletters [1]
@@ -179,5 +179,5 @@ lencapsphrase 4
 begcapsword 45
 endcapsword 6
 begcapsphrase 45-45
-lastwordcaps before 45
+endcapsphrase before 45
 capsletter 46

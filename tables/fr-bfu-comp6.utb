@@ -228,11 +228,11 @@ emphclass italic
 emphclass underline
 emphclass bold
 begemphphrase italic 456-456
-lastwordemphbefore italic 456
+endemphphrase italic before 456
 begemph italic 456
 emphletter italic 456
 begemphphrase bold 456-456
-lastwordemphbefore bold 456
+endemphphrase bold before 456
 
 litdigit 0 3456				zéro
 litdigit 1 16					un

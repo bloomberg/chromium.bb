@@ -44,19 +44,19 @@ emphclass italic
 emphclass underline
 emphclass bold
 
-lastwordemphafter italic 6-3
+endemphphrase italic after 6-3
 lenemphphrase italic 1
 begemph italic 6-456
 endemph italic 6-3
 emphletter italic 456
 
-lastwordemphafter bold 6-3
+endemphphrase bold after 6-3
 lenemphphrase bold 1
 begemph bold 6-456
 endemph bold 6-3
 emphletter bold 456
 
-lastwordemphafter underline 6-3
+endemphphrase underline after 6-3
 lenemphphrase underline 1
 begemph underline 6-456
 endemph underline 6-3
