@@ -95,6 +95,9 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   CONTENT_EXPORT static void RegisterGpuMainThreadFactory(
       GpuMainThreadFactoryFunction create);
 
+  // BrowserChildProcessHostDelegate implementation.
+  ServiceRegistry* GetServiceRegistry() override;
+
   // Get the GPU process host for the GPU process with the given ID. Returns
   // null if the process no longer exists.
   static GpuProcessHost* FromID(int host_id);
@@ -171,7 +174,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   void OnProcessLaunched() override;
   void OnProcessLaunchFailed() override;
   void OnProcessCrashed(int exit_code) override;
-  ServiceRegistry* GetServiceRegistry() override;
 
   // Message handlers.
   void OnInitialized(bool result, const gpu::GPUInfo& gpu_info);

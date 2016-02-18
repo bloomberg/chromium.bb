@@ -16,6 +16,7 @@ class ScopedVector;
 namespace content {
 
 class ContentBrowserClient;
+class ContentGpuClient;
 class ContentPluginClient;
 class ContentRendererClient;
 class ContentUtilityClient;
@@ -88,6 +89,7 @@ class CONTENT_EXPORT ContentMainDelegate {
   // content. If an embedder wants the default (empty) implementation, don't
   // override this.
   virtual ContentBrowserClient* CreateContentBrowserClient();
+  virtual ContentGpuClient* CreateContentGpuClient();
   virtual ContentPluginClient* CreateContentPluginClient();
   virtual ContentRendererClient* CreateContentRendererClient();
   virtual ContentUtilityClient* CreateContentUtilityClient();

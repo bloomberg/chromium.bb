@@ -1,0 +1,30 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# See //content/BUILD.gn for how this works.
+group("gpu") {
+  if (is_component_build) {
+    public_deps = [
+      "//content",
+    ]
+  } else {
+    public_deps = [
+      ":gpu_sources",
+    ]
+  }
+}
+
+source_set("gpu_sources") {
+  visibility = [ "//content/*" ]
+
+  sources = [
+    "content_gpu_client.h",
+  ]
+
+  deps = [
+    "//base",
+    "//content:export",
+    "//content/gpu:gpu_sources",
+  ]
+}

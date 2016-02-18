@@ -20,6 +20,7 @@
 #include "content/gpu/gpu_watchdog_thread.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/gpu/content_gpu_client.h"
 #include "gpu/config/gpu_info_collector.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_message_filter.h"
@@ -205,6 +206,9 @@ void GpuChildThread::Init(const base::Time& process_start_time) {
   // will be destroyed before GpuChildThread is destructed.
   service_registry()->AddService(base::Bind(
       &GpuChildThread::BindProcessControlRequest, base::Unretained(this)));
+
+  if (GetContentClient()->gpu())  // NULL in tests.
+    GetContentClient()->gpu()->RegisterMojoServices(service_registry());
 }
 
 bool GpuChildThread::Send(IPC::Message* msg) {

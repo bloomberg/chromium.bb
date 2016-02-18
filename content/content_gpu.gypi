@@ -21,6 +21,7 @@
     'gpu/gpu_watchdog_thread.h',
     'gpu/in_process_gpu_thread.cc',
     'gpu/in_process_gpu_thread.h',
+    'public/gpu/content_gpu_client.h',
   ],
   'include_dirs': [
     '..',

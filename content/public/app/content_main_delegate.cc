@@ -11,6 +11,7 @@
 #endif
 
 #if !defined(OS_IOS)
+#include "content/public/gpu/content_gpu_client.h"
 #include "content/public/plugin/content_plugin_client.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/utility/content_utility_client.h"
@@ -61,6 +62,14 @@ ContentBrowserClient* ContentMainDelegate::CreateContentBrowserClient() {
   return NULL;
 #else
   return new ContentBrowserClient();
+#endif
+}
+
+ContentGpuClient* ContentMainDelegate::CreateContentGpuClient() {
+#if defined(OS_IOS) || defined(CHROME_MULTIPLE_DLL_BROWSER)
+  return NULL;
+#else
+  return new ContentGpuClient();
 #endif
 }
 

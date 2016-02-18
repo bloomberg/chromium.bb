@@ -68,6 +68,7 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/utility_process_host_impl.h"
+#include "content/public/gpu/content_gpu_client.h"
 #include "content/public/plugin/content_plugin_client.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/utility/content_utility_client.h"
@@ -134,6 +135,8 @@ base::LazyInstance<ContentBrowserClient>
 #endif  //  !CHROME_MULTIPLE_DLL_CHILD
 
 #if !defined(OS_IOS) && !defined(CHROME_MULTIPLE_DLL_BROWSER)
+base::LazyInstance<ContentGpuClient>
+    g_empty_content_gpu_client = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<ContentPluginClient>
     g_empty_content_plugin_client = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<ContentRendererClient>
@@ -225,6 +228,15 @@ class ContentClientInitializer {
 #endif  // !CHROME_MULTIPLE_DLL_CHILD
 
 #if !defined(OS_IOS) && !defined(CHROME_MULTIPLE_DLL_BROWSER)
+    if (process_type == switches::kGpuProcess ||
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kSingleProcess)) {
+      if (delegate)
+        content_client->gpu_ = delegate->CreateContentGpuClient();
+      if (!content_client->gpu_)
+        content_client->gpu_ = &g_empty_content_gpu_client.Get();
+    }
+
     if (process_type == switches::kPluginProcess ||
         process_type == switches::kPpapiPluginProcess) {
       if (delegate)

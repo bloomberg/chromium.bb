@@ -23,6 +23,7 @@ enum CauseForGpuLaunch {
   CAUSE_FOR_GPU_LAUNCH_GPU_MEMORY_BUFFER_ALLOCATE,
   CAUSE_FOR_GPU_LAUNCH_JPEGDECODEACCELERATOR_INITIALIZE,
   CAUSE_FOR_GPU_LAUNCH_MOJO_SETUP,
+  CAUSE_FOR_GPU_LAUNCH_GET_GPU_SERVICE_REGISTRY,
 
   // All new values should be inserted above this point so that
   // existing values continue to match up with those in histograms.xml.
