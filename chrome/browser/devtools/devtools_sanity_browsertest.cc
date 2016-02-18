@@ -49,6 +49,8 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/worker_service.h"
 #include "content/public/browser/worker_service_observer.h"
@@ -62,6 +64,7 @@
 #include "extensions/common/value_builder.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/gl/gl_switches.h"
 
@@ -89,6 +92,7 @@ const char kPageWithContentScript[] =
 const char kNavigateBackTestPage[] =
     "files/devtools/navigate_back.html";
 const char kWindowOpenTestPage[] = "files/devtools/window_open.html";
+const char kLatencyInfoTestPage[] = "files/devtools/latency_info.html";
 const char kChunkedTestPage[] = "chunked";
 const char kSlowTestPage[] =
     "chunked?waitBeforeHeaders=100&waitBetweenChunks=100&chunksNumber=2";
@@ -100,6 +104,25 @@ const char kReloadSharedWorkerTestPage[] =
     "files/workers/debug_shared_worker_initialization.html";
 const char kReloadSharedWorkerTestWorker[] =
     "files/workers/debug_shared_worker_initialization.js";
+
+template <typename... T>
+void DispatchOnTestSuiteSkipCheck(DevToolsWindow* window,
+                                  const char* method,
+                                  T... args) {
+  RenderViewHost* rvh = DevToolsWindowTesting::Get(window)
+                            ->main_web_contents()
+                            ->GetRenderViewHost();
+  std::string result;
+  const char* args_array[] = {method, args...};
+  std::ostringstream script;
+  script << "uiTests.dispatchOnTestSuite([";
+  for (size_t i = 0; i < arraysize(args_array); ++i)
+    script << (i ? "," : "") << '\"' << args_array[i] << '\"';
+  script << "])";
+  ASSERT_TRUE(
+      content::ExecuteScriptAndExtractString(rvh, script.str(), &result));
+  EXPECT_EQ("[OK]", result);
+}
 
 template <typename... T>
 void DispatchOnTestSuite(DevToolsWindow* window,
@@ -119,16 +142,7 @@ void DispatchOnTestSuite(DevToolsWindow* window,
           "    '' + (window.uiTests && (typeof uiTests.dispatchOnTestSuite)));",
           &result));
   ASSERT_EQ("function", result) << "DevTools front-end is broken.";
-
-  const char* args_array[] = {method, args...};
-  std::ostringstream script;
-  script << "uiTests.dispatchOnTestSuite([";
-  for (size_t i = 0; i < arraysize(args_array); ++i)
-    script << (i ? "," : "") << '\"' << args_array[i] << '\"';
-  script << "])";
-  ASSERT_TRUE(
-      content::ExecuteScriptAndExtractString(rvh, script.str(), &result));
-  EXPECT_EQ("[OK]", result);
+  DispatchOnTestSuiteSkipCheck(window, method, args...);
 }
 
 void RunTestFunction(DevToolsWindow* window, const char* test_name) {
@@ -166,6 +180,21 @@ class DevToolsSanityTest : public InProcessBrowserTest {
     OpenDevToolsWindow(test_page, false);
     RunTestFunction(window_, test_name.c_str());
     CloseDevToolsWindow();
+  }
+
+  template <typename... T>
+  void RunTestMethod(const char* method, T... args) {
+    DispatchOnTestSuiteSkipCheck(window_, method, args...);
+  }
+
+  template <typename... T>
+  void DispatchAndWait(const char* method, T... args) {
+    DispatchOnTestSuiteSkipCheck(window_, "waitForAsync", method, args...);
+  }
+
+  template <typename... T>
+  void DispatchInPageAndWait(const char* method, T... args) {
+    DispatchAndWait("invokePageFunctionAsync", method, args...);
   }
 
   void LoadTestPage(const std::string& test_page) {
@@ -1145,8 +1174,46 @@ class DevToolsPixelOutputTests : public DevToolsSanityTest {
 #else
 #define MAYBE_TestScreenshotRecording TestScreenshotRecording
 #endif
-// Tests raw headers text.
 IN_PROC_BROWSER_TEST_F(DevToolsPixelOutputTests,
                        MAYBE_TestScreenshotRecording) {
   RunTest("testScreenshotRecording", std::string());
+}
+
+// This test enables switches::kUseGpuInTests which causes false positives
+// with MemorySanitizer.
+#if defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER)
+#define MAYBE_TestLatencyInfoInstrumentation \
+  DISABLED_TestLatencyInfoInstrumentation
+#else
+#define MAYBE_TestLatencyInfoInstrumentation TestLatencyInfoInstrumentation
+#endif
+IN_PROC_BROWSER_TEST_F(DevToolsPixelOutputTests,
+                       MAYBE_TestLatencyInfoInstrumentation) {
+  WebContents* web_contents = GetInspectedTab();
+  OpenDevToolsWindow(kLatencyInfoTestPage, false);
+  RunTestMethod("enableExperiment", "timelineLatencyInfo");
+  DispatchAndWait("startTimeline");
+
+  for (int i = 0; i < 3; ++i) {
+    SimulateMouseEvent(web_contents, blink::WebInputEvent::MouseMove,
+                       gfx::Point(30, 60));
+    DispatchInPageAndWait("waitForEvent", "mousemove");
+  }
+
+  SimulateMouseClickAt(web_contents, 0, blink::WebPointerProperties::ButtonLeft,
+                       gfx::Point(30, 60));
+  DispatchInPageAndWait("waitForEvent", "click");
+
+  SimulateMouseWheelEvent(web_contents, gfx::Point(300, 100),
+                          gfx::Vector2d(0, 120));
+  DispatchInPageAndWait("waitForEvent", "wheel");
+
+  SimulateTapAt(web_contents, gfx::Point(30, 60));
+  DispatchInPageAndWait("waitForEvent", "gesturetap");
+
+  DispatchAndWait("stopTimeline");
+  RunTestMethod("checkInputEventsPresent", "MouseMove", "MouseDown",
+                "MouseWheel", "GestureTap");
+
+  CloseDevToolsWindow();
 }
