@@ -58,27 +58,31 @@ bool isInDocument(PassRefPtrWillBeRawPtr<EventTarget> n)
 }
 
 WebInputEventResult dispatchPointerEvent(
-    PassRefPtrWillBeRawPtr<EventTarget> target,
-    PassRefPtrWillBeRawPtr<PointerEvent> pointerevent,
+    PassRefPtrWillBeRawPtr<EventTarget> prpTarget,
+    PassRefPtrWillBeRawPtr<PointerEvent> prpPointerEvent,
     bool checkForListener = false)
 {
+    RefPtrWillBeRawPtr<EventTarget> target = prpTarget;
+    RefPtrWillBeRawPtr<PointerEvent> pointerEvent = prpPointerEvent;
     if (!RuntimeEnabledFeatures::pointerEventEnabled())
         return WebInputEventResult::NotHandled;
-    if (!checkForListener || target->hasEventListeners(pointerevent->type())) {
-        bool dispatchResult = target->dispatchEvent(pointerevent);
-        return EventHandler::eventToEventResult(pointerevent, dispatchResult);
+    if (!checkForListener || target->hasEventListeners(pointerEvent->type())) {
+        bool dispatchResult = target->dispatchEvent(pointerEvent);
+        return EventHandler::eventToEventResult(pointerEvent, dispatchResult);
     }
     return WebInputEventResult::NotHandled;
 }
 
 WebInputEventResult dispatchMouseEvent(
-    PassRefPtrWillBeRawPtr<EventTarget> target,
+    PassRefPtrWillBeRawPtr<EventTarget> prpTarget,
     const AtomicString& mouseEventType,
     const PlatformMouseEvent& mouseEvent,
-    PassRefPtrWillBeRawPtr<EventTarget> relatedTarget,
+    PassRefPtrWillBeRawPtr<EventTarget> prpRelatedTarget,
     int detail = 0,
     bool checkForListener = false)
 {
+    RefPtrWillBeRawPtr<EventTarget> target = prpTarget;
+    RefPtrWillBeRawPtr<EventTarget> relatedTarget = prpRelatedTarget;
     if (target->toNode()
         && (!checkForListener || target->hasEventListeners(mouseEventType))) {
         RefPtrWillBeRawPtr<Node> targetNode = target->toNode();
@@ -116,11 +120,14 @@ void PointerEventManager::sendNodeTransitionEvents(
 }
 
 void PointerEventManager::sendNodeTransitionEvents(
-    PassRefPtrWillBeRawPtr<EventTarget> exitedTarget,
-    PassRefPtrWillBeRawPtr<EventTarget> enteredTarget,
-    PassRefPtrWillBeRawPtr<PointerEvent> pointerEvent,
+    PassRefPtrWillBeRawPtr<EventTarget> prpExitedTarget,
+    PassRefPtrWillBeRawPtr<EventTarget> prpEnteredTarget,
+    PassRefPtrWillBeRawPtr<PointerEvent> prpPointerEvent,
     const PlatformMouseEvent& mouseEvent, bool sendMouseEvent)
 {
+    RefPtrWillBeRawPtr<EventTarget> exitedTarget = prpExitedTarget;
+    RefPtrWillBeRawPtr<EventTarget> enteredTarget = prpEnteredTarget;
+    RefPtrWillBeRawPtr<PointerEvent> pointerEvent = prpPointerEvent;
     if (exitedTarget == enteredTarget)
         return;
 
@@ -238,19 +245,21 @@ void PointerEventManager::sendNodeTransitionEvents(
 }
 
 void PointerEventManager::setNodeUnderPointer(
-    PassRefPtrWillBeRawPtr<PointerEvent> pointerevent,
-    PassRefPtrWillBeRawPtr<EventTarget> target)
+    PassRefPtrWillBeRawPtr<PointerEvent> prpPointerEvent,
+    PassRefPtrWillBeRawPtr<EventTarget> prpTarget)
 {
-    if (m_nodeUnderPointer.contains(pointerevent->pointerId())) {
+    RefPtrWillBeRawPtr<PointerEvent> pointerEvent = prpPointerEvent;
+    RefPtrWillBeRawPtr<EventTarget> target = prpTarget;
+    if (m_nodeUnderPointer.contains(pointerEvent->pointerId())) {
         sendNodeTransitionEvents(m_nodeUnderPointer.get(
-            pointerevent->pointerId()), target, pointerevent);
+            pointerEvent->pointerId()), target, pointerEvent);
         if (!target)
-            m_nodeUnderPointer.remove(pointerevent->pointerId());
+            m_nodeUnderPointer.remove(pointerEvent->pointerId());
         else
-            m_nodeUnderPointer.set(pointerevent->pointerId(), target);
+            m_nodeUnderPointer.set(pointerEvent->pointerId(), target);
     } else if (target) {
-        sendNodeTransitionEvents(nullptr, target, pointerevent);
-        m_nodeUnderPointer.add(pointerevent->pointerId(), target);
+        sendNodeTransitionEvents(nullptr, target, pointerEvent);
+        m_nodeUnderPointer.add(pointerEvent->pointerId(), target);
     }
 }
 
@@ -268,11 +277,12 @@ void PointerEventManager::sendTouchCancelPointerEvent(PassRefPtrWillBeRawPtr<Eve
 }
 
 WebInputEventResult PointerEventManager::sendTouchPointerEvent(
-    PassRefPtrWillBeRawPtr<EventTarget> target,
+    PassRefPtrWillBeRawPtr<EventTarget> prpTarget,
     const PlatformTouchPoint& touchPoint, PlatformEvent::Modifiers modifiers,
     const double width, const double height,
     const double clientX, const double clientY)
 {
+    RefPtrWillBeRawPtr<EventTarget> target = prpTarget;
     RefPtrWillBeRawPtr<PointerEvent> pointerEvent =
         m_pointerEventFactory.create(
         pointerEventNameForTouchPointState(touchPoint.state()),
