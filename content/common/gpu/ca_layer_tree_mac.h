@@ -13,6 +13,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/common/content_export.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/transform.h"
@@ -22,7 +23,7 @@ namespace content {
 // The CALayerTree will construct a hierarchy of CALayers from a linear list,
 // using the algorithm and structure referenced described in
 // https://docs.google.com/document/d/1DtSN9zzvCF44_FQPM7ie01UxGHagQ66zfF5L9HnigQY/edit?usp=sharing
-class CALayerTree {
+class CONTENT_EXPORT CALayerTree {
  public:
   CALayerTree();
 

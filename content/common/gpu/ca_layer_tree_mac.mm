@@ -303,7 +303,7 @@ void CALayerTree::ClipAndSortingLayer::CommitToCA(
     DCHECK(old_layer->ca_layer);
     std::swap(ca_layer, old_layer->ca_layer);
     update_is_clipped = old_layer->is_clipped != is_clipped;
-    update_clip_rect = old_layer->clip_rect != clip_rect;
+    update_clip_rect = update_is_clipped || old_layer->clip_rect != clip_rect;
   } else {
     ca_layer.reset([[CALayer alloc] init]);
     [ca_layer setAnchorPoint:CGPointZero];
