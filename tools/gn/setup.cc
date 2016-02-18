@@ -226,6 +226,21 @@ base::FilePath FindWindowsPython() {
 }
 #endif
 
+// Expands all ./, ../, and symbolic links in the given path.
+bool NormalizePath(const base::FilePath& path, base::FilePath* out) {
+#if defined(OS_POSIX)
+  char buf[PATH_MAX];
+  if (!realpath(path.value().c_str(), buf)) {
+    return false;
+  }
+  *out = base::FilePath(buf);
+#else
+  // Do nothing on a non-POSIX system.
+  *out = path;
+#endif
+  return true;
+}
+
 }  // namespace
 
 const char Setup::kBuildArgFileName[] = "args.gn";
@@ -513,9 +528,16 @@ bool Setup::FillSourceDir(const base::CommandLine& cmdline) {
     root_path = dotfile_name_.DirName();
   }
 
+  base::FilePath root_path_normalized;
+  if (!NormalizePath(root_path, &root_path_normalized)) {
+    Err(Location(), "Can't normalize the root path.",
+        "I could not normalize the path \"" + FilePathToUTF8(root_path) + "\".")
+        .PrintToStdout();
+    return false;
+  }
   if (scheduler_.verbose_logging())
-    scheduler_.Log("Using source root", FilePathToUTF8(root_path));
-  build_settings_.SetRootPath(root_path);
+    scheduler_.Log("Using source root", FilePathToUTF8(root_path_normalized));
+  build_settings_.SetRootPath(root_path_normalized);
 
   return true;
 }
@@ -531,11 +553,21 @@ bool Setup::FillBuildDir(const std::string& build_dir, bool require_exists) {
     return false;
   }
 
+  base::FilePath build_dir_path = build_settings_.GetFullPath(resolved);
+  base::FilePath build_dir_path_normalized;
+  if (!NormalizePath(build_dir_path, &build_dir_path_normalized)) {
+    Err(Location(), "Can't normalize the root path.",
+        "I could not normalize the path \"" + FilePathToUTF8(build_dir_path) +
+        "\".").PrintToStdout();
+    return false;
+  }
+  resolved = SourceDirForPath(build_settings_.root_path(),
+                              build_dir_path_normalized);
+
   if (scheduler_.verbose_logging())
     scheduler_.Log("Using build dir", resolved.value());
 
   if (require_exists) {
-    base::FilePath build_dir_path = build_settings_.GetFullPath(resolved);
     if (!base::PathExists(build_dir_path.Append(
             FILE_PATH_LITERAL("build.ninja")))) {
       Err(Location(), "Not a build directory.",
