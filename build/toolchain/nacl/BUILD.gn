@@ -106,7 +106,6 @@ pnacl_toolchain("newlib_pnacl_nonsfi") {
 
 template("nacl_glibc_toolchain") {
   toolchain_cpu = target_name
-  toolchain_cc_args = ""
   assert(defined(invoker.toolchain_tuple), "Must define toolchain_tuple")
   assert(defined(invoker.toolchain_package), "Must define toolchain_package")
   assert(defined(invoker.toolchain_revision), "Must define toolchain_revision")
@@ -114,7 +113,6 @@ template("nacl_glibc_toolchain") {
                          [
                            "toolchain_package",
                            "toolchain_revision",
-                           "toolchain_cc_args",
                          ])
 
   toolprefix = rebase_path("${nacl_toolchain_dir}/${toolchain_package}/bin/" +
@@ -133,8 +131,8 @@ template("nacl_glibc_toolchain") {
     is_clang = false
     is_nacl_glibc = true
 
-    cc = toolprefix + "gcc" + toolsuffix + toolchain_cc_args
-    cxx = toolprefix + "g++" + toolsuffix + toolchain_cc_args
+    cc = toolprefix + "gcc" + toolsuffix
+    cxx = toolprefix + "g++" + toolsuffix
     ar = toolprefix + "ar" + toolsuffix
     ld = cxx
     readelf = toolprefix + "readelf" + toolsuffix
@@ -147,10 +145,12 @@ nacl_glibc_toolchain("x86") {
   toolchain_package = "nacl_x86_glibc"
   toolchain_revision = nacl_x86_glibc_rev
 
-  # i686-nacl-gcc is not in goma (adding it would be tricky) so we use
-  # x86_64-nacl compiler with the -m32 flags.
+  # Rely on the :compiler_cpu_abi config adding the -m32 flag here rather
+  # than using the i686-nacl binary directly.  This is a because i686-nacl-gcc
+  # is a shell script wrapper around x86_64-nacl-gcc and goma has trouble with
+  # compiler executables that are shell scripts (so the i686 'compiler' is not
+  # currently in goma).
   toolchain_tuple = "x86_64-nacl"
-  toolchain_cc_args = " -m32"
 }
 
 nacl_glibc_toolchain("x64") {
@@ -263,7 +263,8 @@ template("nacl_clang_toolchains") {
 }
 
 nacl_clang_toolchains("x86") {
-  toolchain_tuple = "i686-nacl"
+  # Rely on :compiler_cpu_abi adding -m32.  See nacl_x86_glibc above.
+  toolchain_tuple = "x86_64-nacl"
 }
 
 nacl_clang_toolchains("x64") {
