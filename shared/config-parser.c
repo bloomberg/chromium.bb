@@ -312,7 +312,15 @@ config_add_section(struct weston_config *config, const char *name)
 	struct weston_config_section *section;
 
 	section = malloc(sizeof *section);
+	if (section == NULL)
+		return NULL;
+
 	section->name = strdup(name);
+	if (section->name == NULL) {
+		free(section);
+		return NULL;
+	}
+
 	wl_list_init(&section->entry_list);
 	wl_list_insert(config->section_list.prev, &section->link);
 
@@ -326,8 +334,22 @@ section_add_entry(struct weston_config_section *section,
 	struct weston_config_entry *entry;
 
 	entry = malloc(sizeof *entry);
+	if (entry == NULL)
+		return NULL;
+
 	entry->key = strdup(key);
+	if (entry->key == NULL) {
+		free(entry);
+		return NULL;
+	}
+
 	entry->value = strdup(value);
+	if (entry->value == NULL) {
+		free(entry->key);
+		free(entry);
+		return NULL;
+	}
+
 	wl_list_insert(section->entry_list.prev, &entry->link);
 
 	return entry;
