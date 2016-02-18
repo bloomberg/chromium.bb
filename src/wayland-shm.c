@@ -230,17 +230,17 @@ shm_create_pool(struct wl_client *client, struct wl_resource *resource,
 {
 	struct wl_shm_pool *pool;
 
-	pool = malloc(sizeof *pool);
-	if (pool == NULL) {
-		wl_client_post_no_memory(client);
-		goto err_close;
-	}
-
 	if (size <= 0) {
 		wl_resource_post_error(resource,
 				       WL_SHM_ERROR_INVALID_STRIDE,
 				       "invalid size (%d)", size);
-		goto err_free;
+		goto err_close;
+	}
+
+	pool = malloc(sizeof *pool);
+	if (pool == NULL) {
+		wl_client_post_no_memory(client);
+		goto err_close;
 	}
 
 	pool->refcount = 1;
@@ -251,7 +251,7 @@ shm_create_pool(struct wl_client *client, struct wl_resource *resource,
 		wl_resource_post_error(resource,
 				       WL_SHM_ERROR_INVALID_FD,
 				       "failed mmap fd %d", fd);
-		goto err_close;
+		goto err_free;
 	}
 	close(fd);
 
@@ -270,10 +270,10 @@ shm_create_pool(struct wl_client *client, struct wl_resource *resource,
 
 	return;
 
-err_close:
-	close(fd);
 err_free:
 	free(pool);
+err_close:
+	close(fd);
 }
 
 static const struct wl_shm_interface shm_interface = {
