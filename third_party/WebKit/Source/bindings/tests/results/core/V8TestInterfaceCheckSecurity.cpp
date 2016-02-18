@@ -200,7 +200,7 @@ static void doNotCheckSecurityReplaceableReadonlyLongAttributeAttributeSetterCal
     TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityReplaceableReadonlyLongAttributeAttributeSetter(v8Value, info);
 }
 
-bool securityCheck(v8::Local<v8::Context> accessingContext, v8::Local<v8::Object> accessedObject)
+bool securityCheck(v8::Local<v8::Context> accessingContext, v8::Local<v8::Object> accessedObject, v8::Local<v8::Value> data)
 {
     // TODO(jochen): Take accessingContext into account.
     TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toImpl(accessedObject);

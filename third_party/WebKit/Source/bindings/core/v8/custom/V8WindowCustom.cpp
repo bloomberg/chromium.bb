@@ -411,7 +411,7 @@ static bool securityCheck(v8::Local<v8::Object> host)
     return BindingSecurity::shouldAllowAccessTo(isolate, callingDOMWindow(isolate), targetWindow, DoNotReportSecurityError);
 }
 
-bool V8Window::securityCheckCustom(v8::Local<v8::Context> accessingContext, v8::Local<v8::Object> accessedObject)
+bool V8Window::securityCheckCustom(v8::Local<v8::Context> accessingContext, v8::Local<v8::Object> accessedObject, v8::Local<v8::Value> data)
 {
     // TODO(jochen): Take accessingContext into account.
     return securityCheck(accessedObject);

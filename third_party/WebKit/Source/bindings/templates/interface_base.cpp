@@ -124,7 +124,7 @@ static void {{cpp_class}}ConstructorAttributeSetterCallback(v8::Local<v8::Name>,
 {##############################################################################}
 {% block security_check_functions %}
 {% if has_access_check_callbacks %}
-bool securityCheck(v8::Local<v8::Context> accessingContext, v8::Local<v8::Object> accessedObject)
+bool securityCheck(v8::Local<v8::Context> accessingContext, v8::Local<v8::Object> accessedObject, v8::Local<v8::Value> data)
 {
     // TODO(jochen): Take accessingContext into account.
     {{cpp_class}}* impl = {{v8_class}}::toImpl(accessedObject);

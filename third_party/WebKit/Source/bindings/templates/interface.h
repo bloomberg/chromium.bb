@@ -157,7 +157,7 @@ public:
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + {{custom_internal_field_counter}};
     {# End custom internal fields #}
     {% if interface_name == 'Window' %}
-    static bool securityCheckCustom(v8::Local<v8::Context> accessingContext, v8::Local<v8::Object> accessedObject);
+    static bool securityCheckCustom(v8::Local<v8::Context> accessingContext, v8::Local<v8::Object> accessedObject, v8::Local<v8::Value> value);
     {% endif %}
     static void installConditionallyEnabledProperties(v8::Local<v8::Object>, v8::Isolate*){% if has_conditional_attributes %};
     {% else %} { }
