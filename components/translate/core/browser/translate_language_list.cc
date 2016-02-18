@@ -36,6 +36,7 @@ namespace {
 // excluded because Chrome l10n library does not support it.
 const char* const kDefaultSupportedLanguages[] = {
   "af",     // Afrikaans
+  "am",     // Amharic
   "ar",     // Arabic
   "az",     // Azerbaijani
   "be",     // Belarusian
@@ -44,6 +45,7 @@ const char* const kDefaultSupportedLanguages[] = {
   "bs",     // Bosnian
   "ca",     // Catalan
   "ceb",    // Cebuano
+  "co",     // Corsican
   "cs",     // Czech
   "cy",     // Welsh
   "da",     // Danish
@@ -56,11 +58,14 @@ const char* const kDefaultSupportedLanguages[] = {
   "eu",     // Basque
   "fa",     // Persian
   "fi",     // Finnish
+  "fy",     // Frisian
   "fr",     // French
   "ga",     // Irish
+  "gd",     // Scots Gaelic
   "gl",     // Galician
   "gu",     // Gujarati
   "ha",     // Hausa
+  "haw",    // Hawaiian
   "hi",     // Hindi
   "hr",     // Croatian
   "ht",     // Haitian Creole
@@ -77,7 +82,10 @@ const char* const kDefaultSupportedLanguages[] = {
   "km",     // Khmer
   "kn",     // Kannada
   "ko",     // Korean
+  "ku",     // Kurdish
+  "ky",     // Kyrgyz
   "la",     // Latin
+  "lb",     // Luxembourgish
   "lo",     // Lao
   "lt",     // Lithuanian
   "lv",     // Latvian
@@ -96,12 +104,16 @@ const char* const kDefaultSupportedLanguages[] = {
   "ny",     // Nyanja
   "pa",     // Punjabi
   "pl",     // Polish
+  "ps",     // Pashto
   "pt",     // Portuguese
   "ro",     // Romanian
   "ru",     // Russian
+  "sd",     // Sindhi
   "si",     // Sinhala
   "sk",     // Slovak
   "sl",     // Slovenian
+  "sm",     // Samoan
+  "sn",     // Shona
   "so",     // Somali
   "sq",     // Albanian
   "sr",     // Serbian
@@ -120,6 +132,7 @@ const char* const kDefaultSupportedLanguages[] = {
   "uz",     // Uzbek
   "vi",     // Vietnamese
   "yi",     // Yiddish
+  "xh",     // Xhosa
   "yo",     // Yoruba
   "zh-CN",  // Chinese (Simplified)
   "zh-TW",  // Chinese (Traditional)
