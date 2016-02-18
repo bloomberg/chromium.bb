@@ -107,7 +107,9 @@ public:
     bool skippingCache() const { return m_skippingCacheCount; }
 
     // Must be called when a painting is finished.
-    void commitNewDisplayItems();
+    // offsetFromLayoutObject is the offset between the space of the GraphicsLayer which owns this
+    // PaintController and the coordinate space of the owning LayoutObject.
+    void commitNewDisplayItems(const LayoutSize& offsetFromLayoutObject = LayoutSize());
 
     // Returns the approximate memory usage, excluding memory likely to be
     // shared with the embedder after copying to WebPaintController.
@@ -216,7 +218,7 @@ private:
     void checkNoRemainingCachedDisplayItems();
 #endif
 
-    void commitNewDisplayItemsInternal();
+    void commitNewDisplayItemsInternal(const LayoutSize& offsetFromLayoutObject);
 
     // The last complete paint artifact.
     // In SPv2, this includes paint chunks as well as display items.

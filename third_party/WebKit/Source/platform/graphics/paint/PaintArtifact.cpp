@@ -48,16 +48,26 @@ PaintArtifact::PaintArtifact()
 {
 }
 
-PaintArtifact::PaintArtifact(DisplayItemList displayItems, Vector<PaintChunk> paintChunks)
+static void appendVisualRectForDisplayItem(const DisplayItem& displayItem, const LayoutSize& offsetFromLayoutObject, Vector<IntRect>& visualRects)
+{
+    LayoutRect visualRect = displayItem.client().visualRect();
+    visualRect.move(-offsetFromLayoutObject);
+    visualRects.append(enclosingIntRect(visualRect));
+}
+
+PaintArtifact::PaintArtifact(DisplayItemList displayItems, Vector<PaintChunk> paintChunks, const LayoutSize& offsetFromLayoutObject)
     : m_displayItemList(std::move(displayItems))
     , m_paintChunks(std::move(paintChunks))
 {
+    for (const DisplayItem& displayItem : m_displayItemList)
+        appendVisualRectForDisplayItem(displayItem, offsetFromLayoutObject, m_visualRects);
     computeChunkBoundsAndOpaqueness(m_displayItemList, m_paintChunks);
 }
 
 PaintArtifact::PaintArtifact(PaintArtifact&& source)
     : m_displayItemList(std::move(source.m_displayItemList))
     , m_paintChunks(std::move(source.m_paintChunks))
+    , m_visualRects(std::move(source.m_visualRects))
 {
 }
 
@@ -69,6 +79,7 @@ PaintArtifact& PaintArtifact::operator=(PaintArtifact&& source)
 {
     m_displayItemList = std::move(source.m_displayItemList);
     m_paintChunks = std::move(source.m_paintChunks);
+    m_visualRects = std::move(source.m_visualRects);
     return *this;
 }
 
@@ -91,16 +102,17 @@ void PaintArtifact::replay(GraphicsContext& graphicsContext) const
         displayItem.replay(graphicsContext);
 }
 
-void PaintArtifact::appendToWebDisplayItemList(WebDisplayItemList* list, const GraphicsLayer* graphicsLayer) const
+void PaintArtifact::appendToWebDisplayItemList(WebDisplayItemList* list) const
 {
     TRACE_EVENT0("blink,benchmark", "PaintArtifact::appendToWebDisplayItemList");
 #if ENABLE(ASSERT)
     m_displayItemList.assertDisplayItemClientsAreAlive();
 #endif
+    ASSERT(m_displayItemList.size() == m_visualRects.size());
+    unsigned visualRectIndex = 0;
     for (const DisplayItem& displayItem : m_displayItemList) {
-        LayoutRect visualRect = displayItem.client().visualRect();
-        visualRect.move(-graphicsLayer->offsetFromLayoutObjectWithSubpixelAccumulation());
-        displayItem.appendToWebDisplayItemList(enclosingIntRect(visualRect), list);
+        displayItem.appendToWebDisplayItemList(m_visualRects[visualRectIndex], list);
+        visualRectIndex++;
     }
 }
 

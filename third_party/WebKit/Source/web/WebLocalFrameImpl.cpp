@@ -374,7 +374,7 @@ public:
 
     // DisplayItemClient methods
     String debugName() const final { return "ChromePrintContext"; }
-    LayoutRect visualRect() const override { ASSERT_NOT_REACHED(); return LayoutRect(); }
+    LayoutRect visualRect() const override { return LayoutRect(); }
 
 protected:
     // Spools the printed page, a subrect of frame(). Skip the scale step.

@@ -254,12 +254,12 @@ void PaintController::copyCachedSubsequence(DisplayItemList::iterator& currentIt
     } while (!endSubsequenceId.matches(updatedList.last()));
 }
 
-void PaintController::commitNewDisplayItems()
+void PaintController::commitNewDisplayItems(const LayoutSize& offsetFromLayoutObject)
 {
 #if ENABLE(ASSERT)
     m_newDisplayItemList.assertDisplayItemClientsAreAlive();
 #endif
-    commitNewDisplayItemsInternal();
+    commitNewDisplayItemsInternal(offsetFromLayoutObject);
 #if ENABLE(ASSERT)
     m_currentPaintArtifact.displayItemList().assertDisplayItemClientsAreAlive();
 #endif
@@ -276,7 +276,7 @@ void PaintController::commitNewDisplayItems()
 // Coefficients are related to the ratio of out-of-order CachedDisplayItems
 // and the average number of (Drawing|Subsequence)DisplayItems per client.
 //
-void PaintController::commitNewDisplayItemsInternal()
+void PaintController::commitNewDisplayItemsInternal(const LayoutSize& offsetFromLayoutObject)
 {
     TRACE_EVENT2("blink,benchmark", "PaintController::commitNewDisplayItems",
         "current_display_list_size", (int)m_currentPaintArtifact.displayItemList().size(),
@@ -302,7 +302,8 @@ void PaintController::commitNewDisplayItemsInternal()
         for (const auto& item : m_newDisplayItemList)
             ASSERT(!item.isCached());
 #endif
-        m_currentPaintArtifact = PaintArtifact(std::move(m_newDisplayItemList), m_newPaintChunks.releasePaintChunks());
+
+        m_currentPaintArtifact = PaintArtifact(std::move(m_newDisplayItemList), m_newPaintChunks.releasePaintChunks(), offsetFromLayoutObject);
         m_newDisplayItemList = DisplayItemList(kInitialDisplayItemListCapacityBytes);
         m_validlyCachedClientsDirty = true;
         return;
@@ -384,7 +385,8 @@ void PaintController::commitNewDisplayItemsInternal()
 
     // TODO(jbroman): When subsequence caching applies to SPv2, we'll need to
     // merge the paint chunks as well.
-    m_currentPaintArtifact = PaintArtifact(std::move(updatedList), m_newPaintChunks.releasePaintChunks());
+    m_currentPaintArtifact = PaintArtifact(std::move(updatedList), m_newPaintChunks.releasePaintChunks(), offsetFromLayoutObject);
+
     m_newDisplayItemList = DisplayItemList(kInitialDisplayItemListCapacityBytes);
     m_validlyCachedClientsDirty = true;
 }

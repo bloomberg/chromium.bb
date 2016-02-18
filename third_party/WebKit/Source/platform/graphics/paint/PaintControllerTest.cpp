@@ -22,6 +22,11 @@ public:
         : m_paintController(PaintController::create())
         , m_originalSlimmingPaintV2Enabled(RuntimeEnabledFeatures::slimmingPaintV2Enabled()) { }
 
+    IntRect visualRect(const PaintArtifact& paintArtifact, unsigned index)
+    {
+        return paintArtifact.visualRect(index);
+    }
+
 protected:
     PaintController& paintController() { return *m_paintController; }
 
@@ -41,15 +46,16 @@ const DisplayItem::Type clipType = DisplayItem::ClipFirst;
 
 class TestDisplayItemClient : public DisplayItemClient {
 public:
-    TestDisplayItemClient(const String& name)
-        : m_name(name)
+    TestDisplayItemClient(const String& name, LayoutRect visualRect = LayoutRect())
+        : m_name(name), m_visualRect(visualRect)
     { }
 
     String debugName() const final { return m_name; }
-    LayoutRect visualRect() const override { return LayoutRect(); }
+    LayoutRect visualRect() const override { return m_visualRect; }
 
 private:
     String m_name;
+    LayoutRect m_visualRect;
 };
 
 class TestDisplayItem final : public DisplayItem {
@@ -777,6 +783,28 @@ TEST_F(PaintControllerTest, SmallPaintControllerHasOnePaintChunk)
     ASSERT_EQ(1u, paintChunks.size());
     EXPECT_EQ(0u, paintChunks[0].beginIndex);
     EXPECT_EQ(1u, paintChunks[0].endIndex);
+}
+
+#define EXPECT_RECT_EQ(expected, actual) \
+    do { \
+        const IntRect& actualRect = actual; \
+        EXPECT_EQ(expected.x(), actualRect.x()); \
+        EXPECT_EQ(expected.y(), actualRect.y()); \
+        EXPECT_EQ(expected.width(), actualRect.width()); \
+        EXPECT_EQ(expected.height(), actualRect.height()); \
+    } while (false)
+
+TEST_F(PaintControllerTest, PaintArtifactWithVisualRects)
+{
+    TestDisplayItemClient client("test client", LayoutRect(0, 0, 200, 100));
+
+    GraphicsContext context(paintController());
+    drawRect(context, client, backgroundDrawingType, FloatRect(0, 0, 100, 100));
+
+    paintController().commitNewDisplayItems(LayoutSize(20, 30));
+    const auto& paintArtifact = paintController().paintArtifact();
+    ASSERT_EQ(1u, paintArtifact.displayItemList().size());
+    EXPECT_RECT_EQ(IntRect(-20, -30, 200, 100), visualRect(paintArtifact, 0));
 }
 
 } // namespace blink

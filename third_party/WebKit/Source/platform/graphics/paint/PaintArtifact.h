@@ -35,7 +35,7 @@ class PLATFORM_EXPORT PaintArtifact final {
     WTF_MAKE_NONCOPYABLE(PaintArtifact);
 public:
     PaintArtifact();
-    PaintArtifact(DisplayItemList, Vector<PaintChunk>);
+    PaintArtifact(DisplayItemList, Vector<PaintChunk>, const LayoutSize& offsetFromLayoutObject);
     PaintArtifact(PaintArtifact&&);
     ~PaintArtifact();
 
@@ -60,11 +60,16 @@ public:
     void replay(GraphicsContext&) const;
 
     // Writes the paint artifact into a WebDisplayItemList.
-    void appendToWebDisplayItemList(WebDisplayItemList*, const GraphicsLayer*) const;
+    void appendToWebDisplayItemList(WebDisplayItemList*) const;
 
 private:
+    IntRect visualRect(unsigned index) const { return m_visualRects[index]; }
+
     DisplayItemList m_displayItemList;
     Vector<PaintChunk> m_paintChunks;
+    Vector<IntRect> m_visualRects;
+
+    friend class PaintControllerTest;
 };
 
 } // namespace blink
