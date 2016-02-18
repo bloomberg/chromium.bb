@@ -105,6 +105,18 @@ void CSSLengthInterpolationType::composite(
     underlyingNonInterpolableValue = CSSLengthNonInterpolableValue::merge(underlyingNonInterpolableValue.get(), nonInterpolableValue);
 }
 
+void CSSLengthInterpolationType::subtractFromOneHundredPercent(InterpolationValue& result)
+{
+    InterpolableList& list = toInterpolableList(*result.interpolableValue);
+    for (size_t i = 0; i < CSSPrimitiveValue::LengthUnitTypeCount; i++) {
+        double value = -toInterpolableNumber(*list.get(i)).value();
+        if (i == CSSPrimitiveValue::UnitTypePercentage)
+            value += 100;
+        toInterpolableNumber(*list.getMutable(i)).set(value);
+    }
+    result.nonInterpolableValue = CSSLengthNonInterpolableValue::create(true);
+}
+
 InterpolationValue CSSLengthInterpolationType::maybeConvertCSSValue(const CSSValue& value)
 {
     if (!value.isPrimitiveValue())

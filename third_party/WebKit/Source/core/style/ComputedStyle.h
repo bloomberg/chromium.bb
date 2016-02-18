@@ -140,6 +140,7 @@ class CORE_EXPORT ComputedStyle: public RefCounted<ComputedStyle> {
     friend class CachedUAStyle; // Saves Border/Background information for later comparison.
     friend class ColorPropertyFunctions; // Reads initial style values and accesses visited and unvisited colors.
     friend class LengthPropertyFunctions; // Reads initial style values.
+    friend class LengthListPropertyFunctions; // Reads initial style values.
     friend class NumberPropertyFunctions; // Reads initial style values.
     friend class PaintPropertyFunctions; // Reads initial style values.
 
