@@ -348,7 +348,8 @@ float AudioParamTimeline::valuesForFrameRangeImpl(
     double controlRate)
 {
     ASSERT(values);
-    if (!values)
+    ASSERT(numberOfValues >= 1);
+    if (!values || !(numberOfValues >= 1))
         return defaultValue;
 
     // Return default value if there are no events matching the desired time range.
@@ -522,6 +523,10 @@ float AudioParamTimeline::valuesForFrameRangeImpl(
                     value *= multiplier;
                     ++currentFrame;
                 }
+                // |value| got updated one extra time in the above loop.  Restore it to the last
+                // computed value.
+                if (writeIndex >= 1)
+                    value /= multiplier;
             }
         } else {
             // Handle event types not requiring looking ahead to the next event.
@@ -543,6 +548,12 @@ float AudioParamTimeline::valuesForFrameRangeImpl(
             case ParamEvent::ExponentialRampToValue:
                 {
                     currentFrame = fillToEndFrame;
+
+                    // If we're here, we've reached the end of the ramp.  If we can (because the
+                    // start and end values have the same sign, and neither is 0), use the actual
+                    // end value.  If not, we have to propagate whatever we have.
+                    if (i >= 1 && ((m_events[i - 1].value() * event.value()) > 0))
+                        value = event.value();
 
                     // Simply stay at a constant value from the last time.  We don't want to use the
                     // value of the event in case value1 * value2 < 0.  In this case we should
@@ -569,14 +580,19 @@ float AudioParamTimeline::valuesForFrameRangeImpl(
                     // correct if the start time of this automation isn't on a frame boundary.
                     // Otherwise, we can just continue from where we left off from the previous
                     // rendering quantum.
-
                     {
                         double rampStartFrame = time1 * sampleRate;
                         // Condition is c - 1 < r <= c where c = currentFrame and r =
                         // rampStartFrame.  Compute it this way because currentFrame is unsigned and
                         // could be 0.
-                        if (rampStartFrame <= currentFrame && currentFrame < rampStartFrame + 1)
+                        if (rampStartFrame <= currentFrame && currentFrame < rampStartFrame + 1) {
                             value = target + (value - target) * exp(-(currentFrame / sampleRate - time1) / timeConstant);
+                        } else {
+                            // Otherwise, need to compute a new value bacause |value| is the last
+                            // computed value of SetTarget.  Time has progressed by one frame, so we
+                            // need to update the value for the new frame.
+                            value += (target - value) * discreteTimeConstant;
+                        }
                     }
 
                     // If the value is close enough to the target, just fill in the data with the
@@ -622,7 +638,10 @@ float AudioParamTimeline::valuesForFrameRangeImpl(
                             values[writeIndex] = value;
                             value += (target - value) * discreteTimeConstant;
                         }
-
+                        // The previous loops may have updated |value| one extra time.  Reset it to
+                        // the last computed value.
+                        if (writeIndex >= 1)
+                            value = values[writeIndex - 1];
                         currentFrame = fillToEndFrame;
                     }
                     break;
@@ -765,7 +784,8 @@ float AudioParamTimeline::valuesForFrameRangeImpl(
 
                     // If there's any time left after the duration of this event and the start
                     // of the next, then just propagate the last value of the curveData.
-                    value = curveData[numberOfCurvePoints - 1];
+                    if (writeIndex < nextEventFillToFrame)
+                        value = curveData[numberOfCurvePoints - 1];
                     for (; writeIndex < nextEventFillToFrame; ++writeIndex)
                         values[writeIndex] = value;
 
@@ -786,8 +806,9 @@ float AudioParamTimeline::valuesForFrameRangeImpl(
     for (; writeIndex < numberOfValues; ++writeIndex)
         values[writeIndex] = value;
 
-    // This value is used to set the .value attribute of the AudioParam.
-    return value;
+    // This value is used to set the .value attribute of the AudioParam.  it should be the last
+    // computed value.
+    return values[numberOfValues - 1];
 }
 
 } // namespace blink

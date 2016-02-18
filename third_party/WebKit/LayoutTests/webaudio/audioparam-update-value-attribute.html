@@ -1,0 +1,172 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="resources/compatibility.js"></script>
+    <script src="resources/audio-testing.js"></script>
+    <script src="resources/audio-param.js"></script>
+    <script src="../resources/js-test.js"></script>
+    <title>Updating of Value Attribute from Timeline</title>
+  </head>
+
+  <body>
+    <script>
+      description("Test Updating of Value Attribute from Timeline");
+      window.jsTestIsAsync = true;
+
+      // This should be a power of two so that all time computations have no round-off errors.
+      var sampleRate = 32768;
+      var renderQuantumSize = 128;
+      // How many tests to run.
+      var renderLoops = 20;
+      var renderFrames = renderLoops * renderQuantumSize;
+      var renderDuration = renderFrames / sampleRate;
+
+      var audit = Audit.createTaskRunner();
+
+      audit.defineTask("linear", function (done) {
+        // Test the value attribute from a linearRamp event
+        runTest(function (g, v0, t0, v1, t1) {
+          g.gain.linearRampToValueAtTime(v1, t1);
+          return {
+            expectedValue: function (testTime) {
+              return audioParamLinearRamp(testTime, v0, t0, v1, t1);
+            },
+            message: "linearRamp(" + v1 + ", " + t1 + ")",
+            errorThreshold: 1.1650e-6
+          };
+        }).then(done);
+      });
+
+      audit.defineTask("exponential", function (done) {
+        // Test the value attribute from an exponentialRamp event
+        runTest(function (g, v0, t0, v1, t1) {
+          g.gain.exponentialRampToValueAtTime(v1, t1);
+          return {
+            expectedValue: function (testTime) {
+              return audioParamExponentialRamp(testTime, v0, t0, v1, t1);
+            },
+            message: "exponentialRamp(" + v1 + ", " + t1 + ")",
+            errorThreshold: 7.4601e-7
+          };
+        }).then(done);
+      });
+
+      audit.defineTask("setTarget", function (done) {
+        // Test the value attribute from a setTargetAtTime event
+        runTest(function (g, v0, t0, v1, t1) {
+          var timeConstant = 0.1;
+          var vFinal = 0;
+          g.gain.setTargetAtTime(vFinal, t0, timeConstant);
+          return {
+            expectedValue: function (testTime) {
+              return audioParamSetTarget(testTime, v0, t0, vFinal, timeConstant);
+            },
+            message: "setTargetAtTime(" + vFinal + ", " + t0 + ", " + timeConstant + ")",
+            errorThreshold: 1.2869e-6
+          };
+        }).then(done);
+      });
+
+      audit.defineTask("setValueCurve", function (done) {
+        // Test the value attribute from a setValueCurve event
+        runTest(function (g, v0, t0, v1, t1) {
+          var curve = [1, 1.5, 4];
+          var duration = t1 - t0;
+          g.gain.setValueCurveAtTime(Float32Array.from(curve), t0, duration);
+          return {
+            expectedValue: function (testTime) {
+              return audioParamSetValueCurve(testTime, curve, t0, duration);
+            },
+            message: "setValueCurveAtTime([" + curve + "], " + t0 + ", " + duration + ")",
+            errorThreshold: 7.9577e-8
+          };
+        }).then(done);
+      });
+
+      audit.defineTask("finish", function (done) {
+        finishJSTest();
+        done();
+      });
+
+      audit.runTasks();
+
+      // Test that the .value getter has the correct value when a timeline is running.
+      // The |testFunction| is the underlying test to be run.
+      function runTest(testFunction) {
+        // Create a simple graph consisting of a constant source and a gain node where the
+        // automations are run.  A setValueAtTime event starts things off.
+        var context = new OfflineAudioContext(1, renderFrames, sampleRate);
+        var source = context.createBufferSource();
+        source.buffer = createConstantBuffer(context, 1, 1);
+        source.loop = true;
+        var gain = context.createGain();
+
+        source.connect(gain);
+        gain.connect(context.destination);
+
+        // Start the timeline with setValueAtTime(v0, t0).
+        var v0 = 0.25;
+        var t0 = 0;
+        // End value and time, for those that need it.  The end time is less than the rendering
+        // duration so we can test that the final values of the automation (if any) are also
+        // correct.
+        var v1 = 100;
+        var t1 = renderDuration - 5 * renderQuantumSize / sampleRate;
+
+        gain.gain.setValueAtTime(v0, t0);
+
+        // Run the desired automation test.  The test function returns a dictionary consisting of
+        // the following properties:
+        //
+        // |message|        an informative message about the automation being tested.
+        // |errorThreshold| error threshold to determine if the test passes or not.
+        // |expectedValue|  a function that compute the expected value at time |t|.
+        var test = testFunction(gain, v0, t0, v1, t1);
+
+        // Print an informative message about the test being run.
+        testPassed("Initialize " + test.message + " with setValueAtTime(" + v0 + ", " + t0 + ").");
+
+        var success = true;
+
+        // Max relative error found for this test. This is printed if the test fails so that setting
+        // the thresholds is easier.
+        var maxError = 0;
+
+        // For every rendering quantum (except the first), suspend the context so the we can inspect
+        // the value attribute and compare it with the expected value.
+        for (var k = 1; k < renderLoops; ++k) {
+          var time = k * renderQuantumSize / sampleRate;
+          context.suspend(time).then(function () {
+            // The context is supsended at time |time|, which is just before the rendering quantum
+            // starts.  Thus, the value of the attribute is actually 1 frame before the current
+            // context time.
+            var sampleTime = context.currentTime - 1 / sampleRate;
+
+            // Compute the max relative error
+            var expected = test.expectedValue(sampleTime);
+            var relError = Math.abs(expected - gain.gain.value) / Math.abs(expected);
+            maxError = Math.max(relError, maxError);
+
+            success = Should(test.message + " at frame " + (sampleRate * sampleTime),
+                gain.gain.value, {
+                  precision: 7
+                })
+              .beCloseTo(expected, test.errorThreshold || 0) && success;
+          }).then(context.resume.bind(context));
+        }
+
+        source.start();
+
+        return context.startRendering().then(function (resultBuffer) {
+          // Just print a final pass (or fail) message.
+          if (success)
+            testPassed("Gain .value attribute correctly updated during automation.\n");
+          else
+            testFailed(
+              "Gain .value attribute not correctly updated during automation; max error = " +
+              maxError + ".\n");
+        });
+      }
+    </script>
+  </body>
+</html>
