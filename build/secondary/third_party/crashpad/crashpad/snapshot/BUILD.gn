@@ -79,6 +79,8 @@ source_set("snapshot") {
     "process_snapshot.h",
     "system_snapshot.h",
     "thread_snapshot.h",
+    "unloaded_module_snapshot.cc",
+    "unloaded_module_snapshot.h",
     "win/capture_memory_delegate_win.cc",
     "win/capture_memory_delegate_win.h",
     "win/cpu_context_win.cc",
