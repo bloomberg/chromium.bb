@@ -548,6 +548,7 @@
 <translation id="7537536606612762813">強制</translation>
 <translation id="7542995811387359312">由於這個表單並未採用加密連線方式，所以信用卡自動填入功能已停用。</translation>
 <translation id="7549584377607005141">這個網頁需要使用您先前輸入的資料才能正確顯示。您可以重新傳送這些資料，不過這麼做會重複執行這個網頁先前執行過的任何動作。</translation>
+<translation id="7554791636758816595">新增分頁</translation>
 <translation id="7567204685887185387">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證是以欺詐方式發行。這可能是因為設定錯誤，或有攻擊者攔截您的連線所致。</translation>
 <translation id="7568593326407688803">此網頁為<ph name="ORIGINAL_LANGUAGE" />您要翻譯網頁內容嗎？</translation>
 <translation id="7569952961197462199">要從 Chrome 中移除信用卡嗎？</translation>

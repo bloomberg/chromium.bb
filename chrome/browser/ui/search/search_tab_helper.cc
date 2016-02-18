@@ -38,6 +38,7 @@
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/search/search.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"

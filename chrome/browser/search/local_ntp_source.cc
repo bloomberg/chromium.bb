@@ -30,6 +30,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/strings/grit/components_strings.h"
 #include "grit/browser_resources.h"
 #include "grit/theme_resources.h"
 #include "net/url_request/url_request.h"

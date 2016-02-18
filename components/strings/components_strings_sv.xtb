@@ -548,6 +548,7 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY" /> kan vara n�
 <translation id="7537536606612762813">Obligatorisk</translation>
 <translation id="7542995811387359312">Automatisk ifyllning av kreditkort har inaktiverats eftersom formulärets anslutning inte är säker.</translation>
 <translation id="7549584377607005141">Den här webbsidan kräver uppgifter som du har angett tidigare för att kunna visas korrekt. Du kan skicka uppgifterna igen, men om du gör det upprepas de åtgärder som har utförts av sidan tidigare.</translation>
+<translation id="7554791636758816595">Ny flik</translation>
 <translation id="7567204685887185387">Servern kunde inte bevisa att den är <ph name="DOMAIN" /> eftersom dess säkerhetscertifikat kan ha utfärdats utan behörighet. Detta kan orsakas av en felaktig konfigurering eller att någon spärrar anslutningen.</translation>
 <translation id="7568593326407688803">Den här sidan är på<ph name="ORIGINAL_LANGUAGE" />Vill du översätta den?</translation>
 <translation id="7569952961197462199">Vill du ta bort kreditkortet från Chrome?</translation>

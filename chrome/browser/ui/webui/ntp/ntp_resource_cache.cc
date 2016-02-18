@@ -45,6 +45,7 @@
 #include "components/google/core/browser/google_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/web_resource/notification_promo.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"

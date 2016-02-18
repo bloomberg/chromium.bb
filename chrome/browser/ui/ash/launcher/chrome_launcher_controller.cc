@@ -73,6 +73,7 @@
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"

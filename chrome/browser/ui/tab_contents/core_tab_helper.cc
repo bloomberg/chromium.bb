@@ -24,6 +24,7 @@
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"

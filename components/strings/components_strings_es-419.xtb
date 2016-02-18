@@ -545,6 +545,7 @@
 <translation id="7537536606612762813">Obligatoria</translation>
 <translation id="7542995811387359312">El rellenado automático de la tarjeta de crédito se inhabilitó porque este formulario no usa una conexión segura.</translation>
 <translation id="7549584377607005141">Esta página web necesita los datos ingresados anteriormente para mostrarse correctamente. Puedes volver a enviar los datos, pero ten en cuenta que se repetirán las acciones que la página haya realizado anteriormente.</translation>
+<translation id="7554791636758816595">Nueva pestaña</translation>
 <translation id="7567204685887185387">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" />; el certificado de seguridad podría haberse emitido de forma fraudulenta. Es posible que esto se deba a una configuración incorrecta o a que un atacante interceptó la conexión.</translation>
 <translation id="7568593326407688803">Esta página está en<ph name="ORIGINAL_LANGUAGE" />¿Quieres traducirla?</translation>
 <translation id="7569952961197462199">¿Confirmas que quieres quitar la tarjeta de crédito de Chrome?</translation>

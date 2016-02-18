@@ -36,6 +36,7 @@
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"

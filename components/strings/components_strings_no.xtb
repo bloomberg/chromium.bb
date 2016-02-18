@@ -548,6 +548,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
 <translation id="7537536606612762813">Obligatorisk</translation>
 <translation id="7542995811387359312">Automatisk utfylling av kredittkort er deaktivert fordi dette skjemaet ikke bruker en sikker tilkobling.</translation>
 <translation id="7549584377607005141">Denne nettsiden krever data som du har skrevet inn tidligere for å vises korrekt. Du kan sende inn dataene på nytt, men hvis du gjør det, gjentas eventuelle handlinger denne siden utførte.</translation>
+<translation id="7554791636758816595">Ny fane</translation>
 <translation id="7567204685887185387">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Tjenerens sikkerhetssertifikat kan ha blitt utstedt på uredelig vis. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="7568593326407688803">Denne siden er på<ph name="ORIGINAL_LANGUAGE" />Vil du ha den oversatt?</translation>
 <translation id="7569952961197462199">Vil du fjerne kredittkortet fra Chrome?</translation>

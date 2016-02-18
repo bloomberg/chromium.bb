@@ -11,6 +11,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/grit/components_scaled_resources.h"
+#include "components/strings/grit/components_strings.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "ui/base/cocoa/controls/blue_label_button.h"
 #import "ui/base/cocoa/controls/hyperlink_text_view.h"
