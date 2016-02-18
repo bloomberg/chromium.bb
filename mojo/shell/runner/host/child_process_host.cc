@@ -158,6 +158,9 @@ void ChildProcessHost::DoLaunch() {
   options.stdin_handle = INVALID_HANDLE_VALUE;
   options.stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
   options.stderr_handle = GetStdHandle(STD_ERROR_HANDLE);
+  // Always inherit stdout/stderr as a pair.
+  if (!options.stdout_handle || !options.stdin_handle)
+    options.stdin_handle = options.stdout_handle = nullptr;
 
   // Pseudo handles are used when stdout and stderr redirect to the console. In
   // that case, they're automatically inherited by child processes. See
@@ -166,10 +169,13 @@ void ChildProcessHost::DoLaunch() {
   // to fail. When this process is launched from Python
   // (i.e. by apptest_runner.py) then a real handle is used. In that case, we do
   // want to add it to the list of handles that is inherited.
-  if (GetFileType(options.stdout_handle) != FILE_TYPE_CHAR)
+  if (options.stdout_handle &&
+      GetFileType(options.stdout_handle) != FILE_TYPE_CHAR) {
     handle_passing_info_.push_back(options.stdout_handle);
-  if (GetFileType(options.stderr_handle) != FILE_TYPE_CHAR &&
-      options.stdout_handle != options.stdout_handle) {
+  }
+  if (options.stderr_handle &&
+      GetFileType(options.stderr_handle) != FILE_TYPE_CHAR &&
+      options.stdout_handle != options.stderr_handle) {
     handle_passing_info_.push_back(options.stderr_handle);
   }
 #elif defined(OS_POSIX)
