@@ -160,12 +160,9 @@ void ShowHistory(Browser* browser) {
 
 void ShowDownloads(Browser* browser) {
   content::RecordAction(UserMetricsAction("ShowDownloads"));
-  if (browser->window()) {
-    DownloadShelf* shelf = browser->window()->GetDownloadShelf();
-    // The downloads page is always shown in response to a user action.
-    if (shelf->IsShowing())
-      shelf->Close(DownloadShelf::USER_ACTION);
-  }
+  if (browser->window() && browser->window()->IsDownloadShelfVisible())
+    browser->window()->GetDownloadShelf()->Close(DownloadShelf::USER_ACTION);
+
   ShowSingletonTabOverwritingNTP(
       browser,
       GetSingletonTabNavigateParams(browser, GURL(kChromeUIDownloadsURL)));
