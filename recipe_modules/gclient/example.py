@@ -37,6 +37,7 @@ TEST_CONFIGS = [
   'luci_gae',
   'luci_go',
   'luci_py',
+  'master_deps',
   'mojo',
   'nacl',
   'pdfium',
