@@ -55,7 +55,7 @@ std::string IOSChromeTabRestoreServiceClient::GetExtensionAppIDForTab(
 }
 
 base::SequencedWorkerPool* IOSChromeTabRestoreServiceClient::GetBlockingPool() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   return web::WebThread::GetBlockingPool();
 }
 

@@ -283,7 +283,7 @@ SystemURLRequestContextGetter::SystemURLRequestContextGetter(
 SystemURLRequestContextGetter::~SystemURLRequestContextGetter() {}
 
 net::URLRequestContext* SystemURLRequestContextGetter::GetURLRequestContext() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   DCHECK(io_thread_->globals()->system_request_context.get());
 
   return io_thread_->globals()->system_request_context.get();
@@ -343,12 +343,12 @@ IOSChromeIOThread::~IOSChromeIOThread() {
 }
 
 IOSChromeIOThread::Globals* IOSChromeIOThread::globals() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   return globals_;
 }
 
 void IOSChromeIOThread::SetGlobalsForTesting(Globals* globals) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   DCHECK(!globals || !globals_);
   globals_ = globals;
 }
@@ -358,7 +358,7 @@ net_log::ChromeNetLog* IOSChromeIOThread::net_log() {
 }
 
 void IOSChromeIOThread::ChangedToOnTheRecord() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   web::WebThread::PostTask(
       web::WebThread::IO, FROM_HERE,
       base::Bind(&IOSChromeIOThread::ChangedToOnTheRecordOnIOThread,
@@ -367,7 +367,7 @@ void IOSChromeIOThread::ChangedToOnTheRecord() {
 
 net::URLRequestContextGetter*
 IOSChromeIOThread::system_url_request_context_getter() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   if (!system_url_request_context_getter_.get()) {
     InitSystemRequestContext();
   }
@@ -376,7 +376,7 @@ IOSChromeIOThread::system_url_request_context_getter() {
 
 void IOSChromeIOThread::Init() {
   TRACE_EVENT0("startup", "IOSChromeIOThread::Init");
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
 
   net::SetMessageLoopForNSSHttpIO();
 
@@ -604,7 +604,7 @@ void IOSChromeIOThread::CreateDefaultAuthHandlerFactory() {
 }
 
 void IOSChromeIOThread::ClearHostCache() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
 
   net::HostCache* host_cache = globals_->host_resolver->GetHostCache();
   if (host_cache)
@@ -681,7 +681,7 @@ net::SSLConfigService* IOSChromeIOThread::GetSSLConfigService() {
 }
 
 void IOSChromeIOThread::ChangedToOnTheRecordOnIOThread() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
 
   // Clear the host cache to avoid showing entries from the OTR session
   // in about:net-internals.
@@ -708,7 +708,7 @@ void IOSChromeIOThread::InitSystemRequestContext() {
 }
 
 void IOSChromeIOThread::InitSystemRequestContextOnIOThread() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   DCHECK(!globals_->system_proxy_service.get());
   DCHECK(system_proxy_config_service_.get());
 

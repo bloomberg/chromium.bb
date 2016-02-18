@@ -141,7 +141,7 @@ void ConvertAndSaveGreyImage(
 
 - (id)init {
   if ((self = [super init])) {
-    DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+    DCHECK_CURRENTLY_ON(web::WebThread::UI);
     propertyReleaser_SnapshotCache_.Init(self, [SnapshotCache class]);
 
     // Always use the LRUCache when the tab switcher is enabled.
@@ -207,7 +207,7 @@ void ConvertAndSaveGreyImage(
 
 - (void)retrieveImageForSessionID:(NSString*)sessionID
                          callback:(void (^)(UIImage*))callback {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   DCHECK(sessionID);
 
   // Cache on iPad is enabled only when the tab switcher is enabled.
@@ -250,7 +250,7 @@ void ConvertAndSaveGreyImage(
 }
 
 - (void)setImage:(UIImage*)img withSessionID:(NSString*)sessionID {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   if (!img || !sessionID)
     return;
 
@@ -272,7 +272,7 @@ void ConvertAndSaveGreyImage(
 }
 
 - (void)removeImageWithSessionID:(NSString*)sessionID {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   if (lruCache_)
     [lruCache_ removeObjectForKey:sessionID];
   else
@@ -290,7 +290,7 @@ void ConvertAndSaveGreyImage(
 }
 
 - (base::FilePath)oldCacheDirectory {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   NSArray* paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory,
                                                        NSUserDomainMask, YES);
   NSString* path = [paths objectAtIndex:0];
@@ -341,7 +341,7 @@ void ConvertAndSaveGreyImage(
 
 - (void)purgeCacheOlderThan:(const base::Time&)date
                     keeping:(NSSet*)liveSessionIds {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   // Copying the date, as the block must copy the value, not the reference.
   const base::Time dateCopy = date;
   web::WebThread::PostBlockingPoolSequencedTask(
@@ -374,7 +374,7 @@ void ConvertAndSaveGreyImage(
 }
 
 - (void)willBeSavedGreyWhenBackgrounding:(NSString*)sessionID {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   if (!sessionID)
     return;
   backgroundingImageSessionId_.reset([sessionID copy]);
@@ -388,7 +388,7 @@ void ConvertAndSaveGreyImage(
 
 - (void)handleLowMemory {
   DCHECK(!IsIPadIdiom() || experimental_flags::IsTabSwitcherEnabled());
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   base::scoped_nsobject<NSMutableDictionary> dictionary(
       [[NSMutableDictionary alloc] initWithCapacity:2]);
   for (NSString* sessionID in pinnedIDs_) {
@@ -412,20 +412,20 @@ void ConvertAndSaveGreyImage(
 
 - (void)handleEnterBackground {
   DCHECK(!IsIPadIdiom() || experimental_flags::IsTabSwitcherEnabled());
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   [imageDictionary_ removeAllObjects];
   [lruCache_ removeAllObjects];
 }
 
 - (void)handleBecomeActive {
   DCHECK(!IsIPadIdiom() || experimental_flags::IsTabSwitcherEnabled());
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   for (NSString* sessionID in pinnedIDs_)
     [self retrieveImageForSessionID:sessionID callback:nil];
 }
 
 - (void)saveGreyImage:(UIImage*)greyImage forKey:(NSString*)sessionID {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   if (greyImage)
     [greyImageDictionary_ setObject:greyImage forKey:sessionID];
   if ([sessionID isEqualToString:mostRecentGreySessionId_]) {
@@ -435,7 +435,7 @@ void ConvertAndSaveGreyImage(
 }
 
 - (void)loadGreyImageAsync:(NSString*)sessionID {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   // Don't call -retrieveImageForSessionID here because it caches the colored
   // image, which we don't need for the grey image cache. But if the image is
   // already in the cache, use it.
@@ -464,7 +464,7 @@ void ConvertAndSaveGreyImage(
 }
 
 - (void)createGreyCache:(NSArray*)sessionIDs {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   greyImageDictionary_.reset(
       [[NSMutableDictionary alloc] initWithCapacity:kGreyInitialCapacity]);
   for (NSString* sessionID in sessionIDs)
@@ -472,20 +472,20 @@ void ConvertAndSaveGreyImage(
 }
 
 - (void)removeGreyCache {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   greyImageDictionary_.reset();
   [self clearGreySessionInfo];
 }
 
 - (void)clearGreySessionInfo {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   mostRecentGreySessionId_.reset();
   mostRecentGreyBlock_.reset();
 }
 
 - (void)greyImageForSessionID:(NSString*)sessionID
                      callback:(void (^)(UIImage*))callback {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   DCHECK(greyImageDictionary_);
   UIImage* image = [greyImageDictionary_ objectForKey:sessionID];
   if (image) {
@@ -499,7 +499,7 @@ void ConvertAndSaveGreyImage(
 
 - (void)retrieveGreyImageForSessionID:(NSString*)sessionID
                              callback:(void (^)(UIImage*))callback {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   if (greyImageDictionary_) {
     UIImage* image = [greyImageDictionary_ objectForKey:sessionID];
     if (image) {
@@ -542,7 +542,7 @@ void ConvertAndSaveGreyImage(
 }
 
 - (void)saveGreyInBackgroundForSessionID:(NSString*)sessionID {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   if (!sessionID)
     return;
 

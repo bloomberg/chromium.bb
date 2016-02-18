@@ -87,7 +87,7 @@ class BlockHolder : public base::RefCountedThreadSafe<BlockHolder<T>> {
   static void Finalize(id block,
                        ProceduralBlock default_block,
                        bool block_was_called) {
-    DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+    DCHECK_CURRENTLY_ON(web::WebThread::UI);
     // By calling default_block, BlockHolder guarantees that block is always
     // called to satisfy API contract for CRWCertVerificationController
     // (completion handlers are always called).
@@ -205,7 +205,7 @@ decideLoadPolicyForAcceptedTrustResult:(SecTrustResultType)trustResult
 
 - (instancetype)initWithBrowserState:(web::BrowserState*)browserState {
   DCHECK(browserState);
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   self = [super init];
   if (self) {
     _contextGetter = browserState->GetRequestContext();
@@ -221,7 +221,7 @@ decideLoadPolicyForAcceptedTrustResult:(SecTrustResultType)trustResult
 - (void)decideLoadPolicyForTrust:(base::ScopedCFTypeRef<SecTrustRef>)trust
                             host:(NSString*)host
                completionHandler:(web::PolicyDecisionHandler)completionHandler {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   // completionHandler of |verifyCert:forHost:completionHandler:| is called on
   // IO thread and then bounces back to UI thread. As a result all objects
   // captured by completionHandler may be released on either UI or IO thread.
@@ -252,7 +252,7 @@ decideLoadPolicyForAcceptedTrustResult:(SecTrustResultType)trustResult
 - (void)querySSLStatusForTrust:(base::ScopedCFTypeRef<SecTrustRef>)trust
                           host:(NSString*)host
              completionHandler:(web::StatusQueryHandler)completionHandler {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
 
   // The completion handlers of |verifyCert:forHost:completionHandler:| and
   // |verifyTrust:completionHandler:| will be deallocated on background thread.
@@ -292,7 +292,7 @@ decideLoadPolicyForAcceptedTrustResult:(SecTrustResultType)trustResult
 - (void)allowCert:(scoped_refptr<net::X509Certificate>)cert
           forHost:(NSString*)host
            status:(net::CertStatus)status {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   // Store user decisions with the leaf cert, ignoring any intermediates.
   // This is because WKWebView returns the verified certificate chain in
   // |webView:didReceiveAuthenticationChallenge:completionHandler:|,
@@ -310,7 +310,7 @@ decideLoadPolicyForAcceptedTrustResult:(SecTrustResultType)trustResult
 }
 
 - (void)shutDown {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   web::WebThread::PostTask(web::WebThread::IO, FROM_HERE, base::BindBlock(^{
     // This block captures |self| delaying its deallocation and causing dealloc
     // to happen on either IO or UI thread (which is fine for this class).
@@ -464,7 +464,7 @@ decideLoadPolicyForAcceptedTrustResult:(SecTrustResultType)trustResult
                   certVerifierResult:(net::CertVerifyResult)certVerifierResult
                          serverTrust:(SecTrustRef)trust
                                 host:(NSString*)host {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   DCHECK_NE(web::SECURITY_STYLE_AUTHENTICATED,
             web::GetSecurityStyleFromTrustResult(trustResult));
 

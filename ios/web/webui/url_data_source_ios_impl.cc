@@ -49,7 +49,7 @@ void URLDataSourceIOSImpl::SendResponse(
 void URLDataSourceIOSImpl::SendResponseOnIOThread(
     int request_id,
     scoped_refptr<base::RefCountedMemory> bytes) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   if (backend_)
     backend_->DataAvailable(request_id, bytes.get());
 }

@@ -147,7 +147,7 @@ class RequestTrackerTest : public PlatformTest {
   ~RequestTrackerTest() override {}
 
   void SetUp() override {
-    DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+    DCHECK_CURRENTLY_ON(web::WebThread::UI);
     request_group_id_.reset(
         [[NSString stringWithFormat:@"test%d", g_count++] retain]);
 
@@ -160,7 +160,7 @@ class RequestTrackerTest : public PlatformTest {
   }
 
   void TearDown() override {
-    DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+    DCHECK_CURRENTLY_ON(web::WebThread::UI);
     tracker_->Close();
   }
 
@@ -199,7 +199,7 @@ class RequestTrackerTest : public PlatformTest {
   }
 
   NSString* WaitUntilLoop(bool (^condition)(void)) {
-    DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+    DCHECK_CURRENTLY_ON(web::WebThread::UI);
     base::Time maxDate = base::Time::Now() + base::TimeDelta::FromSeconds(10);
     while (!condition()) {
       if ([receiver_ error])
@@ -223,14 +223,14 @@ class RequestTrackerTest : public PlatformTest {
   }
 
   void TrimRequest(NSString* tab_id, const GURL& url) {
-    DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+    DCHECK_CURRENTLY_ON(web::WebThread::UI);
     receiver_.get()->value_ = 0.0f;
     receiver_.get()->max_ = 0.0f;
     tracker_->StartPageLoad(url, nil);
   }
 
   void EndPage(NSString* tab_id, const GURL& url) {
-    DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+    DCHECK_CURRENTLY_ON(web::WebThread::UI);
     tracker_->FinishPageLoad(url, false);
     receiver_.get()->value_ = 0.0f;
     receiver_.get()->max_ = 0.0f;

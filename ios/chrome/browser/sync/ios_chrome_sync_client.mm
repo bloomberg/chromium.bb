@@ -77,18 +77,18 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
 
   // SyncSessionsClient implementation.
   bookmarks::BookmarkModel* GetBookmarkModel() override {
-    DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+    DCHECK_CURRENTLY_ON(web::WebThread::UI);
     return ios::BookmarkModelFactory::GetForBrowserState(browser_state_);
   }
 
   favicon::FaviconService* GetFaviconService() override {
-    DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+    DCHECK_CURRENTLY_ON(web::WebThread::UI);
     return ios::FaviconServiceFactory::GetForBrowserState(
         browser_state_, ServiceAccessType::EXPLICIT_ACCESS);
   }
 
   history::HistoryService* GetHistoryService() override {
-    DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+    DCHECK_CURRENTLY_ON(web::WebThread::UI);
     return ios::HistoryServiceFactory::GetForBrowserState(
         browser_state_, ServiceAccessType::EXPLICIT_ACCESS);
   }
@@ -136,7 +136,7 @@ IOSChromeSyncClient::IOSChromeSyncClient(ios::ChromeBrowserState* browser_state)
 IOSChromeSyncClient::~IOSChromeSyncClient() {}
 
 void IOSChromeSyncClient::Initialize() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
 
   web_data_service_ =
       ios::WebDataServiceFactory::GetAutofillWebDataForBrowserState(
@@ -168,34 +168,34 @@ void IOSChromeSyncClient::Initialize() {
 }
 
 sync_driver::SyncService* IOSChromeSyncClient::GetSyncService() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   return IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state_);
 }
 
 PrefService* IOSChromeSyncClient::GetPrefService() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   return browser_state_->GetPrefs();
 }
 
 bookmarks::BookmarkModel* IOSChromeSyncClient::GetBookmarkModel() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   return ios::BookmarkModelFactory::GetForBrowserState(browser_state_);
 }
 
 favicon::FaviconService* IOSChromeSyncClient::GetFaviconService() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   return ios::FaviconServiceFactory::GetForBrowserState(
       browser_state_, ServiceAccessType::EXPLICIT_ACCESS);
 }
 
 history::HistoryService* IOSChromeSyncClient::GetHistoryService() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   return ios::HistoryServiceFactory::GetForBrowserState(
       browser_state_, ServiceAccessType::EXPLICIT_ACCESS);
 }
 
 autofill::PersonalDataManager* IOSChromeSyncClient::GetPersonalDataManager() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   return PersonalDataManagerFactory::GetForBrowserState(browser_state_);
 }
 
@@ -346,7 +346,7 @@ scoped_refptr<syncer::ModelSafeWorker>
 IOSChromeSyncClient::CreateModelWorkerForGroup(
     syncer::ModelSafeGroup group,
     syncer::WorkerLoopDestructionObserver* observer) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   switch (group) {
     case syncer::GROUP_DB:
       return new browser_sync::BrowserThreadModelWorker(

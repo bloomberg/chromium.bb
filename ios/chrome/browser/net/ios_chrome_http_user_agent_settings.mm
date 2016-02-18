@@ -12,7 +12,7 @@
 
 IOSChromeHttpUserAgentSettings::IOSChromeHttpUserAgentSettings(
     PrefService* prefs) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   pref_accept_language_.Init(prefs::kAcceptLanguages, prefs);
   last_pref_accept_language_ = *pref_accept_language_;
   last_http_accept_language_ =
@@ -22,16 +22,16 @@ IOSChromeHttpUserAgentSettings::IOSChromeHttpUserAgentSettings(
 }
 
 IOSChromeHttpUserAgentSettings::~IOSChromeHttpUserAgentSettings() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
 }
 
 void IOSChromeHttpUserAgentSettings::CleanupOnUIThread() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   pref_accept_language_.Destroy();
 }
 
 std::string IOSChromeHttpUserAgentSettings::GetAcceptLanguage() const {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   std::string new_pref_accept_language = *pref_accept_language_;
   if (new_pref_accept_language != last_pref_accept_language_) {
     last_http_accept_language_ =
@@ -42,6 +42,6 @@ std::string IOSChromeHttpUserAgentSettings::GetAcceptLanguage() const {
 }
 
 std::string IOSChromeHttpUserAgentSettings::GetUserAgent() const {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   return web::GetWebClient()->GetUserAgent(false);
 }

@@ -589,7 +589,7 @@ bool IsCompactTablet() {
 
 // Returns the current first responder.
 UIResponder* GetFirstResponder() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   DCHECK(!gFirstResponder);
   [[UIApplication sharedApplication]
       sendAction:@selector(cr_markSelfCurrentFirstResponder)

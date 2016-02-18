@@ -35,7 +35,7 @@ base::FilePath CRLSetFetcher::GetCRLSetFilePath() const {
 
 void CRLSetFetcher::StartInitialLoad(ComponentUpdateService* cus,
                                      const base::FilePath& path) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   if (path.empty())
     return;
   SetCRLSetFilePath(path);
@@ -49,7 +49,7 @@ void CRLSetFetcher::StartInitialLoad(ComponentUpdateService* cus,
 }
 
 void CRLSetFetcher::DeleteFromDisk(const base::FilePath& path) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
 
   if (path.empty())
     return;
@@ -62,7 +62,7 @@ void CRLSetFetcher::DeleteFromDisk(const base::FilePath& path) {
 }
 
 void CRLSetFetcher::DoInitialLoadFromDisk() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::FILE);
+  DCHECK_CURRENTLY_ON(web::WebThread::FILE);
 
   LoadFromDisk(GetCRLSetFilePath(), &crl_set_);
 
@@ -83,7 +83,7 @@ void CRLSetFetcher::LoadFromDisk(base::FilePath path,
                                  scoped_refptr<net::CRLSet>* out_crl_set) {
   TRACE_EVENT0("CRLSetFetcher", "LoadFromDisk");
 
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::FILE);
+  DCHECK_CURRENTLY_ON(web::WebThread::FILE);
 
   std::string crl_set_bytes;
   {
@@ -107,7 +107,7 @@ void CRLSetFetcher::LoadFromDisk(base::FilePath path,
 }
 
 void CRLSetFetcher::SetCRLSetIfNewer(scoped_refptr<net::CRLSet> crl_set) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
 
   scoped_refptr<net::CRLSet> old_crl_set(net::SSLConfigService::GetCRLSet());
   if (old_crl_set.get() && old_crl_set->sequence() > crl_set->sequence()) {
@@ -128,7 +128,7 @@ static const uint8_t kPublicKeySHA256[32] = {
 };
 
 void CRLSetFetcher::RegisterComponent(uint32_t sequence_of_loaded_crl) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
 
   update_client::CrxComponent component;
   component.pk_hash.assign(kPublicKeySHA256,
@@ -147,7 +147,7 @@ void CRLSetFetcher::RegisterComponent(uint32_t sequence_of_loaded_crl) {
 }
 
 void CRLSetFetcher::DoDeleteFromDisk() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::FILE);
+  DCHECK_CURRENTLY_ON(web::WebThread::FILE);
 
   DeleteFile(GetCRLSetFilePath(), false /* not recursive */);
 }

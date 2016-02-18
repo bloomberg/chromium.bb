@@ -18,7 +18,7 @@ int g_active_state_manager_active_count = 0;
 
 ActiveStateManagerImpl::ActiveStateManagerImpl(BrowserState* browser_state)
     : browser_state_(browser_state), active_(false) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
+  DCHECK_CURRENTLY_ON(WebThread::UI);
   DCHECK(browser_state_);
 }
 
@@ -28,7 +28,7 @@ ActiveStateManagerImpl::~ActiveStateManagerImpl() {
 }
 
 void ActiveStateManagerImpl::SetActive(bool active) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
+  DCHECK_CURRENTLY_ON(WebThread::UI);
 
   if (active == active_) {
     return;
@@ -49,17 +49,17 @@ void ActiveStateManagerImpl::SetActive(bool active) {
 }
 
 bool ActiveStateManagerImpl::IsActive() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
+  DCHECK_CURRENTLY_ON(WebThread::UI);
   return active_;
 }
 
 void ActiveStateManagerImpl::AddObserver(ActiveStateManager::Observer* obs) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
+  DCHECK_CURRENTLY_ON(WebThread::UI);
   observer_list_.AddObserver(obs);
 }
 
 void ActiveStateManagerImpl::RemoveObserver(ActiveStateManager::Observer* obs) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
+  DCHECK_CURRENTLY_ON(WebThread::UI);
   observer_list_.RemoveObserver(obs);
 }
 

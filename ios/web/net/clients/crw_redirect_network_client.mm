@@ -24,7 +24,7 @@
     // CRWRedirectNetworkClients are created on the IO thread, but due to the
     // threading restrictions of WeakNSObjects, |delegate_| may only be
     // dereferenced on the UI thread.
-    DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+    DCHECK_CURRENTLY_ON(web::WebThread::IO);
     delegate_ = delegate;
   }
   return self;
@@ -38,7 +38,7 @@
 - (void)wasRedirectedToRequest:(NSURLRequest*)request
                  nativeRequest:(net::URLRequest*)nativeRequest
               redirectResponse:(NSURLResponse*)redirectResponse {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   web::WebThread::PostTask(web::WebThread::UI, FROM_HERE, base::BindBlock(^{
     // |delegate_| can only be dereferenced from the UI thread.
     [delegate_ wasRedirectedToRequest:request

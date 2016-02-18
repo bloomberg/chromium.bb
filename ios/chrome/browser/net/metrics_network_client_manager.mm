@@ -83,14 +83,14 @@
 #pragma mark - public UI-thread methods
 
 - (void)pageLoadStarted:(GURL)url {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   web::WebThread::PostTask(web::WebThread::IO, FROM_HERE, base::BindBlock(^{
     [self handlePageLoadStarted:url];
   }));
 }
 
 - (void)pageLoadCompleted {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   web::WebThread::PostTask(web::WebThread::IO, FROM_HERE, base::BindBlock(^{
     [self handlePageLoadCompleted];
   }));
@@ -100,7 +100,7 @@
 
 - (PageLoadTimeRecord*)recordForPageLoad:(const GURL&)url
                                     time:(base::TimeTicks)time {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   base::scoped_nsobject<PageLoadTimeRecord> plt;
   if (!_pageURL.spec().empty() && url == _pageURL) {
     plt.reset([[PageLoadTimeRecord alloc] initWithURL:url time:time]);
@@ -112,13 +112,13 @@
 #pragma mark - IO-thread handlers for UI thread methods.
 
 - (void)handlePageLoadStarted:(const GURL&)url {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   [_pageLoadTimes removeAllObjects];
   _pageURL = url;
 }
 
 - (void)handlePageLoadCompleted {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   for (PageLoadTimeRecord* plt in _pageLoadTimes.get()) {
     if (plt.url == _pageURL && !plt.alreadyCounted) {
       plt.alreadyCounted = YES;

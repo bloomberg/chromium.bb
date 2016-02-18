@@ -57,7 +57,7 @@ int64_t ComputeFilesSize(const base::FilePath& directory,
 
 // Simple task to log the size of the browser state at |path|.
 void BrowserStateSizeTask(const base::FilePath& path) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::FILE);
+  DCHECK_CURRENTLY_ON(web::WebThread::FILE);
   const int64_t kBytesInOneMB = 1024 * 1024;
 
   int64_t size = ComputeFilesSize(path, FILE_PATH_LITERAL("*"));

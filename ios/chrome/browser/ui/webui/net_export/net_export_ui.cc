@@ -105,7 +105,7 @@ NetExportMessageHandler::~NetExportMessageHandler() {
 }
 
 void NetExportMessageHandler::RegisterMessages() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
 
   web_ui()->RegisterMessageCallback(
       net_log::kGetExportNetLogInfoHandler,
@@ -178,7 +178,7 @@ void NetExportMessageHandler::ProcessNetLogCommand(
     return;
   }
 
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::FILE_USER_BLOCKING);
+  DCHECK_CURRENTLY_ON(web::WebThread::FILE_USER_BLOCKING);
   net_log_temp_file->ProcessCommand(command);
   SendExportNetLogInfo(net_export_message_handler, net_log_temp_file);
 }
@@ -186,7 +186,7 @@ void NetExportMessageHandler::ProcessNetLogCommand(
 // static
 base::FilePath NetExportMessageHandler::GetNetLogFileName(
     net_log::NetLogTempFile* net_log_temp_file) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::FILE_USER_BLOCKING);
+  DCHECK_CURRENTLY_ON(web::WebThread::FILE_USER_BLOCKING);
   base::FilePath net_export_file_path;
   net_log_temp_file->GetFilePath(&net_export_file_path);
   return net_export_file_path;
@@ -196,7 +196,7 @@ base::FilePath NetExportMessageHandler::GetNetLogFileName(
 void NetExportMessageHandler::SendExportNetLogInfo(
     base::WeakPtr<NetExportMessageHandler> net_export_message_handler,
     net_log::NetLogTempFile* net_log_temp_file) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::FILE_USER_BLOCKING);
+  DCHECK_CURRENTLY_ON(web::WebThread::FILE_USER_BLOCKING);
   base::Value* value = net_log_temp_file->GetState();
   if (!web::WebThread::PostTask(
           web::WebThread::UI, FROM_HERE,
@@ -211,7 +211,7 @@ void NetExportMessageHandler::SendExportNetLogInfo(
 void NetExportMessageHandler::SendEmail(const base::FilePath& file_to_send) {
   if (file_to_send.empty())
     return;
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
 
   std::string email;
   std::string subject = "net_internals_log";
@@ -227,7 +227,7 @@ void NetExportMessageHandler::SendEmail(const base::FilePath& file_to_send) {
 
 void NetExportMessageHandler::OnExportNetLogInfoChanged(base::Value* arg) {
   scoped_ptr<base::Value> value(arg);
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   web_ui()->CallJavascriptFunction(net_log::kOnExportNetLogInfoChanged, *arg);
 }
 

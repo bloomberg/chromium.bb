@@ -46,7 +46,7 @@ URLDataManagerIOS::URLDataSources* URLDataManagerIOS::data_sources_ = NULL;
 void URLDataManagerIOS::AddDataSourceOnIOThread(
     BrowserState* browser_state,
     scoped_refptr<URLDataSourceIOSImpl> data_source) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   browser_state->GetURLDataManagerIOSBackendOnIOThread()->AddDataSource(
       data_source.get());
 }
@@ -59,7 +59,7 @@ URLDataManagerIOS::~URLDataManagerIOS() {
 }
 
 void URLDataManagerIOS::AddDataSource(URLDataSourceIOSImpl* source) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   web::WebThread::PostTask(
       web::WebThread::IO, FROM_HERE,
       base::Bind(&AddDataSourceOnIOThread, base::Unretained(browser_state_),
@@ -68,7 +68,7 @@ void URLDataManagerIOS::AddDataSource(URLDataSourceIOSImpl* source) {
 
 // static
 void URLDataManagerIOS::DeleteDataSources() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   URLDataSources sources;
   {
     base::AutoLock lock(g_delete_lock.Get());

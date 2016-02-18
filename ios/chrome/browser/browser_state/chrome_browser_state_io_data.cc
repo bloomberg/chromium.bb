@@ -74,7 +74,7 @@ namespace {
 void NotifyContextGettersOfShutdownOnIO(
     scoped_ptr<ChromeBrowserStateIOData::IOSChromeURLRequestContextGetterVector>
         getters) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   ChromeBrowserStateIOData::IOSChromeURLRequestContextGetterVector::iterator
       iter;
   for (auto& chrome_context_getter : *getters)
@@ -85,7 +85,7 @@ void NotifyContextGettersOfShutdownOnIO(
 
 void ChromeBrowserStateIOData::InitializeOnUIThread(
     ios::ChromeBrowserState* browser_state) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   PrefService* pref_service = browser_state->GetPrefs();
   scoped_ptr<ProfileParams> params(new ProfileParams);
   params->path = browser_state->GetOriginalChromeBrowserState()->GetStatePath();
@@ -165,12 +165,12 @@ ChromeBrowserStateIOData::ChromeBrowserStateIOData(
     : initialized_(false),
       initialized_on_UI_thread_(false),
       browser_state_type_(browser_state_type) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
 }
 
 ChromeBrowserStateIOData::~ChromeBrowserStateIOData() {
   if (web::WebThread::IsMessageLoopValid(web::WebThread::IO))
-    DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+    DCHECK_CURRENTLY_ON(web::WebThread::IO);
 
   // Pull the contents of the request context maps onto the stack for sanity
   // checking of values in a minidump. http://crbug.com/260425
@@ -287,7 +287,7 @@ bool ChromeBrowserStateIOData::IsOffTheRecord() const {
 }
 
 void ChromeBrowserStateIOData::InitializeMetricsEnabledStateOnUIThread() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   // Prep the PrefMember and send it to the IO thread, since this value will be
   // read from there.
   enable_metrics_.Init(metrics::prefs::kMetricsReportingEnabled,
@@ -297,7 +297,7 @@ void ChromeBrowserStateIOData::InitializeMetricsEnabledStateOnUIThread() {
 }
 
 bool ChromeBrowserStateIOData::GetMetricsEnabledStateOnIOThread() const {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   return enable_metrics_.GetValue();
 }
 
@@ -327,7 +327,7 @@ void ChromeBrowserStateIOData::Init(
   // The basic logic is implemented here. The specific initialization
   // is done in InitializeInternal(), implemented by subtypes. Static helper
   // functions have been provided to assist in common operations.
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   DCHECK(!initialized_);
 
   // TODO(jhawkins): Remove once crbug.com/102004 is fixed.
@@ -425,7 +425,7 @@ ChromeBrowserStateIOData::SetUpJobFactoryDefaults(
 
 void ChromeBrowserStateIOData::ShutdownOnUIThread(
     scoped_ptr<IOSChromeURLRequestContextGetterVector> context_getters) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
 
   google_services_user_account_id_.Destroy();
   enable_referrers_.Destroy();

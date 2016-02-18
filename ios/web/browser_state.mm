@@ -36,7 +36,7 @@ struct CertificatePolicyCacheHandle : public base::SupportsUserData::Data {
 // static
 scoped_refptr<CertificatePolicyCache> BrowserState::GetCertificatePolicyCache(
     BrowserState* browser_state) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
+  DCHECK_CURRENTLY_ON(WebThread::UI);
   if (!browser_state->GetUserData(kCertificatePolicyCacheKeyName)) {
     CertificatePolicyCacheHandle* cert_cache_service_handle =
         new CertificatePolicyCacheHandle(new CertificatePolicyCache());
@@ -53,14 +53,14 @@ scoped_refptr<CertificatePolicyCache> BrowserState::GetCertificatePolicyCache(
 
 // static
 bool BrowserState::HasActiveStateManager(BrowserState* browser_state) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
+  DCHECK_CURRENTLY_ON(WebThread::UI);
   return browser_state->GetUserData(kActiveStateManagerKeyName) != nullptr;
 }
 
 // static
 ActiveStateManager* BrowserState::GetActiveStateManager(
     BrowserState* browser_state) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
+  DCHECK_CURRENTLY_ON(WebThread::UI);
   DCHECK(browser_state);
 
   ActiveStateManagerImpl* active_state_manager =
@@ -77,7 +77,7 @@ ActiveStateManager* BrowserState::GetActiveStateManager(
 // static
 BrowsingDataPartition* BrowserState::GetBrowsingDataPartition(
     BrowserState* browser_state) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
+  DCHECK_CURRENTLY_ON(WebThread::UI);
   DCHECK(browser_state);
 
   BrowsingDataPartitionImpl* browsing_data_partition =
@@ -115,7 +115,7 @@ BrowserState::~BrowserState() {
 
 URLDataManagerIOSBackend*
 BrowserState::GetURLDataManagerIOSBackendOnIOThread() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   if (!url_data_manager_ios_backend_)
     url_data_manager_ios_backend_ = new URLDataManagerIOSBackend();
   return url_data_manager_ios_backend_;

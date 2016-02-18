@@ -49,7 +49,7 @@ SyncInternalsMessageHandler::~SyncInternalsMessageHandler() {
 }
 
 void SyncInternalsMessageHandler::RegisterMessages() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
 
   web_ui()->RegisterMessageCallback(
       sync_driver::sync_ui_util::kRegisterForEvents,

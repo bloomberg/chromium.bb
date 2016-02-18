@@ -49,7 +49,7 @@ scoped_ptr<net::ProxyService> ProxyServiceFactory::CreateProxyService(
     net::NetworkDelegate* network_delegate,
     scoped_ptr<net::ProxyConfigService> proxy_config_service,
     bool quick_check_enabled) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   scoped_ptr<net::ProxyService> proxy_service(
       net::ProxyService::CreateUsingSystemProxyResolver(
           std::move(proxy_config_service), 0, net_log));

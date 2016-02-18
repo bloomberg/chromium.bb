@@ -99,7 +99,7 @@ SafeBrowsingUIManager::SafeBrowsingUIManager(
 SafeBrowsingUIManager::~SafeBrowsingUIManager() {}
 
 void SafeBrowsingUIManager::StopOnIOThread(bool shutdown) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
 
   if (shutdown)
     sb_service_ = nullptr;
@@ -112,7 +112,7 @@ void SafeBrowsingUIManager::LogPauseDelay(base::TimeDelta time) {
 void SafeBrowsingUIManager::OnBlockingPageDone(
     const std::vector<UnsafeResource>& resources,
     bool proceed) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   for (const auto& resource : resources) {
     if (!resource.callback.is_null()) {
       DCHECK(resource.callback_thread);
@@ -127,7 +127,7 @@ void SafeBrowsingUIManager::OnBlockingPageDone(
 
 void SafeBrowsingUIManager::DisplayBlockingPage(
     const UnsafeResource& resource) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   if (resource.is_subresource && !resource.is_subframe) {
     // Sites tagged as serving Unwanted Software should only show a warning for
     // main-frame or sub-frame resource. Similar warning restrictions should be
@@ -220,7 +220,7 @@ void SafeBrowsingUIManager::DisplayBlockingPage(
 // UMA || extended_reporting users.
 void SafeBrowsingUIManager::MaybeReportSafeBrowsingHit(
     const HitReport& hit_report) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
 
   // Decide if we should send this report.
   if (hit_report.is_metrics_reporting_active ||
@@ -234,7 +234,7 @@ void SafeBrowsingUIManager::MaybeReportSafeBrowsingHit(
 
 void SafeBrowsingUIManager::ReportSafeBrowsingHitOnIOThread(
     const HitReport& hit_report) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
 
   // The service may delete the ping manager (i.e. when user disabling service,
   // etc). This happens on the IO thread.
@@ -250,7 +250,7 @@ void SafeBrowsingUIManager::ReportSafeBrowsingHitOnIOThread(
 void SafeBrowsingUIManager::ReportInvalidCertificateChain(
     const std::string& serialized_report,
     const base::Closure& callback) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   web::WebThread::PostTaskAndReply(
       web::WebThread::IO, FROM_HERE,
       base::Bind(
@@ -260,18 +260,18 @@ void SafeBrowsingUIManager::ReportInvalidCertificateChain(
 }
 
 void SafeBrowsingUIManager::AddObserver(Observer* observer) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   observer_list_.AddObserver(observer);
 }
 
 void SafeBrowsingUIManager::RemoveObserver(Observer* observer) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   observer_list_.RemoveObserver(observer);
 }
 
 void SafeBrowsingUIManager::ReportInvalidCertificateChainOnIOThread(
     const std::string& serialized_report) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
 
   // The service may delete the ping manager (i.e. when user disabling service,
   // etc). This happens on the IO thread.
@@ -285,7 +285,7 @@ void SafeBrowsingUIManager::ReportInvalidCertificateChainOnIOThread(
 // when the report is ready.
 void SafeBrowsingUIManager::SendSerializedThreatDetails(
     const std::string& serialized) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
 
   // The service may delete the ping manager (i.e. when user disabling service,
   // etc). This happens on the IO thread.
@@ -301,7 +301,7 @@ void SafeBrowsingUIManager::SendSerializedThreatDetails(
 // Whitelist this domain in the current WebState. Either add the
 // domain to an existing WhitelistUrlSet, or create a new WhitelistUrlSet.
 void SafeBrowsingUIManager::AddToWhitelist(const UnsafeResource& resource) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   DCHECK(resource.weak_web_state.get());
 
   web::WebState* web_state = resource.weak_web_state.get();
@@ -320,7 +320,7 @@ void SafeBrowsingUIManager::AddToWhitelist(const UnsafeResource& resource) {
 // Check if the user has already ignored a SB warning for this WebState and
 // top-level domain.
 bool SafeBrowsingUIManager::IsWhitelisted(const UnsafeResource& resource) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   DCHECK(resource.weak_web_state.get());
 
   web::WebState* web_state = resource.weak_web_state.get();

@@ -23,7 +23,7 @@
 - (CRNForwardingNetworkClient*)
     clientHandlingResponse:(NSURLResponse*)response
                    request:(const net::URLRequest&)request {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
 
   // Some requests (e.g., for chrome:// urls) will not have response headers.
   net::HttpResponseHeaders* responseHeaders = request.response_headers();

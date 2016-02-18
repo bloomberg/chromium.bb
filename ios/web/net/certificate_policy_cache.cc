@@ -18,7 +18,7 @@ CertificatePolicyCache::~CertificatePolicyCache() {
 void CertificatePolicyCache::AllowCertForHost(net::X509Certificate* cert,
                                               const std::string& host,
                                               net::CertStatus error) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::IO);
+  DCHECK_CURRENTLY_ON(WebThread::IO);
   cert_policy_for_host_[host].Allow(cert, error);
 }
 
@@ -26,12 +26,12 @@ CertPolicy::Judgment CertificatePolicyCache::QueryPolicy(
     net::X509Certificate* cert,
     const std::string& host,
     net::CertStatus error) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::IO);
+  DCHECK_CURRENTLY_ON(WebThread::IO);
   return cert_policy_for_host_[host].Check(cert, error);
 }
 
 void CertificatePolicyCache::ClearCertificatePolicies() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::IO);
+  DCHECK_CURRENTLY_ON(WebThread::IO);
   cert_policy_for_host_.clear();
 }
 

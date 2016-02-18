@@ -136,7 +136,7 @@ void IOSChromeBrowsingDataRemover::Remove(int remove_mask) {
 
 void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask,
                                               const GURL& remove_url) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
+  DCHECK_CURRENTLY_ON(WebThread::UI);
   set_removing(true);
   remove_mask_ = remove_mask;
 
@@ -454,13 +454,13 @@ void IOSChromeBrowsingDataRemover::NotifyAndDeleteIfDone() {
 }
 
 void IOSChromeBrowsingDataRemover::OnClearedHostnameResolutionCache() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
+  DCHECK_CURRENTLY_ON(WebThread::UI);
   waiting_for_clear_hostname_resolution_cache_ = false;
   NotifyAndDeleteIfDone();
 }
 
 void IOSChromeBrowsingDataRemover::OnClearedNetworkingHistory() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
+  DCHECK_CURRENTLY_ON(WebThread::UI);
   waiting_for_clear_networking_history_ = false;
   NotifyAndDeleteIfDone();
 }
@@ -472,7 +472,7 @@ void IOSChromeBrowsingDataRemover::OnClearedCache(int error) {
 }
 
 void IOSChromeBrowsingDataRemover::OnClearedPasswords() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
+  DCHECK_CURRENTLY_ON(WebThread::UI);
   waiting_for_clear_passwords_ = false;
   NotifyAndDeleteIfDone();
 }
@@ -494,7 +494,7 @@ void IOSChromeBrowsingDataRemover::OnClearedCookies(int num_deleted) {
 void IOSChromeBrowsingDataRemover::ClearCookiesOnIOThread(
     const scoped_refptr<net::URLRequestContextGetter>& rq_context,
     const GURL& storage_url) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::IO);
+  DCHECK_CURRENTLY_ON(WebThread::IO);
   net::CookieStore* cookie_store =
       rq_context->GetURLRequestContext()->cookie_store();
   if (storage_url.is_empty()) {
@@ -512,7 +512,7 @@ void IOSChromeBrowsingDataRemover::ClearCookiesOnIOThread(
 
 void IOSChromeBrowsingDataRemover::ClearChannelIDsOnIOThread(
     const scoped_refptr<net::URLRequestContextGetter>& rq_context) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::IO);
+  DCHECK_CURRENTLY_ON(WebThread::IO);
   net::ChannelIDService* channel_id_service =
       rq_context->GetURLRequestContext()->channel_id_service();
   channel_id_service->GetChannelIDStore()->DeleteAllCreatedBetween(
@@ -537,19 +537,19 @@ void IOSChromeBrowsingDataRemover::OnClearedChannelIDsOnIOThread(
 }
 
 void IOSChromeBrowsingDataRemover::OnClearedChannelIDs() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
+  DCHECK_CURRENTLY_ON(WebThread::UI);
   waiting_for_clear_channel_ids_ = false;
   NotifyAndDeleteIfDone();
 }
 
 void IOSChromeBrowsingDataRemover::OnClearedFormData() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
+  DCHECK_CURRENTLY_ON(WebThread::UI);
   waiting_for_clear_form_ = false;
   NotifyAndDeleteIfDone();
 }
 
 void IOSChromeBrowsingDataRemover::OnClearedAutofillOriginURLs() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
+  DCHECK_CURRENTLY_ON(WebThread::UI);
   waiting_for_clear_autofill_origin_urls_ = false;
   NotifyAndDeleteIfDone();
 }

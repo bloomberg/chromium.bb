@@ -131,7 +131,7 @@ const net::BackoffEntry::Policy kPollingBackoffPolicy = {
 }
 
 - (void)unregisterForNotifications:(id)observer {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   NSValue* weakReferenceToObserver =
       [NSValue valueWithNonretainedObject:observer];
   [_notificationCenter removeObserver:observer];
@@ -155,7 +155,7 @@ const net::BackoffEntry::Policy kPollingBackoffPolicy = {
 }
 
 - (void)dispatchInstallationNotifierBlock {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   int blockId = ++lastCreatedBlockId_;
   _backoffEntry->InformOfRequest(false);
   int64_t delayInNSec =
@@ -163,7 +163,7 @@ const net::BackoffEntry::Policy kPollingBackoffPolicy = {
   base::WeakNSObject<InstallationNotifier> weakSelf(self);
   [_dispatcher dispatchAfter:delayInNSec
                    withBlock:^{
-                     DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+                     DCHECK_CURRENTLY_ON(web::WebThread::UI);
                      base::scoped_nsobject<InstallationNotifier> strongSelf(
                          [weakSelf retain]);
                      if (blockId == [strongSelf lastCreatedBlockId]) {
@@ -173,7 +173,7 @@ const net::BackoffEntry::Policy kPollingBackoffPolicy = {
 }
 
 - (void)pollForTheInstallationOfApps {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   __block BOOL keepPolling = NO;
   NSMutableSet* keysToDelete = [NSMutableSet set];
   [_installedAppObservers enumerateKeysAndObjectsUsingBlock:^(id scheme,

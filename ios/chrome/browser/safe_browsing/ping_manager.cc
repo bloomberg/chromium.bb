@@ -41,7 +41,7 @@ namespace safe_browsing {
 SafeBrowsingPingManager* SafeBrowsingPingManager::Create(
     net::URLRequestContextGetter* request_context_getter,
     const SafeBrowsingProtocolConfig& config) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   return new SafeBrowsingPingManager(request_context_getter, config);
 }
 

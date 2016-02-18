@@ -104,7 +104,7 @@ SafeBrowsingURLRequestContextGetter::SafeBrowsingURLRequestContextGetter(
 
 net::URLRequestContext*
 SafeBrowsingURLRequestContextGetter::GetURLRequestContext() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
 
   // Check if the service has been shut down.
   if (shut_down_)
@@ -140,7 +140,7 @@ SafeBrowsingURLRequestContextGetter::GetNetworkTaskRunner() const {
 }
 
 void SafeBrowsingURLRequestContextGetter::ServiceShuttingDown() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
 
   shut_down_ = true;
   URLRequestContextGetter::NotifyContextShuttingDown();
@@ -243,13 +243,13 @@ void SafeBrowsingService::ShutDown() {
 
 // Binhash verification is only enabled for UMA users for now.
 bool SafeBrowsingService::DownloadBinHashNeeded() const {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
 
   return false;
 }
 
 net::URLRequestContextGetter* SafeBrowsingService::url_request_context() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   return url_request_context_getter_.get();
 }
 
@@ -259,7 +259,7 @@ const scoped_refptr<SafeBrowsingUIManager>& SafeBrowsingService::ui_manager()
 }
 
 SafeBrowsingPingManager* SafeBrowsingService::ping_manager() const {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   return ping_manager_;
 }
 
@@ -311,7 +311,7 @@ SafeBrowsingProtocolConfig SafeBrowsingService::GetProtocolConfig() const {
 
 void SafeBrowsingService::StartOnIOThread(
     net::URLRequestContextGetter* url_request_context_getter) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   if (enabled_)
     return;
   enabled_ = true;
@@ -324,7 +324,7 @@ void SafeBrowsingService::StartOnIOThread(
 }
 
 void SafeBrowsingService::StopOnIOThread(bool shutdown) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
 
   ui_manager_->StopOnIOThread(shutdown);
 
@@ -337,7 +337,7 @@ void SafeBrowsingService::StopOnIOThread(bool shutdown) {
 }
 
 void SafeBrowsingService::Start() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
 
   web::WebThread::PostTask(web::WebThread::IO, FROM_HERE,
                            base::Bind(&SafeBrowsingService::StartOnIOThread,
@@ -386,12 +386,12 @@ void SafeBrowsingService::RemovePrefService(PrefService* pref_service) {
 scoped_ptr<SafeBrowsingService::StateSubscription>
 SafeBrowsingService::RegisterStateCallback(
     const base::Callback<void(void)>& callback) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   return state_callback_list_.Add(callback);
 }
 
 void SafeBrowsingService::RefreshState() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   // Check if any browser state requires the service to be active.
   bool enable = false;
   std::map<PrefService*, PrefChangeRegistrar*>::iterator iter;
@@ -414,7 +414,7 @@ void SafeBrowsingService::RefreshState() {
 
 void SafeBrowsingService::SendDownloadRecoveryReport(
     const std::string& report) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   web::WebThread::PostTask(
       web::WebThread::IO, FROM_HERE,
       base::Bind(&SafeBrowsingService::OnSendDownloadRecoveryReport, this,
@@ -423,7 +423,7 @@ void SafeBrowsingService::SendDownloadRecoveryReport(
 
 void SafeBrowsingService::OnSendDownloadRecoveryReport(
     const std::string& report) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   if (ping_manager())
     ping_manager()->ReportThreatDetails(report);
 }

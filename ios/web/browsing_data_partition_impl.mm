@@ -106,7 +106,7 @@ CRWBrowsingDataStoreModeObserver* g_browsing_data_store_mode_observer = nil;
 BrowsingDataPartitionImpl::BrowsingDataPartitionImpl(
     BrowserState* browser_state)
     : browser_state_(browser_state) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
+  DCHECK_CURRENTLY_ON(WebThread::UI);
   DCHECK(browser_state);
 
   active_state_manager_ = BrowserState::GetActiveStateManager(browser_state);
@@ -129,7 +129,7 @@ bool BrowsingDataPartition::IsSynchronized() {
 }
 
 CRWBrowsingDataStore* BrowsingDataPartitionImpl::GetBrowsingDataStore() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
+  DCHECK_CURRENTLY_ON(WebThread::UI);
 
   if (!browsing_data_store_) {
     browsing_data_store_.reset(
@@ -146,19 +146,19 @@ CRWBrowsingDataStore* BrowsingDataPartitionImpl::GetBrowsingDataStore() {
 }
 
 void BrowsingDataPartitionImpl::OnActive() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
+  DCHECK_CURRENTLY_ON(WebThread::UI);
 
   [GetBrowsingDataStore() makeActiveWithCompletionHandler:nil];
 }
 
 void BrowsingDataPartitionImpl::OnInactive() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
+  DCHECK_CURRENTLY_ON(WebThread::UI);
 
   [GetBrowsingDataStore() makeInactiveWithCompletionHandler:nil];
 }
 
 void BrowsingDataPartitionImpl::WillBeDestroyed() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
+  DCHECK_CURRENTLY_ON(WebThread::UI);
 
   active_state_manager_->RemoveObserver(this);
   active_state_manager_ = nullptr;

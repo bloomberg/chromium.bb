@@ -97,7 +97,7 @@ IOSChromeURLRequestContextGetter::~IOSChromeURLRequestContextGetter() {
 // Lazily create a URLRequestContext using our factory.
 net::URLRequestContext*
 IOSChromeURLRequestContextGetter::GetURLRequestContext() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
 
   if (factory_.get()) {
     DCHECK(!url_request_context_);
@@ -109,7 +109,7 @@ IOSChromeURLRequestContextGetter::GetURLRequestContext() {
 }
 
 void IOSChromeURLRequestContextGetter::NotifyContextShuttingDown() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
 
   factory_.reset();
   url_request_context_ = nullptr;

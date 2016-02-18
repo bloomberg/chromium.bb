@@ -80,13 +80,13 @@ class SafeBrowsingService
 
   // Get current enabled status. Must be called on IO thread.
   bool enabled() const {
-    DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+    DCHECK_CURRENTLY_ON(web::WebThread::IO);
     return enabled_;
   }
 
   // Whether the service is enabled by the current set of profiles.
   bool enabled_by_prefs() const {
-    DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+    DCHECK_CURRENTLY_ON(web::WebThread::UI);
     return enabled_by_prefs_;
   }
 

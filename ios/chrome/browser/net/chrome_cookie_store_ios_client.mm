@@ -12,7 +12,7 @@ ChromeCookieStoreIOSClient::ChromeCookieStoreIOSClient(
     id<BrowsingDataChangeListening> browsing_data_change_listener)
     : browsing_data_change_listener_(browsing_data_change_listener) {
   DCHECK(browsing_data_change_listener);
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
 }
 
 void ChromeCookieStoreIOSClient::DidChangeCookieStorage() const {

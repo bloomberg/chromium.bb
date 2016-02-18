@@ -73,7 +73,7 @@ pthread_once_t g_once_control = PTHREAD_ONCE_INIT;
 static bool g_waiting_on_io_thread = false;
 base::Lock* g_waiting_on_io_thread_lock = NULL;
 void StopIOThreadWaiting() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   base::AutoLock scoped_lock(*g_waiting_on_io_thread_lock);
   g_waiting_on_io_thread = false;
 }
@@ -103,7 +103,7 @@ static bool IsIntranetHost(const std::string& host) {
 
 // Add |tracker| to |g_trackers| under |key|.
 static void RegisterTracker(web::RequestTrackerImpl* tracker, NSString* key) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   pthread_once(&g_once_control, &InitializeGlobals);
   {
     base::scoped_nsobject<NSString> scoped_key([key copy]);
@@ -132,7 +132,7 @@ struct TrackerCounts {
         expected_length(0),
         processed(0),
         done(false) {
-    DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+    DCHECK_CURRENTLY_ON(web::WebThread::IO);
     is_subrequest = tracked_request->first_party_for_cookies().is_valid() &&
         tracked_request->url() != tracked_request->first_party_for_cookies();
   };
@@ -261,7 +261,7 @@ struct TrackerCounts {
 }
 
 - (void)buildSSLStatus {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   if (!sslInfo_.is_valid())
     return;
 
@@ -348,7 +348,7 @@ RequestTrackerImpl::CreateTrackerForRequestGroupID(
     BrowserState* browser_state,
     net::URLRequestContextGetter* context_getter,
     id<CRWRequestTrackerDelegate> delegate) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   DCHECK(request_group_id);
 
   scoped_refptr<RequestTrackerImpl> tracker =
@@ -367,7 +367,7 @@ RequestTrackerImpl::CreateTrackerForRequestGroupID(
 }
 
 void RequestTrackerImpl::StartPageLoad(const GURL& url, id user_info) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   base::scoped_nsobject<id> scoped_user_info([user_info retain]);
   web::WebThread::PostTask(
       web::WebThread::IO, FROM_HERE,
@@ -375,14 +375,14 @@ void RequestTrackerImpl::StartPageLoad(const GURL& url, id user_info) {
 }
 
 void RequestTrackerImpl::FinishPageLoad(const GURL& url, bool load_success) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   web::WebThread::PostTask(
       web::WebThread::IO, FROM_HERE,
       base::Bind(&RequestTrackerImpl::StopPageLoad, this, url, load_success));
 }
 
 void RequestTrackerImpl::HistoryStateChange(const GURL& url) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   web::WebThread::PostTask(
       web::WebThread::IO, FROM_HERE,
       base::Bind(&RequestTrackerImpl::HistoryStateChangeToURL, this, url));
@@ -393,7 +393,7 @@ void RequestTrackerImpl::HistoryStateChange(const GURL& url) {
 // the UI thread that will make use of the fields being cleaned-up here; they
 // must ensure they they operate without crashing with the cleaned-up values.
 void RequestTrackerImpl::Close() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   // Mark the tracker as closing on the IO thread. Note that because the local
   // scoped_refptr here retains |this|, we a are guaranteed that destruiction
   // won't begin until the block completes, and thus |is_closing_| will always
@@ -415,7 +415,7 @@ void RequestTrackerImpl::Close() {
 
 // static
 void RequestTrackerImpl::RunAfterRequestsCancel(const base::Closure& callback) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   // Post a no-op to the IO thread, and after that has executed, run |callback|.
   // This ensures that |callback| runs after anything elese queued on the IO
   // thread, in particular CancelRequest() calls made from closing trackers.
@@ -425,7 +425,7 @@ void RequestTrackerImpl::RunAfterRequestsCancel(const base::Closure& callback) {
 
 // static
 void RequestTrackerImpl::BlockUntilTrackersShutdown() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   {
     base::AutoLock scoped_lock(*g_waiting_on_io_thread_lock);
     g_waiting_on_io_thread = true;
@@ -454,7 +454,7 @@ void RequestTrackerImpl::BlockUntilTrackersShutdown() {
 RequestTrackerImpl* RequestTrackerImpl::GetTrackerForRequestGroupID(
     NSString* request_group_id) {
   DCHECK(request_group_id);
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   RequestTrackerImpl* tracker = nullptr;
   TrackerMap::iterator map_it;
   pthread_once(&g_once_control, &InitializeGlobals);
@@ -469,12 +469,12 @@ RequestTrackerImpl* RequestTrackerImpl::GetTrackerForRequestGroupID(
 }
 
 net::URLRequestContext* RequestTrackerImpl::GetRequestContext() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   return request_context_getter_->GetURLRequestContext();
 }
 
 void RequestTrackerImpl::StartRequest(net::URLRequest* request) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   DCHECK(!counts_by_request_.count(request));
   DCHECK_EQ(is_for_static_file_requests_, request->url().SchemeIsFile());
 
@@ -507,7 +507,7 @@ void RequestTrackerImpl::StartRequest(net::URLRequest* request) {
 }
 
 void RequestTrackerImpl::CaptureHeaders(net::URLRequest* request) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   if (is_closing_)
     return;
 
@@ -523,7 +523,7 @@ void RequestTrackerImpl::CaptureHeaders(net::URLRequest* request) {
 
 void RequestTrackerImpl::CaptureExpectedLength(const net::URLRequest* request,
                                                uint64_t length) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   if (counts_by_request_.count(request)) {
     TrackerCounts* counts = counts_by_request_[request];
     DCHECK(!counts->done);
@@ -539,7 +539,7 @@ void RequestTrackerImpl::CaptureExpectedLength(const net::URLRequest* request,
 
 void RequestTrackerImpl::CaptureReceivedBytes(const net::URLRequest* request,
                                               uint64_t byte_count) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   if (counts_by_request_.count(request)) {
     TrackerCounts* counts = counts_by_request_[request];
     DCHECK(!counts->done);
@@ -557,7 +557,7 @@ void RequestTrackerImpl::CaptureReceivedBytes(const net::URLRequest* request,
 }
 
 void RequestTrackerImpl::StopRequest(net::URLRequest* request) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
 
   int removedRequests = live_requests_.erase(request);
   if (!is_for_static_file_requests_ && removedRequests > 0) {
@@ -577,7 +577,7 @@ void RequestTrackerImpl::StopRequest(net::URLRequest* request) {
 }
 
 void RequestTrackerImpl::StopRedirectedRequest(net::URLRequest* request) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
 
   int removedRequests = live_requests_.erase(request);
   if (!is_for_static_file_requests_ && removedRequests > 0) {
@@ -604,7 +604,7 @@ void RequestTrackerImpl::StopRedirectedRequest(net::URLRequest* request) {
 void RequestTrackerImpl::CaptureCertificatePolicyCache(
     const net::URLRequest* request,
     const RequestTracker::SSLCallback& should_continue) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   std::string host = request->url().host();
   CertPolicy::Judgment judgment = policy_cache_->QueryPolicy(
       request->ssl_info().cert.get(), host, request->ssl_info().cert_status);
@@ -636,7 +636,7 @@ void RequestTrackerImpl::OnSSLCertificateError(
     const net::SSLInfo& ssl_info,
     bool recoverable,
     const RequestTracker::SSLCallback& should_continue) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   DCHECK(ssl_info.is_valid());
 
   if (counts_by_request_.count(request)) {
@@ -653,7 +653,7 @@ void RequestTrackerImpl::OnSSLCertificateError(
 }
 
 void RequestTrackerImpl::ErrorCallback(CRWSSLCarrier* carrier, bool allow) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   DCHECK(policy_cache_);
 
   if (allow) {
@@ -687,13 +687,13 @@ void RequestTrackerImpl::PostIOTask(const base::Closure& task) {
 }
 
 void RequestTrackerImpl::ScheduleIOTask(const base::Closure& task) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   web::WebThread::PostTask(web::WebThread::IO, FROM_HERE, task);
 }
 
 void RequestTrackerImpl::SetCacheModeFromUIThread(
     RequestTracker::CacheMode mode) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   web::WebThread::PostTask(
       web::WebThread::IO, FROM_HERE,
       base::Bind(&RequestTracker::SetCacheMode, this, mode));
@@ -718,12 +718,12 @@ RequestTrackerImpl::RequestTrackerImpl(
       identifier_(++g_next_request_tracker_id),
       request_group_id_([request_group_id copy]),
       is_closing_(false) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
 }
 
 void RequestTrackerImpl::InitOnIOThread(
     const scoped_refptr<CertificatePolicyCache>& policy_cache) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   Init();
   DCHECK(policy_cache);
   policy_cache_ = policy_cache;
@@ -752,7 +752,7 @@ void RequestTrackerImplTraits::Destruct(const RequestTrackerImpl* t) {
 }
 
 void RequestTrackerImpl::Destruct() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   DCHECK(is_closing_);
 
   pthread_once(&g_once_control, &InitializeGlobals);
@@ -770,7 +770,7 @@ void RequestTrackerImpl::Destruct() {
 #pragma mark Other private methods
 
 void RequestTrackerImpl::Notify() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   if (is_closing_)
     return;
   // Notify() is called asynchronously, it runs later on the same
@@ -783,7 +783,7 @@ void RequestTrackerImpl::Notify() {
 }
 
 void RequestTrackerImpl::StackNotification() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   if (is_closing_)
     return;
 
@@ -807,7 +807,7 @@ void RequestTrackerImpl::StackNotification() {
 }
 
 void RequestTrackerImpl::SSLNotify() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   if (is_closing_)
     return;
 
@@ -839,7 +839,7 @@ void RequestTrackerImpl::SSLNotify() {
 void RequestTrackerImpl::NotifyResponseHeaders(
     net::HttpResponseHeaders* headers,
     const GURL& request_url) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   [delegate_ handleResponseHeaders:headers requestUrl:request_url];
 }
 
@@ -847,23 +847,23 @@ void RequestTrackerImpl::NotifyCertificateUsed(
     net::X509Certificate* certificate,
     const std::string& host,
     net::CertStatus status) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   [delegate_ certificateUsed:certificate forHost:host status:status];
 }
 
 void RequestTrackerImpl::NotifyUpdatedProgress(float estimate) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   [delegate_ updatedProgress:estimate];
 }
 
 void RequestTrackerImpl::NotifyClearCertificates() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   [delegate_ clearCertificates];
 }
 
 void RequestTrackerImpl::NotifyUpdatedSSLStatus(
     base::scoped_nsobject<CRWSSLCarrier> carrier) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   [delegate_ updatedSSLStatus:[carrier sslStatus]
                    forPageUrl:[carrier url]
                      userInfo:user_info_];
@@ -872,7 +872,7 @@ void RequestTrackerImpl::NotifyUpdatedSSLStatus(
 void RequestTrackerImpl::NotifyPresentSSLError(
     base::scoped_nsobject<CRWSSLCarrier> carrier,
     bool recoverable) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   [delegate_ presentSSLError:[carrier sslInfo]
                 forSSLStatus:[carrier sslStatus]
                        onUrl:[carrier url]
@@ -883,7 +883,7 @@ void RequestTrackerImpl::NotifyPresentSSLError(
 }
 
 void RequestTrackerImpl::EvaluateSSLCallbackForCounts(TrackerCounts* counts) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   DCHECK(policy_cache_);
 
   // Ignore non-SSL requests.
@@ -954,7 +954,7 @@ void RequestTrackerImpl::EvaluateSSLCallbackForCounts(TrackerCounts* counts) {
 }
 
 void RequestTrackerImpl::ReevaluateCallbacksForAllCounts() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   if (is_closing_)
     return;
 
@@ -989,7 +989,7 @@ void RequestTrackerImpl::ReevaluateCallbacksForAllCounts() {
 }
 
 void RequestTrackerImpl::CancelRequestForCounts(TrackerCounts* counts) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   // Cancel the request.
   counts->done = true;
   counts_by_request_.erase(counts->request);
@@ -1033,7 +1033,7 @@ PageCounts RequestTrackerImpl::pageCounts() {
 }
 
 float RequestTrackerImpl::EstimatedProgress() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
 
   const PageCounts page_counts = pageCounts();
 
@@ -1107,7 +1107,7 @@ float RequestTrackerImpl::EstimatedProgress() {
 
 void RequestTrackerImpl::RecomputeMixedContent(
     const TrackerCounts* split_position) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   // Check if the mixed content before trimming was correct.
   if (page_url_.SchemeIsCryptographic() && has_mixed_content_) {
     bool old_url_has_mixed_content = false;
@@ -1135,7 +1135,7 @@ void RequestTrackerImpl::RecomputeMixedContent(
 
 void RequestTrackerImpl::RecomputeCertificatePolicy(
     const TrackerCounts* splitPosition) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   // Clear the judgments for the old URL.
   web::WebThread::PostTask(
       web::WebThread::UI, FROM_HERE,
@@ -1158,7 +1158,7 @@ void RequestTrackerImpl::RecomputeCertificatePolicy(
 }
 
 void RequestTrackerImpl::HistoryStateChangeToURL(const GURL& full_url) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   GURL url = GURLByRemovingRefFromGURL(full_url);
 
   if (is_loading_ &&
@@ -1168,7 +1168,7 @@ void RequestTrackerImpl::HistoryStateChangeToURL(const GURL& full_url) {
 }
 
 void RequestTrackerImpl::TrimToURL(const GURL& full_url, id user_info) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
 
   GURL url = GURLByRemovingRefFromGURL(full_url);
 
@@ -1236,7 +1236,7 @@ void RequestTrackerImpl::TrimToURL(const GURL& full_url, id user_info) {
 }
 
 void RequestTrackerImpl::StopPageLoad(const GURL& url, bool load_success) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   DCHECK(page_url_ == GURLByRemovingRefFromGURL(url));
   is_loading_ = false;
 }
@@ -1248,8 +1248,8 @@ void RequestTrackerImpl::PostTask(const base::Closure& task,
   // Absolute sanity test: |thread| is one of {UI, IO}
   DCHECK(thread == web::WebThread::UI || thread == web::WebThread::IO);
   // Check that we're on the counterpart thread to the one we're posting to.
-  DCHECK_CURRENTLY_ON_WEB_THREAD(
-      thread == web::WebThread::IO ? web::WebThread::UI : web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(thread == web::WebThread::IO ? web::WebThread::UI
+                                                   : web::WebThread::IO);
   // Don't post if the tracker is closing and we're on the IO thread.
   // (there should be no way to call anything from the UI thread if
   // the tracker is closing).
@@ -1261,7 +1261,7 @@ void RequestTrackerImpl::PostTask(const base::Closure& task,
 #pragma mark Other internal methods.
 
 NSString* RequestTrackerImpl::UnsafeDescription() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
 
   NSMutableArray* urls = [NSMutableArray array];
   ScopedVector<TrackerCounts>::iterator it;
@@ -1281,7 +1281,7 @@ NSString* RequestTrackerImpl::GetNetworkActivityKey() {
   }
 
 void RequestTrackerImpl::CancelRequests() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   std::set<net::URLRequest*>::iterator it;
   // TODO(droger): When canceling the request, we should in theory make sure
   // that the NSURLProtocol client method |didFailWithError| is called,

@@ -156,12 +156,12 @@ ChromeBrowserStateImplIOData::Handle::Handle(
     : io_data_(new ChromeBrowserStateImplIOData),
       browser_state_(browser_state),
       initialized_(false) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   DCHECK(browser_state);
 }
 
 ChromeBrowserStateImplIOData::Handle::~Handle() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   if (io_data_->http_server_properties_manager_)
     io_data_->http_server_properties_manager_->ShutdownOnPrefThread();
 
@@ -179,7 +179,7 @@ void ChromeBrowserStateImplIOData::Handle::Init(
     const base::FilePath& cache_path,
     int cache_max_size,
     const base::FilePath& profile_path) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   DCHECK(!io_data_->lazy_params_);
 
   LazyParams* lazy_params = new LazyParams();
@@ -230,7 +230,7 @@ ChromeBrowserStateImplIOData::Handle::CreateMainRequestContextGetter(
     ProtocolHandlerMap* protocol_handlers,
     PrefService* local_state,
     IOSChromeIOThread* io_thread) const {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   LazyInitialize();
   DCHECK(!main_request_context_getter_.get());
   main_request_context_getter_ =
@@ -242,7 +242,7 @@ ChromeBrowserStateImplIOData::Handle::CreateMainRequestContextGetter(
 scoped_refptr<IOSChromeURLRequestContextGetter>
 ChromeBrowserStateImplIOData::Handle::CreateIsolatedAppRequestContextGetter(
     const base::FilePath& partition_path) const {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   // Check that the partition_path is not the same as the base profile path. We
   // expect isolated partition, which will never go to the default profile path.
   CHECK(partition_path != browser_state_->GetStatePath());
@@ -270,7 +270,7 @@ ChromeBrowserStateIOData* ChromeBrowserStateImplIOData::Handle::io_data()
 void ChromeBrowserStateImplIOData::Handle::ClearNetworkingHistorySince(
     base::Time time,
     const base::Closure& completion) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   LazyInitialize();
 
   web::WebThread::PostTask(
@@ -281,7 +281,7 @@ void ChromeBrowserStateImplIOData::Handle::ClearNetworkingHistorySince(
 }
 
 void ChromeBrowserStateImplIOData::Handle::LazyInitialize() const {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   if (initialized_)
     return;
 
@@ -502,7 +502,7 @@ ChromeBrowserStateImplIOData::AcquireIsolatedAppRequestContext(
 void ChromeBrowserStateImplIOData::ClearNetworkingHistorySinceOnIOThread(
     base::Time time,
     const base::Closure& completion) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   DCHECK(initialized());
 
   DCHECK(transport_security_state());

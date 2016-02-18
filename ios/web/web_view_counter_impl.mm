@@ -18,17 +18,17 @@ const char kWebViewCounterKeyName[] = "web_view_counter";
 }  // namespace
 
 WebViewCounterImpl::WebViewCounterImpl() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
+  DCHECK_CURRENTLY_ON(WebThread::UI);
 }
 
 WebViewCounterImpl::~WebViewCounterImpl() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
+  DCHECK_CURRENTLY_ON(WebThread::UI);
 }
 
 // static
 WebViewCounter* WebViewCounter::FromBrowserState(
     web::BrowserState* browser_state) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
+  DCHECK_CURRENTLY_ON(WebThread::UI);
   DCHECK(browser_state);
 
   return WebViewCounterImpl::FromBrowserState(browser_state);
@@ -37,7 +37,7 @@ WebViewCounter* WebViewCounter::FromBrowserState(
 // static
 WebViewCounterImpl* WebViewCounterImpl::FromBrowserState(
     web::BrowserState* browser_state) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
+  DCHECK_CURRENTLY_ON(WebThread::UI);
   DCHECK(browser_state);
 
   if (!browser_state->GetUserData(kWebViewCounterKeyName)) {
@@ -49,12 +49,12 @@ WebViewCounterImpl* WebViewCounterImpl::FromBrowserState(
 }
 
 size_t WebViewCounterImpl::GetWKWebViewCount() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
+  DCHECK_CURRENTLY_ON(WebThread::UI);
   return wk_web_view_counter_.Size();
 }
 
 void WebViewCounterImpl::InsertWKWebView(WKWebView* wk_web_view) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
+  DCHECK_CURRENTLY_ON(WebThread::UI);
   DCHECK(wk_web_view);
   DCHECK([wk_web_view isKindOfClass:[WKWebView class]]);
 

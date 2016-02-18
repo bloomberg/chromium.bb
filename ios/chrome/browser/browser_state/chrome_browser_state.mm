@@ -65,7 +65,7 @@ TestChromeBrowserState* ChromeBrowserState::AsTestChromeBrowserState() {
 }
 
 net::URLRequestContextGetter* ChromeBrowserState::GetRequestContext() {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   if (!request_context_getter_) {
     ProtocolHandlerMap protocol_handlers;
     protocol_handlers[kChromeUIScheme] =

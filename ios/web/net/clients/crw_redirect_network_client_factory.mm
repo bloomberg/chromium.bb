@@ -24,7 +24,7 @@
 - (instancetype)initWithDelegate:(id<CRWRedirectClientDelegate>)delegate {
   self = [super init];
   if (self) {
-    DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
+    DCHECK_CURRENTLY_ON(web::WebThread::UI);
     DCHECK(delegate);
     client_delegate_.reset(delegate);
   }
@@ -46,7 +46,7 @@
                                    (const net::URLRequest&)request
                                                   url:(const GURL&)url
                                              response:(NSURLResponse*)response {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   return [[[CRWRedirectNetworkClient alloc]
       initWithDelegate:client_delegate_] autorelease];
 }
