@@ -457,6 +457,8 @@ class CONTENT_EXPORT RenderViewImpl
   gfx::RectF ElementBoundsInWindow(const blink::WebElement& element) override;
   float GetDeviceScaleFactorForTest() const override;
 
+  gfx::Point ConvertWindowPointToViewport(const gfx::Point& point);
+
   bool uses_temporary_zoom_level() const { return uses_temporary_zoom_level_; }
 
   // Please do not add your stuff randomly to the end here. If there is an

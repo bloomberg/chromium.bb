@@ -358,8 +358,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   // files without the user's consent.
   void GrantFileAccessFromPageState(const PageState& validated_state);
 
-  gfx::Point ConvertDIPToViewport(const gfx::Point& point);
-
   // The RenderWidgetHost.
   scoped_ptr<RenderWidgetHostImpl> render_widget_host_;
 

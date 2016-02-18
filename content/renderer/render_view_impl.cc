@@ -2214,6 +2214,13 @@ float RenderViewImpl::GetDeviceScaleFactorForTest() const {
   return device_scale_factor_;
 }
 
+gfx::Point RenderViewImpl::ConvertWindowPointToViewport(
+    const gfx::Point& point) {
+  blink::WebFloatRect point_in_viewport(point.x(), point.y(), 0, 0);
+  convertWindowToViewport(&point_in_viewport);
+  return gfx::Point(point_in_viewport.x, point_in_viewport.y);
+}
+
 void RenderViewImpl::didChangeIcon(WebLocalFrame* frame,
                                    WebIconURL::Type icon_type) {
   if (frame->parent())
@@ -2415,7 +2422,7 @@ void RenderViewImpl::OnDragTargetDragEnter(const DropData& drop_data,
                                            int key_modifiers) {
   WebDragOperation operation = webview()->dragTargetDragEnter(
       DropDataToWebDragData(drop_data),
-      client_point,
+      ConvertWindowPointToViewport(client_point),
       screen_point,
       ops,
       key_modifiers);
@@ -2428,7 +2435,7 @@ void RenderViewImpl::OnDragTargetDragOver(const gfx::Point& client_point,
                                           WebDragOperationsMask ops,
                                           int key_modifiers) {
   WebDragOperation operation = webview()->dragTargetDragOver(
-      client_point,
+      ConvertWindowPointToViewport(client_point),
       screen_point,
       ops,
       key_modifiers);
@@ -2443,13 +2450,15 @@ void RenderViewImpl::OnDragTargetDragLeave() {
 void RenderViewImpl::OnDragTargetDrop(const gfx::Point& client_point,
                                       const gfx::Point& screen_point,
                                       int key_modifiers) {
-  webview()->dragTargetDrop(client_point, screen_point, key_modifiers);
+  webview()->dragTargetDrop(
+      ConvertWindowPointToViewport(client_point), screen_point, key_modifiers);
 }
 
 void RenderViewImpl::OnDragSourceEnded(const gfx::Point& client_point,
                                        const gfx::Point& screen_point,
                                        WebDragOperation op) {
-  webview()->dragSourceEndedAt(client_point, screen_point, op);
+  webview()->dragSourceEndedAt(
+      ConvertWindowPointToViewport(client_point), screen_point, op);
 }
 
 void RenderViewImpl::OnDragSourceSystemDragEnded() {
