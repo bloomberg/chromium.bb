@@ -157,8 +157,19 @@ public:
     void evacuateAndDestroy();
 
     unsigned columnCount() const { return m_columnCount; }
+
+    // Total height available to columns and spanners. This is the multicol container's content box
+    // logical height, or 0 if auto.
     LayoutUnit columnHeightAvailable() const { return m_columnHeightAvailable; }
     void setColumnHeightAvailable(LayoutUnit available) { m_columnHeightAvailable = available; }
+
+    // Maximum content box logical height for the multicol container. This takes CSS logical
+    // 'height' and 'max-height' into account. LayoutUnit::max() is returned if nothing constrains
+    // the height of the multicol container. This method only deals with used values of CSS
+    // properties, and it does not consider enclosing fragmentation contexts -- that's something
+    // that needs to be calculated per fragmentainer group.
+    LayoutUnit maxColumnLogicalHeight() const;
+
     bool progressionIsInline() const { return m_progressionIsInline; }
 
     LayoutUnit tallestUnbreakableLogicalHeight(LayoutUnit offsetInFlowThread) const;

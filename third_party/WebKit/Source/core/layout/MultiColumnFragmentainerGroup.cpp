@@ -298,16 +298,8 @@ LayoutUnit MultiColumnFragmentainerGroup::heightAdjustedForRowOffset(LayoutUnit 
 
 LayoutUnit MultiColumnFragmentainerGroup::calculateMaxColumnHeight() const
 {
-    LayoutBlockFlow* multicolBlock = m_columnSet.multiColumnBlockFlow();
-    const ComputedStyle& multicolStyle = multicolBlock->styleRef();
     LayoutMultiColumnFlowThread* flowThread = m_columnSet.multiColumnFlowThread();
-    LayoutUnit availableHeight = flowThread->columnHeightAvailable();
-    LayoutUnit maxColumnHeight = availableHeight ? availableHeight : LayoutUnit::max();
-    if (!multicolStyle.logicalMaxHeight().isMaxSizeNone()) {
-        LayoutUnit logicalMaxHeight = multicolBlock->computeContentLogicalHeight(MaxSize, multicolStyle.logicalMaxHeight(), LayoutUnit(-1));
-        if (logicalMaxHeight != -1 && maxColumnHeight > logicalMaxHeight)
-            maxColumnHeight = logicalMaxHeight;
-    }
+    LayoutUnit maxColumnHeight = flowThread->maxColumnLogicalHeight();
     LayoutUnit maxHeight = heightAdjustedForRowOffset(maxColumnHeight);
     if (FragmentationContext* enclosingFragmentationContext = flowThread->enclosingFragmentationContext()) {
         if (enclosingFragmentationContext->isFragmentainerLogicalHeightKnown()) {

@@ -275,6 +275,23 @@ void LayoutMultiColumnFlowThread::evacuateAndDestroy()
     destroy();
 }
 
+LayoutUnit LayoutMultiColumnFlowThread::maxColumnLogicalHeight() const
+{
+    if (m_columnHeightAvailable) {
+        // If height is non-auto, it's already constrained against max-height as well.
+        // Just return it.
+        return m_columnHeightAvailable;
+    }
+    const LayoutBlockFlow* multicolBlock = multiColumnBlockFlow();
+    Length logicalMaxHeight = multicolBlock->style()->logicalMaxHeight();
+    if (!logicalMaxHeight.isMaxSizeNone()) {
+        LayoutUnit resolvedLogicalMaxHeight = multicolBlock->computeContentLogicalHeight(MaxSize, logicalMaxHeight, -1);
+        if (resolvedLogicalMaxHeight != -1)
+            return resolvedLogicalMaxHeight;
+    }
+    return LayoutUnit::max();
+}
+
 LayoutUnit LayoutMultiColumnFlowThread::tallestUnbreakableLogicalHeight(LayoutUnit offsetInFlowThread) const
 {
     if (LayoutMultiColumnSet* multicolSet = columnSetAtBlockOffset(offsetInFlowThread))
