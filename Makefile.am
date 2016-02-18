@@ -121,8 +121,8 @@ nodist_weston_SOURCES =					\
 	protocol/text-input-unstable-v1-server-protocol.h		\
 	protocol/input-method-unstable-v1-protocol.c			\
 	protocol/input-method-unstable-v1-server-protocol.h		\
-	protocol/presentation_timing-protocol.c		\
-	protocol/presentation_timing-server-protocol.h	\
+	protocol/presentation-time-protocol.c		\
+	protocol/presentation-time-server-protocol.h	\
 	protocol/scaler-protocol.c			\
 	protocol/scaler-server-protocol.h		\
 	protocol/linux-dmabuf-unstable-v1-protocol.c	\
@@ -501,8 +501,8 @@ weston_presentation_shm_SOURCES = 			\
 	clients/presentation-shm.c			\
 	shared/helpers.h
 nodist_weston_presentation_shm_SOURCES =		\
-	protocol/presentation_timing-protocol.c		\
-	protocol/presentation_timing-client-protocol.h
+	protocol/presentation-time-protocol.c		\
+	protocol/presentation-time-client-protocol.h
 weston_presentation_shm_CFLAGS = $(AM_CFLAGS) $(SIMPLE_CLIENT_CFLAGS)
 weston_presentation_shm_LDADD = $(SIMPLE_CLIENT_LIBS) libshared.la -lm -lrt
 
@@ -721,8 +721,8 @@ weston_info_SOURCES = 					\
 	clients/weston-info.c				\
 	shared/helpers.h
 nodist_weston_info_SOURCES =				\
-	protocol/presentation_timing-protocol.c		\
-	protocol/presentation_timing-client-protocol.h
+	protocol/presentation-time-protocol.c		\
+	protocol/presentation-time-client-protocol.h
 weston_info_LDADD = $(WESTON_INFO_LIBS) libshared.la
 weston_info_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 
@@ -770,8 +770,8 @@ BUILT_SOURCES +=					\
 	protocol/weston-desktop-shell-protocol.c			\
 	protocol/scaler-client-protocol.h		\
 	protocol/scaler-protocol.c			\
-	protocol/presentation_timing-protocol.c				\
-	protocol/presentation_timing-client-protocol.h			\
+	protocol/presentation-time-protocol.c				\
+	protocol/presentation-time-client-protocol.h			\
 	protocol/fullscreen-shell-unstable-v1-protocol.c		\
 	protocol/fullscreen-shell-unstable-v1-client-protocol.h	\
 	protocol/xdg-shell-unstable-v5-protocol.c			\
@@ -1234,8 +1234,8 @@ presentation_weston_SOURCES = 			\
 	tests/presentation-test.c		\
 	shared/helpers.h
 nodist_presentation_weston_SOURCES =		\
-	protocol/presentation_timing-protocol.c	\
-	protocol/presentation_timing-client-protocol.h
+	protocol/presentation-time-protocol.c	\
+	protocol/presentation-time-client-protocol.h
 presentation_weston_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS)
 presentation_weston_LDADD = libtest-client.la
 
@@ -1353,7 +1353,6 @@ EXTRA_DIST +=					\
 	protocol/weston-screenshooter.xml	\
 	protocol/text-cursor-position.xml	\
 	protocol/weston-test.xml		\
-	protocol/presentation_timing.xml	\
 	protocol/scaler.xml			\
 	protocol/ivi-application.xml		\
 	protocol/ivi-hmi-controller.xml

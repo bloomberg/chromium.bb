@@ -1221,7 +1221,7 @@ weston_compositor_stack_plane(struct weston_compositor *ec,
 			      struct weston_plane *above);
 
 /* An invalid flag in presented_flags to catch logic errors. */
-#define PRESENTATION_FEEDBACK_INVALID (1U << 31)
+#define WP_PRESENTATION_FEEDBACK_INVALID (1U << 31)
 
 void
 weston_output_finish_frame(struct weston_output *output,

@@ -55,7 +55,7 @@
 
 #include "compositor.h"
 #include "scaler-server-protocol.h"
-#include "presentation_timing-server-protocol.h"
+#include "presentation-time-server-protocol.h"
 #include "shared/helpers.h"
 #include "shared/os-compatibility.h"
 #include "shared/timespec-util.h"
@@ -443,7 +443,7 @@ static void
 weston_presentation_feedback_discard(
 		struct weston_presentation_feedback *feedback)
 {
-	presentation_feedback_send_discarded(feedback->resource);
+	wp_presentation_feedback_send_discarded(feedback->resource);
 	wl_resource_destroy(feedback->resource);
 }
 
@@ -473,16 +473,16 @@ weston_presentation_feedback_present(
 		if (wl_resource_get_client(o) != client)
 			continue;
 
-		presentation_feedback_send_sync_output(feedback->resource, o);
+		wp_presentation_feedback_send_sync_output(feedback->resource, o);
 	}
 
 	secs = ts->tv_sec;
-	presentation_feedback_send_presented(feedback->resource,
-					     secs >> 32, secs & 0xffffffff,
-					     ts->tv_nsec,
-					     refresh_nsec,
-					     seq >> 32, seq & 0xffffffff,
-					     flags | feedback->psf_flags);
+	wp_presentation_feedback_send_presented(feedback->resource,
+						secs >> 32, secs & 0xffffffff,
+						ts->tv_nsec,
+						refresh_nsec,
+						seq >> 32, seq & 0xffffffff,
+						flags | feedback->psf_flags);
 	wl_resource_destroy(feedback->resource);
 }
 
@@ -496,7 +496,7 @@ weston_presentation_feedback_present_list(struct wl_list *list,
 {
 	struct weston_presentation_feedback *feedback, *tmp;
 
-	assert(!(flags & PRESENTATION_FEEDBACK_INVALID) ||
+	assert(!(flags & WP_PRESENTATION_FEEDBACK_INVALID) ||
 	       wl_list_empty(list));
 
 	wl_list_for_each_safe(feedback, tmp, list, link)
@@ -2489,7 +2489,7 @@ weston_output_finish_frame(struct weston_output *output,
 	 * the deadline given by repaint_msec? In that case we delay until
 	 * the deadline of the next frame, to give clients a more predictable
 	 * timing of the repaint cycle to lock on. */
-	if (presented_flags == PRESENTATION_FEEDBACK_INVALID && msec < 0)
+	if (presented_flags == WP_PRESENTATION_FEEDBACK_INVALID && msec < 0)
 		msec += refresh_nsec / 1000000;
 
 	if (msec < 1)
@@ -4605,7 +4605,7 @@ presentation_feedback(struct wl_client *client,
 		goto err_calloc;
 
 	feedback->resource = wl_resource_create(client,
-					&presentation_feedback_interface,
+					&wp_presentation_feedback_interface,
 					1, callback);
 	if (!feedback->resource)
 		goto err_create;
@@ -4624,7 +4624,7 @@ err_calloc:
 	wl_client_post_no_memory(client);
 }
 
-static const struct presentation_interface presentation_implementation = {
+static const struct wp_presentation_interface presentation_implementation = {
 	presentation_destroy,
 	presentation_feedback
 };
@@ -4636,7 +4636,7 @@ bind_presentation(struct wl_client *client,
 	struct weston_compositor *compositor = data;
 	struct wl_resource *resource;
 
-	resource = wl_resource_create(client, &presentation_interface,
+	resource = wl_resource_create(client, &wp_presentation_interface,
 				      version, id);
 	if (resource == NULL) {
 		wl_client_post_no_memory(client);
@@ -4645,7 +4645,7 @@ bind_presentation(struct wl_client *client,
 
 	wl_resource_set_implementation(resource, &presentation_implementation,
 				       compositor, NULL);
-	presentation_send_clock_id(resource, compositor->presentation_clock);
+	wp_presentation_send_clock_id(resource, compositor->presentation_clock);
 }
 
 static void
@@ -4754,7 +4754,7 @@ weston_compositor_create(struct wl_display *display, void *user_data)
 			      ec, bind_scaler))
 		goto fail;
 
-	if (!wl_global_create(ec->wl_display, &presentation_interface, 1,
+	if (!wl_global_create(ec->wl_display, &wp_presentation_interface, 1,
 			      ec, bind_presentation))
 		goto fail;
 

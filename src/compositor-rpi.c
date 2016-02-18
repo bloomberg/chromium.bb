@@ -50,7 +50,7 @@
 #include "rpi-renderer.h"
 #include "launcher-util.h"
 #include "libinput-seat.h"
-#include "presentation_timing-server-protocol.h"
+#include "presentation-time-server-protocol.h"
 
 #if 0
 #define DBG(...) \
@@ -223,7 +223,7 @@ rpi_output_start_repaint_loop(struct weston_output *output)
 
 	/* XXX: do a phony dispmanx update and trigger on its completion? */
 	weston_compositor_read_presentation_clock(output->compositor, &ts);
-	weston_output_finish_frame(output, &ts, PRESENTATION_FEEDBACK_INVALID);
+	weston_output_finish_frame(output, &ts, WP_PRESENTATION_FEEDBACK_INVALID);
 }
 
 static int
@@ -257,8 +257,8 @@ static void
 rpi_output_update_complete(struct rpi_output *output,
 			   const struct timespec *stamp)
 {
-	uint32_t flags = PRESENTATION_FEEDBACK_KIND_VSYNC |
-			 PRESENTATION_FEEDBACK_KIND_HW_COMPLETION;
+	uint32_t flags = WP_PRESENTATION_FEEDBACK_KIND_VSYNC |
+			 WP_PRESENTATION_FEEDBACK_KIND_HW_COMPLETION;
 
 	DBG("frame update complete(%ld.%09ld)\n",
 	    (long)stamp->tv_sec, (long)stamp->tv_nsec);

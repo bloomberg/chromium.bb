@@ -47,7 +47,7 @@
 #include "shared/os-compatibility.h"
 #include "shared/cairo-util.h"
 #include "fullscreen-shell-unstable-v1-client-protocol.h"
-#include "presentation_timing-server-protocol.h"
+#include "presentation-time-server-protocol.h"
 #include "linux-dmabuf.h"
 
 #define WINDOW_TITLE "Weston Compositor"

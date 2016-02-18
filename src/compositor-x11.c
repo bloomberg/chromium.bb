@@ -55,7 +55,7 @@
 #include "shared/config-parser.h"
 #include "shared/helpers.h"
 #include "shared/image-loader.h"
-#include "presentation_timing-server-protocol.h"
+#include "presentation-time-server-protocol.h"
 #include "linux-dmabuf.h"
 
 #define DEFAULT_AXIS_STEP_DISTANCE wl_fixed_from_int(10)
@@ -371,7 +371,7 @@ x11_output_start_repaint_loop(struct weston_output *output)
 	struct timespec ts;
 
 	weston_compositor_read_presentation_clock(output->compositor, &ts);
-	weston_output_finish_frame(output, &ts, PRESENTATION_FEEDBACK_INVALID);
+	weston_output_finish_frame(output, &ts, WP_PRESENTATION_FEEDBACK_INVALID);
 }
 
 static int

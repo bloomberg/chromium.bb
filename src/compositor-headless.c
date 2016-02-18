@@ -34,7 +34,7 @@
 #include "shared/helpers.h"
 #include "compositor.h"
 #include "pixman-renderer.h"
-#include "presentation_timing-server-protocol.h"
+#include "presentation-time-server-protocol.h"
 
 struct headless_backend {
 	struct weston_backend base;
@@ -64,7 +64,7 @@ headless_output_start_repaint_loop(struct weston_output *output)
 	struct timespec ts;
 
 	weston_compositor_read_presentation_clock(output->compositor, &ts);
-	weston_output_finish_frame(output, &ts, PRESENTATION_FEEDBACK_INVALID);
+	weston_output_finish_frame(output, &ts, WP_PRESENTATION_FEEDBACK_INVALID);
 }
 
 static int

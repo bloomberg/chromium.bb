@@ -33,20 +33,20 @@
 
 #include "shared/helpers.h"
 #include "weston-test-client-helper.h"
-#include "presentation_timing-client-protocol.h"
+#include "presentation-time-client-protocol.h"
 
-static struct presentation *
+static struct wp_presentation *
 get_presentation(struct client *client)
 {
 	struct global *g;
 	struct global *global_pres = NULL;
-	static struct presentation *pres;
+	static struct wp_presentation *pres;
 
 	if (pres)
 		return pres;
 
 	wl_list_for_each(g, &client->global_list, link) {
-		if (strcmp(g->interface, "presentation"))
+		if (strcmp(g->interface, wp_presentation_interface.name))
 			continue;
 
 		if (global_pres)
@@ -60,7 +60,7 @@ get_presentation(struct client *client)
 	assert(global_pres->version == 1);
 
 	pres = wl_registry_bind(client->wl_registry, global_pres->name,
-				&presentation_interface, 1);
+				&wp_presentation_interface, 1);
 	assert(pres);
 
 	return pres;
@@ -68,7 +68,7 @@ get_presentation(struct client *client)
 
 struct feedback {
 	struct client *client;
-	struct presentation_feedback *obj;
+	struct wp_presentation_feedback *obj;
 
 	enum {
 		FB_PENDING = 0,
@@ -93,7 +93,7 @@ timespec_from_proto(struct timespec *tm, uint32_t tv_sec_hi,
 
 static void
 feedback_sync_output(void *data,
-		     struct presentation_feedback *presentation_feedback,
+		     struct wp_presentation_feedback *presentation_feedback,
 		     struct wl_output *output)
 {
 	struct feedback *fb = data;
@@ -106,7 +106,7 @@ feedback_sync_output(void *data,
 
 static void
 feedback_presented(void *data,
-		   struct presentation_feedback *presentation_feedback,
+		   struct wp_presentation_feedback *presentation_feedback,
 		   uint32_t tv_sec_hi,
 		   uint32_t tv_sec_lo,
 		   uint32_t tv_nsec,
@@ -127,7 +127,7 @@ feedback_presented(void *data,
 
 static void
 feedback_discarded(void *data,
-		   struct presentation_feedback *presentation_feedback)
+		   struct wp_presentation_feedback *presentation_feedback)
 {
 	struct feedback *fb = data;
 
@@ -135,7 +135,7 @@ feedback_discarded(void *data,
 	fb->result = FB_DISCARDED;
 }
 
-static const struct presentation_feedback_listener feedback_listener = {
+static const struct wp_presentation_feedback_listener feedback_listener = {
 	feedback_sync_output,
 	feedback_presented,
 	feedback_discarded
@@ -148,8 +148,8 @@ feedback_create(struct client *client, struct wl_surface *surface)
 
 	fb = xzalloc(sizeof *fb);
 	fb->client = client;
-	fb->obj = presentation_feedback(get_presentation(client), surface);
-	presentation_feedback_add_listener(fb->obj, &feedback_listener, fb);
+	fb->obj = wp_presentation_feedback(get_presentation(client), surface);
+	wp_presentation_feedback_add_listener(fb->obj, &feedback_listener, fb);
 
 	return fb;
 }
@@ -169,10 +169,10 @@ pflags_to_str(uint32_t flags, char *str, unsigned len)
 		uint32_t flag;
 		char sym;
 	} desc[] = {
-		{ PRESENTATION_FEEDBACK_KIND_VSYNC, 's' },
-		{ PRESENTATION_FEEDBACK_KIND_HW_CLOCK, 'c' },
-		{ PRESENTATION_FEEDBACK_KIND_HW_COMPLETION, 'e' },
-		{ PRESENTATION_FEEDBACK_KIND_ZERO_COPY, 'z' },
+		{ WP_PRESENTATION_FEEDBACK_KIND_VSYNC, 's' },
+		{ WP_PRESENTATION_FEEDBACK_KIND_HW_CLOCK, 'c' },
+		{ WP_PRESENTATION_FEEDBACK_KIND_HW_COMPLETION, 'e' },
+		{ WP_PRESENTATION_FEEDBACK_KIND_ZERO_COPY, 'z' },
 	};
 	unsigned i;
 
@@ -212,7 +212,7 @@ feedback_print(struct feedback *fb)
 static void
 feedback_destroy(struct feedback *fb)
 {
-	presentation_feedback_destroy(fb->obj);
+	wp_presentation_feedback_destroy(fb->obj);
 	free(fb);
 }
 

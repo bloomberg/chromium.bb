@@ -55,7 +55,7 @@
 #include "libinput-seat.h"
 #include "launcher-util.h"
 #include "vaapi-recorder.h"
-#include "presentation_timing-server-protocol.h"
+#include "presentation-time-server-protocol.h"
 #include "linux-dmabuf.h"
 
 #ifndef DRM_CAP_TIMESTAMP_MONOTONIC
@@ -608,13 +608,13 @@ drm_output_set_gamma(struct weston_output *output_base,
 }
 
 /* Determine the type of vblank synchronization to use for the output.
- * 
+ *
  * The pipe parameter indicates which CRTC is in use.  Knowing this, we
  * can determine which vblank sequence type to use for it.  Traditional
  * cards had only two CRTCs, with CRTC 0 using no special flags, and
  * CRTC 1 using DRM_VBLANK_SECONDARY.  The first bit of the pipe
  * parameter indicates this.
- * 
+ *
  * Bits 1-5 of the pipe parameter are 5 bit wide pipe number between
  * 0-31.  If this is non-zero it indicates we're dealing with a
  * multi-gpu situation and we need to calculate the vblank sync
@@ -778,7 +778,7 @@ drm_output_start_repaint_loop(struct weston_output *output_base)
 		if (timespec_to_nsec(&vbl2now) < refresh_nsec) {
 			drm_output_update_msc(output, vbl.reply.sequence);
 			weston_output_finish_frame(output_base, &ts,
-						PRESENTATION_FEEDBACK_INVALID);
+						WP_PRESENTATION_FEEDBACK_INVALID);
 			return;
 		}
 	}
@@ -800,7 +800,7 @@ finish_frame:
 	/* if we cannot page-flip, immediately finish frame */
 	weston_compositor_read_presentation_clock(output_base->compositor, &ts);
 	weston_output_finish_frame(output_base, &ts,
-				   PRESENTATION_FEEDBACK_INVALID);
+				   WP_PRESENTATION_FEEDBACK_INVALID);
 }
 
 static void
@@ -821,8 +821,8 @@ vblank_handler(int fd, unsigned int frame, unsigned int sec, unsigned int usec,
 	struct drm_sprite *s = (struct drm_sprite *)data;
 	struct drm_output *output = s->output;
 	struct timespec ts;
-	uint32_t flags = PRESENTATION_FEEDBACK_KIND_HW_COMPLETION |
-			 PRESENTATION_FEEDBACK_KIND_HW_CLOCK;
+	uint32_t flags = WP_PRESENTATION_FEEDBACK_KIND_HW_COMPLETION |
+			 WP_PRESENTATION_FEEDBACK_KIND_HW_CLOCK;
 
 	drm_output_update_msc(output, frame);
 	output->vblank_pending = 0;
@@ -847,9 +847,9 @@ page_flip_handler(int fd, unsigned int frame,
 {
 	struct drm_output *output = (struct drm_output *) data;
 	struct timespec ts;
-	uint32_t flags = PRESENTATION_FEEDBACK_KIND_VSYNC |
-			 PRESENTATION_FEEDBACK_KIND_HW_COMPLETION |
-			 PRESENTATION_FEEDBACK_KIND_HW_CLOCK;
+	uint32_t flags = WP_PRESENTATION_FEEDBACK_KIND_VSYNC |
+			 WP_PRESENTATION_FEEDBACK_KIND_HW_COMPLETION |
+			 WP_PRESENTATION_FEEDBACK_KIND_HW_CLOCK;
 
 	drm_output_update_msc(output, frame);
 
@@ -1298,7 +1298,7 @@ drm_assign_planes(struct weston_output *output_base)
 			/* All other planes are a direct scanout of a
 			 * single client buffer.
 			 */
-			ev->psf_flags = PRESENTATION_FEEDBACK_KIND_ZERO_COPY;
+			ev->psf_flags = WP_PRESENTATION_FEEDBACK_KIND_ZERO_COPY;
 		}
 
 		pixman_region32_fini(&surface_overlap);
