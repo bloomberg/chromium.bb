@@ -94,6 +94,14 @@ TEST(IPAddressTest, ToString) {
   uint8_t addr3[16] = {0xFE, 0xDC, 0xBA, 0x98};
   IPAddress ip_address3(addr3);
   EXPECT_EQ("fedc:ba98::", ip_address3.ToString());
+
+  // ToString() shouldn't crash on invalid addresses.
+  uint8_t addr4[2];
+  IPAddress ip_address4(addr4);
+  EXPECT_EQ("", ip_address4.ToString());
+
+  IPAddress ip_address5;
+  EXPECT_EQ("", ip_address5.ToString());
 }
 
 // Test that invalid IP literals fail to parse.
@@ -178,6 +186,10 @@ TEST(IPAddressTest, IPAddressToStringWithPort) {
   IPAddress address3;
   EXPECT_TRUE(address3.AssignFromIPLiteral("fedc:ba98::"));
   EXPECT_EQ("[fedc:ba98::]:8080", IPAddressToStringWithPort(address3, 8080));
+
+  // ToString() shouldn't crash on invalid addresses.
+  IPAddress address4;
+  EXPECT_EQ("", IPAddressToStringWithPort(address4, 8080));
 }
 
 TEST(IPAddressTest, IPAddressToPackedString) {

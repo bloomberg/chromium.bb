@@ -34,6 +34,10 @@ TEST(IpAddressNumberTest, IPAddressToString) {
 
   uint8_t addr3[16] = {0xFE, 0xDC, 0xBA, 0x98};
   EXPECT_EQ("fedc:ba98::", IPAddressToString(addr3, sizeof(addr3)));
+
+  // IPAddressToString() shouldn't crash on invalid addresses.
+  uint8_t addr4[2];
+  EXPECT_EQ("", IPAddressToString(addr4, sizeof(addr4)));
 }
 
 TEST(IpAddressNumberTest, IPAddressToStringWithPort) {
@@ -47,6 +51,10 @@ TEST(IpAddressNumberTest, IPAddressToStringWithPort) {
   uint8_t addr3[16] = {0xFE, 0xDC, 0xBA, 0x98};
   EXPECT_EQ("[fedc:ba98::]:8080",
             IPAddressToStringWithPort(addr3, sizeof(addr3), 8080));
+
+  // IPAddressToStringWithPort() shouldn't crash on invalid addresses.
+  uint8_t addr4[2];
+  EXPECT_EQ("", IPAddressToStringWithPort(addr4, sizeof(addr4), 8080));
 }
 
 // Test that invalid IP literals fail to parse.
