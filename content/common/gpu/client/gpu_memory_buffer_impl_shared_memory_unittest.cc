@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/common/gpu/client/gpu_memory_buffer_impl_shared_memory.h"
-#include "content/test/gpu_memory_buffer_impl_test_template.h"
+#include "content/common/gpu/client/gpu_memory_buffer_impl_test_template.h"
 
 namespace content {
 namespace {

@@ -5,8 +5,8 @@
 // This file defines tests that implementations of GpuMemoryBufferFactory should
 // pass in order to be conformant.
 
-#ifndef CONTENT_TEST_GPU_MEMORY_BUFFER_IMPL_TEST_TEMPLATE_H_
-#define CONTENT_TEST_GPU_MEMORY_BUFFER_IMPL_TEST_TEMPLATE_H_
+#ifndef CONTENT_COMMON_GPU_CLIENT_GPU_MEMORY_BUFFER_IMPL_TEST_TEMPLATE_H_
+#define CONTENT_COMMON_GPU_CLIENT_GPU_MEMORY_BUFFER_IMPL_TEST_TEMPLATE_H_
 
 #include <stddef.h>
 #include <string.h>
@@ -204,4 +204,4 @@ REGISTER_TYPED_TEST_CASE_P(GpuMemoryBufferImplTest,
 
 }  // namespace content
 
-#endif  // CONTENT_TEST_GPU_MEMORY_BUFFER_IMPL_TEST_TEMPLATE_H_
+#endif  // CONTENT_COMMON_GPU_CLIENT_GPU_MEMORY_BUFFER_IMPL_TEST_TEMPLATE_H_
