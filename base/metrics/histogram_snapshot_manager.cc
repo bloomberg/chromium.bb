@@ -14,68 +14,124 @@ namespace base {
 
 HistogramSnapshotManager::HistogramSnapshotManager(
     HistogramFlattener* histogram_flattener)
-    : histogram_flattener_(histogram_flattener) {
+    : preparing_deltas_(false),
+      histogram_flattener_(histogram_flattener) {
   DCHECK(histogram_flattener_);
 }
 
 HistogramSnapshotManager::~HistogramSnapshotManager() {
-  STLDeleteValues(&logged_samples_);
 }
 
-void HistogramSnapshotManager::PrepareDelta(const HistogramBase& histogram) {
+void HistogramSnapshotManager::StartDeltas() {
+  // Ensure that start/finish calls do not get nested.
+  DCHECK(!preparing_deltas_);
+  preparing_deltas_ = true;
+
+#ifdef DEBUG
+  for (const auto& iter : known_histograms) {
+    CHECK(!iter->second.histogram);
+    CHECK(!iter->second.accumulated_samples);
+    CHECK(!(iter->second.inconsistencies &
+            HistogramBase::NEW_INCONSISTENCY_FOUND));
+  }
+#endif
+}
+
+void HistogramSnapshotManager::PrepareDelta(HistogramBase* histogram) {
+  PrepareSamples(histogram, histogram->SnapshotDelta());
+}
+
+void HistogramSnapshotManager::PrepareAbsolute(const HistogramBase* histogram) {
+  PrepareSamples(histogram, histogram->SnapshotSamples());
+}
+
+void HistogramSnapshotManager::FinishDeltas() {
+  DCHECK(preparing_deltas_);
+
+  // Iterate over all known histograms to see what should be recorded.
+  for (auto& iter : known_histograms_) {
+    SampleInfo* sample_info = &iter.second;
+
+    // First, record any histograms in which corruption was detected.
+    if (sample_info->inconsistencies & HistogramBase::NEW_INCONSISTENCY_FOUND) {
+      sample_info->inconsistencies &= ~HistogramBase::NEW_INCONSISTENCY_FOUND;
+      histogram_flattener_->UniqueInconsistencyDetected(
+          static_cast<HistogramBase::Inconsistency>(
+              sample_info->inconsistencies));
+    }
+
+    // Second, record actual accumulated deltas.
+    if (sample_info->accumulated_samples) {
+      // TODO(bcwhite): Investigate using redundant_count() below to avoid
+      // additional pass through all the samples to calculate real total.
+      if (sample_info->accumulated_samples->TotalCount() > 0) {
+        histogram_flattener_->RecordDelta(*sample_info->histogram,
+                                          *sample_info->accumulated_samples);
+      }
+      delete sample_info->accumulated_samples;
+      sample_info->accumulated_samples = nullptr;
+    }
+
+    // The Histogram pointer must be cleared at this point because the owner
+    // is only required to keep it alive until FinishDeltas() completes.
+    sample_info->histogram = nullptr;
+  }
+
+  preparing_deltas_ = false;
+}
+
+void HistogramSnapshotManager::PrepareSamples(
+    const HistogramBase* histogram,
+    scoped_ptr<HistogramSamples> samples) {
   DCHECK(histogram_flattener_);
 
-  // Get up-to-date snapshot of sample stats.
-  scoped_ptr<HistogramSamples> snapshot(histogram.SnapshotSamples());
+  // Get information known about this histogram.
+  SampleInfo* sample_info = &known_histograms_[histogram->name_hash()];
+  if (sample_info->histogram) {
+    DCHECK_EQ(sample_info->histogram->histogram_name(),
+              histogram->histogram_name()) << "hash collision";
+  } else {
+    // First time this histogram has been seen; datafill.
+    sample_info->histogram = histogram;
+  }
 
   // Crash if we detect that our histograms have been overwritten.  This may be
   // a fair distance from the memory smasher, but we hope to correlate these
   // crashes with other events, such as plugins, or usage patterns, etc.
-  int corruption = histogram.FindCorruption(*snapshot);
+  uint32_t corruption = histogram->FindCorruption(*samples);
   if (HistogramBase::BUCKET_ORDER_ERROR & corruption) {
     // The checksum should have caught this, so crash separately if it didn't.
-    CHECK_NE(0, HistogramBase::RANGE_CHECKSUM_ERROR & corruption);
+    CHECK_NE(0U, HistogramBase::RANGE_CHECKSUM_ERROR & corruption);
     CHECK(false);  // Crash for the bucket order corruption.
   }
   // Checksum corruption might not have caused order corruption.
-  CHECK_EQ(0, HistogramBase::RANGE_CHECKSUM_ERROR & corruption);
+  CHECK_EQ(0U, HistogramBase::RANGE_CHECKSUM_ERROR & corruption);
 
   // Note, at this point corruption can only be COUNT_HIGH_ERROR or
   // COUNT_LOW_ERROR and they never arise together, so we don't need to extract
   // bits from corruption.
-  const uint64_t histogram_hash = histogram.name_hash();
   if (corruption) {
-    DLOG(ERROR) << "Histogram: " << histogram.histogram_name()
-                << " has data corruption: " << corruption;
+    DLOG(ERROR) << "Histogram: \"" << histogram->histogram_name()
+                << "\" has data corruption: " << corruption;
     histogram_flattener_->InconsistencyDetected(
         static_cast<HistogramBase::Inconsistency>(corruption));
     // Don't record corrupt data to metrics services.
-    int old_corruption = inconsistencies_[histogram_hash];
+    const uint32_t old_corruption = sample_info->inconsistencies;
     if (old_corruption == (corruption | old_corruption))
       return;  // We've already seen this corruption for this histogram.
-    inconsistencies_[histogram_hash] |= corruption;
-    histogram_flattener_->UniqueInconsistencyDetected(
-        static_cast<HistogramBase::Inconsistency>(corruption));
+    sample_info->inconsistencies |=
+        corruption | HistogramBase::NEW_INCONSISTENCY_FOUND;
+    // TODO(bcwhite): Can we clear the inconsistency for future collection?
     return;
   }
 
-  HistogramSamples* to_log;
-  auto it = logged_samples_.find(histogram_hash);
-  if (it == logged_samples_.end()) {
-    to_log = snapshot.release();
-
-    // This histogram has not been logged before, add a new entry.
-    logged_samples_[histogram_hash] = to_log;
+  if (!sample_info->accumulated_samples) {
+    // This histogram has not been seen before; add it as a new entry.
+    sample_info->accumulated_samples = samples.release();
   } else {
-    HistogramSamples* already_logged = it->second;
-    InspectLoggedSamplesInconsistency(*snapshot, already_logged);
-    snapshot->Subtract(*already_logged);
-    already_logged->Add(*snapshot);
-    to_log = snapshot.get();
+    // There are previous values from this histogram; add them together.
+    sample_info->accumulated_samples->Add(*samples);
   }
-
-  if (to_log->TotalCount() > 0)
-    histogram_flattener_->RecordDelta(histogram, *to_log);
 }
 
 void HistogramSnapshotManager::InspectLoggedSamplesInconsistency(

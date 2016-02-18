@@ -10,6 +10,7 @@
 #include <map>
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_base.h"
 
@@ -35,36 +36,81 @@ class BASE_EXPORT HistogramSnapshotManager {
   // |required_flags| is used to select histograms to be recorded.
   // Only histograms that have all the flags specified by the argument will be
   // chosen. If all histograms should be recorded, set it to
-  // |Histogram::kNoFlags|.
+  // |Histogram::kNoFlags|. Though any "forward" iterator will work, the
+  // histograms over which it iterates *must* remain valid until this method
+  // returns; the iterator cannot deallocate histograms once it iterates past
+  // them.
   template <class ForwardHistogramIterator>
   void PrepareDeltas(ForwardHistogramIterator begin,
                      ForwardHistogramIterator end,
                      HistogramBase::Flags flags_to_set,
                      HistogramBase::Flags required_flags) {
+    StartDeltas();
     for (ForwardHistogramIterator it = begin; it != end; ++it) {
       (*it)->SetFlags(flags_to_set);
       if (((*it)->flags() & required_flags) == required_flags)
-        PrepareDelta(**it);
+        PrepareDelta(*it);
     }
+    FinishDeltas();
   }
 
+  // When the collection is not so simple as can be done using a single
+  // iterator, the steps can be performed separately. Call PerpareDelta()
+  // as many times as necessary with a single StartDeltas() before and
+  // a single FinishDeltas() after. All passed histograms must live
+  // until FinishDeltas() completes. PrepareAbsolute() works the same
+  // but assumes there were no previous logged values and no future deltas
+  // will be created (and thus can work on read-only histograms).
+  void StartDeltas();
+  void PrepareDelta(HistogramBase* histogram);
+  void PrepareAbsolute(const HistogramBase* histogram);
+  void FinishDeltas();
+
  private:
-  // Snapshot this histogram, and record the delta.
-  void PrepareDelta(const HistogramBase& histogram);
+  FRIEND_TEST_ALL_PREFIXES(HistogramSnapshotManagerTest, CheckMerge);
+
+  // During a snapshot, samples are acquired and aggregated. This structure
+  // contains all the information collected for a given histogram. Once a
+  // snapshot operation is finished, it is generally emptied except for
+  // information that must persist from one report to the next, such as
+  // the "inconsistencies".
+  struct SampleInfo {
+    SampleInfo() : histogram(nullptr),
+                   accumulated_samples(nullptr),
+                   inconsistencies(0) {}
+
+    // A histogram associated with this sample; it may be one of many if
+    // several have been aggregated into the same "accumulated" sample set.
+    // Ownership of the histogram remains elsewhere and this pointer is
+    // cleared by FinishDeltas().
+    const HistogramBase* histogram;
+
+    // The current snapshot-delta values being accumulated.
+    // TODO(bcwhite): Change this to a scoped_ptr once all build architectures
+    // support such as the value of a std::map.
+    HistogramSamples* accumulated_samples;
+
+    // The set of inconsistencies (flags) already seen for the histogram.
+    // See HistogramBase::Inconsistency for values.
+    uint32_t inconsistencies;
+  };
+
+  // Capture and hold samples from a histogram. This does all the heavy
+  // lifting for PrepareDelta() and PrepareAbsolute().
+  void PrepareSamples(const HistogramBase* histogram,
+                      scoped_ptr<HistogramSamples> samples);
 
   // Try to detect and fix count inconsistency of logged samples.
   void InspectLoggedSamplesInconsistency(
       const HistogramSamples& new_snapshot,
       HistogramSamples* logged_samples);
 
-  // For histograms, track what we've already recorded (as a sample for
-  // each histogram) so that we can record only the delta with the next log.
-  // The information is indexed by the hash of the histogram name.
-  std::map<uint64_t, HistogramSamples*> logged_samples_;
-
-  // Set of histograms found to be corrupt and their problems, indexed
+  // For histograms, track what has been previously seen, indexed
   // by the hash of the histogram name.
-  std::map<uint64_t, int> inconsistencies_;
+  std::map<uint64_t, SampleInfo> known_histograms_;
+
+  // Indicates if deltas are currently being prepared.
+  bool preparing_deltas_;
 
   // |histogram_flattener_| handles the logistics of recording the histogram
   // deltas.

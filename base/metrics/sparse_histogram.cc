@@ -77,6 +77,17 @@ scoped_ptr<HistogramSamples> SparseHistogram::SnapshotSamples() const {
   return std::move(snapshot);
 }
 
+scoped_ptr<HistogramSamples> SparseHistogram::SnapshotDelta() {
+  scoped_ptr<SampleMap> snapshot(new SampleMap(name_hash()));
+  base::AutoLock auto_lock(lock_);
+  snapshot->Add(samples_);
+
+  // Subtract what was previously logged and update that information.
+  snapshot->Subtract(logged_samples_);
+  logged_samples_.Add(*snapshot);
+  return std::move(snapshot);
+}
+
 void SparseHistogram::AddSamples(const HistogramSamples& samples) {
   base::AutoLock auto_lock(lock_);
   samples_.Add(samples);

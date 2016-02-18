@@ -71,6 +71,7 @@ class BASE_EXPORT SparseHistogram : public HistogramBase {
   void AddSamples(const HistogramSamples& samples) override;
   bool AddSamplesFromPickle(base::PickleIterator* iter) override;
   scoped_ptr<HistogramSamples> SnapshotSamples() const override;
+  scoped_ptr<HistogramSamples> SnapshotDelta() override;
   void WriteHTMLGraph(std::string* output) const override;
   void WriteAscii(std::string* output) const override;
 
@@ -107,6 +108,7 @@ class BASE_EXPORT SparseHistogram : public HistogramBase {
   mutable base::Lock lock_;
 
   SampleMap samples_;
+  SampleMap logged_samples_;
 
   DISALLOW_COPY_AND_ASSIGN(SparseHistogram);
 };

@@ -145,8 +145,10 @@ class BASE_EXPORT Histogram : public HistogramBase {
                                       Sample maximum,
                                       const BucketRanges* ranges,
                                       HistogramBase::AtomicCount* counts,
+                                      HistogramBase::AtomicCount* logged_counts,
                                       uint32_t counts_size,
-                                      HistogramSamples::Metadata* meta);
+                                      HistogramSamples::Metadata* meta,
+                                      HistogramSamples::Metadata* logged_meta);
 
   static void InitializeBucketRanges(Sample minimum,
                                      Sample maximum,
@@ -165,8 +167,9 @@ class BASE_EXPORT Histogram : public HistogramBase {
   // consistent with the bucket ranges and checksums in our histogram.  This can
   // produce a false-alarm if a race occurred in the reading of the data during
   // a SnapShot process, but should otherwise be false at all times (unless we
-  // have memory over-writes, or DRAM failures).
-  int FindCorruption(const HistogramSamples& samples) const override;
+  // have memory over-writes, or DRAM failures). Flag definitions are located
+  // under "enum Inconsistency" in base/metrics/histogram_base.h.
+  uint32_t FindCorruption(const HistogramSamples& samples) const override;
 
   //----------------------------------------------------------------------------
   // Accessors for factory construction, serialization and testing.
@@ -197,6 +200,7 @@ class BASE_EXPORT Histogram : public HistogramBase {
   void Add(Sample value) override;
   void AddCount(Sample value, int count) override;
   scoped_ptr<HistogramSamples> SnapshotSamples() const override;
+  scoped_ptr<HistogramSamples> SnapshotDelta() override;
   void AddSamples(const HistogramSamples& samples) override;
   bool AddSamplesFromPickle(base::PickleIterator* iter) override;
   void WriteHTMLGraph(std::string* output) const override;
@@ -228,8 +232,10 @@ class BASE_EXPORT Histogram : public HistogramBase {
             Sample maximum,
             const BucketRanges* ranges,
             HistogramBase::AtomicCount* counts,
+            HistogramBase::AtomicCount* logged_counts,
             uint32_t counts_size,
-            HistogramSamples::Metadata* meta);
+            HistogramSamples::Metadata* meta,
+            HistogramSamples::Metadata* logged_meta);
 
   ~Histogram() override;
 
@@ -303,6 +309,9 @@ class BASE_EXPORT Histogram : public HistogramBase {
   // sample.
   scoped_ptr<SampleVector> samples_;
 
+  // Also keep a previous uploaded state for calculating deltas.
+  scoped_ptr<HistogramSamples> logged_samples_;
+
   DISALLOW_COPY_AND_ASSIGN(Histogram);
 };
 
@@ -347,8 +356,10 @@ class BASE_EXPORT LinearHistogram : public Histogram {
                                       Sample maximum,
                                       const BucketRanges* ranges,
                                       HistogramBase::AtomicCount* counts,
+                                      HistogramBase::AtomicCount* logged_counts,
                                       uint32_t counts_size,
-                                      HistogramSamples::Metadata* meta);
+                                      HistogramSamples::Metadata* meta,
+                                      HistogramSamples::Metadata* logged_meta);
 
   struct DescriptionPair {
     Sample sample;
@@ -388,8 +399,10 @@ class BASE_EXPORT LinearHistogram : public Histogram {
                   Sample maximum,
                   const BucketRanges* ranges,
                   HistogramBase::AtomicCount* counts,
+                  HistogramBase::AtomicCount* logged_counts,
                   uint32_t counts_size,
-                  HistogramSamples::Metadata* meta);
+                  HistogramSamples::Metadata* meta,
+                  HistogramSamples::Metadata* logged_meta);
 
   double GetBucketSize(Count current, uint32_t i) const override;
 
@@ -431,7 +444,9 @@ class BASE_EXPORT BooleanHistogram : public LinearHistogram {
   static HistogramBase* PersistentGet(const std::string& name,
                                       const BucketRanges* ranges,
                                       HistogramBase::AtomicCount* counts,
-                                      HistogramSamples::Metadata* meta);
+                                      HistogramBase::AtomicCount* logged_counts,
+                                      HistogramSamples::Metadata* meta,
+                                      HistogramSamples::Metadata* logged_meta);
 
   HistogramType GetHistogramType() const override;
 
@@ -443,7 +458,9 @@ class BASE_EXPORT BooleanHistogram : public LinearHistogram {
   BooleanHistogram(const std::string& name,
                    const BucketRanges* ranges,
                    HistogramBase::AtomicCount* counts,
-                   HistogramSamples::Metadata* meta);
+                   HistogramBase::AtomicCount* logged_counts,
+                   HistogramSamples::Metadata* meta,
+                   HistogramSamples::Metadata* logged_meta);
 
   friend BASE_EXPORT HistogramBase* DeserializeHistogramInfo(
       base::PickleIterator* iter);
@@ -476,8 +493,10 @@ class BASE_EXPORT CustomHistogram : public Histogram {
   static HistogramBase* PersistentGet(const std::string& name,
                                       const BucketRanges* ranges,
                                       HistogramBase::AtomicCount* counts,
+                                      HistogramBase::AtomicCount* logged_counts,
                                       uint32_t counts_size,
-                                      HistogramSamples::Metadata* meta);
+                                      HistogramSamples::Metadata* meta,
+                                      HistogramSamples::Metadata* logged_meta);
 
   // Overridden from Histogram:
   HistogramType GetHistogramType() const override;
@@ -499,8 +518,10 @@ class BASE_EXPORT CustomHistogram : public Histogram {
   CustomHistogram(const std::string& name,
                   const BucketRanges* ranges,
                   HistogramBase::AtomicCount* counts,
+                  HistogramBase::AtomicCount* logged_counts,
                   uint32_t counts_size,
-                  HistogramSamples::Metadata* meta);
+                  HistogramSamples::Metadata* meta,
+                  HistogramSamples::Metadata* logged_meta);
 
   // HistogramBase implementation:
   bool SerializeInfoImpl(base::Pickle* pickle) const override;

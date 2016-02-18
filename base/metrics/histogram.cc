@@ -267,15 +267,18 @@ HistogramBase* Histogram::FactoryTimeGet(const char* name,
                         flags);
 }
 
-HistogramBase* Histogram::PersistentGet(const std::string& name,
-                                        Sample minimum,
-                                        Sample maximum,
-                                        const BucketRanges* ranges,
-                                        HistogramBase::AtomicCount* counts,
-                                        uint32_t counts_size,
-                                        HistogramSamples::Metadata* meta) {
-  return new Histogram(name, minimum, maximum, ranges, counts, counts_size,
-                       meta);
+HistogramBase* Histogram::PersistentGet(
+    const std::string& name,
+    Sample minimum,
+    Sample maximum,
+    const BucketRanges* ranges,
+    HistogramBase::AtomicCount* counts,
+    HistogramBase::AtomicCount* logged_counts,
+    uint32_t counts_size,
+    HistogramSamples::Metadata* meta,
+    HistogramSamples::Metadata* logged_meta) {
+  return new Histogram(name, minimum, maximum, ranges, counts, logged_counts,
+                       counts_size, meta, logged_meta);
 }
 
 // Calculate what range of values are held in each bucket.
@@ -320,7 +323,7 @@ void Histogram::InitializeBucketRanges(Sample minimum,
 // static
 const int Histogram::kCommonRaceBasedCountMismatch = 5;
 
-int Histogram::FindCorruption(const HistogramSamples& samples) const {
+uint32_t Histogram::FindCorruption(const HistogramSamples& samples) const {
   int inconsistencies = NO_INCONSISTENCIES;
   Sample previous_range = -1;  // Bottom range is always 0.
   for (uint32_t index = 0; index < bucket_count(); ++index) {
@@ -430,6 +433,21 @@ scoped_ptr<HistogramSamples> Histogram::SnapshotSamples() const {
   return SnapshotSampleVector();
 }
 
+scoped_ptr<HistogramSamples> Histogram::SnapshotDelta() {
+  scoped_ptr<HistogramSamples> snapshot = SnapshotSampleVector();
+  if (!logged_samples_) {
+    // If nothing has been previously logged, save this one as
+    // |logged_samples_| and gather another snapshot to return.
+    logged_samples_.swap(snapshot);
+    return SnapshotSampleVector();
+  }
+
+  // Subtract what was previously logged and update that information.
+  snapshot->Subtract(*logged_samples_);
+  logged_samples_->Add(*snapshot);
+  return snapshot;
+}
+
 void Histogram::AddSamples(const HistogramSamples& samples) {
   samples_->Add(samples);
 }
@@ -477,8 +495,10 @@ Histogram::Histogram(const std::string& name,
                      Sample maximum,
                      const BucketRanges* ranges,
                      HistogramBase::AtomicCount* counts,
+                     HistogramBase::AtomicCount* logged_counts,
                      uint32_t counts_size,
-                     HistogramSamples::Metadata* meta)
+                     HistogramSamples::Metadata* meta,
+                     HistogramSamples::Metadata* logged_meta)
   : HistogramBase(name),
     bucket_ranges_(ranges),
     declared_min_(minimum),
@@ -486,6 +506,8 @@ Histogram::Histogram(const std::string& name,
   if (ranges) {
     samples_.reset(new SampleVector(HashMetricName(name),
                                     counts, counts_size, meta, ranges));
+    logged_samples_.reset(new SampleVector(samples_->id(), logged_counts,
+                                           counts_size, logged_meta, ranges));
   }
 }
 
@@ -776,10 +798,12 @@ HistogramBase* LinearHistogram::PersistentGet(
     Sample maximum,
     const BucketRanges* ranges,
     HistogramBase::AtomicCount* counts,
+    HistogramBase::AtomicCount* logged_counts,
     uint32_t counts_size,
-    HistogramSamples::Metadata* meta) {
+    HistogramSamples::Metadata* meta,
+    HistogramSamples::Metadata* logged_meta) {
   return new LinearHistogram(name, minimum, maximum, ranges, counts,
-                             counts_size, meta);
+                             logged_counts, counts_size, meta, logged_meta);
 }
 
 HistogramBase* LinearHistogram::FactoryGetWithRangeDescription(
@@ -813,15 +837,12 @@ LinearHistogram::LinearHistogram(const std::string& name,
                                  Sample maximum,
                                  const BucketRanges* ranges,
                                  HistogramBase::AtomicCount* counts,
+                                 HistogramBase::AtomicCount* logged_counts,
                                  uint32_t counts_size,
-                                 HistogramSamples::Metadata* meta)
-    : Histogram(name,
-                minimum,
-                maximum,
-                ranges,
-                counts,
-                counts_size,
-                meta) {}
+                                 HistogramSamples::Metadata* meta,
+                                 HistogramSamples::Metadata* logged_meta)
+    : Histogram(name, minimum, maximum, ranges, counts, logged_counts,
+                counts_size, meta, logged_meta) {}
 
 double LinearHistogram::GetBucketSize(Count current, uint32_t i) const {
   DCHECK_GT(ranges(i + 1), ranges(i));
@@ -919,8 +940,11 @@ HistogramBase* BooleanHistogram::PersistentGet(
     const std::string& name,
     const BucketRanges* ranges,
     HistogramBase::AtomicCount* counts,
-    HistogramSamples::Metadata* meta) {
-  return new BooleanHistogram(name, ranges, counts, meta);
+    HistogramBase::AtomicCount* logged_counts,
+    HistogramSamples::Metadata* meta,
+    HistogramSamples::Metadata* logged_meta) {
+  return new BooleanHistogram(name, ranges, counts, logged_counts, meta,
+                              logged_meta);
 }
 
 HistogramType BooleanHistogram::GetHistogramType() const {
@@ -934,8 +958,11 @@ BooleanHistogram::BooleanHistogram(const std::string& name,
 BooleanHistogram::BooleanHistogram(const std::string& name,
                                    const BucketRanges* ranges,
                                    HistogramBase::AtomicCount* counts,
-                                   HistogramSamples::Metadata* meta)
-    : LinearHistogram(name, 1, 2, ranges, counts, 2, meta) {}
+                                   HistogramBase::AtomicCount* logged_counts,
+                                   HistogramSamples::Metadata* meta,
+                                   HistogramSamples::Metadata* logged_meta)
+    : LinearHistogram(name, 1, 2, ranges, counts, logged_counts, 2, meta,
+                      logged_meta) {}
 
 HistogramBase* BooleanHistogram::DeserializeInfoImpl(PickleIterator* iter) {
   std::string histogram_name;
@@ -1019,9 +1046,12 @@ HistogramBase* CustomHistogram::PersistentGet(
     const std::string& name,
     const BucketRanges* ranges,
     HistogramBase::AtomicCount* counts,
+    HistogramBase::AtomicCount* logged_counts,
     uint32_t counts_size,
-    HistogramSamples::Metadata* meta) {
-  return new CustomHistogram(name, ranges, counts, counts_size, meta);
+    HistogramSamples::Metadata* meta,
+    HistogramSamples::Metadata* logged_meta) {
+  return new CustomHistogram(name, ranges, counts, logged_counts, counts_size,
+                             meta, logged_meta);
 }
 
 HistogramType CustomHistogram::GetHistogramType() const {
@@ -1053,15 +1083,19 @@ CustomHistogram::CustomHistogram(const std::string& name,
 CustomHistogram::CustomHistogram(const std::string& name,
                                  const BucketRanges* ranges,
                                  HistogramBase::AtomicCount* counts,
+                                 HistogramBase::AtomicCount* logged_counts,
                                  uint32_t counts_size,
-                                 HistogramSamples::Metadata* meta)
+                                 HistogramSamples::Metadata* meta,
+                                 HistogramSamples::Metadata* logged_meta)
     : Histogram(name,
                 ranges->range(1),
                 ranges->range(ranges->bucket_count() - 1),
                 ranges,
                 counts,
+                logged_counts,
                 counts_size,
-                meta) {}
+                meta,
+                logged_meta) {}
 
 bool CustomHistogram::SerializeInfoImpl(Pickle* pickle) const {
   if (!Histogram::SerializeInfoImpl(pickle))

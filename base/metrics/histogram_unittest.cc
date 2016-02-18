@@ -32,7 +32,7 @@ namespace base {
 // heap.
 class HistogramTest : public testing::TestWithParam<bool> {
  protected:
-  const int32_t kAllocatorMemorySize = 4 << 20;  // 4 MiB
+  const int32_t kAllocatorMemorySize = 8 << 20;  // 8 MiB
 
   HistogramTest() : use_persistent_histogram_allocator_(GetParam()) {}
 
@@ -233,6 +233,35 @@ TEST_P(HistogramTest, NameMatchTest) {
   scoped_ptr<HistogramSamples> samples = histogram->SnapshotSamples();
   EXPECT_EQ(2, samples->TotalCount());
   EXPECT_EQ(2, samples->GetCount(10));
+}
+
+// Check that delta calculations work correct.
+TEST_P(HistogramTest, DeltaTest) {
+  HistogramBase* histogram =
+      Histogram::FactoryGet("DeltaHistogram", 1, 64, 8,
+                            HistogramBase::kNoFlags);
+  histogram->Add(1);
+  histogram->Add(10);
+  histogram->Add(50);
+
+  scoped_ptr<HistogramSamples> samples = histogram->SnapshotDelta();
+  EXPECT_EQ(3, samples->TotalCount());
+  EXPECT_EQ(1, samples->GetCount(1));
+  EXPECT_EQ(1, samples->GetCount(10));
+  EXPECT_EQ(1, samples->GetCount(50));
+  EXPECT_EQ(samples->TotalCount(), samples->redundant_count());
+
+  samples = histogram->SnapshotDelta();
+  EXPECT_EQ(0, samples->TotalCount());
+
+  histogram->Add(10);
+  histogram->Add(10);
+  samples = histogram->SnapshotDelta();
+  EXPECT_EQ(2, samples->TotalCount());
+  EXPECT_EQ(2, samples->GetCount(10));
+
+  samples = histogram->SnapshotDelta();
+  EXPECT_EQ(0, samples->TotalCount());
 }
 
 TEST_P(HistogramTest, ExponentialRangesTest) {
@@ -547,7 +576,7 @@ TEST_P(HistogramTest, CorruptBucketBounds) {
 
   bucket_ranges->set_range(2, bucket_ranges->range(1));
   bucket_ranges->set_range(1, tmp);
-  EXPECT_EQ(0, histogram->FindCorruption(*snapshot));
+  EXPECT_EQ(0U, histogram->FindCorruption(*snapshot));
 
   // Show that two simple changes don't offset each other
   bucket_ranges->set_range(3, bucket_ranges->range(3) + 1);
