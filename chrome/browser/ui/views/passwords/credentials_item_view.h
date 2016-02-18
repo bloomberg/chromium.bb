@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/passwords/account_avatar_fetcher.h"
-#include "components/password_manager/core/common/credential_manager_types.h"
 #include "ui/views/controls/button/label_button.h"
 
 namespace autofill {
@@ -34,33 +33,35 @@ class CredentialsItemView : public AccountAvatarFetcherDelegate,
                             public views::LabelButton {
  public:
   CredentialsItemView(views::ButtonListener* button_listener,
-                      const autofill::PasswordForm* form,
-                      password_manager::CredentialType credential_type,
                       const base::string16& upper_text,
                       const base::string16& lower_text,
+                      SkColor hover_color,
+                      const autofill::PasswordForm* form,
                       net::URLRequestContextGetter* request_context);
   ~CredentialsItemView() override;
 
   const autofill::PasswordForm* form() const { return form_; }
-  password_manager::CredentialType credential_type() const {
-    return credential_type_;
-  }
 
   // AccountAvatarFetcherDelegate:
   void UpdateAvatar(const gfx::ImageSkia& image) override;
+
+  void SetLowerLabelColor(SkColor color);
+  void SetHoverColor(SkColor color);
 
  private:
   // views::LabelButton:
   gfx::Size GetPreferredSize() const override;
   int GetHeightForWidth(int w) const override;
   void Layout() override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
   const autofill::PasswordForm* form_;
-  const password_manager::CredentialType credential_type_;
 
   views::ImageView* image_view_;
   views::Label* upper_label_;
   views::Label* lower_label_;
+
+  SkColor hover_color_;
 
   base::WeakPtrFactory<CredentialsItemView> weak_ptr_factory_;
 

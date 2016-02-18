@@ -24,8 +24,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/strings/grit/ui_strings.h"
 
-const SkColor kButtonHoverColor = SkColorSetRGB(0xEA, 0xEA, 0xEA);
-
 @interface AccountChooserViewController () {
   NSButton* cancelButton_;  // Weak.
   NSTextView* titleView_;   //  Weak.

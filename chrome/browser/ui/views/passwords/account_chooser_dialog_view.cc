@@ -23,22 +23,28 @@
 
 namespace {
 
+const int kVerticalAvatarMargin = 8;
+
 // An identifier for views::ColumnSet.
 enum ColumnSetType {
   SINGLE_VIEW_COLUMN_SET,
+  SINGLE_VIEW_COLUMN_SET_NO_PADDING,
 };
 
-// Construct a SINGLE_VIEW_COLUMN_SET ColumnSet and add it to |layout|.
-void BuildOneColumnSet(views::GridLayout* layout) {
-  views::ColumnSet* column_set = layout->AddColumnSet(SINGLE_VIEW_COLUMN_SET);
-  column_set->AddPaddingColumn(0, views::kButtonHEdgeMarginNew);
+// Construct a |type| ColumnSet and add it to |layout|.
+void BuildColumnSet(ColumnSetType type, views::GridLayout* layout) {
+  views::ColumnSet* column_set = layout->AddColumnSet(type);
+  bool padding = (type == SINGLE_VIEW_COLUMN_SET);
+  if (padding)
+    column_set->AddPaddingColumn(0, views::kButtonHEdgeMarginNew);
   column_set->AddColumn(views::GridLayout::FILL,
                         views::GridLayout::FILL,
                         1,
                         views::GridLayout::USE_PREF,
                         0,
                         0);
-  column_set->AddPaddingColumn(0, views::kButtonHEdgeMarginNew);
+  if (padding)
+    column_set->AddPaddingColumn(0, views::kButtonHEdgeMarginNew);
 }
 
 views::StyledLabel::RangeStyleInfo GetLinkStyle() {
@@ -120,14 +126,15 @@ void AccountChooserDialogView::StyledLabelLinkClicked(views::StyledLabel* label,
 void AccountChooserDialogView::ButtonPressed(views::Button* sender,
                                              const ui::Event& event) {
   CredentialsItemView* view = static_cast<CredentialsItemView*>(sender);
-  controller_->OnChooseCredentials(*view->form(),
-                                   view->credential_type());
+  controller_->OnChooseCredentials(
+      *view->form(),
+      password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
 }
 
 void AccountChooserDialogView::InitWindow() {
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
-  BuildOneColumnSet(layout);
+  BuildColumnSet(SINGLE_VIEW_COLUMN_SET, layout);
 
   // Create the title.
   std::pair<base::string16, gfx::Range> title_content =
@@ -147,6 +154,7 @@ void AccountChooserDialogView::InitWindow() {
   // Show credentials.
   net::URLRequestContextGetter* request_context =
       GetProfileFromWebContents(web_contents_)->GetRequestContext();
+  BuildColumnSet(SINGLE_VIEW_COLUMN_SET_NO_PADDING, layout);
   for (const auto& form : controller_->GetLocalForms()) {
     const base::string16& upper_string =
         form->display_name.empty() ? form->username_value : form->display_name;
@@ -159,11 +167,15 @@ void AccountChooserDialogView::InitWindow() {
           IDS_PASSWORDS_VIA_FEDERATION,
           base::UTF8ToUTF16(form->federation_url.host()));
     }
-    layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
-    layout->AddView(new CredentialsItemView(
-        this, form.get(),
-        password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD,
-        upper_string, lower_string, request_context));
+    layout->StartRow(0, SINGLE_VIEW_COLUMN_SET_NO_PADDING);
+    CredentialsItemView* view = new CredentialsItemView(
+        this, upper_string, lower_string, kButtonHoverColor,
+        form.get(), request_context);
+    view->SetLowerLabelColor(kAutoSigninTextColor);
+    view->SetBorder(views::Border::CreateEmptyBorder(
+        kVerticalAvatarMargin, views::kButtonHEdgeMarginNew,
+        kVerticalAvatarMargin, views::kButtonHEdgeMarginNew));
+    layout->AddView(view);
   }
   // DialogClientView adds kRelatedControlVerticalSpacing padding once more for
   // the buttons.

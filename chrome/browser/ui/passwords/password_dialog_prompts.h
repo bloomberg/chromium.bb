@@ -22,6 +22,9 @@ const int kTitleTopInset = 12;
 // The color of the content in the autosign-in first run prompt.
 const SkColor kAutoSigninTextColor = SkColorSetRGB(0x64, 0x64, 0x64);
 
+// The hover color of the account chooser.
+const SkColor kButtonHoverColor = SkColorSetRGB(0xEA, 0xEA, 0xEA);
+
 // A platform-independent interface for the account chooser dialog.
 class AccountChooserPrompt {
  public:

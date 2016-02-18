@@ -224,11 +224,13 @@ ManagePasswordsBubbleView::AutoSigninView::AutoSigninView(
   SetLayoutManager(new views::FillLayout);
   const autofill::PasswordForm& form = parent_->model()->pending_password();
   CredentialsItemView* credential = new CredentialsItemView(
-      this, &form,
-      password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD,
+      this,
       base::string16(),
       l10n_util::GetStringFUTF16(IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_TITLE,
                                  form.username_value),
+      GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_ButtonBackgroundColor),
+      &form,
       parent_->model()->GetProfile()->GetRequestContext());
   credential->SetEnabled(false);
   AddChildView(credential);
