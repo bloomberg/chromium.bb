@@ -383,7 +383,7 @@ void DocumentLoader::DidOpen(int32_t result) {
     multipart_boundary_ = boundary;
   } else {
     // Need to make sure that the server returned a byte-range, since it's
-    // possible for a server to just ignore our bye-range request and just
+    // possible for a server to just ignore our byte-range request and just
     // return the entire document even if it supports byte-range requests.
     // i.e. sniff response to
     // http://www.act.org/compass/sample/pdf/geometry.pdf
@@ -393,6 +393,8 @@ void DocumentLoader::DidOpen(int32_t result) {
       current_pos_ = start_pos;
       if (end_pos && end_pos > start_pos)
         current_chunk_size_ = end_pos - start_pos + 1;
+    } else {
+      partial_document_ = false;
     }
   }
 
