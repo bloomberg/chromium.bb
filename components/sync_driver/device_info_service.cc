@@ -12,7 +12,6 @@
 #include "sync/api/sync_error.h"
 #include "sync/protocol/data_type_state.pb.h"
 #include "sync/protocol/sync.pb.h"
-#include "sync/util/time.h"
 
 namespace sync_driver_v2 {
 
@@ -34,8 +33,7 @@ using Result = ModelTypeStore::Result;
 DeviceInfoService::DeviceInfoService(
     sync_driver::LocalDeviceInfoProvider* local_device_info_provider,
     const StoreFactoryFunction& callback)
-    : local_device_backup_time_(-1),
-      local_device_info_provider_(local_device_info_provider),
+    : local_device_info_provider_(local_device_info_provider),
       weak_factory_(this) {
   DCHECK(local_device_info_provider);
 
@@ -128,45 +126,12 @@ void DeviceInfoService::NotifyObservers() {
   FOR_EACH_OBSERVER(Observer, observers_, OnDeviceInfoChange());
 }
 
-void DeviceInfoService::UpdateLocalDeviceBackupTime(base::Time backup_time) {
-  // TODO(skym): crbug.com/582460: Replace with is initialized check, we've
-  // already started syncing, provider is ready, make sure we have processor.
-
-  // Local device info must be available in advance.
-  DCHECK(local_device_info_provider_->GetLocalDeviceInfo());
-
-  // TODO(skym): crbug.com/582460: Less than instead of not equal check?
-  if (GetLocalDeviceBackupTime() != backup_time) {
-    // TODO(skym): crbug.com/582460: Storing this field doesn't really make
-    // sense.
-    set_local_device_backup_time(syncer::TimeToProtoTime(backup_time));
-    scoped_ptr<DeviceInfoSpecifics> new_specifics = CreateLocalSpecifics();
-
-    // TODO(skym): crbug.com/543406: Create EntityChange and pass to SMTP
-    // through ProcessChanges.
-    // TODO(skym): crbug.com/543405: Persist metadata and data.
-    StoreSpecifics(std::move(new_specifics));
-  }
-
-  // Don't call NotifyObservers() because backup time is not part of
-  // DeviceInfoTracker interface.
-}
-
-base::Time DeviceInfoService::GetLocalDeviceBackupTime() const {
-  return has_local_device_backup_time()
-             ? syncer::ProtoTimeToTime(local_device_backup_time())
-             : base::Time();
-}
-
 // TODO(skym): crbug.com/543406: It might not make sense for this to be a
 // scoped_ptr.
 scoped_ptr<DeviceInfoSpecifics> DeviceInfoService::CreateLocalSpecifics() {
   const DeviceInfo* info = local_device_info_provider_->GetLocalDeviceInfo();
   DCHECK(info);
   scoped_ptr<DeviceInfoSpecifics> specifics = CreateSpecifics(*info);
-  if (has_local_device_backup_time()) {
-    specifics->set_backup_timestamp(local_device_backup_time());
-  }
   // TODO(skym): crbug.com:543406: Local tag and non unique name have no place
   // to be set now.
   return specifics;

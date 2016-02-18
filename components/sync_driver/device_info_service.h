@@ -70,11 +70,6 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
 
-  // Called to update local device backup time.
-  void UpdateLocalDeviceBackupTime(base::Time backup_time);
-  // Gets the most recently set local device backup time.
-  base::Time GetLocalDeviceBackupTime() const;
-
  private:
   friend class DeviceInfoServiceTest;
 
@@ -117,21 +112,6 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
   // Checks if conditions have been met to load and report metadata to our
   // current processor if able.
   void TryLoadAllMetadata();
-
-  // |local_device_backup_time_| accessors.
-  int64_t local_device_backup_time() const { return local_device_backup_time_; }
-  bool has_local_device_backup_time() const {
-    return local_device_backup_time_ >= 0;
-  }
-  void set_local_device_backup_time(int64_t value) {
-    local_device_backup_time_ = value;
-  }
-  void clear_local_device_backup_time() { local_device_backup_time_ = -1; }
-
-  // TODO(skym): crbug.com/582460: Remove once we remove local provider.
-  // Local device last set backup time (in proto format).
-  // -1 if the value hasn't been specified
-  int64_t local_device_backup_time_;
 
   // |local_device_info_provider_| isn't owned.
   const sync_driver::LocalDeviceInfoProvider* const local_device_info_provider_;
