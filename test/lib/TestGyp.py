@@ -1048,7 +1048,8 @@ class TestGypXcode(TestGypBase):
         if not TestCmd.is_List(expected):
           expected = expected.split('\n')
         actual = [a for a in actual
-                    if 'No recorder, buildTask: <Xcode3BuildTask:' not in a]
+                    if 'No recorder, buildTask: <Xcode3BuildTask:' not in a and
+                       'Beginning test session' not in a]
       return match(actual, expected)
     kw['match'] = match_filter_xcode
 
