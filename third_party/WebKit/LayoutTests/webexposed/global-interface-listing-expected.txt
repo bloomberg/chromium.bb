@@ -6335,6 +6335,9 @@ interface Worker : EventTarget
     method terminate
     setter onerror
     setter onmessage
+interface Worklet
+    method constructor
+    method import
 interface XMLDocument : Document
     method constructor
 interface XMLHttpRequest : XMLHttpRequestEventTarget
@@ -6849,6 +6852,7 @@ interface webkitURL
     attribute performance
     attribute personalbar
     attribute propertyNamesInGlobal
+    attribute renderWorklet
     attribute screen
     attribute screenLeft
     attribute screenTop

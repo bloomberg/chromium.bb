@@ -28,9 +28,9 @@ public:
     using RefCounted<WorkletGlobalScope>::deref;
 #endif
 
-    // The url and userAgent arguments are inherited from the parent
-    // ExecutionContext for Worklets.
-    static PassRefPtrWillBeRawPtr<WorkletGlobalScope> create(const KURL&, const String& userAgent, v8::Isolate*);
+    // The url, userAgent and securityOrigin arguments are inherited from the
+    // parent ExecutionContext for Worklets.
+    static PassRefPtrWillBeRawPtr<WorkletGlobalScope> create(const KURL&, const String& userAgent, PassRefPtr<SecurityOrigin>, v8::Isolate*);
     ~WorkletGlobalScope() override;
 
     bool isWorkletGlobalScope() const final { return true; }
@@ -74,7 +74,7 @@ private:
     void derefExecutionContext() final { deref(); }
 #endif
 
-    WorkletGlobalScope(const KURL&, const String& userAgent, v8::Isolate*);
+    WorkletGlobalScope(const KURL&, const String& userAgent, PassRefPtr<SecurityOrigin>, v8::Isolate*);
 
     const KURL& virtualURL() const final { return m_url; }
     KURL virtualCompleteURL(const String&) const final;
