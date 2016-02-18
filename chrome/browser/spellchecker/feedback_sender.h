@@ -16,6 +16,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <array>
+#include <climits>
 #include <map>
 #include <set>
 #include <vector>
@@ -115,8 +117,14 @@ class FeedbackSender : public base::SupportsWeakPtr<FeedbackSender>,
   // it was being collected.
   void StopFeedbackCollection();
 
+  // 256 bits
+  typedef std::array<char, 256 / CHAR_BIT> RandSalt;
+
  private:
   friend class FeedbackSenderTest;
+
+  // Allow unit tests to override RNG.
+  virtual void RandBytes(void* p, size_t len);
 
   // net::URLFetcherDelegate implementation. Takes ownership of |source|.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
@@ -159,6 +167,12 @@ class FeedbackSender : public base::SupportsWeakPtr<FeedbackSender>,
 
   // When the session started.
   base::Time session_start_;
+
+  // The last time that we updated |salt_|.
+  base::Time last_salt_update_;
+
+  // A random number updated once a day.
+  RandSalt salt_;
 
   // The URL where the feedback data should be sent.
   GURL feedback_service_url_;

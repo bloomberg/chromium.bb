@@ -59,13 +59,46 @@ int CountOccurences(const std::string& haystack, const std::string& needle) {
   return number_of_occurrences;
 }
 
+class MockFeedbackSender : public spellcheck::FeedbackSender {
+ public:
+  MockFeedbackSender(net::URLRequestContextGetter* request_context,
+                     const std::string& language,
+                     const std::string& country)
+      : FeedbackSender(request_context, language, country), random_(0) {}
+
+  void RandBytes(void* p, size_t len) override {
+    memset(p, 0, len);
+    if (len >= sizeof(random_))
+      *(unsigned*)p = ++random_;
+  }
+
+ private:
+  // For returning a different value from each call to RandUint64().
+  unsigned random_;
+};
+
+std::string GetMisspellingId(const std::string& raw_data) {
+  scoped_ptr<base::Value> parsed_data(
+      base::JSONReader::Read(raw_data).release());
+  EXPECT_TRUE(parsed_data.get());
+  base::DictionaryValue* actual_data;
+  EXPECT_TRUE(parsed_data->GetAsDictionary(&actual_data));
+  base::ListValue* suggestions = NULL;
+  EXPECT_TRUE(actual_data->GetList("params.suggestionInfo", &suggestions));
+  base::DictionaryValue* suggestion = NULL;
+  EXPECT_TRUE(suggestions->GetDictionary(0, &suggestion));
+  std::string value;
+  EXPECT_TRUE(suggestion->GetString("userMisspellingId", &value));
+  return value;
+}
+
 }  // namespace
 
 // A test fixture to help keep tests simple.
 class FeedbackSenderTest : public testing::Test {
  public:
   FeedbackSenderTest() : ui_thread_(content::BrowserThread::UI, &loop_) {
-    feedback_.reset(new FeedbackSender(nullptr, kLanguage, kCountry));
+    feedback_.reset(new MockFeedbackSender(NULL, kLanguage, kCountry));
     feedback_->StartFeedbackCollection();
   }
 
@@ -79,7 +112,7 @@ class FeedbackSenderTest : public testing::Test {
     // TODO(rouslan): Remove the command-line switch. http://crbug.com/247726
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableSpellingFeedbackFieldTrial);
-    feedback_.reset(new FeedbackSender(nullptr, kLanguage, kCountry));
+    feedback_.reset(new MockFeedbackSender(NULL, kLanguage, kCountry));
     feedback_->StartFeedbackCollection();
   }
 
@@ -92,7 +125,7 @@ class FeedbackSenderTest : public testing::Test {
     field_trial_ = base::FieldTrialList::CreateFieldTrial(
         kFeedbackFieldTrialName, kFeedbackFieldTrialEnabledGroupName);
     field_trial_->group();
-    feedback_.reset(new FeedbackSender(nullptr, kLanguage, kCountry));
+    feedback_.reset(new MockFeedbackSender(NULL, kLanguage, kCountry));
     feedback_->StartFeedbackCollection();
   }
 
@@ -141,7 +174,11 @@ class FeedbackSenderTest : public testing::Test {
     return fetcher ? fetcher->upload_data() : std::string();
   }
 
-  scoped_ptr<spellcheck::FeedbackSender> feedback_;
+  void AdjustUpdateTime(base::TimeDelta offset) {
+    feedback_->last_salt_update_ += offset;
+  }
+
+  scoped_ptr<MockFeedbackSender> feedback_;
 
  private:
   base::MessageLoop loop_;
@@ -177,6 +214,48 @@ TEST_F(FeedbackSenderTest, PendingFeedback) {
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
                                       std::vector<uint32_t>(1, hash));
   EXPECT_TRUE(UploadDataContains("\"actionType\":\"PENDING\""));
+}
+
+TEST_F(FeedbackSenderTest, IdenticalFeedback) {
+  std::vector<uint32_t> hashes;
+  hashes.push_back(AddPendingFeedback());
+  hashes.push_back(AddPendingFeedback());
+  feedback_->OnReceiveDocumentMarkers(kRendererProcessId, hashes);
+  std::string actual_data = GetUploadData();
+  scoped_ptr<base::DictionaryValue> actual(static_cast<base::DictionaryValue*>(
+      base::JSONReader::Read(GetUploadData()).release()));
+  base::ListValue* suggestions = NULL;
+  ASSERT_TRUE(actual->GetList("params.suggestionInfo", &suggestions));
+  base::DictionaryValue* suggestion0 = NULL;
+  ASSERT_TRUE(suggestions->GetDictionary(0, &suggestion0));
+  base::DictionaryValue* suggestion1 = NULL;
+  ASSERT_TRUE(suggestions->GetDictionary(0, &suggestion1));
+  std::string value0, value1;
+  ASSERT_TRUE(suggestion0->GetString("userMisspellingId", &value0));
+  ASSERT_TRUE(suggestion1->GetString("userMisspellingId", &value1));
+  EXPECT_EQ(value0, value1);
+  base::ListValue* suggestion_ids = NULL;
+  ASSERT_TRUE(suggestion0->GetList("userSuggestionId", &suggestion_ids));
+  ASSERT_TRUE(suggestion_ids->GetString(0, &value0));
+  ASSERT_TRUE(suggestion1->GetList("userSuggestionId", &suggestion_ids));
+  ASSERT_TRUE(suggestion_ids->GetString(0, &value1));
+  EXPECT_EQ(value0, value1);
+}
+
+TEST_F(FeedbackSenderTest, NonidenticalFeedback) {
+  std::vector<uint32_t> hashes;
+  hashes.push_back(AddPendingFeedback());
+  feedback_->OnReceiveDocumentMarkers(kRendererProcessId, hashes);
+  std::string raw_data0 = GetUploadData();
+  hashes.clear();
+  hashes.push_back(AddPendingFeedback());
+  AdjustUpdateTime(-base::TimeDelta::FromHours(25));
+  feedback_->OnReceiveDocumentMarkers(kRendererProcessId, hashes);
+  std::string raw_data1 = GetUploadData();
+
+  std::string value0(GetMisspellingId(raw_data0));
+  std::string value1(GetMisspellingId(raw_data1));
+  EXPECT_NE(value0, value1);
 }
 
 // Send NO_ACTION feedback message if the marker has been removed from the
@@ -446,7 +525,9 @@ TEST_F(FeedbackSenderTest, FeedbackAPI) {
       "\"suggestionId\":\"42\","
       "\"suggestions\":[\"Hello\"],"
       "\"timestamp\":\"9001\","
-      "\"userActions\":[{\"actionType\":\"NO_ACTION\"}]}]}}";
+      "\"userActions\":[{\"actionType\":\"NO_ACTION\"}],"
+      "\"userMisspellingId\":\"14573599553589145012\","
+      "\"userSuggestionId\":[\"14761077877524043800\"]}]}}";
   scoped_ptr<base::Value> expected = base::JSONReader::Read(expected_data);
   EXPECT_TRUE(expected->Equals(actual.get()))
       << "Expected data: " << expected_data

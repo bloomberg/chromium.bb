@@ -50,6 +50,9 @@
 #include "chrome/common/spellcheck_messages.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "content/public/browser/render_process_host.h"
+#include "crypto/random.h"
+#include "crypto/secure_hash.h"
+#include "crypto/sha2.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
@@ -77,6 +80,19 @@ uint32_t BuildHash(const base::Time& session_start, size_t suggestion_index) {
                          suggestion_index));
 }
 
+uint64_t BuildAnonymousHash(const FeedbackSender::RandSalt& r,
+                            const base::string16& s) {
+  scoped_ptr<crypto::SecureHash> hash(
+      crypto::SecureHash::Create(crypto::SecureHash::SHA256));
+
+  hash->Update(s.data(), s.size() * sizeof(s[0]));
+  hash->Update(&r, sizeof(r));
+
+  uint64_t result;
+  hash->Finish(&result, sizeof(result));
+  return result;
+}
+
 // Returns a pending feedback data structure for the spellcheck |result| and
 // |text|.
 Misspelling BuildFeedback(const SpellCheckResult& result,
@@ -96,13 +112,28 @@ Misspelling BuildFeedback(const SpellCheckResult& result,
 // Builds suggestion info from |suggestions|.
 scoped_ptr<base::ListValue> BuildSuggestionInfo(
     const std::vector<Misspelling>& misspellings,
-    bool is_first_feedback_batch) {
+    bool is_first_feedback_batch,
+    const FeedbackSender::RandSalt& salt) {
   scoped_ptr<base::ListValue> list(new base::ListValue);
   for (const auto& raw_misspelling : misspellings) {
     scoped_ptr<base::DictionaryValue> misspelling(
         SerializeMisspelling(raw_misspelling));
     misspelling->SetBoolean("isFirstInSession", is_first_feedback_batch);
     misspelling->SetBoolean("isAutoCorrection", false);
+    // hash(R) fields come from red_underline_extensions.proto
+    // fixed64 user_misspelling_id = ...
+    misspelling->SetString(
+        "userMisspellingId",
+        base::Uint64ToString(BuildAnonymousHash(
+            salt, raw_misspelling.context.substr(raw_misspelling.location,
+                                                 raw_misspelling.length))));
+    // repeated fixed64 user_suggestion_id = ...
+    scoped_ptr<base::ListValue> suggestion_list(new base::ListValue());
+    for (const auto& suggestion : raw_misspelling.suggestions) {
+      suggestion_list->AppendString(
+          base::Uint64ToString(BuildAnonymousHash(salt, suggestion)));
+    }
+    misspelling->Set("userSuggestionId", suggestion_list.release());
     list->Append(misspelling.release());
   }
   return list;
@@ -342,6 +373,10 @@ void FeedbackSender::StopFeedbackCollection() {
   timer_.Stop();
 }
 
+void FeedbackSender::RandBytes(void* p, size_t len) {
+  crypto::RandBytes(p, len);
+}
+
 void FeedbackSender::OnURLFetchComplete(const net::URLFetcher* source) {
   for (ScopedVector<net::URLFetcher>::iterator sender_it = senders_.begin();
        sender_it != senders_.end();
@@ -394,10 +429,14 @@ void FeedbackSender::FlushFeedback() {
 
 void FeedbackSender::SendFeedback(const std::vector<Misspelling>& feedback_data,
                                   bool is_first_feedback_batch) {
+  if (base::Time::Now() - last_salt_update_ > base::TimeDelta::FromHours(24)) {
+    RandBytes(&salt_, sizeof(salt_));
+    last_salt_update_ = base::Time::Now();
+  }
   scoped_ptr<base::Value> feedback_value(BuildFeedbackValue(
-      BuildParams(BuildSuggestionInfo(feedback_data, is_first_feedback_batch),
-                  language_,
-                  country_),
+      BuildParams(
+          BuildSuggestionInfo(feedback_data, is_first_feedback_batch, salt_),
+          language_, country_),
       api_version_));
   std::string feedback;
   base::JSONWriter::Write(*feedback_value, &feedback);
