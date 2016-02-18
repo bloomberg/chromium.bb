@@ -4,15 +4,8 @@
 
 #include "net/cert/internal/verify_name_match.h"
 
-#include <string.h>
-
-#include "base/strings/string16.h"
-#include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversion_utils.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/sys_byteorder.h"
-#include "base/third_party/icu/icu_utf.h"
 #include "base/tuple.h"
+#include "net/cert/internal/parse_name.h"
 #include "net/der/input.h"
 #include "net/der/parser.h"
 #include "net/der/tag.h"
@@ -115,135 +108,28 @@ WARN_UNUSED_RESULT bool NormalizeDirectoryString(
   return true;
 }
 
-// Normalizes the DER-encoded PrintableString value |in| according to
-// RFC 2459, Section 4.1.2.4
+// Converts the value of X509NameAttribute |attribute| to UTF-8, normalizes it,
+// and stores in |output|. The type of |attribute| must be one of the types for
+// which IsNormalizableDirectoryString is true.
 //
-// Briefly, normalization involves removing leading and trailing
-// whitespace, folding multiple whitespace characters into a single
-// whitespace character, and normalizing on case (this function
-// normalizes to lowercase).
-//
-// During normalization, this function also validates that |in|
-// is properly encoded - that is, that it restricts to the character
-// set defined in X.680 (2008), Section 41.4, Table 10. X.680 defines
-// the valid characters as
-//   a-z A-Z 0-9 (space) ' ( ) + , - . / : = ?
-//
-// However, due to an old OpenSSL encoding bug, a number of
-// certificates have also included '*', which has historically been
-// allowed by implementations, and so is also allowed here.
-//
-// If |in| can be normalized, returns true and sets |output| to the
-// case folded, normalized value. If |in| is invalid, returns false.
+// If the value of |attribute| can be normalized, returns true and sets
+// |output| to the case folded, normalized value. If the value of |attribute|
+// is invalid, returns false.
 // NOTE: |output| will be modified regardless of the return.
-WARN_UNUSED_RESULT bool NormalizePrintableStringValue(const der::Input& in,
-                                                      std::string* output) {
-  in.AsString().swap(*output);
-  return NormalizeDirectoryString(ENFORCE_PRINTABLE_STRING, output);
-}
-
-// Normalized a UTF8String value. See the comment for NormalizeDirectoryString
-// for details.
-//
-// If |in| can be normalized, returns true and sets |output| to the
-// case folded, normalized value. If |in| is invalid, returns false.
-// NOTE: |output| will be modified regardless of the return.
-WARN_UNUSED_RESULT bool NormalizeUtf8StringValue(const der::Input& in,
-                                                 std::string* output) {
-  in.AsString().swap(*output);
-  return NormalizeDirectoryString(NO_ENFORCEMENT, output);
-}
-
-// IA5String is ISO/IEC Registrations 1 and 6 from the ISO
-// "International Register of Coded Character Sets to be used
-// with Escape Sequences", plus space and delete. That's just the
-// polite way of saying 0x00 - 0x7F, aka ASCII (or, more formally,
-// ISO/IEC 646)
-//
-// If |in| can be normalized, returns true and sets |output| to the case folded,
-// normalized value. If |in| is invalid, returns false.
-// NOTE: |output| will be modified regardless of the return.
-WARN_UNUSED_RESULT bool NormalizeIA5StringValue(const der::Input& in,
-                                                std::string* output) {
-  in.AsString().swap(*output);
-  return NormalizeDirectoryString(ENFORCE_ASCII, output);
-}
-
-// Converts BMPString value to UTF-8 and then normalizes it. See the comment for
-// NormalizeDirectoryString for details.
-//
-// If |in| can be normalized, returns true and sets |output| to the case folded,
-// normalized value. If |in| is invalid, returns false.
-// NOTE: |output| will be modified regardless of the return.
-WARN_UNUSED_RESULT bool NormalizeBmpStringValue(const der::Input& in,
-                                                std::string* output) {
-  if (in.Length() % 2 != 0)
-    return false;
-
-  base::string16 in_16bit;
-  if (in.Length()) {
-    memcpy(base::WriteInto(&in_16bit, in.Length() / 2 + 1), in.UnsafeData(),
-           in.Length());
-  }
-  for (base::char16& c : in_16bit) {
-    // BMPString is UCS-2 in big-endian order.
-    c = base::NetToHost16(c);
-
-    // BMPString only supports codepoints in the Basic Multilingual Plane;
-    // surrogates are not allowed.
-    if (CBU_IS_SURROGATE(c))
-      return false;
-  }
-  if (!base::UTF16ToUTF8(in_16bit.data(), in_16bit.size(), output))
-    return false;
-  return NormalizeDirectoryString(NO_ENFORCEMENT, output);
-}
-
-// Converts UniversalString value to UTF-8 and then normalizes it. See the
-// comment for NormalizeDirectoryString for details.
-//
-// If |in| can be normalized, returns true and sets |output| to the case folded,
-// normalized value. If |in| is invalid, returns false.
-// NOTE: |output| will be modified regardless of the return.
-WARN_UNUSED_RESULT bool NormalizeUniversalStringValue(const der::Input& in,
-                                                      std::string* output) {
-  if (in.Length() % 4 != 0)
-    return false;
-
-  std::vector<uint32_t> in_32bit(in.Length() / 4);
-  if (in.Length())
-    memcpy(in_32bit.data(), in.UnsafeData(), in.Length());
-  for (const uint32_t c : in_32bit) {
-    // UniversalString is UCS-4 in big-endian order.
-    uint32_t codepoint = base::NetToHost32(c);
-    if (!CBU_IS_UNICODE_CHAR(codepoint))
-      return false;
-
-    base::WriteUnicodeCharacter(codepoint, output);
-  }
-  return NormalizeDirectoryString(NO_ENFORCEMENT, output);
-}
-
-// Converts the string |value| to UTF-8, normalizes it, and stores in |output|.
-// |tag| must one of the types for which IsNormalizableDirectoryString is true.
-//
-// If |value| can be normalized, returns true and sets |output| to the case
-// folded, normalized value. If |value| is invalid, returns false.
-// NOTE: |output| will be modified regardless of the return.
-WARN_UNUSED_RESULT bool NormalizeValue(const der::Tag tag,
-                                       const der::Input& value,
+WARN_UNUSED_RESULT bool NormalizeValue(X509NameAttribute attribute,
                                        std::string* output) {
-  switch (tag) {
+  if (!attribute.ValueAsStringUnsafe(output))
+    return false;
+
+  switch (attribute.value_tag) {
     case der::kPrintableString:
-      return NormalizePrintableStringValue(value, output);
-    case der::kUtf8String:
-      return NormalizeUtf8StringValue(value, output);
-    case der::kIA5String:
-      return NormalizeIA5StringValue(value, output);
-    case der::kUniversalString:
-      return NormalizeUniversalStringValue(value, output);
+      return NormalizeDirectoryString(ENFORCE_PRINTABLE_STRING, output);
     case der::kBmpString:
-      return NormalizeBmpStringValue(value, output);
+    case der::kUniversalString:
+    case der::kUtf8String:
+      return NormalizeDirectoryString(NO_ENFORCEMENT, output);
+    case der::kIA5String:
+      return NormalizeDirectoryString(ENFORCE_ASCII, output);
     default:
       NOTREACHED();
       return false;
@@ -271,98 +157,29 @@ bool IsNormalizableDirectoryString(der::Tag tag) {
   }
 }
 
-// Returns true if the AttributeValue (|a_tag|, |a_value|) matches (|b_tag|,
-// |b_value|).
-bool VerifyValueMatch(const der::Tag a_tag,
-                      const der::Input& a_value,
-                      const der::Tag b_tag,
-                      const der::Input& b_value) {
-  if (IsNormalizableDirectoryString(a_tag) &&
-      IsNormalizableDirectoryString(b_tag)) {
+// Returns true if the value of X509NameAttribute |a| matches |b|.
+bool VerifyValueMatch(X509NameAttribute a, X509NameAttribute b) {
+  if (IsNormalizableDirectoryString(a.value_tag) &&
+      IsNormalizableDirectoryString(b.value_tag)) {
     std::string a_normalized, b_normalized;
-    if (!NormalizeValue(a_tag, a_value, &a_normalized) ||
-        !NormalizeValue(b_tag, b_value, &b_normalized))
+    if (!NormalizeValue(a, &a_normalized) || !NormalizeValue(b, &b_normalized))
       return false;
     return a_normalized == b_normalized;
   }
   // Attributes encoded with different types may be assumed to be unequal.
-  if (a_tag != b_tag)
+  if (a.value_tag != b.value_tag)
     return false;
   // All other types use binary comparison.
-  return a_value == b_value;
-}
-
-struct AttributeTypeAndValue {
-  AttributeTypeAndValue(der::Input in_type,
-                        der::Tag in_value_tag,
-                        der::Input in_value)
-      : type(in_type), value_tag(in_value_tag), value(in_value) {}
-  der::Input type;
-  der::Tag value_tag;
-  der::Input value;
-};
-
-// Parses all the ASN.1 AttributeTypeAndValue elements in |parser| and stores
-// each as an AttributeTypeAndValue object in |out|.
-//
-// AttributeTypeAndValue is defined in RFC 5280 section 4.1.2.4:
-//
-// AttributeTypeAndValue ::= SEQUENCE {
-//   type     AttributeType,
-//   value    AttributeValue }
-//
-// AttributeType ::= OBJECT IDENTIFIER
-//
-// AttributeValue ::= ANY -- DEFINED BY AttributeType
-//
-// DirectoryString ::= CHOICE {
-//       teletexString           TeletexString (SIZE (1..MAX)),
-//       printableString         PrintableString (SIZE (1..MAX)),
-//       universalString         UniversalString (SIZE (1..MAX)),
-//       utf8String              UTF8String (SIZE (1..MAX)),
-//       bmpString               BMPString (SIZE (1..MAX)) }
-//
-// The type of the component AttributeValue is determined by the AttributeType;
-// in general it will be a DirectoryString.
-WARN_UNUSED_RESULT bool ReadRdn(der::Parser* parser,
-                                std::vector<AttributeTypeAndValue>* out) {
-  while (parser->HasMore()) {
-    der::Parser attr_type_and_value;
-    if (!parser->ReadSequence(&attr_type_and_value))
-      return false;
-    // Read the attribute type, which must be an OBJECT IDENTIFIER.
-    der::Input type;
-    if (!attr_type_and_value.ReadTag(der::kOid, &type))
-      return false;
-
-    // Read the attribute value.
-    der::Tag tag;
-    der::Input value;
-    if (!attr_type_and_value.ReadTagAndValue(&tag, &value))
-      return false;
-
-    // There should be no more elements in the sequence after reading the
-    // attribute type and value.
-    if (attr_type_and_value.HasMore())
-      return false;
-
-    out->push_back(AttributeTypeAndValue(type, tag, value));
-  }
-  return true;
+  return a.value == b.value;
 }
 
 // Verifies that |a_parser| and |b_parser| are the same length and that every
 // AttributeTypeAndValue in |a_parser| has a matching AttributeTypeAndValue in
 // |b_parser|.
 bool VerifyRdnMatch(der::Parser* a_parser, der::Parser* b_parser) {
-  std::vector<AttributeTypeAndValue> a_type_and_values, b_type_and_values;
+  std::vector<X509NameAttribute> a_type_and_values, b_type_and_values;
   if (!ReadRdn(a_parser, &a_type_and_values) ||
       !ReadRdn(b_parser, &b_type_and_values))
-    return false;
-
-  // RFC 5280 section 4.1.2.4
-  // RelativeDistinguishedName ::= SET SIZE (1..MAX) OF AttributeTypeAndValue
-  if (a_type_and_values.empty() || b_type_and_values.empty())
     return false;
 
   // RFC 5280 section 7.1:
@@ -377,12 +194,10 @@ bool VerifyRdnMatch(der::Parser* a_parser, der::Parser* b_parser) {
   // small, a naive linear search for each element should be fine. (Hostile
   // certificates already have ways to provoke pathological behavior.)
   for (const auto& a : a_type_and_values) {
-    std::vector<AttributeTypeAndValue>::iterator b_iter =
-        b_type_and_values.begin();
+    std::vector<X509NameAttribute>::iterator b_iter = b_type_and_values.begin();
     for (; b_iter != b_type_and_values.end(); ++b_iter) {
       const auto& b = *b_iter;
-      if (a.type == b.type &&
-          VerifyValueMatch(a.value_tag, a.value, b.value_tag, b.value)) {
+      if (a.type == b.type && VerifyValueMatch(a, b)) {
         break;
       }
     }
@@ -487,7 +302,7 @@ bool NameContainsEmailAddress(const der::Input& name_rdn_sequence,
     if (!rdn_sequence_parser.ReadConstructed(der::kSet, &rdn_parser))
       return false;
 
-    std::vector<AttributeTypeAndValue> type_and_values;
+    std::vector<X509NameAttribute> type_and_values;
     if (!ReadRdn(&rdn_parser, &type_and_values))
       return false;
 
