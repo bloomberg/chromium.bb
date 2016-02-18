@@ -17,6 +17,9 @@ import request_track
 
 class ActivityLens(object):
   """Reconstructs the activity of the main renderer thread between requests."""
+  _SCRIPT_EVENT_NAMES = ('EvaluateScript', 'FunctionCall')
+  _PARSING_EVENT_NAMES = ('ParseHTML', 'ParseAuthorStyleSheet')
+
   def __init__(self, trace):
     """Initializes an instance of ActivityLens.
 
@@ -103,13 +106,23 @@ class ActivityLens(object):
     script_to_duration = collections.defaultdict(float)
     script_events = [e for e in events
                      if ('devtools.timeline' in e.tracing_event['cat']
-                         and e.tracing_event['name'] in (
-                             'EvaluateScript', 'FunctionCall'))]
+                         and (e.tracing_event['name']
+                              in cls._SCRIPT_EVENT_NAMES))]
     for event in script_events:
       clamped_duration = cls._ClampedDuration(event, start_msec, end_msec)
       script_url = event.args['data'].get('scriptName', None)
       script_to_duration[script_url] += clamped_duration
     return dict(script_to_duration)
+
+  @classmethod
+  def _FullyIncludedEvents(cls, events, event):
+    """Return a list of events wholly included in the |event| span."""
+    (start, end) = (event.start_msec, event.end_msec)
+    result = []
+    for event in events:
+      if start <= event.start_msec < end and start <= event.end_msec < end:
+        result.append(event)
+    return result
 
   @classmethod
   def _Parsing(cls, events, start_msec, end_msec):
@@ -127,16 +140,25 @@ class ActivityLens(object):
     url_to_duration = collections.defaultdict(float)
     parsing_events = [e for e in events
                       if ('devtools.timeline' in e.tracing_event['cat']
-                          and e.tracing_event['name'] in (
-                              'ParseHTML', 'ParseAuthorStyleSheet'))]
+                          and (e.tracing_event['name']
+                               in cls._PARSING_EVENT_NAMES))]
     for event in parsing_events:
+      # Parsing events can contain nested script execution events, avoid
+      # double-counting by discounting these.
+      nested_events = cls._FullyIncludedEvents(events, event)
+      events_tree = _EventsTree(event, nested_events)
+      js_events = events_tree.DominatingEventsWithNames(cls._SCRIPT_EVENT_NAMES)
+      duration_to_subtract = sum(
+          cls._ClampedDuration(e, start_msec, end_msec) for e in js_events)
       tracing_event = event.tracing_event
       clamped_duration = cls._ClampedDuration(event, start_msec, end_msec)
       if tracing_event['name'] == 'ParseAuthorStyleSheet':
         url = tracing_event['args']['data']['styleSheetUrl']
       else:
         url = tracing_event['args']['beginData']['url']
-      url_to_duration[url] += clamped_duration
+      parsing_duration = clamped_duration - duration_to_subtract
+      assert parsing_duration >= 0
+      url_to_duration[url] += parsing_duration
     return dict(url_to_duration)
 
   def GenerateEdgeActivity(self, dep):
@@ -170,28 +192,69 @@ class ActivityLens(object):
            RequestDependencyLens.GetRequestDependencies().
 
     Returns:
-      {'script': float, 'parsing': float, 'other': float, 'unknown': float}
+      {'script': float, 'parsing': float, 'other_url': float,
+       'unknown_url': float, 'unrelated_work': float}
       where the values are durations in ms:
+      - idle: The renderer main thread was idle.
       - script: The initiating file was executing.
       - parsing: The initiating file was being parsed.
-      - other: Other scripts and/or parsing activities.
-      - unknown: Activity which is not associated with a URL.
+      - other_url: Other scripts and/or parsing activities.
+      - unknown_url: Activity which is not associated with a URL.
+      - unrelated_work: Activity unrelated to scripts or parsing.
     """
     activity = self.GenerateEdgeActivity(dep)
-    related = {'script': 0, 'parsing': 0, 'other_url': 0, 'unknown_url': 0}
+    breakdown = {'unrelated_work': activity['busy'],
+                 'idle': activity['edge_cost'] - activity['busy'],
+                 'script': 0, 'parsing': 0,
+                 'other_url': 0, 'unknown_url': 0}
     for kind in ('script', 'parsing'):
       for (script_name, duration_ms) in activity[kind].items():
         if not script_name:
-          related['unknown_url'] += duration_ms
+          breakdown['unknown_url'] += duration_ms
         elif script_name == dep[0].url:
-          related[kind] += duration_ms
+          breakdown[kind] += duration_ms
         else:
-          # A lot of "ParseHTML" tasks are mostly about executing
-          # scripts. Don't double-count.
-          # TODO(lizeb): Better handle TraceEvents nesting.
-          if kind == 'script':
-            related['other_url'] += duration_ms
-    return related
+          breakdown['other_url'] += duration_ms
+    breakdown['unrelated_work'] -= sum(
+        breakdown[x] for x in ('script', 'parsing', 'other_url', 'unknown_url'))
+    return breakdown
+
+
+class _EventsTree(object):
+  """Builds the hierarchy of events from a list of fully nested events."""
+  def __init__(self, root_event, events):
+    """Creates the tree.
+
+    Args:
+      root_event: (Event) Event held by the tree root.
+      events: ([Event]) List of events that are fully included in |root_event|.
+    """
+    self.event = root_event
+    self.start_msec = root_event.start_msec
+    self.end_msec = root_event.end_msec
+    self.children = []
+    events.sort(key=operator.attrgetter('start_msec'))
+    if not events:
+      return
+    current_child = (events[0], [])
+    for event in events[1:]:
+      if event.end_msec < current_child[0].end_msec:
+        current_child[1].append(event)
+      else:
+        self.children.append(_EventsTree(current_child[0], current_child[1]))
+        current_child = (event, [])
+    self.children.append(_EventsTree(current_child[0], current_child[1]))
+
+  def DominatingEventsWithNames(self, names):
+    """Returns a list of the top-most events in the tree with a matching name.
+    """
+    if self.event.name in names:
+      return [self.event]
+    else:
+      result = []
+      for child in self.children:
+        result += child.DominatingEventsWithNames(names)
+      return result
 
 
 if __name__ == '__main__':

@@ -56,8 +56,8 @@ class GraphVisualization(object):
   }
 
   _ACTIVITY_TYPE_LABEL = (
-      ('script', 'S'), ('parsing', 'P'), ('other_url', 'O'),
-      ('unknown_url', 'U'))
+      ('idle', 'I'), ('unrelated_work', 'W'), ('script', 'S'),
+      ('parsing', 'P'), ('other_url', 'O'), ('unknown_url', 'U'))
 
   def __init__(self, graph):
     """Initialize.

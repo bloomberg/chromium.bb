@@ -2,9 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import collections
+import copy
 import unittest
 
-from activity_lens import ActivityLens
+from activity_lens import (ActivityLens, _EventsTree)
 import test_utils
 import tracing
 
@@ -202,23 +204,33 @@ class ActivityLensTestCast(unittest.TestCase):
          u'ph': u'X',
          u'pid': 1,
          u'tid': 1,
+         u'ts': 0},
+        {u'cat': u'toplevel',
+         u'dur': 100 * 1000,
+         u'name': u'MessageLoop::RunTask',
+         u'ph': u'X',
+         u'pid': 1,
+         u'tid': 1,
          u'ts': 0}]
     activity = self._ActivityLens(requests, raw_events)
     dep = (requests[0], requests[1], 'parser')
     self.assertEquals(
-        {'script': 0, 'parsing': 12, 'other_url': 0, 'unknown_url': 0},
+        {'unrelated_work': 18, 'idle': 0, 'script': 0, 'parsing': 12,
+         'other_url': 0, 'unknown_url': 0},
         activity.BreakdownEdgeActivityByInitiator(dep))
     dep = (requests[0], requests[1], 'other')
-    # Truncating the event from the parent xrequest end.
+    # Truncating the event from the parent request end.
     self.assertEquals(
-        {'script': 0, 'parsing': 7, 'other_url': 0, 'unknown_url': 0},
+        {'unrelated_work': 13, 'idle': 0, 'script': 0, 'parsing': 7,
+         'other_url': 0, 'unknown_url': 0},
         activity.BreakdownEdgeActivityByInitiator(dep))
     # Unknown URL
     raw_events[0]['args']['beginData']['url'] = None
     activity = self._ActivityLens(requests, raw_events)
     dep = (requests[0], requests[1], 'parser')
     self.assertEquals(
-        {'script': 0, 'parsing': 0, 'other_url': 0, 'unknown_url': 12},
+        {'unrelated_work': 18, 'idle': 0, 'script': 0, 'parsing': 0,
+         'other_url': 0, 'unknown_url': 12},
         activity.BreakdownEdgeActivityByInitiator(dep))
     # Script
     raw_events[1]['ts'] = 40 * 1000
@@ -226,19 +238,53 @@ class ActivityLensTestCast(unittest.TestCase):
     activity = self._ActivityLens(requests, raw_events)
     dep = (requests[0], requests[1], 'script')
     self.assertEquals(
-        {'script': 6, 'parsing': 0, 'other_url': 0, 'unknown_url': 7},
+        {'unrelated_work': 7, 'idle': 0, 'script': 6, 'parsing': 0,
+         'other_url': 0, 'unknown_url': 7},
         activity.BreakdownEdgeActivityByInitiator(dep))
     # Other URL
     raw_events[1]['args']['data']['scriptName'] = 'http://other.com/url'
     activity = self._ActivityLens(requests, raw_events)
     self.assertEquals(
-        {'script': 0., 'parsing': 0., 'other_url': 6., 'unknown_url': 7.},
+        {'unrelated_work': 7, 'idle': 0, 'script': 0., 'parsing': 0.,
+         'other_url': 6., 'unknown_url': 7.},
         activity.BreakdownEdgeActivityByInitiator(dep))
 
   def _ActivityLens(self, requests, raw_events):
     loading_trace = test_utils.LoadingTraceFromEvents(
         requests, None, raw_events)
     return ActivityLens(loading_trace)
+
+
+class EventsTreeTestCase(unittest.TestCase):
+  FakeEvent = collections.namedtuple(
+      'FakeEvent', ('name', 'start_msec', 'end_msec'))
+  _ROOT_EVENT = FakeEvent('-1', 0, 20)
+  _EVENTS = [
+      FakeEvent('0', 2, 4), FakeEvent('1', 1, 5),
+      FakeEvent('2', 6, 9),
+      FakeEvent('3', 13, 14), FakeEvent('4', 14, 17), FakeEvent('5', 12, 18)]
+
+  def setUp(self):
+    self.tree = _EventsTree(self._ROOT_EVENT, copy.deepcopy(self._EVENTS))
+
+  def testEventsTreeConstruction(self):
+    self.assertEquals(self._ROOT_EVENT, self.tree.event)
+    self.assertEquals(3, len(self.tree.children))
+    self.assertEquals(self._EVENTS[1], self.tree.children[0].event)
+    self.assertEquals(self._EVENTS[0], self.tree.children[0].children[0].event)
+    self.assertEquals(self._EVENTS[2], self.tree.children[1].event)
+    self.assertEquals([], self.tree.children[1].children)
+    self.assertEquals(self._EVENTS[5], self.tree.children[2].event)
+    self.assertEquals(2, len(self.tree.children[2].children))
+
+  def testDominatingEventsWithNames(self):
+    self.assertListEqual(
+        [self._ROOT_EVENT], self.tree.DominatingEventsWithNames(('-1')))
+    self.assertListEqual(
+        [self._ROOT_EVENT], self.tree.DominatingEventsWithNames(('-1', '0')))
+    self.assertListEqual(
+        [self._EVENTS[1], self._EVENTS[5]],
+        self.tree.DominatingEventsWithNames(('1', '5')))
 
 
 if __name__ == '__main__':

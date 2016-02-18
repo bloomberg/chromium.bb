@@ -312,6 +312,10 @@ class Event(object):
     return self._tracing_event.get('id')
 
   @property
+  def name(self):
+    return self._tracing_event['name']
+
+  @property
   def tracing_event(self):
     return self._tracing_event
 
@@ -413,6 +417,7 @@ class _IntervalTree(object):
     return _IntervalTree(start, end, filtered_events)
 
   def OverlappingEvents(self, start, end):
+    """Returns a set of events overlapping with [start, end)."""
     if min(end, self.end) - max(start, self.start) <= 0:
       return set()
     elif self._IsLeaf():
