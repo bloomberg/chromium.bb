@@ -59,7 +59,9 @@ public:
     void add(const RuleFeatureSet&);
     void clear();
 
-    void collectFeaturesFromRuleData(const RuleData&);
+    enum SelectorPreMatch { SelectorNeverMatches, SelectorMayMatch };
+
+    SelectorPreMatch collectFeaturesFromRuleData(const RuleData&);
 
     bool usesSiblingRules() const { return !siblingRules.isEmpty(); }
     bool usesFirstLineRules() const { return m_metadata.usesFirstLineRules; }
@@ -118,7 +120,7 @@ private:
         unsigned maxDirectAdjacentSelectors = 0;
     };
 
-    void collectFeaturesFromSelector(const CSSSelector&, FeatureMetadata&);
+    SelectorPreMatch collectFeaturesFromSelector(const CSSSelector&, FeatureMetadata&);
 
     InvalidationSet& ensureClassInvalidationSet(const AtomicString& className, InvalidationType);
     InvalidationSet& ensureAttributeInvalidationSet(const AtomicString& attributeName, InvalidationType);

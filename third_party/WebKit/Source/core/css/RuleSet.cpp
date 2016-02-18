@@ -78,12 +78,8 @@ static bool containsUncommonAttributeSelector(const CSSSelector& selector)
             return true;
         if (selectorListContainsUncommonAttributeSelector(current))
             return true;
-        if (current->relationIsAffectedByPseudoContent()
-            || current->pseudoType() == CSSSelector::PseudoHost
-            || current->pseudoType() == CSSSelector::PseudoHostContext
-            || current->pseudoType() == CSSSelector::PseudoSlotted) {
+        if (current->relationIsAffectedByPseudoContent() || current->pseudoType() == CSSSelector::PseudoSlotted)
             return false;
-        }
         if (current->relation() != CSSSelector::SubSelector) {
             current = current->tagHistory();
             break;
@@ -222,7 +218,8 @@ bool RuleSet::findBestRuleSetAndAdd(const CSSSelector& component, RuleData& rule
 void RuleSet::addRule(StyleRule* rule, unsigned selectorIndex, AddRuleFlags addRuleFlags)
 {
     RuleData ruleData(rule, selectorIndex, m_ruleCount++, addRuleFlags);
-    m_features.collectFeaturesFromRuleData(ruleData);
+    if (m_features.collectFeaturesFromRuleData(ruleData) == RuleFeatureSet::SelectorNeverMatches)
+        return;
 
     if (!findBestRuleSetAndAdd(ruleData.selector(), ruleData)) {
         // If we didn't find a specialized map to stick it in, file under universal rules.

@@ -556,55 +556,90 @@ void RuleFeatureSet::addFeaturesToInvalidationSets(const CSSSelector* selector, 
     }
 }
 
-void RuleFeatureSet::collectFeaturesFromRuleData(const RuleData& ruleData)
+RuleFeatureSet::SelectorPreMatch RuleFeatureSet::collectFeaturesFromRuleData(const RuleData& ruleData)
 {
-    updateInvalidationSets(ruleData);
-
     FeatureMetadata metadata;
-    collectFeaturesFromSelector(ruleData.selector(), metadata);
+    if (collectFeaturesFromSelector(ruleData.selector(), metadata) == SelectorNeverMatches)
+        return SelectorNeverMatches;
+
     m_metadata.add(metadata);
 
     if (metadata.foundSiblingSelector)
         siblingRules.append(RuleFeature(ruleData.rule(), ruleData.selectorIndex(), ruleData.hasDocumentSecurityOrigin()));
     if (ruleData.containsUncommonAttributeSelector())
         uncommonAttributeRules.append(RuleFeature(ruleData.rule(), ruleData.selectorIndex(), ruleData.hasDocumentSecurityOrigin()));
+
+    updateInvalidationSets(ruleData);
+    return SelectorMayMatch;
 }
 
-void RuleFeatureSet::collectFeaturesFromSelector(const CSSSelector& selector, RuleFeatureSet::FeatureMetadata& metadata)
+RuleFeatureSet::SelectorPreMatch RuleFeatureSet::collectFeaturesFromSelector(const CSSSelector& selector, RuleFeatureSet::FeatureMetadata& metadata)
 {
     unsigned maxDirectAdjacentSelectors = 0;
+    CSSSelector::Relation relation = CSSSelector::Descendant;
+    bool foundHostPseudo = false;
 
     for (const CSSSelector* current = &selector; current; current = current->tagHistory()) {
-        if (current->pseudoType() == CSSSelector::PseudoFirstLine)
+        switch (current->pseudoType()) {
+        case CSSSelector::PseudoFirstLine:
             metadata.usesFirstLineRules = true;
-        if (current->pseudoType() == CSSSelector::PseudoWindowInactive)
+            break;
+        case CSSSelector::PseudoWindowInactive:
             metadata.usesWindowInactiveSelector = true;
-        if (current->relation() == CSSSelector::DirectAdjacent) {
+            break;
+        case CSSSelector::PseudoEmpty:
+        case CSSSelector::PseudoFirstChild:
+        case CSSSelector::PseudoFirstOfType:
+        case CSSSelector::PseudoLastChild:
+        case CSSSelector::PseudoLastOfType:
+        case CSSSelector::PseudoOnlyChild:
+        case CSSSelector::PseudoOnlyOfType:
+        case CSSSelector::PseudoNthChild:
+        case CSSSelector::PseudoNthOfType:
+        case CSSSelector::PseudoNthLastChild:
+        case CSSSelector::PseudoNthLastOfType:
+            if (!metadata.foundInsertionPointCrossing)
+                metadata.foundSiblingSelector = true;
+            break;
+        case CSSSelector::PseudoHost:
+        case CSSSelector::PseudoHostContext:
+            if (relation == CSSSelector::SubSelector)
+                return SelectorNeverMatches;
+            if (!current->isLastInTagHistory() && current->tagHistory()->match() != CSSSelector::PseudoElement)
+                return SelectorNeverMatches;
+            foundHostPseudo = true;
+            // fall through.
+        default:
+            if (const CSSSelectorList* selectorList = current->selectorList()) {
+                for (const CSSSelector* subSelector = selectorList->first(); subSelector; subSelector = CSSSelectorList::next(*subSelector))
+                    collectFeaturesFromSelector(*subSelector, metadata);
+            }
+            break;
+        }
+
+        if (current->relationIsAffectedByPseudoContent() || current->pseudoType() == CSSSelector::PseudoSlotted)
+            metadata.foundInsertionPointCrossing = true;
+
+        relation = current->relation();
+
+        if (foundHostPseudo && relation != CSSSelector::SubSelector)
+            return SelectorNeverMatches;
+
+        if (relation == CSSSelector::DirectAdjacent) {
             maxDirectAdjacentSelectors++;
         } else if (maxDirectAdjacentSelectors
-            && ((current->relation() != CSSSelector::SubSelector) || current->isLastInTagHistory())) {
+            && ((relation != CSSSelector::SubSelector) || current->isLastInTagHistory())) {
             if (maxDirectAdjacentSelectors > metadata.maxDirectAdjacentSelectors)
                 metadata.maxDirectAdjacentSelectors = maxDirectAdjacentSelectors;
             maxDirectAdjacentSelectors = 0;
         }
-        if (!metadata.foundInsertionPointCrossing && current->isSiblingPseudo())
-            metadata.foundSiblingSelector = true;
 
-        if (const CSSSelectorList* selectorList = current->selectorList()) {
-            for (const CSSSelector* subSelector = selectorList->first(); subSelector; subSelector = CSSSelectorList::next(*subSelector))
-                collectFeaturesFromSelector(*subSelector, metadata);
-        }
-        if (current->relationIsAffectedByPseudoContent()
-            || current->pseudoType() == CSSSelector::PseudoHost
-            || current->pseudoType() == CSSSelector::PseudoHostContext
-            || current->pseudoType() == CSSSelector::PseudoSlotted) {
-            metadata.foundInsertionPointCrossing = true;
-        }
         if (!metadata.foundInsertionPointCrossing && current->isAdjacentSelector())
             metadata.foundSiblingSelector = true;
     }
 
     ASSERT(!maxDirectAdjacentSelectors);
+    return SelectorMayMatch;
 }
 
 void RuleFeatureSet::FeatureMetadata::add(const FeatureMetadata& other)
