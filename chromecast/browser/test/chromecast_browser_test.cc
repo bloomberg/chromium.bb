@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/browser/cast_browser_context.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/cast_content_window.h"
@@ -69,6 +70,9 @@ content::WebContents* ChromecastBrowserTest::CreateBrowser() {
       initial_size,
       CastBrowserProcess::GetInstance()->browser_context());
   window_->CreateWindowTree(initial_size, web_contents_.get());
+
+  metrics::CastMetricsHelper::GetInstance()->SetDummySessionIdForTesting();
+
   return web_contents_.get();
 }
 

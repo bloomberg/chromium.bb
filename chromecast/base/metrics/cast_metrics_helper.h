@@ -104,6 +104,9 @@ class CastMetricsHelper {
   // CastMetricsHelper only honors the last one.
   virtual void SetRecordActionCallback(const RecordActionCallback& callback);
 
+  // Sets an all-0's session ID for running browser tests.
+  void SetDummySessionIdForTesting();
+
  protected:
   // Creates a CastMetricsHelper instance with no task runner. This should only
   // be used by tests, since invoking any non-overridden methods on this

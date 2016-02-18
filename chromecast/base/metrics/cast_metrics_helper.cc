@@ -91,7 +91,6 @@ CastMetricsHelper* CastMetricsHelper::GetInstance() {
 CastMetricsHelper::CastMetricsHelper(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : task_runner_(task_runner),
-      session_id_("00000000000000000000000000000000"),
       metrics_sink_(NULL),
       logged_first_audio_(false),
       record_action_callback_(base::Bind(&base::RecordComputedAction)) {
@@ -225,6 +224,11 @@ void CastMetricsHelper::SetRecordActionCallback(
       const RecordActionCallback& callback) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   record_action_callback_ = callback;
+}
+
+void CastMetricsHelper::SetDummySessionIdForTesting() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  session_id_ = "00000000-0000-0000-0000-000000000000";
 }
 
 void CastMetricsHelper::RecordSimpleAction(const std::string& action) {
