@@ -66,9 +66,9 @@ void SpellingOptionsSubMenuObserver::InitMenu(
 
   // Add an item that opens the 'Settings - Languages' page. This item is
   // handled in RenderViewContextMenu.
-  submenu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   submenu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS,
                                      IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS);
+  submenu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
 
   if (num_selected_dictionaries_ > 0) {
     // Add a 'Check spelling while typing' item in the sub menu.

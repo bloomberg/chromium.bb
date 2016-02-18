@@ -729,8 +729,8 @@ void RenderViewContextMenu::InitMenu() {
   if (content_type_->SupportsGroup(
           ContextMenuContentType::ITEM_GROUP_EDITABLE)) {
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
-    AppendPlatformEditableItems();
     AppendLanguageSettings();
+    AppendPlatformEditableItems();
   }
 
   if (content_type_->SupportsGroup(
