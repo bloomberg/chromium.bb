@@ -29,8 +29,8 @@
 
 namespace mkvmuxer {
 
-const float MasteringMetadata::kUnspecifiedMmValue = FLT_MAX;
-const uint64 Colour::kUnspecifiedColourValue = UINT64_MAX;
+const float MasteringMetadata::kValueNotPresent = FLT_MAX;
+const uint64 Colour::kValueNotPresent = UINT64_MAX;
 
 namespace {
 // Deallocate the string designated by |dst|, and then copy the |src|
@@ -893,11 +893,11 @@ bool MasteringMetadata::Write(IMkvWriter* writer) const {
 
   if (!WriteEbmlMasterElement(writer, kMkvMasteringMetadata, size))
     return false;
-  if (luminance_max != kUnspecifiedMmValue &&
+  if (luminance_max != kValueNotPresent &&
       !WriteEbmlElement(writer, kMkvLuminanceMax, luminance_max)) {
     return false;
   }
-  if (luminance_min != kUnspecifiedMmValue &&
+  if (luminance_min != kValueNotPresent &&
       !WriteEbmlElement(writer, kMkvLuminanceMin, luminance_min)) {
     return false;
   }
@@ -959,9 +959,9 @@ bool MasteringMetadata::SetChromaticity(
 uint64 MasteringMetadata::PayloadSize() const {
   uint64 size = 0;
 
-  if (luminance_max != kUnspecifiedMmValue)
+  if (luminance_max != kValueNotPresent)
     size += EbmlElementSize(kMkvLuminanceMax, luminance_max);
-  if (luminance_min != kUnspecifiedMmValue)
+  if (luminance_min != kValueNotPresent)
     size += EbmlElementSize(kMkvLuminanceMin, luminance_min);
 
   if (r_) {
@@ -1003,59 +1003,59 @@ bool Colour::Write(IMkvWriter* writer) const {
   if (!WriteEbmlMasterElement(writer, kMkvColour, size))
     return false;
 
-  if (matrix_coefficients != kUnspecifiedColourValue &&
+  if (matrix_coefficients != kValueNotPresent &&
       !WriteEbmlElement(writer, kMkvMatrixCoefficients, matrix_coefficients)) {
     return false;
   }
-  if (bits_per_channel != kUnspecifiedColourValue &&
+  if (bits_per_channel != kValueNotPresent &&
       !WriteEbmlElement(writer, kMkvBitsPerChannel, bits_per_channel)) {
     return false;
   }
-  if (chroma_subsampling_horz != kUnspecifiedColourValue &&
+  if (chroma_subsampling_horz != kValueNotPresent &&
       !WriteEbmlElement(writer, kMkvChromaSubsamplingHorz,
                         chroma_subsampling_horz)) {
     return false;
   }
-  if (chroma_subsampling_vert != kUnspecifiedColourValue &&
+  if (chroma_subsampling_vert != kValueNotPresent &&
       !WriteEbmlElement(writer, kMkvChromaSubsamplingVert,
                         chroma_subsampling_vert)) {
     return false;
   }
 
-  if (cb_subsampling_horz != kUnspecifiedColourValue &&
+  if (cb_subsampling_horz != kValueNotPresent &&
       !WriteEbmlElement(writer, kMkvCbSubsamplingHorz, cb_subsampling_horz)) {
     return false;
   }
-  if (cb_subsampling_vert != kUnspecifiedColourValue &&
+  if (cb_subsampling_vert != kValueNotPresent &&
       !WriteEbmlElement(writer, kMkvCbSubsamplingVert, cb_subsampling_vert)) {
     return false;
   }
-  if (chroma_siting_horz != kUnspecifiedColourValue &&
+  if (chroma_siting_horz != kValueNotPresent &&
       !WriteEbmlElement(writer, kMkvChromaSitingHorz, chroma_siting_horz)) {
     return false;
   }
-  if (chroma_siting_vert != kUnspecifiedColourValue &&
+  if (chroma_siting_vert != kValueNotPresent &&
       !WriteEbmlElement(writer, kMkvChromaSitingVert, chroma_siting_vert)) {
     return false;
   }
-  if (range != kUnspecifiedColourValue &&
+  if (range != kValueNotPresent &&
       !WriteEbmlElement(writer, kMkvRange, range)) {
     return false;
   }
-  if (transfer_characteristics != kUnspecifiedColourValue &&
+  if (transfer_characteristics != kValueNotPresent &&
       !WriteEbmlElement(writer, kMkvTransferCharacteristics,
                         transfer_characteristics)) {
     return false;
   }
-  if (primaries != kUnspecifiedColourValue &&
+  if (primaries != kValueNotPresent &&
       !WriteEbmlElement(writer, kMkvPrimaries, primaries)) {
     return false;
   }
-  if (max_cll != kUnspecifiedColourValue &&
+  if (max_cll != kValueNotPresent &&
       !WriteEbmlElement(writer, kMkvMaxCLL, max_cll)) {
     return false;
   }
-  if (max_fall != kUnspecifiedColourValue &&
+  if (max_fall != kValueNotPresent &&
       !WriteEbmlElement(writer, kMkvMaxFALL, max_fall)) {
     return false;
   }
@@ -1088,32 +1088,32 @@ bool Colour::SetMasteringMetadata(const MasteringMetadata& mastering_metadata) {
 uint64 Colour::PayloadSize() const {
   uint64 size = 0;
 
-  if (matrix_coefficients != kUnspecifiedColourValue)
+  if (matrix_coefficients != kValueNotPresent)
     size += EbmlElementSize(kMkvMatrixCoefficients, matrix_coefficients);
-  if (bits_per_channel != kUnspecifiedColourValue)
+  if (bits_per_channel != kValueNotPresent)
     size += EbmlElementSize(kMkvBitsPerChannel, bits_per_channel);
-  if (chroma_subsampling_horz != kUnspecifiedColourValue)
+  if (chroma_subsampling_horz != kValueNotPresent)
     size += EbmlElementSize(kMkvChromaSubsamplingHorz, chroma_subsampling_horz);
-  if (chroma_subsampling_vert != kUnspecifiedColourValue)
+  if (chroma_subsampling_vert != kValueNotPresent)
     size += EbmlElementSize(kMkvChromaSubsamplingVert, chroma_subsampling_vert);
-  if (cb_subsampling_horz != kUnspecifiedColourValue)
+  if (cb_subsampling_horz != kValueNotPresent)
     size += EbmlElementSize(kMkvCbSubsamplingHorz, cb_subsampling_horz);
-  if (cb_subsampling_vert != kUnspecifiedColourValue)
+  if (cb_subsampling_vert != kValueNotPresent)
     size += EbmlElementSize(kMkvCbSubsamplingVert, cb_subsampling_vert);
-  if (chroma_siting_horz != kUnspecifiedColourValue)
+  if (chroma_siting_horz != kValueNotPresent)
     size += EbmlElementSize(kMkvChromaSitingHorz, chroma_siting_horz);
-  if (chroma_siting_vert != kUnspecifiedColourValue)
+  if (chroma_siting_vert != kValueNotPresent)
     size += EbmlElementSize(kMkvChromaSitingVert, chroma_siting_vert);
-  if (range != kUnspecifiedColourValue)
+  if (range != kValueNotPresent)
     size += EbmlElementSize(kMkvRange, range);
-  if (transfer_characteristics != kUnspecifiedColourValue)
+  if (transfer_characteristics != kValueNotPresent)
     size +=
         EbmlElementSize(kMkvTransferCharacteristics, transfer_characteristics);
-  if (primaries != kUnspecifiedColourValue)
+  if (primaries != kValueNotPresent)
     size += EbmlElementSize(kMkvPrimaries, primaries);
-  if (max_cll != kUnspecifiedColourValue)
+  if (max_cll != kValueNotPresent)
     size += EbmlElementSize(kMkvMaxCLL, max_cll);
-  if (max_fall != kUnspecifiedColourValue)
+  if (max_fall != kValueNotPresent)
     size += EbmlElementSize(kMkvMaxFALL, max_fall);
 
   if (mastering_metadata_)

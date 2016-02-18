@@ -347,11 +347,11 @@ struct PrimaryChromaticity {
 
 class MasteringMetadata {
  public:
-  static const float kUnspecifiedMmValue;
+  static const float kValueNotPresent;
 
   MasteringMetadata()
-      : luminance_max(kUnspecifiedMmValue),
-        luminance_min(kUnspecifiedMmValue),
+      : luminance_max(kValueNotPresent),
+        luminance_min(kValueNotPresent),
         r_(NULL),
         g_(NULL),
         b_(NULL),
@@ -392,21 +392,21 @@ class MasteringMetadata {
 
 class Colour {
  public:
-  static const uint64 kUnspecifiedColourValue;
+  static const uint64 kValueNotPresent;
   Colour()
-      : matrix_coefficients(kUnspecifiedColourValue),
-        bits_per_channel(kUnspecifiedColourValue),
-        chroma_subsampling_horz(kUnspecifiedColourValue),
-        chroma_subsampling_vert(kUnspecifiedColourValue),
-        cb_subsampling_horz(kUnspecifiedColourValue),
-        cb_subsampling_vert(kUnspecifiedColourValue),
-        chroma_siting_horz(kUnspecifiedColourValue),
-        chroma_siting_vert(kUnspecifiedColourValue),
-        range(kUnspecifiedColourValue),
-        transfer_characteristics(kUnspecifiedColourValue),
-        primaries(kUnspecifiedColourValue),
-        max_cll(kUnspecifiedColourValue),
-        max_fall(kUnspecifiedColourValue),
+      : matrix_coefficients(kValueNotPresent),
+        bits_per_channel(kValueNotPresent),
+        chroma_subsampling_horz(kValueNotPresent),
+        chroma_subsampling_vert(kValueNotPresent),
+        cb_subsampling_horz(kValueNotPresent),
+        cb_subsampling_vert(kValueNotPresent),
+        chroma_siting_horz(kValueNotPresent),
+        chroma_siting_vert(kValueNotPresent),
+        range(kValueNotPresent),
+        transfer_characteristics(kValueNotPresent),
+        primaries(kValueNotPresent),
+        max_cll(kValueNotPresent),
+        max_fall(kValueNotPresent),
         mastering_metadata_(NULL) {}
   ~Colour() { delete mastering_metadata_; }
 
