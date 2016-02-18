@@ -1014,7 +1014,9 @@ AndroidVideoDecodeAccelerator::GetCapabilities() {
 
   if (UseDeferredRenderingStrategy()) {
     capabilities.flags = media::VideoDecodeAccelerator::Capabilities::
-        NEEDS_ALL_PICTURE_BUFFERS_TO_DECODE;
+                             NEEDS_ALL_PICTURE_BUFFERS_TO_DECODE |
+                         media::VideoDecodeAccelerator::Capabilities::
+                             SUPPORTS_EXTERNAL_OUTPUT_SURFACE;
   }
 
   return capabilities;

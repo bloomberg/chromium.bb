@@ -26,7 +26,8 @@ scoped_ptr<Renderer> MojoRendererFactory::CreateRenderer(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
     const scoped_refptr<base::TaskRunner>& /* worker_task_runner */,
     AudioRendererSink* /* audio_renderer_sink */,
-    VideoRendererSink* /* video_renderer_sink */) {
+    VideoRendererSink* /* video_renderer_sink */,
+    const RequestSurfaceCB& /* request_surface_cb */) {
   DCHECK(service_factory_);
 
   interfaces::RendererPtr mojo_renderer;

@@ -74,6 +74,7 @@
 #include "content/common/gin_java_bridge_messages.h"
 #include "content/common/media/media_player_messages_android.h"
 #include "content/common/media/media_session_messages_android.h"
+#include "content/common/media/surface_view_manager_messages_android.h"
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)

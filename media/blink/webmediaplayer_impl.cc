@@ -155,9 +155,12 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       suspending_(false),
       suspended_(false),
       resuming_(false),
+      pending_suspend_resume_cycle_(false),
       ended_(false),
       pending_seek_(false),
       should_notify_time_changed_(false),
+      fullscreen_(false),
+      decoder_requires_restart_for_fullscreen_(false),
       client_(client),
       encrypted_client_(encrypted_client),
       delegate_(delegate),
@@ -190,7 +193,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
 #endif
       volume_(1.0),
       volume_multiplier_(1.0),
-      renderer_factory_(std::move(renderer_factory)) {
+      renderer_factory_(std::move(renderer_factory)),
+      surface_manager_(params.surface_manager()) {
   DCHECK(!adjust_allocated_memory_cb_.is_null());
   DCHECK(renderer_factory_);
 
@@ -262,6 +266,18 @@ void WebMediaPlayerImpl::load(LoadType load_type, const blink::WebURL& url,
     return;
   }
   DoLoad(load_type, url, cors_mode);
+}
+
+void WebMediaPlayerImpl::enteredFullscreen() {
+  fullscreen_ = true;
+  if (decoder_requires_restart_for_fullscreen_)
+    ScheduleRestart();
+}
+
+void WebMediaPlayerImpl::exitedFullscreen() {
+  fullscreen_ = false;
+  if (decoder_requires_restart_for_fullscreen_)
+    ScheduleRestart();
 }
 
 void WebMediaPlayerImpl::DoLoad(LoadType load_type,
@@ -972,8 +988,9 @@ void WebMediaPlayerImpl::OnPipelineSuspended(PipelineStatus status) {
   }
 #endif
 
-  if (pending_resume_) {
+  if (pending_resume_ || pending_suspend_resume_cycle_) {
     pending_resume_ = false;
+    pending_suspend_resume_cycle_ = false;
     Resume();
     return;
   }
@@ -1246,6 +1263,15 @@ void WebMediaPlayerImpl::Resume() {
                                         time_changed));
 }
 
+void WebMediaPlayerImpl::ScheduleRestart() {
+  // If we're suspended but not resuming there is no need to restart because
+  // there is no renderer to kill.
+  if (!suspended_ || resuming_) {
+    pending_suspend_resume_cycle_ = true;
+    ScheduleSuspend();
+  }
+}
+
 #if defined(OS_ANDROID)  // WMPI_CAST
 
 bool WebMediaPlayerImpl::isRemote() const {
@@ -1334,10 +1360,44 @@ void WebMediaPlayerImpl::NotifyDownloading(bool is_downloading) {
           "is_downloading_data", is_downloading));
 }
 
+// TODO(watk): Move this state management out of WMPI.
+void WebMediaPlayerImpl::OnSurfaceRequested(
+    const SurfaceCreatedCB& surface_created_cb) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  DCHECK(surface_manager_);
+
+  // A null callback indicates that the decoder is going away.
+  if (surface_created_cb.is_null()) {
+    decoder_requires_restart_for_fullscreen_ = false;
+    return;
+  }
+
+  // If we're getting a surface request it means GVD is initializing, so until
+  // we get a null surface request, GVD is the active decoder. While that's the
+  // case we should restart the pipeline on fullscreen transitions so that when
+  // we create a new GVD it will request a surface again and get the right kind
+  // of surface for the fullscreen state.
+  // TODO(watk): Don't require a pipeline restart to switch surfaces for
+  // cases where it isn't necessary.
+  decoder_requires_restart_for_fullscreen_ = true;
+  if (fullscreen_) {
+    surface_manager_->CreateFullscreenSurface(pipeline_metadata_.natural_size,
+                                              surface_created_cb);
+  } else {
+    // Tell the decoder to create its own surface.
+    surface_created_cb.Run(SurfaceManager::kNoSurfaceID);
+  }
+}
+
 scoped_ptr<Renderer> WebMediaPlayerImpl::CreateRenderer() {
+  RequestSurfaceCB request_surface_cb;
+#if defined(OS_ANDROID)
+  request_surface_cb =
+      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnSurfaceRequested);
+#endif
   return renderer_factory_->CreateRenderer(
       media_task_runner_, worker_task_runner_, audio_source_provider_.get(),
-      compositor_);
+      compositor_, request_surface_cb);
 }
 
 void WebMediaPlayerImpl::StartPipeline() {
@@ -1435,8 +1495,13 @@ void WebMediaPlayerImpl::OnNaturalSizeChanged(gfx::Size size) {
 
   media_log_->AddEvent(
       media_log_->CreateVideoSizeSetEvent(size.width(), size.height()));
-  pipeline_metadata_.natural_size = size;
 
+  if (fullscreen_ && surface_manager_ &&
+      pipeline_metadata_.natural_size != size) {
+    surface_manager_->NaturalSizeChanged(size);
+  }
+
+  pipeline_metadata_.natural_size = size;
   client_->sizeChanged();
 }
 

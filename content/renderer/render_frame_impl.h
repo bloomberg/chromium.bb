@@ -96,6 +96,7 @@ class CdmFactory;
 class MediaPermission;
 class MediaServiceProvider;
 class RendererWebMediaPlayerDelegate;
+class SurfaceManager;
 class UrlIndex;
 class WebEncryptedMediaClientImpl;
 }
@@ -133,6 +134,7 @@ class RendererCdmManager;
 class RendererMediaPlayerManager;
 class RendererMediaSessionManager;
 class RendererPpapiHost;
+class RendererSurfaceViewManager;
 class RenderFrameObserver;
 class RenderViewImpl;
 class RenderWidget;
@@ -1112,6 +1114,8 @@ class CONTENT_EXPORT RenderFrameImpl
   RendererMediaPlayerManager* media_player_manager_;
   RendererMediaSessionManager* media_session_manager_;
 #endif
+
+  media::SurfaceManager* media_surface_manager_;
 
 #if defined(ENABLE_BROWSER_CDMS)
   // Manage all CDMs in this render frame for communicating with the real CDM in

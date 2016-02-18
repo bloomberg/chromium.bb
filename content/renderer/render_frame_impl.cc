@@ -201,6 +201,7 @@
 #include "content/renderer/java/gin_java_bridge_dispatcher.h"
 #include "content/renderer/media/android/renderer_media_player_manager.h"
 #include "content/renderer/media/android/renderer_media_session_manager.h"
+#include "content/renderer/media/android/renderer_surface_view_manager.h"
 #include "content/renderer/media/android/stream_texture_factory_impl.h"
 #include "content/renderer/media/android/webmediaplayer_android.h"
 #include "content/renderer/media/android/webmediasession_android.h"
@@ -1003,6 +1004,7 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
 #if defined(OS_ANDROID)
       media_player_manager_(NULL),
       media_session_manager_(NULL),
+      media_surface_manager_(nullptr),
 #endif
 #if defined(ENABLE_BROWSER_CDMS)
       cdm_manager_(NULL),
@@ -2480,6 +2482,10 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
       base::Bind(&GetSharedMainThreadContext3D);
 
   scoped_refptr<media::MediaLog> media_log(new RenderMediaLog());
+#if defined(OS_ANDROID)
+  if (!media_surface_manager_)
+    media_surface_manager_ = new RendererSurfaceViewManager(this);
+#endif
   media::WebMediaPlayerParams params(
       base::Bind(&ContentRendererClient::DeferMediaLoad,
                  base::Unretained(GetContentClient()->renderer()),
@@ -2490,7 +2496,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
       render_thread->compositor_task_runner(), context_3d_cb,
       base::Bind(&v8::Isolate::AdjustAmountOfExternalAllocatedMemory,
                  base::Unretained(blink::mainThreadIsolate())),
-      GetMediaPermission(), initial_cdm);
+      GetMediaPermission(), initial_cdm, media_surface_manager_);
 
 #if defined(OS_ANDROID)
   if (!CanUseWebMediaPlayerImpl(load_type, url)) {

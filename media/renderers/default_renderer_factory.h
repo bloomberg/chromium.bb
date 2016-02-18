@@ -30,7 +30,8 @@ class MEDIA_EXPORT DefaultRendererFactory : public RendererFactory {
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const scoped_refptr<base::TaskRunner>& worker_task_runner,
       AudioRendererSink* audio_renderer_sink,
-      VideoRendererSink* video_renderer_sink) final;
+      VideoRendererSink* video_renderer_sink,
+      const RequestSurfaceCB& request_surface_cb) final;
 
  private:
   scoped_refptr<MediaLog> media_log_;

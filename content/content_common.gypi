@@ -443,6 +443,7 @@
       'common/media/media_stream_options.h',
       'common/media/media_stream_track_metrics_host_messages.h',
       'common/media/midi_messages.h',
+      'common/media/surface_view_manager_messages_android.h',
       'common/media/video_capture.h',
       'common/media/video_capture_messages.h',
       'common/media/webrtc_identity_messages.h',

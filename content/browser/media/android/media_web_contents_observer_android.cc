@@ -6,6 +6,7 @@
 
 #include "content/browser/media/android/browser_media_player_manager.h"
 #include "content/browser/media/android/browser_media_session_manager.h"
+#include "content/browser/media/android/browser_surface_view_manager.h"
 #include "content/browser/media/android/media_session.h"
 #include "content/browser/media/android/media_session_controller.h"
 #include "content/browser/media/android/media_session_observer.h"
@@ -14,6 +15,7 @@
 #include "content/common/media/media_player_delegate_messages.h"
 #include "content/common/media/media_player_messages_android.h"
 #include "content/common/media/media_session_messages_android.h"
+#include "content/common/media/surface_view_manager_messages_android.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message_macros.h"
@@ -67,6 +69,19 @@ MediaWebContentsObserverAndroid::GetMediaSessionManager(
   return manager;
 }
 
+BrowserSurfaceViewManager*
+MediaWebContentsObserverAndroid::GetSurfaceViewManager(
+    RenderFrameHost* render_frame_host) {
+  auto it = surface_view_managers_.find(render_frame_host);
+  if (it != surface_view_managers_.end())
+    return it->second;
+
+  BrowserSurfaceViewManager* manager =
+      new BrowserSurfaceViewManager(render_frame_host);
+  surface_view_managers_.set(render_frame_host, make_scoped_ptr(manager));
+  return manager;
+}
+
 void MediaWebContentsObserverAndroid::SuspendAllMediaPlayers() {
   web_contents()->ForEachFrame(
       base::Bind(&SuspendAllMediaPlayersInRenderFrame));
@@ -109,6 +124,7 @@ void MediaWebContentsObserverAndroid::RenderFrameDeleted(
   // detaching CDMs from media players yet. See http://crbug.com/330324
   media_player_managers_.erase(render_frame_host);
   media_session_managers_.erase(render_frame_host);
+  surface_view_managers_.erase(render_frame_host);
 
   // TODO(xhwang): Currently MediaWebContentsObserver, BrowserMediaPlayerManager
   // and BrowserCdmManager all run on browser UI thread. So this call is okay.
@@ -138,6 +154,9 @@ bool MediaWebContentsObserverAndroid::OnMessageReceived(
     return true;
 
   if (OnMediaSessionMessageReceived(msg, render_frame_host))
+    return true;
+
+  if (OnSurfaceViewManagerMessageReceived(msg, render_frame_host))
     return true;
 
   return false;
@@ -235,6 +254,22 @@ bool MediaWebContentsObserverAndroid::OnMediaSessionMessageReceived(
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
+  return handled;
+}
+
+bool MediaWebContentsObserverAndroid::OnSurfaceViewManagerMessageReceived(
+    const IPC::Message& msg,
+    RenderFrameHost* render_frame_host) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(MediaWebContentsObserverAndroid, msg)
+    IPC_MESSAGE_FORWARD(SurfaceViewManagerHostMsg_CreateFullscreenSurface,
+                        GetSurfaceViewManager(render_frame_host),
+                        BrowserSurfaceViewManager::OnCreateFullscreenSurface)
+    IPC_MESSAGE_FORWARD(SurfaceViewManagerHostMsg_NaturalSizeChanged,
+                        GetSurfaceViewManager(render_frame_host),
+                        BrowserSurfaceViewManager::OnNaturalSizeChanged)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
   return handled;
 }
 

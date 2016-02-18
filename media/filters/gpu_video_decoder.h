@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/pipeline_status.h"
+#include "media/base/surface_manager.h"
 #include "media/base/video_decoder.h"
 #include "media/video/video_decode_accelerator.h"
 
@@ -45,7 +46,8 @@ class MEDIA_EXPORT GpuVideoDecoder
     : public VideoDecoder,
       public VideoDecodeAccelerator::Client {
  public:
-  explicit GpuVideoDecoder(GpuVideoAcceleratorFactories* factories);
+  explicit GpuVideoDecoder(GpuVideoAcceleratorFactories* factories,
+                           const RequestSurfaceCB& request_surface_cb);
 
   // VideoDecoder implementation.
   std::string GetDisplayName() const override;
@@ -54,6 +56,7 @@ class MEDIA_EXPORT GpuVideoDecoder
                   CdmContext* cdm_context,
                   const InitCB& init_cb,
                   const OutputCB& output_cb) override;
+  void CompleteInitialization(int cdm_id, int surface_id);
   void Decode(const scoped_refptr<DecoderBuffer>& buffer,
               const DecodeCB& decode_cb) override;
   void Reset(const base::Closure& closure) override;
@@ -166,6 +169,10 @@ class MEDIA_EXPORT GpuVideoDecoder
   State state_;
 
   VideoDecoderConfig config_;
+
+  // For requesting a suface to render to. If this is null the VDA will return
+  // normal video frames and not render them to a surface.
+  RequestSurfaceCB request_surface_cb_;
 
   // Shared-memory buffer pool.  Since allocating SHM segments requires a
   // round-trip to the browser process, we keep allocation out of the

@@ -22,6 +22,7 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_switches.h"
 #include "media/base/pipeline.h"
+#include "media/base/surface_manager.h"
 #include "media/base/video_decoder_config.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -65,10 +66,12 @@ GpuVideoDecoder::BufferData::BufferData(int32_t bbid,
 
 GpuVideoDecoder::BufferData::~BufferData() {}
 
-GpuVideoDecoder::GpuVideoDecoder(GpuVideoAcceleratorFactories* factories)
+GpuVideoDecoder::GpuVideoDecoder(GpuVideoAcceleratorFactories* factories,
+                                 const RequestSurfaceCB& request_surface_cb)
     : needs_bitstream_conversion_(false),
       factories_(factories),
       state_(kNormal),
+      request_surface_cb_(request_surface_cb),
       decoder_texture_target_(0),
       next_picture_buffer_id_(0),
       next_bitstream_buffer_id_(0),
@@ -149,8 +152,8 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
 #endif
 
   bool previously_initialized = config_.IsValidConfig();
-  DVLOG(1) << "(Re)initializing GVD with config: "
-           << config.AsHumanReadableString();
+  DVLOG(1) << (previously_initialized ? "Reinitializing" : "Initializing")
+           << "GVD with config: " << config.AsHumanReadableString();
 
   // TODO(posciak): destroy and create a new VDA on codec/profile change
   // (http://crbug.com/260224).
@@ -188,32 +191,64 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
   }
 
   vda_ = factories_->CreateVideoDecodeAccelerator();
-
-  VideoDecodeAccelerator::Config vda_config(config);
-
-  if (!vda_ || !vda_->Initialize(vda_config, this)) {
-    DVLOG(1) << "VDA initialization failed.";
+  if (!vda_) {
+    DVLOG(1) << "Failed to create a VDA.";
     bound_init_cb.Run(false);
     return;
   }
 
+  int cdm_id = CdmContext::kInvalidCdmId;
   if (config.is_encrypted()) {
     DCHECK(cdm_context);
+    cdm_id = cdm_context->GetCdmId();
     // No need to store |cdm_context| since it's not needed in reinitialization.
-    if (cdm_context->GetCdmId() == CdmContext::kInvalidCdmId) {
+    if (cdm_id == CdmContext::kInvalidCdmId) {
       DVLOG(1) << "CDM ID not available.";
       bound_init_cb.Run(false);
       return;
     }
+  }
 
-    // |init_cb_| will be fired when CDM is attached.
-    init_cb_ = bound_init_cb;
-    vda_->SetCdm(cdm_context->GetCdmId());
+  init_cb_ = bound_init_cb;
+
+  const bool supports_external_output_surface =
+      (capabilities.flags & VideoDecodeAccelerator::Capabilities::
+                                SUPPORTS_EXTERNAL_OUTPUT_SURFACE) != 0;
+  if (supports_external_output_surface && !request_surface_cb_.is_null()) {
+    // If we have a surface request callback we should call it and complete
+    // initialization with the returned surface.
+    request_surface_cb_.Run(
+        BindToCurrentLoop(base::Bind(&GpuVideoDecoder::CompleteInitialization,
+                                     weak_factory_.GetWeakPtr(), cdm_id)));
     return;
   }
 
-  DVLOG(3) << "GpuVideoDecoder::Initialize() succeeded.";
-  bound_init_cb.Run(true);
+  // If we don't have to wait for a surface complete initialization with a null
+  // surface.
+  CompleteInitialization(cdm_id, SurfaceManager::kNoSurfaceID);
+}
+
+void GpuVideoDecoder::CompleteInitialization(int cdm_id, int surface_id) {
+  DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
+  DCHECK(!init_cb_.is_null());
+
+  VideoDecodeAccelerator::Config vda_config(config_);
+  vda_config.surface_id = surface_id;
+  if (!vda_->Initialize(vda_config, this)) {
+    DVLOG(1) << "VDA::Initialize failed.";
+    base::ResetAndReturn(&init_cb_).Run(false);
+    return;
+  }
+
+  // The VDA is now initialized, but if the stream is encrypted we need to
+  // attach the CDM before completing GVD's initialization.
+  if (config_.is_encrypted()) {
+    // TODO(watk,timav): Pass this in the VDA::Config.
+    vda_->SetCdm(cdm_id);
+    return;
+  }
+
+  base::ResetAndReturn(&init_cb_).Run(true);
 }
 
 void GpuVideoDecoder::NotifyCdmAttached(bool success) {
@@ -594,6 +629,8 @@ GpuVideoDecoder::~GpuVideoDecoder() {
 
   if (!init_cb_.is_null())
     base::ResetAndReturn(&init_cb_).Run(false);
+  if (!request_surface_cb_.is_null())
+    base::ResetAndReturn(&request_surface_cb_).Run(SurfaceCreatedCB());
 
   for (size_t i = 0; i < available_shm_segments_.size(); ++i) {
     delete available_shm_segments_[i];

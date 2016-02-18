@@ -281,6 +281,8 @@
       'renderer/media/android/renderer_media_player_manager.h',
       'renderer/media/android/renderer_media_session_manager.cc',
       'renderer/media/android/renderer_media_session_manager.h',
+      'renderer/media/android/renderer_surface_view_manager.cc',
+      'renderer/media/android/renderer_surface_view_manager.h',
       'renderer/media/android/stream_texture_factory.h',
       'renderer/media/android/stream_texture_factory_impl.cc',
       'renderer/media/android/stream_texture_factory_impl.h',

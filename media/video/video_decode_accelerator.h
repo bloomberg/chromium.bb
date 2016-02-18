@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "media/base/bitstream_buffer.h"
+#include "media/base/surface_manager.h"
 #include "media/base/video_decoder_config.h"
 #include "media/video/picture.h"
 #include "ui/gfx/geometry/size.h"
@@ -55,6 +56,10 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
       // client must return PictureBuffers to be sure that new frames will be
       // provided via PictureReady.
       NEEDS_ALL_PICTURE_BUFFERS_TO_DECODE = 1 << 0,
+
+      // Whether the VDA supports being configured with an output surface for
+      // it to render frames to. For example, SurfaceViews on Android.
+      SUPPORTS_EXTERNAL_OUTPUT_SURFACE = 1 << 1,
     };
 
     SupportedProfiles supported_profiles;
@@ -82,7 +87,7 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
 
   // Config structure contains parameters required for the VDA initialization.
   struct MEDIA_EXPORT Config {
-    enum { kNoSurfaceID = -1 };
+    enum { kNoSurfaceID = SurfaceManager::kNoSurfaceID };
 
     Config() = default;
     Config(VideoCodecProfile profile);

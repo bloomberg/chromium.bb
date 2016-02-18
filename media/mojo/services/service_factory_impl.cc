@@ -50,7 +50,8 @@ void ServiceFactoryImpl::CreateRenderer(
     return;
 
   scoped_ptr<Renderer> renderer = renderer_factory->CreateRenderer(
-      task_runner, task_runner, audio_renderer_sink, video_renderer_sink);
+      task_runner, task_runner, audio_renderer_sink, video_renderer_sink,
+      RequestSurfaceCB());
   if (!renderer) {
     LOG(ERROR) << "Renderer creation failed.";
     return;

@@ -26,7 +26,8 @@ scoped_ptr<::media::Renderer> ChromecastMediaRendererFactory::CreateRenderer(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
     const scoped_refptr<base::TaskRunner>& worker_task_runner,
     ::media::AudioRendererSink* audio_renderer_sink,
-    ::media::VideoRendererSink* video_renderer_sink) {
+    ::media::VideoRendererSink* video_renderer_sink,
+    const ::media::RequestSurfaceCB& request_surface_cb) {
   // TODO(erickung): crbug.com/443956. Need to provide right LoadType.
   LoadType cma_load_type = kLoadTypeMediaSource;
   scoped_ptr<MediaPipelineProxy> cma_media_pipeline(new MediaPipelineProxy(

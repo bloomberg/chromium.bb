@@ -45,7 +45,8 @@ scoped_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
     const scoped_refptr<base::TaskRunner>& worker_task_runner,
     AudioRendererSink* audio_renderer_sink,
-    VideoRendererSink* video_renderer_sink) {
+    VideoRendererSink* video_renderer_sink,
+    const RequestSurfaceCB& request_surface_cb) {
   DCHECK(audio_renderer_sink);
 
   // Create our audio decoders and renderer.
@@ -72,7 +73,8 @@ scoped_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
          (gpu_factories_->GetTaskRunner() == media_task_runner.get()));
 
   if (gpu_factories_)
-    video_decoders.push_back(new GpuVideoDecoder(gpu_factories_));
+    video_decoders.push_back(
+        new GpuVideoDecoder(gpu_factories_, request_surface_cb));
 
 #if !defined(MEDIA_DISABLE_LIBVPX)
   video_decoders.push_back(new VpxVideoDecoder());
