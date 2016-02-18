@@ -56,6 +56,8 @@ public:
         V8AbstractEventListener::trace(visitor);
     }
 
+    const String& code() const { return m_code; }
+
 protected:
     void prepareListenerObject(ExecutionContext*) override;
 

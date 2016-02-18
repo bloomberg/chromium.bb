@@ -24,6 +24,7 @@
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -43,6 +44,7 @@ public:
     virtual ~EventListener() { }
     virtual bool operator==(const EventListener&) const = 0;
     virtual void handleEvent(ExecutionContext*, Event*) = 0;
+    virtual const String& code() const { return emptyString(); }
     virtual bool wasCreatedFromMarkup() const { return false; }
     virtual bool belongsToTheCurrentWorld() const { return false; }
 
