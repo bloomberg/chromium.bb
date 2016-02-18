@@ -1023,14 +1023,7 @@ bool V4L2VideoDecodeAccelerator::DequeueResolutionChangeEvent() {
 
   while (device_->Ioctl(VIDIOC_DQEVENT, &ev) == 0) {
     if (ev.type == V4L2_EVENT_SOURCE_CHANGE) {
-      uint32_t changes = ev.u.src_change.changes;
-      // We used to define source change was always resolution change. The union
-      // |ev.u| is not used and it is zero by default. When using the upstream
-      // version of the resolution event change, we also need to check
-      // |ev.u.src_change.changes| to know what is changed. For API backward
-      // compatibility, event is treated as resolution change when all bits in
-      // |ev.u.src_change.changes| are cleared.
-      if (changes == 0 || (changes & V4L2_EVENT_SRC_CH_RESOLUTION)) {
+      if (ev.u.src_change.changes & V4L2_EVENT_SRC_CH_RESOLUTION) {
         DVLOG(3)
             << "DequeueResolutionChangeEvent(): got resolution change event.";
         return true;
