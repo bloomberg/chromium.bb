@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "components/sync_driver/local_device_info_provider_mock.h"
 #include "sync/api/data_batch.h"
 #include "sync/api/metadata_batch.h"
@@ -90,17 +91,6 @@ void AssertExpectedFromDataBatch(
     expected.erase(iter);
   }
   ASSERT_TRUE(expected.empty());
-}
-
-DeviceInfoSpecifics TestSpecifics() {
-  DeviceInfoSpecifics specifics;
-  specifics.set_cache_guid("a");
-  specifics.set_client_name("b");
-  specifics.set_device_type(sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
-  specifics.set_sync_user_agent("d");
-  specifics.set_chrome_version("e");
-  specifics.set_backup_timestamp(6);
-  return specifics;
 }
 
 // Instead of actually processing anything, simply accumulates all instructions
@@ -189,6 +179,22 @@ class DeviceInfoServiceTest : public testing::Test,
     base::RunLoop().RunUntilIdle();
   }
 
+  DeviceInfoSpecifics GenerateTestSpecifics() {
+    int label = ++generated_count_;
+    DeviceInfoSpecifics specifics;
+    specifics.set_cache_guid(base::StringPrintf("cache guid %d", label));
+    specifics.set_client_name(base::StringPrintf("client name %d", label));
+    specifics.set_device_type(sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
+    specifics.set_sync_user_agent(
+        base::StringPrintf("sync user agent %d", label));
+    specifics.set_chrome_version(
+        base::StringPrintf("chrome version %d", label));
+    specifics.set_backup_timestamp(label);
+    specifics.set_signin_scoped_device_id(
+        base::StringPrintf("signin scoped device id %d", label));
+    return specifics;
+  }
+
   // Allows access to the store before that will ultimately be used to
   // initialize the service.
   ModelTypeStore* store() {
@@ -240,6 +246,10 @@ class DeviceInfoServiceTest : public testing::Test,
   // A non-owning pointer to the processor given to the service. Will be nullptr
   // before being given to the service, to make ownership easier.
   FakeModelTypeChangeProcessor* processor_ = nullptr;
+
+  // A monotonically increasing label for generated specifics objects with data
+  // that is slightly different from eachother.
+  int generated_count_ = 0;
 };
 
 TEST_F(DeviceInfoServiceTest, EmptyDataReconciliation) {
@@ -264,7 +274,7 @@ TEST_F(DeviceInfoServiceTest, NonEmptyStoreLoad) {
   set_local_device(make_scoped_ptr(new LocalDeviceInfoProviderMock()));
 
   scoped_ptr<WriteBatch> batch = store()->CreateWriteBatch();
-  DeviceInfoSpecifics specifics(TestSpecifics());
+  DeviceInfoSpecifics specifics(GenerateTestSpecifics());
   specifics.set_backup_timestamp(6);
   store()->WriteData(batch.get(), "tag", specifics.SerializeAsString());
   store()->CommitWriteBatch(std::move(batch),
@@ -299,7 +309,7 @@ TEST_F(DeviceInfoServiceTest, GetClientTagEmpty) {
 
 TEST_F(DeviceInfoServiceTest, TestInitStoreThenProc) {
   scoped_ptr<WriteBatch> batch = store()->CreateWriteBatch();
-  DeviceInfoSpecifics specifics(TestSpecifics());
+  DeviceInfoSpecifics specifics(GenerateTestSpecifics());
   store()->WriteData(batch.get(), "tag", specifics.SerializeAsString());
   DataTypeState state;
   state.set_encryption_key_name("ekn");
@@ -324,7 +334,7 @@ TEST_F(DeviceInfoServiceTest, TestInitStoreThenProc) {
 
 TEST_F(DeviceInfoServiceTest, TestInitProcBeforeStoreFinishes) {
   scoped_ptr<WriteBatch> batch = store()->CreateWriteBatch();
-  DeviceInfoSpecifics specifics(TestSpecifics());
+  DeviceInfoSpecifics specifics(GenerateTestSpecifics());
   store()->WriteData(batch.get(), "tag", specifics.SerializeAsString());
   DataTypeState state;
   state.set_encryption_key_name("ekn");
@@ -345,18 +355,20 @@ TEST_F(DeviceInfoServiceTest, TestInitProcBeforeStoreFinishes) {
 
 TEST_F(DeviceInfoServiceTest, GetData) {
   scoped_ptr<WriteBatch> batch = store()->CreateWriteBatch();
-  DeviceInfoSpecifics specifics(TestSpecifics());
-  store()->WriteData(batch.get(), "tag1", specifics.SerializeAsString());
-  store()->WriteData(batch.get(), "tag2", specifics.SerializeAsString());
-  store()->WriteData(batch.get(), "tag3", specifics.SerializeAsString());
+  DeviceInfoSpecifics specifics1(GenerateTestSpecifics());
+  DeviceInfoSpecifics specifics3(GenerateTestSpecifics());
+  store()->WriteData(batch.get(), "tag1", specifics1.SerializeAsString());
+  store()->WriteData(batch.get(), "tag2",
+                     GenerateTestSpecifics().SerializeAsString());
+  store()->WriteData(batch.get(), "tag3", specifics3.SerializeAsString());
   store()->CommitWriteBatch(std::move(batch),
                             base::Bind(&AssertResultIsSuccess));
 
   InitializeAndPump();
 
   std::map<std::string, DeviceInfoSpecifics> expected;
-  expected["tag1"] = specifics;
-  expected["tag3"] = specifics;
+  expected["tag1"] = specifics1;
+  expected["tag3"] = specifics3;
   ClientTagList client_tags;
   client_tags.push_back("tag1");
   client_tags.push_back("tag3");
@@ -381,18 +393,18 @@ TEST_F(DeviceInfoServiceTest, GetDataNotInitialized) {
 
 TEST_F(DeviceInfoServiceTest, GetAllData) {
   scoped_ptr<WriteBatch> batch = store()->CreateWriteBatch();
-  DeviceInfoSpecifics specifics(TestSpecifics());
-
-  store()->WriteData(batch.get(), "tag1", specifics.SerializeAsString());
-  store()->WriteData(batch.get(), "tag2", specifics.SerializeAsString());
+  DeviceInfoSpecifics specifics1(GenerateTestSpecifics());
+  DeviceInfoSpecifics specifics2(GenerateTestSpecifics());
+  store()->WriteData(batch.get(), "tag1", specifics1.SerializeAsString());
+  store()->WriteData(batch.get(), "tag2", specifics2.SerializeAsString());
   store()->CommitWriteBatch(std::move(batch),
                             base::Bind(&AssertResultIsSuccess));
 
   InitializeAndPump();
 
   std::map<std::string, DeviceInfoSpecifics> expected;
-  expected["tag1"] = specifics;
-  expected["tag2"] = specifics;
+  expected["tag1"] = specifics1;
+  expected["tag2"] = specifics2;
   ClientTagList client_tags;
   client_tags.push_back("tag1");
   client_tags.push_back("tag2");
