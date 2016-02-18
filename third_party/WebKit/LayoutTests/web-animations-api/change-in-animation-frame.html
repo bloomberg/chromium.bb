@@ -8,8 +8,8 @@ if (window.testRunner) {
 }
 
 requestAnimationFrame(function() {
-  document.getElementById('pass').animate([{visibility: 'visible'}, {visibility: 'visible'}], 10);
-  document.getElementById('fail').animate([{visibility: 'hidden'}, {visibility: 'hidden'}], 10);
+  document.getElementById('pass').animate([{visibility: 'visible'}, {visibility: 'visible'}], {fill: 'forwards'});
+  document.getElementById('fail').animate([{visibility: 'hidden'}, {visibility: 'hidden'}], {fill: 'forwards'});
   if (window.testRunner) {
     testRunner.notifyDone();
   }
