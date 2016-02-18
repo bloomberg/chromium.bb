@@ -1357,16 +1357,6 @@ crbug.com/572714 [ Linux ] inspector/sources/debugger/debug-inlined-scripts.html
 
 crbug.com/579493 http/tests/security/xss-DENIED-xsl-document-securityOrigin.xml [ Timeout ]
 
-crbug.com/445329 svg/custom/mouse-move-on-svg-root-standalone.svg [ NeedsRebaseline ]
-crbug.com/445329 svg/custom/pointer-events-text-css-transform.svg [ NeedsRebaseline ]
-crbug.com/445329 svg/custom/mouse-move-on-svg-root.xhtml [ NeedsRebaseline ]
-crbug.com/445329 svg/custom/pointer-events-text.svg [ NeedsRebaseline ]
-crbug.com/445329 svg/custom/text-hit-test.svg [ NeedsRebaseline ]
-crbug.com/445329 svg/custom/pointer-events-image-css-transform.svg [ NeedsRebaseline ]
-crbug.com/445329 svg/custom/mouse-move-on-svg-container.xhtml [ NeedsRebaseline ]
-crbug.com/445329 svg/custom/pointer-events-image.svg [ NeedsRebaseline ]
-crbug.com/445329 svg/custom/mouse-move-on-svg-container-standalone.svg [ NeedsRebaseline ]
-
 crbug.com/572723 [ Mac10.7 Release ] inspector/sources/debugger/debugger-completions-on-call-frame.html [ Timeout Pass ]
 crbug.com/572723 [ Linux Mac10.9 ] inspector/sources/debugger/debugger-disable-enable.html [ Pass Failure Timeout ]
 crbug.com/572723 inspector/sources/debugger/debugger-uncaught-promise-on-pause.html [ Timeout Pass ]
