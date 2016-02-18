@@ -6850,9 +6850,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- Session Crashed Info Bar/Bubble-->
-      <message name="IDS_SESSION_CRASHED_VIEW_RESTORE_BUTTON" desc="Title of the restore button in the session crashed view.">
-        Restore
-      </message>
       <message name="IDS_SESSION_CRASHED_BUBBLE_TITLE" desc="Title of the session crashed bubble view.">
         Restore pages?
       </message>

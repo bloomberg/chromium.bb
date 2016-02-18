@@ -269,6 +269,10 @@
       <message name="IDS_UTILITY_PROCESS_JSON_PARSER_NAME" desc="The name of the utility process used for parsing JSON files.">
         JSON Parser
       </message>
+
+      <message name="IDS_SESSION_CRASHED_VIEW_RESTORE_BUTTON" desc="Title of the restore button in the session crashed view.">
+        Restore
+      </message>
     </messages>
   </release>
 </grit>
