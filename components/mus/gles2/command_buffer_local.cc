@@ -89,6 +89,11 @@ CommandBufferLocal::CommandBufferLocal(CommandBufferLocalClient* client,
 
 void CommandBufferLocal::Destroy() {
   DCHECK(CalledOnValidThread());
+  // After this |Destroy()| call, this object will not be used by client anymore
+  // and it will be deleted on the GPU thread. So we have to detach it from the
+  // client thread first.
+  DetachFromThread();
+
   weak_factory_.InvalidateWeakPtrs();
   // CommandBufferLocal is initialized on the GPU thread with
   // InitializeOnGpuThread(), so we need delete memebers on the GPU thread
