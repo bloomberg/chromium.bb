@@ -5,12 +5,15 @@
 #ifndef COMPONENTS_BROWSER_SYNC_BROWSER_PROFILE_SYNC_TEST_UTIL_H_
 #define COMPONENTS_BROWSER_SYNC_BROWSER_PROFILE_SYNC_TEST_UTIL_H_
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "base/time/time.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
+#include "components/invalidation/impl/fake_invalidation_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
@@ -23,6 +26,10 @@
 namespace base {
 class Time;
 class TimeDelta;
+}
+
+namespace history {
+class HistoryService;
 }
 
 namespace net {
@@ -46,7 +53,8 @@ void RegisterPrefsForProfileSyncService(
     user_prefs::PrefRegistrySyncable* registry);
 
 // Aggregate this class to get all necessary support for creating a
-// ProfileSyncService in tests.
+// ProfileSyncService in tests. The test still needs to have its own
+// MessageLoop, though.
 class ProfileSyncServiceBundle {
  public:
 #if defined(OS_CHROMEOS)
@@ -55,7 +63,15 @@ class ProfileSyncServiceBundle {
   typedef FakeSigninManager FakeSigninManagerType;
 #endif
 
+  // Use this if you don't care about threads.
   ProfileSyncServiceBundle();
+
+  // Use this to inject threads directly.
+  ProfileSyncServiceBundle(
+      const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
+      const scoped_refptr<base::SingleThreadTaskRunner>& file_thread,
+      base::SequencedWorkerPool* worker_pool);
+
   ~ProfileSyncServiceBundle();
 
   // Builders
@@ -70,9 +86,27 @@ class ProfileSyncServiceBundle {
 
     ~SyncClientBuilder();
 
-    // Set the clear browsing data callback for the client to return.
+    // Setters for the various additional data for the client to return.
     void SetClearBrowsingDataCallback(
         sync_driver::ClearBrowsingDataCallback clear_browsing_data_callback);
+
+    void SetPersonalDataManager(
+        autofill::PersonalDataManager* personal_data_manager);
+
+    // The client will call this callback to produce the SyncableService
+    // specific to |type|.
+    void SetSyncableServiceCallback(
+        const base::Callback<base::WeakPtr<syncer::SyncableService>(
+            syncer::ModelType type)>& get_syncable_service_callback);
+
+    // The client will call this callback to produce the SyncService for the
+    // current Profile.
+    void SetSyncServiceCallback(const base::Callback<sync_driver::SyncService*(
+                                    void)>& get_sync_service_callback);
+
+    void SetHistoryService(history::HistoryService* history_service);
+
+    void set_activate_model_creation() { activate_model_creation_ = true; }
 
     scoped_ptr<sync_driver::FakeSyncClient> Build();
 
@@ -81,6 +115,15 @@ class ProfileSyncServiceBundle {
     ProfileSyncServiceBundle* const bundle_;
 
     sync_driver::ClearBrowsingDataCallback clear_browsing_data_callback_;
+    autofill::PersonalDataManager* personal_data_manager_;
+    base::Callback<base::WeakPtr<syncer::SyncableService>(
+        syncer::ModelType type)>
+        get_syncable_service_callback_;
+    base::Callback<sync_driver::SyncService*(void)> get_sync_service_callback_;
+    history::HistoryService* history_service_ = nullptr;
+    // If set, the built client will be able to build some ModelSafeWorker
+    // instances.
+    bool activate_model_creation_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(SyncClientBuilder);
   };
@@ -116,8 +159,29 @@ class ProfileSyncServiceBundle {
     return &sync_sessions_client_;
   }
 
+  invalidation::FakeInvalidationService* fake_invalidation_service() {
+    return &fake_invalidation_service_;
+  }
+
+  base::SingleThreadTaskRunner* db_thread() { return db_thread_.get(); }
+
+  base::SingleThreadTaskRunner* file_thread() { return file_thread_.get(); }
+
  private:
-  base::SequencedWorkerPoolOwner worker_pool_owner_;
+  struct ThreadProvider;  // Helper to create threads and worker pool.
+
+  // Either |thread_provider| must be null and or the other arguments non-null,
+  // or vice versa.
+  ProfileSyncServiceBundle(
+      scoped_ptr<ThreadProvider> thread_provider,
+      scoped_refptr<base::SingleThreadTaskRunner> db_thread,
+      scoped_refptr<base::SingleThreadTaskRunner> file_thread,
+      base::SequencedWorkerPool* worker_pool);
+
+  scoped_ptr<ThreadProvider> thread_provider_;
+  const scoped_refptr<base::SingleThreadTaskRunner> db_thread_;
+  const scoped_refptr<base::SingleThreadTaskRunner> file_thread_;
+  base::SequencedWorkerPool* const worker_pool_;
   syncable_prefs::TestingPrefServiceSyncable pref_service_;
   TestSigninClient signin_client_;
   AccountTrackerService account_tracker_;
@@ -125,6 +189,7 @@ class ProfileSyncServiceBundle {
   FakeProfileOAuth2TokenService auth_service_;
   SyncApiComponentFactoryMock component_factory_;
   sync_sessions::FakeSyncSessionsClient sync_sessions_client_;
+  invalidation::FakeInvalidationService fake_invalidation_service_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncServiceBundle);

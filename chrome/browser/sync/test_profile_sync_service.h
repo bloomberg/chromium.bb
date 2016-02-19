@@ -5,75 +5,20 @@
 #ifndef CHROME_BROWSER_SYNC_TEST_PROFILE_SYNC_SERVICE_H_
 #define CHROME_BROWSER_SYNC_TEST_PROFILE_SYNC_SERVICE_H_
 
-#include <string>
-
-#include "base/callback.h"
-#include "base/compiler_specific.h"
-#include "base/memory/weak_ptr.h"
+#include "base/macros.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/sync_driver/data_type_manager_impl.h"
-#include "components/sync_driver/glue/sync_backend_host_impl.h"
-#include "components/sync_driver/sync_client.h"
-#include "components/sync_driver/sync_prefs.h"
-#include "content/public/browser/browser_context.h"
+#include "components/sync_driver/data_type_manager.h"
+#include "sync/internal_api/public/util/weak_handle.h"
+#include "sync/js/js_event_handler.h"
 #include "sync/test/engine/test_id_factory.h"
-#include "testing/gmock/include/gmock/gmock.h"
 
-class Profile;
-class ProfileOAuth2TokenService;
-class SyncApiComponentFactoryMock;
-
-ACTION(ReturnNewDataTypeManager) {
-  return new sync_driver::DataTypeManagerImpl(arg0, arg1, arg2, arg3, arg4);
-}
-
-namespace browser_sync {
-
-class SyncBackendHostForProfileSyncTest : public SyncBackendHostImpl {
- public:
-  SyncBackendHostForProfileSyncTest(
-      Profile* profile,
-      sync_driver::SyncClient* sync_client,
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-      invalidation::InvalidationService* invalidator,
-      const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
-      base::Closure callback);
-  ~SyncBackendHostForProfileSyncTest() override;
-
-  void RequestConfigureSyncer(
-      syncer::ConfigureReason reason,
-      syncer::ModelTypeSet to_download,
-      syncer::ModelTypeSet to_purge,
-      syncer::ModelTypeSet to_journal,
-      syncer::ModelTypeSet to_unapply,
-      syncer::ModelTypeSet to_ignore,
-      const syncer::ModelSafeRoutingInfo& routing_info,
-      const base::Callback<void(syncer::ModelTypeSet, syncer::ModelTypeSet)>&
-          ready_task,
-      const base::Closure& retry_callback) override;
-
- protected:
-  void InitCore(scoped_ptr<DoInitializeOptions> options) override;
-
- private:
-  // Invoked at the start of HandleSyncManagerInitializationOnFrontendLoop.
-  // Allows extra initialization work to be performed before the backend comes
-  // up.
-  base::Closure callback_;
-};
-
-}  // namespace browser_sync
+namespace sync_driver {
+class SyncPrefs;
+}  // namespace sync_driver
 
 class TestProfileSyncService : public ProfileSyncService {
  public:
-  // TODO(tim): Add ability to inject TokenService alongside SigninManager.
-  // TODO(rogerta): what does above comment mean?
-  TestProfileSyncService(
-      Profile* profile,
-      SigninManagerBase* signin,
-      ProfileOAuth2TokenService* oauth2_token_service,
-      browser_sync::ProfileSyncServiceStartBehavior behavior);
+  explicit TestProfileSyncService(ProfileSyncService::InitParams init_params);
 
   ~TestProfileSyncService() override;
 
@@ -83,20 +28,14 @@ class TestProfileSyncService : public ProfileSyncService {
   // We implement our own version to avoid some DCHECKs.
   syncer::UserShare* GetUserShare() const override;
 
-  static TestProfileSyncService* BuildAutoStartAsyncInit(
-      Profile* profile, base::Closure callback);
-
-  SyncApiComponentFactoryMock* GetSyncApiComponentFactoryMock();
-
   syncer::TestIdFactory* id_factory();
 
   // Raise visibility to ease testing.
   using ProfileSyncService::NotifyObservers;
 
- protected:
-  static scoped_ptr<KeyedService> TestFactoryFunction(
-      content::BrowserContext* profile);
+  sync_driver::SyncPrefs* sync_prefs() { return &sync_prefs_; }
 
+ protected:
   // Return NULL handle to use in backend initialization to avoid receiving
   // js messages on UI loop when it's being destroyed, which are not deleted
   // and cause memory leak in test.
@@ -106,6 +45,8 @@ class TestProfileSyncService : public ProfileSyncService {
 
  private:
   syncer::TestIdFactory id_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestProfileSyncService);
 };
 
 #endif  // CHROME_BROWSER_SYNC_TEST_PROFILE_SYNC_SERVICE_H_

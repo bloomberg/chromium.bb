@@ -10,16 +10,15 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/compiler_specific.h"
+#include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
-#include "components/sync_driver/sync_api_component_factory_mock.h"
+#include "components/browser_sync/browser/profile_sync_test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/change_record.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class ProfileSyncService;
 class TestProfileSyncService;
 
 namespace syncer {
@@ -37,6 +36,9 @@ class ProfileSyncServiceTestHelper {
   MakeSingletonDeletionChangeRecordList(
       int64_t node_id,
       const sync_pb::EntitySpecifics& specifics);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ProfileSyncServiceTestHelper);
 };
 
 class AbstractProfileSyncServiceTest : public testing::Test {
@@ -44,15 +46,26 @@ class AbstractProfileSyncServiceTest : public testing::Test {
   AbstractProfileSyncServiceTest();
   ~AbstractProfileSyncServiceTest() override;
 
-  void SetUp() override;
-
-  void TearDown() override;
-
   bool CreateRoot(syncer::ModelType model_type);
 
  protected:
+  // Creates a TestProfileSyncService instance based on
+  // |profile_sync_service_bundle_|, with start behavior
+  // browser_sync::AUTO_START. Passes |callback| down to
+  // SyncManagerForProfileSyncTest to be used by NotifyInitializationSuccess.
+  // |sync_client| is passed to the service.
+  scoped_ptr<TestProfileSyncService> CreateSyncService(
+      scoped_ptr<sync_driver::SyncClient> sync_client,
+      const base::Closure& initialization_success_callback);
+
   content::TestBrowserThreadBundle thread_bundle_;
-  TestProfileSyncService* sync_service_;
+  browser_sync::ProfileSyncServiceBundle profile_sync_service_bundle_;
+  scoped_ptr<TestProfileSyncService> sync_service_;
+
+ private:
+  base::ScopedTempDir temp_dir_;  // To pass to the backend host.
+
+  DISALLOW_COPY_AND_ASSIGN(AbstractProfileSyncServiceTest);
 };
 
 class CreateRootHelper {
@@ -71,6 +84,8 @@ class CreateRootHelper {
   AbstractProfileSyncServiceTest* test_;
   syncer::ModelType model_type_;
   bool success_;
+
+  DISALLOW_COPY_AND_ASSIGN(CreateRootHelper);
 };
 
 #endif  // CHROME_BROWSER_SYNC_ABSTRACT_PROFILE_SYNC_SERVICE_TEST_H_

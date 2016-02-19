@@ -15,6 +15,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
@@ -22,41 +23,17 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
-#include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
-#include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
-#include "chrome/browser/sync/chrome_sync_client.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_profile.h"
-#include "chrome/test/base/testing_profile_manager.h"
-#include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_backend_client.h"
 #include "components/history/core/browser/history_backend_notifier.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service.h"
-#include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/typed_url_data_type_controller.h"
-#include "components/invalidation/impl/fake_invalidation_service.h"
-#include "components/invalidation/impl/profile_invalidation_provider.h"
-#include "components/invalidation/public/invalidation_service.h"
-#include "components/keyed_service/core/refcounted_keyed_service.h"
-#include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_driver/data_type_error_handler_mock.h"
-#include "components/sync_driver/sync_api_component_factory_mock.h"
-#include "components/syncable_prefs/pref_service_syncable.h"
-#include "content/public/browser/notification_service.h"
-#include "google_apis/gaia/gaia_constants.h"
+#include "components/sync_driver/data_type_manager_impl.h"
 #include "sync/internal_api/public/read_node.h"
 #include "sync/internal_api/public/read_transaction.h"
 #include "sync/internal_api/public/write_node.h"
@@ -65,30 +42,25 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
 
-using base::Thread;
-using base::Time;
 using browser_sync::TypedUrlDataTypeController;
 using history::HistoryBackend;
 using history::HistoryBackendNotifier;
 using history::TypedUrlSyncableService;
-using history::URLID;
-using history::URLRow;
-using syncer::syncable::WriteTransaction;
 using testing::DoAll;
 using testing::Return;
 using testing::SetArgumentPointee;
 using testing::_;
 
-namespace content {
-class BrowserContext;
-}
-
 namespace {
 
-const char kTestProfileName[] = "test-profile";
+const char kDummySavingBrowserHistoryDisabled[] = "dummyPref";
 
 // Visits with this timestamp are treated as expired.
 static const int EXPIRED_VISIT = -1;
+
+ACTION(ReturnNewDataTypeManager) {
+  return new sync_driver::DataTypeManagerImpl(arg0, arg1, arg2, arg3, arg4);
+}
 
 class HistoryBackendMock : public HistoryBackend {
  public:
@@ -105,7 +77,6 @@ class HistoryBackendMock : public HistoryBackend {
   MOCK_METHOD3(AddVisits, bool(const GURL& url,
                                const std::vector<history::VisitInfo>& visits,
                                history::VisitSource visit_source));
-  MOCK_METHOD1(RemoveVisits, bool(const history::VisitVector& visits));
   MOCK_METHOD2(GetURL, bool(const GURL& url_id, history::URLRow* url_row));
   MOCK_METHOD2(SetPageTitle, void(const GURL& url,
                                   const base::string16& title));
@@ -124,6 +95,8 @@ class HistoryServiceMock : public history::HistoryService {
   base::CancelableTaskTracker::TaskId ScheduleDBTask(
       scoped_ptr<history::HistoryDBTask> task,
       base::CancelableTaskTracker* tracker) override {
+    // Explicitly copy out the raw pointer -- compilers might decide to
+    // evaluate task.release() before the arguments for the first Bind().
     history::HistoryDBTask* task_raw = task.get();
     task_runner_->PostTaskAndReply(
         FROM_HERE,
@@ -134,11 +107,7 @@ class HistoryServiceMock : public history::HistoryService {
     return base::CancelableTaskTracker::kBadTaskId;  // unused
   }
 
-  MOCK_METHOD0(Shutdown, void());
-
-  MOCK_CONST_METHOD0(GetTypedUrlSyncableService, TypedUrlSyncableService*());
-
-  void ShutdownBaseService() { history::HistoryService::Shutdown(); }
+  ~HistoryServiceMock() override {}
 
   void set_task_runner(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
@@ -151,8 +120,6 @@ class HistoryServiceMock : public history::HistoryService {
   }
 
  private:
-  ~HistoryServiceMock() override {}
-
   void RunTaskOnDBThread(history::HistoryDBTask* task) {
     EXPECT_TRUE(task->RunOnDBThread(backend_.get(), NULL));
   }
@@ -160,17 +127,6 @@ class HistoryServiceMock : public history::HistoryService {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<history::HistoryBackend> backend_;
 };
-
-scoped_ptr<KeyedService> BuildFakeProfileInvalidationProvider(
-    content::BrowserContext* context) {
-  return make_scoped_ptr(new invalidation::ProfileInvalidationProvider(
-      scoped_ptr<invalidation::InvalidationService>(
-          new invalidation::FakeInvalidationService)));
-}
-
-scoped_ptr<KeyedService> BuildHistoryService(content::BrowserContext* profile) {
-  return scoped_ptr<KeyedService>(new HistoryServiceMock);
-}
 
 class TestTypedUrlSyncableService : public TypedUrlSyncableService {
   // TODO(gangwu): remove TestProfileSyncService or even remove whole test
@@ -194,16 +150,6 @@ class TestTypedUrlSyncableService : public TypedUrlSyncableService {
   void ClearErrorStats() override {}
 };
 
-ACTION_P2(ShutdownHistoryService, thread, service) {
-  service->ShutdownBaseService();
-  delete thread;
-}
-
-ACTION_P2(ReturnTypedUrlSyncableService, hb, syncable_service) {
-  syncable_service->reset(new TestTypedUrlSyncableService(hb));
-  return syncable_service->get();
-}
-
 class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
  public:
   void AddTypedUrlSyncNode(const history::URLRow& url,
@@ -219,75 +165,96 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
   }
 
  protected:
-  ProfileSyncServiceTypedUrlTest()
-      : profile_manager_(TestingBrowserProcess::GetGlobal()) {
-    history_thread_.reset(new Thread("history"));
-  }
+  ProfileSyncServiceTypedUrlTest() : history_thread_("history") {
+    profile_sync_service_bundle_.pref_service()
+        ->registry()
+        ->RegisterBooleanPref(kDummySavingBrowserHistoryDisabled, false);
 
-  void SetUp() override {
-    AbstractProfileSyncServiceTest::SetUp();
-    ASSERT_TRUE(profile_manager_.SetUp());
-    TestingProfile::TestingFactories testing_factories;
-    testing_factories.push_back(std::make_pair(
-        ProfileOAuth2TokenServiceFactory::GetInstance(),
-        BuildAutoIssuingFakeProfileOAuth2TokenService));
-    profile_ = profile_manager_.CreateTestingProfile(
-        kTestProfileName,
-        scoped_ptr<syncable_prefs::PrefServiceSyncable>(),
-        base::UTF8ToUTF16(kTestProfileName),
-        0,
-        std::string(),
-        testing_factories);
-    invalidation::ProfileInvalidationProviderFactory::GetInstance()->
-        SetTestingFactory(profile_, BuildFakeProfileInvalidationProvider);
-    history_thread_->Start();
-    history_backend_ = new HistoryBackendMock();
-    history_service_ = static_cast<HistoryServiceMock*>(
-        HistoryServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-            profile_, BuildHistoryService));
-    history_service_->set_task_runner(history_thread_->task_runner());
+    history_thread_.Start();
+    base::RunLoop run_loop;
+    history_thread_.task_runner()->PostTaskAndReply(
+        FROM_HERE,
+        base::Bind(&ProfileSyncServiceTypedUrlTest::CreateHistoryService,
+                   base::Unretained(this)),
+        run_loop.QuitClosure());
+    run_loop.Run();
+    history_service_ = make_scoped_ptr(new HistoryServiceMock);
+    history_service_->set_task_runner(history_thread_.task_runner());
     history_service_->set_backend(history_backend_);
+
+    browser_sync::ProfileSyncServiceBundle::SyncClientBuilder builder(
+        &profile_sync_service_bundle_);
+    builder.SetHistoryService(history_service_.get());
+    builder.SetSyncServiceCallback(
+        base::Bind(&ProfileSyncServiceTypedUrlTest::GetSyncService,
+                   base::Unretained(this)));
+    builder.SetSyncableServiceCallback(
+        base::Bind(&ProfileSyncServiceTypedUrlTest::GetSyncableServiceForType,
+                   base::Unretained(this)));
+    builder.set_activate_model_creation();
+    sync_client_ = builder.Build();
   }
 
-  void TearDown() override {
-    EXPECT_CALL((*history_service_), Shutdown())
-        .WillOnce(ShutdownHistoryService(history_thread_.release(),
-                                         history_service_));
-    profile_ = NULL;
-    profile_manager_.DeleteTestingProfile(kTestProfileName);
-    AbstractProfileSyncServiceTest::TearDown();
+  void CreateHistoryService() {
+    history_backend_ = new HistoryBackendMock();
+    syncable_service_ = make_scoped_ptr(
+        new TestTypedUrlSyncableService(history_backend_.get()));
+  }
+
+  void DeleteSyncableService() { syncable_service_.reset(); }
+
+  ~ProfileSyncServiceTypedUrlTest() override {
+    history_service_->Shutdown();
+
+    // Request stop to get deletion tasks related to the HistoryService posted
+    // on the Sync thread. It is important to not Shutdown at this moment,
+    // because after shutdown the Sync thread is not returned to the sync
+    // service, so we could not get the thread's message loop to wait for the
+    // deletions to be finished.
+    sync_service_->RequestStop(sync_driver::SyncService::CLEAR_DATA);
+    // Spin the sync thread.
+    {
+      base::RunLoop run_loop;
+      sync_service_->GetSyncLoopForTest()->task_runner()->PostTaskAndReply(
+          FROM_HERE, base::Bind(&base::DoNothing), run_loop.QuitClosure());
+      run_loop.Run();
+    }
+
+    sync_service_->Shutdown();
+
+    {
+      base::RunLoop run_loop;
+      history_thread_.task_runner()->PostTaskAndReply(
+          FROM_HERE,
+          base::Bind(&ProfileSyncServiceTypedUrlTest::DeleteSyncableService,
+                     base::Unretained(this)),
+          run_loop.QuitClosure());
+      run_loop.Run();
+    }
   }
 
   TypedUrlSyncableService* StartSyncService(const base::Closure& callback) {
     if (!sync_service_) {
       std::string account_id =
-            AccountTrackerServiceFactory::GetForProfile(profile_)
-                ->SeedAccountInfo("gaia_id", "test");
-      SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile_);
+          profile_sync_service_bundle_.account_tracker()->SeedAccountInfo(
+              "gaia_id", "test");
+      SigninManagerBase* signin = profile_sync_service_bundle_.signin_manager();
       signin->SetAuthenticatedAccountInfo("gaia_id", "test");
-      sync_service_ = TestProfileSyncService::BuildAutoStartAsyncInit(profile_,
-                                                                      callback);
+      sync_service_ = CreateSyncService(std::move(sync_client_), callback);
       data_type_controller = new TypedUrlDataTypeController(
           base::ThreadTaskRunnerHandle::Get(), base::Bind(&base::DoNothing),
-          sync_service_->GetSyncClient(), prefs::kSavingBrowserHistoryDisabled);
-      SyncApiComponentFactoryMock* components =
-          sync_service_->GetSyncApiComponentFactoryMock();
+          sync_service_->GetSyncClient(), kDummySavingBrowserHistoryDisabled);
+      EXPECT_CALL(*profile_sync_service_bundle_.component_factory(),
+                  CreateDataTypeManager(_, _, _, _, _))
+          .WillOnce(ReturnNewDataTypeManager());
 
-      EXPECT_CALL(*components, CreateDataTypeManager(_, _, _, _, _)).
-          WillOnce(ReturnNewDataTypeManager());
-
-      EXPECT_CALL(*history_service_, GetTypedUrlSyncableService())
-          .WillOnce(ReturnTypedUrlSyncableService(history_backend_.get(),
-                                                  &syncable_service_));
-
-      ProfileOAuth2TokenService* oauth2_token_service =
-          ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-      oauth2_token_service->UpdateCredentials(account_id, "oauth2_login_token");
+      profile_sync_service_bundle_.auth_service()->UpdateCredentials(
+          account_id, "oauth2_login_token");
 
       sync_service_->RegisterDataTypeController(data_type_controller);
 
       sync_service_->Initialize();
-      base::MessageLoop::current()->Run();
+      base::RunLoop().Run();
     }
     return syncable_service_.get();
   }
@@ -330,9 +297,8 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
   }
 
   void SendNotification(const base::Closure& task) {
-    history_thread_->task_runner()->PostTaskAndReply(
-        FROM_HERE,
-        task,
+    history_thread_.task_runner()->PostTaskAndReply(
+        FROM_HERE, task,
         base::Bind(&base::MessageLoop::QuitNow,
                    base::Unretained(base::MessageLoop::current())));
     base::MessageLoop::current()->Run();
@@ -387,7 +353,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
     // Give each URL a unique ID, to mimic the behavior of the real database.
     static int unique_url_id = 0;
     GURL gurl(url);
-    URLRow history_url(gurl, ++unique_url_id);
+    history::URLRow history_url(gurl, ++unique_url_id);
     history_url.set_title(base::UTF8ToUTF16(title));
     history_url.set_typed_count(typed_count);
     history_url.set_last_visit(
@@ -400,14 +366,26 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
     return history_url;
   }
 
-  scoped_ptr<Thread> history_thread_;
-  TestingProfileManager profile_manager_;
-  TestingProfile* profile_;
+  sync_driver::SyncService* GetSyncService() { return sync_service_.get(); }
+
+  base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
+      syncer::ModelType type) {
+    DCHECK_EQ(syncer::TYPED_URLS, type);
+    return syncable_service_->AsWeakPtr();
+  }
+
+  // The separate thread is needed, because TypedUrlDataTypeController
+  // requires to run on another thread than the UI thread.
+  base::Thread history_thread_;
   scoped_refptr<HistoryBackendMock> history_backend_;
-  HistoryServiceMock* history_service_;
+  scoped_ptr<HistoryServiceMock> history_service_;
   sync_driver::DataTypeErrorHandlerMock error_handler_;
   TypedUrlDataTypeController* data_type_controller;
   scoped_ptr<TestTypedUrlSyncableService> syncable_service_;
+  scoped_ptr<sync_driver::FakeSyncClient> sync_client_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ProfileSyncServiceTypedUrlTest);
 };
 
 void AddTypedUrlEntries(ProfileSyncServiceTypedUrlTest* test,

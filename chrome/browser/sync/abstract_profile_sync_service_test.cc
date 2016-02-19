@@ -4,19 +4,138 @@
 
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/run_loop.h"
+#include "chrome/browser/sync/test/test_http_bridge_factory.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
+#include "components/sync_driver/glue/sync_backend_host_core.h"
+#include "components/sync_driver/sync_api_component_factory_mock.h"
 #include "content/public/test/test_utils.h"
+#include "google_apis/gaia/gaia_constants.h"
+#include "sync/internal_api/public/test/sync_manager_factory_for_profile_sync_test.h"
+#include "sync/internal_api/public/test/test_internal_components_factory.h"
 #include "sync/internal_api/public/test/test_user_share.h"
-#include "sync/internal_api/public/write_transaction.h"
 #include "sync/protocol/sync.pb.h"
-#include "sync/util/cryptographer.h"
 
+using content::BrowserThread;
 using syncer::ModelType;
-using syncer::UserShare;
+using testing::_;
+using testing::Return;
+
+namespace {
+
+class SyncBackendHostForProfileSyncTest
+    : public browser_sync::SyncBackendHostImpl {
+ public:
+  SyncBackendHostForProfileSyncTest(
+      const base::FilePath& temp_dir,
+      sync_driver::SyncClient* sync_client,
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
+      invalidation::InvalidationService* invalidator,
+      const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
+      const base::Closure& callback);
+  ~SyncBackendHostForProfileSyncTest() override;
+
+  void RequestConfigureSyncer(
+      syncer::ConfigureReason reason,
+      syncer::ModelTypeSet to_download,
+      syncer::ModelTypeSet to_purge,
+      syncer::ModelTypeSet to_journal,
+      syncer::ModelTypeSet to_unapply,
+      syncer::ModelTypeSet to_ignore,
+      const syncer::ModelSafeRoutingInfo& routing_info,
+      const base::Callback<void(syncer::ModelTypeSet, syncer::ModelTypeSet)>&
+          ready_task,
+      const base::Closure& retry_callback) override;
+
+ protected:
+  void InitCore(scoped_ptr<browser_sync::DoInitializeOptions> options) override;
+
+ private:
+  // Invoked at the start of HandleSyncManagerInitializationOnFrontendLoop.
+  // Allows extra initialization work to be performed before the backend comes
+  // up.
+  base::Closure callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(SyncBackendHostForProfileSyncTest);
+};
+
+SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
+    const base::FilePath& temp_dir,
+    sync_driver::SyncClient* sync_client,
+    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
+    invalidation::InvalidationService* invalidator,
+    const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
+    const base::Closure& callback)
+    : browser_sync::SyncBackendHostImpl(
+          "dummy_debug_name",
+          sync_client,
+          ui_thread,
+          invalidator,
+          sync_prefs,
+          temp_dir.Append(base::FilePath(FILE_PATH_LITERAL("test")))),
+      callback_(callback) {}
+
+SyncBackendHostForProfileSyncTest::~SyncBackendHostForProfileSyncTest() {}
+
+void SyncBackendHostForProfileSyncTest::InitCore(
+    scoped_ptr<browser_sync::DoInitializeOptions> options) {
+  options->http_bridge_factory = scoped_ptr<syncer::HttpPostProviderFactory>(
+      new browser_sync::TestHttpBridgeFactory());
+  options->sync_manager_factory.reset(
+      new syncer::SyncManagerFactoryForProfileSyncTest(callback_));
+  options->credentials.email = "testuser@gmail.com";
+  options->credentials.sync_token = "token";
+  options->credentials.scope_set.insert(GaiaConstants::kChromeSyncOAuth2Scope);
+  options->restored_key_for_bootstrapping.clear();
+
+  // It'd be nice if we avoided creating the InternalComponentsFactory in the
+  // first place, but SyncBackendHost will have created one by now so we must
+  // free it. Grab the switches to pass on first.
+  syncer::InternalComponentsFactory::Switches factory_switches =
+      options->internal_components_factory->GetSwitches();
+  options->internal_components_factory.reset(
+      new syncer::TestInternalComponentsFactory(
+          factory_switches,
+          syncer::InternalComponentsFactory::STORAGE_IN_MEMORY, nullptr));
+
+  browser_sync::SyncBackendHostImpl::InitCore(std::move(options));
+}
+
+void SyncBackendHostForProfileSyncTest::RequestConfigureSyncer(
+    syncer::ConfigureReason reason,
+    syncer::ModelTypeSet to_download,
+    syncer::ModelTypeSet to_purge,
+    syncer::ModelTypeSet to_journal,
+    syncer::ModelTypeSet to_unapply,
+    syncer::ModelTypeSet to_ignore,
+    const syncer::ModelSafeRoutingInfo& routing_info,
+    const base::Callback<void(syncer::ModelTypeSet, syncer::ModelTypeSet)>&
+        ready_task,
+    const base::Closure& retry_callback) {
+  syncer::ModelTypeSet failed_configuration_types;
+
+  // The first parameter there should be the set of enabled types.  That's not
+  // something we have access to from this strange test harness.  We'll just
+  // send back the list of newly configured types instead and hope it doesn't
+  // break anything.
+  // Posted to avoid re-entrancy issues.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(&SyncBackendHostForProfileSyncTest::
+                     FinishConfigureDataTypesOnFrontendLoop,
+                 base::Unretained(this),
+                 syncer::Difference(to_download, failed_configuration_types),
+                 syncer::Difference(to_download, failed_configuration_types),
+                 failed_configuration_types, ready_task));
+}
+
+}  // namespace
 
 /* static */
 syncer::ImmutableChangeRecordList
@@ -47,14 +166,14 @@ AbstractProfileSyncServiceTest::AbstractProfileSyncServiceTest()
     // Purposefully do not use a real FILE thread, see crbug/550013.
     : thread_bundle_(content::TestBrowserThreadBundle::REAL_DB_THREAD |
                      content::TestBrowserThreadBundle::REAL_IO_THREAD),
-      sync_service_(NULL) {}
-
-AbstractProfileSyncServiceTest::~AbstractProfileSyncServiceTest() {}
-
-void AbstractProfileSyncServiceTest::SetUp() {
+      profile_sync_service_bundle_(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+          BrowserThread::GetBlockingPool()) {
+  CHECK(temp_dir_.CreateUniqueTempDir());
 }
 
-void AbstractProfileSyncServiceTest::TearDown() {
+AbstractProfileSyncServiceTest::~AbstractProfileSyncServiceTest() {
   // Pump messages posted by the sync core thread (which may end up
   // posting on the IO thread).
   base::RunLoop().RunUntilIdle();
@@ -65,6 +184,31 @@ void AbstractProfileSyncServiceTest::TearDown() {
 bool AbstractProfileSyncServiceTest::CreateRoot(ModelType model_type) {
   return syncer::TestUserShare::CreateRoot(model_type,
                                            sync_service_->GetUserShare());
+}
+
+scoped_ptr<TestProfileSyncService>
+AbstractProfileSyncServiceTest::CreateSyncService(
+    scoped_ptr<sync_driver::SyncClient> sync_client,
+    const base::Closure& initialization_success_callback) {
+  DCHECK(sync_client);
+  ProfileSyncService::InitParams init_params =
+      profile_sync_service_bundle_.CreateBasicInitParams(
+          browser_sync::AUTO_START, std::move(sync_client));
+  auto sync_service =
+      make_scoped_ptr(new TestProfileSyncService(std::move(init_params)));
+
+  SyncApiComponentFactoryMock* components =
+      profile_sync_service_bundle_.component_factory();
+  EXPECT_CALL(*components, CreateSyncBackendHost(_, _, _, _))
+      .WillOnce(Return(new SyncBackendHostForProfileSyncTest(
+          temp_dir_.path(), sync_service->GetSyncClient(),
+          base::ThreadTaskRunnerHandle::Get(),
+          profile_sync_service_bundle_.fake_invalidation_service(),
+          sync_service->sync_prefs()->AsWeakPtr(),
+          initialization_success_callback)));
+
+  sync_service->SetFirstSetupComplete();
+  return sync_service;
 }
 
 CreateRootHelper::CreateRootHelper(AbstractProfileSyncServiceTest* test,
