@@ -166,6 +166,15 @@ void LayoutScrollbarPart::computePreferredLogicalWidths()
     clearPreferredLogicalWidthsDirty();
 }
 
+void LayoutScrollbarPart::adjustStyleBeforeSet(ComputedStyle* newStyle)
+{
+    // LayoutScrollbarPart cannot be an orthogonal writing-mode root because
+    // FrameView calls layout() for all orthogonal writing-mode roots, but
+    // LayoutScrollbarPart::layout() will crash if m_scrollbar is nullptr.
+    if (parent())
+        newStyle->setWritingMode(parent()->styleRef().writingMode());
+}
+
 void LayoutScrollbarPart::styleWillChange(StyleDifference diff, const ComputedStyle& newStyle)
 {
     LayoutBlock::styleWillChange(diff, newStyle);
@@ -175,6 +184,8 @@ void LayoutScrollbarPart::styleWillChange(StyleDifference diff, const ComputedSt
 void LayoutScrollbarPart::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     LayoutBlock::styleDidChange(diff, oldStyle);
+    // See adjustStyleBeforeSet() above.
+    ASSERT(!isOrthogonalWritingModeRoot());
     setInline(false);
     clearPositionedState();
     setFloating(false);

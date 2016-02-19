@@ -272,8 +272,10 @@ void LayoutScrollbar::updateScrollbarPart(ScrollbarPart partType, bool destroy)
         partLayoutObject = 0;
     }
 
-    if (partLayoutObject)
+    if (partLayoutObject) {
+        partLayoutObject->adjustStyleBeforeSet(partStyle.get());
         partLayoutObject->setStyle(partStyle.release());
+    }
 }
 
 IntRect LayoutScrollbar::buttonRect(ScrollbarPart partType) const

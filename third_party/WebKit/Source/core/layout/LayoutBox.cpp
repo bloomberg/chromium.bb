@@ -243,7 +243,7 @@ void LayoutBox::styleDidChange(StyleDifference diff, const ComputedStyle* oldSty
         removeFromPercentHeightContainer();
 
     if (oldHorizontalWritingMode != isHorizontalWritingMode()) {
-        if (parent()) {
+        if (oldStyle) {
             if (isOrthogonalWritingModeRoot())
                 markOrthogonalWritingModeRoot();
             else
