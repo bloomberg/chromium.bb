@@ -32,6 +32,8 @@ void RemoteMessagePipeBootstrap::Create(
     NodeController* node_controller,
     ScopedPlatformHandle platform_handle,
     const ports::PortRef& port) {
+  CHECK(node_controller);
+  CHECK(node_controller->io_task_runner());
   if (node_controller->io_task_runner()->RunsTasksOnCurrentThread()) {
     // Owns itself.
     new RemoteMessagePipeBootstrap(

@@ -487,7 +487,7 @@ bool MessagePipeDispatcher::EndSerialize(void* destination,
 
 bool MessagePipeDispatcher::BeginTransit() {
   base::AutoLock lock(signal_lock_);
-  if (in_transit_)
+  if (in_transit_ || port_closed_)
     return false;
   in_transit_ = true;
   return in_transit_;

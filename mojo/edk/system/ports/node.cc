@@ -955,8 +955,9 @@ int Node::WillSendMessage_Locked(Port* port,
     {
       for (size_t i = 0; i < message->num_ports(); ++i) {
         ports[i] = GetPort_Locked(message->ports()[i]);
-        ports[i]->lock.Acquire();
+        CHECK(ports[i]);
 
+        ports[i]->lock.Acquire();
         int error = OK;
         if (ports[i]->state != Port::kReceiving)
           error = ERROR_PORT_STATE_UNEXPECTED;
