@@ -66,7 +66,7 @@ PortAllocator::PortAllocator(
 
   set_flags(flags);
   SetPortRange(network_settings.port_range.min_port,
-                       network_settings.port_range.max_port);
+               network_settings.port_range.max_port);
 }
 
 PortAllocator::~PortAllocator() {}
@@ -102,40 +102,40 @@ void PortAllocatorSession::GetPortConfigurations() {
 
 void PortAllocatorSession::OnIceConfig(const IceConfig& ice_config) {
   ice_config_ = ice_config;
+  ConfigReady(GetPortConfiguration().release());
 
-  // Creating relay sessions can take time and is done asynchronously.
-  // Creating stun sessions could also take time and could be done aysnc also,
-  // but for now is done here and added to the initial config.  Note any later
-  // configs will have unresolved stun ips and will be discarded by the
-  // AllocationSequence.
+  if (relay_enabled() && !ice_config_.relay_servers.empty() &&
+      !ice_config_.relay_token.empty()) {
+    TryCreateRelaySession();
+  }
+}
+
+scoped_ptr<cricket::PortConfiguration>
+PortAllocatorSession::GetPortConfiguration() {
   cricket::ServerAddresses stun_servers;
   for (const auto& host : ice_config_.stun_servers) {
     stun_servers.insert(host);
   }
 
-  cricket::PortConfiguration* config =
-      new cricket::PortConfiguration(stun_servers, username(), password());
-  ConfigReady(config);
-  TryCreateRelaySession();
+  scoped_ptr<cricket::PortConfiguration> config(
+      new cricket::PortConfiguration(stun_servers, username(), password()));
+
+  if (relay_enabled()) {
+    for (const auto& turn_server : ice_config_.turn_servers) {
+      config->AddRelay(turn_server);
+    }
+  }
+
+  return config;
 }
 
 void PortAllocatorSession::TryCreateRelaySession() {
-  if (flags() & cricket::PORTALLOCATOR_DISABLE_RELAY)
-    return;
+  DCHECK(!ice_config_.relay_servers.empty());
+  DCHECK(!ice_config_.relay_token.empty());
 
   if (attempts_ == kNumRetries) {
     LOG(ERROR) << "PortAllocator: maximum number of requests reached; "
                << "giving up on relay.";
-    return;
-  }
-
-  if (ice_config_.relay_servers.empty()) {
-    LOG(ERROR) << "PortAllocator: no relay servers configured.";
-    return;
-  }
-
-  if (ice_config_.relay_token.empty()){
-    LOG(WARNING) << "No relay auth token found.";
     return;
   }
 
@@ -180,13 +180,7 @@ void PortAllocatorSession::OnSessionRequestResult(
     LOG(WARNING) << "Received unexpected password value from relay server.";
   }
 
-  cricket::ServerAddresses stun_servers;
-  for (const auto& host : ice_config_.stun_servers) {
-    stun_servers.insert(host);
-  }
-
-  cricket::PortConfiguration* config = new cricket::PortConfiguration(
-      stun_servers, map["username"], map["password"]);
+  scoped_ptr<cricket::PortConfiguration> config = GetPortConfiguration();
 
   std::string relay_ip = map["relay.ip"];
   std::string relay_port = map["relay.udp_port"];
@@ -201,7 +195,7 @@ void PortAllocatorSession::OnSessionRequestResult(
     config->AddRelay(relay_config);
   }
 
-  ConfigReady(config);
+  ConfigReady(config.release());
 }
 
 }  // namespace protocol
