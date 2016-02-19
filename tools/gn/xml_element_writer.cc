@@ -38,7 +38,9 @@ XmlElementWriter::XmlElementWriter(std::ostream& out,
 
 XmlElementWriter::~XmlElementWriter() {
   if (!opening_tag_finished_) {
-    out_ << "/>" << std::endl;
+    // The XML spec does not require a space before the closing slash. However,
+    // Eclipse is unable to parse XML settings files if there is no space.
+    out_ << " />" << std::endl;
   } else {
     if (!one_line_)
       out_ << std::string(indent_, ' ');

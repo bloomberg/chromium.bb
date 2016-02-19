@@ -50,6 +50,8 @@
         'copy_target_generator.h',
         'deps_iterator.cc',
         'deps_iterator.h',
+        'eclipse_writer.cc',
+        'eclipse_writer.h',
         'err.cc',
         'err.h',
         'escape.cc',

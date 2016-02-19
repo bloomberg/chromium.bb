@@ -10,6 +10,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "tools/gn/build_settings.h"
 #include "tools/gn/commands.h"
+#include "tools/gn/eclipse_writer.h"
 #include "tools/gn/ninja_target_writer.h"
 #include "tools/gn/ninja_writer.h"
 #include "tools/gn/runtime_deps.h"
@@ -26,6 +27,7 @@ namespace {
 
 const char kSwitchCheck[] = "check";
 const char kSwitchIde[] = "ide";
+const char kSwitchIdeValueEclipse[] = "eclipse";
 const char kSwitchIdeValueVs[] = "vs";
 
 // Called on worker thread to write the ninja file.
@@ -151,8 +153,16 @@ bool RunIdeWriter(const std::string& ide,
                   const BuildSettings* build_settings,
                   Builder* builder,
                   Err* err) {
-  if (ide == kSwitchIdeValueVs) {
-    base::ElapsedTimer timer;
+  base::ElapsedTimer timer;
+  if (ide == kSwitchIdeValueEclipse) {
+    bool res = EclipseWriter::RunAndWriteFile(build_settings, builder, err);
+    if (res) {
+      OutputString("Generating Eclipse settings took " +
+                   base::Int64ToString(timer.Elapsed().InMilliseconds()) +
+                   "ms\n");
+    }
+    return res;
+  } else if (ide == kSwitchIdeValueVs) {
     bool res =
         VisualStudioWriter::RunAndWriteFiles(build_settings, builder, err);
     if (res &&
@@ -189,8 +199,20 @@ const char kGen_Help[] =
     "  --ide=<ide_name>\n"
     "    Also generate files for an IDE. Currently supported values:\n"
     "      'vs' - Visual Studio project/solution files.\n"
+    "      'eclipse' - Eclipse CDT settings file.\n"
     "\n"
-    "  See \"gn help switches\" for the common command-line switches.\n";
+    "  See \"gn help switches\" for the common command-line switches.\n"
+    "\n"
+    "Eclipse IDE Support\n"
+    "\n"
+    "  GN DOES NOT generate Eclipse CDT projects. Instead, it generates a\n"
+    "  settings file which can be imported into an Eclipse CDT project. The\n"
+    "  XML file contains a list of include paths and defines. Because GN does\n"
+    "  not generate a full .cproject definition, it is not possible to\n"
+    "  properly define includes/defines for each file individually.\n"
+    "  Instead, one set of includes/defines is generated for the entire\n"
+    "  project. This works fairly well but may still result in a few indexer\n"
+    "  issues here and there.\n";
 
 int RunGen(const std::vector<std::string>& args) {
   base::ElapsedTimer timer;
