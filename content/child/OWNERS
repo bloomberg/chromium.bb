@@ -1,3 +1,6 @@
+# For Blink API usage
+esprehn@chromium.org
+
 per-file appcache*=michaeln@chromium.org
 
 # WebSocket
