@@ -323,9 +323,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
     force_bypass_cache_for_scripts_ = force_bypass_cache_for_scripts;
   }
 
-  bool skip_script_comparison() const { return skip_script_comparison_; }
-  void set_skip_script_comparison(bool skip_script_comparison) {
-    skip_script_comparison_ = skip_script_comparison;
+  bool pause_after_download() const { return pause_after_download_; }
+  void set_pause_after_download(bool pause_after_download) {
+    pause_after_download_ = pause_after_download;
   }
 
   void SetDevToolsAttached(bool attached);
@@ -708,7 +708,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   bool skip_waiting_ = false;
   bool skip_recording_startup_time_ = false;
   bool force_bypass_cache_for_scripts_ = false;
-  bool skip_script_comparison_ = false;
+  bool pause_after_download_ = false;
   bool is_update_scheduled_ = false;
   bool in_dtor_ = false;
 

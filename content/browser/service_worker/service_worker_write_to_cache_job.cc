@@ -41,16 +41,10 @@ const char kRedirectError[] =
     "The script resource is behind a redirect, which is disallowed.";
 const char kServiceWorkerAllowed[] = "Service-Worker-Allowed";
 
-// The net error code used when the job fails the update attempt because the new
-// script is byte-by-byte identical to the incumbent script. This error is shown
-// in DevTools and in netlog, so we want something obscure enough that it won't
-// conflict with a legitimate network error, and not too alarming if seen by
-// developers.
-// TODO(falken): Redesign this class so we don't have to fail at the network
-// stack layer just to cancel the update.
-const net::Error kIdenticalScriptError = net::ERR_FILE_EXISTS;
-
 }  // namespace
+
+const net::Error ServiceWorkerWriteToCacheJob::kIdenticalScriptError =
+    net::ERR_FILE_EXISTS;
 
 ServiceWorkerWriteToCacheJob::ServiceWorkerWriteToCacheJob(
     net::URLRequest* request,
@@ -468,8 +462,7 @@ net::Error ServiceWorkerWriteToCacheJob::NotifyFinishedCaching(
   // exists.
   if (status.status() == net::URLRequestStatus::SUCCESS &&
       !cache_writer_->did_replace()) {
-    result = kIdenticalScriptError;
-    status = net::URLRequestStatus::FromError(result);
+    status = net::URLRequestStatus::FromError(kIdenticalScriptError);
     version_->SetStartWorkerStatusCode(SERVICE_WORKER_ERROR_EXISTS);
     version_->script_cache_map()->NotifyFinishedCaching(url_, size, status,
                                                         std::string());
@@ -485,7 +478,7 @@ net::Error ServiceWorkerWriteToCacheJob::NotifyFinishedCaching(
 scoped_ptr<ServiceWorkerResponseReader>
 ServiceWorkerWriteToCacheJob::CreateCacheResponseReader() {
   if (incumbent_resource_id_ == kInvalidServiceWorkerResourceId ||
-      version_->skip_script_comparison()) {
+      !version_->pause_after_download()) {
     return nullptr;
   }
   return context_->storage()->CreateResponseReader(incumbent_resource_id_);
