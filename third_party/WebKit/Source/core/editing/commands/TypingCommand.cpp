@@ -208,40 +208,39 @@ void TypingCommand::insertText(Document& document, const String& text, const Vis
     applyTextInsertionCommand(frame.get(), cmd, selectionForInsertion, currentSelection);
 }
 
-void TypingCommand::insertLineBreak(Document& document, Options options, EditingState* editingState)
+bool TypingCommand::insertLineBreak(Document& document, Options options)
 {
     if (RefPtrWillBeRawPtr<TypingCommand> lastTypingCommand = lastTypingCommandIfStillOpenForTyping(document.frame())) {
         lastTypingCommand->setShouldRetainAutocorrectionIndicator(options & RetainAutocorrectionIndicator);
-        lastTypingCommand->insertLineBreak(editingState);
-        return;
+        EditingState editingState;
+        lastTypingCommand->insertLineBreak(&editingState);
+        return !editingState.isAborted();
     }
 
-    TypingCommand::create(document, InsertLineBreak, "", options)->apply();
+    return TypingCommand::create(document, InsertLineBreak, "", options)->apply();
 }
 
-void TypingCommand::insertParagraphSeparatorInQuotedContent(Document& document, EditingState* editingState)
+bool TypingCommand::insertParagraphSeparatorInQuotedContent(Document& document)
 {
     if (RefPtrWillBeRawPtr<TypingCommand> lastTypingCommand = lastTypingCommandIfStillOpenForTyping(document.frame())) {
-        lastTypingCommand->insertParagraphSeparatorInQuotedContent(editingState);
-        return;
+        EditingState editingState;
+        lastTypingCommand->insertParagraphSeparatorInQuotedContent(&editingState);
+        return !editingState.isAborted();
     }
 
-    // TODO(tkent): apply() should take an EditingState argument, or return a
-    // bool value.
-    TypingCommand::create(document, InsertParagraphSeparatorInQuotedContent)->apply();
+    return TypingCommand::create(document, InsertParagraphSeparatorInQuotedContent)->apply();
 }
 
-void TypingCommand::insertParagraphSeparator(Document& document, Options options, EditingState* editingState)
+bool TypingCommand::insertParagraphSeparator(Document& document, Options options)
 {
     if (RefPtrWillBeRawPtr<TypingCommand> lastTypingCommand = lastTypingCommandIfStillOpenForTyping(document.frame())) {
         lastTypingCommand->setShouldRetainAutocorrectionIndicator(options & RetainAutocorrectionIndicator);
-        lastTypingCommand->insertParagraphSeparator(editingState);
-        return;
+        EditingState editingState;
+        lastTypingCommand->insertParagraphSeparator(&editingState);
+        return !editingState.isAborted();
     }
 
-    // TODO(tkent): apply() should take an EditingState argument, or return a
-    // bool value.
-    TypingCommand::create(document, InsertParagraphSeparator, "", options)->apply();
+    return TypingCommand::create(document, InsertParagraphSeparator, "", options)->apply();
 }
 
 PassRefPtrWillBeRawPtr<TypingCommand> TypingCommand::lastTypingCommandIfStillOpenForTyping(LocalFrame* frame)

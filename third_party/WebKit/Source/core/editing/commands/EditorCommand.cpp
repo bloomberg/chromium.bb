@@ -198,8 +198,7 @@ static bool executeApplyParagraphStyle(LocalFrame& frame, EditorCommandSource so
 static bool executeInsertFragment(LocalFrame& frame, PassRefPtrWillBeRawPtr<DocumentFragment> fragment)
 {
     ASSERT(frame.document());
-    ReplaceSelectionCommand::create(*frame.document(), fragment, ReplaceSelectionCommand::PreventNesting, EditActionUnspecified)->apply();
-    return true;
+    return ReplaceSelectionCommand::create(*frame.document(), fragment, ReplaceSelectionCommand::PreventNesting, EditActionUnspecified)->apply();
 }
 
 static bool executeInsertElement(LocalFrame& frame, PassRefPtrWillBeRawPtr<HTMLElement> content)
@@ -324,8 +323,7 @@ static bool executeCreateLink(LocalFrame& frame, Event*, EditorCommandSource, co
     if (value.isEmpty())
         return false;
     ASSERT(frame.document());
-    CreateLinkCommand::create(*frame.document(), value)->apply();
-    return true;
+    return CreateLinkCommand::create(*frame.document(), value)->apply();
 }
 
 static bool executeCut(LocalFrame& frame, Event*, EditorCommandSource source, const String&)
@@ -518,8 +516,7 @@ static bool executeIgnoreSpelling(LocalFrame& frame, Event*, EditorCommandSource
 static bool executeIndent(LocalFrame& frame, Event*, EditorCommandSource, const String&)
 {
     ASSERT(frame.document());
-    IndentOutdentCommand::create(*frame.document(), IndentOutdentCommand::Indent)->apply();
-    return true;
+    return IndentOutdentCommand::create(*frame.document(), IndentOutdentCommand::Indent)->apply();
 }
 
 static bool executeInsertBacktab(LocalFrame& frame, Event* event, EditorCommandSource, const String&)
@@ -561,9 +558,7 @@ static bool executeInsertLineBreak(LocalFrame& frame, Event* event, EditorComman
         // InsertLineBreak is not implemented in IE or Firefox, so this behavior is only needed for
         // backward compatibility with ourselves, and for consistency with other commands.
         ASSERT(frame.document());
-        EditingState editingState;
-        TypingCommand::insertLineBreak(*frame.document(), 0, &editingState);
-        return !editingState.isAborted();
+        return TypingCommand::insertLineBreak(*frame.document(), 0);
     }
     ASSERT_NOT_REACHED();
     return false;
@@ -578,24 +573,19 @@ static bool executeInsertNewline(LocalFrame& frame, Event* event, EditorCommandS
 static bool executeInsertNewlineInQuotedContent(LocalFrame& frame, Event*, EditorCommandSource, const String&)
 {
     ASSERT(frame.document());
-    EditingState editingState;
-    TypingCommand::insertParagraphSeparatorInQuotedContent(*frame.document(), &editingState);
-    return !editingState.isAborted();
+    return TypingCommand::insertParagraphSeparatorInQuotedContent(*frame.document());
 }
 
 static bool executeInsertOrderedList(LocalFrame& frame, Event*, EditorCommandSource, const String&)
 {
     ASSERT(frame.document());
-    InsertListCommand::create(*frame.document(), InsertListCommand::OrderedList)->apply();
-    return true;
+    return InsertListCommand::create(*frame.document(), InsertListCommand::OrderedList)->apply();
 }
 
 static bool executeInsertParagraph(LocalFrame& frame, Event*, EditorCommandSource, const String&)
 {
     ASSERT(frame.document());
-    EditingState editingState;
-    TypingCommand::insertParagraphSeparator(*frame.document(), 0, &editingState);
-    return !editingState.isAborted();
+    return TypingCommand::insertParagraphSeparator(*frame.document(), 0);
 }
 
 static bool executeInsertTab(LocalFrame& frame, Event* event, EditorCommandSource, const String&)
@@ -613,8 +603,7 @@ static bool executeInsertText(LocalFrame& frame, Event*, EditorCommandSource, co
 static bool executeInsertUnorderedList(LocalFrame& frame, Event*, EditorCommandSource, const String&)
 {
     ASSERT(frame.document());
-    InsertListCommand::create(*frame.document(), InsertListCommand::UnorderedList)->apply();
-    return true;
+    return InsertListCommand::create(*frame.document(), InsertListCommand::UnorderedList)->apply();
 }
 
 static bool executeJustifyCenter(LocalFrame& frame, Event*, EditorCommandSource source, const String&)
@@ -962,8 +951,7 @@ static bool executeMoveToRightEndOfLineAndModifySelection(LocalFrame& frame, Eve
 static bool executeOutdent(LocalFrame& frame, Event*, EditorCommandSource, const String&)
 {
     ASSERT(frame.document());
-    IndentOutdentCommand::create(*frame.document(), IndentOutdentCommand::Outdent)->apply();
-    return true;
+    return IndentOutdentCommand::create(*frame.document(), IndentOutdentCommand::Outdent)->apply();
 }
 
 static bool executeToggleOverwrite(LocalFrame& frame, Event*, EditorCommandSource, const String&)
@@ -1183,8 +1171,7 @@ static bool executeUndo(LocalFrame& frame, Event*, EditorCommandSource, const St
 static bool executeUnlink(LocalFrame& frame, Event*, EditorCommandSource, const String&)
 {
     ASSERT(frame.document());
-    UnlinkCommand::create(*frame.document())->apply();
-    return true;
+    return UnlinkCommand::create(*frame.document())->apply();
 }
 
 static bool executeUnscript(LocalFrame& frame, Event*, EditorCommandSource source, const String&)

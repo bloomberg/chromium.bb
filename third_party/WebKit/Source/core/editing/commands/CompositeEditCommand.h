@@ -76,7 +76,8 @@ class CompositeEditCommand : public EditCommand {
 public:
     ~CompositeEditCommand() override;
 
-    void apply();
+    // Returns |false| if the command failed.  e.g. It's aborted.
+    bool apply();
     bool isFirstCommand(EditCommand* command) { return !m_commands.isEmpty() && m_commands.first() == command; }
     EditCommandComposition* composition() { return m_composition.get(); }
     EditCommandComposition* ensureComposition();

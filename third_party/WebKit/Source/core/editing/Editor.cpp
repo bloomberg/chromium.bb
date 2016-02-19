@@ -830,9 +830,7 @@ bool Editor::insertLineBreak()
     VisiblePosition caret = frame().selection().selection().visibleStart();
     bool alignToEdge = isEndOfEditableOrNonEditableContent(caret);
     ASSERT(frame().document());
-    EditingState editingState;
-    TypingCommand::insertLineBreak(*frame().document(), 0, &editingState);
-    if (editingState.isAborted())
+    if (!TypingCommand::insertLineBreak(*frame().document(), 0))
         return false;
     revealSelectionAfterEditingOperation(alignToEdge ? ScrollAlignment::alignToEdgeIfNeeded : ScrollAlignment::alignCenterIfNeeded);
 
@@ -851,8 +849,7 @@ bool Editor::insertParagraphSeparator()
     bool alignToEdge = isEndOfEditableOrNonEditableContent(caret);
     ASSERT(frame().document());
     EditingState editingState;
-    TypingCommand::insertParagraphSeparator(*frame().document(), 0, &editingState);
-    if (editingState.isAborted())
+    if (!TypingCommand::insertParagraphSeparator(*frame().document(), 0))
         return false;
     revealSelectionAfterEditingOperation(alignToEdge ? ScrollAlignment::alignToEdgeIfNeeded : ScrollAlignment::alignCenterIfNeeded);
 

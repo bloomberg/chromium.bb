@@ -62,10 +62,10 @@ public:
     static void forwardDeleteKeyPressed(Document&, EditingState*, Options = 0, TextGranularity = CharacterGranularity);
     static void insertText(Document&, const String&, Options, TextCompositionType = TextCompositionNone);
     static void insertText(Document&, const String&, const VisibleSelection&, Options, TextCompositionType = TextCompositionNone);
-    static void insertLineBreak(Document&, Options, EditingState*);
+    static bool insertLineBreak(Document&, Options);
     // TODO(tkent): |Options| argument should be removed. It's always 0.
-    static void insertParagraphSeparator(Document&, Options, EditingState*);
-    static void insertParagraphSeparatorInQuotedContent(Document&, EditingState*);
+    static bool insertParagraphSeparator(Document&, Options);
+    static bool insertParagraphSeparatorInQuotedContent(Document&);
     static void closeTyping(LocalFrame*);
 
     void insertText(const String &text, bool selectInsertedText, EditingState*);

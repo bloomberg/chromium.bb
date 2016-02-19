@@ -177,7 +177,7 @@ CompositeEditCommand::~CompositeEditCommand()
     ASSERT(isTopLevelCommand() || !m_composition);
 }
 
-void CompositeEditCommand::apply()
+bool CompositeEditCommand::apply()
 {
     if (!endingSelection().isContentRichlyEditable()) {
         switch (editingAction()) {
@@ -190,7 +190,7 @@ void CompositeEditCommand::apply()
             break;
         default:
             ASSERT_NOT_REACHED();
-            return;
+            return false;
         }
     }
     ensureComposition();
@@ -202,9 +202,9 @@ void CompositeEditCommand::apply()
 
     LocalFrame* frame = document().frame();
     ASSERT(frame);
+    EditingState editingState;
     {
         EventQueueScope eventQueueScope;
-        EditingState editingState;
         doApply(&editingState);
     }
 
@@ -213,6 +213,7 @@ void CompositeEditCommand::apply()
     if (!isTypingCommand())
         frame->editor().appliedEditing(this);
     setShouldRetainAutocorrectionIndicator(false);
+    return !editingState.isAborted();
 }
 
 EditCommandComposition* CompositeEditCommand::ensureComposition()
