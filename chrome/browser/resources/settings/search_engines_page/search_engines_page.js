@@ -6,14 +6,6 @@
  * @fileoverview 'settings-search-engines-page' is the settings page
  * containing search engines settings.
  *
- * Example:
- *
- *    <core-animated-pages>
- *      <settings-search-engines-page prefs="{{prefs}}">
- *      </settings-search-engines-page>
- *      ... other pages ...
- *    </core-animated-pages>
- *
  * @group Chrome Settings Elements
  * @element settings-search-engines-page
  */
@@ -33,47 +25,62 @@ Polymer({
       value: function() { return []; }
     },
 
-    /** @type {boolean} */
-    showAddSearchEngineDialog_: {
+    /** @private {boolean} */
+    showAddSearchEngineDialog_: Boolean,
+
+    /** @private {boolean} */
+    otherSearchEnginesExpanded_: {
       type: Boolean,
-      value: false,
+      value: true,
     },
   },
 
+  /**
+   * Holds WebUI listeners that need to be removed when this element is
+   * destroyed.
+   * TODO(dpapad): Move listener tracking logic to a Polymer behavior class,
+   * such that it can be re-used.
+   * @private {!Array<!WebUIListener>}
+   */
+  webUIListeners_: [],
+
   /** @override */
   ready: function() {
-    chrome.searchEnginesPrivate.onSearchEnginesChanged.addListener(
-        this.enginesChanged_.bind(this));
-    this.enginesChanged_();
+    settings.SearchEnginesBrowserProxyImpl.getInstance().
+        getSearchEnginesList().then(this.enginesChanged_.bind(this));
+    this.webUIListeners_.push(cr.addWebUIListener(
+        'search-engines-changed', this.enginesChanged_.bind(this)));
   },
 
-  /** @private */
-  enginesChanged_: function() {
-    chrome.searchEnginesPrivate.getSearchEngines(function(engines) {
-      this.defaultEngines = engines.filter(function(engine) {
-        return engine.type ==
-            chrome.searchEnginesPrivate.SearchEngineType.DEFAULT;
-      }, this);
+  /** @override */
+  detached: function() {
+    this.webUIListeners_.forEach(function(listener) {
+      cr.removeWebUIListener(listener);
+    });
+  },
 
-      this.otherEngines = engines.filter(function(engine) {
-        return engine.type ==
-            chrome.searchEnginesPrivate.SearchEngineType.OTHER;
-      }, this);
-    }.bind(this));
+  /**
+   * @param {!SearchEnginesInfo} searchEnginesInfo
+   * @private
+   */
+  enginesChanged_: function(searchEnginesInfo) {
+    this.defaultEngines = searchEnginesInfo['defaults'];
+    this.otherEngines = searchEnginesInfo['others'];
+    // TODO(dpapad): Use searchEnginesInfo['extensions'] once UI mocks are
+    // provided.
   },
 
   /** @private */
   onAddSearchEngineTap_: function() {
     this.showAddSearchEngineDialog_ = true;
     this.async(function() {
-      var dialog = this.$$('settings-add-search-engine-dialog');
+      var dialog = this.$$('settings-search-engine-dialog');
       // Register listener to detect when the dialog is closed. Flip the boolean
       // once closed to force a restamp next time it is shown such that the
       // previous dialog's contents are cleared.
       dialog.addEventListener('iron-overlay-closed', function() {
         this.showAddSearchEngineDialog_ = false;
       }.bind(this));
-      dialog.open();
     }.bind(this));
   },
 });

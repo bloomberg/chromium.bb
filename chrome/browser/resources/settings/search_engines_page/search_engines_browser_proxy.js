@@ -35,56 +35,84 @@ var SearchEngine;
 var SearchEnginesInfo;
 
 cr.define('settings', function() {
-  /** @constructor */
-  function SearchEnginesBrowserProxy() {};
-
-  // The singleton instance_ is replaced with a test version of this wrapper
-  // during testing.
-  cr.addSingletonGetter(SearchEnginesBrowserProxy);
+  /** @interface */
+  function SearchEnginesBrowserProxy() {}
 
   SearchEnginesBrowserProxy.prototype = {
     /** @param {number} modelIndex */
-    setDefaultSearchEngine: function(modelIndex) {
-      chrome.send('setDefaultSearchEngine', [modelIndex]);
-    },
+    setDefaultSearchEngine: function(modelIndex) {},
 
     /** @param {number} modelIndex */
-    removeSearchEngine: function(modelIndex) {
-      chrome.send('removeSearchEngine', [modelIndex]);
-    },
+    removeSearchEngine: function(modelIndex) {},
 
     /** @param {number} modelIndex */
-    searchEngineEditStarted: function(modelIndex) {
-      chrome.send('searchEngineEditStarted', [modelIndex]);
-    },
+    searchEngineEditStarted: function(modelIndex) {},
 
-    searchEngineEditCancelled: function() {
-      chrome.send('searchEngineEditCancelled');
-    },
+    searchEngineEditCancelled: function() {},
 
     /**
      * @param {string} searchEngine
      * @param {string} keyword
      * @param {string} queryUrl
      */
-    searchEngineEditCompleted: function(searchEngine, keyword, queryUrl) {
-      chrome.send('searchEngineEditCompleted', [
-        searchEngine, keyword, queryUrl,
-      ]);
-    },
+    searchEngineEditCompleted: function(searchEngine, keyword, queryUrl) {},
 
     /**
      * @return {!Promise<!SearchEnginesInfo>}
      */
-    getSearchEnginesList: function() {
-      return cr.sendWithPromise('getSearchEnginesList');
-    },
+    getSearchEnginesList: function() {},
 
     /**
      * @param {string} fieldName
      * @param {string} fieldValue
      * @return {!Promise<boolean>}
      */
+    validateSearchEngineInput: function(fieldName, fieldValue) {},
+  };
+
+  /**
+   * @constructor
+   * @implements {settings.SearchEnginesBrowserProxy}
+   */
+  function SearchEnginesBrowserProxyImpl() {}
+  // The singleton instance_ is replaced with a test version of this wrapper
+  // during testing.
+  cr.addSingletonGetter(SearchEnginesBrowserProxyImpl);
+
+  SearchEnginesBrowserProxyImpl.prototype = {
+    /** @override */
+    setDefaultSearchEngine: function(modelIndex) {
+      chrome.send('setDefaultSearchEngine', [modelIndex]);
+    },
+
+    /** @override */
+    removeSearchEngine: function(modelIndex) {
+      chrome.send('removeSearchEngine', [modelIndex]);
+    },
+
+    /** @override */
+    searchEngineEditStarted: function(modelIndex) {
+      chrome.send('searchEngineEditStarted', [modelIndex]);
+    },
+
+    /** @override */
+    searchEngineEditCancelled: function() {
+      chrome.send('searchEngineEditCancelled');
+    },
+
+    /** @override */
+    searchEngineEditCompleted: function(searchEngine, keyword, queryUrl) {
+      chrome.send('searchEngineEditCompleted', [
+        searchEngine, keyword, queryUrl,
+      ]);
+    },
+
+    /** @override */
+    getSearchEnginesList: function() {
+      return cr.sendWithPromise('getSearchEnginesList');
+    },
+
+    /** @override */
     validateSearchEngineInput: function(fieldName, fieldValue) {
       return cr.sendWithPromise(
           'validateSearchEngineInput', fieldName, fieldValue);
@@ -92,6 +120,6 @@ cr.define('settings', function() {
   };
 
   return {
-    SearchEnginesBrowserProxy: SearchEnginesBrowserProxy,
+    SearchEnginesBrowserProxyImpl: SearchEnginesBrowserProxyImpl,
   };
 });

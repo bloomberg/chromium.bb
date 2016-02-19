@@ -98,3 +98,30 @@ TEST_F('CrSettingsRtlTest', 'DrawerPanelFlips', function() {
   settings_rtl_tests.registerDrawerPanelTests();
   mocha.run();
 });
+
+/**
+ * Test fixture for chrome/browser/resources/settings/search_engines_page/.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+*/
+function CrSettingsSearchEnginesTest() {}
+
+CrSettingsSearchEnginesTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://md-settings/search_engines_page/search_engines_page.html',
+
+  /** @override */
+  extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
+    'search_engines_page_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsSearchEnginesTest', 'SearchEngines', function() {
+  settings_search_engines_page.registerDialogTests();
+  settings_search_engines_page.registerEntryTests();
+  settings_search_engines_page.registerPageTests();
+  mocha.run();
+});

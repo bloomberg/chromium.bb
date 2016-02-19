@@ -9,9 +9,9 @@
 
 .headers .name,
 .headers .keyword {
-  flex: 1;
+  flex: 3;
 }
 
 .headers .url {
-  flex: 3;
+  flex: 4.5;
 }

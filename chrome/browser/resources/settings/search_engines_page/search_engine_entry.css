@@ -4,7 +4,7 @@
 
 .name-column,
 .keyword-column {
-  flex: 2;
+  flex: 3;
 }
 
 .name-column {
@@ -12,7 +12,7 @@
 }
 
 .url-column {
-  flex: 5;
+  flex: 3.5;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -20,11 +20,13 @@
 
 .icon-container {
   flex: 1;
+  margin: auto;
   text-align: center;
 }
 
 .name {
   flex: 3;
+  margin: auto;
 }
 
 #container {

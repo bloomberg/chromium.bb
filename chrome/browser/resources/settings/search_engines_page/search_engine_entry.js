@@ -14,23 +14,48 @@ Polymer({
 
   properties: {
     /** @type {!SearchEngine} */
-    engine: Object
+    engine: Object,
+
+    /** @private {boolean} */
+    showEditSearchEngineDialog_: Boolean,
+  },
+
+  /** @private {!settings.SearchEnginesBrowserProxy} */
+  browserProxy_: null,
+
+  created: function() {
+    this.browserProxy_ = settings.SearchEnginesBrowserProxyImpl.getInstance();
   },
 
   /** @private */
   onDeleteTap_: function() {
-    chrome.searchEnginesPrivate.removeSearchEngine(this.engine.guid);
+    this.browserProxy_.removeSearchEngine(this.engine.modelIndex);
   },
 
   /** @private */
   onEditTap_: function() {
-    // TODO(dpapad): Implement edit mode.
+    this.closePopupMenu_();
+
+    this.showEditSearchEngineDialog_ = true;
+    this.async(function() {
+      var dialog = this.$$('settings-search-engine-dialog');
+      // Register listener to detect when the dialog is closed. Flip the boolean
+      // once closed to force a restamp next time it is shown such that the
+      // previous dialog's contents are cleared.
+      dialog.addEventListener('iron-overlay-closed', function() {
+        this.showEditSearchEngineDialog_ = false;
+      }.bind(this));
+    }.bind(this));
   },
 
   /** @private */
   onMakeDefaultTap_: function() {
-    chrome.searchEnginesPrivate.setSelectedSearchEngine(this.engine.guid);
-    var popupMenu = this.$$('iron-dropdown');
-    popupMenu.close();
+    this.closePopupMenu_();
+    this.browserProxy_.setDefaultSearchEngine(this.engine.modelIndex);
+  },
+
+  /** @private */
+  closePopupMenu_: function() {
+    this.$$('iron-dropdown').close();
   },
 });

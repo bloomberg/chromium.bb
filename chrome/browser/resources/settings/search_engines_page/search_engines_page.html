@@ -1,10 +1,12 @@
+<link rel="import" href="chrome://resources/html/polymer_config.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://md-settings/search_engines_page/add_search_engine_dialog.html">
+<link rel="import" href="chrome://md-settings/search_engines_page/search_engines_browser_proxy.html">
+<link rel="import" href="chrome://md-settings/search_engines_page/search_engine_dialog.html">
 <link rel="import" href="chrome://md-settings/search_engines_page/search_engines_list.html">
-<link rel="import" href="chrome://md-settings/reset_page/reset_profile_dialog.html">
 
 <dom-module id="settings-search-engines-page">
   <link rel="import" type="css" href="chrome://md-settings/settings_shared.css">
@@ -25,19 +27,19 @@
     <div class="settings-box">
       <paper-button class="link-button"
           i18n-content="searchEnginesAddSearchEngineLabel"
-          on-tap="onAddSearchEngineTap_"></paper-button>
+          on-tap="onAddSearchEngineTap_" id="addSearchEngine"></paper-button>
     </div>
     <template is="dom-if" if="[[showAddSearchEngineDialog_]]" restamp>
-      <settings-add-search-engine-dialog></settings-add-search-engine-dialog>
+      <settings-search-engine-dialog></settings-search-engine-dialog>
     </template>
     <div class="settings-box block">
       <div class="other-label-container">
         <span i18n-content="searchEnginesOtherLabel"></span>
-        <cr-expand-button expanded="{{otherSearchEnginesExpanded}}">
+        <cr-expand-button expanded="{{otherSearchEnginesExpanded_}}">
         </cr-expand-button>
       </div>
 
-      <iron-collapse id="collapse" opened=[[otherSearchEnginesExpanded]]>
+      <iron-collapse id="collapse" opened=[[otherSearchEnginesExpanded_]]>
         <settings-search-engines-list engines="[[otherEngines]]">
         </settings-search-engines-list>
       </iron-collapse>
