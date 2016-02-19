@@ -460,6 +460,25 @@ For example, some websites may respond to this request by showing you ads that a
       <message name="IDS_CAN_NOT_CLEAR_BROWSING_HISTORY_TOAST" desc="Message on the toast explaining that child account users can not clear their browsing history.">
         Browsing history can’t be cleared with accounts for kids
       </message>
+      <message name="IDS_CLEAR_BROWSING_DATA_PERIOD_TITLE" desc="Label of the dropdown that selects the time period for which browsing data will be deleted. This sentence can be followed by any option, such as 'Clear data from the past day' or 'Clear data from the past hour'.">
+        Clear data from the
+      </message>
+      <message name="IDS_CLEAR_BROWSING_DATA_PERIOD_HOUR" desc="The option to delete browsing data from the past hour. This is the direct object of the sentence 'Clear data from the past hour'.">
+        past hour
+      </message>
+      <message name="IDS_CLEAR_BROWSING_DATA_PERIOD_DAY" desc="The option to delete browsing data from the past day. This is the direct object of the sentence 'Clear data from the past day'.">
+        past day
+      </message>
+      <message name="IDS_CLEAR_BROWSING_DATA_PERIOD_WEEK" desc="The option to delete browsing data from the past week. This is the direct object of the sentence 'Clear data from the past week'.">
+        past week
+      </message>
+      <message name="IDS_CLEAR_BROWSING_DATA_PERIOD_FOUR_WEEKS" desc="The option to delete browsing data from the last 4 weeks. This is the direct object of the sentence 'Clear data from the last 4 weeks'.">
+        last 4 weeks
+      </message>
+      <message name="IDS_CLEAR_BROWSING_DATA_PERIOD_EVERYTHING" desc="The option to delete browsing data from the beginning of time. This is the direct object of the sentence 'Clear data from the beginning of time'.">
+        beginning of time
+      </message>
+
       <message name="IDS_USAGE_AND_CRASH_REPORTS_TITLE" desc="Title for 'Usage and crash reports' preference">
         Usage and crash reports
       </message>

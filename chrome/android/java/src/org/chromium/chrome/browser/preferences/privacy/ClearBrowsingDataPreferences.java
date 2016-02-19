@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.preferences.privacy;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
@@ -15,6 +16,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BrowsingDataType;
 import org.chromium.chrome.browser.preferences.ButtonPreference;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.preferences.SpinnerPreference;
 import org.chromium.chrome.browser.preferences.privacy.BrowsingDataCounterBridge.BrowsingDataCounterCallback;
 import org.chromium.sync.signin.ChromeSigninController;
 
@@ -27,7 +29,8 @@ import java.util.EnumSet;
  */
 public class ClearBrowsingDataPreferences extends PreferenceFragment
         implements PrefServiceBridge.OnClearBrowsingDataListener,
-                   Preference.OnPreferenceClickListener {
+                   Preference.OnPreferenceClickListener,
+                   Preference.OnPreferenceChangeListener{
     /**
      * Represents a single item in the dialog.
      */
@@ -91,6 +94,7 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
     private static final String PREF_BOOKMARKS = "clear_bookmarks_checkbox";
 
     private static final String PREF_SUMMARY = "summary";
+    private static final String PREF_TIME_RANGE = "time_period_spinner";
 
     /** The "Clear" button preference. Referenced in tests. */
     public static final String PREF_CLEAR_BUTTON = "clear_button";
@@ -127,6 +131,38 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
          */
         public String getPreferenceKey() {
             return mPreferenceKey;
+        }
+    }
+
+    /**
+     * An option to be shown in the time period spiner.
+     */
+    private static class TimePeriodSpinnerOption {
+        private int mTimePeriod;
+        private String mTitle;
+
+        /**
+         * Constructs this time period spinner option.
+         * @param timePeriod The time period represented as an int from the shared enum
+         *     {@link org.chromium.chrome.browser.TimePeriod}.
+         * @param title The text that will be used to represent this item in the spinner.
+         */
+        public TimePeriodSpinnerOption(int timePeriod, String title) {
+            mTimePeriod = timePeriod;
+            mTitle = title;
+        }
+
+        /**
+         * @return The time period represented as an int from the shared enum
+         *     {@link org.chromium.chrome.browser.TimePeriod}
+         */
+        public int getTimePeriod() {
+            return mTimePeriod;
+        }
+
+        @Override
+        public String toString() {
+            return mTitle;
         }
     }
 
@@ -181,6 +217,28 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
     }
 
     /**
+     * Returns the Array of time periods. Options are displayed in the same order as they appear
+     * in the array.
+     */
+    private TimePeriodSpinnerOption[] getTimePeriodSpinnerOptions() {
+        Activity activity = getActivity();
+
+        TimePeriodSpinnerOption[] options = new TimePeriodSpinnerOption[] {
+                new TimePeriodSpinnerOption(org.chromium.chrome.browser.TimePeriod.LAST_HOUR,
+                        activity.getString(R.string.clear_browsing_data_period_hour)),
+                new TimePeriodSpinnerOption(org.chromium.chrome.browser.TimePeriod.LAST_DAY,
+                        activity.getString(R.string.clear_browsing_data_period_day)),
+                new TimePeriodSpinnerOption(org.chromium.chrome.browser.TimePeriod.LAST_WEEK,
+                        activity.getString(R.string.clear_browsing_data_period_week)),
+                new TimePeriodSpinnerOption(org.chromium.chrome.browser.TimePeriod.FOUR_WEEKS,
+                        activity.getString(R.string.clear_browsing_data_period_four_weeks)),
+                new TimePeriodSpinnerOption(org.chromium.chrome.browser.TimePeriod.EVERYTHING,
+                        activity.getString(R.string.clear_browsing_data_period_everything))};
+
+        return options;
+    }
+
+    /**
      * Decides whether a given dialog option should be selected when the dialog is initialized.
      * @param option The option in question.
      * @return boolean Whether the given option should be preselected.
@@ -205,6 +263,16 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
         if (preference.getKey().equals(PREF_CLEAR_BUTTON)) {
             dismissProgressDialog();
             onOptionSelected();
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean onPreferenceChange(Preference preference, Object value) {
+        if (preference.getKey().equals(PREF_TIME_RANGE)) {
+            PrefServiceBridge.getInstance().setBrowsingDataDeletionTimePeriod(
+                    ((TimePeriodSpinnerOption) value).getTimePeriod());
             return true;
         }
         return false;
@@ -253,6 +321,22 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
         for (DialogOption option : unboundOptions) {
             getPreferenceScreen().removePreference(findPreference(option.getPreferenceKey()));
         }
+
+        // The time range selection spinner.
+        SpinnerPreference spinner = (SpinnerPreference) findPreference(PREF_TIME_RANGE);
+        spinner.setOnPreferenceChangeListener(this);
+        TimePeriodSpinnerOption[] spinnerOptions = getTimePeriodSpinnerOptions();
+        int selectedTimePeriod =
+                PrefServiceBridge.getInstance().getBrowsingDataDeletionTimePeriod();
+        int spinnerOptionIndex = -1;
+        for (int i = 0; i < spinnerOptions.length; ++i) {
+            if (spinnerOptions[i].getTimePeriod() == selectedTimePeriod) {
+                spinnerOptionIndex = i;
+                break;
+            }
+        }
+        assert spinnerOptionIndex != -1;
+        spinner.setOptions(spinnerOptions, spinnerOptionIndex);
 
         // The "Clear" button.
         ButtonPreference clearButton = (ButtonPreference) findPreference(PREF_CLEAR_BUTTON);

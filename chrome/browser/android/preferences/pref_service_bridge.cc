@@ -540,6 +540,21 @@ static void SetBrowsingDataDeletionPreference(
   GetOriginalProfile()->GetPrefs()->SetBoolean(pref, value);
 }
 
+static jint GetBrowsingDataDeletionTimePeriod(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  return GetPrefService()->GetInteger(prefs::kDeleteTimePeriod);
+}
+
+static void SetBrowsingDataDeletionTimePeriod(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jint time_period) {
+  DCHECK_GE(time_period, 0);
+  DCHECK_LE(time_period, BrowsingDataRemover::TIME_PERIOD_LAST);
+  GetPrefService()->SetInteger(prefs::kDeleteTimePeriod, time_period);
+}
+
 static void ClearBrowsingData(JNIEnv* env,
                               const JavaParamRef<jobject>& obj,
                               const JavaParamRef<jintArray>& data_types) {

@@ -62,12 +62,20 @@ class BrowsingDataRemover : public KeyedService
 {
  public:
   // Time period ranges available when doing browsing data removals.
+  // TODO(msramek): As this is now reused on Android, we should move it
+  // to browsing_data_counter_utils.h (and rename appropriately), so that
+  // all fundamental types related to browsing data on all platforms are in
+  // one place.
+  //
+  // A Java counterpart will be generated for this enum.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser
   enum TimePeriod {
     LAST_HOUR = 0,
     LAST_DAY,
     LAST_WEEK,
     FOUR_WEEKS,
-    EVERYTHING
+    EVERYTHING,
+    TIME_PERIOD_LAST = EVERYTHING
   };
 
   // Mask used for Remove.
