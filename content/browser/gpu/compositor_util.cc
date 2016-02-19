@@ -171,12 +171,6 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
 
 }  // namespace
 
-bool IsPropertyTreeVerificationEnabled() {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  return command_line.HasSwitch(cc::switches::kEnablePropertyTreeVerification);
-}
-
 int NumberOfRendererRasterThreads() {
   int num_processors = base::SysInfo::NumberOfProcessors();
 

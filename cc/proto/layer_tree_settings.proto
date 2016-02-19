@@ -62,8 +62,6 @@ message LayerTreeSettings {
   optional bool ignore_root_layer_flings = 39;
   optional uint32 scheduled_raster_task_limit = 40;
   optional bool use_occlusion_for_tile_prioritization = 41;
-  optional bool verify_property_trees = 42;
-  optional bool use_property_trees = 43;
   optional bool image_decode_tasks_enabled = 44;
   optional bool use_compositor_animation_timelines = 45;
   optional bool wait_for_beginframe_interval = 46;

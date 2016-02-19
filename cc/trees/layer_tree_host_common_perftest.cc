@@ -108,8 +108,6 @@ class CalcDrawPropsTest : public LayerTreeHostCommonPerfTest {
                                 LayerTreeImpl* active_tree,
                                 LayerTreeHostImpl* host_impl) {
     LayerImplList update_list;
-    bool verify_property_trees = false;
-    bool use_property_trees = true;
     active_tree->IncrementRenderSurfaceListIdForTesting();
     LayerTreeHostCommon::CalcDrawPropsImplInputs inputs(
         active_tree->root_layer(), active_tree->DrawViewportSize(),
@@ -124,8 +122,7 @@ class CalcDrawPropsTest : public LayerTreeHostCommonPerfTest {
         host_impl->settings().layers_always_allowed_lcd_text,
         can_render_to_separate_surface,
         host_impl->settings().layer_transforms_should_scale_layer_contents,
-        verify_property_trees, use_property_trees, &update_list,
-        active_tree->current_render_surface_list_id(),
+        &update_list, active_tree->current_render_surface_list_id(),
         active_tree->property_trees());
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
   }
@@ -229,12 +226,7 @@ TEST_F(BspTreePerfTest, LayerSorterCubes) {
 TEST_F(BspTreePerfTest, LayerSorterRubik) {
   SetTestName("layer_sort_rubik");
   ReadTestFile("layer_sort_rubik");
-  // TODO(vollick): Remove verify_property_trees setting after
-  // crbug.com/444219 is fixed.
-  bool old_verify_property_trees = verify_property_trees();
-  set_verify_property_trees(false);
   RunSortLayers();
-  set_verify_property_trees(old_verify_property_trees);
 }
 
 TEST_F(BspTreePerfTest, BspTreeCubes) {
@@ -248,12 +240,7 @@ TEST_F(BspTreePerfTest, BspTreeRubik) {
   SetTestName("bsp_tree_rubik");
   SetNumberOfDuplicates(1);
   ReadTestFile("layer_sort_rubik");
-  // TODO(vollick): Remove verify_property_trees setting after
-  // crbug.com/444219 is fixed.
-  bool old_verify_property_trees = verify_property_trees();
-  set_verify_property_trees(false);
   RunSortLayers();
-  set_verify_property_trees(old_verify_property_trees);
 }
 
 TEST_F(BspTreePerfTest, BspTreeCubes_2) {

@@ -26,7 +26,6 @@ class LayerTreeImplTest : public LayerTreeHostCommonTest {
   LayerTreeImplTest() : output_surface_(FakeOutputSurface::Create3d()) {
     LayerTreeSettings settings;
     settings.layer_transforms_should_scale_layer_contents = true;
-    settings.verify_property_trees = true;
     host_impl_.reset(new FakeLayerTreeHostImpl(settings, &task_runner_provider_,
                                                &shared_bitmap_manager_,
                                                &task_graph_runner_));
@@ -110,7 +109,6 @@ TEST_F(LayerTreeImplTest, UpdateViewportAndHitTest) {
   TestTaskGraphRunner task_graph_runner;
   FakeImplTaskRunnerProvider task_runner_provider;
   LayerTreeSettings settings;
-  settings.verify_property_trees = true;
   scoped_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
   scoped_ptr<FakeLayerTreeHostImpl> host_impl;
   host_impl.reset(new FakeLayerTreeHostImpl(settings, &task_runner_provider,

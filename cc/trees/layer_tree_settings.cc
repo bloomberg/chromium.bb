@@ -98,8 +98,6 @@ LayerTreeSettings::LayerTreeSettings()
       ignore_root_layer_flings(false),
       scheduled_raster_task_limit(32),
       use_occlusion_for_tile_prioritization(false),
-      verify_property_trees(false),
-      use_property_trees(true),
       image_decode_tasks_enabled(false),
       use_compositor_animation_timelines(true),
       wait_for_beginframe_interval(true),
@@ -166,8 +164,6 @@ bool LayerTreeSettings::operator==(const LayerTreeSettings& other) const {
          scheduled_raster_task_limit == other.scheduled_raster_task_limit &&
          use_occlusion_for_tile_prioritization ==
              other.use_occlusion_for_tile_prioritization &&
-         verify_property_trees == other.verify_property_trees &&
-         use_property_trees == other.use_property_trees &&
          image_decode_tasks_enabled == other.image_decode_tasks_enabled &&
          use_compositor_animation_timelines ==
              other.use_compositor_animation_timelines &&
@@ -231,8 +227,6 @@ void LayerTreeSettings::ToProtobuf(proto::LayerTreeSettings* proto) const {
   proto->set_scheduled_raster_task_limit(scheduled_raster_task_limit);
   proto->set_use_occlusion_for_tile_prioritization(
       use_occlusion_for_tile_prioritization);
-  proto->set_verify_property_trees(verify_property_trees);
-  proto->set_use_property_trees(use_property_trees);
   proto->set_image_decode_tasks_enabled(image_decode_tasks_enabled);
   proto->set_use_compositor_animation_timelines(
       use_compositor_animation_timelines);
@@ -300,8 +294,6 @@ void LayerTreeSettings::FromProtobuf(const proto::LayerTreeSettings& proto) {
   scheduled_raster_task_limit = proto.scheduled_raster_task_limit();
   use_occlusion_for_tile_prioritization =
       proto.use_occlusion_for_tile_prioritization();
-  verify_property_trees = proto.verify_property_trees();
-  use_property_trees = proto.use_property_trees();
   image_decode_tasks_enabled = proto.image_decode_tasks_enabled();
   use_compositor_animation_timelines =
       proto.use_compositor_animation_timelines();

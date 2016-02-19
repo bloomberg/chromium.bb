@@ -123,15 +123,6 @@ void RenderSurfaceImpl::SetContentRect(const gfx::Rect& content_rect) {
   content_rect_ = content_rect;
 }
 
-void RenderSurfaceImpl::SetContentRectFromPropertyTrees(
-    const gfx::Rect& content_rect) {
-  if (content_rect_from_property_trees_ == content_rect)
-    return;
-
-  surface_property_changed_ = true;
-  content_rect_from_property_trees_ = content_rect;
-}
-
 void RenderSurfaceImpl::SetAccumulatedContentRect(
     const gfx::Rect& content_rect) {
   accumulated_content_rect_ = content_rect;

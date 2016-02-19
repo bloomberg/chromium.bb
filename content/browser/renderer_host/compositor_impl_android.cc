@@ -354,8 +354,6 @@ void CompositorImpl::CreateLayerTreeHost() {
       command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking));
   settings.initial_debug_state.show_fps_counter =
       command_line->HasSwitch(cc::switches::kUIShowFPSCounter);
-  if (command_line->HasSwitch(cc::switches::kDisableCompositorPropertyTrees))
-    settings.use_property_trees = false;
   settings.single_thread_proxy_scheduler = true;
 
   settings.use_compositor_animation_timelines = !command_line->HasSwitch(

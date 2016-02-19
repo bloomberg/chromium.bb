@@ -42,7 +42,6 @@ void PopulateCommonLayerTreeSettings(cc::LayerTreeSettings* settings) {
 #endif
   settings->enable_elastic_overscroll = false;
   settings->image_decode_tasks_enabled = false;
-  settings->verify_property_trees = false;
   settings->single_thread_proxy_scheduler = false;
   settings->initial_debug_state.show_debug_borders = false;
   settings->initial_debug_state.show_fps_counter = false;

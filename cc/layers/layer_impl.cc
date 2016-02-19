@@ -1723,10 +1723,8 @@ void LayerImpl::SetHasRenderSurface(bool should_have_render_surface) {
 }
 
 gfx::Transform LayerImpl::DrawTransform() const {
-  // Only drawn layers have up-to-date draw properties when property trees are
-  // enabled.
-  if (layer_tree_impl()->settings().use_property_trees &&
-      !IsDrawnRenderSurfaceLayerListMember()) {
+  // Only drawn layers have up-to-date draw properties.
+  if (!IsDrawnRenderSurfaceLayerListMember()) {
     if (layer_tree_impl()->property_trees()->non_root_surfaces_enabled) {
       return DrawTransformFromPropertyTrees(
           this, layer_tree_impl()->property_trees()->transform_tree);
@@ -1740,10 +1738,8 @@ gfx::Transform LayerImpl::DrawTransform() const {
 }
 
 gfx::Transform LayerImpl::ScreenSpaceTransform() const {
-  // Only drawn layers have up-to-date draw properties when property trees are
-  // enabled.
-  if (layer_tree_impl()->settings().use_property_trees &&
-      !IsDrawnRenderSurfaceLayerListMember()) {
+  // Only drawn layers have up-to-date draw properties.
+  if (!IsDrawnRenderSurfaceLayerListMember()) {
     return ScreenSpaceTransformFromPropertyTrees(
         this, layer_tree_impl()->property_trees()->transform_tree);
   }
@@ -1777,13 +1773,9 @@ gfx::Rect LayerImpl::GetScaledEnclosingRectInTargetSpace(float scale) const {
 }
 
 bool LayerImpl::IsHidden() const {
-  if (layer_tree_impl()->settings().use_property_trees) {
-    EffectTree& effect_tree = layer_tree_impl_->property_trees()->effect_tree;
-    EffectNode* node = effect_tree.Node(effect_tree_index_);
-    return node->data.screen_space_opacity == 0.f;
-  } else {
-    return EffectiveOpacity() == 0.f || (parent() && parent()->IsHidden());
-  }
+  EffectTree& effect_tree = layer_tree_impl_->property_trees()->effect_tree;
+  EffectNode* node = effect_tree.Node(effect_tree_index_);
+  return node->data.screen_space_opacity == 0.f;
 }
 
 float LayerImpl::GetIdealContentsScale() const {

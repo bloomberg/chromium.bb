@@ -43,7 +43,6 @@ class LowResTilingsSettings : public LayerTreeSettingsForTesting {
  public:
   LowResTilingsSettings() {
     create_low_res_tiling = true;
-    verify_property_trees = true;
   }
 };
 

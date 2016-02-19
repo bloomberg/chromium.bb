@@ -45,21 +45,11 @@ const char kSlowDownRasterScaleFactor[] = "slow-down-raster-scale-factor";
 const char kStrictLayerPropertyChangeChecking[] =
     "strict-layer-property-change-checking";
 
-// Ensures that the draw properties computed via the property trees match those
-// computed by CalcDrawProperties.
-const char kEnablePropertyTreeVerification[] =
-    "enable-property-tree-verification";
-
 // Use a BeginFrame signal from browser to renderer to schedule rendering.
 const char kEnableBeginFrameScheduling[] = "enable-begin-frame-scheduling";
 
 // Enables the GPU benchmarking extension
 const char kEnableGpuBenchmarking[] = "enable-gpu-benchmarking";
-
-// Disables the use of property trees rather than CalcDrawProps for computing
-// draw properties.
-const char kDisableCompositorPropertyTrees[] =
-    "disable-compositor-property-trees";
 
 // Renders a border around compositor layers to help debug and study
 // layer compositing.

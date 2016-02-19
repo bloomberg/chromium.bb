@@ -1261,9 +1261,6 @@ StoragePartition* RenderProcessHostImpl::GetStoragePartition() const {
 }
 
 static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
-  if (IsPropertyTreeVerificationEnabled())
-    command_line->AppendSwitch(cc::switches::kEnablePropertyTreeVerification);
-
   command_line->AppendSwitchASCII(
       switches::kNumRasterThreads,
       base::IntToString(NumberOfRendererRasterThreads()));
@@ -1522,7 +1519,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     // also be added to chrome/browser/chromeos/login/chrome_restart_request.cc.
     cc::switches::kDisableCachedPictureRaster,
     cc::switches::kDisableCompositedAntialiasing,
-    cc::switches::kDisableCompositorPropertyTrees,
     cc::switches::kDisableMainFrameBeforeActivation,
     cc::switches::kDisableThreadedAnimation,
     cc::switches::kEnableBeginFrameScheduling,

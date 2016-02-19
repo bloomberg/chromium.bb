@@ -88,7 +88,6 @@ TEST(LayerTreeSettingsTest, AllMembersChanged) {
       settings.scheduled_raster_task_limit * 3 + 1;
   settings.use_occlusion_for_tile_prioritization =
       !settings.use_occlusion_for_tile_prioritization;
-  settings.use_property_trees = !settings.use_property_trees;
   settings.use_compositor_animation_timelines =
       !settings.use_compositor_animation_timelines;
   settings.wait_for_beginframe_interval =
@@ -149,7 +148,6 @@ TEST(LayerTreeSettingsTest, ArbitraryValues) {
   settings.ignore_root_layer_flings = true;
   settings.scheduled_raster_task_limit = 41;
   settings.use_occlusion_for_tile_prioritization = true;
-  settings.use_property_trees = true;
   settings.use_compositor_animation_timelines = true;
   settings.wait_for_beginframe_interval = true;
   settings.max_staging_buffer_usage_in_bytes = 70;

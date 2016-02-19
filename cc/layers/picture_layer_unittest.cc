@@ -145,7 +145,6 @@ TEST(PictureLayerTest, TestSerializationDeserialization) {
   FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
   TestTaskGraphRunner task_graph_runner;
   LayerTreeSettings settings;
-  settings.verify_property_trees = true;
   settings.use_compositor_animation_timelines = true;
   scoped_ptr<FakeImageSerializationProcessor>
       fake_image_serialization_processor =

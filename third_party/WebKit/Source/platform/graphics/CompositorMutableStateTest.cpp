@@ -36,7 +36,6 @@ public:
     {
         LayerTreeSettings settings;
         settings.layer_transforms_should_scale_layer_contents = true;
-        settings.verify_property_trees = true;
         m_hostImpl.reset(new FakeLayerTreeHostImpl(settings, &m_taskRunnerProvider, &m_sharedBitmapManager, &m_taskGraphRunner));
         m_hostImpl->SetVisible(true);
         EXPECT_TRUE(m_hostImpl->InitializeRenderer(m_outputSurface.get()));

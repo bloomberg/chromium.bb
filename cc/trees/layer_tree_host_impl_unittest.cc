@@ -112,7 +112,6 @@ class LayerTreeHostImplTest : public testing::Test,
     settings.renderer_settings.texture_id_allocation_chunk_size = 1;
     settings.gpu_rasterization_enabled = true;
     settings.use_compositor_animation_timelines = true;
-    settings.verify_property_trees = true;
     return settings;
   }
 
@@ -2728,7 +2727,6 @@ class LayerTreeHostImplTestScrollbarOpacity : public LayerTreeHostImplTest {
     settings.scrollbar_animator = animator;
     settings.scrollbar_fade_delay_ms = 20;
     settings.scrollbar_fade_duration_ms = 20;
-    settings.verify_property_trees = true;
     gfx::Size content_size(100, 100);
 
     CreateHostImpl(settings, CreateOutputSurface());
