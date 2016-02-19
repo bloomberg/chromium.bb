@@ -463,7 +463,7 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakePacket(
 scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeMultipleFramesPacket(
     const QuicPacketHeader& header,
     const QuicFrames& frames) {
-  QuicFramer framer(SupportedVersions(version_), QuicTime::Zero(),
+  QuicFramer framer(SupportedVersions(version_), clock_->Now(),
                     Perspective::IS_CLIENT);
   scoped_ptr<QuicPacket> packet(
       BuildUnsizedDataPacket(&framer, header, frames));

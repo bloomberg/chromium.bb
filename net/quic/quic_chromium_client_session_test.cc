@@ -64,7 +64,10 @@ class QuicChromiumClientSessionTest
             new SequencedSocketData(default_read_.get(), 1, nullptr, 0)),
         random_(0),
         helper_(base::ThreadTaskRunnerHandle::Get().get(), &clock_, &random_),
-        maker_(GetParam(), 0, &clock_, kServerHostname) {}
+        maker_(GetParam(), 0, &clock_, kServerHostname) {
+    // Advance the time, because timers do not like uninitialized times.
+    clock_.AdvanceTime(QuicTime::Delta::FromSeconds(1));
+  }
 
   void Initialize() {
     socket_factory_.AddSocketDataProvider(socket_data_.get());
@@ -95,8 +98,6 @@ class QuicChromiumClientSessionTest
         ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem"));
     verify_details_.cert_verify_result.verified_cert = cert;
     verify_details_.cert_verify_result.is_issued_by_known_root = true;
-    // Advance the time, because timers do not like uninitialized times.
-    clock_.AdvanceTime(QuicTime::Delta::FromSeconds(1));
     session_->Initialize();
     session_->StartReading();
   }
