@@ -1139,11 +1139,12 @@ DXVAVideoDecodeAccelerator::GetSupportedProfiles() {
 void DXVAVideoDecodeAccelerator::PreSandboxInitialization() {
   ::LoadLibrary(L"MFPlat.dll");
   ::LoadLibrary(L"msmpeg2vdec.dll");
+  ::LoadLibrary(L"mf.dll");
+  ::LoadLibrary(L"dxva2.dll");
 
   if (base::win::GetVersion() > base::win::VERSION_WIN7) {
     LoadLibrary(L"msvproc.dll");
   } else {
-    LoadLibrary(L"dxva2.dll");
 #if defined(ENABLE_DX11_FOR_WIN7)
     LoadLibrary(L"mshtmlmedia.dll");
 #endif
