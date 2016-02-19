@@ -6,7 +6,6 @@
 #define COMPONENTS_APP_MODAL_JAVASCRIPT_APP_MODAL_DIALOG_H_
 
 #include <map>
-#include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -21,7 +20,7 @@ class ChromeJavaScriptDialogExtraData {
  public:
   ChromeJavaScriptDialogExtraData();
 
-  // True if the user has already seen a JavaScript dialog from the origin.
+  // True if the user has already seen a JavaScript dialog from the WebContents.
   bool has_already_shown_a_dialog_;
 
   // True if the user has decided to block future JavaScript dialogs.
@@ -35,7 +34,7 @@ class ChromeJavaScriptDialogExtraData {
 // onbeforeunload dialog boxes.
 class JavaScriptAppModalDialog : public AppModalDialog {
  public:
-  typedef std::map<std::string, ChromeJavaScriptDialogExtraData> ExtraDataMap;
+  typedef std::map<void*, ChromeJavaScriptDialogExtraData> ExtraDataMap;
 
   JavaScriptAppModalDialog(
       content::WebContents* web_contents,
@@ -67,11 +66,6 @@ class JavaScriptAppModalDialog : public AppModalDialog {
   // its delegate instead of whatever the UI reports.
   void SetOverridePromptText(const base::string16& prompt_text);
 
-  // The serialized form of the origin of the last committed URL in
-  // |web_contents_|. See |extra_data_map_|.
-  static std::string GetSerializedOriginForWebContents(
-      content::WebContents* contents);
-
   // Accessors
   content::JavaScriptMessageType javascript_message_type() const {
     return javascript_message_type_;
@@ -90,8 +84,8 @@ class JavaScriptAppModalDialog : public AppModalDialog {
   void CallDialogClosedCallback(bool success,
                                 const base::string16& prompt_text);
 
-  // A map of extra Chrome-only data associated with the delegate_. The keys
-  // come from |GetSerializedOriginForWebContents|.
+  // A map of extra Chrome-only data associated with the delegate_. Can be
+  // inspected via |extra_data_map_[web_contents_]|.
   ExtraDataMap* extra_data_map_;
 
   // Information about the message box is held in the following variables.
