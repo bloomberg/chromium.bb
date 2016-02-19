@@ -487,12 +487,6 @@
       # See https://github.com/google/syzygy/wiki/SyzyASanHowTo
       'syzyasan%': 0,
 
-      # Enable crash reporting via Kasko.
-      'kasko%': 0,
-
-      # Enable hang reports in Kasko. Requires Kasko to be enabled.
-      'kasko_hang_reports%': 0,
-
       # Enable building with LSan (Clang's -fsanitize=leak option).
       # -fsanitize=leak only works with clang, but lsan=1 implies clang=1
       # See https://sites.google.com/a/chromium.org/dev/developers/testing/leaksanitizer
@@ -1056,7 +1050,18 @@
           # http://crbug.com/574476
           'fastbuild%': 2,
         }],
+
+        # Enable crash reporting via Kasko.
+        # TODO(pmonette): Remove browser hang reports within a day (2/19/2016).
+        ['OS=="win" and target_arch=="ia32" and branding=="Chrome"', {
+          'kasko%': 1,
+        }, {
+          'kasko%': 0,
+        }],
       ],
+
+      # Enable hang reports in Kasko. Requires Kasko to be enabled.
+      'kasko_hang_reports%': 1,
 
       # Setting this to '0' will cause V8's startup snapshot to be
       # embedded in the binary instead of being a external files.
@@ -2007,6 +2012,8 @@
           }],
           ['syzyasan==1', {
             'kasko%': 1,
+            # Disable hang reports for SyzyASAN builds.
+            'kasko_hang_reports': 0,
           }],
           ['component=="shared_library" and "<(GENERATOR)"=="ninja"', {
             # Only enabled by default for ninja because it's buggy in VS.
