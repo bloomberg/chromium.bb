@@ -85,6 +85,7 @@ class IPCSupportInitializer : public mojo::edk::ProcessDelegate {
 
 void IPCSupportInitializer::Init(
     scoped_refptr<base::TaskRunner> io_thread_task_runner) {
+  CHECK(io_thread_task_runner);
   base::AutoLock locker(lock_);
   DCHECK((init_count_ == 0 && !io_thread_task_runner_) ||
          io_thread_task_runner_ == io_thread_task_runner);
