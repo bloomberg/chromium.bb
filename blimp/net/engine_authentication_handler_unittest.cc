@@ -84,7 +84,7 @@ TEST_F(EngineAuthenticationHandlerTest, AuthenticationFailed) {
   net::TestCompletionCallback process_message_cb;
   incoming_message_processor_->ProcessMessage(std::move(blimp_message),
                                               process_message_cb.callback());
-  EXPECT_EQ(net::OK, process_message_cb.WaitForResult());
+  EXPECT_FALSE(process_message_cb.have_result());
 }
 
 TEST_F(EngineAuthenticationHandlerTest, WrongMessageReceived) {
@@ -96,7 +96,7 @@ TEST_F(EngineAuthenticationHandlerTest, WrongMessageReceived) {
   net::TestCompletionCallback process_message_cb;
   incoming_message_processor_->ProcessMessage(std::move(blimp_message),
                                               process_message_cb.callback());
-  EXPECT_EQ(net::OK, process_message_cb.WaitForResult());
+  EXPECT_FALSE(process_message_cb.have_result());
 }
 
 TEST_F(EngineAuthenticationHandlerTest, ConnectionError) {
