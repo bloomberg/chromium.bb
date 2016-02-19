@@ -564,7 +564,8 @@ bool ThreadState::shouldScheduleV8FollowupGC()
 
 bool ThreadState::shouldSchedulePageNavigationGC(float estimatedRemovalRatio)
 {
-    return judgeGCThreshold(1024 * 1024, 1.5 * (1 - estimatedRemovalRatio));
+    // TODO(keishi): Temporarily disabled to observe impact. crbug.com/588029
+    return false;
 }
 
 bool ThreadState::shouldForceConservativeGC()
