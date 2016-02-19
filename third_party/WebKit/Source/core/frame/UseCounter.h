@@ -786,7 +786,6 @@ public:
         // The above items are available in M46 branch.
 
         HTMLImportsHasStyleSheets = 940,
-        WebkitTextInColorProperty = 942,
         ClipPathOfPositionedElement = 944,
         ClipCssOfPositionedElement = 945,
         NetInfoType = 946,

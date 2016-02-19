@@ -67,7 +67,7 @@ Color TextLinkColors::colorFromCSSValue(const CSSValue& value, Color currentColo
     switch (valueID) {
     case 0:
         return Color();
-    case CSSValueWebkitText:
+    case CSSValueInternalQuirkInherit:
         return textColor();
     case CSSValueWebkitLink:
         return forVisitedLink ? visitedLinkColor() : linkColor();

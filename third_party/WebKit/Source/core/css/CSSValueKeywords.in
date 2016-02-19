@@ -188,8 +188,9 @@ windowtext
 currentcolor
 grey
 //
-// colors in non strict mode
--webkit-text mode=QuirksOrUASheet
+// Value used to implement the behavior in:
+// https://quirks.spec.whatwg.org/#the-tables-inherit-color-from-body-quirk
+-internal-quirk-inherit
 //
 // background-repeat
 //

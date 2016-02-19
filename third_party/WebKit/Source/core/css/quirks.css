@@ -38,7 +38,7 @@ table {
     font-size: medium;
     font-variant: normal;
     font-style: normal;
-    color: -webkit-text;
+    color: -internal-quirk-inherit;
     text-align: start;
 }
 

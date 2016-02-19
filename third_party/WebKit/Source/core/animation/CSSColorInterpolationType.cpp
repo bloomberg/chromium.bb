@@ -19,7 +19,7 @@ enum InterpolableColorIndex {
     Currentcolor,
     WebkitActivelink,
     WebkitLink,
-    WebkitText,
+    QuirkInherit,
     InterpolableColorIndexCount,
 };
 
@@ -42,7 +42,7 @@ PassOwnPtr<InterpolableValue> CSSColorInterpolationType::createInterpolableColor
     list->set(Currentcolor, InterpolableNumber::create(0));
     list->set(WebkitActivelink, InterpolableNumber::create(0));
     list->set(WebkitLink, InterpolableNumber::create(0));
-    list->set(WebkitText, InterpolableNumber::create(0));
+    list->set(QuirkInherit, InterpolableNumber::create(0));
     return list.release();
 }
 
@@ -55,8 +55,8 @@ PassOwnPtr<InterpolableValue> CSSColorInterpolationType::createInterpolableColor
         return createInterpolableColorForIndex(WebkitActivelink);
     case CSSValueWebkitLink:
         return createInterpolableColorForIndex(WebkitLink);
-    case CSSValueWebkitText:
-        return createInterpolableColorForIndex(WebkitText);
+    case CSSValueInternalQuirkInherit:
+        return createInterpolableColorForIndex(QuirkInherit);
     case CSSValueWebkitFocusRingColor:
         return createInterpolableColor(LayoutTheme::theme().focusRingColor());
     default:
@@ -119,8 +119,8 @@ Color CSSColorInterpolationType::resolveInterpolableColor(const InterpolableValu
         addPremultipliedColor(red, green, blue, alpha, webkitActivelinkFraction, colors.activeLinkColor());
     if (double webkitLinkFraction = toInterpolableNumber(list.get(WebkitLink))->value())
         addPremultipliedColor(red, green, blue, alpha, webkitLinkFraction, isVisited ? colors.visitedLinkColor() : colors.linkColor());
-    if (double webkitTextFraction = toInterpolableNumber(list.get(WebkitText))->value())
-        addPremultipliedColor(red, green, blue, alpha, webkitTextFraction, colors.textColor());
+    if (double quirkInheritFraction = toInterpolableNumber(list.get(QuirkInherit))->value())
+        addPremultipliedColor(red, green, blue, alpha, quirkInheritFraction, colors.textColor());
 
     alpha = clampTo<double>(alpha, 0, 255);
     if (alpha == 0)

@@ -144,7 +144,7 @@ bool CSSPrimitiveValue::colorIsDerivedFromElement() const
 {
     int valueID = getValueID();
     switch (valueID) {
-    case CSSValueWebkitText:
+    case CSSValueInternalQuirkInherit:
     case CSSValueWebkitLink:
     case CSSValueWebkitActivelink:
     case CSSValueCurrentcolor:

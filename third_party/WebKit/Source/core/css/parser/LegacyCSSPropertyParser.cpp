@@ -624,8 +624,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseColor(const CSSParserVa
     if (isColorKeyword(id)) {
         if (!isValueAllowedInMode(id, m_context.mode()))
             return nullptr;
-        if (id == CSSValueWebkitText && m_context.useCounter())
-            m_context.useCounter()->count(UseCounter::WebkitTextInColorProperty);
         return cssValuePool().createIdentifierValue(id);
     }
     RGBA32 c = Color::transparent;

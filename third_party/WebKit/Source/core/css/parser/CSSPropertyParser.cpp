@@ -155,9 +155,9 @@ bool CSSPropertyParser::isColorKeyword(CSSValueID id)
     //   '-internal-inactive-list-box-selection'
     //   '-internal-inactive-list-box-selection-text'
     //   '-webkit-focus-ring-color'
-    //   '-webkit-text'
+    //   '-internal-quirk-inherit'
     //
-    return (id >= CSSValueAqua && id <= CSSValueWebkitText)
+    return (id >= CSSValueAqua && id <= CSSValueInternalQuirkInherit)
         || (id >= CSSValueAliceblue && id <= CSSValueYellowgreen)
         || id == CSSValueMenu;
 }
