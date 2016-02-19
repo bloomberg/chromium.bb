@@ -90,7 +90,7 @@ public class LayoutManagerChrome
         @Override
         public void willAddTab(Tab tab, TabLaunchType type) {
             // Open the new tab
-            if (type == TabLaunchType.FROM_INSTANT || type == TabLaunchType.FROM_RESTORE) return;
+            if (type == TabLaunchType.FROM_RESTORE) return;
 
             tabCreating(getTabModelSelector().getCurrentTabId(), tab.getUrl(), tab.isIncognito());
         }
@@ -98,14 +98,13 @@ public class LayoutManagerChrome
         @Override
         public void didAddTab(Tab tab, TabLaunchType launchType) {
             int tabId = tab.getId();
-            if (launchType != TabLaunchType.FROM_INSTANT
-                    && launchType != TabLaunchType.FROM_RESTORE) {
+            if (launchType != TabLaunchType.FROM_RESTORE) {
                 boolean incognito = tab.isIncognito();
                 boolean willBeSelected = launchType != TabLaunchType.FROM_LONGPRESS_BACKGROUND
                         || (!getTabModelSelector().isIncognitoSelected() && incognito);
                 float lastTapX = LocalizationUtils.isLayoutRtl() ? mLastContentWidthDp : 0.f;
                 float lastTapY = 0.f;
-                if (launchType != TabLaunchType.FROM_MENU_OR_OVERVIEW) {
+                if (launchType != TabLaunchType.FROM_CHROME_UI) {
                     float heightDelta =
                             mLastFullscreenViewportDp.height() - mLastVisibleViewportDp.height();
                     lastTapX = mPxToDp * mLastTapX;

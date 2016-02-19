@@ -192,7 +192,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
                 TabCreator tabCreator = getActivity().getCurrentTabCreator();
                 tabs[0] = tabCreator.createNewTab(
                         new LoadUrlParams(mTestServer.getURL(FILE_PATH)),
-                                TabLaunchType.FROM_KEYBOARD, null);
+                                TabLaunchType.FROM_CHROME_UI, null);
                 // Background tab.
                 tabs[1] = tabCreator.createNewTab(
                         new LoadUrlParams(mTestServer.getURL(FILE_PATH)),
@@ -263,7 +263,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
                 TabCreator tabCreator = getActivity().getCurrentTabCreator();
                 tabs[0] = tabCreator.createNewTab(
                         new LoadUrlParams(mTestServer.getURL(FILE_PATH)),
-                                TabLaunchType.FROM_KEYBOARD, null);
+                                TabLaunchType.FROM_CHROME_UI, null);
                 // Background tab.
                 tabs[1] = tabCreator.createNewTab(
                         new LoadUrlParams(mTestServer.getURL(FILE_PATH)),
@@ -368,7 +368,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
                         TabCreator tabCreator = getActivity().getCurrentTabCreator();
                         return tabCreator.createNewTab(
                                 new LoadUrlParams(mTestServer.getURL(FILE_PATH)),
-                                        TabLaunchType.FROM_KEYBOARD, null);
+                                        TabLaunchType.FROM_CHROME_UI, null);
                     }
                 });
         ChromeTabUtils.waitForTabPageLoaded(tab, mTestServer.getURL(FILE_PATH));
@@ -442,7 +442,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
                         TabCreator tabCreator = getActivity().getCurrentTabCreator();
                         return tabCreator.createNewTab(
                                 new LoadUrlParams(mTestServer.getURL(FILE_PATH)),
-                                        TabLaunchType.FROM_KEYBOARD, null);
+                                        TabLaunchType.FROM_CHROME_UI, null);
                     }});
         ChromeTabUtils.waitForTabPageLoaded(fgTab, mTestServer.getURL(FILE_PATH));
         int initialNavigationPid = getRenderProcessId(fgTab);
@@ -504,10 +504,10 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
             public void run() {
                 // Foreground tab.
                 tabs[0] = tabCreator.createNewTab(
-                        new LoadUrlParams("about:blank"), TabLaunchType.FROM_KEYBOARD, null);
+                        new LoadUrlParams("about:blank"), TabLaunchType.FROM_CHROME_UI, null);
                 // Background tab.
                 tabs[1] = tabCreator.createNewTab(
-                        new LoadUrlParams("about:blank"), TabLaunchType.FROM_KEYBOARD, null);
+                        new LoadUrlParams("about:blank"), TabLaunchType.FROM_CHROME_UI, null);
             }
         });
         ChromeTabUtils.waitForTabPageLoaded(tabs[0], "about:blank");
@@ -520,7 +520,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
             public void run() {
                 // Foreground tab.
                 tabs[2] = tabCreator.createNewTab(
-                        new LoadUrlParams("about:blank"), TabLaunchType.FROM_KEYBOARD, null);
+                        new LoadUrlParams("about:blank"), TabLaunchType.FROM_CHROME_UI, null);
             }
         });
         ChromeTabUtils.waitForTabPageLoaded(tabs[2], "about:blank");

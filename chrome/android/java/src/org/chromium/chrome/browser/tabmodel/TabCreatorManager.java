@@ -90,7 +90,7 @@ public interface TabCreatorManager {
         public final void launchNTP() {
             try {
                 TraceEvent.begin("TabCreator.launchNTP");
-                launchUrl(UrlConstants.NTP_URL, TabModel.TabLaunchType.FROM_MENU_OR_OVERVIEW);
+                launchUrl(UrlConstants.NTP_URL, TabModel.TabLaunchType.FROM_CHROME_UI);
             } finally {
                 TraceEvent.end("TabCreator.launchNTP");
             }

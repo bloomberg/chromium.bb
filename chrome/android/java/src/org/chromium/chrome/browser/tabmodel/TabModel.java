@@ -8,37 +8,63 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 
 /**
- * TabModel organizes all the open tabs and allows you to create new ones. There are two TabModels
- * in the app at this time: normal and incognito. More could be added to allow for windows or
- * something.
+ * TabModel organizes all the open tabs and allows you to create new ones.  Regular and Incognito
+ * tabs are kept in different TabModels.
  */
 public interface TabModel extends TabList {
     /**
      * A list of the various ways tabs can be launched.
      */
     public enum TabLaunchType {
-        FROM_LINK,             // Opened from a link.
-        FROM_EXTERNAL_APP,     // Opened by and external app.
-        FROM_MENU_OR_OVERVIEW, // Opened from the options menu or the tab stack overview.
-        FROM_RESTORE,          // Opened after restoring state from storage.
-        // Opened from the long press menu. Like FROM_MENU but also sets up a parent/child
-        // relationship like FROM_LINK. FOREGROUND and BACKGROUND indicates whether the current tab
-        // should be automatically switched to the new tab or not.
+        /**
+         * Opened from a link.  Sets up a relationship between the newly created tab and its parent.
+         */
+        FROM_LINK,
+
+        /** Opened by an external app. */
+        FROM_EXTERNAL_APP,
+
+        /**
+         * Catch-all for Tabs opened by Chrome UI not covered by more specific TabLaunchTypes.
+         * Examples include:
+         * - Tabs created by the options menu.
+         * - Tabs created via the New Tab button in the tab stack overview.
+         * - Tabs created via Push Notifications.
+         * - Tabs opened via a keyboard shortcut.
+         */
+        FROM_CHROME_UI,
+
+        /** Opened during the restoration process on startup. */
+        FROM_RESTORE,
+
+        /**
+         * Opened from the long press context menu.  Will be brought to the foreground.
+         * Like FROM_CHROME_UI, but also sets up a parent/child relationship like FROM_LINK.
+         */
         FROM_LONGPRESS_FOREGROUND,
-        FROM_LONGPRESS_BACKGROUND,
-        FROM_INSTANT,          // Tab was created by instant.
-        FROM_KEYBOARD          // Opened from a physical keyboard via shortcut.
+
+        /**
+         * Opened from the long press context menu.  Will not be brought to the foreground.
+         * Like FROM_CHROME_UI, but also sets up a parent/child relationship like FROM_LINK.
+         */
+        FROM_LONGPRESS_BACKGROUND
     }
 
     /**
-     * A list of the various ways tabs can eb selected.
+     * A list of the various ways tabs can be selected.
      */
     public enum TabSelectionType {
-        FROM_CLOSE, // Selection of adjacent tab when the active tab is closed in foreground.
-        FROM_EXIT,  // Selection of adjacent tab when the active tab is closed upon app exit.
-        FROM_NEW,   // Selection of newly created tab (e.g. for a url intent or NTP).
-        FROM_USER   // User-originated switch to existing tab or selection of main tab on app
-                    // startup.
+        /** Selection of adjacent tab when the active tab is closed in foreground. */
+        FROM_CLOSE,
+
+        /** Selection of adjacent tab when the active tab is closed upon app exit. */
+        FROM_EXIT,
+
+        /** Selection of newly created tab (e.g. for a URL intent or NTP). */
+        FROM_NEW,
+
+        /** User-originated switch to existing tab or selection of main tab on app startup. */
+        FROM_USER
     }
 
     /**

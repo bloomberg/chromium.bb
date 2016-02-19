@@ -579,7 +579,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     private void createInitialTab() {
         String url = HomepageManager.getHomepageUri(getApplicationContext());
         if (TextUtils.isEmpty(url)) url = UrlConstants.NTP_URL;
-        getTabCreator(false).launchUrl(url, TabLaunchType.FROM_MENU_OR_OVERVIEW);
+        getTabCreator(false).launchUrl(url, TabLaunchType.FROM_CHROME_UI);
     }
 
     @Override
@@ -610,7 +610,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                 // TODO(dfalcantara): Use real tab reparenting here when possible.  We should fall
                 //                    back to using the TabState file or URL, in that order.
                 getTabCreator(false).createNewTab(new LoadUrlParams(
-                        data.getDataString()), TabLaunchType.FROM_MENU_OR_OVERVIEW, null);
+                        data.getDataString()), TabLaunchType.FROM_CHROME_UI, null);
             } else if ((resultCode == CustomTabActivity.RESULT_BACK_PRESSED
                     || resultCode == CustomTabActivity.RESULT_CLOSED) && data != null) {
                 Log.d(TAG, "Herb: Sending app to the background");
@@ -725,7 +725,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                             // Used by the Account management screen to open a new incognito tab.
                             // Account management screen collects its metrics separately.
                             getTabCreator(true).launchUrl(
-                                    UrlConstants.NTP_URL, TabLaunchType.FROM_MENU_OR_OVERVIEW);
+                                    UrlConstants.NTP_URL, TabLaunchType.FROM_CHROME_UI);
                         } else {
                             getTabCreator(true).launchUrl(
                                     UrlConstants.NTP_URL, TabLaunchType.FROM_EXTERNAL_APP);
@@ -970,8 +970,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         final Tab currentTab = getActivityTab();
         if (id == R.id.new_tab_menu_id) {
             Tab launchedTab = getTabCreator(false).launchUrl(
-                    UrlConstants.NTP_URL,
-                    fromMenu ? TabLaunchType.FROM_MENU_OR_OVERVIEW : TabLaunchType.FROM_KEYBOARD);
+                    UrlConstants.NTP_URL, TabLaunchType.FROM_CHROME_UI);
             RecordUserAction.record("MobileMenuNewTab");
             RecordUserAction.record("MobileNewTabOpened");
             if (isTablet() && !fromMenu && !launchedTab.isHidden()) {
@@ -984,9 +983,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                 RecordUserAction.record("MobileMenuNewIncognitoTab");
                 RecordUserAction.record("MobileNewTabOpened");
                 Tab launchedTab = getTabCreator(true).launchUrl(
-                        UrlConstants.NTP_URL,
-                        fromMenu ? TabLaunchType.FROM_MENU_OR_OVERVIEW
-                                : TabLaunchType.FROM_KEYBOARD);
+                        UrlConstants.NTP_URL, TabLaunchType.FROM_CHROME_UI);
                 if (isTablet() && !fromMenu && !launchedTab.isHidden()) {
                     getToolbarManager().setUrlBarFocus(true);
                 }
@@ -1101,7 +1098,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         // If the current tab url is HELP_URL, then the back button should close the tab to
         // get back to the previous state. The reason for startsWith check is that the
         // actual redirected URL is a different system language based help url.
-        if (type == TabLaunchType.FROM_MENU_OR_OVERVIEW && helpUrl) {
+        if (type == TabLaunchType.FROM_CHROME_UI && helpUrl) {
             getCurrentTabModel().closeTab(currentTab);
             Log.i(TAG, "handleBackPressedWithoutBackStack() - help url");
             return true;

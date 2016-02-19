@@ -781,7 +781,7 @@ public class DocumentActivity extends ChromeActivity {
         if (hasTabState) return TabLaunchType.FROM_RESTORE;
         if (isAffiliated) return TabLaunchType.FROM_LONGPRESS_BACKGROUND;
         if (!TextUtils.isEmpty(url) && url.equals(UrlConstants.NTP_URL)) {
-            return TabLaunchType.FROM_MENU_OR_OVERVIEW;
+            return TabLaunchType.FROM_CHROME_UI;
         }
         return TabLaunchType.FROM_EXTERNAL_APP;
     }
@@ -792,7 +792,7 @@ public class DocumentActivity extends ChromeActivity {
                 new AsyncTabCreationParams(new LoadUrlParams(searchUrl, PageTransition.LINK));
         asyncParams.setDocumentStartedBy(DocumentMetricIds.STARTED_BY_CONTEXTUAL_SEARCH);
         getTabCreator(false).createNewTab(
-                asyncParams, TabLaunchType.FROM_MENU_OR_OVERVIEW, getActivityTab().getId());
+                asyncParams, TabLaunchType.FROM_CHROME_UI, getActivityTab().getId());
     }
 
     @Override

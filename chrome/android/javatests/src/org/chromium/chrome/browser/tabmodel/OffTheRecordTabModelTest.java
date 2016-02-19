@@ -37,7 +37,7 @@ public class OffTheRecordTabModelTest extends ChromeTabbedActivityTestBase {
             @Override
             public void run() {
                 getActivity().getTabCreator(true).createNewTab(new LoadUrlParams("about:blank"),
-                        TabLaunchType.FROM_MENU_OR_OVERVIEW, null);
+                        TabLaunchType.FROM_CHROME_UI, null);
             }
         });
     }

@@ -293,10 +293,9 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
             case FROM_LINK:
             case FROM_EXTERNAL_APP:
                 return PageTransition.LINK | PageTransition.FROM_API;
-            case FROM_MENU_OR_OVERVIEW:
+            case FROM_CHROME_UI:
             case FROM_LONGPRESS_FOREGROUND:
             case FROM_LONGPRESS_BACKGROUND:
-            case FROM_KEYBOARD:
                 return PageTransition.AUTO_TOPLEVEL;
             default:
                 assert false;

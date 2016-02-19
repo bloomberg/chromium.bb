@@ -141,7 +141,7 @@ public abstract class FullScreenActivity extends ChromeActivity {
 
         if (tab == null) {
             tab = new Tab(Tab.INVALID_TAB_ID, Tab.INVALID_TAB_ID, false, this, getWindowAndroid(),
-                    TabLaunchType.FROM_MENU_OR_OVERVIEW, null, null);
+                    TabLaunchType.FROM_CHROME_UI, null, null);
         }
 
         tab.initialize(null, getTabContentManager(), createTabDelegateFactory(), false, unfreeze);

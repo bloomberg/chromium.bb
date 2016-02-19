@@ -116,7 +116,7 @@ public class TabDelegate extends TabCreator {
         } else if (type == TabLaunchType.FROM_LONGPRESS_BACKGROUND
                 || type == TabLaunchType.FROM_LONGPRESS_FOREGROUND) {
             asyncParams.setDocumentStartedBy(DocumentMetricIds.STARTED_BY_CONTEXT_MENU);
-        } else if (type == TabLaunchType.FROM_MENU_OR_OVERVIEW) {
+        } else if (type == TabLaunchType.FROM_CHROME_UI) {
             asyncParams.setDocumentStartedBy(DocumentMetricIds.STARTED_BY_OPTIONS_MENU);
         }
 

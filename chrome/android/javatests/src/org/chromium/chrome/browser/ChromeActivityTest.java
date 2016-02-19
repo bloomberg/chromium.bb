@@ -60,7 +60,7 @@ public class ChromeActivityTest extends ChromeTabbedActivityTestBase {
                 ChromeTabCreator tabCreator = getActivity().getCurrentTabCreator();
                 tabs[0] = tabCreator.createNewTab(
                         new LoadUrlParams(mTestServer.getURL(FILE_PATH)),
-                                TabLaunchType.FROM_KEYBOARD, null);
+                                TabLaunchType.FROM_CHROME_UI, null);
                 // Background tab.
                 tabs[1] = tabCreator.createNewTab(
                         new LoadUrlParams(mTestServer.getURL(FILE_PATH)),
