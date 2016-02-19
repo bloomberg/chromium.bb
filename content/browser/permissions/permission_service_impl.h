@@ -74,11 +74,9 @@ class PermissionServiceImpl : public PermissionService {
                      const PermissionStatusCallback& callback) override;
   void RequestPermission(PermissionName permission,
                          const mojo::String& origin,
-                         bool user_gesture,
                          const PermissionStatusCallback& callback) override;
   void RequestPermissions(mojo::Array<PermissionName> permissions,
                           const mojo::String& origin,
-                          bool user_gesture,
                           const PermissionsStatusCallback& callback) override;
   void RevokePermission(PermissionName permission,
                         const mojo::String& origin,

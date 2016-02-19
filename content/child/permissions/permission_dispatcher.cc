@@ -12,7 +12,6 @@
 #include "content/public/common/service_registry.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/modules/permissions/WebPermissionObserver.h"
-#include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 
 using blink::WebPermissionObserver;
 
@@ -268,7 +267,6 @@ void PermissionDispatcher::RequestPermissionInternal(
   GetPermissionServicePtr()->RequestPermission(
       GetPermissionName(type),
       origin,
-      blink::WebUserGestureIndicator::isProcessingUserGesture(),
       base::Bind(&PermissionDispatcher::OnPermissionResponse,
                  base::Unretained(this),
                  worker_thread_id,
@@ -294,7 +292,6 @@ void PermissionDispatcher::RequestPermissionsInternal(
 
   GetPermissionServicePtr()->RequestPermissions(
       std::move(names), origin,
-      blink::WebUserGestureIndicator::isProcessingUserGesture(),
       base::Bind(&PermissionDispatcher::OnRequestPermissionsResponse,
                  base::Unretained(this), worker_thread_id, callback_key));
 }

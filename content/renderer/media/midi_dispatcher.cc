@@ -9,7 +9,6 @@
 #include "content/public/renderer/render_frame.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/modules/webmidi/WebMIDIOptions.h"
 #include "third_party/WebKit/public/web/modules/webmidi/WebMIDIPermissionRequest.h"
 
@@ -42,7 +41,6 @@ void MidiDispatcher::requestPermission(const WebMIDIPermissionRequest& request,
 
   permission_service_->RequestPermission(
       permission_name, request.securityOrigin().toString().utf8(),
-      blink::WebUserGestureIndicator::isProcessingUserGesture(),
       base::Bind(&MidiDispatcher::OnPermissionSet, base::Unretained(this),
                  permission_request_id));
 }

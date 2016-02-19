@@ -24,9 +24,9 @@ enum PermissionName {
 interface PermissionService {
   HasPermission(PermissionName permission, string origin)
     => (PermissionStatus status);
-  RequestPermission(PermissionName permission, string origin, bool user_gesture)
+  RequestPermission(PermissionName permission, string origin)
     => (PermissionStatus status);
-  RequestPermissions(array<PermissionName> permission, string origin, bool user_gesture)
+  RequestPermissions(array<PermissionName> permission, string origin)
     => (array<PermissionStatus> statuses);
   RevokePermission(PermissionName permission, string origin)
     => (PermissionStatus status);

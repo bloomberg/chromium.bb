@@ -109,7 +109,6 @@ void PermissionServiceImpl::OnConnectionError() {
 void PermissionServiceImpl::RequestPermission(
     PermissionName permission,
     const mojo::String& origin,
-    bool user_gesture,
     const PermissionStatusCallback& callback) {
   // This condition is valid if the call is coming from a ChildThread instead of
   // a RenderFrame. Some consumers of the service run in Workers and some in
@@ -155,7 +154,6 @@ void PermissionServiceImpl::OnRequestPermissionResponse(
 void PermissionServiceImpl::RequestPermissions(
     mojo::Array<PermissionName> permissions,
     const mojo::String& origin,
-    bool user_gesture,
     const PermissionsStatusCallback& callback) {
   if (permissions.is_null()) {
     callback.Run(mojo::Array<PermissionStatus>());

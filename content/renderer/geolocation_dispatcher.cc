@@ -12,7 +12,6 @@
 #include "third_party/WebKit/public/web/WebGeolocationClient.h"
 #include "third_party/WebKit/public/web/WebGeolocationPosition.h"
 #include "third_party/WebKit/public/web/WebGeolocationError.h"
-#include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 
 using blink::WebGeolocationController;
 using blink::WebGeolocationError;
@@ -83,7 +82,6 @@ void GeolocationDispatcher::requestPermission(
   permission_service_->RequestPermission(
       PermissionName::GEOLOCATION,
       permissionRequest.securityOrigin().toString().utf8(),
-      blink::WebUserGestureIndicator::isProcessingUserGesture(),
       base::Bind(&GeolocationDispatcher::OnPermissionSet,
                  base::Unretained(this), permission_request_id));
 }

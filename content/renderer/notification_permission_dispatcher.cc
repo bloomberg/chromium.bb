@@ -11,7 +11,6 @@
 #include "content/public/renderer/render_frame.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/modules/notifications/WebNotificationPermissionCallback.h"
 
 using blink::WebNotificationPermissionCallback;
@@ -38,7 +37,6 @@ void NotificationPermissionDispatcher::RequestPermission(
   // callbacks, will be deleted before the "this" instance is deleted.
   permission_service_->RequestPermission(
       PermissionName::NOTIFICATIONS, origin.toString().utf8(),
-      blink::WebUserGestureIndicator::isProcessingUserGesture(),
       base::Bind(&NotificationPermissionDispatcher::OnPermissionRequestComplete,
                  base::Unretained(this),
                  base::Passed(std::move(owned_callback))));
