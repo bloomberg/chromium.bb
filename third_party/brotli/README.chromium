@@ -1,6 +1,6 @@
 Name: Brotli
 URL: https://github.com/google/brotli
-Version: 24ffa78414663b545b66be392caff7eb5574a62c
+Version: 722f8996b05bdec7c375462f9139e72ed33e3c85
 License: MIT
 License File: LICENSE
 Security Critical: yes
@@ -16,4 +16,3 @@ Local Modifications:
 - .gitignore: Added.
 - BUILD.gn: Added.
 - brotli.gyp: Added.
-- Cherry-picked 37a320dd81db8d546cd24a45b4c61d87b45dcade (04 Feb 2016)

@@ -24,8 +24,6 @@
         'dec/prefix.h',
         'dec/state.c',
         'dec/state.h',
-        'dec/streams.c',
-        'dec/streams.h',
         'dec/transform.h',
         'dec/types.h',
       ],
