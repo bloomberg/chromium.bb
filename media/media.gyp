@@ -1866,8 +1866,8 @@
           'target_name': 'video_capture_android_jni_headers',
           'type': 'none',
           'sources': [
-            'base/android/java/src/org/chromium/media/VideoCapture.java',
-            'base/android/java/src/org/chromium/media/VideoCaptureFactory.java',
+            'capture/video/android/java/src/org/chromium/media/VideoCapture.java',
+            'capture/video/android/java/src/org/chromium/media/VideoCaptureFactory.java',
           ],
           'variables': {
             'jni_gen_package': 'media',
@@ -1972,7 +1972,7 @@
             '../base/base.gyp:base',
           ],
           'variables': {
-            'java_in_dir': 'base/android/java',
+            'java_in_dir': 'capture/video/android/java',
           },
           'includes': ['../build/java.gypi'],
         },

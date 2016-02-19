@@ -114,28 +114,3 @@ generate_jni("media_jni_headers") {
   ]
   jni_package = "media"
 }
-
-generate_jni("video_capture_jni_headers") {
-  sources = [
-    "java/src/org/chromium/media/VideoCapture.java",
-    "java/src/org/chromium/media/VideoCaptureFactory.java",
-  ]
-  jni_package = "media"
-}
-
-java_cpp_enum("media_java_enums_srcjar") {
-  sources = [
-    "//media/capture/video/android/video_capture_device_android.h",
-    "//media/capture/video/video_capture_device.h",
-  ]
-}
-
-android_library("media_java") {
-  deps = [
-    "//base:base_java",
-  ]
-
-  srcjar_deps = [ ":media_java_enums_srcjar" ]
-
-  DEPRECATED_java_in_dir = "java/src"
-}

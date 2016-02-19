@@ -924,7 +924,7 @@ if (is_android) {
       deps += [
         "//gpu:test_support",
         "//media/base/android",
-        "//media/base/android:media_java",
+        "//media/capture/video/android:media_java",
         "//testing/gmock",
         "//ui/android:ui_java",
       ]

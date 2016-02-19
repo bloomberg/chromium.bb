@@ -136,7 +136,7 @@ android_library("chrome_java") {
     "//components/web_contents_delegate_android:web_contents_delegate_android_java",
     "//components/web_restrictions:web_restrictions_java",
     "//content/public/android:content_java",
-    "//media/base/android:media_java",
+    "//media/capture/video/android:media_java",
     "//media/midi:midi_java",
     "//net/android:net_java",
     "//printing:printing_java",
