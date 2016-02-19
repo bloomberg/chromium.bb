@@ -11,9 +11,6 @@ CancellationFlagTest.SetOnDifferentThreadDeathTest
 # Fails on Valgrind/Mac, see http://crbug.com/93722
 ProcessMemoryTest.MacTerminateOnHeapCorruption
 
-# Fails on Valgrind/Mac, see http://crbug.com/122080
-ProcessMemoryTest.MacMallocFailureDoesNotTerminate
-
 # Times out on Valgrind/Mac, see http://crbug.com/172044
 MessageLoopTestTypeUI.RecursivePosts
 MessageLoopTestTypeIO.RecursivePosts
