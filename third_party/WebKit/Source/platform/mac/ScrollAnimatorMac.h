@@ -31,7 +31,9 @@
 #include "platform/geometry/FloatSize.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/heap/Handle.h"
+#include "platform/scheduler/CancellableTaskFactory.h"
 #include "platform/scroll/ScrollAnimatorBase.h"
+#include "public/platform/WebTaskRunner.h"
 #include "wtf/RetainPtr.h"
 
 OBJC_CLASS BlinkScrollAnimationHelperDelegate;
@@ -81,11 +83,12 @@ private:
     RetainPtr<BlinkScrollbarPainterDelegate> m_horizontalScrollbarPainterDelegate;
     RetainPtr<BlinkScrollbarPainterDelegate> m_verticalScrollbarPainterDelegate;
 
-    void initialScrollbarPaintTimerFired(Timer<ScrollAnimatorMac>*);
-    Timer<ScrollAnimatorMac> m_initialScrollbarPaintTimer;
+    void initialScrollbarPaintTask();
+    OwnPtr<CancellableTaskFactory> m_initialScrollbarPaintTaskFactory;
 
-    void sendContentAreaScrolledTimerFired(Timer<ScrollAnimatorMac>*);
-    Timer<ScrollAnimatorMac> m_sendContentAreaScrolledTimer;
+    void sendContentAreaScrolledTask();
+    OwnPtr<CancellableTaskFactory> m_sendContentAreaScrolledTaskFactory;
+    OwnPtr<WebTaskRunner> m_taskRunner;
     FloatSize m_contentAreaScrolledTimerScrollDelta;
 
     ScrollResultOneDimensional userScroll(ScrollbarOrientation, ScrollGranularity, float step, float delta) override;

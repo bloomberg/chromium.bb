@@ -127,8 +127,7 @@ public:
 
     WebTaskRunner* clone() override
     {
-        ASSERT_NOT_REACHED();
-        return nullptr;
+        return new TestingPlatformMockWebTaskRunner(m_tasks);
     }
 
 private:

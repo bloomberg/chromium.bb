@@ -37,6 +37,8 @@
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/scroll/ScrollbarThemeMacCommon.h"
 #include "platform/scroll/ScrollbarThemeMacOverlayAPI.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebScheduler.h"
 #include "wtf/MainThread.h"
 #include "wtf/MathExtras.h"
 #include "wtf/PassOwnPtr.h"
@@ -684,8 +686,9 @@ PassOwnPtrWillBeRawPtr<ScrollAnimatorBase> ScrollAnimatorBase::create(Scrollable
 
 ScrollAnimatorMac::ScrollAnimatorMac(ScrollableArea* scrollableArea)
     : ScrollAnimatorBase(scrollableArea)
-    , m_initialScrollbarPaintTimer(this, &ScrollAnimatorMac::initialScrollbarPaintTimerFired)
-    , m_sendContentAreaScrolledTimer(this, &ScrollAnimatorMac::sendContentAreaScrolledTimerFired)
+    , m_initialScrollbarPaintTaskFactory(CancellableTaskFactory::create(this, &ScrollAnimatorMac::initialScrollbarPaintTask))
+    , m_sendContentAreaScrolledTaskFactory(CancellableTaskFactory::create(this, &ScrollAnimatorMac::sendContentAreaScrolledTask))
+    , m_taskRunner(adoptPtr(Platform::current()->currentThread()->scheduler()->timerTaskRunner()->clone()))
     , m_haveScrolledSincePageLoad(false)
     , m_needsScrollerStyleUpdate(false)
 {
@@ -722,8 +725,8 @@ void ScrollAnimatorMac::dispose()
         [m_scrollAnimationHelperDelegate.get() invalidate];
         END_BLOCK_OBJC_EXCEPTIONS;
     }
-    m_initialScrollbarPaintTimer.stop();
-    m_sendContentAreaScrolledTimer.stop();
+    m_initialScrollbarPaintTaskFactory->cancel();
+    m_sendContentAreaScrolledTaskFactory->cancel();
 }
 
 ScrollResultOneDimensional ScrollAnimatorMac::userScroll(ScrollbarOrientation orientation, ScrollGranularity granularity, float step, float delta)
@@ -1128,20 +1131,20 @@ void ScrollAnimatorMac::updateScrollerStyle()
 
 void ScrollAnimatorMac::startScrollbarPaintTimer()
 {
-    m_initialScrollbarPaintTimer.startOneShot(0.1, BLINK_FROM_HERE);
+    m_taskRunner->postDelayedTask(BLINK_FROM_HERE, m_initialScrollbarPaintTaskFactory->cancelAndCreate(), 0.1);
 }
 
 bool ScrollAnimatorMac::scrollbarPaintTimerIsActive() const
 {
-    return m_initialScrollbarPaintTimer.isActive();
+    return m_initialScrollbarPaintTaskFactory->isPending();
 }
 
 void ScrollAnimatorMac::stopScrollbarPaintTimer()
 {
-    m_initialScrollbarPaintTimer.stop();
+    m_initialScrollbarPaintTaskFactory->cancel();
 }
 
-void ScrollAnimatorMac::initialScrollbarPaintTimerFired(Timer<ScrollAnimatorMac>*)
+void ScrollAnimatorMac::initialScrollbarPaintTask()
 {
     if (ScrollbarThemeMacCommon::isOverlayAPIAvailable()) {
         // To force the scrollbars to flash, we have to call hide first. Otherwise, the ScrollbarPainterController
@@ -1155,11 +1158,11 @@ void ScrollAnimatorMac::sendContentAreaScrolledSoon(const FloatSize& delta)
 {
     m_contentAreaScrolledTimerScrollDelta = delta;
 
-    if (!m_sendContentAreaScrolledTimer.isActive())
-        m_sendContentAreaScrolledTimer.startOneShot(0, BLINK_FROM_HERE);
+    if (!m_sendContentAreaScrolledTaskFactory->isPending())
+        m_taskRunner->postTask(BLINK_FROM_HERE, m_sendContentAreaScrolledTaskFactory->cancelAndCreate());
 }
 
-void ScrollAnimatorMac::sendContentAreaScrolledTimerFired(Timer<ScrollAnimatorMac>*)
+void ScrollAnimatorMac::sendContentAreaScrolledTask()
 {
     if (supportsContentAreaScrolledInDirection()) {
         [m_scrollbarPainterController.get() contentAreaScrolledInDirection:NSMakePoint(m_contentAreaScrolledTimerScrollDelta.width(), m_contentAreaScrolledTimerScrollDelta.height())];
