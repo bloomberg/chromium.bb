@@ -132,6 +132,8 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
     case ui::ET_MOUSE_ENTERED:
     case ui::ET_MOUSE_EXITED:
     case ui::ET_MOUSE_CAPTURE_CHANGED:
+    case ui::ET_SCROLL_FLING_START:
+    case ui::ET_SCROLL_FLING_CANCEL:
       break;
     default:
       NOTREACHED();

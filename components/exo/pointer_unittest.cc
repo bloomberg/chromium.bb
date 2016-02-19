@@ -236,11 +236,7 @@ TEST_F(PointerTest, OnPointerScroll) {
   generator.MoveMouseTo(location);
 
   EXPECT_CALL(delegate, OnPointerWheel(testing::_, gfx::Vector2d(1, 1)));
-  ui::ScrollEvent scroll_event(ui::ET_SCROLL, location, ui::EventTimeForNow(),
-                               0 /* flags */, 1 /* x_offset */,
-                               1 /* y_offset */, 1 /* x_offset_ordinal */,
-                               1 /* y_offset_ordinal */, 1 /* finger_count */);
-  generator.Dispatch(&scroll_event);
+  generator.ScrollSequence(location, base::TimeDelta(), 1, 1, 1, 1);
 
   EXPECT_CALL(delegate, OnPointerDestroying(pointer.get()));
   pointer.reset();
