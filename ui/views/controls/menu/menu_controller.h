@@ -497,20 +497,12 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   // the title.
   void SelectByChar(base::char16 key);
 
-  // For Windows and Aura we repost an event for some events that dismiss
-  // the context menu. The event is then reprocessed to cause its result
-  // if the context menu had not been present.
+  // For Windows and Aura we repost an event which dismisses the |source| menu.
+  // The menu is also canceled dependent on the target of the event. The event
+  // is then reprocessed to cause its result if the menu had not been present.
   // On non-aura Windows, a new mouse event is generated and posted to
   // the window (if there is one) at the location of the event. On
   // aura, the event is reposted on the RootWindow.
-  void RepostEvent(SubmenuView* source,
-                   const ui::LocatedEvent* event,
-                   const gfx::Point& screen_loc,
-                   gfx::NativeView native_view,
-                   gfx::NativeWindow window);
-
-  // For Windows and Aura we repost an event which dismisses the |source| menu.
-  // The menu is also canceled dependent on the target of the event.
   void RepostEventAndCancel(SubmenuView* source, const ui::LocatedEvent* event);
 
   // Sets the drop target to new_item.

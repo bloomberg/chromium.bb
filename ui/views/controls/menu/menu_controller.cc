@@ -162,6 +162,101 @@ static View* GetNextFocusableView(View* ancestor,
   return NULL;
 }
 
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+// Determines the correct cooridinates and window to repost |event| to, if it is
+// a mouse or touch event.
+static void RepostEventImpl(const ui::LocatedEvent* event,
+                            const gfx::Point& screen_loc,
+                            gfx::NativeView native_view,
+                            gfx::NativeWindow window) {
+  if (!event->IsMouseEvent() && !event->IsTouchEvent()) {
+    // TODO(rbyers): Gesture event repost is tricky to get right
+    // crbug.com/170987.
+    DCHECK(event->IsGestureEvent());
+    return;
+  }
+
+  if (!native_view)
+    return;
+
+#if defined(OS_WIN)
+  gfx::Point screen_loc_pixels = gfx::win::DIPToScreenPoint(screen_loc);
+  HWND target_window = ::WindowFromPoint(screen_loc_pixels.ToPOINT());
+  // If we don't find a native window for the HWND at the current location,
+  // then attempt to find a native window from its parent if one exists.
+  // There are HWNDs created outside views, which don't have associated
+  // native windows.
+  if (!window) {
+    HWND parent = ::GetParent(target_window);
+    if (parent) {
+      aura::WindowTreeHost* host =
+          aura::WindowTreeHost::GetForAcceleratedWidget(parent);
+      if (host) {
+        target_window = parent;
+        window = host->window();
+      }
+    }
+  }
+  // Convert screen_loc to pixels for the Win32 API's like WindowFromPoint,
+  // PostMessage/SendMessage to work correctly. These API's expect the
+  // coordinates to be in pixels.
+  if (event->IsMouseEvent()) {
+    HWND source_window = HWNDForNativeView(native_view);
+    if (!target_window || !source_window ||
+        GetWindowThreadProcessId(source_window, NULL) !=
+            GetWindowThreadProcessId(target_window, NULL)) {
+      // Even though we have mouse capture, windows generates a mouse event if
+      // the other window is in a separate thread. Only repost an event if
+      // |target_window| and |source_window| were created on the same thread,
+      // else double events can occur and lead to bad behavior.
+      return;
+    }
+
+    // Determine whether the click was in the client area or not.
+    // NOTE: WM_NCHITTEST coordinates are relative to the screen.
+    LPARAM coords = MAKELPARAM(screen_loc_pixels.x(), screen_loc_pixels.y());
+    LRESULT nc_hit_result = SendMessage(target_window, WM_NCHITTEST, 0, coords);
+    const bool client_area = nc_hit_result == HTCLIENT;
+
+    // TODO(sky): this isn't right. The event to generate should correspond with
+    // the event we just got. MouseEvent only tells us what is down, which may
+    // differ. Need to add ability to get changed button from MouseEvent.
+    int event_type;
+    int flags = event->flags();
+    if (flags & ui::EF_LEFT_MOUSE_BUTTON) {
+      event_type = client_area ? WM_LBUTTONDOWN : WM_NCLBUTTONDOWN;
+    } else if (flags & ui::EF_MIDDLE_MOUSE_BUTTON) {
+      event_type = client_area ? WM_MBUTTONDOWN : WM_NCMBUTTONDOWN;
+    } else if (flags & ui::EF_RIGHT_MOUSE_BUTTON) {
+      event_type = client_area ? WM_RBUTTONDOWN : WM_NCRBUTTONDOWN;
+    } else {
+      NOTREACHED();
+      return;
+    }
+
+    int window_x = screen_loc_pixels.x();
+    int window_y = screen_loc_pixels.y();
+    if (client_area) {
+      POINT pt = {window_x, window_y};
+      ScreenToClient(target_window, &pt);
+      window_x = pt.x;
+      window_y = pt.y;
+    }
+
+    WPARAM target = client_area ? event->native_event().wParam : nc_hit_result;
+    LPARAM window_coords = MAKELPARAM(window_x, window_y);
+    PostMessage(target_window, event_type, target, window_coords);
+    return;
+  }
+#endif
+  // Non Aura window.
+  if (!window)
+    return;
+
+  MenuMessageLoop::RepostEventToWindow(event, window, screen_loc);
+}
+#endif  // defined(OS_WIN) || defined(OS_CHROMEOS)
+
 }  // namespace
 
 // MenuScrollTask --------------------------------------------------------------
@@ -2181,110 +2276,6 @@ void MenuController::SelectByChar(base::char16 character) {
   }
 }
 
-void MenuController::RepostEvent(SubmenuView* source,
-                                 const ui::LocatedEvent* event,
-                                 const gfx::Point& screen_loc,
-                                 gfx::NativeView native_view,
-                                 gfx::NativeWindow window) {
-  if (!event->IsMouseEvent() && !event->IsTouchEvent()) {
-    // TODO(rbyers): Gesture event repost is tricky to get right
-    // crbug.com/170987.
-    DCHECK(event->IsGestureEvent());
-    return;
-  }
-
-#if defined(OS_WIN)
-  if (!state_.item) {
-    // We some times get an event after closing all the menus. Ignore it. Make
-    // sure the menu is in fact not visible. If the menu is visible, then
-    // we're in a bad state where we think the menu isn't visibile but it is.
-    DCHECK(!source->GetWidget()->IsVisible());
-    return;
-  }
-
-  state_.item->GetRootMenuItem()->GetSubmenu()->ReleaseCapture();
-#endif
-
-  if (!native_view)
-    return;
-
-#if defined(OS_WIN)
-  gfx::Point screen_loc_pixels = gfx::win::DIPToScreenPoint(screen_loc);
-  HWND target_window = ::WindowFromPoint(screen_loc_pixels.ToPOINT());
-  // If we don't find a native window for the HWND at the current location,
-  // then attempt to find a native window from its parent if one exists.
-  // There are HWNDs created outside views, which don't have associated
-  // native windows.
-  if (!window) {
-    HWND parent = ::GetParent(target_window);
-    if (parent) {
-      aura::WindowTreeHost* host =
-          aura::WindowTreeHost::GetForAcceleratedWidget(parent);
-      if (host) {
-        target_window = parent;
-        window = host->window();
-      }
-    }
-  }
-  // Convert screen_loc to pixels for the Win32 API's like WindowFromPoint,
-  // PostMessage/SendMessage to work correctly. These API's expect the
-  // coordinates to be in pixels.
-  if (event->IsMouseEvent()) {
-    HWND source_window = HWNDForNativeView(native_view);
-    if (!target_window || !source_window ||
-        GetWindowThreadProcessId(source_window, NULL) !=
-        GetWindowThreadProcessId(target_window, NULL)) {
-      // Even though we have mouse capture, windows generates a mouse event if
-      // the other window is in a separate thread. Only repost an event if
-      // |target_window| and |source_window| were created on the same thread,
-      // else double events can occur and lead to bad behavior.
-      return;
-    }
-
-    // Determine whether the click was in the client area or not.
-    // NOTE: WM_NCHITTEST coordinates are relative to the screen.
-    LPARAM coords = MAKELPARAM(screen_loc_pixels.x(), screen_loc_pixels.y());
-    LRESULT nc_hit_result = SendMessage(target_window, WM_NCHITTEST, 0, coords);
-    const bool client_area = nc_hit_result == HTCLIENT;
-
-    // TODO(sky): this isn't right. The event to generate should correspond with
-    // the event we just got. MouseEvent only tells us what is down, which may
-    // differ. Need to add ability to get changed button from MouseEvent.
-    int event_type;
-    int flags = event->flags();
-    if (flags & ui::EF_LEFT_MOUSE_BUTTON) {
-      event_type = client_area ? WM_LBUTTONDOWN : WM_NCLBUTTONDOWN;
-    } else if (flags & ui::EF_MIDDLE_MOUSE_BUTTON) {
-      event_type = client_area ? WM_MBUTTONDOWN : WM_NCMBUTTONDOWN;
-    } else if (flags & ui::EF_RIGHT_MOUSE_BUTTON) {
-      event_type = client_area ? WM_RBUTTONDOWN : WM_NCRBUTTONDOWN;
-    } else {
-      NOTREACHED();
-      return;
-    }
-
-    int window_x = screen_loc_pixels.x();
-    int window_y = screen_loc_pixels.y();
-    if (client_area) {
-      POINT pt = { window_x, window_y };
-      ScreenToClient(target_window, &pt);
-      window_x = pt.x;
-      window_y = pt.y;
-    }
-
-    WPARAM target = client_area ? event->native_event().wParam : nc_hit_result;
-    LPARAM window_coords = MAKELPARAM(window_x, window_y);
-    PostMessage(target_window, event_type, target, window_coords);
-    return;
-  }
-#endif
-  // Non Aura window.
-  if (!window)
-    return;
-
-  MenuMessageLoop::RepostEventToWindow(event, window, screen_loc);
-}
-
 void MenuController::RepostEventAndCancel(SubmenuView* source,
                                           const ui::LocatedEvent* event) {
   // Cancel can lead to the deletion |source| so we save the view and window to
@@ -2302,9 +2293,29 @@ void MenuController::RepostEventAndCancel(SubmenuView* source,
 #endif
 
 #if defined(OS_WIN)
-  // We're going to close and we own the event capture. We need to repost the
-  // event, otherwise the window the user clicked on won't get the event.
-  RepostEvent(source, event, screen_loc, native_view, window);
+  if (event->IsMouseEvent() || event->IsTouchEvent()) {
+    bool async_run = async_run_;
+    if (state_.item) {
+      state_.item->GetRootMenuItem()->GetSubmenu()->ReleaseCapture();
+      RepostEventImpl(event, screen_loc, native_view, window);
+    } else {
+      // We some times get an event after closing all the menus. Ignore it. Make
+      // sure the menu is in fact not visible. If the menu is visible, then
+      // we're in a bad state where we think the menu isn't visibile but it is.
+      DCHECK(!source->GetWidget()->IsVisible());
+    }
+
+    // We're going to close and we own the event capture. We need to repost the
+    // event, otherwise the window the user clicked on won't get the event.
+    //  RepostEvent(source, event, screen_loc, native_view, window);
+    // MenuController may have been deleted if |async_run_| so check for an
+    // active
+    // instance before accessing member variables.
+    if (!GetActiveInstance()) {
+      DCHECK(async_run);
+      return;
+    }
+  }
 #endif
 
   // Determine target to see if a complete or partial close of the menu should
@@ -2325,7 +2336,7 @@ void MenuController::RepostEventAndCancel(SubmenuView* source,
   // is handled normally after the context menu has exited. We call
   // RepostEvent after Cancel so that event capture has been released so
   // that finding the event target is unaffected by the current capture.
-  RepostEvent(source, event, screen_loc, native_view, window);
+  RepostEventImpl(event, screen_loc, native_view, window);
 #endif
 }
 

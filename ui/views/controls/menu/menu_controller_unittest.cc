@@ -4,6 +4,7 @@
 
 #include "ui/views/controls/menu/menu_controller.h"
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -89,6 +90,11 @@ class TestMenuControllerDelegate : public internal::MenuControllerDelegate {
     return on_menu_closed_mouse_event_flags_;
   }
 
+  // On a subsequent call to OnMenuClosed |controller| will be deleted.
+  void set_on_menu_closed_callback(const base::Closure& callback) {
+    on_menu_closed_callback_ = callback;
+  }
+
   // internal::MenuControllerDelegate:
   void OnMenuClosed(NotifyType type,
                     MenuItemView* menu,
@@ -104,6 +110,9 @@ class TestMenuControllerDelegate : public internal::MenuControllerDelegate {
   MenuItemView* on_menu_closed_menu_;
   int on_menu_closed_mouse_event_flags_;
 
+  // Optional callback triggered during OnMenuClosed
+  base::Closure on_menu_closed_callback_;
+
   DISALLOW_COPY_AND_ASSIGN(TestMenuControllerDelegate);
 };
 
@@ -111,7 +120,8 @@ TestMenuControllerDelegate::TestMenuControllerDelegate()
     : on_menu_closed_called_(0),
       on_menu_closed_notify_type_(NOTIFY_DELEGATE),
       on_menu_closed_menu_(nullptr),
-      on_menu_closed_mouse_event_flags_(0) {}
+      on_menu_closed_mouse_event_flags_(0),
+      on_menu_closed_callback_() {}
 
 void TestMenuControllerDelegate::OnMenuClosed(NotifyType type,
                                               MenuItemView* menu,
@@ -120,6 +130,8 @@ void TestMenuControllerDelegate::OnMenuClosed(NotifyType type,
   on_menu_closed_notify_type_ = type;
   on_menu_closed_menu_ = menu;
   on_menu_closed_mouse_event_flags_ = mouse_event_flags;
+  if (!on_menu_closed_callback_.is_null())
+    on_menu_closed_callback_.Run();
 }
 
 void TestMenuControllerDelegate::SiblingMenuCreated(MenuItemView* menu) {}
@@ -237,12 +249,7 @@ class MenuControllerTest : public ViewsTestBase {
 
   void TearDown() override {
     owner_->CloseNow();
-
-    menu_controller_->showing_ = false;
-    menu_controller_->owner_ = nullptr;
-    delete menu_controller_;
-    menu_controller_ = nullptr;
-
+    DestroyMenuController();
     ViewsTestBase::TearDown();
   }
 
@@ -344,6 +351,13 @@ class MenuControllerTest : public ViewsTestBase {
         MenuController::INCREMENT_SELECTION_UP);
   }
 
+  void DestroyMenuControllerOnMenuClosed(TestMenuControllerDelegate* delegate) {
+    // Unretained() is safe here as the test should outlive the delegate. If not
+    // we want to know.
+    delegate->set_on_menu_closed_callback(base::Bind(
+        &MenuControllerTest::DestroyMenuController, base::Unretained(this)));
+  }
+
   MenuItemView* FindInitialSelectableMenuItemDown(MenuItemView* parent) {
     return menu_controller_->FindInitialSelectableMenuItem(
         parent, MenuController::INCREMENT_SELECTION_DOWN);
@@ -428,6 +442,19 @@ class MenuControllerTest : public ViewsTestBase {
   }
 
  private:
+  void DestroyMenuController() {
+    if (!menu_controller_)
+      return;
+
+    if (!owner_->IsClosed())
+      owner_->RemoveObserver(menu_controller_);
+
+    menu_controller_->showing_ = false;
+    menu_controller_->owner_ = nullptr;
+    delete menu_controller_;
+    menu_controller_ = nullptr;
+  }
+
   void Init() {
     owner_.reset(new Widget);
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
@@ -924,6 +951,49 @@ TEST_F(MenuControllerTest, AsynchronousNestedExitOutermost) {
                  base::Unretained(this)));
 
   RunMenu();
+}
+
+// Tests that having the MenuController deleted during RepostEvent does not
+// cause a crash. ASAN bots should not detect use-after-free in MenuController.
+TEST_F(MenuControllerTest, AsynchronousRepostEventDeletesController) {
+  MenuController* controller = menu_controller();
+  scoped_ptr<TestMenuControllerDelegate> nested_delegate(
+      new TestMenuControllerDelegate());
+
+  ASSERT_FALSE(IsAsyncRun());
+
+  controller->AddNestedDelegate(nested_delegate.get());
+  controller->SetAsyncRun(true);
+
+  EXPECT_TRUE(IsAsyncRun());
+  EXPECT_EQ(nested_delegate.get(), GetCurrentDelegate());
+
+  MenuItemView* item = menu_item();
+  int mouse_event_flags = 0;
+  MenuItemView* run_result =
+      controller->Run(owner(), nullptr, item, gfx::Rect(), MENU_ANCHOR_TOPLEFT,
+                      false, false, &mouse_event_flags);
+  EXPECT_EQ(run_result, nullptr);
+
+  // Show a sub menu to targert with a pointer selection. However have the event
+  // occur outside of the bounds of the entire menu.
+  SubmenuView* sub_menu = item->GetSubmenu();
+  sub_menu->ShowAt(owner(), item->bounds(), true);
+  gfx::Point location(sub_menu->bounds().bottom_right());
+  location.Offset(1, 1);
+  ui::MouseEvent event(ui::ET_MOUSE_PRESSED, location, location,
+                       ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0);
+
+  // This will lead to MenuController being deleted during the event repost.
+  // The remainder of this test, and TearDown should not crash.
+  DestroyMenuControllerOnMenuClosed(nested_delegate.get());
+  // When attempting to select outside of all menus this should lead to a
+  // shutdown. This should not crash while attempting to repost the event.
+  SetSelectionOnPointerDown(sub_menu, &event);
+
+  // Close to remove observers before test TearDown
+  sub_menu->Close();
+  EXPECT_EQ(1, nested_delegate->on_menu_closed_called());
 }
 
 }  // namespace test
