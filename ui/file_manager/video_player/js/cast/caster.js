@@ -6,7 +6,9 @@
 // TODO(yoshiki): Remove this once the cast extension supports Chrome apps.
 // Although localStorage in Chrome app is not supported, but it's used in the
 // cast extension. This line prevents an exception on using localStorage.
-window.__defineGetter__('localStorage', function() { return {}; });
+Object.defineProperty(window, 'localStorage', {
+  get: function() { return {}; }
+});
 
 /**
  * @type {string}

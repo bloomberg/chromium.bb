@@ -30,16 +30,6 @@ function MouseInactivityWatcher(container, opt_timeout, opt_toolsActive) {
    * @private
    **/
   this.disabled_ = false;
-  this.__defineSetter__('disabled', function(value) {
-    this.disabled_ = value;
-    if (value)
-      this.kick();
-    else
-      this.check();
-  });
-  this.__defineGetter__('disabled', function() {
-    return this.disabled_;
-  });
 
   this.container_.addEventListener('mousemove', this.onMouseMove_.bind(this));
   var tools = this.container_.querySelector('.tool');
@@ -69,6 +59,29 @@ function MouseInactivityWatcher(container, opt_timeout, opt_toolsActive) {
  * Default inactivity timeout.
  */
 MouseInactivityWatcher.DEFAULT_TIMEOUT = 3000;
+
+/**
+ * Defines getter/setter for disabled property to update inactivity state.
+ */
+MouseInactivityWatcher.prototype = {
+  /**
+   * @return {boolean}
+   */
+  get disabled() {
+    return this.disabled_;
+  },
+
+  /**
+   * @param {boolean} value
+   */
+  set disabled(value) {
+    this.disabled_ = value;
+    if (value)
+      this.kick();
+    else
+      this.check();
+  }
+};
 
 /**
  * @param {boolean} on True if show, false if hide.
