@@ -342,6 +342,8 @@ class TestRunner : public WebTestRunner,
   // Enable or disable plugins.
   void SetPluginsEnabled(bool enabled);
 
+  bool AnimationScheduled();
+
   ///////////////////////////////////////////////////////////////////////////
   // Methods that modify the state of TestRunner
 

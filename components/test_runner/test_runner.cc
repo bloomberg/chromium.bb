@@ -239,6 +239,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void OverridePreference(const std::string& key, v8::Local<v8::Value> value);
   void SetAcceptLanguages(const std::string& accept_languages);
   void SetPluginsEnabled(bool enabled);
+  bool AnimationScheduled();
   void DumpEditingCallbacks();
   void DumpAsMarkup();
   void DumpAsText();
@@ -519,6 +520,7 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("setScriptsAllowed", &TestRunnerBindings::SetScriptsAllowed)
       .SetMethod("setStorageAllowed", &TestRunnerBindings::SetStorageAllowed)
       .SetMethod("setPluginsAllowed", &TestRunnerBindings::SetPluginsAllowed)
+      .SetMethod("animationScheduled", &TestRunnerBindings::AnimationScheduled)
       .SetMethod("setAllowDisplayOfInsecureContent",
                  &TestRunnerBindings::SetAllowDisplayOfInsecureContent)
       .SetMethod("setAllowRunningOfInsecureContent",
@@ -1100,6 +1102,13 @@ void TestRunnerBindings::SetAcceptLanguages(
 void TestRunnerBindings::SetPluginsEnabled(bool enabled) {
   if (runner_)
     runner_->SetPluginsEnabled(enabled);
+}
+
+bool TestRunnerBindings::AnimationScheduled() {
+  if (runner_)
+    return runner_->AnimationScheduled();
+  else
+    return false;
 }
 
 void TestRunnerBindings::DumpEditingCallbacks() {
@@ -2683,6 +2692,10 @@ void TestRunner::SetAcceptLanguages(const std::string& accept_languages) {
 void TestRunner::SetPluginsEnabled(bool enabled) {
   delegate_->Preferences()->plugins_enabled = enabled;
   delegate_->ApplyPreferences();
+}
+
+bool TestRunner::AnimationScheduled() {
+  return proxy_->AnimationScheduled();
 }
 
 void TestRunner::DumpEditingCallbacks() {

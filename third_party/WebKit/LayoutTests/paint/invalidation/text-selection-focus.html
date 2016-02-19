@@ -1,0 +1,31 @@
+<!doctype HTML>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
+<script src="../selection/resources/selection.js"></script>
+<script src="../../resources/js-test.js"></script>
+<div id="container">
+    Selected area
+</div>
+<script>
+var jsTestIsAsync = true;
+onload = function() {
+    description('If this test passes, a frame was scheduled when focusing the window.');
+
+    selectRange(container, 0, container, 1);
+    if (window.internals)
+        window.internals.setFocused(false);
+
+    if (window.testRunner) {
+        window.testRunner.waitUntilDone();
+        window.testRunner.dumpAsText();
+        runAfterLayoutAndPaint(function() {
+            window.internals.setFocused(true);
+            window.scheduled = window.testRunner.animationScheduled();
+            shouldBe('scheduled', 'true');
+            finishJSTest();
+            window.testRunner.notifyDone();
+
+        });
+    }
+
+}
+</script>

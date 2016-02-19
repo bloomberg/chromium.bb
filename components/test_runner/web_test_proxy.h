@@ -144,6 +144,8 @@ class TEST_RUNNER_EXPORT WebTestProxyBase {
 
   void PostAccessibilityEvent(const blink::WebAXObject&, blink::WebAXEvent);
 
+  bool AnimationScheduled() { return animate_scheduled_; }
+
  protected:
   WebTestProxyBase();
   ~WebTestProxyBase();

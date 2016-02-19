@@ -3375,9 +3375,9 @@ void LayoutObject::setShouldInvalidateSelection()
 {
     if (!canUpdateSelectionOnRootLineBoxes())
         return;
-
     m_bitfields.setShouldInvalidateSelection(true);
     markContainerChainForPaintInvalidation();
+    frameView()->scheduleVisualUpdateForPaintInvalidationIfNeeded();
 }
 
 void LayoutObject::setShouldDoFullPaintInvalidation(PaintInvalidationReason reason)
