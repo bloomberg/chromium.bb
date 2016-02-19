@@ -70,6 +70,13 @@ bool GLContextEGL::Initialize(
     context_attributes = kContextAttributes;
   }
 
+  if (!eglBindAPI(EGL_OPENGL_ES_API)) {
+    LOG(ERROR) << "eglBindApi failed with error "
+               << GetLastEGLErrorString();
+    return false;
+  }
+
+
   context_ = eglCreateContext(
       display_,
       config_,
