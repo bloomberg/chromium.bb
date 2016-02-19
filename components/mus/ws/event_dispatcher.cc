@@ -201,7 +201,9 @@ void EventDispatcher::SetCaptureWindow(ServerWindow* window,
       if (target == window)
         continue;
       mojom::EventPtr cancel_event = mojom::Event::New();
-      cancel_event->action = mojom::EventType::POINTER_CANCEL;
+      cancel_event->action = pair.second.is_mouse_event
+                                 ? mojom::EventType::MOUSE_EXIT
+                                 : mojom::EventType::POINTER_CANCEL;
       cancel_event->flags = mojom::kEventFlagNone;
       cancel_event->time_stamp = base::TimeTicks::Now().ToInternalValue();
       cancel_event->pointer_data = mojom::PointerData::New();
@@ -422,6 +424,8 @@ EventDispatcher::PointerTarget EventDispatcher::PointerTargetForEvent(
   gfx::Point location(EventLocationToPoint(event));
   pointer_target.window =
       FindDeepestVisibleWindowForEvents(root_, surface_id_, &location);
+  pointer_target.is_mouse_event =
+      event.pointer_data->kind == mojom::PointerKind::MOUSE;
   pointer_target.in_nonclient_area =
       IsLocationInNonclientArea(pointer_target.window, location);
   pointer_target.is_pointer_down =

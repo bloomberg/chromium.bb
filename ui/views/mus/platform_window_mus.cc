@@ -28,7 +28,6 @@ PlatformWindowMus::PlatformWindowMus(ui::PlatformWindowDelegate* delegate,
       mus_window_(mus_window),
       show_state_(mus::mojom::ShowState::RESTORED),
       last_cursor_(mus::mojom::Cursor::CURSOR_NULL),
-      has_capture_(false),
       mus_window_destroyed_(false) {
   DCHECK(delegate_);
   DCHECK(mus_window_);
@@ -104,15 +103,11 @@ void PlatformWindowMus::SetTitle(const base::string16& title) {
 }
 
 void PlatformWindowMus::SetCapture() {
-  // TODO(sky): this is wrong, need real capture api.
-  has_capture_ = true;
-  NOTIMPLEMENTED();
+  mus_window_->SetCapture();
 }
 
 void PlatformWindowMus::ReleaseCapture() {
-  // TODO(sky): this is wrong, need real capture api.
-  has_capture_ = false;
-  NOTIMPLEMENTED();
+  mus_window_->ReleaseCapture();
 }
 
 void PlatformWindowMus::ToggleFullscreen() {

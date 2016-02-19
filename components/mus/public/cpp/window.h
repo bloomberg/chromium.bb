@@ -190,6 +190,10 @@ class Window {
   void SetTextInputState(mojo::TextInputStatePtr state);
   void SetImeVisibility(bool visible, mojo::TextInputStatePtr state);
 
+  bool HasCapture() const;
+  void SetCapture();
+  void ReleaseCapture();
+
   // Focus.
   void SetFocus();
   bool HasFocus() const;

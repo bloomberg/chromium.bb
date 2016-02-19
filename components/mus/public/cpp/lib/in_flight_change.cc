@@ -59,30 +59,29 @@ void CrashInFlightChange::Revert() {
   CHECK(false);
 }
 
-// InFlightFocusChange --------------------------------------------------------
+// InFlightWindowChange -------------------------------------------------------
 
-InFlightFocusChange::InFlightFocusChange(WindowTreeClientImpl* connection,
-                                         Window* window)
-    : InFlightChange(nullptr, ChangeType::FOCUS),
-      connection_(connection),
+InFlightWindowTreeClientChange::InFlightWindowTreeClientChange(
+    WindowTreeClientImpl* client_connection,
+    Window* revert_value,
+    ChangeType type)
+    : InFlightChange(nullptr, type),
+      connection_(client_connection),
       revert_window_(nullptr) {
-  SetRevertWindow(window);
+  SetRevertWindow(revert_value);
 }
 
-InFlightFocusChange::~InFlightFocusChange() {
+InFlightWindowTreeClientChange::~InFlightWindowTreeClientChange() {
   SetRevertWindow(nullptr);
 }
 
-void InFlightFocusChange::SetRevertValueFrom(const InFlightChange& change) {
-  SetRevertWindow(
-      static_cast<const InFlightFocusChange&>(change).revert_window_);
+void InFlightWindowTreeClientChange::SetRevertValueFrom(
+    const InFlightChange& change) {
+  SetRevertWindow(static_cast<const InFlightWindowTreeClientChange&>(change)
+                      .revert_window_);
 }
 
-void InFlightFocusChange::Revert() {
-  connection_->LocalSetFocus(revert_window_);
-}
-
-void InFlightFocusChange::SetRevertWindow(Window* window) {
+void InFlightWindowTreeClientChange::SetRevertWindow(Window* window) {
   if (revert_window_)
     revert_window_->RemoveObserver(this);
   revert_window_ = window;
@@ -90,8 +89,38 @@ void InFlightFocusChange::SetRevertWindow(Window* window) {
     revert_window_->AddObserver(this);
 }
 
-void InFlightFocusChange::OnWindowDestroying(Window* window) {
+void InFlightWindowTreeClientChange::OnWindowDestroying(Window* window) {
   SetRevertWindow(nullptr);
+}
+
+// InFlightCaptureChange ------------------------------------------------------
+
+InFlightCaptureChange::InFlightCaptureChange(
+    WindowTreeClientImpl* client_connection,
+    Window* revert_value)
+    : InFlightWindowTreeClientChange(client_connection,
+                                     revert_value,
+                                     ChangeType::CAPTURE) {}
+
+InFlightCaptureChange::~InFlightCaptureChange() {}
+
+void InFlightCaptureChange::Revert() {
+  connection()->LocalSetCapture(revert_window());
+}
+
+// InFlightFocusChange --------------------------------------------------------
+
+InFlightFocusChange::InFlightFocusChange(
+    WindowTreeClientImpl* client_connection,
+    Window* revert_value)
+    : InFlightWindowTreeClientChange(client_connection,
+                                     revert_value,
+                                     ChangeType::FOCUS) {}
+
+InFlightFocusChange::~InFlightFocusChange() {}
+
+void InFlightFocusChange::Revert() {
+  connection()->LocalSetFocus(revert_window());
 }
 
 // InFlightPropertyChange -----------------------------------------------------

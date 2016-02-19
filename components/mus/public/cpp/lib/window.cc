@@ -372,6 +372,20 @@ void Window::SetImeVisibility(bool visible, mojo::TextInputStatePtr state) {
     tree_client()->SetImeVisibility(id_, visible, std::move(state));
 }
 
+bool Window::HasCapture() const {
+  return connection_ && connection_->GetCaptureWindow() == this;
+}
+
+void Window::SetCapture() {
+  if (connection_)
+    tree_client()->SetCapture(this);
+}
+
+void Window::ReleaseCapture() {
+  if (connection_)
+    tree_client()->ReleaseCapture(this);
+}
+
 void Window::SetFocus() {
   if (connection_ && IsDrawn())
     tree_client()->SetFocus(this);

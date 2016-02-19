@@ -942,7 +942,7 @@ TEST_F(EventDispatcherTest, ExplicitCaptureOverridesImplicitCapture) {
   ASSERT_TRUE(details);
   EXPECT_FALSE(event_dispatcher_delegate->has_queued_events());
   EXPECT_EQ(child.get(), details->window);
-  EXPECT_EQ(mojom::EventType::POINTER_CANCEL, details->event->action);
+  EXPECT_EQ(mojom::EventType::MOUSE_EXIT, details->event->action);
 
   const ui::MouseEvent press_event(
       ui::ET_MOUSE_PRESSED, gfx::Point(15, 15), gfx::Point(15, 15),

@@ -119,6 +119,7 @@ WindowTreeClientImpl::WindowTreeClientImpl(
       next_change_id_(1),
       delegate_(delegate),
       window_manager_delegate_(window_manager_delegate),
+      capture_window_(nullptr),
       focused_window_(nullptr),
       binding_(this),
       tree_(nullptr),
@@ -241,11 +242,27 @@ void WindowTreeClientImpl::SetBounds(Window* window,
 }
 
 void WindowTreeClientImpl::SetCapture(Window* window) {
-  NOTIMPLEMENTED();
+  // In order for us to get here we had to have exposed a window, which implies
+  // we got a connection.
+  DCHECK(tree_);
+  if (capture_window_ == window)
+    return;
+  const uint32_t change_id = ScheduleInFlightChange(
+      make_scoped_ptr(new InFlightCaptureChange(this, capture_window_)));
+  tree_->SetCapture(change_id, window->id());
+  LocalSetCapture(window);
 }
 
 void WindowTreeClientImpl::ReleaseCapture(Window* window) {
-  NOTIMPLEMENTED();
+  // In order for us to get here we had to have exposed a window, which implies
+  // we got a connection.
+  DCHECK(tree_);
+  if (capture_window_ != window)
+    return;
+  const uint32_t change_id = ScheduleInFlightChange(
+      make_scoped_ptr(new InFlightCaptureChange(this, window)));
+  tree_->ReleaseCapture(change_id, window->id());
+  LocalSetCapture(nullptr);
 }
 
 void WindowTreeClientImpl::SetClientArea(
@@ -344,6 +361,17 @@ void WindowTreeClientImpl::AttachSurface(
     mojom::SurfaceClientPtr client) {
   DCHECK(tree_);
   tree_->AttachSurface(window_id, type, std::move(surface), std::move(client));
+}
+
+void WindowTreeClientImpl::LocalSetCapture(Window* window) {
+  if (capture_window_ == window)
+    return;
+  Window* lost_capture = capture_window_;
+  capture_window_ = window;
+  if (lost_capture) {
+    FOR_EACH_OBSERVER(WindowObserver, *WindowPrivate(lost_capture).observers(),
+                      OnWindowLostCapture(lost_capture));
+  }
 }
 
 void WindowTreeClientImpl::LocalSetFocus(Window* focused) {
@@ -558,7 +586,15 @@ void WindowTreeClientImpl::OnUnembed(Id window_id) {
 }
 
 void WindowTreeClientImpl::OnLostCapture(Id window_id) {
-  NOTIMPLEMENTED();
+  Window* window = GetWindowById(window_id);
+  if (!window)
+    return;
+
+  InFlightCaptureChange reset_change(this, nullptr);
+  if (ApplyServerChangeToExistingInFlightChange(reset_change))
+    return;
+
+  LocalSetCapture(nullptr);
 }
 
 void WindowTreeClientImpl::OnTopLevelCreated(uint32_t change_id,
@@ -739,6 +775,10 @@ void WindowTreeClientImpl::OnWindowDeleted(Id window_id) {
   Window* window = GetWindowById(window_id);
   if (window)
     WindowPrivate(window).LocalDestroy();
+}
+
+Window* WindowTreeClientImpl::GetCaptureWindow() {
+  return capture_window_;
 }
 
 void WindowTreeClientImpl::OnWindowVisibilityChanged(Id window_id,

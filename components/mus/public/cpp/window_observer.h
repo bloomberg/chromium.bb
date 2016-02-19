@@ -54,6 +54,7 @@ class WindowObserver {
   virtual void OnWindowBoundsChanged(Window* window,
                                      const gfx::Rect& old_bounds,
                                      const gfx::Rect& new_bounds) {}
+  virtual void OnWindowLostCapture(Window* window) {}
   virtual void OnWindowClientAreaChanged(
       Window* window,
       const gfx::Insets& old_client_area,

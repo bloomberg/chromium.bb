@@ -68,11 +68,16 @@ class EventDispatcher : public ServerWindowObserver {
   // Keeps track of state associated with an active pointer.
   struct PointerTarget {
     PointerTarget()
-        : window(nullptr), in_nonclient_area(false), is_pointer_down(false) {}
+        : window(nullptr),
+          is_mouse_event(false),
+          in_nonclient_area(false),
+          is_pointer_down(false) {}
 
     // NOTE: this is set to null if the window is destroyed before a
     // corresponding release/cancel.
     ServerWindow* window;
+
+    bool is_mouse_event;
 
     // Did the pointer event start in the non-client area.
     bool in_nonclient_area;

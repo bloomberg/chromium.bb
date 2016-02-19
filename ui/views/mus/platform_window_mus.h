@@ -90,7 +90,6 @@ class VIEWS_MUS_EXPORT PlatformWindowMus
   mus::Window* mus_window_;
   mus::mojom::ShowState show_state_;
   mus::mojom::Cursor last_cursor_;
-  bool has_capture_;
 
   // True if OnWindowDestroyed() has been received.
   bool mus_window_destroyed_;

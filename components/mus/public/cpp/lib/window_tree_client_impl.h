@@ -105,6 +105,8 @@ class WindowTreeClientImpl : public WindowTreeConnection,
                      mojo::InterfaceRequest<mojom::Surface> surface,
                      mojom::SurfaceClientPtr client);
 
+  // Sets the input capture to |window| without notifying the server.
+  void LocalSetCapture(Window* window);
   // Sets focus to |window| without notifying the server.
   void LocalSetFocus(Window* window);
 
@@ -119,6 +121,9 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   // Called after the window's observers have been notified of destruction (as
   // the last step of ~Window).
   void OnWindowDestroyed(Window* window);
+
+  // WindowTreeConnection:
+  Window* GetCaptureWindow() override;
 
  private:
   friend class WindowTreeClientImplPrivate;
@@ -265,6 +270,8 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   std::set<Window*> roots_;
 
   IdToWindowMap windows_;
+
+  Window* capture_window_;
 
   Window* focused_window_;
 

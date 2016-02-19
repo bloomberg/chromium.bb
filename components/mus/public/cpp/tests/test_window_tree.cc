@@ -99,9 +99,15 @@ void TestWindowTree::ReorderWindow(uint32_t change_id,
 void TestWindowTree::GetWindowTree(uint32_t window_id,
                                    const GetWindowTreeCallback& callback) {}
 
-void TestWindowTree::SetCapture(uint32_t change_id, uint32_t window_id) {}
+void TestWindowTree::SetCapture(uint32_t change_id, uint32_t window_id) {
+  got_change_ = true;
+  change_id_ = change_id;
+}
 
-void TestWindowTree::ReleaseCapture(uint32_t change_id, uint32_t window_id) {}
+void TestWindowTree::ReleaseCapture(uint32_t change_id, uint32_t window_id) {
+  got_change_ = true;
+  change_id_ = change_id;
+}
 
 void TestWindowTree::Embed(uint32_t window_id,
                            mojom::WindowTreeClientPtr client,

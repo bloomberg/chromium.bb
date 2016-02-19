@@ -689,4 +689,120 @@ TEST_F(WindowTreeClientImplTest, TopLevelWindowDestroyedBeforeCreateComplete) {
   EXPECT_EQ(1u, setup.window_tree_connection()->GetRoots().size());
 }
 
+// Tests both SetCapture and ReleaseCapture, to ensure that Window is properly
+// updated on failures.
+TEST_F(WindowTreeClientImplTest, ExplicitCapture) {
+  WindowTreeSetup setup;
+  Window* root = setup.GetFirstRoot();
+  ASSERT_TRUE(root);
+
+  root->SetCapture();
+  EXPECT_TRUE(root->HasCapture());
+  uint32_t change_id1;
+  ASSERT_TRUE(setup.window_tree()->GetAndClearChangeId(&change_id1));
+  setup.window_tree_client()->OnChangeCompleted(change_id1, false);
+  EXPECT_FALSE(root->HasCapture());
+
+  root->SetCapture();
+  EXPECT_TRUE(root->HasCapture());
+  uint32_t change_id2;
+  ASSERT_TRUE(setup.window_tree()->GetAndClearChangeId(&change_id2));
+  setup.window_tree_client()->OnChangeCompleted(change_id2, true);
+  EXPECT_TRUE(root->HasCapture());
+
+  root->ReleaseCapture();
+  EXPECT_FALSE(root->HasCapture());
+  uint32_t change_id3;
+  ASSERT_TRUE(setup.window_tree()->GetAndClearChangeId(&change_id3));
+  setup.window_tree_client()->OnChangeCompleted(change_id3, false);
+  EXPECT_TRUE(root->HasCapture());
+
+  root->ReleaseCapture();
+  uint32_t change_id4;
+  ASSERT_TRUE(setup.window_tree()->GetAndClearChangeId(&change_id4));
+  setup.window_tree_client()->OnChangeCompleted(change_id4, true);
+  EXPECT_FALSE(root->HasCapture());
+}
+
+// Tests that when capture is lost, that the window tree updates properly.
+TEST_F(WindowTreeClientImplTest, LostCapture) {
+  WindowTreeSetup setup;
+  Window* root = setup.GetFirstRoot();
+  ASSERT_TRUE(root);
+
+  root->SetCapture();
+  EXPECT_TRUE(root->HasCapture());
+  uint32_t change_id1;
+  ASSERT_TRUE(setup.window_tree()->GetAndClearChangeId(&change_id1));
+  setup.window_tree_client()->OnChangeCompleted(change_id1, true);
+  EXPECT_TRUE(root->HasCapture());
+
+  // The second SetCapture should be ignored.
+  root->SetCapture();
+  uint32_t change_id2;
+  ASSERT_FALSE(setup.window_tree()->GetAndClearChangeId(&change_id2));
+
+  setup.window_tree_client()->OnLostCapture(root->id());
+  EXPECT_FALSE(root->HasCapture());
+}
+
+// Tests that when capture is lost, while there is a release capture request
+// inflight, that the revert value of that request is updated correctly.
+TEST_F(WindowTreeClientImplTest, LostCaptureDifferentInFlightChange) {
+  WindowTreeSetup setup;
+  Window* root = setup.GetFirstRoot();
+  ASSERT_TRUE(root);
+
+  root->SetCapture();
+  EXPECT_TRUE(root->HasCapture());
+  uint32_t change_id1;
+  ASSERT_TRUE(setup.window_tree()->GetAndClearChangeId(&change_id1));
+  setup.window_tree_client()->OnChangeCompleted(change_id1, true);
+  EXPECT_TRUE(root->HasCapture());
+
+  // The ReleaseCapture should be updated to the revert of the SetCapture.
+  root->ReleaseCapture();
+  uint32_t change_id2;
+  ASSERT_TRUE(setup.window_tree()->GetAndClearChangeId(&change_id2));
+
+  setup.window_tree_client()->OnLostCapture(root->id());
+  EXPECT_FALSE(root->HasCapture());
+
+  setup.window_tree_client()->OnChangeCompleted(change_id2, false);
+  EXPECT_FALSE(root->HasCapture());
+}
+
+// Tests that while two windows can inflight capture requests, that the
+// WindowTreeClient only identifies one as having the current capture.
+TEST_F(WindowTreeClientImplTest, TwoWindowsRequestCapture) {
+  WindowTreeSetup setup;
+  Window* root = setup.GetFirstRoot();
+  Window* child = setup.window_tree_connection()->NewWindow();
+  child->SetVisible(true);
+  root->AddChild(child);
+
+  root->SetCapture();
+  EXPECT_TRUE(root->HasCapture());
+  uint32_t change_id1;
+  ASSERT_TRUE(setup.window_tree()->GetAndClearChangeId(&change_id1));
+
+  child->SetCapture();
+  EXPECT_TRUE(child->HasCapture());
+  EXPECT_FALSE(root->HasCapture());
+
+  uint32_t change_id2;
+  ASSERT_TRUE(setup.window_tree()->GetAndClearChangeId(&change_id2));
+
+  setup.window_tree_client()->OnChangeCompleted(change_id1, true);
+  EXPECT_FALSE(root->HasCapture());
+  EXPECT_TRUE(child->HasCapture());
+
+  setup.window_tree_client()->OnChangeCompleted(change_id2, false);
+  EXPECT_FALSE(child->HasCapture());
+  EXPECT_TRUE(root->HasCapture());
+
+  setup.window_tree_client()->OnLostCapture(root->id());
+  EXPECT_FALSE(root->HasCapture());
+}
+
 }  // namespace mus

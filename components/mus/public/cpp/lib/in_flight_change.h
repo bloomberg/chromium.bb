@@ -29,6 +29,7 @@ enum class ChangeType {
   ADD_CHILD,
   ADD_TRANSIENT_WINDOW,
   BOUNDS,
+  CAPTURE,
   DELETE_WINDOW,
   FOCUS,
   NEW_WINDOW,
@@ -155,18 +156,26 @@ class CrashInFlightChange : public InFlightChange {
   DISALLOW_COPY_AND_ASSIGN(CrashInFlightChange);
 };
 
-// Focus is really a property of the WindowTreeConnection and not the Window.
-// As such, InFlightFocusChange is special in that it is not associated with
-// a particular window (InFlightFocusChange::window() returns null). Internally
-// InFlightFocusChange tracks a window to give focus to, but it may be null.
-class InFlightFocusChange : public InFlightChange, public WindowObserver {
+// Use this class for properties that are specific to the connection, and not a
+// particular window. For example, only a single window can have focus, so focus
+// is specific to the connection.
+//
+// This does not implement InFlightChange::Revert, subclasses must implement
+// that to update the WindowTreeConnection.
+class InFlightWindowTreeClientChange : public InFlightChange,
+                                       public WindowObserver {
  public:
-  InFlightFocusChange(WindowTreeClientImpl* connection, Window* revert_window);
-  ~InFlightFocusChange() override;
+  InFlightWindowTreeClientChange(WindowTreeClientImpl* client_connection,
+                                 Window* revert_value,
+                                 ChangeType type);
+  ~InFlightWindowTreeClientChange() override;
 
   // InFlightChange:
   void SetRevertValueFrom(const InFlightChange& change) override;
-  void Revert() override;
+
+ protected:
+  WindowTreeClientImpl* connection() { return connection_; }
+  Window* revert_window() { return revert_window_; }
 
  private:
   void SetRevertWindow(Window* window);
@@ -177,6 +186,32 @@ class InFlightFocusChange : public InFlightChange, public WindowObserver {
   WindowTreeClientImpl* connection_;
   Window* revert_window_;
 
+  DISALLOW_COPY_AND_ASSIGN(InFlightWindowTreeClientChange);
+};
+
+class InFlightCaptureChange : public InFlightWindowTreeClientChange {
+ public:
+  InFlightCaptureChange(WindowTreeClientImpl* client_connection,
+                        Window* revert_value);
+  ~InFlightCaptureChange() override;
+
+  // InFlightChange:
+  void Revert() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InFlightCaptureChange);
+};
+
+class InFlightFocusChange : public InFlightWindowTreeClientChange {
+ public:
+  InFlightFocusChange(WindowTreeClientImpl* client_connection,
+                      Window* revert_value);
+  ~InFlightFocusChange() override;
+
+  // InFlightChange:
+  void Revert() override;
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(InFlightFocusChange);
 };
 
