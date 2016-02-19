@@ -550,6 +550,7 @@ android_library("cronet_javatests") {
     "test/javatests/src/org/chromium/net/TestHttpUrlRequestListener.java",
     "test/javatests/src/org/chromium/net/TestUploadDataProvider.java",
     "test/javatests/src/org/chromium/net/TestUrlRequestCallback.java",
+    "test/javatests/src/org/chromium/net/UploadDataProvidersTest.java",
     "test/javatests/src/org/chromium/net/UploadTest.java",
     "test/javatests/src/org/chromium/net/UrlResponseInfoTest.java",
     "test/javatests/src/org/chromium/net/urlconnection/CronetBufferedOutputStreamTest.java",
