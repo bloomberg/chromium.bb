@@ -81,14 +81,15 @@ class CertificateManagerHandler
   void ExportPersonalFileWritten(const int* write_errno,
                                  const int* bytes_written);
 
-  // Import from PKCS #12 file.  The sequence goes like:
+  // Import from PKCS #12 or cert file.  The sequence goes like:
   //  1. user click on import button -> StartImportPersonal -> launches file
   //  selector
-  //  2. user selects file -> ImportPersonalFileSelected -> launches password
-  //  dialog
-  //  3. user enters password -> ImportPersonalPasswordSelected -> starts async
+  //  2. user selects file -> ImportPersonalFileSelected -> starts async
   //  read operation
-  //  4. read operation completes -> ImportPersonalFileRead -> unlock slot
+  //  3. read operation completes -> ImportPersonalFileRead ->
+  //    If file is PFX -> launches password dialog, goto step 4
+  //    Else -> import as certificate, goto step 6
+  //  4. user enters password -> ImportPersonalPasswordSelected -> unlock slot
   //  5. slot unlocked -> ImportPersonalSlotUnlocked attempts to
   //  import with previously entered password
   //  6a. if import succeeds -> ImportExportCleanup
@@ -96,8 +97,8 @@ class CertificateManagerHandler
   //  TODO(mattm): allow retrying with different password
   void StartImportPersonal(const base::ListValue* args);
   void ImportPersonalFileSelected(const base::FilePath& path);
-  void ImportPersonalPasswordSelected(const base::ListValue* args);
   void ImportPersonalFileRead(const int* read_errno, const std::string* data);
+  void ImportPersonalPasswordSelected(const base::ListValue* args);
   void ImportPersonalSlotUnlocked();
 
   // Import Server certificates from file.  Sequence goes like:

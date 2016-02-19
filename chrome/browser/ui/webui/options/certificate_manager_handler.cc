@@ -37,6 +37,8 @@
 #include "net/base/crypto_module.h"
 #include "net/base/net_errors.h"
 #include "net/cert/x509_certificate.h"
+#include "net/der/input.h"
+#include "net/der/parser.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
@@ -145,9 +147,42 @@ void ShowCertificateViewerModalDialog(content::WebContents* web_contents,
 }
 #endif
 
-bool IsFileExtensionPkcs12(const base::FilePath& path) {
-  return path.MatchesExtension(FILE_PATH_LITERAL(".p12")) ||
-         path.MatchesExtension(FILE_PATH_LITERAL(".pfx"));
+// Determine if |data| could be a PFX Protocol Data Unit.
+// This only does the minimum parsing necessary to distinguish a PFX file from a
+// DER encoded Certificate.
+//
+// From RFC 7292 section 4:
+//   PFX ::= SEQUENCE {
+//       version     INTEGER {v3(3)}(v3,...),
+//       authSafe    ContentInfo,
+//       macData     MacData OPTIONAL
+//   }
+// From RFC 5280 section 4.1:
+//   Certificate  ::=  SEQUENCE  {
+//       tbsCertificate       TBSCertificate,
+//       signatureAlgorithm   AlgorithmIdentifier,
+//       signatureValue       BIT STRING  }
+//
+//  Certificate must be DER encoded, while PFX may be BER encoded.
+//  Therefore PFX can be distingushed by checking if the file starts with an
+//  indefinite SEQUENCE, or a definite SEQUENCE { INTEGER,  ... }.
+bool CouldBePFX(const std::string& data) {
+  if (data.size() < 4)
+    return false;
+
+  // Indefinite length SEQUENCE.
+  if (data[0] == 0x30 && static_cast<uint8_t>(data[1]) == 0x80)
+    return true;
+
+  // If the SEQUENCE is definite length, it can be parsed through the version
+  // tag using DER parser, since INTEGER must be definite length, even in BER.
+  net::der::Parser parser((net::der::Input(&data)));
+  net::der::Parser sequence_parser;
+  if (!parser.ReadSequence(&sequence_parser))
+    return false;
+  if (!sequence_parser.SkipTag(net::der::kInteger))
+    return false;
+  return true;
 }
 
 }  // namespace
@@ -737,33 +772,9 @@ void CertificateManagerHandler::StartImportPersonal(
 
 void CertificateManagerHandler::ImportPersonalFileSelected(
     const base::FilePath& path) {
-  file_path_ = path;
-  if (IsFileExtensionPkcs12(file_path_)) {
-    web_ui()->CallJavascriptFunction(
-        "CertificateManager.importPersonalAskPassword");
-    return;
-  }
-
-  // Non .p12/.pfx files are treated as unencrypted certificates.
-  password_.clear();
   file_access_provider_->StartRead(
-      file_path_,
-      base::Bind(&CertificateManagerHandler::ImportPersonalFileRead,
-                 base::Unretained(this)),
-      &tracker_);
-}
-
-void CertificateManagerHandler::ImportPersonalPasswordSelected(
-    const base::ListValue* args) {
-  if (!args->GetString(0, &password_)) {
-    web_ui()->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
-    ImportExportCleanup();
-    return;
-  }
-  file_access_provider_->StartRead(
-      file_path_,
-      base::Bind(&CertificateManagerHandler::ImportPersonalFileRead,
-                 base::Unretained(this)),
+      path, base::Bind(&CertificateManagerHandler::ImportPersonalFileRead,
+                       base::Unretained(this)),
       &tracker_);
 }
 
@@ -782,22 +793,9 @@ void CertificateManagerHandler::ImportPersonalFileRead(
 
   file_data_ = *data;
 
-  if (IsFileExtensionPkcs12(file_path_)) {
-    if (use_hardware_backed_) {
-      module_ = certificate_manager_model_->cert_db()->GetPrivateModule();
-    } else {
-      module_ = certificate_manager_model_->cert_db()->GetPublicModule();
-    }
-
-    net::CryptoModuleList modules;
-    modules.push_back(module_);
-    chrome::UnlockSlotsIfNecessary(
-        modules,
-        chrome::kCryptoModulePasswordCertImport,
-        net::HostPortPair(),  // unused.
-        GetParentWindow(),
-        base::Bind(&CertificateManagerHandler::ImportPersonalSlotUnlocked,
-                   base::Unretained(this)));
+  if (CouldBePFX(file_data_)) {
+    web_ui()->CallJavascriptFunction(
+        "CertificateManager.importPersonalAskPassword");
     return;
   }
 
@@ -825,6 +823,31 @@ void CertificateManagerHandler::ImportPersonalFileRead(
   ShowError(
       l10n_util::GetStringUTF8(IDS_CERT_MANAGER_IMPORT_ERROR_TITLE),
       l10n_util::GetStringUTF8(string_id));
+}
+
+void CertificateManagerHandler::ImportPersonalPasswordSelected(
+    const base::ListValue* args) {
+  if (!args->GetString(0, &password_)) {
+    web_ui()->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
+    ImportExportCleanup();
+    return;
+  }
+
+  if (use_hardware_backed_) {
+    module_ = certificate_manager_model_->cert_db()->GetPrivateModule();
+  } else {
+    module_ = certificate_manager_model_->cert_db()->GetPublicModule();
+  }
+
+  net::CryptoModuleList modules;
+  modules.push_back(module_);
+  chrome::UnlockSlotsIfNecessary(
+      modules,
+      chrome::kCryptoModulePasswordCertImport,
+      net::HostPortPair(),  // unused.
+      GetParentWindow(),
+      base::Bind(&CertificateManagerHandler::ImportPersonalSlotUnlocked,
+                 base::Unretained(this)));
 }
 
 void CertificateManagerHandler::ImportPersonalSlotUnlocked() {
@@ -876,6 +899,7 @@ void CertificateManagerHandler::ImportExportCleanup() {
   use_hardware_backed_ = false;
   selected_cert_list_.clear();
   module_ = NULL;
+  tracker_.TryCancelAll();
 
   // There may be pending file dialogs, we need to tell them that we've gone
   // away so they don't try and call back to us.
@@ -897,11 +921,9 @@ void CertificateManagerHandler::ImportServer(const base::ListValue* args) {
 
 void CertificateManagerHandler::ImportServerFileSelected(
     const base::FilePath& path) {
-  file_path_ = path;
   file_access_provider_->StartRead(
-      file_path_,
-      base::Bind(&CertificateManagerHandler::ImportServerFileRead,
-                 base::Unretained(this)),
+      path, base::Bind(&CertificateManagerHandler::ImportServerFileRead,
+                       base::Unretained(this)),
       &tracker_);
 }
 
@@ -957,11 +979,9 @@ void CertificateManagerHandler::ImportCA(const base::ListValue* args) {
 
 void CertificateManagerHandler::ImportCAFileSelected(
     const base::FilePath& path) {
-  file_path_ = path;
   file_access_provider_->StartRead(
-      file_path_,
-      base::Bind(&CertificateManagerHandler::ImportCAFileRead,
-                 base::Unretained(this)),
+      path, base::Bind(&CertificateManagerHandler::ImportCAFileRead,
+                       base::Unretained(this)),
       &tracker_);
 }
 
