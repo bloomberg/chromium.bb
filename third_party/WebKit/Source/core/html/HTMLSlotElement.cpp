@@ -45,7 +45,6 @@ using namespace HTMLNames;
 inline HTMLSlotElement::HTMLSlotElement(Document& document)
     : HTMLElement(slotTag, document)
 {
-    setHasCustomStyleCallbacks();
 }
 
 DEFINE_NODE_FACTORY(HTMLSlotElement);
@@ -213,15 +212,6 @@ void HTMLSlotElement::removedFrom(ContainerNode* insertionPoint)
         root->didRemoveSlot();
 
     HTMLElement::removedFrom(insertionPoint);
-}
-
-void HTMLSlotElement::willRecalcStyle(StyleRecalcChange change)
-{
-    if (change < Inherit && styleChangeType() < SubtreeStyleChange)
-        return;
-
-    for (Node* node : m_distributedNodes)
-        node->setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::PropagateInheritChangeToDistributedNodes));
 }
 
 void HTMLSlotElement::updateDistributedNodesWithFallback()

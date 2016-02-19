@@ -63,20 +63,19 @@ public:
     void updateDistributedNodesWithFallback();
     void didUpdateDistribution();
 
-    void attach(const AttachContext& = AttachContext()) final;
-    void detach(const AttachContext& = AttachContext()) final;
+    void attach(const AttachContext& = AttachContext()) override;
+    void detach(const AttachContext& = AttachContext()) override;
 
-    void attributeChanged(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue, AttributeModificationReason = ModifiedDirectly) final;
+    void attributeChanged(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue, AttributeModificationReason = ModifiedDirectly) override;
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
     HTMLSlotElement(Document&);
 
-    void childrenChanged(const ChildrenChange&) final;
-    InsertionNotificationRequest insertedInto(ContainerNode*) final;
-    void removedFrom(ContainerNode*) final;
-    void willRecalcStyle(StyleRecalcChange) final;
+    void childrenChanged(const ChildrenChange&) override;
+    InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    void removedFrom(ContainerNode*) override;
 
     void dispatchSlotChangeEvent();
 
