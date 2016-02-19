@@ -137,6 +137,11 @@ public class ContextualSearchManager extends ContextualSearchObservable
     private TabRedirectHandler mTabRedirectHandler;
 
     /**
+     * Whether the Accessibility Mode is enabled.
+     */
+    private boolean mIsAccessibilityModeEnabled;
+
+    /**
      * The delegate that is responsible for promoting a {@link ContentViewCore} to a {@link Tab}
      * when necessary.
      */
@@ -786,6 +791,15 @@ public class ContextualSearchManager extends ContextualSearchObservable
         Log.i(TAG, "ctxs setCaption: '" + caption + "', " + doesAnswer);
     }
 
+    /**
+     * Notifies that the Accessibility Mode state has changed.
+     *
+     * @param enabled Whether the Accessibility Mode is enabled.
+     */
+    public void onAccessibilityModeChanged(boolean enabled) {
+        mIsAccessibilityModeEnabled = enabled;
+    }
+
     // ============================================================================================
     // ContextualSearchTranslateInterface
     // ============================================================================================
@@ -1157,16 +1171,22 @@ public class ContextualSearchManager extends ContextualSearchObservable
 
     @Override
     public void handleScroll() {
+        if (mIsAccessibilityModeEnabled) return;
+
         hideContextualSearch(StateChangeReason.BASE_PAGE_SCROLL);
     }
 
     @Override
     public void handleInvalidTap() {
+        if (mIsAccessibilityModeEnabled) return;
+
         hideContextualSearch(StateChangeReason.BASE_PAGE_TAP);
     }
 
     @Override
     public void handleValidTap() {
+        if (mIsAccessibilityModeEnabled) return;
+
         if (isTapSupported()) {
             // Here we are starting a new Contextual Search with a Tap gesture, therefore
             // we need to clear to properly reflect that a search just started and we don't
@@ -1184,6 +1204,8 @@ public class ContextualSearchManager extends ContextualSearchObservable
     @Override
     public void handleSelection(String selection, boolean selectionValid, SelectionType type,
             float x, float y) {
+        if (mIsAccessibilityModeEnabled) return;
+
         if (!selection.isEmpty()) {
             StateChangeReason stateChangeReason = type == SelectionType.TAP
                     ? StateChangeReason.TEXT_SELECT_TAP : StateChangeReason.TEXT_SELECT_LONG_PRESS;
@@ -1199,6 +1221,8 @@ public class ContextualSearchManager extends ContextualSearchObservable
 
     @Override
     public void handleSelectionDismissal() {
+        if (mIsAccessibilityModeEnabled) return;
+
         if (mSearchPanel.isShowing()
                 && !mIsPromotingToTab
                 // If the selection is dismissed when the Panel is not peeking anymore,
@@ -1214,6 +1238,8 @@ public class ContextualSearchManager extends ContextualSearchObservable
     @Override
     public void handleSelectionModification(
             String selection, boolean selectionValid, float x, float y) {
+        if (mIsAccessibilityModeEnabled) return;
+
         if (mSearchPanel.isShowing()) {
             if (selectionValid) {
                 mSearchPanel.displaySearchTerm(selection);
