@@ -12,7 +12,10 @@
 
 namespace {
 
+const unsigned kFormatVersion = 1;
+
 struct PSLRoot {
+  size_t format_version;
   const char *string_table;
 
   // Exports.
@@ -115,6 +118,8 @@ int main(int argc, char **argv) {
   int err = pnacl_load_elf_file(test_dso_file, &pso_root);
   ASSERT_EQ(err, 0);
   const PSLRoot *psl_root = (PSLRoot *) pso_root;
+
+  ASSERT_EQ(psl_root->format_version, kFormatVersion);
 
   // Test exports.
 
