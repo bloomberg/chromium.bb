@@ -317,7 +317,7 @@ PDFiumPage::Area PDFiumPage::GetCharIndex(const pp::Point& point,
 
   FPDF_LINK link = FPDFLink_GetLinkAtPoint(GetPage(), new_x, new_y);
   int control =
-      FPDPage_HasFormFieldAtPoint(engine_->form(), GetPage(), new_x, new_y);
+      FPDFPage_HasFormFieldAtPoint(engine_->form(), GetPage(), new_x, new_y);
 
   // If there is a control and link at the same point, figure out their z-order
   // to determine which is on top.
