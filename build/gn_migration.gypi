@@ -269,7 +269,6 @@
             '../chrome/chrome.gyp:chromedriver',
             '../chrome/chrome.gyp:chromedriver_tests',
             '../chrome/chrome.gyp:chromedriver_unittests',
-            '../cloud_print/cloud_print.gyp:cloud_print_unittests',
             '../content/content_shell_and_tests.gyp:content_shell',
             '../courgette/courgette.gyp:courgette',
             '../courgette/courgette.gyp:courgette_fuzz',
@@ -502,11 +501,6 @@
             '../chrome/installer/mini_installer.gyp:mini_installer',
             '../chrome_elf/chrome_elf.gyp:chrome_elf_unittests',
             '../chrome_elf/chrome_elf.gyp:dll_hash_main',
-            '../cloud_print/service/win/service.gyp:cloud_print_service',
-            '../cloud_print/service/win/service.gyp:cloud_print_service_config',
-            '../cloud_print/service/win/service.gyp:cloud_print_service_setup',
-            '../cloud_print/virtual_driver/win/install/virtual_driver_install.gyp:virtual_driver_setup',
-            '../cloud_print/virtual_driver/win/virtual_driver.gyp:gcp_portmon',
             '../components/components.gyp:wifi_test',
             '../net/net.gyp:quic_client',
             '../net/net.gyp:quic_server',
@@ -729,8 +723,6 @@
             # we decide we need for something. Owner: scottmg.
             '../chrome/tools/crash_service/caps/caps.gyp:caps',
 
-            '../cloud_print/gcp20/prototype/gcp20_device.gyp:gcp20_device',
-            '../cloud_print/gcp20/prototype/gcp20_device.gyp:gcp20_device_unittests',
             '../components/test_runner/test_runner.gyp:layout_test_helper',
             '../content/content_shell_and_tests.gyp:content_shell_crash_service',
             '../gpu/gpu.gyp:angle_end2end_tests',
@@ -756,8 +748,6 @@
             '../crypto/crypto.gyp:crypto_nacl_win64',
             '../ipc/ipc.gyp:ipc_win64',
             '../sandbox/sandbox.gyp:sandbox_win64',
-            '../cloud_print/virtual_driver/win/virtual_driver64.gyp:gcp_portmon64',
-            '../cloud_print/virtual_driver/win/virtual_driver64.gyp:virtual_driver_lib64',
           ],
         }],
         ['OS=="win" and target_arch=="ia32" and configuration_policy==1', {
