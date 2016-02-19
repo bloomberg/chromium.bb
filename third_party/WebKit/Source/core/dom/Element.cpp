@@ -2361,9 +2361,9 @@ void Element::focus(const FocusParams& params)
             return;
 
         // Slide the focus to its inner node.
-        Element* next = document().page()->focusController().findFocusableElement(WebFocusTypeForward, *this);
-        if (next && containsIncludingShadowDOM(next)) {
-            next->focus(FocusParams(SelectionBehaviorOnFocus::Reset, WebFocusTypeForward, nullptr));
+        Element* found = document().page()->focusController().findFocusableElementInShadowHost(*this);
+        if (found && containsIncludingShadowDOM(found)) {
+            found->focus(FocusParams(SelectionBehaviorOnFocus::Reset, WebFocusTypeForward, nullptr));
             return;
         }
     }

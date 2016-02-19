@@ -816,12 +816,17 @@ bool FocusController::advanceFocusInDocumentOrder(LocalFrame* frame, Node* start
     return true;
 }
 
-Element* FocusController::findFocusableElement(WebFocusType type, Node& node)
+Element* FocusController::findFocusableElement(WebFocusType type, Element& element)
 {
     // FIXME: No spacial navigation code yet.
     ASSERT(type == WebFocusTypeForward || type == WebFocusTypeBackward);
-    Element* found = findFocusableElementAcrossFocusScopes(type, FocusNavigationScope::focusNavigationScopeOf(node), &node);
-    return found;
+    return findFocusableElementAcrossFocusScopes(type, FocusNavigationScope::focusNavigationScopeOf(element), &element);
+}
+
+Element* FocusController::findFocusableElementInShadowHost(const Element& shadowHost)
+{
+    ASSERT(shadowHost.authorShadowRoot());
+    return findFocusableElementAcrossFocusScopes(WebFocusTypeForward, FocusNavigationScope::ownedByShadowHost(shadowHost), nullptr);
 }
 
 static bool relinquishesEditingFocus(const Element& element)
