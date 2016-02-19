@@ -198,7 +198,7 @@ template("java_binary_script") {
   action(target_name) {
     script = "//build/android/gyp/create_java_binary_script.py"
     depfile = "$target_gen_dir/$_script_name.d"
-    java_script = "$root_build_dir/bin/helper/$_script_name"
+    java_script = "$root_build_dir/bin/$_script_name"
     inputs = [
       _build_config,
     ]

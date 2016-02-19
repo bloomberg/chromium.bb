@@ -60,6 +60,7 @@
     ],
     'enable_errorprone%': 0,
     'errorprone_exe_path': '<(PRODUCT_DIR)/bin.java/chromium_errorprone',
+    'wrapper_script_name%': '<(_target_name)',
   },
   'all_dependent_settings': {
     'variables': {
@@ -122,7 +123,7 @@
           'action_name': 'create_java_binary_script_<(_target_name)',
           'message': 'Creating java binary script <(_target_name)',
           'variables': {
-            'output': '<(PRODUCT_DIR)/bin/helper/<(_target_name)',
+            'output': '<(PRODUCT_DIR)/bin/<(wrapper_script_name)',
           },
           'inputs': [
             '<(DEPTH)/build/android/gyp/create_java_binary_script.py',

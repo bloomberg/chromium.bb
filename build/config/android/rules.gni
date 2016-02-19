@@ -971,7 +971,7 @@ template("junit_binary") {
     testonly = true
     bypass_platform_checks = true
     main_class = "org.chromium.testing.local.JunitTestMain"
-    wrapper_script_name = "$target_name"
+    wrapper_script_name = "helper/$target_name"
 
     deps += [
       "//testing/android/junit:junit_test_support",
