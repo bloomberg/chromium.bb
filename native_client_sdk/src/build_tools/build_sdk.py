@@ -630,11 +630,11 @@ def BuildStepMakeAll(pepperdir, directory, step_name,
                                      deps, config, args)
 
 
-def BuildStepBuildLibraries(pepperdir, directory):
-  BuildStepMakeAll(pepperdir, directory, 'Build Libraries Debug',
-      clean=True, config='Debug')
-  BuildStepMakeAll(pepperdir, directory, 'Build Libraries Release',
-      clean=True, config='Release')
+def BuildStepBuildLibraries(pepperdir, args=None):
+  BuildStepMakeAll(pepperdir, 'src', 'Build Libraries Debug',
+      clean=True, config='Debug', args=args)
+  BuildStepMakeAll(pepperdir, 'src', 'Build Libraries Release',
+      clean=True, config='Release', args=args)
 
   # Cleanup .pyc file generated while building libraries.  Without
   # this we would end up shipping the pyc in the SDK tarball.
@@ -923,7 +923,7 @@ def main(args):
   BuildStepCopyTextFiles(pepperdir, pepper_ver, chrome_revision, nacl_revision)
 
   # Ship with libraries prebuilt, so run that first.
-  BuildStepBuildLibraries(pepperdir, 'src')
+  BuildStepBuildLibraries(pepperdir)
   GenerateNotice(pepperdir)
 
   # Verify the SDK contains what we expect.

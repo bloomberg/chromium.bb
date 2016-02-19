@@ -56,11 +56,31 @@ def StepCopyTests(pepperdir, toolchains, build_experimental):
                                 toolchains=toolchains)
 
 
-def StepBuildTests(pepperdir):
+def StepBuildLibraries(pepperdir, sanitizer):
   for config in ('Debug', 'Release'):
-    build_sdk.BuildStepMakeAll(pepperdir, 'tests',
-                                   'Build Tests (%s)' % config,
-                                   deps=False, config=config)
+    title = 'Build Libs (%s)[sanitizer=%s]' % (config, sanitizer)
+    build_sdk.BuildStepMakeAll(pepperdir, 'src', title, config=config,
+        args=GetSanitizerArgs(sanitizer))
+
+
+def StepBuildTests(pepperdir, sanitizer):
+  for config in ('Debug', 'Release'):
+    title = 'Build Tests (%s)' % config
+    if sanitizer:
+      title += '[sanitizer=%s]'  % sanitizer
+
+    build_sdk.BuildStepMakeAll(pepperdir, 'tests', title, deps=False,
+        config=config, args=GetSanitizerArgs(sanitizer))
+
+
+def GetSanitizerArgs(sanitizer):
+  if sanitizer == 'valgrind':
+    return ['TOOLCHAIN=linux', 'RUN_UNDER=valgrind']
+  elif sanitizer == 'address':
+    return ['TOOLCHAIN=linux', 'ASAN=1']
+  elif sanitizer == 'thread':
+    return ['TOOLCHAIN=linux', 'TSAN=1']
+  return []
 
 
 def StepRunSelLdrTests(pepperdir, sanitizer):
@@ -72,24 +92,12 @@ def StepRunSelLdrTests(pepperdir, sanitizer):
 
   def RunTest(test, toolchain, config, arch=None):
     args = ['STANDALONE=1', 'TOOLCHAIN=%s' % toolchain]
+    args += GetSanitizerArgs(sanitizer)
     if arch is not None:
       args.append('NACL_ARCH=%s' % arch)
-    deps = False
-
-    if sanitizer is not None:
-      # For sanitizer builds we pass extra argument for make, and do
-      # full clean build to make sure everything is rebuilt with the
-      # correct flags
-      deps = True
-      if sanitizer == 'valgrind':
-        args += ['RUN_UNDER=valgrind']
-      elif sanitizer == 'address':
-        args += ['ASAN=1']
-      elif sanitizer == 'thread':
-        args += ['TSAN=1']
 
     build_projects.BuildProjectsBranch(pepperdir, test, clean=False,
-                                       deps=deps, config=config,
+                                       deps=False, config=config,
                                        args=args + ['run'])
 
   if getos.GetPlatform() == 'win':
@@ -190,18 +198,31 @@ def main(args):
   phases = [
     ('build_examples', StepBuildExamples, pepperdir),
     ('copy_tests', StepCopyTests, pepperdir, toolchains, options.experimental),
-    ('build_tests', StepBuildTests, pepperdir),
-    ('sel_ldr_tests', StepRunSelLdrTests, pepperdir, None),
-    ('browser_tests', StepRunBrowserTests, toolchains, options.experimental),
+    ('build_tests', StepBuildTests, pepperdir, None),
   ]
 
   if options.sanitizer:
     if getos.GetPlatform() != 'linux':
       buildbot_common.ErrorExit('sanitizer tests only run on linux.')
+    clang_dir = os.path.join(SRC_DIR, 'third_party', 'llvm-build',
+        'Release+Asserts', 'bin')
+    os.environ['PATH'] = clang_dir + os.pathsep + os.environ['PATH']
+
     phases += [
+      ('build_libs_asan', StepBuildLibraries, pepperdir, 'address'),
+      ('build_libs_tsan', StepBuildLibraries, pepperdir, 'thread'),
+      ('build_tests_asan', StepBuildTests, pepperdir, 'address'),
+      ('build_tests_tsan', StepBuildTests, pepperdir, 'thread'),
       ('sel_ldr_tests_asan', StepRunSelLdrTests, pepperdir, 'address'),
       ('sel_ldr_tests_tsan', StepRunSelLdrTests, pepperdir, 'thread'),
-      ('sel_ldr_tests_valgrind', StepRunSelLdrTests, pepperdir, 'valgrind')
+      # TODO(sbc): get valgrind installed on the bots to enable this
+      # configuration
+      #('sel_ldr_tests_valgrind', StepRunSelLdrTests, pepperdir, 'valgrind')
+    ]
+  else:
+    phases += [
+      ('sel_ldr_tests', StepRunSelLdrTests, pepperdir, None),
+      ('browser_tests', StepRunBrowserTests, toolchains, options.experimental),
     ]
 
   if options.phases:
