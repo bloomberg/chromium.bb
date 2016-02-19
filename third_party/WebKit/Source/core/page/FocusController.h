@@ -92,7 +92,7 @@ private:
 
     bool advanceFocus(WebFocusType, bool initialFocus, InputDeviceCapabilities* sourceCapabilities = nullptr);
     bool advanceFocusDirectionally(WebFocusType);
-    bool advanceFocusInDocumentOrder(LocalFrame*, Node* startingNode, WebFocusType, bool initialFocus, InputDeviceCapabilities* sourceCapabilities);
+    bool advanceFocusInDocumentOrder(LocalFrame*, Element* start, WebFocusType, bool initialFocus, InputDeviceCapabilities* sourceCapabilities);
 
     bool advanceFocusDirectionallyInContainer(Node* container, const LayoutRect& startingRect, WebFocusType);
     void findFocusCandidateInContainer(Node& container, const LayoutRect& startingRect, WebFocusType, FocusCandidate& closest);

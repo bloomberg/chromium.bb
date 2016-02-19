@@ -74,7 +74,7 @@ class FocusNavigationScope {
 public:
     Node* rootNode() const;
     Element* owner() const;
-    static FocusNavigationScope focusNavigationScopeOf(const Node&);
+    static FocusNavigationScope focusNavigationScopeOf(const Element&);
     static FocusNavigationScope ownedByNonFocusableFocusScopeOwner(Element&);
     static FocusNavigationScope ownedByShadowHost(const Element&);
     static FocusNavigationScope ownedByShadowInsertionPoint(HTMLShadowElement&);
@@ -109,9 +109,9 @@ Element* FocusNavigationScope::owner() const
     return nullptr;
 }
 
-FocusNavigationScope FocusNavigationScope::focusNavigationScopeOf(const Node& node)
+FocusNavigationScope FocusNavigationScope::focusNavigationScopeOf(const Element& element)
 {
-    return FocusNavigationScope(&node.treeScope());
+    return FocusNavigationScope(&element.treeScope());
 }
 
 FocusNavigationScope FocusNavigationScope::ownedByNonFocusableFocusScopeOwner(Element& element)
@@ -529,6 +529,16 @@ Element* findFocusableElementAcrossFocusScopes(WebFocusType type, const FocusNav
         findFocusableElementAcrossFocusScopesBackward(scope, currentNode);
 }
 
+inline Element* adjustToElement(Node* node, WebFocusType type)
+{
+    ASSERT(type == WebFocusTypeForward || type == WebFocusTypeBackward);
+    if (!node)
+        return nullptr;
+    if (node->isElementNode())
+        return toElement(node);
+    return (type == WebFocusTypeForward) ? ElementTraversal::next(*node) : ElementTraversal::previous(*node);
+}
+
 } // anonymous namespace
 
 FocusController::FocusController(Page* page)
@@ -714,33 +724,34 @@ bool FocusController::advanceFocusAcrossFrames(WebFocusType type, RemoteFrame* f
     // child frame has no more focusable elements, and we should continue
     // looking for focusable elements in the parent, starting from the <iframe>
     // element of the child frame.
-    Node* startingNode = nullptr;
+    Element* start = nullptr;
     if (from->tree().parent() == to) {
         ASSERT(from->owner()->isLocal());
-        startingNode = toHTMLFrameOwnerElement(from->owner());
+        start = toHTMLFrameOwnerElement(from->owner());
     }
 
-    return advanceFocusInDocumentOrder(to, startingNode, type, false, sourceCapabilities);
+    return advanceFocusInDocumentOrder(to, start, type, false, sourceCapabilities);
 }
 
-bool FocusController::advanceFocusInDocumentOrder(LocalFrame* frame, Node* startingNode, WebFocusType type, bool initialFocus, InputDeviceCapabilities* sourceCapabilities)
+bool FocusController::advanceFocusInDocumentOrder(LocalFrame* frame, Element* start, WebFocusType type, bool initialFocus, InputDeviceCapabilities* sourceCapabilities)
 {
     ASSERT(frame);
     Document* document = frame->document();
+    ASSERT(document->documentElement());
 
-    Node* currentNode = startingNode;
-    if (!currentNode)
-        currentNode = document->focusedElement();
+    Element* current = start;
+    if (!current)
+        current = document->focusedElement();
 
     // FIXME: Not quite correct when it comes to focus transitions leaving/entering the WebView itself
     bool caretBrowsing = frame->settings() && frame->settings()->caretBrowsingEnabled();
 
-    if (caretBrowsing && !currentNode)
-        currentNode = frame->selection().start().anchorNode();
+    if (caretBrowsing && !current)
+        current = adjustToElement(frame->selection().start().anchorNode(), type);
 
     document->updateLayoutIgnorePendingStylesheets();
 
-    RefPtrWillBeRawPtr<Element> element = findFocusableElementAcrossFocusScopes(type, FocusNavigationScope::focusNavigationScopeOf(currentNode ? *currentNode : *document), currentNode);
+    RefPtrWillBeRawPtr<Element> element = findFocusableElementAcrossFocusScopes(type, FocusNavigationScope::focusNavigationScopeOf(current ? *current : *document->documentElement()), current);
 
     if (!element) {
         // If there's a RemoteFrame on the ancestor chain, we need to continue
@@ -760,7 +771,7 @@ bool FocusController::advanceFocusInDocumentOrder(LocalFrame* frame, Node* start
         }
 
         // Chrome doesn't want focus, so we should wrap focus.
-        element = findFocusableElementRecursively(type, FocusNavigationScope::focusNavigationScopeOf(*toLocalFrame(m_page->mainFrame())->document()), nullptr);
+        element = findFocusableElementRecursively(type, FocusNavigationScope::focusNavigationScopeOf(*toLocalFrame(m_page->mainFrame())->document()->documentElement()), nullptr);
         element = findFocusableElementDescendingDownIntoFrameDocument(type, element.get());
 
         if (!element)
