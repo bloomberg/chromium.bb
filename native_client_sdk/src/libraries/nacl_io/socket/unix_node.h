@@ -49,6 +49,7 @@ class UnixNode : public SocketNode {
                        const struct sockaddr* dest_addr,
                        socklen_t addrlen,
                        int* out_len);
+  virtual Error Shutdown(int how);
 
  private:
   ScopedUnixEventEmitter emitter_;

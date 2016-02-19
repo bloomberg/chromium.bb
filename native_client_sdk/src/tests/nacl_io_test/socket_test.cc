@@ -11,7 +11,9 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 
+#include <iterator>
 #include <map>
+#include <vector>
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -420,6 +422,151 @@ TEST_F(UnixSocketTest, RecvNonBlockingDgram) {
   EXPECT_EQ(1, ki_poll(&pollfd, 1, 0));
   EXPECT_EQ(POLLOUT, pollfd.revents & POLLOUT);
   EXPECT_NE(POLLIN, pollfd.revents & POLLIN);
+}
+
+namespace {
+using std::vector;
+using std::min;
+using std::advance;
+using std::distance;
+
+typedef vector<uint8_t> Buffer;
+typedef Buffer::iterator BufferIterator;
+typedef Buffer::const_iterator BufferConstIterator;
+
+const size_t kReceiveBufferSize = 2 * 1024 * 1024;
+const size_t kThreadSendSize = 512 * 1024;
+const size_t kMainSendSize = 1024 * 1024;
+
+const uint8_t kThreadPattern[] = {0xAA, 0x12, 0x55, 0x34, 0xCC, 0x33};
+
+// Exercises the implementation of an AF_UNIX socket. Will read from the socket
+// into read_buf until EOF (or read_buf is full) whenever the socket is readable
+// and write send_size number of bytes into the socket according to pattern.
+// The test UnixSocketMultithreadedTest.SendRecv uses this function to quickly
+// push about 1 Meg of data between two threads over a socketpair.
+void ReadWriteSocket(int fd,
+                     const uint8_t* pattern,
+                     const size_t pattern_size,
+                     const size_t send_size,
+                     Buffer* read_vector) {
+  Buffer send;
+  while (send.size() != send_size) {
+    size_t s = min(pattern_size, send_size - send.size());
+    send.insert(send.end(), &pattern[0], &pattern[s]);
+  }
+
+  bool read_complete = false, write_complete = false;
+
+  size_t received_count = 0;
+  read_vector->resize(kReceiveBufferSize);
+
+  BufferConstIterator send_iterator(send.begin());
+  BufferConstIterator send_end(send.end());
+  struct timeval timeout;
+  timeout.tv_sec = 10;
+  timeout.tv_usec = 0;
+  while (!read_complete || !write_complete) {
+    fd_set rfd;
+    FD_ZERO(&rfd);
+    if (!read_complete) {
+      FD_SET(fd, &rfd);
+    }
+    fd_set wfd;
+    FD_ZERO(&wfd);
+    if (!write_complete) {
+      FD_SET(fd, &wfd);
+    }
+    struct timeval tv = timeout;
+
+    // Should not timeout, but added to fail test and allow to proceed.
+    EXPECT_LT(0, select(fd + 1, &rfd, &wfd, NULL, &tv));
+    if (!FD_ISSET(fd, &rfd) && !FD_ISSET(fd, &wfd)) {
+      FAIL() << "Select returned with neither readable nor writable fd.";
+    }
+
+    if (!read_complete && FD_ISSET(fd, &rfd)) {
+      if (received_count == read_vector->size()) {
+        read_vector->resize(read_vector->size() + kReceiveBufferSize);
+      }
+      ssize_t len =
+          ki_recv(fd, read_vector->data() + received_count,
+                  read_vector->size() - received_count, /* flags */ 0);
+      ASSERT_LE(0, len) << "Read should succeed";
+      if (len == 0) {
+        read_complete = true;
+        read_vector->resize(received_count);
+      }
+      received_count += len;
+    }
+    if (!write_complete && FD_ISSET(fd, &wfd)) {
+      ssize_t len = ki_send(fd, &(*send_iterator),
+                            distance(send_iterator, send_end), /* flags */ 0);
+      ASSERT_LE(0, len) << "Write should succeed";
+      advance(send_iterator, len);
+      if (send_iterator == send_end) {
+        EXPECT_EQ(0, ki_shutdown(fd, SHUT_WR));
+        write_complete = true;
+      }
+    }
+  }
+}
+
+class UnixSocketMultithreadedTest : public UnixSocketTest {
+ public:
+  void SetUp() {
+    UnixSocketTest::SetUp();
+    EXPECT_EQ(0, ki_socketpair(AF_UNIX, SOCK_STREAM, 0, sv_));
+  }
+
+  void TearDown() { UnixSocketTest::TearDown(); }
+
+  pthread_t CreateThread() {
+    pthread_t id;
+    EXPECT_EQ(0, pthread_create(&id, NULL, ThreadThunk, this));
+    return id;
+  }
+
+ private:
+  static void* ThreadThunk(void* ptr) {
+    return static_cast<UnixSocketMultithreadedTest*>(ptr)->ThreadEntry();
+  }
+
+  void* ThreadEntry() {
+    int fd = sv_[1];
+
+    ReadWriteSocket(fd, kThreadPattern, sizeof(kThreadPattern), kThreadSendSize,
+                    &thread_buffer_);
+    return NULL;
+  }
+
+ protected:
+  Buffer thread_buffer_;
+};
+
+}  // namespace
+
+TEST_F(UnixSocketMultithreadedTest, SendRecv) {
+  pthread_t thread = CreateThread();
+
+  uint8_t pattern[] = {0xA5, 0x00, 0xC3, 0xFF};
+  size_t pattern_size = sizeof(pattern);
+  Buffer main_read_buf;
+
+  ReadWriteSocket(sv_[0], pattern, pattern_size, kMainSendSize, &main_read_buf);
+
+  pthread_join(thread, NULL);
+
+  EXPECT_EQ(kMainSendSize, thread_buffer_.size());
+  EXPECT_EQ(kThreadSendSize, main_read_buf.size());
+  for (size_t i = 0; i != thread_buffer_.size(); ++i) {
+    EXPECT_EQ(pattern[i % pattern_size], thread_buffer_[i])
+        << "Invalid result at position " << i << "in data received by thread";
+  }
+  for (size_t i = 0; i != main_read_buf.size(); ++i) {
+    EXPECT_EQ(kThreadPattern[i % sizeof(kThreadPattern)], main_read_buf[i])
+        << "Invalid result at position " << i << "in data received by main";
+  }
 }
 
 TEST(SocketUtilityFunctions, Htonl) {

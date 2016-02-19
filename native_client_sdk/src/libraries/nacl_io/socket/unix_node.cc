@@ -6,6 +6,7 @@
 #ifdef PROVIDES_SOCKET_API
 
 #include <assert.h>
+#include <errno.h>
 #include <string.h>
 #include <algorithm>
 
@@ -35,7 +36,7 @@ Error UnixNode::Recv_Locked(void* buffer,
                             PP_Resource* out_addr,
                             int* out_len) {
   assert(emitter_.get());
-  *out_len = emitter_->ReadIn_Locked((char*)buffer, len);
+  *out_len = emitter_->ReadIn_Locked(static_cast<char*>(buffer), len);
   *out_addr = 0;
   return 0;
 }
@@ -45,7 +46,10 @@ Error UnixNode::Send_Locked(const void* buffer,
                             PP_Resource out_addr,
                             int* out_len) {
   assert(emitter_.get());
-  *out_len = emitter_->WriteOut_Locked((char*)buffer, len);
+  if (emitter_->IsShutdownWrite()) {
+    return EPIPE;
+  }
+  *out_len = emitter_->WriteOut_Locked(static_cast<const char*>(buffer), len);
   return 0;
 }
 
@@ -88,6 +92,29 @@ Error UnixNode::SendTo(const HandleAttr& attr,
                        int* out_len) {
   PP_Resource addr = 0;
   return SendHelper(attr, buf, len, flags, addr, out_len);
+}
+
+Error UnixNode::Shutdown(int how) {
+  bool read;
+  bool write;
+  switch (how) {
+    case SHUT_RDWR:
+      read = write = true;
+      break;
+    case SHUT_RD:
+      read = true;
+      write = false;
+      break;
+    case SHUT_WR:
+      read = false;
+      write = true;
+      break;
+    default:
+      return EINVAL;
+  }
+  AUTO_LOCK(emitter_->GetLock());
+  emitter_->Shutdown_Locked(read, write);
+  return 0;
 }
 
 }  // namespace nacl_io
