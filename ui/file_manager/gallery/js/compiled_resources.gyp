@@ -104,6 +104,7 @@
           '../../file_manager/foreground/js/share_client.js',
           '../../file_manager/foreground/js/thumbnail_loader.js',
           '../../file_manager/foreground/js/ui/file_manager_dialog_base.js',
+          '../../file_manager/foreground/js/ui/files_confirm_dialog.js',
           '../../file_manager/foreground/js/ui/share_dialog.js',
           '../../file_manager/foreground/js/volume_manager_wrapper.js',
           '../../file_manager/background/js/volume_manager.js',

@@ -42,24 +42,24 @@ function FileManagerUI(providersModel, element, launchParam) {
 
   /**
    * Alert dialog.
-   * @type {!cr.ui.dialogs.AlertDialog}
+   * @type {!FilesAlertDialog}
    * @const
    */
-  this.alertDialog = new cr.ui.dialogs.AlertDialog(this.element);
+  this.alertDialog = new FilesAlertDialog(this.element);
 
   /**
    * Confirm dialog.
-   * @type {!cr.ui.dialogs.ConfirmDialog}
+   * @type {!FilesConfirmDialog}
    * @const
    */
-  this.confirmDialog = new cr.ui.dialogs.ConfirmDialog(this.element);
+  this.confirmDialog = new FilesConfirmDialog(this.element);
 
   /**
    * Confirm dialog for delete.
-   * @type {!cr.ui.dialogs.ConfirmDialog}
+   * @type {!FilesConfirmDialog}
    * @const
    */
-  this.deleteConfirmDialog = new cr.ui.dialogs.ConfirmDialog(this.element);
+  this.deleteConfirmDialog = new FilesConfirmDialog(this.element);
   this.deleteConfirmDialog.setOkLabel(str('DELETE_BUTTON_LABEL'));
 
   /**

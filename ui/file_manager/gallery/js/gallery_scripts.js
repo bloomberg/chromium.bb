@@ -57,6 +57,7 @@
 //<include src="../../file_manager/foreground/js/share_client.js">
 //<include src="../../file_manager/foreground/js/thumbnail_loader.js">
 //<include src="../../file_manager/foreground/js/ui/file_manager_dialog_base.js">
+//<include src="../../file_manager/foreground/js/ui/files_confirm_dialog.js">
 //<include src="../../file_manager/foreground/js/ui/share_dialog.js">
 //<include src="../../file_manager/foreground/js/volume_manager_wrapper.js">
 

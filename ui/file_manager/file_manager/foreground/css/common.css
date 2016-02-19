@@ -320,6 +320,16 @@ html[dir='rtl'] .cr-dialog-close {
   opacity: 1;
 }
 
+.files-alert-dialog .cr-dialog-close,
+.files-confirm-dialog .cr-dialog-close {
+  display: none;
+}
+
+.files-alert-dialog .cr-dialog-text,
+.files-confirm-dialog .cr-dialog-text {
+  font-size: 14px;
+}
+
 /* Minor tweak of vertical position for texts which need to be vertically
  * aligned with corresponding file-type icons. */
 .tree-row > .label,

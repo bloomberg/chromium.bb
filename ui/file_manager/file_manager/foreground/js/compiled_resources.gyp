@@ -133,6 +133,8 @@
           './ui/file_manager_ui.js',
           './ui/file_table.js',
           './ui/file_table_list.js',
+          './ui/files_alert_dialog.js',
+          './ui/files_confirm_dialog.js',
           './ui/files_menu.js',
           './ui/gear_menu.js',
           './ui/list_container.js',
