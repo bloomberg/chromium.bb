@@ -59,6 +59,7 @@ class MediaPipelineImpl {
   void Stop();
   void SetPlaybackRate(double playback_rate);
   void SetVolume(float volume);
+  base::TimeDelta GetMediaTime() const;
   bool HasAudio() const;
   bool HasVideo() const;
 

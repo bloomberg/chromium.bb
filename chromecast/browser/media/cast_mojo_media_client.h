@@ -2,31 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_MEDIA_MOJO_CAST_MOJO_MEDIA_CLIENT_H_
-#define CHROMECAST_MEDIA_MOJO_CAST_MOJO_MEDIA_CLIENT_H_
+#ifndef CHROMECAST_BROWSER_MEDIA_CAST_MOJO_MEDIA_CLIENT_H_
+#define CHROMECAST_BROWSER_MEDIA_CAST_MOJO_MEDIA_CLIENT_H_
 
 #include "media/mojo/services/mojo_media_client.h"
 
 namespace chromecast {
 namespace media {
 
+class CmaMediaPipelineClient;
+
 class CastMojoMediaClient : public ::media::MojoMediaClient {
  public:
-  CastMojoMediaClient();
+  CastMojoMediaClient(scoped_refptr<CmaMediaPipelineClient> pipeline_client);
   ~CastMojoMediaClient() override;
 
-  static scoped_ptr<::media::MojoMediaClient> Create();
-
   // MojoMediaClient overrides.
-  void Initialize() override;
   scoped_ptr<::media::RendererFactory> CreateRendererFactory(
       const scoped_refptr<::media::MediaLog>& media_log) override;
 
  private:
+  scoped_refptr<CmaMediaPipelineClient> pipeline_client_;
   DISALLOW_COPY_AND_ASSIGN(CastMojoMediaClient);
 };
 
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_MEDIA_MOJO_CAST_MOJO_MEDIA_CLIENT_H_
+#endif  // CHROMECAST_BROWSER_MEDIA_CAST_MOJO_MEDIA_CLIENT_H_

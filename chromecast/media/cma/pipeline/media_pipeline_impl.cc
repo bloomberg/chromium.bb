@@ -119,7 +119,6 @@ void MediaPipelineImpl::Initialize(
 void MediaPipelineImpl::SetClient(const MediaPipelineClient& client) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!client.error_cb.is_null());
-  DCHECK(!client.time_update_cb.is_null());
   DCHECK(!client.buffering_state_cb.is_null());
   DCHECK(!client.pipeline_backend_created_cb.is_null());
   DCHECK(!client.pipeline_backend_destroyed_cb.is_null());
@@ -319,6 +318,11 @@ void MediaPipelineImpl::SetVolume(float volume) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (audio_pipeline_)
     audio_pipeline_->SetVolume(volume);
+}
+
+base::TimeDelta MediaPipelineImpl::GetMediaTime() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return last_media_time_;
 }
 
 bool MediaPipelineImpl::HasAudio() const {

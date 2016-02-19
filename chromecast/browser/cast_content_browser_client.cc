@@ -52,7 +52,7 @@
 #include "ui/gl/gl_switches.h"
 
 #if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-#include "chromecast/media/mojo/cast_mojo_media_client.h"
+#include "chromecast/browser/media/cast_mojo_media_client.h"
 // nogncheck because of conditional dependency.
 #include "media/mojo/services/mojo_media_application.h"  // nogncheck
 #endif  // ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS
@@ -66,6 +66,19 @@
 
 namespace chromecast {
 namespace shell {
+
+namespace {
+#if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
+static scoped_ptr<mojo::ShellClient> CreateCastMojoMediaApplication(
+    CastContentBrowserClient* browser_client) {
+  scoped_ptr<::media::MojoMediaClient> mojo_media_client(
+      new media::CastMojoMediaClient(
+          browser_client->CreateCmaMediaPipelineClient()));
+  return scoped_ptr<mojo::ShellClient>(
+      new ::media::MojoMediaApplication(std::move(mojo_media_client)));
+}
+#endif  // ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS
+}  // namespace
 
 CastContentBrowserClient::CastContentBrowserClient()
     : url_request_context_factory_(new URLRequestContextFactory()) {
@@ -355,18 +368,12 @@ bool CastContentBrowserClient::CanCreateWindow(
   return false;
 }
 
-#if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-static scoped_ptr<mojo::ShellClient> CreateCastMojoMediaApplication() {
-  return scoped_ptr<mojo::ShellClient>(new ::media::MojoMediaApplication(
-      make_scoped_ptr(new media::CastMojoMediaClient())));
-}
-#endif
-
 void CastContentBrowserClient::RegisterInProcessMojoApplications(
     StaticMojoApplicationMap* apps) {
 #if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-  apps->insert(std::make_pair(GURL("mojo:media"),
-                              base::Bind(&CreateCastMojoMediaApplication)));
+  apps->insert(std::make_pair(
+      GURL("mojo:media"),
+      base::Bind(&CreateCastMojoMediaApplication, base::Unretained(this))));
 #endif
 }
 

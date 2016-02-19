@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//chromecast/chromecast.gni")
+import("//media/media_options.gni")
 
 source_set("media") {
   sources = [
@@ -14,8 +15,23 @@ source_set("media") {
     "media_pipeline_host.h",
   ]
 
+  if (enable_mojo_media == "browser") {
+    sources += [
+      "cast_mojo_media_client.cc",
+      "cast_mojo_media_client.h",
+      "cast_renderer.cc",
+      "cast_renderer.h",
+    ]
+  }
+
   if (use_playready) {
     public_configs = [ "//chromecast:playready_config" ]
+  }
+
+  if (enable_mojo_media == "browser") {
+    public_deps = [
+      "//media/mojo/services:application",
+    ]
   }
 
   deps = [

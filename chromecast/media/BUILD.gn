@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//chromecast/chromecast.gni")
-import("//media/media_options.gni")
 import("//testing/test.gni")
 
 group("media") {
@@ -13,10 +12,6 @@ group("media") {
     "//chromecast/media/cdm",
     "//chromecast/media/cma",
   ]
-
-  if (enable_mojo_media == "browser") {
-    public_deps += [ "//chromecast/media/mojo" ]
-  }
 }
 
 test("cast_media_unittests") {
