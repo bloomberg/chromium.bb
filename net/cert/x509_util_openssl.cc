@@ -35,7 +35,6 @@ using ScopedASN1_STRING = crypto::ScopedOpenSSL<ASN1_STRING, ASN1_STRING_free>;
 using ScopedASN1_TIME = crypto::ScopedOpenSSL<ASN1_TIME, ASN1_TIME_free>;
 using ScopedX509_EXTENSION =
     crypto::ScopedOpenSSL<X509_EXTENSION, X509_EXTENSION_free>;
-using ScopedX509_NAME = crypto::ScopedOpenSSL<X509_NAME, X509_NAME_free>;
 
 const EVP_MD* ToEVP(x509_util::DigestAlgorithm alg) {
   switch (alg) {

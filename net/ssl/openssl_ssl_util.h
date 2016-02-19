@@ -7,7 +7,11 @@
 
 #include <stdint.h>
 
+#include <openssl/ssl.h>
+
+#include "net/cert/x509_certificate.h"
 #include "net/log/net_log.h"
+#include "net/ssl/scoped_openssl_types.h"
 
 namespace crypto {
 class OpenSSLErrStackTracer;
@@ -68,6 +72,15 @@ NetLog::ParametersCallback CreateNetLogOpenSSLErrorCallback(
     int net_error,
     int ssl_error,
     const OpenSSLErrorInfo& error_info);
+
+// Returns the net SSL version number (see ssl_connection_status_flags.h) for
+// this SSL connection.
+int GetNetSSLVersion(SSL* ssl);
+
+ScopedX509 OSCertHandleToOpenSSL(X509Certificate::OSCertHandle os_handle);
+
+ScopedX509Stack OSCertHandlesToOpenSSL(
+    const X509Certificate::OSCertHandles& os_handles);
 
 }  // namespace net
 

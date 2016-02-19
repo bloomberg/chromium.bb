@@ -8397,7 +8397,8 @@ class SSLClientAuthTestDelegate : public TestDelegate {
 TEST_F(HTTPSRequestTest, ClientAuthTest) {
   EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
   net::SSLServerConfig ssl_config;
-  ssl_config.require_client_cert = true;
+  ssl_config.client_cert_type =
+      SSLServerConfig::ClientCertType::OPTIONAL_CLIENT_CERT;
   test_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK, ssl_config);
   test_server.AddDefaultHandlers(
       base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));

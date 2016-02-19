@@ -14,8 +14,16 @@
 
 namespace net {
 
+class ClientCertVerifier;
+
 // A collection of server-side SSL-related configuration settings.
 struct NET_EXPORT SSLServerConfig {
+  enum ClientCertType {
+    NO_CLIENT_CERT,
+    OPTIONAL_CLIENT_CERT,
+    REQUIRE_CLIENT_CERT,
+  };
+
   // Defaults
   SSLServerConfig();
   ~SSLServerConfig();
@@ -53,9 +61,21 @@ struct NET_EXPORT SSLServerConfig {
   // If true, causes only ECDHE cipher suites to be enabled.
   bool require_ecdhe;
 
-  // Requires a client certificate for client authentication from the client.
-  // This doesn't currently enforce certificate validity.
-  bool require_client_cert;
+  // Sets the requirement for client certificates during handshake.
+  ClientCertType client_cert_type;
+
+  // List of DER-encoded X.509 DistinguishedName of certificate authorities
+  // to be included in the CertificateRequest handshake message,
+  // if client certificates are required.
+  std::vector<std::string> cert_authorities_;
+
+  // Provides the ClientCertVerifier that is to be used to verify
+  // client certificates during the handshake.
+  // The |client_cert_verifier| continues to be owned by the caller,
+  // and must outlive any sockets using this SSLServerConfig.
+  // This field is meaningful only if client certificates are requested.
+  // If a verifier is not provided then all certificates are accepted.
+  ClientCertVerifier* client_cert_verifier;
 };
 
 }  // namespace net

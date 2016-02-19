@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "crypto/openssl_util.h"
 #include "net/base/net_errors.h"
+#include "net/ssl/ssl_connection_status_flags.h"
 
 namespace net {
 
@@ -203,6 +204,44 @@ NetLog::ParametersCallback CreateNetLogOpenSSLErrorCallback(
     const OpenSSLErrorInfo& error_info) {
   return base::Bind(&NetLogOpenSSLErrorCallback,
                     net_error, ssl_error, error_info);
+}
+
+int GetNetSSLVersion(SSL* ssl) {
+  switch (SSL_version(ssl)) {
+    case TLS1_VERSION:
+      return SSL_CONNECTION_VERSION_TLS1;
+    case TLS1_1_VERSION:
+      return SSL_CONNECTION_VERSION_TLS1_1;
+    case TLS1_2_VERSION:
+      return SSL_CONNECTION_VERSION_TLS1_2;
+    default:
+      NOTREACHED();
+      return SSL_CONNECTION_VERSION_UNKNOWN;
+  }
+}
+
+ScopedX509 OSCertHandleToOpenSSL(X509Certificate::OSCertHandle os_handle) {
+#if defined(USE_OPENSSL_CERTS)
+  return ScopedX509(X509Certificate::DupOSCertHandle(os_handle));
+#else  // !defined(USE_OPENSSL_CERTS)
+  std::string der_encoded;
+  if (!X509Certificate::GetDEREncoded(os_handle, &der_encoded))
+    return ScopedX509();
+  const uint8_t* bytes = reinterpret_cast<const uint8_t*>(der_encoded.data());
+  return ScopedX509(d2i_X509(NULL, &bytes, der_encoded.size()));
+#endif  // defined(USE_OPENSSL_CERTS)
+}
+
+ScopedX509Stack OSCertHandlesToOpenSSL(
+    const X509Certificate::OSCertHandles& os_handles) {
+  ScopedX509Stack stack(sk_X509_new_null());
+  for (size_t i = 0; i < os_handles.size(); i++) {
+    ScopedX509 x509 = OSCertHandleToOpenSSL(os_handles[i]);
+    if (!x509)
+      return nullptr;
+    sk_X509_push(stack.get(), x509.release());
+  }
+  return stack;
 }
 
 }  // namespace net

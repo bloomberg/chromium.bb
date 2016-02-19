@@ -15,12 +15,44 @@
 #include "crypto/rsa_private_key.h"
 #include "crypto/scoped_openssl_types.h"
 #include "net/base/net_errors.h"
+#include "net/cert/cert_verify_result.h"
+#include "net/cert/client_cert_verifier.h"
+#include "net/cert/x509_util_openssl.h"
 #include "net/ssl/openssl_ssl_util.h"
 #include "net/ssl/scoped_openssl_types.h"
+#include "net/ssl/ssl_connection_status_flags.h"
+#include "net/ssl/ssl_info.h"
 
 #define GotoState(s) next_handshake_state_ = s
 
 namespace net {
+
+namespace {
+
+// Creates an X509Certificate out of the concatenation of |cert|, if non-null,
+// with |chain|.
+scoped_refptr<X509Certificate> CreateX509Certificate(X509* cert,
+                                                     STACK_OF(X509) * chain) {
+  std::vector<base::StringPiece> der_chain;
+  base::StringPiece der_cert;
+  scoped_refptr<X509Certificate> client_cert;
+  if (cert) {
+    if (!x509_util::GetDER(cert, &der_cert))
+      return nullptr;
+    der_chain.push_back(der_cert);
+  }
+
+  for (size_t i = 0; i < sk_X509_num(chain); ++i) {
+    X509* x = sk_X509_value(chain, i);
+    if (!x509_util::GetDER(x, &der_cert))
+      return nullptr;
+    der_chain.push_back(der_cert);
+  }
+
+  return X509Certificate::CreateFromDERCertChain(der_chain);
+}
+
+}  // namespace
 
 void EnableSSLServerSockets() {
   // No-op because CreateSSLServerSocket() calls crypto::EnsureOpenSSLInit().
@@ -30,17 +62,17 @@ scoped_ptr<SSLServerSocket> CreateSSLServerSocket(
     scoped_ptr<StreamSocket> socket,
     X509Certificate* certificate,
     const crypto::RSAPrivateKey& key,
-    const SSLServerConfig& ssl_config) {
+    const SSLServerConfig& ssl_server_config) {
   crypto::EnsureOpenSSLInit();
   return scoped_ptr<SSLServerSocket>(new SSLServerSocketOpenSSL(
-      std::move(socket), certificate, key, ssl_config));
+      std::move(socket), certificate, key, ssl_server_config));
 }
 
 SSLServerSocketOpenSSL::SSLServerSocketOpenSSL(
     scoped_ptr<StreamSocket> transport_socket,
     scoped_refptr<X509Certificate> certificate,
     const crypto::RSAPrivateKey& key,
-    const SSLServerConfig& ssl_config)
+    const SSLServerConfig& ssl_server_config)
     : transport_send_busy_(false),
       transport_recv_busy_(false),
       transport_recv_eof_(false),
@@ -50,7 +82,7 @@ SSLServerSocketOpenSSL::SSLServerSocketOpenSSL(
       ssl_(NULL),
       transport_bio_(NULL),
       transport_socket_(std::move(transport_socket)),
-      ssl_config_(ssl_config),
+      ssl_server_config_(ssl_server_config),
       cert_(certificate),
       key_(key.Copy()),
       next_handshake_state_(STATE_NONE),
@@ -242,8 +274,30 @@ NextProto SSLServerSocketOpenSSL::GetNegotiatedProtocol() const {
 }
 
 bool SSLServerSocketOpenSSL::GetSSLInfo(SSLInfo* ssl_info) {
-  NOTIMPLEMENTED();
-  return false;
+  ssl_info->Reset();
+  if (!completed_handshake_)
+    return false;
+
+  ssl_info->cert = client_cert_;
+
+  const SSL_CIPHER* cipher = SSL_get_current_cipher(ssl_);
+  CHECK(cipher);
+  ssl_info->security_bits = SSL_CIPHER_get_bits(cipher, NULL);
+
+  SSLConnectionStatusSetCipherSuite(
+      static_cast<uint16_t>(SSL_CIPHER_get_id(cipher)),
+      &ssl_info->connection_status);
+  SSLConnectionStatusSetVersion(GetNetSSLVersion(ssl_),
+                                &ssl_info->connection_status);
+
+  if (!SSL_get_secure_renegotiation_support(ssl_))
+    ssl_info->connection_status |= SSL_CONNECTION_NO_RENEGOTIATION_EXTENSION;
+
+  ssl_info->handshake_type = SSL_session_reused(ssl_)
+                                 ? SSLInfo::HANDSHAKE_RESUME
+                                 : SSLInfo::HANDSHAKE_FULL;
+
+  return true;
 }
 
 void SSLServerSocketOpenSSL::GetConnectionAttempts(
@@ -566,10 +620,27 @@ int SSLServerSocketOpenSSL::DoHandshake() {
 
   if (rv == 1) {
     completed_handshake_ = true;
+    // The results of SSL_get_peer_certificate() must be explicitly freed.
+    ScopedX509 cert(SSL_get_peer_certificate(ssl_));
+    if (cert) {
+      // The caller does not take ownership of SSL_get_peer_cert_chain's
+      // results.
+      STACK_OF(X509)* chain = SSL_get_peer_cert_chain(ssl_);
+      client_cert_ = CreateX509Certificate(cert.get(), chain);
+      if (!client_cert_.get())
+        return ERR_SSL_CLIENT_AUTH_CERT_BAD_FORMAT;
+    }
   } else {
     int ssl_error = SSL_get_error(ssl_, rv);
     OpenSSLErrorInfo error_info;
     net_error = MapOpenSSLErrorWithDetails(ssl_error, err_tracer, &error_info);
+
+    // This hack is necessary because the mapping of SSL error codes to
+    // net_errors assumes (correctly for client sockets, but erroneously for
+    // server sockets) that peer cert verification failure can only occur if
+    // the cert changed during a renego. crbug.com/570351
+    if (net_error == ERR_SSL_SERVER_CERT_CHANGED)
+      net_error = ERR_BAD_SSL_CLIENT_AUTH_CERT;
 
     // If not done, stay in this state
     if (net_error == ERR_IO_PENDING) {
@@ -615,11 +686,21 @@ int SSLServerSocketOpenSSL::Init() {
 
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
-  ScopedSSL_CTX ssl_ctx(SSL_CTX_new(SSLv23_server_method()));
-
-  if (ssl_config_.require_client_cert)
-    SSL_CTX_set_verify(ssl_ctx.get(), SSL_VERIFY_PEER, NULL);
-
+  ScopedSSL_CTX ssl_ctx(SSL_CTX_new(TLS_method()));
+  int verify_mode = 0;
+  switch (ssl_server_config_.client_cert_type) {
+    case SSLServerConfig::ClientCertType::REQUIRE_CLIENT_CERT:
+      verify_mode |= SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
+    // Fall-through
+    case SSLServerConfig::ClientCertType::OPTIONAL_CLIENT_CERT:
+      verify_mode |= SSL_VERIFY_PEER;
+      SSL_CTX_set_verify(ssl_ctx.get(), verify_mode, nullptr);
+      SSL_CTX_set_cert_verify_callback(ssl_ctx.get(), CertVerifyCallback,
+                                       ssl_server_config_.client_cert_verifier);
+      break;
+    case SSLServerConfig::ClientCertType::NO_CLIENT_CERT:
+      break;
+  }
   ssl_ = SSL_new(ssl_ctx.get());
   if (!ssl_)
     return ERR_UNEXPECTED;
@@ -666,10 +747,10 @@ int SSLServerSocketOpenSSL::Init() {
     return ERR_UNEXPECTED;
   }
 
-  DCHECK_LT(SSL3_VERSION, ssl_config_.version_min);
-  DCHECK_LT(SSL3_VERSION, ssl_config_.version_max);
-  SSL_set_min_version(ssl_, ssl_config_.version_min);
-  SSL_set_max_version(ssl_, ssl_config_.version_max);
+  DCHECK_LT(SSL3_VERSION, ssl_server_config_.version_min);
+  DCHECK_LT(SSL3_VERSION, ssl_server_config_.version_max);
+  SSL_set_min_version(ssl_, ssl_server_config_.version_min);
+  SSL_set_max_version(ssl_, ssl_server_config_.version_max);
 
   // OpenSSL defaults some options to on, others to off. To avoid ambiguity,
   // set everything we care about to an absolute value.
@@ -693,11 +774,11 @@ int SSLServerSocketOpenSSL::Init() {
   // as the handshake hash.
   std::string command("DEFAULT:!SHA256:!SHA384:!AESGCM+AES256:!aPSK");
 
-  if (ssl_config_.require_ecdhe)
+  if (ssl_server_config_.require_ecdhe)
     command.append(":!kRSA:!kDHE");
 
   // Remove any disabled ciphers.
-  for (uint16_t id : ssl_config_.disabled_cipher_suites) {
+  for (uint16_t id : ssl_server_config_.disabled_cipher_suites) {
     const SSL_CIPHER* cipher = SSL_get_cipher_by_value(id);
     if (cipher) {
       command.append(":!");
@@ -712,7 +793,52 @@ int SSLServerSocketOpenSSL::Init() {
   LOG_IF(WARNING, rv != 1) << "SSL_set_cipher_list('" << command
                            << "') returned " << rv;
 
+  if (ssl_server_config_.client_cert_type !=
+          SSLServerConfig::ClientCertType::NO_CLIENT_CERT &&
+      !ssl_server_config_.cert_authorities_.empty()) {
+    ScopedX509NameStack stack(sk_X509_NAME_new_null());
+    for (const auto& authority : ssl_server_config_.cert_authorities_) {
+      const uint8_t* name = reinterpret_cast<const uint8_t*>(authority.c_str());
+      const uint8_t* name_start = name;
+      ScopedX509_NAME subj(d2i_X509_NAME(nullptr, &name, authority.length()));
+      if (!subj || name != name_start + authority.length())
+        return ERR_UNEXPECTED;
+      sk_X509_NAME_push(stack.get(), subj.release());
+    }
+    SSL_set_client_CA_list(ssl_, stack.release());
+  }
+
   return OK;
+}
+
+// static
+int SSLServerSocketOpenSSL::CertVerifyCallback(X509_STORE_CTX* store_ctx,
+                                               void* arg) {
+  ClientCertVerifier* verifier = reinterpret_cast<ClientCertVerifier*>(arg);
+  // If a verifier was not supplied, all certificates are accepted.
+  if (!verifier)
+    return 1;
+  STACK_OF(X509)* chain = store_ctx->untrusted;
+  scoped_refptr<X509Certificate> client_cert(
+      CreateX509Certificate(nullptr, chain));
+  if (!client_cert.get()) {
+    X509_STORE_CTX_set_error(store_ctx, X509_V_ERR_CERT_REJECTED);
+    return 0;
+  }
+  // Asynchronous completion of Verify is currently not supported.
+  // http://crbug.com/347402
+  // The API for Verify supports the parts needed for async completion
+  // but is currently expected to complete synchronously.
+  scoped_ptr<ClientCertVerifier::Request> ignore_async;
+  int res =
+      verifier->Verify(client_cert.get(), CompletionCallback(), &ignore_async);
+  DCHECK_NE(res, ERR_IO_PENDING);
+
+  if (res != OK) {
+    X509_STORE_CTX_set_error(store_ctx, X509_V_ERR_CERT_REJECTED);
+    return 0;
+  }
+  return 1;
 }
 
 }  // namespace net

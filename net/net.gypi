@@ -81,6 +81,7 @@
       'cert/cert_verifier.h',
       'cert/cert_verify_result.cc',
       'cert/cert_verify_result.h',
+      'cert/client_cert_verifier.h',
       'cert/crl_set.cc',
       'cert/crl_set.h',
       'cert/ct_known_logs.cc',

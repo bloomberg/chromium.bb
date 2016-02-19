@@ -83,21 +83,21 @@ void EnableSSLServerSockets() {
 
 scoped_ptr<SSLServerSocket> CreateSSLServerSocket(
     scoped_ptr<StreamSocket> socket,
-    X509Certificate* cert,
+    X509Certificate* certificate,
     const crypto::RSAPrivateKey& key,
-    const SSLServerConfig& ssl_config) {
+    const SSLServerConfig& ssl_server_config) {
   DCHECK(g_nss_server_sockets_init) << "EnableSSLServerSockets() has not been"
                                     << " called yet!";
 
-  return scoped_ptr<SSLServerSocket>(
-      new SSLServerSocketNSS(std::move(socket), cert, key, ssl_config));
+  return scoped_ptr<SSLServerSocket>(new SSLServerSocketNSS(
+      std::move(socket), certificate, key, ssl_server_config));
 }
 
 SSLServerSocketNSS::SSLServerSocketNSS(
     scoped_ptr<StreamSocket> transport_socket,
     scoped_refptr<X509Certificate> cert,
     const crypto::RSAPrivateKey& key,
-    const SSLServerConfig& ssl_config)
+    const SSLServerConfig& ssl_server_config)
     : transport_send_busy_(false),
       transport_recv_busy_(false),
       user_read_buf_len_(0),
@@ -105,7 +105,7 @@ SSLServerSocketNSS::SSLServerSocketNSS(
       nss_fd_(NULL),
       nss_bufs_(NULL),
       transport_socket_(std::move(transport_socket)),
-      ssl_config_(ssl_config),
+      ssl_server_config_(ssl_server_config),
       cert_(cert),
       key_(key.Copy()),
       next_handshake_state_(STATE_NONE),
@@ -337,7 +337,8 @@ int SSLServerSocketNSS::InitializeSSLOptions() {
 
   int rv;
 
-  if (ssl_config_.require_client_cert) {
+  if (ssl_server_config_.client_cert_type ==
+      SSLServerConfig::ClientCertType::REQUIRE_CLIENT_CERT) {
     rv = SSL_OptionSet(nss_fd_, SSL_REQUEST_CERTIFICATE, PR_TRUE);
     if (rv != SECSuccess) {
       LogFailedNSSFunction(net_log_, "SSL_OptionSet",
@@ -359,15 +360,15 @@ int SSLServerSocketNSS::InitializeSSLOptions() {
   }
 
   SSLVersionRange version_range;
-  version_range.min = ssl_config_.version_min;
-  version_range.max = ssl_config_.version_max;
+  version_range.min = ssl_server_config_.version_min;
+  version_range.max = ssl_server_config_.version_max;
   rv = SSL_VersionRangeSet(nss_fd_, &version_range);
   if (rv != SECSuccess) {
     LogFailedNSSFunction(net_log_, "SSL_VersionRangeSet", "");
     return ERR_NO_SSL_VERSIONS_ENABLED;
   }
 
-  if (ssl_config_.require_ecdhe) {
+  if (ssl_server_config_.require_ecdhe) {
     const PRUint16* const ssl_ciphers = SSL_GetImplementedCiphers();
     const PRUint16 num_ciphers = SSL_GetNumImplementedCiphers();
 
@@ -384,8 +385,8 @@ int SSLServerSocketNSS::InitializeSSLOptions() {
   }
 
   for (std::vector<uint16_t>::const_iterator it =
-           ssl_config_.disabled_cipher_suites.begin();
-       it != ssl_config_.disabled_cipher_suites.end(); ++it) {
+           ssl_server_config_.disabled_cipher_suites.begin();
+       it != ssl_server_config_.disabled_cipher_suites.end(); ++it) {
     // This will fail if the specified cipher is not implemented by NSS, but
     // the failure is harmless.
     SSL_CipherPrefSet(nss_fd_, *it, PR_FALSE);

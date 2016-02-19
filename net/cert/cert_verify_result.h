@@ -37,7 +37,7 @@ class NET_EXPORT CertVerifyResult {
   // running within the sandbox.
   scoped_refptr<X509Certificate> verified_cert;
 
-  // Bitmask of CERT_STATUS_* from net/base/cert_status_flags.h. Note that
+  // Bitmask of CERT_STATUS_* from net/cert/cert_status_flags.h. Note that
   // these status flags apply to the certificate chain returned in
   // |verified_cert|, rather than the originally supplied certificate
   // chain.

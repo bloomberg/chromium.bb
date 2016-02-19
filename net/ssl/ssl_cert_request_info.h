@@ -32,7 +32,7 @@ class X509Certificate;
 //
 //   struct {
 //       ClientCertificateType certificate_types<1..2^8-1>;
-//       DistinguishedName certificate_authorities<3..2^16-1>;
+//       DistinguishedName certificate_authorities<0..2^16-1>;
 //   } CertificateRequest;
 class NET_EXPORT SSLCertRequestInfo
     : public base::RefCountedThreadSafe<SSLCertRequestInfo> {

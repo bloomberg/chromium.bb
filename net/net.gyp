@@ -529,6 +529,8 @@
         'base/test_data_directory.h',
         'cert/mock_cert_verifier.cc',
         'cert/mock_cert_verifier.h',
+        'cert/mock_client_cert_verifier.cc',
+        'cert/mock_client_cert_verifier.h',
         'cookies/cookie_monster_store_test.cc',
         'cookies/cookie_monster_store_test.h',
         'cookies/cookie_store_test_callbacks.cc',
