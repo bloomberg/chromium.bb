@@ -171,7 +171,6 @@ protected: // For unittests
         PassOwnPtr<WebGraphicsContext3D>,
         PassOwnPtr<Extensions3DUtil>,
         bool multisampleExtensionSupported,
-        bool packedDepthStencilExtensionSupported,
         bool discardFramebufferSupported,
         PreserveDrawingBuffer,
         WebGraphicsContext3D::Attributes requestedAttributes);
@@ -298,7 +297,6 @@ private:
     IntSize m_size;
     WebGraphicsContext3D::Attributes m_requestedAttributes;
     bool m_multisampleExtensionSupported;
-    bool m_packedDepthStencilExtensionSupported;
     bool m_discardFramebufferSupported;
     Platform3DObject m_fbo;
     // DrawingBuffer's output is double-buffered. m_colorBuffer is the back buffer.
@@ -311,12 +309,8 @@ private:
 
     OwnPtr<Closure> m_newMailboxCallback;
 
-    // This is used when we have OES_packed_depth_stencil.
+    // This is used when the user requests either a depth or stencil buffer.
     Platform3DObject m_depthStencilBuffer;
-
-    // These are used when we don't.
-    Platform3DObject m_depthBuffer;
-    Platform3DObject m_stencilBuffer;
 
     // For multisampling.
     Platform3DObject m_multisampleFBO;
