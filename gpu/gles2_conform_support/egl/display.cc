@@ -31,60 +31,41 @@ const int32_t kTransferBufferSize = 512 * 1024;
 }
 
 namespace egl {
-
+#if defined(COMMAND_BUFFER_GLES_LIB_SUPPORT_ONLY)
 // egl::Display is used for comformance tests and command_buffer_gles.  We only
 // need the exit manager for the command_buffer_gles library.
 // TODO(hendrikw): Find a cleaner solution for this.
 namespace {
-base::LazyInstance<base::Lock>::Leaky g_init_lock;
-int g_init_count;
-
-#if defined(COMMAND_BUFFER_GLES_LIB_SUPPORT_ONLY)
+base::LazyInstance<base::Lock>::Leaky g_exit_manager_lock;
+int g_exit_manager_use_count;
 base::AtExitManager* g_exit_manager;
-#endif
-
-void InitGlobal() {
-  base::AutoLock lock(g_init_lock.Get());
-  if (g_init_count == 0) {
-    gles2::Initialize();
-  }
-
-#if defined(COMMAND_BUFFER_GLES_LIB_SUPPORT_ONLY)
+void RefAtExitManager() {
+  base::AutoLock lock(g_exit_manager_lock.Get());
 #if defined(COMPONENT_BUILD)
   if (g_command_buffer_gles_has_atexit_manager) {
-    ++g_init_count;
     return;
   }
 #endif
-  if (g_init_count == 0) {
+  if (g_exit_manager_use_count == 0) {
     g_exit_manager = new base::AtExitManager;
   }
-#endif
-
-  ++g_init_count;
-
+  ++g_exit_manager_use_count;
 }
-void ReleaseGlobal() {
-  base::AutoLock lock(g_init_lock.Get());
-  --g_init_count;
-  if (g_init_count == 0) {
-    gles2::Terminate();
-  }
-
-#if defined(COMMAND_BUFFER_GLES_LIB_SUPPORT_ONLY)
+void ReleaseAtExitManager() {
+  base::AutoLock lock(g_exit_manager_lock.Get());
 #if defined(COMPONENT_BUILD)
   if (g_command_buffer_gles_has_atexit_manager) {
     return;
   }
 #endif
-  if (g_init_count == 0) {
+  --g_exit_manager_use_count;
+  if (g_exit_manager_use_count == 0) {
     delete g_exit_manager;
     g_exit_manager = nullptr;
   }
-#endif
 }
-} // namespace
-
+}
+#endif
 
 Display::Display(EGLNativeDisplayType display_id)
     : display_id_(display_id),
@@ -93,18 +74,20 @@ Display::Display(EGLNativeDisplayType display_id)
       create_offscreen_width_(0),
       create_offscreen_height_(0),
       next_fence_sync_release_(1) {
-
-  InitGlobal();
-
+#if defined(COMMAND_BUFFER_GLES_LIB_SUPPORT_ONLY)
+  RefAtExitManager();
+#endif
 }
 
 Display::~Display() {
-
-  ReleaseGlobal();
-
+  gles2::Terminate();
+#if defined(COMMAND_BUFFER_GLES_LIB_SUPPORT_ONLY)
+  ReleaseAtExitManager();
+#endif
 }
 
 bool Display::Initialize() {
+  gles2::Initialize();
   is_initialized_ = true;
   return true;
 }
