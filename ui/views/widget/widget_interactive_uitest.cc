@@ -52,7 +52,7 @@ class ExitLoopOnRelease : public View {
   ~ExitLoopOnRelease() override {}
 
  private:
-  // Overridden from View:
+  // View:
   void OnMouseReleased(const ui::MouseEvent& event) override {
     GetWidget()->Close();
     base::MessageLoop::current()->QuitNow();
@@ -68,7 +68,7 @@ class GestureCaptureView : public View {
   ~GestureCaptureView() override {}
 
  private:
-  // Overridden from View:
+  // View:
   void OnGestureEvent(ui::GestureEvent* event) override {
     if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
       GetWidget()->SetCapture(this);
@@ -132,7 +132,7 @@ class NestedLoopCaptureView : public View {
   ~NestedLoopCaptureView() override {}
 
  private:
-  // Overridden from View:
+  // View:
   bool OnMousePressed(const ui::MouseEvent& event) override {
     // Start a nested loop.
     widget_->Show();
@@ -1107,9 +1107,60 @@ TEST_F(WidgetTestInteractive, MAYBE_ExitFullscreenRestoreState) {
   RunPendingMessages();
 }
 
+// Testing widget delegate that creates a widget with a single view, which
+// should be initially focused.
+class TestInitialFocusWidgetDelegate : public TestDesktopWidgetDelegate {
+ public:
+  explicit TestInitialFocusWidgetDelegate(gfx::NativeWindow context)
+      : view_(new View) {
+    view_->SetFocusable(true);
+
+    Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
+    params.context = context;
+    InitWidget(params);
+    GetWidget()->GetContentsView()->AddChildView(view_);
+  }
+
+  View* view() { return view_; }
+
+  // DialogDelegateView:
+  View* GetInitiallyFocusedView() override { return view_; }
+
+ private:
+  View* view_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestInitialFocusWidgetDelegate);
+};
+
+// Testing initial focus is assigned properly for normal top-level widgets,
+// and subclasses that specify a initially focused child view.
+TEST_F(WidgetTestInteractive, InitialFocus) {
+  // By default, there is no initially focused view (even if there is a
+  // focusable subview).
+  Widget* toplevel(CreateTopLevelPlatformWidget());
+  View* view = new View;
+  view->SetFocusable(true);
+  toplevel->GetContentsView()->AddChildView(view);
+
+  ShowSync(toplevel);
+  toplevel->Show();
+  EXPECT_FALSE(view->HasFocus());
+  EXPECT_FALSE(toplevel->GetFocusManager()->GetStoredFocusView());
+  toplevel->CloseNow();
+
+  // Testing a widget which specifies a initially focused view.
+  TestInitialFocusWidgetDelegate delegate(GetContext());
+
+  Widget* widget = delegate.GetWidget();
+  ShowSync(widget);
+  widget->Show();
+  EXPECT_TRUE(delegate.view()->HasFocus());
+  EXPECT_EQ(delegate.view(), widget->GetFocusManager()->GetStoredFocusView());
+}
+
 namespace {
 
-// Used to veirfy OnMouseCaptureLost() has been invoked.
+// Used to verify OnMouseCaptureLost() has been invoked.
 class CaptureLostTrackingWidget : public Widget {
  public:
   CaptureLostTrackingWidget() : got_capture_lost_(false) {}

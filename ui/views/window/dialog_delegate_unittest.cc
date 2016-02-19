@@ -241,4 +241,10 @@ TEST_F(DialogTest, BoundsAccommodateTitle) {
   dialog2->TearDown();
 }
 
+// Tests default focus is assigned correctly when showing a new dialog.
+TEST_F(DialogTest, InitialFocus) {
+  EXPECT_TRUE(dialog()->input()->HasFocus());
+  EXPECT_EQ(dialog()->input(), dialog()->GetFocusManager()->GetFocusedView());
+}
+
 }  // namespace views

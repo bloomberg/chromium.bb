@@ -410,6 +410,10 @@ void NativeWidgetMac::ShowWithWindowState(ui::WindowShowState state) {
   bridge_->SetVisibilityState(state == ui::SHOW_STATE_INACTIVE
       ? BridgedNativeWidget::SHOW_INACTIVE
       : BridgedNativeWidget::SHOW_AND_ACTIVATE_WINDOW);
+
+  // Ignore the SetInitialFocus() result. BridgedContentView should get
+  // firstResponder status regardless.
+  delegate_->SetInitialFocus(state);
 }
 
 bool NativeWidgetMac::IsVisible() const {
