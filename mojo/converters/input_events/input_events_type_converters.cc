@@ -244,8 +244,8 @@ mus::mojom::EventPtr TypeConverter<mus::mojom::EventPtr, ui::Event>::Convert(
     brush_data->height = touch_event->pointer_details().radius_y;
     // TODO(rjk): update for touch_event->rotation_angle();
     brush_data->pressure = touch_event->pointer_details().force;
+    brush_data->tilt_x = 0;
     brush_data->tilt_y = 0;
-    brush_data->tilt_z = 0;
     pointer_data->brush_data = std::move(brush_data);
     event->pointer_data = std::move(pointer_data);
 
