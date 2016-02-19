@@ -17,7 +17,6 @@
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_task_runner_handle.h"
@@ -255,11 +254,6 @@ void WatcherThreadManager::StopWatching(WatcherID watcher_id) {
     }
   }
 
-  // TODO(amistry): Remove ScopedTracker below once http://crbug.com/554761 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "554761 WatcherThreadManager::StopWatching"));
   RequestData request_data;
   request_data.type = REQUEST_STOP;
   request_data.stop_id = watcher_id;
