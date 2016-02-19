@@ -447,6 +447,48 @@ class TestHostResolverImpl : public HostResolverImpl {
   }
 };
 
+const unsigned char kLocalhostIPv4[] = {127, 0, 0, 1};
+const unsigned char kLocalhostIPv6[] =
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
+const uint16_t kLocalhostLookupPort = 80;
+
+bool HasEndpoint(const IPEndPoint& endpoint, const AddressList& addresses) {
+  for (const auto& address : addresses) {
+    if (endpoint == address)
+      return true;
+  }
+  return false;
+}
+
+void TestBothLoopbackIPs(const std::string& host) {
+  IPEndPoint localhost_ipv4(
+      IPAddressNumber(kLocalhostIPv4,
+                      kLocalhostIPv4 + arraysize(kLocalhostIPv4)),
+      kLocalhostLookupPort);
+  IPEndPoint localhost_ipv6(
+      IPAddressNumber(kLocalhostIPv6,
+                      kLocalhostIPv6 + arraysize(kLocalhostIPv6)),
+      kLocalhostLookupPort);
+
+  AddressList addresses;
+  EXPECT_TRUE(ResolveLocalHostname(host, kLocalhostLookupPort, &addresses));
+  EXPECT_EQ(2u, addresses.size());
+  EXPECT_TRUE(HasEndpoint(localhost_ipv4, addresses));
+  EXPECT_TRUE(HasEndpoint(localhost_ipv6, addresses));
+}
+
+void TestIPv6LoopbackOnly(const std::string& host) {
+  IPEndPoint localhost_ipv6(
+      IPAddressNumber(kLocalhostIPv6,
+                      kLocalhostIPv6 + arraysize(kLocalhostIPv6)),
+      kLocalhostLookupPort);
+
+  AddressList addresses;
+  EXPECT_TRUE(ResolveLocalHostname(host, kLocalhostLookupPort, &addresses));
+  EXPECT_EQ(1u, addresses.size());
+  EXPECT_TRUE(HasEndpoint(localhost_ipv6, addresses));
+}
+
 }  // namespace
 
 class HostResolverImplTest : public testing::Test {
@@ -2176,6 +2218,64 @@ TEST_F(HostResolverImplDnsTest, ManuallyDisableDnsClientWithPendingRequests) {
   EXPECT_TRUE(requests_[1]->HasOneAddress("192.168.0.2", 80));
   EXPECT_EQ(OK, requests_[2]->WaitForResult());
   EXPECT_TRUE(requests_[2]->HasOneAddress("192.168.0.3", 80));
+}
+
+TEST_F(HostResolverImplTest, ResolveLocalHostname) {
+  AddressList addresses;
+
+  TestBothLoopbackIPs("localhost");
+  TestBothLoopbackIPs("localhoST");
+  TestBothLoopbackIPs("localhost.");
+  TestBothLoopbackIPs("localhoST.");
+  TestBothLoopbackIPs("localhost.localdomain");
+  TestBothLoopbackIPs("localhost.localdomAIn");
+  TestBothLoopbackIPs("localhost.localdomain.");
+  TestBothLoopbackIPs("localhost.localdomAIn.");
+  TestBothLoopbackIPs("foo.localhost");
+  TestBothLoopbackIPs("foo.localhOSt");
+  TestBothLoopbackIPs("foo.localhost.");
+  TestBothLoopbackIPs("foo.localhOSt.");
+
+  TestIPv6LoopbackOnly("localhost6");
+  TestIPv6LoopbackOnly("localhoST6");
+  TestIPv6LoopbackOnly("localhost6.");
+  TestIPv6LoopbackOnly("localhost6.localdomain6");
+  TestIPv6LoopbackOnly("localhost6.localdomain6.");
+
+  EXPECT_FALSE(
+      ResolveLocalHostname("127.0.0.1", kLocalhostLookupPort, &addresses));
+  EXPECT_FALSE(ResolveLocalHostname("::1", kLocalhostLookupPort, &addresses));
+  EXPECT_FALSE(ResolveLocalHostname("0:0:0:0:0:0:0:1", kLocalhostLookupPort,
+                                    &addresses));
+  EXPECT_FALSE(
+      ResolveLocalHostname("localhostx", kLocalhostLookupPort, &addresses));
+  EXPECT_FALSE(
+      ResolveLocalHostname("localhost.x", kLocalhostLookupPort, &addresses));
+  EXPECT_FALSE(ResolveLocalHostname("foo.localdomain", kLocalhostLookupPort,
+                                    &addresses));
+  EXPECT_FALSE(ResolveLocalHostname("foo.localdomain.x", kLocalhostLookupPort,
+                                    &addresses));
+  EXPECT_FALSE(
+      ResolveLocalHostname("localhost6x", kLocalhostLookupPort, &addresses));
+  EXPECT_FALSE(ResolveLocalHostname("localhost.localdomain6",
+                                    kLocalhostLookupPort, &addresses));
+  EXPECT_FALSE(ResolveLocalHostname("localhost6.localdomain",
+                                    kLocalhostLookupPort, &addresses));
+  EXPECT_FALSE(
+      ResolveLocalHostname("127.0.0.1.1", kLocalhostLookupPort, &addresses));
+  EXPECT_FALSE(
+      ResolveLocalHostname(".127.0.0.255", kLocalhostLookupPort, &addresses));
+  EXPECT_FALSE(ResolveLocalHostname("::2", kLocalhostLookupPort, &addresses));
+  EXPECT_FALSE(ResolveLocalHostname("::1:1", kLocalhostLookupPort, &addresses));
+  EXPECT_FALSE(ResolveLocalHostname("0:0:0:0:1:0:0:1", kLocalhostLookupPort,
+                                    &addresses));
+  EXPECT_FALSE(ResolveLocalHostname("::1:1", kLocalhostLookupPort, &addresses));
+  EXPECT_FALSE(ResolveLocalHostname("0:0:0:0:0:0:0:0:1", kLocalhostLookupPort,
+                                    &addresses));
+  EXPECT_FALSE(ResolveLocalHostname("foo.localhost.com", kLocalhostLookupPort,
+                                    &addresses));
+  EXPECT_FALSE(
+      ResolveLocalHostname("foo.localhoste", kLocalhostLookupPort, &addresses));
 }
 
 }  // namespace net

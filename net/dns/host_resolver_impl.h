@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string_piece.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "net/base/ip_address_number.h"
@@ -24,6 +25,7 @@
 
 namespace net {
 
+class AddressList;
 class BoundNetLog;
 class DnsClient;
 class NetLog;
@@ -306,6 +308,18 @@ class NET_EXPORT HostResolverImpl
 
   DISALLOW_COPY_AND_ASSIGN(HostResolverImpl);
 };
+
+// Resolves a local hostname (such as "localhost" or "localhost6") into
+// IP endpoints with the given port. Returns true if |host| is a local
+// hostname and false otherwise. Special IPv6 names (e.g. "localhost6")
+// will resolve to an IPv6 address only, whereas other names will
+// resolve to both IPv4 and IPv6.
+// This function is only exposed so it can be unit-tested.
+// TODO(tfarina): It would be better to change the tests so this function
+// gets exercised indirectly through HostResolverImpl.
+NET_EXPORT_PRIVATE bool ResolveLocalHostname(base::StringPiece host,
+                                             uint16_t port,
+                                             AddressList* address_list);
 
 }  // namespace net
 

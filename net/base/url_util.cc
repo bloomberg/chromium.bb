@@ -24,6 +24,10 @@ bool IsHostCharAlphanumeric(char c) {
   return ((c >= 'a') && (c <= 'z')) || ((c >= '0') && (c <= '9'));
 }
 
+bool IsNormalizedLocalhostTLD(const std::string& host) {
+  return base::EndsWith(host, ".localhost", base::CompareCase::SENSITIVE);
+}
+
 }  // namespace
 
 GURL AppendQueryParameter(const GURL& url,
@@ -381,6 +385,26 @@ bool HasGoogleHost(const GURL& url) {
       return true;
   }
   return false;
+}
+
+bool IsLocalHostname(base::StringPiece host, bool* is_local6) {
+  std::string normalized_host = base::ToLowerASCII(host);
+  // Remove any trailing '.'.
+  if (!normalized_host.empty() && *normalized_host.rbegin() == '.')
+    normalized_host.resize(normalized_host.size() - 1);
+
+  if (normalized_host == "localhost6" ||
+      normalized_host == "localhost6.localdomain6") {
+    if (is_local6)
+      *is_local6 = true;
+    return true;
+  }
+
+  if (is_local6)
+    *is_local6 = false;
+  return normalized_host == "localhost" ||
+         normalized_host == "localhost.localdomain" ||
+         IsNormalizedLocalhostTLD(normalized_host);
 }
 
 }  // namespace net

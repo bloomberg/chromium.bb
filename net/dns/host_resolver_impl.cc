@@ -41,7 +41,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_util.h"
+#include "net/base/url_util.h"
 #include "net/dns/address_sorter.h"
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_config_service.h"
@@ -489,6 +489,33 @@ class PriorityTracker {
 }  // namespace
 
 //-----------------------------------------------------------------------------
+
+bool ResolveLocalHostname(base::StringPiece host,
+                          uint16_t port,
+                          AddressList* address_list) {
+  static const unsigned char kLocalhostIPv4[] = {127, 0, 0, 1};
+  static const unsigned char kLocalhostIPv6[] = {
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
+
+  address_list->clear();
+
+  bool is_local6;
+  if (!IsLocalHostname(host, &is_local6))
+    return false;
+
+  address_list->push_back(
+      IPEndPoint(IPAddressNumber(kLocalhostIPv6,
+                                 kLocalhostIPv6 + arraysize(kLocalhostIPv6)),
+                 port));
+  if (!is_local6) {
+    address_list->push_back(
+        IPEndPoint(IPAddressNumber(kLocalhostIPv4,
+                                   kLocalhostIPv4 + arraysize(kLocalhostIPv4)),
+                   port));
+  }
+
+  return true;
+}
 
 const unsigned HostResolverImpl::kMaximumDnsFailures = 16;
 
