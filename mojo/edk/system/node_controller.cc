@@ -192,16 +192,16 @@ void NodeController::MergePortIntoParent(const std::string& token,
 
 scoped_refptr<PlatformSharedBuffer> NodeController::CreateSharedBuffer(
     size_t num_bytes) {
-  scoped_refptr<PlatformSharedBuffer> buffer =
-      PlatformSharedBuffer::Create(num_bytes);
 #if defined(OS_POSIX)
-  if (!buffer && broker_) {
-    // On POSIX, creating a shared buffer in a sandboxed process will fail, so
-    // fall back to the broker if there is one.
-    buffer = broker_->GetSharedBuffer(num_bytes);
+  // Shared buffer creation failure is fatal, so always use the broker when we
+  // have one. This does mean that a non-root process that has children will use
+  // the broker for shared buffer creation even though that process is
+  // privileged.
+  if (broker_) {
+    return broker_->GetSharedBuffer(num_bytes);
   }
 #endif
-  return buffer;
+  return PlatformSharedBuffer::Create(num_bytes);
 }
 
 void NodeController::RequestShutdown(const base::Closure& callback) {
