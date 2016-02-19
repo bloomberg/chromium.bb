@@ -167,7 +167,12 @@ class NonBlockingEventBrowserTest : public ContentBrowserTest {
 #if defined(OS_MACOSX)
 #define MAYBE_MouseWheel DISABLED_MouseWheel
 #else
+// Also appears to be flaky under TSan. crbug.com/588199
+#if defined(THREAD_SANITIZER)
+#define MAYBE_MouseWheel DISABLED_MouseWheel
+#else
 #define MAYBE_MouseWheel MouseWheel
+#endif
 #endif
 IN_PROC_BROWSER_TEST_F(NonBlockingEventBrowserTest, MAYBE_MouseWheel) {
   LoadURL();
