@@ -78,7 +78,9 @@ TextFieldTextEditHandler.prototype = {
         evt.type !== EventType.valueChanged &&
         evt.type !== EventType.focus)
       return;
-    if (!evt.target.state.focused || !evt.target.state.editable)
+    if (!evt.target.state.focused ||
+        !evt.target.state.editable ||
+        evt.target != this.node_)
       return;
 
     this.editableText_.onUpdate();
@@ -199,9 +201,18 @@ AutomationEditableText.prototype = {
  * @return {editing.TextEditHandler}
  */
 editing.TextEditHandler.createForNode = function(node) {
-  if (!node.state.richlyEditable)
-    return new TextFieldTextEditHandler(node);
-  // TODO(plundblad): Support contenteditable.
+  var rootFocusedEditable = null;
+  var testNode = node;
+
+  do {
+    if (testNode.state.focused && testNode.state.editable)
+      rootFocusedEditable = testNode;
+    testNode = testNode.parent;
+  } while (testNode);
+
+  if (rootFocusedEditable)
+    return new TextFieldTextEditHandler(rootFocusedEditable);
+
   return null;
 };
 
