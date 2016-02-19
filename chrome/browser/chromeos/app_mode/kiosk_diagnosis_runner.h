@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/extensions/api/feedback_private/feedback_service.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class Profile;
@@ -33,7 +32,6 @@ class KioskDiagnosisRunner : public KeyedService {
   void Start(const std::string& app_id);
 
   void StartSystemLogCollection();
-  void SendSysLogFeedback(const extensions::SystemInformationList& sys_info);
   void OnFeedbackSent(bool sent);
 
   Profile* profile_;

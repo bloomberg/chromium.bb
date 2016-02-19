@@ -188,6 +188,8 @@
         'browser/chromeos/external_metrics.h',
         'browser/chromeos/external_protocol_dialog.cc',
         'browser/chromeos/external_protocol_dialog.h',
+        'browser/chromeos/feedback_util.cc',
+        'browser/chromeos/feedback_util.h',
         'browser/chromeos/file_manager/app_id.h',
         'browser/chromeos/file_manager/file_browser_handlers.cc',
         'browser/chromeos/file_manager/file_browser_handlers.h',
