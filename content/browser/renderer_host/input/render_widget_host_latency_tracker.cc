@@ -170,11 +170,6 @@ void ComputeScrollLatencyHistograms(
       UMA_HISTOGRAM_TOUCH_TO_SCROLL_LATENCY(
           "Event.Latency.TouchToFirstScrollUpdateSwapBegin",
           first_original_component, gpu_swap_begin_component);
-      // TODO(brianderson): Remove this version once we have enough overlapping
-      // data with the metric above. crbug.com/478845
-      UMA_HISTOGRAM_TOUCH_TO_SCROLL_LATENCY(
-          "Event.Latency.TouchToFirstScrollUpdateSwap",
-          first_original_component, gpu_swap_end_component);
     }
     original_component = first_original_component;
   } else if (!latency.FindLatency(
@@ -190,11 +185,6 @@ void ComputeScrollLatencyHistograms(
     UMA_HISTOGRAM_TOUCH_TO_SCROLL_LATENCY(
         "Event.Latency.TouchToScrollUpdateSwapBegin", original_component,
         gpu_swap_begin_component);
-    // TODO(brianderson): Remove this version once we have enough overlapping
-    // data with the metric above. crbug.com/478845
-    UMA_HISTOGRAM_TOUCH_TO_SCROLL_LATENCY(
-        "Event.Latency.TouchToScrollUpdateSwap", original_component,
-        gpu_swap_end_component);
   }
 
   // TODO(miletus): Add validation for making sure the following components
