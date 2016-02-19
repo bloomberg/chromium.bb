@@ -47,7 +47,7 @@ win::ScopedHandle CreateLowIntegritySID() {
   if (!success)
     return base::win::ScopedHandle();
 
-  TOKEN_MANDATORY_LABEL TIL = {0};
+  TOKEN_MANDATORY_LABEL TIL = {};
   TIL.Label.Attributes = SE_GROUP_INTEGRITY;
   TIL.Label.Sid = integrity_sid;
   success = ::SetTokenInformation(
