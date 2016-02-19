@@ -855,6 +855,8 @@ scoped_ptr<ResourceHostMsg_Request> ResourceDispatcher::CreateRequest(
       extra_data->transferred_request_request_id();
   request->service_worker_provider_id =
       extra_data->service_worker_provider_id();
+  request->originated_from_service_worker =
+      extra_data->originated_from_service_worker();
   request->lofi_state = extra_data->lofi_state();
   request->request_body = request_body;
   request->resource_body_stream_url = request_info.resource_body_stream_url;

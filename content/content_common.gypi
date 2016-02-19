@@ -512,6 +512,8 @@
       'common/navigation_params.cc',
       'common/navigation_params.h',
       'common/net/url_fetcher.cc',
+      'common/net/url_request_service_worker_data.cc',
+      'common/net/url_request_service_worker_data.h',
       'common/net/url_request_user_data.cc',
       'common/net/url_request_user_data.h',
       'common/notification_constants.h',

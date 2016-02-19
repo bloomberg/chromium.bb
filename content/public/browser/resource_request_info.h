@@ -52,6 +52,10 @@ class ResourceRequestInfo {
       int* render_process_id,
       int* render_frame_id);
 
+  // Returns true if the request originated from a Service Worker.
+  CONTENT_EXPORT static bool OriginatedFromServiceWorker(
+      const net::URLRequest* request);
+
   // A callback that returns a pointer to a WebContents. The callback can
   // always be used, but it may return nullptr: if the info used to
   // instantiate the callback can no longer be used to return a WebContents,

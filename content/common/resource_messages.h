@@ -223,6 +223,10 @@ IPC_STRUCT_BEGIN(ResourceHostMsg_Request)
   // or kInvalidServiceWorkerProviderId.
   IPC_STRUCT_MEMBER(int, service_worker_provider_id)
 
+  // True if the request originated from a Service Worker, e.g. due to a
+  // fetch() in the Service Worker script.
+  IPC_STRUCT_MEMBER(bool, originated_from_service_worker)
+
   // True if the request should not be handled by the ServiceWorker.
   IPC_STRUCT_MEMBER(bool, skip_service_worker)
 

@@ -17,6 +17,7 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_write_to_cache_job.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/public/browser/resource_request_info.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_context.h"
@@ -158,6 +159,32 @@ TEST_F(ServiceWorkerContextRequestHandlerTest, UpdateForceBypassCache) {
 
   // Verify the net request is initialized to bypass the browser cache.
   EXPECT_TRUE(sw_job->net_request_->load_flags() & net::LOAD_BYPASS_CACHE);
+}
+
+TEST_F(ServiceWorkerContextRequestHandlerTest,
+       ServiceWorkerDataRequestAnnotation) {
+  version_->SetStatus(ServiceWorkerVersion::NEW);
+  provider_host_->running_hosted_version_ = version_;
+
+  // Conduct a resource fetch for the main script.
+  const GURL kScriptUrl("http://host/script.js");
+  scoped_ptr<net::URLRequest> request = url_request_context_.CreateRequest(
+      kScriptUrl, net::DEFAULT_PRIORITY, &url_request_delegate_);
+  scoped_ptr<ServiceWorkerContextRequestHandler> handler(
+      new ServiceWorkerContextRequestHandler(
+          context()->AsWeakPtr(), provider_host_,
+          base::WeakPtr<storage::BlobStorageContext>(),
+          RESOURCE_TYPE_SERVICE_WORKER));
+  scoped_ptr<net::URLRequestJob> job(
+      handler->MaybeCreateJob(request.get(), nullptr, nullptr));
+  ASSERT_TRUE(job.get());
+  ServiceWorkerWriteToCacheJob* sw_job =
+      static_cast<ServiceWorkerWriteToCacheJob*>(job.get());
+
+  // Verify that the request is properly annotated as originating from a
+  // Service Worker.
+  EXPECT_TRUE(ResourceRequestInfo::OriginatedFromServiceWorker(
+      sw_job->net_request_.get()));
 }
 
 }  // namespace content

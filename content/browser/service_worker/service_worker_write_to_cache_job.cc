@@ -13,6 +13,7 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
+#include "content/common/net/url_request_service_worker_data.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "net/base/io_buffer.h"
@@ -184,6 +185,8 @@ void ServiceWorkerWriteToCacheJob::InitNetRequest(
       request()->first_party_for_cookies());
   net_request_->set_initiator(request()->initiator());
   net_request_->SetReferrer(request()->referrer());
+  net_request_->SetUserData(URLRequestServiceWorkerData::kUserDataKey,
+                            new URLRequestServiceWorkerData());
   if (extra_load_flags)
     net_request_->SetLoadFlags(net_request_->load_flags() | extra_load_flags);
 

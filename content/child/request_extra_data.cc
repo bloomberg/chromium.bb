@@ -23,6 +23,7 @@ RequestExtraData::RequestExtraData()
       transferred_request_child_id_(-1),
       transferred_request_request_id_(-1),
       service_worker_provider_id_(kInvalidServiceWorkerProviderId),
+      originated_from_service_worker_(false),
       lofi_state_(LOFI_UNSPECIFIED) {
 }
 

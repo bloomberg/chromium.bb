@@ -90,6 +90,14 @@ class CONTENT_EXPORT RequestExtraData
       int service_worker_provider_id) {
     service_worker_provider_id_ = service_worker_provider_id;
   }
+  // true if the request originated from within a service worker e.g. due to
+  // a fetch() in the service worker script.
+  bool originated_from_service_worker() const {
+    return originated_from_service_worker_;
+  }
+  void set_originated_from_service_worker(bool originated_from_service_worker) {
+    originated_from_service_worker_ = originated_from_service_worker;
+  }
   LoFiState lofi_state() const {
     return lofi_state_;
   }
@@ -137,6 +145,7 @@ class CONTENT_EXPORT RequestExtraData
   int transferred_request_child_id_;
   int transferred_request_request_id_;
   int service_worker_provider_id_;
+  bool originated_from_service_worker_;
   blink::WebString custom_user_agent_;
   blink::WebString requested_with_;
   scoped_ptr<StreamOverrideParameters> stream_override_;

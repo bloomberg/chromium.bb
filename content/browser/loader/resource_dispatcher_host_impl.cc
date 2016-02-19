@@ -69,6 +69,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/appcache_interfaces.h"
 #include "content/common/navigation_params.h"
+#include "content/common/net/url_request_service_worker_data.h"
 #include "content/common/resource_messages.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/ssl_status_serialization.h"
@@ -1451,6 +1452,11 @@ void ResourceDispatcherHostImpl::BeginRequest(
   new_request->set_first_party_for_cookies(
       request_data.first_party_for_cookies);
   new_request->set_initiator(request_data.request_initiator);
+
+  if (request_data.originated_from_service_worker) {
+    new_request->SetUserData(URLRequestServiceWorkerData::kUserDataKey,
+                             new URLRequestServiceWorkerData());
+  }
 
   // If the request is a MAIN_FRAME request, the first-party URL gets updated on
   // redirects.

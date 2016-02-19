@@ -100,6 +100,7 @@ class WebServiceWorkerNetworkProviderImpl
             static_cast<DataSourceExtraData*>(data_source->extraData()));
     scoped_ptr<RequestExtraData> extra_data(new RequestExtraData);
     extra_data->set_service_worker_provider_id(provider->provider_id());
+    extra_data->set_originated_from_service_worker(true);
     request.setExtraData(extra_data.release());
   }
 };

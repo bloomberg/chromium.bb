@@ -270,6 +270,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
                            UpdateAfter24Hours);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,
                            UpdateForceBypassCache);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,
+                           ServiceWorkerDataRequestAnnotation);
 
   struct OneShotGetReadyCallback {
     GetRegistrationForReadyCallback callback;
