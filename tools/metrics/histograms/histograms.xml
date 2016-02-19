@@ -66934,6 +66934,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1238" label="V8ForInInitializer"/>
   <int value="1239" label="V8Animation_Id_AttributeGetter"/>
   <int value="1240" label="V8Animation_Id_AttributeSetter"/>
+  <int value="1241" label="MediaStreamOnEnded"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
