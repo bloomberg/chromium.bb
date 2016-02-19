@@ -34,7 +34,8 @@ class VIEWS_EXPORT InkDropAnimationControllerImpl
   ~InkDropAnimationControllerImpl() override;
 
   // InkDropAnimationController:
-  InkDropState GetInkDropState() const override;
+  InkDropState GetTargetInkDropState() const override;
+  bool IsVisible() const override;
   void AnimateToState(InkDropState ink_drop_state) override;
   void SetHovered(bool is_hovered) override;
   bool IsHovered() const override;

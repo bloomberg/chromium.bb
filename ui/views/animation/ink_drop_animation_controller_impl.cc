@@ -7,9 +7,9 @@
 #include "base/auto_reset.h"
 #include "base/timer/timer.h"
 #include "ui/compositor/layer.h"
-#include "ui/views/animation/ink_drop_animation.h"
 #include "ui/views/animation/ink_drop_host.h"
 #include "ui/views/animation/ink_drop_hover.h"
+#include "ui/views/animation/square_ink_drop_animation.h"
 
 namespace views {
 
@@ -70,10 +70,14 @@ InkDropAnimationControllerImpl::~InkDropAnimationControllerImpl() {
   ink_drop_host_->RemoveInkDropLayer(root_layer_.get());
 }
 
-InkDropState InkDropAnimationControllerImpl::GetInkDropState() const {
+InkDropState InkDropAnimationControllerImpl::GetTargetInkDropState() const {
   if (!ink_drop_animation_)
     return InkDropState::HIDDEN;
-  return ink_drop_animation_->ink_drop_state();
+  return ink_drop_animation_->GetTargetInkDropState();
+}
+
+bool InkDropAnimationControllerImpl::IsVisible() const {
+  return ink_drop_animation_ && ink_drop_animation_->IsVisible();
 }
 
 void InkDropAnimationControllerImpl::AnimateToState(
@@ -95,8 +99,8 @@ void InkDropAnimationControllerImpl::AnimateToState(
 
   // Make sure the ink drop starts from the HIDDEN state it was going to auto
   // transition to it.
-  if (ink_drop_animation_->ink_drop_state() == InkDropState::HIDDEN ||
-      ShouldAnimateToHidden(ink_drop_animation_->ink_drop_state())) {
+  if (ink_drop_animation_->GetTargetInkDropState() == InkDropState::HIDDEN ||
+      ShouldAnimateToHidden(ink_drop_animation_->GetTargetInkDropState())) {
     ink_drop_animation_->HideImmediately();
   }
   ink_drop_animation_->AnimateToState(ink_drop_state);
@@ -149,19 +153,19 @@ void InkDropAnimationControllerImpl::SetInkDropCenter(
 void InkDropAnimationControllerImpl::CreateInkDropAnimation() {
   DestroyInkDropAnimation();
 
-  ink_drop_animation_.reset(new InkDropAnimation(
+  ink_drop_animation_.reset(new SquareInkDropAnimation(
       ink_drop_large_size_, ink_drop_large_corner_radius_, ink_drop_small_size_,
       ink_drop_small_corner_radius_));
 
   ink_drop_animation_->AddObserver(this);
   ink_drop_animation_->SetCenterPoint(ink_drop_center_);
-  root_layer_->Add(ink_drop_animation_->root_layer());
+  root_layer_->Add(ink_drop_animation_->GetRootLayer());
 }
 
 void InkDropAnimationControllerImpl::DestroyInkDropAnimation() {
   if (!ink_drop_animation_)
     return;
-  root_layer_->Remove(ink_drop_animation_->root_layer());
+  root_layer_->Remove(ink_drop_animation_->GetRootLayer());
   ink_drop_animation_->RemoveObserver(this);
   ink_drop_animation_.reset();
 }
@@ -219,7 +223,7 @@ void InkDropAnimationControllerImpl::SetHoveredInternal(
   if (is_hovered) {
     if (!hover_)
       CreateInkDropHover();
-    if (GetInkDropState() == views::InkDropState::HIDDEN)
+    if (!IsVisible())
       hover_->FadeIn(animation_duration);
   } else {
     hover_->FadeOut(animation_duration);

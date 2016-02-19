@@ -63,7 +63,7 @@ void ButtonInkDropDelegate::OnMouseEvent(ui::MouseEvent* event) {
 
 void ButtonInkDropDelegate::OnGestureEvent(ui::GestureEvent* event) {
   InkDropState current_ink_drop_state =
-      ink_drop_animation_controller_->GetInkDropState();
+      ink_drop_animation_controller_->GetTargetInkDropState();
 
   InkDropState ink_drop_state = InkDropState::HIDDEN;
   switch (event->type()) {

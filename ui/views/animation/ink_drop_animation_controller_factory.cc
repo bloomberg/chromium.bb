@@ -25,7 +25,8 @@ class InkDropAnimationControllerStub
   ~InkDropAnimationControllerStub() override;
 
   // InkDropAnimationController:
-  InkDropState GetInkDropState() const override;
+  InkDropState GetTargetInkDropState() const override;
+  bool IsVisible() const override;
   void AnimateToState(InkDropState state) override;
   void SetHovered(bool is_hovered) override;
   bool IsHovered() const override;
@@ -49,8 +50,12 @@ InkDropAnimationControllerStub::InkDropAnimationControllerStub()
 
 InkDropAnimationControllerStub::~InkDropAnimationControllerStub() {}
 
-InkDropState InkDropAnimationControllerStub::GetInkDropState() const {
+InkDropState InkDropAnimationControllerStub::GetTargetInkDropState() const {
   return InkDropState::HIDDEN;
+}
+
+bool InkDropAnimationControllerStub::IsVisible() const {
+  return false;
 }
 
 void InkDropAnimationControllerStub::AnimateToState(InkDropState state) {

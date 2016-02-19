@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "ui/gfx/geometry/size.h"
+#include "base/time/time.h"
 
 namespace ui {
 class LayerAnimator;
@@ -19,16 +19,14 @@ class InkDropAnimation;
 
 namespace test {
 
-// Test API to provide internal access to an InkDropAnimation.
+// Base Test API used by test fixtures to validate all concrete implementations
+// of the InkDropAnimation class.
 class InkDropAnimationTestApi {
  public:
-  typedef InkDropAnimation::InkDropTransforms InkDropTransforms;
-  typedef InkDropAnimation::PaintedShape PaintedShape;
-
   explicit InkDropAnimationTestApi(InkDropAnimation* ink_drop_animation);
-  ~InkDropAnimationTestApi();
+  virtual ~InkDropAnimationTestApi();
 
-  // Disables the animation timers when |disable_timers| is true. This
+  // Disables the animation timers when |disable_timers| is true.
   void SetDisableAnimationTimers(bool disable_timers);
 
   // Returns true if any animations are active.
@@ -37,26 +35,30 @@ class InkDropAnimationTestApi {
   // Completes all animations for all the Layer's owned by the InkDropAnimation.
   void CompleteAnimations();
 
-  // Wrapper functions the wrapped InkDropedAnimation:
-  float GetCurrentOpacity() const;
-  void CalculateCircleTransforms(const gfx::Size& size,
-                                 InkDropTransforms* transforms_out) const;
-  void CalculateRectTransforms(const gfx::Size& size,
-                               float corner_radius,
-                               InkDropTransforms* transforms_out) const;
+  // Gets the opacity of the ink drop.
+  virtual float GetCurrentOpacity() const = 0;
 
- private:
-  // Progresses all running LayerAnimationSequences by the given |duration|.
-  // NOTE: This function will NOT progress LayerAnimationSequences that are
-  // queued, only the running ones will be progressed.
-  void StepAnimations(const base::TimeDelta& duration);
+ protected:
+  InkDropAnimation* ink_drop_animation() {
+    return static_cast<const InkDropAnimationTestApi*>(this)
+        ->ink_drop_animation();
+  }
+
+  InkDropAnimation* ink_drop_animation() const { return ink_drop_animation_; }
 
   // Get a list of all the LayerAnimator's used internally by the
   // InkDropAnimation.
   std::vector<ui::LayerAnimator*> GetLayerAnimators();
-  std::vector<ui::LayerAnimator*> GetLayerAnimators() const;
+  virtual std::vector<ui::LayerAnimator*> GetLayerAnimators() const;
 
-  // The InkDropAnimation to provide internal access to.
+ private:
+  // Progresses all running LayerAnimationSequences by the given |duration|.
+  //
+  // NOTE: This function will NOT progress LayerAnimationSequences that are
+  // queued, only the running ones will be progressed.
+  void StepAnimations(const base::TimeDelta& duration);
+
+  // The InkDropedAnimation to provide internal access to.
   InkDropAnimation* ink_drop_animation_;
 
   DISALLOW_COPY_AND_ASSIGN(InkDropAnimationTestApi);

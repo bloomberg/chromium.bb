@@ -107,7 +107,7 @@ TEST_P(InkDropAnimationControllerFactoryTest,
 
 TEST_P(InkDropAnimationControllerFactoryTest, StateIsHiddenInitially) {
   EXPECT_EQ(InkDropState::HIDDEN,
-            ink_drop_animation_controller_->GetInkDropState());
+            ink_drop_animation_controller_->GetTargetInkDropState());
 }
 
 TEST_P(InkDropAnimationControllerFactoryTest, HoveredStateAfterAnimateToState) {
@@ -121,14 +121,14 @@ TEST_P(InkDropAnimationControllerFactoryTest, TypicalQuickAction) {
   ink_drop_animation_controller_->AnimateToState(InkDropState::ACTION_PENDING);
   ink_drop_animation_controller_->AnimateToState(InkDropState::QUICK_ACTION);
   EXPECT_EQ(InkDropState::HIDDEN,
-            ink_drop_animation_controller_->GetInkDropState());
+            ink_drop_animation_controller_->GetTargetInkDropState());
 }
 
 TEST_P(InkDropAnimationControllerFactoryTest, CancelQuickAction) {
   ink_drop_animation_controller_->AnimateToState(InkDropState::ACTION_PENDING);
   ink_drop_animation_controller_->AnimateToState(InkDropState::HIDDEN);
   EXPECT_EQ(InkDropState::HIDDEN,
-            ink_drop_animation_controller_->GetInkDropState());
+            ink_drop_animation_controller_->GetTargetInkDropState());
 }
 
 TEST_P(InkDropAnimationControllerFactoryTest, TypicalSlowAction) {
@@ -137,7 +137,7 @@ TEST_P(InkDropAnimationControllerFactoryTest, TypicalSlowAction) {
       InkDropState::SLOW_ACTION_PENDING);
   ink_drop_animation_controller_->AnimateToState(InkDropState::SLOW_ACTION);
   EXPECT_EQ(InkDropState::HIDDEN,
-            ink_drop_animation_controller_->GetInkDropState());
+            ink_drop_animation_controller_->GetTargetInkDropState());
 }
 
 TEST_P(InkDropAnimationControllerFactoryTest, CancelSlowAction) {
@@ -146,7 +146,7 @@ TEST_P(InkDropAnimationControllerFactoryTest, CancelSlowAction) {
       InkDropState::SLOW_ACTION_PENDING);
   ink_drop_animation_controller_->AnimateToState(InkDropState::HIDDEN);
   EXPECT_EQ(InkDropState::HIDDEN,
-            ink_drop_animation_controller_->GetInkDropState());
+            ink_drop_animation_controller_->GetTargetInkDropState());
 }
 
 TEST_P(InkDropAnimationControllerFactoryTest, TypicalQuickActivated) {
@@ -154,7 +154,7 @@ TEST_P(InkDropAnimationControllerFactoryTest, TypicalQuickActivated) {
   ink_drop_animation_controller_->AnimateToState(InkDropState::ACTIVATED);
   ink_drop_animation_controller_->AnimateToState(InkDropState::DEACTIVATED);
   EXPECT_EQ(InkDropState::HIDDEN,
-            ink_drop_animation_controller_->GetInkDropState());
+            ink_drop_animation_controller_->GetTargetInkDropState());
 }
 
 TEST_P(InkDropAnimationControllerFactoryTest, TypicalSlowActivated) {
@@ -164,7 +164,7 @@ TEST_P(InkDropAnimationControllerFactoryTest, TypicalSlowActivated) {
   ink_drop_animation_controller_->AnimateToState(InkDropState::ACTIVATED);
   ink_drop_animation_controller_->AnimateToState(InkDropState::DEACTIVATED);
   EXPECT_EQ(InkDropState::HIDDEN,
-            ink_drop_animation_controller_->GetInkDropState());
+            ink_drop_animation_controller_->GetTargetInkDropState());
 }
 
 }  // namespace views
