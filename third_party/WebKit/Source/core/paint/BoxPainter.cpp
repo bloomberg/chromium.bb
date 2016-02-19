@@ -92,7 +92,6 @@ void BoxPainter::paintBoxDecorationBackgroundWithRect(const PaintInfo& paintInfo
 
     GraphicsContextStateSaver stateSaver(paintInfo.context, false);
     if (bleedAvoidanceIsClipping(boxDecorationData.bleedAvoidance)) {
-
         stateSaver.save();
         FloatRoundedRect border = style.getRoundedBorderFor(paintRect);
         paintInfo.context.clipRoundedRect(border);
@@ -135,7 +134,7 @@ void BoxPainter::paintBackground(const PaintInfo& paintInfo, const LayoutRect& p
     paintFillLayers(paintInfo, backgroundColor, m_layoutBox.style()->backgroundLayers(), paintRect, bleedAvoidance);
 }
 
-static bool isFillLayerOpaque(const FillLayer& layer, const LayoutObject& imageClient)
+bool BoxPainter::isFillLayerOpaque(const FillLayer& layer, const LayoutObject& imageClient)
 {
     return layer.hasOpaqueImage(&imageClient)
         && layer.image()->canRender()

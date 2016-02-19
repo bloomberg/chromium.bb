@@ -1397,6 +1397,9 @@ crbug.com/577746 [ Linux Debug ] compositing/iframes/iframe-in-composited-layer.
 
 crbug.com/581038 fast/text/first-letter-bad-line-boxes-crash.html [ Crash Pass ]
 
+crbug.com/581616 fast/backgrounds/background-color-image-border-radius-bleed.html [ NeedsRebaseline ]
+crbug.com/581616 fast/backgrounds/background-multi-image-border-radius-bleed.html [ NeedsRebaseline ]
+
 # No baselines, but this js test is also showing FAIL
 crbug.com/583675 fast/dom/shadow/scoped-events-by-ua-stopped.html [ Failure ]
 

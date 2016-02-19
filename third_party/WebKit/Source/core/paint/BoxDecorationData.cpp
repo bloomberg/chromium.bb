@@ -5,6 +5,7 @@
 #include "core/paint/BoxDecorationData.h"
 
 #include "core/layout/LayoutBox.h"
+#include "core/paint/BoxPainter.h"
 #include "core/style/BorderEdge.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -47,13 +48,25 @@ BackgroundBleedAvoidance BoxDecorationData::determineBackgroundBleedAvoidance(co
     if (!hasBackground)
         return BackgroundBleedNone;
 
-    if (!hasBorderDecoration || !layoutBox.style()->hasBorderRadius() || layoutBox.canRenderBorderImage()) {
+    const ComputedStyle& boxStyle = layoutBox.styleRef();
+    const bool hasBorderRadius = boxStyle.hasBorderRadius();
+    if (!hasBorderDecoration || !hasBorderRadius || layoutBox.canRenderBorderImage()) {
         if (layoutBox.backgroundShouldAlwaysBeClipped())
             return BackgroundBleedClipOnly;
+        // Border radius clipping may require layer bleed avoidance if we are going to draw
+        // an image over something else, because we do not want the antialiasing to lead to bleeding
+        if (boxStyle.hasBackgroundImage() && hasBorderRadius) {
+            // But if the top layer is opaque for the purposes of background painting, we do not
+            // need the bleed avoidance because we will not paint anything behind the top layer.
+            // But only if we need to draw something underneath.
+            const FillLayer& fillLayer = layoutBox.style()->backgroundLayers();
+            if ((backgroundColor.alpha() || fillLayer.next()) && !BoxPainter::isFillLayerOpaque(fillLayer, layoutBox))
+                return BackgroundBleedClipLayer;
+        }
         return BackgroundBleedNone;
     }
 
-    if (borderObscuresBackgroundEdge(*layoutBox.style()))
+    if (borderObscuresBackgroundEdge(boxStyle))
         return BackgroundBleedShrinkBackground;
 
     return BackgroundBleedClipLayer;

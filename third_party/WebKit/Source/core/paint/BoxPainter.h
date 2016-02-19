@@ -34,6 +34,9 @@ public:
     // Note that the output list will be in top-bottom order.
     bool calculateFillLayerOcclusionCulling(FillLayerOcclusionOutputList &reversedPaintList, const FillLayer&);
 
+    // Returns true if the fill layer will certainly occlude anything painted behind it.
+    static bool isFillLayerOpaque(const FillLayer&, const LayoutObject&);
+
     void paintFillLayers(const PaintInfo&, const Color&, const FillLayer&, const LayoutRect&, BackgroundBleedAvoidance = BackgroundBleedNone, SkXfermode::Mode = SkXfermode::kSrcOver_Mode, const LayoutObject* backgroundObject = nullptr);
     void paintMaskImages(const PaintInfo&, const LayoutRect&);
     void paintBoxDecorationBackgroundWithRect(const PaintInfo&, const LayoutPoint&, const LayoutRect&);
