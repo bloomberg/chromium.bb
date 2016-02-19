@@ -33,5 +33,5 @@ tests:
     - Number-text-transitions with italic
     - 123abc
     - ⠼⠁⠃⠉⠨⠶⠰⠁⠃⠉⠨⠄
-    - {typeform: '000111'}
+    - {typeform: {italic: '   +++'}}
 
