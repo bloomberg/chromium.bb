@@ -56,6 +56,7 @@ InkDropAnimationControllerImpl::InkDropAnimationControllerImpl(
       ink_drop_large_corner_radius_(0),
       ink_drop_small_corner_radius_(0),
       root_layer_(new ui::Layer(ui::LAYER_NOT_DRAWN)),
+      is_hovered_(false),
       can_destroy_after_hidden_animation_(true),
       hover_after_animation_timer_(nullptr) {
   root_layer_->set_name("InkDropAnimationControllerImpl:RootLayer");
@@ -102,6 +103,7 @@ void InkDropAnimationControllerImpl::AnimateToState(
 }
 
 void InkDropAnimationControllerImpl::SetHovered(bool is_hovered) {
+  is_hovered_ = is_hovered;
   SetHoveredInternal(is_hovered,
                      is_hovered ? base::TimeDelta::FromMilliseconds(
                                       kHoverFadeInFromUserInputDurationInMs)
@@ -110,7 +112,7 @@ void InkDropAnimationControllerImpl::SetHovered(bool is_hovered) {
 }
 
 bool InkDropAnimationControllerImpl::IsHovered() const {
-  return hover_ && hover_->IsVisible();
+  return is_hovered_;
 }
 
 gfx::Size InkDropAnimationControllerImpl::GetInkDropLargeSize() const {
@@ -180,12 +182,12 @@ void InkDropAnimationControllerImpl::DestroyInkDropHover() {
   hover_.reset();
 }
 
+bool InkDropAnimationControllerImpl::IsHoverFadingInOrVisible() const {
+  return hover_ && hover_->IsFadingInOrVisible();
+}
+
 void InkDropAnimationControllerImpl::InkDropAnimationStarted(
     InkDropState ink_drop_state) {
-  if (IsHovered() && ink_drop_state != views::InkDropState::HIDDEN) {
-    SetHoveredInternal(false, base::TimeDelta::FromMilliseconds(
-                                  kHoverFadeOutBeforeAnimationDurationInMs));
-  }
 }
 
 void InkDropAnimationControllerImpl::InkDropAnimationEnded(
@@ -211,15 +213,14 @@ void InkDropAnimationControllerImpl::SetHoveredInternal(
     base::TimeDelta animation_duration) {
   StopHoverAfterAnimationTimer();
 
-  if (IsHovered() == is_hovered)
+  if (IsHoverFadingInOrVisible() == is_hovered)
     return;
 
   if (is_hovered) {
     if (!hover_)
       CreateInkDropHover();
-    if (GetInkDropState() == views::InkDropState::HIDDEN) {
+    if (GetInkDropState() == views::InkDropState::HIDDEN)
       hover_->FadeIn(animation_duration);
-    }
   } else {
     hover_->FadeOut(animation_duration);
   }

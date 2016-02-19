@@ -27,8 +27,9 @@ class VIEWS_EXPORT InkDropHover {
   InkDropHover(const gfx::Size& size, int corner_radius);
   ~InkDropHover();
 
-  // Returns true if the hover layer is visible.
-  bool IsVisible() const;
+  // Returns true if the hover animation is either in the process of fading
+  // in or is fully visible.
+  bool IsFadingInOrVisible() const;
 
   // Fades in the hover visual over the given |duration|.
   void FadeIn(const base::TimeDelta& duration);
@@ -54,6 +55,10 @@ class VIEWS_EXPORT InkDropHover {
   bool AnimationEndedCallback(
       HoverAnimationType animation_type,
       const ui::CallbackLayerAnimationObserver& observer);
+
+  // True if the last animation to be initiated was a FADE_IN, and false
+  // otherwise.
+  bool last_animation_initiated_was_fade_in_;
 
   // The LayerDelegate that paints the hover |layer_|.
   scoped_ptr<RoundedRectangleLayerDelegate> layer_delegate_;

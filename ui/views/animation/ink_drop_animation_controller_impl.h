@@ -64,6 +64,10 @@ class VIEWS_EXPORT InkDropAnimationControllerImpl
   // Destroys the current |hover_|.
   void DestroyInkDropHover();
 
+  // Returns true if the hover animation is in the process of fading in or
+  // is visible.
+  bool IsHoverFadingInOrVisible() const;
+
   // views::InkDropAnimationObserver:
   void InkDropAnimationStarted(InkDropState ink_drop_state) override;
   void InkDropAnimationEnded(InkDropState ink_drop_state,
@@ -110,6 +114,9 @@ class VIEWS_EXPORT InkDropAnimationControllerImpl
 
   // The current InkDropHover. Lazily created using CreateInkDropHover();
   scoped_ptr<InkDropHover> hover_;
+
+  // The logical hover state of |this|.
+  bool is_hovered_;
 
   // The current InkDropAnimation. Created on demand using
   // CreateInkDropAnimation().

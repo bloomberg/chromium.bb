@@ -54,7 +54,6 @@ InkDropState InkDropAnimationControllerStub::GetInkDropState() const {
 }
 
 void InkDropAnimationControllerStub::AnimateToState(InkDropState state) {
-  SetHovered(false);
 }
 
 void InkDropAnimationControllerStub::SetHovered(bool is_hovered) {

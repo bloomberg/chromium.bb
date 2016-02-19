@@ -27,7 +27,8 @@ const SkColor kHoverColor = SK_ColorBLACK;
 }  // namespace
 
 InkDropHover::InkDropHover(const gfx::Size& size, int corner_radius)
-    : layer_delegate_(
+    : last_animation_initiated_was_fade_in_(false),
+      layer_delegate_(
           new RoundedRectangleLayerDelegate(kHoverColor, size, corner_radius)),
       layer_(new ui::Layer()) {
   layer_->SetBounds(gfx::Rect(size));
@@ -42,8 +43,8 @@ InkDropHover::InkDropHover(const gfx::Size& size, int corner_radius)
 
 InkDropHover::~InkDropHover() {}
 
-bool InkDropHover::IsVisible() const {
-  return layer_->visible();
+bool InkDropHover::IsFadingInOrVisible() const {
+  return last_animation_initiated_was_fade_in_;
 }
 
 void InkDropHover::FadeIn(const base::TimeDelta& duration) {
@@ -58,6 +59,8 @@ void InkDropHover::FadeOut(const base::TimeDelta& duration) {
 
 void InkDropHover::AnimateFade(HoverAnimationType animation_type,
                                const base::TimeDelta& duration) {
+  last_animation_initiated_was_fade_in_ = animation_type == FADE_IN;
+
   // The |animation_observer| will be destroyed when the
   // AnimationStartedCallback() returns true.
   ui::CallbackLayerAnimationObserver* animation_observer =

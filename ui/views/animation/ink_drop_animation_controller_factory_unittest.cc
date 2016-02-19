@@ -114,7 +114,7 @@ TEST_P(InkDropAnimationControllerFactoryTest, HoveredStateAfterAnimateToState) {
   ink_drop_animation_controller_->SetHovered(true);
   ink_drop_animation_controller_->AnimateToState(InkDropState::ACTION_PENDING);
 
-  EXPECT_FALSE(ink_drop_animation_controller_->IsHovered());
+  EXPECT_TRUE(ink_drop_animation_controller_->IsHovered());
 }
 
 TEST_P(InkDropAnimationControllerFactoryTest, TypicalQuickAction) {
