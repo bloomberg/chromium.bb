@@ -135,6 +135,8 @@ cr.define('cr.ui', function() {
      */
     handleMouseDown_: function(e) {
       e = /** @type {!MouseEvent} */(e);
+      if (e.button)
+        return;
       this.startDrag(e.clientX, false);
       // Default action is to start selection and to move focus.
       e.preventDefault();

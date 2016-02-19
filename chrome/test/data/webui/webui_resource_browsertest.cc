@@ -218,3 +218,10 @@ IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, MenuButtonTest) {
   AddLibrary(IDR_WEBUI_JS_CR_UI_MENU);
   LoadFile(base::FilePath(FILE_PATH_LITERAL("menu_button_test.html")));
 }
+
+IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, SplitterTest) {
+  AddLibrary(IDR_WEBUI_JS_CR);
+  AddLibrary(IDR_WEBUI_JS_CR_UI);
+  AddLibrary(IDR_WEBUI_JS_CR_UI_SPLITTER);
+  LoadFile(base::FilePath(FILE_PATH_LITERAL("splitter_test.html")));
+}

@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+<body>
+<div></div>
+<div id="splitter"></div>
+<div></div>
+<script>
+function testSplitter_IgnoresRightMouse() {
+  var splitter = document.getElementById('splitter');
+  cr.ui.decorate(splitter, cr.ui.Splitter);
+
+  var downRight = new MouseEvent('mousedown', {button: 1, cancelable: true});
+  assertTrue(splitter.dispatchEvent(downRight));
+  assertFalse(downRight.defaultPrevented);
+
+  var downLeft = new MouseEvent('mousedown', {button: 0, cancelable: true});
+  assertFalse(splitter.dispatchEvent(downLeft));
+  assertTrue(downLeft.defaultPrevented);
+}
+</script>
+</body>
+</html>
