@@ -65,7 +65,7 @@ PaintLayerReflectionInfo::PaintLayerReflectionInfo(LayoutBox& layoutObject)
     m_reflection->setDangerousOneWayParent(m_box);
 }
 
-void PaintLayerReflectionInfo::destroy()
+PaintLayerReflectionInfo::~PaintLayerReflectionInfo()
 {
     if (!m_reflection->documentBeingDestroyed())
         m_reflection->removeLayers(box().layer());

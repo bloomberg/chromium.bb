@@ -61,7 +61,6 @@ public:
         return adoptRefWillBeNoop(new ImageResource(request, image));
     }
 
-
     ~ImageResource() override;
 
     void load(ResourceFetcher*, const ResourceLoaderOptions&) override;
