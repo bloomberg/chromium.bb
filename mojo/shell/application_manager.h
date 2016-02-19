@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "mojo/public/cpp/bindings/weak_binding_set.h"
 #include "mojo/public/cpp/bindings/weak_interface_ptr_set.h"
 #include "mojo/services/package_manager/public/interfaces/shell_resolver.mojom.h"
 #include "mojo/shell/application_loader.h"
@@ -18,6 +19,8 @@
 #include "mojo/shell/connect_to_application_params.h"
 #include "mojo/shell/identity.h"
 #include "mojo/shell/native_runner.h"
+#include "mojo/shell/public/cpp/interface_factory.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/interfaces/application_manager.mojom.h"
 #include "mojo/shell/public/interfaces/interface_provider.mojom.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
@@ -36,7 +39,9 @@ namespace shell {
 class ApplicationInstance;
 class ShellClientFactoryConnection;
 
-class ApplicationManager {
+class ApplicationManager : public ShellClient,
+                           public InterfaceFactory<mojom::ApplicationManager>,
+                           public mojom::ApplicationManager {
  public:
   // API for testing.
   class TestAPI {
@@ -67,7 +72,7 @@ class ApplicationManager {
   ApplicationManager(scoped_ptr<NativeRunnerFactory> native_runner_factory,
                      base::TaskRunner* task_runner,
                      bool register_mojo_url_schemes);
-  ~ApplicationManager();
+  ~ApplicationManager() override;
 
   // Loads a service if necessary and establishes a new client connection.
   // Please see the comments in connect_to_application_params.h for more details
@@ -92,13 +97,6 @@ class ApplicationManager {
 
   ApplicationInstance* GetApplicationInstance(const Identity& identity) const;
 
-  void CreateInstanceForHandle(
-      ScopedHandle channel,
-      const GURL& url,
-      mojom::CapabilityFilterPtr filter,
-      InterfaceRequest<mojom::PIDReceiver> pid_receiver);
-  void AddListener(mojom::ApplicationManagerListenerPtr listener);
-
   void ApplicationPIDAvailable(uint32_t id, base::ProcessId pid);
 
  private:
@@ -106,6 +104,23 @@ class ApplicationManager {
   using URLToLoaderMap = std::map<GURL, ApplicationLoader*>;
   using IdentityToShellClientFactoryMap =
       std::map<Identity, mojom::ShellClientFactoryPtr>;
+
+  // ShellClient:
+  bool AcceptConnection(Connection* connection) override;
+
+  // InterfaceFactory<mojom::ApplicationManager>:
+  void Create(
+      Connection* connection,
+      InterfaceRequest<mojom::ApplicationManager> request) override;
+
+  // mojom::ApplicationManager:
+  void CreateInstanceForHandle(
+      ScopedHandle channel,
+      const String& url,
+      mojom::CapabilityFilterPtr filter,
+      InterfaceRequest<mojom::PIDReceiver> pid_receiver) override;
+  void AddListener(
+      mojom::ApplicationManagerListenerPtr listener) override;
 
   // Takes the contents of |params| only when it returns true.
   bool ConnectToRunningApplication(
@@ -189,6 +204,7 @@ class ApplicationManager {
   base::TaskRunner* task_runner_;
   scoped_ptr<NativeRunnerFactory> native_runner_factory_;
   std::vector<scoped_ptr<NativeRunner>> native_runners_;
+  WeakBindingSet<mojom::ApplicationManager> bindings_;
   base::WeakPtrFactory<ApplicationManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ApplicationManager);

@@ -22,7 +22,7 @@
 #include "mojo/shell/application_instance.h"
 #include "mojo/shell/connect_util.h"
 #include "mojo/shell/public/cpp/connect.h"
-#include "mojo/shell/shell_application_loader.h"
+#include "mojo/shell/public/cpp/shell_connection.h"
 #include "mojo/shell/switches.h"
 #include "mojo/util/filename_util.h"
 
@@ -34,8 +34,26 @@ namespace {
 // Used by TestAPI.
 bool has_created_instance = false;
 
-void OnEmptyOnConnectCallback(uint32_t remote_id) {
-}
+void OnEmptyOnConnectCallback(uint32_t remote_id) {}
+
+class ShellApplicationLoader : public ApplicationLoader {
+ public:
+  explicit ShellApplicationLoader(ApplicationManager* manager)
+      : manager_(manager) {}
+  ~ShellApplicationLoader() override {}
+
+ private:
+  // Overridden from ApplicationLoader:
+  void Load(const GURL& url, mojom::ShellClientRequest request) override {
+    DCHECK(request.is_pending());
+    shell_connection_.reset(new ShellConnection(manager_, std::move(request)));
+  }
+
+  ApplicationManager* manager_;
+  scoped_ptr<ShellConnection> shell_connection_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShellApplicationLoader);
+};
 
 }  // namespace
 
@@ -140,22 +158,48 @@ ApplicationInstance* ApplicationManager::GetApplicationInstance(
   return it != identity_to_instance_.end() ? it->second : nullptr;
 }
 
+void ApplicationManager::ApplicationPIDAvailable(
+    uint32_t id,
+    base::ProcessId pid) {
+  for (auto& instance : identity_to_instance_) {
+    if (instance.second->id() == id) {
+      instance.second->set_pid(pid);
+      break;
+    }
+  }
+  listeners_.ForAllPtrs(
+      [this, id, pid](mojom::ApplicationManagerListener* listener) {
+        listener->ApplicationPIDAvailable(id, pid);
+      });
+}
+
+bool ApplicationManager::AcceptConnection(Connection* connection) {
+  connection->AddInterface<mojom::ApplicationManager>(this);
+  return true;
+}
+
+void ApplicationManager::Create(
+    Connection* connection,
+    mojom::ApplicationManagerRequest request) {
+  bindings_.AddBinding(this, std::move(request));
+}
+
 void ApplicationManager::CreateInstanceForHandle(
     ScopedHandle channel,
-    const GURL& url,
+    const String& url,
     mojom::CapabilityFilterPtr filter,
-    InterfaceRequest<mojom::PIDReceiver> pid_receiver) {
+    mojom::PIDReceiverRequest pid_receiver) {
   // We don't call ConnectToClient() here since the instance was created
   // manually by other code, not in response to a Connect() request. The newly
   // created instance is identified by |url| and may be subsequently reached by
   // client code using this identity.
   CapabilityFilter local_filter = filter->filter.To<CapabilityFilter>();
-  Identity target_id(url, std::string(), local_filter);
+  Identity target_id(url.To<GURL>(), std::string(), local_filter);
   mojom::ShellClientRequest request;
   // TODO(beng): do better than url.spec() for application name.
   ApplicationInstance* instance = CreateInstance(
       target_id, EmptyConnectCallback(), base::Closure(),
-      url.spec(), &request);
+      url, &request);
   instance->BindPIDReceiver(std::move(pid_receiver));
   scoped_ptr<NativeRunner> runner =
       native_runner_factory_->Create(base::FilePath());
@@ -172,21 +216,6 @@ void ApplicationManager::AddListener(
   listener->SetRunningApplications(std::move(applications));
 
   listeners_.AddInterfacePtr(std::move(listener));
-}
-
-void ApplicationManager::ApplicationPIDAvailable(
-    uint32_t id,
-    base::ProcessId pid) {
-  for (auto& instance : identity_to_instance_) {
-    if (instance.second->id() == id) {
-      instance.second->set_pid(pid);
-      break;
-    }
-  }
-  listeners_.ForAllPtrs(
-      [this, id, pid](mojom::ApplicationManagerListener* listener) {
-        listener->ApplicationPIDAvailable(id, pid);
-      });
 }
 
 ApplicationInstance* ApplicationManager::CreateAndConnectToInstance(
