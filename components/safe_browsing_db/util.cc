@@ -53,11 +53,12 @@ const char kIPBlacklist[] = "goog-badip-digest256";
 const char kUnwantedUrlList[] = "goog-unwanted-shavar";
 const char kInclusionWhitelist[] = "goog-csdinclusionwhite-sha256";
 const char kModuleWhitelist[] = "goog-whitemodule-digest256";
+const char kResourceBlacklist[] = "goog-badresource-shavar";
 
-const char* kAllLists[10] = {
+const char* kAllLists[11] = {
     kMalwareList,        kPhishingList,       kBinUrlList,  kCsdWhiteList,
     kDownloadWhiteList,  kExtensionBlacklist, kIPBlacklist, kUnwantedUrlList,
-    kInclusionWhitelist, kModuleWhitelist,
+    kInclusionWhitelist, kModuleWhitelist, kResourceBlacklist,
 };
 
 ListType GetListId(const base::StringPiece& name) {
@@ -82,6 +83,8 @@ ListType GetListId(const base::StringPiece& name) {
     id = INCLUSIONWHITELIST;
   } else if (name == kModuleWhitelist) {
     id = MODULEWHITELIST;
+  } else if (name == kResourceBlacklist) {
+    id = RESOURCEBLACKLIST;
   } else {
     id = INVALID;
   }
@@ -119,6 +122,8 @@ bool GetListName(ListType list_id, std::string* list) {
       break;
     case MODULEWHITELIST:
       *list = kModuleWhitelist;
+    case RESOURCEBLACKLIST:
+      *list = kResourceBlacklist;
       break;
     default:
       return false;

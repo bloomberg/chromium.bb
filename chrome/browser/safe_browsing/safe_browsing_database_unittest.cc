@@ -22,6 +22,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_store_file.h"
 #include "crypto/sha2.h"
 #include "net/base/ip_address_number.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "url/gurl.h"
@@ -282,11 +283,13 @@ class SafeBrowsingDatabaseTest : public PlatformTest {
         new SafeBrowsingStoreFile(task_runner_);
     SafeBrowsingStoreFile* module_whitelist_store =
         new SafeBrowsingStoreFile(task_runner_);
+    SafeBrowsingStoreFile* resource_blacklist_store =
+        new SafeBrowsingStoreFile(task_runner_);
     database_.reset(new SafeBrowsingDatabaseNew(
         task_runner_, browse_store, download_store, csd_whitelist_store,
         download_whitelist_store, inclusion_whitelist_store,
         extension_blacklist_store, ip_blacklist_store, unwanted_software_store,
-        module_whitelist_store));
+        module_whitelist_store, resource_blacklist_store));
     database_->Init(database_filename_);
   }
 
@@ -295,6 +298,16 @@ class SafeBrowsingDatabaseTest : public PlatformTest {
     std::vector<SBPrefix> prefixes;
     SafeBrowsingDatabase::GetDownloadUrlPrefixes(urls, &prefixes);
     return database_->ContainsDownloadUrlPrefixes(prefixes, prefix_hits);
+  }
+
+  bool ContainsResourceUrl(const GURL& url,
+                           std::vector<SBPrefix>* prefix_hits) {
+    std::vector<SBFullHash> full_hashes;
+    UrlToFullHashes(url, false, &full_hashes);
+    std::vector<SBPrefix> prefixes(full_hashes.size());
+    for (size_t i = 0; i < full_hashes.size(); ++i)
+      prefixes[i] = full_hashes[i].prefix;
+    return database_->ContainsResourceUrlPrefixes(prefixes, prefix_hits);
   }
 
   void GetListsInfo(std::vector<SBListChunkRanges>* lists) {
@@ -446,10 +459,14 @@ TEST_F(SafeBrowsingDatabaseTest, ListNames) {
   chunks.push_back(AddChunkPrefixValue(12, "chrome.dll"));
   database_->InsertChunks(kModuleWhitelist, chunks);
 
+  chunks.clear();
+  chunks.push_back(AddChunkPrefixValue(13, "foo.com/script.js"));
+  database_->InsertChunks(kResourceBlacklist, chunks);
+
   database_->UpdateFinished(true);
 
   GetListsInfo(&lists);
-  ASSERT_EQ(10U, lists.size());
+  ASSERT_EQ(11U, lists.size());
   EXPECT_EQ(kMalwareList, lists[0].name);
   EXPECT_EQ("1", lists[0].adds);
   EXPECT_TRUE(lists[0].subs.empty());
@@ -480,6 +497,9 @@ TEST_F(SafeBrowsingDatabaseTest, ListNames) {
   EXPECT_EQ(kModuleWhitelist, lists[9].name);
   EXPECT_EQ("12", lists[9].adds);
   EXPECT_TRUE(lists[9].subs.empty());
+  EXPECT_EQ(kResourceBlacklist, lists[10].name);
+  EXPECT_EQ("13", lists[10].adds);
+  EXPECT_TRUE(lists[10].subs.empty());
 
   database_.reset();
 }
@@ -1162,7 +1182,8 @@ TEST_F(SafeBrowsingDatabaseTest, DISABLED_FileCorruptionHandling) {
   base::MessageLoop loop;
   SafeBrowsingStoreFile* store = new SafeBrowsingStoreFile(task_runner_);
   database_.reset(new SafeBrowsingDatabaseNew(
-      task_runner_, store, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
+      task_runner_, store, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+      NULL));
   database_->Init(database_filename_);
 
   // This will cause an empty database to be created.
@@ -1303,6 +1324,45 @@ TEST_F(SafeBrowsingDatabaseTest, ContainsDownloadUrlPrefixes) {
   database_.reset();
 }
 
+TEST_F(SafeBrowsingDatabaseTest, ContainsResourceUrlPrefixes) {
+  const char* kBadUrl1 = "bad1.com/";
+  const char* kBadUrl2 = "bad2.com/script.js";
+  const SBPrefix kBadPrefix1 = SBPrefixForString(kBadUrl1);
+  const SBPrefix kBadPrefix2 = SBPrefixForString(kBadUrl2);
+
+  // Populate database
+  std::vector<scoped_ptr<SBChunkData>> chunks;
+  chunks.push_back(AddChunkPrefix2Value(1, kBadUrl1, kBadUrl2));
+
+  std::vector<SBListChunkRanges> lists;
+  ASSERT_TRUE(database_->UpdateStarted(&lists));
+  database_->InsertChunks(kResourceBlacklist, chunks);
+  database_->UpdateFinished(true);
+
+  struct {
+    std::string url;
+    bool found_in_db;
+    std::vector<SBPrefix> prefix_hits;
+  } test_cases[] = {
+    {std::string("http://") + kBadUrl1, true, {kBadPrefix1}},
+    {std::string("https://") + kBadUrl2, true, {kBadPrefix2}},
+    {std::string("ftp://") + kBadUrl1, true, {kBadPrefix1}},
+    {std::string("http://") + kBadUrl1 + "a/b/?arg=value", true, {kBadPrefix1}},
+    {std::string("http://") + kBadUrl1 + "script.js", true, {kBadPrefix1}},
+    {std::string("http://www.domain.") + kBadUrl2, true, {kBadPrefix2}},
+    {"http://www.good.org/script.js", false, std::vector<SBPrefix>()},
+  };
+
+  std::vector<SBPrefix> prefix_hits;
+  for (const auto& test_case : test_cases) {
+    EXPECT_EQ(test_case.found_in_db,
+              ContainsResourceUrl(GURL(test_case.url), &prefix_hits));
+    EXPECT_THAT(prefix_hits, testing::ElementsAreArray(test_case.prefix_hits));
+  }
+
+  database_.reset();
+}
+
 // Checks that the whitelists are handled properly.
 TEST_F(SafeBrowsingDatabaseTest, Whitelists) {
   struct TestCase {
@@ -1343,7 +1403,7 @@ TEST_F(SafeBrowsingDatabaseTest, Whitelists) {
   // If the whitelist is disabled everything should match the whitelist.
   database_.reset(new SafeBrowsingDatabaseNew(
       task_runner_, new SafeBrowsingStoreFile(task_runner_), NULL, NULL, NULL,
-      NULL, NULL, NULL, NULL, NULL));
+      NULL, NULL, NULL, NULL, NULL, NULL));
   database_->Init(database_filename_);
   for (const auto& test_case : kTestCases) {
     SCOPED_TRACE(std::string("Tested list at fault => ") +

@@ -213,6 +213,12 @@ bool RemoteSafeBrowsingDatabaseManager::MatchModuleWhitelistString(
   return true;
 }
 
+bool RemoteSafeBrowsingDatabaseManager::CheckResourceUrl(const GURL& url,
+                                                         Client* client) {
+  NOTREACHED();
+  return true;
+}
+
 bool RemoteSafeBrowsingDatabaseManager::IsMalwareKillSwitchOn() {
   NOTREACHED();
   return true;

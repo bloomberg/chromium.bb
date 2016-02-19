@@ -175,6 +175,14 @@ class SafeBrowsingDatabase {
   // This function is safe to call from any thread.
   virtual bool ContainsMalwareIP(const std::string& ip_address) = 0;
 
+  // Populates |prefix_hits| with any prefixes in |prefixes| that have matches
+  // in the database. Returns true iff there were any matches.
+  //
+  // This function can ONLY by accessed from the creation thread.
+  virtual bool ContainsResourceUrlPrefixes(
+      const std::vector<SBPrefix>& prefixes,
+      std::vector<SBPrefix>* prefix_hits) = 0;
+
   // A database transaction should look like:
   //
   // std::vector<SBListChunkRanges> lists;
@@ -270,6 +278,9 @@ class SafeBrowsingDatabase {
   static base::FilePath ModuleWhitelistDBFilename(
       const base::FilePath& db_filename);
 
+  static base::FilePath ResourceBlacklistDBFilename(
+      const base::FilePath& db_filename);
+
   // Get the prefixes matching the download |urls|.
   static void GetDownloadUrlPrefixes(const std::vector<GURL>& urls,
                                      std::vector<SBPrefix>* prefixes);
@@ -313,6 +324,9 @@ class SafeBrowsingDatabase {
     FAILURE_UNWANTED_SOFTWARE_PREFIX_SET_READ = 32,
     FAILURE_UNWANTED_SOFTWARE_PREFIX_SET_WRITE = 33,
     FAILURE_UNWANTED_SOFTWARE_PREFIX_SET_DELETE = 34,
+    FAILURE_RESOURCE_BLACKLIST_UPDATE_BEGIN = 35,
+    FAILURE_RESOURCE_BLACKLIST_UPDATE_FINISH = 36,
+    FAILURE_RESOURCE_BLACKLIST_DELETE = 37,
 
     // Memory space for histograms is determined by the max.  ALWAYS
     // ADD NEW VALUES BEFORE THIS ONE.
@@ -343,7 +357,8 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
       SafeBrowsingStore* extension_blacklist_store,
       SafeBrowsingStore* ip_blacklist_store,
       SafeBrowsingStore* unwanted_software_store,
-      SafeBrowsingStore* module_whitelist_store);
+      SafeBrowsingStore* module_whitelist_store,
+      SafeBrowsingStore* resource_blacklist_store);
 
   ~SafeBrowsingDatabaseNew() override;
 
@@ -374,6 +389,9 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   bool ContainsExtensionPrefixes(const std::vector<SBPrefix>& prefixes,
                                  std::vector<SBPrefix>* prefix_hits) override;
   bool ContainsMalwareIP(const std::string& ip_address) override;
+  bool ContainsResourceUrlPrefixes(const std::vector<SBPrefix>& prefixes,
+                                   std::vector<SBPrefix>* prefix_hits) override;
+
   bool UpdateStarted(std::vector<SBListChunkRanges>* lists) override;
   void InsertChunks(
       const std::string& list_name,
@@ -696,6 +714,8 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   //     identical to browsing lists).
   //   - |module_whitelist_store_|: For module whitelist. This list only
   //     contains 256 bit hashes.
+  //   - |resource_blacklist_store_|: For script resource list (format identical
+  //     to browsing lists).
   //
   // The stores themselves will be modified throughout the existence of this
   // database, but shouldn't ever be swapped out (hence the const scoped_ptr --
@@ -711,6 +731,7 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   const scoped_ptr<SafeBrowsingStore> ip_blacklist_store_;
   const scoped_ptr<SafeBrowsingStore> unwanted_software_store_;
   const scoped_ptr<SafeBrowsingStore> module_whitelist_store_;
+  const scoped_ptr<SafeBrowsingStore> resource_blacklist_store_;
 
   // Used to schedule resetting the database because of corruption. This factory
   // and the WeakPtrs it issues should only be used on the database's main

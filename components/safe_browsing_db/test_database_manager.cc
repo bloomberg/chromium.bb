@@ -64,6 +64,12 @@ bool TestSafeBrowsingDatabaseManager::CheckExtensionIDs(
   return true;
 }
 
+bool TestSafeBrowsingDatabaseManager::CheckResourceUrl(const GURL& url,
+                                                       Client* client) {
+  NOTIMPLEMENTED();
+  return true;
+}
+
 bool TestSafeBrowsingDatabaseManager::MatchCsdWhitelistUrl(const GURL& url) {
   NOTIMPLEMENTED();
   return true;

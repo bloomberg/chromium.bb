@@ -263,6 +263,13 @@ class TestSafeBrowsingDatabase : public SafeBrowsingDatabase {
   bool ContainsMalwareIP(const std::string& ip_address) override {
     return true;
   }
+  bool ContainsResourceUrlPrefixes(
+      const std::vector<SBPrefix>& prefixes,
+      std::vector<SBPrefix>* prefix_hits) override {
+    prefix_hits->clear();
+    return ContainsUrlPrefixes(RESOURCEBLACKLIST, RESOURCEBLACKLIST,
+                               prefixes, prefix_hits);
+  }
   bool UpdateStarted(std::vector<SBListChunkRanges>* lists) override {
     ADD_FAILURE() << "Not implemented.";
     return false;
@@ -1141,6 +1148,8 @@ class TestSBClient : public base::RefCountedThreadSafe<TestSBClient>,
 
   SBThreatType GetThreatType() const { return threat_type_; }
 
+  std::string GetThreatHash() const { return threat_hash_; }
+
   void CheckDownloadUrl(const std::vector<GURL>& url_chain) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
@@ -1153,6 +1162,13 @@ class TestSBClient : public base::RefCountedThreadSafe<TestSBClient>,
         BrowserThread::IO, FROM_HERE,
         base::Bind(&TestSBClient::CheckBrowseUrlOnIOThread, this, url));
     content::RunMessageLoop();  // Will stop in OnCheckBrowseUrlResult.
+  }
+
+  void CheckResourceUrl(const GURL& url) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&TestSBClient::CheckResourceUrlOnIOThread, this, url));
+    content::RunMessageLoop();  // Will stop in OnCheckResourceUrlResult.
   }
 
  private:
@@ -1182,6 +1198,16 @@ class TestSBClient : public base::RefCountedThreadSafe<TestSBClient>,
     }
   }
 
+  void CheckResourceUrlOnIOThread(const GURL& url) {
+    bool synchronous_safe_signal =
+        safe_browsing_service_->database_manager()->CheckResourceUrl(url, this);
+    if (synchronous_safe_signal) {
+      threat_type_ = SB_THREAT_TYPE_SAFE;
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                              base::Bind(&TestSBClient::CheckDone, this));
+    }
+  }
+
   // Called when the result of checking a download URL is known.
   void OnCheckDownloadUrlResult(const std::vector<GURL>& /* url_chain */,
                                 SBThreatType threat_type) override {
@@ -1199,9 +1225,20 @@ class TestSBClient : public base::RefCountedThreadSafe<TestSBClient>,
                             base::Bind(&TestSBClient::CheckDone, this));
   }
 
+  // Called when the result of checking a resource URL is known.
+  void OnCheckResourceUrlResult(const GURL& /* url */,
+                                SBThreatType threat_type,
+                                const std::string& threat_hash) override {
+    threat_type_ = threat_type;
+    threat_hash_ = threat_hash;
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(&TestSBClient::CheckDone, this));
+  }
+
   void CheckDone() { base::MessageLoopForUI::current()->QuitWhenIdle(); }
 
   SBThreatType threat_type_;
+  std::string threat_hash_;
   SafeBrowsingService* safe_browsing_service_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSBClient);
@@ -1335,6 +1372,47 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadUrlRedirects) {
 
   // Now, the badbin_url is not safe since it is added to download database.
   EXPECT_EQ(SB_THREAT_TYPE_BINARY_MALWARE_URL, client->GetThreatType());
+}
+
+IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckResourceUrl) {
+  const char* kBlacklistResource = "/blacklisted/script.js";
+  GURL blacklist_resource = embedded_test_server()->GetURL(kBlacklistResource);
+  std::string blacklist_resource_hash;
+  const char* kMaliciousResource = "/malware/script.js";
+  GURL malware_resource = embedded_test_server()->GetURL(kMaliciousResource);
+  std::string malware_resource_hash;
+
+  {
+    SBFullHashResult full_hash;
+    GenUrlFullhashResult(blacklist_resource, RESOURCEBLACKLIST, &full_hash);
+    SetupResponseForUrl(blacklist_resource, full_hash);
+    blacklist_resource_hash = std::string(full_hash.hash.full_hash,
+                                          full_hash.hash.full_hash + 32);
+  }
+  {
+    SBFullHashResult full_hash;
+    GenUrlFullhashResult(malware_resource, MALWARE, &full_hash);
+    SetupResponseForUrl(malware_resource, full_hash);
+    full_hash.list_id = RESOURCEBLACKLIST;
+    SetupResponseForUrl(malware_resource, full_hash);
+    malware_resource_hash = std::string(full_hash.hash.full_hash,
+                                        full_hash.hash.full_hash + 32);
+  }
+
+  scoped_refptr<TestSBClient> client(new TestSBClient);
+  client->CheckResourceUrl(blacklist_resource);
+  EXPECT_EQ(SB_THREAT_TYPE_BLACKLISTED_RESOURCE, client->GetThreatType());
+  EXPECT_EQ(blacklist_resource_hash, client->GetThreatHash());
+
+  // Since we're checking a resource url, we should receive result that it's
+  // a blacklisted resource, not a malware.
+  client = new TestSBClient;
+  client->CheckResourceUrl(malware_resource);
+  EXPECT_EQ(SB_THREAT_TYPE_BLACKLISTED_RESOURCE, client->GetThreatType());
+  EXPECT_EQ(malware_resource_hash, client->GetThreatHash());
+
+  client->CheckResourceUrl(embedded_test_server()->GetURL(kEmptyPage));
+  EXPECT_EQ(SB_THREAT_TYPE_SAFE, client->GetThreatType());
 }
 
 #if defined(OS_WIN)

@@ -66,9 +66,13 @@ class LocalSafeBrowsingDatabaseManager
     // Either |urls| or |full_hashes| is used to lookup database. |*_results|
     // are parallel vectors containing the results. They are initialized to
     // contain SB_THREAT_TYPE_SAFE.
+    // |url_hit_hash| and |url_metadata| are parallel vectors containing full
+    // hash and metadata of a database record provided the result. They are
+    // initialized to be empty strings.
     std::vector<GURL> urls;
     std::vector<SBThreatType> url_results;
     std::vector<std::string> url_metadata;
+    std::vector<std::string> url_hit_hash;
     std::vector<SBFullHash> full_hashes;
     std::vector<SBThreatType> full_hash_results;
 
@@ -115,6 +119,7 @@ class LocalSafeBrowsingDatabaseManager
                         Client* client) override;
   bool CheckExtensionIDs(const std::set<std::string>& extension_ids,
                          Client* client) override;
+  bool CheckResourceUrl(const GURL& url, Client* client) override;
   bool MatchCsdWhitelistUrl(const GURL& url) override;
   bool MatchMalwareIP(const std::string& ip_address) override;
   bool MatchDownloadWhitelistUrl(const GURL& url) override;
@@ -284,6 +289,10 @@ class LocalSafeBrowsingDatabaseManager
 
   // Checks all extension ID hashes on |safe_browsing_task_runner_|.
   std::vector<SBPrefix> CheckExtensionIDsOnSBThread(
+      const std::vector<SBPrefix>& prefixes);
+
+  // Checks all resource URL hashes on |safe_browsing_task_runner_|.
+  std::vector<SBPrefix> CheckResourceUrlOnSBThread(
       const std::vector<SBPrefix>& prefixes);
 
   // Helper function that calls safe browsing client and cleans up |checks_|.

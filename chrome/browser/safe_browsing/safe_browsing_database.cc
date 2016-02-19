@@ -72,6 +72,9 @@ const base::FilePath::CharType kUnwantedSoftwareDBFile[] =
     FILE_PATH_LITERAL(" UwS List");
 const base::FilePath::CharType kModuleWhitelistDBFile[] =
     FILE_PATH_LITERAL(" Module Whitelist");
+// Filename suffix for the resource blacklist store.
+const base::FilePath::CharType kResourceBlacklistDBFile[] =
+    FILE_PATH_LITERAL(" Resource Blacklist");
 
 // Filename suffix for browse store.
 // TODO(shess): "Safe Browsing Bloom Prefix Set" is full of win.
@@ -293,7 +296,8 @@ class SafeBrowsingDatabaseFactoryImpl : public SafeBrowsingDatabaseFactory {
         CreateStore(enable_extension_blacklist, db_task_runner),
         CreateStore(enable_ip_blacklist, db_task_runner),
         CreateStore(enable_unwanted_software_list, db_task_runner),
-        CreateStore(enable_module_whitelist, db_task_runner));
+        CreateStore(enable_module_whitelist, db_task_runner),
+        CreateStore(true, db_task_runner));  // resource_blacklist_store
   }
 
   SafeBrowsingDatabaseFactoryImpl() {}
@@ -404,6 +408,12 @@ base::FilePath SafeBrowsingDatabase::ModuleWhitelistDBFilename(
 }
 
 // static
+base::FilePath SafeBrowsingDatabase::ResourceBlacklistDBFilename(
+      const base::FilePath& db_filename) {
+  return base::FilePath(db_filename.value() + kResourceBlacklistDBFile);
+}
+
+// static
 void SafeBrowsingDatabase::GetDownloadUrlPrefixes(
     const std::vector<GURL>& urls,
     std::vector<SBPrefix>* prefixes) {
@@ -437,6 +447,8 @@ SafeBrowsingStore* SafeBrowsingDatabaseNew::GetStore(const int list_id) {
     return unwanted_software_store_.get();
   } else if (list_id == MODULEWHITELIST) {
     return module_whitelist_store_.get();
+  } else if (list_id == RESOURCEBLACKLIST) {
+    return resource_blacklist_store_.get();
   }
   return NULL;
 }
@@ -624,7 +636,8 @@ SafeBrowsingDatabaseNew::SafeBrowsingDatabaseNew(
     SafeBrowsingStore* extension_blacklist_store,
     SafeBrowsingStore* ip_blacklist_store,
     SafeBrowsingStore* unwanted_software_store,
-    SafeBrowsingStore* module_whitelist_store)
+    SafeBrowsingStore* module_whitelist_store,
+    SafeBrowsingStore* resource_blacklist_store)
     : db_task_runner_(db_task_runner),
       state_manager_(db_task_runner_),
       db_state_manager_(db_task_runner_),
@@ -637,6 +650,7 @@ SafeBrowsingDatabaseNew::SafeBrowsingDatabaseNew(
       ip_blacklist_store_(ip_blacklist_store),
       unwanted_software_store_(unwanted_software_store),
       module_whitelist_store_(module_whitelist_store),
+      resource_blacklist_store_(resource_blacklist_store),
       reset_factory_(this) {
   DCHECK(browse_store_.get());
 }
@@ -800,6 +814,13 @@ void SafeBrowsingDatabaseNew::Init(const base::FilePath& filename_base) {
   } else {
     state_manager_.BeginWriteTransaction()->WhitelistEverything(
         SBWhitelistId::MODULE);  // Just to be safe.
+  }
+
+  if (resource_blacklist_store_.get()) {
+    resource_blacklist_store_->Init(
+        ResourceBlacklistDBFilename(db_state_manager_.filename_base()),
+        base::Bind(&SafeBrowsingDatabaseNew::HandleCorruptDatabase,
+                   base::Unretained(this)));
   }
 }
 
@@ -981,6 +1002,18 @@ bool SafeBrowsingDatabaseNew::ContainsMalwareIP(const std::string& ip_address) {
     }
   }
   return false;
+}
+
+bool SafeBrowsingDatabaseNew::ContainsResourceUrlPrefixes(
+    const std::vector<SBPrefix>& prefixes,
+    std::vector<SBPrefix>* prefix_hits) {
+  DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
+
+  if (!resource_blacklist_store_)
+    return false;
+
+  return MatchAddPrefixes(resource_blacklist_store_.get(),
+                          RESOURCEBLACKLIST % 2, prefixes, prefix_hits);
 }
 
 bool SafeBrowsingDatabaseNew::ContainsDownloadWhitelistedString(
@@ -1227,6 +1260,12 @@ bool SafeBrowsingDatabaseNew::UpdateStarted(
     return false;
   }
 
+  if (resource_blacklist_store_ && !resource_blacklist_store_->BeginUpdate()) {
+    RecordFailure(FAILURE_RESOURCE_BLACKLIST_UPDATE_BEGIN);
+    HandleCorruptDatabase();
+    return false;
+  }
+
   // Cached fullhash results must be cleared on every database update (whether
   // successful or not).
   state_manager_.BeginWriteTransaction()->clear_prefix_gethash_cache();
@@ -1257,6 +1296,9 @@ bool SafeBrowsingDatabaseNew::UpdateStarted(
                            lists);
 
   UpdateChunkRangesForList(module_whitelist_store_.get(), kModuleWhitelist,
+                           lists);
+
+  UpdateChunkRangesForList(resource_blacklist_store_.get(), kResourceBlacklist,
                            lists);
 
   db_state_manager_.reset_corruption_detected();
@@ -1310,6 +1352,11 @@ void SafeBrowsingDatabaseNew::UpdateFinished(bool update_succeeded) {
     if (module_whitelist_store_ && !module_whitelist_store_->CheckValidity()) {
       DLOG(ERROR) << "Module digest whitelist database corrupt.";
     }
+
+    if (resource_blacklist_store_ &&
+        !resource_blacklist_store_->CheckValidity()) {
+      DLOG(ERROR) << "Resources blacklist url list database corrupt.";
+    }
   }
 
   if (db_state_manager_.corruption_detected())
@@ -1339,6 +1386,8 @@ void SafeBrowsingDatabaseNew::UpdateFinished(bool update_succeeded) {
       unwanted_software_store_->CancelUpdate();
     if (module_whitelist_store_)
       module_whitelist_store_->CancelUpdate();
+    if (resource_blacklist_store_)
+      resource_blacklist_store_->CancelUpdate();
     return;
   }
 
@@ -1385,6 +1434,13 @@ void SafeBrowsingDatabaseNew::UpdateFinished(bool update_succeeded) {
     UpdateWhitelistStore(
         ModuleWhitelistDBFilename(db_state_manager_.filename_base()),
         module_whitelist_store_.get(), SBWhitelistId::MODULE);
+  }
+
+  if (resource_blacklist_store_) {
+    UpdateHashPrefixStore(
+        ResourceBlacklistDBFilename(db_state_manager_.filename_base()),
+        resource_blacklist_store_.get(),
+        FAILURE_RESOURCE_BLACKLIST_UPDATE_FINISH);
   }
 }
 
@@ -1669,7 +1725,12 @@ bool SafeBrowsingDatabaseNew::Delete() {
   if (!r10)
     RecordFailure(FAILURE_UNWANTED_SOFTWARE_PREFIX_SET_DELETE);
 
-  return r1 && r2 && r3 && r4 && r5 && r6 && r7 && r8 && r9 && r10;
+  const bool r11 = base::DeleteFile(
+      ResourceBlacklistDBFilename(db_state_manager_.filename_base()), false);
+  if (!r11)
+    RecordFailure(FAILURE_RESOURCE_BLACKLIST_DELETE);
+
+  return r1 && r2 && r3 && r4 && r5 && r6 && r7 && r8 && r9 && r10 && r11;
 }
 
 void SafeBrowsingDatabaseNew::WritePrefixSet(const base::FilePath& db_filename,
@@ -1845,6 +1906,9 @@ void SafeBrowsingDatabaseNew::RecordFileSizeHistogram(
   else if (base::EndsWith(filename, kModuleWhitelistDBFile,
                           base::CompareCase::SENSITIVE))
     histogram_name.append(".ModuleWhitelist");
+  else if (base::EndsWith(filename, kResourceBlacklistDBFile,
+                          base::CompareCase::SENSITIVE))
+    histogram_name.append(".ResourceBlacklist");
   else
     NOTREACHED();  // Add support for new lists above.
 

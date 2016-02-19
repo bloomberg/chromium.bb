@@ -77553,6 +77553,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="32" label="FAILURE_UNWANTED_SOFTWARE_PREFIX_SET_READ"/>
   <int value="33" label="FAILURE_UNWANTED_SOFTWARE_PREFIX_SET_WRITE"/>
   <int value="34" label="FAILURE_UNWANTED_SOFTWARE_PREFIX_SET_DELETE"/>
+  <int value="35" label="FAILURE_RESOURCE_BLACKLIST_UPDATE_BEGIN"/>
+  <int value="36" label="FAILURE_RESOURCE_BLACKLIST_UPDATE_FINISH"/>
+  <int value="37" label="FAILURE_RESOURCE_BLACKLIST_DELETE"/>
 </enum>
 
 <enum name="SB2DownloadChecks" type="int">
@@ -87337,6 +87340,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   </suffix>
   <suffix name="IPBlacklist" label="IPBlacklist"/>
   <suffix name="UnwantedSoftware" label="UnwantedSoftware"/>
+  <suffix name="ResourceBlacklist" label="ResourceBlacklist"/>
   <affected-histogram name="SB2.DatabaseSizeKilobytes"/>
   <affected-histogram name="SB2.PrefixSetSizeKilobytes"/>
 </histogram_suffixes>

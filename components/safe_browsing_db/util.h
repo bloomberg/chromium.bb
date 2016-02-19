@@ -47,6 +47,10 @@ enum SBThreatType {
   // Url detected by the client-side malware IP list. This IP list is part
   // of the client side detection model.
   SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL,
+
+  // Url leads to a blacklisted resource script. Note that no warnings should be
+  // shown on this threat type, but an incident report might be sent.
+  SB_THREAT_TYPE_BLACKLISTED_RESOURCE,
 };
 
 
@@ -102,8 +106,10 @@ extern const char kUnwantedUrlList[];
 extern const char kInclusionWhitelist[];
 // SafeBrowsing module whitelist list name.
 extern const char kModuleWhitelist[];
-// This array must contain all Safe Browsing lists.
-extern const char* kAllLists[10];
+// Blacklisted resource URLs list name.
+extern const char kResourceBlacklist[];
+/// This array must contain all Safe Browsing lists.
+extern const char* kAllLists[11];
 
 enum ListType {
   INVALID = -1,
@@ -129,6 +135,8 @@ enum ListType {
   // See above comment.  Leave 17 available.
   MODULEWHITELIST = 18,
   // See above comment. Leave 19 available.
+  RESOURCEBLACKLIST = 20,
+  // See above comment.  Leave 21 available.
 };
 
 inline bool SBFullHashEqual(const SBFullHash& a, const SBFullHash& b) {

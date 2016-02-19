@@ -149,6 +149,9 @@ TEST_F(SafeBrowsingDatabaseManagerTest, GetUrlSeverestThreatType) {
   const GURL kUnwantedUrl("http://www.unwanted.com/page.html");
   const GURL kUnwantedAndMalwareUrl(
       "http://www.unwantedandmalware.com/page.html");
+  const GURL kBlacklistedResourceUrl("http://www.blacklisted.com/script.js");
+  const GURL kUnwantedResourceUrl("http://www.unwantedresource.com/script.js");
+  const GURL kMalwareResourceUrl("http://www.malwareresource.com/script.js");
   const GURL kSafeUrl("http://www.safe.com/page.html");
 
   const SBFullHash kMalwareHostHash = SBFullHashForString("malware.com/");
@@ -156,6 +159,12 @@ TEST_F(SafeBrowsingDatabaseManagerTest, GetUrlSeverestThreatType) {
   const SBFullHash kUnwantedHostHash = SBFullHashForString("unwanted.com/");
   const SBFullHash kUnwantedAndMalwareHostHash =
       SBFullHashForString("unwantedandmalware.com/");
+  const SBFullHash kBlacklistedResourceHostHash =
+      SBFullHashForString("blacklisted.com/");
+  const SBFullHash kUnwantedResourceHostHash =
+      SBFullHashForString("unwantedresource.com/");
+  const SBFullHash kMalwareResourceHostHash =
+      SBFullHashForString("malwareresource.com/");
   const SBFullHash kSafeHostHash = SBFullHashForString("www.safe.com/");
 
   {
@@ -180,6 +189,13 @@ TEST_F(SafeBrowsingDatabaseManagerTest, GetUrlSeverestThreatType) {
   }
 
   {
+    SBFullHashResult full_hash;
+    full_hash.hash = kBlacklistedResourceHostHash;
+    full_hash.list_id = static_cast<int>(RESOURCEBLACKLIST);
+    full_hashes.push_back(full_hash);
+  }
+
+  {
     // Add both MALWARE and UNWANTEDURL list IDs for
     // kUnwantedAndMalwareHostHash.
     SBFullHashResult full_hash_malware;
@@ -191,6 +207,26 @@ TEST_F(SafeBrowsingDatabaseManagerTest, GetUrlSeverestThreatType) {
     full_hash_unwanted.hash = kUnwantedAndMalwareHostHash;
     full_hash_unwanted.list_id = static_cast<int>(UNWANTEDURL);
     full_hashes.push_back(full_hash_unwanted);
+  }
+
+  {
+    SBFullHashResult full_hash_unwanted =
+        {kUnwantedResourceHostHash, static_cast<int>(UNWANTEDURL)};
+    full_hashes.push_back(full_hash_unwanted);
+
+    SBFullHashResult full_hash_resource =
+        {kUnwantedResourceHostHash, static_cast<int>(RESOURCEBLACKLIST)};
+    full_hashes.push_back(full_hash_resource);
+  }
+
+  {
+    SBFullHashResult full_hash_malware =
+        {kMalwareResourceHostHash, static_cast<int>(MALWARE)};
+    full_hashes.push_back(full_hash_malware);
+
+    SBFullHashResult full_hash_resource =
+        {kMalwareResourceHostHash, static_cast<int>(RESOURCEBLACKLIST)};
+    full_hashes.push_back(full_hash_resource);
   }
 
   EXPECT_EQ(SB_THREAT_TYPE_URL_MALWARE,
@@ -208,6 +244,18 @@ TEST_F(SafeBrowsingDatabaseManagerTest, GetUrlSeverestThreatType) {
   EXPECT_EQ(SB_THREAT_TYPE_URL_MALWARE,
             LocalSafeBrowsingDatabaseManager::GetHashSeverestThreatType(
                 kUnwantedAndMalwareHostHash, full_hashes));
+
+  EXPECT_EQ(SB_THREAT_TYPE_BLACKLISTED_RESOURCE,
+            LocalSafeBrowsingDatabaseManager::GetHashSeverestThreatType(
+                kBlacklistedResourceHostHash, full_hashes));
+
+  EXPECT_EQ(SB_THREAT_TYPE_URL_UNWANTED,
+            LocalSafeBrowsingDatabaseManager::GetHashSeverestThreatType(
+                kUnwantedResourceHostHash, full_hashes));
+
+  EXPECT_EQ(SB_THREAT_TYPE_URL_MALWARE,
+            LocalSafeBrowsingDatabaseManager::GetHashSeverestThreatType(
+                kMalwareResourceHostHash, full_hashes));
 
   EXPECT_EQ(SB_THREAT_TYPE_SAFE,
             LocalSafeBrowsingDatabaseManager::GetHashSeverestThreatType(
@@ -230,10 +278,25 @@ TEST_F(SafeBrowsingDatabaseManagerTest, GetUrlSeverestThreatType) {
                 kUnwantedUrl, full_hashes, &index));
   EXPECT_EQ(2U, index);
 
+  EXPECT_EQ(SB_THREAT_TYPE_BLACKLISTED_RESOURCE,
+            LocalSafeBrowsingDatabaseManager::GetUrlSeverestThreatType(
+                kBlacklistedResourceUrl, full_hashes, &index));
+  EXPECT_EQ(3U, index);
+
   EXPECT_EQ(SB_THREAT_TYPE_URL_MALWARE,
             LocalSafeBrowsingDatabaseManager::GetUrlSeverestThreatType(
                 kUnwantedAndMalwareUrl, full_hashes, &index));
-  EXPECT_EQ(3U, index);
+  EXPECT_EQ(4U, index);
+
+  EXPECT_EQ(SB_THREAT_TYPE_URL_UNWANTED,
+            LocalSafeBrowsingDatabaseManager::GetUrlSeverestThreatType(
+                kUnwantedResourceUrl, full_hashes, &index));
+  EXPECT_EQ(6U, index);
+
+  EXPECT_EQ(SB_THREAT_TYPE_URL_MALWARE,
+            LocalSafeBrowsingDatabaseManager::GetUrlSeverestThreatType(
+                kMalwareResourceUrl, full_hashes, &index));
+  EXPECT_EQ(8U, index);
 
   index = kArbitraryValue;
   EXPECT_EQ(SB_THREAT_TYPE_SAFE,

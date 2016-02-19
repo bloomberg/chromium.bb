@@ -49,6 +49,11 @@ class SafeBrowsingDatabaseManager
     // Called when the result of checking the API blacklist is known.
     virtual void OnCheckApiBlacklistUrlResult(const GURL& url,
                                               const std::string& metadata) {}
+
+    // Called when the result of checking the resource blacklist is known.
+    virtual void OnCheckResourceUrlResult(const GURL& url,
+                                          SBThreatType threat_type,
+                                          const std::string& threat_hash) {}
   };
 
 
@@ -89,6 +94,11 @@ class SafeBrowsingDatabaseManager
   // the result will be passed to |client|.
   virtual bool CheckExtensionIDs(const std::set<std::string>& extension_ids,
                                  Client* client) = 0;
+
+  // Check if |url| is in the resources blacklist. Returns true if not, false
+  // if further checks need to be made in which case the result will be passed
+  // to callback in |client|.
+  virtual bool CheckResourceUrl(const GURL& url, Client* client) = 0;
 
   // Check if the |url| matches any of the full-length hashes from the client-
   // side phishing detection whitelist.  Returns true if there was a match and
