@@ -75,25 +75,31 @@ public class ItemChooserDialog {
         // The title at the top of the dialog.
         public final SpannableString mTitle;
         // The message to show while there are no results.
-        public final String mSearching;
+        public final SpannableString mSearching;
         // The message to show when no results were produced.
         public final SpannableString mNoneFound;
         // A status message to show above the button row after an item has
         // been added and discovery is still ongoing.
         public final SpannableString mStatusActive;
+        // A status message to show above the button row after discovery has
+        // stopped and no devices have been found.
+        public final SpannableString mStatusIdleNoneFound;
         // A status message to show above the button row after an item has
         // been added and discovery has stopped.
-        public final SpannableString mStatusIdle;
+        public final SpannableString mStatusIdleSomeFound;
         // The label for the positive button (e.g. Select/Pair).
         public final String mPositiveButton;
 
-        public ItemChooserLabels(SpannableString title, String searching, SpannableString noneFound,
-                SpannableString statusActive, SpannableString statusIdle, String positiveButton) {
+        public ItemChooserLabels(SpannableString title, SpannableString searching,
+                SpannableString noneFound, SpannableString statusActive,
+                SpannableString statusIdleNoneFound, SpannableString statusIdleSomeFound,
+                String positiveButton) {
             mTitle = title;
             mSearching = searching;
             mNoneFound = noneFound;
             mStatusActive = statusActive;
-            mStatusIdle = statusIdle;
+            mStatusIdleNoneFound = statusIdleNoneFound;
+            mStatusIdleSomeFound = statusIdleSomeFound;
             mPositiveButton = positiveButton;
         }
     }
@@ -411,8 +417,9 @@ public class ItemChooserDialog {
                 mListView.setVisibility(View.VISIBLE);
                 break;
             case DISCOVERY_IDLE:
-                mStatus.setText(mLabels.mStatusIdle);
                 boolean showEmptyMessage = mItemAdapter.isEmpty();
+                mStatus.setText(showEmptyMessage
+                        ? mLabels.mStatusIdleNoneFound : mLabels.mStatusIdleSomeFound);
                 mEmptyMessage.setText(mLabels.mNoneFound);
                 mEmptyMessage.setVisibility(showEmptyMessage ? View.VISIBLE : View.GONE);
                 break;

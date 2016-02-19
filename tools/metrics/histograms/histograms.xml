@@ -82272,6 +82272,9 @@ To add a new entry, add it with any value and run test to compute valid value.
       label="Chooser insta-closed because Chrome isn't allowed to ask for
              permission to scan for BT devices"/>
   <int value="11" label="Blacklisted service UUID in filter"/>
+  <int value="12" label="Bluetooth Overview Help link pressed."/>
+  <int value="13" label="Adapter Off Help link pressed."/>
+  <int value="14" label="Need Location Help link pressed."/>
 </enum>
 
 <enum name="WebCertVerifyAgreement" type="int">

@@ -233,6 +233,34 @@ std::vector<BluetoothGattService*> GetPrimaryServicesByUUID(
   return services;
 }
 
+UMARequestDeviceOutcome OutcomeFromChooserEvent(BluetoothChooser::Event event) {
+  switch (event) {
+    case BluetoothChooser::Event::DENIED_PERMISSION:
+      return UMARequestDeviceOutcome::BLUETOOTH_CHOOSER_DENIED_PERMISSION;
+    case BluetoothChooser::Event::CANCELLED:
+      return UMARequestDeviceOutcome::BLUETOOTH_CHOOSER_CANCELLED;
+    case BluetoothChooser::Event::SHOW_OVERVIEW_HELP:
+      return UMARequestDeviceOutcome::BLUETOOTH_OVERVIEW_HELP_LINK_PRESSED;
+    case BluetoothChooser::Event::SHOW_ADAPTER_OFF_HELP:
+      return UMARequestDeviceOutcome::ADAPTER_OFF_HELP_LINK_PRESSED;
+    case BluetoothChooser::Event::SHOW_NEED_LOCATION_HELP:
+      return UMARequestDeviceOutcome::NEED_LOCATION_HELP_LINK_PRESSED;
+    case BluetoothChooser::Event::SELECTED:
+      // We can't know if we are going to send a success message yet because
+      // the device could have vanished. This event should be histogramed
+      // manually after checking if the device is still around.
+      NOTREACHED();
+      return UMARequestDeviceOutcome::SUCCESS;
+    case BluetoothChooser::Event::RESCAN:
+      // Rescanning doesn't result in a IPC message for the request being sent
+      // so no need to histogram it.
+      NOTREACHED();
+      return UMARequestDeviceOutcome::SUCCESS;
+  }
+  NOTREACHED();
+  return UMARequestDeviceOutcome::SUCCESS;
+}
+
 }  //  namespace
 
 BluetoothDispatcherHost::BluetoothDispatcherHost(int render_process_id)
@@ -338,11 +366,13 @@ struct BluetoothDispatcherHost::RequestDeviceSession {
  public:
   RequestDeviceSession(int thread_id,
                        int request_id,
+                       int frame_routing_id,
                        url::Origin origin,
                        const std::vector<BluetoothScanFilter>& filters,
                        const std::vector<BluetoothUUID>& optional_services)
       : thread_id(thread_id),
         request_id(request_id),
+        frame_routing_id(frame_routing_id),
         origin(origin),
         filters(filters),
         optional_services(optional_services) {}
@@ -369,6 +399,7 @@ struct BluetoothDispatcherHost::RequestDeviceSession {
 
   const int thread_id;
   const int request_id;
+  const int frame_routing_id;
   const url::Origin origin;
   const std::vector<BluetoothScanFilter> filters;
   const std::vector<BluetoothUUID> optional_services;
@@ -1063,9 +1094,10 @@ void BluetoothDispatcherHost::OnRequestDeviceImpl(
 
   // Create storage for the information that backs the chooser, and show the
   // chooser.
-  RequestDeviceSession* const session = new RequestDeviceSession(
-      thread_id, request_id, render_frame_host->GetLastCommittedOrigin(),
-      filters, optional_services_blacklist_filtered);
+  RequestDeviceSession* const session =
+      new RequestDeviceSession(thread_id, request_id, frame_routing_id,
+                               render_frame_host->GetLastCommittedOrigin(),
+                               filters, optional_services_blacklist_filtered);
   int chooser_id = request_device_sessions_.Add(session);
 
   BluetoothChooser::EventHandler chooser_event_handler =
@@ -1160,37 +1192,34 @@ void BluetoothDispatcherHost::OnBluetoothChooserEvent(
   switch (event) {
     case BluetoothChooser::Event::RESCAN:
       StartDeviceDiscovery(session, chooser_id);
-      break;
+      // No need to close the chooser so we return.
+      return;
     case BluetoothChooser::Event::DENIED_PERMISSION:
     case BluetoothChooser::Event::CANCELLED:
-    case BluetoothChooser::Event::SELECTED: {
-      // Synchronously ensure nothing else calls into the chooser after it has
-      // asked to be closed.
-      session->chooser.reset();
-
-      // Yield to the event loop to make sure we don't destroy the session
-      // within a BluetoothDispatcherHost stack frame.
-      if (!base::ThreadTaskRunnerHandle::Get()->PostTask(
-              FROM_HERE,
-              base::Bind(&BluetoothDispatcherHost::FinishClosingChooser,
-                         weak_ptr_on_ui_thread_, chooser_id, event,
-                         device_id))) {
-        LOG(WARNING) << "No TaskRunner; not closing requestDevice dialog.";
-      }
+    case BluetoothChooser::Event::SELECTED:
       break;
-    }
     case BluetoothChooser::Event::SHOW_OVERVIEW_HELP:
-      ShowBluetoothOverviewLink();
-      break;
-    case BluetoothChooser::Event::SHOW_PAIRING_HELP:
-      ShowBluetoothPairingLink();
+      VLOG(1) << "Overview Help link pressed.";
       break;
     case BluetoothChooser::Event::SHOW_ADAPTER_OFF_HELP:
-      ShowBluetoothAdapterOffLink();
+      VLOG(1) << "Adapter Off Help link pressed.";
       break;
     case BluetoothChooser::Event::SHOW_NEED_LOCATION_HELP:
-      ShowNeedLocationLink();
+      VLOG(1) << "Need Location Help link pressed.";
       break;
+  }
+
+  // Synchronously ensure nothing else calls into the chooser after it has
+  // asked to be closed.
+  session->chooser.reset();
+
+  // Yield to the event loop to make sure we don't destroy the session
+  // within a BluetoothDispatcherHost stack frame.
+  if (!base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::Bind(&BluetoothDispatcherHost::FinishClosingChooser,
+                     weak_ptr_on_ui_thread_, chooser_id, event, device_id))) {
+    LOG(WARNING) << "No TaskRunner; not closing requestDevice dialog.";
   }
 }
 
@@ -1202,10 +1231,9 @@ void BluetoothDispatcherHost::FinishClosingChooser(
   RequestDeviceSession* session = request_device_sessions_.Lookup(chooser_id);
   DCHECK(session) << "Session removed unexpectedly.";
 
-  if (event == BluetoothChooser::Event::CANCELLED) {
-    RecordRequestDeviceOutcome(
-        UMARequestDeviceOutcome::BLUETOOTH_CHOOSER_CANCELLED);
-    VLOG(1) << "Bluetooth chooser cancelled";
+  if ((event != BluetoothChooser::Event::DENIED_PERMISSION) &&
+      (event != BluetoothChooser::Event::SELECTED)) {
+    RecordRequestDeviceOutcome(OutcomeFromChooserEvent(event));
     Send(new BluetoothMsg_RequestDeviceError(
         session->thread_id, session->request_id,
         WebBluetoothError::ChooserCancelled));
@@ -1498,26 +1526,6 @@ bool BluetoothDispatcherHost::CanFrameAccessCharacteristicInstance(
   return QueryCacheForCharacteristic(GetOrigin(frame_routing_id),
                                      characteristic_instance_id)
              .outcome != CacheQueryOutcome::BAD_RENDERER;
-}
-
-void BluetoothDispatcherHost::ShowBluetoothOverviewLink() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  NOTIMPLEMENTED();
-}
-
-void BluetoothDispatcherHost::ShowBluetoothPairingLink() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  NOTIMPLEMENTED();
-}
-
-void BluetoothDispatcherHost::ShowBluetoothAdapterOffLink() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  NOTIMPLEMENTED();
-}
-
-void BluetoothDispatcherHost::ShowNeedLocationLink() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  NOTIMPLEMENTED();
 }
 
 }  // namespace content

@@ -28,8 +28,6 @@ class CONTENT_EXPORT BluetoothChooser {
     RESCAN,
     // Show overview page for Bluetooth.
     SHOW_OVERVIEW_HELP,
-    // Show help page explaining what Bluetooth pairing means.
-    SHOW_PAIRING_HELP,
     // Show help page explaining why scanning failed because Bluetooth is off.
     SHOW_ADAPTER_OFF_HELP,
     // Show help page explaining why Chromium needs the Location permission to
@@ -46,9 +44,9 @@ class CONTENT_EXPORT BluetoothChooser {
   //
   // The EventHandler won't be called after the chooser object is destroyed.
   //
-  // After the EventHandler is called with Event::CANCELLED or Event::SELECTED,
-  // it won't be called again, and users must not call any more BluetoothChooser
-  // methods.
+  // After the EventHandler is called with Event::CANCELLED, Event::SELECTED,
+  // Event::DENIED_PERMISSION or Event::SHOW_*, it won't be called again, and
+  // users must not call any more BluetoothChooser methods.
   typedef base::Callback<void(Event, const std::string& opt_device_id)>
       EventHandler;
 

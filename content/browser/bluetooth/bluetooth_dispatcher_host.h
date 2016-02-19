@@ -265,12 +265,6 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
       int frame_routing_id,
       const std::string& characteristic_instance_id);
 
-  // Show help pages from the chooser dialog.
-  void ShowBluetoothOverviewLink();
-  void ShowBluetoothPairingLink();
-  void ShowBluetoothAdapterOffLink();
-  void ShowNeedLocationLink();
-
   int render_process_id_;
 
   // Maps a (thread_id,request_id) to information about its requestDevice call,

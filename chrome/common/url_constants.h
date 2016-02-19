@@ -574,6 +574,10 @@ extern const char kMac10_678_DeprecationURL[];
 extern const char kWindowsXPVistaDeprecationURL[];
 #endif
 
+// The URL for the Bluetooth Overview help center article in the Web Bluetooth
+// Chooser.
+extern const char kChooserBluetoothOverviewURL[];
+
 }  // namespace chrome
 
 #endif  // CHROME_COMMON_URL_CONSTANTS_H_

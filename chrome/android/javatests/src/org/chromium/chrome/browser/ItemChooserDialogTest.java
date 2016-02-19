@@ -59,13 +59,15 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
 
     private ItemChooserDialog createDialog() {
         SpannableString title = new SpannableString("title");
-        String searching = new String("searching");
+        SpannableString searching = new SpannableString("searching");
         SpannableString noneFound = new SpannableString("noneFound");
         SpannableString statusActive = new SpannableString("statusActive");
-        SpannableString statusIdle = new SpannableString("statusIdle");
+        SpannableString statusIdleNoneFound = new SpannableString("statusIdleNoneFound");
+        SpannableString statusIdleSomeFound = new SpannableString("statusIdleSomeFound");
         String positiveButton = new String("positiveButton");
-        final ItemChooserDialog.ItemChooserLabels labels = new ItemChooserDialog.ItemChooserLabels(
-                title, searching, noneFound, statusActive, statusIdle, positiveButton);
+        final ItemChooserDialog.ItemChooserLabels labels =
+                new ItemChooserDialog.ItemChooserLabels(title, searching, noneFound, statusActive,
+                        statusIdleNoneFound, statusIdleSomeFound, positiveButton);
         ItemChooserDialog dialog = ThreadUtils.runOnUiThreadBlockingNoException(
                 new Callable<ItemChooserDialog>() {
                         @Override
@@ -147,7 +149,7 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         // The chooser should show the status idle text.
         assertEquals(View.VISIBLE, items.getVisibility());
         assertEquals(View.GONE, items.getEmptyView().getVisibility());
-        assertEquals("statusIdle", statusView.getText().toString());
+        assertEquals("statusIdleSomeFound", statusView.getText().toString());
         assertFalse(button.isEnabled());
 
         // Select the first item and verify it got selected.
@@ -178,7 +180,7 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         // drive home the point and a status message at the bottom.
         assertEquals(View.GONE, items.getVisibility());
         assertEquals(View.VISIBLE, items.getEmptyView().getVisibility());
-        assertEquals("statusIdle", statusView.getText().toString());
+        assertEquals("statusIdleNoneFound", statusView.getText().toString());
         assertFalse(button.isEnabled());
 
         mChooserDialog.dismiss();

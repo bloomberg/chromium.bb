@@ -67,7 +67,6 @@ public class BluetoothChooserDialog
     // The type of link that is shown within the dialog.
     private enum LinkType {
         EXPLAIN_BLUETOOTH,
-        EXPLAIN_PARING,
         ADAPTER_OFF,
         ADAPTER_OFF_HELP,
         REQUEST_LOCATION_PERMISSION,
@@ -100,19 +99,21 @@ public class BluetoothChooserDialog
         OmniboxUrlEmphasizer.emphasizeUrl(
                 origin, mContext.getResources(), profile, mSecurityLevel, false, true, true);
         // Construct a full string and replace the origin text with emphasized version.
-        String message = mContext.getString(R.string.bluetooth_dialog_title, mOrigin);
-        SpannableString title = SpanApplier.applySpans(
-                message, new SpanInfo("<link>", "</link>",
-                        new NoUnderlineClickableSpan(LinkType.EXPLAIN_PARING, mContext)));
+        SpannableString title =
+                new SpannableString(mContext.getString(R.string.bluetooth_dialog_title, mOrigin));
         int start = title.toString().indexOf(mOrigin);
         TextUtils.copySpansFrom(origin, 0, origin.length(), Object.class, title, start);
 
-        message = mContext.getString(R.string.bluetooth_not_found);
+        String message = mContext.getString(R.string.bluetooth_not_found);
         SpannableString noneFound = SpanApplier.applySpans(
                 message, new SpanInfo("<link>", "</link>",
                         new NoUnderlineClickableSpan(LinkType.RESTART_SEARCH, mContext)));
 
-        String searching = mContext.getString(R.string.bluetooth_searching);
+        SpannableString searching = SpanApplier.applySpans(
+                mContext.getString(R.string.bluetooth_searching),
+                new SpanInfo("<link>", "</link>",
+                        new NoUnderlineClickableSpan(LinkType.EXPLAIN_BLUETOOTH, mContext)));
+
         String positiveButton = mContext.getString(R.string.bluetooth_confirm_button);
 
         SpannableString statusActive = SpanApplier.applySpans(
@@ -120,15 +121,21 @@ public class BluetoothChooserDialog
                 new SpanInfo("<link>", "</link>",
                         new NoUnderlineClickableSpan(LinkType.EXPLAIN_BLUETOOTH, mContext)));
 
-        SpannableString statusIdle = SpanApplier.applySpans(
-                mContext.getString(R.string.bluetooth_not_seeing_it_idle),
+        SpannableString statusIdleNoneFound = SpanApplier.applySpans(
+                mContext.getString(R.string.bluetooth_not_seeing_it_idle_none_found),
+                new SpanInfo("<link>", "</link>",
+                        new NoUnderlineClickableSpan(LinkType.EXPLAIN_BLUETOOTH, mContext)));
+
+        SpannableString statusIdleSomeFound = SpanApplier.applySpans(
+                mContext.getString(R.string.bluetooth_not_seeing_it_idle_some_found),
                 new SpanInfo("<link1>", "</link1>",
                         new NoUnderlineClickableSpan(LinkType.EXPLAIN_BLUETOOTH, mContext)),
                 new SpanInfo("<link2>", "</link2>",
                         new NoUnderlineClickableSpan(LinkType.RESTART_SEARCH, mContext)));
 
-        ItemChooserDialog.ItemChooserLabels labels = new ItemChooserDialog.ItemChooserLabels(
-                title, searching, noneFound, statusActive, statusIdle, positiveButton);
+        ItemChooserDialog.ItemChooserLabels labels =
+                new ItemChooserDialog.ItemChooserLabels(title, searching, noneFound, statusActive,
+                        statusIdleNoneFound, statusIdleSomeFound, positiveButton);
         mItemChooserDialog = new ItemChooserDialog(mContext, this, labels);
     }
 
@@ -212,13 +219,12 @@ public class BluetoothChooserDialog
 
             switch (mLinkType) {
                 case EXPLAIN_BLUETOOTH: {
+                    // No need to close the dialog here because
+                    // ShowBluetoothOverviewLink will close it.
+                    // TODO(ortuno): The BluetoothChooserDialog should dismiss
+                    // itself when a new tab is opened or the current tab navigates.
+                    // https://crbug.com/588127
                     nativeShowBluetoothOverviewLink(mNativeBluetoothChooserDialogPtr);
-                    closeDialog();
-                    break;
-                }
-                case EXPLAIN_PARING: {
-                    nativeShowBluetoothPairingLink(mNativeBluetoothChooserDialogPtr);
-                    closeDialog();
                     break;
                 }
                 case ADAPTER_OFF: {
@@ -339,7 +345,6 @@ public class BluetoothChooserDialog
     private native void nativeRestartSearch(long nativeBluetoothChooserAndroid);
     // Help links.
     private native void nativeShowBluetoothOverviewLink(long nativeBluetoothChooserAndroid);
-    private native void nativeShowBluetoothPairingLink(long nativeBluetoothChooserAndroid);
     private native void nativeShowBluetoothAdapterOffLink(long nativeBluetoothChooserAndroid);
     private native void nativeShowNeedLocationPermissionLink(long nativeBluetoothChooserAndroid);
 }
