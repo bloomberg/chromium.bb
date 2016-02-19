@@ -326,6 +326,14 @@ void ChromePasswordManagerClient::NotifyUserAutoSigninBlockedOnFirstRun(
 
 void ChromePasswordManagerClient::NotifySuccessfulLoginWithExistingPassword(
     const autofill::PasswordForm& form) {
+  if (form.skip_zero_click &&
+      credential_manager_dispatcher_.IsZeroClickAllowed() &&
+      GetPasswordStore()) {
+    autofill::PasswordForm update(form);
+    update.skip_zero_click = false;
+    GetPasswordStore()->UpdateLogin(update);
+  }
+
   if (!form_blocked_on_first_run_)
     return;
 

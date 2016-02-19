@@ -2905,4 +2905,45 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
       "mypassword");
 }
 
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+                       SkipZeroClickToggledAfterSuccessfulSubmission) {
+  ASSERT_TRUE(ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled());
+  // Save credentials with 'skip_zero_click'
+  scoped_refptr<password_manager::TestPasswordStore> password_store =
+      static_cast<password_manager::TestPasswordStore*>(
+          PasswordStoreFactory::GetForProfile(
+              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
+              .get());
+  autofill::PasswordForm signin_form;
+  signin_form.signon_realm = embedded_test_server()->base_url().spec();
+  signin_form.password_value = base::ASCIIToUTF16("password");
+  signin_form.username_value = base::ASCIIToUTF16("user");
+  signin_form.skip_zero_click = true;
+  password_store->AddLogin(signin_form);
+
+  NavigateToFile("/password/password_form.html");
+  NavigationObserver observer(WebContents());
+  scoped_ptr<PromptObserver> prompt_observer(
+      PromptObserver::Create(WebContents()));
+  std::string fill_and_submit_change_password =
+      "document.getElementById('username_field').value = 'user';"
+      "document.getElementById('password_field').value = 'password';"
+      "document.getElementById('input_submit_button').click()";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(),
+                                     fill_and_submit_change_password));
+  observer.Wait();
+  EXPECT_FALSE(prompt_observer->IsShowingPrompt());
+
+  // Verify that the form's 'skip_zero_click' is updated.
+  auto& passwords_map = password_store->stored_passwords();
+  ASSERT_EQ(1u, passwords_map.size());
+  auto& passwords_vector = passwords_map.begin()->second;
+  ASSERT_EQ(1u, passwords_vector.size());
+  const autofill::PasswordForm& form = passwords_vector[0];
+  EXPECT_EQ(base::ASCIIToUTF16("user"), form.username_value);
+  EXPECT_EQ(base::ASCIIToUTF16("password"), form.password_value);
+  EXPECT_FALSE(form.skip_zero_click);
+}
+
 }  // namespace password_manager
