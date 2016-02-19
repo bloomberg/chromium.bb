@@ -1402,6 +1402,8 @@ crbug.com/583675 fast/dom/shadow/scoped-events-by-ua-stopped.html [ Failure ]
 
 crbug.com/585724 fast/js/JSON-parse.html [ NeedsManualRebaseline ]
 
+crbug.com/587136 [ Linux Debug ] http/tests/security/xss-DENIED-cross-origin-stack-overflow.html [ Timeout Pass ]
+
 crbug.com/587593 [ Android ] fast/js/pic/cached-single-entry-transition.html [ Pass Failure ]
 
 crbug.com/587779 [ Mac10.10 ] fast/dynamic/window-resize-scrollbars-test.html [ Timeout Failure Pass ]
