@@ -12,6 +12,7 @@
 // If you change a given command's number, any NIB files that refer to it will
 // also need to be updated.
 
+// clang-format off
 #define IDC_BACK                                       33000
 #define IDC_FORWARD                                    33001
 #define IDC_RELOAD                                     33002
@@ -72,5 +73,7 @@
 #define IDC_SHOW_SAVE_PASSWORDS_SETTINGS               40945
 #define IDC_READER_MODE                                40947
 #define IDC_RATE_THIS_APP                              40948
+#define IDC_ADD_READING_LIST                           40949
+// clang-format on
 
 #endif  // IOS_CHROME_BROWSER_UI_COMMANDS_IOS_COMMAND_IDS_H_
