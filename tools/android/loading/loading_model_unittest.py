@@ -13,36 +13,7 @@ import request_dependencies_lens
 import test_utils
 
 
-class SimpleLens(object):
-  def __init__(self, trace):
-    self._trace = trace
-
-  def GetRequestDependencies(self):
-    url_to_rq = {}
-    deps = []
-    for rq in self._trace.request_track.GetEvents():
-      assert rq.url not in url_to_rq
-      url_to_rq[rq.url] = rq
-    for rq in self._trace.request_track.GetEvents():
-      initiating_url = rq.initiator['url']
-      if initiating_url in url_to_rq:
-        deps.append((url_to_rq[initiating_url], rq, rq.initiator['type']))
-    return deps
-
-
 class LoadingModelTestCase(unittest.TestCase):
-
-  def setUp(self):
-    self.old_lens = request_dependencies_lens.RequestDependencyLens
-    request_dependencies_lens.RequestDependencyLens = SimpleLens
-
-  def tearDown(self):
-    request_dependencies_lens.RequestDependencyLens = self.old_lens
-
-  def MakeGraph(self, requests):
-    return loading_model.ResourceGraph(
-        test_utils.LoadingTraceFromEvents(requests))
-
   def SortedIndicies(self, graph):
     return [n.Index() for n in dag.TopologicalSort(graph._nodes)]
 
@@ -50,7 +21,7 @@ class LoadingModelTestCase(unittest.TestCase):
     return [c.Index() for c in node.SortedSuccessors()]
 
   def test_DictConstruction(self):
-    graph = loading_model.ResourceGraph(
+    graph = test_utils.TestResourceGraph(
         {'request_track': {
             'events': [
                 test_utils.MakeRequest(0, 'null', 100, 100.5, 101).ToJsonDict(),
@@ -77,7 +48,7 @@ class LoadingModelTestCase(unittest.TestCase):
                 test_utils.MakeRequest(4, 3, 127, 127.5, 128),
                 test_utils.MakeRequest(5, 'null', 100, 103, 105),
                 test_utils.MakeRequest(6, 5, 105, 107, 110)]
-    graph = self.MakeGraph(requests)
+    graph = test_utils.TestResourceGraph.FromRequestList(requests)
     self.assertEqual(self.SuccessorIndicies(graph._nodes[0]), [1, 2])
     self.assertEqual(self.SuccessorIndicies(graph._nodes[1]), [3])
     self.assertEqual(self.SuccessorIndicies(graph._nodes[2]), [])
@@ -98,7 +69,7 @@ class LoadingModelTestCase(unittest.TestCase):
                 test_utils.MakeRequest(4, 3, 127, 128, 129),
                 test_utils.MakeRequest(5, 'null', 100, 105, 106),
                 test_utils.MakeRequest(6, 5, 105, 110, 111)]
-    graph = self.MakeGraph(requests)
+    graph = test_utils.TestResourceGraph.FromRequestList(requests)
     path_list = []
     self.assertEqual(29, graph.Cost(path_list))
     self.assertEqual([0, 1, 3, 4], [n.Index() for n in path_list])
@@ -119,7 +90,7 @@ class LoadingModelTestCase(unittest.TestCase):
                                magic_content_type=True),
         test_utils.MakeRequest(4, 2, 122, 126, 126),
         test_utils.MakeRequest(5, 2, 122, 126, 126)]
-    graph = self.MakeGraph(requests)
+    graph = test_utils.TestResourceGraph.FromRequestList(requests)
     self.assertEqual(self.SuccessorIndicies(graph._nodes[0]), [1, 3])
     self.assertEqual(self.SuccessorIndicies(graph._nodes[1]), [2])
     self.assertEqual(self.SuccessorIndicies(graph._nodes[2]), [4, 5])
@@ -131,7 +102,7 @@ class LoadingModelTestCase(unittest.TestCase):
     # Change node 1 so it is a parent of 3, which becomes the parent of 2.
     requests[1] = test_utils.MakeRequest(
         1, 0, 110, 111, 111, magic_content_type=True)
-    graph = self.MakeGraph(requests)
+    graph = test_utils.TestResourceGraph.FromRequestList(requests)
     self.assertEqual(self.SuccessorIndicies(graph._nodes[0]), [1])
     self.assertEqual(self.SuccessorIndicies(graph._nodes[1]), [3])
     self.assertEqual(self.SuccessorIndicies(graph._nodes[2]), [4, 5])
@@ -144,12 +115,12 @@ class LoadingModelTestCase(unittest.TestCase):
     requests[1] = test_utils.MakeRequest(
         1, 0, 110, 111, 111, magic_content_type=True)
     requests.append(test_utils.MakeRequest(6, 1, 111, 112, 112))
-    graph = self.MakeGraph(requests)
+    graph = test_utils.TestResourceGraph.FromRequestList(requests)
     # Check it doesn't change until we change the content type of 6.
     self.assertEqual(self.SuccessorIndicies(graph._nodes[6]), [])
     requests[6] = test_utils.MakeRequest(6, 1, 111, 112, 112,
                                          magic_content_type=True)
-    graph = self.MakeGraph(requests)
+    graph = test_utils.TestResourceGraph.FromRequestList(requests)
     self.assertEqual(self.SuccessorIndicies(graph._nodes[0]), [1])
     self.assertEqual(self.SuccessorIndicies(graph._nodes[1]), [6])
     self.assertEqual(self.SuccessorIndicies(graph._nodes[2]), [4, 5])
@@ -169,7 +140,7 @@ class LoadingModelTestCase(unittest.TestCase):
                 test_utils.MakeRequest(5, 2, 122, 126, 126)]
     for r in requests:
       r.response_headers['Content-Type'] = 'image/gif'
-    graph = self.MakeGraph(requests)
+    graph = test_utils.TestResourceGraph.FromRequestList(requests)
     self.assertEqual(self.SuccessorIndicies(graph._nodes[0]), [1, 2, 3])
     self.assertEqual(self.SuccessorIndicies(graph._nodes[1]), [])
     self.assertEqual(self.SuccessorIndicies(graph._nodes[2]), [4, 5])

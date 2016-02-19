@@ -5,6 +5,7 @@
 """Common utilities used in unit tests, within this directory."""
 
 import devtools_monitor
+import loading_model
 import loading_trace
 import page_track
 import request_track
@@ -80,3 +81,33 @@ def LoadingTraceFromEvents(requests, page_events=None, trace_events=None):
     tracing_track = None
   return loading_trace.LoadingTrace(
       None, None, page_event_track, request, tracing_track)
+
+
+class SimpleLens(object):
+  """A simple replacement for RequestDependencyLens.
+
+  Uses only the initiator url of a request for determining a dependency.
+  """
+  def __init__(self, trace):
+    self._trace = trace
+
+  def GetRequestDependencies(self):
+    url_to_rq = {}
+    deps = []
+    for rq in self._trace.request_track.GetEvents():
+      assert rq.url not in url_to_rq
+      url_to_rq[rq.url] = rq
+    for rq in self._trace.request_track.GetEvents():
+      initiating_url = rq.initiator['url']
+      if initiating_url in url_to_rq:
+        deps.append((url_to_rq[initiating_url], rq, rq.initiator['type']))
+    return deps
+
+
+class TestResourceGraph(loading_model.ResourceGraph):
+  """Replace the default request lens in a ResourceGraph with our SimpleLens."""
+  REQUEST_LENS = SimpleLens
+
+  @classmethod
+  def FromRequestList(cls, requests, page_events=None, trace_events=None):
+    return cls(LoadingTraceFromEvents(requests, page_events, trace_events))

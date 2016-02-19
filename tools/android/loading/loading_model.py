@@ -31,6 +31,10 @@ class ResourceGraph(object):
 
   See model parameters in Set().
   """
+  # The lens to build request dependencies. Exposed here for subclasses in
+  # unittesting.
+  REQUEST_LENS = request_dependencies_lens.RequestDependencyLens
+
   EDGE_KIND_KEY = 'edge_kind'
   EDGE_KINDS = request_track.Request.INITIATORS + (
       'script_inferred', 'after-load', 'before-load', 'timing')
@@ -477,8 +481,7 @@ class ResourceGraph(object):
       self._nodes.append(node)
       self._node_info.append(node_info)
 
-    dependencies = request_dependencies_lens.RequestDependencyLens(
-        trace).GetRequestDependencies()
+    dependencies = self.REQUEST_LENS(trace).GetRequestDependencies()
     for dep in dependencies:
       (parent_rq, child_rq, reason) = dep
       parent = self._node_info[index_by_request[parent_rq]]
