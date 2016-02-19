@@ -401,10 +401,10 @@ void PushMessagingServiceImpl::SubscribeFromWorker(
     return;
   }
 
-  GURL embedding_origin = requesting_origin;
   blink::WebPushPermissionStatus permission_status =
-      PushMessagingServiceImpl::GetPermissionStatus(
-          requesting_origin, embedding_origin, user_visible);
+      PushMessagingServiceImpl::GetPermissionStatus(requesting_origin,
+                                                    user_visible);
+
   if (permission_status != blink::WebPushPermissionStatusGranted) {
     SubscribeEndWithError(register_callback,
                           content::PUSH_REGISTRATION_STATUS_PERMISSION_DENIED);
@@ -420,15 +420,16 @@ void PushMessagingServiceImpl::SubscribeFromWorker(
 }
 
 blink::WebPushPermissionStatus PushMessagingServiceImpl::GetPermissionStatus(
-    const GURL& requesting_origin,
-    const GURL& embedding_origin,
+    const GURL& origin,
     bool user_visible) {
   if (!user_visible)
     return blink::WebPushPermissionStatusDenied;
 
+  // Because the Push API is tied to Service Workers, many usages of the API
+  // won't have an embedding origin at all. Only consider the requesting
+  // |origin| when checking whether permission to use the API has been granted.
   return ToPushPermission(profile_->GetPermissionManager()->GetPermissionStatus(
-      content::PermissionType::PUSH_MESSAGING, requesting_origin,
-      embedding_origin));
+      content::PermissionType::PUSH_MESSAGING, origin, origin));
 }
 
 bool PushMessagingServiceImpl::SupportNonVisibleMessages() {
@@ -764,7 +765,7 @@ void PushMessagingServiceImpl::OnMenuClick() {
 // Assumes user_visible always since this is just meant to check
 // if the permission was previously granted and not revoked.
 bool PushMessagingServiceImpl::IsPermissionSet(const GURL& origin) {
-  return GetPermissionStatus(origin, origin, true /* user_visible */) ==
+  return GetPermissionStatus(origin, true /* user_visible */) ==
          blink::WebPushPermissionStatusGranted;
 }
 

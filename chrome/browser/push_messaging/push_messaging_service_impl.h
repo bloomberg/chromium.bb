@@ -96,8 +96,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const std::string& sender_id,
       const content::PushMessagingService::UnregisterCallback&) override;
   blink::WebPushPermissionStatus GetPermissionStatus(
-      const GURL& requesting_origin,
-      const GURL& embedding_origin,
+      const GURL& origin,
       bool user_visible) override;
   bool SupportNonVisibleMessages() override;
 

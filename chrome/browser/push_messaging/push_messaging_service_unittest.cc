@@ -151,7 +151,7 @@ TEST_F(PushMessagingServiceTest, PayloadEncryptionTest) {
 
   // (1) Make sure that |kExampleOrigin| has access to use Push Messaging.
   ASSERT_EQ(blink::WebPushPermissionStatusGranted,
-            push_service->GetPermissionStatus(origin, origin, true));
+            push_service->GetPermissionStatus(origin, true));
 
   std::string subscription_id;
   std::vector<uint8_t> p256dh, auth;

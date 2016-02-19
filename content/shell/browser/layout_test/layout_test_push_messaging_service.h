@@ -42,10 +42,9 @@ class LayoutTestPushMessagingService : public PushMessagingService {
       const GURL& origin,
       int64_t service_worker_registration_id,
       const PushMessagingService::EncryptionInfoCallback& callback) override;
-  blink::WebPushPermissionStatus GetPermissionStatus(
-      const GURL& requesting_origin,
-      const GURL& embedding_origin,
-      bool user_visible) override;
+  blink::WebPushPermissionStatus GetPermissionStatus(const GURL& origin,
+                                                     bool user_visible)
+      override;
   bool SupportNonVisibleMessages() override;
   void Unsubscribe(const GURL& requesting_origin,
                    int64_t service_worker_registration_id,

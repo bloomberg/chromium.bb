@@ -83,13 +83,11 @@ class CONTENT_EXPORT PushMessagingService {
                            const std::string& sender_id,
                            const UnregisterCallback& callback) = 0;
 
-  // Checks the permission status for the requesting origin. Permission is only
-  // ever granted when the requesting origin matches the top level embedding
-  // origin. The |user_visible| boolean indicates whether the permission status
-  // only has to cover push messages resulting in visible effects to the user.
+  // Checks the permission status for the |origin|. The |user_visible| boolean
+  // indicates whether the permission status only has to cover push messages
+  // resulting in visible effects to the user.
   virtual blink::WebPushPermissionStatus GetPermissionStatus(
-      const GURL& requesting_origin,
-      const GURL& embedding_origin,
+      const GURL& origin,
       bool user_visible) = 0;
 
   // Returns whether subscriptions that do not mandate user visible UI upon

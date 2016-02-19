@@ -82,7 +82,7 @@ void LayoutTestPushMessagingService::SubscribeFromWorker(
     const std::string& sender_id,
     bool user_visible,
     const PushMessagingService::RegisterCallback& callback) {
-  if (GetPermissionStatus(requesting_origin, requesting_origin, user_visible) ==
+  if (GetPermissionStatus(requesting_origin, user_visible) ==
       blink::WebPushPermissionStatusGranted) {
     std::vector<uint8_t> p256dh(
         kTestP256Key, kTestP256Key + arraysize(kTestP256Key));
@@ -111,16 +111,12 @@ void LayoutTestPushMessagingService::GetEncryptionInfo(
 }
 
 blink::WebPushPermissionStatus
-LayoutTestPushMessagingService::GetPermissionStatus(
-    const GURL& requesting_origin,
-    const GURL& embedding_origin,
-    bool user_visible) {
+LayoutTestPushMessagingService::GetPermissionStatus(const GURL& origin,
+                                                    bool user_visible) {
   return ToWebPushPermissionStatus(LayoutTestContentBrowserClient::Get()
-      ->GetLayoutTestBrowserContext()
-      ->GetLayoutTestPermissionManager()
-      ->GetPermissionStatus(PermissionType::PUSH_MESSAGING,
-                            requesting_origin,
-                            embedding_origin));
+      ->browser_context()
+      ->GetPermissionManager()
+      ->GetPermissionStatus(PermissionType::PUSH_MESSAGING, origin, origin));
 }
 
 bool LayoutTestPushMessagingService::SupportNonVisibleMessages() {

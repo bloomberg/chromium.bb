@@ -917,9 +917,8 @@ void PushMessagingMessageFilter::Core::GetPermissionStatusOnUI(
           request_id, blink::WebPushError::ErrorTypeNotSupported));
       return;
     }
-    GURL embedding_origin = requesting_origin;
-    permission_status = push_service->GetPermissionStatus(
-        requesting_origin, embedding_origin, user_visible);
+    permission_status =
+        push_service->GetPermissionStatus(requesting_origin, user_visible);
   } else if (is_incognito()) {
     // Return prompt, so the website can't detect incognito mode.
     permission_status = blink::WebPushPermissionStatusPrompt;
