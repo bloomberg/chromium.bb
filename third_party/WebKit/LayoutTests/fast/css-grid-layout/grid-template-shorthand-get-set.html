@@ -7,37 +7,37 @@
     grid-template: none;
 }
 #gridTemplateSimpleForm {
-    grid-template: 10px / 15px;
+    grid-template: 15px / 10px;
 }
 #gridTemplateSimpleFormWithNoneColumns {
-    grid-template: none / 15px;
+    grid-template: 15px / none;
 }
 #gridTemplateSimpleFormWithNoneRows {
-    grid-template: 10px / none;
+    grid-template: none / 10px;
 }
 #gridTemplateSimpleFormWithNone {
     grid-template: none / none;
 }
 #gridTemplateComplexForm {
-    grid-template: 10px / "a" 15px;
+    grid-template: "a" 15px / 10px;
 }
 #gridTemplateComplexFormWithLineNames {
-    grid-template: 10px / [head] "a" 15px [tail];
+    grid-template: [head] "a" 15px [tail] / 10px;
 }
 #gridTemplateComplexFormWithLineNamesMultipleColumns {
-    grid-template: 10px / [head] "a b" 15px [tail]
+    grid-template: [head] "a b" 15px [tail] / 10px;
 }
 #gridTemplateComplexFormWithLineNamesMultipleRows {
-    grid-template: 10px / [head1] "a" 15px [tail1]
-                          [head2] "b" 20px [tail2];
+    grid-template: [head1] "a" 15px [tail1]
+                   [head2] "b" 20px [tail2] / 10px;
 }
 #gridTemplateComplexFormWithLineNamesMultipleRowsAndColumns {
-    grid-template: [first] 10px repeat(2, [nav nav2] 15px) /       "a b c" 100px [nav]
-                                                            [nav2] "d e f" 25px  [nav]
-                                                            [nav2] "g h i" 25px  [last];
+    grid-template: "a b c" 100px [nav]
+                   [nav2] "d e f" 25px  [nav]
+                   [nav2] "g h i" 25px  [last] / [first] 10px repeat(2, [nav nav2] 15px);
 }
 #gridTemplateComplexFormWithAuto {
-    grid-template: 10px / "a";
+    grid-template: "a" / 10px;
 }
 #gridTemplateComplexFormOnlyAreas {
     grid-template: "a";
@@ -46,8 +46,8 @@
     grid-template: [first] "a" auto [];
 }
 #gridTemplateConsecutiveAreas {
-     grid-template: 10px / "a"
-                           "a";
+     grid-template: "a"
+                    "a" / 10px;
 }
 
 /* Bad values. */
@@ -59,13 +59,13 @@
     grid-template: 10px;
 }
 #gridTemplateSimpleFormNoRows {
-    grid-template: 10px /;
-}
-#gridTemplateSimpleFormNoColumns {
     grid-template: / 10px;
 }
+#gridTemplateSimpleFormNoColumns {
+    grid-template: 10px /;
+}
 #gridTemplateSimpleFormNoColumnSize {
-    grid-template: [line] / 10px;
+    grid-template: 10px / [line];
 }
 #gridTemplateSimpleFormWithFitContent {
     grid-template: -webkit-fit-content / 10px;
@@ -86,31 +86,31 @@
     grid-template: 10px none / 20px;
 }
 #gridTemplateComplexFormWithRepeat {
-    grid-template: 10px / "a" repeat(2, 50% [title]);
+    grid-template: "a" repeat(2, 50% [title]) / 10px;
 }
 #gridTemplateComplexFormWithWrongRepeat {
-    grid-template: repeat(2, 50% [title] a) / "a";
+    grid-template: "a" / repeat(2, 50% [title] a);
 }
 #griTemplateComplexFormdWithFitAvailable {
-    grid-template: -webkit-fit-available / "a";
+    grid-template: "a" / -webkit-fit-available;
 }
 #gridTemplateComplexFormNoColumnSize {
-    grid-template: [line] / "a";
+    grid-template: "a" / [line];
 }
 #gridTemplateComplexFormMisplacedRowsSize1 {
-    grid-template: 25px / 10px "a";
+    grid-template: 10px "a" / 25px;
 }
 #gridTemplateComplexFormMisplacedRowsSize2 {
-    grid-template: 25px / "a" [name] 10px;
+    grid-template: "a" [name] 10px / 25px;
 }
 #gridTemplateComplexFormColumnsNotParsing1 {
-    grid-template: a / "a" [name] 10px;
+    grid-template: "a" [name] 10px / a;
 }
 #gridTemplateComplexFormColumnsNotParsing2 {
-    grid-template: "B" / "a" [name] 10px;
+    grid-template: "a" [name] 10px / "B";
 }
 #gridTemplateComplexFormWithNoneColumns {
-    grid-template: none / "a" [name] 10px;
+    grid-template: "a" [name] 10px / none;
 }
 #gridTemplateNoColumnsRowWithTwoEmptyTrailingLineNames {
     grid-template: [first] "a" auto [] [];
@@ -216,23 +216,23 @@
 
     debug("");
     debug("Test setting grid-template-columns and grid-template-rows back to 'none' through JS");
-    testGridDefinitionsSetJSValues("10px / [line] 'a' 20px", "10px", "[line] 20px", "\"a\"");
+    testGridDefinitionsSetJSValues("[line] 'a' 20px / 10px", "10px", "[line] 20px", "\"a\"");
     testGridDefinitionsSetJSValues("none", "none", "none", "none");
 
     debug("");
     debug("Test getting and setting grid-template shorthand through JS");
-    testGridDefinitionsSetJSValues("18px / 66px", "18px", "66px", "none");
-    testGridDefinitionsSetJSValues("10px / [head] 'a' 15px [tail]", "10px", "[head] 15px [tail]", "\"a\"");
+    testGridDefinitionsSetJSValues("66px / 18px", "18px", "66px", "none");
+    testGridDefinitionsSetJSValues("[head] 'a' 15px [tail] / 10px", "10px", "[head] 15px [tail]", "\"a\"");
     testGridDefinitionsSetJSValues("'a'", "none", "0px", "\"a\"", "none", "auto");
 
     debug("");
     debug("Test setting grid-template shorthand to bad values through JS");
-    testGridDefinitionsSetBadJSValues("none / 'a'");
-    testGridDefinitionsSetBadJSValues("25px / 'a' [name] 10px");
+    testGridDefinitionsSetBadJSValues("'a' / none");
+    testGridDefinitionsSetBadJSValues("'a' [name] 10px / 25px");
     testGridDefinitionsSetBadJSValues("'a' / 'b'");
     testGridDefinitionsSetBadJSValues("15px");
-    testGridDefinitionsSetBadJSValues("15px / 20px none");
-    testGridDefinitionsSetBadJSValues("25px / 10px 'a'");
+    testGridDefinitionsSetBadJSValues("20px none / 15px");
+    testGridDefinitionsSetBadJSValues("10px 'a' / 25px");
 
 </script>
 </body>

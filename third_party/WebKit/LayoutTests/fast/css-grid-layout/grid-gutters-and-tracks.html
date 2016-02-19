@@ -18,12 +18,12 @@ body { margin: 0px; }
 .gridMultipleCols { grid-template-columns: 30px minmax(10px, 50px) 80px; }
 .gridMultipleRows { grid-template-rows: 90px 70px min-content; }
 .gridAutoAuto { grid-template: auto auto / auto auto; }
-.gridMultipleFixed { grid-template: [first] 15px [foo] 25px [bar] 35px [last] / [first] 37px [foo] 57px [bar] 77px [last]; }
+.gridMultipleFixed { grid-template: [first] 37px [foo] 57px [bar] 77px [last] / [first] 15px [foo] 25px [bar] 35px [last]; }
 .gridFixed100 { grid-template: repeat(2, 100px) / repeat(2, 100px); }
 .gridWithPercent { grid-template-columns: 10px 20% repeat(2, 30px); }
 .gridWithDoublePercent { grid-template-columns: 60% 40%; }
-.gridWithRowPercent { grid-template: 20px / 10px 20% 30px; }
-.gridWithRowDoublePercent { grid-template: 20px / 60% 40%; }
+.gridWithRowPercent { grid-template: 10px 20% 30px / 20px; }
+.gridWithRowDoublePercent { grid-template: 60% 40% / 20px; }
 
 .width220 { width: 220px; }
 .height100 { height: 100px; }

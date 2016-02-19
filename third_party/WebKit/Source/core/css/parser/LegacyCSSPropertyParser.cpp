@@ -1449,7 +1449,20 @@ bool CSSPropertyParser::parseGridGapShorthand(bool important)
     return true;
 }
 
-bool CSSPropertyParser::parseGridTemplateRowsAndAreas(PassRefPtrWillBeRawPtr<CSSValue> templateColumns, bool important)
+PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseGridTemplateColumns(bool important)
+{
+    if (!(m_valueList->current() && isForwardSlashOperator(m_valueList->current()) && m_valueList->next()))
+        return nullptr;
+    if (RefPtrWillBeRawPtr<CSSValue> columnsValue = parseGridTrackList()) {
+        if (m_valueList->current())
+            return nullptr;
+        return columnsValue;
+    }
+
+    return nullptr;
+}
+
+bool CSSPropertyParser::parseGridTemplateRowsAndAreasAndColumns(bool important)
 {
     NamedGridAreaMap gridAreaMap;
     size_t rowCount = 0;
@@ -1458,10 +1471,10 @@ bool CSSPropertyParser::parseGridTemplateRowsAndAreas(PassRefPtrWillBeRawPtr<CSS
     RefPtrWillBeRawPtr<CSSValueList> templateRows = CSSValueList::createSpaceSeparated();
 
     // At least template-areas strings must be defined.
-    if (!m_valueList->current())
+    if (!m_valueList->current() || isForwardSlashOperator(m_valueList->current()))
         return false;
 
-    while (m_valueList->current()) {
+    while (m_valueList->current() && !isForwardSlashOperator(m_valueList->current())) {
         // Handle leading <custom-ident>*.
         if (!parseGridLineNames(*m_valueList, *templateRows, trailingIdentWasAdded ? toCSSGridLineNamesValue(templateRows->item(templateRows->length() - 1)) : nullptr))
             return false;
@@ -1472,7 +1485,7 @@ bool CSSPropertyParser::parseGridTemplateRowsAndAreas(PassRefPtrWillBeRawPtr<CSS
         ++rowCount;
 
         // Handle template-rows's track-size.
-        if (m_valueList->current() && m_valueList->current()->m_unit != CSSParserValue::String) {
+        if (m_valueList->current() && !isForwardSlashOperator(m_valueList->current()) && m_valueList->current()->m_unit != CSSParserValue::String) {
             RefPtrWillBeRawPtr<CSSValue> value = parseGridTrackSize(*m_valueList);
             if (!value)
                 return false;
@@ -1487,16 +1500,22 @@ bool CSSPropertyParser::parseGridTemplateRowsAndAreas(PassRefPtrWillBeRawPtr<CSS
         trailingIdentWasAdded = templateRows->item(templateRows->length() - 1)->isGridLineNamesValue();
     }
 
-    // [<track-list> /]?
-    if (templateColumns)
-        addProperty(CSSPropertyGridTemplateColumns, templateColumns, important);
-    else
-        addProperty(CSSPropertyGridTemplateColumns,  cssValuePool().createIdentifierValue(CSSValueNone), important);
+    RefPtrWillBeRawPtr<CSSValue> columnsValue = nullptr;
+    if (m_valueList->current()) {
+        ASSERT(isForwardSlashOperator(m_valueList->current()));
+        columnsValue = parseGridTemplateColumns(important);
+        if (!columnsValue)
+            return false;
+        // The template-columns <track-list> can't be 'none'.
+        if (columnsValue->isPrimitiveValue() && toCSSPrimitiveValue(*columnsValue).getValueID() == CSSValueNone)
+            return false;
+    }
 
-    // [<line-names>? <string> [<track-size> <line-names>]? ]+
+    addProperty(CSSPropertyGridTemplateRows, templateRows.release(), important);
+    addProperty(CSSPropertyGridTemplateColumns, columnsValue ? columnsValue.release() : cssValuePool().createIdentifierValue(CSSValueNone), important);
+
     RefPtrWillBeRawPtr<CSSValue> templateAreas = CSSGridTemplateAreasValue::create(gridAreaMap, rowCount, columnCount);
     addProperty(CSSPropertyGridTemplateAreas, templateAreas.release(), important);
-    addProperty(CSSPropertyGridTemplateRows, templateRows.release(), important);
 
     return true;
 }
@@ -1523,37 +1542,29 @@ bool CSSPropertyParser::parseGridTemplateShorthand(bool important)
         return true;
     }
 
-    unsigned index = 0;
-    RefPtrWillBeRawPtr<CSSValue> columnsValue = nullptr;
+    // 2- <grid-template-rows> / <grid-template-columns>
+    RefPtrWillBeRawPtr<CSSValue> rowsValue = nullptr;
     if (firstValueIsNone) {
-        columnsValue = cssValuePool().createIdentifierValue(CSSValueNone);
+        rowsValue = cssValuePool().createIdentifierValue(CSSValueNone);
     } else {
-        columnsValue = parseGridTrackList();
+        rowsValue = parseGridTrackList();
     }
 
-    // 2- <grid-template-columns> / <grid-template-columns> syntax.
-    if (columnsValue) {
-        if (!(m_valueList->current() && isForwardSlashOperator(m_valueList->current()) && m_valueList->next()))
+    if (rowsValue) {
+        RefPtrWillBeRawPtr<CSSValue> columnsValue = parseGridTemplateColumns(important);
+        if (!columnsValue)
             return false;
-        index = m_valueList->currentIndex();
-        if (RefPtrWillBeRawPtr<CSSValue> rowsValue = parseGridTrackList()) {
-            if (m_valueList->current())
-                return false;
-            addProperty(CSSPropertyGridTemplateColumns, columnsValue, important);
-            addProperty(CSSPropertyGridTemplateRows, rowsValue, important);
-            addProperty(CSSPropertyGridTemplateAreas, cssValuePool().createIdentifierValue(CSSValueNone), important);
-            return true;
-        }
+
+        addProperty(CSSPropertyGridTemplateRows, rowsValue.release(), important);
+        addProperty(CSSPropertyGridTemplateColumns, columnsValue.release(), important);
+        addProperty(CSSPropertyGridTemplateAreas, cssValuePool().createIdentifierValue(CSSValueNone), important);
+        return true;
     }
 
-
-    // 3- [<track-list> /]? [<line-names>? <string> [<track-size> <line-names>]? ]+ syntax.
-    // The template-columns <track-list> can't be 'none'.
-    if (firstValueIsNone)
-        return false;
+    // 3- [<line-names>? <string> [<track-size> <line-names>]? ]+ syntax.
     // It requires to rewind parsing due to previous syntax failures.
-    m_valueList->setCurrentIndex(index);
-    return parseGridTemplateRowsAndAreas(columnsValue, important);
+    m_valueList->setCurrentIndex(0);
+    return parseGridTemplateRowsAndAreasAndColumns(important);
 }
 
 bool CSSPropertyParser::parseGridShorthand(bool important)

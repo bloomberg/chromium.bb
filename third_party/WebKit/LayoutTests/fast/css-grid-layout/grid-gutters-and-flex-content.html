@@ -5,13 +5,13 @@
 <script src="../../resources/check-layout.js"></script>
 <script src="../../resources/js-test.js"></script>
 <style>
-.gridPercentAndFlexContent { grid-template: 50% minmax(30px, 2fr) / 50px; }
-.gridTwoDoubleMaxFlexContent { grid-template: minmax(10px, 0.5fr) minmax(10px, 2fr) / 50px; }
-.gridIgnoreSecondGridItem { grid-template: minmax(300px, 3fr) minmax(150px, 1fr) / 50px; }
+.gridPercentAndFlexContent { grid-template: 50px / 50% minmax(30px, 2fr); }
+.gridTwoDoubleMaxFlexContent { grid-template: 50px / minmax(10px, 0.5fr) minmax(10px, 2fr); }
+.gridIgnoreSecondGridItem { grid-template: 50px / minmax(300px, 3fr) minmax(150px, 1fr); }
 
-.gridRowsPercentAndFlexContent { grid-template: 50px / minmax(30px, 2fr) 50%; }
-.gridRowsTwoMaxFlexContent { grid-template: 50px / minmax(10px, 1fr) minmax(10px, 2fr); }
-.gridRowsTwoDoubleMaxFlexContent { grid-template: 50px / minmax(10px, 0.5fr) minmax(10px, 2fr); }
+.gridRowsPercentAndFlexContent { grid-template: minmax(30px, 2fr) 50% / 50px; }
+.gridRowsTwoMaxFlexContent { grid-template: minmax(10px, 1fr) minmax(10px, 2fr) / 50px; }
+.gridRowsTwoDoubleMaxFlexContent { grid-template: minmax(10px, 0.5fr) minmax(10px, 2fr) / 50px; }
 
 .gridMinMaxFlexFixedAndMinContentAndFixed { grid-template-columns: minmax(0.5fr, 35px) min-content 25px; }
 .gridMinContentAndMinMaxFixedMinContentAndFlex { grid-template-columns: min-content minmax(20px, min-content) 2fr; }
