@@ -154,7 +154,8 @@ handle_pointer_button(struct libinput_device *libinput_device,
 	notify_button(device->seat,
 		      libinput_event_pointer_get_time(pointer_event),
 		      libinput_event_pointer_get_button(pointer_event),
-		      libinput_event_pointer_get_button_state(pointer_event));
+                      button_state);
+
 	return true;
 }
 
