@@ -51,21 +51,21 @@ TEST_F(LayerProtoConverterTest, TestKeepingRoot) {
   scoped_refptr<Layer> old_root = Layer::Create(LayerSettings());
   proto::LayerNode root_node;
   root_node.set_id(old_root->id());
-  root_node.set_type(proto::LayerType::LAYER);
+  root_node.set_type(proto::LayerNode::LAYER);
 
   proto::LayerNode* child_a_node = root_node.add_children();
   child_a_node->set_id(442);
-  child_a_node->set_type(proto::LayerType::LAYER);
+  child_a_node->set_type(proto::LayerNode::LAYER);
   child_a_node->set_parent_id(old_root->id());  // root_node
 
   proto::LayerNode* child_b_node = root_node.add_children();
   child_b_node->set_id(443);
-  child_b_node->set_type(proto::LayerType::LAYER);
+  child_b_node->set_type(proto::LayerNode::LAYER);
   child_b_node->set_parent_id(old_root->id());  // root_node
 
   proto::LayerNode* child_c_node = child_b_node->add_children();
   child_c_node->set_id(444);
-  child_c_node->set_type(proto::LayerType::LAYER);
+  child_c_node->set_type(proto::LayerNode::LAYER);
   child_c_node->set_parent_id(child_b_node->id());
 
   scoped_refptr<Layer> new_root =
@@ -97,11 +97,11 @@ TEST_F(LayerProtoConverterTest, TestNoExistingRoot) {
   int new_root_id = 244;
   proto::LayerNode root_node;
   root_node.set_id(new_root_id);
-  root_node.set_type(proto::LayerType::LAYER);
+  root_node.set_type(proto::LayerNode::LAYER);
 
   proto::LayerNode* child_a_node = root_node.add_children();
   child_a_node->set_id(442);
-  child_a_node->set_type(proto::LayerType::LAYER);
+  child_a_node->set_type(proto::LayerNode::LAYER);
   child_a_node->set_parent_id(new_root_id);  // root_node
 
   scoped_refptr<Layer> new_root =
@@ -127,21 +127,21 @@ TEST_F(LayerProtoConverterTest, TestSwappingRoot) {
   */
   proto::LayerNode root_node;
   root_node.set_id(441);
-  root_node.set_type(proto::LayerType::LAYER);
+  root_node.set_type(proto::LayerNode::LAYER);
 
   proto::LayerNode* child_a_node = root_node.add_children();
   child_a_node->set_id(442);
-  child_a_node->set_type(proto::LayerType::LAYER);
+  child_a_node->set_type(proto::LayerNode::LAYER);
   child_a_node->set_parent_id(root_node.id());
 
   proto::LayerNode* child_b_node = root_node.add_children();
   child_b_node->set_id(443);
-  child_b_node->set_type(proto::LayerType::LAYER);
+  child_b_node->set_type(proto::LayerNode::LAYER);
   child_b_node->set_parent_id(root_node.id());
 
   proto::LayerNode* child_c_node = child_b_node->add_children();
   child_c_node->set_id(444);
-  child_c_node->set_type(proto::LayerType::LAYER);
+  child_c_node->set_type(proto::LayerNode::LAYER);
   child_c_node->set_parent_id(child_b_node->id());
 
   scoped_refptr<Layer> old_root = Layer::Create(LayerSettings());
@@ -379,7 +379,7 @@ TEST_F(LayerProtoConverterTest, PictureLayerTypeSerialization) {
 
   proto::LayerNode layer_hierarchy;
   LayerProtoConverter::SerializeLayerHierarchy(layer.get(), &layer_hierarchy);
-  EXPECT_EQ(proto::LayerType::PICTURE_LAYER, layer_hierarchy.type());
+  EXPECT_EQ(proto::LayerNode::PICTURE_LAYER, layer_hierarchy.type());
 }
 
 TEST_F(LayerProtoConverterTest, PictureLayerTypeDeserialization) {
@@ -389,7 +389,7 @@ TEST_F(LayerProtoConverterTest, PictureLayerTypeDeserialization) {
       LayerSettings(), EmptyContentLayerClient::GetInstance());
   proto::LayerNode root_node;
   root_node.set_id(old_root->id());
-  root_node.set_type(proto::LayerType::PICTURE_LAYER);
+  root_node.set_type(proto::LayerNode::PICTURE_LAYER);
 
   scoped_refptr<Layer> new_root =
       LayerProtoConverter::DeserializeLayerHierarchy(old_root, root_node);
@@ -401,7 +401,7 @@ TEST_F(LayerProtoConverterTest, PictureLayerTypeDeserialization) {
   // serialize to.
   proto::LayerNode layer_node;
   new_root->SetTypeForProtoSerialization(&layer_node);
-  EXPECT_EQ(proto::LayerType::PICTURE_LAYER, layer_node.type());
+  EXPECT_EQ(proto::LayerNode::PICTURE_LAYER, layer_node.type());
 }
 
 TEST_F(LayerProtoConverterTest, HudLayerTypeSerialization) {
@@ -412,7 +412,7 @@ TEST_F(LayerProtoConverterTest, HudLayerTypeSerialization) {
 
   proto::LayerNode layer_hierarchy;
   LayerProtoConverter::SerializeLayerHierarchy(layer.get(), &layer_hierarchy);
-  EXPECT_EQ(proto::LayerType::HEADS_UP_DISPLAY_LAYER, layer_hierarchy.type());
+  EXPECT_EQ(proto::LayerNode::HEADS_UP_DISPLAY_LAYER, layer_hierarchy.type());
 }
 
 TEST_F(LayerProtoConverterTest, HudLayerTypeDeserialization) {
@@ -421,7 +421,7 @@ TEST_F(LayerProtoConverterTest, HudLayerTypeDeserialization) {
   scoped_refptr<Layer> old_root = HeadsUpDisplayLayer::Create(LayerSettings());
   proto::LayerNode root_node;
   root_node.set_id(old_root->id());
-  root_node.set_type(proto::LayerType::HEADS_UP_DISPLAY_LAYER);
+  root_node.set_type(proto::LayerNode::HEADS_UP_DISPLAY_LAYER);
 
   scoped_refptr<Layer> new_root =
       LayerProtoConverter::DeserializeLayerHierarchy(old_root, root_node);
@@ -433,7 +433,7 @@ TEST_F(LayerProtoConverterTest, HudLayerTypeDeserialization) {
   // serialize to.
   proto::LayerNode layer_node;
   new_root->SetTypeForProtoSerialization(&layer_node);
-  EXPECT_EQ(proto::LayerType::HEADS_UP_DISPLAY_LAYER, layer_node.type());
+  EXPECT_EQ(proto::LayerNode::HEADS_UP_DISPLAY_LAYER, layer_node.type());
 }
 
 }  // namespace

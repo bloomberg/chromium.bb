@@ -113,7 +113,7 @@ class LayerTreeHostSerializationTest : public testing::Test {
       for (int i = 0; i < proto.root_layer().children_size(); ++i) {
         if (proto.root_layer().children(i).id() ==
             layer_tree_host_src_->hud_layer_->id()) {
-          EXPECT_EQ(proto::HEADS_UP_DISPLAY_LAYER,
+          EXPECT_EQ(proto::LayerNode::HEADS_UP_DISPLAY_LAYER,
                     proto.root_layer().children(i).type());
           found_hud_layer_type = true;
           break;

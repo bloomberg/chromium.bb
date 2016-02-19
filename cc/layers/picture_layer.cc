@@ -186,7 +186,7 @@ bool PictureLayer::HasDrawableContent() const {
 }
 
 void PictureLayer::SetTypeForProtoSerialization(proto::LayerNode* proto) const {
-  proto->set_type(proto::LayerType::PICTURE_LAYER);
+  proto->set_type(proto::LayerNode::PICTURE_LAYER);
 }
 
 void PictureLayer::LayerSpecificPropertiesToProto(

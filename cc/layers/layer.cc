@@ -1384,7 +1384,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
 }
 
 void Layer::SetTypeForProtoSerialization(proto::LayerNode* proto) const {
-  proto->set_type(proto::LayerType::LAYER);
+  proto->set_type(proto::LayerNode::LAYER);
 }
 
 void Layer::ToLayerNodeProto(proto::LayerNode* proto) const {

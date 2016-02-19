@@ -64,7 +64,7 @@ scoped_ptr<LayerImpl> HeadsUpDisplayLayer::CreateLayerImpl(
 
 void HeadsUpDisplayLayer::SetTypeForProtoSerialization(
     proto::LayerNode* proto) const {
-  proto->set_type(proto::LayerType::HEADS_UP_DISPLAY_LAYER);
+  proto->set_type(proto::LayerNode::HEADS_UP_DISPLAY_LAYER);
 }
 
 }  // namespace cc

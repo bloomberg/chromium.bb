@@ -20,23 +20,23 @@ package cc.proto;
 
 option optimize_for = LITE_RUNTIME;
 
-// Identifies the type of cc:Layer a LayerNode represents. It is used to
-// facilitate reconstruction of a Layer of the correct type on the client.
-enum LayerType {
-  UNKNOWN = 0;
-  LAYER = 1;
-  PICTURE_LAYER = 2;
-  HEADS_UP_DISPLAY_LAYER = 3;
-
-  // TODO(nyquist): Add the rest of the necessary LayerTypes.
-};
-
 // Hierarchical structure for serializing the Layer tree.
 message LayerNode {
+  // Identifies the type of cc:Layer a LayerNode represents. It is used to
+  // facilitate reconstruction of a Layer of the correct type on the client.
+  enum Type {
+    UNKNOWN = 0;
+    LAYER = 1;
+    PICTURE_LAYER = 2;
+    HEADS_UP_DISPLAY_LAYER = 3;
+
+    // TODO(nyquist): Add the rest of the necessary LayerTypes.
+  };
+
   // required
   optional int32 id = 1;
   // required
-  optional LayerType type = 2;
+  optional Type type = 2;
   optional int32 parent_id = 3;
   // A List of all the children of the current LayerNode.
   repeated LayerNode children = 4;
