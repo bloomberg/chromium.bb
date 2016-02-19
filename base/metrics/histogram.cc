@@ -875,6 +875,8 @@ void LinearHistogram::InitializeBucketRanges(Sample minimum,
     double linear_range =
         (min * (bucket_count - 1 - i) + max * (i - 1)) / (bucket_count - 2);
     ranges->set_range(i, static_cast<Sample>(linear_range + 0.5));
+    // TODO(bcwhite): Remove once crbug/586622 is fixed.
+    base::debug::Alias(&linear_range);
   }
   ranges->set_range(ranges->bucket_count(), HistogramBase::kSampleType_MAX);
   ranges->ResetChecksum();
