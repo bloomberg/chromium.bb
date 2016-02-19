@@ -112,6 +112,7 @@
       'src/crypto/bn/shift.c',
       'src/crypto/bn/sqrt.c',
       'src/crypto/buf/buf.c',
+      'src/crypto/bytestring/asn1_compat.c',
       'src/crypto/bytestring/ber.c',
       'src/crypto/bytestring/cbb.c',
       'src/crypto/bytestring/cbs.c',
