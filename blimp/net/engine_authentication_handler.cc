@@ -4,8 +4,6 @@
 
 #include "blimp/net/engine_authentication_handler.h"
 
-#include <string>
-
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/timer/timer.h"
@@ -110,30 +108,23 @@ void Authenticator::OnConnectionError(int error) {
 
 void Authenticator::ProcessMessage(scoped_ptr<BlimpMessage> message,
                                    const net::CompletionCallback& callback) {
-  if (message->type() != BlimpMessage::PROTOCOL_CONTROL ||
-      message->protocol_control().type() !=
+  if (message->type() == BlimpMessage::PROTOCOL_CONTROL &&
+      message->protocol_control().type() ==
           ProtocolControlMessage::START_CONNECTION) {
+    bool token_match =
+        client_token_ ==
+        message->protocol_control().start_connection().client_token();
+    DVLOG(1) << "Authentication challenge received: "
+             << message->protocol_control().start_connection().client_token()
+             << ", and token "
+             << (token_match ? " matches" : " does not match");
+    OnConnectionAuthenticated(token_match);
+  } else {
     DVLOG(1) << "Expected START_CONNECTION message, got " << *message
              << " instead.";
     OnConnectionAuthenticated(false);
-    return;
   }
 
-  bool token_matches =
-      client_token_ ==
-      message->protocol_control().start_connection().client_token();
-  DVLOG(1) << "Authentication challenge received: "
-           << message->protocol_control().start_connection().client_token()
-           << ", and token "
-           << (token_matches ? " matches" : " does not match");
-  if (!token_matches) {
-    OnConnectionAuthenticated(false);
-    return;
-  }
-
-  // Authentication succeeded!
-  // Run |callback| to signal the pump to read more messages.
-  OnConnectionAuthenticated(true);
   callback.Run(net::OK);
 }
 
