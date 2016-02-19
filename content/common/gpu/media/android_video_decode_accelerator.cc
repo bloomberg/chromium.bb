@@ -371,6 +371,8 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
     TRACE_COUNTER1("media", "AVDA::PendingBitstreamBufferCount",
                    pending_bitstream_buffers_.size());
 
+    DCHECK_NE(state_, ERROR);
+    state_ = WAITING_FOR_EOS;
     media_codec_->QueueEOS(input_buf_index);
     return true;
   }
@@ -534,11 +536,23 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
 
   if (eos) {
     DVLOG(3) << __FUNCTION__ << ": Resetting codec state after EOS";
-    ResetCodecState();
 
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(&AndroidVideoDecodeAccelerator::NotifyFlushDone,
-                              weak_this_factory_.GetWeakPtr()));
+    // If we were waiting for an EOS, clear the state and reset the MediaCodec
+    // as normal. Otherwise, enter the ERROR state which will force destruction
+    // of MediaCodec during ResetCodecState().
+    //
+    // Some Android platforms seem to send an EOS buffer even when we're not
+    // expecting it. In this case, destroy and reset the codec but don't notify
+    // flush done since it violates the state machine. http://crbug.com/585959.
+    const bool was_waiting_for_eos = state_ == WAITING_FOR_EOS;
+    state_ = was_waiting_for_eos ? NO_ERROR : ERROR;
+
+    ResetCodecState();
+    if (was_waiting_for_eos) {
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE, base::Bind(&AndroidVideoDecodeAccelerator::NotifyFlushDone,
+                                weak_this_factory_.GetWeakPtr()));
+    }
     return false;
   }
 

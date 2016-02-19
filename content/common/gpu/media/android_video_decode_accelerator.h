@@ -137,6 +137,7 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
     NO_ERROR,
     ERROR,
     WAITING_FOR_KEY,
+    WAITING_FOR_EOS,
   };
 
   static const base::TimeDelta kDecodePollDelay;
