@@ -65,13 +65,14 @@ bool IsBlacklisted(const GURL& url) {
 
 bool IsDistillablePageAdaboost(WebDocument& doc,
                                const DistillablePageDetector* detector,
+                               const DistillablePageDetector* long_page,
                                bool is_last) {
   WebDistillabilityFeatures features = doc.distillabilityFeatures();
   GURL parsed_url(doc.url());
   if (!parsed_url.is_valid()) {
     return false;
   }
-  bool distillable = detector->Classify(CalculateDerivedFeatures(
+  std::vector<double> derived = CalculateDerivedFeatures(
     features.openGraph,
     parsed_url,
     features.elementCount,
@@ -80,7 +81,9 @@ bool IsDistillablePageAdaboost(WebDocument& doc,
     features.mozScore,
     features.mozScoreAllSqrt,
     features.mozScoreAllLinear
-  ));
+  );
+  bool distillable = detector->Classify(derived);
+  bool long_article = long_page->Classify(derived);
   bool blacklisted = IsBlacklisted(parsed_url);
 
   int bucket = static_cast<unsigned>(features.isMobileFriendly) |
@@ -93,7 +96,13 @@ bool IsDistillablePageAdaboost(WebDocument& doc,
         bucket, 4);
   }
 
-  return distillable && (!features.isMobileFriendly) && (!blacklisted);
+  if (blacklisted) {
+    return false;
+  }
+  if (features.isMobileFriendly) {
+    return false;
+  }
+  return distillable && long_article;
 }
 
 bool IsDistillablePage(WebDocument& doc, bool is_last) {
@@ -103,8 +112,9 @@ bool IsDistillablePage(WebDocument& doc, bool is_last) {
     case DistillerHeuristicsType::OG_ARTICLE:
       return doc.distillabilityFeatures().openGraph;
     case DistillerHeuristicsType::ADABOOST_MODEL:
-      return IsDistillablePageAdaboost(
-          doc, DistillablePageDetector::GetNewModel(), is_last);
+      return IsDistillablePageAdaboost(doc,
+          DistillablePageDetector::GetNewModel(),
+          DistillablePageDetector::GetLongPageModel(), is_last);
     case DistillerHeuristicsType::NONE:
     default:
       return false;

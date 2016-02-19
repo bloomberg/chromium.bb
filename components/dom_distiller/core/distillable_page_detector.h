@@ -21,6 +21,7 @@ class DistillablePageDetector {
  public:
   static const DistillablePageDetector* GetDefault();
   static const DistillablePageDetector* GetNewModel();
+  static const DistillablePageDetector* GetLongPageModel();
   explicit DistillablePageDetector(scoped_ptr<AdaBoostProto> proto);
   ~DistillablePageDetector();
 

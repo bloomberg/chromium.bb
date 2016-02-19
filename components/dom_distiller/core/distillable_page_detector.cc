@@ -41,6 +41,20 @@ const DistillablePageDetector* DistillablePageDetector::GetNewModel() {
   return detector;
 }
 
+const DistillablePageDetector* DistillablePageDetector::GetLongPageModel() {
+  static DistillablePageDetector* detector = nullptr;
+  if (!detector) {
+    std::string serialized_proto =
+        ResourceBundle::GetSharedInstance()
+            .GetRawDataResource(IDR_LONG_PAGE_SERIALIZED_MODEL)
+            .as_string();
+    scoped_ptr<AdaBoostProto> proto(new AdaBoostProto);
+    CHECK(proto->ParseFromString(serialized_proto));
+    detector = new DistillablePageDetector(std::move(proto));
+  }
+  return detector;
+}
+
 DistillablePageDetector::DistillablePageDetector(
     scoped_ptr<AdaBoostProto> proto)
     : proto_(std::move(proto)), threshold_(0.0) {
