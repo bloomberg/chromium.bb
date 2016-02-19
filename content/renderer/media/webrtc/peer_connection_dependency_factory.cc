@@ -19,8 +19,10 @@
 #include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
 #include "content/common/media/media_stream_messages.h"
+#include "content/public/common/common_features.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/feature_h264_with_openh264_ffmpeg.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/webrtc_ip_handling_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -52,7 +54,6 @@
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
-#include "content/renderer/renderer_features.h"
 #include "crypto/openssl_util.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "media/base/media_permission.h"
@@ -263,19 +264,17 @@ void PeerConnectionDependencyFactory::CreatePeerConnectionFactory() {
   DVLOG(1) << "PeerConnectionDependencyFactory::CreatePeerConnectionFactory()";
 
 #if BUILDFLAG(RTC_USE_H264)
-  // TODO(hbos): This is temporary. Disable the runtime effects of building with
-  // |rtc_use_h264|. We are planning to default the |rtc_use_h264| flag to
-  // |proprietary_codecs| so that it will be used by Chromium trybots. This
-  // would also make it used by Chrome, but this feature is not ready to be
-  // launched yet. An upcoming CL will add browser tests for H264. That CL will
-  // remove this line. It should remain disabled until tested.
-  webrtc::DisableRtcUseH264();
-  // When building with |rtc_use_h264|, |H264DecoderImpl| may be used which
-  // depends on FFmpeg, therefore we need to initialize FFmpeg before going
-  // further.
-  // TODO(hbos): Temporarily commented out due to webrtc::DisableRtcUseH264(),
-  // no need to initialize FFmpeg when |H264DecoderImpl| is disabled.
-  // media::FFmpegGlue::InitializeFFmpeg();
+  // Building /w |rtc_use_h264|, is the corresponding run-time feature enabled?
+  if (base::FeatureList::IsEnabled(kWebRtcH264WithOpenH264FFmpeg)) {
+    LOG(WARNING) << "WebRTC H.264 with OpenH264/FFmpeg ENABLED.";
+    // |H264DecoderImpl| may be used which depends on FFmpeg, therefore we need
+    // to initialize FFmpeg before going further.
+    media::FFmpegGlue::InitializeFFmpeg();
+  } else {
+    LOG(WARNING) << "WebRTC H.264 with OpenH264/FFmpeg DISABLED.";
+    // Feature is to be disabled, no need to make sure FFmpeg is initialized.
+    webrtc::DisableRtcUseH264();
+  }
 #endif
 
   base::MessageLoop::current()->AddDestructionObserver(this);
