@@ -168,6 +168,10 @@
     'browser_resources': {
       'filepath': 'chrome/browser/resources/',
     },
+    'browser_resources_md': {
+      'filepath': 'chrome/browser/resources/md_'\
+                  '|chrome/browser/resources/settings/',
+    },
     'browsing_data': {
       'filepath': 'chrome/browser/browsing_data/',
     },
@@ -286,6 +290,9 @@
     'cookie_monster': {
       'filepath': 'net/cookies/|'\
                   'chrome/browser/net/sqlite_persistent_cookie_store',
+    },
+    'cr_elements': {
+      'filepath': 'ui/webui/resources/cr_element',
     },
     'custom_tabs': {
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/customtabs/|'\
@@ -472,8 +479,7 @@
                   '|content/public/common/manifest*',
     },
     'md_settings': {
-      'filepath': 'ui/webui/resources/cr_element'\
-                  '|chrome/browser/resources/settings/'\
+      'filepath': 'chrome/browser/resources/settings/'\
                   '|chrome/browser/ui/webui/settings/',
     },
     'media': {
@@ -1274,6 +1280,7 @@
     'browser_compositor': ['vollick@chromium.org',
                            'piman+watch@chromium.org'],
     'browser_resources': ['arv+watch@chromium.org'],
+    'browser_resources_md': ['michaelpg+watch-md-ui@chromium.org'],
     'browsing_data': ['markusheintz@chromium.org'],
     'bubble': ['msw+watch@chromium.org',
                'rouslan+bubble@chromium.org',
@@ -1327,6 +1334,9 @@
                       'peter@chromium.org'],
     'content_worker': ['blink-worker-reviews@chromium.org',
                        'kinuko+watch@chromium.org'],
+    'cr_elements': ['dbeam+watch-elements@chromium.org',
+                    'michaelpg+watch-elements@chromium.org',
+                    'stevenjb+watch-md-settings@chromium.org'],
     'deep_memory_profiler': ['dmikurube@chromium.org'],
     'device_bluetooth': ['scheib+watch@chromium.org',
                          'ortuno+watch@chromium.org'],
