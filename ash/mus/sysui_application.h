@@ -25,6 +25,7 @@ class SysUIApplication : public mojo::ShellClient {
   void Initialize(mojo::Shell* shell,
                   const std::string& url,
                   uint32_t id) override;
+  bool AcceptConnection(mojo::Connection* connection) override;
 
   mojo::TracingImpl tracing_;
   scoped_ptr<AshInit> ash_init_;

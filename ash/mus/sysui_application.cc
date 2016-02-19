@@ -261,5 +261,9 @@ void SysUIApplication::Initialize(mojo::Shell* shell,
   ash_init_->Initialize(shell);
 }
 
+bool SysUIApplication::AcceptConnection(mojo::Connection* connection) {
+  return true;
+}
+
 }  // namespace sysui
 }  // namespace ash
