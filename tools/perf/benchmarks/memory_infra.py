@@ -55,7 +55,7 @@ class MemoryHealthPlan(_MemoryInfra):
   """Timeline based benchmark for the Memory Health Plan."""
 
   _PREFIX_WHITELIST = ('memory_allocator_', 'memory_android_memtrack_',
-                       'memory_mmaps_')
+                       'memory_mmaps_', 'process_count_')
 
   page_set = page_sets.MemoryHealthStory
 
