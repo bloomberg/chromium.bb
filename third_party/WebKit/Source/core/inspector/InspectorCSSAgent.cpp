@@ -311,6 +311,11 @@ public:
         : InspectorHistory::Action(name)
     {
     }
+
+    virtual PassRefPtr<protocol::TypeBuilder::CSS::CSSStyle> takeSerializedStyle()
+    {
+        return nullptr;
+    }
 };
 
 class InspectorCSSAgent::SetStyleSheetTextAction final : public InspectorCSSAgent::StyleSheetAction {
@@ -435,6 +440,18 @@ public:
         return result;
     }
 
+    PassRefPtr<protocol::TypeBuilder::CSS::CSSStyle> takeSerializedStyle() override
+    {
+        if (m_type != SetStyleText)
+            return nullptr;
+        RefPtrWillBeRawPtr<CSSRule> rule = takeRule();
+        if (rule->type() == CSSRule::STYLE_RULE)
+            return m_styleSheet->buildObjectForStyle(toCSSStyleRule(rule.get())->style());
+        if (rule->type() == CSSRule::KEYFRAME_RULE)
+            return m_styleSheet->buildObjectForStyle(toCSSKeyframeRule(rule.get())->style());
+        return nullptr;
+    }
+
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_styleSheet);
@@ -507,6 +524,11 @@ public:
     String mergeId() override
     {
         return String::format("SetElementStyleAction:%s", m_styleSheet->id().utf8().data());
+    }
+
+    PassRefPtr<protocol::TypeBuilder::CSS::CSSStyle> takeSerializedStyle() override
+    {
+        return m_styleSheet->buildObjectForStyle(m_styleSheet->inlineStyle());
     }
 
     void merge(PassRefPtrWillBeRawPtr<Action> action) override
@@ -1204,21 +1226,90 @@ void InspectorCSSAgent::setKeyframeKey(ErrorString* errorString, const String& s
     *errorString = InspectorDOMAgent::toErrorString(exceptionState);
 }
 
-void InspectorCSSAgent::setStyleText(ErrorString* errorString, const String& styleSheetId, const RefPtr<JSONObject>& range, const String& text, RefPtr<protocol::TypeBuilder::CSS::CSSStyle>& result)
+bool InspectorCSSAgent::multipleStyleTextsActions(ErrorString* errorString, const RefPtr<JSONArray>& edits, HeapVector<RefPtrWillBeMember<StyleSheetAction>>* actions)
+{
+    int n = edits->length();
+    if (n == 0) {
+        *errorString = "Edits should not be empty";
+        return false;
+    }
+
+    for (int i = 0; i < n; ++i) {
+        RefPtr<JSONObject> edit = edits->get(i)->asObject();
+        String styleSheetId;
+        bool success = edit->getString("styleSheetId", &styleSheetId);
+        if (!success) {
+            *errorString = String::format("Could not parse styleSheetId for edit #%d of %d", i + 1, n);
+            return false;
+        }
+        InspectorStyleSheetBase* inspectorStyleSheet = assertStyleSheetForId(errorString, styleSheetId);
+        if (!inspectorStyleSheet) {
+            *errorString = String::format("StyleSheet not found for edit #%d of %d", i + 1 , n);
+            return false;
+        }
+
+        RefPtr<JSONObject> rangeObject = edit->getObject("range");
+        if (!rangeObject) {
+            *errorString = String::format("Could not parse range object for edit #%d of %d", i + 1, n);
+            return false;
+        }
+
+        SourceRange range;
+        if (!jsonRangeToSourceRange(errorString, inspectorStyleSheet, rangeObject, &range))
+            return false;
+
+        String text;
+        success = edit->getString("text", &text);
+        if (!success) {
+            *errorString = String::format("Could not parse text for edit #%d of %d", i + 1, n);
+            return false;
+        }
+
+        if (inspectorStyleSheet->isInlineStyle()) {
+            InspectorStyleSheetForInlineStyle* inlineStyleSheet = static_cast<InspectorStyleSheetForInlineStyle*>(inspectorStyleSheet);
+            RefPtrWillBeRawPtr<SetElementStyleAction> action = adoptRefWillBeNoop(new SetElementStyleAction(inlineStyleSheet, text));
+            actions->append(action);
+        } else {
+            RefPtrWillBeRawPtr<ModifyRuleAction> action = adoptRefWillBeNoop(new ModifyRuleAction(ModifyRuleAction::SetStyleText, static_cast<InspectorStyleSheet*>(inspectorStyleSheet), range, text));
+            actions->append(action);
+        }
+    }
+    return true;
+}
+
+void InspectorCSSAgent::setStyleTexts(ErrorString* errorString, const RefPtr<JSONArray>& edits, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::CSS::CSSStyle>>& result)
 {
     FrontendOperationScope scope;
-    InspectorStyleSheetBase* inspectorStyleSheet = assertStyleSheetForId(errorString, styleSheetId);
-    if (!inspectorStyleSheet) {
-        *errorString = "Stylesheet not found";
-        return;
-    }
-    SourceRange selectorRange;
-    if (!jsonRangeToSourceRange(errorString, inspectorStyleSheet, range, &selectorRange))
+    HeapVector<RefPtrWillBeMember<StyleSheetAction>> actions;
+    if (!multipleStyleTextsActions(errorString, edits, &actions))
         return;
 
-    CSSStyleDeclaration* style = setStyleText(errorString, inspectorStyleSheet, selectorRange, text);
-    if (style)
-        result = inspectorStyleSheet->buildObjectForStyle(style);
+    TrackExceptionState exceptionState;
+
+    int n = actions.size();
+    for (int i = 0; i < n; ++i) {
+        RefPtrWillBeMember<StyleSheetAction> action = actions.at(i);
+        bool success = action->perform(exceptionState);
+        if (!success) {
+            for (int j = i - 1; j >= 0; --j) {
+                RefPtrWillBeMember<StyleSheetAction> revert = actions.at(j);
+                TrackExceptionState undoExceptionState;
+                revert->undo(undoExceptionState);
+                ASSERT(!undoExceptionState.hadException());
+            }
+            *errorString = String::format("Failed applying edit #%d: %s", i, InspectorDOMAgent::toErrorString(exceptionState).utf8().data());
+            return;
+        }
+    }
+
+    result = protocol::TypeBuilder::Array<protocol::TypeBuilder::CSS::CSSStyle>::create();
+    for (size_t i = 0; i < actions.size(); ++i) {
+        RefPtrWillBeMember<StyleSheetAction> action = actions.at(i);
+        RefPtr<protocol::TypeBuilder::CSS::CSSStyle> stylePayload = action->takeSerializedStyle();
+        ASSERT(stylePayload);
+        result->addItem(stylePayload);
+        m_domAgent->history()->appendPerformedAction(action);
+    }
 }
 
 CSSStyleDeclaration* InspectorCSSAgent::setStyleText(ErrorString* errorString, InspectorStyleSheetBase* inspectorStyleSheet, const SourceRange& range, const String& text)

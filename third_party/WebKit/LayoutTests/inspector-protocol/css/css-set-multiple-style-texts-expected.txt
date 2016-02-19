@@ -1,0 +1,117 @@
+The test verifies functionality of protocol method CSS.setStyleTexts.
+
+==== Initial style sheet text ====
+#test {
+    box-sizing: border-box;
+}
+
+#test {
+    /* resetting some properties */
+    line-height: 1;
+    font-family: "Arial";
+    color: blue;
+    display: flex; /* flex FTW! */
+}
+
+@media (min-width: 1px) {
+    #test {
+        font-size: 200%;
+    }
+
+    #test {
+    }
+}
+
+
+
+Running test: testMalformedArguments1
+Expected protocol error: Could not parse styleSheetId for edit #2 of 2
+
+Running test: testMalformedArguments2
+Expected protocol error: Could not parse range object for edit #1 of 3
+
+Running test: testMalformedArguments3
+Expected protocol error: range.startLine must be a non-negative integer
+
+Running test: testFirstEditDoesNotApply
+Expected protocol error: Failed applying edit #0: SyntaxError Style text is not valid.
+
+Running test: testSecondEditDoesNotApply
+Expected protocol error: Failed applying edit #1: SyntaxError Style text is not valid.
+
+Running test: testBasicSetStyle
+==== Style sheet text ====
+#test {
+    content: 'EDITED';
+}
+
+#test {
+    /* resetting some properties */
+    line-height: 1;
+    font-family: "Arial";
+    color: blue;
+    display: flex; /* flex FTW! */
+}
+
+@media (min-width: 1px) {
+    #test {
+        font-size: 200%;
+    }
+
+    #test {
+    }
+}
+
+
+
+Running test: testMultipleStyleTexts1
+==== Style sheet text ====
+#test {
+    content: 'EDITED2';
+}
+
+#test {
+    /* resetting some properties */
+    line-height: 1;
+    font-family: "Arial";
+    color: blue;
+    display: flex; /* flex FTW! */
+}
+
+@media (min-width: 1px) {
+    #test {
+        content: 'EDITED1';
+}
+
+    #test {
+    }
+}
+
+
+
+Running test: testMultipleStyleTexts2
+==== Style sheet text ====
+#test {
+    content: 'EDITED3';
+}
+
+#test {
+    /* resetting some properties */
+    line-height: 1;
+    font-family: "Arial";
+    color: blue;
+    display: flex; /* flex FTW! */
+}
+
+@media (min-width: 1px) {
+    #test {
+        content: 'EDITED4';
+}
+
+    #test {
+        content: 'EDITED5';
+}
+}
+
+
+

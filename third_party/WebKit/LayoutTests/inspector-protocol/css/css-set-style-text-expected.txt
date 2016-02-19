@@ -1,4 +1,4 @@
-The test verifies functionality of protocol method CSS.setStyleText.
+The test verifies functionality of protocol method CSS.setStyleTexts.
 
 ==== Initial style sheet text ====
 #test {
@@ -217,7 +217,7 @@ Dumping matched rules:
 Dumping inherited rules: 
 
 Running test: testSetStylePoorContent
-Expected protocol error: SyntaxError Style text is not valid.
+Expected protocol error: Failed applying edit #0: SyntaxError Style text is not valid.
 Dumping matched rules: 
 *#test* {    regular
     box-sizing: border-box;
@@ -345,7 +345,7 @@ Dumping matched rules:
 Dumping inherited rules: 
 
 Running test: testSetStyleOpenComment
-Expected protocol error: SyntaxError Style text is not valid.
+Expected protocol error: Failed applying edit #0: SyntaxError Style text is not valid.
 Dumping matched rules: 
 *#test* {    regular
     box-sizing: border-box;
@@ -366,5 +366,5 @@ Dumping matched rules:
 Dumping inherited rules: 
 
 Running test: testSetStyleOfRemovedRule
-ERROR: NotFoundError Source range didn't match existing style source range
+ERROR: Failed applying edit #0: NotFoundError Source range didn't match existing style source range
 

@@ -136,7 +136,7 @@ public:
     void setStyleSheetText(ErrorString*, const String& styleSheetId, const String& text, protocol::TypeBuilder::OptOutput<String>* sourceMapURL) override;
     void setRuleSelector(ErrorString*, const String& styleSheetId, const RefPtr<JSONObject>& range, const String& selector, RefPtr<protocol::TypeBuilder::CSS::SelectorList>& result) override;
     void setKeyframeKey(ErrorString*, const String& styleSheetId, const RefPtr<JSONObject>& range, const String& keyText, RefPtr<protocol::TypeBuilder::CSS::Value>& result) override;
-    void setStyleText(ErrorString*, const String& styleSheetId, const RefPtr<JSONObject>& range, const String& text, RefPtr<protocol::TypeBuilder::CSS::CSSStyle>& result) override;
+    void setStyleTexts(ErrorString*, const RefPtr<JSONArray>& edits, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::CSS::CSSStyle>>& result);
     void setMediaText(ErrorString*, const String& styleSheetId, const RefPtr<JSONObject>& range, const String& text, RefPtr<protocol::TypeBuilder::CSS::CSSMedia>& result) override;
     void createStyleSheet(ErrorString*, const String& frameId, protocol::TypeBuilder::CSS::StyleSheetId* outStyleSheetId) override;
     void addRule(ErrorString*, const String& styleSheetId, const String& ruleText, const RefPtr<JSONObject>& location, RefPtr<protocol::TypeBuilder::CSS::CSSRule>& result) override;
@@ -181,6 +181,7 @@ private:
     void updateActiveStyleSheets(Document*, StyleSheetsUpdateType);
     void setActiveStyleSheets(Document*, const WillBeHeapVector<RawPtrWillBeMember<CSSStyleSheet>>&, StyleSheetsUpdateType);
     CSSStyleDeclaration* setStyleText(ErrorString*, InspectorStyleSheetBase*, const SourceRange&, const String&);
+    bool multipleStyleTextsActions(ErrorString*, const RefPtr<JSONArray>& edits, HeapVector<RefPtrWillBeMember<StyleSheetAction>>* actions);
 
     PassRefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::CSS::CSSKeyframesRule>> animationsForNode(Element*);
 

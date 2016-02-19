@@ -12,9 +12,10 @@ InspectorTest.dumpStyleSheetText = function(styleSheetId, callback)
     }
 }
 
-function updateStyleSheetRange(command, styleSheetId, expectError, options, callback)
+function modifyStyleSheet(command, presetStyleSheetId, styleSheetId, expectError, options, callback)
 {
-    options.styleSheetId = styleSheetId;
+    if (presetStyleSheetId)
+        options.styleSheetId = styleSheetId;
     if (expectError)
         InspectorTest.sendCommand(command, options, onResponse);
     else
@@ -37,11 +38,15 @@ function updateStyleSheetRange(command, styleSheetId, expectError, options, call
     }
 }
 
-InspectorTest.setPropertyText = updateStyleSheetRange.bind(null, "CSS.setPropertyText");
-InspectorTest.setRuleSelector = updateStyleSheetRange.bind(null, "CSS.setRuleSelector");
-InspectorTest.setStyleText = updateStyleSheetRange.bind(null, "CSS.setStyleText");
-InspectorTest.setMediaText = updateStyleSheetRange.bind(null, "CSS.setMediaText");
-InspectorTest.addRule = updateStyleSheetRange.bind(null, "CSS.addRule");
+InspectorTest.setPropertyText = modifyStyleSheet.bind(null, "CSS.setPropertyText", true);
+InspectorTest.setRuleSelector = modifyStyleSheet.bind(null, "CSS.setRuleSelector", true);
+InspectorTest.setMediaText = modifyStyleSheet.bind(null, "CSS.setMediaText", true);
+InspectorTest.addRule = modifyStyleSheet.bind(null, "CSS.addRule", true);
+InspectorTest.setStyleTexts = function(styleSheetId, expectError, edits, callback)
+{
+    var options = { edits: edits };
+    modifyStyleSheet("CSS.setStyleTexts", false, styleSheetId, expectError, options, callback);
+}
 
 InspectorTest.requestMainFrameId = function(callback)
 {

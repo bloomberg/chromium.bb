@@ -90,7 +90,12 @@ bool InspectorHistory::perform(PassRefPtrWillBeRawPtr<Action> action, ExceptionS
 {
     if (!action->perform(exceptionState))
         return false;
+    appendPerformedAction(action);
+    return true;
+}
 
+void InspectorHistory::appendPerformedAction(PassRefPtrWillBeRawPtr<Action> action)
+{
     if (!action->mergeId().isEmpty() && m_afterLastActionIndex > 0 && action->mergeId() == m_history[m_afterLastActionIndex - 1]->mergeId()) {
         m_history[m_afterLastActionIndex - 1]->merge(action);
         if (m_history[m_afterLastActionIndex - 1]->isNoop())
@@ -101,7 +106,6 @@ bool InspectorHistory::perform(PassRefPtrWillBeRawPtr<Action> action, ExceptionS
         m_history.append(action);
         ++m_afterLastActionIndex;
     }
-    return true;
 }
 
 void InspectorHistory::markUndoableState()

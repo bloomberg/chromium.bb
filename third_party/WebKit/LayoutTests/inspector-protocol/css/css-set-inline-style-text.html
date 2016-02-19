@@ -9,9 +9,8 @@ function test()
 {
     var styleSheetId;
     var documentNodeId;
-    var setStyleText;
+    var setStyleTexts;
     var verifyProtocolError;
-    var dumpStyleSheet;
 
     InspectorTest.sendCommandOrDie("DOM.enable", {});
     InspectorTest.sendCommandOrDie("CSS.enable", {}, cssWasEnabled);
@@ -35,9 +34,8 @@ function test()
     function onGotInlineStyles(result)
     {
         styleSheetId = result.inlineStyle.styleSheetId;
-        setStyleText = InspectorTest.setStyleText.bind(InspectorTest, styleSheetId, false);
-        verifyProtocolError = InspectorTest.setStyleText.bind(InspectorTest, styleSheetId, true);
-        dumpStyleSheet = InspectorTest.dumpStyleSheetText.bind(null, styleSheetId);
+        setStyleTexts = InspectorTest.setStyleTexts.bind(InspectorTest, styleSheetId, false);
+        verifyProtocolError = InspectorTest.setStyleTexts.bind(InspectorTest, styleSheetId, true);
         InspectorTest.sendCommandOrDie("CSS.getStyleSheetText", { styleSheetId: styleSheetId }, onInitialStyleSheetText);
     }
 
@@ -65,38 +63,38 @@ function test()
     var testSuite = [
         function testBasicSetStyle(next)
         {
-            setStyleText({
+            setStyleTexts([{
                 styleSheetId: styleSheetId,
                 range: { startLine: 0, startColumn: 0, endLine: 0, endColumn: 11 },
                 text: "content: 'EDITED'",
-            }, dumpAndNext(next));
+            }], dumpAndNext(next));
         },
 
         function testSetStylePoorContent(next)
         {
-            verifyProtocolError({
+            verifyProtocolError([{
                 styleSheetId: styleSheetId,
                 range: { startLine: 0, startColumn: 0, endLine: 0, endColumn: 11 },
                 text: "}",
-            }, dumpAndNext(next));
+            }], dumpAndNext(next));
         },
 
         function testDeleteStyleBody(next)
         {
-            setStyleText({
+            setStyleTexts([{
                 styleSheetId: styleSheetId,
                 range: { startLine: 0, startColumn: 0, endLine: 0, endColumn: 11 },
                 text: "",
-            }, dumpAndNext(next));
+            }], dumpAndNext(next));
         },
 
         function testSetStyleOpenComment(next)
         {
-            verifyProtocolError({
+            verifyProtocolError([{
                 styleSheetId: styleSheetId,
                 range: { startLine: 0, startColumn: 0, endLine: 0, endColumn: 11 },
                 text: "/*",
-            }, dumpAndNext(next));
+            }], dumpAndNext(next));
         }
    ];
 }
@@ -104,7 +102,7 @@ function test()
 </script>
 </head>
 <body onload="runTest();">
-<p>The test verifies functionality of protocol method CSS.setStyleText for inline elements.</p>
+<p>The test verifies functionality of protocol method CSS.setStyleTexts for inline elements.</p>
 <div id="inliner" style="color: red;">
 </body>
 </html>

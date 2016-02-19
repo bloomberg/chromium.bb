@@ -71,6 +71,7 @@ public:
     DECLARE_TRACE();
 
     bool perform(PassRefPtrWillBeRawPtr<Action>, ExceptionState&);
+    void appendPerformedAction(PassRefPtrWillBeRawPtr<Action>);
     void markUndoableState();
 
     bool undo(ExceptionState&);

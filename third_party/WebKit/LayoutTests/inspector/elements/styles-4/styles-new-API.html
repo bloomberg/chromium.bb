@@ -191,12 +191,18 @@ function test()
                     InspectorTest.addResult("error: " + error);
                     return;
                 }
-                InspectorTest.CSSAgent.setStyleText(rule.style.styleSheetId, {
-                    startLine: rule.style.range.startLine,
-                    startColumn: rule.style.range.startColumn,
-                    endLine: rule.style.range.startLine,
-                    endColumn: rule.style.range.startColumn
-                }, "font-family: serif;", didSetStyleText);
+                InspectorTest.CSSAgent.setStyleTexts([
+                    {
+                        styleSheetId: rule.style.styleSheetId,
+                        range: {
+                            startLine: rule.style.range.startLine,
+                            startColumn: rule.style.range.startColumn,
+                            endLine: rule.style.range.startLine,
+                            endColumn: rule.style.range.startColumn
+                        },
+                        text: "font-family: serif;",
+                    },
+                ], didSetStyleText);
             }
 
             function viaInspectorStyleSheetCreated(error, styleSheetId)

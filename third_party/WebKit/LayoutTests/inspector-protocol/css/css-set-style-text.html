@@ -13,9 +13,8 @@ function removeRule()
 
 function test()
 {
-    var setStyleText;
+    var setStyleTexts;
     var verifyProtocolError;
-    var dumpStyleSheet;
     var documentNodeId;
     var styleSheetId;
 
@@ -31,9 +30,8 @@ function test()
     function styleSheetAdded(result)
     {
         styleSheetId = result.params.header.styleSheetId;
-        setStyleText = InspectorTest.setStyleText.bind(InspectorTest, styleSheetId, false);
-        verifyProtocolError = InspectorTest.setStyleText.bind(InspectorTest, styleSheetId, true);
-        dumpStyleSheet = InspectorTest.dumpStyleSheetText.bind(null, styleSheetId);
+        setStyleTexts = InspectorTest.setStyleTexts.bind(InspectorTest, styleSheetId, false);
+        verifyProtocolError = InspectorTest.setStyleTexts.bind(InspectorTest, styleSheetId, true);
         InspectorTest.sendCommandOrDie("CSS.getStyleSheetText", { styleSheetId: styleSheetId }, onInitialStyleSheetText);
     }
 
@@ -57,83 +55,83 @@ function test()
     var testSuite = [
         function testBasicSetStyle(next)
         {
-            setStyleText({
+            setStyleTexts([{
                 styleSheetId: styleSheetId,
                 range: { startLine: 0, startColumn: 7, endLine: 2, endColumn: 0 },
                 text: "\n    content: 'EDITED';\n",
-            }, dumpUndoAndNext(next));
+            }], dumpUndoAndNext(next));
         },
 
         function testSetStyleTwice(next)
         {
-            setStyleText({
+            setStyleTexts([{
                 styleSheetId: styleSheetId,
                 range: { startLine: 0, startColumn: 7, endLine: 2, endColumn: 0 },
                 text: "\n    color: green;\n    padding: 0 4px;\n    cursor: pointer\n",
-            }, dumpAndCall(step2));
+            }], dumpAndCall(step2));
 
             function step2()
             {
-                setStyleText({
+                setStyleTexts([{
                     styleSheetId: styleSheetId,
                     range: { startLine: 0, startColumn: 7, endLine: 4, endColumn: 0 },
                     text: "\n    color: green;\n    padding: 0 6px;\n    cursor: pointer\n",
-                }, dumpAndCall(step3));
+                }], dumpAndCall(step3));
             }
 
             function step3()
             {
-                setStyleText({
+                setStyleTexts([{
                     styleSheetId: styleSheetId,
                     range: { startLine: 0, startColumn: 7, endLine: 4, endColumn: 0 },
                     text: "\n    color: green;\n    padding: 0 8px;\n    cursor: pointer\n",
-                }, dumpUndoAndNext(next));
+                }], dumpUndoAndNext(next));
             }
         },
 
         function testSetStylePoorContent(next)
         {
-            verifyProtocolError({
+            verifyProtocolError([{
                 styleSheetId: styleSheetId,
                 range: { startLine: 0, startColumn: 7, endLine: 2, endColumn: 0 },
                 text: "}",
-            }, dumpUndoAndNext(next));
+            }], dumpUndoAndNext(next));
         },
 
         function testSetStyleInMedia(next)
         {
-            setStyleText({
+            setStyleTexts([{
                 styleSheetId: styleSheetId,
                 range: { startLine: 13, startColumn: 11, endLine: 15, endColumn: 4 },
                 text: "\n        content: 'EDITED';\n        color: red;\n        /** foo */\n    ",
-            }, dumpUndoAndNext(next));
+            }], dumpUndoAndNext(next));
         },
 
         function testDeleteStyleBody(next)
         {
-            setStyleText({
+            setStyleTexts([{
                 styleSheetId: styleSheetId,
                 range: { startLine: 13, startColumn: 11, endLine: 15, endColumn: 4 },
                 text: "",
-            }, dumpUndoAndNext(next));
+            }], dumpUndoAndNext(next));
         },
 
         function testSetStylePoorRange(next)
         {
-            verifyProtocolError({
+            verifyProtocolError([{
                 styleSheetId: styleSheetId,
                 range: { startLine: 11, startColumn: 11, endLine: 15, endColumn: 4 },
                 text: "\n        content: 'EDITED';\n",
-            }, dumpUndoAndNext(next));
+            }], dumpUndoAndNext(next));
         },
 
         function testSetStyleOpenComment(next)
         {
-            verifyProtocolError({
+            verifyProtocolError([{
                 styleSheetId: styleSheetId,
                 range: { startLine: 13, startColumn: 11, endLine: 15, endColumn: 4 },
                 text: "\n        content: 'EDITED'/* ;\n",
-            }, dumpUndoAndNext(next));
+            }], dumpUndoAndNext(next));
         },
 
         function testSetStyleOfRemovedRule(next)
@@ -141,11 +139,11 @@ function test()
             InspectorTest.sendCommandOrDie("Runtime.evaluate", {expression: "removeRule()"}, mutateRule);
             function mutateRule()
             {
-                setStyleText({
+                setStyleTexts([{
                     styleSheetId: styleSheetId,
                     range: { startLine: 0, startColumn: 7, endLine: 2, endColumn: 0 },
                     text: "\n    content: 'EDITED';\n",
-                }, dumpUndoAndNext(next));
+                }], dumpUndoAndNext(next));
             }
         }
    ];
@@ -154,7 +152,7 @@ function test()
 </script>
 </head>
 <body onload="runTest();">
-<p>The test verifies functionality of protocol method CSS.setStyleText.</p>
+<p>The test verifies functionality of protocol method CSS.setStyleTexts.</p>
 <article id="test"></article>
 </body>
 </html>

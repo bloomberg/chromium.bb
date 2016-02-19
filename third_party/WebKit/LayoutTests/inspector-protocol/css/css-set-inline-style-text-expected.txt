@@ -1,4 +1,4 @@
-The test verifies functionality of protocol method CSS.setStyleText for inline elements.
+The test verifies functionality of protocol method CSS.setStyleTexts for inline elements.
 
 ==== Initial style sheet text ====
 color: red;
@@ -9,7 +9,7 @@ content: 'EDITED'
 Stylesheet text: content: 'EDITED'
 
 Running test: testSetStylePoorContent
-Expected protocol error: SyntaxError Style text is not valid.
+Expected protocol error: Failed applying edit #0: SyntaxError Style text is not valid.
 Stylesheet text: color: red;
 
 Running test: testDeleteStyleBody
@@ -18,6 +18,6 @@ Running test: testDeleteStyleBody
 Stylesheet text: 
 
 Running test: testSetStyleOpenComment
-Expected protocol error: SyntaxError Style text is not valid.
+Expected protocol error: Failed applying edit #0: SyntaxError Style text is not valid.
 Stylesheet text: color: red;
 
