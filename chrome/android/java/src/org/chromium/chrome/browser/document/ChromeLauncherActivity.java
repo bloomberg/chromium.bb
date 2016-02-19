@@ -326,7 +326,8 @@ public class ChromeLauncherActivity extends Activity
         if (TextUtils.isEmpty(flavor)) {
             return false;
         } else if (TextUtils.equals(flavor, ChromeSwitches.HERB_FLAVOR_ANISE)
-                || TextUtils.equals(flavor, ChromeSwitches.HERB_FLAVOR_BASIL)) {
+                || TextUtils.equals(flavor, ChromeSwitches.HERB_FLAVOR_BASIL)
+                || TextUtils.equals(flavor, ChromeSwitches.HERB_FLAVOR_DILL)) {
             // Only Intents without NEW_TASK and NEW_DOCUMENT will trigger a Custom Tab.
             boolean isSameTask = (getIntent().getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK) == 0;
             boolean isSameDocument =
@@ -334,8 +335,7 @@ public class ChromeLauncherActivity extends Activity
             Log.d(TAG, "Herb Intent proprties -- SAME TASK: "
                     + isSameTask + ", SAME DOCUMENT: " + isSameDocument);
             return isSameTask && isSameDocument;
-        } else if (TextUtils.equals(flavor, ChromeSwitches.HERB_FLAVOR_CHIVE)
-                || TextUtils.equals(flavor, ChromeSwitches.HERB_FLAVOR_DILL)) {
+        } else if (TextUtils.equals(flavor, ChromeSwitches.HERB_FLAVOR_CHIVE)) {
             // Send all View Intents to the main browser.
             return false;
         } else {

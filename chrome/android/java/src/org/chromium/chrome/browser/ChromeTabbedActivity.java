@@ -609,8 +609,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                 //
                 // TODO(dfalcantara): Use real tab reparenting here when possible.  We should fall
                 //                    back to using the TabState file or URL, in that order.
-                getTabCreator(false).createNewTab(
-                        new LoadUrlParams(data.getDataString()), TabLaunchType.FROM_LINK, null);
+                getTabCreator(false).createNewTab(new LoadUrlParams(
+                        data.getDataString()), TabLaunchType.FROM_MENU_OR_OVERVIEW, null);
             } else if ((resultCode == CustomTabActivity.RESULT_BACK_PRESSED
                     || resultCode == CustomTabActivity.RESULT_CLOSED) && data != null) {
                 Log.d(TAG, "Herb: Sending app to the background");
