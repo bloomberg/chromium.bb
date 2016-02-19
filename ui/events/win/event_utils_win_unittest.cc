@@ -21,7 +21,7 @@ class TestWindow : public gfx::WindowImpl {
                             WPARAM w_param,
                             LPARAM l_param,
                             LRESULT& result,
-                            DWORD msg_map_id = 0) {
+                            DWORD msg_map_id = 0) override {
     return true;
   }
 
