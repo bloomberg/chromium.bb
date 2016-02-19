@@ -150,7 +150,7 @@ def main():
     print 'gs://chromium-browser-clang/%s/%s.tgz' % (platform, pdir)
     if sys.platform.startswith('linux'):
       print 'gs://chromium-browser-clang/%s/%s.tgz' % (platform, golddir)
-    return 1
+    return 0
 
   with open('buildlog.txt', 'w') as log:
     Tee('Diff in llvm:\n', log)
