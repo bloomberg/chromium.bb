@@ -378,9 +378,6 @@ class WebTestProxy : public Base, public WebTestProxyBase {
     WebTestProxyBase::ShowValidationMessage(main_message, main_message_hint,
                                             sub_message, sub_message_hint);
   }
-  virtual void postSpellCheckEvent(const blink::WebString& event_name) {
-    WebTestProxyBase::PostSpellCheckEvent(event_name);
-  }
   virtual blink::WebString acceptLanguages() {
     return WebTestProxyBase::acceptLanguages();
   }
