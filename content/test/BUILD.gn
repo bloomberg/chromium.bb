@@ -392,10 +392,6 @@ test("content_browsertests") {
         # TODO(GYP): Add this once //content/shell:copy_test_netscape_plugin
         # exists.
         #data += [ "$root_out_dir/plugins/np_test_netscape_plugin.dll" ]
-
-        if (symbol_level != 0) {
-          data += [ "$root_out_dir/content_browsertests.exe.pdb" ]
-        }
       }
     }
   }
