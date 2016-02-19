@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<style>
+  @-webkit-keyframes rotate {
+    0% { -webkit-transform: rotate(0deg) }
+  }
+
+  img {
+    -webkit-transform: rotate(90deg);
+  }
+</style>
+
+<!-- The blue sector of the image should be at 3 o'clock (viz., rotated by 90 deg). -->
+<img onload="rotate(this)" width="400px" src="resources/red-at-12-oclock-with-color-profile.jpg">
+
+<script>
+function rotate(element) {
+  if (window.testRunner)
+    setTimeout(function() { testRunner.setColorProfile('sRGB', new Function()) }, 0);
+
+  element.addEventListener('webkitAnimationStart', start, false);
+  element.addEventListener('webkitAnimationEnd', end, false);
+
+  if (window.testRunner)
+    element.style.cssText += '-webkit-animation: rotate linear 1s';
+  else
+    element.style.cssText += '-webkit-animation: rotate linear 4s';
+}
+
+function start(event) {
+  if (window.testRunner)
+    setTimeout(function() { testRunner.setColorProfile('whacked', new Function()) }, 100);
+}
+
+function end(event) {
+  if (window.testRunner)
+    setTimeout(function() { testRunner.notifyDone() }, 0);
+}
+
+if (window.internals)
+  internals.settings.setImageColorProfilesEnabled(true);
+
+if (window.testRunner) {
+  testRunner.dumpAsTextWithPixelResults();
+  testRunner.waitUntilDone();
+}
+</script>
+</html>

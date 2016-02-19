@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
+
+<style>
+  p {
+    -webkit-text-fill-color: transparent;
+    background: url("resources/red-at-12-oclock-with-color-profile.jpg") -10px 100px;
+    -webkit-background-clip: text;
+
+    font: 147pt Ahem, sans-serif;
+    position: relative;
+    top: -220pt;
+  }
+
+  p + p {
+    top: -480pt;
+  }
+</style>
+
+<!-- There should be no red on this page. -->
+<body style="overflow: hidden">
+  <p>&#9605;&#9605;&#9605;&#9605;</p><p>&#9605;&#9605;&#9605;&#9605;</p>
+</body>
+
+<script>
+window.onload = function() {
+  if (window.testRunner)
+    runAfterLayoutAndPaint(changeColorProfile);
+};
+
+function changeColorProfile() {
+  testRunner.setColorProfile('whacked', done);
+}
+
+function done() {
+  setTimeout(function() { testRunner.notifyDone() }, 0);
+}
+
+if (window.internals)
+  internals.settings.setImageColorProfilesEnabled(true);
+
+if (window.testRunner) {
+  testRunner.dumpAsTextWithPixelResults();
+  testRunner.waitUntilDone();
+}
+</script>
+</html>
