@@ -1170,7 +1170,7 @@ WebGLRenderingContextBase::HowToClear WebGLRenderingContextBase::clearIfComposit
         clearMask |= GL_DEPTH_BUFFER_BIT;
         webContext()->depthMask(true);
     }
-    if (contextAttributes.get().stencil()) {
+    if (contextAttributes.get().stencil() || drawingBuffer()->hasImplicitStencilBuffer()) {
         if (combinedClear && (mask & GL_STENCIL_BUFFER_BIT))
             webContext()->clearStencil(m_clearStencil & m_stencilMask);
         else
@@ -1685,8 +1685,16 @@ void WebGLRenderingContextBase::clear(GLbitfield mask)
         synthesizeGLError(GL_INVALID_FRAMEBUFFER_OPERATION, "clear", reason);
         return;
     }
-    if (clearIfComposited(mask) != CombinedClear)
+    if (clearIfComposited(mask) != CombinedClear) {
+        // If clearing the default back buffer's depth buffer, also clear the stencil buffer, if one
+        // was allocated implicitly. This avoids performance problems on some GPUs.
+        if (!m_framebufferBinding && drawingBuffer()->hasImplicitStencilBuffer() && (mask & GL_DEPTH_BUFFER_BIT)) {
+            // It shouldn't matter what value it's cleared to, since in other queries in the API, we
+            // claim that the stencil buffer doesn't exist.
+            mask |= GL_STENCIL_BUFFER_BIT;
+        }
         webContext()->clear(mask);
+    }
     markContextChanged(CanvasChanged);
 }
 

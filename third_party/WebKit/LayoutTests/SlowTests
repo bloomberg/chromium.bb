@@ -279,3 +279,6 @@ crbug.com/552556 [ Win Linux ] virtual/threaded/fast/scroll-behavior/overflow-sc
 crbug.com/552556 [ Win Linux ] virtual/threaded/fast/scroll-behavior/overflow-scroll-animates.html [ Slow ]
 crbug.com/570656 [ Mac ] fast/writing-mode/Kusa-Makura-background-canvas.html [ Slow ]
 crbug.com/570656 [ Mac ] fast/text/unicode-fallback-font.html [ Slow ]
+
+# This is really only slow under MSAN, but it's forbidden to add this expectation to MSANExpectations.
+crbug.com/584807 [ Linux ] printing/webgl-oversized-printing.html [ Slow ]

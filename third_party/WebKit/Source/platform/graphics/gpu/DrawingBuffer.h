@@ -83,6 +83,12 @@ public:
     // making the context current and setting the clear values and masks. Modifies the framebuffer binding.
     void clearFramebuffers(GLbitfield clearMask);
 
+    // Indicates whether the DrawingBuffer internally allocated a packed depth-stencil renderbuffer
+    // in the situation where the end user only asked for a depth buffer. In this case, we need to
+    // upgrade clears of the depth buffer to clears of the depth and stencil buffers in order to
+    // avoid performance problems on some GPUs.
+    bool hasImplicitStencilBuffer() const;
+
     // Given the desired buffer size, provides the largest dimensions that will fit in the pixel budget.
     static IntSize adjustSize(const IntSize& desiredSize, const IntSize& curSize, int maxTextureSize);
     bool reset(const IntSize&);

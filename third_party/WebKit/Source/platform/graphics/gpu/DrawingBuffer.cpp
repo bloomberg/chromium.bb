@@ -712,6 +712,11 @@ void DrawingBuffer::clearFramebuffers(GLbitfield clearMask)
     m_context->clear(clearMask);
 }
 
+bool DrawingBuffer::hasImplicitStencilBuffer() const
+{
+    return m_depthStencilBuffer && m_requestedAttributes.depth && !m_requestedAttributes.stencil;
+}
+
 void DrawingBuffer::setSize(const IntSize& size)
 {
     if (m_size == size)
