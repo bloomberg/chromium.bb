@@ -696,30 +696,29 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
     return;
   }
 
+#if !defined(USE_ASH)
   // Pin the app to the relevant launcher depending on the OS.
   Profile* current_profile = profile_->GetOriginalProfile();
+#endif  // !defined(USE_ASH)
 
 // On Mac, shortcuts are automatically created for hosted apps when they are
 // installed, so there is no need to create them again.
 #if !defined(OS_MACOSX)
-  chrome::HostDesktopType desktop = browser->host_desktop_type();
-  if (desktop != chrome::HOST_DESKTOP_TYPE_ASH) {
-    web_app::ShortcutLocations creation_locations;
+#if !defined(USE_ASH)
+  web_app::ShortcutLocations creation_locations;
 #if defined(OS_LINUX) || defined(OS_WIN)
-    creation_locations.on_desktop = true;
+  creation_locations.on_desktop = true;
 #else
-    creation_locations.on_desktop = false;
+  creation_locations.on_desktop = false;
 #endif
-    creation_locations.applications_menu_location =
-        web_app::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS;
-    creation_locations.in_quick_launch_bar = false;
-    web_app::CreateShortcuts(web_app::SHORTCUT_CREATION_BY_USER,
-                             creation_locations, current_profile, extension);
-#if defined(USE_ASH)
-  } else {
-    ChromeLauncherController::instance()->PinAppWithID(extension->id());
-#endif
-  }
+  creation_locations.applications_menu_location =
+      web_app::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS;
+  creation_locations.in_quick_launch_bar = false;
+  web_app::CreateShortcuts(web_app::SHORTCUT_CREATION_BY_USER,
+                           creation_locations, current_profile, extension);
+#else
+  ChromeLauncherController::instance()->PinAppWithID(extension->id());
+#endif  // !defined(USE_ASH)
 #endif  // !defined(OS_MACOSX)
 
 #if defined(OS_MACOSX)

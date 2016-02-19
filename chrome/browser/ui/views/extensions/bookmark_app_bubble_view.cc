@@ -261,15 +261,11 @@ void BookmarkAppBubbleView::UpdateAddButtonState() {
 }
 
 int BookmarkAppBubbleView::TitleStringId() {
-  int string_id = IDS_ADD_TO_DESKTOP_BUBBLE_TITLE;
 #if defined(USE_ASH)
-  if (chrome::GetHostDesktopTypeForNativeWindow(
-          anchor_widget()->GetNativeWindow()) ==
-      chrome::HOST_DESKTOP_TYPE_ASH) {
-    string_id = IDS_ADD_TO_SHELF_BUBBLE_TITLE;
-  }
+  return IDS_ADD_TO_SHELF_BUBBLE_TITLE;
+#else
+  return IDS_ADD_TO_DESKTOP_BUBBLE_TITLE;
 #endif
-  return string_id;
 }
 
 base::string16 BookmarkAppBubbleView::GetTrimmedTitle() {
