@@ -54,6 +54,10 @@ class ShellApplicationLoader : public ApplicationLoader {
 
 }  // namespace
 
+mojom::Shell::ConnectToApplicationCallback EmptyConnectCallback() {
+  return base::Bind(&OnEmptyOnConnectCallback);
+}
+
 // static
 ApplicationManager::TestAPI::TestAPI(ApplicationManager* manager)
     : manager_(manager) {
@@ -67,6 +71,9 @@ bool ApplicationManager::TestAPI::HasRunningInstanceForURL(
   return manager_->identity_to_instance_.find(Identity(url)) !=
          manager_->identity_to_instance_.end();
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// ApplicationManager, public:
 
 ApplicationManager::ApplicationManager(
     bool register_mojo_url_schemes)
@@ -95,10 +102,6 @@ ApplicationManager::~ApplicationManager() {
   STLDeleteValues(&url_to_loader_);
   for (auto& runner : native_runners_)
     runner.reset();
-}
-
-void ApplicationManager::TerminateShellConnections() {
-  STLDeleteValues(&identity_to_instance_);
 }
 
 void ApplicationManager::ConnectToApplication(
@@ -133,16 +136,35 @@ void ApplicationManager::ConnectToApplication(
                   weak_ptr_factory_.GetWeakPtr(), base::Passed(&params)));
 }
 
-bool ApplicationManager::ConnectToRunningApplication(
-    scoped_ptr<ConnectToApplicationParams>* params) {
-  ApplicationInstance* instance = GetApplicationInstance((*params)->target());
-  if (!instance)
-    return false;
+void ApplicationManager::SetLoaderForURL(scoped_ptr<ApplicationLoader> loader,
+                                         const GURL& url) {
+  URLToLoaderMap::iterator it = url_to_loader_.find(url);
+  if (it != url_to_loader_.end())
+    delete it->second;
+  url_to_loader_[url] = loader.release();
+}
 
-  // TODO(beng): CHECK() that the target URL is already in the application
-  //             catalog.
-  instance->ConnectToClient(std::move(*params));
-  return true;
+void ApplicationManager::TerminateShellConnections() {
+  STLDeleteValues(&identity_to_instance_);
+}
+
+void ApplicationManager::OnApplicationInstanceError(
+    ApplicationInstance* instance) {
+  // Called from ~ApplicationInstance, so we do not need to call Destroy here.
+  const Identity identity = instance->identity();
+  base::Closure on_application_end = instance->on_application_end();
+  // Remove the shell.
+  auto it = identity_to_instance_.find(identity);
+  DCHECK(it != identity_to_instance_.end());
+  int id = instance->id();
+  delete it->second;
+  identity_to_instance_.erase(it);
+  listeners_.ForAllPtrs(
+      [this, id](mojom::ApplicationManagerListener* listener) {
+        listener->ApplicationInstanceDestroyed(id);
+      });
+  if (!on_application_end.is_null())
+    on_application_end.Run();
 }
 
 ApplicationInstance* ApplicationManager::GetApplicationInstance(
@@ -166,16 +188,26 @@ void ApplicationManager::ApplicationPIDAvailable(
       });
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// ApplicationManager, ShellClient implementation:
+
 bool ApplicationManager::AcceptConnection(Connection* connection) {
   connection->AddInterface<mojom::ApplicationManager>(this);
   return true;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// ApplicationManager, InterfaceFactory<mojom::ApplicationManager>
+//     implementation:
 
 void ApplicationManager::Create(
     Connection* connection,
     mojom::ApplicationManagerRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// ApplicationManager, mojom::ApplicationManager implemetation:
 
 void ApplicationManager::CreateInstanceForHandle(
     ScopedHandle channel,
@@ -209,6 +241,21 @@ void ApplicationManager::AddListener(
   listener->SetRunningApplications(std::move(applications));
 
   listeners_.AddInterfacePtr(std::move(listener));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ApplicationManager, private:
+
+bool ApplicationManager::ConnectToRunningApplication(
+    scoped_ptr<ConnectToApplicationParams>* params) {
+  ApplicationInstance* instance = GetApplicationInstance((*params)->target());
+  if (!instance)
+    return false;
+
+  // TODO(beng): CHECK() that the target URL is already in the application
+  //             catalog.
+  instance->ConnectToClient(std::move(*params));
+  return true;
 }
 
 ApplicationInstance* ApplicationManager::CreateAndConnectToInstance(
@@ -361,19 +408,20 @@ void ApplicationManager::RunNativeApplication(
   native_runners_.push_back(std::move(runner));
 }
 
-void ApplicationManager::SetLoaderForURL(scoped_ptr<ApplicationLoader> loader,
-                                         const GURL& url) {
-  URLToLoaderMap::iterator it = url_to_loader_.find(url);
-  if (it != url_to_loader_.end())
-    delete it->second;
-  url_to_loader_[url] = loader.release();
-}
-
 ApplicationLoader* ApplicationManager::GetLoaderForURL(const GURL& url) {
   auto url_it = url_to_loader_.find(url);
   if (url_it != url_to_loader_.end())
     return url_it->second;
   return default_loader_.get();
+}
+
+void ApplicationManager::CleanupRunner(NativeRunner* runner) {
+  for (auto it = native_runners_.begin(); it != native_runners_.end(); ++it) {
+    if (it->get() == runner) {
+      native_runners_.erase(it);
+      return;
+    }
+  }
 }
 
 mojom::ApplicationInfoPtr ApplicationManager::CreateApplicationInfoForInstance(
@@ -388,38 +436,6 @@ mojom::ApplicationInfoPtr ApplicationManager::CreateApplicationInfoForInstance(
   else
     info->pid = instance->pid();
   return info;
-}
-
-void ApplicationManager::OnApplicationInstanceError(
-    ApplicationInstance* instance) {
-  // Called from ~ApplicationInstance, so we do not need to call Destroy here.
-  const Identity identity = instance->identity();
-  base::Closure on_application_end = instance->on_application_end();
-  // Remove the shell.
-  auto it = identity_to_instance_.find(identity);
-  DCHECK(it != identity_to_instance_.end());
-  int id = instance->id();
-  delete it->second;
-  identity_to_instance_.erase(it);
-  listeners_.ForAllPtrs(
-      [this, id](mojom::ApplicationManagerListener* listener) {
-        listener->ApplicationInstanceDestroyed(id);
-      });
-  if (!on_application_end.is_null())
-    on_application_end.Run();
-}
-
-void ApplicationManager::CleanupRunner(NativeRunner* runner) {
-  for (auto it = native_runners_.begin(); it != native_runners_.end(); ++it) {
-    if (it->get() == runner) {
-      native_runners_.erase(it);
-      return;
-    }
-  }
-}
-
-mojom::Shell::ConnectToApplicationCallback EmptyConnectCallback() {
-  return base::Bind(&OnEmptyOnConnectCallback);
 }
 
 }  // namespace shell
