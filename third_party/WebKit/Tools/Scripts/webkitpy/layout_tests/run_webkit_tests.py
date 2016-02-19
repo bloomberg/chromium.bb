@@ -60,12 +60,6 @@ def main(argv, stdout, stderr):
         host = Host()
 
     try:
-        # TODO: crbug.com/539509 - Drop this check and make --target work properly.
-        if options.configuration not in (None, 'Debug', 'Release', 'Debug_x64', 'Release_x64'):
-            raise NotImplementedError('--target must be either "Debug" or "Release"; other values do not work\n.'
-                                      'Use multiple //out directories for multiple builds if necessary.\n'
-                                      'See crbug.com/539509.')
-
         port = host.port_factory.get(options.platform, options)
     except NotImplementedError, e:
         # FIXME: is this the best way to handle unsupported port names?
