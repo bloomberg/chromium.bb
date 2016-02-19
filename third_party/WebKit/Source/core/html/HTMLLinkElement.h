@@ -225,7 +225,7 @@ private:
     String m_media;
     RefPtrWillBeMember<DOMTokenList> m_sizes;
     Vector<IntSize> m_iconSizes;
-    RefPtrWillBeMember<RelList> m_relList;
+    RawPtrWillBeMember<RelList> m_relList;
     LinkRelAttribute m_relAttribute;
 
     bool m_createdByParser;

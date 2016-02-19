@@ -149,7 +149,7 @@ inline HTMLLinkElement::HTMLLinkElement(Document& document, bool createdByParser
     : HTMLElement(linkTag, document)
     , m_linkLoader(LinkLoader::create(this))
     , m_sizes(DOMTokenList::create(this))
-    , m_relList(RelList::create(this))
+    , m_relList(RelList::create(this).leakRef())
     , m_createdByParser(createdByParser)
     , m_isInShadowTree(false)
 {

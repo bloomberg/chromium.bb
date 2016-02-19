@@ -44,6 +44,11 @@ public:
         return adoptRefWillBeNoop(new ClassList(element));
     }
 
+#if !ENABLE(OILPAN)
+    void ref() override;
+    void deref() override;
+#endif
+
     unsigned length() const override;
     const AtomicString item(unsigned index) const override;
 
