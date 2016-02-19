@@ -497,7 +497,7 @@ body.check-select #gear-button {
   top: 42px;  /* Positioned just overlapping the top of the toolbar */
   transition: all 0.2s ease;
   width: 270px;
-  z-index: 5;
+  z-index: 550;
 }
 
 /* These horizontal positions for #cloud-import-details are fallback value.
