@@ -73,19 +73,21 @@ LayoutObject* LayoutObjectChildList::removeChildNode(LayoutObject* owner, Layout
     if (oldChild->isBox())
         toLayoutBox(oldChild)->deleteLineBoxWrapper();
 
-    // If oldChild is the start or end of the selection, then clear the selection to
-    // avoid problems of invalid pointers.
-    // FIXME: The FrameSelection should be responsible for this when it
-    // is notified of DOM mutations.
-    if (!owner->documentBeingDestroyed() && oldChild->isSelectionBorder())
-        owner->view()->clearSelection();
 
-    if (!owner->documentBeingDestroyed())
+    if (!owner->documentBeingDestroyed()) {
+        // If oldChild is the start or end of the selection, then clear the selection to
+        // avoid problems of invalid pointers.
+        // FIXME: The FrameSelection should be responsible for this when it
+        // is notified of DOM mutations.
+        if (oldChild->isSelectionBorder())
+            owner->view()->clearSelection();
+
         owner->notifyOfSubtreeChange();
 
-    if (!owner->documentBeingDestroyed() && notifyLayoutObject) {
-        LayoutCounter::layoutObjectSubtreeWillBeDetached(oldChild);
-        oldChild->willBeRemovedFromTree();
+        if (notifyLayoutObject) {
+            LayoutCounter::layoutObjectSubtreeWillBeDetached(oldChild);
+            oldChild->willBeRemovedFromTree();
+        }
     }
 
     // WARNING: There should be no code running between willBeRemovedFromTree and the actual removal below.
