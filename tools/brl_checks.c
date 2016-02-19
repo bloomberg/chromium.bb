@@ -30,7 +30,7 @@
 
 int check_with_mode(
     const char *tableList, const char *str, const formtype *typeform,
-    const char *expected, int mode, int direction);
+    const char *expected, int mode, int direction, int diagnostics);
 
 void
 print_int_array(const char *prefix, int *pos_list, int len)
@@ -220,7 +220,7 @@ check_translation_with_mode(const char *tableList, const char *str,
 			    const formtype *typeform, const char *expected, 
 			    int mode)
 {
-    return check_with_mode(tableList, str, typeform, expected, mode, 0);
+  return check_with_mode(tableList, str, typeform, expected, mode, 0, 1);
 }
 
 /* Check if a string is backtranslated as expected. Return 0 if the
@@ -239,13 +239,16 @@ check_backtranslation_with_mode(const char *tableList, const char *str,
 				const formtype *typeform, const char *expected,
 				int mode)
 {
-    return check_with_mode(tableList, str, typeform, expected, mode, 1);
+  return check_with_mode(tableList, str, typeform, expected, mode, 1, 1);
 }
 
-/* direction, 0=forward, otherwise backwards */
+/* direction, 0=forward, otherwise backwards. If diagnostics is 1 then
+   print diagnostics in case where the translation is not as
+   expected */
 int check_with_mode(
     const char *tableList, const char *str, const formtype *typeform,
-    const char *expected, int mode, int direction)
+    const char *expected, int mode, int direction,
+    int diagnostics)
 {
   widechar *inbuf, *outbuf, *expectedbuf;
   int inlen;
@@ -292,40 +295,43 @@ int check_with_mode(
   if (i < outlen || i < expectedlen)
     {
       rv = 1;
-      outbuf[outlen] = 0;
-      fprintf(stderr,"Input:    '%s'\n", str);
-      /* Print the original typeform not the typeformbuf, as the
-	 latter has been modified by the translation and contains some
-	 information about outbuf */
-      if (typeform != NULL) print_typeform(typeform, inlen);
-      fprintf(stderr,"Expected: '%s' (length %d)\n", expected, expectedlen);
-      fprintf(stderr,"Received: '");
-      print_widechars(outbuf, outlen);
-      fprintf(stderr,"' (length %d)\n", outlen);
+      if (diagnostics)
+	{
+	  outbuf[outlen] = 0;
+	  fprintf(stderr,"Input:    '%s'\n", str);
+	  /* Print the original typeform not the typeformbuf, as the
+	     latter has been modified by the translation and contains some
+	     information about outbuf */
+	  if (typeform != NULL) print_typeform(typeform, inlen);
+	  fprintf(stderr,"Expected: '%s' (length %d)\n", expected, expectedlen);
+	  fprintf(stderr,"Received: '");
+	  print_widechars(outbuf, outlen);
+	  fprintf(stderr,"' (length %d)\n", outlen);
 
-      if (i < outlen && i < expectedlen) 
-	{
-	  unsigned char expected_utf8[UTF8_BUFSIZE];
-	  unsigned char out_utf8[UTF8_BUFSIZE];
+	  if (i < outlen && i < expectedlen)
+	    {
+	      unsigned char expected_utf8[UTF8_BUFSIZE];
+	      unsigned char out_utf8[UTF8_BUFSIZE];
 
-	  ucs_to_utf8(expectedbuf[i], expected_utf8);
-	  ucs_to_utf8(outbuf[i], out_utf8);
-	  fprintf(stderr,"Diff: Expected '%s' but received '%s' in index %d\n",
-		 expected_utf8, out_utf8, i);
-	}
-      else if (i < expectedlen)
-	{
-	  unsigned char expected_utf8[UTF8_BUFSIZE];
-	  ucs_to_utf8(expectedbuf[i], expected_utf8);
-	  fprintf(stderr,"Diff: Expected '%s' but received nothing in index %d\n",
-		 expected_utf8, i);
-	}
-      else 
-	{
-	  unsigned char out_utf8[UTF8_BUFSIZE];
-	  ucs_to_utf8(outbuf[i], out_utf8);
-	  fprintf(stderr,"Diff: Expected nothing but received '%s' in index %d\n",
-		 out_utf8, i);
+	      ucs_to_utf8(expectedbuf[i], expected_utf8);
+	      ucs_to_utf8(outbuf[i], out_utf8);
+	      fprintf(stderr,"Diff: Expected '%s' but received '%s' in index %d\n",
+		      expected_utf8, out_utf8, i);
+	    }
+	  else if (i < expectedlen)
+	    {
+	      unsigned char expected_utf8[UTF8_BUFSIZE];
+	      ucs_to_utf8(expectedbuf[i], expected_utf8);
+	      fprintf(stderr,"Diff: Expected '%s' but received nothing in index %d\n",
+		      expected_utf8, i);
+	    }
+	  else
+	    {
+	      unsigned char out_utf8[UTF8_BUFSIZE];
+	      ucs_to_utf8(outbuf[i], out_utf8);
+	      fprintf(stderr,"Diff: Expected nothing but received '%s' in index %d\n",
+		      out_utf8, i);
+	    }
 	}
     }
 

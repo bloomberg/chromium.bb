@@ -479,7 +479,7 @@ read_test(yaml_parser_t *parser, char *tables_list, int direction, int hyphenati
     }
   } else {
     if (xfail != check_with_mode(tables_list, word, typeform,
-				 translation, translation_mode, direction)) {
+				 translation, translation_mode, direction, !xfail)) {
       if (description)
 	fprintf(stderr, "%s\n", description);
       error_at_line(0, 0, file_name, event.start_mark.line,
