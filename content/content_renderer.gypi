@@ -773,6 +773,7 @@
       'renderer/p2p/socket_client_impl.h',
       'renderer/p2p/socket_dispatcher.cc',
       'renderer/p2p/socket_dispatcher.h',
+      'renderer/renderer_features.h',
     ],
     # Stuff only used when both WebRTC and plugins are enabled.
     'private_renderer_plugin_webrtc_sources': [
@@ -847,7 +848,6 @@
         '../third_party/webrtc/modules/modules.gyp:audio_device',
         '../third_party/webrtc/modules/modules.gyp:audio_processing',
         '../third_party/webrtc/p2p/p2p.gyp:libstunprober',
-        '<(DEPTH)/content/content.gyp:feature_h264_with_openh264_ffmpeg',
         '<(DEPTH)/crypto/crypto.gyp:crypto',
       ],
       'sources': [

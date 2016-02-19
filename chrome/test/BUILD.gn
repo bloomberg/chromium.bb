@@ -878,7 +878,6 @@ if (!is_android) {
       "//components/strings",
       "//components/translate/core/common",
       "//components/user_manager:test_support",
-      "//content/public/common:feature_h264_with_openh264_ffmpeg",
       "//content/test:browsertest_base",
       "//crypto:platform",
       "//crypto:test_support",
@@ -1095,7 +1094,6 @@ if (!is_android) {
         "../browser/media/chrome_webrtc_disable_encryption_flag_browsertest.cc",
         "../browser/media/chrome_webrtc_getmediadevices_browsertest.cc",
       ]
-      deps -= [ "//content/public/common:feature_h264_with_openh264_ffmpeg" ]
     }
     if (enable_media_router) {
       sources += [ "../browser/ui/webui/media_router/media_router_dialog_controller_impl_browsertest.cc" ]

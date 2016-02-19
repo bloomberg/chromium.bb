@@ -49,10 +49,7 @@ source_set("renderer_sources") {
         rebase_path(content_renderer_gypi_values.public_renderer_webrtc_sources,
                     ".",
                     "//content")
-    deps += [
-      "//content/public/common:feature_h264_with_openh264_ffmpeg",
-      "//third_party/webrtc",
-    ]
+    deps += [ "//third_party/webrtc" ]
   }
 
   if (enable_plugins) {

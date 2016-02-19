@@ -2159,7 +2159,6 @@
         '../components/components.gyp:ui_zoom_test_support',
         '../components/components_resources.gyp:components_resources',
         '../components/components_strings.gyp:components_strings',
-        '../content/content.gyp:feature_h264_with_openh264_ffmpeg',
         '../content/content_shell_and_tests.gyp:content_browser_test_base',
         '../crypto/crypto.gyp:crypto_test_support',
         '../device/bluetooth/bluetooth.gyp:device_bluetooth_mocks',

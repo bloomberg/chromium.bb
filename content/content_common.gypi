@@ -50,7 +50,6 @@
       'public/common/child_process_sandbox_support_linux.h',
       'public/common/color_suggestion.cc',
       'public/common/color_suggestion.h',
-      'public/common/common_features.h',
       'public/common/common_param_traits.cc',
       'public/common/common_param_traits.h',
       'public/common/common_param_traits_macros.h',

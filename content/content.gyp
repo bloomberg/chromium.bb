@@ -23,8 +23,8 @@
   },
   'targets': [
     {
-      # GN version: //content/public/common:common_features
-      'target_name': 'common_features',
+      # GN version: //content/renderer:renderer_features
+      'target_name': 'renderer_features',
       'includes': [
         '../build/buildflag_header.gypi',
         '../third_party/webrtc/build/common.gypi',
@@ -37,25 +37,12 @@
         # TODO(hbos): crbug.com/584219
         ['1==1', {
           'variables': {
-            'buildflag_header_path': 'content/public/common/common_features.h',
+            'buildflag_header_path': 'content/renderer/renderer_features.h',
             'buildflag_flags': [
               'RTC_USE_H264=<(rtc_use_h264)',
             ],
           },
         }],
-      ],
-    },
-    {
-      # GN version: //content/public/common:feature_h264_with_openh264_ffmpeg
-      'target_name': 'feature_h264_with_openh264_ffmpeg',
-      'type': 'static_library',
-      'include_dirs': [ '<@(DEPTH)' ],
-      'deps': [
-        ':common_features',
-      ],
-      'sources': [
-        'public/common/feature_h264_with_openh264_ffmpeg.cc',
-        'public/common/feature_h264_with_openh264_ffmpeg.h',
       ],
     },
   ],
@@ -298,10 +285,10 @@
               ],
               'dependencies': [
                 '../third_party/webrtc/modules/modules.gyp:webrtc_h264',
-                'common_features',
                 'content_child',
                 'content_common',
                 'content_resources',
+                'renderer_features',
               ],
               'export_dependent_settings': [
                 'content_common',
@@ -341,8 +328,8 @@
           'variables': { 'enable_wexit_time_destructors': 1, },
           'dependencies': [
             '../third_party/webrtc/modules/modules.gyp:webrtc_h264',
-            'common_features',
             'content_resources',
+            'renderer_features',
           ],
           'conditions': [
             ['chromium_enable_vtune_jit_for_v8==1', {
