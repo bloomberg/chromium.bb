@@ -576,6 +576,10 @@ const GLubyte* MojoGLES2Impl::GetString(GLenum name) {
   MojoGLES2MakeCurrent(context_);
   return glGetString(name);
 }
+const GLubyte* MojoGLES2Impl::GetStringi(GLenum name, GLuint index) {
+  NOTREACHED() << "Unimplemented GetStringi.";
+  return 0;
+}
 void MojoGLES2Impl::GetSynciv(GLsync sync,
                               GLenum pname,
                               GLsizei bufsize,

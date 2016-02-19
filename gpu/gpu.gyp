@@ -367,6 +367,7 @@
         'command_buffer/tests/gl_program_unittest.cc',
         'command_buffer/tests/gl_query_unittest.cc',
         'command_buffer/tests/gl_readback_unittest.cc',
+        'command_buffer/tests/gl_request_extension_unittest.cc',
         'command_buffer/tests/gl_shared_resources_unittest.cc',
         'command_buffer/tests/gl_stream_draw_unittest.cc',
         'command_buffer/tests/gl_test_utils.cc',
@@ -422,6 +423,7 @@
       'type': 'shared_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../gpu/command_buffer/command_buffer.gyp:gles2_utils',
         '../gpu/gpu.gyp:command_buffer_service',
         '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/gl/gl.gyp:gl',

@@ -8,6 +8,7 @@
 #include <GLES3/gl3.h>
 
 #include "base/command_line.h"
+#include "base/strings/string_split.h"
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -85,6 +86,28 @@ TEST_F(OpenGLES3FunctionTest, MAYBE_GetFragDataLocationInvalid) {
   EXPECT_EQ(-1, location);
 
   glDeleteProgram(program);
+}
+
+TEST_F(OpenGLES3FunctionTest, GetStringiTest) {
+  if (!IsApplicable()) {
+    return;
+  }
+  std::string extensionString =
+      reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
+  std::vector<std::string> extensions =
+      base::SplitString(extensionString, base::kWhitespaceASCII,
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  int num_extensions = 0;
+  glGetIntegerv(GL_NUM_EXTENSIONS, &num_extensions);
+  EXPECT_EQ(extensions.size(), static_cast<size_t>(num_extensions));
+  std::set<std::string> extensions_from_string(extensions.begin(),
+                                               extensions.end());
+  std::set<std::string> extensions_from_stringi;
+  for (int i = 0; i < num_extensions; ++i) {
+    extensions_from_stringi.insert(
+        reinterpret_cast<const char*>(glGetStringi(GL_EXTENSIONS, i)));
+  }
+  EXPECT_EQ(extensions_from_string, extensions_from_stringi);
 }
 
 }  // namespace gpu

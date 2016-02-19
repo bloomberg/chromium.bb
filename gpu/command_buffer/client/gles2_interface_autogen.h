@@ -285,6 +285,7 @@ virtual void GetShaderSource(GLuint shader,
                              GLsizei* length,
                              char* source) = 0;
 virtual const GLubyte* GetString(GLenum name) = 0;
+virtual const GLubyte* GetStringi(GLenum name, GLuint index) = 0;
 virtual void GetSynciv(GLsync sync,
                        GLenum pname,
                        GLsizei bufsize,

@@ -381,6 +381,8 @@ void GetShaderSource(GLuint shader,
 
 const GLubyte* GetString(GLenum name) override;
 
+const GLubyte* GetStringi(GLenum name, GLuint index) override;
+
 void GetSynciv(GLsync sync,
                GLenum pname,
                GLsizei bufsize,

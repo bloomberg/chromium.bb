@@ -738,6 +738,11 @@ const GLubyte* GLES2TraceImplementation::GetString(GLenum name) {
   return gl_->GetString(name);
 }
 
+const GLubyte* GLES2TraceImplementation::GetStringi(GLenum name, GLuint index) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GetStringi");
+  return gl_->GetStringi(name, index);
+}
+
 void GLES2TraceImplementation::GetSynciv(GLsync sync,
                                          GLenum pname,
                                          GLsizei bufsize,

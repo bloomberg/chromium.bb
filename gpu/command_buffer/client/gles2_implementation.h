@@ -690,6 +690,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation
 
   void DrawElementsImpl(GLenum mode, GLsizei count, GLenum type,
                         const void* indices, const char* func_name);
+  void UpdateCachedExtensionsIfNeeded();
+  void InvalidateCachedExtensions();
 
   GLES2Util util_;
   GLES2CmdHelper* helper_;
@@ -788,14 +790,9 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   // constrained.
   const uint32_t max_extra_transfer_buffer_size_;
 
-  // Map of GLenum to Strings for glGetString.  We need to cache these because
+  // Set of strings returned from glGetString.  We need to cache these because
   // the pointer passed back to the client has to remain valid for eternity.
-  typedef std::map<uint32_t, std::set<std::string>> GLStringMap;
-  GLStringMap gl_strings_;
-
-  // Similar cache for glGetRequestableExtensionsCHROMIUM. We don't
-  // have an enum for this so handle it separately.
-  std::set<std::string> requestable_extensions_set_;
+  std::set<std::string> gl_strings_;
 
   typedef std::map<const void*, MappedBuffer> MappedBufferMap;
   MappedBufferMap mapped_buffers_;
@@ -828,6 +825,16 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   // Flag to indicate whether the implementation can retain resources, or
   // whether it should aggressively free them.
   bool aggressively_free_resources_;
+
+  // Result of last GetString(GL_EXTENSIONS), used to keep
+  // GetString(GL_EXTENSIONS), GetStringi(GL_EXTENSIONS, index) and
+  // GetIntegerv(GL_NUM_EXTENSIONS) in sync. This points to gl_strings, valid
+  // forever.
+  const char* cached_extension_string_;
+
+  // Populated if cached_extension_string_ != nullptr. These point to
+  // gl_strings, valid forever.
+  std::vector<const char*> cached_extensions_;
 
   base::WeakPtrFactory<GLES2Implementation> weak_ptr_factory_;
 

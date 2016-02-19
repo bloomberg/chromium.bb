@@ -341,6 +341,10 @@ void GLES2InterfaceStub::GetShaderSource(GLuint /* shader */,
 const GLubyte* GLES2InterfaceStub::GetString(GLenum /* name */) {
   return 0;
 }
+const GLubyte* GLES2InterfaceStub::GetStringi(GLenum /* name */,
+                                              GLuint /* index */) {
+  return 0;
+}
 void GLES2InterfaceStub::GetSynciv(GLsync /* sync */,
                                    GLenum /* pname */,
                                    GLsizei /* bufsize */,

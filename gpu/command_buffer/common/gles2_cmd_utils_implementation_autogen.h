@@ -4049,6 +4049,14 @@ std::string GLES2Util::GetStringIndexedGLState(uint32_t value) {
                                            arraysize(string_table), value);
 }
 
+std::string GLES2Util::GetStringIndexedStringType(uint32_t value) {
+  static const EnumToString string_table[] = {
+      {GL_EXTENSIONS, "GL_EXTENSIONS"},
+  };
+  return GLES2Util::GetQualifiedEnumString(string_table,
+                                           arraysize(string_table), value);
+}
+
 std::string GLES2Util::GetStringInternalFormatParameter(uint32_t value) {
   static const EnumToString string_table[] = {
       {GL_NUM_SAMPLE_COUNTS, "GL_NUM_SAMPLE_COUNTS"},

@@ -118,6 +118,7 @@
 #define glGetShaderPrecisionFormat GLES2_GET_FUN(GetShaderPrecisionFormat)
 #define glGetShaderSource GLES2_GET_FUN(GetShaderSource)
 #define glGetString GLES2_GET_FUN(GetString)
+#define glGetStringi GLES2_GET_FUN(GetStringi)
 #define glGetSynciv GLES2_GET_FUN(GetSynciv)
 #define glGetTexParameterfv GLES2_GET_FUN(GetTexParameterfv)
 #define glGetTexParameteriv GLES2_GET_FUN(GetTexParameteriv)

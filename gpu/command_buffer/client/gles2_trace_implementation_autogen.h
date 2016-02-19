@@ -280,6 +280,7 @@ void GetShaderSource(GLuint shader,
                      GLsizei* length,
                      char* source) override;
 const GLubyte* GetString(GLenum name) override;
+const GLubyte* GetStringi(GLenum name, GLuint index) override;
 void GetSynciv(GLsync sync,
                GLenum pname,
                GLsizei bufsize,

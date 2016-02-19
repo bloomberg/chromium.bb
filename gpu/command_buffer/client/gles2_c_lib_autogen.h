@@ -522,6 +522,9 @@ void GL_APIENTRY GLES2GetShaderSource(GLuint shader,
 const GLubyte* GL_APIENTRY GLES2GetString(GLenum name) {
   return gles2::GetGLContext()->GetString(name);
 }
+const GLubyte* GL_APIENTRY GLES2GetStringi(GLenum name, GLuint index) {
+  return gles2::GetGLContext()->GetStringi(name, index);
+}
 void GL_APIENTRY GLES2GetSynciv(GLsync sync,
                                 GLenum pname,
                                 GLsizei bufsize,
@@ -2098,6 +2101,9 @@ extern const NameToFunc g_gles2_function_table[] = {
     },
     {
         "glGetString", reinterpret_cast<GLES2FunctionPointer>(glGetString),
+    },
+    {
+        "glGetStringi", reinterpret_cast<GLES2FunctionPointer>(glGetStringi),
     },
     {
         "glGetSynciv", reinterpret_cast<GLES2FunctionPointer>(glGetSynciv),
