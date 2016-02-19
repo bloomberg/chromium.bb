@@ -43,12 +43,10 @@ class UnixMasterEventEmitter : public UnixEventEmitter {
  protected:
   virtual FIFOInterface* in_fifo() { return in_fifo_; }
   virtual FIFOInterface* out_fifo() { return out_fifo_; }
-  virtual const sdk_util::SimpleLock& GetFifoLock() { return fifo_lock_; }
 
  private:
   FIFOInterface* in_fifo_;
   FIFOInterface* out_fifo_;
-  sdk_util::SimpleLock fifo_lock_;
   bool child_emitter_created_;
   UnixChildEventEmitter* child_emitter_;
 
@@ -62,15 +60,13 @@ class UnixChildEventEmitter : public UnixEventEmitter {
     UpdateStatus_Locked();
   }
   virtual ScopedUnixEventEmitter GetPeerEmitter() { return parent_emitter_; }
+  virtual sdk_util::SimpleLock& GetLock() { return parent_emitter_->GetLock(); }
 
  protected:
   virtual void Destroy() { parent_emitter_->child_emitter_ = NULL; }
 
   virtual FIFOInterface* in_fifo() { return parent_emitter_->out_fifo(); }
   virtual FIFOInterface* out_fifo() { return parent_emitter_->in_fifo(); }
-  virtual const sdk_util::SimpleLock& GetFifoLock() {
-    return parent_emitter_->GetFifoLock();
-  }
 
  private:
   ScopedUnixMasterEventEmitter parent_emitter_;
@@ -85,7 +81,6 @@ ScopedUnixEventEmitter UnixMasterEventEmitter::GetPeerEmitter() {
 }
 
 uint32_t UnixEventEmitter::ReadIn_Locked(char* data, uint32_t len) {
-  AUTO_LOCK(GetFifoLock());
   uint32_t count = in_fifo()->Read(data, len);
   ScopedUnixEventEmitter peer = GetPeerEmitter();
   if (peer) {
@@ -96,7 +91,6 @@ uint32_t UnixEventEmitter::ReadIn_Locked(char* data, uint32_t len) {
 }
 
 uint32_t UnixEventEmitter::WriteOut_Locked(const char* data, uint32_t len) {
-  AUTO_LOCK(GetFifoLock());
   uint32_t count = out_fifo()->Write(data, len);
   ScopedUnixEventEmitter peer = GetPeerEmitter();
   if (peer) {

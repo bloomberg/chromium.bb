@@ -34,8 +34,6 @@ class UnixEventEmitter : public StreamEventEmitter {
  protected:
   UnixEventEmitter() {}
 
-  // Probably only need the master's lock.
-  virtual const sdk_util::SimpleLock& GetFifoLock() = 0;
   virtual FIFOInterface* in_fifo() = 0;
   virtual FIFOInterface* out_fifo() = 0;
 

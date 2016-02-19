@@ -22,12 +22,12 @@ EventEmitter::EventEmitter() : event_status_(0) {
 }
 
 void EventEmitter::RegisterListener(EventListener* listener, uint32_t events) {
-  AUTO_LOCK(emitter_lock_);
+  AUTO_LOCK(GetLock());
   RegisterListener_Locked(listener, events);
 }
 
 void EventEmitter::UnregisterListener(EventListener* listener) {
-  AUTO_LOCK(emitter_lock_);
+  AUTO_LOCK(GetLock());
   UnregisterListener_Locked(listener);
 }
 

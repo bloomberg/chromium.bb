@@ -43,13 +43,13 @@ class EventEmitter : public sdk_util::RefObject {
   // This returns a snapshot, to ensure the status doesn't change from
   // fetch to use, hold the lock and call GetEventStatus_Locked.
   uint32_t GetEventStatus() {
-    AUTO_LOCK(emitter_lock_);
+    AUTO_LOCK(GetLock());
     return GetEventStatus_Locked();
   }
 
   uint32_t GetEventStatus_Locked() { return event_status_; }
 
-  sdk_util::SimpleLock& GetLock() { return emitter_lock_; }
+  virtual sdk_util::SimpleLock& GetLock() { return emitter_lock_; }
 
   // Updates the specified bits in the event status, and signals any
   // listeners waiting on those bits.
