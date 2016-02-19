@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/task_runner_util.h"
+#include "mojo/common/mojo_scheme_register.h"
 #include "mojo/common/url_type_converters.h"
 #include "mojo/util/filename_util.h"
 #include "net/base/filename_util.h"
@@ -70,10 +71,8 @@ ApplicationCatalogStore::~ApplicationCatalogStore() {}
 PackageManager::PackageManager(base::TaskRunner* blocking_pool,
                                bool register_schemes)
     : blocking_pool_(blocking_pool), catalog_store_(nullptr) {
-  if (register_schemes) {
-    url::AddStandardScheme("mojo", url::SCHEME_WITHOUT_AUTHORITY);
-    url::AddStandardScheme("exe", url::SCHEME_WITHOUT_AUTHORITY);
-  }
+  if (register_schemes)
+    mojo::RegisterMojoSchemes();
 
   base::FilePath shell_dir;
   PathService::Get(base::DIR_MODULE, &shell_dir);
