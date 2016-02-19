@@ -191,6 +191,33 @@ void RootInlineBox::childRemoved(InlineBox* box)
     }
 }
 
+static inline void snapHeight(int& maxAscent, int& maxDescent, const ComputedStyle& style)
+{
+    // If position is 0, add spaces to over/under equally.
+    // https://drafts.csswg.org/css-snap-size/#snap-height
+    int unit = style.snapHeightUnit();
+    ASSERT(unit);
+    int position = style.snapHeightPosition();
+    if (!position) {
+        int space = unit - ((maxAscent + maxDescent) % unit);
+        maxDescent += space / 2;
+        maxAscent += space - space / 2;
+        return;
+    }
+
+    // Match the baseline to the specified position.
+    // https://drafts.csswg.org/css-snap-size/#snap-baseline
+    ASSERT(position > 0 && position <= 100);
+    position = position * unit / 100;
+    int spaceOver = position - maxAscent % unit;
+    if (spaceOver < 0) {
+        spaceOver += unit;
+        ASSERT(spaceOver >= 0);
+    }
+    maxAscent += spaceOver;
+    maxDescent += unit - (maxAscent + maxDescent) % unit;
+}
+
 LayoutUnit RootInlineBox::alignBoxesInBlockDirection(LayoutUnit heightOfBlock, GlyphOverflowAndFallbackFontsMap& textBoxDataMap, VerticalPositionCache& verticalPositionCache)
 {
     // SVG will handle vertical alignment on its own.
@@ -213,6 +240,9 @@ LayoutUnit RootInlineBox::alignBoxesInBlockDirection(LayoutUnit heightOfBlock, G
 
     if (maxAscent + maxDescent < std::max(maxPositionTop, maxPositionBottom))
         adjustMaxAscentAndDescent(maxAscent, maxDescent, maxPositionTop, maxPositionBottom);
+
+    if (lineLayoutItem().styleRef().snapHeightUnit())
+        snapHeight(maxAscent, maxDescent, lineLayoutItem().styleRef());
 
     LayoutUnit maxHeight = LayoutUnit(maxAscent + maxDescent);
     LayoutUnit lineTop = heightOfBlock;
