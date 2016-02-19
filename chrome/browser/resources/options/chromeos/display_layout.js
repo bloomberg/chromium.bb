@@ -38,10 +38,37 @@ cr.define('options', function() {
   'use strict';
 
   /**
+   * Snaps the region [point, width] to [basePoint, baseWidth] if
+   * the [point, width] is close enough to the base's edge.
+   * @param {number} point The starting point of the region.
+   * @param {number} width The width of the region.
+   * @param {number} basePoint The starting point of the base region.
+   * @param {number} baseWidth The width of the base region.
+   * @return {number} The moved point. Returns the point itself if it doesn't
+   *     need to snap to the edge.
+   * @private
+   */
+  function snapToEdge(point, width, basePoint, baseWidth) {
+    // If the edge of the region is smaller than this, it will snap to the
+    // base's edge.
+    /** @const */ var SNAP_DISTANCE_PX = 16;
+
+    var startDiff = Math.abs(point - basePoint);
+    var endDiff = Math.abs(point + width - (basePoint + baseWidth));
+    // Prefer the closer one if both edges are close enough.
+    if (startDiff < SNAP_DISTANCE_PX && startDiff < endDiff)
+      return basePoint;
+    else if (endDiff < SNAP_DISTANCE_PX)
+      return basePoint + baseWidth - width;
+
+    return point;
+  }
+
+  /**
    * @constructor
    * @param {string} id
    * @param {string} name
-   * @param {options.DisplayBounds} bounds
+   * @param {!options.DisplayBounds} bounds
    * @param {!options.DisplayLayoutType} layoutType
    * @param {string} parentId
    * @return {!options.DisplayLayout}
@@ -203,7 +230,32 @@ cr.define('options', function() {
             parentDiv.offsetLeft + parentDiv.offsetWidth - MIN_OFFSET_OVERLAP);
         div.style.left = left + 'px';
       }
-    }
+    },
+
+    /**
+     * Snaps a horizontal value, see SnapToEdge.
+     * @param {number} x
+     * @param {?HTMLElement} parentDiv
+     * @return {number}
+     * @private
+     */
+    snapToX: function(x, parentDiv) {
+      return snapToEdge(
+          x, this.div.offsetWidth, parentDiv.offsetLeft, parentDiv.offsetWidth);
+    },
+
+    /**
+     * Snaps a vertical value, see SnapToEdge.
+     * @param {number} y
+     * @param {?HTMLElement} parentDiv
+     * @return {number}
+     * @private
+     */
+    snapToY: function(y, parentDiv) {
+      return snapToEdge(
+          y, this.div.offsetHeight, parentDiv.offsetTop,
+          parentDiv.offsetHeight);
+    },
   };
 
   // Export

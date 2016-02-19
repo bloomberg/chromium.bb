@@ -34,33 +34,6 @@ cr.define('options', function() {
   }
 
   /**
-   * Snaps the region [point, width] to [basePoint, baseWidth] if
-   * the [point, width] is close enough to the base's edge.
-   * @param {number} point The starting point of the region.
-   * @param {number} width The width of the region.
-   * @param {number} basePoint The starting point of the base region.
-   * @param {number} baseWidth The width of the base region.
-   * @return {number} The moved point. Returns the point itself if it doesn't
-   *     need to snap to the edge.
-   * @private
-   */
-  function snapToEdge(point, width, basePoint, baseWidth) {
-    // If the edge of the region is smaller than this, it will snap to the
-    // base's edge.
-    /** @const */ var SNAP_DISTANCE_PX = 16;
-
-    var startDiff = Math.abs(point - basePoint);
-    var endDiff = Math.abs(point + width - (basePoint + baseWidth));
-    // Prefer the closer one if both edges are close enough.
-    if (startDiff < SNAP_DISTANCE_PX && startDiff < endDiff)
-      return basePoint;
-    else if (endDiff < SNAP_DISTANCE_PX)
-      return basePoint + baseWidth - width;
-
-    return point;
-  }
-
-  /**
    * @param {options.DisplayLayoutType} layoutType
    * @return {!options.DisplayLayoutType}
    */
@@ -211,12 +184,8 @@ cr.define('options', function() {
       var baseLayout = this.getBaseLayout_(displayLayout);
       var baseDiv = baseLayout.div;
 
-      newPosition.x = snapToEdge(
-          newPosition.x, div.offsetWidth, baseDiv.offsetLeft,
-          baseDiv.offsetWidth);
-      newPosition.y = snapToEdge(
-          newPosition.y, div.offsetHeight, baseDiv.offsetTop,
-          baseDiv.offsetHeight);
+      newPosition.x = displayLayout.snapToX(newPosition.x, baseDiv);
+      newPosition.y = displayLayout.snapToY(newPosition.y, baseDiv);
 
       /** @type {!options.DisplayPosition} */ var newCenter = {
         x: newPosition.x + div.offsetWidth / 2,
