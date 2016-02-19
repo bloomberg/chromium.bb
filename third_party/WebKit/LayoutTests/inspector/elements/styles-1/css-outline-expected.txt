@@ -63,6 +63,12 @@ The test verifies the CSS outline functionality.
         }
     ]
     selectorText : "div"
+    styleRange : {
+        endColumn : 17
+        endLine : 19
+        startColumn : 5
+        startLine : 19
+    }
 }
 {
     columnNumber : 0
@@ -137,6 +143,12 @@ The test verifies the CSS outline functionality.
         }
     ]
     selectorText : "#fluffy"
+    styleRange : {
+        endColumn : 0
+        endLine : 24
+        startColumn : 9
+        startLine : 20
+    }
 }
 {
     columnNumber : 0
@@ -166,6 +178,12 @@ The test verifies the CSS outline functionality.
         }
     ]
     selectorText : "input:-moz-placeholder"
+    styleRange : {
+        endColumn : 50
+        endLine : 25
+        startColumn : 24
+        startLine : 25
+    }
 }
 {
     columnNumber : 0
@@ -218,6 +236,12 @@ The test verifies the CSS outline functionality.
         }
     ]
     selectorText : ".class-name, p /* style all paragraphs as well */"
+    styleRange : {
+        endColumn : 0
+        endLine : 29
+        startColumn : 51
+        startLine : 26
+    }
 }
 {
     atRule : "@keyframes identifier"
@@ -252,6 +276,12 @@ The test verifies the CSS outline functionality.
         }
     ]
     selectorText : "svg|a"
+    styleRange : {
+        endColumn : 0
+        endLine : 40
+        startColumn : 7
+        startLine : 38
+    }
 }
 {
     atRule : "@media (max-width:500px)"
@@ -332,5 +362,11 @@ The test verifies the CSS outline functionality.
         }
     ]
     selectorText : "span"
+    styleRange : {
+        endColumn : 4
+        endLine : 47
+        startColumn : 10
+        startLine : 43
+    }
 }
 
