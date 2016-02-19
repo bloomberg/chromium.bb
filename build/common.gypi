@@ -3282,6 +3282,10 @@
                 'AdditionalOptions': [
                   # Work around crbug.com/526851, bug in VS 2015 RTM compiler.
                   '/Zc:sizedDealloc-',
+                  # Disable thread-safe statics to avoid overhead and because
+                  # they are disabled on other platforms. See crbug.com/587210
+                  # and -fno-threadsafe-statics.
+                  '/Zc:threadSafeInit-',
                 ],
               },
             },
@@ -3689,6 +3693,8 @@
         'cflags_cc': [
           '-fno-exceptions',
           '-fno-rtti',
+          # If this is removed then remove the corresponding /Zc:threadSafeInit-
+          # for Windows.
           '-fno-threadsafe-statics',
           # Make inline functions have hidden visiblity by default.
           # Surprisingly, not covered by -fvisibility=hidden.

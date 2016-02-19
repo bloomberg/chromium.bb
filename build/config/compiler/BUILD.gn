@@ -149,6 +149,8 @@ config("compiler") {
     # --------------------------------
     cflags += [ "-fno-strict-aliasing" ]  # See http://crbug.com/32204
     cflags_cc += [
+      # If this is removed then remove the corresponding /Zc:threadSafeInit- for
+      # Windows.
       "-fno-threadsafe-statics",
 
       # Not exporting C++ inline functions can generally be applied anywhere
