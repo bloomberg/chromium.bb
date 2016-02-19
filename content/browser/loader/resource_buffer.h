@@ -71,13 +71,8 @@ class CONTENT_EXPORT ResourceBuffer
                   int max_allocation_size);
   bool IsInitialized() const;
 
-  // Returns a shared memory handle that can be passed to the given process.
-  // The shared memory handle is only intended to be interpretted by code
-  // running in the specified process.  NOTE: The caller should ensure that
-  // this memory eventually be returned to the operating system.
-  bool ShareToProcess(base::ProcessHandle process_handle,
-                      base::SharedMemoryHandle* shared_memory_handle,
-                      int* shared_memory_size);
+  // Returns a reference to the underlying shared memory.
+  base::SharedMemory& GetSharedMemory();
 
   // Returns true if Allocate will succeed.
   bool CanAllocate() const;

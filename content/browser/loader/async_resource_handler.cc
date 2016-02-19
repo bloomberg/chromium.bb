@@ -449,26 +449,16 @@ bool AsyncResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
   buffer_->ShrinkLastAllocation(bytes_read);
 
   if (!sent_data_buffer_msg_) {
-    base::SharedMemoryHandle handle;
-    int size;
-    if (!buffer_->ShareToProcess(filter->PeerHandle(), &handle, &size))
-      return false;
-
-    // TODO(erikchen): Temporary debugging. http://crbug.com/527588.
-    CHECK_LE(size, kBufferSize);
+    base::SharedMemoryHandle handle = base::SharedMemory::DuplicateHandle(
+        buffer_->GetSharedMemory().handle());
     filter->Send(new ResourceMsg_SetDataBuffer(
-        GetRequestID(), handle, size, filter->peer_pid()));
+        GetRequestID(), handle, buffer_->GetSharedMemory().mapped_size(),
+        filter->peer_pid()));
     sent_data_buffer_msg_ = true;
   }
 
   int data_offset = buffer_->GetLastAllocationOffset();
 
-  // TODO(erikchen): Temporary debugging. http://crbug.com/527588.
-  CHECK_LE(data_offset, kBufferSize);
-
-  filter->Send(new ResourceMsg_DataReceivedDebug(GetRequestID(), data_offset));
-  filter->Send(new ResourceMsg_DataReceivedDebug2(
-      GetRequestID(), data_offset, bytes_read, encoded_data_length));
   filter->Send(new ResourceMsg_DataReceived(
       GetRequestID(), data_offset, bytes_read, encoded_data_length));
   ++pending_data_count_;

@@ -222,31 +222,6 @@ void ResourceDispatcher::OnSetDataBuffer(int request_id,
   request_info->buffer_size = shm_size;
 }
 
-void ResourceDispatcher::OnReceivedDataDebug(int request_id, int data_offset) {
-  PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
-  if (request_info) {
-    CHECK_GE(data_offset, 0);
-    CHECK_LE(data_offset, 512 * 1024);
-    request_info->data_offset = data_offset;
-  }
-}
-
-void ResourceDispatcher::OnReceivedDataDebug2(int request_id,
-                                              int data_offset,
-                                              int data_length,
-                                              int encoded_data_length) {
-  PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
-  if (request_info) {
-    // TODO(erikchen): Temporary debugging. http://crbug.com/527588.
-    // ResourceMsg_DataReceivedDebug2 should be indistinguishable from
-    // ResourceMsg_DataReceived, which means that data_offset should exceed
-    // 512k. The second assertion is expected to fail for some users.
-    CHECK_GE(data_offset, 0);
-    CHECK_LE(data_offset, 512 * 1024);
-    request_info->data_offset2 = data_offset;
-  }
-}
-
 void ResourceDispatcher::OnReceivedInlinedDataChunk(
     int request_id,
     const std::vector<char>& data,
@@ -287,22 +262,6 @@ void ResourceDispatcher::OnReceivedData(int request_id,
   bool send_ack = true;
   if (request_info && data_length > 0) {
     CHECK(base::SharedMemory::IsHandleValid(request_info->buffer->handle()));
-
-    // TODO(erikchen): Temporary debugging. http://crbug.com/527588.
-    CHECK_GE(request_info->buffer_size, 0);
-    CHECK_LE(request_info->buffer_size, 512 * 1024);
-    CHECK_GE(data_length, 0);
-    CHECK_LE(data_length, 512 * 1024);
-
-    if (data_offset > 512 * 1024) {
-      int cached_data_offset = request_info->data_offset;
-      base::debug::Alias(&cached_data_offset);
-      int cached_data_offset2 = request_info->data_offset2;
-      base::debug::Alias(&cached_data_offset2);
-      CHECK_EQ(cached_data_offset, cached_data_offset2);
-      CHECK(false);
-    }
-
     CHECK_GE(request_info->buffer_size, data_offset + data_length);
 
     base::TimeTicks time_start = base::TimeTicks::Now();
@@ -603,8 +562,6 @@ void ResourceDispatcher::DispatchMessage(const IPC::Message& message) {
                         OnReceivedCachedMetadata)
     IPC_MESSAGE_HANDLER(ResourceMsg_ReceivedRedirect, OnReceivedRedirect)
     IPC_MESSAGE_HANDLER(ResourceMsg_SetDataBuffer, OnSetDataBuffer)
-    IPC_MESSAGE_HANDLER(ResourceMsg_DataReceivedDebug, OnReceivedDataDebug)
-    IPC_MESSAGE_HANDLER(ResourceMsg_DataReceivedDebug2, OnReceivedDataDebug2)
     IPC_MESSAGE_HANDLER(ResourceMsg_InlinedDataChunkReceived,
                         OnReceivedInlinedDataChunk)
     IPC_MESSAGE_HANDLER(ResourceMsg_DataReceived, OnReceivedData)

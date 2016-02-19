@@ -176,10 +176,6 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
     scoped_refptr<SharedMemoryReceivedDataFactory> received_data_factory;
     scoped_ptr<SiteIsolationResponseMetaData> site_isolation_metadata;
     int buffer_size;
-
-    // Debugging for https://code.google.com/p/chromium/issues/detail?id=527588.
-    int data_offset = -1;
-    int data_offset2 = -1;
   };
   using PendingRequestMap = std::map<int, scoped_ptr<PendingRequestInfo>>;
 
@@ -201,11 +197,6 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
                        base::SharedMemoryHandle shm_handle,
                        int shm_size,
                        base::ProcessId renderer_pid);
-  void OnReceivedDataDebug(int request_id, int data_offset);
-  void OnReceivedDataDebug2(int request_id,
-                            int data_offset,
-                            int data_length,
-                            int encoded_data_length);
   void OnReceivedInlinedDataChunk(int request_id,
                                   const std::vector<char>& data,
                                   int encoded_data_length);
