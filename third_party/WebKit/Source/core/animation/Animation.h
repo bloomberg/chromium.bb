@@ -133,6 +133,9 @@ public:
     AnimationEffect* effect() { return m_content.get(); }
     void setEffect(AnimationEffect*);
 
+    void setId(const String& id) { m_id = id; }
+    const String& id() const { return m_id; }
+
     // Pausing via this method is not reflected in the value returned by
     // paused() and must never overlap with pausing via pause().
     void pauseForTesting(double pauseTime);
@@ -205,6 +208,8 @@ private:
     void notifyAnimationStarted(double monotonicTime, int group) override;
     void notifyAnimationFinished(double monotonicTime, int group) override { }
     void notifyAnimationAborted(double monotonicTime, int group) override { }
+
+    String m_id;
 
     AnimationPlayState m_playState;
     double m_playbackRate;

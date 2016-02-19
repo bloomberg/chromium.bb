@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://w3c.github.io/web-animations/#the-animationeffecttimingproperties-dictionary
+// https://w3c.github.io/web-animations/#the-keyframeeffectoptions-dictionary
 
 enum FillMode { "none", "forwards", "backwards", "both", "auto" };
 enum PlaybackDirection { "normal", "reverse", "alternate", "alternate-reverse" };
 
-// TODO(dstockwell): Rename this to AnimationEffectTimingProperties.
 dictionary KeyframeEffectOptions {
     double                             delay = 0;
     double                             endDelay = 0;
@@ -19,4 +18,5 @@ dictionary KeyframeEffectOptions {
     double                             playbackRate = 1.0;
     PlaybackDirection                  direction = "normal";
     DOMString                          easing = "linear";
+    DOMString                          id = "";
 };

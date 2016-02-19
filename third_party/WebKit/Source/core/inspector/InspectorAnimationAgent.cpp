@@ -120,7 +120,6 @@ static PassRefPtr<protocol::TypeBuilder::Animation::AnimationEffect> buildObject
         .setDuration(duration)
         .setDirection(computedTiming.direction())
         .setFill(computedTiming.fill())
-        .setName(effect->name())
         .setBackendNodeId(DOMNodeIds::idForNode(effect->target()))
         .setEasing(easing);
     return animationObject.release();
@@ -184,6 +183,7 @@ PassRefPtr<protocol::TypeBuilder::Animation::Animation> InspectorAnimationAgent:
 
     RefPtr<protocol::TypeBuilder::Animation::Animation> animationObject = protocol::TypeBuilder::Animation::Animation::create()
         .setId(id)
+        .setName(animation.id())
         .setPausedState(animation.paused())
         .setPlayState(animation.playState())
         .setPlaybackRate(animation.playbackRate())
@@ -430,14 +430,14 @@ String InspectorAnimationAgent::createCSSId(Animation& animation)
     } else {
         for (CSSPropertyID property : transitionProperties)
             cssProperties.append(property);
-        cssProperties.append(cssPropertyID(effect->name()));
+        cssProperties.append(cssPropertyID(animation.id()));
     }
 
     Element* element = effect->target();
     WillBeHeapVector<RefPtrWillBeMember<CSSStyleDeclaration>> styles = m_cssAgent->matchingStyles(element);
     OwnPtr<WebCryptoDigestor> digestor = createDigestor(HashAlgorithmSha1);
     addStringToDigestor(digestor.get(), String::number(type));
-    addStringToDigestor(digestor.get(), effect->name());
+    addStringToDigestor(digestor.get(), animation.id());
     for (CSSPropertyID property : cssProperties) {
         RefPtrWillBeRawPtr<CSSStyleDeclaration> style = m_cssAgent->findEffectiveDeclaration(property, styles);
         // Ignore inline styles.

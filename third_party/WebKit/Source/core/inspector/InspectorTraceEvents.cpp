@@ -798,13 +798,13 @@ PassRefPtr<TracedValue> InspectorSetLayerTreeId::data(const String& sessionId, i
     return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorAnimationEvent::data(const Animation& player)
+PassRefPtr<TracedValue> InspectorAnimationEvent::data(const Animation& animation)
 {
     RefPtr<TracedValue> value = TracedValue::create();
-    value->setString("id", String::number(player.sequenceNumber()));
-    value->setString("state", player.playState());
-    if (const AnimationEffect* effect = player.effect()) {
-        value->setString("name", effect->name());
+    value->setString("id", String::number(animation.sequenceNumber()));
+    value->setString("state", animation.playState());
+    if (const AnimationEffect* effect = animation.effect()) {
+        value->setString("name", animation.id());
         if (effect->isKeyframeEffect()) {
             if (Element* target = toKeyframeEffect(effect)->target())
                 setNodeInfo(value.get(), target, "nodeId", "nodeName");
@@ -813,10 +813,10 @@ PassRefPtr<TracedValue> InspectorAnimationEvent::data(const Animation& player)
     return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorAnimationStateEvent::data(const Animation& player)
+PassRefPtr<TracedValue> InspectorAnimationStateEvent::data(const Animation& animation)
 {
     RefPtr<TracedValue> value = TracedValue::create();
-    value->setString("state", player.playState());
+    value->setString("state", animation.playState());
     return value.release();
 }
 

@@ -402,8 +402,8 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
         const InertEffect* inertAnimation = entry.effect.get();
         AnimationEventDelegate* eventDelegate = new AnimationEventDelegate(element, entry.name);
         KeyframeEffect* effect = KeyframeEffect::create(element, inertAnimation->model(), inertAnimation->specifiedTiming(), KeyframeEffect::DefaultPriority, eventDelegate);
-        effect->setName(entry.name);
         Animation* animation = element->document().timeline().play(effect);
+        animation->setId(entry.name);
         if (inertAnimation->paused())
             animation->pause();
         animation->update(TimingUpdateOnDemand);
@@ -483,8 +483,8 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
         }
 
         KeyframeEffect* transition = KeyframeEffect::create(element, model, inertAnimation->specifiedTiming(), KeyframeEffect::TransitionPriority, eventDelegate);
-        transition->setName(getPropertyName(newTransition.id));
         Animation* animation = element->document().timeline().play(transition);
+        animation->setId(getPropertyName(newTransition.id));
         // Set the current time as the start time for retargeted transitions
         if (retargetedCompositorTransitions.contains(id))
             animation->setStartTime(element->document().timeline().currentTime());

@@ -109,9 +109,6 @@ public:
     void computedTiming(ComputedTimingProperties&);
     ComputedTimingProperties computedTiming();
 
-    void setName(const String& name) { m_name = name; }
-    const String& name() const { return m_name; }
-
     DECLARE_VIRTUAL_TRACE();
 
 protected:

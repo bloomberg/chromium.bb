@@ -66804,6 +66804,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1236" label="V8HTMLComment"/>
   <int value="1237" label="V8SloppyModeBlockScopedFunctionRedefinition"/>
   <int value="1238" label="V8ForInInitializer"/>
+  <int value="1239" label="V8Animation_Id_AttributeGetter"/>
+  <int value="1240" label="V8Animation_Id_AttributeSetter"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
