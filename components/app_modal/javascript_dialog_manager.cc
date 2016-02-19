@@ -4,6 +4,7 @@
 
 #include "components/app_modal/javascript_dialog_manager.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -25,6 +26,7 @@
 #include "ui/gfx/font_list.h"
 
 namespace app_modal {
+
 namespace {
 
 #if !defined(OS_ANDROID)
@@ -54,6 +56,32 @@ class DefaultExtensionsClient : public JavaScriptDialogExtensionsClient {
 bool ShouldDisplaySuppressCheckbox(
     ChromeJavaScriptDialogExtraData* extra_data) {
   return extra_data->has_already_shown_a_dialog_;
+}
+
+enum class DialogType {
+  JAVASCRIPT,
+  ON_BEFORE_UNLOAD,
+};
+
+void LogUMAMessageLengthStats(const base::string16& message, DialogType type) {
+  if (type == DialogType::JAVASCRIPT) {
+    UMA_HISTOGRAM_COUNTS("JSDialogs.CountOfJSDialogMessageCharacters",
+                         static_cast<int32_t>(message.length()));
+  } else {
+    UMA_HISTOGRAM_COUNTS("JSDialogs.CountOfOnBeforeUnloadMessageCharacters",
+                         static_cast<int32_t>(message.length()));
+  }
+
+  int32_t newline_count =
+      std::count_if(message.begin(), message.end(),
+                    [](const base::char16& c) { return c == '\n'; });
+  if (type == DialogType::JAVASCRIPT) {
+    UMA_HISTOGRAM_COUNTS("JSDialogs.CountOfJSDialogMessageNewlines",
+                         newline_count);
+  } else {
+    UMA_HISTOGRAM_COUNTS("JSDialogs.CountOfOnBeforeUnloadMessageNewlines",
+                         newline_count);
+  }
 }
 
 }  // namespace
@@ -145,6 +173,7 @@ void JavaScriptDialogManager::RunJavaScriptDialog(
 
   extensions_client_->OnDialogOpened(web_contents);
 
+  LogUMAMessageLengthStats(message_text, DialogType::JAVASCRIPT);
   AppModalDialogQueue::GetInstance()->AddDialog(new JavaScriptAppModalDialog(
       web_contents,
       &javascript_dialog_extra_data_,
@@ -184,6 +213,7 @@ void JavaScriptDialogManager::RunBeforeUnloadDialog(
 
   extensions_client_->OnDialogOpened(web_contents);
 
+  LogUMAMessageLengthStats(message_text, DialogType::ON_BEFORE_UNLOAD);
   AppModalDialogQueue::GetInstance()->AddDialog(new JavaScriptAppModalDialog(
       web_contents,
       &javascript_dialog_extra_data_,

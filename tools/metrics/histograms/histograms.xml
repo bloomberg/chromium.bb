@@ -17914,6 +17914,36 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="JSDialogs.CountOfJSDialogMessageCharacters">
+  <owner>avi@chromium.org</owner>
+  <summary>
+    The count of the number of characters in JavaScript dialog messages.
+  </summary>
+</histogram>
+
+<histogram name="JSDialogs.CountOfJSDialogMessageNewlines">
+  <owner>avi@chromium.org</owner>
+  <summary>
+    The count of the number of newlines in JavaScript dialog messages. (This
+    does not count breaks inserted by the UI toolkit in wrapping the messages.)
+  </summary>
+</histogram>
+
+<histogram name="JSDialogs.CountOfOnBeforeUnloadMessageCharacters">
+  <owner>avi@chromium.org</owner>
+  <summary>
+    The count of the number of characters in onbeforeunload messages.
+  </summary>
+</histogram>
+
+<histogram name="JSDialogs.CountOfOnBeforeUnloadMessageNewlines">
+  <owner>avi@chromium.org</owner>
+  <summary>
+    The count of the number of newlines in onbeforeunload messages. (This does
+    not count breaks inserted by the UI toolkit in wrapping the messages.)
+  </summary>
+</histogram>
+
 <histogram
     name="JSDialogs.FineTiming.TimeBetweenDialogClosedAndNextDialogCreated"
     units="ms">
