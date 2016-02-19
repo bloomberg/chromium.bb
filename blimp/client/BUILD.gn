@@ -47,9 +47,13 @@ source_set("blimp_client") {
 source_set("blimp_client_unit_tests") {
   testonly = true
 
-  sources = [
-    "session/assignment_source_unittest.cc",
-  ]
+  sources = []
+
+  # TODO(dtrainor): Fix the test harness to allow this to run on Android.
+  # See crbug.com/588240.
+  if (is_linux) {
+    sources += [ "session/assignment_source_unittest.cc" ]
+  }
 
   deps = [
     ":blimp_client",
