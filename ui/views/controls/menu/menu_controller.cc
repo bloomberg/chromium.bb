@@ -2489,7 +2489,8 @@ void MenuController::ExitAsyncRun() {
   MenuItemView* result = ExitMenuRun();
   delegate->OnMenuClosed(internal::MenuControllerDelegate::NOTIFY_DELEGATE,
                          result, accept_event_flags_);
-  if (nested && exit_type_ == EXIT_ALL)
+  // MenuController may have been deleted by |delegate|.
+  if (GetActiveInstance() && nested && exit_type_ == EXIT_ALL)
     ExitAsyncRun();
 }
 
