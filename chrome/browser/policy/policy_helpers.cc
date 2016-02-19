@@ -21,17 +21,26 @@ namespace policy {
 
 bool OverrideBlacklistForURL(const GURL& url, bool* block, int* reason) {
 #if defined(OS_CHROMEOS)
-  // On ChromeOS browsing is only allowed once OOBE has completed. Therefore all
-  // requests are blocked until this condition is met.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+  // Don't block if OOBE has completed.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kOobeGuestSession)) {
-    if (!url.SchemeIs("chrome") && !url.SchemeIs("chrome-extension")) {
-      *reason = net::ERR_BLOCKED_ENROLLMENT_CHECK_PENDING;
-      *block = true;
-      return true;
-    }
+    return false;
   }
-  return false;
+
+  // Don't block internal pages and extensions.
+  if (url.SchemeIs("chrome") || url.SchemeIs("chrome-extension")) {
+    return false;
+  }
+
+  // Don't block Google's support web site.
+  if (url.SchemeIs(url::kHttpsScheme) && url.DomainIs("support.google.com")) {
+    return false;
+  }
+
+  // Block the rest.
+  *reason = net::ERR_BLOCKED_ENROLLMENT_CHECK_PENDING;
+  *block = true;
+  return true;
 #elif defined(OS_IOS)
   return false;
 #else
