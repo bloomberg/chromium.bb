@@ -85,7 +85,6 @@ class ApplicationContextImpl : public ApplicationContext {
   scoped_ptr<metrics_services_manager::MetricsServicesManager>
       metrics_services_manager_;
   scoped_ptr<gcm::GCMDriver> gcm_driver_;
-  scoped_ptr<web_resource::PromoResourceService> promo_resource_service_;
   scoped_ptr<component_updater::ComponentUpdateService> component_updater_;
   scoped_refptr<CRLSetFetcher> crl_set_fetcher_;
   scoped_refptr<safe_browsing::SafeBrowsingService> safe_browsing_service_;

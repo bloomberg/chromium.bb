@@ -31,9 +31,6 @@ const char kDisableIOSPasswordGeneration[] = "disable-ios-password-generation";
 const char kDisableIOSPasswordSuggestions[] =
     "disable-ios-password-suggestions";
 
-// Disables the backend service for web resources.
-const char kDisableIOSWebResources[] = "disable-web-resources";
-
 // Disables the use of WKWebView instead of UIWebView.
 const char kDisableIOSWKWebView[] = "disable-wkwebview";
 

@@ -32,12 +32,10 @@
 #include "components/update_client/configurator.h"
 #include "components/update_client/update_query_params.h"
 #include "components/variations/service/variations_service.h"
-#include "components/web_resource/promo_resource_service.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_manager_impl.h"
 #include "ios/chrome/browser/chrome_paths.h"
-#include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/component_updater/ios_component_updater_configurator.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/ios_chrome_io_thread.h"
@@ -54,12 +52,6 @@
 #include "net/log/net_log_capture_mode.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/url_request/url_request_context_getter.h"
-
-namespace {
-// Dummy flag because iOS does not support disabling background networking.
-extern const char kDummyDisableBackgroundNetworking[] =
-    "dummy-disable-background-networking";
-}
 
 ApplicationContextImpl::ApplicationContextImpl(
     base::SequencedTaskRunner* local_state_task_runner,
@@ -107,21 +99,11 @@ void ApplicationContextImpl::PreCreateThreads() {
 
 void ApplicationContextImpl::PreMainMessageLoopRun() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (!command_line.HasSwitch(switches::kDisableIOSWebResources)) {
-    DCHECK(!promo_resource_service_.get());
-    promo_resource_service_.reset(new web_resource::PromoResourceService(
-        GetLocalState(), ::GetChannel(), GetApplicationLocale(),
-        GetSystemURLRequestContext(), kDummyDisableBackgroundNetworking,
-        web_resource::GetIOSChromeParseJSONCallback()));
-    promo_resource_service_->StartAfterDelay();
-  }
 }
 
 void ApplicationContextImpl::StartTearDown() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  // We need to destroy the MetricsServicesManager, PromoResourceService and
+  // We need to destroy the MetricsServicesManager and
   // SafeBrowsing before the IO thread gets destroyed, since their destructors
   // can call the URLFetcher destructor, which does a PostDelayedTask operation
   // on the IO thread. (The IO thread will handle that URLFetcher operation
@@ -133,10 +115,6 @@ void ApplicationContextImpl::StartTearDown() {
 
   // Need to clear browser states before the IO thread.
   chrome_browser_state_manager_.reset();
-
-  // PromoResourceService must be destroyed after the keyed services and before
-  // the IO thread.
-  promo_resource_service_.reset();
 
   // The GCMDriver must shut down while the IO thread is still alive.
   if (gcm_driver_)
@@ -298,7 +276,7 @@ gcm::GCMDriver* ApplicationContextImpl::GetGCMDriver() {
 web_resource::PromoResourceService*
 ApplicationContextImpl::GetPromoResourceService() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return promo_resource_service_.get();
+  return nullptr;
 }
 
 component_updater::ComponentUpdateService*

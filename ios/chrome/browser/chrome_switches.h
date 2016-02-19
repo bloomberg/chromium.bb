@@ -14,7 +14,6 @@ extern const char kDisableIOSFastWebScrollViewInsets[];
 extern const char kDisableIOSFeatures[];
 extern const char kDisableIOSPasswordGeneration[];
 extern const char kDisableIOSPasswordSuggestions[];
-extern const char kDisableIOSWebResources[];
 extern const char kDisableIOSWKWebView[];
 extern const char kDisableLRUSnapshotCache[];
 extern const char kDisableNTPFavicons[];
