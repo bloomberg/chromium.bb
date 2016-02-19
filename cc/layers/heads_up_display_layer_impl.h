@@ -50,6 +50,11 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
 
   bool IsAnimatingHUDContents() const { return fade_step_ > 0; }
 
+  void SetHUDTypeface(const skia::RefPtr<SkTypeface>& typeface);
+
+  // LayerImpl overrides.
+  void PushPropertiesTo(LayerImpl* layer) override;
+
  private:
   class Graph {
    public:

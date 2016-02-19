@@ -103,8 +103,6 @@ component("gfx") {
     "generic_shared_memory_id.h",
     "gfx_paths.cc",
     "gfx_paths.h",
-    "hud_font.cc",
-    "hud_font.h",
     "icon_util.cc",
     "icon_util.h",
     "image/image.cc",

@@ -32,7 +32,6 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_conversions.h"
-#include "ui/gfx/hud_font.h"
 
 namespace cc {
 
@@ -74,15 +73,10 @@ double HeadsUpDisplayLayerImpl::Graph::UpdateUpperBound() {
 HeadsUpDisplayLayerImpl::HeadsUpDisplayLayerImpl(LayerTreeImpl* tree_impl,
                                                  int id)
     : LayerImpl(tree_impl, id),
-      typeface_(gfx::GetHudTypeface()),
       internal_contents_scale_(1.f),
       fps_graph_(60.0, 80.0),
       paint_time_graph_(16.0, 48.0),
       fade_step_(0) {
-  if (!typeface_) {
-    typeface_ = skia::AdoptRef(
-        SkTypeface::CreateFromName("monospace", SkTypeface::kBold));
-  }
 }
 
 HeadsUpDisplayLayerImpl::~HeadsUpDisplayLayerImpl() {}
@@ -224,6 +218,25 @@ gfx::Rect HeadsUpDisplayLayerImpl::GetEnclosingRectInTargetSpace() const {
   return GetScaledEnclosingRectInTargetSpace(internal_contents_scale_);
 }
 
+void HeadsUpDisplayLayerImpl::SetHUDTypeface(
+    const skia::RefPtr<SkTypeface>& typeface) {
+  if (typeface_ == typeface)
+    return;
+
+  DCHECK(typeface_.get() == nullptr);
+  typeface_ = typeface;
+  NoteLayerPropertyChanged();
+}
+
+void HeadsUpDisplayLayerImpl::PushPropertiesTo(LayerImpl* layer) {
+  LayerImpl::PushPropertiesTo(layer);
+
+  HeadsUpDisplayLayerImpl* layer_impl =
+      static_cast<HeadsUpDisplayLayerImpl*>(layer);
+
+  layer_impl->SetHUDTypeface(typeface_);
+}
+
 void HeadsUpDisplayLayerImpl::UpdateHudContents() {
   const LayerTreeDebugState& debug_state = layer_tree_impl()->debug_state();
 
@@ -275,6 +288,7 @@ void HeadsUpDisplayLayerImpl::DrawHudContents(SkCanvas* canvas) {
 int HeadsUpDisplayLayerImpl::MeasureText(SkPaint* paint,
                                          const std::string& text,
                                          int size) const {
+  DCHECK(typeface_.get());
   const bool anti_alias = paint->isAntiAlias();
   paint->setAntiAlias(true);
   paint->setTextSize(size);
@@ -291,6 +305,7 @@ void HeadsUpDisplayLayerImpl::DrawText(SkCanvas* canvas,
                                        int size,
                                        int x,
                                        int y) const {
+  DCHECK(typeface_.get());
   const bool anti_alias = paint->isAntiAlias();
   paint->setAntiAlias(true);
 
@@ -643,6 +658,7 @@ void HeadsUpDisplayLayerImpl::DrawDebugRect(
     SkColor fill_color,
     float stroke_width,
     const std::string& label_text) const {
+  DCHECK(typeface_.get());
   gfx::Rect debug_layer_rect =
       gfx::ScaleToEnclosingRect(rect.rect, 1.0 / internal_contents_scale_,
                                 1.0 / internal_contents_scale_);
