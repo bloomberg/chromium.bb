@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_H_
 
-#include "chrome/browser/profiles/profile_info_cache_observer.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "ui/views/window/non_client_view.h"
 
 class AvatarMenuButton;
@@ -15,7 +15,7 @@ class BrowserView;
 // A specialization of the NonClientFrameView object that provides additional
 // Browser-specific methods.
 class BrowserNonClientFrameView : public views::NonClientFrameView,
-                                  public ProfileInfoCacheObserver {
+                                  public ProfileAttributesStorage::Observer {
  public:
   BrowserNonClientFrameView(BrowserFrame* frame, BrowserView* browser_view);
   ~BrowserNonClientFrameView() override;
@@ -79,7 +79,7 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   void UpdateOldAvatarButton();
 
  private:
-  // Overriden from ProfileInfoCacheObserver.
+  // Overriden from ProfileAttributesStorage::Observer.
   void OnProfileAdded(const base::FilePath& profile_path) override;
   void OnProfileWasRemoved(const base::FilePath& profile_path,
                            const base::string16& profile_name) override;
@@ -96,7 +96,7 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 
   // Menu button that displays the incognito icon. May be null for some frame
   // styles. TODO(anthonyvd): simplify/rename.
-  AvatarMenuButton* avatar_button_;
+  AvatarMenuButton* avatar_button_ = nullptr;
 };
 
 namespace chrome {

@@ -14,6 +14,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -68,17 +70,26 @@ Profile* CreateProfileOutsideUserDataDir() {
 // Set up the profiles to enable Lock. Takes as parameter a profile that will be
 // signed in, and also creates a supervised user (necessary for lock).
 void SetupProfilesForLock(Profile* signed_in) {
-  const char* signed_in_email = "me@google.com";
-  Profile* supervised = CreateTestingProfile("supervised");
-  ProfileInfoCache* cache = &g_browser_process->profile_manager()->
-      GetProfileInfoCache();
-  cache->SetAuthInfoOfProfileAtIndex(cache->GetIndexOfProfileWithPath(
-    signed_in->GetPath()), "12345", base::UTF8ToUTF16(signed_in_email));
-  signed_in->GetPrefs()->
-      SetString(prefs::kGoogleServicesHostedDomain, "google.com");
-  cache->SetSupervisedUserIdOfProfileAtIndex(cache->GetIndexOfProfileWithPath(
-    supervised->GetPath()), signed_in_email);
+  const char signed_in_email[] = "me@google.com";
 
+  // Set up the |signed_in| profile.
+  ProfileAttributesStorage* storage =
+      &g_browser_process->profile_manager()->GetProfileAttributesStorage();
+  ProfileAttributesEntry* entry_signed_in;
+  ASSERT_TRUE(storage->GetProfileAttributesWithPath(signed_in->GetPath(),
+                                                    &entry_signed_in));
+  entry_signed_in->SetAuthInfo("12345", base::UTF8ToUTF16(signed_in_email));
+  signed_in->GetPrefs()->SetString(prefs::kGoogleServicesHostedDomain,
+                                   "google.com");
+
+  // Create the |supervised| profile, which is supervised by |signed_in|.
+  ProfileAttributesEntry* entry_supervised;
+  Profile* supervised = CreateTestingProfile("supervised");
+  ASSERT_TRUE(storage->GetProfileAttributesWithPath(supervised->GetPath(),
+                                                    &entry_supervised));
+  entry_supervised->SetSupervisedUserId(signed_in_email);
+
+  // |signed_in| should now be lockable.
   EXPECT_TRUE(profiles::IsLockAvailable(signed_in));
 }
 
@@ -115,7 +126,7 @@ class ProfileChooserViewExtensionsTest : public ExtensionBrowserTest {
     switches::EnableNewProfileManagementForTesting(command_line);
   }
 
-  void OpenProfileChooserView(Browser* browser){
+  void OpenProfileChooserView(Browser* browser) {
     BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
     views::View* button = browser_view->frame()->GetNewAvatarMenuButton();
     if (!button)

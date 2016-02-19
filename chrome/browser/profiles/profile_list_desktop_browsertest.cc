@@ -37,8 +37,8 @@ class ProfileListDesktopBrowserTest : public InProcessBrowserTest {
  public:
   ProfileListDesktopBrowserTest() {}
 
-  scoped_ptr<AvatarMenu> CreateAvatarMenu(ProfileInfoCache* cache) {
-    return scoped_ptr<AvatarMenu>(new AvatarMenu(cache, NULL, browser()));
+  scoped_ptr<AvatarMenu> CreateAvatarMenu(ProfileAttributesStorage* storage) {
+    return scoped_ptr<AvatarMenu>(new AvatarMenu(storage, NULL, browser()));
   }
 
  private:
@@ -64,9 +64,11 @@ IN_PROC_BROWSER_TEST_F(ProfileListDesktopBrowserTest, MAYBE_SignOut) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   Profile* current_profile = browser()->profile();
   ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+  ProfileAttributesStorage& storage =
+      profile_manager->GetProfileAttributesStorage();
   size_t index = cache.GetIndexOfProfileWithPath(current_profile->GetPath());
 
-  scoped_ptr<AvatarMenu> menu = CreateAvatarMenu(&cache);
+  scoped_ptr<AvatarMenu> menu = CreateAvatarMenu(&storage);
   menu->RebuildMenu();
 
   BrowserList* browser_list = BrowserList::GetInstance();
@@ -107,6 +109,8 @@ IN_PROC_BROWSER_TEST_F(ProfileListDesktopBrowserTest, MAYBE_SwitchToProfile) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   Profile* current_profile = browser()->profile();
   ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+  ProfileAttributesStorage& storage =
+      profile_manager->GetProfileAttributesStorage();
   base::FilePath path_profile1 = current_profile->GetPath();
   base::FilePath user_dir = cache.GetUserDataDir();
 
@@ -123,7 +127,7 @@ IN_PROC_BROWSER_TEST_F(ProfileListDesktopBrowserTest, MAYBE_SwitchToProfile) {
   content::RunMessageLoop();
   ASSERT_EQ(cache.GetNumberOfProfiles(), 2U);
 
-  scoped_ptr<AvatarMenu> menu = CreateAvatarMenu(&cache);
+  scoped_ptr<AvatarMenu> menu = CreateAvatarMenu(&storage);
   menu->RebuildMenu();
   BrowserList* browser_list = BrowserList::GetInstance();
   EXPECT_EQ(1U, browser_list->size());

@@ -40,15 +40,17 @@
 
 using content::BrowserThread;
 
-AvatarMenu::AvatarMenu(ProfileInfoInterface* profile_cache,
+AvatarMenu::AvatarMenu(ProfileAttributesStorage* profile_storage,
                        AvatarMenuObserver* observer,
                        Browser* browser)
-    : profile_list_(ProfileList::Create(profile_cache)),
+    : profile_list_(ProfileList::Create(
+          &g_browser_process->profile_manager()->GetProfileInfoCache())),
       menu_actions_(AvatarMenuActions::Create()),
 #if defined(ENABLE_SUPERVISED_USERS)
       supervised_user_observer_(this),
 #endif
-      profile_info_(profile_cache),
+      profile_info_(
+          &g_browser_process->profile_manager()->GetProfileInfoCache()),
       observer_(observer),
       browser_(browser) {
   DCHECK(profile_info_);
@@ -156,8 +158,8 @@ size_t AvatarMenu::GetNumberOfItems() const {
 const AvatarMenu::Item& AvatarMenu::GetItemAt(size_t index) const {
   return profile_list_->GetItemAt(index);
 }
-size_t AvatarMenu::GetActiveProfileIndex() {
 
+size_t AvatarMenu::GetActiveProfileIndex() {
   // During singleton profile deletion, this function can be called with no
   // profiles in the model - crbug.com/102278 .
   if (profile_list_->GetNumberOfItems() == 0)

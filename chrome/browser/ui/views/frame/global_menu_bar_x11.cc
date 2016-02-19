@@ -19,7 +19,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
@@ -440,7 +439,7 @@ void GlobalMenuBarX11::InitServer(unsigned long xid) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   DCHECK(profile_manager);
   avatar_menu_.reset(new AvatarMenu(
-      &profile_manager->GetProfileInfoCache(), this, nullptr));
+      &profile_manager->GetProfileAttributesStorage(), this, nullptr));
   avatar_menu_->RebuildMenu();
   BrowserList::AddObserver(this);
 

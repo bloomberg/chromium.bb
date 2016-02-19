@@ -19,7 +19,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_shortcut_manager_win.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -203,7 +204,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTestWithProfileShortcutManager,
 
   // Two profile case. Both profile names should be shown.
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
 
   base::FilePath path_profile2 =
       profile_manager->GenerateNextProfileDirectoryPath();
@@ -225,11 +225,13 @@ IN_PROC_BROWSER_TEST_F(BrowserTestWithProfileShortcutManager,
   // The second profile's name should be part of the relaunch name.
   Browser* profile2_browser =
       CreateBrowser(profile_manager->GetProfileByPath(path_profile2));
-  size_t profile2_index = cache.GetIndexOfProfileWithPath(path_profile2);
+  ProfileAttributesEntry* entry;
+  ASSERT_TRUE(profile_manager->GetProfileAttributesStorage().
+              GetProfileAttributesWithPath(path_profile2, &entry));
   WaitAndValidateBrowserWindowProperties(
       base::Bind(&ValidateBrowserWindowProperties,
                  profile2_browser,
-                 cache.GetNameOfProfileAtIndex(profile2_index)));
+                 entry->GetName()));
 }
 
 // http://crbug.com/396344

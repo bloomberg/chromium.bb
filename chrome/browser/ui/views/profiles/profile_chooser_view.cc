@@ -11,7 +11,6 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_window.h"
@@ -671,7 +670,7 @@ ProfileChooserView::ProfileChooserView(views::View* anchor_view,
   ResetView();
 
   avatar_menu_.reset(new AvatarMenu(
-      &g_browser_process->profile_manager()->GetProfileInfoCache(),
+      &g_browser_process->profile_manager()->GetProfileAttributesStorage(),
       this,
       browser_));
   avatar_menu_->RebuildMenu();

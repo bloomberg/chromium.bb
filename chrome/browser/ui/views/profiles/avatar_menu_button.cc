@@ -12,8 +12,9 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/browser.h"
@@ -117,16 +118,15 @@ bool AvatarMenuButton::GetAvatarImages(BrowserView* browser_view,
                                       &is_badge_rectangle);
 #endif
   } else if (should_show_avatar_menu) {
-    ProfileInfoCache& cache =
-        g_browser_process->profile_manager()->GetProfileInfoCache();
-    size_t index = cache.GetIndexOfProfileWithPath(profile->GetPath());
-    if (index == std::string::npos)
+    ProfileAttributesEntry* entry;
+    if (!g_browser_process->profile_manager()->GetProfileAttributesStorage().
+        GetProfileAttributesWithPath(profile->GetPath(), &entry))
       return false;
 
 #if defined(OS_CHROMEOS)
     AvatarMenu::GetImageForMenuButton(profile->GetPath(), avatar, is_rectangle);
 #else
-    *avatar = cache.GetAvatarIconOfProfileAtIndex(index);
+    *avatar = entry->GetAvatarIcon();
     // TODO(noms): Once the code for the old avatar menu button is removed,
     // this function will only be called for badging the taskbar icon.  The
     // function can be renamed to something like GetAvatarImageForBadging()

@@ -9,6 +9,7 @@
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/views/profiles/avatar_button_delegate.h"
@@ -101,7 +102,8 @@ NewAvatarButton::NewAvatarButton(AvatarButtonDelegate* delegate,
         *rb->GetImageNamed(IDR_AVATAR_NATIVE_BUTTON_AVATAR).ToImageSkia();
   }
 
-  g_browser_process->profile_manager()->GetProfileInfoCache().AddObserver(this);
+  g_browser_process->profile_manager()->
+      GetProfileAttributesStorage().AddObserver(this);
 
   // Subscribe to authentication error changes so that the avatar button can
   // update itself.  Note that guest mode profiles won't have a token service.
@@ -117,8 +119,9 @@ NewAvatarButton::NewAvatarButton(AvatarButtonDelegate* delegate,
 
 NewAvatarButton::~NewAvatarButton() {
   g_browser_process->profile_manager()->
-      GetProfileInfoCache().RemoveObserver(this);
-  SigninErrorController* error = profiles::GetSigninErrorController(profile_);
+      GetProfileAttributesStorage().RemoveObserver(this);
+  SigninErrorController* error =
+      profiles::GetSigninErrorController(profile_);
   if (error)
     error->RemoveObserver(this);
 }
@@ -183,15 +186,16 @@ void NewAvatarButton::OnErrorChanged() {
 }
 
 void NewAvatarButton::Update() {
-  const ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
+  ProfileAttributesStorage& storage =
+      g_browser_process->profile_manager()->GetProfileAttributesStorage();
 
   // If we have a single local profile, then use the generic avatar
   // button instead of the profile name. Never use the generic button if
   // the active profile is Guest.
-  bool use_generic_button =
-      (!profile_->IsGuestSession() && cache.GetNumberOfProfiles() == 1 &&
-       !cache.ProfileIsAuthenticatedAtIndex(0));
+  const bool use_generic_button =
+      !profile_->IsGuestSession() &&
+      storage.GetNumberOfProfiles() == 1 &&
+      storage.GetAllProfilesAttributes().front()->IsAuthenticated();
 
   SetText(use_generic_button
               ? base::string16()

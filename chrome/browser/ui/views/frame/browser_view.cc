@@ -32,8 +32,9 @@
 #include "chrome/browser/native_window_notification_source.h"
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -641,10 +642,9 @@ bool BrowserView::ShouldShowAvatar() const {
   // Tests may not have a profile manager.
   if (!g_browser_process->profile_manager())
     return false;
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  if (cache.GetIndexOfProfileWithPath(browser_->profile()->GetPath()) ==
-      std::string::npos) {
+  ProfileAttributesEntry* entry;
+  if (!g_browser_process->profile_manager()->GetProfileAttributesStorage().
+      GetProfileAttributesWithPath(browser_->profile()->GetPath(), &entry)) {
     return false;
   }
 

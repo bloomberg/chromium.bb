@@ -29,6 +29,7 @@ class AvatarMenuActions;
 class AvatarMenuObserver;
 class Browser;
 class Profile;
+class ProfileAttributesStorage;
 class ProfileInfoInterface;
 class ProfileList;
 class SupervisedUserService;
@@ -90,7 +91,7 @@ class AvatarMenu :
 
   // Constructor. |observer| can be NULL. |browser| can be NULL and a new one
   // will be created if an action requires it.
-  AvatarMenu(ProfileInfoInterface* profile_cache,
+  AvatarMenu(ProfileAttributesStorage* profile_storage,
              AvatarMenuObserver* observer,
              Browser* browser);
   ~AvatarMenu() override;

@@ -63,9 +63,9 @@ class ProfileListDesktopTest : public testing::Test {
     mock_observer_.reset(new MockObserver());
     EXPECT_EQ(0, change_count());
 
-    // Reset the model.
+    // Reset the menu.
     avatar_menu_.reset(new AvatarMenu(
-        manager()->profile_info_cache(),
+        manager()->profile_attributes_storage(),
         mock_observer_.get(),
         NULL));
     avatar_menu_->RebuildMenu();

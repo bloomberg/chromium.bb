@@ -9,7 +9,6 @@
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -31,22 +30,19 @@
 BrowserNonClientFrameView::BrowserNonClientFrameView(BrowserFrame* frame,
                                                      BrowserView* browser_view)
     : frame_(frame),
-      browser_view_(browser_view),
-      avatar_button_(nullptr) {
+      browser_view_(browser_view) {
   // The profile manager may by null in tests.
   if (g_browser_process->profile_manager()) {
-    ProfileInfoCache& cache =
-        g_browser_process->profile_manager()->GetProfileInfoCache();
-    cache.AddObserver(this);
+    g_browser_process->profile_manager()->
+        GetProfileAttributesStorage().AddObserver(this);
   }
 }
 
 BrowserNonClientFrameView::~BrowserNonClientFrameView() {
   // The profile manager may by null in tests.
   if (g_browser_process->profile_manager()) {
-    ProfileInfoCache& cache =
-        g_browser_process->profile_manager()->GetProfileInfoCache();
-    cache.RemoveObserver(this);
+    g_browser_process->profile_manager()->
+        GetProfileAttributesStorage().RemoveObserver(this);
   }
 }
 
@@ -233,9 +229,9 @@ void BrowserNonClientFrameView::UpdateTaskbarDecoration() {
     // In tests, make sure that the browser process and profile manager are
     // valid before using.
     if (g_browser_process && g_browser_process->profile_manager()) {
-      const ProfileInfoCache& cache =
-          g_browser_process->profile_manager()->GetProfileInfoCache();
-      show_decoration = show_decoration && cache.GetNumberOfProfiles() > 1;
+      const ProfileAttributesStorage& storage =
+          g_browser_process->profile_manager()->GetProfileAttributesStorage();
+      show_decoration = show_decoration && storage.GetNumberOfProfiles() > 1;
     }
     chrome::DrawTaskbarDecoration(frame_->GetNativeWindow(),
         show_decoration

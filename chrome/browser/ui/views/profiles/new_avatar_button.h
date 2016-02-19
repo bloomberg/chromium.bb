@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_PROFILES_NEW_AVATAR_BUTTON_H_
 
 #include "base/macros.h"
-#include "chrome/browser/profiles/profile_info_cache_observer.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/ui/views/profiles/avatar_button_style.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "ui/views/controls/button/label_button.h"
@@ -16,7 +16,7 @@ class Profile;
 
 // Avatar button that displays the active profile's name in the caption area.
 class NewAvatarButton : public views::LabelButton,
-                        public ProfileInfoCacheObserver,
+                        public ProfileAttributesStorage::Observer,
                         public SigninErrorController::Observer {
  public:
   NewAvatarButton(AvatarButtonDelegate* delegate,
@@ -34,7 +34,7 @@ class NewAvatarButton : public views::LabelButton,
  private:
   friend class ProfileChooserViewExtensionsTest;
 
-  // ProfileInfoCacheObserver:
+  // ProfileAttributesStorage::Observer:
   void OnProfileAdded(const base::FilePath& profile_path) override;
   void OnProfileWasRemoved(const base::FilePath& profile_path,
                            const base::string16& profile_name) override;
