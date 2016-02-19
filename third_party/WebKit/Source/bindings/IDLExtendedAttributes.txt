@@ -93,7 +93,6 @@ SetWrapperReferenceFrom=*
 SetWrapperReferenceTo=*
 SetterCallWith=ExecutionContext|ScriptArguments|ActiveWindow|FirstWindow
 TreatNullAs=NullString|EmptyString
-TreatReturnedNullStringAs=Null|Undefined
 TreatUndefinedAs=NullString
 URL
 Unforgeable

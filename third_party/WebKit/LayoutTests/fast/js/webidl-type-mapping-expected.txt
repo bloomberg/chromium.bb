@@ -1025,28 +1025,12 @@ PASS converter.testByteString = {toString: function() { throw Error(); }} threw 
 PASS converter.testByteString is "!@#123ABCabc\u0000ÿ\r\n\t"
 converter.testByteString = true
 PASS converter.testByteString is "true"
-PASS converter.testByteStringTreatReturnedNullStringAsNullAttribute is "true"
-PASS converter.testByteStringTreatReturnedNullStringAsUndefinedAttribute is "true"
-PASS converter.getTestByteStringTreatReturnedNullStringAsNullMethod() is "true"
-PASS converter.getTestByteStringTreatReturnedNullStringAsUndefinedMethod() is "true"
 converter.testByteString = 123
 PASS converter.testByteString is "123"
-PASS converter.testByteStringTreatReturnedNullStringAsNullAttribute is "123"
-PASS converter.testByteStringTreatReturnedNullStringAsUndefinedAttribute is "123"
-PASS converter.getTestByteStringTreatReturnedNullStringAsNullMethod() is "123"
-PASS converter.getTestByteStringTreatReturnedNullStringAsUndefinedMethod() is "123"
 converter.testByteString = null
 PASS converter.testByteString is "null"
-PASS converter.testByteStringTreatReturnedNullStringAsNullAttribute is "null"
-PASS converter.testByteStringTreatReturnedNullStringAsUndefinedAttribute is "null"
-PASS converter.getTestByteStringTreatReturnedNullStringAsNullMethod() is "null"
-PASS converter.getTestByteStringTreatReturnedNullStringAsUndefinedMethod() is "null"
 converter.testByteString = undefined
 PASS converter.testByteString is "undefined"
-PASS converter.testByteStringTreatReturnedNullStringAsNullAttribute is "undefined"
-PASS converter.testByteStringTreatReturnedNullStringAsUndefinedAttribute is "undefined"
-PASS converter.getTestByteStringTreatReturnedNullStringAsNullMethod() is "undefined"
-PASS converter.getTestByteStringTreatReturnedNullStringAsUndefinedMethod() is "undefined"
 PASS converter.setTestByteString('abc') did not throw exception.
 PASS converter.setTestByteStringDefaultNull('abc') did not throw exception.
 PASS converter.setTestByteString('\u0100') threw exception TypeError: Failed to execute 'setTestByteString' on 'TypeConversions': Value is not a valid ByteString..
@@ -1054,10 +1038,6 @@ PASS converter.setTestByteStringDefaultNull('\u0100') threw exception TypeError:
 PASS converter.setTestByteString() threw exception TypeError: Failed to execute 'setTestByteString' on 'TypeConversions': 1 argument required, but only 0 present..
 PASS converter.setTestByteStringDefaultNull() did not throw exception.
 PASS converter.testByteString is ""
-PASS converter.testByteStringTreatReturnedNullStringAsNullAttribute is null
-PASS converter.testByteStringTreatReturnedNullStringAsUndefinedAttribute is undefined.
-PASS converter.getTestByteStringTreatReturnedNullStringAsNullMethod() is null
-PASS converter.getTestByteStringTreatReturnedNullStringAsUndefinedMethod() is undefined.
 converter.testUSVString = '!@#123ABCabc\x00\x80\xFF\r\n\t'
 PASS converter.testUSVString is "!@#123ABCabc\u0000ÿ\r\n\t"
 converter.testUSVString = '\u0100'
@@ -1078,28 +1058,12 @@ converter.testUSVString = "𝄞"
 PASS converter.testUSVString is "𝄞"
 converter.testUSVString = true
 PASS converter.testUSVString is "true"
-PASS converter.testUSVStringTreatReturnedNullStringAsNullAttribute is "true"
-PASS converter.testUSVStringTreatReturnedNullStringAsUndefinedAttribute is "true"
-PASS converter.getTestUSVStringTreatReturnedNullStringAsNullMethod() is "true"
-PASS converter.getTestUSVStringTreatReturnedNullStringAsUndefinedMethod() is "true"
 converter.testUSVString = 123
 PASS converter.testUSVString is "123"
-PASS converter.testUSVStringTreatReturnedNullStringAsNullAttribute is "123"
-PASS converter.testUSVStringTreatReturnedNullStringAsUndefinedAttribute is "123"
-PASS converter.getTestUSVStringTreatReturnedNullStringAsNullMethod() is "123"
-PASS converter.getTestUSVStringTreatReturnedNullStringAsUndefinedMethod() is "123"
 converter.testUSVString = null
 PASS converter.testUSVString is "null"
-PASS converter.testUSVStringTreatReturnedNullStringAsNullAttribute is "null"
-PASS converter.testUSVStringTreatReturnedNullStringAsUndefinedAttribute is "null"
-PASS converter.getTestUSVStringTreatReturnedNullStringAsNullMethod() is "null"
-PASS converter.getTestUSVStringTreatReturnedNullStringAsUndefinedMethod() is "null"
 converter.testUSVString = undefined
 PASS converter.testUSVString is "undefined"
-PASS converter.testUSVStringTreatReturnedNullStringAsNullAttribute is "undefined"
-PASS converter.testUSVStringTreatReturnedNullStringAsUndefinedAttribute is "undefined"
-PASS converter.getTestUSVStringTreatReturnedNullStringAsNullMethod() is "undefined"
-PASS converter.getTestUSVStringTreatReturnedNullStringAsUndefinedMethod() is "undefined"
 PASS converter.setTestUSVString('abc') did not throw exception.
 PASS converter.setTestUSVStringDefaultNull('abc') did not throw exception.
 PASS converter.setTestUSVString('\u0100') did not throw exception.
@@ -1107,10 +1071,6 @@ PASS converter.setTestUSVStringDefaultNull('\u0100') did not throw exception.
 PASS converter.setTestUSVString() threw exception TypeError: Failed to execute 'setTestUSVString' on 'TypeConversions': 1 argument required, but only 0 present..
 PASS converter.setTestUSVStringDefaultNull() did not throw exception.
 PASS converter.testUSVString is ""
-PASS converter.testUSVStringTreatReturnedNullStringAsNullAttribute is null
-PASS converter.testUSVStringTreatReturnedNullStringAsUndefinedAttribute is undefined.
-PASS converter.getTestUSVStringTreatReturnedNullStringAsNullMethod() is null
-PASS converter.getTestUSVStringTreatReturnedNullStringAsUndefinedMethod() is undefined.
 PASS successfullyParsed is true
 
 TEST COMPLETE

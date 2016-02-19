@@ -184,16 +184,6 @@ inline void v8SetReturnValueStringOrNull(const CallbackInfo& info, const String&
 }
 
 template<typename CallbackInfo>
-inline void v8SetReturnValueStringOrUndefined(const CallbackInfo& info, const String& string, v8::Isolate* isolate)
-{
-    if (string.isNull()) {
-        v8SetReturnValueUndefined(info);
-        return;
-    }
-    V8PerIsolateData::from(isolate)->stringCache()->setReturnValueFromString(info.GetReturnValue(), string.impl());
-}
-
-template<typename CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, ScriptWrappable* impl, v8::Local<v8::Object> creationContext)
 {
     if (UNLIKELY(!impl)) {

@@ -589,10 +589,6 @@ shouldBeEqualToString("converter.testByteString", "!@#123ABCabc\x00\x80\xFF\r\n\
 ["true", "123", "null", "undefined"].forEach(function(value) {
     evalAndLog("converter.testByteString = " + value);
     shouldBeEqualToString("converter.testByteString", value);
-    shouldBeEqualToString("converter.testByteStringTreatReturnedNullStringAsNullAttribute", value);
-    shouldBeEqualToString("converter.testByteStringTreatReturnedNullStringAsUndefinedAttribute", value);
-    shouldBeEqualToString("converter.getTestByteStringTreatReturnedNullStringAsNullMethod()", value);
-    shouldBeEqualToString("converter.getTestByteStringTreatReturnedNullStringAsUndefinedMethod()", value);
 });
 shouldNotThrow("converter.setTestByteString('abc')");
 shouldNotThrow("converter.setTestByteStringDefaultNull('abc')");
@@ -601,10 +597,6 @@ shouldThrow("converter.setTestByteStringDefaultNull('\\u0100')");
 shouldThrow("converter.setTestByteString()");
 shouldNotThrow("converter.setTestByteStringDefaultNull()");
 shouldBeEqualToString("converter.testByteString", "");
-shouldBeNull("converter.testByteStringTreatReturnedNullStringAsNullAttribute");
-shouldBeUndefined("converter.testByteStringTreatReturnedNullStringAsUndefinedAttribute");
-shouldBeNull("converter.getTestByteStringTreatReturnedNullStringAsNullMethod()");
-shouldBeUndefined("converter.getTestByteStringTreatReturnedNullStringAsUndefinedMethod()");
 
 evalAndLog("converter.testUSVString = '!@#123ABCabc\\x00\\x80\\xFF\\r\\n\\t'");
 shouldBeEqualToString("converter.testUSVString", "!@#123ABCabc\x00\x80\xFF\r\n\t");
@@ -625,10 +617,6 @@ shouldBeEqualToString("converter.testUSVString", "\u0100");
 ["true", "123", "null", "undefined"].forEach(function(value) {
     evalAndLog("converter.testUSVString = " + value);
     shouldBeEqualToString("converter.testUSVString", value);
-    shouldBeEqualToString("converter.testUSVStringTreatReturnedNullStringAsNullAttribute", value);
-    shouldBeEqualToString("converter.testUSVStringTreatReturnedNullStringAsUndefinedAttribute", value);
-    shouldBeEqualToString("converter.getTestUSVStringTreatReturnedNullStringAsNullMethod()", value);
-    shouldBeEqualToString("converter.getTestUSVStringTreatReturnedNullStringAsUndefinedMethod()", value);
 });
 shouldNotThrow("converter.setTestUSVString('abc')");
 shouldNotThrow("converter.setTestUSVStringDefaultNull('abc')");
@@ -637,9 +625,5 @@ shouldNotThrow("converter.setTestUSVStringDefaultNull('\\u0100')");
 shouldThrow("converter.setTestUSVString()");
 shouldNotThrow("converter.setTestUSVStringDefaultNull()");
 shouldBeEqualToString("converter.testUSVString", "");
-shouldBeNull("converter.testUSVStringTreatReturnedNullStringAsNullAttribute");
-shouldBeUndefined("converter.testUSVStringTreatReturnedNullStringAsUndefinedAttribute");
-shouldBeNull("converter.getTestUSVStringTreatReturnedNullStringAsNullMethod()");
-shouldBeUndefined("converter.getTestUSVStringTreatReturnedNullStringAsUndefinedMethod()");
 
 </script>

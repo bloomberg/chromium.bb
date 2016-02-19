@@ -47,18 +47,10 @@
     [EnforceRange, ImplementedAs=testUnsignedShort] attribute unsigned short testEnforceRangeUnsignedShort;
 
     attribute ByteString testByteString;
-    [ImplementedAs=testByteString, TreatReturnedNullStringAs=Null] attribute ByteString testByteStringTreatReturnedNullStringAsNullAttribute;
-    [ImplementedAs=testByteString, TreatReturnedNullStringAs=Undefined] attribute ByteString testByteStringTreatReturnedNullStringAsUndefinedAttribute;
-    [ImplementedAs=testByteString] ByteString? getTestByteStringTreatReturnedNullStringAsNullMethod();
-    [ImplementedAs=testByteString, TreatReturnedNullStringAs=Undefined] ByteString getTestByteStringTreatReturnedNullStringAsUndefinedMethod();
     void setTestByteString(ByteString byteString);
     [ImplementedAs=setTestByteString] void setTestByteStringDefaultNull(optional ByteString byteString = null);
 
     attribute USVString testUSVString;
-    [ImplementedAs=testUSVString, TreatReturnedNullStringAs=Null] attribute USVString testUSVStringTreatReturnedNullStringAsNullAttribute;
-    [ImplementedAs=testUSVString, TreatReturnedNullStringAs=Undefined] attribute USVString testUSVStringTreatReturnedNullStringAsUndefinedAttribute;
-    [ImplementedAs=testUSVString] USVString? getTestUSVStringTreatReturnedNullStringAsNullMethod();
-    [ImplementedAs=testUSVString, TreatReturnedNullStringAs=Undefined] USVString getTestUSVStringTreatReturnedNullStringAsUndefinedMethod();
     void setTestUSVString(USVString usvString);
     [ImplementedAs=setTestUSVString] void setTestUSVStringDefaultNull(optional USVString usvString = null);
 };
