@@ -578,7 +578,7 @@ tests:
     - ⠠⠙⠥ ⠋⠊⠝⠝⠑⠗ ⠁⠇⠇⠞⠊⠙ ⠋⠑⠗⠎⠅⠑ ⠝⠽⠓⠑⠞⠑⠗ ⠏⠡ ⠣⠺⠺⠺⠄⠝⠗⠅⠄⠝⠕⠜⠄
     - {xfail: true}
   -
-    - 'set path=c:\prog;%PATH%'
+    - 'set path=c:\\prog;%PATH%'
     - ⠎⠑⠞ ⠏⠁⠞⠓⠶⠉⠒⠱⠏⠗⠕⠛⠆⠫⠠⠠⠏⠁⠞⠓⠫
     - {xfail: true}
   -
