@@ -63,14 +63,7 @@ class ProfileSyncServiceBundle {
   typedef FakeSigninManager FakeSigninManagerType;
 #endif
 
-  // Use this if you don't care about threads.
   ProfileSyncServiceBundle();
-
-  // Use this to inject threads directly.
-  ProfileSyncServiceBundle(
-      const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
-      const scoped_refptr<base::SingleThreadTaskRunner>& file_thread,
-      base::SequencedWorkerPool* worker_pool);
 
   ~ProfileSyncServiceBundle();
 
@@ -165,23 +158,14 @@ class ProfileSyncServiceBundle {
 
   base::SingleThreadTaskRunner* db_thread() { return db_thread_.get(); }
 
-  base::SingleThreadTaskRunner* file_thread() { return file_thread_.get(); }
+  void set_db_thread(
+      const scoped_refptr<base::SingleThreadTaskRunner>& db_thread) {
+    db_thread_ = db_thread;
+  }
 
  private:
-  struct ThreadProvider;  // Helper to create threads and worker pool.
-
-  // Either |thread_provider| must be null and or the other arguments non-null,
-  // or vice versa.
-  ProfileSyncServiceBundle(
-      scoped_ptr<ThreadProvider> thread_provider,
-      scoped_refptr<base::SingleThreadTaskRunner> db_thread,
-      scoped_refptr<base::SingleThreadTaskRunner> file_thread,
-      base::SequencedWorkerPool* worker_pool);
-
-  scoped_ptr<ThreadProvider> thread_provider_;
-  const scoped_refptr<base::SingleThreadTaskRunner> db_thread_;
-  const scoped_refptr<base::SingleThreadTaskRunner> file_thread_;
-  base::SequencedWorkerPool* const worker_pool_;
+  scoped_refptr<base::SingleThreadTaskRunner> db_thread_;
+  base::SequencedWorkerPoolOwner worker_pool_owner_;
   syncable_prefs::TestingPrefServiceSyncable pref_service_;
   TestSigninClient signin_client_;
   AccountTrackerService account_tracker_;

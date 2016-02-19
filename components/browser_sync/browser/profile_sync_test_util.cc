@@ -217,76 +217,13 @@ ProfileSyncServiceBundle::SyncClientBuilder::Build() {
       personal_data_manager_, get_syncable_service_callback_,
       get_sync_service_callback_,
       activate_model_creation_ ? bundle_->db_thread() : nullptr,
-      activate_model_creation_ ? bundle_->file_thread() : nullptr,
+      activate_model_creation_ ? base::ThreadTaskRunnerHandle::Get() : nullptr,
       history_service_));
 }
 
-struct ProfileSyncServiceBundle::ThreadProvider {
- public:
-  ThreadProvider() : worker_pool_owner_(2, "sync test worker pool") {
-    DCHECK(base::MessageLoop::current())
-        << "The test including the bundle also needs to include a MessageLoop";
-  }
-  ~ThreadProvider() = default;
-
-  base::SequencedWorkerPoolOwner worker_pool_owner_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ThreadProvider);
-};
-
 ProfileSyncServiceBundle::ProfileSyncServiceBundle()
-    : ProfileSyncServiceBundle(make_scoped_ptr(new ThreadProvider),
-                               nullptr,
-                               nullptr,
-                               nullptr) {}
-
-ProfileSyncServiceBundle::ProfileSyncServiceBundle(
-    const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
-    const scoped_refptr<base::SingleThreadTaskRunner>& file_thread,
-    base::SequencedWorkerPool* worker_pool)
-    : ProfileSyncServiceBundle(nullptr, db_thread, file_thread, worker_pool) {}
-
-ProfileSyncServiceBundle::~ProfileSyncServiceBundle() {}
-
-ProfileSyncService::InitParams ProfileSyncServiceBundle::CreateBasicInitParams(
-    browser_sync::ProfileSyncServiceStartBehavior start_behavior,
-    scoped_ptr<sync_driver::SyncClient> sync_client) {
-  DCHECK(worker_pool_);
-
-  ProfileSyncService::InitParams init_params;
-
-  init_params.start_behavior = start_behavior;
-  init_params.sync_client = std::move(sync_client);
-  init_params.signin_wrapper =
-      make_scoped_ptr(new SigninManagerWrapper(signin_manager()));
-  init_params.oauth2_token_service = auth_service();
-  init_params.network_time_update_callback =
-      base::Bind(&EmptyNetworkTimeUpdate);
-  init_params.base_directory = base::FilePath(FILE_PATH_LITERAL("dummyPath"));
-  init_params.url_request_context = url_request_context();
-  init_params.debug_identifier = "dummyDebugName";
-  init_params.channel = version_info::Channel::UNKNOWN;
-  init_params.db_thread = db_thread_;
-  init_params.file_thread = file_thread_;
-  init_params.blocking_pool = worker_pool_;
-
-  return init_params;
-}
-
-ProfileSyncServiceBundle::ProfileSyncServiceBundle(
-    scoped_ptr<ThreadProvider> thread_provider,
-    scoped_refptr<base::SingleThreadTaskRunner> db_thread,
-    scoped_refptr<base::SingleThreadTaskRunner> file_thread,
-    base::SequencedWorkerPool* worker_pool)
-    : thread_provider_(std::move(thread_provider)),
-      db_thread_(thread_provider_ ? base::ThreadTaskRunnerHandle::Get()
-                                  : db_thread),
-      file_thread_(thread_provider_ ? base::ThreadTaskRunnerHandle::Get()
-                                    : file_thread),
-      worker_pool_(thread_provider_
-                       ? thread_provider_->worker_pool_owner_.pool().get()
-                       : worker_pool),
+    : db_thread_(base::ThreadTaskRunnerHandle::Get()),
+      worker_pool_owner_(2, "sync test worker pool"),
       signin_client_(&pref_service_),
 #if defined(OS_CHROMEOS)
       signin_manager_(&signin_client_, &account_tracker_),
@@ -302,6 +239,31 @@ ProfileSyncServiceBundle::ProfileSyncServiceBundle(
   auth_service_.set_auto_post_fetch_response_on_message_loop(true);
   account_tracker_.Initialize(&signin_client_);
   signin_manager_.Initialize(&pref_service_);
+}
+
+ProfileSyncServiceBundle::~ProfileSyncServiceBundle() {}
+
+ProfileSyncService::InitParams ProfileSyncServiceBundle::CreateBasicInitParams(
+    browser_sync::ProfileSyncServiceStartBehavior start_behavior,
+    scoped_ptr<sync_driver::SyncClient> sync_client) {
+  ProfileSyncService::InitParams init_params;
+
+  init_params.start_behavior = start_behavior;
+  init_params.sync_client = std::move(sync_client);
+  init_params.signin_wrapper =
+      make_scoped_ptr(new SigninManagerWrapper(signin_manager()));
+  init_params.oauth2_token_service = auth_service();
+  init_params.network_time_update_callback =
+      base::Bind(&EmptyNetworkTimeUpdate);
+  init_params.base_directory = base::FilePath(FILE_PATH_LITERAL("dummyPath"));
+  init_params.url_request_context = url_request_context();
+  init_params.debug_identifier = "dummyDebugName";
+  init_params.channel = version_info::Channel::UNKNOWN;
+  init_params.db_thread = db_thread_;
+  init_params.file_thread = base::ThreadTaskRunnerHandle::Get();
+  init_params.blocking_pool = worker_pool_owner_.pool().get();
+
+  return init_params;
 }
 
 }  // namespace browser_sync

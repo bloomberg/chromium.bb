@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/browser_sync/browser/profile_sync_test_util.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/change_record.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -58,7 +57,10 @@ class AbstractProfileSyncServiceTest : public testing::Test {
       scoped_ptr<sync_driver::SyncClient> sync_client,
       const base::Closure& initialization_success_callback);
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  // Use |data_type_thread_| for code disallowed on the UI thread.
+  base::Thread data_type_thread_;
+
+  base::MessageLoop message_loop_;
   browser_sync::ProfileSyncServiceBundle profile_sync_service_bundle_;
   scoped_ptr<TestProfileSyncService> sync_service_;
 

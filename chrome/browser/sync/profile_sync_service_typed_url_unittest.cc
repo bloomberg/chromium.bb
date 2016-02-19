@@ -165,21 +165,21 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
   }
 
  protected:
-  ProfileSyncServiceTypedUrlTest() : history_thread_("history") {
+  ProfileSyncServiceTypedUrlTest() {
     profile_sync_service_bundle_.pref_service()
         ->registry()
         ->RegisterBooleanPref(kDummySavingBrowserHistoryDisabled, false);
 
-    history_thread_.Start();
+    data_type_thread_.Start();
     base::RunLoop run_loop;
-    history_thread_.task_runner()->PostTaskAndReply(
+    data_type_thread_.task_runner()->PostTaskAndReply(
         FROM_HERE,
         base::Bind(&ProfileSyncServiceTypedUrlTest::CreateHistoryService,
                    base::Unretained(this)),
         run_loop.QuitClosure());
     run_loop.Run();
     history_service_ = make_scoped_ptr(new HistoryServiceMock);
-    history_service_->set_task_runner(history_thread_.task_runner());
+    history_service_->set_task_runner(data_type_thread_.task_runner());
     history_service_->set_backend(history_backend_);
 
     browser_sync::ProfileSyncServiceBundle::SyncClientBuilder builder(
@@ -201,7 +201,10 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
         new TestTypedUrlSyncableService(history_backend_.get()));
   }
 
-  void DeleteSyncableService() { syncable_service_.reset(); }
+  void DeleteSyncableService() {
+    syncable_service_.reset();
+    history_backend_ = nullptr;
+  }
 
   ~ProfileSyncServiceTypedUrlTest() override {
     history_service_->Shutdown();
@@ -220,11 +223,12 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
       run_loop.Run();
     }
 
-    sync_service_->Shutdown();
+    // Spin the loop again for deletion tasks posted from the Sync thread.
+    base::RunLoop().RunUntilIdle();
 
     {
       base::RunLoop run_loop;
-      history_thread_.task_runner()->PostTaskAndReply(
+      data_type_thread_.task_runner()->PostTaskAndReply(
           FROM_HERE,
           base::Bind(&ProfileSyncServiceTypedUrlTest::DeleteSyncableService,
                      base::Unretained(this)),
@@ -297,7 +301,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
   }
 
   void SendNotification(const base::Closure& task) {
-    history_thread_.task_runner()->PostTaskAndReply(
+    data_type_thread_.task_runner()->PostTaskAndReply(
         FROM_HERE, task,
         base::Bind(&base::MessageLoop::QuitNow,
                    base::Unretained(base::MessageLoop::current())));
@@ -374,9 +378,6 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
     return syncable_service_->AsWeakPtr();
   }
 
-  // The separate thread is needed, because TypedUrlDataTypeController
-  // requires to run on another thread than the UI thread.
-  base::Thread history_thread_;
   scoped_refptr<HistoryBackendMock> history_backend_;
   scoped_ptr<HistoryServiceMock> history_service_;
   sync_driver::DataTypeErrorHandlerMock error_handler_;

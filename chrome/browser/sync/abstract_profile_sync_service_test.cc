@@ -15,14 +15,12 @@
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "components/sync_driver/glue/sync_backend_host_core.h"
 #include "components/sync_driver/sync_api_component_factory_mock.h"
-#include "content/public/test/test_utils.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "sync/internal_api/public/test/sync_manager_factory_for_profile_sync_test.h"
 #include "sync/internal_api/public/test/test_internal_components_factory.h"
 #include "sync/internal_api/public/test/test_user_share.h"
 #include "sync/protocol/sync.pb.h"
 
-using content::BrowserThread;
 using syncer::ModelType;
 using testing::_;
 using testing::Return;
@@ -163,22 +161,12 @@ ProfileSyncServiceTestHelper::MakeSingletonDeletionChangeRecordList(
 }
 
 AbstractProfileSyncServiceTest::AbstractProfileSyncServiceTest()
-    // Purposefully do not use a real FILE thread, see crbug/550013.
-    : thread_bundle_(content::TestBrowserThreadBundle::REAL_DB_THREAD |
-                     content::TestBrowserThreadBundle::REAL_IO_THREAD),
-      profile_sync_service_bundle_(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
-          BrowserThread::GetBlockingPool()) {
+    : data_type_thread_("Extra thread") {
   CHECK(temp_dir_.CreateUniqueTempDir());
 }
 
 AbstractProfileSyncServiceTest::~AbstractProfileSyncServiceTest() {
-  // Pump messages posted by the sync core thread (which may end up
-  // posting on the IO thread).
-  base::RunLoop().RunUntilIdle();
-  content::RunAllPendingInMessageLoop(content::BrowserThread::IO);
-  base::RunLoop().RunUntilIdle();
+  sync_service_->Shutdown();
 }
 
 bool AbstractProfileSyncServiceTest::CreateRoot(ModelType model_type) {

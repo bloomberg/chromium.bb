@@ -18,7 +18,7 @@ class SyncPrefs;
 
 class TestProfileSyncService : public ProfileSyncService {
  public:
-  explicit TestProfileSyncService(ProfileSyncService::InitParams init_params);
+  explicit TestProfileSyncService(InitParams init_params);
 
   ~TestProfileSyncService() override;
 
