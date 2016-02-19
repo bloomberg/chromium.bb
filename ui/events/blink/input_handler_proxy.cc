@@ -436,6 +436,11 @@ bool InputHandlerProxy::ShouldAnimate(
 
 InputHandlerProxy::EventDisposition InputHandlerProxy::HandleMouseWheel(
     const WebMouseWheelEvent& wheel_event) {
+  // Only call |CancelCurrentFling()| if a fling was active, as it will
+  // otherwise disrupt an in-progress touch scroll.
+  if (!wheel_event.hasPreciseScrollingDeltas && fling_curve_)
+    CancelCurrentFling();
+
   if (use_gesture_events_for_mouse_wheel_) {
     cc::EventListenerProperties properties =
         input_handler_->GetEventListenerProperties(

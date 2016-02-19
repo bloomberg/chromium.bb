@@ -120,6 +120,7 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
                          float velocity_x,
                          float velocity_y,
                          gin::Arguments* args);
+  bool IsFlinging() const;
   void GestureScrollFirstPoint(int x, int y);
 
   void TouchStart();

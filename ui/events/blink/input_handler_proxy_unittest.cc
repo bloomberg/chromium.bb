@@ -2098,6 +2098,71 @@ TEST_P(InputHandlerProxyTest, GestureFlingCancelledByKeyboardEvent) {
   EXPECT_FALSE(input_handler_->gesture_scroll_on_impl_thread_for_testing());
 }
 
+TEST_P(InputHandlerProxyTest, GestureFlingCancelledByWheelEvent) {
+  // We shouldn't send any events to the widget for this gesture.
+  expected_disposition_ = InputHandlerProxy::DID_HANDLE;
+  VERIFY_AND_RESET_MOCKS();
+
+  EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
+      .WillOnce(testing::Return(kImplThreadScrollState));
+
+  gesture_.type = WebInputEvent::GestureScrollBegin;
+  gesture_.sourceDevice = blink::WebGestureDeviceTouchscreen;
+  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
+  EXPECT_TRUE(input_handler_->gesture_scroll_on_impl_thread_for_testing());
+  VERIFY_AND_RESET_MOCKS();
+
+  // Wheel events received during a scroll shouldn't cancel the fling, but will
+  // cause scrolling.
+  cc::InputHandlerScrollResult result;
+
+  EXPECT_CALL(mock_input_handler_,
+              GetEventListenerProperties(cc::EventListenerClass::kMouseWheel))
+      .WillOnce(testing::Return(cc::EventListenerProperties::kBlocking));
+
+  WebMouseWheelEvent wheel_event;
+  wheel_event.type = WebInputEvent::MouseWheel;
+  input_handler_->HandleInputEvent(wheel_event);
+  EXPECT_TRUE(input_handler_->gesture_scroll_on_impl_thread_for_testing());
+  VERIFY_AND_RESET_MOCKS();
+
+  // On the fling start, animation should be scheduled, but no scrolling occurs.
+  gesture_.type = WebInputEvent::GestureFlingStart;
+  WebFloatPoint fling_delta = WebFloatPoint(100, 100);
+  gesture_.data.flingStart.velocityX = fling_delta.x;
+  gesture_.data.flingStart.velocityY = fling_delta.y;
+  EXPECT_CALL(mock_input_handler_, FlingScrollBegin())
+      .WillOnce(testing::Return(kImplThreadScrollState));
+  EXPECT_SET_NEEDS_ANIMATE_INPUT(1);
+  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
+  EXPECT_TRUE(input_handler_->gesture_scroll_on_impl_thread_for_testing());
+  VERIFY_AND_RESET_MOCKS();
+
+  // Wheel events received during a fling should cancel the active fling, and
+  // cause a scroll.
+  EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
+
+  EXPECT_CALL(mock_input_handler_,
+              GetEventListenerProperties(cc::EventListenerClass::kMouseWheel))
+      .WillOnce(testing::Return(cc::EventListenerProperties::kBlocking));
+
+
+  input_handler_->HandleInputEvent(wheel_event);
+  EXPECT_FALSE(input_handler_->gesture_scroll_on_impl_thread_for_testing());
+  VERIFY_AND_RESET_MOCKS();
+
+  // The call to animate should have no effect, as the fling was cancelled.
+  base::TimeTicks time = base::TimeTicks() + base::TimeDelta::FromSeconds(10);
+  Animate(time);
+  VERIFY_AND_RESET_MOCKS();
+
+  // A fling cancel should be dropped, as there is nothing to cancel.
+  gesture_.type = WebInputEvent::GestureFlingCancel;
+  EXPECT_EQ(InputHandlerProxy::DROP_EVENT,
+            input_handler_->HandleInputEvent(gesture_));
+  EXPECT_FALSE(input_handler_->gesture_scroll_on_impl_thread_for_testing());
+}
+
 TEST_P(InputHandlerProxyTest, GestureFlingWithNegativeTimeDelta) {
   // We shouldn't send any events to the widget for this gesture.
   expected_disposition_ = InputHandlerProxy::DID_HANDLE;

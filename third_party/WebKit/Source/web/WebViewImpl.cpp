@@ -638,6 +638,10 @@ void WebViewImpl::handleMouseUp(LocalFrame& mainFrame, const WebMouseEvent& even
 
 WebInputEventResult WebViewImpl::handleMouseWheel(LocalFrame& mainFrame, const WebMouseWheelEvent& event)
 {
+    // Halt an in-progress fling on a wheel tick.
+    if (!event.hasPreciseScrollingDeltas)
+        endActiveFlingAnimation();
+
     hidePopups();
     return PageWidgetEventHandler::handleMouseWheel(mainFrame, event);
 }

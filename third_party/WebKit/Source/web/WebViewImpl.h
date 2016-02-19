@@ -272,6 +272,7 @@ public:
     WebPageImportanceSignals* pageImportanceSignals() override;
     void transferActiveWheelFlingAnimation(const WebActiveWheelFlingParameters&) override;
     bool endActiveFlingAnimation() override;
+    bool isFlinging() const override { return !!m_gestureAnimation.get(); }
     void setShowPaintRects(bool) override;
     void setShowDebugBorders(bool);
     void setShowFPSCounter(bool) override;

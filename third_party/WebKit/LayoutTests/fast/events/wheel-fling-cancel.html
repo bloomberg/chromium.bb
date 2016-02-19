@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script src="../../../../resources/js-test.js"></script>
+<script src="../../resources/js-test.js"></script>
 <script>
-    description("Tests basic use of GestureFlingCancel");
+    description("Tests that a mouse wheel event will cancel an in progress fling gesture.");
 
     var expectedWheelEventsOccurred = "0";
     var actualWheelEventsOccurred = 0;
@@ -35,11 +35,13 @@
 
     if (window.testRunner && window.eventSender && window.eventSender.gestureFlingStart) {
         eventSender.gestureFlingStart(10, 11, 1000, 1000, "touchpad");
-        eventSender.gestureFlingCancel();
+        window.eventSender.mouseMoveTo(100, 100);
+        window.eventSender.mouseScrollBy(0, 1);
         document.addEventListener("mousewheel", recordWheelEvent);
         testRunner.waitUntilDone();
         notifyWhenFlingIsOver();
     }
+
 </script>
 </head>
 <body>

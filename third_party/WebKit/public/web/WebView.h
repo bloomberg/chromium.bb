@@ -447,6 +447,9 @@ public:
     // Cancels an active fling, returning true if a fling was active.
     virtual bool endActiveFlingAnimation() = 0;
 
+    // Returns true if there's an active fling animation.
+    virtual bool isFlinging() const = 0;
+
     virtual void setShowPaintRects(bool) = 0;
     virtual void setShowFPSCounter(bool) = 0;
     virtual void setShowScrollBottleneckRects(bool) = 0;
