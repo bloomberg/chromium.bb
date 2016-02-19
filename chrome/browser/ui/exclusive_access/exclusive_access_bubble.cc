@@ -74,9 +74,9 @@ void ExclusiveAccessBubble::StartWatchingMouse() {
     hide_timeout_.Start(FROM_HERE,
                         base::TimeDelta::FromMilliseconds(kInitialDelayMs),
                         this, &ExclusiveAccessBubble::CheckMousePosition);
+
+    last_mouse_pos_ = GetCursorScreenPoint();
   }
-  gfx::Point cursor_pos = GetCursorScreenPoint();
-  last_mouse_pos_ = cursor_pos;
   mouse_position_checker_.Start(
       FROM_HERE, base::TimeDelta::FromMilliseconds(1000 / kPositionCheckHz),
       this, &ExclusiveAccessBubble::CheckMousePosition);
@@ -116,11 +116,12 @@ void ExclusiveAccessBubble::CheckMousePosition() {
   // With the "simplified" flag, we ignore all this and just show and hide based
   // on timers (not mouse position).
 
-  gfx::Point cursor_pos = GetCursorScreenPoint();
+  gfx::Point cursor_pos;
+  if (!ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()) {
+    cursor_pos = GetCursorScreenPoint();
 
-  // Check to see whether the mouse is idle.
-  if (cursor_pos != last_mouse_pos_) {
-    if (!ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()) {
+    // Check to see whether the mouse is idle.
+    if (cursor_pos != last_mouse_pos_) {
       // OnUserInput() will reset the idle timer in simplified mode. In classic
       // mode, we need to do this here.
       idle_timeout_.Stop();  // If the timer isn't running, this is a no-op.
@@ -128,10 +129,8 @@ void ExclusiveAccessBubble::CheckMousePosition() {
                           base::TimeDelta::FromMilliseconds(kIdleTimeMs), this,
                           &ExclusiveAccessBubble::CheckMousePosition);
     }
-
-    OnUserInput();
+    last_mouse_pos_ = cursor_pos;
   }
-  last_mouse_pos_ = cursor_pos;
 
   if (ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled() ||
       !IsWindowActive() || !WindowContainsPoint(cursor_pos) ||

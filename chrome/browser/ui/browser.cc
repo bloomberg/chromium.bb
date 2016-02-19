@@ -1628,6 +1628,8 @@ void Browser::ContentsMouseEvent(WebContents* source,
                                  const gfx::Point& location,
                                  bool motion,
                                  bool exited) {
+  exclusive_access_manager_->OnUserInput();
+
   // Mouse motion events update the status bubble, if it exists.
   if (!GetStatusBubble() || (!motion && !exited))
     return;

@@ -3624,6 +3624,49 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, ScrollDeltasResetOnEnd) {
   EXPECT_EQ(0.f, overscroll_delta_y());
 }
 
+TEST_F(RenderWidgetHostViewAuraTest, ForwardMouseEvent) {
+  aura::Window* root = parent_view_->GetNativeView()->GetRootWindow();
+
+  // Set up test delegate and window hierarchy.
+  aura::test::EventCountDelegate delegate;
+  scoped_ptr<aura::Window> parent(new aura::Window(&delegate));
+  parent->Init(ui::LAYER_TEXTURED);
+  root->AddChild(parent.get());
+  view_->InitAsChild(parent.get());
+
+  // Simulate mouse events, ensure they are forwarded to delegate.
+  ui::MouseEvent mouse_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                             ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                             0);
+  view_->OnMouseEvent(&mouse_event);
+  EXPECT_EQ("1 0", delegate.GetMouseButtonCountsAndReset());
+
+  // Simulate mouse events, ensure they are forwarded to delegate.
+  mouse_event = ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(),
+                               ui::EventTimeForNow(), 0, 0);
+  view_->OnMouseEvent(&mouse_event);
+  EXPECT_EQ("0 1 0", delegate.GetMouseMotionCountsAndReset());
+
+  // Lock the mouse, simulate, and ensure they are forwarded.
+  view_->LockMouse();
+
+  mouse_event =
+      ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                     ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0);
+  view_->OnMouseEvent(&mouse_event);
+  EXPECT_EQ("1 0", delegate.GetMouseButtonCountsAndReset());
+
+  mouse_event = ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(),
+                               ui::EventTimeForNow(), 0, 0);
+  view_->OnMouseEvent(&mouse_event);
+  EXPECT_EQ("0 1 0", delegate.GetMouseMotionCountsAndReset());
+
+  view_->UnlockMouse();
+
+  // view_ will be destroyed when parent is destroyed.
+  view_ = nullptr;
+}
+
 // Tests the RenderWidgetHostImpl sends the correct surface ID namespace to
 // the renderer process.
 TEST_F(RenderWidgetHostViewAuraTest, SurfaceIdNamespaceInitialized) {

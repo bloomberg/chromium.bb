@@ -66,6 +66,9 @@ class ExclusiveAccessManager {
   // Called by Browser::PreHandleKeyboardEvent.
   bool HandleUserKeyPress(const content::NativeWebKeyboardEvent& event);
 
+  // Called by Browser::ContentsMouseEvent.
+  void OnUserInput();
+
   // Called by platform ExclusiveAccessExitBubble.
   void OnAcceptExclusiveAccessPermission();
   void OnDenyExclusiveAccessPermission();
