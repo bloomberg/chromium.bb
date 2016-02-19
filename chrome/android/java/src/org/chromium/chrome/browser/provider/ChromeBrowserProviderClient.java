@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser;
+package org.chromium.chrome.browser.provider;
 
 import android.content.Context;
 import android.net.Uri;
@@ -10,7 +10,7 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.Log;
 
-import org.chromium.chrome.browser.ChromeBrowserProvider.BookmarkNode;
+import org.chromium.chrome.browser.provider.ChromeBrowserProvider.BookmarkNode;
 
 import java.io.Serializable;
 

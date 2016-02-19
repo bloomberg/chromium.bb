@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.bookmark;
+package org.chromium.chrome.browser.provider;
 
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -10,7 +10,6 @@ import android.net.Uri;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.ChromeBrowserProvider;
 
 import java.util.Arrays;
 import java.util.Date;

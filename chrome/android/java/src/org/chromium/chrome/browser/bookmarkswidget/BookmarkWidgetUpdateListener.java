@@ -9,7 +9,7 @@ import android.content.Context;
 import android.database.ContentObserver;
 import android.os.Handler;
 
-import org.chromium.chrome.browser.ChromeBrowserProvider;
+import org.chromium.chrome.browser.provider.ChromeBrowserProvider;
 import org.chromium.sync.AndroidSyncSettings;
 
 /**

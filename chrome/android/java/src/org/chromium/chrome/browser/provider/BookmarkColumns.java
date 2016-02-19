@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.bookmark;
+package org.chromium.chrome.browser.provider;
 
 /**
  * Copy of android.provider.Browser.BookmarkColumns.
@@ -46,7 +46,8 @@ public class BookmarkColumns implements BaseColumns {
     public static final String CREATED = "created";
 
     /**
-     * The favicon of the bookmark. Must decode via {@link BitmapFactory#decodeByteArray}.
+     * The favicon of the bookmark. Must decode via
+     * {@link android.graphics.BitmapFactory#decodeByteArray}.
      * <p>Type: BLOB (image)</p>
      */
     public static final String FAVICON = "favicon";

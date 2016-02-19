@@ -27,10 +27,10 @@ import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
-import org.chromium.chrome.browser.ChromeBrowserProvider.BookmarkNode;
-import org.chromium.chrome.browser.ChromeBrowserProviderClient;
-import org.chromium.chrome.browser.bookmark.BookmarkColumns;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.chrome.browser.provider.BookmarkColumns;
+import org.chromium.chrome.browser.provider.ChromeBrowserProvider.BookmarkNode;
+import org.chromium.chrome.browser.provider.ChromeBrowserProviderClient;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.sync.AndroidSyncSettings;
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser;
+package org.chromium.chrome.browser.provider;
 
 import android.annotation.SuppressLint;
 import android.app.SearchManager;
@@ -35,8 +35,6 @@ import org.chromium.base.annotations.CalledByNativeUnchecked;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
-import org.chromium.chrome.browser.bookmark.BookmarkColumns;
-import org.chromium.chrome.browser.bookmark.SearchColumns;
 import org.chromium.chrome.browser.database.SQLiteCursor;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;

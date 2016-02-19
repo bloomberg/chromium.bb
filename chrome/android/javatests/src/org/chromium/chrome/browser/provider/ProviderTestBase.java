@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.bookmark;
+package org.chromium.chrome.browser.provider;
 
 import android.content.ContentProvider;
 import android.content.ContentResolver;
@@ -12,7 +12,6 @@ import android.test.mock.MockContentResolver;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeBrowserProvider;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 
 /**

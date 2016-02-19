@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser;
+package org.chromium.chrome.browser.provider;
 
 import android.app.SearchManager;
 import android.content.Intent;
@@ -10,8 +10,6 @@ import android.database.AbstractCursor;
 import android.database.Cursor;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.bookmark.BaseColumns;
-import org.chromium.chrome.browser.bookmark.BookmarkColumns;
 
 /**
  * For bookmarks/history suggestions, wrap the cursor returned in one that can feed

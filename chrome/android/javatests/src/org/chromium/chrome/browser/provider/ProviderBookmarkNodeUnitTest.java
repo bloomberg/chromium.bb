@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.bookmark;
+package org.chromium.chrome.browser.provider;
 
 import android.os.Parcel;
 import android.test.AndroidTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.ChromeBrowserProvider.BookmarkNode;
-import org.chromium.chrome.browser.ChromeBrowserProvider.Type;
+import org.chromium.chrome.browser.provider.ChromeBrowserProvider.BookmarkNode;
+import org.chromium.chrome.browser.provider.ChromeBrowserProvider.Type;
 
 import java.util.Random;
 

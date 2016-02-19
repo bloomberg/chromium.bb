@@ -8,8 +8,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
 
-import org.chromium.chrome.browser.ChromeBrowserProviderClient;
 import org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataPreferences;
+import org.chromium.chrome.browser.provider.ChromeBrowserProviderClient;
 import org.chromium.chrome.browser.signin.SigninManager;
 
 import java.util.EnumSet;
