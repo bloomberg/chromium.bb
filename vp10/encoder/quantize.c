@@ -8,7 +8,6 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#include <math.h>
 #include "./vpx_dsp_rtcd.h"
 #include "vpx_mem/vpx_mem.h"
 #include "vpx_ports/mem.h"
@@ -26,7 +25,12 @@ void vp10_quantize_fp_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                         const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr,
                         tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr,
                         uint16_t *eob_ptr, const int16_t *scan,
-                        const int16_t *iscan) {
+                        const int16_t *iscan
+#if CONFIG_AOM_QM
+                        ,
+                        const qm_val_t *qm_ptr, const qm_val_t *iqm_ptr
+#endif
+                        ) {
   int i, eob = -1;
   // TODO(jingning) Decide the need of these arguments after the
   // quantization process is completed.
@@ -43,16 +47,29 @@ void vp10_quantize_fp_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
     for (i = 0; i < n_coeffs; i++) {
       const int rc = scan[i];
       const int coeff = coeff_ptr[rc];
+#if CONFIG_AOM_QM
+      const qm_val_t wt = qm_ptr[rc];
+      const qm_val_t iwt = iqm_ptr[rc];
+      const int dequant =
+          (dequant_ptr[rc != 0] * iwt + (1 << (AOM_QM_BITS - 1))) >>
+          AOM_QM_BITS;
+#endif
       const int coeff_sign = (coeff >> 31);
       const int abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
 
-      int tmp = clamp(abs_coeff + round_ptr[rc != 0], INT16_MIN, INT16_MAX);
-      tmp = (tmp * quant_ptr[rc != 0]) >> 16;
-
-      qcoeff_ptr[rc] = (tmp ^ coeff_sign) - coeff_sign;
+      int64_t tmp = clamp(abs_coeff + round_ptr[rc != 0], INT16_MIN, INT16_MAX);
+      int tmp32;
+#if CONFIG_AOM_QM
+      tmp32 = (tmp * wt * quant_ptr[rc != 0]) >> (16 + AOM_QM_BITS);
+      qcoeff_ptr[rc] = (tmp32 ^ coeff_sign) - coeff_sign;
+      dqcoeff_ptr[rc] = qcoeff_ptr[rc] * dequant;
+#else
+      tmp32 = (tmp * quant_ptr[rc != 0]) >> 16;
+      qcoeff_ptr[rc] = (tmp32 ^ coeff_sign) - coeff_sign;
       dqcoeff_ptr[rc] = qcoeff_ptr[rc] * dequant_ptr[rc != 0];
+#endif
 
-      if (tmp) eob = i;
+      if (tmp32) eob = i;
     }
   }
   *eob_ptr = eob + 1;
@@ -66,7 +83,12 @@ void vp10_highbd_quantize_fp_c(const tran_low_t *coeff_ptr, intptr_t count,
                                const int16_t *quant_shift_ptr,
                                tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr,
                                const int16_t *dequant_ptr, uint16_t *eob_ptr,
-                               const int16_t *scan, const int16_t *iscan) {
+                               const int16_t *scan, const int16_t *iscan
+#if CONFIG_AOM_QM
+                               ,
+                               const qm_val_t *qm_ptr, const qm_val_t *iqm_ptr
+#endif
+                               ) {
   int i;
   int eob = -1;
   // TODO(jingning) Decide the need of these arguments after the
@@ -84,12 +106,26 @@ void vp10_highbd_quantize_fp_c(const tran_low_t *coeff_ptr, intptr_t count,
     for (i = 0; i < count; i++) {
       const int rc = scan[i];
       const int coeff = coeff_ptr[rc];
+#if CONFIG_AOM_QM
+      const qm_val_t wt = qm_ptr[rc];
+      const qm_val_t iwt = iqm_ptr[rc];
+      const int dequant =
+          (dequant_ptr[rc != 0] * iwt + (1 << (AOM_QM_BITS - 1))) >>
+          AOM_QM_BITS;
+#endif
       const int coeff_sign = (coeff >> 31);
       const int abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
       const int64_t tmp = abs_coeff + round_ptr[rc != 0];
+#if CONFIG_AOM_QM
+      const uint32_t abs_qcoeff =
+          (uint32_t)((tmp * quant_ptr[rc != 0] * wt) >> (16 + AOM_QM_BITS));
+      qcoeff_ptr[rc] = (tran_low_t)((abs_qcoeff ^ coeff_sign) - coeff_sign);
+      dqcoeff_ptr[rc] = qcoeff_ptr[rc] * dequant;
+#else
       const uint32_t abs_qcoeff = (uint32_t)((tmp * quant_ptr[rc != 0]) >> 16);
       qcoeff_ptr[rc] = (tran_low_t)((abs_qcoeff ^ coeff_sign) - coeff_sign);
       dqcoeff_ptr[rc] = qcoeff_ptr[rc] * dequant_ptr[rc != 0];
+#endif
       if (abs_qcoeff) eob = i;
     }
   }
@@ -106,7 +142,12 @@ void vp10_quantize_fp_32x32_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                               const int16_t *quant_shift_ptr,
                               tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr,
                               const int16_t *dequant_ptr, uint16_t *eob_ptr,
-                              const int16_t *scan, const int16_t *iscan) {
+                              const int16_t *scan, const int16_t *iscan
+#if CONFIG_AOM_QM
+                              ,
+                              const qm_val_t *qm_ptr, const qm_val_t *iqm_ptr
+#endif
+                              ) {
   int i, eob = -1;
   (void)zbin_ptr;
   (void)quant_shift_ptr;
@@ -119,19 +160,38 @@ void vp10_quantize_fp_32x32_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
     for (i = 0; i < n_coeffs; i++) {
       const int rc = scan[i];
       const int coeff = coeff_ptr[rc];
+#if CONFIG_AOM_QM
+      const qm_val_t wt = qm_ptr[rc];
+      const qm_val_t iwt = iqm_ptr[rc];
+      const int dequant =
+          (dequant_ptr[rc != 0] * iwt + (1 << (AOM_QM_BITS - 1))) >>
+          AOM_QM_BITS;
+      int64_t tmp = 0;
+#endif
       const int coeff_sign = (coeff >> 31);
-      int tmp = 0;
+      int tmp32 = 0;
       int abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
 
+#if CONFIG_AOM_QM
+      if (abs_coeff * wt >= (dequant_ptr[rc != 0] << (AOM_QM_BITS - 2))) {
+#else
       if (abs_coeff >= (dequant_ptr[rc != 0] >> 2)) {
+#endif
         abs_coeff += ROUND_POWER_OF_TWO(round_ptr[rc != 0], 1);
         abs_coeff = clamp(abs_coeff, INT16_MIN, INT16_MAX);
-        tmp = (abs_coeff * quant_ptr[rc != 0]) >> 15;
-        qcoeff_ptr[rc] = (tmp ^ coeff_sign) - coeff_sign;
-        dqcoeff_ptr[rc] = qcoeff_ptr[rc] * dequant_ptr[rc != 0] / 2;
+#if CONFIG_AOM_QM
+        tmp = abs_coeff * wt;
+        tmp32 = (int)(tmp * quant_ptr[rc != 0]) >> (AOM_QM_BITS + 15);
+        qcoeff_ptr[rc] = (tmp32 ^ coeff_sign) - coeff_sign;
+        dqcoeff_ptr[rc] = (qcoeff_ptr[rc] * dequant) / 2;
+#else
+        tmp32 = (abs_coeff * quant_ptr[rc != 0]) >> 15;
+        qcoeff_ptr[rc] = (tmp32 ^ coeff_sign) - coeff_sign;
+        dqcoeff_ptr[rc] = (qcoeff_ptr[rc] * dequant_ptr[rc != 0]) / 2;
+#endif
       }
 
-      if (tmp) eob = i;
+      if (tmp32) eob = i;
     }
   }
   *eob_ptr = eob + 1;
@@ -143,7 +203,12 @@ void vp10_highbd_quantize_fp_32x32_c(
     const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr,
     const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr,
     tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr,
-    const int16_t *scan, const int16_t *iscan) {
+    const int16_t *scan, const int16_t *iscan
+#if CONFIG_AOM_QM
+    ,
+    const qm_val_t *qm_ptr, const qm_val_t *iqm_ptr
+#endif
+    ) {
   int i, eob = -1;
   (void)zbin_ptr;
   (void)quant_shift_ptr;
@@ -157,15 +222,32 @@ void vp10_highbd_quantize_fp_32x32_c(
       uint32_t abs_qcoeff = 0;
       const int rc = scan[i];
       const int coeff = coeff_ptr[rc];
+#if CONFIG_AOM_QM
+      const qm_val_t wt = qm_ptr[rc];
+      const qm_val_t iwt = iqm_ptr[rc];
+      const int dequant =
+          (dequant_ptr[rc != 0] * iwt + (1 << (AOM_QM_BITS - 1))) >>
+          AOM_QM_BITS;
+#endif
       const int coeff_sign = (coeff >> 31);
       const int abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
-
+#if CONFIG_AOM_QM
+      if (abs_coeff * wt >= (dequant_ptr[rc != 0] << (AOM_QM_BITS - 2))) {
+#else
       if (abs_coeff >= (dequant_ptr[rc != 0] >> 2)) {
+#endif
         const int64_t tmp =
             abs_coeff + ROUND_POWER_OF_TWO(round_ptr[rc != 0], 1);
+#if CONFIG_AOM_QM
+        abs_qcoeff =
+            (uint32_t)((tmp * wt * quant_ptr[rc != 0]) >> (AOM_QM_BITS + 15));
+        qcoeff_ptr[rc] = (tran_low_t)((abs_qcoeff ^ coeff_sign) - coeff_sign);
+        dqcoeff_ptr[rc] = (qcoeff_ptr[rc] * dequant) / 2;
+#else
         abs_qcoeff = (uint32_t)((tmp * quant_ptr[rc != 0]) >> 15);
         qcoeff_ptr[rc] = (tran_low_t)((abs_qcoeff ^ coeff_sign) - coeff_sign);
-        dqcoeff_ptr[rc] = qcoeff_ptr[rc] * dequant_ptr[rc != 0] / 2;
+        dqcoeff_ptr[rc] = (qcoeff_ptr[rc] * dequant_ptr[rc != 0]) / 2;
+#endif
       }
 
       if (abs_qcoeff) eob = i;
@@ -180,6 +262,12 @@ void vp10_regular_quantize_b_4x4(MACROBLOCK *x, int plane, int block,
   MACROBLOCKD *const xd = &x->e_mbd;
   struct macroblock_plane *p = &x->plane[plane];
   struct macroblockd_plane *pd = &xd->plane[plane];
+#if CONFIG_AOM_QM
+  int seg_id = xd->mi[0]->mbmi.segment_id;
+  int is_intra = is_inter_block(&xd->mi[0]->mbmi);
+  const qm_val_t *qmatrix = pd->seg_qmatrix[seg_id][is_intra][0];
+  const qm_val_t *iqmatrix = pd->seg_iqmatrix[seg_id][is_intra][0];
+#endif
 
 #if CONFIG_VPX_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
@@ -187,7 +275,12 @@ void vp10_regular_quantize_b_4x4(MACROBLOCK *x, int plane, int block,
                           p->zbin, p->round, p->quant, p->quant_shift,
                           BLOCK_OFFSET(p->qcoeff, block),
                           BLOCK_OFFSET(pd->dqcoeff, block), pd->dequant,
+#if !CONFIG_AOM_QM
                           &p->eobs[block], scan, iscan);
+#else
+                          &p->eobs[block], scan, iscan,
+                          qmatrix, iqmatrix);
+#endif
     return;
   }
 #endif
@@ -195,7 +288,12 @@ void vp10_regular_quantize_b_4x4(MACROBLOCK *x, int plane, int block,
                  p->round, p->quant, p->quant_shift,
                  BLOCK_OFFSET(p->qcoeff, block),
                  BLOCK_OFFSET(pd->dqcoeff, block), pd->dequant, &p->eobs[block],
-                 scan, iscan);
+#if !CONFIG_AOM_QM
+                          scan, iscan);
+#else
+                          scan, iscan,
+                          qmatrix, iqmatrix);
+#endif
 }
 
 static void invert_quant(int16_t *quant, int16_t *shift, int d) {
@@ -212,9 +310,12 @@ static int get_qzbin_factor(int q, vpx_bit_depth_t bit_depth) {
   const int quant = vp10_dc_quant(q, 0, bit_depth);
 #if CONFIG_VPX_HIGHBITDEPTH
   switch (bit_depth) {
-    case VPX_BITS_8: return q == 0 ? 64 : (quant < 148 ? 84 : 80);
-    case VPX_BITS_10: return q == 0 ? 64 : (quant < 592 ? 84 : 80);
-    case VPX_BITS_12: return q == 0 ? 64 : (quant < 2368 ? 84 : 80);
+    case VPX_BITS_8:
+      return q == 0 ? 64 : (quant < 148 ? 84 : 80);
+    case VPX_BITS_10:
+      return q == 0 ? 64 : (quant < 592 ? 84 : 80);
+    case VPX_BITS_12:
+      return q == 0 ? 64 : (quant < 2368 ? 84 : 80);
     default:
       assert(0 && "bit_depth should be VPX_BITS_8, VPX_BITS_10 or VPX_BITS_12");
       return -1;
@@ -288,6 +389,11 @@ void vp10_init_plane_quantizers(VP10_COMP *cpi, MACROBLOCK *x) {
   const int qindex = vp10_get_qindex(&cm->seg, segment_id, cm->base_qindex);
   const int rdmult = vp10_compute_rd_mult(cpi, qindex + cm->y_dc_delta_q);
   int i;
+#if CONFIG_AOM_QM
+  const int lossless = xd->lossless[segment_id];
+  // Quant matrix only depends on the base QP so there is only one set per frame
+  int qmlevel = lossless ? NUM_QM_LEVELS - 1 : aom_get_qmlevel(cm->base_qindex);
+#endif
 
   // Y
   x->plane[0].quant = quants->y_quant[qindex];
@@ -296,6 +402,12 @@ void vp10_init_plane_quantizers(VP10_COMP *cpi, MACROBLOCK *x) {
   x->plane[0].quant_shift = quants->y_quant_shift[qindex];
   x->plane[0].zbin = quants->y_zbin[qindex];
   x->plane[0].round = quants->y_round[qindex];
+#if CONFIG_AOM_QM
+  memcpy(&xd->plane[0].seg_qmatrix[segment_id], cm->gqmatrix[qmlevel][0],
+         sizeof(cm->gqmatrix[qmlevel][0]));
+  memcpy(&xd->plane[0].seg_iqmatrix[segment_id], cm->giqmatrix[qmlevel][0],
+         sizeof(cm->giqmatrix[qmlevel][0]));
+#endif
   xd->plane[0].dequant = cpi->y_dequant[qindex];
 
   x->plane[0].quant_thred[0] = x->plane[0].zbin[0] * x->plane[0].zbin[0];
@@ -309,6 +421,12 @@ void vp10_init_plane_quantizers(VP10_COMP *cpi, MACROBLOCK *x) {
     x->plane[i].quant_shift = quants->uv_quant_shift[qindex];
     x->plane[i].zbin = quants->uv_zbin[qindex];
     x->plane[i].round = quants->uv_round[qindex];
+#if CONFIG_AOM_QM
+    memcpy(&xd->plane[i].seg_qmatrix[segment_id], cm->gqmatrix[qmlevel][1],
+           sizeof(cm->gqmatrix[qmlevel][1]));
+    memcpy(&xd->plane[i].seg_iqmatrix[segment_id], cm->giqmatrix[qmlevel][1],
+           sizeof(cm->giqmatrix[qmlevel][1]));
+#endif
     xd->plane[i].dequant = cpi->uv_dequant[qindex];
 
     x->plane[i].quant_thred[0] = x->plane[i].zbin[0] * x->plane[i].zbin[0];

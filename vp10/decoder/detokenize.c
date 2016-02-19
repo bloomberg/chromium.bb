@@ -43,14 +43,25 @@ static INLINE int read_coeff(const vpx_prob *probs, int n, vpx_reader *r) {
   return val;
 }
 
+#if CONFIG_AOM_QM
 static int decode_coefs(const MACROBLOCKD *xd, PLANE_TYPE type,
                         tran_low_t *dqcoeff, TX_SIZE tx_size, const int16_t *dq,
                         int ctx, const int16_t *scan, const int16_t *nb,
-                        vpx_reader *r) {
+                        vpx_reader *r, const qm_val_t *iqm[2][TX_SIZES])
+#else
+static int decode_coefs(const MACROBLOCKD *xd, PLANE_TYPE type,
+                        tran_low_t *dqcoeff, TX_SIZE tx_size, const int16_t *dq,
+                        int ctx, const int16_t *scan, const int16_t *nb,
+                        vpx_reader *r)
+#endif
+{
   FRAME_COUNTS *counts = xd->counts;
   const int max_eob = 16 << (tx_size << 1);
   const FRAME_CONTEXT *const fc = xd->fc;
   const int ref = is_inter_block(&xd->mi[0]->mbmi);
+#if CONFIG_AOM_QM
+  const qm_val_t *iqmatrix = iqm[!ref][tx_size];
+#endif
   int band, c = 0;
   const vpx_prob(*coef_probs)[COEFF_CONTEXTS][UNCONSTRAINED_NODES] =
       fc->coef_probs[tx_size][type][ref];
@@ -183,6 +194,10 @@ static int decode_coefs(const MACROBLOCKD *xd, PLANE_TYPE type,
         }
       }
     }
+#if CONFIG_AOM_QM
+    dqv = ((iqmatrix[scan[c]] * (int)dqv) + (1 << (AOM_QM_BITS - 1))) >>
+          AOM_QM_BITS;
+#endif
     v = (val * dqv) >> dq_shift;
 #if CONFIG_COEFFICIENT_RANGE_CHECKING
 #if CONFIG_VPX_HIGHBITDEPTH
@@ -249,8 +264,16 @@ int vp10_decode_block_tokens(MACROBLOCKD *xd, int plane, const scan_order *sc,
   const int16_t *const dequant = pd->seg_dequant[seg_id];
   const int ctx =
       get_entropy_context(tx_size, pd->above_context + x, pd->left_context + y);
+#if CONFIG_AOM_QM
+  const int eob =
+      decode_coefs(xd, pd->plane_type, pd->dqcoeff, tx_size, dequant, ctx,
+                   sc->scan, sc->neighbors, r, pd->seg_iqmatrix[seg_id]);
+#else
   const int eob = decode_coefs(xd, pd->plane_type, pd->dqcoeff, tx_size,
                                dequant, ctx, sc->scan, sc->neighbors, r);
+#endif
   dec_set_contexts(xd, pd, tx_size, eob > 0, x, y);
   return eob;
 }
+
+

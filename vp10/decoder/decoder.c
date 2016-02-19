@@ -109,6 +109,10 @@ VP10Decoder *vp10_decoder_create(BufferPool *const pool) {
 
   vp10_loop_filter_init(cm);
 
+#if CONFIG_AOM_QM
+  aom_qm_init(cm);
+#endif
+
   cm->error.setjmp = 0;
 
   vpx_get_worker_interface()->init(&pbi->lf_worker);

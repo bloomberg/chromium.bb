@@ -712,8 +712,8 @@ static void dec_build_inter_predictors_sb(VP10Decoder *const pbi,
   }
 }
 
-static INLINE TX_SIZE dec_get_uv_tx_size(const MB_MODE_INFO *mbmi, int n4_wl,
-                                         int n4_hl) {
+static INLINE TX_SIZE
+    dec_get_uv_tx_size(const MB_MODE_INFO *mbmi, int n4_wl, int n4_hl) {
   // get minimum log2 num4x4s dimension
   const int x = VPXMIN(n4_wl, n4_hl);
   return VPXMIN(mbmi->tx_size, x);
@@ -1120,8 +1120,13 @@ static void setup_quantization(VP10_COMMON *const cm,
 
 static void setup_segmentation_dequant(VP10_COMMON *const cm) {
   // Build y/uv dequant values based on segmentation.
+  int i = 0;
+#if CONFIG_AOM_QM
+  int lossless;
+  int j = 0;
+  int qmindex;
+#endif
   if (cm->seg.enabled) {
-    int i;
     for (i = 0; i < MAX_SEGMENTS; ++i) {
       const int qindex = vp10_get_qindex(&cm->seg, i, cm->base_qindex);
       cm->y_dequant[i][0] =
@@ -1131,6 +1136,19 @@ static void setup_segmentation_dequant(VP10_COMMON *const cm) {
           vp10_dc_quant(qindex, cm->uv_dc_delta_q, cm->bit_depth);
       cm->uv_dequant[i][1] =
           vp10_ac_quant(qindex, cm->uv_ac_delta_q, cm->bit_depth);
+#if CONFIG_AOM_QM
+      lossless = qindex == 0 && cm->y_dc_delta_q == 0 &&
+                 cm->uv_dc_delta_q == 0 && cm->uv_ac_delta_q == 0;
+      // NB: depends on base index so there is only 1 set per frame
+      // No quant weighting when lossless
+      qmindex = lossless ? QINDEX_RANGE - 1 : cm->base_qindex;
+      for (j = 0; j < TX_SIZES; ++j) {
+        cm->y_iqmatrix[i][1][j] = aom_iqmatrix(cm, qmindex, 0, j, 1);
+        cm->y_iqmatrix[i][0][j] = aom_iqmatrix(cm, qmindex, 0, j, 0);
+        cm->uv_iqmatrix[i][1][j] = aom_iqmatrix(cm, qmindex, 1, j, 1);
+        cm->uv_iqmatrix[i][0][j] = aom_iqmatrix(cm, qmindex, 1, j, 0);
+      }
+#endif
     }
   } else {
     const int qindex = cm->base_qindex;
@@ -1143,6 +1161,18 @@ static void setup_segmentation_dequant(VP10_COMMON *const cm) {
         vp10_dc_quant(qindex, cm->uv_dc_delta_q, cm->bit_depth);
     cm->uv_dequant[0][1] =
         vp10_ac_quant(qindex, cm->uv_ac_delta_q, cm->bit_depth);
+#if CONFIG_AOM_QM
+    lossless = qindex == 0 && cm->y_dc_delta_q == 0 && cm->uv_dc_delta_q == 0 &&
+               cm->uv_ac_delta_q == 0;
+    // No quant weighting when lossless
+    qmindex = lossless ? QINDEX_RANGE - 1 : cm->base_qindex;
+    for (j = 0; j < TX_SIZES; ++j) {
+      cm->y_iqmatrix[i][1][j] = aom_iqmatrix(cm, qmindex, 0, j, 1);
+      cm->y_iqmatrix[i][0][j] = aom_iqmatrix(cm, qmindex, 0, j, 0);
+      cm->uv_iqmatrix[i][1][j] = aom_iqmatrix(cm, qmindex, 1, j, 1);
+      cm->uv_iqmatrix[i][0][j] = aom_iqmatrix(cm, qmindex, 1, j, 0);
+    }
+#endif
   }
 }
 

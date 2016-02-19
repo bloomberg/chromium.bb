@@ -1613,6 +1613,9 @@ VP10_COMP *vp10_create_compressor(VP10EncoderConfig *oxcf,
    * vp10_init_quantizer() for every frame.
    */
   vp10_init_quantizer(cpi);
+#if CONFIG_AOM_QM
+  aom_qm_init(cm);
+#endif
 
   vp10_loop_filter_init(cm);
 
