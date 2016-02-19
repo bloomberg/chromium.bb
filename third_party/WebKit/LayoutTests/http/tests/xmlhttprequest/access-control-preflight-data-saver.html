@@ -1,0 +1,32 @@
+<html>
+<body>
+<p>Test that 'Save-Data' header is treated as a simple header and preflight request is not created. Should print PASS.</p>
+<div id="log"></div>
+<script>
+window.internals.settings.setDataSaverEnabled(true);
+
+function log(message) {
+    document.getElementById("log").innerHTML += message + "<br>";
+}
+
+if (window.layoutTestController) {
+    layoutTestController.dumpAsText();
+    layoutTestController.waitUntilDone();
+}
+
+var xhr = new XMLHttpRequest();
+xhr.open("GET", "http://localhost:8000/xmlhttprequest/resources/access-control-preflight-request-invalid-status.php?code=400");
+xhr.onerror = function () {
+    log("FAIL");
+    if (window.layoutTestController)
+        layoutTestController.notifyDone();
+};
+xhr.onload = function () {
+    log("PASS");
+    if (window.layoutTestController)
+        layoutTestController.notifyDone();
+};
+xhr.send();
+</script>
+</body>
+</html>

@@ -695,6 +695,14 @@ void CreateWebUsbPermissionBubble(
 }
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
+bool GetDataSaverEnabledPref(const PrefService* prefs) {
+  // Enable data saver only when data saver pref is enabled and not part of
+  // "Disabled" group of "SaveDataHeader" experiment.
+  return prefs->GetBoolean(prefs::kDataSaverEnabled) &&
+         base::FieldTrialList::FindFullName("SaveDataHeader")
+             .compare("Disabled");
+}
+
 }  // namespace
 
 ChromeContentBrowserClient::ChromeContentBrowserClient()
@@ -2379,8 +2387,7 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
     web_prefs->strict_powerful_feature_restrictions = true;
   }
 
-  web_prefs->data_saver_enabled =
-      prefs->GetBoolean(prefs::kDataSaverEnabled);
+  web_prefs->data_saver_enabled = GetDataSaverEnabledPref(prefs);
 
   for (size_t i = 0; i < extra_parts_.size(); ++i)
     extra_parts_[i]->OverrideWebkitPrefs(rvh, web_prefs);
