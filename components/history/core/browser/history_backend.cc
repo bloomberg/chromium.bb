@@ -39,7 +39,6 @@
 #include "components/history/core/browser/page_usage_data.h"
 #include "components/history/core/browser/typed_url_syncable_service.h"
 #include "components/history/core/browser/url_utils.h"
-#include "components/history/core/browser/visit_filter.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "sql/error_delegate_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -1366,85 +1365,6 @@ void HistoryBackend::QueryMostVisitedURLs(int result_count,
     MostVisitedURL url = MakeMostVisitedURL(*current_data, redirects);
     result->push_back(url);
   }
-}
-
-void HistoryBackend::QueryFilteredURLs(int result_count,
-                                       const VisitFilter& filter,
-                                       bool extended_info,
-                                       FilteredURLList* result) {
-  DCHECK(result);
-  base::Time request_start = base::Time::Now();
-
-  result->clear();
-  if (!db_) {
-    // No History Database - return an empty list.
-    return;
-  }
-
-  VisitVector visits;
-  db_->GetDirectVisitsDuringTimes(filter, 0, &visits);
-
-  std::map<URLID, double> score_map;
-  for (size_t i = 0; i < visits.size(); ++i) {
-    score_map[visits[i].url_id] += filter.GetVisitScore(visits[i]);
-  }
-
-  // TODO(georgey): experiment with visit_segment database granularity (it is
-  // currently 24 hours) to use it directly instead of using visits database,
-  // which is considerably slower.
-  ScopedVector<PageUsageData> data;
-  data.reserve(score_map.size());
-  for (std::map<URLID, double>::iterator it = score_map.begin();
-       it != score_map.end(); ++it) {
-    PageUsageData* pud = new PageUsageData(it->first);
-    pud->SetScore(it->second);
-    data.push_back(pud);
-  }
-
-  // Limit to the top |result_count| results.
-  std::sort(data.begin(), data.end(), PageUsageData::Predicate);
-  DCHECK_GE(result_count, 0);
-  if (result_count && data.size() > static_cast<size_t>(result_count))
-    data.resize(result_count);
-
-  for (size_t i = 0; i < data.size(); ++i) {
-    URLRow info;
-    if (db_->GetURLRow(data[i]->GetID(), &info)) {
-      data[i]->SetURL(info.url());
-      data[i]->SetTitle(info.title());
-    }
-  }
-
-  for (size_t i = 0; i < data.size(); ++i) {
-    PageUsageData* current_data = data[i];
-    FilteredURL url(*current_data);
-
-    if (extended_info) {
-      VisitVector visits;
-      db_->GetVisitsForURL(current_data->GetID(), &visits);
-      if (visits.size() > 0) {
-        url.extended_info.total_visits = visits.size();
-        for (size_t i = 0; i < visits.size(); ++i) {
-          url.extended_info.duration_opened +=
-              visits[i].visit_duration.InSeconds();
-          if (visits[i].visit_time > url.extended_info.last_visit_time) {
-            url.extended_info.last_visit_time = visits[i].visit_time;
-          }
-        }
-        // TODO(macourteau): implement the url.extended_info.visits stat.
-      }
-    }
-    result->push_back(url);
-  }
-
-  int delta_time = std::max(
-      1, std::min(999, static_cast<int>((base::Time::Now() - request_start)
-                                            .InMilliseconds())));
-  STATIC_HISTOGRAM_POINTER_BLOCK(
-      "NewTabPage.SuggestedSitesLoadTime", Add(delta_time),
-      base::LinearHistogram::FactoryGet(
-          "NewTabPage.SuggestedSitesLoadTime", 1, 1000, 100,
-          base::Histogram::kUmaTargetedHistogramFlag));
 }
 
 void HistoryBackend::GetRedirectsFromSpecificVisit(VisitID cur_visit,

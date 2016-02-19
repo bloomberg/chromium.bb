@@ -16,7 +16,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "components/history/core/browser/url_database.h"
-#include "components/history/core/browser/visit_filter.h"
 #include "sql/statement.h"
 #include "ui/base/page_transition_types.h"
 #include "url/url_constants.h"
@@ -372,39 +371,6 @@ bool VisitDatabase::GetVisibleVisitsInRange(const QueryOptions& options,
   statement.BindInt(6, ui::PAGE_TRANSITION_KEYWORD_GENERATED);
 
   return FillVisitVectorWithOptions(statement, options, visits);
-}
-
-void VisitDatabase::GetDirectVisitsDuringTimes(const VisitFilter& time_filter,
-                                                int max_results,
-                                                VisitVector* visits) {
-  visits->clear();
-  if (max_results)
-    visits->reserve(max_results);
-  for (VisitFilter::TimeVector::const_iterator it = time_filter.times().begin();
-       it != time_filter.times().end(); ++it) {
-    sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
-        "SELECT" HISTORY_VISIT_ROW_FIELDS "FROM visits "
-        "WHERE visit_time >= ? AND visit_time < ? "
-        "AND (transition & ?) != 0 "  // CHAIN_START
-        "AND (transition & ?) IN (?, ?) "  // TYPED or AUTO_BOOKMARK only
-        "ORDER BY visit_time DESC, id DESC"));
-
-    statement.BindInt64(0, it->first.ToInternalValue());
-    statement.BindInt64(1, it->second.ToInternalValue());
-    statement.BindInt(2, ui::PAGE_TRANSITION_CHAIN_START);
-    statement.BindInt(3, ui::PAGE_TRANSITION_CORE_MASK);
-    statement.BindInt(4, ui::PAGE_TRANSITION_TYPED);
-    statement.BindInt(5, ui::PAGE_TRANSITION_AUTO_BOOKMARK);
-
-    while (statement.Step()) {
-      VisitRow visit;
-      FillVisitRow(statement, &visit);
-      visits->push_back(visit);
-
-      if (max_results > 0 && static_cast<int>(visits->size()) >= max_results)
-        return;
-    }
-  }
 }
 
 VisitID VisitDatabase::GetMostRecentVisitForURL(URLID url_id,

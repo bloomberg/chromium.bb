@@ -58,7 +58,6 @@ struct HistoryDetails;
 class HistoryDBTask;
 class InMemoryHistoryBackend;
 class TypedUrlSyncableService;
-class VisitFilter;
 class HistoryBackendHelper;
 
 // The maximum number of icons URLs per page which can be stored in the
@@ -276,14 +275,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void QueryMostVisitedURLs(int result_count,
                             int days_back,
                             MostVisitedURLList* result);
-
-  // Request the |result_count| URLs and the chain of redirects
-  // leading to each of these URLs, filterd and sorted based on the |filter|.
-  // If |debug| is enabled, additional data will be computed and provided.
-  void QueryFilteredURLs(int result_count,
-                         const VisitFilter& filter,
-                         bool debug,
-                         FilteredURLList* result);
 
   // Statistics ----------------------------------------------------------------
 

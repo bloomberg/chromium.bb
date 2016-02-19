@@ -46,7 +46,6 @@
 #include "components/history/core/browser/keyword_search_term.h"
 #include "components/history/core/browser/visit_database.h"
 #include "components/history/core/browser/visit_delegate.h"
-#include "components/history/core/browser/visit_filter.h"
 #include "components/history/core/browser/web_history_service.h"
 #include "components/history/core/common/thumbnail_score.h"
 #include "sync/api/sync_error_factory.h"
@@ -825,22 +824,6 @@ base::CancelableTaskTracker::TaskId HistoryService::QueryMostVisitedURLs(
       thread_->task_runner().get(), FROM_HERE,
       base::Bind(&HistoryBackend::QueryMostVisitedURLs, history_backend_.get(),
                  result_count, days_back, base::Unretained(result)),
-      base::Bind(callback, base::Owned(result)));
-}
-
-base::CancelableTaskTracker::TaskId HistoryService::QueryFilteredURLs(
-    int result_count,
-    const VisitFilter& filter,
-    bool extended_info,
-    const QueryFilteredURLsCallback& callback,
-    base::CancelableTaskTracker* tracker) {
-  DCHECK(thread_) << "History service being called after cleanup";
-  DCHECK(thread_checker_.CalledOnValidThread());
-  FilteredURLList* result = new FilteredURLList();
-  return tracker->PostTaskAndReply(
-      thread_->task_runner().get(), FROM_HERE,
-      base::Bind(&HistoryBackend::QueryFilteredURLs, history_backend_.get(),
-                 result_count, filter, extended_info, base::Unretained(result)),
       base::Bind(callback, base::Owned(result)));
 }
 

@@ -73,7 +73,6 @@ struct KeywordSearchTermVisit;
 class PageUsageData;
 class URLDatabase;
 class VisitDelegate;
-class VisitFilter;
 class WebHistoryService;
 
 // The history service records page titles, and visit times, as well as
@@ -336,22 +335,6 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
       int result_count,
       int days_back,
       const QueryMostVisitedURLsCallback& callback,
-      base::CancelableTaskTracker* tracker);
-
-  // Request the |result_count| URLs filtered and sorted based on the |filter|.
-  // If |extended_info| is true, additional data will be provided in the
-  // results. Computing this additional data is expensive, likely to become
-  // more expensive as additional data points are added in future changes, and
-  // not useful in most cases. Set |extended_info| to true only if you
-  // explicitly require the additional data.
-  typedef base::Callback<void(const FilteredURLList*)>
-      QueryFilteredURLsCallback;
-
-  base::CancelableTaskTracker::TaskId QueryFilteredURLs(
-      int result_count,
-      const VisitFilter& filter,
-      bool extended_info,
-      const QueryFilteredURLsCallback& callback,
       base::CancelableTaskTracker* tracker);
 
   // Statistics ----------------------------------------------------------------

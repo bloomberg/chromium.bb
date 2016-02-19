@@ -76,8 +76,6 @@ static_library("browser") {
     "visit_database.h",
     "visit_delegate.cc",
     "visit_delegate.h",
-    "visit_filter.cc",
-    "visit_filter.h",
     "visit_tracker.cc",
     "visit_tracker.h",
     "visitsegment_database.cc",
@@ -154,7 +152,6 @@ source_set("unit_tests") {
     "url_database_unittest.cc",
     "url_utils_unittest.cc",
     "visit_database_unittest.cc",
-    "visit_filter_unittest.cc",
     "visit_tracker_unittest.cc",
     "web_history_service_unittest.cc",
   ]
