@@ -320,7 +320,7 @@ bool CompositeEditCommand::isRemovableBlock(const Node* node)
 void CompositeEditCommand::insertNodeBefore(PassRefPtrWillBeRawPtr<Node> insertChild, PassRefPtrWillBeRawPtr<Node> refChild, EditingState* editingState, ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable)
 {
     ASSERT(document().body() != refChild);
-    ASSERT_IN_EDITING_COMMAND(refChild->parentNode()->hasEditableStyle() || !refChild->parentNode()->inActiveDocument());
+    ABORT_EDITING_COMMAND_IF(!refChild->parentNode()->hasEditableStyle() && refChild->parentNode()->inActiveDocument());
     applyCommandToComposite(InsertNodeBeforeCommand::create(insertChild, refChild, shouldAssumeContentIsAlwaysEditable), editingState);
 }
 
@@ -342,7 +342,7 @@ void CompositeEditCommand::insertNodeAfter(PassRefPtrWillBeRawPtr<Node> insertCh
 
 void CompositeEditCommand::insertNodeAt(PassRefPtrWillBeRawPtr<Node> insertChild, const Position& editingPosition, EditingState* editingState)
 {
-    ASSERT_IN_EDITING_COMMAND(isEditablePosition(editingPosition, ContentIsEditable, DoNotUpdateStyle));
+    ABORT_EDITING_COMMAND_IF(!isEditablePosition(editingPosition, ContentIsEditable, DoNotUpdateStyle));
     // For editing positions like [table, 0], insert before the table,
     // likewise for replaced elements, brs, etc.
     Position p = editingPosition.parentAnchoredEquivalent();
@@ -377,14 +377,14 @@ void CompositeEditCommand::appendNode(PassRefPtrWillBeRawPtr<Node> node, PassRef
     // of an OBJECT element, the ASSERT below may fire since the return
     // value of canHaveChildrenForEditing is not reliable until the layout
     // object of the OBJECT is created. Hence we ignore this check for OBJECTs.
-    // TODO(yosin): We should move following |ASSERT_IN_EDITING_COMMAND|s to
+    // TODO(yosin): We should move following |ABORT_EDITING_COMMAND_IF|s to
     // |AppendNodeCommand|.
     // TODO(yosin): We should get rid of |canHaveChildrenForEditing()|, since
     // |cloneParagraphUnderNewElement()| attempt to clone non-well-formed HTML,
     // produced by JavaScript.
-    ASSERT_IN_EDITING_COMMAND(canHaveChildrenForEditing(parent.get())
-        || (parent->isElementNode() && toElement(parent.get())->tagQName() == objectTag));
-    ASSERT_IN_EDITING_COMMAND(parent->hasEditableStyle() || !parent->inActiveDocument());
+    ABORT_EDITING_COMMAND_IF(!canHaveChildrenForEditing(parent.get())
+        && !(parent->isElementNode() && toElement(parent.get())->tagQName() == objectTag));
+    ABORT_EDITING_COMMAND_IF(!parent->hasEditableStyle() && parent->inActiveDocument());
     applyCommandToComposite(AppendNodeCommand::create(parent, node), editingState);
 }
 
@@ -407,13 +407,13 @@ void CompositeEditCommand::removeNode(PassRefPtrWillBeRawPtr<Node> node, Editing
 {
     if (!node || !node->nonShadowBoundaryParentNode())
         return;
-    ASSERT_IN_EDITING_COMMAND(node->document().frame());
+    ABORT_EDITING_COMMAND_IF(!node->document().frame());
     applyCommandToComposite(RemoveNodeCommand::create(node, shouldAssumeContentIsAlwaysEditable), editingState);
 }
 
 void CompositeEditCommand::removeNodePreservingChildren(PassRefPtrWillBeRawPtr<Node> node, EditingState* editingState, ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable)
 {
-    ASSERT_IN_EDITING_COMMAND(node->document().frame());
+    ABORT_EDITING_COMMAND_IF(!node->document().frame());
     applyCommandToComposite(RemoveNodePreservingChildrenCommand::create(node, shouldAssumeContentIsAlwaysEditable), editingState);
 }
 

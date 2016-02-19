@@ -40,8 +40,8 @@ RemoveNodePreservingChildrenCommand::RemoveNodePreservingChildrenCommand(PassRef
 
 void RemoveNodePreservingChildrenCommand::doApply(EditingState* editingState)
 {
-    ASSERT_IN_EDITING_COMMAND(m_node->parentNode());
-    ASSERT_IN_EDITING_COMMAND(m_node->parentNode()->hasEditableStyle());
+    ABORT_EDITING_COMMAND_IF(!m_node->parentNode());
+    ABORT_EDITING_COMMAND_IF(!m_node->parentNode()->hasEditableStyle());
     if (m_node->isContainerNode()) {
         NodeVector children;
         getChildNodes(toContainerNode(*m_node), children);

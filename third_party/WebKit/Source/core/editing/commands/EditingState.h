@@ -52,17 +52,14 @@ private:
     EditingState m_editingState;
 };
 
-// All assertion in "core/editing/commands" should use
-// |ASSERT_IN_EDITING_COMMAND()| instead of |ASSERT()|.
-// TODO(tkent): Rename this because this works without ENABLE(ASSERT).
-#define ASSERT_IN_EDITING_COMMAND(expr) \
+// Abort the editing command if the specified expression is true.
+#define ABORT_EDITING_COMMAND_IF(expr) \
     do { \
-        if (!(expr)) { \
+        if (expr) { \
             editingState->abort(); \
             return; \
         } \
-        break; \
-    } while (true)
+    } while (false)
 
 #if ENABLE(ASSERT)
 // This class is inspired by |NoExceptionStateAssertionChecker|.

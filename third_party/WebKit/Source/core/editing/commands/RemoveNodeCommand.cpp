@@ -56,8 +56,8 @@ void RemoveNodeCommand::doApply(EditingState* editingState)
     // Node::remove dispatch synchronous events such as IFRAME unload events,
     // and event handlers may break the document. We check the document state
     // here in order to prevent further processing in bad situation.
-    ASSERT_IN_EDITING_COMMAND(m_node->document().frame());
-    ASSERT_IN_EDITING_COMMAND(m_node->document().documentElement());
+    ABORT_EDITING_COMMAND_IF(!m_node->document().frame());
+    ABORT_EDITING_COMMAND_IF(!m_node->document().documentElement());
 }
 
 void RemoveNodeCommand::doUnapply()
