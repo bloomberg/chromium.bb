@@ -278,8 +278,6 @@ public class CustomTabActivity extends ChromeActivity {
                 CustomTabsConnection.getInstance(getApplication())
                         .getClientPackageNameForSession(mSession),
                 IntentHandler.getUrlFromIntent(getIntent()));
-        mainTab.setAppAssociatedWith(CustomTabsConnection.getInstance(getApplication())
-                .getClientPackageNameForSession(mSession));
         recordClientPackageName();
         loadUrlInCurrentTab(new LoadUrlParams(IntentHandler.getUrlFromIntent(getIntent())),
                 IntentHandler.getTimestampFromIntent(getIntent()));
@@ -300,6 +298,7 @@ public class CustomTabActivity extends ChromeActivity {
                 TabLaunchType.FROM_EXTERNAL_APP, null, null);
         CustomTabsConnection customTabsConnection =
                 CustomTabsConnection.getInstance(getApplication());
+        tab.setAppAssociatedWith(customTabsConnection.getClientPackageNameForSession(mSession));
         WebContents webContents =
                 customTabsConnection.takePrerenderedUrl(mSession, url, referrerUrl);
         if (webContents == null) {

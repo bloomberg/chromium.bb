@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.os.TransactionTooLargeException;
+import android.text.TextUtils;
 
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
@@ -59,7 +60,7 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
             try {
                 // For a URL chrome can handle and there is no default set, handle it ourselves.
                 if (!hasDefaultHandler) {
-                    if (isPackageSpecializedHandler(
+                    if (!TextUtils.isEmpty(mClientPackageName) && isPackageSpecializedHandler(
                             mApplicationContext, mClientPackageName, intent)) {
                         intent.setPackage(mClientPackageName);
                     } else if (!isExternalProtocol) {
