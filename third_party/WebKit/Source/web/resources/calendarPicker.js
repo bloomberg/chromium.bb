@@ -2438,7 +2438,7 @@ YearListView.prototype.prepareNewCell = function(row) {
     if (this.highlightedMonth && row === this.highlightedMonth.year - 1) {
         var monthButton = cell.monthButtons[this.highlightedMonth.month];
         monthButton.classList.add(YearListCell.ClassNameHighlighted);
-        // aira-activedescendant assumes both elements have layoutObjects, and
+        // aria-activedescendant assumes both elements have layoutObjects, and
         // |monthButton| might have no layoutObject yet.
         var element = this.element;
         setTimeout(function() {

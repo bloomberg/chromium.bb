@@ -25,6 +25,7 @@ var StartCachingAccessibilityTrees =
 var AddTreeChangeObserver = nativeAutomationInternal.AddTreeChangeObserver;
 var RemoveTreeChangeObserver =
     nativeAutomationInternal.RemoveTreeChangeObserver;
+var GetFocus = nativeAutomationInternal.GetFocus;
 var schema = GetSchemaAdditions();
 
 /**
@@ -65,6 +66,27 @@ automationUtil.treeChangeObserverMap = {};
  * @type {number}
  */
 automationUtil.nextTreeChangeObserverId = 1;
+
+/**
+ * @type {AutomationNode} The current focused node. This is only updated
+ *   when calling automationUtil.updateFocusedNode.
+ */
+automationUtil.focusedNode = null;
+
+/**
+ * Update automationUtil.focusedNode to be the node that currently has focus.
+ */
+automationUtil.updateFocusedNode = function() {
+  automationUtil.focusedNode = null;
+  var focusedNodeInfo = GetFocus(DESKTOP_TREE_ID);
+  if (!focusedNodeInfo)
+    return;
+  var tree = AutomationRootNode.getOrCreate(focusedNodeInfo.treeId);
+  if (tree) {
+    automationUtil.focusedNode =
+        privates(tree).impl.get(focusedNodeInfo.nodeId);
+  }
+};
 
 automation.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
@@ -116,6 +138,11 @@ automation.registerCustomHook(function(bindingsAPI) {
     } else {
       callback(desktopTree);
     }
+  });
+
+  apiFunctions.setHandleRequest('getFocus', function(callback) {
+    automationUtil.updateFocusedNode();
+    callback(automationUtil.focusedNode);
   });
 
   function removeTreeChangeObserver(observer) {
@@ -231,14 +258,34 @@ automationInternal.onNodesRemoved.addListener(function(treeID, nodeIDs) {
   }
 });
 
-// Listen to the automationInternal.onAccessibilityEvent event, which is
-// essentially a proxy for the AccessibilityHostMsg_Events IPC from the
-// renderer.
-automationInternal.onAccessibilityEvent.addListener(function(data) {
-  var id = data.treeID;
+/**
+ * Dispatch accessibility events fired on individual nodes to its
+ * corresponding AutomationNode. Handle focus events specially
+ * (see below).
+ */
+automationInternal.onAccessibilityEvent.addListener(function(eventParams) {
+  var id = eventParams.treeID;
   var targetTree = AutomationRootNode.getOrCreate(id);
 
-  if (!privates(targetTree).impl.onAccessibilityEvent(data))
+  // When we get a focus event, ignore the actual event target, and instead
+  // check what node has focus globally. If that represents a focus change,
+  // fire a focus event on the correct target.
+  if (eventParams.eventType == schema.EventType.focus) {
+    var previousFocusedNode = automationUtil.focusedNode;
+    automationUtil.updateFocusedNode();
+    if (automationUtil.focusedNode &&
+        automationUtil.focusedNode == previousFocusedNode) {
+      return;
+    }
+
+    if (automationUtil.focusedNode) {
+      targetTree = automationUtil.focusedNode.root;
+      eventParams.treeID = privates(targetTree).impl.treeID;
+      eventParams.targetID = privates(automationUtil.focusedNode).impl.id;
+    }
+  }
+
+  if (!privates(targetTree).impl.onAccessibilityEvent(eventParams))
     return;
 
   // If we're not waiting on a callback to getTree(), we can early out here.

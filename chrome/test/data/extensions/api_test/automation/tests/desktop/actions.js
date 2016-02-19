@@ -15,18 +15,6 @@ var allTests = [
     firstTextField.doDefault();
   },
 
-  function testFocus() {
-    var firstFocusableNode = findAutomationNode(rootNode,
-        function(node) {
-          return node.role == 'button' && node.state.focusable;
-        });
-    assertTrue(!!firstFocusableNode);
-    listenOnce(firstFocusableNode, EventType.focus, function(e) {
-      chrome.test.succeed();
-    }, true);
-    firstFocusableNode.focus();
-  },
-
   function testDoDefaultViews() {
     listenOnce(rootNode, 'focus', function(node) {
       chrome.test.succeed();

@@ -435,7 +435,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accFocus(VARIANT* focus_child) {
     return E_INVALIDARG;
 
   BrowserAccessibilityWin* focus = static_cast<BrowserAccessibilityWin*>(
-      manager()->GetFocus(this));
+      manager()->GetFocus());
   if (focus == this) {
     focus_child->vt = VT_I4;
     focus_child->lVal = CHILDID_SELF;
@@ -570,7 +570,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accState(VARIANT var_id,
 
   state->vt = VT_I4;
   state->lVal = target->ia_state();
-  if (manager()->GetFocus(NULL) == this)
+  if (manager()->GetFocus() == this)
     state->lVal |= STATE_SYSTEM_FOCUSED;
 
   return S_OK;
@@ -677,7 +677,7 @@ STDMETHODIMP BrowserAccessibilityWin::accSelect(
     return E_FAIL;
 
   if (flags_sel & SELFLAG_TAKEFOCUS) {
-    manager()->SetFocus(this, true);
+    manager()->SetFocus(*this);
     return S_OK;
   }
 
@@ -4435,8 +4435,6 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia_role = ROLE_SYSTEM_LISTITEM;
       if (ia_state & STATE_SYSTEM_SELECTABLE) {
         ia_state |= STATE_SYSTEM_FOCUSABLE;
-        if (HasState(ui::AX_STATE_FOCUSED))
-          ia_state |= STATE_SYSTEM_FOCUSED;
       }
       break;
     case ui::AX_ROLE_LIST_ITEM:
@@ -4485,8 +4483,6 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia2_state &= ~(IA2_STATE_EDITABLE);
       if (ia_state & STATE_SYSTEM_SELECTABLE) {
         ia_state |= STATE_SYSTEM_FOCUSABLE;
-        if (HasState(ui::AX_STATE_FOCUSED))
-          ia_state |= STATE_SYSTEM_FOCUSED;
       }
       break;
     case ui::AX_ROLE_METER:

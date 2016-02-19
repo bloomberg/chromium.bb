@@ -263,9 +263,6 @@ void MenuScrollViewContainer::GetAccessibleState(
 
   // Now change the role.
   state->role = ui::AX_ROLE_MENU_BAR;
-  // Some AT (like NVDA) will not process focus events on menu item children
-  // unless a parent claims to be focused.
-  state->AddStateFlag(ui::AX_STATE_FOCUSED);
 }
 
 void MenuScrollViewContainer::OnBoundsChanged(

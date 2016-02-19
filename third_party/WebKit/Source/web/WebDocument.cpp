@@ -266,6 +266,13 @@ WebAXObject WebDocument::accessibilityObjectFromID(int axID) const
     return cache ? WebAXObject(cache->objectFromAXID(axID)) : WebAXObject();
 }
 
+WebAXObject WebDocument::focusedAccessibilityObject() const
+{
+    const Document* document = constUnwrap<Document>();
+    AXObjectCacheImpl* cache = toAXObjectCacheImpl(document->axObjectCache());
+    return cache ? WebAXObject(cache->focusedObject()) : WebAXObject();
+}
+
 WebVector<WebDraggableRegion> WebDocument::draggableRegions() const
 {
     WebVector<WebDraggableRegion> draggableRegions;

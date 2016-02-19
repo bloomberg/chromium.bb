@@ -208,6 +208,22 @@ Background.prototype = {
       (new PanelCommand(PanelCommandType.DISABLE_MENUS)).send();
     }
 
+    // If switching to Classic from any automation-API-based mode,
+    // clear the focus ring.
+    if (mode === ChromeVoxMode.CLASSIC && mode != this.mode_) {
+      if (cvox.ChromeVox.isChromeOS)
+        chrome.accessibilityPrivate.setFocusRing([]);
+    }
+
+    // If switching away from Classic to any automation-API-based mode,
+    // update the range based on what's focused.
+    if (this.mode_ === ChromeVoxMode.CLASSIC && mode != this.mode_) {
+      chrome.automation.getFocus((function(focus) {
+        if (focus)
+          this.setCurrentRange(cursors.Range.fromNode(focus));
+      }).bind(this));
+    }
+
     this.mode_ = mode;
   },
 
@@ -499,6 +515,11 @@ Background.prototype = {
         // Leaving unlocalized as 'next' isn't an official name.
         cvox.ChromeVox.tts.speak(isClassic ?
             'classic' : 'next', cvox.QueueMode.FLUSH, {doNotInterrupt: true});
+
+        // If the new mode is Classic, return now so we don't announce
+        // anything more.
+        if (newMode == ChromeVoxMode.CLASSIC)
+          return false;
         break;
       case 'toggleStickyMode':
         cvox.ChromeVoxBackground.setPref('sticky',

@@ -1396,27 +1396,18 @@ TEST(BrowserAccessibilityManagerTest, DeletingFocusedNodeDoesNotCrash) {
 
   ui::AXNodeData node2;
   node2.id = 2;
-  node2.state = 1 << ui::AX_STATE_FOCUSED;
 
+  ui::AXTreeUpdate initial_state = MakeAXTreeUpdate(root, node2);
+  initial_state.has_tree_data = true;
+  initial_state.tree_data.focus_id = 2;
   scoped_ptr<BrowserAccessibilityManager> manager(
       BrowserAccessibilityManager::Create(
-          MakeAXTreeUpdate(root, node2),
+          initial_state,
           nullptr,
           new CountedBrowserAccessibilityFactory()));
 
   ASSERT_EQ(1, manager->GetRoot()->GetId());
-  ASSERT_EQ(1, manager->GetFocus(manager->GetRoot())->GetId());
-
-  // Send the focus event for node 2.
-  std::vector<AXEventNotificationDetails> events;
-  events.push_back(AXEventNotificationDetails());
-  events[0].update = MakeAXTreeUpdate(node2);
-  events[0].id = 2;
-  events[0].event_type = ui::AX_EVENT_FOCUS;
-  manager->OnAccessibilityEvents(events);
-
-  ASSERT_EQ(1, manager->GetRoot()->GetId());
-  ASSERT_EQ(2, manager->GetFocus(manager->GetRoot())->GetId());
+  ASSERT_EQ(2, manager->GetFocus()->GetId());
 
   // Now replace the tree with a new tree consisting of a single root.
   ui::AXNodeData root2;
@@ -1434,7 +1425,7 @@ TEST(BrowserAccessibilityManagerTest, DeletingFocusedNodeDoesNotCrash) {
   // Make sure that the focused node was updated to the new root and
   // that this doesn't crash.
   ASSERT_EQ(3, manager->GetRoot()->GetId());
-  ASSERT_EQ(3, manager->GetFocus(manager->GetRoot())->GetId());
+  ASSERT_EQ(3, manager->GetFocus()->GetId());
 }
 
 TEST(BrowserAccessibilityManagerTest, DeletingFocusedNodeDoesNotCrash2) {
@@ -1449,7 +1440,6 @@ TEST(BrowserAccessibilityManagerTest, DeletingFocusedNodeDoesNotCrash2) {
 
   ui::AXNodeData node2;
   node2.id = 2;
-  node2.state = 1 << ui::AX_STATE_FOCUSED;
 
   ui::AXNodeData node3;
   node3.id = 3;
@@ -1459,25 +1449,17 @@ TEST(BrowserAccessibilityManagerTest, DeletingFocusedNodeDoesNotCrash2) {
   node4.id = 4;
   node4.state = 0;
 
+  ui::AXTreeUpdate initial_state = MakeAXTreeUpdate(root, node2, node3, node4);
+  initial_state.has_tree_data = true;
+  initial_state.tree_data.focus_id = 2;
   scoped_ptr<BrowserAccessibilityManager> manager(
       BrowserAccessibilityManager::Create(
-          MakeAXTreeUpdate(root, node2, node3, node4),
+          initial_state,
           nullptr,
           new CountedBrowserAccessibilityFactory()));
 
   ASSERT_EQ(1, manager->GetRoot()->GetId());
-  ASSERT_EQ(1, manager->GetFocus(manager->GetRoot())->GetId());
-
-  // Send the focus event for node 2.
-  std::vector<AXEventNotificationDetails> events;
-  events.push_back(AXEventNotificationDetails());
-  events[0].update = MakeAXTreeUpdate(node2);
-  events[0].id = 2;
-  events[0].event_type = ui::AX_EVENT_FOCUS;
-  manager->OnAccessibilityEvents(events);
-
-  ASSERT_EQ(1, manager->GetRoot()->GetId());
-  ASSERT_EQ(2, manager->GetFocus(manager->GetRoot())->GetId());
+  ASSERT_EQ(2, manager->GetFocus()->GetId());
 
   // Now replace the tree with a new tree consisting of a single root.
   ui::AXNodeData root2;
@@ -1497,7 +1479,7 @@ TEST(BrowserAccessibilityManagerTest, DeletingFocusedNodeDoesNotCrash2) {
   // Make sure that the focused node was updated to the new root and
   // that this doesn't crash.
   ASSERT_EQ(3, manager->GetRoot()->GetId());
-  ASSERT_EQ(3, manager->GetFocus(manager->GetRoot())->GetId());
+  ASSERT_EQ(3, manager->GetFocus()->GetId());
 }
 
 }  // namespace content

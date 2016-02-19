@@ -177,7 +177,7 @@ static gboolean browser_accessibility_grab_focus(AtkComponent* atk_component) {
   if (!obj)
     return false;
 
-  obj->manager()->SetFocus(obj, true);
+  obj->manager()->SetFocus(*obj);
   return true;
 }
 
@@ -539,7 +539,7 @@ static AtkStateSet* browser_accessibility_ref_state_set(AtkObject* atk_object) {
 
   if (state & (1 << ui::AX_STATE_FOCUSABLE))
     atk_state_set_add_state(state_set, ATK_STATE_FOCUSABLE);
-  if (obj->manager()->GetFocus(NULL) == obj)
+  if (obj->manager()->GetFocus() == obj)
     atk_state_set_add_state(state_set, ATK_STATE_FOCUSED);
   if (state & (1 << ui::AX_STATE_ENABLED))
     atk_state_set_add_state(state_set, ATK_STATE_ENABLED);

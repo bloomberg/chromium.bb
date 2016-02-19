@@ -1182,19 +1182,6 @@ void AXObject::clearChildren()
     m_haveChildren = false;
 }
 
-AXObject* AXObject::focusedUIElement() const
-{
-    Document* doc = document();
-    if (!doc)
-        return 0;
-
-    Page* page = doc->page();
-    if (!page)
-        return 0;
-
-    return axObjectCache().focusedUIElementForPage(page);
-}
-
 Document* AXObject::document() const
 {
     FrameView* frameView = documentFrameView();

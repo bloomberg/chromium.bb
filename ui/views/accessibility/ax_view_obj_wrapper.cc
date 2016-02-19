@@ -53,8 +53,6 @@ void AXViewObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
   out_node_data->role = view_data.role;
 
   out_node_data->state = view_data.state();
-  if (view_->HasFocus())
-    out_node_data->state |= 1 << ui::AX_STATE_FOCUSED;
   if (view_->IsFocusable())
     out_node_data->state |= 1 << ui::AX_STATE_FOCUSABLE;
   if (!view_->visible())

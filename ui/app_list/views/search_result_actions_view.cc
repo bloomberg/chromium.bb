@@ -54,8 +54,8 @@ void SearchResultActionsView::SetSelectedAction(int action_index) {
   SchedulePaint();
 
   if (IsValidActionIndex(selected_action_)) {
-    child_at(selected_action_)->NotifyAccessibilityEvent(
-        ui::AX_EVENT_FOCUS, true);
+    child_at(selected_action_)
+        ->NotifyAccessibilityEvent(ui::AX_EVENT_HOVER, true);
   }
 }
 

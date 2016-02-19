@@ -24,9 +24,6 @@ uint32_t AXStateFromBlink(const blink::WebAXObject& o) {
   if (o.canSetFocusAttribute())
     state |= (1 << ui::AX_STATE_FOCUSABLE);
 
-  if (o.isFocused())
-    state |= (1 << ui::AX_STATE_FOCUSED);
-
   if (o.role() == blink::WebAXRolePopUpButton ||
       o.ariaHasPopup())
     state |= (1 << ui::AX_STATE_HASPOPUP);

@@ -865,7 +865,7 @@ bool InitializeAccessibilityTreeSearch(
 - (NSNumber*)focused {
   BrowserAccessibilityManager* manager = browserAccessibility_->manager();
   NSNumber* ret = [NSNumber numberWithBool:
-      manager->GetFocus(NULL) == browserAccessibility_];
+      manager->GetFocus() == browserAccessibility_];
   return ret;
 }
 
@@ -1322,7 +1322,9 @@ bool InitializeAccessibilityTreeSearch(
 - (NSArray*)selectedChildren {
   NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
   BrowserAccessibilityManager* manager = browserAccessibility_->manager();
-  BrowserAccessibility* focusedChild = manager->GetFocus(browserAccessibility_);
+  BrowserAccessibility* focusedChild = manager->GetFocus();
+  if (!focusedChild->IsDescendantOf(browserAccessibility_))
+    focusedChild = nullptr;
 
   // If it's not multiselectable, try to skip iterating over the
   // children.
@@ -2361,7 +2363,7 @@ bool InitializeAccessibilityTreeSearch(
     NSNumber* focusedNumber = value;
     BOOL focused = [focusedNumber intValue];
     if (focused)
-      manager->SetFocus(browserAccessibility_, true);
+      manager->SetFocus(*browserAccessibility_);
   }
   if ([attribute isEqualToString:NSAccessibilitySelectedTextRangeAttribute]) {
     NSRange range = [(NSValue*)value rangeValue];

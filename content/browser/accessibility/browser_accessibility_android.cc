@@ -184,7 +184,7 @@ bool BrowserAccessibilityAndroid::IsFocusable() const {
 }
 
 bool BrowserAccessibilityAndroid::IsFocused() const {
-  return manager()->GetFocus(manager()->GetRoot()) == this;
+  return manager()->GetFocus() == this;
 }
 
 bool BrowserAccessibilityAndroid::IsHeading() const {

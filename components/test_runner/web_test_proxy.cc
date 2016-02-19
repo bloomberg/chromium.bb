@@ -659,9 +659,6 @@ void WebTestProxyBase::PostAccessibilityEvent(const blink::WebAXObject& obj,
   if (!test_interfaces_->GetTestRunner()->TestIsRunning())
     return;
 
-  if (event == blink::WebAXEventFocus)
-    test_interfaces_->GetAccessibilityController()->SetFocusedElement(obj);
-
   const char* event_name = NULL;
   switch (event) {
     case blink::WebAXEventActiveDescendantChanged:

@@ -145,6 +145,10 @@ AXContentTreeData BlinkAXTreeSource::GetTreeData() const {
   tree_data.loading_progress = root.estimatedLoadingProgress();
   tree_data.doctype = "html";
 
+  WebAXObject focus = document.focusedAccessibilityObject();
+  if (!focus.isNull())
+    tree_data.focus_id = focus.axID();
+
   WebAXObject anchor_object, focus_object;
   int anchor_offset, focus_offset;
   root.selection(anchor_object, anchor_offset, focus_object, focus_offset);
@@ -401,12 +405,6 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
 
   if (src.posInSet())
     dst->AddIntAttribute(ui::AX_ATTR_POS_IN_SET, src.posInSet());
-
-  // Treat the active list box item as focused.
-  if (dst->role == ui::AX_ROLE_LIST_BOX_OPTION &&
-      src.isSelectedOptionActive()) {
-    dst->state |= (1 << ui::AX_STATE_FOCUSED);
-  }
 
   if (src.canvasHasFallbackContent())
     dst->AddBoolAttribute(ui::AX_ATTR_CANVAS_HAS_FALLBACK, true);

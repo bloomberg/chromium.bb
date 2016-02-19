@@ -298,6 +298,9 @@ chrome.automation.getTree = function(tabId, callback) {};
 /** @param {function(!chrome.automation.AutomationNode):void} callback */
 chrome.automation.getDesktop = function(callback) {};
 
+/** @param {function(!chrome.automation.AutomationNode):void} callback */
+chrome.automation.getFocus = function(callback) {};
+
 /**
  * @param {string} filter
  * @param {function(chrome.automation.TreeChange) : void}

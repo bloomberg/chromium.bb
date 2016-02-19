@@ -172,11 +172,12 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   // occurred in the tab.
   void GotMouseDown();
 
-  // Update the focused node to |node|, which may be null.
-  // If |notify| is true, send a message to the renderer to set focus
-  // to this node.
-  void SetFocus(ui::AXNode* node, bool notify);
-  void SetFocus(BrowserAccessibility* node, bool notify);
+  // Send a message to the renderer to set focus to this node.
+  void SetFocus(const BrowserAccessibility& node);
+
+  // Pretend that the given node has focus, for testing only. Doesn't
+  // communicate with the renderer and doesn't fire any events.
+  void SetFocusLocallyForTesting(BrowserAccessibility* node);
 
   // Tell the renderer to do the default action for this node.
   void DoDefaultAction(const BrowserAccessibility& node);
@@ -248,13 +249,12 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
       ToBrowserAccessibilityManagerAuraLinux();
 #endif
 
-  // Return the object that has focus, if it's a descendant of the
-  // given root (inclusive). Does not make a new reference.
-  virtual BrowserAccessibility* GetFocus(BrowserAccessibility* root);
+  // Return the object that has focus.
+  virtual BrowserAccessibility* GetFocus();
 
-  // Return the descentant of the given root that has focus, or that object's
-  // active descendant if it has one.
-  BrowserAccessibility* GetActiveDescendantFocus(BrowserAccessibility* root);
+  // Given a focused node |focus|, returns a descendant of that node if it
+  // has an active descendant, otherwise returns |focus|.
+  BrowserAccessibility* GetActiveDescendantFocus(BrowserAccessibility* focus);
 
   // Returns true if native focus is anywhere in this WebContents or not.
   bool NativeViewHasFocus();
@@ -364,9 +364,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
 
   // The underlying tree of accessibility objects.
   scoped_ptr<ui::AXSerializableTree> tree_;
-
-  // The node that currently has focus.
-  ui::AXNode* focus_;
 
   // A mapping from a node id to its wrapper of type BrowserAccessibility.
   base::hash_map<int32_t, BrowserAccessibility*> id_wrapper_map_;

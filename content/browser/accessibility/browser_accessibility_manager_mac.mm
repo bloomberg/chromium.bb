@@ -106,16 +106,15 @@ ui::AXTreeUpdate
   return update;
 }
 
-BrowserAccessibility* BrowserAccessibilityManagerMac::GetFocus(
-    BrowserAccessibility* root) {
+BrowserAccessibility* BrowserAccessibilityManagerMac::GetFocus() {
   // On Mac, list boxes should always get focus on the whole list, otherwise
   // information about the number of selected items will never be reported.
-  BrowserAccessibility* node = BrowserAccessibilityManager::GetFocus(root);
+  BrowserAccessibility* node = BrowserAccessibilityManager::GetFocus();
   if (node && node->GetRole() == ui::AX_ROLE_LIST_BOX)
     return node;
 
   // For other roles, follow the active descendant.
-  return GetActiveDescendantFocus(root);
+  return GetActiveDescendantFocus(node);
 }
 
 void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
@@ -125,8 +124,7 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
     return;
 
   if (event_type == ui::AX_EVENT_FOCUS) {
-    BrowserAccessibility* active_descendant = GetActiveDescendantFocus(
-        GetRoot());
+    BrowserAccessibility* active_descendant = GetActiveDescendantFocus(node);
     if (active_descendant)
       node = active_descendant;
 
@@ -135,7 +133,7 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
         node->GetParent() &&
         node->GetParent()->GetRole() == ui::AX_ROLE_LIST_BOX) {
       node = node->GetParent();
-      SetFocus(node, false);
+      SetFocus(*node);
     }
   }
 

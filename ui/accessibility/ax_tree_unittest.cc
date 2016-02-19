@@ -99,7 +99,7 @@ TEST(AXTreeTest, SerializeSimpleAXTree) {
   AXNodeData root;
   root.id = 1;
   root.role = AX_ROLE_ROOT_WEB_AREA;
-  root.state = (1 << AX_STATE_FOCUSABLE) | (1 << AX_STATE_FOCUSED);
+  root.state = 1 << AX_STATE_FOCUSABLE;
   root.location = gfx::Rect(0, 0, 800, 600);
   root.child_ids.push_back(2);
   root.child_ids.push_back(3);
@@ -151,7 +151,7 @@ TEST(AXTreeTest, SerializeSimpleAXTree) {
 
   EXPECT_EQ(
       "AXTree title=Title\n"
-      "id=1 rootWebArea FOCUSABLE FOCUSED (0, 0)-(800, 600) child_ids=2,3\n"
+      "id=1 rootWebArea FOCUSABLE (0, 0)-(800, 600) child_ids=2,3\n"
       "  id=2 button (20, 20)-(200, 30)\n"
       "  id=3 checkBox (20, 50)-(200, 30)\n",
       dst_tree.ToString());

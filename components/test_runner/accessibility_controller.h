@@ -31,7 +31,6 @@ class AccessibilityController :
 
   void Reset();
   void Install(blink::WebFrame* frame);
-  void SetFocusedElement(const blink::WebAXObject&);
   bool ShouldLogAccessibilityEvents();
   void NotificationReceived(const blink::WebAXObject& target,
                             const std::string& notification_name);
@@ -55,9 +54,6 @@ class AccessibilityController :
 
   // If true, will log all accessibility notifications.
   bool log_accessibility_events_;
-
-  blink::WebAXObject focused_element_;
-  blink::WebAXObject root_element_;
 
   WebAXObjectProxyList elements_;
 

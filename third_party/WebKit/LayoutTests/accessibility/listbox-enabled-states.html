@@ -27,12 +27,13 @@
 
         document.getElementById("selectElement").focus();
 
-        shouldBeTrue('accessibilityController.focusedElement.isEnabled');
-        shouldBeTrue('accessibilityController.focusedElement.childAtIndex(0).isEnabled');
-        shouldBeTrue('accessibilityController.focusedElement.childAtIndex(1).isEnabled');
-        shouldBeFalse('accessibilityController.focusedElement.childAtIndex(2).isEnabled');
-        shouldBeFalse('accessibilityController.focusedElement.childAtIndex(3).isEnabled');
-        shouldBeTrue('accessibilityController.focusedElement.childAtIndex(4).isEnabled');
+        var axSelectElement = accessibilityController.focusedElement;
+        shouldBeTrue('axSelectElement.isEnabled');
+        shouldBeTrue('axSelectElement.childAtIndex(0).isEnabled');
+        shouldBeTrue('axSelectElement.childAtIndex(1).isEnabled');
+        shouldBeFalse('axSelectElement.childAtIndex(2).isEnabled');
+        shouldBeFalse('axSelectElement.childAtIndex(3).isEnabled');
+        shouldBeTrue('axSelectElement.childAtIndex(4).isEnabled');
     }
 </script>
 

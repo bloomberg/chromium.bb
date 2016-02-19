@@ -2214,7 +2214,7 @@ bool AXLayoutObject::isTabItemSelected() const
     // The ARIA spec says a tab item can also be selected if it is aria-labeled by a tabpanel
     // that has keyboard focus inside of it, or if a tabpanel in its aria-controls list has KB
     // focus inside of it.
-    AXObject* focusedElement = focusedUIElement();
+    AXObject* focusedElement = axObjectCache().focusedObject();
     if (!focusedElement)
         return false;
 

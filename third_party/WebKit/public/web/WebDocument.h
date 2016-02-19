@@ -121,6 +121,10 @@ public:
 
     // Gets the accessibility object for an object on this page by ID.
     BLINK_EXPORT WebAXObject accessibilityObjectFromID(int axID) const;
+
+    // Gets the accessibility object that has focus.
+    BLINK_EXPORT WebAXObject focusedAccessibilityObject() const;
+
     // Inserts the given CSS source code as a stylesheet in the document.
     BLINK_EXPORT void insertStyleSheet(const WebString& sourceCode);
 

@@ -448,14 +448,15 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
     atk_state_set_add_state(atk_state_set, ATK_STATE_EXPANDED);
   if (state & (1 << ui::AX_STATE_FOCUSABLE))
     atk_state_set_add_state(atk_state_set, ATK_STATE_FOCUSABLE);
-  if (state & (1 << ui::AX_STATE_FOCUSED))
-    atk_state_set_add_state(atk_state_set, ATK_STATE_FOCUSED);
   if (state & (1 << ui::AX_STATE_PRESSED))
     atk_state_set_add_state(atk_state_set, ATK_STATE_PRESSED);
   if (state & (1 << ui::AX_STATE_SELECTABLE))
     atk_state_set_add_state(atk_state_set, ATK_STATE_SELECTABLE);
   if (state & (1 << ui::AX_STATE_SELECTED))
     atk_state_set_add_state(atk_state_set, ATK_STATE_SELECTED);
+
+  if (delegate_->GetFocus() == GetNativeViewAccessible())
+    atk_state_set_add_state(atk_state_set, ATK_STATE_FOCUSED);
 }
 
 void AXPlatformNodeAuraLinux::GetAtkRelations(AtkRelationSet* atk_relation_set)

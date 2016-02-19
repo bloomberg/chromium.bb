@@ -2033,7 +2033,10 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, ChromeVoxInjection) {
       "web_view/chromevox_injection");
   ASSERT_TRUE(guest_web_contents);
 
-  EXPECT_EQ("chrome vox test title", monitor.GetNextUtterance());
+  for (;;) {
+    if (monitor.GetNextUtterance() == "chrome vox test title")
+      break;
+  }
 }
 #endif
 

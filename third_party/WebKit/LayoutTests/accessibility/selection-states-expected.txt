@@ -2,13 +2,13 @@
 This tests that we report the correct selection-related states.
 
 
-PASS accessibilityController.focusedElement.isMultiSelectable is true
-PASS accessibilityController.focusedElement.childAtIndex(0).isSelectable is true
-PASS accessibilityController.focusedElement.childAtIndex(0).isSelected is true
-PASS accessibilityController.focusedElement.childAtIndex(1).isSelectable is true
-PASS accessibilityController.focusedElement.childAtIndex(1).isSelected is false
-PASS accessibilityController.focusedElement.childAtIndex(2).isSelectable is false
-PASS accessibilityController.focusedElement.childAtIndex(2).isSelected is false
+PASS axSelectElement.isMultiSelectable is true
+PASS axSelectElement.childAtIndex(0).isSelectable is true
+PASS axSelectElement.childAtIndex(0).isSelected is true
+PASS axSelectElement.childAtIndex(1).isSelectable is true
+PASS axSelectElement.childAtIndex(1).isSelected is false
+PASS axSelectElement.childAtIndex(2).isSelectable is false
+PASS axSelectElement.childAtIndex(2).isSelected is false
 PASS successfullyParsed is true
 
 TEST COMPLETE

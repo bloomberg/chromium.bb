@@ -143,7 +143,7 @@ void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
   switch (event_type) {
     case ui::AX_EVENT_LOAD_COMPLETE:
       Java_BrowserAccessibilityManager_handlePageLoaded(
-          env, obj.obj(), focus_->id());
+          env, obj.obj(), GetFocus()->GetId());
       break;
     case ui::AX_EVENT_FOCUS:
       Java_BrowserAccessibilityManager_handleFocusChanged(
@@ -183,7 +183,7 @@ void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
       break;
     case ui::AX_EVENT_TEXT_CHANGED:
     case ui::AX_EVENT_VALUE_CHANGED:
-      if (android_node->IsEditableText() && GetFocus(GetRoot()) == node) {
+      if (android_node->IsEditableText() && GetFocus() == node) {
         Java_BrowserAccessibilityManager_handleEditableTextChanged(
             env, obj.obj(), node->GetId());
       } else if (android_node->IsSlider()) {
@@ -496,13 +496,13 @@ void BrowserAccessibilityManagerAndroid::Focus(JNIEnv* env,
                                                jint id) {
   BrowserAccessibility* node = GetFromID(id);
   if (node)
-    SetFocus(node, true);
+    SetFocus(*node);
 }
 
 void BrowserAccessibilityManagerAndroid::Blur(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  SetFocus(GetRoot(), true);
+  SetFocus(*GetRoot());
 }
 
 void BrowserAccessibilityManagerAndroid::ScrollToMakeNodeVisible(

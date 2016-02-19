@@ -54,7 +54,7 @@ public:
     ~AXObjectCacheImpl();
     DECLARE_VIRTUAL_TRACE();
 
-    AXObject* focusedUIElementForPage(const Page*);
+    AXObject* focusedObject();
 
     void dispose() override;
 

@@ -1,1 +1,3 @@
 AXFocusedUIElementChanged on AXList
+AXFocusedUIElementChanged on AXList
+AXFocusedUIElementChanged on AXList

@@ -149,23 +149,37 @@ AXObject* AXObjectCacheImpl::focusedImageMapUIElement(HTMLAreaElement* areaEleme
     return 0;
 }
 
-AXObject* AXObjectCacheImpl::focusedUIElementForPage(const Page* page)
+AXObject* AXObjectCacheImpl::focusedObject()
 {
-    if (!page->settings().accessibilityEnabled())
+    if (!accessibilityEnabled())
         return 0;
 
-    // Cross-process accessibility is not yet implemented.
-    if (!page->focusController().focusedOrMainFrame()->isLocalFrame())
+    // We don't have to return anything if the focused frame is not local;
+    // the remote frame will have its own AXObjectCacheImpl and the focused
+    // object will be sorted out by the browser process.
+    Page* page = m_document->page();
+    if (!page->focusController().focusedFrame())
         return 0;
 
-    // get the focused node in the page
-    Document* focusedDocument = toLocalFrame(page->focusController().focusedOrMainFrame())->document();
+    // Get the focused node in the page.
+    Document* focusedDocument = page->focusController().focusedFrame()->document();
     Node* focusedNode = focusedDocument->focusedElement();
     if (!focusedNode)
         focusedNode = focusedDocument;
 
-    if (isHTMLAreaElement(*focusedNode))
+    // If it's an image map, get the focused link within the image map.
+    if (isHTMLAreaElement(focusedNode))
         return focusedImageMapUIElement(toHTMLAreaElement(focusedNode));
+
+    // See if there's a page popup, for example a calendar picker.
+    Element* adjustedFocusedElement = focusedDocument->adjustedFocusedElement();
+    if (isHTMLInputElement(adjustedFocusedElement)) {
+        if (AXObject* axPopup = toHTMLInputElement(adjustedFocusedElement)->popupRootAXObject()) {
+            if (Element* focusedElementInPopup = axPopup->document()->focusedElement())
+                focusedNode = focusedElementInPopup;
+        }
+
+    }
 
     AXObject* obj = getOrCreate(focusedNode);
     if (!obj)
@@ -1120,7 +1134,7 @@ void AXObjectCacheImpl::handleFocusedUIElementChanged(Node* oldFocusedNode, Node
     if (!page)
         return;
 
-    AXObject* focusedObject = focusedUIElementForPage(page);
+    AXObject* focusedObject = this->focusedObject();
     if (!focusedObject)
         return;
 

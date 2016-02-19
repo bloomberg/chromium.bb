@@ -159,6 +159,31 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, Desktop) {
       << message_;
 }
 
+#if defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopInitialFocus) {
+  ASSERT_TRUE(
+      RunExtensionSubtest("automation/tests/desktop", "initial_focus.html"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopFocusWeb) {
+  ASSERT_TRUE(
+      RunExtensionSubtest("automation/tests/desktop", "focus_web.html"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopFocusViews) {
+  AutomationManagerAura::GetInstance()->Enable(browser()->profile());
+  // Trigger the shelf subtree to be computed.
+  ash::Shell::GetInstance()->accelerator_controller()->PerformActionIfEnabled(
+      ash::FOCUS_SHELF);
+
+  ASSERT_TRUE(
+      RunExtensionSubtest("automation/tests/desktop", "focus_views.html"))
+      << message_;
+}
+#endif
+
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopNotRequested) {
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs",
                                   "desktop_not_requested.html")) << message_;

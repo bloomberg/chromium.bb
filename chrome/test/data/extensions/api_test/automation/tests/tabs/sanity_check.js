@@ -19,7 +19,7 @@ var allTests = [
 
     var state = RemoveUntestedStates(rootNode.state);
     assertEq(
-        {enabled: true, focusable: true, readOnly: true},
+        {enabled: true, focusable: true, readOnly: true, focused: true},
         state);
 
     var children = rootNode.children;

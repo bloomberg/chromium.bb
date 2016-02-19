@@ -206,7 +206,6 @@
     enabled,   // content only
     expanded,
     focusable,
-    focused,
     haspopup,
     horizontal,
     hovered,

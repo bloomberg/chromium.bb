@@ -33,6 +33,7 @@ BaseAutomationHandler = function(node) {
     focus: this.onFocus,
     hover: this.onEventDefault,
     loadComplete: this.onLoadComplete,
+    menuListItemSelected: this.onEventDefault,
     menuStart: this.onEventDefault,
     menuEnd: this.onEventDefault,
     selection: this.onEventDefault,

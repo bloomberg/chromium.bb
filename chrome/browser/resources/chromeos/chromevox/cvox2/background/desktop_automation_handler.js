@@ -49,6 +49,11 @@ DesktopAutomationHandler = function(node) {
            type: chrome.automation.EventType.loadComplete});
     }
   }
+
+  chrome.automation.getFocus((function(focus) {
+    if (focus)
+      this.onFocus({target: focus, type: 'focus'});
+  }).bind(this));
 };
 
 DesktopAutomationHandler.prototype = {

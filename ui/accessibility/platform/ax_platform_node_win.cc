@@ -982,8 +982,6 @@ int AXPlatformNodeWin::MSAAState() {
     msaa_state |= STATE_SYSTEM_EXPANDED;
   if (state & (1 << ui::AX_STATE_FOCUSABLE))
     msaa_state |= STATE_SYSTEM_FOCUSABLE;
-  if (state & (1 << ui::AX_STATE_FOCUSED))
-    msaa_state |= STATE_SYSTEM_FOCUSED;
   if (state & (1 << ui::AX_STATE_HASPOPUP))
     msaa_state |= STATE_SYSTEM_HASPOPUP;
   if (state & (1 << ui::AX_STATE_HOVERED))
@@ -1006,6 +1004,15 @@ int AXPlatformNodeWin::MSAAState() {
     msaa_state |= STATE_SYSTEM_SELECTED;
   if (state & (1 << ui::AX_STATE_DISABLED))
     msaa_state |= STATE_SYSTEM_UNAVAILABLE;
+
+  gfx::NativeViewAccessible focus = delegate_->GetFocus();
+  if (focus == GetNativeViewAccessible())
+    msaa_state |= STATE_SYSTEM_FOCUSED;
+
+  // On Windows, the "focus" bit should be set on certain containers, like
+  // menu bars, when one of their children has focus.
+  if (GetData().role == ui::AX_ROLE_MENU_BAR && focus)
+    msaa_state |= STATE_SYSTEM_FOCUSED;
 
   return msaa_state;
 }

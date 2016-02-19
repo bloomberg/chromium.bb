@@ -63,6 +63,9 @@ ui::AXTreeData AXTreeSourceAura::GetTreeData() const {
   tree_data.tree_id = 0;
   tree_data.loaded = true;
   tree_data.loading_progress = 1.0;
+  AXAuraObjWrapper* focus = AXAuraObjCache::GetInstance()->GetFocus();
+  if (focus)
+    tree_data.focus_id = focus->GetID();
   return tree_data;
 }
 

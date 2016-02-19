@@ -416,6 +416,8 @@ AutomationInternalCustomBindings::AutomationInternalCustomBindings(
   ROUTE_FUNCTION(AddTreeChangeObserver);
   ROUTE_FUNCTION(RemoveTreeChangeObserver);
   ROUTE_FUNCTION(GetChildIDAtIndex);
+  ROUTE_FUNCTION(GetFocus);
+  ROUTE_FUNCTION(GetState);
   #undef ROUTE_FUNCTION
 
   // Bindings that take a Tree ID and return a property of the tree.
@@ -489,22 +491,6 @@ AutomationInternalCustomBindings::AutomationInternalCustomBindings(
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          TreeCache* cache, ui::AXNode* node) {
         result.Set(v8::Integer::New(isolate, node->index_in_parent()));
-      });
-  RouteNodeIDFunction(
-      "GetState", [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
-                     TreeCache* cache, ui::AXNode* node) {
-        v8::Local<v8::Object> state(v8::Object::New(isolate));
-        uint32_t state_pos = 0, state_shifter = node->data().state;
-        while (state_shifter) {
-          if (state_shifter & 1) {
-            std::string key = ToString(static_cast<ui::AXState>(state_pos));
-            state->Set(CreateV8String(isolate, key),
-                       v8::Boolean::New(isolate, true));
-          }
-          state_shifter = state_shifter >> 1;
-          state_pos++;
-        }
-        result.Set(state);
       });
   RouteNodeIDFunction(
       "GetRole", [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
@@ -775,6 +761,112 @@ void AutomationInternalCustomBindings::RemoveTreeChangeObserver(
   }
 
   UpdateOverallTreeChangeObserverFilter();
+}
+
+bool AutomationInternalCustomBindings::GetFocusInternal(TreeCache* cache,
+                                                        TreeCache** out_cache,
+                                                        ui::AXNode** out_node) {
+  int focus_id = cache->tree.data().focus_id;
+  ui::AXNode* focus = cache->tree.GetFromId(focus_id);
+  if (!focus)
+    return false;
+
+  while (focus->data().HasIntAttribute(ui::AX_ATTR_CHILD_TREE_ID)) {
+    // Try to keep following focus recursively, by letting |tree_id| be the
+    // new subtree to search in, while keeping |focus_tree_id| set to the tree
+    // where we know we found a focused node.
+    int child_tree_id =
+        focus->data().GetIntAttribute(ui::AX_ATTR_CHILD_TREE_ID);
+
+    TreeCache* child_cache = GetTreeCacheFromTreeID(child_tree_id);
+    if (!child_cache)
+      break;
+
+    int child_focus_id = child_cache->tree.data().focus_id;
+    ui::AXNode* child_focus = child_cache->tree.GetFromId(child_focus_id);
+    if (!child_focus)
+      break;
+
+    focus = child_focus;
+    cache = child_cache;
+  }
+
+  *out_cache = cache;
+  *out_node = focus;
+  return true;
+}
+
+void AutomationInternalCustomBindings::GetFocus(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  if (args.Length() != 1 || !args[0]->IsNumber()) {
+    ThrowInvalidArgumentsException(this);
+    return;
+  }
+
+  int tree_id = args[0]->Int32Value();
+  TreeCache* cache = GetTreeCacheFromTreeID(tree_id);
+  if (!cache)
+    return;
+
+  TreeCache* focused_tree_cache = nullptr;
+  ui::AXNode* focused_node = nullptr;
+  if (!GetFocusInternal(cache, &focused_tree_cache, &focused_node))
+    return;
+
+  v8::Isolate* isolate = GetIsolate();
+  v8::Local<v8::Object> result(v8::Object::New(isolate));
+  result->Set(CreateV8String(isolate, "treeId"),
+              v8::Integer::New(isolate, focused_tree_cache->tree_id));
+  result->Set(CreateV8String(isolate, "nodeId"),
+              v8::Integer::New(isolate, focused_node->id()));
+  args.GetReturnValue().Set(result);
+}
+
+void AutomationInternalCustomBindings::GetState(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  v8::Isolate* isolate = GetIsolate();
+  if (args.Length() < 2 || !args[0]->IsNumber() || !args[1]->IsNumber())
+    ThrowInvalidArgumentsException(this);
+
+  int tree_id = args[0]->Int32Value();
+  int node_id = args[1]->Int32Value();
+
+  TreeCache* cache = GetTreeCacheFromTreeID(tree_id);
+  if (!cache)
+    return;
+
+  ui::AXNode* node = cache->tree.GetFromId(node_id);
+  if (!node)
+    return;
+
+  v8::Local<v8::Object> state(v8::Object::New(isolate));
+  uint32_t state_pos = 0, state_shifter = node->data().state;
+  while (state_shifter) {
+    if (state_shifter & 1) {
+      std::string key = ToString(static_cast<ui::AXState>(state_pos));
+      state->Set(CreateV8String(isolate, key), v8::Boolean::New(isolate, true));
+    }
+    state_shifter = state_shifter >> 1;
+    state_pos++;
+  }
+
+  TreeCache* top_cache = GetTreeCacheFromTreeID(0);
+  if (!top_cache)
+    top_cache = cache;
+  TreeCache* focused_cache = nullptr;
+  ui::AXNode* focused_node = nullptr;
+  if (GetFocusInternal(top_cache, &focused_cache, &focused_node)) {
+    if (focused_cache == cache && focused_node == node) {
+      state->Set(CreateV8String(isolate, "focused"),
+                 v8::Boolean::New(isolate, true));
+    }
+  }
+  if (cache->tree.data().focus_id == node->id()) {
+    state->Set(CreateV8String(isolate, "focused"),
+               v8::Boolean::New(isolate, true));
+  }
+
+  args.GetReturnValue().Set(state);
 }
 
 void AutomationInternalCustomBindings::UpdateOverallTreeChangeObserverFilter() {

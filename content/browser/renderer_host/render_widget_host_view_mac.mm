@@ -2829,7 +2829,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
       renderWidgetHostView_->render_widget_host_
           ->GetRootBrowserAccessibilityManager();
   if (manager) {
-    BrowserAccessibility* focused_item = manager->GetFocus(NULL);
+    BrowserAccessibility* focused_item = manager->GetFocus();
     DCHECK(focused_item);
     if (focused_item) {
       BrowserAccessibilityCocoa* focused_item_cocoa =

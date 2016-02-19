@@ -899,7 +899,7 @@ TEST_F(BrowserAccessibilityTest, TestValueAttributeInTextControls) {
   combo_box.role = ui::AX_ROLE_COMBO_BOX;
   combo_box_text.role = ui::AX_ROLE_STATIC_TEXT;
   combo_box.state = (1 << ui::AX_STATE_EDITABLE) |
-                    (1 << ui::AX_STATE_FOCUSABLE) | (1 << ui::AX_STATE_FOCUSED);
+                    (1 << ui::AX_STATE_FOCUSABLE);
   combo_box_text.state = 1 << ui::AX_STATE_EDITABLE;
   combo_box.child_ids.push_back(combo_box_text.id);
 
@@ -914,8 +914,7 @@ TEST_F(BrowserAccessibilityTest, TestValueAttributeInTextControls) {
   search_box_text.role = ui::AX_ROLE_STATIC_TEXT;
   new_line.role = ui::AX_ROLE_LINE_BREAK;
   search_box.state = (1 << ui::AX_STATE_EDITABLE) |
-                     (1 << ui::AX_STATE_FOCUSABLE) |
-                     (1 << ui::AX_STATE_FOCUSED);
+                     (1 << ui::AX_STATE_FOCUSABLE);
   search_box_text.state = new_line.state = 1 << ui::AX_STATE_EDITABLE;
   search_box.child_ids.push_back(search_box_text.id);
   search_box.child_ids.push_back(new_line.id);
@@ -970,9 +969,9 @@ TEST_F(BrowserAccessibilityTest, TestValueAttributeInTextControls) {
   BrowserAccessibilityWin* combo_box_accessible =
       root_accessible->PlatformGetChild(0)->ToBrowserAccessibilityWin();
   ASSERT_NE(nullptr, combo_box_accessible);
-  manager->SetFocus(combo_box_accessible, false /* notify */);
+  manager->SetFocusLocallyForTesting(combo_box_accessible);
   ASSERT_EQ(combo_box_accessible,
-            manager->GetFocus(root_accessible)->ToBrowserAccessibilityWin());
+            manager->GetFocus()->ToBrowserAccessibilityWin());
   BrowserAccessibilityWin* search_box_accessible =
       root_accessible->PlatformGetChild(1)->ToBrowserAccessibilityWin();
   ASSERT_NE(nullptr, search_box_accessible);
@@ -1196,7 +1195,7 @@ TEST_F(BrowserAccessibilityTest, TestCaretAndSelectionInSimpleFields) {
   combo_box.id = 2;
   combo_box.role = ui::AX_ROLE_COMBO_BOX;
   combo_box.state = (1 << ui::AX_STATE_EDITABLE) |
-      (1 << ui::AX_STATE_FOCUSABLE) | (1 << ui::AX_STATE_FOCUSED);
+      (1 << ui::AX_STATE_FOCUSABLE);
   combo_box.SetValue("Test1");
   // Place the caret between 't' and 'e'.
   combo_box.AddIntAttribute(ui::AX_ATTR_TEXT_SEL_START, 1);
@@ -1231,9 +1230,9 @@ TEST_F(BrowserAccessibilityTest, TestCaretAndSelectionInSimpleFields) {
   BrowserAccessibilityWin* combo_box_accessible =
       root_accessible->PlatformGetChild(0)->ToBrowserAccessibilityWin();
   ASSERT_NE(nullptr, combo_box_accessible);
-  manager->SetFocus(combo_box_accessible, false /* notify */);
+  manager->SetFocusLocallyForTesting(combo_box_accessible);
   ASSERT_EQ(combo_box_accessible,
-      manager->GetFocus(root_accessible)->ToBrowserAccessibilityWin());
+      manager->GetFocus()->ToBrowserAccessibilityWin());
   BrowserAccessibilityWin* text_field_accessible =
       root_accessible->PlatformGetChild(1)->ToBrowserAccessibilityWin();
   ASSERT_NE(nullptr, text_field_accessible);
@@ -1254,11 +1253,9 @@ TEST_F(BrowserAccessibilityTest, TestCaretAndSelectionInSimpleFields) {
   EXPECT_EQ(2L, caret_offset);
 
   // Move the focus to the text field.
-  combo_box.state &= ~(1 << ui::AX_STATE_FOCUSED);
-  text_field.state |= 1 << ui::AX_STATE_FOCUSED;
-  manager->SetFocus(text_field_accessible, false /* notify */);
+  manager->SetFocusLocallyForTesting(text_field_accessible);
   ASSERT_EQ(text_field_accessible,
-      manager->GetFocus(root_accessible)->ToBrowserAccessibilityWin());
+      manager->GetFocus()->ToBrowserAccessibilityWin());
 
   // The caret should not have moved.
   hr = text_field_accessible->get_caretOffset(&caret_offset);
@@ -1370,10 +1367,9 @@ TEST_F(BrowserAccessibilityTest, TestCaretInContentEditables) {
   EXPECT_EQ(6L, caret_offset);
 
   // Move the focus to the content editable.
-  div_editable.state |= 1 << ui::AX_STATE_FOCUSED;
-  manager->SetFocus(div_editable_accessible, false /* notify */);
+  manager->SetFocusLocallyForTesting(div_editable_accessible);
   ASSERT_EQ(div_editable_accessible,
-      manager->GetFocus(root_accessible)->ToBrowserAccessibilityWin());
+      manager->GetFocus()->ToBrowserAccessibilityWin());
 
   BrowserAccessibilityWin* text_accessible =
       div_editable_accessible->PlatformGetChild(0)->ToBrowserAccessibilityWin();
@@ -1537,10 +1533,9 @@ TEST_F(BrowserAccessibilityTest, TestSelectionInContentEditables) {
   EXPECT_EQ(7L, caret_offset);
 
   // Move the focus to the content editable.
-  div_editable.state |= 1 << ui::AX_STATE_FOCUSED;
-  manager->SetFocus(div_editable_accessible, false /* notify */);
+  manager->SetFocusLocallyForTesting(div_editable_accessible);
   ASSERT_EQ(div_editable_accessible,
-      manager->GetFocus(root_accessible)->ToBrowserAccessibilityWin());
+      manager->GetFocus()->ToBrowserAccessibilityWin());
 
   // The caret should not have moved.
   hr = div_editable_accessible->get_caretOffset(&caret_offset);

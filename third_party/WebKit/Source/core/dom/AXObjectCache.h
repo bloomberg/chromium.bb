@@ -46,7 +46,7 @@ class CORE_EXPORT AXObjectCache : public GarbageCollectedFinalized<AXObjectCache
 public:
     static AXObjectCache* create(Document&);
 
-    static AXObject* focusedUIElementForPage(const Page*);
+    static AXObject* focusedObject();
 
     virtual ~AXObjectCache();
     DEFINE_INLINE_VIRTUAL_TRACE() { }

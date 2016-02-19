@@ -8,6 +8,7 @@
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
+#include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebKit.h"
@@ -140,8 +141,6 @@ AccessibilityController::AccessibilityController()
 AccessibilityController::~AccessibilityController() {}
 
 void AccessibilityController::Reset() {
-  root_element_ = blink::WebAXObject();
-  focused_element_ = blink::WebAXObject();
   elements_.Clear();
   notification_callback_.Reset();
   log_accessibility_events_ = false;
@@ -152,11 +151,6 @@ void AccessibilityController::Install(blink::WebFrame* frame) {
   frame->view()->settings()->setInlineTextBoxAccessibilityEnabled(true);
 
   AccessibilityControllerBindings::Install(weak_factory_.GetWeakPtr(), frame);
-}
-
-void AccessibilityController::SetFocusedElement(
-    const blink::WebAXObject& focused_element) {
-  focused_element_ = focused_element;
 }
 
 bool AccessibilityController::ShouldLogAccessibilityEvents() {
@@ -228,27 +222,31 @@ void AccessibilityController::UnsetNotificationListener() {
 }
 
 v8::Local<v8::Object> AccessibilityController::FocusedElement() {
-  if (focused_element_.isNull())
-    focused_element_ = web_view_->accessibilityObject();
-  return elements_.GetOrCreate(focused_element_);
+  blink::WebFrame* frame = web_view_->mainFrame();
+  if (!frame)
+    return v8::Local<v8::Object>();
+
+  blink::WebAXObject focused_element =
+      frame->document().focusedAccessibilityObject();
+  if (focused_element.isNull())
+    focused_element = web_view_->accessibilityObject();
+  return elements_.GetOrCreate(focused_element);
 }
 
 v8::Local<v8::Object> AccessibilityController::RootElement() {
-  if (root_element_.isNull())
-    root_element_ = web_view_->accessibilityObject();
-  return elements_.GetOrCreate(root_element_);
+  blink::WebAXObject root_element = web_view_->accessibilityObject();
+  return elements_.GetOrCreate(root_element);
 }
 
 v8::Local<v8::Object>
 AccessibilityController::AccessibleElementById(const std::string& id) {
-  if (root_element_.isNull())
-    root_element_ = web_view_->accessibilityObject();
+  blink::WebAXObject root_element = web_view_->accessibilityObject();
 
-  if (!root_element_.updateLayoutAndCheckValidity())
+  if (!root_element.updateLayoutAndCheckValidity())
     return v8::Local<v8::Object>();
 
   return FindAccessibleElementByIdRecursive(
-      root_element_, blink::WebString::fromUTF8(id.c_str()));
+      root_element, blink::WebString::fromUTF8(id.c_str()));
 }
 
 v8::Local<v8::Object>

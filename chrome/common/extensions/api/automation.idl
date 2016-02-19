@@ -605,6 +605,9 @@
   // Called when the <code>AutomationNode</code> for the page is available.
   callback RootCallback = void(AutomationNode rootNode);
 
+  // Called with the <code>AutomationNode</code> that currently has focus.
+  callback FocusCallback = void(AutomationNode focusedNode);
+
   interface Functions {
     // Get the automation tree for the tab with the given tabId, or the current
     // tab if no tabID is given, enabling automation if necessary. Returns a
@@ -616,6 +619,10 @@
     // Get the automation tree for the whole desktop which consists of all on
     // screen views. Note this API is currently only supported on Chrome OS.
     [nocompile] static void getDesktop(RootCallback callback);
+
+    // Get the automation node that currently has focus, globally. Will return
+    // null if none of the nodes in any loaded trees have focus.
+    [nocompile] static void getFocus(FocusCallback callback);
 
     // Add a tree change observer. Tree change observers are static/global, they
     // listen to changes across all trees. Pass a filter to determine what

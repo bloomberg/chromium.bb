@@ -74,9 +74,6 @@ const ui::AXNodeData& NativeViewAccessibility::GetData() {
   if (!view_->visible())
     data_.state |= (1 << ui::AX_STATE_INVISIBLE);
 
-  if (view_->HasFocus())
-    data_.state |= (1 << ui::AX_STATE_FOCUSED);
-
   return data_;
 }
 

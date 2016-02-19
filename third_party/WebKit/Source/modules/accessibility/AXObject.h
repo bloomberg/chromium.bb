@@ -821,7 +821,6 @@ public:
 
     // Properties of the object's owning document or page.
     virtual double estimatedLoadingProgress() const { return 0; }
-    AXObject* focusedUIElement() const;
 
     // DOM and layout tree access.
     virtual Node* node() const { return 0; }
