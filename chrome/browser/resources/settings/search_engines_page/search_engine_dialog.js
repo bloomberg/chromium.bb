@@ -55,18 +55,18 @@ Polymer({
   /** @override */
   ready: function() {
     if (this.model) {
-      // TODO(dpapad): Localize strings.
-      this.dialogTitle_ = 'Edit search engine';
-      this.actionButtonText_ = 'Edit';
+      this.dialogTitle_ =
+          loadTimeData.getString('searchEnginesEditSearchEngine');
+      this.actionButtonText_ = loadTimeData.getString('save');
 
       // If editing an existing search engine, pre-populate the input fields.
       this.searchEngine_ = this.model.displayName;
       this.keyword_ = this.model.keyword;
       this.queryUrl_ = this.model.url;
     } else {
-      // TODO(dpapad): Localize string.
-      this.dialogTitle_ = 'Add search engine';
-      this.actionButtonText_ = loadTimeData.getString('searchEnginesAdd');
+      this.dialogTitle_ =
+          loadTimeData.getString('searchEnginesAddSearchEngine');
+      this.actionButtonText_ = loadTimeData.getString('add');
     }
   },
 

@@ -445,8 +445,8 @@
   <message name="IDS_SETTINGS_SEARCH_EXPLANATION" desc="Explanation for the search engine dropdown setting.">
     Search engine used when searching from the omnibox
   </message>
-  <message name="IDS_SETTINGS_SEARCH_MANAGE_BUTTON_LABEL" desc="Label for the Manage Search Engines button.">
-    Manage Search Engines
+  <message name="IDS_SETTINGS_SEARCH_MANAGE_SEARCH_ENGINES" desc="Label for the Manage Search Engines button.">
+    Manage search engines
   </message>
   <message name="IDS_SETTINGS_SEARCH_OK_GOOGLE_LABEL" desc="Label for the checkbox which enables the OK Google hotword.">
     Enable "Ok Google" to start a voice search.
@@ -462,26 +462,29 @@
   <message name="IDS_SETTINGS_SEARCH_ENGINES" desc="Name of the settings page which manages search engines.">
     Search Engines
   </message>
-  <message name="IDS_SETTINGS_SEARCH_ENGINES_ADD_SEARCH_ENGINE_LABEL" desc="Label for section for adding a new search engine.">
-    Add a search engine
+  <message name="IDS_SETTINGS_SEARCH_ENGINES_ADD_SEARCH_ENGINE" desc="Title for a dialog that allows adding a new search engine.">
+    Add search engine
   </message>
-  <message name="IDS_SETTINGS_SEARCH_ENGINES_LABEL" desc="Label for regular Search Engines section">
-    Search engines
+  <message name="IDS_SETTINGS_SEARCH_ENGINES_EDIT_SEARCH_ENGINE" desc="Title for a dialog that allows editing an existing search engine.">
+    Edit search engine
   </message>
-  <message name="IDS_SETTINGS_SEARCH_ENGINES_OTHER_ENGINES_LABEL" desc="Label for 'other' Search Engines section">
+  <message name="IDS_SETTINGS_SEARCH_ENGINES_NOT_VALID" desc="Text indicating that the input to a given text field in the add/edit search engine dialog is not invalid.">
+   Not valid
+  </message>
+  <message name="IDS_SETTINGS_SEARCH_ENGINES_OTHER_ENGINES" desc="Label for 'other' Search Engines section">
     Other search engines
   </message>
-  <message name="IDS_SETTINGS_SEARCH_ENGINES_SEARCH_ENGINE_LABEL" desc="Label for a table column that holds the name of a search engine">
+  <message name="IDS_SETTINGS_SEARCH_ENGINES_SEARCH_ENGINE" desc="Label for a table column that holds the name of a search engine">
     Search engine
   </message>
-  <message name="IDS_SETTINGS_SEARCH_ENGINES_KEYWORD_LABEL" desc="Label for Keyword column header for a search engine">
+  <message name="IDS_SETTINGS_SEARCH_ENGINES_KEYWORD" desc="Label for Keyword column header for a search engine">
     Keyword
   </message>
-  <message name="IDS_SETTINGS_SEARCH_ENGINES_QUERY_URL_LABEL" desc="Label for Query URL column header for a search engine">
+  <message name="IDS_SETTINGS_SEARCH_ENGINES_QUERY_URL" desc="Label for Query URL column header for a search engine">
     Query URL
   </message>
-  <message name="IDS_SETTINGS_SEARCH_ENGINES_ADD" desc="Label for Add button for adding a new search engine">
-    Add
+  <message name="IDS_SETTINGS_SEARCH_ENGINES_QUERY_URL_EXPLANATION" desc="Label for explaining the format of the URL that should be entered by the user in the add/edit search engine dialog.">
+    URL with %s in place of query
   </message>
   <message name="IDS_SETTINGS_SEARCH_ENGINES_MAKE_DEFAULT" desc="Text of the button that makes the selected engine the default search engine">
     Make default

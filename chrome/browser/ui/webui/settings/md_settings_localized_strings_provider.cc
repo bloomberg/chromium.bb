@@ -39,12 +39,14 @@ namespace {
 const char kLocalizedStringsFile[] = "strings.js";
 
 void AddCommonStrings(content::WebUIDataSource* html_source) {
-  html_source->AddLocalizedString("basicPageTitle", IDS_SETTINGS_BASIC);
-  html_source->AddLocalizedString("advancedPageTitle", IDS_SETTINGS_ADVANCED);
-  html_source->AddLocalizedString("addLabel", IDS_ADD);
-  html_source->AddLocalizedString("learnMore", IDS_LEARN_MORE);
+  html_source->AddLocalizedString("add", IDS_ADD);
   html_source->AddLocalizedString("cancel", IDS_CANCEL);
+  html_source->AddLocalizedString("learnMore", IDS_LEARN_MORE);
   html_source->AddLocalizedString("ok", IDS_OK);
+  html_source->AddLocalizedString("save", IDS_SAVE);
+
+  html_source->AddLocalizedString("advancedPageTitle", IDS_SETTINGS_ADVANCED);
+  html_source->AddLocalizedString("basicPageTitle", IDS_SETTINGS_BASIC);
   html_source->AddLocalizedString("settings", IDS_SETTINGS_SETTINGS);
 }
 
@@ -653,8 +655,9 @@ void AddSearchStrings(content::WebUIDataSource* html_source) {
                                   IDS_SETTINGS_SEARCH);
   html_source->AddLocalizedString("searchExplanation",
                                   IDS_SETTINGS_SEARCH_EXPLANATION);
-  html_source->AddLocalizedString("searchManageButtonLabel",
-                                  IDS_SETTINGS_SEARCH_MANAGE_BUTTON_LABEL);
+  html_source->AddLocalizedString(
+      "searchEnginesManage",
+      IDS_SETTINGS_SEARCH_MANAGE_SEARCH_ENGINES);
   html_source->AddLocalizedString("searchOkGoogleLabel",
                                   IDS_SETTINGS_SEARCH_OK_GOOGLE_LABEL);
   html_source->AddLocalizedString(
@@ -669,22 +672,29 @@ void AddSearchEnginesStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("searchEnginesPageTitle",
                                   IDS_SETTINGS_SEARCH_ENGINES);
   html_source->AddLocalizedString(
-      "searchEnginesAddSearchEngineLabel",
-      IDS_SETTINGS_SEARCH_ENGINES_ADD_SEARCH_ENGINE_LABEL);
-  html_source->AddLocalizedString("searchEnginesLabel",
-                                  IDS_SETTINGS_SEARCH_ENGINES_LABEL);
+      "searchEnginesAddSearchEngine",
+      IDS_SETTINGS_SEARCH_ENGINES_ADD_SEARCH_ENGINE);
   html_source->AddLocalizedString(
-      "searchEnginesOtherLabel",
-      IDS_SETTINGS_SEARCH_ENGINES_OTHER_ENGINES_LABEL);
+      "searchEnginesEditSearchEngine",
+      IDS_SETTINGS_SEARCH_ENGINES_EDIT_SEARCH_ENGINE);
   html_source->AddLocalizedString(
-      "searchEnginesSearchEngineLabel",
-      IDS_SETTINGS_SEARCH_ENGINES_SEARCH_ENGINE_LABEL);
-  html_source->AddLocalizedString("searchEnginesKeywordLabel",
-                                  IDS_SETTINGS_SEARCH_ENGINES_KEYWORD_LABEL);
-  html_source->AddLocalizedString("searchEnginesQueryURLLabel",
-                                  IDS_SETTINGS_SEARCH_ENGINES_QUERY_URL_LABEL);
+      "searchEnginesNotValid",
+      IDS_SETTINGS_SEARCH_ENGINES_NOT_VALID);
+  html_source->AddLocalizedString("searchEngines",
+                                  IDS_SETTINGS_SEARCH_ENGINES);
   html_source->AddLocalizedString(
-      "searchEnginesAdd", IDS_SETTINGS_SEARCH_ENGINES_ADD);
+      "searchEnginesOther",
+      IDS_SETTINGS_SEARCH_ENGINES_OTHER_ENGINES);
+  html_source->AddLocalizedString(
+      "searchEnginesSearchEngine",
+      IDS_SETTINGS_SEARCH_ENGINES_SEARCH_ENGINE);
+  html_source->AddLocalizedString("searchEnginesKeyword",
+                                  IDS_SETTINGS_SEARCH_ENGINES_KEYWORD);
+  html_source->AddLocalizedString("searchEnginesQueryURL",
+                                  IDS_SETTINGS_SEARCH_ENGINES_QUERY_URL);
+  html_source->AddLocalizedString(
+      "searchEnginesQueryURLExplanation",
+      IDS_SETTINGS_SEARCH_ENGINES_QUERY_URL_EXPLANATION);
   html_source->AddLocalizedString(
       "searchEnginesMakeDefault", IDS_SETTINGS_SEARCH_ENGINES_MAKE_DEFAULT);
   html_source->AddLocalizedString(

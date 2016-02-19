@@ -20,16 +20,16 @@
         <div class="body">
           <div class="explanation">
             <paper-input always-float-label id="searchEngine"
-                i18n-values="label:searchEnginesSearchEngineLabel"
+                i18n-values="label:searchEnginesSearchEngine;error-message:searchEnginesNotValid"
                 value="{{searchEngine_}}" on-focus="validate_"
                 on-input="validate_">
             </paper-input>
             <paper-input always-float-label id="keyword"
-                i18n-values="label:searchEnginesKeywordLabel"
+                i18n-values="label:searchEnginesKeyword;error-message:searchEnginesNotValid"
                 value="{{keyword_}}" on-focus="validate_" on-input="validate_">
             </paper-input>
             <paper-input always-float-label id="queryUrl"
-                i18n-values="label:searchEnginesQueryURLLabel"
+                i18n-values="label:searchEnginesQueryURLExplanation;error-message:searchEnginesNotValid"
                 value="{{queryUrl_}}" on-focus="validate_" on-input="validate_">
             </paper-input>
           </div>
