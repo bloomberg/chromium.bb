@@ -40,8 +40,7 @@ class ScopedIPCSupportHelper {
 }  // namespace internal
 
 // A simple class that calls |InitIPCSupport()| on construction and
-// |ShutdownIPCSupport()| on destruction (or |ShutdownIPCSupportOnIOThread()|
-// if destroyed on the I/O thread).
+// |ShutdownIPCSupport()| on destruction.
 class ScopedIPCSupport : public ProcessDelegate {
  public:
   explicit ScopedIPCSupport(

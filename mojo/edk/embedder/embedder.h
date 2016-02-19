@@ -100,30 +100,23 @@ CreateSharedBufferWrapper(base::SharedMemoryHandle shared_memory_handle,
 // making the IPC functions (in the following section) available and functional.
 // (This may only be done after |Init()|.)
 //
-// This subsystem may be shut down, using |ShutdownIPCSupportOnIOThread()| or
-// |ShutdownIPCSupport()|. None of the IPC functions may be called while or
-// after either of these is called.
+// This subsystem may be shut down using |ShutdownIPCSupport()|. None of the IPC
+// functions may be called after this is called.
 
 // Initializes a process of the given type; to be called after |Init()|.
 //   - |process_delegate| must be a process delegate of the appropriate type
 //     corresponding to |process_type|; its methods will be called on the same
 //     thread as Shutdown.
 //   - |process_delegate|, and |io_thread_task_runner| should live at least
-//     until |ShutdownIPCSupport()|'s callback has been run or
-//     |ShutdownIPCSupportOnIOThread()| has completed.
+//     until |ShutdownIPCSupport()|'s callback has been run.
 MOJO_SYSTEM_IMPL_EXPORT void InitIPCSupport(
     ProcessDelegate* process_delegate,
     scoped_refptr<base::TaskRunner> io_thread_task_runner);
 
-// Shuts down the subsystem initialized by |InitIPCSupport()|. This must be
-// called on the I/O thread (given to |InitIPCSupport()|). This completes
-// synchronously and does not result in a call to the process delegate's
-// |OnShutdownComplete()|.
-MOJO_SYSTEM_IMPL_EXPORT void ShutdownIPCSupportOnIOThread();
-
-// Like |ShutdownIPCSupportOnIOThread()|, but may be called from any thread,
-// signalling shutdown completion via the process delegate's
-// |OnShutdownComplete()|.
+// Shuts down the subsystem initialized by |InitIPCSupport()|. It be called from
+// any thread and will attempt to complete shutdown on the I/O thread with which
+// the system was initialized. Upon completion the ProcessDelegate's
+// |OnShutdownComplete()| method is invoked.
 MOJO_SYSTEM_IMPL_EXPORT void ShutdownIPCSupport();
 
 // Creates a message pipe over an arbitrary platform channel. The other end of

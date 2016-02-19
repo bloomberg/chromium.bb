@@ -19,13 +19,8 @@ ScopedIPCSupportHelper::ScopedIPCSupportHelper() {
 }
 
 ScopedIPCSupportHelper::~ScopedIPCSupportHelper() {
-  if (base::MessageLoop::current() &&
-      base::MessageLoop::current()->task_runner() == io_thread_task_runner_) {
-    ShutdownIPCSupportOnIOThread();
-  } else {
-    ShutdownIPCSupport();
-    run_loop_.Run();
-  }
+  ShutdownIPCSupport();
+  run_loop_.Run();
 }
 
 void ScopedIPCSupportHelper::Init(

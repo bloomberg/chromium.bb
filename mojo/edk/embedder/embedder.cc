@@ -94,9 +94,6 @@ void InitIPCSupport(ProcessDelegate* process_delegate,
   internal::g_process_delegate = process_delegate;
 }
 
-void ShutdownIPCSupportOnIOThread() {
-}
-
 void ShutdownIPCSupport() {
   CHECK(internal::g_process_delegate);
   CHECK(internal::g_core);
@@ -108,19 +105,16 @@ void ShutdownIPCSupport() {
 ScopedMessagePipeHandle CreateMessagePipe(
     ScopedPlatformHandle platform_handle) {
   CHECK(internal::g_process_delegate);
-  CHECK(internal::g_core);
   return internal::g_core->CreateMessagePipe(std::move(platform_handle));
 }
 
 ScopedMessagePipeHandle CreateParentMessagePipe(const std::string& token) {
   CHECK(internal::g_process_delegate);
-  CHECK(internal::g_core);
   return internal::g_core->CreateParentMessagePipe(token);
 }
 
 ScopedMessagePipeHandle CreateChildMessagePipe(const std::string& token) {
   CHECK(internal::g_process_delegate);
-  CHECK(internal::g_core);
   return internal::g_core->CreateChildMessagePipe(token);
 }
 

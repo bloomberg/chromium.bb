@@ -975,8 +975,6 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
 #if defined(MOJO_SHELL_CLIENT)
   MojoShellConnection::Destroy();
 #endif
-  mojo_ipc_support_.reset();
-  mojo_shell_context_.reset();
 
 #if !defined(OS_IOS)
   if (RenderProcessHost::run_renderer_in_process())
@@ -1041,6 +1039,12 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   device_monitor_mac_.reset();
 #endif
 #endif  // !defined(OS_IOS)
+
+  // Shutdown Mojo shell and IPC.
+#if !defined(OS_IOS)
+  mojo_shell_context_.reset();
+  mojo_ipc_support_.reset();
+#endif
 
   // Must be size_t so we can subtract from it.
   for (size_t thread_id = BrowserThread::ID_COUNT - 1;
@@ -1184,6 +1188,14 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   TRACE_EVENT0("startup", "BrowserMainLoop::BrowserThreadsStarted");
 
 #if !defined(OS_IOS)
+  // Bring up Mojo IPC and shell as early as possible.
+  mojo_ipc_support_.reset(new IPC::ScopedIPCSupport(
+      BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::IO)
+          ->task_runner()));
+  mojo_shell_context_.reset(new MojoShellContext);
+#endif
+
+#if !defined(OS_IOS)
   indexed_db_thread_.reset(new base::Thread("IndexedDB"));
   indexed_db_thread_->Start();
 #endif
@@ -1324,11 +1336,6 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 #endif  // defined(OS_MACOSX)
 
 #endif  // !defined(OS_IOS)
-
-  mojo_shell_context_.reset(new MojoShellContext);
-  mojo_ipc_support_.reset(new IPC::ScopedIPCSupport(
-      BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::IO)
-          ->task_runner()));
 
   return result_code_;
 }

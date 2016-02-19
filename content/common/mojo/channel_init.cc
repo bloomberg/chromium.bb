@@ -25,7 +25,6 @@ ChannelInit::~ChannelInit() {}
 mojo::ScopedMessagePipeHandle ChannelInit::Init(
     base::PlatformFile file,
     scoped_refptr<base::TaskRunner> io_thread_task_runner) {
-  ipc_support_.reset(new IPC::ScopedIPCSupport(io_thread_task_runner));
   return mojo::edk::CreateMessagePipe(
       mojo::edk::ScopedPlatformHandle(mojo::edk::PlatformHandle(file)));
 }

@@ -12,14 +12,12 @@
 
 namespace IPC {
 
-// Perform any necessary Mojo IPC initialization. A ScopedIPCSupport object
-// should be instantiated and retained by any component which makes direct calls
-// to the Mojo EDK. This is used to ensure that the EDK is initialized within
-// the current process and that it is shutdown cleanly when no longer in use.
+// Performs any necessary Mojo IPC initialization on construction, and shuts
+// down Mojo IPC on destruction.
 //
-// NOTE: Unless you are making explicit calls to functions in the
-// mojo::edk namespace, you almost definitely DO NOT need this and should
-// not be using it.
+// This should be instantiated once per process and retained as long as Mojo IPC
+// is needed. The TaskRunner passed to the constructor should outlive this
+// object.
 class IPC_MOJO_EXPORT ScopedIPCSupport {
  public:
   ScopedIPCSupport(scoped_refptr<base::TaskRunner> io_thread_task_runner);

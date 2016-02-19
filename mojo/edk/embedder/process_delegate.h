@@ -14,8 +14,7 @@ namespace edk {
 // An interface for process delegates.
 class MOJO_SYSTEM_IMPL_EXPORT ProcessDelegate {
  public:
-  // Called when |ShutdownIPCSupport()| has "completed". Note that this is NOT
-  // called if |ShutdownIPCSupportOnIOThread()| is used instead.
+  // Called when |ShutdownIPCSupport()| has completed work on the I/O thread.
   virtual void OnShutdownComplete() = 0;
 
  protected:
