@@ -36,7 +36,7 @@ InspectorTest.loadASTMapping = function(header, callback)
     function onSourceMapLoaded(sourceMap)
     {
         var astService = new WebInspector.ASTService();
-        WebInspector.SASSLiveSourceMap._createASTMapping(astService, header.cssModel(), sourceMap)
+        WebInspector.ASTSourceMap.fromSourceMap(astService, header.cssModel(), sourceMap)
             .then(mapping => callback(mapping))
             .then(() => astService.dispose());
     }
