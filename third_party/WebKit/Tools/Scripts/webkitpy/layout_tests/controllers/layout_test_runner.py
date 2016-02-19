@@ -196,7 +196,7 @@ class LayoutTestRunner(object):
             return method(source, *args)
         raise AssertionError('unknown message %s received from %s, args=%s' % (name, source, repr(args)))
 
-    def _handle_started_test(self, worker_name, test_input, test_timeout_sec):
+    def _handle_started_test(self, worker_name, test_input):
         self._printer.print_started_test(test_input.test_name)
 
     def _handle_finished_test_list(self, worker_name, list_name):
@@ -279,12 +279,11 @@ class Worker(object):
             stop_when_done = True
 
         self._update_test_input(test_input)
-        test_timeout_sec = self._timeout(test_input)
         start = time.time()
         device_failed = False
 
         _log.debug("%s %s started" % (self._name, test_input.test_name))
-        self._caller.post('started_test', test_input, test_timeout_sec)
+        self._caller.post('started_test', test_input)
         result = single_test_runner.run_single_test(
             self._port, self._options, self._results_directory, self._name,
             self._primary_driver, self._secondary_driver, test_input,
@@ -303,18 +302,6 @@ class Worker(object):
         _log.debug("%s cleaning up" % self._name)
         self._kill_driver(self._primary_driver, "primary")
         self._kill_driver(self._secondary_driver, "secondary")
-
-    def _timeout(self, test_input):
-        """Compute the appropriate timeout value for a test."""
-        # The driver watchdog uses 2.5x the timeout; we want to be
-        # larger than that. We also add a little more padding if we're
-        # running tests in a separate thread.
-        #
-        # Note that we need to convert the test timeout from a
-        # string value in milliseconds to a float for Python.
-
-        # FIXME: Can we just return the test_input.timeout now?
-        driver_timeout_sec = 3.0 * float(test_input.timeout) / 1000.0
 
     def _kill_driver(self, driver, label):
         # Be careful about how and when we kill the driver; if driver.stop()
