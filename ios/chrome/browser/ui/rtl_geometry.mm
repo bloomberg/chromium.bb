@@ -121,7 +121,7 @@ LayoutRect LayoutRectGetLeadingLayout(LayoutRect layout) {
   LayoutRect leadingLayout;
   leadingLayout.position.leading = 0;
   leadingLayout.boundingWidth = layout.boundingWidth;
-  leadingLayout.position.originY = leadingLayout.position.originY;
+  leadingLayout.position.originY = layout.position.originY;
   leadingLayout.size = CGSizeMake(layout.position.leading, layout.size.height);
   return leadingLayout;
 }
@@ -131,7 +131,7 @@ LayoutRect LayoutRectGetTrailingLayout(LayoutRect layout) {
   CGFloat trailing = LayoutRectGetTrailingEdge(layout);
   leadingLayout.position.leading = trailing;
   leadingLayout.boundingWidth = layout.boundingWidth;
-  leadingLayout.position.originY = leadingLayout.position.originY;
+  leadingLayout.position.originY = layout.position.originY;
   leadingLayout.size =
       CGSizeMake((layout.boundingWidth - trailing), layout.size.height);
   return leadingLayout;
