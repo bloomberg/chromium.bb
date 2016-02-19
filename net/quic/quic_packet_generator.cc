@@ -307,12 +307,11 @@ QuicEncryptedPacket* QuicPacketGenerator::SerializeVersionNegotiationPacket(
   return packet_creator_.SerializeVersionNegotiationPacket(supported_versions);
 }
 
-SerializedPacket QuicPacketGenerator::ReserializeAllFrames(
+void QuicPacketGenerator::ReserializeAllFrames(
     const PendingRetransmission& retransmission,
     char* buffer,
     size_t buffer_len) {
-  return packet_creator_.ReserializeAllFrames(retransmission, buffer,
-                                              buffer_len);
+  packet_creator_.ReserializeAllFrames(retransmission, buffer, buffer_len);
 }
 
 void QuicPacketGenerator::UpdateSequenceNumberLength(

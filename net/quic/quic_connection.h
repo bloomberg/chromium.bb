@@ -161,8 +161,7 @@ class NET_EXPORT_PRIVATE QuicConnectionVisitorInterface {
 // points.  Implementations must not mutate the state of the connection
 // as a result of these callbacks.
 class NET_EXPORT_PRIVATE QuicConnectionDebugVisitor
-    : public QuicPacketCreator::DebugDelegate,
-      public QuicSentPacketManager::DebugDelegate {
+    : public QuicSentPacketManager::DebugDelegate {
  public:
   ~QuicConnectionDebugVisitor() override {}
 
@@ -490,8 +489,11 @@ class NET_EXPORT_PRIVATE QuicConnection
   }
   void set_debug_visitor(QuicConnectionDebugVisitor* debug_visitor) {
     debug_visitor_ = debug_visitor;
-    packet_generator_.set_debug_delegate(debug_visitor);
     sent_packet_manager_.set_debug_delegate(debug_visitor);
+  }
+  // Used in Chromium, but not internally.
+  void set_creator_debug_delegate(QuicPacketCreator::DebugDelegate* visitor) {
+    packet_generator_.set_debug_delegate(visitor);
   }
   const IPEndPoint& self_address() const { return self_address_; }
   const IPEndPoint& peer_address() const { return peer_address_; }

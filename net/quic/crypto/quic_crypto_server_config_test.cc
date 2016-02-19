@@ -462,7 +462,7 @@ TEST(QuicCryptoServerConfigTest, ValidateServerNonce) {
   memset(key.get(), 0x11, key_size);
 
   CryptoSecretBoxer boxer;
-  boxer.SetKey(StringPiece(reinterpret_cast<char*>(key.get()), key_size));
+  boxer.SetKeys({string(reinterpret_cast<char*>(key.get()), key_size)});
   const string box = boxer.Box(rand, message);
   MockClock clock;
   QuicWallTime now = clock.WallNow();

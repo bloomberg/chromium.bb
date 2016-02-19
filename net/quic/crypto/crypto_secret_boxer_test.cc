@@ -16,12 +16,9 @@ namespace test {
 
 TEST(CryptoSecretBoxerTest, BoxAndUnbox) {
   StringPiece message("hello world");
-  const size_t key_size = CryptoSecretBoxer::GetKeySize();
-  scoped_ptr<uint8_t[]> key(new uint8_t[key_size]);
-  memset(key.get(), 0x11, key_size);
 
   CryptoSecretBoxer boxer;
-  boxer.SetKey(StringPiece(reinterpret_cast<char*>(key.get()), key_size));
+  boxer.SetKeys({string(CryptoSecretBoxer::GetKeySize(), 0x11)});
 
   const string box = boxer.Box(QuicRandom::GetInstance(), message);
 
@@ -36,6 +33,47 @@ TEST(CryptoSecretBoxerTest, BoxAndUnbox) {
   EXPECT_FALSE(
       boxer.Unbox(string(1, box[0] ^ 0x80) + box.substr(1, string::npos),
                   &storage, &result));
+}
+
+// Helper function to test whether one boxer can decode the output of another.
+static bool CanDecode(const CryptoSecretBoxer& decoder,
+                      const CryptoSecretBoxer& encoder) {
+  StringPiece message("hello world");
+  const string boxed = encoder.Box(QuicRandom::GetInstance(), message);
+  string storage;
+  StringPiece result;
+  bool ok = decoder.Unbox(boxed, &storage, &result);
+  if (ok) {
+    EXPECT_EQ(result, message);
+  }
+  return ok;
+}
+
+TEST(CryptoSecretBoxerTest, MultipleKeys) {
+  string key_11(CryptoSecretBoxer::GetKeySize(), 0x11);
+  string key_12(CryptoSecretBoxer::GetKeySize(), 0x12);
+
+  CryptoSecretBoxer boxer_11, boxer_12, boxer;
+  boxer_11.SetKeys({key_11});
+  boxer_12.SetKeys({key_12});
+  boxer.SetKeys({key_12, key_11});
+
+  // Neither single-key boxer can decode the other's tokens.
+  EXPECT_FALSE(CanDecode(boxer_11, boxer_12));
+  EXPECT_FALSE(CanDecode(boxer_12, boxer_11));
+
+  // |boxer| encodes with the first key, which is key_12.
+  EXPECT_TRUE(CanDecode(boxer_12, boxer));
+  EXPECT_FALSE(CanDecode(boxer_11, boxer));
+
+  // The boxer with both keys can decode tokens from either single-key boxer.
+  EXPECT_TRUE(CanDecode(boxer, boxer_11));
+  EXPECT_TRUE(CanDecode(boxer, boxer_12));
+
+  // After we flush key_11 from |boxer|, it can no longer decode tokens from
+  // |boxer_11|.
+  boxer.SetKeys({key_12});
+  EXPECT_FALSE(CanDecode(boxer, boxer_11));
 }
 
 }  // namespace test

@@ -194,6 +194,14 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   bool SetConfigs(const std::vector<QuicServerConfigProtobuf*>& protobufs,
                   QuicWallTime now);
 
+  // SetDefaultSourceAddressTokenKeys sets the keys to be tried, in order,
+  // when decrypting a source address token. This modifies only the default
+  // boxer, which is to say, it is a no-op if a key was specified in the Config.
+  // Note that these keys are used *without* passing them through a KDF, in
+  // contradistinction to the |source_address_token_secret| argument to the
+  // constructor.
+  void SetDefaultSourceAddressTokenKeys(const std::vector<std::string>& keys);
+
   // Get the server config ids for all known configs.
   void GetConfigIds(std::vector<std::string>* scids) const;
 

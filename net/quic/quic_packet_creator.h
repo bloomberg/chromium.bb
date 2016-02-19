@@ -138,10 +138,9 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   // Used for retransmitting packets to ensure they aren't too long.
   // Caller must ensure that any open FEC group is closed before calling this
   // method.
-  SerializedPacket ReserializeAllFrames(
-      const PendingRetransmission& retransmission,
-      char* buffer,
-      size_t buffer_len);
+  void ReserializeAllFrames(const PendingRetransmission& retransmission,
+                            char* buffer,
+                            size_t buffer_len);
 
   // Serializes all added frames into a single packet and invokes the delegate_
   // to further process the SerializedPacket.

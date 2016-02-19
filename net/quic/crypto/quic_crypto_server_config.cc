@@ -225,8 +225,8 @@ QuicCryptoServerConfig::QuicCryptoServerConfig(
       server_nonce_strike_register_window_secs_(120),
       enable_serving_sct_(false) {
   DCHECK(proof_source_.get());
-  default_source_address_token_boxer_.SetKey(
-      DeriveSourceAddressTokenKey(source_address_token_secret));
+  default_source_address_token_boxer_.SetKeys(
+      {DeriveSourceAddressTokenKey(source_address_token_secret)});
 
   // Generate a random key and orbit for server nonces.
   server_nonce_entropy->RandBytes(server_nonce_orbit_,
@@ -235,8 +235,8 @@ QuicCryptoServerConfig::QuicCryptoServerConfig(
   scoped_ptr<uint8_t[]> key_bytes(new uint8_t[key_size]);
   server_nonce_entropy->RandBytes(key_bytes.get(), key_size);
 
-  server_nonce_boxer_.SetKey(
-      StringPiece(reinterpret_cast<char*>(key_bytes.get()), key_size));
+  server_nonce_boxer_.SetKeys(
+      {string(reinterpret_cast<char*>(key_bytes.get()), key_size)});
 }
 
 QuicCryptoServerConfig::~QuicCryptoServerConfig() {
@@ -478,6 +478,11 @@ bool QuicCryptoServerConfig::SetConfigs(
   }
 
   return ok;
+}
+
+void QuicCryptoServerConfig::SetDefaultSourceAddressTokenKeys(
+    const vector<string>& keys) {
+  default_source_address_token_boxer_.SetKeys(keys);
 }
 
 void QuicCryptoServerConfig::GetConfigIds(vector<string>* scids) const {
@@ -1335,8 +1340,8 @@ QuicCryptoServerConfig::ParseConfigProtobuf(
   } else {
     // Create override boxer instance.
     CryptoSecretBoxer* boxer = new CryptoSecretBoxer;
-    boxer->SetKey(DeriveSourceAddressTokenKey(
-        protobuf->source_address_token_secret_override()));
+    boxer->SetKeys({DeriveSourceAddressTokenKey(
+        protobuf->source_address_token_secret_override())});
     config->source_address_token_boxer_storage.reset(boxer);
     config->source_address_token_boxer = boxer;
   }

@@ -128,20 +128,12 @@ bool FLAGS_quic_utils_use_fast_incremental_hash = true;
 // strike register.
 bool FLAGS_require_strike_register_or_server_nonce = true;
 
-// If true, use the shared writer directly for QuicTimeWaitListManagers instead
-// of creating a wrapper object.
-bool FLAGS_quic_time_wait_list_manager_use_shared_writer = true;
-
 // When turn on, log packet loss into transport connection stats LossEvent.
 bool FLAGS_quic_log_loss_event = true;
 
 // If true, use a free list for the stream frame buffer allocations in
 // QuicPacketCreator.
 bool FLAGS_use_stream_frame_freelist = true;
-
-// Call QuicConnection::OnSerializedPacket instead of returning the
-// serialized packet when frames are retransmitted.
-bool FLAGS_quic_retransmit_via_onserializedpacket = true;
 
 // If true, for QUIC authenticated encryption algorithms, last 8 bytes
 // of IV comprise packet path id and lower 7 bytes of packet number.

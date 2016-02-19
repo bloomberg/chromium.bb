@@ -404,7 +404,7 @@ void QuicPacketCreator::CopyToBuffer(QuicIOVector iov,
   QUIC_BUG_IF(length > 0) << "Failed to copy entire length to buffer.";
 }
 
-SerializedPacket QuicPacketCreator::ReserializeAllFrames(
+void QuicPacketCreator::ReserializeAllFrames(
     const PendingRetransmission& retransmission,
     char* buffer,
     size_t buffer_len) {
@@ -416,7 +416,6 @@ SerializedPacket QuicPacketCreator::ReserializeAllFrames(
   const QuicPacketNumberLength saved_length = packet_.packet_number_length;
   const QuicPacketNumberLength saved_next_length = next_packet_number_length_;
   const bool saved_should_fec_protect = fec_protect_;
-  const bool saved_needs_padding = packet_.needs_padding;
   const EncryptionLevel default_encryption_level = packet_.encryption_level;
 
   // Temporarily set the packet number length, stop FEC protection,
@@ -438,27 +437,14 @@ SerializedPacket QuicPacketCreator::ReserializeAllFrames(
     DCHECK(success);
   }
   SerializePacket(buffer, buffer_len);
-  if (FLAGS_quic_retransmit_via_onserializedpacket) {
-    packet_.original_packet_number = retransmission.packet_number;
-    packet_.transmission_type = retransmission.transmission_type;
-    OnSerializedPacket();
-    // Restore old values.
-    packet_.packet_number_length = saved_length;
-    next_packet_number_length_ = saved_next_length;
-    fec_protect_ = saved_should_fec_protect;
-    packet_.encryption_level = default_encryption_level;
-    return NoPacket();
-  } else {
-    SerializedPacket packet_copy = packet_;
-    ClearPacket();
-    // Restore old values.
-    packet_.needs_padding = saved_needs_padding;
-    packet_.packet_number_length = saved_length;
-    next_packet_number_length_ = saved_next_length;
-    fec_protect_ = saved_should_fec_protect;
-    packet_.encryption_level = default_encryption_level;
-    return packet_copy;
-  }
+  packet_.original_packet_number = retransmission.packet_number;
+  packet_.transmission_type = retransmission.transmission_type;
+  OnSerializedPacket();
+  // Restore old values.
+  packet_.packet_number_length = saved_length;
+  next_packet_number_length_ = saved_next_length;
+  fec_protect_ = saved_should_fec_protect;
+  packet_.encryption_level = default_encryption_level;
 }
 
 void QuicPacketCreator::Flush() {

@@ -210,6 +210,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
                                cert_verify_flags, net_log_)),
           crypto_config));
   connection->set_debug_visitor(logger_.get());
+  connection->set_creator_debug_delegate(logger_.get());
   net_log_.BeginEvent(NetLog::TYPE_QUIC_SESSION,
                       base::Bind(NetLogQuicClientSessionCallback, &server_id,
                                  cert_verify_flags, require_confirmation_));

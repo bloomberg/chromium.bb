@@ -443,13 +443,7 @@ QuicServerSessionBase* QuicDispatcher::CreateQuicSession(
 }
 
 QuicTimeWaitListManager* QuicDispatcher::CreateQuicTimeWaitListManager() {
-  if (FLAGS_quic_time_wait_list_manager_use_shared_writer) {
-    return new QuicTimeWaitListManager(writer_.get(), this, helper_.get());
-  } else {
-    time_wait_list_writer_.reset(CreatePerConnectionWriter());
-    return new QuicTimeWaitListManager(time_wait_list_writer_.get(), this,
-                                       helper_.get());
-  }
+  return new QuicTimeWaitListManager(writer_.get(), this, helper_.get());
 }
 
 bool QuicDispatcher::HandlePacketForTimeWait(

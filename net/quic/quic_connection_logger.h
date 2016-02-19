@@ -29,7 +29,8 @@ class CertVerifyResult;
 // This class is a debug visitor of a QuicConnection which logs
 // events to |net_log|.
 class NET_EXPORT_PRIVATE QuicConnectionLogger
-    : public QuicConnectionDebugVisitor {
+    : public QuicConnectionDebugVisitor,
+      public QuicPacketCreator::DebugDelegate {
  public:
   QuicConnectionLogger(
       QuicSpdySession* session,
@@ -39,7 +40,7 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
 
   ~QuicConnectionLogger() override;
 
-  // QuicPacketGenerator::DebugDelegateInterface
+  // QuicPacketCreator::DebugDelegateInterface
   void OnFrameAddedToPacket(const QuicFrame& frame) override;
 
   // QuicConnectionDebugVisitorInterface

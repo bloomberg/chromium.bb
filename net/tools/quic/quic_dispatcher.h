@@ -239,11 +239,6 @@ class QuicDispatcher : public QuicServerSessionVisitor,
   // The writer to write to the socket with.
   scoped_ptr<QuicPacketWriter> writer_;
 
-  // A per-connection writer that is passed to the time wait list manager.
-  // TODO(jdorfman): Remove this when deprecating
-  // FLAGS_quic_time_wait_list_manager_use_shared_writer.
-  scoped_ptr<QuicPacketWriter> time_wait_list_writer_;
-
   // This vector contains QUIC versions which we currently support.
   // This should be ordered such that the highest supported version is the first
   // element, with subsequent elements in descending order (versions can be

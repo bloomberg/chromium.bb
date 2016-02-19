@@ -1511,27 +1511,7 @@ void QuicConnection::WritePendingRetransmissions() {
     // does not require the creator to be flushed.
     packet_generator_.FlushAllQueuedFrames();
     char buffer[kMaxPacketSize];
-    SerializedPacket serialized_packet =
-        packet_generator_.ReserializeAllFrames(pending, buffer, kMaxPacketSize);
-    if (FLAGS_quic_retransmit_via_onserializedpacket) {
-      DCHECK(serialized_packet.encrypted_buffer == nullptr);
-      continue;
-    }
-    if (serialized_packet.encrypted_buffer == nullptr) {
-      // We failed to serialize the packet, so close the connection.
-      // CloseConnection does not send close packet, so no infinite loop here.
-      // TODO(ianswett): This is actually an internal error, not an encryption
-      // failure.
-      CloseConnection(QUIC_ENCRYPTION_FAILURE,
-                      ConnectionCloseSource::FROM_SELF);
-      return;
-    }
-
-    DVLOG(1) << ENDPOINT << "Retransmitting " << pending.packet_number << " as "
-             << serialized_packet.packet_number;
-    serialized_packet.original_packet_number = pending.packet_number;
-    serialized_packet.transmission_type = pending.transmission_type;
-    SendOrQueuePacket(&serialized_packet);
+    packet_generator_.ReserializeAllFrames(pending, buffer, kMaxPacketSize);
   }
 }
 
