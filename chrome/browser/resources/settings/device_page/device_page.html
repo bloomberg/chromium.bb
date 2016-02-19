@@ -1,0 +1,34 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/hardware-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/image-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
+<link rel="import" href="chrome://md-settings/settings_page/settings_animated_pages.html">
+<link rel="import" href="chrome://md-settings/settings_page/settings_subheader.html">
+<link rel="import" href="chrome://md-settings/device_page/touchpad.html">
+
+<dom-module id="settings-device-page">
+  <link rel="import" type="css" href="chrome://md-settings/settings_shared.css">
+  <template>
+    <settings-animated-pages id="pages" section="device"
+        current-route="{{currentRoute}}">
+      <neon-animatable id="main">
+        <div class="settings-box first" on-tap="onTouchpadTap_">
+          <iron-icon icon="hardware:keyboard"></iron-icon>
+          <div class="middle">[[i18n('touchpadTitle')]]</div>
+        </div>
+        <div class="settings-box">
+          <iron-icon icon="image:brightness-1"></iron-icon>
+          <div class="middle">[[i18n('keyboardTitle')]]</div>
+        </div>
+      </neon-animatable>
+      <neon-animatable id="touchpad">
+        <settings-subheader page-title="[[i18n('touchpadTitle')]]">
+        </settings-subheader>
+        <settings-touchpad prefs="{{prefs}}"></settings-touchpad>
+      </neon-animatable>
+    </settings-animated-pages>
+  </template>
+  <script src="device_page.js"></script>
+</dom-module>

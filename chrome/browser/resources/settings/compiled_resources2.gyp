@@ -7,7 +7,9 @@
       'target_name': 'settings_resources',
       'type': 'none',
       'dependencies': [
+        'device_page/compiled_resources2.gyp:*',
         'reset_page/compiled_resources2.gyp:*',
+        'settings_page/compiled_resources2.gyp:*',
       ],
     },
     {

@@ -388,6 +388,15 @@ Polymer({
       subpageTitles: ['editDictionaryPageTitle'],
     },
 </if>
+<if expr="chromeos">
+    {
+      url: '/pointer-overlay',
+      page: 'basic',
+      section: 'device',
+      subpage: ['touchpad'],
+      subpageTitles: ['touchpadTitle'],
+    },
+</if>
   ],
 
   /**

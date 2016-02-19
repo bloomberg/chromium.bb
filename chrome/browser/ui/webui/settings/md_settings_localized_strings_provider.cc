@@ -285,6 +285,29 @@ void AddDefaultBrowserStrings(content::WebUIDataSource* html_source) {
 }
 #endif
 
+#if defined(OS_CHROMEOS)
+void AddDeviceStrings(content::WebUIDataSource* html_source) {
+  html_source->AddLocalizedString(
+      "devicePageTitle", IDS_SETTINGS_DEVICE_TITLE);
+  html_source->AddLocalizedString(
+      "touchpadTitle", IDS_SETTINGS_TOUCHPAD_TITLE);
+  html_source->AddLocalizedString(
+      "touchpadTapToClickEnabledLabel",
+      IDS_SETTINGS_TOUCHPAD_TAP_TO_CLICK_ENABLED_LABEL);
+  html_source->AddLocalizedString(
+      "scrollLabel", IDS_SETTINGS_SCROLL_LABEL);
+  html_source->AddString(
+      "naturalScrollLabel",
+      l10n_util::GetStringFUTF16(
+        IDS_SETTINGS_NATURAL_SCROLL_LABEL,
+        base::ASCIIToUTF16(chrome::kNaturalScrollHelpURL)));
+  html_source->AddLocalizedString(
+      "traditionalScrollLabel", IDS_SETTINGS_TRADITIONAL_SCROLL_LABEL);
+  html_source->AddLocalizedString(
+      "keyboardTitle", IDS_SETTINGS_KEYBOARD_TITLE);
+}
+#endif
+
 void AddDownloadsStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
       "downloadsPageTitle", IDS_SETTINGS_DOWNLOADS);
@@ -901,6 +924,9 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddDefaultBrowserStrings(html_source);
 #endif
   AddDateTimeStrings(html_source);
+#if defined(OS_CHROMEOS)
+  AddDeviceStrings(html_source);
+#endif
   AddDownloadsStrings(html_source);
 #if defined(OS_CHROMEOS)
   AddInternetStrings(html_source);

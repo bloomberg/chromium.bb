@@ -220,6 +220,20 @@
                    file="default_browser_page/default_browser_page.js"
                    type="chrome_html" />
       </if>
+      <if expr="chromeos">
+        <structure name="IDR_SETTINGS_DEVICE_PAGE_HTML"
+                   file="device_page/device_page.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_DEVICE_PAGE_JS"
+                   file="device_page/device_page.js"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_DEVICE_TOUCHPAD_HTML"
+                   file="device_page/touchpad.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_DEVICE_TOUCHPAD_JS"
+                   file="device_page/touchpad.js"
+                   type="chrome_html" />
+      </if>
       <structure name="IDR_SETTINGS_DIRECTION_DELEGATE_HTML"
                  file="direction_delegate.html"
                  type="chrome_html" />

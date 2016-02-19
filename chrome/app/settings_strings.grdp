@@ -871,4 +871,31 @@
   <message name="IDS_SETTINGS_ADVANCED_FONT_SETTINGS" desc="Label for advanced font settings.">
     Advanced font settings
   </message>
+
+  <!-- Device Page -->
+  <if expr="chromeos">
+    <message name="IDS_SETTINGS_DEVICE_TITLE" desc="Name of the settings page which displays device and peripheral settings.">
+      Device
+    </message>
+    <!-- Touchpad -->
+    <message name="IDS_SETTINGS_TOUCHPAD_TITLE" desc="In Device Settings, the title of the Touchpad Settings section.">
+      Touchpad settings
+    </message>
+    <message name="IDS_SETTINGS_TOUCHPAD_TAP_TO_CLICK_ENABLED_LABEL" desc="In Device Settings, the text next to the checkbox that allows tapping the touchpad to work as a click.">
+      Enable tap-to-click
+    </message>
+    <message name="IDS_SETTINGS_SCROLL_LABEL" desc="In Device Settings, the title above the radio buttons to choose the scrolling behavior.">
+      Scrolling
+    </message>
+    <message name="IDS_SETTINGS_NATURAL_SCROLL_LABEL" desc="In Device Settings, the text next to the radio button that enables natural scrolling.">
+      Australian <ph name="BEGIN_LINK">&lt;a href="$1" target="_blank"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph>
+    </message>
+    <message name="IDS_SETTINGS_TRADITIONAL_SCROLL_LABEL" desc="In Device Settings, the text next to the radio button that enables traditional scrolling.">
+      Traditional
+    </message>
+    <!-- Keyboard -->
+    <message name="IDS_SETTINGS_KEYBOARD_TITLE" desc="In Device Settings, the title for keyboard settings.">
+      Keyboard settings
+    </message>
+  </if>
 </grit-part>

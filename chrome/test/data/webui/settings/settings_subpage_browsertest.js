@@ -98,8 +98,8 @@ SettingsSubPageBrowserTest.prototype = {
   includePage: function(id) {
     if (cr.isChromeOS)
       return id != 'people' && id != 'defaultBrowser';
-    return id != 'internet' && id != 'users' && id != 'dateTime' &&
-           id != 'bluetooth' && id != 'a11y';
+    return id != 'internet' && id != 'users' && id != 'device' &&
+           id != 'dateTime' && id != 'bluetooth' && id != 'a11y';
   },
 };
 
@@ -111,7 +111,8 @@ function SettingsBasicSubPageBrowserTest() {
     'appearance',
     'onStartup',
     'search',
-    'defaultBrowser'
+    'defaultBrowser',
+    'device'
   ];
 
   SettingsSubPageBrowserTest.call(this, 'basic', subPages);

@@ -9,6 +9,7 @@
 <link rel="import" href="chrome://md-settings/reset_page/reset_profile_banner.html">
 
 <if expr="chromeos">
+<link rel="import" href="chrome://md-settings/device_page/device_page.html">
 <link rel="import" href="chrome://md-settings/internet_page/internet_page.html">
 </if>
 
@@ -47,6 +48,16 @@
         </settings-appearance-page>
       </settings-section>
     </template>
+<if expr="chromeos">
+    <template is="dom-if" if="[[showPage(pageVisibility.device)]]" restamp>
+      <settings-section page-title="[[i18n('devicePageTitle')]]"
+          current-route="[[currentRoute]]" section="device">
+        <settings-device-page  prefs="{{prefs}}"
+            current-route="{{currentRoute}}">
+        </settings-device-page>
+      </settings-section>
+    </template>
+</if>
     <template is="dom-if" if="[[showPage(pageVisibility.onStartup)]]" restamp>
       <settings-section page-title="[[i18n('onStartup')]]"
           current-route="[[currentRoute]]" section="onStartup">

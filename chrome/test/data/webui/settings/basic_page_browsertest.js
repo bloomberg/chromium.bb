@@ -46,6 +46,7 @@ TEST_F('SettingsBasicPageBrowserTest', 'MAYBE_Load', function() {
         expectTrue(!!self.getSection(page, 'defaultBrowser'));
       } else {
         expectTrue(!!self.getSection(page, 'internet'));
+        expectTrue(!!self.getSection(page, 'device'));
       }
     });
   });
