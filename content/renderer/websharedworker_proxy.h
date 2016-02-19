@@ -14,9 +14,11 @@
 #include "third_party/WebKit/public/web/WebSharedWorkerConnector.h"
 #include "url/gurl.h"
 
-namespace content {
-
+namespace IPC {
 class MessageRouter;
+}
+
+namespace content {
 
 // Implementation of the WebSharedWorker APIs. This object is intended to only
 // live long enough to allow the caller to send a "connect" event to the worker
@@ -27,8 +29,7 @@ class WebSharedWorkerProxy : public blink::WebSharedWorkerConnector,
                              private IPC::Listener {
  public:
   // If the worker not loaded yet, route_id == MSG_ROUTING_NONE
-  WebSharedWorkerProxy(MessageRouter* router,
-                       int route_id);
+  WebSharedWorkerProxy(IPC::MessageRouter* router, int route_id);
   ~WebSharedWorkerProxy() override;
 
   // Implementations of WebSharedWorkerConnector APIs
@@ -62,7 +63,7 @@ class WebSharedWorkerProxy : public blink::WebSharedWorkerConnector,
   // routing ids).
   int route_id_;
 
-  MessageRouter* const router_;
+  IPC::MessageRouter* const router_;
 
   // Stores messages that were sent before the StartWorkerContext message.
   std::vector<IPC::Message*> queued_messages_;

@@ -19,6 +19,7 @@
     '../device/vibration/vibration.gyp:device_vibration_mojo_bindings',
     '../gin/gin.gyp:gin',
     '../gpu/gpu.gyp:gpu',
+    '../ipc/ipc.gyp:ipc',
     '../jingle/jingle.gyp:jingle_glue',
     '../media/blink/media_blink.gyp:media_blink',
     '../media/media.gyp:media',

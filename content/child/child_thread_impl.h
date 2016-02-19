@@ -20,11 +20,11 @@
 #include "build/build_config.h"
 #include "content/child/mojo/mojo_application.h"
 #include "content/common/content_export.h"
-#include "content/common/message_router.h"
 #include "content/common/mojo/channel_init.h"
 #include "content/public/child/child_thread.h"
 #include "ipc/ipc_message.h"  // For IPC_MESSAGE_LOG_ENABLED.
 #include "ipc/ipc_platform_file.h"
+#include "ipc/message_router.h"
 
 namespace base {
 class MessageLoop;
@@ -92,7 +92,7 @@ class CONTENT_EXPORT ChildThreadImpl
 
   IPC::SyncChannel* channel() { return channel_.get(); }
 
-  MessageRouter* GetRouter();
+  IPC::MessageRouter* GetRouter();
 
   // Allocates a block of shared memory of the given size. Returns NULL on
   // failure.
@@ -203,7 +203,7 @@ class CONTENT_EXPORT ChildThreadImpl
   scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner();
 
  private:
-  class ChildThreadMessageRouter : public MessageRouter {
+  class ChildThreadMessageRouter : public IPC::MessageRouter {
    public:
     // |sender| must outlive this object.
     explicit ChildThreadMessageRouter(IPC::Sender* sender);

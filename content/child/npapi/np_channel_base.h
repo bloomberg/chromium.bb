@@ -15,9 +15,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process.h"
 #include "content/child/npapi/npobject_base.h"
-#include "content/common/message_router.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_channel.h"
+#include "ipc/message_router.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -170,7 +170,7 @@ class NPChannelBase : public IPC::Listener,
 
   // Used to implement message routing functionality to WebPlugin[Delegate]
   // objects
-  MessageRouter router_;
+  IPC::MessageRouter router_;
 
   // A channel is invalid if it is disconnected as a result of a channel
   // error. This flag is used to indicate the same.

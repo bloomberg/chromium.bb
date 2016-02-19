@@ -2,27 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/message_router.h"
+#include "ipc/message_router.h"
 
 #include "ipc/ipc_message.h"
 
-namespace content {
+namespace IPC {
 
-MessageRouter::MessageRouter() {
-}
+MessageRouter::MessageRouter() {}
 
-MessageRouter::~MessageRouter() {
-}
+MessageRouter::~MessageRouter() {}
 
 bool MessageRouter::OnControlMessageReceived(const IPC::Message& msg) {
-  NOTREACHED() <<
-      "should override in subclass if you care about control messages";
+  NOTREACHED()
+      << "should override in subclass if you care about control messages";
   return false;
 }
 
 bool MessageRouter::Send(IPC::Message* msg) {
-  NOTREACHED() <<
-      "should override in subclass if you care about sending messages";
+  NOTREACHED()
+      << "should override in subclass if you care about sending messages";
   return false;
 }
 
@@ -54,4 +52,4 @@ bool MessageRouter::RouteMessage(const IPC::Message& msg) {
   return listener->OnMessageReceived(msg);
 }
 
-}  // namespace content
+}  // namespace IPC

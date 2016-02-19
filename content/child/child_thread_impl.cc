@@ -308,7 +308,7 @@ bool ChildThreadImpl::ChildThreadMessageRouter::Send(IPC::Message* msg) {
 
 bool ChildThreadImpl::ChildThreadMessageRouter::RouteMessage(
     const IPC::Message& msg) {
-  bool handled = MessageRouter::RouteMessage(msg);
+  bool handled = IPC::MessageRouter::RouteMessage(msg);
 #if defined(OS_ANDROID)
   if (!handled && msg.is_sync()) {
     IPC::Message* reply = IPC::SyncMessage::GenerateReply(&msg);
@@ -551,7 +551,7 @@ void ChildThreadImpl::ReleaseCachedFonts() {
 }
 #endif
 
-MessageRouter* ChildThreadImpl::GetRouter() {
+IPC::MessageRouter* ChildThreadImpl::GetRouter() {
   DCHECK(base::MessageLoop::current() == message_loop());
   return &router_;
 }

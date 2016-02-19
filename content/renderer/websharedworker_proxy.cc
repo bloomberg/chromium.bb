@@ -7,15 +7,15 @@
 #include <stddef.h>
 
 #include "content/child/webmessageportchannel_impl.h"
-#include "content/common/message_router.h"
 #include "content/common/view_messages.h"
 #include "content/common/worker_messages.h"
+#include "ipc/message_router.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebSharedWorkerClient.h"
 
 namespace content {
 
-WebSharedWorkerProxy::WebSharedWorkerProxy(MessageRouter* router,
+WebSharedWorkerProxy::WebSharedWorkerProxy(IPC::MessageRouter* router,
                                            int route_id)
     : route_id_(route_id),
       router_(router),

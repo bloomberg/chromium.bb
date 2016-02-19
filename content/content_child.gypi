@@ -8,6 +8,7 @@
     '../components/mime_util/mime_util.gyp:mime_util',
     '../components/tracing.gyp:tracing',
     '../components/webcrypto/webcrypto.gyp:webcrypto',
+    '../ipc/ipc.gyp:ipc',
     '../mojo/mojo_base.gyp:mojo_environment_chromium',
     '../mojo/mojo_base.gyp:mojo_common_lib',
     '../mojo/mojo_base.gyp:mojo_message_pump_lib',

@@ -23,9 +23,9 @@
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/gpu_memory_manager.h"
 #include "content/common/gpu/gpu_stream_priority.h"
-#include "content/common/message_router.h"
 #include "gpu/command_buffer/service/valuebuffer_manager.h"
 #include "ipc/ipc_sync_channel.h"
+#include "ipc/message_router.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_share_group.h"
@@ -254,7 +254,7 @@ class CONTENT_EXPORT GpuChannel
   std::string channel_id_;
 
   // Used to implement message routing functionality to CommandBuffer objects
-  MessageRouter router_;
+  IPC::MessageRouter router_;
 
   // Whether the processing of IPCs on this channel is stalled and we should
   // preempt other GpuChannels.

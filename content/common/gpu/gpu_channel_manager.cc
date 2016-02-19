@@ -17,7 +17,6 @@
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "content/common/gpu/gpu_memory_manager.h"
 #include "content/common/gpu/gpu_messages.h"
-#include "content/common/message_router.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/feature_info.h"
@@ -27,6 +26,7 @@
 #include "gpu/command_buffer/service/shader_translator_cache.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "ipc/message_filter.h"
+#include "ipc/message_router.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_share_group.h"
 

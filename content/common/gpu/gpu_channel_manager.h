@@ -20,9 +20,9 @@
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
 #include "content/common/gpu/gpu_memory_manager.h"
-#include "content/common/message_router.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
+#include "ipc/message_router.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_surface.h"
@@ -173,7 +173,7 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
 
   // Used to send and receive IPC messages from the browser process.
   IPC::SyncChannel* const channel_;
-  MessageRouter router_;
+  IPC::MessageRouter router_;
 
   GpuWatchdog* watchdog_;
 

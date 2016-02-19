@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_MESSAGE_ROUTER_H_
-#define CONTENT_COMMON_MESSAGE_ROUTER_H_
+#ifndef IPC_MESSAGE_ROUTER_H_
+#define IPC_MESSAGE_ROUTER_H_
 
 #include <stdint.h>
 
 #include "base/id_map.h"
 #include "base/macros.h"
-#include "content/common/content_export.h"
+#include "ipc/ipc_export.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 
@@ -31,41 +31,41 @@
 // The MessageRouter can be used as a concrete class provided its Send method
 // is not called and it does not receive any control messages.
 
-namespace content {
+namespace IPC {
 
-class CONTENT_EXPORT MessageRouter : public IPC::Listener, public IPC::Sender {
+class IPC_EXPORT MessageRouter : public Listener, public Sender {
  public:
   MessageRouter();
   ~MessageRouter() override;
 
   // Implemented by subclasses to handle control messages
-  virtual bool OnControlMessageReceived(const IPC::Message& msg);
+  virtual bool OnControlMessageReceived(const Message& msg);
 
-  // IPC::Listener implementation:
-  bool OnMessageReceived(const IPC::Message& msg) override;
+  // Listener implementation:
+  bool OnMessageReceived(const Message& msg) override;
 
   // Like OnMessageReceived, except it only handles routed messages.  Returns
   // true if the message was dispatched, or false if there was no listener for
   // that route id.
-  virtual bool RouteMessage(const IPC::Message& msg);
+  virtual bool RouteMessage(const Message& msg);
 
-  // IPC::Sender implementation:
-  bool Send(IPC::Message* msg) override;
+  // Sender implementation:
+  bool Send(Message* msg) override;
 
   // Called to add a listener for a particular message routing ID.
   // Returns true if succeeded.
-  bool AddRoute(int32_t routing_id, IPC::Listener* listener);
+  bool AddRoute(int32_t routing_id, Listener* listener);
 
   // Called to remove a listener for a particular message routing ID.
   void RemoveRoute(int32_t routing_id);
 
  private:
   // A list of all listeners with assigned routing IDs.
-  IDMap<IPC::Listener> routes_;
+  IDMap<Listener> routes_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageRouter);
 };
 
-}  // namespace content
+}  // namespace IPC
 
-#endif  // CONTENT_COMMON_MESSAGE_ROUTER_H_
+#endif  // IPC_MESSAGE_ROUTER_H_

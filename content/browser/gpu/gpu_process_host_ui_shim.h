@@ -21,11 +21,11 @@
 #include "base/threading/non_thread_safe.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "content/common/message_router.h"
 #include "content/public/common/gpu_memory_stats.h"
 #include "gpu/config/gpu_info.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
+#include "ipc/message_router.h"
 
 #if defined(OS_MACOSX)
 struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
