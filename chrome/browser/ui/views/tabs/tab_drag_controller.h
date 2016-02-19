@@ -462,11 +462,6 @@ class TabDragController : public content::NotificationObserver,
   // dragged Tab is detached.
   TabStrip* attached_tabstrip_;
 
-  // The desktop type that this drag is associated with. Cached, because other
-  // UI elements are NULLd at various points during the lifetime of this
-  // object.
-  chrome::HostDesktopType host_desktop_type_;
-
   // Whether capture can be released during the drag. When false, capture should
   // not be released when transferring capture between widgets and when starting
   // the move loop.

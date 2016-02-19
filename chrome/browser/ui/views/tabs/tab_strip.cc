@@ -1093,18 +1093,18 @@ void TabStrip::SetImmersiveStyle(bool enable) {
 }
 
 SkAlpha TabStrip::GetInactiveAlpha(bool for_new_tab_button) const {
-  static const SkAlpha kInactiveTabAlphaAsh = 230;
-  static const SkAlpha kInactiveTabAlphaGlass = 200;
   static const SkAlpha kInactiveTabAlphaOpaque = 255;
   static const double kMultiSelectionMultiplier = 0.6;
 
-  const chrome::HostDesktopType host_desktop_type =
-      chrome::GetHostDesktopTypeForNativeView(GetWidget()->GetNativeView());
   SkAlpha base_alpha = kInactiveTabAlphaOpaque;
-  if (host_desktop_type == chrome::HOST_DESKTOP_TYPE_ASH)
-    base_alpha = kInactiveTabAlphaAsh;
-  else if (GetWidget()->ShouldWindowContentsBeTransparent())
+#if defined(USE_ASH)
+  static const SkAlpha kInactiveTabAlphaAsh = 230;
+  base_alpha = kInactiveTabAlphaAsh;
+#else
+  static const SkAlpha kInactiveTabAlphaGlass = 200;
+  if (GetWidget()->ShouldWindowContentsBeTransparent())
     base_alpha = kInactiveTabAlphaGlass;
+#endif  // USE_ASH
   return (for_new_tab_button || (GetSelectionModel().size() <= 1)) ?
       base_alpha : static_cast<SkAlpha>(kMultiSelectionMultiplier * base_alpha);
 }
