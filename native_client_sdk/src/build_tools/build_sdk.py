@@ -56,7 +56,7 @@ NACL_TOOLCHAINTARS_DIR = os.path.join(NACL_TOOLCHAIN_DIR, '.tars')
 CYGTAR = os.path.join(BUILD_DIR, 'cygtar.py')
 PKGVER = os.path.join(BUILD_DIR, 'package_version', 'package_version.py')
 
-GYPBUILD_DIR = 'gypbuild'
+GNBUILD_DIR = 'gnbuild'
 
 options = None
 
@@ -100,40 +100,22 @@ def GetToolchainNaClInclude(pepperdir, tcname, arch=None):
     buildbot_common.ErrorExit('Unknown architecture: %s' % arch)
 
 
-def GetConfigDir(arch):
-  if arch.endswith('x64') and getos.GetPlatform() == 'win':
-    return 'Release_x64'
-  else:
-    return 'Release'
-
-
 def GetNinjaOutDir(arch):
-  return os.path.join(OUT_DIR, GYPBUILD_DIR + '-' + arch, GetConfigDir(arch))
+  return os.path.join(OUT_DIR, GNBUILD_DIR + '-' + arch)
 
 
-def GetGypBuiltLib(tcname, arch):
-  if arch == 'ia32':
-    lib_suffix = '32'
-  elif arch == 'x64':
-    lib_suffix = '64'
-  elif arch == 'arm':
-    lib_suffix = 'arm'
+def GetGnBuiltLib(tc, arch):
+  if 'glibc' in tc:
+    out_dir = 'glibc_%s' % arch
+  elif arch == 'pnacl':
+    out_dir = 'newlib_pnacl'
   else:
-    lib_suffix = ''
-
-  tcdir = 'tc_' + GetToolchainLibc(tcname)
-
-  if tcname == 'pnacl':
-    if arch is None:
-      lib_suffix = ''
-      tcdir = 'tc_pnacl_newlib'
-      arch = 'x64'
-
-  return os.path.join(GetNinjaOutDir(arch), 'gen', tcdir, 'lib' + lib_suffix)
+    out_dir = 'clang_newlib_%s' % arch
+  return os.path.join(GetNinjaOutDir('x64'), out_dir)
 
 
 def GetToolchainNaClLib(tcname, tcpath, arch):
-  if arch == 'ia32':
+  if arch == 'x86':
     return os.path.join(tcpath, 'x86_64-nacl', 'lib32')
   elif arch == 'x64':
     return os.path.join(tcpath, 'x86_64-nacl', 'lib')
@@ -143,15 +125,18 @@ def GetToolchainNaClLib(tcname, tcpath, arch):
     return os.path.join(tcpath, 'le32-nacl', 'lib')
 
 
-
 def GetOutputToolchainLib(pepperdir, tcname, arch):
   tcpath = os.path.join(pepperdir, 'toolchain', GetToolchainDirName(tcname))
   return GetToolchainNaClLib(tcname, tcpath, arch)
 
 
 def GetPNaClTranslatorLib(tcpath, arch):
-  if arch not in ['arm', 'x86-32', 'x86-64']:
+  if arch not in ['arm', 'x86', 'x64']:
     buildbot_common.ErrorExit('Unknown architecture %s.' % arch)
+  if arch == 'x86':
+    arch = 'x86-32'
+  elif arch == 'x64':
+    arch = 'x86-64'
   return os.path.join(tcpath, 'translator', arch, 'lib')
 
 
@@ -331,211 +316,142 @@ def InstallNaClHeaders(tc_dst_inc, tcname):
   InstallFiles(SRC_DIR, tc_dst_inc, NACL_HEADER_MAP[GetToolchainLibc(tcname)])
 
 
-def MakeNinjaRelPath(path):
-  return os.path.join(os.path.relpath(OUT_DIR, SRC_DIR), path)
-
-
-TOOLCHAIN_LIBS = {
-  'newlib' : [
-    'libppapi.a',
-    'libppapi_stub.a',
-  ],
-  'glibc': [
-    'libppapi.a',
-    'libppapi.so',
-    'libppapi_stub.a',
-  ]
-}
-
-
-def GypNinjaInstall(pepperdir, toolchains):
-  tools_files_32 = [
+def GnNinjaInstall(pepperdir, toolchains):
+  tools_files_x86 = [
     ['sel_ldr', 'sel_ldr_x86_32'],
-    ['irt_core_newlib_x32.nexe', 'irt_core_x86_32.nexe'],
-    ['irt_core_newlib_x64.nexe', 'irt_core_x86_64.nexe'],
   ]
-  arm_files = [
-    ['elf_loader_newlib_arm.nexe', 'elf_loader_arm.nexe'],
+  tools_files_x64 = [
+    ['sel_ldr', 'sel_ldr_x86_64'],
+    ['ncval_new', 'ncval'],
+    ['clang_newlib_arm/elf_loader.nexe', 'elf_loader_arm.nexe'],
+    ['irt_x86/irt_core.nexe', 'irt_core_x86_32.nexe'],
+    ['irt_x64/irt_core.nexe', 'irt_core_x86_64.nexe'],
   ]
-
-  tools_files_64 = []
+  tools_files_arm = []
 
   platform = getos.GetPlatform()
 
   # TODO(binji): dump_syms doesn't currently build on Windows. See
   # http://crbug.com/245456
   if platform != 'win':
-    tools_files_64 += [
+    tools_files_x64 += [
       ['dump_syms', 'dump_syms'],
       ['minidump_dump', 'minidump_dump'],
       ['minidump_stackwalk', 'minidump_stackwalk']
     ]
 
-  tools_files_64.append(['sel_ldr', 'sel_ldr_x86_64'])
-  tools_files_64.append(['ncval_new', 'ncval'])
 
   if platform == 'linux':
-    tools_files_32.append(['nacl_helper_bootstrap',
-                           'nacl_helper_bootstrap_x86_32'])
-    tools_files_64.append(['nacl_helper_bootstrap',
-                           'nacl_helper_bootstrap_x86_64'])
-    tools_files_32.append(['nonsfi_loader_newlib_x32_nonsfi.nexe',
-                           'nonsfi_loader_x86_32'])
+    tools_files_x86 += [['nonsfi_loader', 'nonsfi_loader_x86_32'],
+                        ['nacl_helper_bootstrap',
+                         'nacl_helper_bootstrap_x86_32']]
+    tools_files_x64 += [['nacl_helper_bootstrap',
+                         'nacl_helper_bootstrap_x86_64']]
+
+
+    # Add ARM trusted binaries (linux only)
+    if not options.no_arm_trusted:
+      tools_files_x64 += [
+        ['irt_arm/irt_core.nexe', 'irt_core_arm.nexe'],
+      ]
+      tools_files_arm += [
+        ['nacl_helper_bootstrap', 'nacl_helper_bootstrap_arm'],
+        ['nonsfi_loader', 'nonsfi_loader_arm'],
+        ['sel_ldr', 'sel_ldr_arm']
+      ]
 
   tools_dir = os.path.join(pepperdir, 'tools')
   buildbot_common.MakeDir(tools_dir)
 
   # Add .exe extensions to all windows tools
-  for pair in tools_files_32 + tools_files_64:
-    if platform == 'win' and not pair[0].endswith('.nexe'):
+  for pair in tools_files_x86 + tools_files_x64:
+    if platform == 'win' and not os.path.splitext(pair[0])[1]:
       pair[0] += '.exe'
       pair[1] += '.exe'
 
-  # Add ARM binaries
-  if platform == 'linux' and not options.no_arm_trusted:
-    arm_files += [
-      ['irt_core_newlib_arm.nexe', 'irt_core_arm.nexe'],
-      ['nacl_helper_bootstrap', 'nacl_helper_bootstrap_arm'],
-      ['nonsfi_loader_newlib_arm_nonsfi.nexe', 'nonsfi_loader_arm'],
-      ['sel_ldr', 'sel_ldr_arm']
-    ]
+  InstallFiles(GetNinjaOutDir('x64'), tools_dir, tools_files_x64)
+  InstallFiles(GetNinjaOutDir('x86'), tools_dir, tools_files_x86)
+  if platform == 'linux':
+    InstallFiles(GetNinjaOutDir('arm'), tools_dir, tools_files_arm)
 
-  InstallFiles(GetNinjaOutDir('x64'), tools_dir, tools_files_64)
-  InstallFiles(GetNinjaOutDir('ia32'), tools_dir, tools_files_32)
-  InstallFiles(GetNinjaOutDir('arm'), tools_dir, arm_files)
-
+  stub_dir = os.path.join(SRC_DIR, 'ppapi/native_client/src/untrusted/irt_stub')
   for tc in toolchains:
     if tc in ('host', 'clang-newlib'):
       continue
     elif tc == 'pnacl':
-      xarches = (None, 'ia32', 'x64', 'arm')
+      xarches = ('pnacl', 'x86', 'x64', 'arm')
     elif tc in ('x86_glibc'):
-      xarches = ('ia32', 'x64')
+      xarches = ('x86', 'x64')
     elif tc == 'arm_glibc':
       xarches = ('arm',)
     else:
       raise AssertionError('unexpected toolchain value: %s' % tc)
 
     for xarch in xarches:
-      src_dir = GetGypBuiltLib(tc, xarch)
+      src_dir = GetGnBuiltLib(tc, xarch)
+      src_dir = os.path.join(src_dir, 'obj', 'ppapi', 'native_client', 'src',
+                             'untrusted', 'irt_stub')
       dst_dir = GetOutputToolchainLib(pepperdir, tc, xarch)
-      libc = GetToolchainLibc(tc)
-      InstallFiles(src_dir, dst_dir, TOOLCHAIN_LIBS[libc])
+      InstallFiles(src_dir, dst_dir, ['libppapi_stub.a'])
+      InstallFiles(stub_dir, dst_dir, ['libppapi.a'])
+      if 'glibc' in tc:
+        InstallFiles(stub_dir, dst_dir, ['libppapi.so'])
 
 
-def GypNinjaBuild_NaCl(rel_out_dir):
-  gyp_py = os.path.join(NACL_DIR, 'build', 'gyp_nacl')
-  nacl_core_sdk_gyp = os.path.join(NACL_DIR, 'build', 'nacl_core_sdk.gyp')
-  all_gyp = os.path.join(NACL_DIR, 'build', 'all.gyp')
+def GnNinjaBuildAll(rel_out_dir):
+  def MakeNinjaRelPath(suffix):
+    return os.path.join(os.path.relpath(OUT_DIR, SRC_DIR), rel_out_dir + suffix)
 
-  out_dir_32 = MakeNinjaRelPath(rel_out_dir + '-ia32')
-  out_dir_64 = MakeNinjaRelPath(rel_out_dir + '-x64')
-  out_dir_arm = MakeNinjaRelPath(rel_out_dir + '-arm')
+  GnNinjaBuild('x64', MakeNinjaRelPath('-x64'),
+      ['nacl_sdk_untrusted=true'])
+  GnNinjaBuild('x86', MakeNinjaRelPath('-x86'))
 
-  GypNinjaBuild('ia32', gyp_py, nacl_core_sdk_gyp, 'nacl_core_sdk', out_dir_32)
-  GypNinjaBuild('x64', gyp_py, nacl_core_sdk_gyp, 'nacl_core_sdk', out_dir_64)
-  GypNinjaBuild('arm', gyp_py, nacl_core_sdk_gyp, 'nacl_core_sdk', out_dir_arm)
-  GypNinjaBuild('x64', gyp_py, all_gyp, 'ncval_new', out_dir_64)
+  platform = getos.GetPlatform()
+  if platform == 'linux':
+    GnNinjaBuild('arm', MakeNinjaRelPath('-arm'))
 
 
-def GypNinjaBuild_Breakpad(rel_out_dir):
-  # TODO(binji): dump_syms doesn't currently build on Windows. See
-  # http://crbug.com/245456
-  if getos.GetPlatform() == 'win':
-    return
+def GnNinjaBuild(arch, out_dir, extra_gn_args=None):
+  gn_args = ['is_debug=false']
+  if extra_gn_args is not None:
+    gn_args += extra_gn_args
+  platform = getos.GetPlatform()
+  if platform == 'mac':
+    if options.mac_sdk:
+      gn_args.append('mac_sdk_min="%s"' % options.mac_sdk)
+    # Without this the target_cpu='arm' build complains about missing code
+    # signing identity
+    gn_args.append('use_ios_simulator=true')
 
-  gyp_py = os.path.join(SRC_DIR, 'build', 'gyp_chromium')
-  out_dir = MakeNinjaRelPath(rel_out_dir)
-  gyp_file = os.path.join(SRC_DIR, 'breakpad', 'breakpad.gyp')
-  build_list = ['dump_syms', 'minidump_dump', 'minidump_stackwalk']
-  GypNinjaBuild('x64', gyp_py, gyp_file, build_list, out_dir)
-
-
-def GypNinjaBuild_PPAPI(arch, rel_out_dir):
-  gyp_py = os.path.join(SRC_DIR, 'build', 'gyp_chromium')
-  out_dir = MakeNinjaRelPath(rel_out_dir)
-  gyp_file = os.path.join(SRC_DIR, 'ppapi', 'native_client',
-                          'native_client.gyp')
-  GypNinjaBuild(arch, gyp_py, gyp_file, 'ppapi_lib', out_dir)
-
-
-def GypNinjaBuild_Pnacl(arch, rel_out_dir):
-  # TODO(binji): This will build the pnacl_irt_shim twice; once as part of the
-  # Chromium build, and once here. When we move more of the SDK build process
-  # to gyp, we can remove this.
-  gyp_py = os.path.join(SRC_DIR, 'build', 'gyp_chromium')
-
-  out_dir = MakeNinjaRelPath(rel_out_dir)
-  gyp_file = os.path.join(SRC_DIR, 'ppapi', 'native_client', 'src',
-                          'untrusted', 'pnacl_irt_shim', 'pnacl_irt_shim.gyp')
-  GypNinjaBuild(arch, gyp_py, gyp_file, 'aot', out_dir)
-
-
-def GypNinjaBuild(arch, gyp_py_script, gyp_file, targets, out_dir):
-  gyp_env = dict(os.environ)
-  gyp_defines = []
-  if options.mac_sdk:
-    gyp_defines.append('mac_sdk=%s' % options.mac_sdk)
+  gn_exe = 'gn'
+  if platform == 'win':
+    gn_exe += '.bat'
 
   if arch is not None:
-    gyp_defines.append('target_arch=%s' % arch)
+    gn_args.append('target_cpu="%s"' % arch)
     if arch == 'arm':
-      gyp_env['GYP_CROSSCOMPILE'] = '1'
       if options.no_arm_trusted:
-        gyp_defines.append('disable_cross_trusted=1')
+        gn_args.append('enable_cross_trusted=false')
 
-  gyp_env['GYP_DEFINES'] = ' '.join(gyp_defines)
-  # We can't use windows path separators in GYP_GENERATOR_FLAGS since
-  # gyp uses shlex to parse them and treats '\' as an escape char.
-  gyp_env['GYP_GENERATOR_FLAGS'] = 'output_dir=%s' % out_dir.replace('\\', '/')
+  gn_args = ' '.join(gn_args)
+  buildbot_common.Run([gn_exe, 'gen', '--args=%s' % gn_args, out_dir],
+                      cwd=SRC_DIR)
 
-  # Print relevant environment variables
-  for key, value in gyp_env.iteritems():
-    if key.startswith('GYP') or key in ('CC',):
-      print '  %s="%s"' % (key, value)
-
-  buildbot_common.Run(
-      [sys.executable, gyp_py_script, gyp_file, '--depth=.'],
-      cwd=SRC_DIR,
-      env=gyp_env)
-
-  NinjaBuild(targets, out_dir, arch)
-
-
-def NinjaBuild(targets, out_dir, arch):
-  if type(targets) is not list:
-    targets = [targets]
-  out_config_dir = os.path.join(out_dir, GetConfigDir(arch))
-  buildbot_common.Run(['ninja', '-C', out_config_dir] + targets, cwd=SRC_DIR)
+  buildbot_common.Run(['ninja', '-C', out_dir, 'nacl_core_sdk'], cwd=SRC_DIR)
 
 
 def BuildStepBuildToolchains(pepperdir, toolchains, build, clean):
   buildbot_common.BuildStep('SDK Items')
 
   if clean:
-    for dirname in glob.glob(os.path.join(OUT_DIR, GYPBUILD_DIR + '*')):
+    for dirname in glob.glob(os.path.join(OUT_DIR, GNBUILD_DIR + '*')):
       buildbot_common.RemoveDir(dirname)
     build = True
 
   if build:
-    GypNinjaBuild_NaCl(GYPBUILD_DIR)
-    GypNinjaBuild_Breakpad(GYPBUILD_DIR + '-x64')
+    GnNinjaBuildAll(GNBUILD_DIR)
 
-    if 'x86_glibc' in toolchains or 'pnacl' in toolchains:
-      GypNinjaBuild_PPAPI('ia32', GYPBUILD_DIR + '-ia32')
-      GypNinjaBuild_PPAPI('x64', GYPBUILD_DIR + '-x64')
-
-    if 'arm_glibc' in toolchains or 'pnacl' in toolchains:
-      GypNinjaBuild_PPAPI('arm', GYPBUILD_DIR + '-arm')
-
-    if 'pnacl' in toolchains:
-      # NOTE: For ia32, gyp builds both x86-32 and x86-64 by default.
-      for arch in ('ia32', 'arm'):
-        # Fill in the latest native pnacl shim library from the chrome build.
-        build_dir = GYPBUILD_DIR + '-pnacl-' + arch
-        GypNinjaBuild_Pnacl(arch, build_dir)
-
-  GypNinjaInstall(pepperdir, toolchains)
+  GnNinjaInstall(pepperdir, toolchains)
 
   for toolchain in toolchains:
     if toolchain not in ('host', 'clang-newlib'):
@@ -544,30 +460,21 @@ def BuildStepBuildToolchains(pepperdir, toolchains, build, clean):
 
 
   if 'pnacl' in toolchains:
-    # NOTE: For ia32, gyp builds both x86-32 and x86-64 by default.
-    for arch in ('ia32', 'arm'):
-      # Fill in the latest native pnacl shim library from the chrome build.
-      build_dir = GYPBUILD_DIR + '-pnacl-' + arch
-      if arch == 'ia32':
-        nacl_arches = ['x86-32', 'x86-64']
-      elif arch == 'arm':
-        nacl_arches = ['arm']
-      else:
-        buildbot_common.ErrorExit('Unknown architecture: %s' % arch)
-      for nacl_arch in nacl_arches:
-        release_build_dir = os.path.join(OUT_DIR, build_dir, 'Release',
-                                         'gen', 'tc_pnacl_translate',
-                                         'lib-' + nacl_arch)
+    # NOTE: gn build all untrusted code in the x86 build
+    build_dir = GetNinjaOutDir('x64')
+    nacl_arches = ['x86', 'x64', 'arm']
+    for nacl_arch in nacl_arches:
+      shim_file = os.path.join(build_dir, 'clang_newlib_' + nacl_arch, 'obj',
+                               'ppapi', 'native_client', 'src', 'untrusted',
+                               'pnacl_irt_shim', 'libpnacl_irt_shim.a')
 
-        pnacldir = GetToolchainDir(pepperdir, 'pnacl')
-        pnacl_translator_lib_dir = GetPNaClTranslatorLib(pnacldir, nacl_arch)
-        if not os.path.isdir(pnacl_translator_lib_dir):
-          buildbot_common.ErrorExit('Expected %s directory to exist.' %
-                                    pnacl_translator_lib_dir)
+      pnacldir = GetToolchainDir(pepperdir, 'pnacl')
+      pnacl_translator_lib_dir = GetPNaClTranslatorLib(pnacldir, nacl_arch)
+      if not os.path.isdir(pnacl_translator_lib_dir):
+        buildbot_common.ErrorExit('Expected %s directory to exist.' %
+                                  pnacl_translator_lib_dir)
 
-        buildbot_common.CopyFile(
-            os.path.join(release_build_dir, 'libpnacl_irt_shim.a'),
-            pnacl_translator_lib_dir)
+      buildbot_common.CopyFile(shim_file, pnacl_translator_lib_dir)
 
     InstallNaClHeaders(GetToolchainNaClInclude(pepperdir, 'pnacl', 'x86'),
                        'pnacl')
@@ -813,7 +720,7 @@ def main(args):
   parser.add_argument('--skip-toolchain', help='Skip toolchain untar',
       action='store_true')
   parser.add_argument('--no-clean', dest='clean', action='store_false',
-      help="Don't clean gypbuild directories")
+      help="Don't clean gn build directories")
   parser.add_argument('--mac-sdk',
       help='Set the mac-sdk (e.g. 10.6) to use when building with ninja.')
   parser.add_argument('--no-arm-trusted', action='store_true',
