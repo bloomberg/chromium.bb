@@ -2,6 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Define a global boolean for notifications (only enabled in the test class).
+cr.define('settings_test', function() {
+  var siteSettingsCategoryOptions =
+      settings_test.siteSettingsCategoryOptions || {
+    /**
+     * True if property changes should fire events for testing purposes.
+     * @type {boolean}
+     */
+    notifyPropertyChangesForTest: false,
+  };
+  return {siteSettingsCategoryOptions: siteSettingsCategoryOptions};
+});
+
 /**
  * @fileoverview
  * 'site-settings-category' is the polymer element for showing a certain
@@ -43,7 +56,11 @@ Polymer({
      * example, the Location category can be set to Block/Ask so false, in that
      * case, represents Block and true represents Ask.
      */
-    categoryEnabled: Boolean,
+    categoryEnabled: {
+      type: Boolean,
+      notify: settings_test.siteSettingsCategoryOptions.
+          notifyPropertyChangesForTest,
+    },
 
     /**
      * The origin that was selected by the user in the dropdown list.
@@ -77,32 +94,36 @@ Polymer({
    * @private
    */
   onToggleChange_: function(event) {
+    var prefsProxy = settings.SiteSettingsPrefsBrowserProxy.getInstance();
     switch (this.category) {
       case settings.ContentSettingsTypes.COOKIES:
       case settings.ContentSettingsTypes.JAVASCRIPT:
       case settings.ContentSettingsTypes.POPUPS:
         // "Allowed" vs "Blocked".
-        this.setPrefValue(this.computeCategoryPrefName(this.category),
-                          this.categoryEnabled ?
-                              settings.PermissionValues.ALLOW :
-                              settings.PermissionValues.BLOCK);
+        prefsProxy.setDefaultValueForContentType(
+            this.category,
+            this.categoryEnabled ?
+                settings.PermissionValues.ALLOW :
+                settings.PermissionValues.BLOCK);
         break;
       case settings.ContentSettingsTypes.NOTIFICATIONS:
       case settings.ContentSettingsTypes.GEOLOCATION:
       case settings.ContentSettingsTypes.CAMERA:
       case settings.ContentSettingsTypes.MIC:
         // "Ask" vs "Blocked".
-        this.setPrefValue(this.computeCategoryPrefName(this.category),
-                          this.categoryEnabled ?
-                              settings.PermissionValues.ASK :
-                              settings.PermissionValues.BLOCK);
+        prefsProxy.setDefaultValueForContentType(
+            this.category,
+            this.categoryEnabled ?
+                settings.PermissionValues.ASK :
+                settings.PermissionValues.BLOCK);
         break;
       case settings.ContentSettingsTypes.FULLSCREEN:
         // "Allowed" vs. "Ask first".
-        this.setPrefValue(this.computeCategoryPrefName(this.category),
-                          this.categoryEnabled ?
-                              settings.PermissionValues.ALLOW :
-                              settings.PermissionValues.ASK);
+        prefsProxy.setDefaultValueForContentType(
+          this.category,
+          this.categoryEnabled ?
+              settings.PermissionValues.ALLOW :
+              settings.PermissionValues.ASK);
         break;
       default:
         assertNotReached();
@@ -114,6 +135,10 @@ Polymer({
    * @private
    */
   onCategoryChanged_: function() {
-    this.categoryEnabled = this.isCategoryAllowed(this.category);
+    var prefsProxy = settings.SiteSettingsPrefsBrowserProxy.getInstance();
+    prefsProxy.getDefaultValueForContentType(
+        this.category).then(function(enabled) {
+          this.categoryEnabled = enabled;
+        }.bind(this));
   },
 });

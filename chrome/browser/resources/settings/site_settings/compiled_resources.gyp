@@ -102,6 +102,7 @@
           '../settings_page/settings_animated_pages.js',
           'constants.js',
           'site_settings_behavior.js',
+          'site_settings_prefs_browser_proxy.js',
         ],
         'externs': [
           '../../../../../third_party/closure_compiler/externs/settings_private.js',

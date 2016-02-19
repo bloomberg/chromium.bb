@@ -40,6 +40,17 @@ cr.define('site_settings_category', function() {
 
       // Import necessary html before running suite.
       suiteSetup(function() {
+        cr.define('settings_test', function() {
+          var siteSettingsCategoryOptions = {
+            /**
+             * True if property changes should fire events for testing purposes.
+             * @type {boolean}
+             */
+            notifyPropertyChangesForTest: true,
+          };
+          return {siteSettingsCategoryOptions: siteSettingsCategoryOptions};
+        });
+
         return PolymerTest.importHtml(
            'chrome://md-settings/site_settings/site_settings_category.html');
       });
@@ -51,18 +62,50 @@ cr.define('site_settings_category', function() {
         document.body.appendChild(testElement);
       });
 
-      test('categoryEnabled correctly represents prefs', function() {
+      /**
+       * Returns a promise that resolves once the selected item is updated.
+       * @param {function()} action is executed after the listener is set up.
+       * @return {!Promise} a Promise fulfilled when the selected item changes.
+       */
+      function runAndResolveWhenCategoryEnabledChanged(action) {
+        return new Promise(function(resolve, reject) {
+          var handler = function() {
+            testElement.removeEventListener(
+                'category-enabled-changed', handler);
+            resolve();
+          };
+          testElement.addEventListener('category-enabled-changed', handler);
+          action();
+        });
+      }
+
+      test('categoryEnabled correctly represents prefs (enabled)', function() {
         testElement.category = settings.ContentSettingsTypes.GEOLOCATION;
 
-        testElement.prefs = prefsLocationEnabled;
-        assertTrue(testElement.categoryEnabled);
-        MockInteractions.tap(testElement.$.toggle);
-        assertFalse(testElement.categoryEnabled);
+        return runAndResolveWhenCategoryEnabledChanged(function() {
+          testElement.prefs = prefsLocationEnabled;
+        }).then(function() {
+          assertTrue(testElement.categoryEnabled);
+          MockInteractions.tap(testElement.$.toggle);
+          assertFalse(testElement.categoryEnabled);
+        });
+      });
 
-        testElement.prefs = prefsLocationDisabled;
-        assertFalse(testElement.categoryEnabled);
-        MockInteractions.tap(testElement.$.toggle);
-        assertTrue(testElement.categoryEnabled);
+      test('categoryEnabled correctly represents prefs (disabled)', function() {
+        testElement.category = settings.ContentSettingsTypes.GEOLOCATION;
+
+        // In order for the 'change' event to trigger, the value monitored needs
+        // to actually change (the event is not sent otherwise). Therefore,
+        // ensure the initial state of enabledness is opposite of what we expect
+        // it to end at.
+        testElement.categoryEnabled = true;
+        return runAndResolveWhenCategoryEnabledChanged(function() {
+          testElement.prefs = prefsLocationDisabled;
+        }).then(function() {
+          assertFalse(testElement.categoryEnabled);
+          MockInteractions.tap(testElement.$.toggle);
+          assertTrue(testElement.categoryEnabled);
+        });
       });
 
       test('basic category tests', function() {

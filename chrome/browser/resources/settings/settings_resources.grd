@@ -459,6 +459,12 @@
       <structure name="IDR_SETTINGS_SITE_SETTINGS_PAGE_JS"
                  file="site_settings_page/site_settings_page.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_SITE_SETTINGS_PREFS_BROWSER_PROXY_HTML"
+                 file="site_settings/site_settings_prefs_browser_proxy.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_SITE_SETTINGS_PREFS_BROWSER_PROXY_JS"
+                 file="site_settings/site_settings_prefs_browser_proxy.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_SITE_DETAILS_CSS"
                  file="site_settings/site_details.css"
                  type="chrome_html" />

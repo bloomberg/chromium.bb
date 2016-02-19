@@ -17,22 +17,6 @@ var SiteSettingsBehaviorImpl = {
   },
 
   /**
-   * Returns whether the category default is set to enabled or not.
-   * @param {number} category The category to check.
-   * @return {boolean} True if the category default is set to enabled.
-   * @protected
-   */
-  isCategoryAllowed: function(category) {
-    var pref = this.getPref(this.computeCategoryPrefName(category));
-
-    // FullScreen is Allow vs. Ask.
-    if (category == settings.ContentSettingsTypes.FULLSCREEN)
-      return pref.value != settings.PermissionValues.ASK;
-
-    return pref.value != settings.PermissionValues.BLOCK;
-  },
-
-  /**
    * Re-sets the category permission for a given origin.
    * @param {string} origin The origin to change the permission for.
    * @param {number} category The category permission to change.

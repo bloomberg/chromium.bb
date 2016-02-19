@@ -51,36 +51,54 @@ Polymer({
 
   ready: function() {
     CrSettingsPrefs.initialized.then(function() {
-      this.addCategory(-1);  // Every category (All Sites).
-      this.addCategory(settings.ContentSettingsTypes.COOKIES);
-      this.addCategory(settings.ContentSettingsTypes.GEOLOCATION);
-      this.addCategory(settings.ContentSettingsTypes.CAMERA);
-      this.addCategory(settings.ContentSettingsTypes.MIC);
-      this.addCategory(settings.ContentSettingsTypes.JAVASCRIPT);
-      this.addCategory(settings.ContentSettingsTypes.POPUPS);
-      this.addCategory(settings.ContentSettingsTypes.FULLSCREEN);
-      this.addCategory(settings.ContentSettingsTypes.NOTIFICATIONS);
-      this.addCategory(settings.ContentSettingsTypes.IMAGES);
+      this.addAllSitesCategory_();
+      this.addCategory_(settings.ContentSettingsTypes.COOKIES);
+      this.addCategory_(settings.ContentSettingsTypes.GEOLOCATION);
+      this.addCategory_(settings.ContentSettingsTypes.CAMERA);
+      this.addCategory_(settings.ContentSettingsTypes.MIC);
+      this.addCategory_(settings.ContentSettingsTypes.JAVASCRIPT);
+      this.addCategory_(settings.ContentSettingsTypes.POPUPS);
+      this.addCategory_(settings.ContentSettingsTypes.FULLSCREEN);
+      this.addCategory_(settings.ContentSettingsTypes.NOTIFICATIONS);
+      this.addCategory_(settings.ContentSettingsTypes.IMAGES);
     }.bind(this));
+  },
+
+  /**
+   * Adds the All Sites category to the page.
+   * @private
+   */
+  addAllSitesCategory_: function() {
+      var description = loadTimeData.getString('siteSettingsCategoryAllSites');
+      this.addCategoryImpl_(-1, 'list', description, '');
   },
 
   /**
    * Adds a single category to the page.
    * @param {number} category The category to add.
+   * @private
    */
-  addCategory: function(category) {
-    var icon, title, categoryDescription;
-    if (category === -1) {
-      icon = 'list';
-      title = loadTimeData.getString('siteSettingsCategoryAllSites');
-      categoryDescription = '';
-    } else {
-      icon = this.computeIconForContentCategory(category);
-      title = this.computeTitleForContentCategory(category);
-      categoryDescription = this.computeCategoryDesc(
-          category, this.isCategoryAllowed(category), false);
-    }
+  addCategory_: function(category) {
+    var icon = this.computeIconForContentCategory(category);
+    var title = this.computeTitleForContentCategory(category);
+    var prefsProxy = settings.SiteSettingsPrefsBrowserProxy.getInstance();
+    prefsProxy.getDefaultValueForContentType(
+        category).then(function(enabled) {
+          var description = this.computeCategoryDesc(category, enabled, false);
+          this.addCategoryImpl_(category, icon, title, description);
+        }.bind(this));
+  },
 
+  /**
+   * Constructs the actual HTML elements for the category.
+   * @param {number} category The category to add.
+   * @param {string} icon The icon to show with it.
+   * @param {string} title The title to show for the category.
+   * @param {string} defaultValue The default value (permission) for the
+   *     category.
+   * @private
+   */
+  addCategoryImpl_: function(category, icon, title, defaultValue) {
     var root = this.$.list;
     var paperIcon = document.createElement('paper-icon-item');
     paperIcon.addEventListener('tap', this.onTapCategory.bind(this, category));
@@ -95,7 +113,7 @@ Polymer({
     var setting = document.createElement('div');
     setting.setAttribute('class', 'option-value');
 
-    setting.appendChild(document.createTextNode(categoryDescription));
+    setting.appendChild(document.createTextNode(defaultValue));
 
     paperIcon.appendChild(ironIcon);
     paperIcon.appendChild(description);

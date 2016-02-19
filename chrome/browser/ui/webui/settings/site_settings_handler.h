@@ -38,6 +38,10 @@ class SiteSettingsHandler : public SettingsPageUIHandler {
   // Deletes the storage being used for a given host.
   void HandleClearUsage(const base::ListValue* args);
 
+  // Gets and sets the default value for a particular content settings type.
+  void HandleSetDefaultValueForContentType(const base::ListValue* args);
+  void HandleGetDefaultValueForContentType(const base::ListValue* args);
+
   Profile* profile_;
 
   // The host for which to fetch usage.
