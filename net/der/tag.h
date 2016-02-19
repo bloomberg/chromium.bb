@@ -68,11 +68,7 @@ NET_EXPORT Tag ContextSpecificConstructed(uint8_t class_number);
 
 NET_EXPORT Tag ContextSpecificPrimitive(uint8_t base);
 
-NET_EXPORT bool IsContextSpecific(Tag tag);
-
 NET_EXPORT bool IsConstructed(Tag tag);
-
-NET_EXPORT uint8_t GetTagNumber(Tag tag);
 
 }  // namespace der
 

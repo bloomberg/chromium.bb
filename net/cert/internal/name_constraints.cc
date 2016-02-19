@@ -144,124 +144,91 @@ WARN_UNUSED_RESULT bool ParseGeneralName(
   der::Input value;
   if (!parser.ReadTagAndValue(&tag, &value))
     return false;
-  if (!der::IsContextSpecific(tag))
-    return false;
   GeneralNameTypes name_type = GENERAL_NAME_NONE;
-  // GeneralName ::= CHOICE {
-  switch (der::GetTagNumber(tag)) {
+  if (tag == der::ContextSpecificConstructed(0)) {
     // otherName                       [0]     OtherName,
-    case 0:
-      if (!der::IsConstructed(tag))
-        return false;
-      name_type = GENERAL_NAME_OTHER_NAME;
-      break;
+    name_type = GENERAL_NAME_OTHER_NAME;
+  } else if (tag == der::ContextSpecificPrimitive(1)) {
     // rfc822Name                      [1]     IA5String,
-    case 1:
-      if (der::IsConstructed(tag))
-        return false;
-      name_type = GENERAL_NAME_RFC822_NAME;
-      break;
+    name_type = GENERAL_NAME_RFC822_NAME;
+  } else if (tag == der::ContextSpecificPrimitive(2)) {
     // dNSName                         [2]     IA5String,
-    case 2: {
-      if (der::IsConstructed(tag))
-        return false;
-      name_type = GENERAL_NAME_DNS_NAME;
-      const std::string s = value.AsString();
-      if (!base::IsStringASCII(s))
-        return false;
-      subtrees->dns_names.push_back(s);
-      break;
-    }
-    // x400Address                     [3]     ORAddress,
-    case 3:
-      if (!der::IsConstructed(tag))
-        return false;
-      name_type = GENERAL_NAME_X400_ADDRESS;
-      break;
-    // directoryName                   [4]     Name,
-    case 4: {
-      if (!der::IsConstructed(tag))
-        return false;
-      name_type = GENERAL_NAME_DIRECTORY_NAME;
-      // Name is a CHOICE { rdnSequence  RDNSequence }, therefore the SEQUENCE
-      // tag is explicit. Remove it, since the name matching functions expect
-      // only the value portion.
-      der::Parser name_parser(value);
-      der::Input name_value;
-      if (!name_parser.ReadTag(der::kSequence, &name_value) || parser.HasMore())
-        return false;
-      subtrees->directory_names.push_back(
-          std::vector<uint8_t>(name_value.UnsafeData(),
-                               name_value.UnsafeData() + name_value.Length()));
-      break;
-    }
-    // ediPartyName                    [5]     EDIPartyName,
-    case 5:
-      if (!der::IsConstructed(tag))
-        return false;
-      name_type = GENERAL_NAME_EDI_PARTY_NAME;
-      break;
-    // uniformResourceIdentifier       [6]     IA5String,
-    case 6:
-      if (der::IsConstructed(tag))
-        return false;
-      name_type = GENERAL_NAME_UNIFORM_RESOURCE_IDENTIFIER;
-      break;
-    // iPAddress                       [7]     OCTET STRING,
-    case 7:
-      if (der::IsConstructed(tag))
-        return false;
-      name_type = GENERAL_NAME_IP_ADDRESS;
-      if (ip_address_type == IP_ADDRESS_ONLY) {
-        // RFC 5280 section 4.2.1.6:
-        // When the subjectAltName extension contains an iPAddress, the address
-        // MUST be stored in the octet string in "network byte order", as
-        // specified in [RFC791].  The least significant bit (LSB) of each octet
-        // is the LSB of the corresponding byte in the network address.  For IP
-        // version 4, as specified in [RFC791], the octet string MUST contain
-        // exactly four octets.  For IP version 6, as specified in [RFC2460],
-        // the octet string MUST contain exactly sixteen octets.
-        if ((value.Length() != kIPv4AddressSize &&
-             value.Length() != kIPv6AddressSize)) {
-          return false;
-        }
-        subtrees->ip_addresses.push_back(std::vector<uint8_t>(
-            value.UnsafeData(), value.UnsafeData() + value.Length()));
-      } else {
-        DCHECK_EQ(ip_address_type, IP_ADDRESS_AND_NETMASK);
-        // RFC 5280 section 4.2.1.10:
-        // The syntax of iPAddress MUST be as described in Section 4.2.1.6 with
-        // the following additions specifically for name constraints. For IPv4
-        // addresses, the iPAddress field of GeneralName MUST contain eight (8)
-        // octets, encoded in the style of RFC 4632 (CIDR) to represent an
-        // address range [RFC4632]. For IPv6 addresses, the iPAddress field
-        // MUST contain 32 octets similarly encoded. For example, a name
-        // constraint for "class C" subnet 192.0.2.0 is represented as the
-        // octets C0 00 02 00 FF FF FF 00, representing the CIDR notation
-        // 192.0.2.0/24 (mask 255.255.255.0).
-        if (value.Length() != kIPv4AddressSize * 2 &&
-            value.Length() != kIPv6AddressSize * 2) {
-          return false;
-        }
-        const std::vector<uint8_t> mask(value.UnsafeData() + value.Length() / 2,
-                                        value.UnsafeData() + value.Length());
-        const unsigned mask_prefix_length = MaskPrefixLength(mask);
-        if (!IsSuffixZero(mask, mask_prefix_length))
-          return false;
-        subtrees->ip_address_ranges.push_back(std::make_pair(
-            std::vector<uint8_t>(value.UnsafeData(),
-                                 value.UnsafeData() + value.Length() / 2),
-            mask_prefix_length));
-      }
-      break;
-    // registeredID                    [8]     OBJECT IDENTIFIER }
-    case 8:
-      if (der::IsConstructed(tag))
-        return false;
-      name_type = GENERAL_NAME_REGISTERED_ID;
-      break;
-    default:
+    name_type = GENERAL_NAME_DNS_NAME;
+    const std::string s = value.AsString();
+    if (!base::IsStringASCII(s))
       return false;
+    subtrees->dns_names.push_back(s);
+  } else if (tag == der::ContextSpecificConstructed(3)) {
+    // x400Address                     [3]     ORAddress,
+    name_type = GENERAL_NAME_X400_ADDRESS;
+  } else if (tag == der::ContextSpecificConstructed(4)) {
+    // directoryName                   [4]     Name,
+    name_type = GENERAL_NAME_DIRECTORY_NAME;
+    // Name is a CHOICE { rdnSequence  RDNSequence }, therefore the SEQUENCE
+    // tag is explicit. Remove it, since the name matching functions expect
+    // only the value portion.
+    der::Parser name_parser(value);
+    der::Input name_value;
+    if (!name_parser.ReadTag(der::kSequence, &name_value) || parser.HasMore())
+      return false;
+    subtrees->directory_names.push_back(
+        std::vector<uint8_t>(name_value.UnsafeData(),
+                             name_value.UnsafeData() + name_value.Length()));
+  } else if (tag == der::ContextSpecificConstructed(5)) {
+    // ediPartyName                    [5]     EDIPartyName,
+    name_type = GENERAL_NAME_EDI_PARTY_NAME;
+  } else if (tag == der::ContextSpecificPrimitive(6)) {
+    // uniformResourceIdentifier       [6]     IA5String,
+    name_type = GENERAL_NAME_UNIFORM_RESOURCE_IDENTIFIER;
+  } else if (tag == der::ContextSpecificPrimitive(7)) {
+    // iPAddress                       [7]     OCTET STRING,
+    name_type = GENERAL_NAME_IP_ADDRESS;
+    if (ip_address_type == IP_ADDRESS_ONLY) {
+      // RFC 5280 section 4.2.1.6:
+      // When the subjectAltName extension contains an iPAddress, the address
+      // MUST be stored in the octet string in "network byte order", as
+      // specified in [RFC791].  The least significant bit (LSB) of each octet
+      // is the LSB of the corresponding byte in the network address.  For IP
+      // version 4, as specified in [RFC791], the octet string MUST contain
+      // exactly four octets.  For IP version 6, as specified in [RFC2460],
+      // the octet string MUST contain exactly sixteen octets.
+      if ((value.Length() != kIPv4AddressSize &&
+           value.Length() != kIPv6AddressSize)) {
+        return false;
+      }
+      subtrees->ip_addresses.push_back(std::vector<uint8_t>(
+          value.UnsafeData(), value.UnsafeData() + value.Length()));
+    } else {
+      DCHECK_EQ(ip_address_type, IP_ADDRESS_AND_NETMASK);
+      // RFC 5280 section 4.2.1.10:
+      // The syntax of iPAddress MUST be as described in Section 4.2.1.6 with
+      // the following additions specifically for name constraints. For IPv4
+      // addresses, the iPAddress field of GeneralName MUST contain eight (8)
+      // octets, encoded in the style of RFC 4632 (CIDR) to represent an
+      // address range [RFC4632]. For IPv6 addresses, the iPAddress field
+      // MUST contain 32 octets similarly encoded. For example, a name
+      // constraint for "class C" subnet 192.0.2.0 is represented as the
+      // octets C0 00 02 00 FF FF FF 00, representing the CIDR notation
+      // 192.0.2.0/24 (mask 255.255.255.0).
+      if (value.Length() != kIPv4AddressSize * 2 &&
+          value.Length() != kIPv6AddressSize * 2) {
+        return false;
+      }
+      const std::vector<uint8_t> mask(value.UnsafeData() + value.Length() / 2,
+                                      value.UnsafeData() + value.Length());
+      const unsigned mask_prefix_length = MaskPrefixLength(mask);
+      if (!IsSuffixZero(mask, mask_prefix_length))
+        return false;
+      subtrees->ip_address_ranges.push_back(std::make_pair(
+          std::vector<uint8_t>(value.UnsafeData(),
+                               value.UnsafeData() + value.Length() / 2),
+          mask_prefix_length));
+    }
+  } else if (tag == der::ContextSpecificPrimitive(8)) {
+    // registeredID                    [8]     OBJECT IDENTIFIER }
+    name_type = GENERAL_NAME_REGISTERED_ID;
+  } else {
+    return false;
   }
   DCHECK_NE(GENERAL_NAME_NONE, name_type);
   if ((name_type & kSupportedNameTypes) ||
