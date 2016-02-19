@@ -16,13 +16,12 @@ namespace shell {
 ScopedMessagePipeHandle ConnectToInterfaceByName(
     ApplicationManager* application_manager,
     const Identity& source,
-    const GURL& application_url,
+    const Identity& target,
     const std::string& interface_name) {
   shell::mojom::InterfaceProviderPtr remote_interfaces;
   scoped_ptr<ConnectToApplicationParams> params(new ConnectToApplicationParams);
   params->set_source(source);
-  params->set_target(Identity(application_url, std::string(),
-                              GetPermissiveCapabilityFilter()));
+  params->set_target(target);
   params->set_remote_interfaces(GetProxy(&remote_interfaces));
   application_manager->ConnectToApplication(std::move(params));
   MessagePipe pipe;

@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <vector>
+
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -21,12 +23,15 @@ namespace mojo {
 namespace shell {
 
 class ChildProcessHost;
+struct CommandLineSwitch;
 
 // An implementation of |NativeRunner| that loads/runs the given app (from the
 // file system) in a separate process (of its own).
 class OutOfProcessNativeRunner : public NativeRunner {
  public:
-  explicit OutOfProcessNativeRunner(base::TaskRunner* launch_process_runner);
+  OutOfProcessNativeRunner(
+      base::TaskRunner* launch_process_runner,
+      const std::vector<CommandLineSwitch>& command_line_switches);
   ~OutOfProcessNativeRunner() override;
 
   // NativeRunner:
@@ -55,6 +60,8 @@ class OutOfProcessNativeRunner : public NativeRunner {
   base::FilePath app_path_;
   base::Closure app_completed_callback_;
 
+  std::vector<CommandLineSwitch> command_line_switches_;
+
   scoped_ptr<ChildProcessHost> child_process_host_;
 
   DISALLOW_COPY_AND_ASSIGN(OutOfProcessNativeRunner);
@@ -62,15 +69,16 @@ class OutOfProcessNativeRunner : public NativeRunner {
 
 class OutOfProcessNativeRunnerFactory : public NativeRunnerFactory {
  public:
-  explicit OutOfProcessNativeRunnerFactory(
-      base::TaskRunner* launch_process_runner)
-      : launch_process_runner_(launch_process_runner) {}
-  ~OutOfProcessNativeRunnerFactory() override {}
+  OutOfProcessNativeRunnerFactory(
+      base::TaskRunner* launch_process_runner,
+      const std::vector<CommandLineSwitch>& command_line_switches);
+  ~OutOfProcessNativeRunnerFactory() override;
 
   scoped_ptr<NativeRunner> Create(const base::FilePath& app_path) override;
 
  private:
   base::TaskRunner* const launch_process_runner_;
+  std::vector<CommandLineSwitch> command_line_switches_;
 
   DISALLOW_COPY_AND_ASSIGN(OutOfProcessNativeRunnerFactory);
 };

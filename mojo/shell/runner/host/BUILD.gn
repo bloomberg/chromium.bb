@@ -61,6 +61,7 @@ source_set("lib") {
     "child_process.h",
     "child_process_host.cc",
     "child_process_host.h",
+    "command_line_switch.h",
     "in_process_native_runner.cc",
     "in_process_native_runner.h",
     "out_of_process_native_runner.cc",

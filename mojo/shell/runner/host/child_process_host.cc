@@ -22,6 +22,7 @@
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/shell/runner/common/switches.h"
+#include "mojo/shell/runner/host/command_line_switch.h"
 
 #if defined(OS_LINUX) && !defined(OS_ANDROID)
 #include "sandbox/linux/services/namespace_sandbox.h"
@@ -34,13 +35,16 @@
 namespace mojo {
 namespace shell {
 
-ChildProcessHost::ChildProcessHost(base::TaskRunner* launch_process_runner,
-                                   bool start_sandboxed,
-                                   const base::FilePath& app_path)
+ChildProcessHost::ChildProcessHost(
+    base::TaskRunner* launch_process_runner,
+    bool start_sandboxed,
+    const base::FilePath& app_path,
+    const std::vector<CommandLineSwitch>& command_line_switches)
     : launch_process_runner_(launch_process_runner),
       start_sandboxed_(start_sandboxed),
       app_path_(app_path),
       start_child_process_event_(false, false),
+      command_line_switches_(command_line_switches),
       weak_factory_(this) {
   node_channel_.reset(new edk::PlatformChannelPair);
   primordial_pipe_token_ = edk::GenerateRandomToken();
@@ -144,6 +148,9 @@ void ChildProcessHost::DoLaunch() {
 
   child_command_line.AppendSwitchASCII(switches::kPrimordialPipeToken,
                                        primordial_pipe_token_);
+
+  for (const CommandLineSwitch& pair : command_line_switches_)
+    child_command_line.AppendSwitchASCII(pair.key, pair.value);
 
   base::LaunchOptions options;
 #if defined(OS_WIN)

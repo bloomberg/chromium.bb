@@ -8,6 +8,7 @@
 #include "mojo/shell/background/background_shell.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
+#include "mojo/shell/runner/host/command_line_switch.h"
 #include "ui/views/mus/window_manager_connection.h"
 #include "url/gurl.h"
 
@@ -30,7 +31,7 @@ class PlatformTestHelperMus : public PlatformTestHelper {
     base::CommandLine::ForCurrentProcess()->AppendSwitch("use-new-edk");
 
     background_shell_.reset(new mojo::shell::BackgroundShell);
-    background_shell_->Init();
+    background_shell_->Init(std::vector<mojo::shell::CommandLineSwitch>());
     shell_client_.reset(new DefaultShellClient);
     shell_connection_.reset(new mojo::ShellConnection(
         shell_client_.get(),

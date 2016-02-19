@@ -25,6 +25,7 @@ interface ShellResolver {
    // TODO(beng): return qualifier too!
   ResolveMojoURL(string mojo_url) =>
       (string resolved_mojo_url,
+       string? qualifier,
        string? mojo_file_url,
        string? application_name,
        mojo.shell.mojom.CapabilityFilter? filter);

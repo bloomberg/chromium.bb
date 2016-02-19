@@ -12,6 +12,7 @@
 #include "base/task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/platform_thread.h"
+#include "mojo/shell/runner/host/command_line_switch.h"
 #include "mojo/shell/runner/host/native_application_support.h"
 #include "mojo/shell/runner/host/out_of_process_native_runner.h"
 #include "mojo/shell/runner/init.h"
@@ -82,8 +83,8 @@ scoped_ptr<NativeRunner> InProcessNativeRunnerFactory::Create(
     const base::FilePath& app_path) {
   // Non-Mojo apps are always run in a new process.
   if (!app_path.MatchesExtension(FILE_PATH_LITERAL(".mojo"))) {
-    return make_scoped_ptr(
-        new OutOfProcessNativeRunner(launch_process_runner_));
+    return make_scoped_ptr(new OutOfProcessNativeRunner(
+        launch_process_runner_, std::vector<CommandLineSwitch>()));
   }
   return make_scoped_ptr(new InProcessNativeRunner);
 }

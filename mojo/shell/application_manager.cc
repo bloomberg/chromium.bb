@@ -294,7 +294,7 @@ mojom::ShellClientFactory* ApplicationManager::GetShellClientFactory(
 
   mojom::ShellClientFactoryPtr factory;
   // TODO(beng): we should forward the original source identity!
-  ConnectToInterface(this, source_identity, shell_client_factory_identity.url(),
+  ConnectToInterface(this, source_identity, shell_client_factory_identity,
                      &factory);
   mojom::ShellClientFactory* factory_interface = factory.get();
   factory.set_connection_error_handler(
@@ -315,6 +315,7 @@ void ApplicationManager::OnShellClientFactoryLost(const Identity& which) {
 void ApplicationManager::OnGotResolvedURL(
     scoped_ptr<ConnectToApplicationParams> params,
     const String& resolved_url,
+    const String& qualifier,
     const String& file_url,
     const String& application_name,
     mojom::CapabilityFilterPtr base_filter) {
@@ -344,8 +345,9 @@ void ApplicationManager::OnGotResolvedURL(
     if (!base_filter.is_null())
       capability_filter = base_filter->filter.To<CapabilityFilter>();
 
-    CreateShellClient(source, Identity(resolved_gurl, target.qualifier(),
-                      capability_filter), target.url(), std::move(request));
+    CreateShellClient(source,
+                      Identity(resolved_gurl, qualifier, capability_filter),
+                      target.url(), std::move(request));
   } else {
     bool start_sandboxed = false;
     base::FilePath path = util::UrlToFilePath(file_url.To<GURL>());

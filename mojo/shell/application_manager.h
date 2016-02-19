@@ -158,6 +158,7 @@ class ApplicationManager : public ShellClient,
   // run with, from its manifest.
   void OnGotResolvedURL(scoped_ptr<ConnectToApplicationParams> params,
                         const String& resolved_url,
+                        const String& qualifier,
                         const String& file_url,
                         const String& application_name,
                         mojom::CapabilityFilterPtr base_filter);

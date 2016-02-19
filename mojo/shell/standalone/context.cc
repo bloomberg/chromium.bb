@@ -33,6 +33,7 @@
 #include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/connect_to_application_params.h"
+#include "mojo/shell/runner/host/command_line_switch.h"
 #include "mojo/shell/runner/host/in_process_native_runner.h"
 #include "mojo/shell/runner/host/out_of_process_native_runner.h"
 #include "mojo/shell/standalone/switches.h"
@@ -123,8 +124,8 @@ void Context::Init(const base::FilePath& shell_file_root) {
     runner_factory.reset(
         new InProcessNativeRunnerFactory(task_runners_->blocking_pool()));
   } else {
-    runner_factory.reset(
-        new OutOfProcessNativeRunnerFactory(task_runners_->blocking_pool()));
+    runner_factory.reset(new OutOfProcessNativeRunnerFactory(
+        task_runners_->blocking_pool(), command_line_switches_));
   }
   application_manager_.reset(new ApplicationManager(
       std::move(runner_factory), task_runners_->blocking_pool(), true));

@@ -72,7 +72,10 @@ class MojoMessageLoop : public base::MessageLoop {
 // Manages the thread to startup mojo.
 class BackgroundShell::MojoThread : public base::SimpleThread {
  public:
-  MojoThread() : SimpleThread("mojo-background-shell") {}
+  explicit MojoThread(
+      const std::vector<CommandLineSwitch>& command_line_switches)
+      : SimpleThread("mojo-background-shell"),
+        command_line_switches_(command_line_switches) {}
   ~MojoThread() override {}
 
   void CreateShellClientRequest(base::WaitableEvent* signal,
@@ -123,6 +126,7 @@ class BackgroundShell::MojoThread : public base::SimpleThread {
 
     scoped_ptr<Context> context(new Context);
     context_ = context.get();
+    context_->set_command_line_switches(command_line_switches_);
     context_->Init(shell_dir);
 
     message_loop_->Run();
@@ -152,6 +156,8 @@ class BackgroundShell::MojoThread : public base::SimpleThread {
   // Created in Run() on the background thread.
   Context* context_ = nullptr;
 
+  const std::vector<CommandLineSwitch> command_line_switches_;
+
   DISALLOW_COPY_AND_ASSIGN(MojoThread);
 };
 
@@ -161,9 +167,10 @@ BackgroundShell::~BackgroundShell() {
   thread_->Stop();
 }
 
-void BackgroundShell::Init() {
+void BackgroundShell::Init(
+    const std::vector<CommandLineSwitch>& command_line_switches) {
   DCHECK(!thread_);
-  thread_.reset(new MojoThread);
+  thread_.reset(new MojoThread(command_line_switches));
   thread_->Start();
 }
 

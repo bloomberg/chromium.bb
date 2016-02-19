@@ -61,7 +61,16 @@ void SerializeEntry(const ApplicationInfo& entry,
   (*value)->Set("capabilities", make_scoped_ptr(capabilities));
 }
 
+scoped_ptr<base::Value> ReadManifest(const base::FilePath& manifest_path) {
+  JSONFileValueDeserializer deserializer(manifest_path);
+  int error = 0;
+  std::string message;
+  // TODO(beng): probably want to do more detailed error checking. This should
+  //             be done when figuring out if to unblock connection completion.
+  return deserializer.Deserialize(&error, &message);
 }
+
+}  // namespace
 
 ApplicationInfo::ApplicationInfo() {}
 ApplicationInfo::~ApplicationInfo() {}
@@ -70,7 +79,9 @@ ApplicationCatalogStore::~ApplicationCatalogStore() {}
 
 PackageManager::PackageManager(base::TaskRunner* blocking_pool,
                                bool register_schemes)
-    : blocking_pool_(blocking_pool), catalog_store_(nullptr) {
+    : blocking_pool_(blocking_pool),
+      catalog_store_(nullptr),
+      weak_factory_(this) {
   if (register_schemes)
     mojo::RegisterMojoSchemes();
 
@@ -130,14 +141,18 @@ void PackageManager::ResolveMojoURL(const mojo::String& mojo_url,
                                     const ResolveMojoURLCallback& callback) {
   GURL resolved_url = mojo_url.To<GURL>();
   auto alias_iter = mojo_url_aliases_.find(mojo_url);
-  if (alias_iter != mojo_url_aliases_.end())
+  std::string qualifier;
+  if (alias_iter != mojo_url_aliases_.end()) {
     resolved_url = GURL(alias_iter->second.first);
+    qualifier = alias_iter->second.second;
+  }
 
-  EnsureURLInCatalog(resolved_url, callback);
+  EnsureURLInCatalog(resolved_url, qualifier, callback);
 }
 
 void PackageManager::CompleteResolveMojoURL(
     const GURL& resolved_url,
+    const std::string& qualifier,
     const ResolveMojoURLCallback& callback) {
   auto info_iter = catalog_.find(resolved_url.spec());
   CHECK(info_iter != catalog_.end());
@@ -163,8 +178,8 @@ void PackageManager::CompleteResolveMojoURL(
   all_interfaces.push_back("*");
   filter->filter.insert("*", std::move(all_interfaces));
 
-  callback.Run(resolved_url.spec(), file_url.spec(), info_iter->second.name,
-               std::move(filter));
+  callback.Run(resolved_url.spec(), qualifier, file_url.spec(),
+               info_iter->second.name, std::move(filter));
 }
 
 bool PackageManager::IsURLInCatalog(const GURL& url) const {
@@ -173,9 +188,10 @@ bool PackageManager::IsURLInCatalog(const GURL& url) const {
 
 void PackageManager::EnsureURLInCatalog(
     const GURL& url,
+    const std::string& qualifier,
     const ResolveMojoURLCallback& callback) {
   if (IsURLInCatalog(url)) {
-    CompleteResolveMojoURL(url, callback);
+    CompleteResolveMojoURL(url, qualifier, callback);
     return;
   }
 
@@ -184,7 +200,7 @@ void PackageManager::EnsureURLInCatalog(
     // The URL is of some form that can't be resolved to a manifest (e.g. some
     // scheme used for tests). Just pass it back to the caller so it can be
     // loaded with a custom loader.
-    callback.Run(url.spec(), nullptr, nullptr, nullptr);
+    callback.Run(url.spec(), nullptr, nullptr, nullptr, nullptr);
     return;
   }
 
@@ -192,11 +208,9 @@ void PackageManager::EnsureURLInCatalog(
   base::FilePath manifest_path;
   CHECK(net::FileURLToFilePath(manifest_url, &manifest_path));
   base::PostTaskAndReplyWithResult(
-      blocking_pool_, FROM_HERE,
-      base::Bind(&PackageManager::ReadManifest, base::Unretained(this),
-                 manifest_path),
-      base::Bind(&PackageManager::OnReadManifest,
-                 base::Unretained(this), url, callback));
+      blocking_pool_, FROM_HERE, base::Bind(&ReadManifest, manifest_path),
+      base::Bind(&PackageManager::OnReadManifest, weak_factory_.GetWeakPtr(),
+                 url, qualifier, callback));
 }
 
 void PackageManager::DeserializeCatalog() {
@@ -259,19 +273,25 @@ GURL PackageManager::GetManifestURL(const GURL& url) {
   return GURL();
 }
 
-scoped_ptr<base::Value> PackageManager::ReadManifest(
-    const base::FilePath& manifest_path) {
-  JSONFileValueDeserializer deserializer(manifest_path);
-  int error = 0;
-  std::string message;
-  // TODO(beng): probably want to do more detailed error checking. This should
-  //             be done when figuring out if to unblock connection completion.
-  return deserializer.Deserialize(&error, &message);
-}
-
-void PackageManager::OnReadManifest(const GURL& url,
+// static
+void PackageManager::OnReadManifest(base::WeakPtr<PackageManager> pm,
+                                    const GURL& url,
+                                    const std::string& qualifier,
                                     const ResolveMojoURLCallback& callback,
                                     scoped_ptr<base::Value> manifest) {
+  if (!pm) {
+    // The PackageManager was destroyed, we're likely in shutdown. Run the
+    // callback so we don't trigger a DCHECK.
+    callback.Run(url.spec(), nullptr, nullptr, nullptr, nullptr);
+    return;
+  }
+  pm->OnReadManifestImpl(url, qualifier, callback, std::move(manifest));
+}
+
+void PackageManager::OnReadManifestImpl(const GURL& url,
+                                        const std::string& qualifier,
+                                        const ResolveMojoURLCallback& callback,
+                                        scoped_ptr<base::Value> manifest) {
   if (manifest) {
     base::DictionaryValue* dictionary = nullptr;
     CHECK(manifest->GetAsDictionary(&dictionary));
@@ -283,7 +303,7 @@ void PackageManager::OnReadManifest(const GURL& url,
     catalog_[info.url] = info;
   }
   SerializeCatalog();
-  CompleteResolveMojoURL(url, callback);
+  CompleteResolveMojoURL(url, qualifier, callback);
 }
 
 }  // namespace package_manager

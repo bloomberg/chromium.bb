@@ -161,6 +161,7 @@ test("views_mus_unittests") {
     "//mojo/shell/background:lib",
     "//mojo/shell/background:main",
     "//mojo/shell/public/cpp:sources",
+    "//mojo/shell/runner/host:lib",
     "//skia",
     "//testing/gtest",
     "//third_party/icu",

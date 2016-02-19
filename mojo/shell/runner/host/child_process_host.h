@@ -29,6 +29,8 @@ class TaskRunner;
 namespace mojo {
 namespace shell {
 
+struct CommandLineSwitch;
+
 // This class represents a "child process host". Handles launching and
 // connecting a platform-specific "pipe" to the child, and supports joining the
 // child process. Currently runs a single app (loaded from the file system).
@@ -48,7 +50,8 @@ class ChildProcessHost {
   // mojo application we wish to start.
   ChildProcessHost(base::TaskRunner* launch_process_runner,
                    bool start_sandboxed,
-                   const base::FilePath& app_path);
+                   const base::FilePath& app_path,
+                   const std::vector<CommandLineSwitch>& switches);
   // Allows a ChildProcessHost to be instantiated for an existing channel
   // created by someone else (e.g. an app that launched its own process).
   explicit ChildProcessHost(ScopedHandle channel);
@@ -94,6 +97,8 @@ class ChildProcessHost {
 
   // A token the child can use to connect a primordial pipe to the host.
   std::string primordial_pipe_token_;
+
+  const std::vector<CommandLineSwitch> command_line_switches_;
 
   base::WeakPtrFactory<ChildProcessHost> weak_factory_;
 

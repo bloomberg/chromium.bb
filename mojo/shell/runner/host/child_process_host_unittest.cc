@@ -18,6 +18,7 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/process_delegate.h"
 #include "mojo/message_pump/message_pump_mojo.h"
+#include "mojo/shell/runner/host/command_line_switch.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -64,7 +65,8 @@ TEST(ChildProcessHostTest, MAYBE_StartJoin) {
   edk::InitIPCSupport(&delegate, io_thread.task_runner());
 
   ChildProcessHost child_process_host(blocking_pool.get(), false,
-                                      base::FilePath());
+                                      base::FilePath(),
+                                      std::vector<CommandLineSwitch>());
   base::RunLoop run_loop;
   child_process_host.Start(
       base::Bind(&ProcessReadyCallbackAdapater, run_loop.QuitClosure()));
