@@ -55,7 +55,7 @@ class FakeGCMDriver : public GCMDriver {
                 const std::string& receiver_id,
                 const OutgoingMessage& message) override;
   void RecordDecryptionFailure(const std::string& app_id,
-                               GCMEncryptionProvider::DecryptionFailure reason)
+                               GCMEncryptionProvider::DecryptionResult result)
       override;
 
  private:

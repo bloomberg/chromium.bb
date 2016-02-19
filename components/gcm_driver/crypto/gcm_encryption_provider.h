@@ -28,38 +28,46 @@ class KeyPair;
 // and decryption of incoming messages.
 class GCMEncryptionProvider {
  public:
+  // Result of decrypting an incoming message. The values of these reasons must
+  // not be changed, because they are being recorded using UMA.
+  enum DecryptionResult {
+    // The message had not been encrypted by the sender.
+    DECRYPTION_RESULT_UNENCRYPTED = 0,
+
+    // The message had been encrypted by the sender, and could successfully be
+    // decrypted for the registration it has been received for.
+    DECRYPTION_RESULT_DECRYPTED = 1,
+
+    // The contents of the Encryption HTTP header could not be parsed.
+    DECRYPTION_RESULT_INVALID_ENCRYPTION_HEADER = 2,
+
+    // The contents of the Crypto-Key HTTP header could not be parsed.
+    DECRYPTION_RESULT_INVALID_CRYPTO_KEY_HEADER = 3,
+
+    // No public/private key-pair was associated with the app_id.
+    DECRYPTION_RESULT_NO_KEYS = 4,
+
+    // The shared secret cannot be derived from the keying material.
+    DECRYPTION_RESULT_INVALID_SHARED_SECRET = 5,
+
+    // The payload could not be decrypted as AES-128-GCM.
+    DECRYPTION_RESULT_INVALID_PAYLOAD = 6,
+
+    DECRYPTION_RESULT_LAST = DECRYPTION_RESULT_INVALID_PAYLOAD
+  };
+
   // Callback to be invoked when the public key and auth secret are available.
   using EncryptionInfoCallback = base::Callback<void(const std::string&,
                                                      const std::string&)>;
 
-  // Callback to be invoked when a message has been decrypted.
-  using MessageDecryptedCallback = base::Callback<void(const IncomingMessage&)>;
+  // Callback to be invoked when a message may have been decrypted, as indicated
+  // by the |result|. The |message| contains the dispatchable message in success
+  // cases, or will be initialized to an empty, default state for failure.
+  using MessageCallback = base::Callback<void(DecryptionResult result,
+                                              const IncomingMessage& message)>;
 
-  // Reasons why the decryption of an incoming message can fail.
-  enum DecryptionFailure {
-    DECRYPTION_FAILURE_UNKNOWN,
-
-    // The contents of the Encryption HTTP header could not be parsed.
-    DECRYPTION_FAILURE_INVALID_ENCRYPTION_HEADER,
-
-    // The contents of the Crypto-Key HTTP header could not be parsed.
-    DECRYPTION_FAILURE_INVALID_CRYPTO_KEY_HEADER,
-
-    // No public/private key-pair was associated with the app_id.
-    DECRYPTION_FAILURE_NO_KEYS,
-
-    // The public key provided in the Crypto-Key header is invalid.
-    DECRYPTION_FAILURE_INVALID_PUBLIC_KEY,
-
-    // The payload could not be decrypted as AES-128-GCM.
-    DECRYPTION_FAILURE_INVALID_PAYLOAD
-  };
-
-  // Callback to be invoked when a message cannot be decoded.
-  using DecryptionFailedCallback = base::Callback<void(DecryptionFailure)>;
-
-  // Converts |reason| to a string describing the details of said reason.
-  static std::string ToDecryptionFailureDetailsString(DecryptionFailure reason);
+  // Converts |result| to a string describing the details of said result.
+  static std::string ToDecryptionResultDetailsString(DecryptionResult result);
 
   GCMEncryptionProvider();
   ~GCMEncryptionProvider();
@@ -84,14 +92,13 @@ class GCMEncryptionProvider {
   // Determines whether |message| contains encrypted content.
   bool IsEncryptedMessage(const IncomingMessage& message) const;
 
-  // Asynchronously decrypts |message|. The |success_callback| will be invoked
-  // the message could be decrypted successfully, accompanied by the decrypted
-  // payload of the message. When decryption failed, the |failure_callback| will
-  // be invoked with the reason that encryption failed.
+  // Attempts to decrypt the |message|. If the |message| is not encrypted, the
+  // |callback| will be invoked immediately. Otherwise |callback| will be called
+  // asynchronously when |message| has been decrypted. A dispatchable message
+  // will be used in case of success, an empty message in case of failure.
   void DecryptMessage(const std::string& app_id,
                       const IncomingMessage& message,
-                      const MessageDecryptedCallback& success_callback,
-                      const DecryptionFailedCallback& failure_callback);
+                      const MessageCallback& callback);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(GCMEncryptionProviderTest, EncryptionRoundTrip);
@@ -106,8 +113,7 @@ class GCMEncryptionProvider {
                                const std::string& auth_secret);
 
   void DecryptMessageWithKey(const IncomingMessage& message,
-                             const MessageDecryptedCallback& success_callback,
-                             const DecryptionFailedCallback& failure_callback,
+                             const MessageCallback& callback,
                              const std::string& salt,
                              const std::string& dh,
                              uint64_t rs,

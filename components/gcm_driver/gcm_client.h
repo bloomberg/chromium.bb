@@ -269,10 +269,10 @@ class GCMClient {
                     const std::string& receiver_id,
                     const OutgoingMessage& message) = 0;
 
-  // Records a decryption failure due to |reason| for the |app_id|.
+  // Records a decryption failure due to |result| for the |app_id|.
   virtual void RecordDecryptionFailure(
       const std::string& app_id,
-      GCMEncryptionProvider::DecryptionFailure reason) = 0;
+      GCMEncryptionProvider::DecryptionResult result) = 0;
 
   // Enables or disables internal activity recording.
   virtual void SetRecording(bool recording) = 0;

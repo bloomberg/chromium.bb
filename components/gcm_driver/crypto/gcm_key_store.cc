@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/gcm_driver/crypto/p256_key_util.h"
 #include "components/leveldb_proto/proto_database_impl.h"
 #include "crypto/random.h"
@@ -54,7 +55,11 @@ void GCMKeyStore::GetKeysAfterInitialize(const std::string& app_id,
                                          const KeysCallback& callback) {
   DCHECK(state_ == State::INITIALIZED || state_ == State::FAILED);
   const auto& iter = key_pairs_.find(app_id);
-  if (iter == key_pairs_.end() || state_ != State::INITIALIZED) {
+
+  const bool success = state_ == State::INITIALIZED && iter != key_pairs_.end();
+  UMA_HISTOGRAM_BOOLEAN("GCM.Crypto.GetKeySuccessRate", success);
+
+  if (!success) {
     callback.Run(KeyPair(), std::string() /* auth_secret */);
     return;
   }
@@ -128,6 +133,7 @@ void GCMKeyStore::DidStoreKeys(const std::string& app_id,
                                const std::string& auth_secret,
                                const KeysCallback& callback,
                                bool success) {
+  UMA_HISTOGRAM_BOOLEAN("GCM.Crypto.CreateKeySuccessRate", success);
   DCHECK_EQ(0u, key_pairs_.count(app_id));
 
   if (!success) {
@@ -173,7 +179,7 @@ void GCMKeyStore::RemoveKeysAfterInitialize(const std::string& app_id,
 void GCMKeyStore::DidRemoveKeys(const std::string& app_id,
                                 const base::Closure& callback,
                                 bool success) {
-  // TODO(peter): Add a histogram for tracking |success|.
+  UMA_HISTOGRAM_BOOLEAN("GCM.Crypto.RemoveKeySuccessRate", success);
 
   if (success) {
     key_pairs_.erase(app_id);
@@ -206,6 +212,7 @@ void GCMKeyStore::LazyInitialize(const base::Closure& done_closure) {
 }
 
 void GCMKeyStore::DidInitialize(bool success) {
+  UMA_HISTOGRAM_BOOLEAN("GCM.Crypto.InitKeyStoreSuccessRate", success);
   if (!success) {
     DVLOG(1) << "Unable to initialize the GCM Key Store.";
     state_ = State::FAILED;
@@ -220,6 +227,7 @@ void GCMKeyStore::DidInitialize(bool success) {
 
 void GCMKeyStore::DidLoadKeys(bool success,
                               scoped_ptr<std::vector<EncryptionData>> entries) {
+  UMA_HISTOGRAM_BOOLEAN("GCM.Crypto.LoadKeyStoreSuccessRate", success);
   if (!success) {
     DVLOG(1) << "Unable to load entries into the GCM Key Store.";
     state_ = State::FAILED;

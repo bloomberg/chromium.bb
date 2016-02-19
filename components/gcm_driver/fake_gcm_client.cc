@@ -160,8 +160,8 @@ void FakeGCMClient::Send(const std::string& app_id,
 
 void FakeGCMClient::RecordDecryptionFailure(
     const std::string& app_id,
-    GCMEncryptionProvider::DecryptionFailure reason) {
-  recorder_.RecordDecryptionFailure(app_id, reason);
+    GCMEncryptionProvider::DecryptionResult result) {
+  recorder_.RecordDecryptionFailure(app_id, result);
 }
 
 void FakeGCMClient::SetRecording(bool recording) {

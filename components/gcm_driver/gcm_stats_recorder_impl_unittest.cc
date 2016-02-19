@@ -99,8 +99,8 @@ static const char kNotifySendStatusDetails[] = "Msg size: 99 bytes, TTL: 7";
 static const char kIncomingSendErrorEvent[] = "Received 'send error' msg";
 static const char kIncomingSendErrorDetails[] = "";
 
-static const GCMEncryptionProvider::DecryptionFailure kDecryptionFailureReason =
-    GCMEncryptionProvider::DECRYPTION_FAILURE_INVALID_PAYLOAD;
+static const GCMEncryptionProvider::DecryptionResult kDecryptionResultFailure =
+    GCMEncryptionProvider::DECRYPTION_RESULT_INVALID_PAYLOAD;
 
 }  // namespace
 
@@ -302,8 +302,8 @@ class GCMStatsRecorderImplTest : public testing::Test {
 
     EXPECT_EQ(kAppId, queue.front().app_id) << remark;
     EXPECT_EQ(
-        GCMEncryptionProvider::ToDecryptionFailureDetailsString(
-            kDecryptionFailureReason),
+        GCMEncryptionProvider::ToDecryptionResultDetailsString(
+            kDecryptionResultFailure),
         queue.front().details) << remark;
   }
 
@@ -547,7 +547,7 @@ TEST_F(GCMStatsRecorderImplTest, RecordSendingTest) {
 }
 
 TEST_F(GCMStatsRecorderImplTest, RecordDecryptionFailureTest) {
-  recorder_.RecordDecryptionFailure(kAppId, kDecryptionFailureReason);
+  recorder_.RecordDecryptionFailure(kAppId, kDecryptionResultFailure);
   VerifyRecordedDecryptionFailureCount(1);
 
   VerifyRecordedDecryptionFailure("1st call");

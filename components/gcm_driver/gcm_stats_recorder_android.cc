@@ -123,14 +123,16 @@ void GCMStatsRecorderAndroid::RecordDataMessageReceived(
 
 void GCMStatsRecorderAndroid::RecordDecryptionFailure(
     const std::string& app_id,
-    GCMEncryptionProvider::DecryptionFailure reason) {
+    GCMEncryptionProvider::DecryptionResult result) {
+  DCHECK_NE(result, GCMEncryptionProvider::DECRYPTION_RESULT_UNENCRYPTED);
+  DCHECK_NE(result, GCMEncryptionProvider::DECRYPTION_RESULT_DECRYPTED);
   if (!is_recording_)
     return;
 
   DecryptionFailureActivity activity;
   activity.app_id = app_id;
   activity.details =
-      GCMEncryptionProvider::ToDecryptionFailureDetailsString(reason);
+      GCMEncryptionProvider::ToDecryptionResultDetailsString(result);
 
   decryption_failure_activities_.push_front(activity);
   if (decryption_failure_activities_.size() > MAX_LOGGED_ACTIVITY_COUNT)

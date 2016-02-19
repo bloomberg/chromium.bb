@@ -39,9 +39,9 @@ class GCMStatsRecorderImpl : public GCMStatsRecorder {
   // Clear all recorded activities.
   void Clear();
 
-  // Records a message decryption failure caused by |reason| for |app_id|.
+  // Records a message decryption failure caused by |result| for |app_id|.
   void RecordDecryptionFailure(const std::string& app_id,
-                               GCMEncryptionProvider::DecryptionFailure reason);
+                               GCMEncryptionProvider::DecryptionResult result);
 
   // GCMStatsRecorder implementation:
   void RecordCheckinInitiated(uint64_t android_id) override;

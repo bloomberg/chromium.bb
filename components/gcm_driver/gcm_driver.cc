@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/gcm_driver/gcm_app_handler.h"
 
 namespace gcm {
@@ -273,17 +274,33 @@ void GCMDriver::ClearCallbacks() {
 
 void GCMDriver::DispatchMessage(const std::string& app_id,
                                 const IncomingMessage& message) {
-  if (!encryption_provider_.IsEncryptedMessage(message)) {
-    GetAppHandler(app_id)->OnMessage(app_id, message);
-    return;
+  encryption_provider_.DecryptMessage(
+      app_id, message, base::Bind(&GCMDriver::DispatchMessageInternal,
+                                  weak_ptr_factory_.GetWeakPtr(), app_id));
+}
+
+void GCMDriver::DispatchMessageInternal(
+    const std::string& app_id,
+    GCMEncryptionProvider::DecryptionResult result,
+    const IncomingMessage& message) {
+  UMA_HISTOGRAM_ENUMERATION("GCM.Crypto.DecryptMessageResult", result,
+                            GCMEncryptionProvider::DECRYPTION_RESULT_LAST + 1);
+
+  switch (result) {
+    case GCMEncryptionProvider::DECRYPTION_RESULT_UNENCRYPTED:
+    case GCMEncryptionProvider::DECRYPTION_RESULT_DECRYPTED:
+      GetAppHandler(app_id)->OnMessage(app_id, message);
+      return;
+    case GCMEncryptionProvider::DECRYPTION_RESULT_INVALID_ENCRYPTION_HEADER:
+    case GCMEncryptionProvider::DECRYPTION_RESULT_INVALID_CRYPTO_KEY_HEADER:
+    case GCMEncryptionProvider::DECRYPTION_RESULT_NO_KEYS:
+    case GCMEncryptionProvider::DECRYPTION_RESULT_INVALID_SHARED_SECRET:
+    case GCMEncryptionProvider::DECRYPTION_RESULT_INVALID_PAYLOAD:
+      RecordDecryptionFailure(app_id, result);
+      return;
   }
 
-  encryption_provider_.DecryptMessage(
-      app_id, message,
-      base::Bind(&GCMDriver::DispatchMessage,
-                 weak_ptr_factory_.GetWeakPtr(), app_id),
-      base::Bind(&GCMDriver::RecordDecryptionFailure,
-                 weak_ptr_factory_.GetWeakPtr(), app_id));
+  NOTREACHED();
 }
 
 void GCMDriver::RegisterAfterUnregister(

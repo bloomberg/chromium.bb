@@ -17,6 +17,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "base/test/histogram_tester.h"
 #include "components/gcm_driver/common/gcm_messages.h"
 #include "components/gcm_driver/crypto/gcm_key_store.h"
 #include "components/gcm_driver/crypto/gcm_message_cryptographer.h"
@@ -76,62 +77,45 @@ class GCMEncryptionProviderTest : public ::testing::Test {
   }
 
  protected:
-  // Tri-state enumaration listing whether the decryption operation is idle
-  // (hasn't started yet), succeeded or failed.
-  enum DecryptionResult {
-    DECRYPTION_IDLE,
-    DECRYPTION_SUCCEEDED,
-    DECRYPTION_FAILED
-  };
-
   // Decrypts the |message| and then synchronously waits until either the
   // success or failure callbacks has been invoked.
   void Decrypt(const IncomingMessage& message) {
-    decryption_result_ = DECRYPTION_IDLE;
     encryption_provider_->DecryptMessage(
         kExampleAppId, message,
-        base::Bind(&GCMEncryptionProviderTest::OnDecryptionSucceeded,
-                   base::Unretained(this)),
-        base::Bind(&GCMEncryptionProviderTest::OnDecryptionFailed,
+        base::Bind(&GCMEncryptionProviderTest::DidDecryptMessage,
                    base::Unretained(this)));
 
     // The encryption keys will be read asynchronously.
     base::RunLoop().RunUntilIdle();
-
-    ASSERT_NE(decryption_result_, DECRYPTION_IDLE);
   }
 
-  DecryptionResult decryption_result() { return decryption_result_; }
+  // Returns the result of the previous decryption operation.
+  GCMEncryptionProvider::DecryptionResult decryption_result() {
+    return decryption_result_;
+  }
 
+  // Returns the message resulting from the previous decryption operation.
   const IncomingMessage& decrypted_message() { return decrypted_message_; }
-
-  GCMEncryptionProvider::DecryptionFailure failure_reason() {
-    return failure_reason_;
-  }
 
   GCMEncryptionProvider* encryption_provider() {
     return encryption_provider_.get();
   }
 
  private:
-  void OnDecryptionSucceeded(const IncomingMessage& message) {
-    decryption_result_ = DECRYPTION_SUCCEEDED;
+  void DidDecryptMessage(GCMEncryptionProvider::DecryptionResult result,
+                         const IncomingMessage& message) {
+    decryption_result_ = result;
     decrypted_message_ = message;
-  }
-
-  void OnDecryptionFailed(GCMEncryptionProvider::DecryptionFailure reason) {
-    decryption_result_ = DECRYPTION_FAILED;
-    failure_reason_ = reason;
   }
 
   base::MessageLoop message_loop_;
   base::ScopedTempDir scoped_temp_dir_;
+  base::HistogramTester histogram_tester_;
 
   scoped_ptr<GCMEncryptionProvider> encryption_provider_;
 
-  DecryptionResult decryption_result_ = DECRYPTION_IDLE;
-  GCMEncryptionProvider::DecryptionFailure failure_reason_ =
-      GCMEncryptionProvider::DECRYPTION_FAILURE_UNKNOWN;
+  GCMEncryptionProvider::DecryptionResult decryption_result_ =
+      GCMEncryptionProvider::DECRYPTION_RESULT_UNENCRYPTED;
 
   IncomingMessage decrypted_message_;
 };
@@ -169,20 +153,20 @@ TEST_F(GCMEncryptionProviderTest, VerifiesEncryptionHeaderParsing) {
   IncomingMessage invalid_message;
   invalid_message.data["encryption"] = kInvalidEncryptionHeader;
   invalid_message.data["crypto-key"] = kValidCryptoKeyHeader;
+  invalid_message.raw_data = "foo";
 
   ASSERT_NO_FATAL_FAILURE(Decrypt(invalid_message));
-  ASSERT_EQ(DECRYPTION_FAILED, decryption_result());
-  EXPECT_EQ(GCMEncryptionProvider::DECRYPTION_FAILURE_INVALID_ENCRYPTION_HEADER,
-            failure_reason());
+  EXPECT_EQ(GCMEncryptionProvider::DECRYPTION_RESULT_INVALID_ENCRYPTION_HEADER,
+            decryption_result());
 
   IncomingMessage valid_message;
   valid_message.data["encryption"] = kValidEncryptionHeader;
   valid_message.data["crypto-key"] = kInvalidCryptoKeyHeader;
+  valid_message.raw_data = "foo";
 
   ASSERT_NO_FATAL_FAILURE(Decrypt(valid_message));
-  ASSERT_EQ(DECRYPTION_FAILED, decryption_result());
-  EXPECT_NE(GCMEncryptionProvider::DECRYPTION_FAILURE_INVALID_ENCRYPTION_HEADER,
-            failure_reason());
+  EXPECT_NE(GCMEncryptionProvider::DECRYPTION_RESULT_INVALID_ENCRYPTION_HEADER,
+            decryption_result());
 }
 
 TEST_F(GCMEncryptionProviderTest, VerifiesCryptoKeyHeaderParsing) {
@@ -192,20 +176,20 @@ TEST_F(GCMEncryptionProviderTest, VerifiesCryptoKeyHeaderParsing) {
   IncomingMessage invalid_message;
   invalid_message.data["encryption"] = kValidEncryptionHeader;
   invalid_message.data["crypto-key"] = kInvalidCryptoKeyHeader;
+  invalid_message.raw_data = "foo";
 
   ASSERT_NO_FATAL_FAILURE(Decrypt(invalid_message));
-  ASSERT_EQ(DECRYPTION_FAILED, decryption_result());
-  EXPECT_EQ(GCMEncryptionProvider::DECRYPTION_FAILURE_INVALID_CRYPTO_KEY_HEADER,
-            failure_reason());
+  EXPECT_EQ(GCMEncryptionProvider::DECRYPTION_RESULT_INVALID_CRYPTO_KEY_HEADER,
+            decryption_result());
 
   IncomingMessage valid_message;
   valid_message.data["encryption"] = kInvalidEncryptionHeader;
   valid_message.data["crypto-key"] = kValidCryptoKeyHeader;
+  valid_message.raw_data = "foo";
 
   ASSERT_NO_FATAL_FAILURE(Decrypt(valid_message));
-  ASSERT_EQ(DECRYPTION_FAILED, decryption_result());
-  EXPECT_NE(GCMEncryptionProvider::DECRYPTION_FAILURE_INVALID_CRYPTO_KEY_HEADER,
-            failure_reason());
+  EXPECT_NE(GCMEncryptionProvider::DECRYPTION_RESULT_INVALID_CRYPTO_KEY_HEADER,
+            decryption_result());
 }
 
 TEST_F(GCMEncryptionProviderTest, VerifiesExistingKeys) {
@@ -215,11 +199,11 @@ TEST_F(GCMEncryptionProviderTest, VerifiesExistingKeys) {
   IncomingMessage message;
   message.data["encryption"] = kValidEncryptionHeader;
   message.data["crypto-key"] = kValidCryptoKeyHeader;
+  message.raw_data = "foo";
 
   ASSERT_NO_FATAL_FAILURE(Decrypt(message));
-  ASSERT_EQ(DECRYPTION_FAILED, decryption_result());
-  EXPECT_EQ(GCMEncryptionProvider::DECRYPTION_FAILURE_NO_KEYS,
-            failure_reason());
+  EXPECT_EQ(GCMEncryptionProvider::DECRYPTION_RESULT_NO_KEYS,
+            decryption_result());
 
   std::string public_key, auth_secret;
   encryption_provider()->GetEncryptionInfo(
@@ -234,9 +218,8 @@ TEST_F(GCMEncryptionProviderTest, VerifiesExistingKeys) {
   ASSERT_GT(auth_secret.size(), 0u);
 
   ASSERT_NO_FATAL_FAILURE(Decrypt(message));
-  ASSERT_EQ(DECRYPTION_FAILED, decryption_result());
-  EXPECT_NE(GCMEncryptionProvider::DECRYPTION_FAILURE_NO_KEYS,
-            failure_reason());
+  EXPECT_NE(GCMEncryptionProvider::DECRYPTION_RESULT_NO_KEYS,
+            decryption_result());
 }
 
 TEST_F(GCMEncryptionProviderTest, EncryptionRoundTrip) {
@@ -312,7 +295,8 @@ TEST_F(GCMEncryptionProviderTest, EncryptionRoundTrip) {
 
   // Decrypt the message, and expect everything to go wonderfully well.
   ASSERT_NO_FATAL_FAILURE(Decrypt(message));
-  ASSERT_EQ(DECRYPTION_SUCCEEDED, decryption_result());
+  ASSERT_EQ(GCMEncryptionProvider::DECRYPTION_RESULT_DECRYPTED,
+            decryption_result());
 
   EXPECT_TRUE(decrypted_message().decrypted);
   EXPECT_EQ(kExampleMessage, decrypted_message().raw_data);

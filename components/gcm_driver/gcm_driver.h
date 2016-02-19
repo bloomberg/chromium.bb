@@ -260,7 +260,7 @@ class GCMDriver {
   // Platform-specific implementation of recording message decryption failures.
   virtual void RecordDecryptionFailure(
       const std::string& app_id,
-      GCMEncryptionProvider::DecryptionFailure reason) = 0;
+      GCMEncryptionProvider::DecryptionResult result) = 0;
 
   // Runs the Register callback.
   void RegisterFinished(const std::string& app_id,
@@ -297,6 +297,13 @@ class GCMDriver {
   void UnregisterInternal(const std::string& app_id,
                           const std::string* sender_id,
                           const UnregisterCallback& callback);
+
+  // Dispatches the OnMessage event to the app handler associated with |app_id|
+  // if |result| indicates that it is safe to do so, or will report a decryption
+  // failure for the |app_id| otherwise.
+  void DispatchMessageInternal(const std::string& app_id,
+                               GCMEncryptionProvider::DecryptionResult result,
+                               const IncomingMessage& message);
 
   // Called after unregistration completes in order to trigger the pending
   // registration.

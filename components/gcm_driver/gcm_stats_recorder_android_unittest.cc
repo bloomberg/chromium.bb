@@ -57,7 +57,7 @@ TEST_F(GCMStatsRecorderAndroidTest, RecordsAndCallsDelegate) {
   EXPECT_EQ(5u, activity_recorded_calls());
 
   recorder.RecordDecryptionFailure(
-      kTestAppId, GCMEncryptionProvider::DECRYPTION_FAILURE_INVALID_PAYLOAD);
+      kTestAppId, GCMEncryptionProvider::DECRYPTION_RESULT_INVALID_PAYLOAD);
   EXPECT_EQ(6u, activity_recorded_calls());
 
   RecordedActivities activities;

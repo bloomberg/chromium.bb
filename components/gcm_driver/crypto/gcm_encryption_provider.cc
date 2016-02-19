@@ -29,25 +29,27 @@ const base::FilePath::CharType kEncryptionDirectoryName[] =
 
 }  // namespace
 
-std::string GCMEncryptionProvider::ToDecryptionFailureDetailsString(
-    DecryptionFailure reason) {
-  switch(reason) {
-    case DECRYPTION_FAILURE_UNKNOWN:
-      return "Unknown failure";
-    case DECRYPTION_FAILURE_INVALID_ENCRYPTION_HEADER:
+std::string GCMEncryptionProvider::ToDecryptionResultDetailsString(
+    DecryptionResult result) {
+  switch(result) {
+    case DECRYPTION_RESULT_UNENCRYPTED:
+      return "Message was not encrypted";
+    case DECRYPTION_RESULT_DECRYPTED:
+      return "Message decrypted";
+    case DECRYPTION_RESULT_INVALID_ENCRYPTION_HEADER:
       return "Invalid format for the Encryption header";
-    case DECRYPTION_FAILURE_INVALID_CRYPTO_KEY_HEADER:
+    case DECRYPTION_RESULT_INVALID_CRYPTO_KEY_HEADER:
       return "Invalid format for the Crypto-Key header";
-    case DECRYPTION_FAILURE_NO_KEYS:
+    case DECRYPTION_RESULT_NO_KEYS:
       return "There are no associated keys with the subscription";
-    case DECRYPTION_FAILURE_INVALID_PUBLIC_KEY:
-      return "The public key in the Crypto-Key header is invalid";
-    case DECRYPTION_FAILURE_INVALID_PAYLOAD:
+    case DECRYPTION_RESULT_INVALID_SHARED_SECRET:
+      return "The shared secret cannot be derived from the keying material";
+    case DECRYPTION_RESULT_INVALID_PAYLOAD:
       return "AES-GCM decryption failed";
   }
 
   NOTREACHED();
-  return "(invalid reason)";
+  return "(invalid result)";
 }
 
 GCMEncryptionProvider::GCMEncryptionProvider()
@@ -103,14 +105,18 @@ bool GCMEncryptionProvider::IsEncryptedMessage(const IncomingMessage& message)
 void GCMEncryptionProvider::DecryptMessage(
     const std::string& app_id,
     const IncomingMessage& message,
-    const MessageDecryptedCallback& success_callback,
-    const DecryptionFailedCallback& failure_callback) {
+    const MessageCallback& callback) {
   DCHECK(key_store_);
+  if (!IsEncryptedMessage(message)) {
+    callback.Run(DECRYPTION_RESULT_UNENCRYPTED, message);
+    return;
+  }
 
+  // IsEncryptedMessage() verifies that both the Encryption and Crypto-Key HTTP
+  // headers have been provided for the |message|.
   const auto& encryption_header = message.data.find(kEncryptionProperty);
   const auto& crypto_key_header = message.data.find(kCryptoKeyProperty);
 
-  // Callers are expected to call IsEncryptedMessage() prior to this method.
   DCHECK(encryption_header != message.data.end());
   DCHECK(crypto_key_header != message.data.end());
 
@@ -118,7 +124,8 @@ void GCMEncryptionProvider::DecryptMessage(
   if (!ParseEncryptionHeader(encryption_header->second,
                              &encryption_header_values)) {
     DLOG(ERROR) << "Unable to parse the value of the Encryption header";
-    failure_callback.Run(DECRYPTION_FAILURE_INVALID_ENCRYPTION_HEADER);
+    callback.Run(DECRYPTION_RESULT_INVALID_ENCRYPTION_HEADER,
+                 IncomingMessage());
     return;
   }
 
@@ -126,7 +133,8 @@ void GCMEncryptionProvider::DecryptMessage(
       encryption_header_values[0].salt.size() !=
           GCMMessageCryptographer::kSaltSize) {
     DLOG(ERROR) << "Invalid values supplied in the Encryption header";
-    failure_callback.Run(DECRYPTION_FAILURE_INVALID_ENCRYPTION_HEADER);
+    callback.Run(DECRYPTION_RESULT_INVALID_ENCRYPTION_HEADER,
+                 IncomingMessage());
     return;
   }
 
@@ -134,22 +142,23 @@ void GCMEncryptionProvider::DecryptMessage(
   if (!ParseCryptoKeyHeader(crypto_key_header->second,
                             &crypto_key_header_values)) {
     DLOG(ERROR) << "Unable to parse the value of the Crypto-Key header";
-    failure_callback.Run(DECRYPTION_FAILURE_INVALID_CRYPTO_KEY_HEADER);
+    callback.Run(DECRYPTION_RESULT_INVALID_CRYPTO_KEY_HEADER,
+                 IncomingMessage());
     return;
   }
 
   if (crypto_key_header_values.size() != 1u ||
       !crypto_key_header_values[0].dh.size()) {
     DLOG(ERROR) << "Invalid values supplied in the Crypto-Key header";
-    failure_callback.Run(DECRYPTION_FAILURE_INVALID_CRYPTO_KEY_HEADER);
+    callback.Run(DECRYPTION_RESULT_INVALID_CRYPTO_KEY_HEADER,
+                 IncomingMessage());
     return;
   }
 
   key_store_->GetKeys(
       app_id, base::Bind(&GCMEncryptionProvider::DecryptMessageWithKey,
                          weak_ptr_factory_.GetWeakPtr(), message,
-                         success_callback, failure_callback,
-                         encryption_header_values[0].salt,
+                         callback, encryption_header_values[0].salt,
                          crypto_key_header_values[0].dh,
                          encryption_header_values[0].rs));
 }
@@ -186,8 +195,7 @@ void GCMEncryptionProvider::DidCreateEncryptionInfo(
 
 void GCMEncryptionProvider::DecryptMessageWithKey(
     const IncomingMessage& message,
-    const MessageDecryptedCallback& success_callback,
-    const DecryptionFailedCallback& failure_callback,
+    const MessageCallback& callback,
     const std::string& salt,
     const std::string& dh,
     uint64_t rs,
@@ -195,7 +203,7 @@ void GCMEncryptionProvider::DecryptMessageWithKey(
     const std::string& auth_secret) {
   if (!pair.IsInitialized()) {
     DLOG(ERROR) << "Unable to retrieve the keys for the incoming message.";
-    failure_callback.Run(DECRYPTION_FAILURE_NO_KEYS);
+    callback.Run(DECRYPTION_RESULT_NO_KEYS, IncomingMessage());
     return;
   }
 
@@ -205,7 +213,7 @@ void GCMEncryptionProvider::DecryptMessageWithKey(
   if (!ComputeSharedP256Secret(pair.private_key(), pair.public_key_x509(), dh,
                                &shared_secret)) {
     DLOG(ERROR) << "Unable to calculate the shared secret.";
-    failure_callback.Run(DECRYPTION_FAILURE_INVALID_PUBLIC_KEY);
+    callback.Run(DECRYPTION_RESULT_INVALID_SHARED_SECRET, IncomingMessage());
     return;
   }
 
@@ -216,7 +224,7 @@ void GCMEncryptionProvider::DecryptMessageWithKey(
   if (!cryptographer.Decrypt(message.raw_data, shared_secret, salt, rs,
                              &plaintext)) {
     DLOG(ERROR) << "Unable to decrypt the incoming data.";
-    failure_callback.Run(DECRYPTION_FAILURE_INVALID_PAYLOAD);
+    callback.Run(DECRYPTION_RESULT_INVALID_PAYLOAD, IncomingMessage());
     return;
   }
 
@@ -230,7 +238,7 @@ void GCMEncryptionProvider::DecryptMessageWithKey(
   // to make sure that we don't end up in an infinite decryption loop.
   DCHECK_EQ(0u, decrypted_message.data.size());
 
-  success_callback.Run(decrypted_message);
+  callback.Run(DECRYPTION_RESULT_DECRYPTED, decrypted_message);
 }
 
 }  // namespace gcm

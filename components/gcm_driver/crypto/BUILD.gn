@@ -76,6 +76,7 @@ source_set("unit_tests") {
   deps = [
     ":crypto",
     "//base",
+    "//base/test:test_support",
     "//components/gcm_driver/common",
     "//crypto",
     "//crypto:platform",

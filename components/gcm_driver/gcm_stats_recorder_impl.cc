@@ -173,7 +173,9 @@ void GCMStatsRecorderImpl::NotifyActivityRecorded() {
 
 void GCMStatsRecorderImpl::RecordDecryptionFailure(
     const std::string& app_id,
-    GCMEncryptionProvider::DecryptionFailure reason) {
+    GCMEncryptionProvider::DecryptionResult result) {
+  DCHECK_NE(result, GCMEncryptionProvider::DECRYPTION_RESULT_UNENCRYPTED);
+  DCHECK_NE(result, GCMEncryptionProvider::DECRYPTION_RESULT_DECRYPTED);
   if (!is_recording_)
     return;
 
@@ -182,7 +184,7 @@ void GCMStatsRecorderImpl::RecordDecryptionFailure(
       &decryption_failure_activities_, data);
   inserted_data->app_id = app_id;
   inserted_data->details =
-      GCMEncryptionProvider::ToDecryptionFailureDetailsString(reason);
+      GCMEncryptionProvider::ToDecryptionResultDetailsString(result);
 
   NotifyActivityRecorded();
 }

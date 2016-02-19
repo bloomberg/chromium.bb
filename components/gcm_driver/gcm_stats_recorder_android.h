@@ -59,9 +59,9 @@ class GCMStatsRecorderAndroid {
   void RecordDataMessageReceived(const std::string& app_id,
                                  int message_byte_size);
 
-  // Records a message decryption failure caused by |reason| for |app_id|.
+  // Records a message decryption failure caused by |result| for |app_id|.
   void RecordDecryptionFailure(const std::string& app_id,
-                               GCMEncryptionProvider::DecryptionFailure reason);
+                               GCMEncryptionProvider::DecryptionResult result);
 
   bool is_recording() const { return is_recording_; }
   void set_is_recording(bool recording) { is_recording_ = recording; }

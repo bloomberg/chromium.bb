@@ -14915,6 +14915,49 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="GCM.Crypto.CreateKeySuccessRate" enum="BooleanSuccess">
+  <owner>peter@chromium.org</owner>
+  <summary>
+    Success rate of writing new keying material to the GCM key store.
+  </summary>
+</histogram>
+
+<histogram name="GCM.Crypto.DecryptMessageResult" enum="GCMDecryptionResult">
+  <owner>peter@chromium.org</owner>
+  <summary>
+    Result of decryption on a received GCM message, which includes unencrypted
+    messages, successfully decrypted messages and decryption failures.
+  </summary>
+</histogram>
+
+<histogram name="GCM.Crypto.GetKeySuccessRate" enum="BooleanSuccess">
+  <owner>peter@chromium.org</owner>
+  <summary>
+    Success rate of reading keying material from the GCM key store.
+  </summary>
+</histogram>
+
+<histogram name="GCM.Crypto.InitKeyStoreSuccessRate" enum="BooleanSuccess">
+  <owner>peter@chromium.org</owner>
+  <summary>
+    Success rate of initializing the LevelDB back-end of the GCM key store.
+  </summary>
+</histogram>
+
+<histogram name="GCM.Crypto.LoadKeyStoreSuccessRate" enum="BooleanSuccess">
+  <owner>peter@chromium.org</owner>
+  <summary>
+    Success rate of loading existing keying material in the GCM key store.
+  </summary>
+</histogram>
+
+<histogram name="GCM.Crypto.RemoveKeySuccessRate" enum="BooleanSuccess">
+  <owner>peter@chromium.org</owner>
+  <summary>
+    Success rate of removing keying material from the GCM key store.
+  </summary>
+</histogram>
+
 <histogram name="GCM.Database.Open" enum="LevelDBStatus">
   <owner>cmumford@chromium.org</owner>
   <summary>The result of a database open attempt by the GCM store.</summary>
@@ -68061,6 +68104,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="3" label="Socket failure"/>
   <int value="4" label="Network change"/>
   <int value="5" label="New heartbeat interval"/>
+</enum>
+
+<enum name="GCMDecryptionResult" type="int">
+  <int value="0" label="Success (message unencrypted)"/>
+  <int value="1" label="Success (message decrypted)"/>
+  <int value="2" label="Failure (invalid Encryption HTTP header)"/>
+  <int value="3" label="Failure (invalid Crypto-Key HTTP header)"/>
+  <int value="4" label="Failure (no keying material available)"/>
+  <int value="5" label="Failure (unable to compute the shared secret)"/>
+  <int value="6" label="Failure (unable to decrypt using AES-GCM)"/>
 </enum>
 
 <enum name="GCMEndpoints" type="int">

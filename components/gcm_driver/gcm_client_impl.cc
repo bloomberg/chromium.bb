@@ -1154,8 +1154,8 @@ std::string GCMClientImpl::GetStateString() const {
 
 void GCMClientImpl::RecordDecryptionFailure(
     const std::string& app_id,
-    GCMEncryptionProvider::DecryptionFailure reason) {
-  recorder_.RecordDecryptionFailure(app_id, reason);
+    GCMEncryptionProvider::DecryptionResult result) {
+  recorder_.RecordDecryptionFailure(app_id, result);
 }
 
 void GCMClientImpl::SetRecording(bool recording) {

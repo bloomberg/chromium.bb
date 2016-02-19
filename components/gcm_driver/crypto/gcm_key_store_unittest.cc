@@ -9,6 +9,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/histogram_tester.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/gcm_driver/crypto/p256_key_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -54,15 +55,22 @@ class GCMKeyStoreTest : public ::testing::Test {
 
  protected:
   GCMKeyStore* gcm_key_store() { return gcm_key_store_.get(); }
+  base::HistogramTester* histogram_tester() { return &histogram_tester_; }
 
  private:
   base::MessageLoop message_loop_;
   base::ScopedTempDir scoped_temp_dir_;
+  base::HistogramTester histogram_tester_;
 
   scoped_ptr<GCMKeyStore> gcm_key_store_;
 };
 
-TEST_F(GCMKeyStoreTest, CreatedByDefault) {
+TEST_F(GCMKeyStoreTest, EmptyByDefault) {
+  // The key store is initialized lazily, so this histogram confirms that
+  // calling the constructor does not in fact cause initialization.
+  histogram_tester()->ExpectTotalCount(
+      "GCM.Crypto.InitKeyStoreSuccessRate", 0);
+
   KeyPair pair;
   std::string auth_secret;
   gcm_key_store()->GetKeys(kFakeAppId,
@@ -75,6 +83,9 @@ TEST_F(GCMKeyStoreTest, CreatedByDefault) {
   ASSERT_FALSE(pair.IsInitialized());
   EXPECT_FALSE(pair.has_type());
   EXPECT_EQ(0u, auth_secret.size());
+
+  histogram_tester()->ExpectBucketCount(
+      "GCM.Crypto.GetKeySuccessRate", 0, 1);  // failure
 }
 
 TEST_F(GCMKeyStoreTest, CreateAndGetKeys) {
@@ -96,6 +107,9 @@ TEST_F(GCMKeyStoreTest, CreateAndGetKeys) {
 
   ASSERT_GT(auth_secret.size(), 0u);
 
+  histogram_tester()->ExpectBucketCount(
+      "GCM.Crypto.CreateKeySuccessRate", 1, 1);  // success
+
   KeyPair read_pair;
   std::string read_auth_secret;
   gcm_key_store()->GetKeys(kFakeAppId,
@@ -112,6 +126,9 @@ TEST_F(GCMKeyStoreTest, CreateAndGetKeys) {
   EXPECT_EQ(pair.public_key(), read_pair.public_key());
 
   EXPECT_EQ(auth_secret, read_auth_secret);
+
+  histogram_tester()->ExpectBucketCount(
+      "GCM.Crypto.GetKeySuccessRate", 1, 1);  // failure
 }
 
 TEST_F(GCMKeyStoreTest, KeysPersistenceBetweenInstances) {
@@ -125,6 +142,11 @@ TEST_F(GCMKeyStoreTest, KeysPersistenceBetweenInstances) {
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(pair.IsInitialized());
+
+  histogram_tester()->ExpectBucketCount(
+      "GCM.Crypto.InitKeyStoreSuccessRate", 1, 1);  // success
+  histogram_tester()->ExpectBucketCount(
+      "GCM.Crypto.LoadKeyStoreSuccessRate", 1, 1);  // success
 
   // Create a new GCM Key Store instance.
   CreateKeyStore();
@@ -141,6 +163,11 @@ TEST_F(GCMKeyStoreTest, KeysPersistenceBetweenInstances) {
   ASSERT_TRUE(read_pair.IsInitialized());
   EXPECT_TRUE(read_pair.has_type());
   EXPECT_GT(read_auth_secret.size(), 0u);
+
+  histogram_tester()->ExpectBucketCount(
+      "GCM.Crypto.InitKeyStoreSuccessRate", 1, 2);  // success
+  histogram_tester()->ExpectBucketCount(
+      "GCM.Crypto.LoadKeyStoreSuccessRate", 1, 2);  // success
 }
 
 TEST_F(GCMKeyStoreTest, CreateAndRemoveKeys) {
@@ -170,6 +197,9 @@ TEST_F(GCMKeyStoreTest, CreateAndRemoveKeys) {
   gcm_key_store()->RemoveKeys(kFakeAppId, base::Bind(&base::DoNothing));
 
   base::RunLoop().RunUntilIdle();
+
+  histogram_tester()->ExpectBucketCount(
+      "GCM.Crypto.RemoveKeySuccessRate", 1, 1);  // success
 
   gcm_key_store()->GetKeys(kFakeAppId,
                            base::Bind(&GCMKeyStoreTest::GotKeys,
