@@ -68,7 +68,9 @@ void ArcNotificationManager::SendNotificationRemovedFromChrome(
     return;
   }
 
-  items_.erase(it);
+  // The removed ArcNotificationItem needs to live in this scope, since the
+  // given argument |key| may be a part of the removed item.
+  scoped_ptr<ArcNotificationItem> item(items_.take_and_erase(it));
 
   auto notifications_instance = arc_bridge_service()->notifications_instance();
 
