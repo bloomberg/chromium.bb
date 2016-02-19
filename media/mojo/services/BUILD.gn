@@ -13,20 +13,33 @@ import("//mojo/public/mojo_application.gni")
 # - unittests: Unit tests for a particular class/file.
 # - test: Tests for a particular app, e.g. media.
 
-config("enable_mojo_media_config") {
-  assert(enable_mojo_media == "none" || enable_mojo_media == "browser" ||
-         enable_mojo_media == "gpu" || enable_mojo_media == "utility")
-
-  if (enable_mojo_media != "none") {
+config("mojo_media_config") {
+  if (!enable_mojo_media) {
+    assert(mojo_media_services == [], "Mojo media is not enabled")
+    assert(mojo_media_host == "none", "Mojo media is not enabled")
+  } else {
     defines = [ "ENABLE_MOJO_MEDIA" ]
-  }
 
-  if (enable_mojo_media == "browser") {
-    defines += [ "ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS" ]
-  } else if (enable_mojo_media == "gpu") {
-    defines += [ "ENABLE_MOJO_MEDIA_IN_GPU_PROCESS" ]
-  } else if (enable_mojo_media == "utility") {
-    defines += [ "ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS" ]
+    assert(mojo_media_services != [], "No mojo media service specified")
+    foreach(service, mojo_media_services) {
+      if (service == "renderer") {
+        defines += [ "ENABLE_MOJO_RENDERER" ]
+      } else if (service == "cdm") {
+        defines += [ "ENABLE_MOJO_CDM" ]
+      } else {
+        assert(false, "Invalid mojo media service: $service")
+      }
+    }
+
+    if (mojo_media_host == "browser") {
+      defines += [ "ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS" ]
+    } else if (mojo_media_host == "gpu") {
+      defines += [ "ENABLE_MOJO_MEDIA_IN_GPU_PROCESS" ]
+    } else if (mojo_media_host == "utility") {
+      defines += [ "ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS" ]
+    } else {
+      assert(false, "Invalid mojo media host: $mojo_media_host")
+    }
   }
 }
 
@@ -66,7 +79,7 @@ source_set("proxy") {
     "mojo_type_trait.h",
   ]
 
-  public_configs = [ ":enable_mojo_media_config" ]
+  public_configs = [ ":mojo_media_config" ]
 
   deps = [
     ":converters",
@@ -115,7 +128,7 @@ source_set("cdm_service") {
   # which is a bit hacky since we need to access CdmService directly
   # from C++ code (AVDA). In the future we'll make those decoders part of
   # MojoMediaApplication, then we won't need this.
-  public_configs = [ ":enable_mojo_media_config" ]
+  public_configs = [ ":mojo_media_config" ]
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 }
@@ -150,7 +163,7 @@ source_set("application") {
     "service_factory_impl.h",
   ]
 
-  public_configs = [ ":enable_mojo_media_config" ]
+  public_configs = [ ":mojo_media_config" ]
 
   deps = [
     ":cdm_service",
@@ -167,7 +180,7 @@ source_set("application_factory") {
     "mojo_media_application_factory.h",
   ]
 
-  public_configs = [ ":enable_mojo_media_config" ]
+  public_configs = [ ":mojo_media_config" ]
 
   deps = [
     ":application",

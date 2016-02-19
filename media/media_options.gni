@@ -44,22 +44,11 @@ declare_args() {
   # platform. Enable by default for Chromecast.
   enable_hevc_demuxing = proprietary_codecs && is_chromecast
 
-  # Experiment to enable mojo media application: http://crbug.com/431776
-  # Valid options are:
-  # - "none": Do not use mojo media application.
-  # - "browser": Use mojo media application hosted in the browser process.
-  # - "gpu": Use mojo media application hosted in the gpu process.
-  # - "utility": Use mojo media application hosted in the utility process.
-  enable_mojo_media = "none"
-
-  # Enable the TestMojoMediaClient to be used in MojoMediaApplication. This is
-  # for testing only and will override the default platform MojoMediaClient.
-  enable_test_mojo_media_client = false
-
   # TODO(GYP): This should be a platform define.
   is_openbsd = false
 }
 
+# Use a second declare_args() to pick up possible overrides of |use_cras|.
 declare_args() {
   # Enables runtime selection of PulseAudio library.
   use_pulseaudio = false
@@ -74,6 +63,58 @@ declare_args() {
     # Pulse is not supported on Chromecast platforms.
     if (!use_cras && !is_chromecast) {
       use_pulseaudio = true
+    }
+  }
+}
+
+declare_args() {
+  # Experiment to enable mojo media services (e.g. "renderer", "cdm", see
+  # |mojo_media_services|). When enabled, selected mojo paths will be enabled in
+  # the media pipeline and corresponding services will hosted in the selected
+  # remote process (e.g. "utility" process, see |mojo_media_host|).
+  enable_mojo_media = false
+
+  # Enable the TestMojoMediaClient to be used in MojoMediaApplication. This is
+  # for testing only and will override the default platform MojoMediaClient.
+  enable_test_mojo_media_client = false
+}
+
+# Use a second declare_args() to pick up possible overrides of enable_mojo_media
+# from --args command line flags. See "gn help declare_args".
+declare_args() {
+  # A list of mojo media services that should be used in the media pipeline.
+  # Must not be empty if |enable_mojo_media| is true.
+  # Valid entries in the list are:
+  # - "renderer": Use mojo based media Renderer service.
+  # - "cdm": Use mojo based Content Decryption Module.
+  # TODO(xhwang): Support mojo base audio/video decoders here.
+  # See http://crbug.com/542910 and http://crbug.com/522298
+  mojo_media_services = []
+
+  # The process to host the mojo media application.
+  # Valid options are:
+  # - "none": Do not use mojo media application.
+  # - "browser": Use mojo media application hosted in the browser process.
+  # - "gpu": Use mojo media application hosted in the gpu process.
+  # - "utility": Use mojo media application hosted in the utility process.
+  mojo_media_host = "none"
+
+  # Default mojo_media_services and mojo_media_host on various platforms.
+  # Can be overridden by gn build arguments from the --args command line flag
+  # for local testing.
+  if (enable_mojo_media) {
+    if (is_android) {
+      mojo_media_services = [ "cdm" ]
+      mojo_media_host = "gpu"
+    } else if (is_chromecast) {
+      mojo_media_services = [
+        "cdm",
+        "renderer",
+      ]
+      mojo_media_host = "browser"
+    } else {
+      mojo_media_services = [ "cdm" ]
+      mojo_media_host = "utility"
     }
   }
 }

@@ -94,7 +94,6 @@
 #include "content/renderer/internal_document_state_data.h"
 #include "content/renderer/manifest/manifest_manager.h"
 #include "content/renderer/media/audio_device_factory.h"
-#include "content/renderer/media/cdm/render_cdm_factory.h"
 #include "content/renderer/media/media_permission_dispatcher.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/media_stream_renderer_factory_impl.h"
@@ -217,13 +216,18 @@
 #endif
 
 #if defined(ENABLE_MOJO_MEDIA)
-#include "media/mojo/services/mojo_cdm_factory.h"  // nogncheck
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/shell/public/cpp/connect.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
 #endif
 
-#if defined(ENABLE_MOJO_MEDIA) && !defined(OS_ANDROID)
+#if defined(ENABLE_MOJO_CDM)
+#include "media/mojo/services/mojo_cdm_factory.h"  // nogncheck
+#else
+#include "content/renderer/media/cdm/render_cdm_factory.h"
+#endif
+
+#if defined(ENABLE_MOJO_RENDERER)
 #include "media/mojo/services/mojo_renderer_factory.h"  // nogncheck
 #else
 #include "media/renderers/default_renderer_factory.h"
@@ -2522,7 +2526,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
   }
 #endif  // defined(OS_ANDROID)
 
-#if defined(ENABLE_MOJO_MEDIA) && !defined(OS_ANDROID)
+#if defined(ENABLE_MOJO_RENDERER)
   scoped_ptr<media::RendererFactory> media_renderer_factory(
       new media::MojoRendererFactory(GetMediaServiceFactory()));
 #else
@@ -2535,7 +2539,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
         media_log, render_thread->GetGpuFactories(),
         *render_thread->GetAudioHardwareConfig()));
   }
-#endif  // defined(ENABLE_MOJO_MEDIA) && !defined(OS_ANDROID)
+#endif  // defined(ENABLE_MOJO_RENDERER)
 
   if (!url_index_.get() || url_index_->frame() != frame_)
     url_index_.reset(new media::UrlIndex(frame_));
@@ -5993,7 +5997,7 @@ void RenderFrameImpl::OnMediaServiceFactoryConnectionError() {
   // this.
   // media_service_factory_.reset();
 }
-#endif
+#endif  // defined(ENABLE_MOJO_MEDIA)
 
 bool RenderFrameImpl::AreSecureCodecsSupported() {
 #if defined(OS_ANDROID)
@@ -6014,7 +6018,7 @@ media::CdmFactory* RenderFrameImpl::GetCdmFactory() {
   if (!cdm_factory_) {
     DCHECK(frame_);
 
-#if defined(ENABLE_MOJO_MEDIA)
+#if defined(ENABLE_MOJO_CDM)
     cdm_factory_.reset(new media::MojoCdmFactory(GetMediaServiceFactory()));
 #else
     cdm_factory_.reset(new RenderCdmFactory(
@@ -6023,8 +6027,8 @@ media::CdmFactory* RenderFrameImpl::GetCdmFactory() {
 #elif defined(ENABLE_BROWSER_CDMS)
         cdm_manager_
 #endif
-        ));
-#endif  //  defined(ENABLE_MOJO_MEDIA)
+            ));
+#endif  //  defined(ENABLE_MOJO_CDM)
   }
 
   return cdm_factory_.get();

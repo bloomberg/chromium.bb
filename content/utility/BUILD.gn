@@ -31,7 +31,7 @@ source_set("utility") {
     "//url",
   ]
 
-  if (enable_mojo_media == "utility") {
+  if (mojo_media_host == "utility") {
     deps += [ "//media/mojo/services:application_factory" ]
   }
 }

@@ -15,7 +15,7 @@ source_set("media") {
     "media_pipeline_host.h",
   ]
 
-  if (enable_mojo_media == "browser") {
+  if (mojo_media_host == "browser") {
     sources += [
       "cast_mojo_media_client.cc",
       "cast_mojo_media_client.h",
@@ -28,7 +28,7 @@ source_set("media") {
     public_configs = [ "//chromecast:playready_config" ]
   }
 
-  if (enable_mojo_media == "browser") {
+  if (mojo_media_host == "browser") {
     public_deps = [
       "//media/mojo/services:application",
     ]

@@ -374,7 +374,7 @@ source_set("common") {
       ]
     }
 
-    if (enable_mojo_media == "gpu") {
+    if (mojo_media_host == "gpu") {
       deps += [ "//media/mojo/services:cdm_service" ]
     }
   }

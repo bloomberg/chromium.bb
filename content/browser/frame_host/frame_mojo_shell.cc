@@ -14,7 +14,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/content_client.h"
 
-#if defined(OS_ANDROID) && defined(ENABLE_MOJO_MEDIA)
+#if defined(OS_ANDROID) && defined(ENABLE_MOJO_CDM)
 #include "content/browser/media/android/provision_fetcher_impl.h"
 #endif
 
@@ -24,7 +24,7 @@ namespace {
 
 void RegisterFrameMojoShellServices(ServiceRegistry* registry,
                                     RenderFrameHost* render_frame_host) {
-#if defined(OS_ANDROID) && defined(ENABLE_MOJO_MEDIA)
+#if defined(OS_ANDROID) && defined(ENABLE_MOJO_CDM)
   registry->AddService(
       base::Bind(&ProvisionFetcherImpl::Create, render_frame_host));
 #endif

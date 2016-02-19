@@ -53,7 +53,7 @@ source_set("gpu_sources") {
     "//content/common:mojo_bindings",
   ]
 
-  if (enable_mojo_media == "gpu") {
+  if (mojo_media_host == "gpu") {
     deps += [ "//media/mojo/services:application_factory" ]
   }
 
