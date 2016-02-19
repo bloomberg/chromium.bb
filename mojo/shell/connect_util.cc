@@ -21,8 +21,8 @@ ScopedMessagePipeHandle ConnectToInterfaceByName(
   shell::mojom::InterfaceProviderPtr remote_interfaces;
   scoped_ptr<ConnectToApplicationParams> params(new ConnectToApplicationParams);
   params->set_source(source);
-  params->SetTarget(Identity(application_url, std::string(),
-                             GetPermissiveCapabilityFilter()));
+  params->set_target(Identity(application_url, std::string(),
+                              GetPermissiveCapabilityFilter()));
   params->set_remote_interfaces(GetProxy(&remote_interfaces));
   application_manager->ConnectToApplication(std::move(params));
   MessagePipe pipe;

@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "mojo/shell/identity.h"
 #include "mojo/shell/public/interfaces/interface_provider.mojom.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
@@ -33,22 +32,12 @@ class ConnectToApplicationParams {
   void SetSource(ApplicationInstance* source);
 
   // The following methods set both |target_| and |target_url_request_|.
-  void SetTarget(const Identity& target);
   void SetTargetURL(const GURL& target_url);
-  void SetTargetURLRequest(URLRequestPtr request);
-  void SetTargetURLRequest(URLRequestPtr request, const Identity& target);
 
   void set_source(const Identity& source) { source_ = source;  }
   const Identity& source() const { return source_; }
+  void set_target(const Identity& target) { target_ = target; }
   const Identity& target() const { return target_; }
-
-  const URLRequest* target_url_request() const {
-    return target_url_request_.get();
-  }
-  // NOTE: This doesn't reset |target_|.
-  URLRequestPtr TakeTargetURLRequest() {
-    return std::move(target_url_request_);
-  }
 
   void set_remote_interfaces(shell::mojom::InterfaceProviderRequest value) {
     remote_interfaces_ = std::move(value);
@@ -86,10 +75,6 @@ class ConnectToApplicationParams {
   Identity source_;
   // The identity of the application being connected to.
   Identity target_;
-  // The URL request to fetch the application. It may contain more information
-  // than |target_| (e.g., headers, request body). When it is taken, |target_|
-  // remains unchanged.
-  URLRequestPtr target_url_request_;
 
   shell::mojom::InterfaceProviderRequest remote_interfaces_;
   shell::mojom::InterfaceProviderPtr local_interfaces_;

@@ -24,29 +24,8 @@ void ConnectToApplicationParams::SetSource(ApplicationInstance* source) {
   source_ = source->identity();
 }
 
-void ConnectToApplicationParams::SetTarget(const Identity& target) {
-  target_ = target;
-  target_url_request_ = URLRequest::New();
-  target_url_request_->url = target_.url().spec();
-}
-
 void ConnectToApplicationParams::SetTargetURL(const GURL& target_url) {
   target_ = Identity(target_url, target_.qualifier(), target_.filter());
-  target_url_request_ = URLRequest::New();
-  target_url_request_->url = target_.url().spec();
-}
-
-void ConnectToApplicationParams::SetTargetURLRequest(URLRequestPtr request) {
-  Identity target = request ? Identity(GURL(request->url.get()),
-                                       target_.qualifier(), target_.filter())
-                            : Identity();
-  SetTargetURLRequest(std::move(request), target);
-}
-
-void ConnectToApplicationParams::SetTargetURLRequest(URLRequestPtr request,
-                                                     const Identity& target) {
-  target_url_request_ = std::move(request);
-  target_ = target;
 }
 
 }  // namespace shell

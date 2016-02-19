@@ -102,9 +102,7 @@ void ApplicationInstance::ConnectToApplication(
         new ConnectToApplicationParams);
     params->SetSource(this);
     GURL app_url(app_request->url.get());
-    params->SetTargetURLRequest(
-        std::move(app_request),
-        Identity(app_url, std::string(), capability_filter));
+    params->set_target(Identity(app_url, std::string(), capability_filter));
     params->set_remote_interfaces(std::move(remote_interfaces));
     params->set_local_interfaces(std::move(local_interfaces));
     params->set_connect_callback(callback);
@@ -161,32 +159,8 @@ void ApplicationInstance::OnConnectionError() {
 
   // If any queued requests came to shell during time it was shutting down,
   // start them now.
-  for (auto request : queued_client_requests) {
-    // Unfortunately, it is possible that |request->target_url_request()| is
-    // null at this point. Consider the following sequence:
-    // 1) connect_request_1 arrives at the application manager; the manager
-    //    decides to fetch the app.
-    // 2) connect_request_2 arrives for the same app; because the app is not
-    //    running yet, the manager decides to fetch the app again.
-    // 3) The fetch for step (1) completes and an application instance app_a is
-    //    registered.
-    // 4) app_a goes into two-phase shutdown.
-    // 5) The fetch for step (2) completes; the manager finds that there is a
-    //    running app already, so it connects to app_a.
-    // 6) connect_request_2 is queued (and eventually gets here), but its
-    //    original_request field was already lost to NetworkFetcher at step (2).
-    //
-    // TODO(yzshen): It seems we should register a pending application instance
-    // before starting the fetch. So at step (2) the application manager knows
-    // that it can wait for the first fetch to complete instead of doing a
-    // second one directly.
-    if (!request->target_url_request()) {
-      URLRequestPtr url_request = mojo::URLRequest::New();
-      url_request->url = request->target().url().spec();
-      request->SetTargetURLRequest(std::move(url_request), request->target());
-    }
+  for (auto request : queued_client_requests)
     manager->ConnectToApplication(make_scoped_ptr(request));
-  }
 }
 
 void ApplicationInstance::OnQuitRequestedResult(bool can_quit) {

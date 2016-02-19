@@ -325,7 +325,7 @@ void CapabilityFilterTest::RunApplication(const std::string& url,
   new InterfaceProviderImpl(GetProxy(&local_interfaces), validator_);
   scoped_ptr<ConnectToApplicationParams> params(
       new ConnectToApplicationParams);
-  params->SetTarget(Identity(GURL(url), std::string(), filter));
+  params->set_target(Identity(GURL(url), std::string(), filter));
   params->set_remote_interfaces(GetProxy(&remote_interfaces));
   params->set_local_interfaces(std::move(local_interfaces));
   params->set_on_application_end(base::MessageLoop::QuitWhenIdleClosure());

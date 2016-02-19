@@ -136,8 +136,8 @@ void Context::Init(const base::FilePath& shell_file_root) {
   scoped_ptr<ConnectToApplicationParams> params(new ConnectToApplicationParams);
   params->set_source(Identity(GURL("mojo:shell"), std::string(),
                               GetPermissiveCapabilityFilter()));
-  params->SetTarget(Identity(GURL("mojo:tracing"), std::string(),
-                             GetPermissiveCapabilityFilter()));
+  params->set_target(Identity(GURL("mojo:tracing"), std::string(),
+                              GetPermissiveCapabilityFilter()));
   params->set_remote_interfaces(GetProxy(&tracing_remote_interfaces));
   params->set_local_interfaces(std::move(tracing_local_interfaces));
   application_manager_->ConnectToApplication(std::move(params));
@@ -196,7 +196,7 @@ void Context::Run(const GURL& url) {
   app_urls_.insert(url);
 
   scoped_ptr<ConnectToApplicationParams> params(new ConnectToApplicationParams);
-  params->SetTarget(
+  params->set_target(
       Identity(url, std::string(), GetPermissiveCapabilityFilter()));
   params->set_remote_interfaces(GetProxy(&remote_interfaces));
   params->set_local_interfaces(std::move(local_interfaces));

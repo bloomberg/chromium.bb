@@ -49,8 +49,6 @@ class ApplicationManager : public ShellClient,
     explicit TestAPI(ApplicationManager* manager);
     ~TestAPI();
 
-    // Returns true if the shared instance has been created.
-    static bool HasCreatedInstance();
     // Returns true if there is a ApplicationInstance for this URL.
     bool HasRunningInstanceForURL(const GURL& url) const;
    private:

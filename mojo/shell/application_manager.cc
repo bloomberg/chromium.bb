@@ -31,9 +31,6 @@ namespace shell {
 
 namespace {
 
-// Used by TestAPI.
-bool has_created_instance = false;
-
 void OnEmptyOnConnectCallback(uint32_t remote_id) {}
 
 class ShellApplicationLoader : public ApplicationLoader {
@@ -63,10 +60,6 @@ ApplicationManager::TestAPI::TestAPI(ApplicationManager* manager)
 }
 
 ApplicationManager::TestAPI::~TestAPI() {
-}
-
-bool ApplicationManager::TestAPI::HasCreatedInstance() {
-  return has_created_instance;
 }
 
 bool ApplicationManager::TestAPI::HasRunningInstanceForURL(
