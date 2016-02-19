@@ -129,8 +129,6 @@ void PackageManager::ResolveProtocolScheme(
 void PackageManager::ResolveMojoURL(const mojo::String& mojo_url,
                                     const ResolveMojoURLCallback& callback) {
   GURL resolved_url = mojo_url.To<GURL>();
-  CHECK(resolved_url.SchemeIs("mojo") || resolved_url.SchemeIs("exe"));
-
   auto alias_iter = mojo_url_aliases_.find(mojo_url);
   if (alias_iter != mojo_url_aliases_.end())
     resolved_url = GURL(alias_iter->second.first);
@@ -182,8 +180,15 @@ void PackageManager::EnsureURLInCatalog(
   }
 
   GURL manifest_url = GetManifestURL(url);
-  if (manifest_url.is_empty())
+  if (manifest_url.is_empty()) {
+    // The URL is of some form that can't be resolved to a manifest (e.g. some
+    // scheme used for tests). Just pass it back to the caller so it can be
+    // loaded with a custom loader.
+    callback.Run(url.spec(), nullptr, nullptr, nullptr);
     return;
+  }
+
+  CHECK(url.SchemeIs("mojo") || url.SchemeIs("exe"));
   base::FilePath manifest_path;
   CHECK(net::FileURLToFilePath(manifest_url, &manifest_path));
   base::PostTaskAndReplyWithResult(

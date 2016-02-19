@@ -120,19 +120,18 @@ class ApplicationManager : public ShellClient,
   void AddListener(
       mojom::ApplicationManagerListenerPtr listener) override;
 
+  void InitPackageManager(bool register_mojo_url_schemes);
+
   // Takes the contents of |params| only when it returns true.
   bool ConnectToRunningApplication(
       scoped_ptr<ConnectToApplicationParams>* params);
 
   ApplicationInstance* CreateAndConnectToInstance(
       scoped_ptr<ConnectToApplicationParams> params,
-      Identity* source,
-      Identity* target,
       const std::string& application_name,
       mojom::ShellClientRequest* request);
   ApplicationInstance* CreateInstance(
       const Identity& target_id,
-      const mojom::Shell::ConnectToApplicationCallback& connect_callback,
       const base::Closure& on_application_end,
       const String& application_name,
       mojom::ShellClientRequest* request);
@@ -163,17 +162,10 @@ class ApplicationManager : public ShellClient,
                         const String& application_name,
                         mojom::CapabilityFilterPtr base_filter);
 
-  // In response to a request via Connect() with |params|, creates an
-  // ApplicationInstance and runs the application at |file_url|.
-  void CreateAndRunLocalApplication(
-      scoped_ptr<ConnectToApplicationParams> params,
-      const String& application_name,
-      const GURL& file_url);
-
-  void RunNativeApplication(InterfaceRequest<mojom::ShellClient> request,
-                            bool start_sandboxed,
-                            ApplicationInstance* instance,
-                            const base::FilePath& file_path);
+  // Tries to load |target| with an ApplicationLoader. Returns true if one was
+  // registered and it was loaded, in which case |request| is taken.
+  bool LoadWithLoader(const Identity& target,
+                      mojom::ShellClientRequest* request);
 
   // Returns the appropriate loader for |url|, or the default loader if there is
   // no loader configured for the URL.

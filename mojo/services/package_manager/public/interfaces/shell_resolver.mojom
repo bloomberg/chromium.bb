@@ -19,9 +19,13 @@ interface ShellResolver {
   // loaded from |resolved_mojo_url|'s manifest.
   // |filter| - the base CapabilityFilter within which an instance of
   // |resolved_mojo_url| must be run for |mojo_url|.
-  // TODO(beng): return qualifier too!
-  ResolveMojoURL(string mojo_url) => (string resolved_mojo_url,
-                                      string mojo_file_url,
-                                      string application_name,
-                                      mojo.shell.mojom.CapabilityFilter filter);
+  // If |mojo_url| can't be resolved (i.e. not a mojo: or exe: scheme), then
+  // the callback will be run with null |mojo_file_url|, |application_name| and
+  // |filter|.
+   // TODO(beng): return qualifier too!
+  ResolveMojoURL(string mojo_url) =>
+      (string resolved_mojo_url,
+       string? mojo_file_url,
+       string? application_name,
+       mojo.shell.mojom.CapabilityFilter? filter);
 };

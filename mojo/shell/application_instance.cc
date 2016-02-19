@@ -22,7 +22,6 @@ ApplicationInstance::ApplicationInstance(
     mojom::ShellClientPtr shell_client,
     ApplicationManager* manager,
     const Identity& identity,
-    const mojom::Shell::ConnectToApplicationCallback& connect_callback,
     const base::Closure& on_application_end,
     const String& application_name)
     : manager_(manager),
@@ -30,7 +29,6 @@ ApplicationInstance::ApplicationInstance(
       identity_(identity),
       allow_any_application_(identity.filter().size() == 1 &&
                              identity.filter().count("*") == 1),
-      connect_callback_(connect_callback),
       on_application_end_(on_application_end),
       shell_client_(std::move(shell_client)),
       binding_(this),
@@ -71,11 +69,6 @@ void ApplicationInstance::SetNativeRunner(NativeRunner* native_runner) {
 void ApplicationInstance::BindPIDReceiver(
     InterfaceRequest<mojom::PIDReceiver> pid_receiver) {
   pid_receiver_binding_.Bind(std::move(pid_receiver));
-}
-
-void ApplicationInstance::RunConnectCallback() {
-  if (!connect_callback_.is_null())
-    connect_callback_.Run(id_);
 }
 
 // Shell implementation:

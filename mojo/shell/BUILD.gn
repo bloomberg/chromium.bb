@@ -9,7 +9,11 @@ group("all") {
   testonly = true
   deps = [
     ":shell",
+    "//mojo/shell/background",
+    "//mojo/shell/background",
     "//mojo/shell/runner",
+    "//mojo/shell/standalone",
+    "//mojo/shell/tests",
   ]
 }
 

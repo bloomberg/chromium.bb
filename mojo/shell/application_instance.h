@@ -37,7 +37,6 @@ class ApplicationInstance : public mojom::Shell,
       mojom::ShellClientPtr shell_client,
       ApplicationManager* manager,
       const Identity& identity,
-      const mojom::Shell::ConnectToApplicationCallback& connect_callback,
       const base::Closure& on_application_end,
       const String& application_name);
 
@@ -51,8 +50,6 @@ class ApplicationInstance : public mojom::Shell,
   void SetNativeRunner(NativeRunner* native_runner);
 
   void BindPIDReceiver(InterfaceRequest<mojom::PIDReceiver> pid_receiver);
-
-  void RunConnectCallback();
 
   mojom::ShellClient* shell_client() { return shell_client_.get(); }
   const Identity& identity() const { return identity_; }
@@ -92,7 +89,6 @@ class ApplicationInstance : public mojom::Shell,
   const uint32_t id_;
   const Identity identity_;
   const bool allow_any_application_;
-  mojom::Shell::ConnectToApplicationCallback connect_callback_;
   base::Closure on_application_end_;
   mojom::ShellClientPtr shell_client_;
   Binding<mojom::Shell> binding_;
