@@ -545,25 +545,61 @@ Background.prototype = {
         break;
       case 'decreaseTtsRate':
         this.increaseOrDecreaseSpeechProperty_(cvox.AbstractTts.RATE, false);
-        break;
+        return false;
       case 'increaseTtsRate':
         this.increaseOrDecreaseSpeechProperty_(cvox.AbstractTts.RATE, true);
-        break;
+        return false;
       case 'decreaseTtsPitch':
         this.increaseOrDecreaseSpeechProperty_(cvox.AbstractTts.PITCH, false);
-        break;
+        return false;
       case 'increaseTtsPitch':
         this.increaseOrDecreaseSpeechProperty_(cvox.AbstractTts.PITCH, true);
-        break;
+        return false;
       case 'decreaseTtsVolume':
         this.increaseOrDecreaseSpeechProperty_(cvox.AbstractTts.VOLUME, false);
-        break;
+        return false;
       case 'increaseTtsVolume':
         this.increaseOrDecreaseSpeechProperty_(cvox.AbstractTts.VOLUME, true);
-        break;
+        return false;
       case 'stopSpeech':
         cvox.ChromeVox.tts.stop();
         global.isReadingContinuously = false;
+        return false;
+      case 'toggleEarcons':
+        cvox.AbstractEarcons.enabled = !cvox.AbstractEarcons.enabled;
+        var announce = cvox.AbstractEarcons.enabled ?
+            Msgs.getMsg('earcons_on') :
+            Msgs.getMsg('earcons_off');
+        cvox.ChromeVox.tts.speak(
+            announce, cvox.QueueMode.FLUSH,
+            cvox.AbstractTts.PERSONALITY_ANNOTATION);
+        return false;
+      case 'cycleTypingEcho':
+        cvox.ChromeVox.typingEcho =
+            cvox.TypingEcho.cycle(cvox.ChromeVox.typingEcho);
+        var announce = '';
+        switch (cvox.ChromeVox.typingEcho) {
+          case cvox.TypingEcho.CHARACTER:
+            announce = Msgs.getMsg('character_echo');
+            break;
+          case cvox.TypingEcho.WORD:
+            announce = Msgs.getMsg('word_echo');
+            break;
+          case cvox.TypingEcho.CHARACTER_AND_WORD:
+            announce = Msgs.getMsg('character_and_word_echo');
+            break;
+          case cvox.TypingEcho.NONE:
+            announce = Msgs.getMsg('none_echo');
+            break;
+        }
+        cvox.ChromeVox.tts.speak(
+            announce, cvox.QueueMode.FLUSH,
+            cvox.AbstractTts.PERSONALITY_ANNOTATION);
+        return false;
+      case 'cyclePunctuationEcho':
+        cvox.ChromeVox.tts.speak(Msgs.getMsg(
+            global.backgroundTts.cyclePunctuationEcho()),
+                       cvox.QueueMode.FLUSH);
         return false;
       default:
         return true;

@@ -483,6 +483,7 @@ cvox.ChromeVoxBackground.prototype.getCurrentVoice = function() {
   var background = new cvox.ChromeVoxBackground();
   background.init();
   window['speak'] = goog.bind(background.tts.speak, background.tts);
+  global.backgroundTts = background.backgroundTts_;
 
   // Export the prefs object for access by the options page.
   window['prefs'] = background.prefs;
