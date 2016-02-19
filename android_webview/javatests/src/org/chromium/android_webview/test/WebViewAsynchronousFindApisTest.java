@@ -113,7 +113,7 @@ public class WebViewAsynchronousFindApisTest extends WebViewFindApisTestBase {
         assertEquals(4, findAllAsyncOnUiThread("wood"));
         clearMatchesOnUiThread();
         assertEquals(4, findAllAsyncOnUiThread("wood"));
-        assertEquals(2, findNextOnUiThread(true));
+        assertEquals(1, findNextOnUiThread(true));
     }
 
     @SmallTest

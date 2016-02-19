@@ -3716,6 +3716,7 @@ public:
     FindUpdateWebFrameClient()
         : m_findResultsAreReady(false)
         , m_count(-1)
+        , m_activeIndex(-1)
     {
     }
 
@@ -3726,12 +3727,19 @@ public:
             m_findResultsAreReady = true;
     }
 
+    void reportFindInPageSelection(int, int activeMatchOrdinal, const WebRect&) override
+    {
+        m_activeIndex = activeMatchOrdinal;
+    }
+
     bool findResultsAreReady() const { return m_findResultsAreReady; }
     int count() const { return m_count; }
+    int activeIndex() const { return m_activeIndex; }
 
 private:
     bool m_findResultsAreReady;
     int m_count;
+    int m_activeIndex;
 };
 
 TEST_P(ParameterizedWebFrameTest, FindInPageMatchRects)
@@ -3852,6 +3860,54 @@ TEST_P(ParameterizedWebFrameTest, FindInPageMatchRects)
     webViewHelper.resize(WebSize(800, 600));
     runPendingTasks();
     EXPECT_TRUE(mainFrame->findMatchMarkersVersion() != rectsVersion);
+}
+
+TEST_F(WebFrameTest, FindInPageActiveIndex)
+{
+    registerMockedHttpURLLoad("find_match_count.html");
+
+    FindUpdateWebFrameClient client;
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "find_match_count.html", true, &client);
+    webViewHelper.webView()->resize(WebSize(640, 480));
+    runPendingTasks();
+
+    const char* kFindString = "a";
+    const int kFindIdentifier = 7777;
+    const int kActiveIndex = 1;
+
+    WebFindOptions options;
+    WebString searchText = WebString::fromUTF8(kFindString);
+    WebLocalFrameImpl* mainFrame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
+    EXPECT_TRUE(mainFrame->find(kFindIdentifier, searchText, options, false, 0));
+    mainFrame->resetMatchCount();
+
+    for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
+        frame->toWebLocalFrame()->scopeStringMatches(kFindIdentifier, searchText, options, true);
+
+    runPendingTasks();
+    EXPECT_TRUE(mainFrame->find(kFindIdentifier, searchText, options, false, 0));
+    mainFrame->stopFinding(true);
+
+    for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
+        frame->toWebLocalFrame()->scopeStringMatches(kFindIdentifier, searchText, options, true);
+
+    runPendingTasks();
+    EXPECT_TRUE(client.findResultsAreReady());
+    EXPECT_EQ(kActiveIndex, client.activeIndex());
+
+    const char* kFindStringNew = "e";
+    WebString searchTextNew = WebString::fromUTF8(kFindStringNew);
+
+    EXPECT_TRUE(mainFrame->find(kFindIdentifier, searchTextNew, options, false, 0));
+    mainFrame->resetMatchCount();
+
+    for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
+        frame->toWebLocalFrame()->scopeStringMatches(kFindIdentifier, searchTextNew, options, true);
+
+    runPendingTasks();
+    EXPECT_TRUE(client.findResultsAreReady());
+    EXPECT_EQ(kActiveIndex, client.activeIndex());
 }
 
 TEST_P(ParameterizedWebFrameTest, FindInPageSkipsHiddenFrames)

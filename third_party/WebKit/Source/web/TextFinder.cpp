@@ -209,6 +209,7 @@ void TextFinder::stopFindingAndClearSelection()
     ownerFrame().frame()->document()->markers().removeMarkers(DocumentMarker::TextMatch);
     ownerFrame().frame()->editor().setMarkedTextMatchesAreHighlighted(false);
     clearFindMatchesCache();
+    resetActiveMatch();
 
     // Let the frame know that we don't want tickmarks anymore.
     ownerFrame().frameView()->invalidatePaintForTickmarks();
