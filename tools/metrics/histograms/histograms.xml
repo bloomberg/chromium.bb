@@ -30678,6 +30678,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NewTabPage.HoverTimeClicked">
+  <obsolete>
+    Deprecated 2016-02 (and not recorded for some time before that).
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Histogram of the time, in milliseconds, users have the cursor over a most
@@ -30686,6 +30689,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NewTabPage.HoverTimeNotClicked">
+  <obsolete>
+    Deprecated 2016-02 (and not recorded for some time before that).
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Histogram of the time, in milliseconds, users have the cursor over a most
@@ -30794,6 +30800,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NewTabPage.MostVisitedAction" enum="NtpFollowAction">
+  <obsolete>
+    Deprecated 2016-02 (and not recorded for some time before that).
+  </obsolete>
   <owner>beaudoin@chromium.org</owner>
   <owner>justincohen@chromium.org</owner>
   <owner>newt@chromium.org</owner>
@@ -30806,6 +30815,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="NewTabPage.MostVisitedTilePlacementExperiment"
     enum="NtpTileExperimentActions">
+  <obsolete>
+    Deprecated 2016-02 (and not recorded for some time before that).
+  </obsolete>
   <owner>beaudoin@chromium.org</owner>
   <owner>justincohen@chromium.org</owner>
   <owner>newt@chromium.org</owner>
@@ -30826,6 +30838,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NewTabPage.NonVisibleScreenshots">
+  <obsolete>
+    Deprecated 2016-02 (and not recorded for some time before that).
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The number of screenshots that were cached for the non-visible but ranked
@@ -30834,6 +30849,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NewTabPage.NonVisibleSuggestedSiteRank">
+  <obsolete>
+    Deprecated 2016-02 (and not recorded for some time before that).
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Given that the user has typed a URL, and given that that specific URL was
@@ -30959,11 +30977,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NewTabPage.Promo.Bubble" enum="NtpPromoAction">
+  <obsolete>
+    Deprecated 2016-02 (and not recorded for some time before that).
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Histogram for NTP bubble promo activity.</summary>
 </histogram>
 
 <histogram name="NewTabPage.Promo.Notification" enum="NtpPromoAction">
+  <obsolete>
+    Deprecated 2016-02 (and not recorded for some time before that).
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Histogram for NTP notification promo activity.</summary>
 </histogram>
@@ -30981,6 +31005,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NewTabPage.SearchURLs.Total">
+  <obsolete>
+    Deprecated 2016-02 (and not recorded for some time before that).
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>TBD.</summary>
 </histogram>
@@ -30991,6 +31018,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NewTabPage.SessionRestore">
+  <obsolete>
+    Deprecated 2016-02 (and not recorded for some time before that).
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Histogram for user clicks of the Recently Closed items. The value is the
@@ -30999,6 +31029,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NewTabPage.SingleSessionPageSwitches">
+  <obsolete>
+    Deprecated 2016-02 (and not recorded for some time before that).
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Histogram to track how many times a user switched pages in a single NTP
@@ -31056,6 +31089,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NewTabPage.SuggestedSite">
+  <obsolete>
+    Deprecated 2016-02 (and not recorded for some time before that).
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Histogram for user clicks of the suggested site thumbnails. The value is
@@ -31064,16 +31100,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NewTabPage.SuggestedSitesAction" enum="NtpFollowAction">
+  <obsolete>
+    Deprecated 2016-02 (and not recorded for some time before that).
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Action taken by the user on the Suggested Sites NTP pane.</summary>
 </histogram>
 
 <histogram name="NewTabPage.SuggestedSitesLoadTime">
+  <obsolete>
+    Deprecated 2016-02 (and not recorded for some time before that).
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Time to load the Suggested Sites NTP pane, in milliseconds.</summary>
 </histogram>
 
 <histogram name="NewTabPage.SuggestedSitesViewTime">
+  <obsolete>
+    Deprecated 2016-02 (and not recorded for some time before that).
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Time spent on the Suggested Sites NTP pane, in seconds.</summary>
 </histogram>
@@ -31162,6 +31207,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NewTabPage.VisibleScreenshots">
+  <obsolete>
+    Deprecated 2016-02 (and not recorded for some time before that).
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The number of screenshots that were cached for the visible suggestions on
@@ -31170,6 +31218,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NewTabPage.VisibleSuggestedSiteRank">
+  <obsolete>
+    Deprecated 2016-02 (and not recorded for some time before that).
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Given that the user has typed a URL, and given that that specific URL was
