@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_TEST_PROFILE_SYNC_SERVICE_H_
-#define CHROME_BROWSER_SYNC_TEST_PROFILE_SYNC_SERVICE_H_
+#ifndef COMPONENTS_BROWSER_SYNC_BROWSER_TEST_PROFILE_SYNC_SERVICE_H_
+#define COMPONENTS_BROWSER_SYNC_BROWSER_TEST_PROFILE_SYNC_SERVICE_H_
 
 #include "base/macros.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
@@ -49,4 +49,4 @@ class TestProfileSyncService : public ProfileSyncService {
   DISALLOW_COPY_AND_ASSIGN(TestProfileSyncService);
 };
 
-#endif  // CHROME_BROWSER_SYNC_TEST_PROFILE_SYNC_SERVICE_H_
+#endif  // COMPONENTS_BROWSER_SYNC_BROWSER_TEST_PROFILE_SYNC_SERVICE_H_

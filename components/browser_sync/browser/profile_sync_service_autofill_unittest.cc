@@ -10,8 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "testing/gtest/include/gtest/gtest.h"
-
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -26,8 +24,6 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
-#include "chrome/browser/sync/abstract_profile_sync_service_test.h"
-#include "chrome/browser/sync/test_profile_sync_service.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -40,7 +36,9 @@
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/browser_sync/browser/abstract_profile_sync_service_test.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
+#include "components/browser_sync/browser/test_profile_sync_service.h"
 #include "components/sync_driver/data_type_controller.h"
 #include "components/sync_driver/data_type_manager_impl.h"
 #include "components/sync_driver/sync_api_component_factory_mock.h"
@@ -57,6 +55,7 @@
 #include "sync/syncable/mutable_entry.h"
 #include "sync/syncable/syncable_write_transaction.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using autofill::AutocompleteSyncableService;
 using autofill::AutofillChange;

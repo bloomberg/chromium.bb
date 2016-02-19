@@ -21,6 +21,9 @@
         'sync_driver_features',
         'version_info',
       ],
+      'export_dependent_settings': [
+        '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
+      ],
       'include_dirs': [
         '..',
       ],

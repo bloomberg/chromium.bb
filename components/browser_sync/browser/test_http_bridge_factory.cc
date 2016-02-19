@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/test/test_http_bridge_factory.h"
+#include "components/browser_sync/browser/test_http_bridge_factory.h"
 
 namespace browser_sync {
 

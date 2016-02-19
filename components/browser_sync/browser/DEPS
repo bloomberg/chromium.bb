@@ -17,6 +17,8 @@ include_rules = [
   "+components/strings",
   "+components/variations",
   "+components/version_info",
+  "+components/webdata/common",
+  "+components/webdata_services",
   "+google_apis",
   "+net",
   "+sync",

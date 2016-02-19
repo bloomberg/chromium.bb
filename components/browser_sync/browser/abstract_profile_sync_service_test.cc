@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/abstract_profile_sync_service_test.h"
+#include "components/browser_sync/browser/abstract_profile_sync_service_test.h"
 
 #include <utility>
 
@@ -11,8 +11,8 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/run_loop.h"
-#include "chrome/browser/sync/test/test_http_bridge_factory.h"
-#include "chrome/browser/sync/test_profile_sync_service.h"
+#include "components/browser_sync/browser/test_http_bridge_factory.h"
+#include "components/browser_sync/browser/test_profile_sync_service.h"
 #include "components/sync_driver/glue/sync_backend_host_core.h"
 #include "components/sync_driver/sync_api_component_factory_mock.h"
 #include "google_apis/gaia/gaia_constants.h"

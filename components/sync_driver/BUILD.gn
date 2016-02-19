@@ -123,6 +123,7 @@ source_set("sync_driver") {
 
   public_deps = [
     ":features",
+    "//third_party/cacheinvalidation",
   ]
   deps = [
     "//base",
@@ -137,7 +138,6 @@ source_set("sync_driver") {
     "//google_apis",
     "//net",
     "//sync",
-    "//third_party/cacheinvalidation",
   ]
 
   if (enable_configuration_policy) {

@@ -76,8 +76,10 @@
       'bookmarks/managed/managed_bookmarks_tracker_unittest.cc',
     ],
     'browser_sync_unittest_sources': [
+      'browser_sync/browser/profile_sync_service_autofill_unittest.cc',
       'browser_sync/browser/profile_sync_service_startup_unittest.cc',
       'browser_sync/browser/profile_sync_service_unittest.cc',
+      'browser_sync/browser/profile_sync_service_typed_url_unittest.cc',
     ],
     'browser_watcher_unittest_sources': [
       'browser_watcher/crash_reporting_metrics_win_unittest.cc',
@@ -1105,6 +1107,7 @@
         'components.gyp:ssl_errors',
         'components.gyp:suggestions',
         'components.gyp:sync_bookmarks',
+        'components.gyp:sync_driver',
         'components.gyp:sync_driver_features',
         'components.gyp:sync_driver_test_support',
         'components.gyp:sync_sessions',
@@ -1125,6 +1128,7 @@
         'components.gyp:variations_net',
         'components.gyp:variations_service',
         'components.gyp:version_info',
+        'components.gyp:webdata_services_test_support',
         'components.gyp:web_resource',
         'components.gyp:web_resource_test_support',
         'components_resources.gyp:components_resources',

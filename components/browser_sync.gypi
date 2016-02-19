@@ -82,10 +82,16 @@
       ],
       'sources': [
         # Note: file list duplicated in GN build.
+        'browser_sync/browser/abstract_profile_sync_service_test.cc',
+        'browser_sync/browser/abstract_profile_sync_service_test.h',
         'browser_sync/browser/profile_sync_service_mock.cc',
         'browser_sync/browser/profile_sync_service_mock.h',
         'browser_sync/browser/profile_sync_test_util.cc',
         'browser_sync/browser/profile_sync_test_util.h',
+        'browser_sync/browser/test_http_bridge_factory.cc',
+        'browser_sync/browser/test_http_bridge_factory.h',
+        'browser_sync/browser/test_profile_sync_service.cc',
+        'browser_sync/browser/test_profile_sync_service.h',
       ],
     }
   ],
