@@ -16,13 +16,7 @@
 namespace blimp {
 
 BlimpMessagePump::BlimpMessagePump(PacketReader* reader)
-    : reader_(reader),
-      buffer_(new net::GrowableIOBuffer),
-      process_msg_callback_(
-          base::Bind(&BlimpMessagePump::OnProcessMessageComplete,
-                     base::Unretained(this))),
-      read_callback_(base::Bind(&BlimpMessagePump::OnReadPacketComplete,
-                                base::Unretained(this))) {
+    : reader_(reader), buffer_(new net::GrowableIOBuffer), weak_factory_(this) {
   DCHECK(reader_);
   buffer_->SetCapacity(kMaxPacketPayloadSizeBytes);
 }
@@ -49,7 +43,9 @@ void BlimpMessagePump::ReadNextPacket() {
   DCHECK(!read_inflight_);
   read_inflight_ = true;
   buffer_->set_offset(0);
-  reader_->ReadPacket(buffer_.get(), read_callback_.callback());
+  reader_->ReadPacket(buffer_.get(),
+                      base::Bind(&BlimpMessagePump::OnReadPacketComplete,
+                                 weak_factory_.GetWeakPtr()));
 }
 
 void BlimpMessagePump::OnReadPacketComplete(int result) {
@@ -60,8 +56,10 @@ void BlimpMessagePump::OnReadPacketComplete(int result) {
     scoped_ptr<BlimpMessage> message(new BlimpMessage);
     if (message->ParseFromArray(buffer_->StartOfBuffer(), buffer_->offset())) {
       DVLOG(2) << "OnReadPacketComplete, result=" << *message;
-      processor_->ProcessMessage(std::move(message),
-                                 process_msg_callback_.callback());
+      processor_->ProcessMessage(
+          std::move(message),
+          base::Bind(&BlimpMessagePump::OnProcessMessageComplete,
+                     weak_factory_.GetWeakPtr()));
     } else {
       result = net::ERR_FAILED;
     }

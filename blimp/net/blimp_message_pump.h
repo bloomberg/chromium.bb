@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "blimp/net/blimp_net_export.h"
 #include "net/base/completion_callback.h"
 
@@ -63,13 +64,8 @@ class BLIMP_NET_EXPORT BlimpMessagePump {
   scoped_refptr<net::GrowableIOBuffer> buffer_;
   bool read_inflight_ = false;
 
-  // Cancelled in the event that the connection is destroyed (along with
-  // |this|) while a inflight callback is held by |processor_|.
-  net::CancelableCompletionCallback process_msg_callback_;
-
-  // Cancelled to guard against |this| being called back from a completed read
-  // operation.
-  net::CancelableCompletionCallback read_callback_;
+  // Used to abandon ProcessMessage completion callbacks if |this| is deleted.
+  base::WeakPtrFactory<BlimpMessagePump> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpMessagePump);
 };
