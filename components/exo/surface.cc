@@ -288,6 +288,12 @@ void Surface::PlaceSubSurfaceBelow(Surface* sub_surface, Surface* sibling) {
       FindListEntry(pending_sub_surfaces_, sub_surface));
 }
 
+void Surface::SetViewport(const gfx::Size& viewport) {
+  TRACE_EVENT1("exo", "Surface::SetViewport", "viewport", viewport.ToString());
+
+  pending_viewport_ = viewport;
+}
+
 void Surface::Commit() {
   TRACE_EVENT0("exo", "Surface::Commit");
 
@@ -318,9 +324,14 @@ void Surface::CommitSurfaceHierarchy() {
     }
 
     if (texture_mailbox_release_callback) {
-      // Update layer with the new contents.
-      gfx::Size contents_size(gfx::ScaleToFlooredSize(
-          texture_mailbox.size_in_pixels(), 1.0f / pending_buffer_scale_));
+      // Update layer with the new contents. If a viewport has been set then
+      // use that to determine the size of the layer and the surface, otherwise
+      // buffer scale and buffer size determines the size.
+      gfx::Size contents_size =
+          pending_viewport_.IsEmpty()
+              ? gfx::ScaleToFlooredSize(texture_mailbox.size_in_pixels(),
+                                        1.0f / pending_buffer_scale_)
+              : pending_viewport_;
       layer()->SetTextureMailbox(texture_mailbox,
                                  std::move(texture_mailbox_release_callback),
                                  contents_size);

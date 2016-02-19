@@ -5,11 +5,13 @@
 #include "components/exo/wayland/server.h"
 
 #include <linux/input.h>
+#include <scaler-server-protocol.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <wayland-server-core.h>
 #include <wayland-server-protocol-core.h>
 #include <xdg-shell-unstable-v5-server-protocol.h>
+
 #include <algorithm>
 #include <utility>
 
@@ -79,6 +81,10 @@ void SetImplementation(wl_resource* resource,
 // A property key containing the surface resource that is associated with
 // window. If unset, no surface resource is associated with window.
 DEFINE_WINDOW_PROPERTY_KEY(wl_resource*, kSurfaceResourceKey, nullptr);
+
+// A property key containing a boolean set to true if a viewport is associated
+// with window.
+DEFINE_WINDOW_PROPERTY_KEY(bool, kSurfaceHasViewportKey, false);
 
 ////////////////////////////////////////////////////////////////////////////////
 // wl_buffer_interface:
@@ -1523,6 +1529,132 @@ void bind_seat(wl_client* client, void* data, uint32_t version, uint32_t id) {
   wl_seat_send_capabilities(resource, capabilities);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// wl_viewport_interface:
+
+class Viewport : public SurfaceObserver {
+ public:
+  explicit Viewport(Surface* surface) : surface_(surface) {
+    surface_->AddSurfaceObserver(this);
+    surface_->SetProperty(kSurfaceHasViewportKey, true);
+  }
+  ~Viewport() override {
+    if (surface_) {
+      surface_->RemoveSurfaceObserver(this);
+      surface_->SetViewport(gfx::Size());
+      surface_->SetProperty(kSurfaceHasViewportKey, false);
+    }
+  }
+
+  void SetDestination(const gfx::Size& size) {
+    if (surface_)
+      surface_->SetViewport(size);
+  }
+
+  // Overridden from SurfaceObserver:
+  void OnSurfaceDestroying(Surface* surface) override {
+    surface->RemoveSurfaceObserver(this);
+    surface_ = nullptr;
+  }
+
+ private:
+  Surface* surface_;
+
+  DISALLOW_COPY_AND_ASSIGN(Viewport);
+};
+
+void viewport_destroy(wl_client* client, wl_resource* resource) {
+  wl_resource_destroy(resource);
+}
+
+void viewport_set(wl_client* client,
+                  wl_resource* resource,
+                  wl_fixed_t src_x,
+                  wl_fixed_t src_y,
+                  wl_fixed_t src_width,
+                  wl_fixed_t src_height,
+                  int32_t dst_width,
+                  int32_t dst_height) {
+  NOTIMPLEMENTED();
+}
+
+void viewport_set_source(wl_client* client,
+                         wl_resource* resource,
+                         wl_fixed_t x,
+                         wl_fixed_t y,
+                         wl_fixed_t width,
+                         wl_fixed_t height) {
+  NOTIMPLEMENTED();
+}
+
+void viewport_set_destination(wl_client* client,
+                              wl_resource* resource,
+                              int32_t width,
+                              int32_t height) {
+  if (width == -1 && height == -1) {
+    GetUserDataAs<Viewport>(resource)->SetDestination(gfx::Size());
+    return;
+  }
+
+  if (width <= 0 || height <= 0) {
+    wl_resource_post_error(resource, WL_VIEWPORT_ERROR_BAD_VALUE,
+                           "destination size must be positive (%dx%d)", width,
+                           height);
+    return;
+  }
+
+  GetUserDataAs<Viewport>(resource)->SetDestination(gfx::Size(width, height));
+}
+
+const struct wl_viewport_interface viewport_implementation = {
+    viewport_destroy, viewport_set, viewport_set_source,
+    viewport_set_destination};
+
+////////////////////////////////////////////////////////////////////////////////
+// wl_scaler_interface:
+
+void scaler_destroy(wl_client* client, wl_resource* resource) {
+  wl_resource_destroy(resource);
+}
+
+void scaler_get_viewport(wl_client* client,
+                         wl_resource* resource,
+                         uint32_t id,
+                         wl_resource* surface_resource) {
+  Surface* surface = GetUserDataAs<Surface>(surface_resource);
+  if (surface->GetProperty(kSurfaceHasViewportKey)) {
+    wl_resource_post_error(resource, WL_SCALER_ERROR_VIEWPORT_EXISTS,
+                           "a viewport for that surface already exists");
+    return;
+  }
+
+  wl_resource* viewport_resource = wl_resource_create(
+      client, &wl_viewport_interface, wl_resource_get_version(resource), id);
+  if (!viewport_resource) {
+    wl_resource_post_no_memory(resource);
+    return;
+  }
+
+  SetImplementation(viewport_resource, &viewport_implementation,
+                    make_scoped_ptr(new Viewport(surface)));
+}
+
+const struct wl_scaler_interface scaler_implementation = {scaler_destroy,
+                                                          scaler_get_viewport};
+
+const uint32_t scaler_version = 2;
+
+void bind_scaler(wl_client* client, void* data, uint32_t version, uint32_t id) {
+  wl_resource* resource = wl_resource_create(
+      client, &wl_scaler_interface, std::min(version, scaler_version), id);
+  if (!resource) {
+    wl_client_post_no_memory(client);
+    return;
+  }
+  wl_resource_set_implementation(resource, &scaler_implementation, data,
+                                 nullptr);
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1549,6 +1681,8 @@ Server::Server(Display* display)
                    display_, bind_data_device_manager);
   wl_global_create(wl_display_.get(), &wl_seat_interface, seat_version,
                    display_, bind_seat);
+  wl_global_create(wl_display_.get(), &wl_scaler_interface, scaler_version,
+                   display_, bind_scaler);
 }
 
 Server::~Server() {}

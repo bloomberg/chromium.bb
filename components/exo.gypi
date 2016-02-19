@@ -65,6 +65,7 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../skia/skia.gyp:skia',
+            '../third_party/wayland-protocols/wayland-protocols.gyp:scaler_protocol',
             '../third_party/wayland-protocols/wayland-protocols.gyp:xdg_shell_protocol',
             '../third_party/wayland/wayland.gyp:wayland_server',
             '../ui/events/events.gyp:dom_keycode_converter',

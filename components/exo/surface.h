@@ -80,6 +80,9 @@ class Surface : public aura::Window,
   void PlaceSubSurfaceAbove(Surface* sub_surface, Surface* reference);
   void PlaceSubSurfaceBelow(Surface* sub_surface, Surface* sibling);
 
+  // This sets the surface viewport for scaling.
+  void SetViewport(const gfx::Size& viewport);
+
   // Surface state (damage regions, attached buffers, etc.) is double-buffered.
   // A Commit() call atomically applies all pending state, replacing the
   // current state. Commit() is not guaranteed to be synchronous. See
@@ -183,6 +186,9 @@ class Surface : public aura::Window,
   using SubSurfaceEntry = std::pair<Surface*, gfx::Point>;
   using SubSurfaceEntryList = std::list<SubSurfaceEntry>;
   SubSurfaceEntryList pending_sub_surfaces_;
+
+  // The viewport to take effect when Commit() is called.
+  gfx::Size pending_viewport_;
 
   // The buffer that is currently set as content of surface.
   base::WeakPtr<Buffer> current_buffer_;

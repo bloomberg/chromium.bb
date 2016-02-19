@@ -118,6 +118,21 @@ TEST_F(SurfaceTest, SetBufferScale) {
       surface->bounds().size().ToString());
 }
 
+TEST_F(SurfaceTest, SetViewport) {
+  gfx::Size buffer_size(1, 1);
+  scoped_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  scoped_ptr<Surface> surface(new Surface);
+
+  // This will update the bounds of the surface and take the viewport into
+  // account.
+  surface->Attach(buffer.get());
+  gfx::Size viewport(256, 256);
+  surface->SetViewport(viewport);
+  surface->Commit();
+  EXPECT_EQ(viewport.ToString(), surface->bounds().size().ToString());
+}
+
 TEST_F(SurfaceTest, Commit) {
   scoped_ptr<Surface> surface(new Surface);
 
