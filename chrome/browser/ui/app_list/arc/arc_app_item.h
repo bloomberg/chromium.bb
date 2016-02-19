@@ -39,7 +39,7 @@ class ArcAppItem : public ChromeAppListItem,
   void SetReady(bool ready);
 
   // ArcAppIcon::Observer
-  void OnIconUpdated() override;
+  void OnIconUpdated(ArcAppIcon* icon) override;
 
  private:
   // Updates the app item's icon, if necessary making it gray.

@@ -704,6 +704,8 @@
     'chrome_browser_ui_chromeos_arc_sources': [
       'browser/ui/app_list/arc/arc_app_icon.cc',
       'browser/ui/app_list/arc/arc_app_icon.h',
+      'browser/ui/app_list/arc/arc_app_icon_loader.cc',
+      'browser/ui/app_list/arc/arc_app_icon_loader.h',
       'browser/ui/app_list/arc/arc_app_item.cc',
       'browser/ui/app_list/arc/arc_app_item.h',
       'browser/ui/app_list/arc/arc_app_list_prefs.cc',

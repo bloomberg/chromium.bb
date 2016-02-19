@@ -7,7 +7,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/app_icon_loader_impl.h"
+#include "chrome/browser/extensions/extension_app_icon_loader.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/signin/core/account_id/account_id.h"
@@ -56,8 +56,7 @@ NotificationManager::NotificationManager(
     : profile_(profile),
       file_system_info_(file_system_info),
       icon_loader_(
-          new extensions::AppIconLoaderImpl(profile, kIconSize, this)) {
-}
+          new extensions::ExtensionAppIconLoader(profile, kIconSize, this)) {}
 
 NotificationManager::~NotificationManager() {
   if (callbacks_.size()) {
@@ -100,8 +99,8 @@ void NotificationManager::OnClose() {
   OnNotificationResult(CONTINUE);
 }
 
-void NotificationManager::SetAppImage(const std::string& id,
-                                      const gfx::ImageSkia& image) {
+void NotificationManager::OnAppImageUpdated(const std::string& id,
+                                            const gfx::ImageSkia& image) {
   extension_icon_.reset(new gfx::Image(image));
   g_browser_process->message_center()->UpdateNotification(
       file_system_info_.mount_path().value(), CreateNotification());

@@ -11,7 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
-#include "chrome/browser/extensions/app_icon_loader_impl.h"
+#include "chrome/browser/extensions/extension_app_icon_loader.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/common/extension.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -88,8 +88,8 @@ void RequestFileSystemNotification::ShowAutoGrantedNotification(
     request_file_system_notification->Show(std::move(notification));
 }
 
-void RequestFileSystemNotification::SetAppImage(const std::string& id,
-                                                const gfx::ImageSkia& image) {
+void RequestFileSystemNotification::OnAppImageUpdated(
+    const std::string& id, const gfx::ImageSkia& image) {
   extension_icon_.reset(new gfx::Image(image));
 
   // If there is a pending notification, then show it now.
@@ -104,7 +104,7 @@ RequestFileSystemNotification::RequestFileSystemNotification(
     Profile* profile,
     const extensions::Extension& extension)
     : icon_loader_(
-          new extensions::AppIconLoaderImpl(profile, kIconSize, this)) {
+          new extensions::ExtensionAppIconLoader(profile, kIconSize, this)) {
   icon_loader_->FetchImage(extension.id());
 }
 

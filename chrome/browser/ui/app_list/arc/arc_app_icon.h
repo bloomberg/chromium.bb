@@ -31,7 +31,7 @@ class ArcAppIcon {
    public:
     // Invoked when a new image rep for an additional scale factor
     // is loaded and added to |image|.
-    virtual void OnIconUpdated() = 0;
+    virtual void OnIconUpdated(ArcAppIcon* icon) = 0;
 
    protected:
     virtual ~Observer() {}
@@ -43,6 +43,7 @@ class ArcAppIcon {
              Observer* observer);
   ~ArcAppIcon();
 
+  const std::string& app_id() const { return app_id_; }
   gfx::Image image() const { return image_; }
   const gfx::ImageSkia& image_skia() const { return image_skia_; }
 

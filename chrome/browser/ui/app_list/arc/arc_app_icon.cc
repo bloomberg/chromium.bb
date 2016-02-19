@@ -271,7 +271,7 @@ void ArcAppIcon::Update(const gfx::ImageSkia* image) {
 
   image_ = gfx::Image(image_skia_);
 
-  observer_->OnIconUpdated();
+  observer_->OnIconUpdated(this);
 }
 
 void ArcAppIcon::DiscardDecodeRequest(DecodeRequest* request) {

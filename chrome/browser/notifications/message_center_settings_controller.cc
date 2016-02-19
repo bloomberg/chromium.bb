@@ -17,7 +17,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/extensions/app_icon_loader_impl.h"
+#include "chrome/browser/extensions/extension_app_icon_loader.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/notifications/notifier_state_tracker.h"
@@ -215,7 +215,7 @@ void MessageCenterSettingsController::GetNotifierList(
   // back to the default icon. The fetched icon will be resized in the settings
   // dialog. See chrome/browser/extensions/extension_icon_image.cc and
   // crbug.com/222931
-  app_icon_loader_.reset(new extensions::AppIconLoaderImpl(
+  app_icon_loader_.reset(new extensions::ExtensionAppIconLoader(
       profile, extension_misc::EXTENSION_ICON_SMALL, this));
   for (extensions::ExtensionSet::const_iterator iter = extension_set.begin();
        iter != extension_set.end();
@@ -428,8 +428,8 @@ void MessageCenterSettingsController::ActiveUserChanged(
 }
 #endif
 
-void MessageCenterSettingsController::SetAppImage(const std::string& id,
-                                                  const gfx::ImageSkia& image) {
+void MessageCenterSettingsController::OnAppImageUpdated(
+    const std::string& id, const gfx::ImageSkia& image) {
   FOR_EACH_OBSERVER(message_center::NotifierSettingsObserver,
                     observers_,
                     UpdateIconImage(NotifierId(NotifierId::APPLICATION, id),

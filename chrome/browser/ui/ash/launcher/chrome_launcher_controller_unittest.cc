@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <algorithm>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -151,24 +152,31 @@ class TestShelfModelObserver : public ash::ShelfModelObserver {
 };
 
 // Test implementation of AppIconLoader.
-class TestAppIconLoaderImpl : public extensions::AppIconLoader {
+class TestAppIconLoaderImpl : public AppIconLoader {
  public:
-  TestAppIconLoaderImpl() : fetch_count_(0) {
-  }
+  TestAppIconLoaderImpl() = default;
+  ~TestAppIconLoaderImpl() override = default;
 
-  ~TestAppIconLoaderImpl() override {}
+  void AddSupportedApp(const std::string& id) { supported_apps_.insert(id); }
 
   // AppIconLoader implementation:
+  bool CanLoadImageForApp(const std::string& id) override {
+    return supported_apps_.find(id) != supported_apps_.end();
+  }
+
   void FetchImage(const std::string& id) override { ++fetch_count_; }
 
-  void ClearImage(const std::string& id) override {}
+  void ClearImage(const std::string& id) override { ++clear_count_; }
 
   void UpdateImage(const std::string& id) override {}
 
   int fetch_count() const { return fetch_count_; }
+  int clear_count() const { return clear_count_; }
 
  private:
-  int fetch_count_;
+  int fetch_count_ = 0;
+  int clear_count_ = 0;
+  std::set<std::string> supported_apps_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAppIconLoaderImpl);
 };
@@ -466,8 +474,18 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     browser()->window()->Show();
   }
 
-  void SetAppIconLoader(extensions::AppIconLoader* loader) {
-    launcher_controller_->SetAppIconLoaderForTest(loader);
+  void SetAppIconLoader(scoped_ptr<AppIconLoader> loader) {
+    std::vector<scoped_ptr<AppIconLoader>> loaders;
+    loaders.push_back(std::move(loader));
+    launcher_controller_->SetAppIconLoadersForTest(loaders);
+  }
+
+  void SetAppIconLoaders(scoped_ptr<AppIconLoader> loader1,
+                         scoped_ptr<AppIconLoader> loader2) {
+    std::vector<scoped_ptr<AppIconLoader>> loaders;
+    loaders.push_back(std::move(loader1));
+    loaders.push_back(std::move(loader2));
+    launcher_controller_->SetAppIconLoadersForTest(loaders);
   }
 
   void SetAppTabHelper(ChromeLauncherController::AppTabHelper* helper) {
@@ -2533,11 +2551,13 @@ TEST_F(ChromeLauncherControllerTest, AppPanels) {
   // App list and Browser shortcut ShelfItems are added.
   EXPECT_EQ(2, model_observer_->added());
 
+  const std::string app_id = extension1_->id();
+  // app_icon_loader is owned by ChromeLauncherController.
   TestAppIconLoaderImpl* app_icon_loader = new TestAppIconLoaderImpl();
-  SetAppIconLoader(app_icon_loader);
+  app_icon_loader->AddSupportedApp(app_id);
+  SetAppIconLoader(scoped_ptr<AppIconLoader>(app_icon_loader));
 
   // Test adding an app panel
-  std::string app_id = extension1_->id();
   AppWindowLauncherItemController* app_panel_controller =
       new AppWindowLauncherItemController(
           LauncherItemController::TYPE_APP_PANEL,
@@ -2558,7 +2578,7 @@ TEST_F(ChromeLauncherControllerTest, AppPanels) {
   // Setting the app image image should not change the panel if it set its icon
   app_panel_controller->set_image_set_by_controller(true);
   gfx::ImageSkia image;
-  launcher_controller_->SetAppImage(app_id, image);
+  launcher_controller_->OnAppImageUpdated(app_id, image);
   EXPECT_EQ(0, model_observer_->changed());
   model_observer_->clear_counts();
 
@@ -2718,8 +2738,10 @@ TEST_F(ChromeLauncherControllerTest, PersistPinned) {
   app_tab_helper->SetAppID(tab_strip_model->GetWebContentsAt(0), "1");
   SetAppTabHelper(app_tab_helper);
 
+  // app_icon_loader is owned by ChromeLauncherController.
   TestAppIconLoaderImpl* app_icon_loader = new TestAppIconLoaderImpl;
-  SetAppIconLoader(app_icon_loader);
+  app_icon_loader->AddSupportedApp("1");
+  SetAppIconLoader(scoped_ptr<AppIconLoader>(app_icon_loader));
   EXPECT_EQ(0, app_icon_loader->fetch_count());
 
   launcher_controller_->PinAppWithID("1");
@@ -2748,8 +2770,10 @@ TEST_F(ChromeLauncherControllerTest, PersistPinned) {
   app_tab_helper = new TestAppTabHelperImpl;
   app_tab_helper->SetAppID(tab_strip_model->GetWebContentsAt(0), "1");
   SetAppTabHelper(app_tab_helper);
+  // app_icon_loader is owned by ChromeLauncherController.
   app_icon_loader = new TestAppIconLoaderImpl;
-  SetAppIconLoader(app_icon_loader);
+  app_icon_loader->AddSupportedApp("1");
+  SetAppIconLoader(scoped_ptr<AppIconLoader>(app_icon_loader));
   if (!ash::Shell::HasInstance()) {
     item_delegate_manager_ = new ash::ShelfItemDelegateManager(model_.get());
     SetShelfItemDelegateManager(item_delegate_manager_);
@@ -2764,4 +2788,73 @@ TEST_F(ChromeLauncherControllerTest, PersistPinned) {
 
   launcher_controller_->UnpinAppWithID("1");
   ASSERT_EQ(initial_size, model_->items().size());
+}
+
+TEST_F(ChromeLauncherControllerTest, MultipleAppIconLoaders) {
+  InitLauncherControllerWithBrowser();
+
+  const std::string app_id1 = extension1_->id();
+  const std::string app_id2 = extension2_->id();
+  const std::string app_id3 = extension3_->id();
+  // app_icon_loader1 and app_icon_loader2 are owned by
+  // ChromeLauncherController.
+  TestAppIconLoaderImpl* app_icon_loader1 = new TestAppIconLoaderImpl();
+  TestAppIconLoaderImpl* app_icon_loader2 = new TestAppIconLoaderImpl();
+  app_icon_loader1->AddSupportedApp(app_id1);
+  app_icon_loader2->AddSupportedApp(app_id2);
+  SetAppIconLoaders(scoped_ptr<AppIconLoader>(app_icon_loader1),
+                    scoped_ptr<AppIconLoader>(app_icon_loader2));
+
+  AppWindowLauncherItemController* app_panel_controller3 =
+      new AppWindowLauncherItemController(
+          LauncherItemController::TYPE_APP_PANEL, "id", app_id3,
+          launcher_controller_.get());
+  const ash::ShelfID shelfId3 = launcher_controller_->CreateAppLauncherItem(
+      app_panel_controller3, app_id3, ash::STATUS_RUNNING);
+  EXPECT_EQ(0, app_icon_loader1->fetch_count());
+  EXPECT_EQ(0, app_icon_loader1->clear_count());
+  EXPECT_EQ(0, app_icon_loader2->fetch_count());
+  EXPECT_EQ(0, app_icon_loader2->clear_count());
+
+  AppWindowLauncherItemController* app_panel_controller2 =
+      new AppWindowLauncherItemController(
+          LauncherItemController::TYPE_APP_PANEL, "id", app_id2,
+          launcher_controller_.get());
+  const ash::ShelfID shelfId2 = launcher_controller_->CreateAppLauncherItem(
+      app_panel_controller2, app_id2, ash::STATUS_RUNNING);
+  EXPECT_EQ(0, app_icon_loader1->fetch_count());
+  EXPECT_EQ(0, app_icon_loader1->clear_count());
+  EXPECT_EQ(1, app_icon_loader2->fetch_count());
+  EXPECT_EQ(0, app_icon_loader2->clear_count());
+
+  // Test adding an app panel
+  AppWindowLauncherItemController* app_panel_controller1 =
+      new AppWindowLauncherItemController(
+          LauncherItemController::TYPE_APP_PANEL, "id", app_id1,
+          launcher_controller_.get());
+
+  const ash::ShelfID shelfId1 = launcher_controller_->CreateAppLauncherItem(
+      app_panel_controller1, app_id1, ash::STATUS_RUNNING);
+  EXPECT_EQ(1, app_icon_loader1->fetch_count());
+  EXPECT_EQ(0, app_icon_loader1->clear_count());
+  EXPECT_EQ(1, app_icon_loader2->fetch_count());
+  EXPECT_EQ(0, app_icon_loader2->clear_count());
+
+  launcher_controller_->CloseLauncherItem(shelfId1);
+  EXPECT_EQ(1, app_icon_loader1->fetch_count());
+  EXPECT_EQ(1, app_icon_loader1->clear_count());
+  EXPECT_EQ(1, app_icon_loader2->fetch_count());
+  EXPECT_EQ(0, app_icon_loader2->clear_count());
+
+  launcher_controller_->CloseLauncherItem(shelfId2);
+  EXPECT_EQ(1, app_icon_loader1->fetch_count());
+  EXPECT_EQ(1, app_icon_loader1->clear_count());
+  EXPECT_EQ(1, app_icon_loader2->fetch_count());
+  EXPECT_EQ(1, app_icon_loader2->clear_count());
+
+  launcher_controller_->CloseLauncherItem(shelfId3);
+  EXPECT_EQ(1, app_icon_loader1->fetch_count());
+  EXPECT_EQ(1, app_icon_loader1->clear_count());
+  EXPECT_EQ(1, app_icon_loader2->fetch_count());
+  EXPECT_EQ(1, app_icon_loader2->clear_count());
 }

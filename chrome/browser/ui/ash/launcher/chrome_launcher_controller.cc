@@ -31,7 +31,7 @@
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/extensions/app_icon_loader_impl.h"
+#include "chrome/browser/extensions/extension_app_icon_loader.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -100,6 +100,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 #include "chrome/browser/ui/ash/launcher/multi_profile_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/multi_profile_browser_status_monitor.h"
@@ -856,8 +857,8 @@ const std::string& ChromeLauncherController::GetAppIDForShelfID(
   return controller->app_id();
 }
 
-void ChromeLauncherController::SetAppImage(const std::string& id,
-                                           const gfx::ImageSkia& image) {
+void ChromeLauncherController::OnAppImageUpdated(const std::string& id,
+                                                 const gfx::ImageSkia& image) {
   // TODO: need to get this working for shortcuts.
   for (IDToItemControllerMap::const_iterator i =
            id_to_item_controller_map_.begin();
@@ -1256,10 +1257,14 @@ void ChromeLauncherController::AdditionalUserAddedToSession(Profile* profile) {
 void ChromeLauncherController::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const Extension* extension) {
-  if (IsAppPinned(extension->id())) {
+  const std::string& app_id = extension->id();
+  if (IsAppPinned(app_id)) {
     // Clear and re-fetch to ensure icon is up-to-date.
-    app_icon_loader_->ClearImage(extension->id());
-    app_icon_loader_->FetchImage(extension->id());
+    AppIconLoader* app_icon_loader = GetAppIconLoaderForApp(app_id);
+    if (app_icon_loader) {
+      app_icon_loader->ClearImage(app_id);
+      app_icon_loader->FetchImage(app_id);
+    }
   }
 
   UpdateAppLaunchersFromPref();
@@ -1269,24 +1274,27 @@ void ChromeLauncherController::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
     UnloadedExtensionInfo::Reason reason) {
-  const std::string& id = extension->id();
+  const std::string& app_id = extension->id();
   const Profile* profile = Profile::FromBrowserContext(browser_context);
 
   // Since we might have windowed apps of this type which might have
   // outstanding locks which needs to be removed.
-  if (GetShelfIDForAppID(id) &&
+  if (GetShelfIDForAppID(app_id) &&
       reason == UnloadedExtensionInfo::REASON_UNINSTALL) {
-    CloseWindowedAppsFromRemovedExtension(id, profile);
+    CloseWindowedAppsFromRemovedExtension(app_id, profile);
   }
 
-  if (IsAppPinned(id)) {
+  if (IsAppPinned(app_id)) {
+    AppIconLoader* app_icon_loader = GetAppIconLoaderForApp(app_id);
     if (reason == UnloadedExtensionInfo::REASON_UNINSTALL) {
       if (profile == profile_) {
-        DoUnpinAppWithID(id);
+        DoUnpinAppWithID(app_id);
       }
-      app_icon_loader_->ClearImage(id);
+      if (app_icon_loader)
+        app_icon_loader->ClearImage(app_id);
     } else {
-      app_icon_loader_->UpdateImage(id);
+      if (app_icon_loader)
+        app_icon_loader->UpdateImage(app_id);
     }
   }
 }
@@ -1459,9 +1467,11 @@ void ChromeLauncherController::SetAppTabHelperForTest(AppTabHelper* helper) {
   app_tab_helper_.reset(helper);
 }
 
-void ChromeLauncherController::SetAppIconLoaderForTest(
-    extensions::AppIconLoader* loader) {
-  app_icon_loader_.reset(loader);
+void ChromeLauncherController::SetAppIconLoadersForTest(
+    std::vector<scoped_ptr<AppIconLoader>>& loaders) {
+  app_icon_loaders_.clear();
+  for (auto& loader : loaders)
+    app_icon_loaders_.push_back(std::move(loader));
 }
 
 const std::string& ChromeLauncherController::GetAppIdFromShelfIdForTest(
@@ -1587,7 +1597,10 @@ void ChromeLauncherController::LauncherItemClosed(ash::ShelfID id) {
   IDToItemControllerMap::iterator iter = id_to_item_controller_map_.find(id);
   CHECK(iter != id_to_item_controller_map_.end());
   CHECK(iter->second);
-  app_icon_loader_->ClearImage(iter->second->app_id());
+  const std::string& app_id = iter->second->app_id();
+  AppIconLoader* app_icon_loader = GetAppIconLoaderForApp(app_id);
+  if (app_icon_loader)
+    app_icon_loader->ClearImage(app_id);
   id_to_item_controller_map_.erase(iter);
   int index = model_->ItemIndexByID(id);
   // A "browser proxy" is not known to the model and this removal does
@@ -1921,8 +1934,11 @@ ash::ShelfID ChromeLauncherController::InsertAppLauncherItem(
 
   model_->AddAt(index, item);
 
-  app_icon_loader_->FetchImage(app_id);
-  app_icon_loader_->UpdateImage(app_id);
+  AppIconLoader* app_icon_loader = GetAppIconLoaderForApp(app_id);
+  if (app_icon_loader) {
+    app_icon_loader->FetchImage(app_id);
+    app_icon_loader->UpdateImage(app_id);
+  }
 
   SetShelfItemDelegate(id, controller);
 
@@ -2180,8 +2196,16 @@ void ChromeLauncherController::AttachProfile(Profile* profile) {
   // Since icon size changes are possible, the icon could be requested to be
   // reloaded. However - having it not multi profile aware would cause problems
   // if the icon cache gets deleted upon user switch.
-  app_icon_loader_.reset(new extensions::AppIconLoaderImpl(
+  scoped_ptr<AppIconLoader> extension_app_icon_loader(
+      new extensions::ExtensionAppIconLoader(
+          profile_, extension_misc::EXTENSION_ICON_SMALL, this));
+  app_icon_loaders_.push_back(std::move(extension_app_icon_loader));
+
+#if defined(OS_CHROMEOS)
+  scoped_ptr<AppIconLoader> arc_app_icon_loader(new ArcAppIconLoader(
       profile_, extension_misc::EXTENSION_ICON_SMALL, this));
+  app_icon_loaders_.push_back(std::move(arc_app_icon_loader));
+#endif
 
   pref_change_registrar_.Init(profile_->GetPrefs());
   pref_change_registrar_.Add(
@@ -2224,4 +2248,14 @@ void ChromeLauncherController::ReleaseProfile() {
   PrefServiceSyncableFromProfile(profile_)->RemoveObserver(this);
 
   pref_change_registrar_.RemoveAll();
+}
+
+AppIconLoader* ChromeLauncherController::GetAppIconLoaderForApp(
+    const std::string& app_id) {
+  for (const auto& app_icon_loader : app_icon_loaders_) {
+    if (app_icon_loader->CanLoadImageForApp(app_id))
+      return app_icon_loader.get();
+  }
+
+  return nullptr;
 }

@@ -60,17 +60,17 @@ class ArcAppListPrefs : public KeyedService,
    public:
     // Notifies an observer that new app is registered.
     virtual void OnAppRegistered(const std::string& app_id,
-                                 const AppInfo& app_info) = 0;
+                                 const AppInfo& app_info) {}
     // Notifies an observer that app ready state has been changed.
-    virtual void OnAppReadyChanged(const std::string& id, bool ready) = 0;
+    virtual void OnAppReadyChanged(const std::string& id, bool ready) {}
     // Notifies an observer that app was removed.
-    virtual void OnAppRemoved(const std::string& id) = 0;
+    virtual void OnAppRemoved(const std::string& id) {}
     // Notifies an observer that app icon has been installed or updated.
     virtual void OnAppIconUpdated(const std::string& id,
-                                  ui::ScaleFactor scale_factor) = 0;
+                                  ui::ScaleFactor scale_factor) {}
     // Notifies an observer that the name of an app has changed.
     virtual void OnAppNameUpdated(const std::string& id,
-                                  const std::string& name) = 0;
+                                  const std::string& name) {}
 
    protected:
     virtual ~Observer() {}

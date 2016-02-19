@@ -114,6 +114,6 @@ void ArcAppItem::UpdatePositionFromOrdering() {
   set_position(pos);
 }
 
-void ArcAppItem::OnIconUpdated() {
+void ArcAppItem::OnIconUpdated(ArcAppIcon* icon) {
   UpdateIcon();
 }

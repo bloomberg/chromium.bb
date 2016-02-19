@@ -36,7 +36,12 @@ ArcBridgeService::~ArcBridgeService() {
 
 // static
 ArcBridgeService* ArcBridgeService::Get() {
-  DCHECK(g_arc_bridge_service);
+  if (!g_arc_bridge_service) {
+    // ArcBridgeService may be indirectly referenced in unit tests where
+    // ArcBridgeService is optional.
+    LOG(ERROR) << "ArcBridgeService is not ready.";
+    return nullptr;
+  }
   DCHECK(g_arc_bridge_service->CalledOnValidThread());
   return g_arc_bridge_service;
 }

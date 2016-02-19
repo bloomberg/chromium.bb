@@ -115,22 +115,16 @@ ArcAppListPrefs::ArcAppListPrefs(const base::FilePath& base_path,
       binding_(this), weak_ptr_factory_(this) {
   base_path_ = base_path.AppendASCII(prefs::kArcApps);
 
-  if (!bridge_service_) {
-    NOTREACHED();
+  if (!bridge_service_)
     return;
-  }
 
   bridge_service_->AddObserver(this);
   OnStateChanged(bridge_service_->state());
 }
 
 ArcAppListPrefs::~ArcAppListPrefs() {
-  if (!bridge_service_) {
-    NOTREACHED();
-    return;
-  }
-
-  bridge_service_->RemoveObserver(this);
+  if (bridge_service_)
+    bridge_service_->RemoveObserver(this);
 }
 
 base::FilePath ArcAppListPrefs::GetAppPath(const std::string& app_id) const {
@@ -255,12 +249,13 @@ bool ArcAppListPrefs::IsRegistered(const std::string& app_id) const {
 }
 
 void ArcAppListPrefs::DisableAllApps() {
-  for (auto& app_id : ready_apps_)
+  std::set<std::string> old_ready_apps;
+  old_ready_apps.swap(ready_apps_);
+  for (auto& app_id : old_ready_apps) {
     FOR_EACH_OBSERVER(Observer,
                       observer_list_,
                       OnAppReadyChanged(app_id, false));
-
-  ready_apps_.clear();
+  }
 }
 
 void ArcAppListPrefs::OnStateChanged(arc::ArcBridgeService::State state) {

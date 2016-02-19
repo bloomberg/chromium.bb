@@ -25,7 +25,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "build/build_config.h"
-#include "chrome/browser/extensions/app_icon_loader.h"
+#include "chrome/browser/ui/app_icon_loader.h"
 #include "chrome/browser/ui/ash/app_sync_ui_state_observer.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_types.h"
@@ -90,7 +90,7 @@ class ChromeLauncherController
       public ash::ShellObserver,
       public ash::WindowTreeHostManager::Observer,
       public extensions::ExtensionRegistryObserver,
-      public extensions::AppIconLoader::Delegate,
+      public AppIconLoaderDelegate,
       public syncable_prefs::PrefServiceSyncableObserver,
       public AppSyncUIStateObserver,
       public ExtensionEnableFlowDelegate,
@@ -330,9 +330,9 @@ class ChromeLauncherController
   void ExtensionEnableFlowFinished() override;
   void ExtensionEnableFlowAborted(bool user_initiated) override;
 
-  // extensions::AppIconLoader:
-  void SetAppImage(const std::string& app_id,
-                   const gfx::ImageSkia& image) override;
+  // AppIconLoaderDelegate:
+  void OnAppImageUpdated(const std::string& app_id,
+                         const gfx::ImageSkia& image) override;
 
   // ash::ShelfLayoutManagerObserver:
   void OnAutoHideBehaviorChanged(
@@ -416,7 +416,8 @@ class ChromeLauncherController
   // Sets the AppTabHelper/AppIconLoader, taking ownership of the helper class.
   // These are intended for testing.
   void SetAppTabHelperForTest(AppTabHelper* helper);
-  void SetAppIconLoaderForTest(extensions::AppIconLoader* loader);
+  void SetAppIconLoadersForTest(
+      std::vector<scoped_ptr<AppIconLoader>>& loaders);
   const std::string& GetAppIdFromShelfIdForTest(ash::ShelfID id);
 
   // Sets the ash::ShelfItemDelegateManager only for unittests and doesn't
@@ -551,6 +552,8 @@ class ChromeLauncherController
   // Forget the current profile to allow attaching to a new one.
   void ReleaseProfile();
 
+  AppIconLoader* GetAppIconLoaderForApp(const std::string& app_id);
+
   static ChromeLauncherController* instance_;
 
   ash::ShelfModel* model_;
@@ -573,8 +576,8 @@ class ChromeLauncherController
   // Used to get app info for tabs.
   scoped_ptr<AppTabHelper> app_tab_helper_;
 
-  // Used to load the image for an app item.
-  scoped_ptr<extensions::AppIconLoader> app_icon_loader_;
+  // Used to load the image for an extension app item.
+  std::vector<scoped_ptr<AppIconLoader>> app_icon_loaders_;
 
   PrefChangeRegistrar pref_change_registrar_;
 

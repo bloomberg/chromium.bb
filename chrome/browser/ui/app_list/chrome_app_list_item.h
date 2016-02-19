@@ -30,6 +30,8 @@ class ChromeAppListItem : public app_list::AppListItem {
   static void OverrideAppListControllerDelegateForTesting(
       AppListControllerDelegate* controller);
 
+  static gfx::ImageSkia CreateDisabledIcon(const gfx::ImageSkia& icon);
+
  protected:
   ChromeAppListItem(Profile* profile, const std::string& app_id);
   ~ChromeAppListItem() override;
@@ -43,8 +45,6 @@ class ChromeAppListItem : public app_list::AppListItem {
   // Updates item position and name from |sync_item|. |sync_item| must be valid.
   void UpdateFromSync(
       const app_list::AppListSyncableService::SyncItem* sync_item);
-
-  static gfx::ImageSkia CreateDisabledIcon(const gfx::ImageSkia& icon);
 
  private:
   Profile* profile_;
