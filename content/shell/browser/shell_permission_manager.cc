@@ -23,7 +23,6 @@ int ShellPermissionManager::RequestPermission(
     PermissionType permission,
     RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
-    bool user_gesture,
     const base::Callback<void(PermissionStatus)>& callback) {
   callback.Run(permission == PermissionType::GEOLOCATION
                    ? PermissionStatus::GRANTED
@@ -35,7 +34,6 @@ int ShellPermissionManager::RequestPermissions(
     const std::vector<PermissionType>& permissions,
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
-    bool user_gesture,
     const base::Callback<void(
         const std::vector<PermissionStatus>&)>& callback) {
   std::vector<PermissionStatus> result(permissions.size());

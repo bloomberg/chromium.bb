@@ -132,7 +132,6 @@ void PermissionServiceImpl::RequestPermission(
       PermissionNameToPermissionType(permission),
       context_->render_frame_host(),
       GURL(origin.get()),
-      user_gesture, // TODO(mlamouri): should be removed (crbug.com/423770)
       base::Bind(&PermissionServiceImpl::OnRequestPermissionResponse,
                  weak_factory_.GetWeakPtr(),
                  pending_request_id));
@@ -193,7 +192,6 @@ void PermissionServiceImpl::RequestPermissions(
       types,
       context_->render_frame_host(),
       GURL(origin.get()),
-      user_gesture, // TODO(mlamouri): should be removed (crbug.com/423770)
       base::Bind(&PermissionServiceImpl::OnRequestPermissionsResponse,
                  weak_factory_.GetWeakPtr(),
                  pending_request_id));

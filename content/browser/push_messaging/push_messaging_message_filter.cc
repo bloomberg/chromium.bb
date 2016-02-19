@@ -428,7 +428,7 @@ void PushMessagingMessageFilter::Core::RegisterOnUI(
               ->GetPermissionManager()
               ->RequestPermission(
                   PermissionType::PUSH_MESSAGING, render_frame_host,
-                  data.requesting_origin, false /* user_gesture */,
+                  data.requesting_origin,
                   base::Bind(&PushMessagingMessageFilter::Core::
                                  DidRequestPermissionInIncognito,
                              weak_factory_ui_to_ui_.GetWeakPtr(), data));

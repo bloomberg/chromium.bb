@@ -22,7 +22,6 @@ int CastPermissionManager::RequestPermission(
     content::PermissionType permission,
     content::RenderFrameHost* render_frame_host,
     const GURL& origin,
-    bool user_gesture,
     const base::Callback<void(content::PermissionStatus)>& callback) {
   LOG(INFO) << __FUNCTION__ << ": " << static_cast<int>(permission);
   callback.Run(content::PermissionStatus::GRANTED);
@@ -33,7 +32,6 @@ int CastPermissionManager::RequestPermissions(
     const std::vector<content::PermissionType>& permissions,
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
-    bool user_gesture,
     const base::Callback<void(
         const std::vector<content::PermissionStatus>&)>& callback) {
   callback.Run(std::vector<content::PermissionStatus>(

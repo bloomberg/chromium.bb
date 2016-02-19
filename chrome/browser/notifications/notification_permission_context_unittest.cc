@@ -230,7 +230,7 @@ TEST_F(NotificationPermissionContextTest, TestCancelledIncognitoRequest) {
   // failing, PermissionManager::OnPermissionsRequestResponseStatus will crash.
   int request_id = permission_manager->RequestPermission(
       content::PermissionType::NOTIFICATIONS, web_contents()->GetMainFrame(),
-      url.GetOrigin(), true /* user_gesture */, base::Bind(&DoNothing2));
+      url.GetOrigin(), base::Bind(&DoNothing2));
 
   permission_manager->CancelPermissionRequest(request_id);
 

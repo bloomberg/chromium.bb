@@ -21,7 +21,6 @@ int BlimpPermissionManager::RequestPermission(
     content::PermissionType permission,
     content::RenderFrameHost* render_frame_host,
     const GURL& origin,
-    bool user_gesture,
     const base::Callback<void(content::PermissionStatus)>& callback) {
   callback.Run(content::PermissionStatus::DENIED);
   return kNoPendingOperation;
@@ -31,7 +30,6 @@ int BlimpPermissionManager::RequestPermissions(
     const std::vector<content::PermissionType>& permission,
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
-    bool user_gesture,
     const base::Callback<void(const std::vector<content::PermissionStatus>&)>&
         callback) {
   callback.Run(std::vector<content::PermissionStatus>(

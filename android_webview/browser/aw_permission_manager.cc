@@ -169,7 +169,6 @@ int AwPermissionManager::RequestPermission(
     PermissionType permission,
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
-    bool user_gesture,
     const base::Callback<void(PermissionStatus)>& callback) {
   int render_process_id = render_frame_host->GetProcess()->GetID();
   int render_frame_id = render_frame_host->GetRoutingID();
@@ -262,7 +261,6 @@ int AwPermissionManager::RequestPermissions(
     const std::vector<PermissionType>& permissions,
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
-    bool user_gesture,
     const base::Callback<void(
         const std::vector<PermissionStatus>&)>& callback) {
   NOTIMPLEMENTED() << "RequestPermissions has not been implemented in WebView";
