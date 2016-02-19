@@ -113,7 +113,7 @@ bool WallpaperSetWallpaperFunction::RunAsync() {
 
   if (params_->details.data) {
     StartDecode(*params_->details.data);
-  } else {
+  } else if (params_->details.url) {
     GURL wallpaper_url(*params_->details.url);
     if (wallpaper_url.is_valid()) {
       g_wallpaper_fetcher.Get().FetchWallpaper(
@@ -123,6 +123,9 @@ bool WallpaperSetWallpaperFunction::RunAsync() {
       SetError("URL is invalid.");
       SendResponse(false);
     }
+  } else {
+    SetError("Either url or data field is required.");
+    SendResponse(false);
   }
   return true;
 }
