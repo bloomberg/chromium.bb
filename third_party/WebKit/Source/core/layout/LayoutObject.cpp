@@ -2684,7 +2684,9 @@ enum FindReferencingScrollAnchorsBehavior {
 
 static bool findReferencingScrollAnchors(LayoutObject* layoutObject, FindReferencingScrollAnchorsBehavior behavior)
 {
-    PaintLayer* layer = layoutObject->enclosingLayer();
+    PaintLayer* layer = nullptr;
+    if (LayoutObject* parent = layoutObject->parent())
+        layer = parent->enclosingLayer();
     bool found = false;
 
     // Walk up the layer tree to clear any scroll anchors that reference us.

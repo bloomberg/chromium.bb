@@ -274,9 +274,6 @@ void FrameView::dispose()
         scrollAnimator->cancelAnimation();
     cancelProgrammaticScrollAnimation();
 
-    if (RuntimeEnabledFeatures::scrollAnchoringEnabled())
-        m_scrollAnchor.clear();
-
     detachScrollbars();
 
     // When the view is no longer associated with a frame, it needs to be removed from the ax object cache

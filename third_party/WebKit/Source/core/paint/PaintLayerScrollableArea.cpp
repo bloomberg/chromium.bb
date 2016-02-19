@@ -155,7 +155,10 @@ void PaintLayerScrollableArea::dispose()
 
     clearScrollAnimators();
 
-    if (RuntimeEnabledFeatures::scrollAnchoringEnabled())
+    // Note: it is not safe to call ScrollAnchor::clear if the document is being destroyed,
+    // because LayoutObjectChildList::removeChildNode skips the call to willBeRemovedFromTree,
+    // leaving the ScrollAnchor with a stale LayoutObject pointer.
+    if (RuntimeEnabledFeatures::scrollAnchoringEnabled() && !box().documentBeingDestroyed())
         m_scrollAnchor.clear();
 
 #if ENABLE(ASSERT)
