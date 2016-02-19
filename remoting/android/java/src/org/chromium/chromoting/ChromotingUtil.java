@@ -4,15 +4,19 @@
 
 package org.chromium.chromoting;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.Log;
 
 /** Utility methods for chromoting code. */
 public abstract class ChromotingUtil {
@@ -67,5 +71,26 @@ public abstract class ChromotingUtil {
         } else {
             throw new Resources.NotFoundException("Attribute not a color.");
         }
+    }
+
+    /**
+     * Starts a new Activity only if the system can resolve the given Intent. Useful for implicit
+     * intents where the system might not have an application that can handle it.
+     * @param context The parent context.
+     * @param intent The (implicit) intent to launch.
+     * @return True if the intent was resolved.
+     */
+    public static boolean startActivitySafely(Context context, Intent intent) {
+        if (intent.resolveActivity(context.getPackageManager()) == null) {
+            Log.w(TAG, "Unable to resolve activity for: %s", intent);
+            return false;
+        }
+        context.startActivity(intent);
+        return true;
+    }
+
+    /** Launches an external web browser or application. */
+    public static boolean openUrl(Activity parentActivity, Uri uri) {
+        return startActivitySafely(parentActivity, new Intent(Intent.ACTION_VIEW, uri));
     }
 }

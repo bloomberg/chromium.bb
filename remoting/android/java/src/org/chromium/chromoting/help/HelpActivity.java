@@ -27,6 +27,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import org.chromium.base.Log;
+import org.chromium.chromoting.ChromotingUtil;
 import org.chromium.chromoting.R;
 import org.chromium.ui.UiUtils;
 
@@ -61,18 +62,6 @@ public class HelpActivity extends AppCompatActivity {
 
     /** Constant used to send the feedback parcel to the system feedback service. */
     private static final int SEND_FEEDBACK_INFO = Binder.FIRST_CALL_TRANSACTION;
-
-    /** Launches an external web browser or application. */
-    private void openUrl(String url) {
-        Uri uri = Uri.parse(url);
-        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-
-        // Verify that the device can launch an application for this intent, otherwise
-        // startActivity() may crash the application.
-        if (intent.resolveActivity(getPackageManager()) != null) {
-            startActivity(intent);
-        }
-    }
 
     private void sendFeedback() {
         Intent intent = new Intent(Intent.ACTION_BUG_REPORT);
@@ -148,13 +137,14 @@ public class HelpActivity extends AppCompatActivity {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 // Make sure any links to other websites open up in an external browser.
-                String host = Uri.parse(url).getHost();
+                Uri uri = Uri.parse(url);
+                String host = uri.getHost();
 
                 // Note that |host| might be null, so allow for this in the test for equality.
                 if (initialHost.equals(host)) {
                     return false;
                 }
-                openUrl(url);
+                ChromotingUtil.openUrl(HelpActivity.this, uri);
                 return true;
             }
         });
@@ -179,7 +169,7 @@ public class HelpActivity extends AppCompatActivity {
             return true;
         }
         if (id == R.id.actionbar_play_store) {
-            openUrl(PLAY_STORE_URL + getPackageName());
+            ChromotingUtil.openUrl(this, Uri.parse(PLAY_STORE_URL + getPackageName()));
             return true;
         }
         if (id == R.id.actionbar_credits) {

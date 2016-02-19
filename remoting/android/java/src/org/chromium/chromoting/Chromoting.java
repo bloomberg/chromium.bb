@@ -133,9 +133,7 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
                         Intent intent = new Intent(Settings.ACTION_ADD_ACCOUNT);
                         intent.putExtra(Settings.EXTRA_ACCOUNT_TYPES,
                                 new String[] { ACCOUNT_TYPE });
-                        if (intent.resolveActivity(getPackageManager()) != null) {
-                            startActivity(intent);
-                        }
+                        ChromotingUtil.startActivitySafely(Chromoting.this, intent);
                         finish();
                     }
                 });
