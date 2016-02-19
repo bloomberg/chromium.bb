@@ -56,6 +56,11 @@ const char kMetricsReportingEnabledTimestamp[] =
 // The metrics client session ID.
 const char kMetricsSessionID[] = "user_experience_metrics.session_id";
 
+// The prefix of the last-seen timestamp for persistent histogram files.
+// Values are named for the files themselves.
+const char kMetricsLastSeenPrefix[] =
+    "user_experience_metrics.last_seen.";
+
 // Number of times the browser has been able to register crash reporting.
 const char kStabilityBreakpadRegistrationSuccess[] =
     "user_experience_metrics.stability.breakpad_registration_ok";

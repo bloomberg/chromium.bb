@@ -350,6 +350,7 @@
       'metrics/cloned_install_detector_unittest.cc',
       'metrics/daily_event_unittest.cc',
       'metrics/drive_metrics_provider_unittest.cc',
+      'metrics/file_metrics_provider_unittest.cc',
       'metrics/histogram_encoder_unittest.cc',
       'metrics/machine_id_provider_win_unittest.cc',
       'metrics/metrics_log_manager_unittest.cc',

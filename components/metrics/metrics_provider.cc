@@ -47,4 +47,8 @@ void MetricsProvider::ProvideGeneralMetrics(
     ChromeUserMetricsExtension* uma_proto) {
 }
 
+void MetricsProvider::RecordHistogramSnapshots(
+    base::HistogramSnapshotManager* snapshot_manager) {
+}
+
 }  // namespace metrics

@@ -40,6 +40,8 @@
         'metrics/drive_metrics_provider_linux.cc',
         'metrics/drive_metrics_provider_mac.mm',
         'metrics/drive_metrics_provider_win.cc',
+        'metrics/file_metrics_provider.cc',
+        'metrics/file_metrics_provider.h',
         'metrics/histogram_encoder.cc',
         'metrics/histogram_encoder.h',
         'metrics/machine_id_provider.h',

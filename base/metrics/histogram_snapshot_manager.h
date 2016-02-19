@@ -9,6 +9,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -61,9 +62,14 @@ class BASE_EXPORT HistogramSnapshotManager {
   // until FinishDeltas() completes. PrepareAbsolute() works the same
   // but assumes there were no previous logged values and no future deltas
   // will be created (and thus can work on read-only histograms).
+  // Use Prepare*TakingOwnership() if it is desireable to have this class
+  // automatically delete the histogram once it is "finished".
   void StartDeltas();
   void PrepareDelta(HistogramBase* histogram);
+  void PrepareDeltaTakingOwnership(scoped_ptr<HistogramBase> histogram);
   void PrepareAbsolute(const HistogramBase* histogram);
+  void PrepareAbsoluteTakingOwnership(
+      scoped_ptr<const HistogramBase> histogram);
   void FinishDeltas();
 
  private:
@@ -75,24 +81,20 @@ class BASE_EXPORT HistogramSnapshotManager {
   // information that must persist from one report to the next, such as
   // the "inconsistencies".
   struct SampleInfo {
-    SampleInfo() : histogram(nullptr),
-                   accumulated_samples(nullptr),
-                   inconsistencies(0) {}
-
     // A histogram associated with this sample; it may be one of many if
     // several have been aggregated into the same "accumulated" sample set.
     // Ownership of the histogram remains elsewhere and this pointer is
     // cleared by FinishDeltas().
-    const HistogramBase* histogram;
+    const HistogramBase* histogram = nullptr;
 
     // The current snapshot-delta values being accumulated.
     // TODO(bcwhite): Change this to a scoped_ptr once all build architectures
     // support such as the value of a std::map.
-    HistogramSamples* accumulated_samples;
+    HistogramSamples* accumulated_samples = nullptr;
 
     // The set of inconsistencies (flags) already seen for the histogram.
     // See HistogramBase::Inconsistency for values.
-    uint32_t inconsistencies;
+    uint32_t inconsistencies = 0;
   };
 
   // Capture and hold samples from a histogram. This does all the heavy
@@ -108,6 +110,10 @@ class BASE_EXPORT HistogramSnapshotManager {
   // For histograms, track what has been previously seen, indexed
   // by the hash of the histogram name.
   std::map<uint64_t, SampleInfo> known_histograms_;
+
+  // Collection of histograms of which ownership has been passed to this
+  // object. They will be deleted by FinishDeltas().
+  std::vector<scoped_ptr<const HistogramBase>> owned_histograms_;
 
   // Indicates if deltas are currently being prepared.
   bool preparing_deltas_;

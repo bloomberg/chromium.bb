@@ -27,8 +27,9 @@ void HistogramSnapshotManager::StartDeltas() {
   DCHECK(!preparing_deltas_);
   preparing_deltas_ = true;
 
+  DCHECK(owned_histograms_.empty());
+
 #ifdef DEBUG
-  for (const auto& iter : known_histograms) {
     CHECK(!iter->second.histogram);
     CHECK(!iter->second.accumulated_samples);
     CHECK(!(iter->second.inconsistencies &
@@ -41,16 +42,28 @@ void HistogramSnapshotManager::PrepareDelta(HistogramBase* histogram) {
   PrepareSamples(histogram, histogram->SnapshotDelta());
 }
 
+void HistogramSnapshotManager::PrepareDeltaTakingOwnership(
+    scoped_ptr<HistogramBase> histogram) {
+  PrepareSamples(histogram.get(), histogram->SnapshotDelta());
+  owned_histograms_.push_back(std::move(histogram));
+}
+
 void HistogramSnapshotManager::PrepareAbsolute(const HistogramBase* histogram) {
   PrepareSamples(histogram, histogram->SnapshotSamples());
+}
+
+void HistogramSnapshotManager::PrepareAbsoluteTakingOwnership(
+    scoped_ptr<const HistogramBase> histogram) {
+  PrepareSamples(histogram.get(), histogram->SnapshotSamples());
+  owned_histograms_.push_back(std::move(histogram));
 }
 
 void HistogramSnapshotManager::FinishDeltas() {
   DCHECK(preparing_deltas_);
 
   // Iterate over all known histograms to see what should be recorded.
-  for (auto& iter : known_histograms_) {
-    SampleInfo* sample_info = &iter.second;
+  for (auto& hash_and_info : known_histograms_) {
+    SampleInfo* sample_info = &hash_and_info.second;
 
     // First, record any histograms in which corruption was detected.
     if (sample_info->inconsistencies & HistogramBase::NEW_INCONSISTENCY_FOUND) {
@@ -77,6 +90,7 @@ void HistogramSnapshotManager::FinishDeltas() {
     sample_info->histogram = nullptr;
   }
 
+  owned_histograms_.clear();
   preparing_deltas_ = false;
 }
 

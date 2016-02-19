@@ -41,6 +41,8 @@ if (is_win) {
       "installer_crash_reporter_client.h",
       "installer_crash_reporting.cc",
       "installer_crash_reporting.h",
+      "installer_metrics.cc",
+      "installer_metrics.h",
       "setup_constants.cc",
       "setup_constants.h",
       "setup_util.cc",

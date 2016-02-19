@@ -14,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/strings/string16.h"
 #include "base/threading/platform_thread.h"
@@ -30,8 +31,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/features.h"
+#include "chrome/installer/util/util_constants.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/drive_metrics_provider.h"
+#include "components/metrics/file_metrics_provider.h"
 #include "components/metrics/gpu/gpu_metrics_provider.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
@@ -128,6 +131,33 @@ bool ShouldClearSavedMetrics() {
 #endif
 }
 
+void RegisterInstallerFileMetricsPreferences(PrefRegistrySimple* registry) {
+#if defined(OS_WIN)
+  metrics::FileMetricsProvider::RegisterPrefs(
+      registry, installer::kSetupHistogramAllocatorName);
+#endif
+}
+
+void RegisterInstallerFileMetricsProvider(
+    metrics::MetricsService* metrics_service) {
+#if defined(OS_WIN)
+  scoped_ptr<metrics::FileMetricsProvider> file_metrics(
+    new metrics::FileMetricsProvider(
+        content::BrowserThread::GetBlockingPool()
+            ->GetTaskRunnerWithShutdownBehavior(
+                base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN),
+        g_browser_process->local_state()));
+  base::FilePath program_dir;
+  base::PathService::Get(base::DIR_EXE, &program_dir);
+  file_metrics->RegisterFile(
+      program_dir.AppendASCII(installer::kSetupHistogramAllocatorName)
+          .AddExtension(L".pma"),
+      metrics::FileMetricsProvider::FILE_HISTOGRAMS_ATOMIC,
+      installer::kSetupHistogramAllocatorName);
+  metrics_service->RegisterMetricsProvider(std::move(file_metrics));
+#endif
+}
+
 }  // namespace
 
 
@@ -176,6 +206,8 @@ scoped_ptr<ChromeMetricsServiceClient> ChromeMetricsServiceClient::Create(
 void ChromeMetricsServiceClient::RegisterPrefs(PrefRegistrySimple* registry) {
   metrics::MetricsService::RegisterPrefs(registry);
   metrics::StabilityMetricsHelper::RegisterPrefs(registry);
+
+  RegisterInstallerFileMetricsPreferences(registry);
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
   AndroidMetricsProvider::RegisterPrefs(registry);
@@ -334,6 +366,8 @@ void ChromeMetricsServiceClient::Initialize() {
   metrics_service_->RegisterMetricsProvider(
       scoped_ptr<metrics::MetricsProvider>(
           new metrics::ScreenInfoMetricsProvider));
+
+  RegisterInstallerFileMetricsProvider(metrics_service_.get());
 
   drive_metrics_provider_ = new metrics::DriveMetricsProvider(
       content::BrowserThread::GetMessageLoopProxyForThread(
@@ -523,7 +557,7 @@ void ChromeMetricsServiceClient::OnMemoryDetailCollectionDone() {
   }
 #endif  // !ENABLE_PRINT_PREVIEW
 
-  // Set up the callback to task to call after we receive histograms from all
+  // Set up the callback task to call after we receive histograms from all
   // child processes. |timeout| specifies how long to wait before absolutely
   // calling us back on the task.
   content::FetchHistogramsAsynchronously(base::MessageLoop::current(), callback,

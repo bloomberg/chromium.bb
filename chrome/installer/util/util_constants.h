@@ -253,6 +253,10 @@ const int kBsdiffErrorOffset = 600;
 extern const char kCourgette[];
 extern const char kBsdiff[];
 
+// Name of the allocator (and associated file) for storing histograms to be
+// reported by Chrome during its next upload.
+extern const char kSetupHistogramAllocatorName[];
+
 }  // namespace installer
 
 #endif  // CHROME_INSTALLER_UTIL_UTIL_CONSTANTS_H_

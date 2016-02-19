@@ -45,6 +45,7 @@
 #include "chrome/installer/setup/install.h"
 #include "chrome/installer/setup/install_worker.h"
 #include "chrome/installer/setup/installer_crash_reporting.h"
+#include "chrome/installer/setup/installer_metrics.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/setup/setup_util.h"
 #include "chrome/installer/setup/uninstall.h"
@@ -69,6 +70,7 @@
 #include "chrome/installer/util/self_cleaning_temp_dir.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/user_experiment.h"
+#include "chrome/installer/util/util_constants.h"
 #include "components/crash/content/app/crash_switches.h"
 #include "components/crash/content/app/run_as_crashpad_handler_win.h"
 #include "content/public/common/content_switches.h"
@@ -1624,6 +1626,9 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   if (!installer::IsProcessorSupported())
     return installer::CPU_NOT_SUPPORTED;
 
+  // Persist histograms so they can be uploaded later.
+  installer::BeginPersistentHistogramStorage();
+
   // The exit manager is in charge of calling the dtors of singletons.
   base::AtExitManager exit_manager;
   base::CommandLine::Init(0, NULL);
@@ -1782,6 +1787,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
     return_code = InstallUtil::GetInstallReturnCode(install_status);
   }
 
+  installer::EndPersistentHistogramStorage(installer_state.target_path());
   VLOG(1) << "Installation complete, returning: " << return_code;
 
   return return_code;

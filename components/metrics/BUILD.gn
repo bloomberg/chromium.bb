@@ -22,6 +22,8 @@ source_set("metrics") {
     "drive_metrics_provider_linux.cc",
     "drive_metrics_provider_mac.mm",
     "drive_metrics_provider_win.cc",
+    "file_metrics_provider.cc",
+    "file_metrics_provider.h",
     "histogram_encoder.cc",
     "histogram_encoder.h",
     "machine_id_provider.h",

@@ -26,6 +26,7 @@ extern const char kMetricsResetIds[];
 extern const char kMetricsReportingEnabled[];
 extern const char kMetricsReportingEnabledTimestamp[];
 extern const char kMetricsSessionID[];
+extern const char kMetricsLastSeenPrefix[];
 extern const char kStabilityBreakpadRegistrationSuccess[];
 extern const char kStabilityBreakpadRegistrationFail[];
 extern const char kStabilityChildProcessCrashCount[];

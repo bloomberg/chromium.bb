@@ -53,6 +53,9 @@ enum CreateHistogramResultType {
   CREATE_HISTOGRAM_MAX
 };
 
+// Name of histogram for storing results of local operations.
+const char kResultHistogram[] = "UMA.CreatePersistentHistogram.Result";
+
 // Type identifiers used when storing in persistent memory so they can be
 // identified during extraction; the first 4 bytes of the SHA1 of the name
 // is used as a unique integer. A "version number" is added to the base
@@ -159,8 +162,7 @@ HistogramBase* GetCreateHistogramResultHistogram() {
       }
 
       histogram_pointer = LinearHistogram::FactoryGet(
-          "UMA.CreatePersistentHistogram.Result",
-          1, CREATE_HISTOGRAM_MAX, CREATE_HISTOGRAM_MAX + 1,
+          kResultHistogram, 1, CREATE_HISTOGRAM_MAX, CREATE_HISTOGRAM_MAX + 1,
           HistogramBase::kUmaTargetedHistogramFlag);
       base::subtle::Release_Store(
           &atomic_histogram_pointer,
@@ -210,6 +212,15 @@ ReleasePersistentHistogramMemoryAllocatorForTesting() {
               ref, kTypeIdHistogram);
       DCHECK(histogram_data);
       StatisticsRecorder::ForgetHistogramForTesting(histogram_data->name);
+
+      // If a test breaks here then a memory region containing a histogram
+      // actively used by this code is being released back to the test.
+      // If that memory segment were to be deleted, future calls to create
+      // persistent histograms would crash. To avoid this, have the test call
+      // the method GetCreateHistogramResultHistogram() *before* setting the
+      // (temporary) memory allocator via SetPersistentMemoryAllocator() so
+      // that the histogram is instead allocated from the process heap.
+      DCHECK_NE(kResultHistogram, histogram_data->name);
     }
   }
 
@@ -480,7 +491,7 @@ HistogramBase* AllocatePersistentHistogram(
 void ImportPersistentHistograms() {
   // The lock protects against concurrent access to the iterator and is created
   // in a thread-safe manner when needed.
-  static base::LazyInstance<base::Lock> lock = LAZY_INSTANCE_INITIALIZER;
+  static base::LazyInstance<base::Lock>::Leaky lock = LAZY_INSTANCE_INITIALIZER;
 
   if (g_allocator) {
     base::AutoLock auto_lock(lock.Get());
@@ -492,7 +503,7 @@ void ImportPersistentHistograms() {
     if (iter.is_clear())
       g_allocator->CreateIterator(&iter);
 
-    for (;;) {
+    while (true) {
       HistogramBase* histogram = GetNextPersistentHistogram(g_allocator, &iter);
       if (!histogram)
         break;

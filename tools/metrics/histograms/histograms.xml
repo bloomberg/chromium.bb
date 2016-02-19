@@ -52533,6 +52533,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="UMA.FileMetricsProvider.AccessResult"
+    enum="FileMetricsProviderAccessResult">
+  <owner>asvitkine@chromium.org</owner>
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    Records attempts to access a file for the purpose of extracting metrics.
+  </summary>
+</histogram>
+
 <histogram name="UMA.GeneratedLowEntropySource" enum="Boolean">
   <obsolete>
     Deprecated as of August 2015. No longer tracked.
@@ -67756,6 +67765,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="3" label="Archive File"/>
   <int value="4" label="FileSystemProvider API"/>
   <int value="5" label="MTP (Media Transfer Protocol) Device"/>
+</enum>
+
+<enum name="FileMetricsProviderAccessResult" type="int">
+  <int value="0" label="File was mapped."/>
+  <int value="1" label="File doesn't exist."/>
+  <int value="2" label="File not modified."/>
+  <int value="3" label="File is invalid (e.g. directory or zero-size)."/>
+  <int value="4" label="File could not be memory-mapped by system."/>
+  <int value="5" label="File has invalid contents."/>
 </enum>
 
 <enum name="FileSystemDatabaseInitResult" type="int">

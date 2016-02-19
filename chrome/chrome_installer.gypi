@@ -239,6 +239,8 @@
             'installer/setup/installer_crash_reporter_client.h',
             'installer/setup/installer_crash_reporting.cc',
             'installer/setup/installer_crash_reporting.h',
+            'installer/setup/installer_metrics.cc',
+            'installer/setup/installer_metrics.h',
             'installer/setup/setup_constants.cc',
             'installer/setup/setup_constants.h',
             'installer/setup/setup_util.cc',

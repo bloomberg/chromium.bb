@@ -7,6 +7,10 @@
 
 #include "base/macros.h"
 
+namespace base {
+class HistogramSnapshotManager;
+}  // namespace base
+
 namespace metrics {
 
 class ChromeUserMetricsExtension;
@@ -65,6 +69,13 @@ class MetricsProvider {
   // collected right before upload.
   virtual void ProvideGeneralMetrics(
       ChromeUserMetricsExtension* uma_proto);
+
+  // Called during collection to explicitly load histogram snapshots using a
+  // snapshot manager. PrepareDeltas() will have already been called and
+  // FinishDeltas() will be called later; calls to only PrepareDelta(), not
+  // PrepareDeltas (plural), should be made.
+  virtual void RecordHistogramSnapshots(
+      base::HistogramSnapshotManager* snapshot_manager);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MetricsProvider);
