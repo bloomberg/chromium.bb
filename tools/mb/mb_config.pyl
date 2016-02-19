@@ -751,7 +751,7 @@
       'linux_chromium_compile_dbg_32_ng': 'swarming_gyp_debug_trybot_x86',
       'linux_chromium_dbg_32_ng': 'swarming_gyp_debug_trybot_x86',
       'linux_chromium_archive_rel_ng': 'noswarming_gn_release_bot',
-      'linux_chromium_clobber_rel_ng': 'gyp_release_trybot',
+      'linux_chromium_clobber_rel_ng': 'gn_release_trybot',
       'linux_chromium_gn_upload': 'gn_linux_upload',
       'linux_chromium_clang_upload': 'gn_release_bot',
       'cast_shell_linux': 'cast_gn_release_trybot',
