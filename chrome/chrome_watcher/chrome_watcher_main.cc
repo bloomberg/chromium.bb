@@ -266,7 +266,8 @@ void DumpHungBrowserProcess(DWORD main_thread_id,
   bool have_context = false;
   if (main_thread.IsValid()) {
     DWORD suspend_count = ::SuspendThread(main_thread.Get());
-    if (suspend_count != -1) {
+    const DWORD kSuspendFailed = static_cast<DWORD>(-1);
+    if (suspend_count != kSuspendFailed) {
       // Best effort capture of the context.
       thread_context.ContextFlags = CONTEXT_FLOATING_POINT | CONTEXT_SEGMENTS |
                                     CONTEXT_INTEGER | CONTEXT_CONTROL;
