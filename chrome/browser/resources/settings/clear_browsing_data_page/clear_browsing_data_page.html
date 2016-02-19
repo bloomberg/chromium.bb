@@ -5,12 +5,12 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="chrome://md-settings/controls/settings_checkbox.html">
 <link rel="import" href="chrome://md-settings/controls/settings_dropdown_menu.html">
+<link rel="import" href="chrome://md-settings/settings_shared_css.html">
 
 <dom-module id="settings-clear-browsing-data-page">
-  <link rel="import" type="css"
-      href="chrome://md-settings/settings_shared.css">
   <link rel="import" type="css" href="clear_browsing_data_page.css">
   <template>
+    <style include="settings-shared"></style>
     <div class="settings-box block">
       <span i18n-content="clearFollowingItemsFrom"></span>
       <settings-dropdown-menu id="clearFrom"

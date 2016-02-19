@@ -136,8 +136,8 @@
       <structure name="IDR_SETTINGS_CR_SETTINGS_PAGE_CSS"
                  file="settings_page.css"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_CR_SETTINGS_SHARED_CSS"
-                 file="settings_shared.css"
+      <structure name="IDR_SETTINGS_SETTINGS_SHARED_CSS_HTML"
+                 file="settings_shared_css.html"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_BREADCRUMB_CSS"
                  file="settings_ui/breadcrumb.css"

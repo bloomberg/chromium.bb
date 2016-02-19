@@ -3,14 +3,14 @@
 <link rel="import" href="chrome://resources/cr_elements/network/cr_onc_types.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_animated_pages.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_subheader.html">
+<link rel="import" href="chrome://md-settings/settings_shared_css.html">
 <link rel="import" href="internet_detail_page.html">
 <link rel="import" href="internet_known_networks_page.html">
 <link rel="import" href="network_summary.html">
 
 <dom-module id="settings-internet-page">
-  <link rel="import" type="css"
-      href="chrome://md-settings/settings_shared.css">
   <template>
+    <style include="settings-shared"></style>
     <settings-animated-pages id="pages" current-route="{{currentRoute}}"
         section="internet">
       <neon-animatable id="main">
