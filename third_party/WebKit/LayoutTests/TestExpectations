@@ -1415,3 +1415,5 @@ crbug.com/588056 [ Linux Debug ] webaudio/periodicwave-normalization.html [ Time
 crbug.com/588061 [ Debug ] inspector/sources/debugger-breakpoints/debugger-reload-breakpoints-with-source-maps.html [ Pass Failure ]
 
 crbug.com/248063 [ Win ] plugins/plugin-clip-subframe.html [ Pass Failure ]
+
+crbug.com/588103 fast/xmlhttprequest/xmlhttprequest-responsetype-arraybuffer.html [ Pass Failure ]
