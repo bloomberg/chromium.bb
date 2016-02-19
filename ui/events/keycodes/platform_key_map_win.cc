@@ -163,15 +163,16 @@ void PlatformKeyMap::UpdateLayout(HKL layout) {
   if (layout == keyboard_layout_)
     return;
 
+  BYTE keyboard_state_to_restore[256];
+  if (!::GetKeyboardState(keyboard_state_to_restore))
+    return;
+
   // TODO(chongz): Optimize layout switching (see crbug.com/587147).
   keyboard_layout_ = layout;
   code_to_key_.clear();
   // Map size for some sample keyboard layouts:
   // US: 428, French: 554, Persian: 434, Vietnamese: 1388
   code_to_key_.reserve(500);
-
-  BYTE keyboard_state_to_restore[256];
-  ::GetKeyboardState(keyboard_state_to_restore);
 
   for (int eindex = 0; eindex <= kModifierFlagsCombinations; ++eindex) {
     BYTE keyboard_state[256];
