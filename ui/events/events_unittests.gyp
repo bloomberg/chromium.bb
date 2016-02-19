@@ -61,6 +61,7 @@
         'latency_info_unittest.cc',
         'platform/platform_event_source_unittest.cc',
         'scoped_target_handler_unittest.cc',
+        'win/event_utils_win_unittest.cc',
         'x/events_x_unittest.cc',
       ],
       'include_dirs': [

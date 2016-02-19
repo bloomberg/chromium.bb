@@ -260,7 +260,9 @@ gfx::Point EventSystemLocationFromNative(
     const base::NativeEvent& native_event) {
   POINT global_point = { static_cast<short>(LOWORD(native_event.lParam)),
                          static_cast<short>(HIWORD(native_event.lParam)) };
-  ClientToScreen(native_event.hwnd, &global_point);
+  // Wheel events have position in screen coordinates.
+  if (!IsMouseWheelEvent(native_event))
+    ClientToScreen(native_event.hwnd, &global_point);
   return gfx::Point(global_point);
 }
 
