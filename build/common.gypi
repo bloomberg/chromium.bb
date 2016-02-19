@@ -2406,14 +2406,12 @@
               }],
             ],
           }, {  # chromecast!=1
+            # Build all platforms whose deps are in install-build-deps.sh.
+            # Only these platforms will be compile tested by buildbots.
+            'ozone_platform_egltest%': 1,
             'conditions': [
-              ['OS=="chromeos"', {
+              ['chromeos==1', {
                 'ozone_platform_gbm%': 1,
-                'ozone_platform_egltest%': 1,
-              }, {
-                # Build all platforms whose deps are in install-build-deps.sh.
-                # Only these platforms will be compile tested by buildbots.
-                'ozone_platform_egltest%': 1,
               }],
             ],
           }],
