@@ -80,7 +80,6 @@ class WebStateImpl;
                                        CRWRequestTrackerDelegate,
                                        CRWTouchTrackingDelegate,
                                        CRWWebControllerScripting,
-                                       UIActionSheetDelegate,
                                        UIGestureRecognizerDelegate>
 
 // Whether or not a UIWebView is allowed to exist in this CRWWebController.
