@@ -22322,12 +22322,29 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Navigation.FrameHasEmbeddedCredentials" enum="Boolean">
+  <owner>palmer@chromium.org</owner>
+  <owner>cbentzel@chromium.org</owner>
+  <summary>
+    Whether the navigation was to a URL that had embedded credentials.
+  </summary>
+</histogram>
+
 <histogram name="Navigation.IsMobileOptimized" enum="BooleanIsMobileOptimized">
   <owner>cjhopman@chromium.org</owner>
   <owner>nyquist@chromium.org</owner>
   <summary>
     Signifies whether a succesfully finished page load for the main frame
     content width fits within the device width and/or has a fixed page scale.
+  </summary>
+</histogram>
+
+<histogram name="Navigation.MainFrameHasEmbeddedCredentials" enum="Boolean">
+  <owner>palmer@chromium.org</owner>
+  <owner>cbentzel@chromium.org</owner>
+  <summary>
+    Whether the main-frame navigation was to a URL that had embedded
+    credentials.
   </summary>
 </histogram>
 
