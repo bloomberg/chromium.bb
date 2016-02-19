@@ -369,6 +369,69 @@ class LayerSerializationTest : public testing::Test {
     VerifyBaseLayerPropertiesSerializationAndDeserialization(layer.get());
   }
 
+  void RunHierarchyDeserializationWithLayerTreeHostTest() {
+    /* Testing serialization and deserialization of a tree that looks like this:
+            root
+               \
+                a
+                 \
+                  b
+                   \
+                    c
+      The root layer has a LayerTreeHost, and it should propagate to all the
+      children.
+    */
+    scoped_refptr<Layer> layer_src_root = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> layer_src_a = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> layer_src_b = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> layer_src_c = Layer::Create(LayerSettings());
+    layer_src_root->AddChild(layer_src_a);
+    layer_src_a->AddChild(layer_src_b);
+    layer_src_b->AddChild(layer_src_c);
+
+    proto::LayerNode proto;
+    layer_src_root->ToLayerNodeProto(&proto);
+
+    Layer::LayerIdMap empty_dest_layer_map;
+    scoped_refptr<Layer> layer_dest_root = Layer::Create(LayerSettings());
+
+    // Forcefully set the layer tree host for the root layer, which should cause
+    // it to propagate to all the children.
+    layer_dest_root->layer_tree_host_ = layer_tree_host_.get();
+
+    layer_dest_root->FromLayerNodeProto(proto, empty_dest_layer_map);
+
+    EXPECT_EQ(layer_src_root->id(), layer_dest_root->id());
+    EXPECT_EQ(nullptr, layer_dest_root->parent());
+    ASSERT_EQ(1u, layer_dest_root->children().size());
+    EXPECT_EQ(layer_tree_host_.get(), layer_dest_root->layer_tree_host_);
+
+    scoped_refptr<Layer> layer_dest_a = layer_dest_root->children()[0];
+    EXPECT_EQ(layer_src_a->id(), layer_dest_a->id());
+    EXPECT_EQ(layer_src_root->id(), layer_dest_a->parent()->id());
+    EXPECT_EQ(1u, layer_dest_a->children().size());
+    EXPECT_EQ(layer_tree_host_.get(), layer_dest_a->layer_tree_host_);
+
+    scoped_refptr<Layer> layer_dest_b = layer_dest_a->children()[0];
+    EXPECT_EQ(layer_src_b->id(), layer_dest_b->id());
+    EXPECT_EQ(layer_src_a->id(), layer_dest_b->parent()->id());
+    ASSERT_EQ(1u, layer_dest_b->children().size());
+    EXPECT_EQ(layer_tree_host_.get(), layer_dest_b->layer_tree_host_);
+
+    scoped_refptr<Layer> layer_dest_c = layer_dest_b->children()[0];
+    EXPECT_EQ(layer_src_c->id(), layer_dest_c->id());
+    EXPECT_EQ(layer_src_b->id(), layer_dest_c->parent()->id());
+    EXPECT_EQ(0u, layer_dest_c->children().size());
+    EXPECT_EQ(layer_tree_host_.get(), layer_dest_c->layer_tree_host_);
+
+    // The layers have not been added to the LayerTreeHost layer map, so the
+    // LTH pointers must be cleared manually.
+    layer_dest_root->layer_tree_host_ = nullptr;
+    layer_dest_a->layer_tree_host_ = nullptr;
+    layer_dest_b->layer_tree_host_ = nullptr;
+    layer_dest_c->layer_tree_host_ = nullptr;
+  }
+
   void RunNonDestructiveDeserializationBaseCaseTest() {
     /* Testing serialization and deserialization of a tree that initially looks
        like this:
@@ -2492,6 +2555,10 @@ TEST_F(LayerTest, DeleteMaskAndReplicaLayer) {
 
   EXPECT_EQ(nullptr, layer_dest_root->mask_layer());
   EXPECT_EQ(nullptr, layer_dest_root->replica_layer());
+}
+
+TEST_F(LayerSerializationTest, HierarchyDeserializationWithLayerTreeHost) {
+  RunHierarchyDeserializationWithLayerTreeHostTest();
 }
 
 TEST_F(LayerSerializationTest, NonDestructiveDeserializationBaseCase) {

@@ -213,6 +213,12 @@ void PictureLayer::FromLayerSpecificPropertiesProto(
     const proto::LayerProperties& proto) {
   Layer::FromLayerSpecificPropertiesProto(proto);
   const proto::PictureLayerProperties& picture = proto.picture();
+  // If this is a new layer, ensure it has a recording source. During layer
+  // hierarchy deserialization, ::SetLayerTreeHost(...) is not called, but
+  // instead the member is set directly, so it needs to be set here explicitly.
+  if (!recording_source_)
+    recording_source_.reset(new DisplayListRecordingSource);
+
   recording_source_->FromProtobuf(
       picture.recording_source(),
       layer_tree_host()->image_serialization_processor());

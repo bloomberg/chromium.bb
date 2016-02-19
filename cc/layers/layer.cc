@@ -1420,12 +1420,12 @@ void Layer::FromLayerNodeProto(const proto::LayerNode& proto,
     DCHECK(child_proto.has_type());
     scoped_refptr<Layer> child =
         LayerProtoConverter::FindOrAllocateAndConstruct(child_proto, layer_map);
-    child->FromLayerNodeProto(child_proto, layer_map);
-    children_.push_back(child);
     // The child must now refer to this layer as its parent, and must also have
-    // the same LayerTreeHost.
+    // the same LayerTreeHost. This must be done before deserializing children.
     child->parent_ = this;
     child->layer_tree_host_ = layer_tree_host_;
+    child->FromLayerNodeProto(child_proto, layer_map);
+    children_.push_back(child);
   }
 
   // Remove now-unused children from the tree.
@@ -1441,26 +1441,30 @@ void Layer::FromLayerNodeProto(const proto::LayerNode& proto,
     }
   }
 
-  if (mask_layer_)
-    mask_layer_->RemoveFromParent();
+  if (mask_layer_) {
+    mask_layer_->parent_ = nullptr;
+    mask_layer_->layer_tree_host_ = nullptr;
+  }
   if (proto.has_mask_layer()) {
     mask_layer_ = LayerProtoConverter::FindOrAllocateAndConstruct(
         proto.mask_layer(), layer_map);
+    mask_layer_->parent_ = this;
+    mask_layer_->layer_tree_host_ = layer_tree_host_;
     mask_layer_->FromLayerNodeProto(proto.mask_layer(), layer_map);
-    mask_layer_->SetParent(this);
-    // SetIsMask() is only ever called with true, so no need to reset flag.
-    mask_layer_->SetIsMask(true);
   } else {
     mask_layer_ = nullptr;
   }
 
-  if (replica_layer_)
-    replica_layer_->RemoveFromParent();
+  if (replica_layer_) {
+    replica_layer_->parent_ = nullptr;
+    replica_layer_->layer_tree_host_ = nullptr;
+  }
   if (proto.has_replica_layer()) {
     replica_layer_ = LayerProtoConverter::FindOrAllocateAndConstruct(
         proto.replica_layer(), layer_map);
+    replica_layer_->parent_ = this;
+    replica_layer_->layer_tree_host_ = layer_tree_host_;
     replica_layer_->FromLayerNodeProto(proto.replica_layer(), layer_map);
-    replica_layer_->SetParent(this);
   } else {
     replica_layer_ = nullptr;
   }
