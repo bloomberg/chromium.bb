@@ -10,8 +10,7 @@
 namespace blimp {
 namespace switches {
 
-extern const char kBlimpletHost[];
-extern const char kBlimpletTCPPort[];
+extern const char kBlimpletEndpoint[];
 
 }  // namespace switches
 }  // namespace blimp

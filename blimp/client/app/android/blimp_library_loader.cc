@@ -15,6 +15,7 @@
 #include "blimp/client/app/android/blimp_jni_registrar.h"
 #include "blimp/client/app/blimp_startup.h"
 #include "jni/BlimpLibraryLoader_jni.h"
+#include "net/android/net_jni_registrar.h"
 #include "ui/gl/gl_surface.h"
 
 namespace {
@@ -31,6 +32,9 @@ bool OnJniInitializationComplete() {
 
 bool RegisterJni(JNIEnv* env) {
   if (!base::android::RegisterJni(env))
+    return false;
+
+  if (!net::android::RegisterJni(env))
     return false;
 
   if (!blimp::client::RegisterBlimpJni(env))

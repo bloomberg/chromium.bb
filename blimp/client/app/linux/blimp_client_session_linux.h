@@ -20,8 +20,7 @@ namespace client {
 class BlimpClientSessionLinux : public BlimpClientSession,
                                 public BlimpDisplayManagerDelegate {
  public:
-  explicit BlimpClientSessionLinux(
-      scoped_ptr<AssignmentSource> assignment_source);
+  BlimpClientSessionLinux();
   ~BlimpClientSessionLinux() override;
 
   // BlimpDisplayManagerDelegate implementation.

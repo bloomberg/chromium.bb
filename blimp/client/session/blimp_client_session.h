@@ -42,18 +42,30 @@ class TabControlFeature;
 // feature proxies must be interacted with on the UI thread.
 class BLIMP_CLIENT_EXPORT BlimpClientSession {
  public:
-  explicit BlimpClientSession(scoped_ptr<AssignmentSource> assignment_source);
+  BlimpClientSession();
 
   // Uses the AssignmentSource to get an Assignment and then uses the assignment
   // configuration to connect to the Blimplet.
-  void Connect();
+  // |client_auth_token| is the OAuth2 access token to use when querying
+  // for an assignment.  This token needs the OAuth2 scope of userinfo.email and
+  // only needs to be an access token, not a refresh token.
+  void Connect(const std::string& client_auth_token);
 
   TabControlFeature* GetTabControlFeature() const;
   NavigationFeature* GetNavigationFeature() const;
   RenderWidgetFeature* GetRenderWidgetFeature() const;
 
+  // The AssignmentCallback for when an assignment is ready. This will trigger
+  // a connection to the engine.
+  virtual void ConnectWithAssignment(AssignmentSource::Result result,
+                                     const Assignment& assignment);
+
  protected:
   virtual ~BlimpClientSession();
+
+  // Notified every time the AssignmentSource returns the result of an attempted
+  // assignment request.
+  virtual void OnAssignmentConnectionAttempted(AssignmentSource::Result result);
 
  private:
   // Registers a message processor which will receive all messages of the |type|
@@ -63,18 +75,14 @@ class BLIMP_CLIENT_EXPORT BlimpClientSession {
       BlimpMessage::Type type,
       BlimpMessageProcessor* incoming_processor);
 
-  // The AssignmentCallback for when an assignment is ready. This will trigger
-  // a connection to the engine.
-  void ConnectWithAssignment(const Assignment& assignment);
-
-  // The AssignmentSource is used when the user of BlimpClientSession calls
-  // Connect() to get a valid assignment and later connect to the engine.
-  scoped_ptr<AssignmentSource> assignment_source_;
-
   base::Thread io_thread_;
   scoped_ptr<TabControlFeature> tab_control_feature_;
   scoped_ptr<NavigationFeature> navigation_feature_;
   scoped_ptr<RenderWidgetFeature> render_widget_feature_;
+
+  // The AssignmentSource is used when the user of BlimpClientSession calls
+  // Connect() to get a valid assignment and later connect to the engine.
+  scoped_ptr<AssignmentSource> assignment_source_;
 
   // Container struct for network components.
   // Must be deleted on the IO thread.

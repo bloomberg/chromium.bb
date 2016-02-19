@@ -6,7 +6,7 @@ include_rules = [
   "-content",
   "+gpu",
   "+jni",
-  "+net/base",
+  "+net",
   "+skia",
   "+third_party/libwebp",
   "+third_party/skia",

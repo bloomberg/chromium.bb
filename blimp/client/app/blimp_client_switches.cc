@@ -7,14 +7,11 @@
 namespace blimp {
 namespace switches {
 
-// Specifies the blimplet IP-address to connect to, e.g.:
-// --blimplet-host="127.0.0.1".
+// Specifies the blimplet scheme, IP-address and port to connect to, e.g.:
+// --blimplet-host="tcp:127.0.0.1:25467".  Valid schemes are "ssl",
+// "tcp", and "quic".
 // TODO(nyquist): Add support for DNS-lookup. See http://crbug.com/576857.
-const char kBlimpletHost[] = "blimplet-host";
-
-// Specifies the blimplet port to connect to, e.g.:
-// --blimplet-tcp-port=25467.
-const char kBlimpletTCPPort[] = "blimplet-tcp-port";
+const char kBlimpletEndpoint[] = "blimplet-endpoint";
 
 }  // namespace switches
 }  // namespace blimp

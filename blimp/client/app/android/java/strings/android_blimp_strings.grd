@@ -103,6 +103,39 @@
       <message name="IDS_SIGNIN_CHOOSER_DESCRIPTION" desc="Message shown with the Android signin chooser screen.">
         Please choose an account to use with Blimp.
       </message>
+      <message name="IDS_ASSIGNMENT_FAILURE_UNKNOWN" desc="Message for when getting an assignment has failed due to an unknown issue.">
+        Assignment failed.  Unknown issue.
+      </message>
+      <message name="IDS_ASSIGNMENT_FAILURE_BAD_REQUEST" desc="Message for when getting an assignment has failed due to a bad request.">
+        Assignment failed.  400 (BAD_REQUEST) error.
+      </message>
+      <message name="IDS_ASSIGNMENT_FAILURE_BAD_RESPONSE" desc="Message for when getting an assignment has failed due to a bad response.">
+        Assignment failed.  Invalid response.
+      </message>
+      <message name="IDS_ASSIGNMENT_FAILURE_BAD_VERSION" desc="Message for when getting an assignment has failed due to an out of date client.">
+        Assignment failed.  No matching engine version.
+      </message>
+      <message name="IDS_ASSIGNMENT_FAILURE_EXPIRED_TOKEN" desc="Message for when getting an assignment has failed due to an expired user token.">
+        Assignment failed.  Expired user access token.
+      </message>
+      <message name="IDS_ASSIGNMENT_FAILURE_USER_INVALID" desc="Message for when getting an assignment has failed due to an invalid user.">
+        Assignment failed.  Account does not have access.
+      </message>
+      <message name="IDS_ASSIGNMENT_FAILURE_OUT_OF_VMS" desc="Message for when getting an assignment has failed due to a shortage of engines.">
+        Assignment failed.  No engine available.
+      </message>
+      <message name="IDS_ASSIGNMENT_FAILURE_SERVER_ERROR" desc="Message for when getting an assignment has failed due to a server error.">
+        Assignment failed.  Server error.
+      </message>
+      <message name="IDS_ASSIGNMENT_FAILURE_SERVER_INTERRUPTED" desc="Message for when getting an assignment has failed due to another request.">
+        Assignment failed.  Second request sent before first request responded.
+      </message>
+      <message name="IDS_ASSIGNMENT_FAILURE_NETWORK" desc="Message for when getting an assignment has failed due to a general network issue.">
+        Assignment failed.  Network request failed.
+      </message>
+      <message name="IDS_ASSIGNMENT_SUCCESS" desc="Message for when getting an assignment succeeds.">
+        Assignment succeeded.
+      </message>
     </messages>
   </release>
 </grit>

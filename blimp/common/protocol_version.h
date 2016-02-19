@@ -11,6 +11,9 @@ namespace blimp {
 
 const int BLIMP_COMMON_EXPORT kProtocolVersion = 0;
 
+// TODO(dtrainor): Move this out or integrate this with kProtocolVersion?
+const char BLIMP_COMMON_EXPORT kEngineVersion[] = "20160209094838";
+
 }  // namespace blimp
 
 #endif  // BLIMP_COMMON_PROTOCOL_VERSION_H_

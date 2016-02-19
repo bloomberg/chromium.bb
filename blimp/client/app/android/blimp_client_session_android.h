@@ -20,13 +20,20 @@ class BlimpClientSessionAndroid : public BlimpClientSession {
   static BlimpClientSessionAndroid* FromJavaObject(JNIEnv* env, jobject jobj);
 
   BlimpClientSessionAndroid(JNIEnv* env,
-                            const base::android::JavaParamRef<jobject>& jobj,
-                            scoped_ptr<AssignmentSource> assignment_source);
+                            const base::android::JavaParamRef<jobject>& jobj);
 
   // Methods called from Java via JNI.
-  void Connect(JNIEnv* env, const base::android::JavaParamRef<jobject>& jobj);
+  // |jclient_auth_token| is an OAuth2 access token created by GoogleAuthUtil.
+  // See BlimpClientSession::Connect() for more information.
+  void Connect(JNIEnv* env,
+               const base::android::JavaParamRef<jobject>& jobj,
+               const base::android::JavaParamRef<jstring>& jclient_auth_token);
 
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& jobj);
+
+  // BlimpClientSession overrides.
+  void OnAssignmentConnectionAttempted(
+      AssignmentSource::Result result) override;
 
  private:
   ~BlimpClientSessionAndroid() override;

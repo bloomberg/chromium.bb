@@ -18,6 +18,7 @@
 #include "blimp/client/session/assignment_source.h"
 
 namespace {
+const char kDummyLoginToken[] = "";
 const char kDefaultUrl[] = "https://www.google.com";
 const int kDummyTabId = 0;
 }
@@ -31,12 +32,9 @@ int main(int argc, const char**argv) {
   blimp::client::InitializeLogging();
   blimp::client::InitializeMainMessageLoop();
 
-  scoped_ptr<blimp::client::AssignmentSource> assignment_source =
-      make_scoped_ptr(new blimp::client::AssignmentSource(
-          base::ThreadTaskRunnerHandle::Get()));
-  blimp::client::BlimpClientSessionLinux session(std::move(assignment_source));
+  blimp::client::BlimpClientSessionLinux session;
   session.GetTabControlFeature()->CreateTab(kDummyTabId);
-  session.Connect();
+  session.Connect(kDummyLoginToken);
 
   // If there is a non-switch argument to the command line, load that url.
   base::CommandLine::StringVector args =

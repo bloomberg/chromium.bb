@@ -22,12 +22,16 @@ import org.chromium.ui.widget.Toast;
  * The {@link Activity} for rendering the main Blimp client.  This loads the Blimp rendering stack
  * and displays it.
  */
-public class BlimpRendererActivity extends Activity implements BlimpLibraryLoader.Callback,
-        TokenSource.Callback {
-
+public class BlimpRendererActivity extends Activity
+        implements BlimpLibraryLoader.Callback, TokenSource.Callback, BlimpClientSession.Callback {
     private static final int ACCOUNT_CHOOSER_INTENT_REQUEST_CODE = 100;
     private static final String TAG = "Blimp";
+
+    /** Provides user authentication tokens that can be used to query for engine assignments.  This
+     *  can potentially query GoogleAuthUtil for an OAuth2 authentication token with userinfo.email
+     *  privileges for a chosen Android account. */
     private TokenSource mTokenSource;
+
     private BlimpView mBlimpView;
     private Toolbar mToolbar;
     private BlimpClientSession mBlimpClientSession;
@@ -37,6 +41,12 @@ public class BlimpRendererActivity extends Activity implements BlimpLibraryLoade
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // Build a TokenSource that will internally retry accessing the underlying TokenSourceImpl.
+        // This will exponentially backoff while it tries to get the access token.  See
+        // {@link RetryingTokenSource} for more information.  The underlying
+        // TokenSourceImpl will attempt to query GoogleAuthUtil, but might fail if there is no
+        // account selected, in which case it will ask this Activity to show an account chooser and
+        // notify it of the selection result.
         mTokenSource = new RetryingTokenSource(new TokenSourceImpl(this));
         mTokenSource.setCallback(this);
         mTokenSource.getToken();
@@ -115,8 +125,7 @@ public class BlimpRendererActivity extends Activity implements BlimpLibraryLoade
 
         setContentView(R.layout.blimp_main);
 
-        mBlimpClientSession = new BlimpClientSession();
-        mBlimpClientSession.connect();
+        mBlimpClientSession = new BlimpClientSession(this);
 
         mBlimpView = (BlimpView) findViewById(R.id.renderer);
         mBlimpView.initializeRenderer(mBlimpClientSession);
@@ -131,8 +140,7 @@ public class BlimpRendererActivity extends Activity implements BlimpLibraryLoade
     // TokenSource.Callback implementation.
     @Override
     public void onTokenReceived(String token) {
-        // TODO(dtrainor): Do something with the token and the assigner!
-        Toast.makeText(this, R.string.signin_get_token_succeeded, Toast.LENGTH_SHORT).show();
+        if (mBlimpClientSession != null) mBlimpClientSession.connect(token);
     }
 
     @Override
@@ -140,11 +148,16 @@ public class BlimpRendererActivity extends Activity implements BlimpLibraryLoade
         // Ignore isTransient here because we're relying on the auto-retry TokenSource.
         // TODO(dtrainor): Show a better error dialog/message.
         Toast.makeText(this, R.string.signin_get_token_failed, Toast.LENGTH_LONG).show();
-        finish();
     }
 
     @Override
     public void onNeedsAccountToBeSelected(Intent suggestedIntent) {
         startActivityForResult(suggestedIntent, ACCOUNT_CHOOSER_INTENT_REQUEST_CODE);
+    }
+
+    // BlimpClientSession.Callback implementation.
+    @Override
+    public void onAssignmentReceived(int result, int suggestedMessageResourceId) {
+        Toast.makeText(this, suggestedMessageResourceId, Toast.LENGTH_LONG).show();
     }
 }

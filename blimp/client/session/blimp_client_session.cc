@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "blimp/client/app/blimp_client_switches.h"
 #include "blimp/client/feature/navigation_feature.h"
@@ -106,10 +107,8 @@ void ClientNetworkComponents::RegisterFeature(
   outgoing_message_processors_.push_back(std::move(outgoing_message_processor));
 }
 
-BlimpClientSession::BlimpClientSession(
-    scoped_ptr<AssignmentSource> assignment_source)
-    : assignment_source_(std::move(assignment_source)),
-      io_thread_("BlimpIOThread"),
+BlimpClientSession::BlimpClientSession()
+    : io_thread_("BlimpIOThread"),
       tab_control_feature_(new TabControlFeature),
       navigation_feature_(new NavigationFeature),
       render_widget_feature_(new RenderWidgetFeature),
@@ -118,6 +117,9 @@ BlimpClientSession::BlimpClientSession(
   base::Thread::Options options;
   options.message_loop_type = base::MessageLoop::TYPE_IO;
   io_thread_.StartWithOptions(options);
+
+  assignment_source_.reset(new AssignmentSource(
+      base::ThreadTaskRunnerHandle::Get(), io_thread_.task_runner()));
 
   // Register features' message senders and receivers.
   tab_control_feature_->set_outgoing_message_processor(
@@ -144,17 +146,29 @@ BlimpClientSession::~BlimpClientSession() {
   io_thread_.task_runner()->DeleteSoon(FROM_HERE, net_components_.release());
 }
 
-void BlimpClientSession::Connect() {
-  assignment_source_->GetAssignment(base::Bind(
-      &BlimpClientSession::ConnectWithAssignment, weak_factory_.GetWeakPtr()));
+void BlimpClientSession::Connect(const std::string& client_auth_token) {
+  assignment_source_->GetAssignment(
+      client_auth_token, base::Bind(&BlimpClientSession::ConnectWithAssignment,
+                                    weak_factory_.GetWeakPtr()));
 }
 
-void BlimpClientSession::ConnectWithAssignment(const Assignment& assignment) {
+void BlimpClientSession::ConnectWithAssignment(AssignmentSource::Result result,
+                                               const Assignment& assignment) {
+  OnAssignmentConnectionAttempted(result);
+
+  if (result != AssignmentSource::Result::RESULT_OK) {
+    VLOG(1) << "Assignment request failed: " << result;
+    return;
+  }
+
   io_thread_.task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&ClientNetworkComponents::ConnectWithAssignment,
                  base::Unretained(net_components_.get()), assignment));
 }
+
+void BlimpClientSession::OnAssignmentConnectionAttempted(
+    AssignmentSource::Result result) {}
 
 scoped_ptr<BlimpMessageProcessor> BlimpClientSession::RegisterFeature(
     BlimpMessage::Type type,
