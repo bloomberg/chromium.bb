@@ -858,7 +858,4 @@ public class WebsiteSettingsPopup implements OnClickListener {
     private static native long nativeInit(WebsiteSettingsPopup popup, WebContents webContents);
 
     private native void nativeDestroy(long nativeWebsiteSettingsPopupAndroid);
-
-    private native void nativeOnPermissionSettingChanged(long nativeWebsiteSettingsPopupAndroid,
-            int type, int setting);
 }
