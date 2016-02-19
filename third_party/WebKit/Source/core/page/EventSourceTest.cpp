@@ -18,6 +18,7 @@
 #include "core/page/EventSourceInit.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "wtf/text/CharacterNames.h"
 
 #include <string.h>
 #include <v8.h>
@@ -69,6 +70,8 @@ protected:
     {
         source()->setStateForTest(EventSource::OPEN);
         source()->setThreadableLoaderForTest(MockThreadableLoader::create());
+        source()->setParser(new EventSourceParser("https://localhost/", source()));
+        source()->setRequestInFlightForTest(true);
     }
     ~EventSourceTest() override
     {
@@ -421,6 +424,21 @@ TEST_F(EventSourceTest, FeedDataOneByOne)
     ASSERT_EQ(MessageEvent::DataTypeSerializedScriptValue, messageEvent->dataType());
     EXPECT_EQ("bye", dataAsString(scriptState(), messageEvent.get()));
     EXPECT_EQ("8", messageEvent->lastEventId());
+}
+
+TEST_F(EventSourceTest, InvalidUTF8Sequence)
+{
+    RefPtrWillBeRawPtr<FakeEventListener> listener = FakeEventListener::create();
+
+    source()->addEventListener("message", listener);
+    enqueue("data:\xffhello\xc2\n\n");
+
+    ASSERT_EQ(1u, listener->events().size());
+    ASSERT_EQ("message", listener->events()[0]->type());
+    RefPtrWillBeRawPtr<MessageEvent> event = static_cast<MessageEvent*>(listener->events()[0].get());
+    ASSERT_EQ(MessageEvent::DataTypeSerializedScriptValue, event->dataType());
+    String expected = String() + replacementCharacter + "hello" + replacementCharacter;
+    EXPECT_EQ(expected, dataAsString(scriptState(), event.get()));
 }
 
 } // namespace

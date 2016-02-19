@@ -105,7 +105,7 @@ public:
     void didFinishFetch(ExecutionContext*, ThreadableLoaderClient*, const AtomicString& method, const String& url);
 
     void willSendEventSourceRequest(ThreadableLoaderClient*);
-    void willDispachEventSourceEvent(ThreadableLoaderClient*, const AtomicString& eventName, const AtomicString& eventId, const Vector<UChar>& data);
+    void willDispatchEventSourceEvent(ThreadableLoaderClient*, const AtomicString& eventName, const AtomicString& eventId, const String& data);
     void didFinishEventSourceRequest(ThreadableLoaderClient*);
 
     void removedResourceFromMemoryCache(Resource*);

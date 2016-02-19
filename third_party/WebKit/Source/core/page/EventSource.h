@@ -36,24 +36,23 @@
 #include "core/events/EventTarget.h"
 #include "core/loader/ThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
+#include "core/page/EventSourceParser.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
+#include "wtf/Forward.h"
 #include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 
 class EventSourceInit;
 class ExceptionState;
-class MessageEvent;
 class ResourceResponse;
-class TextResourceDecoder;
 
-class CORE_EXPORT EventSource final : public RefCountedGarbageCollectedEventTargetWithInlineData<EventSource>, private ThreadableLoaderClient, public ActiveDOMObject {
+class CORE_EXPORT EventSource final : public RefCountedGarbageCollectedEventTargetWithInlineData<EventSource>, private ThreadableLoaderClient, public ActiveDOMObject, public EventSourceParser::Client {
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(EventSource);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(EventSource);
+    USING_GARBAGE_COLLECTED_MIXIN(EventSource);
 public:
     static EventSource* create(ExecutionContext*, const String& url, const EventSourceInit&, ExceptionState&);
     ~EventSource() override;
@@ -92,11 +91,6 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
-    void setStateForTest(State state) { m_state = state; }
-    void setThreadableLoaderForTest(PassRefPtr<ThreadableLoader> loader) { m_loader = loader; }
-    ThreadableLoaderClient* asThreadableLoaderClientForTest() { return this; }
-    unsigned long long reconnectDelayForTest() const { return m_reconnectDelay; }
-
 private:
     EventSource(ExecutionContext*, const KURL&, const EventSourceInit&);
 
@@ -107,30 +101,24 @@ private:
     void didFailAccessControlCheck(const ResourceError&) override;
     void didFailRedirectCheck() override;
 
+    void onMessageEvent(const AtomicString& event, const String& data, const AtomicString& id) override;
+    void onReconnectionTimeSet(unsigned long long reconnectionTime) override;
+
     void scheduleInitialConnect();
     void connect();
     void networkRequestEnded();
     void scheduleReconnect();
     void connectTimerFired(Timer<EventSource>*);
     void abortConnectionAttempt();
-    void parseEventStream();
-    void parseEventStreamLine(unsigned pos, int fieldLength, int lineLength);
-    PassRefPtrWillBeRawPtr<MessageEvent> createMessageEvent();
 
     KURL m_url;
     bool m_withCredentials;
     State m_state;
 
-    OwnPtr<TextResourceDecoder> m_decoder;
+    Member<EventSourceParser> m_parser;
     RefPtr<ThreadableLoader> m_loader;
     Timer<EventSource> m_connectTimer;
-    Vector<UChar> m_receiveBuf;
-    bool m_discardTrailingNewline;
 
-    AtomicString m_eventName;
-    Vector<UChar> m_data;
-    AtomicString m_currentlyParsedEventId;
-    AtomicString m_lastEventId;
     unsigned long long m_reconnectDelay;
     String m_eventStreamOrigin;
 };

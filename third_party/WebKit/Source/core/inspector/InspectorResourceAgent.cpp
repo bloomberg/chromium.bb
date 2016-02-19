@@ -726,12 +726,12 @@ void InspectorResourceAgent::willSendEventSourceRequest(ThreadableLoaderClient* 
     m_pendingRequestType = InspectorPageAgent::EventSourceResource;
 }
 
-void InspectorResourceAgent::willDispachEventSourceEvent(ThreadableLoaderClient* eventSource, const AtomicString& eventName, const AtomicString& eventId, const Vector<UChar>& data)
+void InspectorResourceAgent::willDispatchEventSourceEvent(ThreadableLoaderClient* eventSource, const AtomicString& eventName, const AtomicString& eventId, const String& data)
 {
     ThreadableLoaderClientRequestIdMap::iterator it = m_knownRequestIdMap.find(eventSource);
     if (it == m_knownRequestIdMap.end())
         return;
-    frontend()->eventSourceMessageReceived(IdentifiersFactory::requestId(it->value), monotonicallyIncreasingTime(), eventName.string(), eventId.string(), String(data));
+    frontend()->eventSourceMessageReceived(IdentifiersFactory::requestId(it->value), monotonicallyIncreasingTime(), eventName.string(), eventId.string(), data);
 }
 
 void InspectorResourceAgent::didFinishEventSourceRequest(ThreadableLoaderClient* eventSource)

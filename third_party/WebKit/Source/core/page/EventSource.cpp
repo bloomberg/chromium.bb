@@ -44,7 +44,6 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/html/parser/TextResourceDecoder.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/ThreadableLoader.h"
@@ -55,7 +54,6 @@
 #include "platform/network/ResourceResponse.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebURLRequest.h"
-#include "wtf/ASCIICType.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
@@ -67,9 +65,7 @@ inline EventSource::EventSource(ExecutionContext* context, const KURL& url, cons
     , m_url(url)
     , m_withCredentials(eventSourceInit.withCredentials())
     , m_state(CONNECTING)
-    , m_decoder(TextResourceDecoder::create("text/plain", "UTF-8"))
     , m_connectTimer(this, &EventSource::connectTimerFired)
-    , m_discardTrailingNewline(false)
     , m_reconnectDelay(defaultReconnectDelay)
 {
 }
@@ -127,10 +123,10 @@ void EventSource::connect()
     request.setHTTPHeaderField(HTTPNames::Accept, "text/event-stream");
     request.setHTTPHeaderField(HTTPNames::Cache_Control, "no-cache");
     request.setRequestContext(WebURLRequest::RequestContextEventSource);
-    if (!m_lastEventId.isEmpty()) {
+    if (m_parser && !m_parser->lastEventId().isEmpty()) {
         // HTTP headers are Latin-1 byte strings, but the Last-Event-ID header is encoded as UTF-8.
         // TODO(davidben): This should be captured in the type of setHTTPHeaderField's arguments.
-        CString lastEventIdUtf8 = m_lastEventId.utf8();
+        CString lastEventIdUtf8 = m_parser->lastEventId().utf8();
         request.setHTTPHeaderField(HTTPNames::Last_Event_ID, AtomicString(reinterpret_cast<const LChar*>(lastEventIdUtf8.data()), lastEventIdUtf8.length()));
     }
 
@@ -196,6 +192,8 @@ void EventSource::close()
         ASSERT(!m_loader);
         return;
     }
+    if (m_parser)
+        m_parser->stop();
 
     // Stop trying to reconnect if EventSource was explicitly closed or if ActiveDOMObject::stop() was called.
     if (m_connectTimer.isActive()) {
@@ -256,6 +254,12 @@ void EventSource::didReceiveResponse(unsigned long, const ResourceResponse& resp
 
     if (responseIsValid) {
         m_state = OPEN;
+        AtomicString lastEventId;
+        if (m_parser) {
+            // The new parser takes over the event ID.
+            lastEventId = m_parser->lastEventId();
+        }
+        m_parser = new EventSourceParser(lastEventId, this);
         dispatchEvent(Event::create(EventTypeNames::open));
     } else {
         m_loader->cancel();
@@ -267,9 +271,9 @@ void EventSource::didReceiveData(const char* data, unsigned length)
 {
     ASSERT(m_state == OPEN);
     ASSERT(m_loader);
+    ASSERT(m_parser);
 
-    append(m_receiveBuf, m_decoder->decode(data, length));
-    parseEventStream();
+    m_parser->addBytes(data, length);
 }
 
 void EventSource::didFinishLoading(unsigned long, double)
@@ -277,15 +281,6 @@ void EventSource::didFinishLoading(unsigned long, double)
     ASSERT(m_state == OPEN);
     ASSERT(m_loader);
 
-    if (m_receiveBuf.size() > 0 || m_data.size() > 0) {
-        parseEventStream();
-
-        // Discard everything that has not been dispatched by now.
-        m_receiveBuf.clear();
-        m_data.clear();
-        m_eventName = emptyAtom;
-        m_currentlyParsedEventId = nullAtom;
-    }
     networkRequestEnded();
 }
 
@@ -316,6 +311,20 @@ void EventSource::didFailRedirectCheck()
     abortConnectionAttempt();
 }
 
+void EventSource::onMessageEvent(const AtomicString& eventType, const String& data, const AtomicString& lastEventId)
+{
+    RefPtrWillBeRawPtr<MessageEvent> e = MessageEvent::create();
+    e->initMessageEvent(eventType, false, false, SerializedScriptValueFactory::instance().create(data), m_eventStreamOrigin, lastEventId, 0, nullptr);
+
+    InspectorInstrumentation::willDispatchEventSourceEvent(executionContext(), this, eventType, lastEventId, data);
+    dispatchEvent(e);
+}
+
+void EventSource::onReconnectionTimeSet(unsigned long long reconnectionTime)
+{
+    m_reconnectDelay = reconnectionTime;
+}
+
 void EventSource::abortConnectionAttempt()
 {
     ASSERT(m_state == CONNECTING);
@@ -325,105 +334,6 @@ void EventSource::abortConnectionAttempt()
     networkRequestEnded();
 
     dispatchEvent(Event::create(EventTypeNames::error));
-}
-
-void EventSource::parseEventStream()
-{
-    unsigned bufPos = 0;
-    unsigned bufSize = m_receiveBuf.size();
-    while (bufPos < bufSize) {
-        if (m_discardTrailingNewline) {
-            if (m_receiveBuf[bufPos] == '\n')
-                bufPos++;
-            m_discardTrailingNewline = false;
-        }
-
-        int lineLength = -1;
-        int fieldLength = -1;
-        for (unsigned i = bufPos; lineLength < 0 && i < bufSize; i++) {
-            switch (m_receiveBuf[i]) {
-            case ':':
-                if (fieldLength < 0)
-                    fieldLength = i - bufPos;
-                break;
-            case '\r':
-                m_discardTrailingNewline = true;
-            case '\n':
-                lineLength = i - bufPos;
-                break;
-            }
-        }
-
-        if (lineLength < 0)
-            break;
-
-        parseEventStreamLine(bufPos, fieldLength, lineLength);
-        bufPos += lineLength + 1;
-
-        // EventSource.close() might've been called by one of the message event handlers.
-        // Per spec, no further messages should be fired after that.
-        if (m_state == CLOSED)
-            break;
-    }
-
-    if (bufPos == bufSize)
-        m_receiveBuf.clear();
-    else if (bufPos)
-        m_receiveBuf.remove(0, bufPos);
-}
-
-void EventSource::parseEventStreamLine(unsigned bufPos, int fieldLength, int lineLength)
-{
-    if (!lineLength) {
-        if (!m_data.isEmpty()) {
-            m_data.removeLast();
-            if (!m_currentlyParsedEventId.isNull()) {
-                m_lastEventId = m_currentlyParsedEventId;
-                m_currentlyParsedEventId = nullAtom;
-            }
-            InspectorInstrumentation::willDispachEventSourceEvent(executionContext(), this, m_eventName.isEmpty() ? EventTypeNames::message : m_eventName, m_lastEventId, m_data);
-            dispatchEvent(createMessageEvent());
-        }
-        if (!m_eventName.isEmpty())
-            m_eventName = emptyAtom;
-    } else if (fieldLength) {
-        bool noValue = fieldLength < 0;
-
-        String field(&m_receiveBuf[bufPos], noValue ? lineLength : fieldLength);
-        int step;
-        if (noValue)
-            step = lineLength;
-        else if (m_receiveBuf[bufPos + fieldLength + 1] != ' ')
-            step = fieldLength + 1;
-        else
-            step = fieldLength + 2;
-        bufPos += step;
-        int valueLength = lineLength - step;
-
-        if (field == "data") {
-            if (valueLength)
-                m_data.append(&m_receiveBuf[bufPos], valueLength);
-            m_data.append('\n');
-        } else if (field == "event") {
-            m_eventName = valueLength ? AtomicString(&m_receiveBuf[bufPos], valueLength) : "";
-        } else if (field == "id") {
-            m_currentlyParsedEventId = valueLength ? AtomicString(&m_receiveBuf[bufPos], valueLength) : "";
-        } else if (field == "retry") {
-            bool hasOnlyDigits = true;
-            for (int i = 0; i < valueLength && hasOnlyDigits; ++i) {
-                hasOnlyDigits = isASCIIDigit(m_receiveBuf[bufPos + i]);
-            }
-            if (!valueLength) {
-                m_reconnectDelay = defaultReconnectDelay;
-            } else if (hasOnlyDigits) {
-                String value(&m_receiveBuf[bufPos], valueLength);
-                bool ok;
-                unsigned long long retry = value.toUInt64(&ok);
-                if (ok)
-                    m_reconnectDelay = retry;
-            }
-        }
-    }
 }
 
 void EventSource::stop()
@@ -436,18 +346,12 @@ bool EventSource::hasPendingActivity() const
     return m_state != CLOSED;
 }
 
-PassRefPtrWillBeRawPtr<MessageEvent> EventSource::createMessageEvent()
-{
-    RefPtrWillBeRawPtr<MessageEvent> event = MessageEvent::create();
-    event->initMessageEvent(m_eventName.isEmpty() ? EventTypeNames::message : m_eventName, false, false, SerializedScriptValueFactory::instance().create(String(m_data)), m_eventStreamOrigin, m_lastEventId, 0, nullptr);
-    m_data.clear();
-    return event.release();
-}
-
 DEFINE_TRACE(EventSource)
 {
+    visitor->trace(m_parser);
     RefCountedGarbageCollectedEventTargetWithInlineData::trace(visitor);
     ActiveDOMObject::trace(visitor);
+    EventSourceParser::Client::trace(visitor);
 }
 
 } // namespace blink

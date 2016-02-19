@@ -255,7 +255,7 @@ interface InspectorInstrumentation {
     void willSendEventSourceRequest(ExecutionContext*, ThreadableLoaderClient* eventSource);
 
     [Resource]
-    void willDispachEventSourceEvent(ExecutionContext*, ThreadableLoaderClient* eventSource, const AtomicString& eventName, const AtomicString& eventId, const Vector<UChar>& data);
+    void willDispatchEventSourceEvent(ExecutionContext*, ThreadableLoaderClient* eventSource, const AtomicString& eventName, const AtomicString& eventId, const String& data);
 
     [Resource]
     void didFinishEventSourceRequest(ExecutionContext*, ThreadableLoaderClient* eventSource);
