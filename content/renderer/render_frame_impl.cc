@@ -1007,8 +1007,8 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
 #if defined(OS_ANDROID)
       media_player_manager_(NULL),
       media_session_manager_(NULL),
-      media_surface_manager_(nullptr),
 #endif
+      media_surface_manager_(nullptr),
 #if defined(ENABLE_BROWSER_CDMS)
       cdm_manager_(NULL),
 #endif
