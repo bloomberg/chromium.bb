@@ -304,7 +304,8 @@ void WizardController::Init(const std::string& first_screen_name) {
   // Use the saved screen preference from Local State.
   const std::string screen_pref =
       GetLocalState()->GetString(prefs::kOobeScreenPending);
-  if (is_out_of_box_ && !screen_pref.empty() && !IsHostPairingOobe() &&
+  if (is_out_of_box_ && !screen_pref.empty() && !IsRemoraPairingOobe() &&
+      !IsBootstrappingSlave() &&
       (first_screen_name.empty() ||
        first_screen_name == WizardController::kTestNoScreenName)) {
     first_screen_name_ = screen_pref;
@@ -950,7 +951,7 @@ void WizardController::AdvanceToScreen(const std::string& screen_name) {
   } else if (screen_name != kTestNoScreenName) {
     if (is_out_of_box_) {
       time_oobe_started_ = base::Time::Now();
-      if (IsHostPairingOobe()) {
+      if (IsRemoraPairingOobe() || IsSlavePairingOobe()) {
         ShowHostPairingScreen();
       } else if (CanShowHIDDetectionScreen()) {
         hid_screen_ = GetScreen(kHIDDetectionScreenName);
@@ -1326,11 +1327,15 @@ bool WizardController::SetOnTimeZoneResolvedForTesting(
   return true;
 }
 
-bool WizardController::IsHostPairingOobe() const {
-  return (IsRemoraRequisition() || IsBootstrappingSlave()) &&
+bool WizardController::IsRemoraPairingOobe() const {
+  return IsRemoraRequisition() &&
          (base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kHostPairingOobe) ||
           shark_controller_detected_);
+}
+
+bool WizardController::IsSlavePairingOobe() const {
+  return IsBootstrappingSlave() && shark_controller_detected_;
 }
 
 void WizardController::MaybeStartListeningForSharkConnection() {
@@ -1338,7 +1343,7 @@ void WizardController::MaybeStartListeningForSharkConnection() {
     return;
 
   // We shouldn't be here if we are running pairing OOBE already.
-  DCHECK(!IsHostPairingOobe());
+  DCHECK(!IsRemoraPairingOobe() && !IsSlavePairingOobe());
 
   if (!shark_connection_listener_) {
     shark_connection_listener_.reset(

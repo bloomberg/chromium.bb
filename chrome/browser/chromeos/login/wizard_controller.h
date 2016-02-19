@@ -311,7 +311,10 @@ class WizardController : public BaseScreenDelegate,
   bool SetOnTimeZoneResolvedForTesting(const base::Closure& callback);
 
   // Returns true for pairing remora OOBE.
-  bool IsHostPairingOobe() const;
+  bool IsRemoraPairingOobe() const;
+
+  // Returns true for pairing slave OOBE.
+  bool IsSlavePairingOobe() const;
 
   // Starts listening for an incoming shark controller connection, if we are
   // running remora OOBE.
