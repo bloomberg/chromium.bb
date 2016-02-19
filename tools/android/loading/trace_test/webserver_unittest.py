@@ -43,7 +43,6 @@ class TracingTrackTestCase(unittest.TestCase):
       sock.connect((host, int(port)))
       sock.sendall('GET test.html HTTP/1.1\n\n')
       data = sock.recv(4096)
-      print '%%% ' + data
       self.assertTrue('HTTP/1.0 200 OK' in data)
 
       sock.close()
