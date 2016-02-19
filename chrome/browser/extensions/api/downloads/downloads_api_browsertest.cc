@@ -31,6 +31,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/common/extensions/api/downloads.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -1766,15 +1767,42 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       << kInvalidURLs[index];
   }
 
-  EXPECT_STREQ("NETWORK_INVALID_REQUEST", RunFunctionAndReturnError(
+  int result_id = -1;
+  scoped_ptr<base::Value> result(RunFunctionAndReturnResult(
       new DownloadsDownloadFunction(),
-      "[{\"url\": \"javascript:document.write(\\\"hello\\\");\"}]").c_str());
-  EXPECT_STREQ("NETWORK_INVALID_REQUEST", RunFunctionAndReturnError(
+      "[{\"url\": \"javascript:document.write(\\\"hello\\\");\"}]"));
+  ASSERT_TRUE(result.get());
+  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
+  ASSERT_TRUE(item);
+  ASSERT_TRUE(WaitForInterruption(
+      item, content::DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST,
+      "[{\"state\": \"in_progress\","
+      "  \"url\": \"javascript:document.write(\\\"hello\\\");\"}]"));
+
+  result.reset(
+      RunFunctionAndReturnResult(new DownloadsDownloadFunction(),
+                                 "[{\"url\": \"javascript:return false;\"}]"));
+  ASSERT_TRUE(result.get());
+  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  item = GetCurrentManager()->GetDownload(result_id);
+  ASSERT_TRUE(item);
+  ASSERT_TRUE(WaitForInterruption(
+      item, content::DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST,
+      "[{\"state\": \"in_progress\","
+      "  \"url\": \"javascript:return false;\"}]"));
+
+  result.reset(RunFunctionAndReturnResult(
       new DownloadsDownloadFunction(),
-      "[{\"url\": \"javascript:return false;\"}]").c_str());
-  EXPECT_STREQ("NETWORK_FAILED", RunFunctionAndReturnError(
-      new DownloadsDownloadFunction(),
-      "[{\"url\": \"ftp://example.com/example.txt\"}]").c_str());
+      "[{\"url\": \"ftp://example.com/example.txt\"}]"));
+  ASSERT_TRUE(result.get());
+  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  item = GetCurrentManager()->GetDownload(result_id);
+  ASSERT_TRUE(item);
+  ASSERT_TRUE(WaitForInterruption(
+      item, content::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED,
+      "[{\"state\": \"in_progress\","
+      "  \"url\": \"ftp://example.com/example.txt\"}]"));
 }
 
 // TODO(benjhayden): Set up a test ftp server, add ftp://localhost* to
@@ -2033,7 +2061,6 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       content::DOWNLOAD_INTERRUPT_REASON_SERVER_UNAUTHORIZED,
       base::StringPrintf("[{\"danger\": \"safe\","
                          "  \"incognito\": false,"
-                         "  \"mime\": \"text/html\","
                          "  \"paused\": false,"
                          "  \"url\": \"%s\"}]",
                          download_url.c_str())));

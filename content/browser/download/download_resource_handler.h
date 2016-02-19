@@ -33,17 +33,14 @@ struct DownloadCreateInfo;
 // Forwards data to the download thread.
 class CONTENT_EXPORT DownloadResourceHandler
     : public ResourceHandler,
+      public DownloadRequestCore::Delegate,
       public base::SupportsWeakPtr<DownloadResourceHandler> {
  public:
   struct DownloadTabInfo;
 
   // started_cb will be called exactly once on the UI thread.
   // |id| should be invalid if the id should be automatically assigned.
-  DownloadResourceHandler(
-      uint32_t id,
-      net::URLRequest* request,
-      const DownloadUrlParameters::OnStartedCallback& started_cb,
-      scoped_ptr<DownloadSaveInfo> save_info);
+  DownloadResourceHandler(net::URLRequest* request);
 
   bool OnRequestRedirected(const net::RedirectInfo& redirect_info,
                            ResourceResponse* response,
@@ -84,18 +81,12 @@ class CONTENT_EXPORT DownloadResourceHandler
  private:
   ~DownloadResourceHandler() override;
 
-  // Arrange for started_cb_ to be called on the UI thread with the
-  // below values, nulling out started_cb_.  Should only be called
-  // on the IO thread.
-  void CallStartedCB(DownloadInterruptReason interrupt_reason);
-
-  void OnCoreReadyToRead();
-
-  uint32_t download_id_;
-
-  // This is read only on the IO thread, but may only
-  // be called on the UI thread.
-  DownloadUrlParameters::OnStartedCallback started_cb_;
+  // DownloadRequestCore::Delegate
+  void OnStart(
+      scoped_ptr<DownloadCreateInfo> download_create_info,
+      scoped_ptr<ByteStreamReader> stream_reader,
+      const DownloadUrlParameters::OnStartedCallback& callback) override;
+  void OnReadyToRead() override;
 
   // Stores information about the download that must be acquired on the UI
   // thread before StartOnUIThread is called.

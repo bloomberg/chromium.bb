@@ -459,8 +459,9 @@ void WebstoreInstaller::OnDownloadStarted(
     const std::string& extension_id,
     DownloadItem* item,
     content::DownloadInterruptReason interrupt_reason) {
-  if (!item) {
-    DCHECK_NE(content::DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason);
+  if (!item || interrupt_reason != content::DOWNLOAD_INTERRUPT_REASON_NONE) {
+    if (item)
+      item->Remove();
     ReportFailure(content::DownloadInterruptReasonToString(interrupt_reason),
                   FAILURE_REASON_OTHER);
     return;

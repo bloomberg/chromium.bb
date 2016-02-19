@@ -240,15 +240,6 @@ DownloadTargetDeterminer::Result
   DCHECK(virtual_path_.IsAbsolute());
   DVLOG(20) << "Generated virtual path: " << virtual_path_.AsUTF8Unsafe();
 
-  // If the download is DOA, don't bother going any further. This would be the
-  // case for a download that failed to initialize (e.g. the initial temporary
-  // file couldn't be created because both the downloads directory and the
-  // temporary directory are unwriteable).
-  //
-  // A virtual path is determined for DOA downloads for display purposes. This
-  // is why this check is performed here instead of at the start.
-  if (download_->GetState() != DownloadItem::IN_PROGRESS)
-    return COMPLETE;
   return CONTINUE;
 }
 
@@ -259,7 +250,8 @@ DownloadTargetDeterminer::Result
 
   next_state_ = STATE_RESERVE_VIRTUAL_PATH;
 
-  if (!should_notify_extensions_)
+  if (!should_notify_extensions_ ||
+      download_->GetState() != DownloadItem::IN_PROGRESS)
     return CONTINUE;
 
   delegate_->NotifyExtensions(download_, virtual_path_,
@@ -307,6 +299,8 @@ DownloadTargetDeterminer::Result
   DCHECK(!virtual_path_.empty());
 
   next_state_ = STATE_PROMPT_USER_FOR_DOWNLOAD_PATH;
+  if (download_->GetState() != DownloadItem::IN_PROGRESS)
+    return CONTINUE;
 
   delegate_->ReserveVirtualPath(
       download_, virtual_path_, create_target_directory_, conflict_action_,
@@ -343,7 +337,9 @@ DownloadTargetDeterminer::Result
 
   next_state_ = STATE_DETERMINE_LOCAL_PATH;
 
-  if (should_prompt_) {
+  // Avoid prompting for a download if it isn't in-progress. The user will be
+  // prompted once the download is resumed and headers are available.
+  if (should_prompt_ && download_->GetState() == DownloadItem::IN_PROGRESS) {
     delegate_->PromptUserForDownloadPath(
         download_,
         virtual_path_,
@@ -581,6 +577,7 @@ DownloadTargetDeterminer::Result
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!virtual_path_.empty());
   next_state_ = STATE_CHECK_VISITED_REFERRER_BEFORE;
+
   delegate_->CheckDownloadUrl(
       download_,
       virtual_path_,

@@ -73,6 +73,8 @@ class CONTENT_EXPORT DownloadItemImpl
 
   // Constructing for a regular download.
   // |bound_net_log| is constructed externally for our use.
+  // TODO(asanka): Get rid of the DownloadCreateInfo parameter since active
+  // downloads end up at Start() immediately after creation.
   DownloadItemImpl(DownloadItemImplDelegate* delegate,
                    uint32_t id,
                    const DownloadCreateInfo& info,
@@ -167,18 +169,18 @@ class CONTENT_EXPORT DownloadItemImpl
   // INTERRUPTED state.
   virtual ResumeMode GetResumeMode() const;
 
-  // Notify the download item that new origin information is available due to a
-  // resumption request receiving a response.
-  virtual void MergeOriginInfoOnResume(
-      const DownloadCreateInfo& new_create_info);
-
   // State transition operations on regular downloads --------------------------
 
   // Start the download.
   // |download_file| is the associated file on the storage medium.
   // |req_handle| is the new request handle associated with the download.
+  // |new_create_info| is a DownloadCreateInfo containing the new response
+  // parameters. It may be different from the DownloadCreateInfo used to create
+  // the DownloadItem if Start() is being called in response for a download
+  // resumption request.
   virtual void Start(scoped_ptr<DownloadFile> download_file,
-                     scoped_ptr<DownloadRequestHandleInterface> req_handle);
+                     scoped_ptr<DownloadRequestHandleInterface> req_handle,
+                     const DownloadCreateInfo& new_create_info);
 
   // Needed because of intertwining with DownloadManagerImpl -------------------
 
@@ -239,7 +241,7 @@ class CONTENT_EXPORT DownloadItemImpl
     //
     // Transitions to (regular):
     //   TARGET_PENDING_INTERNAL: After a successful Start() call.
-    //   INTERRUPTED_INTERNAL:    Afater a failed Start() call.
+    //   INTERRUPTED_TARGET_PENDING_INTERNAL: After a failed Start() call.
     //
     // Transitions to (SavePackage):
     //   <n/a>                    SavePackage downloads never reach this state.
@@ -252,11 +254,26 @@ class CONTENT_EXPORT DownloadItemImpl
     //
     // Transitions to (regular):
     //   TARGET_RESOLVED_INTERNAL: Once the embedder invokes the callback.
+    //   INTERRUPTED_TARGET_PENDING_INTERNAL: An error occurred prior to target
+    //                            determination.
     //   CANCELLED_INTERNAL:      Cancelled.
     //
     // Transitions to (SavePackage):
     //   <n/a>                    SavePackage downloads never reach this state.
     TARGET_PENDING_INTERNAL,
+
+    // Embedder is in the process of determining the target of the download, and
+    // the download is in an interrupted state. The interrupted state is not
+    // exposed to the emedder until target determination is complete.
+    //
+    // Transitions to (regular):
+    //   INTERRUPTED_INTERNAL:    Once the target is determined, the download
+    //                            is marked as interrupted.
+    //   CANCELLED_INTERNAL:      Cancelled.
+    //
+    // Transitions to (SavePackage):
+    //   <n/a>                    SavePackage downloads never reach this state.
+    INTERRUPTED_TARGET_PENDING_INTERNAL,
 
     // Embedder has completed target determination. It is now safe to resolve
     // the download target as well as process deferred DestinationError events.
@@ -328,6 +345,12 @@ class CONTENT_EXPORT DownloadItemImpl
     // Transitions to (regular):
     //   TARGET_PENDING_INTERNAL: Once a server response is received from a
     //                            resumption.
+    //   INTERRUPTED_TARGET_PENDING_INTERNAL: A server response was received,
+    //                            but it indicated an error, and the download
+    //                            needs to go through target determination.
+    //   TARGET_RESOLVED_INTERNAL: A resumption attempt received an error
+    //                            but it was not necessary to go through target
+    //                            determination.
     //   CANCELLED_INTERNAL:      On cancel.
     //
     // Transitions to (SavePackage):
@@ -347,13 +370,6 @@ class CONTENT_EXPORT DownloadItemImpl
     MAX_DOWNLOAD_INTERNAL_STATE,
   };
 
-  // Used with TransitionTo() to indicate whether or not to call
-  // UpdateObservers() after the state transition.
-  enum ShouldUpdateObservers {
-    UPDATE_OBSERVERS,
-    DONT_UPDATE_OBSERVERS
-  };
-
   // Normal progression of a download ------------------------------------------
 
   // These are listed in approximately chronological order.  There are also
@@ -366,6 +382,13 @@ class CONTENT_EXPORT DownloadItemImpl
   // this is.
   void Init(bool active, DownloadType download_type);
 
+  // Callback from file thread when we initialize the DownloadFile.
+  void OnDownloadFileInitialized(DownloadInterruptReason result);
+
+  // Called to determine the target path. Will cause OnDownloadTargetDetermined
+  // to be called when the target information is available.
+  void DetermineDownloadTarget();
+
   // Called when the target path has been determined. |target_path| is the
   // suggested target path. |disposition| indicates how the target path should
   // be used (see TargetDisposition). |danger_type| is the danger level of
@@ -376,9 +399,6 @@ class CONTENT_EXPORT DownloadItemImpl
       TargetDisposition disposition,
       DownloadDangerType danger_type,
       const base::FilePath& intermediate_path);
-
-  // Callback from file thread when we initialize the DownloadFile.
-  void OnDownloadFileInitialized(DownloadInterruptReason result);
 
   void OnDownloadRenamedToIntermediateName(
       DownloadInterruptReason reason, const base::FilePath& full_path);
@@ -404,10 +424,6 @@ class CONTENT_EXPORT DownloadItemImpl
   // is completed.
   void Completed();
 
-  // Callback invoked when the URLRequest for a download resumption has started.
-  void OnResumeRequestStarted(DownloadItem* item,
-                              DownloadInterruptReason interrupt_reason);
-
   // Helper routines -----------------------------------------------------------
 
   // Indicate that an error has occurred on the download.
@@ -427,8 +443,7 @@ class CONTENT_EXPORT DownloadItemImpl
   // Call to transition state; all state transitions should go through this.
   // |notify_action| specifies whether or not to call UpdateObservers() after
   // the state transition.
-  void TransitionTo(DownloadInternalState new_state,
-                    ShouldUpdateObservers notify_action);
+  void TransitionTo(DownloadInternalState new_state);
 
   // Set the |danger_type_| and invoke observers if necessary.
   void SetDangerType(DownloadDangerType danger_type);
@@ -438,6 +453,11 @@ class CONTENT_EXPORT DownloadItemImpl
   void AutoResumeIfValid();
 
   void ResumeInterruptedDownload();
+
+  // Update origin information based on the response to a download resumption
+  // request. Should only be called if the resumption request was successful.
+  virtual void UpdateValidatorsOnResumption(
+      const DownloadCreateInfo& new_create_info);
 
   static DownloadState InternalToExternalState(
       DownloadInternalState internal_state);

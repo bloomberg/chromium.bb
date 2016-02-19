@@ -878,17 +878,17 @@ TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_InactiveDownload) {
        download_util::NOT_DANGEROUS, "http://example.com/foo.txt", "text/plain",
        FILE_PATH_LITERAL(""),
 
-       FILE_PATH_LITERAL(""), DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+       FILE_PATH_LITERAL("foo.txt"), DownloadItem::TARGET_DISPOSITION_OVERWRITE,
 
-       EXPECT_LOCAL_PATH},
+       EXPECT_CRDOWNLOAD},
 
       {SAVE_AS, content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
        download_util::NOT_DANGEROUS, "http://example.com/foo.txt", "text/plain",
        FILE_PATH_LITERAL(""),
 
-       FILE_PATH_LITERAL(""), DownloadItem::TARGET_DISPOSITION_PROMPT,
+       FILE_PATH_LITERAL("foo.txt"), DownloadItem::TARGET_DISPOSITION_PROMPT,
 
-       EXPECT_LOCAL_PATH}};
+       EXPECT_CRDOWNLOAD}};
 
   for (size_t i = 0; i < arraysize(kInactiveTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "Running test case " << i);
@@ -897,10 +897,11 @@ TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_InactiveDownload) {
         CreateActiveDownloadItem(i, test_case));
     EXPECT_CALL(*item.get(), GetState())
         .WillRepeatedly(Return(content::DownloadItem::CANCELLED));
-    // Even though one is a SAVE_AS download, no prompt will be displayed to
-    // the user because the download is inactive.
-    EXPECT_CALL(*delegate(), PromptUserForDownloadPath(_, _, _))
-        .Times(0);
+
+    EXPECT_CALL(*delegate(), PromptUserForDownloadPath(_, _, _)).Times(0);
+    EXPECT_CALL(*delegate(), NotifyExtensions(_, _, _)).Times(0);
+    EXPECT_CALL(*delegate(), ReserveVirtualPath(_, _, _, _, _)).Times(0);
+    EXPECT_CALL(*delegate(), DetermineLocalPath(_, _, _)).Times(1);
     RunTestCase(test_case, base::FilePath(), item.get());
   }
 }

@@ -41,65 +41,126 @@ class WebContents;
 
 class CONTENT_EXPORT DownloadUrlParameters {
  public:
-  // If there is an error, then |item| will be nullptr.
+  // An OnStartedCallback is invoked when a response is available for the
+  // download request. For new downloads, this callback is invoked after the
+  // OnDownloadCreated notification is issued by the DownloadManager. If the
+  // download fails, then the DownloadInterruptReason parameter will indicate
+  // the failure.
+  //
+  // DownloadItem* may be nullptr if no DownloadItem was created. DownloadItems
+  // are not created when a resource throttle or a resource handler blocks the
+  // download request. I.e. the download triggered a warning of some sort and
+  // the user chose to not to proceed with the download as a result.
   typedef base::Callback<void(DownloadItem*, DownloadInterruptReason)>
       OnStartedCallback;
 
   typedef std::pair<std::string, std::string> RequestHeadersNameValuePair;
   typedef std::vector<RequestHeadersNameValuePair> RequestHeadersType;
 
+  // Construct DownloadUrlParameters for downloading the resource at |url| and
+  // associating the download with |web_contents|.
   static scoped_ptr<DownloadUrlParameters> FromWebContents(
       WebContents* web_contents,
       const GURL& url);
 
-  DownloadUrlParameters(
-      const GURL& url,
-      int render_process_host_id,
-      int render_view_host_routing_id,
-      int render_frame_host_routing_id,
-      content::ResourceContext* resource_context);
+  // Construct DownloadUrlParameters for downloading the resource at |url| and
+  // associating the download with the WebContents identified by
+  // |render_process_host_id| and |render_view_host_routing_id|.
+  //
+  // If the download is not associated with a WebContents, then set the IDs to
+  // -1.
+  // NOTE: This is not safe and should only be done in a limited set of cases
+  // where the download URL has been previously vetted. A download that's
+  // initiated without associating it with a WebContents don't receive the same
+  // security checks as a request that's associated with one. Hence, downloads
+  // that are not associated with a WebContents should only be made for URLs
+  // that are either trusted or URLs that have previously been successfully
+  // issued using a non-privileged WebContents.
+  DownloadUrlParameters(const GURL& url,
+                        int render_process_host_id,
+                        int render_view_host_routing_id,
+                        int render_frame_host_routing_id,
+                        ResourceContext* resource_context);
 
   ~DownloadUrlParameters();
 
+  // Should be set to true if the download was initiated by a script or a web
+  // page. I.e. if the download request cannot be attributed to an explicit user
+  // request for a download, then set this value to true.
   void set_content_initiated(bool content_initiated) {
     content_initiated_ = content_initiated;
   }
   void add_request_header(const std::string& name, const std::string& value) {
     request_headers_.push_back(make_pair(name, value));
   }
+
+  // HTTP Referrer and referrer encoding.
   void set_referrer(const Referrer& referrer) { referrer_ = referrer; }
   void set_referrer_encoding(const std::string& referrer_encoding) {
     referrer_encoding_ = referrer_encoding;
   }
+
+  // If this is a request for resuming an HTTP/S download, |last_modified|
+  // should be the value of the last seen Last-Modified response header.
   void set_last_modified(const std::string& last_modified) {
     last_modified_ = last_modified;
   }
+
+  // If this is a request for resuming an HTTP/S download, |etag| should be the
+  // last seen Etag response header.
   void set_etag(const std::string& etag) {
     etag_ = etag;
   }
+
+  // HTTP method to use.
   void set_method(const std::string& method) {
     method_ = method;
   }
+
+  // Body of the HTTP POST request.
   void set_post_body(const std::string& post_body) {
     post_body_ = post_body;
   }
+
+  // If |prefer_cache| is true and the response to |url| is in the HTTP cache,
+  // it will be used without validation. If |method| is POST, then |post_id_|
+  // shoud be set via |set_post_id()| below to the identifier of the POST
+  // transaction used to originally retrieve the resource.
   void set_prefer_cache(bool prefer_cache) {
     prefer_cache_ = prefer_cache;
   }
+
+  // See set_prefer_cache() above.
   void set_post_id(int64_t post_id) { post_id_ = post_id; }
+
+  // See OnStartedCallback above.
   void set_callback(const OnStartedCallback& callback) {
     callback_ = callback;
   }
+
+  // If not empty, specifies the full target path for the download. This value
+  // overrides the filename suggested by a Content-Disposition headers. It
+  // should only be set for programmatic downloads where the caller can verify
+  // the safety of the filename and the resulting download.
   void set_file_path(const base::FilePath& file_path) {
     save_info_.file_path = file_path;
   }
+
+  // Suggested filename for the download. The suggestion can be overridden by
+  // either a Content-Disposition response header or a |file_path|.
   void set_suggested_name(const base::string16& suggested_name) {
     save_info_.suggested_name = suggested_name;
   }
+
+  // If |offset| is non-zero, then a byte range request will be issued to fetch
+  // the range of bytes starting at |offset| through to the end of thedownload.
   void set_offset(int64_t offset) { save_info_.offset = offset; }
   void set_hash_state(const std::string& hash_state) {
     save_info_.hash_state = hash_state;
   }
+
+  // If |prompt| is true, then the user will be prompted for a filename. Ignored
+  // if |file_path| is non-empty.
   void set_prompt(bool prompt) { save_info_.prompt_for_save_location = prompt; }
   void set_file(base::File file) { save_info_.file = std::move(file); }
   void set_do_not_prompt_for_login(bool do_not_prompt) {
@@ -123,15 +184,8 @@ class CONTENT_EXPORT DownloadUrlParameters {
   int render_frame_host_routing_id() const {
     return render_frame_host_routing_id_;
   }
-  RequestHeadersType::const_iterator request_headers_begin() const {
-    return request_headers_.begin();
-  }
-  RequestHeadersType::const_iterator request_headers_end() const {
-    return request_headers_.end();
-  }
-  content::ResourceContext* resource_context() const {
-    return resource_context_;
-  }
+  const RequestHeadersType& request_headers() const { return request_headers_; }
+  ResourceContext* resource_context() const { return resource_context_; }
   const base::FilePath& file_path() const { return save_info_.file_path; }
   const base::string16& suggested_name() const {
     return save_info_.suggested_name;

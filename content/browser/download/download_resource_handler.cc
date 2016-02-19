@@ -48,11 +48,11 @@ static void StartOnUIThread(
     // NULL in unittests or if the page closed right after starting the
     // download.
     if (!started_cb.is_null())
-      started_cb.Run(NULL, DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
+      started_cb.Run(nullptr, DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
 
-    // |stream| gets deleted on non-FILE thread, but it's ok since
-    // we're not using stream_writer_ yet.
-
+    if (stream)
+      BrowserThread::DeleteSoon(BrowserThread::FILE, FROM_HERE,
+                                stream.release());
     return;
   }
 
@@ -83,19 +83,10 @@ void DeleteOnUIThread(
 
 }  // namespace
 
-DownloadResourceHandler::DownloadResourceHandler(
-    uint32_t id,
-    net::URLRequest* request,
-    const DownloadUrlParameters::OnStartedCallback& started_cb,
-    scoped_ptr<DownloadSaveInfo> save_info)
+DownloadResourceHandler::DownloadResourceHandler(net::URLRequest* request)
     : ResourceHandler(request),
-      download_id_(id),
-      started_cb_(started_cb),
       tab_info_(new DownloadTabInfo()),
-      core_(request,
-            std::move(save_info),
-            base::Bind(&DownloadResourceHandler::OnCoreReadyToRead,
-                       base::Unretained(this))) {
+      core_(request, this) {
   // Do UI thread initialization for tab_info_ asap after
   // DownloadResourceHandler creation since the tab could be navigated
   // before StartOnUIThread gets called.  This is safe because deletion
@@ -113,11 +104,6 @@ DownloadResourceHandler::DownloadResourceHandler(
 }
 
 DownloadResourceHandler::~DownloadResourceHandler() {
-  // This won't do anything if the callback was called before.
-  // If it goes through, it will likely be because OnWillStart() returned
-  // false somewhere in the chain of resource handlers.
-  CallStartedCB(DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED);
-
   if (tab_info_) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
@@ -136,39 +122,9 @@ bool DownloadResourceHandler::OnRequestRedirected(
 bool DownloadResourceHandler::OnResponseStarted(
     ResourceResponse* response,
     bool* defer) {
-  scoped_ptr<DownloadCreateInfo> create_info;
-  scoped_ptr<ByteStreamReader> stream_reader;
-
-  core_.OnResponseStarted(&create_info, &stream_reader);
-
-  const ResourceRequestInfoImpl* request_info = GetRequestInfo();
-  create_info->download_id = download_id_;
-  create_info->has_user_gesture = request_info->HasUserGesture();
-  create_info->transition_type = request_info->GetPageTransition();
-  create_info->request_handle.reset(new DownloadRequestHandle(
-      AsWeakPtr(), request_info->GetChildID(), request_info->GetRouteID(),
-      request_info->GetRequestID(), request_info->frame_tree_node_id()));
-
   // The MIME type in ResourceResponse is the product of
   // MimeTypeResourceHandler.
-  create_info->mime_type = response->head.mime_type;
-
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&StartOnUIThread, base::Passed(&create_info),
-                 base::Passed(&tab_info_), base::Passed(&stream_reader),
-                 base::ResetAndReturn(&started_cb_)));
-  return true;
-}
-
-void DownloadResourceHandler::CallStartedCB(
-    DownloadInterruptReason interrupt_reason) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (started_cb_.is_null())
-    return;
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(base::ResetAndReturn(&started_cb_),
-                                     nullptr, interrupt_reason));
+  return core_.OnResponseStarted(response->head.mime_type);
 }
 
 bool DownloadResourceHandler::OnWillStart(const GURL& url, bool* defer) {
@@ -197,8 +153,7 @@ void DownloadResourceHandler::OnResponseCompleted(
     const net::URLRequestStatus& status,
     const std::string& security_info,
     bool* defer) {
-  DownloadInterruptReason result = core_.OnResponseCompleted(status);
-  CallStartedCB(result);
+  core_.OnResponseCompleted(status);
 }
 
 void DownloadResourceHandler::OnDataDownloaded(int bytes_downloaded) {
@@ -213,7 +168,37 @@ void DownloadResourceHandler::ResumeRequest() {
   core_.ResumeRequest();
 }
 
-void DownloadResourceHandler::OnCoreReadyToRead() {
+void DownloadResourceHandler::OnStart(
+    scoped_ptr<DownloadCreateInfo> create_info,
+    scoped_ptr<ByteStreamReader> stream_reader,
+    const DownloadUrlParameters::OnStartedCallback& callback) {
+  // If the user cancels the download, then don't call start. Instead ignore the
+  // download entirely.
+  if (create_info->result == DOWNLOAD_INTERRUPT_REASON_USER_CANCELED &&
+      create_info->download_id == DownloadItem::kInvalidId) {
+    if (!callback.is_null())
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          base::Bind(callback, nullptr, create_info->result));
+    return;
+  }
+
+  const ResourceRequestInfoImpl* request_info = GetRequestInfo();
+  create_info->has_user_gesture = request_info->HasUserGesture();
+  create_info->transition_type = request_info->GetPageTransition();
+
+  create_info->request_handle.reset(new DownloadRequestHandle(
+      AsWeakPtr(), request_info->GetChildID(), request_info->GetRouteID(),
+      request_info->GetRequestID(), request_info->frame_tree_node_id()));
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&StartOnUIThread, base::Passed(&create_info),
+                 base::Passed(&tab_info_), base::Passed(&stream_reader),
+                 callback));
+}
+
+void DownloadResourceHandler::OnReadyToRead() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   controller()->Resume();
 }

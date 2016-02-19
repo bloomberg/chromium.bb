@@ -35,21 +35,22 @@ const int kInitialRenameRetryDelayMs = 200;
 int DownloadFile::number_active_objects_ = 0;
 
 DownloadFileImpl::DownloadFileImpl(
-    scoped_ptr<DownloadSaveInfo> save_info,
+    const DownloadSaveInfo& save_info,
     const base::FilePath& default_download_directory,
     const GURL& url,
     const GURL& referrer_url,
     bool calculate_hash,
+    base::File file,
     scoped_ptr<ByteStreamReader> stream,
     const net::BoundNetLog& bound_net_log,
     base::WeakPtr<DownloadDestinationObserver> observer)
-    : file_(save_info->file_path,
+    : file_(save_info.file_path,
             url,
             referrer_url,
-            save_info->offset,
+            save_info.offset,
             calculate_hash,
-            save_info->hash_state,
-            std::move(save_info->file),
+            save_info.hash_state,
+            std::move(file),
             bound_net_log),
       default_download_directory_(default_download_directory),
       stream_reader_(std::move(stream)),

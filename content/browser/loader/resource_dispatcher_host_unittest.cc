@@ -1169,8 +1169,6 @@ void ResourceDispatcherHostTest::MakeTestRequestWithPriorityAndRenderFrame(
 void ResourceDispatcherHostTest::MakeWebContentsAssociatedDownloadRequest(
     int request_id,
     const GURL& url) {
-  scoped_ptr<DownloadSaveInfo> save_info(new DownloadSaveInfo());
-  save_info->prompt_for_save_location = false;
   net::URLRequestContext* request_context =
       browser_context_->GetResourceContext()->GetRequestContext();
   scoped_ptr<net::URLRequest> request(
@@ -1180,9 +1178,7 @@ void ResourceDispatcherHostTest::MakeWebContentsAssociatedDownloadRequest(
                       browser_context_->GetResourceContext(),
                       web_contents_->GetRenderProcessHost()->GetID(),
                       web_contents_->GetRoutingID(),
-                      web_contents_->GetMainFrame()->GetRoutingID(), false,
-                      false, std::move(save_info), DownloadItem::kInvalidId,
-                      ResourceDispatcherHostImpl::DownloadStartedCallback());
+                      web_contents_->GetMainFrame()->GetRoutingID(), false);
 }
 
 void ResourceDispatcherHostTest::CancelRequest(int request_id) {

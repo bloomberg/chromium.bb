@@ -29,8 +29,11 @@
 #include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_resource_handler.h"
+#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/power_save_blocker.h"
+#include "content/public/browser/resource_dispatcher_host_delegate.h"
+#include "content/public/browser/resource_throttle.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/test/browser_test_utils.h"
@@ -118,17 +121,17 @@ static DownloadManagerImpl* DownloadManagerForShell(Shell* shell) {
 
 class DownloadFileWithDelay : public DownloadFileImpl {
  public:
-  DownloadFileWithDelay(
-      scoped_ptr<DownloadSaveInfo> save_info,
-      const base::FilePath& default_download_directory,
-      const GURL& url,
-      const GURL& referrer_url,
-      bool calculate_hash,
-      scoped_ptr<ByteStreamReader> stream,
-      const net::BoundNetLog& bound_net_log,
-      scoped_ptr<PowerSaveBlocker> power_save_blocker,
-      base::WeakPtr<DownloadDestinationObserver> observer,
-      base::WeakPtr<DownloadFileWithDelayFactory> owner);
+  DownloadFileWithDelay(const DownloadSaveInfo& save_info,
+                        const base::FilePath& default_download_directory,
+                        const GURL& url,
+                        const GURL& referrer_url,
+                        bool calculate_hash,
+                        base::File file,
+                        scoped_ptr<ByteStreamReader> stream,
+                        const net::BoundNetLog& bound_net_log,
+                        scoped_ptr<PowerSaveBlocker> power_save_blocker,
+                        base::WeakPtr<DownloadDestinationObserver> observer,
+                        base::WeakPtr<DownloadFileWithDelayFactory> owner);
 
   ~DownloadFileWithDelay() override;
 
@@ -165,11 +168,12 @@ class DownloadFileWithDelayFactory : public DownloadFileFactory {
 
   // DownloadFileFactory interface.
   DownloadFile* CreateFile(
-      scoped_ptr<DownloadSaveInfo> save_info,
+      const DownloadSaveInfo& save_info,
       const base::FilePath& default_download_directory,
       const GURL& url,
       const GURL& referrer_url,
       bool calculate_hash,
+      base::File file,
       scoped_ptr<ByteStreamReader> stream,
       const net::BoundNetLog& bound_net_log,
       base::WeakPtr<DownloadDestinationObserver> observer) override;
@@ -189,21 +193,23 @@ class DownloadFileWithDelayFactory : public DownloadFileFactory {
 };
 
 DownloadFileWithDelay::DownloadFileWithDelay(
-    scoped_ptr<DownloadSaveInfo> save_info,
+    const DownloadSaveInfo& save_info,
     const base::FilePath& default_download_directory,
     const GURL& url,
     const GURL& referrer_url,
     bool calculate_hash,
+    base::File file,
     scoped_ptr<ByteStreamReader> stream,
     const net::BoundNetLog& bound_net_log,
     scoped_ptr<PowerSaveBlocker> power_save_blocker,
     base::WeakPtr<DownloadDestinationObserver> observer,
     base::WeakPtr<DownloadFileWithDelayFactory> owner)
-    : DownloadFileImpl(std::move(save_info),
+    : DownloadFileImpl(save_info,
                        default_download_directory,
                        url,
                        referrer_url,
                        calculate_hash,
+                       std::move(file),
                        std::move(stream),
                        bound_net_log,
                        observer),
@@ -247,11 +253,12 @@ DownloadFileWithDelayFactory::DownloadFileWithDelayFactory()
 DownloadFileWithDelayFactory::~DownloadFileWithDelayFactory() {}
 
 DownloadFile* DownloadFileWithDelayFactory::CreateFile(
-    scoped_ptr<DownloadSaveInfo> save_info,
+    const DownloadSaveInfo& save_info,
     const base::FilePath& default_download_directory,
     const GURL& url,
     const GURL& referrer_url,
     bool calculate_hash,
+    base::File file,
     scoped_ptr<ByteStreamReader> stream,
     const net::BoundNetLog& bound_net_log,
     base::WeakPtr<DownloadDestinationObserver> observer) {
@@ -259,8 +266,8 @@ DownloadFile* DownloadFileWithDelayFactory::CreateFile(
       PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
       PowerSaveBlocker::kReasonOther, "Download in progress"));
   return new DownloadFileWithDelay(
-      std::move(save_info), default_download_directory, url, referrer_url,
-      calculate_hash, std::move(stream), bound_net_log, std::move(psb),
+      save_info, default_download_directory, url, referrer_url, calculate_hash,
+      std::move(file), std::move(stream), bound_net_log, std::move(psb),
       observer, weak_ptr_factory_.GetWeakPtr());
 }
 
@@ -289,20 +296,22 @@ void DownloadFileWithDelayFactory::WaitForSomeCallback() {
 
 class CountingDownloadFile : public DownloadFileImpl {
  public:
-  CountingDownloadFile(scoped_ptr<DownloadSaveInfo> save_info,
+  CountingDownloadFile(const DownloadSaveInfo& save_info,
                        const base::FilePath& default_downloads_directory,
                        const GURL& url,
                        const GURL& referrer_url,
                        bool calculate_hash,
+                       base::File file,
                        scoped_ptr<ByteStreamReader> stream,
                        const net::BoundNetLog& bound_net_log,
                        scoped_ptr<PowerSaveBlocker> power_save_blocker,
                        base::WeakPtr<DownloadDestinationObserver> observer)
-      : DownloadFileImpl(std::move(save_info),
+      : DownloadFileImpl(save_info,
                          default_downloads_directory,
                          url,
                          referrer_url,
                          calculate_hash,
+                         std::move(file),
                          std::move(stream),
                          bound_net_log,
                          observer) {}
@@ -349,21 +358,22 @@ class CountingDownloadFileFactory : public DownloadFileFactory {
 
   // DownloadFileFactory interface.
   DownloadFile* CreateFile(
-      scoped_ptr<DownloadSaveInfo> save_info,
+      const DownloadSaveInfo& save_info,
       const base::FilePath& default_downloads_directory,
       const GURL& url,
       const GURL& referrer_url,
       bool calculate_hash,
+      base::File file,
       scoped_ptr<ByteStreamReader> stream,
       const net::BoundNetLog& bound_net_log,
       base::WeakPtr<DownloadDestinationObserver> observer) override {
     scoped_ptr<PowerSaveBlocker> psb(PowerSaveBlocker::Create(
         PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
         PowerSaveBlocker::kReasonOther, "Download in progress"));
-    return new CountingDownloadFile(
-        std::move(save_info), default_downloads_directory, url, referrer_url,
-        calculate_hash, std::move(stream), bound_net_log, std::move(psb),
-        observer);
+    return new CountingDownloadFile(save_info, default_downloads_directory, url,
+                                    referrer_url, calculate_hash,
+                                    std::move(file), std::move(stream),
+                                    bound_net_log, std::move(psb), observer);
   }
 };
 
@@ -599,6 +609,12 @@ class DownloadContentTest : public ContentBrowserTest {
   void WaitForCompletion(DownloadItem* download) {
     DownloadUpdatedObserver(
         download, base::Bind(&IsDownloadInState, DownloadItem::COMPLETE))
+        .WaitForEvent();
+  }
+
+  void WaitForCancel(DownloadItem* download) {
+    DownloadUpdatedObserver(
+        download, base::Bind(&IsDownloadInState, DownloadItem::CANCELLED))
         .WaitForEvent();
   }
 
@@ -1123,6 +1139,136 @@ IN_PROC_BROWSER_TEST_P(DownloadResumptionContentTest, StrongValidators) {
             value);
 }
 
+// Resumption should only attempt to contact the final URL if the download has a
+// URL chain.
+IN_PROC_BROWSER_TEST_P(DownloadResumptionContentTest, RedirectBeforeResume) {
+  TestDownloadRequestHandler request_handler_1(
+      GURL("http://example.com/first-url"));
+  request_handler_1.StartServingStaticResponse(
+      "HTTP/1.1 302 Redirect\r\n"
+      "Location: http://example.com/second-url\r\n"
+      "\r\n");
+
+  TestDownloadRequestHandler request_handler_2(
+      GURL("http://example.com/second-url"));
+  request_handler_2.StartServingStaticResponse(
+      "HTTP/1.1 302 Redirect\r\n"
+      "Location: http://example.com/third-url\r\n"
+      "\r\n");
+
+  TestDownloadRequestHandler request_handler_3(
+      GURL("http://example.com/third-url"));
+  request_handler_3.StartServingStaticResponse(
+      "HTTP/1.1 302 Redirect\r\n"
+      "Location: http://example.com/download\r\n"
+      "\r\n");
+
+  TestDownloadRequestHandler resumable_request_handler(
+      GURL("http://example.com/download"));
+  TestDownloadRequestHandler::Parameters parameters =
+      TestDownloadRequestHandler::Parameters::WithSingleInterruption();
+  resumable_request_handler.StartServing(parameters);
+
+  DownloadItem* download = StartDownloadAndReturnItem(
+      initiator_shell_for_resumption(), request_handler_1.url());
+  WaitForInterrupt(download);
+
+  EXPECT_EQ(4u, download->GetUrlChain().size());
+  EXPECT_EQ(request_handler_1.url(), download->GetOriginalUrl());
+  EXPECT_EQ(resumable_request_handler.url(), download->GetURL());
+
+  // Now that the download is interrupted, make all intermediate servers return
+  // a 404. The only way a resumption request would succeed if the resumption
+  // request is sent to the final server in the chain.
+  const char k404Response[] = "HTTP/1.1 404 Not found\r\n\r\n";
+  request_handler_1.StartServingStaticResponse(k404Response);
+  request_handler_2.StartServingStaticResponse(k404Response);
+  request_handler_3.StartServingStaticResponse(k404Response);
+
+  PrepareToResume();
+  download->Resume();
+  WaitForCompletion(download);
+
+  ASSERT_NO_FATAL_FAILURE(ReadAndVerifyFileContents(
+      parameters.pattern_generator_seed, parameters.size,
+      download->GetTargetFilePath()));
+}
+
+// If the server response for the resumption request specifies a bad range (i.e.
+// not the range that was requested or an invalid or missing Content-Range
+// header), then the download should be marked as interrupted again without
+// discarding the partial state.
+IN_PROC_BROWSER_TEST_P(DownloadResumptionContentTest, BadRangeHeader) {
+  TestDownloadRequestHandler request_handler;
+  TestDownloadRequestHandler::Parameters parameters =
+      TestDownloadRequestHandler::Parameters::WithSingleInterruption();
+  request_handler.StartServing(parameters);
+
+  DownloadItem* download = StartDownloadAndReturnItem(
+      initiator_shell_for_resumption(), request_handler.url());
+  WaitForInterrupt(download);
+
+  // Upon resumption, the server starts responding with a bad range header.
+  request_handler.StartServingStaticResponse(
+      "HTTP/1.1 206 Partial Content\r\n"
+      "Content-Range: bytes 1000000-2000000/3000000\r\n"
+      "\r\n");
+  PrepareToResume();
+  download->Resume();
+  WaitForInterrupt(download);
+  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
+            download->GetLastReason());
+
+  // Or this time, the server sends a response with an invalid Content-Range
+  // header.
+  request_handler.StartServingStaticResponse(
+      "HTTP/1.1 206 Partial Content\r\n"
+      "Content-Range: ooga-booga-booga-booga\r\n"
+      "\r\n");
+  download->Resume();
+  WaitForInterrupt(download);
+  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
+            download->GetLastReason());
+
+  // Or no Content-Range header at all.
+  request_handler.StartServingStaticResponse(
+      "HTTP/1.1 206 Partial Content\r\n"
+      "Some-Headers: ooga-booga-booga-booga\r\n"
+      "\r\n");
+  download->Resume();
+  WaitForInterrupt(download);
+  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
+            download->GetLastReason());
+
+  // Back to the original request handler. Resumption should now succeed, and
+  // use the partial data it had prior to the first interruption.
+  request_handler.StartServing(parameters);
+  download->Resume();
+  WaitForCompletion(download);
+
+  ASSERT_EQ(parameters.size, download->GetReceivedBytes());
+  ASSERT_EQ(parameters.size, download->GetTotalBytes());
+  ASSERT_NO_FATAL_FAILURE(ReadAndVerifyFileContents(
+      parameters.pattern_generator_seed, parameters.size,
+      download->GetTargetFilePath()));
+
+  // Characterization risk: The next portion of the test examines the requests
+  // that were sent out while downloading our resource. These requests
+  // correspond to the requests that were generated by the browser and the
+  // downloads system and may change as implementation details change.
+  TestDownloadRequestHandler::CompletedRequests requests;
+  request_handler.GetCompletedRequestInfo(&requests);
+
+  ASSERT_EQ(5u, requests.size());
+
+  // None of the request should have transferred the entire resource.
+  EXPECT_GT(parameters.size, requests[0].transferred_byte_count);
+  EXPECT_EQ(0, requests[1].transferred_byte_count);
+  EXPECT_EQ(0, requests[2].transferred_byte_count);
+  EXPECT_EQ(0, requests[3].transferred_byte_count);
+  EXPECT_GT(parameters.size, requests[4].transferred_byte_count);
+}
+
 // A partial resumption results in an HTTP 200 response. I.e. the server ignored
 // the range request and sent the entire resource instead. For If-Range requests
 // (as opposed to If-Match), the behavior for a precondition failure is also to
@@ -1289,7 +1435,7 @@ IN_PROC_BROWSER_TEST_P(DownloadResumptionContentTest,
             download->GetLastReason());
   EXPECT_EQ(0, download->GetReceivedBytes());
   EXPECT_TRUE(download->GetFullPath().empty());
-  EXPECT_TRUE(download->GetTargetFilePath().empty());
+  EXPECT_FALSE(download->GetTargetFilePath().empty());
 
   // We need to make sure that any cross-thread downloads communication has
   // quiesced before clearing and injecting the new errors, as the
@@ -1834,6 +1980,69 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   ASSERT_TRUE(origin_two.ShutdownAndWaitUntilComplete());
 }
 
+// A request for a non-existent resource should still result in a DownloadItem
+// that's created in an interrupted state.
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeServerError) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL download_url =
+      embedded_test_server()->GetURL("/download/does-not-exist");
+  GURL document_url = embedded_test_server()->GetURL(
+      std::string("/download/download-attribute.html?target=") +
+      download_url.spec());
+
+  DownloadItem* download = StartDownloadAndReturnItem(shell(), document_url);
+  WaitForInterrupt(download);
+
+  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
+            download->GetLastReason());
+}
+
+namespace {
+
+void ErrorReturningRequestHandler(
+    const net::HttpRequestHeaders& headers,
+    const TestDownloadRequestHandler::OnStartResponseCallback& callback) {
+  callback.Run(std::string(), net::ERR_INTERNET_DISCONNECTED);
+}
+
+}  // namespace
+
+// A request that fails before it gets a response from the server should also
+// result in a DownloadItem that's created in an interrupted state.
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeNetworkError) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  TestDownloadRequestHandler request_handler;
+  TestDownloadRequestHandler::Parameters parameters;
+
+  parameters.on_start_handler = base::Bind(&ErrorReturningRequestHandler);
+  request_handler.StartServing(parameters);
+
+  GURL document_url = embedded_test_server()->GetURL(
+      std::string("/download/download-attribute.html?target=") +
+      request_handler.url().spec());
+  DownloadItem* download = StartDownloadAndReturnItem(shell(), document_url);
+  WaitForInterrupt(download);
+
+  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED,
+            download->GetLastReason());
+}
+
+// A request that fails due to it being rejected by policy should result in a
+// DownloadItem that's marked as interrupted.
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeInvalidURL) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL document_url = embedded_test_server()->GetURL(
+      "/download/download-attribute.html?target=about:version");
+  DownloadItem* download = StartDownloadAndReturnItem(shell(), document_url);
+  WaitForInterrupt(download);
+
+  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST,
+            download->GetLastReason());
+  EXPECT_FALSE(download->CanResume());
+}
+
 // The file empty.bin is served with a MIME type of application/octet-stream.
 // The content body is empty. Make sure this case is handled properly and we
 // don't regress on http://crbug.com/320394.
@@ -1854,9 +2063,11 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, SniffedMimeType) {
   EXPECT_TRUE(item->GetOriginalMimeType().empty());
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadContentTest, Spam) {
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, DuplicateContentDisposition) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
+  // double-content-disposition.txt is served with two Content-Disposition
+  // headers, both of which are identical.
   NavigateToURLAndWaitForDownload(
       shell(),
       embedded_test_server()->GetURL(

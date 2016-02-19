@@ -91,10 +91,7 @@ class TestResourceDispatcherHost : public ResourceDispatcherHostImpl {
   scoped_ptr<ResourceHandler> CreateResourceHandlerForDownload(
       net::URLRequest* request,
       bool is_content_initiated,
-      bool must_download,
-      uint32_t id,
-      scoped_ptr<DownloadSaveInfo> save_info,
-      const DownloadUrlParameters::OnStartedCallback& started_cb) override {
+      bool must_download) override {
     return scoped_ptr<ResourceHandler>(new TestResourceHandler);
   }
 

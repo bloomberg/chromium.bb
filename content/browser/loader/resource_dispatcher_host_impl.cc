@@ -350,20 +350,6 @@ void RemoveDownloadFileFromChildSecurityPolicy(int child_id,
       child_id, path);
 }
 
-DownloadInterruptReason CallbackAndReturn(
-    const DownloadUrlParameters::OnStartedCallback& started_cb,
-    DownloadInterruptReason interrupt_reason) {
-  if (started_cb.is_null())
-    return interrupt_reason;
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(
-          started_cb, static_cast<DownloadItem*>(NULL), interrupt_reason));
-
-  return interrupt_reason;
-}
-
 int GetCertID(net::URLRequest* request, int child_id) {
   if (request->ssl_info().cert.get()) {
     return CertStore::GetInstance()->StoreCert(request->ssl_info().cert.get(),
@@ -765,14 +751,9 @@ DownloadInterruptReason ResourceDispatcherHostImpl::BeginDownload(
     int child_id,
     int render_view_route_id,
     int render_frame_route_id,
-    bool prefer_cache,
-    bool do_not_prompt_for_login,
-    scoped_ptr<DownloadSaveInfo> save_info,
-    uint32_t download_id,
-    const DownloadStartedCallback& started_callback) {
+    bool do_not_prompt_for_login) {
   if (is_shutdown_)
-    return CallbackAndReturn(started_callback,
-                             DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN);
+    return DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN;
 
   const GURL& url = request->original_url();
 
@@ -783,21 +764,6 @@ DownloadInterruptReason ResourceDispatcherHostImpl::BeginDownload(
   CHECK(ContainsKey(active_resource_contexts_, context));
 
   SetReferrerForRequest(request.get(), referrer);
-
-  int extra_load_flags = net::LOAD_NORMAL;
-  if (prefer_cache) {
-    // If there is upload data attached, only retrieve from cache because there
-    // is no current mechanism to prompt the user for their consent for a
-    // re-post. For GETs, try to retrieve data from the cache and skip
-    // validating the entry if present.
-    if (request->get_upload() != NULL)
-      extra_load_flags |= net::LOAD_ONLY_FROM_CACHE;
-    else
-      extra_load_flags |= net::LOAD_PREFERRING_CACHE;
-  } else {
-    extra_load_flags |= net::LOAD_DISABLE_CACHE;
-  }
-  request->SetLoadFlags(request->load_flags() | extra_load_flags);
 
   // We treat a download as a main frame load, and thus update the policy URL on
   // redirects.
@@ -811,20 +777,18 @@ DownloadInterruptReason ResourceDispatcherHostImpl::BeginDownload(
   // Check if the renderer is permitted to request the requested URL.
   if (!ChildProcessSecurityPolicyImpl::GetInstance()->
           CanRequestURL(child_id, url)) {
-    VLOG(1) << "Denied unauthorized download request for "
-            << url.possibly_invalid_spec();
-    return CallbackAndReturn(started_callback,
-                             DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST);
+    DVLOG(1) << "Denied unauthorized download request for "
+             << url.possibly_invalid_spec();
+    return DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST;
   }
 
   request_id_--;
 
   const net::URLRequestContext* request_context = context->GetRequestContext();
   if (!request_context->job_factory()->IsHandledURL(url)) {
-    VLOG(1) << "Download request for unsupported protocol: "
-            << url.possibly_invalid_spec();
-    return CallbackAndReturn(started_callback,
-                             DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST);
+    DVLOG(1) << "Download request for unsupported protocol: "
+             << url.possibly_invalid_spec();
+    return DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST;
   }
 
   ResourceRequestInfoImpl* extra_info =
@@ -844,8 +808,7 @@ DownloadInterruptReason ResourceDispatcherHostImpl::BeginDownload(
   // From this point forward, the |DownloadResourceHandler| is responsible for
   // |started_callback|.
   scoped_ptr<ResourceHandler> handler(CreateResourceHandlerForDownload(
-      request.get(), is_content_initiated, true, download_id,
-      std::move(save_info), started_callback));
+      request.get(), is_content_initiated, true));
 
   BeginRequestInternal(std::move(request), std::move(handler));
 
@@ -874,12 +837,8 @@ scoped_ptr<ResourceHandler>
 ResourceDispatcherHostImpl::CreateResourceHandlerForDownload(
     net::URLRequest* request,
     bool is_content_initiated,
-    bool must_download,
-    uint32_t id,
-    scoped_ptr<DownloadSaveInfo> save_info,
-    const DownloadUrlParameters::OnStartedCallback& started_cb) {
-  scoped_ptr<ResourceHandler> handler(new DownloadResourceHandler(
-      id, request, started_cb, std::move(save_info)));
+    bool must_download) {
+  scoped_ptr<ResourceHandler> handler(new DownloadResourceHandler(request));
   if (delegate_) {
     const ResourceRequestInfoImpl* request_info(
         ResourceRequestInfoImpl::ForRequest(request));

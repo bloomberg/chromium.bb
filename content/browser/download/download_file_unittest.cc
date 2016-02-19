@@ -75,19 +75,21 @@ typedef void (DownloadFile::*DownloadFileRenameMethodType)(
 // retries renames failed due to ACCESS_DENIED.
 class TestDownloadFileImpl : public DownloadFileImpl {
  public:
-  TestDownloadFileImpl(scoped_ptr<DownloadSaveInfo> save_info,
+  TestDownloadFileImpl(const DownloadSaveInfo& save_info,
                        const base::FilePath& default_downloads_directory,
                        const GURL& url,
                        const GURL& referrer_url,
                        bool calculate_hash,
+                       base::File file,
                        scoped_ptr<ByteStreamReader> stream,
                        const net::BoundNetLog& bound_net_log,
                        base::WeakPtr<DownloadDestinationObserver> observer)
-      : DownloadFileImpl(std::move(save_info),
+      : DownloadFileImpl(save_info,
                          default_downloads_directory,
                          url,
                          referrer_url,
                          calculate_hash,
+                         std::move(file),
                          std::move(stream),
                          bound_net_log,
                          observer) {}
@@ -176,15 +178,14 @@ class DownloadFileTest : public testing::Test {
         .RetiresOnSaturation();
 
     scoped_ptr<DownloadSaveInfo> save_info(new DownloadSaveInfo());
-    scoped_ptr<TestDownloadFileImpl> download_file_impl(
-        new TestDownloadFileImpl(
-            std::move(save_info), base::FilePath(),
-            GURL(),  // Source
-            GURL(),  // Referrer
-            calculate_hash, scoped_ptr<ByteStreamReader>(input_stream_),
-            net::BoundNetLog(), observer_factory_.GetWeakPtr()));
-    download_file_impl->SetClientGuid("12345678-ABCD-1234-DCBA-123456789ABC");
-    download_file_ = std::move(download_file_impl);
+    download_file_.reset(new TestDownloadFileImpl(
+        *save_info, base::FilePath(),
+        GURL(),  // Source
+        GURL(),  // Referrer
+        calculate_hash, std::move(save_info->file),
+        scoped_ptr<ByteStreamReader>(input_stream_), net::BoundNetLog(),
+        observer_factory_.GetWeakPtr()));
+    download_file_->SetClientGuid("12345678-ABCD-1234-DCBA-123456789ABC");
 
     EXPECT_CALL(*input_stream_, Read(_, _))
         .WillOnce(Return(ByteStreamReader::STREAM_EMPTY))

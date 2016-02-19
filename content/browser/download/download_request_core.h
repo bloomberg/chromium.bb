@@ -20,7 +20,9 @@
 #include "content/public/browser/download_url_parameters.h"
 
 namespace net {
+class HttpResponseHeaders;
 class URLRequest;
+class URLRequestStatus;
 }  // namespace net
 
 namespace content {
@@ -38,29 +40,25 @@ struct DownloadCreateInfo;
 class CONTENT_EXPORT DownloadRequestCore
     : public base::SupportsWeakPtr<DownloadRequestCore> {
  public:
-  // Size of the buffer used between the DownloadRequestCore and the
-  // downstream receiver of its output.
-  static const int kDownloadByteStreamSize;
+  class Delegate {
+   public:
+    virtual void OnReadyToRead() = 0;
+    virtual void OnStart(
+        scoped_ptr<DownloadCreateInfo> download_create_info,
+        scoped_ptr<ByteStreamReader> stream_reader,
+        const DownloadUrlParameters::OnStartedCallback& callback) = 0;
+  };
 
-  // |request| *must* outlive the DownloadRequestCore. |save_info| must be
-  // valid.
-  //
-  // Invokes |on_ready_to_read_callback| if a previous call to OnReadCompleted()
-  // resulted in |defer| being set to true, and DownloadRequestCore is now ready
-  // to commence reading.
-  DownloadRequestCore(net::URLRequest* request,
-                      scoped_ptr<DownloadSaveInfo> save_info,
-                      const base::Closure& on_ready_to_read_callback);
+  // All parameters are required. |request| and |delegate| must outlive
+  // DownloadRequestCore.
+  DownloadRequestCore(net::URLRequest* request, Delegate* delegate);
   ~DownloadRequestCore();
 
   // Should be called when the URLRequest::Delegate receives OnResponseStarted.
-  // Constructs a DownloadCreateInfo and a ByteStreamReader that should be
-  // passed into DownloadManagerImpl::StartDownload().
-  //
-  // Only populates the response derived fields of DownloadCreateInfo, with the
-  // exception of |save_info|.
-  void OnResponseStarted(scoped_ptr<DownloadCreateInfo>* info,
-                         scoped_ptr<ByteStreamReader>* stream_reader);
+  // Invokes Delegate::OnStart() with download start parameters. The
+  // |override_mime_type| is used as the MIME type for the download when
+  // constructing a DownloadCreateInfo object.
+  bool OnResponseStarted(const std::string& override_mime_type);
 
   // Starts a read cycle. Creates a new IOBuffer which can be passed into
   // URLRequest::Read(). Call OnReadCompleted() when the Read operation
@@ -74,15 +72,12 @@ class CONTENT_EXPORT DownloadRequestCore
   // can be read, invokes the |on_ready_to_read_callback|.
   bool OnReadCompleted(int bytes_read, bool* defer);
 
-  // Called to signal that the response is complete. If the return value is
-  // something other than DOWNLOAD_INTERRUPT_REASON_NONE, then the download
-  // should be considered interrupted.
+  // Called to signal that the response is complete.
   //
   // It is expected that once this method is invoked, the DownloadRequestCore
   // object will be destroyed in short order without invoking any other methods
   // other than the destructor.
-  DownloadInterruptReason OnResponseCompleted(
-      const net::URLRequestStatus& status);
+  void OnResponseCompleted(const net::URLRequestStatus& status);
 
   // Called if the request should suspend reading. A subsequent
   // OnReadCompleted() will result in |defer| being set to true.
@@ -98,13 +93,36 @@ class CONTENT_EXPORT DownloadRequestCore
 
   std::string DebugString() const;
 
+  static scoped_ptr<net::URLRequest> CreateRequestOnIOThread(
+      uint32_t download_id,
+      DownloadUrlParameters* params);
+
+  // Size of the buffer used between the DownloadRequestCore and the
+  // downstream receiver of its output.
+  static const int kDownloadByteStreamSize;
+
  protected:
   net::URLRequest* request() const { return request_; }
 
  private:
-  base::Closure on_ready_to_read_callback_;
+  static DownloadInterruptReason HandleRequestStatus(
+      const net::URLRequestStatus& status);
+
+  static DownloadInterruptReason HandleSuccessfulServerResponse(
+      const net::HttpResponseHeaders& http_headers,
+      DownloadSaveInfo* save_info);
+
+  scoped_ptr<DownloadCreateInfo> CreateDownloadCreateInfo(
+      DownloadInterruptReason result);
+
+  Delegate* delegate_;
   net::URLRequest* request_;
+
+  // "Passthrough" fields. These are only kept here so that they can be used to
+  // populate the DownloadCreateInfo when the time comes.
   scoped_ptr<DownloadSaveInfo> save_info_;
+  uint32_t download_id_;
+  DownloadUrlParameters::OnStartedCallback on_started_callback_;
 
   // Data flow
   scoped_refptr<net::IOBuffer> read_buffer_;    // From URLRequest.
@@ -125,6 +143,15 @@ class CONTENT_EXPORT DownloadRequestCore
 
   int pause_count_;
   bool was_deferred_;
+  bool is_resumption_request_;
+  bool started_;
+
+  // When DownloadRequestCore initiates an abort (by blocking a redirect, for
+  // example) it expects to eventually receive a OnResponseCompleted() with a
+  // status indicating that the request was aborted. When this happens, the
+  // interrupt reason in |abort_reason_| will be used instead of USER_CANCELED
+  // which is vague.
+  DownloadInterruptReason abort_reason_;
 
   // Each successful OnWillRead will yield a buffer of this size.
   static const int kReadBufSize = 32768;   // bytes

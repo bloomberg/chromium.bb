@@ -5,7 +5,6 @@
 #include "content/browser/download/download_create_info.h"
 
 #include <string>
-#include <utility>
 
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
@@ -13,20 +12,19 @@
 namespace content {
 
 DownloadCreateInfo::DownloadCreateInfo(const base::Time& start_time,
-                                       int64_t total_bytes,
                                        const net::BoundNetLog& bound_net_log,
                                        scoped_ptr<DownloadSaveInfo> save_info)
-    : start_time(start_time),
-      total_bytes(total_bytes),
-      download_id(DownloadItem::kInvalidId),
+    : download_id(DownloadItem::kInvalidId),
+      start_time(start_time),
+      total_bytes(0),
       has_user_gesture(false),
       transition_type(ui::PAGE_TRANSITION_LINK),
+      result(DOWNLOAD_INTERRUPT_REASON_NONE),
       save_info(std::move(save_info)),
       request_bound_net_log(bound_net_log) {}
 
 DownloadCreateInfo::DownloadCreateInfo()
     : DownloadCreateInfo(base::Time(),
-                         0,
                          net::BoundNetLog(),
                          make_scoped_ptr(new DownloadSaveInfo)) {}
 

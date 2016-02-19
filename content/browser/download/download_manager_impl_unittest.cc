@@ -117,7 +117,8 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   MOCK_METHOD1(OnAllDataSaved, void(const std::string&));
   MOCK_METHOD0(OnDownloadedFileRemoved, void());
   void Start(scoped_ptr<DownloadFile> download_file,
-             scoped_ptr<DownloadRequestHandleInterface> req_handle) override {
+             scoped_ptr<DownloadRequestHandleInterface> req_handle,
+             const DownloadCreateInfo& create_info) override {
     MockStart(download_file.get(), req_handle.get());
   }
 
@@ -378,26 +379,22 @@ class MockDownloadFileFactory
   virtual ~MockDownloadFileFactory() {}
 
   // Overridden method from DownloadFileFactory
-  MOCK_METHOD8(MockCreateFile, MockDownloadFile*(
-    const DownloadSaveInfo&,
-    const base::FilePath&,
-    const GURL&, const GURL&, bool,
-    ByteStreamReader*,
-    const net::BoundNetLog&,
-    base::WeakPtr<DownloadDestinationObserver>));
+  MOCK_METHOD3(MockCreateFile,
+               MockDownloadFile*(const DownloadSaveInfo&,
+                                 bool,
+                                 ByteStreamReader*));
 
   virtual DownloadFile* CreateFile(
-      scoped_ptr<DownloadSaveInfo> save_info,
+      const DownloadSaveInfo& save_info,
       const base::FilePath& default_download_directory,
       const GURL& url,
       const GURL& referrer_url,
       bool calculate_hash,
-      scoped_ptr<ByteStreamReader> stream,
+      base::File file_stream,
+      scoped_ptr<ByteStreamReader> byte_stream,
       const net::BoundNetLog& bound_net_log,
       base::WeakPtr<DownloadDestinationObserver> observer) {
-    return MockCreateFile(*save_info.get(), default_download_directory, url,
-                          referrer_url, calculate_hash,
-                          stream.get(), bound_net_log, observer);
+    return MockCreateFile(save_info, calculate_hash, byte_stream.get());
   }
 };
 
@@ -443,6 +440,14 @@ class MockDownloadManagerObserver : public DownloadManager::Observer {
         DownloadManager*, DownloadItem*));
   MOCK_METHOD1(ManagerGoingDown, void(DownloadManager*));
   MOCK_METHOD2(SelectFileDialogDisplayed, void(DownloadManager*, int32_t));
+};
+
+class MockByteStreamReader : public ByteStreamReader {
+ public:
+  virtual ~MockByteStreamReader() {}
+  MOCK_METHOD2(Read, StreamState(scoped_refptr<net::IOBuffer>*, size_t*));
+  MOCK_CONST_METHOD0(GetStatus, int());
+  MOCK_METHOD1(RegisterCallback, void(const base::Closure&));
 };
 
 }  // namespace
@@ -529,7 +534,7 @@ class DownloadManagerTest : public testing::Test {
     // we call Start on it immediately, so we need to set that expectation
     // in the factory.
     scoped_ptr<DownloadRequestHandleInterface> req_handle;
-    item.Start(scoped_ptr<DownloadFile>(), std::move(req_handle));
+    item.Start(scoped_ptr<DownloadFile>(), std::move(req_handle), info);
     DCHECK(id < download_urls_.size());
     EXPECT_CALL(item, GetURL()).WillRepeatedly(ReturnRef(download_urls_[id]));
 
@@ -605,7 +610,7 @@ class DownloadManagerTest : public testing::Test {
 // Confirm the appropriate invocations occur when you start a download.
 TEST_F(DownloadManagerTest, StartDownload) {
   scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo);
-  scoped_ptr<ByteStreamReader> stream;
+  scoped_ptr<ByteStreamReader> stream(new MockByteStreamReader);
   uint32_t local_id(5);  // Random value
   base::FilePath download_path(FILE_PATH_LITERAL("download/path"));
 
@@ -626,8 +631,7 @@ TEST_F(DownloadManagerTest, StartDownload) {
   MockDownloadFile* mock_file = new MockDownloadFile;
   EXPECT_CALL(*mock_file, SetClientGuid("client-id"));
   EXPECT_CALL(*mock_download_file_factory_.get(),
-              MockCreateFile(Ref(*info->save_info.get()), _, _, _, true,
-                             stream.get(), _, _))
+              MockCreateFile(Ref(*info->save_info.get()), true, stream.get()))
       .WillOnce(Return(mock_file));
 
   download_manager_->StartDownload(std::move(info), std::move(stream),

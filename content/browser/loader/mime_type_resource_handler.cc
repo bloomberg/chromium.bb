@@ -385,13 +385,9 @@ bool MimeTypeResourceHandler::SelectNextHandler(bool* defer) {
   // Install download handler
   info->set_is_download(true);
   scoped_ptr<ResourceHandler> handler(
-      host_->CreateResourceHandlerForDownload(
-          request(),
-          true,  // is_content_initiated
-          must_download,
-          DownloadItem::kInvalidId,
-          scoped_ptr<DownloadSaveInfo>(new DownloadSaveInfo()),
-          DownloadUrlParameters::OnStartedCallback()));
+      host_->CreateResourceHandlerForDownload(request(),
+                                              true,  // is_content_initiated
+                                              must_download));
   return UseAlternateNextHandler(std::move(handler), std::string());
 }
 

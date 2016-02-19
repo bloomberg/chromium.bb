@@ -128,19 +128,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // ResourceDispatcherHost implementation:
   void SetDelegate(ResourceDispatcherHostDelegate* delegate) override;
   void SetAllowCrossOriginAuthPrompt(bool value) override;
-  DownloadInterruptReason BeginDownload(
-      scoped_ptr<net::URLRequest> request,
-      const Referrer& referrer,
-      bool is_content_initiated,
-      ResourceContext* context,
-      int child_id,
-      int render_view_route_id,
-      int render_frame_route_id,
-      bool prefer_cache,
-      bool do_not_prompt_for_login,
-      scoped_ptr<DownloadSaveInfo> save_info,
-      uint32_t download_id,
-      const DownloadStartedCallback& started_callback) override;
   void ClearLoginDelegateForRequest(net::URLRequest* request) override;
 
   // Puts the resource dispatcher host in an inactive state (unable to begin
@@ -161,6 +148,15 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // Returns true if the message was a resource message that was processed.
   bool OnMessageReceived(const IPC::Message& message,
                          ResourceMessageFilter* filter);
+
+  DownloadInterruptReason BeginDownload(scoped_ptr<net::URLRequest> request,
+                                        const Referrer& referrer,
+                                        bool is_content_initiated,
+                                        ResourceContext* context,
+                                        int child_id,
+                                        int render_view_route_id,
+                                        int render_frame_route_id,
+                                        bool do_not_prompt_for_login);
 
   // Initiates a save file from the browser process (as opposed to a resource
   // request from the renderer or another child process).
@@ -272,10 +268,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   virtual scoped_ptr<ResourceHandler> CreateResourceHandlerForDownload(
       net::URLRequest* request,
       bool is_content_initiated,
-      bool must_download,
-      uint32_t id,
-      scoped_ptr<DownloadSaveInfo> save_info,
-      const DownloadUrlParameters::OnStartedCallback& started_cb);
+      bool must_download);
 
   // Called to determine whether the response to |request| should be intercepted
   // and handled as a stream. Streams are used to pass direct access to a

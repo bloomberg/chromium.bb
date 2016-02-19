@@ -10,6 +10,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -38,15 +39,15 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   // Note that the DownloadFileImpl automatically reads from the passed in
   // stream, and sends updates and status of those reads to the
   // DownloadDestinationObserver.
-  DownloadFileImpl(
-    scoped_ptr<DownloadSaveInfo> save_info,
-    const base::FilePath& default_downloads_directory,
-    const GURL& url,
-    const GURL& referrer_url,
-    bool calculate_hash,
-    scoped_ptr<ByteStreamReader> stream,
-    const net::BoundNetLog& bound_net_log,
-    base::WeakPtr<DownloadDestinationObserver> observer);
+  DownloadFileImpl(const DownloadSaveInfo& save_info,
+                   const base::FilePath& default_downloads_directory,
+                   const GURL& url,
+                   const GURL& referrer_url,
+                   bool calculate_hash,
+                   base::File file,
+                   scoped_ptr<ByteStreamReader> byte_stream,
+                   const net::BoundNetLog& bound_net_log,
+                   base::WeakPtr<DownloadDestinationObserver> observer);
 
   ~DownloadFileImpl() override;
 
