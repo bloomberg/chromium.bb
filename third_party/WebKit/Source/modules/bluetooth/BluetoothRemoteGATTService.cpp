@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/bluetooth/BluetoothGATTService.h"
+#include "modules/bluetooth/BluetoothRemoteGATTService.h"
 
 #include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ScriptPromise.h"
@@ -10,27 +10,27 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/bluetooth/BluetoothError.h"
-#include "modules/bluetooth/BluetoothGATTCharacteristic.h"
+#include "modules/bluetooth/BluetoothRemoteGATTCharacteristic.h"
 #include "modules/bluetooth/BluetoothSupplement.h"
 #include "modules/bluetooth/BluetoothUUID.h"
 #include "public/platform/modules/bluetooth/WebBluetooth.h"
 
 namespace blink {
 
-BluetoothGATTService::BluetoothGATTService(PassOwnPtr<WebBluetoothGATTService> webService)
+BluetoothRemoteGATTService::BluetoothRemoteGATTService(PassOwnPtr<WebBluetoothRemoteGATTService> webService)
     : m_webService(webService)
 {
 }
 
-BluetoothGATTService* BluetoothGATTService::take(ScriptPromiseResolver*, PassOwnPtr<WebBluetoothGATTService> webService)
+BluetoothRemoteGATTService* BluetoothRemoteGATTService::take(ScriptPromiseResolver*, PassOwnPtr<WebBluetoothRemoteGATTService> webService)
 {
     if (!webService) {
         return nullptr;
     }
-    return new BluetoothGATTService(webService);
+    return new BluetoothRemoteGATTService(webService);
 }
 
-ScriptPromise BluetoothGATTService::getCharacteristic(ScriptState* scriptState,
+ScriptPromise BluetoothRemoteGATTService::getCharacteristic(ScriptState* scriptState,
     const StringOrUnsignedLong& characteristic, ExceptionState& exceptionState)
 {
     WebBluetooth* webbluetooth = BluetoothSupplement::fromScriptState(scriptState);
@@ -41,7 +41,7 @@ ScriptPromise BluetoothGATTService::getCharacteristic(ScriptState* scriptState,
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    webbluetooth->getCharacteristic(m_webService->serviceInstanceID, characteristicUUID, new CallbackPromiseAdapter<BluetoothGATTCharacteristic, BluetoothError>(resolver));
+    webbluetooth->getCharacteristic(m_webService->serviceInstanceID, characteristicUUID, new CallbackPromiseAdapter<BluetoothRemoteGATTCharacteristic, BluetoothError>(resolver));
 
     return promise;
 }

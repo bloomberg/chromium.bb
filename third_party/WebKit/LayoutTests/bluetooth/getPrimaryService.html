@@ -148,7 +148,7 @@ promise_test(() => {
       return assert_promise_rejects_with_message(
         gattServer.getPrimaryService('wrong_name'), new DOMException(
           'Failed to execute \'getPrimaryService\' on ' +
-          '\'BluetoothGATTRemoteServer\': Invalid Service name: ' +
+          '\'BluetoothRemoteGATTServer\': Invalid Service name: ' +
           '\'wrong_name\'. ' +
           'It must be a valid UUID alias (e.g. 0x1234), ' +
           'UUID (lowercase hex characters e.g. ' +

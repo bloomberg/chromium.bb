@@ -10,7 +10,7 @@
 #include "core/page/PageLifecycleObserver.h"
 #include "modules/EventTargetModules.h"
 #include "modules/bluetooth/BluetoothAdvertisingData.h"
-#include "modules/bluetooth/BluetoothGATTRemoteServer.h"
+#include "modules/bluetooth/BluetoothRemoteGATTServer.h"
 #include "platform/heap/Heap.h"
 #include "public/platform/modules/bluetooth/WebBluetoothDevice.h"
 #include "wtf/OwnPtr.h"
@@ -19,7 +19,7 @@
 
 namespace blink {
 
-class BluetoothGATTRemoteServer;
+class BluetoothRemoteGATTServer;
 class ScriptPromise;
 class ScriptPromiseResolver;
 class ScriptState;
@@ -90,7 +90,7 @@ public:
     unsigned vendorID(bool& isNull);
     unsigned productID(bool& isNull);
     unsigned productVersion(bool& isNull);
-    BluetoothGATTRemoteServer* gatt() { return m_gatt; }
+    BluetoothRemoteGATTServer* gatt() { return m_gatt; }
     Vector<String> uuids();
     // TODO(ortuno): Remove connectGATT
     // http://crbug.com/582292
@@ -101,7 +101,7 @@ public:
 private:
     OwnPtr<WebBluetoothDevice> m_webDevice;
     Member<BluetoothAdvertisingData> m_adData;
-    Member<BluetoothGATTRemoteServer> m_gatt;
+    Member<BluetoothRemoteGATTServer> m_gatt;
 };
 
 } // namespace blink

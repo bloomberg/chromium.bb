@@ -29,7 +29,7 @@ void WebBluetoothImpl::requestDevice(
 
 void WebBluetoothImpl::connect(
     const blink::WebString& device_id,
-    blink::WebBluetoothGATTServerConnectCallbacks* callbacks) {
+    blink::WebBluetoothRemoteGATTServerConnectCallbacks* callbacks) {
   GetDispatcher()->connect(frame_routing_id_, device_id, callbacks);
 }
 
@@ -70,7 +70,7 @@ void WebBluetoothImpl::writeValue(
 
 void WebBluetoothImpl::startNotifications(
     const blink::WebString& characteristic_instance_id,
-    blink::WebBluetoothGATTCharacteristic* characteristic,
+    blink::WebBluetoothRemoteGATTCharacteristic* characteristic,
     blink::WebBluetoothNotificationsCallbacks* callbacks) {
   GetDispatcher()->startNotifications(
       frame_routing_id_, characteristic_instance_id, characteristic, callbacks);
@@ -78,7 +78,7 @@ void WebBluetoothImpl::startNotifications(
 
 void WebBluetoothImpl::stopNotifications(
     const blink::WebString& characteristic_instance_id,
-    blink::WebBluetoothGATTCharacteristic* characteristic,
+    blink::WebBluetoothRemoteGATTCharacteristic* characteristic,
     blink::WebBluetoothNotificationsCallbacks* callbacks) {
   GetDispatcher()->stopNotifications(
       frame_routing_id_, characteristic_instance_id, characteristic, callbacks);
@@ -86,14 +86,14 @@ void WebBluetoothImpl::stopNotifications(
 
 void WebBluetoothImpl::characteristicObjectRemoved(
     const blink::WebString& characteristic_instance_id,
-    blink::WebBluetoothGATTCharacteristic* characteristic) {
+    blink::WebBluetoothRemoteGATTCharacteristic* characteristic) {
   GetDispatcher()->characteristicObjectRemoved(
       frame_routing_id_, characteristic_instance_id, characteristic);
 }
 
 void WebBluetoothImpl::registerCharacteristicObject(
     const blink::WebString& characteristic_instance_id,
-    blink::WebBluetoothGATTCharacteristic* characteristic) {
+    blink::WebBluetoothRemoteGATTCharacteristic* characteristic) {
   GetDispatcher()->registerCharacteristicObject(
       frame_routing_id_, characteristic_instance_id, characteristic);
 }

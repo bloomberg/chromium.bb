@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebBluetoothGATTService_h
-#define WebBluetoothGATTService_h
+#ifndef WebBluetoothRemoteGATTService_h
+#define WebBluetoothRemoteGATTService_h
 
 #include "public/platform/WebString.h"
 
 namespace blink {
 
-struct WebBluetoothGATTService {
-    WebBluetoothGATTService(const WebString& serviceInstanceID,
+struct WebBluetoothRemoteGATTService {
+    WebBluetoothRemoteGATTService(const WebString& serviceInstanceID,
         const WebString& uuid,
         bool isPrimary,
         const WebString& deviceInstanceID)
@@ -21,7 +21,7 @@ struct WebBluetoothGATTService {
     {
     }
 
-    // Members corresponding to BluetoothGATTService attributes as
+    // Members corresponding to BluetoothRemoteGATTService attributes as
     // specified in the IDL.
     const WebString serviceInstanceID;
     const WebString uuid;
@@ -31,4 +31,4 @@ struct WebBluetoothGATTService {
 
 } // namespace blink
 
-#endif // WebBluetoothGATTService_h
+#endif // WebBluetoothRemoteGATTService_h

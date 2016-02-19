@@ -13,7 +13,7 @@
 #include "core/events/Event.h"
 #include "core/page/PageVisibilityState.h"
 #include "modules/bluetooth/BluetoothError.h"
-#include "modules/bluetooth/BluetoothGATTRemoteServer.h"
+#include "modules/bluetooth/BluetoothRemoteGATTServer.h"
 #include "modules/bluetooth/BluetoothSupplement.h"
 #include "public/platform/modules/bluetooth/WebBluetooth.h"
 
@@ -25,7 +25,7 @@ BluetoothDevice::BluetoothDevice(ExecutionContext* context, PassOwnPtr<WebBlueto
     , m_webDevice(webDevice)
     , m_adData(BluetoothAdvertisingData::create(m_webDevice->txPower,
         m_webDevice->rssi))
-    , m_gatt(BluetoothGATTRemoteServer::create(this))
+    , m_gatt(BluetoothRemoteGATTServer::create(this))
 {
     // See example in Source/platform/heap/ThreadState.h
     ThreadState::current()->registerPreFinalizer(this);

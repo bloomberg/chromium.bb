@@ -13,24 +13,24 @@
 
 namespace blink {
 
-class WebBluetoothGATTCharacteristic;
+class WebBluetoothRemoteGATTCharacteristic;
 
 struct WebBluetoothDevice;
-struct WebBluetoothGATTCharacteristicInit;
-struct WebBluetoothGATTService;
+struct WebBluetoothRemoteGATTCharacteristicInit;
+struct WebBluetoothRemoteGATTService;
 struct WebRequestDeviceOptions;
 
 // Success and failure callbacks for requestDevice.
 using WebBluetoothRequestDeviceCallbacks = WebCallbacks<WebPassOwnPtr<WebBluetoothDevice>, const WebBluetoothError&>;
 
 // Success and failure callbacks for connectGATT.
-using WebBluetoothGATTServerConnectCallbacks = WebCallbacks<void, const WebBluetoothError&>;
+using WebBluetoothRemoteGATTServerConnectCallbacks = WebCallbacks<void, const WebBluetoothError&>;
 
 // Success and failure callbacks for getPrimaryService.
-using WebBluetoothGetPrimaryServiceCallbacks = WebCallbacks<WebPassOwnPtr<WebBluetoothGATTService>, const WebBluetoothError&>;
+using WebBluetoothGetPrimaryServiceCallbacks = WebCallbacks<WebPassOwnPtr<WebBluetoothRemoteGATTService>, const WebBluetoothError&>;
 
 // Success and failure callbacks for getCharacteristic.
-using WebBluetoothGetCharacteristicCallbacks = WebCallbacks<WebPassOwnPtr<WebBluetoothGATTCharacteristicInit>, const WebBluetoothError&>;
+using WebBluetoothGetCharacteristicCallbacks = WebCallbacks<WebPassOwnPtr<WebBluetoothRemoteGATTCharacteristicInit>, const WebBluetoothError&>;
 
 // Success and failure callbacks for readValue.
 using WebBluetoothReadValueCallbacks = WebCallbacks<const WebVector<uint8_t>&, const WebBluetoothError&>;
@@ -53,23 +53,23 @@ public:
 
     // BluetoothDevice methods:
 
-    // BluetoothGATTRemoteServer methods:
+    // BluetoothRemoteGATTServer methods:
     // See https://webbluetoothchrome.github.io/web-bluetooth/#idl-def-bluetoothgattremoteserver
     virtual void connect(const WebString& deviceId,
-        WebBluetoothGATTServerConnectCallbacks*) { }
+        WebBluetoothRemoteGATTServerConnectCallbacks*) { }
     virtual void disconnect(const WebString& deviceId) = 0;
     virtual void getPrimaryService(const WebString& deviceId,
         const WebString& serviceUUID,
         WebBluetoothGetPrimaryServiceCallbacks*) { }
     // virtual void getPrimaryServices() { }
 
-    // BluetoothGATTService methods:
+    // BluetoothRemoteGATTService methods:
     // See https://webbluetoothchrome.github.io/web-bluetooth/#idl-def-bluetoothgattservice
     virtual void getCharacteristic(const WebString& serviceInstanceID,
         const WebString& characteristicUUID,
         WebBluetoothGetCharacteristicCallbacks*) { }
 
-    // BluetoothGATTCharacteristic methods:
+    // BluetoothRemoteGATTCharacteristic methods:
     // See https://webbluetoothchrome.github.io/web-bluetooth/#bluetoothgattcharacteristic
     virtual void readValue(const WebString& characteristicInstanceID,
         WebBluetoothReadValueCallbacks*) { }
@@ -77,19 +77,19 @@ public:
         const WebVector<uint8_t>& value,
         WebBluetoothWriteValueCallbacks*) {}
     virtual void startNotifications(const WebString& characteristicInstanceID,
-        WebBluetoothGATTCharacteristic*,
+        WebBluetoothRemoteGATTCharacteristic*,
         WebBluetoothNotificationsCallbacks*) {}
     virtual void stopNotifications(const WebString& characteristicInstanceID,
-        WebBluetoothGATTCharacteristic*,
+        WebBluetoothRemoteGATTCharacteristic*,
         WebBluetoothNotificationsCallbacks*) {}
 
     // Called when addEventListener is called on a characteristic.
     virtual void registerCharacteristicObject(
         const WebString& characteristicInstanceID,
-        WebBluetoothGATTCharacteristic*) = 0;
+        WebBluetoothRemoteGATTCharacteristic*) = 0;
     virtual void characteristicObjectRemoved(
         const WebString& characteristicInstanceID,
-        WebBluetoothGATTCharacteristic*) {}
+        WebBluetoothRemoteGATTCharacteristic*) {}
 };
 
 } // namespace blink

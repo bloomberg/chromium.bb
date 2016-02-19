@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BluetoothGATTService_h
-#define BluetoothGATTService_h
+#ifndef BluetoothRemoteGATTService_h
+#define BluetoothRemoteGATTService_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/modules/v8/UnionTypesModules.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/modules/bluetooth/WebBluetoothGATTService.h"
+#include "public/platform/modules/bluetooth/WebBluetoothRemoteGATTService.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
@@ -23,20 +23,20 @@ class ScriptState;
 // characteristics and relationships to other services that encapsulate the
 // behavior of part of a device.
 //
-// Callbacks providing WebBluetoothGATTService objects are handled by
+// Callbacks providing WebBluetoothRemoteGATTService objects are handled by
 // CallbackPromiseAdapter templatized with this class. See this class's
 // "Interface required by CallbackPromiseAdapter" section and the
 // CallbackPromiseAdapter class comments.
-class BluetoothGATTService final
-    : public GarbageCollectedFinalized<BluetoothGATTService>
+class BluetoothRemoteGATTService final
+    : public GarbageCollectedFinalized<BluetoothRemoteGATTService>
     , public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    explicit BluetoothGATTService(PassOwnPtr<WebBluetoothGATTService>);
+    explicit BluetoothRemoteGATTService(PassOwnPtr<WebBluetoothRemoteGATTService>);
 
     // Interface required by CallbackPromiseAdapter:
-    using WebType = OwnPtr<WebBluetoothGATTService>;
-    static BluetoothGATTService* take(ScriptPromiseResolver*, PassOwnPtr<WebBluetoothGATTService>);
+    using WebType = OwnPtr<WebBluetoothRemoteGATTService>;
+    static BluetoothRemoteGATTService* take(ScriptPromiseResolver*, PassOwnPtr<WebBluetoothRemoteGATTService>);
 
     // Interface required by garbage collection.
     DEFINE_INLINE_TRACE() { }
@@ -47,9 +47,9 @@ public:
     ScriptPromise getCharacteristic(ScriptState*, const StringOrUnsignedLong& characteristic, ExceptionState&);
 
 private:
-    OwnPtr<WebBluetoothGATTService> m_webService;
+    OwnPtr<WebBluetoothRemoteGATTService> m_webService;
 };
 
 } // namespace blink
 
-#endif // BluetoothGATTService_h
+#endif // BluetoothRemoteGATTService_h

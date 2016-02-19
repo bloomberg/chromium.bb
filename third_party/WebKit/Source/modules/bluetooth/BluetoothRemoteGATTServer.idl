@@ -10,12 +10,12 @@
     GarbageCollected,
     RuntimeEnabled=WebBluetooth,
     OriginTrialEnabled=WebBluetooth,
-] interface BluetoothGATTRemoteServer
+] interface BluetoothRemoteGATTServer
 {
     readonly attribute BluetoothDevice                   device;
     readonly attribute boolean                           connected;
-    [CallWith=ScriptState] Promise<BluetoothGATTRemoteServer>             connect();
+    [CallWith=ScriptState] Promise<BluetoothRemoteGATTServer>             connect();
     [CallWith=ScriptState] void                                           disconnect();
-    [CallWith=ScriptState, RaisesException] Promise<BluetoothGATTService> getPrimaryService (BluetoothServiceUUID service);
-  // Promise<sequence<BluetoothGATTService>> getPrimaryServices (optional BluetoothServiceUUID service);
+    [CallWith=ScriptState, RaisesException] Promise<BluetoothRemoteGATTService> getPrimaryService (BluetoothServiceUUID service);
+  // Promise<sequence<BluetoothRemoteGATTService>> getPrimaryServices (optional BluetoothServiceUUID service);
 };

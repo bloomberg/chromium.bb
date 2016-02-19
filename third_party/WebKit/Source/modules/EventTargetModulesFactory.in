@@ -3,7 +3,7 @@ suffix="Modules"
 
 modules/battery/BatteryManager
 modules/bluetooth/BluetoothDevice
-modules/bluetooth/BluetoothGATTCharacteristic
+modules/bluetooth/BluetoothRemoteGATTCharacteristic
 modules/compositorworker/CompositorWorker
 modules/compositorworker/CompositorWorkerGlobalScope
 modules/encryptedmedia/MediaKeySession

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/bluetooth/BluetoothGATTCharacteristic.h"
+#include "modules/bluetooth/BluetoothRemoteGATTCharacteristic.h"
 
 #include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ScriptPromise.h"
@@ -31,7 +31,7 @@ PassRefPtr<DOMDataView> ConvertWebVectorToDataView(
 
 } // anonymous namespace
 
-BluetoothGATTCharacteristic::BluetoothGATTCharacteristic(ExecutionContext* context, PassOwnPtr<WebBluetoothGATTCharacteristicInit> webCharacteristic)
+BluetoothRemoteGATTCharacteristic::BluetoothRemoteGATTCharacteristic(ExecutionContext* context, PassOwnPtr<WebBluetoothRemoteGATTCharacteristicInit> webCharacteristic)
     : ActiveDOMObject(context)
     , m_webCharacteristic(webCharacteristic)
     , m_stopped(false)
@@ -41,24 +41,24 @@ BluetoothGATTCharacteristic::BluetoothGATTCharacteristic(ExecutionContext* conte
     ThreadState::current()->registerPreFinalizer(this);
 }
 
-BluetoothGATTCharacteristic* BluetoothGATTCharacteristic::take(ScriptPromiseResolver* resolver, PassOwnPtr<WebBluetoothGATTCharacteristicInit> webCharacteristic)
+BluetoothRemoteGATTCharacteristic* BluetoothRemoteGATTCharacteristic::take(ScriptPromiseResolver* resolver, PassOwnPtr<WebBluetoothRemoteGATTCharacteristicInit> webCharacteristic)
 {
     if (!webCharacteristic) {
         return nullptr;
     }
-    BluetoothGATTCharacteristic* characteristic = new BluetoothGATTCharacteristic(resolver->executionContext(), webCharacteristic);
+    BluetoothRemoteGATTCharacteristic* characteristic = new BluetoothRemoteGATTCharacteristic(resolver->executionContext(), webCharacteristic);
     // See note in ActiveDOMObject about suspendIfNeeded.
     characteristic->suspendIfNeeded();
     return characteristic;
 }
 
-void BluetoothGATTCharacteristic::setValue(
+void BluetoothRemoteGATTCharacteristic::setValue(
     const PassRefPtr<DOMDataView>& domDataView)
 {
     m_value = domDataView;
 }
 
-void BluetoothGATTCharacteristic::dispatchCharacteristicValueChanged(
+void BluetoothRemoteGATTCharacteristic::dispatchCharacteristicValueChanged(
     const WebVector<uint8_t>& value)
 {
     RefPtr<DOMDataView> domDataView = ConvertWebVectorToDataView(value);
@@ -66,17 +66,17 @@ void BluetoothGATTCharacteristic::dispatchCharacteristicValueChanged(
     dispatchEvent(Event::create(EventTypeNames::characteristicvaluechanged));
 }
 
-void BluetoothGATTCharacteristic::stop()
+void BluetoothRemoteGATTCharacteristic::stop()
 {
     notifyCharacteristicObjectRemoved();
 }
 
-void BluetoothGATTCharacteristic::dispose()
+void BluetoothRemoteGATTCharacteristic::dispose()
 {
     notifyCharacteristicObjectRemoved();
 }
 
-void BluetoothGATTCharacteristic::notifyCharacteristicObjectRemoved()
+void BluetoothRemoteGATTCharacteristic::notifyCharacteristicObjectRemoved()
 {
     if (!m_stopped) {
         m_stopped = true;
@@ -85,17 +85,17 @@ void BluetoothGATTCharacteristic::notifyCharacteristicObjectRemoved()
     }
 }
 
-const WTF::AtomicString& BluetoothGATTCharacteristic::interfaceName() const
+const WTF::AtomicString& BluetoothRemoteGATTCharacteristic::interfaceName() const
 {
-    return EventTargetNames::BluetoothGATTCharacteristic;
+    return EventTargetNames::BluetoothRemoteGATTCharacteristic;
 }
 
-ExecutionContext* BluetoothGATTCharacteristic::executionContext() const
+ExecutionContext* BluetoothRemoteGATTCharacteristic::executionContext() const
 {
     return ActiveDOMObject::executionContext();
 }
 
-bool BluetoothGATTCharacteristic::addEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, const EventListenerOptions& options)
+bool BluetoothRemoteGATTCharacteristic::addEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, const EventListenerOptions& options)
 {
     // We will also need to unregister a characteristic once all the event
     // listeners have been removed. See http://crbug.com/541390
@@ -108,7 +108,7 @@ bool BluetoothGATTCharacteristic::addEventListenerInternal(const AtomicString& e
 
 class ReadValueCallback : public WebBluetoothReadValueCallbacks {
 public:
-    ReadValueCallback(BluetoothGATTCharacteristic* characteristic, ScriptPromiseResolver* resolver) : m_webCharacteristic(characteristic), m_resolver(resolver) {}
+    ReadValueCallback(BluetoothRemoteGATTCharacteristic* characteristic, ScriptPromiseResolver* resolver) : m_webCharacteristic(characteristic), m_resolver(resolver) {}
 
     void onSuccess(const WebVector<uint8_t>& value) override
     {
@@ -130,11 +130,11 @@ public:
     }
 
 private:
-    WeakPersistent<BluetoothGATTCharacteristic> m_webCharacteristic;
+    WeakPersistent<BluetoothRemoteGATTCharacteristic> m_webCharacteristic;
     Persistent<ScriptPromiseResolver> m_resolver;
 };
 
-ScriptPromise BluetoothGATTCharacteristic::readValue(ScriptState* scriptState)
+ScriptPromise BluetoothRemoteGATTCharacteristic::readValue(ScriptState* scriptState)
 {
     WebBluetooth* webbluetooth = BluetoothSupplement::fromScriptState(scriptState);
 
@@ -147,7 +147,7 @@ ScriptPromise BluetoothGATTCharacteristic::readValue(ScriptState* scriptState)
 
 class WriteValueCallback : public WebBluetoothWriteValueCallbacks {
 public:
-    WriteValueCallback(BluetoothGATTCharacteristic* characteristic, ScriptPromiseResolver* resolver) : m_webCharacteristic(characteristic), m_resolver(resolver) {}
+    WriteValueCallback(BluetoothRemoteGATTCharacteristic* characteristic, ScriptPromiseResolver* resolver) : m_webCharacteristic(characteristic), m_resolver(resolver) {}
 
     void onSuccess(const WebVector<uint8_t>& value) override
     {
@@ -168,11 +168,11 @@ public:
     }
 
 private:
-    WeakPersistent<BluetoothGATTCharacteristic> m_webCharacteristic;
+    WeakPersistent<BluetoothRemoteGATTCharacteristic> m_webCharacteristic;
     Persistent<ScriptPromiseResolver> m_resolver;
 };
 
-ScriptPromise BluetoothGATTCharacteristic::writeValue(ScriptState* scriptState, const DOMArrayPiece& value)
+ScriptPromise BluetoothRemoteGATTCharacteristic::writeValue(ScriptState* scriptState, const DOMArrayPiece& value)
 {
     WebBluetooth* webbluetooth = BluetoothSupplement::fromScriptState(scriptState);
     // Partial implementation of writeValue algorithm:
@@ -195,7 +195,7 @@ ScriptPromise BluetoothGATTCharacteristic::writeValue(ScriptState* scriptState, 
     return promise;
 }
 
-ScriptPromise BluetoothGATTCharacteristic::startNotifications(ScriptState* scriptState)
+ScriptPromise BluetoothRemoteGATTCharacteristic::startNotifications(ScriptState* scriptState)
 {
     WebBluetooth* webbluetooth = BluetoothSupplement::fromScriptState(scriptState);
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
@@ -204,7 +204,7 @@ ScriptPromise BluetoothGATTCharacteristic::startNotifications(ScriptState* scrip
     return promise;
 }
 
-ScriptPromise BluetoothGATTCharacteristic::stopNotifications(ScriptState* scriptState)
+ScriptPromise BluetoothRemoteGATTCharacteristic::stopNotifications(ScriptState* scriptState)
 {
     WebBluetooth* webbluetooth = BluetoothSupplement::fromScriptState(scriptState);
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
@@ -213,9 +213,9 @@ ScriptPromise BluetoothGATTCharacteristic::stopNotifications(ScriptState* script
     return promise;
 }
 
-DEFINE_TRACE(BluetoothGATTCharacteristic)
+DEFINE_TRACE(BluetoothRemoteGATTCharacteristic)
 {
-    RefCountedGarbageCollectedEventTargetWithInlineData<BluetoothGATTCharacteristic>::trace(visitor);
+    RefCountedGarbageCollectedEventTargetWithInlineData<BluetoothRemoteGATTCharacteristic>::trace(visitor);
     ActiveDOMObject::trace(visitor);
     visitor->trace(m_properties);
 }

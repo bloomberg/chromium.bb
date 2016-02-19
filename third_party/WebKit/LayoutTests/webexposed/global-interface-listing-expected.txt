@@ -321,7 +321,7 @@ interface BluetoothDevice : EventTarget
     method connectGATT
     method constructor
     setter ongattserverdisconnected
-interface BluetoothGATTCharacteristic : EventTarget
+interface BluetoothRemoteGATTCharacteristic : EventTarget
     getter oncharacteristicvaluechanged
     getter properties
     getter uuid
@@ -332,14 +332,14 @@ interface BluetoothGATTCharacteristic : EventTarget
     method stopNotifications
     method writeValue
     setter oncharacteristicvaluechanged
-interface BluetoothGATTRemoteServer
+interface BluetoothRemoteGATTServer
     getter connected
     getter device
     method connect
     method constructor
     method disconnect
     method getPrimaryService
-interface BluetoothGATTService
+interface BluetoothRemoteGATTService
     getter isPrimary
     getter uuid
     method constructor

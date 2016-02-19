@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BluetoothGATTCharacteristic_h
-#define BluetoothGATTCharacteristic_h
+#ifndef BluetoothRemoteGATTCharacteristic_h
+#define BluetoothRemoteGATTCharacteristic_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
@@ -11,8 +11,8 @@
 #include "core/dom/DOMDataView.h"
 #include "modules/EventTargetModules.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/modules/bluetooth/WebBluetoothGATTCharacteristic.h"
-#include "public/platform/modules/bluetooth/WebBluetoothGATTCharacteristicInit.h"
+#include "public/platform/modules/bluetooth/WebBluetoothRemoteGATTCharacteristic.h"
+#include "public/platform/modules/bluetooth/WebBluetoothRemoteGATTCharacteristicInit.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
@@ -25,33 +25,33 @@ class ScriptPromise;
 class ScriptPromiseResolver;
 class ScriptState;
 
-// BluetoothGATTCharacteristic represents a GATT Characteristic, which is a
+// BluetoothRemoteGATTCharacteristic represents a GATT Characteristic, which is a
 // basic data element that provides further information about a peripheral's
 // service.
 //
-// Callbacks providing WebBluetoothGATTCharacteristicInit objects are handled by
+// Callbacks providing WebBluetoothRemoteGATTCharacteristicInit objects are handled by
 // CallbackPromiseAdapter templatized with this class. See this class's
 // "Interface required by CallbackPromiseAdapter" section and the
 // CallbackPromiseAdapter class comments.
-class BluetoothGATTCharacteristic final
-    : public RefCountedGarbageCollectedEventTargetWithInlineData<BluetoothGATTCharacteristic>
+class BluetoothRemoteGATTCharacteristic final
+    : public RefCountedGarbageCollectedEventTargetWithInlineData<BluetoothRemoteGATTCharacteristic>
     , public ActiveDOMObject
-    , public WebBluetoothGATTCharacteristic {
-    USING_PRE_FINALIZER(BluetoothGATTCharacteristic, dispose);
+    , public WebBluetoothRemoteGATTCharacteristic {
+    USING_PRE_FINALIZER(BluetoothRemoteGATTCharacteristic, dispose);
     DEFINE_WRAPPERTYPEINFO();
-    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(BluetoothGATTCharacteristic);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(BluetoothGATTCharacteristic);
+    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(BluetoothRemoteGATTCharacteristic);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(BluetoothRemoteGATTCharacteristic);
 public:
-    explicit BluetoothGATTCharacteristic(ExecutionContext*, PassOwnPtr<WebBluetoothGATTCharacteristicInit>);
+    explicit BluetoothRemoteGATTCharacteristic(ExecutionContext*, PassOwnPtr<WebBluetoothRemoteGATTCharacteristicInit>);
 
     // Interface required by CallbackPromiseAdapter.
-    using WebType = OwnPtr<WebBluetoothGATTCharacteristicInit>;
-    static BluetoothGATTCharacteristic* take(ScriptPromiseResolver*, PassOwnPtr<WebBluetoothGATTCharacteristicInit>);
+    using WebType = OwnPtr<WebBluetoothRemoteGATTCharacteristicInit>;
+    static BluetoothRemoteGATTCharacteristic* take(ScriptPromiseResolver*, PassOwnPtr<WebBluetoothRemoteGATTCharacteristicInit>);
 
     // Save value.
     void setValue(const PassRefPtr<DOMDataView>&);
 
-    // WebBluetoothGATTCharacteristic interface:
+    // WebBluetoothRemoteGATTCharacteristic interface:
     void dispatchCharacteristicValueChanged(const WebVector<uint8_t>&) override;
 
     // ActiveDOMObject interface.
@@ -89,7 +89,7 @@ protected:
     bool addEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, const EventListenerOptions&) override;
 
 private:
-    OwnPtr<WebBluetoothGATTCharacteristicInit> m_webCharacteristic;
+    OwnPtr<WebBluetoothRemoteGATTCharacteristicInit> m_webCharacteristic;
     bool m_stopped;
     Member<BluetoothCharacteristicProperties> m_properties;
     RefPtr<DOMDataView> m_value;
@@ -97,4 +97,4 @@ private:
 
 } // namespace blink
 
-#endif // BluetoothGATTCharacteristic_h
+#endif // BluetoothRemoteGATTCharacteristic_h

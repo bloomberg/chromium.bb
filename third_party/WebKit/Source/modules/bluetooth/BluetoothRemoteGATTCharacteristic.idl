@@ -4,22 +4,22 @@
 
 // https://webbluetoothchrome.github.io/web-bluetooth/#idl-def-bluetoothgattcharacteristic
 
-// Implement BluetoothGATTCharacteristic interface: https://crbug.com/483344
+// Implement BluetoothRemoteGATTCharacteristic interface: https://crbug.com/483344
 
 [
     GarbageCollected,
     ActiveDOMObject,
     RuntimeEnabled=WebBluetooth,
     OriginTrialEnabled=WebBluetooth,
-] interface BluetoothGATTCharacteristic : EventTarget {//: CharacteristicEventHandlers {
+] interface BluetoothRemoteGATTCharacteristic : EventTarget {//: CharacteristicEventHandlers {
     // TODO(ortuno): Add test to make sure service matches the service
     // used to call getCharacteristic.
-    // readonly    attribute BluetoothGATTService     service;
+    // readonly    attribute BluetoothRemoteGATTService     service;
     readonly    attribute UUID                  uuid;
     readonly    attribute BluetoothCharacteristicProperties properties;
     readonly    attribute DataView?             value;
-    // Promise<BluetoothGATTDescriptor>           getDescriptor(BluetoothDescriptorUUID descriptor);
-    // Promise<sequence<BluetoothGATTDescriptor>> getDescriptors(optional BluetoothDescriptorUUID descriptor);
+    // Promise<BluetoothRemoteGATTDescriptor>           getDescriptor(BluetoothDescriptorUUID descriptor);
+    // Promise<sequence<BluetoothRemoteGATTDescriptor>> getDescriptors(optional BluetoothDescriptorUUID descriptor);
     [CallWith=ScriptState] Promise<DataView>    readValue();
     [CallWith=ScriptState] Promise<void>        writeValue(BufferSource value);
     [CallWith=ScriptState] Promise<void>        startNotifications();

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/bluetooth/BluetoothGATTRemoteServer.h"
+#include "modules/bluetooth/BluetoothRemoteGATTServer.h"
 
 #include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ScriptPromise.h"
@@ -12,7 +12,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/page/Page.h"
 #include "modules/bluetooth/BluetoothError.h"
-#include "modules/bluetooth/BluetoothGATTService.h"
+#include "modules/bluetooth/BluetoothRemoteGATTService.h"
 #include "modules/bluetooth/BluetoothSupplement.h"
 #include "modules/bluetooth/BluetoothUUID.h"
 #include "public/platform/modules/bluetooth/WebBluetooth.h"
@@ -25,23 +25,23 @@ const char kPageHiddenError[] = "Connection is only allowed while the page is vi
 
 }
 
-BluetoothGATTRemoteServer::BluetoothGATTRemoteServer(BluetoothDevice* device)
+BluetoothRemoteGATTServer::BluetoothRemoteGATTServer(BluetoothDevice* device)
     : m_device(device)
     , m_connected(false)
 {
 }
 
-BluetoothGATTRemoteServer* BluetoothGATTRemoteServer::create(BluetoothDevice* device)
+BluetoothRemoteGATTServer* BluetoothRemoteGATTServer::create(BluetoothDevice* device)
 {
-    return new BluetoothGATTRemoteServer(device);
+    return new BluetoothRemoteGATTServer(device);
 }
 
-DEFINE_TRACE(BluetoothGATTRemoteServer)
+DEFINE_TRACE(BluetoothRemoteGATTServer)
 {
     visitor->trace(m_device);
 }
 
-class ConnectCallback : public WebBluetoothGATTServerConnectCallbacks {
+class ConnectCallback : public WebBluetoothRemoteGATTServerConnectCallbacks {
 public:
     ConnectCallback(BluetoothDevice* device, ScriptPromiseResolver* resolver)
         : m_device(device)
@@ -75,7 +75,7 @@ private:
     Persistent<ScriptPromiseResolver> m_resolver;
 };
 
-ScriptPromise BluetoothGATTRemoteServer::connect(ScriptState* scriptState)
+ScriptPromise BluetoothRemoteGATTServer::connect(ScriptState* scriptState)
 {
     // TODO(ortuno): Allow connections when the tab is in the background.
     // This is a short term solution instead of implementing a tab indicator
@@ -95,14 +95,14 @@ ScriptPromise BluetoothGATTRemoteServer::connect(ScriptState* scriptState)
     return promise;
 }
 
-void BluetoothGATTRemoteServer::disconnect(ScriptState* scriptState)
+void BluetoothRemoteGATTServer::disconnect(ScriptState* scriptState)
 {
     m_connected = false;
     WebBluetooth* webbluetooth = BluetoothSupplement::fromScriptState(scriptState);
     webbluetooth->disconnect(device()->id());
 }
 
-ScriptPromise BluetoothGATTRemoteServer::getPrimaryService(ScriptState* scriptState, const StringOrUnsignedLong& service, ExceptionState& exceptionState)
+ScriptPromise BluetoothRemoteGATTServer::getPrimaryService(ScriptState* scriptState, const StringOrUnsignedLong& service, ExceptionState& exceptionState)
 {
     WebBluetooth* webbluetooth = BluetoothSupplement::fromScriptState(scriptState);
 
@@ -112,7 +112,7 @@ ScriptPromise BluetoothGATTRemoteServer::getPrimaryService(ScriptState* scriptSt
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    webbluetooth->getPrimaryService(device()->id(), serviceUUID, new CallbackPromiseAdapter<BluetoothGATTService, BluetoothError>(resolver));
+    webbluetooth->getPrimaryService(device()->id(), serviceUUID, new CallbackPromiseAdapter<BluetoothRemoteGATTService, BluetoothError>(resolver));
 
     return promise;
 }

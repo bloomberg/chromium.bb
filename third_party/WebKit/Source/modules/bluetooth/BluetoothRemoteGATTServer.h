@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BluetoothGATTRemoteServer_h
-#define BluetoothGATTRemoteServer_h
+#ifndef BluetoothRemoteGATTServer_h
+#define BluetoothRemoteGATTServer_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/modules/v8/UnionTypesModules.h"
@@ -20,15 +20,15 @@ class ScriptPromise;
 class ScriptPromiseResolver;
 class ScriptState;
 
-// BluetoothGATTRemoteServer provides a way to interact with a connected bluetooth peripheral.
-class BluetoothGATTRemoteServer final
-    : public GarbageCollectedFinalized<BluetoothGATTRemoteServer>
+// BluetoothRemoteGATTServer provides a way to interact with a connected bluetooth peripheral.
+class BluetoothRemoteGATTServer final
+    : public GarbageCollectedFinalized<BluetoothRemoteGATTServer>
     , public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    BluetoothGATTRemoteServer(BluetoothDevice*);
+    BluetoothRemoteGATTServer(BluetoothDevice*);
 
-    static BluetoothGATTRemoteServer* create(BluetoothDevice*);
+    static BluetoothRemoteGATTServer* create(BluetoothDevice*);
 
     void setConnected(bool connected) { m_connected = connected; }
 

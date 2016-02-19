@@ -10,7 +10,7 @@
 
 namespace blink {
 
-// Each BluetoothGATTCharacteristic exposes its characteristic properties
+// Each BluetoothRemoteGATTCharacteristic exposes its characteristic properties
 // through a BluetoothCharacteristicProperties object. These properties express
 // what operations are valid on the characteristic.
 class BluetoothCharacteristicProperties final

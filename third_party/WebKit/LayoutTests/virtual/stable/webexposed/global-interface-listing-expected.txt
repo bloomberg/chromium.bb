@@ -5837,9 +5837,9 @@ interface webkitURL
     attribute BluetoothAdvertisingData
     attribute BluetoothCharacteristicProperties
     attribute BluetoothDevice
-    attribute BluetoothGATTCharacteristic
-    attribute BluetoothGATTRemoteServer
-    attribute BluetoothGATTService
+    attribute BluetoothRemoteGATTCharacteristic
+    attribute BluetoothRemoteGATTServer
+    attribute BluetoothRemoteGATTService
     attribute BluetoothUUID
     attribute GCController
     attribute accessibilityController

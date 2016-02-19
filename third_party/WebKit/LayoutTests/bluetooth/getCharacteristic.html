@@ -112,7 +112,7 @@ promise_test(() => {
       return assert_promise_rejects_with_message(
         service.getCharacteristic('wrong_name'), new DOMException(
           'Failed to execute \'getCharacteristic\' on ' +
-          '\'BluetoothGATTService\': Invalid Characteristic name: ' +
+          '\'BluetoothRemoteGATTService\': Invalid Characteristic name: ' +
           '\'wrong_name\'. ' +
           'It must be a valid UUID alias (e.g. 0x1234), ' +
           'UUID (lowercase hex characters e.g. ' +
