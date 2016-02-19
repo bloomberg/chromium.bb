@@ -272,7 +272,7 @@ void StatisticsRecorder::GetBucketRanges(
 }
 
 // static
-HistogramBase* StatisticsRecorder::FindHistogram(const std::string& name) {
+HistogramBase* StatisticsRecorder::FindHistogram(base::StringPiece name) {
   if (lock_ == NULL)
     return NULL;
   base::AutoLock auto_lock(*lock_);

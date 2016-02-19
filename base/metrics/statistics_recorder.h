@@ -100,7 +100,7 @@ class BASE_EXPORT StatisticsRecorder {
 
   // Find a histogram by name. It matches the exact name. This method is thread
   // safe.  It returns NULL if a matching histogram is not found.
-  static HistogramBase* FindHistogram(const std::string& name);
+  static HistogramBase* FindHistogram(base::StringPiece name);
 
   // Support for iterating over known histograms.
   static HistogramIterator begin(bool include_persistent);
