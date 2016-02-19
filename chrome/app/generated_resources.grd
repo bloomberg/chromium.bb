@@ -983,20 +983,20 @@ are declared in build/common.gypi.
       <!-- Spelling submenu -->
       <if expr="is_macosx">
         <message name="IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS" desc="In Title Case: The name of the Language Settings command in the content area context menu">
-          &amp;Language Settings...
+          &amp;Language Settings
         </message>
       </if>
       <if expr="not is_macosx">
         <message name="IDS_CONTENT_CONTEXT_SPELLCHECK_MENU" desc="The name of the menu item that shows the submenu for spellcheck options">
-          &amp;Spellcheck...
+          &amp;Spellcheck
         </message>
         <message name="IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS" desc="The name of the menu item that opens spellcheck settings in a new tab">
-          &amp;Settings...
+          &amp;Language settings
         </message>
-        <message name="IDS_CONTENT_CONTEXT_SPELLCHECK_MULTI_LINGUAL" desc="The name of the menu item that enables spellcheck in all languages">
-          &amp;All languages
+        <message name="IDS_CONTENT_CONTEXT_SPELLCHECK_MULTI_LINGUAL" desc="The name of the menu item that enables spellcheck in all of the languages that the user has selected in settings">
+          &amp;All your languages
         </message>
-        <message name="IDS_CONTENT_CONTEXT_CHECK_SPELLING_WHILE_TYPING" desc="The name of the Check Spelling while Typing field command in the spelling context menu">
+        <message name="IDS_CONTENT_CONTEXT_CHECK_SPELLING_WHILE_TYPING" desc="The name of the menu item that toggles spellcheck on or off">
           &amp;Check the spelling of text fields
         </message>
       </if>
@@ -9544,10 +9544,6 @@ I don't think this site should be blocked!
           <message name="IDS_OPTIONS_SETTINGS_CANNOT_BE_USED_FOR_SPELL_CHECKING"
                    desc="The label for a language that cannot be used for spell checking">
             This language cannot be used for spell checking
-          </message>
-          <message name="IDS_OPTIONS_SETTINGS_IS_USED_FOR_SPELL_CHECKING"
-                   desc="The label for a language that is currently used for spell checking">
-            This language is used for spell checking
           </message>
         </if>
         <if expr="not chromeos">

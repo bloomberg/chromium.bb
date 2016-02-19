@@ -80,8 +80,6 @@ void LanguageOptionsHandlerCommon::GetLocalizedValues(
       IDS_OPTIONS_SETTINGS_USE_THIS_FOR_SPELL_CHECKING },
     { "cannotBeUsedForSpellChecking",
       IDS_OPTIONS_SETTINGS_CANNOT_BE_USED_FOR_SPELL_CHECKING },
-    { "isUsedForSpellChecking",
-      IDS_OPTIONS_SETTINGS_IS_USED_FOR_SPELL_CHECKING },
     { "enableSpellCheck", IDS_OPTIONS_ENABLE_SPELLCHECK },
     { "downloadingDictionary", IDS_OPTIONS_DICTIONARY_DOWNLOADING },
     { "downloadFailed", IDS_OPTIONS_DICTIONARY_DOWNLOAD_FAILED },
