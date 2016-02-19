@@ -67,7 +67,9 @@ class AccountTrackerService : public KeyedService,
   enum AccountIdMigrationState {
     MIGRATION_NOT_STARTED,
     MIGRATION_IN_PROGRESS,
-    MIGRATION_DONE
+    MIGRATION_DONE,
+    // Keep in sync with OAuth2LoginAccountRevokedMigrationState histogram enum.
+    NUM_MIGRATION_STATES
   };
 
   AccountTrackerService();

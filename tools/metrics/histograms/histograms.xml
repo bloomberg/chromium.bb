@@ -31567,6 +31567,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The pane selected when the user switches panes in the NTP.</summary>
 </histogram>
 
+<histogram name="OAuth2Login.AccountRevoked.IsEmailId" enum="Boolean">
+  <owner>knn@chromium.org</owner>
+  <summary>
+    This histogram records whether the account ID is actually an email if we
+    detect an account that has an account ID but not email.
+  </summary>
+</histogram>
+
+<histogram name="OAuth2Login.AccountRevoked.MigrationState"
+    enum="OAuth2LoginAccountRevokedMigrationState">
+  <owner>knn@chromium.org</owner>
+  <summary>
+    This histogram records the account ID migration status from email to GAIA ID
+    if we detect an account that has an account ID but not email.
+  </summary>
+</histogram>
+
 <histogram name="OAuth2Login.GetOAuth2AccessTokenFailure"
     enum="GoogleServiceAuthError">
   <owner>zelidrag@chromium.org</owner>
@@ -73912,6 +73929,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Didn't remove URL, too few suggestions in MV"/>
   <int value="2" label="Too few URLs, didn't flip tiles 1 and 8"/>
   <int value="3" label="Too few URLs, didn't flip tiles 1 and 4"/>
+</enum>
+
+<enum name="OAuth2LoginAccountRevokedMigrationState" type="int">
+  <int value="0" label="Account ID migration not started"/>
+  <int value="1" label="Account ID migration in progress"/>
+  <int value="2" label="Account ID migration done"/>
 </enum>
 
 <enum name="OAuth2LoginSeedState" type="int">

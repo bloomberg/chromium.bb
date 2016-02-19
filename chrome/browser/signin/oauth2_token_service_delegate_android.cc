@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_android.h"
@@ -478,13 +479,21 @@ void OAuth2TokenServiceDelegateAndroid::FireRefreshTokenRevoked(
   DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::FireRefreshTokenRevoked id="
            << account_id;
   std::string account_name = MapAccountIdToAccountName(account_id);
-  // TODO(knn): Convert to DCHECK after https://crbug.com/535211
-  CHECK(!account_name.empty());
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> j_account_name =
-      ConvertUTF8ToJavaString(env, account_name);
-  Java_OAuth2TokenService_notifyRefreshTokenRevoked(env, java_ref_.obj(),
-                                                    j_account_name.obj());
+  if (!account_name.empty()) {
+    JNIEnv* env = AttachCurrentThread();
+    ScopedJavaLocalRef<jstring> j_account_name =
+        ConvertUTF8ToJavaString(env, account_name);
+    Java_OAuth2TokenService_notifyRefreshTokenRevoked(env, java_ref_.obj(),
+                                                      j_account_name.obj());
+  } else {
+    // Current prognosis is that we have an unmigrated account which is due for
+    // deletion. Record a histogram to debug this.
+    UMA_HISTOGRAM_ENUMERATION("OAuth2Login.AccountRevoked.MigrationState",
+                              account_tracker_service_->GetMigrationState(),
+                              AccountTrackerService::NUM_MIGRATION_STATES);
+    bool is_email_id = account_id.find('@') != std::string::npos;
+    UMA_HISTOGRAM_BOOLEAN("OAuth2Login.AccountRevoked.IsEmailId", is_email_id);
+  }
   OAuth2TokenServiceDelegate::FireRefreshTokenRevoked(account_id);
 }
 
