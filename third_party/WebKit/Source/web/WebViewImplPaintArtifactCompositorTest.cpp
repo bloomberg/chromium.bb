@@ -68,7 +68,6 @@ private:
 
 TEST_F(WebViewImplPaintArtifactCompositorTest, AttachAndDetach)
 {
-    paintArtifactCompositor().initializeIfNeeded();
     cc::Layer* rootLayer = paintArtifactCompositor().rootLayer();
     ASSERT_TRUE(rootLayer);
 

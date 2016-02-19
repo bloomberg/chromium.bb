@@ -29,7 +29,9 @@ protected:
     void SetUp() override
     {
         RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true);
-        m_paintArtifactCompositor.initializeIfNeeded();
+
+        // Delay constructing the compositor until after the feature is set.
+        m_paintArtifactCompositor = adoptPtr(new PaintArtifactCompositor);
     }
 
     void TearDown() override
@@ -37,13 +39,13 @@ protected:
         m_featuresBackup.restore();
     }
 
-    PaintArtifactCompositor& paintArtifactCompositor() { return m_paintArtifactCompositor; }
-    cc::Layer* rootLayer() { return m_paintArtifactCompositor.rootLayer(); }
-    void update(const PaintArtifact& artifact) { m_paintArtifactCompositor.update(artifact); }
+    PaintArtifactCompositor& paintArtifactCompositor() { return *m_paintArtifactCompositor; }
+    cc::Layer* rootLayer() { return m_paintArtifactCompositor->rootLayer(); }
+    void update(const PaintArtifact& artifact) { m_paintArtifactCompositor->update(artifact); }
 
 private:
     RuntimeEnabledFeatures::Backup m_featuresBackup;
-    PaintArtifactCompositor m_paintArtifactCompositor;
+    OwnPtr<PaintArtifactCompositor> m_paintArtifactCompositor;
 };
 
 TEST_F(PaintArtifactCompositorTest, EmptyPaintArtifact)

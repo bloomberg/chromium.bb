@@ -4549,7 +4549,6 @@ void WebViewImpl::attachPaintArtifactCompositor()
     // TODO(jbroman): This should probably have hookups for overlays, visual
     // viewport, etc.
 
-    m_paintArtifactCompositor.initializeIfNeeded();
     WebLayer* rootLayer = m_paintArtifactCompositor.webLayer();
     ASSERT(rootLayer);
     m_layerTreeView->setRootLayer(*rootLayer);

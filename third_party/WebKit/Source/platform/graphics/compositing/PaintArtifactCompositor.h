@@ -33,11 +33,6 @@ public:
     PaintArtifactCompositor();
     ~PaintArtifactCompositor();
 
-    // Creates at least a root layer to be managed by this controller. Can't be
-    // done in the constructor, since RuntimeEnabledFeatures may not be
-    // initialized yet.
-    void initializeIfNeeded();
-
     // Updates the layer tree to match the provided paint artifact.
     // Creates the root layer if not already done.
     void update(const PaintArtifact&);

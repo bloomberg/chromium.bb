@@ -65,20 +65,14 @@ private:
 
 PaintArtifactCompositor::PaintArtifactCompositor()
 {
+    if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+        return;
+    m_rootLayer = cc::Layer::Create(cc::LayerSettings());
+    m_webLayer = adoptPtr(Platform::current()->compositorSupport()->createLayerFromCCLayer(m_rootLayer.get()));
 }
 
 PaintArtifactCompositor::~PaintArtifactCompositor()
 {
-}
-
-void PaintArtifactCompositor::initializeIfNeeded()
-{
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
-    if (m_rootLayer)
-        return;
-
-    m_rootLayer = cc::Layer::Create(cc::LayerSettings());
-    m_webLayer = adoptPtr(Platform::current()->compositorSupport()->createLayerFromCCLayer(m_rootLayer.get()));
 }
 
 namespace {
