@@ -115,6 +115,10 @@ component("media") {
     "capture/content/thread_safe_capture_oracle.h",
     "capture/content/video_capture_oracle.cc",
     "capture/content/video_capture_oracle.h",
+    "capture/video/android/video_capture_device_android.cc",
+    "capture/video/android/video_capture_device_android.h",
+    "capture/video/android/video_capture_device_factory_android.cc",
+    "capture/video/android/video_capture_device_factory_android.h",
     "capture/video/fake_video_capture_device.cc",
     "capture/video/fake_video_capture_device.h",
     "capture/video/fake_video_capture_device_factory.cc",
@@ -387,10 +391,6 @@ component("media") {
       ]
     }
     sources += [
-      "capture/video/android/video_capture_device_android.cc",
-      "capture/video/android/video_capture_device_android.h",
-      "capture/video/android/video_capture_device_factory_android.cc",
-      "capture/video/android/video_capture_device_factory_android.h",
       "filters/android/media_codec_audio_decoder.cc",
       "filters/android/media_codec_audio_decoder.h",
     ]
@@ -403,7 +403,7 @@ component("media") {
     deps += [
       "//media/base/android",
       "//media/base/android:media_jni_headers",
-      "//media/base/android:video_capture_jni_headers",
+      "//media/capture/video/android:capture_jni_headers",
     ]
 
     # Only 64 bit builds are using android-21 NDK library, check common.gypi
@@ -577,6 +577,11 @@ component("media") {
     "//third_party/opus",
   ]
 
+  # TODO(mcasas) Remove this after http://crbug.com/584797
+  if (is_android) {
+    public_deps += [ "//media/capture/video/android" ]
+  }
+
   deps += [
     "//base",
     "//base:i18n",
@@ -721,6 +726,7 @@ test("media_unittests") {
     deps += [
       "//media/base/android:media_java",
       "//media/base/android:unittests",
+      "//media/capture/video/android:capture_java",
       "//ui/android:ui_java",
     ]
   }

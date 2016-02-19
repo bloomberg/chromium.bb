@@ -249,9 +249,7 @@ source_set("base") {
   if (is_android) {
     public_deps = [
       "//media/base/android",
-      "//media/base/android:media_java",
       "//media/base/android:media_jni_headers",
-      "//media/base/android:video_capture_jni_headers",
     ]
     allow_circular_includes_from += [ "//media/base/android" ]
   }

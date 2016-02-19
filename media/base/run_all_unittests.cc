@@ -15,6 +15,7 @@
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
 #include "media/base/android/media_jni_registrar.h"
+#include "media/capture/video/android/capture_jni_registrar.h"
 #include "ui/gl/android/gl_jni_registrar.h"
 #endif
 
@@ -43,6 +44,7 @@ void TestSuiteNoAtExit::Initialize() {
   // Needed for surface texture support.
   ui::gl::android::RegisterJni(env);
   media::RegisterJni(env);
+  media::RegisterCaptureJni(env);
 #endif
 
   // Run this here instead of main() to ensure an AtExitManager is already

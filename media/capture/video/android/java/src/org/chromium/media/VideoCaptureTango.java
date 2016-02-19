@@ -22,7 +22,6 @@ import java.util.Arrays;
  **/
 @SuppressWarnings("deprecation")
 public class VideoCaptureTango extends VideoCaptureCamera {
-
     private static class CamParams {
         final int mId;
         final String mName;
@@ -46,7 +45,7 @@ public class VideoCaptureTango extends VideoCaptureCamera {
     private static final CamParams CAM_PARAMS[] = {
             new CamParams(DEPTH_CAMERA_ID, "depth", 320, 240),
             new CamParams(FISHEYE_CAMERA_ID, "fisheye", 640, 480),
-            new CamParams(FOURMP_CAMERA_ID, "4MP", 1280, 720) };
+            new CamParams(FOURMP_CAMERA_ID, "4MP", 1280, 720)};
 
     // SuperFrame size definitions. Note that total size is the amount of lines
     // multiplied by 3/2 due to Chroma components following.
@@ -55,9 +54,9 @@ public class VideoCaptureTango extends VideoCaptureCamera {
     private static final int SF_FULL_HEIGHT = SF_HEIGHT * 3 / 2;
     private static final int SF_LINES_HEADER = 16;
     private static final int SF_LINES_FISHEYE = 240;
-    private static final int SF_LINES_RESERVED = 80;  // Spec says 96.
+    private static final int SF_LINES_RESERVED = 80; // Spec says 96.
     private static final int SF_LINES_DEPTH = 60;
-    private static final int SF_LINES_DEPTH_PADDED = 112;  // Spec says 96.
+    private static final int SF_LINES_DEPTH_PADDED = 112; // Spec says 96.
     private static final int SF_LINES_BIGIMAGE = 720;
     private static final int SF_OFFSET_4MP_CHROMA = 112;
 
@@ -92,24 +91,17 @@ public class VideoCaptureTango extends VideoCaptureCamera {
         return formatList.toArray(new VideoCaptureFormat[formatList.size()]);
     }
 
-    VideoCaptureTango(Context context,
-                      int id,
-                      long nativeVideoCaptureDeviceAndroid) {
+    VideoCaptureTango(Context context, int id, long nativeVideoCaptureDeviceAndroid) {
         // All Tango cameras are like the back facing one for the generic VideoCapture code.
         super(context, 0, nativeVideoCaptureDeviceAndroid);
         mTangoCameraId = id;
     }
 
     @Override
-    protected void setCaptureParameters(
-            int width,
-            int height,
-            int frameRate,
+    protected void setCaptureParameters(int width, int height, int frameRate,
             android.hardware.Camera.Parameters cameraParameters) {
         mCaptureFormat = new VideoCaptureFormat(CAM_PARAMS[mTangoCameraId].mWidth,
-                                           CAM_PARAMS[mTangoCameraId].mHeight,
-                                           frameRate,
-                                           ImageFormat.YV12);
+                CAM_PARAMS[mTangoCameraId].mHeight, frameRate, ImageFormat.YV12);
         // Connect Tango SuperFrame mode. Available sf modes are "all",
         // "big-rgb", "small-rgb", "depth", "ir".
         cameraParameters.set("sf-mode", "all");
@@ -117,8 +109,8 @@ public class VideoCaptureTango extends VideoCaptureCamera {
 
     @Override
     protected void allocateBuffers() {
-        mFrameBuffer = ByteBuffer.allocateDirect(
-                mCaptureFormat.mWidth * mCaptureFormat.mHeight * 3 / 2);
+        mFrameBuffer =
+                ByteBuffer.allocateDirect(mCaptureFormat.mWidth * mCaptureFormat.mHeight * 3 / 2);
         // Prefill Chroma to their zero-equivalent for the cameras that only
         // provide Luma component.
         Arrays.fill(mFrameBuffer.array(), CHROMA_ZERO_LEVEL);
@@ -160,8 +152,8 @@ public class VideoCaptureTango extends VideoCaptureCamera {
                     // them explicitly since they're filled to 128 on creation.
                     ByteBuffer.wrap(data, startY, sizeY).get(mFrameBuffer.array(), 0, sizeY);
                 } else if (mTangoCameraId == FOURMP_CAMERA_ID) {
-                    int startY = SF_WIDTH * (SF_LINES_HEADER + SF_LINES_FISHEYE
-                                    + SF_LINES_RESERVED + SF_LINES_DEPTH_PADDED);
+                    int startY = SF_WIDTH * (SF_LINES_HEADER + SF_LINES_FISHEYE + SF_LINES_RESERVED
+                                                    + SF_LINES_DEPTH_PADDED);
                     int sizeY = SF_WIDTH * SF_LINES_BIGIMAGE;
 
                     // The spec is completely inaccurate on the location, sizes
@@ -174,21 +166,17 @@ public class VideoCaptureTango extends VideoCaptureCamera {
                     // Equivalent to the following |for| loop but much faster:
                     // for (int i = START; i < START + SIZE; ++i)
                     //     mFrameBuffer.put(data[i]);
-                    ByteBuffer.wrap(data, startY, sizeY)
-                              .get(mFrameBuffer.array(), 0, sizeY);
-                    ByteBuffer.wrap(data, startU, sizeU)
-                              .get(mFrameBuffer.array(), sizeY, sizeU);
+                    ByteBuffer.wrap(data, startY, sizeY).get(mFrameBuffer.array(), 0, sizeY);
+                    ByteBuffer.wrap(data, startU, sizeU).get(mFrameBuffer.array(), sizeY, sizeU);
                     ByteBuffer.wrap(data, startV, sizeV)
-                              .get(mFrameBuffer.array(), sizeY + sizeU, sizeV);
+                            .get(mFrameBuffer.array(), sizeY + sizeU, sizeV);
                 } else {
                     Log.e(TAG, "Unknown camera, #id: %d", mTangoCameraId);
                     return;
                 }
-                mFrameBuffer.rewind();  // Important!
-                nativeOnFrameAvailable(mNativeVideoCaptureDeviceAndroid,
-                                       mFrameBuffer.array(),
-                                       mFrameBuffer.capacity(),
-                                       getCameraRotation());
+                mFrameBuffer.rewind(); // Important!
+                nativeOnFrameAvailable(mNativeVideoCaptureDeviceAndroid, mFrameBuffer.array(),
+                        mFrameBuffer.capacity(), getCameraRotation());
             }
         } finally {
             mPreviewBufferLock.unlock();

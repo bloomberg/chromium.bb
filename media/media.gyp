@@ -745,6 +745,7 @@
         }],
         ['OS=="android"', {
           'dependencies': [
+            'capture_java',
             'media_android_jni_headers',
             'media_java',
             'player_android',
@@ -1820,6 +1821,7 @@
           'target_name': 'media_unittests_apk',
           'type': 'none',
           'dependencies': [
+            'capture_java',
             'media_java',
             'media_unittests',
           ],
@@ -1834,6 +1836,7 @@
           'target_name': 'media_perftests_apk',
           'type': 'none',
           'dependencies': [
+            'capture_java',
             'media_java',
             'media_perftests',
           ],
@@ -1844,7 +1847,7 @@
           'includes': ['../build/apk_test.gypi'],
         },
         {
-          # GN: //media/base/android:media_android_jni_headers
+          # GN: //media/base/android:media_jni_headers
           'target_name': 'media_android_jni_headers',
           'type': 'none',
           'sources': [
@@ -1862,12 +1865,12 @@
           'includes': ['../build/jni_generator.gypi'],
         },
         {
-          # GN: //media/base/android:video_capture_android_jni_headers
+          # GN: //media/capture/video/android:capture_jni_headers
           'target_name': 'video_capture_android_jni_headers',
           'type': 'none',
           'sources': [
-            'base/android/java/src/org/chromium/media/VideoCapture.java',
-            'base/android/java/src/org/chromium/media/VideoCaptureFactory.java',
+            'capture/video/android/java/src/org/chromium/media/VideoCapture.java',
+            'capture/video/android/java/src/org/chromium/media/VideoCaptureFactory.java',
           ],
           'variables': {
             'jni_gen_package': 'media',
@@ -1932,6 +1935,8 @@
             'base/android/video_decoder_job.h',
             'base/android/video_media_codec_decoder.cc',
             'base/android/video_media_codec_decoder.h',
+            'capture/video/android/capture_jni_registrar.cc',
+            'capture/video/android/capture_jni_registrar.h',
           ],
           'conditions': [
             # Only 64 bit builds are using android-21 NDK library, check common.gypi
@@ -1960,13 +1965,28 @@
           ],
         },
         {
-          # GN: //media/base/android:media_java
-          'target_name': 'media_java',
+          # GN: //media/capture/video/android:capture_java
+          'target_name': 'capture_java',
           'type': 'none',
           'dependencies': [
             '../base/base.gyp:base',
             'media_android_captureapitype',
             'media_android_imageformat',
+          ],
+          'export_dependent_settings': [
+            '../base/base.gyp:base',
+          ],
+          'variables': {
+            'java_in_dir': 'capture/video/android/java',
+          },
+          'includes': ['../build/java.gypi'],
+        },
+        {
+          # GN: //media/base/android:media_java
+          'target_name': 'media_java',
+          'type': 'none',
+          'dependencies': [
+            '../base/base.gyp:base',
           ],
           'export_dependent_settings': [
             '../base/base.gyp:base',
