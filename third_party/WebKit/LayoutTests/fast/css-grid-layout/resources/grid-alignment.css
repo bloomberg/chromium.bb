@@ -40,6 +40,10 @@
 .alignContentRight { align-content: right; }
 .alignContentFlexStart { align-content: flex-start; }
 .alignContentFlexEnd { align-content: flex-end; }
+.alignContentSpaceBetween { align-content: space-between; }
+.alignContentSpaceAround { align-content: space-around; }
+.alignContentSpaceEvenly { align-content: space-evenly; }
+.alignContentStretch { align-content: stretch; }
 
 /* justify-self */
 .justifySelfAuto { justify-self: auto; }

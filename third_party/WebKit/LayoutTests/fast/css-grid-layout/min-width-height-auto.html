@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <link href="resources/grid.css" rel="stylesheet">
+<link href="resources/grid-alignment.css" rel="stylesheet">
 <style>
 .grid {
     grid-template-columns: 5px;
@@ -34,11 +35,6 @@
 .maxBigger {
     max-width: 150px;
     max-height: 75px;
-}
-
-.noStretch {
-    align-items: start;
-    justify-items: start;
 }
 
 .minHeightSmaller { min-height: 12px; }
@@ -81,31 +77,31 @@
 
 <!-- Verify that the same cases without 'stretch' work as expected as well. -->
 <div class="container">
-    <div class="grid noStretch">
+    <div class="grid itemsStart">
         <div class="ahem" data-expected-width="100" data-expected-height="25">XXXX</div>
     </div>
 </div>
 
 <div class="container">
-    <div class="grid noStretch">
+    <div class="grid itemsStart">
         <div class="ahem minSmaller" data-expected-width="100" data-expected-height="25">XXXX</div>
     </div>
 </div>
 
 <div class="container">
-    <div class="grid noStretch">
+    <div class="grid itemsStart">
         <div class="ahem minBigger" data-expected-width="150" data-expected-height="75">XXXX</div>
     </div>
 </div>
 
 <div class="container">
-    <div class="grid noStretch">
+    <div class="grid itemsStart">
         <div class="ahem maxSmaller" data-expected-width="10" data-expected-height="10">XXXX</div>
     </div>
 </div>
 
 <div class="container">
-    <div class="grid noStretch">
+    <div class="grid itemsStart">
         <div class="ahem maxBigger" data-expected-width="100" data-expected-height="25">XXXX</div>
     </div>
 </div>
@@ -118,7 +114,7 @@
 </div>
 
 <div class="container">
-    <div class="grid noStretch">
+    <div class="grid itemsStart">
         <div class="ahem" data-expected-width="75" data-expected-height="50">XXX X</div>
     </div>
 </div>

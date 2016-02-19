@@ -3,6 +3,7 @@
 <link href="../css-intrinsic-dimensions/resources/width-keyword-classes.css" rel="stylesheet">
 <link href="../css-intrinsic-dimensions/resources/height-keyword-classes.css" rel="stylesheet">
 <link href="resources/grid.css" rel="stylesheet">
+<link href="resources/grid-alignment.css" rel="stylesheet">
 <style>
 .columnsSmallerThanContentBox { grid-template-columns: 80px; }
 .columnsSameAsContentBox { grid-template-columns: 100px; }
@@ -29,8 +30,8 @@
     background-color: blue;
 }
 
-.fitContentOnlyHeight { width: auto; align-items: start; }
-.fitContentOnlyWidth { height: auto; justify-items: start; }
+.autoWidth { width: auto; }
+.autoHeight { height: auto; }
 
 </style>
 <script src="../../resources/check-layout.js"></script>
@@ -77,35 +78,35 @@
 <!-- Checking shrink-to-fit in row-axis -->
 <p>Stretching allowed in column axis, fitContent in row-axis | column smaller than content-box, row bigger than margin-box</p>
 <div class="container">
-    <div class="grid fit-content fitContentOnlyWidth columnsSmallerThanContentBox rowsBiggerThanMarginBox">
+    <div class="grid fit-content autoHeight justifyItemsStart columnsSmallerThanContentBox rowsBiggerThanMarginBox">
         <div class="item" data-offset-x="20" data-offset-y="20" data-expected-width="100" data-expected-height="60">XXXX</div>
     </div>
 </div>
 
 <p>Stretching allowed in column axis, fitContent in row-axis | column of same size than content-box, row bigger than margin-box</p>
 <div class="container">
-    <div class="grid fit-content fitContentOnlyWidth columnsSameAsContentBox rowsBiggerThanMarginBox">
+    <div class="grid fit-content autoHeight justifyItemsStart columnsSameAsContentBox rowsBiggerThanMarginBox">
         <div class="item" data-offset-x="20" data-offset-y="20" data-expected-width="100" data-expected-height="60">XXXX</div>
     </div>
 </div>
 
 <p>Stretching allowed in column axis, fitContent in row-axis | column bigger than content-box, row bigger than margin-box</p>
 <div class="container">
-    <div class="grid fit-content fitContentOnlyWidth columnsBiggerThanContentBox rowsBiggerThanMarginBox">
+    <div class="grid fit-content autoHeight justifyItemsStart columnsBiggerThanContentBox rowsBiggerThanMarginBox">
         <div class="item" data-offset-x="20" data-offset-y="20" data-expected-width="100" data-expected-height="60">XXXX</div>
     </div>
 </div>
 
 <p>Stretching allowed in column axis, fitContent in row-axis | column of same size as margin-box, row bigger than margin-box</p>
 <div class="container">
-    <div class="grid fit-content fitContentOnlyWidth columnsSameAsMarginBox rowsBiggerThanMarginBox">
+    <div class="grid fit-content autoHeight justifyItemsStart columnsSameAsMarginBox rowsBiggerThanMarginBox">
         <div class="item" data-offset-x="20" data-offset-y="20" data-expected-width="100" data-expected-height="60">XXXX</div>
     </div>
 </div>
 
 <p>Stretching allowed in column axis, fitContent in row-axis | column bigger than content-box, row bigger than margin-box</p>
 <div class="container">
-    <div class="grid fit-content fitContentOnlyWidth columnsBiggerThanMarginBox rowsBiggerThanMarginBox">
+    <div class="grid fit-content autoHeight justifyItemsStart columnsBiggerThanMarginBox rowsBiggerThanMarginBox">
         <div class="item" data-offset-x="20" data-offset-y="20" data-expected-width="100" data-expected-height="60">XXXX</div>
     </div>
 </div>
@@ -149,35 +150,35 @@
 <!-- Checking min-height: auto logic -->
 <p>Stretching allowed in row axis, fitContent in column-axis | row smaller than content-box, column bigger than margin-box</p>
 <div class="container">
-    <div class="grid fit-content fitContentOnlyHeight rowsSmallerThanContentBox columnsBiggerThanMarginBox">
+    <div class="grid fit-content autoWidth alignItemsStart rowsSmallerThanContentBox columnsBiggerThanMarginBox">
         <div class="item" data-offset-x="20" data-offset-y="20" data-expected-width="110" data-expected-height="25">XXXX</div>
     </div>
 </div>
 
 <p>Stretching allowed in row axis, fitContent in column-axis | row of same size than content-box, column bigger than margin-box</p>
 <div class="container">
-    <div class="grid fit-content fitContentOnlyHeight rowsSameAsContentBox columnsBiggerThanMarginBox">
+    <div class="grid fit-content autoWidth alignItemsStart rowsSameAsContentBox columnsBiggerThanMarginBox">
         <div class="item" data-offset-x="20" data-offset-y="20" data-expected-width="110" data-expected-height="25">XXXX</div>
     </div>
 </div>
 
 <p>Stretching allowed in column axis, fitContent in row-axis | row bigger than content-box, column bigger than margin-box</p>
 <div class="container">
-    <div class="grid fit-content fitContentOnlyHeight rowsBiggerThanContentBox columnsBiggerThanMarginBox">
+    <div class="grid fit-content autoWidth alignItemsStart rowsBiggerThanContentBox columnsBiggerThanMarginBox">
         <div class="item" data-offset-x="20" data-offset-y="20" data-expected-width="110" data-expected-height="25">XXXX</div>
     </div>
 </div>
 
 <p>Stretching allowed in row axis, fitContent in column-axis | row of same size as margin-box, column bigger than margin-box</p>
 <div class="container">
-    <div class="grid fit-content fitContentOnlyHeight rowsSameAsMarginBox columnsBiggerThanMarginBox">
+    <div class="grid fit-content autoWidth alignItemsStart rowsSameAsMarginBox columnsBiggerThanMarginBox">
         <div class="item" data-offset-x="20" data-offset-y="20" data-expected-width="110" data-expected-height="25">XXXX</div>
     </div>
 </div>
 
 <p>Stretching allowed in column axis, fitContent in row-axis | row bigger than margin-box, column bigger than margin-box</p>
 <div class="container">
-    <div class="grid fit-content fitContentOnlyHeight rowsBiggerThanMarginBox columnsBiggerThanMarginBox">
+    <div class="grid fit-content autoWidth alignItemsStart rowsBiggerThanMarginBox columnsBiggerThanMarginBox">
         <div class="item" data-offset-x="20" data-offset-y="20" data-expected-width="110" data-expected-height="25">XXXX</div>
     </div>
 </div>

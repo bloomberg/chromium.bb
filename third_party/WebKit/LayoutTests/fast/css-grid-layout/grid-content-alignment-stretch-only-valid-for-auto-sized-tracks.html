@@ -2,6 +2,7 @@
 <html>
 <head>
 <script src="../../resources/check-layout.js"></script>
+<link href="resources/grid-alignment.css" rel="stylesheet">
 <style>
 body {
     margin: 0px;
@@ -11,10 +12,6 @@ body {
     display: grid;
     background-color: grey;
     position: relative;
-    align-content: stretch;
-    justify-content: stretch;
-    align-items: start;
-    justify-items: start;
 }
 
 .definiteSize {
@@ -72,7 +69,7 @@ body {
 
 <div style="position: relative">
     <p>cols: 'auto' | rows: 'auto' | definite-sized container | definite-sized items </p>
-    <div class="grid definiteSize autoTracks" data-expected-width="200" data-expected-height="300">
+    <div class="grid contentStretch itemsStart definiteSize autoTracks" data-expected-width="200" data-expected-height="300">
         <div class="item firstRowFirstColumn" data-offset-x="0" data-offset-y="0" data-expected-width="40" data-expected-height="80"></div>
         <div class="item firstRowSecondColumn" data-offset-x="100" data-offset-y="0" data-expected-width="40" data-expected-height="80"></div>
         <div class="item secondRowFirstColumn" data-offset-x="0" data-offset-y="150" data-expected-width="40" data-expected-height="80"></div>
@@ -82,7 +79,7 @@ body {
 
 <div style="position: relative">
     <p>cols: 'minmax(20px, auto)' | rows: 'minmax(40px, auto)' | definite-sized container | definite-sized items </p>
-    <div class="grid definiteSize autoMaxTracks" data-expected-width="200" data-expected-height="300">
+    <div class="grid contentStretch itemsStart definiteSize autoMaxTracks" data-expected-width="200" data-expected-height="300">
         <div class="item firstRowFirstColumn" data-offset-x="0" data-offset-y="0" data-expected-width="40" data-expected-height="80"></div>
         <div class="item firstRowSecondColumn" data-offset-x="100" data-offset-y="0" data-expected-width="40" data-expected-height="80"></div>
         <div class="item secondRowFirstColumn" data-offset-x="0" data-offset-y="150" data-expected-width="40" data-expected-height="80"></div>
@@ -92,7 +89,7 @@ body {
 
 <div style="position: relative">
     <p>cols: 'min-content' | rows: 'min-content' | definite-sized container | definite-sized items </p>
-    <div class="grid definiteSize minContentTracks" data-expected-width="200" data-expected-height="300">
+    <div class="grid contentStretch itemsStart definiteSize minContentTracks" data-expected-width="200" data-expected-height="300">
         <div class="item firstRowFirstColumn" data-offset-x="0" data-offset-y="0" data-expected-width="40" data-expected-height="80"></div>
         <div class="item firstRowSecondColumn" data-offset-x="40" data-offset-y="0" data-expected-width="40" data-expected-height="80"></div>
         <div class="item secondRowFirstColumn" data-offset-x="0" data-offset-y="80" data-expected-width="40" data-expected-height="80"></div>
@@ -102,7 +99,7 @@ body {
 
 <div style="position: relative">
     <p>cols: 'max-content' | rows: 'max-content' | definite-sized container | definite-sized items </p>
-    <div class="grid definiteSize maxContentTracks" data-expected-width="200" data-expected-height="300">
+    <div class="grid contentStretch itemsStart definiteSize maxContentTracks" data-expected-width="200" data-expected-height="300">
         <div class="item firstRowFirstColumn" data-offset-x="0" data-offset-y="0" data-expected-width="40" data-expected-height="80"></div>
         <div class="item firstRowSecondColumn" data-offset-x="40" data-offset-y="0" data-expected-width="40" data-expected-height="80"></div>
         <div class="item secondRowFirstColumn" data-offset-x="0" data-offset-y="80" data-expected-width="40" data-expected-height="80"></div>
@@ -112,7 +109,7 @@ body {
 
 <div style="position: relative">
     <p>cols: 'minmax(20px, max-content)' | rows: 'minmax(20px, max-content)' | definite-sized container | definite-sized items </p>
-    <div class="grid definiteSize minMaxWithMaxContentTracks" data-expected-width="200" data-expected-height="300">
+    <div class="grid contentStretch itemsStart definiteSize minMaxWithMaxContentTracks" data-expected-width="200" data-expected-height="300">
         <div class="item firstRowFirstColumn" data-offset-x="0" data-offset-y="0" data-expected-width="40" data-expected-height="80"></div>
         <div class="item firstRowSecondColumn" data-offset-x="40" data-offset-y="0" data-expected-width="40" data-expected-height="80"></div>
         <div class="item secondRowFirstColumn" data-offset-x="0" data-offset-y="80" data-expected-width="40" data-expected-height="80"></div>
@@ -122,7 +119,7 @@ body {
 
 <div style="position: relative">
     <p>cols: 'minmax(20px, min-content)' | rows: 'minmax(20px, min-content)' | definite-sized container | definite-sized items </p>
-    <div class="grid definiteSize minMaxWithMinContentTracks" data-expected-width="200" data-expected-height="300">
+    <div class="grid contentStretch itemsStart definiteSize minMaxWithMinContentTracks" data-expected-width="200" data-expected-height="300">
         <div class="item firstRowFirstColumn" data-offset-x="0" data-offset-y="0" data-expected-width="40" data-expected-height="80"></div>
         <div class="item firstRowSecondColumn" data-offset-x="40" data-offset-y="0" data-expected-width="40" data-expected-height="80"></div>
         <div class="item secondRowFirstColumn" data-offset-x="0" data-offset-y="80" data-expected-width="40" data-expected-height="80"></div>
@@ -132,7 +129,7 @@ body {
 
 <div style="position: relative">
     <p>cols: 'minmax(auto, max-content)' | rows: 'minmax(auto, max-content)' | definite-sized container | definite-sized items </p>
-    <div class="grid definiteSize minMaxWithMinAutoTracks" data-expected-width="200" data-expected-height="300">
+    <div class="grid contentStretch itemsStart definiteSize minMaxWithMinAutoTracks" data-expected-width="200" data-expected-height="300">
         <div class="item firstRowFirstColumn" data-offset-x="0" data-offset-y="0" data-expected-width="40" data-expected-height="80"></div>
         <div class="item firstRowSecondColumn" data-offset-x="40" data-offset-y="0" data-expected-width="40" data-expected-height="80"></div>
         <div class="item secondRowFirstColumn" data-offset-x="0" data-offset-y="80" data-expected-width="40" data-expected-height="80"></div>
