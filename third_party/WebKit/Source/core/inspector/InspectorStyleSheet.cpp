@@ -1489,7 +1489,8 @@ String InspectorStyleSheet::sourceURL()
     String styleSheetText;
     bool success = getText(&styleSheetText);
     if (success) {
-        String commentValue = V8ContentSearchUtil::findSourceURL(styleSheetText, true);
+        bool deprecated = false;
+        String commentValue = V8ContentSearchUtil::findSourceURL(styleSheetText, true, &deprecated);
         if (!commentValue.isEmpty()) {
             m_sourceURL = commentValue;
             return commentValue;
@@ -1540,7 +1541,8 @@ String InspectorStyleSheet::sourceMapURL()
     String styleSheetText;
     bool success = getText(&styleSheetText);
     if (success) {
-        String commentValue = V8ContentSearchUtil::findSourceMapURL(styleSheetText, true);
+        bool deprecated = false;
+        String commentValue = V8ContentSearchUtil::findSourceMapURL(styleSheetText, true, &deprecated);
         if (!commentValue.isEmpty())
             return commentValue;
     }

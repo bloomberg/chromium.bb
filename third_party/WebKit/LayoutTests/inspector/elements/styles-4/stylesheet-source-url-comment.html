@@ -31,6 +31,13 @@ function addInlineStyleSheetMultiple()
     document.head.appendChild(styleElement);
 }
 
+function addInlineStyleSheetDeprecated()
+{
+    var styleElement = document.createElement("style");
+    styleElement.textContent = "body { color: black; }\n/*@ sourceURL=css/addedInlineStylesheetDeprecated.css */";
+    document.head.appendChild(styleElement);
+}
+
 function test()
 {
     function forEachHeaderMatchingURL(url, handler)
@@ -73,6 +80,19 @@ function test()
             {
                 InspectorTest.addResult(sourceFrame.textEditor.text());
                 forEachHeaderMatchingURL("addedInlineStylesheet", checkHeaderHasSourceURL);
+                next();
+            }
+        },
+
+        function testDeprecatedSourceURLComment(next)
+        {
+            InspectorTest.showScriptSource("css/addedInlineStylesheetDeprecated.css", didShowSource);
+            InspectorTest.evaluateInPage("setTimeout(addInlineStyleSheetDeprecated, 0)");
+
+            function didShowSource(sourceFrame)
+            {
+                InspectorTest.addResult(sourceFrame.textEditor.text());
+                forEachHeaderMatchingURL("addedInlineStylesheetDeprecated", checkHeaderHasSourceURL);
                 next();
             }
         },

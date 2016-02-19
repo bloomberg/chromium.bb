@@ -15,8 +15,8 @@ class V8Debugger;
 
 namespace V8ContentSearchUtil {
 
-PLATFORM_EXPORT String findSourceURL(const String& content, bool multiline);
-PLATFORM_EXPORT String findSourceMapURL(const String& content, bool multiline);
+PLATFORM_EXPORT String findSourceURL(const String& content, bool multiline, bool* deprecated = nullptr);
+PLATFORM_EXPORT String findSourceMapURL(const String& content, bool multiline, bool* deprecated = nullptr);
 PLATFORM_EXPORT PassRefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::SearchMatch>> searchInTextByLines(V8Debugger*, const String& text, const String& query, const bool caseSensitive, const bool isRegex);
 
 }

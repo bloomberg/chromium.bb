@@ -14,9 +14,11 @@ namespace blink {
 
 namespace {
 
-String findMagicComment(const String& content, const String& name, bool multiline)
+String findMagicComment(const String& content, const String& name, bool multiline, bool* deprecated)
 {
     ASSERT(name.find("=") == kNotFound);
+    if (deprecated)
+        *deprecated = false;
 
     unsigned length = content.length();
     unsigned nameLength = name.length();
@@ -38,7 +40,7 @@ String findMagicComment(const String& content, const String& name, bool multilin
         if ((content[pos + 1] != '/' || multiline)
             && (content[pos + 1] != '*' || !multiline))
             continue;
-        if (content[pos + 2] != '#')
+        if (content[pos + 2] != '#' && content[pos + 2] != '@')
             continue;
         if (content[pos + 3] != ' ' && content[pos + 3] != '\t')
             continue;
@@ -53,6 +55,9 @@ String findMagicComment(const String& content, const String& name, bool multilin
 
         break;
     }
+
+    if (deprecated && content[pos + 2] == '@')
+        *deprecated = true;
 
     ASSERT(equalSignPos);
     ASSERT(!multiline || closingCommentPos);
@@ -158,14 +163,14 @@ String toWTFStringWithTypeCheck(v8::Local<v8::Value> value)
 
 namespace V8ContentSearchUtil {
 
-String findSourceURL(const String& content, bool multiline)
+String findSourceURL(const String& content, bool multiline, bool* deprecated)
 {
-    return findMagicComment(content, "sourceURL", multiline);
+    return findMagicComment(content, "sourceURL", multiline, deprecated);
 }
 
-String findSourceMapURL(const String& content, bool multiline)
+String findSourceMapURL(const String& content, bool multiline, bool* deprecated)
 {
-    return findMagicComment(content, "sourceMappingURL", multiline);
+    return findMagicComment(content, "sourceMappingURL", multiline, deprecated);
 }
 
 PassRefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::SearchMatch>> searchInTextByLines(V8Debugger* debugger, const String& text, const String& query, const bool caseSensitive, const bool isRegex)
