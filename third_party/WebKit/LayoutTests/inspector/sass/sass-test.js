@@ -2,26 +2,18 @@ var initialize_SassTest = function() {
 
 InspectorTest.preloadModule("sass");
 
-var sassWorkspaceAdapter = null;
-InspectorTest.sassWorkspaceAdapter = function()
-{
-    if (!sassWorkspaceAdapter)
-        sassWorkspaceAdapter = new WebInspector.SASSWorkspaceAdapter(InspectorTest.cssModel, WebInspector.workspace, WebInspector.networkMapping);
-    return sassWorkspaceAdapter;
-}
+var cssParserService = null;
 
-var cssParser = null;
-
-InspectorTest.cssParser = function()
+InspectorTest.cssParserService = function()
 {
-    if (!cssParser)
-        cssParser = new WebInspector.CSSParser();
-    return cssParser;
+    if (!cssParserService)
+        cssParserService = new WebInspector.CSSParserService();
+    return cssParserService;
 }
 
 InspectorTest.parseCSS = function(url, text)
 {
-    return WebInspector.SASSSupport.parseCSS(InspectorTest.cssParser(), url, text);
+    return WebInspector.SASSSupport.parseCSS(InspectorTest.cssParserService(), url, text);
 }
 
 InspectorTest.parseSCSS = function(url, text)
@@ -31,37 +23,22 @@ InspectorTest.parseSCSS = function(url, text)
 
     function onTokenizer(tokenizer)
     {
-        return WebInspector.SASSSupport.parseSCSS(url, text, tokenizer);
+        return WebInspector.SASSSupport.parseSCSS(tokenizer, url, text);
     }
 }
 
 InspectorTest.loadASTMapping = function(header, callback)
 {
-    console.assert(header.cssModel() === InspectorTest.sassWorkspaceAdapter()._cssModel, "The header could not be processed by main target workspaceAdapter");
-    var tokenizerFactory = null;
-    var sourceMap = null;
 
     var completeSourceMapURL = WebInspector.ParsedURL.completeURL(header.sourceURL, header.sourceMapURL);
     WebInspector.SourceMap.load(completeSourceMapURL, header.sourceURL, onSourceMapLoaded);
 
-    self.runtime.instancePromise(WebInspector.TokenizerFactory)
-        .then(tf => tokenizerFactory = tf)
-        .then(maybeStartLoading);
-
-    function onSourceMapLoaded(sm)
+    function onSourceMapLoaded(sourceMap)
     {
-        sourceMap = sm;
-        maybeStartLoading();
-    }
-
-    function maybeStartLoading()
-    {
-        if (!sourceMap || !tokenizerFactory)
-            return;
-        var client = InspectorTest.sassWorkspaceAdapter().trackSources(sourceMap);
-        WebInspector.SASSLiveSourceMap._loadMapping(client, InspectorTest.cssParser(), tokenizerFactory, sourceMap)
-            .then(callback)
-            .then(() => client.dispose())
+        var astService = new WebInspector.ASTService();
+        WebInspector.SASSLiveSourceMap._createASTMapping(astService, header.cssModel(), sourceMap)
+            .then(mapping => callback(mapping))
+            .then(() => astService.dispose());
     }
 }
 
