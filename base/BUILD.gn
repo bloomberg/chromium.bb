@@ -1642,6 +1642,7 @@ test("base_unittests") {
     "memory/scoped_vector_unittest.cc",
     "memory/shared_memory_mac_unittest.cc",
     "memory/shared_memory_unittest.cc",
+    "memory/shared_memory_win_unittest.cc",
     "memory/singleton_unittest.cc",
     "memory/weak_ptr_unittest.cc",
     "message_loop/message_loop_task_runner_unittest.cc",

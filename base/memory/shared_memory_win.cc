@@ -62,6 +62,41 @@ bool IsSectionSafeToMap(HANDLE handle) {
   return (basic_information.Attributes & SEC_IMAGE) != SEC_IMAGE;
 }
 
+// Returns a HANDLE on success and |nullptr| on failure.
+// This function is similar to CreateFileMapping, but removes the permissions
+// WRITE_DAC, WRITE_OWNER, READ_CONTROL, and DELETE.
+//
+// A newly created file mapping has two sets of permissions. It has access
+// control permissions (WRITE_DAC, WRITE_OWNER, READ_CONTROL, and DELETE) and
+// file permissions (FILE_MAP_READ, FILE_MAP_WRITE, etc.). ::DuplicateHandle()
+// with the parameter DUPLICATE_SAME_ACCESS copies both sets of permissions.
+//
+// The Chrome sandbox prevents HANDLEs with the WRITE_DAC permission from being
+// duplicated into unprivileged processes. But the only way to copy file
+// permissions is with the parameter DUPLICATE_SAME_ACCESS. This means that
+// there is no way for a privileged process to duplicate a file mapping into an
+// unprivileged process while maintaining the previous file permissions.
+//
+// By removing all access control permissions of a file mapping immediately
+// after creation, ::DuplicateHandle() effectively only copies the file
+// permissions.
+HANDLE CreateFileMappingWithReducedPermissions(SECURITY_ATTRIBUTES* sa,
+                                               size_t rounded_size,
+                                               LPCWSTR name) {
+  HANDLE h = CreateFileMapping(INVALID_HANDLE_VALUE, sa, PAGE_READWRITE, 0,
+                               static_cast<DWORD>(rounded_size), name);
+  if (!h)
+    return nullptr;
+
+  HANDLE h2;
+  BOOL success = ::DuplicateHandle(
+      GetCurrentProcess(), h, GetCurrentProcess(), &h2,
+      FILE_MAP_READ | FILE_MAP_WRITE | SECTION_QUERY, FALSE, 0);
+  BOOL rv = ::CloseHandle(h);
+  DCHECK(rv);
+  return success ? h2 : nullptr;
+}
+
 }  // namespace.
 
 namespace base {
@@ -169,7 +204,7 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
   SECURITY_DESCRIPTOR sd;
   ACL dacl;
 
-  if (options.share_read_only && name_.empty()) {
+  if (name_.empty()) {
     // Add an empty DACL to enforce anonymous read-only sections.
     sa.lpSecurityDescriptor = &sd;
     if (!InitializeAcl(&dacl, sizeof(dacl), ACL_REVISION))
@@ -187,9 +222,8 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
                          rand_values[0], rand_values[1],
                          rand_values[2], rand_values[3]);
   }
-  mapped_file_ = CreateFileMapping(INVALID_HANDLE_VALUE, &sa,
-      PAGE_READWRITE, 0, static_cast<DWORD>(rounded_size),
-      name_.empty() ? nullptr : name_.c_str());
+  mapped_file_ = CreateFileMappingWithReducedPermissions(
+      &sa, rounded_size, name_.empty() ? nullptr : name_.c_str());
   if (!mapped_file_)
     return false;
 
