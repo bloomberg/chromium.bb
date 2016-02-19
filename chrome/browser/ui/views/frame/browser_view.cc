@@ -2584,7 +2584,7 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
     AvatarBubbleMode mode,
     const signin::ManageAccountsParams& manage_accounts_params,
     signin_metrics::AccessPoint access_point) {
-#if defined(FRAME_AVATAR_BUTTON)
+#if !defined(OS_CHROMEOS)
   // Do not show avatar bubble if there is no avatar menu button.
   if (!frame_->GetNewAvatarMenuButton())
     return;

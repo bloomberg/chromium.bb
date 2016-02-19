@@ -2569,9 +2569,6 @@
           'sources': [ '<@(chrome_browser_tests_views_non_mac_sources)' ],
         }],
         ['toolkit_views==1 and OS!="mac" and chromeos == 0', {
-          # A temporary define to make it easier to remove CrOS dependencies on
-          # avatar button code. TODO(estade): remove.
-          'defines': [ 'FRAME_AVATAR_BUTTON=1', ],
           'sources': [ '<@(chrome_browser_tests_views_non_cros_or_mac_sources)' ],
         }],
         ['OS=="ios"', {

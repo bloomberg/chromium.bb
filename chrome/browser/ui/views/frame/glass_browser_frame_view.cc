@@ -84,6 +84,7 @@ base::win::ScopedHICON CreateHICONFromSkBitmapSizedTo(
 GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
                                              BrowserView* browser_view)
     : BrowserNonClientFrameView(frame, browser_view),
+      profile_switcher_(this),
       throbber_running_(false),
       throbber_frame_(0) {
   if (browser_view->ShouldShowWindowIcon())
@@ -116,9 +117,9 @@ gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
 
     // The new avatar button is optionally displayed to the left of the
     // minimize button.
-    if (new_avatar_button()) {
+    if (profile_switcher_.view()) {
       const int old_end_x = end_x;
-      end_x -= new_avatar_button()->width() + kNewAvatarButtonOffset;
+      end_x -= profile_switcher_.view()->width() + kNewAvatarButtonOffset;
 
       // In non-maximized mode, allow the new tab button to slide completely
       // under the avatar button.
@@ -175,6 +176,10 @@ gfx::Size GlassBrowserFrameView::GetMinimumSize() const {
   return min_size;
 }
 
+views::View* GlassBrowserFrameView::GetProfileSwitcherView() const {
+  return profile_switcher_.view();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // GlassBrowserFrameView, views::NonClientFrameView implementation:
 
@@ -214,9 +219,9 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   // See if the point is within the incognito icon or the new avatar menu.
   if ((avatar_button() &&
        avatar_button()->GetMirroredBounds().Contains(point)) ||
-      (new_avatar_button() &&
-       new_avatar_button()->GetMirroredBounds().Contains(point)))
-   return HTCLIENT;
+      (profile_switcher_.view() &&
+       profile_switcher_.view()->GetMirroredBounds().Contains(point)))
+    return HTCLIENT;
 
   int frame_component = frame()->client_view()->NonClientHitTest(point);
 
@@ -270,8 +275,11 @@ void GlassBrowserFrameView::Layout() {
 // GlassBrowserFrameView, protected:
 
 // BrowserNonClientFrameView:
-void GlassBrowserFrameView::UpdateNewAvatarButtonImpl() {
-  UpdateNewAvatarButton(AvatarButtonStyle::NATIVE);
+void GlassBrowserFrameView::UpdateAvatar() {
+  if (browser_view()->IsRegularOrGuestSession())
+    profile_switcher_.Update(AvatarButtonStyle::NATIVE);
+  else
+    UpdateOldAvatarButton();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -283,8 +291,9 @@ bool GlassBrowserFrameView::DoesIntersectRect(const views::View* target,
   CHECK_EQ(target, this);
   bool hit_incognito_icon = avatar_button() &&
       avatar_button()->GetMirroredBounds().Intersects(rect);
-  bool hit_new_avatar_button = new_avatar_button() &&
-      new_avatar_button()->GetMirroredBounds().Intersects(rect);
+  bool hit_new_avatar_button =
+      profile_switcher_.view() &&
+      profile_switcher_.view()->GetMirroredBounds().Intersects(rect);
   return hit_incognito_icon || hit_new_avatar_button ||
          !frame()->client_view()->bounds().Intersects(rect);
 }
@@ -486,10 +495,10 @@ void GlassBrowserFrameView::FillClientEdgeRects(int x,
 
 void GlassBrowserFrameView::LayoutNewStyleAvatar() {
   DCHECK(browser_view()->IsRegularOrGuestSession());
-  if (!new_avatar_button())
+  if (!profile_switcher_.view())
     return;
 
-  gfx::Size label_size = new_avatar_button()->GetPreferredSize();
+  gfx::Size label_size = profile_switcher_.view()->GetPreferredSize();
 
   int button_x = frame()->GetMinimizeButtonOffset() -
       kNewAvatarButtonOffset - label_size.width();
@@ -510,10 +519,8 @@ void GlassBrowserFrameView::LayoutNewStyleAvatar() {
   // pixel in height, then we place it at the correct position in restored mode,
   // or one pixel above the top of the screen in maximized mode.
   int button_y = frame()->IsMaximized() ? (FrameTopBorderHeight(false) - 1) : 1;
-  new_avatar_button()->SetBounds(
-      button_x,
-      button_y,
-      label_size.width(),
+  profile_switcher_.view()->SetBounds(
+      button_x, button_y, label_size.width(),
       gfx::win::GetSystemMetricsInDIP(SM_CYMENUSIZE) + 1);
 }
 
@@ -533,8 +540,9 @@ void GlassBrowserFrameView::LayoutIncognitoIcon() {
   // In RTL, the icon needs to start after the caption buttons.
   if (base::i18n::IsRTL()) {
     x = width() - frame()->GetMinimizeButtonOffset() +
-        (new_avatar_button() ?
-            (new_avatar_button()->width() + kNewAvatarButtonOffset) : 0);
+        (profile_switcher_.view()
+             ? (profile_switcher_.view()->width() + kNewAvatarButtonOffset)
+             : 0);
   } else if (!md && !avatar_button() && IsToolbarVisible() &&
              (base::win::GetVersion() < base::win::VERSION_WIN10)) {
     // In non-MD before Win 10, the toolbar has a rounded corner that we don't

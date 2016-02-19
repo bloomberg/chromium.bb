@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/frame/avatar_button_manager.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view_layout_delegate.h"
@@ -43,6 +44,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   int GetThemeBackgroundXInset() const override;
   void UpdateThrobber(bool running) override;
   gfx::Size GetMinimumSize() const override;
+  views::View* GetProfileSwitcherView() const override;
 
   // views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;
@@ -100,7 +102,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
 
   // BrowserNonClientFrameView:
   bool ShouldPaintAsThemed() const override;
-  void UpdateNewAvatarButtonImpl() override;
+  void UpdateAvatar() override;
 
  private:
   // views::NonClientFrameView:
@@ -165,6 +167,9 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   // The window icon and title.
   TabIconView* window_icon_;
   views::Label* window_title_;
+
+  // Wrapper around the in-frame avatar switcher.
+  AvatarButtonManager profile_switcher_;
 
   // Background painter for the window frame.
   scoped_ptr<views::FrameBackground> frame_background_;

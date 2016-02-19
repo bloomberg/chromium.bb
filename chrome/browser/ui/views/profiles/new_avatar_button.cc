@@ -11,7 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
-#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/views/profiles/avatar_button_delegate.h"
 #include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -49,11 +49,12 @@ scoped_ptr<views::Border> CreateBorder(const int normal_image_set[],
 
 }  // namespace
 
-NewAvatarButton::NewAvatarButton(views::ButtonListener* listener,
+NewAvatarButton::NewAvatarButton(AvatarButtonDelegate* delegate,
                                  AvatarButtonStyle button_style,
-                                 Browser* browser)
-    : LabelButton(listener, base::string16()),
-      browser_(browser),
+                                 Profile* profile)
+    : LabelButton(delegate, base::string16()),
+      delegate_(delegate),
+      profile_(profile),
       has_auth_error_(false),
       suppress_mouse_released_action_(false) {
   set_triggerable_event_flags(
@@ -104,8 +105,7 @@ NewAvatarButton::NewAvatarButton(views::ButtonListener* listener,
 
   // Subscribe to authentication error changes so that the avatar button can
   // update itself.  Note that guest mode profiles won't have a token service.
-  SigninErrorController* error =
-      profiles::GetSigninErrorController(browser_->profile());
+  SigninErrorController* error = profiles::GetSigninErrorController(profile_);
   if (error) {
     error->AddObserver(this);
     OnErrorChanged();  // This calls Update().
@@ -118,8 +118,7 @@ NewAvatarButton::NewAvatarButton(views::ButtonListener* listener,
 NewAvatarButton::~NewAvatarButton() {
   g_browser_process->profile_manager()->
       GetProfileInfoCache().RemoveObserver(this);
-  SigninErrorController* error =
-      profiles::GetSigninErrorController(browser_->profile());
+  SigninErrorController* error = profiles::GetSigninErrorController(profile_);
   if (error)
     error->RemoveObserver(this);
 }
@@ -157,27 +156,27 @@ void NewAvatarButton::OnProfileWasRemoved(
       const base::string16& profile_name) {
   // If deleting the active profile, don't bother updating the avatar
   // button, as the browser window is being closed anyway.
-  if (browser_->profile()->GetPath() != profile_path)
+  if (profile_->GetPath() != profile_path)
     Update();
 }
 
 void NewAvatarButton::OnProfileNameChanged(
       const base::FilePath& profile_path,
       const base::string16& old_profile_name) {
-  if (browser_->profile()->GetPath() == profile_path)
+  if (profile_->GetPath() == profile_path)
     Update();
 }
 
 void NewAvatarButton::OnProfileSupervisedUserIdChanged(
       const base::FilePath& profile_path) {
-  if (browser_->profile()->GetPath() == profile_path)
+  if (profile_->GetPath() == profile_path)
     Update();
 }
 
 void NewAvatarButton::OnErrorChanged() {
   // If there is an error, show an warning icon.
   const SigninErrorController* error =
-      profiles::GetSigninErrorController(browser_->profile());
+      profiles::GetSigninErrorController(profile_);
   has_auth_error_ = error && error->HasError();
 
   Update();
@@ -190,12 +189,13 @@ void NewAvatarButton::Update() {
   // If we have a single local profile, then use the generic avatar
   // button instead of the profile name. Never use the generic button if
   // the active profile is Guest.
-  bool use_generic_button = (!browser_->profile()->IsGuestSession() &&
-                             cache.GetNumberOfProfiles() == 1 &&
-                             !cache.ProfileIsAuthenticatedAtIndex(0));
+  bool use_generic_button =
+      (!profile_->IsGuestSession() && cache.GetNumberOfProfiles() == 1 &&
+       !cache.ProfileIsAuthenticatedAtIndex(0));
 
-  SetText(use_generic_button ? base::string16() :
-      profiles::GetAvatarButtonTextForProfile(browser_->profile()));
+  SetText(use_generic_button
+              ? base::string16()
+              : profiles::GetAvatarButtonTextForProfile(profile_));
 
   // If the button has no text, clear the text shadows to make sure the
   // image is centered correctly.
@@ -224,4 +224,5 @@ void NewAvatarButton::Update() {
   SetImageLabelSpacing(use_generic_button ? 0 : kDefaultImageTextSpacing);
 
   PreferredSizeChanged();
+  delegate_->ButtonPreferredSizeChanged();
 }

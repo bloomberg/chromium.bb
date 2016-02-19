@@ -39,7 +39,7 @@ class BrowserNonClientFrameViewMac : public BrowserNonClientFrameView {
   void OnPaint(gfx::Canvas* canvas) override;
 
   // BrowserNonClientFrameView:
-  void UpdateNewAvatarButtonImpl() override;
+  void UpdateAvatar() override;
 
  private:
   void PaintThemedFrame(gfx::Canvas* canvas);

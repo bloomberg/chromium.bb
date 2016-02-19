@@ -1314,6 +1314,7 @@
       'browser/ui/sync/one_click_signin_sync_starter.h',
       'browser/ui/views/frame/avatar_button_manager.cc',
       'browser/ui/views/frame/avatar_button_manager.h',
+      'browser/ui/views/profiles/avatar_button_delegate.h',
       'browser/ui/views/profiles/avatar_button_style.h',
       'browser/ui/views/profiles/new_avatar_button.cc',
       'browser/ui/views/profiles/new_avatar_button.h',
@@ -3075,9 +3076,6 @@
           ],
         }],
         ['OS=="win" or OS=="mac" or desktop_linux==1', {
-          # A temporary define to make it easier to remove CrOS dependencies on
-          # avatar button code. TODO(estade): remove.
-          'defines': [ 'FRAME_AVATAR_BUTTON=1', ],
           'sources': [ '<@(chrome_browser_ui_desktop_sources)' ],
         }],
         ['use_aura==1', {

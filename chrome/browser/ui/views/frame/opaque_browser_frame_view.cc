@@ -85,6 +85,7 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
       close_button_(nullptr),
       window_icon_(nullptr),
       window_title_(nullptr),
+      profile_switcher_(this),
       frame_background_(new views::FrameBackground()) {
   SetLayoutManager(layout_);
 
@@ -172,6 +173,10 @@ gfx::Size OpaqueBrowserFrameView::GetMinimumSize() const {
   return layout_->GetMinimumSize(width());
 }
 
+views::View* OpaqueBrowserFrameView::GetProfileSwitcherView() const {
+  return profile_switcher_.view();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameView, views::NonClientFrameView implementation:
 
@@ -190,12 +195,10 @@ bool OpaqueBrowserFrameView::IsWithinAvatarMenuButtons(
      avatar_button()->GetMirroredBounds().Contains(point)) {
     return true;
   }
-#if defined(FRAME_AVATAR_BUTTON)
-  if (new_avatar_button() &&
-     new_avatar_button()->GetMirroredBounds().Contains(point)) {
+  if (profile_switcher_.view() &&
+      profile_switcher_.view()->GetMirroredBounds().Contains(point)) {
     return true;
   }
-#endif
 
   return false;
 }
@@ -462,10 +465,11 @@ bool OpaqueBrowserFrameView::ShouldPaintAsThemed() const {
          platform_observer_->IsUsingSystemTheme();
 }
 
-void OpaqueBrowserFrameView::UpdateNewAvatarButtonImpl() {
-#if defined(FRAME_AVATAR_BUTTON)
-  UpdateNewAvatarButton(AvatarButtonStyle::THEMED);
-#endif
+void OpaqueBrowserFrameView::UpdateAvatar() {
+  if (browser_view()->IsRegularOrGuestSession())
+    profile_switcher_.Update(AvatarButtonStyle::THEMED);
+  else
+    UpdateOldAvatarButton();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -11,16 +11,17 @@
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "ui/views/controls/button/label_button.h"
 
-class Browser;
+class AvatarButtonDelegate;
+class Profile;
 
 // Avatar button that displays the active profile's name in the caption area.
 class NewAvatarButton : public views::LabelButton,
                         public ProfileInfoCacheObserver,
                         public SigninErrorController::Observer {
  public:
-  NewAvatarButton(views::ButtonListener* listener,
+  NewAvatarButton(AvatarButtonDelegate* delegate,
                   AvatarButtonStyle button_style,
-                  Browser* browser);
+                  Profile* profile);
   ~NewAvatarButton() override;
 
   // Views::LabelButton
@@ -49,7 +50,8 @@ class NewAvatarButton : public views::LabelButton,
   // have to update the icon/text of the button.
   void Update();
 
-  Browser* browser_;
+  AvatarButtonDelegate* delegate_;
+  Profile* profile_;
 
   // Whether the signed in profile has an authentication error. Used to display
   // an error icon next to the button text.

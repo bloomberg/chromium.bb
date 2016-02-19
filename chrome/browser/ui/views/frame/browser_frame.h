@@ -112,10 +112,7 @@ class BrowserFrame
                               ui::MenuSourceType source_type) override;
 
   AvatarMenuButton* GetAvatarMenuButton();
-
-#if defined(FRAME_AVATAR_BUTTON)
   views::View* GetNewAvatarMenuButton();
-#endif
 
   // Returns the menu model. BrowserFrame owns the returned model.
   // Note that in multi user mode this will upon each call create a new model.

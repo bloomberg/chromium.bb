@@ -216,8 +216,6 @@ source_set("ui") {
       "//components/arc",
       "//ui/base/ime",
     ]
-  } else {
-    defines += [ "FRAME_AVATAR_BUTTON=1" ]
   }
   if (use_cups) {
     configs += [ "//printing:cups" ]

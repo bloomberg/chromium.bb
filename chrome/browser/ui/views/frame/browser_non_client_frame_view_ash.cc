@@ -383,8 +383,8 @@ gfx::ImageSkia BrowserNonClientFrameViewAsh::GetFaviconForTabIconView() {
 // BrowserNonClientFrameViewAsh, protected:
 
 // BrowserNonClientFrameView:
-void BrowserNonClientFrameViewAsh::UpdateNewAvatarButtonImpl() {
-  NOTREACHED();
+void BrowserNonClientFrameViewAsh::UpdateAvatar() {
+  UpdateOldAvatarButton();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

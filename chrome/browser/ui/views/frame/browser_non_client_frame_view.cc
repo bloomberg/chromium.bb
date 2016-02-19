@@ -32,9 +32,6 @@ BrowserNonClientFrameView::BrowserNonClientFrameView(BrowserFrame* frame,
                                                      BrowserView* browser_view)
     : frame_(frame),
       browser_view_(browser_view),
-#if defined(FRAME_AVATAR_BUTTON)
-      profile_switcher_(this),
-#endif
       avatar_button_(nullptr) {
   // The profile manager may by null in tests.
   if (g_browser_process->profile_manager()) {
@@ -62,6 +59,10 @@ views::View* BrowserNonClientFrameView::GetLocationIconView() const {
   return nullptr;
 }
 
+views::View* BrowserNonClientFrameView::GetProfileSwitcherView() const {
+  return nullptr;
+}
+
 void BrowserNonClientFrameView::VisibilityChanged(views::View* starting_from,
                                                   bool is_visible) {
   if (!is_visible)
@@ -86,17 +87,6 @@ void BrowserNonClientFrameView::VisibilityChanged(views::View* starting_from,
   // this in guest mode.
   if (!browser_view_->IsGuestSession())
     OnProfileAvatarChanged(base::FilePath());
-#endif
-}
-
-void BrowserNonClientFrameView::ChildPreferredSizeChanged(View* child) {
-#if defined(FRAME_AVATAR_BUTTON)
-  // Only perform a re-layout if the avatar button has changed, since that
-  // can affect the size of the tabs.
-  if (child == new_avatar_button()) {
-    InvalidateLayout();
-    frame_->GetRootView()->Layout();
-  }
 #endif
 }
 
@@ -157,15 +147,6 @@ gfx::ImageSkia* BrowserNonClientFrameView::GetFrameOverlayImage() const {
 }
 #endif  // !defined(OS_CHROMEOS)
 
-void BrowserNonClientFrameView::UpdateAvatar() {
-#if !defined(OS_CHROMEOS)
-  if (browser_view()->IsRegularOrGuestSession())
-    UpdateNewAvatarButtonImpl();
-  else
-#endif
-    UpdateOldAvatarButton();
-}
-
 void BrowserNonClientFrameView::UpdateOldAvatarButton() {
   if (browser_view_->ShouldShowAvatar()) {
     if (!avatar_button_) {
@@ -203,13 +184,6 @@ void BrowserNonClientFrameView::UpdateOldAvatarButton() {
   if (avatar_button_)
     avatar_button_->SetAvatarIcon(avatar, is_rectangle);
 }
-
-#if defined(FRAME_AVATAR_BUTTON)
-void BrowserNonClientFrameView::UpdateNewAvatarButton(
-    const AvatarButtonStyle style) {
-  profile_switcher_.Update(style);
-}
-#endif
 
 void BrowserNonClientFrameView::OnProfileAdded(
     const base::FilePath& profile_path) {

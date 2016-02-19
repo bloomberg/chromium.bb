@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/profiler/scoped_tracker.h"
-#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -48,6 +47,10 @@
 #include "ui/views/mus/window_manager_frame_values.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
+
+#if !defined(OS_CHROMEOS)
+#define FRAME_AVATAR_BUTTON
+#endif
 
 namespace {
 
@@ -102,7 +105,11 @@ BrowserNonClientFrameViewMus::BrowserNonClientFrameViewMus(
     BrowserView* browser_view)
     : BrowserNonClientFrameView(frame, browser_view),
       window_icon_(nullptr),
-      tab_strip_(nullptr) {}
+#if defined(FRAME_AVATAR_BUTTON)
+      profile_switcher_(this),
+#endif
+      tab_strip_(nullptr) {
+}
 
 BrowserNonClientFrameViewMus::~BrowserNonClientFrameViewMus() {
   if (tab_strip_) {
@@ -185,6 +192,14 @@ views::View* BrowserNonClientFrameViewMus::GetLocationIconView() const {
   return nullptr;
 }
 
+views::View* BrowserNonClientFrameViewMus::GetProfileSwitcherView() const {
+#if defined(FRAME_AVATAR_BUTTON)
+  return profile_switcher_.view();
+#else
+  return nullptr;
+#endif
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // views::NonClientFrameView:
 
@@ -208,8 +223,8 @@ int BrowserNonClientFrameViewMus::NonClientHitTest(const gfx::Point& point) {
   int hit_test = HTCLIENT;
 
 #if defined(FRAME_AVATAR_BUTTON)
-  if (hit_test == HTCAPTION && new_avatar_button() &&
-      ConvertedHitTest(this, new_avatar_button(), point)) {
+  if (hit_test == HTCAPTION && profile_switcher_.view() &&
+      ConvertedHitTest(this, profile_switcher_.view(), point)) {
     return HTCLIENT;
   }
 #endif
@@ -267,11 +282,11 @@ void BrowserNonClientFrameViewMus::OnPaint(gfx::Canvas* canvas) {
 
 void BrowserNonClientFrameViewMus::Layout() {
   if (avatar_button())
-    LayoutAvatar();
+    LayoutIncognitoButton();
 
 #if defined(FRAME_AVATAR_BUTTON)
-  if (new_avatar_button())
-    LayoutNewStyleAvatar();
+  if (profile_switcher_.view())
+    LayoutProfileSwitcher();
 #endif
 
   BrowserNonClientFrameView::Layout();
@@ -304,24 +319,6 @@ gfx::Size BrowserNonClientFrameViewMus::GetMinimumSize() const {
   return gfx::Size(min_width, min_client_view_size.height());
 }
 
-void BrowserNonClientFrameViewMus::ChildPreferredSizeChanged(
-    views::View* child) {
-  // FrameCaptionButtonContainerView animates the visibility changes in
-  // UpdateSizeButtonVisibility(false). Due to this a new size is not available
-  // until the completion of the animation. Layout in response to the preferred
-  // size changes.
-  if (!browser_view()->initialized())
-    return;
-  bool needs_layout = false;
-#if defined(FRAME_AVATAR_BUTTON)
-  needs_layout = needs_layout || child == new_avatar_button();
-#endif
-  if (needs_layout) {
-    InvalidateLayout();
-    frame()->GetRootView()->Layout();
-  }
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // TabIconViewModel:
 
@@ -343,10 +340,13 @@ gfx::ImageSkia BrowserNonClientFrameViewMus::GetFaviconForTabIconView() {
 // BrowserNonClientFrameViewMus, protected:
 
 // BrowserNonClientFrameView:
-void BrowserNonClientFrameViewMus::UpdateNewAvatarButtonImpl() {
+void BrowserNonClientFrameViewMus::UpdateAvatar() {
 #if defined(FRAME_AVATAR_BUTTON)
-  UpdateNewAvatarButton(AvatarButtonStyle::NATIVE);
+  if (browser_view()->IsRegularOrGuestSession())
+    profile_switcher_.Update(AvatarButtonStyle::NATIVE);
+  else
 #endif
+    UpdateOldAvatarButton();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -423,9 +423,9 @@ int BrowserNonClientFrameViewMus::GetTabStripRightInset() const {
   int right_inset = kTabstripRightSpacing + frame_right_insets;
 
 #if defined(FRAME_AVATAR_BUTTON)
-  if (new_avatar_button()) {
+  if (profile_switcher_.view()) {
     right_inset += kNewAvatarButtonOffset +
-                   new_avatar_button()->GetPreferredSize().width();
+                   profile_switcher_.view()->GetPreferredSize().width();
   }
 #endif
 
@@ -456,7 +456,7 @@ bool BrowserNonClientFrameViewMus::UseWebAppHeaderStyle() const {
       Browser::FEATURE_WEBAPPFRAME);
 }
 
-void BrowserNonClientFrameViewMus::LayoutAvatar() {
+void BrowserNonClientFrameViewMus::LayoutIncognitoButton() {
   DCHECK(avatar_button());
 #if !defined(OS_CHROMEOS)
   // ChromeOS shows avatar on V1 app.
@@ -485,11 +485,14 @@ void BrowserNonClientFrameViewMus::LayoutAvatar() {
   avatar_button()->SetVisible(avatar_visible);
 }
 
+void BrowserNonClientFrameViewMus::LayoutProfileSwitcher() {
 #if defined(FRAME_AVATAR_BUTTON)
-void BrowserNonClientFrameViewMus::LayoutNewStyleAvatar() {
-  NOTIMPLEMENTED();
-}
+  gfx::Size button_size = profile_switcher_.view()->GetPreferredSize();
+  int button_x = width() - GetTabStripRightInset() + kNewAvatarButtonOffset;
+  profile_switcher_.view()->SetBounds(button_x, 0, button_size.width(),
+                                      button_size.height());
 #endif
+}
 
 bool BrowserNonClientFrameViewMus::ShouldPaint() const {
   if (!frame()->IsFullscreen())

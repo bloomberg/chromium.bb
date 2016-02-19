@@ -73,7 +73,7 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
 
  protected:
   // BrowserNonClientFrameView:
-  void UpdateNewAvatarButtonImpl() override;
+  void UpdateAvatar() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest, WindowHeader);

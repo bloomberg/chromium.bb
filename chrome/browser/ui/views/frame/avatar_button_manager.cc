@@ -15,13 +15,14 @@ AvatarButtonManager::AvatarButtonManager(BrowserNonClientFrameView* frame_view)
 void AvatarButtonManager::Update(AvatarButtonStyle style) {
   BrowserView* browser_view = frame_view_->browser_view();
   BrowserFrame* frame = frame_view_->frame();
+  Profile* profile = browser_view->browser()->profile();
 
   // This should never be called in incognito mode.
   DCHECK(browser_view->IsRegularOrGuestSession());
 
   if (browser_view->ShouldShowAvatar()) {
     if (!view_) {
-      view_ = new NewAvatarButton(this, style, browser_view->browser());
+      view_ = new NewAvatarButton(this, style, profile);
       view_->set_id(VIEW_ID_NEW_AVATAR_BUTTON);
       frame_view_->AddChildView(view_);
       frame->GetRootView()->Layout();
@@ -31,6 +32,16 @@ void AvatarButtonManager::Update(AvatarButtonStyle style) {
     view_ = nullptr;
     frame->GetRootView()->Layout();
   }
+}
+
+void AvatarButtonManager::ButtonPreferredSizeChanged() {
+  // Perform a re-layout if the avatar button has changed, since that can affect
+  // the size of the tabs.
+  if (!view_ || !frame_view_->browser_view()->initialized())
+    return;  // Ignore the update during view creation.
+
+  frame_view_->InvalidateLayout();
+  frame_view_->frame()->GetRootView()->Layout();
 }
 
 void AvatarButtonManager::ButtonPressed(views::Button* sender,

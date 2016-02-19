@@ -8,10 +8,6 @@
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "ui/views/window/non_client_view.h"
 
-#if defined(FRAME_AVATAR_BUTTON)
-#include "chrome/browser/ui/views/frame/avatar_button_manager.h"
-#endif
-
 class AvatarMenuButton;
 class BrowserFrame;
 class BrowserView;
@@ -27,12 +23,6 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   BrowserView* browser_view() const { return browser_view_; }
   BrowserFrame* frame() const { return frame_; }
   AvatarMenuButton* avatar_button() const { return avatar_button_; }
-
-#if defined(FRAME_AVATAR_BUTTON)
-  views::View* new_avatar_button() const {
-    return profile_switcher_.view();
-  }
-#endif
 
   // Called when BrowserView creates all it's child views.
   virtual void OnBrowserViewInitViewsComplete();
@@ -62,9 +52,11 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Returns the location icon, if this frame has any.
   virtual views::View* GetLocationIconView() const;
 
+  // Returns the profile switcher button, if this frame has any.
+  virtual views::View* GetProfileSwitcherView() const;
+
   // Overriden from views::View.
   void VisibilityChanged(views::View* starting_from, bool is_visible) override;
-  void ChildPreferredSizeChanged(View* child) override;
 
  protected:
   // Whether the frame should be painted with theming.
@@ -79,24 +71,12 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   gfx::ImageSkia* GetFrameOverlayImage() const;
 #endif
 
-  // Updates the avatar button using the old or new UI based on the BrowserView
-  // type, and the presence of the --enable-new-avatar-menu flag. Calls either
-  // UpdateOldAvatarButton() or UpdateNewAvatarButtonImpl() accordingly.
-  void UpdateAvatar();
+  // Update the profile switcher button if one should exist. Otherwise, update
+  // the incognito avatar, or profile avatar for teleported frames in ChromeOS.
+  virtual void UpdateAvatar() = 0;
 
   // Updates the title and icon of the old avatar button.
   void UpdateOldAvatarButton();
-
-  // Updates the avatar button displayed in the caption area by calling
-  // UpdateNewAvatarButton() with an implementation specific |listener|
-  // and button |style|.
-  virtual void UpdateNewAvatarButtonImpl() = 0;
-
-#if defined(FRAME_AVATAR_BUTTON)
-  // Updates the title of the avatar button displayed in the caption area.
-  // The button uses |style| to match the browser window style.
-  void UpdateNewAvatarButton(const AvatarButtonStyle style);
-#endif
 
  private:
   // Overriden from ProfileInfoCacheObserver.
@@ -113,12 +93,6 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 
   // The BrowserView hosted within this View.
   BrowserView* browser_view_;
-
-#if defined(FRAME_AVATAR_BUTTON)
-  // Wrapper around the in-frame avatar switcher.
-  // TODO(tapted): Move this component down into the subclasses that need it.
-  AvatarButtonManager profile_switcher_;
-#endif
 
   // Menu button that displays the incognito icon. May be null for some frame
   // styles. TODO(anthonyvd): simplify/rename.

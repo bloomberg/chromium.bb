@@ -5,11 +5,16 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_MUS_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_MUS_H_
 
+#include "build/build_config.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/tab_icon_view_model.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_observer.h"
+
+#if !defined(OS_CHROMEOS)
+#include "chrome/browser/ui/views/frame/avatar_button_manager.h"
+#endif
 
 class TabIconView;
 class WebAppLeftHeaderView;
@@ -42,6 +47,7 @@ class BrowserNonClientFrameViewMus : public BrowserNonClientFrameView,
   void UpdateThrobber(bool running) override;
   void UpdateToolbar() override;
   views::View* GetLocationIconView() const override;
+  views::View* GetProfileSwitcherView() const override;
 
   // views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;
@@ -60,7 +66,6 @@ class BrowserNonClientFrameViewMus : public BrowserNonClientFrameView,
   const char* GetClassName() const override;
   void GetAccessibleState(ui::AXViewState* state) override;
   gfx::Size GetMinimumSize() const override;
-  void ChildPreferredSizeChanged(views::View* child) override;
 
   // TabIconViewModel:
   bool ShouldTabIconViewAnimate() const override;
@@ -68,7 +73,7 @@ class BrowserNonClientFrameViewMus : public BrowserNonClientFrameView,
 
  protected:
   // BrowserNonClientFrameView:
-  void UpdateNewAvatarButtonImpl() override;
+  void UpdateAvatar() override;
 
  private:
   mus::Window* mus_window();
@@ -106,11 +111,11 @@ class BrowserNonClientFrameViewMus : public BrowserNonClientFrameView,
   // accoutrements.
   bool UseWebAppHeaderStyle() const;
 
-  // Layout the avatar button.
-  void LayoutAvatar();
-#if defined(FRAME_AVATAR_BUTTON)
-  void LayoutNewStyleAvatar();
-#endif
+  // Layout the incognito button.
+  void LayoutIncognitoButton();
+
+  // Layout the profile switcher (if there is one).
+  void LayoutProfileSwitcher();
 
   // Returns true if there is anything to paint. Some fullscreen windows do not
   // need their frames painted.
@@ -130,6 +135,11 @@ class BrowserNonClientFrameViewMus : public BrowserNonClientFrameView,
 
   // For popups, the window icon.
   TabIconView* window_icon_;
+
+#if !defined(OS_CHROMEOS)
+  // Wrapper around the in-frame avatar switcher.
+  AvatarButtonManager profile_switcher_;
+#endif
 
   TabStrip* tab_strip_;
 
