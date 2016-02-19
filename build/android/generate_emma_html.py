@@ -58,6 +58,9 @@ def main():
 
   coverage_files = _GetFilesWithExt(options.coverage_dir, 'ec')
   metadata_files = _GetFilesWithExt(options.metadata_dir, 'em')
+  # Filter out zero-length files. These are created by emma_instr.py when a
+  # target has no classes matching the coverage filter.
+  metadata_files = [f for f in metadata_files if os.path.getsize(f)]
   print 'Found coverage files: %s' % str(coverage_files)
   print 'Found metadata files: %s' % str(metadata_files)
 
@@ -86,6 +89,10 @@ def main():
   if options.cleanup:
     for f in coverage_files:
       os.remove(f)
+
+  # Command tends to exit with status 0 when it actually failed.
+  if not exit_code and not os.path.exists(options.output):
+    exit_code = 1
 
   return exit_code
 
