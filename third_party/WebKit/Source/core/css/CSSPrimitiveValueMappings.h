@@ -636,7 +636,6 @@ template<> inline EFillBox CSSPrimitiveValue::convertTo() const
     case CSSValueContentBox:
         return ContentFillBox;
     case CSSValueText:
-    case CSSValueWebkitText:
         return TextFillBox;
     default:
         break;
