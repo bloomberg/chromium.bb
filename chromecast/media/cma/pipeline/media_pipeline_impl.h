@@ -66,6 +66,12 @@ class MediaPipelineImpl {
   void SetCdm(BrowserCdmCast* cdm);
 
  private:
+  enum BackendState {
+    BACKEND_STATE_UNINITIALIZED,
+    BACKEND_STATE_INITIALIZED,
+    BACKEND_STATE_PLAYING,
+    BACKEND_STATE_PAUSED
+  };
   struct FlushTask;
   void OnFlushDone(bool is_audio_stream);
 
@@ -82,22 +88,20 @@ class MediaPipelineImpl {
   BrowserCdmCast* cdm_;
 
   // Interface with the underlying hardware media pipeline.
+  BackendState backend_state_;
+  // Playback rate set by the upper layer.
+  // Cached here because CMA pipeline backend does not support rate == 0,
+  // which is emulated by pausing the backend.
+  float playback_rate_;
   scoped_ptr<MediaPipelineBackend> media_pipeline_backend_;
   scoped_ptr<AudioDecoderSoftwareWrapper> audio_decoder_;
   MediaPipelineBackend::VideoDecoder* video_decoder_;
 
-  bool backend_initialized_;
   scoped_ptr<AudioPipelineImpl> audio_pipeline_;
   scoped_ptr<VideoPipelineImpl> video_pipeline_;
   scoped_ptr<FlushTask> pending_flush_task_;
 
-  // Whether or not the backend is currently paused.
-  bool paused_;
-  // Playback rate set by the upper layer.
-  float target_playback_rate_;
-
   // The media time is retrieved at regular intervals.
-  bool backend_started_;  // Whether or not the backend is playing/paused.
   bool pending_time_update_task_;
   base::TimeDelta last_media_time_;
 

@@ -61,12 +61,10 @@ struct MediaPipelineImpl::FlushTask {
 
 MediaPipelineImpl::MediaPipelineImpl()
     : cdm_(nullptr),
+      backend_state_(BACKEND_STATE_UNINITIALIZED),
+      playback_rate_(1.0f),
       audio_decoder_(nullptr),
       video_decoder_(nullptr),
-      backend_initialized_(false),
-      paused_(false),
-      target_playback_rate_(1.0f),
-      backend_started_(false),
       pending_time_update_task_(false),
       statistics_rolling_counter_(0),
       weak_factory_(this) {
@@ -184,16 +182,14 @@ void MediaPipelineImpl::StartPlayingFrom(base::TimeDelta time) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(audio_pipeline_ || video_pipeline_);
   DCHECK(!pending_flush_task_);
-  // When starting, we always enter the "playing" state (not paused).
-  paused_ = false;
 
-  // Lazy initialise
-  if (!backend_initialized_) {
-    backend_initialized_ = media_pipeline_backend_->Initialize();
-    if (!backend_initialized_) {
+  // Lazy initialize.
+  if (backend_state_ == BACKEND_STATE_UNINITIALIZED) {
+    if (!media_pipeline_backend_->Initialize()) {
       OnError(::media::PIPELINE_ERROR_ABORT);
       return;
     }
+    backend_state_ = BACKEND_STATE_INITIALIZED;
   }
 
   // Start the backend.
@@ -201,9 +197,9 @@ void MediaPipelineImpl::StartPlayingFrom(base::TimeDelta time) {
     OnError(::media::PIPELINE_ERROR_ABORT);
     return;
   }
+  backend_state_ = BACKEND_STATE_PLAYING;
 
   // Enable time updates.
-  backend_started_ = true;
   statistics_rolling_counter_ = 0;
   if (!pending_time_update_task_) {
     pending_time_update_task_ = true;
@@ -235,10 +231,11 @@ void MediaPipelineImpl::StartPlayingFrom(base::TimeDelta time) {
 void MediaPipelineImpl::Flush(const base::Closure& flush_cb) {
   CMALOG(kLogControl) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK((backend_state_ == BACKEND_STATE_PLAYING) ||
+         (backend_state_ == BACKEND_STATE_PAUSED));
   DCHECK(audio_pipeline_ || video_pipeline_);
   DCHECK(!pending_flush_task_);
 
-  backend_started_ = false;
   buffering_controller_->Reset();
 
   // 1. Stop both the audio and video pipeline so that they stop feeding
@@ -251,6 +248,7 @@ void MediaPipelineImpl::Flush(const base::Closure& flush_cb) {
   // 2. Stop the backend, so that the backend won't push their pending buffer,
   // which may be invalidated later, to hardware. (b/25342604)
   CHECK(media_pipeline_backend_->Stop());
+  backend_state_ = BACKEND_STATE_INITIALIZED;
 
   // 3. Flush both the audio and video pipeline. This will flush the frame
   // provider and invalidate all the unreleased buffers.
@@ -277,7 +275,6 @@ void MediaPipelineImpl::Stop() {
   // audio/video pipelines. This will ensure A/V Flush won't happen in
   // stopped state.
   pending_flush_task_.reset();
-  backend_started_ = false;
 
   // Stop both the audio and video pipeline.
   if (audio_pipeline_)
@@ -290,26 +287,28 @@ void MediaPipelineImpl::Stop() {
   video_pipeline_ = nullptr;
   audio_decoder_.reset();
   media_pipeline_backend_.reset();
+  backend_state_ = BACKEND_STATE_UNINITIALIZED;
 }
 
 void MediaPipelineImpl::SetPlaybackRate(double rate) {
   CMALOG(kLogControl) << __FUNCTION__ << " rate=" << rate;
   DCHECK(thread_checker_.CalledOnValidThread());
-  target_playback_rate_ = rate;
-  if (!backend_started_)
-    return;
+  DCHECK((backend_state_ == BACKEND_STATE_PLAYING) ||
+         (backend_state_ == BACKEND_STATE_PAUSED));
+
+  playback_rate_ = rate;
   if (buffering_controller_ && buffering_controller_->IsBuffering())
     return;
 
   if (rate != 0.0f) {
     media_pipeline_backend_->SetPlaybackRate(rate);
-    if (paused_) {
-      paused_ = false;
+    if (backend_state_ == BACKEND_STATE_PAUSED) {
       media_pipeline_backend_->Resume();
+      backend_state_ = BACKEND_STATE_PLAYING;
     }
-  } else if (!paused_) {
-    paused_ = true;
+  } else if (backend_state_ == BACKEND_STATE_PLAYING) {
     media_pipeline_backend_->Pause();
+    backend_state_ = BACKEND_STATE_PAUSED;
   }
 }
 
@@ -359,33 +358,37 @@ void MediaPipelineImpl::OnFlushDone(bool is_audio_stream) {
 void MediaPipelineImpl::OnBufferingNotification(bool is_buffering) {
   CMALOG(kLogControl) << __FUNCTION__ << " is_buffering=" << is_buffering;
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK((backend_state_ == BACKEND_STATE_PLAYING) ||
+         (backend_state_ == BACKEND_STATE_PAUSED));
   DCHECK(buffering_controller_);
+  DCHECK_EQ(is_buffering, buffering_controller_->IsBuffering());
 
   if (!client_.buffering_state_cb.is_null()) {
-    ::media::BufferingState buffering_state =
-        is_buffering ? ::media::BUFFERING_HAVE_NOTHING
-                     : ::media::BUFFERING_HAVE_ENOUGH;
-    client_.buffering_state_cb.Run(buffering_state);
+    if (is_buffering) {
+      // TODO(alokp): WebMediaPlayerImpl currently only handles HAVE_ENOUGH.
+      // See WebMediaPlayerImpl::OnPipelineBufferingStateChanged,
+      // http://crbug.com/144683.
+      LOG(WARNING) << "Ignoring buffering notification.";
+    } else {
+      client_.buffering_state_cb.Run(::media::BUFFERING_HAVE_ENOUGH);
+    }
   }
 
-  if (!is_buffering) {
-    DCHECK(!buffering_controller_->IsBuffering());
+  if (is_buffering && (backend_state_ == BACKEND_STATE_PLAYING)) {
+    media_pipeline_backend_->Pause();
+    backend_state_ = BACKEND_STATE_PAUSED;
+  } else if (!is_buffering && (backend_state_ == BACKEND_STATE_PAUSED)) {
     // Once we finish buffering, we need to honour the desired playback rate
     // (rather than just resuming). This way, if playback was paused while
     // buffering, it will remain paused rather than incorrectly resuming.
-    SetPlaybackRate(target_playback_rate_);
-    return;
-  }
-  // Do not consume data in a rebuffering phase.
-  if (!paused_) {
-    paused_ = true;
-    media_pipeline_backend_->Pause();
+    SetPlaybackRate(playback_rate_);
   }
 }
 
 void MediaPipelineImpl::UpdateMediaTime() {
   pending_time_update_task_ = false;
-  if (!backend_started_)
+  if ((backend_state_ != BACKEND_STATE_PLAYING) &&
+      (backend_state_ != BACKEND_STATE_PAUSED))
     return;
 
   if (statistics_rolling_counter_ == 0) {

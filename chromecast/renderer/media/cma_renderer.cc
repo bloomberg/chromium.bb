@@ -431,17 +431,6 @@ void CmaRenderer::OnBufferingNotification(
     ::media::BufferingState buffering_state) {
   CMALOG(kLogControl) << __FUNCTION__ << ": state=" << state_
                       << ", buffering=" << buffering_state;
-  // TODO(gunsch): WebMediaPlayerImpl currently only handles HAVE_ENOUGH while
-  // playing. See OnPipelineBufferingStateChanged, http://crbug.com/144683.
-  if (state_ != kPlaying) {
-    LOG(WARNING) << "Ignoring buffering notification in state: " << state_;
-    return;
-  }
-  if (buffering_state != ::media::BUFFERING_HAVE_ENOUGH) {
-    LOG(WARNING) << "Ignoring buffering notification during playing: "
-                 << buffering_state;
-    return;
-  }
   buffering_state_cb_.Run(buffering_state);
 }
 
