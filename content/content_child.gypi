@@ -6,6 +6,7 @@
   'dependencies': [
     '../base/base.gyp:base',
     '../components/mime_util/mime_util.gyp:mime_util',
+    '../components/scheduler/scheduler.gyp:scheduler',
     '../components/tracing.gyp:tracing',
     '../components/webcrypto/webcrypto.gyp:webcrypto',
     '../ipc/ipc.gyp:ipc',
@@ -13,11 +14,18 @@
     '../mojo/mojo_base.gyp:mojo_common_lib',
     '../mojo/mojo_base.gyp:mojo_message_pump_lib',
     '../skia/skia.gyp:skia',
+    '../storage/storage_common.gyp:storage_common',
+    '../third_party/WebKit/public/blink.gyp:blink',
+    '../third_party/WebKit/public/blink_resources.gyp:blink_image_resources',
+    '../third_party/WebKit/public/blink_resources.gyp:blink_resources',
+    '../third_party/npapi/npapi.gyp:npapi',
     '../ui/base/ui_base.gyp:ui_base',
     '../ui/events/events.gyp:gestures_blink',
     '../ui/gfx/gfx.gyp:gfx',
     '../ui/gfx/gfx.gyp:gfx_geometry',
     '../url/url.gyp:url_lib',
+    'app/resources/content_resources.gyp:content_resources',
+    'app/strings/content_strings.gyp:content_strings',
     'content_common_mojo_bindings.gyp:content_common_mojo_bindings',
   ],
   'include_dirs': [
@@ -314,24 +322,6 @@
       'sources/': [
         ['exclude', '^child/npapi/plugin_'],
         ['exclude', '^child/npapi/webplugin_'],
-      ],
-    }],
-    ['OS=="ios"', {
-      'sources/': [
-        # iOS only needs a small portion of content; exclude all the
-        # implementation, and re-include what is used.
-        ['exclude', '\\.(cc|mm)$'],
-      ],
-    }, {  # OS!="ios"
-      'dependencies': [
-        'app/resources/content_resources.gyp:content_resources',
-        'app/strings/content_strings.gyp:content_strings',
-        '../components/scheduler/scheduler.gyp:scheduler',
-        '../storage/storage_common.gyp:storage_common',
-        '../third_party/WebKit/public/blink.gyp:blink',
-        '../third_party/WebKit/public/blink_resources.gyp:blink_image_resources',
-        '../third_party/WebKit/public/blink_resources.gyp:blink_resources',
-        '../third_party/npapi/npapi.gyp:npapi',
       ],
     }],
     ['use_aura==1', {

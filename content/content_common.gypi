@@ -5,12 +5,34 @@
 {
   'dependencies': [
     '../base/base.gyp:base',
+    '../cc/cc.gyp:cc',
     '../components/tracing.gyp:tracing',
+    '../device/bluetooth/bluetooth.gyp:device_bluetooth',
+    '../gpu/blink/gpu_blink.gyp:gpu_blink',
     '../gpu/command_buffer/command_buffer.gyp:gles2_utils',
+    '../gpu/gpu.gyp:command_buffer_service',
+    '../gpu/gpu.gyp:gles2_c_lib',
+    '../gpu/gpu.gyp:gles2_implementation',
+    # TODO: the dependency on gl_in_process_context should be decoupled from
+    # content and moved to android_webview. See crbug.com/365797.
+    '../gpu/gpu.gyp:gl_in_process_context',
+    '../gpu/gpu.gyp:gpu_ipc',
+    '../gpu/skia_bindings/skia_bindings.gyp:gpu_skia_bindings',
     '../ipc/ipc.gyp:ipc',
+    '../ipc/mojo/ipc_mojo.gyp:ipc_mojo',
+    '../media/media.gyp:media',
+    '../media/media.gyp:shared_memory_support',
+    '../media/midi/midi.gyp:midi',
+    '../mojo/mojo_base.gyp:mojo_application_bindings',
+    '../mojo/mojo_base.gyp:mojo_environment_chromium',
+    '../mojo/mojo_edk.gyp:mojo_system_impl',
+    '../mojo/mojo_public.gyp:mojo_cpp_bindings',
     '../net/net.gyp:net',
     '../skia/skia.gyp:skia',
+    '../storage/storage_common.gyp:storage_common',
+    '../third_party/WebKit/public/blink.gyp:blink',
     '../third_party/WebKit/public/blink_headers.gyp:blink_headers',
+    '../third_party/boringssl/boringssl.gyp:boringssl',
     '../third_party/icu/icu.gyp:icuuc',
     '../ui/accessibility/accessibility.gyp:accessibility',
     '../ui/accessibility/accessibility.gyp:ax_gen',
@@ -20,14 +42,42 @@
     '../ui/gfx/gfx.gyp:gfx',
     '../ui/gfx/gfx.gyp:gfx_geometry',
     '../ui/gfx/ipc/gfx_ipc.gyp:gfx_ipc',
+    '../ui/gl/gl.gyp:gl',
     '../ui/shell_dialogs/shell_dialogs.gyp:shell_dialogs',
     '../url/url.gyp:url_lib',
+    'content_common_mojo_bindings.gyp:content_common_mojo_bindings',
   ],
   'include_dirs': [
     '..',
   ],
+  'actions': [
+    {
+      'action_name': 'generate_webkit_version',
+      'inputs': [
+        '<(script)',
+        '<(lastchange)',
+        '<(template)',
+      ],
+      'outputs': [
+        '<(SHARED_INTERMEDIATE_DIR)/build/util/webkit_version.h',
+      ],
+      'action': ['python',
+                 '<(script)',
+                 '-f', '<(lastchange)',
+                 '<(template)',
+                 '<@(_outputs)',
+      ],
+      'variables': {
+        'script': '<(DEPTH)/build/util/version.py',
+        'lastchange': '<(DEPTH)/build/util/LASTCHANGE.blink',
+        'template': '<(DEPTH)/build/util/webkit_version.h.in',
+      },
+    },
+  ],
   'export_dependent_settings': [
     '../base/base.gyp:base',
+    '../mojo/mojo_base.gyp:mojo_application_bindings',
+    '../mojo/mojo_public.gyp:mojo_cpp_bindings',
     # The public content API headers directly include Blink API headers, so we
     # have to export the blink header settings so that relative paths in these
     # headers resolve correctly.
@@ -588,94 +638,6 @@
     }],
   ],
   'conditions': [
-    ['OS=="ios"', {
-      # iOS has different user-agent construction utilities, since the
-      # version strings is not derived from webkit_version, and follows
-      # a different format.
-      'sources!': [
-        'common/user_agent.cc',
-      ],
-      'sources/': [
-        # iOS only needs a small portion of content; exclude all the
-        # implementation, and re-include what is used.
-        ['exclude', '\\.(cc|mm)$'],
-        ['include', '_ios\\.(cc|mm)$'],
-        ['include', '^public/common/content_client\\.cc$'],
-        ['include', '^public/common/content_constants\\.cc$'],
-        ['include', '^public/common/content_switches\\.cc$'],
-        ['include', '^public/common/frame_navigate_params\\.cc$'],
-        ['include', '^public/common/media_stream_request\\.cc$'],
-        ['include', '^public/common/page_state\\.cc$'],
-        ['include', '^public/common/password_form\\.cc$'],
-        ['include', '^public/common/signed_certificate_timestamp_id_and_status\\.cc$'],
-        ['include', '^public/common/speech_recognition_result\\.cc$'],
-        ['include', '^public/common/ssl_status\\.cc$'],
-        ['include', '^public/common/url_constants\\.cc$'],
-        ['include', '^common/content_paths\\.cc$'],
-        ['include', '^common/media/media_stream_options\\.cc$'],
-        ['include', '^common/net/url_fetcher\\.cc$'],
-        ['include', '^common/net/url_request_user_data\\.cc$'],
-        ['include', '^common/page_state_serialization\\.cc$'],
-        ['include', '^common/savable_url_schemes\\.cc$'],
-        ['include', '^common/url_schemes\\.cc$'],
-      ],
-    }, {  # OS!="ios"
-      'dependencies': [
-        '../cc/cc.gyp:cc',
-        '../device/bluetooth/bluetooth.gyp:device_bluetooth',
-        '../gpu/blink/gpu_blink.gyp:gpu_blink',
-        '../gpu/gpu.gyp:command_buffer_service',
-        '../gpu/gpu.gyp:gles2_c_lib',
-        '../gpu/gpu.gyp:gles2_implementation',
-        # TODO: the dependency on gl_in_process_context should be decoupled from
-        # content and moved to android_webview. See crbug.com/365797.
-        '../gpu/gpu.gyp:gl_in_process_context',
-        '../gpu/gpu.gyp:gpu_ipc',
-        '../gpu/skia_bindings/skia_bindings.gyp:gpu_skia_bindings',
-        '../ipc/ipc.gyp:ipc',
-        '../ipc/mojo/ipc_mojo.gyp:ipc_mojo',
-        '../media/media.gyp:media',
-        '../media/media.gyp:shared_memory_support',
-        '../media/midi/midi.gyp:midi',
-        '../mojo/mojo_base.gyp:mojo_application_bindings',
-        '../mojo/mojo_base.gyp:mojo_environment_chromium',
-        '../mojo/mojo_edk.gyp:mojo_system_impl',
-        '../mojo/mojo_public.gyp:mojo_cpp_bindings',
-        '../storage/storage_common.gyp:storage_common',
-        '../third_party/WebKit/public/blink.gyp:blink',
-        '../third_party/boringssl/boringssl.gyp:boringssl',
-        '../ui/gl/gl.gyp:gl',
-        'content_common_mojo_bindings.gyp:content_common_mojo_bindings',
-      ],
-      'export_dependent_settings' : [
-        '../mojo/mojo_base.gyp:mojo_application_bindings',
-        '../mojo/mojo_public.gyp:mojo_cpp_bindings',
-      ],
-      'actions': [
-        {
-          'action_name': 'generate_webkit_version',
-          'inputs': [
-            '<(script)',
-            '<(lastchange)',
-            '<(template)',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/build/util/webkit_version.h',
-          ],
-          'action': ['python',
-                     '<(script)',
-                     '-f', '<(lastchange)',
-                     '<(template)',
-                     '<@(_outputs)',
-          ],
-          'variables': {
-            'script': '<(DEPTH)/build/util/version.py',
-            'lastchange': '<(DEPTH)/build/util/LASTCHANGE.blink',
-            'template': '<(DEPTH)/build/util/webkit_version.h.in',
-          },
-        },
-      ],
-    }],
     ['OS=="mac"', {
       'dependencies': [
         '../media/media.gyp:media',

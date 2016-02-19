@@ -90,18 +90,17 @@ def LoadPythonDictionary(path):
     file_data.update(file_data['variables'])
     del file_data['variables']
 
-  # Strip any conditions.
-  if 'conditions' in file_data:
-    del file_data['conditions']
-  if 'target_conditions' in file_data:
-    del file_data['target_conditions']
-
-  # Strip targets and includes in the toplevel, since some files define these
-  # and we can't slurp them in.
-  if 'targets' in file_data:
-    del file_data['targets']
-  if 'includes' in file_data:
-    del file_data['includes']
+  # Strip all elements that this script can't process.
+  elements_to_strip = [
+    'conditions',
+    'target_conditions',
+    'targets',
+    'includes',
+    'actions',
+  ]
+  for element in elements_to_strip:
+    if element in file_data:
+      del file_data[element]
 
   return file_data
 

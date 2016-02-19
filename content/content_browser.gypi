@@ -5,26 +5,41 @@
 {
   'dependencies': [
     '../base/base.gyp:base_static',
+    '../cc/cc.gyp:cc',
+    '../cc/cc.gyp:cc_surfaces',
+    '../components/mime_util/mime_util.gyp:mime_util',
+    '../components/scheduler/scheduler.gyp:scheduler_common',
     '../components/url_formatter/url_formatter.gyp:url_formatter',
     '../crypto/crypto.gyp:crypto',
     '../device/battery/battery.gyp:device_battery',
     '../device/battery/battery.gyp:device_battery_mojo_bindings',
+    '../device/bluetooth/bluetooth.gyp:device_bluetooth',
+    '../device/usb/usb.gyp:device_usb',
     '../device/vibration/vibration.gyp:device_vibration',
     '../device/vibration/vibration.gyp:device_vibration_mojo_bindings',
+    '../gin/gin.gyp:gin',
     '../google_apis/google_apis.gyp:google_apis',
     '../mojo/mojo_base.gyp:mojo_application_base',
     '../mojo/mojo_base.gyp:mojo_geometry_lib',
     '../mojo/mojo_base.gyp:mojo_url_type_converters',
     '../mojo/mojo_public.gyp:mojo_cpp_bindings',
+    '../mojo/mojo_public.gyp:mojo_js_bindings',
     '../mojo/mojo_services.gyp:network_service_bindings_lib',
     '../mojo/mojo_services.gyp:updater_bindings_lib',
     '../mojo/mojo_shell.gyp:mojo_shell_lib',
+    '../net/net.gyp:http_server',
     '../net/net.gyp:net',
     '../net/net.gyp:net_extras',
+    '../sandbox/sandbox.gyp:sandbox',
     '../skia/skia.gyp:skia',
     '../skia/skia.gyp:skia_mojo',
     '../sql/sql.gyp:sql',
+    '../storage/storage_browser.gyp:storage',
+    '../storage/storage_common.gyp:storage_common',
+    '../third_party/angle/src/angle.gyp:commit_id',
     '../third_party/kasko/kasko.gyp:kasko_features',
+    '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
+    '../third_party/libyuv/libyuv.gyp:libyuv',
     '../third_party/re2/re2.gyp:re2',
     '../third_party/zlib/google/zip.gyp:zip',
     '../third_party/zlib/zlib.gyp:zlib',
@@ -33,6 +48,7 @@
     '../ui/accessibility/accessibility.gyp:ax_gen',
     '../ui/base/ui_base.gyp:ui_base',
     '../ui/base/ime/ui_base_ime.gyp:ui_base_ime',
+    '../ui/events/blink/events_blink.gyp:events_blink',
     '../ui/events/events.gyp:events',
     '../ui/events/events.gyp:events_base',
     '../ui/events/events.gyp:gesture_detection',
@@ -40,14 +56,21 @@
     '../ui/gfx/gfx.gyp:gfx_geometry',
     '../ui/resources/ui_resources.gyp:ui_resources',
     '../ui/snapshot/snapshot.gyp:snapshot',
+    '../ui/surface/surface.gyp:surface',
+    '../ui/touch_selection/ui_touch_selection.gyp:ui_touch_selection',
+    'app/resources/content_resources.gyp:content_resources',
+    'app/strings/content_strings.gyp:content_strings',
     'browser/background_sync/background_sync_proto.gyp:background_sync_proto',
     'browser/cache_storage/cache_storage_proto.gyp:cache_storage_proto',
+    'browser/devtools/devtools_resources.gyp:devtools_resources',
+    'browser/devtools/devtools.gyp:devtools_protocol_handler',
     'browser/notifications/notification_proto.gyp:notification_proto',
     'browser/service_worker/service_worker_proto.gyp:service_worker_proto',
     'browser/speech/proto/speech_proto.gyp:speech_proto',
     'content_common_mojo_bindings.gyp:content_common_mojo_bindings',
   ],
   'export_dependent_settings': [
+    '../mojo/mojo_public.gyp:mojo_cpp_bindings',
     '../ui/accessibility/accessibility.gyp:ax_gen',
     # The public content API headers directly include Blink API headers, so we
     # have to export the blink header settings so that relative paths in these
@@ -506,6 +529,11 @@
       'browser/cocoa/system_hotkey_helper_mac.mm',
       'browser/cocoa/system_hotkey_map.h',
       'browser/cocoa/system_hotkey_map.mm',
+      # NOTE: These files are here instead of in compositor_browser_sources
+      # because the latter is not built on Android, whereas these files are
+      # needed on all platforms.
+      'browser/compositor/surface_utils.cc',
+      'browser/compositor/surface_utils.h',
       'browser/device_monitor_mac.h',
       'browser/device_monitor_mac.mm',
       'browser/device_sensors/ambient_light_mac.cc',
@@ -1850,43 +1878,6 @@
         'browser/gamepad/gamepad_platform_data_fetcher.cc',
       ]
     }],
-    ['OS=="ios"', {
-      'sources/': [
-        # iOS only needs a small portion of content; exclude all the
-        # implementation, and re-include what is used.
-        ['exclude', '\\.(cc|mm)$'],
-        ['include', '^public/browser/navigation_details\\.cc$'],
-        ['include', '^public/browser/page_navigator\\.cc$'],
-        ['include', '^browser/browser_context\\.cc$'],
-      ],
-    }, {  # OS!="ios"
-      'dependencies': [
-        'app/resources/content_resources.gyp:content_resources',
-        'app/strings/content_strings.gyp:content_strings',
-        'browser/devtools/devtools_resources.gyp:devtools_resources',
-        'browser/devtools/devtools.gyp:devtools_protocol_handler',
-        '../cc/cc.gyp:cc',
-        '../cc/cc.gyp:cc_surfaces',
-        '../components/mime_util/mime_util.gyp:mime_util',
-        '../components/scheduler/scheduler.gyp:scheduler_common',
-        '../device/bluetooth/bluetooth.gyp:device_bluetooth',
-        '../device/usb/usb.gyp:device_usb',
-        '../gin/gin.gyp:gin',
-        '../mojo/mojo_public.gyp:mojo_cpp_bindings',
-        '../mojo/mojo_public.gyp:mojo_js_bindings',
-        '../net/net.gyp:http_server',
-        '../storage/storage_browser.gyp:storage',
-        '../storage/storage_common.gyp:storage_common',
-        '../third_party/angle/src/angle.gyp:commit_id',
-        '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
-        '../ui/events/blink/events_blink.gyp:events_blink',
-        '../ui/surface/surface.gyp:surface',
-        '../ui/touch_selection/ui_touch_selection.gyp:ui_touch_selection',
-      ],
-      'export_dependent_settings': [
-        '../mojo/mojo_public.gyp:mojo_cpp_bindings',
-      ],
-    }],
     ['debug_devtools==1', {
       'defines': [
         'DEBUG_DEVTOOLS=1',
@@ -1897,17 +1888,12 @@
         '../printing/printing.gyp:printing',
       ],
     }],
-    ['OS!="ios" and chrome_multiple_dll!=1', {
+    ['chrome_multiple_dll!=1', {
       'dependencies': [
         '../third_party/WebKit/public/blink.gyp:blink',
       ],
     }],
-    ['OS!="ios"', {
-      'dependencies': [
-        '../sandbox/sandbox.gyp:sandbox',
-      ],
-    }],
-    ['OS!="android" and OS!="ios"', {
+    ['OS!="android"', {
       'dependencies': [
         'browser/tracing/tracing_resources.gyp:tracing_resources',
         '../ui/compositor/compositor.gyp:compositor',
@@ -1925,17 +1911,6 @@
       'sources': [
         'browser/tracing/power_tracing_agent.cc',
         'browser/tracing/power_tracing_agent.h',
-      ],
-    }],
-    ['OS!="ios"', {
-      'sources': [
-        'browser/compositor/surface_utils.cc',
-        'browser/compositor/surface_utils.h',
-      ]
-    }],
-    ['OS!="ios"', {
-      'dependencies': [
-        '../third_party/libyuv/libyuv.gyp:libyuv',
       ],
     }],
     ['enable_webrtc==1', {

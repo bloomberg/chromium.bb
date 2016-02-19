@@ -46,13 +46,11 @@
       ],
     },
   ],
+  'includes': [
+    '../build/win_precompile.gypi',
+    'content_resources.gypi',
+  ],
   'conditions': [
-    ['OS != "ios"', {
-      'includes': [
-        '../build/win_precompile.gypi',
-        'content_resources.gypi',
-      ],
-    }],
     ['OS == "win"', {
       'targets': [
         {
@@ -89,22 +87,16 @@
           'type': 'none',
           'dependencies': [
             'content_browser',
+            'content_child',
             'content_common',
+            'content_gpu',
+            'content_plugin',
+            'content_ppapi_plugin',
+            'content_renderer',
+            'content_utility',
           ],
           'export_dependent_settings': [
             'content_common',
-          ],
-          'conditions': [
-            ['OS != "ios"', {
-              'dependencies': [
-                'content_child',
-                'content_gpu',
-                'content_plugin',
-                'content_ppapi_plugin',
-                'content_renderer',
-                'content_utility',
-              ],
-            }],
           ],
         },
         {
@@ -179,6 +171,7 @@
           ],
           'dependencies': [
             'content_common',
+            'content_resources',
           ],
           'export_dependent_settings': [
             'content_common',
@@ -195,11 +188,6 @@
                 'content_utility',
               ],
             }],
-            ['OS != "ios"', {
-              'dependencies': [
-                'content_resources',
-              ],
-            }],
           ],
         },
         {
@@ -207,116 +195,106 @@
           'target_name': 'content_common',
           'type': 'static_library',
           'variables': { 'enable_wexit_time_destructors': 1, },
+          'dependencies': [
+            'content_resources',
+          ],
           'includes': [
             'content_common.gypi',
-          ],
-          'conditions': [
-            ['OS != "ios"', {
-              'dependencies': [
-                'content_resources',
-              ],
-            }],
           ],
           # Disable c4267 warnings until we fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4267, ],
         },
-      ],
-      'conditions': [
-        ['OS != "ios"', {
-          'targets': [
-            {
+        {
               # GN version: //content/child and //content/public/child
-              'target_name': 'content_child',
-              'type': 'static_library',
-              'variables': { 'enable_wexit_time_destructors': 1, },
-              'includes': [
-                'content_child.gypi',
-              ],
-              'dependencies': [
-                'content_resources',
-              ],
-              # Disable c4267 warnings until we fix size_t to int truncations.
-              'msvs_disabled_warnings': [ 4267, ],
-            },
-            {
-              # GN version: //content/gpu
-              'target_name': 'content_gpu',
-              'type': 'static_library',
-              'variables': { 'enable_wexit_time_destructors': 1, },
-              'includes': [
-                'content_gpu.gypi',
-              ],
-              'dependencies': [
-                'content_child',
-                'content_common',
-              ],
-            },
-            {
-              # GN version: //content/plugin and //content/public/plugin
-              'target_name': 'content_plugin',
-              'type': 'static_library',
-              'variables': { 'enable_wexit_time_destructors': 1, },
-              'includes': [
-                'content_plugin.gypi',
-              ],
-              'dependencies': [
-                'content_child',
-                'content_common',
-              ],
-            },
-            {
-              # GN version: //content/ppapi_plugin
-              'target_name': 'content_ppapi_plugin',
-              'type': 'static_library',
-              'variables': { 'enable_wexit_time_destructors': 1, },
-              'includes': [
-                'content_ppapi_plugin.gypi',
-              ],
-              # Disable c4267 warnings until we fix size_t to int truncations.
-              'msvs_disabled_warnings': [ 4267, ],
-            },
-            {
-              # GN version: //content/renderer and //content/public/renderer
-              'target_name': 'content_renderer',
-              'type': 'static_library',
-              'variables': { 'enable_wexit_time_destructors': 1, },
-              'includes': [
-                'content_renderer.gypi',
-              ],
-              'dependencies': [
-                '../third_party/webrtc/modules/modules.gyp:webrtc_h264',
-                'content_child',
-                'content_common',
-                'content_resources',
-                'renderer_features',
-              ],
-              'export_dependent_settings': [
-                'content_common',
-              ],
-              'conditions': [
-                ['chromium_enable_vtune_jit_for_v8==1', {
-                  'dependencies': [
-                    '../v8/src/third_party/vtune/v8vtune.gyp:v8_vtune',
-                  ],
-                }],
-              ],
-            },
-            {
-              # GN version: //content/utility and //content/public/utility
-              'target_name': 'content_utility',
-              'type': 'static_library',
-              'variables': { 'enable_wexit_time_destructors': 1, },
-              'includes': [
-                'content_utility.gypi',
-              ],
-              'dependencies': [
-                'content_child',
-                'content_common',
-                'content_common_mojo_bindings.gyp:content_common_mojo_bindings',
-              ],
-            },
+          'target_name': 'content_child',
+          'type': 'static_library',
+          'variables': { 'enable_wexit_time_destructors': 1, },
+          'includes': [
+            'content_child.gypi',
           ],
-        }],
+          'dependencies': [
+            'content_resources',
+          ],
+          # Disable c4267 warnings until we fix size_t to int truncations.
+          'msvs_disabled_warnings': [ 4267, ],
+        },
+        {
+          # GN version: //content/gpu
+          'target_name': 'content_gpu',
+          'type': 'static_library',
+          'variables': { 'enable_wexit_time_destructors': 1, },
+          'includes': [
+            'content_gpu.gypi',
+          ],
+          'dependencies': [
+            'content_child',
+            'content_common',
+          ],
+        },
+        {
+          # GN version: //content/plugin and //content/public/plugin
+          'target_name': 'content_plugin',
+          'type': 'static_library',
+          'variables': { 'enable_wexit_time_destructors': 1, },
+          'includes': [
+            'content_plugin.gypi',
+          ],
+          'dependencies': [
+            'content_child',
+            'content_common',
+          ],
+        },
+        {
+          # GN version: //content/ppapi_plugin
+          'target_name': 'content_ppapi_plugin',
+          'type': 'static_library',
+          'variables': { 'enable_wexit_time_destructors': 1, },
+          'includes': [
+            'content_ppapi_plugin.gypi',
+          ],
+          # Disable c4267 warnings until we fix size_t to int truncations.
+          'msvs_disabled_warnings': [ 4267, ],
+        },
+        {
+          # GN version: //content/renderer and //content/public/renderer
+          'target_name': 'content_renderer',
+          'type': 'static_library',
+          'variables': { 'enable_wexit_time_destructors': 1, },
+          'includes': [
+            'content_renderer.gypi',
+          ],
+          'dependencies': [
+            '../third_party/webrtc/modules/modules.gyp:webrtc_h264',
+            'content_child',
+            'content_common',
+            'content_resources',
+            'renderer_features',
+          ],
+          'export_dependent_settings': [
+            'content_common',
+          ],
+          'conditions': [
+            ['chromium_enable_vtune_jit_for_v8==1', {
+              'dependencies': [
+                '../v8/src/third_party/vtune/v8vtune.gyp:v8_vtune',
+              ],
+            }],
+          ],
+        },
+        {
+          # GN version: //content/utility and //content/public/utility
+          'target_name': 'content_utility',
+          'type': 'static_library',
+          'variables': { 'enable_wexit_time_destructors': 1, },
+          'includes': [
+            'content_utility.gypi',
+          ],
+          'dependencies': [
+            'content_child',
+            'content_common',
+            'content_common_mojo_bindings.gyp:content_common_mojo_bindings',
+          ],
+        },
       ],
     },
     {  # component != static_library

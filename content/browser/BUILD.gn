@@ -180,7 +180,7 @@ source_set("browser") {
   }
 
   # TODO(GYP)
-  #   ['OS!="ios" and chrome_multiple_dll!=1', {
+  #   [chrome_multiple_dll!=1', {
   #     'dependencies': [
   #       '../third_party/WebKit/public/blink.gyp:blink',
   #     ],
@@ -497,13 +497,6 @@ source_set("browser") {
       ]
     }
     deps += [ "//ui/compositor" ]
-  }
-
-  if (!is_ios) {
-    sources += [
-      "compositor/surface_utils.cc",
-      "compositor/surface_utils.h",
-    ]
   }
 
   if (enable_web_speech) {

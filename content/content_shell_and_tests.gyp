@@ -19,14 +19,8 @@
     ],
   },
   'includes': [
+    '../build/win_precompile.gypi',
+    'content_shell.gypi',
     'content_tests.gypi',
-  ],
-  'conditions': [
-    ['OS != "ios"', {
-      'includes': [
-        '../build/win_precompile.gypi',
-        'content_shell.gypi',
-      ],
-    }],
   ],
 }
