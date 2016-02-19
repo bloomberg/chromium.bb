@@ -87,25 +87,6 @@
 #include "wtf/text/CString.h"
 #include <limits>
 
-
-namespace blink {
-
-#if !LOG_DISABLED
-static String urlForLoggingMedia(const KURL& url)
-{
-    static const unsigned maximumURLLengthForLogging = 128;
-
-    if (url.string().length() < maximumURLLengthForLogging)
-        return url.string();
-    return url.string().substring(0, maximumURLLengthForLogging) + "...";
-}
-
-static const char* boolString(bool val)
-{
-    return val ? "true" : "false";
-}
-#endif
-
 #ifndef LOG_MEDIA_EVENTS
 // Default to not logging events because so many are generated they can overwhelm the rest of
 // the logging.
@@ -118,20 +99,41 @@ static const char* boolString(bool val)
 #define LOG_CACHED_TIME_WARNINGS 0
 #endif
 
-// URL protocol used to signal that the media source API is being used.
-static const char mediaSourceBlobProtocol[] = "blob";
+namespace blink {
 
 using namespace HTMLNames;
 
-typedef WillBeHeapHashSet<RawPtrWillBeWeakMember<HTMLMediaElement>> WeakMediaElementSet;
-typedef WillBeHeapHashMap<RawPtrWillBeWeakMember<Document>, WeakMediaElementSet> DocumentElementSetMap;
-static DocumentElementSetMap& documentToElementSetMap()
+using WeakMediaElementSet = WillBeHeapHashSet<RawPtrWillBeWeakMember<HTMLMediaElement>>;
+using DocumentElementSetMap = WillBeHeapHashMap<RawPtrWillBeWeakMember<Document>, WeakMediaElementSet>;
+
+namespace {
+
+// URL protocol used to signal that the media source API is being used.
+const char mediaSourceBlobProtocol[] = "blob";
+
+#if !LOG_DISABLED
+String urlForLoggingMedia(const KURL& url)
+{
+    static const unsigned maximumURLLengthForLogging = 128;
+
+    if (url.string().length() < maximumURLLengthForLogging)
+        return url.string();
+    return url.string().substring(0, maximumURLLengthForLogging) + "...";
+}
+
+const char* boolString(bool val)
+{
+    return val ? "true" : "false";
+}
+#endif
+
+DocumentElementSetMap& documentToElementSetMap()
 {
     DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<DocumentElementSetMap>, map, (adoptPtrWillBeNoop(new DocumentElementSetMap())));
     return *map;
 }
 
-static void addElementToDocumentMap(HTMLMediaElement* element, Document* document)
+void addElementToDocumentMap(HTMLMediaElement* element, Document* document)
 {
     DocumentElementSetMap& map = documentToElementSetMap();
     WeakMediaElementSet set = map.take(document);
@@ -139,7 +141,7 @@ static void addElementToDocumentMap(HTMLMediaElement* element, Document* documen
     map.add(document, set);
 }
 
-static void removeElementFromDocumentMap(HTMLMediaElement* element, Document* document)
+void removeElementFromDocumentMap(HTMLMediaElement* element, Document* document)
 {
     DocumentElementSetMap& map = documentToElementSetMap();
     WeakMediaElementSet set = map.take(document);
@@ -167,7 +169,7 @@ private:
     Member<AudioSourceProviderClient> m_client;
 };
 
-static const AtomicString& AudioKindToString(WebMediaPlayerClient::AudioTrackKind kind)
+const AtomicString& AudioKindToString(WebMediaPlayerClient::AudioTrackKind kind)
 {
     switch (kind) {
     case WebMediaPlayerClient::AudioTrackKindNone:
@@ -190,7 +192,7 @@ static const AtomicString& AudioKindToString(WebMediaPlayerClient::AudioTrackKin
     return emptyAtom;
 }
 
-static const AtomicString& VideoKindToString(WebMediaPlayerClient::VideoTrackKind kind)
+const AtomicString& VideoKindToString(WebMediaPlayerClient::VideoTrackKind kind)
 {
     switch (kind) {
     case WebMediaPlayerClient::VideoTrackKindNone:
@@ -213,7 +215,7 @@ static const AtomicString& VideoKindToString(WebMediaPlayerClient::VideoTrackKin
     return emptyAtom;
 }
 
-static bool canLoadURL(const KURL& url, const ContentType& contentType, const String& keySystem)
+bool canLoadURL(const KURL& url, const ContentType& contentType, const String& keySystem)
 {
     DEFINE_STATIC_LOCAL(const String, codecs, ("codecs"));
 
@@ -240,6 +242,8 @@ static bool canLoadURL(const KURL& url, const ContentType& contentType, const St
 
     return false;
 }
+
+} // anonymous namespace
 
 void HTMLMediaElement::recordAutoplayMetric(AutoplayMetrics metric)
 {
