@@ -12,6 +12,11 @@
 
 namespace chromeos {
 namespace switches {
+// If this flag is passed, failed policy fetches will not cause profile
+// initialization to fail. This is useful for tests because it means that
+// tests don't have to mock out the policy infrastructure.
+const char kAllowFailedPolicyFetchForTest[] =
+    "allow-failed-policy-fetch-for-test";
 
 // Allows remote attestation (RA) in dev mode for testing purpose. Usually RA
 // is disabled in dev mode because it will always fail. However, there are cases

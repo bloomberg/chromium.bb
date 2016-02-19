@@ -128,6 +128,10 @@ void UserPolicyTestHelper::UpdatePolicy(
   run_loop.Run();
 }
 
+void UserPolicyTestHelper::DeletePolicyFile() {
+  base::DeleteFile(PolicyFilePath(), false);
+}
+
 void UserPolicyTestHelper::WritePolicyFile(
     const base::DictionaryValue& mandatory,
     const base::DictionaryValue& recommended) {
