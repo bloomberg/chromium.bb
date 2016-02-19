@@ -58,6 +58,8 @@ NSString* const NSAccessibilityLiveRegionChangedNotification =
     @"AXLiveRegionChanged";
 NSString* const NSAccessibilityMenuItemSelectedNotification =
     @"AXMenuItemSelected";
+
+// Attributes used for NSAccessibilitySelectedTextChangedNotification.
 NSString* const NSAccessibilityTextStateChangeTypeKey =
     @"AXTextStateChangeType";
 NSString* const NSAccessibilityTextStateSyncKey = @"AXTextStateSync";
@@ -67,8 +69,9 @@ NSString* const NSAccessibilityTextSelectionGranularity =
     @"AXTextSelectionGranularity";
 NSString* const NSAccessibilityTextSelectionChangedFocus =
     @"AXTextSelectionChangedFocus";
-NSString* const NSAccessibilityTextChangeElement =
-    @"AXAccessibilityTextChangeElement";
+NSString* const NSAccessibilitySelectedTextMarkerRangeAttribute =
+    @"AXSelectedTextMarkerRange";
+NSString* const NSAccessibilityTextChangeElement = @"AXTextChangeElement";
 
 }  // namespace
 
@@ -185,10 +188,21 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
         // 10.11 or later to notify Voiceover about text selection changes. This
         // API has been present on versions of OS X since 10.7 but doesn't
         // appear to be needed by Voiceover before version 10.11.
+        // WebKit fires a notification both on the focused object and the root.
         NSDictionary* user_info =
             GetUserInfoForSelectedTextChangedNotification();
+
+        BrowserAccessibility* focus = GetFocus();
+        if (!focus)
+          return;
         NSAccessibilityPostNotificationWithUserInfo(
-            native_node, mac_notification, user_info);
+            focus->ToBrowserAccessibilityCocoa(), mac_notification, user_info);
+
+        BrowserAccessibility* root = GetRoot();
+        if (!root)
+          return;
+        NSAccessibilityPostNotificationWithUserInfo(
+            root->ToBrowserAccessibilityCocoa(), mac_notification, user_info);
         return;
       }
       break;
@@ -296,16 +310,18 @@ NSDictionary* BrowserAccessibilityManagerMac::
          forKey:NSAccessibilityTextSelectionGranularity];
   [user_info setObject:[NSNumber numberWithBool:YES]
                 forKey:NSAccessibilityTextSelectionChangedFocus];
-  // TODO(nektar): Set selected text marker range.
 
   int32_t focus_id = GetTreeData().sel_focus_object_id;
   BrowserAccessibility* focus_object = GetFromID(focus_id);
   if (focus_object) {
     focus_object = focus_object->GetClosestPlatformObject();
     auto native_focus_object = focus_object->ToBrowserAccessibilityCocoa();
-    if (native_focus_object)
+    if (native_focus_object) {
+      [user_info setObject:[native_focus_object selectedTextMarkerRange]
+                    forKey:NSAccessibilitySelectedTextMarkerRangeAttribute];
       [user_info setObject:native_focus_object
                     forKey:NSAccessibilityTextChangeElement];
+    }
   }
 
   return user_info;
