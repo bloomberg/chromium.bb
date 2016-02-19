@@ -139,11 +139,9 @@ ScriptPromise CredentialsContainer::get(ScriptState* scriptState, const Credenti
         }
     }
 
-    UseCounter::count(scriptState->executionContext(),
-                      options.suppressUI() ? UseCounter::CredentialManagerGetWithoutUI
-                                           : UseCounter::CredentialManagerGetWithUI);
+    UseCounter::count(scriptState->executionContext(), options.unmediated() ? UseCounter::CredentialManagerGetWithoutUI : UseCounter::CredentialManagerGetWithUI);
 
-    CredentialManagerClient::from(scriptState->executionContext())->dispatchGet(options.suppressUI(), options.password(), providers, new RequestCallbacks(resolver));
+    CredentialManagerClient::from(scriptState->executionContext())->dispatchGet(options.unmediated(), options.password(), providers, new RequestCallbacks(resolver));
     return promise;
 }
 

@@ -2312,9 +2312,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     DLOG(WARNING) << "JS message parameter not found: requestId";
     return NO;
   }
-  bool suppress_ui = false;
-  if (!message->GetBoolean("suppressUI", &suppress_ui)) {
-    DLOG(WARNING) << "JS message parameter not found: suppressUI";
+  bool unmediated = false;
+  if (!message->GetBoolean("unmediated", &unmediated)) {
+    DLOG(WARNING) << "JS message parameter not found: unmediated";
     return NO;
   }
   base::ListValue* federations_value = nullptr;
@@ -2333,7 +2333,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
   DCHECK(context[web::kUserIsInteractingKey]);
   _webStateImpl->OnCredentialsRequested(
-      request_id, net::GURLWithNSURL(context[web::kOriginURLKey]), suppress_ui,
+      request_id, net::GURLWithNSURL(context[web::kOriginURLKey]), unmediated,
       federations, [context[web::kUserIsInteractingKey] boolValue]);
   return YES;
 }

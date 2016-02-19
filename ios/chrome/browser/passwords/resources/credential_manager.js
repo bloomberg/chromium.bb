@@ -505,8 +505,8 @@ function CredentialsContainer() {
 
 /**
  * Requests a credential from the credential manager.
- * @param {{suppressUI: boolean, federations: Array<string>}=} opt_options An
- *     optional dictionary of parameters for the request. If |suppressUI| is
+ * @param {{unmediated: boolean, federations: Array<string>}=} opt_options An
+ *     optional dictionary of parameters for the request. If |unmediated| is
  *     true, the returned promise will only be resolved with a credential if
  *     this is possible without user interaction; otherwise, the returned
  *     promise will be resolved with |undefined|. |federations| specifies a
@@ -517,7 +517,7 @@ function CredentialsContainer() {
  */
 CredentialsContainer.prototype.request = function(opt_options) {
   var options = {
-    'suppressUI': !!opt_options && !!opt_options['suppressUI'],
+    'unmediated': !!opt_options && !!opt_options['unmediated'],
     'federations': (!!opt_options && opt_options['federations']) || []
   };
   return __gCrWeb['credentialManager'].invokeOnHost_(

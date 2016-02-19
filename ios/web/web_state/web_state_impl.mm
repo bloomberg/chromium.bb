@@ -195,11 +195,11 @@ void WebStateImpl::OnFaviconUrlUpdated(
 void WebStateImpl::OnCredentialsRequested(
     int request_id,
     const GURL& source_url,
-    bool suppress_ui,
+    bool unmediated,
     const std::vector<std::string>& federations,
     bool user_interaction) {
   FOR_EACH_OBSERVER(WebStateObserver, observers_,
-                    CredentialsRequested(request_id, source_url, suppress_ui,
+                    CredentialsRequested(request_id, source_url, unmediated,
                                          federations, user_interaction));
 }
 

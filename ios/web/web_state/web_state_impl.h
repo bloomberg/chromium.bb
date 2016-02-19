@@ -119,7 +119,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // Called when the page requests a credential.
   void OnCredentialsRequested(int request_id,
                               const GURL& source_url,
-                              bool suppress_ui,
+                              bool unmediated,
                               const std::vector<std::string>& federations,
                               bool user_interaction);
 
