@@ -655,7 +655,10 @@ bool ExtensionTabUtil::OpenOptionsPage(const Extension* extension,
 
   chrome::NavigateParams params(
       chrome::GetSingletonTabNavigateParams(browser, url_to_navigate));
-  params.path_behavior = chrome::NavigateParams::IGNORE_AND_NAVIGATE;
+  // We need to respect path differences because we don't want opening the
+  // options page to close a page that might be open to extension content.
+  // Note: default ref behavior is IGNORE_REF, which is correct.
+  params.path_behavior = chrome::NavigateParams::RESPECT;
   params.url = url_to_navigate;
   chrome::ShowSingletonTabOverwritingNTP(browser, params);
   return true;
