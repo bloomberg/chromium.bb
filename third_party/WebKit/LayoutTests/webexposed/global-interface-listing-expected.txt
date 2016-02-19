@@ -5236,6 +5236,27 @@ interface Skew : TransformComponent
     getter ax
     getter ay
     method constructor
+interface SourceBuffer : EventTarget
+    getter appendWindowEnd
+    getter appendWindowStart
+    getter buffered
+    getter mode
+    getter timestampOffset
+    getter trackDefaults
+    getter updating
+    method abort
+    method appendBuffer
+    method appendStream
+    method constructor
+    method remove
+    setter appendWindowEnd
+    setter appendWindowStart
+    setter mode
+    setter timestampOffset
+    setter trackDefaults
+interface SourceBufferList : EventTarget
+    getter length
+    method constructor
 interface SpeechSynthesisEvent : Event
     getter charIndex
     getter elapsedTime

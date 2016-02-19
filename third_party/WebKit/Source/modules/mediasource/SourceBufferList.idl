@@ -30,7 +30,6 @@
 
 [
     GarbageCollected,
-    NoInterfaceObject,
     RuntimeEnabled=MediaSource,
 ] interface SourceBufferList : EventTarget {
     readonly attribute unsigned long length;

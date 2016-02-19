@@ -37,7 +37,6 @@ enum AppendMode {
 
 [
     ActiveDOMObject,
-    NoInterfaceObject,
     RuntimeEnabled=MediaSource,
 ] interface SourceBuffer : EventTarget {
 

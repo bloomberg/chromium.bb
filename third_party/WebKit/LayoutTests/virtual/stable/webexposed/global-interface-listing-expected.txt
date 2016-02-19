@@ -4589,6 +4589,22 @@ interface SharedWorker : EventTarget
     getter workerStart
     method constructor
     setter onerror
+interface SourceBuffer : EventTarget
+    getter appendWindowEnd
+    getter appendWindowStart
+    getter buffered
+    getter timestampOffset
+    getter updating
+    method abort
+    method appendBuffer
+    method constructor
+    method remove
+    setter appendWindowEnd
+    setter appendWindowStart
+    setter timestampOffset
+interface SourceBufferList : EventTarget
+    getter length
+    method constructor
 interface SpeechSynthesisEvent : Event
     getter charIndex
     getter elapsedTime
