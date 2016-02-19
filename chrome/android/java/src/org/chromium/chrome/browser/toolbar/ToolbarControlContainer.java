@@ -185,6 +185,9 @@ public class ToolbarControlContainer extends FrameLayout implements ControlConta
         @Override
         protected void onCaptureEnd() {
             mToolbar.setTextureCaptureMode(false);
+            // Forcing a texture capture should only be done for one draw. Turn off forced
+            // texture capture.
+            mToolbar.setForceTextureCapture(false);
         }
 
         @Override

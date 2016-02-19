@@ -27,6 +27,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.compositor.Invalidator;
+import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.omnibox.LocationBar;
@@ -438,6 +439,14 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     public boolean isReadyForTextureCapture() {
         return true;
     }
+
+    @Override
+    public boolean setForceTextureCapture(boolean forceTextureCapture) {
+        return false;
+    }
+
+    @Override
+    public void setLayoutUpdateHost(LayoutUpdateHost layoutUpdateHost) { }
 
     /**
      * @param attached Whether or not the web content is attached to the view heirarchy.

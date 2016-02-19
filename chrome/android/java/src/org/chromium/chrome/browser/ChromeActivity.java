@@ -369,9 +369,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                     // The app menu badge should be removed the first time the menu is opened.
                     if (mToolbarManager.getToolbar().isShowingAppMenuUpdateBadge()) {
                         mToolbarManager.getToolbar().removeAppMenuUpdateBadge(true);
-
-                        // TODO(twellington): Try invalidating the toolbar instead of requesting
-                        // render. See crbug.com/585975.
                         mCompositorViewHolder.requestRender();
                     }
                 }

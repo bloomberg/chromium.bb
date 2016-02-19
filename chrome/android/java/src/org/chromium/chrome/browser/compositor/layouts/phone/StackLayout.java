@@ -490,11 +490,12 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
         // Remove any views in case we're getting another call to show before we hide (quickly
         // toggling the tab switcher button).
         mViewContainer.removeAllViews();
+        int currentTabModel = mTabModelSelector.isIncognitoSelected() ? 1 : 0;
 
         for (int i = mStacks.length - 1; i >= 0; --i) {
             mStacks[i].reset();
             if (mStacks[i].isDisplayable()) {
-                mStacks[i].show();
+                mStacks[i].show(i == currentTabModel);
             } else {
                 mStacks[i].cleanupTabs();
             }
