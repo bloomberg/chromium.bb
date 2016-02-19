@@ -805,11 +805,6 @@ class CONTENT_EXPORT RenderViewImpl
   // Used for popups.
   bool opened_by_user_gesture_;
 
-  // Whether this RenderView was created by a frame that was suppressing its
-  // opener. If so, we may want to load pages in a separate process.  See
-  // decidePolicyForNavigation for details.
-  bool opener_suppressed_;
-
   // Whether we must stop creating nested message loops for modal dialogs until
   // OnSwapOut is called.  This is necessary because modal dialogs have a
   // PageGroupLoadDeferrer on the stack that interferes with swapping out.

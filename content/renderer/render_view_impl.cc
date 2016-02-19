@@ -616,7 +616,6 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
       send_preferred_size_changes_(false),
       navigation_gesture_(NavigationGestureUnknown),
       opened_by_user_gesture_(true),
-      opener_suppressed_(false),
       suppress_dialogs_until_swap_out_(false),
       page_id_(-1),
       next_page_id_(params.next_page_id),
@@ -1700,9 +1699,6 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
   RenderViewImpl* view =
       RenderViewImpl::Create(compositor_deps_, view_params, true);
   view->opened_by_user_gesture_ = params.user_gesture;
-
-  // Record whether the creator frame is trying to suppress the opener field.
-  view->opener_suppressed_ = params.opener_suppressed;
 
   return view->webview();
 }
