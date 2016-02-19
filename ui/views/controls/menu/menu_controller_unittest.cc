@@ -953,9 +953,16 @@ TEST_F(MenuControllerTest, AsynchronousNestedExitOutermost) {
   RunMenu();
 }
 
+#if defined(OS_CHROMEOS)
+#define MAYBE_AsynchronousRepostEventDeletesController \
+  DISABLED_AsynchronousRepostEventDeletesController
+#else
+#define MAYBE_AsynchronousRepostEventDeletesController \
+  AsynchronousRepostEventDeletesController
+#endif
 // Tests that having the MenuController deleted during RepostEvent does not
 // cause a crash. ASAN bots should not detect use-after-free in MenuController.
-TEST_F(MenuControllerTest, AsynchronousRepostEventDeletesController) {
+TEST_F(MenuControllerTest, MAYBE_AsynchronousRepostEventDeletesController) {
   MenuController* controller = menu_controller();
   scoped_ptr<TestMenuControllerDelegate> nested_delegate(
       new TestMenuControllerDelegate());
