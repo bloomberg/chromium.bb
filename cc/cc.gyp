@@ -311,8 +311,6 @@
         'output/overlay_candidate_validator.h',
         'output/overlay_processor.cc',
         'output/overlay_processor.h',
-        'output/overlay_strategy_sandwich.cc',
-        'output/overlay_strategy_sandwich.h',
         'output/overlay_strategy_single_on_top.cc',
         'output/overlay_strategy_single_on_top.h',
         'output/overlay_strategy_underlay.cc',

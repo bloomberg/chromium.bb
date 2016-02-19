@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "cc/output/overlay_strategy_sandwich.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 
