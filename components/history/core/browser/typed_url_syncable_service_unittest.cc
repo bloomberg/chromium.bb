@@ -228,6 +228,13 @@ class TypedUrlSyncableServiceTest : public testing::Test {
     fake_change_processor_.reset(new syncer::FakeSyncChangeProcessor);
   }
 
+  void TearDown() override {
+    // If |fake_history_backend_| has a scheduled commit task, the task and the
+    // backend are retaining each other and the backend will leak. Closing the
+    // backend ensures it is correctly destroyed.
+    fake_history_backend_->Closing();
+  }
+
   // Starts sync for |typed_url_sync_service_| with |initial_data| as the
   // initial sync data.
   void StartSyncing(const syncer::SyncDataList& initial_data);

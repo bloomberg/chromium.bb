@@ -6,6 +6,7 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/run_loop.h"
 #include "components/pref_registry/testing_pref_service_syncable.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/account_tracker_service.h"
@@ -178,6 +179,7 @@ class AccountConsistencyServiceTest : public PlatformTest {
 
   void SignOut() { signin_manager_->ForceSignOut(); }
 
+  bool HasWKWebView() { return account_consistency_service_->web_view_; }
   id GetMockWKWebView() { return account_consistency_service_->GetWKWebView(); }
   id GetNavigationDelegate() {
     return account_consistency_service_->navigation_delegate_;
@@ -458,4 +460,33 @@ TEST_F(AccountConsistencyServiceTest, SigninAddCookieOnMainDomains) {
 
   CheckDomainHasCookie(kGoogleDomain);
   CheckDomainHasCookie(kYoutubeDomain);
+}
+
+// Tests that the web view is not released when receiving a memory pressure
+// notification if it is being used.
+TEST_F(AccountConsistencyServiceTest, UsedWebViewNotReleasedOnMemoryPressure) {
+  AddPageLoadedExpectation(kGoogleUrl, false /* continue_navigation */);
+  SignIn();
+
+  base::MemoryPressureListener::NotifyMemoryPressure(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(HasWKWebView());
+  EXPECT_OCMOCK_VERIFY(GetMockWKWebView());
+}
+
+// Tests that the web view is correctly released when receiving a memory
+// pressure notification if it is not being used.
+TEST_F(AccountConsistencyServiceTest, UnusedWebViewReleasedOnMemoryPressure) {
+  AddPageLoadedExpectation(kGoogleUrl, true /* continue_navigation */);
+  AddPageLoadedExpectation(kYoutubeUrl, true /* continue_navigation */);
+  SignIn();
+
+  base::MemoryPressureListener::NotifyMemoryPressure(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(HasWKWebView());
+  EXPECT_OCMOCK_VERIFY(GetMockWKWebView());
 }
