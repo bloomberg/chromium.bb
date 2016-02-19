@@ -88,10 +88,11 @@ class CONTENT_EXPORT ContentClient {
   virtual void AddPepperPlugins(
       std::vector<content::PepperPluginInfo>* plugins) {}
 
-  // Gives the embedder a chance to register its own standard and saveable
-  // url schemes early on in the startup sequence.
+  // Gives the embedder a chance to register its own standard, referrer and
+  // saveable url schemes early on in the startup sequence.
   virtual void AddAdditionalSchemes(
       std::vector<url::SchemeWithType>* standard_schemes,
+      std::vector<url::SchemeWithType>* referrer_schemes,
       std::vector<std::string>* savable_schemes) {}
 
   // Returns whether the given message should be sent in a swapped out renderer.

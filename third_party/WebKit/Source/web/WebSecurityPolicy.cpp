@@ -152,4 +152,9 @@ void WebSecurityPolicy::registerURLSchemeAsNotAllowingJavascriptURLs(const WebSt
     SchemeRegistry::registerURLSchemeAsNotAllowingJavascriptURLs(scheme);
 }
 
+void WebSecurityPolicy::registerURLSchemeAsAllowedForReferrer(const WebString& scheme)
+{
+    SchemeRegistry::registerURLSchemeAsAllowedForReferrer(scheme);
+}
+
 } // namespace blink

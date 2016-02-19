@@ -39,6 +39,7 @@ class ExtensionsContentClient : public content::ContentClient {
   // content::ContentClient overrides:
   void AddAdditionalSchemes(
       std::vector<url::SchemeWithType>* standard_schemes,
+      std::vector<url::SchemeWithType>* referrer_schemes,
       std::vector<std::string>* savable_schemes) override {
     for (int i = 0; i < kNumExtensionStandardURLSchemes; i++)
       standard_schemes->push_back(kExtensionStandardURLSchemes[i]);

@@ -79,6 +79,7 @@
 #include "components/web_cache/renderer/web_cache_render_process_observer.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/renderer/plugin_instance_throttler.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
@@ -393,8 +394,13 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(dom_distiller_scheme);
 
 #if defined(OS_CHROMEOS)
-  WebString external_file_scheme(ASCIIToUTF16(content::kExternalFileScheme));
-  WebSecurityPolicy::registerURLSchemeAsLocal(external_file_scheme);
+  WebSecurityPolicy::registerURLSchemeAsLocal(
+      WebString::fromUTF8(content::kExternalFileScheme));
+#endif
+
+#if defined(OS_ANDROID)
+  WebSecurityPolicy::registerURLSchemeAsAllowedForReferrer(
+      WebString::fromUTF8(chrome::kAndroidAppScheme));
 #endif
 
 #if defined(ENABLE_IPC_FUZZER)

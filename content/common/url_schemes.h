@@ -10,16 +10,16 @@
 namespace content {
 
 // Note: ContentMainRunner calls this method internally as part of main
-// initialziation, so this function generally should not be called by
+// initialization, so this function generally should not be called by
 // embedders. It's exported to facilitate test harnesses that do not
 // utilize ContentMainRunner and that do not wish to lock the set
 // of standard schemes at init time.
 //
-// Called near the beginning of startup to register URL schemes that should
-// be parsed as "standard" with the src/url/ library. Optionally, the set
-// of standard schemes is locked down. The embedder can add additional
-// schemes by overriding the ContentClient::AddAdditionalSchemes method.
-CONTENT_EXPORT void RegisterContentSchemes(bool lock_standard_schemes);
+// Called near the beginning of startup to register URL schemes that should be
+// parsed as "standard" or "referrer" with the src/url/ library. Optionally, the
+// sets of schemes are locked down. The embedder can add additional schemes by
+// overriding the ContentClient::AddAdditionalSchemes method.
+CONTENT_EXPORT void RegisterContentSchemes(bool lock_schemes);
 
 }  // namespace content
 

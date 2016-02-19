@@ -83,6 +83,7 @@ static const url::SchemeWithType kShellStandardURLSchemes[
 
 void ShellContentClient::AddAdditionalSchemes(
     std::vector<url::SchemeWithType>* standard_schemes,
+    std::vector<url::SchemeWithType>* referrer_schemes,
     std::vector<std::string>* savable_schemes) {
   for (int i = 0; i < kNumShellStandardURLSchemes; i++)
     standard_schemes->push_back(kShellStandardURLSchemes[i]);

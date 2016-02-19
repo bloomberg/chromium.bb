@@ -332,7 +332,7 @@ GURL GURL::GetOrigin() const {
 }
 
 GURL GURL::GetAsReferrer() const {
-  if (!is_valid_ || !SchemeIsHTTPOrHTTPS())
+  if (!SchemeIsValidForReferrer())
     return GURL();
 
   if (!has_ref() && !has_username() && !has_password())
@@ -384,6 +384,10 @@ bool GURL::SchemeIs(base::StringPiece lower_ascii_scheme) const {
 
 bool GURL::SchemeIsHTTPOrHTTPS() const {
   return SchemeIs(url::kHttpScheme) || SchemeIs(url::kHttpsScheme);
+}
+
+bool GURL::SchemeIsValidForReferrer() const {
+  return is_valid_ && IsReferrerScheme(spec_.data(), parsed_.scheme);
 }
 
 bool GURL::SchemeIsWSOrWSS() const {

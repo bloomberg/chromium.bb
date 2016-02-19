@@ -15,10 +15,10 @@ namespace web {
 //
 // Called near the beginning of startup to register URL schemes that
 // should be parsed as "standard" with the src/url/ library. The set
-// of standard scheme is locked if |lock_standard_schemes| is true.
+// of standard scheme is locked if |lock_schemes| is true.
 // The embedder can add additional schemes by overriding the
 // WebClient::AddAditionalSchemes method.
-void RegisterWebSchemes(bool lock_standard_schemes);
+void RegisterWebSchemes(bool lock_schemes);
 
 }  // namespace web
 

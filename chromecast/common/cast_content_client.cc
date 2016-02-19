@@ -81,6 +81,7 @@ CastContentClient::~CastContentClient() {
 
 void CastContentClient::AddAdditionalSchemes(
     std::vector<url::SchemeWithType>* standard_schemes,
+    std::vector<url::SchemeWithType>* referrer_schemes,
     std::vector<std::string>* savable_schemes) {
   standard_schemes->push_back(kChromeResourceSchemeWithType);
 }

@@ -101,6 +101,11 @@ public:
     static void registerURLSchemeAsFirstPartyWhenTopLevel(const String& scheme);
     static bool shouldTreatURLSchemeAsFirstPartyWhenTopLevel(const String& scheme);
 
+    // Schemes that can be used in a referrer.
+    static void registerURLSchemeAsAllowedForReferrer(const String& scheme);
+    static void removeURLSchemeAsAllowedForReferrer(const String& scheme);
+    static bool shouldTreatURLSchemeAsAllowedForReferrer(const String& scheme);
+
     // Allow resources from some schemes to load on a page, regardless of its
     // Content Security Policy.
     // This enum should be kept in sync with public/web/WebSecurityPolicy.h.

@@ -125,6 +125,9 @@ public:
     // by bookmarklets or javascript: URLs typed in the omnibox.
     BLINK_EXPORT static void registerURLSchemeAsNotAllowingJavascriptURLs(const WebString&);
 
+    // Registers an URL scheme as allowed in referrers.
+    BLINK_EXPORT static void registerURLSchemeAsAllowedForReferrer(const WebString&);
+
 private:
     WebSecurityPolicy();
 };

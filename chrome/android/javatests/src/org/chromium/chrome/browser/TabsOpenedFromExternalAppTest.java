@@ -6,6 +6,7 @@ package org.chromium.chrome.browser;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Browser;
 import android.test.FlakyTest;
@@ -43,9 +44,9 @@ import java.util.concurrent.TimeoutException;
  * Test the behavior of tabs when opening a URL from an external app.
  */
 public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase {
-
     private static final String EXTERNAL_APP_1_ID = "app1";
     private static final String EXTERNAL_APP_2_ID = "app2";
+    private static final String ANDROID_APP_REFERRER = "android-app://com.my.great.great.app";
 
     static class ElementFocusedCriteria extends Criteria {
         private final Tab mTab;
@@ -116,6 +117,40 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
         }
     }
 
+    private static class ReferrerCriteria extends Criteria {
+        private final Tab mTab;
+        private final String mExpectedReferrer;
+        private static final String GET_REFERRER_JS =
+                "(function() { return document.referrer; })();";
+
+        public ReferrerCriteria(Tab tab, String expectedReferrer) {
+            super("Referrer is not as expected.");
+            mTab = tab;
+            // Add quotes to match returned value from JS.
+            mExpectedReferrer = "\"" + expectedReferrer + "\"";
+        }
+
+        @Override
+        public boolean isSatisfied() {
+            String referrer;
+            try {
+                String jsonText = JavaScriptUtils.executeJavaScriptAndWaitForResult(
+                        mTab.getWebContents(), GET_REFERRER_JS);
+                if (jsonText.equalsIgnoreCase("null")) jsonText = "";
+                referrer = jsonText;
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                Assert.fail("InterruptedException was thrown");
+                return false;
+            } catch (TimeoutException e) {
+                e.printStackTrace();
+                Assert.fail("TimeoutException was thrown");
+                return false;
+            }
+            return TextUtils.equals(mExpectedReferrer, referrer);
+        }
+    }
+
     private EmbeddedTestServer mTestServer;
 
     public TabsOpenedFromExternalAppTest() {
@@ -146,8 +181,8 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
      * Returns when the URL has been navigated to.
      * @throws InterruptedException
      */
-    private void launchUrlFromExternalApp(String url, String appId, boolean createNewTab)
-            throws InterruptedException {
+    private void launchUrlFromExternalApp(String url, String appId, boolean createNewTab,
+            Bundle extras) throws InterruptedException {
         final Intent intent = new Intent(Intent.ACTION_VIEW);
         if (appId != null) {
             intent.putExtra(Browser.EXTRA_APPLICATION_ID, appId);
@@ -156,6 +191,7 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
             intent.putExtra(Browser.EXTRA_CREATE_NEW_TAB, true);
         }
         intent.setData(Uri.parse(url));
+        if (extras != null) intent.putExtras(extras);
 
         final Tab originalTab = getActivity().getActivityTab();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -173,6 +209,45 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
             });
         }
         ChromeTabUtils.waitForTabPageLoaded(getActivity().getActivityTab(), url);
+    }
+
+    private void launchUrlFromExternalApp(String url, String appId, boolean createNewTab)
+            throws InterruptedException {
+        launchUrlFromExternalApp(url, appId, createNewTab, null);
+    }
+
+    /**
+     * Tests that URLs opened from external apps can set an android-app scheme referrer.
+     * @throws InterruptedException
+     */
+    @LargeTest
+    @Feature({"Navigation"})
+    public void testReferrer() throws InterruptedException {
+        String url = mTestServer.getURL("/chrome/test/data/android/about.html");
+        startMainActivityFromLauncher();
+        Bundle extras = new Bundle();
+        extras.putParcelable(Intent.EXTRA_REFERRER, Uri.parse(ANDROID_APP_REFERRER));
+        launchUrlFromExternalApp(url, EXTERNAL_APP_1_ID, true, extras);
+        CriteriaHelper.pollForCriteria(
+                new ReferrerCriteria(getActivity().getActivityTab(), ANDROID_APP_REFERRER), 2000,
+                200);
+    }
+
+    /**
+     * Tests that URLs opened from external apps can set an android-app scheme referrer.
+     * @throws InterruptedException
+     */
+    @LargeTest
+    @Feature({"Navigation"})
+    public void testCannotSetArbitraryReferrer() throws InterruptedException {
+        String url = mTestServer.getURL("/chrome/test/data/android/about.html");
+        startMainActivityFromLauncher();
+        String referrer = "foobar://totally.legit.referrer";
+        Bundle extras = new Bundle();
+        extras.putParcelable(Intent.EXTRA_REFERRER, Uri.parse(referrer));
+        launchUrlFromExternalApp(url, EXTERNAL_APP_1_ID, true, extras);
+        CriteriaHelper.pollForCriteria(
+                new ReferrerCriteria(getActivity().getActivityTab(), ""), 2000, 200);
     }
 
     /**

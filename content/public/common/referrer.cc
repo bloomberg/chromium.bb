@@ -14,7 +14,7 @@ Referrer Referrer::SanitizeForRequest(const GURL& request,
   Referrer sanitized_referrer(referrer.url.GetAsReferrer(), referrer.policy);
 
   if (!request.SchemeIsHTTPOrHTTPS() ||
-      !sanitized_referrer.url.SchemeIsHTTPOrHTTPS()) {
+      !sanitized_referrer.url.SchemeIsValidForReferrer()) {
     sanitized_referrer.url = GURL();
     return sanitized_referrer;
   }

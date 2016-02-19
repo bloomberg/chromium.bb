@@ -18,6 +18,10 @@ namespace chrome {
 const char kCrosScheme[] = "cros";
 #endif
 
+#if defined(OS_ANDROID)
+const char kAndroidAppScheme[] = "android-app";
+#endif
+
 // Add Chrome UI URLs as necessary, in alphabetical order.
 // Be sure to add the corresponding kChromeUI*Host constant below.
 // This is a WebUI page that lists other WebUI pages.

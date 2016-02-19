@@ -539,9 +539,15 @@ static const url::SchemeWithType kChromeStandardURLSchemes[
 
 void ChromeContentClient::AddAdditionalSchemes(
     std::vector<url::SchemeWithType>* standard_schemes,
+    std::vector<url::SchemeWithType>* referrer_schemes,
     std::vector<std::string>* savable_schemes) {
   for (int i = 0; i < kNumChromeStandardURLSchemes; i++)
     standard_schemes->push_back(kChromeStandardURLSchemes[i]);
+
+#if defined(OS_ANDROID)
+  referrer_schemes->push_back(
+      {chrome::kAndroidAppScheme, url::SCHEME_WITHOUT_PORT});
+#endif
 
   savable_schemes->push_back(extensions::kExtensionScheme);
   savable_schemes->push_back(extensions::kExtensionResourceScheme);

@@ -71,6 +71,21 @@ TEST(URLUtilTest, IsStandard) {
   EXPECT_FALSE(IsStandard(kFooScheme, Component(0, strlen(kFooScheme))));
 }
 
+TEST(URLUtilTest, IsReferrerScheme) {
+  const char kHTTPScheme[] = "http";
+  EXPECT_TRUE(IsReferrerScheme(kHTTPScheme, Component(0, strlen(kHTTPScheme))));
+
+  const char kFooScheme[] = "foo";
+  EXPECT_FALSE(IsReferrerScheme(kFooScheme, Component(0, strlen(kFooScheme))));
+}
+
+TEST(URLUtilTest, AddReferrerScheme) {
+  const char kFooScheme[] = "foo";
+  EXPECT_FALSE(IsReferrerScheme(kFooScheme, Component(0, strlen(kFooScheme))));
+  AddReferrerScheme(kFooScheme, url::SCHEME_WITHOUT_PORT);
+  EXPECT_TRUE(IsReferrerScheme(kFooScheme, Component(0, strlen(kFooScheme))));
+}
+
 TEST(URLUtilTest, GetStandardSchemeType) {
   url::SchemeType scheme_type;
 

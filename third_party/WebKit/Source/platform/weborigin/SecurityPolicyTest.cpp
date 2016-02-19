@@ -31,14 +31,40 @@
 #include "platform/weborigin/SecurityPolicy.h"
 
 #include "platform/weborigin/KURL.h"
+#include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
-TEST(SecurityPolicyTest, ReferrerIsAlwaysAWebURL)
+TEST(SecurityPolicyTest, EmptyReferrerForUnauthorizedScheme)
 {
-    EXPECT_TRUE(String() == SecurityPolicy::generateReferrer(ReferrerPolicyAlways, KURL(ParsedURLString, "http://example.com/"), String::fromUTF8("chrome://somepage/")).referrer);
+    const KURL exampleHttpUrl = KURL(ParsedURLString, "http://example.com/");
+    EXPECT_TRUE(String() == SecurityPolicy::generateReferrer(ReferrerPolicyAlways, exampleHttpUrl, String::fromUTF8("chrome://somepage/")).referrer);
+}
+
+TEST(SecurityPolicyTest, GenerateReferrerRespectsReferrerSchemesRegistry)
+{
+    const KURL exampleHttpUrl = KURL(ParsedURLString, "http://example.com/");
+    const String foobarURL = String::fromUTF8("foobar://somepage/");
+    const String foobarScheme = String::fromUTF8("foobar");
+
+    EXPECT_EQ(String(), SecurityPolicy::generateReferrer(ReferrerPolicyAlways, exampleHttpUrl, foobarURL).referrer);
+    SchemeRegistry::registerURLSchemeAsAllowedForReferrer(foobarScheme);
+    EXPECT_EQ(foobarURL, SecurityPolicy::generateReferrer(ReferrerPolicyAlways, exampleHttpUrl, foobarURL).referrer);
+    SchemeRegistry::removeURLSchemeAsAllowedForReferrer(foobarScheme);
+}
+
+TEST(SecurityPolicyTest, ShouldHideReferrerRespectsReferrerSchemesRegistry)
+{
+    const KURL exampleHttpUrl = KURL(ParsedURLString, "http://example.com/");
+    const String foobarURL = String::fromUTF8("foobar://somepage/");
+    const String foobarScheme = String::fromUTF8("foobar");
+
+    EXPECT_TRUE(SecurityPolicy::shouldHideReferrer(exampleHttpUrl, foobarScheme));
+    SchemeRegistry::registerURLSchemeAsAllowedForReferrer(foobarScheme);
+    EXPECT_FALSE(SecurityPolicy::shouldHideReferrer(exampleHttpUrl, foobarURL));
+    SchemeRegistry::removeURLSchemeAsAllowedForReferrer(foobarScheme);
 }
 
 TEST(SecurityPolicyTest, GenerateReferrer)

@@ -32,6 +32,7 @@ void ChromeContentClient::AddPepperPlugins(
 
 void ChromeContentClient::AddAdditionalSchemes(
     std::vector<url::SchemeWithType>* standard_schemes,
+    std::vector<url::SchemeWithType>* referrer_schemes,
     std::vector<std::string>* saveable_shemes) {
   // No additional schemes for iOS.
 }

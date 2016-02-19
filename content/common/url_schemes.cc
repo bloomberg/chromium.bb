@@ -18,35 +18,37 @@
 
 namespace {
 
-void AddStandardSchemeHelper(const url::SchemeWithType& scheme) {
-  url::AddStandardScheme(scheme.scheme, scheme.type);
-}
-
 }  // namespace
 
 namespace content {
 
-void RegisterContentSchemes(bool lock_standard_schemes) {
+void RegisterContentSchemes(bool lock_schemes) {
   std::vector<url::SchemeWithType> additional_standard_schemes;
+  std::vector<url::SchemeWithType> additional_referrer_schemes;
   std::vector<std::string> additional_savable_schemes;
+
   GetContentClient()->AddAdditionalSchemes(&additional_standard_schemes,
+                                           &additional_referrer_schemes,
                                            &additional_savable_schemes);
 
   url::AddStandardScheme(kChromeDevToolsScheme, url::SCHEME_WITHOUT_PORT);
   url::AddStandardScheme(kChromeUIScheme, url::SCHEME_WITHOUT_PORT);
   url::AddStandardScheme(kGuestScheme, url::SCHEME_WITHOUT_PORT);
   url::AddStandardScheme(kMetadataScheme, url::SCHEME_WITHOUT_AUTHORITY);
-  std::for_each(additional_standard_schemes.begin(),
-                additional_standard_schemes.end(),
-                AddStandardSchemeHelper);
 
-  // Prevent future modification of the standard schemes list. This is to
-  // prevent accidental creation of data races in the program. AddStandardScheme
-  // isn't threadsafe so must be called when GURL isn't used on any other
-  // thread. This is really easy to mess up, so we say that all calls to
-  // AddStandardScheme in Chrome must be inside this function.
-  if (lock_standard_schemes)
-    url::LockStandardSchemes();
+  for (const url::SchemeWithType& scheme : additional_standard_schemes)
+    url::AddStandardScheme(scheme.scheme, scheme.type);
+
+  for (const url::SchemeWithType& scheme : additional_referrer_schemes)
+    url::AddReferrerScheme(scheme.scheme, scheme.type);
+
+  // Prevent future modification of the scheme lists. This is to prevent
+  // accidental creation of data races in the program. Add*Scheme aren't
+  // threadsafe so must be called when GURL isn't used on any other thread. This
+  // is really easy to mess up, so we say that all calls to Add*Scheme in Chrome
+  // must be inside this function.
+  if (lock_schemes)
+    url::LockSchemeRegistries();
 
   // We rely on the above lock to protect this part from being invoked twice.
   if (!additional_savable_schemes.empty()) {
