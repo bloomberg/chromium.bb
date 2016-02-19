@@ -52,11 +52,25 @@ class AbstractProfileSyncServiceTest : public testing::Test {
   // |profile_sync_service_bundle_|, with start behavior
   // browser_sync::AUTO_START. Passes |callback| down to
   // SyncManagerForProfileSyncTest to be used by NotifyInitializationSuccess.
-  // |sync_client| is passed to the service.
-  scoped_ptr<TestProfileSyncService> CreateSyncService(
-      scoped_ptr<sync_driver::SyncClient> sync_client,
-      const base::Closure& initialization_success_callback);
+  // |sync_client| is passed to the service. The created service is stored in
+  // |sync_service_|.
+  void CreateSyncService(scoped_ptr<sync_driver::SyncClient> sync_client,
+                         const base::Closure& initialization_success_callback);
 
+  base::Thread* data_type_thread() { return &data_type_thread_; }
+
+  TestProfileSyncService* sync_service() { return sync_service_.get(); }
+
+  // Returns the callback for the FakeSyncClient builder. It is not possible to
+  // just Bind() sync_service(), because of Callback not understanding the
+  // inheritance of its template arguments.
+  base::Callback<sync_driver::SyncService*(void)> GetSyncServiceCallback();
+
+  browser_sync::ProfileSyncServiceBundle* profile_sync_service_bundle() {
+    return &profile_sync_service_bundle_;
+  }
+
+ private:
   // Use |data_type_thread_| for code disallowed on the UI thread.
   base::Thread data_type_thread_;
 
@@ -64,7 +78,6 @@ class AbstractProfileSyncServiceTest : public testing::Test {
   browser_sync::ProfileSyncServiceBundle profile_sync_service_bundle_;
   scoped_ptr<TestProfileSyncService> sync_service_;
 
- private:
   base::ScopedTempDir temp_dir_;  // To pass to the backend host.
 
   DISALLOW_COPY_AND_ASSIGN(AbstractProfileSyncServiceTest);

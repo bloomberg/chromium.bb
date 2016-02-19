@@ -133,6 +133,12 @@ void SyncBackendHostForProfileSyncTest::RequestConfigureSyncer(
                  failed_configuration_types, ready_task));
 }
 
+// Helper function for return-type-upcasting of the callback.
+sync_driver::SyncService* GetSyncService(
+    base::Callback<TestProfileSyncService*(void)> get_sync_service_callback) {
+  return get_sync_service_callback.Run();
+}
+
 }  // namespace
 
 /* static */
@@ -174,29 +180,34 @@ bool AbstractProfileSyncServiceTest::CreateRoot(ModelType model_type) {
                                            sync_service_->GetUserShare());
 }
 
-scoped_ptr<TestProfileSyncService>
-AbstractProfileSyncServiceTest::CreateSyncService(
+void AbstractProfileSyncServiceTest::CreateSyncService(
     scoped_ptr<sync_driver::SyncClient> sync_client,
     const base::Closure& initialization_success_callback) {
   DCHECK(sync_client);
   ProfileSyncService::InitParams init_params =
       profile_sync_service_bundle_.CreateBasicInitParams(
           browser_sync::AUTO_START, std::move(sync_client));
-  auto sync_service =
+  sync_service_ =
       make_scoped_ptr(new TestProfileSyncService(std::move(init_params)));
 
   SyncApiComponentFactoryMock* components =
       profile_sync_service_bundle_.component_factory();
   EXPECT_CALL(*components, CreateSyncBackendHost(_, _, _, _))
       .WillOnce(Return(new SyncBackendHostForProfileSyncTest(
-          temp_dir_.path(), sync_service->GetSyncClient(),
+          temp_dir_.path(), sync_service_->GetSyncClient(),
           base::ThreadTaskRunnerHandle::Get(),
           profile_sync_service_bundle_.fake_invalidation_service(),
-          sync_service->sync_prefs()->AsWeakPtr(),
+          sync_service_->sync_prefs()->AsWeakPtr(),
           initialization_success_callback)));
 
-  sync_service->SetFirstSetupComplete();
-  return sync_service;
+  sync_service_->SetFirstSetupComplete();
+}
+
+base::Callback<sync_driver::SyncService*(void)>
+AbstractProfileSyncServiceTest::GetSyncServiceCallback() {
+  return base::Bind(GetSyncService,
+                    base::Bind(&AbstractProfileSyncServiceTest::sync_service,
+                               base::Unretained(this)));
 }
 
 CreateRootHelper::CreateRootHelper(AbstractProfileSyncServiceTest* test,

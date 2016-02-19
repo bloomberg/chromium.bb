@@ -153,7 +153,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
  public:
   void AddTypedUrlSyncNode(const history::URLRow& url,
                            const history::VisitVector& visits) {
-    syncer::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
+    syncer::WriteTransaction trans(FROM_HERE, sync_service()->GetUserShare());
 
     syncer::WriteNode node(&trans);
     std::string tag = url.url().spec();
@@ -165,28 +165,27 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
 
  protected:
   ProfileSyncServiceTypedUrlTest() {
-    profile_sync_service_bundle_.pref_service()
+    profile_sync_service_bundle()
+        ->pref_service()
         ->registry()
         ->RegisterBooleanPref(kDummySavingBrowserHistoryDisabled, false);
 
-    data_type_thread_.Start();
+    data_type_thread()->Start();
     base::RunLoop run_loop;
-    data_type_thread_.task_runner()->PostTaskAndReply(
+    data_type_thread()->task_runner()->PostTaskAndReply(
         FROM_HERE,
         base::Bind(&ProfileSyncServiceTypedUrlTest::CreateHistoryService,
                    base::Unretained(this)),
         run_loop.QuitClosure());
     run_loop.Run();
     history_service_ = make_scoped_ptr(new HistoryServiceMock);
-    history_service_->set_task_runner(data_type_thread_.task_runner());
+    history_service_->set_task_runner(data_type_thread()->task_runner());
     history_service_->set_backend(history_backend_);
 
     browser_sync::ProfileSyncServiceBundle::SyncClientBuilder builder(
-        &profile_sync_service_bundle_);
+        profile_sync_service_bundle());
     builder.SetHistoryService(history_service_.get());
-    builder.SetSyncServiceCallback(
-        base::Bind(&ProfileSyncServiceTypedUrlTest::GetSyncService,
-                   base::Unretained(this)));
+    builder.SetSyncServiceCallback(GetSyncServiceCallback());
     builder.SetSyncableServiceCallback(
         base::Bind(&ProfileSyncServiceTypedUrlTest::GetSyncableServiceForType,
                    base::Unretained(this)));
@@ -213,11 +212,11 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
     // because after shutdown the Sync thread is not returned to the sync
     // service, so we could not get the thread's message loop to wait for the
     // deletions to be finished.
-    sync_service_->RequestStop(sync_driver::SyncService::CLEAR_DATA);
+    sync_service()->RequestStop(sync_driver::SyncService::CLEAR_DATA);
     // Spin the sync thread.
     {
       base::RunLoop run_loop;
-      sync_service_->GetSyncLoopForTest()->task_runner()->PostTaskAndReply(
+      sync_service()->GetSyncLoopForTest()->task_runner()->PostTaskAndReply(
           FROM_HERE, base::Bind(&base::DoNothing), run_loop.QuitClosure());
       run_loop.Run();
     }
@@ -227,7 +226,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
 
     {
       base::RunLoop run_loop;
-      data_type_thread_.task_runner()->PostTaskAndReply(
+      data_type_thread()->task_runner()->PostTaskAndReply(
           FROM_HERE,
           base::Bind(&ProfileSyncServiceTypedUrlTest::DeleteSyncableService,
                      base::Unretained(this)),
@@ -237,26 +236,27 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
   }
 
   TypedUrlSyncableService* StartSyncService(const base::Closure& callback) {
-    if (!sync_service_) {
+    if (!sync_service()) {
       std::string account_id =
-          profile_sync_service_bundle_.account_tracker()->SeedAccountInfo(
+          profile_sync_service_bundle()->account_tracker()->SeedAccountInfo(
               "gaia_id", "test");
-      SigninManagerBase* signin = profile_sync_service_bundle_.signin_manager();
+      SigninManagerBase* signin =
+          profile_sync_service_bundle()->signin_manager();
       signin->SetAuthenticatedAccountInfo("gaia_id", "test");
-      sync_service_ = CreateSyncService(std::move(sync_client_), callback);
+      CreateSyncService(std::move(sync_client_), callback);
       data_type_controller = new TypedUrlDataTypeController(
           base::ThreadTaskRunnerHandle::Get(), base::Bind(&base::DoNothing),
-          sync_service_->GetSyncClient(), kDummySavingBrowserHistoryDisabled);
-      EXPECT_CALL(*profile_sync_service_bundle_.component_factory(),
+          sync_service()->GetSyncClient(), kDummySavingBrowserHistoryDisabled);
+      EXPECT_CALL(*profile_sync_service_bundle()->component_factory(),
                   CreateDataTypeManager(_, _, _, _, _))
           .WillOnce(ReturnNewDataTypeManager());
 
-      profile_sync_service_bundle_.auth_service()->UpdateCredentials(
+      profile_sync_service_bundle()->auth_service()->UpdateCredentials(
           account_id, "oauth2_login_token");
 
-      sync_service_->RegisterDataTypeController(data_type_controller);
+      sync_service()->RegisterDataTypeController(data_type_controller);
 
-      sync_service_->Initialize();
+      sync_service()->Initialize();
       base::RunLoop().Run();
     }
     return syncable_service_.get();
@@ -264,7 +264,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
 
   void GetTypedUrlsFromSyncDB(history::URLRows* urls) {
     urls->clear();
-    syncer::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
+    syncer::ReadTransaction trans(FROM_HERE, sync_service()->GetUserShare());
     syncer::ReadNode typed_url_root(&trans);
     if (typed_url_root.InitTypeRoot(syncer::TYPED_URLS) !=
         syncer::BaseNode::INIT_OK)
@@ -293,14 +293,14 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
   }
 
   void SetIdleChangeProcessorExpectations() {
-    EXPECT_CALL((*history_backend_.get()), SetPageTitle(_, _)).Times(0);
-    EXPECT_CALL((*history_backend_.get()), UpdateURL(_, _)).Times(0);
-    EXPECT_CALL((*history_backend_.get()), GetURL(_, _)).Times(0);
-    EXPECT_CALL((*history_backend_.get()), DeleteURL(_)).Times(0);
+    EXPECT_CALL((history_backend()), SetPageTitle(_, _)).Times(0);
+    EXPECT_CALL((history_backend()), UpdateURL(_, _)).Times(0);
+    EXPECT_CALL((history_backend()), GetURL(_, _)).Times(0);
+    EXPECT_CALL((history_backend()), DeleteURL(_)).Times(0);
   }
 
   void SendNotification(const base::Closure& task) {
-    data_type_thread_.task_runner()->PostTaskAndReply(
+    data_type_thread()->task_runner()->PostTaskAndReply(
         FROM_HERE, task,
         base::Bind(&base::MessageLoop::QuitNow,
                    base::Unretained(base::MessageLoop::current())));
@@ -369,14 +369,15 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
     return history_url;
   }
 
-  sync_driver::SyncService* GetSyncService() { return sync_service_.get(); }
-
   base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
       syncer::ModelType type) {
     DCHECK_EQ(syncer::TYPED_URLS, type);
     return syncable_service_->AsWeakPtr();
   }
 
+  HistoryBackendMock& history_backend() { return *history_backend_.get(); }
+
+ private:
   scoped_refptr<HistoryBackendMock> history_backend_;
   scoped_ptr<HistoryServiceMock> history_service_;
   sync_driver::DataTypeErrorHandlerMock error_handler_;
@@ -384,7 +385,6 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
   scoped_ptr<TestTypedUrlSyncableService> syncable_service_;
   scoped_ptr<sync_driver::FakeSyncClient> sync_client_;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncServiceTypedUrlTest);
 };
 
@@ -403,8 +403,7 @@ void AddTypedUrlEntries(ProfileSyncServiceTypedUrlTest* test,
 }  // namespace
 
 TEST_F(ProfileSyncServiceTypedUrlTest, EmptyNativeEmptySync) {
-  EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
-      WillOnce(Return(true));
+  EXPECT_CALL((history_backend()), GetAllTypedURLs(_)).WillOnce(Return(true));
   SetIdleChangeProcessorExpectations();
   CreateRootHelper create_root(this, syncer::TYPED_URLS);
   TypedUrlSyncableService* syncable_service =
@@ -421,10 +420,10 @@ TEST_F(ProfileSyncServiceTypedUrlTest, HasNativeEmptySync) {
   entries.push_back(MakeTypedUrlEntry("http://foo.com", "bar",
                                       2, 15, false, &visits));
 
-  EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
-      WillOnce(DoAll(SetArgumentPointee<0>(entries), Return(true)));
-  EXPECT_CALL((*history_backend_.get()), GetMostRecentVisitsForURL(_, _, _)).
-      WillRepeatedly(DoAll(SetArgumentPointee<2>(visits), Return(true)));
+  EXPECT_CALL((history_backend()), GetAllTypedURLs(_))
+      .WillOnce(DoAll(SetArgumentPointee<0>(entries), Return(true)));
+  EXPECT_CALL((history_backend()), GetMostRecentVisitsForURL(_, _, _))
+      .WillRepeatedly(DoAll(SetArgumentPointee<2>(visits), Return(true)));
   SetIdleChangeProcessorExpectations();
   CreateRootHelper create_root(this, syncer::TYPED_URLS);
   TypedUrlSyncableService* syncable_service =
@@ -445,15 +444,15 @@ TEST_F(ProfileSyncServiceTypedUrlTest, HasNativeErrorReadingVisits) {
                                                   3, 15, false, &visits));
   entries.push_back(native_entry1);
   entries.push_back(native_entry2);
-  EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
-      WillOnce(DoAll(SetArgumentPointee<0>(entries), Return(true)));
+  EXPECT_CALL((history_backend()), GetAllTypedURLs(_))
+      .WillOnce(DoAll(SetArgumentPointee<0>(entries), Return(true)));
   // Return an error from GetMostRecentVisitsForURL() for the second URL.
-  EXPECT_CALL((*history_backend_.get()),
-              GetMostRecentVisitsForURL(native_entry1.id(), _, _)).
-                  WillRepeatedly(Return(true));
-  EXPECT_CALL((*history_backend_.get()),
-              GetMostRecentVisitsForURL(native_entry2.id(), _, _)).
-                  WillRepeatedly(Return(false));
+  EXPECT_CALL((history_backend()),
+              GetMostRecentVisitsForURL(native_entry1.id(), _, _))
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL((history_backend()),
+              GetMostRecentVisitsForURL(native_entry2.id(), _, _))
+      .WillRepeatedly(Return(false));
   SetIdleChangeProcessorExpectations();
   CreateRootHelper create_root(this, syncer::TYPED_URLS);
   StartSyncService(create_root.callback());
@@ -471,10 +470,10 @@ TEST_F(ProfileSyncServiceTypedUrlTest, HasNativeWithBlankEmptySync) {
                                       2, 15, false, &visits));
   entries.push_back(MakeTypedUrlEntry("http://foo.com", "bar",
                                       2, 15, false, &visits));
-  EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
-      WillOnce(DoAll(SetArgumentPointee<0>(entries), Return(true)));
-  EXPECT_CALL((*history_backend_.get()), GetMostRecentVisitsForURL(_, _, _)).
-      WillRepeatedly(DoAll(SetArgumentPointee<2>(visits), Return(true)));
+  EXPECT_CALL((history_backend()), GetAllTypedURLs(_))
+      .WillOnce(DoAll(SetArgumentPointee<0>(entries), Return(true)));
+  EXPECT_CALL((history_backend()), GetMostRecentVisitsForURL(_, _, _))
+      .WillRepeatedly(DoAll(SetArgumentPointee<2>(visits), Return(true)));
   SetIdleChangeProcessorExpectations();
   CreateRootHelper create_root(this, syncer::TYPED_URLS);
   StartSyncService(create_root.callback());
@@ -495,18 +494,19 @@ TEST_F(ProfileSyncServiceTypedUrlTest, HasNativeHasSyncNoMerge) {
 
   history::URLRows native_entries;
   native_entries.push_back(native_entry);
-  EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
-      WillOnce(DoAll(SetArgumentPointee<0>(native_entries), Return(true)));
-  EXPECT_CALL((*history_backend_.get()), GetMostRecentVisitsForURL(_, _, _)).
-      WillRepeatedly(DoAll(SetArgumentPointee<2>(native_visits), Return(true)));
-  EXPECT_CALL((*history_backend_.get()),
-      AddVisits(_, _, history::SOURCE_SYNCED)).WillRepeatedly(Return(true));
+  EXPECT_CALL((history_backend()), GetAllTypedURLs(_))
+      .WillOnce(DoAll(SetArgumentPointee<0>(native_entries), Return(true)));
+  EXPECT_CALL((history_backend()), GetMostRecentVisitsForURL(_, _, _))
+      .WillRepeatedly(
+          DoAll(SetArgumentPointee<2>(native_visits), Return(true)));
+  EXPECT_CALL((history_backend()), AddVisits(_, _, history::SOURCE_SYNCED))
+      .WillRepeatedly(Return(true));
 
   history::URLRows sync_entries;
   sync_entries.push_back(sync_entry);
 
-  EXPECT_CALL((*history_backend_.get()), UpdateURL(_, _)).
-      WillRepeatedly(Return(true));
+  EXPECT_CALL((history_backend()), UpdateURL(_, _))
+      .WillRepeatedly(Return(true));
   StartSyncService(base::Bind(&AddTypedUrlEntries, this, sync_entries));
 
   std::map<std::string, history::URLRow> expected;
@@ -533,8 +533,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, EmptyNativeExpiredSync) {
 
   // Since all our URLs are expired, no backend calls to add new URLs will be
   // made.
-  EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
-      WillOnce(Return(true));
+  EXPECT_CALL((history_backend()), GetAllTypedURLs(_)).WillOnce(Return(true));
   SetIdleChangeProcessorExpectations();
 
   StartSyncService(base::Bind(&AddTypedUrlEntries, this, sync_entries));
@@ -557,20 +556,20 @@ TEST_F(ProfileSyncServiceTypedUrlTest, HasNativeHasSyncMerge) {
 
   history::URLRows native_entries;
   native_entries.push_back(native_entry);
-  EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
-      WillOnce(DoAll(SetArgumentPointee<0>(native_entries), Return(true)));
-  EXPECT_CALL((*history_backend_.get()), GetMostRecentVisitsForURL(_, _, _)).
-      WillRepeatedly(DoAll(SetArgumentPointee<2>(native_visits), Return(true)));
-  EXPECT_CALL((*history_backend_.get()),
-      AddVisits(_, _, history::SOURCE_SYNCED)). WillRepeatedly(Return(true));
+  EXPECT_CALL((history_backend()), GetAllTypedURLs(_))
+      .WillOnce(DoAll(SetArgumentPointee<0>(native_entries), Return(true)));
+  EXPECT_CALL((history_backend()), GetMostRecentVisitsForURL(_, _, _))
+      .WillRepeatedly(
+          DoAll(SetArgumentPointee<2>(native_visits), Return(true)));
+  EXPECT_CALL((history_backend()), AddVisits(_, _, history::SOURCE_SYNCED))
+      .WillRepeatedly(Return(true));
 
   history::URLRows sync_entries;
   sync_entries.push_back(sync_entry);
 
-  EXPECT_CALL((*history_backend_.get()), UpdateURL(_, _)).
-      WillRepeatedly(Return(true));
-  EXPECT_CALL((*history_backend_.get()), SetPageTitle(_, _)).
-      WillRepeatedly(Return());
+  EXPECT_CALL((history_backend()), UpdateURL(_, _))
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL((history_backend()), SetPageTitle(_, _)).WillRepeatedly(Return());
   StartSyncService(base::Bind(&AddTypedUrlEntries, this, sync_entries));
 
   history::URLRows new_sync_entries;
@@ -589,23 +588,22 @@ TEST_F(ProfileSyncServiceTypedUrlTest, HasNativeWithErrorHasSyncMerge) {
 
   history::URLRows native_entries;
   native_entries.push_back(native_entry);
-  EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
-      WillOnce(DoAll(SetArgumentPointee<0>(native_entries), Return(true)));
+  EXPECT_CALL((history_backend()), GetAllTypedURLs(_))
+      .WillOnce(DoAll(SetArgumentPointee<0>(native_entries), Return(true)));
   // Return an error getting the visits for the native URL.
-  EXPECT_CALL((*history_backend_.get()), GetMostRecentVisitsForURL(_, _, _)).
-      WillRepeatedly(Return(false));
-  EXPECT_CALL((*history_backend_.get()), GetURL(_, _)).
-      WillRepeatedly(DoAll(SetArgumentPointee<1>(native_entry), Return(true)));
-  EXPECT_CALL((*history_backend_.get()),
-      AddVisits(_, _, history::SOURCE_SYNCED)). WillRepeatedly(Return(true));
+  EXPECT_CALL((history_backend()), GetMostRecentVisitsForURL(_, _, _))
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL((history_backend()), GetURL(_, _))
+      .WillRepeatedly(DoAll(SetArgumentPointee<1>(native_entry), Return(true)));
+  EXPECT_CALL((history_backend()), AddVisits(_, _, history::SOURCE_SYNCED))
+      .WillRepeatedly(Return(true));
 
   history::URLRows sync_entries;
   sync_entries.push_back(sync_entry);
 
-  EXPECT_CALL((*history_backend_.get()), UpdateURL(_, _)).
-      WillRepeatedly(Return(true));
-  EXPECT_CALL((*history_backend_.get()), SetPageTitle(_, _)).
-      WillRepeatedly(Return());
+  EXPECT_CALL((history_backend()), UpdateURL(_, _))
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL((history_backend()), SetPageTitle(_, _)).WillRepeatedly(Return());
   StartSyncService(base::Bind(&AddTypedUrlEntries, this, sync_entries));
 
   history::URLRows new_sync_entries;
@@ -619,10 +617,9 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeAdd) {
   history::URLRow added_entry(MakeTypedUrlEntry("http://added.com", "entry",
                                                 2, 15, false, &added_visits));
 
-  EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
-      WillOnce(Return(true));
-  EXPECT_CALL((*history_backend_.get()), GetMostRecentVisitsForURL(_, _, _)).
-      WillOnce(DoAll(SetArgumentPointee<2>(added_visits), Return(true)));
+  EXPECT_CALL((history_backend()), GetAllTypedURLs(_)).WillOnce(Return(true));
+  EXPECT_CALL((history_backend()), GetMostRecentVisitsForURL(_, _, _))
+      .WillOnce(DoAll(SetArgumentPointee<2>(added_visits), Return(true)));
 
   SetIdleChangeProcessorExpectations();
   CreateRootHelper create_root(this, syncer::TYPED_URLS);
@@ -645,10 +642,9 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeAddWithBlank) {
   history::URLRow added_entry(MakeTypedUrlEntry("http://added.com", "entry",
                                                 2, 15, false, &added_visits));
 
-  EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
-      WillOnce(Return(true));
-  EXPECT_CALL((*history_backend_.get()), GetMostRecentVisitsForURL(_, _, _)).
-      WillRepeatedly(DoAll(SetArgumentPointee<2>(added_visits), Return(true)));
+  EXPECT_CALL((history_backend()), GetAllTypedURLs(_)).WillOnce(Return(true));
+  EXPECT_CALL((history_backend()), GetMostRecentVisitsForURL(_, _, _))
+      .WillRepeatedly(DoAll(SetArgumentPointee<2>(added_visits), Return(true)));
 
   SetIdleChangeProcessorExpectations();
   CreateRootHelper create_root(this, syncer::TYPED_URLS);
@@ -673,11 +669,10 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeUpdate) {
   history::URLRows original_entries;
   original_entries.push_back(original_entry);
 
-  EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
-      WillOnce(DoAll(SetArgumentPointee<0>(original_entries), Return(true)));
-  EXPECT_CALL((*history_backend_.get()), GetMostRecentVisitsForURL(_, _, _)).
-      WillOnce(DoAll(SetArgumentPointee<2>(original_visits),
-                     Return(true)));
+  EXPECT_CALL((history_backend()), GetAllTypedURLs(_))
+      .WillOnce(DoAll(SetArgumentPointee<0>(original_entries), Return(true)));
+  EXPECT_CALL((history_backend()), GetMostRecentVisitsForURL(_, _, _))
+      .WillOnce(DoAll(SetArgumentPointee<2>(original_visits), Return(true)));
   CreateRootHelper create_root(this, syncer::TYPED_URLS);
   StartSyncService(create_root.callback());
 
@@ -685,9 +680,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeUpdate) {
   history::URLRow updated_entry(MakeTypedUrlEntry("http://mine.com", "entry",
                                                   7, 17, false,
                                                   &updated_visits));
-  EXPECT_CALL((*history_backend_.get()), GetMostRecentVisitsForURL(_, _, _)).
-      WillOnce(DoAll(SetArgumentPointee<2>(updated_visits),
-                     Return(true)));
+  EXPECT_CALL((history_backend()), GetMostRecentVisitsForURL(_, _, _))
+      .WillOnce(DoAll(SetArgumentPointee<2>(updated_visits), Return(true)));
 
   history::URLRows changed_urls;
   changed_urls.push_back(updated_entry);
@@ -704,10 +698,9 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeAddFromVisit) {
   history::URLRow added_entry(MakeTypedUrlEntry("http://added.com", "entry",
                                                 2, 15, false, &added_visits));
 
-  EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
-      WillOnce(Return(true));
-  EXPECT_CALL((*history_backend_.get()), GetMostRecentVisitsForURL(_, _, _)).
-      WillOnce(DoAll(SetArgumentPointee<2>(added_visits), Return(true)));
+  EXPECT_CALL((history_backend()), GetAllTypedURLs(_)).WillOnce(Return(true));
+  EXPECT_CALL((history_backend()), GetMostRecentVisitsForURL(_, _, _))
+      .WillOnce(DoAll(SetArgumentPointee<2>(added_visits), Return(true)));
 
   SetIdleChangeProcessorExpectations();
   CreateRootHelper create_root(this, syncer::TYPED_URLS);
@@ -729,11 +722,10 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeUpdateFromVisit) {
   history::URLRows original_entries;
   original_entries.push_back(original_entry);
 
-  EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
-      WillOnce(DoAll(SetArgumentPointee<0>(original_entries), Return(true)));
-  EXPECT_CALL((*history_backend_.get()), GetMostRecentVisitsForURL(_, _, _)).
-      WillOnce(DoAll(SetArgumentPointee<2>(original_visits),
-                           Return(true)));
+  EXPECT_CALL((history_backend()), GetAllTypedURLs(_))
+      .WillOnce(DoAll(SetArgumentPointee<0>(original_entries), Return(true)));
+  EXPECT_CALL((history_backend()), GetMostRecentVisitsForURL(_, _, _))
+      .WillOnce(DoAll(SetArgumentPointee<2>(original_visits), Return(true)));
   CreateRootHelper create_root(this, syncer::TYPED_URLS);
   StartSyncService(create_root.callback());
 
@@ -741,9 +733,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeUpdateFromVisit) {
   history::URLRow updated_entry(MakeTypedUrlEntry("http://mine.com", "entry",
                                                   7, 17, false,
                                                   &updated_visits));
-  EXPECT_CALL((*history_backend_.get()), GetMostRecentVisitsForURL(_, _, _)).
-      WillOnce(DoAll(SetArgumentPointee<2>(updated_visits),
-                           Return(true)));
+  EXPECT_CALL((history_backend()), GetMostRecentVisitsForURL(_, _, _))
+      .WillOnce(DoAll(SetArgumentPointee<2>(updated_visits), Return(true)));
 
   SendNotificationURLVisited(ui::PAGE_TRANSITION_TYPED, updated_entry);
 
@@ -761,11 +752,11 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserIgnoreChangeUpdateFromVisit) {
   history::URLRows original_entries;
   original_entries.push_back(original_entry);
 
-  EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
-      WillOnce(DoAll(SetArgumentPointee<0>(original_entries), Return(true)));
-  EXPECT_CALL((*history_backend_.get()), GetMostRecentVisitsForURL(_, _, _)).
-      WillRepeatedly(DoAll(SetArgumentPointee<2>(original_visits),
-                           Return(true)));
+  EXPECT_CALL((history_backend()), GetAllTypedURLs(_))
+      .WillOnce(DoAll(SetArgumentPointee<0>(original_entries), Return(true)));
+  EXPECT_CALL((history_backend()), GetMostRecentVisitsForURL(_, _, _))
+      .WillRepeatedly(
+          DoAll(SetArgumentPointee<2>(original_visits), Return(true)));
   CreateRootHelper create_root(this, syncer::TYPED_URLS);
   StartSyncService(create_root.callback());
   history::URLRows new_sync_entries;
@@ -824,11 +815,11 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemove) {
   original_entries.push_back(original_entry1);
   original_entries.push_back(original_entry2);
 
-  EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
-      WillOnce(DoAll(SetArgumentPointee<0>(original_entries), Return(true)));
-  EXPECT_CALL((*history_backend_.get()), GetMostRecentVisitsForURL(_, _, _)).
-      WillRepeatedly(DoAll(SetArgumentPointee<2>(original_visits1),
-                           Return(true)));
+  EXPECT_CALL((history_backend()), GetAllTypedURLs(_))
+      .WillOnce(DoAll(SetArgumentPointee<0>(original_entries), Return(true)));
+  EXPECT_CALL((history_backend()), GetMostRecentVisitsForURL(_, _, _))
+      .WillRepeatedly(
+          DoAll(SetArgumentPointee<2>(original_visits1), Return(true)));
   CreateRootHelper create_root(this, syncer::TYPED_URLS);
   StartSyncService(create_root.callback());
 
@@ -855,11 +846,11 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemoveExpired) {
   original_entries.push_back(original_entry1);
   original_entries.push_back(original_entry2);
 
-  EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
-      WillOnce(DoAll(SetArgumentPointee<0>(original_entries), Return(true)));
-  EXPECT_CALL((*history_backend_.get()), GetMostRecentVisitsForURL(_, _, _)).
-      WillRepeatedly(DoAll(SetArgumentPointee<2>(original_visits1),
-                           Return(true)));
+  EXPECT_CALL((history_backend()), GetAllTypedURLs(_))
+      .WillOnce(DoAll(SetArgumentPointee<0>(original_entries), Return(true)));
+  EXPECT_CALL((history_backend()), GetMostRecentVisitsForURL(_, _, _))
+      .WillRepeatedly(
+          DoAll(SetArgumentPointee<2>(original_visits1), Return(true)));
   CreateRootHelper create_root(this, syncer::TYPED_URLS);
   StartSyncService(create_root.callback());
 
@@ -887,11 +878,11 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemoveAll) {
   original_entries.push_back(original_entry1);
   original_entries.push_back(original_entry2);
 
-  EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
-      WillOnce(DoAll(SetArgumentPointee<0>(original_entries), Return(true)));
-  EXPECT_CALL((*history_backend_.get()), GetMostRecentVisitsForURL(_, _, _)).
-      WillRepeatedly(DoAll(SetArgumentPointee<2>(original_visits1),
-                           Return(true)));
+  EXPECT_CALL((history_backend()), GetAllTypedURLs(_))
+      .WillOnce(DoAll(SetArgumentPointee<0>(original_entries), Return(true)));
+  EXPECT_CALL((history_backend()), GetMostRecentVisitsForURL(_, _, _))
+      .WillRepeatedly(
+          DoAll(SetArgumentPointee<2>(original_visits1), Return(true)));
   CreateRootHelper create_root(this, syncer::TYPED_URLS);
   StartSyncService(create_root.callback());
 
@@ -916,27 +907,27 @@ TEST_F(ProfileSyncServiceTypedUrlTest, FailWriteToHistoryBackend) {
 
   history::URLRows native_entries;
   native_entries.push_back(native_entry);
-  EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
-      WillOnce(DoAll(SetArgumentPointee<0>(native_entries), Return(true)));
-  EXPECT_CALL((*history_backend_.get()), GetURL(_, _))
+  EXPECT_CALL((history_backend()), GetAllTypedURLs(_))
+      .WillOnce(DoAll(SetArgumentPointee<0>(native_entries), Return(true)));
+  EXPECT_CALL((history_backend()), GetURL(_, _))
       .WillOnce(DoAll(SetArgumentPointee<1>(native_entry), Return(false)));
-  EXPECT_CALL((*history_backend_.get()), GetMostRecentVisitsForURL(_, _, _)).
-      WillRepeatedly(DoAll(SetArgumentPointee<2>(native_visits), Return(true)));
-  EXPECT_CALL((*history_backend_.get()),
-      AddVisits(_, _, history::SOURCE_SYNCED)).WillRepeatedly(Return(false));
+  EXPECT_CALL((history_backend()), GetMostRecentVisitsForURL(_, _, _))
+      .WillRepeatedly(
+          DoAll(SetArgumentPointee<2>(native_visits), Return(true)));
+  EXPECT_CALL((history_backend()), AddVisits(_, _, history::SOURCE_SYNCED))
+      .WillRepeatedly(Return(false));
 
   history::URLRows sync_entries;
   sync_entries.push_back(sync_entry);
 
-  EXPECT_CALL((*history_backend_.get()), UpdateURL(_, _)).
-      WillRepeatedly(Return(false));
+  EXPECT_CALL((history_backend()), UpdateURL(_, _))
+      .WillRepeatedly(Return(false));
   TypedUrlSyncableService* syncable_service =
       StartSyncService(base::Bind(&AddTypedUrlEntries, this, sync_entries));
   // Errors writing to the DB should be recorded, but should not cause an
   // unrecoverable error.
-  ASSERT_FALSE(
-      sync_service_->data_type_status_table().GetFailedTypes().Has(
-          syncer::TYPED_URLS));
+  ASSERT_FALSE(sync_service()->data_type_status_table().GetFailedTypes().Has(
+      syncer::TYPED_URLS));
   // Some calls should have succeeded, so the error percentage should be
   // somewhere > 0 and < 100.
   ASSERT_NE(0, syncable_service->GetErrorPercentage());
@@ -953,8 +944,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, FailToGetTypedURLs) {
 
   history::URLRows native_entries;
   native_entries.push_back(native_entry);
-  EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
-      WillOnce(DoAll(SetArgumentPointee<0>(native_entries), Return(false)));
+  EXPECT_CALL((history_backend()), GetAllTypedURLs(_))
+      .WillOnce(DoAll(SetArgumentPointee<0>(native_entries), Return(false)));
 
   history::URLRows sync_entries;
   sync_entries.push_back(sync_entry);
@@ -962,11 +953,10 @@ TEST_F(ProfileSyncServiceTypedUrlTest, FailToGetTypedURLs) {
   StartSyncService(base::Bind(&AddTypedUrlEntries, this, sync_entries));
   // Errors getting typed URLs will cause an unrecoverable error (since we can
   // do *nothing* in that case).
-  ASSERT_TRUE(
-      sync_service_->data_type_status_table().GetFailedTypes().Has(
-          syncer::TYPED_URLS));
-  ASSERT_EQ(
-      1u, sync_service_->data_type_status_table().GetFailedTypes().Size());
+  ASSERT_TRUE(sync_service()->data_type_status_table().GetFailedTypes().Has(
+      syncer::TYPED_URLS));
+  ASSERT_EQ(1u,
+            sync_service()->data_type_status_table().GetFailedTypes().Size());
   // Can't check GetErrorPercentage(), because generating an unrecoverable
   // error will free the model associator.
 }
@@ -985,12 +975,12 @@ TEST_F(ProfileSyncServiceTypedUrlTest, IgnoreLocalFileURL) {
   original_entries.push_back(url_entry);
   original_entries.push_back(file_entry);
 
-  EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
-      WillRepeatedly(DoAll(SetArgumentPointee<0>(original_entries),
-                     Return(true)));
-  EXPECT_CALL((*history_backend_.get()), GetMostRecentVisitsForURL(_, _, _)).
-      WillRepeatedly(DoAll(SetArgumentPointee<2>(original_visits),
-                     Return(true)));
+  EXPECT_CALL((history_backend()), GetAllTypedURLs(_))
+      .WillRepeatedly(
+          DoAll(SetArgumentPointee<0>(original_entries), Return(true)));
+  EXPECT_CALL((history_backend()), GetMostRecentVisitsForURL(_, _, _))
+      .WillRepeatedly(
+          DoAll(SetArgumentPointee<2>(original_visits), Return(true)));
   CreateRootHelper create_root(this, syncer::TYPED_URLS);
   StartSyncService(create_root.callback());
 
@@ -1035,12 +1025,12 @@ TEST_F(ProfileSyncServiceTypedUrlTest, IgnoreLocalhostURL) {
   original_entries.push_back(url_entry);
   original_entries.push_back(localhost_entry);
 
-  EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
-      WillRepeatedly(DoAll(SetArgumentPointee<0>(original_entries),
-                     Return(true)));
-  EXPECT_CALL((*history_backend_.get()), GetMostRecentVisitsForURL(_, _, _)).
-      WillRepeatedly(DoAll(SetArgumentPointee<2>(original_visits),
-                     Return(true)));
+  EXPECT_CALL((history_backend()), GetAllTypedURLs(_))
+      .WillRepeatedly(
+          DoAll(SetArgumentPointee<0>(original_entries), Return(true)));
+  EXPECT_CALL((history_backend()), GetMostRecentVisitsForURL(_, _, _))
+      .WillRepeatedly(
+          DoAll(SetArgumentPointee<2>(original_visits), Return(true)));
   CreateRootHelper create_root(this, syncer::TYPED_URLS);
   StartSyncService(create_root.callback());
 
@@ -1072,10 +1062,10 @@ TEST_F(ProfileSyncServiceTypedUrlTest, IgnoreLocalhostURL) {
 }
 
 TEST_F(ProfileSyncServiceTypedUrlTest, IgnoreModificationWithoutValidVisit) {
-  EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
-      WillRepeatedly(Return(true));
-  EXPECT_CALL((*history_backend_.get()), GetMostRecentVisitsForURL(_, _, _)).
-      WillRepeatedly(Return(true));
+  EXPECT_CALL((history_backend()), GetAllTypedURLs(_))
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL((history_backend()), GetMostRecentVisitsForURL(_, _, _))
+      .WillRepeatedly(Return(true));
 
   CreateRootHelper create_root(this, syncer::TYPED_URLS);
   StartSyncService(create_root.callback());
