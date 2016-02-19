@@ -24,10 +24,11 @@ import java.util.concurrent.locks.ReentrantLock;
  **/
 @JNINamespace("media")
 @SuppressWarnings("deprecation")
-// TODO: is this class only used on ICS MR1 (or some later version) and above?
+//TODO: is this class only used on ICS MR1 (or some later version) and above?
 @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
-public abstract class VideoCaptureCamera
-        extends VideoCapture implements android.hardware.Camera.PreviewCallback {
+public abstract class VideoCaptureCamera extends VideoCapture
+        implements android.hardware.Camera.PreviewCallback {
+
     protected android.hardware.Camera mCamera;
     // Lock to mutually exclude execution of OnPreviewFrame() and {start/stop}Capture().
     protected ReentrantLock mPreviewBufferLock = new ReentrantLock();
@@ -41,7 +42,8 @@ public abstract class VideoCaptureCamera
     private static final String TAG = "cr.media";
 
     protected static android.hardware.Camera.CameraInfo getCameraInfo(int id) {
-        android.hardware.Camera.CameraInfo cameraInfo = new android.hardware.Camera.CameraInfo();
+        android.hardware.Camera.CameraInfo cameraInfo =
+                new android.hardware.Camera.CameraInfo();
         try {
             android.hardware.Camera.getCameraInfo(id, cameraInfo);
         } catch (RuntimeException ex) {
@@ -64,7 +66,9 @@ public abstract class VideoCaptureCamera
         return parameters;
     }
 
-    VideoCaptureCamera(Context context, int id, long nativeVideoCaptureDeviceAndroid) {
+    VideoCaptureCamera(Context context,
+                       int id,
+                       long nativeVideoCaptureDeviceAndroid) {
         super(context, id, nativeVideoCaptureDeviceAndroid);
     }
 
@@ -109,9 +113,8 @@ public abstract class VideoCaptureCamera
         // Use the first range as the default chosen range.
         int[] chosenFpsRange = listFpsRange.get(0);
         int frameRateNearest = Math.abs(frameRateScaled - chosenFpsRange[0])
-                        < Math.abs(frameRateScaled - chosenFpsRange[1])
-                ? chosenFpsRange[0]
-                : chosenFpsRange[1];
+                               < Math.abs(frameRateScaled - chosenFpsRange[1])
+                               ? chosenFpsRange[0] : chosenFpsRange[1];
         int chosenFrameRate = (frameRateNearest + 999) / 1000;
         int fpsRangeSize = Integer.MAX_VALUE;
         for (int[] fpsRange : listFpsRange) {
@@ -122,16 +125,18 @@ public abstract class VideoCaptureCamera
                 fpsRangeSize = fpsRange[1] - fpsRange[0];
             }
         }
-        Log.d(TAG, "allocate: fps set to %d, [%d-%d]", chosenFrameRate, chosenFpsRange[0],
-                chosenFpsRange[1]);
+        Log.d(TAG, "allocate: fps set to %d, [%d-%d]", chosenFrameRate,
+                chosenFpsRange[0], chosenFpsRange[1]);
 
         // Calculate size.
-        List<android.hardware.Camera.Size> listCameraSize = parameters.getSupportedPreviewSizes();
+        List<android.hardware.Camera.Size> listCameraSize =
+                parameters.getSupportedPreviewSizes();
         int minDiff = Integer.MAX_VALUE;
         int matchedWidth = width;
         int matchedHeight = height;
         for (android.hardware.Camera.Size size : listCameraSize) {
-            int diff = Math.abs(size.width - width) + Math.abs(size.height - height);
+            int diff = Math.abs(size.width - width)
+                       + Math.abs(size.height - height);
             Log.d(TAG, "allocate: supported (%d, %d), diff=%d", size.width, size.height, diff);
             // TODO(wjia): Remove this hack (forcing width to be multiple
             // of 32) by supporting stride in video frame buffer.
@@ -151,14 +156,14 @@ public abstract class VideoCaptureCamera
 
         if (parameters.isVideoStabilizationSupported()) {
             Log.d(TAG, "Image stabilization supported, currently: "
-                            + parameters.getVideoStabilization() + ", setting it.");
+                    + parameters.getVideoStabilization() + ", setting it.");
             parameters.setVideoStabilization(true);
         } else {
             Log.d(TAG, "Image stabilization not supported.");
         }
 
         if (parameters.getSupportedFocusModes().contains(
-                    android.hardware.Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)) {
+                android.hardware.Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)) {
             parameters.setFocusMode(android.hardware.Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
         } else {
             Log.d(TAG, "Continuous focus mode not supported.");
@@ -183,15 +188,15 @@ public abstract class VideoCaptureCamera
         GLES20.glGenTextures(1, mGlTextures, 0);
         GLES20.glBindTexture(GL_TEXTURE_EXTERNAL_OES, mGlTextures[0]);
         // No mip-mapping with camera source.
-        GLES20.glTexParameterf(
-                GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameterf(
-                GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+        GLES20.glTexParameterf(GL_TEXTURE_EXTERNAL_OES,
+                GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
+        GLES20.glTexParameterf(GL_TEXTURE_EXTERNAL_OES,
+                GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
         // Clamp to edge is only option.
-        GLES20.glTexParameteri(
-                GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glTexParameteri(
-                GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
+        GLES20.glTexParameteri(GL_TEXTURE_EXTERNAL_OES,
+                GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
+        GLES20.glTexParameteri(GL_TEXTURE_EXTERNAL_OES,
+                GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
 
         mSurfaceTexture = new SurfaceTexture(mGlTextures[0]);
         mSurfaceTexture.setOnFrameAvailableListener(null);
@@ -277,7 +282,10 @@ public abstract class VideoCaptureCamera
 
     // Local hook to allow derived classes to fill capture format and modify
     // camera parameters as they see fit.
-    abstract void setCaptureParameters(int width, int height, int frameRate,
+    abstract void setCaptureParameters(
+            int width,
+            int height,
+            int frameRate,
             android.hardware.Camera.Parameters cameraParameters);
 
     // Local method to be overriden with the particular setPreviewCallback to be

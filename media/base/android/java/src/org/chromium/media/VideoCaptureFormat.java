@@ -10,7 +10,8 @@ class VideoCaptureFormat {
     final int mFramerate;
     final int mPixelFormat;
 
-    public VideoCaptureFormat(int width, int height, int framerate, int pixelformat) {
+    public VideoCaptureFormat(
+            int width, int height, int framerate, int pixelformat) {
         mWidth = width;
         mHeight = height;
         mFramerate = framerate;

@@ -40,6 +40,7 @@ import java.util.List;
 @JNINamespace("media")
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class VideoCaptureCamera2 extends VideoCapture {
+
     // Inner class to extend a CameraDevice state change listener.
     private class CrStateListener extends CameraDevice.StateCallback {
         @Override
@@ -48,7 +49,8 @@ public class VideoCaptureCamera2 extends VideoCapture {
             changeCameraStateAndNotify(CameraState.CONFIGURING);
             if (!createCaptureObjects()) {
                 changeCameraStateAndNotify(CameraState.STOPPED);
-                nativeOnError(mNativeVideoCaptureDeviceAndroid, "Error configuring camera");
+                nativeOnError(mNativeVideoCaptureDeviceAndroid,
+                              "Error configuring camera");
             }
         }
 
@@ -65,7 +67,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
             mCameraDevice = null;
             changeCameraStateAndNotify(CameraState.STOPPED);
             nativeOnError(mNativeVideoCaptureDeviceAndroid,
-                    "Camera device error " + Integer.toString(error));
+                          "Camera device error " + Integer.toString(error));
         }
     };
 
@@ -84,7 +86,8 @@ public class VideoCaptureCamera2 extends VideoCapture {
             // TODO(mcasas): When signalling error, C++ will tear us down. Is there need for
             // cleanup?
             changeCameraStateAndNotify(CameraState.STOPPED);
-            nativeOnError(mNativeVideoCaptureDeviceAndroid, "Camera session configuration error");
+            nativeOnError(mNativeVideoCaptureDeviceAndroid,
+                          "Camera session configuration error");
         }
     };
 
@@ -97,9 +100,10 @@ public class VideoCaptureCamera2 extends VideoCapture {
             try {
                 image = reader.acquireLatestImage();
                 if (image == null) return;
-                if (image.getFormat() != ImageFormat.YUV_420_888 || image.getPlanes().length != 3) {
-                    Log.e(TAG, "Unexpected image format: %d or #planes: %d", image.getFormat(),
-                            image.getPlanes().length);
+                if (image.getFormat() != ImageFormat.YUV_420_888
+                        || image.getPlanes().length != 3) {
+                    Log.e(TAG, "Unexpected image format: %d or #planes: %d",
+                            image.getFormat(), image.getPlanes().length);
                     return;
                 }
 
@@ -110,8 +114,10 @@ public class VideoCaptureCamera2 extends VideoCapture {
                             + "x" + image.getHeight());
                 }
                 readImageIntoBuffer(image, mCapturedData);
-                nativeOnFrameAvailable(mNativeVideoCaptureDeviceAndroid, mCapturedData,
-                        mCapturedData.length, getCameraRotation());
+                nativeOnFrameAvailable(mNativeVideoCaptureDeviceAndroid,
+                                       mCapturedData,
+                                       mCapturedData.length,
+                                       getCameraRotation());
             } catch (IllegalStateException ex) {
                 Log.e(TAG, "acquireLatestImage():" + ex);
                 return;
@@ -133,7 +139,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
     private static final double kNanoSecondsToFps = 1.0E-9;
     private static final String TAG = "cr.media";
 
-    private static enum CameraState { OPENING, CONFIGURING, STARTED, STOPPED }
+    private static enum CameraState {OPENING, CONFIGURING, STARTED, STOPPED}
     private CameraState mCameraState = CameraState.STOPPED;
     private final Object mCameraStateLock = new Object();
 
@@ -157,12 +163,15 @@ public class VideoCaptureCamera2 extends VideoCapture {
         // readback take place on its own thread.
         final int maxImages = 2;
         mImageReader = ImageReader.newInstance(mCaptureFormat.getWidth(),
-                mCaptureFormat.getHeight(), mCaptureFormat.getPixelFormat(), maxImages);
+                                               mCaptureFormat.getHeight(),
+                                               mCaptureFormat.getPixelFormat(),
+                                               maxImages);
         HandlerThread thread = new HandlerThread("CameraPreview");
         thread.start();
         final Handler backgroundHandler = new Handler(thread.getLooper());
         final CrImageReaderListener imageReaderListener = new CrImageReaderListener();
-        mImageReader.setOnImageAvailableListener(imageReaderListener, backgroundHandler);
+        mImageReader.setOnImageAvailableListener(imageReaderListener,
+                                                 backgroundHandler);
 
         // The Preview template specifically means "high frame rate is given
         // priority over the highest-quality post-processing".
@@ -186,12 +195,13 @@ public class VideoCaptureCamera2 extends VideoCapture {
         mPreviewBuilder.addTarget(mImageReader.getSurface());
 
         // A series of configuration options in the PreviewBuilder
-        mPreviewBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
-        mPreviewBuilder.set(
-                CaptureRequest.NOISE_REDUCTION_MODE, CameraMetadata.NOISE_REDUCTION_MODE_FAST);
+        mPreviewBuilder.set(CaptureRequest.CONTROL_MODE,
+                            CameraMetadata.CONTROL_MODE_AUTO);
+        mPreviewBuilder.set(CaptureRequest.NOISE_REDUCTION_MODE,
+                            CameraMetadata.NOISE_REDUCTION_MODE_FAST);
         mPreviewBuilder.set(CaptureRequest.EDGE_MODE, CameraMetadata.EDGE_MODE_FAST);
         mPreviewBuilder.set(CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE,
-                CameraMetadata.CONTROL_VIDEO_STABILIZATION_MODE_ON);
+                            CameraMetadata.CONTROL_VIDEO_STABILIZATION_MODE_ON);
         // SENSOR_EXPOSURE_TIME ?
 
         List<Surface> surfaceList = new ArrayList<Surface>(1);
@@ -308,8 +318,8 @@ public class VideoCaptureCamera2 extends VideoCapture {
             return CaptureApiType.API_TYPE_UNKNOWN;
         }
 
-        final int supportedHWLevel =
-                cameraCharacteristics.get(CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL);
+        final int supportedHWLevel = cameraCharacteristics.get(
+                CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL);
         switch (supportedHWLevel) {
             case CameraMetadata.INFO_SUPPORTED_HARDWARE_LEVEL_LEGACY:
                 return CaptureApiType.API2_LEGACY;
@@ -336,8 +346,8 @@ public class VideoCaptureCamera2 extends VideoCapture {
                 getCameraCharacteristics(appContext, id);
         if (cameraCharacteristics == null) return null;
 
-        final int[] capabilities =
-                cameraCharacteristics.get(CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES);
+        final int[] capabilities = cameraCharacteristics.get(
+                CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES);
         // Per-format frame rate via getOutputMinFrameDuration() is only available if the
         // property REQUEST_AVAILABLE_CAPABILITIES_MANUAL_SENSOR is set.
         boolean minFrameDurationAvailable = false;
@@ -374,7 +384,9 @@ public class VideoCaptureCamera2 extends VideoCapture {
         return formatList.toArray(new VideoCaptureFormat[formatList.size()]);
     }
 
-    VideoCaptureCamera2(Context context, int id, long nativeVideoCaptureDeviceAndroid) {
+    VideoCaptureCamera2(Context context,
+                        int id,
+                        long nativeVideoCaptureDeviceAndroid) {
         super(context, id, nativeVideoCaptureDeviceAndroid);
     }
 
@@ -423,7 +435,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
         // but NOT for N7 with a dev Build. Figure out which one to support.
         mInvertDeviceOrientationReadings =
                 cameraCharacteristics.get(CameraCharacteristics.LENS_FACING)
-                == CameraCharacteristics.LENS_FACING_BACK;
+                        == CameraCharacteristics.LENS_FACING_BACK;
         return true;
     }
 

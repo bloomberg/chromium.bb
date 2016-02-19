@@ -20,14 +20,18 @@ import java.util.List;
  **/
 @SuppressWarnings("deprecation")
 public class VideoCaptureAndroid extends VideoCaptureCamera {
+
     // Some devices don't support YV12 format correctly, even with JELLY_BEAN or
     // newer OS. To work around the issues on those devices, we have to request
     // NV21. This is supposed to be a temporary hack.
     private static class BuggyDeviceHack {
         private static final String[] COLORSPACE_BUGGY_DEVICE_LIST = {
-                "SAMSUNG-SGH-I747", "ODROID-U2",
-                // See https://crbug.com/577435 for more info.
-                "XT1092", "XT1095", "XT1096",
+            "SAMSUNG-SGH-I747",
+            "ODROID-U2",
+            // See https://crbug.com/577435 for more info.
+            "XT1092",
+            "XT1095",
+            "XT1096",
         };
 
         static int getImageFormat() {
@@ -59,10 +63,8 @@ public class VideoCaptureAndroid extends VideoCaptureCamera {
         android.hardware.Camera.CameraInfo cameraInfo = VideoCaptureCamera.getCameraInfo(id);
         if (cameraInfo == null) return null;
 
-        return "camera " + id + ", facing "
-                + (cameraInfo.facing == android.hardware.Camera.CameraInfo.CAMERA_FACING_FRONT
-                                  ? "front"
-                                  : "back");
+        return "camera " + id + ", facing " + (cameraInfo.facing
+                == android.hardware.Camera.CameraInfo.CAMERA_FACING_FRONT ? "front" : "back");
     }
 
     static VideoCaptureFormat[] getDeviceSupportedFormats(int id) {
@@ -115,8 +117,10 @@ public class VideoCaptureAndroid extends VideoCaptureCamera {
                     supportedSizes.add(camera.new Size(0, 0));
                 }
                 for (android.hardware.Camera.Size size : supportedSizes) {
-                    formatList.add(new VideoCaptureFormat(
-                            size.width, size.height, (fpsRange[1] + 999) / 1000, pixelFormat));
+                    formatList.add(new VideoCaptureFormat(size.width,
+                                                     size.height,
+                                                     (fpsRange[1] + 999) / 1000,
+                                                     pixelFormat));
                 }
             }
         }
@@ -124,15 +128,20 @@ public class VideoCaptureAndroid extends VideoCaptureCamera {
         return formatList.toArray(new VideoCaptureFormat[formatList.size()]);
     }
 
-    VideoCaptureAndroid(Context context, int id, long nativeVideoCaptureDeviceAndroid) {
+    VideoCaptureAndroid(Context context,
+                        int id,
+                        long nativeVideoCaptureDeviceAndroid) {
         super(context, id, nativeVideoCaptureDeviceAndroid);
     }
 
     @Override
-    protected void setCaptureParameters(int width, int height, int frameRate,
+    protected void setCaptureParameters(
+            int width,
+            int height,
+            int frameRate,
             android.hardware.Camera.Parameters cameraParameters) {
-        mCaptureFormat =
-                new VideoCaptureFormat(width, height, frameRate, BuggyDeviceHack.getImageFormat());
+        mCaptureFormat = new VideoCaptureFormat(
+                width, height, frameRate, BuggyDeviceHack.getImageFormat());
     }
 
     @Override
@@ -158,8 +167,8 @@ public class VideoCaptureAndroid extends VideoCaptureCamera {
                 return;
             }
             if (data.length == mExpectedFrameSize) {
-                nativeOnFrameAvailable(mNativeVideoCaptureDeviceAndroid, data, mExpectedFrameSize,
-                        getCameraRotation());
+                nativeOnFrameAvailable(mNativeVideoCaptureDeviceAndroid,
+                        data, mExpectedFrameSize, getCameraRotation());
             }
         } finally {
             mPreviewBufferLock.unlock();

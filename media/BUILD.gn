@@ -403,8 +403,7 @@ component("media") {
     deps += [
       "//media/base/android",
       "//media/base/android:media_jni_headers",
-      "//media/capture/video/android:media_java",
-      "//media/capture/video/android:video_capture_jni_headers",
+      "//media/base/android:video_capture_jni_headers",
     ]
 
     # Only 64 bit builds are using android-21 NDK library, check common.gypi
@@ -720,6 +719,7 @@ test("media_unittests") {
       "filters/decrypting_video_decoder_unittest.cc",
     ]
     deps += [
+      "//media/base/android:media_java",
       "//media/base/android:unittests",
       "//ui/android:ui_java",
     ]

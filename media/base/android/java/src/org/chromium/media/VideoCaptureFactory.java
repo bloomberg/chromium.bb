@@ -25,13 +25,14 @@ import org.chromium.base.annotations.JNINamespace;
 @JNINamespace("media")
 @SuppressWarnings("deprecation")
 class VideoCaptureFactory {
+
     // Internal class to encapsulate camera device id manipulations.
     static class ChromiumCameraInfo {
         // Special devices have more cameras than usual. Those devices are
         // identified by model & device. Currently only the Tango is supported.
         // Note that these devices have no Camera.CameraInfo.
         private static final String[][] SPECIAL_DEVICE_LIST = {
-                {"Peanut", "peanut"},
+            {"Peanut", "peanut"},
         };
         private static int sNumberOfSystemCameras = -1;
         private static final String TAG = "cr.media";
@@ -70,10 +71,11 @@ class VideoCaptureFactory {
                                 != PackageManager.PERMISSION_GRANTED) {
                     sNumberOfSystemCameras = 0;
                     Log.w(TAG, "Missing android.permission.CAMERA permission, "
-                                    + "no system camera available.");
+                            + "no system camera available.");
                 } else {
                     if (isLReleaseOrLater()) {
-                        sNumberOfSystemCameras = VideoCaptureCamera2.getNumberOfCameras(appContext);
+                        sNumberOfSystemCameras =
+                                VideoCaptureCamera2.getNumberOfCameras(appContext);
                     } else {
                         sNumberOfSystemCameras = VideoCaptureAndroid.getNumberOfCameras();
                         if (isSpecialDevice()) {
@@ -96,13 +98,18 @@ class VideoCaptureFactory {
     static VideoCapture createVideoCapture(
             Context context, int id, long nativeVideoCaptureDeviceAndroid) {
         if (isLReleaseOrLater() && !VideoCaptureCamera2.isLegacyDevice(context, id)) {
-            return new VideoCaptureCamera2(context, id, nativeVideoCaptureDeviceAndroid);
+            return new VideoCaptureCamera2(context,
+                                           id,
+                                           nativeVideoCaptureDeviceAndroid);
         }
         if (!ChromiumCameraInfo.isSpecialCamera(id)) {
-            return new VideoCaptureAndroid(context, id, nativeVideoCaptureDeviceAndroid);
+            return new VideoCaptureAndroid(context,
+                                           id,
+                                           nativeVideoCaptureDeviceAndroid);
         }
-        return new VideoCaptureTango(
-                context, ChromiumCameraInfo.toSpecialCameraId(id), nativeVideoCaptureDeviceAndroid);
+        return new VideoCaptureTango(context,
+                                     ChromiumCameraInfo.toSpecialCameraId(id),
+                                     nativeVideoCaptureDeviceAndroid);
     }
 
     @CalledByNative
@@ -115,7 +122,8 @@ class VideoCaptureFactory {
         if (isLReleaseOrLater()) {
             return VideoCaptureCamera2.getCaptureApiType(id, appContext);
         } else if (ChromiumCameraInfo.isSpecialCamera(id)) {
-            return VideoCaptureTango.getCaptureApiType(ChromiumCameraInfo.toSpecialCameraId(id));
+            return VideoCaptureTango.getCaptureApiType(
+                    ChromiumCameraInfo.toSpecialCameraId(id));
         } else {
             return VideoCaptureAndroid.getCaptureApiType(id);
         }
@@ -138,7 +146,7 @@ class VideoCaptureFactory {
         }
         return ChromiumCameraInfo.isSpecialCamera(id)
                 ? VideoCaptureTango.getDeviceSupportedFormats(
-                          ChromiumCameraInfo.toSpecialCameraId(id))
+                        ChromiumCameraInfo.toSpecialCameraId(id))
                 : VideoCaptureAndroid.getDeviceSupportedFormats(id);
     }
 

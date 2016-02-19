@@ -19,6 +19,7 @@ import org.chromium.base.annotations.JNINamespace;
  **/
 @JNINamespace("media")
 public abstract class VideoCapture {
+
     // The angle (0, 90, 180, 270) that the image needs to be rotated to show in
     // the display's native orientation.
     protected int mCameraNativeOrientation;
@@ -32,7 +33,9 @@ public abstract class VideoCapture {
     // Native callback context variable.
     protected final long mNativeVideoCaptureDeviceAndroid;
 
-    VideoCapture(Context context, int id, long nativeVideoCaptureDeviceAndroid) {
+    VideoCapture(Context context,
+                 int id,
+                 long nativeVideoCaptureDeviceAndroid) {
         mContext = context;
         mId = id;
         mNativeVideoCaptureDeviceAndroid = nativeVideoCaptureDeviceAndroid;
@@ -84,8 +87,8 @@ public abstract class VideoCapture {
     }
 
     protected final int getCameraRotation() {
-        int rotation = mInvertDeviceOrientationReadings ? (360 - getDeviceRotation())
-                                                        : getDeviceRotation();
+        int rotation = mInvertDeviceOrientationReadings
+                ?  (360 - getDeviceRotation()) : getDeviceRotation();
         return (mCameraNativeOrientation + rotation) % 360;
     }
 
@@ -93,7 +96,7 @@ public abstract class VideoCapture {
         if (mContext == null) return 0;
         final int orientation;
         WindowManager wm = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
-        switch (wm.getDefaultDisplay().getRotation()) {
+        switch(wm.getDefaultDisplay().getRotation()) {
             case Surface.ROTATION_90:
                 orientation = 90;
                 break;
@@ -112,9 +115,12 @@ public abstract class VideoCapture {
     }
 
     // Method for VideoCapture implementations to call back native code.
-    public native void nativeOnFrameAvailable(
-            long nativeVideoCaptureDeviceAndroid, byte[] data, int length, int rotation);
+    public native void nativeOnFrameAvailable(long nativeVideoCaptureDeviceAndroid,
+                                              byte[] data,
+                                              int length,
+                                              int rotation);
 
     // Method for VideoCapture implementations to signal an asynchronous error.
-    public native void nativeOnError(long nativeVideoCaptureDeviceAndroid, String message);
+    public native void nativeOnError(long nativeVideoCaptureDeviceAndroid,
+                                     String message);
 }
