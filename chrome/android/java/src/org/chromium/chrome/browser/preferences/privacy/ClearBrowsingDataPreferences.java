@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import android.widget.ListView;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
@@ -87,8 +88,8 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
     }
 
     private static final String PREF_HISTORY = "clear_history_checkbox";
-    private static final String PREF_CACHE = "clear_cache_checkbox";
     private static final String PREF_COOKIES = "clear_cookies_checkbox";
+    private static final String PREF_CACHE = "clear_cache_checkbox";
     private static final String PREF_PASSWORDS = "clear_passwords_checkbox";
     private static final String PREF_FORM_DATA = "clear_form_data_checkbox";
     private static final String PREF_BOOKMARKS = "clear_bookmarks_checkbox";
@@ -107,8 +108,8 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
      */
     public enum DialogOption {
         CLEAR_HISTORY(BrowsingDataType.HISTORY, PREF_HISTORY),
-        CLEAR_CACHE(BrowsingDataType.CACHE, PREF_CACHE),
         CLEAR_COOKIES_AND_SITE_DATA(BrowsingDataType.COOKIES, PREF_COOKIES),
+        CLEAR_CACHE(BrowsingDataType.CACHE, PREF_CACHE),
         CLEAR_PASSWORDS(BrowsingDataType.PASSWORDS, PREF_PASSWORDS),
         CLEAR_FORM_DATA(BrowsingDataType.FORM_DATA, PREF_FORM_DATA),
         // Clear bookmarks is only used by ClearSyncData dialog.
@@ -210,8 +211,8 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
     protected DialogOption[] getDialogOptions() {
         return new DialogOption[] {
             DialogOption.CLEAR_HISTORY,
-            DialogOption.CLEAR_CACHE,
             DialogOption.CLEAR_COOKIES_AND_SITE_DATA,
+            DialogOption.CLEAR_CACHE,
             DialogOption.CLEAR_PASSWORDS,
             DialogOption.CLEAR_FORM_DATA};
     }
@@ -347,9 +348,9 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
         // the user is signed in.
         Preference summary = findPreference(PREF_SUMMARY);
         if (ChromeSigninController.get(getActivity()).isSignedIn()) {
-            summary.setTitle(R.string.clear_browsing_data_footnote);
+            summary.setSummary(R.string.clear_browsing_data_footnote_signed);
         } else {
-            summary.setTitle(R.string.clear_browsing_data_footnote_synced);
+            summary.setSummary(R.string.clear_browsing_data_footnote);
         }
     }
 
@@ -358,6 +359,9 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
         super.onActivityCreated(savedInstanceState);
         // Now that the dialog's view has been created, update the button state.
         updateButtonState();
+
+        // Remove the dividers between checkboxes.
+        ((ListView) getView().findViewById(android.R.id.list)).setDivider(null);
     }
 
     @Override
