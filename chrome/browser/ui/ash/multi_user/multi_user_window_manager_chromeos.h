@@ -23,7 +23,6 @@
 class Browser;
 class MultiUserNotificationBlockerChromeOS;
 class MultiUserNotificationBlockerChromeOSTest;
-class Profile;
 
 namespace content {
 class BrowserContext;
@@ -223,12 +222,6 @@ class MultiUserWindowManagerChromeOS
   // Get the animation time in milliseconds dependent on the |AnimationSpeed|
   // from the passed |default_time_in_ms|.
   int GetAdjustedAnimationTimeInMS(int default_time_in_ms) const;
-
-  // This is called when KeyedService (for |account_id| and |profile|) is
-  // destroyed, or when MultiUserWindowManagerChromeOS is destroyed.
-  // This happens on shutdown, before profile prefs are stored to
-  // disk.
-  void RemoveUser(const AccountId& account_id, Profile* profile);
 
   // A lookup to see to which user the given window belongs to, where and if it
   // should get shown.
