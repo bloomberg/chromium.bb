@@ -7269,6 +7269,52 @@
       }
     ]
   },
+  "MD Top Chrome ChromeOS material-hybrid": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--top-chrome-md=material-hybrid"
+        ],
+        "test": "ash_unittests"
+      },
+      {
+        "args": [
+          "--top-chrome-md=material-hybrid"
+        ],
+        "test": "aura_unittests"
+      },
+      {
+        "args": [
+          "--top-chrome-md=material-hybrid"
+        ],
+        "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--top-chrome-md=material-hybrid"
+        ],
+        "test": "interactive_ui_tests"
+      },
+      {
+        "args": [
+          "--top-chrome-md=material-hybrid"
+        ],
+        "test": "ui_base_unittests"
+      },
+      {
+        "args": [
+          "--top-chrome-md=material-hybrid"
+        ],
+        "test": "unit_tests"
+      },
+      {
+        "args": [
+          "--top-chrome-md=material-hybrid"
+        ],
+        "test": "views_unittests"
+      }
+    ]
+  },
   "MD Top Chrome ChromeOS non-material": {
     "gtest_tests": [
       {
@@ -7317,6 +7363,86 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "views_unittests"
+      }
+    ]
+  },
+  "MD Top Chrome Linux material": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--top-chrome-md=material"
+        ],
+        "test": "aura_unittests"
+      },
+      {
+        "args": [
+          "--top-chrome-md=material"
+        ],
+        "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--top-chrome-md=material"
+        ],
+        "test": "interactive_ui_tests"
+      },
+      {
+        "args": [
+          "--top-chrome-md=material"
+        ],
+        "test": "ui_base_unittests"
+      },
+      {
+        "args": [
+          "--top-chrome-md=material"
+        ],
+        "test": "unit_tests"
+      },
+      {
+        "args": [
+          "--top-chrome-md=material"
+        ],
+        "test": "views_unittests"
+      }
+    ]
+  },
+  "MD Top Chrome Win material": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--top-chrome-md=material"
+        ],
+        "test": "aura_unittests"
+      },
+      {
+        "args": [
+          "--top-chrome-md=material"
+        ],
+        "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--top-chrome-md=material"
+        ],
+        "test": "interactive_ui_tests"
+      },
+      {
+        "args": [
+          "--top-chrome-md=material"
+        ],
+        "test": "ui_base_unittests"
+      },
+      {
+        "args": [
+          "--top-chrome-md=material"
+        ],
+        "test": "unit_tests"
+      },
+      {
+        "args": [
+          "--top-chrome-md=material"
+        ],
         "test": "views_unittests"
       }
     ]
