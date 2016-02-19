@@ -214,9 +214,6 @@ AccountConsistencyService::AccountConsistencyService(
   gaia_cookie_manager_service_->AddObserver(this);
   signin_manager_->AddObserver(this);
   web::BrowserState::GetActiveStateManager(browser_state_)->AddObserver(this);
-  memory_pressure_listener_.reset(new base::MemoryPressureListener(base::Bind(
-      &AccountConsistencyService::OnMemoryPressure, base::Unretained(this))));
-
   LoadFromPrefs();
   if (signin_manager_->IsAuthenticated()) {
     AddXChromeConnectedCookies();
@@ -478,14 +475,4 @@ void AccountConsistencyService::OnInactive() {
   // |browser_state_| is now inactive. Stop using |web_view_| and don't create
   // a new one until it is active.
   ResetWKWebView();
-}
-
-void AccountConsistencyService::OnMemoryPressure(
-    base::MemoryPressureListener::MemoryPressureLevel level) {
-  bool is_memory_pressure_critical =
-      (level == base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
-  if (is_memory_pressure_critical && !applying_cookie_requests_) {
-    // |web_view_| isn't being used, release it.
-    ResetWKWebView();
-  }
 }

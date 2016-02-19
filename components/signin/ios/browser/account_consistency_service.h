@@ -12,7 +12,6 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
@@ -152,10 +151,6 @@ class AccountConsistencyService : public KeyedService,
   void OnActive() override;
   void OnInactive() override;
 
-  // Memory pressure callback.
-  void OnMemoryPressure(
-      base::MemoryPressureListener::MemoryPressureLevel level);
-
   // Browser state associated with the service, used to create WKWebViews.
   web::BrowserState* browser_state_;
   // Service managing accounts reconciliation, notified of GAIA responses with
@@ -191,9 +186,6 @@ class AccountConsistencyService : public KeyedService,
   // header set.
   std::map<web::WebState*, scoped_ptr<web::WebStatePolicyDecider>>
       web_state_handlers_;
-
-  // Listens to memory pressure notifications.
-  scoped_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountConsistencyService);
 };

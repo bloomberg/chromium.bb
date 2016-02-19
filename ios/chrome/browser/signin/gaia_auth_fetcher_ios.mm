@@ -6,8 +6,6 @@
 
 #import <WebKit/WebKit.h>
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/json/string_escape.h"
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
@@ -212,8 +210,6 @@ GaiaAuthFetcherIOSBridge::GaiaAuthFetcherIOSBridge(
     web::BrowserState* browser_state)
     : browser_state_(browser_state), fetcher_(fetcher), request_() {
   web::BrowserState::GetActiveStateManager(browser_state_)->AddObserver(this);
-  memory_pressure_listener_.reset(new base::MemoryPressureListener(base::Bind(
-      &GaiaAuthFetcherIOSBridge::OnMemoryPressure, base::Unretained(this))));
 }
 
 GaiaAuthFetcherIOSBridge::~GaiaAuthFetcherIOSBridge() {
@@ -313,16 +309,6 @@ void GaiaAuthFetcherIOSBridge::OnInactive() {
   // |browser_state_| is now inactive. Stop using |web_view_| and don't create
   // a new one until it is active.
   ResetWKWebView();
-}
-
-void GaiaAuthFetcherIOSBridge::OnMemoryPressure(
-    base::MemoryPressureListener::MemoryPressureLevel level) {
-  bool is_memory_pressure_critical =
-      (level == base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
-  if (is_memory_pressure_critical && !request_.pending) {
-    // |web_view_| isn't being used, release it.
-    ResetWKWebView();
-  }
 }
 
 #pragma mark - GaiaAuthFetcherIOS definition

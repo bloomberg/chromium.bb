@@ -72,7 +72,6 @@ class GaiaAuthFetcherIOSTest : public PlatformTest {
     return gaia_auth_fetcher_->bridge_.get();
   }
 
-  bool HasWKWebView() { return gaia_auth_fetcher_->bridge_->web_view_; }
   id GetMockWKWebView() { return gaia_auth_fetcher_->bridge_->GetWKWebView(); }
 
   web::TestWebThreadBundle thread_bundle_;
@@ -190,37 +189,5 @@ TEST_F(GaiaAuthFetcherIOSTest, StopOnInactiveReFetchOnActive) {
   gaia_auth_fetcher_->StartMergeSession("uber_token", "");
   web::BrowserState::GetActiveStateManager(&browser_state_)->SetActive(false);
   web::BrowserState::GetActiveStateManager(&browser_state_)->SetActive(true);
-  EXPECT_OCMOCK_VERIFY(GetMockWKWebView());
-}
-
-// Tests that the web view is not released when receiving a memory pressure
-// notification if it is being used.
-TEST_F(GaiaAuthFetcherIOSTest, UsedWebViewNotReleasedOnMemoryPressure) {
-  [static_cast<WKWebView*>([GetMockWKWebView() expect])
-      loadRequest:[OCMArg any]];
-  gaia_auth_fetcher_->StartMergeSession("uber_token", "");
-
-  base::MemoryPressureListener::NotifyMemoryPressure(
-      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_TRUE(HasWKWebView());
-  EXPECT_OCMOCK_VERIFY(GetMockWKWebView());
-}
-
-// Tests that the web view is correctly released when receiving a memory
-// pressure notification if it is not being used.
-TEST_F(GaiaAuthFetcherIOSTest, UnusedWebViewReleasedOnMemoryPressure) {
-  EXPECT_CALL(consumer_, OnMergeSessionSuccess("data")).Times(1);
-  [static_cast<WKWebView*>([[GetMockWKWebView() expect] andDo:^(NSInvocation*) {
-    GetBridge()->URLFetchSuccess("data");
-  }]) loadRequest:[OCMArg any]];
-  gaia_auth_fetcher_->StartMergeSession("uber_token", "");
-
-  base::MemoryPressureListener::NotifyMemoryPressure(
-      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_FALSE(HasWKWebView());
   EXPECT_OCMOCK_VERIFY(GetMockWKWebView());
 }

@@ -9,7 +9,6 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "base/memory/memory_pressure_listener.h"
 #include "ios/web/public/active_state_manager.h"
 
 class GaiaAuthFetcherIOS;
@@ -93,10 +92,6 @@ class GaiaAuthFetcherIOSBridge : web::ActiveStateManager::Observer {
   void OnActive() override;
   void OnInactive() override;
 
-  // Memory pressure callback.
-  void OnMemoryPressure(
-      base::MemoryPressureListener::MemoryPressureLevel level);
-
   // Browser state associated with the bridge, used to create WKWebViews.
   web::BrowserState* browser_state_;
   // Fetcher owning this bridge.
@@ -108,9 +103,6 @@ class GaiaAuthFetcherIOSBridge : web::ActiveStateManager::Observer {
   base::scoped_nsobject<GaiaAuthFetcherNavigationDelegate> navigation_delegate_;
   // Web view used to do the network requests.
   base::scoped_nsobject<WKWebView> web_view_;
-
-  // Listens to memory pressure notifications.
-  scoped_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
   DISALLOW_COPY_AND_ASSIGN(GaiaAuthFetcherIOSBridge);
 };
