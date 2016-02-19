@@ -107,7 +107,6 @@ class AppsContainerView : public AppListPage, public TopIconAnimationObserver {
 
   void PrepareToShowApps(AppListFolderItem* folder_item);
 
-  AppListModel* model_;
   AppsGridView* apps_grid_view_;  // Owned by views hierarchy.
   AppListFolderView* app_list_folder_view_;  // Owned by views hierarchy.
   FolderBackgroundView* folder_background_view_;  // Owned by views hierarchy.
