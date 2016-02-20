@@ -266,38 +266,6 @@ PluginObserver::~PluginObserver() {
 #endif
 }
 
-void PluginObserver::RenderFrameCreated(
-    content::RenderFrameHost* render_frame_host) {
-#if defined(OS_WIN)
-  // If the window belongs to the Ash desktop, before we navigate we need
-  // to tell the renderview that NPAPI plugins are not supported so it does
-  // not try to instantiate them. The final decision is actually done in
-  // the IO thread by PluginInfoMessageFilter of this proces,s but it's more
-  // complex to manage a map of Ash views in PluginInfoMessageFilter than
-  // just telling the renderer via IPC.
-
-  // TODO(shrikant): Implement solution which will help associate
-  // render_view_host/webcontents/view/window instance with host desktop.
-  // Refer to issue http://crbug.com/317940.
-  // When non-active tabs are restored they are not added in view/window parent
-  // hierarchy (chrome::CreateRestoredTab/CreateParams). Normally we traverse
-  // parent hierarchy to identify containing desktop (like in function
-  // chrome::GetHostDesktopTypeForNativeView).
-  // Possible issue with chrome::GetActiveDesktop, is that it's global
-  // state, which remembers last active desktop, which may break in scenarios
-  // where we have instances on both Ash and Native desktop.
-
-  // We will do both tests. Both have some factor of unreliability.
-  aura::Window* window = web_contents()->GetNativeView();
-  if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH ||
-      chrome::GetHostDesktopTypeForNativeView(window) ==
-      chrome::HOST_DESKTOP_TYPE_ASH) {
-    int routing_id = render_frame_host->GetRoutingID();
-    render_frame_host->Send(new ChromeViewMsg_NPAPINotSupported(routing_id));
-  }
-#endif
-}
-
 void PluginObserver::PluginCrashed(const base::FilePath& plugin_path,
                                    base::ProcessId plugin_pid) {
   DCHECK(!plugin_path.value().empty());
