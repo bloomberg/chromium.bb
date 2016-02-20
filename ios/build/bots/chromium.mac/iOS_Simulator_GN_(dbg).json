@@ -14,7 +14,7 @@
     "use_goma": "1"
   },
   "gn_args": [
-    "gomadir=$(goma_dir)",
+    "goma_dir=\"$(goma_dir)\"",
     "target_os=\"ios\"",
     "use_goma=true"
   ],

@@ -14,7 +14,7 @@
     "use_goma": "1"
   },
   "gn_args": [
-    "gomadir=$(goma_dir)",
+    "goma_dir=\"$(goma_dir)\"",
     "ios_enable_code_signing=false",
     "target_cpu=\"arm\"",
     "target_os=\"ios\"",
