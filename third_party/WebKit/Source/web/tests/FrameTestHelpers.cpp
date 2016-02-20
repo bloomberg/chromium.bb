@@ -56,7 +56,7 @@ namespace {
 // dance. Since the parser is threaded, simply spinning the run loop once is not
 // enough to ensure completion of a load. Instead, the following pattern is
 // used to ensure that tests see the final state:
-// 1. Post a task to trigger a load (LoadTask/LoadHTMLStringTask/ReloadTask).
+// 1. Starts a load.
 // 2. Enter the run loop.
 // 3. Posted task triggers the load, and starts pumping pending resource
 //    requests using ServeAsyncRequestsTask.
@@ -98,84 +98,6 @@ void pumpPendingRequests(WebFrame* frame)
     testing::enterRunLoop();
 }
 
-class LoadTask : public WebTaskRunner::Task {
-public:
-    LoadTask(WebFrame* frame, const WebURLRequest& request)
-        : m_frame(frame)
-        , m_request(request)
-    {
-    }
-
-    void run() override
-    {
-        m_frame->loadRequest(m_request);
-    }
-
-private:
-    WebFrame* const m_frame;
-    const WebURLRequest m_request;
-};
-
-class LoadHTMLStringTask : public WebTaskRunner::Task {
-public:
-    LoadHTMLStringTask(WebFrame* frame, const std::string& html, const WebURL& baseURL)
-        : m_frame(frame)
-        , m_html(html)
-        , m_baseURL(baseURL)
-    {
-    }
-
-    void run() override
-    {
-        m_frame->loadHTMLString(WebData(m_html.data(), m_html.size()), m_baseURL);
-    }
-
-private:
-    WebFrame* const m_frame;
-    const std::string m_html;
-    const WebURL m_baseURL;
-};
-
-class LoadHistoryItemTask : public WebTaskRunner::Task {
-public:
-    LoadHistoryItemTask(WebFrame* frame, const WebHistoryItem& item, WebHistoryLoadType loadType, WebURLRequest::CachePolicy cachePolicy)
-        : m_frame(frame)
-        , m_item(item)
-        , m_loadType(loadType)
-        , m_cachePolicy(cachePolicy)
-    {
-    }
-
-    void run() override
-    {
-        m_frame->loadHistoryItem(m_item, m_loadType, m_cachePolicy);
-    }
-
-private:
-    WebFrame* const m_frame;
-    const WebHistoryItem m_item;
-    const WebHistoryLoadType m_loadType;
-    const WebURLRequest::CachePolicy m_cachePolicy;
-};
-
-class ReloadTask : public WebTaskRunner::Task {
-public:
-    ReloadTask(WebFrame* frame, bool ignoreCache)
-        : m_frame(frame)
-        , m_ignoreCache(ignoreCache)
-    {
-    }
-
-    void run() override
-    {
-        m_frame->reload(m_ignoreCache);
-    }
-
-private:
-    WebFrame* const m_frame;
-    const bool m_ignoreCache;
-};
-
 TestWebFrameClient* defaultWebFrameClient()
 {
     DEFINE_STATIC_LOCAL(TestWebFrameClient, client, ());
@@ -195,32 +117,31 @@ void loadFrame(WebFrame* frame, const std::string& url)
     WebURLRequest urlRequest;
     urlRequest.initialize();
     urlRequest.setURL(URLTestHelpers::toKURL(url));
-
-    Platform::current()->currentThread()->taskRunner()->postTask(BLINK_FROM_HERE, new LoadTask(frame, urlRequest));
+    frame->loadRequest(urlRequest);
     pumpPendingRequests(frame);
 }
 
 void loadHTMLString(WebFrame* frame, const std::string& html, const WebURL& baseURL)
 {
-    Platform::current()->currentThread()->taskRunner()->postTask(BLINK_FROM_HERE, new LoadHTMLStringTask(frame, html, baseURL));
+    frame->loadHTMLString(WebData(html.data(), html.size()), baseURL);
     pumpPendingRequests(frame);
 }
 
 void loadHistoryItem(WebFrame* frame, const WebHistoryItem& item, WebHistoryLoadType loadType, WebURLRequest::CachePolicy cachePolicy)
 {
-    Platform::current()->currentThread()->taskRunner()->postTask(BLINK_FROM_HERE, new LoadHistoryItemTask(frame, item, loadType, cachePolicy));
+    frame->loadHistoryItem(item, loadType, cachePolicy);
     pumpPendingRequests(frame);
 }
 
 void reloadFrame(WebFrame* frame)
 {
-    Platform::current()->currentThread()->taskRunner()->postTask(BLINK_FROM_HERE, new ReloadTask(frame, false));
+    frame->reload(false);
     pumpPendingRequests(frame);
 }
 
 void reloadFrameIgnoringCache(WebFrame* frame)
 {
-    Platform::current()->currentThread()->taskRunner()->postTask(BLINK_FROM_HERE, new ReloadTask(frame, true));
+    frame->reload(true);
     pumpPendingRequests(frame);
 }
 
