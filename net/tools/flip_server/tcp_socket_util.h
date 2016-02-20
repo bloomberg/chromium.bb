@@ -9,6 +9,12 @@
 
 namespace net {
 
+// This function disables buffering in the kernel. By default, TCP sockets
+// will wait up to 200ms for more data to complete a packet before transmitting.
+// After calling this function, the kernel will not wait. See TCP_NODELAY in
+// `man 7 tcp`.
+int SetDisableNagle(int fd);
+
 // Summary:
 //   creates a socket for listening, and bind()s and listen()s it.
 // Args:
