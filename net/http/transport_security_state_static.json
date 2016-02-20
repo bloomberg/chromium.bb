@@ -252,6 +252,7 @@
     // Other Google-related domains that must use HTTPS.
     { "name": "apis.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "build.chromium.org", "include_subdomains": true, "mode": "force-https", "pins": "google" },
+    { "name": "bugs.chromium.org", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "chrome.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "chrome-devtools-frontend.appspot.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "chromiumcodereview.appspot.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
