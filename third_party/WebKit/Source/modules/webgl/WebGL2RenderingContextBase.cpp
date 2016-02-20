@@ -634,7 +634,7 @@ void WebGL2RenderingContextBase::readPixels(GLint x, GLint y, GLsizei width, GLs
     long long size = buffer->getSize() - offset;
     // If size is negative, or size is not large enough to store pixels, those cases
     // are handled by validateReadPixelsFuncParameters to generate INVALID_OPERATION.
-    if (!validateReadPixelsFuncParameters(width, height, format, type, size))
+    if (!validateReadPixelsFuncParameters(width, height, format, type, nullptr, size))
         return;
 
     clearIfComposited();
@@ -2992,7 +2992,7 @@ bool WebGL2RenderingContextBase::validateFramebufferTarget(GLenum target)
     }
 }
 
-bool WebGL2RenderingContextBase::validateReadPixelsFormatAndType(GLenum format, GLenum type)
+bool WebGL2RenderingContextBase::validateReadPixelsFormatAndType(GLenum format, GLenum type, DOMArrayBufferView* buffer)
 {
     switch (format) {
     case GL_RED:
@@ -3014,48 +3014,62 @@ bool WebGL2RenderingContextBase::validateReadPixelsFormatAndType(GLenum format, 
 
     switch (type) {
     case GL_UNSIGNED_BYTE:
+        if (buffer && buffer->type() != DOMArrayBufferView::TypeUint8) {
+            synthesizeGLError(GL_INVALID_OPERATION, "readPixels", "type UNSIGNED_BYTE but ArrayBufferView not Uint8Array");
+            return false;
+        }
+        return true;
     case GL_BYTE:
+        if (buffer && buffer->type() != DOMArrayBufferView::TypeInt8) {
+            synthesizeGLError(GL_INVALID_OPERATION, "readPixels", "type BYTE but ArrayBufferView not Int8Array");
+            return false;
+        }
+        return true;
     case GL_HALF_FLOAT:
+        if (buffer && buffer->type() != DOMArrayBufferView::TypeUint16) {
+            synthesizeGLError(GL_INVALID_OPERATION, "readPixels", "type HALF_FLOAT but ArrayBufferView not Uint16Array");
+            return false;
+        }
+        return true;
     case GL_FLOAT:
+        if (buffer && buffer->type() != DOMArrayBufferView::TypeFloat32) {
+            synthesizeGLError(GL_INVALID_OPERATION, "readPixels", "type FLOAT but ArrayBufferView not Float32Array");
+            return false;
+        }
+        return true;
     case GL_UNSIGNED_SHORT:
     case GL_UNSIGNED_SHORT_5_6_5:
     case GL_UNSIGNED_SHORT_4_4_4_4:
     case GL_UNSIGNED_SHORT_5_5_5_1:
+        if (buffer && buffer->type() != DOMArrayBufferView::TypeUint16) {
+            synthesizeGLError(GL_INVALID_OPERATION, "readPixels", "type UNSIGNED_SHORT but ArrayBufferView not Uint16Array");
+            return false;
+        }
+        return true;
     case GL_SHORT:
+        if (buffer && buffer->type() != DOMArrayBufferView::TypeInt16) {
+            synthesizeGLError(GL_INVALID_OPERATION, "readPixels", "type SHORT but ArrayBufferView not Int16Array");
+            return false;
+        }
+        return true;
     case GL_UNSIGNED_INT:
     case GL_UNSIGNED_INT_2_10_10_10_REV:
     case GL_UNSIGNED_INT_10F_11F_11F_REV:
     case GL_UNSIGNED_INT_5_9_9_9_REV:
+        if (buffer && buffer->type() != DOMArrayBufferView::TypeUint32) {
+            synthesizeGLError(GL_INVALID_OPERATION, "readPixels", "type UNSIGNED_INT but ArrayBufferView not Uint32Array");
+            return false;
+        }
+        return true;
     case GL_INT:
-        break;
+        if (buffer && buffer->type() != DOMArrayBufferView::TypeInt32) {
+            synthesizeGLError(GL_INVALID_OPERATION, "readPixels", "type INT but ArrayBufferView not Int32Array");
+            return false;
+        }
+        return true;
     default:
         synthesizeGLError(GL_INVALID_ENUM, "readPixels", "invalid type");
         return false;
-    }
-
-    return true;
-}
-
-DOMArrayBufferView::ViewType WebGL2RenderingContextBase::readPixelsExpectedArrayBufferViewType(GLenum type)
-{
-    switch (type) {
-    case GL_BYTE:
-        return DOMArrayBufferView::TypeInt8;
-    case GL_UNSIGNED_SHORT:
-        return DOMArrayBufferView::TypeUint16;
-    case GL_SHORT:
-        return DOMArrayBufferView::TypeInt16;
-    case GL_HALF_FLOAT:
-        return DOMArrayBufferView::TypeUint16;
-    case GL_UNSIGNED_INT:
-    case GL_UNSIGNED_INT_2_10_10_10_REV:
-    case GL_UNSIGNED_INT_10F_11F_11F_REV:
-    case GL_UNSIGNED_INT_5_9_9_9_REV:
-        return DOMArrayBufferView::TypeUint32;
-    case GL_INT:
-        return DOMArrayBufferView::TypeInt32;
-    default:
-        return WebGLRenderingContextBase::readPixelsExpectedArrayBufferViewType(type);
     }
 }
 

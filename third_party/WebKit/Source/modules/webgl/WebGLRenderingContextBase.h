@@ -848,16 +848,14 @@ protected:
     // If not, generates a GL error, returns false.
     bool validateReadBufferAndGetInfo(const char* functionName, WebGLFramebuffer*& readFramebufferBinding);
 
-    // Helper function to check format/type enums for readPixels.
+    // Helper function to check format/type and ArrayBuffer view type for readPixels.
     // Generates INVALID_ENUM and returns false if parameters are invalid.
-    virtual bool validateReadPixelsFormatAndType(GLenum format, GLenum type);
-
-    // Helper function to get expected ArrayBuffer view type for readPixels.
-    virtual DOMArrayBufferView::ViewType readPixelsExpectedArrayBufferViewType(GLenum type);
+    // Generates INVALID_OPERATION if ArrayBuffer view type is incompatible with type.
+    virtual bool validateReadPixelsFormatAndType(GLenum format, GLenum type, DOMArrayBufferView*);
 
     // Helper function to check parameters of readPixels. Returns true if all parameters
     // are valid. Otherwise, generates appropriate error and returns false.
-    bool validateReadPixelsFuncParameters(GLsizei width, GLsizei height, GLenum format, GLenum type, long long bufferSize);
+    bool validateReadPixelsFuncParameters(GLsizei width, GLsizei height, GLenum format, GLenum type, DOMArrayBufferView*, long long bufferSize);
 
     virtual GLint getMaxTextureLevelForTarget(GLenum target);
 

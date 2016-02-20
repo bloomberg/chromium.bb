@@ -224,9 +224,8 @@ protected:
     bool validateBufferTarget(const char* functionName, GLenum target) override;
     bool validateAndUpdateBufferBindTarget(const char* functionName, GLenum, WebGLBuffer*) override;
     bool validateFramebufferTarget(GLenum target) override;
-    bool validateReadPixelsFormatAndType(GLenum format, GLenum type) override;
 
-    DOMArrayBufferView::ViewType readPixelsExpectedArrayBufferViewType(GLenum type) override;
+    bool validateReadPixelsFormatAndType(GLenum format, GLenum type, DOMArrayBufferView*) override;
     WebGLFramebuffer* getFramebufferBinding(GLenum target) override;
     WebGLFramebuffer* getReadFramebufferBinding() override;
     GLint getMaxTextureLevelForTarget(GLenum target) override;
