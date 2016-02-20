@@ -445,17 +445,17 @@ static void amdgpu_command_submission_gfx_shared_ib(void)
 	CU_ASSERT_EQUAL(r, 0);
 }
 
-static void amdgpu_command_submission_cp_write_data(void)
+static void amdgpu_command_submission_gfx_cp_write_data(void)
 {
 	amdgpu_command_submission_write_linear_helper(AMDGPU_HW_IP_GFX);
 }
 
-static void amdgpu_command_submission_cp_const_fill(void)
+static void amdgpu_command_submission_gfx_cp_const_fill(void)
 {
 	amdgpu_command_submission_const_fill_helper(AMDGPU_HW_IP_GFX);
 }
 
-static void amdgpu_command_submission_cp_copy_data(void)
+static void amdgpu_command_submission_gfx_cp_copy_data(void)
 {
 	amdgpu_command_submission_copy_linear_helper(AMDGPU_HW_IP_GFX);
 }
@@ -463,11 +463,11 @@ static void amdgpu_command_submission_cp_copy_data(void)
 static void amdgpu_command_submission_gfx(void)
 {
 	/* write data using the CP */
-	amdgpu_command_submission_cp_write_data();
+	amdgpu_command_submission_gfx_cp_write_data();
 	/* const fill using the CP */
-	amdgpu_command_submission_cp_const_fill();
+	amdgpu_command_submission_gfx_cp_const_fill();
 	/* copy data using the CP */
-	amdgpu_command_submission_cp_copy_data();
+	amdgpu_command_submission_gfx_cp_copy_data();
 	/* separate IB buffers for multi-IB submission */
 	amdgpu_command_submission_gfx_separate_ibs();
 	/* shared IB buffer for multi-IB submission */
@@ -602,7 +602,7 @@ static void amdgpu_semaphore_test(void)
 	CU_ASSERT_EQUAL(r, 0);
 }
 
-static void amdgpu_command_submission_compute(void)
+static void amdgpu_command_submission_compute_nop(void)
 {
 	amdgpu_context_handle context_handle;
 	amdgpu_bo_handle ib_result_handle;
@@ -671,6 +671,33 @@ static void amdgpu_command_submission_compute(void)
 
 	r = amdgpu_cs_ctx_free(context_handle);
 	CU_ASSERT_EQUAL(r, 0);
+}
+
+static void amdgpu_command_submission_compute_cp_write_data(void)
+{
+	amdgpu_command_submission_write_linear_helper(AMDGPU_HW_IP_COMPUTE);
+}
+
+static void amdgpu_command_submission_compute_cp_const_fill(void)
+{
+	amdgpu_command_submission_const_fill_helper(AMDGPU_HW_IP_COMPUTE);
+}
+
+static void amdgpu_command_submission_compute_cp_copy_data(void)
+{
+	amdgpu_command_submission_copy_linear_helper(AMDGPU_HW_IP_COMPUTE);
+}
+
+static void amdgpu_command_submission_compute(void)
+{
+	/* write data using the CP */
+	amdgpu_command_submission_compute_cp_write_data();
+	/* const fill using the CP */
+	amdgpu_command_submission_compute_cp_const_fill();
+	/* copy data using the CP */
+	amdgpu_command_submission_compute_cp_copy_data();
+	/* nop test */
+	amdgpu_command_submission_compute_nop();
 }
 
 /*
