@@ -23,8 +23,7 @@ namespace printing {
 bool PrintWebViewHelper::PrintPagesNative(blink::WebFrame* frame,
                                           int page_count) {
   PdfMetafileSkia metafile;
-  if (!metafile.Init())
-    return false;
+  CHECK(metafile.Init());
 
   const PrintMsg_PrintPages_Params& params = *print_pages_params_;
   std::vector<int> printed_pages = GetPrintedPages(params, page_count);

@@ -16,10 +16,6 @@ namespace printing {
 #if defined(ENABLE_BASIC_PRINTING)
 bool PrintWebViewHelper::PrintPagesNative(blink::WebFrame* frame,
                                           int page_count) {
-  PdfMetafileSkia metafile;
-  if (!metafile.Init())
-    return false;
-
   const PrintMsg_PrintPages_Params& params = *print_pages_params_;
   std::vector<int> printed_pages = GetPrintedPages(params, page_count);
   if (printed_pages.empty())
@@ -27,6 +23,9 @@ bool PrintWebViewHelper::PrintPagesNative(blink::WebFrame* frame,
 
   std::vector<gfx::Size> page_size_in_dpi(printed_pages.size());
   std::vector<gfx::Rect> content_area_in_dpi(printed_pages.size());
+
+  PdfMetafileSkia metafile;
+  CHECK(metafile.Init());
 
   PrintMsg_PrintPage_Params page_params;
   page_params.params = params.params;

@@ -32,7 +32,7 @@ PdfMetafileSkia* MetafileSkiaWrapper::GetMetafileFromCanvas(
   SkMetaData& meta = skia::GetMetaData(canvas);
   SkRefCnt* value;
   if (!meta.findRefCnt(kMetafileKey, &value) || !value)
-    return NULL;
+    return nullptr;
 
   return static_cast<MetafileSkiaWrapper*>(value)->metafile_;
 }

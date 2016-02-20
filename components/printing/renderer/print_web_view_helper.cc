@@ -2011,11 +2011,7 @@ bool PrintWebViewHelper::PrintPreviewContext::CreatePreviewDocument(
   }
 
   metafile_.reset(new PdfMetafileSkia);
-  if (!metafile_->Init()) {
-    set_error(PREVIEW_ERROR_METAFILE_INIT_FAILED);
-    LOG(ERROR) << "PdfMetafileSkia Init failed";
-    return false;
-  }
+  CHECK(metafile_->Init());
 
   current_page_index_ = 0;
   pages_to_render_ = pages;

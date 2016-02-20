@@ -42,8 +42,7 @@ void PrintWebViewHelper::PrintPageInternal(
     const PrintMsg_PrintPage_Params& params,
     blink::WebFrame* frame) {
   PdfMetafileSkia metafile;
-  if (!metafile.Init())
-    return;
+  CHECK(metafile.Init());
 
   int page_number = params.page_number;
   gfx::Size page_size_in_dpi;
@@ -82,12 +81,7 @@ bool PrintWebViewHelper::RenderPreviewPage(
 
   if (render_to_draft) {
     draft_metafile.reset(new PdfMetafileSkia());
-    if (!draft_metafile->Init()) {
-      print_preview_context_.set_error(
-          PREVIEW_ERROR_MAC_DRAFT_METAFILE_INIT_FAILED);
-      LOG(ERROR) << "Draft PdfMetafileSkia Init failed";
-      return false;
-    }
+    CHECK(draft_metafile->Init());
     initial_render_metafile = draft_metafile.get();
   }
 

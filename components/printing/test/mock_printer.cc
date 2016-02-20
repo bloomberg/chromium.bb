@@ -228,10 +228,9 @@ int MockPrinter::GetPrintedPages() const {
 }
 
 const MockPrinterPage* MockPrinter::GetPrintedPage(unsigned int pageno) const {
-  if (pages_.size() > pageno)
-    return pages_[pageno].get();
-  else
-    return NULL;
+  if (pageno >= pages_.size())
+    return nullptr;
+  return pages_[pageno].get();
 }
 
 int MockPrinter::GetWidth(unsigned int page) const {
