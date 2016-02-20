@@ -385,16 +385,12 @@ public:
     bool gotoAnchorNeededAfterStylesheetsLoad() { return m_gotoAnchorNeededAfterStylesheetsLoad; }
     void setGotoAnchorNeededAfterStylesheetsLoad(bool b) { m_gotoAnchorNeededAfterStylesheetsLoad = b; }
 
-    // Called when one or more stylesheets in the document may have been added, removed, or changed.
-    void styleResolverChanged(StyleResolverUpdateMode = FullStyleUpdate);
-    void styleResolverMayHaveChanged();
-
-    // FIXME: Switch all callers of styleResolverChanged to these or better ones and then make them
+    // FIXME: Switch all callers of resolverChanged to these or better ones and then make them
     // do something smarter.
     void removedStyleSheet(StyleSheet*, StyleResolverUpdateMode = FullStyleUpdate);
-    void addedStyleSheet(StyleSheet*) { styleResolverChanged(); }
+    void addedStyleSheet(StyleSheet*);
     void modifiedStyleSheet(StyleSheet*, StyleResolverUpdateMode = FullStyleUpdate);
-    void changedSelectorWatch() { styleResolverChanged(); }
+    void changedSelectorWatch();
 
     void scheduleUseShadowTreeUpdate(SVGUseElement&);
     void unscheduleUseShadowTreeUpdate(SVGUseElement&);
@@ -1158,6 +1154,7 @@ private:
     void clearFocusedElementTimerFired(Timer<Document>*);
 
     bool haveStylesheetsLoaded() const;
+    void styleResolverMayHaveChanged();
 
     void setHoverNode(PassRefPtrWillBeRawPtr<Node>);
 

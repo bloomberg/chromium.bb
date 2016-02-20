@@ -637,7 +637,7 @@ MediaQueryMatcher& Document::mediaQueryMatcher()
 
 void Document::mediaQueryAffectingValueChanged()
 {
-    styleResolverChanged();
+    styleEngine().resolverChanged(FullStyleUpdate);
     m_evaluateMediaQueriesOnStyleRecalc = true;
     styleEngine().clearMediaQueryRuleSetStyleSheets();
     InspectorInstrumentation::mediaQueryResultChanged(this);
@@ -2008,7 +2008,7 @@ void Document::updateLayoutTreeIgnorePendingStylesheets()
         HTMLElement* bodyElement = body();
         if (bodyElement && !bodyElement->layoutObject() && m_pendingSheetLayout == NoLayoutWithPendingSheets) {
             m_pendingSheetLayout = DidLayoutWithPendingSheets;
-            styleResolverChanged();
+            styleEngine().resolverChanged(FullStyleUpdate);
         } else if (m_hasNodesWithPlaceholderStyle) {
             // If new nodes have been added or style recalc has been done with style sheets still
             // pending, some nodes may not have had their real style calculated yet. Normally this
@@ -3440,7 +3440,7 @@ String Document::selectedStylesheetSet() const
 void Document::setSelectedStylesheetSet(const String& aString)
 {
     styleEngine().setSelectedStylesheetSetName(aString);
-    styleResolverChanged();
+    styleEngine().resolverChanged(FullStyleUpdate);
 }
 
 void Document::evaluateMediaQueryListIfNeeded()
@@ -3467,9 +3467,9 @@ void Document::notifyResizeForViewportUnits()
     setNeedsStyleRecalcForViewportUnits();
 }
 
-void Document::styleResolverChanged(StyleResolverUpdateMode updateMode)
+void Document::styleResolverMayHaveChanged()
 {
-    styleEngine().resolverChanged(updateMode);
+    styleEngine().resolverChanged(hasNodesWithPlaceholderStyle() ? FullStyleUpdate : AnalyzedStyleUpdate);
 
     if (didLayoutWithPendingStylesheets() && !styleEngine().hasPendingSheets()) {
         // We need to manually repaint because we avoid doing all repaints in layout or style
@@ -3480,11 +3480,6 @@ void Document::styleResolverChanged(StyleResolverUpdateMode updateMode)
         if (layoutView())
             layoutView()->invalidatePaintForViewAndCompositedLayers();
     }
-}
-
-void Document::styleResolverMayHaveChanged()
-{
-    styleResolverChanged(hasNodesWithPlaceholderStyle() ? FullStyleUpdate : AnalyzedStyleUpdate);
 }
 
 void Document::setHoverNode(PassRefPtrWillBeRawPtr<Node> newHoverNode)
@@ -5680,21 +5675,31 @@ float Document::devicePixelRatio() const
 void Document::removedStyleSheet(StyleSheet* sheet, StyleResolverUpdateMode updateMode)
 {
     // If we're in document teardown, then we don't need this notification of our sheet's removal.
-    // styleResolverChanged() is needed even when the document is inactive so that
-    // imported docuements (which is inactive) notifies the change to the master document.
+    // resolverChanged() is needed even when the document is inactive so that imported documents
+    // (which are inactive) notify the change to the master document.
     if (isActive())
         styleEngine().modifiedStyleSheet(sheet);
-    styleResolverChanged(updateMode);
+    styleEngine().resolverChanged(updateMode);
+}
+
+void Document::addedStyleSheet(StyleSheet*)
+{
+    styleEngine().resolverChanged(FullStyleUpdate);
 }
 
 void Document::modifiedStyleSheet(StyleSheet* sheet, StyleResolverUpdateMode updateMode)
 {
     // If we're in document teardown, then we don't need this notification of our sheet's removal.
-    // styleResolverChanged() is needed even when the document is inactive so that
-    // imported docuements (which is inactive) notifies the change to the master document.
+    // resolverChanged() is needed even when the document is inactive so that imported documents
+    // (which are inactive) notify the change to the master document.
     if (isActive())
         styleEngine().modifiedStyleSheet(sheet);
-    styleResolverChanged(updateMode);
+    styleEngine().resolverChanged(updateMode);
+}
+
+void Document::changedSelectorWatch()
+{
+    styleEngine().resolverChanged(FullStyleUpdate);
 }
 
 TextAutosizer* Document::textAutosizer()

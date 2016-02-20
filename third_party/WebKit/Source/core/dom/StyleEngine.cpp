@@ -439,7 +439,7 @@ void StyleEngine::resolverChanged(StyleResolverUpdateMode mode)
 {
     if (!isMaster()) {
         if (Document* master = this->master())
-            master->styleResolverChanged(mode);
+            master->styleEngine().resolverChanged(mode);
         return;
     }
 

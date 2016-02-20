@@ -74,7 +74,7 @@ void HttpEquiv::processHttpEquivDefaultStyle(Document& document, const AtomicStr
     // -dwh
     document.styleEngine().setSelectedStylesheetSetName(content);
     document.styleEngine().setPreferredStylesheetSetName(content);
-    document.styleResolverChanged();
+    document.styleEngine().resolverChanged(FullStyleUpdate);
 }
 
 void HttpEquiv::processHttpEquivRefresh(Document& document, const AtomicString& content)

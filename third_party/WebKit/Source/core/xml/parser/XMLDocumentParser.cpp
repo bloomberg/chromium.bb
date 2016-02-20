@@ -39,6 +39,7 @@
 #include "core/dom/DocumentType.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/ScriptLoader.h"
+#include "core/dom/StyleEngine.h"
 #include "core/dom/TransformSource.h"
 #include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/fetch/RawResource.h"
@@ -448,7 +449,7 @@ void XMLDocumentParser::end()
         updateLeafTextNode();
         // Do not bail out if in a stopped state, but notify document that
         // parsing has finished.
-        document()->styleResolverChanged();
+        document()->styleEngine().resolverChanged(FullStyleUpdate);
     }
 
     if (isParsing())
@@ -1541,9 +1542,9 @@ void XMLDocumentParser::doEnd()
         document()->setTransformSource(adoptPtr(new TransformSource(doc)));
         // Make the document think it's done, so it will apply XSL stylesheets.
         document()->setParsingState(Document::FinishedParsing);
-        document()->styleResolverChanged();
+        document()->styleEngine().resolverChanged(FullStyleUpdate);
 
-        // styleResolverChanged() call can detach the parser and null out its
+        // resolverChanged() call can detach the parser and null out its
         // document. In that case, we just bail out.
         if (isDetached())
             return;
