@@ -281,6 +281,9 @@ void CapabilityFilterTest::RunWildcardTest() {
 
 void CapabilityFilterTest::SetUp() {
   application_manager_.reset(new ApplicationManager(true));
+  application_manager_->SetInstanceQuitCallback(
+      base::Bind(&CapabilityFilterTest::OnInstanceQuit,
+                 base::Unretained(this)));
   CreateLoader<ServiceApplication>("test:service");
   CreateLoader<ServiceApplication>("test:service2");
 }
@@ -327,7 +330,7 @@ void CapabilityFilterTest::RunApplication(const std::string& url,
   params->set_target(Identity(GURL(url), std::string(), filter));
   params->set_remote_interfaces(GetProxy(&remote_interfaces));
   params->set_local_interfaces(std::move(local_interfaces));
-  params->set_on_application_end(base::MessageLoop::QuitWhenIdleClosure());
+  quit_identities_.insert(params->target());
   application_manager_->Connect(std::move(params));
 }
 
@@ -343,6 +346,14 @@ void CapabilityFilterTest::RunTest() {
   EXPECT_TRUE(validator_->expectations_met());
   if (!validator_->expectations_met())
     validator_->PrintUnmetExpectations();
+}
+
+void CapabilityFilterTest::OnInstanceQuit(const Identity& identity) {
+  auto it = quit_identities_.find(identity);
+  if (it != quit_identities_.end())
+    quit_identities_.erase(it);
+  if (quit_identities_.empty())
+    base::MessageLoop::current()->QuitWhenIdle();
 }
 
 }  // namespace test

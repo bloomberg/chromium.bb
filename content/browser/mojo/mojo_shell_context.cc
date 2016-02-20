@@ -279,7 +279,6 @@ void MojoShellContext::ConnectToApplicationOnOwnThread(
   params->set_target(mojo::shell::Identity(url, std::string(), filter));
   params->set_remote_interfaces(std::move(request));
   params->set_local_interfaces(std::move(exposed_services));
-  params->set_on_application_end(base::Bind(&base::DoNothing));
   params->set_connect_callback(callback);
   application_manager_->Connect(std::move(params));
 }

@@ -92,6 +92,11 @@ ApplicationManager::~ApplicationManager() {
     runner.reset();
 }
 
+void ApplicationManager::SetInstanceQuitCallback(
+    base::Callback<void(const Identity&)> callback) {
+  instance_quit_callback_ = callback;
+}
+
 void ApplicationManager::Connect(scoped_ptr<ConnectParams> params) {
   TRACE_EVENT_INSTANT1("mojo_shell", "ApplicationManager::Connect",
                        TRACE_EVENT_SCOPE_THREAD, "original_url",
@@ -123,9 +128,7 @@ void ApplicationManager::TerminateShellConnections() {
 
 void ApplicationManager::OnApplicationInstanceError(
     ApplicationInstance* instance) {
-  // Called from ~ApplicationInstance, so we do not need to call Destroy here.
   const Identity identity = instance->identity();
-  base::Closure on_application_end = instance->on_application_end();
   // Remove the shell.
   auto it = identity_to_instance_.find(identity);
   DCHECK(it != identity_to_instance_.end());
@@ -136,8 +139,8 @@ void ApplicationManager::OnApplicationInstanceError(
       [this, id](mojom::ApplicationManagerListener* listener) {
         listener->ApplicationInstanceDestroyed(id);
       });
-  if (!on_application_end.is_null())
-    on_application_end.Run();
+  if (!instance_quit_callback_.is_null())
+    instance_quit_callback_.Run(identity);
 }
 
 ApplicationInstance* ApplicationManager::GetApplicationInstance(
@@ -194,8 +197,7 @@ void ApplicationManager::CreateInstanceForHandle(
   Identity target_id(url.To<GURL>(), std::string(), local_filter);
   mojom::ShellClientRequest request;
   // TODO(beng): do better than url.spec() for application name.
-  ApplicationInstance* instance =
-      CreateInstance(target_id, base::Closure(), url, &request);
+  ApplicationInstance* instance = CreateInstance(target_id, url, &request);
   instance->BindPIDReceiver(std::move(pid_receiver));
   scoped_ptr<NativeRunner> runner =
       native_runner_factory_->Create(base::FilePath());
@@ -223,7 +225,7 @@ void ApplicationManager::InitPackageManager(bool register_mojo_url_schemes) {
 
   mojom::ShellClientRequest request;
   GURL url("mojo://package_manager/");
-  CreateInstance(Identity(url), base::Closure(), url.spec(), &request);
+  CreateInstance(Identity(url), url.spec(), &request);
   loader->Load(url, std::move(request));
 
   SetLoaderForURL(std::move(loader), url);
@@ -242,14 +244,12 @@ bool ApplicationManager::ConnectToExistingInstance(
 
 ApplicationInstance* ApplicationManager::CreateInstance(
     const Identity& target_id,
-    const base::Closure& on_application_end,
     const String& application_name,
     mojom::ShellClientRequest* request) {
   mojom::ShellClientPtr shell_client;
   *request = GetProxy(&shell_client);
   ApplicationInstance* instance = new ApplicationInstance(
-      std::move(shell_client), this, target_id, on_application_end,
-      application_name);
+      std::move(shell_client), this, target_id, application_name);
   DCHECK(identity_to_instance_.find(target_id) ==
          identity_to_instance_.end());
   identity_to_instance_[target_id] = instance;
@@ -315,9 +315,8 @@ void ApplicationManager::OnGotResolvedURL(
 
   Identity source = params->source(), target = params->target();
   mojom::ShellClientRequest request;
-  ApplicationInstance* instance = CreateInstance(
-      params->target(), params->on_application_end(), application_name,
-      &request);
+  ApplicationInstance* instance =
+      CreateInstance(params->target(), application_name, &request);
   instance->ConnectToClient(std::move(params));
 
   if (LoadWithLoader(target, &request))

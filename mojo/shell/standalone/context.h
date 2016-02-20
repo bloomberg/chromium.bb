@@ -5,8 +5,6 @@
 #ifndef MOJO_SHELL_STANDALONE_CONTEXT_H_
 #define MOJO_SHELL_STANDALONE_CONTEXT_H_
 
-#include <set>
-#include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -28,7 +26,6 @@ class SingleThreadTaskRunner;
 namespace mojo {
 namespace shell {
 struct CommandLineSwitch;
-class NativeApplicationLoader;
 
 // The "global" context for the shell's main process.
 class Context : public edk::ProcessDelegate {
@@ -50,28 +47,19 @@ class Context : public edk::ProcessDelegate {
   // If Init() was called and succeeded, this must be called before destruction.
   void Shutdown();
 
-  // NOTE: call either Run() or RunCommandLineApplication(), but not both.
-
-  // Runs the app specified by |url|.
-  void Run(const GURL& url);
-
-  // Run the application specified on the commandline. When the app finishes,
-  // |callback| is run if not null, otherwise the message loop is quit.
-  void RunCommandLineApplication(const base::Closure& callback);
+  // Run the application specified on the command line.
+  void RunCommandLineApplication();
 
   ApplicationManager* application_manager() {
     return application_manager_.get();
   }
 
  private:
-  class NativeViewportApplicationLoader;
-
-  // ProcessDelegate implementation.
+  // edk::ProcessDelegate:
   void OnShutdownComplete() override;
 
-  void OnApplicationEnd(const GURL& url);
-
-  std::set<GURL> app_urls_;
+  // Runs the app specified by |url|.
+  void Run(const GURL& url);
 
   scoped_refptr<base::SingleThreadTaskRunner> shell_runner_;
   scoped_ptr<base::Thread> io_thread_;
@@ -81,7 +69,6 @@ class Context : public edk::ProcessDelegate {
   // that needs the IO thread to destruct cleanly.
   Tracer tracer_;
   scoped_ptr<ApplicationManager> application_manager_;
-  base::Closure app_complete_callback_;
   base::Time main_entry_time_;
   std::vector<CommandLineSwitch> command_line_switches_;
 

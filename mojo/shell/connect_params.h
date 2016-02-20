@@ -53,13 +53,6 @@ class ConnectParams {
     return std::move(local_interfaces_);
   }
 
-  void set_on_application_end(const base::Closure& value) {
-    on_application_end_ = value;
-  }
-  const base::Closure& on_application_end() const {
-    return on_application_end_;
-  }
-
   void set_connect_callback(const shell::mojom::Shell::ConnectCallback& value) {
     connect_callback_ = value;
   }
@@ -76,7 +69,6 @@ class ConnectParams {
 
   shell::mojom::InterfaceProviderRequest remote_interfaces_;
   shell::mojom::InterfaceProviderPtr local_interfaces_;
-  base::Closure on_application_end_;
   shell::mojom::Shell::ConnectCallback connect_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectParams);

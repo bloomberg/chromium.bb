@@ -89,6 +89,8 @@ class CapabilityFilterTest : public testing::Test {
   void InitValidator(const std::set<std::string>& expectations);
   void RunTest();
 
+  void OnInstanceQuit(const Identity& identity);
+
   template<class T>
   scoped_ptr<ShellClient> CreateShellClient() {
     return scoped_ptr<ShellClient>(new T);
@@ -98,6 +100,7 @@ class CapabilityFilterTest : public testing::Test {
   base::MessageLoop loop_;
   scoped_ptr<ApplicationManager> application_manager_;
   ConnectionValidator* validator_;
+  std::set<Identity> quit_identities_;
 
   DISALLOW_COPY_AND_ASSIGN(CapabilityFilterTest);
 };

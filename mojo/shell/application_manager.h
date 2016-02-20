@@ -71,6 +71,11 @@ class ApplicationManager : public ShellClient,
                      bool register_mojo_url_schemes);
   ~ApplicationManager() override;
 
+  // Provide a callback to be notified whenever an instance is destroyed.
+  // Typically the creator of the ApplicationManager will use this to determine
+  // when some set of instances it created are destroyed, so it can shut down.
+  void SetInstanceQuitCallback(base::Callback<void(const Identity&)> callback);
+
   // Completes a connection between a source and target application as defined
   // by |params|, exchanging InterfaceProviders between them. If no existing
   // instance of the target application is running, one will be loaded.
@@ -125,7 +130,6 @@ class ApplicationManager : public ShellClient,
 
   ApplicationInstance* CreateInstance(
       const Identity& target_id,
-      const base::Closure& on_application_end,
       const String& application_name,
       mojom::ShellClientRequest* request);
 
@@ -185,6 +189,7 @@ class ApplicationManager : public ShellClient,
 
   WeakInterfacePtrSet<mojom::ApplicationManagerListener> listeners_;
 
+  base::Callback<void(const Identity&)> instance_quit_callback_;
   base::TaskRunner* task_runner_;
   scoped_ptr<NativeRunnerFactory> native_runner_factory_;
   std::vector<scoped_ptr<NativeRunner>> native_runners_;

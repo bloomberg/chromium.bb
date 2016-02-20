@@ -22,14 +22,12 @@ ApplicationInstance::ApplicationInstance(
     mojom::ShellClientPtr shell_client,
     ApplicationManager* manager,
     const Identity& identity,
-    const base::Closure& on_application_end,
     const String& application_name)
     : manager_(manager),
       id_(GenerateUniqueID()),
       identity_(identity),
       allow_any_application_(identity.filter().size() == 1 &&
                              identity.filter().count("*") == 1),
-      on_application_end_(on_application_end),
       shell_client_(std::move(shell_client)),
       binding_(this),
       pid_receiver_binding_(this),

@@ -13,8 +13,7 @@ namespace mojo {
 namespace shell {
 
 // Main method for the launcher process.
-// See commit in main_helper.h for explanation of the parameters.
-int LauncherProcessMain(const GURL& mojo_url, const base::Closure& callback);
+int LauncherProcessMain();
 
 }  // namespace shell
 }  // namespace mojo

@@ -28,10 +28,7 @@
 namespace mojo {
 namespace shell {
 
-int StandaloneShellMain(int argc,
-                        char** argv,
-                        const GURL& mojo_url,
-                        const base::Closure& callback) {
+int StandaloneShellMain(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -47,7 +44,7 @@ int StandaloneShellMain(int argc,
   if (command_line.HasSwitch(switches::kChildProcess))
     return ChildProcessMain();
 
-  return LauncherProcessMain(mojo_url, callback);
+  return LauncherProcessMain();
 }
 
 }  // namespace shell

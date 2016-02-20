@@ -37,7 +37,6 @@ class ApplicationInstance : public mojom::Shell,
       mojom::ShellClientPtr shell_client,
       ApplicationManager* manager,
       const Identity& identity,
-      const base::Closure& on_application_end,
       const String& application_name);
   ~ApplicationInstance() override;
 
@@ -55,7 +54,6 @@ class ApplicationInstance : public mojom::Shell,
   uint32_t id() const { return id_; }
   base::ProcessId pid() const { return pid_; }
   void set_pid(base::ProcessId pid) { pid_ = pid; }
-  base::Closure on_application_end() const { return on_application_end_; }
   const String& application_name() const { return application_name_; }
 
  private:
@@ -87,7 +85,6 @@ class ApplicationInstance : public mojom::Shell,
   const uint32_t id_;
   const Identity identity_;
   const bool allow_any_application_;
-  base::Closure on_application_end_;
   mojom::ShellClientPtr shell_client_;
   Binding<mojom::Shell> binding_;
   Binding<mojom::PIDReceiver> pid_receiver_binding_;

@@ -90,6 +90,11 @@ scoped_ptr<base::Thread> CreateIOThread(const char* name) {
   return thread;
 }
 
+void OnInstanceQuit(const GURL& url, const Identity& identity) {
+  if (url == identity.url())
+    base::MessageLoop::current()->QuitWhenIdle();
+}
+
 }  // namespace
 
 Context::Context()
@@ -143,7 +148,7 @@ void Context::Init(const base::FilePath& shell_file_root) {
         blocking_pool_.get(), command_line_switches_));
   }
   application_manager_.reset(new ApplicationManager(
-    std::move(runner_factory), blocking_pool_.get(), true));
+      std::move(runner_factory), blocking_pool_.get(), true));
 
   shell::mojom::InterfaceProviderPtr tracing_remote_interfaces;
   shell::mojom::InterfaceProviderPtr tracing_local_interfaces;
@@ -202,50 +207,31 @@ void Context::OnShutdownComplete() {
   base::MessageLoop::current()->QuitWhenIdle();
 }
 
-void Context::Run(const GURL& url) {
-  DCHECK(app_complete_callback_.is_null());
-  shell::mojom::InterfaceProviderPtr remote_interfaces;
-  shell::mojom::InterfaceProviderPtr local_interfaces;
-
-  app_urls_.insert(url);
-
-  scoped_ptr<ConnectParams> params(new ConnectParams);
-  params->set_target(
-      Identity(url, std::string(), GetPermissiveCapabilityFilter()));
-  params->set_remote_interfaces(GetProxy(&remote_interfaces));
-  params->set_local_interfaces(std::move(local_interfaces));
-  params->set_on_application_end(
-      base::Bind(&Context::OnApplicationEnd, base::Unretained(this), url));
-  application_manager_->Connect(std::move(params));
-}
-
-void Context::RunCommandLineApplication(const base::Closure& callback) {
-  DCHECK(app_urls_.empty());
-  DCHECK(app_complete_callback_.is_null());
+void Context::RunCommandLineApplication() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   base::CommandLine::StringVector args = command_line->GetArgs();
   for (size_t i = 0; i < args.size(); ++i) {
     GURL possible_app(args[i]);
     if (possible_app.SchemeIs("mojo")) {
       Run(possible_app);
-      app_complete_callback_ = callback;
       break;
     }
   }
 }
 
-void Context::OnApplicationEnd(const GURL& url) {
-  if (app_urls_.find(url) != app_urls_.end()) {
-    app_urls_.erase(url);
-    if (app_urls_.empty() && base::MessageLoop::current()->is_running()) {
-      DCHECK_EQ(base::MessageLoop::current()->task_runner(), shell_runner_);
-      if (app_complete_callback_.is_null()) {
-        base::MessageLoop::current()->QuitWhenIdle();
-      } else {
-        app_complete_callback_.Run();
-      }
-    }
-  }
+void Context::Run(const GURL& url) {
+  application_manager_->SetInstanceQuitCallback(
+      base::Bind(&OnInstanceQuit, url));
+
+  shell::mojom::InterfaceProviderPtr remote_interfaces;
+  shell::mojom::InterfaceProviderPtr local_interfaces;
+
+  scoped_ptr<ConnectParams> params(new ConnectParams);
+  params->set_target(
+      Identity(url, std::string(), GetPermissiveCapabilityFilter()));
+  params->set_remote_interfaces(GetProxy(&remote_interfaces));
+  params->set_local_interfaces(std::move(local_interfaces));
+  application_manager_->Connect(std::move(params));
 }
 
 }  // namespace shell

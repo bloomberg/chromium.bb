@@ -53,6 +53,11 @@ bool Identity::operator<(const Identity& other) const {
   return qualifier_ < other.qualifier_;
 }
 
+bool Identity::operator==(const Identity& other) const {
+  return other.url_ == url_ && other.qualifier_ == qualifier_ &&
+    other.filter_ == filter_;
+}
+
 Identity CreateShellIdentity() {
   return Identity(GURL("mojo://shell/"), std::string(),
                   GetPermissiveCapabilityFilter());

@@ -37,9 +37,13 @@ struct TestContext {
   int num_loader_deletes;
 };
 
-void QuitClosure(bool* value) {
-  *value = true;
-  base::MessageLoop::current()->QuitWhenIdle();
+void QuitClosure(const Identity& expected,
+                 bool* value,
+                 const Identity& actual) {
+  if (expected == actual) {
+    *value = true;
+    base::MessageLoop::current()->QuitWhenIdle();
+  }
 }
 
 class TestServiceImpl : public TestService {
@@ -597,8 +601,8 @@ TEST_F(ApplicationManagerTest, TestEndApplicationClosure) {
   bool called = false;
   scoped_ptr<ConnectParams> params(new ConnectParams);
   params->SetTargetURL(GURL("test:test"));
-  params->set_on_application_end(
-      base::Bind(&QuitClosure, base::Unretained(&called)));
+  application_manager_->SetInstanceQuitCallback(
+      base::Bind(&QuitClosure, params->target(), &called));
   application_manager_->Connect(std::move(params));
   loop_.Run();
   EXPECT_TRUE(called);

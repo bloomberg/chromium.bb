@@ -30,6 +30,7 @@ class Identity {
 
   bool operator<(const Identity& other) const;
   bool is_null() const { return url_.is_empty(); }
+  bool operator==(const Identity& other) const;
 
   const GURL& url() const { return url_; }
   const std::string& qualifier() const { return qualifier_; }

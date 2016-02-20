@@ -12,13 +12,7 @@ namespace mojo {
 namespace shell {
 
 // Helper method to start Mojo standalone shell code.
-// If |mojo_url| is not empty, the given mojo application is started. Otherwise,
-// an application must have been specified on the command line and it is run.
-// |callback| is only called in the later case.
-int StandaloneShellMain(int argc,
-                        char** argv,
-                        const GURL& mojo_url,
-                        const base::Closure& callback);
+int StandaloneShellMain(int argc, char** argv);
 
 }  // namespace shell
 }  // namespace mojo

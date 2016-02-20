@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <algorithm>
 #include <iostream>
 
 #include "base/base_switches.h"
@@ -24,7 +23,7 @@
 namespace mojo {
 namespace shell {
 
-int LauncherProcessMain(const GURL& mojo_url, const base::Closure& callback) {
+int LauncherProcessMain() {
 #if !defined(OFFICIAL_BUILD)
   base::debug::EnableInProcessStackDumping();
 #endif
@@ -44,16 +43,11 @@ int LauncherProcessMain(const GURL& mojo_url, const base::Closure& callback) {
     CHECK(base::i18n::InitializeICU());
     shell_context.Init(shell_dir);
 
-    if (mojo_url.is_empty()) {
-      message_loop.PostTask(
-          FROM_HERE,
-          base::Bind(&Context::RunCommandLineApplication,
-                     base::Unretained(&shell_context), base::Closure()));
-    } else {
-      message_loop.PostTask(
-          FROM_HERE, base::Bind(&mojo::shell::Context::Run,
-                                base::Unretained(&shell_context), mojo_url));
-    }
+    message_loop.PostTask(
+        FROM_HERE,
+        base::Bind(&Context::RunCommandLineApplication,
+                    base::Unretained(&shell_context)));
+
     message_loop.Run();
 
     // Must be called before |message_loop| is destroyed.
