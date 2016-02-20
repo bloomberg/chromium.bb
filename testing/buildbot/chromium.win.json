@@ -424,62 +424,39 @@
   "Win x64 GN": {
     "additional_compile_targets": [
       "gn_all"
+    ],
+    "gtest_tests": [
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "content_browsertests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "events_unittests"
+      }
     ]
   },
   "Win x64 GN (dbg)": {
     "additional_compile_targets": [
-      "accessibility_unittests",
-      "app_list_unittests",
-      "app_shell_unittests",
-      "ash_shell_with_content",
-      "ash_unittests",
-      "aura_unittests",
-      "battor_agent",
-      "cacheinvalidation_unittests",
-      "cast_unittests",
-      "cc_unittests",
-      "chrome",
-      "chrome_elf_unittests",
-      "chromedriver_unittests",
-      "components_browsertests",
-      "components_unittests",
-      "compositor_unittests",
-      "content_browsertests",
-      "content_unittests",
-      "courgette_unittests",
-      "crypto_unittests",
-      "device_unittests",
-      "events_unittests",
-      "extensions_browsertests",
-      "extensions_unittests",
-      "gcm_unit_tests",
-      "gfx_unittests",
-      "google_apis_unittests",
-      "gpu_unittests",
-      "interactive_ui_tests",
-      "ipc_mojo_unittests",
-      "ipc_tests",
-      "jingle_unittests",
-      "keyboard_unittests",
-      "mash:all",
-      "media_unittests",
-      "media_blink_unittests",
-      "message_center_unittests",
-      "ppapi_unittests",
-      "printing_unittests",
-      "remoting_all",
-      "sbox_integration_tests",
-      "sbox_unittests",
-      "sbox_validation_tests",
-      "skia_unittests",
-      "sql_unittests",
-      "sync_integration_tests",
-      "sync_unit_tests",
-      "ui_base_unittests",
-      "ui_touch_selection_unittests",
-      "url_unittests",
-      "views_unittests",
-      "wm_unittests"
+      "gn_all"
+    ],
+    "gtest_tests": [
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "content_browsertests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "events_unittests"
+      }
     ]
   },
   "Win7 (32) Tests": {
@@ -1396,9 +1373,15 @@
         "test": "battor_agent_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "content_browsertests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "events_unittests"
       },
       {
@@ -1453,58 +1436,21 @@
   },
   "Win8 GN (dbg)": {
     "additional_compile_targets": [
-      "accessibility_unittests",
-      "app_list_unittests",
-      "app_shell_unittests",
-      "ash_shell_with_content",
-      "ash_unittests",
-      "aura_unittests",
-      "battor_agent",
-      "cacheinvalidation_unittests",
-      "cast_unittests",
-      "cc_unittests",
-      "chrome",
-      "chrome_elf_unittests",
-      "chromedriver_unittests",
-      "components_browsertests",
-      "components_unittests",
-      "compositor_unittests",
-      "content_browsertests",
-      "content_unittests",
-      "courgette_unittests",
-      "crypto_unittests",
-      "device_unittests",
-      "events_unittests",
-      "extensions_browsertests",
-      "extensions_unittests",
-      "gcm_unit_tests",
-      "gfx_unittests",
-      "google_apis_unittests",
-      "gpu_unittests",
-      "interactive_ui_tests",
-      "ipc_mojo_unittests",
-      "ipc_tests",
-      "jingle_unittests",
-      "keyboard_unittests",
-      "mash:all",
-      "media_unittests",
-      "media_blink_unittests",
-      "message_center_unittests",
-      "ppapi_unittests",
-      "printing_unittests",
-      "remoting_all",
-      "sbox_integration_tests",
-      "sbox_unittests",
-      "sbox_validation_tests",
-      "skia_unittests",
-      "sql_unittests",
-      "sync_integration_tests",
-      "sync_unit_tests",
-      "ui_base_unittests",
-      "ui_touch_selection_unittests",
-      "url_unittests",
-      "views_unittests",
-      "wm_unittests"
+      "gn_all"
+    ],
+    "gtest_tests": [
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "content_browsertests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "events_unittests"
+      }
     ]
   }
 }
