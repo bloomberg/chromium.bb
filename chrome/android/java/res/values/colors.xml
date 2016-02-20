@@ -171,6 +171,7 @@
     <!-- Physical Web diagnostics colors -->
     <color name="physical_web_diags_success_color">#00933b</color>
     <color name="physical_web_diags_failure_color">#f90101</color>
+    <color name="physical_web_diags_indeterminate_color">#f2b50f</color>
 
     <!-- Bottom bar colors -->
     <color name="bottom_bar_shadow_color">#1d000000</color>

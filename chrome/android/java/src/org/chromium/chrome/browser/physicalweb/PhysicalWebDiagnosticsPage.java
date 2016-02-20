@@ -33,11 +33,16 @@ import java.util.Set;
  * Provides diagnostic information about the Physical Web feature.
  */
 public class PhysicalWebDiagnosticsPage implements NativePage {
+    private static final int RESULT_FAILURE = 0;
+    private static final int RESULT_SUCCESS = 1;
+    private static final int RESULT_INDETERMINATE = 2;
+
     private final Context mContext;
     private final int mBackgroundColor;
     private final int mThemeColor;
     private final String mSuccessColor;
     private final String mFailureColor;
+    private final String mIndeterminateColor;
     private final View mPageView;
     private final Button mLaunchButton;
     private final TextView mDiagnosticsText;
@@ -52,6 +57,8 @@ public class PhysicalWebDiagnosticsPage implements NativePage {
                 R.color.physical_web_diags_success_color));
         mFailureColor = colorToHexValue(ApiCompatibilityUtils.getColor(resources,
                 R.color.physical_web_diags_failure_color));
+        mIndeterminateColor = colorToHexValue(ApiCompatibilityUtils.getColor(resources,
+                R.color.physical_web_diags_indeterminate_color));
 
         LayoutInflater inflater = LayoutInflater.from(mContext);
         mPageView = inflater.inflate(R.layout.physical_web_diagnostics, null);
@@ -71,9 +78,28 @@ public class PhysicalWebDiagnosticsPage implements NativePage {
 
     private void appendResult(StringBuilder sb, boolean success, String successMessage,
             String failureMessage) {
-        sb.append(String.format("<font color=\"%s\">%s</font><br/>",
-                success ? mSuccessColor : mFailureColor,
-                success ? successMessage : failureMessage));
+        int successValue = (success ? RESULT_SUCCESS : RESULT_FAILURE);
+        appendResult(sb, successValue, successMessage, failureMessage, null);
+    }
+
+    private void appendResult(StringBuilder sb, int successValue, String successMessage,
+            String failureMessage, String indeterminateMessage) {
+        String color;
+        String message;
+        if (successValue == RESULT_SUCCESS) {
+            color = mSuccessColor;
+            message = successMessage;
+        } else if (successValue == RESULT_FAILURE) {
+            color = mFailureColor;
+            message = failureMessage;
+        } else if (successValue == RESULT_INDETERMINATE) {
+            color = mIndeterminateColor;
+            message = indeterminateMessage;
+        } else {
+            return;
+        }
+
+        sb.append(String.format("<font color=\"%s\">%s</font><br/>", color, message));
     }
 
     private boolean appendSdkVersionReport(StringBuilder sb) {
@@ -95,13 +121,24 @@ public class PhysicalWebDiagnosticsPage implements NativePage {
         return isDataConnectionActive;
     }
 
-    private boolean appendBluetoothReport(StringBuilder sb) {
-        BluetoothAdapter bt = BluetoothAdapter.getDefaultAdapter();
-        boolean isBluetoothEnabled = (bt != null && bt.isEnabled());
+    private boolean isBluetoothPermissionGranted() {
+        return PermissionChecker.checkSelfPermission(mContext, Manifest.permission.BLUETOOTH)
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private int appendBluetoothReport(StringBuilder sb) {
+        // Chrome normally does not have the Bluetooth permission, which is required to check
+        // whether Bluetooth is enabled. Without the Bluetooth permission we must ask the user to
+        // perform a manual check.
+        int successValue = RESULT_INDETERMINATE;
+        if (isBluetoothPermissionGranted()) {
+            BluetoothAdapter bt = BluetoothAdapter.getDefaultAdapter();
+            successValue = (bt != null && bt.isEnabled()) ? RESULT_SUCCESS : RESULT_FAILURE;
+        }
 
         sb.append("Bluetooth: ");
-        appendResult(sb, isBluetoothEnabled, "Enabled", "Disabled");
-        return isBluetoothEnabled;
+        appendResult(sb, successValue, "Enabled", "Disabled", "Needs verification");
+        return successValue;
     }
 
     private boolean appendLocationServicesReport(StringBuilder sb) {
@@ -143,7 +180,7 @@ public class PhysicalWebDiagnosticsPage implements NativePage {
 
         boolean isSdkVersionCorrect = appendSdkVersionReport(sb);
         boolean isDataConnectionActive = appendDataConnectivityReport(sb);
-        boolean isBluetoothEnabled = appendBluetoothReport(sb);
+        int bluetoothStatus = appendBluetoothReport(sb);
         boolean isLocationProviderAvailable = appendLocationServicesReport(sb);
         boolean isLocationPermissionGranted = true;
         if (isAndroidMOrLater) {
@@ -151,17 +188,29 @@ public class PhysicalWebDiagnosticsPage implements NativePage {
         }
         boolean isPreferenceEnabled = appendPhysicalWebPrivacyPreferenceReport(sb);
 
-        boolean allSucceeded = isSdkVersionCorrect && isDataConnectionActive && isBluetoothEnabled
-                && isLocationProviderAvailable && isLocationPermissionGranted
-                && isPreferenceEnabled;
+        int successValue = RESULT_SUCCESS;
+        if (!isSdkVersionCorrect || !isDataConnectionActive || (bluetoothStatus == RESULT_FAILURE)
+                || !isLocationProviderAvailable || !isLocationPermissionGranted
+                || !isPreferenceEnabled) {
+            successValue = RESULT_FAILURE;
+        } else if (bluetoothStatus == RESULT_INDETERMINATE) {
+            successValue = RESULT_INDETERMINATE;
+        }
 
         sb.append("<br/>");
-        if (allSucceeded) {
+        if (successValue == RESULT_SUCCESS) {
             sb.append("All prerequisite checks ");
         } else {
             sb.append("One or more prerequisite checks ");
         }
-        appendResult(sb, allSucceeded, "SUCCEEDED", "FAILED");
+        appendResult(sb, successValue, "SUCCEEDED", "FAILED", "need verification");
+
+        // Append instructions for how to verify Bluetooth is enabled when we are unable to check
+        // programmatically.
+        if (!isBluetoothPermissionGranted()) {
+            sb.append("<br/>To verify Bluetooth is enabled, check that the Bluetooth icon is "
+                    + "shown in the status bar.");
+        }
     }
 
     private void appendUrlManagerReport(StringBuilder sb) {
