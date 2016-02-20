@@ -10,6 +10,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "jni/MediaPlayerBridge_jni.h"
 #include "media/base/android/media_common_android.h"
@@ -22,6 +23,16 @@ using base::android::ConvertUTF8ToJavaString;
 using base::android::ScopedJavaLocalRef;
 
 namespace media {
+
+namespace {
+
+enum UMAExitStatus {
+  UMA_EXIT_SUCCESS = 0,
+  UMA_EXIT_ERROR,
+  UMA_EXIT_STATUS_MAX = UMA_EXIT_ERROR,
+};
+
+}  // namespace
 
 MediaPlayerBridge::MediaPlayerBridge(
     int player_id,
@@ -50,6 +61,9 @@ MediaPlayerBridge::MediaPlayerBridge(
       can_seek_forward_(true),
       can_seek_backward_(true),
       allow_credentials_(allow_credentials),
+      is_active_(false),
+      has_error_(false),
+      has_ever_started_(false),
       weak_factory_(this) {}
 
 MediaPlayerBridge::~MediaPlayerBridge() {
@@ -59,6 +73,12 @@ MediaPlayerBridge::~MediaPlayerBridge() {
     Java_MediaPlayerBridge_destroy(env, j_media_player_bridge_.obj());
   }
   Release();
+
+  if (has_ever_started_) {
+    UMA_HISTOGRAM_ENUMERATION("Media.Android.MediaPlayerSuccess",
+                              has_error_ ? UMA_EXIT_ERROR : UMA_EXIT_SUCCESS,
+                              UMA_EXIT_STATUS_MAX + 1);
+  }
 }
 
 void MediaPlayerBridge::Initialize() {
@@ -274,6 +294,17 @@ void MediaPlayerBridge::OnMediaMetadataExtracted(
 }
 
 void MediaPlayerBridge::Start() {
+  // A second Start() call after an error is considered another attempt for UMA
+  // and causes UMA reporting.
+  if (has_ever_started_ && has_error_) {
+    UMA_HISTOGRAM_ENUMERATION("Media.Android.MediaPlayerSuccess",
+                              UMA_EXIT_ERROR, UMA_EXIT_STATUS_MAX + 1);
+  }
+
+  has_ever_started_ = true;
+  has_error_ = false;
+  is_active_ = true;
+
   if (j_media_player_bridge_.is_null()) {
     pending_play_ = true;
     Prepare();
@@ -294,6 +325,8 @@ void MediaPlayerBridge::Pause(bool is_media_related_action) {
     else
       pending_play_ = false;
   }
+
+  is_active_ = false;
 }
 
 bool MediaPlayerBridge::IsPlaying() {
@@ -364,6 +397,8 @@ base::TimeDelta MediaPlayerBridge::GetDuration() {
 }
 
 void MediaPlayerBridge::Release() {
+  is_active_ = false;
+
   on_decoder_resources_released_cb_.Run(player_id());
   if (j_media_player_bridge_.is_null())
     return;
@@ -399,6 +434,22 @@ void MediaPlayerBridge::OnVideoSizeChanged(int width, int height) {
   width_ = width;
   height_ = height;
   MediaPlayerAndroid::OnVideoSizeChanged(width, height);
+}
+
+void MediaPlayerBridge::OnMediaError(int error_type) {
+  // Gather errors for UMA only in the active state.
+  // The MEDIA_ERROR_INVALID_CODE is reported by MediaPlayerListener.java in
+  // the situations that are considered normal, and is ignored by upper level.
+  if (is_active_ && error_type != MEDIA_ERROR_INVALID_CODE)
+    has_error_ = true;
+
+  // Do not propagate MEDIA_ERROR_SERVER_DIED. If it happens in the active state
+  // we want the playback to stall. It can be recovered by pressing the Play
+  // button again.
+  if (error_type == MEDIA_ERROR_SERVER_DIED)
+    error_type = MEDIA_ERROR_INVALID_CODE;
+
+  MediaPlayerAndroid::OnMediaError(error_type);
 }
 
 void MediaPlayerBridge::OnPlaybackComplete() {

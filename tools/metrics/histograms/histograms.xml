@@ -18835,6 +18835,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Android.MediaPlayerSuccess" enum="MediaPlayerExitStatus">
+  <owner>timav@chromium.org</owner>
+  <summary>Android: Whether MediaPlayer exited without errors.</summary>
+</histogram>
+
 <histogram name="Media.Android.NumMediaServerCrashes">
   <owner>qinmin@chromium.org</owner>
   <summary>
@@ -72611,6 +72616,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="Queried"/>
   <int value="1" label="No external link"/>
   <int value="2" label="All external links protected"/>
+</enum>
+
+<enum name="MediaPlayerExitStatus" type="int">
+  <int value="0" label="No errors"/>
+  <int value="1" label="Has errors"/>
 </enum>
 
 <enum name="MediaRouteProviderWakeReason" type="int">

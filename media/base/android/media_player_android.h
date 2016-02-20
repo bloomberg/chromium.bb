@@ -36,6 +36,7 @@ class MEDIA_EXPORT MediaPlayerAndroid {
     MEDIA_ERROR_DECODE,
     MEDIA_ERROR_NOT_VALID_FOR_PROGRESSIVE_PLAYBACK,
     MEDIA_ERROR_INVALID_CODE,
+    MEDIA_ERROR_SERVER_DIED,
   };
 
   static const double kDefaultVolumeMultiplier;

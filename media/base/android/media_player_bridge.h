@@ -95,6 +95,7 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
 
   // MediaPlayerAndroid implementation.
   void OnVideoSizeChanged(int width, int height) override;
+  void OnMediaError(int error_type) override;
   void OnPlaybackComplete() override;
   void OnMediaInterrupted() override;
   void OnMediaPrepared() override;
@@ -198,6 +199,19 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
 
   // Whether user credentials are allowed to be passed.
   bool allow_credentials_;
+
+  // Helper variables for UMA reporting.
+
+  // Whether the preparation for playback or the playback is currently going on.
+  // This flag is set in Start() and cleared in Pause() and Release(). Used for
+  // UMA reporting only.
+  bool is_active_;
+
+  // Whether there has been any errors in the active state.
+  bool has_error_;
+
+  // The flag is set if Start() has been called at least once.
+  bool has_ever_started_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<MediaPlayerBridge> weak_factory_;
