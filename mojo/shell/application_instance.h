@@ -36,8 +36,7 @@ class ApplicationInstance : public mojom::Shell,
   ApplicationInstance(
       mojom::ShellClientPtr shell_client,
       ApplicationManager* manager,
-      const Identity& identity,
-      const String& application_name);
+      const Identity& identity);
   ~ApplicationInstance() override;
 
   void InitializeApplication();
@@ -54,7 +53,6 @@ class ApplicationInstance : public mojom::Shell,
   uint32_t id() const { return id_; }
   base::ProcessId pid() const { return pid_; }
   void set_pid(base::ProcessId pid) { pid_ = pid; }
-  const String& application_name() const { return application_name_; }
 
  private:
   // Shell implementation:
@@ -91,7 +89,6 @@ class ApplicationInstance : public mojom::Shell,
   bool queue_requests_;
   std::vector<ConnectParams*> queued_client_requests_;
   NativeRunner* native_runner_;
-  const String application_name_;
   base::ProcessId pid_;
 
   DISALLOW_COPY_AND_ASSIGN(ApplicationInstance);

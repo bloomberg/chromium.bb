@@ -77,15 +77,12 @@ class ApplicationManagerAppTest : public mojo::test::ApplicationTestBase,
 
  protected:
   struct ApplicationInfo {
-    ApplicationInfo(uint32_t id,
-                    const std::string& url,
-                    const std::string& name)
-        : id(id), url(url), pid(base::kNullProcessId), name(name) {}
+    ApplicationInfo(uint32_t id, const std::string& url)
+        : id(id), url(url), pid(base::kNullProcessId) {}
 
     uint32_t id;
     std::string url;
     base::ProcessId pid;
-    std::string name;
   };
 
   void AddListenerAndWaitForApplications() {
@@ -96,13 +93,13 @@ class ApplicationManagerAppTest : public mojo::test::ApplicationTestBase,
     binding_.WaitForIncomingMethodCall();
   }
 
-  bool ContainsApplicationNamed(const std::string& name) const {
+  bool ContainsApplicationWithURL(const std::string& url) const {
     for (const auto& application : initial_applications_) {
-      if (application.name == name)
+      if (application.url == url)
         return true;
     }
     for (const auto& application : applications_) {
-      if (application.name == name)
+      if (application.url == url)
         return true;
     }
     return false;
@@ -131,14 +128,12 @@ class ApplicationManagerAppTest : public mojo::test::ApplicationTestBase,
       Array<mojom::ApplicationInfoPtr> applications) override {
     for (size_t i = 0; i < applications.size(); ++i) {
       initial_applications_.push_back(ApplicationInfo(applications[i]->id,
-                                                      applications[i]->url,
-                                                      applications[i]->name));
+                                                      applications[i]->url));
     }
   }
   void ApplicationInstanceCreated(
       mojom::ApplicationInfoPtr application) override {
-    applications_.push_back(ApplicationInfo(application->id, application->url,
-                                            application->name));
+    applications_.push_back(ApplicationInfo(application->id, application->url));
   }
   void ApplicationInstanceDestroyed(uint32_t id) override {
     for (auto it = applications_.begin(); it != applications_.end(); ++it) {
@@ -184,9 +179,9 @@ TEST_F(ApplicationManagerAppTest, CreateInstanceForHandle) {
   EXPECT_TRUE(connection->GetRemoteApplicationID(&remote_id));
   EXPECT_NE(mojom::Shell::kInvalidApplicationID, remote_id);
 
-  // 3. Validate that this test suite's pretty name was consumed from its
-  //    manifest.
-  EXPECT_TRUE(ContainsApplicationNamed("Application Manager Apptests"));
+  // 3. Validate that this test suite's URL was received from the application
+  //    manager.
+  EXPECT_TRUE(ContainsApplicationWithURL("mojo://mojo_shell_apptests/"));
 
   // 4. Validate that the right applications/processes were created.
   //    Note that the target process will be created even if the tests are

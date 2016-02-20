@@ -128,10 +128,8 @@ class ApplicationManager : public ShellClient,
   // and this function returns true.
   bool ConnectToExistingInstance(scoped_ptr<ConnectParams>* params);
 
-  ApplicationInstance* CreateInstance(
-      const Identity& target_id,
-      const String& application_name,
-      mojom::ShellClientRequest* request);
+  ApplicationInstance* CreateInstance(const Identity& target_id,
+                                      mojom::ShellClientRequest* request);
 
   void CreateShellClient(const Identity& source,
                          const Identity& shell_client_factory,
@@ -149,16 +147,13 @@ class ApplicationManager : public ShellClient,
   // |resolved_url| is the mojo: url identifying the physical package
   // application.
   // |file_url| is the resolved file:// URL of the physical package.
-  // |application_name| is the requested application's pretty name, from its
-  // manifest.
   // |base_filter| is the CapabilityFilter the requested application should be
   // run with, from its manifest.
   void OnGotResolvedURL(scoped_ptr<ConnectParams> params,
                         const String& resolved_url,
                         const String& qualifier,
-                        const String& file_url,
-                        const String& application_name,
-                        mojom::CapabilityFilterPtr base_filter);
+                        mojom::CapabilityFilterPtr base_filter,
+                        const String& file_url);
 
   // Tries to load |target| with an ApplicationLoader. Returns true if one was
   // registered and it was loaded, in which case |request| is taken.

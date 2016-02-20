@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MASH_TASK_VIEWER_TASK_VIEWER_APPLICATION_DELEGATE_H_
-#define MASH_TASK_VIEWER_TASK_VIEWER_APPLICATION_DELEGATE_H_
+#ifndef MASH_TASK_VIEWER_TASK_VIEWER_H_
+#define MASH_TASK_VIEWER_TASK_VIEWER_H_
 
 #include <map>
 
@@ -20,10 +20,10 @@ class AuraInit;
 namespace mash {
 namespace task_viewer {
 
-class TaskViewerApplicationDelegate : public mojo::ShellClient {
+class TaskViewer : public mojo::ShellClient {
  public:
-  TaskViewerApplicationDelegate();
-  ~TaskViewerApplicationDelegate() override;
+  TaskViewer();
+  ~TaskViewer() override;
 
  private:
   // mojo::ShellClient:
@@ -33,10 +33,10 @@ class TaskViewerApplicationDelegate : public mojo::ShellClient {
   mojo::TracingImpl tracing_;
   scoped_ptr<views::AuraInit> aura_init_;
 
-  DISALLOW_COPY_AND_ASSIGN(TaskViewerApplicationDelegate);
+  DISALLOW_COPY_AND_ASSIGN(TaskViewer);
 };
 
 }  // namespace task_viewer
 }  // namespace mash
 
-#endif  // MASH_TASK_VIEWER_TASK_VIEWER_APPLICATION_DELEGATE_H_
+#endif  // MASH_TASK_VIEWER_TASK_VIEWER_H_

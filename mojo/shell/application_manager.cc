@@ -196,8 +196,7 @@ void ApplicationManager::CreateInstanceForHandle(
   CapabilityFilter local_filter = filter->filter.To<CapabilityFilter>();
   Identity target_id(url.To<GURL>(), std::string(), local_filter);
   mojom::ShellClientRequest request;
-  // TODO(beng): do better than url.spec() for application name.
-  ApplicationInstance* instance = CreateInstance(target_id, url, &request);
+  ApplicationInstance* instance = CreateInstance(target_id, &request);
   instance->BindPIDReceiver(std::move(pid_receiver));
   scoped_ptr<NativeRunner> runner =
       native_runner_factory_->Create(base::FilePath());
@@ -225,7 +224,7 @@ void ApplicationManager::InitPackageManager(bool register_mojo_url_schemes) {
 
   mojom::ShellClientRequest request;
   GURL url("mojo://package_manager/");
-  CreateInstance(Identity(url), url.spec(), &request);
+  CreateInstance(Identity(url), &request);
   loader->Load(url, std::move(request));
 
   SetLoaderForURL(std::move(loader), url);
@@ -244,12 +243,11 @@ bool ApplicationManager::ConnectToExistingInstance(
 
 ApplicationInstance* ApplicationManager::CreateInstance(
     const Identity& target_id,
-    const String& application_name,
     mojom::ShellClientRequest* request) {
   mojom::ShellClientPtr shell_client;
   *request = GetProxy(&shell_client);
-  ApplicationInstance* instance = new ApplicationInstance(
-      std::move(shell_client), this, target_id, application_name);
+  ApplicationInstance* instance =
+      new ApplicationInstance(std::move(shell_client), this, target_id);
   DCHECK(identity_to_instance_.find(target_id) ==
          identity_to_instance_.end());
   identity_to_instance_[target_id] = instance;
@@ -304,9 +302,8 @@ void ApplicationManager::OnGotResolvedURL(
     scoped_ptr<ConnectParams> params,
     const String& resolved_url,
     const String& qualifier,
-    const String& file_url,
-    const String& application_name,
-    mojom::CapabilityFilterPtr base_filter) {
+    mojom::CapabilityFilterPtr base_filter,
+    const String& file_url) {
   // It's possible that when this manifest request was issued, another one was
   // already in-progress and completed by the time this one did, and so the
   // requested application may already be running.
@@ -315,15 +312,13 @@ void ApplicationManager::OnGotResolvedURL(
 
   Identity source = params->source(), target = params->target();
   mojom::ShellClientRequest request;
-  ApplicationInstance* instance =
-      CreateInstance(params->target(), application_name, &request);
+  ApplicationInstance* instance = CreateInstance(params->target(), &request);
   instance->ConnectToClient(std::move(params));
 
   if (LoadWithLoader(target, &request))
     return;
 
-  CHECK(!file_url.is_null() && !application_name.is_null() &&
-        !base_filter.is_null());
+  CHECK(!file_url.is_null() && !base_filter.is_null());
 
   GURL resolved_gurl = resolved_url.To<GURL>();
   if (target.url().spec() != resolved_url) {
@@ -380,7 +375,6 @@ mojom::ApplicationInfoPtr ApplicationManager::CreateApplicationInfoForInstance(
   info->id = instance->id();
   info->url = instance->identity().url().spec();
   info->qualifier = instance->identity().qualifier();
-  info->name = instance->application_name();
   if (instance->identity().url().spec() == "mojo://shell/")
     info->pid = base::Process::Current().Pid();
   else

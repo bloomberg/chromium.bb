@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/values.h"
 #include "mojo/public/cpp/bindings/weak_binding_set.h"
+#include "mojo/services/package_manager/public/interfaces/catalog.mojom.h"
 #include "mojo/services/package_manager/public/interfaces/resolver.mojom.h"
 #include "mojo/services/package_manager/public/interfaces/shell_resolver.mojom.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
@@ -53,8 +54,10 @@ class ApplicationCatalogStore {
 class PackageManager : public mojo::ShellClient,
                        public mojo::InterfaceFactory<mojom::Resolver>,
                        public mojo::InterfaceFactory<mojom::ShellResolver>,
+                       public mojo::InterfaceFactory<mojom::Catalog>,
                        public mojom::Resolver,
-                       public mojom::ShellResolver {
+                       public mojom::ShellResolver,
+                       public mojom::Catalog {
  public:
   // If |register_schemes| is true, mojo: and exe: schemes are registered as
   // "standard".
@@ -78,6 +81,10 @@ class PackageManager : public mojo::ShellClient,
   void Create(mojo::Connection* connection,
               mojom::ShellResolverRequest request) override;
 
+  // mojo::InterfaceFactory<mojom::Catalog>:
+  void Create(mojo::Connection* connection,
+              mojom::CatalogRequest request) override;
+
   // mojom::Resolver:
   void ResolveResponse(
       mojo::URLResponsePtr response,
@@ -93,6 +100,10 @@ class PackageManager : public mojo::ShellClient,
   // mojom::ShellResolver:
   void ResolveMojoURL(const mojo::String& mojo_url,
                       const ResolveMojoURLCallback& callback) override;
+
+  // mojom::Catalog:
+  void GetEntries(mojo::Array<mojo::String> urls,
+                  const GetEntriesCallback& callback) override;
 
   // Completes resolving a Mojo URL from the Shell after the resolved URL has
   // been added to the catalog and the manifest read.
@@ -137,6 +148,7 @@ class PackageManager : public mojo::ShellClient,
 
   mojo::WeakBindingSet<mojom::Resolver> resolver_bindings_;
   mojo::WeakBindingSet<mojom::ShellResolver> shell_resolver_bindings_;
+  mojo::WeakBindingSet<mojom::Catalog> catalog_bindings_;
 
   ApplicationCatalogStore* catalog_store_;
   std::map<std::string, ApplicationInfo> catalog_;

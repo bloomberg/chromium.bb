@@ -21,8 +21,7 @@ namespace shell {
 ApplicationInstance::ApplicationInstance(
     mojom::ShellClientPtr shell_client,
     ApplicationManager* manager,
-    const Identity& identity,
-    const String& application_name)
+    const Identity& identity)
     : manager_(manager),
       id_(GenerateUniqueID()),
       identity_(identity),
@@ -33,7 +32,6 @@ ApplicationInstance::ApplicationInstance(
       pid_receiver_binding_(this),
       queue_requests_(false),
       native_runner_(nullptr),
-      application_name_(application_name),
       pid_(base::kNullProcessId) {
   DCHECK_NE(Shell::kInvalidApplicationID, id_);
 }

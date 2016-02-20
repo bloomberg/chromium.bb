@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mash/task_viewer/task_viewer_application_delegate.h"
+#include "mash/task_viewer/task_viewer.h"
 
 #include <stddef.h>
 #include <stdint.h>
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/services/package_manager/public/interfaces/catalog.mojom.h"
 #include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/shell.h"
 #include "mojo/shell/public/interfaces/application_manager.mojom.h"
@@ -33,19 +35,24 @@ using ListenerRequest =
     mojo::InterfaceRequest<mojo::shell::mojom::ApplicationManagerListener>;
 using mojo::shell::mojom::ApplicationInfoPtr;
 
-class TaskViewer : public views::WidgetDelegateView,
-                   public ui::TableModel,
-                   public views::ButtonListener,
-                   public mojo::shell::mojom::ApplicationManagerListener {
+class TaskViewerContents
+    : public views::WidgetDelegateView,
+      public ui::TableModel,
+      public views::ButtonListener,
+      public mojo::shell::mojom::ApplicationManagerListener {
  public:
-  TaskViewer(ListenerRequest request, scoped_ptr<mojo::AppRefCount> app)
+  TaskViewerContents(ListenerRequest request,
+                     package_manager::mojom::CatalogPtr catalog,
+                     scoped_ptr<mojo::AppRefCount> app)
       : binding_(this, std::move(request)),
+        catalog_(std::move(catalog)),
         app_(std::move(app)),
         table_view_(nullptr),
         table_view_parent_(nullptr),
         kill_button_(
             new views::LabelButton(this, base::ASCIIToUTF16("Kill Process"))),
-        observer_(nullptr) {
+        observer_(nullptr),
+        weak_ptr_factory_(this) {
     // We don't want to show an empty UI on startup, so just block until we
     // receive the initial set of applications.
     binding_.WaitForIncomingMethodCall();
@@ -60,23 +67,22 @@ class TaskViewer : public views::WidgetDelegateView,
     kill_button_->SetStyle(views::Button::STYLE_BUTTON);
     AddChildView(kill_button_);
   }
-  ~TaskViewer() override {
+  ~TaskViewerContents() override {
     table_view_->SetModel(nullptr);
   }
 
  private:
-  struct ApplicationInfo {
+  struct InstanceInfo {
+    InstanceInfo(uint32_t id,
+                 const std::string& url,
+                 base::ProcessId pid)
+        : id(id), url(url), pid(pid) {}
     uint32_t id;
     std::string url;
     uint32_t pid;
     std::string name;
-
-    ApplicationInfo(uint32_t id,
-                    const std::string& url,
-                    base::ProcessId pid, const
-                    std::string& name)
-        : id(id), url(url), pid(pid), name(name) {}
   };
+
 
   // Overridden from views::WidgetDelegate:
   views::View* GetContentsView() override { return this; }
@@ -101,19 +107,19 @@ class TaskViewer : public views::WidgetDelegateView,
 
   // Overridden from ui::TableModel:
   int RowCount() override {
-    return static_cast<int>(applications_.size());
+    return static_cast<int>(instances_.size());
   }
   base::string16 GetText(int row, int column_id) override {
     switch(column_id) {
     case 0:
-      DCHECK(row < static_cast<int>(applications_.size()));
-      return base::UTF8ToUTF16(applications_[row]->name);
+      DCHECK(row < static_cast<int>(instances_.size()));
+      return base::UTF8ToUTF16(instances_[row]->name);
     case 1:
-      DCHECK(row < static_cast<int>(applications_.size()));
-      return base::UTF8ToUTF16(applications_[row]->url);
+      DCHECK(row < static_cast<int>(instances_.size()));
+      return base::UTF8ToUTF16(instances_[row]->url);
     case 2:
-      DCHECK(row < static_cast<int>(applications_.size()));
-      return base::IntToString16(applications_[row]->pid);
+      DCHECK(row < static_cast<int>(instances_.size()));
+      return base::IntToString16(instances_[row]->pid);
     default:
       NOTREACHED();
       break;
@@ -129,8 +135,8 @@ class TaskViewer : public views::WidgetDelegateView,
     DCHECK_EQ(sender, kill_button_);
     DCHECK_EQ(table_view_->SelectedRowCount(), 1);
     int row = table_view_->FirstSelectedRow();
-    DCHECK(row < static_cast<int>(applications_.size()));
-    base::Process process = base::Process::Open(applications_[row]->pid);
+    DCHECK(row < static_cast<int>(instances_.size()));
+    base::Process process = base::Process::Open(instances_[row]->pid);
     process.Terminate(9, true);
   }
 
@@ -138,50 +144,72 @@ class TaskViewer : public views::WidgetDelegateView,
   void SetRunningApplications(
       mojo::Array<ApplicationInfoPtr> applications) override {
     // This callback should only be called with an empty model.
-    DCHECK(applications_.empty());
+    DCHECK(instances_.empty());
+    mojo::Array<mojo::String> urls;
     for (size_t i = 0; i < applications.size(); ++i) {
-      applications_.push_back(
-          make_scoped_ptr(new ApplicationInfo(applications[i]->id,
-                                              applications[i]->url,
-                                              applications[i]->pid,
-                                              applications[i]->name)));
+      InsertInstance(applications[i]->id, applications[i]->url,
+                     applications[i]->pid);
+      urls.push_back(applications[i]->url);
     }
+    catalog_->GetEntries(std::move(urls),
+                         base::Bind(&TaskViewerContents::OnGotCatalogEntries,
+                                    weak_ptr_factory_.GetWeakPtr()));
   }
   void ApplicationInstanceCreated(ApplicationInfoPtr application) override {
     DCHECK(!ContainsId(application->id));
-    applications_.push_back(make_scoped_ptr(
-        new ApplicationInfo(application->id, application->url,
-                            application->pid, application->name)));
-    observer_->OnItemsAdded(static_cast<int>(applications_.size()), 1);
+    InsertInstance(application->id, application->url, application->pid);
+    observer_->OnItemsAdded(static_cast<int>(instances_.size()), 1);
+    mojo::Array<mojo::String> urls;
+    urls.push_back(application->url);
+    catalog_->GetEntries(std::move(urls),
+                         base::Bind(&TaskViewerContents::OnGotCatalogEntries,
+                                    weak_ptr_factory_.GetWeakPtr()));
   }
   void ApplicationInstanceDestroyed(uint32_t id) override {
-    for (auto it = applications_.begin(); it != applications_.end(); ++it) {
+    for (auto it = instances_.begin(); it != instances_.end(); ++it) {
       if ((*it)->id == id) {
         observer_->OnItemsRemoved(
-            static_cast<int>(it - applications_.begin()), 1);
-        applications_.erase(it);
+            static_cast<int>(it - instances_.begin()), 1);
+        instances_.erase(it);
         return;
       }
     }
     NOTREACHED();
   }
   void ApplicationPIDAvailable(uint32_t id, uint32_t pid) override {
-    for (auto it = applications_.begin(); it != applications_.end(); ++it) {
+    for (auto it = instances_.begin(); it != instances_.end(); ++it) {
       if ((*it)->id == id) {
         (*it)->pid = pid;
         observer_->OnItemsChanged(
-            static_cast<int>(it - applications_.begin()), 1);
+            static_cast<int>(it - instances_.begin()), 1);
         return;
       }
     }
   }
 
   bool ContainsId(uint32_t id) const {
-    for (auto& it : applications_) {
+    for (auto& it : instances_) {
       if (it->id == id)
         return true;
     }
     return false;
+  }
+
+  void InsertInstance(uint32_t id, const std::string& url, uint32_t pid) {
+    instances_.push_back(make_scoped_ptr(new InstanceInfo(id, url, pid)));
+  }
+
+  void OnGotCatalogEntries(
+      mojo::Map<mojo::String,
+                package_manager::mojom::CatalogEntryPtr> entries) {
+    for (auto it = instances_.begin(); it != instances_.end(); ++it) {
+      auto entry_it = entries.find((*it)->url);
+      if (entry_it != entries.end()) {
+        (*it)->name = entry_it->second->name;
+        observer_->OnItemsChanged(
+            static_cast<int>(it - instances_.begin()), 1);
+      }
+    }
   }
 
   static std::vector<ui::TableColumn> GetColumns() {
@@ -217,6 +245,7 @@ class TaskViewer : public views::WidgetDelegateView,
   }
 
   mojo::Binding<mojo::shell::mojom::ApplicationManagerListener> binding_;
+  package_manager::mojom::CatalogPtr catalog_;
   scoped_ptr<mojo::AppRefCount> app_;
 
   views::TableView* table_view_;
@@ -224,20 +253,20 @@ class TaskViewer : public views::WidgetDelegateView,
   views::LabelButton* kill_button_;
   ui::TableModelObserver* observer_;
 
-  std::vector<scoped_ptr<ApplicationInfo>> applications_;
+  std::vector<scoped_ptr<InstanceInfo>> instances_;
 
-  DISALLOW_COPY_AND_ASSIGN(TaskViewer);
+  base::WeakPtrFactory<TaskViewerContents> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(TaskViewerContents);
 };
 
 }  // namespace
 
-TaskViewerApplicationDelegate::TaskViewerApplicationDelegate() {}
+TaskViewer::TaskViewer() {}
+TaskViewer::~TaskViewer() {}
 
-TaskViewerApplicationDelegate::~TaskViewerApplicationDelegate() {}
-
-void TaskViewerApplicationDelegate::Initialize(mojo::Shell* shell,
-                                               const std::string& url,
-                                               uint32_t id) {
+void TaskViewer::Initialize(mojo::Shell* shell, const std::string& url,
+                            uint32_t id) {
   tracing_.Initialize(shell, url);
 
   aura_init_.reset(new views::AuraInit(shell, "views_mus_resources.pak"));
@@ -250,8 +279,11 @@ void TaskViewerApplicationDelegate::Initialize(mojo::Shell* shell,
   ListenerRequest request = GetProxy(&listener);
   application_manager->AddListener(std::move(listener));
 
-  TaskViewer* task_viewer = new TaskViewer(
-      std::move(request), shell->CreateAppRefCount());
+  package_manager::mojom::CatalogPtr catalog;
+  shell->ConnectToInterface("mojo:package_manager", &catalog);
+
+  TaskViewerContents* task_viewer = new TaskViewerContents(
+      std::move(request), std::move(catalog), shell->CreateAppRefCount());
   views::Widget* window = views::Widget::CreateWindowWithBounds(
       task_viewer, gfx::Rect(10, 10, 500, 500));
   window->Show();

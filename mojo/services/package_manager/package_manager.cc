@@ -99,6 +99,7 @@ void PackageManager::Initialize(mojo::Shell* shell, const std::string& url,
                                 uint32_t id) {}
 
 bool PackageManager::AcceptConnection(mojo::Connection* connection) {
+  connection->AddInterface<mojom::Catalog>(this);
   connection->AddInterface<mojom::Resolver>(this);
   if (connection->GetRemoteApplicationURL() == "mojo://shell/")
     connection->AddInterface<mojom::ShellResolver>(this);
@@ -113,6 +114,11 @@ void PackageManager::Create(mojo::Connection* connection,
 void PackageManager::Create(mojo::Connection* connection,
                             mojom::ShellResolverRequest request) {
   shell_resolver_bindings_.AddBinding(this, std::move(request));
+}
+
+void PackageManager::Create(mojo::Connection* connection,
+                            mojom::CatalogRequest request) {
+  catalog_bindings_.AddBinding(this, std::move(request));
 }
 
 void PackageManager::ResolveResponse(mojo::URLResponsePtr response,
@@ -150,6 +156,22 @@ void PackageManager::ResolveMojoURL(const mojo::String& mojo_url,
   EnsureURLInCatalog(resolved_url, qualifier, callback);
 }
 
+void PackageManager::GetEntries(
+    mojo::Array<mojo::String> urls,
+    const GetEntriesCallback& callback) {
+  mojo::Map<mojo::String, mojom::CatalogEntryPtr> entries;
+  std::vector<mojo::String> urls_vec = urls.PassStorage();
+  for (const auto& url : urls_vec) {
+    if (catalog_.find(url) == catalog_.end())
+      continue;
+    const ApplicationInfo& info = catalog_[url];
+    mojom::CatalogEntryPtr entry(mojom::CatalogEntry::New());
+    entry->name = info.name;
+    entries[info.url] = std::move(entry);
+  }
+  callback.Run(std::move(entries));
+}
+
 void PackageManager::CompleteResolveMojoURL(
     const GURL& resolved_url,
     const std::string& qualifier,
@@ -178,8 +200,8 @@ void PackageManager::CompleteResolveMojoURL(
   all_interfaces.push_back("*");
   filter->filter.insert("*", std::move(all_interfaces));
 
-  callback.Run(resolved_url.spec(), qualifier, file_url.spec(),
-               info_iter->second.name, std::move(filter));
+  callback.Run(resolved_url.spec(), qualifier, std::move(filter),
+               file_url.spec());
 }
 
 bool PackageManager::IsURLInCatalog(const GURL& url) const {
@@ -200,7 +222,7 @@ void PackageManager::EnsureURLInCatalog(
     // The URL is of some form that can't be resolved to a manifest (e.g. some
     // scheme used for tests). Just pass it back to the caller so it can be
     // loaded with a custom loader.
-    callback.Run(url.spec(), nullptr, nullptr, nullptr, nullptr);
+    callback.Run(url.spec(), url.spec(), nullptr, nullptr);
     return;
   }
 
@@ -282,7 +304,7 @@ void PackageManager::OnReadManifest(base::WeakPtr<PackageManager> pm,
   if (!pm) {
     // The PackageManager was destroyed, we're likely in shutdown. Run the
     // callback so we don't trigger a DCHECK.
-    callback.Run(url.spec(), nullptr, nullptr, nullptr, nullptr);
+    callback.Run(url.spec(), url.spec(), nullptr, nullptr);
     return;
   }
   pm->OnReadManifestImpl(url, qualifier, callback, std::move(manifest));
