@@ -129,7 +129,8 @@ void BluetoothApiSocket::OnSocketReceiveError(
     device::BluetoothSocket::ErrorReason reason,
     const std::string& message) {
   DCHECK_CURRENTLY_ON(kThreadId);
-  BluetoothApiSocket::ErrorReason error_reason;
+  BluetoothApiSocket::ErrorReason error_reason =
+      BluetoothApiSocket::kSystemError;
   switch (reason) {
     case device::BluetoothSocket::kIOPending:
       error_reason = BluetoothApiSocket::kIOPending;

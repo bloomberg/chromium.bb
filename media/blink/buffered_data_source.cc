@@ -541,7 +541,7 @@ void BufferedDataSource::LoadingStateChangedCallback(
   if (assume_fully_buffered())
     return;
 
-  bool is_downloading_data;
+  bool is_downloading_data = false;
   switch (state) {
     case BufferedResourceLoader::kLoading:
       is_downloading_data = true;

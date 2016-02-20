@@ -295,7 +295,7 @@ void ChunkDemuxerStream::CompletePendingReadIfPossible_Locked() {
   lock_.AssertAcquired();
   DCHECK(!read_cb_.is_null());
 
-  DemuxerStream::Status status;
+  DemuxerStream::Status status = DemuxerStream::kAborted;
   scoped_refptr<StreamParserBuffer> buffer;
 
   switch (state_) {
