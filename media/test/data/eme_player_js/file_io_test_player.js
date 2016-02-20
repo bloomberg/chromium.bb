@@ -15,18 +15,21 @@ FileIOTestPlayer.prototype.init = function() {
 
 FileIOTestPlayer.prototype.registerEventListeners = function() {
   // Returns a promise.
-  return PlayerUtils.registerPrefixedEMEEventListeners(this);
+  return PlayerUtils.registerEMEEventListeners(this).then(function(result) {
+    return PlayerUtils.registerPrefixedEMEEventListeners(this);
+  });
 };
 
 handleMessage = function(message) {
   // The test result is either '0' or '1' appended to the header.
-  if (Utils.hasPrefix(message.message, FILE_IO_TEST_RESULT_HEADER)) {
-    if (message.message.length != FILE_IO_TEST_RESULT_HEADER.length + 1) {
-      Utils.failTest('Unexpected FileIOTest CDM message' + message.message);
+  var msg = Utils.convertToUint8Array(message.message);
+  if (Utils.hasPrefix(msg, FILE_IO_TEST_RESULT_HEADER)) {
+    if (msg.length != FILE_IO_TEST_RESULT_HEADER.length + 1) {
+      Utils.failTest('Unexpected FileIOTest CDM message' + msg);
       return;
     }
     var result_index = FILE_IO_TEST_RESULT_HEADER.length;
-    var success = String.fromCharCode(message.message[result_index]) == 1;
+    var success = String.fromCharCode(msg[result_index]) == 1;
     Utils.timeLog('CDM file IO test: ' + (success ? 'Success' : 'Fail'));
     if (success)
       Utils.setResultInTitle(FILE_IO_TEST_SUCCESS);

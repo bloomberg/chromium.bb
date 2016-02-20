@@ -98,6 +98,11 @@ PlayerUtils.registerEMEEventListeners = function(player) {
   player.video.receivedKeyMessage = false;
   Utils.timeLog('Setting video media keys: ' + player.testConfig.keySystem);
   var config = {};
+  // The File IO test requires persistent state support.
+  if (player.testConfig.keySystem ==
+      'org.chromium.externalclearkey.fileiotest') {
+    config = {persistentState: "required"};
+  }
   if (player.testConfig.sessionToLoad) {
     config = {
         persistentState: "required",
