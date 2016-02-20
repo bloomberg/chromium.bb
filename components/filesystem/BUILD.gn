@@ -26,6 +26,7 @@ source_set("lib") {
     "//mojo/common:common_base",
     "//mojo/platform_handle",
     "//mojo/shell/public/cpp",
+    "//mojo/shell/public/interfaces",
     "//url",
   ]
 }
