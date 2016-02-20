@@ -71,7 +71,7 @@ public class PartnerBrowserCustomizations {
      *         to read provider is also considered initialization.
      */
     @VisibleForTesting
-    static boolean isInitialized() {
+    public static boolean isInitialized() {
         return sIsInitialized;
     }
 

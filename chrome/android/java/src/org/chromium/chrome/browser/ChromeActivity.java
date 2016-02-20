@@ -185,7 +185,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     private ContextReporter mContextReporter;
     protected GSAServiceClient mGSAServiceClient;
 
-    private boolean mPartnerBrowserRefreshNeeded = false;
+    private boolean mPartnerBrowserRefreshNeeded;
 
     protected IntentHandler mIntentHandler;
 
@@ -240,6 +240,12 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     @Override
     public void preInflationStartup() {
         super.preInflationStartup();
+
+        // Force a partner customizations refresh if it has yet to be initialized.  This can happen
+        // if Chrome is killed and you refocus a previous activity from Android recents, which does
+        // not go through ChromeLauncherActivity that would have normally triggered this.
+        mPartnerBrowserRefreshNeeded = !PartnerBrowserCustomizations.isInitialized();
+
         ApplicationInitialization.enableFullscreenFlags(
                 getResources(), this, getControlContainerHeightResource());
         // TODO(twellington): Remove this work around when the underlying bug is fixed.
