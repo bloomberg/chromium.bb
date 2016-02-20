@@ -367,7 +367,12 @@ public class ChromeLauncherActivity extends Activity
                 context.getResources().getString(R.string.menu_open_in_chrome));
 
         newIntent.putExtra(CustomTabsIntent.EXTRA_ACTION_BUTTON_BUNDLE, herbBundle);
+        newIntent.putExtra(CustomTabsIntent.EXTRA_DEFAULT_SHARE_MENU_ITEM, true);
         newIntent.putExtra(CustomTabIntentDataProvider.EXTRA_FINISH_AFTER_OPENING_IN_BROWSER, true);
+        newIntent.putExtra(CustomTabIntentDataProvider.EXTRA_SHOW_STAR_ICON, true);
+
+        // Mark this as a trusted Chrome Intent.
+        IntentHandler.addTrustedIntentExtras(newIntent, context);
     }
 
     /**

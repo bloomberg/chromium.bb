@@ -324,6 +324,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         assertNotNull(menu.findItem(R.id.open_in_browser_id));
         assertFalse(menu.findItem(R.id.share_menu_id).isVisible());
         assertFalse(menu.findItem(R.id.share_menu_id).isEnabled());
+        assertNull(menu.findItem(R.id.bookmark_this_page_id));
     }
 
     /**

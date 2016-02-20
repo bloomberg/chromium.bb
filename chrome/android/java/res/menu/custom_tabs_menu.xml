@@ -11,6 +11,9 @@
               <item android:id="@+id/forward_menu_id"
                 android:title="@string/accessibility_menu_forward"
                 android:icon="@drawable/btn_forward"/>
+              <item android:id="@+id/bookmark_this_page_id"
+                android:title="@string/accessibility_menu_bookmark"
+                android:icon="@drawable/btn_star"/>
               <item android:id="@+id/info_menu_id"
                 android:title="@string/accessibility_menu_info"
                 android:icon="@drawable/btn_info" />

@@ -28,20 +28,24 @@ import java.util.concurrent.ExecutionException;
  */
 public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegate {
     private static final String SAMPLE_URL = "https://www.google.com";
-    private boolean mIsCustomEntryAdded;
-    private boolean mShowShare;
-    private List<String> mMenuEntries;
+
+    private final boolean mShowShare;
+    private final boolean mShowBookmark;
+    private final List<String> mMenuEntries;
     private final Map<MenuItem, Integer> mItemToIndexMap = new HashMap<MenuItem, Integer>();
-    private AsyncTask<Void, Void, String> mDefaultBrowserFetcher;
+    private final AsyncTask<Void, Void, String> mDefaultBrowserFetcher;
+
+    private boolean mIsCustomEntryAdded;
 
     /**
      * Creates an {@link CustomTabAppMenuPropertiesDelegate} instance.
      */
     public CustomTabAppMenuPropertiesDelegate(final ChromeActivity activity,
-            List<String> menuEntries, boolean showShare) {
+            List<String> menuEntries, boolean showShare, boolean showBookmark) {
         super(activity);
         mMenuEntries = menuEntries;
         mShowShare = showShare;
+        mShowBookmark = showBookmark;
         mDefaultBrowserFetcher = new AsyncTask<Void, Void, String>() {
             @Override
             protected String doInBackground(Void... params) {
@@ -70,6 +74,16 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
             MenuItem shareItem = menu.findItem(R.id.share_menu_id);
             shareItem.setVisible(mShowShare);
             shareItem.setEnabled(mShowShare);
+
+            if (mShowBookmark) {
+                MenuItem bookmarkItem = menu.findItem(R.id.bookmark_this_page_id);
+                updateBookmarkMenuItem(bookmarkItem, currentTab);
+            } else {
+                // Because we have custom logic for laying out the icon row, the bookmark icon must
+                // be explicitly removed instead of just made invisible.
+                menu.findItem(R.id.icon_row_menu_id).getSubMenu().removeItem(
+                        R.id.bookmark_this_page_id);
+            }
 
             MenuItem openInChromeItem = menu.findItem(R.id.open_in_browser_id);
             try {

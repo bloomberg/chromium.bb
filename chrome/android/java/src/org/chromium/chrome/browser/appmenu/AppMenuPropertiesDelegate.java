@@ -99,16 +99,7 @@ public class AppMenuPropertiesDelegate {
                 loadingStateChanged(currentTab.isLoading());
 
                 MenuItem bookmarkMenuItem = menu.findItem(R.id.bookmark_this_page_id);
-                bookmarkMenuItem.setEnabled(mBookmarkBridge.isEditBookmarksEnabled());
-                if (currentTab.getBookmarkId() != ChromeBrowserProviderClient.INVALID_BOOKMARK_ID) {
-                    bookmarkMenuItem.setIcon(R.drawable.btn_star_filled);
-                    bookmarkMenuItem.setChecked(true);
-                    bookmarkMenuItem.setTitleCondensed(mActivity.getString(R.string.edit_bookmark));
-                } else {
-                    bookmarkMenuItem.setIcon(R.drawable.btn_star);
-                    bookmarkMenuItem.setChecked(false);
-                    bookmarkMenuItem.setTitleCondensed(null);
-                }
+                updateBookmarkMenuItem(bookmarkMenuItem, currentTab);
             }
 
             menu.findItem(R.id.update_menu_id).setVisible(
@@ -248,5 +239,24 @@ public class AppMenuPropertiesDelegate {
      */
     public void setBookmarkBridge(BookmarkBridge bookmarkBridge) {
         mBookmarkBridge = bookmarkBridge;
+    }
+
+    /**
+     * Updates the bookmark item's visibility.
+     *
+     * @param bookmarkMenuItem {@link MenuItem} for adding/editing the bookmark.
+     * @param currentTab        Current tab being displayed.
+     */
+    protected void updateBookmarkMenuItem(MenuItem bookmarkMenuItem, Tab currentTab) {
+        bookmarkMenuItem.setEnabled(mBookmarkBridge.isEditBookmarksEnabled());
+        if (currentTab.getBookmarkId() != ChromeBrowserProviderClient.INVALID_BOOKMARK_ID) {
+            bookmarkMenuItem.setIcon(R.drawable.btn_star_filled);
+            bookmarkMenuItem.setChecked(true);
+            bookmarkMenuItem.setTitleCondensed(mActivity.getString(R.string.edit_bookmark));
+        } else {
+            bookmarkMenuItem.setIcon(R.drawable.btn_star);
+            bookmarkMenuItem.setChecked(false);
+            bookmarkMenuItem.setTitleCondensed(null);
+        }
     }
 }
