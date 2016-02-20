@@ -13,6 +13,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
+#include "content/common/mojo/static_application_loader.h"
 #include "content/common/process_control.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -27,7 +28,6 @@
 #include "mojo/shell/connect_to_application_params.h"
 #include "mojo/shell/identity.h"
 #include "mojo/shell/public/cpp/shell_client.h"
-#include "mojo/shell/static_application_loader.h"
 
 namespace content {
 
@@ -216,7 +216,7 @@ MojoShellContext::MojoShellContext() {
   for (const auto& entry : apps) {
     application_manager_->SetLoaderForURL(
         scoped_ptr<mojo::shell::ApplicationLoader>(
-            new mojo::shell::StaticApplicationLoader(entry.second)),
+            new StaticApplicationLoader(entry.second)),
         entry.first);
   }
 

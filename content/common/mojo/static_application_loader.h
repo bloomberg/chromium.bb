@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SHELL_STATIC_APPLICATION_LOADER_H_
-#define MOJO_SHELL_STATIC_APPLICATION_LOADER_H_
+#ifndef CONTENT_COMMON_MOJO_STATIC_APPLICATION_LOADER_H_
+#define CONTENT_COMMON_MOJO_STATIC_APPLICATION_LOADER_H_
 
 #include <list>
 
@@ -20,8 +20,7 @@ namespace mojo {
 class ShellClient;
 }
 
-namespace mojo {
-namespace shell {
+namespace content {
 
 // An ApplicationLoader which loads a single type of app from a given
 // mojo::ShellClient factory. A Load() request is fulfilled by creating an
@@ -44,7 +43,7 @@ class StaticApplicationLoader : public mojo::shell::ApplicationLoader {
 
   // mojo::shell::ApplicationLoader:
   void Load(const GURL& url,
-            InterfaceRequest<mojom::ShellClient> request) override;
+            mojo::shell::mojom::ShellClientRequest request) override;
 
  private:
   void StopAppThread();
@@ -63,7 +62,6 @@ class StaticApplicationLoader : public mojo::shell::ApplicationLoader {
   DISALLOW_COPY_AND_ASSIGN(StaticApplicationLoader);
 };
 
-}  // namespace shell
-}  // namespace mojo
+}  // namespace content
 
-#endif  // MOJO_SHELL_STATIC_APPLICATION_LOADER_H_
+#endif  // CONTENT_COMMON_MOJO_STATIC_APPLICATION_LOADER_H_

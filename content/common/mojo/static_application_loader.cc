@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/shell/static_application_loader.h"
+#include "content/common/mojo/static_application_loader.h"
 
 #include <utility>
 
@@ -17,15 +17,14 @@
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/interfaces/shell_client.mojom.h"
 
-namespace mojo {
-namespace shell {
+namespace content {
 
 namespace {
 
 class RunnerThread : public base::SimpleThread {
  public:
   RunnerThread(const GURL& url,
-               InterfaceRequest<mojom::ShellClient> request,
+               mojo::shell::mojom::ShellClientRequest request,
                scoped_refptr<base::TaskRunner> exit_task_runner,
                const base::Closure& exit_callback,
                const StaticApplicationLoader::ApplicationFactory& factory)
@@ -36,15 +35,15 @@ class RunnerThread : public base::SimpleThread {
         factory_(factory) {}
 
   void Run() override {
-    scoped_ptr<ApplicationRunner> runner(
-        new ApplicationRunner(factory_.Run().release()));
+    scoped_ptr<mojo::ApplicationRunner> runner(
+        new mojo::ApplicationRunner(factory_.Run().release()));
     runner->Run(request_.PassMessagePipe().release().value(),
                 false /* init_base */);
     exit_task_runner_->PostTask(FROM_HERE, exit_callback_);
   }
 
  private:
-  InterfaceRequest<mojom::ShellClient> request_;
+  mojo::shell::mojom::ShellClientRequest request_;
   scoped_refptr<base::TaskRunner> exit_task_runner_;
   base::Closure exit_callback_;
   StaticApplicationLoader::ApplicationFactory factory_;
@@ -72,7 +71,7 @@ StaticApplicationLoader::~StaticApplicationLoader() {
 
 void StaticApplicationLoader::Load(
     const GURL& url,
-    InterfaceRequest<mojom::ShellClient> request) {
+    mojo::shell::mojom::ShellClientRequest request) {
   if (thread_)
     return;
 
@@ -94,5 +93,4 @@ void StaticApplicationLoader::StopAppThread() {
     quit_callback_.Run();
 }
 
-}  // namespace shell
-}  // namespace mojo
+}  // namespace content

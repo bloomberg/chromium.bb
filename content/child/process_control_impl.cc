@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/stl_util.h"
+#include "content/common/mojo/static_application_loader.h"
 #include "content/public/common/content_client.h"
-#include "mojo/shell/static_application_loader.h"
 #include "url/gurl.h"
 
 namespace content {

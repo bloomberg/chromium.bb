@@ -508,6 +508,8 @@
       'common/mojo/mojo_messages.h',
       'common/mojo/service_registry_impl.cc',
       'common/mojo/service_registry_impl.h',
+      'common/mojo/static_application_loader.cc',
+      'common/mojo/static_application_loader.h',
       'common/navigation_gesture.h',
       'common/navigation_params.cc',
       'common/navigation_params.h',

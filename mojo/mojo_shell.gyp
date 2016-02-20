@@ -27,8 +27,6 @@
       'shell/identity.cc',
       'shell/identity.h',
       'shell/native_runner.h',
-      'shell/static_application_loader.cc',
-      'shell/static_application_loader.h',
       'shell/switches.cc',
       'shell/switches.cc',
       'util/filename_util.cc',

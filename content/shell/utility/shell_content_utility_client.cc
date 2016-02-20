@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/common/mojo/static_application_loader.h"
 #include "content/public/test/test_mojo_app.h"
-#include "mojo/shell/static_application_loader.h"
 
 namespace content {
 
