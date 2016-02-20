@@ -328,6 +328,7 @@ void PrintDialogGtk2::ShowDialog(
     bool has_selection,
     const PrintingContextLinux::PrintSettingsCallback& callback) {
   callback_ = callback;
+  DCHECK(!callback_.is_null());
 
   dialog_ = gtk_print_unix_dialog_new(NULL, NULL);
   libgtk2ui::SetGtkTransientForAura(dialog_, parent_view);
@@ -550,5 +551,8 @@ void PrintDialogGtk2::OnWindowDestroying(aura::Window* window) {
 
   libgtk2ui::ClearAuraTransientParent(dialog_);
   window->RemoveObserver(this);
-  Release();
+  if (!callback_.is_null()) {
+    callback_.Run(PrintingContextLinux::CANCEL);
+    callback_.Reset();
+  }
 }
