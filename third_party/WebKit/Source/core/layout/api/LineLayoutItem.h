@@ -419,6 +419,7 @@ private:
     LayoutObject* m_layoutObject;
 
     friend class LineLayoutAPIShim;
+    friend class LineLayoutBlockFlow; // For layoutObject().
 };
 
 } // namespace blink
