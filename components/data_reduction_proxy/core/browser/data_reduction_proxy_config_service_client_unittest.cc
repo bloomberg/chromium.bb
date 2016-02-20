@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
+#include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
 #include "base/time/time.h"
@@ -750,7 +751,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, HTTPRequests) {
         test_url_request_context()->CreateRequest(GURL(tests[i].url), net::IDLE,
                                                   &test_delegate));
     request->Start();
-    RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     histogram_tester.ExpectTotalCount(
         "DataReductionProxy.ConfigService.HTTPRequests",
