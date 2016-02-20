@@ -59,7 +59,7 @@ private:
     Vector<EventOrReconnectionTimeSetting> m_events;
 };
 
-class StoppingClient : public GarbageCollectedFinalized<Client>, public EventSourceParser::Client {
+class StoppingClient : public GarbageCollectedFinalized<StoppingClient>, public EventSourceParser::Client {
     USING_GARBAGE_COLLECTED_MIXIN(StoppingClient);
 public:
     ~StoppingClient() override {}
