@@ -64,6 +64,7 @@
 #include "core/layout/ScrollAlignment.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/layout/TracedLayoutObject.h"
+#include "core/layout/api/LayoutBoxModel.h"
 #include "core/layout/api/LayoutItem.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/CompositedSelection.h"
@@ -1360,9 +1361,10 @@ bool FrameView::invalidateViewportConstrainedObjects()
 {
     for (const auto& viewportConstrainedObject : *m_viewportConstrainedObjects) {
         LayoutObject* layoutObject = viewportConstrainedObject;
-        ASSERT(layoutObject->style()->hasViewportConstrainedPosition());
-        ASSERT(layoutObject->hasLayer());
-        PaintLayer* layer = toLayoutBoxModelObject(layoutObject)->layer();
+        LayoutItem layoutItem = LayoutItem(layoutObject);
+        ASSERT(layoutItem.style()->hasViewportConstrainedPosition());
+        ASSERT(layoutItem.hasLayer());
+        PaintLayer* layer = LayoutBoxModel(layoutItem).layer();
 
         if (layer->isPaintInvalidationContainer())
             continue;
@@ -1382,7 +1384,7 @@ bool FrameView::invalidateViewportConstrainedObjects()
             "data",
             InspectorScrollInvalidationTrackingEvent::data(*layoutObject));
 
-        layoutObject->setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
+        layoutItem.setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
     }
     return true;
 }

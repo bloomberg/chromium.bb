@@ -31,12 +31,49 @@ public:
     // https://crbug.com/499321
     operator LayoutObject*() const { return m_layoutObject; }
 
-    bool needsLayout() { return m_layoutObject->needsLayout(); }
-    void layout() { m_layoutObject->layout(); }
+    bool isBoxModelObject() const
+    {
+        return m_layoutObject->isBoxModelObject();
+    }
 
-    LayoutItem container() const { return LayoutItem(m_layoutObject->container()); }
+    bool needsLayout()
+    {
+        return m_layoutObject->needsLayout();
+    }
 
-    void setMayNeedPaintInvalidation() { m_layoutObject->setMayNeedPaintInvalidation(); }
+    void layout()
+    {
+        m_layoutObject->layout();
+    }
+
+    LayoutItem container() const
+    {
+        return LayoutItem(m_layoutObject->container());
+    }
+
+    void setMayNeedPaintInvalidation()
+    {
+        m_layoutObject->setMayNeedPaintInvalidation();
+    }
+
+    const ComputedStyle* style() const
+    {
+        return m_layoutObject->style();
+    }
+
+    bool hasLayer() const
+    {
+        return m_layoutObject->hasLayer();
+    }
+
+    void setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants()
+    {
+        m_layoutObject->setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
+    }
+
+protected:
+    LayoutObject* layoutObject() { return m_layoutObject; }
+    const LayoutObject* layoutObject() const { return m_layoutObject; }
 
 private:
     LayoutObject* m_layoutObject;
