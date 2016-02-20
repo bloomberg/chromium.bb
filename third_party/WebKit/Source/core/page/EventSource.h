@@ -62,7 +62,7 @@ public:
     String url() const;
     bool withCredentials() const;
 
-    enum State : unsigned short {
+    enum State : short {
         CONNECTING = 0,
         OPEN = 1,
         CLOSED = 2
