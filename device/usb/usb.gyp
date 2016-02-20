@@ -11,6 +11,7 @@
       'target_name': 'device_usb',
       'type': 'static_library',
       'dependencies': [
+        'device_usb_mojo_bindings',
         '../../components/components.gyp:device_event_log_component',
         '../../net/net.gyp:net',
         '../../third_party/libusb/libusb.gyp:libusb',
