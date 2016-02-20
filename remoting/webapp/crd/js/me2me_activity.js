@@ -39,6 +39,12 @@ remoting.Me2MeActivity = function(host, hostList) {
 
   /** @private {remoting.DesktopRemotingActivity} */
   this.desktopActivity_ = null;
+
+  /** @private {remoting.GnubbyAuthHandler} */
+  this.gnubbyAuthHandler_ = new remoting.GnubbyAuthHandler();
+
+  /** @private {Array<string>} */
+  this.additionalCapabilities_ = [];
 };
 
 remoting.Me2MeActivity.prototype.dispose = function() {
@@ -74,6 +80,16 @@ remoting.Me2MeActivity.prototype.start = function() {
     // User cancels out of the Host upgrade dialog.  Report it as bad version.
     throw new remoting.Error(remoting.Error.Tag.BAD_VERSION);
   })).then(
+    this.gnubbyAuthHandler_.isGnubbyExtensionInstalled.bind(
+        this.gnubbyAuthHandler_)
+  ).then(
+    function (extensionInstalled) {
+      if (extensionInstalled) {
+        this.additionalCapabilities_.push(
+            remoting.ClientSession.Capability.SECURITY_KEY);
+      }
+    }.bind(this)
+  ).then(
     this.connect_.bind(this)
   ).catch(remoting.Error.handler(handleError));
 };
@@ -124,8 +140,9 @@ remoting.Me2MeActivity.prototype.reconnect_ = function(entryPoint) {
  */
 remoting.Me2MeActivity.prototype.connect_ = function() {
   base.dispose(this.desktopActivity_);
-  this.desktopActivity_ =
-      new remoting.DesktopRemotingActivity(this, this.logger_);
+
+  this.desktopActivity_ = new remoting.DesktopRemotingActivity(
+      this, this.logger_, this.additionalCapabilities_);
   this.desktopActivity_.getConnectingDialog().show();
   this.desktopActivity_.start(this.host_, this.createCredentialsProvider_());
 };
@@ -240,7 +257,9 @@ remoting.Me2MeActivity.prototype.onConnected = function(connectionInfo) {
   if (plugin.hasCapability(remoting.ClientSession.Capability.CAST)) {
     plugin.extensions().register(new remoting.CastExtensionHandler());
   }
-  plugin.extensions().register(new remoting.GnubbyAuthHandler());
+  // TODO(joedow): Do not register the GnubbyAuthHandler extension if the host
+  //               does not support security key forwarding.
+  plugin.extensions().register(this.gnubbyAuthHandler_);
   this.pinDialog_.requestPairingIfNecessary(connectionInfo.plugin());
 
   // Drop the session after 30s of suspension.  If this timeout is too short, we

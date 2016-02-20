@@ -8,7 +8,7 @@
 
 namespace {
 // TODO(joedow): Update this once clients support sending a gnubby capabililty.
-//               Tracked via: crbug.com/585835
+//               Tracked via: crbug.com/587485
 const char kCapability[] = "";
 }
 

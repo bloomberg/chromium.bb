@@ -44,7 +44,7 @@ remoting.CastExtensionHandler = function() {
 /** @private {string} */
 remoting.CastExtensionHandler.EXTENSION_TYPE = 'cast_message';
 
-/** @return {Array<string>} */
+/** @override @return {Array<string>} */
 remoting.CastExtensionHandler.prototype.getExtensionTypes = function() {
   return [remoting.CastExtensionHandler.EXTENSION_TYPE];
 };

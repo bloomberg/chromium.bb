@@ -97,6 +97,10 @@ remoting.BaseTestDriver = function(mockHTML) {
       sinon.stub(remoting.NetworkConnectivityDetector, 'create', function(){
         return new MockNetworkConnectivityDetector();
       });
+  /** @private */
+  this.isGnubbyExtensionInstalledStub_ = sinon.stub(
+      remoting.GnubbyAuthHandler.prototype, 'isGnubbyExtensionInstalled',
+      function() { return Promise.resolve(false); });
 
   /**
    * Use fake timers to prevent the generation of session ID expiration events.
@@ -125,6 +129,7 @@ remoting.BaseTestDriver.prototype.dispose = function() {
   this.eventWriterMock_.restore();
   this.desktopConnectedViewCreateStub_.restore();
   this.createNetworkConnectivityDetectorStub_.restore();
+  this.isGnubbyExtensionInstalledStub_.restore();
   if (Boolean(this.mockConnection_)) {
     this.mockConnection_.restore();
     this.mockConnection_ = null;

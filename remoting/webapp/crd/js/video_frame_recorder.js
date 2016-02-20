@@ -27,7 +27,7 @@ remoting.VideoFrameRecorder = function() {
 /** @private {string} */
 remoting.VideoFrameRecorder.EXTENSION_TYPE = 'video-recorder';
 
-/** @return {Array<string>} */
+/** @override @return {Array<string>} */
 remoting.VideoFrameRecorder.prototype.getExtensionTypes = function() {
   return [remoting.VideoFrameRecorder.EXTENSION_TYPE];
 };

@@ -20,12 +20,71 @@ var remoting = remoting || {};
 remoting.GnubbyAuthHandler = function() {
   /** @private {?function(string,string)} */
   this.sendMessageToHostCallback_ = null;
+
+  /** @private {string} */
+  this.gnubbyExtensionId_ = '';
+
+  /** @private {Promise} */
+  this.gnubbyExtensionPromise_ = null;
 };
 
-/** @private {string} */
+/** @private @const  {string} */
 remoting.GnubbyAuthHandler.EXTENSION_TYPE = 'gnubby-auth';
 
-/** @return {Array<string>} */
+/** @private @const {string} */
+remoting.GnubbyAuthHandler.GNUBBY_DEV_EXTENSION_ID =
+    'dlfcjilkjfhdnfiecknlnddkmmiofjbg';
+
+/** @private @const {string} */
+remoting.GnubbyAuthHandler.GNUBBY_STABLE_EXTENSION_ID =
+    'beknehfpfkghjoafdifaflglpjkojoco';
+
+/**
+ * Determines whether any supported Gnubby extensions are installed.
+ *
+ * @return {Promise<boolean>}  Promise that resolves after we have either found
+ *     an extension or checked for the known extensions IDs without success.
+ *     Returns true if an applicable gnubby extension was found.
+ */
+remoting.GnubbyAuthHandler.prototype.isGnubbyExtensionInstalled = function() {
+  if (this.gnubbyExtensionPromise_) {
+    return this.gnubbyExtensionPromise_;
+  }
+
+  var findGnubbyExtension = function(extensionId, resolve, reject) {
+    var message_callback = function(response) {
+      if (response) {
+        this.gnubbyExtensionId_ = extensionId;
+        resolve(true);
+      } else {
+        reject();
+      }
+    }.bind(this)
+
+    chrome.runtime.sendMessage(extensionId, "HELLO", message_callback);
+  }
+
+  var findDevGnubbyExtension = findGnubbyExtension.bind(this,
+      remoting.GnubbyAuthHandler.GNUBBY_DEV_EXTENSION_ID)
+
+  var findStableGnubbyExtension = findGnubbyExtension.bind(this,
+      remoting.GnubbyAuthHandler.GNUBBY_STABLE_EXTENSION_ID)
+
+  this.gnubbyExtensionPromise_ = new Promise(
+    findStableGnubbyExtension
+  ).catch(function () {
+      return new Promise(findDevGnubbyExtension);
+    }
+  ).catch(function () {
+      // If no extensions are found, return false.
+      return Promise.resolve(false);
+    }
+  );
+
+  return this.gnubbyExtensionPromise_;
+};
+
+/** @override @return {Array<string>} */
 remoting.GnubbyAuthHandler.prototype.getExtensionTypes = function() {
   return [remoting.GnubbyAuthHandler.EXTENSION_TYPE];
 };
@@ -100,37 +159,19 @@ remoting.GnubbyAuthHandler.prototype.callback_ =
 };
 
 /**
- * Send data to the gnubbyd extension.
+ * Send data to the installed gnubbyd extension.
  * @param {Object} jsonObject The JSON object to send to the gnubbyd extension.
  * @param {function(Object)} callback The callback to invoke with reply data.
  * @private
  */
 remoting.GnubbyAuthHandler.prototype.sendMessageToGnubbyd_ =
     function(jsonObject, callback) {
-  var kGnubbydDevExtensionId = 'dlfcjilkjfhdnfiecknlnddkmmiofjbg';
-
-  chrome.runtime.sendMessage(
-      kGnubbydDevExtensionId,
-      jsonObject,
-      onGnubbydDevReply_.bind(this, jsonObject, callback));
+  this.isGnubbyExtensionInstalled().then(
+    function (extensionInstalled) {
+      if (extensionInstalled) {
+        chrome.runtime.sendMessage(
+            this.gnubbyExtensionId_, jsonObject, callback);
+      }
+    }.bind(this)
+  );
 };
-
-/**
- * Callback invoked as a result of sending a message to the gnubbyd-dev
- * extension. If that extension is not installed, reply will be undefined;
- * otherwise it will be the JSON response object.
- * @param {Object} jsonObject The JSON object to send to the gnubbyd extension.
- * @param {function(Object)} callback The callback to invoke with reply data.
- * @param {Object} reply The reply from the extension (or Chrome, if the
- *    extension does not exist.
- * @private
- */
-function onGnubbydDevReply_(jsonObject, callback, reply) {
-  var kGnubbydStableExtensionId = 'beknehfpfkghjoafdifaflglpjkojoco';
-
-  if (reply) {
-    callback(reply);
-  } else {
-    chrome.runtime.sendMessage(kGnubbydStableExtensionId, jsonObject, callback);
-  }
-}

@@ -113,6 +113,7 @@
       'webapp/crd/js/combined_host_list_api_unittest.js',
       'webapp/crd/js/gcd_client_unittest.js',
       'webapp/crd/js/gcd_client_with_mock_xhr_unittest.js',
+      "webapp/crd/js/gnubby_auth_handler_unittest.js",
       'webapp/crd/js/host_controller_unittest.js',
       'webapp/crd/js/host_daemon_facade_unittest.js',
       'webapp/crd/js/host_table_entry_unittest.js',

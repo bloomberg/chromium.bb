@@ -16,20 +16,23 @@ var remoting = remoting || {};
  *
  * @param {remoting.Activity} parentActivity
  * @param {remoting.SessionLogger} logger
+ * @param {Array<string>=} opt_additionalCapabilities
  * @implements {remoting.ClientSession.EventHandler}
  * @implements {base.Disposable}
  * @constructor
  */
-remoting.DesktopRemotingActivity = function(parentActivity, logger) {
+remoting.DesktopRemotingActivity = function(
+    parentActivity, logger, opt_additionalCapabilities) {
   /** @private */
   this.parentActivity_ = parentActivity;
   /** @private {remoting.DesktopConnectedView} */
   this.connectedView_ = null;
 
+  opt_additionalCapabilities = opt_additionalCapabilities || [];
   /** @private */
   this.sessionFactory_ = new remoting.ClientSessionFactory(
       document.querySelector('#client-container .client-plugin-container'),
-      [/* No special capabilities required. */]);
+      opt_additionalCapabilities);
 
   /** @private {remoting.ClientSession} */
   this.session_ = null;

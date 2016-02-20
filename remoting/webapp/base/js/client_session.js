@@ -261,6 +261,9 @@ remoting.ClientSession.Capability = {
 
   // Indicates desktop shape support.
   DESKTOP_SHAPE: 'desktopShape',
+
+  // Indicates whether the client supports security key request forwarding.
+  SECURITY_KEY: 'securityKey',
 };
 
 /**
