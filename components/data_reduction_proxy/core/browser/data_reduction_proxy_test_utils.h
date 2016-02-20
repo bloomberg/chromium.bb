@@ -121,6 +121,19 @@ class TestDataReductionProxyConfigServiceClient
 
   int32_t failed_attempts_before_success() const;
 
+#if defined(OS_ANDROID)
+  bool IsApplicationStateBackground() const override;
+
+  void set_application_state_background(bool new_state) {
+    is_application_state_background_ = new_state;
+  }
+
+  bool foreground_fetch_pending() const { return foreground_fetch_pending_; }
+
+  // Triggers the callback for Chromium status change to foreground.
+  void TriggerApplicationStatusToForeground();
+#endif
+
  protected:
   // Overrides of DataReductionProxyConfigServiceClient
   base::Time Now() override;
@@ -144,6 +157,10 @@ class TestDataReductionProxyConfigServiceClient
    private:
     base::Time time_;
   };
+
+#if defined(OS_ANDROID)
+  bool is_application_state_background_;
+#endif
 
   TestTickClock tick_clock_;
   net::BackoffEntry test_backoff_entry_;

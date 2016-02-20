@@ -62,6 +62,12 @@ const char kUMAConfigServiceFetchLatency[] =
 const char kUMAConfigServiceAuthExpired[] =
     "DataReductionProxy.ConfigService.AuthExpired";
 
+#if defined(OS_ANDROID)
+// Maximum duration  to wait before fetching the config, while the application
+// is in background.
+const uint32_t kMaxBackgroundFetchIntervalSeconds = 6 * 60 * 60;  // 6 hours.
+#endif
+
 #if defined(USE_GOOGLE_API_KEYS)
 // Used in all Data Reduction Proxy URLs to specify API Key.
 const char kApiKeyName[] = "key";
@@ -156,6 +162,9 @@ DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
       enabled_(false),
       remote_config_applied_(false),
       url_request_context_getter_(nullptr),
+#if defined(OS_ANDROID)
+      foreground_fetch_pending_(false),
+#endif
       previous_request_failed_authentication_(false),
       failed_attempts_before_success_(0) {
   DCHECK(request_options);
@@ -177,8 +186,21 @@ base::TimeDelta
 DataReductionProxyConfigServiceClient::CalculateNextConfigRefreshTime(
     bool fetch_succeeded,
     const base::TimeDelta& config_expiration_delta,
-    const base::TimeDelta& backoff_delay) const {
+    const base::TimeDelta& backoff_delay) {
   DCHECK(backoff_delay >= base::TimeDelta());
+
+#if defined(OS_ANDROID)
+  foreground_fetch_pending_ = false;
+  if (!fetch_succeeded && IsApplicationStateBackground()) {
+    // If Chromium is in background, then fetch the config when Chromium comes
+    // to foreground or after max of |kMaxBackgroundFetchIntervalSeconds| and
+    // |backoff_delay|.
+    foreground_fetch_pending_ = true;
+    return std::max(backoff_delay, base::TimeDelta::FromSeconds(
+                                       kMaxBackgroundFetchIntervalSeconds));
+  }
+#endif
+
   if (fetch_succeeded) {
     return std::max(backoff_delay, config_expiration_delta);
   }
@@ -189,6 +211,14 @@ DataReductionProxyConfigServiceClient::CalculateNextConfigRefreshTime(
 void DataReductionProxyConfigServiceClient::InitializeOnIOThread(
     net::URLRequestContextGetter* url_request_context_getter) {
   DCHECK(url_request_context_getter);
+#if defined(OS_ANDROID)
+  // It is okay to use Unretained here because |app_status_listener| would be
+  // destroyed before |this|.
+  app_status_listener_.reset(
+      new base::android::ApplicationStatusListener(base::Bind(
+          &DataReductionProxyConfigServiceClient::OnApplicationStateChange,
+          base::Unretained(this))));
+#endif
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
   url_request_context_getter_ = url_request_context_getter;
 }
@@ -418,6 +448,7 @@ void DataReductionProxyConfigServiceClient::HandleResponse(
   GetBackoffEntry()->InformOfRequest(succeeded);
   base::TimeDelta next_config_refresh_time = CalculateNextConfigRefreshTime(
       succeeded, refresh_duration, GetBackoffEntry()->GetTimeUntilRelease());
+
   SetConfigRefreshTimer(next_config_refresh_time);
   event_creator_->EndConfigRequest(bound_net_log_, status.error(),
                                    response_code,
@@ -461,5 +492,23 @@ bool DataReductionProxyConfigServiceClient::ParseAndApplyProxyConfig(
   remote_config_applied_ = true;
   return true;
 }
+
+#if defined(OS_ANDROID)
+bool DataReductionProxyConfigServiceClient::IsApplicationStateBackground()
+    const {
+  return base::android::ApplicationStatusListener::GetState() !=
+         base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES;
+}
+
+void DataReductionProxyConfigServiceClient::OnApplicationStateChange(
+    base::android::ApplicationState new_state) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (new_state == base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES &&
+      foreground_fetch_pending_) {
+    foreground_fetch_pending_ = false;
+    RetrieveConfig();
+  }
+}
+#endif
 
 }  // namespace data_reduction_proxy

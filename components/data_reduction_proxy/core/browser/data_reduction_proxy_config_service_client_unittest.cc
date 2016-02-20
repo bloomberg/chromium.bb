@@ -58,7 +58,13 @@ const char kPersistedFallback[] = "persisted.net:80";
 const char kPersistedSessionKey[] = "PersistedSessionKey";
 
 // Duration (in seconds) after which the config should be refreshed.
-const int kConfingRefreshDurationSeconds = 600;
+const int kConfigRefreshDurationSeconds = 600;
+
+#if defined(OS_ANDROID)
+// Maximum duration  to wait before fetching the config, while the application
+// is in background.
+const uint32_t kMaxBackgroundFetchIntervalSeconds = 6 * 60 * 60;  // 6 hours.
+#endif
 
 }  // namespace
 
@@ -144,20 +150,20 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
 
     // Set up the various test ClientConfigs.
     ClientConfig config =
-        CreateConfig(kSuccessSessionKey, kConfingRefreshDurationSeconds, 0,
+        CreateConfig(kSuccessSessionKey, kConfigRefreshDurationSeconds, 0,
                      ProxyServer_ProxyScheme_HTTPS, "origin.net", 443,
                      ProxyServer_ProxyScheme_HTTP, "fallback.net", 80);
     config.SerializeToString(&config_);
     encoded_config_ = EncodeConfig(config);
 
     ClientConfig previous_config =
-        CreateConfig(kOldSuccessSessionKey, kConfingRefreshDurationSeconds, 0,
+        CreateConfig(kOldSuccessSessionKey, kConfigRefreshDurationSeconds, 0,
                      ProxyServer_ProxyScheme_HTTPS, "old.origin.net", 443,
                      ProxyServer_ProxyScheme_HTTP, "old.fallback.net", 80);
     previous_config.SerializeToString(&previous_config_);
 
     ClientConfig persisted =
-        CreateConfig(kPersistedSessionKey, kConfingRefreshDurationSeconds, 0,
+        CreateConfig(kPersistedSessionKey, kConfigRefreshDurationSeconds, 0,
                      ProxyServer_ProxyScheme_HTTPS, "persisted.net", 443,
                      ProxyServer_ProxyScheme_HTTP, "persisted.net", 80);
     loaded_config_ = EncodeConfig(persisted);
@@ -190,7 +196,7 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
         kSuccessOrigin, net::ProxyServer::SCHEME_HTTP));
     expected_http_proxies.push_back(net::ProxyServer::FromURI(
         kSuccessFallback, net::ProxyServer::SCHEME_HTTP));
-    EXPECT_EQ(base::TimeDelta::FromSeconds(kConfingRefreshDurationSeconds),
+    EXPECT_EQ(base::TimeDelta::FromSeconds(kConfigRefreshDurationSeconds),
               config_client()->GetDelay());
     EXPECT_THAT(configurator()->proxies_for_http(),
                 testing::ContainerEq(expected_http_proxies));
@@ -206,7 +212,7 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
         kOldSuccessOrigin, net::ProxyServer::SCHEME_HTTP));
     expected_http_proxies.push_back(net::ProxyServer::FromURI(
         kOldSuccessFallback, net::ProxyServer::SCHEME_HTTP));
-    EXPECT_EQ(base::TimeDelta::FromSeconds(kConfingRefreshDurationSeconds),
+    EXPECT_EQ(base::TimeDelta::FromSeconds(kConfigRefreshDurationSeconds),
               config_client()->GetDelay());
     EXPECT_THAT(configurator()->proxies_for_http(),
                 testing::ContainerEq(expected_http_proxies));
@@ -387,7 +393,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, DevRolloutAndQuic) {
 
     config_client()->RetrieveConfig();
     RunUntilIdle();
-    EXPECT_EQ(base::TimeDelta::FromSeconds(kConfingRefreshDurationSeconds),
+    EXPECT_EQ(base::TimeDelta::FromSeconds(kConfigRefreshDurationSeconds),
               config_client()->GetDelay())
         << i;
 
@@ -450,6 +456,10 @@ TEST_F(DataReductionProxyConfigServiceClientTest, EnsureBackoff) {
   EXPECT_TRUE(configurator()->proxies_for_https().empty());
   EXPECT_EQ(base::TimeDelta::FromSeconds(20), config_client()->GetDelay());
 
+#if defined(OS_ANDROID)
+  EXPECT_FALSE(config_client()->foreground_fetch_pending());
+#endif
+
   // Second attempt should be unsuccessful and backoff time should increase.
   config_client()->RetrieveConfig();
   RunUntilIdle();
@@ -457,6 +467,10 @@ TEST_F(DataReductionProxyConfigServiceClientTest, EnsureBackoff) {
   EXPECT_TRUE(configurator()->proxies_for_https().empty());
   EXPECT_EQ(base::TimeDelta::FromSeconds(40), config_client()->GetDelay());
   EXPECT_TRUE(persisted_config().empty());
+
+#if defined(OS_ANDROID)
+  EXPECT_FALSE(config_client()->foreground_fetch_pending());
+#endif
 
   EXPECT_EQ(2, config_client()->failed_attempts_before_success());
   histogram_tester.ExpectTotalCount(
@@ -473,6 +487,9 @@ TEST_F(DataReductionProxyConfigServiceClientTest, RemoteConfigSuccess) {
   config_client()->RetrieveConfig();
   RunUntilIdle();
   VerifyRemoteSuccess();
+#if defined(OS_ANDROID)
+  EXPECT_FALSE(config_client()->foreground_fetch_pending());
+#endif
 }
 
 // Tests that the config is read successfully on the second attempt.
@@ -821,5 +838,81 @@ TEST_F(DataReductionProxyConfigServiceClientTest, ApplySerializedConfigLocal) {
   EXPECT_TRUE(persisted_config().empty());
   EXPECT_FALSE(request_options()->GetSecureSession().empty());
 }
+
+#if defined(OS_ANDROID)
+// Verifies the correctness of fetching config when Chromium is in background
+// and foreground.
+TEST_F(DataReductionProxyConfigServiceClientTest, FetchConfigOnForeground) {
+  Init(true);
+  SetDataReductionProxyEnabled(true);
+
+  {
+    // Tests that successful config fetches while Chromium is in background,
+    // does not trigger refetches when Chromium comes to foreground.
+    base::HistogramTester histogram_tester;
+    AddMockSuccess();
+    config_client()->set_application_state_background(true);
+    config_client()->RetrieveConfig();
+    RunUntilIdle();
+    VerifyRemoteSuccess();
+    EXPECT_FALSE(config_client()->foreground_fetch_pending());
+    histogram_tester.ExpectTotalCount(
+        "DataReductionProxy.ConfigService.FetchLatency", 1);
+    EXPECT_EQ(base::TimeDelta::FromSeconds(kConfigRefreshDurationSeconds),
+              config_client()->GetDelay());
+    config_client()->set_application_state_background(false);
+    config_client()->TriggerApplicationStatusToForeground();
+    RunUntilIdle();
+    EXPECT_EQ(base::TimeDelta::FromSeconds(kConfigRefreshDurationSeconds),
+              config_client()->GetDelay());
+    histogram_tester.ExpectTotalCount(
+        "DataReductionProxy.ConfigService.FetchLatency", 1);
+  }
+
+  {
+    // Tests that config fetch failures while Chromium is in foreground does not
+    // trigger refetches when Chromium comes to foreground again.
+    base::HistogramTester histogram_tester;
+    AddMockFailure();
+    config_client()->set_application_state_background(false);
+    config_client()->RetrieveConfig();
+    RunUntilIdle();
+    EXPECT_FALSE(config_client()->foreground_fetch_pending());
+    histogram_tester.ExpectTotalCount(
+        "DataReductionProxy.ConfigService.FetchLatency", 0);
+    EXPECT_EQ(base::TimeDelta::FromSeconds(20), config_client()->GetDelay());
+    config_client()->TriggerApplicationStatusToForeground();
+    RunUntilIdle();
+    histogram_tester.ExpectTotalCount(
+        "DataReductionProxy.ConfigService.FetchLatency", 0);
+    EXPECT_EQ(base::TimeDelta::FromSeconds(20), config_client()->GetDelay());
+  }
+
+  {
+    // Tests that config fetch failures while Chromium is in background, trigger
+    // a refetch when Chromium comes to foreground.
+    base::HistogramTester histogram_tester;
+    AddMockFailure();
+    AddMockSuccess();
+    config_client()->set_application_state_background(true);
+    config_client()->RetrieveConfig();
+    RunUntilIdle();
+    EXPECT_TRUE(config_client()->foreground_fetch_pending());
+    histogram_tester.ExpectTotalCount(
+        "DataReductionProxy.ConfigService.FetchLatency", 0);
+    EXPECT_EQ(base::TimeDelta::FromSeconds(kMaxBackgroundFetchIntervalSeconds),
+              config_client()->GetDelay());
+    config_client()->set_application_state_background(false);
+    config_client()->TriggerApplicationStatusToForeground();
+    RunUntilIdle();
+    EXPECT_FALSE(config_client()->foreground_fetch_pending());
+    histogram_tester.ExpectTotalCount(
+        "DataReductionProxy.ConfigService.FetchLatency", 1);
+    EXPECT_EQ(base::TimeDelta::FromSeconds(kConfigRefreshDurationSeconds),
+              config_client()->GetDelay());
+    VerifyRemoteSuccess();
+  }
+}
+#endif
 
 }  // namespace data_reduction_proxy

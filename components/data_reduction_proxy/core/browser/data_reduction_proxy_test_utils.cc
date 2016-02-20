@@ -110,8 +110,12 @@ TestDataReductionProxyConfigServiceClient::
                                             event_creator,
                                             net_log,
                                             config_storer),
+#if defined(OS_ANDROID)
+      is_application_state_background_(false),
+#endif
       tick_clock_(base::Time::UnixEpoch()),
-      test_backoff_entry_(&kTestBackoffPolicy, &tick_clock_) {}
+      test_backoff_entry_(&kTestBackoffPolicy, &tick_clock_) {
+}
 
 TestDataReductionProxyConfigServiceClient::
     ~TestDataReductionProxyConfigServiceClient() {
@@ -173,6 +177,19 @@ void TestDataReductionProxyConfigServiceClient::TestTickClock::SetTime(
     const base::Time& time) {
   time_ = time;
 }
+
+#if defined(OS_ANDROID)
+bool TestDataReductionProxyConfigServiceClient::IsApplicationStateBackground()
+    const {
+  return is_application_state_background_;
+}
+
+void TestDataReductionProxyConfigServiceClient::
+    TriggerApplicationStatusToForeground() {
+  OnApplicationStateChange(
+      base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES);
+}
+#endif
 
 MockDataReductionProxyService::MockDataReductionProxyService(
     DataReductionProxySettings* settings,
