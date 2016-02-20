@@ -1,0 +1,37 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef COMPONENTS_LEVELDB_LEVELDB_SERVICE_IMPL_H_
+#define COMPONENTS_LEVELDB_LEVELDB_SERVICE_IMPL_H_
+
+#include "base/memory/ref_counted.h"
+#include "components/leveldb/leveldb_file_thread.h"
+#include "components/leveldb/public/interfaces/leveldb.mojom.h"
+
+namespace leveldb {
+
+// Creates LevelDBDatabases based scoped to a |directory|/|dbname|.
+class LevelDBServiceImpl : public LevelDBService {
+ public:
+  LevelDBServiceImpl();
+  ~LevelDBServiceImpl() override;
+
+  // Overridden from LevelDBService:
+  void Open(filesystem::DirectoryPtr directory,
+            const mojo::String& dbname,
+            mojo::InterfaceRequest<LevelDBDatabase> database,
+            const OpenCallback& callback) override;
+
+ private:
+  // Thread to own the mojo message pipe. Because leveldb spawns multiple
+  // threads that want to call file stuff, we create a dedicated thread to send
+  // and receive mojo message calls.
+  scoped_refptr<LevelDBFileThread> thread_;
+
+  DISALLOW_COPY_AND_ASSIGN(LevelDBServiceImpl);
+};
+
+}  // namespace leveldb
+
+#endif  // COMPONENTS_LEVELDB_LEVELDB_SERVICE_IMPL_H_

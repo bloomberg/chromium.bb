@@ -11,8 +11,6 @@ source_set("lib") {
     "directory_impl.h",
     "file_impl.cc",
     "file_impl.h",
-    "file_system_app.cc",
-    "file_system_app.h",
     "file_system_impl.cc",
     "file_system_impl.h",
     "lock_table.cc",
@@ -27,7 +25,6 @@ source_set("lib") {
     "//mojo/common",
     "//mojo/common:common_base",
     "//mojo/platform_handle",
-    "//mojo/services/tracing/public/cpp",
     "//mojo/shell/public/cpp",
     "//url",
   ]
@@ -35,6 +32,8 @@ source_set("lib") {
 
 mojo_native_application("filesystem") {
   sources = [
+    "file_system_app.cc",
+    "file_system_app.h",
     "main.cc",
   ]
 
@@ -42,11 +41,13 @@ mojo_native_application("filesystem") {
     ":lib",
     ":manifest",
     "//base",
+    "//components/filesystem/public/interfaces",
     "//mojo/common",
     "//mojo/environment:chromium",
     "//mojo/platform_handle:for_shared_library",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
+    "//mojo/services/tracing/public/cpp",
     "//mojo/shell/public/cpp",
   ]
 }

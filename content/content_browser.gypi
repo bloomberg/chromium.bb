@@ -7,6 +7,8 @@
     '../base/base.gyp:base_static',
     '../cc/cc.gyp:cc',
     '../cc/cc.gyp:cc_surfaces',
+    '../components/filesystem/filesystem.gyp:filesystem_lib',
+    '../components/leveldb/leveldb.gyp:leveldb_lib',
     '../components/mime_util/mime_util.gyp:mime_util',
     '../components/scheduler/scheduler.gyp:scheduler_common',
     '../components/url_formatter/url_formatter.gyp:url_formatter',
