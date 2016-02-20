@@ -16,7 +16,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/task_runner.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/ui/host_desktop.h"
 #include "net/cert/x509_certificate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
@@ -88,13 +87,8 @@ class CertificateViewerDialog : public ui::BaseShellDialogImpl {
 void ShowCertificateViewer(content::WebContents* web_contents,
                            gfx::NativeWindow parent,
                            net::X509Certificate* cert) {
-  if (chrome::GetHostDesktopTypeForNativeWindow(parent) !=
-      chrome::HOST_DESKTOP_TYPE_ASH) {
-    CertificateViewerDialog* dialog = new CertificateViewerDialog;
-    dialog->Show(
-        parent->GetHost()->GetAcceleratedWidget(), cert,
-        base::Bind(&base::DeletePointer<CertificateViewerDialog>, dialog));
-  } else {
-    NOTIMPLEMENTED();
-  }
+  CertificateViewerDialog* dialog = new CertificateViewerDialog;
+  dialog->Show(
+      parent->GetHost()->GetAcceleratedWidget(), cert,
+      base::Bind(&base::DeletePointer<CertificateViewerDialog>, dialog));
 }
