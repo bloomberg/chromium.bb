@@ -11,6 +11,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "remoting/base/url_request.h"
+#include "remoting/protocol/http_ice_config_request.h"
 #include "remoting/protocol/jingle_info_request.h"
 #include "remoting/protocol/port_allocator_factory.h"
 #include "third_party/webrtc/base/socketaddress.h"
@@ -79,7 +80,12 @@ void TransportContext::EnsureFreshJingleInfo() {
 
   if (ice_config_.is_null() ||
       base::Time::Now() > ice_config_.expiration_time) {
-    ice_config_request_.reset(new JingleInfoRequest(signal_strategy_));
+    if (!ice_config_url_.empty()) {
+      ice_config_request_.reset(new HttpIceConfigRequest(
+          url_request_factory_.get(), ice_config_url_));
+    } else {
+      ice_config_request_.reset(new JingleInfoRequest(signal_strategy_));
+    }
     ice_config_request_->Send(base::Bind(
         &TransportContext::OnIceConfig, base::Unretained(this)));
   }

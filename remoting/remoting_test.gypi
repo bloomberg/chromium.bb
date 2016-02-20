@@ -321,6 +321,7 @@
         'protocol/connection_tester.h',
         'protocol/connection_unittest.cc',
         'protocol/content_description_unittest.cc',
+        'protocol/http_ice_config_request_unittest.cc',
         'protocol/ice_transport_unittest.cc',
         'protocol/input_event_tracker_unittest.cc',
         'protocol/input_filter_unittest.cc',

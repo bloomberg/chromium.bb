@@ -119,6 +119,8 @@
       'protocol/host_stub.h',
       'protocol/host_video_dispatcher.cc',
       'protocol/host_video_dispatcher.h',
+      'protocol/http_ice_config_request.cc',
+      'protocol/http_ice_config_request.h',
       'protocol/ice_config.cc',
       'protocol/ice_config.h',
       'protocol/ice_config_request.h',

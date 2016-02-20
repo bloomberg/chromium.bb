@@ -42,6 +42,11 @@ class TransportContext : public base::RefCountedThreadSafe<TransportContext> {
                    const NetworkSettings& network_settings,
                    TransportRole role);
 
+  // Enables standard TURN servers.
+  void UseTurn(const std::string& ice_config_url) {
+    ice_config_url_ = ice_config_url;
+  }
+
   // Prepares fresh JingleInfo. It may be called while connection is being
   // negotiated to minimize the chance that the following GetIceConfig() will
   // be blocking.
@@ -72,6 +77,8 @@ class TransportContext : public base::RefCountedThreadSafe<TransportContext> {
   scoped_ptr<UrlRequestFactory> url_request_factory_;
   NetworkSettings network_settings_;
   TransportRole role_;
+
+  std::string ice_config_url_;
 
   scoped_ptr<IceConfigRequest> ice_config_request_;
 
