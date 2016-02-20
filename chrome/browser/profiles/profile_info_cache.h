@@ -151,12 +151,12 @@ class ProfileInfoCache : public ProfileInfoInterface,
   bool IsDefaultProfileName(const base::string16& name) const;
 
   // Returns unique name that can be assigned to a newly created profile.
-  base::string16 ChooseNameForNewProfile(size_t icon_index) const;
+  base::string16 ChooseNameForNewProfile(size_t icon_index) const override;
 
   // Returns an avatar icon index that can be assigned to a newly created
   // profile. Note that the icon may not be unique since there are a limited
   // set of default icons.
-  size_t ChooseAvatarIconIndexForNewProfile() const;
+  size_t ChooseAvatarIconIndexForNewProfile() const override;
 
   // Statistics
   void SetStatsBrowsingHistoryOfProfileAtIndex(size_t index, int value);

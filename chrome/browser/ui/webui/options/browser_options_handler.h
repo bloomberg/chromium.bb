@@ -15,7 +15,7 @@
 #include "base/scoped_observer.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_info_cache_observer.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
@@ -56,7 +56,7 @@ namespace options {
 // Chrome browser options page UI handler.
 class BrowserOptionsHandler
     : public OptionsPageUIHandler,
-      public ProfileInfoCacheObserver,
+      public ProfileAttributesStorage::Observer,
       public sync_driver::SyncServiceObserver,
       public SigninManagerBase::Observer,
       public ui::SelectFileDialog::Listener,
@@ -116,13 +116,13 @@ class BrowserOptionsHandler
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
- // ProfileInfoCacheObserver implementation.
- void OnProfileAdded(const base::FilePath& profile_path) override;
- void OnProfileWasRemoved(const base::FilePath& profile_path,
-                          const base::string16& profile_name) override;
- void OnProfileNameChanged(const base::FilePath& profile_path,
-                           const base::string16& old_profile_name) override;
- void OnProfileAvatarChanged(const base::FilePath& profile_path) override;
+  // ProfileAttributesStorage::Observer implementation.
+  void OnProfileAdded(const base::FilePath& profile_path) override;
+  void OnProfileWasRemoved(const base::FilePath& profile_path,
+                           const base::string16& profile_name) override;
+  void OnProfileNameChanged(const base::FilePath& profile_path,
+                            const base::string16& old_profile_name) override;
+  void OnProfileAvatarChanged(const base::FilePath& profile_path) override;
 
 #if defined(ENABLE_PRINT_PREVIEW) && !defined(OS_CHROMEOS)
   void OnCloudPrintPrefsChanged();

@@ -7,14 +7,15 @@
 #include <stddef.h>
 
 #include <set>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -44,12 +45,11 @@ scoped_ptr<base::ListValue> GetAvatarIcons() {
 }
 
 bool ProfileIsLegacySupervised(const base::FilePath& profile_path) {
-  const ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  size_t index = cache.GetIndexOfProfileWithPath(profile_path);
-  if (index == std::string::npos)
-    return false;
-  return cache.ProfileIsLegacySupervisedAtIndex(index);
+  ProfileAttributesEntry* entry;
+
+  return g_browser_process->profile_manager()->GetProfileAttributesStorage().
+      GetProfileAttributesWithPath(profile_path, &entry) &&
+      entry->IsLegacySupervised();
 }
 
 }  // namespace
@@ -101,7 +101,7 @@ void SupervisedUserImportHandler::InitializeHandler() {
   Profile* profile = Profile::FromWebUI(web_ui());
   if (!profile->IsSupervised()) {
     profile_observer_.Add(
-        &g_browser_process->profile_manager()->GetProfileInfoCache());
+        &g_browser_process->profile_manager()->GetProfileAttributesStorage());
     SupervisedUserSyncService* sync_service =
         SupervisedUserSyncServiceFactory::GetForProfile(profile);
     if (sync_service) {
@@ -194,17 +194,17 @@ void SupervisedUserImportHandler::RequestSupervisedUserImportUpdate(
 void SupervisedUserImportHandler::SendExistingSupervisedUsers(
     const base::DictionaryValue* dict) {
   DCHECK(dict);
-  const ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
+  std::vector<ProfileAttributesEntry*> entries =
+      g_browser_process->profile_manager()->
+      GetProfileAttributesStorage().GetAllProfilesAttributes();
 
   // Collect the ids of local supervised user profiles.
   std::set<std::string> supervised_user_ids;
-  for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i) {
+  for (const ProfileAttributesEntry* entry : entries) {
     // Filter out omitted profiles. These are currently being imported, and
     // shouldn't show up as "already on this device" just yet.
-    if (cache.ProfileIsLegacySupervisedAtIndex(i) &&
-        !cache.IsOmittedProfileAtIndex(i)) {
-      supervised_user_ids.insert(cache.GetSupervisedUserIdOfProfileAtIndex(i));
+    if (entry->IsLegacySupervised() && !entry->IsOmitted()) {
+      supervised_user_ids.insert(entry->GetSupervisedUserId());
     }
   }
 

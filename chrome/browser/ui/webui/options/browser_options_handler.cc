@@ -37,8 +37,8 @@
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
@@ -837,7 +837,7 @@ void BrowserOptionsHandler::RegisterMessages() {
 void BrowserOptionsHandler::Uninitialize() {
   registrar_.RemoveAll();
   g_browser_process->profile_manager()->
-      GetProfileInfoCache().RemoveObserver(this);
+      GetProfileAttributesStorage().RemoveObserver(this);
 #if defined(OS_WIN)
   ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))->RemoveObserver(this);
 #endif
@@ -888,7 +888,8 @@ void BrowserOptionsHandler::InitializeHandler() {
   g_browser_process->policy_service()->AddObserver(
       policy::POLICY_DOMAIN_CHROME, this);
 
-  g_browser_process->profile_manager()->GetProfileInfoCache().AddObserver(this);
+  g_browser_process->profile_manager()->
+      GetProfileAttributesStorage().AddObserver(this);
 
   ProfileSyncService* sync_service(
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile));
@@ -1294,37 +1295,33 @@ void BrowserOptionsHandler::OnProfileAvatarChanged(
 }
 
 scoped_ptr<base::ListValue> BrowserOptionsHandler::GetProfilesInfoList() {
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
+  std::vector<ProfileAttributesEntry*> entries =
+      g_browser_process->profile_manager()->
+      GetProfileAttributesStorage().GetAllProfilesAttributesSortedByName();
   scoped_ptr<base::ListValue> profile_info_list(new base::ListValue);
   base::FilePath current_profile_path =
       web_ui()->GetWebContents()->GetBrowserContext()->GetPath();
 
-  for (size_t i = 0, e = cache.GetNumberOfProfiles(); i < e; ++i) {
+  for (const ProfileAttributesEntry* entry : entries) {
     // The items in |profile_value| are also described in
     // chrome/browser/resources/options/browser_options.js in a @typedef for
     // Profile. Please update it whenever you add or remove any keys here.
-
     base::DictionaryValue* profile_value = new base::DictionaryValue();
-    profile_value->SetString("name", cache.GetNameOfProfileAtIndex(i));
-    base::FilePath profile_path = cache.GetPathOfProfileAtIndex(i);
+    profile_value->SetString("name", entry->GetName());
+    base::FilePath profile_path = entry->GetPath();
     profile_value->Set("filePath", base::CreateFilePathValue(profile_path));
     profile_value->SetBoolean("isCurrentProfile",
                               profile_path == current_profile_path);
-    profile_value->SetBoolean("isSupervised",
-                              cache.ProfileIsSupervisedAtIndex(i));
-    profile_value->SetBoolean("isChild", cache.ProfileIsChildAtIndex(i));
+    profile_value->SetBoolean("isSupervised", entry->IsSupervised());
+    profile_value->SetBoolean("isChild", entry->IsChild());
 
-    bool is_gaia_picture =
-        cache.IsUsingGAIAPictureOfProfileAtIndex(i) &&
-        cache.GetGAIAPictureOfProfileAtIndex(i);
-    if (is_gaia_picture) {
-      gfx::Image icon = profiles::GetAvatarIconForWebUI(
-          cache.GetAvatarIconOfProfileAtIndex(i), true);
+    if (entry->IsUsingGAIAPicture() && entry->GetGAIAPicture()) {
+      gfx::Image icon = profiles::GetAvatarIconForWebUI(entry->GetAvatarIcon(),
+                                                        true);
       profile_value->SetString("iconURL",
-          webui::GetBitmapDataUrl(icon.AsBitmap()));
+                               webui::GetBitmapDataUrl(icon.AsBitmap()));
     } else {
-      size_t icon_index = cache.GetAvatarIconIndexOfProfileAtIndex(i);
+      size_t icon_index = entry->GetAvatarIconIndex();
       profile_value->SetString("iconURL",
                                profiles::GetDefaultAvatarIconUrl(icon_index));
     }

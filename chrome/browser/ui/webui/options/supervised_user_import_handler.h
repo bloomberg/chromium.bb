@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/profiles/profile_info_cache_observer.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_sync_service_observer.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "components/signin/core/browser/signin_error_controller.h"
@@ -22,14 +22,14 @@ class DictionaryValue;
 class ListValue;
 }
 
-class ProfileInfoCache;
+class ProfileAttributesStorage;
 class SupervisedUserSyncService;
 
 namespace options {
 
 // Handler for the 'import existing supervised user' dialog.
 class SupervisedUserImportHandler : public OptionsPageUIHandler,
-                                    public ProfileInfoCacheObserver,
+                                    public ProfileAttributesStorage::Observer,
                                     public SupervisedUserSyncServiceObserver,
                                     public SigninErrorController::Observer {
  public:
@@ -47,7 +47,7 @@ class SupervisedUserImportHandler : public OptionsPageUIHandler,
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
 
-  // ProfileInfoCacheObserver implementation.
+  // ProfileAttributesStorage::Observer implementation.
   void OnProfileAdded(const base::FilePath& profile_path) override;
   void OnProfileWillBeRemoved(const base::FilePath& profile_path) override;
   void OnProfileWasRemoved(const base::FilePath& profile_path,
@@ -99,7 +99,7 @@ class SupervisedUserImportHandler : public OptionsPageUIHandler,
 
   scoped_ptr<CallbackList::Subscription> subscription_;
 
-  ScopedObserver<ProfileInfoCache, SupervisedUserImportHandler>
+  ScopedObserver<ProfileAttributesStorage, SupervisedUserImportHandler>
       profile_observer_;
   ScopedObserver<SigninErrorController, SupervisedUserImportHandler>
       signin_error_observer_;

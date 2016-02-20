@@ -39,6 +39,7 @@
 #include "base/run_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -225,12 +226,12 @@ IN_PROC_BROWSER_TEST_F(OptionsUIBrowserTest, MAYBE_VerifyManagedSignout) {
   EXPECT_TRUE(result);
 
   base::FilePath profile_dir = browser()->profile()->GetPath();
-  ProfileInfoCache& profile_info_cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
+  ProfileAttributesStorage& storage =
+      g_browser_process->profile_manager()->GetProfileAttributesStorage();
+  ProfileAttributesEntry* entry;
 
   EXPECT_TRUE(DirectoryExists(profile_dir));
-  EXPECT_TRUE(profile_info_cache.GetIndexOfProfileWithPath(profile_dir) !=
-              std::string::npos);
+  EXPECT_TRUE(storage.GetProfileAttributesWithPath(profile_dir, &entry));
 
   // TODO(kaliamoorthi): Get the macos problem fixed and remove this code.
   // Deleting the Profile also destroys all browser windows of that Profile.
@@ -244,8 +245,7 @@ IN_PROC_BROWSER_TEST_F(OptionsUIBrowserTest, MAYBE_VerifyManagedSignout) {
       browser()->tab_strip_model()->GetActiveWebContents(),
       "$('disconnect-managed-profile-ok').click();"));
 
-  EXPECT_TRUE(profile_info_cache.GetIndexOfProfileWithPath(profile_dir) ==
-              std::string::npos);
+  EXPECT_TRUE(storage.GetProfileAttributesWithPath(profile_dir, &entry));
 
   wait_for_browser_closed.Wait();
 }

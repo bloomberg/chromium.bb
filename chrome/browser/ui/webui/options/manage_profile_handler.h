@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/profiles/profile_info_cache_observer.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sync_driver/sync_service_observer.h"
@@ -22,7 +22,7 @@ namespace options {
 
 // Chrome personal stuff profiles manage overlay UI handler.
 class ManageProfileHandler : public OptionsPageUIHandler,
-                             public ProfileInfoCacheObserver,
+                             public ProfileAttributesStorage::Observer,
                              public sync_driver::SyncServiceObserver {
  public:
   ManageProfileHandler();
@@ -37,7 +37,7 @@ class ManageProfileHandler : public OptionsPageUIHandler,
   // WebUIMessageHandler:
   void RegisterMessages() override;
 
-  // ProfileInfoCacheObserver:
+  // ProfileAttributesStorage::Observer:
   void OnProfileAdded(const base::FilePath& profile_path) override;
   void OnProfileWasRemoved(const base::FilePath& profile_path,
                            const base::string16& profile_name) override;

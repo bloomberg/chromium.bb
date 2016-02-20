@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -15,8 +17,8 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
-#include "chrome/browser/profiles/profile_info_cache_observer.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -35,20 +37,20 @@ namespace options {
 // ProfileUpdateObserver------------------------------------------------------
 
 class SupervisedUserCreateConfirmHandler::ProfileUpdateObserver
-    : public ProfileInfoCacheObserver {
+    : public ProfileAttributesStorage::Observer {
  public:
-  ProfileUpdateObserver(ProfileInfoCache* profile_info_cache,
+  ProfileUpdateObserver(ProfileAttributesStorage* profile_attributes_storage,
                         SupervisedUserCreateConfirmHandler* handler)
-      : profile_info_cache_(profile_info_cache),
+      : profile_attributes_storage_(profile_attributes_storage),
         create_confirm_handler_(handler),
         scoped_observer_(this) {
-    DCHECK(profile_info_cache_);
+    DCHECK(profile_attributes_storage_);
     DCHECK(create_confirm_handler_);
-    scoped_observer_.Add(profile_info_cache_);
+    scoped_observer_.Add(profile_attributes_storage_);
   }
 
  private:
-  // ProfileInfoCacheObserver implementation:
+  // ProfileAttributesStorage::Observer implementation:
   // Forward possibly relevant changes to the dialog, which will check the
   // affected profile and update or close as needed.
   void OnProfileWasRemoved(const base::FilePath& profile_path,
@@ -62,12 +64,11 @@ class SupervisedUserCreateConfirmHandler::ProfileUpdateObserver
 
   void OnProfileNameChanged(const base::FilePath& profile_path,
                             const base::string16& old_profile_name) override {
-    size_t profile_index =
-        profile_info_cache_->GetIndexOfProfileWithPath(profile_path);
-    if (profile_index == std::string::npos)
+    ProfileAttributesEntry* entry;
+    if (!profile_attributes_storage_->
+        GetProfileAttributesWithPath(profile_path, &entry))
       return;
-    base::string16 new_profile_name =
-        profile_info_cache_->GetNameOfProfileAtIndex(profile_index);
+    base::string16 new_profile_name = entry->GetName();
     scoped_ptr<base::StringValue> profile_path_value(
         base::CreateFilePathValue(profile_path));
     create_confirm_handler_->web_ui()->CallJavascriptFunction(
@@ -77,14 +78,15 @@ class SupervisedUserCreateConfirmHandler::ProfileUpdateObserver
   }
 
   // Weak.
-  ProfileInfoCache* profile_info_cache_;
+  ProfileAttributesStorage* profile_attributes_storage_;
 
   // Weak; owns us.
   SupervisedUserCreateConfirmHandler* create_confirm_handler_;
 
   // Manages any sources we're observing, ensuring that they're all removed
   // on destruction.
-  ScopedObserver<ProfileInfoCache, ProfileUpdateObserver> scoped_observer_;
+  ScopedObserver<ProfileAttributesStorage, ProfileUpdateObserver>
+      scoped_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileUpdateObserver);
 };
@@ -93,9 +95,10 @@ class SupervisedUserCreateConfirmHandler::ProfileUpdateObserver
 // SupervisedUserCreateConfirmHandler-----------------------------------------
 
 SupervisedUserCreateConfirmHandler::SupervisedUserCreateConfirmHandler() {
-  profile_info_cache_observer_.reset(
+  profile_update_observer_.reset(
       new SupervisedUserCreateConfirmHandler::ProfileUpdateObserver(
-          &g_browser_process->profile_manager()->GetProfileInfoCache(), this));
+          &g_browser_process->profile_manager()->GetProfileAttributesStorage(),
+          this));
 }
 
 SupervisedUserCreateConfirmHandler::~SupervisedUserCreateConfirmHandler() {

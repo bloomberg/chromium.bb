@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
@@ -19,8 +21,8 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/gaia_info_update_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
@@ -144,7 +146,8 @@ void ManageProfileHandler::GetLocalizedValues(
 }
 
 void ManageProfileHandler::InitializeHandler() {
-  g_browser_process->profile_manager()->GetProfileInfoCache().AddObserver(this);
+  g_browser_process->profile_manager()->
+      GetProfileAttributesStorage().AddObserver(this);
 
   Profile* profile = Profile::FromWebUI(web_ui());
   pref_change_registrar_.Init(profile->GetPrefs());
@@ -207,7 +210,7 @@ void ManageProfileHandler::RegisterMessages() {
 
 void ManageProfileHandler::Uninitialize() {
   g_browser_process->profile_manager()->
-      GetProfileInfoCache().RemoveObserver(this);
+      GetProfileAttributesStorage().RemoveObserver(this);
 }
 
 void ManageProfileHandler::OnProfileAdded(const base::FilePath& profile_path) {
@@ -285,12 +288,12 @@ void ManageProfileHandler::RequestDefaultProfileIcons(
 
 void ManageProfileHandler::RequestNewProfileDefaults(
     const base::ListValue* args) {
-  const ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  const size_t icon_index = cache.ChooseAvatarIconIndexForNewProfile();
+  const ProfileAttributesStorage& storage =
+      g_browser_process->profile_manager()->GetProfileAttributesStorage();
+  const size_t icon_index = storage.ChooseAvatarIconIndexForNewProfile();
 
   base::DictionaryValue profile_info;
-  profile_info.SetString("name", cache.ChooseNameForNewProfile(icon_index));
+  profile_info.SetString("name", storage.ChooseNameForNewProfile(icon_index));
   profile_info.SetString("iconURL",
       profiles::GetDefaultAvatarIconUrl(icon_index));
 
@@ -303,23 +306,23 @@ void ManageProfileHandler::SendProfileIconsAndNames(
   base::ListValue image_url_list;
   base::ListValue default_name_list;
 
-  const ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
+  ProfileAttributesStorage& storage =
+      g_browser_process->profile_manager()->GetProfileAttributesStorage();
 
   // In manage mode, first add the GAIA picture if it is available. No GAIA
   // picture in create mode.
   if (mode.GetString() == kManageProfileIdentifier) {
     Profile* profile = Profile::FromWebUI(web_ui());
-    size_t profile_index = cache.GetIndexOfProfileWithPath(profile->GetPath());
-    if (profile_index != std::string::npos) {
-      const gfx::Image* icon =
-          cache.GetGAIAPictureOfProfileAtIndex(profile_index);
-      if (icon) {
-        gfx::Image icon2 = profiles::GetAvatarIconForWebUI(*icon, true);
-        gaia_picture_url_ = webui::GetBitmapDataUrl(icon2.AsBitmap());
-        image_url_list.AppendString(gaia_picture_url_);
-        default_name_list.AppendString(std::string());
-      }
+    ProfileAttributesEntry* entry = nullptr;
+    bool success = storage.GetProfileAttributesWithPath(profile->GetPath(),
+                                                        &entry);
+    DCHECK(success);
+    const gfx::Image* icon = entry->GetGAIAPicture();
+    if (icon) {
+      gfx::Image icon2 = profiles::GetAvatarIconForWebUI(*icon, true);
+      gaia_picture_url_ = webui::GetBitmapDataUrl(icon2.AsBitmap());
+      image_url_list.AppendString(gaia_picture_url_);
+      default_name_list.AppendString(std::string());
     }
   }
 
@@ -327,7 +330,7 @@ void ManageProfileHandler::SendProfileIconsAndNames(
   for (size_t i = 0; i < profiles::GetDefaultAvatarIconCount(); i++) {
     std::string url = profiles::GetDefaultAvatarIconUrl(i);
     image_url_list.AppendString(url);
-    default_name_list.AppendString(cache.ChooseNameForNewProfile(i));
+    default_name_list.AppendString(storage.ChooseNameForNewProfile(i));
   }
 
   web_ui()->CallJavascriptFunction(
@@ -336,13 +339,12 @@ void ManageProfileHandler::SendProfileIconsAndNames(
 }
 
 void ManageProfileHandler::SendExistingProfileNames() {
-  const ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
+  std::vector<ProfileAttributesEntry*> entries =
+      g_browser_process->profile_manager()->
+      GetProfileAttributesStorage().GetAllProfilesAttributes();
   base::DictionaryValue profile_name_dict;
-  for (size_t i = 0, e = cache.GetNumberOfProfiles(); i < e; ++i) {
-    profile_name_dict.SetBoolean(
-        base::UTF16ToUTF8(cache.GetNameOfProfileAtIndex(i)), true);
-  }
+  for (const ProfileAttributesEntry* entry : entries)
+    profile_name_dict.SetBoolean(base::UTF16ToUTF8(entry->GetName()), true);
 
   web_ui()->CallJavascriptFunction(
       "ManageProfileOverlay.receiveExistingProfileNames", profile_name_dict);
@@ -454,12 +456,11 @@ void ManageProfileHandler::ProfileIconSelectionChanged(
   // If the selection is the GAIA picture then also show the profile name in the
   // text field. This will display either the GAIA given name, if available,
   // or the first name.
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  size_t profile_index = cache.GetIndexOfProfileWithPath(profile_file_path);
-  if (profile_index == std::string::npos)
+  ProfileAttributesEntry* entry = nullptr;
+  if (!g_browser_process->profile_manager()->GetProfileAttributesStorage().
+      GetProfileAttributesWithPath(profile_file_path, &entry))
     return;
-  base::string16 gaia_name = cache.GetNameOfProfileAtIndex(profile_index);
+  base::string16 gaia_name = entry->GetName();
   if (gaia_name.empty())
     return;
 
@@ -478,23 +479,21 @@ void ManageProfileHandler::RequestHasProfileShortcuts(
   if (!GetProfilePathFromArgs(args, &profile_file_path))
     return;
 
-  const ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  size_t profile_index = cache.GetIndexOfProfileWithPath(profile_file_path);
-  if (profile_index == std::string::npos)
+  ProfileAttributesStorage& storage =
+      g_browser_process->profile_manager()->GetProfileAttributesStorage();
+  ProfileAttributesEntry* entry;
+  if (!storage.GetProfileAttributesWithPath(profile_file_path, &entry))
     return;
 
   // Don't show the add/remove desktop shortcut button in the single user case.
-  if (cache.GetNumberOfProfiles() <= 1)
+  if (storage.GetNumberOfProfiles() <= 1u)
     return;
 
-  const base::FilePath profile_path =
-      cache.GetPathOfProfileAtIndex(profile_index);
   ProfileShortcutManager* shortcut_manager =
       g_browser_process->profile_manager()->profile_shortcut_manager();
   shortcut_manager->HasProfileShortcuts(
-      profile_path, base::Bind(&ManageProfileHandler::OnHasProfileShortcuts,
-                               weak_factory_.GetWeakPtr()));
+      entry->GetPath(), base::Bind(&ManageProfileHandler::OnHasProfileShortcuts,
+                                   weak_factory_.GetWeakPtr()));
 }
 
 void ManageProfileHandler::RequestCreateProfileUpdate(

@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram.h"
@@ -13,6 +15,8 @@
 #include "base/value_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
@@ -460,11 +464,11 @@ bool CreateProfileHandler::IsValidExistingSupervisedUserId(
     return false;
 
   // Check if this supervised user already exists on this machine.
-  const ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i) {
-    if (existing_supervised_user_id ==
-            cache.GetSupervisedUserIdOfProfileAtIndex(i))
+  std::vector<ProfileAttributesEntry*> entries =
+      g_browser_process->profile_manager()->
+      GetProfileAttributesStorage().GetAllProfilesAttributes();
+  for (const ProfileAttributesEntry* entry : entries) {
+    if (existing_supervised_user_id == entry->GetSupervisedUserId())
       return false;
   }
   return true;

@@ -58,6 +58,14 @@ class ProfileAttributesStorage {
   // Returns the count of known profiles.
   virtual size_t GetNumberOfProfiles() const = 0;
 
+  // Returns a unique name that can be assigned to a newly created profile.
+  virtual base::string16 ChooseNameForNewProfile(size_t icon_index) const = 0;
+
+  // Returns an avatar icon index that can be assigned to a newly created
+  // profile. Note that the icon may not be unique since there are a limited
+  // set of default icons.
+  virtual size_t ChooseAvatarIconIndexForNewProfile() const = 0;
+
   virtual void AddObserver(ProfileAttributesStorage::Observer* observer) = 0;
   virtual void RemoveObserver(ProfileAttributesStorage::Observer* observer) = 0;
 
