@@ -7,20 +7,27 @@ import("//chromecast/chromecast.gni")
 # These targets shall only be referenced on Android builds.
 assert(is_android)
 
+# This source_set should only contain headers for internal code. These must be
+# built separately from public stub implementations of this code to keep the
+# dependency tree clean.
+source_set("platform_jni_loader") {
+  sources = [
+    "platform_jni_loader.h",
+  ]
+}
+
 # GYP target: chromecast.gyp:libcast_shell_android
 shared_library("libcast_shell_android") {
   sources = [
+    "//chromecast/app/android/cast_jni_loader.cc",
     "cast_jni_registrar.cc",
     "cast_jni_registrar.h",
     "cast_metrics_helper_android.cc",
     "cast_metrics_helper_android.h",
-    "platform_jni_loader.h",
-
-    # TODO(slan): Move this into this folder.
-    "//chromecast/app/android/cast_jni_loader.cc",
   ]
 
   deps = [
+    ":platform_jni_loader",
     "//base",
     "//chromecast:cast_shell_common",
     "//chromecast/app",
