@@ -99,6 +99,19 @@ div {
     TRAILING-1: VALUE;}
 
 
+Running: testPrependMultipleProperties
+div {
+    /* This is a regular comment */
+    TRAILING-1: VALUE;
+    TRAILING-2: VALUE;
+    TRAILING-3: VALUE;
+    TRAILING-4: VALUE;
+    color: red;
+    /* position: absolute; */
+    display: block
+;}
+
+
 Running: testAppendAndRemoveLastProperty
 div {
     /* This is a regular comment */

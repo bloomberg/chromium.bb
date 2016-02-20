@@ -62,7 +62,7 @@ InspectorTest.runEditingTests = function(cssAST)
             var clone = cssAST.clone();
             var rule = clone.rules[0];
             var anchor = rule.properties[0];
-            rule.insertProperty("NEW-NAME", "NEW-VALUE", false, anchor, true);
+            rule.insertProperties(["NEW-NAME"], ["NEW-VALUE"], [false], anchor, true);
             InspectorTest.addResult(clone.document.newText());
             next();
         },
@@ -72,7 +72,7 @@ InspectorTest.runEditingTests = function(cssAST)
             var clone = cssAST.clone();
             var rule = clone.rules[0];
             var anchor = rule.properties[rule.properties.length - 1];
-            rule.insertProperty("NEW-NAME", "NEW-VALUE", false, anchor, false);
+            rule.insertProperties(["NEW-NAME"], ["NEW-VALUE"], [false], anchor, false);
             InspectorTest.addResult(clone.document.newText());
             next();
         },
@@ -82,7 +82,7 @@ InspectorTest.runEditingTests = function(cssAST)
             var clone = cssAST.clone();
             var rule = clone.rules[0];
             var anchor = rule.properties[1];
-            rule.insertProperty("NEW-NAME", "NEW-VALUE", true, anchor, true);
+            rule.insertProperties(["NEW-NAME"], ["NEW-VALUE"], [true], anchor, true);
             InspectorTest.addResult(clone.document.newText());
             next();
         },
@@ -92,10 +92,23 @@ InspectorTest.runEditingTests = function(cssAST)
             var clone = cssAST.clone();
             var rule = clone.rules[0];
             var anchor = rule.properties[rule.properties.length - 1];
-            rule.insertProperty("TRAILING-4", "VALUE", false, anchor, false);
-            rule.insertProperty("TRAILING-3", "VALUE", false, anchor, false);
-            rule.insertProperty("TRAILING-2", "VALUE", false, anchor, false);
-            rule.insertProperty("TRAILING-1", "VALUE", false, anchor, false);
+            rule.insertProperties(["TRAILING-4", "TRAILING-3", "TRAILING-2", "TRAILING-1"],
+                ["VALUE", "VALUE", "VALUE", "VALUE"],
+                [false, false, false, false],
+                anchor, false);
+            InspectorTest.addResult(clone.document.newText());
+            next();
+        },
+
+        function testPrependMultipleProperties(next)
+        {
+            var clone = cssAST.clone();
+            var rule = clone.rules[0];
+            var anchor = rule.properties[0];
+            rule.insertProperties(["TRAILING-1", "TRAILING-2", "TRAILING-3", "TRAILING-4"],
+                ["VALUE", "VALUE", "VALUE", "VALUE"],
+                [false, false, false, false],
+                anchor, true);
             InspectorTest.addResult(clone.document.newText());
             next();
         },
@@ -105,7 +118,7 @@ InspectorTest.runEditingTests = function(cssAST)
             var clone = cssAST.clone();
             var rule = clone.rules[0];
             var anchor = rule.properties[rule.properties.length - 1];
-            rule.insertProperty("NEW-NAME", "NEW-VALUE", false, anchor, false);
+            rule.insertProperties(["NEW-NAME"], ["NEW-VALUE"], [false], anchor, false);
             anchor.remove();
             InspectorTest.addResult(clone.document.newText());
             next();
@@ -116,7 +129,7 @@ InspectorTest.runEditingTests = function(cssAST)
             var clone = cssAST.clone();
             var rule = clone.rules[0];
             var lastProperty = rule.properties[rule.properties.length - 1];
-            rule.insertProperty("NEW-NAME", "NEW-VALUE", false, lastProperty, false);
+            rule.insertProperties(["NEW-NAME"], ["NEW-VALUE"], [false], lastProperty, false);
             lastProperty.name.setText("CHANGED");
             rule.properties[0].value.setText("CHANGED");
             rule.properties[1].setDisabled(true);

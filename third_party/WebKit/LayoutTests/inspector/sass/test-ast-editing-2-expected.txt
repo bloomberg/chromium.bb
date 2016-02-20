@@ -39,6 +39,13 @@ TRAILING-3: VALUE;
 TRAILING-2: VALUE;
 TRAILING-1: VALUE;}
 
+Running: testPrependMultipleProperties
+div{TRAILING-1: VALUE;
+TRAILING-2: VALUE;
+TRAILING-3: VALUE;
+TRAILING-4: VALUE;
+color:red;/*display:block;*/margin:0;}
+
 Running: testAppendAndRemoveLastProperty
 div{color:red;/*display:block;*/;
 NEW-NAME: NEW-VALUE;}
