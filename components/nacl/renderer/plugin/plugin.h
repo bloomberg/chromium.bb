@@ -104,11 +104,6 @@ class Plugin : public pp::Instance {
   // in this order, for the main nacl subprocess.
   void ShutDownSubprocesses();
 
-  // Start sel_ldr given the start params. This is invoked on the main thread.
-  void StartSelLdr(ServiceRuntime* service_runtime,
-                   const SelLdrStartParams& params,
-                   pp::CompletionCallback callback);
-
   // Callback used when getting the URL for the .nexe file.  If the URL loading
   // is successful, the file descriptor is opened and can be passed to sel_ldr
   // with the sandbox on.

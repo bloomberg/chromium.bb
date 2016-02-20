@@ -33,12 +33,6 @@ void Plugin::ShutDownSubprocesses() {
   main_subprocess_.Shutdown();
 }
 
-void Plugin::StartSelLdr(ServiceRuntime* service_runtime,
-                         const SelLdrStartParams& params,
-                         pp::CompletionCallback callback) {
-  service_runtime->StartSelLdr(params, callback);
-}
-
 void Plugin::LoadNaClModule(PP_NaClFileInfo file_info,
                             bool uses_nonsfi_mode,
                             PP_NaClAppProcessType process_type) {
@@ -60,8 +54,8 @@ void Plugin::LoadNaClModule(PP_NaClFileInfo file_info,
       this, pp_instance(), true, uses_nonsfi_mode);
   main_subprocess_.set_service_runtime(service_runtime);
 
-  StartSelLdr(service_runtime, params,
-              pp::CompletionCallback(NoOpCallback, NULL));
+  service_runtime->StartSelLdr(params,
+                               pp::CompletionCallback(NoOpCallback, NULL));
 }
 
 void Plugin::LoadHelperNaClModule(const std::string& helper_url,
@@ -79,7 +73,7 @@ void Plugin::LoadHelperNaClModule(const std::string& helper_url,
                          false,   // Not main_service_runtime.
                          false);  // No non-SFI mode (i.e. in SFI-mode).
   subprocess_to_init->set_service_runtime(service_runtime);
-  StartSelLdr(service_runtime, params, callback);
+  service_runtime->StartSelLdr(params, callback);
 }
 
 // All failures of this function will show up as "Missing Plugin-in", so
