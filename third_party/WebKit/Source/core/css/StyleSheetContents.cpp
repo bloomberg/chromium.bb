@@ -34,7 +34,6 @@
 #include "core/inspector/InspectorTraceEvents.h"
 #include "platform/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "wtf/Deque.h"
 
 namespace blink {
 
