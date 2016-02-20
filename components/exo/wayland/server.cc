@@ -113,10 +113,8 @@ void surface_attach(wl_client* client,
                     int32_t x,
                     int32_t y) {
   // TODO(reveman): Implement buffer offset support.
-  if (x || y) {
-    wl_resource_post_no_memory(resource);
-    return;
-  }
+  DLOG_IF(WARNING, x || y) << "Unsupported buffer offset: "
+                           << gfx::Point(x, y).ToString();
 
   GetUserDataAs<Surface>(resource)
       ->Attach(buffer ? GetUserDataAs<Buffer>(buffer) : nullptr);
@@ -148,10 +146,6 @@ void surface_frame(wl_client* client,
                    uint32_t callback) {
   wl_resource* callback_resource =
       wl_resource_create(client, &wl_callback_interface, 1, callback);
-  if (!callback_resource) {
-    wl_resource_post_no_memory(resource);
-    return;
-  }
 
   // base::Unretained is safe as the resource owns the callback.
   scoped_ptr<base::CancelableCallback<void(base::TimeTicks)>>
@@ -254,14 +248,9 @@ void compositor_create_surface(wl_client* client,
                                uint32_t id) {
   scoped_ptr<Surface> surface =
       GetUserDataAs<Display>(resource)->CreateSurface();
-  DCHECK(surface);
 
   wl_resource* surface_resource = wl_resource_create(
       client, &wl_surface_interface, wl_resource_get_version(resource), id);
-  if (!surface_resource) {
-    wl_resource_post_no_memory(resource);
-    return;
-  }
 
   // Set the surface resource property for type-checking downcast support.
   surface->SetProperty(kSurfaceResourceKey, surface_resource);
@@ -273,16 +262,11 @@ void compositor_create_surface(wl_client* client,
 void compositor_create_region(wl_client* client,
                               wl_resource* resource,
                               uint32_t id) {
-  scoped_ptr<SkRegion> region(new SkRegion);
-
   wl_resource* region_resource =
       wl_resource_create(client, &wl_region_interface, 1, id);
-  if (!region_resource) {
-    wl_resource_post_no_memory(resource);
-    return;
-  }
 
-  SetImplementation(region_resource, &region_implementation, std::move(region));
+  SetImplementation(region_resource, &region_implementation,
+                    make_scoped_ptr(new SkRegion));
 }
 
 const struct wl_compositor_interface compositor_implementation = {
@@ -297,10 +281,6 @@ void bind_compositor(wl_client* client,
   wl_resource* resource =
       wl_resource_create(client, &wl_compositor_interface,
                          std::min(version, compositor_version), id);
-  if (!resource) {
-    wl_client_post_no_memory(client);
-    return;
-  }
 
   wl_resource_set_implementation(resource, &compositor_implementation, data,
                                  nullptr);
@@ -356,10 +336,6 @@ void shm_pool_create_buffer(wl_client* client,
 
   wl_resource* buffer_resource =
       wl_resource_create(client, &wl_buffer_interface, 1, id);
-  if (!buffer_resource) {
-    wl_resource_post_no_memory(resource);
-    return;
-  }
 
   buffer->set_release_callback(base::Bind(&HandleBufferReleaseCallback,
                                           base::Unretained(buffer_resource)));
@@ -396,10 +372,6 @@ void shm_create_pool(wl_client* client,
 
   wl_resource* shm_pool_resource =
       wl_resource_create(client, &wl_shm_pool_interface, 1, id);
-  if (!shm_pool_resource) {
-    wl_resource_post_no_memory(resource);
-    return;
-  }
 
   SetImplementation(shm_pool_resource, &shm_pool_implementation,
                     std::move(shared_memory));
@@ -409,10 +381,6 @@ const struct wl_shm_interface shm_implementation = {shm_create_pool};
 
 void bind_shm(wl_client* client, void* data, uint32_t version, uint32_t id) {
   wl_resource* resource = wl_resource_create(client, &wl_shm_interface, 1, id);
-  if (!resource) {
-    wl_client_post_no_memory(client);
-    return;
-  }
 
   wl_resource_set_implementation(resource, &shm_implementation, data, nullptr);
 
@@ -504,10 +472,6 @@ void drm_create_prime_buffer(wl_client* client,
 
   wl_resource* buffer_resource =
       wl_resource_create(client, &wl_buffer_interface, 1, id);
-  if (!buffer_resource) {
-    wl_resource_post_no_memory(resource);
-    return;
-  }
 
   buffer->set_release_callback(base::Bind(&HandleBufferReleaseCallback,
                                           base::Unretained(buffer_resource)));
@@ -524,10 +488,7 @@ const uint32_t drm_version = 2;
 void bind_drm(wl_client* client, void* data, uint32_t version, uint32_t id) {
   wl_resource* resource = wl_resource_create(
       client, &wl_drm_interface, std::min(version, drm_version), id);
-  if (!resource) {
-    wl_client_post_no_memory(client);
-    return;
-  }
+
   wl_resource_set_implementation(resource, &drm_implementation, data, nullptr);
 
   if (version >= 2)
@@ -594,16 +555,13 @@ void subcompositor_get_subsurface(wl_client* client,
       GetUserDataAs<Display>(resource)->CreateSubSurface(
           GetUserDataAs<Surface>(surface), GetUserDataAs<Surface>(parent));
   if (!subsurface) {
-    wl_resource_post_no_memory(resource);
+    wl_resource_post_error(resource, WL_SUBCOMPOSITOR_ERROR_BAD_SURFACE,
+                           "invalid surface");
     return;
   }
 
   wl_resource* subsurface_resource =
       wl_resource_create(client, &wl_subsurface_interface, 1, id);
-  if (!subsurface_resource) {
-    wl_resource_post_no_memory(resource);
-    return;
-  }
 
   SetImplementation(subsurface_resource, &subsurface_implementation,
                     std::move(subsurface));
@@ -618,10 +576,7 @@ void bind_subcompositor(wl_client* client,
                         uint32_t id) {
   wl_resource* resource =
       wl_resource_create(client, &wl_subcompositor_interface, 1, id);
-  if (!resource) {
-    wl_client_post_no_memory(client);
-    return;
-  }
+
   wl_resource_set_implementation(resource, &subcompositor_implementation, data,
                                  nullptr);
 }
@@ -730,16 +685,13 @@ void shell_get_shell_surface(wl_client* client,
       GetUserDataAs<Display>(resource)
           ->CreateShellSurface(GetUserDataAs<Surface>(surface));
   if (!shell_surface) {
-    wl_resource_post_no_memory(resource);
+    wl_resource_post_error(resource, WL_SHELL_ERROR_ROLE,
+                           "surface has already been assigned a role");
     return;
   }
 
   wl_resource* shell_surface_resource =
       wl_resource_create(client, &wl_shell_surface_interface, 1, id);
-  if (!shell_surface_resource) {
-    wl_resource_post_no_memory(resource);
-    return;
-  }
 
   // Shell surfaces are initially disabled and needs to be explicitly mapped
   // before they are enabled and can become visible.
@@ -762,10 +714,7 @@ const struct wl_shell_interface shell_implementation = {
 void bind_shell(wl_client* client, void* data, uint32_t version, uint32_t id) {
   wl_resource* resource =
       wl_resource_create(client, &wl_shell_interface, 1, id);
-  if (!resource) {
-    wl_client_post_no_memory(client);
-    return;
-  }
+
   wl_resource_set_implementation(resource, &shell_implementation, data,
                                  nullptr);
 }
@@ -778,10 +727,6 @@ const uint32_t output_version = 2;
 void bind_output(wl_client* client, void* data, uint32_t version, uint32_t id) {
   wl_resource* resource = wl_resource_create(
       client, &wl_output_interface, std::min(version, output_version), id);
-  if (!resource) {
-    wl_client_post_no_memory(client);
-    return;
-  }
 
   // TODO(reveman): Watch for display changes and report them.
   // TODO(reveman): Multi-display support.
@@ -986,16 +931,13 @@ void xdg_shell_get_xdg_surface(wl_client* client,
       GetUserDataAs<Display>(resource)
           ->CreateShellSurface(GetUserDataAs<Surface>(surface));
   if (!shell_surface) {
-    wl_resource_post_no_memory(resource);
+    wl_resource_post_error(resource, XDG_SHELL_ERROR_ROLE,
+                           "surface has already been assigned a role");
     return;
   }
 
   wl_resource* xdg_surface_resource =
       wl_resource_create(client, &xdg_surface_interface, 1, id);
-  if (!xdg_surface_resource) {
-    wl_resource_post_no_memory(resource);
-    return;
-  }
 
   shell_surface->set_close_callback(base::Bind(
       &HandleXdgSurfaceCloseCallback, base::Unretained(xdg_surface_resource)));
@@ -1034,10 +976,7 @@ void bind_xdg_shell(wl_client* client,
                     uint32_t id) {
   wl_resource* resource =
       wl_resource_create(client, &xdg_shell_interface, 1, id);
-  if (!resource) {
-    wl_client_post_no_memory(client);
-    return;
-  }
+
   wl_resource_set_implementation(resource, &xdg_shell_implementation, data,
                                  nullptr);
 }
@@ -1079,10 +1018,6 @@ void data_device_manager_get_data_device(wl_client* client,
                                          wl_resource* seat_resource) {
   wl_resource* data_device_resource =
       wl_resource_create(client, &wl_data_device_interface, 1, id);
-  if (!data_device_resource) {
-    wl_client_post_no_memory(client);
-    return;
-  }
 
   wl_resource_set_implementation(data_device_resource,
                                  &data_device_implementation, nullptr, nullptr);
@@ -1099,10 +1034,6 @@ void bind_data_device_manager(wl_client* client,
                               uint32_t id) {
   wl_resource* resource =
       wl_resource_create(client, &wl_data_device_manager_interface, 1, id);
-  if (!resource) {
-    wl_client_post_no_memory(client);
-    return;
-  }
 
   wl_resource_set_implementation(resource, &data_device_manager_implementation,
                                  data, nullptr);
@@ -1459,10 +1390,6 @@ const struct wl_touch_interface touch_implementation = {touch_release};
 void seat_get_pointer(wl_client* client, wl_resource* resource, uint32_t id) {
   wl_resource* pointer_resource = wl_resource_create(
       client, &wl_pointer_interface, wl_resource_get_version(resource), id);
-  if (!pointer_resource) {
-    wl_resource_post_no_memory(resource);
-    return;
-  }
 
   SetImplementation(pointer_resource, &pointer_implementation,
                     make_scoped_ptr(new Pointer(
@@ -1474,10 +1401,6 @@ void seat_get_keyboard(wl_client* client, wl_resource* resource, uint32_t id) {
   uint32_t version = wl_resource_get_version(resource);
   wl_resource* keyboard_resource =
       wl_resource_create(client, &wl_keyboard_interface, version, id);
-  if (!keyboard_resource) {
-    wl_resource_post_no_memory(resource);
-    return;
-  }
 
   SetImplementation(keyboard_resource, &keyboard_implementation,
                     make_scoped_ptr(new Keyboard(
@@ -1494,10 +1417,6 @@ void seat_get_keyboard(wl_client* client, wl_resource* resource, uint32_t id) {
 void seat_get_touch(wl_client* client, wl_resource* resource, uint32_t id) {
   wl_resource* touch_resource = wl_resource_create(
       client, &wl_touch_interface, wl_resource_get_version(resource), id);
-  if (!touch_resource) {
-    wl_resource_post_no_memory(resource);
-    return;
-  }
 
   SetImplementation(
       touch_resource, &touch_implementation,
@@ -1512,10 +1431,6 @@ const uint32_t seat_version = 4;
 void bind_seat(wl_client* client, void* data, uint32_t version, uint32_t id) {
   wl_resource* resource = wl_resource_create(
       client, &wl_seat_interface, std::min(version, seat_version), id);
-  if (!resource) {
-    wl_client_post_no_memory(client);
-    return;
-  }
 
   wl_resource_set_implementation(resource, &seat_implementation, data, nullptr);
 
