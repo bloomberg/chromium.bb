@@ -12,7 +12,6 @@
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
-#include "chrome/browser/ui/host_desktop.h"
 #include "content/public/browser/browser_thread.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
@@ -69,10 +68,7 @@ void SetOverlayIcon(HWND hwnd, scoped_ptr<SkBitmap> bitmap) {
 }  // namespace
 
 void DrawTaskbarDecoration(gfx::NativeWindow window, const gfx::Image* image) {
-  // HOST_DESKTOP_TYPE_ASH doesn't use the taskbar.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7 ||
-      chrome::GetHostDesktopTypeForNativeWindow(window) !=
-      chrome::HOST_DESKTOP_TYPE_NATIVE)
+  if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return;
 
   HWND hwnd = views::HWNDForNativeWindow(window);

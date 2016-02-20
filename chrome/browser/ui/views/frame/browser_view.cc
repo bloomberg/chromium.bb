@@ -261,8 +261,7 @@ void PaintDetachedBookmarkBar(gfx::Canvas* canvas,
 void PaintBackgroundAttachedMode(gfx::Canvas* canvas,
                                  const ui::ThemeProvider* theme_provider,
                                  const gfx::Rect& bounds,
-                                 const gfx::Point& background_origin,
-                                 chrome::HostDesktopType host_desktop_type) {
+                                 const gfx::Point& background_origin) {
   canvas->FillRect(bounds,
                    theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR));
 
@@ -280,8 +279,8 @@ void PaintBackgroundAttachedMode(gfx::Canvas* canvas,
                          bounds.height());
   }
 
-  if (host_desktop_type == chrome::HOST_DESKTOP_TYPE_ASH &&
-      !ui::MaterialDesignController::IsModeMaterial()) {
+#if defined(USE_ASH)
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
     // The pre-material design version of Ash provides additional lightening
     // at the edges of the toolbar.
     gfx::ImageSkia* toolbar_left =
@@ -299,22 +298,19 @@ void PaintBackgroundAttachedMode(gfx::Canvas* canvas,
                          toolbar_right->width(),
                          bounds.height());
   }
+#endif  // USE_ASH
 }
 
 void PaintAttachedBookmarkBar(gfx::Canvas* canvas,
                               BookmarkBarView* view,
                               BrowserView* browser_view,
-                              chrome::HostDesktopType host_desktop_type,
                               int toolbar_overlap) {
   // Paint background for attached state, this is fade in/out.
   gfx::Point background_image_offset =
       browser_view->OffsetPointForToolbarBackgroundImage(
           gfx::Point(view->GetMirroredX(), view->y()));
-  PaintBackgroundAttachedMode(canvas,
-                              view->GetThemeProvider(),
-                              view->GetLocalBounds(),
-                              background_image_offset,
-                              host_desktop_type);
+  PaintBackgroundAttachedMode(canvas, view->GetThemeProvider(),
+                              view->GetLocalBounds(), background_image_offset);
   if (view->height() >= toolbar_overlap) {
     // Draw the separator below the Bookmarks Bar; this is fading in/out.
     if (ui::MaterialDesignController::IsModeMaterial()) {
@@ -433,10 +429,7 @@ void BookmarkBarViewBackground::Paint(gfx::Canvas* canvas,
   SkAlpha detached_alpha = static_cast<SkAlpha>(
       bookmark_bar_view_->size_animation().CurrentValueBetween(0xff, 0));
   if (detached_alpha != 0xff) {
-    PaintAttachedBookmarkBar(canvas,
-                             bookmark_bar_view_,
-                             browser_view_,
-                             browser_->host_desktop_type(),
+    PaintAttachedBookmarkBar(canvas, bookmark_bar_view_, browser_view_,
                              toolbar_overlap);
   }
 
