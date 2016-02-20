@@ -96,13 +96,14 @@ class BlinkGCPluginConsumer : public clang::ASTConsumer {
                                  clang::CXXRecordDecl* base);
   void ReportFieldsRequireTracing(RecordInfo* info,
                                   clang::CXXMethodDecl* trace);
-  void ReportClassContainsInvalidFields(RecordInfo* info,
-                                        CheckFieldsVisitor::Errors* errors);
+  void ReportClassContainsInvalidFields(
+      RecordInfo* info,
+      const CheckFieldsVisitor::Errors& errors);
   void ReportClassContainsGCRoots(RecordInfo* info,
-                                  CheckGCRootsVisitor::Errors* errors);
+                                  const CheckGCRootsVisitor::Errors& errors);
   void ReportFinalizerAccessesFinalizedFields(
       clang::CXXMethodDecl* dtor,
-      CheckFinalizerVisitor::Errors* fields);
+      const CheckFinalizerVisitor::Errors& errors);
   void ReportClassRequiresFinalization(RecordInfo* info);
   void ReportClassDoesNotRequireFinalization(RecordInfo* info);
   void ReportClassMustDeclareGCMixinTraceMethod(RecordInfo* info);
