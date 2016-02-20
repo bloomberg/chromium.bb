@@ -654,10 +654,13 @@ void FeatureInfo::InitializeFeatures() {
     validators_.read_pixel_format.AddValue(GL_BGRA_EXT);
   }
 
-  // We only support timer queries if we also support glGetInteger64v.
-  // For GL_EXT_disjoint_timer_query, glGetInteger64v is only support under ES3.
-  if ((gl_version_info_->is_es3 &&
-       extensions.Contains("GL_EXT_disjoint_timer_query")) ||
+  // glGetInteger64v for timestamps is implemented on the client side in a way
+  // that it does not depend on a driver-level implementation of
+  // glGetInteger64v. The GPUTimer class which implements timer queries can also
+  // fallback to an implementation that does not depend on glGetInteger64v on
+  // ES2. Thus we can enable GL_EXT_disjoint_timer_query on ES2 contexts even
+  // though it does not support glGetInteger64v due to a specification bug.
+  if (extensions.Contains("GL_EXT_disjoint_timer_query") ||
       extensions.Contains("GL_ARB_timer_query") ||
       extensions.Contains("GL_EXT_timer_query")) {
     AddExtensionString("GL_EXT_disjoint_timer_query");
