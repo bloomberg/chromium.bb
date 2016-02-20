@@ -44,7 +44,6 @@
 #endif
 
 #if defined(USE_AURA) && !defined(OS_CHROMEOS)
-#include "chrome/browser/ui/host_desktop.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/native_widget_aura.h"
 #endif
@@ -232,13 +231,9 @@ bool ChromeViewsDelegate::GetSavedWindowPlacement(
   // On Ash environment, a window won't span across displays.  Adjust
   // the bounds to fit the work area.
   gfx::NativeView window = widget->GetNativeView();
-  if (chrome::GetHostDesktopTypeForNativeView(window) ==
-      chrome::HOST_DESKTOP_TYPE_ASH) {
-    gfx::Display display =
-        gfx::Screen::GetScreen()->GetDisplayMatching(*bounds);
-    bounds->AdjustToFit(display.work_area());
-    ash::wm::GetWindowState(window)->set_minimum_visibility(true);
-  }
+  gfx::Display display = gfx::Screen::GetScreen()->GetDisplayMatching(*bounds);
+  bounds->AdjustToFit(display.work_area());
+  ash::wm::GetWindowState(window)->set_minimum_visibility(true);
 #endif
   return true;
 }
@@ -353,10 +348,7 @@ void ChromeViewsDelegate::OnBeforeWidgetInit(
   // the side effects are not as bad as the poor window manager interactions. On
   // Windows however these WM interactions are not an issue, so we open windows
   // requested as top_level as actual top level windows on the desktop.
-  use_non_toplevel_window = use_non_toplevel_window &&
-      (params->child ||
-       chrome::GetHostDesktopTypeForNativeView(params->parent) !=
-          chrome::HOST_DESKTOP_TYPE_NATIVE);
+  use_non_toplevel_window = use_non_toplevel_window && params->child;
 
   if (!ui::win::IsAeroGlassEnabled()) {
     // If we don't have composition (either because Glass is not enabled or
@@ -434,14 +426,7 @@ void ChromeViewsDelegate::OnBeforeWidgetInit(
     }
     params->native_widget = native_widget;
   } else {
-    // TODO(erg): Once we've threaded context to everywhere that needs it, we
-    // should remove this check here.
-    gfx::NativeView to_check =
-        params->context ? params->context : params->parent;
-    if (chrome::GetHostDesktopTypeForNativeView(to_check) ==
-        chrome::HOST_DESKTOP_TYPE_NATIVE) {
-      params->native_widget = new views::DesktopNativeWidgetAura(delegate);
-    }
+    params->native_widget = new views::DesktopNativeWidgetAura(delegate);
   }
 #endif
 }
