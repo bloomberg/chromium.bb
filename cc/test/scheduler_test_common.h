@@ -164,7 +164,8 @@ class TestSyntheticBeginFrameSource : public SyntheticBeginFrameSource {
 
 class FakeCompositorTimingHistory : public CompositorTimingHistory {
  public:
-  static scoped_ptr<FakeCompositorTimingHistory> Create();
+  static scoped_ptr<FakeCompositorTimingHistory> Create(
+      bool using_synchronous_renderer_compositor);
   ~FakeCompositorTimingHistory() override;
 
   void SetAllEstimatesTo(base::TimeDelta duration);
@@ -190,7 +191,8 @@ class FakeCompositorTimingHistory : public CompositorTimingHistory {
   base::TimeDelta DrawDurationEstimate() const override;
 
  protected:
-  FakeCompositorTimingHistory(scoped_ptr<RenderingStatsInstrumentation>
+  FakeCompositorTimingHistory(bool using_synchronous_renderer_compositor,
+                              scoped_ptr<RenderingStatsInstrumentation>
                                   rendering_stats_instrumentation_owned);
 
   scoped_ptr<RenderingStatsInstrumentation>

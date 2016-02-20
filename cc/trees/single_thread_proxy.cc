@@ -67,6 +67,7 @@ void SingleThreadProxy::Start(
 
     scoped_ptr<CompositorTimingHistory> compositor_timing_history(
         new CompositorTimingHistory(
+            scheduler_settings.using_synchronous_renderer_compositor,
             CompositorTimingHistory::BROWSER_UMA,
             layer_tree_host_->rendering_stats_instrumentation()));
 

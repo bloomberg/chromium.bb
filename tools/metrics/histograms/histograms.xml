@@ -43581,6 +43581,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Scheduling.MainAndImplFrameTimeDelta" units="microseconds">
+  <owner>brianderson@chromium.org</owner>
+  <summary>
+    Recorded every time the compositor draws with a new active tree. A value of
+    0 indicates the main-side started and finished within the same frame
+    interval as the impl-side. Positive values correspond to how old any
+    main-side updates are compared to the impl-side updates. If there are no
+    mid-frame updates, this metric is a good proxy for how well the main and
+    impl threads are synchronized.
+  </summary>
+</histogram>
+
 <histogram name="Scheduling.PrepareTilesDuration" units="microseconds">
   <owner>brianderson@chromium.org</owner>
   <summary>
@@ -83318,6 +83330,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Scheduling.BeginMainFrameToCommitDuration"/>
   <affected-histogram name="Scheduling.CommitToReadyToActivateDuration"/>
   <affected-histogram name="Scheduling.DrawDuration"/>
+  <affected-histogram name="Scheduling.MainAndImplFrameTimeDelta"/>
   <affected-histogram name="Scheduling.PrepareTilesDuration"/>
   <affected-histogram name="Scheduling.SwapToAckLatency"/>
 </histogram_suffixes>

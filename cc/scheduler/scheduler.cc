@@ -249,8 +249,8 @@ void Scheduler::DidCreateAndInitializeOutputSurface() {
   TRACE_EVENT0("cc", "Scheduler::DidCreateAndInitializeOutputSurface");
   DCHECK(!observing_frame_source_);
   DCHECK(begin_impl_frame_deadline_task_.IsCancelled());
-  compositor_timing_history_->DidSwapBuffersReset();
   state_machine_.DidCreateAndInitializeOutputSurface();
+  compositor_timing_history_->DidCreateAndInitializeOutputSurface();
   UpdateCompositorTimingHistoryRecordingEnabled();
   ProcessScheduledActions();
 }
@@ -663,21 +663,29 @@ void Scheduler::OnBeginImplFrameDeadline() {
 void Scheduler::DrawAndSwapIfPossible() {
   bool drawing_with_new_active_tree =
       state_machine_.active_tree_needs_first_draw();
+  bool main_thread_missed_last_deadline =
+      state_machine_.main_thread_missed_last_deadline();
   compositor_timing_history_->WillDraw();
   state_machine_.WillDraw();
   DrawResult result = client_->ScheduledActionDrawAndSwapIfPossible();
   state_machine_.DidDraw(result);
-  compositor_timing_history_->DidDraw(drawing_with_new_active_tree);
+  compositor_timing_history_->DidDraw(
+      drawing_with_new_active_tree, main_thread_missed_last_deadline,
+      begin_impl_frame_tracker_.DangerousMethodCurrentOrLast().frame_time);
 }
 
 void Scheduler::DrawAndSwapForced() {
   bool drawing_with_new_active_tree =
       state_machine_.active_tree_needs_first_draw();
+  bool main_thread_missed_last_deadline =
+      state_machine_.main_thread_missed_last_deadline();
   compositor_timing_history_->WillDraw();
   state_machine_.WillDraw();
   DrawResult result = client_->ScheduledActionDrawAndSwapForced();
   state_machine_.DidDraw(result);
-  compositor_timing_history_->DidDraw(drawing_with_new_active_tree);
+  compositor_timing_history_->DidDraw(
+      drawing_with_new_active_tree, main_thread_missed_last_deadline,
+      begin_impl_frame_tracker_.DangerousMethodCurrentOrLast().frame_time);
 }
 
 void Scheduler::SetDeferCommits(bool defer_commits) {
@@ -710,7 +718,8 @@ void Scheduler::ProcessScheduledActions() {
         break;
       case SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME:
         compositor_timing_history_->WillBeginMainFrame(
-            begin_main_frame_args_.on_critical_path);
+            begin_main_frame_args_.on_critical_path,
+            begin_main_frame_args_.frame_time);
         state_machine_.WillSendBeginMainFrame();
         // TODO(brianderson): Pass begin_main_frame_args_ directly to client.
         client_->ScheduledActionSendBeginMainFrame(begin_main_frame_args_);
@@ -748,6 +757,7 @@ void Scheduler::ProcessScheduledActions() {
         // No action is actually performed, but this allows the state machine to
         // drain the pipeline without actually drawing.
         state_machine_.AbortDrawAndSwap();
+        compositor_timing_history_->DrawAborted();
         break;
       }
       case SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION:

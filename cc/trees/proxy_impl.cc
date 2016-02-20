@@ -74,8 +74,10 @@ ProxyImpl::ProxyImpl(ChannelImpl* channel_impl,
       layer_tree_host->settings().ToSchedulerSettings());
 
   scoped_ptr<CompositorTimingHistory> compositor_timing_history(
-      new CompositorTimingHistory(CompositorTimingHistory::RENDERER_UMA,
-                                  rendering_stats_instrumentation_));
+      new CompositorTimingHistory(
+          scheduler_settings.using_synchronous_renderer_compositor,
+          CompositorTimingHistory::RENDERER_UMA,
+          rendering_stats_instrumentation_));
 
   scheduler_ = Scheduler::Create(this, scheduler_settings, layer_tree_host_id_,
                                  task_runner_provider_->ImplThreadTaskRunner(),

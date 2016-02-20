@@ -613,7 +613,6 @@ void SchedulerStateMachine::WillCommit(bool commit_has_no_updates) {
       forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_DRAW) {
     DCHECK(!has_pending_tree_);
     needs_redraw_ = true;
-    active_tree_needs_first_draw_ = true;
   }
 
   // This post-commit work is common to both completed and aborted commits.

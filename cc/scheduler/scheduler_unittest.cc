@@ -263,7 +263,8 @@ class SchedulerTest : public testing::Test {
     }
 
     scoped_ptr<FakeCompositorTimingHistory> fake_compositor_timing_history =
-        FakeCompositorTimingHistory::Create();
+        FakeCompositorTimingHistory::Create(
+            scheduler_settings_.using_synchronous_renderer_compositor);
     fake_compositor_timing_history_ = fake_compositor_timing_history.get();
 
     scheduler_ = TestScheduler::Create(
