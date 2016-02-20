@@ -16,6 +16,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "components/filesystem/directory_impl.h"
+#include "components/filesystem/file_system_app.h"
 #include "mojo/shell/public/cpp/connection.h"
 #include "url/gurl.h"
 
@@ -44,10 +45,12 @@ const char kUserDataDir[] = "user-data-dir";
 
 }  // namespace filesystem
 
-FileSystemImpl::FileSystemImpl(mojo::Connection* connection,
+FileSystemImpl::FileSystemImpl(FileSystemApp* app,
+                               mojo::Connection* connection,
                                mojo::InterfaceRequest<FileSystem> request,
                                LockTable* lock_table)
-    : remote_application_url_(connection->GetRemoteApplicationURL()),
+    : app_(app),
+      remote_application_url_(connection->GetRemoteApplicationURL()),
       binding_(this, std::move(request)),
       lock_table_(lock_table) {}
 
@@ -86,8 +89,9 @@ void FileSystemImpl::OpenFileSystem(const mojo::String& file_system,
   }
 
   if (!path.empty()) {
-    new DirectoryImpl(
+    DirectoryImpl* dir_impl = new DirectoryImpl(
         std::move(directory), path, std::move(temp_dir), lock_table_);
+    app_->RegisterDirectoryToClient(dir_impl, std::move(client));
     callback.Run(FileError::OK);
   } else {
     callback.Run(FileError::FAILED);

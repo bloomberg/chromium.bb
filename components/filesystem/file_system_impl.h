@@ -25,7 +25,8 @@ class LockTable;
 
 class FileSystemImpl : public FileSystem {
  public:
-  FileSystemImpl(mojo::Connection* connection,
+  FileSystemImpl(FileSystemApp* app,
+                 mojo::Connection* connection,
                  mojo::InterfaceRequest<FileSystem> request,
                  LockTable* lock_table);
   ~FileSystemImpl() override;
@@ -51,6 +52,7 @@ class FileSystemImpl : public FileSystem {
   void BuildSanitizedOrigin(const std::string& origin,
                             std::string* sanitized_origin);
 
+  FileSystemApp* app_;
   const std::string remote_application_url_;
   mojo::StrongBinding<FileSystem> binding_;
   LockTable* lock_table_;
