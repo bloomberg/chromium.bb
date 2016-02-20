@@ -643,6 +643,13 @@ void SchedulerStateMachine::WillActivate() {
 }
 
 void SchedulerStateMachine::WillDrawInternal() {
+  // If a new active tree is pending after the one we are about to draw,
+  // the main thread is in a high latency mode.
+  // main_thread_missed_last_deadline_ is here in addition to
+  // OnBeginImplFrameIdle for cases where the scheduler aborts draws outside
+  // of the deadline.
+  main_thread_missed_last_deadline_ = CommitPending() || has_pending_tree_;
+
   // We need to reset needs_redraw_ before we draw since the
   // draw itself might request another draw.
   needs_redraw_ = false;
