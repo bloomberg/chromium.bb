@@ -38,7 +38,6 @@ public class HelpActivity extends AppCompatActivity {
     private static final String TAG = "Chromoting";
 
     private static final String PLAY_STORE_URL = "market://details?id=";
-    private static final String CREDITS_URL = "file:///android_res/raw/credits.html";
 
     private static final String FEEDBACK_PACKAGE = "com.google.android.gms";
 
@@ -57,7 +56,7 @@ public class HelpActivity extends AppCompatActivity {
      */
     private static Bitmap sScreenshot;
 
-    /** WebView used to display help content and credits. */
+    /** WebView used to display help content. */
     private WebView mWebView;
 
     /** Constant used to send the feedback parcel to the system feedback service. */
@@ -173,7 +172,7 @@ public class HelpActivity extends AppCompatActivity {
             return true;
         }
         if (id == R.id.actionbar_credits) {
-            mWebView.loadUrl(CREDITS_URL);
+            startActivity(new Intent(this, CreditsActivity.class));
             return true;
         }
         return super.onOptionsItemSelected(item);
