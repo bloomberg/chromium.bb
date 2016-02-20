@@ -1311,6 +1311,7 @@ component("base") {
       "mac/scoped_nsobject.h",
       "mac/scoped_objc_class_swizzler.h",
       "mac/scoped_objc_class_swizzler.mm",
+      "memory/shared_memory_posix.cc",
       "message_loop/message_pump_mac.h",
       "message_loop/message_pump_mac.mm",
       "process/memory_stubs.cc",
