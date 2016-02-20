@@ -22,6 +22,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/tracing/tracing_switches.h"
@@ -36,7 +37,6 @@
 #include "mojo/shell/runner/host/command_line_switch.h"
 #include "mojo/shell/runner/host/in_process_native_runner.h"
 #include "mojo/shell/runner/host/out_of_process_native_runner.h"
-#include "mojo/shell/standalone/switches.h"
 #include "mojo/shell/standalone/tracer.h"
 #include "mojo/shell/switches.h"
 #include "mojo/util/filename_util.h"
@@ -80,12 +80,25 @@ class TracingInterfaceProvider : public shell::mojom::InterfaceProvider {
   DISALLOW_COPY_AND_ASSIGN(TracingInterfaceProvider);
 };
 
+const size_t kMaxBlockingPoolThreads = 3;
+
+scoped_ptr<base::Thread> CreateIOThread(const char* name) {
+  scoped_ptr<base::Thread> thread(new base::Thread(name));
+  base::Thread::Options options;
+  options.message_loop_type = base::MessageLoop::TYPE_IO;
+  thread->StartWithOptions(options);
+  return thread;
+}
+
 }  // namespace
 
-Context::Context() : main_entry_time_(base::Time::Now()) {}
+Context::Context()
+    : io_thread_(CreateIOThread("io_thread")),
+      main_entry_time_(base::Time::Now()) {}
 
 Context::~Context() {
   DCHECK(!base::MessageLoop::current());
+  blocking_pool_->Shutdown();
 }
 
 // static
@@ -108,11 +121,13 @@ void Context::Init(const base::FilePath& shell_file_root) {
   }
 
   EnsureEmbedderIsInitialized();
-  task_runners_.reset(
-      new TaskRunners(base::MessageLoop::current()->task_runner()));
+
+  shell_runner_ = base::MessageLoop::current()->task_runner();
+  blocking_pool_ =
+      new base::SequencedWorkerPool(kMaxBlockingPoolThreads, "blocking_pool");
 
   // TODO(vtl): This should be MASTER, not NONE.
-  edk::InitIPCSupport(this, task_runners_->io_runner());
+  edk::InitIPCSupport(this, io_thread_->task_runner().get());
 
   scoped_ptr<NativeRunnerFactory> runner_factory;
   if (command_line.HasSwitch(switches::kSingleProcess)) {
@@ -122,13 +137,13 @@ void Context::Init(const base::FilePath& shell_file_root) {
                << " or don't pass --single-process.";
 #endif
     runner_factory.reset(
-        new InProcessNativeRunnerFactory(task_runners_->blocking_pool()));
+        new InProcessNativeRunnerFactory(blocking_pool_.get()));
   } else {
     runner_factory.reset(new OutOfProcessNativeRunnerFactory(
-        task_runners_->blocking_pool(), command_line_switches_));
+        blocking_pool_.get(), command_line_switches_));
   }
   application_manager_.reset(new ApplicationManager(
-      std::move(runner_factory), task_runners_->blocking_pool(), true));
+    std::move(runner_factory), blocking_pool_.get(), true));
 
   shell::mojom::InterfaceProviderPtr tracing_remote_interfaces;
   shell::mojom::InterfaceProviderPtr tracing_local_interfaces;
@@ -174,8 +189,7 @@ void Context::Shutdown() {
   application_manager_.reset();
 
   TRACE_EVENT0("mojo_shell", "Context::Shutdown");
-  DCHECK_EQ(base::MessageLoop::current()->task_runner(),
-            task_runners_->shell_runner());
+  DCHECK_EQ(base::MessageLoop::current()->task_runner(), shell_runner_);
   // Post a task in case OnShutdownComplete is called synchronously.
   base::MessageLoop::current()->PostTask(FROM_HERE,
                                          base::Bind(edk::ShutdownIPCSupport));
@@ -184,8 +198,7 @@ void Context::Shutdown() {
 }
 
 void Context::OnShutdownComplete() {
-  DCHECK_EQ(base::MessageLoop::current()->task_runner(),
-            task_runners_->shell_runner());
+  DCHECK_EQ(base::MessageLoop::current()->task_runner(), shell_runner_);
   base::MessageLoop::current()->QuitWhenIdle();
 }
 
@@ -225,8 +238,7 @@ void Context::OnApplicationEnd(const GURL& url) {
   if (app_urls_.find(url) != app_urls_.end()) {
     app_urls_.erase(url);
     if (app_urls_.empty() && base::MessageLoop::current()->is_running()) {
-      DCHECK_EQ(base::MessageLoop::current()->task_runner(),
-                task_runners_->shell_runner());
+      DCHECK_EQ(base::MessageLoop::current()->task_runner(), shell_runner_);
       if (app_complete_callback_.is_null()) {
         base::MessageLoop::current()->QuitWhenIdle();
       } else {

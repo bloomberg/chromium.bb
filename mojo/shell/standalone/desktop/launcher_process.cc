@@ -19,7 +19,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "mojo/shell/standalone/context.h"
-#include "mojo/shell/standalone/switches.h"
 #include "mojo/shell/switches.h"
 
 namespace mojo {

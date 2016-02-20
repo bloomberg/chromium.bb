@@ -48,8 +48,4 @@ group("tests") {
     "//mojo/shell/tests:apptests",
     "//mojo/shell/tests:mojo_shell_unittests",
   ]
-
-  if (is_android) {
-    deps += [ "//mojo/shell/standalone:mojo_shell_standalone_apptests_apk" ]
-  }
 }

@@ -62,24 +62,6 @@ source_set("init_commandline") {
   ]
 }
 
-source_set("shell_client_factory") {
-  sources = [
-    "lib/shell_client_factory.cc",
-    "shell_client_factory.h",
-  ]
-  deps = [
-    ":cpp",
-
-    # TODO: this code should not depend on base.
-    "//base",
-    "//mojo/common:url_type_converters",
-    "//mojo/message_pump",
-    "//mojo/services/network/public/interfaces",
-    "//mojo/shell/public/interfaces:interfaces_cpp_sources",
-    "//url",
-  ]
-}
-
 source_set("test_support") {
   testonly = true
   sources = [
@@ -104,7 +86,4 @@ source_set("test_support") {
   ]
 
   data_deps = []
-  if (is_android) {
-    data_deps += [ "//mojo/android" ]
-  }
 }

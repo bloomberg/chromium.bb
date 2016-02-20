@@ -98,13 +98,7 @@
         "test": "mojo_system_unittests"
       },
       {
-        "test": "mojo_view_manager_lib_unittests"
-      },
-      {
         "test": "net_unittests"
-      },
-      {
-        "test": "resource_provider_unittests"
       },
       {
         "test": "sql_unittests"
@@ -123,9 +117,6 @@
       },
       {
         "test": "unit_tests"
-      },
-      {
-        "test": "window_manager_unittests"
       }
     ]
   },

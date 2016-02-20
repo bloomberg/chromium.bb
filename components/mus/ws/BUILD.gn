@@ -119,8 +119,11 @@ group("tests") {
   deps = [
     ":apptests",
     ":window_manager_unittests",
-    "//components/mus/public/cpp/tests:mojo_view_manager_lib_unittests",
   ]
+  if (!is_android) {
+    deps +=
+        [ "//components/mus/public/cpp/tests:mojo_view_manager_lib_unittests" ]
+  }
 }
 
 test("window_manager_unittests") {

@@ -604,10 +604,6 @@ group("mojo_apptests") {
       "//ui/views/mus:tests",
     ]
   }
-
-  if (is_android) {
-    deps += [ "//mojo/shell/standalone:mojo_shell_standalone_apptests_apk" ]
-  }
 }
 
 group("gn_only") {
