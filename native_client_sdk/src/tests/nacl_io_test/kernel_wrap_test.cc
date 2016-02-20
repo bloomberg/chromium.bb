@@ -157,13 +157,12 @@ class KernelWrapTest : public ::testing::Test {
         .WillByDefault(Invoke(this, &KernelWrapTest::DefaultWrite));
     EXPECT_CALL(mock, write(_, _, _)).Times(AnyNumber());
 
-    // Ignore calls to munmap.  These can be generated from within the standard
-    // library malloc implementation so can be expected at pretty much any time.
-    // Returning zero is fine since the real munmap see also run.
-    // See kernel_wrap_newlib.cc.
+#ifndef _NEWLIB_VERSION
+    // Disable munmap mocking under newlib due to deadlock issues in dlmalloc
     ON_CALL(mock, munmap(_, _))
         .WillByDefault(Return(0));
     EXPECT_CALL(mock, munmap(_, _)).Times(AnyNumber());
+#endif
 
     ASSERT_EQ(0, ki_push_state_for_testing());
     ASSERT_EQ(0, ki_init(&mock));
@@ -471,6 +470,8 @@ TEST_F(KernelWrapTest, mount) {
                   kDummyVoidPtr));
 }
 
+#ifndef _NEWLIB_VERSION
+// Disable munmap mocking under newlib due to deadlock in dlmalloc
 TEST_F(KernelWrapTest, munmap) {
   // The way we wrap munmap, calls the "real" mmap as well as the intercepted
   // one. The result returned is from the "real" mmap.
@@ -480,6 +481,7 @@ TEST_F(KernelWrapTest, munmap) {
   EXPECT_CALL(mock, munmap(kDummyVoidPtr, kDummySizeT));
   munmap(kDummyVoidPtr, kDummySizeT);
 }
+#endif
 
 TEST_F(KernelWrapTest, open) {
   // We pass O_RDONLY because we do not want an error in flags translation

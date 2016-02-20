@@ -48,7 +48,15 @@ class MockKernelProxy : public nacl_io::KernelProxy {
   MOCK_METHOD6(mmap, void*(void*, size_t, int, int, int, size_t));
   MOCK_METHOD5(mount, int(const char*, const char*, const char*, unsigned long,
                           const void*));
+
+#ifndef _NEWLIB_VERSION
+  /*
+   * Disable mocking of munmap under newlib since it can lead to deadlocks
+   * in dlmalloc: free -> dlmalloc -> acquire lock -> munmap -> mock munmap ->
+   * std::string -> new -> dlmalloc -> acquire lock (already held).
+   */
   MOCK_METHOD2(munmap, int(void*, size_t));
+#endif
   MOCK_METHOD3(open, int(const char*, int, mode_t));
   MOCK_METHOD1(open_resource, int(const char*));
   MOCK_METHOD1(pipe, int(int[2]));
