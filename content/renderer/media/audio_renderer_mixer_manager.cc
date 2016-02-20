@@ -84,14 +84,13 @@ media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
     return nullptr;
   }
 
-  // On ChromeOS and Android, as well as when a fake device is used, we can rely
-  // on the playback device to handle resampling, so don't waste cycles on it
-  // here.
+  // On ChromeOS as well as when a fake device is used, we can rely on the
+  // playback device to handle resampling, so don't waste cycles on it here.
   int sample_rate = params.sample_rate();
   int buffer_size =
       media::AudioHardwareConfig::GetHighLatencyBufferSize(sample_rate, 0);
 
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+#if !defined(OS_CHROMEOS)
   media::AudioParameters hardware_params =
       sink->GetOutputDevice()->GetOutputParameters();
 

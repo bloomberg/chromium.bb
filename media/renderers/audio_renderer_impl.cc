@@ -359,10 +359,10 @@ void AudioRendererImpl::Initialize(
     int sample_rate = hw_params.sample_rate();
     int preferred_buffer_size = hw_params.frames_per_buffer();
 
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
-    // On ChromeOS and Android let the OS level resampler handle resampling
-    // unless the initial sample rate is too low; this allows support for
-    // sample rate adaptations where necessary.
+#if defined(OS_CHROMEOS)
+    // On ChromeOS let the OS level resampler handle resampling unless the
+    // initial sample rate is too low; this allows support for sample rate
+    // adaptations where necessary.
     if (stream->audio_decoder_config().samples_per_second() >= 44100) {
       sample_rate = stream->audio_decoder_config().samples_per_second();
       preferred_buffer_size = 0;  // No preference.
