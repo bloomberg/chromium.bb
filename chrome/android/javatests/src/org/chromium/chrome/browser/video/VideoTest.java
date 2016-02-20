@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.video;
 import android.os.Environment;
 import android.test.suitebuilder.annotation.LargeTest;
 
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.Tab;
@@ -27,6 +28,7 @@ public class VideoTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         mSkipCheckHttpServer = true;
     }
 
+    @DisableIf.Build(sdk_is_less_than = 19, message = "crbug.com/582067")
     @Feature({"Media", "Media-Video", "Main"})
     @LargeTest
     public void testLoadMediaUrl() throws InterruptedException, TimeoutException {
