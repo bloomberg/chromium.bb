@@ -6022,15 +6022,13 @@ mojo::shell::mojom::InterfaceProviderPtr RenderFrameImpl::ConnectToApplication(
   if (!mojo_shell_)
     GetServiceRegistry()->ConnectToRemoteService(mojo::GetProxy(&mojo_shell_));
   mojo::shell::mojom::InterfaceProviderPtr interface_provider;
-  mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = mojo::String::From(url);
   mojo::shell::mojom::CapabilityFilterPtr filter(
       mojo::shell::mojom::CapabilityFilter::New());
   mojo::Array<mojo::String> all_interfaces;
   all_interfaces.push_back("*");
   filter->filter.insert("*", std::move(all_interfaces));
-  mojo_shell_->ConnectToApplication(
-      std::move(request), GetProxy(&interface_provider), nullptr,
+  mojo_shell_->Connect(
+      url.spec(), GetProxy(&interface_provider), nullptr,
       std::move(filter), base::Bind(&OnGotInstanceID));
   return interface_provider;
 }

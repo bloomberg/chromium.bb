@@ -46,8 +46,7 @@ ConnectionImpl::ConnectionImpl()
 
 ConnectionImpl::~ConnectionImpl() {}
 
-shell::mojom::Shell::ConnectToApplicationCallback
-ConnectionImpl::GetConnectToApplicationCallback() {
+shell::mojom::Shell::ConnectCallback ConnectionImpl::GetConnectCallback() {
   return base::Bind(&ConnectionImpl::OnGotInstanceID,
                     weak_factory_.GetWeakPtr());
 }

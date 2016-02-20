@@ -43,7 +43,6 @@ source_set("sources") {
   deps = [
     "//base:i18n",
     "//mojo/common",
-    "//mojo/converters/network",
     "//mojo/environment:chromium",
     "//mojo/message_pump",
   ]
@@ -53,6 +52,7 @@ source_set("sources") {
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
     "//mojo/shell/public/interfaces",
+    "//url",
   ]
 }
 

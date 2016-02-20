@@ -52,8 +52,7 @@ void ApplicationInstance::InitializeApplication() {
   binding_.set_connection_error_handler([this]() { OnConnectionError(); });
 }
 
-void ApplicationInstance::ConnectToClient(
-    scoped_ptr<ConnectToApplicationParams> params) {
+void ApplicationInstance::ConnectToClient(scoped_ptr<ConnectParams> params) {
   if (queue_requests_) {
     queued_client_requests_.push_back(params.release());
     return;
@@ -72,16 +71,15 @@ void ApplicationInstance::BindPIDReceiver(
 }
 
 // Shell implementation:
-void ApplicationInstance::ConnectToApplication(
-    URLRequestPtr app_request,
+void ApplicationInstance::Connect(
+    const String& app_url,
     shell::mojom::InterfaceProviderRequest remote_interfaces,
     shell::mojom::InterfaceProviderPtr local_interfaces,
     mojom::CapabilityFilterPtr filter,
-    const ConnectToApplicationCallback& callback) {
-  std::string url_string = app_request->url.To<std::string>();
-  GURL url(url_string);
+    const ConnectCallback& callback) {
+  GURL url = app_url.To<GURL>();
   if (!url.is_valid()) {
-    LOG(ERROR) << "Error: invalid URL: " << url_string;
+    LOG(ERROR) << "Error: invalid URL: " << app_url;
     callback.Run(kInvalidApplicationID);
     return;
   }
@@ -91,15 +89,13 @@ void ApplicationInstance::ConnectToApplication(
     if (!filter.is_null())
       capability_filter = filter->filter.To<CapabilityFilter>();
 
-    scoped_ptr<ConnectToApplicationParams> params(
-        new ConnectToApplicationParams);
+    scoped_ptr<ConnectParams> params(new ConnectParams);
     params->SetSource(this);
-    GURL app_url(app_request->url.get());
-    params->set_target(Identity(app_url, std::string(), capability_filter));
+    params->set_target(Identity(url, std::string(), capability_filter));
     params->set_remote_interfaces(std::move(remote_interfaces));
     params->set_local_interfaces(std::move(local_interfaces));
     params->set_connect_callback(callback);
-    manager_->ConnectToApplication(std::move(params));
+    manager_->Connect(std::move(params));
   } else {
     LOG(WARNING) << "CapabilityFilter prevented connection from: " <<
         identity_.url() << " to: " << url.spec();
@@ -127,7 +123,7 @@ uint32_t ApplicationInstance::GenerateUniqueID() const {
 }
 
 void ApplicationInstance::CallAcceptConnection(
-    scoped_ptr<ConnectToApplicationParams> params) {
+    scoped_ptr<ConnectParams> params) {
   params->connect_callback().Run(id_);
   AllowedInterfaces interfaces;
   interfaces.insert("*");
@@ -144,7 +140,7 @@ void ApplicationInstance::CallAcceptConnection(
 }
 
 void ApplicationInstance::OnConnectionError() {
-  std::vector<ConnectToApplicationParams*> queued_client_requests;
+  std::vector<ConnectParams*> queued_client_requests;
   queued_client_requests_.swap(queued_client_requests);
   auto manager = manager_;
   manager_->OnApplicationInstanceError(this);
@@ -153,7 +149,7 @@ void ApplicationInstance::OnConnectionError() {
   // If any queued requests came to shell during time it was shutting down,
   // start them now.
   for (auto request : queued_client_requests)
-    manager->ConnectToApplication(make_scoped_ptr(request));
+    manager->Connect(make_scoped_ptr(request));
 }
 
 void ApplicationInstance::OnQuitRequestedResult(bool can_quit) {

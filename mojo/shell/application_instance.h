@@ -15,7 +15,7 @@
 #include "base/process/process_handle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/shell/capability_filter.h"
-#include "mojo/shell/connect_to_application_params.h"
+#include "mojo/shell/connect_params.h"
 #include "mojo/shell/identity.h"
 #include "mojo/shell/public/interfaces/application_manager.mojom.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
@@ -39,12 +39,11 @@ class ApplicationInstance : public mojom::Shell,
       const Identity& identity,
       const base::Closure& on_application_end,
       const String& application_name);
-
   ~ApplicationInstance() override;
 
   void InitializeApplication();
 
-  void ConnectToClient(scoped_ptr<ConnectToApplicationParams> params);
+  void ConnectToClient(scoped_ptr<ConnectParams> params);
 
   // Required before GetProcessId can be called.
   void SetNativeRunner(NativeRunner* native_runner);
@@ -61,12 +60,11 @@ class ApplicationInstance : public mojom::Shell,
 
  private:
   // Shell implementation:
-  void ConnectToApplication(
-      URLRequestPtr app_request,
-      shell::mojom::InterfaceProviderRequest remote_interfaces,
-      shell::mojom::InterfaceProviderPtr local_interfaces,
-      mojom::CapabilityFilterPtr filter,
-      const ConnectToApplicationCallback& callback) override;
+  void Connect(const String& app_url,
+               shell::mojom::InterfaceProviderRequest remote_interfaces,
+               shell::mojom::InterfaceProviderPtr local_interfaces,
+               mojom::CapabilityFilterPtr filter,
+               const ConnectCallback& callback) override;
   void QuitApplication() override;
 
   // PIDReceiver implementation:
@@ -74,7 +72,7 @@ class ApplicationInstance : public mojom::Shell,
 
   uint32_t GenerateUniqueID() const;
 
-  void CallAcceptConnection(scoped_ptr<ConnectToApplicationParams> params);
+  void CallAcceptConnection(scoped_ptr<ConnectParams> params);
 
   void OnConnectionError();
 
@@ -94,7 +92,7 @@ class ApplicationInstance : public mojom::Shell,
   Binding<mojom::Shell> binding_;
   Binding<mojom::PIDReceiver> pid_receiver_binding_;
   bool queue_requests_;
-  std::vector<ConnectToApplicationParams*> queued_client_requests_;
+  std::vector<ConnectParams*> queued_client_requests_;
   NativeRunner* native_runner_;
   const String application_name_;
   base::ProcessId pid_;

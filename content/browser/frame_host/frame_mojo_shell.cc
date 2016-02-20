@@ -13,6 +13,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/content_client.h"
+#include "mojo/common/url_type_converters.h"
 
 #if defined(OS_ANDROID) && defined(ENABLE_MOJO_CDM)
 #include "content/browser/media/android/provision_fetcher_impl.h"
@@ -47,12 +48,12 @@ void FrameMojoShell::BindRequest(
 // TODO(xhwang): Currently no callers are exposing |exposed_services|. So we
 // drop it and replace it with services we provide in the browser. In the
 // future we may need to support both.
-void FrameMojoShell::ConnectToApplication(
-    mojo::URLRequestPtr application_url,
+void FrameMojoShell::Connect(
+    const mojo::String& application_url,
     mojo::shell::mojom::InterfaceProviderRequest services,
     mojo::shell::mojom::InterfaceProviderPtr /* exposed_services */,
     mojo::shell::mojom::CapabilityFilterPtr filter,
-    const ConnectToApplicationCallback& callback) {
+    const ConnectCallback& callback) {
   mojo::shell::mojom::InterfaceProviderPtr frame_services;
   service_provider_bindings_.AddBinding(GetServiceRegistry(),
                                         GetProxy(&frame_services));
@@ -62,7 +63,7 @@ void FrameMojoShell::ConnectToApplication(
   if (!filter.is_null())
     capability_filter = filter->filter.To<mojo::shell::CapabilityFilter>();
   MojoShellContext::ConnectToApplication(
-      GURL(application_url->url.get()),
+      application_url.To<GURL>(),
       frame_host_->GetSiteInstance()->GetSiteURL(), std::move(services),
       std::move(frame_services), capability_filter, callback);
 }

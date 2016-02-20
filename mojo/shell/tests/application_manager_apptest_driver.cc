@@ -18,7 +18,6 @@
 #include "base/path_service.h"
 #include "base/process/process.h"
 #include "base/thread_task_runner_handle.h"
-#include "mojo/converters/network/network_type_converters.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"

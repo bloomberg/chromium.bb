@@ -16,7 +16,7 @@
 #include "mojo/services/package_manager/public/interfaces/shell_resolver.mojom.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/capability_filter.h"
-#include "mojo/shell/connect_to_application_params.h"
+#include "mojo/shell/connect_params.h"
 #include "mojo/shell/identity.h"
 #include "mojo/shell/native_runner.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
@@ -37,7 +37,6 @@ namespace mojo {
 namespace shell {
 
 class ApplicationInstance;
-class ShellClientFactoryConnection;
 
 class ApplicationManager : public ShellClient,
                            public InterfaceFactory<mojom::ApplicationManager>,
@@ -72,10 +71,10 @@ class ApplicationManager : public ShellClient,
                      bool register_mojo_url_schemes);
   ~ApplicationManager() override;
 
-  // Loads a service if necessary and establishes a new client connection.
-  // Please see the comments in connect_to_application_params.h for more details
-  // about the parameters.
-  void ConnectToApplication(scoped_ptr<ConnectToApplicationParams> params);
+  // Completes a connection between a source and target application as defined
+  // by |params|, exchanging InterfaceProviders between them. If no existing
+  // instance of the target application is running, one will be loaded.
+  void Connect(scoped_ptr<ConnectParams> params);
 
   // Sets the default Loader to be used if not overridden by SetLoaderForURL().
   void set_default_loader(scoped_ptr<ApplicationLoader> loader) {
@@ -107,29 +106,23 @@ class ApplicationManager : public ShellClient,
   bool AcceptConnection(Connection* connection) override;
 
   // InterfaceFactory<mojom::ApplicationManager>:
-  void Create(
-      Connection* connection,
-      InterfaceRequest<mojom::ApplicationManager> request) override;
+  void Create(Connection* connection,
+              InterfaceRequest<mojom::ApplicationManager> request) override;
 
   // mojom::ApplicationManager:
-  void CreateInstanceForHandle(
-      ScopedHandle channel,
-      const String& url,
-      mojom::CapabilityFilterPtr filter,
-      InterfaceRequest<mojom::PIDReceiver> pid_receiver) override;
-  void AddListener(
-      mojom::ApplicationManagerListenerPtr listener) override;
+  void CreateInstanceForHandle(ScopedHandle channel,
+                               const String& url,
+                               mojom::CapabilityFilterPtr filter,
+                               mojom::PIDReceiverRequest pid_receiver) override;
+  void AddListener(mojom::ApplicationManagerListenerPtr listener) override;
 
   void InitPackageManager(bool register_mojo_url_schemes);
 
-  // Takes the contents of |params| only when it returns true.
-  bool ConnectToRunningApplication(
-      scoped_ptr<ConnectToApplicationParams>* params);
+  // Attempt to complete the connection requested by |params| by connecting to
+  // an existing instance. If there is an existing instance, |params| is taken,
+  // and this function returns true.
+  bool ConnectToExistingInstance(scoped_ptr<ConnectParams>* params);
 
-  ApplicationInstance* CreateAndConnectToInstance(
-      scoped_ptr<ConnectToApplicationParams> params,
-      const std::string& application_name,
-      mojom::ShellClientRequest* request);
   ApplicationInstance* CreateInstance(
       const Identity& target_id,
       const base::Closure& on_application_end,
@@ -156,7 +149,7 @@ class ApplicationManager : public ShellClient,
   // manifest.
   // |base_filter| is the CapabilityFilter the requested application should be
   // run with, from its manifest.
-  void OnGotResolvedURL(scoped_ptr<ConnectToApplicationParams> params,
+  void OnGotResolvedURL(scoped_ptr<ConnectParams> params,
                         const String& resolved_url,
                         const String& qualifier,
                         const String& file_url,
@@ -201,7 +194,7 @@ class ApplicationManager : public ShellClient,
   DISALLOW_COPY_AND_ASSIGN(ApplicationManager);
 };
 
-mojom::Shell::ConnectToApplicationCallback EmptyConnectCallback();
+mojom::Shell::ConnectCallback EmptyConnectCallback();
 
 }  // namespace shell
 }  // namespace mojo

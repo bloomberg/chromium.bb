@@ -15,7 +15,7 @@
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/application_manager.h"
 #include "mojo/shell/capability_filter.h"
-#include "mojo/shell/connect_to_application_params.h"
+#include "mojo/shell/connect_params.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
 #include "mojo/shell/standalone/context.h"
@@ -79,7 +79,7 @@ class BackgroundShell::MojoThread : public base::SimpleThread {
   ~MojoThread() override {}
 
   void CreateShellClientRequest(base::WaitableEvent* signal,
-                                scoped_ptr<ConnectToApplicationParams> params,
+                                scoped_ptr<ConnectParams> params,
                                 mojom::ShellClientRequest* request) {
     // Only valid to call this on the background thread.
     DCHECK_EQ(message_loop_, base::MessageLoop::current());
@@ -91,7 +91,7 @@ class BackgroundShell::MojoThread : public base::SimpleThread {
                    url, signal, request));
     context_->application_manager()->SetLoaderForURL(make_scoped_ptr(loader),
                                                      url);
-    context_->application_manager()->ConnectToApplication(std::move(params));
+    context_->application_manager()->Connect(std::move(params));
     // The request is asynchronously processed. When processed
     // OnGotApplicationRequest() is called and we'll signal |signal|.
   }
@@ -176,7 +176,7 @@ void BackgroundShell::Init(
 
 mojom::ShellClientRequest BackgroundShell::CreateShellClientRequest(
     const GURL& url) {
-  scoped_ptr<ConnectToApplicationParams> params(new ConnectToApplicationParams);
+  scoped_ptr<ConnectParams> params(new ConnectParams);
   params->set_target(
       Identity(url, std::string(), GetPermissiveCapabilityFilter()));
   mojom::ShellClientRequest request;

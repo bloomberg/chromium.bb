@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SHELL_CONNECT_TO_APPLICATION_PARAMS_H_
-#define MOJO_SHELL_CONNECT_TO_APPLICATION_PARAMS_H_
+#ifndef MOJO_SHELL_CONNECT_PARAMS_H_
+#define MOJO_SHELL_CONNECT_PARAMS_H_
 
 #include <string>
 #include <utility>
@@ -23,10 +23,10 @@ class ApplicationInstance;
 
 // This class represents a request for the application manager to connect to an
 // application.
-class ConnectToApplicationParams {
+class ConnectParams {
  public:
-  ConnectToApplicationParams();
-  ~ConnectToApplicationParams();
+   ConnectParams();
+   ~ConnectParams();
 
   // Sets |source_|. If |source| is null, |source_| is reset.
   void SetSource(ApplicationInstance* source);
@@ -60,12 +60,10 @@ class ConnectToApplicationParams {
     return on_application_end_;
   }
 
-  void set_connect_callback(
-      const shell::mojom::Shell::ConnectToApplicationCallback& value) {
+  void set_connect_callback(const shell::mojom::Shell::ConnectCallback& value) {
     connect_callback_ = value;
   }
-  const shell::mojom::Shell::ConnectToApplicationCallback&
-      connect_callback() const {
+  const shell::mojom::Shell::ConnectCallback& connect_callback() const {
     return connect_callback_;
   }
 
@@ -79,12 +77,12 @@ class ConnectToApplicationParams {
   shell::mojom::InterfaceProviderRequest remote_interfaces_;
   shell::mojom::InterfaceProviderPtr local_interfaces_;
   base::Closure on_application_end_;
-  shell::mojom::Shell::ConnectToApplicationCallback connect_callback_;
+  shell::mojom::Shell::ConnectCallback connect_callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(ConnectToApplicationParams);
+  DISALLOW_COPY_AND_ASSIGN(ConnectParams);
 };
 
 }  // namespace shell
 }  // namespace mojo
 
-#endif  // MOJO_SHELL_CONNECT_TO_APPLICATION_PARAMS_H_
+#endif  // MOJO_SHELL_CONNECT_PARAMS_H_

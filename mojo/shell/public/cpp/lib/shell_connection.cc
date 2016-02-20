@@ -8,7 +8,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "mojo/converters/network/network_type_converters.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/shell/public/cpp/lib/connection_impl.h"
 #include "mojo/shell/public/cpp/shell_client.h"
@@ -87,10 +86,7 @@ class AppRefCountImpl : public AppRefCount {
 
 
 ShellConnection::ConnectParams::ConnectParams(const std::string& url)
-    : ConnectParams(URLRequest::From(url)) {}
-ShellConnection::ConnectParams::ConnectParams(URLRequestPtr request)
-    : request_(std::move(request)),
-      filter_(shell::mojom::CapabilityFilter::New()) {
+    : url_(url), filter_(shell::mojom::CapabilityFilter::New()) {
   filter_->filter.SetToEmpty();
 }
 ShellConnection::ConnectParams::~ConnectParams() {}
@@ -136,8 +132,7 @@ scoped_ptr<Connection> ShellConnection::Connect(ConnectParams* params) {
   if (!shell_)
     return nullptr;
   DCHECK(params);
-  URLRequestPtr request = params->TakeRequest();
-  std::string application_url = request->url.To<std::string>();
+  std::string application_url = params->url().spec();
   // We allow all interfaces on outgoing connections since we are presumably in
   // a position to know who we're talking to.
   // TODO(beng): is this a valid assumption or do we need to figure some way to
@@ -154,11 +149,11 @@ scoped_ptr<Connection> ShellConnection::Connect(ConnectParams* params) {
       application_url, application_url,
       shell::mojom::Shell::kInvalidApplicationID, std::move(remote_interfaces),
       std::move(local_request), allowed));
-  shell_->ConnectToApplication(std::move(request),
-                               std::move(remote_request),
-                               std::move(local_interfaces),
-                               params->TakeFilter(),
-                               registry->GetConnectToApplicationCallback());
+  shell_->Connect(application_url,
+                  std::move(remote_request),
+                  std::move(local_interfaces),
+                  params->TakeFilter(),
+                  registry->GetConnectCallback());
   return std::move(registry);
 }
 

@@ -29,12 +29,12 @@ class FrameMojoShell : public mojo::shell::mojom::Shell {
 
  private:
   // mojo::Shell:
-  void ConnectToApplication(
-      mojo::URLRequestPtr application_url,
+  void Connect(
+      const mojo::String& application_url,
       mojo::shell::mojom::InterfaceProviderRequest services,
       mojo::shell::mojom::InterfaceProviderPtr exposed_services,
       mojo::shell::mojom::CapabilityFilterPtr filter,
-      const ConnectToApplicationCallback& callback) override;
+      const ConnectCallback& callback) override;
   void QuitApplication() override;
 
   ServiceRegistryImpl* GetServiceRegistry();

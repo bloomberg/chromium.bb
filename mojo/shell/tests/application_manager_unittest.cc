@@ -423,14 +423,13 @@ class ApplicationManagerTest : public testing::Test {
   void ConnectToInterface(const GURL& url, InterfacePtr<Interface>* ptr) {
     base::RunLoop loop;
     mojom::InterfaceProviderPtr remote_interfaces;
-    scoped_ptr<ConnectToApplicationParams> params(
-        new ConnectToApplicationParams);
+    scoped_ptr<ConnectParams> params(new ConnectParams);
     params->set_source(CreateShellIdentity());
     params->set_target(Identity(url));
     params->set_remote_interfaces(GetProxy(&remote_interfaces));
     params->set_connect_callback(
         base::Bind(&OnConnect, base::Unretained(&loop)));
-    application_manager_->ConnectToApplication(std::move(params));
+    application_manager_->Connect(std::move(params));
     loop.Run();
 
     mojo::GetInterface(remote_interfaces.get(), ptr);
@@ -596,11 +595,11 @@ TEST_F(ApplicationManagerTest, TestEndApplicationClosure) {
       scoped_ptr<ApplicationLoader>(loader), GURL("test:test"));
 
   bool called = false;
-  scoped_ptr<ConnectToApplicationParams> params(new ConnectToApplicationParams);
+  scoped_ptr<ConnectParams> params(new ConnectParams);
   params->SetTargetURL(GURL("test:test"));
   params->set_on_application_end(
       base::Bind(&QuitClosure, base::Unretained(&called)));
-  application_manager_->ConnectToApplication(std::move(params));
+  application_manager_->Connect(std::move(params));
   loop_.Run();
   EXPECT_TRUE(called);
 }

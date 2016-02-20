@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/shell/connect_to_application_params.h"
+#include "mojo/shell/connect_params.h"
 
 #include <utility>
 
@@ -11,11 +11,11 @@
 namespace mojo {
 namespace shell {
 
-ConnectToApplicationParams::ConnectToApplicationParams() {}
+  ConnectParams::ConnectParams() {}
 
-ConnectToApplicationParams::~ConnectToApplicationParams() {}
+  ConnectParams::~ConnectParams() {}
 
-void ConnectToApplicationParams::SetSource(ApplicationInstance* source) {
+  void ConnectParams::SetSource(ApplicationInstance* source) {
   if (!source) {
     source_ = Identity();
     return;
@@ -24,7 +24,7 @@ void ConnectToApplicationParams::SetSource(ApplicationInstance* source) {
   source_ = source->identity();
 }
 
-void ConnectToApplicationParams::SetTargetURL(const GURL& target_url) {
+void ConnectParams::SetTargetURL(const GURL& target_url) {
   target_ = Identity(target_url, target_.qualifier(), target_.filter());
 }
 

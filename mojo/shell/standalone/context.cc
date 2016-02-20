@@ -33,7 +33,7 @@
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
 #include "mojo/shell/application_loader.h"
-#include "mojo/shell/connect_to_application_params.h"
+#include "mojo/shell/connect_params.h"
 #include "mojo/shell/runner/host/command_line_switch.h"
 #include "mojo/shell/runner/host/in_process_native_runner.h"
 #include "mojo/shell/runner/host/out_of_process_native_runner.h"
@@ -149,14 +149,14 @@ void Context::Init(const base::FilePath& shell_file_root) {
   shell::mojom::InterfaceProviderPtr tracing_local_interfaces;
   new TracingInterfaceProvider(&tracer_, GetProxy(&tracing_local_interfaces));
 
-  scoped_ptr<ConnectToApplicationParams> params(new ConnectToApplicationParams);
+  scoped_ptr<ConnectParams> params(new ConnectParams);
   params->set_source(Identity(GURL("mojo:shell"), std::string(),
                               GetPermissiveCapabilityFilter()));
   params->set_target(Identity(GURL("mojo:tracing"), std::string(),
                               GetPermissiveCapabilityFilter()));
   params->set_remote_interfaces(GetProxy(&tracing_remote_interfaces));
   params->set_local_interfaces(std::move(tracing_local_interfaces));
-  application_manager_->ConnectToApplication(std::move(params));
+  application_manager_->Connect(std::move(params));
 
   if (command_line.HasSwitch(tracing::kTraceStartup)) {
     tracing::TraceCollectorPtr coordinator;
@@ -209,14 +209,14 @@ void Context::Run(const GURL& url) {
 
   app_urls_.insert(url);
 
-  scoped_ptr<ConnectToApplicationParams> params(new ConnectToApplicationParams);
+  scoped_ptr<ConnectParams> params(new ConnectParams);
   params->set_target(
       Identity(url, std::string(), GetPermissiveCapabilityFilter()));
   params->set_remote_interfaces(GetProxy(&remote_interfaces));
   params->set_local_interfaces(std::move(local_interfaces));
   params->set_on_application_end(
       base::Bind(&Context::OnApplicationEnd, base::Unretained(this), url));
-  application_manager_->ConnectToApplication(std::move(params));
+  application_manager_->Connect(std::move(params));
 }
 
 void Context::RunCommandLineApplication(const base::Closure& callback) {

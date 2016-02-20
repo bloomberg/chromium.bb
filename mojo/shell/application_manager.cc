@@ -31,8 +31,6 @@ namespace shell {
 
 namespace {
 
-void OnEmptyOnConnectCallback(uint32_t remote_id) {}
-
 class ShellApplicationLoader : public ApplicationLoader {
  public:
   explicit ShellApplicationLoader(ApplicationManager* manager)
@@ -54,10 +52,6 @@ class ShellApplicationLoader : public ApplicationLoader {
 
 }  // namespace
 
-mojom::Shell::ConnectToApplicationCallback EmptyConnectCallback() {
-  return base::Bind(&OnEmptyOnConnectCallback);
-}
-
 // static
 ApplicationManager::TestAPI::TestAPI(ApplicationManager* manager)
     : manager_(manager) {
@@ -75,8 +69,7 @@ bool ApplicationManager::TestAPI::HasRunningInstanceForURL(
 ////////////////////////////////////////////////////////////////////////////////
 // ApplicationManager, public:
 
-ApplicationManager::ApplicationManager(
-    bool register_mojo_url_schemes)
+ApplicationManager::ApplicationManager(bool register_mojo_url_schemes)
     : ApplicationManager(nullptr, nullptr, register_mojo_url_schemes) {}
 
 ApplicationManager::ApplicationManager(
@@ -99,15 +92,14 @@ ApplicationManager::~ApplicationManager() {
     runner.reset();
 }
 
-void ApplicationManager::ConnectToApplication(
-    scoped_ptr<ConnectToApplicationParams> params) {
-  TRACE_EVENT_INSTANT1("mojo_shell", "ApplicationManager::ConnectToApplication",
+void ApplicationManager::Connect(scoped_ptr<ConnectParams> params) {
+  TRACE_EVENT_INSTANT1("mojo_shell", "ApplicationManager::Connect",
                        TRACE_EVENT_SCOPE_THREAD, "original_url",
                        params->target().url().spec());
   DCHECK(params->target().url().is_valid());
 
   // Connect to an existing matching instance, if possible.
-  if (ConnectToRunningApplication(&params))
+  if (ConnectToExistingInstance(&params))
     return;
 
   std::string url = params->target().url().spec();
@@ -149,7 +141,7 @@ void ApplicationManager::OnApplicationInstanceError(
 }
 
 ApplicationInstance* ApplicationManager::GetApplicationInstance(
-    const Identity& identity) const {
+  const Identity& identity) const {
   const auto& it = identity_to_instance_.find(identity);
   return it != identity_to_instance_.end() ? it->second : nullptr;
 }
@@ -181,9 +173,8 @@ bool ApplicationManager::AcceptConnection(Connection* connection) {
 // ApplicationManager, InterfaceFactory<mojom::ApplicationManager>
 //     implementation:
 
-void ApplicationManager::Create(
-    Connection* connection,
-    mojom::ApplicationManagerRequest request) {
+void ApplicationManager::Create(Connection* connection,
+                                mojom::ApplicationManagerRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
@@ -240,14 +231,11 @@ void ApplicationManager::InitPackageManager(bool register_mojo_url_schemes) {
   ConnectToInterface(this, CreateShellIdentity(), url, &shell_resolver_);
 }
 
-bool ApplicationManager::ConnectToRunningApplication(
-    scoped_ptr<ConnectToApplicationParams>* params) {
+bool ApplicationManager::ConnectToExistingInstance(
+    scoped_ptr<ConnectParams>* params) {
   ApplicationInstance* instance = GetApplicationInstance((*params)->target());
   if (!instance)
     return false;
-
-  // TODO(beng): CHECK() that the target URL is already in the application
-  //             catalog.
   instance->ConnectToClient(std::move(*params));
   return true;
 }
@@ -313,7 +301,7 @@ void ApplicationManager::OnShellClientFactoryLost(const Identity& which) {
 }
 
 void ApplicationManager::OnGotResolvedURL(
-    scoped_ptr<ConnectToApplicationParams> params,
+    scoped_ptr<ConnectParams> params,
     const String& resolved_url,
     const String& qualifier,
     const String& file_url,
@@ -322,7 +310,7 @@ void ApplicationManager::OnGotResolvedURL(
   // It's possible that when this manifest request was issued, another one was
   // already in-progress and completed by the time this one did, and so the
   // requested application may already be running.
-  if (ConnectToRunningApplication(&params))
+  if (ConnectToExistingInstance(&params))
     return;
 
   Identity source = params->source(), target = params->target();

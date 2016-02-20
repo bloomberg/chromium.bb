@@ -35,8 +35,7 @@ class ConnectionImpl : public Connection {
                  const std::set<std::string>& allowed_interfaces);
   ~ConnectionImpl() override;
 
-  shell::mojom::Shell::ConnectToApplicationCallback
-      GetConnectToApplicationCallback();
+  shell::mojom::Shell::ConnectCallback GetConnectCallback();
 
  private:
   // Connection:

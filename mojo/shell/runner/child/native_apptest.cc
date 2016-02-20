@@ -4,7 +4,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "mojo/converters/network/network_type_converters.h"
 #include "mojo/shell/public/cpp/application_test_base.h"
 #include "mojo/shell/runner/child/test_native_service.mojom.h"
 

@@ -8,6 +8,7 @@
 #include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
 #include "mojo/shell/public/interfaces/shell_client.mojom.h"
+#include "url/gurl.h"
 
 namespace mojo {
 
@@ -37,10 +38,9 @@ class Shell {
   class ConnectParams {
    public:
     explicit ConnectParams(const std::string& url);
-    explicit ConnectParams(URLRequestPtr request);
     ~ConnectParams();
 
-    URLRequestPtr TakeRequest() { return std::move(request_); }
+    const GURL& url() { return url_; }
     shell::mojom::CapabilityFilterPtr TakeFilter() {
       return std::move(filter_);
     }
@@ -49,7 +49,7 @@ class Shell {
     }
 
    private:
-    URLRequestPtr request_;
+    GURL url_;
     shell::mojom::CapabilityFilterPtr filter_;
 
     DISALLOW_COPY_AND_ASSIGN(ConnectParams);

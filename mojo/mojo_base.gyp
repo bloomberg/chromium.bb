@@ -213,12 +213,6 @@
           'shell/public/interfaces/shell_client_factory.mojom',
         ],
       },
-      'dependencies': [
-        'mojo_services.gyp:network_service_bindings_generation',
-      ],
-      'export_dependent_settings': [
-        'mojo_services.gyp:network_service_bindings_generation',
-      ],
       'includes': [ 'mojom_bindings_generator_explicit.gypi' ],
     },
     {

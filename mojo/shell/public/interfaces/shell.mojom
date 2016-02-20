@@ -5,7 +5,6 @@
 module mojo.shell.mojom;
 
 import "mojo/shell/public/interfaces/interface_provider.mojom";
-import "network/public/interfaces/url_loader.mojom";
 
 // Specifies a whitelist of applications and services an application can connect
 // to. Connections to applications not explicitly specified here as a key are
@@ -27,11 +26,8 @@ interface Shell {
   const uint32 kInvalidApplicationID = 0;
 
   // Establishes a connection with another application ("target application")
-  // (located at |request->url|) through which the calling application and the
+  // (located at |url|) through which the calling application and the
   // target application may request services from one another.
-  // |application_url| is a URLRequest in case this is called for an HTTP
-  // navigation, in which case HTTP specific information like POST data,
-  // referrer header etc... needed.
   //
   // If the calling application would like to request services from the target
   // application, it should pass a valid interface request in the |services|
@@ -56,10 +52,10 @@ interface Shell {
   // |filter| is a whitelist of application URLs and services that the target
   // application is permitted to connect to. See documentation for
   // CapabilityFilter above.
-  ConnectToApplication(mojo.URLRequest application_url,
-                       InterfaceProvider&? remote_interfaces,
-                       InterfaceProvider? local_interfaces,
-                       CapabilityFilter filter) => (uint32 application_id);
+  Connect(string url,
+          InterfaceProvider&? remote_interfaces,
+          InterfaceProvider? local_interfaces,
+          CapabilityFilter filter) => (uint32 application_id);
 
   // When there are no more instantiated services in an application, it should
   // start its shutdown process by calling this method. Additionally, it should

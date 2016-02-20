@@ -25,7 +25,7 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/string.h"
 #include "mojo/shell/application_loader.h"
-#include "mojo/shell/connect_to_application_params.h"
+#include "mojo/shell/connect_params.h"
 #include "mojo/shell/identity.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 
@@ -160,7 +160,7 @@ class MojoShellContext::Proxy {
       mojo::shell::mojom::InterfaceProviderRequest request,
       mojo::shell::mojom::InterfaceProviderPtr exposed_services,
       const mojo::shell::CapabilityFilter& filter,
-      const mojo::shell::mojom::Shell::ConnectToApplicationCallback& callback) {
+      const mojo::shell::mojom::Shell::ConnectCallback& callback) {
     if (task_runner_ == base::ThreadTaskRunnerHandle::Get()) {
       if (shell_context_) {
         shell_context_->ConnectToApplicationOnOwnThread(
@@ -259,7 +259,7 @@ void MojoShellContext::ConnectToApplication(
     mojo::shell::mojom::InterfaceProviderRequest request,
     mojo::shell::mojom::InterfaceProviderPtr exposed_services,
     const mojo::shell::CapabilityFilter& filter,
-    const mojo::shell::mojom::Shell::ConnectToApplicationCallback& callback) {
+    const mojo::shell::mojom::Shell::ConnectCallback& callback) {
   proxy_.Get()->ConnectToApplication(url, requestor_url, std::move(request),
                                      std::move(exposed_services), filter,
                                      callback);
@@ -271,9 +271,8 @@ void MojoShellContext::ConnectToApplicationOnOwnThread(
     mojo::shell::mojom::InterfaceProviderRequest request,
     mojo::shell::mojom::InterfaceProviderPtr exposed_services,
     const mojo::shell::CapabilityFilter& filter,
-    const mojo::shell::mojom::Shell::ConnectToApplicationCallback& callback) {
-  scoped_ptr<mojo::shell::ConnectToApplicationParams> params(
-      new mojo::shell::ConnectToApplicationParams);
+    const mojo::shell::mojom::Shell::ConnectCallback& callback) {
+  scoped_ptr<mojo::shell::ConnectParams> params(new mojo::shell::ConnectParams);
   params->set_source(
       mojo::shell::Identity(requestor_url, std::string(),
                             mojo::shell::GetPermissiveCapabilityFilter()));
@@ -282,7 +281,7 @@ void MojoShellContext::ConnectToApplicationOnOwnThread(
   params->set_local_interfaces(std::move(exposed_services));
   params->set_on_application_end(base::Bind(&base::DoNothing));
   params->set_connect_callback(callback);
-  application_manager_->ConnectToApplication(std::move(params));
+  application_manager_->Connect(std::move(params));
 }
 
 }  // namespace content
