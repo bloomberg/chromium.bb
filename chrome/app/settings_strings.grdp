@@ -678,6 +678,9 @@
     <message name="IDS_SETTINGS_CHANGE_PICTURE_PROFILE_LOADING_PHOTO" desc="The text on the loading stub for Google profile image.">
       Google Profile photo (loading)
     </message>
+    <message name="IDS_SETTINGS_CHANGE_PICTURE_OLD_PHOTO" desc="The text on the existing photo from camera or file.">
+      Existing photo from camera or file
+    </message>
   </if>
 
   <if expr="not chromeos">

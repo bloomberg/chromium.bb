@@ -1,4 +1,5 @@
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/image-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-selector/iron-selector.html">
@@ -17,14 +18,13 @@
         <iron-selector id="selector" on-iron-activate="onImageActivate_"
             selected-item="{{selectedItem_}}">
           <iron-icon id="cameraImage" data-type="camera" icon="image:camera-alt"
-              alt="[[i18n('takePhoto')]]" hidden="[[!cameraPresent_]]">
+              i18n-values="alt:takePhoto" hidden="[[!cameraPresent_]]">
           </iron-icon>
           <iron-icon data-type="file" icon="folder"
-              alt="[[i18n('chooseFile')]]">
+              i18n-values="alt:chooseFile">
           </iron-icon>
           <img id="profileImage" data-type="profile"
-              src="[[profileImageUrl_]]"
-              alt="[[i18n('profilePhotoLoading')]]">
+              src="[[profileImageUrl_]]" i18n-values="alt:profilePhotoLoading">
           <img id="oldImage" data-type="old"
               src="[[oldImageUrl_]]" hidden="[[!oldImageUrl_]]">
           <template is="dom-repeat" items="[[defaultImages_]]">
@@ -45,9 +45,9 @@
       </div>
       <div id="previewPane">
         <img i18n-values="alt:previewAltText" src="[[selectedItem_.src]]"
-            hidden="[[isCameraActive_(cameraPresent_, selectedItem_)]]">
+            hidden="[[isPreviewImageHidden_(selectedItem_)]]">
         <div id="discardControlBar" hidden="[[isDiscardHidden_(selectedItem_)]]">
-          <paper-icon-button id="discardOldImage" tabindex="2" icon="delete"
+          <paper-icon-button id="discardOldImage" tabindex="0" icon="delete"
               i18n-values="title:discardPhoto" on-tap="onTapDiscardOldImage_">
           </paper-icon-button>
         </div>

@@ -160,6 +160,7 @@ Polymer({
        */
       receiveProfileImage: function(imageUrl, selected) {
         this.profileImageUrl_ = imageUrl;
+        this.$.profileImage.alt = this.i18n('profilePhoto');
 
         if (!selected)
           return;
@@ -235,8 +236,6 @@ Polymer({
    */
   onPhotoTaken_: function(event) {
     settings.ChangePicturePrivateApi.photoTaken(event.detail.photoDataUrl);
-
-    // TODO(tommycli): Add announce of accessible message for photo capture.
   },
 
   /**
@@ -260,6 +259,9 @@ Polymer({
     assert(this.defaultImages_.length > 0);
     settings.ChangePicturePrivateApi.selectDefaultImage(
         this.defaultImages_[0].url);
+
+    announceAccessibleMessage(
+        loadTimeData.getString('photoDiscardAccessibleText'));
   },
 
   /**
@@ -269,6 +271,19 @@ Polymer({
    * @private
    */
   isOldImageHidden_: function(oldImageUrl) { return oldImageUrl.length == 0; },
+
+  /**
+   * @param {settings.ChangePictureImageElement} selectedItem
+   * @return {boolean} True if the preview image should be hidden.
+   * @private
+   */
+  isPreviewImageHidden_: function(selectedItem) {
+    if (selectedItem == undefined)
+      return true;
+
+    var type = selectedItem.dataset.type;
+    return type != 'default' && type != 'profile' && type != 'old';
+  },
 
   /**
    * @param {settings.ChangePictureImageElement} selectedItem

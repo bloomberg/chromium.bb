@@ -539,6 +539,8 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
                                   IDS_SETTINGS_CHANGE_PICTURE_CHOOSE_FILE);
   html_source->AddLocalizedString("profilePhoto",
                                   IDS_SETTINGS_CHANGE_PICTURE_PROFILE_PHOTO);
+  html_source->AddLocalizedString("oldPhoto",
+                                  IDS_SETTINGS_CHANGE_PICTURE_OLD_PHOTO);
   html_source->AddLocalizedString(
       "profilePhotoLoading", IDS_SETTINGS_CHANGE_PICTURE_PROFILE_LOADING_PHOTO);
   html_source->AddLocalizedString("previewAltText",

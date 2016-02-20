@@ -134,7 +134,9 @@ Polymer({
     this.isFlipped_ = !this.isFlipped_;
     this.$.userImageStreamCrop.classList.toggle('flip-x', this.isFlipped_);
 
-    // TODO(tommycli): Add announce of accessible message for photo flipping.
+    var flipMessageId = this.isFlipped_ ?
+       'photoFlippedAccessibleText' : 'photoFlippedBackAccessibleText';
+    announceAccessibleMessage(loadTimeData.getString(flipMessageId));
   },
 
   /**
@@ -157,6 +159,9 @@ Polymer({
     var photoDataUrl = this.isFlipped_ ? this.flipFrame_(canvas) :
                                          canvas.toDataURL('image/png');
     this.fire('phototaken', {photoDataUrl: photoDataUrl});
+
+    announceAccessibleMessage(
+        loadTimeData.getString('photoCaptureAccessibleText'));
   },
 
   /**

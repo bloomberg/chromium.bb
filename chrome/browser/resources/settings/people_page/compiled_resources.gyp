@@ -8,6 +8,7 @@
       'variables': {
         'depends': [
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
+          '../../../../../ui/webui/resources/js/compiled_resources.gyp:util',
           '../../../../../ui/webui/resources/js/i18n_behavior.js',
         ],
       },
@@ -20,6 +21,7 @@
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:assert',
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:cr',
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
+          '../../../../../ui/webui/resources/js/compiled_resources.gyp:util',
           '../../../../../ui/webui/resources/js/i18n_behavior.js',
           'change_picture_private_api.js',
         ],
