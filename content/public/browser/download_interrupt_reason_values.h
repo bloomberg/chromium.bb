@@ -106,6 +106,10 @@ INTERRUPT_REASON(SERVER_CERT_PROBLEM, 35)
 // Server access forbidden.
 INTERRUPT_REASON(SERVER_FORBIDDEN, 36)
 
+// Unexpected server response. This might indicate that the responding server
+// may not be the intended server.
+INTERRUPT_REASON(SERVER_UNREACHABLE, 37)
+
 // User input.
 
 // The user canceled the download.

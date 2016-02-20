@@ -199,6 +199,7 @@ DownloadRequestCore::DownloadRequestCore(net::URLRequest* request,
       bytes_read_(0),
       pause_count_(0),
       was_deferred_(false),
+      is_partial_request_(false),
       started_(false),
       abort_reason_(DOWNLOAD_INTERRUPT_REASON_NONE) {
   DCHECK(request_);
@@ -213,6 +214,7 @@ DownloadRequestCore::DownloadRequestCore(net::URLRequest* request,
     download_id_ = request_data->download_id();
     on_started_callback_ = request_data->callback();
     DownloadRequestData::Detach(request_);
+    is_partial_request_ = save_info_->offset > 0;
   } else {
     save_info_.reset(new DownloadSaveInfo);
   }
@@ -332,6 +334,18 @@ bool DownloadRequestCore::OnResponseStarted(
   return true;
 }
 
+bool DownloadRequestCore::OnRequestRedirected() {
+  DVLOG(20) << __FUNCTION__ << "() " << DebugString();
+  if (is_partial_request_) {
+    // A redirect while attempting a partial resumption indicates a potential
+    // middle box. Trigger another interruption so that the DownloadItem can
+    // retry.
+    abort_reason_ = DOWNLOAD_INTERRUPT_REASON_SERVER_UNREACHABLE;
+    return false;
+  }
+  return true;
+}
+
 // Create a new buffer, which will be handed to the download thread for file
 // writing and deletion.
 bool DownloadRequestCore::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
@@ -386,6 +400,12 @@ bool DownloadRequestCore::OnReadCompleted(int bytes_read, bool* defer) {
     *defer = was_deferred_ = true;
 
   return true;
+}
+
+void DownloadRequestCore::OnWillAbort(DownloadInterruptReason reason) {
+  DVLOG(20) << __FUNCTION__ << "() reason=" << reason << " " << DebugString();
+  DCHECK(!started_);
+  abort_reason_ = reason;
 }
 
 void DownloadRequestCore::OnResponseCompleted(

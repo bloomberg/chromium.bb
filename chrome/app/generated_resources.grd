@@ -1654,6 +1654,14 @@ are declared in build/common.gypi.
                desc="Download page message: Forbidden.">
         Access to this resource was forbidden by the server.
       </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_UNREACHABLE"
+               desc="An unexpected response was received which may indicate that the server is not reachable due to an intermediary.">
+        Server unreachable
+      </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_UNREACHABLE"
+               desc="Download page message: An unexpected response was received which may indicate that the server is not reachable due to an intermediary.">
+        The server may be unreachable. Try again later.
+      </message>
 
       <message name="IDS_DOWNLOAD_NOTIFICATION_LABEL_OPEN_WHEN_COMPLETE"
                desc="Download notifications: Label for 'Open when download is complete' action button on notification">

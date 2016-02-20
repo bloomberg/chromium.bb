@@ -116,7 +116,15 @@ void UrlDownloader::OnReceivedRedirect(net::URLRequest* request,
                                        const net::RedirectInfo& redirect_info,
                                        bool* defer_redirect) {
   DVLOG(1) << "OnReceivedRedirect: " << request_->url().spec();
-  request_->CancelWithError(net::ERR_ABORTED);
+
+  // We are going to block redirects even if DownloadRequestCore allows it.  No
+  // redirects are expected for download requests that are made without a
+  // renderer, which are currently exclusively resumption requests. Since there
+  // is no security policy being applied here, it's safer to block redirects and
+  // revisit if some previously unknown legitimate use case arises for redirects
+  // while resuming.
+  core_.OnWillAbort(DOWNLOAD_INTERRUPT_REASON_SERVER_UNREACHABLE);
+  request_->CancelWithError(net::ERR_UNSAFE_REDIRECT);
 }
 
 void UrlDownloader::OnResponseStarted(net::URLRequest* request) {

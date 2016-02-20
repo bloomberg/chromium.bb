@@ -115,7 +115,7 @@ bool DownloadResourceHandler::OnRequestRedirected(
     const net::RedirectInfo& redirect_info,
     ResourceResponse* response,
     bool* defer) {
-  return true;
+  return core_.OnRequestRedirected();
 }
 
 // Send the download creation information to the download thread.

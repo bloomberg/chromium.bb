@@ -60,12 +60,21 @@ class CONTENT_EXPORT DownloadRequestCore
   // constructing a DownloadCreateInfo object.
   bool OnResponseStarted(const std::string& override_mime_type);
 
+  // Should be called to handle a redirect. The caller should only allow the
+  // redirect to be followed if the return value is true.
+  bool OnRequestRedirected();
+
   // Starts a read cycle. Creates a new IOBuffer which can be passed into
   // URLRequest::Read(). Call OnReadCompleted() when the Read operation
   // completes.
   bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                   int* buf_size,
                   int min_size);
+
+  // Used to notify DownloadRequestCore that the caller is about to abort the
+  // outer request. |reason| will be used as the final interrupt reason when
+  // OnResponseCompleted() is called.
+  void OnWillAbort(DownloadInterruptReason reason);
 
   // Should be called when the Read() operation completes. |defer| will be set
   // to true if reading is to be suspended. In the latter case, once more data
@@ -143,7 +152,7 @@ class CONTENT_EXPORT DownloadRequestCore
 
   int pause_count_;
   bool was_deferred_;
-  bool is_resumption_request_;
+  bool is_partial_request_;
   bool started_;
 
   // When DownloadRequestCore initiates an abort (by blocking a redirect, for

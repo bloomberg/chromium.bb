@@ -170,6 +170,10 @@ base::string16 InterruptReasonStatusMessage(
     case content::DOWNLOAD_INTERRUPT_REASON_SERVER_FORBIDDEN:
       string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_FORBIDDEN;
       break;
+    case content::DOWNLOAD_INTERRUPT_REASON_SERVER_UNREACHABLE:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_UNREACHABLE;
+      break;
+
     case content::DOWNLOAD_INTERRUPT_REASON_NONE:
       NOTREACHED();
       // fallthrough
@@ -249,6 +253,9 @@ base::string16 InterruptReasonMessage(content::DownloadInterruptReason reason) {
       break;
     case content::DOWNLOAD_INTERRUPT_REASON_SERVER_FORBIDDEN:
       string_id = IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_FORBIDDEN;
+      break;
+    case content::DOWNLOAD_INTERRUPT_REASON_SERVER_UNREACHABLE:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_UNREACHABLE;
       break;
     case content::DOWNLOAD_INTERRUPT_REASON_NONE:
       NOTREACHED();
