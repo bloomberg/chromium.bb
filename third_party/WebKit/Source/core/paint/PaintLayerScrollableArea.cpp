@@ -90,6 +90,8 @@ PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)
     , m_nextTopmostScrollChild(0)
     , m_topmostScrollChild(0)
     , m_needsCompositedScrolling(false)
+    , m_rebuildHorizontalScrollbarLayer(false)
+    , m_rebuildVerticalScrollbarLayer(false)
     , m_scrollbarManager(*this)
     , m_scrollCorner(nullptr)
     , m_resizer(nullptr)
@@ -1441,6 +1443,12 @@ Widget* PaintLayerScrollableArea::widget()
     return box().frame()->view();
 }
 
+void PaintLayerScrollableArea::resetRebuildScrollbarLayerFlags()
+{
+    m_rebuildHorizontalScrollbarLayer = false;
+    m_rebuildVerticalScrollbarLayer = false;
+}
+
 PaintLayerScrollableArea::ScrollbarManager::ScrollbarManager(PaintLayerScrollableArea& scrollableArea)
     : m_scrollableArea(&scrollableArea)
     , m_canDetachScrollbars(0)
@@ -1529,6 +1537,10 @@ void PaintLayerScrollableArea::ScrollbarManager::destroyScrollbar(ScrollbarOrien
         return;
 
     m_scrollableArea->setScrollbarNeedsPaintInvalidation(orientation);
+    if (orientation == HorizontalScrollbar)
+        m_scrollableArea->m_rebuildHorizontalScrollbarLayer = true;
+    else
+        m_scrollableArea->m_rebuildVerticalScrollbarLayer = true;
 
     if (!scrollbar->isCustomScrollbar())
         m_scrollableArea->willRemoveScrollbar(*scrollbar, orientation);

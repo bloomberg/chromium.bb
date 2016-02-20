@@ -1301,17 +1301,35 @@ void CompositedLayerMapping::setBackgroundLayerPaintsFixedRootBackground(bool ba
     m_backgroundLayerPaintsFixedRootBackground = backgroundLayerPaintsFixedRootBackground;
 }
 
-// Only a member function so it can call createGraphicsLayer.
 bool CompositedLayerMapping::toggleScrollbarLayerIfNeeded(OwnPtr<GraphicsLayer>& layer, bool needsLayer, CompositingReasons reason)
 {
     if (needsLayer == !!layer)
         return false;
     layer = needsLayer ? createGraphicsLayer(reason) : nullptr;
+
+    if (PaintLayerScrollableArea* scrollableArea = m_owningLayer.scrollableArea()) {
+        if (ScrollingCoordinator* scrollingCoordinator = scrollingCoordinatorFromLayer(m_owningLayer)) {
+            if (reason == CompositingReasonLayerForHorizontalScrollbar)
+                scrollingCoordinator->scrollableAreaScrollbarLayerDidChange(scrollableArea, HorizontalScrollbar);
+            else if (reason == CompositingReasonLayerForVerticalScrollbar)
+                scrollingCoordinator->scrollableAreaScrollbarLayerDidChange(scrollableArea, VerticalScrollbar);
+        }
+    }
     return true;
 }
 
 bool CompositedLayerMapping::updateOverflowControlsLayers(bool needsHorizontalScrollbarLayer, bool needsVerticalScrollbarLayer, bool needsScrollCornerLayer, bool needsAncestorClip)
 {
+    if (PaintLayerScrollableArea* scrollableArea = m_owningLayer.scrollableArea()) {
+        // If the scrollable area is marked as needing a new scrollbar layer,
+        // destroy the layer now so that it will be created again below.
+        if (m_layerForHorizontalScrollbar && needsHorizontalScrollbarLayer && scrollableArea->shouldRebuildHorizontalScrollbarLayer())
+            toggleScrollbarLayerIfNeeded(m_layerForHorizontalScrollbar, false, CompositingReasonLayerForHorizontalScrollbar);
+        if (m_layerForVerticalScrollbar && needsVerticalScrollbarLayer && scrollableArea->shouldRebuildVerticalScrollbarLayer())
+            toggleScrollbarLayerIfNeeded(m_layerForVerticalScrollbar, false, CompositingReasonLayerForVerticalScrollbar);
+        scrollableArea->resetRebuildScrollbarLayerFlags();
+    }
+
     // If the subtree is invisible, we don't actually need scrollbar layers.
     bool invisible = m_owningLayer.subtreeIsInvisible();
     needsHorizontalScrollbarLayer &= !invisible;
@@ -1326,13 +1344,6 @@ bool CompositedLayerMapping::updateOverflowControlsLayers(bool needsHorizontalSc
     toggleScrollbarLayerIfNeeded(m_overflowControlsHostLayer, needsOverflowControlsHostLayer, CompositingReasonLayerForOverflowControlsHost);
     bool needsOverflowAncestorClipLayer = needsOverflowControlsHostLayer && needsAncestorClip;
     toggleScrollbarLayerIfNeeded(m_overflowControlsAncestorClippingLayer, needsOverflowAncestorClipLayer, CompositingReasonLayerForOverflowControlsHost);
-
-    if (ScrollingCoordinator* scrollingCoordinator = scrollingCoordinatorFromLayer(m_owningLayer)) {
-        if (horizontalScrollbarLayerChanged)
-            scrollingCoordinator->scrollableAreaScrollbarLayerDidChange(m_owningLayer.scrollableArea(), HorizontalScrollbar);
-        if (verticalScrollbarLayerChanged)
-            scrollingCoordinator->scrollableAreaScrollbarLayerDidChange(m_owningLayer.scrollableArea(), VerticalScrollbar);
-    }
 
     return horizontalScrollbarLayerChanged || verticalScrollbarLayerChanged || scrollCornerLayerChanged;
 }

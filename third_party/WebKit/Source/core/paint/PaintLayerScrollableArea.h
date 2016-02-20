@@ -334,6 +334,10 @@ public:
     ScrollAnchor& scrollAnchor() { return m_scrollAnchor; }
     bool isPaintLayerScrollableArea() const override { return true; }
 
+    bool shouldRebuildHorizontalScrollbarLayer() const { return m_rebuildHorizontalScrollbarLayer; }
+    bool shouldRebuildVerticalScrollbarLayer() const { return m_rebuildVerticalScrollbarLayer; }
+    void resetRebuildScrollbarLayerFlags();
+
     DECLARE_VIRTUAL_TRACE();
 
 private:
@@ -387,6 +391,12 @@ private:
     // FIXME: once cc can handle composited scrolling with clip paths, we will
     // no longer need this bit.
     unsigned m_needsCompositedScrolling : 1;
+
+    // Set to indicate that a scrollbar layer, if present, needs to be rebuilt
+    // in the next compositing update because the underlying blink::Scrollbar
+    // instance has been reconstructed.
+    unsigned m_rebuildHorizontalScrollbarLayer : 1;
+    unsigned m_rebuildVerticalScrollbarLayer : 1;
 
     // The width/height of our scrolled area.
     // This is OverflowModel's layout overflow translated to physical
