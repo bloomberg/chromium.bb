@@ -1425,11 +1425,20 @@ void BookmarkBarView::OnMenuButtonClicked(views::MenuButton* view,
     node = model_->bookmark_bar_node()->GetChild(button_index);
   }
 
-  RecordBookmarkFolderOpen(GetBookmarkLaunchLocation());
-  bookmark_menu_ = new BookmarkMenuController(
-      browser_, page_navigator_, GetWidget(), node, start_index, false);
-  bookmark_menu_->set_observer(this);
-  bookmark_menu_->RunMenuAt(this);
+  // Clicking the middle mouse button opens all bookmarks in the folder in new
+  // tabs.
+  if (event && (event->flags() & ui::EF_MIDDLE_MOUSE_BUTTON) != 0) {
+    WindowOpenDisposition disposition_from_event_flags =
+        ui::DispositionFromEventFlags(event->flags());
+    chrome::OpenAll(GetWidget()->GetNativeWindow(), page_navigator_, node,
+                    disposition_from_event_flags, browser_->profile());
+  } else {
+    RecordBookmarkFolderOpen(GetBookmarkLaunchLocation());
+    bookmark_menu_ = new BookmarkMenuController(
+        browser_, page_navigator_, GetWidget(), node, start_index, false);
+    bookmark_menu_->set_observer(this);
+    bookmark_menu_->RunMenuAt(this);
+  }
 }
 
 void BookmarkBarView::ButtonPressed(views::Button* sender,
@@ -1453,16 +1462,14 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
   const BookmarkNode* node = model_->bookmark_bar_node()->GetChild(index);
   DCHECK(page_navigator_);
 
-  if (node->is_url()) {
-    RecordAppLaunch(browser_->profile(), node->url());
-    OpenURLParams params(
-        node->url(), Referrer(), disposition_from_event_flags,
-        ui::PAGE_TRANSITION_AUTO_BOOKMARK, false);
-    page_navigator_->OpenURL(params);
-  } else {
-    chrome::OpenAll(GetWidget()->GetNativeWindow(), page_navigator_, node,
-                    disposition_from_event_flags, browser_->profile());
-  }
+  // Only URL nodes have regular buttons on the bookmarks bar; folder clicks
+  // are directed to OnMenuButtonClicked().
+  DCHECK(node->is_url());
+  RecordAppLaunch(browser_->profile(), node->url());
+  OpenURLParams params(
+      node->url(), Referrer(), disposition_from_event_flags,
+      ui::PAGE_TRANSITION_AUTO_BOOKMARK, false);
+  page_navigator_->OpenURL(params);
 
   RecordBookmarkLaunch(node, GetBookmarkLaunchLocation());
 }
