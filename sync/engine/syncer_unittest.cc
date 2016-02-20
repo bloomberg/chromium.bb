@@ -283,6 +283,7 @@ class SyncerTest : public testing::Test,
                                                  &cancelation_signal_));
     debug_info_getter_.reset(new MockDebugInfoGetter);
     EnableDatatype(BOOKMARKS);
+    EnableDatatype(EXTENSIONS);
     EnableDatatype(NIGORI);
     EnableDatatype(PREFERENCES);
     EnableDatatype(NIGORI);
@@ -2670,11 +2671,11 @@ TEST_F(SyncerTest, CommitsUpdateDoesntAlterEntry) {
 }
 
 TEST_F(SyncerTest, ParentAndChildBothMatch) {
-  // Disable PREFERENCES which is enabled at the setup step to avoid
-  // auto-creating
-  // PREFERENCES root folder and failing the test below that verifies the number
-  // of children at the root.
+  // Disable PREFERENCES and EXTENSIONS which are enabled at the setup step to
+  // avoid auto-creating root folders and failing the test below
+  // that verifies the number of children at the root.
   DisableDatatype(PREFERENCES);
+  DisableDatatype(EXTENSIONS);
 
   const FullModelTypeSet all_types = FullModelTypeSet::All();
   syncable::Id parent_id = ids_.NewServerId();
@@ -3752,6 +3753,82 @@ TEST_F(SyncerTest, ConflictResolverMergesLocalDeleteAndServerUpdate) {
     EXPECT_TRUE(local_deleted.GetIsUnsynced());
     EXPECT_TRUE(local_deleted.GetIsDel());
     EXPECT_FALSE(local_deleted.GetIsDir());
+  }
+}
+
+// This ensures that for extensions, we resolve the conflict of local updates
+// and server deletes in favor of the server, to prevent extensions from
+// being reinstalled after uninstall.
+TEST_F(SyncerTest, ConflictResolverAcceptsServerDeleteForExtensions) {
+  ASSERT_TRUE(context_->GetEnabledTypes().Has(EXTENSIONS));
+
+  // Create an extension entry.
+  int64_t metahandle;
+  {
+    WriteTransaction trans(FROM_HERE, UNITTEST, directory());
+    MutableEntry extension(
+        &trans, CREATE, EXTENSIONS, trans.root_id(), "extension_name");
+    ASSERT_TRUE(extension.good());
+    sync_pb::EntitySpecifics specifics;
+    AddDefaultFieldValue(EXTENSIONS, &specifics);
+    extension.PutSpecifics(specifics);
+    EXPECT_FALSE(extension.GetIsUnappliedUpdate());
+    EXPECT_FALSE(extension.GetId().ServerKnows());
+    metahandle = extension.GetMetahandle();
+    extension.PutIsUnsynced(true);
+  }
+
+  // Make sure the server has received the new item.
+  SyncShareNudge();
+  syncable::Id id;
+  {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    Entry entry(&trans, GET_BY_HANDLE, metahandle);
+
+    EXPECT_EQ(metahandle, entry.GetMetahandle());
+    EXPECT_FALSE(entry.GetIsDel());
+    EXPECT_FALSE(entry.GetServerIsDel());
+    EXPECT_GE(entry.GetBaseVersion(), 0);
+    EXPECT_EQ(entry.GetBaseVersion(), entry.GetServerVersion());
+    EXPECT_FALSE(entry.GetIsUnsynced());
+    EXPECT_FALSE(entry.GetIsUnappliedUpdate());
+    id = entry.GetId();
+  }
+
+
+  // Simulate another client deleting the item.
+  {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    Entry entry(&trans, GET_BY_HANDLE, metahandle);
+    mock_server_->AddUpdateTombstone(id, EXTENSIONS);
+  }
+
+  // Create a local update, which should cause a conflict with the delete that
+  // we just pushed to the server.
+  {
+    WriteTransaction trans(FROM_HERE, UNITTEST, directory());
+    MutableEntry extension(&trans, GET_BY_HANDLE, metahandle);
+    ASSERT_TRUE(extension.good());
+    sync_pb::EntitySpecifics specifics;
+    AddDefaultFieldValue(EXTENSIONS, &specifics);
+    specifics.mutable_extension()->set_disable_reasons(2);
+    extension.PutSpecifics(specifics);
+    EXPECT_FALSE(extension.GetIsUnappliedUpdate());
+    extension.PutIsUnsynced(true);
+  }
+
+  // Run a sync, and expect the item to be deleted.
+  SyncShareNudge();
+  {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    Entry entry(&trans, GET_BY_HANDLE, metahandle);
+    EXPECT_EQ(metahandle, entry.GetMetahandle());
+    EXPECT_TRUE(entry.GetIsDel());
+    EXPECT_TRUE(entry.GetServerIsDel());
+    EXPECT_FALSE(entry.GetIsUnsynced());
+    EXPECT_FALSE(entry.GetIsUnappliedUpdate());
+    EXPECT_GE(entry.GetBaseVersion(), 0);
+    EXPECT_GE(entry.GetServerVersion(), 0);
   }
 }
 

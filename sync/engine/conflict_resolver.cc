@@ -116,6 +116,8 @@ void ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
   // f) Otherwise, it's in general safer to ignore local changes, with the
   //    exception of deletion conflicts (choose to undelete) and conflicts
   //    where the non_unique_name or parent don't match.
+  // e) Except for the case of extensions and apps, where we want uninstalls to
+  //    win over local modifications to avoid "back from the dead" reinstalls.
   if (!entry.GetServerIsDel()) {
     // TODO(nick): The current logic is arbitrary; instead, it ought to be made
     // consistent with the ModelAssociator behavior for a datatype.  It would
@@ -228,28 +230,42 @@ void ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
     // specifics.
     entry.PutBaseServerSpecifics(sync_pb::EntitySpecifics());
   } else {  // SERVER_IS_DEL is true
-    if (entry.GetIsDir()) {
-      Directory::Metahandles children;
-      trans->directory()->GetChildHandlesById(trans,
-                                              entry.GetId(),
-                                              &children);
-      // If a server deleted folder has local contents it should be a hierarchy
-      // conflict.  Hierarchy conflicts should not be processed by this
-      // function.
-      DCHECK(children.empty());
-    }
+    ModelType type = entry.GetModelType();
+    if (type == EXTENSIONS || type == APPS) {
+      // Ignore local changes for extensions/apps when server had a delete, to
+      // avoid unwanted reinstall of an uninstalled extension.
+      DVLOG(1) << "Resolving simple conflict, ignoring local changes for "
+               << "extension/app: " << entry;
+      conflict_util::IgnoreLocalChanges(&entry);
+      status->increment_num_local_overwrites();
+      counters->num_local_overwrites++;
+      UMA_HISTOGRAM_ENUMERATION("Sync.ResolveSimpleConflict",
+                                OVERWRITE_LOCAL,
+                                CONFLICT_RESOLUTION_SIZE);
+    } else {
+      if (entry.GetIsDir()) {
+        Directory::Metahandles children;
+        trans->directory()->GetChildHandlesById(trans,
+                                                entry.GetId(),
+                                                &children);
+        // If a server deleted folder has local contents it should be a
+        // hierarchy conflict.  Hierarchy conflicts should not be processed by
+        // this function.
+        DCHECK(children.empty());
+      }
 
-    // The entry is deleted on the server but still exists locally.
-    // We undelete it by overwriting the server's tombstone with the local
-    // data.
-    conflict_util::OverwriteServerChanges(&entry);
-    status->increment_num_server_overwrites();
-    counters->num_server_overwrites++;
-    DVLOG(1) << "Resolving simple conflict, undeleting server entry: "
-             << entry;
-    UMA_HISTOGRAM_ENUMERATION("Sync.ResolveSimpleConflict",
-                              UNDELETE,
-                              CONFLICT_RESOLUTION_SIZE);
+      // The entry is deleted on the server but still exists locally.
+      // We undelete it by overwriting the server's tombstone with the local
+      // data.
+      conflict_util::OverwriteServerChanges(&entry);
+      status->increment_num_server_overwrites();
+      counters->num_server_overwrites++;
+      DVLOG(1) << "Resolving simple conflict, undeleting server entry: "
+               << entry;
+      UMA_HISTOGRAM_ENUMERATION("Sync.ResolveSimpleConflict",
+                                UNDELETE,
+                                CONFLICT_RESOLUTION_SIZE);
+    }
   }
 }
 
