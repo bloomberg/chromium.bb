@@ -65,6 +65,9 @@ class MEDIA_EXPORT MediaCodecUtil {
   static bool IsHLSPath(const GURL& url);
 
   static bool RegisterMediaCodecUtil(JNIEnv* env);
+
+  // Indicates if the vp8 decoder is available on this device.
+  static bool IsVp8DecoderAvailable();
 };
 
 }  // namespace media

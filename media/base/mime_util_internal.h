@@ -11,6 +11,7 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
+#include "media/base/media_export.h"
 #include "media/base/mime_util.h"
 
 namespace media {
@@ -18,7 +19,7 @@ namespace internal {
 
 // Internal utility class for handling mime types.  Should only be invoked by
 // tests and the functions within mime_util.cc -- NOT for direct use by others.
-class MimeUtil {
+class MEDIA_EXPORT MimeUtil {
  public:
   MimeUtil();
   ~MimeUtil();
@@ -41,7 +42,20 @@ class MimeUtil {
     HEVC_MAIN,
     VP8,
     VP9,
-    THEORA
+    THEORA,
+    LAST_CODEC = THEORA
+  };
+
+  // Platform configuration structure.  Controls which codecs are supported at
+  // runtime.  Also used by tests to simulate platform differences.
+  struct PlatformInfo {
+    bool has_platform_decoders = false;
+
+    bool has_platform_vp8_decoder = false;
+    bool supports_opus = false;
+    bool supports_vp9 = false;
+
+    bool is_unified_media_pipeline_enabled = false;
   };
 
   // See mime_util.h for more information on these methods.
@@ -49,11 +63,22 @@ class MimeUtil {
   void ParseCodecString(const std::string& codecs,
                         std::vector<std::string>* codecs_out,
                         bool strip);
-  SupportsType IsSupportedMediaFormat(
-      const std::string& mime_type,
-      const std::vector<std::string>& codecs) const;
+  SupportsType IsSupportedMediaFormat(const std::string& mime_type,
+                                      const std::vector<std::string>& codecs,
+                                      bool is_encrypted) const;
 
   void RemoveProprietaryMediaTypesAndCodecs();
+
+  // Checks special platform specific codec restrictions. Returns true if
+  // |codec| is supported when contained in |mime_type_lower_case|.
+  // |is_encrypted| means the codec will be used with encrypted blocks.
+  // |platform_info| describes the availability of various platform features;
+  // see PlatformInfo for more details.
+  static bool IsCodecSupportedOnPlatform(
+      Codec codec,
+      const std::string& mime_type_lower_case,
+      bool is_encrypted,
+      const PlatformInfo& platform_info);
 
  private:
   typedef base::hash_set<int> CodecSet;
@@ -69,13 +94,16 @@ class MimeUtil {
   // For faster lookup, keep hash sets.
   void InitializeMimeTypeMaps();
 
-  // Returns IsSupported if all codec IDs in |codecs| are unambiguous
-  // and are supported by the platform. MayBeSupported is returned if
-  // at least one codec ID in |codecs| is ambiguous but all the codecs
-  // are supported by the platform. IsNotSupported is returned if at
-  // least one codec ID  is not supported by the platform.
+  // Returns IsSupported if all codec IDs in |codecs| are unambiguous and are
+  // supported in |mime_type_lower_case|. MayBeSupported is returned if at least
+  // one codec ID in |codecs| is ambiguous but all the codecs are supported.
+  // IsNotSupported is returned if |mime_type_lower_case| is not supported or at
+  // least one is not supported in |mime_type_lower_case|. |is_encrypted| means
+  // the codec will be used with encrypted blocks.
   SupportsType AreSupportedCodecs(const CodecSet& supported_codecs,
-                                  const std::vector<std::string>& codecs) const;
+                                  const std::vector<std::string>& codecs,
+                                  const std::string& mime_type_lower_case,
+                                  bool is_encrypted) const;
 
   // Converts a codec ID into an Codec enum value and indicates
   // whether the conversion was ambiguous.
@@ -89,10 +117,13 @@ class MimeUtil {
                      Codec* codec,
                      bool* is_ambiguous) const;
 
-  // Returns true if |codec| is supported by the platform.
-  // Note: This method will return false if the platform supports proprietary
-  // codecs but |allow_proprietary_codecs_| is set to false.
-  bool IsCodecSupported(Codec codec) const;
+  // Returns true if |codec| is supported when contained in
+  // |mime_type_lower_case|. Note: This method will always return false for
+  // proprietary codecs if |allow_proprietary_codecs_| is set to false.
+  // |is_encrypted| means the codec will be used with encrypted blocks.
+  bool IsCodecSupported(Codec codec,
+                        const std::string& mime_type_lower_case,
+                        bool is_encrypted) const;
 
   // Returns true if |codec| refers to a proprietary codec.
   bool IsCodecProprietary(Codec codec) const;
@@ -105,12 +136,13 @@ class MimeUtil {
 
   // Returns true if |mime_type_lower_case| has a default codec associated with
   // it and IsCodecSupported() returns true for that particular codec.
-  bool IsDefaultCodecSupportedLowerCase(
-      const std::string& mime_type_lower_case) const;
+  // |is_encrypted| means the codec will be used with encrypted blocks.
+  bool IsDefaultCodecSupportedLowerCase(const std::string& mime_type_lower_case,
+                                        bool is_encrypted) const;
 
 #if defined(OS_ANDROID)
-  // Checks special Android only codec restrictions.
-  bool IsCodecSupportedOnAndroid(Codec codec) const;
+  // Indicates the support of various codecs within the platform.
+  PlatformInfo platform_info_;
 #endif
 
   // A map of mime_types and hash map of the supported codecs for the mime_type.

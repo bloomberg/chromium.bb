@@ -8,11 +8,13 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "media/base/media.h"
 #include "media/base/video_codecs.h"
 #include "media/media_features.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
+#include "media/base/android/media_codec_util.h"
 #endif
 
 namespace media {
@@ -266,6 +268,22 @@ static bool ParseHEVCCodecID(const std::string& codec_id,
 #endif
 
 MimeUtil::MimeUtil() : allow_proprietary_codecs_(false) {
+#if defined(OS_ANDROID)
+  platform_info_.is_unified_media_pipeline_enabled =
+      IsUnifiedMediaPipelineEnabled();
+  // When the unified media pipeline is enabled, we need support for both GPU
+  // video decoders and MediaCodec; indicated by HasPlatformDecoderSupport().
+  // When the Android pipeline is used, we only need access to MediaCodec.
+  platform_info_.has_platform_decoders =
+      platform_info_.is_unified_media_pipeline_enabled
+          ? HasPlatformDecoderSupport()
+          : MediaCodecUtil::IsMediaCodecAvailable();
+  platform_info_.has_platform_vp8_decoder =
+      MediaCodecUtil::IsVp8DecoderAvailable();
+  platform_info_.supports_opus = PlatformHasOpusSupport();
+  platform_info_.supports_vp9 = PlatformHasVp9Support();
+#endif
+
   InitializeMimeTypeMaps();
 }
 
@@ -273,7 +291,9 @@ MimeUtil::~MimeUtil() {}
 
 SupportsType MimeUtil::AreSupportedCodecs(
     const CodecSet& supported_codecs,
-    const std::vector<std::string>& codecs) const {
+    const std::vector<std::string>& codecs,
+    const std::string& mime_type_lower_case,
+    bool is_encrypted) const {
   DCHECK(!supported_codecs.empty());
   DCHECK(!codecs.empty());
 
@@ -284,7 +304,7 @@ SupportsType MimeUtil::AreSupportedCodecs(
     if (!StringToCodec(codecs[i], &codec, &is_ambiguous))
       return IsNotSupported;
 
-    if (!IsCodecSupported(codec) ||
+    if (!IsCodecSupported(codec, mime_type_lower_case, is_encrypted) ||
         supported_codecs.find(codec) == supported_codecs.end()) {
       return IsNotSupported;
     }
@@ -361,7 +381,8 @@ void MimeUtil::ParseCodecString(const std::string& codecs,
 
 SupportsType MimeUtil::IsSupportedMediaFormat(
     const std::string& mime_type,
-    const std::vector<std::string>& codecs) const {
+    const std::vector<std::string>& codecs,
+    bool is_encrypted) const {
   const std::string mime_type_lower_case = base::ToLowerASCII(mime_type);
   MediaFormatMappings::const_iterator it_media_format_map =
       media_format_map_.find(mime_type_lower_case);
@@ -370,8 +391,8 @@ SupportsType MimeUtil::IsSupportedMediaFormat(
 
   if (it_media_format_map->second.empty()) {
     // We get here if the mimetype does not expect a codecs parameter.
-    return (codecs.empty() &&
-            IsDefaultCodecSupportedLowerCase(mime_type_lower_case))
+    return (codecs.empty() && IsDefaultCodecSupportedLowerCase(
+                                  mime_type_lower_case, is_encrypted))
                ? IsSupported
                : IsNotSupported;
   }
@@ -385,7 +406,9 @@ SupportsType MimeUtil::IsSupportedMediaFormat(
     if (!GetDefaultCodecLowerCase(mime_type_lower_case, &default_codec))
       return MayBeSupported;
 
-    return IsCodecSupported(default_codec) ? IsSupported : IsNotSupported;
+    return IsCodecSupported(default_codec, mime_type_lower_case, is_encrypted)
+               ? IsSupported
+               : IsNotSupported;
   }
 
 #if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
@@ -394,11 +417,13 @@ SupportsType MimeUtil::IsSupportedMediaFormat(
     for (const auto& codec_id : codecs) {
       codecs_to_check.push_back(TranslateLegacyAvc1CodecIds(codec_id));
     }
-    return AreSupportedCodecs(it_media_format_map->second, codecs_to_check);
+    return AreSupportedCodecs(it_media_format_map->second, codecs_to_check,
+                              mime_type_lower_case, is_encrypted);
   }
 #endif
 
-  return AreSupportedCodecs(it_media_format_map->second, codecs);
+  return AreSupportedCodecs(it_media_format_map->second, codecs,
+                            mime_type_lower_case, is_encrypted);
 }
 
 void MimeUtil::RemoveProprietaryMediaTypesAndCodecs() {
@@ -406,6 +431,125 @@ void MimeUtil::RemoveProprietaryMediaTypesAndCodecs() {
     if (kFormatCodecMappings[i].format_type == PROPRIETARY)
       media_format_map_.erase(kFormatCodecMappings[i].mime_type);
   allow_proprietary_codecs_ = false;
+}
+
+// static
+bool MimeUtil::IsCodecSupportedOnPlatform(
+    Codec codec,
+    const std::string& mime_type_lower_case,
+    bool is_encrypted,
+    const PlatformInfo& platform_info) {
+  DCHECK_NE(mime_type_lower_case, "");
+
+  // Encrypted block support is never available without platform decoders.
+  if (is_encrypted && !platform_info.has_platform_decoders)
+    return false;
+
+  // NOTE: We do not account for Media Source Extensions (MSE) within these
+  // checks since it has its own isTypeSupported() which will handle platform
+  // specific codec rejections.  See http://crbug.com/587303.
+
+  switch (codec) {
+    // ----------------------------------------------------------------------
+    // The following codecs are never supported.
+    // ----------------------------------------------------------------------
+    case INVALID_CODEC:
+    case AC3:
+    case EAC3:
+    case THEORA:
+      return false;
+
+    // ----------------------------------------------------------------------
+    // The remaining codecs may be supported depending on platform abilities.
+    // ----------------------------------------------------------------------
+
+    case PCM:
+    case MP3:
+    case MPEG4_AAC_LC:
+    case MPEG4_AAC_SBR_v1:
+    case MPEG4_AAC_SBR_PS_v2:
+    case VORBIS:
+      // These codecs are always supported; via a platform decoder (when used
+      // with MSE/EME), a software decoder (the unified pipeline), or with
+      // MediaPlayer.
+      DCHECK(!is_encrypted || platform_info.has_platform_decoders);
+      return true;
+
+    case MPEG2_AAC_LC:
+    case MPEG2_AAC_MAIN:
+    case MPEG2_AAC_SSR:
+      // MPEG-2 variants of AAC are not supported on Android unless the unified
+      // media pipeline can be used. These codecs will be decoded in software.
+      return !is_encrypted && platform_info.is_unified_media_pipeline_enabled;
+
+    case OPUS:
+      // If clear, the unified pipeline can always decode Opus in software.
+      if (!is_encrypted && platform_info.is_unified_media_pipeline_enabled)
+        return true;
+
+      // Otherwise, platform support is required.
+      if (!platform_info.supports_opus)
+        return false;
+
+      // MediaPlayer does not support Opus in ogg containers.
+      if (base::EndsWith(mime_type_lower_case, "ogg",
+                         base::CompareCase::SENSITIVE)) {
+        return false;
+      }
+
+      DCHECK(!is_encrypted || platform_info.has_platform_decoders);
+      return true;
+
+    case H264:
+      // The unified pipeline requires platform support for h264.
+      if (platform_info.is_unified_media_pipeline_enabled)
+        return platform_info.has_platform_decoders;
+
+      // When MediaPlayer or MediaCodec is used, h264 is always supported.
+      DCHECK(!is_encrypted || platform_info.has_platform_decoders);
+      return true;
+
+    case HEVC_MAIN:
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+      if (platform_info.is_unified_media_pipeline_enabled &&
+          !platform_info.has_platform_decoders) {
+        return false;
+      }
+
+#if defined(OS_ANDROID)
+      // HEVC/H.265 is supported in Lollipop+ (API Level 21), according to
+      // http://developer.android.com/reference/android/media/MediaFormat.html
+      return base::android::BuildInfo::GetInstance()->sdk_int() >= 21;
+#else
+      return true;
+#endif  // defined(OS_ANDROID)
+#else
+      return false;
+#endif  // BUILDFLAG(ENABLE_HEVC_DEMUXING)
+
+    case VP8:
+      // If clear, the unified pipeline can always decode VP8 in software.
+      if (!is_encrypted && platform_info.is_unified_media_pipeline_enabled)
+        return true;
+
+      if (is_encrypted)
+        return platform_info.has_platform_vp8_decoder;
+
+      // MediaPlayer can always play VP8. Note: This is incorrect for MSE, but
+      // MSE does not use this code. http://crbug.com/587303.
+      return true;
+
+    case VP9: {
+      // If clear, the unified pipeline can always decode VP9 in software.
+      if (!is_encrypted && platform_info.is_unified_media_pipeline_enabled)
+        return true;
+
+      // Otherwise, platform support is required.
+      return platform_info.supports_vp9;
+    }
+  }
+
+  return false;
 }
 
 bool MimeUtil::StringToCodec(const std::string& codec_id,
@@ -444,12 +588,16 @@ bool MimeUtil::StringToCodec(const std::string& codec_id,
   return false;
 }
 
-bool MimeUtil::IsCodecSupported(Codec codec) const {
+bool MimeUtil::IsCodecSupported(Codec codec,
+                                const std::string& mime_type_lower_case,
+                                bool is_encrypted) const {
   DCHECK_NE(codec, INVALID_CODEC);
 
 #if defined(OS_ANDROID)
-  if (!IsCodecSupportedOnAndroid(codec))
+  if (!IsCodecSupportedOnPlatform(codec, mime_type_lower_case, is_encrypted,
+                                  platform_info_)) {
     return false;
+  }
 #endif
 
   return allow_proprietary_codecs_ || !IsCodecProprietary(codec);
@@ -501,64 +649,13 @@ bool MimeUtil::GetDefaultCodecLowerCase(const std::string& mime_type_lower_case,
 }
 
 bool MimeUtil::IsDefaultCodecSupportedLowerCase(
-    const std::string& mime_type_lower_case) const {
+    const std::string& mime_type_lower_case,
+    bool is_encrypted) const {
   Codec default_codec = Codec::INVALID_CODEC;
   if (!GetDefaultCodecLowerCase(mime_type_lower_case, &default_codec))
     return false;
-  return IsCodecSupported(default_codec);
+  return IsCodecSupported(default_codec, mime_type_lower_case, is_encrypted);
 }
-
-#if defined(OS_ANDROID)
-bool MimeUtil::IsCodecSupportedOnAndroid(Codec codec) const {
-  switch (codec) {
-    case INVALID_CODEC:
-      return false;
-
-    case PCM:
-    case MP3:
-    case MPEG4_AAC_LC:
-    case MPEG4_AAC_SBR_v1:
-    case MPEG4_AAC_SBR_PS_v2:
-    case VORBIS:
-    case H264:
-    case VP8:
-      return true;
-
-    case AC3:
-    case EAC3:
-      // TODO(servolk): Revisit this for AC3/EAC3 support on AndroidTV
-      return false;
-
-    case MPEG2_AAC_LC:
-    case MPEG2_AAC_MAIN:
-    case MPEG2_AAC_SSR:
-      // MPEG-2 variants of AAC are not supported on Android.
-      return false;
-
-    case OPUS:
-      // Opus is supported only in Lollipop+ (API Level 21).
-      return base::android::BuildInfo::GetInstance()->sdk_int() >= 21;
-
-    case HEVC_MAIN:
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
-      // HEVC/H.265 is supported in Lollipop+ (API Level 21), according to
-      // http://developer.android.com/reference/android/media/MediaFormat.html
-      return base::android::BuildInfo::GetInstance()->sdk_int() >= 21;
-#else
-      return false;
-#endif
-
-    case VP9:
-      // VP9 is supported only in KitKat+ (API Level 19).
-      return base::android::BuildInfo::GetInstance()->sdk_int() >= 19;
-
-    case THEORA:
-      return false;
-  }
-
-  return false;
-}
-#endif
 
 }  // namespace internal
 }  // namespace media

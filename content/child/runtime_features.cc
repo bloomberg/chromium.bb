@@ -31,9 +31,8 @@ namespace content {
 
 static void SetRuntimeFeatureDefaultsForPlatform() {
 #if defined(OS_ANDROID)
-  // MSE/EME implementation needs Android MediaCodec API.
+  // EME implementation needs Android MediaCodec API.
   if (!media::MediaCodecUtil::IsMediaCodecAvailable()) {
-    WebRuntimeFeatures::enableMediaSource(false);
     WebRuntimeFeatures::enablePrefixedEncryptedMedia(false);
     WebRuntimeFeatures::enableEncryptedMedia(false);
   }

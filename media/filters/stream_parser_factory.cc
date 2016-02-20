@@ -14,6 +14,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "media/base/media.h"
 #include "media/base/media_switches.h"
 #include "media/formats/mpeg/adts_stream_parser.h"
 #include "media/formats/mpeg/mpeg1_audio_stream_parser.h"
@@ -21,7 +22,7 @@
 #include "media/media_features.h"
 
 #if defined(OS_ANDROID)
-#include "base/android/build_info.h"
+#include "media/base/android/media_codec_util.h"
 #endif
 
 #if defined(USE_PROPRIETARY_CODECS)
@@ -330,14 +331,30 @@ static bool VerifyCodec(
       return true;
     case CodecInfo::VIDEO:
 #if defined(OS_ANDROID)
-      // VP9 is only supported on KitKat+ (API Level 19).
-      if (codec_info->tag == CodecInfo::HISTOGRAM_VP9 &&
-          base::android::BuildInfo::GetInstance()->sdk_int() < 19) {
+      // TODO(wolenetz, dalecurtis): This should instead use MimeUtil() to avoid
+      // duplication of subtle Android behavior.  http://crbug.com/587303.
+      if (codec_info->tag == CodecInfo::HISTOGRAM_H264) {
+        if (media::IsUnifiedMediaPipelineEnabledForMse() &&
+            !media::HasPlatformDecoderSupport()) {
+          return false;
+        }
+
+        if (!MediaCodecUtil::IsMediaCodecAvailable())
+          return false;
+      }
+      if (codec_info->tag == CodecInfo::HISTOGRAM_VP8 &&
+          !media::MediaCodecUtil::IsVp8DecoderAvailable() &&
+          !media::IsUnifiedMediaPipelineEnabledForMse()) {
         return false;
       }
-      // Opus is only supported on Lollipop+ (API Level 21).
+      if (codec_info->tag == CodecInfo::HISTOGRAM_VP9 &&
+          !media::PlatformHasVp9Support() &&
+          !media::IsUnifiedMediaPipelineEnabledForMse()) {
+        return false;
+      }
       if (codec_info->tag == CodecInfo::HISTOGRAM_OPUS &&
-          base::android::BuildInfo::GetInstance()->sdk_int() < 21) {
+          !media::PlatformHasOpusSupport() &&
+          !media::IsUnifiedMediaPipelineEnabledForMse()) {
         return false;
       }
 #endif

@@ -19,7 +19,15 @@ bool IsSupportedMediaMimeType(const std::string& mime_type) {
 
 SupportsType IsSupportedMediaFormat(const std::string& mime_type,
                                     const std::vector<std::string>& codecs) {
-  return g_media_mime_util.Pointer()->IsSupportedMediaFormat(mime_type, codecs);
+  return g_media_mime_util.Pointer()->IsSupportedMediaFormat(mime_type, codecs,
+                                                             false);
+}
+
+SupportsType IsSupportedEncryptedMediaFormat(
+    const std::string& mime_type,
+    const std::vector<std::string>& codecs) {
+  return g_media_mime_util.Pointer()->IsSupportedMediaFormat(mime_type, codecs,
+                                                             true);
 }
 
 void ParseCodecString(const std::string& codecs,

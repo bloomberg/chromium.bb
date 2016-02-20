@@ -275,7 +275,11 @@ class MediaCodecUtil {
      * @param mime MIME type as passed to mediaCodec.createDecoderByType(mime).
      * @return true if this codec is supported for decoder on this device.
      */
-    private static boolean isDecoderSupportedForDevice(String mime) {
+    @CalledByNative
+    static boolean isDecoderSupportedForDevice(String mime) {
+        // *************************************************************
+        // *** DO NOT ADD ANY NEW CODECS WITHOUT UPDATING MIME_UTIL. ***
+        // *************************************************************
         if (mime.equals("video/x-vnd.on2.vp8")) {
             // Some Samsung devices cannot render VP8 video directly to the surface.
             if (Build.MANUFACTURER.toLowerCase(Locale.getDefault()).equals("samsung")) {
@@ -297,7 +301,9 @@ class MediaCodecUtil {
                 }
             }
         }
-
+        // *************************************************************
+        // *** DO NOT ADD ANY NEW CODECS WITHOUT UPDATING MIME_UTIL. ***
+        // *************************************************************
         return true;
     }
 

@@ -282,7 +282,7 @@ bool IsSupportedClearMediaFormat(const std::string& container_mime_type,
   std::vector<std::string> codec_vector;
   media::ParseCodecString(codecs, &codec_vector, false);
   media::SupportsType support_result =
-      media::IsSupportedMediaFormat(container_mime_type, codec_vector);
+      media::IsSupportedEncryptedMediaFormat(container_mime_type, codec_vector);
   switch (support_result) {
     case media::IsSupported:
       return true;

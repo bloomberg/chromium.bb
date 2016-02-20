@@ -131,6 +131,7 @@
 #include "gin/modules/module_registry.h"
 #include "media/audio/audio_output_device.h"
 #include "media/base/audio_renderer_mixer_input.h"
+#include "media/base/media.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/blink/url_index.h"
@@ -747,42 +748,29 @@ bool IsContentWithCertificateErrorsRelevantToUI(
 }
 
 #if defined(OS_ANDROID)
-// Returns true if WMPI must be used for playback because WMPA will not work.
-bool MustUseWebMediaPlayerImpl(blink::WebMediaPlayer::LoadType load_type,
-                               const GURL& url) {
-  // WMPA can't play MSE if MediaCodec is unavailable. In this case WMPI may
-  // still work (via libvpx).
-  return (load_type == blink::WebMediaPlayer::LoadTypeMediaSource &&
-          !media::MediaCodecUtil::IsMediaCodecAvailable());
-}
-
-// Returns true if WMPI can be used for playback, false if it may not work.
+// Returns true if WMPI should be used for playback, false otherwise.
 //
-// Note that HLS and WebM detection are pre-redirect and path-based. It is
+// Note that HLS and MP4 detection are pre-redirect and path-based. It is
 // possible to load such a URL and find different content.
-bool CanUseWebMediaPlayerImpl(blink::WebMediaPlayer::LoadType load_type,
-                              const GURL& url) {
-  if (MustUseWebMediaPlayerImpl(load_type, url))
-    return true;
+bool UseWebMediaPlayerImpl(blink::WebMediaPlayer::LoadType load_type,
+                           const GURL& url) {
+  if (load_type == blink::WebMediaPlayer::LoadTypeMediaSource)
+    return media::IsUnifiedMediaPipelineEnabledForMse();
 
   // WMPI does not support HLS.
   if (media::MediaCodecUtil::IsHLSPath(url))
     return false;
 
-  // Otherwise --enable-unified-media-pipeline always enables WMPI.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableUnifiedMediaPipeline)) {
-    return true;
+  // Don't use WMPI if the container likely contains a codec we can't decode in
+  // software and hardware decoders are not available.
+  if (base::EndsWith(url.path(), ".mp4",
+                     base::CompareCase::INSENSITIVE_ASCII) &&
+      !media::HasPlatformDecoderSupport()) {
+    return false;
   }
 
-  // WMPI can always play WebM (via libvpx).
-  if (base::EndsWith(url.path(), ".webm", base::CompareCase::INSENSITIVE_ASCII))
-    return true;
-
-  // Otherwise, WMPI can only be used if AVDA is working.
-  return (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kDisableAcceleratedVideoDecode) &&
-          media::MediaCodecUtil::IsMediaCodecAvailable());
+  // Otherwise enable WMPI if indicated via experiment or command line.
+  return media::IsUnifiedMediaPipelineEnabled();
 }
 #endif  // defined(OS_ANDROID)
 
@@ -2503,27 +2491,8 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
       GetMediaPermission(), initial_cdm, media_surface_manager_);
 
 #if defined(OS_ANDROID)
-  if (!CanUseWebMediaPlayerImpl(load_type, url)) {
+  if (!UseWebMediaPlayerImpl(load_type, url))
     return CreateAndroidWebMediaPlayer(client, encrypted_client, params);
-  } else if (!MustUseWebMediaPlayerImpl(load_type, url)) {
-    // TODO(dalecurtis): This experiment is temporary and should be removed once
-    // we have enough data to support the primacy of the unified media pipeline;
-    // see http://crbug.com/533190 for details.
-    //
-    // Note: It's important to query the field trial state first, to ensure that
-    // UMA reports the correct group.
-    const std::string group_name =
-        base::FieldTrialList::FindFullName("UnifiedMediaPipelineTrial");
-    const bool enabled_via_cli =
-        base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableUnifiedMediaPipeline);
-    const bool enable_unified_media_pipeline =
-        enabled_via_cli ||
-        base::StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE);
-
-    if (!enable_unified_media_pipeline)
-      return CreateAndroidWebMediaPlayer(client, encrypted_client, params);
-  }
 #endif  // defined(OS_ANDROID)
 
 #if defined(ENABLE_MOJO_RENDERER)

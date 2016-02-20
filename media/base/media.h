@@ -8,6 +8,7 @@
 #ifndef MEDIA_BASE_MEDIA_H_
 #define MEDIA_BASE_MEDIA_H_
 
+#include "build/build_config.h"
 #include "media/base/media_export.h"
 
 namespace base {
@@ -19,6 +20,33 @@ namespace media {
 // Initializes media libraries (e.g. ffmpeg) as well as CPU specific media
 // features.
 MEDIA_EXPORT void InitializeMediaLibrary();
+
+#if defined(OS_ANDROID)
+// Tells the media library it has support for OS level decoders. Should only be
+// used for actual decoders (e.g. MediaCodec) and not full-featured players
+// (e.g. MediaPlayer).
+MEDIA_EXPORT void EnablePlatformDecoderSupport();
+MEDIA_EXPORT bool HasPlatformDecoderSupport();
+
+// Indicates if the platform supports Opus or VP9. Determined *ONLY* by the
+// platform version, so does not guarantee that either can actually be played.
+MEDIA_EXPORT bool PlatformHasOpusSupport();
+MEDIA_EXPORT bool PlatformHasVp9Support();
+
+// Returns true if the unified media pipeline is enabled; the pipeline may still
+// not work for all codecs if HasPlatformDecoderSupport() is false. Please see
+// MimeUtil for an exhaustive listing of supported codecs.
+//
+// TODO(dalecurtis): These methods are temporary and should be removed once the
+// unified media pipeline is supported everywhere.  http://crbug.com/580626.
+MEDIA_EXPORT bool IsUnifiedMediaPipelineEnabled();
+
+// Similar to IsUnifiedMediaPipelineEnabled() but will also return true if
+// MediaCodec is not available (allowing the unified pipeline to take over for
+// cases where existing pipeline has no support). As above, codecs requiring
+// platform support may not be available.
+MEDIA_EXPORT bool IsUnifiedMediaPipelineEnabledForMse();
+#endif
 
 }  // namespace media
 

@@ -245,4 +245,14 @@ bool MediaCodecUtil::RegisterMediaCodecUtil(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
+// static
+bool MediaCodecUtil::IsVp8DecoderAvailable() {
+  if (!IsMediaCodecAvailable())
+    return false;
+
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> j_mime = ConvertUTF8ToJavaString(env, "vp8");
+  return Java_MediaCodecUtil_isDecoderSupportedForDevice(env, j_mime.obj());
+}
+
 }  // namespace media

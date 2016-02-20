@@ -172,6 +172,7 @@
 #include "content/renderer/android/synchronous_compositor_filter.h"
 #include "content/renderer/media/android/renderer_demuxer_android.h"
 #include "content/renderer/media/android/stream_texture_factory_impl.h"
+#include "media/base/android/media_codec_util.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -808,6 +809,13 @@ void RenderThreadImpl::Init() {
   // Note that under Linux, the media library will normally already have
   // been initialized by the Zygote before this instance became a Renderer.
   media::InitializeMediaLibrary();
+
+#if defined(OS_ANDROID)
+  if (!command_line.HasSwitch(switches::kDisableAcceleratedVideoDecode) &&
+      media::MediaCodecUtil::IsMediaCodecAvailable()) {
+    media::EnablePlatformDecoderSupport();
+  }
+#endif
 
   memory_pressure_listener_.reset(new base::MemoryPressureListener(
       base::Bind(&RenderThreadImpl::OnMemoryPressure, base::Unretained(this))));

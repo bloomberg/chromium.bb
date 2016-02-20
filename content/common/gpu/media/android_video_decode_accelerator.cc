@@ -22,9 +22,11 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
+#include "media/base/android/media_codec_util.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/limits.h"
+#include "media/base/media.h"
 #include "media/base/media_switches.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_decoder_config.h"
@@ -1005,15 +1007,19 @@ AndroidVideoDecodeAccelerator::GetCapabilities() {
 
   SupportedProfile profile;
 
-  profile.profile = media::VP8PROFILE_ANY;
-  profile.min_resolution.SetSize(0, 0);
-  profile.max_resolution.SetSize(1920, 1088);
-  profiles.push_back(profile);
+  if (media::MediaCodecUtil::IsVp8DecoderAvailable()) {
+    profile.profile = media::VP8PROFILE_ANY;
+    profile.min_resolution.SetSize(0, 0);
+    profile.max_resolution.SetSize(1920, 1088);
+    profiles.push_back(profile);
+  }
 
-  profile.profile = media::VP9PROFILE_ANY;
-  profile.min_resolution.SetSize(0, 0);
-  profile.max_resolution.SetSize(1920, 1088);
-  profiles.push_back(profile);
+  if (media::PlatformHasVp9Support()) {
+    profile.profile = media::VP9PROFILE_ANY;
+    profile.min_resolution.SetSize(0, 0);
+    profile.max_resolution.SetSize(1920, 1088);
+    profiles.push_back(profile);
+  }
 
   for (const auto& supported_profile : kSupportedH264Profiles) {
     SupportedProfile profile;
