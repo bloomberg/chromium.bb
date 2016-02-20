@@ -4,13 +4,14 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/hardware-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/image-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
+<link rel="import" href="chrome://md-settings/device_page/touchpad.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_animated_pages.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_subheader.html">
-<link rel="import" href="chrome://md-settings/device_page/touchpad.html">
+<link rel="import" href="chrome://md-settings/settings_shared_css.html">
 
 <dom-module id="settings-device-page">
-  <link rel="import" type="css" href="chrome://md-settings/settings_shared.css">
   <template>
+    <style include="settings-shared"></style>
     <settings-animated-pages id="pages" section="device"
         current-route="{{currentRoute}}">
       <neon-animatable id="main">
