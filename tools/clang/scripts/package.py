@@ -81,7 +81,7 @@ def GetGsutilPath():
 
 
 def RunGsutil(args):
-  return subprocess.call([GetGsutilPath()] + args)
+  return subprocess.call([sys.executable, GetGsutilPath()] + args)
 
 
 def GsutilArchiveExists(archive_name, platform):
@@ -106,7 +106,7 @@ def MaybeUpload(args, archive_name, platform):
       os.exit(exit_code)
   else:
     print 'To upload, run:'
-    print ('gsutil %s' % string.join(gsutil_args, ' '))
+    print ('gsutil %s' % ' '.join(gsutil_args))
 
 
 def main():
