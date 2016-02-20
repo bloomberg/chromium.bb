@@ -55,6 +55,8 @@ class NativeViewGLSurfaceOSMesa : public GLSurfaceOSMesa {
 // Helper routine that does one-off initialization like determining the
 // pixel format.
 bool GLSurface::InitializeOneOffInternal() {
+  VSyncProviderWin::InitializeOneOff();
+
   switch (GetGLImplementation()) {
     case kGLImplementationDesktopGL:
       if (!GLSurfaceWGL::InitializeOneOff()) {

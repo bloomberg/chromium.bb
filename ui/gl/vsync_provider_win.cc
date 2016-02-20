@@ -13,12 +13,29 @@
 
 namespace gfx {
 
+namespace {
+bool g_use_dwm_vsync;
+}  // namespace
+
 VSyncProviderWin::VSyncProviderWin(gfx::AcceleratedWidget window)
     : window_(window) {
-  use_dwm_ = (base::win::GetVersion() >= base::win::VERSION_WIN7);
 }
 
 VSyncProviderWin::~VSyncProviderWin() {}
+
+// static
+void VSyncProviderWin::InitializeOneOff() {
+  static bool initialized = false;
+  if (initialized)
+    return;
+  initialized = true;
+  g_use_dwm_vsync = (base::win::GetVersion() >= base::win::VERSION_WIN7);
+
+  if (g_use_dwm_vsync) {
+    // Prewarm sandbox
+    ::LoadLibrary(L"dwmapi.dll");
+  }
+}
 
 void VSyncProviderWin::GetVSyncParameters(const UpdateVSyncCallback& callback) {
   TRACE_EVENT0("gpu", "WinVSyncProvider::GetVSyncParameters");
@@ -29,7 +46,7 @@ void VSyncProviderWin::GetVSyncParameters(const UpdateVSyncCallback& callback) {
 
   // Query the DWM timing info first if available. This will provide the most
   // precise values.
-  if (use_dwm_) {
+  if (g_use_dwm_vsync) {
     DWM_TIMING_INFO timing_info;
     timing_info.cbSize = sizeof(timing_info);
     HRESULT result = DwmGetCompositionTimingInfo(NULL, &timing_info);

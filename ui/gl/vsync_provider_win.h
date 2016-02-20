@@ -13,12 +13,13 @@ class GL_EXPORT VSyncProviderWin : public VSyncProvider {
   explicit VSyncProviderWin(gfx::AcceleratedWidget window);
   ~VSyncProviderWin() override;
 
+  static void InitializeOneOff();
+
   // VSyncProvider overrides;
   void GetVSyncParameters(const UpdateVSyncCallback& callback) override;
 
  private:
   gfx::AcceleratedWidget window_;
-  bool use_dwm_;
 
   DISALLOW_COPY_AND_ASSIGN(VSyncProviderWin);
 };
