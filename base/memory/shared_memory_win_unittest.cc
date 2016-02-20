@@ -15,6 +15,7 @@
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/win_util.h"
 #include "testing/multiprocess_func_list.h"
 
 namespace base {
@@ -84,7 +85,7 @@ win::ScopedHandle ReadHandleFromPipe(HANDLE pipe) {
 
 // Writes a HANDLE to a pipe as a raw int, least significant digit first.
 void WriteHandleToPipe(HANDLE pipe, HANDLE handle) {
-  uint32_t handle_as_int = reinterpret_cast<uint32_t>(handle);
+  uint32_t handle_as_int = base::win::HandleToUint32(handle);
 
   scoped_ptr<char, base::FreeDeleter> buffer(static_cast<char*>(malloc(1000)));
   size_t index = 0;
