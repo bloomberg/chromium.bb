@@ -10,32 +10,9 @@
 #include "content/common/mojo/service_registry_impl.h"
 #include "content/public/common/service_registry.h"
 #include "mojo/edk/js/handle.h"
-#include "v8/include/v8.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace content {
-
-namespace {
-
-struct JsFactoryDeleter {
-  inline void operator()(v8::Persistent<v8::Function>* ptr) const {
-    ptr->Reset();
-    delete ptr;
-  }
-};
-
-using ScopedJsFactory =
-    scoped_ptr<v8::Persistent<v8::Function>, JsFactoryDeleter>;
-
-void CallJsFactory(ScopedJsFactory factory,
-                   mojo::ScopedMessagePipeHandle pipe) {
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
-  v8::Local<v8::Value> argv[] = {
-    gin::ConvertToV8(isolate, mojo::Handle(pipe.release().value()))
-  };
-  factory->Get(isolate)->Call(v8::Undefined(isolate), 1, argv);
-}
-
-}  // namespace
 
 gin::WrapperInfo ServiceRegistryJsWrapper::kWrapperInfo = {
     gin::kEmbedderNativeGin};
@@ -48,10 +25,12 @@ ServiceRegistryJsWrapper::~ServiceRegistryJsWrapper() {
 // static
 gin::Handle<ServiceRegistryJsWrapper> ServiceRegistryJsWrapper::Create(
     v8::Isolate* isolate,
+    v8::Handle<v8::Context> context,
     ServiceRegistry* service_registry) {
   return gin::CreateHandle(
       isolate,
       new ServiceRegistryJsWrapper(
+          isolate, context,
           static_cast<ServiceRegistryImpl*>(service_registry)->GetWeakPtr()));
 }
 
@@ -80,16 +59,45 @@ void ServiceRegistryJsWrapper::AddServiceOverrideForTesting(
       static_cast<ServiceRegistryImpl*>(service_registry_.get());
   if (!registry)
     return;
-  ScopedJsFactory factory(
-      new v8::Persistent<v8::Function>(v8::Isolate::GetCurrent(),
-                                       service_factory));
+  ScopedJsFactory factory(v8::Isolate::GetCurrent(), service_factory);
   registry->AddServiceOverrideForTesting(
-      service_name, base::Bind(&CallJsFactory, base::Passed(&factory)));
+      service_name, base::Bind(&ServiceRegistryJsWrapper::CallJsFactory,
+                               weak_factory_.GetWeakPtr(), factory));
 }
 
 ServiceRegistryJsWrapper::ServiceRegistryJsWrapper(
+    v8::Isolate* isolate,
+    v8::Handle<v8::Context> context,
     base::WeakPtr<ServiceRegistry> service_registry)
-    : service_registry_(service_registry) {
+    : isolate_(isolate),
+      context_(isolate, context),
+      service_registry_(service_registry),
+      weak_factory_(this) {
+  context_.SetWeak(this, &ServiceRegistryJsWrapper::ClearContext,
+                   v8::WeakCallbackType::kParameter);
+}
+
+void ServiceRegistryJsWrapper::CallJsFactory(
+    const ScopedJsFactory& factory,
+    mojo::ScopedMessagePipeHandle pipe) {
+  if (context_.IsEmpty())
+    return;
+
+  v8::HandleScope handle_scope(isolate_);
+  v8::Handle<v8::Context> context = context_.Get(isolate_);
+  v8::Context::Scope context_scope(context);
+  v8::Local<v8::Value> argv[] = {
+      gin::ConvertToV8(isolate_, mojo::Handle(pipe.release().value()))};
+  blink::WebLocalFrame::frameForContext(context)
+      ->callFunctionEvenIfScriptDisabled(factory.Get(isolate_),
+                                         v8::Undefined(isolate_), 1, argv);
+}
+
+// static
+void ServiceRegistryJsWrapper::ClearContext(
+    const v8::WeakCallbackInfo<ServiceRegistryJsWrapper>& data) {
+  ServiceRegistryJsWrapper* service_registry = data.GetParameter();
+  service_registry->context_.Reset();
 }
 
 }  // namespace content

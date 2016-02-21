@@ -12,11 +12,8 @@
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
-#include "mojo/public/cpp/system/handle.h"
-
-namespace v8 {
-class Isolate;
-}
+#include "mojo/public/cpp/system/message_pipe.h"
+#include "v8/include/v8.h"
 
 namespace content {
 
@@ -30,6 +27,7 @@ class CONTENT_EXPORT ServiceRegistryJsWrapper
   ~ServiceRegistryJsWrapper() override;
   static gin::Handle<ServiceRegistryJsWrapper> Create(
       v8::Isolate* isolate,
+      v8::Handle<v8::Context> context,
       ServiceRegistry* service_registry);
 
   // gin::Wrappable<ServiceRegistryJsWrapper> overrides.
@@ -45,10 +43,24 @@ class CONTENT_EXPORT ServiceRegistryJsWrapper
   static const char kModuleName[];
 
  private:
-  explicit ServiceRegistryJsWrapper(
-      base::WeakPtr<ServiceRegistry> service_registry);
+  using ScopedJsFactory =
+      v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function>>;
 
+  ServiceRegistryJsWrapper(v8::Isolate* isolate,
+                           v8::Handle<v8::Context> context,
+                           base::WeakPtr<ServiceRegistry> service_registry);
+
+  void CallJsFactory(const ScopedJsFactory& factory,
+                     mojo::ScopedMessagePipeHandle pipe);
+
+  static void ClearContext(
+      const v8::WeakCallbackInfo<ServiceRegistryJsWrapper>& data);
+
+  v8::Isolate* isolate_;
+  v8::Global<v8::Context> context_;
   base::WeakPtr<ServiceRegistry> service_registry_;
+
+  base::WeakPtrFactory<ServiceRegistryJsWrapper> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceRegistryJsWrapper);
 };

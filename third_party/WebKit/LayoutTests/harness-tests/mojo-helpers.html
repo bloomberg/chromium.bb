@@ -16,11 +16,16 @@ mojo_test(mojo => {
 
 mojo_test(mojo => {
   return new Promise(resolve => {
-    // Complete the test as soon as a request comes in for a Frobinator service.
-    mojo.serviceRegistry.addServiceOverrideForTesting('Frobinator', resolve);
+    let calls = 0;
+    // Complete the test as soon as two requests come in for a Frobinator service.
+    mojo.serviceRegistry.addServiceOverrideForTesting('Frobinator', () => {
+      if (++calls == 2)
+        resolve();
+    });
 
     // Try to connect to the browser's Frobinator service. This should be
     // intercepted by the above override.
+    mojo.serviceRegistry.connectToService('Frobinator');
     mojo.serviceRegistry.connectToService('Frobinator');
   });
 }, 'Service registry overrides should be properly intercepted.');

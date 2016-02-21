@@ -2382,9 +2382,9 @@ void RenderFrameImpl::EnsureMojoBuiltinsAreAvailable(
   registry->AddBuiltinModule(isolate, mojo::edk::js::Support::kModuleName,
                              mojo::edk::js::Support::GetModule(isolate));
   registry->AddBuiltinModule(
-      isolate,
-      ServiceRegistryJsWrapper::kModuleName,
-      ServiceRegistryJsWrapper::Create(isolate, &service_registry_).ToV8());
+      isolate, ServiceRegistryJsWrapper::kModuleName,
+      ServiceRegistryJsWrapper::Create(isolate, context, &service_registry_)
+          .ToV8());
 }
 
 void RenderFrameImpl::AddMessageToConsole(ConsoleMessageLevel level,
