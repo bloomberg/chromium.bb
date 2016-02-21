@@ -162,7 +162,8 @@ Surface* Surface::AsSurface(aura::Window* window) {
 }
 
 void Surface::Attach(Buffer* buffer) {
-  TRACE_EVENT1("exo", "Surface::Attach", "buffer", buffer->AsTracedValue());
+  TRACE_EVENT1("exo", "Surface::Attach", "buffer",
+               buffer ? buffer->GetSize().ToString() : "null");
 
   has_pending_contents_ = true;
   pending_buffer_ = buffer ? buffer->AsWeakPtr() : base::WeakPtr<Buffer>();
