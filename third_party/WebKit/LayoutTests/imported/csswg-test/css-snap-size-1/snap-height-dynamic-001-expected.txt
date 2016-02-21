@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL CSS Snap Size: snap-height dynamic change assert_not_equals: Height must change when snap-height changes got disallowed value 28
+Harness: the test ran to completion.
+
