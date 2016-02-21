@@ -40,17 +40,9 @@
 namespace blink {
 namespace testing {
 
-class QuitTask : public WebTaskRunner::Task {
-public:
-    virtual void run()
-    {
-        exitRunLoop();
-    }
-};
-
 void runPendingTasks()
 {
-    Platform::current()->currentThread()->taskRunner()->postTask(BLINK_FROM_HERE, new QuitTask);
+    Platform::current()->currentThread()->taskRunner()->postTask(BLINK_FROM_HERE, bind(&exitRunLoop));
     enterRunLoop();
 }
 
@@ -66,10 +58,10 @@ String blinkRootDir()
 PassRefPtr<SharedBuffer> readFromFile(const String& path)
 {
     StringUTF8Adaptor utf8(path);
-    base::FilePath file_path = base::FilePath::FromUTF8Unsafe(
+    base::FilePath filePath = base::FilePath::FromUTF8Unsafe(
         std::string(utf8.data(), utf8.length()));
     std::string buffer;
-    base::ReadFileToString(file_path, &buffer);
+    base::ReadFileToString(filePath, &buffer);
     return SharedBuffer::create(buffer.data(), buffer.size());
 }
 
