@@ -336,7 +336,7 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
                          [
                            remoting_srcs_gypi_values.daemon_controller_guid,
                            remoting_srcs_gypi_values.rdp_desktop_session_guid,
-                           version_full,
+                           chrome_version_full,
                          ],
                          "value")
     daemon_controller_clsid = clsids[0]

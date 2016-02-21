@@ -75,6 +75,20 @@ group("remoting_all") {
   }
 }
 
+if (is_win) {
+  # GYP version: remoting/remoting_host_win.gypi:remoting_breakpad_tester
+  executable("remoting_breakpad_tester") {
+    deps = [
+      "//base",
+      "//remoting/host",
+    ]
+
+    sources = [
+      "tools/breakpad_tester_win.cc",
+    ]
+  }
+}
+
 # GYP version: remoting/remoting_test.gypi:remoting_test_support
 source_set("test_support") {
   testonly = true
