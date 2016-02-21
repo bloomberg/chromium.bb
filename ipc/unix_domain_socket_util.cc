@@ -24,37 +24,24 @@ static_assert(sizeof(((sockaddr_un*)0)->sun_path) >= kMaxSocketNameLength,
 
 namespace {
 
-// Returns fd (>= 0) on success, -1 on failure. If successful, fills in
+// Returns true on success, false otherwise. If successful, fills in
 // |unix_addr| with the appropriate data for the socket, and sets
 // |unix_addr_len| to the length of the data therein.
-int MakeUnixAddrForPath(const std::string& socket_name,
-                        struct sockaddr_un* unix_addr,
-                        size_t* unix_addr_len) {
+bool MakeUnixAddrForPath(const std::string& socket_name,
+                         struct sockaddr_un* unix_addr,
+                         size_t* unix_addr_len) {
   DCHECK(unix_addr);
   DCHECK(unix_addr_len);
 
   if (socket_name.length() == 0) {
     LOG(ERROR) << "Empty socket name provided for unix socket address.";
-    return -1;
+    return false;
   }
   // We reject socket_name.length() == kMaxSocketNameLength to make room for
   // the NUL terminator at the end of the string.
   if (socket_name.length() >= kMaxSocketNameLength) {
     LOG(ERROR) << "Socket name too long: " << socket_name;
-    return -1;
-  }
-
-  // Create socket.
-  base::ScopedFD fd(socket(AF_UNIX, SOCK_STREAM, 0));
-  if (!fd.is_valid()) {
-    PLOG(ERROR) << "socket";
-    return -1;
-  }
-
-  // Make socket non-blocking
-  if (!base::SetNonBlocking(fd.get())) {
-    PLOG(ERROR) << "base::SetNonBlocking() failed " << fd.get();
-    return -1;
+    return false;
   }
 
   // Create unix_addr structure.
@@ -63,7 +50,25 @@ int MakeUnixAddrForPath(const std::string& socket_name,
   strncpy(unix_addr->sun_path, socket_name.c_str(), kMaxSocketNameLength);
   *unix_addr_len =
       offsetof(struct sockaddr_un, sun_path) + socket_name.length();
-  return fd.release();
+  return true;
+}
+
+// Returns a valid socket on success.
+base::ScopedFD CreateUnixDomainSocket() {
+  // Create socket.
+  base::ScopedFD fd(socket(AF_UNIX, SOCK_STREAM, 0));
+  if (!fd.is_valid()) {
+    PLOG(ERROR) << "Failed to create AF_UNIX socket.";
+    return base::ScopedFD();
+  }
+
+  // Make socket non-blocking.
+  if (!base::SetNonBlocking(fd.get())) {
+    PLOG(ERROR) << "base::SetNonBlocking() failed " << fd.get();
+    return base::ScopedFD();
+  }
+
+  return fd;
 }
 
 bool IsRecoverableError() {
@@ -80,8 +85,9 @@ bool CreateServerUnixDomainSocket(const base::FilePath& socket_path,
   const std::string socket_name = socket_path.value();
   struct sockaddr_un unix_addr;
   size_t unix_addr_len;
-  base::ScopedFD fd(
-      MakeUnixAddrForPath(socket_name, &unix_addr, &unix_addr_len));
+  if (!MakeUnixAddrForPath(socket_name, &unix_addr, &unix_addr_len))
+    return false;
+  base::ScopedFD fd(CreateUnixDomainSocket());
   if (!fd.is_valid())
     return false;
 
@@ -122,8 +128,9 @@ bool CreateClientUnixDomainSocket(const base::FilePath& socket_path,
 
   struct sockaddr_un unix_addr;
   size_t unix_addr_len;
-  base::ScopedFD fd(
-      MakeUnixAddrForPath(socket_path.value(), &unix_addr, &unix_addr_len));
+  if (!MakeUnixAddrForPath(socket_path.value(), &unix_addr, &unix_addr_len))
+    return false;
+  base::ScopedFD fd(CreateUnixDomainSocket());
   if (!fd.is_valid())
     return false;
 
