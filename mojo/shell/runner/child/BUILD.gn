@@ -55,7 +55,6 @@ source_set("test_native_main") {
   deps = [
     "//base",
     "//mojo/edk/system",
-    "//mojo/gles2",
     "//mojo/message_pump",
     "//mojo/shell/public/cpp",
     "//mojo/shell/runner/child:lib",
@@ -87,7 +86,6 @@ mojo_native_application("apptests") {
     ":apptest_interfaces",
     "//base",
     "//base/test:test_config",
-    "//mojo/common:common_base",
     "//mojo/shell/public/cpp:sources",
     "//mojo/shell/public/cpp:test_support",
   ]
@@ -111,7 +109,6 @@ executable("native_target") {
     ":test_native_main",
     "//base",
     "//build/config/sanitizers:deps",
-    "//mojo/common:common_base",
     "//mojo/shell/public/cpp",
   ]
 }

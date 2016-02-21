@@ -15,13 +15,6 @@ executable("standalone") {
     ":lib",
     "//base",
     "//build/config/sanitizers:deps",
-    "//components/tracing:startup_tracing",
-    "//mojo/common",
-    "//mojo/environment:chromium",
-    "//mojo/message_pump",
-    "//mojo/shell/runner/common",
-    "//mojo/shell/runner/host:lib",
-    "//third_party/icu:icudata",
   ]
 }
 
@@ -48,17 +41,8 @@ source_set("lib") {
     "//mojo/services/tracing/public/interfaces",
     "//mojo/shell",
     "//mojo/shell/public/cpp",
-    "//mojo/shell/runner:init",
-    "//mojo/shell/runner/child:interfaces",
     "//mojo/shell/runner/host:lib",
-    "//mojo/util:filename_util",
-    "//ui/gl",
     "//url",
-  ]
-
-  public_deps = [
-    "//mojo/shell",
-    "//mojo/shell/runner:init",
   ]
 
   if (!is_component_build) {

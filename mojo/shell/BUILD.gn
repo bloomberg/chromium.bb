@@ -10,7 +10,6 @@ group("all") {
   deps = [
     ":shell",
     "//mojo/shell/background",
-    "//mojo/shell/background",
     "//mojo/shell/runner",
     "//mojo/shell/standalone",
     "//mojo/shell/tests",
@@ -38,22 +37,15 @@ source_set("shell") {
     "switches.h",
   ]
 
-  public_deps = [
+  deps = [
     "//base",
+    "//base/third_party/dynamic_annotations",
     "//mojo/common",
     "//mojo/public/cpp/bindings",
-    "//mojo/services/package_manager/public/interfaces",
-    "//mojo/services/updater",
-    "//mojo/shell/public/interfaces",
-    "//url",
-  ]
-  deps = [
-    "//base/third_party/dynamic_annotations",
-    "//crypto:crypto",
-    "//mojo/edk/system",
-    "//mojo/environment:chromium",
     "//mojo/services/package_manager:lib",
+    "//mojo/services/package_manager/public/interfaces",
     "//mojo/shell/public/cpp:sources",
+    "//mojo/shell/public/interfaces",
     "//mojo/util:filename_util",
     "//url",
   ]
