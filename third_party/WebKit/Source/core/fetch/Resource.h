@@ -336,7 +336,6 @@ private:
     class CacheHandler;
     void cancelTimerFired(Timer<Resource>*);
 
-    void switchClientsToRevalidatedResource();
     void revalidationSucceeded(const ResourceResponse&);
     void revalidationFailed();
 

@@ -141,7 +141,6 @@ public:
 
     String getCacheIdentifier() const;
 
-    void scheduleDocumentResourcesGC();
     bool clientDefersImage(const KURL&) const;
     static void determineRequestContext(ResourceRequest&, Resource::Type, bool isMainFrame);
     void determineRequestContext(ResourceRequest&, Resource::Type);
@@ -181,8 +180,6 @@ private:
     void reloadImagesIfNotDeferred();
 
     void willTerminateResourceLoader(ResourceLoader*);
-
-    ResourceLoadPriority modifyPriorityForExperiments(ResourceLoadPriority, Resource::Type, const FetchRequest&);
 
     Member<FetchContext> m_context;
 
