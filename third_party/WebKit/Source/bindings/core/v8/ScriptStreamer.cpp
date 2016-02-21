@@ -231,7 +231,7 @@ public:
 
         // Inform main thread to re-queue the data.
         m_loadingTaskRunner->postTask(
-            BLINK_FROM_HERE, bind(&SourceStream::fetchDataFromResourceBuffer, this, 0));
+            BLINK_FROM_HERE, threadSafeBind(&SourceStream::fetchDataFromResourceBuffer, AllowCrossThreadAccess(this), 0));
     }
 
     void didFinishLoading()

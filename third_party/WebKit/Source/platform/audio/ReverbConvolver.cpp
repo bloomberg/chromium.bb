@@ -28,6 +28,7 @@
 
 #include "platform/audio/ReverbConvolver.h"
 #include "platform/Task.h"
+#include "platform/ThreadSafeFunctional.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/VectorMath.h"
 #include "public/platform/Platform.h"
@@ -168,7 +169,7 @@ void ReverbConvolver::process(const AudioChannel* sourceChannel, AudioChannel* d
 
     // Now that we've buffered more input, post another task to the background thread.
     if (m_backgroundThread)
-        m_backgroundThread->taskRunner()->postTask(BLINK_FROM_HERE, new Task(WTF::bind(&ReverbConvolver::processInBackground, this)));
+        m_backgroundThread->taskRunner()->postTask(BLINK_FROM_HERE, new Task(threadSafeBind(&ReverbConvolver::processInBackground, AllowCrossThreadAccess(this))));
 }
 
 void ReverbConvolver::reset()
