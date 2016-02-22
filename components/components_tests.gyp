@@ -1672,6 +1672,7 @@
               'policy/android/junit/',
               'web_restrictions/junit/'
             ],
+            'wrapper_script_name': 'helper/<(_target_name)',
           },
           'includes': [ '../build/host_jar.gypi' ],
         },

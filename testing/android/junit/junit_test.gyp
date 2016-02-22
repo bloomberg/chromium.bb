@@ -34,6 +34,7 @@
         'src_paths': [
           'javatests/src',
         ],
+        'wrapper_script_name': 'helper/<(_target_name)',
       },
       'includes': [
         '../../../build/host_jar.gypi',
