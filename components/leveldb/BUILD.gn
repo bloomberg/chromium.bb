@@ -9,12 +9,12 @@ source_set("lib") {
   sources = [
     "env_mojo.cc",
     "env_mojo.h",
-    "leveldb_app.cc",
-    "leveldb_app.h",
     "leveldb_database_impl.cc",
     "leveldb_database_impl.h",
     "leveldb_file_thread.cc",
     "leveldb_file_thread.h",
+    "leveldb_service_impl.cc",
+    "leveldb_service_impl.h",
     "util.cc",
     "util.h",
   ]
@@ -25,7 +25,6 @@ source_set("lib") {
     "//mojo/common",
     "//mojo/message_pump",
     "//mojo/platform_handle",
-    "//mojo/services/tracing/public/cpp",
     "//mojo/shell/public/cpp",
     "//third_party/leveldatabase",
   ]
@@ -33,17 +32,21 @@ source_set("lib") {
 
 mojo_native_application("leveldb") {
   sources = [
+    "leveldb_app.cc",
+    "leveldb_app.h",
     "main.cc",
   ]
 
   deps = [
     ":lib",
     ":manifest",
+    "//components/leveldb/public/interfaces",
     "//mojo/common",
     "//mojo/environment:chromium",
     "//mojo/platform_handle:for_shared_library",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
+    "//mojo/services/tracing/public/cpp",
     "//mojo/shell/public/cpp",
   ]
 }

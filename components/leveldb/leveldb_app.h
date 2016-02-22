@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_LEVELDB_LEVELDB_APP_H_
 #define COMPONENTS_LEVELDB_LEVELDB_APP_H_
 
-#include "components/leveldb/leveldb_file_thread.h"
 #include "components/leveldb/public/interfaces/leveldb.mojom.h"
 #include "mojo/public/cpp/bindings/weak_binding_set.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
@@ -15,8 +14,7 @@
 namespace leveldb {
 
 class LevelDBApp : public mojo::ShellClient,
-                   public mojo::InterfaceFactory<LevelDBService>,
-                   public LevelDBService {
+                   public mojo::InterfaceFactory<LevelDBService> {
  public:
   LevelDBApp();
   ~LevelDBApp() override;
@@ -35,19 +33,9 @@ class LevelDBApp : public mojo::ShellClient,
   void Create(mojo::Connection* connection,
               mojo::InterfaceRequest<LevelDBService> request) override;
 
-  // Overridden from LevelDBService:
-  void Open(filesystem::DirectoryPtr directory,
-            const mojo::String& dbname,
-            mojo::InterfaceRequest<LevelDBDatabase> database,
-            const OpenCallback& callback) override;
-
   mojo::TracingImpl tracing_;
+  scoped_ptr<LevelDBService> service_;
   mojo::WeakBindingSet<LevelDBService> bindings_;
-
-  // Thread to own the mojo message pipe. Because leveldb spawns multiple
-  // threads that want to call file stuff, we create a dedicated thread to send
-  // and receive mojo message calls.
-  scoped_refptr<LevelDBFileThread> thread_;
 
   DISALLOW_COPY_AND_ASSIGN(LevelDBApp);
 };

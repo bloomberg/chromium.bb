@@ -4,15 +4,8 @@
 
 #include "components/leveldb/leveldb_app.h"
 
-#include "components/leveldb/env_mojo.h"
-#include "components/leveldb/leveldb_database_impl.h"
-#include "components/leveldb/util.h"
+#include "components/leveldb/leveldb_service_impl.h"
 #include "mojo/shell/public/cpp/connection.h"
-#include "third_party/leveldatabase/env_chromium.h"
-#include "third_party/leveldatabase/src/include/leveldb/db.h"
-#include "third_party/leveldatabase/src/include/leveldb/env.h"
-#include "third_party/leveldatabase/src/include/leveldb/filter_policy.h"
-#include "third_party/leveldatabase/src/include/leveldb/slice.h"
 
 namespace leveldb {
 
@@ -24,7 +17,7 @@ void LevelDBApp::Initialize(mojo::Shell* shell,
                             const std::string& url,
                             uint32_t id) {
   tracing_.Initialize(shell, url);
-  thread_ = new LevelDBFileThread;
+  service_.reset(new LevelDBServiceImpl);
 }
 
 bool LevelDBApp::AcceptConnection(mojo::Connection* connection) {
@@ -34,41 +27,7 @@ bool LevelDBApp::AcceptConnection(mojo::Connection* connection) {
 
 void LevelDBApp::Create(mojo::Connection* connection,
                         mojo::InterfaceRequest<LevelDBService> request) {
-  bindings_.AddBinding(this, std::move(request));
-}
-
-void LevelDBApp::Open(filesystem::DirectoryPtr directory,
-                      const mojo::String& dbname,
-                      mojo::InterfaceRequest<LevelDBDatabase> database,
-                      const OpenCallback& callback) {
-  // This is the place where we open a database.
-  leveldb::Options options;
-  options.create_if_missing = true;
-  options.paranoid_checks = true;
-  // TODO(erg): Do we need a filter policy?
-  options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
-  options.compression = leveldb::kSnappyCompression;
-
-  // For info about the troubles we've run into with this parameter, see:
-  // https://code.google.com/p/chromium/issues/detail?id=227313#c11
-  options.max_open_files = 80;
-
-  // Register our directory with the file thread.
-  LevelDBFileThread::OpaqueDir* dir =
-      thread_->RegisterDirectory(std::move(directory));
-
-  scoped_ptr<MojoEnv> env_mojo(new MojoEnv(thread_, dir));
-  options.env = env_mojo.get();
-
-  leveldb::DB* db = nullptr;
-  leveldb::Status s = leveldb::DB::Open(options, dbname.To<std::string>(), &db);
-
-  if (s.ok()) {
-    new LevelDBDatabaseImpl(std::move(database), std::move(env_mojo),
-                            scoped_ptr<leveldb::DB>(db));
-  }
-
-  callback.Run(LeveldbStatusToError(s));
+  bindings_.AddBinding(service_.get(), std::move(request));
 }
 
 }  // namespace leveldb
