@@ -4,7 +4,7 @@
 
 #include "core/paint/NinePieceImagePainter.h"
 
-#include "core/frame/UseCounter.h"
+#include "core/frame/Deprecation.h"
 #include "core/layout/ImageQualityController.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/paint/BoxPainter.h"
@@ -41,7 +41,7 @@ bool NinePieceImagePainter::paint(GraphicsContext& graphicsContext, const Layout
         || (style.borderRightWidth() && (style.borderRight().style() == BNONE || style.borderRight().style() == BHIDDEN))
         || (style.borderTopWidth() && (style.borderTop().style() == BNONE || style.borderTop().style() == BHIDDEN))
         || (style.borderBottomWidth() && (style.borderBottom().style() == BNONE || style.borderBottom().style() == BHIDDEN)))
-        UseCounter::count(m_layoutObject.document(), UseCounter::BorderImageWithBorderStyleNone);
+        Deprecation::countDeprecation(m_layoutObject.document(), UseCounter::BorderImageWithBorderStyleNone);
 
     // FIXME: border-image is broken with full page zooming when tiling has to happen, since the tiling function
     // doesn't have any understanding of the zoom that is in effect on the tile.
