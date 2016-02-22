@@ -839,7 +839,7 @@ class TestMain(NetTestCase):
         '')
     expected = [
       (
-        'foo.json',
+        u'foo.json',
         {
           'base_task_name': 'unit_tests',
           'tasks': {
@@ -848,6 +848,32 @@ class TestMain(NetTestCase):
               'task_id': '12300',
               'view_url': 'https://localhost:1/user/task/12300',
             }
+          },
+          'request': {
+            'expiration_secs': 3600,
+            'name': 'unit_tests',
+            'parent_task_id': '',
+            'priority': 101,
+            'properties': {
+              'command': None,
+              'dimensions': [
+                {'key': 'foo', 'value': 'bar'},
+                {'key': 'os', 'value': 'Mac'},
+              ],
+              'env': [],
+              'execution_timeout_secs': 60,
+              'extra_args': ['--some-arg', '123'],
+              'grace_period_secs': 30,
+              'idempotent': True,
+              'inputs_ref': {
+                'isolated': isolated_hash,
+                'isolatedserver': 'https://localhost:2',
+                'namespace': 'default-gzip',
+                },
+              'io_timeout_secs': 60,
+            },
+            'tags': ['tag:a', 'tag:b'],
+            'user': 'joe@localhost',
           },
         },
         True,
@@ -916,6 +942,65 @@ class TestMain(NetTestCase):
           '[-- extra_args|raw command]'
         '\n\n'
         'swarming.py: error: Please at least specify one --dimension\n')
+
+  def test_collect_default_json(self):
+    j = os.path.join(self.tempdir, 'foo.json')
+    data = {
+      'base_task_name': 'unit_tests',
+      'tasks': {
+        'unit_tests': {
+          'shard_index': 0,
+          'task_id': '12300',
+          'view_url': 'https://localhost:1/user/task/12300',
+        }
+      },
+      'request': {
+        'expiration_secs': 3600,
+        'name': 'unit_tests',
+        'parent_task_id': '',
+        'priority': 101,
+        'properties': {
+          'command': None,
+          'dimensions': [
+            {'key': 'foo', 'value': 'bar'},
+            {'key': 'os', 'value': 'Mac'},
+          ],
+          'env': [],
+          'execution_timeout_secs': 60,
+          'extra_args': ['--some-arg', '123'],
+          'grace_period_secs': 30,
+          'idempotent': True,
+          'inputs_ref': {
+            'isolated': '1'*40,
+            'isolatedserver': 'https://localhost:2',
+            'namespace': 'default-gzip',
+            },
+          'io_timeout_secs': 60,
+        },
+        'tags': ['tag:a', 'tag:b'],
+        'user': 'joe@localhost',
+      },
+    }
+    with open(j, 'wb') as f:
+      json.dump(data, f)
+    def stub_collect(
+        swarming_server, task_ids, timeout, decorate, print_status_updates,
+        task_summary_json, task_output_dir):
+      self.assertEqual('https://host', swarming_server)
+      self.assertEqual([u'12300'], task_ids)
+      # It is automatically calculated from hard timeout + expiration + 10.
+      self.assertEqual(3670., timeout)
+      self.assertEqual(True, decorate)
+      self.assertEqual(True, print_status_updates)
+      self.assertEqual('/a', task_summary_json)
+      self.assertEqual('/b', task_output_dir)
+      print('Fake output')
+    self.mock(swarming, 'collect', stub_collect)
+    main(
+        ['collect', '--swarming', 'https://host', '--json', j, '--decorate',
+          '--print-status-updates', '--task-summary-json', '/a',
+          '--task-output-dir', '/b'])
+    self._check_output('Fake output\n', '')
 
   def test_query_base(self):
     self.expected_requests(

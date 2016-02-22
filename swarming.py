@@ -179,7 +179,7 @@ def namedtuple_to_dict(value):
 
 
 def task_request_to_raw_request(task_request):
-  """Returns the json dict expected by the Swarming server for new request.
+  """Returns the json-compatible dict expected by the server for new request.
 
   This is for the v1 client Swarming API.
   """
@@ -502,7 +502,7 @@ def retrieve_results(
     <result dict> on success.
     None on failure.
   """
-  assert isinstance(timeout, float), timeout
+  assert timeout is None or isinstance(timeout, float), timeout
   result_url = '%s/_ah/api/swarming/v1/task/%s/result' % (base_url, task_id)
   output_url = '%s/_ah/api/swarming/v1/task/%s/stdout' % (base_url, task_id)
   started = now()
@@ -953,11 +953,9 @@ def process_trigger_options(parser, options, args):
 
 def add_collect_options(parser):
   parser.server_group.add_option(
-      '-t', '--timeout',
-      type='float',
-      default=80*60.,
-      help='Timeout to wait for result, set to 0 for no timeout; default: '
-           '%default s')
+      '-t', '--timeout', type='float',
+      help='Timeout to wait for result, set to 0 for no timeout; default to no '
+           'wait')
   parser.group_logging.add_option(
       '--decorate', action='store_true', help='Decorate output')
   parser.group_logging.add_option(
@@ -1095,11 +1093,19 @@ def CMDcollect(parser, args):
     options.json = unicode(os.path.abspath(options.json))
     try:
       with fs.open(options.json, 'rb') as f:
-        tasks = sorted(
-            json.load(f)['tasks'].itervalues(), key=lambda x: x['shard_index'])
-        args = [t['task_id'] for t in tasks]
-    except (KeyError, IOError, TypeError, ValueError):
-      parser.error('Failed to parse %s' % options.json)
+        data = json.load(f)
+    except (IOError, ValueError):
+      parser.error('Failed to open %s' % options.json)
+    try:
+      tasks = sorted(
+          data['tasks'].itervalues(), key=lambda x: x['shard_index'])
+      args = [t['task_id'] for t in tasks]
+    except (KeyError, TypeError):
+      parser.error('Failed to process %s' % options.json)
+    if options.timeout is None:
+      options.timeout = (
+          data['request']['properties']['execution_timeout_secs'] +
+          data['request']['expiration_secs'] + 10.)
   else:
     valid = frozenset('0123456789abcdef')
     if any(not valid.issuperset(task_id) for task_id in args):
@@ -1298,6 +1304,10 @@ def CMDrun(parser, args):
     t['task_id']
     for t in sorted(tasks.itervalues(), key=lambda x: x['shard_index'])
   ]
+  if options.timeout is None:
+    options.timeout = (
+        task_request.properties.execution_timeout_secs +
+        task_request.expiration_secs + 10.)
   try:
     return collect(
         options.swarming,
@@ -1435,6 +1445,7 @@ def CMDtrigger(parser, args):
         data = {
           'base_task_name': options.task_name,
           'tasks': tasks,
+          'request': task_request_to_raw_request(task_request),
         }
         tools.write_json(unicode(options.dump_json), data, True)
         print('To collect results, use:')
