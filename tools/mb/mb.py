@@ -27,7 +27,15 @@ import tempfile
 def main(args):
   mbw = MetaBuildWrapper()
   mbw.ParseArgs(args)
-  return mbw.args.func()
+
+  try:
+    ret = mbw.args.func()
+    if ret:
+      mbw.DumpInputFiles()
+    return ret
+  except Exception:
+    mbw.DumpInputFiles()
+    raise
 
 
 class MetaBuildWrapper(object):
@@ -141,6 +149,21 @@ class MetaBuildWrapper(object):
     subp.set_defaults(func=self.CmdHelp)
 
     self.args = parser.parse_args(argv)
+
+  def DumpInputFiles(self):
+
+    def DumpContentsOfFilePassedTo(arg):
+      attr = arg.replace('--', '').replace('-', '_')
+      path = getattr(self.args, attr, '')
+      if path and self.Exists(path):
+        print("\n# To recreate the file passed to %s:" % arg)
+        print("%% cat > %s <<EOF)" % path)
+        contents = self.ReadFile(path)
+        print(contents)
+        print("EOF\n%\n")
+
+    DumpContentsOfFilePassedTo('input_path')
+    DumpContentsOfFilePassedTo('--swarming-targets-file')
 
   def CmdAnalyze(self):
     vals = self.Lookup()
@@ -506,17 +529,28 @@ class MetaBuildWrapper(object):
       # the compile targets listed (one per line) in the file so
       # we can run them via swarming. We use ninja_to_gn.pyl to convert
       # the compile targets to the matching GN labels.
-      contents = self.ReadFile(self.args.swarming_targets_file)
-      swarming_targets = contents.splitlines()
+      path = self.args.swarming_targets_file
+      if not self.Exists(path):
+        self.WriteFailureAndRaise('"%s" does not exist' % path,
+                                  output_path=None)
+      contents = self.ReadFile(path)
+      swarming_targets = set(contents.splitlines())
       gn_isolate_map = ast.literal_eval(self.ReadFile(self.PathJoin(
           self.chromium_src_dir, 'testing', 'buildbot', 'gn_isolate_map.pyl')))
       gn_labels = []
+      err = ''
       for target in swarming_targets:
         target_name = self.GNTargetName(target)
         if not target_name in gn_isolate_map:
-          raise MBErr('test target "%s"  not found in %s' %
-                      (target, '//testing/buildbot/gn_isolate_map.pyl'))
-        gn_labels.append(gn_isolate_map[target_name]['label'])
+          err += ('test target "%s" not found\n' % target_name)
+        elif gn_isolate_map[target_name]['type'] == 'unknown':
+          err += ('test target "%s" type is unknown\n' % target_name)
+        else:
+          gn_labels.append(gn_isolate_map[target_name]['label'])
+
+      if err:
+          raise MBErr('Error: Failed to match swarming targets to %s:\n%s' %
+                      ('//testing/buildbot/gn_isolate_map.pyl', err))
 
       gn_runtime_deps_path = self.ToAbsPath(build_dir, 'runtime_deps')
 
