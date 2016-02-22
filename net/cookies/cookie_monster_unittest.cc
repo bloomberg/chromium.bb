@@ -126,7 +126,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
                                             const CookieOptions& options) {
     DCHECK(cm);
     GetCookieListCallback callback;
-    cm->GetAllCookiesForURLWithOptionsAsync(
+    cm->GetCookieListForURLWithOptionsAsync(
         url, options,
         base::Bind(&GetCookieListCallback::Run, base::Unretained(&callback)));
     callback.WaitUntilDone();
@@ -826,8 +826,8 @@ ACTION_P2(DeleteAllAction, cookie_monster, callback) {
   cookie_monster->DeleteAllAsync(callback->AsCallback());
 }
 
-ACTION_P3(GetAllCookiesForUrlWithOptionsAction, cookie_monster, url, callback) {
-  cookie_monster->GetAllCookiesForURLWithOptionsAsync(url, CookieOptions(),
+ACTION_P3(GetCookieListForUrlWithOptionsAction, cookie_monster, url, callback) {
+  cookie_monster->GetCookieListForURLWithOptionsAsync(url, CookieOptions(),
                                                       callback->AsCallback());
 }
 
@@ -1137,14 +1137,14 @@ TEST_F(DeferredCookieTaskTest, DeferredGetAllForUrlWithOptionsCookies) {
   MockGetCookieListCallback get_cookie_list_callback;
 
   BeginWithForDomainKey(http_www_google_.domain(),
-                        GetAllCookiesForUrlWithOptionsAction(
+                        GetCookieListForUrlWithOptionsAction(
                             &cookie_monster(), http_www_google_.url(),
                             &get_cookie_list_callback));
 
   WaitForLoadCall();
 
   EXPECT_CALL(get_cookie_list_callback, Invoke(testing::_))
-      .WillOnce(GetAllCookiesForUrlWithOptionsAction(
+      .WillOnce(GetCookieListForUrlWithOptionsAction(
           &cookie_monster(), http_www_google_.url(),
           &get_cookie_list_callback));
   base::RunLoop loop;
@@ -1372,12 +1372,33 @@ TEST_F(CookieMonsterTest, TestLastAccess) {
   // Reading the cookie again immediately shouldn't update the access date,
   // since we're inside the threshold.
   EXPECT_EQ("A=B", GetCookies(cm.get(), http_www_google_.url()));
-  EXPECT_TRUE(last_access_date == GetFirstCookieAccessDate(cm.get()));
+  EXPECT_EQ(last_access_date, GetFirstCookieAccessDate(cm.get()));
 
-  // Reading after a short wait should update the access date.
+  // Reading after a short wait will update the access date, if the cookie
+  // is requested with options that would update the access date. First, test
+  // that the flag's behavior is respected.
   base::PlatformThread::Sleep(
       base::TimeDelta::FromMilliseconds(kAccessDelayMs));
-  EXPECT_EQ("A=B", GetCookies(cm.get(), http_www_google_.url()));
+  CookieOptions options;
+  options.set_do_not_update_access_time();
+  EXPECT_EQ("A=B",
+            GetCookiesWithOptions(cm.get(), http_www_google_.url(), options));
+  EXPECT_EQ(last_access_date, GetFirstCookieAccessDate(cm.get()));
+
+  // Getting all cookies for a URL doesn't update the accessed time either.
+  CookieList cookies = GetAllCookiesForURL(cm.get(), http_www_google_.url());
+  CookieList::iterator it = cookies.begin();
+  ASSERT_TRUE(it != cookies.end());
+  EXPECT_EQ(http_www_google_.host(), it->Domain());
+  EXPECT_EQ("A", it->Name());
+  EXPECT_EQ("B", it->Value());
+  EXPECT_EQ(last_access_date, GetFirstCookieAccessDate(cm.get()));
+  EXPECT_TRUE(++it == cookies.end());
+
+  // If the flag isn't set, the last accessed time should be updated.
+  options = CookieOptions();
+  EXPECT_EQ("A=B",
+            GetCookiesWithOptions(cm.get(), http_www_google_.url(), options));
   EXPECT_FALSE(last_access_date == GetFirstCookieAccessDate(cm.get()));
 }
 
@@ -1481,7 +1502,7 @@ TEST_F(CookieMonsterTest, GetAllCookiesForURL) {
   ASSERT_TRUE(++it == cookies.end());
 
   // Reading after a short wait should not update the access date.
-  EXPECT_TRUE(last_access_date == GetFirstCookieAccessDate(cm.get()));
+  EXPECT_EQ(last_access_date, GetFirstCookieAccessDate(cm.get()));
 }
 
 TEST_F(CookieMonsterTest, GetAllCookiesForURLPathMatching) {
@@ -2471,7 +2492,7 @@ class MultiThreadedCookieMonsterTest : public CookieMonsterTest {
                                           const GURL& url,
                                           const CookieOptions& options,
                                           GetCookieListCallback* callback) {
-    cm->GetAllCookiesForURLWithOptionsAsync(
+    cm->GetCookieListForURLWithOptionsAsync(
         url, options,
         base::Bind(&GetCookieListCallback::Run, base::Unretained(callback)));
   }

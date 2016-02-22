@@ -522,11 +522,11 @@ void CookieMonster::GetAllCookiesTask::Run() {
   }
 }
 
-// Task class for GetAllCookiesForURLWithOptions call.
-class CookieMonster::GetAllCookiesForURLWithOptionsTask
+// Task class for GetCookieListForURLWithOptionsAsync call.
+class CookieMonster::GetCookieListForURLWithOptionsTask
     : public CookieMonsterTask {
  public:
-  GetAllCookiesForURLWithOptionsTask(CookieMonster* cookie_monster,
+  GetCookieListForURLWithOptionsTask(CookieMonster* cookie_monster,
                                      const GURL& url,
                                      const CookieOptions& options,
                                      const GetCookieListCallback& callback)
@@ -539,20 +539,20 @@ class CookieMonster::GetAllCookiesForURLWithOptionsTask
   void Run() override;
 
  protected:
-  ~GetAllCookiesForURLWithOptionsTask() override {}
+  ~GetCookieListForURLWithOptionsTask() override {}
 
  private:
   GURL url_;
   CookieOptions options_;
   GetCookieListCallback callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(GetAllCookiesForURLWithOptionsTask);
+  DISALLOW_COPY_AND_ASSIGN(GetCookieListForURLWithOptionsTask);
 };
 
-void CookieMonster::GetAllCookiesForURLWithOptionsTask::Run() {
+void CookieMonster::GetCookieListForURLWithOptionsTask::Run() {
   if (!callback_.is_null()) {
     CookieList cookies =
-        this->cookie_monster()->GetAllCookiesForURLWithOptions(url_, options_);
+        this->cookie_monster()->GetCookieListForURLWithOptions(url_, options_);
     this->InvokeCallback(base::Bind(&GetCookieListCallback::Run,
                                     base::Unretained(&callback_), cookies));
   }
@@ -905,12 +905,12 @@ void CookieMonster::SetCookieWithDetailsAsync(
   DoCookieTaskForURL(task, url);
 }
 
-void CookieMonster::GetAllCookiesForURLWithOptionsAsync(
+void CookieMonster::GetCookieListForURLWithOptionsAsync(
     const GURL& url,
     const CookieOptions& options,
     const GetCookieListCallback& callback) {
-  scoped_refptr<GetAllCookiesForURLWithOptionsTask> task =
-      new GetAllCookiesForURLWithOptionsTask(this, url, options, callback);
+  scoped_refptr<GetCookieListForURLWithOptionsTask> task =
+      new GetCookieListForURLWithOptionsTask(this, url, options, callback);
 
   DoCookieTaskForURL(task, url);
 }
@@ -962,8 +962,9 @@ void CookieMonster::GetAllCookiesForURLAsync(
   CookieOptions options;
   options.set_include_httponly();
   options.set_include_same_site();
-  scoped_refptr<GetAllCookiesForURLWithOptionsTask> task =
-      new GetAllCookiesForURLWithOptionsTask(this, url, options, callback);
+  options.set_do_not_update_access_time();
+  scoped_refptr<GetCookieListForURLWithOptionsTask> task =
+      new GetCookieListForURLWithOptionsTask(this, url, options, callback);
 
   DoCookieTaskForURL(task, url);
 }
@@ -1159,13 +1160,13 @@ CookieList CookieMonster::GetAllCookies() {
   return cookie_list;
 }
 
-CookieList CookieMonster::GetAllCookiesForURLWithOptions(
+CookieList CookieMonster::GetCookieListForURLWithOptions(
     const GURL& url,
     const CookieOptions& options) {
   base::AutoLock autolock(lock_);
 
   std::vector<CanonicalCookie*> cookie_ptrs;
-  FindCookiesForHostAndDomain(url, options, false, &cookie_ptrs);
+  FindCookiesForHostAndDomain(url, options, &cookie_ptrs);
   std::sort(cookie_ptrs.begin(), cookie_ptrs.end(), CookieSorter);
 
   CookieList cookies;
@@ -1254,7 +1255,7 @@ std::string CookieMonster::GetCookiesWithOptions(const GURL& url,
     return std::string();
 
   std::vector<CanonicalCookie*> cookies;
-  FindCookiesForHostAndDomain(url, options, true, &cookies);
+  FindCookiesForHostAndDomain(url, options, &cookies);
   std::sort(cookies.begin(), cookies.end(), CookieSorter);
 
   std::string cookie_line = BuildCookieLine(cookies);
@@ -1276,7 +1277,7 @@ void CookieMonster::DeleteCookie(const GURL& url,
   options.set_include_same_site();
   // Get the cookies for this host and its domain(s).
   std::vector<CanonicalCookie*> cookies;
-  FindCookiesForHostAndDomain(url, options, true, &cookies);
+  FindCookiesForHostAndDomain(url, options, &cookies);
   std::set<CanonicalCookie*> matching_cookies;
 
   for (std::vector<CanonicalCookie*>::const_iterator it = cookies.begin();
@@ -1607,7 +1608,6 @@ void CookieMonster::TrimDuplicateCookiesForKey(const std::string& key,
 void CookieMonster::FindCookiesForHostAndDomain(
     const GURL& url,
     const CookieOptions& options,
-    bool update_access_time,
     std::vector<CanonicalCookie*>* cookies) {
   lock_.AssertAcquired();
 
@@ -1620,15 +1620,13 @@ void CookieMonster::FindCookiesForHostAndDomain(
 
   // Can just dispatch to FindCookiesForKey
   const std::string key(GetKey(url.host()));
-  FindCookiesForKey(key, url, options, current_time, update_access_time,
-                    cookies);
+  FindCookiesForKey(key, url, options, current_time, cookies);
 }
 
 void CookieMonster::FindCookiesForKey(const std::string& key,
                                       const GURL& url,
                                       const CookieOptions& options,
                                       const Time& current,
-                                      bool update_access_time,
                                       std::vector<CanonicalCookie*>* cookies) {
   lock_.AssertAcquired();
 
@@ -1652,7 +1650,7 @@ void CookieMonster::FindCookiesForKey(const std::string& key,
 
     // Add this cookie to the set of matching cookies. Update the access
     // time if we've been requested to do so.
-    if (update_access_time) {
+    if (options.update_access_time()) {
       InternalUpdateCookieAccessTime(cc, current);
     }
     cookies->push_back(cc);

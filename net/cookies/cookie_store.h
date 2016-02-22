@@ -98,8 +98,9 @@ class NET_EXPORT CookieStore : public base::RefCountedThreadSafe<CookieStore> {
       const CookieOptions& options,
       const GetCookiesCallback& callback) = 0;
 
-  // Invokes GetAllCookiesForURLWithOptions with options set to include HTTP
-  // only cookies.
+  // Returns all cookies associated with |url|, including http-only, and
+  // same-site cookies. The returned cookies are ordered by longest path, then
+  // by earliest creation date, and are not marked as having been accessed.
   virtual void GetAllCookiesForURLAsync(
       const GURL& url,
       const GetCookieListCallback& callback) = 0;

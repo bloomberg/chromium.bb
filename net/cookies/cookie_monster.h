@@ -153,7 +153,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // mark the cookies as having been accessed.
   // The returned cookies are ordered by longest path, then earliest
   // creation date.
-  void GetAllCookiesForURLWithOptionsAsync(
+  void GetCookieListForURLWithOptionsAsync(
       const GURL& url,
       const CookieOptions& options,
       const GetCookieListCallback& callback);
@@ -238,7 +238,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
   class DeleteAllCreatedBetweenForHostTask;
   class DeleteCookieTask;
   class DeleteCanonicalCookieTask;
-  class GetAllCookiesForURLWithOptionsTask;
+  class GetCookieListForURLWithOptionsTask;
   class GetAllCookiesTask;
   class GetCookiesWithOptionsTask;
   class SetAllCookiesTask;
@@ -418,7 +418,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   CookieList GetAllCookies();
 
-  CookieList GetAllCookiesForURLWithOptions(const GURL& url,
+  CookieList GetCookieListForURLWithOptions(const GURL& url,
                                             const CookieOptions& options);
 
   int DeleteAllCreatedBetween(const base::Time& delete_begin,
@@ -496,14 +496,12 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   void FindCookiesForHostAndDomain(const GURL& url,
                                    const CookieOptions& options,
-                                   bool update_access_time,
                                    std::vector<CanonicalCookie*>* cookies);
 
   void FindCookiesForKey(const std::string& key,
                          const GURL& url,
                          const CookieOptions& options,
                          const base::Time& current,
-                         bool update_access_time,
                          std::vector<CanonicalCookie*>* cookies);
 
   // Delete any cookies that are equivalent to |ecc| (same path, domain, etc).
