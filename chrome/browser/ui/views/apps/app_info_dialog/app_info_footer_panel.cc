@@ -7,7 +7,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/browser/extension_system.h"
@@ -143,11 +142,13 @@ void AppInfoFooterPanel::CreateShortcuts() {
 }
 
 bool AppInfoFooterPanel::CanCreateShortcuts() const {
-  // Ash platforms can't create shortcuts. Extensions and the Chrome
-  // component app can't have shortcuts.
-  return app_->id() != extension_misc::kChromeAppId && !app_->is_extension() &&
-         (chrome::GetHostDesktopTypeForNativeWindow(parent_window_) !=
-          chrome::HOST_DESKTOP_TYPE_ASH);
+#if defined(USE_ASH)
+  // Ash platforms can't create shortcuts.
+  return false;
+#else
+  // Extensions and the Chrome component app can't have shortcuts.
+  return app_->id() != extension_misc::kChromeAppId && !app_->is_extension();
+#endif  // USE_ASH
 }
 
 void AppInfoFooterPanel::SetPinnedToShelf(bool value) {
@@ -171,11 +172,8 @@ void AppInfoFooterPanel::SetPinnedToShelf(bool value) {
 bool AppInfoFooterPanel::CanSetPinnedToShelf() const {
 #if defined(USE_ASH)
   // Non-Ash platforms don't have a shelf.
-  if (!ash::Shell::HasInstance() ||
-      chrome::GetHostDesktopTypeForNativeWindow(parent_window_) !=
-          chrome::HOST_DESKTOP_TYPE_ASH) {
+  if (!ash::Shell::HasInstance())
     return false;
-  }
 
   // The Chrome app can't be unpinned, and extensions can't be pinned.
   return app_->id() != extension_misc::kChromeAppId && !app_->is_extension() &&
