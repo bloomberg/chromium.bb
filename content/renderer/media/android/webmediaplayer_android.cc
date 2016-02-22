@@ -1859,6 +1859,7 @@ void WebMediaPlayerAndroid::SetCdmInternal(
 void WebMediaPlayerAndroid::OnCdmAttached(
     const media::CdmAttachedCB& cdm_attached_cb,
     bool success) {
+  DVLOG(1) << __FUNCTION__ << ": success: " << success;
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
   if (!success) {

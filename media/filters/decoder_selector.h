@@ -81,13 +81,6 @@ class MEDIA_EXPORT DecoderSelector {
   void InitializeDecryptingDecoder();
   void DecryptingDecoderInitDone(bool success);
 #endif
-
-  // Requests that this object notifies when a CDM is ready through the
-  // |cdm_ready_cb| provided.
-  // TODO(xhwang): Remove after DecryptingDemuxerStream::Initialize() is fixed
-  // to take |cdm_context_| directly.
-  void SetCdmReadyCallback(const CdmReadyCB& cdm_ready_cb);
-
   void InitializeDecryptingDemuxerStream();
   void DecryptingDemuxerStreamInitDone(PipelineStatus status);
   void InitializeDecoder();

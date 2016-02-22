@@ -159,23 +159,12 @@ void DecoderSelector<StreamType>::DecryptingDecoderInitDone(bool success) {
 #endif  // !defined(OS_ANDROID)
 
 template <DemuxerStream::Type StreamType>
-void DecoderSelector<StreamType>::SetCdmReadyCallback(
-    const CdmReadyCB& cdm_ready_cb) {
-  DCHECK(cdm_context_);
-  cdm_ready_cb.Run(cdm_context_, base::Bind(IgnoreCdmAttached));
-}
-
-template <DemuxerStream::Type StreamType>
 void DecoderSelector<StreamType>::InitializeDecryptingDemuxerStream() {
   decrypted_stream_.reset(new DecryptingDemuxerStream(
       task_runner_, media_log_, waiting_for_decryption_key_cb_));
 
-  // TODO(xhwang): Fix DecryptingDemuxerStream::Initialize() to take
-  // |cdm_context_| directly.
   decrypted_stream_->Initialize(
-      input_stream_,
-      base::Bind(&DecoderSelector<StreamType>::SetCdmReadyCallback,
-                 weak_ptr_factory_.GetWeakPtr()),
+      input_stream_, cdm_context_,
       base::Bind(&DecoderSelector<StreamType>::DecryptingDemuxerStreamInitDone,
                  weak_ptr_factory_.GetWeakPtr()));
 }
