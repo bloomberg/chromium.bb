@@ -72108,16 +72108,16 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="215" label="webkit-column-break-after"/>
   <int value="216" label="webkit-column-break-before"/>
   <int value="217" label="webkit-column-break-inside"/>
-  <int value="218" label="webkit-column-count"/>
-  <int value="219" label="webkit-column-gap"/>
+  <int value="218" label="alias-webkit-column-count"/>
+  <int value="219" label="alias-webkit-column-gap"/>
   <int value="220" label="webkit-column-progression"/>
-  <int value="221" label="webkit-column-rule"/>
-  <int value="222" label="webkit-column-rule-color"/>
-  <int value="223" label="webkit-column-rule-style"/>
-  <int value="224" label="webkit-column-rule-width"/>
-  <int value="225" label="webkit-column-span"/>
-  <int value="226" label="webkit-column-width"/>
-  <int value="227" label="webkit-columns"/>
+  <int value="221" label="alias-webkit-column-rule"/>
+  <int value="222" label="alias-webkit-column-rule-color"/>
+  <int value="223" label="alias-webkit-column-rule-style"/>
+  <int value="224" label="alias-webkit-column-rule-width"/>
+  <int value="225" label="alias-webkit-column-span"/>
+  <int value="226" label="alias-webkit-column-width"/>
+  <int value="227" label="alias-webkit-columns"/>
   <int value="228" label="webkit-box-decoration-break"/>
   <int value="229" label="webkit-filter"/>
   <int value="230" label="align-content"/>
@@ -72409,6 +72409,19 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="516" label="font-display"/>
   <int value="517" label="contain"/>
   <int value="518" label="d"/>
+  <int value="519" label="snap-height"/>
+  <int value="520" label="break-after"/>
+  <int value="521" label="break-before"/>
+  <int value="522" label="break-inside"/>
+  <int value="523" label="column-count"/>
+  <int value="524" label="column-gap"/>
+  <int value="525" label="column-rule"/>
+  <int value="526" label="column-rule-color"/>
+  <int value="527" label="column-rule-style"/>
+  <int value="528" label="column-rule-width"/>
+  <int value="529" label="column-span"/>
+  <int value="530" label="column-width"/>
+  <int value="531" label="columns"/>
 </enum>
 
 <enum name="MappedEditingCommands" type="int">
