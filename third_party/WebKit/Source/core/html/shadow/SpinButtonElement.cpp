@@ -189,13 +189,13 @@ void SpinButtonElement::doStepAction(int amount)
 void SpinButtonElement::releaseCapture(EventDispatch eventDispatch)
 {
     stopRepeatingTimer();
-    if (m_capturing) {
-        if (LocalFrame* frame = document().frame()) {
-            frame->eventHandler().setCapturingMouseEventsNode(nullptr);
-            m_capturing = false;
-            if (Page* page = document().page())
-                page->chromeClient().unregisterPopupOpeningObserver(this);
-        }
+    if (!m_capturing)
+        return;
+    if (LocalFrame* frame = document().frame()) {
+        frame->eventHandler().setCapturingMouseEventsNode(nullptr);
+        m_capturing = false;
+        if (Page* page = document().page())
+            page->chromeClient().unregisterPopupOpeningObserver(this);
     }
     if (m_spinButtonOwner)
         m_spinButtonOwner->spinButtonDidReleaseMouseCapture(eventDispatch);
