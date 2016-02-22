@@ -10,6 +10,7 @@ unstable_protocols =								\
 	$(NULL)
 
 stable_protocols =								\
+	stable/presentation-time/presentation-time.xml				\
 	$(NULL)
 
 nobase_dist_pkgdata_DATA =							\
