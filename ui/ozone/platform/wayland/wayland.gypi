@@ -47,6 +47,7 @@
       'target_name': 'ozone_platform_wayland_unittests',
       'type': 'none',
       'dependencies': [
+        'ozone.gyp:ozone_platform',
         '../../skia/skia.gyp:skia',
         '../../testing/gmock.gyp:gmock',
         '../../third_party/wayland-protocols/wayland-protocols.gyp:xdg_shell_protocol',

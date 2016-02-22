@@ -5,14 +5,13 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_WAYLAND_SURFACE_FACTORY_H_
 #define UI_OZONE_PLATFORM_WAYLAND_WAYLAND_SURFACE_FACTORY_H_
 
-#include "ui/ozone/ozone_export.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 
 namespace ui {
 
 class WaylandDisplay;
 
-class OZONE_EXPORT WaylandSurfaceFactory : public SurfaceFactoryOzone {
+class WaylandSurfaceFactory : public SurfaceFactoryOzone {
  public:
   explicit WaylandSurfaceFactory(WaylandDisplay* display);
   ~WaylandSurfaceFactory() override;

@@ -176,7 +176,7 @@
         '../../skia/skia.gyp:skia',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
-        'ozone.gyp:ozone',
+        'ozone.gyp:ozone_platform',
         'drm_atomic',
       ],
       'export_dependent_settings': [

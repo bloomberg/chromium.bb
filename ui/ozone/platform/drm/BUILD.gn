@@ -189,7 +189,7 @@ source_set("gbm_unittests") {
     "//skia",
     "//testing/gtest",
     "//ui/gfx",
-    "//ui/ozone",
+    "//ui/ozone:platform",
   ]
 
   public_configs = [ ":libdrm" ]

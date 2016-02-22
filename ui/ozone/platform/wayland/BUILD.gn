@@ -46,11 +46,12 @@ source_set("wayland_unittests") {
   ]
 
   deps = [
+    ":wayland",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/wayland:wayland_server",
     "//third_party/wayland-protocols:xdg_shell_protocol",
     "//ui/gfx:test_support",
-    "//ui/ozone",
+    "//ui/ozone:platform",
   ]
 }

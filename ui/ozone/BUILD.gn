@@ -122,7 +122,7 @@ component("ozone_base") {
   ]
 }
 
-component("ozone") {
+source_set("platform") {
   sources = [
     "common/stub_client_native_pixmap_factory.cc",
     "common/stub_client_native_pixmap_factory.h",
@@ -161,10 +161,16 @@ component("ozone") {
 
   # TODO(GYP) the GYP version has a way to add additional dependencies via
   # build flags.
-  public_deps += ozone_platform_deps
+  deps += ozone_platform_deps
 
   # Platforms are always linked into //ui/ozone and can include our headers.
   allow_circular_includes_from = ozone_platform_deps
+}
+
+component("ozone") {
+  public_deps = [
+    ":platform",
+  ]
 }
 
 # GYP version: ui/ozone/ozone.gyp:generate_ozone_platform_list
@@ -217,8 +223,15 @@ test("ozone_unittests") {
   ]
 
   deps = [
-           "//base/test:test_support",
-           "//testing/gtest",
-           "//ui/gfx/geometry",
-         ] + ozone_platform_test_deps
+    "//base/test:test_support",
+    "//testing/gtest",
+    "//ui/gfx/geometry",
+  ]
+
+  # Add tests of platform internals.
+  deps += ozone_platform_test_deps
+
+  # Platform tests link ozone statically. Make sure we're not getting a
+  # 2nd copy of any code via the component.
+  assert_no_deps = [ "//ui/ozone" ]
 }
