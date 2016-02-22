@@ -14,14 +14,17 @@
 #include "net/quic/quic_protocol.h"
 #include "net/tools/quic/quic_process_packet_interface.h"
 
+#define MMSG_MORE 0
+
 namespace net {
 
-
+#if MMSG_MORE
 // Read in larger batches to minimize recvmmsg overhead.
 const int kNumPacketsPerReadMmsgCall = 16;
 // Allocate space for in6_pktinfo as it's larger than in_pktinfo
 const int kSpaceForOverflowAndIp =
     CMSG_SPACE(sizeof(int)) + CMSG_SPACE(sizeof(in6_pktinfo));
+#endif
 
 namespace test {
 class QuicServerPeer;
@@ -57,6 +60,7 @@ class QuicPacketReader {
 
   // Storage only used when recvmmsg is available.
 
+#if MMSG_MORE
   // cbuf_ is used for ancillary data from the kernel on recvmmsg.
   char cbuf_[kSpaceForOverflowAndIp * kNumPacketsPerReadMmsgCall];
   // buf_ is used for the data read from the kernel on recvmmsg.
@@ -69,6 +73,7 @@ class QuicPacketReader {
   // raw_address_ is used for address information provided by the recvmmsg
   // call on the packets.
   struct sockaddr_storage raw_address_[kNumPacketsPerReadMmsgCall];
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(QuicPacketReader);
 };

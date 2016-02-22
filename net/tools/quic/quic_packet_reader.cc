@@ -34,6 +34,7 @@ QuicPacketReader::QuicPacketReader() {
 }
 
 void QuicPacketReader::Initialize() {
+#if MMSG_MORE
   // Zero initialize uninitialized memory.
   memset(cbuf_, 0, arraysize(cbuf_));
   memset(buf_, 0, arraysize(buf_));
@@ -53,6 +54,7 @@ void QuicPacketReader::Initialize() {
     hdr->msg_control = cbuf_ + kSpaceForOverflowAndIp * i;
     hdr->msg_controllen = kSpaceForOverflowAndIp;
   }
+#endif
 }
 
 QuicPacketReader::~QuicPacketReader() {}
