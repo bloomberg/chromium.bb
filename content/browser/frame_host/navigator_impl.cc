@@ -784,6 +784,10 @@ void NavigatorImpl::OnBeginNavigation(
       (ongoing_navigation_request->browser_initiated() ||
        ongoing_navigation_request->begin_params().has_user_gesture) &&
       !begin_params.has_user_gesture) {
+    RenderFrameHost* current_frame_host =
+        frame_tree_node->render_manager()->current_frame_host();
+    current_frame_host->Send(
+        new FrameMsg_Stop(current_frame_host->GetRoutingID()));
     return;
   }
 

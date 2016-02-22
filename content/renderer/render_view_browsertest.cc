@@ -586,6 +586,11 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicy) {
 
   // Navigations to normal HTTP URLs can be handled locally.
   blink::WebURLRequest request(GURL("http://foo.com"));
+  request.setFetchRequestMode(blink::WebURLRequest::FetchRequestModeNavigate);
+  request.setFetchCredentialsMode(
+      blink::WebURLRequest::FetchCredentialsModeInclude);
+  request.setFetchRedirectMode(blink::WebURLRequest::FetchRedirectModeManual);
+  request.setFrameType(blink::WebURLRequest::FrameTypeTopLevel);
   blink::WebFrameClient::NavigationPolicyInfo policy_info(request);
   policy_info.navigationType = blink::WebNavigationTypeLinkClicked;
   policy_info.defaultPolicy = blink::WebNavigationPolicyCurrentTab;
@@ -596,7 +601,7 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicy) {
   } else {
     // If this is a renderer-initiated navigation that just begun, it should
     // stop and be sent to the browser.
-    EXPECT_EQ(blink::WebNavigationPolicyIgnore, policy);
+    EXPECT_EQ(blink::WebNavigationPolicyHandledByClient, policy);
 
     // If this a navigation that is ready to commit, it should be handled
     // locally.

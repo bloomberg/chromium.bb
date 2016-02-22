@@ -1032,6 +1032,17 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
                                      true,   // is_synchronous
                                      validated_params.is_srcdoc,
                                      base::TimeTicks::Now());
+    // PlzNavigate
+    if (IsBrowserSideNavigationEnabled()) {
+      // PlzNavigate: synchronous loads happen in the renderer, and the browser
+      // has not been notified about the start of the load yet. Do it now.
+      if (!is_loading()) {
+        bool was_loading = frame_tree_node()->frame_tree()->IsLoading();
+        is_loading_ = true;
+        frame_tree_node()->DidStartLoading(true, was_loading);
+      }
+      pending_commit_ = false;
+    }
   }
 
   accessibility_reset_count_ = 0;
@@ -1049,10 +1060,6 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
     RenderWidgetHostImpl::From(GetView()->GetRenderWidgetHost())
         ->StartNewContentRenderingTimeout();
   }
-
-  // PlzNavigate
-  if (IsBrowserSideNavigationEnabled())
-    pending_commit_ = false;
 }
 
 void RenderFrameHostImpl::OnUpdateState(const PageState& state) {
@@ -1705,6 +1712,11 @@ void RenderFrameHostImpl::OnToggleFullscreen(bool enter_fullscreen) {
 }
 
 void RenderFrameHostImpl::OnDidStartLoading(bool to_different_document) {
+  if (IsBrowserSideNavigationEnabled() && to_different_document) {
+    bad_message::ReceivedBadMessage(GetProcess(),
+                                    bad_message::RFH_UNEXPECTED_LOAD_START);
+    return;
+  }
   bool was_previously_loading = frame_tree_node_->frame_tree()->IsLoading();
   is_loading_ = true;
 

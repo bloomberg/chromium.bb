@@ -313,6 +313,7 @@ void FrameTreeNode::ResetNavigationRequest(bool keep_state) {
   CHECK(IsBrowserSideNavigationEnabled());
   if (!navigation_request_)
     return;
+  bool was_renderer_initiated = !navigation_request_->browser_initiated();
   navigation_request_.reset();
 
   if (keep_state)
@@ -322,6 +323,14 @@ void FrameTreeNode::ResetNavigationRequest(bool keep_state) {
   // it created for the navigation. Also register that the load stopped.
   DidStopLoading();
   render_manager_.CleanUpNavigation();
+
+  // If the navigation is renderer-initiated, the renderer should also be
+  // informed that the navigation stopped.
+  if (was_renderer_initiated) {
+    current_frame_host()->Send(
+        new FrameMsg_Stop(current_frame_host()->GetRoutingID()));
+  }
+
 }
 
 bool FrameTreeNode::has_started_loading() const {

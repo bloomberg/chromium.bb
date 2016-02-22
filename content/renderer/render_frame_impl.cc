@@ -4616,7 +4616,11 @@ void RenderFrameImpl::didStartLoading(bool to_different_document) {
   TRACE_EVENT1("navigation", "RenderFrameImpl::didStartLoading",
                "id", routing_id_);
   render_view_->FrameDidStartLoading(frame_);
-  Send(new FrameHostMsg_DidStartLoading(routing_id_, to_different_document));
+
+  // PlzNavigate: the browser is responsible for knowing the start of all
+  // non-synchronous navigations.
+  if (!IsBrowserSideNavigationEnabled() || !to_different_document)
+    Send(new FrameHostMsg_DidStartLoading(routing_id_, to_different_document));
 }
 
 void RenderFrameImpl::didStopLoading() {
@@ -4912,7 +4916,7 @@ WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
       ShouldMakeNetworkRequestForURL(url)) {
     BeginNavigation(&info.urlRequest, info.replacesCurrentHistoryItem,
                     info.isClientRedirect);
-    return blink::WebNavigationPolicyIgnore;
+    return blink::WebNavigationPolicyHandledByClient;
   }
 
   return info.defaultPolicy;
