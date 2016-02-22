@@ -5,7 +5,7 @@
 var WALLPAPER_PICKER_WIDTH = 574;
 var WALLPAPER_PICKER_HEIGHT = 420;
 
-var wallpaperPickerWindow;
+var wallpaperPickerWindow = null;
 
 var surpriseWallpaper = null;
 
@@ -262,6 +262,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
     wallpaperPickerWindow = w;
     chrome.wallpaperPrivate.minimizeInactiveWindows();
     w.onClosed.addListener(function() {
+      wallpaperPickerWindow = null;
       chrome.wallpaperPrivate.restoreMinimizedWindows();
     });
     WallpaperUtil.testSendMessage('wallpaper-window-created');
@@ -319,6 +320,30 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
         }
       }
 
+      // If the built-in Wallpaper Picker App is open, update the check mark
+      // and the corresponding 'wallpaper-set-by-message' in time.
+      var updateCheckMarkAndAppNameIfAppliable = function(appName) {
+        if (!wallpaperPickerWindow)
+          return;
+        var wpDocument = wallpaperPickerWindow.contentWindow.document;
+        if (!!appName) {
+          chrome.wallpaperPrivate.getStrings(function(strings) {
+            var message =
+                strings.currentWallpaperSetByMessage.replace(/\$1/g, appName);
+            wpDocument.querySelector('#wallpaper-set-by-message').textContent =
+                message;
+            wpDocument.querySelector('#wallpaper-grid').classList.add('small');
+            if (wpDocument.querySelector('.check'))
+              wpDocument.querySelector('.check').style.visibility = 'hidden';
+          });
+        } else {
+          wpDocument.querySelector('#wallpaper-set-by-message').textContent =
+              '';
+          wpDocument.querySelector('#wallpaper-grid').classList.remove('small');
+          wpDocument.querySelector('.check').style.visibility = 'visible';
+        }
+      };
+
       if (changes[Constants.AccessLocalWallpaperInfoKey]) {
         // If the old wallpaper is a third party wallpaper we should remove it
         // from the local & sync file system to free space.
@@ -328,6 +353,10 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
           WallpaperUtil.deleteWallpaperFromLocalFS(oldInfo.url);
           WallpaperUtil.deleteWallpaperFromSyncFS(oldInfo.url);
         }
+
+        var newInfo = changes[Constants.AccessLocalWallpaperInfoKey].newValue;
+        if (newInfo && newInfo.hasOwnProperty('appName'))
+          updateCheckMarkAndAppNameIfAppliable(newInfo.appName);
       }
 
       if (changes[Constants.AccessSyncWallpaperInfoKey]) {
@@ -386,6 +415,9 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
                     WallpaperUtil.deleteWallpaperFromLocalFS(localInfo.url);
                     WallpaperUtil.deleteWallpaperFromSyncFS(localInfo.url);
                   }
+
+                  if (syncInfo && syncInfo.hasOwnProperty('appName'))
+                    updateCheckMarkAndAppNameIfAppliable(syncInfo.appName);
 
                   WallpaperUtil.saveToLocalStorage(
                       Constants.AccessLocalWallpaperInfoKey, syncInfo);
