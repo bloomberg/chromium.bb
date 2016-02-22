@@ -93,6 +93,22 @@
   color: rgb(0, 138, 255);
 }
 
+.displays-parent-left {
+  border-left: solid 1px rgb(255, 138, 0);
+}
+
+.displays-parent-right {
+  border-right: solid 1px rgb(255, 138, 0);
+}
+
+.displays-parent-top {
+  border-top: solid 1px rgb(255, 138, 0);
+}
+
+.displays-parent-bottom {
+  border-bottom: solid 1px rgb(255, 138, 0);
+}
+
 #display-options-select-mirroring {
   margin-right: 5px;
 }

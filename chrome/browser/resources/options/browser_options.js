@@ -1735,12 +1735,17 @@ cr.define('options', function() {
 
     /**
      * Enables or disables the Chrome OS display settings button and overlay.
+     * @param {boolean} enabled
+     * @param {boolean} showUnifiedDesktop
+     * @param {boolean} multiDisplayLayout
      * @private
      */
-    enableDisplaySettings_: function(enabled, showUnifiedDesktop) {
+    enableDisplaySettings_: function(
+        enabled, showUnifiedDesktop, multiDisplayLayout) {
       if (cr.isChromeOS) {
         $('display-options').disabled = !enabled;
-        DisplayOptions.getInstance().setEnabled(enabled, showUnifiedDesktop);
+        DisplayOptions.getInstance().setEnabled(
+            enabled, showUnifiedDesktop, multiDisplayLayout);
       }
     },
 

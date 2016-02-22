@@ -17,12 +17,14 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/display/display_preferences.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/chromeos_switches.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/ash_strings.h"
@@ -346,11 +348,14 @@ void DisplayOptionsHandler::SendDisplayInfo(
 void DisplayOptionsHandler::UpdateDisplaySettingsEnabled() {
   bool enabled = GetDisplayManager()->num_connected_displays() <= 2;
   bool show_unified_desktop = GetDisplayManager()->unified_desktop_enabled();
+  bool multi_display_layout = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kEnableMultiDisplayLayout);
 
   web_ui()->CallJavascriptFunction(
       "options.BrowserOptions.enableDisplaySettings",
       base::FundamentalValue(enabled),
-      base::FundamentalValue(show_unified_desktop));
+      base::FundamentalValue(show_unified_desktop),
+      base::FundamentalValue(multi_display_layout));
 }
 
 void DisplayOptionsHandler::HandleDisplayInfo(

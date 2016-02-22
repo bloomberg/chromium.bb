@@ -106,6 +106,13 @@ cr.define('options', function() {
     displays_: [],
 
     /**
+     * Whether to use DisplayLayoutManagerMulti.
+     * @type {boolean}
+     * @private
+     */
+    multiDisplayLayout_: false,
+
+    /**
      * Manages the display layout.
      * @type {?options.DisplayLayoutManager}
      * @private
@@ -234,14 +241,15 @@ cr.define('options', function() {
      * @param {boolean} enabled Whether the page should be enabled.
      * @param {boolean} showUnifiedDesktop Whether the unified desktop option
      *     should be present.
+     * @param {boolean} multiDisplayLayout Whether to use
+     *     DisplayLayoutManagerMulti.
      */
-    setEnabled: function(enabled, showUnifiedDesktop) {
-      if (this.enabled_ == enabled &&
-          this.showUnifiedDesktopOption_ == showUnifiedDesktop) {
-        return;
-      }
-      this.enabled_ = enabled;
+    setEnabled: function(enabled, showUnifiedDesktop, multiDisplayLayout) {
       this.showUnifiedDesktopOption_ = showUnifiedDesktop;
+      this.multiDisplayLayout_ = multiDisplayLayout;
+      if (this.enabled_ == enabled)
+        return;
+      this.enabled_ = enabled;
       if (!enabled && this.visible)
         PageManager.closeOverlay();
     },
@@ -389,7 +397,8 @@ cr.define('options', function() {
 
       var updateDisplayDescription = focused.id != this.focusedId_;
       this.focusedId_ = focused.id;
-      this.displayLayoutManager_.setFocusedId(focused.id);
+      this.displayLayoutManager_.setFocusedId(
+          focused.id, true /* user action */);
 
       if (this.displayLayoutManager_.getDisplayLayoutCount() > 1) {
         this.dragInfo_ = {
@@ -639,7 +648,10 @@ cr.define('options', function() {
      */
     layoutDisplays_: function(layoutType) {
       // Create the layout manager.
-      this.displayLayoutManager_ = new options.DisplayLayoutManager();
+      if (this.multiDisplayLayout_)
+        this.displayLayoutManager_ = new options.DisplayLayoutManagerMulti();
+      else
+        this.displayLayoutManager_ = new options.DisplayLayoutManager();
 
       // Create the display layouts. Child displays are parented to the primary.
       // TODO(stevenjb): DisplayInfo should provide the parent id for displays.

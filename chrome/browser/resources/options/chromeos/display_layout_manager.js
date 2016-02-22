@@ -151,8 +151,10 @@ cr.define('options', function() {
      * Sets the display layout div corresponding to |id| to focused and
      * sets all other display layouts to unfocused.
      * @param {string} focusedId
+     * @param {boolean=} opt_userAction If true, focus was triggered by a
+     *     user action. (Used in DisplayLayoutManagerMulti override).
      */
-    setFocusedId: function(focusedId) {
+    setFocusedId: function(focusedId, opt_userAction) {
       for (var id in this.displayLayoutMap_) {
         var layout = this.displayLayoutMap_[id];
         layout.div.classList.toggle('displays-focused', layout.id == focusedId);

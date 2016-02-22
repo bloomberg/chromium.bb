@@ -44,21 +44,28 @@ cr.define('options', function() {
    * @param {number} width The width of the region.
    * @param {number} basePoint The starting point of the base region.
    * @param {number} baseWidth The width of the base region.
+   * @param {number=} opt_snapDistance Provide to override the snap distance.
+   *     0 means snap at any distance.
    * @return {number} The moved point. Returns the point itself if it doesn't
    *     need to snap to the edge.
    * @private
    */
-  function snapToEdge(point, width, basePoint, baseWidth) {
+  function snapToEdge_(point, width, basePoint, baseWidth, opt_snapDistance) {
     // If the edge of the region is smaller than this, it will snap to the
     // base's edge.
     /** @const */ var SNAP_DISTANCE_PX = 16;
+    var snapDist;
+    if (opt_snapDistance !== undefined)
+      snapDist = opt_snapDistance;
+    else
+      snapDist = SNAP_DISTANCE_PX;
 
     var startDiff = Math.abs(point - basePoint);
     var endDiff = Math.abs(point + width - (basePoint + baseWidth));
     // Prefer the closer one if both edges are close enough.
-    if (startDiff < SNAP_DISTANCE_PX && startDiff < endDiff)
+    if ((!snapDist || startDiff < snapDist) && startDiff < endDiff)
       return basePoint;
-    else if (endDiff < SNAP_DISTANCE_PX)
+    else if (!snapDist || endDiff < snapDist)
       return basePoint + baseWidth - width;
 
     return point;
@@ -150,9 +157,9 @@ cr.define('options', function() {
     },
 
     /**
-     * Calculates the offset for displayLayout relative to its parent.
+     * Calculates the offset relative to |parent|.
      * @param {number} scale
-     * @param {options.DisplayLayout} parent
+     * @param {?options.DisplayLayout} parent
      */
     calculateOffset: function(scale, parent) {
       // Offset is calculated from top or left edge.
@@ -172,12 +179,67 @@ cr.define('options', function() {
     },
 
     /**
+     * Calculates the bounds relative to |parentBounds|.
+     * @param {!options.DisplayBounds} parentBounds
+     * @return {!options.DisplayBounds}
+     */
+    calculateBounds: function(parentBounds) {
+      var left = 0, top = 0;
+      switch (this.layoutType) {
+        case options.DisplayLayoutType.TOP:
+          left = parentBounds.left + this.offset;
+          top = parentBounds.top - this.bounds.height;
+          break;
+        case options.DisplayLayoutType.RIGHT:
+          left = parentBounds.left + parentBounds.width;
+          top = parentBounds.top + this.offset;
+          break;
+        case options.DisplayLayoutType.BOTTOM:
+          left = parentBounds.left + this.offset;
+          top = parentBounds.top + parentBounds.height;
+          break;
+        case options.DisplayLayoutType.LEFT:
+          left = parentBounds.left - this.bounds.width;
+          top = parentBounds.top + this.offset;
+          break;
+      }
+      return {
+        left: left,
+        top: top,
+        width: this.bounds.width,
+        height: this.bounds.height
+      };
+    },
+
+    /**
+     * Snap |newPosition| to the edge specified by |layoutType| and call
+     * setDivPosition.
+     * @param {options.DisplayPosition} newPosition
+     * @param {?HTMLElement} parentDiv
+     * @param {!options.DisplayLayoutType} layoutType
+     */
+    snapAndSetDivPosition(newPosition, parentDiv, layoutType) {
+      var snapX = (layoutType == options.DisplayLayoutType.LEFT ||
+                   layoutType == options.DisplayLayoutType.RIGHT) ?
+          0 /* infinite */ :
+          undefined /* default */;
+      var snapY = (layoutType == options.DisplayLayoutType.TOP ||
+                   layoutType == options.DisplayLayoutType.BOTTOM) ?
+          0 /* infinite */ :
+          undefined /* default */;
+
+      newPosition.x = this.snapToX(newPosition.x, parentDiv, snapX);
+      newPosition.y = this.snapToY(newPosition.y, parentDiv, snapY);
+
+      this.setDivPosition(newPosition, parentDiv, layoutType);
+    },
+
+    /**
      * Update the div location to the position closest to |newPosition|  along
      * the edge of |parentDiv| specified by |layoutType|.
      * @param {options.DisplayPosition} newPosition
      * @param {?HTMLElement} parentDiv
      * @param {!options.DisplayLayoutType} layoutType
-     * @private
      */
     setDivPosition(newPosition, parentDiv, layoutType) {
       var div = this.div;
@@ -205,7 +267,6 @@ cr.define('options', function() {
      * Ensures that there is a minimum overlap when displays meet at a corner.
      * @param {?HTMLElement} parentDiv
      * @param {options.DisplayLayoutType} layoutType
-     * @private
      */
     adjustCorners: function(parentDiv, layoutType) {
       // The number of pixels to share the edges between displays.
@@ -233,29 +294,73 @@ cr.define('options', function() {
     },
 
     /**
+     * Calculates the layoutType for |position| relative to |parentDiv|.
+     * @param {?HTMLElement} parentDiv
+     * @param {!options.DisplayPosition} position
+     * @return {options.DisplayLayoutType}
+     */
+    getLayoutTypeForPosition: function(parentDiv, position) {
+      var div = this.div;
+
+      // Translate position from top-left to center.
+      var x = position.x + div.offsetWidth / 2;
+      var y = position.y + div.offsetHeight / 2;
+
+      // Determine the distance from the new position to both of the near edges.
+      var div = parentDiv;
+      var left = div.offsetLeft;
+      var top = div.offsetTop;
+      var width = div.offsetWidth;
+      var height = div.offsetHeight;
+
+      // Signed deltas to the center of the div.
+      var dx = x - (left + width / 2);
+      var dy = y - (top + height / 2);
+
+      // Unsigned distance to each edge.
+      var distx = Math.abs(dx) - width / 2;
+      var disty = Math.abs(dy) - height / 2;
+
+      if (distx > disty) {
+        if (dx < 0)
+          return options.DisplayLayoutType.LEFT;
+        else
+          return options.DisplayLayoutType.RIGHT;
+      } else {
+        if (dy < 0)
+          return options.DisplayLayoutType.TOP;
+        else
+          return options.DisplayLayoutType.BOTTOM;
+      }
+    },
+
+    /**
      * Snaps a horizontal value, see SnapToEdge.
      * @param {number} x
      * @param {?HTMLElement} parentDiv
+     * @param {number=} opt_snapDistance Provide to override the snap distance.
+     *     0 means snap from any distance.
      * @return {number}
-     * @private
      */
-    snapToX: function(x, parentDiv) {
-      return snapToEdge(
-          x, this.div.offsetWidth, parentDiv.offsetLeft, parentDiv.offsetWidth);
+    snapToX: function(x, parentDiv, opt_snapDistance) {
+      return snapToEdge_(
+          x, this.div.offsetWidth, parentDiv.offsetLeft, parentDiv.offsetWidth,
+          opt_snapDistance);
     },
 
     /**
      * Snaps a vertical value, see SnapToEdge.
      * @param {number} y
      * @param {?HTMLElement} parentDiv
+     * @param {number=} opt_snapDistance Provide to override the snap distance.
+     *     0 means snap from any distance.
      * @return {number}
-     * @private
      */
-    snapToY: function(y, parentDiv) {
-      return snapToEdge(
-          y, this.div.offsetHeight, parentDiv.offsetTop,
-          parentDiv.offsetHeight);
-    },
+    snapToY: function(y, parentDiv, opt_snapDistance) {
+      return snapToEdge_(
+          y, this.div.offsetHeight, parentDiv.offsetTop, parentDiv.offsetHeight,
+          opt_snapDistance);
+    }
   };
 
   // Export

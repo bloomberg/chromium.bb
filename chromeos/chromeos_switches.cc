@@ -158,6 +158,9 @@ const char kEnableScreenshotTestingWithMode[] =
 // than the kiosk app mode.
 const char kEnableKioskMode[] = "enable-kiosk-mode";
 
+// Enable the multiple display layout UI.
+const char kEnableMultiDisplayLayout[] = "enable-multi-display-layout";
+
 // Enables request of tablet site (via user agent override).
 const char kEnableRequestTabletSite[] = "enable-request-tablet-site";
 

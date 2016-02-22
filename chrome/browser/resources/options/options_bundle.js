@@ -34,6 +34,7 @@
 <include src="chromeos/consumer_management_overlay.js">
 <include src="chromeos/display_layout.js">
 <include src="chromeos/display_layout_manager.js">
+<include src="chromeos/display_layout_manager_multi.js">
 <include src="chromeos/display_options.js">
 <include src="chromeos/display_overscan.js">
 <include src="chromeos/keyboard_overlay.js">
