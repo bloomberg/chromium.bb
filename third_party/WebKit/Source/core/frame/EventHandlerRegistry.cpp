@@ -73,8 +73,7 @@ bool EventHandlerRegistry::eventTypeToClass(const AtomicString& eventType, const
         // The EventHandlerClass is TouchEventPassive since the pointer events
         // never block scrolling and the compositor only needs to know
         // about the touch listeners.
-        // TODO(dtapuska): Change this to TouchEventPassive when cc knows that PEs are non-blocking
-        *result = TouchEventBlocking;
+        *result = TouchEventPassive;
 #if ENABLE(ASSERT)
     } else if (eventType == EventTypeNames::load || eventType == EventTypeNames::mousemove || eventType == EventTypeNames::touchstart) {
         *result = EventsForTesting;
