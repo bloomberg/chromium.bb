@@ -103,8 +103,8 @@ void HTMLObjectElement::parseAttribute(const QualifiedName& name, const AtomicSt
         size_t pos = m_serviceType.find(";");
         if (pos != kNotFound)
             m_serviceType = m_serviceType.left(pos);
-        // FIXME: What is the right thing to do here? Should we supress the
-        // reload stuff when a persistable widget-type is specified?
+        // TODO(schenney): crbug.com/572908 What is the right thing to do here? Should we
+        // suppress the reload stuff when a persistable widget-type is specified?
         reloadPluginOnAttributeChange(name);
         if (!layoutObject())
             requestPluginCreationWithoutLayoutObjectIfPossible();
@@ -144,7 +144,7 @@ static void mapDataParamToSrc(Vector<String>* paramNames, Vector<String>* paramV
     }
 }
 
-// FIXME: This function should not deal with url or serviceType!
+// TODO(schenney): crbug.com/572908 This function should not deal with url or serviceType!
 void HTMLObjectElement::parametersForPlugin(Vector<String>& paramNames, Vector<String>& paramValues, String& url, String& serviceType)
 {
     HashSet<StringImpl*, CaseFoldingHash> uniqueParamNames;
@@ -161,10 +161,10 @@ void HTMLObjectElement::parametersForPlugin(Vector<String>& paramNames, Vector<S
         paramNames.append(p->name());
         paramValues.append(p->value());
 
-        // FIXME: url adjustment does not belong in this function.
+        // TODO(schenney): crbug.com/572908 url adjustment does not belong in this function.
         if (url.isEmpty() && urlParameter.isEmpty() && (equalIgnoringCase(name, "src") || equalIgnoringCase(name, "movie") || equalIgnoringCase(name, "code") || equalIgnoringCase(name, "url")))
             urlParameter = stripLeadingAndTrailingHTMLSpaces(p->value());
-        // FIXME: serviceType calculation does not belong in this function.
+        // TODO(schenney): crbug.com/572908 serviceType calculation does not belong in this function.
         if (serviceType.isEmpty() && equalIgnoringCase(name, "type")) {
             serviceType = p->value();
             size_t pos = serviceType.find(";");
@@ -257,22 +257,21 @@ void HTMLObjectElement::reloadPluginOnAttributeChange(const QualifiedName& name)
         lazyReattachIfNeeded();
 }
 
-// FIXME: This should be unified with HTMLEmbedElement::updateWidget and
+// TODO(schenney): crbug.com/572908 This should be unified with HTMLEmbedElement::updateWidget and
 // moved down into HTMLPluginElement.cpp
 void HTMLObjectElement::updateWidgetInternal()
 {
     ASSERT(!layoutEmbeddedObject()->showsUnavailablePluginIndicator());
     ASSERT(needsWidgetUpdate());
     setNeedsWidgetUpdate(false);
-    // FIXME: This should ASSERT isFinishedParsingChildren() instead.
+    // TODO(schenney): crbug.com/572908 This should ASSERT isFinishedParsingChildren() instead.
     if (!isFinishedParsingChildren()) {
         dispatchErrorEvent();
         return;
     }
 
-    // FIXME: I'm not sure it's ever possible to get into updateWidget during a
-    // removal, but just in case we should avoid loading the frame to prevent
-    // security bugs.
+    // TODO(schenney): crbug.com/572908 I'm not sure it's ever possible to get into updateWidget during a
+    // removal, but just in case we should avoid loading the frame to prevent security bugs.
     if (!SubframeLoadingDisabler::canLoadFrame(*this)) {
         dispatchErrorEvent();
         return;
@@ -281,7 +280,7 @@ void HTMLObjectElement::updateWidgetInternal()
     String url = this->url();
     String serviceType = m_serviceType;
 
-    // FIXME: These should be joined into a PluginParameters class.
+    // TODO(schenney): crbug.com/572908 These should be joined into a PluginParameters class.
     Vector<String> paramNames;
     Vector<String> paramValues;
     parametersForPlugin(paramNames, paramValues, url, serviceType);
@@ -292,7 +291,8 @@ void HTMLObjectElement::updateWidgetInternal()
         return;
     }
 
-    // FIXME: Is it possible to get here without a layoutObject now that we don't have beforeload events?
+    // TODO(schenney): crbug.com/572908 Is it possible to get here without a layoutObject
+    // now that we don't have beforeload events?
     if (!layoutObject())
         return;
 
@@ -348,7 +348,7 @@ const AtomicString HTMLObjectElement::imageSourceURL() const
     return getAttribute(dataAttr);
 }
 
-// FIXME: Remove this hack.
+// TODO(schenney): crbug.com/572908 Remove this hack.
 void HTMLObjectElement::reattachFallbackContent()
 {
     // This can happen inside of attach() in the middle of a recalcStyle so we need to
@@ -380,7 +380,7 @@ void HTMLObjectElement::renderFallbackContent()
 
     m_useFallbackContent = true;
 
-    // FIXME: Style gets recalculated which is suboptimal.
+    // TODO(schenney): crbug.com/572908 Style gets recalculated which is suboptimal.
     reattachFallbackContent();
 }
 
