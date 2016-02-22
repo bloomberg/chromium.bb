@@ -1135,7 +1135,7 @@ void WebMediaPlayerImpl::OnHidden(bool must_suspend) {
     return;
 #endif
 
-  if (must_suspend || hasVideo())
+  if (must_suspend || paused_ || hasVideo())
     ScheduleSuspend();
 }
 
