@@ -1,0 +1,5 @@
+CONSOLE ERROR: line 23: Uncaught SyntaxError: Unexpected token }
+This is a testharness.js-based test.
+FAIL Invalid uncompiled raw handlers should only be compiled once. assert_equals: expected (object) null but got (undefined) undefined
+Harness: the test ran to completion.
+

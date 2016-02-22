@@ -1,0 +1,6 @@
+CONSOLE ERROR: line 52: Uncaught SyntaxError: Unexpected token }
+CONSOLE ERROR: line 52: Uncaught SyntaxError: Unexpected token }
+This is a testharness.js-based test.
+Harness Error. harness_status.status = 1 , harness_status.message = Uncaught SyntaxError: Unexpected token }
+Harness: the test ran to completion.
+
