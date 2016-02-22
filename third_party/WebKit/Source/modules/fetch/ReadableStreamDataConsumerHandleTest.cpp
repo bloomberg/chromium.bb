@@ -185,6 +185,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, Read)
     ScriptValue stream(scriptState(), evalWithPrintingError(
         "var controller;"
         "var stream = new ReadableStream({start: c => controller = c});"
+        "controller.enqueue(new Uint8Array());"
         "controller.enqueue(new Uint8Array([0x43, 0x44, 0x45, 0x46]));"
         "controller.enqueue(new Uint8Array([0x47, 0x48, 0x49, 0x4a]));"
         "controller.close();"
@@ -205,6 +206,8 @@ TEST_F(ReadableStreamDataConsumerHandleTest, Read)
     EXPECT_CALL(checkpoint, Call(4));
     EXPECT_CALL(*client, didGetReadable());
     EXPECT_CALL(checkpoint, Call(5));
+    EXPECT_CALL(*client, didGetReadable());
+    EXPECT_CALL(checkpoint, Call(6));
 
     char buffer[3];
     size_t readBytes;
@@ -216,6 +219,9 @@ TEST_F(ReadableStreamDataConsumerHandleTest, Read)
     EXPECT_EQ(kShouldWait, reader->read(buffer, 3, kNone, &readBytes));
     testing::runPendingTasks();
     checkpoint.Call(3);
+    EXPECT_EQ(kShouldWait, reader->read(buffer, 3, kNone, &readBytes));
+    testing::runPendingTasks();
+    checkpoint.Call(4);
     EXPECT_EQ(kOk, reader->read(buffer, 3, kNone, &readBytes));
     EXPECT_EQ(3u, readBytes);
     EXPECT_EQ(0x43, buffer[0]);
@@ -226,7 +232,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, Read)
     EXPECT_EQ(0x46, buffer[0]);
     EXPECT_EQ(kShouldWait, reader->read(buffer, 3, kNone, &readBytes));
     testing::runPendingTasks();
-    checkpoint.Call(4);
+    checkpoint.Call(5);
     EXPECT_EQ(kOk, reader->read(buffer, 3, kNone, &readBytes));
     EXPECT_EQ(3u, readBytes);
     EXPECT_EQ(0x47, buffer[0]);
@@ -237,7 +243,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, Read)
     EXPECT_EQ(0x4a, buffer[0]);
     EXPECT_EQ(kShouldWait, reader->read(buffer, 3, kNone, &readBytes));
     testing::runPendingTasks();
-    checkpoint.Call(5);
+    checkpoint.Call(6);
     EXPECT_EQ(kDone, reader->read(buffer, 3, kNone, &readBytes));
 }
 
@@ -247,6 +253,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, TwoPhaseRead)
     ScriptValue stream(scriptState(), evalWithPrintingError(
         "var controller;"
         "var stream = new ReadableStream({start: c => controller = c});"
+        "controller.enqueue(new Uint8Array());"
         "controller.enqueue(new Uint8Array([0x43, 0x44, 0x45, 0x46]));"
         "controller.enqueue(new Uint8Array([0x47, 0x48, 0x49, 0x4a]));"
         "controller.close();"
@@ -267,6 +274,8 @@ TEST_F(ReadableStreamDataConsumerHandleTest, TwoPhaseRead)
     EXPECT_CALL(checkpoint, Call(4));
     EXPECT_CALL(*client, didGetReadable());
     EXPECT_CALL(checkpoint, Call(5));
+    EXPECT_CALL(*client, didGetReadable());
+    EXPECT_CALL(checkpoint, Call(6));
 
     const void* buffer;
     size_t available;
@@ -278,6 +287,9 @@ TEST_F(ReadableStreamDataConsumerHandleTest, TwoPhaseRead)
     EXPECT_EQ(kShouldWait, reader->beginRead(&buffer, kNone, &available));
     testing::runPendingTasks();
     checkpoint.Call(3);
+    EXPECT_EQ(kShouldWait, reader->beginRead(&buffer, kNone, &available));
+    testing::runPendingTasks();
+    checkpoint.Call(4);
     EXPECT_EQ(kOk, reader->beginRead(&buffer, kNone, &available));
     EXPECT_EQ(4u, available);
     EXPECT_EQ(0x43, static_cast<const char*>(buffer)[0]);
@@ -300,7 +312,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, TwoPhaseRead)
     EXPECT_EQ(kOk, reader->endRead(3));
     EXPECT_EQ(kShouldWait, reader->beginRead(&buffer, kNone, &available));
     testing::runPendingTasks();
-    checkpoint.Call(4);
+    checkpoint.Call(5);
     EXPECT_EQ(kOk, reader->beginRead(&buffer, kNone, &available));
     EXPECT_EQ(4u, available);
     EXPECT_EQ(0x47, static_cast<const char*>(buffer)[0]);
@@ -310,7 +322,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, TwoPhaseRead)
     EXPECT_EQ(kOk, reader->endRead(4));
     EXPECT_EQ(kShouldWait, reader->beginRead(&buffer, kNone, &available));
     testing::runPendingTasks();
-    checkpoint.Call(5);
+    checkpoint.Call(6);
     EXPECT_EQ(kDone, reader->beginRead(&buffer, kNone, &available));
 }
 

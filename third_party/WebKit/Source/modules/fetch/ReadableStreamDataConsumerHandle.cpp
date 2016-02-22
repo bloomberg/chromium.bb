@@ -186,7 +186,8 @@ public:
         ASSERT(!m_pendingBuffer);
         ASSERT(!m_pendingOffset);
         m_isReading = false;
-        m_pendingBuffer = buffer;
+        if (buffer->length() > 0)
+            m_pendingBuffer = buffer;
         notify();
     }
 
