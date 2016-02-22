@@ -561,17 +561,6 @@
    fun:_ZN4base12_GLOBAL__N_114WorkerPoolImpl8PostTaskERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEEb
    fun:_ZN4base10WorkerPool8PostTaskERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEEb
 }
-{
-   bug_542575 (Intentional)
-   Memcheck:Overlap
-   fun:memcpy@@GLIBC_2.14
-   ...
-   fun:BrotliDecompressBuffer
-   fun:_ZN3ots18ConvertWOFF2ToSFNTEPNS_4FontEPhmPKhm
-   fun:_ZN12_GLOBAL__N_112ProcessWOFF2EPN3ots12OpenTypeFileEPNS0_4FontEPNS0_9OTSStreamEPKhm
-   fun:_ZN3ots10OTSContext7ProcessEPNS_9OTSStreamEPKhmj
-   fun:_ZN5blink17OpenTypeSanitizer8sanitizeEv
-}
 
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
@@ -3294,17 +3283,6 @@
    fun:_ZN4base6Thread5StartEv
    fun:_ZN4base6Thread22StartAndWaitForTestingEv
    fun:_ZN12browser_sync12_GLOBAL__N_124SyncBackendRegistrarTest5SetUpEv
-}
-{
-   bug_573604
-   Memcheck:Overlap
-   fun:memcpy@@GLIBC_2.14
-   fun:ProcessCommands
-   fun:BrotliDecompressStream
-   fun:_ZN3net12BrotliFilter16ReadFilteredDataEPcPi
-   fun:_ZN3net6Filter8ReadDataEPcPi
-   fun:_ZN3net14BrotliUnitTest19DecodeAllWithFilterEPNS_6FilterEPKciPcPi
-   fun:_ZN3net37BrotliUnitTest_DecodeMissingData_Test8TestBodyEv
 }
 {
    bug_576259_a
