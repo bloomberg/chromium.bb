@@ -35,4 +35,12 @@ CRWWebController* CreateWebController(WebViewType web_view_type,
   return CreateWebController(web_view_type, std::move(web_state));
 }
 
+CRWWebController* CreateWebController(scoped_ptr<WebStateImpl> web_state) {
+  return CreateWebController(WK_WEB_VIEW_TYPE, std::move(web_state));
+}
+
+CRWWebController* CreateWebController(BrowserState* browser_state) {
+  return CreateWebController(WK_WEB_VIEW_TYPE, browser_state);
+}
+
 }  // namespace web

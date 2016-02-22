@@ -23,18 +23,10 @@
 #include "ios/web/public/referrer.h"
 #import "ios/web/public/web_controller_factory.h"
 #include "ios/web/public/web_state/web_state.h"
-#include "ios/web/public/web_view_creation_util.h"
 #include "ios/web/shell/shell_browser_state.h"
 #include "ios/web/web_state/ui/crw_web_controller.h"
 #include "ios/web/web_state/web_state_impl.h"
 #include "ui/base/page_transition_types.h"
-
-namespace {
-// Returns true if WKWebView is supported.
-bool UseWKWebView() {
-  return web::IsWKWebViewSupported();
-}
-}
 
 NSString* const kWebShellBackButtonAccessibilityLabel = @"Back";
 NSString* const kWebShellForwardButtonAccessibilityLabel = @"Forward";
@@ -121,10 +113,7 @@ NSString* const kWebShellAddressFieldAccessibilityLabel = @"Address field";
 
   scoped_ptr<web::WebStateImpl> webState(new web::WebStateImpl(_browserState));
   webState->GetNavigationManagerImpl().InitializeSession(nil, nil, NO, 0);
-  web::WebViewType webViewType =
-      UseWKWebView() ? web::WK_WEB_VIEW_TYPE : web::UI_WEB_VIEW_TYPE;
-  _webController.reset(
-      web::CreateWebController(webViewType, std::move(webState)));
+  _webController.reset(web::CreateWebController(std::move(webState)));
   [_webController setDelegate:self];
   [_webController setUIDelegate:self];
   [_webController setWebUsageEnabled:YES];
