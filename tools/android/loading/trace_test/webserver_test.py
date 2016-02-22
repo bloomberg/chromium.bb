@@ -148,14 +148,24 @@ class InitiatorSequence(object):
       return
     for rq in trace.request_track.GetEvents():
       if rq.initiator['type'] in ('parser', 'script'):
-        stack = 'no stack'
-        if 'stack' in rq.initiator:
-          stack = '/'.join(
+        stack_string = ''
+        stack = rq.initiator.get('stack')
+        # Iteratively walk the stack and its parents.
+        while stack:
+          current_string = '/'.join(
               ['%s:%s' % (self._ShortUrl(frame['url']), frame['lineNumber'])
-               for frame in rq.initiator['stack']['callFrames']])
+               for frame in stack['callFrames']])
+          if len(current_string) and len(stack_string):
+            stack_string += '/'
+          stack_string += current_string
+          stack = stack.get('parent')
+
+        if stack_string == '':
+          stack_string = 'no stack'
+
         self._seq.append('%s (%s) %s' % (
             rq.initiator['type'],
-            stack,
+            stack_string,
             self._ShortUrl(rq.url)))
     self._seq.sort()
 
