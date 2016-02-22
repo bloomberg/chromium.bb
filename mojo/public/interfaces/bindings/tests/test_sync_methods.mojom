@@ -4,26 +4,16 @@
 
 module mojo.test;
 
-interface TestCodeGeneration {
-  [Sync]
-  NoInput() => (int32 result);
-
-  [Sync]
-  NoOutput(int32 value) => ();
-
-  [Sync]
-  NoInOut() => ();
-
-  [Sync]
-  HaveInOut(int32 value1, int32 value2) => (int32 result1, int32 result2);
-};
-
 interface TestSync {
+  [Sync]
+  Get() => (int32 result);
+
+  [Sync]
+  Set(int32 value) => ();
+
   [Sync]
   Ping() => ();
 
   [Sync]
   Echo(int32 value) => (int32 result);
-
-  AsyncEcho(int32 value) => (int32 result);
 };

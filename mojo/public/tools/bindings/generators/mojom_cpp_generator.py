@@ -473,7 +473,6 @@ class Generator(generator.Generator):
     "get_pad": pack.GetPad,
     "get_qualified_name_for_kind": GetQualifiedNameForKind,
     "has_callbacks": mojom.HasCallbacks,
-    "has_sync_methods": mojom.HasSyncMethods,
     "should_inline": ShouldInlineStruct,
     "should_inline_union": ShouldInlineUnion,
     "is_array_kind": mojom.IsArrayKind,

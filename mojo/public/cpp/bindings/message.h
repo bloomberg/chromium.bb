@@ -122,7 +122,6 @@ class MessageReceiverWithResponder : public MessageReceiver {
   // |responder| and will delete it after calling |responder->Accept| or upon
   // its own destruction.
   //
-  // TODO(yzshen): consider changing |responder| to scoped_ptr<MessageReceiver>.
   virtual bool AcceptWithResponder(Message* message, MessageReceiver* responder)
       MOJO_WARN_UNUSED_RESULT = 0;
 };
@@ -155,7 +154,6 @@ class MessageReceiverWithResponderStatus : public MessageReceiver {
   // |responder| and will delete it after calling |responder->Accept| or upon
   // its own destruction.
   //
-  // TODO(yzshen): consider changing |responder| to scoped_ptr<MessageReceiver>.
   virtual bool AcceptWithResponder(Message* message,
                                    MessageReceiverWithStatus* responder)
       MOJO_WARN_UNUSED_RESULT = 0;

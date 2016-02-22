@@ -30,47 +30,26 @@ class TestSyncImpl : public TestSync {
  public:
   TestSyncImpl(TestSyncRequest request) : binding_(this, std::move(request)) {}
 
-  using PingHandler = Callback<void(const PingCallback&)>;
-  void set_ping_handler(const PingHandler& handler) { ping_handler_ = handler; }
-
-  using EchoHandler = Callback<void(int32_t, const EchoCallback&)>;
-  void set_echo_handler(const EchoHandler& handler) { echo_handler_ = handler; }
-
-  using AsyncEchoHandler = Callback<void(int32_t, const AsyncEchoCallback&)>;
-  void set_async_echo_handler(const AsyncEchoHandler& handler) {
-    async_echo_handler_ = handler;
+  void set_ping_notification(const Closure& closure) {
+    ping_notification_ = closure;
   }
 
   // TestSync implementation:
+  void Get(const GetCallback& callback) override { callback.Run(42); }
+  void Set(int32_t value, const SetCallback& callback) override {
+    callback.Run();
+  }
   void Ping(const PingCallback& callback) override {
-    if (ping_handler_.is_null()) {
-      callback.Run();
-      return;
-    }
-    ping_handler_.Run(callback);
+    ping_notification_.Run();
+    callback.Run();
   }
   void Echo(int32_t value, const EchoCallback& callback) override {
-    if (echo_handler_.is_null()) {
-      callback.Run(value);
-      return;
-    }
-    echo_handler_.Run(value, callback);
+    callback.Run(value);
   }
-  void AsyncEcho(int32_t value, const AsyncEchoCallback& callback) override {
-    if (async_echo_handler_.is_null()) {
-      callback.Run(value);
-      return;
-    }
-    async_echo_handler_.Run(value, callback);
-  }
-
-  Binding<TestSync>* binding() { return &binding_; }
 
  private:
   Binding<TestSync> binding_;
-  PingHandler ping_handler_;
-  EchoHandler echo_handler_;
-  AsyncEchoHandler async_echo_handler_;
+  Closure ping_notification_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSyncImpl);
 };
@@ -88,12 +67,9 @@ class TestSyncServiceThread {
   void SetUp(TestSyncRequest request) {
     CHECK(thread_.task_runner()->BelongsToCurrentThread());
     impl_.reset(new TestSyncImpl(std::move(request)));
-    impl_->set_ping_handler([this](const TestSync::PingCallback& callback) {
-      {
-        base::AutoLock locker(lock_);
-        ping_called_ = true;
-      }
-      callback.Run();
+    impl_->set_ping_notification([this]() {
+      base::AutoLock locker(lock_);
+      ping_called_ = true;
     });
   }
 
@@ -152,197 +128,6 @@ TEST_F(SyncMethodTest, BasicSyncCalls) {
                             base::Unretained(&service_thread)),
       run_loop.QuitClosure());
   run_loop.Run();
-}
-
-TEST_F(SyncMethodTest, ReenteredBySyncMethodBinding) {
-  // Test that an interface pointer waiting for a sync call response can be
-  // reentered by a binding serving sync methods on the same thread.
-
-  TestSyncPtr ptr;
-  // The binding lives on the same thread as the interface pointer.
-  TestSyncImpl impl(GetProxy(&ptr));
-  int32_t output_value = -1;
-  ASSERT_TRUE(ptr->Echo(42, &output_value));
-  EXPECT_EQ(42, output_value);
-}
-
-TEST_F(SyncMethodTest, InterefacePtrDestroyedDuringSyncCall) {
-  // Test that it won't result in crash or hang if an interface pointer is
-  // destroyed while it is waiting for a sync call response.
-
-  TestSyncPtr ptr;
-  TestSyncImpl impl(GetProxy(&ptr));
-  impl.set_ping_handler([&ptr](const TestSync::PingCallback& callback) {
-    ptr.reset();
-    callback.Run();
-  });
-  ASSERT_FALSE(ptr->Ping());
-}
-
-TEST_F(SyncMethodTest, BindingDestroyedDuringSyncCall) {
-  // Test that it won't result in crash or hang if a binding is
-  // closed (and therefore the message pipe handle is closed) while the
-  // corresponding interface pointer is waiting for a sync call response.
-
-  TestSyncPtr ptr;
-  TestSyncImpl impl(GetProxy(&ptr));
-  impl.set_ping_handler([&impl](const TestSync::PingCallback& callback) {
-    impl.binding()->Close();
-    callback.Run();
-  });
-  ASSERT_FALSE(ptr->Ping());
-}
-
-TEST_F(SyncMethodTest, NestedSyncCallsWithInOrderResponses) {
-  // Test that we can call a sync method on an interface ptr, while there is
-  // already a sync call ongoing. The responses arrive in order.
-
-  TestSyncPtr ptr;
-  TestSyncImpl impl(GetProxy(&ptr));
-
-  // The same variable is used to store the output of the two sync calls, in
-  // order to test that responses are handled in the correct order.
-  int32_t result_value = -1;
-
-  bool first_call = true;
-  impl.set_echo_handler([&first_call, &ptr, &result_value](
-      int32_t value, const TestSync::EchoCallback& callback) {
-    if (first_call) {
-      first_call = false;
-      ASSERT_TRUE(ptr->Echo(456, &result_value));
-      EXPECT_EQ(456, result_value);
-    }
-    callback.Run(value);
-  });
-
-  ASSERT_TRUE(ptr->Echo(123, &result_value));
-  EXPECT_EQ(123, result_value);
-}
-
-TEST_F(SyncMethodTest, NestedSyncCallsWithOutOfOrderResponses) {
-  // Test that we can call a sync method on an interface ptr, while there is
-  // already a sync call ongoing. The responses arrive out of order.
-
-  TestSyncPtr ptr;
-  TestSyncImpl impl(GetProxy(&ptr));
-
-  // The same variable is used to store the output of the two sync calls, in
-  // order to test that responses are handled in the correct order.
-  int32_t result_value = -1;
-
-  bool first_call = true;
-  impl.set_echo_handler([&first_call, &ptr, &result_value](
-      int32_t value, const TestSync::EchoCallback& callback) {
-    callback.Run(value);
-    if (first_call) {
-      first_call = false;
-      ASSERT_TRUE(ptr->Echo(456, &result_value));
-      EXPECT_EQ(456, result_value);
-    }
-  });
-
-  ASSERT_TRUE(ptr->Echo(123, &result_value));
-  EXPECT_EQ(123, result_value);
-}
-
-TEST_F(SyncMethodTest, AsyncResponseQueuedDuringSyncCall) {
-  // Test that while an interface pointer is waiting for the response to a sync
-  // call, async responses are queued until the sync call completes.
-
-  TestSyncPtr ptr;
-  TestSyncImpl impl(GetProxy(&ptr));
-
-  int32_t async_echo_request_value = -1;
-  TestSync::AsyncEchoCallback async_echo_request_callback;
-  base::RunLoop run_loop1;
-  impl.set_async_echo_handler(
-      [&async_echo_request_value, &async_echo_request_callback, &run_loop1](
-          int32_t value, const TestSync::AsyncEchoCallback& callback) {
-        async_echo_request_value = value;
-        async_echo_request_callback = callback;
-        run_loop1.Quit();
-      });
-
-  bool async_echo_response_dispatched = false;
-  base::RunLoop run_loop2;
-  ptr->AsyncEcho(123,
-                 [&async_echo_response_dispatched, &run_loop2](int32_t result) {
-                   async_echo_response_dispatched = true;
-                   EXPECT_EQ(123, result);
-                   run_loop2.Quit();
-                 });
-  // Run until the AsyncEcho request reaches the service side.
-  run_loop1.Run();
-
-  impl.set_echo_handler(
-      [&async_echo_request_value, &async_echo_request_callback](
-          int32_t value, const TestSync::EchoCallback& callback) {
-        // Send back the async response first.
-        EXPECT_FALSE(async_echo_request_callback.is_null());
-        async_echo_request_callback.Run(async_echo_request_value);
-
-        callback.Run(value);
-      });
-
-  int32_t result_value = -1;
-  ASSERT_TRUE(ptr->Echo(456, &result_value));
-  EXPECT_EQ(456, result_value);
-
-  // Although the AsyncEcho response arrives before the Echo response, it should
-  // be queued and not yet dispatched.
-  EXPECT_FALSE(async_echo_response_dispatched);
-
-  // Run until the AsyncEcho response is dispatched.
-  run_loop2.Run();
-
-  EXPECT_TRUE(async_echo_response_dispatched);
-}
-
-TEST_F(SyncMethodTest, AsyncRequestQueuedDuringSyncCall) {
-  // Test that while an interface pointer is waiting for the response to a sync
-  // call, async requests for a binding running on the same thread are queued
-  // until the sync call completes.
-
-  TestSyncPtr ptr;
-  TestSyncImpl impl(GetProxy(&ptr));
-
-  bool async_echo_request_dispatched = false;
-  impl.set_async_echo_handler([&async_echo_request_dispatched](
-      int32_t value, const TestSync::AsyncEchoCallback& callback) {
-    async_echo_request_dispatched = true;
-    callback.Run(value);
-  });
-
-  bool async_echo_response_dispatched = false;
-  base::RunLoop run_loop;
-  ptr->AsyncEcho(123,
-                 [&async_echo_response_dispatched, &run_loop](int32_t result) {
-                   async_echo_response_dispatched = true;
-                   EXPECT_EQ(123, result);
-                   run_loop.Quit();
-                 });
-
-  impl.set_echo_handler([&async_echo_request_dispatched](
-      int32_t value, const TestSync::EchoCallback& callback) {
-    // Although the AsyncEcho request is sent before the Echo request, it
-    // shouldn't be dispatched yet at this point, because there is an ongoing
-    // sync call on the same thread.
-    EXPECT_FALSE(async_echo_request_dispatched);
-    callback.Run(value);
-  });
-
-  int32_t result_value = -1;
-  ASSERT_TRUE(ptr->Echo(456, &result_value));
-  EXPECT_EQ(456, result_value);
-
-  // Although the AsyncEcho request is sent before the Echo request, it
-  // shouldn't be dispatched yet.
-  EXPECT_FALSE(async_echo_request_dispatched);
-
-  // Run until the AsyncEcho response is dispatched.
-  run_loop.Run();
-
-  EXPECT_TRUE(async_echo_response_dispatched);
 }
 
 }  // namespace

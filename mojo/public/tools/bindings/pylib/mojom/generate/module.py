@@ -671,10 +671,3 @@ def PassesAssociatedKinds(interface):
         if _ContainsAssociatedKinds(param.kind, visited_kinds):
           return True
   return False
-
-
-def HasSyncMethods(interface):
-  for method in interface.methods:
-    if method.sync:
-      return True
-  return False

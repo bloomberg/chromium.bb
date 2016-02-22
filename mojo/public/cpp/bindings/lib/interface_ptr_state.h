@@ -172,8 +172,7 @@ class InterfacePtrState<Interface, false> {
     filters.Append<MessageHeaderValidator>();
     filters.Append<typename Interface::ResponseValidator_>();
 
-    router_ =
-        new Router(std::move(handle_), std::move(filters), false, waiter_);
+    router_ = new Router(std::move(handle_), std::move(filters), waiter_);
     waiter_ = nullptr;
 
     proxy_ = new Proxy(router_);
