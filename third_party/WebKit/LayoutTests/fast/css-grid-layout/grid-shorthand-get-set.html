@@ -12,7 +12,7 @@
 .gridWithInherit {
     grid: inherit;
 }
-#gridWithAutoFlowAndColumns {
+#gridWithAutoFlowAndRows {
     grid: column 10px;
 }
 #gridWithAutoFlowNone {
@@ -24,7 +24,7 @@
 #gridWithAutoFlowDenseRow {
     grid: dense row 10px;
 }
-#gridWithAutoFlowAndColumnsAndRows {
+#gridWithAutoFlowAndRowsAndColumns {
     grid: column 10px / 20px;
 }
 
@@ -54,11 +54,11 @@
 <div class="grid" class="gridWithTemplate">
     <div><div class="grid gridWithInherit" id="gridNoInherit"></div></div>
 </div-->
-<div class="grid" id="gridWithAutoFlowAndColumns"></div>
+<div class="grid" id="gridWithAutoFlowAndRows"></div>
 <div class="grid" id="gridWithAutoFlowNone"></div>
 <div class="grid" id="gridWithAutoFlowColumnDense"></div>
 <div class="grid" id="gridWithAutoFlowDenseRow"></div>
-<div class="grid" id="gridWithAutoFlowAndColumnsAndRows"></div>
+<div class="grid" id="gridWithAutoFlowAndRowsAndColumns"></div>
 <div class="grid" id="gridWithExplicitAndImplicit"></div>
 <div class="grid" id="gridWithMisplacedNone1"></div>
 <div class="grid" id="gridWithMisplacedNone2"></div>
@@ -72,11 +72,11 @@
     testGridDefinitionsValues(document.getElementById("gridWithTemplate"), "15px", "10px", "none", "row", "auto", "auto");
     testGridDefinitionsValues(document.getElementById("gridInherit"), "15px", "10px", "none", "row", "auto", "auto");
     testGridDefinitionsValues(document.getElementById("gridNoInherit"), "none", "none", "none", "row", "auto", "auto");
-    testGridDefinitionsValues(document.getElementById("gridWithAutoFlowAndColumns"), "none", "none", "none", "column", "10px", "10px");
+    testGridDefinitionsValues(document.getElementById("gridWithAutoFlowAndRows"), "none", "none", "none", "column", "10px", "10px");
     testGridDefinitionsValues(document.getElementById("gridWithAutoFlowNone"), "none", "none", "none", "row", "auto", "auto");
     testGridDefinitionsValues(document.getElementById("gridWithAutoFlowColumnDense"), "none", "none", "none", "column dense", "10px", "10px");
     testGridDefinitionsValues(document.getElementById("gridWithAutoFlowDenseRow"), "none", "none", "none", "row dense", "10px", "10px");
-    testGridDefinitionsValues(document.getElementById("gridWithAutoFlowAndColumnsAndRows"), "none", "none", "none", "column", "10px", "20px");
+    testGridDefinitionsValues(document.getElementById("gridWithAutoFlowAndRowsAndColumns"), "none", "none", "none", "column", "20px", "10px");
 
     debug("");
     debug("Test getting wrong values for 'grid' shorthand through CSS (they should resolve to the default: 'none')");
@@ -90,7 +90,7 @@
     testGridDefinitionsSetJSValues("20px / 10px", "10px", "20px", "none", "row", "auto", "auto", "10px", "20px", "none", "initial", "initial", "initial");
     testGridDefinitionsSetJSValues("[line] 'a' 20px / 10px", "10px", "[line] 20px", "\"a\"", "row", "auto", "auto", "10px", "[line] 20px", "\"a\"", "initial", "initial", "initial");
     testGridDefinitionsSetJSValues("row dense 20px", "none", "none", "none", "row dense", "20px", "20px", "initial", "initial", "initial", "row dense", "20px", "20px");
-    testGridDefinitionsSetJSValues("column 20px / 10px", "none", "none", "none", "column", "20px", "10px", "initial", "initial", "initial", "column", "20px", "10px");
+    testGridDefinitionsSetJSValues("column 20px / 10px", "none", "none", "none", "column", "10px", "20px", "initial", "initial", "initial", "column", "10px", "20px");
 
     debug("");
     debug("Test the initial value");
@@ -106,7 +106,7 @@
 
     debug("");
     debug("Test setting grid-template-columns and grid-template-rows back to 'none' through JS");
-    testGridDefinitionsSetJSValues("column 10px / 20px", "none", "none", "none", "column", "10px", "20px", "initial", "initial", "initial", "column", "10px", "20px");
+    testGridDefinitionsSetJSValues("column 10px / 20px", "none", "none", "none", "column", "20px", "10px", "initial", "initial", "initial", "column", "20px", "10px");
     testGridDefinitionsSetJSValues("none", "none", "none", "none", "row", "auto", "auto", "none", "none", "none", "initial", "initial", "initial");
 
     debug("");

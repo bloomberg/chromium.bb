@@ -1545,7 +1545,7 @@ bool CSSPropertyParser::parseGridShorthand(bool important)
     // Need to rewind parsing to explore the alternative syntax of this shorthand.
     m_valueList->setCurrentIndex(0);
 
-    // 2- <grid-auto-flow> [ <grid-auto-columns> [ / <grid-auto-rows> ]? ]
+    // 2- <grid-auto-flow> [ <grid-auto-rows> [ / <grid-auto-columns> ]? ]
     if (!legacyParseAndApplyValue(CSSPropertyGridAutoFlow, important))
         return false;
 
@@ -1553,14 +1553,14 @@ bool CSSPropertyParser::parseGridShorthand(bool important)
     RefPtrWillBeRawPtr<CSSValue> autoRowsValue = nullptr;
 
     if (m_valueList->current()) {
-        autoColumnsValue = parseGridTrackSize(*m_valueList);
-        if (!autoColumnsValue)
+        autoRowsValue = parseGridTrackSize(*m_valueList);
+        if (!autoRowsValue)
             return false;
         if (m_valueList->current()) {
             if (!isForwardSlashOperator(m_valueList->current()) || !m_valueList->next())
                 return false;
-            autoRowsValue = parseGridTrackSize(*m_valueList);
-            if (!autoRowsValue)
+            autoColumnsValue = parseGridTrackSize(*m_valueList);
+            if (!autoColumnsValue)
                 return false;
         }
         if (m_valueList->current())
@@ -1571,9 +1571,9 @@ bool CSSPropertyParser::parseGridShorthand(bool important)
         autoRowsValue = cssValuePool().createImplicitInitialValue();
     }
 
-    // if <grid-auto-rows> value is omitted, it is set to the value specified for grid-auto-columns.
-    if (!autoRowsValue)
-        autoRowsValue = autoColumnsValue;
+    // if <grid-auto-columns> value is omitted, it is set to the value specified for grid-auto-rows.
+    if (!autoColumnsValue)
+        autoColumnsValue = autoRowsValue;
 
     addProperty(CSSPropertyGridAutoColumns, autoColumnsValue, important);
     addProperty(CSSPropertyGridAutoRows, autoRowsValue, important);
