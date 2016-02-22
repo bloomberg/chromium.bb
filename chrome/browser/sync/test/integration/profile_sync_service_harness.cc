@@ -399,7 +399,7 @@ bool ProfileSyncServiceHarness::EnableSyncForAllDatatypes() {
     return false;
   }
 
-  service()->OnUserChoseDatatypes(true, syncer::ModelTypeSet::All());
+  service()->OnUserChoseDatatypes(true, syncer::UserSelectableTypes());
   if (AwaitSyncSetupCompletion()) {
     DVLOG(1) << "EnableSyncForAllDatatypes(): Enabled sync for all datatypes "
              << "on " << profile_debug_name_ << ".";

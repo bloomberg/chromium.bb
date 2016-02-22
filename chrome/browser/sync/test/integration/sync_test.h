@@ -257,10 +257,6 @@ class SyncTest : public InProcessBrowserTest {
   // behavior.
   void TearDownInProcessBrowserTestFixture() override;
 
-  // Creates Profile, Browser and ProfileSyncServiceHarness instances for
-  // |index|. Used by SetupClients().
-  virtual void InitializeInstance(int index);
-
   // Implementations of the EnableNotifications() and DisableNotifications()
   // functions defined above.
   void DisableNotificationsImpl();
@@ -299,7 +295,7 @@ class SyncTest : public InProcessBrowserTest {
 
   // Helper to Profile::CreateProfile that handles path creation. It creates
   // a profile then registers it as a testing profile.
-  Profile* MakeTestProfile(base::FilePath profile_path);
+  Profile* MakeTestProfile(base::FilePath profile_path, int index);
 
   // Helper method used to create a Gaia account at runtime.
   // This function should only be called when running against external servers
@@ -307,6 +303,10 @@ class SyncTest : public InProcessBrowserTest {
   // Returns true if account creation was successful, false otherwise.
   bool CreateGaiaAccount(const std::string& username,
                          const std::string& password);
+
+  // Helper to block the current thread while the data models sync depends on
+  // finish loading.
+  void WaitForDataModels(Profile* profile);
 
   // Helper method used to read GAIA credentials from a local password file
   // specified via the "--password-file-for-test" command line switch.
@@ -359,6 +359,9 @@ class SyncTest : public InProcessBrowserTest {
   // of test being run and command line args passed in.
   void DecideServerType();
 
+  // Initializes any custom services needed for the |profile| at |index|.
+  void InitializeProfile(int index, Profile* profile);
+
   // Sets up the client-side invalidations infrastructure depending on the
   // value of |server_type_|.
   void InitializeInvalidations(int index);
@@ -384,6 +387,11 @@ class SyncTest : public InProcessBrowserTest {
   // data contained within its own subdirectory under the chrome user data
   // directory. Profiles are owned by the ProfileManager.
   std::vector<Profile*> profiles_;
+
+  // Collection of profile delegates. Only used for test profiles, which require
+  // a custom profile delegate to ensure initialization happens at the right
+  // time.
+  std::vector<scoped_ptr<Profile::Delegate>> profile_delegates_;
 
   // Collection of profile paths used by a test. Each profile has a unique path
   // which should be cleaned up at test shutdown. Profile paths inside the

@@ -24,7 +24,6 @@ SigninManagerFactory::SigninManagerFactory()
   DependsOn(ChromeSigninClientFactory::GetInstance());
   DependsOn(GaiaCookieManagerServiceFactory::GetInstance());
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
-  DependsOn(AccountFetcherServiceFactory::GetInstance());
   DependsOn(AccountTrackerServiceFactory::GetInstance());
 }
 

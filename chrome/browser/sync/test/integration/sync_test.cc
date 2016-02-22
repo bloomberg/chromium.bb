@@ -108,6 +108,36 @@ const char kSyncServerCommandLine[] = "sync-server-command-line";
 
 namespace {
 
+// Helper class to ensure a profile is registered before the manager is
+// notified of creation.
+class SyncProfileDelegate : public Profile::Delegate {
+ public:
+  explicit SyncProfileDelegate(
+      const base::Callback<void(Profile*)>& on_profile_created_callback)
+      : on_profile_created_callback_(on_profile_created_callback) {}
+  ~SyncProfileDelegate() override {}
+
+  void OnProfileCreated(Profile* profile,
+                        bool success,
+                        bool is_new_profile) override {
+    g_browser_process->profile_manager()->RegisterTestingProfile(profile,
+                                                                 true,
+                                                                 false);
+
+    // Perform any custom work needed before the profile is initialized.
+    if (!on_profile_created_callback_.is_null())
+      on_profile_created_callback_.Run(profile);
+
+    g_browser_process->profile_manager()->OnProfileCreated(profile, success,
+                                                           is_new_profile);
+  }
+
+ private:
+  base::Callback<void(Profile*)> on_profile_created_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(SyncProfileDelegate);
+};
+
 // Helper class that checks whether a sync test server is running or not.
 class SyncServerStatusChecker : public net::URLFetcherDelegate {
  public:
@@ -330,11 +360,18 @@ void SyncTest::CreateProfile(int index) {
   if (UsingExternalServers()) {
     // If running against an EXTERNAL_LIVE_SERVER, we signin profiles using real
     // GAIA server. This requires creating profiles with no test hooks.
-    profiles_[index] = MakeProfileForUISignin(profile_path);
+    InitializeProfile(index, MakeProfileForUISignin(profile_path));
   } else {
     // Without need of real GAIA authentication, we create new test profiles.
-    profiles_[index] = MakeTestProfile(profile_path);
+    // For test profiles, a custom delegate needs to be used to do the
+    // initialization work before the profile is registered.
+    profile_delegates_[index].reset(new SyncProfileDelegate(base::Bind(
+            &SyncTest::InitializeProfile, base::Unretained(this), index)));
+    MakeTestProfile(profile_path, index);
   }
+
+  // Once profile initialization has kicked off, wait for it to finish.
+  WaitForDataModels(GetProfile(index));
 }
 
 // Called when the ProfileManager has created a profile.
@@ -371,7 +408,7 @@ Profile* SyncTest::MakeProfileForUISignin(base::FilePath profile_path) {
   return profile_manager->GetProfileByPath(profile_path);
 }
 
-Profile* SyncTest::MakeTestProfile(base::FilePath profile_path) {
+Profile* SyncTest::MakeTestProfile(base::FilePath profile_path, int index) {
   if (!preexisting_preferences_file_contents_.empty()) {
     base::FilePath pref_path(profile_path.Append(chrome::kPreferencesFilename));
     const char* contents = preexisting_preferences_file_contents_.c_str();
@@ -380,12 +417,10 @@ Profile* SyncTest::MakeTestProfile(base::FilePath profile_path) {
       LOG(FATAL) << "Preexisting Preferences file could not be written.";
     }
   }
-  Profile* profile = Profile::CreateProfile(profile_path,
-                                            NULL,
-                                            Profile::CREATE_MODE_SYNCHRONOUS);
-  g_browser_process->profile_manager()->RegisterTestingProfile(profile,
-                                                               true,
-                                                               true);
+
+  Profile* profile =
+      Profile::CreateProfile(profile_path, profile_delegates_[index].get(),
+                             Profile::CREATE_MODE_SYNCHRONOUS);
   return profile;
 }
 
@@ -445,6 +480,7 @@ bool SyncTest::SetupClients() {
 
   // Create the required number of sync profiles, browsers and clients.
   profiles_.resize(num_clients_);
+  profile_delegates_.resize(num_clients_ + 1); // + 1 for the verifier.
   tmp_profile_paths_.resize(num_clients_);
   browsers_.resize(num_clients_);
   clients_.resize(num_clients_);
@@ -452,7 +488,7 @@ bool SyncTest::SetupClients() {
   sync_refreshers_.resize(num_clients_);
   fake_server_invalidation_services_.resize(num_clients_);
   for (int i = 0; i < num_clients_; ++i) {
-    InitializeInstance(i);
+    CreateProfile(i);
   }
 
   // Verifier account is not useful when running against external servers.
@@ -463,14 +499,11 @@ bool SyncTest::SetupClients() {
   if (use_verifier_) {
     base::FilePath user_data_dir;
     PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+    profile_delegates_[num_clients_].reset(
+        new SyncProfileDelegate(base::Callback<void(Profile*)>()));
     verifier_ = MakeTestProfile(
-        user_data_dir.Append(FILE_PATH_LITERAL("Verifier")));
-    bookmarks::test::WaitForBookmarkModelToLoad(
-        BookmarkModelFactory::GetForProfile(verifier()));
-    ui_test_utils::WaitForHistoryToLoad(HistoryServiceFactory::GetForProfile(
-        verifier(), ServiceAccessType::EXPLICIT_ACCESS));
-    search_test_utils::WaitForTemplateURLServiceToLoad(
-        TemplateURLServiceFactory::GetForProfile(verifier()));
+        user_data_dir.Append(FILE_PATH_LITERAL("Verifier")), num_clients_);
+    WaitForDataModels(verifier());
   }
   // Error cases are all handled by LOG(FATAL) messages. So there is not really
   // a case that returns false.  In case we failed to create a verifier profile,
@@ -478,10 +511,9 @@ bool SyncTest::SetupClients() {
   return true;
 }
 
-void SyncTest::InitializeInstance(int index) {
-  CreateProfile(index);
-  EXPECT_FALSE(GetProfile(index) == NULL) << "Could not create Profile "
-                                          << index << ".";
+void SyncTest::InitializeProfile(int index, Profile* profile) {
+  DCHECK(profile);
+  profiles_[index] = profile;
 
   // CheckInitialState() assumes that no windows are open at startup.
   browsers_[index] = new Browser(Browser::CreateParams(GetProfile(index)));
@@ -517,13 +549,6 @@ void SyncTest::InitializeInstance(int index) {
   EXPECT_FALSE(GetClient(index) == NULL) << "Could not create Client "
                                          << index << ".";
   InitializeInvalidations(index);
-
-  bookmarks::test::WaitForBookmarkModelToLoad(
-      BookmarkModelFactory::GetForProfile(GetProfile(index)));
-  ui_test_utils::WaitForHistoryToLoad(HistoryServiceFactory::GetForProfile(
-      GetProfile(index), ServiceAccessType::EXPLICIT_ACCESS));
-  search_test_utils::WaitForTemplateURLServiceToLoad(
-      TemplateURLServiceFactory::GetForProfile(GetProfile(index)));
 }
 
 void SyncTest::InitializeInvalidations(int index) {
@@ -675,6 +700,15 @@ void SyncTest::SetUpInProcessBrowserTestFixture() {
 
 void SyncTest::TearDownInProcessBrowserTestFixture() {
   mock_host_resolver_override_.reset();
+}
+
+void SyncTest::WaitForDataModels(Profile* profile) {
+  bookmarks::test::WaitForBookmarkModelToLoad(
+      BookmarkModelFactory::GetForProfile(profile));
+  ui_test_utils::WaitForHistoryToLoad(HistoryServiceFactory::GetForProfile(
+      profile, ServiceAccessType::EXPLICIT_ACCESS));
+  search_test_utils::WaitForTemplateURLServiceToLoad(
+      TemplateURLServiceFactory::GetForProfile(profile));
 }
 
 void SyncTest::ReadPasswordFile() {

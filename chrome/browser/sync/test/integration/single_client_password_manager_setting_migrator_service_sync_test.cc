@@ -55,34 +55,6 @@ void InjectPreferenceValueToFakeServer(fake_server::FakeServer* fake_server,
       fake_server::UniqueClientEntity::CreateForInjection(id, specifics));
 }
 
-class SyncStateObserver : public syncable_prefs::PrefServiceSyncableObserver {
- public:
-  SyncStateObserver() : profile_(nullptr), prefs_(nullptr) {}
-
-  ~SyncStateObserver() override {}
-
-  void InitWithProfile(Profile* profile) {
-    profile_ = profile;
-    prefs_ = PrefServiceSyncableFromProfile(profile_);
-    prefs_->AddObserver(this);
-  }
-
-  void OnIsSyncingChanged() override {
-    if (!prefs_->IsSyncing() && !prefs_->IsPrioritySyncing()) {
-      // TODO(melandory): postpone observer removal until destruction.
-      prefs_->RemoveObserver(this);
-      password_manager_setting_migrater_helper::InitializePreferencesMigration(
-          profile_);
-    }
-  }
-
- private:
-  Profile* profile_;
-  syncable_prefs::PrefServiceSyncable* prefs_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncStateObserver);
-};
-
 }  // namespace
 
 class SingleClientPasswordManagerSettingMigratorServiceSyncTest
@@ -115,14 +87,20 @@ class SingleClientPasswordManagerSettingMigratorServiceSyncTest
         GetFakeServer(), kPasswordManagerSavingEnabled, old_pref_sync_value);
   }
 
-  void InitMigrationService() {
+  void InitMigrationServiceAndSync() {
+    // Set up sync without prefs first to suppress the migration logic.
+    syncer::ModelTypeSet types = syncer::UserSelectableTypes();
+    types.Remove(syncer::PREFERENCES);
+    ASSERT_TRUE(GetClient(0)->SetupSync(types));
     password_manager_setting_migrater_helper::SetupFieldTrial();
-    sync_state_observer_.InitWithProfile(GetProfile(0));
+    password_manager_setting_migrater_helper::InitializePreferencesMigration(
+        GetProfile(0));
+    // Now enable prefs, the completion of which will trigger the migration
+    // logic.
+    ASSERT_TRUE(GetClient(0)->EnableSyncForAllDatatypes());
   }
 
  private:
-  SyncStateObserver sync_state_observer_;
-
   DISALLOW_COPY_AND_ASSIGN(
       SingleClientPasswordManagerSettingMigratorServiceSyncTest);
 };
@@ -135,8 +113,7 @@ IN_PROC_BROWSER_TEST_F(
                      true /* kPasswordManagerSavingEnabled */);
   InjectNewValues(false /* kCredentialsEnableService */,
                   false /* kPasswordManagerSavingEnabled */);
-  InitMigrationService();
-  ASSERT_TRUE(SetupSync());
+  InitMigrationServiceAndSync();
   ASSERT_TRUE(sync_integration_test_util::AwaitCommitActivityCompletion(
       GetSyncService((0))));
   AssertPrefValues(false /* kCredentialsEnableService */,
@@ -149,8 +126,7 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(SetupClients());
   InjectNewValues(true /* kCredentialsEnableService */,
                   false /* kPasswordManagerSavingEnabled */);
-  InitMigrationService();
-  ASSERT_TRUE(SetupSync());
+  InitMigrationServiceAndSync();
   ASSERT_TRUE(sync_integration_test_util::AwaitCommitActivityCompletion(
       GetSyncService((0))));
   AssertPrefValues(false /* kCredentialsEnableService */,
@@ -165,8 +141,7 @@ IN_PROC_BROWSER_TEST_F(
                      true /* kPasswordManagerSavingEnabled */);
   InjectNewValues(false /* kCredentialsEnableService */,
                   true /* kPasswordManagerSavingEnabled */);
-  InitMigrationService();
-  ASSERT_TRUE(SetupSync());
+  InitMigrationServiceAndSync();
   ASSERT_TRUE(sync_integration_test_util::AwaitCommitActivityCompletion(
       GetSyncService((0))));
   AssertPrefValues(false /* kCredentialsEnableService */,
@@ -181,8 +156,7 @@ IN_PROC_BROWSER_TEST_F(
                      false /* kPasswordManagerSavingEnabled */);
   InjectNewValues(true /* kCredentialsEnableService */,
                   true /* kPasswordManagerSavingEnabled */);
-  InitMigrationService();
-  ASSERT_TRUE(SetupSync());
+  InitMigrationServiceAndSync();
   ASSERT_TRUE(sync_integration_test_util::AwaitCommitActivityCompletion(
       GetSyncService((0))));
   AssertPrefValues(true /* kCredentialsEnableService */,
@@ -197,8 +171,7 @@ IN_PROC_BROWSER_TEST_F(
                      false /* kPasswordManagerSavingEnabled */);
   InjectNewValues(true /* kCredentialsEnableService */,
                   false /* kPasswordManagerSavingEnabled */);
-  InitMigrationService();
-  ASSERT_TRUE(SetupSync());
+  InitMigrationServiceAndSync();
   ASSERT_TRUE(sync_integration_test_util::AwaitCommitActivityCompletion(
       GetSyncService((0))));
   AssertPrefValues(false /* kCredentialsEnableService */,
@@ -213,8 +186,7 @@ IN_PROC_BROWSER_TEST_F(
                      false /* kPasswordManagerSavingEnabled */);
   InjectNewValues(false /* kCredentialsEnableService */,
                   true /* kPasswordManagerSavingEnabled */);
-  InitMigrationService();
-  ASSERT_TRUE(SetupSync());
+  InitMigrationServiceAndSync();
   ASSERT_TRUE(sync_integration_test_util::AwaitCommitActivityCompletion(
       GetSyncService((0))));
   AssertPrefValues(false /* kCredentialsEnableService */,
@@ -229,8 +201,7 @@ IN_PROC_BROWSER_TEST_F(
                      false /* kPasswordManagerSavingEnabled */);
   InjectNewValues(false /* kCredentialsEnableService */,
                   true /* kPasswordManagerSavingEnabled */);
-  InitMigrationService();
-  ASSERT_TRUE(SetupSync());
+  InitMigrationServiceAndSync();
   ASSERT_TRUE(sync_integration_test_util::AwaitCommitActivityCompletion(
       GetSyncService((0))));
   AssertPrefValues(true /* kCredentialsEnableService */,
@@ -245,8 +216,7 @@ IN_PROC_BROWSER_TEST_F(
                      false /* kPasswordManagerSavingEnabled */);
   InjectNewValues(true /* kCredentialsEnableService */,
                   false /* kPasswordManagerSavingEnabled */);
-  InitMigrationService();
-  ASSERT_TRUE(SetupSync());
+  InitMigrationServiceAndSync();
   ASSERT_TRUE(sync_integration_test_util::AwaitCommitActivityCompletion(
       GetSyncService((0))));
   AssertPrefValues(true /* kCredentialsEnableService */,
@@ -261,8 +231,7 @@ IN_PROC_BROWSER_TEST_F(
                      true /* kPasswordManagerSavingEnabled */);
   InjectNewValues(false /* kCredentialsEnableService */,
                   true /* kPasswordManagerSavingEnabled */);
-  InitMigrationService();
-  ASSERT_TRUE(SetupSync());
+  InitMigrationServiceAndSync();
   ASSERT_TRUE(sync_integration_test_util::AwaitCommitActivityCompletion(
       GetSyncService((0))));
   AssertPrefValues(false /* kCredentialsEnableService */,
@@ -277,8 +246,7 @@ IN_PROC_BROWSER_TEST_F(
                      false /* kPasswordManagerSavingEnabled */);
   InjectNewValues(false /* kCredentialsEnableService */,
                   false /* kPasswordManagerSavingEnabled */);
-  InitMigrationService();
-  ASSERT_TRUE(SetupSync());
+  InitMigrationServiceAndSync();
   ASSERT_TRUE(sync_integration_test_util::AwaitCommitActivityCompletion(
       GetSyncService((0))));
   AssertPrefValues(false /* kCredentialsEnableService */,
@@ -293,8 +261,7 @@ IN_PROC_BROWSER_TEST_F(
                      true /* kPasswordManagerSavingEnabled */);
   InjectNewValues(true /* kCredentialsEnableService */,
                   true /* kPasswordManagerSavingEnabled */);
-  InitMigrationService();
-  ASSERT_TRUE(SetupSync());
+  InitMigrationServiceAndSync();
   ASSERT_TRUE(sync_integration_test_util::AwaitCommitActivityCompletion(
       GetSyncService((0))));
   AssertPrefValues(true /* kCredentialsEnableService */,
