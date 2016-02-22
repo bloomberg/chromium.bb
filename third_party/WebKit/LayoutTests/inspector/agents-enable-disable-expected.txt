@@ -7,7 +7,6 @@ DOM.disable finished successfully
 DOMStorage.disable finished successfully
 Database.disable finished successfully
 Debugger.disable finished successfully
-FileSystem.disable finished successfully
 HeapProfiler.disable finished successfully
 IndexedDB.disable finished successfully
 Inspector.disable finished successfully
@@ -38,9 +37,6 @@ Database.disable finished successfully
 
 Debugger.enable finished successfully
 Debugger.disable finished successfully
-
-FileSystem.enable finished successfully
-FileSystem.disable finished successfully
 
 HeapProfiler.enable finished successfully
 HeapProfiler.disable finished successfully

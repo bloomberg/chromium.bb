@@ -1045,8 +1045,6 @@
       'filesystem/FileWriterSync.h',
       'filesystem/HTMLInputElementFileSystem.cpp',
       'filesystem/HTMLInputElementFileSystem.h',
-      'filesystem/InspectorFileSystemAgent.cpp',
-      'filesystem/InspectorFileSystemAgent.h',
       'filesystem/LocalFileSystem.cpp',
       'filesystem/LocalFileSystem.h',
       'filesystem/Metadata.h',
