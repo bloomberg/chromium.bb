@@ -185,6 +185,11 @@ bool Event::isPointerEvent() const
     return false;
 }
 
+bool Event::isInputEvent() const
+{
+    return false;
+}
+
 bool Event::isDragEvent() const
 {
     return false;

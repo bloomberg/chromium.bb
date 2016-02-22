@@ -66,6 +66,7 @@
 #include "core/events/EventDispatcher.h"
 #include "core/events/EventListener.h"
 #include "core/events/GestureEvent.h"
+#include "core/events/InputEvent.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
 #include "core/events/MutationEvent.h"
@@ -2084,7 +2085,13 @@ void Node::dispatchSimulatedClick(Event* underlyingEvent, SimulatedClickMouseEve
 
 void Node::dispatchInputEvent()
 {
-    dispatchScopedEvent(Event::createBubble(EventTypeNames::input));
+    if (RuntimeEnabledFeatures::inputEventEnabled()) {
+        InputEventInit eventInitDict;
+        eventInitDict.setBubbles(true);
+        dispatchScopedEvent(InputEvent::create(EventTypeNames::input, eventInitDict));
+    } else {
+        dispatchScopedEvent(Event::createBubble(EventTypeNames::input));
+    }
 }
 
 void Node::defaultEventHandler(Event* event)

@@ -98,6 +98,7 @@ ImageOrientation status=test
 ImageRenderingPixelated status=stable
 IndexedDBExperimental status=experimental
 InputDeviceCapabilities status=stable
+InputEvent status=experimental
 InputModeAttribute status=experimental
 IntersectionObserver status=experimental
 IterableCollections status=experimental

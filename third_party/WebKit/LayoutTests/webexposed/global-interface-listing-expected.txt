@@ -3149,6 +3149,8 @@ interface ImageData
 interface InputDeviceCapabilities
     getter firesTouchEvents
     method constructor
+interface InputEvent : UIEvent
+    method constructor
 interface IntersectionObserver
     getter root
     getter rootMargin

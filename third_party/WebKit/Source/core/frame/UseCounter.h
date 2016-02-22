@@ -1089,6 +1089,7 @@ public:
         V8Animation_Id_AttributeGetter = 1239,
         V8Animation_Id_AttributeSetter = 1240,
         MediaStreamOnEnded = 1241,
+        DocumentCreateEventInputEvent = 1242,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
