@@ -6,11 +6,12 @@
 #define CONTENT_SHELL_RENDERER_LAYOUT_TEST_LEAK_DETECTOR_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/shell/common/leak_detection_result.h"
 #include "third_party/WebKit/public/web/WebLeakDetector.h"
 
 namespace blink {
-class WebLocalFrame;
+class WebFrame;
 }  // namespace blink
 
 namespace content {
@@ -28,7 +29,7 @@ class LeakDetector : public blink::WebLeakDetectorClient {
   // specific page, like about:blank is loaded to compare the previous
   // circumstance of DOM objects. If the number of objects increses, there
   // should be a leak.
-  void TryLeakDetection(blink::WebLocalFrame* frame);
+  void TryLeakDetection(blink::WebFrame* frame);
 
   // WebLeakDetectorClient:
   void onLeakDetectionComplete(const Result& result) override;

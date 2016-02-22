@@ -1015,8 +1015,8 @@ void BlinkTestRunner::OnNotifyDone() {
 }
 
 void BlinkTestRunner::OnTryLeakDetection() {
-  WebLocalFrame* main_frame =
-      render_view()->GetWebView()->mainFrame()->toWebLocalFrame();
+  blink::WebFrame* main_frame =
+      render_view()->GetWebView()->mainFrame();
   DCHECK_EQ(GURL(url::kAboutBlankURL), GURL(main_frame->document().url()));
   DCHECK(!main_frame->isLoading());
 

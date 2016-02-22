@@ -226,6 +226,19 @@ void SpellCheckRequester::cancelCheck()
         m_processingRequest->didCancel();
 }
 
+void SpellCheckRequester::prepareForLeakDetection()
+{
+    m_timerToProcessQueuedRequest.stop();
+    // Empty the queue of pending requests to prevent it being a leak source.
+    // Pending spell checker requests are cancellable requests not representing
+    // leaks, just async work items waiting to be processed.
+    //
+    // Rather than somehow wait for this async queue to drain before running
+    // the leak detector, they're all cancelled to prevent flaky leaks being
+    // reported.
+    m_requestQueue.clear();
+}
+
 void SpellCheckRequester::invokeRequest(PassRefPtrWillBeRawPtr<SpellCheckRequest> request)
 {
     ASSERT(!m_processingRequest);

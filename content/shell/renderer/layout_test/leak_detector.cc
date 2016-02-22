@@ -59,8 +59,8 @@ LeakDetector::LeakDetector(BlinkTestRunner* test_runner)
 LeakDetector::~LeakDetector() {
 }
 
-void LeakDetector::TryLeakDetection(blink::WebLocalFrame* frame) {
-  web_leak_detector_->prepareForLeakDetection();
+void LeakDetector::TryLeakDetection(blink::WebFrame* frame) {
+  web_leak_detector_->prepareForLeakDetection(frame);
   web_leak_detector_->collectGarbageAndReport();
 }
 

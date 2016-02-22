@@ -922,4 +922,9 @@ DEFINE_TRACE(SpellChecker)
     visitor->trace(m_spellCheckRequester);
 }
 
+void SpellChecker::prepareForLeakDetection()
+{
+    m_spellCheckRequester->prepareForLeakDetection();
+}
+
 } // namespace blink

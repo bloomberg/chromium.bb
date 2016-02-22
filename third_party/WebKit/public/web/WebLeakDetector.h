@@ -31,10 +31,11 @@
 #ifndef WebLeakDetector_h
 #define WebLeakDetector_h
 
-#include "WebFrame.h"
 #include "public/platform/WebCommon.h"
 
 namespace blink {
+
+class WebFrame;
 
 class WebLeakDetectorClient {
 public:
@@ -79,7 +80,7 @@ public:
 
     // Perform initial stage of preparing for leak detection,
     // releasing references to resources held globally.
-    virtual void prepareForLeakDetection() = 0;
+    virtual void prepareForLeakDetection(WebFrame*) = 0;
 
     // Garbage collect Blink's heaps and report leak counts.
     // |WebLeakDetectorClient::onLeakDetectionComplete()| is called

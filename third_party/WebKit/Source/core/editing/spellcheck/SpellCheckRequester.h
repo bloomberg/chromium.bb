@@ -105,6 +105,10 @@ public:
         return m_lastProcessedSequence;
     }
 
+    // Exposed for leak detector only, see comment for corresponding
+    // SpellChecker method.
+    void prepareForLeakDetection();
+
 private:
     friend class SpellCheckRequest;
 

@@ -35,6 +35,7 @@
 #include "bindings/core/v8/V8GCController.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/Document.h"
+#include "core/editing/spellcheck/SpellChecker.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/inspector/InstanceCounters.h"
 #include "core/layout/LayoutObject.h"
@@ -42,7 +43,8 @@
 #include "modules/webaudio/AudioNode.h"
 #include "platform/Timer.h"
 #include "public/web/WebDocument.h"
-#include "public/web/WebLocalFrame.h"
+#include "public/web/WebFrame.h"
+#include "web/WebLocalFrameImpl.h"
 
 namespace blink {
 
@@ -62,7 +64,7 @@ public:
 
     ~WebLeakDetectorImpl() override {}
 
-    void prepareForLeakDetection() override;
+    void prepareForLeakDetection(WebFrame*) override;
     void collectGarbageAndReport() override;
 
 private:
@@ -75,7 +77,7 @@ private:
     int m_numberOfGCNeeded;
 };
 
-void WebLeakDetectorImpl::prepareForLeakDetection()
+void WebLeakDetectorImpl::prepareForLeakDetection(WebFrame* frame)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope handleScope(isolate);
@@ -89,6 +91,17 @@ void WebLeakDetectorImpl::prepareForLeakDetection()
 
     WorkerThread::terminateAndWaitForAllWorkers();
     memoryCache()->evictResources();
+
+    // If the spellchecker is allowed to continue issuing requests while the
+    // leak detector runs, leaks may flakily be reported as the requests keep
+    // their associated element (and document) alive.
+    //
+    // Stop the spellchecker to prevent this.
+    if (frame->isWebLocalFrame()) {
+        WebLocalFrameImpl* localFrame = toWebLocalFrameImpl(frame);
+        SpellChecker& spellChecker = localFrame->frame()->spellChecker();
+        spellChecker.prepareForLeakDetection();
+    }
 
     // FIXME: HTML5 Notification should be closed because notification affects the result of number of DOM objects.
 
