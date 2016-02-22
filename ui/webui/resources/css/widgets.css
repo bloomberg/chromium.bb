@@ -38,7 +38,7 @@ select {
   min-width: 4em;
   padding-top: 1px;
   padding-bottom: 1px;
-<if expr="is_win">
+<if expr="is_win or is_macosx">
   /* The following platform-specific rule is necessary to get adjacent
    * buttons, text inputs, and so forth to align on their borders while also
    * aligning on the text's baselines. */
