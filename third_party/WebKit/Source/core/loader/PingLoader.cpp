@@ -93,14 +93,12 @@ void PingLoader::sendLinkAuditPing(LocalFrame* frame, const KURL& pingURL, const
 
     RefPtr<SecurityOrigin> pingOrigin = SecurityOrigin::create(pingURL);
     // addAdditionalRequestHeaders() will have added a referrer for same origin requests,
-    // but the spec omits the referrer for same origin.
-    if (frame->document()->securityOrigin()->isSameSchemeHostPort(pingOrigin.get()))
-        request.clearHTTPReferrer();
+    // but the spec omits the referrer.
+    request.clearHTTPReferrer();
 
     request.setHTTPHeaderField(HTTPNames::Ping_To, AtomicString(destinationURL.string()));
 
     // Ping-From follows the same rules as the default referrer beahavior for subresource requests.
-    // FIXME: Should Ping-From obey ReferrerPolicy?
     if (!SecurityPolicy::shouldHideReferrer(pingURL, frame->document()->url().string()))
         request.setHTTPHeaderField(HTTPNames::Ping_From, AtomicString(frame->document()->url().string()));
 
