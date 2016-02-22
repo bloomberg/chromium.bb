@@ -577,23 +577,25 @@ void Animation::finish(ExceptionState& exceptionState)
 {
     PlayStateUpdateScope updateScope(*this, TimingUpdateOnDemand);
 
-    if (!m_playbackRate || playStateInternal() == Idle) {
+    if (!m_playbackRate) {
+        exceptionState.throwDOMException(InvalidStateError, "Cannot finish Animation with a playbackRate of 0.");
         return;
     }
     if (m_playbackRate > 0 && effectEnd() == std::numeric_limits<double>::infinity()) {
-        exceptionState.throwDOMException(InvalidStateError, "Animation has effect whose end time is infinity.");
+        exceptionState.throwDOMException(InvalidStateError, "Cannot finish Animation with an infinite target effect end.");
         return;
     }
 
+    // Avoid updating start time when already finished.
+    if (calculatePlayState() == Finished)
+        return;
+
     double newCurrentTime = m_playbackRate < 0 ? 0 : effectEnd();
     setCurrentTimeInternal(newCurrentTime, TimingUpdateOnDemand);
-    if (!paused()) {
-        m_startTime = calculateStartTime(newCurrentTime);
-    }
-
+    m_paused = false;
     m_currentTimePending = false;
-    ASSERT(playStateInternal() != Idle);
-    ASSERT(limited());
+    m_startTime = calculateStartTime(newCurrentTime);
+    m_playState = Finished;
 }
 
 ScriptPromise Animation::finished(ScriptState* scriptState)

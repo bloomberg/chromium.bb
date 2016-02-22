@@ -118,9 +118,9 @@ test(function() {
 test(function() {
   var animation = idleAnimation();
   animation.finish();
-  assert_unresolved(animation.startTime);
-  assert_unresolved(animation.currentTime);
-  assert_equals(animation.playState, 'idle');
+  assert_equals(animation.startTime, document.timeline.currentTime - animation.currentTime);
+  assert_equals(animation.currentTime, duration);
+  assert_equals(animation.playState, 'finished');
 }, "idle -> finish()");
 
 test(function() {
@@ -344,9 +344,9 @@ test(function() {
 test(function() {
   var animation = pausedAnimation();
   animation.finish();
-  assert_unresolved(animation.startTime);
+  assert_equals(animation.startTime, document.timeline.currentTime - animation.currentTime);
   assert_equals(animation.currentTime, duration);
-  assert_equals(animation.playState, 'paused');
+  assert_equals(animation.playState, 'finished');
 }, "paused -> finish()");
 
 test(function() {
