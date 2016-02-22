@@ -92,7 +92,9 @@ function testThroughWebRTC(stream) {
     receiver.createAnswer(function (receiver_description) {
       receiver.setLocalDescription(receiver_description);
       sender.setRemoteDescription(receiver_description);
+    }, function() {
     });
+  }, function() {
   });
 }
 
