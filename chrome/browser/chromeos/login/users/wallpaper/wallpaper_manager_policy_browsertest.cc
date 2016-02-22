@@ -184,10 +184,6 @@ class WallpaperManagerPolicyTest
     command_line->AppendSwitch(switches::kLoginManager);
     command_line->AppendSwitch(switches::kForceLoginManagerInTests);
 
-    // Allow policy fetches to fail - these tests instead invoke InjectPolicy()
-    // to directly inject and modify policy dynamically.
-    command_line->AppendSwitch(switches::kAllowFailedPolicyFetchForTest);
-
     LoginManagerTest::SetUpCommandLine(command_line);
   }
 

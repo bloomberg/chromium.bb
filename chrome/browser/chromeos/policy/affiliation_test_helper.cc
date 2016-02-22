@@ -133,11 +133,6 @@ void LoginUser(const std::string& user_id) {
 void AppendCommandLineSwitchesForLoginManager(base::CommandLine* command_line) {
   command_line->AppendSwitch(chromeos::switches::kLoginManager);
   command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
-  // LoginManager tests typically don't stand up a policy test server but
-  // instead inject policies directly through a SessionManagerClient. So allow
-  // policy fetches to fail - this is expected.
-  command_line->AppendSwitch(
-      chromeos::switches::kAllowFailedPolicyFetchForTest);
 }
 
 }  // namespace affiliation_test_helper
