@@ -47062,24 +47062,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="SiteEngagementService.ScoreDecayedFrom">
-  <owner>calamity@chromium.org</owner>
-  <owner>dominickn@chromium.org</owner>
-  <summary>
-    The site engagement score of an origin prior to applying decay. Recorded at
-    the first engagement event after decay, independently per decay event.
-  </summary>
-</histogram>
-
-<histogram name="SiteEngagementService.ScoreDecayedTo">
-  <owner>calamity@chromium.org</owner>
-  <owner>dominickn@chromium.org</owner>
-  <summary>
-    The site engagement score of an origin once decay has occured. Recorded at
-    the first engagement event after decay, independently per decay event.
-  </summary>
-</histogram>
-
 <histogram name="SiteEngagementService.TotalEngagement">
   <owner>calamity@chromium.org</owner>
   <owner>dominickn@chromium.org</owner>
