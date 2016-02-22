@@ -426,6 +426,8 @@ source_set("browser") {
     "ui/commands/ios_command_ids.h",
     "ui/commands/open_url_command.h",
     "ui/commands/open_url_command.mm",
+    "ui/commands/reading_list_add_command.h",
+    "ui/commands/reading_list_add_command.mm",
     "ui/commands/set_up_for_testing_command.h",
     "ui/commands/set_up_for_testing_command.mm",
     "ui/commands/show_mail_composer_command.h",

@@ -581,6 +581,8 @@
         'browser/ui/commands/ios_command_ids.h',
         'browser/ui/commands/open_url_command.h',
         'browser/ui/commands/open_url_command.mm',
+        'browser/ui/commands/reading_list_add_command.h',
+        'browser/ui/commands/reading_list_add_command.mm',
         'browser/ui/commands/set_up_for_testing_command.h',
         'browser/ui/commands/set_up_for_testing_command.mm',
         'browser/ui/commands/show_mail_composer_command.h',
