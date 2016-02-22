@@ -1443,7 +1443,7 @@ bool CSSPropertyParser::parseGridTemplateRowsAndAreasAndColumns(bool important)
         ++rowCount;
 
         // Handle template-rows's track-size.
-        if (m_valueList->current() && !isForwardSlashOperator(m_valueList->current()) && m_valueList->current()->m_unit != CSSParserValue::String) {
+        if (m_valueList->current() && m_valueList->current()->m_unit != CSSParserValue::Operator && m_valueList->current()->m_unit != CSSParserValue::String) {
             RefPtrWillBeRawPtr<CSSValue> value = parseGridTrackSize(*m_valueList);
             if (!value)
                 return false;
@@ -1519,7 +1519,7 @@ bool CSSPropertyParser::parseGridTemplateShorthand(bool important)
         return true;
     }
 
-    // 3- [<line-names>? <string> [<track-size> <line-names>]? ]+ syntax.
+    // 3- [<line-names>? <string> <track-size>? <line-names>? ]+ syntax.
     // It requires to rewind parsing due to previous syntax failures.
     m_valueList->setCurrentIndex(0);
     return parseGridTemplateRowsAndAreasAndColumns(important);
