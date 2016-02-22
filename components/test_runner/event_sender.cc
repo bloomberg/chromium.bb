@@ -1857,6 +1857,16 @@ void EventSender::LeapForward(int milliseconds) {
 }
 
 void EventSender::BeginDragWithFiles(const std::vector<std::string>& files) {
+  if (!current_drag_data_.isNull()) {
+    // Nested dragging not supported, fuzzer code a likely culprit.
+    // Cancel the current drag operation and throw an error.
+    KeyDown("escape", 0, DOMKeyLocationStandard);
+    v8::Isolate* isolate = blink::mainThreadIsolate();
+    isolate->ThrowException(v8::Exception::Error(
+        gin::StringToV8(isolate,
+                        "Nested beginDragWithFiles() not supported.")));
+    return;
+  }
   current_drag_data_.initialize();
   WebVector<WebString> absolute_filenames(files.size());
   for (size_t i = 0; i < files.size(); ++i) {
