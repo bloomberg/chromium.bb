@@ -209,10 +209,11 @@ public class CustomTabActivity extends ChromeActivity {
     @Override
     public void finishNativeInitialization() {
         mSession = mIntentDataProvider.getSession();
+        CustomTabsConnection connection = CustomTabsConnection.getInstance(getApplication());
         // If extra headers have been passed, cancel any current prerender, as
         // prerendering doesn't support extra headers.
         if (IntentHandler.getExtraHeadersFromIntent(getIntent()) != null) {
-            CustomTabsConnection.getInstance(getApplication()).cancelPrerender(mSession);
+            connection.cancelPrerender(mSession);
         }
         Tab mainTab = createMainTab();
         getTabModelSelector().getModel(false).addObserver(mTabModelObserver);
@@ -275,10 +276,10 @@ public class CustomTabActivity extends ChromeActivity {
             }
         };
         DataUseTabUIManager.onCustomTabInitialNavigation(mainTab,
-                CustomTabsConnection.getInstance(getApplication())
-                        .getClientPackageNameForSession(mSession),
+                connection.getClientPackageNameForSession(mSession),
                 IntentHandler.getUrlFromIntent(getIntent()));
         recordClientPackageName();
+        connection.showSignInToastIfNecessary(mSession, getIntent());
         loadUrlInCurrentTab(new LoadUrlParams(IntentHandler.getUrlFromIntent(getIntent())),
                 IntentHandler.getTimestampFromIntent(getIntent()));
         super.finishNativeInitialization();

@@ -471,6 +471,13 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
     }
 
     /**
+     * Shows a toast about any possible sign in issues encountered during custom tab startup.
+     * @param session The session that corresponding custom tab is assigned.
+     * @param intent The intent that launched the custom tab.
+     */
+    void showSignInToastIfNecessary(IBinder session, Intent intent) { }
+
+    /**
      * Notifies the application of a navigation event.
      *
      * Delivers the {@link ICustomTabsConnectionCallback#onNavigationEvent}
