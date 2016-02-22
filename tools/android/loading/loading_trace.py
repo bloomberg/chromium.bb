@@ -4,9 +4,11 @@
 
 """Represents the trace of a page load."""
 
+import json
 import page_track
 import request_track
 import tracing
+
 
 class LoadingTrace(object):
   """Represents the trace of a page load."""
@@ -40,6 +42,12 @@ class LoadingTrace(object):
               self._TRACING_KEY: self.tracing_track.ToJsonDict()}
     return result
 
+  def ToJsonFile(self, json_path):
+    """Save a json file representing this instance."""
+    json_dict = self.ToJsonDict()
+    with open(json_path, 'w') as output_file:
+       json.dump(json_dict, output_file, indent=2)
+
   @classmethod
   def FromJsonDict(cls, json_dict):
     """Returns an instance from a dictionary returned by ToJsonDict()."""
@@ -53,3 +61,9 @@ class LoadingTrace(object):
         json_dict[cls._TRACING_KEY])
     return LoadingTrace(json_dict[cls._URL_KEY], json_dict[cls._METADATA_KEY],
                         page, request, tracing_track)
+
+  @classmethod
+  def FromJsonFile(cls, json_path):
+    """Returns an instance from a json file saved by ToJsonFile()."""
+    with open(json_path) as input_file:
+      return cls.FromJsonDict(json.load(input_file))

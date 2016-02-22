@@ -12,12 +12,17 @@ import operator
 import devtools_monitor
 
 
+DEFAULT_CATEGORIES = None
+
+
 class TracingTrack(devtools_monitor.Track):
   """Grabs and processes trace event messages.
 
   See https://goo.gl/Qabkqk for details on the protocol.
   """
-  def __init__(self, connection, categories=None, fetch_stream=False):
+  def __init__(self, connection,
+               categories=DEFAULT_CATEGORIES,
+               fetch_stream=False):
     """Initialize this TracingTrack.
 
     Args:
@@ -302,6 +307,14 @@ class Event(object):
     if self._synthetic:
       return None
     return self._tracing_event['ph']
+
+  @property
+  def category(self):
+    return self._tracing_event['cat']
+
+  @property
+  def pid(self):
+    return self._tracing_event['pid']
 
   @property
   def args(self):

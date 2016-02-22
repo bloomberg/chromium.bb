@@ -35,11 +35,15 @@ import devil_chromium
 
 import device_setup
 import devtools_monitor
-import json
+import options
 import page_track
 import pull_sandwich_metrics
+import trace_recorder
 import tracing
 
+
+# Use options layer to access constants.
+OPTIONS = options.OPTIONS
 
 _JOB_SEARCH_PATH = 'sandwich_jobs'
 
@@ -53,16 +57,13 @@ _INDEX_DIRECTORY_NAME = 'index-dir'
 # in the cache directory under _INDEX_DIRECTORY_NAME.
 _REAL_INDEX_FILE_NAME = 'the-real-index'
 
-# Name of the chrome package.
-_CHROME_PACKAGE = (
-    constants.PACKAGE_INFO[device_setup.DEFAULT_CHROME_PACKAGE].package)
-
 # An estimate of time to wait for the device to become idle after expensive
 # operations, such as opening the launcher activity.
 _TIME_TO_DEVICE_IDLE_SECONDS = 2
 
-# Cache directory's path on the device.
-_REMOTE_CACHE_DIRECTORY = '/data/data/' + _CHROME_PACKAGE + '/cache/Cache'
+
+def _RemoteCacheDirectory():
+  return '/data/data/{}/cache/Cache'.format(OPTIONS.chrome_package_name)
 
 
 def _ReadUrlsFromJobDescription(job_name):
@@ -84,23 +85,6 @@ def _ReadUrlsFromJobDescription(job_name):
     if isinstance(url_list, list) and len(url_list) > 0:
       return url_list
   raise Exception('Job description does not define a list named "urls"')
-
-
-def _SaveChromeTrace(events, target_directory):
-  """Saves the trace events, ignores IO errors.
-
-  Args:
-    events: a dict as returned by TracingTrack.ToJsonDict()
-    target_directory: Directory path where trace is created.
-  """
-  filename = os.path.join(target_directory, 'trace.json')
-  try:
-    os.makedirs(target_directory)
-    with open(filename, 'w') as f:
-      json.dump({'traceEvents': events['events'], 'metadata': {}}, f, indent=2)
-  except IOError:
-    logging.warning('Could not save a trace: %s' % filename)
-    # Swallow the exception.
 
 
 def _UpdateTimestampFromAdbStat(filename, stat):
@@ -128,13 +112,13 @@ def _PullBrowserCache(device):
     Temporary directory containing all the browser cache.
   """
   save_target = tempfile.mkdtemp(suffix='.cache')
-  for filename, stat in device.adb.Ls(_REMOTE_CACHE_DIRECTORY):
+  for filename, stat in device.adb.Ls(_RemoteCacheDirectory()):
     if filename == '..':
       continue
     if filename == '.':
       cache_directory_stat = stat
       continue
-    original_file = os.path.join(_REMOTE_CACHE_DIRECTORY, filename)
+    original_file = os.path.join(_RemoteCacheDirectory(), filename)
     saved_file = os.path.join(save_target, filename)
     device.adb.Pull(original_file, saved_file)
     _UpdateTimestampFromAdbStat(saved_file, stat)
@@ -166,16 +150,16 @@ def _PushBrowserCache(device, local_cache_path):
     local_cache_path: The directory's path containing the cache locally.
   """
   # Clear previous cache.
-  _AdbShell(device.adb, ['rm', '-rf', _REMOTE_CACHE_DIRECTORY])
-  _AdbShell(device.adb, ['mkdir', _REMOTE_CACHE_DIRECTORY])
+  _AdbShell(device.adb, ['rm', '-rf', _RemoteCacheDirectory()])
+  _AdbShell(device.adb, ['mkdir', _RemoteCacheDirectory()])
 
   # Push cache content.
-  device.adb.Push(local_cache_path, _REMOTE_CACHE_DIRECTORY)
+  device.adb.Push(local_cache_path, _RemoteCacheDirectory())
 
   # Walk through the local cache to update mtime on the device.
   def MirrorMtime(local_path):
     cache_relative_path = os.path.relpath(local_path, start=local_cache_path)
-    remote_path = os.path.join(_REMOTE_CACHE_DIRECTORY, cache_relative_path)
+    remote_path = os.path.join(_RemoteCacheDirectory(), cache_relative_path)
     _AdbUtime(device.adb, remote_path, os.stat(local_path).st_mtime)
 
   for local_directory_path, dirnames, filenames in os.walk(
@@ -278,6 +262,10 @@ def main():
   logging.basicConfig(level=logging.INFO)
   devil_chromium.Initialize()
 
+  # Don't give the argument yet. All we are interested in for now is accessing
+  # the default values of OPTIONS.
+  OPTIONS.ParseArgs([])
+
   parser = argparse.ArgumentParser()
   parser.add_argument('--job', required=True,
                       help='JSON file with job description.')
@@ -331,17 +319,15 @@ def main():
       with device_setup.DeviceConnection(
           device=device,
           additional_flags=additional_flags) as connection:
-        if clear_cache:
-          connection.ClearCache()
-        page_track.PageTrack(connection)
-        tracing_track = tracing.TracingTrack(connection,
+        loading_trace = trace_recorder.MonitorUrl(
+            connection, url,
+            clear_cache=clear_cache,
             categories=pull_sandwich_metrics.CATEGORIES)
-        connection.SetUpMonitoring()
-        connection.SendAndIgnoreResponse('Page.navigate', {'url': url})
-        connection.StartMonitoring()
         if trace_id != None:
-          trace_target_directory = os.path.join(args.output, str(trace_id))
-          _SaveChromeTrace(tracing_track.ToJsonDict(), trace_target_directory)
+          loading_trace_path = os.path.join(
+              args.output, str(trace_id), 'trace.json')
+          os.makedirs(os.path.dirname(loading_trace_path))
+          loading_trace.ToJsonFile(loading_trace_path)
 
     for _ in xrange(args.repeat):
       for url in job_urls:
@@ -349,7 +335,7 @@ def main():
         if args.cache_op == 'clear':
           clear_cache = True
         elif args.cache_op == 'push':
-          device.KillAll(_CHROME_PACKAGE, quiet=True)
+          device.KillAll(OPTIONS.chrome_package_name, quiet=True)
           _PushBrowserCache(device, local_cache_directory_path)
         elif args.cache_op == 'reload':
           _RunNavigation(url, clear_cache=True, trace_id=None)
@@ -366,7 +352,7 @@ def main():
     # Move Chrome to background to allow it to flush the index.
     device.adb.Shell('am start com.google.android.launcher')
     time.sleep(_TIME_TO_DEVICE_IDLE_SECONDS)
-    device.KillAll(_CHROME_PACKAGE, quiet=True)
+    device.KillAll(OPTIONS.chrome_package_name, quiet=True)
     time.sleep(_TIME_TO_DEVICE_IDLE_SECONDS)
 
     cache_directory_path = _PullBrowserCache(device)

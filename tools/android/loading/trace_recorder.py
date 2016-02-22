@@ -30,20 +30,22 @@ import request_track
 import tracing
 
 
-def MonitorUrl(connection, url, clear_cache=False):
+def MonitorUrl(connection, url, clear_cache=False,
+               categories=tracing.DEFAULT_CATEGORIES):
   """Monitor a URL via a trace recorder.
 
   Args:
     connection: A device_monitor.DevToolsConnection instance.
     url: url to navigate to as string.
     clear_cache: boolean indicating if cache should be cleared before loading.
+    categories: List of tracing event categories to record.
 
   Returns:
     loading_trace.LoadingTrace.
   """
   page = page_track.PageTrack(connection)
   request = request_track.RequestTrack(connection)
-  trace = tracing.TracingTrack(connection)
+  trace = tracing.TracingTrack(connection, categories=categories)
   connection.SetUpMonitoring()
   if clear_cache:
     connection.ClearCache()
