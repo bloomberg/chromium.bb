@@ -151,6 +151,13 @@
 <translation id="1522425503138261032">Tillåt alla webbplatser att spåra användarnas fysiska plats</translation>
 <translation id="152657506688053119">Lista över alternativa webbadresser för standardsökleverantören.</translation>
 <translation id="1530812829012954197">Rendera alltid följande webbadressmönster i värdwebbläsaren</translation>
+<translation id="1553684822621013552">När den här principen är inställd på sant aktiveras ARC för användaren
+      (givet att övriga principinställningar tillåter det – ACR är fortfarande
+      otillgängligt om antingen tillfälligt läge eller multiinloggning är aktiverat
+      i den aktuella användarsessionen).
+
+      Om inställningen är inaktiverad eller inte konfigurerad kan företagsanvändare
+      inte använda ARC.</translation>
 <translation id="1561424797596341174">Åsidosättningar av policyn för felsökningsversioner av fjärråtkomstvärden</translation>
 <translation id="1583248206450240930">Använd <ph name="PRODUCT_FRAME_NAME" /> som standard</translation>
 <translation id="1608755754295374538">Webbadresser som ska ges tillgång till ljudinspelningsenheter utan meddelande</translation>
@@ -257,6 +264,7 @@
       Om policyn är inställd på sant kommer <ph name="PRODUCT_OS_NAME" /> att försöka ladda ned betalningar med automatisk uppdatering via HTTP. Om policyn är inställd på falskt eller inte har angetts kommer HTTPS att användas för att ladda ned betalningar med automatisk uppdatering.</translation>
 <translation id="2006530844219044261">Energibesparing (DPMS)</translation>
 <translation id="201557587962247231">Frekvens för antal uppladdningar av statusrapport för enhet</translation>
+<translation id="2024476116966025075">Konfigurera domännamnet som krävs för fjärråtkomstklienter</translation>
 <translation id="2030905906517501646">Sökord för standardsökleverantör</translation>
 <translation id="206623763829450685">Anger vilka scheman för HTTP-autentisering som stöds av <ph name="PRODUCT_NAME" />.
 
@@ -492,6 +500,7 @@
       Om policyn inte anges kommer proxyfunktionen för datakomprimering kommer användaren att kunna välja om han eller hon vill använda den.</translation>
 <translation id="2587719089023392205">Gör <ph name="PRODUCT_NAME" /> till min standardwebbläsare</translation>
 <translation id="2592091433672667839">Inaktivitetstid innan skärmsläckaren visas på inloggningsskärmen i återförsäljarläge</translation>
+<translation id="260705825237536216">Konfigurera ARC-appar</translation>
 <translation id="2623014935069176671">Vänta på inledande användaraktivitet</translation>
 <translation id="262740370354162807">Aktivera sändning av dokument till <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Aktivera talad feedback.</translation>
@@ -612,6 +621,7 @@
           Om den här policyn inte ställs in används en standardtid.
 
           Policyns värde anges i millisekunder. Värdena måste vara mindre än eller lika med skärmavstängningstiden (om den har ställts in) och inaktivitetstiden.</translation>
+<translation id="2987155890997901449">Aktivera ARC</translation>
 <translation id="2998881342848488968">Med den här policyn kan <ph name="PRODUCT_OS_NAME" /> kringgå en proxyserver för autentisering av infångstportaler.
 
       Den här policyn gäller endast om en proxyserver har konfigurerats (till exempel via en policy, av användaren i chrome://settings eller via tillägg).
@@ -1223,6 +1233,11 @@
 <translation id="5307432759655324440">Tillgänglighet för inkognitoläge</translation>
 <translation id="5318185076587284965">Aktivera reläserveranvändning via värden för fjärråtkomst</translation>
 <translation id="5330684698007383292">Tillåt att <ph name="PRODUCT_FRAME_NAME" /> hanterar följande innehållstyper</translation>
+<translation id="5345267406698765263">Anger principen för ARC-appar som en JSON-sträng som kan
+      lämnas över för ACR-körning i befintligt skick. För närvarande används inställningen
+      endast till att ange framtvingad installation av apparna.
+
+      Inga appar installeras automatiskt om principen inte är angiven.</translation>
 <translation id="5365946944967967336">Visa knappen Startsida i verktygsfältet</translation>
 <translation id="5366977351895725771">Om "false" anges inaktiveras alternativet att skapa övervakade användare för den här användaren. Eventuella befintliga övervakade användare är fortfarande tillgängliga.
 
@@ -1295,6 +1310,13 @@
       Om policyn inte tillämpas kan användarna välja om de vill att hyllan ska döljas automatiskt.</translation>
 <translation id="557658534286111200">Aktiverar eller inaktiverar bokmärkesredigering</translation>
 <translation id="5586942249556966598">Gör ingenting</translation>
+<translation id="5613179474872285001">Konfigurerar vilket klientdomännamn som fjärråtkomstklienter måste använda och hindrar användare från att ändra det.
+
+          Om inställningen är aktiverad kan endast klienter från den angivna domänen ansluta till värden.
+
+          Om inställningen är inaktiverad eller inte angiven gäller standardprincipen för den här anslutningstypen. Vid fjärrhjälp kan klienter från alla domäner ansluta till värden; vid fjärråtkomst när som helst kan endast värdens ägare ansluta.
+
+          Se även RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">Återställ den senaste sessionen</translation>
 <translation id="5645779841392247734">Tillåt cookies på dessa webbplatser</translation>
 <translation id="5677038592630896441">Kräver att namnet på den lokala användaren och ägaren till fjärråtkomstvärden överensstämmer.
@@ -1735,6 +1757,13 @@
 <translation id="6943577887654905793">Namn för Mac/Linux-inställning:</translation>
 <translation id="69525503251220566">Parameter som anger bildsökningsfunktionen för sökleverantören som är standard</translation>
 <translation id="6956272732789158625">Tillåt inte att någon webbplats använder nyckelgenerering</translation>
+<translation id="695891079107014261">Konfigurerar vilket värddomännamn som fjärråtkomstvärdar måste använda och hindrar användare från att ändra det.
+
+          Om inställningen är aktiverad kan värdar endast delas med hjälp av konton som är registrerade på det angivna domännamnet.
+
+          Om inställningen är inaktiverad eller inte angiven kan värdar delas med hjälp av vilka konton som helst.
+
+          Se även RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Om OCSP/CRL-kontroller online krävs för lokala tillitsankare</translation>
 <translation id="7003334574344702284">När den här policyn är aktiverad tvingas import av sparade lösenord från standardwebbläsaren. Policyn påverkar också dialogrutan för import.
 
@@ -1990,7 +2019,7 @@
       Om policyn inte anges använder <ph name="PRODUCT_NAME" /> standardvärdet 5 000 millisekunder.</translation>
 <translation id="7841880500990419427">Lägsta TLS-version som kan användas som alternativ</translation>
 <translation id="7842869978353666042">Konfigurera alternativ för Google Drive</translation>
-<translation id="7843525027689416831">Anger de flaggor som ska användas i <ph name="PRODUCT_NAME" /> när vid start. De angivna flaggorna används bara för inloggningsskärmen. Flaggor som angetts via denna princip påverkar inte användarsessioner.</translation>
+<translation id="7843525027689416831">Anger de flaggor som ska användas i <ph name="PRODUCT_NAME" /> vid start. De angivna flaggorna används bara för inloggningsskärmen. Flaggor som angetts via denna princip påverkar inte användarsessioner.</translation>
 <translation id="7848840259379156480">Innebär att du kan konfigurera standardrenderare för HTML när <ph name="PRODUCT_FRAME_NAME" /> är installerat.
       Standardinställningen är att låta värdwebbläsaren utföra renderingen, men du
       kan välja att åsidosätta detta och låta <ph name="PRODUCT_FRAME_NAME" /> rendera HTML-sidor som standard.</translation>

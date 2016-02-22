@@ -38,11 +38,14 @@
 <translation id="1227224963052638717">Okänd policy.</translation>
 <translation id="1227633850867390598">Dölj värde</translation>
 <translation id="1228893227497259893">Fel enhetsidentifierare</translation>
+<translation id="1232569758102978740">Namnlös</translation>
 <translation id="1254117744268754948">Välj mapp</translation>
 <translation id="1270699273812232624">Tillåt objekt</translation>
 <translation id="1285320974508926690">Översätt aldrig den här webbplatsen</translation>
+<translation id="129553762522093515">Nyligen stängda</translation>
 <translation id="1339601241726513588">Registreringsdomän:</translation>
 <translation id="1344588688991793829">Inställningar för Autofyll i Chromium …</translation>
+<translation id="1374468813861204354">förslag</translation>
 <translation id="1375198122581997741">Om version</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> skickade ingen data.</translation>
 <translation id="1407135791313364759">Öppna alla</translation>
@@ -59,6 +62,7 @@
 <translation id="1559572115229829303">&lt;p&gt;Det gick inte att upprätta en privat anslutning till <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> eftersom enhetens datum och tid (<ph name="DATE_AND_TIME" />) inte stämmer.&lt;/p&gt;
 
       &lt;p&gt;Ändra datumet och tiden under &lt;strong&gt;Allmänt&lt;/strong&gt; i appen &lt;strong&gt;Inställningar&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="1583429793053364125">Ett fel uppstod när webbsidan skulle visas.</translation>
 <translation id="1592005682883173041">Lokal dataåtkomst</translation>
 <translation id="1629803312968146339">Vill du att Chrome sparar det här kortet?</translation>
 <translation id="1640180200866533862">Användarpolicyer</translation>
@@ -93,6 +97,7 @@
 <translation id="2030481566774242610">Menade du <ph name="LINK" />?</translation>
 <translation id="2053553514270667976">ZIP</translation>
 <translation id="2065985942032347596">Verifiering krävs</translation>
+<translation id="2079545284768500474">Ångra</translation>
 <translation id="20817612488360358">Datorns proxyinställningar är inställda på att användas, men det finns också en explicit proxykonfiguration.</translation>
 <translation id="2089090684895656482">Mindre</translation>
 <translation id="2094505752054353250">Domänen matchar inte</translation>
@@ -168,6 +173,7 @@
 <translation id="2837049386027881519">Anslutningen var tvungen att återupprättas via en äldre version av TLS- eller SSL-protokollet. Detta innebär vanligtvis att servern använder mycket gammal programvara och kanske har andra säkerhetsproblem.</translation>
 <translation id="284702764277384724">Servercertifikatet på <ph name="HOST_NAME" /> verkar vara falskt.</translation>
 <translation id="2855922900409897335">Verifiera ditt <ph name="CREDIT_CARD" /></translation>
+<translation id="2896499918916051536">Det här pluginprogrammet stöds inte.</translation>
 <translation id="2897655920961181107">Den begärda porten är osäker och har blockerats.</translation>
 <translation id="2909946352844186028">En nätverksförändring upptäcktes.</translation>
 <translation id="2915500479781995473">Servern kunde inte bevisa att den är <ph name="DOMAIN" /> eftersom dess säkerhetscertifikat har upphört att gälla. Detta kan bero på en felaktig inställning eller att en angripare har manipulerat anslutningen. Klockan på datorn är för närvarande inställd på <ph name="CURRENT_TIME" />. Stämmer det inte? Korrigera systemets klocka och uppdatera sedan sidan.</translation>
@@ -189,6 +195,7 @@
 <translation id="3005723025932146533">Visa sparad kopia</translation>
 <translation id="3010559122411665027">Listposten <ph name="ENTRY_INDEX" />: <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Felaktig policytyp</translation>
+<translation id="3037605927509011580">Oj, ett fel har uppstått!</translation>
 <translation id="3041612393474885105">Certifikatinformation</translation>
 <translation id="3093245981617870298">Du är offline.</translation>
 <translation id="3105172416063519923">Tillgångs-id:</translation>
@@ -198,6 +205,8 @@
 <translation id="3145945101586104090">Det gick inte att avkoda svaret</translation>
 <translation id="3147485256806412701">Webbplatsen har en ny generisk toppnivådomän.</translation>
 <translation id="3150653042067488994">Tillfälligt serverfel</translation>
+<translation id="3157931365184549694">Återställ</translation>
+<translation id="3167968892399408617">Sidor som visas på flikar i inkognitoläget försvinner från webbhistoriken, från dina cookies och från sökhistoriken när alla inkognitoflikar har stängts. Alla filer som du laddar ned eller bokmärken som du skapar sparas.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">Ö</translation>
 <translation id="3176929007561373547">Kontrollera dina proxyinställningar eller kontakta nätverksadministratören om du vill
@@ -248,6 +257,7 @@
 <translation id="3648607100222897006">Dessa experimentella funktioner kan ändras, avbrytas eller försvinna när som helst. Vi lämnar inga som helst garantier om vad som kan ske om du aktiverar något av dessa experiment. Webbläsaren kanske t.o.m. går upp i rök. Skämt åsido, alla data i webbläsaren kan raderas och säkerheten och sekretessen kan äventyras på oväntade sätt. Experiment som du aktiverar kommer att aktiveras för alla som använder webbläsaren. Var försiktig.</translation>
 <translation id="3650584904733503804">Valideringen har genomförts</translation>
 <translation id="3651020361689274926">Den begärda resursen finns inte längre och vidarebefordringsadress saknas. Det är förmodligen ett permanent fel.</translation>
+<translation id="3655670868607891010">Om du ser detta ofta provar du <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Version</translation>
 <translation id="3681007416295224113">Certifikatinformation</translation>
 <translation id="3693415264595406141">Lösenord:</translation>
@@ -338,7 +348,6 @@
 <translation id="4841640898320458950">Osäker port har blockerats.</translation>
 <translation id="4850886885716139402">Visa</translation>
 <translation id="4880827082731008257">Sök i historiken</translation>
-<translation id="488726935215981469">Dina data har krypterats med din lösenfras för synkronisering. Ange den nedan.</translation>
 <translation id="4923417429809017348">Sidan har översatts från ett okänt språk till <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Värdet måste anges.</translation>
 <translation id="495170559598752135">Åtgärder</translation>
@@ -349,6 +358,7 @@
 <translation id="5023310440958281426">Kontrollera administratörsprinciperna</translation>
 <translation id="5029568752722684782">Ta bort kopia</translation>
 <translation id="5031870354684148875">Om Google Översätt</translation>
+<translation id="5040262127954254034">Sekretess</translation>
 <translation id="5045550434625856497">Felaktigt lösenord</translation>
 <translation id="5087286274860437796">Servercertifikatet är inte giltigt för närvarande.</translation>
 <translation id="5089810972385038852">Delstat</translation>
@@ -560,12 +570,14 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY" /> kan vara n�
 <translation id="7610193165460212391">Värdet är utanför intervallet <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Upphör: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Du har redan data som krypteras med en annan version av ditt lösenord till Google-kontot. Ange det nedan.</translation>
+<translation id="7634554953375732414">Din anslutning till webbplatsen är inte privat.</translation>
 <translation id="7637571805876720304">Vill du ta bort kreditkortet från Chromium?</translation>
 <translation id="7643817847124207232">Internet-anslutningen har frånkopplats.</translation>
 <translation id="765676359832457558">Dölj avancerade inställningar ...</translation>
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7668654391829183341">Okänd enhet</translation>
 <translation id="7674629440242451245">Är du intresserad av häftiga nya funktioner i Chrome? Pröva vår utvecklarkanal på chrome.com/dev.</translation>
+<translation id="769344199378576125">Visa bokmärken som sparats offline</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Fortsätt till <ph name="SITE" /> (osäkert)<ph name="END_LINK" /></translation>
 <translation id="7716424297397655342">Det går inte att läsa in webbplatsen från cachelagringen</translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
@@ -584,6 +596,7 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY" /> kan vara n�
 <translation id="7805768142964895445">Status</translation>
 <translation id="7813600968533626083">Vill du ta bort formulärförslaget från Chrome?</translation>
 <translation id="7825436071901023927">Osäker port <ph name="SITE" /></translation>
+<translation id="785549533363645510">Men du är inte osynlig. Inkognitoläget döljer inte webbhistoriken för din arbetsgivare, internetleverantören eller webbplatserna du besöker.</translation>
 <translation id="7887683347370398519">Kontrollera CVC-koden och försök igen</translation>
 <translation id="790025292736025802"><ph name="URL" /> hittades inte</translation>
 <translation id="7912024687060120840">I mappen:</translation>
@@ -594,11 +607,9 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY" /> kan vara n�
 <translation id="7961015016161918242">Aldrig</translation>
 <translation id="7977590112176369853">&lt;skriv fråga&gt;</translation>
 <translation id="7983301409776629893">Översätt alltid <ph name="ORIGINAL_LANGUAGE" /> till <ph name="TARGET_LANGUAGE" /></translation>
-<translation id="7988324688042446538">Bokmärken på skrivbordet</translation>
 <translation id="7995512525968007366">Inte specificerad</translation>
 <translation id="8034522405403831421">Den här sidan är skriven på <ph name="SOURCE_LANGUAGE" />. Vill du översätta den till <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8034955203865359138">Inga historikposter hittades.</translation>
-<translation id="8075539548641175231">Dina data har krypterats med din lösenfras för synkronisering den <ph name="TIME" />. Ange den nedan.</translation>
 <translation id="8088680233425245692">Det gick inte att visa artikeln.</translation>
 <translation id="8091372947890762290">Aktiveringen väntar på servern</translation>
 <translation id="8149426793427495338">Datorn gick i viloläge.</translation>
@@ -651,6 +662,7 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY" /> kan vara n�
 <translation id="8703575177326907206">Din anslutning till <ph name="DOMAIN" /> är inte krypterad.</translation>
 <translation id="8713130696108419660">Dålig initial signatur</translation>
 <translation id="8725066075913043281">Försök igen</translation>
+<translation id="8728672262656704056">Du surfar inkognito.</translation>
 <translation id="8730621377337864115">Klart</translation>
 <translation id="8738058698779197622">Om du vill upprätta en säker anslutning måste klockan vara rätt inställd. Det beror på att certifikaten som webbplatserna använder för att identifiera sig endast är giltiga under vissa tidsperioder. Chromium kan inte verifiera certifikaten eftersom klockan på enheten inte stämmer.</translation>
 <translation id="8740359287975076522">Det gick inte att hitta <ph name="HOST_NAME" />s &lt;abbr id="dnsDefinition"&gt;DNS-adress&lt;/abbr&gt;. Diagnostiserar problemet.</translation>
@@ -666,6 +678,7 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY" /> kan vara n�
 <translation id="885730110891505394">Delar med Google</translation>
 <translation id="8866481888320382733">Det uppstod ett fel när policyinställningarna analyserades</translation>
 <translation id="8866959479196209191">På den här sidan står det:</translation>
+<translation id="8870413625673593573">Nyligen stängda</translation>
 <translation id="8876793034577346603">Det gick inte att tolka nätverkskonfigurationen.</translation>
 <translation id="8891727572606052622">Ogiltigt proxyläge.</translation>
 <translation id="889901481107108152">Experimentet finns tyvärr inte på din plattform.</translation>

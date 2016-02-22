@@ -35,11 +35,14 @@
 <translation id="1227224963052638717">Política desconeguda.</translation>
 <translation id="1227633850867390598">Amaga el valor</translation>
 <translation id="1228893227497259893">Identificador d'entitat incorrecte</translation>
+<translation id="1232569758102978740">Sense títol</translation>
 <translation id="1254117744268754948">Selecció de la carpeta</translation>
 <translation id="1270699273812232624">Permet els elements</translation>
 <translation id="1285320974508926690">No tradueixis mai aquest lloc</translation>
+<translation id="129553762522093515">Tancades recentment</translation>
 <translation id="1339601241726513588">Domini d'inscripció:</translation>
 <translation id="1344588688991793829">Configuració d'Emplenament automàtic de Chromium...</translation>
+<translation id="1374468813861204354">suggeriments</translation>
 <translation id="1375198122581997741">Quan a la versió</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> no ha enviat dades.</translation>
 <translation id="1407135791313364759">Obre-les totes</translation>
@@ -56,6 +59,7 @@
 <translation id="1559572115229829303">&lt;p&gt;No es pot establir una connexió privada amb <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> perquè la data i l'hora (<ph name="DATE_AND_TIME" />) del vostre dispositiu no són correctes.&lt;/p&gt;
 
       &lt;p&gt;Canvieu la data i l'hora a la secció &lt;strong&gt;General&lt;/strong&gt; de l'aplicació &lt;strong&gt;Configuració&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="1583429793053364125">S'ha produït un error en mostrar aquesta pàgina web.</translation>
 <translation id="1592005682883173041">Accés a les dades locals</translation>
 <translation id="1629803312968146339">Voleu que Chrome desi aquesta targeta?</translation>
 <translation id="1640180200866533862">Polítiques d'usuari</translation>
@@ -90,6 +94,7 @@
 <translation id="2030481566774242610">Volíeu dir <ph name="LINK" />?</translation>
 <translation id="2053553514270667976">Codi postal</translation>
 <translation id="2065985942032347596">Es necessita autenticació</translation>
+<translation id="2079545284768500474">Desfés</translation>
 <translation id="20817612488360358">S'ha definit la configuració del servidor intermediari del sistema perquè es pugui utilitzar, però també s'ha especificat una configuració del servidor intermediari explícita.</translation>
 <translation id="2089090684895656482">Menys</translation>
 <translation id="2094505752054353250">Els dominis no coincideixen.</translation>
@@ -165,6 +170,7 @@
 <translation id="2837049386027881519">S'ha hagut de tornar a intentar la connexió mitjançant una versió anterior del protocol TLS o SSL. Generalment, això vol dir que el servidor utilitza un programari molt antic i és possible que tingui altres problemes de seguretat.</translation>
 <translation id="284702764277384724">Sembla que el certificat de servidor disponible a <ph name="HOST_NAME" /> és una falsificació.</translation>
 <translation id="2855922900409897335">Verifica la targeta <ph name="CREDIT_CARD" /></translation>
+<translation id="2896499918916051536">Aquest connector no és compatible.</translation>
 <translation id="2897655920961181107">Port sol·licitat no segur: bloquejat.</translation>
 <translation id="2909946352844186028">S'ha detectat un canvi a la xarxa.</translation>
 <translation id="2915500479781995473">Aquest servidor no ha pogut comprovar que sigui <ph name="DOMAIN" /> perquè el seu certificat de seguretat ha caducat. Això pot ser a causa d'una configuració incorrecta o d'un atacant que intercepta la vostra connexió. Actualment, el rellotge de l'ordinador està definit com a <ph name="CURRENT_TIME" />. Creieu que és correcte? Si no és així, corregiu el rellotge del sistema i actualitzeu aquesta pàgina.</translation>
@@ -186,6 +192,7 @@
 <translation id="3005723025932146533">Mostra la còpia desada</translation>
 <translation id="3010559122411665027">Entrada de llista "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Tipus de política incorrecte</translation>
+<translation id="3037605927509011580">Oh, no!</translation>
 <translation id="3041612393474885105">Informació del certificat</translation>
 <translation id="3093245981617870298">Esteu fora de línia.</translation>
 <translation id="3105172416063519923">Identificador de l'element:</translation>
@@ -195,6 +202,8 @@
 <translation id="3145945101586104090">No s'ha pogut descodificar la resposta</translation>
 <translation id="3147485256806412701">En aquest lloc s'utilitza un nou domini genèric de nivell superior.</translation>
 <translation id="3150653042067488994">Error temporal del servidor</translation>
+<translation id="3157931365184549694">Restaura</translation>
+<translation id="3167968892399408617">Les pàgines que consulteu en pestanyes d'incògnit no s'emmagatzemaran a l'historial del navegador, al magatzem de galetes ni a l'historial de cerca després d'haver tancat totes les pestanyes d'incògnit. Els fitxers que baixeu i les adreces d'interès que creeu sí que es desaran.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">Illa</translation>
 <translation id="3176929007561373547">Comproveu la configuració del servidor intermediari o contacteu amb l'administrador de la xarxa per
@@ -245,6 +254,7 @@
 <translation id="3648607100222897006">Aquestes funcions experimentals poden canviar, trencar-se o desaparèixer en qualsevol moment. No donem cap garantia sobre què pot passar si activeu algun d'aquests experiments, i fins i tot el vostre navegador es podria fregir de sobte. Bromes a part,és possible que el vostre navegador suprimeixi totes les vostres dades, o bé la seguretat i la privadesa poden estar compromeses de maneres inesperades. Qualsevol experiment que activeu s'activaran per a tots els usuaris d'aquest navegador. Continueu amb precaució.</translation>
 <translation id="3650584904733503804">Validació correcta</translation>
 <translation id="3651020361689274926">El recurs sol·licitat ja no existeix, i no hi ha cap adreça de reenviament. Està previst que sigui una condició permanent.</translation>
+<translation id="3655670868607891010">Si aquest missatge apareix sovint, proveu aquests <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Revisió</translation>
 <translation id="3681007416295224113">Informació del certificat</translation>
 <translation id="3693415264595406141">Contrasenya:</translation>
@@ -335,7 +345,6 @@
 <translation id="4841640898320458950">Port no segur bloq.</translation>
 <translation id="4850886885716139402">Visualització</translation>
 <translation id="4880827082731008257">Cerca a l'historial</translation>
-<translation id="488726935215981469">Les vostres dades s'han encriptat amb la vostra frase de contrasenya de sincronització. Escriviu-la a continuació.</translation>
 <translation id="4923417429809017348">Aquesta pàgina s'ha traduït des d'un idioma desconegut a: <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">S'ha d'especificar.</translation>
 <translation id="495170559598752135">Accions</translation>
@@ -346,6 +355,7 @@
 <translation id="5023310440958281426">Consulteu les polítiques de l'administrador</translation>
 <translation id="5029568752722684782">Esborra la còpia</translation>
 <translation id="5031870354684148875">Sobre el Traductor de Google</translation>
+<translation id="5040262127954254034">Privadesa</translation>
 <translation id="5045550434625856497">Contrasenya incorrecta</translation>
 <translation id="5087286274860437796">En aquest moment el certificat del servidor no és vàlid.</translation>
 <translation id="5089810972385038852">Estat</translation>
@@ -557,12 +567,14 @@ El mode d'incògnit, <ph name="SHORTCUT_KEY" />, us pot resultar pràctic la pro
 <translation id="7610193165460212391">El valor es troba fora de l'interval <ph name="VALUE" /> .</translation>
 <translation id="7613889955535752492">Data de caducitat: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Ja teniu dades encriptades amb una versió diferent de la contrasenya del vostre compte de Google. Introduïu-la a continuació.</translation>
+<translation id="7634554953375732414">La vostra connexió amb aquest lloc no és privada.</translation>
 <translation id="7637571805876720304">Voleu suprimir la targeta de crèdit de Chromium?</translation>
 <translation id="7643817847124207232">S'ha perdut la connexió a Internet.</translation>
 <translation id="765676359832457558">Amaga la configuració avançada...</translation>
 <translation id="7658239707568436148">Cancel·la</translation>
 <translation id="7668654391829183341">Dispositiu desconegut</translation>
 <translation id="7674629440242451245">Esteu interessat en les funcions de Chrome noves i interessants? Proveu el nostre canal per a desenvolupadors a la pàgina chrome.com/dev.</translation>
+<translation id="769344199378576125">Mostra les adreces d'interès sense connexió</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Continua per accedir a <ph name="SITE" /> (no segur)<ph name="END_LINK" /></translation>
 <translation id="7716424297397655342">Aquest lloc no es pot carregar des de la memòria cau</translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
@@ -581,6 +593,7 @@ El mode d'incògnit, <ph name="SHORTCUT_KEY" />, us pot resultar pràctic la pro
 <translation id="7805768142964895445">Estat</translation>
 <translation id="7813600968533626083">Voleu suprimir el suggeriment de formulari de Chrome?</translation>
 <translation id="7825436071901023927">Port no segur <ph name="SITE" /></translation>
+<translation id="785549533363645510">Tanmateix, no sou invisible. La vostra empresa, el vostre proveïdor de serveis d'Internet i els llocs web que visiteu poden veure la vostra navegació d'incògnit.</translation>
 <translation id="7887683347370398519">Comproveu el CVC i torneu-ho a provar</translation>
 <translation id="790025292736025802">No s'ha trobat <ph name="URL" /></translation>
 <translation id="7912024687060120840">A la carpeta:</translation>
@@ -591,11 +604,9 @@ El mode d'incògnit, <ph name="SHORTCUT_KEY" />, us pot resultar pràctic la pro
 <translation id="7961015016161918242">Mai</translation>
 <translation id="7977590112176369853">&lt;introdueix la consulta&gt;</translation>
 <translation id="7983301409776629893">Tradueix sempre de: <ph name="ORIGINAL_LANGUAGE" /> a: <ph name="TARGET_LANGUAGE" /></translation>
-<translation id="7988324688042446538">Adreces d'interès d'escriptori</translation>
 <translation id="7995512525968007366">No especificat</translation>
 <translation id="8034522405403831421">Aquesta pàgina està escrita en <ph name="SOURCE_LANGUAGE" />. Voleu traduir-la a <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8034955203865359138">No s'ha trobat cap entrada a l'historial.</translation>
-<translation id="8075539548641175231">Les vostres dades s'han encriptat amb la vostra frase de contrasenya de sincronització el <ph name="TIME" />. Escriviu-la a continuació.</translation>
 <translation id="8088680233425245692">No s'ha pogut consultar l'article.</translation>
 <translation id="8091372947890762290">L'activació està pendent al servidor</translation>
 <translation id="8149426793427495338">L'ordinador ha entrat en mode de repòs.</translation>
@@ -648,6 +659,7 @@ El mode d'incògnit, <ph name="SHORTCUT_KEY" />, us pot resultar pràctic la pro
 <translation id="8703575177326907206">La teva connexió a <ph name="DOMAIN" /> no està xifrada.</translation>
 <translation id="8713130696108419660">Signatura inicial incorrecta</translation>
 <translation id="8725066075913043281">Torna-ho a provar</translation>
+<translation id="8728672262656704056">Heu passat al mode d'incògnit.</translation>
 <translation id="8730621377337864115">Fet</translation>
 <translation id="8738058698779197622">Per establir una connexió segura, el rellotge ha d'estar ben ajustat, perquè els certificats que els llocs web fan servir per identificar-se només són vàlids per a períodes de temps concrets. Com que el rellotge del dispositiu no està ben ajustat, Chromium no pot verificar aquests certificats.</translation>
 <translation id="8740359287975076522">No s'ha trobat l'&lt;abbr id="dnsDefinition"&gt;adreça DNS&lt;/abbr&gt; de <ph name="HOST_NAME" />. S'està diagnosticant el problema.</translation>
@@ -663,6 +675,7 @@ El mode d'incògnit, <ph name="SHORTCUT_KEY" />, us pot resultar pràctic la pro
 <translation id="885730110891505394">Comparteix informació amb Google</translation>
 <translation id="8866481888320382733">S'ha produït un error en analitzar la configuració de la política</translation>
 <translation id="8866959479196209191">Aquesta pàgina diu:</translation>
+<translation id="8870413625673593573">Tancades recentment</translation>
 <translation id="8876793034577346603">No s'ha pogut analitzar la configuració de la xarxa.</translation>
 <translation id="8891727572606052622">El mode de servidor intermediari no és vàlid.</translation>
 <translation id="889901481107108152">Aquest experiment no està disponible a la vostra plataforma.</translation>

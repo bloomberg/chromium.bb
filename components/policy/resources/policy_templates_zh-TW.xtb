@@ -134,6 +134,13 @@
 <translation id="1522425503138261032">允許網站追蹤使用者的實際位置</translation>
 <translation id="152657506688053119">預設搜尋的替代網址清單</translation>
 <translation id="1530812829012954197">一律在瀏覽器中顯示以下網址模式</translation>
+<translation id="1553684822621013552">如果將這項政策設為 true，系統會為使用者啟用 ARC
+      (需經過額外政策設定檢查 - 如果目前的
+      使用者工作階段已啟用暫時模式或多帳戶登入功能，
+      仍然無法使用 ARC)。
+
+      如果停用或未設定這項政策，企業使用者將
+      無法使用 ARC。</translation>
 <translation id="1561424797596341174">針對遠端存取主機的偵錯版本覆寫政策</translation>
 <translation id="1583248206450240930">根據預設使用 <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="1608755754295374538">系統會直接授權存取音訊擷取裝置而不需提示的網址</translation>
@@ -223,6 +230,7 @@
       如果將這項政策設為 True，<ph name="PRODUCT_OS_NAME" /> 將嘗試透過 HTTP 下載自動更新裝載。如果設為 False 或未設定，系統則會透過 HTTPS 下載自動更新裝載。</translation>
 <translation id="2006530844219044261">電源管理</translation>
 <translation id="201557587962247231">裝置狀態報告上傳頻率</translation>
+<translation id="2024476116966025075">設定遠端存取用戶端的網域名稱 (必要)</translation>
 <translation id="2030905906517501646">預設搜尋引擎關鍵字</translation>
 <translation id="206623763829450685">指定 <ph name="PRODUCT_NAME" /> 支援的 HTTP 驗證機制。
 
@@ -435,6 +443,7 @@
       如果您未設定這項政策，使用者將可以自行決定是否要使用資料壓縮 Proxy 功能。</translation>
 <translation id="2587719089023392205">將 <ph name="PRODUCT_NAME" /> 設為預設瀏覽器</translation>
 <translation id="2592091433672667839">螢幕保護程式顯示前的閒置時間會顯示在零售模式下的登入畫面上</translation>
+<translation id="260705825237536216">設定 ARC 應用程式</translation>
 <translation id="2623014935069176671">等待初始使用者活動</translation>
 <translation id="262740370354162807">啟用「<ph name="CLOUD_PRINT_NAME" />」文件提交功能</translation>
 <translation id="2633084400146331575">啟用互動朗讀</translation>
@@ -542,6 +551,7 @@
           如果您未設定這項政策，系統會使用預設時間長度。
 
           指定政策值時需以毫秒為單位。該值需小於或等於螢幕關閉延遲時間 (如有設定) 和閒置延遲時間。</translation>
+<translation id="2987155890997901449">啟用 ARC</translation>
 <translation id="2998881342848488968">這項政策可讓 <ph name="PRODUCT_OS_NAME" /> 在進行監控式入口網站驗證程序時不要連線到 Proxy 伺服器。
 
       這項政策只會在 Proxy 已設定 (例如透過政策設定、由使用者在 chrome://settings 中設定，或透過擴充功能設定) 時生效。
@@ -1070,6 +1080,11 @@
 <translation id="5307432759655324440">無痕模式適用性</translation>
 <translation id="5318185076587284965">啟用遠端存取主機所使用的轉送伺服器</translation>
 <translation id="5330684698007383292">允許 <ph name="PRODUCT_FRAME_NAME" /> 處理列出的內容類型</translation>
+<translation id="5345267406698765263">以 JSON 字串形式指定 ARC 應用程式政策，
+      以便直接遞交給 ARC 執行階段。目前這項設定僅適用於
+      指定強制安裝應用程式。
+
+      如果未設定這項政策，則不會自動安裝任何應用程式。</translation>
 <translation id="5365946944967967336">在工具列上顯示 [首頁] 按鈕</translation>
 <translation id="5366977351895725771">如果設為 False，這位使用者將無法建立受監督的使用者。目前如有任何受監督的使用者帳戶，則仍然可供存取。
 
@@ -1133,6 +1148,13 @@
       如未設定這項政策，使用者可以選擇檔案櫃是否要自動隱藏。</translation>
 <translation id="557658534286111200">啟用或停用書籤編輯功能</translation>
 <translation id="5586942249556966598">不要處理</translation>
+<translation id="5613179474872285001">設定必要的用戶端網域名稱，強制遠端存取用戶端使用，並禁止使用者自行變更。
+
+          啟用這項設定後，只有指定的網域中的用戶端可以連上主機。
+
+          如果停用或未設定這項政策，則會套用預設的連線類型政策。如果是遠端協助，任何網域中的用戶端都可以連上主機。如果是沒有時限的遠端存取，則只有主機擁有者可以連線。
+
+          另請參閱 RemoteAccessHostDomain。</translation>
 <translation id="5630352020869108293">還原上次工作階段</translation>
 <translation id="5645779841392247734">允許這些網站的 Cookie</translation>
 <translation id="5677038592630896441">本機使用者和遠端存取主機擁有者的名稱必須相符。
@@ -1517,6 +1539,13 @@
 <translation id="6943577887654905793">Mac/Linux 偏好設定名稱：</translation>
 <translation id="69525503251220566">為預設搜尋引擎提供圖片搜尋功能的參數</translation>
 <translation id="6956272732789158625">不允許任何網站使用金鑰產生功能</translation>
+<translation id="695891079107014261">設定必要的主機網域名稱，強制遠端存取主機使用，並禁止使用者自行變更。
+
+          啟用這項設定後，必須使用在指定的網域名稱中註冊的帳戶才能分享主機。
+
+          如果停用或未設定這項政策，則可使用任何帳戶分享主機。
+
+          另請參閱 RemoteAccessHostClientDomain。</translation>
 <translation id="6997592395211691850">是否需要為本機信任錨點執行線上 OCSP/CRL 檢查。</translation>
 <translation id="7003334574344702284">如果啟用這項政策，則會強制從之前的預設瀏覽器匯入儲存的密碼，並影響匯入對話方塊。如果停用這項政策，則不會匯入儲存的密碼。如果未設定這項政策，系統會自動匯入儲存的密碼，或詢問使用者是否要匯入儲存的密碼。</translation>
 <translation id="7003746348783715221"><ph name="PRODUCT_NAME" /> 偏好設定</translation>

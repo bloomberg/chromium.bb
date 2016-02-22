@@ -3,7 +3,6 @@
 <translationbundle lang="zh-TW">
 <translation id="1001534784610492198">安裝程式封存檔案已經損壞或無效，請再次下載 Google Chrome。</translation>
 <translation id="1013290471399003443">Chrome 已驗證這個網站的憑證核發者是 <ph name="ISSUER" />。該伺服器提供了有效的 Certificate Transparency 資訊。</translation>
-<translation id="1016765312371154165">Chrome 未正確關閉。</translation>
 <translation id="103396972844768118">Chrome 資料的相關重要資訊</translation>
 <translation id="1035334672863811645">登入 Chrome</translation>
 <translation id="1061441684050139317">Chrome 需要存取麥克風，才能與這個網站分享。</translation>

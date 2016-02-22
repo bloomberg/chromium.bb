@@ -38,11 +38,14 @@
 <translation id="1227224963052638717">Ismeretlen házirend</translation>
 <translation id="1227633850867390598">Érték elrejtése</translation>
 <translation id="1228893227497259893">Helytelen entitásazonosító</translation>
+<translation id="1232569758102978740">Névtelen</translation>
 <translation id="1254117744268754948">Mappa kiválasztása</translation>
 <translation id="1270699273812232624">Elemek engedélyezése</translation>
 <translation id="1285320974508926690">Ezt a webhelyet soha ne fordítsa le</translation>
+<translation id="129553762522093515">Mostanában bezárt</translation>
 <translation id="1339601241726513588">Regisztrációs domain:</translation>
 <translation id="1344588688991793829">A Chromium Automatikus kitöltési beállításai…</translation>
+<translation id="1374468813861204354">javaslatok</translation>
 <translation id="1375198122581997741">A verzióról</translation>
 <translation id="139305205187523129">A(z) <ph name="HOST_NAME" /> nem küldött adatokat.</translation>
 <translation id="1407135791313364759">Összes megnyitása</translation>
@@ -59,6 +62,7 @@
 <translation id="1559572115229829303">&lt;p&gt;Nem hozható létre privát kapcsolat a következővel: <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, mert az eszköz dátum- és időbeállítása helytelen (<ph name="DATE_AND_TIME" />).&lt;/p&gt;
 
       &lt;p&gt;Módosítsa a dátumot és az időt a &lt;strong&gt;Beállítások&lt;/strong&gt; alkalmazás &lt;strong&gt;Általános&lt;/strong&gt; részében.&lt;/p&gt;</translation>
+<translation id="1583429793053364125">Valami nem sikerült a weboldal megjelenítése során.</translation>
 <translation id="1592005682883173041">Helyi adatok elérése</translation>
 <translation id="1629803312968146339">Szeretné, hogy a Chrome mentse ezt a kártyát?</translation>
 <translation id="1640180200866533862">Felhasználói házirendek</translation>
@@ -93,6 +97,7 @@
 <translation id="2030481566774242610">Erre gondolt: <ph name="LINK" />?</translation>
 <translation id="2053553514270667976">Irányítószám</translation>
 <translation id="2065985942032347596">Hitelesítés szükséges</translation>
+<translation id="2079545284768500474">Visszavonás</translation>
 <translation id="20817612488360358">A rendszer proxybeállításai konfigurálva vannak a használathoz, de kifejezett proxykonfiguráció is meg van adva.</translation>
 <translation id="2089090684895656482">Rövidebben</translation>
 <translation id="2094505752054353250">Domainkeveredés</translation>
@@ -168,6 +173,7 @@
 <translation id="2837049386027881519">A kapcsolat felépítését újra meg kellett próbálni egy régebbi verziójú TLS- vagy SSL-protokoll használatával. Ez általában azt jelenti, hogy a szerver nagyon régi szoftvert használ, és lehetnek vele más biztonsági problémák is.</translation>
 <translation id="284702764277384724">A(z) <ph name="HOST_NAME" /> szervertanúsítványa hamisítványnak tűnik.</translation>
 <translation id="2855922900409897335">A(z) <ph name="CREDIT_CARD" /> kártya igazolása</translation>
+<translation id="2896499918916051536">Ez a beépülő modul nem támogatott.</translation>
 <translation id="2897655920961181107">A kért port nem biztonságos – letiltva.</translation>
 <translation id="2909946352844186028">Változást érzékeltünk a hálózatban.</translation>
 <translation id="2915500479781995473">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa lejárt. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását. Számítógépének órája jelenleg <ph name="CURRENT_TIME" /> időre van állítva. Ez helyesnek tűnik? Ha nem, állítsa be megfelelően a rendszer óráját, majd frissítse az oldalt.</translation>
@@ -189,6 +195,7 @@
 <translation id="3005723025932146533">Mentett másolat megjelenítése</translation>
 <translation id="3010559122411665027">"<ph name="ENTRY_INDEX" />." listabejegyzés: <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Nem megfelelő irányelvtípus</translation>
+<translation id="3037605927509011580">A manóba!</translation>
 <translation id="3041612393474885105">Tanúsítvány adatai</translation>
 <translation id="3093245981617870298">Ön jelenleg offline.</translation>
 <translation id="3105172416063519923">Tartalomazonosító:</translation>
@@ -198,6 +205,8 @@
 <translation id="3145945101586104090">Nem sikerült dekódolni a választ</translation>
 <translation id="3147485256806412701">Ez a webhely új, általános felső szintű domaint használ.</translation>
 <translation id="3150653042067488994">Átmeneti szerverhiba</translation>
+<translation id="3157931365184549694">Visszaállítás</translation>
+<translation id="3167968892399408617">Az inkognitólapon megtekintett oldalak az összes inkognitólap bezárását követően nem szerepelnek majd böngészési előzményei között, a cookie-k gyűjtőhelyén, illetve a keresési előzményekben. A letöltött fájlok és a könyvjelzők azonban megmaradnak.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">Sziget</translation>
 <translation id="3176929007561373547">Ellenőrizze a proxybeállításokat, vagy kérdezze meg a rendszergazdájától, hogy a proxyszerver működik-e. Ha úgy gondolja, hogy nem használ proxyszervert:
@@ -246,6 +255,7 @@
 <translation id="3648607100222897006">Ezek a kísérleti funkciók bármikor megváltozhatnak, elromolhatnak vagy eltűnhetnek. Nem vállalunk semmilyen garanciát az ezen kísérleti funkciók bekapcsolásából származó eseményekért; továbbá böngészője váratlanul összeomolhat. A viccet félretéve, a böngészője törölheti az összes adatot, valamint különböző módokon veszélyeztetheti biztonságát és adatvédelmét. Ha bármilyen kísérleti funkciót engedélyez, az a böngésző minden felhasználója számára engedélyezve lesz. Kérjük, óvatosan lépjen tovább.</translation>
 <translation id="3650584904733503804">Sikeres érvényesítés</translation>
 <translation id="3651020361689274926">A kért forrás már nem létezik, és nincs átirányítási cím.  Ez valószínűleg egy végleges állapot.</translation>
+<translation id="3655670868607891010">Ha gyakran látja ezt, próbálja ki a következőt: <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Ellenőrzés</translation>
 <translation id="3681007416295224113">Tanúsítvány adatai</translation>
 <translation id="3693415264595406141">Jelszó:</translation>
@@ -336,7 +346,6 @@
 <translation id="4841640898320458950">Nem biztonságos port</translation>
 <translation id="4850886885716139402">Nézet</translation>
 <translation id="4880827082731008257">Keresés az előzmények között</translation>
-<translation id="488726935215981469">Adatai az összetett szinkronizálási jelszavával vannak titkosítva. Kérjük, adja meg alább a jelszót.</translation>
 <translation id="4923417429809017348">Ezt az oldalt lefordították egy ismeretlen nyelvről <ph name="LANGUAGE_LANGUAGE" /> nyelvre</translation>
 <translation id="4926049483395192435">Meg kell határozni.</translation>
 <translation id="495170559598752135">Műveletek</translation>
@@ -347,6 +356,7 @@
 <translation id="5023310440958281426">Ellenőrizze rendszergazdai házirendjeit</translation>
 <translation id="5029568752722684782">Példány törlése</translation>
 <translation id="5031870354684148875">A Google Fordító leírása</translation>
+<translation id="5040262127954254034">Adatvédelem</translation>
 <translation id="5045550434625856497">Téves jelszó</translation>
 <translation id="5087286274860437796">A szerver tanúsítványa jelenleg nem érvényes.</translation>
 <translation id="5089810972385038852">Állam</translation>
@@ -557,12 +567,14 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY" />) hasznos lehet a következő
 <translation id="7610193165460212391">Az érték kívül esik a következő tartományon: <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Lejárat: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Már rendelkezik olyan adattal, amely Google-fiókja jelszavának egy másik verziójával van titkosítva. Kérjük, lentebb adja azt meg.</translation>
+<translation id="7634554953375732414">A webhellyel való kapcsolata nem privát.</translation>
 <translation id="7637571805876720304">Eltávolítja a hitelkártyát a Chromiumból?</translation>
 <translation id="7643817847124207232">Elveszett az internetes kapcsolat.</translation>
 <translation id="765676359832457558">Speciális beállítások elrejtése...</translation>
 <translation id="7658239707568436148">Mégse</translation>
 <translation id="7668654391829183341">Ismeretlen eszköz</translation>
 <translation id="7674629440242451245">Érdekli néhány remek új Chrome-funkció? Próbálja ki a fejlesztői csatornánkat a chrome.com/dev webhelyen.</translation>
+<translation id="769344199378576125">Offline könyvjelzők megjelenítése</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Tovább a(z) <ph name="SITE" /> webhelyre (nem biztonságos)<ph name="END_LINK" /></translation>
 <translation id="7716424297397655342">A webhely nem tölthető be a gyorsítótárból</translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
@@ -581,6 +593,7 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY" />) hasznos lehet a következő
 <translation id="7805768142964895445">Állapot</translation>
 <translation id="7813600968533626083">Eltávolítja a javaslatot a Chrome-ból?</translation>
 <translation id="7825436071901023927">Nem biztonságos: <ph name="SITE" /></translation>
+<translation id="785549533363645510">Azonban Ön nem teljesen láthatatlan. Az inkognitómód használata nem rejti el böngészési műveleteit munkáltatója, az internetszolgáltatója és a felkeresett webhelyek elől.</translation>
 <translation id="7887683347370398519">Ellenőrizze a CVC-t, majd próbálja újra</translation>
 <translation id="790025292736025802"><ph name="URL" /> nem található</translation>
 <translation id="7912024687060120840">Ebben a mappában:</translation>
@@ -591,11 +604,9 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY" />) hasznos lehet a következő
 <translation id="7961015016161918242">Soha</translation>
 <translation id="7977590112176369853">&lt;lekérdezés megadása&gt;</translation>
 <translation id="7983301409776629893">A(z) <ph name="ORIGINAL_LANGUAGE" /> nyelvű szövegeket mindig fordítsa <ph name="TARGET_LANGUAGE" /> nyelvre</translation>
-<translation id="7988324688042446538">Asztali könyvjelzők</translation>
 <translation id="7995512525968007366">Nincs megadva</translation>
 <translation id="8034522405403831421">Ez az oldal <ph name="SOURCE_LANGUAGE" /> nyelven van. Lefordítja <ph name="TARGET_LANGUAGE" /> nyelvre?</translation>
 <translation id="8034955203865359138">Nincsenek előzménybejegyzések.</translation>
-<translation id="8075539548641175231">Adatai titkosítva lettek összetett szinkronizálási jelszavával ekkor: <ph name="TIME" />. Kérjük, adja meg alább a jelszót.</translation>
 <translation id="8088680233425245692">Nem sikerült megtekinteni a cikket.</translation>
 <translation id="8091372947890762290">Az aktiválás függőben van a szerveren</translation>
 <translation id="8149426793427495338">Számítógépe alvó üzemmódba váltott.</translation>
@@ -648,6 +659,7 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY" />) hasznos lehet a következő
 <translation id="8703575177326907206">A kapcsolat (<ph name="DOMAIN" />) nem titkosított.</translation>
 <translation id="8713130696108419660">Helytelen első aláírás</translation>
 <translation id="8725066075913043281">Újrapróbálás</translation>
+<translation id="8728672262656704056">Ön inkognitómódra váltott</translation>
 <translation id="8730621377337864115">Kész</translation>
 <translation id="8738058698779197622">Biztonságos kapcsolat létrehozásához az órát pontosan be kell állítani. Ez azért szükséges, mert a webhelyek által az azonosításukra használt tanúsítványok csak adott ideig érvényesek. Mivel az eszköz órája nem pontos, a Chromium nem tudja ellenőrizni ezeket a tanúsítványokat.</translation>
 <translation id="8740359287975076522">A(z) <ph name="HOST_NAME" /> &lt;abbr id="dnsDefinition"&gt;DNS-címe&lt;/abbr&gt; nem található. A probléma diagnosztizálása folyamatban van.</translation>
@@ -663,6 +675,7 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY" />) hasznos lehet a következő
 <translation id="885730110891505394">Megosztás a Google-lal</translation>
 <translation id="8866481888320382733">Irányelv-beállítások előfeldolgozási hibája</translation>
 <translation id="8866959479196209191">Az oldal közlendője:</translation>
+<translation id="8870413625673593573">Mostanában bezárt</translation>
 <translation id="8876793034577346603">A hálózati konfiguráció előfeldolgozása sikertelen.</translation>
 <translation id="8891727572606052622">Érvénytelen proxymód.</translation>
 <translation id="889901481107108152">Sajnos ez a kísérlet nem érhető el az Ön operációs rendszerén.</translation>

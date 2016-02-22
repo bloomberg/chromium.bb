@@ -38,11 +38,14 @@
 <translation id="1227224963052638717">Kebijakan tidak dikenal.</translation>
 <translation id="1227633850867390598">Sembunyikan nilai</translation>
 <translation id="1228893227497259893">Pengidentifikasi entitas salah</translation>
+<translation id="1232569758102978740">Tanpa Judul</translation>
 <translation id="1254117744268754948">Pilih Folder</translation>
 <translation id="1270699273812232624">Izinkan item</translation>
 <translation id="1285320974508926690">Jangan pernah terjemahkan situs ini</translation>
+<translation id="129553762522093515">Barusan ditutup</translation>
 <translation id="1339601241726513588">Domain pendaftaran:</translation>
 <translation id="1344588688991793829">Setelan IsiOtomatis Chromium...</translation>
+<translation id="1374468813861204354">saran</translation>
 <translation id="1375198122581997741">Tentang Versi</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> tidak mengirimkan data apa pun.</translation>
 <translation id="1407135791313364759">Buka semua</translation>
@@ -59,6 +62,7 @@
 <translation id="1559572115229829303">&lt;p&gt;Sambungan pribadi ke <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tidak dapat dibuat karena tanggal dan waktu (<ph name="DATE_AND_TIME" />) perangkat Anda tidak benar.&lt;/p&gt;
 
       &lt;p&gt;Sesuaikan tanggal dan waktu dari bagian &lt;strong&gt;Umum&lt;/strong&gt; aplikasi &lt;strong&gt;Setelan&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="1583429793053364125">Terjadi masalah sewaktu menampilkan laman web ini.</translation>
 <translation id="1592005682883173041">Akses Data Lokal</translation>
 <translation id="1629803312968146339">Ingin Chrome menyimpan kartu ini?</translation>
 <translation id="1640180200866533862">Kebijakan pengguna</translation>
@@ -93,6 +97,7 @@
 <translation id="2030481566774242610">Mungkin maksud Anda <ph name="LINK" />?</translation>
 <translation id="2053553514270667976">Kode pos</translation>
 <translation id="2065985942032347596">Diperlukan Otentikasi</translation>
+<translation id="2079545284768500474">Batalkan</translation>
 <translation id="20817612488360358">Setelan proxy sistem disetel untuk digunakan namun konfigurasi proxy eksplisit juga ditentukan.</translation>
 <translation id="2089090684895656482">Lebih Sedikit</translation>
 <translation id="2094505752054353250">Ketidakcocokan domain</translation>
@@ -168,6 +173,7 @@
 <translation id="2837049386027881519">Sambungan harus dicoba lagi menggunakan versi yang lebih lama dari protokol TLS atau SSL. Biasanya, ini artinya server menggunakan perangkat lunak yang amat lawas dan mungkin mengalami masalah keamanan lainnya.</translation>
 <translation id="284702764277384724">Sertifikat server di <ph name="HOST_NAME" /> tampaknya palsu.</translation>
 <translation id="2855922900409897335">Verifikasi <ph name="CREDIT_CARD" /> Anda</translation>
+<translation id="2896499918916051536">Plugin ini tidak didukung.</translation>
 <translation id="2897655920961181107">Port yang diminta tidak aman dan telah diblokir.</translation>
 <translation id="2909946352844186028">Perubahan jaringan terdeteksi.</translation>
 <translation id="2915500479781995473">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; masa berlaku sertifikat keamanannya telah habis. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda. Saat ini jam komputer Anda disetel ke <ph name="CURRENT_TIME" />. Apakah sudah benar? Jika belum, sebaiknya perbaiki jam sistem kemudian segarkan laman ini.</translation>
@@ -189,6 +195,7 @@
 <translation id="3005723025932146533">Tampilkan salinan yang disimpan</translation>
 <translation id="3010559122411665027">Entri daftar "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Jenis kebijakan salah</translation>
+<translation id="3037605927509011580">Yah!</translation>
 <translation id="3041612393474885105">Informasi Sertifikat</translation>
 <translation id="3093245981617870298">Anda sedang offline.</translation>
 <translation id="3105172416063519923">ID Aset:</translation>
@@ -198,6 +205,8 @@
 <translation id="3145945101586104090">Gagal mendekodekan tanggapan</translation>
 <translation id="3147485256806412701">Situs ini menggunakan domain tingkat atas generik baru.</translation>
 <translation id="3150653042067488994">Kesalahan server sementara</translation>
+<translation id="3157931365184549694">Pulihkan</translation>
+<translation id="3167968892399408617">Laman yang Anda lihat di tab penyamaran tidak akan disimpan dalam riwayat browser, penyimpanan cookie, atau riwayat penelusuran setelah Anda menutup semua tab penyamaran. File apa pun yang diunduh atau bookmark yang dibuat akan tetap tersimpan.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">Pulau</translation>
 <translation id="3176929007561373547">Periksa setelan proxy atau hubungi administrator jaringan untuk
@@ -248,6 +257,7 @@
 <translation id="3648607100222897006">Fitur eksperimental ini bisa berubah, rusak, atau hilang kapan saja. Kami sama sekali tidak menjamin apa yang akan terjadi saat eksperimen ini dinyalakan, siapa tahu browser Anda tiba-tiba hangus terbakar! Becanda! Tapi bisa jadi browser akan menghapus semua data, atau keamanan dan privasi Anda akan disusupi secara tak terduga. Eksperimen yang Anda aktifkan akan diaktifkan untuk semua pengguna browser ini. Lanjutkan dengan hati-hati.</translation>
 <translation id="3650584904733503804">Validasi berhasil</translation>
 <translation id="3651020361689274926">Sumber daya yang diminta sudah tidak ada lagi, dan tidak ada alamat terusan.  Kondisi ini diperkirakan permanen.</translation>
+<translation id="3655670868607891010">Jika Anda sering melihatnya, coba <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Revisi</translation>
 <translation id="3681007416295224113">Informasi sertifikat</translation>
 <translation id="3693415264595406141">Sandi:</translation>
@@ -338,7 +348,6 @@
 <translation id="4841640898320458950">Port tidak aman diblokir.</translation>
 <translation id="4850886885716139402">Lihat</translation>
 <translation id="4880827082731008257">Telusuri riwayat</translation>
-<translation id="488726935215981469">Data dienkripsi dengan frasa sandi sinkronisasi Anda. Masukkan di bawah.</translation>
 <translation id="4923417429809017348">Laman ini telah diterjemahkan dari bahasa yang tidak diketahui ke bahasa <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Harus ditentukan.</translation>
 <translation id="495170559598752135">Tindakan</translation>
@@ -349,6 +358,7 @@
 <translation id="5023310440958281426">Periksa kebijakan administrator Anda</translation>
 <translation id="5029568752722684782">Hapus salinan</translation>
 <translation id="5031870354684148875">Tentang Google Terjemahan</translation>
+<translation id="5040262127954254034">Privasi</translation>
 <translation id="5045550434625856497">Sandi salah</translation>
 <translation id="5087286274860437796">Sertifikat server saat ini tidak valid.</translation>
 <translation id="5089810972385038852">Negara bagian</translation>
@@ -560,12 +570,14 @@ Ssst! <ph name="SHORTCUT_KEY" /> mode penyamaran mungkin berguna suatu saat nant
 <translation id="7610193165460212391">Nilai di luar jangkauan <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Masa berlaku habis: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Anda sudah memiliki data yang dienkripsi menggunakan versi sandi Akun Google yang berbeda. Masukkan sandi di bawah.</translation>
+<translation id="7634554953375732414">Sambungan Anda ke situs ini tidak bersifat pribadi.</translation>
 <translation id="7637571805876720304">Hapus kartu kredit dari Chromium?</translation>
 <translation id="7643817847124207232">Sambungan Internet telah terputus.</translation>
 <translation id="765676359832457558">Sembunyikan setelan lanjutan...</translation>
 <translation id="7658239707568436148">Batal</translation>
 <translation id="7668654391829183341">Perangkat tidak dikenal</translation>
 <translation id="7674629440242451245">Tertarik dengan fitur Chrome baru yang keren? Coba saluran dev kami di chrome.com/dev.</translation>
+<translation id="769344199378576125">Tampilkan bookmark offline</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Lanjutkan ke <ph name="SITE" /> (tidak aman)<ph name="END_LINK" /></translation>
 <translation id="7716424297397655342">Situs ini tidak dapat dimuat dari cache</translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
@@ -584,6 +596,7 @@ Ssst! <ph name="SHORTCUT_KEY" /> mode penyamaran mungkin berguna suatu saat nant
 <translation id="7805768142964895445">Status</translation>
 <translation id="7813600968533626083">Hapus sebagai saran dari Chrome?</translation>
 <translation id="7825436071901023927">Port <ph name="SITE" /> Tidak Aman</translation>
+<translation id="785549533363645510">Namun, Anda masih dapat terlihat. Masuk ke mode penyamaran tidak menyembunyikan penjelajahan Anda dari atasan, penyedia layanan internet, atau situs web yang Anda kunjungi.</translation>
 <translation id="7887683347370398519">Periksa CVC dan coba lagi</translation>
 <translation id="790025292736025802"><ph name="URL" /> tidak ditemukan</translation>
 <translation id="7912024687060120840">Dalam Folder:</translation>
@@ -594,11 +607,9 @@ Ssst! <ph name="SHORTCUT_KEY" /> mode penyamaran mungkin berguna suatu saat nant
 <translation id="7961015016161918242">Tidak pernah</translation>
 <translation id="7977590112176369853">&lt;masukkan permintaan&gt;</translation>
 <translation id="7983301409776629893">Selalu terjemahkan <ph name="ORIGINAL_LANGUAGE" /> ke <ph name="TARGET_LANGUAGE" /></translation>
-<translation id="7988324688042446538">Bookmark desktop</translation>
 <translation id="7995512525968007366">Tidak Ditentukan</translation>
 <translation id="8034522405403831421">Laman ini berbahasa <ph name="SOURCE_LANGUAGE" />. Terjemahkan ke <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8034955203865359138">Tidak ditemukan entri riwayat.</translation>
-<translation id="8075539548641175231">Data dienkripsi dengan frasa sandi sinkronisasi Anda tanggal <ph name="TIME" />. Masukkan di bawah.</translation>
 <translation id="8088680233425245692">Gagal melihat artikel.</translation>
 <translation id="8091372947890762290">Aktivasi ditunda di server</translation>
 <translation id="8149426793427495338">Komputer Anda sedang dalam mode tidur.</translation>
@@ -651,6 +662,7 @@ Ssst! <ph name="SHORTCUT_KEY" /> mode penyamaran mungkin berguna suatu saat nant
 <translation id="8703575177326907206">Sambungan ke <ph name="DOMAIN" /> tidak dienkripsi.</translation>
 <translation id="8713130696108419660">Tanda tangan awal yang buruk</translation>
 <translation id="8725066075913043281">Coba lagi</translation>
+<translation id="8728672262656704056">Anda masuk mode penyamaran</translation>
 <translation id="8730621377337864115">Selesai</translation>
 <translation id="8738058698779197622">Untuk membuat sambungan aman, jam perlu disetel dengan benar. Hal ini karena sertifikat yang digunakan situs web untuk mengidentifikasi situs web tersebut hanya valid untuk jangka waktu tertentu. Karena jam perangkat tidak benar, Chromium tidak dapat memverifikasi sertifikat ini.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;Alamat DNS&lt;/abbr&gt; <ph name="HOST_NAME" /> tidak dapat ditemukan. Mendiagnosis masalah.</translation>
@@ -666,6 +678,7 @@ Ssst! <ph name="SHORTCUT_KEY" /> mode penyamaran mungkin berguna suatu saat nant
 <translation id="885730110891505394">Berbagi dengan Google</translation>
 <translation id="8866481888320382733">Kesalahan saat menguraikan setelan kebijakan</translation>
 <translation id="8866959479196209191">Laman ini menyatakan:</translation>
+<translation id="8870413625673593573">Barusan Ditutup</translation>
 <translation id="8876793034577346603">Konfigurasi jaringan gagal diuraikan.</translation>
 <translation id="8891727572606052622">Mode proxy tidak valid.</translation>
 <translation id="889901481107108152">Maaf, percobaan ini tidak tersedia di platform Anda.</translation>

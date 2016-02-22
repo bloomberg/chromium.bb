@@ -38,17 +38,20 @@
 <translation id="1227224963052638717">অজানা নীতি৷</translation>
 <translation id="1227633850867390598">মান লুকান</translation>
 <translation id="1228893227497259893">ভুল সত্তা সনাক্তকারী</translation>
+<translation id="1232569758102978740">শিরোনামহীন</translation>
 <translation id="1254117744268754948">ফোল্ডার চয়ন করুন</translation>
 <translation id="1270699273812232624">আইটেমগুলিকে মঞ্জুরি দিন</translation>
 <translation id="1285320974508926690">কখনই এই সাইটটিকে অনুবাদ করবেন না</translation>
+<translation id="129553762522093515">সম্প্রতি বন্ধ হয়েছে</translation>
 <translation id="1339601241726513588">ডোমেন নথিভুক্ত করুন:</translation>
 <translation id="1344588688991793829">Chromium স্বতঃপূর্ণ সেটিংস...</translation>
+<translation id="1374468813861204354">প্রস্তাবনাগুলি</translation>
 <translation id="1375198122581997741">সংস্করণ সম্পর্কে</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> কোনো তথ্য পাঠায়নি।</translation>
 <translation id="1407135791313364759">সব খুলুন</translation>
 <translation id="1413809658975081374">গোপনীয়তা ত্রুটি</translation>
 <translation id="1426410128494586442">হ্যাঁ</translation>
-<translation id="1430915738399379752">মুদ্রণ</translation>
+<translation id="1430915738399379752">প্রিন্ট</translation>
 <translation id="1442912890475371290"><ph name="BEGIN_LINK" /><ph name="DOMAIN" /> এ পৃষ্ঠা পরিদর্শন করার<ph name="END_LINK" /> প্রচেষ্টা অবরুদ্ধ করা হয়েছে৷</translation>
 <translation id="1455235771979731432">আপনার কার্ডটি যাচাই করতে একটি সমস্যা হয়েছিল৷ আপনার ইন্টারনেট সংযোগ পরীক্ষা করুন এবং আবার চেষ্টা করুন৷</translation>
 <translation id="1491151370853475546">এই পৃষ্ঠাটি পুনঃ লোড করুন</translation>
@@ -59,6 +62,7 @@
 <translation id="1559572115229829303">&lt;p&gt;<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> এ একটি ব্যক্তিগত সংযোগ স্থাপন করা যায়নি কারণ আপনার ডিভাইসের তারিখ এবং সময় (<ph name="DATE_AND_TIME" />) সঠিক নয়৷&lt;/p&gt;
 
 &lt;p&gt;দয়া করে &lt;strong&gt;সেটিংস&lt;/strong&gt; অ্যাপ্লিকেশানের &lt;strong&gt;সাধারণ&lt;/strong&gt; বিভাগ থেকে তারিখ এবং সময় সংশোধন করুন৷&lt;/p&gt;</translation>
+<translation id="1583429793053364125">এই ওয়েবপৃষ্ঠাটি দেখানোর সময় কোনো সমস্যা হয়েছে।</translation>
 <translation id="1592005682883173041">স্থানীয় ডেটা অ্যাক্সেস</translation>
 <translation id="1629803312968146339">আপনি কি চান যে Chrome এই কার্ড সংরক্ষণ করুক?</translation>
 <translation id="1640180200866533862">ব্যবহারকারীর নীতিসমূহ</translation>
@@ -94,6 +98,7 @@
 <translation id="2030481566774242610">আপনি কি <ph name="LINK" /> বোঝাতে চেয়েছিলেন?</translation>
 <translation id="2053553514270667976">পিন কোড</translation>
 <translation id="2065985942032347596">প্রমাণীকরণ প্রয়োজন</translation>
+<translation id="2079545284768500474">পূর্বাবস্থায় ফিরুন</translation>
 <translation id="20817612488360358">সিস্টেম প্রক্সি সেটিংস ব্যবহার করার জন্য সেট আছে কিন্তু একটি সুনির্দিষ্ট প্রক্সি কনফিগারেশনও নির্দিষ্ট করা আছে৷</translation>
 <translation id="2089090684895656482">কম</translation>
 <translation id="2094505752054353250">ডোমেন মেলেনি</translation>
@@ -169,6 +174,7 @@
 <translation id="2837049386027881519">TLS অথবা SSL প্রোটোকলের পুরোনো সংস্করণ ব্যবহার করে সংযোগের জন্য পুনরায় চেষ্টা করা হয়েছে৷ সাধারণত এর অর্থ হল সার্ভার ভীষণ পুরোনো সংস্করণ ব্যবহার করছে এবং এতে অন্য কোনো নিরাপত্তা সমস্যা থাকতে পারে৷</translation>
 <translation id="284702764277384724"><ph name="HOST_NAME" /> এর সার্ভার শংসাপত্রটি জাল বলে মনে হচ্ছে।</translation>
 <translation id="2855922900409897335">আপনার <ph name="CREDIT_CARD" /> যাচাই করুন৷</translation>
+<translation id="2896499918916051536">এই প্লাগ ইন সমর্থিত নয়৷</translation>
 <translation id="2897655920961181107">অনুরোধ করা পোর্টটি অনিরাপদ এবং অবরুদ্ধ।</translation>
 <translation id="2909946352844186028">একটি নেটওয়ার্ক পরিবর্তন সনাক্ত হয়েছে৷</translation>
 <translation id="2915500479781995473">এই সার্ভার প্রমাণ করতে পারেনি যে এটি <ph name="DOMAIN" />; এর নিরাপত্তা শংসাপত্রটির মেয়াদোত্তীর্ণ হয়ে গেছে৷ কোনো ভুল কনফিগারেশনের কারণে অথবা কোনো আক্রমণকারী আপনার সংযোগ মাঝপথে আটকে দিচ্ছে বলে এমনটা হতে পারে৷ আপনার কম্পিউটারের ঘড়িটি বর্তমানে <ph name="CURRENT_TIME" /> হিসেবে সেট করা আছে৷ এটি কি ঠিক আছে? ঠিক না থাকলে, আপনার সিস্টেম ঘড়িটি ঠিক করে পৃষ্ঠাটি রিফ্রেশ করা উচিৎ৷</translation>
@@ -190,6 +196,7 @@
 <translation id="3005723025932146533">সংরক্ষিত প্রতিলিপি দেখান</translation>
 <translation id="3010559122411665027">তালিকার এন্ট্রি " <ph name="ENTRY_INDEX" /> ": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">নীতির ভুল প্রকার</translation>
+<translation id="3037605927509011580">ইস!</translation>
 <translation id="3041612393474885105">শংসাপত্র তথ্য</translation>
 <translation id="3093245981617870298">আপনি অফলাইনে আছেন৷</translation>
 <translation id="3105172416063519923">সম্পদ আইডি:</translation>
@@ -199,6 +206,8 @@
 <translation id="3145945101586104090">প্রতিক্রিয়া ডিকোড করতে ব্যর্থ হয়েছে</translation>
 <translation id="3147485256806412701">এই সাইটটি একটি নতুন জেনেরিক উচ্চ স্তরের ডোমেন ব্যবহার করছে৷</translation>
 <translation id="3150653042067488994">সাময়িক সার্ভার ত্রুটি</translation>
+<translation id="3157931365184549694">পুনরুদ্ধার করুন</translation>
+<translation id="3167968892399408617">ছদ্মবেশী ট্যাবগুলিতে আপনি যে পৃষ্ঠাগুলি দেখেন সেগুলি আপনার সব ছদ্মবেশী ট্যাব বন্ধ করে দেওয়ার পর ব্রাউজারের ইতিহাস, কুকি স্টোর বা অনুসন্ধান ইতিহাসে থাকবে না। আপনি ডাউনলোড করেছেন এমন ফাইল বা বুকমার্ক তৈরি করছেন এমন সবগুলি রেখে দেওয়া হবে।</translation>
 <translation id="3169472444629675720">আবিষ্কার করুন</translation>
 <translation id="3174168572213147020">দ্বীপ</translation>
 <translation id="3176929007561373547">প্রক্সী সার্ভার কাজ করছে কি না, তা নিশ্চিত করতে আপনার প্রক্সী সেটিংস পরীক্ষা করুন
@@ -249,6 +258,7 @@
 <translation id="3648607100222897006">এই পরীক্ষামূলক বৈশিষ্ট্যগুলি যেকোনো সময়ে পরিবর্তন, ভঙ্গ বা অদৃশ্য হয়ে যেতে পারে৷ আপনি এই পরীক্ষাগুলির যেকোনো একটি চালু করতে কী ঘটতে পারে সে সম্পর্কে আমরা কোনো রকম নিশ্চয়তা দিই না এবং এমনকি আপনার ব্রাউজার তাত্ক্ষণিকভাবে বিস্ফোরণ ঘটাতে পারে৷ মজা সরিয়ে, আপনার ব্রাউজার আপনার সকল ডেটা মুছে দিতে পারে, বা আপনার সুরক্ষা ও গোপনীয়তা অপ্রত্যাশিতভাবে ক্ষতিগ্রস্থ হতে পারে৷ আপনার দ্বারা সক্রিয় করা যেকোনো পরীক্ষা এই ব্রাউজারের সমস্ত ব্যবহারকারীদের জন্য সক্রিয় হবে৷ দয়া করে সাবধানতার সাথে এগিয়ে যান৷</translation>
 <translation id="3650584904733503804">বৈধতা যাচাইকরণ সফল হয়েছে</translation>
 <translation id="3651020361689274926">অনুরোধ হওয়া সংস্থানটি আর বিদ্যমান নেই এবং অগ্রবর্তী ঠিকানা নেই৷ এটি একটি স্থায়ী অবস্থা হিসাবে প্রত্যাশিত৷</translation>
+<translation id="3655670868607891010">আপনি যদি এটি প্রায়শই দেখতে পান, তাহলে <ph name="HELP_LINK" /> চেষ্টা করে দেখুন৷</translation>
 <translation id="3658742229777143148">পুনর্বিবেচনা</translation>
 <translation id="3681007416295224113">শংসাপত্র তথ্য</translation>
 <translation id="3693415264595406141">পাসওয়ার্ড:</translation>
@@ -339,7 +349,6 @@
 <translation id="4841640898320458950">অনিরাপদ পোর্ট অবরুদ্ধ।</translation>
 <translation id="4850886885716139402">দেখুন</translation>
 <translation id="4880827082731008257">ইতিহাস অনুসন্ধান</translation>
-<translation id="488726935215981469">আপনার সিঙ্ক পাসফ্রেজের মাধ্যমে আপনার ডেটা এনক্রিপটেড হয়েছে৷ দয়া করে এটি নিচে লিখুন৷</translation>
 <translation id="4923417429809017348">এই পৃষ্ঠাটি কোন অজানা ভাষা থেকে <ph name="LANGUAGE_LANGUAGE" />-এ অনুবাদ করা হয়েছে</translation>
 <translation id="4926049483395192435">নির্দিষ্ট করা উচিত৷</translation>
 <translation id="495170559598752135">ক্রিয়াসমূহ</translation>
@@ -350,6 +359,7 @@
 <translation id="5023310440958281426">আপনার প্রশাসকের নীতিগুলি দেখুন</translation>
 <translation id="5029568752722684782">প্রতিলিপি সাফ করুন</translation>
 <translation id="5031870354684148875">Google অনুবাদ সম্বন্ধে</translation>
+<translation id="5040262127954254034">গোপনীয়তা</translation>
 <translation id="5045550434625856497">ভুল পাসওয়ার্ড</translation>
 <translation id="5087286274860437796">সার্ভারের শংসাপত্র এই সময়ে বৈধ নয়৷</translation>
 <translation id="5089810972385038852">রাজ্য</translation>
@@ -560,12 +570,14 @@
 <translation id="7610193165460212391">সীমার বাইরে মান <ph name="VALUE" />৷</translation>
 <translation id="7613889955535752492">মেয়াদোত্তীর্ণ: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">আপনার কাছে ইতিমধ্যেই এমন ডেটা আছে যা Google অ্যাকাউন্টের পাসওয়ার্ডের কোনো ভিন্ন সংস্করণ ব্যবহারের দ্বারা এনক্রিপ্ট করা হয়৷ দয়া করে এটিকে নীচে লিখুন৷</translation>
+<translation id="7634554953375732414">এই সাইটে আপনার সংযোগ ব্যক্তিগত নয়।</translation>
 <translation id="7637571805876720304">Chromium থেকে ক্রেডিট কার্ড সরাবেন?</translation>
 <translation id="7643817847124207232">ইন্টারনেট কানেকশন বিচ্ছিন্ন হয়েছে৷</translation>
 <translation id="765676359832457558">উন্নত সেটিংস লুকান...</translation>
 <translation id="7658239707568436148">বাতিল</translation>
 <translation id="7668654391829183341">অজানা ডিভাইস</translation>
 <translation id="7674629440242451245">Chrome এর নতুন দুর্দান্ত বৈশিষ্ট্যগুলিতে আগ্রহী? chrome.com/dev এ আমাদের ডেভ চ্যানেল ব্যবহার করে দেখুন৷</translation>
+<translation id="769344199378576125">অফলাইন বুকমার্কগুলি দেখান</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" /> <ph name="SITE" /> এ এগিয়ে যান (নিরাপদ নয়) <ph name="END_LINK" /></translation>
 <translation id="7716424297397655342">এই সাইটটি ক্যাশে থেকে লোড করা যাবে না</translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
@@ -584,6 +596,7 @@
 <translation id="7805768142964895445">স্থিতি</translation>
 <translation id="7813600968533626083">Chrome থেকে ফর্ম প্রস্তাবনা সরাবেন?</translation>
 <translation id="7825436071901023927">অনিরাপদ পোর্ট <ph name="SITE" /></translation>
+<translation id="785549533363645510">আপনি অবশ্য অদৃশ্য থাকবেন না। ছদ্মবেশী মোডে গেলেও তা আপনার নিয়োগকর্তা, আপনার ইন্টারনেট পরিষেবা প্রদানকারী অথবা আপনার পরিদর্শন করা ওয়েবসাইট থেকে আপনার ব্রাউজিংকে আড়াল করবে না।</translation>
 <translation id="7887683347370398519">আপনার CVC পরীক্ষা করুন এবং আবার চেষ্টা করুন</translation>
 <translation id="790025292736025802"><ph name="URL" /> পাওয়া যায় নি</translation>
 <translation id="7912024687060120840">ফোল্ডারে:</translation>
@@ -594,11 +607,9 @@
 <translation id="7961015016161918242">কখনই নয়</translation>
 <translation id="7977590112176369853">&lt;ক্যোয়ারী লিখুন&gt;</translation>
 <translation id="7983301409776629893">সর্বদা <ph name="ORIGINAL_LANGUAGE" />-কে <ph name="TARGET_LANGUAGE" />-তে অনুবাদ করুন</translation>
-<translation id="7988324688042446538">ডেস্কটপ বুকমার্ক</translation>
 <translation id="7995512525968007366">নির্দিষ্ট করে উল্লেখ করা নেই</translation>
 <translation id="8034522405403831421">এই পৃষ্ঠাটি <ph name="SOURCE_LANGUAGE" /> ভাষায় রয়েছে৷ এটিকে <ph name="TARGET_LANGUAGE" /> ভাষায় অনুবাদ করবেন?</translation>
 <translation id="8034955203865359138">কোনো ইতিহাস এন্টি পাওয়া যায়নি৷</translation>
-<translation id="8075539548641175231">আপনার সিঙ্ক পাসফ্রেজের মাধ্যমে <ph name="TIME" /> এ আপনার ডেটা এনক্রিপটেড হয়েছে৷ দয়া করে এটি নিচে লিখুন৷</translation>
 <translation id="8088680233425245692">নিবন্ধ দেখতে ব্যর্থ হয়েছে৷</translation>
 <translation id="8091372947890762290">সার্ভারে সক্রিয়করণ বাকি আছে</translation>
 <translation id="8149426793427495338">আপনার কম্পিউটারটি নিদ্রা মোডে গিয়েছে।</translation>
@@ -651,6 +662,7 @@
 <translation id="8703575177326907206"><ph name="DOMAIN" />-এ আপনার কানেকশন এনক্রিপ্ট হয় নি৷</translation>
 <translation id="8713130696108419660">খারাপ ইনিশিয়াল স্বাক্ষর</translation>
 <translation id="8725066075913043281">আবার চেষ্টা করুন</translation>
+<translation id="8728672262656704056">আপনি ছদ্মবেশে রয়েছেন৷</translation>
 <translation id="8730621377337864115">সম্পন্ন হয়েছে</translation>
 <translation id="8738058698779197622">নিরাপদ নেটওয়ার্ক সংযোগ স্থাপন করতে আপনার ঘড়িকে সঠিকভাবে সেট করতে হবে৷ নিরাপদ সংযোগ স্থাপন করার জন্য নিজেদের সনাক্ত করার জন্য ওয়েবসাইটগুলি যে শংসাপত্রগুলি ব্যবহার করে, সেগুলি শুধুমাত্র নির্দিষ্ট সময়ের জন্য বৈধ থাকে৷ যেহেতু আপনার ডিভাইসের ঘড়িটি ভুল, সেই জন্য Chromium সঠিকভাবে শংসাপত্রগুলি পরীক্ষা করতে পারে না৷</translation>
 <translation id="8740359287975076522"><ph name="HOST_NAME" /> এর &lt;abbr id="dnsDefinition"&gt;DNS ঠিকানা&lt;/abbr&gt; পাওয়া যায়নি। সমস্যা নির্ণয় করা হচ্ছে।</translation>
@@ -666,6 +678,7 @@
 <translation id="885730110891505394">Google এর সাথে ভাগ করছে</translation>
 <translation id="8866481888320382733">নীতি সেটিংস বিশ্লেষণ করার সময় ত্রুটি</translation>
 <translation id="8866959479196209191">এই পৃষ্ঠা বলছে:</translation>
+<translation id="8870413625673593573">সম্প্রতি বন্ধ হয়েছে</translation>
 <translation id="8876793034577346603">নেটওয়ার্ক কনফিগারেশন বিশ্লেষণ করতে ব্যর্থ হয়েছে৷</translation>
 <translation id="8891727572606052622">প্রক্সি মোড অবৈধ৷</translation>
 <translation id="889901481107108152">দুঃখিত, এই গবেষণা আপনার প্ল্যাটফর্মে উপলব্ধ নেই৷</translation>

@@ -236,7 +236,7 @@
 <translation id="8878886163241303700">正在扩展屏幕</translation>
 <translation id="8938800817013097409">USB-C 设备（背面右侧端口）</translation>
 <translation id="8940956008527784070">电池电量不足 (<ph name="PERCENTAGE" />%)</translation>
-<translation id="9008540565042607572">嗨！显示器，咱们合不来。（系统不支持该显示器。点击可发送反馈报告。）</translation>
+<translation id="9008540565042607572">嗨！显示器，咱们合不来（系统不支持该显示器，点击可发送反馈报告。）</translation>
 <translation id="9074739597929991885">蓝牙</translation>
 <translation id="9080206825613744995">麦克风目前处于使用状态。</translation>
 <translation id="9089416786594320554">输入法</translation>

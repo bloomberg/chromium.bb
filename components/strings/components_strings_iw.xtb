@@ -37,11 +37,14 @@
 <translation id="1227224963052638717">מדיניות לא ידועה.</translation>
 <translation id="1227633850867390598">הסתר ערך</translation>
 <translation id="1228893227497259893">מזהה יישות שגוי</translation>
+<translation id="1232569758102978740">ללא שם</translation>
 <translation id="1254117744268754948">בחר תיקייה</translation>
 <translation id="1270699273812232624">אפשר פריטים</translation>
 <translation id="1285320974508926690">לעולם אל תתרגם אתר זה</translation>
+<translation id="129553762522093515">נסגרו לאחרונה</translation>
 <translation id="1339601241726513588">דומיין הרשמה:</translation>
 <translation id="1344588688991793829">‏הגדרות מילוי אוטומטי של Chromium...</translation>
+<translation id="1374468813861204354">הצעות</translation>
 <translation id="1375198122581997741">מידע על הגרסה</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> לא שלח נתונים.</translation>
 <translation id="1407135791313364759">פתח הכל</translation>
@@ -58,6 +61,7 @@
 <translation id="1559572115229829303">‏&lt;p&gt;לא ניתן ליצור חיבור פרטי אל <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> משום שהתאריך והשעה במכשיר שלך (<ph name="DATE_AND_TIME" />) שגויים.&lt;/p&gt;
 
       &lt;p&gt;שנה את התאריך והשעה בקטע &lt;strong&gt;כללי&lt;/strong&gt; באפליקציה &lt;strong&gt;הגדרות&lt;/strong&gt;‏.&lt;/p&gt;</translation>
+<translation id="1583429793053364125">משהו השתבש בעת הצגת דף אינטרנט זה.</translation>
 <translation id="1592005682883173041">גישה לנתונים מקומיים</translation>
 <translation id="1629803312968146339">‏האם תרצה ש-Chrome ישמור את הכרטיס הזה?</translation>
 <translation id="1640180200866533862">מדיניות משתמשים</translation>
@@ -92,6 +96,7 @@
 <translation id="2030481566774242610">האם התכוונת ל-<ph name="LINK" />?</translation>
 <translation id="2053553514270667976">מספר / מיקוד</translation>
 <translation id="2065985942032347596">נדרש אימות</translation>
+<translation id="2079545284768500474">בטל</translation>
 <translation id="20817612488360358">‏נקבע שימוש בהגדרות שרת Proxy של מערכת אך בנוסף מצוינת גם תצורה מפורשת של שרת Proxy.</translation>
 <translation id="2089090684895656482">פחות</translation>
 <translation id="2094505752054353250">אי התאמה בדומיינים</translation>
@@ -167,6 +172,7 @@
 <translation id="2837049386027881519">‏היה צורך לנסות שוב את החיבור באמצעות גרסה ישנה יותר של פרוטוקול TLS או SSL. לרוב, פירוש הדבר הוא שהשרת משתמש בתוכנה ישנה מאוד וייתכן שיש לו בעיות אבטחה אחרות.</translation>
 <translation id="284702764277384724">אישור השרת ב-<ph name="HOST_NAME" /> נראה מזויף.</translation>
 <translation id="2855922900409897335">אמת את ה-<ph name="CREDIT_CARD" /></translation>
+<translation id="2896499918916051536">הפלאגין הזה אינו נתמך.</translation>
 <translation id="2897655920961181107">היציאה המבוקשת אינה בטוחה והיא נחסמה.</translation>
 <translation id="2909946352844186028">אותר שינוי ברשת.</translation>
 <translation id="2915500479781995473">לשרת זה לא הייתה אפשרות להוכיח שהוא <ph name="DOMAIN" />; פג תוקפו של אישור האבטחה שלו. ייתכן שמצב זה נגרם בשל תצורה שגויה או שתוקף מיירט את החיבור שלך. שעון המחשב שלך מוגדר כעת ל-<ph name="CURRENT_TIME" />. האם השעה נכונה? אם לא, עליך לכוון את שעון המערכת ולאחר מכן לרענן דף זה.</translation>
@@ -188,6 +194,7 @@
 <translation id="3005723025932146533">הצג עותק שמור</translation>
 <translation id="3010559122411665027">רשומה ברשימה "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">סוג המדיניות שגוי</translation>
+<translation id="3037605927509011580">אוי, לא!</translation>
 <translation id="3041612393474885105">פרטי אישור</translation>
 <translation id="3093245981617870298">אתה במצב לא מקוון.</translation>
 <translation id="3105172416063519923">מזהה נכס:</translation>
@@ -197,6 +204,8 @@
 <translation id="3145945101586104090">פענוח התגובה נכשל</translation>
 <translation id="3147485256806412701">האתר הזה משתמש בדומיין גנרי חדש ברמה עליונה.</translation>
 <translation id="3150653042067488994">שגיאת שרת זמנית</translation>
+<translation id="3157931365184549694">שחזר</translation>
+<translation id="3167968892399408617">‏דפים שאתה מציג בכרטיסיות גלישה בסתר לא יישארו בהיסטוריית הדפדפן, באחסון קובצי ה-Cookie או בהיסטוריית החיפושים לאחר שתסגור את כל כרטיסיות הגלישה בסתר. קבצים שהורדת או סימניות שיצרת יישמרו.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">אי</translation>
 <translation id="3176929007561373547">‏בדוק את הגדרות שרת ה-proxy או פנה למנהל הרשת
@@ -247,6 +256,7 @@
 <translation id="3648607100222897006">תכונות ניסיוניות אלה עשויות להשתנות, להפסיק לעבוד או להיעלם בכל עת. איננו מביעים כל אחריות לגבי ההשלכות של הפעלה של אחד מניסויים אלה, וייתכן אף שהדפדפן שלך יתלקח באופן ספונטני. צחוק בצד, הדפדפן עלול למחוק את כל הנתונים שלך, או שהאבטחה והפרטיות שלך ייפגעו בדרכים לא צפויות. כל ניסוי שתאפשר יהפוך לפעיל עבור כל המשתמשים בדפדפן זה. המשך בזהירות.</translation>
 <translation id="3650584904733503804">האימות בוצע בהצלחה</translation>
 <translation id="3651020361689274926">המשאב הנדרש אינו קיים יותר ולא קיימת כתובת להעברה. נראה שזה מצב בלתי הפיך.</translation>
+<translation id="3655670868607891010">אם אתה רואה זאת לעתים קרובות, נסה את ה<ph name="HELP_LINK" /> האלה.</translation>
 <translation id="3658742229777143148">גרסה קודמת</translation>
 <translation id="3681007416295224113">פרטי אישור</translation>
 <translation id="3693415264595406141">סיסמה:</translation>
@@ -344,7 +354,6 @@ Del</translation>
 <translation id="4841640898320458950">יציאה לא בטוחה נחסמה.</translation>
 <translation id="4850886885716139402">הצג</translation>
 <translation id="4880827082731008257">חפש בהיסטוריה</translation>
-<translation id="488726935215981469">הנתונים שלך מוצפנים באמצעות משפט הסיסמה שלך לסנכרון. הזן אותו למטה.</translation>
 <translation id="4923417429809017348">דף זה תורגם משפה לא ידועה ל<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">יש לציין ערך זה.</translation>
 <translation id="495170559598752135">פעולות</translation>
@@ -355,6 +364,7 @@ Del</translation>
 <translation id="5023310440958281426">בדוק את תקנון מנהל המערכת שלך</translation>
 <translation id="5029568752722684782">נקה את העותק</translation>
 <translation id="5031870354684148875">‏מידע על Google Translate</translation>
+<translation id="5040262127954254034">פרטיות</translation>
 <translation id="5045550434625856497">סיסמה שגויה</translation>
 <translation id="5087286274860437796">האישור של השרת אינו תקף כעת.</translation>
 <translation id="5089810972385038852">מדינה</translation>
@@ -567,12 +577,14 @@ Del</translation>
 <translation id="7610193165460212391">הערך מחוץ לטווח <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">תפוגה: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">‏יש לך כבר נתונים שהוצפנו באמצעות גירסה אחרת של סיסמת חשבון Google שלך. הזן אותה למטה.</translation>
+<translation id="7634554953375732414">החיבור שלך לאתר זה אינו פרטי.</translation>
 <translation id="7637571805876720304">‏האם להסיר מ-Chromium את כרטיס האשראי?</translation>
 <translation id="7643817847124207232">חיבור האינטרנט אבד.</translation>
 <translation id="765676359832457558">הסתר הגדרות מתקדמות...</translation>
 <translation id="7658239707568436148">ביטול</translation>
 <translation id="7668654391829183341">מכשיר לא ידוע</translation>
 <translation id="7674629440242451245">‏מעוניין בתכונות חדשות ומגניבות של Chrome? נסה את הערוץ שלנו למפתחים בכתובת chrome.com/dev.</translation>
+<translation id="769344199378576125">הצג סימניות לא מקוונות</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />המשך אל <ph name="SITE" /> (לא בטוח)<ph name="END_LINK" /></translation>
 <translation id="7716424297397655342">לא ניתן לטעון את האתר הזה מהקובץ השמור</translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
@@ -591,6 +603,7 @@ Del</translation>
 <translation id="7805768142964895445">סטטוס</translation>
 <translation id="7813600968533626083">‏האם להסיר מ-Chrome הצעות בשביל טפסים?</translation>
 <translation id="7825436071901023927">יציאה לא בטוחה <ph name="SITE" /></translation>
+<translation id="785549533363645510">עם זאת, אינך בלתי נראה. המעבר למצב גלישה בסתר לא מסתיר את הגלישה שלך מהמעסיק, מספק האינטרנט או מהאתרים שאליהם אתה נכנס.</translation>
 <translation id="7887683347370398519">‏בדוק את ה-CVC ונסה שוב</translation>
 <translation id="790025292736025802"><ph name="URL" /> לא נמצא</translation>
 <translation id="7912024687060120840">בתיקייה:</translation>
@@ -601,11 +614,9 @@ Del</translation>
 <translation id="7961015016161918242">אף פעם</translation>
 <translation id="7977590112176369853">&lt;הזן שאילתה&gt;</translation>
 <translation id="7983301409776629893">תרגם תמיד <ph name="ORIGINAL_LANGUAGE" /> ל<ph name="TARGET_LANGUAGE" /></translation>
-<translation id="7988324688042446538">סימניות שולחן עבודה</translation>
 <translation id="7995512525968007366">לא צוין</translation>
 <translation id="8034522405403831421">דף זה מוצג ב<ph name="SOURCE_LANGUAGE" />. האם לתרגם אותו ל<ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8034955203865359138">לא נמצאו רשומות היסטוריה.</translation>
-<translation id="8075539548641175231">הנתונים שלך הוצפנו באמצעות משפט הסיסמה שלך לסנכרון בתאריך <ph name="TIME" />. הזן אותו למטה.</translation>
 <translation id="8088680233425245692">הצגת הפריט נכשלה.</translation>
 <translation id="8091372947890762290">ההפעלה ממתינה בשרת</translation>
 <translation id="8149426793427495338">המחשב עבר למצב שינה.</translation>
@@ -658,6 +669,7 @@ Del</translation>
 <translation id="8703575177326907206">ההתחברות שלך אל <ph name="DOMAIN" /> אינה מוצפנת.</translation>
 <translation id="8713130696108419660">חתימה ראשונית פגומה</translation>
 <translation id="8725066075913043281">נסה שוב</translation>
+<translation id="8728672262656704056">עברת למצב גלישה בסתר</translation>
 <translation id="8730621377337864115">בוצע</translation>
 <translation id="8738058698779197622">‏כדי ליצור חיבור מאובטח, השעון צריך להיות מוגדר כהלכה. הסיבה לכך היא שהאישורים שבהם אתרים משתמשים כדי לזהות את עצמם תקפים רק למשך פרקי זמן מסוימים. מאחר שהשעון במכשיר שלך שגוי, Chromium לא יכול לאמת את האישורים האלו.</translation>
 <translation id="8740359287975076522">‏לא ניתן היה למצוא את &lt;abbr id="dnsDefinition"&gt;כתובת ה-DNS&lt;/abbr&gt; של <ph name="HOST_NAME" />. מאבחן את הבעיה.</translation>
@@ -673,6 +685,7 @@ Del</translation>
 <translation id="885730110891505394">‏שיתוף עם Google</translation>
 <translation id="8866481888320382733">שגיאה בניתוח הגדרות המדיניות</translation>
 <translation id="8866959479196209191">דף זה אומר:</translation>
+<translation id="8870413625673593573">נסגרו לאחרונה</translation>
 <translation id="8876793034577346603">ניתוח תצורת הרשת נכשל.</translation>
 <translation id="8891727572606052622">‏מצב שרת Proxy לא חוקי.</translation>
 <translation id="889901481107108152">מצטערים, ניסוי זה אינו זמין בפלטפורמה שלך.</translation>

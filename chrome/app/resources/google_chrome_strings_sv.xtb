@@ -3,7 +3,6 @@
 <translationbundle lang="sv">
 <translation id="1001534784610492198">Arkivet för installationsfilen är skadat eller ogiltigt. Ladda ned Google Chrome igen.</translation>
 <translation id="1013290471399003443">Chrome har verifierat att webbplatsens certifikat har utfärdats av <ph name="ISSUER" />. Giltiga certifikattransparensuppgifter har skickats från servern.</translation>
-<translation id="1016765312371154165">Chrome avslutades inte korrekt.</translation>
 <translation id="103396972844768118">Viktig information om uppgifter i Chrome</translation>
 <translation id="1035334672863811645">Logga in i Chrome</translation>
 <translation id="1061441684050139317">Chrome behöver tillgång till mikrofonen för att kunna dela den på den här webbplatsen.</translation>

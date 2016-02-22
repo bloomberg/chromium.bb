@@ -38,11 +38,14 @@
 <translation id="1227224963052638717">سياسة غير معروفة.</translation>
 <translation id="1227633850867390598">إخفاء القيمة</translation>
 <translation id="1228893227497259893">معرف الكيان خاطئ</translation>
+<translation id="1232569758102978740">بلا عنوان</translation>
 <translation id="1254117744268754948">اختيار مجلد</translation>
 <translation id="1270699273812232624">السماح بالعناصر</translation>
 <translation id="1285320974508926690">عدم ترجمة هذا الموقع مطلقًا</translation>
+<translation id="129553762522093515">المغلقة حديثًا</translation>
 <translation id="1339601241726513588">نطاق التسجيل:</translation>
 <translation id="1344588688991793829">‏إعدادات الملء التلقائي في Chromium...</translation>
+<translation id="1374468813861204354">اقتراحات</translation>
 <translation id="1375198122581997741">معلومات عن الإصدار</translation>
 <translation id="139305205187523129">لم يرسل <ph name="HOST_NAME" /> أي بيانات.</translation>
 <translation id="1407135791313364759">فتح الكل</translation>
@@ -59,6 +62,7 @@
 <translation id="1559572115229829303">‏&lt;p&gt;تعذر إنشاء اتصال خاص بـ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> نظرًا لأن تاريخ ووقت جهازك (<ph name="DATE_AND_TIME" />) غير صحيحين.&lt;/p&gt;
 
           &lt;p&gt;يُرجى تعديل التاريخ والوقت من القسم &lt;strong&gt;عام&lt;/strong&gt; في تطبيق &lt;strong&gt;الإعدادات&lt;/strong&gt; .&lt;/p&gt;</translation>
+<translation id="1583429793053364125">حدث خطأ في شيء ما أثناء عرض صفحة الويب هذه.</translation>
 <translation id="1592005682883173041">الوصول إلى البيانات المحلية</translation>
 <translation id="1629803312968146339">‏هل تريد من Chrome حفظ هذه البطاقة؟</translation>
 <translation id="1640180200866533862">سياسات المستخدم</translation>
@@ -93,6 +97,7 @@
 <translation id="2030481566774242610">هل تقصد <ph name="LINK" />؟</translation>
 <translation id="2053553514270667976">الرمز البريدي</translation>
 <translation id="2065985942032347596">يجب إدخال اسم المستخدم وكلمة المرور</translation>
+<translation id="2079545284768500474">تراجع</translation>
 <translation id="20817612488360358">تم تعيين إعدادات الخادم الوكيل ليتم استخدامها وتم أيضًا تحديد تهيئة صريحة للخادم الوكيل.</translation>
 <translation id="2089090684895656482">أقل</translation>
 <translation id="2094505752054353250">النطاق غير متطابق</translation>
@@ -168,6 +173,7 @@
 <translation id="2837049386027881519">‏يجب إعادة محاولة إجراء الاتصال باستخدام إصدار أقدم من بروتوكول TLS أو طبقة المقابس الآمنة. يعني هذا عادة أن الخادم يستخدم برنامجًا قديمًا جدًا وقد تكون به مشكلات أمان أخرى.</translation>
 <translation id="284702764277384724">يبدو أن شهادة الخادم على <ph name="HOST_NAME" /> مزيفة.</translation>
 <translation id="2855922900409897335">تحقق من <ph name="CREDIT_CARD" /></translation>
+<translation id="2896499918916051536">هذا المكون الإضافي غير معتمد.</translation>
 <translation id="2897655920961181107">المنفذ المطلوب غير آمن وتم حظره.</translation>
 <translation id="2909946352844186028">تم اكتشاف حدوث تغيير في الشبكة.</translation>
 <translation id="2915500479781995473">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان منتهية الصلاحية. وربما يكون سبب ذلك خطأ في التهيئة أو مهاجمًا يعترض الاتصال. تم تعيين ساعة الكمبيوتر حاليًا على <ph name="CURRENT_TIME" />. هل تبدو الساعة صحيحة؟ إذا لم تكن كذلك، يجب عليك تصحيح ساعة النظام، ثم تحديث هذه الصفحة.</translation>
@@ -189,6 +195,7 @@
 <translation id="3005723025932146533">عرض نسخة محفوظة</translation>
 <translation id="3010559122411665027">إدخال القائمة "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">نوع السياسة غير صحيح</translation>
+<translation id="3037605927509011580">عذرًا!</translation>
 <translation id="3041612393474885105">معلومات الشهادة</translation>
 <translation id="3093245981617870298">أنت غير متصل.</translation>
 <translation id="3105172416063519923">رقم تعريف الأصل:</translation>
@@ -198,6 +205,8 @@
 <translation id="3145945101586104090">أخفق فك تشفير الاستجابة</translation>
 <translation id="3147485256806412701">هذا الموقع يستخدم نطاق مستوى أعلى عام جديد.</translation>
 <translation id="3150653042067488994">خطأ مؤقت في الخادم</translation>
+<translation id="3157931365184549694">استعادة</translation>
+<translation id="3167968892399408617">لن يتم تسجيل الصفحات التي تعرضها في علامات تبويب التصفح المتخفي في سجل المتصفح أو مخزن ملفات تعريف الارتباط أو سجل البحث بعد إغلاق جميع علامات التبويب في وضع التصفح المتخفي. ولكن سيتم الاحتفاظ بأي ملفات تنزلها أو إشارات مرجعية تنشئها.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">جزيرة</translation>
 <translation id="3176929007561373547">تحقق من إعدادات الخادم الوكيل أو اتصل بمشرف الشبكة
@@ -248,6 +257,7 @@
 <translation id="3648607100222897006">ربما تتغير أو تتعطل أو تختفي هذه الميزات التجريبية في أي وقت. ولا نعطي أي ضمانات حيال ما يمكن حدوثه إذا شغلت إحدى هذه الميزات التجريبية، وقد يتعطل المتصفح بشكل مفاجئ. وبشكل جدي، قد يحذف المتصفح جميع بياناتك، أو قد تتعرض خصوصيتك وأمانك للاختراق بطرق غير متوقعة. أي ميزات تجريبية تمكّنها سيتم تمكينها لجميع مستخدمي هذا المتصفح. الرجاء المتابعة بحذر.</translation>
 <translation id="3650584904733503804">تم التحقق بنجاح</translation>
 <translation id="3651020361689274926">لم يعد المورد المطلوب موجودًا ولا يوجد عنوان لإعادة التوجيه.  ومن المتوقع استمرار هذه الحالة.</translation>
+<translation id="3655670868607891010">إذا كنت تشاهد هذا بكثرة، فجرّب <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">التعديل</translation>
 <translation id="3681007416295224113">معلومات الشهادة</translation>
 <translation id="3693415264595406141">كلمة المرور:</translation>
@@ -338,7 +348,6 @@
 <translation id="4841640898320458950">منفذ غير آمن محظور</translation>
 <translation id="4850886885716139402">عرض</translation>
 <translation id="4880827082731008257">سجلّ البحث</translation>
-<translation id="488726935215981469">تم تشفير بياناتك باستخدام عبارة مرور المزامنة. الرجاء إدخالها أدناه.</translation>
 <translation id="4923417429809017348">تمت ترجمة هذه الصفحة من لغة غير معروفة إلى اللغة <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">يجب تحديدها.</translation>
 <translation id="495170559598752135">إجراءات</translation>
@@ -349,6 +358,7 @@
 <translation id="5023310440958281426">التحقق من سياسات المشرف</translation>
 <translation id="5029568752722684782">محو النسخة</translation>
 <translation id="5031870354684148875">‏معلومات عن الترجمة من Google</translation>
+<translation id="5040262127954254034">الخصوصية</translation>
 <translation id="5045550434625856497">كلمة مرور غير صحيحة</translation>
 <translation id="5087286274860437796">شهادة الخادم ليست صالحة حاليًا.</translation>
 <translation id="5089810972385038852">بلد/دولة</translation>
@@ -559,12 +569,14 @@
 <translation id="7610193165460212391">القيمة خارج النطاق <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">تاريخ انتهاء الصلاحية: <ph name="EXPIRATION_MONTH" /> / <ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">‏لديك فعلاً بيانات تم تشفيرها باستخدام نسخة أخرى من كلمة مرور حسابك في Google. الرجاء إدخالها أدناه.</translation>
+<translation id="7634554953375732414">إن اتصالك بهذا الموقع ليس له خصوصية.</translation>
 <translation id="7637571805876720304">‏هل تريد إزالة بطاقة الائتمان من Chromium؟</translation>
 <translation id="7643817847124207232">انقطع الاتصال بالإنترنت.</translation>
 <translation id="765676359832457558">إخفاء الإعدادات المتقدمة...</translation>
 <translation id="7658239707568436148">إلغاء</translation>
 <translation id="7668654391829183341">جهاز غير معروف</translation>
 <translation id="7674629440242451245">‏إذا كنت مهتمًا بميزات Google الجديدة والرائعة، فيُمكنك تجربة قناة مطوري البرامج على chrome.com/dev.</translation>
+<translation id="769344199378576125">عرض الإشارات المرجعية في وضع عدم اتصال</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />متابعة إلى <ph name="SITE" /> (غير آمن)<ph name="END_LINK" /></translation>
 <translation id="7716424297397655342">لا يمكن تحميل موقع الويب هذا من ذاكرة التخزين المؤقت</translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
@@ -583,6 +595,7 @@
 <translation id="7805768142964895445">الحالة</translation>
 <translation id="7813600968533626083">‏هل تريد إزالة اقتراح النموذج من Chrome؟</translation>
 <translation id="7825436071901023927">منفذ غير آمن <ph name="SITE" /></translation>
+<translation id="785549533363645510">ومع ذلك، أنت غير مرئي. لا يخفي الانتقال إلى وضع التخفي التصفح من صاحب العمل أو مزود خدمة الإنترنت أو المواقع التي تزورها.</translation>
 <translation id="7887683347370398519">‏تحقق من رمز التحقق من البطاقة (CVC) ثم أعد المحاولة.</translation>
 <translation id="790025292736025802">تعذر العثور على <ph name="URL" /></translation>
 <translation id="7912024687060120840">في المجلد:</translation>
@@ -593,11 +606,9 @@
 <translation id="7961015016161918242">مطلقًا</translation>
 <translation id="7977590112176369853">&lt;أدخل طلب البحث&gt;</translation>
 <translation id="7983301409776629893">الترجمة من اللغة <ph name="ORIGINAL_LANGUAGE" /> إلى اللغة <ph name="TARGET_LANGUAGE" /> دومًا</translation>
-<translation id="7988324688042446538">الإشارات المرجعية على سطح المكتب</translation>
 <translation id="7995512525968007366">غير محدد</translation>
 <translation id="8034522405403831421">هذه الصفحة باللغة <ph name="SOURCE_LANGUAGE" />. هل تريد ترجمتها إلى اللغة <ph name="TARGET_LANGUAGE" />؟</translation>
 <translation id="8034955203865359138">لم يتم العثور على أي إدخالات في السجل.</translation>
-<translation id="8075539548641175231">تم تشفير بياناتك باستخدام عبارة مرور المزامنة في <ph name="TIME" />. الرجاء إدخالها أدناه.</translation>
 <translation id="8088680233425245692">أخفق عرض المقالة.</translation>
 <translation id="8091372947890762290">التنشيط قيد الانتظار في الخادم</translation>
 <translation id="8149426793427495338">خضع جهاز الكمبيوتر إلى وضع السكون.</translation>
@@ -650,6 +661,7 @@
 <translation id="8703575177326907206">الاتصال بالموقع <ph name="DOMAIN" /> غير محميّ بنظام تشفير.</translation>
 <translation id="8713130696108419660">توقيع أولي غير صحيح</translation>
 <translation id="8725066075913043281">أعد المحاولة</translation>
+<translation id="8728672262656704056">لقد انتقلت إلى وضع التصفح المتخفي</translation>
 <translation id="8730621377337864115">تم</translation>
 <translation id="8738058698779197622">‏لإنشاء اتصال آمن، فإنك بحاجة إلى ضبط ساعتك بشكل صحيح. وذلك لأن الشهادات التي تستخدمها مواقع الويب لتعريف نفسها تكون صالحة فقط لفترات محددة من الوقت. فإذا كانت ساعة جهازك غير صحيحة، فلن يتمكن Chromium من التحقق من هذه الشهادات.</translation>
 <translation id="8740359287975076522">‏تعذر العثور على &lt;/abbr&gt;عنوان نظام أسماء النطاقات (DNS)‏&lt;abbr id="dnsDefinition"&gt; لـ <ph name="HOST_NAME" />. جارٍ تشخيص المشكلة.</translation>
@@ -665,6 +677,7 @@
 <translation id="885730110891505394">‏مشاركة مع Google</translation>
 <translation id="8866481888320382733">خطأ في إعدادات تحليل السياسة</translation>
 <translation id="8866959479196209191">تعرض هذه الصفحة:</translation>
+<translation id="8870413625673593573">العناصر المغلقة مؤخرًا</translation>
 <translation id="8876793034577346603">أخفق تحليل تهيئة الشبكة</translation>
 <translation id="8891727572606052622">وضع الخادم الوكيل غير صالح.</translation>
 <translation id="889901481107108152">عذرًا، هذه التجربة غير متاحة على نظامك الأساسي.</translation>

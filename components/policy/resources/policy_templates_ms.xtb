@@ -151,6 +151,13 @@
 <translation id="1522425503138261032">Membenarkan tapak untuk mengesan lokasi fizikal pengguna</translation>
 <translation id="152657506688053119">Senarai URL alternatif untuk penyedia carian lalai</translation>
 <translation id="1530812829012954197">Sentiasa paparkan corak URL berikut dalam penyemak imbas hos</translation>
+<translation id="1553684822621013552">Apabila dasar ini ditetapkan kepada benar, ARC akan didayakan untuk
+      pengguna (tertakluk kepada semakan tetapan dasar tambahan - ARC
+      masih tidak boleh digunakan jika salah satu antara mod sementara atau
+      log masuk berbilang didayakan dalam sesi pengguna semasa).
+
+      Jika tetapan ini dilumpuhkan atau tidak dikonfigurasikan, maka pengguna
+      perusahaan tidak dapat menggunakan ARC.</translation>
 <translation id="1561424797596341174">Pembatalan dasar untuk binaan Nyahpepijat bagi hos akses jauh</translation>
 <translation id="1583248206450240930">Gunakan <ph name="PRODUCT_FRAME_NAME" /> secara lalai</translation>
 <translation id="1608755754295374538">URL yang akan diberikan akses kepada peranti tangkapan audio tanpa gesaan</translation>
@@ -257,6 +264,7 @@
       Jika dasar ini ditetapkan kepada benar, <ph name="PRODUCT_OS_NAME" /> akan cuba memuat turun beban bayar auto kemas kini melalui HTTP. Jika dasar ini ditetapkan kepada palsu atau tidak ditetapkan, HTTPS akan digunakan untuk memuat turun beban bayar auto kemas kini.</translation>
 <translation id="2006530844219044261">Pengurusan kuasa</translation>
 <translation id="201557587962247231">Kekerapan muat naik laporan status peranti</translation>
+<translation id="2024476116966025075">Konfigurasikan nama domain yang diperlukan untuk pelanggan akses jauh</translation>
 <translation id="2030905906517501646">Kata kunci pembekal carian lalai</translation>
 <translation id="206623763829450685">Menetapkan skim pengesahan HTTP yang disokong oleh <ph name="PRODUCT_NAME" />.
 
@@ -490,6 +498,7 @@
       Jika dasar ini dibiarkan tanpa ditetapkan, ciri proksi pemampatan data akan disediakan supaya pengguna boleh memilih sama ada untuk menggunakannya atau tidak.</translation>
 <translation id="2587719089023392205">Tetapkan <ph name="PRODUCT_NAME" /> sebagai Penyemak Imbas Lalai</translation>
 <translation id="2592091433672667839">Tempoh tidak aktif sebelum penyelamat skrin dipaparkan pada skrin log masuk dalam mod runcit</translation>
+<translation id="260705825237536216">Konfigurasikan apl ARC</translation>
 <translation id="2623014935069176671">Tunggu aktiviti pengguna awal</translation>
 <translation id="262740370354162807">Dayakan penyerahan dokumen pada <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Dayakan maklum balas yang dituturkan</translation>
@@ -608,6 +617,7 @@
           Apabila dasar ini tidak ditetapkan, panjang masa lalai akan digunakan.
 
           Nilai dasar ini harus ditetapkan dalam milisaat. Nilai diapit supaya kurang daripada atau sama dengan kelewatan pemadaman skrin (jika ditetapkan) dan kelewatan melahu.</translation>
+<translation id="2987155890997901449">Dayakan ARC</translation>
 <translation id="2998881342848488968">Dasar ini membenarkan <ph name="PRODUCT_OS_NAME" /> memintas mana-mana proksi untuk pengesahan portal tawanan.
 
       Dasar ini hanya berkuat kuasa jika proksi dikonfigurasikan (contohnya menerusi dasar, oleh pengguna dalam chrome://settings atau oleh sambungan).
@@ -1214,6 +1224,12 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 <translation id="5307432759655324440">Ketersediaan mod Inkognito</translation>
 <translation id="5318185076587284965">Dayakan penggunaan pelayan ganti oleh hos akses jauh.</translation>
 <translation id="5330684698007383292">Benarkan <ph name="PRODUCT_FRAME_NAME" /> mengendalikan jenis kandungan berikut</translation>
+<translation id="5345267406698765263">Menentukan dasar aplikasi ARC sebagai rentetan JSON yang boleh
+      diserahkan seadanya kepada waktu jalan ARC. Pada masa ini, tetapan ini
+      digunakan untuk menentukan pemasangan paksa apl semata-mata.
+
+      Jika dasar ini dibiarkan tanpa ditetapkan, tiada apl yang akan dipasang
+      secara automatik.</translation>
 <translation id="5365946944967967336">Paparkan butang Halaman Utama pada bar alat</translation>
 <translation id="5366977351895725771">Jika ditetapkan kepada palsu, penghasilan pengguna diselia oleh pengguna ini akan dilumpuhkan. Mana-mana pengguna diselia yang sedia ada masih akan tersedia.
 
@@ -1286,6 +1302,13 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
       Jika dasar ini dibiarkan tanpa ditetapkan, pengguna boleh memilih untuk menyembunyikan rak secara automatik atau tidak.</translation>
 <translation id="557658534286111200">Mendayakan atau melumpuhkan pengeditan penanda halaman</translation>
 <translation id="5586942249556966598">Jangan buat apa-apa</translation>
+<translation id="5613179474872285001">Mengkonfigurasikan nama domain pelanggan yang diperlukan, yang akan dikenakan pada pelanggan akses jauh dan menghalang pengguna daripada menukarnya.
+
+          Jika tetapan ini didayakan, maka hanya pelanggan daripada domain yang dinyatakan boleh membuat sambungan ke hos.
+
+          Jika tetapan ini dilumpuhkan atau tidak ditetapkan, maka dasar lalai untuk jenis sambungan itu akan digunakan. Untuk bantuan jauh, ini membolehkan pelanggan daripada mana-mana domain membuat sambungan ke hos; untuk akses jauh bila-bila masa, hanya pemilik hos boleh membuat sambungan.
+
+          Lihat juga RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">Pulihkan sesi terakhir</translation>
 <translation id="5645779841392247734">Benarkan kuki pada tapak ini</translation>
 <translation id="5677038592630896441">Memerlukan nama pengguna setempat sepadan dengan pemilik hos akses jauh.
@@ -1725,6 +1748,13 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="6943577887654905793">Nama keutamaan Mac/Linux:</translation>
 <translation id="69525503251220566">Parameter yang menyediakan ciri cari melalui imej untuk penyedia carian lalai</translation>
 <translation id="6956272732789158625">Jangan benarkan mana-mana tapak untuk menggunakan penghasilan kunci</translation>
+<translation id="695891079107014261">Mengkonfigurasikan nama domain hos yang diperlukan, yang akan dikenakan pada hos akses jauh dan menghalang pengguna daripada menukarnya.
+
+          Jika tetapan ini didayakan, maka hos boleh dikongsi hanya dengan menggunakan akaun yang didaftarkan pada nama domain yang dinyatakan.
+
+          Jika tetapan ini dilumpuhkan atau tidak ditetapkan, maka hos boleh dikongsi dengan menggunakan mana-mana akaun.
+
+          Lihat juga RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Sama ada semakan OCSP/CRL dalam talian diperlukan untuk pengukuhan kepercayaan setempat</translation>
 <translation id="7003334574344702284">Dasar ini memaksa kata laluan yang disimpan diimport dari pelayar lalai sebelumnya jika didayakan. Jika didayakan, dasar ini juga memberi kesan pada dialog import.
 

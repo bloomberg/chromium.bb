@@ -3,7 +3,6 @@
 <translationbundle lang="ja">
 <translation id="1001534784610492198">インストーラー アーカイブが壊れているか無効です。Google Chrome をダウンロードし直してください。</translation>
 <translation id="1013290471399003443">Chrome で <ph name="ISSUER" /> がこのウェブサイトの証明書を発行したことを確認しました。証明書の透明性に関する有効な情報がサーバーから提供されました。</translation>
-<translation id="1016765312371154165">Chrome は正しく終了しませんでした。</translation>
 <translation id="103396972844768118">Chrome データに関する重要な情報</translation>
 <translation id="1035334672863811645">Chrome にログイン</translation>
 <translation id="1061441684050139317">このサイトとマイクを共有するには Chrome にマイクへのアクセスを許可する必要があります。</translation>

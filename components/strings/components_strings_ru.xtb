@@ -38,11 +38,14 @@
 <translation id="1227224963052638717">Неизвестное правило.</translation>
 <translation id="1227633850867390598">Скрыть значение</translation>
 <translation id="1228893227497259893">Неверный идентификатор объекта</translation>
+<translation id="1232569758102978740">Без имени</translation>
 <translation id="1254117744268754948">Выбор папки</translation>
 <translation id="1270699273812232624">Разрешить для выбранных элементов</translation>
 <translation id="1285320974508926690">Никогда не переводить этот сайт</translation>
+<translation id="129553762522093515">Недавно закрытые</translation>
 <translation id="1339601241726513588">Регистрация домена:</translation>
 <translation id="1344588688991793829">Настройки автозаполнения в Chromium...</translation>
+<translation id="1374468813861204354">подсказки</translation>
 <translation id="1375198122581997741">Сведения о версии</translation>
 <translation id="139305205187523129">Сайт <ph name="HOST_NAME" /> не отправил данных.</translation>
 <translation id="1407135791313364759">Открыть все</translation>
@@ -59,6 +62,7 @@
 <translation id="1559572115229829303">&lt;p&gt;Не удалось установить защищенное соединение с доменом <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> из-за неверных настроек системных часов и календаря (<ph name="DATE_AND_TIME" />).&lt;/p&gt;
 
       &lt;p&gt;Установите точную дату и время. Для этого откройте раздел &lt;strong&gt;Общие&lt;/strong&gt; в приложении &lt;strong&gt;Настройки&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="1583429793053364125">При загрузке этой страницы возникли неполадки.</translation>
 <translation id="1592005682883173041">Доступ к данным на устройстве</translation>
 <translation id="1629803312968146339">Сохранить эту карту в Chrome?</translation>
 <translation id="1640180200866533862">Пользовательские правила</translation>
@@ -93,6 +97,7 @@
 <translation id="2030481566774242610">Возможно, вы имели в виду <ph name="LINK" />.</translation>
 <translation id="2053553514270667976">Почтовый индекс</translation>
 <translation id="2065985942032347596">Необходима авторизация</translation>
+<translation id="2079545284768500474">Отмена</translation>
 <translation id="20817612488360358">Включены системные настройки прокси-сервера, но при этом его конфигурация задана явным образом.</translation>
 <translation id="2089090684895656482">Свернуть</translation>
 <translation id="2094505752054353250">Несоответствие домена</translation>
@@ -168,6 +173,7 @@
 <translation id="2837049386027881519">Необходимо снова установить соединение, используя более старую версию протокола TLS или SSL. Обычно это говорит о том, что ПО на сервере давно не обновлялось. Возможно возникновение и других проблем с безопасностью.</translation>
 <translation id="284702764277384724">Возможно, сертификат сервера <ph name="HOST_NAME" /> фальсифицирован.</translation>
 <translation id="2855922900409897335">Подтвердите данные карты <ph name="CREDIT_CARD" /></translation>
+<translation id="2896499918916051536">Плагин не поддерживается.</translation>
 <translation id="2897655920961181107">Запрашиваемый порт оказался опасен и был заблокирован.</translation>
 <translation id="2909946352844186028">Похоже, вы подключились к другой сети.</translation>
 <translation id="2915500479781995473">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Срок действия его сертификата безопасности истек. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные. Обратите внимание, что на компьютере установлено время <ph name="CURRENT_TIME" />. Если оно неправильное, измените его и обновите страницу.</translation>
@@ -189,6 +195,7 @@
 <translation id="3005723025932146533">Открыть сохраненную копию</translation>
 <translation id="3010559122411665027">Элемент списка "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Неверный тип политики</translation>
+<translation id="3037605927509011580">Опаньки...</translation>
 <translation id="3041612393474885105">Данные сертификата</translation>
 <translation id="3093245981617870298">Нет подключения к сети</translation>
 <translation id="3105172416063519923">Идентификатор объекта:</translation>
@@ -198,6 +205,8 @@
 <translation id="3145945101586104090">Не удалось декодировать ответ</translation>
 <translation id="3147485256806412701">Этот сайт использует новый общий домен верхнего уровня.</translation>
 <translation id="3150653042067488994">Временные неполадки на сервере</translation>
+<translation id="3157931365184549694">Восстановить</translation>
+<translation id="3167968892399408617">Страницы, открытые в этом окне, не останутся в истории браузера или поиска. Они не оставят на компьютере следов, таких как файлы cookie, после того как вы закроете все вкладки инкогнито. Скачанные вами файлы и добавленные закладки будут сохранены.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">Остров</translation>
 <translation id="3176929007561373547">Проверьте настройки прокси-сервера или попросите администратора
@@ -247,6 +256,7 @@
 <translation id="3648607100222897006">Эти экспериментальные функции в любой момент могут измениться, прекратить работу или исчезнуть. Мы не предоставляем никаких гарантий относительно возможных последствий их активации, кроме того, они могут привести к сбою браузера. Браузер может удалить все ваши данные, безопасность и конфиденциальность данных могут быть нарушены неожиданных образом. Экспериментальные функции, выбранные одним пользователем, включаются для всех пользователей браузера на компьютере. Соблюдайте осторожность.</translation>
 <translation id="3650584904733503804">Проверка выполнена успешно</translation>
 <translation id="3651020361689274926">Запрошенного ресурса больше не существует, адрес пересылки не указан. Вероятно, в будущем ситуация не изменится.</translation>
+<translation id="3655670868607891010">Если эта проблема возникает часто, изучите <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Версия</translation>
 <translation id="3681007416295224113">Данные сертификата</translation>
 <translation id="3693415264595406141">Пароль:</translation>
@@ -337,7 +347,6 @@
 <translation id="4841640898320458950">Опасный порт заблокирован.</translation>
 <translation id="4850886885716139402">Посмотреть</translation>
 <translation id="4880827082731008257">Искать в истории</translation>
-<translation id="488726935215981469">Данные зашифрованы с помощью кодовой фразы. Введите ее в поле ниже.</translation>
 <translation id="4923417429809017348">Эта страница была автоматически переведена с неизвестного языка на <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Укажите значение.</translation>
 <translation id="495170559598752135">Действия</translation>
@@ -348,6 +357,7 @@
 <translation id="5023310440958281426">Проверьте правила, установленные администратором</translation>
 <translation id="5029568752722684782">Удалить данные</translation>
 <translation id="5031870354684148875">О Переводчике Google</translation>
+<translation id="5040262127954254034">Личные данные</translation>
 <translation id="5045550434625856497">Неправильный пароль</translation>
 <translation id="5087286274860437796">Сертификат сервера не действителен в настоящее время.</translation>
 <translation id="5089810972385038852">Штат</translation>
@@ -559,12 +569,14 @@
 <translation id="7610193165460212391">Значение <ph name="VALUE" /> лежит за пределами разрешенного диапазона.</translation>
 <translation id="7613889955535752492">Срок действия: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">У вас уже есть данные, зашифрованные с другой версией пароля к аккаунту Google. Введите этот пароль ниже.</translation>
+<translation id="7634554953375732414">Подключение к веб-сайту не защищено</translation>
 <translation id="7637571805876720304">Удалить кредитную карту из Chromium?</translation>
 <translation id="7643817847124207232">Потеряно соединение с Интернетом.</translation>
 <translation id="765676359832457558">Скрыть дополнительные настройки</translation>
 <translation id="7658239707568436148">Отмена</translation>
 <translation id="7668654391829183341">Неизвестное устройство</translation>
 <translation id="7674629440242451245">Хотите быть в курсе новинок Chrome? Выберите канал обновления для разработчиков на странице "chrome.com/dev".</translation>
+<translation id="769344199378576125">Показать сохраненные закладки</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Перейти на сайт <ph name="SITE" /> (небезопасно)<ph name="END_LINK" /></translation>
 <translation id="7716424297397655342">Не удалось загрузить сайт из кеша</translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
@@ -583,6 +595,7 @@
 <translation id="7805768142964895445">Состояние</translation>
 <translation id="7813600968533626083">Удалить подсказку из Chrome?</translation>
 <translation id="7825436071901023927">Опасный порт <ph name="SITE" /></translation>
+<translation id="785549533363645510">Тем не менее ваши действия будут видны системному администратору и интернет-провайдеру, а также доступны веб-сайтам, которые вы посещаете.</translation>
 <translation id="7887683347370398519">Проверьте CVC-код и повторите попытку</translation>
 <translation id="790025292736025802"><ph name="URL" /> не найден</translation>
 <translation id="7912024687060120840">В папке:</translation>
@@ -593,11 +606,9 @@
 <translation id="7961015016161918242">Нет</translation>
 <translation id="7977590112176369853">&lt;введите запрос&gt;</translation>
 <translation id="7983301409776629893">Всегда переводить <ph name="ORIGINAL_LANGUAGE" /> на <ph name="TARGET_LANGUAGE" /></translation>
-<translation id="7988324688042446538">Закладки на компьютере</translation>
 <translation id="7995512525968007366">Не указано</translation>
 <translation id="8034522405403831421">Язык этой страницы: <ph name="SOURCE_LANGUAGE" />. Перевести ее на <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8034955203865359138">Элементы истории не найдены.</translation>
-<translation id="8075539548641175231">Данные зашифрованы <ph name="TIME" /> с помощью кодовой фразы. Введите ее в поле ниже.</translation>
 <translation id="8088680233425245692">Не удалось показать статью</translation>
 <translation id="8091372947890762290">Активация управления устройствами не завершена</translation>
 <translation id="8149426793427495338">Ваш компьютер перешел в спящий режим.</translation>
@@ -649,6 +660,7 @@
 <translation id="8703575177326907206">Соединение с <ph name="DOMAIN" /> не зашифровано.</translation>
 <translation id="8713130696108419660">Недопустимая начальная подпись</translation>
 <translation id="8725066075913043281">Повторить попытку</translation>
+<translation id="8728672262656704056">Вы перешли в режим инкогнито</translation>
 <translation id="8730621377337864115">Готово</translation>
 <translation id="8738058698779197622">Для создания безопасного подключения необходимо, чтобы показания системных часов были верны. Причина в том, что сертификаты для идентификации сайтов имеют ограниченный срок действия. Если часы на устройстве неточны, Chromium не может проверить актуальность этих сертификатов.</translation>
 <translation id="8740359287975076522">Не удается найти &lt;abbr id="dnsDefinition"&gt;DNS-адрес&lt;/abbr&gt; сайта <ph name="HOST_NAME" />. Выполняется диагностика.</translation>
@@ -664,6 +676,7 @@
 <translation id="885730110891505394">Доступ Google</translation>
 <translation id="8866481888320382733">Не удалось выполнить анализ настроек политики</translation>
 <translation id="8866959479196209191">Подтвердите действие:</translation>
+<translation id="8870413625673593573">Недавно закрытые</translation>
 <translation id="8876793034577346603">Не удалось выполнить анализ конфигурации сети.</translation>
 <translation id="8891727572606052622">Недопустимый режим работы прокси-сервера.</translation>
 <translation id="889901481107108152">К сожалению, данное действие невозможно выполнить на этой платформе.</translation>

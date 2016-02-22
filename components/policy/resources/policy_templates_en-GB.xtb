@@ -150,6 +150,13 @@
 <translation id="1522425503138261032">Allow sites to track the users' physical location</translation>
 <translation id="152657506688053119">List of alternative URLs for the default search provider</translation>
 <translation id="1530812829012954197">Always render the following URL patterns in the host browser</translation>
+<translation id="1553684822621013552">When this policy is set to true, ARC will be enabled for the user
+      (subject to additional policy settings checks – ARC will still be
+      unavailable if either ephemeral mode or multiple sign-in is enabled
+      in the current user session).
+
+      If this setting is disabled or not configured then enterprise users are
+      unable to use ARC.</translation>
 <translation id="1561424797596341174">Policy overrides for Debug builds of the remote access host</translation>
 <translation id="1583248206450240930">Use <ph name="PRODUCT_FRAME_NAME" /> by default</translation>
 <translation id="1608755754295374538">URLs that will be granted access to audio capture devices without prompt</translation>
@@ -252,6 +259,7 @@
       If this policy is set to true, <ph name="PRODUCT_OS_NAME" /> will attempt to download auto-update payloads via HTTP. If the policy is set to false or not set, HTTPS will be used for downloading auto-update payloads.</translation>
 <translation id="2006530844219044261">Power management</translation>
 <translation id="201557587962247231">Frequency of device status report uploads</translation>
+<translation id="2024476116966025075">Configure the required domain name for remote access clients</translation>
 <translation id="2030905906517501646">Default search provider keyword</translation>
 <translation id="206623763829450685">Specifies which HTTP authentication schemes are supported by <ph name="PRODUCT_NAME" />.
 
@@ -487,6 +495,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If this policy is left not set, the data compression proxy feature will be available for the user to choose whether to use it or not.</translation>
 <translation id="2587719089023392205">Set <ph name="PRODUCT_NAME" /> as Default Browser</translation>
 <translation id="2592091433672667839">Duration of inactivity before the screen saver is shown on the sign-in screen in retail mode</translation>
+<translation id="260705825237536216">Configure ARC apps</translation>
 <translation id="2623014935069176671">Wait for initial user activity</translation>
 <translation id="262740370354162807">Enable submission of documents to <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Enable spoken feedback</translation>
@@ -607,6 +616,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           When this policy is unset, a default length of time is used.
 
           The policy value should be specified in milliseconds. Values are clamped to be less than or equal the screen off delay (if set) and the idle delay.</translation>
+<translation id="2987155890997901449">Enable ARC</translation>
 <translation id="2998881342848488968">This policy allows <ph name="PRODUCT_OS_NAME" /> to bypass any proxy for captive portal authentication.
 
       This policy only takes effect if a proxy is configured (for example through policy, by the user in chrome://settings or by extensions).
@@ -1219,6 +1229,11 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="5307432759655324440">Incognito mode availability</translation>
 <translation id="5318185076587284965">Enable the use of relay servers by the remote access host</translation>
 <translation id="5330684698007383292">Allow <ph name="PRODUCT_FRAME_NAME" /> to handle the following content types</translation>
+<translation id="5345267406698765263">Specifies the ARC application policy as JSON string which can be
+      handed-off as-is to the ARC runtime. At the moment, this setting is used
+      solely to specify force-installation of the apps.
+
+      If this policy is left unset, no apps are installed automatically.</translation>
 <translation id="5365946944967967336">Show Home button on the toolbar</translation>
 <translation id="5366977351895725771">If set to false, supervised-user creation by this user will be disabled. Any existing supervised users will still be available.
 
@@ -1292,6 +1307,13 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If the policy is left not set, users can choose whether the shelf should auto-hide.</translation>
 <translation id="557658534286111200">Enables or disables bookmark editing</translation>
 <translation id="5586942249556966598">Do nothing</translation>
+<translation id="5613179474872285001">Configures the required client domain name that will be imposed on remote access clients and prevents users from changing it.
+
+          If this setting is enabled, then only clients from the specified domain can connect to the host.
+
+          If this setting is disabled or not set, then the default policy for the connection type is applied. For remote assistance, this allows clients from any domain can connect to the host; for anytime remote access, only the host owner can connect.
+
+          See also RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">Restore the last session</translation>
 <translation id="5645779841392247734">Allow cookies on these sites</translation>
 <translation id="5677038592630896441">Requires that the name of the local user and the remote access host owner match.
@@ -1731,6 +1753,13 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="6943577887654905793">Mac/Linux preference name:</translation>
 <translation id="69525503251220566">Parameter providing search-by-image feature for the default search provider</translation>
 <translation id="6956272732789158625">Do not allow any site to use key generation</translation>
+<translation id="695891079107014261">Configures the required host domain name that will be imposed on remote access hosts and prevents users from changing it.
+
+          If this setting is enabled, then hosts can be shared only using accounts registered on the specified domain name.
+
+          If this setting is disabled or not set, then hosts can be shared using any account.
+
+          See also RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Whether online OCSP/CRL checks are required for local trust anchors</translation>
 <translation id="7003334574344702284">This policy forces the saved passwords to be imported from the previous default browser, if enabled. If enabled, this policy also affects the import dialogue.
 

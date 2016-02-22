@@ -150,7 +150,6 @@
 <translation id="1200154159504823132">512</translation>
 <translation id="1201402288615127009">अगला</translation>
 <translation id="1202596434010270079">कियोस्‍क ऐप अपडेट कर दिया गया है. कृपया USB स्‍टिक को निकालें.</translation>
-<translation id="1204242529756846967">वर्तनी जांच के लिए इस भाषा का उपयोग किया जाता है</translation>
 <translation id="1205489148908752564">श्वेतसूची में डाले गए उपयोगकर्ताओं को पढ़ें और बदलें</translation>
 <translation id="1208421848177517699">लिप्यंतरण (namaste → નમસ્તે)</translation>
 <translation id="1209796539517632982">स्वचालित नाम सर्वर</translation>
@@ -191,7 +190,6 @@
 <translation id="1290223615328246825">स्वत: प्रवेश विफल रहा</translation>
 <translation id="1293556467332435079">फ़ाइल</translation>
 <translation id="1294298200424241932">विश्‍वास सेटिंग संपादित करें:</translation>
-<translation id="129553762522093515">हाल ही में बंद किए गए</translation>
 <translation id="1297175357211070620">गंतव्य</translation>
 <translation id="1297922636971898492">Google डिस्क इस समय उपलब्ध नहीं है. Google डिस्क के वापस आ जाने पर अपलोडिंग अपने आप पुन: प्रारंभ हो जाएगी.</translation>
 <translation id="1300861494336759522">Windows डेस्कटॉप खोज रीडायरेक्शन</translation>
@@ -248,7 +246,6 @@
 <translation id="1368832886055348810">बाएं से दाएं</translation>
 <translation id="1370646789215800222">व्यक्ति को निकालें?</translation>
 <translation id="1371806038977523515">ये सेटिंग इसके द्वारा नियंत्रित की जाती है:</translation>
-<translation id="1374468813861204354">सुझाव</translation>
 <translation id="1374844444528092021">नेटवर्क "<ph name="NETWORK_NAME" />" के लिए आवश्यक प्रमाणपत्र या तो इंस्टॉल नहीं है या अब मान्य नहीं है.  कृपया नया प्रमाणपत्र प्राप्त करें और फिर से कनेक्ट करने का प्रयास करें.</translation>
 <translation id="1374901261970273271">वॉलपेपर बूट ऐनिमेशन (OOBE स्थिति को छोड़कर).</translation>
 <translation id="1376740484579795545">यदि सक्षम हो, तो chrome://downloads/ URL मटीरियल डिज़ाइन डाउनलोड पृष्ठ को लोड करता है.</translation>
@@ -409,7 +406,6 @@
 <translation id="1572876035008611720">अपना ईमेल डालें</translation>
 <translation id="1580652505892042215">संदर्भ:</translation>
 <translation id="1581962803218266616">खोजकर्ता में दिखाएं</translation>
-<translation id="1583429793053364125">यह वेबपृष्ठ प्रदर्शित करते समय कोई समस्या हुई.</translation>
 <translation id="1584990664401018068">आप जिस वाई-फ़ाई नेटवर्क (<ph name="NETWORK_ID" />) का उपयोग कर रहे हैं उसे प्रमाणीकरण की आवश्‍यकता है.</translation>
 <translation id="1585717515139318619">आपके कंप्‍यूटर पर किसी अन्‍य प्रोग्राम ने ऐसी थीम जोड़ी है जो Chrome के काम करने के तरीके को बदल सकती है.
 
@@ -1054,7 +1050,6 @@
 <translation id="254087552098767269">दूरस्‍थ प्रबंधन से नामांकन हटाना सफल नहीं रहा.</translation>
 <translation id="2541423446708352368">सभी डाउनलोड दिखाएं</translation>
 <translation id="2542049655219295786">Google तालिका</translation>
-<translation id="254416073296957292">&amp;भाषा सेटिंग...</translation>
 <translation id="2546283357679194313">कुकी और साइट डेटा</translation>
 <translation id="2549646943416322527">Seccomp पहचानकर्ता</translation>
 <translation id="2553100941515833716">प्रत्येक बार पुन: प्रारंभ होने पर ऐप्लिकेशन लॉन्चर इंस्टॉल स्थिति रीसेट करें.</translation>
@@ -1172,7 +1167,6 @@
 <translation id="2721334646575696520">Microsoft Edge</translation>
 <translation id="2724841811573117416">WebRTC लॉग</translation>
 <translation id="2725200716980197196">नेटवर्क कनेक्टिविटी पुनर्स्थापित हो गई</translation>
-<translation id="2726070073248054109">ऑडियो भी साझा करें</translation>
 <translation id="2726934403674109201">(<ph name="COUNT" /> कुल)</translation>
 <translation id="2727712005121231835">वास्तविक आकार</translation>
 <translation id="273093730430620027">यह पृष्ठ आपका कैमरा एक्सेस कर रहा है.</translation>
@@ -1322,7 +1316,6 @@
 <translation id="2893168226686371498">सामान्य ब्राउज़र</translation>
 <translation id="289426338439836048">अन्‍य मोबाइल नेटवर्क...</translation>
 <translation id="2894745200702272315">'Ok Google' हॉटवर्ड पहचान सुविधाओं के ऐसे प्रयोगात्‍मक वर्शन को सक्षम करता है जिसमें हार्डवेयर निर्भरता होती है.</translation>
-<translation id="2896499918916051536">यह प्लग इन समर्थित नहीं है.</translation>
 <translation id="289695669188700754">कुंजी ID: <ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870">क्या आप वाकई <ph name="TAB_COUNT" /> टैब खोलना चाहते हैं?</translation>
 <translation id="2902127500170292085"><ph name="EXTENSION_NAME" /> इस प्रिंटर के साथ जुड़ नहीं सका. सुनिश्चित करें कि प्रिंटर को प्लग इन किया गया है और पुनः प्रयास करें.</translation>
@@ -1335,6 +1328,7 @@
 <translation id="2908789530129661844">स्क्रीन ज़ूम आउट करें</translation>
 <translation id="2911372483530471524">PID नामस्थान</translation>
 <translation id="2912905526406334195"><ph name="HOST" /> आपके माइक्रोफ़ोन का उपयोग करना चाहता है.</translation>
+<translation id="2914303854539667666">पासवर्ड जेनरेट करें</translation>
 <translation id="2916073183900451334">किसी वेबपृष्ठ पर टैब दबाने से लिंक के साथ-साथ फ़ॉर्म भी हाइलाइट होते हैं</translation>
 <translation id="2916974515569113497">यह विकल्प सक्षम करने से निश्चित स्थिति वाले तत्व अपने स्वयं के संयोजित लेयर होंगे. ध्यान दें कि निश्चित स्थिति वाले तत्वों को इस कार्य के लिए स्टैकिंग संदर्भ भी बनाने होंगे.</translation>
 <translation id="2917297899322145927">संचय V8 कंपाइलर डेटा.</translation>
@@ -1422,7 +1416,6 @@
 <translation id="3031417829280473749">एजेंट X</translation>
 <translation id="3031557471081358569">आयात करने के लिए आइटम को चुनें:</translation>
 <translation id="3033332627063280038">संचय-नियंत्रण: पुनर्सत्यापन के दौरान पुरानी जानकारी डाइरेक्टिव को प्रयोगात्मक रूप से लागू किया जाना सक्षम करें. इससे सर्वर यह निर्दिष्ट कर सकते हैं कि कुछ स्रोत विलंब को बेहतर बनाने के लिए पृष्ठभूमि में पुनर्सत्यापित किए जा सकते हैं.</translation>
-<translation id="3037605927509011580">हे भगवान!</translation>
 <translation id="3039828483675273919">$1 आइटम ले जाए जा रहे हैं...</translation>
 <translation id="304009983491258911">सिम कार्ड पिन बदलें</translation>
 <translation id="3045551944631926023">केवल दृश्यमान टैब स्वत:-रीलोड करें</translation>
@@ -1491,7 +1484,6 @@
 <translation id="3129140854689651517">टेक्स्ट खोजें</translation>
 <translation id="3129173833825111527">बायां हाशिया</translation>
 <translation id="3130528281680948470">आपका डिवाइस रीसेट कर दिया जाएगा और सभी उपयोगकर्ता खाते तथा स्‍थानीय डेटा निकाल दिया जाएगा. इसे पूर्ववत नहीं किया जा सकता.</translation>
-<translation id="3131784283815405679">ऑडियो साझाकरण अलग-अलग विंडो के लिए समर्थित नहीं है.</translation>
 <translation id="313205617302240621">पासवर्ड भूल गए?</translation>
 <translation id="3133421990448450542">दूरी फ़ील्ड लेख</translation>
 <translation id="3135204511829026971">स्क्रीन को घुमाएं</translation>
@@ -1515,7 +1507,6 @@
 <translation id="316307797510303346">इस व्‍यक्‍ति द्वारा <ph name="CUSTODIAN_EMAIL" /> से देखी जाने वाली वेबसाइटों को नियंत्रित करें और देखें.
     आपके खाता प्रवेश विवरण पुराने हो चुके हैं.</translation>
 <translation id="3166571619128686629">बोलकर खोजना प्रारंभ करने के लिए "Ok Google" क्‍लिक करें या बोलें</translation>
-<translation id="3167968892399408617">आपके द्वारा गुप्त टैब में देखे जाने वाले पृष्ठ, आपके द्वारा अपने सभी गुप्त टैब बंद कर देने के बाद आपके ब्राउज़र के इतिहास, कुकी संग्रह, या खोज इतिहास में नहीं रहेंगे. आपके द्वारा डाउनलोड की गईं सभी फ़ाइलें या बनाए गए बुकमार्क रख लिए जाएंगे.</translation>
 <translation id="3170072451822350649">आप प्रवेश करना छोड़ भी सकते हैं और <ph name="LINK_START" />अतिथि के रूप में ब्राउज़<ph name="LINK_END" /> कर सकते हैं.</translation>
 <translation id="3170544058711792988">आवर्धक फ़ोकस को स्क्रीन के केंद्र में रखें</translation>
 <translation id="3172213052701798825">पासवर्ड के लिए Google Smart Lock</translation>
@@ -1884,7 +1875,6 @@
 <translation id="3653999333232393305"><ph name="HOST" /> को अपना माइक्रोफ़ोन एक्सेस करते रहने दें</translation>
 <translation id="3654045516529121250">अपनी पहुंच-योग्यता सेटिंग पढ़ें</translation>
 <translation id="3654092442379740616">समन्‍वयन त्रुटि:  <ph name="PRODUCT_NAME" /> पुराना है और इसे अपडेट करने की आवश्‍यकता है.</translation>
-<translation id="3655670868607891010">यदि आपको यह बार-बार दिखाई दे रहा हो, तो इन <ph name="HELP_LINK" /> को आज़माएं.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{उसे एक फ़ाइल की स्‍थायी ऐक्‍सेस प्राप्‍त है.}one{उसे # फ़ाइलों की स्‍थायी ऐक्‍सेस प्राप्‍त है.}other{उसे # फ़ाइलों की स्‍थायी ऐक्‍सेस प्राप्‍त है.}}</translation>
 <translation id="3656059567098593256"><ph name="APP_NAME" /> आपकी स्क्रीन पर मौजूद सामग्री को <ph name="TARGET_NAME" /> से साझा करना चाहता है. चुनें कि आप क्या साझा करना चाहते हैं.</translation>
 <translation id="3657468915905674858">PPAPI Win32k लॉकडाउन सक्षम करें.</translation>
@@ -2260,6 +2250,7 @@
 <translation id="4218259925454408822">अन्य खाते में प्रवेश करें</translation>
 <translation id="4219614746733932747">यदि सक्षम किया गया हो, तो Blink अपने ज़ूमिंग तंत्र का उपयोग करता है ताकि डिवाइस माप कारक की सामग्री मापी जा सके.</translation>
 <translation id="4220865787605972627">यदि स्क्रीन सुविधा का समर्थन करती है तो स्क्रीन के रंग अंशांकन की अनुमति दें.</translation>
+<translation id="4233506668751282421">डेस्कटॉप साझा के लिए ऑडियो सक्षम करें</translation>
 <translation id="4235200303672858594">संपूर्ण स्क्रीन</translation>
 <translation id="4235813040357936597"><ph name="PROFILE_NAME" /> के लिए खाता जोड़ें</translation>
 <translation id="4240069395079660403"><ph name="PRODUCT_NAME" /> को इस भाषा में प्रदर्शित नहीं किया जा सकता</translation>
@@ -2267,6 +2258,7 @@
 <translation id="4242577469625748426">डिवाइस पर नीति सेटिंग इंस्टॉल करने में विफल रहा: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4243835228168841140"><ph name="FULLSCREEN_ORIGIN" /> आपका माउस कर्सर अक्षम करना चाहता है.</translation>
 <translation id="424546999567421758">अधिक डिस्क उपयोग का पता चला</translation>
+<translation id="4247072926966606568">इस फ़्लैग के चालू होने पर, डेस्कटॉप साझा पिकर विंडो उपयोगकर्ता को यह चुनने देती है कि ऑडियो साझा करें या नहीं.</translation>
 <translation id="424726838611654458">हमेशा Adobe Reader में खोलें</translation>
 <translation id="4249248555939881673">नेटवर्क कनेक्शन के लिए प्रतीक्षारत...</translation>
 <translation id="4249373718504745892">इस पृष्ठ को आपके कैमरे और माइक्रोफ़ोन को एक्सेस करने से अवरोधित कर दिया गया है.</translation>
@@ -2342,6 +2334,7 @@
 <translation id="4361190688154226069">दृश्यों में रेक्ट-आधारित लक्ष्यीकरण</translation>
 <translation id="4363372140743955595">पासवर्ड प्रबंधक पुन: प्रमाणीकरण</translation>
 <translation id="4364444725319685468"><ph name="FILE_NAME" /> डाउनलोड किया गया</translation>
+<translation id="4364830672918311045">प्रदर्शन नोटिफिकेशन</translation>
 <translation id="4365486896593700706">WebAudio</translation>
 <translation id="4365673000813822030">ओह, समन्‍वयन ने कार्य करना बंद कर दिया.</translation>
 <translation id="4366509400410520531">आपके द्वारा अनुमत</translation>
@@ -2363,6 +2356,7 @@
 <translation id="4389091756366370506">उपयोगकर्ता <ph name="VALUE" /></translation>
 <translation id="4394049700291259645">अक्षम करें</translation>
 <translation id="4396124683129237657">नया क्रेडिट कार्ड...</translation>
+<translation id="4401841120781282684">हमेशा WebFonts हेतु उपयोगकर्ता एजेंट हस्तक्षेप लोडिंग ट्रिगर करने का चयन करें. यह फ़्लैग केवल तभी प्रभावित करता है जब हस्तक्षेप सक्षम हो.</translation>
 <translation id="4408599188496843485">स&amp;हायता</translation>
 <translation id="4409697491990005945">मार्जिन</translation>
 <translation id="4411578466613447185">कोड हस्ताक्षरकर्ता</translation>
@@ -2540,6 +2534,7 @@
 <translation id="4707934200082538898">आगे के निर्देशों के लिए कृपया <ph name="BEGIN_BOLD" /><ph name="MANAGER_EMAIL" /><ph name="END_BOLD" /> पर अपना ईमेल देखें.</translation>
 <translation id="4708849949179781599"><ph name="PRODUCT_NAME" /> छोड़ें</translation>
 <translation id="4709423352780499397">स्‍थानीय रूप से संग्रहीत डेटा</translation>
+<translation id="4709726535665440636">ऑफ़स्क्रीन सामग्री के बदलने पर दृश्यमान जंप को रोकने के लिए स्क्रॉल स्थिति को एडजेस्ट करता है.</translation>
 <translation id="4711094779914110278">तुर्की</translation>
 <translation id="4711638718396952945">सेटिंग पुन: स्थापित करें</translation>
 <translation id="4712556365486669579">मैलवेयर पुनर्प्राप्त करें?</translation>
@@ -2764,7 +2759,6 @@
 <translation id="5038863510258510803">सक्षम किया जा रहा है...</translation>
 <translation id="5039512255859636053">$1 TB</translation>
 <translation id="5039804452771397117">अनुमति दें</translation>
-<translation id="5040262127954254034">गोपनीयता</translation>
 <translation id="5045550434625856497">गलत पासवर्ड</translation>
 <translation id="5048179823246820836">नोर्डिक</translation>
 <translation id="5053604404986157245">यादृच्छिक रूप से जेनरेट किया गया TPM पासवर्ड उपलब्ध नहीं है. Powerwash के बाद ऐसा होना सामान्य बात है.</translation>
@@ -2865,7 +2859,6 @@
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5188893945248311098">मीडिया प्लेबैक के लिए हावभाव आवश्यकता</translation>
 <translation id="5189060859917252173">प्रमाणपत्र "<ph name="CERTIFICATE_NAME" />" एक प्रमाणन प्राधिकरण का प्रतिनिधित्व करता है.</translation>
-<translation id="5191625995327478163">&amp;भाषा सेटिंग...</translation>
 <translation id="5196117515621749903">संचय पर ध्यान दिए बिना पुन: लोड करें</translation>
 <translation id="5196716972587102051">2</translation>
 <translation id="5197255632782567636">इंटरनेट</translation>
@@ -3009,6 +3002,7 @@
 <translation id="5390284375844109566">अनुक्रमित डेटाबेस</translation>
 <translation id="5392544185395226057">स्‍थानीय क्‍लाइंट के लिए समर्थन सक्षम करें.</translation>
 <translation id="5393125431335030955">यह प्लग इन केवल डेस्कटॉप पर काम करता है.</translation>
+<translation id="5393559999218790205">UI कंपोज़िटर ऐनिमेशन टाइमलाइन अक्षम करें</translation>
 <translation id="5396126354477659676"><ph name="PEPPER_PLUGIN_DOMAIN" /> पर <ph name="PEPPER_PLUGIN_NAME" /> आपके कंप्यूटर की पहुंच चाहता है.</translation>
 <translation id="539755880180803351">वेब फ़ॉर्म पर स्वतः-भरण फ़ील्‍ड प्रकार के पूर्वानुमानों के साथ प्‍लेसहोल्‍डर टेक्‍स्‍ट के रूप में टिप्पणी करता है.</translation>
 <translation id="5397578532367286026">इस उपयोगकर्ता के उपयोग और इतिहास की प्रबंधक (<ph name="MANAGER_EMAIL" />) द्वारा chrome.com पर समीक्षा की जा सकती है.</translation>
@@ -3020,7 +3014,6 @@
 <translation id="540296380408672091"><ph name="HOST" /> पर कुकी को हमेशा अवरुद्ध करें</translation>
 <translation id="5403346645236247882">कास्‍ट स्‍ट्रीमिंग हार्डवेयर वीडियो एन्‍कोडिंग</translation>
 <translation id="5409029099497331039">मुझे आश्चर्यचकित करें</translation>
-<translation id="5409341371246664034"><ph name="PROVIDER" /> के द्वारा</translation>
 <translation id="5411472733320185105">इन होस्‍ट और डोमेन के लिए प्रॉक्‍सी सेटिंग का उपयोग न करें:</translation>
 <translation id="5412637665001827670">बुल्गारियाई कीबोर्ड</translation>
 <translation id="5414566801737831689">आपके द्वारा देखी जाने वाली वेबसाइटों के आइकन पढ़ें</translation>
@@ -3033,6 +3026,7 @@
 <translation id="5423849171846380976">सक्रिय हुआ</translation>
 <translation id="5425470845862293575">प्रयोगात्मक DirectWrite फ़ॉन्ट रेंडरिंग सिस्टम का उपयोग सक्षम करता है.</translation>
 <translation id="5425722269016440406">Smart Lock बंद करने के लिए आपको ऑनलाइन होना होगा क्‍योंकि यह सेटिंग आपके फ़ोन और अन्‍य डिवाइस से समन्‍वयित की जाती है. कृपया पहले किसी नेटवर्क से कनेक्‍ट करें.</translation>
+<translation id="5426623592374109001">UI में कंपोज़िट किए गए ऐनिमेशन के पुराने हस्तक्षेप करने वाले ऐनिमेशन सबसिटम का उपयोग करें.</translation>
 <translation id="5427459444770871191">&amp;घड़ी की दिशा में घुमाएं</translation>
 <translation id="5428105026674456456">स्पैनिश</translation>
 <translation id="542872847390508405">आप एक अतिथि के रूप में ब्राउज़ कर रहे हैं</translation>
@@ -3415,6 +3409,7 @@
 <translation id="5984814259619230127">Smart Lock ब्लूटूथ निम्न ऊर्जा खोज</translation>
 <translation id="5986245990306121338">यदि टैब स्विचर सक्षम है,तो सेटिंग में 'टैब और ऐप्स मर्ज करें' विकल्प चालू होने पर भी टैब स्विचर दिखाई देगा.</translation>
 <translation id="5990198433782424697">chrome:// URL पर एक्सटेंशन</translation>
+<translation id="5990814808592353318">मैन्युअल पासवर्ड जेनरेशन.</translation>
 <translation id="5991049340509704927">आवर्धित करें</translation>
 <translation id="5991774521050363748">वेब नोटिफिकेशन के लिए कस्टम लेआउट सक्षम करें. उनमें परिष्कृत लेआउट सुधार होंगे जो अन्यथा संभव नहीं होते हैं.</translation>
 <translation id="5993332328670040093">अब आपके डेटा उपयोग का मापन नहीं किया जाएगा.</translation>
@@ -3496,6 +3491,7 @@
 <translation id="6111974609785983504">डिफ़ॉल्ट रूप से अनुमत</translation>
 <translation id="6113134669445407638">WebRTC में Delay Agnostic AEC को अक्षम करें. यदि रिपोर्ट किए गए सिस्टम विलंब बहुत विश्वसनीय हों या यदि आपकी मशीन से अन्य अनुभव सामने आते हों तो इसका उपयोग करें.</translation>
 <translation id="6116921718742659598">भाषा और अक्षर सेटिंग बदलें</translation>
+<translation id="6117536376248197233">रेंडरर में कंपोज़िटर ऐनिमेशन टाइमलाइन अक्षम करें.</translation>
 <translation id="6120205520491252677">इस पृष्ठ को प्रारंभ स्क्रीन में पिन करें...</translation>
 <translation id="6120816415558830169">&lt;a&gt;<ph name="EXTENSION" />&lt;/a&gt; के द्वारा डाउनलोड किया गया</translation>
 <translation id="6122081475643980456">आपका इंटरनेट कनेक्शन नियंत्रित किया जा रहा है</translation>
@@ -3598,6 +3594,7 @@
 <translation id="6277105963844135994">नेटवर्क समय समाप्त</translation>
 <translation id="6277518330158259200">स्क्री&amp;नशॉट लें</translation>
 <translation id="6279183038361895380">अपना कर्सर दिखाने के लिए |<ph name="ACCELERATOR" />| दबाएं</translation>
+<translation id="6281743458679673853">सभी के द्वारा लेआउट व्यूपोर्ट प्रदर्शित किए जाने के लिए प्रयोग करें. इससे window.scroll प्रॉपर्टी, लेआउट व्यूपोर्ट से संबंधित हो जाएंगी.</translation>
 <translation id="6285120908535925801">{NUM_PRINTER,plural, =1{आपके नेटवर्क पर नया प्रिंटर}one{आपके नेटवर्क पर नए प्रिंटर}other{आपके नेटवर्क पर नए प्रिंटर}}</translation>
 <translation id="6285395082104474418">स्थिति ट्रे आपको आपके नेटवर्क, बैटरी आदि की वर्तमान स्थिति दिखाती है.</translation>
 <translation id="6286684120317096255">डेटा उपयोग का मापन हो रहा है</translation>
@@ -3987,6 +3984,7 @@
 <translation id="6915804003454593391">उपयोगकर्ता:</translation>
 <translation id="6916590542764765824">एक्‍सटेंशन प्रबंधित करें</translation>
 <translation id="6918340160281024199">यूएस वर्कमैन</translation>
+<translation id="6920569915859786172">हमेशा WebFonts लोडिंग के लिए उपयोगकर्ता एजेंट हस्तक्षेप ट्रिगर करें.</translation>
 <translation id="6920989436227028121">नियमित टैब के रूप में खोलें</translation>
 <translation id="6922128026973287222">Google डेटा बचतकर्ता का उपयोग करके डेटा बचाएं और तेज़ी से ब्राउज़ करें. और जानने के लिए क्‍लिक करें.</translation>
 <translation id="6929555043669117778">पॉप-अप को अवरोधित करना जारी रखें</translation>
@@ -4604,7 +4602,6 @@
 <translation id="7852934890287130200">प्रोफ़ाइल बनाएं, बदलें, या हटाएं.</translation>
 <translation id="7853747251428735">अधिक टू&amp;ल</translation>
 <translation id="7853966320808728790">फ़्रेंच बेपो</translation>
-<translation id="785549533363645510">हालांकि, आप अदृश्य नहीं हैं. गुप्त मोड में रहने से आपकी ब्राउज़िंग आपके नियोक्ता, आपके इंटरनेट सेवा प्रदाता या आपके द्वारा देखी जाने वाली वेबसाइट से छिपती नहीं है.</translation>
 <translation id="7857823885309308051">इसमें कुछ समय लग सकता है...</translation>
 <translation id="7857949311770343000">क्या यह वही नया टैब पृष्ठ है जिसकी आप अपेक्षा कर रहे थे?</translation>
 <translation id="7858929532264920831">कुंजी जेनरेशन</translation>
@@ -4717,10 +4714,10 @@
 अपनी मुख्य फ़ाइल को किसी सुरक्षित स्थान पर रखें. आपको अपने एक्सटेंशन के नए वर्शन बनाने के लिए इसकी आवश्यकता होगी.</translation>
 <translation id="799923393800005025">देख सकते हैं</translation>
 <translation id="7999338963698132743">नया कार्य प्रबंधक</translation>
+<translation id="8000004253404706714">रेंडरर में कंपोज़िट किए गए ऐनिमेशन के पुराने हस्तक्षेप करने वाले ऐनिमेशन सबसिस्टम का उपयोग करें.</translation>
 <translation id="8004582292198964060">ब्राउज़र</translation>
 <translation id="8007030362289124303">बैटरी कम</translation>
 <translation id="8008356846765065031">इंटरनेट डिस्‍कनेक्‍ट हो गया है. कृपया अपना इंटरनेट कनेक्‍शन जांचें.</translation>
-<translation id="8009669262342650481">वेब ब्‍लूटूथ को सक्षम करता है जो वेबसाइटों को आपके आस-पास के ब्‍लूटूथ डिवाइस से कनेक्‍ट करने और उन्‍हें नियंत्रित करने दे सकता है. इसमें कीबोर्ड, कैमरा, माइक्रोफ़ोन आदि शामिल हैं.</translation>
 <translation id="8012382203418782830">इस पृष्ठ का अनुवाद किया गया है.</translation>
 <translation id="8012647001091218357">हम इस समय आपके अभिभावकों तक नहीं पहुंच पा रहे हैं. कृपया पुन: प्रयास करें.</translation>
 <translation id="8014154204619229810">अपडेटर वर्तमान में चल रहा है. फिर से देखने के लिए एक मिनट में रीफ्रेश करें.</translation>
@@ -5187,6 +5184,7 @@
 <translation id="869891660844655955">समय समाप्ति दिनांक</translation>
 <translation id="8700934097952626751">बोलकर खोजना प्रारंभ करने के लिए क्लिक करें</translation>
 <translation id="870112442358620996">पासवर्ड के लिए Google Smart Lock के साथ पासवर्ड सहेजना ऑफ़र करें.</translation>
+<translation id="8704458368793604611">उपयोगकर्ता को किसी पासवर्ड फ़ील्ड पर पासवर्ड जेनरेट करने के लिए मैन्युअल रूप से लागू करने देता है.</translation>
 <translation id="8704521619148782536">इसमें सामान्य से अधिक समय लग रहा है. आप प्रतीक्षा कर सकते हैं, या रद्द कर सकते हैं और बाद में फिर से प्रयास कर सकते हैं.</translation>
 <translation id="8705331520020532516">क्रम संख्या</translation>
 <translation id="8706385129644254954">एक्सेस-योग्यता टैब स्विचर</translation>
@@ -5210,7 +5208,6 @@
 <translation id="8726206820263995930">सर्वर से नीति सेटिंग फ़ेच करते समय त्रुटि: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="8726888928275282477">एक्सटेंशन विकल्पों को नए टैब में खोलने की बजाय chrome://extensions में एम्बेड किए गए तत्व के रूप में दिखाएं.</translation>
 <translation id="8727142376512517020">इसे दोबारा ना दिखाएं</translation>
-<translation id="8728672262656704056">आप गुप्त मोड में चले गए हैं</translation>
 <translation id="8730621377337864115">पूर्ण</translation>
 <translation id="8731332457891046104"><ph name="DEVICE_TYPE" /> का नामांकन रद्द करना</translation>
 <translation id="8732030010853991079">इस आइकन पर क्लिक करके इस एक्सटेंशन का उपयोग करें.</translation>
@@ -5279,6 +5276,7 @@
 <translation id="8830796635868321089">वर्तमान प्रॉक्सी सेटिंग के उपयोग से अपडेट जांच विफल रही. कृपया अपनी <ph name="PROXY_SETTINGS_LINK_START" />प्रॉक्सी सेटिंग<ph name="PROXY_SETTINGS_LINK_END" /> एडजस्ट करें.</translation>
 <translation id="8831623914872394308">सूचक सेटिंग</translation>
 <translation id="8837103518490433332">क्या आप चाहते हैं कि <ph name="ORIGIN" /> के लिए <ph name="PASSWORD_MANAGER_BRAND" /> आपका पासवर्ड सहेजे?</translation>
+<translation id="8841142799574815336">विज़ुअल व्यूपोर्ट निष्क्रिय करें.</translation>
 <translation id="884264119367021077">शिपिंग पता</translation>
 <translation id="8844238624737526720">chrome कार्य प्रबंधक के नए और ऑप्टिमाइज़ किए गए कार्यान्वयन का उपयोग करें.</translation>
 <translation id="8846141544112579928">कीबोर्ड खोजा जा रहा है...</translation>
@@ -5292,6 +5290,7 @@
 <translation id="8859174528519900719">सबफ़्रेम: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">Excel स्‍प्रैडशीट</translation>
 <translation id="8863489667196658337">बुकमार्क ऐप्‍स बनाने के लिए नए सिस्‍टम को सक्षम करता है.</translation>
+<translation id="8866441758832353668">स्क्रॉल एंकरिंग</translation>
 <translation id="8870318296973696995">मुख्यपृष्ठ</translation>
 <translation id="8870413625673593573">हाल ही में बंद किए गए</translation>
 <translation id="8871551568777368300">व्यवस्थापक द्वारा पिन किया गया</translation>
@@ -5415,7 +5414,6 @@
 <translation id="9039890312082871605">टैब म्‍यूट करें</translation>
 <translation id="9040185888511745258"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> पर मौजूद हमलावर आपको ऐसे प्रोग्राम इंस्टॉल करने के लिए भ्रमित कर सकते हैं जिनसे आपके ब्राउज़िंग अनुभव को हानि पहुंच सकती है (उदाहरण के लिए, आपके मुख्यपृष्ठ को बदलकर या आपके द्वारा देखी जाने वाली वेबसाइटों पर अतिरिक्त विज्ञापन दिखाकर).</translation>
 <translation id="9040421302519041149">इस नेटवर्क की पहुंच सुरक्षित है.</translation>
-<translation id="9040967476106479091">प्रवेश करने के लिए <ph name="PASSWORD_MANAGER_BRAND" /> से अपना खाता चुनें</translation>
 <translation id="9041603713188951722">सेटिंग विंडो में दिखाएं</translation>
 <translation id="904451693890288097">कृपया "<ph name="DEVICE_NAME" />" के लिए पासकुंजी दर्ज करें:</translation>
 <translation id="9049835026521739061">हैंगफुल मोड</translation>
@@ -5477,6 +5475,7 @@
 <translation id="9137356749601179867">सर्वर से डाउनलोड किए गए क्रेडिट कार्ड को स्‍थानीय रूप से सहेजना ऑफ़र करने वाला चेकबॉक्‍स दिखाएं.</translation>
 <translation id="913758436357682283">म्यांमार म्यांसन कीबोर्ड</translation>
 <translation id="9137916601698928395">लिंक को <ph name="USER" /> के रूप में खोलें</translation>
+<translation id="9138978632494473300">निम्न स्थानों के लिए शॉर्टकट जोड़ें:</translation>
 <translation id="9145718805518496796">एक्‍सटेंशन पैक करें...</translation>
 <translation id="9147392381910171771">&amp;विकल्प</translation>
 <translation id="9148058034647219655">बाहर निकलें</translation>

@@ -132,6 +132,14 @@
 <translation id="1522425503138261032">Ermittlung des physischen Standorts des Nutzers durch Websites zulassen</translation>
 <translation id="152657506688053119">Liste alternativer URLs für den Standardsuchanbieter</translation>
 <translation id="1530812829012954197">Immer die folgenden URL-Muster im Host-Browser darstellen</translation>
+<translation id="1553684822621013552">Wenn diese Richtlinie auf "true" gesetzt ist, wird ARC für den Nutzer aktiviert.
+      Dies unterliegt jedoch zusätzlichen Überprüfungen der Richtlinieneinstellungen
+      – ARC ist weiterhin nicht verfügbar, wenn entweder die sitzungsspezifischen
+      Profile oder die Mehrfachanmeldung in der aktuellen Nutzersitzung aktiviert
+      sind.
+
+      Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, können
+      Enterprise-Nutzer kein ARC verwenden.</translation>
 <translation id="1561424797596341174">Überschreiben von Richtlinien für Fehlerbehebungs-Builds des Hosts für den Remotezugriff</translation>
 <translation id="1583248206450240930">Standardmäßig <ph name="PRODUCT_FRAME_NAME" /> verwenden</translation>
 <translation id="1608755754295374538">URLs, denen ohne Nachfrage Zugriff auf Audioaufnahmegeräte gestattet wird</translation>
@@ -217,6 +225,7 @@ Diese Richtlinien sind nur aktiv, wenn der Chrome Remote Desktop-Host installier
       Ist diese Richtlinie auf "true" gesetzt, versucht <ph name="PRODUCT_OS_NAME" />, die Nutzdaten automatischer Updates über HTTP herunterzuladen. Ist die Richtlinie auf "false" gesetzt oder nicht festgelegt, wird für solche Downloads HTTPS verwendet.</translation>
 <translation id="2006530844219044261">Energieverwaltung</translation>
 <translation id="201557587962247231">Häufigkeit von Uploads mit Berichten zum Gerätestatus</translation>
+<translation id="2024476116966025075">Erforderlichen Domainnamen für Remotezugriff-Clients konfigurieren</translation>
 <translation id="2030905906517501646">Suchbegriff der Standardsuchmaschine</translation>
 <translation id="206623763829450685">Gibt an, welche HTTP-Authentifizierungsschemas von <ph name="PRODUCT_NAME" /> unterstützt werden.
 
@@ -433,6 +442,7 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
       Ist die Richtlinie nicht festgelegt, kann der Nutzer festlegen, ob die Funktion für den Datenkomprimierungs-Proxy verwendet werden soll oder nicht.</translation>
 <translation id="2587719089023392205"><ph name="PRODUCT_NAME" /> als Standardbrowser festlegen</translation>
 <translation id="2592091433672667839">Dauer der Inaktivität, bevor im Händlermodus der Bildschirmschoner auf der Anmeldeseite erscheint</translation>
+<translation id="260705825237536216">ARC-Apps konfigurieren</translation>
 <translation id="2623014935069176671">Auf erste Nutzeraktivität warten</translation>
 <translation id="262740370354162807">Senden von Dokumenten an <ph name="CLOUD_PRINT_NAME" /> aktivieren</translation>
 <translation id="2633084400146331575">Gesprochenes Feedback aktivieren</translation>
@@ -540,6 +550,7 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
           Wenn die Richtlinie nicht konfiguriert ist, wird ein Standardwert verwendet.
 
           Der Wert für die Richtlinie muss in Millisekunden angegeben werden. Werte müssen kleiner oder gleich dem Wert der Verzögerung für die Bildschirmabschaltung (falls angegeben) und der Inaktivitätsverzögerung sein.</translation>
+<translation id="2987155890997901449">ARC aktivieren</translation>
 <translation id="2998881342848488968">Diese Richtlinie ermöglicht <ph name="PRODUCT_OS_NAME" />, zur Captive-Portal-Authentifizierung alle Proxys zu umgehen.
 
       Die Richtlinie kommt nur dann zum Einsatz, wenn ein Proxy konfiguriert ist, zum Beispiel über eine Richtlinie, vom Nutzer unter chrome://settings oder von Erweiterungen.
@@ -1067,6 +1078,13 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
 <translation id="5307432759655324440">Inkognitomodus - Verfügbarkeit</translation>
 <translation id="5318185076587284965">Verwendung von Relayservern durch den Host für den Remote-Zugriff gestatten</translation>
 <translation id="5330684698007383292">Verarbeitung der folgenden Inhaltstypen durch <ph name="PRODUCT_FRAME_NAME" /> zulassen</translation>
+<translation id="5345267406698765263">Gibt die ARC-Anwendungsrichtlinie als JSON-String an, der im aktuellen Zustand
+      für die ARC-Laufzeit übergeben werden kann. Im Moment wird die
+      Einstellung nur dazu verwendet, die erzwungene Installation der Anwendungen
+      anzugeben.
+
+      Wenn diese Richtlinie nicht konfiguriert ist, werden keine Anwendungen
+      automatisch installiert.</translation>
 <translation id="5365946944967967336">Startseiten-Schaltfläche auf Symbolleiste anzeigen</translation>
 <translation id="5366977351895725771">Wurde "false" festgelegt, kann dieser Nutzer keine betreuten Nutzer erstellen. Alle vorhandenen betreuten Nutzer sind weiterhin verfügbar.
 
@@ -1130,6 +1148,13 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
       Wenn die Richtlinie nicht eingerichtet ist, können Nutzer wählen, ob sie die Ablage automatisch ausblenden möchten oder nicht.</translation>
 <translation id="557658534286111200">Bearbeitung von Lesezeichen aktivieren oder deaktivieren</translation>
 <translation id="5586942249556966598">Nichts tun</translation>
+<translation id="5613179474872285001">Konfiguriert den erforderlichen Client-Domainnamen, der verpflichtend für Remotezugriff-Clients verwendet wird und von Nutzern nicht geändert werden kann.
+
+          Wenn diese Einstellung aktiviert ist, können sich nur Clients aus der angegebenen Domain mit dem Host verbinden.
+
+          Wenn diese Einstellung deaktiviert oder nicht festgelegt wird, wird die Standardrichtlinie für den Verbindungstyp angewendet. Bei der Remoteunterstützung können sich Clients aus allen Domains mit dem Host verbinden, bei einem stetigen Remotezugriff kann nur der Hostinhaber eine Verbindung herstellen.
+
+          Siehe auch "RemoteAccessHostDomain".</translation>
 <translation id="5630352020869108293">Letzte Sitzung wiederherstellen</translation>
 <translation id="5645779841392247734">Cookies auf diesen Websites zulassen</translation>
 <translation id="5677038592630896441">Erfordert die Übereinstimmung zwischen dem Namen des lokalen Nutzers und dem Eigentümer des Hosts für den Remotezugriff
@@ -1508,6 +1533,13 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
 <translation id="6943577887654905793">Bevorzugter Mac-/Linux-Name:</translation>
 <translation id="69525503251220566">Parameter für Funktion zur bildgesteuerten Suche für Standardsuchanbieter</translation>
 <translation id="6956272732789158625">Schlüsselgenerierung für keine Website zulassen</translation>
+<translation id="695891079107014261">Konfiguriert den erforderlichen Client-Domainnamen, der verpflichtend für Remotezugriff-Clients verwendet wird und von Nutzern nicht geändert werden kann.
+
+          Wenn diese Einstellung aktiviert wird, können Hosts nur mithilfe von Konten freigegeben werden, die unter dem angegebenen Domainnamen registriert sind.
+
+          Wenn diese Einstellung deaktiviert oder nicht festgelegt ist, können Hosts für alle Konten freigegeben werden.
+
+          Siehe auch "RemoteAccessHostClientDomain".</translation>
 <translation id="6997592395211691850">Gibt an, ob für lokale Vertrauensanker Online-OCSP/CRLS-Prüfungen erforderlich sind</translation>
 <translation id="7003334574344702284">Diese Richtlinie erzwingt, sofern aktiv, den Import von gespeicherten Passwörtern aus dem vorherigen Standardbrowser. Bei einer Aktivierung wirkt sich die Richtlinie auch auf den Importdialog aus. Wenn sie deaktiviert ist, erfolgt kein Import der gespeicherten Passwörter. Sollte sie nicht konfiguriert sein, so wird der Nutzer möglicherweise gefragt, ob ein Import erfolgen soll, oder der Import findet automatisch statt.</translation>
 <translation id="7003746348783715221">Einstellungen für <ph name="PRODUCT_NAME" /></translation>

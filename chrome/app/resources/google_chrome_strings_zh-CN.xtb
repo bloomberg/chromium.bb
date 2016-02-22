@@ -3,7 +3,6 @@
 <translationbundle lang="zh-CN">
 <translation id="1001534784610492198">安装程序存档文件损坏或无效。请重新下载 Google Chrome。</translation>
 <translation id="1013290471399003443">Chrome 已证实此网站的证书是由<ph name="ISSUER" />签发的。服务器提供了有效的 Certificate Transparency 信息。</translation>
-<translation id="1016765312371154165">Chrome 未正确关闭。</translation>
 <translation id="103396972844768118">与您的 Chrome 数据相关的重要信息</translation>
 <translation id="1035334672863811645">登录 Chrome</translation>
 <translation id="1061441684050139317">Chrome 需要具有麦克风使用权限，才能批准此网站的分享请求。</translation>

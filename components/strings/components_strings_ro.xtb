@@ -38,11 +38,14 @@
 <translation id="1227224963052638717">Politică necunoscută.</translation>
 <translation id="1227633850867390598">Ascundeți valoarea</translation>
 <translation id="1228893227497259893">Identificator greșit pentru entitate</translation>
+<translation id="1232569758102978740">Fără titlu</translation>
 <translation id="1254117744268754948">Alegeți dosarul</translation>
 <translation id="1270699273812232624">Permiteți aceste elemente</translation>
 <translation id="1285320974508926690">Nu traduce niciodată acest site</translation>
+<translation id="129553762522093515">Închise recent</translation>
 <translation id="1339601241726513588">Domeniu de înregistrare:</translation>
 <translation id="1344588688991793829">Setări de completare automată în Chromium...</translation>
+<translation id="1374468813861204354">sugestii</translation>
 <translation id="1375198122581997741">Despre versiune</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> nu a trimis date.</translation>
 <translation id="1407135791313364759">Deschideți-le pe toate</translation>
@@ -59,6 +62,7 @@
 <translation id="1559572115229829303">&lt;p&gt;O conexiune privată la <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> nu poate fi stabilită, deoarece data și ora dispozitivului (<ph name="DATE_AND_TIME" />) sunt incorecte.&lt;/p&gt;
 
           &lt;p&gt;Corectează data și ora din secțiunea &lt;strong&gt;General&lt;/strong&gt; a aplicației &lt;strong&gt;Setări&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="1583429793053364125">A apărut o eroare la afișarea paginii web.</translation>
 <translation id="1592005682883173041">Accesul la datele locale</translation>
 <translation id="1629803312968146339">Dorești ca acest card să fie salvat în Chrome?</translation>
 <translation id="1640180200866533862">Politici privind utilizatorii</translation>
@@ -93,6 +97,7 @@
 <translation id="2030481566774242610">Ați dorit să scrieți <ph name="LINK" />?</translation>
 <translation id="2053553514270667976">Cod zip</translation>
 <translation id="2065985942032347596">Autentificare obligatorie</translation>
+<translation id="2079545284768500474">Anulează</translation>
 <translation id="20817612488360358">Setările proxy de sistem sunt setate pentru a fi utilizate, dar o configurație explicită pentru proxy este, de asemenea, specificată.</translation>
 <translation id="2089090684895656482">Mai puține</translation>
 <translation id="2094505752054353250">Nepotrivire domeniu</translation>
@@ -168,6 +173,7 @@
 <translation id="2837049386027881519">A fost necesar să se încerce din nou realizarea conexiunii, utilizând o versiune mai veche a protocolului TSL sau SSL. În mod obișnuit, acest lucru înseamnă că serverul utilizează un software foarte vechi și că poate avea și alte probleme de securitate.</translation>
 <translation id="284702764277384724">Se pare că certificatul de server pentru <ph name="HOST_NAME" /> este un fals.</translation>
 <translation id="2855922900409897335">Confirmă <ph name="CREDIT_CARD" /></translation>
+<translation id="2896499918916051536">Acest plugin nu este acceptat.</translation>
 <translation id="2897655920961181107">Portul solicitat este nesigur și blocat.</translation>
 <translation id="2909946352844186028">A fost detectată o schimbare a rețelei.</translation>
 <translation id="2915500479781995473">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; certificatul său de securitate a expirat. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator. În prezent, ceasul computerului este setat la <ph name="CURRENT_TIME" />. Este corect? Dacă nu, trebuie să corectezi ora sistemului, apoi să actualizezi pagina.</translation>
@@ -188,6 +194,7 @@
 <translation id="3005723025932146533">Afișați o copie salvată</translation>
 <translation id="3010559122411665027">Intrarea din listă „<ph name="ENTRY_INDEX" />”: <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Tip de politică greșit</translation>
+<translation id="3037605927509011580">Of, nu mai merge!</translation>
 <translation id="3041612393474885105">Informații despre certificat</translation>
 <translation id="3093245981617870298">Sunteți offline.</translation>
 <translation id="3105172416063519923">ID articol:</translation>
@@ -197,6 +204,8 @@
 <translation id="3145945101586104090">Răspunsul nu a putut fi decodificat</translation>
 <translation id="3147485256806412701">Acest site folosește un nou domeniu generic de nivel superior.</translation>
 <translation id="3150653042067488994">Eroare temporară de server</translation>
+<translation id="3157931365184549694">Restabilește</translation>
+<translation id="3167968892399408617">Paginile pe care le accesezi în filele incognito nu vor fi înregistrate în istoricul browserului, nu vor stoca cookie-uri și nu vor rămâne în istoricul de căutare după ce închizi toate filele incognito. Fișierele descărcate și marcajele create vor fi păstrate.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">Insulă</translation>
 <translation id="3176929007561373547">Verifică setările de proxy sau contactează administratorul de rețea
@@ -247,6 +256,7 @@
 <translation id="3648607100222897006">Aceste funcții experimentale pot oricând să se schimbe, să nu mai funcționeze sau să dispară. Nu oferim absolut nicio garanție cu privire la efectele activării acestor experimente. Se poate chiar ca browserul să se defecteze brusc. Lăsând gluma la o parte, browserul poate să șteargă toate datele sau securitatea și confidențialitatea datelor se pot compromite într-un mod neașteptat. Toate experimentele pe care le activezi vor fi activate pentru toți utilizatorii acestui browser. Continuă cu prudență.</translation>
 <translation id="3650584904733503804">Validarea a reușit</translation>
 <translation id="3651020361689274926">Resursa solicitată nu mai există și nu apare nicio adresă de redirecționare. Se pare că această stare este definitivă.</translation>
+<translation id="3655670868607891010">Dacă această pagină se afișează în mod frecvent, încercați <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Versiune</translation>
 <translation id="3681007416295224113">Informații despre certificat</translation>
 <translation id="3693415264595406141">Parolă:</translation>
@@ -337,7 +347,6 @@
 <translation id="4841640898320458950">Port nesigur blocat.</translation>
 <translation id="4850886885716139402">Afișează</translation>
 <translation id="4880827082731008257">Caută în istoric</translation>
-<translation id="488726935215981469">Datele dvs. sunt criptate cu parola dvs. de acces pentru sincronizare. Introduceți-o mai jos.</translation>
 <translation id="4923417429809017348">Această pagină a fost tradusă dintr-o limbă necunoscută în <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Valoarea trebuie specificată.</translation>
 <translation id="495170559598752135">Acțiuni</translation>
@@ -348,6 +357,7 @@
 <translation id="5023310440958281426">Consultați politicile administratorului</translation>
 <translation id="5029568752722684782">Șterge copia</translation>
 <translation id="5031870354684148875">Despre Google Traducere</translation>
+<translation id="5040262127954254034">Confidențialitate</translation>
 <translation id="5045550434625856497">Parolă incorectă</translation>
 <translation id="5087286274860437796">Momentan, certificatul serverului este nevalid.</translation>
 <translation id="5089810972385038852">Stat</translation>
@@ -558,12 +568,14 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="7610193165460212391">Valoarea este în afara intervalului <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Expiră pe: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Aveți deja date criptate utilizând o versiune diferită a parolei pentru Contul dvs. Google. Introduceți-o mai jos.</translation>
+<translation id="7634554953375732414">Conexiunea la acest site nu este privată.</translation>
 <translation id="7637571805876720304">Elimini cardul de credit din Chromium?</translation>
 <translation id="7643817847124207232">A fost pierdută conexiunea la internet.</translation>
 <translation id="765676359832457558">Ascundeți setările avansate...</translation>
 <translation id="7658239707568436148">Anulează</translation>
 <translation id="7668654391829183341">Dispozitiv necunoscut</translation>
 <translation id="7674629440242451245">Doriți să utilizați funcții Chrome noi și interesante? Încercați canalul nostru pentru dezvoltatori, de la chrome.com/dev.</translation>
+<translation id="769344199378576125">Afișează marcajele offline</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Accesați <ph name="SITE" /> (nesigur)<ph name="END_LINK" /></translation>
 <translation id="7716424297397655342">Acest site nu poate fi încărcat din memoria cache</translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
@@ -582,6 +594,7 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="7805768142964895445">Stare</translation>
 <translation id="7813600968533626083">Elimini sugestia pentru formular din Chrome?</translation>
 <translation id="7825436071901023927">Port nesigur <ph name="SITE" /></translation>
+<translation id="785549533363645510">Cu toate acestea, nu ești invizibil(ă). Trecerea în modul incognito nu ascunde activitatea de navigare față de angajator, față de furnizorul de servicii de internet sau față de site-urile pe care le accesezi.</translation>
 <translation id="7887683347370398519">Verifică codul CVC și încearcă din nou</translation>
 <translation id="790025292736025802">Adresa <ph name="URL" /> nu a fost găsită</translation>
 <translation id="7912024687060120840">În dosarul:</translation>
@@ -592,11 +605,9 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="7961015016161918242">Niciodată</translation>
 <translation id="7977590112176369853">&lt;introdu interogarea&gt;</translation>
 <translation id="7983301409776629893">Tradu întotdeauna din <ph name="ORIGINAL_LANGUAGE" /> în <ph name="TARGET_LANGUAGE" /></translation>
-<translation id="7988324688042446538">Marcaje desktop</translation>
 <translation id="7995512525968007366">Nespecificată</translation>
 <translation id="8034522405403831421">Această pagină este în <ph name="SOURCE_LANGUAGE" />. Doriți traducere în <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8034955203865359138">Nu au fost găsite intrări în istoric.</translation>
-<translation id="8075539548641175231">Datele dvs. au fost criptate cu parola dvs. de acces pentru sincronizare la <ph name="TIME" />. Introduceți-o mai jos.</translation>
 <translation id="8088680233425245692">Articolul nu a fost vizualizat.</translation>
 <translation id="8091372947890762290">Se așteaptă activarea pe server</translation>
 <translation id="8149426793427495338">Computerul este inactiv.</translation>
@@ -649,6 +660,7 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="8703575177326907206">Conexiunea la <ph name="DOMAIN" /> nu este criptată.</translation>
 <translation id="8713130696108419660">Semnătură inițială incorectă</translation>
 <translation id="8725066075913043281">Încearcă din nou</translation>
+<translation id="8728672262656704056">Ați trecut în modul incognito</translation>
 <translation id="8730621377337864115">Terminat</translation>
 <translation id="8738058698779197622">Pentru a stabili o conexiune securizată, ceasul trebuie să fie setat corect. Aceasta deoarece certificatele pe care site-urile le folosesc pentru a se identifica sunt valabile numai pentru anumite intervale de timp. Din moment ce ora de pe dispozitiv este incorectă, Chromium nu poate verifica aceste certificate.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;Adresa DNS&lt;/abbr&gt; pentru <ph name="HOST_NAME" /> nu a putut fi găsită. Se diagnostichează problema.</translation>
@@ -664,6 +676,7 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="885730110891505394">Permiterea accesului pentru Google</translation>
 <translation id="8866481888320382733">Eroare la analizarea setărilor pentru politică</translation>
 <translation id="8866959479196209191">Această pagină afișează mesajul:</translation>
+<translation id="8870413625673593573">Închise recent</translation>
 <translation id="8876793034577346603">Configurația rețelei nu a putut fi analizată.</translation>
 <translation id="8891727572606052622">Mod proxy nevalid.</translation>
 <translation id="889901481107108152">Ne pare rău, acest experiment nu este disponibil pe platforma dvs.</translation>

@@ -135,6 +135,13 @@
 <translation id="1522425503138261032">Permite site-urilor să urmărească locația fizică a utilizatorilor</translation>
 <translation id="152657506688053119">Lista adreselor URL alternative pentru furnizorul de căutare prestabilit</translation>
 <translation id="1530812829012954197">Redă întotdeauna următoarele șabloane de adrese URL în browserul gazdă</translation>
+<translation id="1553684822621013552">Dacă această politică este activată, funcția ARC va fi activată pentru utilizator
+      (în funcție de verificările suplimentare ale setărilor politicii – funcția ARC va fi în continuare
+      indisponibilă dacă este activat modul efemer sau conectarea multiplă
+      în sesiunea utilizatorului actual).
+
+      Dacă această setare este dezactivată sau neconfigurată, utilizatorii din companie
+      nu pot folosi ARC.</translation>
 <translation id="1561424797596341174">Suprascrieri de politici pentru versiunile de depanare ale gazdei de acces la distanță</translation>
 <translation id="1583248206450240930">Utilizează <ph name="PRODUCT_FRAME_NAME" /> în mod prestabilit</translation>
 <translation id="1608755754295374538">Adresele URL cărora li se va acorda acces automat la dispozitivele de capturare a conținutului audio</translation>
@@ -228,6 +235,7 @@
       Dacă politica este activată, <ph name="PRODUCT_OS_NAME" /> va încerca să descarce încărcările utile pentru actualizările automate prin HTTP. Dacă politica este dezactivată sau nu este configurată, la descărcarea încărcărilor utile pentru actualizări automate se va utiliza HTTPS.</translation>
 <translation id="2006530844219044261">Gestionarea consumului de energie</translation>
 <translation id="201557587962247231">Frecvența de încărcare a raportului privind starea dispozitivului</translation>
+<translation id="2024476116966025075">Configurează numele de domeniu necesar pentru clienții cu acces la distanță</translation>
 <translation id="2030905906517501646">Cuvânt cheie pentru furnizorul de căutare prestabilit</translation>
 <translation id="206623763829450685">Specifică schemele de autentificare HTTP acceptate de <ph name="PRODUCT_NAME" />.
 
@@ -445,6 +453,7 @@
       Dacă lăsați politica neconfigurată, utilizatorii vor avea posibilitatea de a alege dacă folosesc sau nu funcția serverului proxy pentru comprimarea datelor.</translation>
 <translation id="2587719089023392205">Setează <ph name="PRODUCT_NAME" /> ca browser prestabilit</translation>
 <translation id="2592091433672667839">Durata de inactivitate înainte ca screen saverul să fie afișat pe ecranul de conectare în modul Vânzare</translation>
+<translation id="260705825237536216">Configurează aplicațiile ARC</translation>
 <translation id="2623014935069176671">Se așteaptă prima activitate a utilizatorului</translation>
 <translation id="262740370354162807">Activează trimiterea documentelor la <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Activați feedbackul vocal</translation>
@@ -552,6 +561,7 @@
           Dacă politica nu este setată, se utilizează o perioadă de timp prestabilită.
 
           Valoarea politicii trebuie specificată în milisecunde. Valorile trebuie să fie mai mici sau egale cu intervalul pentru oprirea ecranului (dacă este setat) și cu intervalul de inactivitate.</translation>
+<translation id="2987155890997901449">Activează ARC</translation>
 <translation id="2998881342848488968">Această politică permite <ph name="PRODUCT_OS_NAME" /> să ocolească orice proxy pentru autentificarea prin portalul captiv.
 
       Această politică are efect numai dacă este configurat un proxy (de exemplu, conform unei politici, de utilizatori în chrome://settings sau prin extensii).
@@ -1090,6 +1100,11 @@
 <translation id="5307432759655324440">Disponibilitatea modului incognito</translation>
 <translation id="5318185076587284965">Activați folosirea serverelor de transmisie de către gazdele de acces la distanță</translation>
 <translation id="5330684698007383292">Permiteți ca <ph name="PRODUCT_FRAME_NAME" /> să gestioneze următoarele tipuri de conținut</translation>
+<translation id="5345267406698765263">Specifică politica aplicării ARC ca un șir JSON care poate fi
+      trimis ca atare în procesul ARC. Momentan, această setare este folosită
+      numai pentru a specifica instalarea forțată a aplicațiilor.
+
+      Dacă această politică nu este configurată, nicio aplicația nu va fi instalată automat.</translation>
 <translation id="5365946944967967336">Afișează butonul Pagina de pornire în bara de instrumente</translation>
 <translation id="5366977351895725771">Dacă această politică nu este activată, crearea utilizatorilor monitorizați de către acest utilizator va fi dezactivată. Utilizatorii monitorizați existenți vor fi în continuare disponibili.
 
@@ -1153,6 +1168,13 @@
       Dacă politica nu este setată, utilizatorii pot alege dacă raftul va fi ascuns automat.</translation>
 <translation id="557658534286111200">Activează sau dezactivează editarea marcajelor</translation>
 <translation id="5586942249556966598">Nicio acțiune</translation>
+<translation id="5613179474872285001">Configurează numele de domeniu client necesar care va fi impus pentru clienții cu acces la distanță și împiedică utilizatorii să îl modifice.
+
+          Dacă această setare este activată, numai clienții din domeniul indicat se pot conecta la gazdă.
+
+          Dacă această setare este dezactivată sau neconfigurată, se aplică politica prestabilită pentru tipul conexiunii. Pentru asistența la distanță, clienții din orice domeniu se pot conecta la gazdă. Pentru acces la distanță oricând, numai proprietarul gazdei se poate conecta.
+
+          Vezi și RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">Restabiliți ultima sesiune</translation>
 <translation id="5645779841392247734">Permite cookie-uri de pe aceste site-uri</translation>
 <translation id="5677038592630896441">Este necesar ca numele utilizatorului local și numele proprietarului gazdei de acces la distanță să corespundă.
@@ -1538,6 +1560,13 @@
 <translation id="6943577887654905793">Nume preferință Mac/Linux:</translation>
 <translation id="69525503251220566">Parametru care pune la dispoziție funcția Căutare după imagine pentru furnizorul de căutare prestabilit</translation>
 <translation id="6956272732789158625">Nu permite niciunui site să folosească generarea cheilor</translation>
+<translation id="695891079107014261">Configurează numele de domeniu gazdă necesar care va fi impus pentru gazdele cu acces la distanță și împiedică utilizatorii să îl modifice.
+
+          Dacă această setare este activată, gazdele pot fi accesate folosind numai conturi înregistrate pe numele de domeniu indicat.
+
+          Dacă această setare este dezactivată sau neconfigurată, gazdele pot fi accesate folosind orice cont.
+
+          Vezi și RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Dacă verificările OCSP/CRL online sunt necesare sau nu pentru ancorele de încredere locale</translation>
 <translation id="7003334574344702284">Dacă este activată, această politică forțează importarea parolelor salvate din browserul prestabilit anterior. Dacă este activată, această politică afectează, de asemenea, caseta de dialog de importare. Dacă este dezactivată, parolele salvate nu sunt importate. În cazul în care nu este setată, utilizatorul poate fi întrebat dacă dorește importarea sau aceasta poate avea loc în mod automat.</translation>
 <translation id="7003746348783715221">Preferințe <ph name="PRODUCT_NAME" /></translation>

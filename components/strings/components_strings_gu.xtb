@@ -38,11 +38,14 @@
 <translation id="1227224963052638717">અજ્ઞાત નીતિ.</translation>
 <translation id="1227633850867390598">મૂલ્ય છુપાવો</translation>
 <translation id="1228893227497259893">ખોટો અસ્તિત્વ ઓળખકર્તા</translation>
+<translation id="1232569758102978740">શીર્ષક વિનાનું</translation>
 <translation id="1254117744268754948">ફોલ્ડર પસંદ કરો</translation>
 <translation id="1270699273812232624">આઇટમ્સને મંજૂરી આપો</translation>
 <translation id="1285320974508926690">આ સાઇટનું ક્યારેય ભાષાંતર કરશો નહીં</translation>
+<translation id="129553762522093515">તાજેતરમાં બંધ કરેલા</translation>
 <translation id="1339601241726513588">નોંધણી ડોમેન:</translation>
 <translation id="1344588688991793829">Chromium સ્વતઃભરણ સેટિંગ્સ...</translation>
+<translation id="1374468813861204354">સૂચનો</translation>
 <translation id="1375198122581997741">વર્ઝન વિશે</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> એ કોઈપણ ડેટા મોકલ્યો ન હતો.</translation>
 <translation id="1407135791313364759">બધું ખોલો</translation>
@@ -59,6 +62,7 @@
 <translation id="1559572115229829303">&lt;p&gt;<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> પર ખાનગી કનેક્શન સ્થાપિત કરી શકાતું નથી કારણ કે તમારા ઉપકરણની તારીખ અને સમય (<ph name="DATE_AND_TIME" />) અયોગ્ય છે.&lt;/p&gt;
 
           &lt;p&gt;કૃપા કરીને &lt;strong&gt;સેટિંગ્સ&lt;/strong&gt; અ‍ૅપ્લિકેશનના &lt;strong&gt;સામાન્ય&lt;/strong&gt; વિભાગમાં તારીખ અને સમય સમાયોજિત કરો.&lt;/p&gt;</translation>
+<translation id="1583429793053364125">આ વેબપૃષ્ઠ પ્રદર્શિત કરતી વખતે કંઇક ખોટું થયું.</translation>
 <translation id="1592005682883173041">સ્થાનિક ડેટા ઍક્સેસ</translation>
 <translation id="1629803312968146339">શું તમે ઇચ્છો છો કે Chrome આ કાર્ડ સાચવે?</translation>
 <translation id="1640180200866533862">વપરાશકર્તા નીતિઓ</translation>
@@ -93,6 +97,7 @@
 <translation id="2030481566774242610">શું તમારો અર્થ <ph name="LINK" /> છે?</translation>
 <translation id="2053553514270667976">પિન કોડ</translation>
 <translation id="2065985942032347596">પ્રમાણીકરણ આવશ્યક</translation>
+<translation id="2079545284768500474">પૂર્વવત્ કરો</translation>
 <translation id="20817612488360358">સિસ્ટમ પ્રોક્સી સેટિંગ્સ ઉપયોગમાં લેવા માટે સેટ છે પણ એક સ્પષ્ટ પ્રોક્સી ગોઠવણી પણ ઉલ્લેખિત કરેલી છે.</translation>
 <translation id="2089090684895656482">ઓછું</translation>
 <translation id="2094505752054353250">ડોમેન મેળ ખાતું નથી</translation>
@@ -167,6 +172,7 @@
 <translation id="2837049386027881519">TLS અથવા SSL પ્રોટોકોલનાં જૂના સંસ્કરણનો ઉપયોગ કરીને કનેક્શન માટે ફરીથી પ્રયાસ કરવાની જરૂર હતી. સામાન્ય રીતે આનો અર્થ એ થાય છે કે સર્વર ખૂબ જૂના સૉફ્ટવેરનો ઉપયોગ કરે છે અને તેમાં અન્ય સુરક્ષા સમસ્યાઓ હોઈ શકે છે.</translation>
 <translation id="284702764277384724"><ph name="HOST_NAME" /> પરનું સર્વરનું પ્રમાણપત્ર બનાવટી હોય એવું લાગે છે.</translation>
 <translation id="2855922900409897335">તમારું <ph name="CREDIT_CARD" /> ચકાસો</translation>
+<translation id="2896499918916051536">આ પ્લગિન સમર્થિત નથી.</translation>
 <translation id="2897655920961181107">વિનંતી કરેલ પોર્ટ અસુરક્ષિત છે અને અવરોધિત કરવામાં આવ્યો છે.</translation>
 <translation id="2909946352844186028">નેટવર્ક ફેરફાર મળ્યો હતો.</translation>
 <translation id="2915500479781995473">આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેના સુરક્ષા પ્રમાણપત્રની સમયસીમા સમાપ્ત થઈ છે. આ કોઈ ગેરગોઠવણના કારણે થયું છે અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે. તમારા કમ્પ્યુટરની ઘડિયાળ હાલમાં <ph name="CURRENT_TIME" /> પર સેટ છે. શું તે બરાબર છે? જો નહીં, તો તમારે તમારા સિસ્ટમની ઘડિયાળને ઠીક કરવી જોઈએ અને તે પછી આ પૃષ્ઠને ફરી તાજું કરો.</translation>
@@ -188,6 +194,7 @@
 <translation id="3005723025932146533">સાચવેલી કૉપિ બતાવો</translation>
 <translation id="3010559122411665027">"<ph name="ENTRY_INDEX" />" એન્ટ્રીને સૂચિબદ્ધ કરો: <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">ખોટો નીતિ પ્રકાર</translation>
+<translation id="3037605927509011580">અરર કંઇક ભુલ થઇ!</translation>
 <translation id="3041612393474885105">પ્રમાણપત્ર માહિતી</translation>
 <translation id="3093245981617870298">તમે ઑફલાઇન છો</translation>
 <translation id="3105172416063519923">સંપત્તિ ID:</translation>
@@ -197,6 +204,8 @@
 <translation id="3145945101586104090">પ્રતિક્રિયા ડિકોડ કરવી નિષ્ફળ થઇ</translation>
 <translation id="3147485256806412701">આ સાઇટ જેનરિક શીર્ષ-સ્તરના ડોમેનનો ઉપયોગ કરે છે.</translation>
 <translation id="3150653042067488994">અસ્થાયી સર્વર ભૂલ</translation>
+<translation id="3157931365184549694">પુનઃસ્થાપિત કરો</translation>
+<translation id="3167968892399408617">તમે છુપા ટેબ્સમાં જુઓ છો તે પૃષ્ઠો તમે તમારા બધા છુપા ટેબ્સ બંધ કરી દો તે પછી તમારા બ્રાઉઝરના ઇતિહાસ, કુકી સ્ટોર અથવા શોધ ઇતિહાસમાં રહેશે નહીં. તમે ડાઉનલોડ કરો છો તે કોઈપણ ફાઇલો અથવા તમે બનાવો છો તે બુકમાર્ક્સ રાખવામાં આવશે.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">આઇલેન્ડ</translation>
 <translation id="3176929007561373547">પ્રોક્સી સર્વર કાર્ય કરી રહ્યું છે તેની ખાતરી કરવા માટે તમારી પ્રોક્સી સેટિંગ્સ તપાસો
@@ -247,6 +256,7 @@
 <translation id="3648607100222897006">આ પ્રાયોગિક સુવિધાઓ કોઈપણ સમયે બદલાઈ, ભંગ અથવા અદૃશ્ય થઈ શકે છે. જો તમે આમાંના કોઈ એક પ્રયોગને ચાલુ કરો છો તો તેનું શું થશે તેની અમે કોઈ ગેરેંટી આપી શકતા નથી, બને કે તમારું બ્રાઉઝર પણ ભડકી ઉઠે. તમારું બ્રાઉઝર તમારા ડેટાને કાઢી નાખી શકે છે, અથવા તમારી સુરક્ષા અને ગોપનીયતા સાથે અનપેક્ષિત રીતે ચેડા થઈ શકે છે. તમે જે પ્રયોગોને અક્ષમ કરો છો તે આ બ્રાઉઝરના બધા વપરાશકર્તાઓ માટે સક્ષમ થશે. કૃપા કરીને સાવધાનીપૂર્વક આગળ વધો.</translation>
 <translation id="3650584904733503804">માન્યતા સફળ</translation>
 <translation id="3651020361689274926">વિનંતી કરાયેલું સાધન હવે હયાત નથી અને ત્યાં કોઈ ફોરવર્ડિંગ સરનામું નથી.  આ કાયમી સ્થિતિ હોવાનું અપેક્ષિત છે.</translation>
+<translation id="3655670868607891010">જો તમે આ વારંવાર જોઈ રહ્યાં છો, તો આ <ph name="HELP_LINK" /> અજમાવી જુઓ.</translation>
 <translation id="3658742229777143148">પુનરાવર્તન</translation>
 <translation id="3681007416295224113">પ્રમાણપત્ર માહિતી</translation>
 <translation id="3693415264595406141">પાસવર્ડ:</translation>
@@ -337,7 +347,6 @@
 <translation id="4841640898320458950">અસુરક્ષિત પોર્ટ અવરોધિત.</translation>
 <translation id="4850886885716139402">જુઓ</translation>
 <translation id="4880827082731008257">ઇતિહાસ શોધ</translation>
-<translation id="488726935215981469">તમારો ડેટા તમારા સમન્વયન પાસફ્રેઝ સાથે એન્ક્રિપ્ટ કરાયો છે. કૃપા કરી તેને નીચે દાખલ કરો.</translation>
 <translation id="4923417429809017348">આ પૃષ્ઠ કોઈ અજ્ઞાત ભાષામાંથી <ph name="LANGUAGE_LANGUAGE" /> માં અનુવાદિત કરવામાં આવ્યું છે</translation>
 <translation id="4926049483395192435">ઉલ્લેખિત હોવું આવશ્યક છે.</translation>
 <translation id="495170559598752135">ક્રિયાઓ</translation>
@@ -348,6 +357,7 @@
 <translation id="5023310440958281426">તમારા વ્યવસ્થાપકની નીતિઓ તપાસો</translation>
 <translation id="5029568752722684782">કૉપિ સાફ કરો</translation>
 <translation id="5031870354684148875">Google અનુવાદ વિશે</translation>
+<translation id="5040262127954254034">ગોપનીયતા</translation>
 <translation id="5045550434625856497">ખોટો પાસવર્ડ</translation>
 <translation id="5087286274860437796">સર્વરનું પ્રમાણપત્ર આ સમયે માન્ય નથી.</translation>
 <translation id="5089810972385038852">રાજ્ય</translation>
@@ -559,12 +569,14 @@
 <translation id="7610193165460212391">મૂલ્ય <ph name="VALUE" /> શ્રેણી બહારનું છે.</translation>
 <translation id="7613889955535752492">સમાપ્તિ: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">તમારી પાસે પેહલાથી જ ડેટા છે જે તમારા Google એકાઉન્ટ પાસવર્ડના વિવિધ સંસ્કરણોંનો ઉપયોગ કરીને એન્ક્રિપ્ટ કરેલો છે. </translation>
+<translation id="7634554953375732414">આ સાઇટ પરનું તમારું કનેક્શન ખાનગી નથી.</translation>
 <translation id="7637571805876720304">Chromium માંથી ક્રેડિટ કાર્ડ દૂર કરીએ?</translation>
 <translation id="7643817847124207232">ઇંટરનેટ કનેક્શન જતું રહ્યું છે.</translation>
 <translation id="765676359832457558">વિગતવાર સેટિંગ્સ છુપાવો...</translation>
 <translation id="7658239707568436148">રદ કરો</translation>
 <translation id="7668654391829183341">અજ્ઞાત ઉપકરણ</translation>
 <translation id="7674629440242451245">શું કૂલ નવી Chrome સુવિધાઓમાં રુચિ ધરાવો છો? chrome.com/dev પર અમારી dev ચૅનલ અજમાવી જુઓ.</translation>
+<translation id="769344199378576125">ઑફલાઇન બુકમાર્ક્સ બતાવો</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" /><ph name="SITE" /> પર આગળ વધો (અસલામત)<ph name="END_LINK" /></translation>
 <translation id="7716424297397655342">કૅશમાંથી આ સાઇટ લોડ કરી શકાતી નથી</translation>
 <translation id="7733391738235763478">( <ph name="NUMBER_VISITS" /> )</translation>
@@ -583,6 +595,7 @@
 <translation id="7805768142964895445">સ્થિતિ</translation>
 <translation id="7813600968533626083">Chrome માંથી ફોર્મ સૂચનો દૂર કરીએ?</translation>
 <translation id="7825436071901023927">અસુરક્ષિત પોર્ટ <ph name="SITE" /></translation>
+<translation id="785549533363645510">જો કે, તમે અદૃશ્ય નથી. છુપામાં જવું તમારા નિયોક્તા, તમારા ઇન્ટરનેટ સેવા પ્રદાતા અથવા તમે મુલાકાત લો છો તે વેબસાઇટ્સથી તમારા બ્રાઉઝિંગને છુપાવતું નથી.</translation>
 <translation id="7887683347370398519">તમારું CVC તપાસો અને ફરીથી પ્રયાસ કરો</translation>
 <translation id="790025292736025802"><ph name="URL" /> મળ્યું નથી</translation>
 <translation id="7912024687060120840">ફોલ્ડરમાં:</translation>
@@ -593,11 +606,9 @@
 <translation id="7961015016161918242">ક્યારેય નહીં</translation>
 <translation id="7977590112176369853">&lt;ક્વેરી દાખલ કરો&gt;</translation>
 <translation id="7983301409776629893">હંમેશા <ph name="ORIGINAL_LANGUAGE" /> નું <ph name="TARGET_LANGUAGE" /> માં ભાષાંતર કરો</translation>
-<translation id="7988324688042446538">ડેસ્કટૉપ બુકમાર્ક્સ</translation>
 <translation id="7995512525968007366">નિર્દિષ્ટ કરાયેલ નથી</translation>
 <translation id="8034522405403831421">આ પૃષ્ઠ <ph name="SOURCE_LANGUAGE" /> માં છે. શું તેનો અનુવાદ <ph name="TARGET_LANGUAGE" /> માં કરીએ?</translation>
 <translation id="8034955203865359138">કોઈ ઇતિહાસ પ્રવિષ્ટિઓ મળી નથી.</translation>
-<translation id="8075539548641175231">તમારો ડેટા <ph name="TIME" /> ના રોજ તમારા સમન્વયન પાસફ્રેઝ સાથે એન્ક્રિપ્ટ કરાયો છે. કૃપા કરી તેને નીચે દાખલ કરો.</translation>
 <translation id="8088680233425245692">લેખ જોવામાં નિષ્ફળ થયાં.</translation>
 <translation id="8091372947890762290">સક્રિયતા સર્વર પર બાકી છે</translation>
 <translation id="8149426793427495338">તમારું કમ્પ્યુટર નિષ્ક્રિય થઈ ગયું હતું.</translation>
@@ -649,6 +660,7 @@
 <translation id="8703575177326907206"><ph name="DOMAIN" /> સાથેનું તમારું કનેક્શન એન્ક્રિપ્ટેડ નથી.</translation>
 <translation id="8713130696108419660">ખોટી ટૂંકી સહી</translation>
 <translation id="8725066075913043281">ફરી પ્રયાસ કરો</translation>
+<translation id="8728672262656704056">તમે છુપા મોડમાં ગયા છો</translation>
 <translation id="8730621377337864115">થઈ ગયું</translation>
 <translation id="8738058698779197622">એક સુરક્ષિત કનેક્શન સ્થાપિત કરવા માટે, તમારું ઘડિયાળ યોગ્ય રીતે સેટ હોવું જરૂરી છે. આનું કારણ એ કે  વેબસાઇટ્સ તેઓને ઓળખવા માટે જે પ્રમાણપત્રોનો ઉપયોગ કરે છે તે ચોક્કસ સમય અવધિ માટે જ માન્ય હોય છે. તમારા ઉપકરણની ઘડિયાળ ખોટી હોવાને લીધે, Chromium આ પ્રમાણપત્રોને ચકાસી શકતું નથી.</translation>
 <translation id="8740359287975076522"><ph name="HOST_NAME" /> નું &lt;abbr id="dnsDefinition"&gt;DNS સરનામું&lt;/abbr&gt; શોધી શકાયું નથી. સમસ્યાનું નિદાન કરી રહ્યાં છીએ.</translation>
@@ -664,6 +676,7 @@
 <translation id="885730110891505394">Google સાથે શેર કરવું</translation>
 <translation id="8866481888320382733">ભૂલ વિશ્લેષણ નીતિ સેટિંગ્સ</translation>
 <translation id="8866959479196209191">આ પૃષ્ઠ આ કહે છે:</translation>
+<translation id="8870413625673593573">તાજેતરમાં બંધ કરેલા</translation>
 <translation id="8876793034577346603">નેટવર્ક ગોઠવણી વિશ્લેષિત થવામાં નિષ્ફળ થઇ.</translation>
 <translation id="8891727572606052622">અમાન્ય પ્રોક્સી મોડ.</translation>
 <translation id="889901481107108152">માફ કરશો, આ પ્રયોગ તમારા પ્લેટફોર્મ પર ઉપલબ્ધ નથી.</translation>

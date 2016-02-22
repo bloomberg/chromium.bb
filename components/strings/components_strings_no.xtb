@@ -38,11 +38,14 @@
 <translation id="1227224963052638717">Ukjent innstilling.</translation>
 <translation id="1227633850867390598">Skjul verdien</translation>
 <translation id="1228893227497259893">Feil enhetsidentifikator</translation>
+<translation id="1232569758102978740">Uten tittel</translation>
 <translation id="1254117744268754948">Valg av mappe</translation>
 <translation id="1270699273812232624">Tillat elementer</translation>
 <translation id="1285320974508926690">Oversett aldri dette nettstedet</translation>
+<translation id="129553762522093515">Nylig lukket</translation>
 <translation id="1339601241726513588">Registreringsdomene:</translation>
 <translation id="1344588688991793829">Innstillinger for autofyll i Chromium</translation>
+<translation id="1374468813861204354">forslagene</translation>
 <translation id="1375198122581997741">Om versjon</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> sendte ingen data.</translation>
 <translation id="1407135791313364759">Åpne alle</translation>
@@ -59,6 +62,7 @@
 <translation id="1559572115229829303">&lt;p&gt;Vi kan ikke opprette noen privat tilkobling til <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, fordi datoen og klokkeslettet (<ph name="DATE_AND_TIME" />) på enheten din er feil.&lt;/p&gt;
 
       &lt;p&gt;Juster datoen og klokkeslettet under &lt;strong&gt;Generelt&lt;/strong&gt; i &lt;strong&gt;Innstillinger&lt;/strong&gt;-appen.&lt;/p&gt;</translation>
+<translation id="1583429793053364125">Noe gikk galt under åpningen av denne nettsiden.</translation>
 <translation id="1592005682883173041">Tilgang til lokale data</translation>
 <translation id="1629803312968146339">Vil du at Chrome skal lagre dette kortet?</translation>
 <translation id="1640180200866533862">Brukerretningslinjer</translation>
@@ -93,6 +97,7 @@
 <translation id="2030481566774242610">Mener du <ph name="LINK" />?</translation>
 <translation id="2053553514270667976">Postnummer</translation>
 <translation id="2065985942032347596">Godkjenning kreves</translation>
+<translation id="2079545284768500474">Angre</translation>
 <translation id="20817612488360358">Innstillinger for systemmellomtjener er stilt inn på å brukes, men en uttrykkelig mellomtjenerkonfigurasjon er også angitt.</translation>
 <translation id="2089090684895656482">Mindre</translation>
 <translation id="2094505752054353250">Domenene samsvarer ikke</translation>
@@ -168,6 +173,7 @@
 <translation id="2837049386027881519">Tilkoblingen måtte måtte prøves på nytt ved hjelp av en eldre versjon av TLS- eller SSL-protokollen. Dette betyr vanligvis at tjeneren bruker veldig gammel programvare og kan ha andre sikkerhetsproblemer.</translation>
 <translation id="284702764277384724">Tjenersertifikatet på <ph name="HOST_NAME" /> ser ut til å være forfalsket.</translation>
 <translation id="2855922900409897335">Bekreft følgende kort: <ph name="CREDIT_CARD" /></translation>
+<translation id="2896499918916051536">Dette programtillegget støttes ikke.</translation>
 <translation id="2897655920961181107">Den forespurte porten er utrygg, og har blitt blokkert.</translation>
 <translation id="2909946352844186028">En nettverksendring ble oppdaget.</translation>
 <translation id="2915500479781995473">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Tjenerens sikkerhetssertifikat er utløpt. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din. Datamaskinens klokke er for øyeblikket satt til <ph name="CURRENT_TIME" />. Ser det riktig ut? Hvis det ikke gjør det, bør du korrigere systemets klokke og deretter laste inn denne siden på nytt.</translation>
@@ -189,6 +195,7 @@
 <translation id="3005723025932146533">Vis lagret kopi</translation>
 <translation id="3010559122411665027">Listeoppføring «<ph name="ENTRY_INDEX" />»: <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Feil type enhetsinnstillinger</translation>
+<translation id="3037605927509011580">Æsj!</translation>
 <translation id="3041612393474885105">Sertifikatinformasjon</translation>
 <translation id="3093245981617870298">Du er ikke tilkoblet Internett.</translation>
 <translation id="3105172416063519923">Ressurs-ID:</translation>
@@ -198,6 +205,8 @@
 <translation id="3145945101586104090">Kunne ikke avkode responsen</translation>
 <translation id="3147485256806412701">Dette nettstedet bruker et nytt generisk toppdomene.</translation>
 <translation id="3150653042067488994">Midlertidig tjenerfeil</translation>
+<translation id="3157931365184549694">Gjenopprett</translation>
+<translation id="3167968892399408617">Sider du går til i inkognitofaner, blir ikke værende i nettleserloggen, lageret for informasjonskapsler eller søkeloggen etter at du har lukket alle inkognitofanene. Filer du laster ned eller bokmerker du oppretter, blir lagret.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">Øy</translation>
 <translation id="3176929007561373547">Sjekk innstillingene for proxy-tjeneren eller kontakt nettverksadministratoren
@@ -248,6 +257,7 @@
 <translation id="3648607100222897006">Disse eksperimentelle funksjonene kan bli endret, satt på pause eller forsvinne når som helst. Vi gir absolutt ingen garantier om hva som kan skje hvis du slår på et av disse eksperimentene – nettleseren kan til og med spontanantenne. Spøk til side: Nettleseren kan komme til å slette alle dataene dine eller sikkerheten og personvernet kan bli kompromittert på uventede måter. Eventuelle eksperimenter du aktiverer bli aktivert for alle brukere av denne nettleseren. Vær forsiktig hvis du fortsetter.</translation>
 <translation id="3650584904733503804">Valideringen var vellykket</translation>
 <translation id="3651020361689274926">Den forespurte ressursen finnes ikke lenger, og har ingen videresendingsadresse. Det antas at denne tilstanden er varig.</translation>
+<translation id="3655670868607891010">Hvis du ser denne meldingen ofte, kan du prøve disse <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Versjon</translation>
 <translation id="3681007416295224113">Sertifikatinformasjon</translation>
 <translation id="3693415264595406141">Passord:</translation>
@@ -338,7 +348,6 @@
 <translation id="4841640898320458950">En utrygg port er blokkert.</translation>
 <translation id="4850886885716139402">Visning</translation>
 <translation id="4880827082731008257">Søk i loggen</translation>
-<translation id="488726935215981469">Dataene dine er kryptert med passordfrasen din. Skriv den inn nedenfor.</translation>
 <translation id="4923417429809017348">Denne siden er oversatt til <ph name="LANGUAGE_LANGUAGE" /> fra et ukjent språk</translation>
 <translation id="4926049483395192435">Må angis.</translation>
 <translation id="495170559598752135">Handlinger</translation>
@@ -349,6 +358,7 @@
 <translation id="5023310440958281426">Kontrollér retningslinjene til administratoren din</translation>
 <translation id="5029568752722684782">Slett kopi</translation>
 <translation id="5031870354684148875">Om Google Oversett</translation>
+<translation id="5040262127954254034">Personvern</translation>
 <translation id="5045550434625856497">Feil passord</translation>
 <translation id="5087286274860437796">Sertifikatet til tjeneren er ikke gyldig for øyeblikket.</translation>
 <translation id="5089810972385038852">Fylke / delstat</translation>
@@ -560,12 +570,14 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
 <translation id="7610193165460212391">Verdien er utenfor rekkevidden <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Utløpsdato: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Du har allerede data som er kryptert med en annen versjon av Google-kontopassordet ditt. Skriv det inn nedenfor.</translation>
+<translation id="7634554953375732414">Tilkoblingen til dette nettstedet er ikke privat.</translation>
 <translation id="7637571805876720304">Vil du fjerne kredittkortet fra Chromium?</translation>
 <translation id="7643817847124207232">Internett-tilkoblingen er blitt borte.</translation>
 <translation id="765676359832457558">Skjul avanserte innstillinger</translation>
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7668654391829183341">Ukjent enhet</translation>
 <translation id="7674629440242451245">Interessert i nye kule Chrome-funksjoner? Prøv utviklerkanalen vår på chrome.com/dev</translation>
+<translation id="769344199378576125">Vis bokmerker for bruk uten nett</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Fortsett til <ph name="SITE" /> (usikker side)<ph name="END_LINK" /></translation>
 <translation id="7716424297397655342">Dette nettstedet kan ikke lastes inn fra bufferen</translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
@@ -584,6 +596,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
 <translation id="7805768142964895445">Status</translation>
 <translation id="7813600968533626083">Vil du fjerne skjemaforslaget fra Chrome?</translation>
 <translation id="7825436071901023927">Utrygg port <ph name="SITE" /></translation>
+<translation id="785549533363645510">Du er imidlertid ikke usynlig. Inkognitomodus skjuler ikke surfingen din for arbeidsgiveren din, Internett-leverandøren eller nettstedene du besøker.</translation>
 <translation id="7887683347370398519">Kontrollér CVC-koden din, og prøv igjen.</translation>
 <translation id="790025292736025802">Finner ikke <ph name="URL" /></translation>
 <translation id="7912024687060120840">I mappen:</translation>
@@ -594,11 +607,9 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
 <translation id="7961015016161918242">Aldri</translation>
 <translation id="7977590112176369853">&lt;skriv inn søk&gt;</translation>
 <translation id="7983301409776629893">Oversett alltid <ph name="ORIGINAL_LANGUAGE" /> til <ph name="TARGET_LANGUAGE" /></translation>
-<translation id="7988324688042446538">Bokmerker på datamaskinen</translation>
 <translation id="7995512525968007366">Ikke spesifisert</translation>
 <translation id="8034522405403831421">Denne siden er på <ph name="SOURCE_LANGUAGE" />. Vil du oversette den til <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8034955203865359138">Fant ingen loggoppføringer.</translation>
-<translation id="8075539548641175231">Dataene dine ble kryptert med passordfrasen din <ph name="TIME" />. Skriv den inn nedenfor.</translation>
 <translation id="8088680233425245692">Kunne ikke åpne artikkelen.</translation>
 <translation id="8091372947890762290">Aktivering venter på tjeneren</translation>
 <translation id="8149426793427495338">Datamaskinen din gikk inn i hvilemodus.</translation>
@@ -653,6 +664,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
 <translation id="8703575177326907206">Tilkoblingen til <ph name="DOMAIN" /> er ikke kryptert.</translation>
 <translation id="8713130696108419660">Feil innledende signatur</translation>
 <translation id="8725066075913043281">Prøv igjen</translation>
+<translation id="8728672262656704056">Du er nå i inkognitomodus</translation>
 <translation id="8730621377337864115">Ferdig</translation>
 <translation id="8738058698779197622">Klokken din må være riktig stilt for at du skal kunne opprette en sikker forbindelse. Sertifikatene som nettsteder bruker til å identifisere seg med, er nemlig bare gyldige i en viss tid. Siden enhetens klokke er feil, kan ikke Chromium kontrollere disse sertifikatene.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;DNS-adressen&lt;/abbr&gt; til <ph name="HOST_NAME" /> ble ikke funnet. Problemet diagnostiseres.</translation>
@@ -668,6 +680,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
 <translation id="885730110891505394">Deling med Google</translation>
 <translation id="8866481888320382733">Analysefeil i angivelsen av enhetrsinnstillinger</translation>
 <translation id="8866959479196209191">Denne siden sier:</translation>
+<translation id="8870413625673593573">Nylig lukket</translation>
 <translation id="8876793034577346603">Nettverkskonfigurasjon kunne ikke analyseres.</translation>
 <translation id="8891727572606052622">Ugyldig modus for mellomtjener.</translation>
 <translation id="889901481107108152">Beklager, dette eksperimentet er ikke er tilgjengelig på plattformen din.</translation>

@@ -145,6 +145,11 @@ Iwapo sera hii haijawekwa, hali ya juu ya utoafautishaji huzimwa wakati skrini y
 <translation id="1522425503138261032">Ruhusu tovuti kufuatilia eneo halisi la mtumiaji</translation>
 <translation id="152657506688053119">Orodha ya URL mbadala za mtoa huduma chaguo-msingi wa utafutaji.</translation>
 <translation id="1530812829012954197">Onyesha ruwaza zifuatazo za URL mara kwa mara katika kivinjari cha mpangishaji</translation>
+<translation id="1553684822621013552">Sera hii ikiwekwa kuwa ndivyo, kipengee cha ARC kitawashiwa mtumiaji
+      (kutegemea kanuni za mipangilio ya ziada ya sera - kipengee cha ARC bado hakitapatikana ikiwa kipindi cha matumizi ya muda au kipengee cha kuingia katika akaunti nyingi kitawashwa katika kipindi cha sasa cha mtumiaji).
+
+      Mipangilio hii ikizimwa au isiposanidiwa, basi watumiaji wa biashara
+      hawawezi kutumia kipengee cha ARC.</translation>
 <translation id="1561424797596341174">Ubatilishaji wa sera kwa miundo ya Hitilafu ya seva pangishi ya ufikiaji wa mbali</translation>
 <translation id="1583248206450240930">Tumia <ph name="PRODUCT_FRAME_NAME" /> kwa chaguo-msingi</translation>
 <translation id="1608755754295374538">URL ambazo zitapewa ufikiaji wa vifaa vya kunasa sauti bila ushawishi</translation>
@@ -249,6 +254,7 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
       Sera hii ikiwekwa kuwa ndivyo, <ph name="PRODUCT_OS_NAME" /> itajaribu kupakua sasisho za data  kiotomatiki kupitia HTTP. Sera ikiwekwa kuwa sivyo ama isiwekwe, HTTPS itatumika kupakua sasisho za data kiotomatiki.</translation>
 <translation id="2006530844219044261">Usimamizi wa nishati</translation>
 <translation id="201557587962247231">Idadi ya upakiaji wa ripoti ya hali ya kifaa</translation>
+<translation id="2024476116966025075">Weka mipangilio ya jina la kikoa linalohitajika kwa seva teja za ufikiaji wa mbali</translation>
 <translation id="2030905906517501646">Nenomsingi la mtoa huduma chaguo-msingi wa utafutaji</translation>
 <translation id="206623763829450685">Hubainisha mipango ya uthibitishaji wa HTTP inayotumia na <ph name="PRODUCT_NAME" />.
 
@@ -479,6 +485,7 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
        Kama sera hii imeachwa bila kuwekwa, kipengee cha proksi ya kupunguza data kitapatikana ili mtumiaji achague kama atakitumia au la.</translation>
 <translation id="2587719089023392205">Weka <ph name="PRODUCT_NAME" /> kama Kivinjari Chaguo-msingi</translation>
 <translation id="2592091433672667839">Muda wa shughuli kabla ya seva ya skrini kuonyeshwa kwenye skrini ya kuingia katika modi ya rejareja</translation>
+<translation id="260705825237536216">Weka mipangilio ya programu za ARC</translation>
 <translation id="2623014935069176671">Subiri shughuli ya kwanza ya mtumiaji</translation>
 <translation id="262740370354162807">Wezesha uwasilishaji wa nyaraka kwenye <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Wezesha maoni yaliyozungumzwa</translation>
@@ -595,6 +602,7 @@ Kama sera hii haitawekwa, hii itawashwa lakini mtumiaji ataweza kuibadilisha.</t
           Sera hii inapokuwa haijawekwa, urefu wa muda wa chaguo-msingi unatumiwa.
 
           Sera ya thamani inastahili kubainishwa kwa nukta. Thamani zinabanwa ili kuwa chini ya ucheleweshaji wa kutokuwa na shughuli.</translation>
+<translation id="2987155890997901449">Washa kipengele cha ARC</translation>
 <translation id="2998881342848488968">Sera hii inaruhusu <ph name="PRODUCT_OS_NAME" /> kukwepa seva mbadala yoyote kwa uthibitishaji wa ukurasa wa kwanza wa kuingia kwenye wavuti.
 
       Sera hii inatumika tu ikiwa seva mbadala imesanidiwa (kwa mfano kupitia sera, na mtumiaji katika mipangilio ya://chrome, au kwa kiendelezi).
@@ -1199,6 +1207,10 @@ Sera hii huathiri aina zote za vifaa vya kuingiza video na si tu kamera iliyojen
 <translation id="5307432759655324440">Upatikanaji wa hali fiche</translation>
 <translation id="5318185076587284965">Washa matumizi ya seva za relei kwa mpangishi wa ufikiaji wa mbali</translation>
 <translation id="5330684698007383292">Ruhusu <ph name="PRODUCT_FRAME_NAME" /> kushughulikia aina zifuatazo za maudhui</translation>
+<translation id="5345267406698765263">Hubainisha sera ya programu ya ARC kama mfuatano wa JSON ambao unaweza
+      kutolewa kama ulivyo programu kwenye ARC inapotumika. Kwa sasa, mipangilio inatumika tu kubainisha usakinishaji wa kulazimisha wa programu.
+
+      Sera hii isipowekwa, hakuna programu zitakazosakinishwa kiotomatiki.</translation>
 <translation id="5365946944967967336">Onyesha kitufe cha Mwazo kwenye upauzana</translation>
 <translation id="5366977351895725771">Ikiwekwa kuwa si kweli, uwezo wa mtumiaji huu wa kufungua akaunti ya mtumiaji anayesimamiwa utazimwa. Bado mtumiaji yeyote ambaye hivi sasa anasimamiwa atapatikana.
 
@@ -1271,6 +1283,13 @@ Sera hii huathiri aina zote za vifaa vya kuingiza video na si tu kamera iliyojen
       Iwapo sera itaachwa bila kuwekwa, watumiaji wanaweza kuamua iwapo rafu itajificha kiotomatiki.</translation>
 <translation id="557658534286111200">Inawezesha au kulemaza uhariri wa alamisho</translation>
 <translation id="5586942249556966598">Usifanye chochote</translation>
+<translation id="5613179474872285001">Huweka mipangilio ya jina la kikoa cha seva teja ambalo litawekwa kwenye seva teja za ufikiaji wa mbali na huzuia watumiaji kulibadilisha.
+
+          Mipangilio hii ikiwashwa, basi ni seva teja kutoka kwenye kikoa kilichobainishwa pekee zinazoweza kuunganisha kwenye seva pangishi.
+
+          Mipangilio hii ikizimwa au isipowekwa, basi sera chaguo-msingi ya aina ya uunganishi hutumika. Kwa ajili ya usaidizi wa mbali, hii huruhusu seva teja kutoka kwenye kikoa chochote kuunganisha kwenye seva pangishi; kwa ufikiaji wa mbali wa wakati wowote, ni mmiliki wa seva panishi pekee anayeweza kuunganisha.
+
+          Angalia pia RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">Rejesha kipindi kilichopita</translation>
 <translation id="5645779841392247734">Ruhusu vidakuzi kwenye tovuti hizi</translation>
 <translation id="5677038592630896441">Huhitaji jina la mtumiaji wa ndani na mmiliki wa seva pangishi ya uwezo wa kufikia kwa mbali vilingane.
@@ -1709,6 +1728,13 @@ Iwapo sera hii haijawekwa, maoni yanayotamkwaa yatazimwa mwanzoni lakini yanawez
 <translation id="6943577887654905793">Jina la Mac/Linux inayopendelewa:</translation>
 <translation id="69525503251220566">Kigezo kinachotoa kipengele cha kutafuta kwa picha kwa mtoa huduma wa utafutaji chaguo-msingi</translation>
 <translation id="6956272732789158625">Usiruhusu tovuti yoyote itumie uundaji ufunguo</translation>
+<translation id="695891079107014261">Huweka mipangilio ya jina la kikoa cha seva pangishi linalohitajika litakalolazimishwa kwa seva pangishi za ufikiaji wa mbali na huzuia watumiaji kulibadilisha.
+
+          Ikiwa mipangilio hii itawashwa, basi seva pangishi zinaweza kushirikiwa tu kwa kutumia akaunti zilizosajiliwa kwenye jina la kikoa lililobainishwa.
+
+          Ikiwa mipangilio hii itazimwa au isiwekwe, basi seva pangishi zinaweza kushirikiwa kwa kutumia akaunti yoyote.
+
+          Angalia pia RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Iwapo ukaguzi wa OCSP/CRL mtandaoni unahitajika kwa nanga za uaminifu za karibu</translation>
 <translation id="7003334574344702284">Sera hii inalazimisha manaenosiri yaliyohifadhiwa kuletwa kutoka kwenye kivinjari chaguo-msingi cha awali ikiwezeshwa. Ikiwezeshwa, sera hii pia inaathiri kidadisi cha kuleta.
 

@@ -133,6 +133,13 @@ Bármely érték, amely nem ebben a tartományban van, a közelebbi határhoz le
 <translation id="1522425503138261032">Engedélyezi a webhelyek számára a felhasználók fizikai helyének követését</translation>
 <translation id="152657506688053119">Az alapértelmezett keresési szolgáltató alternatív URL-jeinek listája.</translation>
 <translation id="1530812829012954197">Mindig jelenítse meg a következő URL-mintákat a gazdagép böngészőjében</translation>
+<translation id="1553684822621013552">Ha a házirend értéke igaz, akkor az ARC engedélyezve lesz a felhasználó
+      számára (további házirend-ellenőrzések alapján – az ARC továbbra sem
+      áll rendelkezésre, ha engedélyezve van az átmeneti mód vagy a többfiókos
+      bejelentkezés az aktuális felhasználói munkamenetnél).
+
+      Ha ez a beállítás le van tiltva, illetve nincs konfigurálva, akkor a vállalati
+      felhasználók nem használhatják az ARC szolgáltatást.</translation>
 <translation id="1561424797596341174">A házirend felülírja a távoli elérésű gazdagép hibakeresés végzésére szolgáló buildjeit</translation>
 <translation id="1583248206450240930">A <ph name="PRODUCT_FRAME_NAME" /> használata alapértelmezés szerint</translation>
 <translation id="1608755754295374538">Azon URL-ek, amelyek rákérdezés nélkül hozzáférést kapnak a hangrögzítő eszközökhöz</translation>
@@ -223,6 +230,7 @@ Ha a házirend konfigurálatlanul marad, a felhasználó döntheti el, hogy kív
       Ha a házirend értéke igaz, akkor a <ph name="PRODUCT_OS_NAME" /> az automatikusan frissülő hasznos tartalmakat HTTP-kapcsolaton keresztül kísérli meg letölteni. Ha a házirend értéke hamis, vagy ha nincs beállítva, akkor a rendszer mindig HTTPS-kapcsolatot használ az automatikusan frissülő hasznos tartalmak letöltésére.</translation>
 <translation id="2006530844219044261">Energiagazdálkodás</translation>
 <translation id="201557587962247231">Az eszköz állapotával kapcsolatos jelentések feltöltési gyakorisága</translation>
+<translation id="2024476116966025075">A kötelező domainnév konfigurálása a távoli hozzáférésű ügyfeleknél</translation>
 <translation id="2030905906517501646">Alapértelmezett keresési szolgáltató kulcsszava</translation>
 <translation id="206623763829450685">Meghatározza, hogy a <ph name="PRODUCT_NAME" /> milyen HTTP-hitelesítési sémákat támogat.
 
@@ -436,6 +444,7 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
       Ha a szabály nincs beállítva, a felhasználó eldöntheti, hogy használja-e a rendelkezésre álló adattömörítő proxyfunkciót.</translation>
 <translation id="2587719089023392205">A <ph name="PRODUCT_NAME" /> legyen az alapértelmezett böngészőm</translation>
 <translation id="2592091433672667839">Inaktivitás időtartama, mielőtt megjelenne a képernyőkímélő a bejelentkezési képernyőn kiállító módban</translation>
+<translation id="260705825237536216">ARC-alkalmazások konfigurálása</translation>
 <translation id="2623014935069176671">Várakozás a kezdeti felhasználói tevékenységre</translation>
 <translation id="262740370354162807">A dokumentumok <ph name="CLOUD_PRINT_NAME" /> szolgáltatás részére való benyújtásának engedélyezése</translation>
 <translation id="2633084400146331575">Hangos visszajelzések engedélyezése</translation>
@@ -543,6 +552,7 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
           Ha a házirend nincs beállítva, a rendszer egy alapértelmezett időtartamot használ.
 
           A házirend értékét ezredmásodpercben kell megadni. Az értéknek kisebbnek kell lennie a képernyő kikapcsolásának késleltetésénél (ha be van állítva) és a tétlenségi késleltetésnél.</translation>
+<translation id="2987155890997901449">ARC engedélyezése</translation>
 <translation id="2998881342848488968">Lehetővé teszi a <ph name="PRODUCT_OS_NAME" /> számára, hogy megkerülje a proxyt a hitelesítési portálokon történő hitelesítéskor.
 
       Ez a házirend csak akkor lép érvénybe, ha be van állítva proxy (például házirend vagy bővítmény révén, illetve a felhasználó által a chrome://settings oldalon).
@@ -1071,6 +1081,11 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 <translation id="5307432759655324440">Inkognitómód elérhetősége</translation>
 <translation id="5318185076587284965">Relay szerverek használatának engedélyezése a távoli gazdagép számára</translation>
 <translation id="5330684698007383292">A következő tartalomtípusok kezelésének engedélyezése a(z) <ph name="PRODUCT_FRAME_NAME" /> számára</translation>
+<translation id="5345267406698765263">Az ARC-házirendet JSON-karakterláncként adja meg, amely változtatás
+      nélkül hozzáadható az ARC-futáshoz. A beállítás pillanatnyilag csak az
+      alkalmazások kényszerített telepítésére szolgál.
+
+      Ha nincs beállítva ez a házirend, akkor egyik alkalmazás telepítése sem történik meg automatikusan.</translation>
 <translation id="5365946944967967336">Kezdőoldal gomb megjelenítése az eszköztáron</translation>
 <translation id="5366977351895725771">Ha „hamis” értékre van állítva, a felhasználó nem hozhat létre felügyelt felhasználókat. Az összes meglévő felügyelt felhasználó továbbra is elérhető lesz.
 
@@ -1134,6 +1149,13 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
       Ha az irányelvet beállítatlanul hagyja, akkor a felhasználók választhatnak, hogy a polc automatikusan el legyen-e rejtve vagy sem.</translation>
 <translation id="557658534286111200">Engedélyezi vagy letiltja a könyvjelzők szerkesztését</translation>
 <translation id="5586942249556966598">Ne tegyen semmit</translation>
+<translation id="5613179474872285001">Beállítja a távoli hozzáférésű ügyfelek számára kötelező domainnevet, és megakadályozza, hogy a felhasználók megváltoztassák azt.
+
+          Ha a beállítás engedélyezve van, akkor csak a megadott domainhez tartozó ügyfelek csatlakozhatnak a gazdagéphez.
+
+          Ha a beállítás le van tiltva vagy nincs megadva, akkor a rendszer a kapcsolódási típusnak megfelelő alapértelmezett házirendet alkalmazza. A házirend távoli segítség esetén az összes domainhez tartozó ügyfél számára engedélyezi a gazdagéphez való csatlakozást; a bármikor történő távoli hozzáférés esetén azonban csak a gazdagép tulajdonosa csatlakozhat.
+
+          Lásd még a RemoteAccessHostDomain házirendet.</translation>
 <translation id="5630352020869108293">Utolsó munkamenet visszaállítása</translation>
 <translation id="5645779841392247734">Cookie-k engedélyezése ezeken a webhelyeken</translation>
 <translation id="5677038592630896441">Megköveteli a helyi felhasználó nevének és a távoli elérésű gazdagép tulajdonosának egyezését.
@@ -1519,6 +1541,13 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 <translation id="6943577887654905793">Mac/Linux preferencia neve:</translation>
 <translation id="69525503251220566">Paraméter az alapértelmezett keresési szolgáltatóval végezhető képalapú keresési funkció biztosításához</translation>
 <translation id="6956272732789158625">A kulcsgenerálás használatának letiltása minden webhelyen</translation>
+<translation id="695891079107014261">Beállítja a távoli hozzáférésű gazdagépek számára kötelező domainnevet, és megakadályozza, hogy a felhasználók megváltoztassák azt.
+
+          Ha a beállítás engedélyezve van, a gazdagépeket csak a megadott domainnévvel regisztrált fiókokkal lehet megosztani.
+
+          Ha a beállítás le van tiltva vagy nincs megadva, a gazdagépeket bármely fiókkal meg lehet osztani.
+
+          Lásd még a RemoteAccessHostClientDomain házirendet.</translation>
 <translation id="6997592395211691850">Szükség van-e online OCSP- vagy CRL-ellenőrzésekre a helyi megbízhatósági kapcsolatok alapjainál</translation>
 <translation id="7003334574344702284">Ez a házirend engedélyezése esetén kikényszeríti a mentett jelszavak importálását a jelenlegi alapértelmezett böngészőből. Bekapcsolása esetén a házirend az importálás párbeszédpanelére is hatással van. Letiltása esetén a mentett jelszavak importálása nem történik meg. Ha nincs beállítva, akkor előfordulhat, hogy a rendszer a felhasználótól kérdezi meg, hogy megtörténjen-e az importálás, vagy hogy lehet-e automatikus az importálás.</translation>
 <translation id="7003746348783715221">A <ph name="PRODUCT_NAME" /> beállításai</translation>

@@ -38,11 +38,14 @@
 <translation id="1227224963052638717">Nezināma politika.</translation>
 <translation id="1227633850867390598">Slēpt vērtību</translation>
 <translation id="1228893227497259893">Nepareizs vienības identifikators</translation>
+<translation id="1232569758102978740">Bez nosaukuma</translation>
 <translation id="1254117744268754948">Mapes izvēle</translation>
 <translation id="1270699273812232624">Atļaut vienumus</translation>
 <translation id="1285320974508926690">Nekad netulkot šo vietni</translation>
+<translation id="129553762522093515">Nesen aizvērtas</translation>
 <translation id="1339601241726513588">Reģistrācijas domēns:</translation>
 <translation id="1344588688991793829">Chromium automātiskās aizpildes iestatījumi...</translation>
+<translation id="1374468813861204354">ieteikumus</translation>
 <translation id="1375198122581997741">Par versiju</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> nenosūtīja nekādus datus.</translation>
 <translation id="1407135791313364759">Atvērt visas</translation>
@@ -59,6 +62,7 @@
 <translation id="1559572115229829303">&lt;p&gt;Nevar izveidot privātu savienojumu ar <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, jo jūsu ierīces datums un laiks (<ph name="DATE_AND_TIME" />) nav pareizi.&lt;/p&gt;
 
       &lt;p&gt;Lūdzu, koriģējiet datumu un laiku lietotnes &lt;strong&gt;Iestatījumi&lt;/strong&gt; sadaļā &lt;strong&gt;Vispārīgi&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="1583429793053364125">Šīs tīmekļa lapas rādīšanas laikā radās kļūda.</translation>
 <translation id="1592005682883173041">Piekļuve lokālajiem datiem</translation>
 <translation id="1629803312968146339">Vai vēlaties, lai Chrome saglabātu šo karti?</translation>
 <translation id="1640180200866533862">Lietotāja politikas</translation>
@@ -93,6 +97,7 @@
 <translation id="2030481566774242610">Vai domājāt <ph name="LINK" />?</translation>
 <translation id="2053553514270667976">Pasta indekss</translation>
 <translation id="2065985942032347596">Nepieciešama autentiskuma noteikšana</translation>
+<translation id="2079545284768500474">Atsaukt</translation>
 <translation id="20817612488360358">Ir iestatīta datora starpniekserveru iestatījumu lietošana, bet ir norādīta arī atklāta starpniekservera konfigurācija.</translation>
 <translation id="2089090684895656482">Mazāk</translation>
 <translation id="2094505752054353250">Domēni nesaskan</translation>
@@ -168,6 +173,7 @@
 <translation id="2837049386027881519">Savienojums bija jāizveido vēlreiz, izmantojot vecāku TLS vai SSL protokola versiju. Parasti tas nozīmē, ka servera programmatūra ir novecojusi un ir iespējamas citas ar drošību saistītas problēmas.</translation>
 <translation id="284702764277384724">Šķiet, ka servera sertifikāts vietnē <ph name="HOST_NAME" /> ir viltojums.</translation>
 <translation id="2855922900409897335">Verificējiet kredītkarti <ph name="CREDIT_CARD" /></translation>
+<translation id="2896499918916051536">Šis spraudnis netiek atbalstīts.</translation>
 <translation id="2897655920961181107">Pieprasītais ports nav drošs, tāpēc ir bloķēts.</translation>
 <translation id="2909946352844186028">Konstatētas tīkla izmaiņas.</translation>
 <translation id="2915500479781995473">Šis serveris nevarēja pierādīt, ka ir <ph name="DOMAIN" />; tā drošības sertifikāts vairs nav derīgs. Šī problēma var rasties nepareizas konfigurācijas dēļ vai tādēļ, ka kāds uzbrucējs ir pārtvēris jūsu savienojumu. Jūsu datora pulkstenī pašlaik ir iestatīts šāds datums: <ph name="CURRENT_TIME" />. Vai tas ir pareizs? Ja datums nav pareizs, mainiet sistēmas pulksteni un pēc tam atsvaidziniet šo lapu.</translation>
@@ -189,6 +195,7 @@
 <translation id="3005723025932146533">Rādīt saglabāto versiju</translation>
 <translation id="3010559122411665027">Saraksta ieraksts “<ph name="ENTRY_INDEX" />”: <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Politikas tips nav pareizs.</translation>
+<translation id="3037605927509011580">Cilnes avārija.</translation>
 <translation id="3041612393474885105">Sertifikāta informācija</translation>
 <translation id="3093245981617870298">Esat bezsaistē</translation>
 <translation id="3105172416063519923">Līdzekļa ID:</translation>
@@ -198,6 +205,8 @@
 <translation id="3145945101586104090">Neizdevās atšifrēt atbildi.</translation>
 <translation id="3147485256806412701">Šī vietne izmanto jaunu vispārēju augšējā līmeņa domēnu.</translation>
 <translation id="3150653042067488994">Īslaicīga servera kļūda</translation>
+<translation id="3157931365184549694">Atjaunot</translation>
+<translation id="3167968892399408617">Lapas, ko skatāt inkognito režīma cilnēs, nebūs redzamas pārlūka vēsturē, sīkfailu krātuvē vai meklēšanas vēsturē, kad aizvērsiet visas inkognito režīma cilnes. Tomēr tiks saglabāti visi lejupielādētie faili un izveidotās grāmatzīmes.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">Sala</translation>
 <translation id="3176929007561373547">Pārbaudiet starpniekservera iestatījumus vai sazinieties ar tīkla administratoru, lai
@@ -248,6 +257,7 @@
 <translation id="3648607100222897006">Šīs eksperimentālās funkcijas jebkurā laikā var mainīties, pārstāt darboties vai pazust. Mēs nesniedzam pilnīgi nekādas garantijas tam, kas var notikt, ja jūs ieslēdzat vienu no šiem eksperimentiem. Jūsu pārlūks var pat sabrukt. Nopietni runājot, pārlūks var izdzēst visus jūsu datus vai arī neparedzamā veidā var tikt pārkāpti drošības un konfidencialitātes noteikumi. Visi jūsu aktivizētie eksperimenti tiks aktivizēti visiem šī pārlūka lietotājiem. Lūdzu, esiet uzmanīgs!</translation>
 <translation id="3650584904733503804">Validācija bija veiksmīga.</translation>
 <translation id="3651020361689274926">Pieprasītais resurss vairs neeksistē, un neeksistē arī pārsūtīšanas adrese. Paredzams, ka turpmāk tā būs vienmēr.</translation>
+<translation id="3655670868607891010">Ja šo redzat bieži, izmēģiniet šos <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Pārskatīšana</translation>
 <translation id="3681007416295224113">Sertifikāta informācija</translation>
 <translation id="3693415264595406141">Parole:</translation>
@@ -338,7 +348,6 @@
 <translation id="4841640898320458950">Bloķēts nedrošs ports</translation>
 <translation id="4850886885716139402">Skatīt</translation>
 <translation id="4880827082731008257">Meklēšanas vēsture</translation>
-<translation id="488726935215981469">Dati ir šifrēti, izmantojot sinhronizācijas ieejas frāzi. Lūdzu, ievadiet to tālāk esošajā sadaļā.</translation>
 <translation id="4923417429809017348">Šī lapa ir tulkota no nezināmas valodas valodā: <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Jābūt norādītai.</translation>
 <translation id="495170559598752135">Darbības</translation>
@@ -349,6 +358,7 @@
 <translation id="5023310440958281426">Administratora politiku pārbaude</translation>
 <translation id="5029568752722684782">Dzēst kopiju</translation>
 <translation id="5031870354684148875">Par Google tulkotāju</translation>
+<translation id="5040262127954254034">Privātums</translation>
 <translation id="5045550434625856497">Nepareiza parole</translation>
 <translation id="5087286274860437796">Servera sertifikāts šobrīd nav derīgs.</translation>
 <translation id="5089810972385038852">Štats</translation>
@@ -560,12 +570,14 @@ Nākamreiz jums varētu noderēt inkognito režīms (<ph name="SHORTCUT_KEY" />)
 <translation id="7610193165460212391">Vērtība pārsniedz diapazonu: <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Derīguma termiņš: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Jums jau ir dati, kas šifrēti, izmantojot citu Google konta paroles versiju. Ievadiet to šeit.</translation>
+<translation id="7634554953375732414">Jūsu savienojums ar šo vietni nav privāts.</translation>
 <translation id="7637571805876720304">Vai noņemt kredītkarti no pārlūka Chromium?</translation>
 <translation id="7643817847124207232">Interneta savienojums ir pazaudēts.</translation>
 <translation id="765676359832457558">Slēpt papildu iestatījumus...</translation>
 <translation id="7658239707568436148">Atcelt</translation>
 <translation id="7668654391829183341">Nezināma ierīce</translation>
 <translation id="7674629440242451245">Vai jūs interesē jaunas Chrome funkcijas? Izmēģiniet izstrādātāja versiju vietnē chrome.com/dev.</translation>
+<translation id="769344199378576125">Rādīt grāmatzīmes bezsaistē</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Apmeklēt vietni <ph name="SITE" /> (nav droša)<ph name="END_LINK" /></translation>
 <translation id="7716424297397655342">Šo vietni nevar ielādēt no kešatmiņas</translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
@@ -584,6 +596,7 @@ Nākamreiz jums varētu noderēt inkognito režīms (<ph name="SHORTCUT_KEY" />)
 <translation id="7805768142964895445">Statuss</translation>
 <translation id="7813600968533626083">Vai noņemt veidlapas ieteikumu no pārlūka Chrome?</translation>
 <translation id="7825436071901023927">Ports <ph name="SITE" /> nav drošs</translation>
+<translation id="785549533363645510">Tomēr jūs neesat neredzams. Pārlūkojot inkognito režīmā, jūsu pārlūkošanas darbības netiek slēptas no jūsu darba devēja, interneta pakalpojumu sniedzēja vai apmeklētajām vietnēm.</translation>
 <translation id="7887683347370398519">Pārbaudiet CVC kodu un mēģiniet vēlreiz.</translation>
 <translation id="790025292736025802"><ph name="URL" /> nav atrasts</translation>
 <translation id="7912024687060120840">Mapē:</translation>
@@ -594,11 +607,9 @@ Nākamreiz jums varētu noderēt inkognito režīms (<ph name="SHORTCUT_KEY" />)
 <translation id="7961015016161918242">Nekad</translation>
 <translation id="7977590112176369853">&lt;ievadīt vaicājumu&gt;</translation>
 <translation id="7983301409776629893">Vienmēr tulkot no <ph name="ORIGINAL_LANGUAGE" /> valodas <ph name="TARGET_LANGUAGE" /> valodā</translation>
-<translation id="7988324688042446538">Datora grāmatzīmes</translation>
 <translation id="7995512525968007366">Nav norādīts</translation>
 <translation id="8034522405403831421">Šī lapas saturs ir šādā valodā: <ph name="SOURCE_LANGUAGE" />. Vai tulkot šādā valodā: <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8034955203865359138">Netika atrasts neviens vēstures ieraksts.</translation>
-<translation id="8075539548641175231">Dati ir šifrēti, izmantojot sinhronizācijas ieejas frāzi (sinhronizācijas laiks: <ph name="TIME" />). Lūdzu, ievadiet to tālāk esošajā sadaļā.</translation>
 <translation id="8088680233425245692">Rakstu neizdevās skatīt.</translation>
 <translation id="8091372947890762290">Aktivizācija vēl nav apstiprināta serverī.</translation>
 <translation id="8149426793427495338">Dators tika pārslēgts miega režīmā.</translation>
@@ -651,6 +662,7 @@ Nākamreiz jums varētu noderēt inkognito režīms (<ph name="SHORTCUT_KEY" />)
 <translation id="8703575177326907206">Jūsu savienojums ar <ph name="DOMAIN" /> nav kodēts.</translation>
 <translation id="8713130696108419660">Nederīgs sākotnējais paraksts</translation>
 <translation id="8725066075913043281">Mēģināt vēlreiz</translation>
+<translation id="8728672262656704056">Jūs esat atvēris inkognito režīmu</translation>
 <translation id="8730621377337864115">Gatavs</translation>
 <translation id="8738058698779197622">Lai izveidotu drošu savienojumu, ir jāiestata pareizs pulksteņa laiks. Tas ir nepieciešams, jo sertifikāti, kurus vietnes izmanto, lai tiktu identificētas, ir derīgi tikai noteiktos laika periodos. Tā kā jūsu ierīces pulkstenis nav pareizi iestatīts, Chromium nevar verificēt šos sertifikātus.</translation>
 <translation id="8740359287975076522">Nevarēja atrast <ph name="HOST_NAME" /> &lt;abbr id="dnsDefinition"&gt;DNS adresi&lt;/abbr&gt;. Notiek problēmas diagnosticēšana.</translation>
@@ -666,6 +678,7 @@ Nākamreiz jums varētu noderēt inkognito režīms (<ph name="SHORTCUT_KEY" />)
 <translation id="885730110891505394">Kopīgošana ar Google</translation>
 <translation id="8866481888320382733">Parsējot politikas iestatījumus, radās kļūda.</translation>
 <translation id="8866959479196209191">Šajā lapā ir rakstīts:</translation>
+<translation id="8870413625673593573">Nesen aizvērtas</translation>
 <translation id="8876793034577346603">Neizdevās parsēt tīkla konfigurāciju.</translation>
 <translation id="8891727572606052622">Nederīgs starpniekservera režīms.</translation>
 <translation id="889901481107108152">Diemžēl šis eksperiments nav pieejams jūsu platformā.</translation>

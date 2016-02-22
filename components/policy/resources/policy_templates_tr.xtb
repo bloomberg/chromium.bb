@@ -151,6 +151,9 @@
 <translation id="1522425503138261032">Sitelerin, kullanıcıların fiziksel konumlarını izlemesine izin ver</translation>
 <translation id="152657506688053119">Varsayılan arama sağlayıcısına ilişkin alternatif URL'lerin listesi</translation>
 <translation id="1530812829012954197">Aşağıdaki URL kalıplarını her zaman ana makine tarayıcısında oluştur</translation>
+<translation id="1553684822621013552">Bu politika doğru değerine ayarlandığında, ARC kullanıcı için etkinleştirilir (ek politika ayarı kontrollerine tabidir; geçerli kullanıcı oturumunda geçici mod veya çoklu oturum açma etkinleştirilirse ARC yine de kullanılamaz).
+
+Bu ayar devre dışı bırakılır veya yapılandırılmazsa kurumsal kullanıcılar ARC'yi kullanamaz.</translation>
 <translation id="1561424797596341174">Politika, uzaktan erişim ana makinesinin Hata Ayıklama yapılarını geçersiz kılar</translation>
 <translation id="1583248206450240930">Varsayılan olarak <ph name="PRODUCT_FRAME_NAME" /> ürününü kullan</translation>
 <translation id="1608755754295374538">Soru sorulmadan ses yakalama cihazlarına erişim verilecek URL'ler</translation>
@@ -257,6 +260,7 @@
       Bu politika doğru seçeneğine ayarlanırsa <ph name="PRODUCT_OS_NAME" /> otomatik güncelleme verilerini HTTP aracılığıyla indirmeye çalışır. Politika yanlış seçeneğine ayarlanırsa veya hiç ayarlanmazsa otomatik güncelleme verilerini indirmek için HTTPS kullanılır.</translation>
 <translation id="2006530844219044261">Güç yönetimi</translation>
 <translation id="201557587962247231">Cihaz durumu raporlarının yüklenme sıklığı</translation>
+<translation id="2024476116966025075">Uzaktan erişim istemcileri için gereken alan adını yapılandır</translation>
 <translation id="2030905906517501646">Varsayılan arama sağlayıcı anahtar kelimesi</translation>
 <translation id="206623763829450685"><ph name="PRODUCT_NAME" /> tarafından desteklenen HTTP kimlik doğrulaması şemalarını belirtir.
 
@@ -490,6 +494,7 @@
       Bu politika hiç ayarlanmazsa; kullanıcı, veri sıkıştırma proxy'si özelliğinin kullanılıp kullanılmayacağını seçebilir.</translation>
 <translation id="2587719089023392205"><ph name="PRODUCT_NAME" /> ürününü varsayılan tarayıcım olarak ayarla</translation>
 <translation id="2592091433672667839">Perakende modunda oturum açma ekranında ekran koruyucunun devreye girmesi için geçecek boşta kalma süresi</translation>
+<translation id="260705825237536216">ARC uygulamalarını yapılandır</translation>
 <translation id="2623014935069176671">İlk kullanıcı etkinliğini bekle</translation>
 <translation id="262740370354162807">Dokümanların <ph name="CLOUD_PRINT_NAME" /> için gönderilmesini etkinleştir</translation>
 <translation id="2633084400146331575">Sözlü geribildirimi etkinleştir</translation>
@@ -610,6 +615,7 @@
           Bu politika ayarlanmadan bırakılırsa, varsayılan süre kullanılır.
 
           Politika değeri milisaniye olarak belirtilmelidir. Değerler ekran kapanma gecikmesinden (ayarlanmışsa) ve boşta kalma gecikmesinden küçük veya ona eşit olacak şekilde bir aralığa sıkıştırılır.</translation>
+<translation id="2987155890997901449">ARC'yi etkinleştir</translation>
 <translation id="2998881342848488968">Bu politika <ph name="PRODUCT_OS_NAME" /> ürününün, giriş portalı kimlik doğrulaması için proxy'leri atlamasına izin verir.
 
       Bu politika sadece bir proxy yapılandırıldığında geçerli olur (örneğin, politika aracılığıyla, kullanıcı tarafından chrome://settings bölümünden veya uzantılar tarafından).
@@ -1213,6 +1219,9 @@ politikayı geçersiz kılamaz.
 <translation id="5307432759655324440">Gizli modun kullanılabilirliği</translation>
 <translation id="5318185076587284965">Uzaktan erişen ana makine tarafından geçiş sunucuları kullanılmasını etkinleştir</translation>
 <translation id="5330684698007383292"><ph name="PRODUCT_FRAME_NAME" /> için aşağıdaki içerik türlerini işlemeye izin ver</translation>
+<translation id="5345267406698765263">ARC uygulama politikasını, ARC çalışma zamanına olduğu gibi aktarılabilen JSON dizesi olarak belirtir. Şu anda, bu ayar yalnızca uygulamaların kurulumunun zorlanmasını belirtmek için kullanılmaktadır.
+
+Bu politika ayarlanmadan bırakılırsa hiçbir uygulama otomatik olarak yüklenmez.</translation>
 <translation id="5365946944967967336">Araç çubuğunda Ana Sayfa düğmesini göster</translation>
 <translation id="5366977351895725771">False (yanlış) olarak ayarlanırsa, bu kullanıcının denetlenen kullanıcı oluşturma yetkisi devre dışı bırakılır. Mevcut tüm denetlenen kullanıcılar kullanılabilir olmaya devam eder.
 
@@ -1285,6 +1294,13 @@ politikayı geçersiz kılamaz.
       Bu politika ayarlanmadan bırakılırsa, kullanıcılar rafın otomatik olarak gizlenip gizlenmeyeceğini belirtebilir.</translation>
 <translation id="557658534286111200">Yer işareti düzenlemeyi etkinleştirir veya devre dışı bırakır</translation>
 <translation id="5586942249556966598">Hiçbir şey yapma</translation>
+<translation id="5613179474872285001">Uzaktan erişim istemcilerine uygulanacak gerekli istemci alan adını yapılandırır ve kullanıcıların bunu değiştirmesini engeller.
+
+Bu ayar etkinleştirilirse yalnızca belirtilen alan adındaki istemciler ana makineye bağlanabilir.
+
+Bu ayar devre dışı bırakılır veya ayarlanmazsa bağlantı türüne ilişkin varsayılan politika uygulanır. Bu durum, uzaktan yardım açısından, herhangi bir alan adındaki istemcilerin ana makineye bağlanmasına olanak tanır; herhangi bir zamanda gerçekleştirilen uzaktan erişim için yalnızca ana makine sahibi bağlantı kurabilir.
+
+Ayrıca, RemoteAccessHostDomain konusuna bakın.</translation>
 <translation id="5630352020869108293">Son oturumu geri yükle</translation>
 <translation id="5645779841392247734">Bu sitelerde çerezlere izin ver</translation>
 <translation id="5677038592630896441">Yerel kullanıcı adı ile uzaktan erişim ana makinesi sahibinin eşleşmesini gerektirir.
@@ -1725,6 +1741,13 @@ politikayı geçersiz kılamaz.
 <translation id="6943577887654905793">Mac/Linux tercih adı:</translation>
 <translation id="69525503251220566">Varsayılan arama sağlayıcısı için resme göre arama özelliği sağlayan parametre</translation>
 <translation id="6956272732789158625">Hiçbir sitenin anahtar oluşturma işlevini kullanmasına izin verme</translation>
+<translation id="695891079107014261">Uzaktan erişim ana makinelerine uygulanacak gerekli ana makine alan adını yapılandırır ve kullanıcıların bunu değiştirmesini engeller.
+
+Bu ayar etkinleştirilirse ana makineler yalnızca belirtilen alan adında kayıtlı hesaplar kullanılarak paylaşılabilir.
+
+Bu ayar devre dışı bırakılır veya ayarlanmazsa ana makineler, herhangi bir hesap kullanılarak paylaşılabilir.
+
+Ayrıca, RemoteAccessHostClientDomain konusuna bakın.</translation>
 <translation id="6997592395211691850">Çevrimiçi OCSP/CRL kontrollerinin yerel güven bağlantıları için gerekli olup olmadığı</translation>
 <translation id="7003334574344702284">Bu politika etkinleştirildiyse, kaydedilen şifreleri önceki varsayılan tarayıcıdan içe aktarır. Etkinleştirilirse, içe aktarma iletişim kutusunu da etkiler.
 

@@ -38,11 +38,14 @@
 <translation id="1227224963052638717">Ukendt politik.</translation>
 <translation id="1227633850867390598">Skjul værdi</translation>
 <translation id="1228893227497259893">Forkert enheds-id</translation>
+<translation id="1232569758102978740">Ikke-navngivet</translation>
 <translation id="1254117744268754948">Vælg mappe</translation>
 <translation id="1270699273812232624">Tillad elementer</translation>
 <translation id="1285320974508926690">Oversæt aldrig dette website</translation>
+<translation id="129553762522093515">Senest lukkede</translation>
 <translation id="1339601241726513588">Registreringsdomæne:</translation>
 <translation id="1344588688991793829">Indstillinger for AutoFyld i Chromium...</translation>
+<translation id="1374468813861204354">forslag</translation>
 <translation id="1375198122581997741">Om version</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> har ikke sendt nogen data.</translation>
 <translation id="1407135791313364759">Åbn alle</translation>
@@ -59,6 +62,7 @@
 <translation id="1559572115229829303">&lt;p&gt;Der kan ikke oprettes en privat forbindelse til <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, da datoen og tiden på din enhed (<ph name="DATE_AND_TIME" />) er forkert.&lt;/p&gt;
 
       &lt;p&gt;Juster datoen og tiden i sektionen &lt;strong&gt;Generelt&lt;/strong&gt; i appen &lt;strong&gt;Indstillinger&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="1583429793053364125">Der opstod en fejl ved visningen af denne webside.</translation>
 <translation id="1592005682883173041">Lokal dataadgang</translation>
 <translation id="1629803312968146339">Skal Chrome gemme dette kort?</translation>
 <translation id="1640180200866533862">Brugerpolitikker</translation>
@@ -93,6 +97,7 @@
 <translation id="2030481566774242610">Mente du <ph name="LINK" />?</translation>
 <translation id="2053553514270667976">Postnummer</translation>
 <translation id="2065985942032347596">Godkendelse påkrævet</translation>
+<translation id="2079545284768500474">Fortryd</translation>
 <translation id="20817612488360358">Indstillingerne for systemproxy er angivet at blive brugt, men en eksplicit proxykonfiguration er også angivet.</translation>
 <translation id="2089090684895656482">Mindre</translation>
 <translation id="2094505752054353250">Uoverensstemmelse mellem domæner</translation>
@@ -168,6 +173,7 @@
 <translation id="2837049386027881519">Forbindelsen skulle prøves igen ved hjælp af en ældre version af TLS- eller SSL-protokollen. Det betyder typisk, at serveren bruger meget gammel software og kan have andre sikkerhedsproblemer.</translation>
 <translation id="284702764277384724">Serverens certifikat på <ph name="HOST_NAME" /> lader til at være en forfalskning.</translation>
 <translation id="2855922900409897335">Bekræft dit <ph name="CREDIT_CARD" /></translation>
+<translation id="2896499918916051536">Dette plugin understøttes ikke.</translation>
 <translation id="2897655920961181107">Porten er usikker og er blevet blokeret.</translation>
 <translation id="2909946352844186028">Der blev registreret en netværksændring.</translation>
 <translation id="2915500479781995473">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da sikkerhedscertifikatet er udløbet. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse. Uret på din computer er indstillet til <ph name="CURRENT_TIME" />. Er det korrekt? Hvis ikke, skal du indstille uret og opdatere siden.</translation>
@@ -189,6 +195,7 @@
 <translation id="3005723025932146533">Vis gemt kopi</translation>
 <translation id="3010559122411665027">Angiv posten "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Forkert politiktype</translation>
+<translation id="3037605927509011580">Øv, surt!</translation>
 <translation id="3041612393474885105">Certifikatoplysninger</translation>
 <translation id="3093245981617870298">Du er offline.</translation>
 <translation id="3105172416063519923">Aktiv-id:</translation>
@@ -198,6 +205,8 @@
 <translation id="3145945101586104090">Svaret kunne ikke afkodes</translation>
 <translation id="3147485256806412701">Dette website anvender et nyt generisk domæne på øverste niveau.</translation>
 <translation id="3150653042067488994">Midlertidig serverfejl</translation>
+<translation id="3157931365184549694">Gendan</translation>
+<translation id="3167968892399408617">Når du har lukket alle dine inkognitofaner, gemmes der hverken cookies, browser- eller søgehistorik for de sider, du besøger i inkognitotilstand. Dog gemmes alle de filer, du downloader, og bogmærker, du opretter.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">Ø</translation>
 <translation id="3176929007561373547">Kontrollér dine proxyindstillinger, eller kontakt din netværksadministrator
@@ -248,6 +257,7 @@
 <translation id="3648607100222897006">Disse eksperimentelle funktioner kan ændre sig, gå i stykker eller forsvinde når som helst. Vi giver absolut ingen garantier for, hvad der kan ske, hvis du aktiverer en af ​​disse eksperimentelle funktioner, og din browser kan måske endda finde på spontant at selvantænde. Spøg til side. Din browser kan muligvis slette alle dine data, eller din sikkerhed eller dine personlige oplysninger kan komme i fare på uventet vis. Enhver eksperimentel funktion, du aktiverer, aktiveres for alle brugere af denne browser. Vær forsigtig, hvis du fortsætter.</translation>
 <translation id="3650584904733503804">Valideringen er fuldført</translation>
 <translation id="3651020361689274926">Den anmodede ressource findes ikke længere, og der findes ingen adresse til videresendelse. Dette forventes at være en varig tilstand.</translation>
+<translation id="3655670868607891010">Hvis du ser dette jævnligt, kan du prøve <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Revision</translation>
 <translation id="3681007416295224113">Certifikatoplysninger</translation>
 <translation id="3693415264595406141">Adgangskode:</translation>
@@ -338,7 +348,6 @@
 <translation id="4841640898320458950">Usikker port blokeret.</translation>
 <translation id="4850886885716139402">Vis</translation>
 <translation id="4880827082731008257">Søg i historikken</translation>
-<translation id="488726935215981469">Dine data er krypteret med din adgangssætning til synkronisering. Angiv den nedenfor.</translation>
 <translation id="4923417429809017348">Denne side er oversat fra et ukendt sprog til <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Skal angives.</translation>
 <translation id="495170559598752135">Handlinger</translation>
@@ -349,6 +358,7 @@
 <translation id="5023310440958281426">Læs din administrators politikker</translation>
 <translation id="5029568752722684782">Slet kopi</translation>
 <translation id="5031870354684148875">Om Google Oversæt</translation>
+<translation id="5040262127954254034">Beskyttelse af personlige oplysninger</translation>
 <translation id="5045550434625856497">Ugyldig adgangskode</translation>
 <translation id="5087286274860437796">Serverens certifikatet er ikke gyldigt i øjeblikket.</translation>
 <translation id="5089810972385038852">Delstat</translation>
@@ -560,12 +570,14 @@ Psst! Prøv at bruge Inkognitotilstand <ph name="SHORTCUT_KEY" /> næste gang.</
 <translation id="7610193165460212391">Værdien er uden for intervallet <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Udløbsdato: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Du har allerede data, der er krypteret med en anden version af adgangskoden til din Google-konto. Indtast adgangskoden i feltet nedenfor.</translation>
+<translation id="7634554953375732414">Din forbindelse til dette website er ikke privat.</translation>
 <translation id="7637571805876720304">Vil du fjerne kreditkortet fra Chromium?</translation>
 <translation id="7643817847124207232">Forbindelsen til internettet er tabt.</translation>
 <translation id="765676359832457558">Skjul avancerede indstillinger...</translation>
 <translation id="7658239707568436148">Annuller</translation>
 <translation id="7668654391829183341">Ukendt enhed</translation>
 <translation id="7674629440242451245">Er du interesseret i smarte nye Chrome-funktioner? Prøv vores udviklerkanal på chrome.com/dev.</translation>
+<translation id="769344199378576125">Vis bogmærker, der er gemt offline</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Fortsæt til <ph name="SITE" /> (usikkert)<ph name="END_LINK" /></translation>
 <translation id="7716424297397655342">Dette website kan ikke indlæses fra cachen</translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
@@ -584,6 +596,7 @@ Psst! Prøv at bruge Inkognitotilstand <ph name="SHORTCUT_KEY" /> næste gang.</
 <translation id="7805768142964895445">Status</translation>
 <translation id="7813600968533626083">Vil du fjerne formularforslaget fra Chrome?</translation>
 <translation id="7825436071901023927">Usikker port <ph name="SITE" /></translation>
+<translation id="785549533363645510">Du er dog ikke usynlig. Inkognitotilstand skjuler ikke din browserhistorik over for din arbejdsgiver, din internetudbyder eller de websites, du besøger.</translation>
 <translation id="7887683347370398519">Kontrollér, om din kontrolkode er korrekt, og prøv igen.</translation>
 <translation id="790025292736025802"><ph name="URL" /> blev ikke fundet</translation>
 <translation id="7912024687060120840">I mappe:</translation>
@@ -594,11 +607,9 @@ Psst! Prøv at bruge Inkognitotilstand <ph name="SHORTCUT_KEY" /> næste gang.</
 <translation id="7961015016161918242">Aldrig</translation>
 <translation id="7977590112176369853">&lt;indtast forespørgsel&gt;</translation>
 <translation id="7983301409776629893">Oversæt altid <ph name="ORIGINAL_LANGUAGE" /> til <ph name="TARGET_LANGUAGE" /></translation>
-<translation id="7988324688042446538">Bogmærker på pc</translation>
 <translation id="7995512525968007366">Ikke angivet</translation>
 <translation id="8034522405403831421">Denne side er på <ph name="SOURCE_LANGUAGE" />. Vil du oversætte den til <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8034955203865359138">Der blev ikke fundet nogen poster i historikken.</translation>
-<translation id="8075539548641175231">Dine data blev krypteret med din adgangssætning den <ph name="TIME" />. Angiv den nedenfor.</translation>
 <translation id="8088680233425245692">Artiklen kunne ikke vises.</translation>
 <translation id="8091372947890762290">Aktivering afventer serveren</translation>
 <translation id="8149426793427495338">Din computer gik i dvale.</translation>
@@ -651,6 +662,7 @@ Psst! Prøv at bruge Inkognitotilstand <ph name="SHORTCUT_KEY" /> næste gang.</
 <translation id="8703575177326907206">Din forbindelse til <ph name="DOMAIN" /> er ikke krypteret.</translation>
 <translation id="8713130696108419660">Ugyldig første signatur</translation>
 <translation id="8725066075913043281">Forsøg igen</translation>
+<translation id="8728672262656704056">Du er nu i inkognitotilstand</translation>
 <translation id="8730621377337864115">Fuldført</translation>
 <translation id="8738058698779197622">For at kunne oprette en sikker forbindelse skal dit ur være indstillet korrekt. Det er vigtigt, da de certifikater, som websites bruger til at identificere sig selv, kun er gyldige i bestemte tidsperioder. Da uret på din enhed går forkert, kan Chromium ikke bekræfte disse certifikater.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;DNS-adressen&lt;/abbr&gt; for <ph name="HOST_NAME" /> kunne ikke findes. Diagnosticerer problemet.</translation>
@@ -666,6 +678,7 @@ Psst! Prøv at bruge Inkognitotilstand <ph name="SHORTCUT_KEY" /> næste gang.</
 <translation id="885730110891505394">Deling med Google</translation>
 <translation id="8866481888320382733">Der opstod en fejl ved parsing af indstillinger for politik</translation>
 <translation id="8866959479196209191">Denne side siger:</translation>
+<translation id="8870413625673593573">Senest lukkede</translation>
 <translation id="8876793034577346603">Netværkskonfiguration kunne ikke parses.</translation>
 <translation id="8891727572606052622">Ugyldig proxytilstand.</translation>
 <translation id="889901481107108152">Dette eksperiment er ikke tilgængeligt på din platform.</translation>

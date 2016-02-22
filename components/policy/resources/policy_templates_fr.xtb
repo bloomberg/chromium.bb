@@ -152,6 +152,13 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="1522425503138261032">Autoriser les sites à suivre la position géographique des utilisateurs</translation>
 <translation id="152657506688053119">Liste d'URL alternatives pour le moteur de recherche par défaut</translation>
 <translation id="1530812829012954197">Toujours rendre les formats d'URL suivants dans le navigateur hôte</translation>
+<translation id="1553684822621013552">Lorsque cette règle est définie sur "True", ARC est activé pour l'utilisateur
+      (sous réserve de contrôles supplémentaires des paramètres de la règle. ARC
+      reste indisponible si le mode Éphémère ou la connexion multicompte sont
+      activés dans la session utilisateur active).
+
+      Si ce paramètre est désactivé ou s'il n'est pas configuré, les utilisateurs d'entreprise
+      ne peuvent pas utiliser ARC.</translation>
 <translation id="1561424797596341174">Remplacements de règle pour les versions de débogage de l'hôte distant</translation>
 <translation id="1583248206450240930">Utiliser <ph name="PRODUCT_FRAME_NAME" /> par défaut</translation>
 <translation id="1608755754295374538">URL autorisées à accéder aux appareils de capture audio sans avis préalable</translation>
@@ -254,6 +261,7 @@ Pour plus d'options et obtenir des exemples détaillés, accédez au site :
       Si cette règle est définie sur "True", le téléchargement des charges utiles de mise à jour automatique est effectué par <ph name="PRODUCT_OS_NAME" /> via HTTP. Si cette règle est définie sur "False", ou si elle n'est pas configurée, HTTPS est utilisé pour le téléchargement des charges utiles de mise à jour automatique.</translation>
 <translation id="2006530844219044261">Gestion de l'alimentation</translation>
 <translation id="201557587962247231">Fréquence d'importation des rapports sur l'état de l'appareil</translation>
+<translation id="2024476116966025075">Configurer le nom de domaine requis pour les clients d'accès à distance</translation>
 <translation id="2030905906517501646">Mot clé du moteur de recherche par défaut</translation>
 <translation id="206623763829450685">Indique les modèles d'authentification HTTP compatibles avec <ph name="PRODUCT_NAME" />.
 
@@ -491,6 +499,7 @@ Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" es
       Si cette règle n'est pas définie, l'utilisateur peut décider s'il veut ou non utiliser la fonctionnalité de proxy pour la compression de données.</translation>
 <translation id="2587719089023392205">Définir <ph name="PRODUCT_NAME" /> comme navigateur par défaut</translation>
 <translation id="2592091433672667839">Durée d'inactivité préalable à l'affichage de l'économiseur d'écran sur l'écran de connexion en mode Point de vente</translation>
+<translation id="260705825237536216">Configurer les applications ARC</translation>
 <translation id="2623014935069176671">Attendre l'activité utilisateur initiale</translation>
 <translation id="262740370354162807">Activer l'envoi de documents à <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Activer les commentaires audio</translation>
@@ -611,6 +620,7 @@ Pour plus d'exemples détaillés, accédez à l'adresse :
                       Si elle n'est pas définie, la durée par défaut est utilisée.
 
                       La valeur de cette règle doit être indiquée en millisecondes. Les valeurs doivent être inférieures ou égales au délai d'arrêt de l'écran (le cas échéant) et au délai d'inactivité.</translation>
+<translation id="2987155890997901449">Activer ARC</translation>
 <translation id="2998881342848488968">Cette règle permet à <ph name="PRODUCT_OS_NAME" /> de contourner les proxy pour l'authentification du portail captif.
 
      Cette règle n'est active que si un proxy est configuré (par exemple par une règle définie par l'utilisateur dans chrome://settings ou par des extensions).
@@ -1225,6 +1235,11 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="5307432759655324440">Disponibilité du mode navigation privée</translation>
 <translation id="5318185076587284965">Autoriser l'hôte d'accès à distance à utiliser des serveurs de relais</translation>
 <translation id="5330684698007383292">Autoriser <ph name="PRODUCT_FRAME_NAME" /> à gérer les types de contenu suivants</translation>
+<translation id="5345267406698765263">Précise la règle relative aux applications ARC sous forme d'une chaîne JSON qui
+      peut être remise telle quelle à l'exécution d'ARC. À l'heure actuelle, ce
+      paramètre n'est utilisé que pour indiquer l'installation forcée des applications.
+
+      Si cette règle n'est pas définie, aucune application n'est installée automatiquement.</translation>
 <translation id="5365946944967967336">Afficher le bouton Accueil sur la barre d'outils</translation>
 <translation id="5366977351895725771">Si cette règle est associée à la valeur "false", la création de comptes utilisateur supervisés par cet utilisateur est désactivée. Les utilisateurs supervisés existants restent disponibles.
 
@@ -1298,6 +1313,13 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Si cette règle n'est pas configurée, l'utilisateur peut choisir de masquer automatiquement l'étagère ou non.</translation>
 <translation id="557658534286111200">Active ou désactive la modification des favoris</translation>
 <translation id="5586942249556966598">Ne rien faire</translation>
+<translation id="5613179474872285001">Configure le nom de domaine obligatoire du client qui sera imposé aux clients d'accès à distance et ne pourra pas être modifié par les utilisateurs.
+
+          Si ce paramètre est activé, seuls les clients du domaine indiqué peuvent se connecter à l'hôte.
+
+          Si ce paramètre est désactivé ou s'il n'est pas défini, la règle par défaut pour le type de connexion concerné est appliquée. Dans le cadre d'une assistance à distance, cela permet aux clients de n'importe quel domaine de se connecter à l'hôte. Concernant l'accès à distance à tout moment, seul le propriétaire de l'hôte peut se connecter.
+
+          Voir aussi la règle "RemoteAccessHostDomain".</translation>
 <translation id="5630352020869108293">Restaurer la dernière session</translation>
 <translation id="5645779841392247734">Autoriser les cookies sur ces sites</translation>
 <translation id="5677038592630896441">Requiert la correspondance entre le nom de l'utilisateur local et le propriétaire de l'hôte d'accès à distance.
@@ -1736,6 +1758,13 @@ Cette règle n'est prise en compte que si la règle "DefaultSearchProviderEnable
 <translation id="6943577887654905793">Nom de préférence Mac/Linux :</translation>
 <translation id="69525503251220566">Paramètre qui active la fonctionnalité de recherche par image pour le moteur de recherche par défaut</translation>
 <translation id="6956272732789158625">Interdire à tous les sites d'utiliser la génération de clé</translation>
+<translation id="695891079107014261">Configure le nom de domaine obligatoire de l'hôte qui sera imposé aux hôtes d'accès à distance et ne pourra pas être modifié par les utilisateurs.
+
+          Si ce paramètre est activé, les hôtes ne peuvent être partagés qu'à l'aide des comptes enregistrés sur le nom de domaine spécifié.
+
+          Si ce paramètre est désactivé ou s'il n'est pas défini, les hôtes peuvent être partagés à l'aide de n'importe quel compte.
+
+          Voir aussi la règle "RemoteAccessHostClientDomain".</translation>
 <translation id="6997592395211691850">Définit si les vérifications en ligne OCSP/CRL sont requises pour les ancres d'approbation locales.</translation>
 <translation id="7003334574344702284">Lorsqu'elle est activée, cette règle force l'importation des mots de passe enregistrés à partir du navigateur par défaut précédent. Si elle est activée, cette politique affecte également la boîte de dialogue d'importation. 
 

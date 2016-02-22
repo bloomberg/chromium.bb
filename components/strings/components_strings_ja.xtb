@@ -38,11 +38,14 @@
 <translation id="1227224963052638717">不明なポリシー。</translation>
 <translation id="1227633850867390598">値を非表示</translation>
 <translation id="1228893227497259893">エンティティ識別子が正しくありません</translation>
+<translation id="1232569758102978740">無題</translation>
 <translation id="1254117744268754948">フォルダの選択</translation>
 <translation id="1270699273812232624">アイテムを許可</translation>
 <translation id="1285320974508926690">このサイトは翻訳しない</translation>
+<translation id="129553762522093515">最近閉じたタブ</translation>
 <translation id="1339601241726513588">登録ドメイン:</translation>
 <translation id="1344588688991793829">Chromium の自動入力設定...</translation>
+<translation id="1374468813861204354">ヒント</translation>
 <translation id="1375198122581997741">バージョン情報</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> からデータが送信されませんでした。</translation>
 <translation id="1407135791313364759">すべて開く</translation>
@@ -59,6 +62,7 @@
 <translation id="1559572115229829303">&lt;p&gt;デバイスの日時（<ph name="DATE_AND_TIME" />）が正しくないため、<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> へのプライベート接続を確立できません。&lt;/p&gt;
 
       &lt;p&gt;&lt;strong&gt;設定&lt;/strong&gt;アプリの [&lt;strong&gt;全般&lt;/strong&gt;] セクションで日時を調整してください。&lt;/p&gt;</translation>
+<translation id="1583429793053364125">このウェブページを表示中に問題が発生しました。</translation>
 <translation id="1592005682883173041">ローカルデータへのアクセス</translation>
 <translation id="1629803312968146339">Chrome にこのカードを保存しますか？</translation>
 <translation id="1640180200866533862">ユーザー ポリシー</translation>
@@ -93,6 +97,7 @@
 <translation id="2030481566774242610">もしかして: <ph name="LINK" /></translation>
 <translation id="2053553514270667976">郵便番号</translation>
 <translation id="2065985942032347596">認証が必要</translation>
+<translation id="2079545284768500474">取り消す</translation>
 <translation id="20817612488360358">システム プロキシ設定を使用するように設定されていますが、明示的なプロキシの設定も指定されています。</translation>
 <translation id="2089090684895656482">一部表示</translation>
 <translation id="2094505752054353250">ドメインが一致しません</translation>
@@ -168,6 +173,7 @@
 <translation id="2837049386027881519">旧バージョンの TLS または SSL プロトコルで接続を再試行する必要がありました。これは通常、サーバーのソフトウェアが非常に古く、他のセキュリティ問題が発生している可能性があるということです。</translation>
 <translation id="284702764277384724"><ph name="HOST_NAME" /> のサーバー証明書は偽造されたもののようです。</translation>
 <translation id="2855922900409897335"><ph name="CREDIT_CARD" /> の確認</translation>
+<translation id="2896499918916051536">このプラグインはサポートされていません。</translation>
 <translation id="2897655920961181107">要求されたポートは安全でないためブロックされました。</translation>
 <translation id="2909946352844186028">ネットワークの変更が検出されました。</translation>
 <translation id="2915500479781995473">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。セキュリティ証明書の期限が切れています。原因として、設定が不適切か、悪意のあるユーザーが接続を妨害している可能性があります。パソコンの時計は現在 <ph name="CURRENT_TIME" /> に設定されています。この時刻が正しくない場合は、システムの時計を修正して、このページを更新してください。</translation>
@@ -188,6 +194,7 @@
 <translation id="3005723025932146533">保存済みのコピーを表示</translation>
 <translation id="3010559122411665027">リスト エントリ「<ph name="ENTRY_INDEX" />」: <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">ポリシー タイプが間違っています</translation>
+<translation id="3037605927509011580">エラー</translation>
 <translation id="3041612393474885105">証明書情報</translation>
 <translation id="3093245981617870298">現在オフラインです。</translation>
 <translation id="3105172416063519923">アセット ID:</translation>
@@ -197,6 +204,8 @@
 <translation id="3145945101586104090">応答をデコードできませんでした</translation>
 <translation id="3147485256806412701">このサイトは新しいジェネリック トップレベル ドメインを使用しています。</translation>
 <translation id="3150653042067488994">一時的なサーバー エラーです</translation>
+<translation id="3157931365184549694">復元</translation>
+<translation id="3167968892399408617">シークレット タブで表示したページの記録は、シークレット タブをすべて閉じた後、ブラウザの履歴、Cookie の保存場所、検索履歴から消去されます。ただし、ダウンロードしたファイルや作成したブックマークは保存されます。</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">島</translation>
 <translation id="3176929007561373547">プロキシの設定を確認するか、ネットワーク管理者に問い合わせて、プロキシ サーバーが正常に
@@ -247,6 +256,7 @@
 <translation id="3648607100222897006">この試験運用機能は、随時変更、中断、提供中止されることがあります。これらの機能のいずれかを有効にした場合に生じる結果について、Google は一切保証しません。ブラウザによってすべてのデータが削除されたり、予期せぬ方法でセキュリティやプライバシーが侵害されたりする可能性があります。有効にした試験運用機能は同じブラウザを使用する全ユーザーに対して有効になります。続行する場合は十分ご注意ください。</translation>
 <translation id="3650584904733503804">検証が正常に完了しました</translation>
 <translation id="3651020361689274926">リクエストされたリソースが存在せず、転送アドレスは指定されていません。これは永続的な状態であると思われます。</translation>
+<translation id="3655670868607891010">このエラーが頻繁に表示される場合は、こちらの<ph name="HELP_LINK" />をお試しください。</translation>
 <translation id="3658742229777143148">変更履歴</translation>
 <translation id="3681007416295224113">証明書情報</translation>
 <translation id="3693415264595406141">パスワード:</translation>
@@ -337,7 +347,6 @@
 <translation id="4841640898320458950">安全でないポートをブロックしました。</translation>
 <translation id="4850886885716139402">表示</translation>
 <translation id="4880827082731008257">履歴を検索</translation>
-<translation id="488726935215981469">データは同期パスフレーズで暗号化されています。同期パスフレーズを入力してください。</translation>
 <translation id="4923417429809017348">このページは、不明な言語から<ph name="LANGUAGE_LANGUAGE" />に翻訳されました。</translation>
 <translation id="4926049483395192435">指定する必要があります。</translation>
 <translation id="495170559598752135">操作</translation>
@@ -348,6 +357,7 @@
 <translation id="5023310440958281426">管理者のポリシーを確認してください</translation>
 <translation id="5029568752722684782">コピーを消去</translation>
 <translation id="5031870354684148875">Google 翻訳について</translation>
+<translation id="5040262127954254034">プライバシー</translation>
 <translation id="5045550434625856497">パスワードが正しくありません</translation>
 <translation id="5087286274860437796">サーバーの証明書が現在有効ではありません。</translation>
 <translation id="5089810972385038852">都道府県 / 州</translation>
@@ -558,12 +568,14 @@
 <translation id="7610193165460212391">値（<ph name="VALUE" />）が範囲外です。</translation>
 <translation id="7613889955535752492">有効期限: <ph name="EXPIRATION_MONTH" /> / <ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">別の Google アカウント パスワードを使って暗号化したデータが既にあります。パスワードを以下に入力してください。</translation>
+<translation id="7634554953375732414">このサイトへの接続はプライベート接続ではありません。</translation>
 <translation id="7637571805876720304">Chromium からクレジット カードを削除してもよろしいですか？</translation>
 <translation id="7643817847124207232">インターネットに接続できません。</translation>
 <translation id="765676359832457558">詳細設定を表示しない...</translation>
 <translation id="7658239707568436148">キャンセル</translation>
 <translation id="7668654391829183341">不明なデバイス</translation>
 <translation id="7674629440242451245">Chrome の新しい機能に関心をお持ちでしたら、chrome.com/dev から Dev チャンネルをお試しください。</translation>
+<translation id="769344199378576125">オフライン ブックマークを表示</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" /><ph name="SITE" /> にアクセスする（安全ではありません）<ph name="END_LINK" /></translation>
 <translation id="7716424297397655342">このサイトをキャッシュから読み込むことができません</translation>
 <translation id="7733391738235763478">（<ph name="NUMBER_VISITS" />）</translation>
@@ -582,6 +594,7 @@
 <translation id="7805768142964895445">ステータス</translation>
 <translation id="7813600968533626083">Chrome から候補を削除してもよろしいですか？</translation>
 <translation id="7825436071901023927">安全でないポート: <ph name="SITE" /></translation>
+<translation id="785549533363645510">あらゆる場所に記録が一切残らないわけではありません。シークレット モードを使っても、雇用主、インターネット サービス プロバイダ、訪問先のウェブサイトに閲覧内容が知られる可能性はあります。</translation>
 <translation id="7887683347370398519">CVC を確認してからもう一度お試しください</translation>
 <translation id="790025292736025802"><ph name="URL" /> が見つかりません</translation>
 <translation id="7912024687060120840">フォルダの内容:</translation>
@@ -592,11 +605,9 @@
 <translation id="7961015016161918242">使用しない</translation>
 <translation id="7977590112176369853">&lt;検索キーワードを入力&gt;</translation>
 <translation id="7983301409776629893">常に<ph name="ORIGINAL_LANGUAGE" />から<ph name="TARGET_LANGUAGE" />に翻訳する</translation>
-<translation id="7988324688042446538">パソコンのブックマーク</translation>
 <translation id="7995512525968007366">指定なし</translation>
 <translation id="8034522405403831421">このページの言語は<ph name="SOURCE_LANGUAGE" />です。<ph name="TARGET_LANGUAGE" />に翻訳しますか？</translation>
 <translation id="8034955203865359138">履歴エントリが見つかりません。</translation>
-<translation id="8075539548641175231">データは <ph name="TIME" /> に同期パスフレーズで暗号化されました。同期パスフレーズを入力してください。</translation>
 <translation id="8088680233425245692">記事を表示できませんでした。</translation>
 <translation id="8091372947890762290">サーバーで有効化が保留になっています</translation>
 <translation id="8149426793427495338">パソコンがスリープ状態です。</translation>
@@ -645,6 +656,7 @@
 <translation id="8703575177326907206"><ph name="DOMAIN" /> への接続は暗号化されていません。</translation>
 <translation id="8713130696108419660">無効なイニシャル署名です</translation>
 <translation id="8725066075913043281">やり直し</translation>
+<translation id="8728672262656704056">シークレット モードです</translation>
 <translation id="8730621377337864115">完了</translation>
 <translation id="8738058698779197622">安全な接続を確立するには時計が正しく設定されている必要があります。この理由は、本物のウェブサイトであることを示すためにウェブサイトで使用される証明書には、有効期間（発効日時と失効日時）が設定されているためです。デバイスの時計が正しくないため、Chromium ではこれらの証明書を確認できません。</translation>
 <translation id="8740359287975076522"><ph name="HOST_NAME" /> の &lt;abbr id="dnsDefinition"&gt;DNS アドレス&lt;/abbr&gt;が見つかりませんでした。問題を診断しています。</translation>
@@ -660,6 +672,7 @@
 <translation id="885730110891505394">Google との共有</translation>
 <translation id="8866481888320382733">ポリシー設定の解析中にエラーが発生しました</translation>
 <translation id="8866959479196209191">このページの内容:</translation>
+<translation id="8870413625673593573">最近閉じたタブ</translation>
 <translation id="8876793034577346603">ネットワーク設定を解析できませんでした。</translation>
 <translation id="8891727572606052622">プロキシ モードが無効です。</translation>
 <translation id="889901481107108152">この試験運用機能は、お使いのプラットフォームでは利用できません。</translation>

@@ -36,11 +36,14 @@
 <translation id="1227224963052638717">未知政策。</translation>
 <translation id="1227633850867390598">隐藏值</translation>
 <translation id="1228893227497259893">实体标识符有误</translation>
+<translation id="1232569758102978740">无标题</translation>
 <translation id="1254117744268754948">选择文件夹</translation>
 <translation id="1270699273812232624">允许历史记录项</translation>
 <translation id="1285320974508926690">一律不翻译此网站</translation>
+<translation id="129553762522093515">最近关闭的标签页</translation>
 <translation id="1339601241726513588">注册域：</translation>
 <translation id="1344588688991793829">Chromium自动填充设置…</translation>
+<translation id="1374468813861204354">建议</translation>
 <translation id="1375198122581997741">关于版本</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> 未发送任何数据。</translation>
 <translation id="1407135791313364759">全部打开</translation>
@@ -57,6 +60,7 @@
 <translation id="1559572115229829303">&lt;p&gt;您设备的日期和时间（<ph name="DATE_AND_TIME" />）不正确，因此无法与 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 建立私密连接。&lt;/p&gt;
 
       &lt;p&gt;请在&lt;strong&gt;设置&lt;/strong&gt;应用的&lt;strong&gt;通用&lt;/strong&gt;部分调整日期和时间。&lt;/p&gt;</translation>
+<translation id="1583429793053364125">显示此网页时出了点问题。</translation>
 <translation id="1592005682883173041">本地数据访问权限</translation>
 <translation id="1629803312968146339">您希望 Chrome 保存此信用卡吗？</translation>
 <translation id="1640180200866533862">用户政策</translation>
@@ -91,6 +95,7 @@
 <translation id="2030481566774242610">您是想访问<ph name="LINK" />吗？</translation>
 <translation id="2053553514270667976">邮编</translation>
 <translation id="2065985942032347596">需要进行身份验证</translation>
+<translation id="2079545284768500474">撤消</translation>
 <translation id="20817612488360358">已设置为使用系统代理设置，但同时指定了一个明确的代理配置。</translation>
 <translation id="2089090684895656482">收起</translation>
 <translation id="2094505752054353250">网域不匹配</translation>
@@ -164,6 +169,7 @@
 <translation id="2837049386027881519">此连接必须使用较旧版本的 TLS 或 SSL 协议重试，这通常意味着该服务器使用的软件版本过低或者可能存在其他安全问题。</translation>
 <translation id="284702764277384724"><ph name="HOST_NAME" /> 上的服务器证书似乎是伪造的。</translation>
 <translation id="2855922900409897335">验证您的 <ph name="CREDIT_CARD" /></translation>
+<translation id="2896499918916051536">不支持该插件。</translation>
 <translation id="2897655920961181107">请求的端口不安全，已被屏蔽。</translation>
 <translation id="2909946352844186028">检测到了网络变化。</translation>
 <translation id="2915500479781995473">此服务器无法证明它是<ph name="DOMAIN" />；其安全证书已过期。出现此问题的原因可能是配置有误或您的连接被拦截了。计算机的时钟目前已设为<ph name="CURRENT_TIME" />，该设置是否正确？如果不正确，请更正系统的时钟，然后刷新此页面。</translation>
@@ -181,6 +187,7 @@
 <translation id="3005723025932146533">显示已保存的版本</translation>
 <translation id="3010559122411665027">列表条目“<ph name="ENTRY_INDEX" />”：<ph name="ERROR" /></translation>
 <translation id="3024663005179499861">策略类型有误</translation>
+<translation id="3037605927509011580">喔唷，崩溃啦！</translation>
 <translation id="3041612393474885105">证书信息</translation>
 <translation id="3093245981617870298">您处于离线状态。</translation>
 <translation id="3105172416063519923">资产 ID：</translation>
@@ -190,6 +197,8 @@
 <translation id="3145945101586104090">无法对响应解码</translation>
 <translation id="3147485256806412701">此网站使用的是新的通用顶级域名。</translation>
 <translation id="3150653042067488994">服务器临时错误</translation>
+<translation id="3157931365184549694">恢复</translation>
+<translation id="3167968892399408617">在您关闭所有隐身标签页后，您在这些标签页中查看的网页不会在浏览器历史记录、Cookie 存储区或搜索记录中留下任何痕迹。不过，您下载的所有文件或创建的书签均会保留下来。</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">岛</translation>
 <translation id="3176929007561373547">请检查您的代理服务器设置或与网络管理员联系，以确保代理服务器正常运行。如果您认为自己不需要使用代理服务器，请执行以下操作：
@@ -238,6 +247,7 @@
 <translation id="3648607100222897006">这些实验性功能随时可能会更改、中止或取消。因此，我们完全无法保证您启用某项实验性功能后会发生什么情况，您的浏览器甚至可能会自动崩溃。请注意，您的浏览器可能会删除您的所有数据，您的安全和隐私也有可能受到意外伤害。您启用的所有实验性功能将用于此浏览器的所有用户。启用前，请务必三思。</translation>
 <translation id="3650584904733503804">验证成功</translation>
 <translation id="3651020361689274926">请求的资源已不存在，并且没有转接地址。这估计是永久状态。</translation>
+<translation id="3655670868607891010">如果您频繁遇到此问题，请尝试这些<ph name="HELP_LINK" />。</translation>
 <translation id="3658742229777143148">修订版本</translation>
 <translation id="3681007416295224113">证书信息</translation>
 <translation id="3693415264595406141">密码：</translation>
@@ -327,7 +337,6 @@
 <translation id="4841640898320458950">该端口不安全，已被屏蔽。</translation>
 <translation id="4850886885716139402">视图</translation>
 <translation id="4880827082731008257">搜索历史记录</translation>
-<translation id="488726935215981469">您的数据已使用同步密码加密，请在下方输入您的同步密码。</translation>
 <translation id="4923417429809017348">翻译服务器已将此网页从某种未知语言翻译成了<ph name="LANGUAGE_LANGUAGE" />。</translation>
 <translation id="4926049483395192435">必须指定。</translation>
 <translation id="495170559598752135">操作</translation>
@@ -338,6 +347,7 @@
 <translation id="5023310440958281426">请查看管理员制定的政策</translation>
 <translation id="5029568752722684782">清除副本</translation>
 <translation id="5031870354684148875">关于 Google 翻译</translation>
+<translation id="5040262127954254034">隐私设置</translation>
 <translation id="5045550434625856497">密码不正确</translation>
 <translation id="5087286274860437796">服务器的证书目前无效。</translation>
 <translation id="5089810972385038852">州</translation>
@@ -542,12 +552,14 @@
 <translation id="7610193165460212391">值超出了范围 (<ph name="VALUE" />)。</translation>
 <translation id="7613889955535752492">过期时间：<ph name="EXPIRATION_YEAR" /> 年 <ph name="EXPIRATION_MONTH" /> 月</translation>
 <translation id="7615602087246926389">您已经使用不同版本的 Google 帐户密码加密了数据。请在下方输入。</translation>
+<translation id="7634554953375732414">您与此网站建立的不是私密连接。</translation>
 <translation id="7637571805876720304">要从 Chromium 中移除信用卡吗？</translation>
 <translation id="7643817847124207232">互联网连接已中断。</translation>
 <translation id="765676359832457558">隐藏高级设置...</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7668654391829183341">未知设备</translation>
 <translation id="7674629440242451245">想试试超酷的 Chrome 新功能？欢迎访问 chrome.com/dev，试用我们的测试版！</translation>
+<translation id="769344199378576125">显示离线书签</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />继续前往<ph name="SITE" />（不安全）<ph name="END_LINK" /></translation>
 <translation id="7716424297397655342">无法从缓存中加载此网站</translation>
 <translation id="7733391738235763478">（<ph name="NUMBER_VISITS" /> 次）</translation>
@@ -566,6 +578,7 @@
 <translation id="7805768142964895445">状态</translation>
 <translation id="7813600968533626083">从 Chrome 中移除表单建议？</translation>
 <translation id="7825436071901023927"><ph name="SITE" />端口不安全</translation>
+<translation id="785549533363645510">但是，这并不意味着您能完全隐身。即使您进入隐身模式，您的雇主、互联网服务提供商和您访问的网站仍然能看到您的浏览活动。</translation>
 <translation id="7887683347370398519">请检查您的银行卡验证码 (CVC)，然后重试</translation>
 <translation id="790025292736025802">未找到 <ph name="URL" /></translation>
 <translation id="7912024687060120840">在以下文件夹中：</translation>
@@ -576,11 +589,9 @@
 <translation id="7961015016161918242">一律不</translation>
 <translation id="7977590112176369853">&lt;输入查询&gt;</translation>
 <translation id="7983301409776629893">一律将<ph name="ORIGINAL_LANGUAGE" />翻译成<ph name="TARGET_LANGUAGE" /></translation>
-<translation id="7988324688042446538">桌面书签</translation>
 <translation id="7995512525968007366">未指定</translation>
 <translation id="8034522405403831421">此网页的源语言为<ph name="SOURCE_LANGUAGE" />，要将其翻译成<ph name="TARGET_LANGUAGE" />吗？</translation>
 <translation id="8034955203865359138">未找到任何历史记录条目。</translation>
-<translation id="8075539548641175231">您的数据已于 <ph name="TIME" />使用您的同步密码加密，请在下方输入该密码。</translation>
 <translation id="8088680233425245692">无法查看文章。</translation>
 <translation id="8091372947890762290">正等待在服务器上激活</translation>
 <translation id="8149426793427495338">您的计算机已进入休眠模式。</translation>
@@ -625,6 +636,7 @@
 <translation id="8703575177326907206">您与 <ph name="DOMAIN" /> 的连接未加密。</translation>
 <translation id="8713130696108419660">初始签名错误</translation>
 <translation id="8725066075913043281">重试</translation>
+<translation id="8728672262656704056">您已进入隐身模式</translation>
 <translation id="8730621377337864115">完成</translation>
 <translation id="8738058698779197622">要建立安全连接，您的时钟设置必须正确。这是因为，网站用于证明身份的证书仅在特定时间段有效。由于您设备的时钟不正确，因此 Chromium 无法验证这些证书。</translation>
 <translation id="8740359287975076522">无法找到 <ph name="HOST_NAME" /> 的 &lt;abbr id="dnsDefinition"&gt;DNS 地址&lt;/abbr&gt;。正在诊断该问题。</translation>
@@ -640,6 +652,7 @@
 <translation id="885730110891505394">与 Google 分享</translation>
 <translation id="8866481888320382733">解析策略设置时出错</translation>
 <translation id="8866959479196209191">此网页显示：</translation>
+<translation id="8870413625673593573">最近关闭的标签页</translation>
 <translation id="8876793034577346603">无法解析网络配置。</translation>
 <translation id="8891727572606052622">代理模式无效。</translation>
 <translation id="889901481107108152">抱歉，此项实验性功能不能用于您的平台。</translation>

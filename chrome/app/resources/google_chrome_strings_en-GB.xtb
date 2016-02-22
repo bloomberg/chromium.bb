@@ -3,7 +3,6 @@
 <translationbundle lang="en-GB">
 <translation id="1001534784610492198">The installer archive is corrupted or invalid. Please download Google Chrome again.</translation>
 <translation id="1013290471399003443">Chrome verified that <ph name="ISSUER" /> issued this website's certificate. The server supplied valid Certificate Transparency information.</translation>
-<translation id="1016765312371154165">Chrome didn't shut down correctly.</translation>
 <translation id="103396972844768118">Important information regarding your Chrome data</translation>
 <translation id="1035334672863811645">sign in to Chrome</translation>
 <translation id="1061441684050139317">Chrome needs microphone access to share it with this site.</translation>

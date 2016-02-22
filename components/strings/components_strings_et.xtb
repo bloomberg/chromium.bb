@@ -38,11 +38,14 @@
 <translation id="1227224963052638717">Tundmatud eeskirjad.</translation>
 <translation id="1227633850867390598">Peida väärtus</translation>
 <translation id="1228893227497259893">Üksuse vale identifikaator</translation>
+<translation id="1232569758102978740">Pealkirjata</translation>
 <translation id="1254117744268754948">Kausta valimine</translation>
 <translation id="1270699273812232624">Luba üksused</translation>
 <translation id="1285320974508926690">Ära kunagi seda saiti tõlgi</translation>
+<translation id="129553762522093515">Viimati suletud</translation>
 <translation id="1339601241726513588">Registreerimisdomeen:</translation>
 <translation id="1344588688991793829">Chromiumi automaattäite seaded ...</translation>
+<translation id="1374468813861204354">soovitused</translation>
 <translation id="1375198122581997741">Teave versiooni kohta</translation>
 <translation id="139305205187523129">Host <ph name="HOST_NAME" /> ei saatnud andmeid.</translation>
 <translation id="1407135791313364759">Ava kõik</translation>
@@ -59,6 +62,7 @@
 <translation id="1559572115229829303">&lt;p&gt;Domeeniga <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ei saa privaatset ühendust luua, kuna seadme kuupäev ja kellaaeg (<ph name="DATE_AND_TIME" />DATE_AND_TIME) on valed.&lt;/p&gt;
 
           &lt;p&gt;Kohandage kuupäeva ja kellaaega rakenduse &lt;strong&gt;Seaded&lt;/strong&gt; jaotises &lt;strong&gt;Üldine&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="1583429793053364125">Veebilehe kuvamisel läks midagi valesti.</translation>
 <translation id="1592005682883173041">Juurdepääs kohalikele andmetele</translation>
 <translation id="1629803312968146339">Kas soovite, et Chrome salvestaks selle kaardi?</translation>
 <translation id="1640180200866533862">Kasutajareeglid</translation>
@@ -93,6 +97,7 @@
 <translation id="2030481566774242610">Kas mõtlesite aadressi <ph name="LINK" />?</translation>
 <translation id="2053553514270667976">Postiindeks</translation>
 <translation id="2065985942032347596">Vajalik autentimine</translation>
+<translation id="2079545284768500474">Võta tagasi</translation>
 <translation id="20817612488360358">Kasutamiseks on määratud süsteemi puhverserveri seaded, kuid määratud on ka konkreetne puhverserveri konfigureerimine.</translation>
 <translation id="2089090684895656482">Vähem</translation>
 <translation id="2094505752054353250">Domeeni vastuolu</translation>
@@ -168,6 +173,7 @@
 <translation id="2837049386027881519">Ühenduse loomist tuli korrata TLS- või SSL-protokolli vanema versiooniga. See tähendab tavaliselt seda, et serveri tarkvara on väga vana ja sellel võib olla muid turvaprobleeme.</translation>
 <translation id="284702764277384724">Hosti <ph name="HOST_NAME" /> serveri sertifikaat näib olevat võltsing.</translation>
 <translation id="2855922900409897335">Kaardi <ph name="CREDIT_CARD" /> kinnitamine</translation>
+<translation id="2896499918916051536">Seda pistikprogrammi ei toetata.</translation>
 <translation id="2897655920961181107">Taotletud port on ohtlik ja blokeeritud.</translation>
 <translation id="2909946352844186028">Tuvastati võrgumuudatus.</translation>
 <translation id="2915500479781995473">Server ei suutnud tõestada, et see on domeen <ph name="DOMAIN" />; selle turvasertifikaat on aegunud. Selle põhjuseks võib olla vale seadistus või ründaja, kes on sekkunud teie ühendusse. Teie arvuti kell on praegu <ph name="CURRENT_TIME" />. Kas see on õige? Kui see pole õige, korrigeerige süsteemi kellaaega ja värskendage lehte.</translation>
@@ -189,6 +195,7 @@
 <translation id="3005723025932146533">Kuva salvestatud koopia</translation>
 <translation id="3010559122411665027">Loendi kirje „<ph name="ENTRY_INDEX" />”: <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Reegli tüüp on vale</translation>
+<translation id="3037605927509011580">Ups, ebaõnn!</translation>
 <translation id="3041612393474885105">Sertifikaadi andmed</translation>
 <translation id="3093245981617870298">Olete võrguühenduseta.</translation>
 <translation id="3105172416063519923">Vara ID:</translation>
@@ -198,6 +205,8 @@
 <translation id="3145945101586104090">Vastuse dekodeerimine ebaõnnestus</translation>
 <translation id="3147485256806412701">See sait kasutab uut üldist üladomeeni.</translation>
 <translation id="3150653042067488994">Serveris ilmnes ajutine viga</translation>
+<translation id="3157931365184549694">Taasta</translation>
+<translation id="3167968892399408617">Inkognito vahelehtedel kuvatavaid lehti ei talletata pärast vahelehtede sulgemist brauseri ajalukku, küpsistefailide salve ega otsinguajalukku. Allalaaditavad failid ja järjehoidjatesse lisatud sisu säilitatakse.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">Saar</translation>
 <translation id="3176929007561373547">Kontrollige puhverserveri seadeid või võtke ühendust võrguadministraatoriga
@@ -248,6 +257,7 @@
 <translation id="3648607100222897006">Need eksperimentaalsed funktsioonid võivad igal ajal muutuda, rikki minna või kaduda. Me ei anna mingeid garantiisid selle kohta, mis juhtub, kui mõne eksperimendi sisse lülitate. Võimalik on teie brauseri iseeneslik süttimine. Kui tõsiselt rääkida, siis võib brauser kustutada kõik teie andmed või ootamatul viisil võidakse rikkuda teie turvalisust ja privaatsust. Kõik eksperimendid, mis te brauseris lubate, lubatakse brauseri kõigile kasutajatele. Jätkake ettevaatlikult.</translation>
 <translation id="3650584904733503804">Valideerimine õnnestus</translation>
 <translation id="3651020361689274926">Nõutavat ressurssi enam ei eksisteeri ja puudub edastusaadress. See peaks olema püsiseisund.</translation>
+<translation id="3655670868607891010">Kui näete seda sageli, proovige järgmist: <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Redaktsioon</translation>
 <translation id="3681007416295224113">Sertifikaadi andmed</translation>
 <translation id="3693415264595406141">Parool:</translation>
@@ -338,7 +348,6 @@
 <translation id="4841640898320458950">Ohtlik port on blok.</translation>
 <translation id="4850886885716139402">Kuva</translation>
 <translation id="4880827082731008257">Otsi ajaloost</translation>
-<translation id="488726935215981469">Teie andmed on krüpteeritud teie sünkroonimise parooliga. Sisestage see allpool.</translation>
 <translation id="4923417429809017348">Leht on tõlgitud teadmata keelest <ph name="LANGUAGE_LANGUAGE" /> keelde</translation>
 <translation id="4926049483395192435">Tuleb määrata.</translation>
 <translation id="495170559598752135">Toimingud</translation>
@@ -349,6 +358,7 @@
 <translation id="5023310440958281426">Tutvuge administraatori reeglitega</translation>
 <translation id="5029568752722684782">Kustuta koopia</translation>
 <translation id="5031870354684148875">Teave Google'i tõlke kohta</translation>
+<translation id="5040262127954254034">Privaatsus</translation>
 <translation id="5045550434625856497">Vale parool</translation>
 <translation id="5087286274860437796">Serveri sertifikaat pole praegu kehtiv.</translation>
 <translation id="5089810972385038852">Osariik</translation>
@@ -560,12 +570,14 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="7610193165460212391">Väärtus on vahemikust (<ph name="VALUE" />) väljaspool.</translation>
 <translation id="7613889955535752492">Aegub: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Teil on juba andmed, mis on krüpteeritud Google'i konto parooli teise versiooniga. Sisestage see allpool.</translation>
+<translation id="7634554953375732414">Teie ühendus selle saidiga pole privaatne.</translation>
 <translation id="7637571805876720304">Kas eemaldada Chromiumist krediitkaart?</translation>
 <translation id="7643817847124207232">Interneti-ühendus kadus.</translation>
 <translation id="765676359832457558">Peida täpsemad seaded ...</translation>
 <translation id="7658239707568436148">Tühista</translation>
 <translation id="7668654391829183341">Tundmatu seade</translation>
 <translation id="7674629440242451245">Kas olete huvitatud Chrome'i uutest lahedatest funktsioonidest? Proovige meie arenduskanalit aadressil chrome.com/beta.</translation>
+<translation id="769344199378576125">Kuva võrguühenduseta järjehoidjad</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Edasiliikumine saidile <ph name="SITE" /> (ebaturvaline)<ph name="END_LINK" /></translation>
 <translation id="7716424297397655342">Seda saiti ei saa vahemälust laadida</translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
@@ -584,6 +596,7 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="7805768142964895445">Olek</translation>
 <translation id="7813600968533626083">Kas eemaldada Chrome'ist vormi soovitus?</translation>
 <translation id="7825436071901023927">Ohtlik port: <ph name="SITE" /></translation>
+<translation id="785549533363645510">Te pole siiski nähtamatu. Inkognito režiimi kasutamine ei varja teie sirvimist tööandja, Interneti-teenuse pakkuja ega külastatavate veebisaitide eest.</translation>
 <translation id="7887683347370398519">Kontrollige CVC-d ja proovige uuesti</translation>
 <translation id="790025292736025802">Aadressi <ph name="URL" /> ei leitud</translation>
 <translation id="7912024687060120840">Kaustas:</translation>
@@ -594,11 +607,9 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="7961015016161918242">Mitte kunagi</translation>
 <translation id="7977590112176369853">&lt;sisesta päring&gt;</translation>
 <translation id="7983301409776629893">Tõlgi alati keelest <ph name="ORIGINAL_LANGUAGE" /> keelde <ph name="TARGET_LANGUAGE" /></translation>
-<translation id="7988324688042446538">Töölaua järjehoidjad</translation>
 <translation id="7995512525968007366">Ei ole määratud</translation>
 <translation id="8034522405403831421">Leht on <ph name="SOURCE_LANGUAGE" /> keeles. Kas tõlkida <ph name="TARGET_LANGUAGE" /> keelde?</translation>
 <translation id="8034955203865359138">Ajaloo sisestusi ei leitud.</translation>
-<translation id="8075539548641175231">Teie andmed krüpteeriti <ph name="TIME" /> teie sünkroonimise parooliga. Sisestage see allpool.</translation>
 <translation id="8088680233425245692">Artikli kuvamine ebaõnnestus.</translation>
 <translation id="8091372947890762290">Aktiveerimine on serveris ootel</translation>
 <translation id="8149426793427495338">Teie arvuti lülitus unerežiimile.</translation>
@@ -651,6 +662,7 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="8703575177326907206">Teie ühendus <ph name="DOMAIN" />'ga pole krüptitud.</translation>
 <translation id="8713130696108419660">Sobimatu esialgne allkiri</translation>
 <translation id="8725066075913043281">Proovi uuesti</translation>
+<translation id="8728672262656704056">Olete inkognito režiimis</translation>
 <translation id="8730621377337864115">Valmis</translation>
 <translation id="8738058698779197622">Turvalise ühenduse loomiseks peab kell olema õigesti seadistatud. See on nii, kuna sertifikaadid, mida veebisaidid kasutavad enda tuvastamiseks, kehtivad ainult teatud perioodi jooksul. Kuna teie seadme kell on vale, ei saa Chromium neid sertifikaate kinnitada.</translation>
 <translation id="8740359287975076522">Hosti <ph name="HOST_NAME" /> &lt;abbr id="dnsDefinition"&gt;DNS-aadressi&lt;/abbr&gt; ei leitud. Probleemi diagnoositakse.</translation>
@@ -666,6 +678,7 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="885730110891505394">Jagamine Google'iga</translation>
 <translation id="8866481888320382733">Reegli seadete sõelumisel ilmnes viga</translation>
 <translation id="8866959479196209191">Leht ütleb:</translation>
+<translation id="8870413625673593573">Viimati suletud</translation>
 <translation id="8876793034577346603">Võrgu seadistust ei õnnestunud sõeluda.</translation>
 <translation id="8891727572606052622">Kehtetu puhverserveri režiim.</translation>
 <translation id="889901481107108152">Kahjuks ei ole see eksperiment teie platvormil saadaval.</translation>

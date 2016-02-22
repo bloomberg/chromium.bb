@@ -38,11 +38,14 @@
 <translation id="1227224963052638717">خط‌مشی ناشناخته.</translation>
 <translation id="1227633850867390598">پنهان کردن مقدار</translation>
 <translation id="1228893227497259893">‏شناسه entity نادرست</translation>
+<translation id="1232569758102978740">بدون عنوان</translation>
 <translation id="1254117744268754948">انتخاب پوشه</translation>
 <translation id="1270699273812232624">اجازه به موارد</translation>
 <translation id="1285320974508926690">این سایت هرگز ترجمه نشود</translation>
+<translation id="129553762522093515">اخیراً بسته شده</translation>
 <translation id="1339601241726513588">دامنه ثبت‌نام:</translation>
 <translation id="1344588688991793829">‏تنظیمات تکمیل خودکار Chromium...</translation>
+<translation id="1374468813861204354">پیشنهادات</translation>
 <translation id="1375198122581997741">درباره نسخه</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> داده‌ای ارسال نکرد.</translation>
 <translation id="1407135791313364759">باز کردن همه</translation>
@@ -59,6 +62,7 @@
 <translation id="1559572115229829303">‏&lt;p&gt;اتصال خصوصی به <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> برقرار نشد، زیرا تاریخ و زمان دستگاه شما (<ph name="DATE_AND_TIME" />) نادرست است.&lt;/p&gt;
 
           &lt;p&gt;لطفاً تاریخ و زمان را در بخش &lt;strong&gt;عمومی&lt;/strong&gt; برنامه &lt;strong&gt;تنظیمات&lt;/strong&gt; تنظیم کنید.&lt;/p&gt;</translation>
+<translation id="1583429793053364125">هنگام نمایش این صفحه وب مشکلی پیش آمد.</translation>
 <translation id="1592005682883173041">دسترسی داده محلی</translation>
 <translation id="1629803312968146339">‏می‌خواهید Chrome این کارت را ذخیره کند؟</translation>
 <translation id="1640180200866533862">خط‌مشی‌های کاربر</translation>
@@ -93,6 +97,7 @@
 <translation id="2030481566774242610">منظورتان <ph name="LINK" /> بود؟</translation>
 <translation id="2053553514270667976">کد پستی</translation>
 <translation id="2065985942032347596">تأیید اعتبار لازم است</translation>
+<translation id="2079545284768500474">لغو</translation>
 <translation id="20817612488360358">تنظیمات پروکسی سیستم تنظیم شده تا مورد استفاده قرار گیرد، اما یک پیکربندی مشخص برای پروکسی نیز تعیین شده است.</translation>
 <translation id="2089090684895656482">کمتر</translation>
 <translation id="2094505752054353250">عدم تطابق دامنه</translation>
@@ -168,6 +173,7 @@
 <translation id="2837049386027881519">‏با استفاده از نسخه قدیمی پروتکل TLS یا SSL باید دوباره سعی کنید اتصال را برقرار کنید. یعنی سرور از نرم‌افزار خیلی قدیمی استفاده می‌کند و ممکن است مسائل امنیتی دیگری داشته باشد.</translation>
 <translation id="284702764277384724">به نظر می‌رسد که گواهی سرور در <ph name="HOST_NAME" /> جعلی باشد.</translation>
 <translation id="2855922900409897335"><ph name="CREDIT_CARD" /> را تأیید کنید</translation>
+<translation id="2896499918916051536">این افزایه پشتیبانی نمی‌شود.</translation>
 <translation id="2897655920961181107">درگاه درخواستی ناامن است و مسدود شده است</translation>
 <translation id="2909946352844186028">تغییر شبکه تشخیص داده شد.</translation>
 <translation id="2915500479781995473">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهینامه امنیتی آن منقضی شده است. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصال شما را قطع کرده است. در حال حاضر ساعت رایانه‌تان روی <ph name="CURRENT_TIME" /> تنظیم شده است. آیا این زمان درست است؟ اگر درست نیست، باید ساعت سیستم‌تان را تنظیم کنید و سپس این صفحه را بازخوانی نمایید.</translation>
@@ -189,6 +195,7 @@
 <translation id="3005723025932146533">نمایش کپی ذخیره شده</translation>
 <translation id="3010559122411665027">ورودی لیست "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">نوع خط‌مشی اشتباه است</translation>
+<translation id="3037605927509011580">اوه، نه!</translation>
 <translation id="3041612393474885105">اطلاعات گواهی</translation>
 <translation id="3093245981617870298">شما آفلاین هستید.</translation>
 <translation id="3105172416063519923">شناسه دارایی:</translation>
@@ -198,6 +205,8 @@
 <translation id="3145945101586104090">رمزگشایی پاسخ انجام نشد</translation>
 <translation id="3147485256806412701">این سایت از یک دامنه سطح بالای عمومی جدید استفاده می‌کند.</translation>
 <translation id="3150653042067488994">خطای موقت سرور</translation>
+<translation id="3157931365184549694">بازیابی</translation>
+<translation id="3167968892399408617">صفحه‌هایی که در برگه‌های حالت ناشناس مرور می‌کنید، بعد از بستن همه برگه‌های حالت ناشناس در سابقه مرورگر، فضای ذخیره کوکی یا سابقه جستجو باقی نمی‌مانند. فایل‌هایی که بارگیری می‌کنید یا نشانک‌هایی که ایجاد می‌کنید حفظ می‌شود.</translation>
 <translation id="3169472444629675720">کشف کردن</translation>
 <translation id="3174168572213147020">جزیره</translation>
 <translation id="3176929007561373547">تنظیمات پروکسی‌ را بررسی کنید یا با سرپرست شبکه‌‌تان تماس بگیرید تا
@@ -248,11 +257,12 @@
 <translation id="3648607100222897006">این ویژگی‌های آزمایشی ممکن است در هر زمانی تغییر کنند، نقض شوند یا ناپدید شوند. اگر یکی از این ویژگی‌های آزمایشی را فعال کنید ما هیچ تضمینی در مورد آنچه که ممکن است اتفاق بیفتد نداریم، و حتی ممکن است مرورگر شما خود به خود ناپدید شود. در واقع، ممکن است مرورگر شما تمام داده‌های شما را حذف کند یا امنیت و حریم خصوصی شما می‌تواند به صورت غیرمنتظره‌ای به خطر بیفتد. هر ویژگی آزمایشی که فعال می‌کنید برای تمام کاربران این مرورگر فعال خواهد شد. لطفاً با احتیاط ادامه دهید.</translation>
 <translation id="3650584904733503804">ارزیابی موفق بود</translation>
 <translation id="3651020361689274926">منبع درخواستی دیگر موجود نیست و آدرسی برای هدایت وجود ندارد.  انتظار می‌رود این وضعیت دائمی باشد.</translation>
+<translation id="3655670868607891010">اگر مکرراً با این مشکل مواجه می‌شوید، <ph name="HELP_LINK" /> را امتحان کنید.</translation>
 <translation id="3658742229777143148">ویرایش</translation>
 <translation id="3681007416295224113">اطلاعات گواهی</translation>
 <translation id="3693415264595406141">گذرواژه:</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> ‏<ph name="BOOKMARKED" /> ‏<ph name="TITLE" /> ‏<ph name="DOMAIN" /></translation>
-<translation id="370665806235115550">در حال بارگیری...</translation>
+<translation id="370665806235115550">در حال بارکردن…</translation>
 <translation id="3712624925041724820">مجوزها دیگر معتبر نیستند</translation>
 <translation id="3739623965217189342">پیوندی که کپی کرده‌اید</translation>
 <translation id="3744899669254331632">‏نمی‌توانید اکنون از <ph name="SITE" /> دیدن کنید زیرا وب‌سایت اعتبارنامه‌های درهمی ارسال کرده که Chromium نمی‌تواند پردازش کند. خطاها و حمله‌های شبکه معمولاً موقتی هستند، بنابراین احتمالاً این صفحه بعداً کار می‌کند.</translation>
@@ -338,7 +348,6 @@
 <translation id="4841640898320458950">درگاه ناامن مسدود شد</translation>
 <translation id="4850886885716139402">نما</translation>
 <translation id="4880827082731008257">سابقه جستجو</translation>
-<translation id="488726935215981469">داده‌های شما با رمز عبارتی همگام‌سازی شما رمزگذاری شده‌اند. لطفاً آن را در زیر وارد کنید.</translation>
 <translation id="4923417429809017348">این صفحه از یک زبان ناشناخته به <ph name="LANGUAGE_LANGUAGE" /> ترجمه شده است.</translation>
 <translation id="4926049483395192435">باید مشخص شود.</translation>
 <translation id="495170559598752135">عملکردها</translation>
@@ -349,6 +358,7 @@
 <translation id="5023310440958281426">خط‌مشی‌های سرپرست سیستمتان را بررسی کنید</translation>
 <translation id="5029568752722684782">پاک کردن نسخه کپی</translation>
 <translation id="5031870354684148875">‏درباره Google Translate</translation>
+<translation id="5040262127954254034">حریم خصوصی</translation>
 <translation id="5045550434625856497">گذرواژه نامعتبر</translation>
 <translation id="5087286274860437796">در حال حاضر گواهی سرور معتبر نیست.</translation>
 <translation id="5089810972385038852">ایالت</translation>
@@ -560,12 +570,14 @@
 <translation id="7610193165460212391">مقدار خارج از محدوده <ph name="VALUE" /> است.</translation>
 <translation id="7613889955535752492">انقضا: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">‏شما در حال حاضر داده‌هایی دارید که با استفاده از نسخه دیگری از گذرواژه حساب Google شما رمزگذاری شده‌اند. لطفاً آن را در زیر وارد کنید.</translation>
+<translation id="7634554953375732414">اتصال شما به این سایت خصوصی نیست.</translation>
 <translation id="7637571805876720304">‏کارت اعتباری از Chromium پاک شود؟</translation>
 <translation id="7643817847124207232">اتصال اینترنت قطع شده است.</translation>
 <translation id="765676359832457558">پنهان کردن تنظیمات پیشرفته…</translation>
 <translation id="7658239707568436148">لغو</translation>
 <translation id="7668654391829183341">دستگاه ناشناس</translation>
 <translation id="7674629440242451245">‏علاقه‌مند به قابلیت‌های جدید و جالب Chrome هستید؟ کانال برنامه‌نویسان ما را در chrome.com/dev امتحان کنید.</translation>
+<translation id="769344199378576125">نمایش نشانک‌های آفلاین</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />ادامه به <ph name="SITE" /> (غیرایمن)<ph name="END_LINK" /></translation>
 <translation id="7716424297397655342">این سایت نمی‌تواند از حافظه پنهان بار شود</translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
@@ -584,6 +596,7 @@
 <translation id="7805768142964895445">وضعیت</translation>
 <translation id="7813600968533626083">‏پیشنهاد فرم از Chrome پاک شود؟</translation>
 <translation id="7825436071901023927">درگاه ناامن <ph name="SITE" /></translation>
+<translation id="785549533363645510">اما، شما نامرئی نیستید. با استفاده از حالت ناشناس، مرورتان از چشمان کارفرمای شما، ارائه‌دهنده خدمات اینترنت یا وب‌‌سایت‌هایی که بازدید می‌کنید پنهان نمی‌ماند.</translation>
 <translation id="7887683347370398519">‏CVC را بررسی کرده و دوباره امتحان کنید</translation>
 <translation id="790025292736025802"><ph name="URL" /> یافت نشد</translation>
 <translation id="7912024687060120840">در پوشه:</translation>
@@ -594,11 +607,9 @@
 <translation id="7961015016161918242">هرگز</translation>
 <translation id="7977590112176369853">&lt;واردکردن پرسش&gt;</translation>
 <translation id="7983301409776629893">همیشه <ph name="ORIGINAL_LANGUAGE" /> به <ph name="TARGET_LANGUAGE" /> ترجمه شود</translation>
-<translation id="7988324688042446538">نشانک‌های دسک‌تاپ</translation>
 <translation id="7995512525968007366">تعیین نشده</translation>
 <translation id="8034522405403831421">این صفحه به زبان <ph name="SOURCE_LANGUAGE" /> است. مایلید آن را به <ph name="TARGET_LANGUAGE" /> ترجمه کنید؟</translation>
 <translation id="8034955203865359138">ورودی سابقه یافت نشد.</translation>
-<translation id="8075539548641175231">داده‌های شما در تاریخ <ph name="TIME" /> با «رمز عبارتی همگام‌سازی» شما رمزگذاری شده‌اند. لطفاً آن را در زیر وارد کنید.</translation>
 <translation id="8088680233425245692">مشاهده مقاله ناموفق بود.</translation>
 <translation id="8091372947890762290">فعال‌سازی در سرور در حالت تعلیق است</translation>
 <translation id="8149426793427495338">رایانه‌تان به خواب رفته است.</translation>
@@ -651,6 +662,7 @@
 <translation id="8703575177326907206">اتصال شما به <ph name="DOMAIN" /> رمزگذاری نشده است.</translation>
 <translation id="8713130696108419660">امضای اولیه خراب</translation>
 <translation id="8725066075913043281">سعی مجدد</translation>
+<translation id="8728672262656704056">به صورت ناشناس وارد شدید</translation>
 <translation id="8730621377337864115">تمام</translation>
 <translation id="8738058698779197622">‏به منظور برقراری یک اتصال امن، لازم است که ساعت شما به درستی تنظیم شود. زیرا گواهینامه‌هایی که وب‌سایت‌ها برای شناسایی خودشان استفاده می‌کنند تنها برای دوره‌های زمانی خاصی معتبر هستند. از آنجایی که ساعت دستگاه نادرست است، Chromium نمی‌تواند این گواهینامه‌ها را تأیید کند.</translation>
 <translation id="8740359287975076522">‏<ph name="HOST_NAME" />’s &lt;abbr id="dnsDefinition"&gt;آدرس DNS&lt;/abbr&gt; پیدا نشد. درحال بررسی برای تشخیص مشکل.</translation>
@@ -666,6 +678,7 @@
 <translation id="885730110891505394">‏اشتراک‌گذاری با Google</translation>
 <translation id="8866481888320382733">خطا در تجزیه تنظیمات خط‌مشی</translation>
 <translation id="8866959479196209191">این صفحه می‌گوید:</translation>
+<translation id="8870413625673593573">اخیراً بسته شده</translation>
 <translation id="8876793034577346603">پیکربندی شبکه نتوانست تجزیه شود.</translation>
 <translation id="8891727572606052622">حالت پروکسی نامعتبر است.</translation>
 <translation id="889901481107108152">متأسفیم، این آزمایش بر روی دستگاه شما قابل انجام نیست.</translation>

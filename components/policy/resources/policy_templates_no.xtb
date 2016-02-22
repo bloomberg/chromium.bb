@@ -146,6 +146,13 @@
 <translation id="1522425503138261032">Tillat nettsteder å spore brukernes fysiske plassering</translation>
 <translation id="152657506688053119">Liste over alternative nettadresser for standard søkeleverandør</translation>
 <translation id="1530812829012954197">Alltid gjengi følgende nettadressemønstre i vertsnettleseren</translation>
+<translation id="1553684822621013552">Når denne regelen er satt til true (sann), er ARC slått på for brukeren
+      (avhengig av andre regelinnstillinger – ARC er likevel
+      utilgjengelig hvis enten engangsmodus eller multipålogging er slått på
+      i den aktive brukerøkten).
+
+      Hvis denne innstillingen er slått av eller ikke konfigurert, kan bedriftsbrukere
+      ikke bruke ARC.</translation>
 <translation id="1561424797596341174">Overstyring av regler for delversjoner for feilsøking på fjerntilgangsverten</translation>
 <translation id="1583248206450240930">Bruk <ph name="PRODUCT_FRAME_NAME" /> som standard</translation>
 <translation id="1608755754295374538">Nettadresser som uten forespørsel blir gitt tilgang til enheter med lydopptak</translation>
@@ -242,6 +249,7 @@
       Hvis denne innstillingen angis som sann, prøver <ph name="PRODUCT_OS_NAME" /> å laste ned nyttelaster med automatisk oppdatering via HTTP. Hvis innstillingen angis som usann eller ikke angis i det hele tatt, blir HTTPS brukt til å laste ned nyttelaster med automatisk oppdatering.</translation>
 <translation id="2006530844219044261">Strømstyring</translation>
 <translation id="201557587962247231">Frekvensen for opplasting av statusrapporter for enheter</translation>
+<translation id="2024476116966025075">Konfigurer det nødvendige domenenavnet for klienter med ekstern tilgang</translation>
 <translation id="2030905906517501646">Søkeord for standard søkeleverandør</translation>
 <translation id="206623763829450685">Spesifiserer hvilke HTTP-autentiseringsskjemaer som støttes av <ph name="PRODUCT_NAME" />.
 
@@ -468,6 +476,7 @@
       Hvis innstillingen ikke angis, blir proxy-tjenerfunksjonen for datakomprimering tilgjengelig for brukere som velger om de vil bruke den eller ikke.</translation>
 <translation id="2587719089023392205">Angi <ph name="PRODUCT_NAME" /> som standard nettleser</translation>
 <translation id="2592091433672667839">Varighet av inaktivitet før skjermspareren vises på påloggingssiden i detaljistmodus</translation>
+<translation id="260705825237536216">Konfigurer ARC-apper</translation>
 <translation id="2623014935069176671">Vent på første brukeraktivitet</translation>
 <translation id="262740370354162807">Aktiver sending av dokumenter til <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Aktiverer talerespons</translation>
@@ -585,6 +594,7 @@
           Hvis innstillingen ikke er konfigurert, brukes et standard tidsområde.
 
           Innstillingsverdien må spesifiseres i millisekunder. Verdien er låst til å være lavere enn eller samsvarende med forsinkelsen for å slå av skjermen (hvis den er konfigurert) og inaktivitetsforsinkelsen.</translation>
+<translation id="2987155890997901449">Slå på ARC</translation>
 <translation id="2998881342848488968">Med denne innstillingen kan <ph name="PRODUCT_OS_NAME" /> omgå eventuelle proxy-tjenere for autentisering via obligatoriske sider.
 
       Denne regelen trer bare i kraft hvis en proxy-tjener er konfigurert (for eksempel gjennom administratorinnstillingene, av brukeren i chrome://settings eller av utvidelser).
@@ -1157,6 +1167,11 @@
 <translation id="5307432759655324440">Tilgjengelighet for inkognitomodus</translation>
 <translation id="5318185076587284965">Aktiver bruken av relétjenere ved fjerntilgangsverten</translation>
 <translation id="5330684698007383292">Gi <ph name="PRODUCT_FRAME_NAME" /> tillatelse til å håndtere de følgende innholdstypene</translation>
+<translation id="5345267406698765263">Spesifiserer ARC-programregelen som en JSON-streng som kan
+      leveres som den er til ARC-kjøringen. For øyeblikket brukes denne innstillingen
+      utelukkende for å spesifisere tvungen installering av appene.
+
+      Hvis denne regelen ikke er spesifisert, blir ingen apper installert automatisk.</translation>
 <translation id="5365946944967967336">Vis startsideknappen på verktøylinjen</translation>
 <translation id="5366977351895725771">Hvis angitt til «false» kan ikke denne brukeren opprette administrerte brukere. Eksisterende administrerte brukere er fortsatt tilgjengelige.
 
@@ -1229,6 +1244,13 @@
       Hvis innstillingen ikke angis, kan brukerne velge hvorvidt hyllen skal skjules automatisk eller ikke.</translation>
 <translation id="557658534286111200">Aktiverer eller deaktiverer bokmerkeredigering</translation>
 <translation id="5586942249556966598">Gjør ingenting</translation>
+<translation id="5613179474872285001">Konfigurerer det påkrevde klientdomenenavnet som skal være obligatorisk for klienter med ekstern tilgang, og hindrer brukerne i å endre det.
+
+          Hvis denne innstillingen er slått på, kan bare klienter fra det spesifiserte domenet koble til verten.
+
+          Hvis denne innstillingen er slått av eller ikke spesifisert, brukes standardregelen for tilkoblingstypen. For fjernhjelp gjør dette at klienter fra alle domener kan koble til verten. For ekstern tilgang uavhengig av tidspunkt kan bare vertseieren koble til.
+
+          Se også RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">Gjenopprett den siste økten</translation>
 <translation id="5645779841392247734">Tillat informasjonskapsler på disse nettstedene</translation>
 <translation id="5677038592630896441">Krever at den lokale brukeren og eieren av fjerntilgangsverten har samme navn.
@@ -1662,6 +1684,13 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="6943577887654905793">Innstillingsnavn for Mac/Linux:</translation>
 <translation id="69525503251220566">Parameteret som tilbyr search-by-image-funksjonen for standardsøkemotoren</translation>
 <translation id="6956272732789158625">Ikke tillat noen nettsteder å bruke nøkkelgenerering</translation>
+<translation id="695891079107014261">Konfigurerer det påkrevde vertsdomenenavnet som skal være obligatorisk for verter for ekstern tilgang, og hindrer brukerne i å endre det.
+
+          Hvis denne innstillingen er slått på, kan verter bare deles ved hjelp av kontoer som er registrert på det spesifiserte domenenavnet.
+
+          Hvis denne innstillingen er slått av eller ikke spesifisert, kan verter deles med en hvilken som helst konto.
+
+          Se også RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Hvorvidt OCSP/CRL-sjekker på nettet er påkrevd for lokale klareringsankere</translation>
 <translation id="7003334574344702284">Denne retningslinjen tvinger import av de lagrede passordene fra forrige standardnettleser hvis den er aktivert. Hvis den er aktivert, påvirker retningslinjen også importeringsdialogen.
 

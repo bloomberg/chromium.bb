@@ -134,6 +134,13 @@
 <translation id="1522425503138261032">Zezwalaj witrynom na śledzenie fizycznej lokalizacji użytkownika</translation>
 <translation id="152657506688053119">Lista alternatywnych URL-i dla domyślnego dostawcy wyszukiwania</translation>
 <translation id="1530812829012954197">Zawsze renderuj strony w przeglądarce hosta według następujących wzorców adresów URL</translation>
+<translation id="1553684822621013552">Gdy ta zasada jest włączona, użytkownik ma dostęp do rozszerzenia ARC
+      (zależy to jednak od kontroli dodatkowych ustawień zasad – rozszerzenie ARC nadal jest niedostępne,
+      jeśli w bieżącej sesji użytkownika włączono tryb tymczasowy
+      lub wielokrotne logowanie).
+
+      Jeśli to ustawienie jest wyłączone lub nie jest skonfigurowane, użytkownicy w firmie
+      nie mogą używać rozszerzenia ARC.</translation>
 <translation id="1561424797596341174">Zasada zastępuje kompilacje hosta dostępu zdalnego w trybie debugowania</translation>
 <translation id="1583248206450240930">Używaj domyślnie wtyczki <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="1608755754295374538">Adresy URL, które bez pytania otrzymają dostęp do urządzeń do nagrywania dźwięku</translation>
@@ -215,6 +222,7 @@
       Jeśli ustawisz tu wartość prawda, <ph name="PRODUCT_OS_NAME" /> będzie próbować pobierać ładunki aktualizacji automatycznych przez HTTP. Jeśli nie skonfigurujesz tej zasady lub ustawisz w niej wartość fałsz, do pobierania ładunków aktualizacji automatycznych będzie używany protokół HTTPS.</translation>
 <translation id="2006530844219044261">Zarządzanie energią</translation>
 <translation id="201557587962247231">Częstotliwość pobierania raportów o stanie urządzenia</translation>
+<translation id="2024476116966025075">Konfiguracja wymaganej nazwy domeny dla klientów zdalnego dostępu</translation>
 <translation id="2030905906517501646">Słowo kluczowe domyślnego dostawcy wyszukiwania</translation>
 <translation id="206623763829450685">Pozwala określić schematy uwierzytelniania HTTP obsługiwane w <ph name="PRODUCT_NAME" />.
 
@@ -434,6 +442,7 @@
       Jeśli nie skonfigurujesz tej zasady, użytkownicy będą mogli sami wybrać, czy chcą używać serwera proxy kompresowania danych czy nie.</translation>
 <translation id="2587719089023392205">Ustaw <ph name="PRODUCT_NAME" /> jako przeglądarkę domyślną</translation>
 <translation id="2592091433672667839">Czas bezczynności, po upływie którego w trybie sklepu na ekranie logowania jest wyświetlany wygaszacz ekranu</translation>
+<translation id="260705825237536216">Konfigurowanie aplikacji ARC</translation>
 <translation id="2623014935069176671">Poczekaj na początkową aktywność użytkownika</translation>
 <translation id="262740370354162807">Włącz wysyłanie dokumentów do <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2633084400146331575">Włącz potwierdzenia głosowe</translation>
@@ -541,6 +550,7 @@
           Jeśli ta zasada nie jest ustawiona, używana jest domyślna wartość długości czasu.
 
           Wartość tej zasady powinna być określona w milisekundach. Wartości nie mogą być większe niż opóźnienie wyłączenia ekranu (jeśli jest ustawione) i opóźnienie bezczynności.</translation>
+<translation id="2987155890997901449">Włączenie ARC</translation>
 <translation id="2998881342848488968">Ta zasada umożliwia <ph name="PRODUCT_OS_NAME" /> ominięcie dowolnego serwera proxy w celu uwierzytelnienia portalu przechwytującego.
 
       Zasada działa tylko wtedy, gdy serwer proxy jest skonfigurowany (np. przez zasadę, użytkownika na chrome://settings lub rozszerzenie).
@@ -1071,6 +1081,11 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="5307432759655324440">Dostępność trybu incognito</translation>
 <translation id="5318185076587284965">Zezwalaj hostowi zdalnego dostępu na korzystanie z serwerów przekazujących</translation>
 <translation id="5330684698007383292">Zezwalaj <ph name="PRODUCT_FRAME_NAME" /> na obsługę tych typów treści</translation>
+<translation id="5345267406698765263">Określa zasady aplikacji ARC jako ciąg znaków JSON, który może zostać
+      przekazany w niezmienionej postaci do środowiska wykonawczego ARC. Aktualnie to ustawienie jest używane
+      wyłącznie do określania wymuszonej instalacji aplikacji.
+
+      Jeśli ta zasada nie jest ustawiona, aplikacje nie są instalowane automatycznie.</translation>
 <translation id="5365946944967967336">Pokaż przycisk strony startowej na pasku narzędzi</translation>
 <translation id="5366977351895725771">Jeśli ta zasada ma wartość „fałsz”, ten użytkownik nie może tworzyć użytkowników nadzorowanych. Dotychczasowi użytkownicy nadzorowani będą nadal dostępni.
 
@@ -1134,6 +1149,13 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Jeśli ta opcja pozostanie nieustawiona, półka będzie ukrywana automatycznie.</translation>
 <translation id="557658534286111200">Włącz lub wyłącz edytowanie zakładek</translation>
 <translation id="5586942249556966598">Nic nie rób</translation>
+<translation id="5613179474872285001">Konfiguruje wymaganą nazwę domeny klienta, która będzie stosowana do klientów zdalnego dostępu, i uniemożliwia użytkownikom jej zmianę.
+
+          Jeśli to ustawienie jest włączone, z hostem mogą się łączyć tylko klienty z określonej domeny.
+
+          Jeśli to ustawienie jest wyłączone lub nie jest skonfigurowane, do danego rodzaju połączenia stosowane są zasady domyślne. Dzięki temu na potrzeby pomocy zdalnej z hostem mogą łączyć się klienty z dowolnej domeny, a na potrzeby uzyskania dostępu zdalnego w dowolnym momencie łączyć się może tylko właściciel hosta.
+
+          Zobacz też RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">Przywróć ostatnią sesję</translation>
 <translation id="5645779841392247734">Zezwalaj na pliki cookie w tych witrynach</translation>
 <translation id="5677038592630896441">Wymaga dopasowania nazwy użytkownika lokalnego do nazwy hosta dostępu zdalnego.
@@ -1509,6 +1531,13 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="6943577887654905793">Nazwa ustawienia w systemie Mac OS/Linux:</translation>
 <translation id="69525503251220566">Parametr udostępniający funkcję wyszukiwania obrazem dla domyślnego dostawcy wyszukiwania</translation>
 <translation id="6956272732789158625">Nie zezwalaj na generowanie kluczy w żadnej witrynie</translation>
+<translation id="695891079107014261">Konfiguruje wymaganą nazwę domeny hosta, która będzie stosowana do hostów zdalnego dostępu, i uniemożliwia użytkownikom jej zmianę.
+
+          Jeśli to ustawienie jest włączone, udostępnianie hostów jest możliwe tylko z użyciem kont zarejestrowanych w określonej domenie.
+
+          Jeśli to ustawienie jest wyłączone lub nie jest skonfigurowane, udostępnianie hostów jest możliwe z użyciem dowolnego konta.
+
+          Zobacz też RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Określa, czy dla lokalnych kotwic zaufania są wymagane sprawdzenia online OCSP/CRL</translation>
 <translation id="7003334574344702284">Po włączeniu tej zasady wymuszany jest import zapisanych haseł z poprzedniej przeglądarki domyślnej. Włączenie zasady ma również wpływ na opcje w oknie dialogowym importowania. W przypadku jej wyłączenia zapisane hasła nie są importowane. Jeśli zasada nie jest skonfigurowana, użytkownik może zostać zapytany, czy zaimportować hasła lub operacja ta zostanie wykonana automatycznie.</translation>
 <translation id="7003746348783715221">Ustawienia przeglądarki <ph name="PRODUCT_NAME" /></translation>

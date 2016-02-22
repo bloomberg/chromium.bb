@@ -133,6 +133,13 @@
 <translation id="1522425503138261032">Permet que els llocs facin un seguiment de la ubicació física dels usuaris</translation>
 <translation id="152657506688053119">Llista d'URL alternatius per al proveïdor de cerca predeterminat</translation>
 <translation id="1530812829012954197">Renderitza sempre els patrons d'URL següents al navegador de l'amfitrió</translation>
+<translation id="1553684822621013552">Quan aquesta política s'estableix en "true", s'activa ARC per a l'usuari
+      (depenent de les comprovacions addicionals de la configuració de la política;
+      però ARC no estarà disponible encara que el mode efímer
+      o l'inici de sessió múltiple estiguin activats a la sessió d'usuari actual).
+
+      Si aquesta opció de configuració està desactivada o no està configurada,
+      els usuaris d'empreses no poden utilitzar ARC.</translation>
 <translation id="1561424797596341174">La política substitueix les compilacions de depuració de l'amfitrió d'accés remot</translation>
 <translation id="1583248206450240930">Fes servir <ph name="PRODUCT_FRAME_NAME" /> de manera predeterminada</translation>
 <translation id="1608755754295374538">URL als quals els dispositius de captura d'àudio podran accedir sense confirmació.</translation>
@@ -222,6 +229,7 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
       Si aquesta política es configura com a "true", <ph name="PRODUCT_OS_NAME" /> provarà de baixar les càrregues útils d'actualització automàtica mitjançant HTTP. Si la política es configura com a "false" o si no es configura, s'utilitzarà HTTPS per baixar les càrregues útils d'actualització automàtica.</translation>
 <translation id="2006530844219044261">Gestió de l'alimentació</translation>
 <translation id="201557587962247231">Freqüència amb què s'envien càrregues per informar sobre l'estat del dispositiu</translation>
+<translation id="2024476116966025075">Configura el nom de domini requerit per a clients d'accés remot</translation>
 <translation id="2030905906517501646">Paraula clau del proveïdor de cerca predeterminat</translation>
 <translation id="206623763829450685">Especifica quins esquemes d'autenticació HTTP són compatibles amb <ph name="PRODUCT_NAME" />.
 
@@ -438,6 +446,7 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
       Si no configureu aquesta política, els usuaris podran triar si volen fer servir la funció del servidor intermediari de compressió de dades.</translation>
 <translation id="2587719089023392205">Estableix <ph name="PRODUCT_NAME" /> com a navegador predeterminat</translation>
 <translation id="2592091433672667839">La durada de la inactivitat abans no es mostri el protector de pantalla es mostra a la pantalla d'inici de sessió en mode de venta</translation>
+<translation id="260705825237536216">Configura les aplicacions ARC</translation>
 <translation id="2623014935069176671">Espereu que hi hagi una activitat inicial de l'usuari.</translation>
 <translation id="262740370354162807">Activa l'enviament de documents a <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Activa els comentaris per veu</translation>
@@ -545,6 +554,7 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
           Quan aquesta política no es defineix, s'utilitza un temps predeterminat.
 
           El valor de la política s'ha d'indicar en mil·lisegons i es limita perquè sigui inferior o igual al retard de desactivació (si s'ha definit) i al retard d'inactivitat.</translation>
+<translation id="2987155890997901449">Activa ARC</translation>
 <translation id="2998881342848488968">Aquesta política permet que <ph name="PRODUCT_OS_NAME" /> eviti qualsevol servidor intermediari a l'autenticació de portals captius.
 
       Aquesta política només es fa efectiva si hi ha un servidor intermediari configurat (per exemple, mitjançant la política, configurat per l'usuari a chrome://settings o configurat per alguna extensió).
@@ -1072,6 +1082,13 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
 <translation id="5307432759655324440">Disponibilitat del mode d'incògnit</translation>
 <translation id="5318185076587284965">Permet que l'amfitrió d'accés remot pugui utilitzar els servidors de tramesa</translation>
 <translation id="5330684698007383292">Permet que <ph name="PRODUCT_FRAME_NAME" /> gestioni els tipus de contingut següents</translation>
+<translation id="5345267406698765263">Especifica la política de l'aplicació ARC com una cadena JSON
+      que es pot transmetre sense modificar al temps d'execució d'ARC. De moment,
+      aquesta opció de configuració només s'utilitza per especificar la instal·lació forçosa
+      de les aplicacions.
+
+      Si aquesta política es deixa sense establir, no s'instal·la
+      automàticament cap aplicació.</translation>
 <translation id="5365946944967967336">Mostra el botó Pàgina d'inici a la barra d'eines</translation>
 <translation id="5366977351895725771">Si es defineix com a fals, la creació d'usuaris supervisats per part d'aquest usuari es desactivarà. Els usuaris supervisats existents continuaran estant disponibles.
 
@@ -1135,6 +1152,13 @@ Si es defineix aquesta política, els usuaris no podran canviar-la ni sobreescri
 Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'amagar automàticament.</translation>
 <translation id="557658534286111200">Activa o desactiva l'edició d'adreces d'interès.</translation>
 <translation id="5586942249556966598">No facis res</translation>
+<translation id="5613179474872285001">Configura el nom requerit per al domini client que s'imposarà als clients d'accés remot. A més, impedeix que els usuaris el canviïn.
+
+          Si aquesta opció de configuració està activada, només els clients del domini especificat poden connectar-se a l'amfitrió.
+
+          Si està desactivada o es deixa sense establir, s'aplica la política predeterminada segons el tipus de connexió. En el cas de l'assistència remota, això permet que els clients de qualsevol domini es connectin a l'amfitrió; en el cas de l'accés remot en qualsevol moment, només s'hi pot connectar el propietari de l'amfitrió.
+
+          Consulteu també la política RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">Restaura l'última sessió</translation>
 <translation id="5645779841392247734">Permet les galetes en aquests llocs</translation>
 <translation id="5677038592630896441">Requereix que el nom de l'usuari local i el propietari de l'amfitrió d'accés remot coincideixin.
@@ -1522,6 +1546,13 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6943577887654905793">Nom de la preferència de Mac/Linux:</translation>
 <translation id="69525503251220566">Paràmetre que proporciona la funció de cerca per imatge per al proveïdor de cerca predeterminat</translation>
 <translation id="6956272732789158625">No permetis que cap lloc utilitzi la generació de claus</translation>
+<translation id="695891079107014261">Configura el nom requerit per al domini amfitrió que s'imposarà als amfitrions d'accés remot. A més, impedeix que els usuaris el canviïn.
+
+          Si aquesta opció de configuració està activada, els amfitrions només es poden compartir fent servir comptes registrats al nom de domini especificat.
+
+          Si està desactivada o es deixa sense establir, els amfitrions es poden compartir fent servir qualsevol compte.
+
+          Consulteu també la política RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Si es requereixen comprovacions d'OCSP/CRL en línia per a ancoratges de confiança locals</translation>
 <translation id="7003334574344702284">Si està activada, aquesta política fa que les contrasenyes desades s'importin des del navegador predeterminat anterior. Si està activada, aquesta política també afecta el diàleg d'importació. Si està desactivada, les contrasenyes desades no s'importaran. Si no es defineix, pot ser que es demani a l'usuari si vol importar o bé la importació es pot produir de manera automàtica.</translation>
 <translation id="7003746348783715221">Preferències de <ph name="PRODUCT_NAME" /></translation>

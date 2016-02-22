@@ -147,6 +147,13 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
 <translation id="1522425503138261032">Permitir que los sitios puedan hacer un seguimiento de la ubicación física de los usuarios</translation>
 <translation id="152657506688053119">Lista de URL alternativas para el proveedor de búsquedas predeterminado</translation>
 <translation id="1530812829012954197">Mostrar siempre los patrones de URL que se indican a continuación en el navegador del host</translation>
+<translation id="1553684822621013552">Si se asigna el valor true a esta política, se habilitará ARC para el usuario
+      (la política está sujeta a comprobaciones adicionales de la configuración de la política: ARC no estará
+      disponible si el modo efímero o el acceso múltiple están habilitados
+      en la sesión de usuario actual).
+
+      Si esta configuración se inhabilita o no se configura, los usuarios de empresas no
+      podrán utilizar ARC.</translation>
 <translation id="1561424797596341174">La política anula las compilaciones de depuración del host de acceso remoto.</translation>
 <translation id="1583248206450240930">Utilizar <ph name="PRODUCT_FRAME_NAME" /> de forma predeterminada</translation>
 <translation id="1608755754295374538">URLs a las que se concederá acceso a dispositivos de captura de audio sin confirmación</translation>
@@ -253,6 +260,7 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
 Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará descargar cargas útiles de actualizaciones automáticas a través de HTTP. Si la política se establece en False o no se configura, se utilizará HTTPS para descargar cargas útiles de actualizaciones automáticas.</translation>
 <translation id="2006530844219044261">Administración de energía</translation>
 <translation id="201557587962247231">Frecuencia de subida de informes de estado del dispositivo</translation>
+<translation id="2024476116966025075">Configurar el nombre de dominio requerido para los clientes de acceso remoto</translation>
 <translation id="2030905906517501646">Palabra clave de proveedor de búsquedas predeterminadas</translation>
 <translation id="206623763829450685">Especifica los esquemas de autenticación HTTP admitidos por <ph name="PRODUCT_NAME" />.
 
@@ -488,6 +496,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Si no se establece esta política, la función del proxy de compresión de datos estará disponible para que el usuario decida si quiere o no utilizarla.</translation>
 <translation id="2587719089023392205">Establecer <ph name="PRODUCT_NAME" /> como navegador predeterminado</translation>
 <translation id="2592091433672667839">Duración de la inactividad antes de que se muestre el protector de pantalla en el modo de venta</translation>
+<translation id="260705825237536216">Configurar las aplicaciones ARC</translation>
 <translation id="2623014935069176671">Esperar actividad inicial del usuario</translation>
 <translation id="262740370354162807">Habilitar el envío de documentos a <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Habilitar mensajes de voz</translation>
@@ -608,6 +617,7 @@ Si se inhabilita o no se configura esta opción, los usuarios podrán decidir si
           Cuando no se establece esta política, se utilizará un valor de tiempo predeterminado.
 
           El valor de la política se debe especificar en milisegundos. Los valores están establecidos para ser inferiores o iguales al retraso de desconexión de pantalla (si está establecido) y al retraso de inactividad.</translation>
+<translation id="2987155890997901449">Habilitar ARC</translation>
 <translation id="2998881342848488968">Esta política permite a <ph name="PRODUCT_OS_NAME" /> omitir cualquier proxy para la autenticación de portal cautivo.
 
       Esta política solo tendrá validez si se ha configurado un proxy (por ejemplo, a través de una política o de las extensiones, o si lo ha configurado el usuario en chrome://settings).
@@ -1215,6 +1225,11 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="5307432759655324440">Disponibilidad del modo de incógnito</translation>
 <translation id="5318185076587284965">Habilita el uso de servidores de retransmisión por parte del host de acceso remoto</translation>
 <translation id="5330684698007383292">Permitir que <ph name="PRODUCT_FRAME_NAME" /> procese los tipos de contenido que se indican a continuación</translation>
+<translation id="5345267406698765263">Especifica la política de la aplicación ARC como cadena JSON, que se puede
+      transmitir tal cual al tiempo de ejecución ARC. En este momento, esta configuración se utiliza
+      solo para especificar la instalación forzada de las aplicaciones.
+
+      Si esta política no se configura, no se instalará ninguna aplicación automáticamente.</translation>
 <translation id="5365946944967967336">Mostrar botón de página principal en la barra de herramientas</translation>
 <translation id="5366977351895725771">Si se establece el valor "false", el usuario no podrá crear usuarios supervisados, pero seguirán estando disponibles los usuarios supervisados creados anteriormente.
 
@@ -1287,6 +1302,13 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Si la política no se establece, los usuarios podrán elegir si los archivos se deben ocultar automáticamente.</translation>
 <translation id="557658534286111200">Permite habilitar o inhabilitar la edición de marcadores.</translation>
 <translation id="5586942249556966598">No hacer nada</translation>
+<translation id="5613179474872285001">Configura el nombre de dominio del cliente requerido que se impondrá a los clientes de acceso remoto y evita que los usuarios lo cambien.
+
+          Si esta configuración se habilita, solo podrán conectarse al host los clientes del dominio que se haya especificado.
+
+          Si esta configuración se inhabilita o no se establece, se aplica la política predeterminada para establecer el tipo de conexión. Para la asistencia remota, permite que los clientes de cualquier dominio puedan conectarse al host. En el caso del acceso remoto en cualquier momento, solo puede conectarse el propietario del host.
+
+          Consulta también RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">Restaurar la última sesión</translation>
 <translation id="5645779841392247734">Permitir cookies en estos sitios</translation>
 <translation id="5677038592630896441">Es necesario que el nombre del usuario local y del propietario del host de acceso remoto coincidan.
@@ -1722,6 +1744,13 @@ Si no se establece esta política, las opciones de accesibilidad no aparecerán 
 <translation id="6943577887654905793">Nombre de preferencia en Mac/Linux:</translation>
 <translation id="69525503251220566">Parámetro que proporciona una función de búsqueda por imagen para el proveedor de búsquedas predeterminado</translation>
 <translation id="6956272732789158625">No permitir que los sitios web utilicen la generación de claves</translation>
+<translation id="695891079107014261">Configura el nombre de dominio del host requerido que se impondrá a los hosts de acceso remoto y evita que los usuarios lo cambien.
+
+          Si esta configuración se habilita, los hosts solo podrán compartirse con cuentas registradas en el nombre de dominio que se haya especificado.
+
+          Si esta configuración se inhabilita o no se establece, los hosts se pueden compartir utilizando cualquier cuenta.
+
+          Consulta también RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Permite establecer si es necesario realizar comprobaciones de OCSP/CRL online para los anclajes de veracidad locales</translation>
 <translation id="7003334574344702284">Si se habilita, esta política fuerza la importación de las contraseñas guardadas desde el navegador predeterminado actual. Si está habilitada, esta política también afecta al cuadro de diálogo de importación.
 

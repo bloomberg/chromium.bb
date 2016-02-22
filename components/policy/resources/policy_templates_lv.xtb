@@ -151,6 +151,13 @@
 <translation id="1522425503138261032">Atļaut vietnēm izsekot lietotāju fizisko atrašanās vietu</translation>
 <translation id="152657506688053119">Noklusējuma meklētājprogrammas alternatīvo vietrāžu URL saraksts</translation>
 <translation id="1530812829012954197">Norādītās URL struktūras vienmēr tiek renderētas ar saimniekdatora pārlūku</translation>
+<translation id="1553684822621013552">Ja šai politikai ir iestatīta vērtība “Patiesa”, lietotājam tiks iespējots ARC
+      (var tikt veiktas papildu politikas iestatījumu pārbaudes — ARC joprojām nebūs
+      pieejams, ja pašreizējā lietotāja sesijā būs iespējots īslaicīgais režīms vai
+      vairākkārtēja pierakstīšanās).
+
+      Ja šis iestatījums ir atspējots vai nav konfigurēts, korporatīvie lietotāji
+      nevar izmantot ARC.</translation>
 <translation id="1561424797596341174">Politikas ignorēšana attālās piekļuves saimniekdatora atkļūdošanas versijām</translation>
 <translation id="1583248206450240930">Pēc noklusējuma lietot <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="1608755754295374538">Vietrāži URL, kuriem tiks nodrošināta piekļuve audio tveršanas ierīcēm bez uzvednes parādīšanas.</translation>
@@ -252,6 +259,7 @@
       Ja šai politikai ir iestatīta vērtība Patiesa, <ph name="PRODUCT_OS_NAME" /> mēģinās lejupielādēt automātiskās atjaunināšanas vērtumus, izmantojot HTTP. Ja šai politikai ir iestatīta vērtība Nepatiesa vai politika nav iestatīta, automātiskās atjaunināšanas vērtumu lejupielādei tiks izmantots HTTPS.</translation>
 <translation id="2006530844219044261">Barošanas pārvaldība</translation>
 <translation id="201557587962247231">Ierīces statusa pārskatu augšupielādes biežums</translation>
+<translation id="2024476116966025075">Nepieciešamā domēna nosaukuma konfigurēšana attālās piekļuves klientiem</translation>
 <translation id="2030905906517501646">Noklusējuma meklētājprogrammas atslēgvārds</translation>
 <translation id="206623763829450685">Norāda <ph name="PRODUCT_NAME" /> atbalstītās HTTP autentifikācijas shēmas.
 
@@ -489,6 +497,7 @@
       Ja šī politika nav iestatīta, lietotājs varēs izvēlēties, izmantot vai neizmantot datu saspiešanas starpniekservera funkciju.</translation>
 <translation id="2587719089023392205">Iestatīt <ph name="PRODUCT_NAME" /> kā noklusējuma pārlūku</translation>
 <translation id="2592091433672667839">Neaktivitātes ilgums, pirms ekrānsaudzētājs tiek parādīts mazumtirdzniecības režīma pierakstīšanās ekrānā</translation>
+<translation id="260705825237536216">ARC lietotņu konfigurēšana</translation>
 <translation id="2623014935069176671">Gaidīt sākotnējo lietotāja darbību</translation>
 <translation id="262740370354162807">Iespējo dokumentu iesniegšanu pakalpojumā <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Iespējot izrunu</translation>
@@ -609,6 +618,7 @@
           Ja šīs politikas vērtība nav iestatīta, tiek izmantots noklusējuma laika periods.
 
           Politikas vērtību nedrīkst norādīt milisekundēs. Ir jānorāda vērtības, kas ir mazākas par aizkavi līdz ekrāna izslēgšanai (ja tāda ir iestatīta) un dīkstāvei vai kas ir vienādas ar to.</translation>
+<translation id="2987155890997901449">ARC iespējošana</translation>
 <translation id="2998881342848488968">Šī politika ļauj operētājsistēmai <ph name="PRODUCT_OS_NAME" /> apiet visus caurlaides lapu autentifikācijas starpniekserverus.
 
       Šī politika ir spēkā tikai tad, ja ir konfigurēts starpniekserveris (piemēram, izmantojot politiku, lietotāja iestatījumus lapā chrome://settings vai paplašinājumus).
@@ -1218,6 +1228,11 @@
 <translation id="5307432759655324440">Inkognito režīma pieejamība</translation>
 <translation id="5318185076587284965">Pārraides serveru iespējošana attālās piekļuves saimniekdatoram</translation>
 <translation id="5330684698007383292">Atļauja produktam <ph name="PRODUCT_FRAME_NAME" /> apstrādāt tālāk norādītos satura veidus</translation>
+<translation id="5345267406698765263">Norāda ARC lietojumprogrammu politiku kā JSON virkni, kuru
+      ARC izpildlaikam var pārsūtīt tādu, kāda tā ir. Pašlaik šis iestatījums tiek izmantots
+      tikai lietotņu piespiedu instalēšanas norādīšanai.
+
+      Ja šī politika nav iestatīta, neviena lietotne netiek instalēta automātiski.</translation>
 <translation id="5365946944967967336">Rīkjoslā parāda pogu Sākums</translation>
 <translation id="5366977351895725771">Iestatot vērtību uz “false”, šim lietotājam tiks atspējota iespēja veidot uzraudzītos lietotāju kontus. Visi esošie uzraudzītie lietotāju konti joprojām būs pieejami.
 
@@ -1290,6 +1305,13 @@
       Ja politika netiks iestatīta, lietotāji varēs izvēlēties, vai automātiski slēpt plauktu.</translation>
 <translation id="557658534286111200">Iespējo vai atspējo grāmatzīmju rediģēšanu</translation>
 <translation id="5586942249556966598">Nedarīt neko</translation>
+<translation id="5613179474872285001">Konfigurē nepieciešamo klienta domēna nosaukumu, kas tiks izmantots attālās piekļuves klientiem, un lietotāji to nevarēs mainīt.
+
+          Ja šis iestatījums ir iespējots, savienojumu ar saimniekdatoru var izveidot tikai klienti no norādītā domēna.
+
+          Ja šis iestatījums ir atspējots vai nav iestatīts, tiek lietota savienojuma veida noklusējuma politika. Lai sniegtu attālu palīdzību, klienti no jebkura domēna var izveidot savienojumu ar saimniekdatoru. Attālai piekļuvei jebkurā laikā savienojumu var izveidot tikai saimniekdatora īpašnieks.
+
+          Skatiet arī politiku RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">Atjaunot pēdējo sesiju</translation>
 <translation id="5645779841392247734">Atļauj sīkfailus šajās vietnēs</translation>
 <translation id="5677038592630896441">Pieprasa, lai sakristu lokālā lietotāja vārds un attālās piekļuves saimniekdatora īpašnieka vārds.
@@ -1727,6 +1749,13 @@
 <translation id="6943577887654905793">Mac/Linux preferences nosaukums:</translation>
 <translation id="69525503251220566">Parametrs, kas noklusējuma meklēšanas pakalpojumu sniedzējam nodrošina funkciju Meklēšana pēc attēla</translation>
 <translation id="6956272732789158625">Neatļaut izmantot atslēgu ģenerēšanu nevienā vietnē</translation>
+<translation id="695891079107014261">Konfigurē nepieciešamo klienta domēna nosaukumu, kas tiks izmantots attālās piekļuves klientiem, un lietotāji to nevarēs mainīt.
+
+          Ja šis iestatījums ir iespējots, saimniekdatorus var koplietot, tikai izmantojot kontus, kas reģistrēti norādītajā domēna nosaukumā.
+
+          Ja šī politika ir atspējota vai nav iestatīta, saimniekdatorus var koplietot, izmantojot jebkuru kontu.
+
+          Skatiet arī politiku RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Vai lokāliem uzticamības enkuriem ir nepieciešama OCSP/CRL pārbaude</translation>
 <translation id="7003334574344702284">Šī politika (ja tā ir iespējota) liek importēt saglabātās paroles no iepriekšējā noklusējuma pārlūka. Ja šī politika ir iespējota, tā arī maina importēšanas dialoglodziņu.
 

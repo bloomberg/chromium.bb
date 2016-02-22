@@ -35,11 +35,14 @@
 <translation id="1227224963052638717">Norma sconosciuta.</translation>
 <translation id="1227633850867390598">Nascondi valore</translation>
 <translation id="1228893227497259893">Identificatore entità errato</translation>
+<translation id="1232569758102978740">Senza titolo</translation>
 <translation id="1254117744268754948">Scegli cartella</translation>
 <translation id="1270699273812232624">Consenti elementi</translation>
 <translation id="1285320974508926690">Non tradurre mai questo sito</translation>
+<translation id="129553762522093515">Chiuse di recente</translation>
 <translation id="1339601241726513588">Dominio registrazione:</translation>
 <translation id="1344588688991793829">Impostazioni di Compilazione automatica Chromium...</translation>
+<translation id="1374468813861204354">suggerimenti</translation>
 <translation id="1375198122581997741">Informazioni sulla versione</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> non ha inviato dati.</translation>
 <translation id="1407135791313364759">Apri tutte</translation>
@@ -56,6 +59,7 @@
 <translation id="1559572115229829303">&lt;p&gt;Impossibile stabilire una connessione privata con il sito <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> perché data e ora del dispositivo (<ph name="DATE_AND_TIME" />) non sono corrette.&lt;/p&gt;
 
       &lt;p&gt;Regola data e ora nella sezione &lt;strong&gt;Generali&lt;/strong&gt; dell'app &lt;strong&gt;Impostazioni&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="1583429793053364125">Si è verificato un problema durante la visualizzazione della pagina web.</translation>
 <translation id="1592005682883173041">Accesso ai dati locali</translation>
 <translation id="1629803312968146339">Vuoi che Chrome salvi questa carta?</translation>
 <translation id="1640180200866533862">Criteri utente</translation>
@@ -90,6 +94,7 @@
 <translation id="2030481566774242610">Forse cercavi <ph name="LINK" />?</translation>
 <translation id="2053553514270667976">ZIP</translation>
 <translation id="2065985942032347596">Autenticazione richiesta</translation>
+<translation id="2079545284768500474">Annulla</translation>
 <translation id="20817612488360358">Devono essere utilizzate le impostazioni del proxy di sistema ma è stata specificata anche una configurazione proxy esplicita.</translation>
 <translation id="2089090684895656482">Meno</translation>
 <translation id="2094505752054353250">Dominio non corrispondente</translation>
@@ -162,6 +167,7 @@
 <translation id="2837049386027881519">È stato necessario ritentare la connessione utilizzando una versione precedente del protocollo TLS o SSL. In genere questo significa che il server utilizza software molto obsoleto e che potrebbe avere altri problemi di sicurezza.</translation>
 <translation id="284702764277384724">Il certificato del server <ph name="HOST_NAME" /> risulta essere un falso.</translation>
 <translation id="2855922900409897335">Verifica la carta <ph name="CREDIT_CARD" /></translation>
+<translation id="2896499918916051536">Questo plug-in non è supportato.</translation>
 <translation id="2897655920961181107">La porta richiesta non è sicura ed è stata bloccata.</translation>
 <translation id="2909946352844186028">È stato rilevato un cambio di rete.</translation>
 <translation id="2915500479781995473">Questo server non è riuscito a verificare che si tratti di <ph name="DOMAIN" />; il relativo certificato di sicurezza è scaduto. Il problema potrebbe essere dovuto a un'errata configurazione o a un malitenzionato che ha intercettato la connessione. L'orologio del tuo computer è attualmente impostato sul giorno <ph name="CURRENT_TIME" />. È corretto? In caso contrario dovresti regolare l'orologio del sistema e aggiornare la pagina.</translation>
@@ -179,6 +185,7 @@
 <translation id="3005723025932146533">Mostra copia salvata</translation>
 <translation id="3010559122411665027">Voce "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Tipo di criterio errato</translation>
+<translation id="3037605927509011580">Uffa!</translation>
 <translation id="3041612393474885105">Informazioni certificato</translation>
 <translation id="3093245981617870298">Sei offline.</translation>
 <translation id="3105172416063519923">ID asset:</translation>
@@ -188,6 +195,8 @@
 <translation id="3145945101586104090">Decodifica della risposta non riuscita</translation>
 <translation id="3147485256806412701">Questo sito ha un nuovo dominio di primo livello generico.</translation>
 <translation id="3150653042067488994">Errore temporaneo del server</translation>
+<translation id="3157931365184549694">Ripristina</translation>
+<translation id="3167968892399408617">Le pagine visualizzate nelle schede in incognito non vengono memorizzate nella cronologia del browser, nell'archivio di cookie o nella cronologia delle ricerche dopo avere chiuso tutte le schede in incognito. I file scaricati o i preferiti creati verranno conservati.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">Isola</translation>
 <translation id="3176929007561373547">Controlla le impostazioni del proxy o contatta il tuo amministratore di rete per verificare che il server proxy funzioni. Se non ritieni di dover utilizzare un server proxy: <ph name="PLATFORM_TEXT" /></translation>
@@ -235,6 +244,7 @@
 <translation id="3648607100222897006">Queste funzioni sperimentali potrebbero essere modificate, essere interrotte o scomparire in qualsiasi momento. Non offriamo assolutamente alcuna garanzia su ciò potrebbe accadere se attivi uno di questi esperimenti: il tuo browser potrebbe persino andare in autocombustione! Scherzi a parte, il browser potrebbe eliminare tutti i tuoi dati oppure la tua sicurezza e la tua privacy potrebbero essere compromesse in modi inaspettati. Tutti gli esperimenti che attivi saranno abilitati per tutti gli utenti di questo browser. Procedi con cautela.</translation>
 <translation id="3650584904733503804">Convalida riuscita</translation>
 <translation id="3651020361689274926">La risorsa richiesta non esiste più e non esiste un indirizzo di inoltro.  Questa condizione potrebbe essere permanente.</translation>
+<translation id="3655670868607891010">Se questo problema si verifica spesso, prova questi <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Revisione</translation>
 <translation id="3681007416295224113">Informazioni certificato</translation>
 <translation id="3693415264595406141">Password:</translation>
@@ -324,7 +334,6 @@
 <translation id="4841640898320458950">Porta non sicura bloccata.</translation>
 <translation id="4850886885716139402">Visualizza</translation>
 <translation id="4880827082731008257">Cerca nella cronologia</translation>
-<translation id="488726935215981469">I tuoi dati vengono crittografati con la tua passphrase di sincronizzazione. Inseriscila qui di seguito.</translation>
 <translation id="4923417429809017348">Questa pagina è stata tradotta da una lingua sconosciuta in <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Deve essere specificato.</translation>
 <translation id="495170559598752135">Azioni</translation>
@@ -335,6 +344,7 @@
 <translation id="5023310440958281426">Consulta le norme dell'amministratore</translation>
 <translation id="5029568752722684782">Cancella copia</translation>
 <translation id="5031870354684148875">Informazioni su Google Traduttore</translation>
+<translation id="5040262127954254034">Privacy</translation>
 <translation id="5045550434625856497">Password non corretta</translation>
 <translation id="5087286274860437796">Il certificato del server non è valido in questa fase.</translation>
 <translation id="5089810972385038852">Provincia</translation>
@@ -539,12 +549,14 @@ Psst! La prossima volta potrebbe esserti utile la modalità di navigazione in in
 <translation id="7610193165460212391">Il valore non è compreso nell'intervallo (<ph name="VALUE" />).</translation>
 <translation id="7613889955535752492">Scadenza: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Hai già dati crittografati con una versione diversa della password del tuo account Google. Inseriscila qui di seguito.</translation>
+<translation id="7634554953375732414">La tua connessione a questo sito non è privata.</translation>
 <translation id="7637571805876720304">Rimuovere la carta di credito da Chromium?</translation>
 <translation id="7643817847124207232">Connessione a Internet interrotta.</translation>
 <translation id="765676359832457558">Nascondi impostazioni avanzate...</translation>
 <translation id="7658239707568436148">Annulla</translation>
 <translation id="7668654391829183341">Dispositivo sconosciuto</translation>
 <translation id="7674629440242451245">Ti interessano le nuove e straordinarie funzioni di Chrome? Prova il nostro canale Dev all'indirizzo chrome.com/dev.</translation>
+<translation id="769344199378576125">Mostra preferiti offline</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Procedi su <ph name="SITE" /> (non sicuro)<ph name="END_LINK" /></translation>
 <translation id="7716424297397655342">Impossibile caricare il sito dalla cache</translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
@@ -563,6 +575,7 @@ Psst! La prossima volta potrebbe esserti utile la modalità di navigazione in in
 <translation id="7805768142964895445">Stato</translation>
 <translation id="7813600968533626083">Rimuovere il suggerimento per i moduli da Chrome?</translation>
 <translation id="7825436071901023927">Porta non sicura <ph name="SITE" /></translation>
+<translation id="785549533363645510">Non sei completamente invisibile: se navighi in incognito, la tua navigazione non viene nascosta al tuo datore di lavoro, al provider di servizi Internet o ai siti web che visiti.</translation>
 <translation id="7887683347370398519">Controlla il tuo codice CVC e riprova</translation>
 <translation id="790025292736025802"><ph name="URL" /> non trovato</translation>
 <translation id="7912024687060120840">Nella cartella:</translation>
@@ -573,11 +586,9 @@ Psst! La prossima volta potrebbe esserti utile la modalità di navigazione in in
 <translation id="7961015016161918242">Mai</translation>
 <translation id="7977590112176369853">&lt;inserisci query&gt;</translation>
 <translation id="7983301409776629893">Traduci sempre <ph name="ORIGINAL_LANGUAGE" /> in <ph name="TARGET_LANGUAGE" /></translation>
-<translation id="7988324688042446538">Preferiti desktop</translation>
 <translation id="7995512525968007366">Non specificato</translation>
 <translation id="8034522405403831421">Questa pagina è in <ph name="SOURCE_LANGUAGE" />. Tradurla in <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8034955203865359138">Nessuna voce della cronologia trovata.</translation>
-<translation id="8075539548641175231">I tuoi dati sono stati crittografati con la tua passphrase di sincronizzazione in data <ph name="TIME" />. Inseriscila qui di seguito.</translation>
 <translation id="8088680233425245692">Impossibile visualizzare l'articolo.</translation>
 <translation id="8091372947890762290">Attivazione in attesa sul server</translation>
 <translation id="8149426793427495338">Il computer è entrato in modalità sospensione.</translation>
@@ -622,6 +633,7 @@ Puoi comunque utilizzare lo strumento di diagnostica presentato qui per risolver
 <translation id="8703575177326907206">La connessione a <ph name="DOMAIN" /> non è crittografata.</translation>
 <translation id="8713130696108419660">Firma iniziale non valida</translation>
 <translation id="8725066075913043281">Riprova</translation>
+<translation id="8728672262656704056">Sei passato alla navigazione in incognito</translation>
 <translation id="8730621377337864115">Fine</translation>
 <translation id="8738058698779197622">Per poter stabilire una connessione protetta, l'orologio deve essere impostato correttamente perché i certificati utilizzati dai siti web per identificarsi sono validi soltanto per determinati periodi di tempo. L'orologio del dispositivo è sbagliato, pertanto Chromium non può verificare i certificati.</translation>
 <translation id="8740359287975076522">Impossibile trovare l'&lt;abbr id="dnsDefinition"&gt;indirizzo DNS&lt;/abbr&gt; di <ph name="HOST_NAME" />. Stiamo analizzando il problema.</translation>
@@ -637,6 +649,7 @@ Puoi comunque utilizzare lo strumento di diagnostica presentato qui per risolver
 <translation id="885730110891505394">Condivisione con Google</translation>
 <translation id="8866481888320382733">Errore durante l'analisi delle impostazioni criterio</translation>
 <translation id="8866959479196209191">Questa pagina dice:</translation>
+<translation id="8870413625673593573">Chiusi di recente</translation>
 <translation id="8876793034577346603">Analisi della configurazione di rete non riuscita.</translation>
 <translation id="8891727572606052622">Modalità proxy non valida.</translation>
 <translation id="889901481107108152">Spiacenti, questo esperimento non è disponibile sulla tua piattaforma.</translation>

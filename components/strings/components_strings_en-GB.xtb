@@ -38,11 +38,14 @@
 <translation id="1227224963052638717">Unknown policy.</translation>
 <translation id="1227633850867390598">Hide value</translation>
 <translation id="1228893227497259893">Wrong entity identifier</translation>
+<translation id="1232569758102978740">Untitled</translation>
 <translation id="1254117744268754948">Choose Folder</translation>
 <translation id="1270699273812232624">Allow items</translation>
 <translation id="1285320974508926690">Never translate this site</translation>
+<translation id="129553762522093515">Recently closed</translation>
 <translation id="1339601241726513588">Enrolment domain:</translation>
 <translation id="1344588688991793829">Chromium Auto-fill settings...</translation>
+<translation id="1374468813861204354">suggestions</translation>
 <translation id="1375198122581997741">About Version</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> didn’t send any data.</translation>
 <translation id="1407135791313364759">Open all</translation>
@@ -59,6 +62,7 @@
 <translation id="1559572115229829303">&lt;p&gt;A private connection to <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> can't be established because your device's date and time (<ph name="DATE_AND_TIME" />) are incorrect.&lt;/p&gt;
 
       &lt;p&gt;Please adjust the date and time from the &lt;strong&gt;General&lt;/strong&gt; section of the &lt;strong&gt;Settings&lt;/strong&gt; app.&lt;/p&gt;</translation>
+<translation id="1583429793053364125">Something went wrong while displaying this web page.</translation>
 <translation id="1592005682883173041">Local Data Access</translation>
 <translation id="1629803312968146339">Do you want Chrome to save this card?</translation>
 <translation id="1640180200866533862">User policies</translation>
@@ -93,6 +97,7 @@
 <translation id="2030481566774242610">Did you mean <ph name="LINK" />?</translation>
 <translation id="2053553514270667976">ZIP code</translation>
 <translation id="2065985942032347596">Authentication Required</translation>
+<translation id="2079545284768500474">Undo</translation>
 <translation id="20817612488360358">System proxy settings are set to be used but an explicit proxy configuration is also specified.</translation>
 <translation id="2089090684895656482">Less</translation>
 <translation id="2094505752054353250">Domain mismatch</translation>
@@ -168,6 +173,7 @@
 <translation id="2837049386027881519">The connection had to be retried using an older version of the TLS or SSL protocol. This typically means that the server is using very old software and may have other security issues.</translation>
 <translation id="284702764277384724">The server certificate at <ph name="HOST_NAME" /> appears to be a forgery.</translation>
 <translation id="2855922900409897335">Verify your <ph name="CREDIT_CARD" /></translation>
+<translation id="2896499918916051536">This plug-in is not supported.</translation>
 <translation id="2897655920961181107">The requested port is unsafe and has been blocked.</translation>
 <translation id="2909946352844186028">A network change was detected.</translation>
 <translation id="2915500479781995473">This server could not prove that it is <ph name="DOMAIN" />; its security certificate expired. This may be caused by a misconfiguration or an attacker intercepting your connection. Your computer's clock is currently set to <ph name="CURRENT_TIME" />. Does that look right? If not, you should correct your system's clock and then refresh this page.</translation>
@@ -189,6 +195,7 @@
 <translation id="3005723025932146533">Show saved copy</translation>
 <translation id="3010559122411665027">List entry "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Wrong policy type</translation>
+<translation id="3037605927509011580">Aw, Snap!</translation>
 <translation id="3041612393474885105">Certificate Information</translation>
 <translation id="3093245981617870298">You are offline</translation>
 <translation id="3105172416063519923">Asset ID:</translation>
@@ -198,6 +205,8 @@
 <translation id="3145945101586104090">Failed to decode response</translation>
 <translation id="3147485256806412701">This site is using a new generic top-level domain.</translation>
 <translation id="3150653042067488994">Temporary server error</translation>
+<translation id="3157931365184549694">Restore</translation>
+<translation id="3167968892399408617">Pages that you view in incognito tabs won’t stick around in your browser’s history, cookie store or search history after you’ve closed all of your incognito tabs. Any files you download or bookmarks you create will be kept.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">Island</translation>
 <translation id="3176929007561373547">Check your proxy settings or contact your network administrator to
@@ -248,6 +257,7 @@
 <translation id="3648607100222897006">These experimental features may change, break or disappear at any time. We make absolutely no guarantees about what may happen if you turn one of these experiments on, and your browser may even spontaneously combust. Jokes aside, your browser may delete all your data or your security and privacy could be compromised in unexpected ways. Any experiments that you enable will be enabled for all users of this browser. Please proceed with caution.</translation>
 <translation id="3650584904733503804">Validation successful</translation>
 <translation id="3651020361689274926">The resource requested no longer exists and there is no forwarding address.  This is expected to be a permanent condition.</translation>
+<translation id="3655670868607891010">If you're seeing this frequently, try these <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Revision</translation>
 <translation id="3681007416295224113">Certificate information</translation>
 <translation id="3693415264595406141">Password:</translation>
@@ -338,7 +348,6 @@
 <translation id="4841640898320458950">Unsafe port blocked.</translation>
 <translation id="4850886885716139402">View</translation>
 <translation id="4880827082731008257">Search history</translation>
-<translation id="488726935215981469">Your data is encrypted with your sync passphrase. Please enter it below.</translation>
 <translation id="4923417429809017348">This page has been translated from an unknown language into <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Must be specified.</translation>
 <translation id="495170559598752135">Actions</translation>
@@ -349,6 +358,7 @@
 <translation id="5023310440958281426">Check your administrator's policies</translation>
 <translation id="5029568752722684782">Clear copy</translation>
 <translation id="5031870354684148875">About Google Translate</translation>
+<translation id="5040262127954254034">Privacy</translation>
 <translation id="5045550434625856497">Incorrect password</translation>
 <translation id="5087286274860437796">Server's certificate is not valid at this time.</translation>
 <translation id="5089810972385038852">County</translation>
@@ -560,12 +570,14 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="7610193165460212391">Value is out of range <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Exp: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">You already have data that is encrypted using a different version of your Google Account password. Please enter it below.</translation>
+<translation id="7634554953375732414">Your connection to this site is not private.</translation>
 <translation id="7637571805876720304">Remove credit card from Chromium?</translation>
 <translation id="7643817847124207232">The Internet connection has been lost.</translation>
 <translation id="765676359832457558">Hide advanced settings ...</translation>
 <translation id="7658239707568436148">Cancel</translation>
 <translation id="7668654391829183341">Unknown device</translation>
 <translation id="7674629440242451245">Interested in cool new Chrome features? Try our dev channel at chrome.com/dev.</translation>
+<translation id="769344199378576125">Show offline bookmarks</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Proceed to <ph name="SITE" /> (unsafe)<ph name="END_LINK" /></translation>
 <translation id="7716424297397655342">This site can’t be loaded from the cache</translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
@@ -584,6 +596,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="7805768142964895445">Status</translation>
 <translation id="7813600968533626083">Remove form suggestion from Chrome?</translation>
 <translation id="7825436071901023927">Unsafe Port <ph name="SITE" /></translation>
+<translation id="785549533363645510">However, you aren’t invisible. Going incognito doesn’t hide your browsing from your employer, your Internet service provider or the websites that you visit.</translation>
 <translation id="7887683347370398519">Check your CVC and try again</translation>
 <translation id="790025292736025802"><ph name="URL" /> is not found</translation>
 <translation id="7912024687060120840">In Folder:</translation>
@@ -594,11 +607,9 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="7961015016161918242">Never</translation>
 <translation id="7977590112176369853">&lt;enter query&gt;</translation>
 <translation id="7983301409776629893">Always translate <ph name="ORIGINAL_LANGUAGE" /> to <ph name="TARGET_LANGUAGE" /></translation>
-<translation id="7988324688042446538">Desktop bookmarks</translation>
 <translation id="7995512525968007366">Not Specified</translation>
 <translation id="8034522405403831421">This page is in <ph name="SOURCE_LANGUAGE" />. Translate it to <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8034955203865359138">No history entries found.</translation>
-<translation id="8075539548641175231">Your data was encrypted with your sync passphrase on <ph name="TIME" />. Please enter it below.</translation>
 <translation id="8088680233425245692">Failed to view article.</translation>
 <translation id="8091372947890762290">Activation is pending on the server</translation>
 <translation id="8149426793427495338">Your computer went to sleep.</translation>
@@ -651,6 +662,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="8703575177326907206">Your connection to <ph name="DOMAIN" /> is not encrypted.</translation>
 <translation id="8713130696108419660">Bad intial signature</translation>
 <translation id="8725066075913043281">Try again</translation>
+<translation id="8728672262656704056">You’ve gone incognito</translation>
 <translation id="8730621377337864115">Finished</translation>
 <translation id="8738058698779197622">To establish a secure connection, your clock needs to be set correctly. This is because the certificates that websites use to identify themselves are only valid for specific periods of time. Since your device's clock is incorrect, Chromium cannot verify these certificates.</translation>
 <translation id="8740359287975076522"><ph name="HOST_NAME" />’s &lt;abbr id="dnsDefinition"&gt;DNS address&lt;/abbr&gt; could not be found. Diagnosing the problem.</translation>
@@ -666,6 +678,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="885730110891505394">Sharing with Google</translation>
 <translation id="8866481888320382733">Error parsing policy settings</translation>
 <translation id="8866959479196209191">This page says:</translation>
+<translation id="8870413625673593573">Recently Closed</translation>
 <translation id="8876793034577346603">Network configuration failed to be parsed.</translation>
 <translation id="8891727572606052622">Invalid proxy mode.</translation>
 <translation id="889901481107108152">Sorry, this experiment is not available on your platform.</translation>

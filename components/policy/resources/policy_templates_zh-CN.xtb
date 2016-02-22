@@ -128,6 +128,9 @@
 <translation id="1522425503138261032">允许网站跟踪用户的地理位置</translation>
 <translation id="152657506688053119">默认搜索服务提供商的备选网址列表</translation>
 <translation id="1530812829012954197">总是通过托管浏览器呈现以下网址格式</translation>
+<translation id="1553684822621013552">如果将这项政策设为 true，系统会为用户启用 ARC（需要经过额外的政策设置检查；如果目前的用户会话中已启用暂存模式或多帐户登录功能，则用户仍然无法使用 ARC）。
+
+如果停用或未配置此设置，那么企业用户将无法使用 ARC。</translation>
 <translation id="1561424797596341174">覆盖与远程访问主机的调试版本号相关的政策</translation>
 <translation id="1583248206450240930">默认情况下使用“<ph name="PRODUCT_FRAME_NAME" />”</translation>
 <translation id="1608755754295374538">无需提示用户即可使用音频捕获设备的网址</translation>
@@ -213,6 +216,7 @@
       如果此政策设为true，<ph name="PRODUCT_OS_NAME" />将尝试通过HTTP下载自动更新有效负荷。如果此政策设为false或未设置，系统将使用HTTPS下载自动更新有效负荷。</translation>
 <translation id="2006530844219044261">电源管理</translation>
 <translation id="201557587962247231">设备状态报告的上传频率</translation>
+<translation id="2024476116966025075">为远程访问客户端配置必要的域名</translation>
 <translation id="2030905906517501646">默认搜索服务提供商关键字</translation>
 <translation id="206623763829450685">指定 <ph name="PRODUCT_NAME" /> 支持哪些 HTTP 身份验证方案。
 
@@ -419,6 +423,7 @@
       如果该政策未设置，用户可选择是否使用数据压缩代理功能。</translation>
 <translation id="2587719089023392205">将 <ph name="PRODUCT_NAME" /> 设为默认浏览器</translation>
 <translation id="2592091433672667839">在零售模式登录屏幕上显示屏幕保护程序之前的闲置时间</translation>
+<translation id="260705825237536216">配置 ARC 应用</translation>
 <translation id="2623014935069176671">等待首个用户活动</translation>
 <translation id="262740370354162807">允许将文档提交到 <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">启用语音反馈</translation>
@@ -526,6 +531,7 @@
           如果未设置此政策，系统将使用默认的时间长度。
 
           指定的政策值应以毫秒为单位，并且不得大于屏幕关闭延迟时间（如果设置了的话）和闲置延迟时间。</translation>
+<translation id="2987155890997901449">启用 ARC</translation>
 <translation id="2998881342848488968">此政策允许 <ph name="PRODUCT_OS_NAME" />在进行强制门户身份验证时跳过任何代理服务器。
 
       只有在配置了代理服务器时（例如，通过政策配置、由用户在 chrome://settings 中配置，或通过扩展程序配置），此政策才会生效。
@@ -1049,6 +1055,9 @@
 <translation id="5307432759655324440">隐身模式的可用性</translation>
 <translation id="5318185076587284965">允许远程访问主机使用中继服务器</translation>
 <translation id="5330684698007383292">允许 <ph name="PRODUCT_FRAME_NAME" />处理以下内容类型</translation>
+<translation id="5345267406698765263">以 JSON 字符串形式指定 ARC 应用政策，以便以原样将其传递给 ARC 运行时。目前，此设置仅适用于指定强制安装应用。
+
+如果未设置这项政策，则系统不会自动安装任何应用。</translation>
 <translation id="5365946944967967336">在工具栏上显示“主页”按钮</translation>
 <translation id="5366977351895725771">如果此政策的值设置为 False，此用户将无法创建受监管用户。不过，所有目前受监管的用户帐户仍然可供访问。
 
@@ -1112,6 +1121,13 @@
       如果未设置此策略，那么用户将可以选择是否自动隐藏文件架。</translation>
 <translation id="557658534286111200">启用或停用书签修改功能</translation>
 <translation id="5586942249556966598">不执行任何操作</translation>
+<translation id="5613179474872285001">配置将针对远程访问客户端强制使用的必要客户端域名，并禁止用户对其进行更改。
+
+启用此设置后，只有来自指定网域的客户端可以连接到主机。
+
+如果停用或未配置此设置，那么系统会应用默认的连接类型政策。如果是远程协助，此设置则允许来自任何网域的客户端连接到主机；如果是没有时间限制的远程访问，则只有主机所有者可以连接到主机。
+
+另请参阅 RemoteAccessHostDomain。</translation>
 <translation id="5630352020869108293">恢复上次的会话</translation>
 <translation id="5645779841392247734">在这些网站上允许 Cookie</translation>
 <translation id="5677038592630896441">本地用户的名称和远程访问主机所有者的名称必须一致。
@@ -1492,6 +1508,13 @@
 <translation id="6943577887654905793">Mac/Linux 偏好设置名称：</translation>
 <translation id="69525503251220566">用来为默认搜索服务提供商提供图片搜索功能的参数</translation>
 <translation id="6956272732789158625">不允许任何网站使用密钥生成功能</translation>
+<translation id="695891079107014261">配置将针对远程访问主机强制使用的必要主机域名，并禁止用户对其进行更改。
+
+启用这项设置后，必须使用在指定域名上注册的帐户才能共享主机。
+
+如果停用或未配置此设置，则可以使用任何帐户共享主机。
+
+另请参阅 RemoteAccessHostClientDomain。</translation>
 <translation id="6997592395211691850">是否需要为本地信任锚执行在线 OCSP/CRL 检查</translation>
 <translation id="7003334574344702284">如果启用此政策，就会强制从先前的默认浏览器导入已保存的密码，还会影响导入对话框。如果停用此政策，就不会导入已保存的密码。如果未设置此政策，系统就会询问用户是否导入已保存的密码，或者系统自动进行导入。</translation>
 <translation id="7003746348783715221">“<ph name="PRODUCT_NAME" />”偏好设置</translation>

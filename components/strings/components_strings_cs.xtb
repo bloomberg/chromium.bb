@@ -35,11 +35,14 @@
 <translation id="1227224963052638717">Neznámá zásada.</translation>
 <translation id="1227633850867390598">Skrýt hodnotu</translation>
 <translation id="1228893227497259893">Nesprávný identifikátor subjektu</translation>
+<translation id="1232569758102978740">Bez názvu</translation>
 <translation id="1254117744268754948">Výběr složky</translation>
 <translation id="1270699273812232624">Povolit položky</translation>
 <translation id="1285320974508926690">Tento web nikdy nepřekládat</translation>
+<translation id="129553762522093515">Nedávno zavřené</translation>
 <translation id="1339601241726513588">Doména registrace:</translation>
 <translation id="1344588688991793829">Nastavení Automatického vyplňování v prohlížeči Chromium...</translation>
+<translation id="1374468813861204354">návrhy</translation>
 <translation id="1375198122581997741">O verzi aplikace</translation>
 <translation id="139305205187523129">Web <ph name="HOST_NAME" /> neodeslal žádná data.</translation>
 <translation id="1407135791313364759">Otevřít vše</translation>
@@ -56,6 +59,7 @@
 <translation id="1559572115229829303">&lt;p&gt;Soukromé připojení k doméně <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> nelze navázat, protože máte v zařízení nastaveno chybné datum a čas (<ph name="DATE_AND_TIME" />).&lt;/p&gt;
 
       &lt;p&gt;Datum a čas upravte v aplikaci &lt;strong&gt;Nastavení&lt;/strong&gt; v sekci &lt;strong&gt;Obecné&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="1583429793053364125">Při zobrazování této webové stránky došlo k chybě.</translation>
 <translation id="1592005682883173041">Přístup k místním datům</translation>
 <translation id="1629803312968146339">Chcete, aby Chrome tuto kartu uložil?</translation>
 <translation id="1640180200866533862">Zásady pro uživatele</translation>
@@ -90,6 +94,7 @@
 <translation id="2030481566774242610">Měli jste na mysli <ph name="LINK" />?</translation>
 <translation id="2053553514270667976">PSČ</translation>
 <translation id="2065985942032347596">Vyžaduje se ověření</translation>
+<translation id="2079545284768500474">Zpět</translation>
 <translation id="20817612488360358">Jako aktivní jsou nakonfigurována systémová nastavení proxy serveru, je však určena i explicitní konfigurace proxy serveru.</translation>
 <translation id="2089090684895656482">Méně</translation>
 <translation id="2094505752054353250">Neshoda domén</translation>
@@ -162,6 +167,7 @@
 <translation id="2837049386027881519">Pokus o připojení musel proběhnout znovu pomocí starší verze protokolu TLS nebo SSL. Obvykle to znamená, že server používá zastaralý software a může mít další problémy se zabezpečením.</translation>
 <translation id="284702764277384724">Zdá se, že certifikát serveru webu <ph name="HOST_NAME" /> je podvrh.</translation>
 <translation id="2855922900409897335">Ověření karty <ph name="CREDIT_CARD" /></translation>
+<translation id="2896499918916051536">Tento plugin není podporován.</translation>
 <translation id="2897655920961181107">Požadovaný port je nebezpečný a byl zablokován.</translation>
 <translation id="2909946352844186028">Byla zjištěna změna sítě.</translation>
 <translation id="2915500479781995473">Tento server nemohl prokázat, že patří do domény <ph name="DOMAIN" />. Platnost jeho bezpečnostního certifikátu vypršela. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník. Hodiny ve vašem počítači jsou aktuálně nastaveny na <ph name="CURRENT_TIME" />. Je to správně? Pokud ne, měli byste čas v počítači opravit a poté tuto stránku načíst znovu.</translation>
@@ -179,6 +185,7 @@
 <translation id="3005723025932146533">Zobrazit uloženou kopii</translation>
 <translation id="3010559122411665027">Položka seznamu „<ph name="ENTRY_INDEX" />“: <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Chybný typ zásady</translation>
+<translation id="3037605927509011580">Aj, chyba!</translation>
 <translation id="3041612393474885105">Informace o certifikátu</translation>
 <translation id="3093245981617870298">Nejste připojeni k síti.</translation>
 <translation id="3105172416063519923">ID díla:</translation>
@@ -188,6 +195,8 @@
 <translation id="3145945101586104090">Dekódování odpovědi se nezdařilo</translation>
 <translation id="3147485256806412701">Tento web používá novou generickou doménu nejvyšší úrovně.</translation>
 <translation id="3150653042067488994">Dočasná chyba serveru</translation>
+<translation id="3157931365184549694">Obnovit</translation>
+<translation id="3167968892399408617">Stránky, které otevřete na anonymních kartách, po zavření všech anonymních karet nezanechají žádné stopy v historii prohlížeče, v úložišti souborů cookie ani v historii vyhledávání. Zachovány však zůstanou všechny stažené soubory a vytvořené záložky.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">Ostrov</translation>
 <translation id="3176929007561373547">Zkontrolujte nastavení proxy serveru nebo se obraťte na správce sítě, aby ověřil, zda proxy server funguje. Pokud se domníváte, že by proxy server neměl být používán: <ph name="PLATFORM_TEXT" /></translation>
@@ -235,6 +244,7 @@
 <translation id="3648607100222897006">Tyto experimentální funkce se mohou kdykoli změnit, zhroutit nebo zmizet. Nemůžeme vůbec zaručit, co se po zapnutí těchto experimentů stane. Prohlížeč může například samovolně vybouchnout. Ale bez legrace: Prohlížeč může smazat veškeré vaše údaje nebo neočekávanými způsoby narušit vaše zabezpečení či soukromí. Experimenty, které zapnete, budou k dispozici všem uživatelům prohlížeče. Buďte prosím obezřetní.</translation>
 <translation id="3650584904733503804">Ověření proběhlo úspěšně</translation>
 <translation id="3651020361689274926">Požadovaný zdroj již neexistuje a není k dispozici ani adresa přesměrování. Tento stav je pravděpodobně trvalý.</translation>
+<translation id="3655670868607891010">Pokud se vám tato stránka zobrazuje často, zkuste využít tyto <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Verze</translation>
 <translation id="3681007416295224113">Informace o certifikátu</translation>
 <translation id="3693415264595406141">Heslo:</translation>
@@ -324,7 +334,6 @@
 <translation id="4841640898320458950">Nebezpečný port je blokován.</translation>
 <translation id="4850886885716139402">Zobrazit</translation>
 <translation id="4880827082731008257">Hledat v historii</translation>
-<translation id="488726935215981469">Údaje jsou šifrovány pomocí vlastního hesla pro synchronizaci. Zadejte toto heslo.</translation>
 <translation id="4923417429809017348">Tato stránka byla přeložena z neznámého jazyka do jazyka <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Musí být uvedeno</translation>
 <translation id="495170559598752135">Akce</translation>
@@ -335,6 +344,7 @@
 <translation id="5023310440958281426">Zkontrolujte zásady svého správce</translation>
 <translation id="5029568752722684782">Vymazat kopii</translation>
 <translation id="5031870354684148875">O Překladači Google</translation>
+<translation id="5040262127954254034">Ochrana soukromí</translation>
 <translation id="5045550434625856497">Nesprávné heslo</translation>
 <translation id="5087286274860437796">Certifikát serveru v tuto chvíli není platný.</translation>
 <translation id="5089810972385038852">Stát/kraj</translation>
@@ -539,12 +549,14 @@ Pssst! Příště by se vám mohl hodit anonymní režim (<ph name="SHORTCUT_KEY
 <translation id="7610193165460212391">Hodnota <ph name="VALUE" /> je mimo rozsah.</translation>
 <translation id="7613889955535752492">Vypršení platnosti: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Již máte údaje, které jsou šifrovány pomocí jiné verze vašeho hesla k účtu Google. Zadejte toto heslo prosím níže.</translation>
+<translation id="7634554953375732414">Spojení s tímto webem není soukromé.</translation>
 <translation id="7637571805876720304">Odstranit platební kartu z prohlížeče Chromium?</translation>
 <translation id="7643817847124207232">Internetové spojení se ztratilo.</translation>
 <translation id="765676359832457558">Skrýt rozšířená nastavení...</translation>
 <translation id="7658239707568436148">Zrušit</translation>
 <translation id="7668654391829183341">Neznámé zařízení</translation>
 <translation id="7674629440242451245">Zajímají vás nové funkce Chromu? Vyzkoušejte kanál pro vývojáře na adrese chrome.com/dev.</translation>
+<translation id="769344199378576125">Zobrazit offline záložky</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Pokračovat na web <ph name="SITE" /> (nespolehlivý)<ph name="END_LINK" /></translation>
 <translation id="7716424297397655342">Tento web nelze načíst z mezipaměti</translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
@@ -561,6 +573,7 @@ Pssst! Příště by se vám mohl hodit anonymní režim (<ph name="SHORTCUT_KEY
 <translation id="7805768142964895445">Stav</translation>
 <translation id="7813600968533626083">Odstranit návrh položky formuláře z Chromu?</translation>
 <translation id="7825436071901023927">Nebezpečný port <ph name="SITE" /></translation>
+<translation id="785549533363645510">To neznamená, že jste neviditelní. Anonymní režim neskryje vaši aktivitu před vaším zaměstnavatelem, poskytovatelem internetových služeb ani webovými stránkami, které navštívíte.</translation>
 <translation id="7887683347370398519">Zkontrolujte kód CVC a zkuste to znovu</translation>
 <translation id="790025292736025802">Adresa <ph name="URL" /> nenalezena</translation>
 <translation id="7912024687060120840">Ve složce:</translation>
@@ -571,11 +584,9 @@ Pssst! Příště by se vám mohl hodit anonymní režim (<ph name="SHORTCUT_KEY
 <translation id="7961015016161918242">Nikdy</translation>
 <translation id="7977590112176369853">&lt;zadat dotaz&gt;</translation>
 <translation id="7983301409776629893">Vždy překládat z jazyka <ph name="ORIGINAL_LANGUAGE" /> do jazyka <ph name="TARGET_LANGUAGE" /></translation>
-<translation id="7988324688042446538">Záložky v PC</translation>
 <translation id="7995512525968007366">Není zadáno</translation>
 <translation id="8034522405403831421">Stránka je v jazyce <ph name="SOURCE_LANGUAGE" />. Chcete ji přeložit do jazyka <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8034955203865359138">Nebyly nalezeny žádné historické záznamy.</translation>
-<translation id="8075539548641175231">Údaje byly dne <ph name="TIME" /> zašifrovány pomocí vlastní heslové fráze pro synchronizaci. Zadejte tuto frázi.</translation>
 <translation id="8088680233425245692">Zobrazení článku se nezdařilo.</translation>
 <translation id="8091372947890762290">Čeká se na aktivaci na serveru</translation>
 <translation id="8149426793427495338">Počítač přešel do režimu spánku.</translation>
@@ -618,6 +629,7 @@ Pssst! Příště by se vám mohl hodit anonymní režim (<ph name="SHORTCUT_KEY
 <translation id="8703575177326907206">Vaše spojení se serverem <ph name="DOMAIN" /> není šifrované.</translation>
 <translation id="8713130696108419660">Nesprávný počáteční podpis</translation>
 <translation id="8725066075913043281">Zkusit znovu</translation>
+<translation id="8728672262656704056">Jste v anonymním režimu</translation>
 <translation id="8730621377337864115">Hotovo</translation>
 <translation id="8738058698779197622">Aby bylo možné navázat zabezpečené spojení, hodiny musejí být nastaveny správně. Důvodem je, že certifikáty, pomocí kterých se weby identifikují, platí pouze pro pevně daná období. Jelikož hodiny v zařízení nejsou nastaveny správně, prohlížeč Chromium tyto certifikáty nemůže ověřit.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;Adresu DNS&lt;/abbr&gt; webu <ph name="HOST_NAME" /> nelze najít. Diagnostikování problému…</translation>
@@ -633,6 +645,7 @@ Pssst! Příště by se vám mohl hodit anonymní režim (<ph name="SHORTCUT_KEY
 <translation id="885730110891505394">Sdílení s Googlem</translation>
 <translation id="8866481888320382733">Při analýze nastavení zásady došlo k chybě</translation>
 <translation id="8866959479196209191">Tato stránka říká:</translation>
+<translation id="8870413625673593573">Nedávno zavřené</translation>
 <translation id="8876793034577346603">Analýza konfigurace sítě se nezdařila.</translation>
 <translation id="8891727572606052622">Neplatný režim proxy serveru.</translation>
 <translation id="889901481107108152">Je nám líto, tento experiment není na vaší platformě dostupný.</translation>

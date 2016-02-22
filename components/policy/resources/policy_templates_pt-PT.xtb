@@ -141,6 +141,13 @@
 <translation id="1522425503138261032">Permitir que os sites registem a localização física dos utilizadores</translation>
 <translation id="152657506688053119">Lista de URLs alternativos para o fornecedor de pesquisas predefinido</translation>
 <translation id="1530812829012954197">Processar sempre os seguintes padrões de URL no navegador anfitrião</translation>
+<translation id="1553684822621013552">Quando esta política está definida como verdadeira, o ARC está ativado para o utilizador
+      (sujeito a verificações adicionais das definições da política. O ARC continua
+      indisponível se o modo temporário ou o início de sessão integrado estiverem ativados
+      na sessão de utilizador atual).
+
+      Se esta definição estiver desativada ou por configurar, os utilizadores empresariais
+      não podem utilizar o ARC.</translation>
 <translation id="1561424797596341174">Substituições da política para compilações de Depuração do anfitrião de acesso remoto</translation>
 <translation id="1583248206450240930">Utilizar o <ph name="PRODUCT_FRAME_NAME" /> por predefinição</translation>
 <translation id="1608755754295374538">URLs aos quais será concedido acesso a dispositivos de captura de áudio imediatamente</translation>
@@ -230,6 +237,7 @@
       Se esta política for definida como verdadeira, o <ph name="PRODUCT_OS_NAME" /> tentará transferir payloads de atualização automática através de HTTP. Se esta política for definida como falsa ou não for definida, será utilizado HTTPS para transferir payloads de atualização automática.</translation>
 <translation id="2006530844219044261">Gestão de energia</translation>
 <translation id="201557587962247231">Frequência de carregamentos de relatórios de estado do dispositivo</translation>
+<translation id="2024476116966025075">Configurar o nome do domínio obrigatório para clientes de acesso remoto</translation>
 <translation id="2030905906517501646">Palavra-chave do fornecedor de pesquisas predefinido</translation>
 <translation id="206623763829450685">Especifica quais os esquemas de autenticação HTTP que o <ph name="PRODUCT_NAME" /> suporta.
 
@@ -446,6 +454,7 @@
       Se esta política não ficar definida, a funcionalidade proxy de compressão de dados estará disponível para o utilizador decidir se pretende utilizá-la ou não.</translation>
 <translation id="2587719089023392205">Definir o <ph name="PRODUCT_NAME" /> como o Navegador predefinido</translation>
 <translation id="2592091433672667839">Período de inatividade antes de a proteção de ecrã ser apresentada no ecrã de início de sessão no modo de retalho</translation>
+<translation id="260705825237536216">Configurar aplicações ARC</translation>
 <translation id="2623014935069176671">Aguardar atividade inicial do utilizador</translation>
 <translation id="262740370354162807">Permitir o envio de documentos para o <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Ativar comentários falados</translation>
@@ -552,6 +561,7 @@
           Quando esta política não está definida, utiliza-se um período de tempo predefinido.
 
           O valor da política deve ser especificado em milissegundos. Os valores devem ser inferiores ou iguais ao atraso para desligar o ecrã (se estiver definido) e ao atraso de inatividade.</translation>
+<translation id="2987155890997901449">Ativar ARC</translation>
 <translation id="2998881342848488968">Esta política permite ao <ph name="PRODUCT_OS_NAME" /> ignorar qualquer proxy para autenticação do portal cativo.
 
       Esta política apenas é efetiva se um proxy estiver configurado (por exemplo através da política, pelo utilizador em chrome://settings ou por extensões).
@@ -1080,6 +1090,11 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="5307432759655324440">Disponibilidade do modo de navegação anónima</translation>
 <translation id="5318185076587284965">Ativar a utilização de servidores de retransmissão através do anfitrião de acesso remoto</translation>
 <translation id="5330684698007383292">Permitir que o <ph name="PRODUCT_FRAME_NAME" /> processe os seguintes tipos de conteúdo</translation>
+<translation id="5345267406698765263">Especifica a política da aplicação ARC como uma string JSON que pode ser
+      transmitida tal como está ao tempo de execução ARC. De momento, esta definição é utilizada
+      exclusivamente para especificar a instalação forçada das aplicações.
+
+      Se esta política não for definida, não são instaladas automaticamente quaisquer aplicações.</translation>
 <translation id="5365946944967967336">Mostrar o botão Página Inicial na barra de ferramentas</translation>
 <translation id="5366977351895725771">Se definido como "false", é desativada a criação de utilizadores supervisionados por parte deste utilizador. Todos os utilizadores supervisionados continuarão disponíveis.
 
@@ -1143,6 +1158,13 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se a política ficar por definir, os utilizadores poderão escolher se a prateleira deverá ser ocultada automaticamente.</translation>
 <translation id="557658534286111200">Ativa ou desativa a edição de marcadores</translation>
 <translation id="5586942249556966598">Não fazer nada</translation>
+<translation id="5613179474872285001">Configura o nome do domínio do cliente obrigatório que é imposto aos clientes de acesso remoto e impede os utilizadores de o alterar.
+
+          Se esta definição estiver ativada, apenas os clientes do domínio especificado podem estabelecer ligação ao anfitrião.
+
+          Se esta definição estiver desativada ou por definir, aplica-se a política predefinida para o tipo de ligação. Para assistência remota, permite que os clientes de qualquer domínio estabeleçam ligação ao anfitrião; para acesso remoto a qualquer momento, apenas o proprietário do anfitrião pode estabelecer ligação.
+
+          Consulte também RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">Restaurar a última sessão</translation>
 <translation id="5645779841392247734">Permitir cookies nestes sites</translation>
 <translation id="5677038592630896441">Requer que o nome do utilizador local e do proprietário do anfitrião de acesso remoto coincidam.
@@ -1528,6 +1550,13 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="6943577887654905793">Nome de preferência do Mac/Linux</translation>
 <translation id="69525503251220566">Parâmetro que fornece a funcionalidade de pesquisa por imagem ao fornecedor de pesquisas predefinido</translation>
 <translation id="6956272732789158625">Não permitir que os sites utilizem a geração de chaves</translation>
+<translation id="695891079107014261">Configura o nome do domínio do anfitrião obrigatório que é imposto aos anfitriões de acesso remoto e impede os utilizadores de o alterar.
+
+          Se esta definição estiver ativada, apenas é possível partilhar os anfitriões através de contas registadas no nome do domínio especificado.
+
+          Se esta definição estiver desativada ou por definir, é possível partilhar os anfitriões através de qualquer conta.
+
+          Consulte também RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Se são necessárias verificações de OCSP/CRL online para âncoras fidedignas locais</translation>
 <translation id="7003334574344702284">Se esta política estiver ativada, força a importação de palavras-passe guardadas a partir do anterior navegador predefinido e também afeta a caixa de diálogo de importação. Se estiver desativada, as palavras-passe não são importadas. Se não estiver definida, o utilizador poderá ser questionado se pretende importá-las ou a importação poderá ocorrer automaticamente.</translation>
 <translation id="7003746348783715221">Preferências do <ph name="PRODUCT_NAME" /></translation>

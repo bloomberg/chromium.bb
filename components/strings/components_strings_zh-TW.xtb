@@ -38,11 +38,14 @@
 <translation id="1227224963052638717">不明政策。</translation>
 <translation id="1227633850867390598">隱藏政策值</translation>
 <translation id="1228893227497259893">實體識別碼錯誤</translation>
+<translation id="1232569758102978740">未命名</translation>
 <translation id="1254117744268754948">選擇資料夾</translation>
 <translation id="1270699273812232624">允許項目</translation>
 <translation id="1285320974508926690">一律不翻譯此網站</translation>
+<translation id="129553762522093515">最近關閉的分頁</translation>
 <translation id="1339601241726513588">註冊網域：</translation>
 <translation id="1344588688991793829">Chromium 自動填入設定...</translation>
+<translation id="1374468813861204354">建議</translation>
 <translation id="1375198122581997741">關於版本</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> 未傳送任何資料。</translation>
 <translation id="1407135791313364759">全部開啟</translation>
@@ -59,6 +62,7 @@
 <translation id="1559572115229829303">&lt;p&gt;您裝置的日期和時間 (<ph name="DATE_AND_TIME" />) 不正確，因此無法與 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 建立私人連線。&lt;/p&gt;
 
       &lt;p&gt;請前往「設定」應用程式的「一般設定」專區調整日期和時間。&lt;strong&gt;&lt;/strong&gt;&lt;strong&gt;&lt;/strong&gt;&lt;/p&gt;</translation>
+<translation id="1583429793053364125">顯示這個網頁時發生錯誤。</translation>
 <translation id="1592005682883173041">本機資料存取權</translation>
 <translation id="1629803312968146339">您希望 Chrome 儲存這張信用卡嗎？</translation>
 <translation id="1640180200866533862">使用者政策</translation>
@@ -93,6 +97,7 @@
 <translation id="2030481566774242610">您要找的是 <ph name="LINK" /> 嗎？</translation>
 <translation id="2053553514270667976">郵遞區號</translation>
 <translation id="2065985942032347596">需要驗證</translation>
+<translation id="2079545284768500474">復原</translation>
 <translation id="20817612488360358">雖然系統 Proxy 設定已設為使用，不過也指定了明確 Proxy 設定。</translation>
 <translation id="2089090684895656482">摘要資訊</translation>
 <translation id="2094505752054353250">網域不符</translation>
@@ -168,6 +173,7 @@
 <translation id="2837049386027881519">必須使用較舊版的 TLS 或 SSL 通訊協定重試連線。這通常表示伺服器所使用的軟體非常老舊，而且可能產生其他安全問題。</translation>
 <translation id="284702764277384724"><ph name="HOST_NAME" /> 疑似使用偽造的伺服器憑證。</translation>
 <translation id="2855922900409897335">驗證您的 <ph name="CREDIT_CARD" /></translation>
+<translation id="2896499918916051536">系統不支援這個外掛程式。</translation>
 <translation id="2897655920961181107">您所要求的通訊埠不安全，已遭到封鎖。</translation>
 <translation id="2909946352844186028">系統偵測到網路變更。</translation>
 <translation id="2915500479781995473">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證已過期。這可能是因為設定錯誤，或有攻擊者攔截您的連線所致。您電腦時鐘目前設定的時間是 <ph name="CURRENT_TIME" />，是否正確？如果設定有誤，請更正您系統的時鐘，再重新整理這個頁面。</translation>
@@ -189,6 +195,7 @@
 <translation id="3005723025932146533">顯示儲存的複本</translation>
 <translation id="3010559122411665027">清單項目「<ph name="ENTRY_INDEX" />」：<ph name="ERROR" /></translation>
 <translation id="3024663005179499861">政策類型有誤</translation>
+<translation id="3037605927509011580">糟糕！</translation>
 <translation id="3041612393474885105">憑證資訊</translation>
 <translation id="3093245981617870298">您處於離線狀態。</translation>
 <translation id="3105172416063519923">資產 ID：</translation>
@@ -198,6 +205,8 @@
 <translation id="3145945101586104090">無法將回應解碼</translation>
 <translation id="3147485256806412701">這個網站使用的是最新通用頂層網域。</translation>
 <translation id="3150653042067488994">伺服器暫時發生錯誤</translation>
+<translation id="3157931365184549694">還原</translation>
+<translation id="3167968892399408617">當您關閉所有無痕式分頁後，您在其中瀏覽的網頁都不會保留在瀏覽器紀錄、Cookie 儲存庫或搜尋紀錄中。不過，您下載的檔案或建立的書籤全部都會保留下來。</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">島</translation>
 <translation id="3176929007561373547">檢查您的 Proxy 設定，或是與您的網路管理員聯絡
@@ -248,6 +257,7 @@
 <translation id="3648607100222897006">這些實驗性功能隨時都有可能變動、中斷或消失。我們完全無法保證啟用這些實驗性功能會導致何種後果，您的瀏覽器說不定會突然自己燒掉。當然這只是玩笑話，不過您的瀏覽器可能真的會刪除您的所有資料，或是意外洩漏您的安全性和隱私權設定。只要您啟用了任何實驗性功能，這個瀏覽器的所有使用者都會啟用該功能。使用時請務必小心謹慎。</translation>
 <translation id="3650584904733503804">驗證成功</translation>
 <translation id="3651020361689274926">您所要求的資源已不存在，且未設定任何自動網址導向，這通常表示該資源已永久移除。</translation>
+<translation id="3655670868607891010">如果您經常看到這個頁面，請參考這些說明：<ph name="HELP_LINK" />。</translation>
 <translation id="3658742229777143148">修訂版本</translation>
 <translation id="3681007416295224113">憑證資訊</translation>
 <translation id="3693415264595406141">密碼：</translation>
@@ -338,7 +348,6 @@
 <translation id="4841640898320458950">不安全的通訊埠已遭到系統封鎖。</translation>
 <translation id="4850886885716139402">檢視</translation>
 <translation id="4880827082731008257">搜尋紀錄</translation>
-<translation id="488726935215981469">您已使用同步通關密語對資料進行加密，請在下方輸入通關密語。</translation>
 <translation id="4923417429809017348">系統已將此網頁從不明語言翻譯成<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">必須指定。</translation>
 <translation id="495170559598752135">動作</translation>
@@ -349,6 +358,7 @@
 <translation id="5023310440958281426">請查看您的管理員政策</translation>
 <translation id="5029568752722684782">清除複本</translation>
 <translation id="5031870354684148875">關於「Google 翻譯」</translation>
+<translation id="5040262127954254034">隱私權</translation>
 <translation id="5045550434625856497">密碼不正確</translation>
 <translation id="5087286274860437796">伺服器憑證目前無效。</translation>
 <translation id="5089810972385038852">州</translation>
@@ -560,12 +570,14 @@
 <translation id="7610193165460212391">值超出 <ph name="VALUE" /> 的範圍。</translation>
 <translation id="7613889955535752492">有效期限：<ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">您已經使用其他版本的「Google 帳戶」密碼對資料進行加密，請在下方輸入密碼。</translation>
+<translation id="7634554953375732414">您與這個網站建立了非私人連線。</translation>
 <translation id="7637571805876720304">要從 Chromium 中移除信用卡嗎？</translation>
 <translation id="7643817847124207232">已失去網際網路連線。</translation>
 <translation id="765676359832457558">隱藏進階設定...</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7668654391829183341">不明的裝置</translation>
 <translation id="7674629440242451245">想搶先試用酷炫的 Chrome 新功能嗎？請前往 chrome.com/dev 安裝開發人員版。</translation>
+<translation id="769344199378576125">顯示離線書籤</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />繼續前往 <ph name="SITE" /> 網站 (不安全)<ph name="END_LINK" /></translation>
 <translation id="7716424297397655342">無法從快取載入這個網站</translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
@@ -584,6 +596,7 @@
 <translation id="7805768142964895445">狀態</translation>
 <translation id="7813600968533626083">要從 Chrome 中移除建議嗎？</translation>
 <translation id="7825436071901023927">通訊埠 <ph name="SITE" /> 不安全</translation>
+<translation id="785549533363645510">不過，這並不意味著您可以完全隱形。使用無痕模式時，您的雇主和網際網路服務供應商仍然可以追蹤您的瀏覽紀錄，您所造訪的網站也可能會記錄您的瀏覽行為。</translation>
 <translation id="7887683347370398519">請檢查您的 CVC，然後再試一次</translation>
 <translation id="790025292736025802">找不到 <ph name="URL" /></translation>
 <translation id="7912024687060120840">在以下資料夾中：</translation>
@@ -594,11 +607,9 @@
 <translation id="7961015016161918242">永不</translation>
 <translation id="7977590112176369853">&lt;輸入查詢&gt;</translation>
 <translation id="7983301409776629893">一律將網頁內容由<ph name="ORIGINAL_LANGUAGE" />翻譯成<ph name="TARGET_LANGUAGE" /></translation>
-<translation id="7988324688042446538">電腦版書籤</translation>
 <translation id="7995512525968007366">未指定</translation>
 <translation id="8034522405403831421">這個網頁的內容是<ph name="SOURCE_LANGUAGE" />，需要翻譯成<ph name="TARGET_LANGUAGE" />嗎？</translation>
 <translation id="8034955203865359138">找不到任何紀錄項目。</translation>
-<translation id="8075539548641175231">您已在 <ph name="TIME" />使用同步通關密語對資料進行加密，請在下方輸入通關密語。</translation>
 <translation id="8088680233425245692">無法查看文章。</translation>
 <translation id="8091372947890762290">尚未在伺服器上啟動</translation>
 <translation id="8149426793427495338">您的電腦已進入睡眠模式。</translation>
@@ -651,6 +662,7 @@
 <translation id="8703575177326907206">您到 <ph name="DOMAIN" /> 的連線未加密。</translation>
 <translation id="8713130696108419660">初始簽名錯誤</translation>
 <translation id="8725066075913043281">再試一次</translation>
+<translation id="8728672262656704056">您已啟用無痕模式。</translation>
 <translation id="8730621377337864115">完成</translation>
 <translation id="8738058698779197622">您必須正確設定時鐘，才能建立安全連線。這是因為網站驗證身分時所使用的憑證僅於特定一段時間內有效。由於您裝置的時鐘不正確，因此 Chromium 無法驗證這些憑證。</translation>
 <translation id="8740359287975076522">找不到 <ph name="HOST_NAME" /> 的 &lt;abbr id="dnsDefinition"&gt;DNS 位址&lt;/abbr&gt;，正在診斷問題。</translation>
@@ -666,6 +678,7 @@
 <translation id="885730110891505394">與 Google 分享</translation>
 <translation id="8866481888320382733">解析政策設定時發生錯誤</translation>
 <translation id="8866959479196209191">這個網頁顯示：</translation>
+<translation id="8870413625673593573">最近關閉的分頁</translation>
 <translation id="8876793034577346603">無法解析網路設定。</translation>
 <translation id="8891727572606052622">Proxy 模式無效。</translation>
 <translation id="889901481107108152">很抱歉，這項實驗功能無法支援您的平台。</translation>

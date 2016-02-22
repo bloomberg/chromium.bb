@@ -151,6 +151,13 @@
 <translation id="1522425503138261032">Cho phép các trang web theo dõi vị trí thực của người dùng</translation>
 <translation id="152657506688053119">Danh sách các URL thay thế cho nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="1530812829012954197">Luôn hiển thị các mẫu URL sau đây trong trình duyệt chính</translation>
+<translation id="1553684822621013552">Khi chính sách này được đặt thành true, ARC sẽ được bật cho người dùng
+      (theo kiểm tra cài đặt chính sách bổ sung - ARC sẽ vẫn không khả
+      dụng nếu chế độ tạm thời hoặc đăng nhập nhiều tài khoản được bật trong
+      phiên người dùng hiện tại).
+
+      Nếu cài đặt này bị tắt hoặc không được định cấu hình thì người dùng
+      doanh nghiệp sẽ không thể sử dụng ARC.</translation>
 <translation id="1561424797596341174">Chính sách ghi đè dành cho bản dựng Gỡ lỗi của máy chủ truy cập từ xa</translation>
 <translation id="1583248206450240930">Sử dụng <ph name="PRODUCT_FRAME_NAME" /> theo mặc định</translation>
 <translation id="1608755754295374538">Các URL sẽ được cấp quyền truy cập thiết bị ghi âm mà không cần phải hiển thị lời nhắc</translation>
@@ -251,6 +258,7 @@
       Nếu chính sách này được đặt thành true, <ph name="PRODUCT_OS_NAME" /> sẽ cố gắng tải xuống các phần tải dữ liệu tự động cập nhật qua HTTP. Nếu chính sách được đặt thành false hoặc không được đặt, HTTPS sẽ không được sử dụng để tải xuống các phần tải dữ liệu tự động cập nhật.</translation>
 <translation id="2006530844219044261">Quản lý nguồn</translation>
 <translation id="201557587962247231">Tần suất tải lên báo cáo trạng thái thiết bị</translation>
+<translation id="2024476116966025075">Định cấu hình tên miền được yêu cầu cho ứng dụng truy cập từ xa</translation>
 <translation id="2030905906517501646">Từ khóa nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="206623763829450685">Chỉ định các cơ chế xác thực HTTP mà <ph name="PRODUCT_NAME" /> hỗ trợ.
 
@@ -483,6 +491,7 @@
       Nếu chính sách này không được đặt, sẽ có tính năng proxy nén dữ liệu để người dùng chọn có sử dụng hay không.</translation>
 <translation id="2587719089023392205">Đặt <ph name="PRODUCT_NAME" /> làm trình duyệt mặc định</translation>
 <translation id="2592091433672667839">Khoảng thời gian không hoạt động trước khi trình bảo vệ màn hình hiển thị trên màn hình đăng nhập ở chế độ bán lẻ</translation>
+<translation id="260705825237536216">Định cấu hình ứng dụng ARC</translation>
 <translation id="2623014935069176671">Đợi hoạt động người dùng đầu tiên</translation>
 <translation id="262740370354162807">Cho phép gửi tài liệu tới <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Bật tính năng phản hồi bằng giọng nói</translation>
@@ -604,6 +613,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
          Khi chính sách này không được đặt, khoảng thời gian mặc định sẽ được sử dụng.
 
           Phải chỉ định giá trị chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn hoặc bằng độ trễ tắt màn hình (nếu được đặt) và độ trễ khi không sử dụng.</translation>
+<translation id="2987155890997901449">Bật ARC</translation>
 <translation id="2998881342848488968">Chính sách này cho phép <ph name="PRODUCT_OS_NAME" /> bỏ qua proxy bất kỳ để xác thực cổng cố định.
 
       Chính sách này chỉ có hiệu lực khi một proxy được định cấu hình (ví dụ: thông qua chính sách, bởi người dùng trong chrome://settings hoặc bởi các tiện ích).
@@ -1205,6 +1215,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="5307432759655324440">Tính khả dụng của chế độ ẩn danh</translation>
 <translation id="5318185076587284965">Cho phép máy chủ truy cập từ xa sử dụng máy chủ chuyển tiếp</translation>
 <translation id="5330684698007383292">Cho phép <ph name="PRODUCT_FRAME_NAME" /> xử lý các loại nội dung sau</translation>
+<translation id="5345267406698765263">Chỉ định chính sách ứng dụng ARC làm chuỗi JSON có thể được
+      chuyển giao nguyên trạng cho thời gian chạy ARC. Tại thời điểm này,
+      cài đặt này chỉ được sử dụng để chỉ định bắt buộc cài đặt ứng dụng.
+
+      Nếu chính sách này không được đặt thì sẽ không có ứng dụng nào được cài đặt tự động.</translation>
 <translation id="5365946944967967336">Hiển thị nút Trang chủ trên thanh công cụ</translation>
 <translation id="5366977351895725771">Nếu đặt thành sai, tác vụ tạo tài khoản người dùng bị giám sát của người dùng này sẽ bị tắt. Mọi tài khoản người dùng bị giám sát hiện có sẽ vẫn khả dụng.
 
@@ -1277,6 +1292,13 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu chính sách không được đặt, người dùng có thể chọn có nên tự động ẩn giá không.</translation>
 <translation id="557658534286111200">Cho phép hoặc vô hiệu hóa chỉnh sửa dấu trang</translation>
 <translation id="5586942249556966598">Không làm gì</translation>
+<translation id="5613179474872285001">Định cấu hình tên miền ứng dụng được yêu cầu sẽ được áp dụng cho ứng dụng truy cập từ xa và ngăn người dùng thay đổi tên miền đó.
+
+          Nếu cài đặt này được bật thì chỉ những ứng dụng từ miền đã chỉ định mới có thể kết nối với máy chủ.
+
+          Nếu cài đặt này bị tắt hoặc không được đặt thì chính sách mặc định cho loại kết nối sẽ được áp dụng. Đối với trợ giúp từ xa, cài đặt này sẽ cho phép các ứng dụng từ miền bất kỳ có thể kết nối với máy chủ; đối với quyền truy cập từ xa mọi lúc, chỉ chủ sở hữu máy chủ mới có thể kết nối.
+
+          Đồng thời, hãy xem RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">Khôi phục phiên trước đó</translation>
 <translation id="5645779841392247734">Cho phép cookie trên các trang web này</translation>
 <translation id="5677038592630896441">Yêu cầu tên của người dùng ngôn ngữ và chủ sở hữu máy chủ truy cập từ xa phải khớp nhau.
@@ -1713,6 +1735,13 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="6943577887654905793">Tên tùy chọn Mac/Linux:</translation>
 <translation id="69525503251220566">Tham số cung cấp tính năng tìm theo hình ảnh cho nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="6956272732789158625">Không cho phép bất kỳ trang web nào sử dụng tạo khóa</translation>
+<translation id="695891079107014261">Định cấu hình tên miền ứng dụng được yêu cầu sẽ được áp dụng cho máy chủ truy cập từ xa và ngăn người dùng thay đổi tên miền đó.
+
+          Nếu cài đặt này được bật thì máy chủ chỉ có thể được chia sẻ bằng cách sử dụng tài khoản được đăng ký trên tên miền đã chỉ định.
+
+          Nếu cài đặt này bị tắt hoặc không được đặt thì máy chủ có thể được chia sẻ bằng cách sử dụng bất kỳ tài khoản nào.
+
+          Đồng thời, hãy xem RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Có bắt buộc kiểm tra OCSP/CRL trực tuyến cho mẩu neo tin cậy nội bộ hay không</translation>
 <translation id="7003334574344702284">Chính sách này nếu được bật sẽ buộc mật khẩu đã lưu phải được nhập từ trình duyệt mặc định trước đó. Nếu được bật, chính sách này cũng ảnh hưởng đến hộp thoại nhập.
 

@@ -38,11 +38,14 @@
 <translation id="1227224963052638717">Règle inconnue</translation>
 <translation id="1227633850867390598">Masquer la valeur</translation>
 <translation id="1228893227497259893">Identifiant d'entité incorrect.</translation>
+<translation id="1232569758102978740">Sans titre</translation>
 <translation id="1254117744268754948">Sélectionner un dossier</translation>
 <translation id="1270699273812232624">Autoriser les éléments</translation>
 <translation id="1285320974508926690">Ne jamais traduire ce site</translation>
+<translation id="129553762522093515">Récemment fermés</translation>
 <translation id="1339601241726513588">Domaine d'enregistrement :</translation>
 <translation id="1344588688991793829">Paramètres de saisie automatique de Chromium…</translation>
+<translation id="1374468813861204354">suggestions</translation>
 <translation id="1375198122581997741">À propos de la version</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> n'a envoyé aucune donnée.</translation>
 <translation id="1407135791313364759">Tout ouvrir</translation>
@@ -59,6 +62,7 @@
 <translation id="1559572115229829303">&lt;p&gt;Impossible d'établir une connexion privée à <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> : la date et l'heure de votre appareil (<ph name="DATE_AND_TIME" />) sont incorrectes.&lt;/p&gt;
 
       &lt;p&gt;Veuillez ajuster la date et l'heure dans la section &lt;strong&gt;Général&lt;/strong&gt; de l'application &lt;strong&gt;Réglages&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="1583429793053364125">Une erreur s'est produite lors de l'affichage de la page Web.</translation>
 <translation id="1592005682883173041">Accès aux données locales</translation>
 <translation id="1629803312968146339">Voulez-vous que cette carte soit enregistrée dans Chrome ?</translation>
 <translation id="1640180200866533862">Règles relatives aux utilisateurs</translation>
@@ -93,6 +97,7 @@
 <translation id="2030481566774242610">Essayez avec <ph name="LINK" /></translation>
 <translation id="2053553514270667976">Code postal</translation>
 <translation id="2065985942032347596">Authentification requise</translation>
+<translation id="2079545284768500474">Annuler</translation>
 <translation id="20817612488360358">Les paramètres de proxy du système sont configurés pour être utilisés, mais une configuration de proxy explicite est également spécifiée.</translation>
 <translation id="2089090684895656482">Moins</translation>
 <translation id="2094505752054353250">Le domaine ne correspond pas</translation>
@@ -168,6 +173,7 @@
 <translation id="2837049386027881519">Une nouvelle tentative de connexion a dû être effectuée à l'aide d'une ancienne version du protocole TLS ou SSL. Cela signifie généralement que le serveur utilise un logiciel obsolète, et qu'il est possible qu'il rencontre d'autres problèmes de sécurité.</translation>
 <translation id="284702764277384724">Le certificat du serveur relatif à <ph name="HOST_NAME" /> semble être contrefait.</translation>
 <translation id="2855922900409897335">Valider votre <ph name="CREDIT_CARD" /></translation>
+<translation id="2896499918916051536">Ce plug-in n'est pas compatible.</translation>
 <translation id="2897655920961181107">Le port demandé est dangereux et a été bloqué.</translation>
 <translation id="2909946352844186028">Un changement de réseau a été détecté.</translation>
 <translation id="2915500479781995473">Nous n'avons pas pu vérifier qu'il s'agissait du domaine <ph name="DOMAIN" />, car son certificat de sécurité a expiré. Cela peut être dû à une mauvaise configuration ou à une tentative d'interception de la connexion par un pirate informatique. L'horloge de votre ordinateur indique actuellement : <ph name="CURRENT_TIME" />. Cela vous semble-t-il correct ? Si ce n'est pas le cas, vous devez corriger l'horloge de votre système, puis réinitialiser la page.</translation>
@@ -189,6 +195,7 @@
 <translation id="3005723025932146533">Afficher la copie enregistrée</translation>
 <translation id="3010559122411665027">Entrée de la liste "<ph name="ENTRY_INDEX" />" : <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Type de règle incorrect.</translation>
+<translation id="3037605927509011580">Aie aie aie</translation>
 <translation id="3041612393474885105">Informations relatives au certificat</translation>
 <translation id="3093245981617870298">Vous êtes actuellement hors connexion</translation>
 <translation id="3105172416063519923">ID d'élément :</translation>
@@ -198,6 +205,8 @@
 <translation id="3145945101586104090">Échec du décodage de la réponse.</translation>
 <translation id="3147485256806412701">Ce site utilise un nouveau domaine générique de premier niveau.</translation>
 <translation id="3150653042067488994">Erreur temporaire du serveur.</translation>
+<translation id="3157931365184549694">Restaurer</translation>
+<translation id="3167968892399408617">Les pages consultées dans les onglets de navigation privée ne sont pas enregistrées dans l'historique de votre navigateur, dans les cookies ni dans l'historique des recherches une fois que vous avez fermé tous les onglets de navigation privée. Les fichiers téléchargés et les favoris ajoutés sont conservés.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">Île</translation>
 <translation id="3176929007561373547">Vérifiez vos paramètres de proxy ou contactez votre administrateur réseau pour
@@ -248,6 +257,7 @@
 <translation id="3648607100222897006">Ces fonctionnalités expérimentales sont susceptibles d'être modifiées, de cesser de fonctionner ou de disparaître à tout moment. Nous ne garantissons en aucun cas les conséquences de l'activation de l'une d'entre elles. Il est même possible que votre navigateur s'auto-détruise ! Plus sérieusement, votre navigateur risque de supprimer toutes vos données. Votre sécurité et la confidentialité de vos données peuvent également être compromises de manière inattendue. Toute fonctionnalité expérimentale que vous activez le sera pour tous les utilisateurs de ce navigateur. Faites donc attention.</translation>
 <translation id="3650584904733503804">Validation réussie.</translation>
 <translation id="3651020361689274926">La ressource demandée n'existe plus et aucune adresse de transfert n'est disponible. Il semble que cet état de fait soit permanent.</translation>
+<translation id="3655670868607891010">Si ce message s'affiche régulièrement, essayez ces <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Révision</translation>
 <translation id="3681007416295224113">Informations relatives au certificat</translation>
 <translation id="3693415264595406141">Mot de passe :</translation>
@@ -338,7 +348,6 @@
 <translation id="4841640898320458950">Port danger. bloqué.</translation>
 <translation id="4850886885716139402">Afficher</translation>
 <translation id="4880827082731008257">Rechercher dans l'historique</translation>
-<translation id="488726935215981469">Vos données sont chiffrées avec votre phrase secrète de synchronisation. Veuillez la saisir ci-dessous.</translation>
 <translation id="4923417429809017348">Cette page rédigée dans une langue non identifiée a été traduite en <ph name="LANGUAGE_LANGUAGE" />.</translation>
 <translation id="4926049483395192435">Doit être spécifié.</translation>
 <translation id="495170559598752135">Actions</translation>
@@ -349,6 +358,7 @@
 <translation id="5023310440958281426">Vérifiez les règles définies par votre administrateur</translation>
 <translation id="5029568752722684782">Effacer la copie</translation>
 <translation id="5031870354684148875">À propos de Google Traduction</translation>
+<translation id="5040262127954254034">Confidentialité</translation>
 <translation id="5045550434625856497">Mot de passe incorrect.</translation>
 <translation id="5087286274860437796">Le certificat actuel du serveur n'est pas valide.</translation>
 <translation id="5089810972385038852">État</translation>
@@ -560,12 +570,14 @@ Conseil : Le mode navigation privée (<ph name="SHORTCUT_KEY" />) pourra vous �
 <translation id="7610193165460212391">La valeur <ph name="VALUE" /> est hors limites.</translation>
 <translation id="7613889955535752492">Date d'expiration : <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Vous disposez déjà de données chiffrées à l'aide d'une autre version de votre mot de passe de compte Google. Veuillez saisir celui-ci ci-dessous.</translation>
+<translation id="7634554953375732414">Votre connexion à ce site n'est pas privée.</translation>
 <translation id="7637571805876720304">Supprimer les données de carte de paiement de Chromium ?</translation>
 <translation id="7643817847124207232">La connexion Internet a été interrompue.</translation>
 <translation id="765676359832457558">Masquer les paramètres avancés…</translation>
 <translation id="7658239707568436148">Annuler</translation>
 <translation id="7668654391829183341">Appareil inconnu</translation>
 <translation id="7674629440242451245">Vous souhaitez bénéficier de nouvelles fonctionnalités Chrome passionnantes ? Essayez notre version en développement à l'adresse chrome.com/dev.</translation>
+<translation id="769344199378576125">Afficher les favoris hors connexion</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Continuer vers le site <ph name="SITE" /> (dangereux)<ph name="END_LINK" /></translation>
 <translation id="7716424297397655342">Impossible de charger ce site à partir du cache</translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
@@ -584,6 +596,7 @@ Conseil : Le mode navigation privée (<ph name="SHORTCUT_KEY" />) pourra vous �
 <translation id="7805768142964895445">État</translation>
 <translation id="7813600968533626083">Supprimer la suggestion de saisie de formulaire de Chrome ?</translation>
 <translation id="7825436071901023927">Port dangereux : <ph name="SITE" /></translation>
+<translation id="785549533363645510">Cependant, cela ne vous rend pas invisible. Si vous passez en mode navigation privée, votre employeur, votre fournisseur d'accès à Internet ou les sites Web que vous consultez pourront toujours avoir accès à votre historique de navigation.</translation>
 <translation id="7887683347370398519">Veuillez vérifier votre code CVC et réessayer.</translation>
 <translation id="790025292736025802"><ph name="URL" /> introuvable</translation>
 <translation id="7912024687060120840">Dans le dossier :</translation>
@@ -594,11 +607,9 @@ Conseil : Le mode navigation privée (<ph name="SHORTCUT_KEY" />) pourra vous �
 <translation id="7961015016161918242">Jamais</translation>
 <translation id="7977590112176369853">&lt;saisir une requête&gt;</translation>
 <translation id="7983301409776629893">Toujours traduire en <ph name="TARGET_LANGUAGE" /> les pages en <ph name="ORIGINAL_LANGUAGE" /></translation>
-<translation id="7988324688042446538">Favoris sur l'ordinateur</translation>
 <translation id="7995512525968007366">Non spécifié</translation>
 <translation id="8034522405403831421">Cette page est rédigée en <ph name="SOURCE_LANGUAGE" />. Voulez-vous la traduire en <ph name="TARGET_LANGUAGE" /> ?</translation>
 <translation id="8034955203865359138">Aucune entrée d'historique trouvée.</translation>
-<translation id="8075539548641175231">Vos données ont été chiffrées avec votre phrase secrète de synchronisation le <ph name="TIME" />. Veuillez la saisir ci-dessous.</translation>
 <translation id="8088680233425245692">Échec de l'affichage de l'article.</translation>
 <translation id="8091372947890762290">Activation en attente sur le serveur.</translation>
 <translation id="8149426793427495338">Votre ordinateur s'est mis en veille.</translation>
@@ -651,6 +662,7 @@ Conseil : Le mode navigation privée (<ph name="SHORTCUT_KEY" />) pourra vous �
 <translation id="8703575177326907206">Votre connexion à <ph name="DOMAIN" /> n'est pas chiffrée.</translation>
 <translation id="8713130696108419660">Signature initiale incorrecte.</translation>
 <translation id="8725066075913043281">Réessayer</translation>
+<translation id="8728672262656704056">Vous êtes passé en mode navigation privée</translation>
 <translation id="8730621377337864115">OK</translation>
 <translation id="8738058698779197622">Afin d'établir une connexion sécurisée, votre horloge doit être réglée correctement. Les certificats permettant aux sites Web de s'identifier sont en effet valides pendant une période précise. Si l'horloge de votre appareil est incorrecte, Chromium n'est pas en mesure de vérifier la validité des certificats.</translation>
 <translation id="8740359287975076522">L'&lt;abbr id="dnsDefinition"&gt;adresse DNS&lt;/abbr&gt; de <ph name="HOST_NAME" /> est introuvable. Identification du problème…</translation>
@@ -666,6 +678,7 @@ Conseil : Le mode navigation privée (<ph name="SHORTCUT_KEY" />) pourra vous �
 <translation id="885730110891505394">Partage avec Google</translation>
 <translation id="8866481888320382733">Erreur d'analyse des paramètres de la règle.</translation>
 <translation id="8866959479196209191">Cette page indique :</translation>
+<translation id="8870413625673593573">Récemment fermés</translation>
 <translation id="8876793034577346603">Échec de l'analyse de la configuration du réseau.</translation>
 <translation id="8891727572606052622">Mode proxy non valide.</translation>
 <translation id="889901481107108152">Désolé, cette fonctionnalité expérimentale n'est pas disponible pour votre plate-forme.</translation>

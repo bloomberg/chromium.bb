@@ -146,6 +146,9 @@
 <translation id="1522425503138261032">Sites toestaan de fysieke locatie van gebruikers bij te houden</translation>
 <translation id="152657506688053119">Lijst met alternatieve URL's voor de standaardzoekprovider</translation>
 <translation id="1530812829012954197">De volgende URL-patronen altijd verwerken in de hostbrowser</translation>
+<translation id="1553684822621013552">Als dit beleid is ingesteld op waar, wordt ARC ingeschakeld voor de gebruiker (onderhevig aan extra controles van de beleidsinstellingen; ARC is nog steeds niet beschikbaar als de kortstondige modus of toegang tot meerdere accounts is ingeschakeld in de huidige gebruikerssessie).
+
+     Als deze instelling is uitgeschakeld of niet is geconfigureerd, kunnen zakelijke gebruikers ARC niet gebruiken.</translation>
 <translation id="1561424797596341174">Beleid overschrijft Debug-builds van de host voor externe toegang</translation>
 <translation id="1583248206450240930"><ph name="PRODUCT_FRAME_NAME" /> standaard gebruiken</translation>
 <translation id="1608755754295374538">URL's die zonder prompt toegang krijgen tot apparaten voor het vastleggen van audio</translation>
@@ -248,6 +251,7 @@
       Als dit beleid is ingesteld op 'true' (waar), probeert <ph name="PRODUCT_OS_NAME" /> nettoladingen voor automatische updates te downloaden via HTTP. Als het beleid is ingesteld op 'false' (onwaar) of niet is geconfigureerd, wordt HTTPS gebruikt voor het downloaden van nettoladingen voor automatische updates.</translation>
 <translation id="2006530844219044261">Energiebeheer</translation>
 <translation id="201557587962247231">De frequentie van uploads van rapporten over de apparaatstatus</translation>
+<translation id="2024476116966025075">De vereiste domeinnaam configureren voor clients voor externe toegang</translation>
 <translation id="2030905906517501646">Zoekwoord voor standaardzoekprovider</translation>
 <translation id="206623763829450685">Hiermee wordt gespecificeerd welke HTTP-verificatieschema's door <ph name="PRODUCT_NAME" /> worden ondersteund.
 
@@ -482,6 +486,7 @@
       Als dit beleid niet wordt ingesteld, is de proxyfunctie voor het comprimeren van gegevens beschikbaar en kunnen gebruikers kiezen of ze deze willen gebruiken.</translation>
 <translation id="2587719089023392205"><ph name="PRODUCT_NAME" /> instellen als standaardbrowser</translation>
 <translation id="2592091433672667839">Duur van inactiviteit voordat de schermbeveiliging wordt weergegeven in het inlogvenster in de winkelmodus</translation>
+<translation id="260705825237536216">ARC-apps configureren</translation>
 <translation id="2623014935069176671">Wachten op initiële gebruikersactiviteit</translation>
 <translation id="262740370354162807">Verzenden van documenten naar <ph name="CLOUD_PRINT_NAME" /> inschakelen</translation>
 <translation id="2633084400146331575">Gesproken feedback inschakelen</translation>
@@ -602,6 +607,7 @@
           Als dit beleid niet is ingesteld, wordt een standaardtijdsduur gebruikt.
 
           De beleidswaarde moet worden opgegeven in milliseconden. Waarden moeten lager zijn dan of gelijk zijn aan de vertraging van scherm uitschakelen (indien ingesteld) en de inactieve vertraging.</translation>
+<translation id="2987155890997901449">ARC inschakelen</translation>
 <translation id="2998881342848488968">Met dit beleid kan <ph name="PRODUCT_OS_NAME" /> elke proxy voor captive portal-verificatie omzeilen.
 
       Dit beleid wordt alleen geactiveerd als een proxy wordt geconfigureerd (bijvoorbeeld via een beleid, door de gebruiker in chrome://settings of met extensies).
@@ -1209,6 +1215,9 @@
 <translation id="5307432759655324440">Beschikbaarheid van incognitomodus</translation>
 <translation id="5318185076587284965">Het gebruik van relayservers door de host voor externe toegang inschakelen</translation>
 <translation id="5330684698007383292"><ph name="PRODUCT_FRAME_NAME" /> toestaan de volgende soorten inhoud te verwerken.</translation>
+<translation id="5345267406698765263">Hiermee geef je het beleid voor ARC-apps op als JSON-tekenreeks die als zodanig kan worden overgedragen aan de ARC-runtime. Deze instelling wordt momenteel uitsluitend gebruikt om een geforceerde installatie van de apps aan te geven.
+
+      Als dit beleid niet wordt ingesteld, worden er geen apps automatisch geïnstalleerd.</translation>
 <translation id="5365946944967967336">Knop 'Startpagina' in de werkbalk weergeven</translation>
 <translation id="5366977351895725771">Als dit is ingesteld op 'false' (niet waar) wordt het maken van gebruikers met beperkte rechten uitgeschakeld voor deze gebruiker. Bestaande gebruikers met beperkte rechten blijven beschikbaar.
 
@@ -1281,6 +1290,13 @@
       Als het beleid niet wordt ingesteld, kunnen gebruikers kiezen of het archief automatisch wordt verborgen.</translation>
 <translation id="557658534286111200">Het bewerken van bladwijzers in- of uitschakelen</translation>
 <translation id="5586942249556966598">Niets doen</translation>
+<translation id="5613179474872285001">Hiermee configureer je de vereiste clientdomeinnaam die wordt opgelegd aan clients voor externe toegang en voorkom je dat gebruikers deze wijzigen.
+
+          Als deze instelling is ingeschakeld, kunnen alleen clients in het opgegeven domein verbinding maken met de host.
+
+          Als deze instelling is uitgeschakeld of niet is ingesteld, wordt het standaardbeleid voor het verbindingstype toegepast. Zo kunnen clients in elk domein verbinding maken met de host voor hulp op afstand. Voor externe toegang op elk gewenst moment kan alleen de hosteigenaar verbinding maken.
+
+          Bekijk ook RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">De laatste sessie herstellen</translation>
 <translation id="5645779841392247734">Cookies toestaan op deze sites</translation>
 <translation id="5677038592630896441">Hiermee wordt vereist dat de naam van de lokale gebruiker en de eigenaar van de host voor externe toegang met elkaar overeenkomen.
@@ -1716,6 +1732,13 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="6943577887654905793">Voorkeursnaam voor Mac/Linux:</translation>
 <translation id="69525503251220566">Parameter die een functie voor zoeken op afbeelding levert voor de standaardzoekprovider</translation>
 <translation id="6956272732789158625">Sites niet toestaan sleutels te genereren</translation>
+<translation id="695891079107014261">Hiermee configureer je de vereiste hostdomeinnaam die wordt opgelegd aan hosts voor externe toegang en voorkom je dat gebruikers deze wijzigen.
+
+          Als deze instelling is ingeschakeld, kunnen hosts alleen worden gedeeld met accounts die zijn geregistreerd op de opgegeven domeinnaam.
+
+          Als deze instelling is uitgeschakeld of niet is ingesteld, kunnen hosts worden gedeeld met elk account.
+
+          Bekijk ook RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Of online OCSP/CRL-controles zijn vereist voor lokale vertrouwensankers</translation>
 <translation id="7003334574344702284">Indien ingeschakeld, wordt met dit beleid afgedwongen dat de opgeslagen wachtwoorden worden geïmporteerd uit de vorige standaardbrowser. Als het beleid is ingeschakeld, is dit ook van invloed op het dialoogvenster voor importeren.
 

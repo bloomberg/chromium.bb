@@ -151,6 +151,13 @@
 <translation id="1522425503138261032">Leisti svetainėse stebėti naudotojo buvimo vietą</translation>
 <translation id="152657506688053119">Alternatyvių numatytojo paieškos teikėjo URL sąrašas</translation>
 <translation id="1530812829012954197">Visada pateikti šiuos URL šablonus prieglobos naršyklėje</translation>
+<translation id="1553684822621013552">Kai ši politika yra galiojanti, ARC įgalinama naudotojui
+      (taikomos papildomos politikos nustatymų patikros – ARC vis tiek bus
+      nepasiekiama, jei trumpalaikis režimas arba kelios paskyros įgalintos
+      dabartinėje naudotojo sesijoje).
+
+      Jei šis nustatymas išjungtas arba nesukonfigūruotas, įmonių naudotojai
+      negali naudoti ARC.</translation>
 <translation id="1561424797596341174">Nuotolinės prieigos prieglobos derinimo versijų politikos pakeitimai</translation>
 <translation id="1583248206450240930">Naudoti „<ph name="PRODUCT_FRAME_NAME" />“ pagal numatytuosius nustatymus</translation>
 <translation id="1608755754295374538">URL, kuriems bus suteikta prieiga prie garso užfiksavimo įrenginių be paraginimo</translation>
@@ -253,6 +260,7 @@
       Jei ši politika galioja, „<ph name="PRODUCT_OS_NAME" />“ bandys atsisiųsti automatinį naudingųjų apkrovų naujinį naudodama HTTP. Jei ši politika negalioja arba yra nenustatyta, automatinis naudingųjų apkrovų naujinys bus atsisiunčiamas naudojant HTTPS.</translation>
 <translation id="2006530844219044261">Maitinimo valdymas</translation>
 <translation id="201557587962247231">Įrenginio būsenos ataskaitų įkėlimo dažnis</translation>
+<translation id="2024476116966025075">Būtino nuotolinės prieigos klientų domeno pavadinimo konfigūravimas</translation>
 <translation id="2030905906517501646">Numatytojo paieškos teikėjo raktinis žodis</translation>
 <translation id="206623763829450685">Nurodoma, kurios HTTP autentifikavimo schemos palaikomos „<ph name="PRODUCT_NAME" />“.
 
@@ -488,6 +496,7 @@
       Jei ši politika bus nenustatyta, duomenų glaudinimo tarpinio serverio funkcija bus pasiekiama, kad naudotojas pasirinktų, ar ją naudoti.</translation>
 <translation id="2587719089023392205">Nustatyti „<ph name="PRODUCT_NAME" />“ kaip numatytąją naršyklę</translation>
 <translation id="2592091433672667839">Neveikos iki parodant ekrano užsklandą prisijungimo ekrane, dirbant mažmeninės prekybos režimu, trukmė</translation>
+<translation id="260705825237536216">ARC programų konfigūravimas</translation>
 <translation id="2623014935069176671">Laukti pradinės naudotojo veiklos</translation>
 <translation id="262740370354162807">Įgalinti dokumentų pateikimą „<ph name="CLOUD_PRINT_NAME" />“</translation>
 <translation id="2633084400146331575">Įgalinti žodinius atsiliepimus</translation>
@@ -608,6 +617,7 @@
           Kai ši politika nenustatyta, naudojama numatytoji laiko trukmė.
 
           Politikos vertė turėtų būti nurodyta milisekundėmis. Vertės sumažinamos, kad neviršytų ekrano išjungimo delsos laiko (jei jis nustatytas) ar neveikos delsos laiko arba būtų jam lygios.</translation>
+<translation id="2987155890997901449">ARC įgalinimas</translation>
 <translation id="2998881342848488968">Įgalinus šią politiką „<ph name="PRODUCT_OS_NAME" />“ gali apeiti fiksuotojo portalo autentifikavimo tarpinį serverį.
 
       Ši politika taikoma, tik jei sukonfigūruotas tarpinis serveris (pvz., kai naudotojas pakeičia politiką apsilankęs adresu chrome://settings arba kai tai atlieka plėtiniai).
@@ -1218,6 +1228,11 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="5307432759655324440">Inkognito režimo pasiekiamumas</translation>
 <translation id="5318185076587284965">Įgalinti perdavimo serverių naudojimą per nuotolinės prieigos prieglobą</translation>
 <translation id="5330684698007383292">Leisti „<ph name="PRODUCT_FRAME_NAME" />“ naudoti šių tipų turinį</translation>
+<translation id="5345267406698765263">Nurodoma ARC programos politika kaip JSON eilutė, kurią galima
+      perduoti tokią, kokia yra, ARC vykdymo laikui. Šiuo metu šis nustatymas naudojamas
+      tik programų priverstiniam diegimui nurodyti.
+
+      Jei ši politika nenustatyta, jokios programos nėra diegiamos automatiškai.</translation>
 <translation id="5365946944967967336">Rodyti įrankių juostoje pagrindinio puslapio mygtuką</translation>
 <translation id="5366977351895725771">Jei ši politika negalioja, šis naudotojas negalės kurti prižiūrimų naudotojų. Visi esami naudotojai bus vis tiek pasiekiami.
 
@@ -1290,6 +1305,13 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Jei ši politika nenustatyta, naudotojai gali pasirinkti, ar lentyną automatiškai paslėpti.</translation>
 <translation id="557658534286111200">Įgalinamas žymių redagavimas arba neleidžiama redaguoti žymių</translation>
 <translation id="5586942249556966598">Nieko nedaryti</translation>
+<translation id="5613179474872285001">Konfigūruojamas būtinas kliento domeno pavadinimas, kuris bus nustatytas nuotolinės prieigos klientams, ir neleidžiama naudotojams jo keisti.
+
+          Jei šis nustatymas įgalintas, tik klientai iš nurodyto domeno gali prisijungti prie prieglobos.
+
+          Jei šis nustatymas išjungtas arba nenustatytas, taikoma numatytoji ryšio tipo politika. Teikiant nuotolinę pagalbą, klientams iš bet kurio domeno leidžiama prisijungti prie prieglobos. Teikiant nuotolinę prieigą bet kuriuo metu, gali prisijungti tik prieglobos savininkas.
+
+          Taip pat žr. RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">Atkurti paskutinę sesiją</translation>
 <translation id="5645779841392247734">Leisti slapukus šiose svetainėse</translation>
 <translation id="5677038592630896441">Reikalaujama, kad vietinio naudotojo ir nuotolinės prieigos prieglobos serverio savininko vardai atitiktų.
@@ -1732,6 +1754,13 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="6943577887654905793">„Mac“ / „Linux“ nuostatos pavadinimas:</translation>
 <translation id="69525503251220566">Parametras, nurodantis paieškos pagal vaizdą funkciją numatytajam paieškos teikėjui</translation>
 <translation id="6956272732789158625">Neleisti jokiai svetainei naudoti rakto generavimo</translation>
+<translation id="695891079107014261">Konfigūruojamas būtinas prieglobos domeno pavadinimas, kuris bus nustatytas nuotolinės prieigos priegloboms, ir neleidžiama naudotojams jo keisti.
+
+          Jei šis nustatymas įgalintas, prieglobas galima bendrinti tik naudojant nurodytu domeno pavadinimu užregistruotas paskyras.
+
+          Jei šis nustatymas išjungtas arba nenustatytas, tada prieglobas galima bendrinti naudojant bet kurią paskyrą.
+
+          Taip pat žr. RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Ar internetinės OCSP / CRL patikros reikalingos vietiniams patikimiems prieraišams</translation>
 <translation id="7003334574344702284">Pagal šią politiką priverstinai importuojami išsaugoti slaptažodžiai iš ankstesnės numatytosios naršyklės (jei įgalinta). Be to, jei įgalinta, ši politika turi įtakos importavimo dialogo langui.
 

@@ -143,6 +143,9 @@ Pokud je tato zásada nastavena na hodnotu false nebo ponechána bez nastavení,
 <translation id="1522425503138261032">Umožňuje webovým stránkám sledovat fyzickou polohu uživatele</translation>
 <translation id="152657506688053119">Seznam alternativních adres URL výchozího poskytovatele vyhledávání</translation>
 <translation id="1530812829012954197">Následující vzory adres URL vykreslit vždy v hostitelském prohlížeči</translation>
+<translation id="1553684822621013552">Je-li zásada nastavena na hodnotu true, rozšíření ARC bude uživateli povoleno (pokud bude v aktuální uživatelské relaci povolen režim dočasných profilů nebo vícenásobné přihlašování, rozšíření ARC dostupné nebude).
+
+Pokud je toto nastavení zakázáno nebo není nakonfigurováno, firemní uživatelé rozšíření ARC nebudou moci používat.</translation>
 <translation id="1561424797596341174">Přepsání zásad pro ladicí sestavení hostitele vzdáleného přístupu</translation>
 <translation id="1583248206450240930">Ve výchozím nastavení používat plugin <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="1608755754295374538">Adresy URL, kterým bude udělen přístup pro záznam zvuku bez zobrazení výzvy</translation>
@@ -241,6 +244,7 @@ Hodnota je analyzována jako slovník JSON s mapováním názvu zásady na hodno
       Pokud tuto zásadu nastavíte na hodnotu true, systém <ph name="PRODUCT_OS_NAME" /> se bude pokoušet stahovat datové části automatických aktualizací prostřednictvím protokolu HTTP. Pokud tuto zásadu nastavíte na hodnotu false nebo ji nenastavíte, ke stahování datových částí automatických aktualizací se bude používat protokol HTTPS.</translation>
 <translation id="2006530844219044261">Správa možností napájení</translation>
 <translation id="201557587962247231">Frekvence nahrávání hlášení o stavu zařízení</translation>
+<translation id="2024476116966025075">Konfigurace povinného názvu domény pro klienty vzdáleného přístupu</translation>
 <translation id="2030905906517501646">Klíčové slovo výchozího poskytovatele vyhledávání</translation>
 <translation id="206623763829450685">Určuje, která schémata ověření v protokolu HTTP bude prohlížeč <ph name="PRODUCT_NAME" /> podporovat.
 
@@ -276,7 +280,7 @@ Pokud tato zásada není nastavena, použije se výchozí hodnota 0 a uživatel
 <translation id="2204753382813641270">Řídit automatické skrývání poličky</translation>
 <translation id="2208976000652006649">Parametry adresy URL vyhledávání používající metodu POST</translation>
 <translation id="2223598546285729819">Výchozí nastavení oznámení</translation>
-<translation id="2231817271680715693">Importování historie prohlížení z výchozího prohlížeče při prvním spuštění</translation>
+<translation id="2231817271680715693">Importování historie procházení z výchozího prohlížeče při prvním spuštění</translation>
 <translation id="2236488539271255289">Nepovolovat nastavení místních dat žádným webům</translation>
 <translation id="2240879329269430151">Umožňuje nastavit, zda mohou webové stránky zobrazovat vyskakovací okna. Zobrazování vyskakovacích oken lze buď povolit pro všechny weby, nebo je pro všechny weby zakázat.
 
@@ -364,11 +368,11 @@ Pokud tuto zásadu nastavíte, uživatelé ji nebudou moci změnit ani přepsat.
 
 Pokud je tato zásada ponechána nenastavená, uživatel si může zvolit, jaký obrázek bude mít zobrazený na ploše a na pozadí přihlašovací obrazovky.</translation>
 <translation id="2411919772666155530">Blokovat upozornění na těchto stránkách</translation>
-<translation id="2418507228189425036">Deaktivuje ukládání historie prohlížení v prohlížeči <ph name="PRODUCT_NAME" /> a brání uživatelům, aby toto nastavení změnili.
+<translation id="2418507228189425036">Deaktivuje ukládání historie procházení v prohlížeči <ph name="PRODUCT_NAME" /> a brání uživatelům, aby toto nastavení změnili.
 
-Pokud je toto nastavení deaktivováno, historie prohlížení nebude ukládána. Toto nastavení také deaktivuje synchronizaci karet.
+Pokud je toto nastavení deaktivováno, historie procházení nebude ukládána. Toto nastavení také deaktivuje synchronizaci karet.
 
-Pokud je toto nastavení deaktivováno nebo není nakonfigurováno, historie prohlížení bude ukládána.</translation>
+Pokud je toto nastavení deaktivováno nebo není nakonfigurováno, historie procházení bude ukládána.</translation>
 <translation id="2424023834246613232">Přepíše v prohlížeči <ph name="PRODUCT_NAME" /> pravidla výběru výchozí tiskárny.
 
 Tato zásada určuje pravidla pro výběr výchozí tiskárny v prohlížeči <ph name="PRODUCT_NAME" />, který se provede při prvním použití funkce tisku v profilu.
@@ -462,6 +466,7 @@ Z prohlížeče <ph name="PRODUCT_NAME" /> verze 29 a novějších verzí bylo t
       Pokud zásadu nenastavíte, bude na uživatelích, aby zvolili, zda funkci datové komprese proxy serveru chtějí nebo nechtějí použít.</translation>
 <translation id="2587719089023392205">Nastavit <ph name="PRODUCT_NAME" /> jako výchozí prohlížeč</translation>
 <translation id="2592091433672667839">Doba nečinnosti před zobrazením spořiče obrazovky na přihlašovací obrazovce v režimu prodeje</translation>
+<translation id="260705825237536216">Konfigurace aplikací ARC</translation>
 <translation id="2623014935069176671">Počkat na první aktivitu uživatele</translation>
 <translation id="262740370354162807">Povolí odesílání dokumentů do služby <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Aktivovat hlasovou odezvu</translation>
@@ -581,6 +586,7 @@ Pokud zásadu nenastavíte, bude se považovat za aktivované (viz popis výše)
           Není-li tato zásada nastavena, bude použita výchozí doba.
 
           Hodnotu zásady zadávejte v milisekundách. Maximální hodnota je stejná jako prodleva vypnutí obrazovky (pokud je nastavena) a prodleva režimu spánku.</translation>
+<translation id="2987155890997901449">Povolit rozšíření ARC</translation>
 <translation id="2998881342848488968">Tato zásada umožňuje operačnímu systému <ph name="PRODUCT_OS_NAME" /> obejít jakýkoliv proxy server pro ověření captive portálu.
 
 Tato zásada bude použita pouze v případě, že je proxy server nakonfigurován (například pomocí zásady, uživatelským nastavením na stránce chrome://settings nebo pomocí rozšíření).
@@ -1079,9 +1085,9 @@ Tato zásada ovlivňuje kromě integrované webové kamery i všechny ostatní v
 <translation id="4983201894483989687">Povolit spouštění zastaralých pluginů</translation>
 <translation id="4988291787868618635">Akce prováděná po určité době nečinnosti</translation>
 <translation id="5047604665028708335">Povolit přístup k webům mimo obsahové balíčky</translation>
-<translation id="5052081091120171147">Je-li tato zásada aktivovaná, vynucuje import historie prohlížení z aktuálního výchozího prohlížeče. Aktivace této zásady má také vliv na dialogové okno importu
+<translation id="5052081091120171147">Je-li tato zásada aktivovaná, vynucuje import historie procházení z aktuálního výchozího prohlížeče. Aktivace této zásady má také vliv na dialogové okno importu
      
-      Je-li deaktivovaná, k importu historie prohlížení nedojde. Pokud není nakonfigurovaná, bude použito výchozí chování
+      Je-li deaktivovaná, k importu historie procházení nedojde. Pokud není nakonfigurovaná, bude použito výchozí chování
 
       Není-li nastavena, může se uživatelům zobrazit výzva, zda chtějí historii importovat, nebo může import probíhat automaticky.</translation>
 <translation id="5056708224511062314">Deaktivace lupy</translation>
@@ -1184,6 +1190,9 @@ Pokud zásadu nastavíte, můžete nakonfigurovat, zda má uživatel oprávněn�
 <translation id="5307432759655324440">Dostupnost anonymního režimu</translation>
 <translation id="5318185076587284965">Povolit použití předávacích serverů hostitelem vzdáleného přístupu</translation>
 <translation id="5330684698007383292">Umožnit pluginu <ph name="PRODUCT_FRAME_NAME" /> zpracovávat následující typy obsahu</translation>
+<translation id="5345267406698765263">Udává zásady aplikace ARC ve formě textového řetězce JSON, který může rozšíření ARC beze změn zpracovat. Momentálně toto nastavení slouží výhradně k vynucení instalace aplikací.
+
+Je-li tato zásada ponechána nenastavená, žádné aplikace se automaticky nenainstalují.</translation>
 <translation id="5365946944967967336">Zobrazit na liště tlačítko Domů</translation>
 <translation id="5366977351895725771">Pokud tuto zásadu nastavíte na hodnotu false, vytváření a přihlašování dozorovaných uživatelů bude zakázáno. Všichni existující dozorovaní uživatelé budou stále k dispozici.
 
@@ -1255,6 +1264,13 @@ Pokud nastavíte tuto zásadu, uživatelé ji nebudou moci změnit ani přepsat.
 Pokud tuto zásadu ponecháte nenastavenou, uživatelé budou moci nastavit automatické skrývání poličky sami.</translation>
 <translation id="557658534286111200">Povolí nebo zakáže úpravy záložek</translation>
 <translation id="5586942249556966598">Nedělat nic</translation>
+<translation id="5613179474872285001">Slouží ke konfiguraci povinného názvu klientské domény, který bude uveden u klientů vzdáleného přístupu, a brání uživatelům, aby jej změnili.
+
+Pokud je toto nastavení aktivováno, k hostiteli se budou moci připojit pouze klienti ze zadané domény.
+
+Pokud je toto nastavení deaktivováno nebo není nakonfigurováno, k připojení bude použita výchozí zásada. Pokud zvolíte nastavení pro vzdálenou asistenci, k hostiteli se bude moci připojit klient z jakékoli domény. Pokud zvolíte nastavení neomezeného vzdáleného přístupu, bude se moci připojit pouze vlastník hostitele.
+
+Přečtěte si také o zásadě RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">Obnovit poslední relaci</translation>
 <translation id="5645779841392247734">Povolit soubory cookie na těchto stránkách</translation>
 <translation id="5677038592630896441">Vyžaduje shodu jména místního uživatele a vlastníka hostitele vzdáleného přístupu.
@@ -1688,6 +1704,13 @@ Pokud ji ponecháte nenastavenou, bude hlasová odezva ve výchozím nastavení 
 <translation id="6943577887654905793">Název nastavení v systémech Mac/Linux:</translation>
 <translation id="69525503251220566">Parametr poskytující funkci vyhledávání podle obrázku pro výchozího poskytovatele vyhledávání</translation>
 <translation id="6956272732789158625">Nepovolit žádnému webu generovat klíče</translation>
+<translation id="695891079107014261">Slouží ke konfiguraci povinného názvu hostitelské domény, který bude uveden u hostitelů vzdáleného přístupu, a brání uživatelům, aby jej změnili.
+
+Je-li toto nastavení zapnuto, hostitelé smějí být sdíleni jen prostřednictvím účtů zaregistrovaných v daném názvu domény.
+
+Je-li toto nastavení vypnuto nebo není-li nastaveno, hostitele lze sdílet prostřednictvím libovolného účtu.
+
+Přečtěte si také o zásadě RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Určuje, zda jsou online kontroly OCSP/CRL vyžadovány pro místní kotvy důvěryhodnosti.</translation>
 <translation id="7003334574344702284">Je-li tato zásada aktivovaná, vynucuje import uložených hesel z předchozího výchozího prohlížeče. Aktivace této zásady má také vliv na dialogové okno importu.
 
@@ -2170,13 +2193,13 @@ Tato zásada není k dispozici v relacích Windows, které nejsou připojené 
 
           Tato zásada bude dodržována pouze v případě, že je aktivní zásada DefaultSearchProviderEnabled.</translation>
 <translation id="8731693562790917685">Nastavení obsahu umožňují určit, jakým způsobem bude zpracováván obsah určitého typu (například soubory cookie, obrázky nebo JavaScript).</translation>
-<translation id="8749370016497832113">Aktivuje v prohlížeči <ph name="PRODUCT_NAME" /> mazání historie prohlížení a stahování a zabraňuje uživatelům, aby toto nastavení změnili.
+<translation id="8749370016497832113">Aktivuje v prohlížeči <ph name="PRODUCT_NAME" /> mazání historie procházení a stahování a zabraňuje uživatelům, aby toto nastavení změnili.
 
-     I když je tato zásada deaktivována, nelze zaručit, že bude historie prohlížení a stahování uchována: uživatelé mohou soubory upravovat nebo smazat přímo v databázi historie a také prohlížeč může některé nebo všechny položky historie kdykoliv smazat nebo archivovat.
+     I když je tato zásada deaktivována, nelze zaručit, že bude historie procházení a stahování uchována: uživatelé mohou soubory upravovat nebo smazat přímo v databázi historie a také prohlížeč může některé nebo všechny položky historie kdykoliv smazat nebo archivovat.
 
-      Pokud je toto nastavení aktivováno nebo není nastaveno, lze historii prohlížení a stahování smazat.
+      Pokud je toto nastavení aktivováno nebo není nastaveno, lze historii procházení a stahování smazat.
 
-      Je-li nastavení deaktivováno, historii prohlížení nebo stahování smazat nelze.</translation>
+      Je-li nastavení deaktivováno, historii procházení nebo stahování smazat nelze.</translation>
 <translation id="8764119899999036911">Určuje, zda bude vygenerovaný hlavní název služby protokolu Kerberos založen na kanonickém názvu DNS, nebo na původním zadaném názvu.
          
         Pokud toto nastavení aktivujete, vyhledávání záznamů CNAME bude přeskočeno a bude použit zadaný název serveru.

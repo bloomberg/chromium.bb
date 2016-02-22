@@ -3,7 +3,6 @@
 <translationbundle lang="fi">
 <translation id="1001534784610492198">Asennusohjelman arkistotiedosto on vioittunut tai se ei kelpaa. Lataa Google Chrome uudelleen.</translation>
 <translation id="1013290471399003443">Chrome vahvisti, että <ph name="ISSUER" /> on myöntänyt tämän sivuston varmenteen. Palvelin lähetti paikkansa pitävät Certificate Transparency -tiedot.</translation>
-<translation id="1016765312371154165">Chromea ei suljettu oikein.</translation>
 <translation id="103396972844768118">Tärkeitä tietoja Chrome-tiedoistasi</translation>
 <translation id="1035334672863811645">Kirjaudu Chromeen</translation>
 <translation id="1061441684050139317">Chrome tarvitsee mikrofonin käyttöoikeuden voidakseen jakaa sen tämän sivuston kanssa.</translation>

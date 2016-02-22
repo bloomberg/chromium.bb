@@ -134,6 +134,13 @@
 <translation id="1522425503138261032">Dopusti web-lokacijama praćenje fizičke lokacije korisnika</translation>
 <translation id="152657506688053119">Popis zamjenskih URL-ova za zadanog davatelja usluge pretraživanja</translation>
 <translation id="1530812829012954197">Uvijek prikaži sljedeće URL obrasce u pregledniku hosta</translation>
+<translation id="1553684822621013552">Kada je to pravilo postavljeno na "True", ARC će biti omogućen za korisnika
+      (ovisno o dodatnim postavkama pravila – ARC i dalje neće biti
+      dostupan ako su jednokratni način rada ili višestruka prijava omogućeni
+      u trenutačnoj korisničkoj sesiji).
+
+      Ako se ta postavka onemogući ili ne konfigurira, poslovni korisnici
+      ne mogu upotrebljavati ARC.</translation>
 <translation id="1561424797596341174">Nadjačavanja pravila za međuverzije za otklanjanje pogrešaka hosta daljinskog pristupa</translation>
 <translation id="1583248206450240930">Upotrijebi <ph name="PRODUCT_FRAME_NAME" /> kao zadano</translation>
 <translation id="1608755754295374538">URL-ovi koji će dobiti pristup uređajima za snimanje zvuka bez postavljanja upita</translation>
@@ -223,6 +230,7 @@
       Ako je ovo pravilo postavljeno na istinito, sustav <ph name="PRODUCT_OS_NAME" />pokušat će preuzeti podatke automatskog ažuriranja putem HTTP-a. Ako je pravilo postavljeno na neistinito ili nije postavljeno, za preuzimanje podataka automatskog ažuriranja upotrebljavat će se HTTPS.</translation>
 <translation id="2006530844219044261">Upravljanje napajanjem</translation>
 <translation id="201557587962247231">Učestalost učitavanja izvješća o statusu uređaja</translation>
+<translation id="2024476116966025075">Konfiguriraj traženi naziv domene za klijente s daljinskim pristupom</translation>
 <translation id="2030905906517501646">Zadani davatelj usluga pretraživanja</translation>
 <translation id="206623763829450685">Određuje koje sheme HTTP autentifikacije <ph name="PRODUCT_NAME" /> podržava.
 
@@ -438,6 +446,7 @@
       Ako se to pravilo ne postavi, korisnici će moći odlučivati hoće li upotrebljavati značajku proxyja za kompresiju podataka.</translation>
 <translation id="2587719089023392205">Postavi <ph name="PRODUCT_NAME" /> kao zadani preglednik</translation>
 <translation id="2592091433672667839">Trajanje neaktivnosti prije nego što se čuvar zaslona prikaže na zaslonu prijave u prodajnom načinu</translation>
+<translation id="260705825237536216">Konfiguriraj ARC aplikacije</translation>
 <translation id="2623014935069176671">Pričekaj početnu aktivnost korisnika</translation>
 <translation id="262740370354162807">Omogući slanje dokumenata na uslugu <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Omogućavanje govornih povratnih informacija</translation>
@@ -545,6 +554,7 @@
           Kada nije postavljeno, upotrebljava se zadano vrijeme.
 
           Vrijednost pravila treba navesti u milisekundama. Vrijednosti su ograničene na vrijeme kraće od odgode isključivanja zaslona i odgode neaktivnosti ili jednako tom vremenu (ako je postavljeno).</translation>
+<translation id="2987155890997901449">Omogući ARC</translation>
 <translation id="2998881342848488968">To pravilo omogućuje proizvodu <ph name="PRODUCT_OS_NAME" /> da zaobiđe bilo koji proxy za autentifikaciju zaštitnim portalom.
 
       To pravilo djeluje samo ako je proxy konfiguriran (na primjer, pravilom, korisnički u chrome://settings ili proširenjima).
@@ -1073,6 +1083,11 @@
 <translation id="5307432759655324440">Pristupačnost anonimnog načina rada</translation>
 <translation id="5318185076587284965">Omogući hostu za daljinski pristup upotrebu relejnih poslužitelja</translation>
 <translation id="5330684698007383292">Dopusti proizvodu <ph name="PRODUCT_FRAME_NAME" /> rukovanje sljedećim vrstama sadržaja</translation>
+<translation id="5345267406698765263">Navodi pravilo ARC aplikacija kao JSON niz koji se može
+      poslati u trenutačnom obliku u vrijeme izvođenja ARC-a. Ta se postavka
+      trenutačno upotrebljava samo za navođenje prisilne instalacije aplikacija.
+
+      Ako se to pravilo ne postavi, aplikacije se neće instalirati automatski.</translation>
 <translation id="5365946944967967336">Prikaži gumb Početna na alatnoj traci</translation>
 <translation id="5366977351895725771">Ako je postavljeno na netočno, korisnik neće moći izrađivati nadzirane korisnike. Postojeći nadzirani korisnici i dalje će biti dostupni.
 
@@ -1136,6 +1151,13 @@
       Ako pravilo nije postavljeno, korisnici mogu birati treba li se polica automatski skrivati.</translation>
 <translation id="557658534286111200">Omogućuje ili onemogućuje uređivanje knjižnih oznaka</translation>
 <translation id="5586942249556966598">Ne radi ništa</translation>
+<translation id="5613179474872285001">Konfigurira traženi naziv domene klijenta koji će se nametnuti klijentima s daljinskim pristupom i sprječava korisnike da to promijene.
+
+          Ako se ta postavka omogući, s hostom se mogu povezati samo klijenti s navedene domene.
+
+          Ako se ta postavka onemogući ili ne postavi, primjenjuje se zadano pravilo za vrstu veze. U slučaju pružanja pomoći na daljinu to omogućuje klijentima iz bilo koje domene da se povežu s hostom; daljinski pristup u bilo kojem trenutku dostupan je samo vlasniku hosta.
+
+          Pogledajte i RemoteAccessHostDomain.</translation>
 <translation id="5630352020869108293">Vrati posljednju sesiju</translation>
 <translation id="5645779841392247734">Dopusti kolačiće na ovim web-lokacijama</translation>
 <translation id="5677038592630896441">Zahtijeva da se ime lokalnog korisnika i hosta daljinskog pristupa podudaraju.
@@ -1518,6 +1540,13 @@
 <translation id="6943577887654905793">Naziv Mac/Linux preferencije:</translation>
 <translation id="69525503251220566">Značajka pretraživanja po slici koja pruža parametre za zadanog davatelja usluge pretraživanja</translation>
 <translation id="6956272732789158625">Nemoj dopustiti nijednoj web-lokaciji da upotrebljava generiranje ključeva</translation>
+<translation id="695891079107014261">Konfigurira traženi naziv domene hosta koji će se nametnuti hostovima s daljinskim pristupom i sprječava korisnike da to promijene.
+
+          Ako se ta postavka omogući, hostovi se mogu dijeliti samo putem računa registriranih na navedenom nazivu domene.
+
+          Ako se ta postavka onemogući ili ne postavi, hostovi se mogu dijeliti putem bilo kojeg računa.
+
+          Pogledajte i RemoteAccessHostClientDomain.</translation>
 <translation id="6997592395211691850">Jesu li potrebne mrežne OCSP/CRL provjere za lokalna pouzdana sidra</translation>
 <translation id="7003334574344702284">Ako je omogućeno, ovo pravilo prisilno uvozi spremljene zaporke iz prethodno zadanog preglednika. Ako je omogućeno, ovo pravilo također utječe na dijaloški okvir za uvoz. Ako je onemogućeno, spremljene se zaporke ne uvoze. Ako nije postavljeno, korisniku može biti postavljen upit želi li uvesti zaporke ili do uvoza može doći automatski.</translation>
 <translation id="7003746348783715221">Postavke za <ph name="PRODUCT_NAME" /></translation>
