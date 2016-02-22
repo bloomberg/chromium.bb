@@ -755,7 +755,8 @@ git-hyper-blame(1) Manual Page
 <h2 id="_synopsis">SYNOPSIS</h2>
 <div class="sectionbody">
 <div class="verseblock">
-<pre class="content"><em>git hyper-blame</em> [-i &lt;rev&gt; [-i &lt;rev&gt; &#8230;]] [&lt;rev&gt;] [--] &lt;file&gt;</pre>
+<pre class="content"><em>git hyper-blame</em> [-i &lt;rev&gt; [-i &lt;rev&gt; &#8230;]] [--ignore-file=&lt;file&gt;]
+                [--no-default-ignores] [&lt;rev&gt;] [--] &lt;file&gt;</pre>
 <div class="attribution">
 </div></div>
 </div>
@@ -773,6 +774,9 @@ touched a given line.</p></div>
 <div class="paragraph"><p>Follows the normal <code>blame</code> syntax: annotates <code>&lt;file&gt;</code> with the revision that
 last modified each line. Optional <code>&lt;rev&gt;</code> specifies the revision of <code>&lt;file&gt;</code> to
 start from.</p></div>
+<div class="paragraph"><p>Automatically looks for a file called <code>.git-blame-ignore-revs</code> in the repository
+root directory. This file has the same syntax as the <code>--ignore-file</code> argument,
+and any commits mentioned in this file are added to the ignore list.</p></div>
 </div>
 </div>
 <div class="sect1">
@@ -785,6 +789,23 @@ start from.</p></div>
 <dd>
 <p>
   A revision to ignore. Can be specified as many times as needed.
+</p>
+</dd>
+<dt class="hdlist1">
+--ignore-file=&lt;file&gt;
+</dt>
+<dd>
+<p>
+  A file containing a list of revisions to ignore. Can have comments beginning
+  with <code>#</code>.
+</p>
+</dd>
+<dt class="hdlist1">
+--no-default-ignores
+</dt>
+<dd>
+<p>
+  Do not ignore commits from the <code>.git-blame-ignore-revs</code> file.
 </p>
 </dd>
 </dl></div>
@@ -833,25 +854,6 @@ other more invasive changes.</p></div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_bugs">BUGS</h2>
-<div class="sectionbody">
-<div class="ulist"><ul>
-<li>
-<p>
-There is currently no way to pass the ignore list as a file.
-</p>
-</li>
-<li>
-<p>
-It should be possible for a git repository to configure an automatic list of
-  commits to ignore (like <code>.gitignore</code>), so that project owners can maintain a
-  list of "big change" commits that are ignored by hyper-blame by default.
-</p>
-</li>
-</ul></div>
-</div>
-</div>
-<div class="sect1">
 <h2 id="_see_also">SEE ALSO</h2>
 <div class="sectionbody">
 <div class="paragraph"><p><a href="git-blame.html">git-blame(1)</a></p></div>
@@ -869,7 +871,7 @@ from <a href="https://chromium.googlesource.com/chromium/tools/depot_tools.git">
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2016-02-05 13:43:52 AEDT
+Last updated 2016-02-19 15:04:46 AEDT
 </div>
 </div>
 </body>

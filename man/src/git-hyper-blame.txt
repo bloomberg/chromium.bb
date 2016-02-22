@@ -9,7 +9,8 @@ include::_git-hyper-blame_desc.helper.txt[]
 SYNOPSIS
 --------
 [verse]
-'git hyper-blame' [-i <rev> [-i <rev> ...]] [<rev>] [--] <file>
+'git hyper-blame' [-i <rev> [-i <rev> ...]] [--ignore-file=<file>]
+                [--no-default-ignores] [<rev>] [--] <file>
 
 DESCRIPTION
 -----------
@@ -27,11 +28,22 @@ Follows the normal `blame` syntax: annotates `<file>` with the revision that
 last modified each line. Optional `<rev>` specifies the revision of `<file>` to
 start from.
 
+Automatically looks for a file called `.git-blame-ignore-revs` in the repository
+root directory. This file has the same syntax as the `--ignore-file` argument,
+and any commits mentioned in this file are added to the ignore list.
+
 OPTIONS
 -------
 
 -i <rev>::
   A revision to ignore. Can be specified as many times as needed.
+
+--ignore-file=<file>::
+  A file containing a list of revisions to ignore. Can have comments beginning
+  with `#`.
+
+--no-default-ignores::
+  Do not ignore commits from the `.git-blame-ignore-revs` file.
 
 EXAMPLE
 -------
@@ -63,14 +75,6 @@ blamed for nearby edits.
 For this reason, `hyper-blame` works best when the ignored commits are be
 limited to minor changes such as formatting and renaming, not refactoring or
 other more invasive changes.
-
-BUGS
-----
-
-- There is currently no way to pass the ignore list as a file.
-- It should be possible for a git repository to configure an automatic list of
-  commits to ignore (like `.gitignore`), so that project owners can maintain a
-  list of "big change" commits that are ignored by hyper-blame by default.
 
 SEE ALSO
 --------

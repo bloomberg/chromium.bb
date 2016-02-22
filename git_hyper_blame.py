@@ -22,6 +22,9 @@ import git_dates
 logging.getLogger().setLevel(logging.INFO)
 
 
+DEFAULT_IGNORE_FILE_NAME = '.git-blame-ignore-revs'
+
+
 class Commit(object):
   """Info about a commit."""
   def __init__(self, commithash):
@@ -323,12 +326,25 @@ def hyper_blame(ignored, filename, revision='HEAD', out=sys.stdout,
 
   return 0
 
+
+def parse_ignore_file(ignore_file):
+  for line in ignore_file:
+    line = line.split('#', 1)[0].strip()
+    if line:
+      yield line
+
+
 def main(args, stdout=sys.stdout, stderr=sys.stderr):
   parser = argparse.ArgumentParser(
       prog='git hyper-blame',
       description='git blame with support for ignoring certain commits.')
   parser.add_argument('-i', metavar='REVISION', action='append', dest='ignored',
                       default=[], help='a revision to ignore')
+  parser.add_argument('--ignore-file', metavar='FILE',
+                      type=argparse.FileType('r'), dest='ignore_file',
+                      help='a file containing a list of revisions to ignore')
+  parser.add_argument('--no-default-ignores', dest='no_default_ignores',
+                      help='Do not ignore commits from .git-blame-ignore-revs.')
   parser.add_argument('revision', nargs='?', default='HEAD', metavar='REVISION',
                       help='revision to look at')
   parser.add_argument('filename', metavar='FILE', help='filename to blame')
@@ -349,14 +365,21 @@ def main(args, stdout=sys.stdout, stderr=sys.stderr):
   filename = os.path.normpath(filename)
   filename = os.path.normcase(filename)
 
+  ignored_list = list(args.ignored)
+  if not args.no_default_ignores and os.path.exists(DEFAULT_IGNORE_FILE_NAME):
+    with open(DEFAULT_IGNORE_FILE_NAME) as ignore_file:
+      ignored_list.extend(parse_ignore_file(ignore_file))
+
+  if args.ignore_file:
+    ignored_list.extend(parse_ignore_file(args.ignore_file))
+
   ignored = set()
-  for c in args.ignored:
+  for c in ignored_list:
     try:
       ignored.add(git_common.hash_one(c))
     except subprocess2.CalledProcessError as e:
-      # Custom error message (the message from git-rev-parse is inappropriate).
-      stderr.write('fatal: unknown revision \'%s\'.\n' % c)
-      return e.returncode
+      # Custom warning string (the message from git-rev-parse is inappropriate).
+      stderr.write('warning: unknown revision \'%s\'.\n' % c)
 
   return hyper_blame(ignored, filename, args.revision, out=stdout, err=stderr)
 

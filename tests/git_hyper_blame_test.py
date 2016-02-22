@@ -50,7 +50,7 @@ class GitHyperBlameTestBase(git_test_utils.GitRepoReadOnlyTestBase):
 
 class GitHyperBlameMainTest(GitHyperBlameTestBase):
   """End-to-end tests on a very simple repo."""
-  REPO_SCHEMA = "A B C"
+  REPO_SCHEMA = "A B C D"
 
   COMMIT_A = {
     'some/files/file': {'data': 'line 1\nline 2\n'},
@@ -63,6 +63,19 @@ class GitHyperBlameMainTest(GitHyperBlameTestBase):
   COMMIT_C = {
     'some/files/file': {'data': 'line 1.1\nline 2.1\n'},
   }
+
+  COMMIT_D = {
+    # This file should be automatically considered for ignore.
+    '.git-blame-ignore-revs': {'data': 'tag_C'},
+    # This file should not be considered.
+    'some/files/.git-blame-ignore-revs': {'data': 'tag_B'},
+  }
+
+  def setUp(self):
+    super(GitHyperBlameMainTest, self).setUp()
+    # Most tests want to check out C (so the .git-blame-ignore-revs is not
+    # used).
+    self.repo.git('checkout', '-f', 'tag_C')
 
   def testBasicBlame(self):
     """Tests the main function (simple end-to-end test with no ignores)."""
@@ -137,14 +150,72 @@ class GitHyperBlameMainTest(GitHyperBlameTestBase):
 
   def testBadIgnore(self):
     """Tests the main function (bad revision passed to -i)."""
+    expected_output = [self.blame_line('C', '1) line 1.1'),
+                       self.blame_line('B', '2) line 2.1')]
     stdout = StringIO.StringIO()
     stderr = StringIO.StringIO()
     retval = self.repo.run(self.git_hyper_blame.main,
                            args=['-i', 'xxxx', 'tag_C', 'some/files/file'],
                            stdout=stdout, stderr=stderr)
-    self.assertNotEqual(0, retval)
-    self.assertEqual('', stdout.getvalue())
-    self.assertEqual('fatal: unknown revision \'xxxx\'.\n', stderr.getvalue())
+    self.assertEqual(0, retval)
+    self.assertEqual(expected_output, stdout.getvalue().rstrip().split('\n'))
+    self.assertEqual('warning: unknown revision \'xxxx\'.\n', stderr.getvalue())
+
+  def testIgnoreFile(self):
+    """Tests passing the ignore list in a file."""
+    expected_output = [self.blame_line('C', ' 1) line 1.1'),
+                       self.blame_line('A', '2*) line 2.1')]
+    stdout = StringIO.StringIO()
+    stderr = StringIO.StringIO()
+
+    with tempfile.NamedTemporaryFile(mode='w+', prefix='ignore') as ignore_file:
+      ignore_file.write('# Line comments are allowed.\n'.format(self.repo['B']))
+      ignore_file.write('\n')
+      ignore_file.write('{}\n'.format(self.repo['B']))
+      # A revision that is not in the repo (should be ignored).
+      ignore_file.write('xxxx\n')
+      ignore_file.flush()
+      retval = self.repo.run(self.git_hyper_blame.main,
+                             args=['--ignore-file', ignore_file.name, 'tag_C',
+                                   'some/files/file'],
+                             stdout=stdout, stderr=stderr)
+
+    self.assertEqual(0, retval)
+    self.assertEqual(expected_output, stdout.getvalue().rstrip().split('\n'))
+    self.assertEqual('warning: unknown revision \'xxxx\'.\n', stderr.getvalue())
+
+  def testDefaultIgnoreFile(self):
+    """Tests automatically using a default ignore list."""
+    # Check out revision D. We expect the script to use the default ignore list
+    # that is checked out, *not* the one committed at the given revision.
+    self.repo.git('checkout', '-f', 'tag_D')
+
+    expected_output = [self.blame_line('A', '1*) line 1.1'),
+                       self.blame_line('B', ' 2) line 2.1')]
+    stdout = StringIO.StringIO()
+    stderr = StringIO.StringIO()
+
+    retval = self.repo.run(self.git_hyper_blame.main,
+                           args=['tag_D', 'some/files/file'],
+                           stdout=stdout, stderr=stderr)
+
+    self.assertEqual(0, retval)
+    self.assertEqual(expected_output, stdout.getvalue().rstrip().split('\n'))
+    self.assertEqual('', stderr.getvalue())
+
+    # Test blame from a different revision. Despite the default ignore file
+    # *not* being committed at that revision, it should still be picked up
+    # because D is currently checked out.
+    stdout = StringIO.StringIO()
+    stderr = StringIO.StringIO()
+
+    retval = self.repo.run(self.git_hyper_blame.main,
+                           args=['tag_C', 'some/files/file'],
+                           stdout=stdout, stderr=stderr)
+
+    self.assertEqual(0, retval)
+    self.assertEqual(expected_output, stdout.getvalue().rstrip().split('\n'))
+    self.assertEqual('', stderr.getvalue())
 
 class GitHyperBlameSimpleTest(GitHyperBlameTestBase):
   REPO_SCHEMA = """
