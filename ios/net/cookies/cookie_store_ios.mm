@@ -1081,7 +1081,8 @@ void CookieStoreIOS::DidClearBinaryCookiesFileCookies(
   CookieStoreIOSClient* client = net::GetCookieStoreIOSClient();
   DCHECK(client);
   client->DidChangeCookieStorage();
-  callback.Run(num_deleted_from_nshttp_cookie_storage);
+  if (!callback.is_null())
+    callback.Run(num_deleted_from_nshttp_cookie_storage);
 }
 
 void CookieStoreIOS::UpdateCachesFromCookieMonster() {
@@ -1099,20 +1100,23 @@ void CookieStoreIOS::UpdateCachesAfterSet(const SetCookiesCallback& callback,
   DCHECK(thread_checker_.CalledOnValidThread());
   if (success)
     UpdateCachesFromCookieMonster();
-  callback.Run(success);
+  if (!callback.is_null())
+    callback.Run(success);
 }
 
 void CookieStoreIOS::UpdateCachesAfterDelete(const DeleteCallback& callback,
                                              int num_deleted) {
   DCHECK(thread_checker_.CalledOnValidThread());
   UpdateCachesFromCookieMonster();
-  callback.Run(num_deleted);
+  if (!callback.is_null())
+    callback.Run(num_deleted);
 }
 
 void CookieStoreIOS::UpdateCachesAfterClosure(const base::Closure& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   UpdateCachesFromCookieMonster();
-  callback.Run();
+  if (!callback.is_null())
+    callback.Run();
 }
 
 net::CookieList
