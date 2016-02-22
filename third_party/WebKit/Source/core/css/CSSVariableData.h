@@ -23,9 +23,9 @@ public:
         return adoptRef(new CSSVariableData(range, needsVariableResolution));
     }
 
-    static PassRefPtr<CSSVariableData> createResolved(const Vector<CSSParserToken>& resolvedTokens, PassRefPtr<CSSVariableData> unresolvedData)
+    static PassRefPtr<CSSVariableData> createResolved(const Vector<CSSParserToken>& resolvedTokens, const CSSVariableData& unresolvedData)
     {
-        return adoptRef(new CSSVariableData(resolvedTokens, unresolvedData->m_backingString));
+        return adoptRef(new CSSVariableData(resolvedTokens, unresolvedData.m_backingString));
     }
 
     CSSParserTokenRange tokenRange() { return m_tokens; }

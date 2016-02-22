@@ -14,6 +14,7 @@
 namespace blink {
 
 class CSSParserTokenRange;
+class CSSVariableData;
 class CSSVariableReferenceValue;
 class StyleResolverState;
 class StyleVariableData;
@@ -28,12 +29,22 @@ public:
 
 private:
     CSSVariableResolver(StyleVariableData*);
-    CSSVariableResolver(StyleVariableData*, AtomicString& variable);
 
-    // Returns false if we encounter a reference to an invalid variable with no fallback
+    // These return false if we encounter a reference to an invalid variable with no fallback
+
+    // Resolves a range which may contain var() references
+    bool resolveTokenRange(CSSParserTokenRange, Vector<CSSParserToken>& result);
+    // Resolves the fallback (if present) of a var() reference, starting from the comma
     bool resolveFallback(CSSParserTokenRange, Vector<CSSParserToken>& result);
-    bool resolveVariableTokensRecursive(CSSParserTokenRange, Vector<CSSParserToken>& result);
-    bool resolveVariableReferencesFromTokens(CSSParserTokenRange tokens, Vector<CSSParserToken>& result);
+    // Resolves the contents of a var() reference
+    bool resolveVariableReference(CSSParserTokenRange, Vector<CSSParserToken>& result);
+
+    // These return null if the custom property is invalid
+
+    // Returns the CSSVariableData for a custom property, resolving and storing it if necessary
+    CSSVariableData* valueForCustomProperty(AtomicString name);
+    // Resolves the CSSVariableData from a custom property declaration
+    PassRefPtr<CSSVariableData> resolveCustomProperty(AtomicString name, const CSSVariableData&);
 
     StyleVariableData* m_styleVariableData;
     HashSet<AtomicString> m_variablesSeen;
