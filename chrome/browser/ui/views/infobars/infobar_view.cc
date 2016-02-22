@@ -220,7 +220,9 @@ void InfoBarView::Layout() {
             height() - InfoBarContainerDelegate::kSeparatorLineHeight));
   }
 
-  child_container_->SetBounds(0, arrow_height(), width(), bar_height());
+  child_container_->SetBounds(
+      0, arrow_height(), width(),
+      bar_height() - InfoBarContainerDelegate::kSeparatorLineHeight);
   // |child_container_| should be the only child.
   DCHECK_EQ(1, child_count());
 
