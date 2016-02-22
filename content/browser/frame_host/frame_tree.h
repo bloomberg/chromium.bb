@@ -41,6 +41,7 @@ class RenderWidgetHostDelegate;
 class CONTENT_EXPORT FrameTree {
  public:
   class NodeRange;
+  class ConstNodeRange;
 
   class CONTENT_EXPORT NodeIterator {
    public:
@@ -77,6 +78,41 @@ class CONTENT_EXPORT FrameTree {
     FrameTreeNode* const node_to_skip_;
   };
 
+  class CONTENT_EXPORT ConstNodeIterator {
+   public:
+    ~ConstNodeIterator();
+
+    ConstNodeIterator& operator++();
+
+    bool operator==(const ConstNodeIterator& rhs) const;
+    bool operator!=(const ConstNodeIterator& rhs) const {
+      return !(*this == rhs);
+    }
+
+    const FrameTreeNode* operator*() { return current_node_; }
+
+   private:
+    friend class ConstNodeRange;
+
+    ConstNodeIterator(const FrameTreeNode* starting_node);
+
+    const FrameTreeNode* current_node_;
+    std::queue<const FrameTreeNode*> queue_;
+  };
+
+  class CONTENT_EXPORT ConstNodeRange {
+   public:
+    ConstNodeIterator begin();
+    ConstNodeIterator end();
+
+   private:
+    friend class FrameTree;
+
+    ConstNodeRange(const FrameTree* tree);
+
+    const FrameTree* const tree_;
+  };
+
   // Each FrameTreeNode will default to using the given |navigator| for
   // navigation tasks in the frame.
   // A set of delegates are remembered here so that we can create
@@ -108,6 +144,10 @@ class CONTENT_EXPORT FrameTree {
   // Returns a range to iterate over all FrameTreeNodes in the frame tree in
   // breadth-first traversal order.
   NodeRange Nodes();
+
+  // Returns a range to iterate over all FrameTreeNodes in the frame tree in
+  // breadth-first traversal order. All FrameTreeNodes returned will be const.
+  ConstNodeRange ConstNodes() const;
 
   // Adds a new child frame to the frame tree. |process_id| is required to
   // disambiguate |new_routing_id|, and it must match the process of the
@@ -187,7 +227,7 @@ class CONTENT_EXPORT FrameTree {
   void ResetLoadProgress();
 
   // Returns true if at least one of the nodes in this FrameTree is loading.
-  bool IsLoading();
+  bool IsLoading() const;
 
   // Set page-level focus in all SiteInstances involved in rendering
   // this FrameTree, not including the current main frame's

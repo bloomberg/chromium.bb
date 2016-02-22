@@ -117,7 +117,9 @@ class CONTENT_EXPORT HistoryController {
     provisional_entry_ = std::move(entry);
   }
 
-  void GoToEntry(blink::WebLocalFrame* main_frame,
+  // Return true if the main frame ended up loading a request as part of the
+  // history navigation.
+  bool GoToEntry(blink::WebLocalFrame* main_frame,
                  scoped_ptr<HistoryEntry> entry,
                  scoped_ptr<NavigationParams> navigation_params,
                  blink::WebURLRequest::CachePolicy cache_policy);

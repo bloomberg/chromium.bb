@@ -227,7 +227,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
       "web_accessible/accessible_history_navigation.html"));
   ui_test_utils::NavigateToURL(browser(), newtab_page);
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
-      browser(), accessible_newtab_override, 2);
+      browser(), accessible_newtab_override, 1);
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
       browser()->tab_strip_model()->GetActiveWebContents(),
       "window.domAutomationController.send(document.title)",
@@ -246,8 +246,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
   GURL accessible_linked_resource(embedded_test_server()->GetURL(
       "/extensions/api_test/extension_resource_request_policy/"
       "web_accessible/accessible_link_resource.html"));
-  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(),
-      accessible_linked_resource, 2);
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+      browser(), accessible_linked_resource, 1);
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
       browser()->tab_strip_model()->GetActiveWebContents(),
       "window.domAutomationController.send(document.URL)",

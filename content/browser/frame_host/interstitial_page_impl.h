@@ -88,6 +88,8 @@ class CONTENT_EXPORT InterstitialPageImpl
   }
   bool reload_on_dont_proceed() const { return reload_on_dont_proceed_; }
 
+  bool pause_throbber() const { return pause_throbber_; }
+
   // TODO(nasko): This should move to InterstitialPageNavigatorImpl, but in
   // the meantime make it public, so it can be called directly.
   void DidNavigate(
@@ -271,10 +273,6 @@ class CONTENT_EXPORT InterstitialPageImpl
   // revert it to its original value).
   bool should_revert_web_contents_title_;
 
-  // Whether or not the contents was loading resources when the interstitial was
-  // shown.  We restore this state if the user proceeds from the interstitial.
-  bool web_contents_was_loading_;
-
   // Whether the ResourceDispatcherHost has been notified to cancel/resume the
   // resource requests blocked for the RenderViewHost.
   bool resource_dispatcher_host_notified_;
@@ -290,6 +288,11 @@ class CONTENT_EXPORT InterstitialPageImpl
   mutable RendererPreferences renderer_preferences_;
 
   bool create_view_;
+
+  // Whether the throbber should be paused. This is true from the moment the
+  // interstitial is shown until the moment the interstitial goes away or the
+  // user chooses to proceed.
+  bool pause_throbber_;
 
   scoped_ptr<InterstitialPageDelegate> delegate_;
 

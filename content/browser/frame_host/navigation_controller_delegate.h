@@ -42,7 +42,6 @@ class NavigationControllerDelegate {
   virtual void Stop() = 0;
   virtual int32_t GetMaxPageID() = 0;
   virtual int32_t GetMaxPageIDForSiteInstance(SiteInstance* site_instance) = 0;
-  virtual bool IsLoading() const = 0;
   virtual bool IsBeingDestroyed() const = 0;
   virtual bool CanOverscrollContent() const = 0;
 
@@ -71,10 +70,8 @@ class NavigationControllerDelegate {
       RenderFrameHost* render_frame_host) = 0;
   virtual void AttachInterstitialPage(
       InterstitialPageImpl* interstitial_page) = 0;
+  virtual void DidProceedOnInterstitial() = 0;
   virtual void DetachInterstitialPage() = 0;
-  virtual void SetIsLoading(bool is_loading,
-                            bool to_different_document,
-                            LoadNotificationDetails* details) = 0;
 };
 
 }  // namespace content

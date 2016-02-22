@@ -4663,11 +4663,13 @@ void RenderFrameImpl::OnCommitNavigation(
                    std::move(stream_override));
 }
 
+// PlzNavigate
 void RenderFrameImpl::OnFailedNavigation(
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params,
     bool has_stale_copy_in_cache,
     int error_code) {
+  DCHECK(IsBrowserSideNavigationEnabled());
   bool is_reload = IsReload(common_params.navigation_type);
   bool is_history_navigation = request_params.page_state.IsValid();
   WebURLRequest::CachePolicy cache_policy =
@@ -4693,10 +4695,9 @@ void RenderFrameImpl::OnFailedNavigation(
       frame_->isViewSourceModeEnabled());
   SendFailedProvisionalLoad(failed_request, error, frame_);
 
+  // This check should have been done on the browser side already.
   if (!ShouldDisplayErrorPageForFailedLoad(error_code, common_params.url)) {
-    // TODO(avi): Remove this; we shouldn't ever be dropping navigations.
-    // http://crbug.com/501960
-    Send(new FrameHostMsg_DidDropNavigation(routing_id_));
+    NOTREACHED();
     return;
   }
 
@@ -5328,6 +5329,11 @@ void RenderFrameImpl::NavigateInternal(
   WebURLRequest request =
       CreateURLRequestForNavigation(common_params, std::move(stream_params),
                                     frame_->isViewSourceModeEnabled());
+
+  // Used to determine whether this frame is actually loading a request as part
+  // of a history navigation.
+  bool has_history_navigation_in_frame = false;
+
 #if defined(OS_ANDROID)
   request.setHasUserGesture(start_params.has_user_gesture);
 #endif
@@ -5378,9 +5384,10 @@ void RenderFrameImpl::NavigateInternal(
         DCHECK(!browser_side_navigation);
         scoped_ptr<NavigationParams> navigation_params(
             new NavigationParams(*pending_navigation_params_.get()));
-        render_view_->history_controller()->GoToEntry(
-            frame_, std::move(entry), std::move(navigation_params),
-            cache_policy);
+        has_history_navigation_in_frame =
+            render_view_->history_controller()->GoToEntry(
+                frame_, std::move(entry), std::move(navigation_params),
+                cache_policy);
       } else {
         // In --site-per-process, the browser process sends a single
         // WebHistoryItem destined for this frame.
@@ -5477,6 +5484,16 @@ void RenderFrameImpl::NavigateInternal(
       frame_->load(request, load_type, item_for_history_navigation,
                    history_load_type, is_client_redirect);
     }
+  } else {
+    // The browser expects the frame to be loading this navigation. Inform it
+    // that the load stopped if needed.
+    // Note: in the case of history navigations, |should_load_request| will be
+    // false, and the frame may not have been set in a loading state. Do not
+    // send a stop message if the HistoryController is loading in this frame
+    // nonetheless. This behavior will go away with subframe navigation
+    // entries.
+    if (!frame_->isLoading() && !has_history_navigation_in_frame)
+      Send(new FrameHostMsg_DidStopLoading(routing_id_));
   }
 
   // In case LoadRequest failed before didCreateDataSource was called.

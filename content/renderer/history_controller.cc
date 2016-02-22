@@ -60,7 +60,7 @@ HistoryController::HistoryController(RenderViewImpl* render_view)
 HistoryController::~HistoryController() {
 }
 
-void HistoryController::GoToEntry(
+bool HistoryController::GoToEntry(
     blink::WebLocalFrame* main_frame,
     scoped_ptr<HistoryEntry> target_entry,
     scoped_ptr<NavigationParams> navigation_params,
@@ -89,6 +89,7 @@ void HistoryController::GoToEntry(
         std::make_pair(main_frame, provisional_entry_->root()));
   }
 
+  bool has_main_frame_request = false;
   for (const auto& item : same_document_loads) {
     WebFrame* frame = item.first;
     RenderFrameImpl* render_frame = RenderFrameImpl::FromWebFrame(frame);
@@ -101,6 +102,8 @@ void HistoryController::GoToEntry(
     frame->toWebLocalFrame()->load(
         request, blink::WebFrameLoadType::BackForward, item.second,
         blink::WebHistorySameDocumentLoad);
+    if (frame == main_frame)
+      has_main_frame_request = true;
   }
   for (const auto& item : different_document_loads) {
     WebFrame* frame = item.first;
@@ -114,7 +117,11 @@ void HistoryController::GoToEntry(
     frame->toWebLocalFrame()->load(
         request, blink::WebFrameLoadType::BackForward, item.second,
         blink::WebHistoryDifferentDocumentLoad);
+    if (frame == main_frame)
+      has_main_frame_request = true;
   }
+
+  return has_main_frame_request;
 }
 
 void HistoryController::RecursiveGoToEntry(
