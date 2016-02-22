@@ -273,7 +273,7 @@ TEST_F(ExtendedDesktopTest, TestCursor) {
   aura::WindowTreeHost* host0 = root_windows[0]->GetHost();
   aura::WindowTreeHost* host1 = root_windows[1]->GetHost();
   EXPECT_EQ(ui::kCursorPointer, host0->last_cursor().native_type());
-  EXPECT_EQ(ui::kCursorPointer, host1->last_cursor().native_type());
+  EXPECT_EQ(ui::kCursorNull, host1->last_cursor().native_type());
   Shell::GetInstance()->cursor_manager()->SetCursor(ui::kCursorCopy);
   EXPECT_EQ(ui::kCursorCopy, host0->last_cursor().native_type());
   EXPECT_EQ(ui::kCursorCopy, host1->last_cursor().native_type());

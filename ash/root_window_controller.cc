@@ -705,7 +705,6 @@ void RootWindowController::Init(RootWindowType root_window_type,
   Shell* shell = Shell::GetInstance();
   shell->InitRootWindow(root_window);
 
-  ash_host_->AsWindowTreeHost()->SetCursor(ui::kCursorPointer);
   CreateContainersInRootWindow(root_window);
 
   CreateSystemBackground(first_run_after_boot);

@@ -33,9 +33,12 @@ component("x11") {
 
   if (ozone_platform_x11) {
     sources += [
+      "x11_cursor_ozone.cc",
+      "x11_cursor_ozone.h",
       "x11_window_ozone.cc",
       "x11_window_ozone.h",
     ]
+    deps += [ "//ui/base" ]
   } else if (use_x11) {
     sources += [
       "x11_window.cc",

@@ -10,6 +10,7 @@
 #include "ui/events/ozone/events_ozone.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/platform_window/x11/x11_cursor_ozone.h"
 
 namespace ui {
 
@@ -26,7 +27,10 @@ X11WindowOzone::~X11WindowOzone() {
   event_source_->RemoveXEventDispatcher(this);
 }
 
-void X11WindowOzone::SetCursor(PlatformCursor cursor) {}
+void X11WindowOzone::SetCursor(PlatformCursor cursor) {
+  X11CursorOzone* cursor_ozone = static_cast<X11CursorOzone*>(cursor);
+  XDefineCursor(xdisplay(), xwindow(), cursor_ozone->xcursor());
+}
 
 bool X11WindowOzone::DispatchXEvent(XEvent* xev) {
   if (!IsEventForXWindow(*xev))

@@ -7,10 +7,10 @@
 #include <utility>
 
 #include "base/memory/scoped_ptr.h"
-#include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/events/platform/x11/x11_event_source_libevent.h"
 #include "ui/ozone/common/native_display_delegate_ozone.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
+#include "ui/ozone/platform/x11/x11_cursor_factory_ozone.h"
 #include "ui/ozone/platform/x11/x11_surface_factory.h"
 #include "ui/ozone/public/gpu_platform_support.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
@@ -82,7 +82,7 @@ class OzonePlatformX11 : public OzonePlatform {
     surface_factory_ozone_.reset(new X11SurfaceFactory());
     overlay_manager_.reset(new StubOverlayManager());
     input_controller_ = CreateStubInputController();
-    cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone);
+    cursor_factory_ozone_.reset(new X11CursorFactoryOzone());
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
   }
 
@@ -96,7 +96,7 @@ class OzonePlatformX11 : public OzonePlatform {
   scoped_ptr<X11EventSourceLibevent> event_source_;
   scoped_ptr<OverlayManagerOzone> overlay_manager_;
   scoped_ptr<InputController> input_controller_;
-  scoped_ptr<BitmapCursorFactoryOzone> cursor_factory_ozone_;
+  scoped_ptr<X11CursorFactoryOzone> cursor_factory_ozone_;
   scoped_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
 
   // Objects in the GPU process.
