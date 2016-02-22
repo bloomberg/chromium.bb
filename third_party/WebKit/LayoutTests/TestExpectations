@@ -1408,7 +1408,7 @@ crbug.com/587136 [ Linux Debug ] http/tests/security/xss-DENIED-cross-origin-sta
 
 crbug.com/587593 [ Android ] fast/js/pic/cached-single-entry-transition.html [ Pass Failure ]
 
-crbug.com/587779 [ Mac10.10 ] fast/dynamic/window-resize-scrollbars-test.html [ Timeout Failure Pass ]
+crbug.com/587779 [ Mac10.9 Mac10.10 ] fast/dynamic/window-resize-scrollbars-test.html [ Timeout Failure Pass ]
 
 crbug.com/587950 [ Mac Win ] virtual/threaded/animations/background-shorthand-crash.html [ Failure ]
 
