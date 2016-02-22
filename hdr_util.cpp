@@ -101,6 +101,8 @@ bool CopyColour(const mkvparser::Colour& parser_colour,
     mkvmuxer::MasteringMetadata muxer_mm;
     if (!CopyMasteringMetadata(*parser_colour.mastering_metadata, &muxer_mm))
       return false;
+    if (!muxer_colour->SetMasteringMetadata(muxer_mm))
+      return false;
   }
   return true;
 }
