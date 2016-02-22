@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file_path.h"
 #include "components/user_manager/user_manager_export.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
@@ -55,8 +56,10 @@ class USER_MANAGER_EXPORT UserImage {
   bool is_safe_format() const { return is_safe_format_; }
   void MarkAsSafe();
 
-  const std::string& file_path() const { return file_path_; }
-  void set_file_path(const std::string& file_path) { file_path_ = file_path; }
+  const base::FilePath& file_path() const { return file_path_; }
+  void set_file_path(const base::FilePath& file_path) {
+    file_path_ = file_path;
+  }
 
  private:
   gfx::ImageSkia image_;
@@ -65,7 +68,7 @@ class USER_MANAGER_EXPORT UserImage {
   GURL url_;
 
   // If image was loaded from the local file, file path is stored here.
-  std::string file_path_;
+  base::FilePath file_path_;
   bool is_safe_format_;
 };
 

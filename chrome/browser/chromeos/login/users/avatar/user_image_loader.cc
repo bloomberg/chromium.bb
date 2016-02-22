@@ -23,13 +23,12 @@
 
 namespace chromeos {
 
-UserImageLoader::ImageInfo::ImageInfo(const std::string& file_path,
+UserImageLoader::ImageInfo::ImageInfo(const base::FilePath& file_path,
                                       int pixels_per_side,
                                       const LoadedCallback& loaded_cb)
     : file_path(file_path),
       pixels_per_side(pixels_per_side),
-      loaded_cb(loaded_cb) {
-}
+      loaded_cb(loaded_cb) {}
 
 UserImageLoader::ImageInfo::~ImageInfo() {
 }
@@ -58,33 +57,29 @@ UserImageLoader::UserImageLoader(
 UserImageLoader::~UserImageLoader() {
 }
 
-void UserImageLoader::Start(const std::string& filepath,
-                            int pixels_per_side,
-                            const LoadedCallback& loaded_cb) {
+void UserImageLoader::StartWithFilePath(const base::FilePath& file_path,
+                                        int pixels_per_side,
+                                        const LoadedCallback& loaded_cb) {
   background_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&UserImageLoader::ReadAndDecodeImage,
-                 this,
-                 ImageInfo(filepath, pixels_per_side, loaded_cb)));
+      FROM_HERE, base::Bind(&UserImageLoader::ReadAndDecodeImage, this,
+                            ImageInfo(file_path, pixels_per_side, loaded_cb)));
 }
 
-void UserImageLoader::Start(scoped_ptr<std::string> data,
-                            int pixels_per_side,
-                            const LoadedCallback& loaded_cb) {
+void UserImageLoader::StartWithData(scoped_ptr<std::string> data,
+                                    int pixels_per_side,
+                                    const LoadedCallback& loaded_cb) {
   background_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&UserImageLoader::DecodeImage,
-                 this,
-                 base::Passed(&data),
-                 ImageInfo(std::string(), pixels_per_side, loaded_cb)));
+      base::Bind(&UserImageLoader::DecodeImage, this, base::Passed(&data),
+                 ImageInfo(base::FilePath(), pixels_per_side, loaded_cb)));
 }
 
 void UserImageLoader::ReadAndDecodeImage(const ImageInfo& image_info) {
   DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
 
   scoped_ptr<std::string> data(new std::string);
-  if (!base::ReadFileToString(base::FilePath(image_info.file_path), data.get()))
-    LOG(ERROR) << "Failed to read image " << image_info.file_path;
+  if (!base::ReadFileToString(image_info.file_path, data.get()))
+    LOG(ERROR) << "Failed to read image " << image_info.file_path.value();
 
   // In case ReadFileToString() fails, |data| is empty and DecodeImage() calls
   // back to OnDecodeImageFailed().

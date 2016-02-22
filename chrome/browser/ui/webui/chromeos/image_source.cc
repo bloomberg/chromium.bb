@@ -54,8 +54,10 @@ void StartOnBlockingPool(
   const base::FilePath asset_dir(FILE_PATH_LITERAL(chrome::kChromeOSAssetPath));
   const base::FilePath image_path = asset_dir.AppendASCII(path);
   if (base::PathExists(image_path)) {
-    image_loader->Start(image_path.value(), 0,
-                        base::Bind(&ImageLoaded, got_data_callback));
+    image_loader->StartWithFilePath(
+        image_path,
+        0,  // Do not crop.
+        base::Bind(&ImageLoaded, got_data_callback));
   } else {
     thread_task_runner->PostTask(FROM_HERE,
                                  base::Bind(got_data_callback, nullptr));

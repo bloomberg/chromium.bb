@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/image_decoder.h"
@@ -42,26 +43,26 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader> {
   // UserImage (which may be empty in case of error). If |pixels_per_side| is
   // positive, the image is cropped to a square and shrunk so that it does not
   // exceed |pixels_per_side|x|pixels_per_side|. The first variant of this
-  // method reads the image from |filepath| on disk, the second processes |data|
-  // read into memory already.
-  void Start(const std::string& filepath,
-             int pixels_per_side,
-             const LoadedCallback& loaded_cb);
-  void Start(scoped_ptr<std::string> data,
-             int pixels_per_side,
-             const LoadedCallback& loaded_cb);
+  // method reads the image from |file_path| on disk, the second processes
+  // |data| read into memory already.
+  void StartWithFilePath(const base::FilePath& file_path,
+                         int pixels_per_side,
+                         const LoadedCallback& loaded_cb);
+  void StartWithData(scoped_ptr<std::string> data,
+                     int pixels_per_side,
+                     const LoadedCallback& loaded_cb);
 
  private:
   friend class base::RefCountedThreadSafe<UserImageLoader>;
 
   // Contains attributes we need to know about each image we decode.
   struct ImageInfo {
-    ImageInfo(const std::string& file_path,
+    ImageInfo(const base::FilePath& file_path,
               int pixels_per_side,
               const LoadedCallback& loaded_cb);
     ~ImageInfo();
 
-    const std::string file_path;
+    const base::FilePath file_path;
     const int pixels_per_side;
     const LoadedCallback loaded_cb;
   };

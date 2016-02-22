@@ -319,11 +319,9 @@ void UserImageManagerImpl::Job::LoadImage(base::FilePath image_path,
     // LoadImage() is called only for users whose user image has previously
     // been set by one of the Set*() methods, which transcode to JPEG format.
     DCHECK(!image_path_.empty());
-    parent_->image_loader_->Start(image_path_.value(),
-                                  0,
-                                  base::Bind(&Job::OnLoadImageDone,
-                                             weak_factory_.GetWeakPtr(),
-                                             false));
+    parent_->image_loader_->StartWithFilePath(
+        image_path_, 0,  // Do not crop.
+        base::Bind(&Job::OnLoadImageDone, weak_factory_.GetWeakPtr(), false));
   } else {
     NOTREACHED();
     NotifyJobDone();
@@ -378,7 +376,7 @@ void UserImageManagerImpl::Job::SetToImageData(scoped_ptr<std::string> data) {
   // * This is safe because the image_loader_ employs a hardened JPEG decoder
   //   that protects against malicious invalid image data being used to attack
   //   the login screen or another user session currently in progress.
-  parent_->image_loader_->Start(
+  parent_->image_loader_->StartWithData(
       std::move(data), login::kMaxUserImageSize,
       base::Bind(&Job::OnLoadImageDone, weak_factory_.GetWeakPtr(), true));
 }
@@ -394,11 +392,9 @@ void UserImageManagerImpl::Job::SetToPath(const base::FilePath& path,
   image_url_ = image_url;
 
   DCHECK(!path.empty());
-  parent_->unsafe_image_loader_->Start(path.value(),
-                                       resize ? login::kMaxUserImageSize : 0,
-                                       base::Bind(&Job::OnLoadImageDone,
-                                                  weak_factory_.GetWeakPtr(),
-                                                  true));
+  parent_->unsafe_image_loader_->StartWithFilePath(
+      path, resize ? login::kMaxUserImageSize : 0,
+      base::Bind(&Job::OnLoadImageDone, weak_factory_.GetWeakPtr(), true));
 }
 
 void UserImageManagerImpl::Job::OnLoadImageDone(

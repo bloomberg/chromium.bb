@@ -448,7 +448,7 @@ void WallpaperManager::OnPolicyFetched(const std::string& policy,
   if (!data)
     return;
 
-  wallpaper_loader_->Start(
+  wallpaper_loader_->StartWithData(
       std::move(data),
       0,  // Do not crop.
       base::Bind(&WallpaperManager::SetPolicyControlledWallpaper,
@@ -577,7 +577,7 @@ void WallpaperManager::DoSetDefaultWallpaper(
                 : wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED;
   DCHECK(file);
   if (!default_wallpaper_image_.get() ||
-      default_wallpaper_image_->file_path() != file->value()) {
+      default_wallpaper_image_->file_path() != *file) {
     default_wallpaper_image_.reset();
     if (!file->empty()) {
       loaded_wallpapers_for_test_++;
@@ -954,8 +954,8 @@ void WallpaperManager::StartLoad(const AccountId& account_id,
     wallpaper_cache_[account_id] =
         CustomWallpaperElement(wallpaper_path, gfx::ImageSkia());
   }
-  wallpaper_loader_->Start(
-      wallpaper_path.value(),
+  wallpaper_loader_->StartWithFilePath(
+      wallpaper_path,
       0,  // Do not crop.
       base::Bind(&WallpaperManager::OnWallpaperDecoded,
                  weak_factory_.GetWeakPtr(), account_id, info.layout,
@@ -975,8 +975,8 @@ void WallpaperManager::SetCustomizedDefaultWallpaperAfterCheck(
 
     // Either resized images do not exist or cached version is incorrect.
     // Need to start resize again.
-    wallpaper_loader_->Start(
-        downloaded_file.value(),
+    wallpaper_loader_->StartWithFilePath(
+        downloaded_file,
         0,  // Do not crop.
         base::Bind(&WallpaperManager::OnCustomizedDefaultWallpaperDecoded,
                    weak_factory_.GetWeakPtr(), wallpaper_url,
@@ -1051,8 +1051,8 @@ void WallpaperManager::StartLoadAndSetDefaultWallpaper(
     const wallpaper::WallpaperLayout layout,
     MovableOnDestroyCallbackHolder on_finish,
     scoped_ptr<user_manager::UserImage>* result_out) {
-  wallpaper_loader_->Start(
-      path.value(),
+  wallpaper_loader_->StartWithFilePath(
+      path,
       0,  // Do not crop.
       base::Bind(&WallpaperManager::OnDefaultWallpaperDecoded,
                  weak_factory_.GetWeakPtr(), path, layout,
@@ -1087,15 +1087,13 @@ void WallpaperManager::SetDefaultWallpaperPath(
     if (small_wallpaper_image) {
       default_wallpaper_image_.reset(
           new user_manager::UserImage(*small_wallpaper_image));
-      default_wallpaper_image_->set_file_path(
-          default_small_wallpaper_file.value());
+      default_wallpaper_image_->set_file_path(default_small_wallpaper_file);
     }
   } else {
     if (large_wallpaper_image) {
       default_wallpaper_image_.reset(
           new user_manager::UserImage(*large_wallpaper_image));
-      default_wallpaper_image_->set_file_path(
-          default_large_wallpaper_file.value());
+      default_wallpaper_image_->set_file_path(default_large_wallpaper_file);
     }
   }
 
