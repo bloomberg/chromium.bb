@@ -10,6 +10,7 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/html/HTMLSlotElement.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/layout/LayoutObject.h"
 
@@ -121,6 +122,8 @@ void StyleInvalidator::RecursionData::pushInvalidationSet(const DescendantInvali
         m_treeBoundaryCrossing = true;
     if (invalidationSet.insertionPointCrossing())
         m_insertionPointCrossing = true;
+    if (invalidationSet.invalidatesSlotted())
+        m_invalidatesSlotted = true;
     m_invalidationSets.append(&invalidationSet);
     m_invalidateCustomPseudo = invalidationSet.customPseudoInvalid();
 }
@@ -140,6 +143,19 @@ ALWAYS_INLINE bool StyleInvalidator::RecursionData::matchesCurrentInvalidationSe
             return true;
     }
 
+    return false;
+}
+
+bool StyleInvalidator::RecursionData::matchesCurrentInvalidationSetsAsSlotted(Element& element) const
+{
+    ASSERT(m_invalidatesSlotted);
+
+    for (const auto& invalidationSet : m_invalidationSets) {
+        if (!invalidationSet->invalidatesSlotted())
+            continue;
+        if (invalidationSet->invalidatesElement(element))
+            return true;
+    }
     return false;
 }
 
@@ -290,11 +306,25 @@ bool StyleInvalidator::invalidate(Element& element, RecursionData& recursionData
 
     if (recursionData.insertionPointCrossing() && element.isInsertionPoint())
         element.setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleInvalidator));
+    if (recursionData.invalidatesSlotted() && isHTMLSlotElement(element))
+        invalidateSlotDistributedElements(toHTMLSlotElement(element), recursionData);
 
     element.clearChildNeedsStyleInvalidation();
     element.clearNeedsStyleInvalidation();
 
     return thisElementNeedsStyleRecalc;
+}
+
+void StyleInvalidator::invalidateSlotDistributedElements(HTMLSlotElement& slot, const RecursionData& recursionData) const
+{
+    for (auto& distributedNode : slot.getDistributedNodes()) {
+        if (distributedNode->needsStyleRecalc())
+            continue;
+        if (!distributedNode->isElementNode())
+            continue;
+        if (recursionData.matchesCurrentInvalidationSetsAsSlotted(toElement(*distributedNode)))
+            distributedNode->setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleInvalidator));
+    }
 }
 
 DEFINE_TRACE(StyleInvalidator)

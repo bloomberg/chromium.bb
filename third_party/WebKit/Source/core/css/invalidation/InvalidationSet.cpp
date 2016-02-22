@@ -57,6 +57,7 @@ InvalidationSet::InvalidationSet(InvalidationType type)
     , m_customPseudoInvalid(false)
     , m_treeBoundaryCrossing(false)
     , m_insertionPointCrossing(false)
+    , m_invalidatesSlotted(false)
 {
 }
 
@@ -131,6 +132,9 @@ void InvalidationSet::combine(const InvalidationSet& other)
 
     if (other.insertionPointCrossing())
         setInsertionPointCrossing();
+
+    if (other.invalidatesSlotted())
+        setInvalidatesSlotted();
 
     if (other.m_classes) {
         for (const auto& className : *other.m_classes)
@@ -226,6 +230,7 @@ void InvalidationSet::setWholeSubtreeInvalid()
     m_customPseudoInvalid = false;
     m_treeBoundaryCrossing = false;
     m_insertionPointCrossing = false;
+    m_invalidatesSlotted = false;
     m_classes = nullptr;
     m_ids = nullptr;
     m_tagNames = nullptr;
@@ -246,6 +251,8 @@ void InvalidationSet::toTracedValue(TracedValue* value) const
         value->setBoolean("treeBoundaryCrossing", true);
     if (m_insertionPointCrossing)
         value->setBoolean("insertionPointCrossing", true);
+    if (m_invalidatesSlotted)
+        value->setBoolean("invalidatesSlotted", true);
 
     if (m_ids) {
         value->beginArray("ids");

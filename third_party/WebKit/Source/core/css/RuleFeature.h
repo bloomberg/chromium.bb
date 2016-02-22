@@ -145,6 +145,7 @@ private:
         bool insertionPointCrossing = false;
         bool forceSubtree = false;
         bool contentPseudoCrossing = false;
+        bool invalidatesSlotted = false;
     };
 
     static bool extractInvalidationSetFeature(const CSSSelector&, InvalidationSetFeatures&);

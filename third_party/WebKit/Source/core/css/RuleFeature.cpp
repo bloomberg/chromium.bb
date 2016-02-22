@@ -420,6 +420,10 @@ RuleFeatureSet::extractInvalidationSetFeatures(const CSSSelector& selector, Inva
                 return std::make_pair(&selector, ForceSubtree);
             }
             if (const CSSSelectorList* selectorList = current->selectorList()) {
+                if (current->pseudoType() == CSSSelector::PseudoSlotted) {
+                    ASSERT(position == Subject);
+                    features.invalidatesSlotted = true;
+                }
                 ASSERT(supportsInvalidationWithSelectorList(current->pseudoType()));
                 const CSSSelector* subSelector = selectorList->first();
                 bool allSubSelectorsHaveFeatures = !!subSelector;
@@ -468,6 +472,8 @@ void RuleFeatureSet::addFeaturesToInvalidationSet(InvalidationSet& invalidationS
         invalidationSet.setTreeBoundaryCrossing();
     if (features.insertionPointCrossing)
         invalidationSet.setInsertionPointCrossing();
+    if (features.invalidatesSlotted)
+        invalidationSet.setInvalidatesSlotted();
     if (features.forceSubtree)
         invalidationSet.setWholeSubtreeInvalid();
     if (features.contentPseudoCrossing || features.forceSubtree)

@@ -109,7 +109,10 @@ public:
     void setCustomPseudoInvalid() { m_customPseudoInvalid = true; }
     bool customPseudoInvalid() const { return m_customPseudoInvalid; }
 
-    bool isEmpty() const { return !m_classes && !m_ids && !m_tagNames && !m_attributes && !m_customPseudoInvalid && !m_insertionPointCrossing; }
+    void setInvalidatesSlotted() { m_invalidatesSlotted = true; }
+    bool invalidatesSlotted() const { return m_invalidatesSlotted; }
+
+    bool isEmpty() const { return !m_classes && !m_ids && !m_tagNames && !m_attributes && !m_customPseudoInvalid && !m_insertionPointCrossing && !m_invalidatesSlotted; }
 
     void toTracedValue(TracedValue*) const;
 
@@ -164,6 +167,9 @@ private:
 
     // If true, insertion point descendants must be invalidated.
     unsigned m_insertionPointCrossing : 1;
+
+    // If true, distributed nodes of <slot> elements need to be invalidated.
+    unsigned m_invalidatesSlotted : 1;
 };
 
 class CORE_EXPORT DescendantInvalidationSet final : public InvalidationSet {

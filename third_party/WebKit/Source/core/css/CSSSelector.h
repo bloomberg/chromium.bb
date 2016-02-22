@@ -255,7 +255,7 @@ public:
     bool isShadowSelector() const { return m_relation == ShadowPseudo || m_relation == ShadowDeep; }
     bool isAttributeSelector() const { return m_match >= FirstAttributeSelectorMatch; }
     bool isHostPseudoClass() const { return m_pseudoType == PseudoHost || m_pseudoType == PseudoHostContext; }
-    bool isInsertionPointCrossing() const { return m_pseudoType == PseudoHostContext || m_pseudoType == PseudoContent || m_pseudoType == PseudoSlotted; }
+    bool isInsertionPointCrossing() const { return m_pseudoType == PseudoHostContext || m_pseudoType == PseudoContent; }
 
     Relation relation() const { return static_cast<Relation>(m_relation); }
     void setRelation(Relation relation)

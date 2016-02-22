@@ -13,6 +13,7 @@ namespace blink {
 
 class Document;
 class Element;
+class HTMLSlotElement;
 class InvalidationSet;
 
 
@@ -35,10 +36,13 @@ private:
             , m_wholeSubtreeInvalid(false)
             , m_treeBoundaryCrossing(false)
             , m_insertionPointCrossing(false)
+            , m_invalidatesSlotted(false)
         { }
 
         void pushInvalidationSet(const DescendantInvalidationSet&);
         bool matchesCurrentInvalidationSets(Element&) const;
+        bool matchesCurrentInvalidationSetsAsSlotted(Element&) const;
+
         bool hasInvalidationSets() const { return !wholeSubtreeInvalid() && m_invalidationSets.size(); }
 
         bool wholeSubtreeInvalid() const { return m_wholeSubtreeInvalid; }
@@ -46,6 +50,7 @@ private:
 
         bool treeBoundaryCrossing() const { return m_treeBoundaryCrossing; }
         bool insertionPointCrossing() const { return m_insertionPointCrossing; }
+        bool invalidatesSlotted() const { return m_invalidatesSlotted; }
 
         using DescendantInvalidationSets = Vector<const DescendantInvalidationSet*, 16>;
         DescendantInvalidationSets m_invalidationSets;
@@ -53,6 +58,7 @@ private:
         bool m_wholeSubtreeInvalid;
         bool m_treeBoundaryCrossing;
         bool m_insertionPointCrossing;
+        bool m_invalidatesSlotted;
     };
 
     class SiblingData {
@@ -87,6 +93,7 @@ private:
     bool invalidate(Element&, RecursionData&, SiblingData&);
     bool invalidateShadowRootChildren(Element&, RecursionData&);
     bool invalidateChildren(Element&, RecursionData&);
+    void invalidateSlotDistributedElements(HTMLSlotElement&, const RecursionData&) const;
     bool checkInvalidationSetsAgainstElement(Element&, RecursionData&, SiblingData&);
     void pushInvalidationSetsForElement(Element&, RecursionData&, SiblingData&);
 
@@ -98,6 +105,7 @@ private:
             , m_prevWholeSubtreeInvalid(data->m_wholeSubtreeInvalid)
             , m_treeBoundaryCrossing(data->m_treeBoundaryCrossing)
             , m_insertionPointCrossing(data->m_insertionPointCrossing)
+            , m_invalidatesSlotted(data->m_invalidatesSlotted)
             , m_data(data)
         { }
         ~RecursionCheckpoint()
@@ -107,6 +115,7 @@ private:
             m_data->m_wholeSubtreeInvalid = m_prevWholeSubtreeInvalid;
             m_data->m_treeBoundaryCrossing = m_treeBoundaryCrossing;
             m_data->m_insertionPointCrossing = m_insertionPointCrossing;
+            m_data->m_invalidatesSlotted = m_invalidatesSlotted;
         }
 
     private:
@@ -115,6 +124,7 @@ private:
         bool m_prevWholeSubtreeInvalid;
         bool m_treeBoundaryCrossing;
         bool m_insertionPointCrossing;
+        bool m_invalidatesSlotted;
         RecursionData* m_data;
     };
 
