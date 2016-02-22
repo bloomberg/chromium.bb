@@ -311,8 +311,7 @@ void NaClAddCodeIdentity(uint8_t *data,
 
 struct NaClDesc *NaClDescCreateWithFilePathMetadata(NaClHandle handle,
                                                     const char *file_path) {
-  struct NaClDesc *desc = NaClDescIoDescFromHandleAllocCtor(handle,
-                                                            NACL_ABI_O_RDONLY);
+  struct NaClDesc *desc = NaClDescIoMakeFromHandle(handle, NACL_ABI_O_RDONLY);
   char *alloc_file_path;
   size_t file_path_length = strlen(file_path);
 

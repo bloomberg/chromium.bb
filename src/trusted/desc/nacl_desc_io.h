@@ -48,18 +48,9 @@ int NaClDescIoDescCtor(struct NaClDescIoDesc  *self,
 struct NaClDescIoDesc *NaClDescIoDescMake(struct NaClHostDesc *nhdp);
 
 /*
- * Deprecated alias.  TODO(mseaborn): Remove after Chromium uses the new name.
- */
-static INLINE struct NaClDesc *NaClDescIoDescFromHandleAllocCtor(
-    NaClHandle handle, int flags) {
-  return NaClDescIoMakeFromHandle(handle, flags);
-}
-
-/*
  * NaClDescIoDescFromDescAllocCtor is essentially the same as
- * NaClDescIoDescFromHandleAllocCtor, except that instead of
- * NaClHandle (which is HANDLE on Windows), we always use a Posix
- * I/O descriptor.
+ * NaClDescIoMakeFromHandle, except that instead of NaClHandle (which is
+ * HANDLE on Windows), we always use a Posix I/O descriptor.
  */
 struct NaClDesc *NaClDescIoDescFromDescAllocCtor(int desc,
                                                  int flags) NACL_WUR;

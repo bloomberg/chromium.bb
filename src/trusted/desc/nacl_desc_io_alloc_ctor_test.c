@@ -206,7 +206,7 @@ int TestIsOkayP(char const *filename, struct TestParams const *params) {
     NaClLog(LOG_ERROR, "Could not make test file %s\n", filename);
     return 0;  /* failed */
   }
-  iod = NaClDescIoDescFromHandleAllocCtor(h, params->flags);
+  iod = NaClDescIoMakeFromHandle(h, params->flags);
   if (NULL == iod) {
     NaClLog(LOG_ERROR, "Could not create iod\n");
     return 0;
