@@ -31341,8 +31341,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Notifications.AuthorDataSize" units="bytes">
+  <owner>peter@chromium.org</owner>
+  <summary>
+    The size, in bytes, of the author-provided data associated with a Web
+    Notification. Recorded when a persistent Web Notification is being shown by
+    the developer.
+  </summary>
+</histogram>
+
 <histogram name="Notifications.AuthorDataSizeKB" units="KB">
   <owner>peter@chromium.org</owner>
+  <obsolete>
+    Replaced by Notifications.AuthorDataSize in February 2016.
+  </obsolete>
   <summary>
     The size, in kilobytes, of the author-provided data associated with a Web
     Notification. Recorded when a persistent Web Notification is being shown by
@@ -47041,24 +47053,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     have reached the absolute site engagement point cap, recorded at startup per
     non-incognito profile, and then upon the first engagement-increasing event
     every hour thereafter.
-  </summary>
-</histogram>
-
-<histogram name="SiteEngagementService.ScoreDecayedFrom">
-  <owner>calamity@chromium.org</owner>
-  <owner>dominickn@chromium.org</owner>
-  <summary>
-    The site engagement score of an origin prior to applying decay. Recorded at
-    the first engagement event after decay, independently per decay event.
-  </summary>
-</histogram>
-
-<histogram name="SiteEngagementService.ScoreDecayedTo">
-  <owner>calamity@chromium.org</owner>
-  <owner>dominickn@chromium.org</owner>
-  <summary>
-    The site engagement score of an origin once decay has occured. Recorded at
-    the first engagement event after decay, independently per decay event.
   </summary>
 </histogram>
 

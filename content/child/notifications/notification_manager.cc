@@ -4,7 +4,6 @@
 
 #include "content/child/notifications/notification_manager.h"
 
-#include <cmath>
 #include <utility>
 
 #include "base/lazy_instance.h"
@@ -123,8 +122,8 @@ void NotificationManager::showPersistent(
   // is outside of the boundaries set by the specification, but it gives authors
   // an indication that something has gone wrong.
   size_t author_data_size = notification_data.data.size();
-  UMA_HISTOGRAM_MEMORY_KB("Notifications.AuthorDataSizeKB",
-                          static_cast<int>(ceil(author_data_size / 1024.0)));
+
+  UMA_HISTOGRAM_COUNTS_1000("Notifications.AuthorDataSize", author_data_size);
 
   if (author_data_size > PlatformNotificationData::kMaximumDeveloperDataSize) {
     owned_callbacks->onError();
