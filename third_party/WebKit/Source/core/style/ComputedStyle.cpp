@@ -583,6 +583,8 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(const ComputedStyle&
             || rareInheritedData->m_textCombine != other.rareInheritedData->m_textCombine
             || rareInheritedData->m_tabSize != other.rareInheritedData->m_tabSize
             || rareInheritedData->listStyleImage != other.rareInheritedData->listStyleImage
+            || rareInheritedData->m_snapHeightUnit != other.rareInheritedData->m_snapHeightUnit
+            || rareInheritedData->m_snapHeightPosition != other.rareInheritedData->m_snapHeightPosition
             || rareInheritedData->textStrokeWidth != other.rareInheritedData->textStrokeWidth)
             return true;
 
