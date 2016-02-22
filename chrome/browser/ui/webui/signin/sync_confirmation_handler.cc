@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "url/gurl.h"
@@ -48,6 +49,7 @@ void SyncConfirmationHandler::HandleGoToSettings(const base::ListValue* args) {
 }
 
 void SyncConfirmationHandler::HandleUndo(const base::ListValue* args) {
+  content::RecordAction(base::UserMetricsAction("Signin_Undo_Signin"));
   Browser* browser = GetDesktopBrowser();
   LoginUIServiceFactory::GetForProfile(browser->profile())->
       SyncConfirmationUIClosed(LoginUIService::ABORT_SIGNIN);

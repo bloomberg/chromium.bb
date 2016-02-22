@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/signin/sync_confirmation_handler.h"
 
+#include "base/test/user_action_tester.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/signin/account_fetcher_service_factory.h"
@@ -98,6 +99,10 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest {
     return ProfileSyncServiceFactory::GetForProfile(profile());
   }
 
+  base::UserActionTester* user_action_tester() {
+    return &user_action_tester_;
+  }
+
   // BrowserWithTestWindowTest
   BrowserWindow* CreateBrowserWindow() override {
     return new DialogTestBrowserWindow;
@@ -116,6 +121,7 @@ private:
   scoped_ptr<content::TestWebUI> web_ui_;
   scoped_ptr<SyncConfirmationUI> sync_confirmation_ui_;
   TestingSyncConfirmationHandler* handler_;  // Not owned.
+  base::UserActionTester user_action_tester_;
 };
 
 TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReady) {
@@ -194,6 +200,11 @@ TEST_F(SyncConfirmationHandlerTest, TestHandleUndo) {
   EXPECT_FALSE(sync()->IsFirstSetupComplete());
   EXPECT_FALSE(
       SigninManagerFactory::GetForProfile(profile())->IsAuthenticated());
+  EXPECT_EQ(1, user_action_tester()->GetActionCount("Signin_Undo_Signin"));
+  EXPECT_EQ(0, user_action_tester()->GetActionCount(
+      "Signin_Signin_WithDefaultSyncSettings"));
+  EXPECT_EQ(0, user_action_tester()->GetActionCount(
+      "Signin_Signin_WithAdvancedSyncSettings"));
 }
 
 TEST_F(SyncConfirmationHandlerTest, TestHandleConfirm) {
@@ -206,4 +217,9 @@ TEST_F(SyncConfirmationHandlerTest, TestHandleConfirm) {
   EXPECT_TRUE(sync()->IsFirstSetupComplete());
   EXPECT_TRUE(
       SigninManagerFactory::GetForProfile(profile())->IsAuthenticated());
+  EXPECT_EQ(0, user_action_tester()->GetActionCount("Signin_Undo_Signin"));
+  EXPECT_EQ(1, user_action_tester()->GetActionCount(
+      "Signin_Signin_WithDefaultSyncSettings"));
+  EXPECT_EQ(0, user_action_tester()->GetActionCount(
+      "Signin_Signin_WithAdvancedSyncSettings"));
 }
