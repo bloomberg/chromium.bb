@@ -22,8 +22,7 @@ class _StartupWarm(perf_benchmark.PerfBenchmark):
 
 @benchmark.Disabled('all')  # crbug.com/551938
 # On android logging in is done through system accounts workflow.
-@benchmark.Disabled('android',
-                    'reference')  # crbug.com/499312
+@benchmark.Disabled('android')
 class SigninStartup(_StartupWarm):
   """Measures warm startup time of signing a profile into Chrome."""
   page_set = page_sets.ChromeSigninPageSet
