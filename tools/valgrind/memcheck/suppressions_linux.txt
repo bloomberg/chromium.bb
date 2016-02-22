@@ -116,3 +116,13 @@
    ...
    fun:_ZN5media14CdmWrapperImplIN3cdm25ContentDecryptionModule_8EE7DecryptERKNS1_11InputBufferEPNS1_14DecryptedBlockE
 }
+{
+  b_588788
+  Memcheck:Unaddressable
+  ...
+  fun:_ZN5views14AXAuraObjCache14GetFocusedViewEv
+  fun:_ZN5views14AXAuraObjCache8GetFocusEv
+  fun:_ZNK16AXTreeSourceAura11GetTreeDataEv
+  fun:_ZN2ui16AXTreeSerializerIPN5views16AXAuraObjWrapperENS_10AXNodeDataENS_10AXTreeDataEE16SerializeChangesES3_PNS_16AXTreeUpdateBaseIS4_S5_EE
+  fun:_ZN35AXTreeSourceAuraTest_Serialize_Test8TestBodyEv
+}
