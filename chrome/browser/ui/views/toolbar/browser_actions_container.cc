@@ -261,6 +261,8 @@ void BrowserActionsContainer::Redraw(bool order_changed) {
         while (actions[i] != toolbar_action_views_[j]->view_controller())
           ++j;
         std::swap(toolbar_action_views_[i], toolbar_action_views_[j]);
+        // Also move the view in the child views vector.
+        ReorderChildView(toolbar_action_views_[i], i);
       }
     }
   }
