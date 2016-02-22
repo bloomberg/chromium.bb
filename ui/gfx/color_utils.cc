@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/geometry/safe_integer_conversions.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -134,15 +135,8 @@ SkColor HSLToSkColor(const HSL& hsl, SkAlpha alpha) {
   // If there's no color, we don't care about hue and can do everything based on
   // brightness.
   if (!saturation) {
-    uint8_t light;
-
-    if (lightness < 0)
-      light = 0;
-    else if (lightness >= 1.0)
-      light = 255;
-    else
-      light = static_cast<uint8_t>(SkDoubleToFixed(lightness) >> 8);
-
+    const uint8_t light =
+        base::saturated_cast<uint8_t>(gfx::ToRoundedInt(lightness * 255));
     return SkColorSetARGB(alpha, light, light, light);
   }
 
