@@ -23,7 +23,7 @@
   },
   "Linux x64": {
     "additional_compile_targets": [
-      "gn_all"
+      "all"
     ],
     "scripts": [
       {

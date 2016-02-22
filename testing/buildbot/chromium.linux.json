@@ -542,15 +542,12 @@
   },
   "Linux Builder": {
     "additional_compile_targets": [
-      "battor_agent",
-      "blimp",
-      "mash:all",
-      "remoting_all"
+      "all"
     ]
   },
   "Linux Builder (dbg)": {
     "additional_compile_targets": [
-      "gn_all"
+      "all"
     ]
   },
   "Linux Tests": {
