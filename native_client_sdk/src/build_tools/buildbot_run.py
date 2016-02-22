@@ -31,6 +31,7 @@ def StepArmRunHooks():
   buildbot_common.BuildStep('gclient runhooks for arm')
   env = dict(os.environ)
   env['GYP_DEFINES'] = 'target_arch=arm'
+  env['GYP_CHROMIUM_NO_ACTION'] = '1'
   Run(['gclient', 'runhooks'], env=env, cwd=SDK_SRC_DIR)
 
 
