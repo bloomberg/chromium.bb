@@ -361,7 +361,7 @@ void DefaultDisplayManager::OnDamageRect(const gfx::Rect& damaged_region) {
 void DefaultDisplayManager::DispatchEvent(ui::Event* event) {
   delegate_->OnEvent(*event);
 
-#if defined(USE_X11)
+#if defined(USE_X11) || defined(USE_OZONE)
   // We want to emulate the WM_CHAR generation behaviour of Windows.
   //
   // On Linux, we've previously inserted characters by having
