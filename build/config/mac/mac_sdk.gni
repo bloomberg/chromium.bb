@@ -4,12 +4,17 @@
 
 import("//build/config/chrome_build.gni")
 
+# See https://bugs.chromium.org/p/webrtc/issues/detail?id=5453.
+# We can drop the rtc_require_mac_10_7_deployment flag when Chromium
+# also requires a 10.7 deployment target.
+import("//build_overrides/build.gni")
+
 declare_args() {
   # Minimum supported version of the Mac SDK.
   mac_sdk_min = "10.10"
 
   # Minimum supported version of OSX.
-  mac_deployment_target = "10.6"
+  mac_deployment_target = mac_deployment_target_build_override
 
   # Path to a specific version of the Mac SDK, not including a backslash at
   # the end. If empty, the path to the lowest version greater than or equal to
