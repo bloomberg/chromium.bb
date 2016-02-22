@@ -116,18 +116,14 @@ void SVGMarkerElement::childrenChanged(const ChildrenChange& change)
 
 void SVGMarkerElement::setOrientToAuto()
 {
-    m_orientAngle->baseValue()->orientType()->setEnumValue(SVGMarkerOrientAuto);
-    invalidateSVGAttributes();
-    svgAttributeBaseValChanged(SVGNames::orientAttr);
+    setAttribute(SVGNames::orientAttr, "auto");
 }
 
 void SVGMarkerElement::setOrientToAngle(PassRefPtrWillBeRawPtr<SVGAngleTearOff> angle)
 {
     ASSERT(angle);
     RefPtrWillBeRawPtr<SVGAngle> target = angle->target();
-    m_orientAngle->baseValue()->newValueSpecifiedUnits(target->unitType(), target->valueInSpecifiedUnits());
-    invalidateSVGAttributes();
-    svgAttributeBaseValChanged(SVGNames::orientAttr);
+    setAttribute(SVGNames::orientAttr, AtomicString(target->valueAsString()));
 }
 
 LayoutObject* SVGMarkerElement::createLayoutObject(const ComputedStyle&)
