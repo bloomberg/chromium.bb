@@ -275,9 +275,9 @@ void AudioBuffer::ReadFrames(int frames_to_copy,
 
   // Remaining formats are integer interleaved data. Use the deinterleaving code
   // in AudioBus to copy the data.
-  DCHECK(sample_format_ == kSampleFormatU8 ||
-         sample_format_ == kSampleFormatS16 ||
-         sample_format_ == kSampleFormatS32);
+  DCHECK(
+      sample_format_ == kSampleFormatU8 || sample_format_ == kSampleFormatS16 ||
+      sample_format_ == kSampleFormatS24 || sample_format_ == kSampleFormatS32);
   int bytes_per_channel = SampleFormatToBytesPerChannel(sample_format_);
   int frame_size = channel_count_ * bytes_per_channel;
   const uint8_t* source_data = data_.get() + source_frame_offset * frame_size;
