@@ -9,8 +9,8 @@ label seems suitable.
 ### Required:
 * Identify new crashers
 * Identify new network issues.
-* Request data about recent Cr-Internals-Network issue.
-* Investigate each recent Cr-Internals-Network issue.
+* Request data about recent Internals>Network issue.
+* Investigate each recent Internals>Network issue.
 * Monitor UMA histograms and Chirp/Gasper alerts.
 
 ### Best effort:
@@ -33,18 +33,18 @@ uniform, predictable two day commitment for all triagers.
 * Identify new crashers that are potentially network related.  You should check
   the most recent canary, the previous canary (if the most recent less than a
   day old), and any of dev/beta/stable that were released in the last couple of
-  days, for each platform.  File Cr-Internals-Network bugs on the tracker when
+  days, for each platform.  File Internals>Network bugs on the tracker when
   new crashers are found.
 
 * Identify new network bugs, both on the bug tracker and on the crash server.
   All Unconfirmed issues filed during your triage rotation should be scanned,
-  and, for suspected network bugs, a network label assigned.  A triager is
+  and, for suspected network bugs, a network component assigned.  A triager is
   responsible for looking at bugs reported from noon PST / 3:00 pm EST of the
   last day of the previous triager's rotation until the same time on the last
   day of their rotation.
 
 * Investigate each recent (new comment within the past week or so)
-  Cr-Internals-Network issue, driving getting information from reporters as
+  Internals>Network issue, driving getting information from reporters as
   needed, until you can do one of the following:
 
     * Mark it as *WontFix* (working as intended, obsolete issue) or a
@@ -52,16 +52,16 @@ uniform, predictable two day commitment for all triagers.
 
     * Mark it as a feature request.
 
-    * Remove the Cr-Internals-Network label, replacing it with at least one
-      more specific network label or non-network label.  Promptly adding
-      non-network labels when appropriate is important to get new bugs in front
+    * Remove the Internals>Network component, replacing it with at least one
+      more specific network component or non-network component.  Promptly adding
+      non-network components when appropriate is important to get new bugs in front
       of someone familiar with the relevant code, and to remove them from the
       next triager's radar.  Because of the way the bug report wizard works, a
-      lot of bugs incorrectly end up with the network label.
+      lot of bugs incorrectly end up with the network component.
 
     * The issue is assigned to an appropriate owner.
 
-    * If there is no more specific label for a bug, it should be investigated
+    * If there is no more specific component for a bug, it should be investigated
       until we have a good understanding of the cause of the problem, and some
       idea how it should be fixed, at which point its status should be set to
       Available.  Future triagers should ignore bugs with this status, unless
@@ -71,8 +71,8 @@ uniform, predictable two day commitment for all triagers.
 
     * For each Chirp and Gasper alert that fires, the triager should determine
       if the alert is real (not due to noise), and file a bug with the
-      appropriate label if so.  Note that if no label more specific than
-      Cr-Internals-Network is appropriate, the responsibility remains with the
+      appropriate component if so.  Note that if no component more specific than
+      Internals>Network is appropriate, the responsibility remains with the
       triager to continue investigating the bug, as above.
 
 ### Best Effort (As you have time):
