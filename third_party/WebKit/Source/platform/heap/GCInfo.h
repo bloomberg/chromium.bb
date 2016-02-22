@@ -121,18 +121,12 @@ extern PLATFORM_EXPORT GCInfo const** s_gcInfoTable;
 // reachable. There is a GCInfo struct for each class that directly
 // inherits from GarbageCollected or GarbageCollectedFinalized.
 struct GCInfo {
-    using GetClassNameCallback = const String (*)();
-
     bool hasFinalizer() const { return m_nonTrivialFinalizer; }
     bool hasVTable() const { return m_hasVTable; }
     TraceCallback m_trace;
     FinalizationCallback m_finalize;
     bool m_nonTrivialFinalizer;
     bool m_hasVTable;
-#if ENABLE(DETAILED_MEMORY_INFRA)
-    const String className() const { return m_className(); }
-    GetClassNameCallback m_className;
-#endif
 };
 
 #if ENABLE(ASSERT)
@@ -177,9 +171,6 @@ struct GCInfoAtBaseType {
             FinalizerTrait<T>::finalize,
             FinalizerTrait<T>::nonTrivialFinalizer,
             std::is_polymorphic<T>::value,
-#if ENABLE(DETAILED_MEMORY_INFRA)
-            TypenameStringTrait<T>::get
-#endif
         };
 
         static size_t gcInfoIndex = 0;

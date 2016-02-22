@@ -1479,16 +1479,6 @@ void ThreadState::takeSnapshot(SnapshotType type)
     size_t totalLiveSize = 0;
     size_t totalDeadSize = 0;
     for (size_t gcInfoIndex = 1; gcInfoIndex <= GCInfoTable::gcInfoIndex(); ++gcInfoIndex) {
-        String dumpName = classesDumpName + String::format("/%lu_", static_cast<unsigned long>(gcInfoIndex));
-#if ENABLE(DETAILED_MEMORY_INFRA)
-        dumpName.append(Heap::gcInfo(gcInfoIndex)->className());
-#endif
-        WebMemoryAllocatorDump* classDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(dumpName);
-        classDump->addScalar("live_count", "objects", info.liveCount[gcInfoIndex]);
-        classDump->addScalar("dead_count", "objects", info.deadCount[gcInfoIndex]);
-        classDump->addScalar("live_size", "bytes", info.liveSize[gcInfoIndex]);
-        classDump->addScalar("dead_size", "bytes", info.deadSize[gcInfoIndex]);
-
         totalLiveCount += info.liveCount[gcInfoIndex];
         totalDeadCount += info.deadCount[gcInfoIndex];
         totalLiveSize += info.liveSize[gcInfoIndex];

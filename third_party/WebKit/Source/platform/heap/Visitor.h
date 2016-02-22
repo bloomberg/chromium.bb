@@ -42,7 +42,6 @@
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashTraits.h"
-#include "wtf/InstanceCounter.h"
 #include "wtf/TypeTraits.h"
 
 namespace blink {
@@ -399,17 +398,6 @@ private:
     ThreadState* m_state;
     OwnPtr<Visitor> m_visitor;
 };
-
-#if ENABLE(DETAILED_MEMORY_INFRA)
-template<typename T>
-struct TypenameStringTrait {
-    STATIC_ONLY(TypenameStringTrait);
-    static const String get()
-    {
-        return WTF::extractTypeNameFromFunctionName(WTF::extractNameFunction<T>());
-    }
-};
-#endif
 
 } // namespace blink
 

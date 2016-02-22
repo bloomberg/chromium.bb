@@ -34,7 +34,7 @@
 
 namespace WTF {
 
-#if ENABLE(INSTANCE_COUNTER) || ENABLE(DETAILED_MEMORY_INFRA)
+#if ENABLE(INSTANCE_COUNTER)
 
 #if COMPILER(CLANG)
 const size_t stringWithTypeNamePrefixLength = sizeof("const char *WTF::getStringWithTypeName() [T = ") - 1;
@@ -148,6 +148,6 @@ String dumpRefCountedInstanceCounts()
     return String("{}");
 }
 
-#endif // ENABLE(INSTANCE_COUNTER) || ENABLE(DETAILED_MEMORY_INFRA)
+#endif // ENABLE(INSTANCE_COUNTER)
 
 } // namespace WTF
