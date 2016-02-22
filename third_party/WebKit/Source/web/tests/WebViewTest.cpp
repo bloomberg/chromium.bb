@@ -1345,22 +1345,6 @@ TEST_F(WebViewTest, PrintWithXHRInFlight)
     m_webViewHelper.reset();
 }
 
-class DropTask : public WebTaskRunner::Task {
-public:
-    explicit DropTask(WebView* webView) : m_webView(webView)
-    {
-    }
-
-    void run() override
-    {
-        const WebPoint clientPoint(0, 0);
-        const WebPoint screenPoint(0, 0);
-        m_webView->dragTargetDrop(clientPoint, screenPoint, 0);
-    }
-
-private:
-    WebView* const m_webView;
-};
 static void DragAndDropURL(WebViewImpl* webView, const std::string& url)
 {
     WebDragData dragData;
@@ -1375,7 +1359,7 @@ static void DragAndDropURL(WebViewImpl* webView, const std::string& url)
     const WebPoint clientPoint(0, 0);
     const WebPoint screenPoint(0, 0);
     webView->dragTargetDragEnter(dragData, clientPoint, screenPoint, WebDragOperationCopy, 0);
-    Platform::current()->currentThread()->taskRunner()->postTask(BLINK_FROM_HERE, new DropTask(webView));
+    webView->dragTargetDrop(clientPoint, screenPoint, 0);
     FrameTestHelpers::pumpPendingRequestsDoNotUse(webView->mainFrame());
 }
 

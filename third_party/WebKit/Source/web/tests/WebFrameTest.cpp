@@ -3234,24 +3234,6 @@ TEST_P(ParameterizedWebFrameTest, ReloadDoesntSetRedirect)
     FrameTestHelpers::reloadFrameIgnoringCache(webViewHelper.webView()->mainFrame());
 }
 
-class ReloadWithOverrideURLTask : public WebTaskRunner::Task {
-public:
-    ReloadWithOverrideURLTask(WebFrame* frame, const KURL& url, bool ignoreCache)
-        : m_frame(frame), m_url(url), m_ignoreCache(ignoreCache)
-    {
-    }
-
-    void run() override
-    {
-        m_frame->reloadWithOverrideURL(m_url, m_ignoreCache);
-    }
-
-private:
-    WebFrame* const m_frame;
-    const KURL m_url;
-    const bool m_ignoreCache;
-};
-
 class ClearScrollStateOnCommitWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
     void didCommitProvisionalLoad(WebLocalFrame* frame, const WebHistoryItem&, WebHistoryCommitType) override
@@ -3284,24 +3266,21 @@ TEST_F(WebFrameTest, ReloadWithOverrideURLPreservesState)
     float previousScale = webViewHelper.webViewImpl()->pageScaleFactor();
 
     // Reload the page and end up at the same url. State should be propagated.
-    Platform::current()->currentThread()->taskRunner()->postTask(
-        BLINK_FROM_HERE, new ReloadWithOverrideURLTask(webViewHelper.webViewImpl()->mainFrame(), toKURL(m_baseURL + firstURL), false));
+    webViewHelper.webViewImpl()->mainFrame()->reloadWithOverrideURL(toKURL(m_baseURL + firstURL), false);
     FrameTestHelpers::pumpPendingRequestsDoNotUse(webViewHelper.webViewImpl()->mainFrame());
     EXPECT_EQ(previousOffset.width, webViewHelper.webViewImpl()->mainFrame()->scrollOffset().width);
     EXPECT_EQ(previousOffset.height, webViewHelper.webViewImpl()->mainFrame()->scrollOffset().height);
     EXPECT_EQ(previousScale, webViewHelper.webViewImpl()->pageScaleFactor());
 
     // Reload the page using the cache. State should not be propagated.
-    Platform::current()->currentThread()->taskRunner()->postTask(
-        BLINK_FROM_HERE, new ReloadWithOverrideURLTask(webViewHelper.webViewImpl()->mainFrame(), toKURL(m_baseURL + secondURL), false));
+    webViewHelper.webViewImpl()->mainFrame()->reloadWithOverrideURL(toKURL(m_baseURL + secondURL), false);
     FrameTestHelpers::pumpPendingRequestsDoNotUse(webViewHelper.webViewImpl()->mainFrame());
     EXPECT_EQ(0, webViewHelper.webViewImpl()->mainFrame()->scrollOffset().width);
     EXPECT_EQ(0, webViewHelper.webViewImpl()->mainFrame()->scrollOffset().height);
     EXPECT_EQ(1.0f, webViewHelper.webViewImpl()->pageScaleFactor());
 
     // Reload the page while ignoring the cache. State should not be propagated.
-    Platform::current()->currentThread()->taskRunner()->postTask(
-        BLINK_FROM_HERE, new ReloadWithOverrideURLTask(webViewHelper.webViewImpl()->mainFrame(), toKURL(m_baseURL + thirdURL), true));
+    webViewHelper.webViewImpl()->mainFrame()->reloadWithOverrideURL(toKURL(m_baseURL + thirdURL), true);
     FrameTestHelpers::pumpPendingRequestsDoNotUse(webViewHelper.webViewImpl()->mainFrame());
     EXPECT_EQ(0, webViewHelper.webViewImpl()->mainFrame()->scrollOffset().width);
     EXPECT_EQ(0, webViewHelper.webViewImpl()->mainFrame()->scrollOffset().height);
