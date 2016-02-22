@@ -75,16 +75,6 @@
 #include <time.h>
 
 /*
- * Long-long (64-bit signed integer type) support macros used by
- * PR_ImplodeTime().
- * See http://lxr.mozilla.org/nspr/source/pr/include/prlong.h
- */
-#define LL_I2L(l, i) ((l) = (PRInt64)(i))
-#define LL_MUL(r, a, b) ((r) = (a) * (b))
-#define LL_ADD(r, a, b) ((r) = (a) + (b))
-#define LL_SUB(r, a, b) ((r) = (a) - (b))
-
-/*
  * The COUNT_LEAPS macro counts the number of leap years passed by
  * till the start of the given year Y.  At the start of the year 4
  * A.D. the number of leap years passed by is 0, while at the start of
