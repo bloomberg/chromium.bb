@@ -7264,7 +7264,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Automatically sign in to websites using stored credential. When the feature is off, you'll be asked for verification every time before signing in to a website.
       </message>
       <message name="IDS_PASSWORDS_VIA_FEDERATION" desc="Text for federated credential's value.">
-        via <ph name="PROVIDER">$1<ex>facebook.com</ex></ph>
+        with <ph name="PROVIDER">$1<ex>facebook.com</ex></ph>
       </message>
       <message name="IDS_PASSWORDS_PAGE_SEARCH_PASSWORDS" desc="Placeholder text shown in password table search box">
         Search passwords
