@@ -33,7 +33,6 @@
 
 #include "bindings/core/v8/V8PerIsolateData.h"
 #include "core/CoreExport.h"
-#include "platform/ScriptForbiddenScope.h"
 #include "wtf/Noncopyable.h"
 #include <v8.h>
 
@@ -62,7 +61,6 @@ public:
     explicit V8RecursionScope(v8::Isolate* isolate)
         : m_isolate(isolate)
     {
-        RELEASE_ASSERT(!ScriptForbiddenScope::isScriptForbidden());
         V8PerIsolateData::from(m_isolate)->incrementRecursionLevel();
         // If you want V8 to autorun microtasks, this class needs to have a
         // v8::Isolate::SuppressMicrotaskExecutionScope member.
@@ -96,7 +94,6 @@ public:
             : m_isolate(isolate)
 #endif
         {
-            RELEASE_ASSERT(!ScriptForbiddenScope::isScriptForbidden());
 #if ENABLE(ASSERT)
             V8PerIsolateData::from(m_isolate)->incrementInternalScriptRecursionLevel();
 #endif

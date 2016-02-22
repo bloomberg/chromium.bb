@@ -34,6 +34,7 @@
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/frame/Deprecation.h"
 #include "core/inspector/MainThreadDebugger.h"
+#include "platform/ScriptForbiddenScope.h"
 #include "public/platform/Platform.h"
 #include "wtf/LeakAnnotations.h"
 #include "wtf/MainThread.h"
@@ -42,10 +43,15 @@ namespace blink {
 
 static V8PerIsolateData* mainThreadPerIsolateData = 0;
 
-#if ENABLE(ASSERT)
-static void assertV8RecursionScope()
+static void beforeCallEnteredCallback(v8::Isolate* isolate)
 {
-    ASSERT(V8RecursionScope::properlyUsed(v8::Isolate::GetCurrent()));
+    RELEASE_ASSERT(!ScriptForbiddenScope::isScriptForbidden());
+}
+
+#if ENABLE(ASSERT)
+static void assertV8RecursionScope(v8::Isolate* isolate)
+{
+    ASSERT(V8RecursionScope::properlyUsed(isolate));
 }
 
 static bool runningUnitTest()
@@ -151,6 +157,7 @@ V8PerIsolateData::V8PerIsolateData()
     if (!runningUnitTest())
         isolate()->AddCallCompletedCallback(&assertV8RecursionScope);
 #endif
+    isolate()->AddBeforeCallEnteredCallback(&beforeCallEnteredCallback);
     if (isMainThread())
         mainThreadPerIsolateData = this;
     isolate()->SetUseCounterCallback(&useCounterCallback);
@@ -210,6 +217,7 @@ void V8PerIsolateData::destroy(v8::Isolate* isolate)
     if (!runningUnitTest())
         isolate->RemoveCallCompletedCallback(&assertV8RecursionScope);
 #endif
+    isolate->RemoveBeforeCallEnteredCallback(&beforeCallEnteredCallback);
     V8PerIsolateData* data = from(isolate);
 
     // Clear everything before exiting the Isolate.
