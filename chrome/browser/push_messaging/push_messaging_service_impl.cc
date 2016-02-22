@@ -220,7 +220,7 @@ void PushMessagingServiceImpl::OnMessage(const std::string& app_id,
   // The payload of a push message can be valid with content, valid with empty
   // content, or null. Only set the payload data if it is non-null.
   content::PushEventPayload payload;
-  if (AreMessagePayloadsEnabled() && message.decrypted)
+  if (message.decrypted)
     payload.setData(message.raw_data);
 
   // Dispatch the message to the appropriate Service Worker.
@@ -465,14 +465,6 @@ void PushMessagingServiceImpl::DidSubscribe(
 
   switch (result) {
     case gcm::GCMClient::SUCCESS:
-      // Do not get a certificate if message payloads have not been enabled.
-      if (!AreMessagePayloadsEnabled()) {
-        DidSubscribeWithEncryptionInfo(
-            app_identifier, callback, subscription_id,
-            std::string() /* p256dh */, std::string() /* auth_secret */);
-        return;
-      }
-
       // Make sure that this subscription has associated encryption keys prior
       // to returning it to the developer - they'll need this information in
       // order to send payloads to the user.
@@ -505,7 +497,7 @@ void PushMessagingServiceImpl::DidSubscribeWithEncryptionInfo(
     const std::string& subscription_id,
     const std::string& p256dh,
     const std::string& auth_secret) {
-  if (!p256dh.size() && AreMessagePayloadsEnabled()) {
+  if (!p256dh.size()) {
     SubscribeEndWithError(
         callback, content::PUSH_REGISTRATION_STATUS_PUBLIC_KEY_UNAVAILABLE);
     return;
@@ -546,13 +538,6 @@ void PushMessagingServiceImpl::GetEncryptionInfo(
     const GURL& origin,
     int64_t service_worker_registration_id,
     const PushMessagingService::EncryptionInfoCallback& callback) {
-  // An empty public key will be returned if payloads are not enabled.
-  if (!AreMessagePayloadsEnabled()) {
-    callback.Run(true /* success */, std::vector<uint8_t>() /* p256dh */,
-                 std::vector<uint8_t>() /* auth */);
-    return;
-  }
-
   PushMessagingAppIdentifier app_identifier =
       PushMessagingAppIdentifier::FindByServiceWorker(
           profile_, origin, service_worker_registration_id);
@@ -767,11 +752,6 @@ void PushMessagingServiceImpl::OnMenuClick() {
 bool PushMessagingServiceImpl::IsPermissionSet(const GURL& origin) {
   return GetPermissionStatus(origin, true /* user_visible */) ==
          blink::WebPushPermissionStatusGranted;
-}
-
-bool PushMessagingServiceImpl::AreMessagePayloadsEnabled() const {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableExperimentalWebPlatformFeatures);
 }
 
 gcm::GCMDriver* PushMessagingServiceImpl::GetGCMDriver() const {

@@ -426,15 +426,23 @@ interface PromiseRejectionEvent : Event
     getter reason
     method constructor
 interface PushEvent : ExtendableEvent
+    getter data
     method constructor
 interface PushManager
     method constructor
     method getSubscription
     method permissionState
     method subscribe
+interface PushMessageData
+    method arrayBuffer
+    method blob
+    method constructor
+    method json
+    method text
 interface PushSubscription
     getter endpoint
     method constructor
+    method getKey
     method toJSON
     method unsubscribe
 interface ReadableByteStream

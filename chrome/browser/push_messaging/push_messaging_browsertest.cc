@@ -43,7 +43,6 @@
 #include "components/gcm_driver/common/gcm_messages.h"
 #include "components/gcm_driver/gcm_client.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -82,14 +81,6 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
  public:
   PushMessagingBrowserTest() : gcm_service_(nullptr) {}
   ~PushMessagingBrowserTest() override {}
-
-  // InProcessBrowserTest:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(
-        switches::kEnableExperimentalWebPlatformFeatures);
-
-    InProcessBrowserTest::SetUpCommandLine(command_line);
-  }
 
   // InProcessBrowserTest:
   void SetUp() override {

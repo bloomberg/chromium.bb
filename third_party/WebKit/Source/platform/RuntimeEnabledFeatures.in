@@ -151,7 +151,7 @@ Presentation status=stable
 PresentationReceiver status=test
 PromiseRejectionEvent status=stable
 PushMessaging status=stable
-PushMessagingData status=experimental
+PushMessagingData status=stable
 QuotaPromise status=experimental
 ReducedReferrerGranularity
 RenderingPipelineThrottling status=experimental

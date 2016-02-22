@@ -26,7 +26,6 @@
 #include "components/gcm_driver/crypto/gcm_crypto_test_helpers.h"
 #include "components/gcm_driver/fake_gcm_client_factory.h"
 #include "components/gcm_driver/gcm_profile_service.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/push_event_payload.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -96,10 +95,6 @@ class PushMessagingServiceTest : public ::testing::Test {
     // Override the GCM Profile service so that we can send fake messages.
     gcm::GCMProfileServiceFactory::GetInstance()->SetTestingFactory(
         &profile_, &BuildFakeGCMProfileService);
-
-    // Force-enable encrypted payloads for incoming push messages.
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableExperimentalWebPlatformFeatures);
   }
 
   ~PushMessagingServiceTest() override {}

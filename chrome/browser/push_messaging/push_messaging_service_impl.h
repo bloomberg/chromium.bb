@@ -200,9 +200,6 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   // Checks if a given origin is allowed to use Push.
   bool IsPermissionSet(const GURL& origin);
 
-  // Returns whether incoming messages should support payloads.
-  bool AreMessagePayloadsEnabled() const;
-
   gcm::GCMDriver* GetGCMDriver() const;
 
   // Testing methods -----------------------------------------------------------
