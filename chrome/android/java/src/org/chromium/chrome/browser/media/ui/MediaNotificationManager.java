@@ -591,7 +591,8 @@ public class MediaNotificationManager {
         // The intent will currently only be null when using a custom tab.
         // TODO(avayvod) work out what we should do in this case. See https://crbug.com/585395.
         if (mMediaNotificationInfo.contentIntent != null) {
-            mNotificationBuilder.setContentIntent(PendingIntent.getActivity(mContext, 0,
+            mNotificationBuilder.setContentIntent(PendingIntent.getActivity(mContext,
+                    mMediaNotificationInfo.tabId,
                     mMediaNotificationInfo.contentIntent, 0));
         }
 
