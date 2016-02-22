@@ -132,6 +132,9 @@ CanvasRenderingContext2D::CanvasRenderingContext2D(HTMLCanvasElement* canvas, co
         m_clipAntialiasing = AntiAliased;
     m_stateStack.append(CanvasRenderingContext2DState::create());
     setShouldAntialias(true);
+#if ENABLE(OILPAN)
+    ThreadState::current()->registerPreFinalizer(this);
+#endif
 }
 
 void CanvasRenderingContext2D::unwindStateStack()

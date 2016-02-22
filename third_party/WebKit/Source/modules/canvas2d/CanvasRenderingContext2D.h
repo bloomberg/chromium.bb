@@ -65,7 +65,7 @@ typedef HTMLImageElementOrHTMLVideoElementOrHTMLCanvasElementOrImageBitmap Canva
 
 class MODULES_EXPORT CanvasRenderingContext2D final : public CanvasRenderingContext, public CanvasPathMethods, public WebThread::TaskObserver, public SVGResourceClient {
     DEFINE_WRAPPERTYPEINFO();
-    USING_PRE_FINALIZER(CanvasRenderingContext2D, dispose);
+    WILL_BE_USING_PRE_FINALIZER(CanvasRenderingContext2D, dispose);
 public:
     class Factory : public CanvasRenderingContextFactory {
         WTF_MAKE_NONCOPYABLE(Factory);
