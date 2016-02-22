@@ -19,7 +19,7 @@ Polymer({
       type: Array,
       readOnly: true,
       value: function() {
-        return ['dismissButton', 'learnMoreButton'];
+        return ['dismissButton', 'learnMoreText'];
       },
     },
 

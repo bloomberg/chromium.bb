@@ -115,8 +115,7 @@ Polymer({
     firstRunFlowLearnMore_: {
       type: String,
       readOnly: true,
-      value: loadTimeData.valueExists('firstRunFlowLearnMore') ?
-          loadTimeData.getString('firstRunFlowLearnMore') : '',
+      value: loadTimeData.getString('learnMoreText'),
     },
 
     /**

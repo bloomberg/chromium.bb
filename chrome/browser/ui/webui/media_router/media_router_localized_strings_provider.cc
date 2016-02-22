@@ -15,6 +15,8 @@ const char kLocalizedStringsFile[] = "strings.js";
 
 void AddMediaRouterStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("mediaRouterTitle", IDS_MEDIA_ROUTER_TITLE);
+  html_source->AddLocalizedString("learnMoreText",
+                                  IDS_MEDIA_ROUTER_LEARN_MORE);
 }
 
 void AddRouteDetailsStrings(content::WebUIDataSource* html_source) {
@@ -31,15 +33,11 @@ void AddIssuesStrings(content::WebUIDataSource* html_source) {
                                   IDS_MEDIA_ROUTER_DISMISS_BUTTON);
   html_source->AddLocalizedString("issueHeader",
                                   IDS_MEDIA_ROUTER_ISSUE_HEADER);
-  html_source->AddLocalizedString("learnMoreButton",
-                                  IDS_MEDIA_ROUTER_LEARN_MORE_BUTTON);
 }
 
 void AddMediaRouterContainerStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("firstRunFlowButton",
                                   IDS_MEDIA_ROUTER_FIRST_RUN_FLOW_BUTTON);
-  html_source->AddLocalizedString("firstRunFlowLearnMore",
-                                  IDS_MEDIA_ROUTER_FIRST_RUN_FLOW_LEARN_MORE);
   html_source->AddLocalizedString("firstRunFlowText",
                                   IDS_MEDIA_ROUTER_FIRST_RUN_FLOW_TEXT);
   html_source->AddLocalizedString("firstRunFlowTitle",

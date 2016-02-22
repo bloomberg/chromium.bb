@@ -11,6 +11,9 @@
   <message name="IDS_MEDIA_ROUTER_MENU_ITEM_TITLE" desc="Title of menu item for Media Router, which appears in the overflow menu and page contextual menus.">
     Cast...
   </message>
+  <message name="IDS_MEDIA_ROUTER_LEARN_MORE" desc="Text of a menu item or link which, on click, opens a page with more information or relevant help center page.">
+   Learn more
+  </message>
 
   <!-- Cast Modes -->
   <message name="IDS_MEDIA_ROUTER_AUTO_CAST_MODE" desc="Title for auto cast mode that appears as the header of a list of devices. This represents the mode that will be initially shown, if the list of sinks supports more than one of the cast modes below. Note that auto mode is not a real cast mode and merely serves as a proxy for the other cast modes. This is NOT shown as a dropdown option.">
@@ -46,9 +49,6 @@
   <message name="IDS_MEDIA_ROUTER_HELP" desc="Title of a menu item which, on click, opens a page to the Chromecast help center.">
    Help
   </message>
-  <message name="IDS_MEDIA_ROUTER_LEARN_MORE" desc="Title of a menu item which, on click, opens a page with instructions on how to cast to a Chromecast.">
-   Learn more
-  </message>
   <message name="IDS_MEDIA_ROUTER_REPORT_ISSUE" desc="Title of a menu item which, on click, opens a page to give feedback or report an issue with Chromecast integration.">
    Report an issue
   </message>
@@ -76,16 +76,10 @@
   <message name="IDS_MEDIA_ROUTER_FIRST_RUN_FLOW_BUTTON" desc="Acknowledge button for the first run flow, which, on click, will dismiss the first run flow and set the current profile's preference that the user has acknowledged the first run flow.">
     Ok, got it
   </message>
-  <message name="IDS_MEDIA_ROUTER_FIRST_RUN_FLOW_LEARN_MORE" desc="Text of a learn more link, which, on click, opens a page with more details about Media Router or specific functionality relevant to the feature.">
-    Learn More
-  </message>
 
   <!-- Issue Actions -->
   <message name="IDS_MEDIA_ROUTER_DISMISS_BUTTON" desc="Dismiss button, which, on click, will dismiss the current issue.">
     Dismiss
-  </message>
-  <message name="IDS_MEDIA_ROUTER_LEARN_MORE_BUTTON" desc="Learn more button, which, on click, will open a page with more details about the current issue.">
-    Learn More
   </message>
 
   <!-- Issue Messaging -->
