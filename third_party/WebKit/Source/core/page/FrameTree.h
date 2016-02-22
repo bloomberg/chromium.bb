@@ -42,10 +42,11 @@ public:
     // |fallbackName| is used as a source of uniqueName.
     void setName(const AtomicString& name, const AtomicString& fallbackName = nullAtom);
 
-    // Directly assigns both the name and uniqueName. Should only be used when
-    // switching between LocalFrames and RemoteFrames for the same logical frame
-    // so that the unique name stays unique.
-    void setNameForReplacementFrame(const AtomicString& name, const AtomicString& uniqueName);
+    // Directly assigns both the name and uniqueName.  Can be used when
+    // |uniqueName| is already known (i.e. when it has been precalculated by
+    // calculateUniqueNameForNewChildFrame OR when replicating the name between
+    // LocalFrames and RemoteFrames for the same logical frame).
+    void setPrecalculatedName(const AtomicString& name, const AtomicString& uniqueName);
 
     Frame* parent() const;
     Frame* top() const;
@@ -70,9 +71,16 @@ public:
 
     DECLARE_TRACE();
 
+    AtomicString calculateUniqueNameForNewChildFrame(
+        const AtomicString& name,
+        const AtomicString& fallbackName = nullAtom) const;
+
 private:
     Frame* deepLastChild() const;
-    AtomicString uniqueChildName(const AtomicString& requestedName) const;
+    AtomicString calculateUniqueNameForChildFrame(
+        bool existingChildFrame,
+        const AtomicString& name,
+        const AtomicString& fallbackName = nullAtom) const;
     bool uniqueNameExists(const AtomicString& name) const;
 
     RawPtrWillBeMember<Frame> m_thisFrame;

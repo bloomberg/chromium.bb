@@ -1475,7 +1475,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::createProvisional(WebFrameClient* client, 
     RefPtrWillBeRawPtr<LocalFrame> frame = LocalFrame::create(webFrame->m_frameLoaderClientImpl.get(), oldFrame->host(), tempOwner.get());
     // Set the name and unique name directly, bypassing any of the normal logic
     // to calculate unique name.
-    frame->tree().setNameForReplacementFrame(toWebRemoteFrameImpl(oldWebFrame)->frame()->tree().name(), toWebRemoteFrameImpl(oldWebFrame)->frame()->tree().uniqueName());
+    frame->tree().setPrecalculatedName(toWebRemoteFrameImpl(oldWebFrame)->frame()->tree().name(), toWebRemoteFrameImpl(oldWebFrame)->frame()->tree().uniqueName());
     webFrame->setCoreFrame(frame);
 
     frame->setOwner(oldFrame->owner());
@@ -1591,10 +1591,10 @@ void WebLocalFrameImpl::setCoreFrame(PassRefPtrWillBeRawPtr<LocalFrame> frame)
     }
 }
 
-void WebLocalFrameImpl::initializeCoreFrame(FrameHost* host, FrameOwner* owner, const AtomicString& name, const AtomicString& fallbackName)
+void WebLocalFrameImpl::initializeCoreFrame(FrameHost* host, FrameOwner* owner, const AtomicString& name, const AtomicString& uniqueName)
 {
     setCoreFrame(LocalFrame::create(m_frameLoaderClientImpl.get(), host, owner));
-    frame()->tree().setName(name, fallbackName);
+    frame()->tree().setPrecalculatedName(name, uniqueName);
     // We must call init() after m_frame is assigned because it is referenced
     // during init(). Note that this may dispatch JS events; the frame may be
     // detached after init() returns.
@@ -1610,15 +1610,17 @@ PassRefPtrWillBeRawPtr<LocalFrame> WebLocalFrameImpl::createChildFrame(const Fra
         ? WebTreeScopeType::Document
         : WebTreeScopeType::Shadow;
     WebFrameOwnerProperties ownerProperties(ownerElement->scrollingMode(), ownerElement->marginWidth(), ownerElement->marginHeight());
-    RefPtrWillBeRawPtr<WebLocalFrameImpl> webframeChild = toWebLocalFrameImpl(m_client->createChildFrame(this, scope, name, static_cast<WebSandboxFlags>(ownerElement->sandboxFlags()), ownerProperties));
-    if (!webframeChild)
-        return nullptr;
-
     // FIXME: Using subResourceAttributeName as fallback is not a perfect
     // solution. subResourceAttributeName returns just one attribute name. The
     // element might not have the attribute, and there might be other attributes
     // which can identify the element.
-    webframeChild->initializeCoreFrame(frame()->host(), ownerElement, name, ownerElement->getAttribute(ownerElement->subResourceAttributeName()));
+    AtomicString uniqueName = frame()->tree().calculateUniqueNameForNewChildFrame(
+        name, ownerElement->getAttribute(ownerElement->subResourceAttributeName()));
+    RefPtrWillBeRawPtr<WebLocalFrameImpl> webframeChild = toWebLocalFrameImpl(m_client->createChildFrame(this, scope, name, uniqueName, static_cast<WebSandboxFlags>(ownerElement->sandboxFlags()), ownerProperties));
+    if (!webframeChild)
+        return nullptr;
+
+    webframeChild->initializeCoreFrame(frame()->host(), ownerElement, name, uniqueName);
     // Initializing the core frame may cause the new child to be detached, since
     // it may dispatch a load event in the parent.
     if (!webframeChild->parent())

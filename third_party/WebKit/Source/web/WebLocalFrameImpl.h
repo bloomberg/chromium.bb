@@ -254,7 +254,7 @@ public:
     void setTickmarks(const WebVector<WebRect>&) override;
 
     // WebFrameImplBase methods:
-    void initializeCoreFrame(FrameHost*, FrameOwner*, const AtomicString& name, const AtomicString& fallbackName) override;
+    void initializeCoreFrame(FrameHost*, FrameOwner*, const AtomicString& name, const AtomicString& uniqueName) override;
     LocalFrame* frame() const override { return m_frame.get(); }
 
     void willBeDetached();

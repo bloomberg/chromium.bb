@@ -616,8 +616,9 @@ class PrepareFrameAndViewForPrint : public blink::WebViewClient,
       blink::WebLocalFrame* parent,
       blink::WebTreeScopeType scope,
       const blink::WebString& name,
-      blink::WebSandboxFlags sandboxFlags,
-      const blink::WebFrameOwnerProperties& frameOwnerProperties) override;
+      const blink::WebString& unique_name,
+      blink::WebSandboxFlags sandbox_flags,
+      const blink::WebFrameOwnerProperties& frame_owner_properties) override;
   void frameDetached(blink::WebFrame* frame, DetachType type) override;
 
   void CallOnReady();
@@ -761,8 +762,9 @@ blink::WebFrame* PrepareFrameAndViewForPrint::createChildFrame(
     blink::WebLocalFrame* parent,
     blink::WebTreeScopeType scope,
     const blink::WebString& name,
-    blink::WebSandboxFlags sandboxFlags,
-    const blink::WebFrameOwnerProperties& frameOwnerProperties) {
+    const blink::WebString& unique_name,
+    blink::WebSandboxFlags sandbox_flags,
+    const blink::WebFrameOwnerProperties& frame_owner_properties) {
   blink::WebFrame* frame = blink::WebLocalFrame::create(scope, this);
   parent->appendChild(frame);
   return frame;

@@ -607,7 +607,7 @@ WebString WebRemoteFrameImpl::layerTreeAsText(bool showDebugInfo) const
     return WebString();
 }
 
-WebLocalFrame* WebRemoteFrameImpl::createLocalChild(WebTreeScopeType scope, const WebString& name, WebSandboxFlags sandboxFlags, WebFrameClient* client, WebFrame* previousSibling, const WebFrameOwnerProperties& frameOwnerProperties)
+WebLocalFrame* WebRemoteFrameImpl::createLocalChild(WebTreeScopeType scope, const WebString& name, const WebString& uniqueName, WebSandboxFlags sandboxFlags, WebFrameClient* client, WebFrame* previousSibling, const WebFrameOwnerProperties& frameOwnerProperties)
 {
     WebLocalFrameImpl* child = toWebLocalFrameImpl(WebLocalFrame::create(scope, client));
     WillBeHeapHashMap<WebFrame*, OwnPtrWillBeMember<FrameOwner>>::AddResult result =
@@ -617,28 +617,27 @@ WebLocalFrame* WebRemoteFrameImpl::createLocalChild(WebTreeScopeType scope, cons
     // result in the browser observing two navigations to about:blank (one from the initial
     // frame creation, and one from swapping it into the remote process). FrameLoader might
     // need a special initialization function for this case to avoid that duplicate navigation.
-    child->initializeCoreFrame(frame()->host(), result.storedValue->value.get(), name, nullAtom);
+    child->initializeCoreFrame(frame()->host(), result.storedValue->value.get(), name, uniqueName);
     // Partially related with the above FIXME--the init() call may trigger JS dispatch. However,
     // if the parent is remote, it should never be detached synchronously...
     ASSERT(child->frame());
     return child;
 }
 
-
-void WebRemoteFrameImpl::initializeCoreFrame(FrameHost* host, FrameOwner* owner, const AtomicString& name, const AtomicString& fallbackName)
+void WebRemoteFrameImpl::initializeCoreFrame(FrameHost* host, FrameOwner* owner, const AtomicString& name, const AtomicString& uniqueName)
 {
     setCoreFrame(RemoteFrame::create(m_frameClient.get(), host, owner));
     frame()->createView();
-    m_frame->tree().setName(name, fallbackName);
+    m_frame->tree().setPrecalculatedName(name, uniqueName);
 }
 
-WebRemoteFrame* WebRemoteFrameImpl::createRemoteChild(WebTreeScopeType scope, const WebString& name, WebSandboxFlags sandboxFlags, WebRemoteFrameClient* client)
+WebRemoteFrame* WebRemoteFrameImpl::createRemoteChild(WebTreeScopeType scope, const WebString& name, const WebString& uniqueName, WebSandboxFlags sandboxFlags, WebRemoteFrameClient* client)
 {
     WebRemoteFrameImpl* child = toWebRemoteFrameImpl(WebRemoteFrame::create(scope, client));
     WillBeHeapHashMap<WebFrame*, OwnPtrWillBeMember<FrameOwner>>::AddResult result =
         m_ownersForChildren.add(child, RemoteBridgeFrameOwner::create(nullptr, static_cast<SandboxFlags>(sandboxFlags), WebFrameOwnerProperties()));
     appendChild(child);
-    child->initializeCoreFrame(frame()->host(), result.storedValue->value.get(), name, nullAtom);
+    child->initializeCoreFrame(frame()->host(), result.storedValue->value.get(), name, uniqueName);
     return child;
 }
 
@@ -690,10 +689,10 @@ void WebRemoteFrameImpl::setReplicatedSandboxFlags(WebSandboxFlags flags) const
     frame()->securityContext()->enforceSandboxFlags(static_cast<SandboxFlags>(flags));
 }
 
-void WebRemoteFrameImpl::setReplicatedName(const WebString& name) const
+void WebRemoteFrameImpl::setReplicatedName(const WebString& name, const WebString& uniqueName) const
 {
     ASSERT(frame());
-    frame()->tree().setName(name, nullAtom);
+    frame()->tree().setPrecalculatedName(name, uniqueName);
 }
 
 void WebRemoteFrameImpl::setReplicatedShouldEnforceStrictMixedContentChecking(bool shouldEnforce) const

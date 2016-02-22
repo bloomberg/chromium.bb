@@ -157,6 +157,7 @@ class CONTENT_EXPORT FrameTree {
                 int new_routing_id,
                 blink::WebTreeScopeType scope,
                 const std::string& frame_name,
+                const std::string& frame_unique_name,
                 blink::WebSandboxFlags sandbox_flags,
                 const blink::WebFrameOwnerProperties& frame_owner_properties);
 

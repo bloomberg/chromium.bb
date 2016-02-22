@@ -21,6 +21,7 @@ struct CONTENT_EXPORT FrameReplicationState {
   FrameReplicationState();
   FrameReplicationState(blink::WebTreeScopeType scope,
                         const std::string& name,
+                        const std::string& unique_name,
                         blink::WebSandboxFlags sandbox_flags,
                         bool should_enforce_strict_mixed_content_checking);
   ~FrameReplicationState();
@@ -51,8 +52,7 @@ struct CONTENT_EXPORT FrameReplicationState {
   // frame.
   blink::WebSandboxFlags sandbox_flags;
 
-  // The assigned name of the frame. This name can be empty, unlike the unique
-  // name generated internally in the DOM tree.
+  // The assigned name of the frame (see WebFrame::assignedName()).
   //
   // |name| is set when a new child frame is created using the value of the
   // <iframe> element's "name" attribute (see
@@ -63,6 +63,19 @@ struct CONTENT_EXPORT FrameReplicationState {
   // --site-per-process mode), so that other frames can look up or navigate a
   // frame using its updated name (e.g., using window.open(url, frame_name)).
   std::string name;
+
+  // Unique name of the frame (see WebFrame::uniqueName()).
+  //
+  // |unique_name| is used in heuristics that try to identify the same frame
+  // across different, unrelated navigations (i.e. to refer to the frame
+  // when going back/forward in session history OR when refering to the frame
+  // in layout tests results).
+  //
+  // |unique_name| needs to be replicated to ensure that unique name for a given
+  // frame is the same across all renderers - without replication a renderer
+  // might arrive at a different value when recalculating the unique name from
+  // scratch.
+  std::string unique_name;
 
   // Whether the frame is in a document tree or a shadow tree, per the Shadow
   // DOM spec: https://w3c.github.io/webcomponents/spec/shadow/

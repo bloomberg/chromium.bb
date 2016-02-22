@@ -20,6 +20,7 @@
 #include "content/child/request_extra_data.h"
 #include "content/child/service_worker/service_worker_network_provider.h"
 #include "content/common/frame_messages.h"
+#include "content/common/frame_replication_state.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
@@ -152,6 +153,31 @@ class WebUITestWebUIControllerFactory : public WebUIControllerFactory {
 // constraints on systems with these timers.
 bool TimeTicksGT(const base::TimeTicks& x, const base::TimeTicks& y) {
   return base::TimeTicks::IsHighResolution() ? x > y : x >= y;
+}
+
+// FrameReplicationState is normally maintained in the browser process,
+// but the function below provides a way for tests to construct a partial
+// FrameReplicationState within the renderer process.  We say "partial",
+// because some fields of FrameReplicationState cannot be filled out
+// by content-layer, renderer code (still the constructed, partial
+// FrameReplicationState is sufficiently complete to avoid trigerring
+// asserts that a default/empty FrameReplicationState would).
+FrameReplicationState ReconstructReplicationStateForTesting(
+    TestRenderFrame* test_render_frame) {
+  blink::WebLocalFrame* frame = test_render_frame->GetWebFrame();
+
+  FrameReplicationState result;
+  // can't recover result.scope - no way to get WebTreeScopeType via public
+  // blink API...
+  result.name = base::UTF16ToUTF8(base::StringPiece16(frame->assignedName()));
+  result.unique_name =
+      base::UTF16ToUTF8(base::StringPiece16(frame->uniqueName()));
+  result.sandbox_flags = frame->effectiveSandboxFlags();
+  // result.should_enforce_strict_mixed_content_checking is calculated in the
+  // browser...
+  result.origin = frame->securityOrigin();
+
+  return result;
 }
 
 }  // namespace
@@ -727,7 +753,8 @@ TEST_F(RenderViewImplTest, SendSwapOutACK) {
   RenderProcess::current()->AddRefProcess();
 
   // Respond to a swap out request.
-  frame()->SwapOut(kProxyRoutingId, true, content::FrameReplicationState());
+  frame()->SwapOut(kProxyRoutingId, true,
+                   ReconstructReplicationStateForTesting(frame()));
 
   // Ensure the swap out commits synchronously.
   EXPECT_NE(initial_page_id, view_page_id());
@@ -740,7 +767,8 @@ TEST_F(RenderViewImplTest, SendSwapOutACK) {
   // It is possible to get another swap out request.  Ensure that we send
   // an ACK, even if we don't have to do anything else.
   render_thread_->sink().ClearMessages();
-  frame()->SwapOut(kProxyRoutingId, false, content::FrameReplicationState());
+  frame()->SwapOut(kProxyRoutingId, false,
+                   ReconstructReplicationStateForTesting(frame()));
   const IPC::Message* msg2 = render_thread_->sink().GetUniqueMessageMatching(
       FrameHostMsg_SwapOut_ACK::ID);
   ASSERT_TRUE(msg2);
@@ -808,7 +836,8 @@ TEST_F(RenderViewImplTest, ReloadWhileSwappedOut) {
   ProcessPendingMessages();
 
   // Respond to a swap out request.
-  frame()->SwapOut(kProxyRoutingId, true, content::FrameReplicationState());
+  frame()->SwapOut(kProxyRoutingId, true,
+                   ReconstructReplicationStateForTesting(frame()));
 
   // Check for a OnSwapOutACK.
   const IPC::Message* msg = render_thread_->sink().GetUniqueMessageMatching(
@@ -864,7 +893,8 @@ TEST_F(RenderViewImplTest, OriginReplicationForSwapOut) {
 
   // Swap the child frame out and pass a replicated origin to be set for
   // WebRemoteFrame.
-  content::FrameReplicationState replication_state;
+  content::FrameReplicationState replication_state =
+      ReconstructReplicationStateForTesting(child_frame);
   replication_state.origin = url::Origin(GURL("http://foo.com"));
   child_frame->SwapOut(kProxyRoutingId, true, replication_state);
 
@@ -902,7 +932,9 @@ TEST_F(RenderViewImplTest, NavigateProxyAndDetachBeforeOnNavigate) {
       RenderFrame::FromWebFrame(web_frame->firstChild()));
 
   // Swap the child frame out.
-  child_frame->SwapOut(kProxyRoutingId, true, content::FrameReplicationState());
+  FrameReplicationState replication_state =
+      ReconstructReplicationStateForTesting(child_frame);
+  child_frame->SwapOut(kProxyRoutingId, true, replication_state);
   EXPECT_TRUE(web_frame->firstChild()->isWebRemoteFrame());
 
   // Do the first step of a remote-to-local transition for the child proxy,
@@ -913,8 +945,8 @@ TEST_F(RenderViewImplTest, NavigateProxyAndDetachBeforeOnNavigate) {
   widget_params.hidden = false;
   RenderFrameImpl::CreateFrame(routing_id, kProxyRoutingId, MSG_ROUTING_NONE,
                                frame()->GetRoutingID(), MSG_ROUTING_NONE,
-                               content::FrameReplicationState(), nullptr,
-                               widget_params, blink::WebFrameOwnerProperties());
+                               replication_state, nullptr, widget_params,
+                               blink::WebFrameOwnerProperties());
   TestRenderFrame* provisional_frame =
       static_cast<TestRenderFrame*>(RenderFrameImpl::FromRoutingID(routing_id));
   EXPECT_TRUE(provisional_frame);
@@ -961,8 +993,9 @@ TEST_F(RenderViewImplTest, PaintAfterSwapOut) {
   // Respond to a swap out request.
   TestRenderFrame* new_main_frame =
       static_cast<TestRenderFrame*>(new_view->GetMainRenderFrame());
-  new_main_frame->SwapOut(kProxyRoutingId, true,
-                          content::FrameReplicationState());
+  new_main_frame->SwapOut(
+      kProxyRoutingId, true,
+      ReconstructReplicationStateForTesting(new_main_frame));
 
   // Simulate getting painted after swapping out.
   new_view->DidFlushPaint();
@@ -988,7 +1021,8 @@ TEST_F(RenderViewImplTest, SetZoomLevelAfterCrossProcessNavigation) {
   // Swap the main frame out after which it should become a WebRemoteFrame.
   TestRenderFrame* main_frame =
       static_cast<TestRenderFrame*>(view()->GetMainRenderFrame());
-  main_frame->SwapOut(kProxyRoutingId, true, content::FrameReplicationState());
+  main_frame->SwapOut(kProxyRoutingId, true,
+                      ReconstructReplicationStateForTesting(main_frame));
   EXPECT_TRUE(view()->webview()->mainFrame()->isWebRemoteFrame());
 
   // This should not cause a crash.

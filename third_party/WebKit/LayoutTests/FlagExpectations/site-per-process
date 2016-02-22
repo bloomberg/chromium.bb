@@ -44,14 +44,6 @@ http/tests/security/xssAuditor/dom-write-location-inline-event.html [ Crash ]
 http/tests/serviceworker/windowclient-navigate.html [ Crash ]
 http/tests/xmlhttprequest/detaching-frame-2.html [ Crash ]
 
-# https://crbug.com/576969 - unique name is not replicated into OOPIFs.
-http/tests/security/aboutBlank/xss-DENIED-set-opener.html [ Failure ]
-http/tests/security/cross-origin-appcache-allowed.html [ Failure ]
-http/tests/security/cross-origin-indexeddb-allowed.html [ Failure ]
-http/tests/security/cross-origin-local-storage-allowed.html [ Failure ]
-http/tests/security/cross-origin-session-storage-allowed.html [ Failure ]
-http/tests/security/cross-origin-websql-allowed.html [ Failure ]
-
 # https://crbug.com/582289 - dumpResourceLoadCallbacks test flag is not replicated into OOPIFs.
 http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag-parent-same-origin-deny.html [ Failure ]
 

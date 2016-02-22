@@ -1024,7 +1024,7 @@ void LocalDOMWindow::setName(const AtomicString& name)
 
     frame()->tree().setName(name);
     ASSERT(frame()->loader().client());
-    frame()->loader().client()->didChangeName(name);
+    frame()->loader().client()->didChangeName(name, frame()->tree().uniqueName());
 }
 
 void LocalDOMWindow::setStatus(const String& string)

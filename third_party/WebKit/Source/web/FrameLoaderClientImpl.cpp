@@ -900,11 +900,11 @@ void FrameLoaderClientImpl::frameFocused() const
         m_webFrame->client()->frameFocused();
 }
 
-void FrameLoaderClientImpl::didChangeName(const String& name)
+void FrameLoaderClientImpl::didChangeName(const String& name, const String& uniqueName)
 {
     if (!m_webFrame->client())
         return;
-    m_webFrame->client()->didChangeName(name);
+    m_webFrame->client()->didChangeName(name, uniqueName);
 }
 
 void FrameLoaderClientImpl::didEnforceStrictMixedContentChecking()

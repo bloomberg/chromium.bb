@@ -78,6 +78,7 @@ FrameTreeNode::FrameTreeNode(
     RenderFrameHostManager::Delegate* manager_delegate,
     blink::WebTreeScopeType scope,
     const std::string& name,
+    const std::string& unique_name,
     const blink::WebFrameOwnerProperties& frame_owner_properties)
     : frame_tree_(frame_tree),
       navigator_(navigator),
@@ -94,6 +95,7 @@ FrameTreeNode::FrameTreeNode(
       replication_state_(
           scope,
           name,
+          unique_name,
           blink::WebSandboxFlags::None,
           false /* should enforce strict mixed content checking */),
       pending_sandbox_flags_(blink::WebSandboxFlags::None),
@@ -203,10 +205,16 @@ void FrameTreeNode::SetCurrentOrigin(const url::Origin& origin) {
   replication_state_.origin = origin;
 }
 
-void FrameTreeNode::SetFrameName(const std::string& name) {
-  if (name != replication_state_.name)
-    render_manager_.OnDidUpdateName(name);
+void FrameTreeNode::SetFrameName(const std::string& name,
+                                 const std::string& unique_name) {
+  if (name == replication_state_.name) {
+    // |unique_name| shouldn't change unless |name| changes.
+    DCHECK_EQ(unique_name, replication_state_.unique_name);
+    return;
+  }
+  render_manager_.OnDidUpdateName(name, unique_name);
   replication_state_.name = name;
+  replication_state_.unique_name = unique_name;
 }
 
 void FrameTreeNode::SetEnforceStrictMixedContentChecking(bool should_enforce) {

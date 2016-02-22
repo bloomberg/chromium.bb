@@ -955,7 +955,8 @@ void RenderFrameHostManager::OnDidStopLoading() {
   }
 }
 
-void RenderFrameHostManager::OnDidUpdateName(const std::string& name) {
+void RenderFrameHostManager::OnDidUpdateName(const std::string& name,
+                                             const std::string& unique_name) {
   // The window.name message may be sent outside of --site-per-process when
   // report_frame_name_changes renderer preference is set (used by
   // WebView).  Don't send the update to proxies in those cases.
@@ -965,8 +966,8 @@ void RenderFrameHostManager::OnDidUpdateName(const std::string& name) {
     return;
 
   for (const auto& pair : proxy_hosts_) {
-    pair.second->Send(
-        new FrameMsg_DidUpdateName(pair.second->GetRoutingID(), name));
+    pair.second->Send(new FrameMsg_DidUpdateName(pair.second->GetRoutingID(),
+                                                 name, unique_name));
   }
 }
 
@@ -1816,7 +1817,8 @@ void RenderFrameHostManager::CreateOuterDelegateProxy(
   // investigate and fix.
   render_frame_host->Send(new FrameMsg_SwapOut(
       render_frame_host->GetRoutingID(), proxy->GetRoutingID(),
-      false /* is_loading */, FrameReplicationState()));
+      false /* is_loading */,
+      render_frame_host->frame_tree_node()->current_replication_state()));
   proxy->set_render_frame_proxy_created(true);
 }
 

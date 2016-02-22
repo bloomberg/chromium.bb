@@ -202,7 +202,7 @@ public:
 
     virtual WebCookieJar* cookieJar() const = 0;
 
-    virtual void didChangeName(const String&) { }
+    virtual void didChangeName(const String& name, const String& uniqueName) { }
 
     virtual void didEnforceStrictMixedContentChecking() {}
 

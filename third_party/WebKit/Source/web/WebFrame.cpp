@@ -70,6 +70,7 @@ bool WebFrame::swap(WebFrame* frame)
 
     FrameHost* host = oldFrame->host();
     AtomicString name = oldFrame->tree().name();
+    AtomicString uniqueName = oldFrame->tree().uniqueName();
     FrameOwner* owner = oldFrame->owner();
     oldFrame->disconnectOwnerElement();
 
@@ -101,7 +102,7 @@ bool WebFrame::swap(WebFrame* frame)
             localFrame.page()->setMainFrame(&localFrame);
         }
     } else {
-        toWebRemoteFrameImpl(frame)->initializeCoreFrame(host, owner, name, nullAtom);
+        toWebRemoteFrameImpl(frame)->initializeCoreFrame(host, owner, name, uniqueName);
     }
 
     frame->toImplBase()->frame()->windowProxyManager()->setGlobals(globals);

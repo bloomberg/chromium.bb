@@ -156,7 +156,7 @@ public:
     // until frameDetached() is called on it.
     // Note: If you override this, you should almost certainly be overriding
     // frameDetached().
-    virtual WebFrame* createChildFrame(WebLocalFrame* parent, WebTreeScopeType, const WebString& frameName, WebSandboxFlags sandboxFlags, const WebFrameOwnerProperties&) { return nullptr; }
+    virtual WebFrame* createChildFrame(WebLocalFrame* parent, WebTreeScopeType, const WebString& name, const WebString& uniqueName, WebSandboxFlags sandboxFlags, const WebFrameOwnerProperties&) { return nullptr; }
 
     // This frame has set its opener to another frame, or disowned the opener
     // if opener is null. See http://html.spec.whatwg.org/#dom-opener.
@@ -176,7 +176,7 @@ public:
     virtual void willClose(WebFrame*) { }
 
     // This frame's name has changed.
-    virtual void didChangeName(const WebString&) { }
+    virtual void didChangeName(const WebString& name, const WebString& uniqueName) { }
 
     // This frame has been set to enforce strict mixed content checking.
     virtual void didEnforceStrictMixedContentChecking() {}

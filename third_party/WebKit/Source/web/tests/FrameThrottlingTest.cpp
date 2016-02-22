@@ -322,9 +322,8 @@ TEST(RemoteFrameThrottlingTest, ThrottledLocalRoot)
     remoteClient.frame()->setReplicatedOrigin(WebSecurityOrigin::createUnique());
 
     WebFrameOwnerProperties properties;
-    FrameTestHelpers::TestWebFrameClient localFrameClient;
     WebRemoteFrame* rootFrame = webView->mainFrame()->toWebRemoteFrame();
-    WebLocalFrame* localFrame = rootFrame->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, &localFrameClient, nullptr, properties);
+    WebLocalFrame* localFrame = FrameTestHelpers::createLocalChild(rootFrame);
 
     WebString baseURL("http://internal.test/");
     URLTestHelpers::registerMockedURLFromBaseURL(baseURL, "simple_div.html");

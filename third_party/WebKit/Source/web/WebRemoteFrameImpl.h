@@ -145,7 +145,7 @@ public:
     WebFrameImplBase* toImplBase() { return this; }
 
     // WebFrameImplBase methods:
-    void initializeCoreFrame(FrameHost*, FrameOwner*, const AtomicString& name, const AtomicString& fallbackName) override;
+    void initializeCoreFrame(FrameHost*, FrameOwner*, const AtomicString& name, const AtomicString& uniqueName) override;
     RemoteFrame* frame() const override { return m_frame.get(); }
 
     void setCoreFrame(PassRefPtrWillBeRawPtr<RemoteFrame>);
@@ -155,14 +155,14 @@ public:
     static WebRemoteFrameImpl* fromFrame(RemoteFrame&);
 
     // WebRemoteFrame methods:
-    WebLocalFrame* createLocalChild(WebTreeScopeType, const WebString& name, WebSandboxFlags, WebFrameClient*, WebFrame* previousSibling, const WebFrameOwnerProperties&) override;
-    WebRemoteFrame* createRemoteChild(WebTreeScopeType, const WebString& name, WebSandboxFlags, WebRemoteFrameClient*) override;
+    WebLocalFrame* createLocalChild(WebTreeScopeType, const WebString& name, const WebString& uniqueName, WebSandboxFlags, WebFrameClient*, WebFrame* previousSibling, const WebFrameOwnerProperties&) override;
+    WebRemoteFrame* createRemoteChild(WebTreeScopeType, const WebString& name, const WebString& uniqueName, WebSandboxFlags, WebRemoteFrameClient*) override;
 
     void initializeFromFrame(WebLocalFrame*) const override;
 
     void setReplicatedOrigin(const WebSecurityOrigin&) const override;
     void setReplicatedSandboxFlags(WebSandboxFlags) const override;
-    void setReplicatedName(const WebString&) const override;
+    void setReplicatedName(const WebString& name, const WebString& uniqueName) const override;
     void setReplicatedShouldEnforceStrictMixedContentChecking(bool) const override;
     void DispatchLoadEventForFrameOwner() const override;
 

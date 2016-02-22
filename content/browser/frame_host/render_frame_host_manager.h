@@ -433,9 +433,10 @@ class CONTENT_EXPORT RenderFrameHostManager
   void OnDidStartLoading();
   void OnDidStopLoading();
 
-  // Send updated frame name to all frame proxies when the frame changes its
-  // window.name property.
-  void OnDidUpdateName(const std::string& name);
+  // OnDidUpdateName gets called when a frame changes its name - it gets the new
+  // |name| and the recalculated |unique_name| and replicates them into all
+  // frame proxies.
+  void OnDidUpdateName(const std::string& name, const std::string& unique_name);
 
   // Sends updated enforcement of strict mixed content checking to all
   // frame proxies when the frame changes its setting.

@@ -20,6 +20,7 @@
 #include "content/common/pepper_renderer_instance_data.h"
 #endif
 
+struct FrameHostMsg_CreateChildFrame_Params;
 class GURL;
 
 namespace net {
@@ -61,13 +62,8 @@ class RenderFrameMessageFilter : public BrowserMessageFilter {
 
   ~RenderFrameMessageFilter() override;
 
-  void OnCreateChildFrame(
-      int parent_routing_id,
-      blink::WebTreeScopeType scope,
-      const std::string& frame_name,
-      blink::WebSandboxFlags sandbox_flags,
-      const blink::WebFrameOwnerProperties& frame_owner_properties,
-      int* new_render_frame_id);
+  void OnCreateChildFrame(const FrameHostMsg_CreateChildFrame_Params& params,
+                          int* new_render_frame_id);
   void OnSetCookie(int render_frame_id,
                    const GURL& url,
                    const GURL& first_party_for_cookies,

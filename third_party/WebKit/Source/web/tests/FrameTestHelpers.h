@@ -34,8 +34,10 @@
 #include "core/frame/Settings.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/scroll/ScrollbarTheme.h"
+#include "public/platform/WebString.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/web/WebFrameClient.h"
+#include "public/web/WebFrameOwnerProperties.h"
 #include "public/web/WebHistoryItem.h"
 #include "public/web/WebRemoteFrameClient.h"
 #include "public/web/WebViewClient.h"
@@ -47,7 +49,10 @@
 
 namespace blink {
 
+class WebFrame;
 class WebFrameWidget;
+class WebLocalFrame;
+class WebRemoteFrame;
 class WebRemoteFrameImpl;
 
 namespace FrameTestHelpers {
@@ -69,6 +74,11 @@ void reloadFrameIgnoringCache(WebFrame*);
 // Pumps pending resource requests while waiting for a frame to load. Don't use
 // this. Use one of the above helpers.
 void pumpPendingRequestsDoNotUse(WebFrame*);
+
+// Calls WebRemoteFrame::createLocalChild, but with some arguments prefilled
+// with default test values (i.e. with a default |client| or |properties| and/or
+// with a precalculated |uniqueName|).
+WebLocalFrame* createLocalChild(WebRemoteFrame* parent, const WebString& name = WebString::fromUTF8("frameName"), WebFrameClient* = nullptr, WebFrame* previousSibling = nullptr, const WebFrameOwnerProperties& = WebFrameOwnerProperties());
 
 class SettingOverrider {
 public:
@@ -155,7 +165,7 @@ class TestWebFrameClient : public WebFrameClient {
 public:
     TestWebFrameClient();
 
-    WebFrame* createChildFrame(WebLocalFrame* parent, WebTreeScopeType, const WebString& frameName, WebSandboxFlags, const WebFrameOwnerProperties&) override;
+    WebFrame* createChildFrame(WebLocalFrame* parent, WebTreeScopeType, const WebString& name, const WebString& uniqueName, WebSandboxFlags, const WebFrameOwnerProperties&) override;
     void frameDetached(WebFrame*, DetachType) override;
     void didStartLoading(bool) override;
     void didStopLoading() override;

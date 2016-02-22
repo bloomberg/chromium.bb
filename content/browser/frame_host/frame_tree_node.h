@@ -61,6 +61,7 @@ class CONTENT_EXPORT FrameTreeNode {
                 RenderFrameHostManager::Delegate* manager_delegate,
                 blink::WebTreeScopeType scope,
                 const std::string& name,
+                const std::string& unique_name,
                 const blink::WebFrameOwnerProperties& frame_owner_properties);
 
   ~FrameTreeNode();
@@ -140,7 +141,7 @@ class CONTENT_EXPORT FrameTreeNode {
   void SetCurrentOrigin(const url::Origin& origin);
 
   // Set the current name and notify proxies about the update.
-  void SetFrameName(const std::string& name);
+  void SetFrameName(const std::string& name, const std::string& unique_name);
 
   // Sets the current enforcement of strict mixed content checking and
   // notifies proxies about the update.

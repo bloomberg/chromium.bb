@@ -767,7 +767,7 @@ TEST_F(RenderFrameHostManagerTest, DropCreateChildFrameWhileSwappedOut) {
     RenderFrameHostCreatedObserver observer(contents());
     initial_rfh->OnCreateChildFrame(
         initial_rfh->GetProcess()->GetNextRoutingID(),
-        blink::WebTreeScopeType::Document, std::string(),
+        blink::WebTreeScopeType::Document, std::string(), "uniqueName1",
         blink::WebSandboxFlags::None, blink::WebFrameOwnerProperties());
     EXPECT_TRUE(observer.created());
   }
@@ -791,7 +791,7 @@ TEST_F(RenderFrameHostManagerTest, DropCreateChildFrameWhileSwappedOut) {
     RenderFrameHostCreatedObserver observer(contents());
     initial_rfh->OnCreateChildFrame(
         initial_rfh->GetProcess()->GetNextRoutingID(),
-        blink::WebTreeScopeType::Document, std::string(),
+        blink::WebTreeScopeType::Document, std::string(), "uniqueName2",
         blink::WebSandboxFlags::None, blink::WebFrameOwnerProperties());
     EXPECT_FALSE(observer.created());
   }
@@ -2162,11 +2162,11 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation, DetachPendingChild) {
   contents()->NavigateAndCommit(kUrlA);
   contents()->GetMainFrame()->OnCreateChildFrame(
       contents()->GetMainFrame()->GetProcess()->GetNextRoutingID(),
-      blink::WebTreeScopeType::Document, "frame_name",
+      blink::WebTreeScopeType::Document, "frame_name", "uniqueName1",
       blink::WebSandboxFlags::None, blink::WebFrameOwnerProperties());
   contents()->GetMainFrame()->OnCreateChildFrame(
       contents()->GetMainFrame()->GetProcess()->GetNextRoutingID(),
-      blink::WebTreeScopeType::Document, "frame_name",
+      blink::WebTreeScopeType::Document, "frame_name", "uniqueName2",
       blink::WebSandboxFlags::None, blink::WebFrameOwnerProperties());
   RenderFrameHostManager* root_manager =
       contents()->GetFrameTree()->root()->render_manager();
@@ -2303,7 +2303,7 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
   // |contents1| creates an out of process iframe.
   contents1->GetMainFrame()->OnCreateChildFrame(
       contents1->GetMainFrame()->GetProcess()->GetNextRoutingID(),
-      blink::WebTreeScopeType::Document, "frame_name",
+      blink::WebTreeScopeType::Document, "frame_name", "uniqueName1",
       blink::WebSandboxFlags::None, blink::WebFrameOwnerProperties());
   RenderFrameHostManager* iframe =
       contents()->GetFrameTree()->root()->child_at(0)->render_manager();
@@ -2352,7 +2352,7 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
   EXPECT_TRUE(main_rfh->IsRenderFrameLive());
   main_rfh->OnCreateChildFrame(main_rfh->GetProcess()->GetNextRoutingID(),
                                blink::WebTreeScopeType::Document, std::string(),
-                               blink::WebSandboxFlags::None,
+                               "uniqueName1", blink::WebSandboxFlags::None,
                                blink::WebFrameOwnerProperties());
   RenderFrameHostManager* subframe_rfhm =
       contents()->GetFrameTree()->root()->child_at(0)->render_manager();
@@ -2512,10 +2512,10 @@ TEST_F(RenderFrameHostManagerTest, TraverseComplexOpenerChain) {
   FrameTreeNode* root1 = tree1->root();
   int process_id = root1->current_frame_host()->GetProcess()->GetID();
   tree1->AddFrame(root1, process_id, 12, blink::WebTreeScopeType::Document,
-                  std::string(), blink::WebSandboxFlags::None,
+                  std::string(), "uniqueName0", blink::WebSandboxFlags::None,
                   blink::WebFrameOwnerProperties());
   tree1->AddFrame(root1, process_id, 13, blink::WebTreeScopeType::Document,
-                  std::string(), blink::WebSandboxFlags::None,
+                  std::string(), "uniqueName1", blink::WebSandboxFlags::None,
                   blink::WebFrameOwnerProperties());
 
   scoped_ptr<TestWebContents> tab2(
@@ -2525,10 +2525,10 @@ TEST_F(RenderFrameHostManagerTest, TraverseComplexOpenerChain) {
   FrameTreeNode* root2 = tree2->root();
   process_id = root2->current_frame_host()->GetProcess()->GetID();
   tree2->AddFrame(root2, process_id, 22, blink::WebTreeScopeType::Document,
-                  std::string(), blink::WebSandboxFlags::None,
+                  std::string(), "uniqueName2", blink::WebSandboxFlags::None,
                   blink::WebFrameOwnerProperties());
   tree2->AddFrame(root2, process_id, 23, blink::WebTreeScopeType::Document,
-                  std::string(), blink::WebSandboxFlags::None,
+                  std::string(), "uniqueName3", blink::WebSandboxFlags::None,
                   blink::WebFrameOwnerProperties());
 
   scoped_ptr<TestWebContents> tab3(
@@ -2543,7 +2543,7 @@ TEST_F(RenderFrameHostManagerTest, TraverseComplexOpenerChain) {
   FrameTreeNode* root4 = tree4->root();
   process_id = root4->current_frame_host()->GetProcess()->GetID();
   tree4->AddFrame(root4, process_id, 42, blink::WebTreeScopeType::Document,
-                  std::string(), blink::WebSandboxFlags::None,
+                  std::string(), "uniqueName4", blink::WebSandboxFlags::None,
                   blink::WebFrameOwnerProperties());
 
   root1->child_at(1)->SetOpener(root1->child_at(1));
@@ -2592,15 +2592,15 @@ TEST_F(RenderFrameHostManagerTest, PageFocusPropagatesToSubframeProcesses) {
   contents()->NavigateAndCommit(kUrlA);
   main_test_rfh()->OnCreateChildFrame(
       main_test_rfh()->GetProcess()->GetNextRoutingID(),
-      blink::WebTreeScopeType::Document, "frame1",
+      blink::WebTreeScopeType::Document, "frame1", "uniqueName1",
       blink::WebSandboxFlags::None, blink::WebFrameOwnerProperties());
   main_test_rfh()->OnCreateChildFrame(
       main_test_rfh()->GetProcess()->GetNextRoutingID(),
-      blink::WebTreeScopeType::Document, "frame2",
+      blink::WebTreeScopeType::Document, "frame2", "uniqueName2",
       blink::WebSandboxFlags::None, blink::WebFrameOwnerProperties());
   main_test_rfh()->OnCreateChildFrame(
       main_test_rfh()->GetProcess()->GetNextRoutingID(),
-      blink::WebTreeScopeType::Document, "frame3",
+      blink::WebTreeScopeType::Document, "frame3", "uniqueName3",
       blink::WebSandboxFlags::None, blink::WebFrameOwnerProperties());
 
   FrameTreeNode* root = contents()->GetFrameTree()->root();
@@ -2690,7 +2690,7 @@ TEST_F(RenderFrameHostManagerTest,
   contents()->NavigateAndCommit(kUrlA);
   main_test_rfh()->OnCreateChildFrame(
       main_test_rfh()->GetProcess()->GetNextRoutingID(),
-      blink::WebTreeScopeType::Document, "frame1",
+      blink::WebTreeScopeType::Document, "frame1", "uniqueName1",
       blink::WebSandboxFlags::None, blink::WebFrameOwnerProperties());
 
   FrameTreeNode* root = contents()->GetFrameTree()->root();
@@ -3176,8 +3176,8 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
   // Create a child frame and navigate it cross-site.
   main_test_rfh()->OnCreateChildFrame(
       main_test_rfh()->GetProcess()->GetNextRoutingID(),
-      blink::WebTreeScopeType::Document, "frame1", blink::WebSandboxFlags::None,
-      blink::WebFrameOwnerProperties());
+      blink::WebTreeScopeType::Document, "frame1", "uniqueName1",
+      blink::WebSandboxFlags::None, blink::WebFrameOwnerProperties());
 
   FrameTreeNode* root = contents()->GetFrameTree()->root();
   RenderFrameHostManager* child = root->child_at(0)->render_manager();

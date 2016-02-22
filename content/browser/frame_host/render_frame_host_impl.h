@@ -230,6 +230,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
       int new_routing_id,
       blink::WebTreeScopeType scope,
       const std::string& frame_name,
+      const std::string& frame_unique_name,
       blink::WebSandboxFlags sandbox_flags,
       const blink::WebFrameOwnerProperties& frame_owner_properties);
 
@@ -609,7 +610,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
                                           uint32_t end_offset);
   void OnDidAccessInitialDocument();
   void OnDidChangeOpener(int32_t opener_routing_id);
-  void OnDidChangeName(const std::string& name);
+  void OnDidChangeName(const std::string& name, const std::string& unique_name);
   void OnEnforceStrictMixedContentChecking();
   void OnDidAssignPageId(int32_t page_id);
   void OnDidChangeSandboxFlags(int32_t frame_routing_id,

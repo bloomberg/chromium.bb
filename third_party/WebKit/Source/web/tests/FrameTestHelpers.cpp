@@ -40,6 +40,7 @@
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/WebUnitTestSupport.h"
 #include "public/web/WebFrameWidget.h"
+#include "public/web/WebRemoteFrame.h"
 #include "public/web/WebSettings.h"
 #include "public/web/WebTreeScopeType.h"
 #include "public/web/WebViewClient.h"
@@ -47,6 +48,7 @@
 #include "web/WebRemoteFrameImpl.h"
 #include "wtf/Functional.h"
 #include "wtf/StdLibExtras.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace blink {
 namespace FrameTestHelpers {
@@ -140,6 +142,22 @@ void pumpPendingRequestsDoNotUse(WebFrame* frame)
     pumpPendingRequests(frame);
 }
 
+WebLocalFrame* createLocalChild(WebRemoteFrame* parent, const WebString& name, WebFrameClient* client, WebFrame* previousSibling, const WebFrameOwnerProperties& properties)
+{
+    if (!client)
+        client = defaultWebFrameClient();
+
+    // |uniqueName| is normally calculated in a somewhat complicated way by the
+    // FrameTree class, but for test purposes the approximation below should be
+    // close enough.
+    static int uniqueNameCounter = 0;
+    StringBuilder uniqueName;
+    uniqueName.append(name);
+    uniqueName.appendNumber(uniqueNameCounter++);
+
+    return parent->createLocalChild(WebTreeScopeType::Document, name, uniqueName.toString(), WebSandboxFlags::None, client, previousSibling, properties);
+}
+
 WebViewHelper::WebViewHelper(SettingOverrider* settingOverrider)
     : m_webView(nullptr)
     , m_webViewWidget(nullptr)
@@ -223,7 +241,7 @@ TestWebFrameClient::TestWebFrameClient() : m_loadsInProgress(0)
 {
 }
 
-WebFrame* TestWebFrameClient::createChildFrame(WebLocalFrame* parent, WebTreeScopeType scope, const WebString& frameName, WebSandboxFlags sandboxFlags, const WebFrameOwnerProperties& frameOwnerProperties)
+WebFrame* TestWebFrameClient::createChildFrame(WebLocalFrame* parent, WebTreeScopeType scope, const WebString& name, const WebString& uniqueName, WebSandboxFlags sandboxFlags, const WebFrameOwnerProperties& frameOwnerProperties)
 {
     WebFrame* frame = WebLocalFrame::create(scope, this);
     parent->appendChild(frame);

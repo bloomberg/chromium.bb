@@ -4808,6 +4808,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     params.previous_sibling_routing_id = MSG_ROUTING_NONE;
     params.widget_params.routing_id = MSG_ROUTING_NONE;
     params.widget_params.hidden = true;
+    params.replication_state.name = "name";
+    params.replication_state.unique_name = "name";
 
     process->Send(new FrameMsg_NewFrame(params));
   }
@@ -4872,6 +4874,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ParentDetachRemoteChild) {
     params.previous_sibling_routing_id = MSG_ROUTING_NONE;
     params.widget_params.routing_id = widget_routing_id;
     params.widget_params.hidden = true;
+    params.replication_state.name = "name";
+    params.replication_state.unique_name = "name";
 
     process->Send(new FrameMsg_NewFrame(params));
   }

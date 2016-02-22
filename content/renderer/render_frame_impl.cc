@@ -863,6 +863,7 @@ void RenderFrameImpl::CreateFrame(
         RenderFrameImpl::Create(parent_proxy->render_view(), routing_id);
     web_frame = parent_web_frame->createLocalChild(
         replicated_state.scope, WebString::fromUTF8(replicated_state.name),
+        WebString::fromUTF8(replicated_state.unique_name),
         replicated_state.sandbox_flags, render_frame,
         previous_sibling_web_frame, frame_owner_properties);
 
@@ -2619,14 +2620,21 @@ blink::WebFrame* RenderFrameImpl::createChildFrame(
     blink::WebLocalFrame* parent,
     blink::WebTreeScopeType scope,
     const blink::WebString& name,
+    const blink::WebString& unique_name,
     blink::WebSandboxFlags sandbox_flags,
-    const blink::WebFrameOwnerProperties& frameOwnerProperties) {
+    const blink::WebFrameOwnerProperties& frame_owner_properties) {
   // Synchronously notify the browser of a child frame creation to get the
   // routing_id for the RenderFrame.
   int child_routing_id = MSG_ROUTING_NONE;
-  Send(new FrameHostMsg_CreateChildFrame(
-      routing_id_, scope, base::UTF16ToUTF8(base::StringPiece16(name)),
-      sandbox_flags, frameOwnerProperties, &child_routing_id));
+  FrameHostMsg_CreateChildFrame_Params params;
+  params.parent_routing_id = routing_id_;
+  params.scope = scope;
+  params.frame_name = base::UTF16ToUTF8(base::StringPiece16(name));
+  params.frame_unique_name =
+      base::UTF16ToUTF8(base::StringPiece16(unique_name));
+  params.sandbox_flags = sandbox_flags;
+  params.frame_owner_properties = frame_owner_properties;
+  Send(new FrameHostMsg_CreateChildFrame(params, &child_routing_id));
 
   // Allocation of routing id failed, so we can't create a child frame. This can
   // happen if this RenderFrameImpl's IPCs are being filtered when in swapped
@@ -2739,7 +2747,8 @@ void RenderFrameImpl::willClose(blink::WebFrame* frame) {
                     FrameWillClose(frame));
 }
 
-void RenderFrameImpl::didChangeName(const blink::WebString& name) {
+void RenderFrameImpl::didChangeName(const blink::WebString& name,
+                                    const blink::WebString& unique_name) {
   // TODO(alexmos): According to https://crbug.com/169110, sending window.name
   // updates may have performance implications for benchmarks like SunSpider.
   // For now, send these updates only for --site-per-process, which needs to
@@ -2751,7 +2760,8 @@ void RenderFrameImpl::didChangeName(const blink::WebString& name) {
   if (SiteIsolationPolicy::AreCrossProcessFramesPossible() ||
       render_view_->renderer_preferences_.report_frame_name_changes) {
     Send(new FrameHostMsg_DidChangeName(
-        routing_id_, base::UTF16ToUTF8(base::StringPiece16(name))));
+        routing_id_, base::UTF16ToUTF8(base::StringPiece16(name)),
+        base::UTF16ToUTF8(base::StringPiece16(unique_name))));
   }
 }
 

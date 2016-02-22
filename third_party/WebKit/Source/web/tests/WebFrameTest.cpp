@@ -1581,8 +1581,7 @@ TEST_F(WebFrameTest, FrameOwnerPropertiesMargin)
     WebFrameOwnerProperties properties;
     properties.marginWidth = 11;
     properties.marginHeight = 22;
-    FrameTestHelpers::TestWebFrameClient localFrameClient;
-    WebLocalFrame* localFrame = root->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, &localFrameClient, nullptr, properties);
+    WebLocalFrame* localFrame = FrameTestHelpers::createLocalChild(root, "frameName", nullptr, nullptr, properties);
 
     registerMockedHttpURLLoad("frame_owner_properties.html");
     FrameTestHelpers::loadFrame(localFrame, m_baseURL + "frame_owner_properties.html");
@@ -1614,8 +1613,7 @@ TEST_F(WebFrameTest, FrameOwnerPropertiesScrolling)
     WebFrameOwnerProperties properties;
     // Turn off scrolling in the subframe.
     properties.scrollingMode = WebFrameOwnerProperties::ScrollingMode::AlwaysOff;
-    FrameTestHelpers::TestWebFrameClient localFrameClient;
-    WebLocalFrame* localFrame = root->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, &localFrameClient, nullptr, properties);
+    WebLocalFrame* localFrame = FrameTestHelpers::createLocalChild(root, "frameName", nullptr, nullptr, properties);
 
     registerMockedHttpURLLoad("frame_owner_properties.html");
     FrameTestHelpers::loadFrame(localFrame, m_baseURL + "frame_owner_properties.html");
@@ -5922,7 +5920,7 @@ public:
     int willSendRequestCallCount() const { return m_willSendRequestCallCount; }
     int childFrameCreationCount() const { return m_childFrameCreationCount; }
 
-    virtual WebFrame* createChildFrame(WebLocalFrame* parent, WebTreeScopeType scope, const WebString&, WebSandboxFlags, const WebFrameOwnerProperties& frameOwnerProperties)
+    virtual WebFrame* createChildFrame(WebLocalFrame* parent, WebTreeScopeType scope, const WebString&, const WebString&, WebSandboxFlags, const WebFrameOwnerProperties& frameOwnerProperties)
     {
         ASSERT(m_childClient);
         m_childFrameCreationCount++;
@@ -6311,7 +6309,7 @@ class FailCreateChildFrame : public FrameTestHelpers::TestWebFrameClient {
 public:
     FailCreateChildFrame() : m_callCount(0) { }
 
-    WebFrame* createChildFrame(WebLocalFrame* parent, WebTreeScopeType scope, const WebString& frameName, WebSandboxFlags sandboxFlags, const WebFrameOwnerProperties& frameOwnerProperties) override
+    WebFrame* createChildFrame(WebLocalFrame* parent, WebTreeScopeType scope, const WebString& frameName, const WebString& frameUniqueName, WebSandboxFlags sandboxFlags, const WebFrameOwnerProperties& frameOwnerProperties) override
     {
         ++m_callCount;
         return 0;
@@ -6969,8 +6967,7 @@ TEST_P(ParameterizedWebFrameTest, EmbedderTriggeredDetachWithRemoteMainFrame)
     FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
     WebView* view = WebView::create(&viewClient);
     view->setMainFrame(remoteClient.frame());
-    FrameTestHelpers::TestWebFrameClient childFrameClient;
-    WebLocalFrame* childFrame = view->mainFrame()->toWebRemoteFrame()->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, &childFrameClient, nullptr, WebFrameOwnerProperties());
+    WebLocalFrame* childFrame = FrameTestHelpers::createLocalChild(view->mainFrame()->toWebRemoteFrame());
 
     // Purposely keep the LocalFrame alive so it's the last thing to be destroyed.
     RefPtrWillBePersistent<Frame> childCoreFrame = childFrame->toImplBase()->frame();
@@ -7218,7 +7215,7 @@ TEST_F(WebFrameSwapTest, SwapParentShouldDetachChildren)
 
     // Create child frames in the target frame before testing the swap.
     FrameTestHelpers::TestWebRemoteFrameClient remoteFrameClient2;
-    WebRemoteFrame* childRemoteFrame = remoteFrame->createRemoteChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, &remoteFrameClient2);
+    WebRemoteFrame* childRemoteFrame = remoteFrame->createRemoteChild(WebTreeScopeType::Document, "", "uniqueName0", WebSandboxFlags::None, &remoteFrameClient2);
 
     FrameTestHelpers::TestWebFrameClient client;
     WebLocalFrame* localFrame = WebLocalFrame::createProvisional(&client, remoteFrame, WebSandboxFlags::None, WebFrameOwnerProperties());
@@ -7367,8 +7364,7 @@ TEST_F(WebFrameSwapTest, FramesOfRemoteParentAreIndexable)
     mainFrame()->swap(remoteParentFrame);
     remoteParentFrame->setReplicatedOrigin(SecurityOrigin::createUnique());
 
-    FrameTestHelpers::TestWebFrameClient childFrameClient;
-    WebLocalFrame* childFrame = remoteParentFrame->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, &childFrameClient, nullptr, WebFrameOwnerProperties());
+    WebLocalFrame* childFrame = FrameTestHelpers::createLocalChild(remoteParentFrame);
     FrameTestHelpers::loadFrame(childFrame, m_baseURL + "subframe-hello.html");
 
     v8::Local<v8::Value> window = childFrame->executeScriptAndReturnValue(WebScriptSource("window"));
@@ -7394,8 +7390,7 @@ TEST_F(WebFrameSwapTest, FrameElementInFramesWithRemoteParent)
     mainFrame()->swap(remoteParentFrame);
     remoteParentFrame->setReplicatedOrigin(SecurityOrigin::createUnique());
 
-    FrameTestHelpers::TestWebFrameClient childFrameClient;
-    WebLocalFrame* childFrame = remoteParentFrame->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, &childFrameClient, nullptr, WebFrameOwnerProperties());
+    WebLocalFrame* childFrame = FrameTestHelpers::createLocalChild(remoteParentFrame);
     FrameTestHelpers::loadFrame(childFrame, m_baseURL + "subframe-hello.html");
 
     v8::Local<v8::Value> frameElement = childFrame->executeScriptAndReturnValue(WebScriptSource("window.frameElement"));
@@ -7712,7 +7707,7 @@ TEST_P(ParameterizedWebFrameTest, RemoteFrameInitialCommitType)
 
     // If an iframe has a remote main frame, ensure the inital commit is correctly identified as WebInitialCommitInChildFrame.
     CommitTypeWebFrameClient childFrameClient;
-    WebLocalFrame* childFrame = view->mainFrame()->toWebRemoteFrame()->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, &childFrameClient, nullptr, WebFrameOwnerProperties());
+    WebLocalFrame* childFrame = FrameTestHelpers::createLocalChild(view->mainFrame()->toWebRemoteFrame(), "frameName", &childFrameClient);
     registerMockedHttpURLLoad("foo.html");
     FrameTestHelpers::loadFrame(childFrame, m_baseURL + "foo.html");
     EXPECT_EQ(WebInitialCommitInChildFrame, childFrameClient.historyCommitType());
@@ -7737,8 +7732,7 @@ TEST_P(ParameterizedWebFrameTest, FrameWidgetTest)
     FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
     view->setMainFrame(remoteClient.frame());
 
-    FrameTestHelpers::TestWebFrameClient childFrameClient;
-    WebLocalFrame* childFrame = view->mainFrame()->toWebRemoteFrame()->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, &childFrameClient, nullptr, WebFrameOwnerProperties());
+    WebLocalFrame* childFrame = FrameTestHelpers::createLocalChild(view->mainFrame()->toWebRemoteFrame());
 
     GestureEventTestWebViewClient childViewClient;
     WebFrameWidget* widget = WebFrameWidget::create(&childViewClient, childFrame);
@@ -7804,7 +7798,7 @@ TEST_P(ParameterizedWebFrameTest, DetachRemoteFrame)
     WebView* view = WebView::create(&viewClient);
     view->setMainFrame(remoteClient.frame());
     FrameTestHelpers::TestWebRemoteFrameClient childFrameClient;
-    WebRemoteFrame* childFrame = view->mainFrame()->toWebRemoteFrame()->createRemoteChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, &childFrameClient);
+    WebRemoteFrame* childFrame = view->mainFrame()->toWebRemoteFrame()->createRemoteChild(WebTreeScopeType::Document, "", "uniqueName1", WebSandboxFlags::None, &childFrameClient);
     childFrame->detach();
     view->close();
     childFrame->close();
@@ -7957,10 +7951,10 @@ TEST_P(ParameterizedWebFrameTest, CreateLocalChildWithPreviousSibling)
     view->setMainFrame(remoteClient.frame());
     WebRemoteFrame* parent = view->mainFrame()->toWebRemoteFrame();
 
-    WebLocalFrameScope secondFrame(parent->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, nullptr, nullptr, WebFrameOwnerProperties()));
-    WebLocalFrameScope fourthFrame(parent->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, nullptr, secondFrame, WebFrameOwnerProperties()));
-    WebLocalFrameScope thirdFrame(parent->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, nullptr, secondFrame, WebFrameOwnerProperties()));
-    WebLocalFrameScope firstFrame(parent->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, nullptr, nullptr, WebFrameOwnerProperties()));
+    WebLocalFrameScope secondFrame(FrameTestHelpers::createLocalChild(parent, "name2"));
+    WebLocalFrameScope fourthFrame(FrameTestHelpers::createLocalChild(parent, "name4", nullptr, secondFrame));
+    WebLocalFrameScope thirdFrame(FrameTestHelpers::createLocalChild(parent, "name3", nullptr, secondFrame));
+    WebLocalFrameScope firstFrame(FrameTestHelpers::createLocalChild(parent, "name1"));
 
     EXPECT_EQ(firstFrame, parent->firstChild());
     EXPECT_EQ(nullptr, firstFrame->previousSibling());
@@ -7994,8 +7988,7 @@ TEST_P(ParameterizedWebFrameTest, SendBeaconFromChildWithRemoteMainFrame)
     WebRemoteFrame* root = view->mainFrame()->toWebRemoteFrame();
     root->setReplicatedOrigin(SecurityOrigin::createUnique());
 
-    FrameTestHelpers::TestWebFrameClient localFrameClient;
-    WebLocalFrame* localFrame = root->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, &localFrameClient, nullptr, WebFrameOwnerProperties());
+    WebLocalFrame* localFrame = FrameTestHelpers::createLocalChild(root);
 
     // Finally, make sure an embedder triggered load in the local frame swapped
     // back in works.
@@ -8016,8 +8009,7 @@ TEST_P(ParameterizedWebFrameTest, RemoteToLocalSwapOnMainFrameInitializesCoreFra
     WebRemoteFrame* remoteRoot = view->mainFrame()->toWebRemoteFrame();
     remoteRoot->setReplicatedOrigin(SecurityOrigin::createUnique());
 
-    FrameTestHelpers::TestWebFrameClient localFrameClient;
-    remoteRoot->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, &localFrameClient, nullptr, WebFrameOwnerProperties());
+    FrameTestHelpers::createLocalChild(remoteRoot);
 
     // Do a remote-to-local swap of the top frame.
     FrameTestHelpers::TestWebFrameClient localClient;

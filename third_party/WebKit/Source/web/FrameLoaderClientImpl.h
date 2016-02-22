@@ -148,7 +148,7 @@ public:
     WebCookieJar* cookieJar() const override;
     bool willCheckAndDispatchMessageEvent(SecurityOrigin* target, MessageEvent*, LocalFrame* sourceFrame) const override;
     void frameFocused() const override;
-    void didChangeName(const String&) override;
+    void didChangeName(const String& name, const String& uniqueName) override;
     void didEnforceStrictMixedContentChecking() override;
     void didChangeSandboxFlags(Frame* childFrame, SandboxFlags) override;
     void didChangeFrameOwnerProperties(HTMLFrameElementBase*) override;

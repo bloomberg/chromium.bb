@@ -1367,7 +1367,11 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   GetRenderManager()->Init(site_instance.get(), view_routing_id,
                            params.main_frame_routing_id,
                            main_frame_widget_routing_id);
-  frame_tree_.root()->SetFrameName(params.main_frame_name);
+
+  // blink::FrameTree::setName uses |name| as the |unique_name| for the main
+  // frame - let's do the same thing here.
+  std::string unique_name = params.main_frame_name;
+  frame_tree_.root()->SetFrameName(params.main_frame_name, unique_name);
 
   WebContentsViewDelegate* delegate =
       GetContentClient()->browser()->GetWebContentsViewDelegate(this);

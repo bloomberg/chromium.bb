@@ -110,6 +110,7 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
     web_frame = parent->web_frame()->createRemoteChild(
         replicated_state.scope,
         blink::WebString::fromUTF8(replicated_state.name),
+        blink::WebString::fromUTF8(replicated_state.unique_name),
         replicated_state.sandbox_flags, proxy.get());
     render_view = parent->render_view();
     render_widget = parent->render_widget();
@@ -223,7 +224,8 @@ void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
   DCHECK(web_frame_);
   web_frame_->setReplicatedOrigin(state.origin);
   web_frame_->setReplicatedSandboxFlags(state.sandbox_flags);
-  web_frame_->setReplicatedName(blink::WebString::fromUTF8(state.name));
+  web_frame_->setReplicatedName(blink::WebString::fromUTF8(state.name),
+                                blink::WebString::fromUTF8(state.unique_name));
   web_frame_->setReplicatedShouldEnforceStrictMixedContentChecking(
       state.should_enforce_strict_mixed_content_checking);
 }
@@ -343,8 +345,10 @@ void RenderFrameProxy::OnDispatchLoad() {
   web_frame_->DispatchLoadEventForFrameOwner();
 }
 
-void RenderFrameProxy::OnDidUpdateName(const std::string& name) {
-  web_frame_->setReplicatedName(blink::WebString::fromUTF8(name));
+void RenderFrameProxy::OnDidUpdateName(const std::string& name,
+                                       const std::string& unique_name) {
+  web_frame_->setReplicatedName(blink::WebString::fromUTF8(name),
+                                blink::WebString::fromUTF8(unique_name));
 }
 
 void RenderFrameProxy::OnEnforceStrictMixedContentChecking(

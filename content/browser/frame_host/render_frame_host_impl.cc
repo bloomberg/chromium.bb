@@ -829,8 +829,12 @@ void RenderFrameHostImpl::OnCreateChildFrame(
     int new_routing_id,
     blink::WebTreeScopeType scope,
     const std::string& frame_name,
+    const std::string& frame_unique_name,
     blink::WebSandboxFlags sandbox_flags,
     const blink::WebFrameOwnerProperties& frame_owner_properties) {
+  // TODO(lukasza): Call ReceivedBadMessage when |frame_unique_name| is empty.
+  DCHECK(!frame_unique_name.empty());
+
   // It is possible that while a new RenderFrameHost was committed, the
   // RenderFrame corresponding to this host sent an IPC message to create a
   // frame and it is delivered after this host is swapped out.
@@ -840,7 +844,7 @@ void RenderFrameHostImpl::OnCreateChildFrame(
     return;
 
   frame_tree_->AddFrame(frame_tree_node_, GetProcess()->GetID(), new_routing_id,
-                        scope, frame_name, sandbox_flags,
+                        scope, frame_name, frame_unique_name, sandbox_flags,
                         frame_owner_properties);
 }
 
@@ -1428,9 +1432,15 @@ void RenderFrameHostImpl::OnDidChangeOpener(int32_t opener_routing_id) {
                                                       GetSiteInstance());
 }
 
-void RenderFrameHostImpl::OnDidChangeName(const std::string& name) {
+void RenderFrameHostImpl::OnDidChangeName(const std::string& name,
+                                          const std::string& unique_name) {
+  if (GetParent() != nullptr) {
+    // TODO(lukasza): Call ReceivedBadMessage when |unique_name| is empty.
+    DCHECK(!unique_name.empty());
+  }
+
   std::string old_name = frame_tree_node()->frame_name();
-  frame_tree_node()->SetFrameName(name);
+  frame_tree_node()->SetFrameName(name, unique_name);
   if (old_name.empty() && !name.empty())
     frame_tree_node_->render_manager()->CreateProxiesForNewNamedFrame();
   delegate_->DidChangeName(this, name);

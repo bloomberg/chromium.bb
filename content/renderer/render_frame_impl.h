@@ -437,13 +437,15 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebLocalFrame* parent,
       blink::WebTreeScopeType scope,
       const blink::WebString& name,
-      blink::WebSandboxFlags sandboxFlags,
-      const blink::WebFrameOwnerProperties& frameOwnerProperties) override;
+      const blink::WebString& unique_name,
+      blink::WebSandboxFlags sandbox_flags,
+      const blink::WebFrameOwnerProperties& frame_owner_properties) override;
   void didChangeOpener(blink::WebFrame* frame) override;
   void frameDetached(blink::WebFrame* frame, DetachType type) override;
   void frameFocused() override;
   void willClose(blink::WebFrame* frame) override;
-  void didChangeName(const blink::WebString& name) override;
+  void didChangeName(const blink::WebString& name,
+                     const blink::WebString& unique_name) override;
   void didEnforceStrictMixedContentChecking() override;
   void didChangeSandboxFlags(blink::WebFrame* child_frame,
                              blink::WebSandboxFlags flags) override;

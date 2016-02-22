@@ -137,6 +137,7 @@ FrameTree::FrameTree(Navigator* navigator,
                               // document scope.
                               blink::WebTreeScopeType::Document,
                               std::string(),
+                              std::string(),
                               blink::WebFrameOwnerProperties())),
       focused_frame_tree_node_id_(-1),
       load_progress_(0.0) {}
@@ -204,6 +205,7 @@ bool FrameTree::AddFrame(
     int new_routing_id,
     blink::WebTreeScopeType scope,
     const std::string& frame_name,
+    const std::string& frame_unique_name,
     blink::WebSandboxFlags sandbox_flags,
     const blink::WebFrameOwnerProperties& frame_owner_properties) {
   CHECK_NE(new_routing_id, MSG_ROUTING_NONE);
@@ -220,7 +222,7 @@ bool FrameTree::AddFrame(
       make_scoped_ptr(new FrameTreeNode(
           this, parent->navigator(), render_frame_delegate_,
           render_view_delegate_, render_widget_delegate_, manager_delegate_,
-          scope, frame_name, frame_owner_properties)),
+          scope, frame_name, frame_unique_name, frame_owner_properties)),
       process_id, new_routing_id);
 
   // Set sandbox flags and make them effective immediately, since initial

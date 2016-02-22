@@ -16,11 +16,13 @@ FrameReplicationState::FrameReplicationState()
 FrameReplicationState::FrameReplicationState(
     blink::WebTreeScopeType scope,
     const std::string& name,
+    const std::string& unique_name,
     blink::WebSandboxFlags sandbox_flags,
     bool should_enforce_strict_mixed_content_checking)
     : origin(),
       sandbox_flags(sandbox_flags),
       name(name),
+      unique_name(unique_name),
       scope(scope),
       should_enforce_strict_mixed_content_checking(
           should_enforce_strict_mixed_content_checking) {}
