@@ -23,9 +23,15 @@ class Target;
 
 class VisualStudioWriter {
  public:
+  enum Version {
+    Vs2013 = 1,  // Visual Studio 2013
+    Vs2015       // Visual Studio 2015
+  };
+
   // On failure will populate |err| and will return false.
   static bool RunAndWriteFiles(const BuildSettings* build_settings,
                                Builder* builder,
+                               Version version,
                                Err* err);
 
  private:
@@ -67,7 +73,8 @@ class VisualStudioWriter {
   using SolutionProjects = std::vector<SolutionProject*>;
   using SolutionFolders = std::vector<SolutionEntry*>;
 
-  explicit VisualStudioWriter(const BuildSettings* build_settings);
+  explicit VisualStudioWriter(const BuildSettings* build_settings,
+                              Version version);
   ~VisualStudioWriter();
 
   bool WriteProjectFiles(const Target* target, Err* err);
@@ -85,6 +92,15 @@ class VisualStudioWriter {
   void ResolveSolutionFolders();
 
   const BuildSettings* build_settings_;
+
+  // Toolset version.
+  const char* toolset_version_;
+
+  // Project version.
+  const char* project_version_;
+
+  // Visual Studio version string.
+  const char* version_string_;
 
   // Indicates if project files are generated for Debug mode configuration.
   bool is_debug_config_;

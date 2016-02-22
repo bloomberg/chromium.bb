@@ -29,6 +29,8 @@ const char kSwitchCheck[] = "check";
 const char kSwitchIde[] = "ide";
 const char kSwitchIdeValueEclipse[] = "eclipse";
 const char kSwitchIdeValueVs[] = "vs";
+const char kSwitchIdeValueVs2013[] = "vs2013";
+const char kSwitchIdeValueVs2015[] = "vs2015";
 
 // Called on worker thread to write the ninja file.
 void BackgroundDoWrite(const Target* target) {
@@ -156,15 +158,20 @@ bool RunIdeWriter(const std::string& ide,
   base::ElapsedTimer timer;
   if (ide == kSwitchIdeValueEclipse) {
     bool res = EclipseWriter::RunAndWriteFile(build_settings, builder, err);
-    if (res) {
+    if (res &&
+        !base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kQuiet)) {
       OutputString("Generating Eclipse settings took " +
                    base::Int64ToString(timer.Elapsed().InMilliseconds()) +
                    "ms\n");
     }
     return res;
-  } else if (ide == kSwitchIdeValueVs) {
-    bool res =
-        VisualStudioWriter::RunAndWriteFiles(build_settings, builder, err);
+  } else if (ide == kSwitchIdeValueVs || ide == kSwitchIdeValueVs2013 ||
+             ide == kSwitchIdeValueVs2015) {
+    VisualStudioWriter::Version version =
+        ide == kSwitchIdeValueVs2013 ? VisualStudioWriter::Version::Vs2013
+                                     : VisualStudioWriter::Version::Vs2015;
+    bool res = VisualStudioWriter::RunAndWriteFiles(build_settings, builder,
+                                                    version, err);
     if (res &&
         !base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kQuiet)) {
       OutputString("Generating Visual Studio projects took " +
@@ -198,8 +205,11 @@ const char kGen_Help[] =
     "\n"
     "  --ide=<ide_name>\n"
     "    Also generate files for an IDE. Currently supported values:\n"
-    "      'vs' - Visual Studio project/solution files.\n"
-    "      'eclipse' - Eclipse CDT settings file.\n"
+    "      \"eclipse\" - Eclipse CDT settings file.\n"
+    "      \"vs\" - Visual Studio project/solution files.\n"
+    "             (default Visual Studio version: 2015)\n"
+    "      \"vs2013\" - Visual Studio 2013 project/solution files.\n"
+    "      \"vs2015\" - Visual Studio 2015 project/solution files.\n"
     "\n"
     "  See \"gn help switches\" for the common command-line switches.\n"
     "\n"

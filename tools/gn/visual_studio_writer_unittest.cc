@@ -26,7 +26,8 @@ std::string MakeTestPath(const std::string& path) {
 }  // namespace
 
 TEST_F(VisualStudioWriterTest, ResolveSolutionFolders) {
-  VisualStudioWriter writer(setup_.build_settings());
+  VisualStudioWriter writer(setup_.build_settings(),
+                            VisualStudioWriter::Version::Vs2015);
 
   std::string path =
       MakeTestPath("/foo/chromium/src/out/Debug/obj/base/base.vcxproj");
@@ -79,7 +80,8 @@ TEST_F(VisualStudioWriterTest, ResolveSolutionFolders) {
 }
 
 TEST_F(VisualStudioWriterTest, ResolveSolutionFolders_AbsPath) {
-  VisualStudioWriter writer(setup_.build_settings());
+  VisualStudioWriter writer(setup_.build_settings(),
+                            VisualStudioWriter::Version::Vs2015);
 
   std::string path =
       MakeTestPath("/foo/chromium/src/out/Debug/obj/base/base.vcxproj");
