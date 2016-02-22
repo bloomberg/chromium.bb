@@ -3,17 +3,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""A simple event server test case.
-
-This test will go through all of the possible event states and ensures their
-return codes are what are expected.
-"""
+"""Legion-based comm server test."""
 
 import argparse
 import logging
 import os
 import sys
-import time
 
 # Map the testing directory so we can import legion.legion_test_case.
 TESTING_DIR = os.path.join(
@@ -25,7 +20,7 @@ from legion import legion_test_case
 from legion.lib import common_lib
 
 
-class EventTestController(legion_test_case.TestCase):
+class CommServerTestController(legion_test_case.TestCase):
   """A simple example controller for a test."""
 
   @classmethod
@@ -38,7 +33,7 @@ class EventTestController(legion_test_case.TestCase):
 
     task = cls.CreateTask(
         isolated_hash=args.task_hash,
-        dimensions={'os': args.os},
+        dimensions={'os': args.os, 'pool': 'default'},
         idle_timeout_secs=90,
         connection_timeout_secs=90,
         verbosity=logging.DEBUG)
@@ -51,12 +46,12 @@ class EventTestController(legion_test_case.TestCase):
     cls.task = cls.CreateTestTask()
     cls.task.WaitForConnection()
 
-  def testEventTest(self):
+  def testCommServerTest(self):
     cmd = [
         'python',
         'task.py',
         '--address', str(common_lib.MY_IP),
-        '--port', str(self.event_server.port)
+        '--port', str(self.comm_server.port)
         ]
     process = self.task.Process(cmd)
     process.Wait()

@@ -14,9 +14,9 @@ import unittest
 from lib import common_lib
 common_lib.SetupEnvironment()
 
-from legion.lib import event_server
 from legion.lib import task_controller
 from legion.lib import task_registration_server
+from legion.lib.comm_server import comm_server
 
 BANNER_WIDTH = 80
 
@@ -106,9 +106,9 @@ class TestCase(unittest.TestCase):
     cls._registration_server.Start()
 
     # Setup the event server
-    cls.event_server = event_server.ThreadedServer()
-    common_lib.OnShutdown += cls.event_server.shutdown
-    cls.event_server.start()
+    cls.comm_server = comm_server.CommServer()
+    common_lib.OnShutdown += cls.comm_server.shutdown
+    cls.comm_server.start()
 
   @classmethod
   def _TearDownFramework(cls):
