@@ -41,7 +41,7 @@ radial-gradient
 
 
 PASS testGradient("background-image: radial-gradient(white, black)") is "radial-gradient(white, black)"
-PASS testGradient("background-image: radial-gradient(at bottom right, white, black)") is "radial-gradient(at 100% 100%, white, black)"
+PASS testGradient("background-image: radial-gradient(at bottom right, white, black)") is "radial-gradient(at right bottom, white, black)"
 PASS testGradient("background-image: radial-gradient(farthest-corner, white, black)") is "radial-gradient(white, black)"
 PASS testGradient("background-image: radial-gradient(farthest-corner, white, 35%, black)") is "radial-gradient(white, 35%, black)"
 PASS testGradient("background-image: radial-gradient(closest-side, white, black)") is "radial-gradient(closest-side, white, black)"
@@ -51,8 +51,8 @@ PASS testGradient("background-image: radial-gradient(ellipse closest-side, white
 PASS testGradient("background-image: radial-gradient(circle, white, black)") is "radial-gradient(circle, white, black)"
 PASS testGradient("background-image: radial-gradient(circle farthest-corner, white, black)") is "radial-gradient(circle, white, black)"
 PASS testGradient("background-image: radial-gradient(circle closest-side, white, black)") is "radial-gradient(circle closest-side, white, black)"
-PASS testGradient("background-image: radial-gradient(circle closest-side at top, white, black)") is "radial-gradient(circle closest-side at 50% 0%, white, black)"
-PASS testGradient("background-image: radial-gradient(circle closest-side at top left, white, black)") is "radial-gradient(circle closest-side at 0% 0%, white, black)"
+PASS testGradient("background-image: radial-gradient(circle closest-side at top, white, black)") is "radial-gradient(circle closest-side at center top, white, black)"
+PASS testGradient("background-image: radial-gradient(circle closest-side at top left, white, black)") is "radial-gradient(circle closest-side at left top, white, black)"
 PASS testGradient("background-image: radial-gradient(circle closest-side at 10px 20%, white, black)") is "radial-gradient(circle closest-side at 10px 20%, white, black)"
 PASS testGradient("background-image: radial-gradient(at 10px 20% circle closest-side, white, black)") is "none"
 PASS testGradient("background-image: radial-gradient(circle at 10px 20% circle, white, black)") is "none"
@@ -69,10 +69,10 @@ PASS testGradient("background-image: radial-gradient(white,, black)") is "none"
 PASS testGradient("background-image: radial-gradient(ellipse 10px, white, 25%, 75%, black)") is "none"
 PASS testGradient("background-image: radial-gradient(ellipse 10px 20px, white, black)") is "radial-gradient(10px 20px, white, black)"
 PASS testGradient("background-image: radial-gradient(circle 10px, white, black)") is "radial-gradient(10px, white, black)"
-PASS testGradient("background-image: radial-gradient(10px 10px at center, white, black)") is "radial-gradient(10px 10px at 50% 50%, white, black)"
-PASS testGradient("background-image: radial-gradient(10px 10px at center, white, 50%, black)") is "radial-gradient(10px 10px at 50% 50%, white, 50%, black)"
-PASS testGradient("background-image: radial-gradient(10px 10px at center, white, 0%, black)") is "radial-gradient(10px 10px at 50% 50%, white, 0%, black)"
-PASS testGradient("background-image: radial-gradient(10px 10px at center, white, 100%, black)") is "radial-gradient(10px 10px at 50% 50%, white, 100%, black)"
+PASS testGradient("background-image: radial-gradient(10px 10px at center, white, black)") is "radial-gradient(10px 10px at center center, white, black)"
+PASS testGradient("background-image: radial-gradient(10px 10px at center, white, 50%, black)") is "radial-gradient(10px 10px at center center, white, 50%, black)"
+PASS testGradient("background-image: radial-gradient(10px 10px at center, white, 0%, black)") is "radial-gradient(10px 10px at center center, white, 0%, black)"
+PASS testGradient("background-image: radial-gradient(10px 10px at center, white, 100%, black)") is "radial-gradient(10px 10px at center center, white, 100%, black)"
 repeating-radial-gradient
 
 

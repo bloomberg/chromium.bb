@@ -271,41 +271,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::legacyParseValue(CSSProperty
     RefPtrWillBeRawPtr<CSSValue> parsedValue = nullptr;
 
     switch (propId) {
-    case CSSPropertyBackgroundColor: // <color> | inherit
-        parsedValue = parseColor(m_valueList->current(), inQuirksMode() && !inShorthand());
-        if (parsedValue)
-            m_valueList->next();
-        break;
-
-    case CSSPropertyBackgroundBlendMode:
-    case CSSPropertyBackgroundAttachment:
-    case CSSPropertyBackgroundClip:
-    case CSSPropertyWebkitBackgroundClip:
-    case CSSPropertyWebkitBackgroundComposite:
-    case CSSPropertyBackgroundImage:
-    case CSSPropertyBackgroundOrigin:
-    case CSSPropertyMaskSourceType:
-    case CSSPropertyWebkitBackgroundOrigin:
-    case CSSPropertyBackgroundPositionX:
-    case CSSPropertyBackgroundPositionY:
-    case CSSPropertyBackgroundSize:
-    case CSSPropertyWebkitMaskClip:
-    case CSSPropertyWebkitMaskComposite:
-    case CSSPropertyWebkitMaskImage:
-    case CSSPropertyWebkitMaskOrigin:
-    case CSSPropertyWebkitMaskPositionX:
-    case CSSPropertyWebkitMaskPositionY:
-    case CSSPropertyWebkitMaskSize:
-    case CSSPropertyWebkitMaskRepeatX:
-    case CSSPropertyWebkitMaskRepeatY:
-    {
-        RefPtrWillBeRawPtr<CSSValue> dummyValue = nullptr;
-        CSSPropertyID propId1, propId2;
-        if (!parseFillProperty(unresolvedProperty, propId1, propId2, parsedValue, dummyValue))
-            return nullptr;
-        ASSERT(!dummyValue);
-        break;
-    }
     case CSSPropertyJustifySelf:
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
         parsedValue = parseItemPositionOverflowPosition();

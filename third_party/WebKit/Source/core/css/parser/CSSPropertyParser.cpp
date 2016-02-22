@@ -3392,6 +3392,138 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeImageOrientation(CSSParserTokenRa
     return nullptr;
 }
 
+static PassRefPtrWillBeRawPtr<CSSValue> consumeBackgroundBlendMode(CSSParserTokenRange& range)
+{
+    CSSValueID id = range.peek().id();
+    if (id == CSSValueNormal || id == CSSValueOverlay || (id >= CSSValueMultiply && id <= CSSValueLuminosity))
+        return consumeIdent(range);
+    return nullptr;
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeBackgroundAttachment(CSSParserTokenRange& range)
+{
+    return consumeIdent<CSSValueScroll, CSSValueFixed, CSSValueLocal>(range);
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeBackgroundBox(CSSParserTokenRange& range)
+{
+    return consumeIdent<CSSValueBorderBox, CSSValuePaddingBox, CSSValueContentBox>(range);
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeBackgroundComposite(CSSParserTokenRange& range)
+{
+    return consumeIdentRange(range, CSSValueClear, CSSValuePlusLighter);
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeMaskSourceType(CSSParserTokenRange& range)
+{
+    ASSERT(RuntimeEnabledFeatures::cssMaskSourceTypeEnabled());
+    return consumeIdent<CSSValueAuto, CSSValueAlpha, CSSValueLuminance>(range);
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumePrefixedBackgroundBox(CSSPropertyID property, CSSParserTokenRange& range, const CSSParserContext& context)
+{
+    // The values 'border', 'padding' and 'content' are deprecated and do not apply to the version of the property that has the -webkit- prefix removed.
+    if (RefPtrWillBeRawPtr<CSSValue> value = consumeIdentRange(range, CSSValueBorder, CSSValuePaddingBox))
+        return value.release();
+    if ((property == CSSPropertyWebkitBackgroundClip || property == CSSPropertyWebkitMaskClip) && range.peek().id() == CSSValueText)
+        return consumeIdent(range);
+    return nullptr;
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeBackgroundSize(CSSPropertyID unresolvedProperty, CSSParserTokenRange& range, CSSParserMode mode)
+{
+    if (identMatches<CSSValueContain, CSSValueCover>(range.peek().id()))
+        return consumeIdent(range);
+
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> horizontal = consumeIdent<CSSValueAuto>(range);
+    if (!horizontal)
+        horizontal = consumeLengthOrPercent(range, mode, ValueRangeAll, UnitlessQuirk::Forbid);
+
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> vertical = nullptr;
+    if (!range.atEnd()) {
+        if (range.peek().id() == CSSValueAuto) // `auto' is the default
+            range.consumeIncludingWhitespace();
+        else
+            vertical = consumeLengthOrPercent(range, mode, ValueRangeAll, UnitlessQuirk::Forbid);
+    } else if (unresolvedProperty == CSSPropertyAliasWebkitBackgroundSize) {
+        // Legacy syntax: "-webkit-background-size: 10px" is equivalent to "background-size: 10px 10px".
+        vertical = horizontal;
+    }
+    if (!vertical)
+        return horizontal;
+    return CSSValuePair::create(horizontal.release(), vertical.release(), CSSValuePair::KeepIdenticalValues);
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeBackgroundComponent(CSSPropertyID unresolvedProperty, CSSParserTokenRange& range, const CSSParserContext& context)
+{
+    switch (unresolvedProperty) {
+    case CSSPropertyBackgroundClip:
+        return consumeBackgroundBox(range);
+    case CSSPropertyBackgroundBlendMode:
+        return consumeBackgroundBlendMode(range);
+    case CSSPropertyBackgroundAttachment:
+        return consumeBackgroundAttachment(range);
+    case CSSPropertyBackgroundOrigin:
+        return consumeBackgroundBox(range);
+    case CSSPropertyWebkitBackgroundComposite:
+    case CSSPropertyWebkitMaskComposite:
+        return consumeBackgroundComposite(range);
+    case CSSPropertyMaskSourceType:
+        return consumeMaskSourceType(range);
+    case CSSPropertyWebkitBackgroundClip:
+    case CSSPropertyWebkitBackgroundOrigin:
+    case CSSPropertyWebkitMaskClip:
+    case CSSPropertyWebkitMaskOrigin:
+        return consumePrefixedBackgroundBox(unresolvedProperty, range, context);
+    case CSSPropertyBackgroundImage:
+    case CSSPropertyWebkitMaskImage:
+        return consumeImage(range, context);
+    case CSSPropertyBackgroundPositionX:
+    case CSSPropertyWebkitMaskPositionX:
+        return consumePositionX(range, context.mode());
+    case CSSPropertyBackgroundPositionY:
+    case CSSPropertyWebkitMaskPositionY:
+        return consumePositionY(range, context.mode());
+    case CSSPropertyBackgroundSize:
+    case CSSPropertyAliasWebkitBackgroundSize:
+    case CSSPropertyWebkitMaskSize:
+        return consumeBackgroundSize(unresolvedProperty, range, context.mode());
+    case CSSPropertyBackgroundColor:
+        return consumeColor(range, context.mode());
+    default:
+        break;
+    };
+    return nullptr;
+}
+
+static void addBackgroundValue(RefPtrWillBeRawPtr<CSSValue>& list, PassRefPtrWillBeRawPtr<CSSValue> value)
+{
+    if (list) {
+        if (!list->isBaseValueList()) {
+            RefPtrWillBeRawPtr<CSSValue> firstValue = list.release();
+            list = CSSValueList::createCommaSeparated();
+            toCSSValueList(list.get())->append(firstValue.release());
+        }
+        toCSSValueList(list.get())->append(value);
+    } else {
+        // To conserve memory we don't actually wrap a single value in a list.
+        list = value;
+    }
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeCommaSeparatedBackgroundComponent(CSSPropertyID unresolvedProperty, CSSParserTokenRange& range, const CSSParserContext& context)
+{
+    RefPtrWillBeRawPtr<CSSValue> result = nullptr;
+    do {
+        RefPtrWillBeRawPtr<CSSValue> value = consumeBackgroundComponent(unresolvedProperty, range, context);
+        if (!value)
+            return nullptr;
+        addBackgroundValue(result, value);
+    } while (consumeCommaIncludingWhitespace(range));
+    return result.release();
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
@@ -3555,6 +3687,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyColumnRuleColor:
         return consumeColor(m_range, m_context.mode());
     case CSSPropertyColor:
+    case CSSPropertyBackgroundColor:
         return consumeColor(m_range, m_context.mode(), inQuirksMode());
     case CSSPropertyWebkitBorderStartWidth:
     case CSSPropertyWebkitBorderEndWidth:
@@ -3724,6 +3857,29 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyImageOrientation:
         ASSERT(RuntimeEnabledFeatures::imageOrientationEnabled());
         return consumeImageOrientation(m_range, m_context.mode());
+    case CSSPropertyBackgroundAttachment:
+    case CSSPropertyBackgroundBlendMode:
+    case CSSPropertyBackgroundClip:
+    case CSSPropertyBackgroundImage:
+    case CSSPropertyBackgroundOrigin:
+    case CSSPropertyBackgroundPositionX:
+    case CSSPropertyBackgroundPositionY:
+    case CSSPropertyBackgroundSize:
+    case CSSPropertyMaskSourceType:
+    case CSSPropertyWebkitBackgroundComposite:
+    case CSSPropertyWebkitBackgroundClip:
+    case CSSPropertyWebkitBackgroundOrigin:
+    case CSSPropertyWebkitMaskClip:
+    case CSSPropertyWebkitMaskComposite:
+    case CSSPropertyWebkitMaskImage:
+    case CSSPropertyWebkitMaskOrigin:
+    case CSSPropertyWebkitMaskPositionX:
+    case CSSPropertyWebkitMaskPositionY:
+    case CSSPropertyWebkitMaskSize:
+        return consumeCommaSeparatedBackgroundComponent(unresolvedProperty, m_range, m_context);
+    case CSSPropertyWebkitMaskRepeatX:
+    case CSSPropertyWebkitMaskRepeatY:
+        return nullptr;
     default:
         CSSParserValueList valueList(m_range);
         if (valueList.size()) {

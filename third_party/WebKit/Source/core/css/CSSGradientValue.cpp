@@ -524,6 +524,8 @@ static float positionFromValue(CSSValue* value, const CSSToLengthConversionData&
     case CSSValueRight:
         ASSERT(isHorizontal);
         return size.width();
+    case CSSValueCenter:
+        return origin + sign * .5f * edgeDistance;
     default:
         break;
     }
