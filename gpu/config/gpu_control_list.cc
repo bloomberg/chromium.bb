@@ -1155,6 +1155,8 @@ bool GpuControlList::GpuControlListEntry::Contains(
           if (gpu_info.secondary_gpus[ii].active)
             candidates.push_back(gpu_info.secondary_gpus[ii]);
         }
+        if (candidates.empty())
+          candidates.push_back(gpu_info.gpu);
       default:
         break;
     }

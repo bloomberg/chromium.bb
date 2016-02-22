@@ -664,4 +664,36 @@ TEST_F(GpuControlListTest, DisabledInProcessGPUTest) {
   EXPECT_EMPTY_SET(features);
 }
 
+TEST_F(GpuControlListTest, SameGPUTwiceTest) {
+  const std::string json = LONG_STRING_CONST(
+      {
+        "name": "gpu control list",
+        "version": "0.1",
+        "entries": [
+          {
+            "id": 1,
+            "os": {
+              "type": "win"
+            },
+            "vendor_id": "0x8086",
+            "features": [
+              "test_feature_0"
+            ]
+          }
+        ]
+      }
+  );
+  GPUInfo gpu_info;
+  gpu_info.gpu.vendor_id = kIntelVendorId;
+  // Real case on Intel GMA* on Windows
+  gpu_info.secondary_gpus.push_back(gpu_info.gpu);
+
+  scoped_ptr<GpuControlList> control_list(Create());
+  EXPECT_TRUE(control_list->LoadList(json, GpuControlList::kAllOs));
+  std::set<int> features = control_list->MakeDecision(
+      GpuControlList::kOsWin, kOsVersion, gpu_info);
+  EXPECT_SINGLE_FEATURE(features, TEST_FEATURE_0);
+  EXPECT_FALSE(control_list->needs_more_info());
+}
+
 }  // namespace gpu
