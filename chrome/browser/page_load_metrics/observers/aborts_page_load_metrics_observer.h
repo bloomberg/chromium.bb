@@ -16,6 +16,7 @@ extern const char kHistogramAbortNewNavigationBeforeCommit[];
 extern const char kHistogramAbortStopBeforeCommit[];
 extern const char kHistogramAbortCloseBeforeCommit[];
 extern const char kHistogramAbortOtherBeforeCommit[];
+extern const char kHistogramAbortUnknownNavigationBeforeCommit[];
 extern const char kHistogramAbortForwardBackBeforePaint[];
 extern const char kHistogramAbortReloadBeforePaint[];
 extern const char kHistogramAbortNewNavigationBeforePaint[];

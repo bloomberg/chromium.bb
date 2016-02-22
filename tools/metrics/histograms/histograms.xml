@@ -33016,6 +33016,31 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram
+    name="PageLoad.Internal.ProvisionalAbortChainSize.ForwardBackNavigation">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    This histogram counts the number of provisional loads aborted by other
+    navigations, until a final forward back navigation commits.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.Internal.ProvisionalAbortChainSize.NewNavigation">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    This histogram counts the number of provisional loads aborted by new
+    navigations, until a final new navigation commits.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.Internal.ProvisionalAbortChainSize.Reload">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    This histogram counts the number of provisional loads aborted by other
+    navigations, until a final reload navigation commits.
+  </summary>
+</histogram>
+
 <histogram name="PageLoad.Timing.NavigationToDOMContentLoadedEventFired"
     units="ms">
   <owner>bmcquade@chromium.org</owner>

@@ -42,6 +42,10 @@ enum UserAbortType {
   // without committing, either without error or with net::ERR_ABORTED.
   ABORT_OTHER,
 
+  // The load aborted due to another navigation, but it isn't clear what type of
+  // navigation it was.
+  ABORT_UNKNOWN_NAVIGATION,
+
   // Add values before this final count.
   ABORT_LAST_ENTRY
 };
