@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/ui.gni")
+
 source_set("gles2") {
   visibility = [
     "//components/mus:*",
@@ -52,6 +54,10 @@ source_set("gles2") {
     deps += [ "//mojo/platform_handle:platform_handle_impl" ]
   } else {
     deps += [ "//mojo/platform_handle:for_shared_library" ]
+  }
+
+  if (use_ozone) {
+    deps += [ "//ui/ozone:ozone" ]
   }
 
   include_dirs = [ "../.." ]

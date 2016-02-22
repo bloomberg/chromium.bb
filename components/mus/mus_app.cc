@@ -6,6 +6,7 @@
 
 #include "base/stl_util.h"
 #include "build/build_config.h"
+#include "base/threading/platform_thread.h"
 #include "components/mus/common/args.h"
 #include "components/mus/gles2/gpu_impl.h"
 #include "components/mus/ws/client_connection.h"
@@ -59,6 +60,8 @@ void MandolineUIServicesApp::Initialize(mojo::Shell* shell,
   shell_ = shell;
   surfaces_state_ = new SurfacesState;
 
+  base::PlatformThread::SetName("mus");
+
 #if defined(USE_X11)
   XInitThreads();
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -71,20 +74,21 @@ void MandolineUIServicesApp::Initialize(mojo::Shell* shell,
   // The ozone platform can provide its own event source. So initialize the
   // platform before creating the default event source.
   // TODO(rjkroege): Add tracing here.
+  // Because GL libraries need to be initialized before entering the sandbox,
+  // in MUS, |InitializeForUI| will load the GL libraries.
   ui::OzonePlatform::InitializeForUI();
-  ui::OzonePlatform::InitializeForGPU();
 #endif
 
-  bool hardware_rendering_available = true;
+// TODO(rjkroege): Enter sandbox here before we start threads in GpuState
+// http://crbug.com/584532
+
 #if !defined(OS_ANDROID)
-  hardware_rendering_available = gfx::GLSurface::InitializeOneOff();
   event_source_ = ui::PlatformEventSource::CreateDefault();
 #endif
 
   // TODO(rjkroege): It is possible that we might want to generalize the
   // GpuState object.
-  if (!gpu_state_.get())
-    gpu_state_ = new GpuState(hardware_rendering_available);
+  gpu_state_ = new GpuState();
   connection_manager_.reset(new ws::ConnectionManager(this, surfaces_state_));
 
   tracing_.Initialize(shell, url);

@@ -12,12 +12,16 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
 
+#if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
+#endif
+
 namespace mus {
 
-GpuState::GpuState(bool hardware_rendering_available)
+GpuState::GpuState()
     : gpu_thread_("gpu_thread"),
       control_thread_("gpu_command_buffer_control"),
-      hardware_rendering_available_(hardware_rendering_available) {
+      hardware_rendering_available_(false) {
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
   gpu_thread_.Start();
   control_thread_.Start();
@@ -36,6 +40,7 @@ void GpuState::StopThreads() {
 }
 
 void GpuState::InitializeOnGpuThread(base::WaitableEvent* event) {
+  hardware_rendering_available_ = gfx::GLSurface::InitializeOneOff();
   command_buffer_task_runner_ = new CommandBufferTaskRunner;
   driver_manager_.reset(new CommandBufferDriverManager);
   sync_point_manager_.reset(new gpu::SyncPointManager(true));
@@ -58,6 +63,10 @@ void GpuState::InitializeOnGpuThread(base::WaitableEvent* event) {
         << "Collect context graphics info failed!";
   }
   event->Signal();
+
+#if defined(USE_OZONE)
+  ui::OzonePlatform::InitializeForGPU();
+#endif
 }
 
 }  // namespace mus

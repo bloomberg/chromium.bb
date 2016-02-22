@@ -26,7 +26,7 @@ namespace mus {
 // they create can share resources with each other via mailboxes.
 class GpuState : public base::RefCountedThreadSafe<GpuState> {
  public:
-  explicit GpuState(bool hardware_rendering_available);
+  GpuState();
 
   // We run the CommandBufferImpl on the control_task_runner, which forwards
   // most method class to the CommandBufferDriver, which runs on the "driver",
