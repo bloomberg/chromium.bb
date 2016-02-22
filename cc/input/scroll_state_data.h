@@ -10,10 +10,9 @@
 #include <list>
 
 #include "cc/base/cc_export.h"
+#include "cc/trees/property_tree.h"
 
 namespace cc {
-
-class LayerImpl;
 
 class CC_EXPORT ScrollStateData {
  public:
@@ -54,19 +53,19 @@ class CC_EXPORT ScrollStateData {
   bool caused_scroll_x;
   bool caused_scroll_y;
 
-  LayerImpl* current_native_scrolling_layer() const;
-  void set_current_native_scrolling_layer(
-      LayerImpl* current_native_scrolling_layer);
+  ScrollNode* current_native_scrolling_node() const;
+  void set_current_native_scrolling_node(
+      ScrollNode* current_native_scrolling_node);
   uint64_t current_native_scrolling_element() const;
   void set_current_native_scrolling_element(uint64_t element_id);
 
  private:
-  // Only one of current_native_scrolling_layer_ and
+  // Only one of current_native_scrolling_node_ and
   // current_native_scrolling_element_ may be non-null at a time. Whenever
-  // possible, we should store the layer.
+  // possible, we should store the scroll node.
 
-  // The last layer to respond to a scroll, or null if none exists.
-  LayerImpl* current_native_scrolling_layer_;
+  // The last scroll node to respond to a scroll, or null if none exists.
+  ScrollNode* current_native_scrolling_node_;
   // The id of the last native element to respond to a scroll, or 0 if none
   // exists.
   uint64_t current_native_scrolling_element_;

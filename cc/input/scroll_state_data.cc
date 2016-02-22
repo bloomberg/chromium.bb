@@ -4,8 +4,6 @@
 
 #include "cc/input/scroll_state_data.h"
 
-#include "cc/layers/layer_impl.h"
-
 namespace cc {
 
 ScrollStateData::ScrollStateData()
@@ -25,26 +23,26 @@ ScrollStateData::ScrollStateData()
       delta_granularity(0),
       caused_scroll_x(false),
       caused_scroll_y(false),
-      current_native_scrolling_layer_(nullptr),
+      current_native_scrolling_node_(nullptr),
       current_native_scrolling_element_(0) {}
 
-LayerImpl* ScrollStateData::current_native_scrolling_layer() const {
-  return current_native_scrolling_layer_;
+ScrollNode* ScrollStateData::current_native_scrolling_node() const {
+  return current_native_scrolling_node_;
 }
-void ScrollStateData::set_current_native_scrolling_layer(
-    LayerImpl* current_native_scrolling_layer) {
-  current_native_scrolling_layer_ = current_native_scrolling_layer;
+void ScrollStateData::set_current_native_scrolling_node(
+    ScrollNode* current_native_scrolling_node) {
+  current_native_scrolling_node_ = current_native_scrolling_node;
   current_native_scrolling_element_ = 0;
 }
 uint64_t ScrollStateData::current_native_scrolling_element() const {
-  if (current_native_scrolling_layer_)
-    return current_native_scrolling_layer_->element_id();
+  if (current_native_scrolling_node_)
+    return current_native_scrolling_node_->data.element_id;
   return current_native_scrolling_element_;
 }
 void ScrollStateData::set_current_native_scrolling_element(
     uint64_t element_id) {
   current_native_scrolling_element_ = element_id;
-  current_native_scrolling_layer_ = nullptr;
+  current_native_scrolling_node_ = nullptr;
 }
 
 }  // namespace cc

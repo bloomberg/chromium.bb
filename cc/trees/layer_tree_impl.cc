@@ -58,7 +58,6 @@ LayerTreeImpl::LayerTreeImpl(
       hud_layer_(0),
       background_color_(0),
       has_transparent_background_(false),
-      currently_scrolling_layer_id_(Layer::INVALID_ID),
       last_scrolled_layer_id_(Layer::INVALID_ID),
       overscroll_elasticity_layer_id_(Layer::INVALID_ID),
       page_scale_layer_id_(Layer::INVALID_ID),
@@ -316,7 +315,9 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   // The request queue should have been processed and does not require a push.
   DCHECK_EQ(ui_resource_request_queue_.size(), 0u);
 
+  LayerImpl* layer = target_tree->CurrentlyScrollingLayer();
   target_tree->SetPropertyTrees(property_trees_);
+  target_tree->SetCurrentlyScrollingLayer(layer);
 
   if (next_activation_forces_redraw_) {
     target_tree->ForceRedrawNextActivation();
@@ -433,7 +434,9 @@ LayerImpl* LayerTreeImpl::OuterViewportContainerLayer() const {
 
 LayerImpl* LayerTreeImpl::CurrentlyScrollingLayer() const {
   DCHECK(IsActiveTree());
-  return LayerById(currently_scrolling_layer_id_);
+  const ScrollNode* scroll_node =
+      property_trees_.scroll_tree.CurrentlyScrollingNode();
+  return LayerById(scroll_node ? scroll_node->owner_id : Layer::INVALID_ID);
 }
 
 int LayerTreeImpl::LastScrolledLayerId() const {
@@ -441,22 +444,25 @@ int LayerTreeImpl::LastScrolledLayerId() const {
 }
 
 void LayerTreeImpl::SetCurrentlyScrollingLayer(LayerImpl* layer) {
+  ScrollTree& scroll_tree = property_trees()->scroll_tree;
+  ScrollNode* scroll_node = scroll_tree.CurrentlyScrollingNode();
+  int old_id = scroll_node ? scroll_node->owner_id : Layer::INVALID_ID;
   int new_id = layer ? layer->id() : Layer::INVALID_ID;
+  int new_scroll_node_id = layer ? layer->scroll_tree_index() : -1;
   if (layer)
     last_scrolled_layer_id_ = new_id;
 
-  if (currently_scrolling_layer_id_ == new_id)
+  if (old_id == new_id)
     return;
 
   ScrollbarAnimationController* old_animation_controller =
-      layer_tree_host_impl_->ScrollbarAnimationControllerForId(
-          currently_scrolling_layer_id_);
+      layer_tree_host_impl_->ScrollbarAnimationControllerForId(old_id);
   ScrollbarAnimationController* new_animation_controller =
       layer_tree_host_impl_->ScrollbarAnimationControllerForId(new_id);
 
   if (old_animation_controller)
     old_animation_controller->DidScrollEnd();
-  currently_scrolling_layer_id_ = new_id;
+  scroll_tree.set_currently_scrolling_node(new_scroll_node_id);
   if (new_animation_controller)
     new_animation_controller->DidScrollBegin();
 }

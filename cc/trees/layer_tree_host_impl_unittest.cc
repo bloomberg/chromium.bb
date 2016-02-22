@@ -9520,6 +9520,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedNotUserScrollable) {
   host_impl_->OuterViewportScrollLayer()->set_user_scrollable_vertical(true);
   host_impl_->OuterViewportScrollLayer()->set_user_scrollable_horizontal(false);
 
+  SetNeedsRebuildPropertyTrees();
   DrawFrame();
 
   base::TimeTicks start_time =

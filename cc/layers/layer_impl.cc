@@ -228,7 +228,7 @@ void LayerImpl::DistributeScroll(ScrollState* scroll_state) {
   // propagating to this layer.
   if (!scroll_state->should_propagate() &&
       scroll_state->delta_consumed_for_scroll_sequence() &&
-      scroll_state->current_native_scrolling_layer() != this) {
+      scroll_state->current_native_scrolling_node()->owner_id != id()) {
     return;
   }
 

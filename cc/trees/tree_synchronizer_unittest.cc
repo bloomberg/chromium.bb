@@ -753,5 +753,52 @@ TEST_F(TreeSynchronizerTest, SynchronizeClipParent) {
   EXPECT_FALSE(additional_clip_child->clip_parent());
 }
 
+TEST_F(TreeSynchronizerTest, SynchronizeCurrentlyScrollingNode) {
+  LayerTreeSettings settings;
+  FakeLayerTreeHostImplClient client;
+  FakeImplTaskRunnerProvider task_runner_provider;
+  FakeRenderingStatsInstrumentation stats_instrumentation;
+  TestSharedBitmapManager shared_bitmap_manager;
+  TestTaskGraphRunner task_graph_runner;
+  FakeLayerTreeHostImpl* host_impl = host_->host_impl();
+  host_impl->CreatePendingTree();
+
+  scoped_refptr<Layer> layer_tree_root = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> scroll_clip_layer = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> scroll_layer = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> transient_scroll_clip_layer =
+      Layer::Create(layer_settings_);
+  scoped_refptr<Layer> transient_scroll_layer = Layer::Create(layer_settings_);
+
+  layer_tree_root->AddChild(transient_scroll_clip_layer);
+  transient_scroll_clip_layer->AddChild(transient_scroll_layer);
+  transient_scroll_layer->AddChild(scroll_clip_layer);
+  scroll_clip_layer->AddChild(scroll_layer);
+
+  transient_scroll_layer->SetScrollClipLayerId(
+      transient_scroll_clip_layer->id());
+  scroll_layer->SetScrollClipLayerId(scroll_clip_layer->id());
+  host_->SetRootLayer(layer_tree_root);
+  host_->BuildPropertyTreesForTesting();
+  host_->CommitAndCreatePendingTree();
+  host_impl->ActivateSyncTree();
+
+  ExpectTreesAreIdentical(layer_tree_root.get(),
+                          host_impl->active_tree()->root_layer(),
+                          host_impl->active_tree());
+
+  host_impl->active_tree()->SetCurrentlyScrollingLayer(
+      host_impl->active_tree()->LayerById(scroll_layer->id()));
+  transient_scroll_layer->SetScrollClipLayerId(Layer::INVALID_ID);
+  host_->BuildPropertyTreesForTesting();
+
+  host_impl->CreatePendingTree();
+  host_->CommitAndCreatePendingTree();
+  host_impl->ActivateSyncTree();
+
+  EXPECT_EQ(scroll_layer->id(),
+            host_impl->active_tree()->CurrentlyScrollingLayer()->id());
+}
+
 }  // namespace
 }  // namespace cc

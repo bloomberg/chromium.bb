@@ -599,10 +599,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   // ReleaseResources call.
   virtual void RecreateResources();
 
-  int clip_height() {
-    return scroll_clip_layer() ? scroll_clip_layer()->bounds().height() : 0;
-  }
-
   virtual skia::RefPtr<SkPicture> GetPicture();
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl);

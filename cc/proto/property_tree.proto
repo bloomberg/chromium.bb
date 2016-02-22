@@ -97,7 +97,7 @@ message EffectNodeData {
 }
 
 // Proto for struct ScrollNodeData
-// NEXT ID: 9
+// NEXT ID: 15
 message ScrollNodeData {
   optional bool scrollable = 1;
   optional int32 main_thread_scrolling_reasons = 2;
@@ -109,6 +109,9 @@ message ScrollNodeData {
   optional bool is_outer_viewport_scroll_layer = 8;
   optional Vector2dF offset_to_transform_parent = 9;
   optional bool should_flatten = 10;
+  optional bool user_scrollable_horizontal = 13;
+  optional bool user_scrollable_vertical = 14;
+  optional int64 element_id = 12;
   optional int64 transform_id = 11;
 }
 
@@ -149,6 +152,12 @@ message PropertyTree {
   // PropertyTree. Only one of these fields should be set, depending on the type
   // of this property tree.
   optional TransformTreeData transform_tree_data = 1000;
+  optional ScrollTreeData scroll_tree_data = 1001;
+}
+
+// Proto for data members of class ScrollTree
+message ScrollTreeData {
+  optional int64 currently_scrolling_node_id = 1;
 }
 
 // Proto for data members of class TransformTree.

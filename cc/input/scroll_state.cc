@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "cc/layers/layer_impl.h"
+#include "cc/trees/layer_tree_impl.h"
 
 namespace cc {
 
@@ -24,9 +24,9 @@ void ScrollState::ConsumeDelta(double x, double y) {
 
 void ScrollState::DistributeToScrollChainDescendant() {
   if (!scroll_chain_.empty()) {
-    LayerImpl* next = scroll_chain_.front();
+    const ScrollNode* next = scroll_chain_.front();
     scroll_chain_.pop_front();
-    next->DistributeScroll(this);
+    layer_tree_impl_->LayerById(next->owner_id)->DistributeScroll(this);
   }
 }
 

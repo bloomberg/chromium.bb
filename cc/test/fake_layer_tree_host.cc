@@ -105,4 +105,16 @@ LayerImpl* FakeLayerTreeHost::CommitAndCreateLayerImplTree() {
   return active_tree()->root_layer();
 }
 
+LayerImpl* FakeLayerTreeHost::CommitAndCreatePendingTree() {
+  scoped_ptr<LayerImpl> old_root_layer_impl = pending_tree()->DetachLayerTree();
+
+  scoped_ptr<LayerImpl> layer_impl = TreeSynchronizer::SynchronizeTrees(
+      root_layer(), std::move(old_root_layer_impl), pending_tree());
+  pending_tree()->SetPropertyTrees(*property_trees());
+  TreeSynchronizer::PushProperties(root_layer(), layer_impl.get());
+
+  pending_tree()->SetRootLayer(std::move(layer_impl));
+  return pending_tree()->root_layer();
+}
+
 }  // namespace cc

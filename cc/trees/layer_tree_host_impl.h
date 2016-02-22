@@ -705,10 +705,10 @@ class CC_EXPORT LayerTreeHostImpl
 
   void ScrollAnimationAbort(LayerImpl* layer_impl);
 
-  void ScrollAnimationCreate(LayerImpl* layer_impl,
+  void ScrollAnimationCreate(ScrollNode* scroll_node,
                              const gfx::ScrollOffset& target_offset,
                              const gfx::ScrollOffset& current_offset);
-  bool ScrollAnimationUpdateTarget(LayerImpl* layer_impl,
+  bool ScrollAnimationUpdateTarget(ScrollNode* scroll_node,
                                    const gfx::Vector2dF& scroll_delta);
 
   using UIResourceMap = std::unordered_map<UIResourceId, UIResourceData>;

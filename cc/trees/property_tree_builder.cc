@@ -701,6 +701,9 @@ void AddScrollNodeIfNeeded(
     node.data.offset_to_transform_parent = layer->offset_to_transform_parent();
     node.data.should_flatten =
         layer->should_flatten_transform_from_property_tree();
+    node.data.user_scrollable_horizontal = layer->user_scrollable_horizontal();
+    node.data.user_scrollable_vertical = layer->user_scrollable_vertical();
+    node.data.element_id = layer->element_id();
     node.data.transform_id =
         data_for_children->transform_tree_parent->transform_tree_index();
 

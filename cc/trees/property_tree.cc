@@ -485,6 +485,9 @@ ScrollNodeData::ScrollNodeData()
       is_inner_viewport_scroll_layer(false),
       is_outer_viewport_scroll_layer(false),
       should_flatten(false),
+      user_scrollable_horizontal(false),
+      user_scrollable_vertical(false),
+      element_id(0),
       transform_id(0) {}
 
 bool ScrollNodeData::operator==(const ScrollNodeData& other) const {
@@ -502,7 +505,9 @@ bool ScrollNodeData::operator==(const ScrollNodeData& other) const {
              other.is_outer_viewport_scroll_layer &&
          offset_to_transform_parent == other.offset_to_transform_parent &&
          should_flatten == other.should_flatten &&
-         transform_id == other.transform_id;
+         user_scrollable_horizontal == other.user_scrollable_horizontal &&
+         user_scrollable_vertical == other.user_scrollable_vertical &&
+         element_id == other.element_id && transform_id == other.transform_id;
 }
 
 void ScrollNodeData::ToProtobuf(proto::TreeNode* proto) const {
@@ -522,6 +527,9 @@ void ScrollNodeData::ToProtobuf(proto::TreeNode* proto) const {
   Vector2dFToProto(offset_to_transform_parent,
                    data->mutable_offset_to_transform_parent());
   data->set_should_flatten(should_flatten);
+  data->set_user_scrollable_horizontal(user_scrollable_horizontal);
+  data->set_user_scrollable_vertical(user_scrollable_vertical);
+  data->set_element_id(element_id);
   data->set_transform_id(transform_id);
 }
 
@@ -542,6 +550,9 @@ void ScrollNodeData::FromProtobuf(const proto::TreeNode& proto) {
   offset_to_transform_parent =
       ProtoToVector2dF(data.offset_to_transform_parent());
   should_flatten = data.should_flatten();
+  user_scrollable_horizontal = data.user_scrollable_horizontal();
+  user_scrollable_vertical = data.user_scrollable_vertical();
+  element_id = data.element_id();
   transform_id = data.transform_id();
 }
 
@@ -1247,12 +1258,13 @@ void EffectTree::FromProtobuf(const proto::PropertyTree& proto) {
   PropertyTree::FromProtobuf(proto);
 }
 
-ScrollTree::ScrollTree() {}
+ScrollTree::ScrollTree() : currently_scrolling_node_id_(-1) {}
 
 ScrollTree::~ScrollTree() {}
 
 bool ScrollTree::operator==(const ScrollTree& other) const {
-  return PropertyTree::operator==(other);
+  return PropertyTree::operator==(other) &&
+         CurrentlyScrollingNode() == other.CurrentlyScrollingNode();
 }
 
 void ScrollTree::ToProtobuf(proto::PropertyTree* proto) const {
@@ -1260,6 +1272,9 @@ void ScrollTree::ToProtobuf(proto::PropertyTree* proto) const {
   proto->set_property_type(proto::PropertyTree::Scroll);
 
   PropertyTree::ToProtobuf(proto);
+  proto::ScrollTreeData* data = proto->mutable_scroll_tree_data();
+
+  data->set_currently_scrolling_node_id(currently_scrolling_node_id_);
 }
 
 void ScrollTree::FromProtobuf(const proto::PropertyTree& proto) {
@@ -1267,6 +1282,9 @@ void ScrollTree::FromProtobuf(const proto::PropertyTree& proto) {
   DCHECK_EQ(proto.property_type(), proto::PropertyTree::Scroll);
 
   PropertyTree::FromProtobuf(proto);
+  const proto::ScrollTreeData& data = proto.scroll_tree_data();
+
+  currently_scrolling_node_id_ = data.currently_scrolling_node_id();
 }
 
 gfx::ScrollOffset ScrollTree::MaxScrollOffset(int scroll_node_id) const {
@@ -1292,6 +1310,19 @@ gfx::ScrollOffset ScrollTree::MaxScrollOffset(int scroll_node_id) const {
   scaled_scroll_bounds.SetSize(std::floor(scaled_scroll_bounds.width()),
                                std::floor(scaled_scroll_bounds.height()));
 
+  gfx::Size clip_layer_bounds = scroll_clip_layer_bounds(scroll_node->id);
+
+  gfx::ScrollOffset max_offset(
+      scaled_scroll_bounds.width() - clip_layer_bounds.width(),
+      scaled_scroll_bounds.height() - clip_layer_bounds.height());
+
+  max_offset.Scale(1 / scale_factor);
+  max_offset.SetToMax(gfx::ScrollOffset());
+  return max_offset;
+}
+
+gfx::Size ScrollTree::scroll_clip_layer_bounds(int scroll_node_id) const {
+  const ScrollNode* scroll_node = Node(scroll_node_id);
   gfx::Size scroll_clip_layer_bounds =
       scroll_node->data.scroll_clip_layer_bounds;
 
@@ -1309,13 +1340,21 @@ gfx::ScrollOffset ScrollTree::MaxScrollOffset(int scroll_node_id) const {
       scroll_clip_layer_bounds.width() + delta.x(),
       scroll_clip_layer_bounds.height() + delta.y());
 
-  gfx::ScrollOffset max_offset(
-      scaled_scroll_bounds.width() - scroll_clip_layer_bounds.width(),
-      scaled_scroll_bounds.height() - scroll_clip_layer_bounds.height());
+  return scroll_clip_layer_bounds;
+}
 
-  max_offset.Scale(1 / scale_factor);
-  max_offset.SetToMax(gfx::ScrollOffset());
-  return max_offset;
+ScrollNode* ScrollTree::CurrentlyScrollingNode() {
+  ScrollNode* scroll_node = Node(currently_scrolling_node_id_);
+  return scroll_node;
+}
+
+const ScrollNode* ScrollTree::CurrentlyScrollingNode() const {
+  const ScrollNode* scroll_node = Node(currently_scrolling_node_id_);
+  return scroll_node;
+}
+
+void ScrollTree::set_currently_scrolling_node(int scroll_node_id) {
+  currently_scrolling_node_id_ = scroll_node_id;
 }
 
 gfx::Transform ScrollTree::ScreenSpaceTransform(int scroll_node_id) const {

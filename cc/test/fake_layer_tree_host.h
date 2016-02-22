@@ -55,9 +55,11 @@ class FakeLayerTreeHost : public LayerTreeHost {
   using LayerTreeHost::root_layer;
 
   LayerImpl* CommitAndCreateLayerImplTree();
+  LayerImpl* CommitAndCreatePendingTree();
 
   FakeLayerTreeHostImpl* host_impl() { return &host_impl_; }
   LayerTreeImpl* active_tree() { return host_impl_.active_tree(); }
+  LayerTreeImpl* pending_tree() { return host_impl_.pending_tree(); }
 
   using LayerTreeHost::ScheduleMicroBenchmark;
   using LayerTreeHost::SendMessageToMicroBenchmark;

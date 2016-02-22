@@ -280,6 +280,9 @@ struct CC_EXPORT ScrollNodeData {
   bool is_outer_viewport_scroll_layer;
   gfx::Vector2dF offset_to_transform_parent;
   bool should_flatten;
+  bool user_scrollable_horizontal;
+  bool user_scrollable_vertical;
+  int element_id;
   int transform_id;
 
   bool operator==(const ScrollNodeData& other) const;
@@ -540,7 +543,14 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   void FromProtobuf(const proto::PropertyTree& proto);
 
   gfx::ScrollOffset MaxScrollOffset(int scroll_node_id) const;
+  gfx::Size scroll_clip_layer_bounds(int scroll_node_id) const;
+  ScrollNode* CurrentlyScrollingNode();
+  const ScrollNode* CurrentlyScrollingNode() const;
+  void set_currently_scrolling_node(int scroll_node_id);
   gfx::Transform ScreenSpaceTransform(int scroll_node_id) const;
+
+ private:
+  int currently_scrolling_node_id_;
 };
 
 class CC_EXPORT PropertyTrees final {

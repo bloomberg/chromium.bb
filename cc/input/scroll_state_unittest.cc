@@ -9,6 +9,7 @@
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
+#include "cc/trees/layer_tree_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -68,8 +69,11 @@ TEST_F(ScrollStateTest, CurrentNativeScrollingScrollable) {
 
   scoped_ptr<LayerImpl> layer_impl =
       LayerImpl::Create(host_impl.active_tree(), 1);
-  scroll_state.set_current_native_scrolling_layer(layer_impl.get());
-  EXPECT_EQ(layer_impl.get(), scroll_state.current_native_scrolling_layer());
+  ScrollNode* scroll_node =
+      host_impl.active_tree()->property_trees()->scroll_tree.Node(
+          layer_impl->scroll_tree_index());
+  scroll_state.set_current_native_scrolling_node(scroll_node);
+  EXPECT_EQ(scroll_node, scroll_state.current_native_scrolling_node());
 }
 
 TEST_F(ScrollStateTest, FullyConsumed) {

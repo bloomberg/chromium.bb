@@ -10082,6 +10082,8 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   ScrollNode scroll_root1;
   scroll_root1.id = 1;
   scroll_root1.owner_id = root1->id();
+  scroll_root1.data.user_scrollable_horizontal = true;
+  scroll_root1.data.user_scrollable_vertical = true;
   scroll_root1.data.transform_id = root1->transform_tree_index();
   expected_scroll_tree.Insert(scroll_root1, 0);
 
@@ -10096,6 +10098,8 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   scroll_parent2.data.bounds = parent2->bounds();
   scroll_parent2.data.max_scroll_offset_affected_by_page_scale = true;
   scroll_parent2.data.is_inner_viewport_scroll_layer = true;
+  scroll_parent2.data.user_scrollable_horizontal = true;
+  scroll_parent2.data.user_scrollable_vertical = true;
   scroll_parent2.data.transform_id = parent2->transform_tree_index();
   expected_scroll_tree.Insert(scroll_parent2, 1);
 
@@ -10106,6 +10110,8 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   scroll_child6.data.main_thread_scrolling_reasons =
       child6->main_thread_scrolling_reasons();
   scroll_child6.data.should_flatten = true;
+  scroll_child6.data.user_scrollable_horizontal = true;
+  scroll_child6.data.user_scrollable_vertical = true;
   scroll_child6.data.transform_id = child6->transform_tree_index();
   expected_scroll_tree.Insert(scroll_child6, 2);
 
@@ -10116,6 +10122,8 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   scroll_child7.data.scrollable = true;
   scroll_child7.data.scroll_clip_layer_bounds = parent3->bounds();
   scroll_child7.data.bounds = child7->bounds();
+  scroll_child7.data.user_scrollable_horizontal = true;
+  scroll_child7.data.user_scrollable_vertical = true;
   scroll_child7.data.transform_id = child7->transform_tree_index();
   expected_scroll_tree.Insert(scroll_child7, 1);
 
@@ -10124,6 +10132,8 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   scroll_grand_child11.id = 5;
   scroll_grand_child11.owner_id = grand_child11->id();
   scroll_grand_child11.data.scrollable = true;
+  scroll_grand_child11.data.user_scrollable_horizontal = true;
+  scroll_grand_child11.data.user_scrollable_vertical = true;
   scroll_grand_child11.data.transform_id =
       grand_child11->transform_tree_index();
   expected_scroll_tree.Insert(scroll_grand_child11, 4);
@@ -10135,6 +10145,8 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   scroll_parent5.data.contains_non_fast_scrollable_region = true;
   scroll_parent5.data.bounds = gfx::Size(10, 10);
   scroll_parent5.data.should_flatten = true;
+  scroll_parent5.data.user_scrollable_horizontal = true;
+  scroll_parent5.data.user_scrollable_vertical = true;
   scroll_parent5.data.transform_id = parent5->transform_tree_index();
   expected_scroll_tree.Insert(scroll_parent5, 1);
 

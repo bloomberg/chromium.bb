@@ -479,7 +479,6 @@ class CC_EXPORT LayerTreeImpl {
   SkColor background_color_;
   bool has_transparent_background_;
 
-  int currently_scrolling_layer_id_;
   int last_scrolled_layer_id_;
   int overscroll_elasticity_layer_id_;
   int page_scale_layer_id_;
