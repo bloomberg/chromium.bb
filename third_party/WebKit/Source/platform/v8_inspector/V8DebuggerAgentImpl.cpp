@@ -1376,19 +1376,21 @@ PassOwnPtr<V8StackTraceImpl> V8DebuggerAgentImpl::currentAsyncStackTraceForRunti
     return result.release();
 }
 
-String V8DebuggerAgentImpl::sourceMapURLForScript(const V8DebuggerScript& script, bool success)
-{
-    if (success)
-        return script.sourceMappingURL();
-    return V8ContentSearchUtil::findSourceMapURL(script.source(), false);
-}
-
 void V8DebuggerAgentImpl::didParseSource(const V8DebuggerParsedScript& parsedScript)
 {
     V8DebuggerScript script = parsedScript.script;
 
+    bool isDeprecatedSourceURL = false;
     if (!parsedScript.success)
-        script.setSourceURL(V8ContentSearchUtil::findSourceURL(script.source(), false));
+        script.setSourceURL(V8ContentSearchUtil::findSourceURL(script.source(), false, &isDeprecatedSourceURL));
+    else if (script.hasSourceURL())
+        V8ContentSearchUtil::findSourceURL(script.source(), false, &isDeprecatedSourceURL);
+
+    bool isDeprecatedSourceMappingURL = false;
+    if (!parsedScript.success)
+        script.setSourceMappingURL(V8ContentSearchUtil::findSourceMapURL(script.source(), false, &isDeprecatedSourceMappingURL));
+    else if (!script.sourceMappingURL().isEmpty())
+        V8ContentSearchUtil::findSourceMapURL(script.source(), false, &isDeprecatedSourceMappingURL);
 
     int executionContextId = script.executionContextId();
     bool isContentScript = script.isContentScript();
@@ -1396,17 +1398,19 @@ void V8DebuggerAgentImpl::didParseSource(const V8DebuggerParsedScript& parsedScr
     bool isLiveEdit = script.isLiveEdit();
     bool hasSourceURL = script.hasSourceURL();
     String scriptURL = script.sourceURL();
-    String sourceMapURL = sourceMapURLForScript(script, parsedScript.success);
+    String sourceMapURL = script.sourceMappingURL();
+    bool deprecatedCommentWasUsed = isDeprecatedSourceURL || isDeprecatedSourceMappingURL;
 
     const String* sourceMapURLParam = sourceMapURL.isNull() ? nullptr : &sourceMapURL;
     const bool* isContentScriptParam = isContentScript ? &isContentScript : nullptr;
     const bool* isInternalScriptParam = isInternalScript ? &isInternalScript : nullptr;
     const bool* isLiveEditParam = isLiveEdit ? &isLiveEdit : nullptr;
     const bool* hasSourceURLParam = hasSourceURL ? &hasSourceURL : nullptr;
+    const bool* deprecatedCommentWasUsedParam = deprecatedCommentWasUsed ? &deprecatedCommentWasUsed : nullptr;
     if (parsedScript.success)
-        m_frontend->scriptParsed(parsedScript.scriptId, scriptURL, script.startLine(), script.startColumn(), script.endLine(), script.endColumn(), executionContextId, isContentScriptParam, isInternalScriptParam, isLiveEditParam, sourceMapURLParam, hasSourceURLParam);
+        m_frontend->scriptParsed(parsedScript.scriptId, scriptURL, script.startLine(), script.startColumn(), script.endLine(), script.endColumn(), executionContextId, isContentScriptParam, isInternalScriptParam, isLiveEditParam, sourceMapURLParam, hasSourceURLParam, deprecatedCommentWasUsedParam);
     else
-        m_frontend->scriptFailedToParse(parsedScript.scriptId, scriptURL, script.startLine(), script.startColumn(), script.endLine(), script.endColumn(), executionContextId, isContentScriptParam, isInternalScriptParam, sourceMapURLParam, hasSourceURLParam);
+        m_frontend->scriptFailedToParse(parsedScript.scriptId, scriptURL, script.startLine(), script.startColumn(), script.endLine(), script.endColumn(), executionContextId, isContentScriptParam, isInternalScriptParam, sourceMapURLParam, hasSourceURLParam, deprecatedCommentWasUsedParam);
 
     m_scripts.set(parsedScript.scriptId, script);
 
