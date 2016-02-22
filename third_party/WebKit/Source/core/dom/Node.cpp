@@ -2269,8 +2269,10 @@ PassRefPtrWillBeRawPtr<StaticNodeList> Node::getDestinationInsertionPoints()
 HTMLSlotElement* Node::assignedSlot() const
 {
     ASSERT(!needsDistributionRecalc());
-    if (ElementShadow* shadow = parentElementShadow())
-        return shadow->assignedSlotFor(*this);
+    if (ElementShadow* shadow = parentElementShadow()) {
+        if (shadow->isV1())
+            return shadow->assignedSlotFor(*this);
+    }
     return nullptr;
 }
 
