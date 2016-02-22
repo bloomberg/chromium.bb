@@ -59,9 +59,6 @@
 
 EXTERN_C_BEGIN
 
-#define NACL_SERVICE_PORT_DESCRIPTOR    3
-#define NACL_SERVICE_ADDRESS_DESCRIPTOR 4
-
 #define NACL_DEFAULT_STACK_MAX  (16 << 20)  /* main thread stack */
 
 struct NaClAppThread;

@@ -47,11 +47,10 @@ struct NaClValidationCache;
  * NACL_CHROME_DESC_BASE and higher when setting up a NaClApp's
  * initial descriptors using NaClAppSetDesc().
  *
- * This number is chosen so as not to conflict with
- * NACL_SERVICE_PORT_DESCRIPTOR, NACL_SERVICE_ADDRESS_DESCRIPTOR and
- * export_addr_to inside NaClChromeMainStart().
+ * This number is chosen so as not to conflict with stdin/stdout/stderr's
+ * FD numbers.
  */
-#define NACL_CHROME_DESC_BASE 6
+#define NACL_CHROME_DESC_BASE 3
 
 
 struct NaClChromeMainArgs {

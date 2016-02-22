@@ -214,11 +214,6 @@ static int LoadApp(struct NaClApp *nap, struct NaClChromeMainArgs *args) {
   NaClAppInitialDescriptorHookup(nap);
 
   /*
-   * NACL_SERVICE_PORT_DESCRIPTOR and NACL_SERVICE_ADDRESS_DESCRIPTOR
-   * are 3 and 4.
-   */
-
-  /*
    * in order to report load error to the browser plugin through the
    * secure command channel, we do not immediate jump to cleanup code
    * on error.  rather, we continue processing (assuming earlier
