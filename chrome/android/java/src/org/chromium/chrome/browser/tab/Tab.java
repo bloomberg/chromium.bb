@@ -1149,6 +1149,8 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
      */
     public void onActivityHidden() {
         hide();
+
+        if (mTabUma != null) mTabUma.onActivityHidden();
     }
 
     /**
@@ -1468,6 +1470,8 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
 
         clearHungRendererState();
 
+        if (mTabUma != null) mTabUma.onPageLoadStarted();
+
         for (TabObserver observer : mObservers) observer.onPageLoadStarted(this, validatedUrl);
     }
 
@@ -1484,7 +1488,7 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
                     "Navigation.IsMobileOptimized", mContentViewCore.getIsMobileOptimizedHint());
         }
 
-        if (mTabUma != null) mTabUma.onLoadFinished();
+        if (mTabUma != null) mTabUma.onPageLoadFinished();
 
         for (TabObserver observer : mObservers) observer.onPageLoadFinished(this);
 

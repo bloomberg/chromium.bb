@@ -51188,6 +51188,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Tab.BackgroundTabsOpenedViaContextMenuCount">
+  <owner>pkotwicz@chromium.org</owner>
+  <summary>
+    Counts the number of background tabs opened via the context menu per page
+    URL. The count is reset on each navigation of the parent tab. Zero counts
+    are not recorded.
+  </summary>
+</histogram>
+
 <histogram name="Tab.Close" units="ms">
   <summary>
     Time in milliseconds from trying to close the tab to actually closing it.
@@ -51690,6 +51699,27 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Fine-grained (in msec) time between opening a tab and closing it, to track
     very short-lived tabs.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.FirstSwitchedToForegroundCreationRank">
+  <owner>pkotwicz@chromium.org</owner>
+  <summary>
+    Records the &quot;Tab Creation Rank&quot; for the first background tab which
+    was switched to the foreground. The &quot;Tab Creation Rank&quot; is
+    relative to other background tabs which were opened from the same URL via
+    the context menu. The oldest background tab has a rank of zero.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.FirstSwitchedToForegroundCreationReverseRank">
+  <owner>pkotwicz@chromium.org</owner>
+  <summary>
+    Records the &quot;Reverse Tab Creation Rank&quot; for the first background
+    background tab which was switched to the foreground. The &quot;Reverse Tab
+    Creation Rank&quot; is relative to other background tabs which were opened
+    from the same URL via the context menu. The newest background tab has a
+    &quot;Reverse Tab Creation Rank&quot; of zero.
   </summary>
 </histogram>
 

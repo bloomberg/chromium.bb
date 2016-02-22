@@ -78,6 +78,14 @@ public class TabUma {
     private long mLastTabStateChangeMillis = -1;
     private int mLastTabState = TAB_STATE_INITIAL;
 
+    // The number of background tabs opened by long pressing on this tab and selecting
+    // "Open in a new tab" from the context menu.
+    private int mNumBackgroundTabsOpened;
+
+    // Records histogram about which background tab opened from this tab the user switches to
+    // first.
+    private ChildBackgroundTabShowObserver mChildBackgroundTabShowObserver;
+
     /**
      * Constructs a new UMA tracker for a specific tab.
      * @param creationState In what state the tab was created.
@@ -107,7 +115,8 @@ public class TabUma {
      * @param perceivedTime The perceived time taken to perform the tab restore.
      * @param errorCode The error code, on failure (as denoted by the |succeeded| parameter).
      */
-    void recordTabRestoreResult(boolean succeeded, long time, long perceivedTime, int errorCode) {
+    private void recordTabRestoreResult(boolean succeeded, long time, long perceivedTime,
+            int errorCode) {
         if (succeeded) {
             RecordHistogram.recordEnumeratedHistogram(
                     "Tab.RestoreResult", TAB_RESTORE_RESULT_SUCCESS, TAB_RESTORE_RESULT_COUNT);
@@ -133,7 +142,7 @@ public class TabUma {
      * Records a sample in a histogram of times. This is the Java equivalent of the
      * UMA_HISTOGRAM_LONG_TIMES_100.
      */
-    void recordLongTimesHistogram100(String name, long duration) {
+    private void recordLongTimesHistogram100(String name, long duration) {
         RecordHistogram.recordCustomTimesHistogram(
                 name, TimeUnit.MILLISECONDS.toMillis(duration),
                 TimeUnit.MILLISECONDS.toMillis(1), TimeUnit.HOURS.toMillis(1),
@@ -146,7 +155,7 @@ public class TabUma {
      * @param newState New state of the tab.
      * @param delta Time elapsed from the last state transition in milliseconds.
      */
-    void recordTabStateTransition(int prevState, int newState, long delta) {
+    private void recordTabStateTransition(int prevState, int newState, long delta) {
         if (prevState == TAB_STATE_ACTIVE && newState == TAB_STATE_INACTIVE) {
             recordLongTimesHistogram100("Tabs.StateTransfer.Time_Active_Inactive", delta);
         } else if (prevState == TAB_STATE_ACTIVE && newState == TAB_STATE_CLOSED) {
@@ -167,6 +176,19 @@ public class TabUma {
             RecordHistogram.recordEnumeratedHistogram("Tabs.StateTransfer.Target_Inactive",
                     newState, TAB_STATE_MAX);
         }
+    }
+
+    /**
+     * Records the number of background tabs which were opened from this tab's
+     * current URL. Does not record anything if no background tabs were opened.
+     */
+    private void recordNumBackgroundTabsOpened() {
+        if (mNumBackgroundTabsOpened > 0) {
+            RecordHistogram.recordCount100Histogram(
+                    "Tab.BackgroundTabsOpenedViaContextMenuCount", mNumBackgroundTabsOpened);
+        }
+        mNumBackgroundTabsOpened = 0;
+        mChildBackgroundTabShowObserver = null;
     }
 
     /**
@@ -273,6 +295,11 @@ public class TabUma {
         updateTabState(TAB_STATE_INACTIVE);
     }
 
+    /** Called when the corresponding activity is stopped. */
+    void onActivityHidden() {
+        recordNumBackgroundTabsOpened();
+    }
+
     void onDestroy() {
         updateTabState(TAB_STATE_CLOSED);
 
@@ -281,6 +308,8 @@ public class TabUma {
             RecordHistogram.recordBooleanHistogram(
                     "Tab.BackgroundTabShown", mLastShownTimestamp != -1);
         }
+
+        recordNumBackgroundTabsOpened();
     }
 
     /** Called when restore of the corresponding tab is triggered. */
@@ -288,8 +317,13 @@ public class TabUma {
         mRestoreStartedAtMillis = SystemClock.elapsedRealtime();
     }
 
+    /** Called when the corresponding tab starts a page load. */
+    void onPageLoadStarted() {
+        recordNumBackgroundTabsOpened();
+    }
+
     /** Called when the correspoding tab completes a page load. */
-    void onLoadFinished() {
+    void onPageLoadFinished() {
         // Record only tab restores that the user became aware of. If the restore is triggered
         // speculatively and completes before the user switches to the tab, then this case is
         // reflected in Tab.StatusWhenSwitchedBackToForeground metric.
@@ -318,6 +352,21 @@ public class TabUma {
             //            renderer crashes and start to track that.
             mRestoreStartedAtMillis = -1;
         }
+    }
+
+    /**
+     * Called when a user opens a background tab by long pressing and selecting "Open in a new tab"
+     * from the context menu.
+     * @param backgroundTab The background tab.
+     */
+    void onBackgroundTabOpenedFromContextMenu(Tab backgroundTab) {
+        ++mNumBackgroundTabsOpened;
+
+        if (mChildBackgroundTabShowObserver == null) {
+            mChildBackgroundTabShowObserver =
+                    new ChildBackgroundTabShowObserver(backgroundTab.getParentId());
+        }
+        mChildBackgroundTabShowObserver.onBackgroundTabOpened(backgroundTab);
     }
 
     /**
