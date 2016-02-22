@@ -20,6 +20,8 @@
 
 namespace net {
 
+namespace {
+
 // Used to ensure we delete the addrinfo structure alloc'd by getaddrinfo().
 class AddrinfoGuard {
  public:
@@ -57,17 +59,18 @@ bool CloseSocket(int* fd, int tries) {
   return false;
 }
 
-int SetDisableNagle(int fd) {
+}  // namespace
+
+bool SetDisableNagle(int fd) {
   int on = 1;
-  int rc;
-  rc = setsockopt(
-      fd, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char*>(&on), sizeof(on));
+  int rc = setsockopt(fd, IPPROTO_TCP, TCP_NODELAY,
+                      reinterpret_cast<char*>(&on), sizeof(on));
   if (rc < 0) {
     close(fd);
     LOG(FATAL) << "setsockopt() TCP_NODELAY: failed on fd " << fd;
-    return 0;
+    return false;
   }
-  return 1;
+  return true;
 }
 
 int CreateTCPServerSocket(const std::string& host,
@@ -139,7 +142,7 @@ int CreateTCPServerSocket(const std::string& host,
 #define SO_REUSEPORT 15
 #endif
   if (reuseport) {
-    // set SO_REUSEADDR on the listening socket.
+    // set SO_REUSEPORT on the listening socket.
     int on = 1;
     int rc;
     rc = setsockopt(sock,
