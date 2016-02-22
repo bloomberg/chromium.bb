@@ -45,6 +45,7 @@
 #include "public/web/WebViewClient.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebRemoteFrameImpl.h"
+#include "wtf/Functional.h"
 #include "wtf/StdLibExtras.h"
 
 namespace blink {
@@ -59,42 +60,31 @@ namespace {
 // 1. Starts a load.
 // 2. Enter the run loop.
 // 3. Posted task triggers the load, and starts pumping pending resource
-//    requests using ServeAsyncRequestsTask.
+//    requests using runServeAsyncRequestsTask().
 // 4. TestWebFrameClient watches for didStartLoading/didStopLoading calls,
 //    keeping track of how many loads it thinks are in flight.
-// 5. While ServeAsyncRequestsTask observes TestWebFrameClient to still have
-//    loads in progress, it posts itself back to the run loop.
-// 6. When ServeAsyncRequestsTask notices there are no more loads in progress,
-//    it exits the run loop.
+// 5. While runServeAsyncRequestsTask() observes TestWebFrameClient to still
+//    have loads in progress, it posts itself back to the run loop.
+// 6. When runServeAsyncRequestsTask() notices there are no more loads in
+//    progress, it exits the run loop.
 // 7. At this point, all parsing, resource loads, and layout should be finished.
 TestWebFrameClient* testClientForFrame(WebFrame* frame)
 {
     return static_cast<TestWebFrameClient*>(toWebLocalFrameImpl(frame)->client());
 }
 
-class ServeAsyncRequestsTask : public WebTaskRunner::Task {
-public:
-    explicit ServeAsyncRequestsTask(TestWebFrameClient* client)
-        : m_client(client)
-    {
-    }
-
-    void run() override
-    {
-        Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
-        if (m_client->isLoading())
-            Platform::current()->currentThread()->taskRunner()->postTask(BLINK_FROM_HERE, new ServeAsyncRequestsTask(m_client));
-        else
-            testing::exitRunLoop();
-    }
-
-private:
-    TestWebFrameClient* const m_client;
-};
+void runServeAsyncRequestsTask(TestWebFrameClient* client)
+{
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+    if (client->isLoading())
+        Platform::current()->currentThread()->taskRunner()->postTask(BLINK_FROM_HERE, bind(&runServeAsyncRequestsTask, client));
+    else
+        testing::exitRunLoop();
+}
 
 void pumpPendingRequests(WebFrame* frame)
 {
-    Platform::current()->currentThread()->taskRunner()->postTask(BLINK_FROM_HERE, new ServeAsyncRequestsTask(testClientForFrame(frame)));
+    Platform::current()->currentThread()->taskRunner()->postTask(BLINK_FROM_HERE, bind(&runServeAsyncRequestsTask, testClientForFrame(frame)));
     testing::enterRunLoop();
 }
 
