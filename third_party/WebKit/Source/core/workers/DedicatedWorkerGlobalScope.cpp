@@ -32,6 +32,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
+#include "core/dom/CrossThreadTask.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/workers/DedicatedWorkerThread.h"
@@ -78,39 +79,26 @@ DedicatedWorkerThread* DedicatedWorkerGlobalScope::thread() const
     return static_cast<DedicatedWorkerThread*>(Base::thread());
 }
 
-class UseCounterTask : public ExecutionContextTask {
-public:
-    static PassOwnPtr<UseCounterTask> createCount(UseCounter::Feature feature) { return adoptPtr(new UseCounterTask(feature, false)); }
-    static PassOwnPtr<UseCounterTask> createDeprecation(UseCounter::Feature feature) { return adoptPtr(new UseCounterTask(feature, true)); }
+static void countOnDocument(UseCounter::Feature feature, ExecutionContext* context)
+{
+    ASSERT(context->isDocument());
+    UseCounter::count(context, feature);
+}
 
-private:
-    UseCounterTask(UseCounter::Feature feature, bool isDeprecation)
-        : m_feature(feature)
-        , m_isDeprecation(isDeprecation)
-    {
-    }
-
-    void performTask(ExecutionContext* context) override
-    {
-        ASSERT(context->isDocument());
-        if (m_isDeprecation)
-            Deprecation::countDeprecation(context, m_feature);
-        else
-            UseCounter::count(context, m_feature);
-    }
-
-    UseCounter::Feature m_feature;
-    bool m_isDeprecation;
-};
+static void countDeprecationOnDocument(UseCounter::Feature feature, ExecutionContext* context)
+{
+    ASSERT(context->isDocument());
+    Deprecation::countDeprecation(context, feature);
+}
 
 void DedicatedWorkerGlobalScope::countFeature(UseCounter::Feature feature) const
 {
-    thread()->workerObjectProxy().postTaskToMainExecutionContext(UseCounterTask::createCount(feature));
+    thread()->workerObjectProxy().postTaskToMainExecutionContext(createCrossThreadTask(&countOnDocument, feature));
 }
 
 void DedicatedWorkerGlobalScope::countDeprecation(UseCounter::Feature feature) const
 {
-    thread()->workerObjectProxy().postTaskToMainExecutionContext(UseCounterTask::createDeprecation(feature));
+    thread()->workerObjectProxy().postTaskToMainExecutionContext(createCrossThreadTask(&countDeprecationOnDocument, feature));
 }
 
 DEFINE_TRACE(DedicatedWorkerGlobalScope)
