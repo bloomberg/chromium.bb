@@ -285,13 +285,6 @@ class ASH_EXPORT ShelfLayoutManager
   // Stops any animations and progresses them to the end.
   void StopAnimating();
 
-  // Returns the width (if aligned to the side) or height (if aligned to the
-  // bottom).
-  void GetShelfSize(int* width, int* height);
-
-  // Insets |bounds| by |inset| on the edge the shelf is aligned to.
-  void AdjustBoundsBasedOnAlignment(int inset, gfx::Rect* bounds) const;
-
   // Calculates the target bounds assuming visibility of |visible|.
   void CalculateTargetBounds(const State& state, TargetBounds* target_bounds);
 

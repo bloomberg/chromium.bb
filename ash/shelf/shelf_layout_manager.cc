@@ -271,15 +271,12 @@ ShelfAlignment ShelfLayoutManager::GetAlignment() const {
 }
 
 gfx::Rect ShelfLayoutManager::GetIdealBounds() {
-  gfx::Rect bounds(
-      ScreenUtil::GetDisplayBoundsInParent(shelf_->GetNativeView()));
-  int width = 0, height = 0;
-  GetShelfSize(&width, &height);
+  gfx::Rect rect(ScreenUtil::GetDisplayBoundsInParent(shelf_->GetNativeView()));
   return SelectValueForShelfAlignment(
-      gfx::Rect(bounds.x(), bounds.bottom() - height, bounds.width(), height),
-      gfx::Rect(bounds.x(), bounds.y(), width, bounds.height()),
-      gfx::Rect(bounds.right() - width, bounds.y(), width, bounds.height()),
-      gfx::Rect(bounds.x(), bounds.y(), bounds.width(), height));
+      gfx::Rect(rect.x(), rect.bottom() - kShelfSize, rect.width(), kShelfSize),
+      gfx::Rect(rect.x(), rect.y(), kShelfSize, rect.height()),
+      gfx::Rect(rect.right() - kShelfSize, rect.y(), kShelfSize, rect.height()),
+      gfx::Rect(rect.x(), rect.y(), rect.width(), kShelfSize));
 }
 
 void ShelfLayoutManager::LayoutShelf() {
@@ -732,38 +729,14 @@ void ShelfLayoutManager::StopAnimating() {
   GetLayer(shelf_->status_area_widget())->GetAnimator()->StopAnimating();
 }
 
-void ShelfLayoutManager::GetShelfSize(int* width, int* height) {
-  *width = *height = 0;
-  gfx::Size status_size(
-      shelf_->status_area_widget()->GetWindowBoundsInScreen().size());
-  if (IsHorizontalAlignment())
-    *height = kShelfSize;
-  else
-    *width = kShelfSize;
-}
-
-void ShelfLayoutManager::AdjustBoundsBasedOnAlignment(int inset,
-                                                      gfx::Rect* bounds) const {
-  bounds->Inset(SelectValueForShelfAlignment(
-      gfx::Insets(0, 0, inset, 0),
-      gfx::Insets(0, inset, 0, 0),
-      gfx::Insets(0, 0, 0, inset),
-      gfx::Insets(inset, 0, 0, 0)));
-}
-
-void ShelfLayoutManager::CalculateTargetBounds(
-    const State& state,
-    TargetBounds* target_bounds) {
+void ShelfLayoutManager::CalculateTargetBounds(const State& state,
+                                               TargetBounds* target_bounds) {
   gfx::Rect available_bounds =
       ScreenUtil::GetShelfDisplayBoundsInRoot(root_window_);
   gfx::Rect status_size(
       shelf_->status_area_widget()->GetWindowBoundsInScreen().size());
-  int shelf_width = 0, shelf_height = 0;
-  GetShelfSize(&shelf_width, &shelf_height);
-  if (IsHorizontalAlignment())
-    shelf_width = available_bounds.width();
-  else
-    shelf_height = available_bounds.height();
+  int shelf_width = PrimaryAxisValue(available_bounds.width(), kShelfSize);
+  int shelf_height = PrimaryAxisValue(kShelfSize, available_bounds.height());
 
   if (state.visibility_state == SHELF_AUTO_HIDE &&
       state.auto_hide_state == SHELF_AUTO_HIDE_HIDDEN) {
