@@ -177,7 +177,7 @@ display_protocol_error(struct wl_display *display, uint32_t code,
 		return;
 
 	/* set correct errno */
-	if (wl_interface_equal(intf, &wl_display_interface)) {
+	if (intf && wl_interface_equal(intf, &wl_display_interface)) {
 		switch (code) {
 		case WL_DISPLAY_ERROR_INVALID_OBJECT:
 		case WL_DISPLAY_ERROR_INVALID_METHOD:
@@ -790,12 +790,26 @@ display_handle_error(void *data,
 		     uint32_t code, const char *message)
 {
 	struct wl_proxy *proxy = object;
+	uint32_t object_id;
+	const struct wl_interface *interface;
 
-	wl_log("%s@%u: error %d: %s\n",
-	       proxy->object.interface->name, proxy->object.id, code, message);
+	if (proxy) {
+		wl_log("%s@%u: error %d: %s\n",
+		       proxy->object.interface->name,
+		       proxy->object.id,
+		       code, message);
 
-	display_protocol_error(display, code, proxy->object.id,
-			       proxy->object.interface);
+		object_id = proxy->object.id;
+		interface = proxy->object.interface;
+	} else {
+		wl_log("[destroyed object]: error %d: %s\n",
+		       code, message);
+
+		object_id = 0;
+		interface = NULL;
+	}
+
+	display_protocol_error(display, code, object_id, interface);
 }
 
 static void
@@ -1756,10 +1770,12 @@ wl_display_get_error(struct wl_display *display)
 /** Retrieves the information about a protocol error:
  *
  * \param display    The Wayland display
- * \param interface  if not NULL, stores the interface where the error occurred
+ * \param interface  if not NULL, stores the interface where the error occurred,
+ *                   or NULL, if unknown.
  * \param id         if not NULL, stores the object id that generated
- *                   the error. There's no guarantee the object is
- *                   still valid; the client must know if it deleted the object.
+ *                   the error, or 0, if the object id is unknown. There's no
+ *                   guarantee the object is still valid; the client must know
+ *                   if it deleted the object.
  * \return           The error code as defined in the interface specification.
  *
  * \code
