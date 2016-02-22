@@ -1108,15 +1108,8 @@ static void discardPages(Address begin, Address end)
 {
     uintptr_t beginAddress = WTF::roundUpToSystemPage(reinterpret_cast<uintptr_t>(begin));
     uintptr_t endAddress = WTF::roundDownToSystemPage(reinterpret_cast<uintptr_t>(end));
-    if (beginAddress >= endAddress)
-        return;
-    bool allZero = true;
-    for (Address address = reinterpret_cast<Address>(beginAddress); address < reinterpret_cast<Address>(endAddress); address++) {
-        allZero = allZero && !*address;
-    }
-    RELEASE_ASSERT(allZero);
-
-    WTF::discardSystemPages(reinterpret_cast<void*>(beginAddress), endAddress - beginAddress);
+    if (beginAddress < endAddress)
+        WTF::discardSystemPages(reinterpret_cast<void*>(beginAddress), endAddress - beginAddress);
 }
 #endif
 
