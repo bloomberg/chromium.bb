@@ -1054,6 +1054,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
 
   settings->setSupportsMultipleWindows(prefs.supports_multiple_windows);
 
+  settings->setInertVisualViewport(prefs.inert_visual_viewport);
+
   settings->setSmartInsertDeleteEnabled(prefs.smart_insert_delete_enabled);
 
   settings->setSpatialNavigationEnabled(prefs.spatial_navigation_enabled);

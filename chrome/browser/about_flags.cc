@@ -1307,6 +1307,11 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_SETTINGS_WINDOW_DESCRIPTION, kOsDesktop,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableSettingsWindow,
                                switches::kDisableSettingsWindow)},
+    {"inert-visual-viewport",
+     IDS_FLAGS_INERT_VISUAL_VIEWPORT_NAME,
+     IDS_FLAGS_INERT_VISUAL_VIEWPORT_DESCRIPTION,
+     kOsAll,
+     SINGLE_VALUE_TYPE(switches::kInertVisualViewport)},
 #if defined(OS_MACOSX)
     {"enable-save-password-bubble", IDS_FLAGS_SAVE_PASSWORD_BUBBLE_NAME,
      IDS_FLAGS_SAVE_PASSWORD_BUBBLE_DESCRIPTION, kOsMac,
