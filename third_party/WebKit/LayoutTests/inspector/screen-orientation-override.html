@@ -3,16 +3,25 @@
 <script src="../http/tests/inspector/inspector-test.js"></script>
 <script>
 
-if (!window.testRunner)
-    debug("This test requires testRunner");
+var windowOrientationChangeEvent = false;
+var screenOrientationChangeEvent = false;
+
+window.addEventListener("orientationchange", function() { windowOrientationChangeEvent = true; maybeLog(); });
+screen.orientation.addEventListener("change", function() { screenOrientationChangeEvent = true; maybeLog(); });
 
 function dump()
 {
     return "angle: " + screen.orientation.angle + "; type: " + screen.orientation.type;
 }
 
-if (window.testRunner)
-    testRunner.setMockScreenOrientation("landscape-primary");
+function maybeLog()
+{
+    if (windowOrientationChangeEvent && screenOrientationChangeEvent) {
+        windowOrientationChangeEvent = false;
+        screenOrientationChangeEvent = false;
+        console.log(dump());
+    }
+}
 
 function test()
 {
@@ -29,29 +38,27 @@ function test()
 
     function testOverride(angle, orientation, next)
     {
-        var protocolCallback = addDumpResult.bind(null, next);
-        if (orientation) {
-           InspectorTest.ScreenOrientationAgent.setScreenOrientationOverride(angle, orientation, protocolCallback);
-        } else {
-            InspectorTest.ScreenOrientationAgent.clearScreenOrientationOverride(protocolCallback);
-        }
+        InspectorTest.addConsoleSniffer(addDumpResult.bind(null, next));
+        InspectorTest.EmulationAgent.invoke_setDeviceMetricsOverride({width: 0, height: 0, deviceScaleFactor: 0, mobile: true, fitWindow: false, screenOrientation: {type: orientation, angle: angle}}, function() {});
     }
 
     function testError(angle, orientation, next)
     {
-        InspectorTest.ScreenOrientationAgent.setScreenOrientationOverride(angle, orientation, protocolCallback);
-
-        function protocolCallback(error)
-        {
-            InspectorTest.addResult(error);
-            next();
-        }
+        InspectorTest.EmulationAgent.invoke_setDeviceMetricsOverride({width: 0, height: 0, deviceScaleFactor: 0, mobile: true, fitWindow: false, screenOrientation: {type: orientation, angle: angle}}, next);
     }
+
+    var original;
 
     InspectorTest.runTestSuite([
         function initial(next)
         {
-            addDumpResult(next);
+            InspectorTest.evaluateInPage("dump()", dumpCallback);
+
+            function dumpCallback(result)
+            {
+                original = result.value;
+                next();
+            }
         },
 
         function setWrongAngle1(next)
@@ -96,7 +103,18 @@ function test()
 
         function clearOverride(next)
         {
-            testOverride(0, "", next);
+            InspectorTest.EmulationAgent.clearDeviceMetricsOverride(checkInitial);
+
+            function checkInitial()
+            {
+                InspectorTest.evaluateInPage("dump()", dumpCallback);
+            }
+
+            function dumpCallback(result)
+            {
+                InspectorTest.addResult("Equals to initial: " + (original === result.value ? "true" : "false"));
+                next();
+            }
         }
     ]);
 }

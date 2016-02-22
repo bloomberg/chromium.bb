@@ -99,6 +99,14 @@ void RenderWidgetScreenMetricsEmulator::Apply() {
           ? emulation_params_.deviceScaleFactor
           : original_screen_info().deviceScaleFactor;
 
+  if (emulation_params_.screenOrientationType !=
+      blink::WebScreenOrientationUndefined) {
+    modified_resize_params.screen_info.orientationType =
+        emulation_params_.screenOrientationType;
+    modified_resize_params.screen_info.orientationAngle =
+        emulation_params_.screenOrientationAngle;
+  }
+
   // Pass three emulation parameters to the blink side:
   // - we keep the real device scale factor in compositor to produce sharp image
   //   even when emulating different scale factor;

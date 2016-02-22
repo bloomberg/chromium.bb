@@ -592,7 +592,7 @@ void WebTestProxyBase::LayoutAndPaintAsyncThen(const base::Closure& callback) {
 
 void WebTestProxyBase::GetScreenOrientationForTesting(
     blink::WebScreenInfo& screen_info) {
-  if (!screen_orientation_client_)
+  if (!screen_orientation_client_ || !screen_orientation_client_->is_active())
     return;
   // Override screen orientation information with mock data.
   screen_info.orientationType =

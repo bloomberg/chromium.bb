@@ -39,18 +39,20 @@ class EmulationHandler {
                                     const std::string* configuration);
 
   Response CanEmulate(bool* result);
-  Response SetDeviceMetricsOverride(int width,
-                                    int height,
-                                    double device_scale_factor,
-                                    bool mobile,
-                                    bool fit_window,
-                                    const double* optional_scale,
-                                    const double* optional_offset_x,
-                                    const double* optional_offset_y,
-                                    const int* screen_widget,
-                                    const int* screen_height,
-                                    const int* position_x,
-                                    const int* position_y);
+  Response SetDeviceMetricsOverride(
+      int width,
+      int height,
+      double device_scale_factor,
+      bool mobile,
+      bool fit_window,
+      const double* optional_scale,
+      const double* optional_offset_x,
+      const double* optional_offset_y,
+      const int* screen_widget,
+      const int* screen_height,
+      const int* position_x,
+      const int* position_y,
+      const scoped_ptr<base::DictionaryValue>& screen_orientation);
   Response ClearDeviceMetricsOverride();
 
  private:

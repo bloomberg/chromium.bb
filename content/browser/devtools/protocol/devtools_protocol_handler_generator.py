@@ -568,6 +568,7 @@ def ResolveObject(json, mapping):
   mapping["storage_type"] = "scoped_ptr<base::DictionaryValue>"
   mapping["raw_type"] = "base::DictionaryValue*"
   mapping["pass_template"] = tmpl_object_pass
+  mapping["init"] = " = nullptr"
   if "properties" in json:
     if not "declared_name" in mapping:
       mapping["declared_name"] = ("%s%s" %
