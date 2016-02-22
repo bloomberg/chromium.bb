@@ -483,12 +483,12 @@ Animation::AnimationPlayState Animation::playStateInternal() const
 
 Animation::AnimationPlayState Animation::calculatePlayState()
 {
+    if (m_paused && !m_currentTimePending)
+        return Paused;
     if (m_playState == Idle)
         return Idle;
-    if (m_currentTimePending || (isNull(m_startTime) && !m_paused && m_playbackRate != 0))
+    if (m_currentTimePending || (isNull(m_startTime) && m_playbackRate != 0))
         return Pending;
-    if (m_paused)
-        return Paused;
     if (limited())
         return Finished;
     return Running;
@@ -501,11 +501,17 @@ void Animation::pause()
 
     PlayStateUpdateScope updateScope(*this, TimingUpdateOnDemand);
 
+    double newCurrentTime = currentTimeInternal();
+    if (calculatePlayState() == Idle) {
+        newCurrentTime = m_playbackRate < 0 ? effectEnd() : 0;
+    }
+
     if (playing()) {
         m_currentTimePending = true;
     }
+
     m_paused = true;
-    setCurrentTimeInternal(currentTimeInternal(), TimingUpdateOnDemand);
+    setCurrentTimeInternal(newCurrentTime, TimingUpdateOnDemand);
 }
 
 void Animation::unpause()
@@ -861,7 +867,7 @@ void Animation::cancel()
 
     m_holdTime = currentTimeInternal();
     m_held = true;
-    // TODO
+    m_paused = false;
     m_playState = Idle;
     m_startTime = nullValue();
     m_currentTimePending = false;
