@@ -47,6 +47,7 @@
 #include "net/spdy/spdy_protocol.h"
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_session_pool.h"
+#include "net/ssl/channel_id_service.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_failure_state.h"
@@ -57,6 +58,63 @@
 #endif
 
 namespace net {
+
+namespace {
+
+void DoNothingAsyncCallback(int result){};
+void RecordChannelIDKeyMatch(SSLClientSocket* ssl_socket,
+                             ChannelIDService* channel_id_service,
+                             std::string host) {
+  SSLInfo ssl_info;
+  ssl_socket->GetSSLInfo(&ssl_info);
+  if (!ssl_info.channel_id_sent)
+    return;
+  scoped_ptr<crypto::ECPrivateKey> request_key;
+  ChannelIDService::Request request;
+  int result = channel_id_service->GetOrCreateChannelID(
+      host, &request_key, base::Bind(&DoNothingAsyncCallback), &request);
+  // GetOrCreateChannelID only returns ERR_IO_PENDING before its first call
+  // (over the lifetime of the ChannelIDService) has completed or if it is
+  // creating a new key. The key that is being looked up here should already
+  // have been looked up before the channel ID was sent on the ssl socket, so
+  // the expectation is that this call will return synchronously. If this does
+  // return ERR_IO_PENDING, treat that as any other lookup failure and cancel
+  // the async request.
+  if (result == ERR_IO_PENDING)
+    request.Cancel();
+  crypto::ECPrivateKey* socket_key = ssl_socket->GetChannelIDKey();
+
+  // This enum is used for an UMA histogram - do not change or re-use values.
+  enum {
+    NO_KEYS = 0,
+    MATCH = 1,
+    SOCKET_KEY_MISSING = 2,
+    REQUEST_KEY_MISSING = 3,
+    KEYS_DIFFER = 4,
+    KEY_LOOKUP_ERROR = 5,
+    KEY_MATCH_MAX
+  } match;
+  if (result != OK) {
+    match = KEY_LOOKUP_ERROR;
+  } else if (!socket_key && !request_key) {
+    match = NO_KEYS;
+  } else if (!socket_key) {
+    match = SOCKET_KEY_MISSING;
+  } else if (!request_key) {
+    match = REQUEST_KEY_MISSING;
+  } else {
+    match = KEYS_DIFFER;
+    std::string raw_socket_key, raw_request_key;
+    if (socket_key->ExportRawPublicKey(&raw_socket_key) &&
+        request_key->ExportRawPublicKey(&raw_request_key) &&
+        raw_socket_key == raw_request_key) {
+      match = MATCH;
+    }
+  }
+  UMA_HISTOGRAM_ENUMERATION("Net.TokenBinding.KeyMatch", match, KEY_MATCH_MAX);
+}
+
+}  // namespace
 
 // Returns parameters associated with the start of a HTTP stream job.
 scoped_ptr<base::Value> NetLogHttpStreamJobCallback(
@@ -1277,6 +1335,13 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
   DCHECK(!IsQuicAlternative());
 
   next_state_ = STATE_CREATE_STREAM_COMPLETE;
+
+  if (using_ssl_ && connection_->socket()) {
+    SSLClientSocket* ssl_socket =
+        static_cast<SSLClientSocket*>(connection_->socket());
+    RecordChannelIDKeyMatch(ssl_socket, session_->params().channel_id_service,
+                            server_.HostForURL());
+  }
 
   // We only set the socket motivation if we're the first to use
   // this socket.  Is there a race for two SPDY requests?  We really

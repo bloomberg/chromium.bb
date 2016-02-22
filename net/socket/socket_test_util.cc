@@ -833,6 +833,11 @@ Error MockClientSocket::GetSignedEKMForTokenBinding(crypto::ECPrivateKey* key,
   return ERR_NOT_IMPLEMENTED;
 }
 
+crypto::ECPrivateKey* MockClientSocket::GetChannelIDKey() const {
+  NOTREACHED();
+  return NULL;
+}
+
 SSLFailureState MockClientSocket::GetSSLFailureState() const {
   return IsConnected() ? SSL_FAILURE_NONE : SSL_FAILURE_UNKNOWN;
 }

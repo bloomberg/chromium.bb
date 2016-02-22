@@ -28256,6 +28256,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.TokenBinding.KeyMatch" enum="TokenBinding.KeyMatch">
+  <owner>nharper@chromium.org</owner>
+  <summary>
+    Logs on each request that is sent on a connection where Channel ID was sent
+    whether the key that would be used for Token Binding matches the key used
+    for Channel ID.
+  </summary>
+</histogram>
+
 <histogram name="Net.TokenBinding.Support" enum="TokenBinding.Support">
   <owner>nharper@chromium.org</owner>
   <summary>
@@ -81348,6 +81357,15 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="TLSRenegotiationPatched" type="int">
   <int value="0" label="Not renegotiation patched"/>
   <int value="1" label="Renegotiation patched"/>
+</enum>
+
+<enum name="TokenBinding.KeyMatch" type="int">
+  <int value="0" label="No keys"/>
+  <int value="1" label="Keys match"/>
+  <int value="2" label="Socket (Channel ID) key missing"/>
+  <int value="3" label="Request (Token Binding) key missing"/>
+  <int value="4" label="Keys present but don't match"/>
+  <int value="5" label="Error looking up request key"/>
 </enum>
 
 <enum name="TokenBinding.Support" type="int">

@@ -588,6 +588,10 @@ Error SSLClientSocketOpenSSL::GetSignedEKMForTokenBinding(
   return OK;
 }
 
+crypto::ECPrivateKey* SSLClientSocketOpenSSL::GetChannelIDKey() const {
+  return channel_id_key_.get();
+}
+
 SSLFailureState SSLClientSocketOpenSSL::GetSSLFailureState() const {
   return ssl_failure_state_;
 }

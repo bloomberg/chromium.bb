@@ -521,6 +521,10 @@ class SSLClientSocketNSS::Core : public base::RefCountedThreadSafe<Core> {
   // verified, and may not be called within an NSS callback.
   void CacheSessionIfNecessary();
 
+  crypto::ECPrivateKey* GetChannelIDKey() const {
+    return channel_id_key_.get();
+  }
+
  private:
   friend class base::RefCountedThreadSafe<Core>;
   ~Core();
@@ -3196,6 +3200,10 @@ Error SSLClientSocketNSS::GetSignedEKMForTokenBinding(
     std::vector<uint8_t>* out) {
   NOTREACHED();
   return ERR_NOT_IMPLEMENTED;
+}
+
+crypto::ECPrivateKey* SSLClientSocketNSS::GetChannelIDKey() const {
+  return core_->GetChannelIDKey();
 }
 
 SSLFailureState SSLClientSocketNSS::GetSSLFailureState() const {

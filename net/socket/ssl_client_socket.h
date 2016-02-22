@@ -153,6 +153,11 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
   virtual Error GetSignedEKMForTokenBinding(crypto::ECPrivateKey* key,
                                             std::vector<uint8_t>* out) = 0;
 
+  // This method is only for debugging crbug.com/548423 and will be removed when
+  // that bug is closed. This returns the channel ID key that was used when
+  // establishing the connection (or NULL if no channel ID was used).
+  virtual crypto::ECPrivateKey* GetChannelIDKey() const = 0;
+
   // Returns the state of the handshake when it failed, or |SSL_FAILURE_NONE| if
   // the handshake succeeded. This is used to classify causes of the TLS version
   // fallback.
