@@ -36,11 +36,13 @@ gin::Handle<ServiceRegistryJsWrapper> ServiceRegistryJsWrapper::Create(
 
 gin::ObjectTemplateBuilder ServiceRegistryJsWrapper::GetObjectTemplateBuilder(
     v8::Isolate* isolate) {
-  return Wrappable<ServiceRegistryJsWrapper>::GetObjectTemplateBuilder(isolate).
-      SetMethod("connectToService",
-                &ServiceRegistryJsWrapper::ConnectToService).
-      SetMethod("addServiceOverrideForTesting",
-                &ServiceRegistryJsWrapper::AddServiceOverrideForTesting);
+  return Wrappable<ServiceRegistryJsWrapper>::GetObjectTemplateBuilder(isolate)
+      .SetMethod("connectToService",
+                 &ServiceRegistryJsWrapper::ConnectToService)
+      .SetMethod("addServiceOverrideForTesting",
+                 &ServiceRegistryJsWrapper::AddServiceOverrideForTesting)
+      .SetMethod("clearServiceOverridesForTesting",
+                 &ServiceRegistryJsWrapper::ClearServiceOverridesForTesting);
 }
 
 mojo::Handle ServiceRegistryJsWrapper::ConnectToService(
@@ -63,6 +65,15 @@ void ServiceRegistryJsWrapper::AddServiceOverrideForTesting(
   registry->AddServiceOverrideForTesting(
       service_name, base::Bind(&ServiceRegistryJsWrapper::CallJsFactory,
                                weak_factory_.GetWeakPtr(), factory));
+}
+
+void ServiceRegistryJsWrapper::ClearServiceOverridesForTesting() {
+  ServiceRegistryImpl* registry =
+      static_cast<ServiceRegistryImpl*>(service_registry_.get());
+  if (!registry)
+    return;
+
+  registry->ClearServiceOverridesForTesting();
 }
 
 ServiceRegistryJsWrapper::ServiceRegistryJsWrapper(

@@ -40,11 +40,20 @@ function loadMojoModules(name, modules = []) {
   });
 }
 
+function mojoTestCleanUp(mojo) {
+  mojo.serviceRegistry.clearServiceOverridesForTesting();
+}
+
 // Runs a promise_test which depends on the Mojo system API modules available to
 // all layout tests. The test implementation function is called with an Object
 // that exposes common Mojo module interfaces.
 function mojo_test(func, name, properties) {
-  promise_test(() => loadMojoModules(name).then(func), name, properties);
+  promise_test(() => loadMojoModules(name).then(mojo => {
+    let result = Promise.resolve(func(mojo));
+    let cleanUp = () => mojoTestCleanUp(mojo);
+    result.then(cleanUp, cleanUp);
+    return result;
+  }), name, properties);
 }
 
 // Waits for a message to become available on a pipe.

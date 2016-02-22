@@ -45,6 +45,10 @@ void ServiceRegistryImpl::AddServiceOverrideForTesting(
   service_overrides_[service_name] = factory;
 }
 
+void ServiceRegistryImpl::ClearServiceOverridesForTesting() {
+  service_overrides_.clear();
+}
+
 void ServiceRegistryImpl::AddService(const std::string& service_name,
                                      const ServiceFactory service_factory) {
   service_factories_[service_name] = service_factory;

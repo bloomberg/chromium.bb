@@ -44,6 +44,7 @@ class CONTENT_EXPORT ServiceRegistryImpl
   // for testing.
   void AddServiceOverrideForTesting(const std::string& service_name,
                                     const ServiceFactory& service_factory);
+  void ClearServiceOverridesForTesting();
 
   // ServiceRegistry overrides.
   void AddService(const std::string& service_name,

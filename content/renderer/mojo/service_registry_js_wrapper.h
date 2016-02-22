@@ -37,6 +37,7 @@ class CONTENT_EXPORT ServiceRegistryJsWrapper
   // JS interface implementation.
   void AddServiceOverrideForTesting(const std::string& service_name,
                                     v8::Local<v8::Function> service_factory);
+  void ClearServiceOverridesForTesting();
   mojo::Handle ConnectToService(const std::string& service_name);
 
   static gin::WrapperInfo kWrapperInfo;
