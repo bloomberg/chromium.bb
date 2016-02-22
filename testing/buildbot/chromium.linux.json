@@ -138,6 +138,12 @@
       },
       {
         "args": [
+          "--isolate_file_path=src/third_party/WebKit/Source/platform/heap/BlinkHeapUnitTests.isolate"
+        ],
+        "test": "blink_heap_unittests"
+      },
+      {
+        "args": [
           "--isolate_file_path=src/breakpad/breakpad_unittests.isolate"
         ],
         "override_compile_targets": [
@@ -274,6 +280,12 @@
           "--isolate_file_path=src/base/base_unittests.isolate"
         ],
         "test": "base_unittests"
+      },
+      {
+        "args": [
+          "--isolate_file_path=src/third_party/WebKit/Source/platform/heap/BlinkHeapUnitTests.isolate"
+        ],
+        "test": "blink_heap_unittests"
       },
       {
         "args": [
