@@ -155,6 +155,32 @@ test(function(t)
 }, "A parent can use aria-owns to reorder its children into a more logical AX ordering.");
 </script>
 
+<div class="container">
+    <ul id="dead_parent" aria-owns="orphan"></ul>
+    <li id="orphan">Orphan</li>
+</div>
+
+<script>
+test(function(t)
+{
+    var axDeadParent = accessibilityController.accessibleElementById(
+        "dead_parent");
+    assert_equals(axDeadParent.role, "AXRole: AXList");
+    assert_equals(axDeadParent.childrenCount, 1);
+
+    var axOrphan = axDeadParent.childAtIndex(0);
+    assert_equals(axOrphan.role, "AXRole: AXListItem");
+    assert_equals(axOrphan.parentElement().role, "AXRole: AXList");
+
+    var deadParent = document.getElementById("dead_parent");
+    deadParent.parentElement.removeChild(deadParent);
+
+    var orphan = document.getElementById("orphan");
+    orphan.setAttribute("id", "o2");
+    orphan.setAttribute("id", "orphan");
+}, "No crash if an aria-owns parent is deleted and the child is re-added.");
+</script>
+
 <script>
 if (window.testRunner)
     document.body.className = "hideAllContainers";

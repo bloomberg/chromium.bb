@@ -580,6 +580,16 @@ void AXObjectCacheImpl::removeAXID(AXObject* object)
     ASSERT(m_idsInUse.contains(objID));
     object->setAXObjectID(0);
     m_idsInUse.remove(objID);
+
+    if (m_ariaOwnerToChildrenMapping.contains(objID)) {
+        Vector<AXID> childAXIDs = m_ariaOwnerToChildrenMapping.get(objID);
+        for (size_t i = 0; i < childAXIDs.size(); ++i)
+            m_ariaOwnedChildToOwnerMapping.remove(childAXIDs[i]);
+        m_ariaOwnerToChildrenMapping.remove(objID);
+    }
+    m_ariaOwnedChildToOwnerMapping.remove(objID);
+    m_ariaOwnedChildToRealParentMapping.remove(objID);
+    m_ariaOwnerToIdsMapping.remove(objID);
 }
 
 void AXObjectCacheImpl::selectionChanged(Node* node)
