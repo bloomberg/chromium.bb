@@ -43,45 +43,6 @@
 #include "cairo-util.h"
 #include "hash.h"
 
-static void
-weston_dnd_start(struct weston_wm *wm, xcb_window_t owner)
-{
-	uint32_t values[1], version = 4;
-
-	wm->dnd_window = xcb_generate_id(wm->conn);
-	values[0] =
-		XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY |
-		XCB_EVENT_MASK_PROPERTY_CHANGE;
-
-	xcb_create_window(wm->conn,
-			  XCB_COPY_FROM_PARENT,
-			  wm->dnd_window,
-			  wm->screen->root,
-			  0, 0,
-			  8192, 8192,
-			  0,
-			  XCB_WINDOW_CLASS_INPUT_ONLY,
-			  wm->screen->root_visual,
-			  XCB_CW_EVENT_MASK, values);
-	xcb_change_property(wm->conn,
-			    XCB_PROP_MODE_REPLACE,
-			    wm->dnd_window,
-			    wm->atom.xdnd_aware,
-			    XCB_ATOM_ATOM,
-			    32, /* format */
-			    1, &version);
-
-	xcb_map_window(wm->conn, wm->dnd_window);
-	wm->dnd_owner = owner;
-}
-
-static void
-weston_dnd_stop(struct weston_wm *wm)
-{
-	xcb_destroy_window(wm->conn, wm->dnd_window);
-	wm->dnd_window = XCB_WINDOW_NONE;
-}
-
 struct dnd_data_source {
 	struct weston_data_source base;
 	struct weston_wm *wm;
@@ -234,12 +195,6 @@ weston_wm_handle_dnd_event(struct weston_wm *wm,
 
 		weston_log("XdndSelection owner: %d!\n",
 			   xfixes_selection_notify->owner);
-
-		if (xfixes_selection_notify->owner != XCB_WINDOW_NONE)
-			weston_dnd_start(wm, xfixes_selection_notify->owner);
-		else
-			weston_dnd_stop(wm);
-
 		return 1;
 	}
 
@@ -267,7 +222,7 @@ weston_wm_handle_dnd_event(struct weston_wm *wm,
 void
 weston_wm_dnd_init(struct weston_wm *wm)
 {
-	uint32_t mask;
+	uint32_t values[1], version = 4, mask;
 
 	mask =
 		XCB_XFIXES_SELECTION_EVENT_MASK_SET_SELECTION_OWNER |
@@ -275,4 +230,27 @@ weston_wm_dnd_init(struct weston_wm *wm)
 		XCB_XFIXES_SELECTION_EVENT_MASK_SELECTION_CLIENT_CLOSE;
 	xcb_xfixes_select_selection_input(wm->conn, wm->selection_window,
 					  wm->atom.xdnd_selection, mask);
+
+	wm->dnd_window = xcb_generate_id(wm->conn);
+	values[0] =
+		XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY |
+		XCB_EVENT_MASK_PROPERTY_CHANGE;
+
+	xcb_create_window(wm->conn,
+			  XCB_COPY_FROM_PARENT,
+			  wm->dnd_window,
+			  wm->screen->root,
+			  0, 0,
+			  8192, 8192,
+			  0,
+			  XCB_WINDOW_CLASS_INPUT_ONLY,
+			  wm->screen->root_visual,
+			  XCB_CW_EVENT_MASK, values);
+	xcb_change_property(wm->conn,
+			    XCB_PROP_MODE_REPLACE,
+			    wm->dnd_window,
+			    wm->atom.xdnd_aware,
+			    XCB_ATOM_ATOM,
+			    32, /* format */
+			    1, &version);
 }
