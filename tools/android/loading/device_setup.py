@@ -105,12 +105,15 @@ def _SetUpDevice(device, package_info):
 
 @contextlib.contextmanager
 def WprHost(device, wpr_archive_path, record=False,
+            network_condition_name=None,
             disable_script_injection=False):
   """Launches web page replay host.
 
   Args:
     device: Android device.
     wpr_archive_path: host sided WPR archive's path.
+    network_condition_name: Network condition name available in
+        chrome_setup.NETWORK_CONDITIONS.
     record: Enables or disables WPR archive recording.
 
   Returns:
@@ -119,6 +122,9 @@ def WprHost(device, wpr_archive_path, record=False,
   """
   assert device
   if wpr_archive_path == None:
+    assert not record, 'WPR cannot record without a specified archive.'
+    assert not network_condition_name, ('WPR cannot emulate network condition' +
+                                        ' without a specified archive.')
     yield []
     return
 
@@ -129,6 +135,16 @@ def WprHost(device, wpr_archive_path, record=False,
       os.remove(wpr_archive_path)
   else:
     assert os.path.exists(wpr_archive_path)
+  if network_condition_name:
+    condition = chrome_setup.NETWORK_CONDITIONS[network_condition_name]
+    if record:
+      logging.warning('WPR network condition is ignored when recording.')
+    else:
+      wpr_server_args.extend([
+          '--down', chrome_setup.BandwidthToString(condition['download']),
+          '--up', chrome_setup.BandwidthToString(condition['upload']),
+          '--delay_ms', str(condition['latency']),
+          '--shaping_type', 'proxy'])
 
   if disable_script_injection:
     # Remove default WPR injected scripts like deterministic.js which

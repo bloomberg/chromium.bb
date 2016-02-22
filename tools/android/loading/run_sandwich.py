@@ -33,6 +33,7 @@ sys.path.append(os.path.join(_SRC_DIR, 'build', 'android'))
 from pylib import constants
 import devil_chromium
 
+import chrome_setup
 import device_setup
 import devtools_monitor
 import options
@@ -64,6 +65,10 @@ _TIME_TO_DEVICE_IDLE_SECONDS = 2
 
 def _RemoteCacheDirectory():
   return '/data/data/{}/cache/Cache'.format(OPTIONS.chrome_package_name)
+
+# Devtools timeout of 1 minute to avoid websocket timeout on slow
+# network condition.
+_DEVTOOLS_TIMEOUT = 60
 
 
 def _ReadUrlsFromJobDescription(job_name):
@@ -258,14 +263,9 @@ def _CleanPreviousTraces(output_directories_path):
     shutil.rmtree(directory_path)
 
 
-def main():
-  logging.basicConfig(level=logging.INFO)
-  devil_chromium.Initialize()
-
-  # Don't give the argument yet. All we are interested in for now is accessing
-  # the default values of OPTIONS.
-  OPTIONS.ParseArgs([])
-
+def _ArgumentParser():
+  """Build a command line argument's parser.
+  """
   parser = argparse.ArgumentParser()
   parser.add_argument('--job', required=True,
                       help='JSON file with job description.')
@@ -287,7 +287,25 @@ def main():
                       help='Disable WPR default script injection such as ' +
                           'overriding javascript\'s Math.random() and Date() ' +
                           'with deterministic implementations.')
-  args = parser.parse_args()
+  parser.add_argument('--network-condition', default=None,
+      choices=sorted(chrome_setup.NETWORK_CONDITIONS.keys()),
+      help='Set a network profile.')
+  parser.add_argument('--network-emulator', default='browser',
+      choices=['browser', 'wpr'],
+      help='Set which component is emulating the network condition.' +
+          ' (Default to browser)')
+  return parser
+
+
+def main():
+  logging.basicConfig(level=logging.INFO)
+  devil_chromium.Initialize()
+
+  # Don't give the argument yet. All we are interested in for now is accessing
+  # the default values of OPTIONS.
+  OPTIONS.ParseArgs([])
+
+  args = _ArgumentParser().parse_args()
 
   if not os.path.isdir(args.output):
     try:
@@ -307,22 +325,41 @@ def main():
   device = device_utils.DeviceUtils.HealthyDevices()[0]
   local_cache_archive_path = os.path.join(args.output, 'cache.zip')
   local_cache_directory_path = None
+  wpr_network_condition_name = None
+  browser_network_condition_name = None
+  if args.network_emulator == 'wpr':
+    wpr_network_condition_name = args.network_condition
+  elif args.network_emulator == 'browser':
+    browser_network_condition_name = args.network_condition
+  else:
+    assert False
 
   if args.cache_op == 'push':
     assert os.path.isfile(local_cache_archive_path)
     local_cache_directory_path = tempfile.mkdtemp(suffix='.cache')
     _UnzipDirectoryContent(local_cache_archive_path, local_cache_directory_path)
 
-  with device_setup.WprHost(device, args.wpr_archive, args.wpr_record,
-      args.disable_wpr_script_injection) as additional_flags:
+  with device_setup.WprHost(device, args.wpr_archive,
+      record=args.wpr_record,
+      network_condition_name=wpr_network_condition_name,
+      disable_script_injection=args.disable_wpr_script_injection
+      ) as additional_flags:
     def _RunNavigation(url, clear_cache, trace_id):
       with device_setup.DeviceConnection(
           device=device,
           additional_flags=additional_flags) as connection:
+        additional_metadata = {}
+        if browser_network_condition_name:
+          additional_metadata = chrome_setup.SetUpEmulationAndReturnMetadata(
+              connection=connection,
+              emulated_device_name=None,
+              emulated_network_name=browser_network_condition_name)
         loading_trace = trace_recorder.MonitorUrl(
             connection, url,
             clear_cache=clear_cache,
-            categories=pull_sandwich_metrics.CATEGORIES)
+            categories=pull_sandwich_metrics.CATEGORIES,
+            timeout=_DEVTOOLS_TIMEOUT)
+        loading_trace.metadata.update(additional_metadata)
         if trace_id != None:
           loading_trace_path = os.path.join(
               args.output, str(trace_id), 'trace.json')

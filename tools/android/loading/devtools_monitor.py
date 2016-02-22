@@ -20,6 +20,9 @@ from telemetry.internal.backends.chrome_inspector import inspector_websocket
 from telemetry.internal.backends.chrome_inspector import websocket
 
 
+DEFAULT_TIMEOUT = 10 # seconds
+
+
 class DevToolsConnectionException(Exception):
   def __init__(self, message):
     super(DevToolsConnectionException, self).__init__(message)
@@ -217,20 +220,21 @@ class DevToolsConnection(object):
     self._tearing_down_tracing = False
     self._set_up = True
 
-  def StartMonitoring(self):
+  def StartMonitoring(self, timeout=DEFAULT_TIMEOUT):
     """Starts monitoring.
 
     DevToolsConnection.SetUpMonitoring() has to be called first.
     """
     assert self._set_up, 'DevToolsConnection.SetUpMonitoring not called.'
-    self._Dispatch()
+    self._Dispatch(timeout=timeout)
     self._TearDownMonitoring()
 
   def StopMonitoring(self):
     """Stops the monitoring."""
     self._please_stop = True
 
-  def _Dispatch(self, kind='Monitoring', timeout=10):
+  def _Dispatch(self, kind='Monitoring',
+                timeout=DEFAULT_TIMEOUT):
     self._please_stop = False
     while not self._please_stop:
       try:

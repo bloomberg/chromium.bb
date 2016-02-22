@@ -17,9 +17,10 @@ from options import OPTIONS
 
 # Copied from
 # WebKit/Source/devtools/front_end/network/NetworkConditionsSelector.js
-_NETWORK_CONDITIONS = {
-    'Offline': {
-        'download': 0 * 1024 / 8, 'upload': 0 * 1024 / 8, 'latency': 0},
+# Units:
+#   download/upload: byte/s
+#   latency: ms
+NETWORK_CONDITIONS = {
     'GPRS': {
         'download': 50 * 1024 / 8, 'upload': 20 * 1024 / 8, 'latency': 500},
     'Regular 2G': {
@@ -41,6 +42,23 @@ _NETWORK_CONDITIONS = {
         'download': 30 * 1024 * 1024 / 8, 'upload': 15 * 1024 * 1024 / 8,
         'latency': 2}
 }
+
+
+def BandwidthToString(bandwidth):
+  """Converts a bandwidth to string.
+
+  Args:
+    bandwidth: The bandwidth to convert in byte/s. Must be a multiple of 1024/8.
+
+  Returns:
+    A string compatible with wpr --{up,down} command line flags.
+  """
+  assert type(bandwidth) == int
+  assert bandwidth % (1024/8) == 0
+  bandwidth_kbps = (bandwidth * 8) / 1024
+  if bandwidth_kbps % 1024:
+    return '{}Kbit/s'.format(bandwidth_kbps)
+  return '{}Mbit/s'.format(bandwidth_kbps / 1024)
 
 
 @contextlib.contextmanager
@@ -80,7 +98,7 @@ def SetUpEmulationAndReturnMetadata(connection, emulated_device_name,
     connection: (DevToolsConnection)
     emulated_device_name: (str) Key in the dict returned by
                           _LoadEmulatedDevices().
-    emulated_network_name: (str) Key in _NETWORK_CONDITIONS.
+    emulated_network_name: (str) Key in NETWORK_CONDITIONS.
 
   Returns:
     A metadata dict {'deviceEmulation': params, 'networkEmulation': params}.
@@ -93,7 +111,7 @@ def SetUpEmulationAndReturnMetadata(connection, emulated_device_name,
         connection, emulated_device)
     result['deviceEmulation'] = emulation_params
   if emulated_network_name:
-    params = _NETWORK_CONDITIONS[emulated_network_name]
+    params = NETWORK_CONDITIONS[emulated_network_name]
     _SetUpNetworkEmulation(
         connection, params['latency'], params['download'], params['upload'])
     result['networkEmulation'] = params

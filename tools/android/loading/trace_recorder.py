@@ -31,14 +31,16 @@ import tracing
 
 
 def MonitorUrl(connection, url, clear_cache=False,
-               categories=tracing.DEFAULT_CATEGORIES):
+               categories=tracing.DEFAULT_CATEGORIES,
+               timeout=devtools_monitor.DEFAULT_TIMEOUT):
   """Monitor a URL via a trace recorder.
 
   Args:
-    connection: A device_monitor.DevToolsConnection instance.
+    connection: A devtools_monitor.DevToolsConnection instance.
     url: url to navigate to as string.
     clear_cache: boolean indicating if cache should be cleared before loading.
     categories: List of tracing event categories to record.
+    timeout: Websocket timeout.
 
   Returns:
     loading_trace.LoadingTrace.
@@ -50,7 +52,7 @@ def MonitorUrl(connection, url, clear_cache=False,
   if clear_cache:
     connection.ClearCache()
   connection.SendAndIgnoreResponse('Page.navigate', {'url': url})
-  connection.StartMonitoring()
+  connection.StartMonitoring(timeout=timeout)
   metadata = {'date': datetime.datetime.utcnow().isoformat(),
               'seconds_since_epoch': time.time()}
   return loading_trace.LoadingTrace(url, metadata, page, request, trace)
