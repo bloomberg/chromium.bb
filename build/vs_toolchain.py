@@ -176,7 +176,7 @@ def _CopyRuntime2013(target_dir, source_dir, dll_pattern):
     _CopyRuntimeImpl(target, source)
 
 
-def _CopyRuntime2015(target_dir, source_dir, dll_pattern):
+def _CopyRuntime2015(target_dir, source_dir, dll_pattern, suffix):
   """Copy both the msvcp and vccorlib runtime DLLs, only if the target doesn't
   exist, but the target directory does exist."""
   for file_part in ('msvcp', 'vccorlib', 'vcruntime'):
@@ -184,6 +184,14 @@ def _CopyRuntime2015(target_dir, source_dir, dll_pattern):
     target = os.path.join(target_dir, dll)
     source = os.path.join(source_dir, dll)
     _CopyRuntimeImpl(target, source)
+  ucrt_src_dir = os.path.join(source_dir, 'api-ms-win-*.dll')
+  print 'Copying %s to %s...' % (ucrt_src_dir, target_dir)
+  for ucrt_src_file in glob.glob(ucrt_src_dir):
+    file_part = os.path.basename(ucrt_src_file)
+    ucrt_dst_file = os.path.join(target_dir, file_part)
+    _CopyRuntimeImpl(ucrt_dst_file, ucrt_src_file, False)
+  _CopyRuntimeImpl(os.path.join(target_dir, 'ucrtbase' + suffix),
+                    os.path.join(source_dir, 'ucrtbase' + suffix))
 
 
 def _CopyRuntime(target_dir, source_dir, target_cpu, debug):
@@ -191,15 +199,7 @@ def _CopyRuntime(target_dir, source_dir, target_cpu, debug):
   directory does exist. Handles VS 2013 and VS 2015."""
   suffix = "d.dll" if debug else ".dll"
   if GetVisualStudioVersion() == '2015':
-    _CopyRuntime2015(target_dir, source_dir, '%s140' + suffix)
-    ucrt_src_dir = os.path.join(source_dir, 'api-ms-win-*.dll')
-    print 'Copying %s to %s...' % (ucrt_src_dir, target_dir)
-    for ucrt_src_file in glob.glob(ucrt_src_dir):
-      file_part = os.path.basename(ucrt_src_file)
-      ucrt_dst_file = os.path.join(target_dir, file_part)
-      _CopyRuntimeImpl(ucrt_dst_file, ucrt_src_file, False)
-    _CopyRuntimeImpl(os.path.join(target_dir, 'ucrtbase' + suffix),
-                      os.path.join(source_dir, 'ucrtbase' + suffix))
+    _CopyRuntime2015(target_dir, source_dir, '%s140' + suffix, suffix)
   else:
     _CopyRuntime2013(target_dir, source_dir, 'msvc%s120' + suffix)
 
