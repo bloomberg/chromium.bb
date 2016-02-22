@@ -12,7 +12,7 @@
 
 namespace {
 
-const unsigned kFormatVersion = 1;
+const unsigned kFormatVersion = 2;
 
 struct PSLRoot {
   size_t format_version;
@@ -23,9 +23,15 @@ struct PSLRoot {
   const size_t *exported_names;
   size_t export_count;
 
+  // Imports.
   void *const *imported_ptrs;
   const size_t *imported_names;
   size_t import_count;
+
+  // Hash Table, for quick exported symbol lookup.
+  size_t bucket_count;
+  const int32_t *hash_buckets;
+  const uint32_t *hash_chains;
 };
 
 const char *GetExportedSymbolName(const PSLRoot *root, size_t i) {
@@ -48,13 +54,86 @@ void DumpImportedSymbols(const PSLRoot *root) {
   }
 }
 
-void *GetExportedSym(const PSLRoot *root, const char *name) {
+void *GetExportedSymSlow(const PSLRoot *root, const char *name) {
   for (size_t i = 0; i < root->export_count; i++) {
     if (strcmp(GetExportedSymbolName(root, i), name) == 0) {
       return root->exported_ptrs[i];
     }
   }
   return NULL;
+}
+
+uint32_t HashString(const char *sp) {
+  uint32_t h = 5381;
+  for (unsigned char c = *sp; c != '\0'; c = *++sp)
+    h = h * 33 + c;
+  return h;
+}
+
+void *GetExportedSymHash(const PSLRoot *root, const char *name) {
+  uint32_t hash = HashString(name);
+  uint32_t bucket_index = hash % root->bucket_count;
+  int32_t chain_index = root->hash_buckets[bucket_index];
+  // Bucket empty -- value not found.
+  if (chain_index == -1)
+    return NULL;
+
+  for (; chain_index < root->export_count; chain_index++) {
+    uint32_t chain_value = root->hash_chains[chain_index];
+    if ((hash & ~1) == (chain_value & ~1) &&
+        strcmp(name, GetExportedSymbolName(root, chain_index)) == 0)
+      return root->exported_ptrs[chain_index];
+
+    // End of chain -- value not found.
+    if ((chain_value & 1) == 1)
+      return NULL;
+  }
+
+  ASSERT(false);
+}
+
+void VerifyHashTable(const PSLRoot *root) {
+  // Confirm that each entry in hash_chains[] contains a hash
+  // corresponding with the hashes of "exported_names", in order.
+  for (uint32_t chain_index = 0; chain_index < root->export_count;
+       chain_index++) {
+    uint32_t hash = HashString(GetExportedSymbolName(root, chain_index));
+    ASSERT_EQ(hash & ~1, root->hash_chains[chain_index] & ~1);
+  }
+
+  // Confirm that each entry in hash_buckets[] is either -1 or a valid index
+  // into hash_chains[].
+  for (uint32_t bucket_index = 0; bucket_index < root->bucket_count;
+       bucket_index++) {
+    int32_t chain_index = root->hash_buckets[bucket_index];
+    ASSERT_GE(chain_index, -1);
+    ASSERT_LT(chain_index, root->export_count);
+
+    if (chain_index != -1) {
+      // For each chain marked in hash_buckets[], confirm that it is terminated
+      // and the hash matches the hash_buckets[] index.
+      bool chain_terminated = false;
+      for (; chain_index < root->export_count; chain_index++) {
+        uint32_t hash = HashString(GetExportedSymbolName(root, chain_index));
+        ASSERT_EQ(bucket_index, hash % root->bucket_count);
+        if ((root->hash_chains[chain_index] & 1) == 1) {
+          chain_terminated = true;
+          break;
+        }
+      }
+      ASSERT(chain_terminated);
+    }
+  }
+}
+
+void *GetExportedSym(const PSLRoot *root, const char *name) {
+  // There are two possible ways to get the exported symbol. First, by manually
+  // scanning all exports, and secondly, by using the exported symbol hash
+  // table. Use both methods, and assert that they provide an equivalent result.
+  void *sym_slow = GetExportedSymSlow(root, name);
+  void *sym_hash = GetExportedSymHash(root, name);
+  ASSERT_EQ(sym_slow, sym_hash);
+  return sym_slow;
 }
 
 void TestImportReloc(const PSLRoot *psl_root,
@@ -120,6 +199,8 @@ int main(int argc, char **argv) {
   const PSLRoot *psl_root = (PSLRoot *) pso_root;
 
   ASSERT_EQ(psl_root->format_version, kFormatVersion);
+
+  VerifyHashTable(psl_root);
 
   // Test exports.
 

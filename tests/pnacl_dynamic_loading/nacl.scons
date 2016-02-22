@@ -76,7 +76,7 @@ env.AddNodeToTestSuite(
 
 
 # Use of the ConvertToPSO pass requires this toolchain version.
-if env['TOOLCHAIN_FEATURE_VERSION'] < 17:
+if env['TOOLCHAIN_FEATURE_VERSION'] < 18:
   Return()
 
 dso4 = MakeAndTranslatePso(
