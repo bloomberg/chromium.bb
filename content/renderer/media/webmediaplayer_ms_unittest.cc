@@ -141,7 +141,7 @@ void MockVideoFrameProvider::QueueFrames(
 
     if (token >= 0) {
       gfx::Size natural_size = media::TestVideoConfig::NormalCodedSize();
-      auto frame = media::VideoFrame::CreateFrame(
+      auto frame = media::VideoFrame::CreateZeroInitializedFrame(
           media::PIXEL_FORMAT_YV12, natural_size, gfx::Rect(natural_size),
           natural_size, base::TimeDelta::FromMilliseconds(token));
 
