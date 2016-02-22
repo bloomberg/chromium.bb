@@ -794,7 +794,7 @@ insertBrailleIndicators (int finish)
 	    if ((checkAttr_safe (currentInput, src, CTC_Letter, 0)
 	       && !(beforeAttributes & CTC_Letter))
 	      && (!checkAttr_safe (currentInput, src + 1, CTC_Letter, 0)
-		))//  || (beforeAttributes & CTC_Digit)))
+		  || (beforeAttributes & CTC_Digit)))
 	    {
 	      ok = 1;
 	      if (src > 0)
