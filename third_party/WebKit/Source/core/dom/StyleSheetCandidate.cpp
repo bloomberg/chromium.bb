@@ -93,6 +93,10 @@ bool StyleSheetCandidate::canBeActivated(const String& currentPreferrableName) c
     StyleSheet* sheet = this->sheet();
     if (!sheet || sheet->disabled() || !sheet->isCSSStyleSheet())
         return false;
+
+    if (sheet->ownerNode() && sheet->ownerNode()->isInShadowTree())
+        return true;
+
     const AtomicString& title = this->title();
     if (!isEnabledViaScript() && !title.isEmpty() && title != currentPreferrableName)
         return false;

@@ -57,14 +57,8 @@ void ShadowTreeStyleSheetCollection::collectStyleSheets(StyleEngine& engine, Sty
         if (!sheet)
             continue;
 
-        // FIXME: clarify how PREFERRED or ALTERNATE works in shadow trees.
-        // Should we set preferred/selected stylesheets name in shadow trees and
-        // use the name in document?
-        if (candidate.hasPreferrableName(engine.preferredStylesheetSetName()))
-            engine.selectStylesheetSetName(candidate.title());
-
         collection.appendSheetForList(sheet);
-        if (candidate.canBeActivated(engine.preferredStylesheetSetName()))
+        if (candidate.canBeActivated(nullAtom))
             collection.appendActiveStyleSheet(toCSSStyleSheet(sheet));
     }
 }
