@@ -220,9 +220,17 @@ double SiteEngagementScore::Score() const {
 
 void SiteEngagementScore::AddPoints(double points) {
   DCHECK_NE(0, points);
+  double decayed_score = DecayedScore();
+
+  // Record the original and decayed scores after a decay event.
+  if (decayed_score < raw_score_) {
+    SiteEngagementMetrics::RecordScoreDecayedFrom(raw_score_);
+    SiteEngagementMetrics::RecordScoreDecayedTo(decayed_score);
+  }
+
   // As the score is about to be updated, commit any decay that has happened
   // since the last update.
-  raw_score_ = DecayedScore();
+  raw_score_ = decayed_score;
 
   base::Time now = clock_->Now();
   if (!last_engagement_time_.is_null() &&
@@ -317,8 +325,7 @@ double SiteEngagementScore::DecayedScore() const {
     return raw_score_;
 
   int periods = days_since_engagement / GetDecayPeriodInDays();
-  double decayed_score = raw_score_ - periods * GetDecayPoints();
-  return std::max(0.0, decayed_score);
+  return std::max(0.0, raw_score_ - periods * GetDecayPoints());
 }
 
 double SiteEngagementScore::BonusScore() const {

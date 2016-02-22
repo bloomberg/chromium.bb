@@ -1156,3 +1156,93 @@ TEST_F(SiteEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     EXPECT_EQ(5.0, engagement->GetTotalEngagementPoints());
   }
 }
+
+TEST_F(SiteEngagementServiceTest, ScoreDecayHistograms) {
+  base::SimpleTestClock* clock = new base::SimpleTestClock();
+  scoped_ptr<SiteEngagementService> service(
+      new SiteEngagementService(profile(), make_scoped_ptr(clock)));
+
+  base::Time current_day = GetReferenceTime();
+  clock->SetNow(current_day);
+  base::HistogramTester histograms;
+  GURL origin1("http://www.google.com/");
+  GURL origin2("http://drive.google.com/");
+
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kScoreDecayedFromHistogram,
+                              0);
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kScoreDecayedToHistogram,
+                              0);
+
+  service->AddPoints(origin2, SiteEngagementScore::GetNavigationPoints());
+
+  // Max the score for origin1.
+  for (int i = 0; i < kMoreDaysThanNeededToMaxTotalEngagement; ++i) {
+    current_day += base::TimeDelta::FromDays(1);
+    clock->SetNow(current_day);
+
+    for (int j = 0; j < kMoreAccumulationsThanNeededToMaxDailyEngagement; ++j)
+      service->AddPoints(origin1, SiteEngagementScore::GetNavigationPoints());
+  }
+
+  EXPECT_EQ(SiteEngagementScore::kMaxPoints, service->GetScore(origin1));
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kScoreDecayedFromHistogram,
+                              0);
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kScoreDecayedToHistogram,
+                              0);
+
+  // Check histograms after one decay period.
+  clock->SetNow(current_day + base::TimeDelta::FromDays(
+                                  SiteEngagementScore::GetDecayPeriodInDays()));
+
+  // Trigger decay and histogram hit.
+  service->AddPoints(origin1, 0.01);
+  histograms.ExpectUniqueSample(
+      SiteEngagementMetrics::kScoreDecayedFromHistogram,
+      SiteEngagementScore::kMaxPoints, 1);
+  histograms.ExpectUniqueSample(
+      SiteEngagementMetrics::kScoreDecayedToHistogram,
+      SiteEngagementScore::kMaxPoints - SiteEngagementScore::GetDecayPoints(),
+      1);
+
+  // Check histograms after a few decay periods.
+  clock->SetNow(current_day + base::TimeDelta::FromDays(
+                                  kLessPeriodsThanNeededToDecayMaxScore *
+                                  SiteEngagementScore::GetDecayPeriodInDays()));
+  // Trigger decay and histogram hit.
+  service->AddPoints(origin1, 0.01);
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kScoreDecayedFromHistogram,
+                              2);
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kScoreDecayedToHistogram,
+                              2);
+
+  // Check decay to zero.
+  clock->SetNow(current_day + base::TimeDelta::FromDays(
+                                  kMorePeriodsThanNeededToDecayMaxScore *
+                                  SiteEngagementScore::GetDecayPeriodInDays()));
+  // Trigger decay and histogram hit.
+  service->AddPoints(origin1, 0.01);
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kScoreDecayedFromHistogram,
+                              3);
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kScoreDecayedToHistogram,
+                              3);
+  histograms.ExpectBucketCount(SiteEngagementMetrics::kScoreDecayedToHistogram,
+                               0, 1);
+  // Trigger decay and histogram hit for origin2, checking an independent decay.
+  service->AddPoints(origin2, 0.01);
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kScoreDecayedFromHistogram,
+                              4);
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kScoreDecayedToHistogram,
+                              4);
+  histograms.ExpectBucketCount(
+      SiteEngagementMetrics::kScoreDecayedFromHistogram, 0, 1);
+  histograms.ExpectBucketCount(SiteEngagementMetrics::kScoreDecayedToHistogram,
+                               0, 2);
+
+  // Add more points and ensure no more samples are present.
+  service->AddPoints(origin1, 0.01);
+  service->AddPoints(origin2, 0.01);
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kScoreDecayedFromHistogram,
+                              4);
+  histograms.ExpectTotalCount(SiteEngagementMetrics::kScoreDecayedToHistogram,
+                              4);
+}

@@ -51,6 +51,12 @@ const char SiteEngagementMetrics::kEngagementBucketHistogramBase[] =
 const char SiteEngagementMetrics::kDaysSinceLastShortcutLaunchHistogram[] =
     "SiteEngagementService.DaysSinceLastShortcutLaunch";
 
+const char SiteEngagementMetrics::kScoreDecayedFromHistogram[] =
+    "SiteEngagementService.ScoreDecayedFrom";
+
+const char SiteEngagementMetrics::kScoreDecayedToHistogram[] =
+    "SiteEngagementService.ScoreDecayedTo";
+
 void SiteEngagementMetrics::RecordTotalSiteEngagement(double total_engagement) {
   UMA_HISTOGRAM_COUNTS_10000(kTotalEngagementHistogram, total_engagement);
 }
@@ -114,6 +120,14 @@ void SiteEngagementMetrics::RecordEngagement(EngagementType type) {
 
 void SiteEngagementMetrics::RecordDaysSinceLastShortcutLaunch(int days) {
   UMA_HISTOGRAM_COUNTS_100(kDaysSinceLastShortcutLaunchHistogram, days);
+}
+
+void SiteEngagementMetrics::RecordScoreDecayedFrom(double score) {
+  UMA_HISTOGRAM_COUNTS_100(kScoreDecayedFromHistogram, score);
+}
+
+void SiteEngagementMetrics::RecordScoreDecayedTo(double score) {
+  UMA_HISTOGRAM_COUNTS_100(kScoreDecayedToHistogram, score);
 }
 
 // static

@@ -251,6 +251,7 @@ class SiteEngagementService : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest,
                            CleanupOriginsOnHistoryDeletion);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, IsBootstrapped);
+  FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, ScoreDecayHistograms);
   FRIEND_TEST_ALL_PREFIXES(AppBannerSettingsHelperTest, SiteEngagementTrigger);
 
   // Only used in tests.

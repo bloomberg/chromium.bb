@@ -40,10 +40,13 @@ class SiteEngagementMetrics {
   static void RecordPercentOriginsWithMaxEngagement(double percentage);
   static void RecordEngagement(EngagementType type);
   static void RecordDaysSinceLastShortcutLaunch(int days);
+  static void RecordScoreDecayedFrom(double score);
+  static void RecordScoreDecayedTo(double score);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, CheckHistograms);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, LastShortcutLaunch);
+  FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, ScoreDecayHistograms);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementHelperTest,
                            MixedInputEngagementAccumulation);
   static const char kTotalEngagementHistogram[];
@@ -57,6 +60,8 @@ class SiteEngagementMetrics {
   static const char kEngagementTypeHistogram[];
   static const char kEngagementBucketHistogramBase[];
   static const char kDaysSinceLastShortcutLaunchHistogram[];
+  static const char kScoreDecayedFromHistogram[];
+  static const char kScoreDecayedToHistogram[];
 
   static std::vector<std::string> GetEngagementBucketHistogramNames();
 };
