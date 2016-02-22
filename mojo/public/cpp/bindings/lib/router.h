@@ -8,8 +8,10 @@
 #include <stdint.h>
 
 #include <map>
+#include <queue>
 
-#include "base/logging.h"
+#include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/bindings/callback.h"
@@ -24,6 +26,7 @@ class Router : public MessageReceiverWithResponder {
  public:
   Router(ScopedMessagePipeHandle message_pipe,
          FilterChain filters,
+         bool expects_sync_requests,
          const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter());
   ~Router() override;
 
@@ -104,13 +107,29 @@ class Router : public MessageReceiverWithResponder {
   // Returns true if this Router has any pending callbacks.
   bool has_pending_responders() const {
     DCHECK(thread_checker_.CalledOnValidThread());
-    return !async_responders_.empty() || !sync_responders_.empty();
+    return !async_responders_.empty() || !sync_responses_.empty();
   }
 
  private:
   // Maps from the id of a response to the MessageReceiver that handles the
   // response.
-  typedef std::map<uint64_t, MessageReceiver*> ResponderMap;
+  using AsyncResponderMap = std::map<uint64_t, scoped_ptr<MessageReceiver>>;
+
+  struct SyncResponseInfo {
+   public:
+    explicit SyncResponseInfo(bool* in_response_received);
+    ~SyncResponseInfo();
+
+    scoped_ptr<Message> response;
+
+    // Points to a stack-allocated variable.
+    bool* response_received;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(SyncResponseInfo);
+  };
+
+  using SyncResponseMap = std::map<uint64_t, scoped_ptr<SyncResponseInfo>>;
 
   class HandleIncomingMessageThunk : public MessageReceiver {
    public:
@@ -125,15 +144,22 @@ class Router : public MessageReceiverWithResponder {
   };
 
   bool HandleIncomingMessage(Message* message);
+  void HandleQueuedMessages();
+
+  bool HandleMessageInternal(Message* message);
 
   HandleIncomingMessageThunk thunk_;
   FilterChain filters_;
   Connector connector_;
   MessageReceiverWithResponderStatus* incoming_receiver_;
-  ResponderMap async_responders_;
-  ResponderMap sync_responders_;
+  AsyncResponderMap async_responders_;
+  SyncResponseMap sync_responses_;
   uint64_t next_request_id_;
   bool testing_mode_;
+  std::queue<scoped_ptr<Message>> pending_messages_;
+  // Whether a task has been posted to trigger processing of
+  // |pending_messages_|.
+  bool pending_task_for_messages_;
   base::ThreadChecker thread_checker_;
   base::WeakPtrFactory<Router> weak_factory_;
 };
