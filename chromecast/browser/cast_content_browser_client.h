@@ -163,6 +163,12 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
  protected:
   CastContentBrowserClient();
 
+#if !defined(OS_ANDROID)
+  media::CmaMediaPipelineClient* cma_media_pipeline_client() const {
+    return cma_media_pipeline_client_.get();
+  }
+#endif  // !defined(OS_ANDROID)
+
   URLRequestContextFactory* url_request_context_factory() const {
     return url_request_context_factory_.get();
   }
@@ -185,7 +191,10 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
 
   // A static cache to hold crash_handlers for each process_type
   std::map<std::string, breakpad::CrashHandlerHostLinux*> crash_handlers_;
-#endif
+
+  // The CmaMediaPipelineClient to pass to all message hosts.
+  scoped_refptr<media::CmaMediaPipelineClient> cma_media_pipeline_client_;
+#endif  // !defined(OS_ANDROID)
 
   scoped_ptr<URLRequestContextFactory> url_request_context_factory_;
 

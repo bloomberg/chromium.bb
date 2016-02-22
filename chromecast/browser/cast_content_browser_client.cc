@@ -142,9 +142,11 @@ content::BrowserMainParts* CastContentBrowserClient::CreateBrowserMainParts(
 void CastContentBrowserClient::RenderProcessWillLaunch(
     content::RenderProcessHost* host) {
 #if !defined(OS_ANDROID)
+  if (!cma_media_pipeline_client_.get())
+    cma_media_pipeline_client_ = CreateCmaMediaPipelineClient();
   scoped_refptr<media::CmaMessageFilterHost> cma_message_filter(
       new media::CmaMessageFilterHost(host->GetID(),
-                                      CreateCmaMediaPipelineClient()));
+                                      cma_media_pipeline_client_));
   host->AddFilter(cma_message_filter.get());
 #endif  // !defined(OS_ANDROID)
 
