@@ -8,7 +8,6 @@ import android.content.Context;
 import android.os.Environment;
 
 import org.chromium.base.Log;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -22,8 +21,6 @@ import org.chromium.components.offlinepages.FeatureMode;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.PageTransition;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * A class holding static util functions for offline pages.
@@ -63,10 +60,8 @@ public class OfflinePageUtils {
 
     /**
      * Returns true if the network is connected.
-     * @param context Context associated with the activity.
      */
-    // TODO(petewil): Remove context, we no longer need it now that we use NCN.
-    public static boolean isConnected(Context context) {
+    public static boolean isConnected() {
         return NetworkChangeNotifier.isOnline();
     }
 
@@ -133,71 +128,12 @@ public class OfflinePageUtils {
     }
 
     /**
-     * Retrieves the url to launch a bookmark or saved page. If latter, also marks it as
-     * accessed and reports the UMAs.
-     *
-     * @param context Context for checking connection.
-     * @param bridge Offline page bridge.
-     * @param page Offline page to get the launch url for.
-     * @param onlineUrl Online URL to launch if offline is not available.
-     * @return The launch URL.
-     */
-    // TODO(fgorski): Add tests once petewil lands OfflinePageUtilsTest.
-    public static String getLaunchUrlAndMarkAccessed(
-            Context context, OfflinePageBridge bridge, OfflinePageItem page, String onlineUrl) {
-        if (page == null) return onlineUrl;
-
-        boolean isConnected = OfflinePageUtils.isConnected(context);
-        RecordHistogram.recordBooleanHistogram("OfflinePages.OnlineOnOpen", isConnected);
-
-        // When there is a network connection, we visit original URL online.
-        if (isConnected) return onlineUrl;
-
-        // TODO(fgorski): This code should be moved to markPageAccessed on the native side.
-        // The last access time was set to same as creation time when the page was created.
-        int maxMinutes = (int) TimeUnit.DAYS.toMinutes(90);
-        int minutesSinceLastOpened =
-                (int) ((System.currentTimeMillis() - page.getLastAccessTimeMs()) / (1000 * 60));
-        if (page.getCreationTimeMs() == page.getLastAccessTimeMs()) {
-            RecordHistogram.recordCustomCountHistogram("OfflinePages.FirstOpenSinceCreated",
-                    minutesSinceLastOpened, 1, maxMinutes, 50);
-        } else {
-            RecordHistogram.recordCustomCountHistogram("OfflinePages.OpenSinceLastOpen",
-                    minutesSinceLastOpened, 1, maxMinutes, 50);
-        }
-
-        // Mark that the offline page has been accessed, that will cause last access time and access
-        // count being updated.
-        bridge.markPageAccessed(page.getBookmarkId());
-
-        // Returns the offline URL for offline access.
-        return page.getOfflineUrl();
-    }
-
-    /**
-     * Retrieves the url to launch a bookmark or saved page. If latter, also marks it as accessed
-     * and reports the UMAs.
-     *
-     * @parma context Context for checking connection.
-     * @param bridge Offline page bridge.
-     * @param onlineUrl Online url of a bookmark.
-     * @return The launch URL.
-     */
-    // TODO(fgorski): Add tests once petewil lands OfflinePageUtilsTest.
-    public static String getLaunchUrlFromOnlineUrl(
-            Context context, OfflinePageBridge bridge, String onlineUrl) {
-        if (!OfflinePageBridge.isEnabled() || bridge == null) return onlineUrl;
-        return getLaunchUrlAndMarkAccessed(
-                context, bridge, bridge.getPageByOnlineURL(onlineUrl), onlineUrl);
-    }
-
-    /**
      * Whenever we reload an offline page, if we are online, load the online version of the page
      * instead, on the theory that the user prefers the online version of the page.
      */
     public static void preferOnlineVersion(ChromeActivity activity, Tab tab, String newUrl) {
         // If we are reloading an offline page, but are online, get the online version.
-        if (newUrl.equals(tab.getUrl()) && isConnected(activity.getBaseContext())) {
+        if (newUrl.equals(tab.getUrl()) && isConnected()) {
             Log.i(TAG, "Refreshing to the online version of an offline page, since we are online");
             tab.loadUrl(new LoadUrlParams(tab.getOfflinePageOriginalUrl(), PageTransition.RELOAD));
         }
@@ -234,8 +170,7 @@ public class OfflinePageUtils {
             snackbarController = getSnackbarController(activity, tab);
         }
 
-        Context context = activity.getBaseContext();
-        final boolean connected = isConnected(context);
+        final boolean connected = isConnected();
 
         Log.d(TAG, "showOfflineSnackbarIfNecessary called, tabId " + tab.getId() + ", hidden "
                         + tab.isHidden() + ", connected " + connected + ", controller "

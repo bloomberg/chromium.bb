@@ -51,7 +51,7 @@ class BookmarkDrawerListView extends ListView implements BookmarkUIObserver {
 
                 if (OfflinePageBridge.isEnabled()) {
                     int currentState = mDelegate.getCurrentState();
-                    boolean isConnected = OfflinePageUtils.isConnected(context);
+                    boolean isConnected = OfflinePageUtils.isConnected();
                     if (item.mType == BookmarkDrawerListViewAdapter.TYPE_FILTER
                             && currentState != BookmarkUIState.STATE_FILTER) {
                         RecordHistogram.recordBooleanHistogram(

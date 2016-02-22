@@ -83,11 +83,6 @@ class OfflinePageBridge : public OfflinePageModel::Observer {
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& j_online_url);
 
-  jboolean IsOfflinePageUrl(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jstring>& j_offline_url);
-
  private:
   void NotifyIfDoneLoading() const;
 

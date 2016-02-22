@@ -8,7 +8,6 @@ import android.os.AsyncTask;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.metrics.RecordHistogram;
@@ -284,7 +283,7 @@ public final class OfflinePageBridge {
      *
      * @param bookmarkId Bookmark ID for which the offline copy will be deleted.
      */
-    public void markPageAccessed(BookmarkId bookmarkId) {
+    private void markPageAccessed(BookmarkId bookmarkId) {
         assert mIsNativeOfflinePageModelLoaded;
         nativeMarkPageAccessed(mNativeOfflinePageBridge, bookmarkId.getId());
     }
@@ -353,25 +352,50 @@ public final class OfflinePageBridge {
     }
 
     /**
+     * Retrieves the url to launch a bookmark or saved page. If latter, also marks it as accessed
+     * and reports the UMAs.
+     *
+     * @param onlineUrl Online url of a bookmark.
+     * @return The launch URL.
+     */
+    public String getLaunchUrlFromOnlineUrl(String onlineUrl) {
+        if (!isEnabled()) return onlineUrl;
+        return getLaunchUrlAndMarkAccessed(getPageByOnlineURL(onlineUrl), onlineUrl);
+    }
+
+    /**
+     * Retrieves the url to launch a bookmark or saved page. If latter, also marks it as
+     * accessed and reports the UMAs.
+     *
+     * @param page Offline page to get the launch url for.
+     * @param onlineUrl Online URL to launch if offline is not available.
+     * @return The launch URL.
+     */
+    public String getLaunchUrlAndMarkAccessed(OfflinePageItem page, String onlineUrl) {
+        if (page == null) return onlineUrl;
+
+        boolean isOnline = OfflinePageUtils.isConnected();
+        RecordHistogram.recordBooleanHistogram("OfflinePages.OnlineOnOpen", isOnline);
+
+        // When there is a network connection, we visit original URL online.
+        if (isOnline) return onlineUrl;
+
+        // Mark that the offline page has been accessed, that will cause last access time and access
+        // count being updated.
+        markPageAccessed(page.getBookmarkId());
+
+        // Returns the offline URL for offline access.
+        return page.getOfflineUrl();
+    }
+
+    /**
      * Gets the offline URL of an offline page of that is saved for the online URL.
      * @param onlineUrl Online URL, which might have offline copy.
      * @return URL pointing to the offline copy or <code>null</code> if none exists.
      */
-    @VisibleForTesting
     public String getOfflineUrlForOnlineUrl(String onlineUrl) {
         assert mIsNativeOfflinePageModelLoaded;
         return nativeGetOfflineUrlForOnlineUrl(mNativeOfflinePageBridge, onlineUrl);
-    }
-
-    /**
-     * Returns <code>true</code> if offline URL points to a local copy of an offline page.
-     * @param offlineUrl A URL potentially pointing to an offline copy of an offline page.
-     * @return Whether a provided url points to an offline copy of an offline page.
-     */
-    @VisibleForTesting
-    public boolean isOfflinePageUrl(String offlineUrl) {
-        assert mIsNativeOfflinePageModelLoaded;
-        return nativeIsOfflinePageUrl(mNativeOfflinePageBridge, offlineUrl);
     }
 
     private DeletePageCallback wrapCallbackWithHistogramReporting(
@@ -454,5 +478,4 @@ public final class OfflinePageBridge {
     private native void nativeCheckMetadataConsistency(long nativeOfflinePageBridge);
     private native String nativeGetOfflineUrlForOnlineUrl(
             long nativeOfflinePageBridge, String onlineUrl);
-    private native boolean nativeIsOfflinePageUrl(long nativeOfflinePageBridge, String offlineUrl);
 }

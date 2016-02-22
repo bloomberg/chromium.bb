@@ -47,6 +47,11 @@ const base::TimeDelta kPageCleanUpThreshold = base::TimeDelta::FromDays(30);
 // snackbar that offers undo.
 const base::TimeDelta kFinalDeletionDelay = base::TimeDelta::FromSeconds(6);
 
+// The maximum histogram size for the metrics that measure time between views of
+// a given page.
+const base::TimeDelta kMaxOpenedPageHistogramBucket =
+    base::TimeDelta::FromDays(90);
+
 SavePageResult ToSavePageResult(ArchiverResult archiver_result) {
   SavePageResult result;
   switch (archiver_result) {
@@ -182,8 +187,26 @@ void OfflinePageModel::MarkPageAccessed(int64_t bookmark_id) {
   // Make a copy of the cached item and update it. The cached item should only
   // be updated upon the successful store operation.
   OfflinePageItem offline_page_item = iter->second;
-  offline_page_item.last_access_time = base::Time::Now();
+
+  base::Time now = base::Time::Now();
+  base::TimeDelta time_since_last_accessed =
+      now - offline_page_item.last_access_time;
+
+  // The last access time was set to same as creation time when the page was
+  // created.
+  if (offline_page_item.creation_time == offline_page_item.last_access_time) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS("OfflinePages.FirstOpenSinceCreated",
+                                time_since_last_accessed.InMinutes(), 1,
+                                kMaxOpenedPageHistogramBucket.InMinutes(), 50);
+  } else {
+    UMA_HISTOGRAM_CUSTOM_COUNTS("OfflinePages.OpenSinceLastOpen",
+                                time_since_last_accessed.InMinutes(), 1,
+                                kMaxOpenedPageHistogramBucket.InMinutes(), 50);
+  }
+
+  offline_page_item.last_access_time = now;
   offline_page_item.access_count++;
+
   store_->AddOrUpdateOfflinePage(
       offline_page_item,
       base::Bind(&OfflinePageModel::OnMarkPageAccesseDone,

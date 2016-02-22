@@ -238,14 +238,6 @@ ScopedJavaLocalRef<jstring> OfflinePageBridge::GetOfflineUrlForOnlineUrl(
   return ConvertUTF8ToJavaString(env, offline_url.spec());
 }
 
-jboolean OfflinePageBridge::IsOfflinePageUrl(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& j_offline_url) {
-  GURL offline_url(ConvertJavaStringToUTF8(env, j_offline_url));
-  return OfflinePageUtils::IsOfflinePage(browser_context_, offline_url);
-}
-
 void OfflinePageBridge::NotifyIfDoneLoading() const {
   if (!offline_page_model_->is_loaded())
     return;

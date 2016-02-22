@@ -297,10 +297,9 @@ public class BookmarkUtils {
     /**
      * Gets whether bookmark manager should load offline page initially.
      */
-    private static boolean shouldShowOfflinePageAtFirst(BookmarkModel model, Context context) {
+    private static boolean shouldShowOfflinePageAtFirst(BookmarkModel model) {
         OfflinePageBridge bridge = model.getOfflinePageBridge();
-        if (bridge == null || bridge.getAllPages().isEmpty()
-                || OfflinePageUtils.isConnected(context)) {
+        if (bridge == null || bridge.getAllPages().isEmpty() || OfflinePageUtils.isConnected()) {
             return false;
         }
         return true;
@@ -328,7 +327,7 @@ public class BookmarkUtils {
     private static String getFirstUrlToLoad(Activity activity) {
         BookmarkModel model = new BookmarkModel();
         try {
-            if (shouldShowOfflinePageAtFirst(model, activity)) {
+            if (shouldShowOfflinePageAtFirst(model)) {
                 return BookmarkUIState.createFilterUrl(BookmarkFilter.OFFLINE_PAGES,
                         false).toString();
             }
@@ -411,7 +410,7 @@ public class BookmarkUtils {
             BookmarkId bookmarkId, int launchLocation) {
         if (model.getBookmarkById(bookmarkId) == null) return false;
 
-        String url = model.getLaunchUrlAndMarkAccessed(activity, bookmarkId);
+        String url = model.getLaunchUrlAndMarkAccessed(bookmarkId);
 
         // TODO(jianli): Notify the user about the failure.
         if (TextUtils.isEmpty(url)) return false;

@@ -48,7 +48,6 @@ import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.interests.InterestsPage;
 import org.chromium.chrome.browser.ntp.interests.InterestsPage.InterestsClickListener;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
-import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.preferences.DocumentModeManager;
 import org.chromium.chrome.browser.preferences.DocumentModePreference;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -348,8 +347,7 @@ public class NewTabPage
                 if (mOfflinePageBridge == null) {
                     mOfflinePageBridge = new OfflinePageBridge(mProfile);
                 }
-                url = OfflinePageUtils.getLaunchUrlFromOnlineUrl(
-                        mNewTabPageView.getContext(), mOfflinePageBridge, url);
+                url = mOfflinePageBridge.getLaunchUrlFromOnlineUrl(url);
             }
             mTab.loadUrl(new LoadUrlParams(url, PageTransition.AUTO_BOOKMARK));
         }

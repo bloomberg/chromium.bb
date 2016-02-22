@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.bookmarks;
 
-import android.content.Context;
-
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
@@ -13,7 +11,6 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageModelObserver;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.SavePageCallback;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
-import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.provider.ChromeBrowserProviderClient;
 import org.chromium.components.bookmarks.BookmarkId;
@@ -266,15 +263,14 @@ public class BookmarkModel extends BookmarkBridge {
      * Retrieves the url to launch a bookmark or saved page. If latter, also marks it as being
      * accessed and reports the UMAs.
      *
-     * @param context Context for checking connection.
      * @param bookmarkId ID of the bookmark to launch.
      * @return The launch URL.
      */
-    public String getLaunchUrlAndMarkAccessed(Context context, BookmarkId bookmarkId) {
+    public String getLaunchUrlAndMarkAccessed(BookmarkId bookmarkId) {
         String url = getBookmarkById(bookmarkId).getUrl();
         if (mOfflinePageBridge == null) return url;
 
-        return OfflinePageUtils.getLaunchUrlAndMarkAccessed(context, mOfflinePageBridge,
+        return mOfflinePageBridge.getLaunchUrlAndMarkAccessed(
                 mOfflinePageBridge.getPageByBookmarkId(bookmarkId), url);
     }
 
