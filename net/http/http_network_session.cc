@@ -133,7 +133,7 @@ HttpNetworkSession::Params::Params()
       quic_migrate_sessions_early(false),
       proxy_delegate(NULL),
       enable_token_binding(false) {
-  quic_supported_versions.push_back(QUIC_VERSION_26);
+  quic_supported_versions.push_back(QUIC_VERSION_27);
 }
 
 HttpNetworkSession::Params::~Params() {}
