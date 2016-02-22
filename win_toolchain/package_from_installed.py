@@ -271,10 +271,12 @@ def GenerateSetEnvCmd(target_dir):
           var, BatDirs(dirs), ';%PATH%' if var == 'PATH' else ''))
   with open(set_env_prefix + '.x86.json', 'wb') as f:
     assert not set(env.keys()) & set(env_x86.keys()), 'dupe keys'
-    json.dump(collections.OrderedDict(env.items() + env_x86.items()), f)
+    json.dump({'env': collections.OrderedDict(env.items() + env_x86.items())},
+              f)
   with open(set_env_prefix + '.x64.json', 'wb') as f:
     assert not set(env.keys()) & set(env_x64.keys()), 'dupe keys'
-    json.dump(collections.OrderedDict(env.items() + env_x64.items()), f)
+    json.dump({'env': collections.OrderedDict(env.items() + env_x64.items())},
+              f)
 
 
 def AddEnvSetup(files):
