@@ -11,6 +11,7 @@ from chromoting_test_utilities import CleanupUserProfileDir
 from chromoting_test_utilities import GetJidFromHostLog
 from chromoting_test_utilities import GetJidListFromTestResults
 from chromoting_test_utilities import InitialiseTestMachineForLinux
+from chromoting_test_utilities import MAX_RETRIES
 from chromoting_test_utilities import PrintHostLogContents
 from chromoting_test_utilities import PROD_DIR_ID
 from chromoting_test_utilities import RunCommandInSubProcess
@@ -23,7 +24,6 @@ FAILING_TESTS = ''
 BROWSER_NOT_STARTED_ERROR = (
     'Still waiting for the following processes to finish')
 TIME_OUT_INDICATOR = '(TIMED OUT)'
-MAX_RETRIES = 1
 
 
 def LaunchBTCommand(args, command):
@@ -101,10 +101,11 @@ def LaunchBTCommand(args, command):
     # A line saying "Still waiting for the following processes to finish",
     # and, because sometimes that line gets logged even if the test
     # eventually passes, we'll also look for "(TIMED OUT)", before retrying.
-    if not (
-        BROWSER_NOT_STARTED_ERROR in results and TIME_OUT_INDICATOR in results):
-      # Test failed for some other reason. Let's not retry.
-      break
+    if BROWSER_NOT_STARTED_ERROR in results and TIME_OUT_INDICATOR in results:
+      print 'Browser-instance not started (http://crbug/480025). Retrying.'
+    else:
+      print 'Test failed for unknown reason. Retrying.'
+
     retries += 1
 
   # Check that the test passed.

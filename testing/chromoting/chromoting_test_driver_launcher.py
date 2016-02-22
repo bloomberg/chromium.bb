@@ -8,6 +8,7 @@ import argparse
 
 from chromoting_test_utilities import GetJidFromHostLog
 from chromoting_test_utilities import InitialiseTestMachineForLinux
+from chromoting_test_utilities import MAX_RETRIES
 from chromoting_test_utilities import PrintHostLogContents
 from chromoting_test_utilities import PROD_DIR_ID
 from chromoting_test_utilities import RunCommandInSubProcess
@@ -40,22 +41,34 @@ def LaunchCTDCommand(args, command):
     print 'Host-JID not found in log %s.' % host_log_file_names[-1]
     return '[Command failed]: %s, %s' % (command, host_log_file_names)
 
-  # In order to ensure the host is online with the expected JID, pass in the
-  # jid obtained from the host-log as a command-line parameter.
-  command = command.replace('\n', '') + ' --hostjid=%s' % host_jid
-
-  results = RunCommandInSubProcess(command)
-
-  tear_down_index = results.find(TEST_ENVIRONMENT_TEAR_DOWN_INDICATOR)
-  if tear_down_index == -1:
-    # The test environment did not tear down. Something went horribly wrong.
-    return '[Command failed]: ' + command, host_log_file_names
-
-  end_results_list = results[tear_down_index:].split('\n')
+  retries = 0
   failed_tests_list = []
-  for result in end_results_list:
-    if result.startswith(FAILED_INDICATOR):
-      failed_tests_list.append(result)
+  # TODO(anandc): Remove this retry-logic once http://crbug/570840 is fixed.
+  while retries <= MAX_RETRIES:
+    # In order to ensure the host is online with the expected JID, pass in the
+    # jid obtained from the host-log as a command-line parameter.
+    command = command.replace('\n', '') + ' --hostjid=%s' % host_jid
+
+    results = RunCommandInSubProcess(command)
+
+    tear_down_index = results.find(TEST_ENVIRONMENT_TEAR_DOWN_INDICATOR)
+    if tear_down_index == -1:
+      # The test environment did not tear down. Something went horribly wrong.
+      return '[Command failed]: ' + command, host_log_file_names
+
+    end_results_list = results[tear_down_index:].split('\n')
+    test_failed = False
+    for result in end_results_list:
+      if result.startswith(FAILED_INDICATOR):
+        test_failed = True
+        if retries == MAX_RETRIES:
+          # Test failed and we have no more retries left.
+          failed_tests_list.append(result)
+
+    if test_failed:
+      retries += 1
+    else:
+      break
 
   if failed_tests_list:
     test_result = '[Command]: ' + command

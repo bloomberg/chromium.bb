@@ -29,6 +29,7 @@ ISOLATE_CHROMOTING_HOST_PATH = 'remoting/host/linux/linux_me2me_host.py'
 ISOLATE_TEMP_FOLDER = os.path.abspath(os.path.join(os.getcwd(), '../..'))
 CHROMOTING_HOST_PATH = os.path.join(ISOLATE_TEMP_FOLDER,
                                     ISOLATE_CHROMOTING_HOST_PATH)
+MAX_RETRIES = 1
 
 
 class HostOperationFailedException(Exception):
