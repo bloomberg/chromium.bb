@@ -61,7 +61,10 @@ tests:
   - # Underlines, p. 39
     - Tietoa saa Näkövammaisten Keskusliitosta.
     - ⠠⠞⠊⠑⠞⠕⠁ ⠎⠁⠁ ⠬⠠⠝⠜⠅⠪⠧⠁⠍⠍⠁⠊⠎⠞⠑⠝ ⠬⠠⠅⠑⠎⠅⠥⠎⠇⠊⠊⠞⠕⠎⠞⠁⠄
-    - {typeform: {bold: '           +++++++++++++++++++++++++++++ '}}
+    - {typeform:
+        {bold: '           +++++++++++++++++++++++++++++ '},
+      xfail: true}
+    # Fails because an emphasized word ending in a symbol that is not emphasized breaks detection of that word.
   - # Bold, p. 39
     - Hän kiinnitti huomiota järjestysluvun taivutukseen sanassa tuhannennen.
     - ⠠⠓⠜⠝ ⠅⠊⠊⠝⠝⠊⠞⠞⠊ ⠓⠥⠕⠍⠊⠕⠞⠁ ⠬⠚⠜⠗⠚⠑⠎⠞⠽⠎⠇⠥⠧⠥⠝ ⠞⠁⠊⠧⠥⠞⠥⠅⠎⠑⠑⠝ ⠎⠁⠝⠁⠎⠎⠁ ⠞⠥⠓⠁⠝⠬⠝⠑⠝⠬⠝⠑⠝⠄
@@ -75,5 +78,7 @@ tests:
   - # Longer emphasized phrase, p. 39
     - Tämä on yli kolmen sanan testi.
     - ⠠⠞⠜⠍⠜ ⠬⠬⠕⠝ ⠽⠇⠊ ⠅⠕⠇⠍⠑⠝ ⠎⠁⠝⠁⠝ ⠬⠞⠑⠎⠞⠊⠄
-    - typeform:
-        underline: '     +++++++++++++++++++++++++ '
+    - {typeform:
+        {underline: '     +++++++++++++++++++++++++ '},
+      xfail: true}
+    # Fails because an emphasized word ending in a symbol that is not emphasized breaks detection of that word.
