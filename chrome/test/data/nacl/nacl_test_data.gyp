@@ -701,6 +701,25 @@
       },
     },
     {
+      'target_name': 'pnacl_url_loader_test',
+      'type': 'none',
+      'variables': {
+        'nexe_target': 'pnacl_url_loader',
+        'build_pnacl_newlib': 1,
+        'nexe_destination_dir': 'nacl_test_data',
+        'generate_nmf': 1,
+        'link_flags': [
+          '-lppapi',
+        ],
+        'sources': [
+          'pnacl_url_loader/pnacl_url_loader.cc',
+        ],
+        'test_files': [
+          'pnacl_url_loader/pnacl_url_loader.html',
+        ],
+      },
+    },
+    {
       'target_name': 'pnacl_dyncode_syscall_disabled_test',
       'type': 'none',
       'variables': {
