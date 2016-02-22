@@ -80,20 +80,20 @@ if env['TOOLCHAIN_FEATURE_VERSION'] < 18:
   Return()
 
 dso4 = MakeAndTranslatePso(
-    'test_psl', [env.ComponentObject('test_psl.c')],
+    'test_pll', [env.ComponentObject('test_pll.c')],
     # Skip the pre-opt passes because they add TLS functions.  However, we
     # still need to run the post-opt passes so that the LLVM IR passes the
     # PNaCl ABI checker.
     llvm_passes='-convert-to-pso -pnacl-abi-simplify-postopt')
 
-psl_symbols_test = env.ComponentProgram(
-    'psl_symbols_test', ['psl_symbols_test.cc'],
+pll_symbols_test = env.ComponentProgram(
+    'pll_symbols_test', ['pll_symbols_test.cc'],
     EXTRA_LIBS=['${NONIRT_LIBS}', 'pnacl_dynloader', 'platform'])
 
 node = env.CommandSelLdrTestNacl(
-    'psl_symbols_test.out', psl_symbols_test, [dso4],
+    'pll_symbols_test.out', pll_symbols_test, [dso4],
     # Add '-a' to enable filesystem access for opening DSOs.
     sel_ldr_flags=['-a'])
 env.AddNodeToTestSuite(
     node, ['small_tests', 'toolchain_tests'],
-    'run_psl_symbols_test', is_broken=is_broken)
+    'run_pll_symbols_test', is_broken=is_broken)

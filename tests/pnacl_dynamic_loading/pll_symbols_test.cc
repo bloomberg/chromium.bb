@@ -14,7 +14,7 @@ namespace {
 
 const unsigned kFormatVersion = 2;
 
-struct PSLRoot {
+struct PLLRoot {
   size_t format_version;
   const char *string_table;
 
@@ -34,27 +34,27 @@ struct PSLRoot {
   const uint32_t *hash_chains;
 };
 
-const char *GetExportedSymbolName(const PSLRoot *root, size_t i) {
+const char *GetExportedSymbolName(const PLLRoot *root, size_t i) {
   return root->string_table + root->exported_names[i];
 }
 
-const char *GetImportedSymbolName(const PSLRoot *root, size_t i) {
+const char *GetImportedSymbolName(const PLLRoot *root, size_t i) {
   return root->string_table + root->imported_names[i];
 }
 
-void DumpExportedSymbols(const PSLRoot *root) {
+void DumpExportedSymbols(const PLLRoot *root) {
   for (size_t i = 0; i < root->export_count; i++) {
     printf("exported symbol: %s\n", GetExportedSymbolName(root, i));
   }
 }
 
-void DumpImportedSymbols(const PSLRoot *root) {
+void DumpImportedSymbols(const PLLRoot *root) {
   for (size_t i = 0; i < root->import_count; i++) {
     printf("imported symbol: %s\n", GetImportedSymbolName(root, i));
   }
 }
 
-void *GetExportedSymSlow(const PSLRoot *root, const char *name) {
+void *GetExportedSymSlow(const PLLRoot *root, const char *name) {
   for (size_t i = 0; i < root->export_count; i++) {
     if (strcmp(GetExportedSymbolName(root, i), name) == 0) {
       return root->exported_ptrs[i];
@@ -70,7 +70,7 @@ uint32_t HashString(const char *sp) {
   return h;
 }
 
-void *GetExportedSymHash(const PSLRoot *root, const char *name) {
+void *GetExportedSymHash(const PLLRoot *root, const char *name) {
   uint32_t hash = HashString(name);
   uint32_t bucket_index = hash % root->bucket_count;
   int32_t chain_index = root->hash_buckets[bucket_index];
@@ -92,7 +92,7 @@ void *GetExportedSymHash(const PSLRoot *root, const char *name) {
   ASSERT(false);
 }
 
-void VerifyHashTable(const PSLRoot *root) {
+void VerifyHashTable(const PLLRoot *root) {
   // Confirm that each entry in hash_chains[] contains a hash
   // corresponding with the hashes of "exported_names", in order.
   for (uint32_t chain_index = 0; chain_index < root->export_count;
@@ -126,7 +126,7 @@ void VerifyHashTable(const PSLRoot *root) {
   }
 }
 
-void *GetExportedSym(const PSLRoot *root, const char *name) {
+void *GetExportedSym(const PLLRoot *root, const char *name) {
   // There are two possible ways to get the exported symbol. First, by manually
   // scanning all exports, and secondly, by using the exported symbol hash
   // table. Use both methods, and assert that they provide an equivalent result.
@@ -136,7 +136,7 @@ void *GetExportedSym(const PSLRoot *root, const char *name) {
   return sym_slow;
 }
 
-void TestImportReloc(const PSLRoot *psl_root,
+void TestImportReloc(const PLLRoot *pll_root,
                      const char *imported_sym_name,
                      int import_addend,
                      const char *dest_name,
@@ -145,7 +145,7 @@ void TestImportReloc(const PSLRoot *psl_root,
          "the value of \"%s+%d\"\n",
          dest_name, offset_from_dest, imported_sym_name, import_addend);
 
-  void *dest_sym_addr = GetExportedSym(psl_root, dest_name);
+  void *dest_sym_addr = GetExportedSym(pll_root, dest_name);
   ASSERT_NE(dest_sym_addr, NULL);
   uintptr_t addr_to_modify = (uintptr_t) dest_sym_addr + offset_from_dest;
 
@@ -156,13 +156,13 @@ void TestImportReloc(const PSLRoot *psl_root,
   // do not require the relocations to appear in a specific order in the
   // import list.
   bool found = false;
-  for (size_t index = 0; index < psl_root->import_count; index++) {
-    if (psl_root->imported_ptrs[index] == (void *) addr_to_modify) {
+  for (size_t index = 0; index < pll_root->import_count; index++) {
+    if (pll_root->imported_ptrs[index] == (void *) addr_to_modify) {
       ASSERT(!found);
       found = true;
 
       // Check name of symbol being imported.
-      ASSERT_EQ(strcmp(GetImportedSymbolName(psl_root, index),
+      ASSERT_EQ(strcmp(GetImportedSymbolName(pll_root, index),
                        imported_sym_name), 0);
     }
   }
@@ -170,14 +170,14 @@ void TestImportReloc(const PSLRoot *psl_root,
 }
 
 // Resolves any imports that refer to |symbol_name| with the given value.
-void ResolveReferenceToSym(const PSLRoot *psl_root,
+void ResolveReferenceToSym(const PLLRoot *pll_root,
                            const char *symbol_name,
                            uintptr_t value) {
   bool found = false;
-  for (size_t index = 0; index < psl_root->import_count; index++) {
-    if (strcmp(GetImportedSymbolName(psl_root, index), symbol_name) == 0) {
+  for (size_t index = 0; index < pll_root->import_count; index++) {
+    if (strcmp(GetImportedSymbolName(pll_root, index), symbol_name) == 0) {
       found = true;
-      *(uintptr_t *) psl_root->imported_ptrs[index] += value;
+      *(uintptr_t *) pll_root->imported_ptrs[index] += value;
     }
   }
   ASSERT(found);
@@ -196,28 +196,28 @@ int main(int argc, char **argv) {
   void *pso_root;
   int err = pnacl_load_elf_file(test_dso_file, &pso_root);
   ASSERT_EQ(err, 0);
-  const PSLRoot *psl_root = (PSLRoot *) pso_root;
+  const PLLRoot *pll_root = (PLLRoot *) pso_root;
 
-  ASSERT_EQ(psl_root->format_version, kFormatVersion);
+  ASSERT_EQ(pll_root->format_version, kFormatVersion);
 
-  VerifyHashTable(psl_root);
+  VerifyHashTable(pll_root);
 
   // Test exports.
 
-  DumpExportedSymbols(psl_root);
+  DumpExportedSymbols(pll_root);
 
-  ASSERT_EQ(GetExportedSym(psl_root, "does_not_exist"), NULL);
+  ASSERT_EQ(GetExportedSym(pll_root, "does_not_exist"), NULL);
 
-  int *var = (int *) GetExportedSym(psl_root, "var");
+  int *var = (int *) GetExportedSym(pll_root, "var");
   ASSERT_NE(var, NULL);
   ASSERT_EQ(*var, 2345);
 
   int *(*get_var)(void) =
-    (int *(*)(void)) (uintptr_t) GetExportedSym(psl_root, "get_var");
+    (int *(*)(void)) (uintptr_t) GetExportedSym(pll_root, "get_var");
   ASSERT_NE(get_var, NULL);
   ASSERT_EQ(get_var(), var);
 
-  void *example_func = GetExportedSym(psl_root, "example_func");
+  void *example_func = GetExportedSym(pll_root, "example_func");
   ASSERT_NE(example_func, NULL);
 
   // For "var", "get_var" and "example_func".
@@ -226,14 +226,14 @@ int main(int argc, char **argv) {
   // Test imports referenced by variables.  We can test these directly, by
   // checking that the relocations refer to the correct addresses.
 
-  DumpImportedSymbols(psl_root);
+  DumpImportedSymbols(pll_root);
 
-  TestImportReloc(psl_root, "imported_var", 0, "reloc_var", 0);
-  TestImportReloc(psl_root, "imported_var_addend", sizeof(int),
+  TestImportReloc(pll_root, "imported_var", 0, "reloc_var", 0);
+  TestImportReloc(pll_root, "imported_var_addend", sizeof(int),
                   "reloc_var_addend", 0);
-  TestImportReloc(psl_root, "imported_var2", sizeof(int) * 100,
+  TestImportReloc(pll_root, "imported_var2", sizeof(int) * 100,
                   "reloc_var_offset", sizeof(int));
-  TestImportReloc(psl_root, "imported_var3", sizeof(int) * 200,
+  TestImportReloc(pll_root, "imported_var3", sizeof(int) * 200,
                   "reloc_var_offset", sizeof(int) * 2);
   // For the 4 calls to TestImportReloc().
   int expected_imports = 4;
@@ -242,7 +242,7 @@ int main(int argc, char **argv) {
 
   // Test that local (non-imported) relocations still work and that they
   // don't get mixed up with relocations for imports.
-  int **local_reloc_var = (int **) GetExportedSym(psl_root, "local_reloc_var");
+  int **local_reloc_var = (int **) GetExportedSym(pll_root, "local_reloc_var");
   ASSERT_EQ(**local_reloc_var, 1234);
   // For "local_reloc_var".
   expected_exports += 1;
@@ -252,12 +252,12 @@ int main(int argc, char **argv) {
   // we apply relocations.
 
   uintptr_t (*get_imported_var)() =
-    (uintptr_t (*)()) (uintptr_t) GetExportedSym(psl_root, "get_imported_var");
+    (uintptr_t (*)()) (uintptr_t) GetExportedSym(pll_root, "get_imported_var");
   uintptr_t (*get_imported_var_addend)() =
-    (uintptr_t (*)()) (uintptr_t) GetExportedSym(psl_root,
+    (uintptr_t (*)()) (uintptr_t) GetExportedSym(pll_root,
                                                  "get_imported_var_addend");
   uintptr_t (*get_imported_func)() =
-    (uintptr_t (*)()) (uintptr_t) GetExportedSym(psl_root,
+    (uintptr_t (*)()) (uintptr_t) GetExportedSym(pll_root,
                                                  "get_imported_func");
   ASSERT_EQ(get_imported_var(), 0);
   ASSERT_EQ(get_imported_var_addend(), sizeof(int));
@@ -265,9 +265,9 @@ int main(int argc, char **argv) {
   uintptr_t example_ptr1 = 0x100000;
   uintptr_t example_ptr2 = 0x200000;
   uintptr_t example_ptr3 = 0x300000;
-  ResolveReferenceToSym(psl_root, "imported_var", example_ptr1);
-  ResolveReferenceToSym(psl_root, "imported_var_addend", example_ptr2);
-  ResolveReferenceToSym(psl_root, "imported_func", example_ptr3);
+  ResolveReferenceToSym(pll_root, "imported_var", example_ptr1);
+  ResolveReferenceToSym(pll_root, "imported_var_addend", example_ptr2);
+  ResolveReferenceToSym(pll_root, "imported_func", example_ptr3);
   ASSERT_EQ(get_imported_var(), example_ptr1);
   ASSERT_EQ(get_imported_var_addend(), example_ptr2 + sizeof(int));
   ASSERT_EQ(get_imported_func(), example_ptr3);
@@ -276,8 +276,8 @@ int main(int argc, char **argv) {
   // For "imported_var", "imported_var_addend" and "imported_func".
   expected_imports += 3;
 
-  ASSERT_EQ(psl_root->export_count, expected_exports);
-  ASSERT_EQ(psl_root->import_count, expected_imports);
+  ASSERT_EQ(pll_root->export_count, expected_exports);
+  ASSERT_EQ(pll_root->import_count, expected_imports);
 
   return 0;
 }
