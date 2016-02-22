@@ -33,9 +33,10 @@ class GnubbyAuthHandler {
   static scoped_ptr<GnubbyAuthHandler> Create(
       const SendMessageCallback& callback);
 
+#if defined(OS_LINUX)
   // Specify the name of the socket to listen to gnubby requests on.
-  // TODO(joedow): Move this to a linux specific class.  see: crbug.com/587298
   static void SetGnubbySocketName(const base::FilePath& gnubby_socket_name);
+#endif  // defined(OS_LINUX)
 
   // Sets the callback used to send messages to the client.
   virtual void SetSendMessageCallback(const SendMessageCallback& callback) = 0;

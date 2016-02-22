@@ -52,6 +52,7 @@ class GnubbyAuthHandlerLinuxTest : public testing::Test {
       : run_loop_(new base::RunLoop()), last_connection_id_received_(-1) {
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
     socket_path_ = temp_dir_.path().Append(kSocketFilename);
+    remoting::GnubbyAuthHandler::SetGnubbySocketName(socket_path_);
 
     send_message_callback_ =
         base::Bind(&GnubbyAuthHandlerLinuxTest::SendMessageToClient,
@@ -59,7 +60,6 @@ class GnubbyAuthHandlerLinuxTest : public testing::Test {
     auth_handler_linux_.reset(new GnubbyAuthHandlerLinux());
     auth_handler_ = auth_handler_linux_.get();
     auth_handler_->SetSendMessageCallback(send_message_callback_);
-    auth_handler_->SetGnubbySocketName(socket_path_);
   }
 
   void WaitForSendMessageToClient() {

@@ -13,9 +13,4 @@ scoped_ptr<GnubbyAuthHandler> GnubbyAuthHandler::Create(
   return nullptr;
 }
 
-void GnubbyAuthHandler::SetGnubbySocketName(
-    const base::FilePath& gnubby_socket_name) {
-  NOTIMPLEMENTED();
-}
-
 }  // namespace remoting
