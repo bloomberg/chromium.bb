@@ -67,6 +67,12 @@ class JavaScriptDialogManager : public content::JavaScriptDialogManager {
                           const std::string& accept_lang,
                           bool is_alert);
 
+  // Wrapper around OnDialogClosed; logs UMA stats before continuing on.
+  void OnBeforeUnloadDialogClosed(content::WebContents* web_contents,
+                                  DialogClosedCallback callback,
+                                  bool success,
+                                  const base::string16& user_input);
+
   // Wrapper around a DialogClosedCallback so that we can intercept it before
   // passing it onto the original callback.
   void OnDialogClosed(content::WebContents* web_contents,

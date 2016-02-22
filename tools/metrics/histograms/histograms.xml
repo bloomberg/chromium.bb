@@ -17974,6 +17974,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="JSDialogs.OnBeforeUnloadStayVsLeave" enum="StayVsLeave">
+  <owner>avi@chromium.org</owner>
+  <summary>
+    For onbeforeunload dialogs, the user's choice between staying on the page
+    and leaving it.
+  </summary>
+</histogram>
+
 <histogram name="Keyboard.KeystrokeDeltas" units="ms">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -80585,6 +80593,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Erased pref: platform-specific store was empty"/>
   <int value="2" label="Overwrote pref: platform-specific store differed"/>
   <int value="3" label="No pref change: was equal to platform-specific store"/>
+</enum>
+
+<enum name="StayVsLeave" type="int">
+  <int value="0" label="Stay on the current page"/>
+  <int value="1" label="Leave the current page"/>
 </enum>
 
 <enum name="StyleSheetCacheStatus" type="int">

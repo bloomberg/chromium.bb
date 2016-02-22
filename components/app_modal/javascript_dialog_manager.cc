@@ -224,7 +224,7 @@ void JavaScriptDialogManager::RunBeforeUnloadDialog(
       ShouldDisplaySuppressCheckbox(extra_data),
       true,        // is_before_unload_dialog
       is_reload,
-      base::Bind(&JavaScriptDialogManager::OnDialogClosed,
+      base::Bind(&JavaScriptDialogManager::OnBeforeUnloadDialogClosed,
                  base::Unretained(this), web_contents, callback)));
 }
 
@@ -307,6 +307,24 @@ void JavaScriptDialogManager::CancelActiveAndPendingDialogs(
   }
   if (active_dialog && active_dialog->web_contents() == web_contents)
     active_dialog->Invalidate();
+}
+
+void JavaScriptDialogManager::OnBeforeUnloadDialogClosed(
+    content::WebContents* web_contents,
+    DialogClosedCallback callback,
+    bool success,
+    const base::string16& user_input) {
+  enum class StayVsLeave {
+    STAY = 0,
+    LEAVE = 1,
+    MAX,
+  };
+  UMA_HISTOGRAM_ENUMERATION(
+      "JSDialogs.OnBeforeUnloadStayVsLeave",
+      static_cast<int>(success ? StayVsLeave::LEAVE : StayVsLeave::STAY),
+      static_cast<int>(StayVsLeave::MAX));
+
+  OnDialogClosed(web_contents, callback, success, user_input);
 }
 
 void JavaScriptDialogManager::OnDialogClosed(
