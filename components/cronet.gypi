@@ -243,9 +243,6 @@
             '../base/base.gyp:base',
             '../net/net.gyp:net_small',
           ],
-          'ldflags': [
-            '-Wl,--version-script=<!(cd <(DEPTH) && pwd -P)/components/cronet/android/only_jni_exports.lst',
-          ],
         },
         { # cronet_api.jar defines Cronet API and provides implementation of
           # legacy api using HttpUrlConnection (not the Chromium stack).
@@ -410,9 +407,6 @@
             '../base/base.gyp:base_i18n',
             '../third_party/icu/icu.gyp:icui18n',
             '../third_party/icu/icu.gyp:icuuc',
-          ],
-          'ldflags': [
-            '-Wl,--version-script=<!(cd <(DEPTH) && pwd -P)/components/cronet/android/only_jni_exports.lst',
           ],
           'conditions': [
             ['enable_data_reduction_proxy_support==1',
