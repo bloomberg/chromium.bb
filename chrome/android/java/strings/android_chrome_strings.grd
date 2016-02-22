@@ -170,6 +170,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_NEXT" desc="Generic label for a button to advance to the next item. [CHAR-LIMIT=20]">
         Next
       </message>
+      <message name="IDS_SUBMIT" desc="Generic label for a button to submit data. Used in multiple contexts. [CHAR-LIMIT=20]">
+        Submit
+      </message>
       <message name="IDS_UNDO" desc="Generic label for a button to undo the previous action.">
         Undo
       </message>
@@ -203,9 +206,6 @@ CHAR-LIMIT guidelines:
       </message>
       <message name="IDS_SIGN_IN_TO_CHROME_SUMMARY" desc="Summary for the button to sign in to Chrome, explaining benefits of signing in.">
         Sign in to get your bookmarks, history, passwords, and other settings on all your devices
-      </message>
-      <message name="IDS_NUMBER_OF_SIGNED_IN_ACCOUNTS" desc="Summary indicating the number of accounts (always greater than 1) the user is signed in to the content area.">
-        <ph name="NUMBER_OF_ACCOUNTS">%1$d<ex>3</ex></ph> accounts
       </message>
 
       <!-- Search engine preferences -->
@@ -835,16 +835,16 @@ To obtain new licenses, connect to the internet and play your downloaded content
 
       <!-- Account management UI strings. -->
       <message name="IDS_ACCOUNT_MANAGEMENT_ADD_ACCOUNT_TITLE" desc="Button text for opening the add account dialog to add a new account to a user's profile. [CHAR-LIMIT=20]">
-        Add account for <ph name="ADD_ACCOUNT_USER_NAME">%1$s<ex>Pablo Picasso</ex></ph>
+        Add account
       </message>
       <message name="IDS_ACCOUNT_MANAGEMENT_TITLE" desc="Header title for the account management screen. [CHAR-LIMIT=32]">
-        Accounts
+        Signed in to Google as
       </message>
-      <message name="IDS_ACCOUNT_MANAGEMENT_GO_INCOGNITO_TEXT" desc="Summary text for going incognito.">
-        Go incognito to browse privately or sign in temporarily
+      <message name="IDS_ACCOUNT_MANAGEMENT_SYNC_SUMMARY" desc="Description for which account the data is being synced to">
+        Syncing to <ph name="SYNC_ACCOUNT_USER_NAME">%1$s<ex>johndoe@gmail.com</ex></ph>
       </message>
-      <message name="IDS_ACCOUNT_MANAGEMENT_NOT_YOU_TEXT" desc="Title text for the section with the incognito button.">
-        Not <ph name="NOT_YOU_USER_NAME">%1$s<ex>Pablo Picasso</ex></ph>?
+      <message name="IDS_ACCOUNT_MANAGEMENT_SIGN_OUT" desc="Button text for signing out of Chrome">
+        Sign out of Chrome
       </message>
 
       <!-- Child accounts -->
@@ -894,6 +894,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
       <message name="IDS_SYNC_SETUP_PROGRESS" desc="Message indicating that sync setup is in progress">
         Setup in progress…
+      </message>
+      <message name="IDS_SYNC_ACCOUNT_HEADER" desc="Header for indicating to the user which account is being used for syncing">
+        Sync account
       </message>
 
       <!-- Confirm Sync account change dialog. -->
@@ -956,28 +959,28 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_ADD_ACCOUNT_CONTINUE" desc="Continue button for add Google account dialog [CHAR-LIMIT=20]">
         Continue
       </message>
-      <message name="IDS_SIGN_IN_ACCOUNTS_MESSAGE" desc="Description of the signed-in section shown below the header">
-        You’re signed in to the following Google Accounts. Add or remove accounts in Android settings.
-      </message>
-      <message name="IDS_SIGN_IN_ACCOUNTS_MESSAGE_MANAGED" desc="Description of the signed-in section shown below the header when adding or removing accounts is not allowed.">
-        You’re signed in to the following Google Accounts.
-      </message>
-      <message name="IDS_SIGN_IN_ACCOUNTS_MESSAGE_CHILD" desc="Description of the signed-in section shown below the header for child accounts">
-        You’re signed in to the following Google Account.
-      </message>
       <message name="IDS_SIGNOUT_TITLE" desc="Title for sign out of Chrome dialog [CHAR-LIMIT=40]">
-        Sign out of Chrome
+        Sign out of Chrome?
       </message>
       <message name="IDS_SIGNOUT_MESSAGE" desc="Message to display for sign out of Chrome dialog">
-        The data stored on this device as well as the data stored in your Google Account will remain in both places. However, new data or changes you make to your data will not be synchronized between them.
+        Changes to your bookmarks, history, passwords, and other settings will no longer be synced to your Google Account. However, your existing data will remain stored in your Google account.
       </message>
       <message name="IDS_SIGNOUT_MANAGED_ACCOUNT_MESSAGE" desc="Message to display for sign out of Chrome dialog when the account has enterprise management, and all user data will be erased">
         You are signing out of an account managed by <ph name="DOMAIN_NAME">%1$s<ex>google.com</ex></ph>. This will delete the Chrome data stored on this device, but the data will remain in your Google Account.
+      </message>
+      <message name="IDS_SIGNOUT_DIALOG_POSITIVE_BUTTON" desc="Button to sign out of Chrome">
+        Sign out
       </message>
 
       <!-- Sync strings -->
       <message name="IDS_SIGN_IN_SYNC" desc="Sync preference title in signed-in prefs and prefix for notification related to sync [CHAR-LIMIT=32]">
         Sync
+      </message>
+      <message name="IDS_SYNC_DESCRIPTION" desc="Describes the purpose of syncing. This will be displayed on the sync on/off toggle">
+        Get your bookmarks, history, passwords, and other settings on all your devices
+      </message>
+      <message name="IDS_SYNC_TO_ACCOUNT_HEADER" desc="Header title for selecting the account to sync to [CHAR-LIMIT=32]">
+        Sync to
       </message>
       <message name="IDS_SYNC_DATA_TYPES" desc="Preference category name for customization of synced data types. [CHAR-LIMT=32]">
         Data types
@@ -1022,13 +1025,16 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Encrypt all with Google password as of <ph name="TIME">%1$s<ex>Oct 3, 2014</ex></ph>
       </message>
       <message name="IDS_SYNC_PASSPHRASE_TYPE_CUSTOM" desc="Option to encrypt all sync data with a custom passphrase.">
-        Encrypt all with passphrase
+        Encrypt all synced data with your own sync passphrase
+      </message>
+      <message name="IDS_SYNC_PASSPHRASE_TYPE_CUSTOM_DIALOG_TITLE" desc="Dialog title for custom passphrase creation.">
+        Create passphrase
       </message>
       <message name="IDS_SIGN_IN_GOOGLE_ACCOUNT" desc="Title of sign in account selection dialog. [CHAR-LIMIT=32]">
         Google Account
       </message>
       <message name="IDS_SYNC_CUSTOM_PASSPHRASE" desc="Prompt user to create a custom sync password.">
-        Only someone with your passphrase can read your encrypted data. This passphrase is not sent to or stored by Google. If you forget your passphrase, you will need to reset sync.
+        Only someone with your passphrase can read your encrypted data. The passphrase is not sent to or stored by Google. If you forget your passphrase or want to change this setting you'll need to reset sync. <ph name="BEGIN_LINK">&lt;learnmore&gt;</ph>Learn more<ph name="END_LINK">&lt;/learnmore&gt;</ph>
       </message>
       <message name="IDS_SYNC_DASHBOARD_URL" desc="URL for the sync dashboard." translateable="false">
         https://www.google.com/settings/chrome/sync
@@ -1043,10 +1049,13 @@ To obtain new licenses, connect to the internet and play your downloaded content
         This field cannot be blank
       </message>
       <message name="IDS_SYNC_PASSPHRASE_RESET_INSTRUCTIONS" desc="Inform the user how they can reset their passphrase if they have forgotten it." meaning="Android">
-        If you’ve forgotten your passphrase, stop and reset Sync via <ph name="BEGIN_LINK">&lt;link&gt;</ph>Google Dashboard<ph name="END_LINK">&lt;/link&gt;</ph>.
+        If you forgot your passphrase or want to change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<ph name="END_LINK">&lt;/resetlink&gt;</ph>
       </message>
       <message name="IDS_SYNC_PASSPHRASES_DO_NOT_MATCH" desc="Inform user that their sync password does not match.">
         Passphrases do not match
+      </message>
+      <message name="IDS_SYNC_PASSPHRASE_ENCRYPTION_RESET_INSTRUCTIONS" desc="Inform user how to change their encryption setting.">
+        To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<ph name="END_LINK">&lt;/resetlink&gt;</ph>
       </message>
       <message name="IDS_SYNC_PASSPHRASE_INCORRECT" desc="Inform the user that the passphrase they entered for sync is incorrect. [CHAR-LIMIT=40]">
         Incorrect passphrase
@@ -1056,6 +1065,15 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
       <message name="IDS_SYNC_LOADING" desc="Preference title to let the user change their encryption password. [CHAR-LIMIT=20]">
         Loading…
+      </message>
+      <message name="IDS_SYNC_KEEP_EXISTING_DATA_SEPARATE" desc="Option to keep the existing data separate from the newly selected sync account">
+        Keep existing data separate
+      </message>
+      <message name="IDS_SYNC_KEEP_EXISTING_DATA_SEPARATE_SUBTEXT" desc="Subtext describing what happens if the user elects to keep the existing data separate">
+        Replace this device’s data with <ph name="ACCOUNT">%1$s<ex>john@doe.com</ex></ph>’s data. You can retrieve your existing data by switching back to <ph name="ACCOUNT">%1$s<ex>johndoe@gmail.com</ex></ph>
+      </message>
+      <message name="IDS_SYNC_KEEP_EXISTING_DATA_SEPARATE_VALUE" desc="Internal value for keep existing data preference" translateable="false">
+        keep_existing_data
       </message>
 
       <!-- Bluetooth Picker UI strings -->

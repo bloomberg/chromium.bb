@@ -21,10 +21,7 @@ import org.chromium.chrome.browser.profiles.ProfileDownloader;
 import org.chromium.chrome.browser.signin.AccountManagementFragment;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInAllowedObserver;
-import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
-
-import java.util.List;
 
 /**
  * A preference that displays "Sign in to Chrome" when the user is not sign in, and displays
@@ -78,13 +75,8 @@ public class SignInPreference extends Preference implements SignInAllowedObserve
             summary = getContext().getString(R.string.sign_in_to_chrome_summary);
             fragment = null;
         } else {
-            List<String> accounts = AccountManagerHelper.get(getContext()).getGoogleAccountNames();
-            if (accounts.size() == 1) {
-                summary = accounts.get(0);
-            } else {
-                summary = getContext().getString(
-                        R.string.number_of_signed_in_accounts, accounts.size());
-            }
+            summary = String.format(
+                    getContext().getString(R.string.account_management_sync_summary), account.name);
             fragment = AccountManagementFragment.class.getName();
             title = AccountManagementFragment.getCachedUserName(account.name);
             if (title == null) {

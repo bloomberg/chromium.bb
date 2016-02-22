@@ -4,10 +4,14 @@
 
 package org.chromium.chrome.browser.sync.ui;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
+import android.text.SpannableString;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +21,10 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.help.HelpAndFeedback;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.ui.text.SpanApplier;
+import org.chromium.ui.text.SpanApplier.SpanInfo;
 
 /**
  * Dialog to ask the user to enter a new custom passphrase.
@@ -47,14 +55,33 @@ public class PassphraseCreationDialogFragment extends DialogFragment {
             }
         });
 
+        TextView instructionsView =
+                (TextView) view.findViewById(R.id.custom_passphrase_instructions);
+        instructionsView.setMovementMethod(LinkMovementMethod.getInstance());
+        instructionsView.setText(getInstructionsText());
+
         AlertDialog dialog = new AlertDialog.Builder(getActivity(), R.style.AlertDialogTheme)
                 .setView(view)
-                .setTitle(R.string.sync_passphrase_type_custom)
-                .setPositiveButton(R.string.ok, null)
+                .setTitle(R.string.sync_passphrase_type_custom_dialog_title)
+                .setPositiveButton(R.string.save, null)
                 .setNegativeButton(R.string.cancel, null)
                 .create();
         dialog.getDelegate().setHandleNativeActionModesEnabled(false);
         return dialog;
+    }
+
+    private SpannableString getInstructionsText() {
+        final Activity activity = getActivity();
+        return SpanApplier.applySpans(
+                activity.getString(R.string.sync_custom_passphrase),
+                new SpanInfo("<learnmore>", "</learnmore>", new ClickableSpan() {
+                    @Override
+                    public void onClick(View view) {
+                        HelpAndFeedback.getInstance(activity).show(activity,
+                                activity.getString(R.string.help_context_change_sync_passphrase),
+                                Profile.getLastUsedProfile(), null);
+                    }
+                }));
     }
 
     @Override

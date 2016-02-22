@@ -7,8 +7,8 @@ package org.chromium.chrome.browser.sync.ui;
 import android.app.DialogFragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -25,14 +25,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
-
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.childaccounts.ChildAccountService;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
+import org.chromium.chrome.browser.preferences.SyncedAccountPreference;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.ModelType;
@@ -57,7 +58,6 @@ public class SyncCustomizationFragment extends PreferenceFragment
     public static final String FRAGMENT_CUSTOM_PASSPHRASE = "custom_password";
     @VisibleForTesting
     public static final String FRAGMENT_PASSPHRASE_TYPE = "password_type";
-
     @VisibleForTesting
     public static final String PREFERENCE_SYNC_EVERYTHING = "sync_everything";
     @VisibleForTesting
@@ -80,10 +80,10 @@ public class SyncCustomizationFragment extends PreferenceFragment
     public static final String PREF_SYNC_SWITCH = "sync_switch";
     @VisibleForTesting
     public static final String PREFERENCE_SYNC_MANAGE_DATA = "sync_manage_data";
+    @VisibleForTesting
+    public static final String PREFERENCE_SYNC_ACCOUNT_LIST = "synced_account";
 
     public static final String ARGUMENT_ACCOUNT = "account";
-
-    private static final int ERROR_COLOR = Color.RED;
 
     private ChromeSwitchPreference mSyncSwitchPreference;
     private boolean mIsBackendInitialized;
@@ -114,7 +114,6 @@ public class SyncCustomizationFragment extends PreferenceFragment
     private Preference mSyncEncryption;
     private Preference mManageSyncData;
     private CheckBoxPreference[] mAllTypes;
-    private boolean mCheckboxesInitialized;
 
     private ProfileSyncService mProfileSyncService;
 
@@ -145,9 +144,9 @@ public class SyncCustomizationFragment extends PreferenceFragment
         mManageSyncData = findPreference(PREFERENCE_SYNC_MANAGE_DATA);
         mManageSyncData.setOnPreferenceClickListener(this);
 
-        mAllTypes = new CheckBoxPreference[]{
-            mSyncAutofill, mSyncBookmarks, mSyncOmnibox, mSyncPasswords,
-            mSyncRecentTabs, mSyncSettings, mPaymentsIntegration
+        mAllTypes = new CheckBoxPreference[] {
+                mSyncAutofill, mSyncBookmarks, mSyncOmnibox, mSyncPasswords,
+                mSyncRecentTabs, mSyncSettings, mPaymentsIntegration
         };
 
         mSyncEverything.setOnPreferenceChangeListener(this);
@@ -268,6 +267,9 @@ public class SyncCustomizationFragment extends PreferenceFragment
             }
             PersonalDataManager.setPaymentsIntegrationEnabled(mPaymentsIntegration.isChecked());
             // Setup is done. This was preventing sync from turning on even if it was enabled.
+            // TODO(crbug/557784): This needs to be set only when we think the user is done with
+            // setting up. This means: 1) If the user leaves the Sync Settings screen (via back)
+            // or, 2) If the user leaves the screen by tapping on "Manage Synced Data"
             mProfileSyncService.setSetupInProgress(false);
         }
     }
@@ -285,6 +287,12 @@ public class SyncCustomizationFragment extends PreferenceFragment
         updateSyncStateFromSwitch();
     }
 
+    private void updateSyncAccountsListState() {
+        SyncedAccountPreference accountList =
+                (SyncedAccountPreference) findPreference(PREFERENCE_SYNC_ACCOUNT_LIST);
+        accountList.setEnabled(mSyncSwitchPreference.isChecked());
+    }
+
     /**
      * Update the state of settings using the switch state to determine if sync is enabled.
      */
@@ -292,6 +300,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
         updateSyncEverythingState();
         updateDataTypeState();
         updateEncryptionState();
+        updateSyncAccountsListState();
     }
 
     /**
@@ -320,16 +329,19 @@ public class SyncCustomizationFragment extends PreferenceFragment
         }
         if (mProfileSyncService.isPassphraseRequiredForDecryption() && isAdded()) {
             mSyncEncryption.setSummary(
-                    errorSummary(getString(R.string.sync_need_passphrase)));
+                    errorSummary(getString(R.string.sync_need_passphrase), getActivity()));
         }
     }
 
     /**
      * Applies a span to the given string to give it an error color.
      */
-    private static Spannable errorSummary(String string) {
+    private static Spannable errorSummary(String string, Context context) {
         SpannableString summary = new SpannableString(string);
-        summary.setSpan(new ForegroundColorSpan(ERROR_COLOR), 0, summary.length(), 0);
+        summary.setSpan(new ForegroundColorSpan(
+                ApiCompatibilityUtils.getColor(
+                        context.getResources(), R.color.input_underline_error_color)),
+                0, summary.length(), 0);
         return summary;
     }
 
@@ -339,8 +351,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
         boolean syncEverything = mSyncEverything.isChecked();
         mProfileSyncService.setPreferredDataTypes(syncEverything, getSelectedModelTypes());
         // Update the invalidation listener with the set of types we are enabling.
-        InvalidationController invController =
-                InvalidationController.get(getActivity());
+        InvalidationController invController = InvalidationController.get(getActivity());
         invController.ensureStartedAndUpdateRegisteredTypes();
     }
 
@@ -475,7 +486,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
     public boolean onPreferenceClick(Preference preference) {
         if (!isResumed()) {
             // This event could come in after onPause if the user clicks back and the preference at
-            // roughly the same time.  See http://b/5983282
+            // roughly the same time. See http://b/5983282
             return false;
         }
         if (preference == mSyncEncryption && mProfileSyncService.isBackendInitialized()) {
@@ -579,6 +590,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
 
     /**
      * Disables Sync if all data types have been disabled.
+     *
      * @return true if Sync has been disabled, false otherwise.
      */
     private boolean maybeDisableSync() {

@@ -51,9 +51,9 @@
     </message>
   </if>
   <message name="IDS_SYNC_ENTER_PASSPHRASE_BODY_WITH_DATE" desc="Instructions for the dialog where the user enters the passphrase.">
-    Your data was encrypted with your sync passphrase on <ph name="TIME">$1<ex>Sept 1, 2012</ex></ph>. Please enter it below.
+    Your data was encrypted with your sync passphrase on <ph name="TIME">$1<ex>Sept 1, 2012</ex></ph>. Enter it to start sync.
   </message>
   <message name="IDS_SYNC_ENTER_PASSPHRASE_BODY" desc="Instructions for the dialog where the user enters the passphrase.">
-    Your data is encrypted with your sync passphrase. Please enter it below.
+    Your data is encrypted with your sync passphrase. Enter it to start sync.
   </message>
 </grit-part>
