@@ -104,49 +104,35 @@ unsigned WorkerThread::workerThreadCount()
     return workerThreads().size();
 }
 
-class WorkerThreadTask : public WebTaskRunner::Task {
-    WTF_MAKE_NONCOPYABLE(WorkerThreadTask); USING_FAST_MALLOC(WorkerThreadTask);
-public:
-    static PassOwnPtr<WorkerThreadTask> create(WorkerThread& workerThread, PassOwnPtr<ExecutionContextTask> task, bool isInstrumented)
-    {
-        return adoptPtr(new WorkerThreadTask(workerThread, task, isInstrumented));
+void WorkerThread::performTask(PassOwnPtr<ExecutionContextTask> task, bool isInstrumented)
+{
+    ASSERT(isCurrentThread());
+    WorkerGlobalScope* globalScope = workerGlobalScope();
+    // If the thread is terminated before it had a chance initialize (see
+    // WorkerThread::Initialize()), we mustn't run any of the posted tasks.
+    if (!globalScope) {
+        ASSERT(terminated());
+        return;
     }
 
-    ~WorkerThreadTask() override { }
+    if (isInstrumented)
+        InspectorInstrumentation::willPerformExecutionContextTask(globalScope, task.get());
+    task->performTask(globalScope);
+    if (isInstrumented)
+        InspectorInstrumentation::didPerformExecutionContextTask(globalScope);
+}
 
-    void run() override
-    {
-        WorkerGlobalScope* workerGlobalScope = m_workerThread.workerGlobalScope();
-        // If the thread is terminated before it had a chance initialize (see
-        // WorkerThread::Initialize()), we mustn't run any of the posted tasks.
-        if (!workerGlobalScope) {
-            ASSERT(m_workerThread.terminated());
-            return;
-        }
-
-        if (m_isInstrumented)
-            InspectorInstrumentation::willPerformExecutionContextTask(workerGlobalScope, m_task.get());
-        m_task->performTask(workerGlobalScope);
-        if (m_isInstrumented)
-            InspectorInstrumentation::didPerformExecutionContextTask(workerGlobalScope);
+WebTaskRunner::Task* WorkerThread::createWorkerThreadTask(PassOwnPtr<ExecutionContextTask> task, bool isInstrumented)
+{
+    if (isInstrumented)
+        isInstrumented = !task->taskNameForInstrumentation().isEmpty();
+    if (isInstrumented) {
+        // TODO(hiroshige): This doesn't work when called on the main thread.
+        // https://crbug.com/588497
+        InspectorInstrumentation::didPostExecutionContextTask(workerGlobalScope(), task.get());
     }
-
-private:
-    WorkerThreadTask(WorkerThread& workerThread, PassOwnPtr<ExecutionContextTask> task, bool isInstrumented)
-        : m_workerThread(workerThread)
-        , m_task(task)
-        , m_isInstrumented(isInstrumented)
-    {
-        if (m_isInstrumented)
-            m_isInstrumented = !m_task->taskNameForInstrumentation().isEmpty();
-        if (m_isInstrumented)
-            InspectorInstrumentation::didPostExecutionContextTask(m_workerThread.workerGlobalScope(), m_task.get());
-    }
-
-    WorkerThread& m_workerThread;
-    OwnPtr<ExecutionContextTask> m_task;
-    bool m_isInstrumented;
-};
+    return new Task(threadSafeBind(&WorkerThread::performTask, AllowCrossThreadAccess(this), task, isInstrumented));
+}
 
 class WorkerThread::DebuggerTaskQueue {
     WTF_MAKE_NONCOPYABLE(DebuggerTaskQueue);
@@ -454,12 +440,12 @@ bool WorkerThread::isCurrentThread()
 
 void WorkerThread::postTask(const WebTraceLocation& location, PassOwnPtr<ExecutionContextTask> task)
 {
-    backingThread().postTask(location, WorkerThreadTask::create(*this, task, true).leakPtr());
+    backingThread().postTask(location, createWorkerThreadTask(task, true));
 }
 
 void WorkerThread::postDelayedTask(const WebTraceLocation& location, PassOwnPtr<ExecutionContextTask> task, long long delayMs)
 {
-    backingThread().postDelayedTask(location, WorkerThreadTask::create(*this, task, true).leakPtr(), delayMs);
+    backingThread().postDelayedTask(location, createWorkerThreadTask(task, true), delayMs);
 }
 
 void WorkerThread::initializeBackingThread()

@@ -145,12 +145,15 @@ private:
     class DebuggerTaskQueue;
     friend class WorkerMicrotaskRunner;
 
+    WebTaskRunner::Task* createWorkerThreadTask(PassOwnPtr<ExecutionContextTask>, bool isInstrumented);
+
     // Called on the main thread.
     void terminateInternal();
 
     // Called on the worker thread.
     void initialize(PassOwnPtr<WorkerThreadStartupData>);
     void shutdown();
+    void performTask(PassOwnPtr<ExecutionContextTask>, bool isInstrumented);
     void performShutdownTask();
     void postDelayedTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>, long long delayMs);
 

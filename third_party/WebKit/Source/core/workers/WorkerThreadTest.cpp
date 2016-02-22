@@ -10,6 +10,8 @@
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "platform/NotImplemented.h"
+#include "platform/Task.h"
+#include "platform/ThreadSafeFunctional.h"
 #include "platform/WaitableEvent.h"
 #include "public/platform/WebScheduler.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -142,48 +144,6 @@ void notifyScriptLoadedEventToWorkerThreadForTest(WorkerThread* thread)
     static_cast<WorkerThreadForTest*>(thread)->scriptLoaded();
 }
 
-class WakeupTask : public WebTaskRunner::Task {
-public:
-    WakeupTask() { }
-
-    ~WakeupTask() override { }
-
-    void run() override { }
-};
-
-class PostDelayedWakeupTask : public WebTaskRunner::Task {
-public:
-    PostDelayedWakeupTask(WebScheduler* scheduler, long long delay) : m_scheduler(scheduler), m_delay(delay) { }
-
-    ~PostDelayedWakeupTask() override { }
-
-    void run() override
-    {
-        m_scheduler->timerTaskRunner()->postDelayedTask(BLINK_FROM_HERE, new WakeupTask(), m_delay);
-    }
-
-    WebScheduler* m_scheduler; // Not owned.
-    long long m_delay;
-};
-
-class SignalTask : public WebTaskRunner::Task {
-public:
-    SignalTask(WaitableEvent* completionEvent)
-        : m_completionEvent(completionEvent)
-    {
-    }
-
-    ~SignalTask() override { }
-
-    void run() override
-    {
-        m_completionEvent->signal();
-    }
-
-private:
-    WaitableEvent* m_completionEvent; // Not owned.
-};
-
 } // namespace
 
 class WorkerThreadTest : public testing::Test {
@@ -231,7 +191,7 @@ public:
     void waitForInit()
     {
         OwnPtr<WaitableEvent> completionEvent = adoptPtr(new WaitableEvent());
-        m_workerThread->backingThread().postTask(BLINK_FROM_HERE, new SignalTask(completionEvent.get()));
+        m_workerThread->backingThread().postTask(BLINK_FROM_HERE, new Task(threadSafeBind(&WaitableEvent::signal, AllowCrossThreadAccess(completionEvent.get()))));
         completionEvent->wait();
     }
 
