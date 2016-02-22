@@ -40,7 +40,6 @@
 #include "SkPoint.h"
 #include "SkRect.h"
 #include "SkTypeface.h"
-#include "SkUtils.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontPlatformData.h"
 #include "platform/fonts/SimpleFontData.h"

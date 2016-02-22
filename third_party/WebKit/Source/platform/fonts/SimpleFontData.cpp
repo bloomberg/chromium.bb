@@ -33,7 +33,6 @@
 #include "SkPath.h"
 #include "SkTypeface.h"
 #include "SkTypes.h"
-#include "SkUtils.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/GlyphPage.h"
 #include "platform/fonts/VDMXParser.h"
@@ -43,6 +42,7 @@
 #include "wtf/text/CharacterNames.h"
 #include "wtf/text/Unicode.h"
 #include <unicode/normlzr.h>
+#include <unicode/utf16.h>
 
 namespace blink {
 
@@ -427,8 +427,8 @@ float SimpleFontData::platformWidthForGlyph(Glyph glyph) const
 
 bool SimpleFontData::fillGlyphPage(GlyphPage* pageToFill, unsigned offset, unsigned length, UChar* buffer, unsigned bufferLength) const
 {
-    if (SkUTF16_IsHighSurrogate(buffer[bufferLength-1])) {
-        SkDebugf("%s last char is high-surrogate", __FUNCTION__);
+    if (U16_IS_LEAD(buffer[bufferLength-1])) {
+        WTF_LOG_ERROR("Last UTF-16 code unit is high-surrogate.");
         return false;
     }
 
