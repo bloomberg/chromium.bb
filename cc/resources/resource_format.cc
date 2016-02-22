@@ -101,15 +101,38 @@ gfx::BufferFormat BufferFormat(ResourceFormat format) {
       return gfx::BufferFormat::RGBA_4444;
     case RGBA_8888:
       return gfx::BufferFormat::RGBA_8888;
+    case ETC1:
+      return gfx::BufferFormat::ETC1;
     case ALPHA_8:
     case LUMINANCE_8:
     case RGB_565:
-    case ETC1:
     case LUMINANCE_F16:
       break;
   }
   NOTREACHED();
   return gfx::BufferFormat::RGBA_8888;
+}
+
+bool IsResourceFormatCompressed(ResourceFormat format) {
+  return format == ETC1;
+}
+
+bool DoesResourceFormatSupportAlpha(ResourceFormat format) {
+  switch (format) {
+    case RGBA_4444:
+    case RGBA_8888:
+    case BGRA_8888:
+    case ALPHA_8:
+      return true;
+    case LUMINANCE_8:
+    case RGB_565:
+    case ETC1:
+    case RED_8:
+    case LUMINANCE_F16:
+      return false;
+  }
+  NOTREACHED();
+  return false;
 }
 
 }  // namespace cc

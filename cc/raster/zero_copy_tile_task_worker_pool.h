@@ -32,7 +32,7 @@ class CC_EXPORT ZeroCopyTileTaskWorkerPool : public TileTaskWorkerPool,
       base::SequencedTaskRunner* task_runner,
       TaskGraphRunner* task_graph_runner,
       ResourceProvider* resource_provider,
-      bool use_rgba_4444_texture_format);
+      ResourceFormat preferred_tile_format);
 
   // Overridden from TileTaskWorkerPool:
   TileTaskRunner* AsTileTaskRunner() override;
@@ -55,7 +55,7 @@ class CC_EXPORT ZeroCopyTileTaskWorkerPool : public TileTaskWorkerPool,
   ZeroCopyTileTaskWorkerPool(base::SequencedTaskRunner* task_runner,
                              TaskGraphRunner* task_graph_runner,
                              ResourceProvider* resource_provider,
-                             bool use_rgba_4444_texture_format);
+                             ResourceFormat preferred_tile_format);
 
  private:
   scoped_refptr<base::trace_event::ConvertableToTraceFormat> StateAsValue()
@@ -66,7 +66,7 @@ class CC_EXPORT ZeroCopyTileTaskWorkerPool : public TileTaskWorkerPool,
   const NamespaceToken namespace_token_;
   ResourceProvider* resource_provider_;
 
-  bool use_rgba_4444_texture_format_;
+  ResourceFormat preferred_tile_format_;
 
   Task::Vector completed_tasks_;
 

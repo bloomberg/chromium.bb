@@ -147,7 +147,8 @@ void LayerTreeHostPixelResourceTest::CreateResourceAndTileTaskWorkerPool(
       *resource_pool = ResourcePool::Create(resource_provider, task_runner);
 
       *tile_task_worker_pool = ZeroCopyTileTaskWorkerPool::Create(
-          task_runner, task_graph_runner(), resource_provider, false);
+          task_runner, task_graph_runner(), resource_provider,
+          PlatformColor::BestTextureFormat());
       break;
     case ONE_COPY_TILE_TASK_WORKER_POOL:
       EXPECT_TRUE(context_provider);
@@ -158,7 +159,8 @@ void LayerTreeHostPixelResourceTest::CreateResourceAndTileTaskWorkerPool(
       *tile_task_worker_pool = OneCopyTileTaskWorkerPool::Create(
           task_runner, task_graph_runner(), context_provider, resource_provider,
           max_bytes_per_copy_operation, false,
-          max_staging_buffer_usage_in_bytes, false);
+          max_staging_buffer_usage_in_bytes,
+          PlatformColor::BestTextureFormat());
       break;
   }
 }
