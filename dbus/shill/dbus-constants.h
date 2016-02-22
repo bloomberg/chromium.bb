@@ -703,6 +703,7 @@ const char kDomainSearchParameterThirdPartyVpn[] = "domain_search";
 const char kDnsServersParameterThirdPartyVpn[] = "dns_servers";
 const char kInclusionListParameterThirdPartyVpn[] = "inclusion_list";
 const char kExclusionListParameterThirdPartyVpn[] = "exclusion_list";
+const char kReconnectParameterThirdPartyVpn[] = "reconnect";
 const char kObjectPathSuffixProperty[] = "ObjectPathSuffix";
 const char kExtensionNameProperty[] = "ExtensionName";
 const char kConfigurationNameProperty[] = "ConfigurationName";
