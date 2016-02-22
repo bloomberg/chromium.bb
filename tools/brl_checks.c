@@ -368,7 +368,7 @@ check_inpos(const char *tableList, const char *str, const int *expected_poslist)
       if (expected_poslist[i] != inpos[i])
 	{
 	  rv = 1;
-	  fprintf(stderr,"Expected %d, recieved %d in index %d\n",
+	  fprintf(stderr,"Expected %d, received %d in index %d\n",
 		 expected_poslist[i], inpos[i], i);
 	}
     }
@@ -414,7 +414,7 @@ check_outpos(const char *tableList, const char *str, const int *expected_poslist
       if (expected_poslist[i] != outpos[i])
 	{
 	  rv = 1;
-	  fprintf(stderr,"Expected %d, recieved %d in index %d\n",
+	  fprintf(stderr,"Expected %d, received %d in index %d\n",
 		 expected_poslist[i], outpos[i], i);
 	}
     }
@@ -456,7 +456,7 @@ check_cursor_pos(const char *tableList, const char *str, const int *expected_pos
 	{
 	  rv = 1;
 	  fprintf(stderr,"string='%s' cursor=%d ('%c') expected=%d \
-recieved=%d ('%c')\n", str, i, str[i], expected_pos[i], cursor_pos, (char) outbuf[cursor_pos]);
+received=%d ('%c')\n", str, i, str[i], expected_pos[i], cursor_pos, (char) outbuf[cursor_pos]);
 	}
     }
 
