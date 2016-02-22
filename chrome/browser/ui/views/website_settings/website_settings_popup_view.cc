@@ -696,8 +696,10 @@ void WebsiteSettingsPopupView::SetIdentityInfo(
       header_->AddResetDecisionsButton();
   }
 
-  header_->SetSecuritySummary(security_summary_text,
-                              identity_info.cert_id != 0);
+  bool include_details_link =
+      !is_devtools_disabled_ || identity_info.cert_id != 0;
+
+  header_->SetSecuritySummary(security_summary_text, include_details_link);
 
   Layout();
   SizeToContents();
