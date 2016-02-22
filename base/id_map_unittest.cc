@@ -365,6 +365,13 @@ TEST(IDMapTest, Int64KeyType) {
   map.AddWithID(&obj1, kId1);
   EXPECT_EQ(&obj1, map.Lookup(kId1));
 
+  IDMap<TestObject, IDMapExternalPointer, int64_t>::const_iterator iter(&map);
+  ASSERT_FALSE(iter.IsAtEnd());
+  EXPECT_EQ(kId1, iter.GetCurrentKey());
+  EXPECT_EQ(&obj1, iter.GetCurrentValue());
+  iter.Advance();
+  ASSERT_TRUE(iter.IsAtEnd());
+
   map.Remove(kId1);
   EXPECT_TRUE(map.IsEmpty());
 }
