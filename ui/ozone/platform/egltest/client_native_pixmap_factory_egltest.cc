@@ -4,7 +4,7 @@
 
 #include "ui/ozone/platform/egltest/client_native_pixmap_factory_egltest.h"
 
-#include "ui/ozone/common/stub_client_native_pixmap_factory.h"  // nogncheck
+#include "ui/ozone/common/stub_client_native_pixmap_factory.h"
 
 namespace ui {
 

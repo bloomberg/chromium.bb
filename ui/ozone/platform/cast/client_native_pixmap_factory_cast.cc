@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/ozone/public/client_native_pixmap.h"
-#include "ui/ozone/public/client_native_pixmap_factory.h"  // nogncheck
+#include "ui/ozone/public/client_native_pixmap_factory.h"
 
 namespace ui {
 namespace {

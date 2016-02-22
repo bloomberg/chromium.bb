@@ -8,7 +8,7 @@
 
 #include "base/macros.h"
 #include "ui/gfx/native_pixmap_handle_ozone.h"
-#include "ui/ozone/public/client_native_pixmap_factory.h"  // nogncheck
+#include "ui/ozone/public/client_native_pixmap_factory.h"
 
 #if defined(USE_VGEM_MAP)
 #include "ui/ozone/platform/drm/common/client_native_pixmap_vgem.h"

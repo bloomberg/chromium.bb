@@ -132,6 +132,7 @@ source_set("gbm") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/ozone:ozone_base",
+    "//ui/platform_window",
   ]
 
   configs += [ ":libdrm" ]
