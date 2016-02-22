@@ -30,7 +30,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "platform/SharedBuffer.h"
+#include "public/platform/FilePathConversion.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebString.h"
 #include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
@@ -57,9 +59,7 @@ String blinkRootDir()
 
 PassRefPtr<SharedBuffer> readFromFile(const String& path)
 {
-    StringUTF8Adaptor utf8(path);
-    base::FilePath filePath = base::FilePath::FromUTF8Unsafe(
-        std::string(utf8.data(), utf8.length()));
+    base::FilePath filePath = blink::WebStringToFilePath(path);
     std::string buffer;
     base::ReadFileToString(filePath, &buffer);
     return SharedBuffer::create(buffer.data(), buffer.size());

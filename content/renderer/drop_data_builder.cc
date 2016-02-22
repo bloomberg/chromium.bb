@@ -8,6 +8,7 @@
 
 #include "base/strings/string_util.h"
 #include "content/public/common/drop_data.h"
+#include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebDragData.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -60,8 +61,8 @@ DropData DropDataBuilder::Build(const WebDragData& drag_data) {
       case WebDragData::Item::StorageTypeFilename:
         // TODO(varunjain): This only works on chromeos. Support win/mac/gtk.
         result.filenames.push_back(ui::FileInfo(
-            base::FilePath::FromUTF16Unsafe(item.filenameData),
-            base::FilePath::FromUTF16Unsafe(item.displayNameData)));
+            blink::WebStringToFilePath(item.filenameData),
+            blink::WebStringToFilePath(item.displayNameData)));
         break;
       case WebDragData::Item::StorageTypeFileSystemFile: {
         DropData::FileSystemFileInfo info;

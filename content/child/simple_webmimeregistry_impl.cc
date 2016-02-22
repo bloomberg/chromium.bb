@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/mime_util/mime_util.h"
 #include "net/base/mime_util.h"
+#include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
 using blink::WebString;
@@ -87,7 +88,7 @@ WebString SimpleWebMimeRegistryImpl::mimeTypeForExtension(
     const WebString& file_extension) {
   std::string mime_type;
   net::GetMimeTypeFromExtension(
-      base::FilePath::FromUTF16Unsafe(file_extension).value(), &mime_type);
+      blink::WebStringToFilePath(file_extension).value(), &mime_type);
   return WebString::fromUTF8(mime_type);
 }
 
@@ -95,7 +96,7 @@ WebString SimpleWebMimeRegistryImpl::wellKnownMimeTypeForExtension(
     const WebString& file_extension) {
   std::string mime_type;
   net::GetWellKnownMimeTypeFromExtension(
-      base::FilePath::FromUTF16Unsafe(file_extension).value(), &mime_type);
+      blink::WebStringToFilePath(file_extension).value(), &mime_type);
   return WebString::fromUTF8(mime_type);
 }
 

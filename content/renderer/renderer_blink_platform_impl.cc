@@ -84,6 +84,7 @@
 #include "media/filters/stream_parser_factory.h"
 #include "storage/common/database/database_identifier.h"
 #include "storage/common/quota/quota_types.h"
+#include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebBatteryStatusListener.h"
 #include "third_party/WebKit/public/platform/WebBlobRegistry.h"
@@ -506,7 +507,7 @@ WebString RendererBlinkPlatformImpl::MimeRegistry::mimeTypeForExtension(
   std::string mime_type;
   RenderThread::Get()->Send(
       new MimeRegistryMsg_GetMimeTypeFromExtension(
-          base::FilePath::FromUTF16Unsafe(file_extension).value(), &mime_type));
+          blink::WebStringToFilePath(file_extension).value(), &mime_type));
   return base::ASCIIToUTF16(mime_type);
 }
 
@@ -518,7 +519,7 @@ bool RendererBlinkPlatformImpl::FileUtilities::getFileInfo(
   base::File::Info file_info;
   base::File::Error status = base::File::FILE_ERROR_MAX;
   if (!SendSyncMessageFromAnyThread(new FileUtilitiesMsg_GetFileInfo(
-           base::FilePath::FromUTF16Unsafe(path), &file_info, &status)) ||
+           blink::WebStringToFilePath(path), &file_info, &status)) ||
       status != base::File::FILE_OK) {
     return false;
   }

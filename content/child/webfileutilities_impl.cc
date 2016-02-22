@@ -10,6 +10,7 @@
 #include "content/child/file_info_util.h"
 #include "net/base/file_stream.h"
 #include "net/base/filename_util.h"
+#include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/WebFileInfo.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -32,7 +33,7 @@ bool WebFileUtilitiesImpl::getFileInfo(const WebString& path,
     return false;
   }
   base::File::Info file_info;
-  if (!base::GetFileInfo(base::FilePath::FromUTF16Unsafe(path),
+  if (!base::GetFileInfo(blink::WebStringToFilePath(path),
                          reinterpret_cast<base::File::Info*>(&file_info)))
     return false;
 
@@ -42,15 +43,15 @@ bool WebFileUtilitiesImpl::getFileInfo(const WebString& path,
 }
 
 WebString WebFileUtilitiesImpl::directoryName(const WebString& path) {
-  return base::FilePath::FromUTF16Unsafe(path).DirName().AsUTF16Unsafe();
+  return blink::WebStringToFilePath(path).DirName().AsUTF16Unsafe();
 }
 
 WebString WebFileUtilitiesImpl::baseName(const WebString& path) {
-  return base::FilePath::FromUTF16Unsafe(path).BaseName().AsUTF16Unsafe();
+  return blink::WebStringToFilePath(path).BaseName().AsUTF16Unsafe();
 }
 
 blink::WebURL WebFileUtilitiesImpl::filePathToURL(const WebString& path) {
-  return net::FilePathToFileURL(base::FilePath::FromUTF16Unsafe(path));
+  return net::FilePathToFileURL(blink::WebStringToFilePath(path));
 }
 
 }  // namespace content

@@ -80,7 +80,6 @@
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
         '<(DEPTH)/url/url.gyp:url_lib',
-        'blink_platform.gyp:blink_common',
         'blink_platform.gyp:blink_platform',
       ],
       'defines': [
@@ -109,6 +108,7 @@
       'dependencies': [
         '../config.gyp:config',
         '../wtf/wtf.gyp:wtf',
+        'blink_platform.gyp:blink_common',
         'blink_platform.gyp:blink_platform',
         '<(DEPTH)/testing/gmock.gyp:gmock',
       ],

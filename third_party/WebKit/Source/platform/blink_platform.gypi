@@ -1113,6 +1113,7 @@
       'animation/CompositorFloatAnimationCurveTest.cpp',
       'blob/BlobDataTest.cpp',
       'clipboard/ClipboardUtilitiesTest.cpp',
+      'exported/FilePathConversionTest.cpp',
       'fonts/AcceptLanguagesResolverTest.cpp',
       'fonts/CharacterTest.cpp',
       'fonts/FontCacheTest.cpp',

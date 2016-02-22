@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "content/test/weburl_loader_mock.h"
+#include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -36,15 +37,7 @@ void WebURLLoaderMockFactory::RegisterURL(const WebURL& url,
   ResponseInfo response_info;
   response_info.response = response;
   if (!file_path.isNull() && !file_path.isEmpty()) {
-#if defined(OS_POSIX)
-    // TODO(jcivelli): On Linux, UTF8 might not be correct.
-    response_info.file_path =
-        base::FilePath(static_cast<std::string>(file_path.utf8()));
-#elif defined(OS_WIN)
-    base::string16 file_path_16 = file_path;
-    response_info.file_path = base::FilePath(std::wstring(
-        file_path_16.data(), file_path_16.length()));
-#endif
+    response_info.file_path = blink::WebStringToFilePath(file_path);
     DCHECK(base::PathExists(response_info.file_path))
         << response_info.file_path.MaybeAsASCII() << " does not exist.";
   }

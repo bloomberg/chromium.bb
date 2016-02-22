@@ -112,6 +112,7 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_util.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebConnectionType.h"
@@ -1739,7 +1740,7 @@ bool RenderViewImpl::enumerateChosenDirectory(
   int id = enumeration_completion_id_++;
   enumeration_completions_[id] = chooser_completion;
   return Send(new ViewHostMsg_EnumerateDirectory(
-      routing_id(), id, base::FilePath::FromUTF16Unsafe(path)));
+      routing_id(), id, blink::WebStringToFilePath(path)));
 }
 
 void RenderViewImpl::FrameDidStartLoading(WebFrame* frame) {
@@ -1819,7 +1820,7 @@ bool RenderViewImpl::runFileChooser(
     ipc_params.mode = FileChooserParams::Open;
   ipc_params.title = params.title;
   ipc_params.default_file_name =
-      base::FilePath::FromUTF16Unsafe(params.initialValue).BaseName();
+      blink::WebStringToFilePath(params.initialValue).BaseName();
   ipc_params.accept_types.reserve(params.acceptTypes.size());
   for (size_t i = 0; i < params.acceptTypes.size(); ++i)
     ipc_params.accept_types.push_back(params.acceptTypes[i]);

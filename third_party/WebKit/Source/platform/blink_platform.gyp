@@ -63,6 +63,7 @@
       '<(SHARED_INTERMEDIATE_DIR)/blink',
     ],
     'sources': [
+      'exported/FilePathConversion.cpp',
       'exported/URLConversion.cpp',
       'exported/WebCString.cpp',
       'exported/WebCommon.cpp',

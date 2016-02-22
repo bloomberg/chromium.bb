@@ -6,6 +6,7 @@
   'variables': {
     'blink_public_sources': [
       "platform/Platform.h",
+      "platform/FilePathConversion.h",
       "platform/URLConversion.h",
       "platform/WebApiKeyValidator.h",
       "platform/WebApplicationCacheHost.h",

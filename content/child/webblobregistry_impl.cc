@@ -15,6 +15,7 @@
 #include "content/child/child_thread_impl.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/fileapi/webblob_messages.h"
+#include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/WebBlobData.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebThreadSafeData.h"
@@ -210,7 +211,7 @@ void WebBlobRegistryImpl::BuilderImpl::appendFile(
     uint64_t length,
     double expected_modification_time) {
   consolidation_.AddFileItem(
-      base::FilePath::FromUTF16Unsafe(base::string16(path)), offset, length,
+      blink::WebStringToFilePath(path), offset, length,
       expected_modification_time);
 }
 

@@ -610,7 +610,7 @@ string16 FilePath::AsUTF16Unsafe() const {
 }
 
 // static
-FilePath FilePath::FromUTF8Unsafe(const std::string& utf8) {
+FilePath FilePath::FromUTF8Unsafe(StringPiece utf8) {
 #if defined(SYSTEM_NATIVE_UTF8)
   return FilePath(utf8);
 #else
@@ -619,11 +619,11 @@ FilePath FilePath::FromUTF8Unsafe(const std::string& utf8) {
 }
 
 // static
-FilePath FilePath::FromUTF16Unsafe(const string16& utf16) {
+FilePath FilePath::FromUTF16Unsafe(StringPiece16 utf16) {
 #if defined(SYSTEM_NATIVE_UTF8)
   return FilePath(UTF16ToUTF8(utf16));
 #else
-  return FilePath(SysWideToNativeMB(UTF16ToWide(utf16)));
+  return FilePath(SysWideToNativeMB(UTF16ToWide(utf16.as_string())));
 #endif
 }
 
@@ -647,12 +647,12 @@ string16 FilePath::AsUTF16Unsafe() const {
 }
 
 // static
-FilePath FilePath::FromUTF8Unsafe(const std::string& utf8) {
+FilePath FilePath::FromUTF8Unsafe(StringPiece utf8) {
   return FilePath(UTF8ToWide(utf8));
 }
 
 // static
-FilePath FilePath::FromUTF16Unsafe(const string16& utf16) {
+FilePath FilePath::FromUTF16Unsafe(StringPiece16 utf16) {
   return FilePath(utf16);
 }
 #endif

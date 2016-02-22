@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/WebHTTPHeaderVisitor.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -256,11 +257,11 @@ scoped_refptr<ResourceRequestBody> GetRequestBodyForWebURLRequest(
       case WebHTTPBody::Element::TypeFile:
         if (element.fileLength == -1) {
           request_body->AppendFileRange(
-              base::FilePath::FromUTF16Unsafe(element.filePath), 0,
+              blink::WebStringToFilePath(element.filePath), 0,
               std::numeric_limits<uint64_t>::max(), base::Time());
         } else {
           request_body->AppendFileRange(
-              base::FilePath::FromUTF16Unsafe(element.filePath),
+              blink::WebStringToFilePath(element.filePath),
               static_cast<uint64_t>(element.fileStart),
               static_cast<uint64_t>(element.fileLength),
               base::Time::FromDoubleT(element.modificationTime));
