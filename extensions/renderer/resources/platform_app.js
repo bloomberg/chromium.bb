@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+var logging = requireNative('logging');
+
 /**
  * Returns a function that logs a 'not available' error to the console and
  * returns undefined.
@@ -65,10 +67,16 @@ function generateThrowingMethodStub(messagePrefix, opt_messageSuffix) {
  */
 function disableMethods(object, objectName, methodNames, useThrowingStubs) {
   $Array.forEach(methodNames, function(methodName) {
+    logging.DCHECK($Object.getOwnPropertyDescriptor(object, methodName),
+                   objectName + ': ' + methodName);
     var messagePrefix = objectName + '.' + methodName + '()';
-    object[methodName] = useThrowingStubs ?
-        generateThrowingMethodStub(messagePrefix) :
-        generateDisabledMethodStub(messagePrefix);
+    $Object.defineProperty(object, methodName, {
+      configurable: false,
+      enumerable: false,
+      value: useThrowingStubs ?
+                 generateThrowingMethodStub(messagePrefix) :
+                 generateDisabledMethodStub(messagePrefix)
+    });
   });
 }
 
@@ -85,9 +93,16 @@ function disableMethods(object, objectName, methodNames, useThrowingStubs) {
  *     referred to by web developers, e.g. "document" instead of
  *     "HTMLDocument").
  * @param {Array<string>} propertyNames names of properties to disable.
+ * @param {?string=} opt_messageSuffix An optional suffix for the message.
+ * @param {boolean=} opt_ignoreMissingProperty True if we allow disabling
+ *     getters for non-existent properties.
  */
-function disableGetters(object, objectName, propertyNames, opt_messageSuffix) {
+function disableGetters(object, objectName, propertyNames, opt_messageSuffix,
+                        opt_ignoreMissingProperty) {
   $Array.forEach(propertyNames, function(propertyName) {
+    logging.DCHECK(opt_ignoreMissingProperty ||
+                       $Object.getOwnPropertyDescriptor(object, propertyName),
+                   objectName + ': ' + propertyName);
     var stub = generateDisabledMethodStub(objectName + '.' + propertyName,
                                           opt_messageSuffix);
     stub._is_platform_app_disabled_getter = true;
@@ -130,10 +145,12 @@ function disableGetters(object, objectName, propertyNames, opt_messageSuffix) {
  */
 function disableSetters(object, objectName, propertyNames, opt_messageSuffix) {
   $Array.forEach(propertyNames, function(propertyName) {
+    logging.DCHECK($Object.getOwnPropertyDescriptor(object, propertyName),
+                   objectName + ': ' + propertyName);
     var stub = generateDisabledMethodStub(objectName + '.' + propertyName,
                                           opt_messageSuffix);
     $Object.defineProperty(object, propertyName, {
-      configurable: true,
+      configurable: false,
       enumerable: false,
       get: function() {
         return;
@@ -144,24 +161,26 @@ function disableSetters(object, objectName, propertyNames, opt_messageSuffix) {
 }
 
 // Disable benign Document methods.
-disableMethods(HTMLDocument.prototype, 'document', ['open', 'clear', 'close']);
+disableMethods(Document.prototype, 'document', ['open', 'close']);
+disableMethods(HTMLDocument.prototype, 'document', ['clear']);
 
 // Replace evil Document methods with exception-throwing stubs.
-disableMethods(HTMLDocument.prototype, 'document', ['write', 'writeln'], true);
+disableMethods(Document.prototype, 'document', ['write', 'writeln'], true);
 
 // Disable history.
 Object.defineProperty(window, "history", { value: {} });
+// Note: we just blew away the history object, so we need to ignore the fact
+// that these properties aren't defined on the object.
 disableGetters(window.history, 'history',
-    ['back', 'forward', 'go', 'length', 'pushState', 'replaceState', 'state']);
+    ['back', 'forward', 'go', 'length', 'pushState', 'replaceState', 'state'],
+    null, true);
 
 // Disable find.
 disableMethods(window, 'window', ['find']);
-disableMethods(Window.prototype, 'window', ['find']);
 
 // Disable modal dialogs. Shell windows disable these anyway, but it's nice to
 // warn.
 disableMethods(window, 'window', ['alert', 'confirm', 'prompt']);
-disableMethods(Window.prototype, 'window', ['alert', 'confirm', 'prompt']);
 
 // Disable window.*bar.
 disableGetters(window, 'window',
@@ -194,16 +213,20 @@ window.addEventListener('readystatechange', function(event) {
   // it first to 'undefined' to avoid this.
   document.all = undefined;
   disableGetters(document, 'document',
-      ['alinkColor', 'all', 'bgColor', 'fgColor', 'linkColor', 'vlinkColor']);
+      ['alinkColor', 'all', 'bgColor', 'fgColor', 'linkColor', 'vlinkColor'],
+      null, true);
 }, true);
 
 // Disable onunload, onbeforeunload.
 disableSetters(window, 'window', ['onbeforeunload', 'onunload']);
-disableSetters(Window.prototype, 'window', ['onbeforeunload', 'onunload']);
 var eventTargetAddEventListener = EventTarget.prototype.addEventListener;
 EventTarget.prototype.addEventListener = function(type) {
+  var args = $Array.slice(arguments);
+  // Note: Force conversion to a string in order to catch any funny attempts
+  // to pass in something that evals to 'unload' but wouldn't === 'unload'.
+  var type = (args[0] += '');
   if (type === 'unload' || type === 'beforeunload')
     generateDisabledMethodStub(type)();
   else
-    return $Function.apply(eventTargetAddEventListener, this, arguments);
+    return $Function.apply(eventTargetAddEventListener, this, args);
 };

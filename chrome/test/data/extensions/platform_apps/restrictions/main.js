@@ -74,28 +74,28 @@ chrome.test.runTests([
   },
 
   function testWindowFind() {
-    assertEq('undefined', typeof(Window.prototype.find('needle')));
+    assertEq('undefined', typeof(Window.prototype.find));
     assertEq('undefined', typeof(window.find('needle')));
     assertEq('undefined', typeof(find('needle')));
     succeed();
   },
 
   function testWindowAlert() {
-    assertEq('undefined', typeof(Window.prototype.alert()));
+    assertEq('undefined', typeof(Window.prototype.alert));
     assertEq('undefined', typeof(window.alert()));
     assertEq('undefined', typeof(alert()));
     succeed();
   },
 
   function testWindowConfirm() {
-    assertEq('undefined', typeof(Window.prototype.confirm('Failed')));
+    assertEq('undefined', typeof(Window.prototype.confirm));
     assertEq('undefined', typeof(window.confirm('Failed')));
     assertEq('undefined', typeof(confirm('Failed')));
     succeed();
   },
 
   function testWindowPrompt() {
-    assertEq('undefined', typeof(Window.prototype.prompt('Failed')));
+    assertEq('undefined', typeof(Window.prototype.prompt));
     assertEq('undefined', typeof(window.prompt('Failed')));
     assertEq('undefined', typeof(prompt('Failed')));
     succeed();

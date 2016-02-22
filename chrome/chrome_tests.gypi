@@ -213,6 +213,7 @@
       'browser/extensions/api/webstore_private/webstore_private_apitest.cc',
       'browser/extensions/app_background_page_apitest.cc',
       'browser/extensions/app_process_apitest.cc',
+      'browser/extensions/app_window_overrides_browsertest.cc',
       'browser/extensions/background_app_browsertest.cc',
       'browser/extensions/background_page_apitest.cc',
       'browser/extensions/background_scripts_apitest.cc',
