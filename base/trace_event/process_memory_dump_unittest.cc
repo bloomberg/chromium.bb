@@ -15,6 +15,13 @@
 namespace base {
 namespace trace_event {
 
+namespace {
+TracedValue* GetHeapDump(const ProcessMemoryDump& pmd, const char* name) {
+  auto it = pmd.heap_dumps().find(name);
+  return it == pmd.heap_dumps().end() ? nullptr : it->second.get();
+}
+}  // namespace
+
 TEST(ProcessMemoryDumpTest, Clear) {
   scoped_ptr<ProcessMemoryDump> pmd1(new ProcessMemoryDump(nullptr));
   pmd1->CreateAllocatorDump("mad1");
@@ -47,7 +54,7 @@ TEST(ProcessMemoryDumpTest, Clear) {
   ASSERT_EQ(nullptr, pmd1->GetSharedGlobalAllocatorDump(shared_mad_guid2));
 
   // Check that calling AsValueInto() doesn't cause a crash.
-  scoped_refptr<TracedValue> traced_value(new TracedValue());
+  scoped_refptr<TracedValue> traced_value(new TracedValue);
   pmd1->AsValueInto(traced_value.get());
 
   // Check that the pmd can be reused and behaves as expected.
@@ -65,24 +72,38 @@ TEST(ProcessMemoryDumpTest, Clear) {
   ASSERT_EQ(shared_mad2, pmd1->GetSharedGlobalAllocatorDump(shared_mad_guid2));
   ASSERT_EQ(MemoryAllocatorDump::Flags::WEAK, shared_mad2->flags());
 
-  traced_value = new TracedValue();
+  traced_value = new TracedValue;
   pmd1->AsValueInto(traced_value.get());
 
   pmd1.reset();
 }
 
 TEST(ProcessMemoryDumpTest, TakeAllDumpsFrom) {
-  scoped_refptr<TracedValue> traced_value(new TracedValue());
+  scoped_refptr<TracedValue> traced_value(new TracedValue);
+  TracedValue* heap_dumps_ptr[4];
+  scoped_refptr<TracedValue> heap_dump;
 
   scoped_ptr<ProcessMemoryDump> pmd1(new ProcessMemoryDump(nullptr));
   auto mad1_1 = pmd1->CreateAllocatorDump("pmd1/mad1");
   auto mad1_2 = pmd1->CreateAllocatorDump("pmd1/mad2");
   pmd1->AddOwnershipEdge(mad1_1->guid(), mad1_2->guid());
+  heap_dump = new TracedValue;
+  heap_dumps_ptr[0] = heap_dump.get();
+  pmd1->AddHeapDump("pmd1/heap_dump1", std::move(heap_dump));
+  heap_dump = new TracedValue;
+  heap_dumps_ptr[1] = heap_dump.get();
+  pmd1->AddHeapDump("pmd1/heap_dump2", std::move(heap_dump));
 
   scoped_ptr<ProcessMemoryDump> pmd2(new ProcessMemoryDump(nullptr));
   auto mad2_1 = pmd2->CreateAllocatorDump("pmd2/mad1");
   auto mad2_2 = pmd2->CreateAllocatorDump("pmd2/mad2");
-  pmd1->AddOwnershipEdge(mad2_1->guid(), mad2_2->guid());
+  pmd2->AddOwnershipEdge(mad2_1->guid(), mad2_2->guid());
+  heap_dump = new TracedValue;
+  heap_dumps_ptr[2] = heap_dump.get();
+  pmd2->AddHeapDump("pmd2/heap_dump1", std::move(heap_dump));
+  heap_dump = new TracedValue;
+  heap_dumps_ptr[3] = heap_dump.get();
+  pmd2->AddHeapDump("pmd2/heap_dump2", std::move(heap_dump));
 
   MemoryAllocatorDumpGuid shared_mad_guid1(1);
   MemoryAllocatorDumpGuid shared_mad_guid2(2);
@@ -95,6 +116,7 @@ TEST(ProcessMemoryDumpTest, TakeAllDumpsFrom) {
   // Make sure that pmd2 is empty but still usable after it has been emptied.
   ASSERT_TRUE(pmd2->allocator_dumps().empty());
   ASSERT_TRUE(pmd2->allocator_dumps_edges().empty());
+  ASSERT_TRUE(pmd2->heap_dumps().empty());
   pmd2->CreateAllocatorDump("pmd2/this_mad_stays_with_pmd2");
   ASSERT_EQ(1u, pmd2->allocator_dumps().size());
   ASSERT_EQ(1u, pmd2->allocator_dumps().count("pmd2/this_mad_stays_with_pmd2"));
@@ -118,9 +140,14 @@ TEST(ProcessMemoryDumpTest, TakeAllDumpsFrom) {
   ASSERT_EQ(shared_mad1, pmd1->GetSharedGlobalAllocatorDump(shared_mad_guid1));
   ASSERT_EQ(shared_mad2, pmd1->GetSharedGlobalAllocatorDump(shared_mad_guid2));
   ASSERT_TRUE(MemoryAllocatorDump::Flags::WEAK & shared_mad2->flags());
+  ASSERT_EQ(4u, pmd1->heap_dumps().size());
+  ASSERT_EQ(heap_dumps_ptr[0], GetHeapDump(*pmd1, "pmd1/heap_dump1"));
+  ASSERT_EQ(heap_dumps_ptr[1], GetHeapDump(*pmd1, "pmd1/heap_dump2"));
+  ASSERT_EQ(heap_dumps_ptr[2], GetHeapDump(*pmd1, "pmd2/heap_dump1"));
+  ASSERT_EQ(heap_dumps_ptr[3], GetHeapDump(*pmd1, "pmd2/heap_dump2"));
 
   // Check that calling AsValueInto() doesn't cause a crash.
-  traced_value = new TracedValue();
+  traced_value = new TracedValue;
   pmd1->AsValueInto(traced_value.get());
 
   pmd1.reset();
@@ -164,7 +191,7 @@ TEST(ProcessMemoryDumpTest, Suballocations) {
   ASSERT_TRUE(found_edge[1]);
 
   // Check that calling AsValueInto() doesn't cause a crash.
-  scoped_refptr<TracedValue> traced_value(new TracedValue());
+  scoped_refptr<TracedValue> traced_value(new TracedValue);
   pmd->AsValueInto(traced_value.get());
 
   pmd.reset();

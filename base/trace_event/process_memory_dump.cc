@@ -124,37 +124,35 @@ ProcessMemoryDump::ProcessMemoryDump(
     const scoped_refptr<MemoryDumpSessionState>& session_state)
     : has_process_totals_(false),
       has_process_mmaps_(false),
-      session_state_(session_state) {
-}
+      session_state_(session_state) {}
 
-ProcessMemoryDump::~ProcessMemoryDump() {
-}
+ProcessMemoryDump::~ProcessMemoryDump() {}
 
 MemoryAllocatorDump* ProcessMemoryDump::CreateAllocatorDump(
     const std::string& absolute_name) {
-  MemoryAllocatorDump* mad = new MemoryAllocatorDump(absolute_name, this);
-  AddAllocatorDumpInternal(mad);  // Takes ownership of |mad|.
-  return mad;
+  return AddAllocatorDumpInternal(
+      make_scoped_ptr(new MemoryAllocatorDump(absolute_name, this)));
 }
 
 MemoryAllocatorDump* ProcessMemoryDump::CreateAllocatorDump(
     const std::string& absolute_name,
     const MemoryAllocatorDumpGuid& guid) {
-  MemoryAllocatorDump* mad = new MemoryAllocatorDump(absolute_name, this, guid);
-  AddAllocatorDumpInternal(mad);  // Takes ownership of |mad|.
-  return mad;
+  return AddAllocatorDumpInternal(
+      make_scoped_ptr(new MemoryAllocatorDump(absolute_name, this, guid)));
 }
 
-void ProcessMemoryDump::AddAllocatorDumpInternal(MemoryAllocatorDump* mad) {
-  DCHECK_EQ(0ul, allocator_dumps_.count(mad->absolute_name()));
-  allocator_dumps_storage_.push_back(mad);
-  allocator_dumps_[mad->absolute_name()] = mad;
+MemoryAllocatorDump* ProcessMemoryDump::AddAllocatorDumpInternal(
+    scoped_ptr<MemoryAllocatorDump> mad) {
+  auto insertion_result = allocator_dumps_.insert(
+      std::make_pair(mad->absolute_name(), std::move(mad)));
+  DCHECK(insertion_result.second) << "Duplicate name: " << mad->absolute_name();
+  return insertion_result.first->second.get();
 }
 
 MemoryAllocatorDump* ProcessMemoryDump::GetAllocatorDump(
     const std::string& absolute_name) const {
   auto it = allocator_dumps_.find(absolute_name);
-  return it == allocator_dumps_.end() ? nullptr : it->second;
+  return it == allocator_dumps_.end() ? nullptr : it->second.get();
 }
 
 MemoryAllocatorDump* ProcessMemoryDump::GetOrCreateAllocatorDump(
@@ -209,7 +207,6 @@ void ProcessMemoryDump::Clear() {
     has_process_mmaps_ = false;
   }
 
-  allocator_dumps_storage_.clear();
   allocator_dumps_.clear();
   allocator_dumps_edges_.clear();
   heap_dumps_.clear();
@@ -219,14 +216,9 @@ void ProcessMemoryDump::TakeAllDumpsFrom(ProcessMemoryDump* other) {
   DCHECK(!other->has_process_totals() && !other->has_process_mmaps());
 
   // Moves the ownership of all MemoryAllocatorDump(s) contained in |other|
-  // into this ProcessMemoryDump.
-  for (MemoryAllocatorDump* mad : other->allocator_dumps_storage_) {
-    // Check that we don't merge duplicates.
-    DCHECK_EQ(0ul, allocator_dumps_.count(mad->absolute_name()));
-    allocator_dumps_storage_.push_back(mad);
-    allocator_dumps_[mad->absolute_name()] = mad;
-  }
-  other->allocator_dumps_storage_.weak_clear();
+  // into this ProcessMemoryDump, checking for duplicates.
+  for (auto& it : other->allocator_dumps_)
+    AddAllocatorDumpInternal(std::move(it.second));
   other->allocator_dumps_.clear();
 
   // Move all the edges.
@@ -252,10 +244,10 @@ void ProcessMemoryDump::AsValueInto(TracedValue* value) const {
     value->EndDictionary();
   }
 
-  if (allocator_dumps_storage_.size() > 0) {
+  if (allocator_dumps_.size() > 0) {
     value->BeginDictionary("allocators");
-    for (const MemoryAllocatorDump* allocator_dump : allocator_dumps_storage_)
-      allocator_dump->AsValueInto(value);
+    for (const auto& allocator_dump_it : allocator_dumps_)
+      allocator_dump_it.second->AsValueInto(value);
     value->EndDictionary();
   }
 

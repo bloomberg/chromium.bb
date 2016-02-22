@@ -7,11 +7,10 @@
 
 #include <stddef.h>
 
+#include <unordered_map>
 #include <vector>
 
 #include "base/base_export.h"
-#include "base/containers/hash_tables.h"
-#include "base/containers/small_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
@@ -34,7 +33,6 @@
 namespace base {
 namespace trace_event {
 
-class ConvertableToTraceFormat;
 class MemoryDumpManager;
 class MemoryDumpSessionState;
 class TracedValue;
@@ -53,10 +51,10 @@ class BASE_EXPORT ProcessMemoryDump {
   // Maps allocator dumps absolute names (allocator_name/heap/subheap) to
   // MemoryAllocatorDump instances.
   using AllocatorDumpsMap =
-      SmallMap<hash_map<std::string, MemoryAllocatorDump*>>;
+      std::unordered_map<std::string, scoped_ptr<MemoryAllocatorDump>>;
 
   using HeapDumpsMap =
-      SmallMap<hash_map<std::string, scoped_refptr<TracedValue>>>;
+      std::unordered_map<std::string, scoped_refptr<TracedValue>>;
 
 #if defined(COUNT_RESIDENT_BYTES_SUPPORTED)
   // Returns the total bytes resident for a virtual address range, with given
@@ -171,8 +169,11 @@ class BASE_EXPORT ProcessMemoryDump {
   bool has_process_mmaps() const { return has_process_mmaps_; }
   void set_has_process_mmaps() { has_process_mmaps_ = true; }
 
+  const HeapDumpsMap& heap_dumps() const { return heap_dumps_; }
+
  private:
-  void AddAllocatorDumpInternal(MemoryAllocatorDump* mad);
+  MemoryAllocatorDump* AddAllocatorDumpInternal(
+      scoped_ptr<MemoryAllocatorDump> mad);
 
   ProcessMemoryTotals process_totals_;
   bool has_process_totals_;
@@ -182,9 +183,6 @@ class BASE_EXPORT ProcessMemoryDump {
 
   AllocatorDumpsMap allocator_dumps_;
   HeapDumpsMap heap_dumps_;
-
-  // ProcessMemoryDump handles the memory ownership of all its belongings.
-  ScopedVector<MemoryAllocatorDump> allocator_dumps_storage_;
 
   // State shared among all PMDs instances created in a given trace session.
   scoped_refptr<MemoryDumpSessionState> session_state_;
