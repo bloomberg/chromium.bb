@@ -227,6 +227,14 @@ void ConfirmEmailDialogDelegate::OnLinkClicked(
   web_contents_->OpenURL(params);
 }
 
+void CloseModalSigninIfNeeded(InlineLoginHandlerImpl* handler) {
+  if (handler && switches::UsePasswordSeparatedSigninFlow()) {
+    Browser* browser = handler->GetDesktopBrowser();
+    if (browser)
+      browser->CloseModalSigninWindow();
+  }
+}
+
 }  // namespace
 
 InlineSigninHelper::InlineSigninHelper(
@@ -837,14 +845,11 @@ void InlineLoginHandlerImpl::FinishCompleteLogin(
     params.handler->
         web_ui()->CallJavascriptFunction("inline.login.closeDialog");
 
-  if (params.handler && switches::UsePasswordSeparatedSigninFlow()) {
-    Browser* browser = params.handler->GetDesktopBrowser();
-    if (browser)
-      browser->CloseModalSigninWindow();
-  }
+  CloseModalSigninIfNeeded(params.handler);
 }
 
 void InlineLoginHandlerImpl::HandleLoginError(const std::string& error_msg) {
+  CloseModalSigninIfNeeded(this);
   SyncStarterCallback(OneClickSigninSyncStarter::SYNC_SETUP_FAILURE);
 
   Browser* browser = GetDesktopBrowser();
