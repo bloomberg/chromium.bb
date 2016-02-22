@@ -355,11 +355,8 @@ static void CopySharedMemoryHandleForMessage(
     const base::SharedMemoryHandle& handle_in,
     base::SharedMemoryHandle* handle_out,
     base::ProcessId peer_pid) {
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_WIN)
   *handle_out = base::SharedMemory::DuplicateHandle(handle_in);
-#elif defined(OS_WIN)
-  // On Windows we need to duplicate the handle for the plugin process.
-  BrokerDuplicateSharedMemoryHandle(handle_in, peer_pid, handle_out);
 #else
 #error Shared memory copy not implemented.
 #endif

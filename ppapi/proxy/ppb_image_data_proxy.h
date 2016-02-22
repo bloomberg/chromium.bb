@@ -98,7 +98,6 @@ class PPAPI_PROXY_EXPORT PlatformImageData : public ImageData {
   SkCanvas* GetCanvas() override;
 
   static ImageHandle NullHandle();
-  static ImageHandle HandleFromInt(int32_t i);
 
  private:
   scoped_ptr<TransportDIB> transport_dib_;

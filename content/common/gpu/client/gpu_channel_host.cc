@@ -354,26 +354,7 @@ base::SharedMemoryHandle GpuChannelHost::ShareToGpuProcess(
   if (IsLost())
     return base::SharedMemory::NULLHandle();
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  // Windows and Mac need to explicitly duplicate the handle out to another
-  // process.
-  base::SharedMemoryHandle target_handle;
-  base::ProcessId peer_pid;
-  {
-    AutoLock lock(context_lock_);
-    if (!channel_)
-      return base::SharedMemory::NULLHandle();
-    peer_pid = channel_->GetPeerPID();
-  }
-  bool success = BrokerDuplicateSharedMemoryHandle(source_handle, peer_pid,
-                                                   &target_handle);
-  if (!success)
-    return base::SharedMemory::NULLHandle();
-
-  return target_handle;
-#else
   return base::SharedMemory::DuplicateHandle(source_handle);
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
 }
 
 int32_t GpuChannelHost::ReserveTransferBufferId() {

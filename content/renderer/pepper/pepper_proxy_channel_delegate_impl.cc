@@ -40,16 +40,7 @@ base::SharedMemoryHandle
 PepperProxyChannelDelegateImpl::ShareSharedMemoryHandleWithRemote(
     const base::SharedMemoryHandle& handle,
     base::ProcessId remote_pid) {
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  base::SharedMemoryHandle duped_handle;
-  bool success =
-      BrokerDuplicateSharedMemoryHandle(handle, remote_pid, &duped_handle);
-  if (success)
-    return duped_handle;
-  return base::SharedMemory::NULLHandle();
-#else
   return base::SharedMemory::DuplicateHandle(handle);
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
 }
 
 }  // namespace content

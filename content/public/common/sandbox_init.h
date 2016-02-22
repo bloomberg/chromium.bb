@@ -28,17 +28,6 @@ struct SandboxInterfaceInfo;
 namespace content {
 class SandboxedProcessLauncherDelegate;
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
-// This function allows a sandboxed process to duplicate a SharedMemoryHandle
-// to itself or to another process. The duplicated SharedMemoryHandle has the
-// same access rights as the original. Returns true on success, false
-// otherwise.
-CONTENT_EXPORT bool BrokerDuplicateSharedMemoryHandle(
-    const base::SharedMemoryHandle& source_handle,
-    base::ProcessId target_process_id,
-    base::SharedMemoryHandle* target_handle);
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
-
 #if defined(OS_WIN)
 
 // Initialize the sandbox for renderer, gpu, utility, worker, nacl, and plugin

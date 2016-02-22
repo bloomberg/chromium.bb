@@ -42,19 +42,4 @@ bool InitializeSandbox(sandbox::SandboxInterfaceInfo* sandbox_info) {
   return InitTargetServices(target_services);
 }
 
-bool BrokerDuplicateSharedMemoryHandle(
-    const base::SharedMemoryHandle& source_handle,
-    base::ProcessId target_process_id,
-    base::SharedMemoryHandle* target_handle) {
-  HANDLE duped_handle;
-  if (!BrokerDuplicateHandle(
-          source_handle.GetHandle(), target_process_id, &duped_handle,
-          FILE_MAP_READ | FILE_MAP_WRITE | SECTION_QUERY, 0)) {
-    return false;
-  }
-
-  *target_handle = base::SharedMemoryHandle(duped_handle, target_process_id);
-  return true;
-}
-
 }  // namespace content

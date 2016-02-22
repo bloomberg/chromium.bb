@@ -376,8 +376,7 @@ PlatformImageData::PlatformImageData(const HostResource& resource,
                                      ImageHandle handle)
     : ImageData(resource, PPB_ImageData_Shared::PLATFORM, desc) {
 #if defined(OS_WIN)
-  transport_dib_.reset(TransportDIB::CreateWithHandle(
-      base::SharedMemoryHandle(handle, base::GetCurrentProcId())));
+  transport_dib_.reset(TransportDIB::CreateWithHandle(handle));
 #else
   transport_dib_.reset(TransportDIB::Map(handle));
 #endif  // defined(OS_WIN)
@@ -420,19 +419,7 @@ SkCanvas* PlatformImageData::GetCanvas() {
 
 // static
 ImageHandle PlatformImageData::NullHandle() {
-#if defined(OS_WIN)
-  return NULL;
-#else
   return ImageHandle();
-#endif
-}
-
-ImageHandle PlatformImageData::HandleFromInt(int32_t i) {
-#if defined(OS_WIN)
-    return reinterpret_cast<ImageHandle>(i);
-#else
-    return ImageHandle(i, false);
-#endif
 }
 #endif  // !defined(OS_NACL)
 
@@ -633,11 +620,7 @@ void PPB_ImageData_Proxy::OnHostMsgCreatePlatform(
                       desc, &image_handle, &byte_count);
   result->SetHostResource(instance, resource);
   if (resource) {
-#if defined(OS_WIN)
-    *result_image_handle = image_handle.GetHandle();
-#else
     *result_image_handle = image_handle;
-#endif
   } else {
     *result_image_handle = PlatformImageData::NullHandle();
   }
