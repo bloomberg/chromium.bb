@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -44,6 +45,12 @@ class ImageSource : public content::URLDataSource {
   std::string GetMimeType(const std::string& path) const override;
 
  private:
+  // Continuation from StartDataRequest().
+  void StartDataRequestAfterPathExists(
+      const base::FilePath& image_path,
+      const content::URLDataSource::GotDataCallback& got_data_callback,
+      bool path_exists);
+
   // Checks whether we have allowed the image to be loaded.
   bool IsWhitelisted(const std::string& path) const;
 

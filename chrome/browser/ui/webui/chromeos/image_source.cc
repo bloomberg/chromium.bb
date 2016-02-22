@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task_runner_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_loader.h"
 #include "chrome/common/url_constants.h"
@@ -41,27 +42,6 @@ void ImageLoaded(
     got_data_callback.Run(new base::RefCountedBytes(user_image.raw_image()));
   else
     got_data_callback.Run(NULL);
-}
-
-// Looks for the image at |path| under the shared assets directory.
-void StartOnBlockingPool(
-    const std::string& path,
-    scoped_refptr<UserImageLoader> image_loader,
-    const content::URLDataSource::GotDataCallback& got_data_callback,
-    scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner) {
-  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-
-  const base::FilePath asset_dir(FILE_PATH_LITERAL(chrome::kChromeOSAssetPath));
-  const base::FilePath image_path = asset_dir.AppendASCII(path);
-  if (base::PathExists(image_path)) {
-    image_loader->StartWithFilePath(
-        image_path,
-        0,  // Do not crop.
-        base::Bind(&ImageLoaded, got_data_callback));
-  } else {
-    thread_task_runner->PostTask(FROM_HERE,
-                                 base::Bind(got_data_callback, nullptr));
-  }
 }
 
 }  // namespace
@@ -96,13 +76,28 @@ void ImageSource::StartDataRequest(
                                         task_runner_);
   }
 
-  content::BrowserThread::GetBlockingPool()->PostTask(
+  const base::FilePath asset_dir(FILE_PATH_LITERAL(chrome::kChromeOSAssetPath));
+  const base::FilePath image_path = asset_dir.AppendASCII(path);
+  base::PostTaskAndReplyWithResult(
+      content::BrowserThread::GetBlockingPool(),
       FROM_HERE,
-      base::Bind(&StartOnBlockingPool,
-                 path,
-                 image_loader_,
-                 got_data_callback,
-                 base::ThreadTaskRunnerHandle::Get()));
+      base::Bind(&base::PathExists, image_path),
+      base::Bind(&ImageSource::StartDataRequestAfterPathExists,
+                 weak_factory_.GetWeakPtr(), image_path, got_data_callback));
+}
+
+void ImageSource::StartDataRequestAfterPathExists(
+    const base::FilePath& image_path,
+    const content::URLDataSource::GotDataCallback& got_data_callback,
+    bool path_exists) {
+  if (path_exists) {
+    image_loader_->StartWithFilePath(
+        image_path,
+        0,  // Do not crop.
+        base::Bind(&ImageLoaded, got_data_callback));
+  } else {
+    got_data_callback.Run(nullptr);
+  }
 }
 
 std::string ImageSource::GetMimeType(const std::string& path) const {
