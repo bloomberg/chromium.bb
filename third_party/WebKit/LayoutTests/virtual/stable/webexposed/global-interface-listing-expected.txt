@@ -4594,6 +4594,7 @@ interface SourceBuffer : EventTarget
     getter appendWindowEnd
     getter appendWindowStart
     getter buffered
+    getter mode
     getter timestampOffset
     getter updating
     method abort
@@ -4602,6 +4603,7 @@ interface SourceBuffer : EventTarget
     method remove
     setter appendWindowEnd
     setter appendWindowStart
+    setter mode
     setter timestampOffset
 interface SourceBufferList : EventTarget
     getter length
