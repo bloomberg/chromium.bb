@@ -107,8 +107,6 @@ source_set("base") {
     "key_systems.cc",
     "key_systems.h",
     "key_systems.h",
-    "key_systems_support_uma.cc",
-    "key_systems_support_uma.h",
     "loopback_audio_converter.cc",
     "loopback_audio_converter.h",
     "media.cc",

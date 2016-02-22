@@ -22,10 +22,6 @@
       <td><label for='mediaTypeList'>Media type:</label></td>
       <td><select id='mediaTypeList'></select></td>
     </tr>
-    <tr title='URL param usePrefixedEME=1|0'>
-      <td><label for='usePrefixedEME'>EME API version:</label></td>
-      <td><select id='usePrefixedEME'></select></td>
-    </tr>
     <tr title='URL param useMSE=1|0'>
       <td><label for='useMSE'>Load media by:</label></td>
       <td>
@@ -84,8 +80,6 @@
       if (!testConfig.sessionToLoad) {
         // keyadded may be fired around the start of playback; check for it
         // after a delay to avoid timing issues.
-        if (testConfig.usePrefixedEME && !video.receivedKeyAdded)
-          Utils.failTest('Key added event not received.');
         if (testConfig.keySystem == EXTERNAL_CLEARKEY &&
             !video.receivedRenewalMessage)
           Utils.failTest('license-renewal message not received.');

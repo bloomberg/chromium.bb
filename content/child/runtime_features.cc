@@ -33,7 +33,6 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
 #if defined(OS_ANDROID)
   // EME implementation needs Android MediaCodec API.
   if (!media::MediaCodecUtil::IsMediaCodecAvailable()) {
-    WebRuntimeFeatures::enablePrefixedEncryptedMedia(false);
     WebRuntimeFeatures::enableEncryptedMedia(false);
   }
 
@@ -103,12 +102,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   if (command_line.HasSwitch(switches::kDisableSpeechAPI))
     WebRuntimeFeatures::enableScriptedSpeech(false);
-
-  if (command_line.HasSwitch(switches::kDisableEncryptedMedia))
-    WebRuntimeFeatures::enableEncryptedMedia(false);
-
-  if (command_line.HasSwitch(switches::kEnablePrefixedEncryptedMedia))
-    WebRuntimeFeatures::enablePrefixedEncryptedMedia(true);
 
   if (command_line.HasSwitch(switches::kDisableFileSystem))
     WebRuntimeFeatures::enableFileSystem(false);

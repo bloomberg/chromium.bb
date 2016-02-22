@@ -212,7 +212,7 @@ void CdmSessionAdapter::OnLegacySessionError(
     uint32_t system_code,
     const std::string& error_message) {
   // Error events not used by unprefixed EME.
-  // TODO(jrummell): Remove when prefixed EME removed.
+  // TODO(jrummell): Remove when prefixed EME removed. https://crbug.com/249976
 }
 
 WebContentDecryptionModuleSessionImpl* CdmSessionAdapter::GetSession(

@@ -28,7 +28,6 @@ namespace media {
 
 class RestartableAudioRendererSink;
 class MediaLog;
-class MediaPermission;
 class SurfaceManager;
 
 // Holds parameters for constructing WebMediaPlayerImpl without having
@@ -56,7 +55,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
       const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
       const Context3DCB& context_3d,
       const AdjustAllocatedMemoryCB& adjust_allocated_memory_cb,
-      MediaPermission* media_permission,
       blink::WebContentDecryptionModule* initial_cdm,
       SurfaceManager* surface_manager,
       blink::WebMediaSession* media_session);
@@ -89,8 +87,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
 
   Context3DCB context_3d_cb() const { return context_3d_cb_; }
 
-  MediaPermission* media_permission() const { return media_permission_; }
-
   blink::WebContentDecryptionModule* initial_cdm() const {
     return initial_cdm_;
   }
@@ -113,8 +109,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
   Context3DCB context_3d_cb_;
   AdjustAllocatedMemoryCB adjust_allocated_memory_cb_;
 
-  // TODO(xhwang): Remove after prefixed EME API support is removed.
-  MediaPermission* media_permission_;
   blink::WebContentDecryptionModule* initial_cdm_;
   SurfaceManager* surface_manager_;
 

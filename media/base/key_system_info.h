@@ -21,6 +21,8 @@
 // * Abstract key system
 //    A key system string that cannot be instantiated like a concrete key system
 //    but is otherwise useful, such as in discovery using isTypeSupported().
+// TODO(ddorwin): Remove the concept of a parent key system now that prefixed
+// has been removed. https://crbug.com/249976
 // * Parent key system
 //    A key system string that is one level up from the child key system. It may
 //    be an abstract key system.

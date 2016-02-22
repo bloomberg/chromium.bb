@@ -54,8 +54,6 @@ EMEApp.prototype.updateDocument = function(testConfig) {
   // Update document lists with test configuration values.
   Utils.addOptions(KEYSYSTEM_ELEMENT_ID, KEY_SYSTEMS);
   Utils.addOptions(MEDIA_TYPE_ELEMENT_ID, MEDIA_TYPES);
-  Utils.addOptions(USE_PREFIXED_EME_ID, EME_VERSIONS_OPTIONS,
-                   EME_DISABLED_OPTIONS);
   document.getElementById(MEDIA_FILE_ELEMENT_ID).value =
       testConfig.mediaFile || DEFAULT_MEDIA_FILE;
   document.getElementById(LICENSE_SERVER_ELEMENT_ID).value =
@@ -65,8 +63,6 @@ EMEApp.prototype.updateDocument = function(testConfig) {
   if (testConfig.mediaType)
     Utils.ensureOptionInList(MEDIA_TYPE_ELEMENT_ID, testConfig.mediaType);
   document.getElementById(USE_MSE_ELEMENT_ID).value = testConfig.useMSE;
-  if (testConfig.usePrefixedEME)
-    document.getElementById(USE_PREFIXED_EME_ID).value = EME_PREFIXED_VERSION;
 };
 
 EMEApp.prototype.updateTestConfig = function() {
@@ -79,9 +75,6 @@ EMEApp.prototype.updateTestConfig = function() {
       document.getElementById(MEDIA_TYPE_ELEMENT_ID).value;
   this.testConfig_.useMSE =
       document.getElementById(USE_MSE_ELEMENT_ID).value == 'true';
-  this.testConfig_.usePrefixedEME = (
-      document.getElementById(USE_PREFIXED_EME_ID).value ==
-      EME_PREFIXED_VERSION);
   this.testConfig_.licenseServerURL =
       document.getElementById(LICENSE_SERVER_ELEMENT_ID).value;
 };

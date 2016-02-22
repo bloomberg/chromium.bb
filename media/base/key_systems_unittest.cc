@@ -32,7 +32,6 @@ const char kExternalParent[] = "x-com.example";
 const char kExternalNameForUMA[] = "External";
 
 const char kClearKey[] = "org.w3.clearkey";
-const char kPrefixedClearKey[] = "webkit-org.w3.clearkey";
 const char kExternalClearKey[] = "org.chromium.externalclearkey";
 
 const char kAudioWebM[] = "audio/webm";
@@ -143,9 +142,9 @@ TestMediaClient::~TestMediaClient() {
 void TestMediaClient::AddKeySystemsInfoForUMA(
     std::vector<KeySystemInfoForUMA>* key_systems_info_for_uma) {
   key_systems_info_for_uma->push_back(
-      media::KeySystemInfoForUMA(kUsesAes, kUseAesNameForUMA, false));
+      media::KeySystemInfoForUMA(kUsesAes, kUseAesNameForUMA));
   key_systems_info_for_uma->push_back(
-      media::KeySystemInfoForUMA(kExternal, kExternalNameForUMA, true));
+      media::KeySystemInfoForUMA(kExternal, kExternalNameForUMA));
 }
 
 bool TestMediaClient::IsKeySystemsUpdateNeeded() {
@@ -367,10 +366,6 @@ TEST_F(KeySystemsTest, ClearKey) {
       kVideoWebM, no_codecs(), kClearKey));
 
   EXPECT_EQ("ClearKey", GetKeySystemNameForUMA(kClearKey));
-
-  // Prefixed Clear Key is not supported internally.
-  EXPECT_FALSE(IsSupportedKeySystem(kPrefixedClearKey));
-  EXPECT_EQ("Unknown", GetKeySystemNameForUMA(kPrefixedClearKey));
 }
 
 TEST_F(KeySystemsTest, ClearKeyWithInitDataType) {
@@ -587,8 +582,6 @@ TEST_F(KeySystemsTest, Basic_ExternalDecryptor) {
 TEST_F(KeySystemsTest, Parent_ParentRegistered) {
   // Unprefixed has no parent key system support.
   EXPECT_FALSE(IsSupportedKeySystem(kExternalParent));
-  EXPECT_TRUE(PrefixedIsSupportedKeySystemWithMediaMimeType(
-      kVideoWebM, no_codecs(), kExternalParent));
 
   // The parent is not supported for most things.
   EXPECT_EQ("Unknown", GetKeySystemNameForUMA(kExternalParent));
@@ -625,25 +618,6 @@ TEST_F(
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       kVideoWebM, vorbis_codec(), kExternal));
 
-  // Valid video types - parent key system.
-  // Prefixed has parent key system support.
-  EXPECT_TRUE(PrefixedIsSupportedKeySystemWithMediaMimeType(
-      kVideoWebM, no_codecs(), kExternalParent));
-  EXPECT_TRUE(PrefixedIsSupportedKeySystemWithMediaMimeType(
-      kVideoWebM, vp8_codec(), kExternalParent));
-  EXPECT_TRUE(PrefixedIsSupportedKeySystemWithMediaMimeType(
-      kVideoWebM, vp80_codec(), kExternalParent));
-  EXPECT_TRUE(PrefixedIsSupportedKeySystemWithMediaMimeType(
-      kVideoWebM, vp8_and_vorbis_codecs(), kExternalParent));
-  EXPECT_TRUE(PrefixedIsSupportedKeySystemWithMediaMimeType(
-      kVideoWebM, vp9_codec(), kExternalParent));
-  EXPECT_TRUE(PrefixedIsSupportedKeySystemWithMediaMimeType(
-      kVideoWebM, vp90_codec(), kExternalParent));
-  EXPECT_TRUE(PrefixedIsSupportedKeySystemWithMediaMimeType(
-      kVideoWebM, vp9_and_vorbis_codecs(), kExternalParent));
-  EXPECT_TRUE(PrefixedIsSupportedKeySystemWithMediaMimeType(
-      kVideoWebM, vorbis_codec(), kExternalParent));
-
   // Non-Webm codecs.
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       kVideoWebM, foovideo_codec(), kExternal));
@@ -657,13 +631,6 @@ TEST_F(
       kAudioWebM, no_codecs(), kExternal));
   EXPECT_TRUE(IsSupportedKeySystemWithAudioMimeType(
       kAudioWebM, vorbis_codec(), kExternal));
-
-  // Valid audio types - parent key system.
-  // Prefixed has parent key system support.
-  EXPECT_TRUE(PrefixedIsSupportedKeySystemWithMediaMimeType(
-      kAudioWebM, no_codecs(), kExternalParent));
-  EXPECT_TRUE(PrefixedIsSupportedKeySystemWithMediaMimeType(
-      kAudioWebM, vorbis_codec(), kExternalParent));
 
   // Non-audio codecs.
   EXPECT_FALSE(IsSupportedKeySystemWithAudioMimeType(
@@ -695,17 +662,6 @@ TEST_F(
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       kVideoFoo, fooaudio_codec(), kExternal));
 
-  // Valid video types - parent key system.
-  // Prefixed has parent key system support.
-  EXPECT_TRUE(PrefixedIsSupportedKeySystemWithMediaMimeType(
-      kVideoFoo, no_codecs(), kExternalParent));
-  EXPECT_TRUE(PrefixedIsSupportedKeySystemWithMediaMimeType(
-      kVideoFoo, foovideo_codec(), kExternalParent));
-  EXPECT_TRUE(PrefixedIsSupportedKeySystemWithMediaMimeType(
-      kVideoFoo, foovideo_and_fooaudio_codecs(), kExternalParent));
-  EXPECT_TRUE(PrefixedIsSupportedKeySystemWithMediaMimeType(
-      kVideoFoo, fooaudio_codec(), kExternalParent));
-
   // Extended codecs fail because this is handled by SimpleWebMimeRegistryImpl.
   // They should really pass canPlayType().
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
@@ -729,13 +685,6 @@ TEST_F(
   EXPECT_TRUE(IsSupportedKeySystemWithAudioMimeType(
       kAudioFoo, fooaudio_codec(), kExternal));
 
-  // Valid audio types - parent key system.
-  // Prefixed has parent key system support.
-  EXPECT_TRUE(PrefixedIsSupportedKeySystemWithMediaMimeType(
-      kAudioFoo, no_codecs(), kExternalParent));
-  EXPECT_TRUE(PrefixedIsSupportedKeySystemWithMediaMimeType(
-      kAudioFoo, fooaudio_codec(), kExternalParent));
-
   // Non-audio codecs.
   EXPECT_FALSE(IsSupportedKeySystemWithAudioMimeType(
       kAudioFoo, foovideo_codec(), kExternal));
@@ -749,8 +698,6 @@ TEST_F(
 
 TEST_F(KeySystemsTest, KeySystemNameForUMA) {
   EXPECT_EQ("ClearKey", GetKeySystemNameForUMA(kClearKey));
-  // Prefixed is not supported internally.
-  EXPECT_EQ("Unknown", GetKeySystemNameForUMA(kPrefixedClearKey));
 
   // External Clear Key never has a UMA name.
   EXPECT_EQ("Unknown", GetKeySystemNameForUMA(kExternalClearKey));
@@ -770,24 +717,6 @@ TEST_F(KeySystemsTest, KeySystemsUpdate) {
   EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
       kVideoWebM, no_codecs(), kUsesAes));
   EXPECT_FALSE(IsSupportedKeySystem(kExternal));
-}
-
-TEST_F(KeySystemsTest, PrefixedKeySystemsUpdate) {
-  EXPECT_TRUE(IsSupportedKeySystem(kUsesAes));
-  EXPECT_TRUE(PrefixedIsSupportedKeySystemWithMediaMimeType(
-      kVideoWebM, no_codecs(), kUsesAes));
-  EXPECT_TRUE(IsSupportedKeySystem(kExternal));
-  EXPECT_TRUE(PrefixedIsSupportedKeySystemWithMediaMimeType(
-      kVideoWebM, no_codecs(), kExternal));
-
-  UpdateClientKeySystems();
-
-  EXPECT_TRUE(IsSupportedKeySystem(kUsesAes));
-  EXPECT_TRUE(PrefixedIsSupportedKeySystemWithMediaMimeType(
-      kVideoWebM, no_codecs(), kUsesAes));
-  EXPECT_FALSE(IsSupportedKeySystem(kExternal));
-  EXPECT_FALSE(PrefixedIsSupportedKeySystemWithMediaMimeType(
-      kVideoWebM, no_codecs(), kExternal));
 }
 
 TEST_F(KeySystemsPotentiallySupportedNamesTest, PotentiallySupportedNames) {

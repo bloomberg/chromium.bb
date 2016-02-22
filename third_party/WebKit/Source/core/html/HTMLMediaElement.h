@@ -66,7 +66,7 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement, public WillBeHeapSupple
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElement);
     WILL_BE_USING_PRE_FINALIZER(HTMLMediaElement, dispose);
 public:
-    static WebMimeRegistry::SupportsType supportsType(const ContentType&, const String& keySystem = String());
+    static WebMimeRegistry::SupportsType supportsType(const ContentType&);
 
     static void setMediaStreamRegistry(URLRegistry*);
     static bool isMediaStreamURL(const String& url);
@@ -111,7 +111,7 @@ public:
 
     TimeRanges* buffered() const;
     void load();
-    String canPlayType(const String& mimeType, const String& keySystem = String()) const;
+    String canPlayType(const String& mimeType) const;
 
     // ready state
     enum ReadyState { HAVE_NOTHING, HAVE_METADATA, HAVE_CURRENT_DATA, HAVE_FUTURE_DATA, HAVE_ENOUGH_DATA };
@@ -340,7 +340,7 @@ private:
     void prepareForLoad();
     void loadInternal();
     void selectMediaResource();
-    void loadResource(const KURL&, ContentType&, const String& keySystem);
+    void loadResource(const KURL&, ContentType&);
     void startPlayerLoad();
     void setPlayerPreload();
     WebMediaPlayer::LoadType loadType() const;
@@ -355,7 +355,7 @@ private:
     void waitForSourceChange();
     void prepareToPlay();
 
-    KURL selectNextSourceChild(ContentType*, String* keySystem, InvalidURLAction);
+    KURL selectNextSourceChild(ContentType*, InvalidURLAction);
 
     void mediaLoadingFailed(WebMediaPlayer::NetworkState);
 

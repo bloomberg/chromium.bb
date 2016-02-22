@@ -73,9 +73,6 @@ public:
     BLINK_EXPORT static void enableEncryptedMedia(bool);
     BLINK_EXPORT static bool isEncryptedMediaEnabled();
 
-    BLINK_EXPORT static void enablePrefixedEncryptedMedia(bool);
-    BLINK_EXPORT static bool isPrefixedEncryptedMediaEnabled();
-
     BLINK_EXPORT static void enableCompositorAnimationTimelines(bool);
 
     BLINK_EXPORT static void enableExperimentalCanvasFeatures(bool);

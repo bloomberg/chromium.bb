@@ -68,6 +68,7 @@ DurableStorage status=experimental
 ForceDisplayList2dCanvas
 // See crbug.com/585250.
 ForceDisable2dCanvasCopyOnWrite
+// See https://crbug.com/582618.
 EncryptedMedia status=stable
 ExecCommandInJavaScript status=test
 ComputedAccessibilityInfo status=experimental
@@ -144,7 +145,6 @@ Permissions status=stable
 PermissionsRequestRevoke status=experimental
 PointerEvent
 PreciseMemoryInfo
-PrefixedEncryptedMedia status=test
 // This feature is deprecated and we are evangelizing affected sites.
 // See https://crbug.com/346236 for current status.
 PrefixedVideoFullscreen status=stable

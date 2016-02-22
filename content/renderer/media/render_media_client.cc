@@ -34,7 +34,7 @@ void RenderMediaClient::AddKeySystemsInfoForUMA(
   DVLOG(2) << __FUNCTION__;
 #if defined(WIDEVINE_CDM_AVAILABLE)
   key_systems_info_for_uma->push_back(media::KeySystemInfoForUMA(
-      kWidevineKeySystem, kWidevineKeySystemNameForUMA, true));
+      kWidevineKeySystem, kWidevineKeySystemNameForUMA));
 #endif  // WIDEVINE_CDM_AVAILABLE
 }
 

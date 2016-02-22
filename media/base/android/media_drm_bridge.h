@@ -190,8 +190,8 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
 
   // Session event callbacks.
 
-  // TODO(xhwang): Remove |j_legacy_destination_url| when prefixed EME support
-  // is removed.
+  // TODO(xhwang): Remove |j_legacy_destination_url| now that prefixed EME
+  // support is removed. http://crbug.com/249976
   void OnSessionMessage(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& j_media_drm,
@@ -224,6 +224,7 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
   // unrelated to one of the MediaKeys calls that accept a |promise|.
   // Note:
   // - This method is only for supporting prefixed EME API.
+  //   TODO(ddorwin): Remove it now. https://crbug.com/249976
   // - This method will be ignored by unprefixed EME. All errors reported
   //   in this method should probably also be reported by one of other methods.
   void OnLegacySessionError(

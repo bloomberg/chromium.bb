@@ -8,7 +8,6 @@ import "media/mojo/interfaces/decryptor.mojom";
 
 // Transport layer of media::MediaKeys::Exception (see media/base/media_keys.h).
 // This is used for ContentDecryptionModule (CDM) promise rejections.
-// Note: This can also be used for session errors in prefixed API.
 enum CdmException {
   NOT_SUPPORTED_ERROR,
   INVALID_STATE_ERROR,

@@ -58,7 +58,8 @@ void RenderCdmFactory::Create(
   }
 
   if (media::CanUseAesDecryptor(key_system)) {
-    // TODO(sandersd): Currently the prefixed API always allows distinctive
+    // TODO(sandersd): Address this now that prefixed EME has been removed.
+    // http://crbug.com/249976. The prefixed API always allowed distinctive
     // identifiers and persistent state. Once that changes we can sanity check
     // here that neither is allowed for AesDecryptor, since it does not support
     // them and should never be configured that way. http://crbug.com/455271

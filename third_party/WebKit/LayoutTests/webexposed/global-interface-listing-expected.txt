@@ -2430,10 +2430,6 @@ interface HTMLMediaElement : HTMLElement
     getter muted
     getter networkState
     getter onencrypted
-    getter onwebkitkeyadded
-    getter onwebkitkeyerror
-    getter onwebkitkeymessage
-    getter onwebkitneedkey
     getter paused
     getter playbackRate
     getter played
@@ -2457,9 +2453,6 @@ interface HTMLMediaElement : HTMLElement
     method play
     method setMediaKeys
     method setSinkId
-    method webkitAddKey
-    method webkitCancelKeyRequest
-    method webkitGenerateKeyRequest
     setter autoplay
     setter controls
     setter crossOrigin
@@ -2470,10 +2463,6 @@ interface HTMLMediaElement : HTMLElement
     setter loop
     setter muted
     setter onencrypted
-    setter onwebkitkeyadded
-    setter onwebkitkeyerror
-    setter onwebkitkeymessage
-    setter onwebkitneedkey
     setter playbackRate
     setter preload
     setter src
@@ -3295,25 +3284,6 @@ interface MediaError
     attribute MEDIA_ERR_NETWORK
     attribute MEDIA_ERR_SRC_NOT_SUPPORTED
     getter code
-    method constructor
-interface MediaKeyError
-    attribute MEDIA_KEYERR_CLIENT
-    attribute MEDIA_KEYERR_DOMAIN
-    attribute MEDIA_KEYERR_HARDWARECHANGE
-    attribute MEDIA_KEYERR_OUTPUT
-    attribute MEDIA_KEYERR_SERVICE
-    attribute MEDIA_KEYERR_UNKNOWN
-    getter code
-    getter systemCode
-    method constructor
-interface MediaKeyEvent : Event
-    getter defaultURL
-    getter errorCode
-    getter initData
-    getter keySystem
-    getter message
-    getter sessionId
-    getter systemCode
     method constructor
 interface MediaKeyMessageEvent : Event
     getter message

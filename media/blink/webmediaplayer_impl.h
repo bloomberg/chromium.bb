@@ -18,14 +18,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
-#include "media/base/cdm_factory.h"
 #include "media/base/pipeline.h"
 #include "media/base/renderer_factory.h"
 #include "media/base/surface_manager.h"
 #include "media/base/text_track.h"
 #include "media/blink/buffered_data_source.h"
 #include "media/blink/buffered_data_source_host_impl.h"
-#include "media/blink/encrypted_media_player_support.h"
 #include "media/blink/media_blink_export.h"
 #include "media/blink/multibuffer_data_source.h"
 #include "media/blink/video_frame_compositor.h"
@@ -86,7 +84,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
       blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
       base::WeakPtr<WebMediaPlayerDelegate> delegate,
       scoped_ptr<RendererFactory> renderer_factory,
-      CdmFactory* cdm_factory,
       linked_ptr<UrlIndex> url_index,
       const WebMediaPlayerParams& params);
   ~WebMediaPlayerImpl() override;
@@ -160,22 +157,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
       bool flip_y) override;
 
   blink::WebAudioSourceProvider* audioSourceProvider() override;
-
-  MediaKeyException generateKeyRequest(
-      const blink::WebString& key_system,
-      const unsigned char* init_data,
-      unsigned init_data_length) override;
-
-  MediaKeyException addKey(const blink::WebString& key_system,
-                           const unsigned char* key,
-                           unsigned key_length,
-                           const unsigned char* init_data,
-                           unsigned init_data_length,
-                           const blink::WebString& session_id) override;
-
-  MediaKeyException cancelKeyRequest(
-      const blink::WebString& key_system,
-      const blink::WebString& session_id) override;
 
   void setContentDecryptionModule(
       blink::WebContentDecryptionModule* cdm,
@@ -450,8 +431,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // The compositor layer for displaying the video content when using composited
   // playback.
   scoped_ptr<cc_blink::WebLayerImpl> video_weblayer_;
-
-  EncryptedMediaPlayerSupport encrypted_media_support_;
 
   scoped_ptr<blink::WebContentDecryptionModuleResult> set_cdm_result_;
 

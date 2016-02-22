@@ -30,7 +30,6 @@
 #include "media/base/time_delta_interpolator.h"
 #include "media/blink/webmediaplayer_delegate.h"
 #include "media/blink/webmediaplayer_params.h"
-#include "media/cdm/proxy_decryptor.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/WebSetSinkIdCallbacks.h"
@@ -62,15 +61,12 @@ struct MailboxHolder;
 
 namespace media {
 class CdmContext;
-class CdmFactory;
 class MediaLog;
-class MediaPermission;
 class WebContentDecryptionModuleImpl;
 }
 
 namespace content {
 
-class RendererCdmManager;
 class RendererMediaPlayerManager;
 
 // This class implements blink::WebMediaPlayer by keeping the android
@@ -96,7 +92,6 @@ class WebMediaPlayerAndroid
       blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
       base::WeakPtr<media::WebMediaPlayerDelegate> delegate,
       RendererMediaPlayerManager* player_manager,
-      media::CdmFactory* cdm_factory,
       scoped_refptr<StreamTextureFactory> factory,
       int frame_id,
       bool enable_texture_copy,
@@ -235,30 +230,9 @@ class WebMediaPlayerAndroid
   const gfx::RectF GetBoundaryRectangle() override;
 #endif  // defined(VIDEO_HOLE)
 
-  MediaKeyException generateKeyRequest(const blink::WebString& key_system,
-                                       const unsigned char* init_data,
-                                       unsigned init_data_length) override;
-  MediaKeyException addKey(const blink::WebString& key_system,
-                           const unsigned char* key,
-                           unsigned key_length,
-                           const unsigned char* init_data,
-                           unsigned init_data_length,
-                           const blink::WebString& session_id) override;
-  MediaKeyException cancelKeyRequest(
-      const blink::WebString& key_system,
-      const blink::WebString& session_id) override;
-
   void setContentDecryptionModule(
       blink::WebContentDecryptionModule* cdm,
       blink::WebContentDecryptionModuleResult result) override;
-
-  void OnKeyAdded(const std::string& session_id);
-  void OnKeyError(const std::string& session_id,
-                  media::MediaKeys::KeyError error_code,
-                  uint32_t system_code);
-  void OnKeyMessage(const std::string& session_id,
-                    const std::vector<uint8_t>& message,
-                    const GURL& destination_url);
 
   void OnMediaSourceOpened(blink::WebMediaSource* web_media_source);
 
@@ -309,20 +283,6 @@ class WebMediaPlayerAndroid
                         bool allow_stored_credentials);
   bool IsKeySystemSupported(const std::string& key_system);
   bool IsLocalResource();
-
-  // Actually do the work for generateKeyRequest/addKey so they can easily
-  // report results to UMA.
-  MediaKeyException GenerateKeyRequestInternal(const std::string& key_system,
-                                               const unsigned char* init_data,
-                                               unsigned init_data_length);
-  MediaKeyException AddKeyInternal(const std::string& key_system,
-                                   const unsigned char* key,
-                                   unsigned key_length,
-                                   const unsigned char* init_data,
-                                   unsigned init_data_length,
-                                   const std::string& session_id);
-  MediaKeyException CancelKeyRequestInternal(const std::string& key_system,
-                                             const std::string& session_id);
 
   // Called when |cdm_context| is ready.
   void OnCdmContextReady(media::CdmContext* cdm_context);
@@ -421,12 +381,6 @@ class WebMediaPlayerAndroid
   // Owned by RenderFrameImpl.
   RendererMediaPlayerManager* const player_manager_;
 
-  // TODO(xhwang): Remove |cdm_factory_| when prefixed EME is deprecated. See
-  // http://crbug.com/249976
-  media::CdmFactory* const cdm_factory_;
-
-  media::MediaPermission* media_permission_;
-
   // Player ID assigned by the |player_manager_|.
   int player_id_;
 
@@ -500,17 +454,6 @@ class WebMediaPlayerAndroid
   scoped_refptr<media::MediaLog> media_log_;
 
   scoped_ptr<MediaInfoLoader> info_loader_;
-
-  // The currently selected key system. Empty string means that no key system
-  // has been selected.
-  std::string current_key_system_;
-
-  // Temporary for EME v0.1. Not needed for unprefixed EME, and can be removed
-  // when prefixed EME is removed.
-  media::EmeInitDataType init_data_type_;
-
-  // Manages decryption keys and decrypts encrypted frames.
-  scoped_ptr<media::ProxyDecryptor> proxy_decryptor_;
 
   // Non-owned pointer to the CdmContext. Updated in the constructor,
   // generateKeyRequest() or setContentDecryptionModule().

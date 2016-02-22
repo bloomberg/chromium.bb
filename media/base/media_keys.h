@@ -66,22 +66,8 @@ typedef ScopedVector<CdmKeyInformation> CdmKeysInfo;
 class MEDIA_EXPORT MediaKeys
     : public base::RefCountedThreadSafe<MediaKeys, MediaKeysTraits> {
  public:
-  // Reported to UMA, so never reuse a value!
-  // Must be kept in sync with blink::WebMediaPlayerClient::MediaKeyErrorCode
-  // (enforced in webmediaplayer_impl.cc).
-  // TODO(jrummell): Can this be moved to proxy_decryptor as it should only be
-  // used by the prefixed EME code?
-  enum KeyError {
-    kUnknownError = 1,
-    kClientError,
-    // The commented v0.1b values below have never been used.
-    // kServiceError,
-    kOutputError = 4,
-    // kHardwareChangeError,
-    // kDomainError,
-    kMaxKeyError  // Must be last and greater than any legit value.
-  };
-
+  // TODO(xhwang): Remove after prefixed EME support is removed. See
+  // http://crbug.com/249976
   // Must be a superset of cdm::MediaKeyException.
   enum Exception {
     NOT_SUPPORTED_ERROR,
@@ -193,6 +179,7 @@ struct MEDIA_EXPORT MediaKeysTraits {
 typedef base::Callback<void(const std::string& session_id,
                             MediaKeys::MessageType message_type,
                             const std::vector<uint8_t>& message,
+                            // TODO(ddorwin): Remove. https://crbug.com/249976
                             const GURL& legacy_destination_url)>
     SessionMessageCB;
 

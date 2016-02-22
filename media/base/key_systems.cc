@@ -15,7 +15,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/base/key_system_info.h"
-#include "media/base/key_systems_support_uma.h"
 #include "media/base/media_client.h"
 #include "media/cdm/key_system_names.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
@@ -23,8 +22,6 @@
 namespace media {
 
 const char kClearKeyKeySystem[] = "org.w3.clearkey";
-const char kPrefixedClearKeyKeySystem[] = "webkit-org.w3.clearkey";
-const char kUnsupportedClearKeyKeySystem[] = "unsupported-org.w3.clearkey";
 
 // These names are used by UMA. Do not change them!
 const char kClearKeyKeySystemNameForUMA[] = "ClearKey";
@@ -80,6 +77,7 @@ static EmeRobustness ConvertRobustness(const std::string& robustness) {
   return EmeRobustness::INVALID;
 }
 
+// TODO(ddorwin): Remove reference to "concrete" key systems. crbug.com/249976.
 static void AddClearKey(std::vector<KeySystemInfo>* concrete_key_systems) {
   KeySystemInfo info;
   info.key_system = kClearKeyKeySystem;
@@ -178,11 +176,6 @@ class KeySystemsImpl : public KeySystems {
 
   bool IsConcreteSupportedKeySystem(const std::string& key_system) const;
 
-  bool PrefixedIsSupportedKeySystemWithMediaMimeType(
-      const std::string& mime_type,
-      const std::vector<std::string>& codecs,
-      const std::string& key_system);
-
   std::string GetKeySystemNameForUMA(const std::string& key_system) const;
 
   bool UseAesDecryptor(const std::string& concrete_key_system) const;
@@ -251,9 +244,6 @@ class KeySystemsImpl : public KeySystems {
       const std::string& container) const;
   EmeCodec GetCodecForString(const std::string& codec) const;
 
-  const std::string& PrefixedGetConcreteKeySystemNameFor(
-      const std::string& key_system) const;
-
   // Returns whether a |container| type is supported by checking
   // |key_system_supported_codecs|.
   // TODO(xhwang): Update this to actually check initDataType support.
@@ -273,8 +263,6 @@ class KeySystemsImpl : public KeySystems {
   // Map from parent key system to the concrete key system that should be used
   // to represent its capabilities.
   ParentKeySystemMap parent_key_system_map_;
-
-  KeySystemsSupportUMA key_systems_support_uma_;
 
   ContainerCodecsMap container_to_codec_mask_map_;
   CodecsMap codec_string_map_;
@@ -339,15 +327,6 @@ EmeCodec KeySystemsImpl::GetCodecForString(const std::string& codec) const {
   return EME_CODEC_NONE;
 }
 
-const std::string& KeySystemsImpl::PrefixedGetConcreteKeySystemNameFor(
-    const std::string& key_system) const {
-  ParentKeySystemMap::const_iterator iter =
-      parent_key_system_map_.find(key_system);
-  if (iter != parent_key_system_map_.end())
-    return iter->second;
-  return key_system;
-}
-
 void KeySystemsImpl::InitializeUMAInfo() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(key_system_name_for_uma_map_.empty());
@@ -359,8 +338,6 @@ void KeySystemsImpl::InitializeUMAInfo() {
   for (const KeySystemInfoForUMA& info : key_systems_info_for_uma) {
     key_system_name_for_uma_map_[info.key_system] =
         info.key_system_name_for_uma;
-    if (info.reports_key_system_support_to_uma)
-      key_systems_support_uma_.AddKeySystemToReport(info.key_system);
   }
 
   // Clear Key is always supported.
@@ -526,7 +503,7 @@ bool KeySystemsImpl::IsSupportedInitDataType(
     EmeInitDataType init_data_type) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // Locate |key_system|. Only concrete key systems are supported in unprefixed.
+  // Locate |key_system|. Only concrete key systems are supported.
   KeySystemInfoMap::const_iterator key_system_iter =
       concrete_key_system_map_.find(key_system);
   if (key_system_iter == concrete_key_system_map_.end()) {
@@ -549,49 +526,6 @@ bool KeySystemsImpl::IsSupportedInitDataType(
   }
   NOTREACHED();
   return false;
-}
-
-bool KeySystemsImpl::PrefixedIsSupportedKeySystemWithMediaMimeType(
-    const std::string& mime_type,
-    const std::vector<std::string>& codecs,
-    const std::string& key_system) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  const std::string& concrete_key_system =
-      PrefixedGetConcreteKeySystemNameFor(key_system);
-
-  bool has_type = !mime_type.empty();
-
-  key_systems_support_uma_.ReportKeySystemQuery(key_system, has_type);
-
-  // Check key system support.
-  KeySystemInfoMap::const_iterator key_system_iter =
-      concrete_key_system_map_.find(concrete_key_system);
-  if (key_system_iter == concrete_key_system_map_.end())
-    return false;
-
-  key_systems_support_uma_.ReportKeySystemSupport(key_system, false);
-
-  if (!has_type) {
-    DCHECK(codecs.empty());
-    return true;
-  }
-
-  SupportedCodecs key_system_supported_codecs =
-      key_system_iter->second.supported_codecs;
-
-  if (!IsSupportedContainer(mime_type, key_system_supported_codecs))
-    return false;
-
-  if (!codecs.empty() &&
-      !IsSupportedContainerAndCodecs(
-          mime_type, codecs, key_system_supported_codecs)) {
-    return false;
-  }
-
-  key_systems_support_uma_.ReportKeySystemSupport(key_system, true);
-
-  return true;
 }
 
 std::string KeySystemsImpl::GetKeySystemNameForUMA(
@@ -874,43 +808,10 @@ KeySystems* KeySystems::GetInstance() {
 
 //------------------------------------------------------------------------------
 
-std::string GetUnprefixedKeySystemName(const std::string& key_system) {
-  if (key_system == kClearKeyKeySystem)
-    return kUnsupportedClearKeyKeySystem;
-
-  if (key_system == kPrefixedClearKeyKeySystem)
-    return kClearKeyKeySystem;
-
-  return key_system;
-}
-
-std::string GetPrefixedKeySystemName(const std::string& key_system) {
-  DCHECK_NE(key_system, kPrefixedClearKeyKeySystem);
-
-  if (key_system == kClearKeyKeySystem)
-    return kPrefixedClearKeyKeySystem;
-
-  return key_system;
-}
-
-bool PrefixedIsSupportedConcreteKeySystem(const std::string& key_system) {
-  return KeySystemsImpl::GetInstance()->IsConcreteSupportedKeySystem(
-      key_system);
-}
-
 bool IsSupportedKeySystemWithInitDataType(const std::string& key_system,
                                           EmeInitDataType init_data_type) {
   return KeySystemsImpl::GetInstance()->IsSupportedInitDataType(key_system,
                                                                 init_data_type);
-}
-
-bool PrefixedIsSupportedKeySystemWithMediaMimeType(
-    const std::string& mime_type,
-    const std::vector<std::string>& codecs,
-    const std::string& key_system) {
-  return KeySystemsImpl::GetInstance()
-      ->PrefixedIsSupportedKeySystemWithMediaMimeType(mime_type, codecs,
-                                                      key_system);
 }
 
 std::string GetKeySystemNameForUMA(const std::string& key_system) {

@@ -41,7 +41,6 @@ const char kClearKeyCdmPluginMimeType[] = "application/x-ppapi-clearkey-cdm";
 
 // Available key systems.
 const char kClearKeyKeySystem[] = "org.w3.clearkey";
-const char kPrefixedClearKeyKeySystem[] = "webkit-org.w3.clearkey";
 const char kExternalClearKeyKeySystem[] = "org.chromium.externalclearkey";
 const char kExternalClearKeyFileIOTestKeySystem[] =
     "org.chromium.externalclearkey.fileiotest";
@@ -74,9 +73,7 @@ const char kEmeLoadFailed[] = "EME_LOAD_FAILED";
 const char kEmeUpdateFailed[] = "EME_UPDATE_FAILED";
 const char kEmeErrorEvent[] = "EME_ERROR_EVENT";
 const char kEmeMessageUnexpectedType[] = "EME_MESSAGE_UNEXPECTED_TYPE";
-const char kPrefixedEmeRenewalMissingHeader[] =
-    "PREFIXED_EME_RENEWAL_MISSING_HEADER";
-const char kPrefixedEmeErrorEvent[] = "PREFIXED_EME_ERROR_EVENT";
+const char kEmeRenewalMissingHeader[] = "EME_RENEWAL_MISSING_HEADER";
 
 const char kDefaultEmePlayer[] = "eme_player.html";
 
@@ -84,12 +81,6 @@ const char kDefaultEmePlayer[] = "eme_player.html";
 enum SrcType {
   SRC,
   MSE
-};
-
-// Whether to use prefixed or unprefixed EME.
-enum EmeVersion {
-  PREFIXED,
-  UNPREFIXED
 };
 
 // Whether the video should be played once or twice.
@@ -159,7 +150,6 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
                              const std::string& media_type,
                              const std::string& key_system,
                              SrcType src_type,
-                             EmeVersion eme_version,
                              const std::string& session_to_load,
                              bool force_invalid_response,
                              PlayTwice play_twice,
@@ -174,8 +164,6 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
     query_params.push_back(std::make_pair("keySystem", key_system));
     if (src_type == MSE)
       query_params.push_back(std::make_pair("useMSE", "1"));
-    if (eme_version == PREFIXED)
-      query_params.push_back(std::make_pair("usePrefixedEME", "1"));
     if (force_invalid_response)
       query_params.push_back(std::make_pair("forceInvalidResponse", "1"));
     if (!session_to_load.empty())
@@ -189,18 +177,15 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
   void RunSimpleEncryptedMediaTest(const std::string& media_file,
                                    const std::string& media_type,
                                    const std::string& key_system,
-                                   SrcType src_type,
-                                   EmeVersion eme_version) {
+                                   SrcType src_type) {
     std::string expected_title = kEnded;
     if (!IsPlayBackPossible(key_system)) {
-      expected_title = (eme_version == EmeVersion::UNPREFIXED)
-                           ? kEmeUpdateFailed
-                           : kPrefixedEmeErrorEvent;
+      expected_title = kEmeUpdateFailed;
     }
 
     RunEncryptedMediaTest(kDefaultEmePlayer, media_file, media_type, key_system,
-                          src_type, eme_version, kNoSessionToLoad, false,
-                          PlayTwice::NO, expected_title);
+                          src_type, kNoSessionToLoad, false, PlayTwice::NO,
+                          expected_title);
     // Check KeyMessage received for all key systems.
     bool receivedKeyMessage = false;
     EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
@@ -260,15 +245,12 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
     title_watcher->AlsoWaitForTitle(
         base::ASCIIToUTF16(kEmeMessageUnexpectedType));
     title_watcher->AlsoWaitForTitle(
-        base::ASCIIToUTF16(kPrefixedEmeRenewalMissingHeader));
-    title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kPrefixedEmeErrorEvent));
+        base::ASCIIToUTF16(kEmeRenewalMissingHeader));
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(
         switches::kDisableGestureRequirementForMediaPlayback);
-    // For simplicity with respect to parameterized tests, enable for all tests.
-    command_line->AppendSwitch(switches::kEnablePrefixedEncryptedMedia);
   }
 
   void SetUpCommandLineForKeySystem(const std::string& key_system,
@@ -344,46 +326,16 @@ class ECKEncryptedMediaTest : public EncryptedMediaTestBase {
                             const std::string& expected_title) {
     // Since we do not test playback, arbitrarily choose a test file and source
     // type.
-    RunEncryptedMediaTest(
-        kDefaultEmePlayer, "bear-a_enc-a.webm", kWebMAudioOnly, key_system, SRC,
-        UNPREFIXED, kNoSessionToLoad, false, PlayTwice::NO, expected_title);
+    RunEncryptedMediaTest(kDefaultEmePlayer, "bear-a_enc-a.webm",
+                          kWebMAudioOnly, key_system, SRC, kNoSessionToLoad,
+                          false, PlayTwice::NO, expected_title);
   }
 
   void TestPlaybackCase(const std::string& session_to_load,
                         const std::string& expected_title) {
     RunEncryptedMediaTest(kDefaultEmePlayer, "bear-320x240-v_enc-v.webm",
                           kWebMVideoOnly, kExternalClearKeyKeySystem, SRC,
-                          UNPREFIXED, session_to_load, false, PlayTwice::NO,
-                          expected_title);
-  }
-
- protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    EncryptedMediaTestBase::SetUpCommandLine(command_line);
-    SetUpCommandLineForKeySystem(kExternalClearKeyKeySystem, command_line);
-  }
-};
-
-// Tests encrypted media playback using ExternalClearKey key system in
-// decrypt-and-decode mode for prefixed EME.
-class ECKPrefixedEncryptedMediaTest : public EncryptedMediaTestBase {
- public:
-  // We use special |key_system| names to do non-playback related tests, e.g.
-  // kExternalClearKeyFileIOTestKeySystem is used to test file IO.
-  void TestNonPlaybackCases(const std::string& key_system,
-                            const std::string& expected_title) {
-    // Since we do not test playback, arbitrarily choose a test file and source
-    // type.
-    RunEncryptedMediaTest(
-        kDefaultEmePlayer, "bear-a_enc-a.webm", kWebMAudioOnly, key_system, SRC,
-        PREFIXED, kNoSessionToLoad, false, PlayTwice::NO, expected_title);
-  }
-
-  void TestPlaybackCase(const std::string& session_to_load,
-                        const std::string& expected_title) {
-    RunEncryptedMediaTest(kDefaultEmePlayer, "bear-320x240-v_enc-v.webm",
-                          kWebMVideoOnly, kExternalClearKeyKeySystem, SRC,
-                          PREFIXED, session_to_load, false, PlayTwice::NO,
+                          session_to_load, false, PlayTwice::NO,
                           expected_title);
   }
 
@@ -410,15 +362,13 @@ class WVEncryptedMediaTest : public EncryptedMediaTestBase {
 // Tests encrypted media playback with a combination of parameters:
 // - char*: Key system name.
 // - SrcType: Use MSE or SRC.
-// - EmeVersion: Use PREFIXED or UNPREFIXED EME.
 //
 // Note: Only parameterized (*_P) tests can be used. Non-parameterized (*_F)
 // tests will crash at GetParam(). To add non-parameterized tests, use
 // EncryptedMediaTestBase or one of its subclasses (e.g. WVEncryptedMediaTest).
-class EncryptedMediaTest
-    : public EncryptedMediaTestBase,
-      public testing::WithParamInterface<
-          std::tr1::tuple<const char*, SrcType, EmeVersion> > {
+class EncryptedMediaTest : public EncryptedMediaTestBase,
+                           public testing::WithParamInterface<
+                               std::tr1::tuple<const char*, SrcType>> {
  public:
   std::string CurrentKeySystem() {
     return std::tr1::get<0>(GetParam());
@@ -428,17 +378,10 @@ class EncryptedMediaTest
     return std::tr1::get<1>(GetParam());
   }
 
-  EmeVersion CurrentEmeVersion() {
-    return std::tr1::get<2>(GetParam());
-  }
-
   void TestSimplePlayback(const std::string& encrypted_media,
                           const std::string& media_type) {
-    RunSimpleEncryptedMediaTest(encrypted_media,
-                                media_type,
-                                CurrentKeySystem(),
-                                CurrentSourceType(),
-                                CurrentEmeVersion());
+    RunSimpleEncryptedMediaTest(encrypted_media, media_type, CurrentKeySystem(),
+                                CurrentSourceType());
   }
 
   void TestMultiplePlayback(const std::string& encrypted_media,
@@ -446,26 +389,21 @@ class EncryptedMediaTest
     DCHECK(IsPlayBackPossible(CurrentKeySystem()));
     RunEncryptedMediaTest(kDefaultEmePlayer, encrypted_media, media_type,
                           CurrentKeySystem(), CurrentSourceType(),
-                          CurrentEmeVersion(), kNoSessionToLoad, false,
-                          PlayTwice::YES, kEnded);
+                          kNoSessionToLoad, false, PlayTwice::YES, kEnded);
   }
 
   void RunInvalidResponseTest() {
-    std::string expected_response =
-        (CurrentEmeVersion() == EmeVersion::UNPREFIXED)
-            ? kEmeUpdateFailed
-            : kPrefixedEmeErrorEvent;
-    RunEncryptedMediaTest(
-        kDefaultEmePlayer, "bear-320x240-av_enc-av.webm", kWebMAudioVideo,
-        CurrentKeySystem(), CurrentSourceType(), CurrentEmeVersion(),
-        kNoSessionToLoad, true, PlayTwice::NO, expected_response);
+    RunEncryptedMediaTest(kDefaultEmePlayer, "bear-320x240-av_enc-av.webm",
+                          kWebMAudioVideo, CurrentKeySystem(),
+                          CurrentSourceType(), kNoSessionToLoad, true,
+                          PlayTwice::NO, kEmeUpdateFailed);
   }
 
   void TestFrameSizeChange() {
-    RunEncryptedMediaTest(
-        "encrypted_frame_size_change.html", "frame_size_change-av_enc-v.webm",
-        kWebMAudioVideo, CurrentKeySystem(), CurrentSourceType(),
-        CurrentEmeVersion(), kNoSessionToLoad, false, PlayTwice::NO, kEnded);
+    RunEncryptedMediaTest("encrypted_frame_size_change.html",
+                          "frame_size_change-av_enc-v.webm", kWebMAudioVideo,
+                          CurrentKeySystem(), CurrentSourceType(),
+                          kNoSessionToLoad, false, PlayTwice::NO, kEnded);
   }
 
   void TestConfigChange() {
@@ -473,8 +411,6 @@ class EncryptedMediaTest
     base::StringPairs query_params;
     query_params.push_back(std::make_pair("keySystem", CurrentKeySystem()));
     query_params.push_back(std::make_pair("runEncrypted", "1"));
-    if (CurrentEmeVersion() == PREFIXED)
-      query_params.push_back(std::make_pair("usePrefixedEME", "1"));
     RunEncryptedMediaTestPage("mse_config_change.html",
                               CurrentKeySystem(),
                               query_params,
@@ -499,7 +435,6 @@ class EncryptedMediaTest
   void TestDifferentContainers(EncryptedContainer video_format,
                                EncryptedContainer audio_format) {
     DCHECK(IsMSESupported());
-    DCHECK_NE(CurrentEmeVersion(), PREFIXED);
     base::StringPairs query_params;
     query_params.push_back(std::make_pair("keySystem", CurrentKeySystem()));
     query_params.push_back(std::make_pair("runEncrypted", "1"));
@@ -522,93 +457,42 @@ using ::testing::Combine;
 using ::testing::Values;
 
 #if !defined(OS_ANDROID)
-INSTANTIATE_TEST_CASE_P(SRC_ClearKey_Prefixed,
-                        EncryptedMediaTest,
-                        Combine(Values(kPrefixedClearKeyKeySystem),
-                                Values(SRC),
-                                Values(PREFIXED)));
-
 INSTANTIATE_TEST_CASE_P(SRC_ClearKey,
                         EncryptedMediaTest,
-                        Combine(Values(kClearKeyKeySystem),
-                                Values(SRC),
-                                Values(UNPREFIXED)));
+                        Combine(Values(kClearKeyKeySystem), Values(SRC)));
 #endif  // !defined(OS_ANDROID)
 
-INSTANTIATE_TEST_CASE_P(MSE_ClearKey_Prefixed,
-                        EncryptedMediaTest,
-                        Combine(Values(kPrefixedClearKeyKeySystem),
-                                Values(MSE),
-                                Values(PREFIXED)));
 INSTANTIATE_TEST_CASE_P(MSE_ClearKey,
                         EncryptedMediaTest,
-                        Combine(Values(kClearKeyKeySystem),
-                                Values(MSE),
-                                Values(UNPREFIXED)));
+                        Combine(Values(kClearKeyKeySystem), Values(MSE)));
 
 // External Clear Key is currently only used on platforms that use Pepper CDMs.
 #if defined(ENABLE_PEPPER_CDMS)
-INSTANTIATE_TEST_CASE_P(SRC_ExternalClearKey_Prefixed,
-                        EncryptedMediaTest,
-                        Combine(Values(kExternalClearKeyKeySystem),
-                                Values(SRC),
-                                Values(PREFIXED)));
 INSTANTIATE_TEST_CASE_P(SRC_ExternalClearKey,
                         EncryptedMediaTest,
                         Combine(Values(kExternalClearKeyKeySystem),
-                                Values(SRC),
-                                Values(UNPREFIXED)));
+                                Values(SRC)));
 
-INSTANTIATE_TEST_CASE_P(MSE_ExternalClearKey_Prefixed,
-                        EncryptedMediaTest,
-                        Combine(Values(kExternalClearKeyKeySystem),
-                                Values(MSE),
-                                Values(PREFIXED)));
 INSTANTIATE_TEST_CASE_P(MSE_ExternalClearKey,
                         EncryptedMediaTest,
                         Combine(Values(kExternalClearKeyKeySystem),
-                                Values(MSE),
-                                Values(UNPREFIXED)));
+                                Values(MSE)));
 
 const char kExternalClearKeyDecryptOnlyKeySystem[] =
     "org.chromium.externalclearkey.decryptonly";
 
 // To reduce test time, only run ExternalClearKeyDecryptOnly with MSE.
-INSTANTIATE_TEST_CASE_P(MSE_ExternalClearKeyDecryptOnly_Prefixed,
-                        EncryptedMediaTest,
-                        Combine(Values(kExternalClearKeyDecryptOnlyKeySystem),
-                                Values(MSE),
-                                Values(PREFIXED)));
 INSTANTIATE_TEST_CASE_P(MSE_ExternalClearKeyDecryptOnly,
                         EncryptedMediaTest,
                         Combine(Values(kExternalClearKeyDecryptOnlyKeySystem),
-                                Values(MSE),
-                                Values(UNPREFIXED)));
+                                Values(MSE)));
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
-
-// Prefixed Widevine tests fail in Chrome OS official builds due to the request
-// for permissions. Since prefixed EME is deprecated and will be removed soon,
-// don't run these tests. http://crbug.com/430711
-#if !(defined(OS_CHROMEOS) && defined(OFFICIAL_BUILD))
-
-// This test doesn't fully test playback with Widevine. So we only run Widevine
-// test with MSE (no SRC) to reduce test time. Also, on Android EME only works
-// with MSE and we cannot run this test with SRC.
-INSTANTIATE_TEST_CASE_P(MSE_Widevine_Prefixed,
-                        EncryptedMediaTest,
-                        Combine(Values(kWidevineKeySystem),
-                                Values(MSE),
-                                Values(PREFIXED)));
-#endif  // !(defined(OS_CHROMEOS) && defined(OFFICIAL_BUILD))
-
 #if !defined(OS_CHROMEOS)
 INSTANTIATE_TEST_CASE_P(MSE_Widevine,
                         EncryptedMediaTest,
-                        Combine(Values(kWidevineKeySystem),
-                                Values(MSE),
-                                Values(UNPREFIXED)));
+                        Combine(Values(kWidevineKeySystem), Values(MSE)));
 #endif  // !defined(OS_CHROMEOS)
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 
@@ -711,10 +595,6 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
     DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
     return;
   }
-  if (CurrentEmeVersion() != UNPREFIXED) {
-    DVLOG(0) << "Skipping test; Only supported by unprefixed EME";
-    return;
-  }
   if (!IsPlayBackPossible(CurrentKeySystem())) {
     DVLOG(0) << "Skipping test - Test requires video playback.";
     return;
@@ -728,10 +608,6 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
   // MP4 without MSE is not support yet, http://crbug.com/170793.
   if (CurrentSourceType() != MSE) {
     DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
-    return;
-  }
-  if (CurrentEmeVersion() != UNPREFIXED) {
-    DVLOG(0) << "Skipping test; Only supported by unprefixed EME";
     return;
   }
   if (!IsPlayBackPossible(CurrentKeySystem())) {
@@ -749,10 +625,6 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
     DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
     return;
   }
-  if (CurrentEmeVersion() != UNPREFIXED) {
-    DVLOG(0) << "Skipping test; Only supported by unprefixed EME";
-    return;
-  }
   if (!IsPlayBackPossible(CurrentKeySystem())) {
     DVLOG(0) << "Skipping test - Test requires video playback.";
     return;
@@ -763,18 +635,11 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
 #endif  // defined(USE_PROPRIETARY_CODECS)
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
-// The parent key system cannot be used in generateKeyRequest.
-IN_PROC_BROWSER_TEST_F(WVEncryptedMediaTest, ParentThrowsException_Prefixed) {
-  RunEncryptedMediaTest(kDefaultEmePlayer, "bear-a_enc-a.webm", kWebMAudioOnly,
-                        "com.widevine", MSE, PREFIXED, kNoSessionToLoad, false,
-                        PlayTwice::NO, kEmeNotSupportedError);
-}
-
 // The parent key system cannot be used when creating MediaKeys.
 IN_PROC_BROWSER_TEST_F(WVEncryptedMediaTest, ParentThrowsException) {
   RunEncryptedMediaTest(kDefaultEmePlayer, "bear-a_enc-a.webm", kWebMAudioOnly,
-                        "com.widevine", MSE, UNPREFIXED, kNoSessionToLoad,
-                        false, PlayTwice::NO, kEmeNotSupportedError);
+                        "com.widevine", MSE, kNoSessionToLoad, false,
+                        PlayTwice::NO, kEmeNotSupportedError);
 }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 
@@ -813,39 +678,4 @@ IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, LoadUnknownSession) {
   TestPlaybackCase(kUnknownSession, kEmeSessionNotFound);
 }
 
-IN_PROC_BROWSER_TEST_F(ECKPrefixedEncryptedMediaTest, InitializeCDMFail) {
-  TestNonPlaybackCases(kExternalClearKeyInitializeFailKeySystem,
-                       kPrefixedEmeErrorEvent);
-}
-
-// When CDM crashes, we should still get a decode error.
-// crbug.com/386657
-IN_PROC_BROWSER_TEST_F(ECKPrefixedEncryptedMediaTest,
-                       DISABLED_CDMCrashDuringDecode) {
-  IgnorePluginCrash();
-  TestNonPlaybackCases(kExternalClearKeyCrashKeySystem, kError);
-}
-
-// Testing that the media browser test does fail on plugin crash.
-// crbug.com/386657
-IN_PROC_BROWSER_TEST_F(ECKPrefixedEncryptedMediaTest,
-                       DISABLED_CDMExpectedCrash) {
-  // Plugin crash is not ignored by default, the test is expected to fail.
-  EXPECT_NONFATAL_FAILURE(
-      TestNonPlaybackCases(kExternalClearKeyCrashKeySystem, kError),
-      "plugin crash");
-}
-
-IN_PROC_BROWSER_TEST_F(ECKPrefixedEncryptedMediaTest, FileIOTest) {
-  TestNonPlaybackCases(kExternalClearKeyFileIOTestKeySystem,
-                       kFileIOTestSuccess);
-}
-
-IN_PROC_BROWSER_TEST_F(ECKPrefixedEncryptedMediaTest, LoadLoadableSession) {
-  TestPlaybackCase(kLoadableSession, kEnded);
-}
-
-IN_PROC_BROWSER_TEST_F(ECKPrefixedEncryptedMediaTest, LoadUnknownSession) {
-  TestPlaybackCase(kUnknownSession, kPrefixedEmeErrorEvent);
-}
 #endif  // defined(ENABLE_PEPPER_CDMS)

@@ -28,27 +28,11 @@ class MODULES_EXPORT HTMLMediaElementEncryptedMedia final : public NoBaseWillBeG
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElementEncryptedMedia);
     USING_FAST_MALLOC_WILL_BE_REMOVED(HTMLMediaElementEncryptedMedia);
 public:
-    // encrypted media extensions (v0.1b)
-    static void webkitGenerateKeyRequest(HTMLMediaElement&, const String& keySystem, PassRefPtr<DOMUint8Array> initData, ExceptionState&);
-    static void webkitGenerateKeyRequest(HTMLMediaElement&, const String& keySystem, ExceptionState&);
-    static void webkitAddKey(HTMLMediaElement&, const String& keySystem, PassRefPtr<DOMUint8Array> key, PassRefPtr<DOMUint8Array> initData, const String& sessionId, ExceptionState&);
-    static void webkitAddKey(HTMLMediaElement&, const String& keySystem, PassRefPtr<DOMUint8Array> key, ExceptionState&);
-    static void webkitCancelKeyRequest(HTMLMediaElement&, const String& keySystem, const String& sessionId, ExceptionState&);
-
-    DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(webkitkeyadded);
-    DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(webkitkeyerror);
-    DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(webkitkeymessage);
-    DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(webkitneedkey);
-
-    // encrypted media extensions (WD)
     static MediaKeys* mediaKeys(HTMLMediaElement&);
     static ScriptPromise setMediaKeys(ScriptState*, HTMLMediaElement&, MediaKeys*);
     DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(encrypted);
 
     // WebMediaPlayerEncryptedMediaClient methods
-    void keyAdded(const WebString& keySystem, const WebString& sessionId) final;
-    void keyError(const WebString& keySystem, const WebString& sessionId, WebMediaPlayerEncryptedMediaClient::MediaKeyErrorCode, unsigned short systemCode) final;
-    void keyMessage(const WebString& keySystem, const WebString& sessionId, const unsigned char* message, unsigned messageLength, const WebURL& defaultURL) final;
     void encrypted(WebEncryptedMediaInitDataType, const unsigned char* initData, unsigned initDataLength) final;
     void didBlockPlaybackWaitingForKey() final;
     void didResumePlaybackBlockedForKey() final;
@@ -65,26 +49,12 @@ private:
     friend class SetMediaKeysHandler;
 
     HTMLMediaElementEncryptedMedia(HTMLMediaElement&);
-    void generateKeyRequest(WebMediaPlayer*, const String& keySystem, PassRefPtr<DOMUint8Array> initData, ExceptionState&);
-    void addKey(WebMediaPlayer*, const String& keySystem, PassRefPtr<DOMUint8Array> key, PassRefPtr<DOMUint8Array> initData, const String& sessionId, ExceptionState&);
-    void cancelKeyRequest(WebMediaPlayer*, const String& keySystem, const String& sessionId, ExceptionState&);
 
     // EventTarget
     bool setAttributeEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>);
     EventListener* getAttributeEventListener(const AtomicString& eventType);
 
-    // Currently we have both EME v0.1b and EME WD implemented in media element.
-    // But we do not want to support both at the same time. The one used first
-    // will be supported. Use |m_emeMode| to track this selection.
-    // FIXME: Remove EmeMode once EME v0.1b support is removed. See crbug.com/249976.
-    enum EmeMode { EmeModeNotSelected, EmeModePrefixed, EmeModeUnprefixed };
-
-    // check (and set if necessary) the encrypted media extensions (EME) mode
-    // (v0.1b or WD). Returns whether the mode is allowed and successfully set.
-    bool setEmeMode(EmeMode);
-
     RawPtrWillBeMember<HTMLMediaElement> m_mediaElement;
-    EmeMode m_emeMode;
 
     bool m_isWaitingForKey;
 

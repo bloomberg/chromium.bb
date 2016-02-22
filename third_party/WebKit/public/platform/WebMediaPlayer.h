@@ -82,15 +82,6 @@ public:
         Aggressive,
     };
 
-    // Represents synchronous exceptions that can be thrown from the Encrypted
-    // Media methods. This is different from the asynchronous MediaKeyError.
-    enum MediaKeyException {
-        MediaKeyExceptionNoError,
-        MediaKeyExceptionInvalidPlayerState,
-        MediaKeyExceptionKeySystemNotSupported,
-        MediaKeyExceptionInvalidAccess,
-    };
-
     enum CORSMode {
         CORSModeUnspecified,
         CORSModeAnonymous,
@@ -184,11 +175,6 @@ public:
 
     virtual WebAudioSourceProvider* audioSourceProvider() { return nullptr; }
 
-    // Returns whether keySystem is supported. If true, the result will be
-    // reported by an event.
-    virtual MediaKeyException generateKeyRequest(const WebString& keySystem, const unsigned char* initData, unsigned initDataLength) { return MediaKeyExceptionKeySystemNotSupported; }
-    virtual MediaKeyException addKey(const WebString& keySystem, const unsigned char* key, unsigned keyLength, const unsigned char* initData, unsigned initDataLength, const WebString& sessionId) { return MediaKeyExceptionKeySystemNotSupported; }
-    virtual MediaKeyException cancelKeyRequest(const WebString& keySystem, const WebString& sessionId) { return MediaKeyExceptionKeySystemNotSupported; }
     virtual void setContentDecryptionModule(WebContentDecryptionModule* cdm, WebContentDecryptionModuleResult result) { result.completeWithError(WebContentDecryptionModuleExceptionNotSupportedError, 0, "ERROR"); }
 
     // Sets the poster image URL.

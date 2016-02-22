@@ -38,8 +38,8 @@ PlayerUtils.registerDefaultEventListeners = function(player) {
   });
 };
 
-// Register the necessary event handlers needed when playing encrypted content
-// using the unprefixed API. Returns a promise that resolves to the player.
+// Register the necessary event handlers needed when playing encrypted content.
+// Returns a promise that resolves to the player.
 PlayerUtils.registerEMEEventListeners = function(player) {
   player.video.addEventListener('encrypted', function(message) {
 
@@ -119,59 +119,6 @@ PlayerUtils.registerEMEEventListeners = function(player) {
       .catch(function(error) { Utils.failTest(error, NOTSUPPORTEDERROR); });
 };
 
-// Register the necessary event handlers needed when playing encrypted content
-// using the prefixed API. Even though the prefixed API is all synchronous,
-// returns a promise that resolves to the player.
-PlayerUtils.registerPrefixedEMEEventListeners = function(player) {
- player.video.addEventListener('webkitneedkey', function(message) {
-    var initData = message.initData;
-    if (player.testConfig.sessionToLoad) {
-      Utils.timeLog('Loading session: ' + player.testConfig.sessionToLoad);
-      initData =
-          Utils.convertToUint8Array(PREFIXED_EME_API_LOAD_SESSION_HEADER +
-                                    player.testConfig.sessionToLoad);
-    }
-    Utils.timeLog(player.testConfig.keySystem +
-                  ' Generate key request, initData: ' +
-                  Utils.getHexString(initData));
-    try {
-      message.target.webkitGenerateKeyRequest(player.testConfig.keySystem,
-                                              initData);
-    } catch (e) {
-      Utils.failTest(e);
-    }
-  });
-
-  player.video.addEventListener('webkitkeyadded', function(message) {
-    Utils.timeLog('onWebkitKeyAdded', message);
-    message.target.receivedKeyAdded = true;
-  });
-
-  player.video.addEventListener('webkitkeyerror', function(error) {
-    Utils.timeLog('onWebkitKeyError',
-                  'KeySystem: ' + error.keySystem + ', sessionId: ' +
-                      error.sessionId + ', errorCode: ' + error.errorCode.code +
-                      ', systemCode: ' + error.systemCode);
-    Utils.failTest(error, PREFIXED_EME_ERROR_EVENT);
-  });
-
-  player.video.addEventListener('webkitkeymessage', function(message) {
-    Utils.timeLog('onWebkitKeyMessage', message);
-    message.target.receivedKeyMessage = true;
-    if (Utils.isRenewalMessagePrefixed(message.message)) {
-      Utils.timeLog('onWebkitKeyMessage - renewal', message);
-      message.target.receivedRenewalMessage = true;
-    }
-  });
-
-  // The prefixed API is all synchronous, so wrap the calls in a promise.
-  return new Promise(function(resolve, reject) {
-    PlayerUtils.registerDefaultEventListeners(player);
-    player.video.receivedKeyMessage = false;
-    resolve(player);
-  });
-};
-
 PlayerUtils.setVideoSource = function(player) {
   if (player.testConfig.useMSE) {
     Utils.timeLog('Loading media using MSE.');
@@ -197,31 +144,17 @@ PlayerUtils.initEMEPlayer = function(player) {
 
 // Return the appropriate player based on test configuration.
 PlayerUtils.createPlayer = function(video, testConfig) {
-  // Update keySystem if using prefixed Clear Key since it is not available as a
-  // separate key system to choose from; however it can be set in URL query.
-  var usePrefixedEME = testConfig.usePrefixedEME;
-  if (testConfig.keySystem == CLEARKEY && usePrefixedEME)
-    testConfig.keySystem = PREFIXED_CLEARKEY;
-
   function getPlayerType(keySystem) {
     switch (keySystem) {
       case WIDEVINE_KEYSYSTEM:
-        if (usePrefixedEME)
-          return PrefixedWidevinePlayer;
         return WidevinePlayer;
-      case PREFIXED_CLEARKEY:
-        return PrefixedClearKeyPlayer;
       case EXTERNAL_CLEARKEY:
       case CLEARKEY:
-        if (usePrefixedEME)
-          return PrefixedClearKeyPlayer;
         return ClearKeyPlayer;
       case FILE_IO_TEST_KEYSYSTEM:
         return FileIOTestPlayer;
       default:
         Utils.timeLog(keySystem + ' is not a known key system');
-        if (usePrefixedEME)
-          return PrefixedClearKeyPlayer;
         return ClearKeyPlayer;
     }
   }

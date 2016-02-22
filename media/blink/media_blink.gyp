@@ -45,8 +45,6 @@
         'cdm_result_promise_helper.h',
         'cdm_session_adapter.cc',
         'cdm_session_adapter.h',
-        'encrypted_media_player_support.cc',
-        'encrypted_media_player_support.h',
         'interval_map.h',
         'key_system_config_selector.cc',
         'key_system_config_selector.h',
@@ -101,8 +99,6 @@
         }],
         ['OS=="android" and media_use_ffmpeg==0', {
           'sources!': [
-            'encrypted_media_player_support.cc',
-            'encrypted_media_player_support.h',
             'webmediaplayer_impl.cc',
             'webmediaplayer_impl.h',
           ],

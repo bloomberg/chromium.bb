@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Widevine player responsible for playing media using Widevine key system
-// and EME working draft API.
+// Widevine player responsible for playing media using Widevine key system.
 function WidevinePlayer(video, testConfig) {
   this.video = video;
   this.testConfig = testConfig;

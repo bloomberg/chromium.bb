@@ -215,7 +215,7 @@ const AtomicString& VideoKindToString(WebMediaPlayerClient::VideoTrackKind kind)
     return emptyAtom;
 }
 
-bool canLoadURL(const KURL& url, const ContentType& contentType, const String& keySystem)
+bool canLoadURL(const KURL& url, const ContentType& contentType)
 {
     DEFINE_STATIC_LOCAL(const String, codecs, ("codecs"));
 
@@ -236,7 +236,7 @@ bool canLoadURL(const KURL& url, const ContentType& contentType, const String& k
     // when used with parameters, e.g. "application/octet-stream;codecs=theora", is a type that the user agent knows
     // it cannot render.
     if (contentMIMEType != "application/octet-stream" || contentTypeCodecs.isEmpty()) {
-        WebMimeRegistry::SupportsType supported = Platform::current()->mimeRegistry()->supportsMediaMIMEType(contentMIMEType, contentTypeCodecs, keySystem.lower());
+        WebMimeRegistry::SupportsType supported = Platform::current()->mimeRegistry()->supportsMediaMIMEType(contentMIMEType, contentTypeCodecs);
         return supported > WebMimeRegistry::IsNotSupported;
     }
 
@@ -251,7 +251,7 @@ void HTMLMediaElement::recordAutoplayMetric(AutoplayMetrics metric)
     autoplayHistogram.count(metric);
 }
 
-WebMimeRegistry::SupportsType HTMLMediaElement::supportsType(const ContentType& contentType, const String& keySystem)
+WebMimeRegistry::SupportsType HTMLMediaElement::supportsType(const ContentType& contentType)
 {
     DEFINE_STATIC_LOCAL(const String, codecs, ("codecs"));
 
@@ -262,7 +262,6 @@ WebMimeRegistry::SupportsType HTMLMediaElement::supportsType(const ContentType& 
     // The codecs string is not lower-cased because MP4 values are case sensitive
     // per http://tools.ietf.org/html/rfc4281#page-7.
     String typeCodecs = contentType.parameter(codecs);
-    String system = keySystem.lower();
 
     if (type.isEmpty())
         return WebMimeRegistry::IsNotSupported;
@@ -272,7 +271,7 @@ WebMimeRegistry::SupportsType HTMLMediaElement::supportsType(const ContentType& 
     if (type == "application/octet-stream")
         return WebMimeRegistry::IsNotSupported;
 
-    return Platform::current()->mimeRegistry()->supportsMediaMIMEType(type, typeCodecs, system);
+    return Platform::current()->mimeRegistry()->supportsMediaMIMEType(type, typeCodecs);
 }
 
 URLRegistry* HTMLMediaElement::s_mediaStreamRegistry = 0;
@@ -640,9 +639,9 @@ HTMLMediaElement::NetworkState HTMLMediaElement::networkState() const
     return m_networkState;
 }
 
-String HTMLMediaElement::canPlayType(const String& mimeType, const String& keySystem) const
+String HTMLMediaElement::canPlayType(const String& mimeType) const
 {
-    WebMimeRegistry::SupportsType support = supportsType(ContentType(mimeType), keySystem);
+    WebMimeRegistry::SupportsType support = supportsType(ContentType(mimeType));
     String canPlay;
 
     // 4.8.10.3
@@ -658,7 +657,7 @@ String HTMLMediaElement::canPlayType(const String& mimeType, const String& keySy
         break;
     }
 
-    WTF_LOG(Media, "HTMLMediaElement::canPlayType(%p, %s, %s) -> %s", this, mimeType.utf8().data(), keySystem.utf8().data(), canPlay.utf8().data());
+    WTF_LOG(Media, "HTMLMediaElement::canPlayType(%p, %s) -> %s", this, mimeType.utf8().data(), canPlay.utf8().data());
 
     return canPlay;
 }
@@ -880,11 +879,10 @@ void HTMLMediaElement::selectMediaResource()
             return;
         }
 
-        // No type or key system information is available when the url comes
-        // from the 'src' attribute so MediaPlayer
+        // No type is available when the url comes from the 'src' attribute so MediaPlayer
         // will have to pick a media engine based on the file extension.
         ContentType contentType((String()));
-        loadResource(mediaURL, contentType, String());
+        loadResource(mediaURL, contentType);
         WTF_LOG(Media, "HTMLMediaElement::selectMediaResource(%p), using 'src' attribute url", this);
         return;
     }
@@ -896,8 +894,7 @@ void HTMLMediaElement::selectMediaResource()
 void HTMLMediaElement::loadNextSourceChild()
 {
     ContentType contentType((String()));
-    String keySystem;
-    KURL mediaURL = selectNextSourceChild(&contentType, &keySystem, Complain);
+    KURL mediaURL = selectNextSourceChild(&contentType, Complain);
     if (!mediaURL.isValid()) {
         waitForSourceChange();
         return;
@@ -907,15 +904,15 @@ void HTMLMediaElement::loadNextSourceChild()
     resetMediaPlayerAndMediaSource();
 
     m_loadState = LoadingFromSourceElement;
-    loadResource(mediaURL, contentType, keySystem);
+    loadResource(mediaURL, contentType);
 }
 
-void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType, const String& keySystem)
+void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType)
 {
     ASSERT(isMainThread());
     ASSERT(isSafeToLoadURL(url, Complain));
 
-    WTF_LOG(Media, "HTMLMediaElement::loadResource(%p, %s, %s, %s)", this, urlForLoggingMedia(url).utf8().data(), contentType.raw().utf8().data(), keySystem.utf8().data());
+    WTF_LOG(Media, "HTMLMediaElement::loadResource(%p, %s, %s)", this, urlForLoggingMedia(url).utf8().data(), contentType.raw().utf8().data());
 
     LocalFrame* frame = document().frame();
     if (!frame) {
@@ -967,7 +964,7 @@ void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType, c
         }
     }
 
-    if (attemptLoad && canLoadURL(url, contentType, keySystem)) {
+    if (attemptLoad && canLoadURL(url, contentType)) {
         ASSERT(!webMediaPlayer());
 
         if (!m_havePreparedToPlay && effectivePreloadType() == WebMediaPlayer::PreloadNone) {
@@ -2523,7 +2520,7 @@ bool HTMLMediaElement::havePotentialSourceChild()
     RefPtrWillBeRawPtr<HTMLSourceElement> currentSourceNode = m_currentSourceNode;
     RefPtrWillBeRawPtr<Node> nextNode = m_nextChildNodeToConsider;
 
-    KURL nextURL = selectNextSourceChild(0, 0, DoNothing);
+    KURL nextURL = selectNextSourceChild(0, DoNothing);
 
     m_currentSourceNode = currentSourceNode;
     m_nextChildNodeToConsider = nextNode;
@@ -2531,7 +2528,7 @@ bool HTMLMediaElement::havePotentialSourceChild()
     return nextURL.isValid();
 }
 
-KURL HTMLMediaElement::selectNextSourceChild(ContentType* contentType, String* keySystem, InvalidURLAction actionIfInvalid)
+KURL HTMLMediaElement::selectNextSourceChild(ContentType* contentType, InvalidURLAction actionIfInvalid)
 {
 #if !LOG_DISABLED
     // Don't log if this was just called to find out if there are any valid <source> elements.
@@ -2552,7 +2549,6 @@ KURL HTMLMediaElement::selectNextSourceChild(ContentType* contentType, String* k
     Node* node;
     HTMLSourceElement* source = 0;
     String type;
-    String system;
     bool lookingForStartNode = m_nextChildNodeToConsider;
     bool canUseSourceElement = false;
 
@@ -2582,15 +2578,14 @@ KURL HTMLMediaElement::selectNextSourceChild(ContentType* contentType, String* k
             goto checkAgain;
 
         type = source->type();
-        // FIXME(82965): Add support for keySystem in <source> and set system from source.
         if (type.isEmpty() && mediaURL.protocolIsData())
             type = mimeTypeFromDataURL(mediaURL);
-        if (!type.isEmpty() || !system.isEmpty()) {
+        if (!type.isEmpty()) {
 #if !LOG_DISABLED
             if (shouldLog)
-                WTF_LOG(Media, "HTMLMediaElement::selectNextSourceChild(%p) - 'type' is '%s' - key system is '%s'", this, type.utf8().data(), system.utf8().data());
+                WTF_LOG(Media, "HTMLMediaElement::selectNextSourceChild(%p) - 'type' is '%s'", this, type.utf8().data());
 #endif
-            if (!supportsType(ContentType(type), system))
+            if (!supportsType(ContentType(type)))
                 goto checkAgain;
         }
 
@@ -2609,8 +2604,6 @@ checkAgain:
     if (canUseSourceElement) {
         if (contentType)
             *contentType = ContentType(type);
-        if (keySystem)
-            *keySystem = system;
         m_currentSourceNode = source;
         m_nextChildNodeToConsider = source->nextSibling();
     } else {

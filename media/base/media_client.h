@@ -28,8 +28,7 @@ MEDIA_EXPORT MediaClient* GetMediaClient();
 
 struct MEDIA_EXPORT KeySystemInfoForUMA {
   KeySystemInfoForUMA(const std::string& key_system,
-                      const std::string& key_system_name_for_uma,
-                      bool reports_key_system_support_to_uma);
+                      const std::string& key_system_name_for_uma);
   ~KeySystemInfoForUMA();
 
   // Concrete key system name;
@@ -39,12 +38,6 @@ struct MEDIA_EXPORT KeySystemInfoForUMA {
   // "org.w3.clearkey" is "ClearKey". When providing this value, make sure to
   // update tools/metrics/histograms/histograms.xml.
   std::string key_system_name_for_uma;
-
-  // Whether query/support statistics for |key_system| should be reported.
-  // If set to true, make sure to add a new Media.EME.KeySystemSupport.* to
-  // tools/metrics/histograms/histograms.xml. See KeySystemsSupportUMA for
-  // details on how key system query/support UMA is reported.
-  bool reports_key_system_support_to_uma;
 };
 
 // A client interface for embedders (e.g. content/renderer) to provide

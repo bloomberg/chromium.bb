@@ -119,8 +119,6 @@ public:
         UnprefixedUserTiming = 67,
         WindowEvent = 69,
         ContentSecurityPolicyWithBaseElement = 70,
-        PrefixedMediaAddKey = 71,
-        PrefixedMediaGenerateKeyRequest = 72,
         DocumentClear = 74,
         XMLDocument = 77,
         XSLProcessingInstruction = 78,
@@ -222,8 +220,6 @@ public:
         // The above items are available in M33 branch.
 
         InitMessageEvent = 222,
-        PrefixedMediaCancelKeyRequest = 229,
-        CanPlayTypeKeySystem = 232,
         PrefixedDevicePixelRatioMediaFeature = 233,
         PrefixedMaxDevicePixelRatioMediaFeature = 234,
         PrefixedMinDevicePixelRatioMediaFeature = 235,

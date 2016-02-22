@@ -41,18 +41,6 @@ class WebURL;
 
 class BLINK_PLATFORM_EXPORT WebMediaPlayerEncryptedMediaClient {
 public:
-    enum MediaKeyErrorCode {
-        MediaKeyErrorCodeUnknown = 1,
-        MediaKeyErrorCodeClient,
-        MediaKeyErrorCodeService,
-        MediaKeyErrorCodeOutput,
-        MediaKeyErrorCodeHardwareChange,
-        MediaKeyErrorCodeDomain
-    };
-
-    virtual void keyAdded(const WebString& keySystem, const WebString& sessionId) = 0;
-    virtual void keyError(const WebString& keySystem, const WebString& sessionId, MediaKeyErrorCode, unsigned short systemCode) = 0;
-    virtual void keyMessage(const WebString& keySystem, const WebString& sessionId, const unsigned char* message, unsigned messageLength, const WebURL& defaultURL) = 0;
     virtual void encrypted(WebEncryptedMediaInitDataType, const unsigned char* initData, unsigned initDataLength) = 0;
     virtual void didBlockPlaybackWaitingForKey() = 0;
     virtual void didResumePlaybackBlockedForKey() = 0;

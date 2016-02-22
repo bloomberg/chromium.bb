@@ -2489,7 +2489,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
       render_thread->compositor_task_runner(), context_3d_cb,
       base::Bind(&v8::Isolate::AdjustAmountOfExternalAllocatedMemory,
                  base::Unretained(blink::mainThreadIsolate())),
-      GetMediaPermission(), initial_cdm, media_surface_manager_, media_session);
+      initial_cdm, media_surface_manager_, media_session);
 
 #if defined(OS_ANDROID)
   if (!UseWebMediaPlayerImpl(load_type, url))
@@ -2517,7 +2517,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
   media::WebMediaPlayerImpl* media_player = new media::WebMediaPlayerImpl(
       frame_, client, encrypted_client,
       GetWebMediaPlayerDelegate()->AsWeakPtr(),
-      std::move(media_renderer_factory), GetCdmFactory(), url_index_, params);
+      std::move(media_renderer_factory), url_index_, params);
 
 #if defined(OS_ANDROID)  // WMPI_CAST
   media_player->SetMediaPlayerManager(GetMediaPlayerManager());
@@ -5946,11 +5946,10 @@ WebMediaPlayer* RenderFrameImpl::CreateAndroidWebMediaPlayer(
 
   bool enable_texture_copy =
       RenderThreadImpl::current()->EnableStreamTextureCopy();
-  return new WebMediaPlayerAndroid(frame_, client, encrypted_client,
-                                   GetWebMediaPlayerDelegate()->AsWeakPtr(),
-                                   GetMediaPlayerManager(), GetCdmFactory(),
-                                   stream_texture_factory, routing_id_,
-                                   enable_texture_copy, params);
+  return new WebMediaPlayerAndroid(
+      frame_, client, encrypted_client,
+      GetWebMediaPlayerDelegate()->AsWeakPtr(), GetMediaPlayerManager(),
+      stream_texture_factory, routing_id_, enable_texture_copy, params);
 }
 
 RendererMediaPlayerManager* RenderFrameImpl::GetMediaPlayerManager() {

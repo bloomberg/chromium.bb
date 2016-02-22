@@ -247,14 +247,6 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
     case UseCounter::RangeExpand:
         return replacedBy("'Range.expand()'", "'Selection.modify()'");
 
-    case UseCounter::PrefixedMediaAddKey:
-    case UseCounter::PrefixedMediaGenerateKeyRequest:
-    case UseCounter::PrefixedMediaCancelKeyRequest:
-        return "The prefixed Encrypted Media Extensions APIs are deprecated. Please use 'navigator.requestMediaKeySystemAccess()' instead.";
-
-    case UseCounter::CanPlayTypeKeySystem:
-        return replacedBy("canPlayType()'s 'keySystem' parameter", "'navigator.requestMediaKeySystemAccess()'");
-
     // Powerful features on insecure origins (https://goo.gl/rStTGz)
     case UseCounter::DeviceMotionInsecureOrigin:
         return "The devicemotion event is deprecated on insecure origins, and support will be removed in the future. You should consider switching your application to a secure origin, such as HTTPS. See https://goo.gl/rStTGz for more details.";

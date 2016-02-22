@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// ClearKeyPlayer responsible for playing media using Clear Key key system and
-// the unprefixed version of EME.
+// ClearKeyPlayer responsible for playing media using Clear Key key system.
 function ClearKeyPlayer(video, testConfig) {
   this.video = video;
   this.testConfig = testConfig;

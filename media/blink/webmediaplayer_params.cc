@@ -20,7 +20,6 @@ WebMediaPlayerParams::WebMediaPlayerParams(
     const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
     const Context3DCB& context_3d_cb,
     const AdjustAllocatedMemoryCB& adjust_allocated_memory_cb,
-    MediaPermission* media_permission,
     blink::WebContentDecryptionModule* initial_cdm,
     SurfaceManager* surface_manager,
     blink::WebMediaSession* media_session)
@@ -32,7 +31,6 @@ WebMediaPlayerParams::WebMediaPlayerParams(
       compositor_task_runner_(compositor_task_runner),
       context_3d_cb_(context_3d_cb),
       adjust_allocated_memory_cb_(adjust_allocated_memory_cb),
-      media_permission_(media_permission),
       initial_cdm_(initial_cdm),
       surface_manager_(surface_manager),
       media_session_(media_session) {}

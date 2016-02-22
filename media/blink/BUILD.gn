@@ -88,8 +88,6 @@ component("blink") {
 
   if (media_use_ffmpeg || !is_android) {
     sources += [
-      "encrypted_media_player_support.cc",
-      "encrypted_media_player_support.h",
       "webmediaplayer_impl.cc",
       "webmediaplayer_impl.h",
     ]

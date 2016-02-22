@@ -15,9 +15,7 @@ FileIOTestPlayer.prototype.init = function() {
 
 FileIOTestPlayer.prototype.registerEventListeners = function() {
   // Returns a promise.
-  return PlayerUtils.registerEMEEventListeners(this).then(function(result) {
-    return PlayerUtils.registerPrefixedEMEEventListeners(this);
-  });
+  return PlayerUtils.registerEMEEventListeners(this);
 };
 
 handleMessage = function(message) {
@@ -38,8 +36,4 @@ handleMessage = function(message) {
   }
 };
 
-// Check message for prefixed API.
-FileIOTestPlayer.prototype.onWebkitKeyMessage = handleMessage;
-
-// Check message for unprefixed API.
 FileIOTestPlayer.prototype.onMessage = handleMessage;

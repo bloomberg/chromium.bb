@@ -27,7 +27,6 @@
 #ifndef MediaKeyMessageEvent_h
 #define MediaKeyMessageEvent_h
 
-#include "core/html/MediaKeyError.h"
 #include "modules/EventModules.h"
 #include "modules/encryptedmedia/MediaKeyMessageEventInit.h"
 

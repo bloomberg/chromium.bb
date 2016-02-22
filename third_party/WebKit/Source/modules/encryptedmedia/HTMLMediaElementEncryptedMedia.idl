@@ -3,15 +3,6 @@
 // found in the LICENSE file.
 
 partial interface HTMLMediaElement {
-    [RuntimeEnabled=PrefixedEncryptedMedia, RaisesException, DeprecateAs=PrefixedMediaGenerateKeyRequest, LegacyInterfaceTypeChecking] void webkitGenerateKeyRequest([TreatUndefinedAs=NullString] DOMString? keySystem, optional Uint8Array initData);
-    [RuntimeEnabled=PrefixedEncryptedMedia, RaisesException, DeprecateAs=PrefixedMediaAddKey, LegacyInterfaceTypeChecking] void webkitAddKey([TreatUndefinedAs=NullString] DOMString? keySystem, Uint8Array key, optional Uint8Array initData, optional DOMString sessionId = null);
-    [RuntimeEnabled=PrefixedEncryptedMedia, RaisesException, DeprecateAs=PrefixedMediaCancelKeyRequest] void webkitCancelKeyRequest([TreatUndefinedAs=NullString] DOMString? keySystem, optional DOMString sessionId = null);
-
-    [RuntimeEnabled=PrefixedEncryptedMedia] attribute EventHandler onwebkitkeyadded;
-    [RuntimeEnabled=PrefixedEncryptedMedia] attribute EventHandler onwebkitkeyerror;
-    [RuntimeEnabled=PrefixedEncryptedMedia] attribute EventHandler onwebkitkeymessage;
-    [RuntimeEnabled=PrefixedEncryptedMedia] attribute EventHandler onwebkitneedkey;
-
     [RuntimeEnabled=EncryptedMedia] readonly attribute MediaKeys mediaKeys;
     [RuntimeEnabled=EncryptedMedia, CallWith=ScriptState] Promise setMediaKeys(MediaKeys? mediaKeys);
     [RuntimeEnabled=EncryptedMedia] attribute EventHandler onencrypted;

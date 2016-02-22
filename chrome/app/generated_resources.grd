@@ -5593,18 +5593,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_MEDIA_SOURCE_DESCRIPTION" desc="Description for the flag for the Media Source API.">
         The MediaSource object allows JavaScript to send media data directly to a video element.
       </message>
-      <message name="IDS_FLAGS_ENCRYPTED_MEDIA_NAME" desc="Title for the flag for the Encrypted Media Extensions APIs.">
-        Encrypted Media Extensions
-      </message>
-      <message name="IDS_FLAGS_ENCRYPTED_MEDIA_DESCRIPTION" desc="Description for the flag for the Encrypted Media Extensions APIs.">
-        Encrypted Media Extensions on video and audio elements.
-      </message>
-      <message name="IDS_FLAGS_PREFIXED_ENCRYPTED_MEDIA_NAME" desc="Title for the flag for the prefixed Encrypted Media Extensions APIs (e.g. webkitGenerateKeyRequest()).">
-        Prefixed Encrypted Media Extensions
-      </message>
-      <message name="IDS_FLAGS_PREFIXED_ENCRYPTED_MEDIA_DESCRIPTION" desc="Description for the flag for the prefixed Encrypted Media Extensions APIs (e.g. webkitGenerateKeyRequest()).">
-        Deprecated version of Encrypted Media Extensions on video and audio elements.
-      </message>
       <message name="IDS_FLAGS_GESTURE_REQUIREMENT_FOR_MEDIA_PLAYBACK_NAME" desc="Title for the flag for gesture requiment for media playback">
         Gesture requirement for media playback
       </message>

@@ -20,12 +20,9 @@ MediaClient* GetMediaClient() {
 
 KeySystemInfoForUMA::KeySystemInfoForUMA(
     const std::string& key_system,
-    const std::string& key_system_name_for_uma,
-    bool reports_key_system_support_to_uma)
+    const std::string& key_system_name_for_uma)
     : key_system(key_system),
-      key_system_name_for_uma(key_system_name_for_uma),
-      reports_key_system_support_to_uma(reports_key_system_support_to_uma) {
-}
+      key_system_name_for_uma(key_system_name_for_uma) {}
 
 KeySystemInfoForUMA::~KeySystemInfoForUMA() {
 }
