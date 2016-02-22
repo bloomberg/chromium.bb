@@ -102,13 +102,18 @@ const SkColor kDefaultColorButtonBackground = SkColorSetARGB(0, 0, 0, 0);
 
 // Default tints.
 const color_utils::HSL kDefaultTintButtons = { -1, -1, -1 };
-const color_utils::HSL kDefaultTintButtonsIncognito = { -1, -1, 0.85 };
+// In pre-md, reuse the normal tint for incognito.
+const color_utils::HSL kDefaultTintButtonsIncognito[] = {kDefaultTintButtons,
+                                                         {-1, -1, 0.85}};
 const color_utils::HSL kDefaultTintFrame = { -1, -1, -1 };
 const color_utils::HSL kDefaultTintFrameInactive = { -1, -1, 0.75 };
 const color_utils::HSL kDefaultTintFrameIncognito = { -1, 0.2, 0.35 };
 const color_utils::HSL kDefaultTintFrameIncognitoInactive = { -1, 0.3, 0.6 };
 const color_utils::HSL kDefaultTintBackgroundTab = { -1, -1, 0.4296875 };
-const color_utils::HSL kDefaultTintBackgroundTabIncognito = { -1, -1, 0.34375 };
+// In pre-md, reuse the normal tint for incognito.
+const color_utils::HSL kDefaultTintBackgroundTabIncognito[] = {
+    kDefaultTintBackgroundTab,
+    {-1, -1, 0.34375}};
 
 // ----------------------------------------------------------------------------
 // Defaults for properties which are not stored in the browser theme pack.
@@ -246,18 +251,18 @@ const std::set<int>& ThemeProperties::GetTintableToolbarButtons() {
 
 // static
 color_utils::HSL ThemeProperties::GetDefaultTint(int id, bool otr) {
-  bool otr_tint = otr && ui::MaterialDesignController::IsModeMaterial();
+  int mode = ui::MaterialDesignController::IsModeMaterial();
   switch (id) {
     case TINT_FRAME:
-      return otr_tint ? kDefaultTintFrameIncognito : kDefaultTintFrame;
+      return otr ? kDefaultTintFrameIncognito : kDefaultTintFrame;
     case TINT_FRAME_INACTIVE:
-      return otr_tint ? kDefaultTintFrameIncognitoInactive
-                      : kDefaultTintFrameInactive;
+      return otr ? kDefaultTintFrameIncognitoInactive
+                 : kDefaultTintFrameInactive;
     case TINT_BUTTONS:
-      return otr_tint ? kDefaultTintButtonsIncognito : kDefaultTintButtons;
+      return otr ? kDefaultTintButtonsIncognito[mode] : kDefaultTintButtons;
     case TINT_BACKGROUND_TAB:
-      return otr_tint ? kDefaultTintBackgroundTabIncognito
-                      : kDefaultTintBackgroundTab;
+      return otr ? kDefaultTintBackgroundTabIncognito[mode]
+                 : kDefaultTintBackgroundTab;
     case TINT_FRAME_INCOGNITO:
     case TINT_FRAME_INCOGNITO_INACTIVE:
       NOTREACHED() << "These values should be queried via their respective "
