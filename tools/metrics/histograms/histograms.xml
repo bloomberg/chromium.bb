@@ -30768,6 +30768,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NewTabPage.DefaultPageType" enum="NtpPaneType">
+  <obsolete>
+    Deprecated 2016-02.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>The default pane when the NTP is first opened.</summary>
 </histogram>
@@ -31064,6 +31067,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NewTabPage.PreviousSelectedPageType" enum="NtpPaneType">
+  <obsolete>
+    Deprecated 2016-02.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The pane that had been previously selected when the user switches panes in
@@ -31108,6 +31114,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NewTabPage.SelectedPageType" enum="NtpPaneType">
+  <obsolete>
+    Deprecated 2016-02.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>The pane selected when the user switches panes in the NTP.</summary>
 </histogram>
