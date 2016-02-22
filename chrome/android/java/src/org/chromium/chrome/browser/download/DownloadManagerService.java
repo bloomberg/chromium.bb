@@ -446,7 +446,8 @@ public class DownloadManagerService extends BroadcastReceiver implements
                                     Pair.create(INVALID_DOWNLOAD_ID, false));
                             mDownloadNotifier.notifyDownloadFailed(progress.mDownloadInfo);
                         } else {
-                            boolean canResolve = canResolveDownloadItem(mContext, downloadId);
+                            boolean canResolve = isOMADownloadDescription(progress.mDownloadInfo)
+                                    || canResolveDownloadItem(mContext, downloadId);
                             completionMap.put(
                                     progress.mDownloadInfo, Pair.create(downloadId, canResolve));
                             mDownloadNotifier.notifyDownloadSuccessful(
@@ -516,7 +517,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
      * @param downloadId Download identifier issued by the android DownloadManager.
      */
     private void handleAutoOpenAfterDownload(DownloadInfo info, long downloadId) {
-        if (OMADownloadHandler.OMA_DOWNLOAD_DESCRIPTOR_MIME.equalsIgnoreCase(info.getMimeType())) {
+        if (isOMADownloadDescription(info)) {
             mOMADownloadHandler.handleOMADownload(info, downloadId);
             return;
         }
@@ -645,7 +646,8 @@ public class DownloadManagerService extends BroadcastReceiver implements
             if (c.moveToNext()) {
                 status = c.getInt(c.getColumnIndex(DownloadManager.COLUMN_STATUS));
                 if (status == DownloadManager.STATUS_SUCCESSFUL) {
-                    canResolve = canResolveDownloadItem(mContext, mDownloadId);
+                    canResolve = isOMADownloadDescription(mDownloadInfo)
+                            || canResolveDownloadItem(mContext, mDownloadId);
                 } else if (status == DownloadManager.STATUS_FAILED) {
                     mFailureReason = c.getInt(c.getColumnIndex(DownloadManager.COLUMN_REASON));
                 }
@@ -837,6 +839,17 @@ public class DownloadManagerService extends BroadcastReceiver implements
     public static boolean isAttachment(String contentDisposition) {
         return contentDisposition != null
                 && contentDisposition.regionMatches(true, 0, "attachment", 0, 10);
+    }
+
+    /**
+     * Returns true if the download is for OMA download description file.
+     *
+     * @param downloadInfo Information about the download.
+     * @return true if the downloaded is OMA download description, or false otherwise.
+     */
+    static boolean isOMADownloadDescription(DownloadInfo downloadInfo) {
+        return OMADownloadHandler.OMA_DOWNLOAD_DESCRIPTOR_MIME.equalsIgnoreCase(
+                downloadInfo.getMimeType());
     }
 
     /**
