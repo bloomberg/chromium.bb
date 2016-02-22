@@ -2488,7 +2488,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
       render_thread->compositor_task_runner(), context_3d_cb,
       base::Bind(&v8::Isolate::AdjustAmountOfExternalAllocatedMemory,
                  base::Unretained(blink::mainThreadIsolate())),
-      GetMediaPermission(), initial_cdm, media_surface_manager_);
+      GetMediaPermission(), initial_cdm, media_surface_manager_, media_session);
 
 #if defined(OS_ANDROID)
   if (!UseWebMediaPlayerImpl(load_type, url))
