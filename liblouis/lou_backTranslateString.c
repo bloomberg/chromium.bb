@@ -505,11 +505,11 @@ handleMultind ()
     //        table->beginCapitalSign and table->endCapitalSign.
     //        These are actually compiled with firstlettercaps/lastlettercaps.
     //        Which to use here?
-    case CTO_FirstLetterCapsRule:
-      found = findBrailleIndicatorRule (table->emphRules[capsRule][firstLetterOffset]);
+    case CTO_CapsWordRule:
+      found = findBrailleIndicatorRule (table->emphRules[capsRule][wordOffset]);
       break;
-    case CTO_LastLetterCapsRule:
-      found = findBrailleIndicatorRule (table->emphRules[capsRule][lastLetterOffset]);
+    case CTO_CapsWordStopRule:
+      found = findBrailleIndicatorRule (table->emphRules[capsRule][wordStopOffset]);
       break;
     case CTO_LetterSign:
       found = findBrailleIndicatorRule (table->letterSign);
@@ -673,6 +673,8 @@ back_selectRule ()
 		    case CTO_SingleLetterCapsRule:
 		    case CTO_FirstLetterCapsRule:
 		    case CTO_LastLetterCapsRule:
+		    case CTO_CapsWordRule:
+		    case CTO_CapsWordStopRule:
 		    case CTO_FirstLetterItalRule:
 		    case CTO_LastLetterItalRule:
 		    case CTO_FirstLetterBoldRule:
@@ -1094,6 +1096,11 @@ backTranslateString ()
 	  break;
 	case CTO_FirstLetterCapsRule:
 	  allUpperPhrase = 1;
+	  src += currentDotslen;
+	  continue;
+	  break;
+	case CTO_CapsWordStopRule:
+	  allUpper = 0;
 	  src += currentDotslen;
 	  continue;
 	  break;
