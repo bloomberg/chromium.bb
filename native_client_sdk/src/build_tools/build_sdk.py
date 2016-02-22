@@ -411,6 +411,19 @@ def GnNinjaBuildAll(rel_out_dir):
     GnNinjaBuild('arm', MakeNinjaRelPath('-arm'))
 
 
+def GetGNExecutable(platform):
+  # TODO(sbc): Remove this code, which is duplicated from mb.py and simply
+  # rely on the depot_tools gn wrapper which should be in the PATH.
+  # http://crbug.com/588794
+  if platform == 'linux':
+    subdir, exe = 'linux64', 'gn'
+  elif platform == 'mac':
+    subdir, exe = 'mac', 'gn'
+  else:
+    subdir, exe = 'win', 'gn.exe'
+  return os.path.join(SRC_DIR, 'buildtools', subdir, exe)
+
+
 def GnNinjaBuild(arch, out_dir, extra_gn_args=None):
   gn_args = ['is_debug=false']
   if extra_gn_args is not None:
@@ -423,9 +436,7 @@ def GnNinjaBuild(arch, out_dir, extra_gn_args=None):
     # signing identity
     gn_args.append('use_ios_simulator=true')
 
-  gn_exe = 'gn'
-  if platform == 'win':
-    gn_exe += '.bat'
+  gn_exe = GetGNExecutable(platform)
 
   if arch is not None:
     gn_args.append('target_cpu="%s"' % arch)
