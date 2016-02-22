@@ -74,6 +74,9 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformSharedBuffer
   // TODO(vtl): On POSIX, we'll need two FDs to support sharing read-only.
   ScopedPlatformHandle DuplicatePlatformHandle();
 
+  // Duplicates the underlying shared memory handle and passes it to the caller.
+  base::SharedMemoryHandle DuplicateSharedMemoryHandle();
+
   // Passes the underlying platform handle to the caller. This should only be
   // called if there's a unique reference to this object (owned by the caller).
   // After calling this, this object should no longer be used, but should only

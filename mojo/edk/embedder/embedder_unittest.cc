@@ -362,8 +362,19 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MultiprocessSharedMemoryClient, EmbedderTest,
   memcpy(buffer, kByeWorld, sizeof(kByeWorld));
   WriteMessage(client_mp, "bye");
 
-  // 5. Close |sb1|.
-  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(sb1));
+  // 5. Extract the shared memory handle and ensure we can map it and read the
+  // contents.
+  base::SharedMemoryHandle shm_handle;
+  ASSERT_EQ(MOJO_RESULT_OK,
+            PassSharedMemoryHandle(sb1, &shm_handle, nullptr, nullptr));
+  base::SharedMemory shared_memory(shm_handle, false);
+  ASSERT_TRUE(shared_memory.Map(123));
+  EXPECT_NE(buffer, shared_memory.memory());
+  EXPECT_EQ(kByeWorld, std::string(static_cast<char*>(shared_memory.memory())));
+
+  // 6. Close |sb1|. Should fail because |PassSharedMemoryHandle()| should have
+  // closed the handle.
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(sb1));
 }
 
 // TODO(vtl): Test immediate write & close.

@@ -61,6 +61,10 @@ class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher final : public Dispatcher {
       PlatformHandle* platform_handles,
       size_t num_platform_handles);
 
+  // Passes the underlying platform shared buffer. This dispatcher must be
+  // closed after calling this function.
+  scoped_refptr<PlatformSharedBuffer> PassPlatformSharedBuffer();
+
   // Dispatcher:
   Type GetType() const override;
   MojoResult Close() override;

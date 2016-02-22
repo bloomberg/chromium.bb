@@ -94,6 +94,21 @@ CreateSharedBufferWrapper(base::SharedMemoryHandle shared_memory_handle,
                           bool read_only,
                           MojoHandle* mojo_wrapper_handle);
 
+// Retrieves the underlying |SharedMemoryHandle| from a shared buffer
+// |MojoHandle| and closes the handle. If successful, |num_bytes| will contain
+// the size of the shared memory buffer and |read_only| will contain whether the
+// buffer handle is read-only. Both |num_bytes| and |read_only| may be null.
+// Note: The value of |shared_memory_handle| may be
+// base::SharedMemory::NULLHandle(), even if this function returns success.
+// Callers should perform appropriate checks.
+// TODO(crbug.com/556587): Support read-only handles. Currently, |read_only|
+// will always return |false|.
+MOJO_SYSTEM_IMPL_EXPORT MojoResult
+PassSharedMemoryHandle(MojoHandle mojo_handle,
+                       base::SharedMemoryHandle* shared_memory_handle,
+                       size_t* num_bytes,
+                       bool* read_only);
+
 // Initialialization/shutdown for interprocess communication (IPC) -------------
 
 // |InitIPCSupport()| sets up the subsystem for interprocess communication,

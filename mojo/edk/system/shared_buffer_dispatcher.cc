@@ -139,13 +139,24 @@ scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::Deserialize(
   return CreateInternal(std::move(shared_buffer));
 }
 
+scoped_refptr<PlatformSharedBuffer>
+SharedBufferDispatcher::PassPlatformSharedBuffer() {
+  base::AutoLock lock(lock_);
+  if (!shared_buffer_ || in_transit_)
+    return nullptr;
+
+  scoped_refptr<PlatformSharedBuffer> retval = shared_buffer_;
+  shared_buffer_ = nullptr;
+  return retval;
+}
+
 Dispatcher::Type SharedBufferDispatcher::GetType() const {
   return Type::SHARED_BUFFER;
 }
 
 MojoResult SharedBufferDispatcher::Close() {
   base::AutoLock lock(lock_);
-  if (!shared_buffer_ || in_transit_)
+  if (in_transit_)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   shared_buffer_ = nullptr;

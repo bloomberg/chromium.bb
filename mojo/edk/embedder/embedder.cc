@@ -87,6 +87,15 @@ MojoResult CreateSharedBufferWrapper(
       shared_memory_handle, num_bytes, read_only, mojo_wrapper_handle);
 }
 
+MojoResult PassSharedMemoryHandle(
+    MojoHandle mojo_handle,
+    base::SharedMemoryHandle* shared_memory_handle,
+    size_t* num_bytes,
+    bool* read_only) {
+  return internal::g_core->PassSharedMemoryHandle(
+      mojo_handle, shared_memory_handle, num_bytes, read_only);
+}
+
 void InitIPCSupport(ProcessDelegate* process_delegate,
                     scoped_refptr<base::TaskRunner> io_thread_task_runner) {
   CHECK(internal::g_core);

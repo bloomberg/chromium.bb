@@ -152,6 +152,13 @@ ScopedPlatformHandle PlatformSharedBuffer::PassPlatformHandle() {
   return handle;
 }
 
+base::SharedMemoryHandle PlatformSharedBuffer::DuplicateSharedMemoryHandle() {
+  DCHECK(shared_memory_);
+
+  base::AutoLock locker(lock_);
+  return base::SharedMemory::DuplicateHandle(shared_memory_->handle());
+}
+
 PlatformSharedBuffer::PlatformSharedBuffer(size_t num_bytes)
     : num_bytes_(num_bytes) {}
 
