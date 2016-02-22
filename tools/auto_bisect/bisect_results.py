@@ -56,6 +56,13 @@ class BisectResults(object):
       runtime_warnings: A list of warnings from the bisect run.
       error: Error message. When error is not None, other arguments are ignored.
     """
+    # Setting these attributes so that bisect printer does not break when the
+    # regression cannot be reproduced (no broken revision was found)
+    self.regression_size = 0
+    self.regression_std_err = 0
+    self.confidence = 0
+    self.culprit_revisions = []
+
     self.error = error
     self.abort_reason = abort_reason
     if error is not None or abort_reason is not None:
@@ -91,13 +98,6 @@ class BisectResults(object):
 
       self.warnings += self._GetResultBasedWarnings(
           self.culprit_revisions, opts, self.confidence)
-    elif first_working_rev is not None:
-      # Setting these attributes so that bisect printer does not break when the
-      # regression cannot be reproduced (no broken revision was found)
-      self.regression_size = 0
-      self.regression_std_err = 0
-      self.confidence = 0
-      self.culprit_revisions = []
 
   def AddRetestResults(self, results_tot, results_reverted):
     if not results_tot or not results_reverted:

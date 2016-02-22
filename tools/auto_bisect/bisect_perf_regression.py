@@ -41,11 +41,12 @@ try bots, and is started by tools/run-bisect-perf-regression.py using
 config parameters from tools/auto_bisect/bisect.cfg.
 """
 
+import argparse
 import copy
 import errno
 import hashlib
+import json
 import logging
-import argparse
 import os
 import re
 import shlex
@@ -53,12 +54,14 @@ import shutil
 import StringIO
 import sys
 import time
+import urllib2
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..',
                              'third_party', 'catapult', 'telemetry'))
 
 from bisect_printer import BisectPrinter
 from bisect_results import BisectResults
+import bisect_results_json
 from bisect_state import BisectState
 import bisect_utils
 import builder
@@ -124,6 +127,7 @@ PERF_SVN_REPO_URL = 'svn://svn.chromium.org/chrome-try/try-perf'
 FULL_SVN_REPO_URL = 'svn://svn.chromium.org/chrome-try/try'
 ANDROID_CHROME_SVN_REPO_URL = ('svn://svn.chromium.org/chrome-try-internal/'
                                'try-perf')
+PERF_DASH_RESULTS_URL = 'https://chromeperf.appspot.com/post_bisect_results'
 
 
 class RunGitError(Exception):
@@ -2505,6 +2509,24 @@ def _IsPlatformSupported():
   return os.name in supported
 
 
+def _PostBisectResults(bisect_results, opts, src_cwd):
+  """Posts bisect results to Perf Dashboard."""
+  bisect_utils.OutputAnnotationStepStart('Post Results')
+
+  results = bisect_results_json.Get(
+      bisect_results, opts, DepotDirectoryRegistry(src_cwd))
+  data = {'data': results}
+  request = urllib2.Request(PERF_DASH_RESULTS_URL)
+  request.add_header('Content-Type', 'application/json')
+  try:
+    urllib2.urlopen(request, json.dumps(data))
+  except urllib2.URLError as e:
+    print 'Failed to post bisect results. Error: %s.' % e
+    bisect_utils.OutputAnnotationStepWarning()
+
+  bisect_utils.OutputAnnotationStepClosed()
+
+
 def RemoveBuildFiles(build_type):
   """Removes build files from previous runs."""
   out_dir = os.path.join('out', build_type)
@@ -2584,6 +2606,7 @@ class BisectOptions(object):
     self.improvement_direction = 0
     self.bug_id = ''
     self.required_initial_confidence = 80.0
+    self.try_job_id = None
 
   @staticmethod
   def _AddBisectOptionsGroup(parser):
@@ -2858,6 +2881,7 @@ def main():
       if results.error:
         raise RuntimeError(results.error)
       bisect_test.printer.FormatAndPrintResults(results)
+      _PostBisectResults(results, opts, os.getcwd())
       return 0
     finally:
       bisect_test.PerformCleanup()
