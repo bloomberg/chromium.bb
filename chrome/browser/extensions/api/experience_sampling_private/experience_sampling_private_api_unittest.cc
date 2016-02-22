@@ -29,8 +29,7 @@ TEST_F(ExperienceSamplingPrivateTest, GetBrowserInfoTest) {
 
   // Set field trials using a string.
   base::FieldTrialList::CreateTrialsFromString(
-      "Some name/Winner/xxx/yyyy/zzz/default/",
-      base::FieldTrialList::ACTIVATE_TRIALS,
+      "*Some name/Winner/*xxx/yyyy/*zzz/default/",
       std::set<std::string>());
   result = RunFunctionAndReturnDictionary(
       new ExperienceSamplingPrivateGetBrowserInfoFunction(), "[]");

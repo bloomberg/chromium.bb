@@ -688,7 +688,6 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
     // consistent manner with field trials created from the server.
     bool result = base::FieldTrialList::CreateTrialsFromString(
         command_line->GetSwitchValueASCII(switches::kForceFieldTrials),
-        base::FieldTrialList::DONT_ACTIVATE_TRIALS,
         unforceable_field_trials);
     CHECK(result) << "Invalid --" << switches::kForceFieldTrials
                   << " list specified.";

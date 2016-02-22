@@ -530,7 +530,6 @@ void FieldTrialList::GetActiveFieldTrialGroupsFromString(
 // static
 bool FieldTrialList::CreateTrialsFromString(
     const std::string& trials_string,
-    FieldTrialActivationMode mode,
     const std::set<std::string>& ignored_trial_names) {
   DCHECK(global_);
   if (trials_string.empty() || !global_)
@@ -550,7 +549,7 @@ bool FieldTrialList::CreateTrialsFromString(
     FieldTrial* trial = CreateFieldTrial(trial_name, group_name);
     if (!trial)
       return false;
-    if (mode == ACTIVATE_TRIALS || entry.activated) {
+    if (entry.activated) {
       // Call |group()| to mark the trial as "used" and notify observers, if
       // any. This is useful to ensure that field trials created in child
       // processes are properly reported in crash reports.

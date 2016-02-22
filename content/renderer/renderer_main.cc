@@ -169,7 +169,6 @@ int RendererMain(const MainFunctionParams& parameters) {
   if (parsed_command_line.HasSwitch(switches::kForceFieldTrials)) {
     bool result = base::FieldTrialList::CreateTrialsFromString(
         parsed_command_line.GetSwitchValueASCII(switches::kForceFieldTrials),
-        base::FieldTrialList::DONT_ACTIVATE_TRIALS,
         std::set<std::string>());
     DCHECK(result);
   }

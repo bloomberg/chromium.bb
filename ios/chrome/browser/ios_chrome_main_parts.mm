@@ -207,7 +207,7 @@ void IOSChromeMainParts::SetUpMetricsAndFieldTrials() {
     // consistent manner with field trials created from the server.
     bool result = base::FieldTrialList::CreateTrialsFromString(
         command_line->GetSwitchValueASCII(switches::kForceFieldTrials),
-        base::FieldTrialList::DONT_ACTIVATE_TRIALS, std::set<std::string>());
+        std::set<std::string>());
     CHECK(result) << "Invalid --" << switches::kForceFieldTrials
                   << " list specified.";
   }

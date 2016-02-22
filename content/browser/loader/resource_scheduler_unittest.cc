@@ -162,9 +162,7 @@ class ResourceSchedulerTest : public testing::Test {
   // as the argument to kForceFieldTrials.
   bool InitializeFieldTrials(const std::string& force_field_trial_argument) {
     return base::FieldTrialList::CreateTrialsFromString(
-        force_field_trial_argument,
-        base::FieldTrialList::DONT_ACTIVATE_TRIALS,
-        std::set<std::string>());
+        force_field_trial_argument, std::set<std::string>());
   }
 
   scoped_ptr<net::URLRequest> NewURLRequestWithChildAndRoute(
