@@ -312,6 +312,13 @@ camera.views.Album.prototype.onKeyPressed = function(event) {
         changeSelection(this.pictures.length - 1);
       event.preventDefault();
       return;
+    case 'Ctrl-U+0041':  // Ctrl+A for selecting all.
+      if (this.pictures.length) {
+        this.setSelectedIndex(0);
+        this.expandSelectionTo_(this.pictures.length - 1);
+      }
+      event.preventDefault();
+      return;
     case 'Enter':
       // Do not handle enter, if other elements (such as buttons) are focused.
       if (document.activeElement != document.body &&
