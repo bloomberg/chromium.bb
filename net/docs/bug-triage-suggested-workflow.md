@@ -88,9 +88,13 @@
 ## Investigating Cr-Internals-Network bugs
 
 * It's recommended that while on triage duty, you subscribe to the
-  Cr-Internals-Network label.  To do this, go to the issue tracker and click on
-  [Subscriptions](https://code.google.com/p/chromium/issues/subscriptions).
-  Enter "Cr-Internals-Network" and click submit.
+  Internals>Network component (but not its subcomponents). To do this, go
+  to the issue tracker and then click "Saved Queries".
+  Add a query with these settings:
+  * Saved query name: Network Bug Triage
+  * Project: chromium
+  * Query: component=Internals>Network
+  * Subscription options: Notify Immediately
 
 * Look through uncomfirmed and untriaged Cr-Internals-Network bugs,
   prioritizing those updated within the last week. [Use this issue tracker
