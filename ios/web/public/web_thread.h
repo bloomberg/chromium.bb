@@ -33,11 +33,6 @@ class WebThreadDelegate;
   (DCHECK(::web::WebThread::CurrentlyOn(thread_identifier)) \
    << ::web::WebThread::GetDCheckCurrentlyOnErrorMessage(thread_identifier))
 
-// TODO(crbug.com/438202): remove this compatibility macro once all the code
-// downstream has been ported to use the new name DCHECK_CURRENTLY_ON.
-#define DCHECK_CURRENTLY_ON_WEB_THREAD(thread_identifier) \
-  DCHECK_CURRENTLY_ON(thread_identifier)
-
 ///////////////////////////////////////////////////////////////////////////////
 // WebThread
 //
