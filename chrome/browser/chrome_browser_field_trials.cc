@@ -31,9 +31,10 @@ void InstantiatePersistentHistograms() {
   if (base::FeatureList::IsEnabled(base::kPersistentHistogramsFeature)) {
     const char kAllocatorName[] = "BrowserMetrics";
     // Create persistent/shared memory and allow histograms to be stored in it.
-    // TODO(bcwhite): Update this with correct allocator and memory size.
+    // Memory that is not actualy used won't be physically mapped by the system.
+    // BrowserMetrics usage peaked around 95% of 2MiB as of 2016-02-20.
     base::SetPersistentHistogramMemoryAllocator(
-        new base::LocalPersistentMemoryAllocator(2 << 20,     // 2 MiB
+        new base::LocalPersistentMemoryAllocator(3 << 20,     // 3 MiB
                                                  0x935DDD43,  // SHA1(B...M...)
                                                  kAllocatorName));
     base::GetPersistentHistogramMemoryAllocator()->CreateTrackingHistograms(
