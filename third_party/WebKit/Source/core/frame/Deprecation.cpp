@@ -343,7 +343,7 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
         return willBeRemoved("'SVGZoomEvent'", 52, "5760883808534528");
 
     case UseCounter::BorderImageWithBorderStyleNone:
-        return "Elements using the 'border-image' CSS property with no 'border-style' set should have no border, but currently does. Setting 'border-style' will be required in M51, around June 2016. See https://www.chromestatus.com/features/5542503914668032 for more details.";
+        return "Elements using the 'border-image' CSS property with no 'border-style' set should have no border, but currently do. Setting 'border-style' will be required in M51, around June 2016. See https://www.chromestatus.com/features/5542503914668032 for more details.";
 
     // Features that aren't deprecated don't have a deprecation message.
     default:
