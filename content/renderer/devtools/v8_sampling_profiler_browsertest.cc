@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include "base/json/json_reader.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/run_loop.h"
 #include "base/trace_event/trace_buffer.h"
 #include "base/trace_event/trace_event.h"

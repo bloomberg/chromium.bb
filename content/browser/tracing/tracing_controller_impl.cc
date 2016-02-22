@@ -9,6 +9,7 @@
 #include "base/guid.h"
 #include "base/json/string_escape.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "base/thread_task_runner_handle.h"

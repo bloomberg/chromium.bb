@@ -11,6 +11,7 @@
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/browser_process.h"

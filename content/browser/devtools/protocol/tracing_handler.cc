@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/format_macros.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"

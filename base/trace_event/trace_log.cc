@@ -15,6 +15,7 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/process/process_metrics.h"

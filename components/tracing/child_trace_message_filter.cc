@@ -4,6 +4,7 @@
 
 #include "components/tracing/child_trace_message_filter.h"
 
+#include "base/memory/ref_counted_memory.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/trace_event/trace_event.h"
 #include "components/tracing/child_memory_dump_manager_delegate_impl.h"

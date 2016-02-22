@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/trace_event_analyzer.h"
 #include "base/trace_event/trace_event_impl.h"
