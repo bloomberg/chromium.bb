@@ -76,8 +76,7 @@ handle_keyboard_key(struct libinput_device *libinput_device,
 	notify_key(device->seat,
 		   libinput_event_keyboard_get_time(keyboard_event),
 		   libinput_event_keyboard_get_key(keyboard_event),
-		   libinput_event_keyboard_get_key_state(keyboard_event),
-		   STATE_UPDATE_AUTOMATIC);
+		   key_state, STATE_UPDATE_AUTOMATIC);
 }
 
 static bool
