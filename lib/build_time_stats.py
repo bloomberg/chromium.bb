@@ -287,7 +287,7 @@ def FindAndSortStageStats(focus_build, builds_timings):
   stage_names = list(set(focus_stages.keys() + stats_stages.keys()))
   def name_key(name):
     f, s = focus_stages.get(name), stats_stages.get(name)
-    return s.start.median if s else f.start or datetime.timedelta()
+    return s.start.median if s and s.start else f.start or datetime.timedelta()
   stage_names.sort(key=name_key)
 
   return stage_names, focus_stages, stats_stages
