@@ -36,6 +36,7 @@ from utils import tools
 import auth
 import isolated_format
 import isolateserver
+import run_isolated
 
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -1333,6 +1334,9 @@ def CMDreproduce(parser, args):
   You can pass further additional arguments to the target command by passing
   them after --.
   """
+  parser.add_option(
+      '--output-dir', metavar='DIR', default='',
+      help='Directory that will have results stored into')
   options, args = parser.parse_args(args)
   extra_args = []
   if not args:
@@ -1381,6 +1385,11 @@ def CMDreproduce(parser, args):
       if bundle.relative_cwd:
         workdir = os.path.join(workdir, bundle.relative_cwd)
       command.extend(properties.get('extra_args') or [])
+    # https://github.com/luci/luci-py/blob/master/appengine/swarming/doc/Magic-Values.md
+    new_command = run_isolated.process_command(command, options.output_dir)
+    if not options.output_dir and new_command != command:
+      parser.error('The task has outputs, you must use --output-dir')
+    command = new_command
   else:
     command = properties['command']
   try:

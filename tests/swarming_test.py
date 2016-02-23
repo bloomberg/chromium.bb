@@ -8,6 +8,7 @@ import hashlib
 import json
 import logging
 import os
+import re
 import StringIO
 import subprocess
 import sys
@@ -153,28 +154,56 @@ class NonBlockingEvent(threading._Event):  # pylint: disable=W0212
     return super(NonBlockingEvent, self).wait(0)
 
 
-class NetTestCase(net_utils.TestCase):
-  """Base class that defines the url_open mock."""
+class SwarmingServerHandler(isolateserver_mock.MockHandler):
+  """An extremely minimal implementation of the swarming server API v1.0."""
+
+  def do_GET(self):
+    logging.info('S GET %s', self.path)
+    if self.path in ('/on/load', '/on/quit'):
+      self._octet_stream('')
+    elif self.path == '/auth/api/v1/server/oauth_config':
+      self._json({
+          'client_id': 'c',
+          'client_not_so_secret': 's',
+          'primary_url': self.server.url})
+    elif self.path == '/auth/api/v1/accounts/self':
+      self._json({'identity': 'user:joe', 'xsrf_token': 'foo'})
+    else:
+      m = re.match(r'/_ah/api/swarming/v1/task/(\d+)/request', self.path)
+      if m:
+        logging.info('%s', m.group(1))
+        self._json(self.server.tasks[int(m.group(1))])
+      else:
+        self._json( {'a': 'b'})
+        #raise NotImplementedError(self.path)
+
+  def do_POST(self):
+    logging.info('POST %s', self.path)
+    raise NotImplementedError(self.path)
+
+
+class MockSwarmingServer(isolateserver_mock.MockServer):
+  _HANDLER_CLS = SwarmingServerHandler
+
+  def __init__(self):
+    super(MockSwarmingServer, self).__init__()
+    self._server.tasks = {}
+
+
+class Common(object):
   def setUp(self):
-    super(NetTestCase, self).setUp()
     self._tempdir = None
     self.mock(auth, 'ensure_logged_in', lambda _: None)
-    self.mock(time, 'sleep', lambda _: None)
-    self.mock(subprocess, 'call', lambda *_: self.fail())
-    self.mock(threading, 'Event', NonBlockingEvent)
     self.mock(sys, 'stdout', StringIO.StringIO())
     self.mock(sys, 'stderr', StringIO.StringIO())
     self.mock(logging_utils, 'prepare_logging', lambda *args: None)
     self.mock(logging_utils, 'set_console_level', lambda *args: None)
 
   def tearDown(self):
-    try:
-      if self._tempdir:
-        file_path.rmtree(self._tempdir)
-      if not self.has_failed():
-        self._check_output('', '')
-    finally:
-      super(NetTestCase, self).tearDown()
+    if self._tempdir:
+      file_path.rmtree(self._tempdir)
+    if not self.has_failed():
+      self._check_output('', '')
 
   @property
   def tempdir(self):
@@ -194,27 +223,80 @@ class NetTestCase(net_utils.TestCase):
     self.mock(sys, 'stderr', StringIO.StringIO())
 
 
-class TestIsolated(auto_stub.TestCase):
+class NetTestCase(net_utils.TestCase, Common):
+  """Base class that defines the url_open mock."""
+  def setUp(self):
+    net_utils.TestCase.setUp(self)
+    Common.setUp(self)
+    self.mock(time, 'sleep', lambda _: None)
+    self.mock(subprocess, 'call', lambda *_: self.fail())
+    self.mock(threading, 'Event', NonBlockingEvent)
+
+
+class TestIsolated(auto_stub.TestCase, Common):
   """Test functions with isolated_ prefix."""
   def setUp(self):
-    super(TestIsolated, self).setUp()
-    self._server = None
+    auto_stub.TestCase.setUp(self)
+    Common.setUp(self)
+    self._isolate = isolateserver_mock.MockIsolateServer()
+    self._swarming = MockSwarmingServer()
 
   def tearDown(self):
     try:
-      if self._server:
-        self._server.close_start()
-      if self._server:
-        self._server.close_end()
+      self._isolate.close_start()
+      self._swarming.close_start()
+      self._isolate.close_end()
+      self._swarming.close_end()
     finally:
-      super(TestIsolated, self).tearDown()
+      Common.tearDown(self)
+      auto_stub.TestCase.tearDown(self)
 
-  @property
-  def server(self):
-    """Creates the Isolate Server mock on first reference."""
-    if not self._server:
-      self._server = isolateserver_mock.MockIsolateServer()
-    return self._server
+  def test_reproduce_isolated(self):
+    old_cwd = os.getcwd()
+    try:
+      os.chdir(self.tempdir)
+
+      def call(cmd, env, cwd):
+        self.assertEqual([sys.executable, u'main.py', u'foo', '--bar'], cmd)
+        self.assertEqual(None, env)
+        self.assertEqual(unicode(os.path.abspath('work')), cwd)
+        return 0
+
+      self.mock(subprocess, 'call', call)
+
+      main_hash = self._isolate.add_content_compressed(
+          'default-gzip', 'not executed')
+      isolated = {
+        'files': {
+          'main.py': {
+            'h': main_hash,
+            's': 12,
+            'm': 0700,
+          },
+        },
+        'command': ['python', 'main.py'],
+      }
+      isolated_hash = self._isolate.add_content_compressed(
+          'default-gzip', json.dumps(isolated))
+      self._swarming._server.tasks[123] = {
+        'properties': {
+          'inputs_ref': {
+            'isolatedserver': self._isolate.url,
+            'namespace': 'default-gzip',
+            'isolated': isolated_hash,
+          },
+          'extra_args': ['foo'],
+        },
+      }
+      ret = main(
+          [
+            'reproduce', '--swarming', self._swarming.url, '123', '--',
+            '--bar',
+          ])
+      self._check_output('', '')
+      self.assertEqual(0, ret)
+    finally:
+      os.chdir(old_cwd)
 
 
 class TestSwarmingTrigger(NetTestCase):
