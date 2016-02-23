@@ -157,11 +157,10 @@ class LocalSafeBrowsingDatabaseManager
   friend class SafeBrowsingServerTest;
   friend class SafeBrowsingServiceTest;
   friend class SafeBrowsingServiceTestHelper;
-  // TODO(nparker): Rename this test to LocalSafeBrowsingDatabaseManagerTest
-  friend class SafeBrowsingDatabaseManagerTest;
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingDatabaseManagerTest,
+  friend class LocalDatabaseManagerTest;
+  FRIEND_TEST_ALL_PREFIXES(LocalDatabaseManagerTest,
                            GetUrlSeverestThreatType);
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingDatabaseManagerTest,
+  FRIEND_TEST_ALL_PREFIXES(LocalDatabaseManagerTest,
                            ServiceStopWithPendingChecks);
 
   typedef std::set<SafeBrowsingCheck*> CurrentChecks;

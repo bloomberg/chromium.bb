@@ -23,7 +23,7 @@ using content::TestBrowserThreadBundle;
 
 namespace safe_browsing {
 
-class SafeBrowsingDatabaseManagerTest : public PlatformTest {
+class LocalDatabaseManagerTest : public PlatformTest {
  public:
   struct HostListPair {
     std::string host;
@@ -45,7 +45,7 @@ class SafeBrowsingDatabaseManagerTest : public PlatformTest {
   TestBrowserThreadBundle thread_bundle_;
 };
 
-bool SafeBrowsingDatabaseManagerTest::RunSBHashTest(
+bool LocalDatabaseManagerTest::RunSBHashTest(
     const ListType list_type,
     const std::vector<SBThreatType>& expected_threats,
     const std::vector<std::string>& result_lists) {
@@ -64,7 +64,7 @@ bool SafeBrowsingDatabaseManagerTest::RunSBHashTest(
   return RunTest(check.get(), fake_results);
 }
 
-bool SafeBrowsingDatabaseManagerTest::RunUrlTest(
+bool LocalDatabaseManagerTest::RunUrlTest(
     const GURL& url, ListType list_type,
     const std::vector<SBThreatType>& expected_threats,
     const std::vector<HostListPair>& host_list_results) {
@@ -81,7 +81,7 @@ bool SafeBrowsingDatabaseManagerTest::RunUrlTest(
   return RunTest(check.get(), full_hash_results);
 }
 
-bool SafeBrowsingDatabaseManagerTest::RunTest(
+bool LocalDatabaseManagerTest::RunTest(
     LocalSafeBrowsingDatabaseManager::SafeBrowsingCheck* check,
     const std::vector<SBFullHashResult>& hash_results) {
   scoped_refptr<SafeBrowsingService> sb_service_(
@@ -95,7 +95,7 @@ bool SafeBrowsingDatabaseManagerTest::RunTest(
   return result;
 }
 
-TEST_F(SafeBrowsingDatabaseManagerTest, CheckCorrespondsListTypeForHash) {
+TEST_F(LocalDatabaseManagerTest, CheckCorrespondsListTypeForHash) {
   std::vector<SBThreatType> malware_threat(1,
                                            SB_THREAT_TYPE_BINARY_MALWARE_URL);
   EXPECT_FALSE(RunSBHashTest(BINURL, malware_threat, {kMalwareList}));
@@ -114,7 +114,7 @@ TEST_F(SafeBrowsingDatabaseManagerTest, CheckCorrespondsListTypeForHash) {
   EXPECT_TRUE(RunSBHashTest(UNWANTEDURL, unwanted_threat, hash_hits));
 }
 
-TEST_F(SafeBrowsingDatabaseManagerTest, CheckCorrespondsListTypeForUrl) {
+TEST_F(LocalDatabaseManagerTest, CheckCorrespondsListTypeForUrl) {
   const GURL url("http://www.host.com/index.html");
   const std::string host1 = "host.com/";
   const std::string host2 = "www.host.com/";
@@ -141,7 +141,7 @@ TEST_F(SafeBrowsingDatabaseManagerTest, CheckCorrespondsListTypeForUrl) {
   EXPECT_TRUE(RunUrlTest(url, UNWANTEDURL, unwanted_threat, multiple_results));
 }
 
-TEST_F(SafeBrowsingDatabaseManagerTest, GetUrlSeverestThreatType) {
+TEST_F(LocalDatabaseManagerTest, GetUrlSeverestThreatType) {
   std::vector<SBFullHashResult> full_hashes;
 
   const GURL kMalwareUrl("http://www.malware.com/page.html");
@@ -305,7 +305,7 @@ TEST_F(SafeBrowsingDatabaseManagerTest, GetUrlSeverestThreatType) {
   EXPECT_EQ(kArbitraryValue, index);
 }
 
-TEST_F(SafeBrowsingDatabaseManagerTest, ServiceStopWithPendingChecks) {
+TEST_F(LocalDatabaseManagerTest, ServiceStopWithPendingChecks) {
   scoped_refptr<SafeBrowsingService> sb_service(
       SafeBrowsingService::CreateSafeBrowsingService());
   scoped_refptr<LocalSafeBrowsingDatabaseManager> db_manager(
