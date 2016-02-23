@@ -195,29 +195,31 @@ binaries themselves should be considered inputs for memoization.
 # Return a tuple (C compiler, C++ compiler, ar, ranlib) of the compilers and
 # tools to compile the host toolchains.
 def CompilersForHost(host):
-  compiler = {
+  rtn = {
       # For now we only do native builds for linux and mac
       # treat 32-bit linux like a native build
-      'i686-linux': (CHROME_CLANG, CHROME_CLANGXX, 'ar', 'ranlib'),
-      'x86_64-linux': (CHROME_CLANG, CHROME_CLANGXX, 'ar', 'ranlib'),
-      'x86_64-apple-darwin': (CHROME_CLANG, CHROME_CLANGXX, 'ar', 'ranlib'),
+      'i686-linux': [CHROME_CLANG, CHROME_CLANGXX, 'ar', 'ranlib'],
+      'x86_64-linux': [CHROME_CLANG, CHROME_CLANGXX, 'ar', 'ranlib'],
+      'x86_64-apple-darwin': [CHROME_CLANG, CHROME_CLANGXX, 'ar', 'ranlib'],
       # Windows build should work for native and cross
-      'i686-w64-mingw32': (
-          'i686-w64-mingw32-gcc', 'i686-w64-mingw32-g++', 'ar', 'ranlib'),
+      'i686-w64-mingw32': [
+          'i686-w64-mingw32-gcc', 'i686-w64-mingw32-g++', 'ar', 'ranlib'],
       # TODO: add arm-hosted support
-      'i686-pc-cygwin': ('gcc', 'g++', 'ar', 'ranlib'),
-  }
-  if host == 'le32-nacl':
-    nacl_sdk = os.environ.get('NACL_SDK_ROOT')
-    assert nacl_sdk, 'NACL_SDK_ROOT not set'
-    pnacl_bin_dir = os.path.join(nacl_sdk, 'toolchain/linux_pnacl/bin')
-    compiler.update({
-        'le32-nacl': (os.path.join(pnacl_bin_dir, 'pnacl-clang'),
-                      os.path.join(pnacl_bin_dir, 'pnacl-clang++'),
-                      os.path.join(pnacl_bin_dir, 'pnacl-ar'),
-                      os.path.join(pnacl_bin_dir, 'pnacl-ranlib')),
-    })
-  return compiler[host]
+      'i686-pc-cygwin': ['gcc', 'g++', 'ar', 'ranlib'],
+      'le32-nacl': ['pnacl-clang', 'pnacl-clang++', 'pnacl-ar', 'pnacl-ranlib'],
+  }[host]
+
+  # Allow caller to override host toolchain
+  if 'CC' in os.environ:
+    rtn[0] = os.environ['CC']
+  if 'CXX' in os.environ:
+    rtn[1] = os.environ['CXX']
+  if 'AR' in os.environ:
+    rtn[2] = os.environ['AR']
+  if 'RANLIB' in os.environ:
+    rtn[3] = os.environ['RANLIB']
+
+  return rtn
 
 def AflFuzzCompilers(afl_fuzz_dir):
   """Returns the AFL (clang) compiler executables, assuming afl_fuzz_dir
@@ -714,10 +716,12 @@ def HostTools(host, options):
   #            [-Werror,-Wshift-negative-value]
   binutils_do_werror = False
   extra_gold_deps = []
+  install_step = 'install-strip'
   if host == 'le32-nacl':
     # TODO(bradnelson): Fix warnings so this can go away.
     binutils_do_werror = False
     extra_gold_deps = [H('llvm')]
+    install_step = 'install'
 
   # The binutils git checkout includes all the directories in the
   # upstream binutils-gdb.git repository, but some of these
@@ -769,7 +773,7 @@ def HostTools(host, options):
               DummyDirCommands(binutils_dummy_dirs) + [
               command.Command(MakeCommand(host, options),
                               path_dirs=GomaPathDirs(host, options)),
-              command.Command(MAKE_DESTDIR_CMD + ['install-strip'])] +
+              command.Command(MAKE_DESTDIR_CMD + [install_step])] +
               [command.RemoveDirectory(os.path.join('%(output)s', dir))
                for dir in ('lib', 'lib32')] +
               # Since it has dual use, just create links for both sets of names
@@ -1077,6 +1081,9 @@ def HostToolsDirectToNacl(host, options):
   binutils_flags, binutils_inputs, binutils_deps = ConfigureBinutilsCommon(
       host, options, False)
   redirect_inputs.update(binutils_inputs)
+  install_step = 'install-strip'
+  if host == 'le32-nacl':
+    install_step = 'install'
   tools.update({
       H('binutils_x86'): {
           'type': 'build',
@@ -1095,7 +1102,7 @@ def HostToolsDirectToNacl(host, options):
                   path_dirs=GomaPathDirs(host, options)),
               command.Command(MakeCommand(host, options),
                               path_dirs=GomaPathDirs(host, options)),
-              command.Command(MAKE_DESTDIR_CMD + ['install-strip'])] +
+              command.Command(MAKE_DESTDIR_CMD + [install_step])] +
               # Remove the share dir from this binutils build and leave the one
               # from the newer version used for bitcode linking. Always remove
               # the lib dirs, which have unneeded host libs.
@@ -1359,7 +1366,7 @@ def main():
     packages.update(HostTools(host, args))
     if not args.pnacl_in_pnacl:
       packages.update(HostLibs(host, args))
-      packages.update(HostToolsDirectToNacl(host, args))
+    packages.update(HostToolsDirectToNacl(host, args))
   if not args.pnacl_in_pnacl:
     packages.update(TargetLibCompiler(pynacl.platform.PlatformTriple(), args))
   # Don't build the target libs on Windows because of pathname issues.
