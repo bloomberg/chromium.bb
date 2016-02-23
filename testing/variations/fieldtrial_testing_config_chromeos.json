@@ -89,6 +89,11 @@
             }
         }
     ],
+    "RenderingPipelineThrottling": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "ReportCertificateErrors": [
         {
             "group_name": "ShowAndPossiblySend",
