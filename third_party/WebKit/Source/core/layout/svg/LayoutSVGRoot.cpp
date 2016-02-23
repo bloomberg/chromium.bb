@@ -40,15 +40,6 @@
 
 namespace blink {
 
-namespace {
-
-FloatSize calculateIntrinsicSize(const SVGSVGElement& svg)
-{
-    return FloatSize(floatValueForLength(svg.intrinsicWidth(), 0), floatValueForLength(svg.intrinsicHeight(), 0));
-}
-
-} // namespace
-
 LayoutSVGRoot::LayoutSVGRoot(SVGElement* node)
     : LayoutReplaced(node)
     , m_objectBoundingBoxValid(false)
@@ -61,7 +52,7 @@ LayoutSVGRoot::LayoutSVGRoot(SVGElement* node)
     SVGSVGElement* svg = toSVGSVGElement(node);
     ASSERT(svg);
 
-    LayoutSize intrinsicSize(calculateIntrinsicSize(*svg));
+    LayoutSize intrinsicSize(svg->intrinsicWidth(), svg->intrinsicHeight());
     if (!svg->hasIntrinsicWidth())
         intrinsicSize.setWidth(LayoutUnit(defaultWidth));
     if (!svg->hasIntrinsicHeight())
@@ -80,7 +71,7 @@ void LayoutSVGRoot::computeIntrinsicSizingInfo(IntrinsicSizingInfo& intrinsicSiz
     SVGSVGElement* svg = toSVGSVGElement(node());
     ASSERT(svg);
 
-    intrinsicSizingInfo.size = calculateIntrinsicSize(*svg);
+    intrinsicSizingInfo.size = FloatSize(svg->intrinsicWidth(), svg->intrinsicHeight());
     intrinsicSizingInfo.hasWidth = svg->hasIntrinsicWidth();
     intrinsicSizingInfo.hasHeight = svg->hasIntrinsicHeight();
 

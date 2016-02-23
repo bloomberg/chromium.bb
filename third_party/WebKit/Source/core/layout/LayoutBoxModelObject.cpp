@@ -745,15 +745,11 @@ LayoutSize LayoutBoxModelObject::calculateImageIntrinsicDimensions(StyleImage* i
     if (image->isGeneratedImage() && image->usesImageContainerSize())
         return positioningAreaSize;
 
-    Length intrinsicWidth(Fixed);
-    Length intrinsicHeight(Fixed);
+    FloatSize intrinsicSize;
     FloatSize intrinsicRatio;
-    image->computeIntrinsicDimensions(this, intrinsicWidth, intrinsicHeight, intrinsicRatio);
+    image->computeIntrinsicDimensions(this, intrinsicSize, intrinsicRatio);
 
-    ASSERT(intrinsicWidth.isFixed());
-    ASSERT(intrinsicHeight.isFixed());
-
-    LayoutSize resolvedSize(intrinsicWidth.value(), intrinsicHeight.value());
+    LayoutSize resolvedSize(intrinsicSize);
     LayoutSize minimumSize(resolvedSize.width() > LayoutUnit() ? LayoutUnit(1) : LayoutUnit(),
         resolvedSize.height() > LayoutUnit() ? LayoutUnit(1) : LayoutUnit());
     if (shouldScaleOrNot == ScaleByEffectiveZoom)

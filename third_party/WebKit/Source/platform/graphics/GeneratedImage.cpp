@@ -37,9 +37,9 @@
 
 namespace blink {
 
-void GeneratedImage::computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio)
+void GeneratedImage::computeIntrinsicDimensions(FloatSize& intrinsicSize, FloatSize& intrinsicRatio)
 {
-    Image::computeIntrinsicDimensions(intrinsicWidth, intrinsicHeight, intrinsicRatio);
+    Image::computeIntrinsicDimensions(intrinsicSize, intrinsicRatio);
     intrinsicRatio = FloatSize();
 }
 

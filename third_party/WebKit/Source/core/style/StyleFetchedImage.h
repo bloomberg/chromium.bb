@@ -52,7 +52,7 @@ public:
     bool errorOccurred() const override;
     LayoutSize imageSize(const LayoutObject*, float multiplier) const override;
     bool imageHasRelativeSize() const override;
-    void computeIntrinsicDimensions(const LayoutObject*, Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio) override;
+    void computeIntrinsicDimensions(const LayoutObject*, FloatSize& intrinsicSize, FloatSize& intrinsicRatio) override;
     bool usesImageContainerSize() const override;
     void addClient(LayoutObject*) override;
     void removeClient(LayoutObject*) override;

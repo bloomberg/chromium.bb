@@ -105,9 +105,9 @@ bool StyleFetchedImageSet::imageHasRelativeSize() const
     return m_bestFitImage->imageHasRelativeSize();
 }
 
-void StyleFetchedImageSet::computeIntrinsicDimensions(const LayoutObject*, Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio)
+void StyleFetchedImageSet::computeIntrinsicDimensions(const LayoutObject*, FloatSize& intrinsicSize, FloatSize& intrinsicRatio)
 {
-    m_bestFitImage->computeIntrinsicDimensions(intrinsicWidth, intrinsicHeight, intrinsicRatio);
+    m_bestFitImage->computeIntrinsicDimensions(intrinsicSize, intrinsicRatio);
 }
 
 bool StyleFetchedImageSet::usesImageContainerSize() const

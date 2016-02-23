@@ -611,7 +611,7 @@ FloatRect SVGSVGElement::currentViewBoxRect() const
 
     // If no viewBox is specified but non-relative width/height values, then we
     // should always synthesize a viewBox if we're embedded through a SVGImage.
-    return FloatRect(FloatPoint(), FloatSize(floatValueForLength(intrinsicWidth(), 0), floatValueForLength(intrinsicHeight(), 0)));
+    return FloatRect(FloatPoint(), FloatSize(intrinsicWidth(), intrinsicHeight()));
 }
 
 FloatSize SVGSVGElement::currentViewportSize() const
@@ -638,22 +638,22 @@ bool SVGSVGElement::hasIntrinsicHeight() const
     return height()->currentValue()->typeWithCalcResolved() != CSSPrimitiveValue::UnitType::Percentage;
 }
 
-Length SVGSVGElement::intrinsicWidth() const
+float SVGSVGElement::intrinsicWidth() const
 {
     if (width()->currentValue()->typeWithCalcResolved() == CSSPrimitiveValue::UnitType::Percentage)
-        return Length(0, Fixed);
+        return 0;
 
     SVGLengthContext lengthContext(this);
-    return Length(width()->currentValue()->value(lengthContext), Fixed);
+    return width()->currentValue()->value(lengthContext);
 }
 
-Length SVGSVGElement::intrinsicHeight() const
+float SVGSVGElement::intrinsicHeight() const
 {
     if (height()->currentValue()->typeWithCalcResolved() == CSSPrimitiveValue::UnitType::Percentage)
-        return Length(0, Fixed);
+        return 0;
 
     SVGLengthContext lengthContext(this);
-    return Length(height()->currentValue()->value(lengthContext), Fixed);
+    return height()->currentValue()->value(lengthContext);
 }
 
 AffineTransform SVGSVGElement::viewBoxToViewTransform(float viewWidth, float viewHeight) const

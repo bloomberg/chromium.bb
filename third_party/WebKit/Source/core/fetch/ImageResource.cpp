@@ -239,10 +239,10 @@ LayoutSize ImageResource::imageSize(RespectImageOrientationEnum shouldRespectIma
     return size;
 }
 
-void ImageResource::computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio)
+void ImageResource::computeIntrinsicDimensions(FloatSize& intrinsicSize, FloatSize& intrinsicRatio)
 {
     if (m_image)
-        m_image->computeIntrinsicDimensions(intrinsicWidth, intrinsicHeight, intrinsicRatio);
+        m_image->computeIntrinsicDimensions(intrinsicSize, intrinsicRatio);
 }
 
 void ImageResource::notifyObservers(const IntRect* changeRect)

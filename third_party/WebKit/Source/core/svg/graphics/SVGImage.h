@@ -92,7 +92,7 @@ private:
 
     IntSize containerSize() const;
     bool usesContainerSize() const override { return true; }
-    void computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio) override;
+    void computeIntrinsicDimensions(FloatSize& intrinsicSize, FloatSize& intrinsicRatio) override;
 
     bool dataChanged(bool allDataReceived) override;
 

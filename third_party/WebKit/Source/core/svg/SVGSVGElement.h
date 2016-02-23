@@ -60,8 +60,8 @@ public:
     bool useCurrentView() const { return m_useCurrentView; }
     SVGViewSpec* currentView();
 
-    Length intrinsicWidth() const;
-    Length intrinsicHeight() const;
+    float intrinsicWidth() const;
+    float intrinsicHeight() const;
     FloatSize currentViewportSize() const;
     FloatRect currentViewBoxRect() const;
 

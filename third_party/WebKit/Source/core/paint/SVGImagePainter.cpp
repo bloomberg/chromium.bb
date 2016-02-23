@@ -84,10 +84,9 @@ FloatSize SVGImagePainter::computeImageViewportSize() const
     // scaling. This can be achieved by setting the image's container size to
     // its viewport size (i.e. if a viewBox is available - use that - else use intrinsic size.)
     // See: http://www.w3.org/TR/SVG/single-page.html, 7.8 The 'preserveAspectRatio' attribute.
-    Length intrinsicWidth;
-    Length intrinsicHeight;
+    FloatSize intrinsicSize;
     FloatSize intrinsicRatio;
-    cachedImage->computeIntrinsicDimensions(intrinsicWidth, intrinsicHeight, intrinsicRatio);
+    cachedImage->computeIntrinsicDimensions(intrinsicSize, intrinsicRatio);
     return intrinsicRatio;
 }
 

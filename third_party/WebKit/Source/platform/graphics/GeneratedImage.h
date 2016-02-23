@@ -38,7 +38,7 @@ public:
 
     bool usesContainerSize() const override { return true; }
     bool hasRelativeSize() const override { return true; }
-    void computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio) override;
+    void computeIntrinsicDimensions(FloatSize& intrinsicSize, FloatSize& intrinsicRatio) override;
 
     IntSize size() const override { return m_size; }
 

@@ -259,11 +259,9 @@ void Image::drawPattern(GraphicsContext& context, const FloatRect& floatSrcRect,
         PlatformInstrumentation::didDrawLazyPixelRef(imageID);
 }
 
-void Image::computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio)
+void Image::computeIntrinsicDimensions(FloatSize& intrinsicSize, FloatSize& intrinsicRatio)
 {
-    intrinsicRatio = FloatSize(size());
-    intrinsicWidth = Length(intrinsicRatio.width(), Fixed);
-    intrinsicHeight = Length(intrinsicRatio.height(), Fixed);
+    intrinsicSize = intrinsicRatio = FloatSize(size());
 }
 
 PassRefPtr<Image> Image::imageForDefaultFrame()
