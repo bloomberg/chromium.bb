@@ -518,8 +518,8 @@ bool InitializeSDK() {
 }
 
 void ShutdownSDK() {
-  TearDownV8();
   FPDF_DestroyLibrary();
+  TearDownV8();
 }
 
 PDFEngine* PDFEngine::Create(PDFEngine::Client* client) {
