@@ -223,7 +223,6 @@ void ScriptRunner::notifyScriptLoadError(ScriptLoader* scriptLoader, ExecutionTy
         RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(foundLoader);
         break;
     }
-    scriptLoader->detach();
     m_document->decrementLoadEventDelayCount();
 }
 
