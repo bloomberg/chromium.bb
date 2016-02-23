@@ -121,13 +121,6 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
             CommandLine.init(null);
         }
 
-        CommandLine cl = CommandLine.getInstance();
-        // TODO: currently in a relase build the DCHECKs only log. We either need to insall
-        // a report handler with SetLogReportHandler to make them assert, or else compile
-        // them out of the build altogether (b/8284203). Either way, so long they're
-        // compiled in, we may as unconditionally enable them here.
-        cl.appendSwitch("enable-dcheck");
-
         ThreadUtils.setWillOverrideUiThread();
         // Load chromium library.
         AwBrowserProcess.loadLibrary(getWrappedCurrentApplicationContext());
