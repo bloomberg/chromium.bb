@@ -1,0 +1,5 @@
+{
+  "url": "mojo://mash_wm_apptests/",
+  "name": "Desktop Window Manager Apptests",
+  "capabilities": { "*": ["*"] }
+}

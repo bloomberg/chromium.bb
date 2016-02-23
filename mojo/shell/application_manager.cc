@@ -301,7 +301,7 @@ void ApplicationManager::OnShellClientFactoryLost(const Identity& which) {
 void ApplicationManager::OnGotResolvedURL(
     scoped_ptr<ConnectParams> params,
     const String& resolved_url,
-    const String& qualifier,
+    const String& resolved_qualifier,
     mojom::CapabilityFilterPtr base_filter,
     const String& file_url) {
   // It's possible that when this manifest request was issued, another one was
@@ -310,9 +310,15 @@ void ApplicationManager::OnGotResolvedURL(
   if (ConnectToExistingInstance(&params))
     return;
 
-  Identity source = params->source(), target = params->target();
+  Identity source = params->source();
+  CapabilityFilter filter = params->target().filter();
+  // TODO(beng): this clobbers the filter passed via Connect().
+  if (!base_filter.is_null())
+    filter = base_filter->filter.To<CapabilityFilter>();
+  Identity target(params->target().url(), params->target().qualifier(), filter);
+
   mojom::ShellClientRequest request;
-  ApplicationInstance* instance = CreateInstance(params->target(), &request);
+  ApplicationInstance* instance = CreateInstance(target, &request);
   instance->ConnectToClient(std::move(params));
 
   if (LoadWithLoader(target, &request))
@@ -322,13 +328,11 @@ void ApplicationManager::OnGotResolvedURL(
 
   GURL resolved_gurl = resolved_url.To<GURL>();
   if (target.url().spec() != resolved_url) {
-    // TODO(beng): this clobbers the CapabilityFilter passed via Connect().
-    CapabilityFilter capability_filter = GetPermissiveCapabilityFilter();
-    if (!base_filter.is_null())
-      capability_filter = base_filter->filter.To<CapabilityFilter>();
-
+    // In cases where a package alias is resolved, we have to use the qualifier
+    // from the original request rather than for the package itself, which will
+    // always be the same.
     CreateShellClient(source,
-                      Identity(resolved_gurl, qualifier, capability_filter),
+                      Identity(resolved_gurl, target.qualifier(), filter),
                       target.url(), std::move(request));
   } else {
     bool start_sandboxed = false;

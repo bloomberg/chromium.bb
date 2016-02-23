@@ -1,0 +1,5 @@
+{
+  "url": "mojo://media_pipeline_integration_apptests/",
+  "name": "Media Pipeline Integration Apptests",
+  "capabilities": { "*": ["*"] }
+}

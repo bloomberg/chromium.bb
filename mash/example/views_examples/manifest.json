@@ -1,0 +1,5 @@
+{
+  "url": "mojo://views_examples/",
+  "name": "Views Examples",
+  "capabilities": { "*": ["*"] }
+}

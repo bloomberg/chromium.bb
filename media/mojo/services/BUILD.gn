@@ -5,6 +5,7 @@
 import("//media/media_options.gni")
 import("//testing/test.gni")
 import("//mojo/public/mojo_application.gni")
+import("//mojo/public/mojo_application_manifest.gni")
 
 # Target naming conventions:
 # - converters: C++/Mojo type converters.
@@ -265,6 +266,7 @@ mojo_native_application("media_apptests") {
   ]
 
   deps = [
+    ":apptest_manifest",
     ":proxy",
     "//media/base:test_support",
     "//mojo/shell/public/cpp:test_support",
@@ -277,16 +279,27 @@ mojo_native_application("media_apptests") {
   ]
 }
 
+mojo_application_manifest("apptest_manifest") {
+  application_name = "media_apptests"
+  source = "apptest_manifest.json"
+}
+
 mojo_native_application("media_pipeline_integration_apptests") {
   testonly = true
 
   deps = [
+    ":pipeline_apptest_manifest",
     "//media/test:mojo_pipeline_integration_tests",
   ]
 
   data_deps = [
     ":media",
   ]
+}
+
+mojo_application_manifest("pipeline_apptest_manifest") {
+  application_name = "media_pipeline_integration_apptests"
+  source = "pipeline_apptest_manifest.json"
 }
 
 group("tests") {

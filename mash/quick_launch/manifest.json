@@ -1,5 +1,5 @@
 {
   "url": "mojo://quick_launch/",
   "name": "Quick Launch",
-  "capabilities": { }
+  "capabilities": { "*": ["*"] }
 }

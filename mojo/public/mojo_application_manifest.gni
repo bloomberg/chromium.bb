@@ -62,6 +62,10 @@ template("mojo_application_manifest") {
     }
 
     application_name = invoker.application_name
+    inputs = [
+      invoker.source,
+    ]
+
     if (type == "mojo") {
       output = "$root_out_dir/$application_name/manifest.json"
     } else {
@@ -83,6 +87,7 @@ template("mojo_application_manifest") {
     if (defined(invoker.packaged_applications)) {
       foreach(application_name, invoker.packaged_applications) {
         input = "$root_out_dir/$application_name/manifest.json"
+        inputs += [ input ]
         args += [ rebase_path(input, root_build_dir) ]
       }
     }

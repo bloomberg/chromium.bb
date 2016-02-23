@@ -1,5 +1,5 @@
 {
   "url": "mojo://font_service/",
   "name": "Font Service",
-  "capabilities": { }
+  "capabilities": { "*": [ "*" ] }
 }

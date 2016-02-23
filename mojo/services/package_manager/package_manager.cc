@@ -151,6 +151,8 @@ void PackageManager::ResolveMojoURL(const mojo::String& mojo_url,
   if (alias_iter != mojo_url_aliases_.end()) {
     resolved_url = GURL(alias_iter->second.first);
     qualifier = alias_iter->second.second;
+  } else {
+    qualifier = resolved_url.host();
   }
 
   EnsureURLInCatalog(resolved_url, qualifier, callback);
@@ -193,13 +195,15 @@ void PackageManager::CompleteResolveMojoURL(
     file_url = system_package_dir_.Resolve(resolved_url.host() + extension);
   }
 
-  // TODO(beng): Use the actual capability filter from |info|!
   mojo::shell::mojom::CapabilityFilterPtr filter(
       mojo::shell::mojom::CapabilityFilter::New());
-  mojo::Array<mojo::String> all_interfaces;
-  all_interfaces.push_back("*");
-  filter->filter.insert("*", std::move(all_interfaces));
-
+  filter->filter = mojo::Map<mojo::String, mojo::Array<mojo::String>>();
+  for (const auto& entry : info_iter->second.base_filter) {
+    mojo::Array<mojo::String> interfaces;
+    for (auto interface_name : entry.second)
+      interfaces.push_back(interface_name);
+    filter->filter.insert(entry.first, std::move(interfaces));
+  }
   callback.Run(resolved_url.spec(), qualifier, std::move(filter),
                file_url.spec());
 }

@@ -1,5 +1,5 @@
 {
   "url": "mojo://ash_sysui/",
   "name": "System UI",
-  "capabilities": { }
+  "capabilities": { "*": [ "*" ] }
 }

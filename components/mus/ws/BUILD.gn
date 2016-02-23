@@ -5,6 +5,7 @@
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 import("//mojo/public/mojo_application.gni")
+import("//mojo/public/mojo_application_manifest.gni")
 
 source_set("lib") {
   sources = [
@@ -183,6 +184,7 @@ mojo_native_application("apptests") {
   ]
 
   deps = [
+    ":manifest",
     ":test_support",
     "//base",
     "//base/test:test_config",
@@ -206,4 +208,9 @@ mojo_native_application("apptests") {
   if (use_x11) {
     deps += [ "//tools/xdisplaycheck" ]
   }
+}
+
+mojo_application_manifest("manifest") {
+  application_name = "mus_apptests"
+  source = "apptest_manifest.json"
 }

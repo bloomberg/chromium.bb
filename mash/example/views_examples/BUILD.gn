@@ -4,6 +4,7 @@
 
 import("//build/config/ui.gni")
 import("//mojo/public/mojo_application.gni")
+import("//mojo/public/mojo_application_manifest.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//tools/grit/repack.gni")
 
@@ -17,6 +18,7 @@ mojo_native_application("views_examples") {
   ]
 
   deps = [
+    ":manifest",
     "//base",
     "//components/mus/public/interfaces",
     "//mojo/converters/geometry",
@@ -37,4 +39,9 @@ mojo_native_application("views_examples") {
   data_deps = [
     "//components/mus",
   ]
+}
+
+mojo_application_manifest("manifest") {
+  application_name = "views_examples"
+  source = "manifest.json"
 }

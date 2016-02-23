@@ -140,6 +140,7 @@ mojo_native_application("apptests") {
   ]
 
   deps = [
+    ":apptest_manifest",
     "//base",
     "//base/test:test_config",
     "//components/resource_provider/public/cpp",
@@ -151,4 +152,9 @@ mojo_native_application("apptests") {
   data_deps = [
     ":resource_provider",
   ]
+}
+
+mojo_application_manifest("apptest_manifest") {
+  application_name = "resource_provider_apptests"
+  source = "apptest_manifest.json"
 }

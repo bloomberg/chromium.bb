@@ -66,6 +66,7 @@ mojo_native_application("apptests") {
   ]
 
   deps = [
+    ":apptest_manifest",
     "//base",
     "//components/filesystem/public/interfaces",
     "//components/leveldb/public/interfaces",
@@ -79,4 +80,9 @@ mojo_native_application("apptests") {
     ":leveldb",
     "//components/filesystem:filesystem",
   ]
+}
+
+mojo_application_manifest("apptest_manifest") {
+  application_name = "leveldb_apptests"
+  source = "apptest_manifest.json"
 }

@@ -71,6 +71,7 @@ mojo_native_application("apptests") {
   ]
 
   deps = [
+    ":apptest_manifest",
     "//base",
     "//components/filesystem/public/interfaces",
     "//mojo/common",
@@ -82,4 +83,9 @@ mojo_native_application("apptests") {
   data_deps = [
     ":filesystem",
   ]
+}
+
+mojo_application_manifest("apptest_manifest") {
+  application_name = "filesystem_apptests"
+  source = "apptest_manifest.json"
 }

@@ -148,6 +148,7 @@ mojo_native_application("apptests") {
   ]
 
   deps = [
+    ":apptest_manifest",
     "//base",
     "//base/test:test_config",
     "//components/mus/public/cpp",
@@ -168,6 +169,11 @@ mojo_native_application("apptests") {
   if (use_x11) {
     deps += [ "//tools/xdisplaycheck" ]
   }
+}
+
+mojo_application_manifest("apptest_manifest") {
+  application_name = "mash_wm_apptests"
+  source = "apptest_manifest.json"
 }
 
 source_set("unittests") {
