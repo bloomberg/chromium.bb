@@ -72,6 +72,13 @@ or if they failed. If the results came back, and a culprit was found, follow up
 with the CL author. If the bisects failed to update the bug with results, please
 file a bug on it (see [feedback](#feedback) links below).
 
+Also during your shift, please spend any spare time driving down bugs from the
+[regression backlog](http://go/triage-backlog). Treat these bugs as you would
+your own - investigate the regressions, find out what the next step should be,
+and then move the bug along. As the backlog only contains bugs that haven't been
+modified in some time, you should be able to end your shift with an empty
+backlog.
+
 After your shift, please try to follow up on the bugs you filed weekly. Kick off
 new bisects if the previous ones failed, and if the bisect picks a likely
 culprit follow up to ensure the CL author addresses the problem. If you are
