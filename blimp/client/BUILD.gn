@@ -309,6 +309,7 @@ if (is_android) {
       "app/android/java/src/org/chromium/blimp/BlimpLibraryLoader.java",
       "app/android/java/src/org/chromium/blimp/BlimpRendererActivity.java",
       "app/android/java/src/org/chromium/blimp/BlimpView.java",
+      "app/android/java/src/org/chromium/blimp/input/TextInputFeature.java",
       "app/android/java/src/org/chromium/blimp/session/BlimpClientSession.java",
       "app/android/java/src/org/chromium/blimp/session/TabControlFeature.java",
       "app/android/java/src/org/chromium/blimp/toolbar/Toolbar.java",

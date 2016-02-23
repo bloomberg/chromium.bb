@@ -13,6 +13,7 @@ import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.blimp.auth.RetryingTokenSource;
 import org.chromium.blimp.auth.TokenSource;
 import org.chromium.blimp.auth.TokenSourceImpl;
+import org.chromium.blimp.input.TextInputFeature;
 import org.chromium.blimp.session.BlimpClientSession;
 import org.chromium.blimp.session.TabControlFeature;
 import org.chromium.blimp.toolbar.Toolbar;
@@ -25,7 +26,7 @@ import org.chromium.ui.widget.Toast;
 public class BlimpRendererActivity extends Activity
         implements BlimpLibraryLoader.Callback, TokenSource.Callback, BlimpClientSession.Callback {
     private static final int ACCOUNT_CHOOSER_INTENT_REQUEST_CODE = 100;
-    private static final String TAG = "Blimp";
+    private static final String TAG = "BlimpRendererActivity";
 
     /** Provides user authentication tokens that can be used to query for engine assignments.  This
      *  can potentially query GoogleAuthUtil for an OAuth2 authentication token with userinfo.email
@@ -36,6 +37,7 @@ public class BlimpRendererActivity extends Activity
     private Toolbar mToolbar;
     private BlimpClientSession mBlimpClientSession;
     private TabControlFeature mTabControlFeature;
+    private TextInputFeature mTextInputFeature;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -135,6 +137,8 @@ public class BlimpRendererActivity extends Activity
 
         mTabControlFeature = new TabControlFeature(mBlimpClientSession, mBlimpView);
         mToolbar.loadUrl("http://www.google.com/");
+
+        mTextInputFeature = (TextInputFeature) findViewById(R.id.editText);
     }
 
     // TokenSource.Callback implementation.
