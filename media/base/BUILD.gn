@@ -89,6 +89,8 @@ source_set("base") {
     "decoder_buffer.h",
     "decoder_buffer_queue.cc",
     "decoder_buffer_queue.h",
+    "decoder_factory.cc",
+    "decoder_factory.h",
     "decrypt_config.cc",
     "decrypt_config.h",
     "decryptor.cc",

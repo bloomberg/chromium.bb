@@ -131,6 +131,7 @@
 #include "gin/modules/module_registry.h"
 #include "media/audio/audio_output_device.h"
 #include "media/base/audio_renderer_mixer_input.h"
+#include "media/base/decoder_factory.h"
 #include "media/base/media.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
@@ -232,6 +233,10 @@
 #include "media/mojo/services/mojo_renderer_factory.h"  // nogncheck
 #else
 #include "media/renderers/default_renderer_factory.h"
+#endif
+
+#if defined(ENABLE_MOJO_AUDIO_DECODER)
+#include "media/mojo/services/mojo_decoder_factory.h"  // nogncheck
 #endif
 
 #if defined(ENABLE_WEBVR)
@@ -2506,7 +2511,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
 
   if (!media_renderer_factory.get()) {
     media_renderer_factory.reset(new media::DefaultRendererFactory(
-        media_log, render_thread->GetGpuFactories(),
+        media_log, GetDecoderFactory(), render_thread->GetGpuFactories(),
         *render_thread->GetAudioHardwareConfig()));
   }
 #endif  // defined(ENABLE_MOJO_RENDERER)
@@ -6031,6 +6036,16 @@ media::CdmFactory* RenderFrameImpl::GetCdmFactory() {
   }
 
   return cdm_factory_.get();
+}
+
+media::DecoderFactory* RenderFrameImpl::GetDecoderFactory() {
+#if defined(ENABLE_MOJO_AUDIO_DECODER)
+  if (!decoder_factory_) {
+    decoder_factory_.reset(
+        new media::MojoDecoderFactory(GetMediaServiceFactory()));
+  }
+#endif
+  return decoder_factory_.get();
 }
 
 void RenderFrameImpl::RegisterMojoServices() {

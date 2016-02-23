@@ -26,6 +26,8 @@ config("mojo_media_config") {
         defines += [ "ENABLE_MOJO_RENDERER" ]
       } else if (service == "cdm") {
         defines += [ "ENABLE_MOJO_CDM" ]
+      } else if (service == "audio_decoder") {
+        defines += [ "ENABLE_MOJO_AUDIO_DECODER" ]
       } else {
         assert(false, "Invalid mojo media service: $service")
       }
@@ -64,10 +66,14 @@ source_set("converters") {
 # Implementations of media C++ interfaces using corresponding mojo services.
 source_set("proxy") {
   sources = [
+    "mojo_audio_decoder.cc",
+    "mojo_audio_decoder.h",
     "mojo_cdm.cc",
     "mojo_cdm.h",
     "mojo_cdm_factory.cc",
     "mojo_cdm_factory.h",
+    "mojo_decoder_factory.cc",
+    "mojo_decoder_factory.h",
     "mojo_decryptor.cc",
     "mojo_decryptor.h",
     "mojo_demuxer_stream_impl.cc",

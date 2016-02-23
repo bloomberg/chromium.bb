@@ -93,6 +93,7 @@ class Rect;
 
 namespace media {
 class CdmFactory;
+class DecoderFactory;
 class MediaPermission;
 class MediaServiceProvider;
 class RendererWebMediaPlayerDelegate;
@@ -949,6 +950,7 @@ class CONTENT_EXPORT RenderFrameImpl
 #endif
 
   media::CdmFactory* GetCdmFactory();
+  media::DecoderFactory* GetDecoderFactory();
 
   void RegisterMojoServices();
 
@@ -1126,8 +1128,9 @@ class CONTENT_EXPORT RenderFrameImpl
   RendererCdmManager* cdm_manager_;
 #endif
 
-  // The CDM factory attached to this frame, lazily initialized.
+  // The CDM and decoder factory attached to this frame, lazily initialized.
   scoped_ptr<media::CdmFactory> cdm_factory_;
+  scoped_ptr<media::DecoderFactory> decoder_factory_;
 
   // Media resource cache, lazily initialized.
   linked_ptr<media::UrlIndex> url_index_;

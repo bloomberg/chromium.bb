@@ -7,21 +7,26 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/scoped_vector.h"
 #include "media/base/media_export.h"
 #include "media/base/renderer_factory.h"
 
 namespace media {
 
+class AudioDecoder;
 class AudioHardwareConfig;
 class AudioRendererSink;
+class DecoderFactory;
 class GpuVideoAcceleratorFactories;
 class MediaLog;
+class VideoDecoder;
 class VideoRendererSink;
 
 // The default factory class for creating RendererImpl.
 class MEDIA_EXPORT DefaultRendererFactory : public RendererFactory {
  public:
   DefaultRendererFactory(const scoped_refptr<MediaLog>& media_log,
+                         DecoderFactory* decoder_factory,
                          GpuVideoAcceleratorFactories* gpu_factories,
                          const AudioHardwareConfig& audio_hardware_config);
   ~DefaultRendererFactory() final;
@@ -34,7 +39,17 @@ class MEDIA_EXPORT DefaultRendererFactory : public RendererFactory {
       const RequestSurfaceCB& request_surface_cb) final;
 
  private:
+  ScopedVector<AudioDecoder> CreateAudioDecoders(
+      const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner);
+  ScopedVector<VideoDecoder> CreateVideoDecoders(
+      const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+      const RequestSurfaceCB& request_surface_cb);
+
   scoped_refptr<MediaLog> media_log_;
+
+  // Factory to create extra audio and video decoders.
+  // Could be nullptr if not extra decoders are available.
+  DecoderFactory* decoder_factory_;
 
   // Factories for supporting video accelerators. May be null.
   GpuVideoAcceleratorFactories* gpu_factories_;

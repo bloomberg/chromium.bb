@@ -305,6 +305,8 @@
         'base/decoder_buffer.h',
         'base/decoder_buffer_queue.cc',
         'base/decoder_buffer_queue.h',
+        'base/decoder_factory.cc',
+        'base/decoder_factory.h',
         'base/decrypt_config.cc',
         'base/decrypt_config.h',
         'base/decryptor.cc',

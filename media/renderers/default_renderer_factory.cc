@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
+#include "media/base/decoder_factory.h"
 #include "media/base/media_log.h"
 #include "media/filters/gpu_video_decoder.h"
 #include "media/filters/opus_audio_decoder.h"
@@ -32,23 +33,19 @@ namespace media {
 
 DefaultRendererFactory::DefaultRendererFactory(
     const scoped_refptr<MediaLog>& media_log,
+    DecoderFactory* decoder_factory,
     GpuVideoAcceleratorFactories* gpu_factories,
     const AudioHardwareConfig& audio_hardware_config)
     : media_log_(media_log),
+      decoder_factory_(decoder_factory),
       gpu_factories_(gpu_factories),
       audio_hardware_config_(audio_hardware_config) {}
 
 DefaultRendererFactory::~DefaultRendererFactory() {
 }
 
-scoped_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
-    const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-    const scoped_refptr<base::TaskRunner>& worker_task_runner,
-    AudioRendererSink* audio_renderer_sink,
-    VideoRendererSink* video_renderer_sink,
-    const RequestSurfaceCB& request_surface_cb) {
-  DCHECK(audio_renderer_sink);
-
+ScopedVector<AudioDecoder> DefaultRendererFactory::CreateAudioDecoders(
+    const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner) {
   // Create our audio decoders and renderer.
   ScopedVector<AudioDecoder> audio_decoders;
 
@@ -59,10 +56,15 @@ scoped_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
 
   audio_decoders.push_back(new OpusAudioDecoder(media_task_runner));
 
-  scoped_ptr<AudioRenderer> audio_renderer(new AudioRendererImpl(
-      media_task_runner, audio_renderer_sink, std::move(audio_decoders),
-      audio_hardware_config_, media_log_));
+  if (decoder_factory_)
+    decoder_factory_->CreateAudioDecoders(&audio_decoders);
 
+  return audio_decoders;
+}
+
+ScopedVector<VideoDecoder> DefaultRendererFactory::CreateVideoDecoders(
+    const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+    const RequestSurfaceCB& request_surface_cb) {
   // Create our video decoders and renderer.
   ScopedVector<VideoDecoder> video_decoders;
 
@@ -84,11 +86,30 @@ scoped_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
   video_decoders.push_back(new FFmpegVideoDecoder());
 #endif
 
+  if (decoder_factory_)
+    decoder_factory_->CreateVideoDecoders(&video_decoders);
+
+  return video_decoders;
+}
+
+scoped_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
+    const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+    const scoped_refptr<base::TaskRunner>& worker_task_runner,
+    AudioRendererSink* audio_renderer_sink,
+    VideoRendererSink* video_renderer_sink,
+    const RequestSurfaceCB& request_surface_cb) {
+  DCHECK(audio_renderer_sink);
+
+  scoped_ptr<AudioRenderer> audio_renderer(
+      new AudioRendererImpl(media_task_runner, audio_renderer_sink,
+                            CreateAudioDecoders(media_task_runner),
+                            audio_hardware_config_, media_log_));
+
   scoped_ptr<VideoRenderer> video_renderer(new VideoRendererImpl(
       media_task_runner, worker_task_runner, video_renderer_sink,
-      std::move(video_decoders), true, gpu_factories_, media_log_));
+      CreateVideoDecoders(media_task_runner, request_surface_cb), true,
+      gpu_factories_, media_log_));
 
-  // Create renderer.
   return scoped_ptr<Renderer>(new RendererImpl(
       media_task_runner, std::move(audio_renderer), std::move(video_renderer)));
 }
