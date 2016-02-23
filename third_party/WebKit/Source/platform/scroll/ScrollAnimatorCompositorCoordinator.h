@@ -24,10 +24,12 @@ class CompositorAnimationTimeline;
 class PLATFORM_EXPORT ScrollAnimatorCompositorCoordinator : public NoBaseWillBeGarbageCollectedFinalized<ScrollAnimatorCompositorCoordinator>, private CompositorAnimationPlayerClient, WebCompositorAnimationDelegate {
     USING_FAST_MALLOC_WILL_BE_REMOVED(ScrollAnimatorCompositorCoordinator);
     WTF_MAKE_NONCOPYABLE(ScrollAnimatorCompositorCoordinator);
+    WILL_BE_USING_PRE_FINALIZER(ScrollAnimatorCompositorCoordinator, dispose);
 public:
     virtual ~ScrollAnimatorCompositorCoordinator();
 
     bool hasAnimationThatRequiresService() const;
+    void dispose();
 
     virtual void resetAnimationState();
     virtual void cancelAnimation();

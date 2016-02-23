@@ -95,6 +95,8 @@ ScrollableArea::~ScrollableArea()
 void ScrollableArea::clearScrollAnimators()
 {
 #if OS(MACOSX) && ENABLE(OILPAN)
+    // TODO(ymalik): Let oilpan decide when to call dispose rather than
+    // explicitly calling it here to cleanup.
     if (m_scrollAnimator)
         m_scrollAnimator->dispose();
 #endif

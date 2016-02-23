@@ -73,8 +73,8 @@ void CompositorAnimationPlayer::NotifyAnimationStarted(
     cc::Animation::TargetProperty targetProperty,
     int group)
 {
-    ASSERT(m_delegate);
-    m_delegate->notifyAnimationStarted((monotonicTime - base::TimeTicks()).InSecondsF(), group);
+    if (m_delegate)
+        m_delegate->notifyAnimationStarted((monotonicTime - base::TimeTicks()).InSecondsF(), group);
 }
 
 void CompositorAnimationPlayer::NotifyAnimationFinished(
@@ -82,8 +82,8 @@ void CompositorAnimationPlayer::NotifyAnimationFinished(
     cc::Animation::TargetProperty targetProperty,
     int group)
 {
-    ASSERT(m_delegate);
-    m_delegate->notifyAnimationFinished((monotonicTime - base::TimeTicks()).InSecondsF(), group);
+    if (m_delegate)
+        m_delegate->notifyAnimationFinished((monotonicTime - base::TimeTicks()).InSecondsF(), group);
 }
 
 void CompositorAnimationPlayer::NotifyAnimationAborted(
@@ -91,8 +91,8 @@ void CompositorAnimationPlayer::NotifyAnimationAborted(
     cc::Animation::TargetProperty targetProperty,
     int group)
 {
-    ASSERT(m_delegate);
-    m_delegate->notifyAnimationAborted((monotonicTime - base::TimeTicks()).InSecondsF(), group);
+    if (m_delegate)
+        m_delegate->notifyAnimationAborted((monotonicTime - base::TimeTicks()).InSecondsF(), group);
 }
 
 } // namespace blink
