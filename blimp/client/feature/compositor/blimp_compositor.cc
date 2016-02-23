@@ -6,7 +6,6 @@
 
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/lazy_instance.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -14,11 +13,7 @@
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_restrictions.h"
 #include "blimp/client/feature/compositor/blimp_context_provider.h"
-#include "blimp/client/feature/compositor/blimp_layer_tree_settings.h"
 #include "blimp/client/feature/compositor/blimp_output_surface.h"
-#include "blimp/client/feature/render_widget_feature.h"
-#include "blimp/common/compositor/blimp_image_serialization_processor.h"
-#include "blimp/common/compositor/blimp_task_graph_runner.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_settings.h"
 #include "cc/output/output_surface.h"
@@ -29,44 +24,19 @@
 
 namespace blimp {
 namespace client {
-namespace {
 
-base::LazyInstance<blimp::BlimpTaskGraphRunner> g_task_graph_runner =
-    LAZY_INSTANCE_INITIALIZER;
-
-const int kDummyTabId = 0;
-
-}  // namespace
-
-BlimpCompositor::BlimpCompositor(float dp_to_px,
-                                 RenderWidgetFeature* render_widget_feature)
-    : device_scale_factor_(dp_to_px),
+BlimpCompositor::BlimpCompositor(int render_widget_id,
+                                 BlimpCompositorClient* client)
+    : render_widget_id_(render_widget_id),
+      client_(client),
       window_(gfx::kNullAcceleratedWidget),
       host_should_be_visible_(false),
       output_surface_request_pending_(false),
-      remote_proto_channel_receiver_(nullptr),
-      render_widget_feature_(render_widget_feature),
-      image_serialization_processor_(
-          make_scoped_ptr(new BlimpImageSerializationProcessor(
-              BlimpImageSerializationProcessor::Mode::DESERIALIZATION))) {
-  DCHECK(render_widget_feature_);
-  render_widget_feature_->SetDelegate(kDummyTabId, this);
-}
+      remote_proto_channel_receiver_(nullptr) {}
 
 BlimpCompositor::~BlimpCompositor() {
-  render_widget_feature_->RemoveDelegate(kDummyTabId);
-  SetVisible(false);
-
-  // Destroy |host_| first, as it has a reference to the |settings_| and runs
-  // tasks on |compositor_thread_|.
-  host_.reset();
-  settings_.reset();
-
-  // We must destroy |host_| before the |input_manager_|.
-  input_manager_.reset();
-
-  if (compositor_thread_)
-    compositor_thread_->Stop();
+  if (host_)
+    DestroyLayerTreeHost();
 }
 
 void BlimpCompositor::SetVisible(bool visible) {
@@ -152,15 +122,7 @@ void BlimpCompositor::SetProtoReceiver(ProtoReceiver* receiver) {
 
 void BlimpCompositor::SendCompositorProto(
     const cc::proto::CompositorMessage& proto) {
-  render_widget_feature_->SendCompositorMessage(kDummyTabId, proto);
-}
-
-void BlimpCompositor::OnRenderWidgetInitialized() {
-  // Destroy the state for the current LayerTreeHost. Since a new render widget
-  // has been initialized, we will start receiving compositor messages from
-  // this widget now.
-  if (host_)
-    DestroyLayerTreeHost();
+  client_->SendCompositorMessage(render_widget_id_, proto);
 }
 
 void BlimpCompositor::OnCompositorMessageReceived(
@@ -195,14 +157,9 @@ void BlimpCompositor::OnCompositorMessageReceived(
   }
 }
 
-void BlimpCompositor::GenerateLayerTreeSettings(
-    cc::LayerTreeSettings* settings) {
-  PopulateCommonLayerTreeSettings(settings);
-}
-
 void BlimpCompositor::SendWebGestureEvent(
     const blink::WebGestureEvent& gesture_event) {
-  render_widget_feature_->SendInputEvent(kDummyTabId, gesture_event);
+  client_->SendWebGestureEvent(render_widget_id_, gesture_event);
 }
 
 void BlimpCompositor::SetVisibleInternal(bool visible) {
@@ -231,30 +188,22 @@ void BlimpCompositor::CreateLayerTreeHost(
     const cc::proto::InitializeImpl& initialize_message) {
   DCHECK(!host_);
 
-  if (!settings_) {
-    settings_.reset(new cc::LayerTreeSettings);
-
-    // TODO(khushalsagar): The server should selectively send only those
-    // LayerTreeSettings which should remain consistent across the server and
-    // client. Since it currently overrides all settings, ignore them.
-    // See crbug/577985.
-    GenerateLayerTreeSettings(settings_.get());
-  }
-
   // Create the LayerTreeHost
   cc::LayerTreeHost::InitParams params;
   params.client = this;
-  params.task_graph_runner = g_task_graph_runner.Pointer();
-  params.gpu_memory_buffer_manager = &gpu_memory_buffer_manager_;
+  params.task_graph_runner = client_->GetTaskGraphRunner();
+  params.gpu_memory_buffer_manager = client_->GetGpuMemoryBufferManager();
   params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
-  params.settings = settings_.get();
-  params.image_serialization_processor = image_serialization_processor_.get();
+  params.image_serialization_processor =
+      client_->GetImageSerializationProcessor();
+  params.settings = client_->GetLayerTreeSettings();
 
-  // TODO(khushalsagar): Add the GpuMemoryBufferManager to params
+  scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner =
+      client_->GetCompositorTaskRunner();
 
   host_ =
       cc::LayerTreeHost::CreateRemoteClient(this /* remote_proto_channel */,
-                                            GetCompositorTaskRunner(), &params);
+                                            compositor_task_runner, &params);
 
   // Now that we have a host, set the visiblity on it correctly.
   SetVisibleInternal(host_should_be_visible_);
@@ -263,7 +212,7 @@ void BlimpCompositor::CreateLayerTreeHost(
   input_manager_ =
       BlimpInputManager::Create(this,
                                 base::ThreadTaskRunnerHandle::Get(),
-                                GetCompositorTaskRunner(),
+                                compositor_task_runner,
                                 host_->GetInputHandler());
 }
 
@@ -289,29 +238,6 @@ void BlimpCompositor::DestroyLayerTreeHost() {
   DCHECK(!remote_proto_channel_receiver_);
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-BlimpCompositor::GetCompositorTaskRunner() {
-  if (compositor_thread_)
-    return compositor_thread_->task_runner();
-
-  base::Thread::Options thread_options;
-#if defined(OS_ANDROID)
-  thread_options.priority = base::ThreadPriority::DISPLAY;
-#endif
-  compositor_thread_.reset(new base::Thread("Compositor"));
-  compositor_thread_->StartWithOptions(thread_options);
-
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      compositor_thread_->task_runner();
-  task_runner->PostTask(
-      FROM_HERE,
-      base::Bind(base::IgnoreResult(&base::ThreadRestrictions::SetIOAllowed),
-                 false));
-  // TODO(dtrainor): Determine whether or not we can disallow waiting.
-
-  return task_runner;
-}
-
 void BlimpCompositor::HandlePendingOutputSurfaceRequest() {
   DCHECK(output_surface_request_pending_);
 
@@ -322,7 +248,8 @@ void BlimpCompositor::HandlePendingOutputSurfaceRequest() {
     return;
 
   scoped_refptr<BlimpContextProvider> context_provider =
-      BlimpContextProvider::Create(window_, &gpu_memory_buffer_manager_);
+      BlimpContextProvider::Create(window_,
+                                   client_->GetGpuMemoryBufferManager());
 
   host_->SetOutputSurface(
       make_scoped_ptr(new BlimpOutputSurface(context_provider)));

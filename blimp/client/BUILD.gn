@@ -86,6 +86,8 @@ source_set("feature") {
   sources = [
     "feature/compositor/blimp_compositor.cc",
     "feature/compositor/blimp_compositor.h",
+    "feature/compositor/blimp_compositor_manager.cc",
+    "feature/compositor/blimp_compositor_manager.h",
     "feature/compositor/blimp_context_provider.cc",
     "feature/compositor/blimp_context_provider.h",
     "feature/compositor/blimp_gpu_memory_buffer_manager.cc",
@@ -131,6 +133,7 @@ source_set("feature_unit_tests") {
   testonly = true
 
   sources = [
+    "feature/compositor/blimp_compositor_manager_unittest.cc",
     "feature/navigation_feature_unittest.cc",
     "feature/render_widget_feature_unittest.cc",
     "feature/tab_control_feature_unittest.cc",
@@ -347,8 +350,8 @@ if (is_android) {
     sources = [
       "app/android/blimp_client_session_android.cc",
       "app/android/blimp_client_session_android.h",
-      "app/android/blimp_compositor_android.cc",
-      "app/android/blimp_compositor_android.h",
+      "app/android/blimp_compositor_manager_android.cc",
+      "app/android/blimp_compositor_manager_android.h",
       "app/android/blimp_jni_registrar.cc",
       "app/android/blimp_jni_registrar.h",
       "app/android/blimp_library_loader.cc",

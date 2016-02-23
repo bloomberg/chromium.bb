@@ -332,33 +332,17 @@ void BlimpEngineSession::Reload(const int target_tab_id) {
 }
 
 void BlimpEngineSession::OnWebGestureEvent(
+    content::RenderWidgetHost* render_widget_host,
     scoped_ptr<blink::WebGestureEvent> event) {
-  if (!web_contents_ || !web_contents_->GetRenderViewHost())
-    return;
 
-  content::RenderWidgetHost* host =
-      web_contents_->GetRenderViewHost()->GetWidget();
-
-  if (!host)
-    return;
-
-  host->ForwardGestureEvent(*event);
+  render_widget_host->ForwardGestureEvent(*event);
 }
 
 void BlimpEngineSession::OnCompositorMessageReceived(
+    content::RenderWidgetHost* render_widget_host,
     const std::vector<uint8_t>& message) {
-  // Make sure that We actually have a valid WebContents and RenderViewHost.
-  if (!web_contents_ || !web_contents_->GetRenderViewHost())
-    return;
 
-  content::RenderWidgetHost* host =
-      web_contents_->GetRenderViewHost()->GetWidget();
-
-  // Make sure we actually have a valid RenderWidgetHost.
-  if (!host)
-    return;
-
-  host->HandleCompositorProto(message);
+  render_widget_host->HandleCompositorProto(message);
 }
 
 void BlimpEngineSession::ProcessMessage(
@@ -464,8 +448,10 @@ void BlimpEngineSession::ActivateContents(content::WebContents* contents) {
 }
 
 void BlimpEngineSession::ForwardCompositorProto(
+    content::RenderWidgetHost* render_widget_host,
     const std::vector<uint8_t>& proto) {
-  render_widget_feature_.SendCompositorMessage(kDummyTabId, proto);
+  render_widget_feature_.SendCompositorMessage(kDummyTabId, render_widget_host,
+                                               proto);
 }
 
 void BlimpEngineSession::NavigationStateChanged(
@@ -499,12 +485,25 @@ void BlimpEngineSession::NavigationStateChanged(
                                              net::CompletionCallback());
 }
 
+void BlimpEngineSession::RenderViewCreated(
+    content::RenderViewHost* render_view_host) {
+  render_widget_feature_.OnRenderWidgetCreated(kDummyTabId,
+                                               render_view_host->GetWidget());
+}
+
 void BlimpEngineSession::RenderViewHostChanged(
     content::RenderViewHost* old_host,
     content::RenderViewHost* new_host) {
   // Informs client that WebContents swaps its visible RenderViewHost with
   // another one.
-  render_widget_feature_.OnRenderWidgetInitialized(kDummyTabId);
+  render_widget_feature_.OnRenderWidgetInitialized(kDummyTabId,
+                                                   new_host->GetWidget());
+}
+
+void BlimpEngineSession::RenderViewDeleted(
+    content::RenderViewHost* render_view_host) {
+  render_widget_feature_.OnRenderWidgetDeleted(kDummyTabId,
+                                               render_view_host->GetWidget());
 }
 
 void BlimpEngineSession::PlatformSetContents(

@@ -197,6 +197,7 @@ source_set("feature_unit_tests") {
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//blimp/common/proto",
+    "//content",
     "//testing/gmock",
     "//testing/gtest",
   ]

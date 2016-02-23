@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/client/app/android/blimp_compositor_android.h"
+#include "blimp/client/app/android/blimp_compositor_manager_android.h"
 
 #include <algorithm>
 
@@ -20,10 +20,9 @@ namespace blimp {
 namespace client {
 
 // static
-scoped_ptr<BlimpCompositorAndroid> BlimpCompositorAndroid::Create(
+scoped_ptr<BlimpCompositorManagerAndroid> BlimpCompositorManagerAndroid::Create(
     const gfx::Size& real_size,
     const gfx::Size& size,
-    float dp_to_px,
     RenderWidgetFeature* render_widget_feature) {
   gfx::Size device_size(real_size);
   bool real_size_supported = true;
@@ -31,25 +30,24 @@ scoped_ptr<BlimpCompositorAndroid> BlimpCompositorAndroid::Create(
     real_size_supported = false;
     device_size = size;
   }
-  return make_scoped_ptr(new BlimpCompositorAndroid(
-      device_size, real_size_supported, dp_to_px, render_widget_feature));
+  return make_scoped_ptr(new BlimpCompositorManagerAndroid(
+      device_size, real_size_supported, render_widget_feature));
 }
 
-BlimpCompositorAndroid::BlimpCompositorAndroid(
+BlimpCompositorManagerAndroid::BlimpCompositorManagerAndroid(
     const gfx::Size& size,
     bool real_size_supported,
-    float dp_to_px,
     RenderWidgetFeature* render_widget_feature)
-    : BlimpCompositor(dp_to_px, render_widget_feature),
+    : BlimpCompositorManager(render_widget_feature),
       portrait_width_(std::min(size.width(), size.height())),
       landscape_width_(std::max(size.width(), size.height())),
       real_size_supported_(real_size_supported) {}
 
-BlimpCompositorAndroid::~BlimpCompositorAndroid() {}
+BlimpCompositorManagerAndroid::~BlimpCompositorManagerAndroid() {}
 
-void BlimpCompositorAndroid::GenerateLayerTreeSettings(
+void BlimpCompositorManagerAndroid::GenerateLayerTreeSettings(
     cc::LayerTreeSettings* settings) {
-  BlimpCompositor::GenerateLayerTreeSettings(settings);
+  BlimpCompositorManager::GenerateLayerTreeSettings(settings);
 
   // Calculate the correct raster tile size to use.  Assuming a square tile.
   DCHECK_EQ(settings->default_tile_size.width(),

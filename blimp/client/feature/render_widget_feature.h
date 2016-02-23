@@ -27,6 +27,9 @@ class CompositorMessage;
 }
 
 namespace blimp {
+class RenderWidgetMessage;
+class CompositorMessage;
+
 namespace client {
 
 // Handles all incoming and outgoing protobuf message types tied to a specific
@@ -40,14 +43,19 @@ class BLIMP_CLIENT_EXPORT RenderWidgetFeature : public BlimpMessageProcessor {
   // A delegate to be notified of specific RenderWidget related incoming events.
   class RenderWidgetFeatureDelegate {
    public:
+    virtual void OnRenderWidgetCreated(int render_widget_id) = 0;
+
     // Called when the engine's RenderWidget has changed for a particular
     // WebContents.  When this is received all state related to the existing
     // client RenderWidget should be reset.
-    virtual void OnRenderWidgetInitialized() = 0;
+    virtual void OnRenderWidgetInitialized(int render_widget_id) = 0;
+
+    virtual void OnRenderWidgetDeleted(int render_widget_id) = 0;
 
     // Called when the engine sent a CompositorMessage.  These messages should
     // be sent to the client's RemoteChannel of the compositor.
     virtual void OnCompositorMessageReceived(
+        int render_widget_id,
         scoped_ptr<cc::proto::CompositorMessage> message) = 0;
   };
 
@@ -65,10 +73,13 @@ class BLIMP_CLIENT_EXPORT RenderWidgetFeature : public BlimpMessageProcessor {
       scoped_ptr<BlimpMessageProcessor> processor);
 
   // Sends a WebGestureEvent for |tab_id| to the engine.
-  void SendInputEvent(const int tab_id, const blink::WebGestureEvent& event);
+  void SendWebGestureEvent(const int tab_id,
+                           const int render_widget_id,
+                           const blink::WebGestureEvent& event);
 
   // Sends a CompositorMessage for |tab_id| to the engine.
   void SendCompositorMessage(const int tab_id,
+                             const int render_widget_id,
                              const cc::proto::CompositorMessage& message);
 
   // Sets a RenderWidgetMessageDelegate to be notified of all incoming
@@ -83,18 +94,20 @@ class BLIMP_CLIENT_EXPORT RenderWidgetFeature : public BlimpMessageProcessor {
   void ProcessMessage(scoped_ptr<BlimpMessage> message,
                       const net::CompletionCallback& callback) override;
 
+  void ProcessRenderWidgetMessage(
+      RenderWidgetFeatureDelegate* delegate,
+      const RenderWidgetMessage& message);
+
+  void ProcessCompositorMessage(RenderWidgetFeatureDelegate* delegate,
+                                const CompositorMessage& message);
+
   // Returns nullptr if no delegate is found.
   RenderWidgetFeatureDelegate* FindDelegate(const int tab_id);
 
-  // Returns 0 if no id is found.
-  uint32_t GetRenderWidgetId(const int tab_id);
-
   typedef base::SmallMap<std::map<int, RenderWidgetFeatureDelegate*>>
       DelegateMap;
-  typedef base::SmallMap<std::map<int, uint32_t>> RenderWidgetIdMap;
 
   DelegateMap delegates_;
-  RenderWidgetIdMap render_widget_ids_;
 
   InputMessageGenerator input_message_generator_;
 

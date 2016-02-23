@@ -4,8 +4,10 @@
 
 #include "blimp/client/feature/compositor/blimp_compositor.h"
 
-#include "base/lazy_instance.h"
 #include "base/thread_task_runner_handle.h"
+#include "blimp/client/feature/compositor/blimp_gpu_memory_buffer_manager.h"
+#include "blimp/common/compositor/blimp_image_serialization_processor.h"
+#include "blimp/common/compositor/blimp_task_graph_runner.h"
 #include "cc/proto/compositor_message.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -15,22 +17,62 @@ using testing::_;
 namespace blimp {
 namespace client {
 
-class MockRenderWidgetFeature : public RenderWidgetFeature {
+class MockBlimpCompositorClient : public BlimpCompositorClient {
  public:
-  MOCK_METHOD2(SendCompositorMessage,
-               void(const int,
-                    const cc::proto::CompositorMessage&));
-  MOCK_METHOD2(SendInputEvent, void(const int,
-                                    const blink::WebInputEvent&));
-  MOCK_METHOD2(SetDelegate, void(int, RenderWidgetFeatureDelegate*));
-  MOCK_METHOD1(RemoveDelegate, void(const int));
+  MockBlimpCompositorClient()
+  : compositor_thread_("Compositor"),
+    image_serialization_processor_(
+       BlimpImageSerializationProcessor::Mode::DESERIALIZATION) {
+    compositor_thread_.Start();
+  }
+  ~MockBlimpCompositorClient() override { compositor_thread_.Stop(); }
+
+  cc::LayerTreeSettings* GetLayerTreeSettings() override { return &settings_; }
+  scoped_refptr<base::SingleThreadTaskRunner> GetCompositorTaskRunner() override
+      { return compositor_thread_.task_runner(); }
+  cc::TaskGraphRunner* GetTaskGraphRunner() override {
+    return &task_graph_runner_; }
+  gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override {
+    return &gpu_memory_buffer_manager_;
+  }
+  cc::ImageSerializationProcessor* GetImageSerializationProcessor() override {
+    return &image_serialization_processor_;
+  }
+
+  void SendWebGestureEvent(
+      int render_widget_id,
+      const blink::WebGestureEvent& gesture_event) override {
+    MockableSendWebGestureEvent(render_widget_id);
+  }
+  void SendCompositorMessage(
+      int render_widget_id,
+      const cc::proto::CompositorMessage& message) override {
+    MockableSendCompositorMessage(render_widget_id);
+  }
+
+  MOCK_METHOD1(MockableSendWebGestureEvent, void(int));
+  MOCK_METHOD1(MockableSendCompositorMessage, void(int));
+
+  cc::LayerTreeSettings settings_;
+  base::Thread compositor_thread_;
+  BlimpTaskGraphRunner task_graph_runner_;
+  BlimpGpuMemoryBufferManager gpu_memory_buffer_manager_;
+  BlimpImageSerializationProcessor image_serialization_processor_;
 };
 
 class BlimpCompositorForTesting : public BlimpCompositor {
  public:
-  BlimpCompositorForTesting(float dp_to_px,
-                            RenderWidgetFeature* render_widget_feature)
-  : BlimpCompositor(dp_to_px, render_widget_feature) {}
+  BlimpCompositorForTesting(int render_widget_id,
+                            BlimpCompositorClient* client)
+  : BlimpCompositor(render_widget_id, client) {}
+
+  void SendProto(const cc::proto::CompositorMessage& proto) {
+    SendCompositorProto(proto);
+  }
+
+  void SendGestureEvent(const blink::WebGestureEvent& gesture_event) {
+    SendWebGestureEvent(gesture_event);
+  }
 
   cc::LayerTreeHost* host() const { return host_.get(); }
 };
@@ -38,15 +80,13 @@ class BlimpCompositorForTesting : public BlimpCompositor {
 class BlimpCompositorTest : public testing::Test {
  public:
   BlimpCompositorTest():
+    render_widget_id_(1),
     loop_(new base::MessageLoop),
     window_(42u) {}
 
   void SetUp() override {
-    EXPECT_CALL(render_widget_feature_, SetDelegate(_, _)).Times(1);
-    EXPECT_CALL(render_widget_feature_, RemoveDelegate(_)).Times(1);
-
-    compositor_.reset(new BlimpCompositorForTesting(
-        1.0f, &render_widget_feature_));
+    compositor_.reset(new BlimpCompositorForTesting(render_widget_id_,
+                                                    &compositor_client_));
   }
 
   void TearDown() override {
@@ -54,12 +94,6 @@ class BlimpCompositorTest : public testing::Test {
   }
 
   ~BlimpCompositorTest() override {}
-
-  RenderWidgetFeature::RenderWidgetFeatureDelegate* delegate() const {
-    DCHECK(compositor_);
-    return static_cast<RenderWidgetFeature::RenderWidgetFeatureDelegate*>
-        (compositor_.get());
-  }
 
   void SendInitializeMessage() {
     scoped_ptr<cc::proto::CompositorMessage> message;
@@ -72,7 +106,7 @@ class BlimpCompositorTest : public testing::Test {
         to_impl->mutable_initialize_impl_message();
     cc::LayerTreeSettings settings;
     settings.ToProtobuf(initialize_message->mutable_layer_tree_settings());
-    delegate()->OnCompositorMessageReceived(std::move(message));
+    compositor_->OnCompositorMessageReceived(std::move(message));
   }
 
   void SendShutdownMessage() {
@@ -81,11 +115,12 @@ class BlimpCompositorTest : public testing::Test {
     cc::proto::CompositorMessageToImpl* to_impl =
         message->mutable_to_impl();
     to_impl->set_message_type(cc::proto::CompositorMessageToImpl::CLOSE_IMPL);
-    delegate()->OnCompositorMessageReceived(std::move(message));
+    compositor_->OnCompositorMessageReceived(std::move(message));
   }
 
+  int render_widget_id_;
   scoped_ptr<base::MessageLoop> loop_;
-  MockRenderWidgetFeature render_widget_feature_;
+  MockBlimpCompositorClient compositor_client_;
   scoped_ptr<BlimpCompositorForTesting> compositor_;
   gfx::AcceleratedWidget window_;
 };
@@ -130,20 +165,14 @@ TEST_F(BlimpCompositorTest, DestroyAndRecreateHost) {
   EXPECT_TRUE(compositor_->host()->visible());
 }
 
-TEST_F(BlimpCompositorTest, DestroyHostOnRenderWidgetInitialized) {
-  // Create the host.
-  compositor_->SetVisible(true);
-  compositor_->SetAcceleratedWidget(window_);
-  SendInitializeMessage();
-  EXPECT_NE(compositor_->host(), nullptr);
+TEST_F(BlimpCompositorTest, MessagesHaveCorrectId) {
+  EXPECT_CALL(compositor_client_,
+              MockableSendCompositorMessage(render_widget_id_)).Times(1);
+  EXPECT_CALL(compositor_client_,
+              MockableSendWebGestureEvent(render_widget_id_)).Times(1);
 
-  delegate()->OnRenderWidgetInitialized();
-  EXPECT_EQ(compositor_->host(), nullptr);
-
-  // Recreate the host.
-  SendInitializeMessage();
-  EXPECT_NE(compositor_->host(), nullptr);
-  EXPECT_TRUE(compositor_->host()->visible());
+  compositor_->SendProto(cc::proto::CompositorMessage());
+  compositor_->SendGestureEvent(blink::WebGestureEvent());
 }
 
 }  // namespace client

@@ -1764,11 +1764,8 @@ void WebContentsImpl::LostMouseLock(RenderWidgetHostImpl* render_widget_host) {
 void WebContentsImpl::ForwardCompositorProto(
     RenderWidgetHostImpl* render_widget_host,
     const std::vector<uint8_t>& proto) {
-  if (render_widget_host != GetRenderViewHost()->GetWidget())
-    return;
-
   if (delegate_)
-    delegate_->ForwardCompositorProto(proto);
+    delegate_->ForwardCompositorProto(render_widget_host, proto);
 }
 
 void WebContentsImpl::OnRenderFrameProxyVisibilityChanged(bool visible) {

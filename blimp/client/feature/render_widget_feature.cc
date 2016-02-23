@@ -30,8 +30,10 @@ void RenderWidgetFeature::set_outgoing_compositor_message_processor(
   outgoing_compositor_message_processor_ = std::move(processor);
 }
 
-void RenderWidgetFeature::SendInputEvent(const int tab_id,
-                                         const blink::WebGestureEvent& event) {
+void RenderWidgetFeature::SendWebGestureEvent(
+    const int tab_id,
+    const int render_widget_id,
+    const blink::WebGestureEvent& event) {
   scoped_ptr<BlimpMessage> blimp_message =
       input_message_generator_.GenerateMessage(event);
 
@@ -40,8 +42,7 @@ void RenderWidgetFeature::SendInputEvent(const int tab_id,
     return;
 
   blimp_message->set_target_tab_id(tab_id);
-  blimp_message->mutable_input()->set_render_widget_id(
-      GetRenderWidgetId(tab_id));
+  blimp_message->mutable_input()->set_render_widget_id(render_widget_id);
 
   outgoing_input_message_processor_->ProcessMessage(std::move(blimp_message),
                                                     net::CompletionCallback());
@@ -49,13 +50,12 @@ void RenderWidgetFeature::SendInputEvent(const int tab_id,
 
 void RenderWidgetFeature::SendCompositorMessage(
     const int tab_id,
+    const int render_widget_id,
     const cc::proto::CompositorMessage& message) {
   CompositorMessage* compositor_message;
   scoped_ptr<BlimpMessage> blimp_message =
       CreateBlimpMessage(&compositor_message, tab_id);
 
-  uint32_t render_widget_id = GetRenderWidgetId(tab_id);
-  DCHECK_LT(0U, render_widget_id);
   compositor_message->set_render_widget_id(render_widget_id);
   compositor_message->mutable_payload()->resize(
       base::checked_cast<size_t>(message.ByteSize()));
@@ -89,30 +89,51 @@ void RenderWidgetFeature::ProcessMessage(
   int target_tab_id = message->target_tab_id();
   RenderWidgetFeatureDelegate* delegate = FindDelegate(target_tab_id);
   DCHECK(delegate) << "RenderWidgetFeatureDelegate not found for "
-                   << target_tab_id;
+      << target_tab_id;
 
   switch (message->type()) {
     case BlimpMessage::RENDER_WIDGET:
-      if (message->render_widget().type() == RenderWidgetMessage::INITIALIZE) {
-        render_widget_ids_[target_tab_id] =
-            message->render_widget().render_widget_id();
-        delegate->OnRenderWidgetInitialized();
-      }
+      ProcessRenderWidgetMessage(delegate, message->render_widget());
       break;
-    case BlimpMessage::COMPOSITOR: {
-      DCHECK_EQ(message->compositor().render_widget_id(),
-                GetRenderWidgetId(target_tab_id));
-      scoped_ptr<cc::proto::CompositorMessage> payload(
-          new cc::proto::CompositorMessage);
-      if (payload->ParseFromString(message->compositor().payload())) {
-        delegate->OnCompositorMessageReceived(std::move(payload));
-      }
-    } break;
+    case BlimpMessage::COMPOSITOR:
+      ProcessCompositorMessage(delegate, message->compositor());
+      break;
     default:
       NOTIMPLEMENTED();
   }
 
   callback.Run(net::OK);
+}
+
+void RenderWidgetFeature::ProcessRenderWidgetMessage(
+    RenderWidgetFeatureDelegate* delegate,
+    const RenderWidgetMessage& message) {
+  int render_widget_id = message.render_widget_id();
+
+  switch (message.type()) {
+    case RenderWidgetMessage::CREATED:
+      delegate->OnRenderWidgetCreated(render_widget_id);
+      break;
+    case RenderWidgetMessage::INITIALIZE:
+      delegate->OnRenderWidgetInitialized(render_widget_id);
+      break;
+    case RenderWidgetMessage::DELETED:
+      delegate->OnRenderWidgetDeleted(render_widget_id);
+      break;
+  }
+}
+
+void RenderWidgetFeature::ProcessCompositorMessage(
+    RenderWidgetFeatureDelegate* delegate,
+    const CompositorMessage& message) {
+  int render_widget_id = message.render_widget_id();
+
+  scoped_ptr<cc::proto::CompositorMessage> payload(
+      new cc::proto::CompositorMessage);
+  if (payload->ParseFromString(message.payload())) {
+    delegate->OnCompositorMessageReceived(render_widget_id,
+                                          std::move(payload));
+  }
 }
 
 RenderWidgetFeature::RenderWidgetFeatureDelegate*
@@ -121,13 +142,6 @@ RenderWidgetFeature::FindDelegate(const int tab_id) {
   if (it != delegates_.end())
     return it->second;
   return nullptr;
-}
-
-uint32_t RenderWidgetFeature::GetRenderWidgetId(const int tab_id) {
-  RenderWidgetIdMap::const_iterator it = render_widget_ids_.find(tab_id);
-  if (it != render_widget_ids_.end())
-    return it->second;
-  return 0U;
 }
 
 }  // namespace client

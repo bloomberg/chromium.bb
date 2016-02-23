@@ -17,7 +17,7 @@ class Size;
 namespace blimp {
 namespace client {
 
-class BlimpCompositorAndroid;
+class BlimpCompositorManagerAndroid;
 class RenderWidgetFeature;
 
 // The native component of org.chromium.blimp.BlimpView.  This builds and
@@ -96,7 +96,7 @@ class BlimpView {
 
   const float device_scale_factor_;
 
-  scoped_ptr<BlimpCompositorAndroid> compositor_;
+  scoped_ptr<BlimpCompositorManagerAndroid> compositor_manager_;
 
   // The format of the current surface owned by |compositor_|.  See
   // android.graphics.PixelFormat.java.

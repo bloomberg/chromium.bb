@@ -10,6 +10,7 @@
 #include <map>
 #include <vector>
 
+#include "base/atomic_sequence_num.h"
 #include "base/containers/small_map.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -18,6 +19,10 @@
 
 namespace blink {
 class WebGestureEvent;
+}
+
+namespace content {
+class RenderWidgetHost;
 }
 
 namespace blimp {
@@ -35,12 +40,14 @@ class EngineRenderWidgetFeature : public BlimpMessageProcessor {
    public:
     // Called when the client is sending a WebGestureEvent to the engine.
     virtual void OnWebGestureEvent(
+        content::RenderWidgetHost* render_widget_host,
         scoped_ptr<blink::WebGestureEvent> event) = 0;
 
     // Called when the client sent a CompositorMessage.  These messages should
     // be sent to the engine's render process so they can be processed by the
     // RemoteChannel of the compositor.
     virtual void OnCompositorMessageReceived(
+        content::RenderWidgetHost* render_widget_host,
         const std::vector<uint8_t>& message) = 0;
   };
 
@@ -56,13 +63,29 @@ class EngineRenderWidgetFeature : public BlimpMessageProcessor {
   void set_compositor_message_sender(
       scoped_ptr<BlimpMessageProcessor> message_processor);
 
+  // Notifes the client that a new RenderWidget for a particular WebContents has
+  // been created. This will trigger the creation of the BlimpCompositor for
+  // this widget on the client.
+  void OnRenderWidgetCreated(const int tab_id,
+                             content::RenderWidgetHost* render_widget_host);
+
   // Notifies the client that the RenderWidget for a particular WebContents has
-  // changed.  When this is sent all incoming messages from the client sent
-  // before this message has been received will be dropped by this class.
-  void OnRenderWidgetInitialized(const int tab_id);
+  // changed.  When this is sent the native view on the client becomes bound to
+  // the BlimpCompositor for this widget.
+  // Since the compositor on the client performs the operations of the view for
+  // this widget, this will set the visibility and draw state correctly for this
+  // widget.
+  // Note: This assumes that this is the RenderWidgetHost for the main frame.
+  // Only one RenderWidget can be in initialized state for a tab.
+  void OnRenderWidgetInitialized(const int tab_id,
+                                 content::RenderWidgetHost* render_widget_host);
+
+  void OnRenderWidgetDeleted(const int tab_id,
+                             content::RenderWidgetHost* render_widget_host);
 
   // Sends a CompositorMessage for |tab_id| to the client.
   void SendCompositorMessage(const int tab_id,
+                             content::RenderWidgetHost* render_widget_host,
                              const std::vector<uint8_t>& message);
 
   // Sets a RenderWidgetMessageDelegate to be notified of all incoming
@@ -76,18 +99,55 @@ class EngineRenderWidgetFeature : public BlimpMessageProcessor {
                       const net::CompletionCallback& callback) override;
 
  private:
+  typedef base::SmallMap<std::map<int, RenderWidgetMessageDelegate*> >
+  DelegateMap;
+
+  typedef base::SmallMap<std::map<content::RenderWidgetHost*, int>>
+      RenderWidgetToIdMap;
+
+  typedef base::SmallMap<std::map<int, content::RenderWidgetHost*>>
+      IdToRenderWidgetMap;
+
+  typedef std::pair<RenderWidgetToIdMap, IdToRenderWidgetMap> RenderWidgetMaps;
+
+  typedef base::SmallMap<std::map<int, RenderWidgetMaps>> TabMap;
+
   // Returns nullptr if no delegate is found.
   RenderWidgetMessageDelegate* FindDelegate(const int tab_id);
 
-  // Returns 0 if no id is found.
-  uint32_t GetRenderWidgetId(const int tab_id);
+  // Adds the RenderWidgetHost to the map and return the render_widget_id.
+  int AddRenderWidget(const int tab_id,
+                      content::RenderWidgetHost* render_widget_host);
 
-  typedef base::SmallMap<std::map<int, RenderWidgetMessageDelegate*> >
-      DelegateMap;
-  typedef base::SmallMap<std::map<int, uint32_t> > RenderWidgetIdMap;
+  // Deletes the RenderWidgetHost from the map and returns the render_widget_id
+  // for the deleted host.
+  int DeleteRenderWidget(const int tab_id,
+                         content::RenderWidgetHost* render_widget_host);
+
+  // Returns the render_widget_id for the RenderWidgetHost. Will return 0U if
+  // the host is not found.
+  int GetRenderWidgetId(const int tab_id,
+                        content::RenderWidgetHost* render_widget_host);
+
+  // Returns the RenderWidgetHost for the given render_widget_id. Will return
+  // nullptr if no host is found.
+  content::RenderWidgetHost* GetRenderWidgetHost(const int tab_id,
+                                                 const int render_widget_id);
 
   DelegateMap delegates_;
-  RenderWidgetIdMap render_widget_ids_;
+  TabMap tabs_;
+
+  // A RenderWidgetHost can also be uniquely identified by the
+  // <process_id, routing_id> where the process_id is the id for the
+  // RenderProcessHost for this widget and the routing_id is the id for the
+  // widget.
+  // But we generate our own ids to avoid having the render widget protocol tied
+  // to always using a combination of these ids, generated by the content layer.
+  // By using an AtomicSequenceNumber for identifying render widgets across
+  // tabs, we can be sure that there will always be a 1:1 mapping between the
+  // render widget and the consumer of the features tied to this widget on the
+  // client, which is the BlimpCompositor.
+  base::AtomicSequenceNumber next_widget_id_;
 
   InputMessageConverter input_message_converter_;
 

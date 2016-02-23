@@ -4,7 +4,7 @@
 
 #include "blimp/client/app/linux/blimp_display_manager.h"
 
-#include "blimp/client/feature/compositor/blimp_compositor.h"
+#include "blimp/client/feature/compositor/blimp_compositor_manager.h"
 #include "blimp/client/feature/render_widget_feature.h"
 #include "blimp/client/feature/tab_control_feature.h"
 #include "ui/events/event.h"
@@ -23,14 +23,15 @@ BlimpDisplayManager::BlimpDisplayManager(
     : device_pixel_ratio_(1.f),
       delegate_(delegate),
       tab_control_feature_(tab_control_feature),
-      blimp_compositor_(new BlimpCompositor(1.f, render_widget_feature)),
+      blimp_compositor_manager_(
+          new BlimpCompositorManager(render_widget_feature)),
       platform_window_(new ui::X11Window(this)) {
   platform_window_->SetBounds(gfx::Rect(window_size));
   platform_window_->Show();
   tab_control_feature_->SetSizeAndScale(platform_window_->GetBounds().size(),
                                         device_pixel_ratio_);
 
-  blimp_compositor_->SetVisible(true);
+  blimp_compositor_manager_->SetVisible(true);
 }
 
 BlimpDisplayManager::~BlimpDisplayManager() {}
@@ -47,7 +48,7 @@ void BlimpDisplayManager::DispatchEvent(ui::Event* event) {
 }
 
 void BlimpDisplayManager::OnCloseRequest() {
-  blimp_compositor_->SetVisible(false);
+  blimp_compositor_manager_->SetVisible(false);
   platform_window_->Close();
 }
 
@@ -69,11 +70,11 @@ void BlimpDisplayManager::OnAcceleratedWidgetAvailable(
                                         device_pixel_ratio_);
 
   if (widget != gfx::kNullAcceleratedWidget)
-    blimp_compositor_->SetAcceleratedWidget(widget);
+    blimp_compositor_manager_->SetAcceleratedWidget(widget);
 }
 
 void BlimpDisplayManager::OnAcceleratedWidgetDestroyed() {
-  blimp_compositor_->ReleaseAcceleratedWidget();
+  blimp_compositor_manager_->ReleaseAcceleratedWidget();
 }
 
 void BlimpDisplayManager::OnActivationChanged(bool active) {}

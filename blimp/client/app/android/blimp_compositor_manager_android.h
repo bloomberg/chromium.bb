@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BLIMP_CLIENT_APP_ANDROID_BLIMP_COMPOSITOR_ANDROID_H_
-#define BLIMP_CLIENT_APP_ANDROID_BLIMP_COMPOSITOR_ANDROID_H_
+#ifndef BLIMP_CLIENT_APP_ANDROID_BLIMP_COMPOSITOR_MANAGER_ANDROID_H_
+#define BLIMP_CLIENT_APP_ANDROID_BLIMP_COMPOSITOR_MANAGER_ANDROID_H_
 
 #include "base/android/jni_android.h"
 #include "base/macros.h"
-#include "blimp/client/feature/compositor/blimp_compositor.h"
+#include "blimp/client/feature/compositor/blimp_compositor_manager.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -27,29 +27,25 @@ class RenderWidgetFeature;
 
 // An Android specific version of the BlimpCompositor.  This class builds a
 // gfx::AcceleratedWidget out of an Android SurfaceView's surface.
-class BlimpCompositorAndroid : public BlimpCompositor {
+class BlimpCompositorManagerAndroid : public BlimpCompositorManager {
  public:
   // |real_size| is the total display area including system decorations (see
   // android.view.Display.getRealSize()).  |size| is the total display
   // area not including system decorations (see android.view.Display.getSize()).
-  // |dp_to_px| is the scale factor that is required to convert from dp device
-  // pixels) to px.
-  static scoped_ptr<BlimpCompositorAndroid> Create(
+  static scoped_ptr<BlimpCompositorManagerAndroid> Create(
       const gfx::Size& real_size,
       const gfx::Size& size,
-      float dp_to_px,
       RenderWidgetFeature* render_widget_feature);
 
-  ~BlimpCompositorAndroid() override;
+  ~BlimpCompositorManagerAndroid() override;
 
  protected:
   // |size| is the size of the display.  |real_size_supported| determines
   // whether or not this size is the real display size or the display size
   // not including the system decorations.  |dp_to_px| is the scale factor that
   // is required to convert from dp (device pixels) to px.
-  BlimpCompositorAndroid(const gfx::Size& size,
+  BlimpCompositorManagerAndroid(const gfx::Size& size,
                          bool real_size_supported,
-                         float dp_to_px,
                          RenderWidgetFeature* render_widget_feature);
 
   // BlimpCompositor implementation.
@@ -66,10 +62,10 @@ class BlimpCompositorAndroid : public BlimpCompositor {
   // physical dimensions, including any area occupied by system decorations.
   bool real_size_supported_;
 
-  DISALLOW_COPY_AND_ASSIGN(BlimpCompositorAndroid);
+  DISALLOW_COPY_AND_ASSIGN(BlimpCompositorManagerAndroid);
 };
 
 }  // namespace client
 }  // namespace blimp
 
-#endif  // BLIMP_CLIENT_APP_ANDROID_BLIMP_COMPOSITOR_ANDROID_H_
+#endif  // BLIMP_CLIENT_APP_ANDROID_BLIMP_COMPOSITOR_MANAGER_ANDROID_H_

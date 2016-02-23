@@ -7,7 +7,7 @@
 #include <android/native_window_jni.h>
 
 #include "blimp/client/app/android/blimp_client_session_android.h"
-#include "blimp/client/app/android/blimp_compositor_android.h"
+#include "blimp/client/app/android/blimp_compositor_manager_android.h"
 #include "jni/BlimpView_jni.h"
 #include "ui/events/android/motion_event_android.h"
 #include "ui/gfx/geometry/size.h"
@@ -48,9 +48,8 @@ BlimpView::BlimpView(JNIEnv* env,
                      float dp_to_px,
                      RenderWidgetFeature* render_widget_feature)
     : device_scale_factor_(dp_to_px),
-      compositor_(BlimpCompositorAndroid::Create(real_size,
+      compositor_manager_(BlimpCompositorManagerAndroid::Create(real_size,
                                                  size,
-                                                 dp_to_px,
                                                  render_widget_feature)),
       current_surface_format_(0),
       window_(gfx::kNullAcceleratedWidget) {
@@ -81,8 +80,8 @@ void BlimpView::OnSurfaceChanged(JNIEnv* env,
     if (jsurface) {
       base::android::ScopedJavaLocalFrame scoped_local_reference_frame(env);
       window_ = ANativeWindow_fromSurface(env, jsurface);
-      compositor_->SetAcceleratedWidget(window_);
-      compositor_->SetVisible(true);
+      compositor_manager_->SetAcceleratedWidget(window_);
+      compositor_manager_->SetVisible(true);
     }
   }
 }
@@ -101,14 +100,14 @@ void BlimpView::OnSurfaceDestroyed(JNIEnv* env,
 void BlimpView::SetVisibility(JNIEnv* env,
                               const JavaParamRef<jobject>& jobj,
                               jboolean visible) {
-  compositor_->SetVisible(visible);
+  compositor_manager_->SetVisible(visible);
 }
 
 void BlimpView::ReleaseAcceleratedWidget() {
   if (window_ == gfx::kNullAcceleratedWidget)
     return;
 
-  compositor_->ReleaseAcceleratedWidget();
+  compositor_manager_->ReleaseAcceleratedWidget();
   ANativeWindow_release(window_);
   window_ = gfx::kNullAcceleratedWidget;
 }
@@ -172,7 +171,7 @@ jboolean BlimpView::OnTouchEvent(JNIEnv* env,
                                pointer0,
                                pointer1);
 
-  return compositor_->OnTouchEvent(event);
+  return compositor_manager_->OnTouchEvent(event);
 }
 
 }  // namespace client

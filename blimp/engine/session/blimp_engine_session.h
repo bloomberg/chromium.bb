@@ -112,8 +112,10 @@ class BlimpEngineSession
 
   // RenderWidgetMessage handler methods.
   // RenderWidgetMessageDelegate implementation.
-  void OnWebGestureEvent(scoped_ptr<blink::WebGestureEvent> event) override;
+  void OnWebGestureEvent(content::RenderWidgetHost* render_widget_host,
+                         scoped_ptr<blink::WebGestureEvent> event) override;
   void OnCompositorMessageReceived(
+      content::RenderWidgetHost* render_widget_host,
       const std::vector<uint8_t>& message) override;
 
   // content::WebContentsDelegate implementation.
@@ -131,13 +133,17 @@ class BlimpEngineSession
                           bool last_unlocked_by_target) override;
   void CloseContents(content::WebContents* source) override;
   void ActivateContents(content::WebContents* contents) override;
-  void ForwardCompositorProto(const std::vector<uint8_t>& proto) override;
+  void ForwardCompositorProto(
+      content::RenderWidgetHost* render_widget_host,
+      const std::vector<uint8_t>& proto) override;
   void NavigationStateChanged(content::WebContents* source,
                               content::InvalidateTypes changed_flags) override;
 
   // content::WebContentsObserver implementation.
+  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
   void RenderViewHostChanged(content::RenderViewHost* old_host,
                              content::RenderViewHost* new_host) override;
+  void RenderViewDeleted(content::RenderViewHost* render_view_host) override;
 
   // Sets up and owns |new_contents|.
   void PlatformSetContents(scoped_ptr<content::WebContents> new_contents);

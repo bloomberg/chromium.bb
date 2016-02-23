@@ -11,13 +11,12 @@ package blimp;
 
 message RenderWidgetMessage {
   enum Type {
-    // TODO(dtrainor): Leaving this a bit open in case we need to send other
-    // types of RenderWidget messages (like shutdown).
-
     // Engine => Client types.
     INITIALIZE = 1;
+    CREATED = 2;
+    DELETED = 3;
   }
 
   optional Type type = 1;
-  optional uint32 render_widget_id = 2;
+  optional int32 render_widget_id = 2;
 }

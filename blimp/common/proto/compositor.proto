@@ -12,7 +12,7 @@ package blimp;
 
 message CompositorMessage {
   // An ID that corresponds to RenderWidgetMessage.render_widget_id.
-  optional uint32 render_widget_id = 1;
+  optional int32 render_widget_id = 1;
 
   // This represents a serialized CompositorMessage in
   // cc/proto/compositor_message.proto.

@@ -20,7 +20,7 @@ class PlatformWindow;
 namespace blimp {
 namespace client {
 
-class BlimpCompositor;
+class BlimpCompositorManager;
 class RenderWidgetFeature;
 class TabControlFeature;
 
@@ -56,7 +56,7 @@ class BlimpDisplayManager : public ui::PlatformWindowDelegate {
   BlimpDisplayManagerDelegate* delegate_;
   TabControlFeature* tab_control_feature_;
 
-  scoped_ptr<BlimpCompositor> blimp_compositor_;
+  scoped_ptr<BlimpCompositorManager> blimp_compositor_manager_;
   scoped_ptr<ui::PlatformWindow> platform_window_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpDisplayManager);

@@ -11,9 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "blimp/client/blimp_client_export.h"
-#include "blimp/client/feature/compositor/blimp_gpu_memory_buffer_manager.h"
 #include "blimp/client/feature/compositor/blimp_input_manager.h"
-#include "blimp/client/feature/render_widget_feature.h"
 #include "cc/layers/layer_settings.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_client.h"
@@ -29,6 +27,7 @@ class Thread;
 
 namespace cc {
 namespace proto {
+class CompositorMessage;
 class InitializeImpl;
 }
 class LayerTreeHost;
@@ -41,6 +40,37 @@ class BlimpMessage;
 
 namespace client {
 
+// The BlimpCompositorClient provides the BlimpCompositor with the necessary
+// dependencies for cc::LayerTreeHost owned by this compositor and for
+// communicating the compositor and input messages to the corresponding
+// render widget of this compositor on the engine.
+class BlimpCompositorClient {
+ public:
+  // These methods should provide the dependencies for cc::LayerTreeHost for
+  // this compositor.
+  virtual cc::LayerTreeSettings* GetLayerTreeSettings() = 0;
+  virtual scoped_refptr<base::SingleThreadTaskRunner>
+  GetCompositorTaskRunner() = 0;
+  virtual cc::TaskGraphRunner* GetTaskGraphRunner() = 0;
+  virtual gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() = 0;
+  virtual cc::ImageSerializationProcessor* GetImageSerializationProcessor() = 0;
+
+  // Should send web gesture events which could not be handled locally by the
+  // compositor to the engine.
+  virtual void SendWebGestureEvent(
+      int render_widget_id,
+      const blink::WebGestureEvent& gesture_event) = 0;
+
+  // Should send the compositor messages from the remote client LayerTreeHost of
+  // this compositor to the corresponding remote server LayerTreeHost.
+  virtual void SendCompositorMessage(
+      int render_widget_id,
+      const cc::proto::CompositorMessage& message) = 0;
+
+ protected:
+  virtual ~BlimpCompositorClient() {}
+};
+
 // BlimpCompositor provides the basic framework and setup to host a
 // LayerTreeHost.  The class that owns the LayerTreeHost is usually called the
 // compositor, but the LayerTreeHost does the compositing work.  The rendering
@@ -48,16 +78,20 @@ namespace client {
 // by SetAcceleratedWidget().  This class should only be accessed from the main
 // thread.  Any interaction with the compositing thread should happen through
 // the LayerTreeHost.
+//
+// The Blimp compositor owns the remote client cc::LayerTreeHost, which performs
+// the compositing work for the remote server LayerTreeHost. The server
+// LayerTreeHost for a BlimpCompositor is owned by the
+// content::RenderWidgetCompositor. Thus, each BlimpCompositor is tied to a
+// RenderWidget, identified by a custom |render_widget_id| generated on the
+// engine. The lifetime of this compositor is controlled by its corresponding
+// RenderWidget.
 class BLIMP_CLIENT_EXPORT BlimpCompositor
     : public cc::LayerTreeHostClient,
       public cc::RemoteProtoChannel,
-      public RenderWidgetFeature::RenderWidgetFeatureDelegate,
       public BlimpInputManagerClient {
  public:
-  // |dp_to_px| is the scale factor required to move from dp (device pixels) to
-  // px.  See https://developer.android.com/guide/practices/screens_support.html
-  // for more details.
-  BlimpCompositor(float dp_to_px, RenderWidgetFeature* render_widget_feature);
+  BlimpCompositor(const int render_widget_id, BlimpCompositorClient* client);
 
   ~BlimpCompositor() override;
 
@@ -65,28 +99,35 @@ class BLIMP_CLIENT_EXPORT BlimpCompositor
   // Setting this to false will make the compositor drop all of its resources
   // and the output surface.  Setting it to true again will rebuild the output
   // surface from the gfx::AcceleratedWidget (see SetAcceleratedWidget).
-  void SetVisible(bool visible);
+  // virtual for testing.
+  virtual void SetVisible(bool visible);
 
   // Lets this compositor know that it can draw to |widget|.  This means that,
   // if this compositor is visible, it will build an output surface and GL
   // context around |widget| and will draw to it.  ReleaseAcceleratedWidget()
   // *must* be called before SetAcceleratedWidget() is called with the same
   // gfx::AcceleratedWidget on another compositor.
-  void SetAcceleratedWidget(gfx::AcceleratedWidget widget);
+  // virtual for testing.
+  virtual void SetAcceleratedWidget(gfx::AcceleratedWidget widget);
 
   // Releases the internally stored gfx::AcceleratedWidget and the associated
   // output surface.  This must be called before calling
   // SetAcceleratedWidget() with the same gfx::AcceleratedWidget on another
   // compositor.
-  void ReleaseAcceleratedWidget();
+  // virtual for testing.
+  virtual void ReleaseAcceleratedWidget();
 
   // Forwards the touch event to the |input_manager_|.
-  bool OnTouchEvent(const ui::MotionEvent& motion_event);
+  // virtual for testing.
+  virtual bool OnTouchEvent(const ui::MotionEvent& motion_event);
 
- protected:
-  // Populates the cc::LayerTreeSettings used by the cc::LayerTreeHost.  Can be
-  // overridden to provide custom settings parameters.
-  virtual void GenerateLayerTreeSettings(cc::LayerTreeSettings* settings);
+  // Called to forward the compositor message from the remote server
+  // LayerTreeHost of the render widget for this compositor.
+  // virtual for testing.
+  virtual void OnCompositorMessageReceived(
+      scoped_ptr<cc::proto::CompositorMessage> message);
+
+  int render_widget_id() const { return render_widget_id_; }
 
  private:
   friend class BlimpCompositorForTesting;
@@ -119,11 +160,6 @@ class BLIMP_CLIENT_EXPORT BlimpCompositor
   void SetProtoReceiver(ProtoReceiver* receiver) override;
   void SendCompositorProto(const cc::proto::CompositorMessage& proto) override;
 
-  // RenderWidgetFeatureDelegate implementation.
-  void OnRenderWidgetInitialized() override;
-  void OnCompositorMessageReceived(
-      scoped_ptr<cc::proto::CompositorMessage> message) override;
-
   // BlimpInputManagerClient implementation.
   void SendWebGestureEvent(
       const blink::WebGestureEvent& gesture_event) override;
@@ -144,20 +180,15 @@ class BLIMP_CLIENT_EXPORT BlimpCompositor
   // Creates (if necessary) and returns a TaskRunner for a thread meant to run
   // compositor rendering.
   void HandlePendingOutputSurfaceRequest();
-  scoped_refptr<base::SingleThreadTaskRunner> GetCompositorTaskRunner();
 
-  // The scale factor used to convert dp units (device independent pixels) to
-  // pixels.
-  float device_scale_factor_;
+  // The unique identifier for the render widget for this compositor.
+  const int render_widget_id_;
+
+  BlimpCompositorClient* client_;
+
   scoped_ptr<cc::LayerTreeHost> host_;
-  scoped_ptr<cc::LayerTreeSettings> settings_;
-
-  // Lazily created thread that will run the compositor rendering tasks.
-  scoped_ptr<base::Thread> compositor_thread_;
 
   gfx::AcceleratedWidget window_;
-
-  BlimpGpuMemoryBufferManager gpu_memory_buffer_manager_;
 
   // Whether or not |host_| should be visible.  This is stored in case |host_|
   // is null when SetVisible() is called or if we don't have a
@@ -174,22 +205,12 @@ class BLIMP_CLIENT_EXPORT BlimpCompositor
   // to |render_widget_id_|.
   cc::RemoteProtoChannel::ProtoReceiver* remote_proto_channel_receiver_;
 
-  // The bridge to the network layer that does the proto/RenderWidget id work.
-  // BlimpCompositor does not own this and it is expected to outlive this
-  // BlimpCompositor instance.
-  // TODO(dtrainor): Move this to a higher level once we start dealing with
-  // multiple tabs.
-  RenderWidgetFeature* render_widget_feature_;
-
   // Handles input events for the current render widget. The lifetime of the
   // input manager is tied to the lifetime of the |host_| which owns the
   // cc::InputHandler. The input events are forwarded to this input handler by
   // the manager to be handled by the client compositor for the current render
   // widget.
   scoped_ptr<BlimpInputManager> input_manager_;
-
-  // Provides the functionality to deserialize images in SkPicture.
-  scoped_ptr<BlimpImageSerializationProcessor> image_serialization_processor_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpCompositor);
 };

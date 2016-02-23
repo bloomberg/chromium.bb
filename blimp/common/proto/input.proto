@@ -77,7 +77,7 @@ message InputMessage {
   optional Type type = 1;
 
   // An ID that corresponds to RenderWidgetMessage.render_widget_id.
-  optional uint32 render_widget_id = 10;
+  optional int32 render_widget_id = 10;
 
   // Seconds since client platform start (boot) with millisecond resolution.
   // On Android, this is based off of the client's SystemClock#uptimeMillis().

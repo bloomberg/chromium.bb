@@ -12,6 +12,7 @@
 #include "blimp/engine/feature/engine_render_widget_feature.h"
 #include "blimp/net/input_message_generator.h"
 #include "blimp/net/test_common.h"
+#include "content/public/browser/render_widget_host.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -30,23 +31,75 @@ class MockHostRenderWidgetMessageDelegate
     : public EngineRenderWidgetFeature::RenderWidgetMessageDelegate {
  public:
   // EngineRenderWidgetFeature implementation.
-  void OnWebGestureEvent(scoped_ptr<blink::WebGestureEvent> event) override {
-    MockableOnWebGestureEvent();
+  void OnWebGestureEvent(
+      content::RenderWidgetHost* render_widget_host,
+      scoped_ptr<blink::WebGestureEvent> event) override {
+    MockableOnWebGestureEvent(render_widget_host);
   }
 
   void OnCompositorMessageReceived(
+      content::RenderWidgetHost* render_widget_host,
       const std::vector<uint8_t>& message) override {
-    MockableOnCompositorMessageReceived(message);
+    MockableOnCompositorMessageReceived(render_widget_host, message);
   }
 
-  MOCK_METHOD0(MockableOnWebGestureEvent, void());
-  MOCK_METHOD1(MockableOnCompositorMessageReceived,
-               void(const std::vector<uint8_t>& message));
+  MOCK_METHOD1(MockableOnWebGestureEvent,
+               void(content::RenderWidgetHost* render_widget_host));
+  MOCK_METHOD2(MockableOnCompositorMessageReceived,
+               void(content::RenderWidgetHost* render_widget_host,
+                    const std::vector<uint8_t>& message));
+};
+
+class MockRenderWidgetHost
+    : public content::RenderWidgetHost {
+ public:
+  MockRenderWidgetHost() {}
+  ~MockRenderWidgetHost() override {}
+  void UpdateTextDirection(blink::WebTextDirection direction) override {}
+  void NotifyTextDirection() override {}
+  void Focus() override {}
+  void Blur() override {}
+  void SetActive(bool active) override {}
+  void CopyFromBackingStore(const gfx::Rect& src_rect,
+                            const gfx::Size& accelerated_dst_size,
+                            const content::ReadbackRequestCallback& callback,
+                            const SkColorType color_type) override {}
+  bool CanCopyFromBackingStore() override { return false; }
+  void LockBackingStore() override {}
+  void UnlockBackingStore() override {}
+  void ForwardMouseEvent(
+      const blink::WebMouseEvent& mouse_event) override {}
+  void ForwardWheelEvent(
+      const blink::WebMouseWheelEvent& wheel_event) override {}
+  void ForwardKeyboardEvent(
+      const content::NativeWebKeyboardEvent& key_event) override {}
+  void ForwardGestureEvent(
+      const blink::WebGestureEvent& gesture_event) override {}
+  content::RenderProcessHost* GetProcess() const override { return nullptr; }
+  int GetRoutingID() const override { return 0; }
+  content::RenderWidgetHostView* GetView() const override { return nullptr; }
+  bool IsLoading() const override { return false; }
+  void ResizeRectChanged(const gfx::Rect& new_rect) override {}
+  void RestartHangMonitorTimeout() override {}
+  void SetIgnoreInputEvents(bool ignore_input_events) override {}
+  void WasResized() override {}
+  void AddKeyPressEventCallback(
+      const KeyPressEventCallback& callback) override {}
+  void RemoveKeyPressEventCallback(
+      const KeyPressEventCallback& callback) override {}
+  void AddMouseEventCallback(const MouseEventCallback& callback) override {}
+  void RemoveMouseEventCallback(const MouseEventCallback& callback) override {}
+  void GetWebScreenInfo(blink::WebScreenInfo* result) override {}
+  bool GetScreenColorProfile(std::vector<char>* color_profile) override {
+    return false; }
+  void HandleCompositorProto(const std::vector<uint8_t>& proto) override {}
+
+  bool Send(IPC::Message* msg) override { return false; }
 };
 
 MATCHER_P(CompMsgEquals, contents, "") {
   if (contents.size() != arg.size())
-      return false;
+    return false;
 
   return memcmp(contents.data(), arg.data(), contents.size()) == 0;
 }
@@ -65,14 +118,15 @@ MATCHER_P3(BlimpCompMsgEquals, tab_id, rw_id, contents, "") {
       arg.target_tab_id() == tab_id;
 }
 
-MATCHER_P2(BlimpRWMsgEquals, tab_id, rw_id, "") {
+MATCHER_P3(BlimpRWMsgEquals, tab_id, rw_id, message_type, "") {
   return arg.render_widget().render_widget_id() == rw_id &&
-      arg.target_tab_id() == tab_id;
+      arg.target_tab_id() == tab_id &&
+      arg.render_widget().type() == message_type;
 }
 
 void SendInputMessage(BlimpMessageProcessor* processor,
-                             int tab_id,
-                             uint32_t rw_id) {
+                      int tab_id,
+                      int rw_id) {
   blink::WebGestureEvent input_event;
   input_event.type = blink::WebGestureEvent::Type::GestureTap;
 
@@ -88,9 +142,9 @@ void SendInputMessage(BlimpMessageProcessor* processor,
 }
 
 void SendCompositorMessage(BlimpMessageProcessor* processor,
-                             int tab_id,
-                             uint32_t rw_id,
-                             const std::vector<uint8_t>& payload) {
+                           int tab_id,
+                           int rw_id,
+                           const std::vector<uint8_t>& payload) {
   CompositorMessage* details;
   scoped_ptr<BlimpMessage> message = CreateBlimpMessage(&details, tab_id);
   details->set_render_widget_id(rw_id);
@@ -120,6 +174,8 @@ class EngineRenderWidgetFeatureTest : public testing::Test {
  protected:
   MockBlimpMessageProcessor* render_widget_message_sender_;
   MockBlimpMessageProcessor* compositor_message_sender_;
+  MockRenderWidgetHost render_widget_host1_;
+  MockRenderWidgetHost render_widget_host2_;
   MockHostRenderWidgetMessageDelegate delegate1_;
   MockHostRenderWidgetMessageDelegate delegate2_;
   EngineRenderWidgetFeature feature_;
@@ -128,22 +184,33 @@ class EngineRenderWidgetFeatureTest : public testing::Test {
 TEST_F(EngineRenderWidgetFeatureTest, DelegateCallsOK) {
   std::vector<uint8_t> payload = { 'd', 'a', 'v', 'i', 'd' };
 
-  EXPECT_CALL(*render_widget_message_sender_, MockableProcessMessage(_, _))
-      .Times(2);
-  EXPECT_CALL(delegate1_,
-              MockableOnCompositorMessageReceived(CompMsgEquals(payload)))
-      .Times(1);
-  EXPECT_CALL(delegate1_, MockableOnWebGestureEvent()).Times(1);
-  EXPECT_CALL(delegate2_,
-              MockableOnCompositorMessageReceived(CompMsgEquals(payload)))
-      .Times(1);
-  EXPECT_CALL(delegate2_, MockableOnWebGestureEvent()).Times(0);
+  EXPECT_CALL(*render_widget_message_sender_, MockableProcessMessage(
+      BlimpRWMsgEquals(1, 1, RenderWidgetMessage::CREATED), _))
+  .Times(1);
+  EXPECT_CALL(*render_widget_message_sender_, MockableProcessMessage(
+      BlimpRWMsgEquals(1, 1, RenderWidgetMessage::INITIALIZE), _))
+  .Times(1);
+  EXPECT_CALL(*render_widget_message_sender_, MockableProcessMessage(
+      BlimpRWMsgEquals(2, 2, RenderWidgetMessage::CREATED), _))
+  .Times(1);
 
-  feature_.OnRenderWidgetInitialized(1);
-  feature_.OnRenderWidgetInitialized(2);
-  SendCompositorMessage(&feature_, 1, 1U, payload);
-  SendInputMessage(&feature_, 1, 1U);
-  SendCompositorMessage(&feature_, 2, 1U, payload);
+  EXPECT_CALL(delegate1_,
+              MockableOnCompositorMessageReceived(&render_widget_host1_,
+                                                  CompMsgEquals(payload)))
+  .Times(1);
+  EXPECT_CALL(delegate1_, MockableOnWebGestureEvent(&render_widget_host1_))
+  .Times(1);
+  EXPECT_CALL(delegate2_,
+              MockableOnCompositorMessageReceived(&render_widget_host2_,
+                                                  CompMsgEquals(payload)))
+  .Times(1);
+
+  feature_.OnRenderWidgetCreated(1, &render_widget_host1_);
+  feature_.OnRenderWidgetInitialized(1, &render_widget_host1_);
+  feature_.OnRenderWidgetCreated(2, &render_widget_host2_);
+  SendCompositorMessage(&feature_, 1, 1, payload);
+  SendInputMessage(&feature_, 1, 1);
+  SendCompositorMessage(&feature_, 2, 2, payload);
 }
 
 TEST_F(EngineRenderWidgetFeatureTest, DropsStaleMessages) {
@@ -152,26 +219,35 @@ TEST_F(EngineRenderWidgetFeatureTest, DropsStaleMessages) {
   std::vector<uint8_t> new_payload = {'n', 'o', ' ', 'f', 'u', 'n'};
 
   EXPECT_CALL(*render_widget_message_sender_,
-              MockableProcessMessage(BlimpRWMsgEquals(1, 1U), _));
+              MockableProcessMessage(
+                  BlimpRWMsgEquals(1, 1, RenderWidgetMessage::CREATED), _));
   EXPECT_CALL(delegate1_,
-              MockableOnCompositorMessageReceived(CompMsgEquals(payload)));
+              MockableOnCompositorMessageReceived(&render_widget_host1_,
+                                                  CompMsgEquals(payload)));
   EXPECT_CALL(*render_widget_message_sender_,
-              MockableProcessMessage(BlimpRWMsgEquals(1, 2U), _));
-  EXPECT_CALL(delegate1_,
-              MockableOnCompositorMessageReceived(CompMsgEquals(new_payload)));
-  EXPECT_CALL(delegate1_, MockableOnWebGestureEvent());
+              MockableProcessMessage(
+                  BlimpRWMsgEquals(1, 1, RenderWidgetMessage::DELETED), _));
+  EXPECT_CALL(*render_widget_message_sender_,
+              MockableProcessMessage(
+                  BlimpRWMsgEquals(1, 2, RenderWidgetMessage::CREATED), _));
 
-  feature_.OnRenderWidgetInitialized(1);
-  SendCompositorMessage(&feature_, 1, 1U, payload);
-  feature_.OnRenderWidgetInitialized(1);
+  EXPECT_CALL(delegate1_,
+              MockableOnCompositorMessageReceived(&render_widget_host2_,
+                                                  CompMsgEquals(new_payload)));
+  EXPECT_CALL(delegate1_, MockableOnWebGestureEvent(&render_widget_host2_));
+
+  feature_.OnRenderWidgetCreated(1, &render_widget_host1_);
+  SendCompositorMessage(&feature_, 1, 1, payload);
+  feature_.OnRenderWidgetDeleted(1, &render_widget_host1_);
+  feature_.OnRenderWidgetCreated(1, &render_widget_host2_);
 
   // These next three calls should be dropped.
-  SendCompositorMessage(&feature_, 1, 1U, payload);
-  SendCompositorMessage(&feature_, 1, 1U, payload);
-  SendInputMessage(&feature_, 1, 1U);
+  SendCompositorMessage(&feature_, 1, 1, payload);
+  SendCompositorMessage(&feature_, 1, 1, payload);
+  SendInputMessage(&feature_, 1, 1);
 
-  SendCompositorMessage(&feature_, 1, 2U, new_payload);
-  SendInputMessage(&feature_, 1, 2U);
+  SendCompositorMessage(&feature_, 1, 2, new_payload);
+  SendInputMessage(&feature_, 1, 2);
 }
 
 TEST_F(EngineRenderWidgetFeatureTest, RepliesHaveCorrectRenderWidgetId) {
@@ -180,26 +256,31 @@ TEST_F(EngineRenderWidgetFeatureTest, RepliesHaveCorrectRenderWidgetId) {
   std::vector<uint8_t> payload = { 'a', 'b', 'c', 'd' };
 
   EXPECT_CALL(*render_widget_message_sender_,
-              MockableProcessMessage(BlimpRWMsgEquals(1, 1U), _))
-      .InSequence(delegate1_sequence);
+              MockableProcessMessage(
+                  BlimpRWMsgEquals(1, 1, RenderWidgetMessage::CREATED), _))
+  .InSequence(delegate1_sequence);
   EXPECT_CALL(*render_widget_message_sender_,
-              MockableProcessMessage(BlimpRWMsgEquals(1, 2U), _))
-      .InSequence(delegate1_sequence);
+              MockableProcessMessage(
+                  BlimpRWMsgEquals(1, 1, RenderWidgetMessage::INITIALIZE), _))
+  .InSequence(delegate1_sequence);
   EXPECT_CALL(*compositor_message_sender_,
-              MockableProcessMessage(BlimpCompMsgEquals(1, 2U, payload), _))
-      .InSequence(delegate1_sequence);
-  EXPECT_CALL(*render_widget_message_sender_,
-              MockableProcessMessage(BlimpRWMsgEquals(2, 1U), _))
-      .InSequence(delegate2_sequence);
-  EXPECT_CALL(*render_widget_message_sender_,
-              MockableProcessMessage(BlimpRWMsgEquals(2, 2U), _))
-      .InSequence(delegate2_sequence);
+              MockableProcessMessage(BlimpCompMsgEquals(1, 1, payload), _))
+  .InSequence(delegate1_sequence);
 
-  feature_.OnRenderWidgetInitialized(1);
-  feature_.OnRenderWidgetInitialized(2);
-  feature_.OnRenderWidgetInitialized(1);
-  feature_.OnRenderWidgetInitialized(2);
-  feature_.SendCompositorMessage(1, payload);
+  EXPECT_CALL(*render_widget_message_sender_,
+              MockableProcessMessage(
+                  BlimpRWMsgEquals(2, 2, RenderWidgetMessage::CREATED), _))
+  .InSequence(delegate2_sequence);
+  EXPECT_CALL(*render_widget_message_sender_,
+              MockableProcessMessage(
+                  BlimpRWMsgEquals(2, 2, RenderWidgetMessage::DELETED), _))
+  .InSequence(delegate2_sequence);
+
+  feature_.OnRenderWidgetCreated(1, &render_widget_host1_);
+  feature_.OnRenderWidgetCreated(2, &render_widget_host2_);
+  feature_.OnRenderWidgetInitialized(1, &render_widget_host1_);
+  feature_.OnRenderWidgetDeleted(2, &render_widget_host2_);
+  feature_.SendCompositorMessage(1, &render_widget_host1_, payload);
 }
 
 
