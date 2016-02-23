@@ -101,18 +101,18 @@ const SkColor kDefaultColorNTPSectionLink = SkColorSetRGB(6, 55, 116);
 const SkColor kDefaultColorButtonBackground = SkColorSetARGB(0, 0, 0, 0);
 
 // Default tints.
-const color_utils::HSL kDefaultTintButtons = { -1, -1, -1 };
+const color_utils::HSL kDefaultTintButtons = {-1, -1, -1};
 // In pre-md, reuse the normal tint for incognito.
-const color_utils::HSL kDefaultTintButtonsIncognito[] = {kDefaultTintButtons,
+const color_utils::HSL kDefaultTintButtonsIncognito[] = {{-1, -1, -1},
                                                          {-1, -1, 0.85}};
-const color_utils::HSL kDefaultTintFrame = { -1, -1, -1 };
-const color_utils::HSL kDefaultTintFrameInactive = { -1, -1, 0.75 };
-const color_utils::HSL kDefaultTintFrameIncognito = { -1, 0.2, 0.35 };
-const color_utils::HSL kDefaultTintFrameIncognitoInactive = { -1, 0.3, 0.6 };
-const color_utils::HSL kDefaultTintBackgroundTab = { -1, -1, 0.4296875 };
+const color_utils::HSL kDefaultTintFrame = {-1, -1, -1};
+const color_utils::HSL kDefaultTintFrameInactive = {-1, -1, 0.75};
+const color_utils::HSL kDefaultTintFrameIncognito = {-1, 0.2, 0.35};
+const color_utils::HSL kDefaultTintFrameIncognitoInactive = {-1, 0.3, 0.6};
+const color_utils::HSL kDefaultTintBackgroundTab = {-1, -1, 0.4296875};
 // In pre-md, reuse the normal tint for incognito.
 const color_utils::HSL kDefaultTintBackgroundTabIncognito[] = {
-    kDefaultTintBackgroundTab,
+    {-1, -1, 0.4296875},
     {-1, -1, 0.34375}};
 
 // ----------------------------------------------------------------------------
