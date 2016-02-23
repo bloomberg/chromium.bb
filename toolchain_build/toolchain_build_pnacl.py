@@ -870,7 +870,7 @@ def HostTools(host, options):
                   '-DLLVM_EXTERNAL_CLANG_SOURCE_DIR=%(clang_src)s',
                   '-DLLVM_EXTERNAL_SUBZERO_SOURCE_DIR=%(subzero_src)s',
                   '-DLLVM_INSTALL_UTILS=ON',
-                  '-DLLVM_TARGETS_TO_BUILD=X86;ARM;Mips;JSBackend',
+                  '-DLLVM_TARGETS_TO_BUILD=X86;ARM;Mips',
                   '-DSUBZERO_TARGETS_TO_BUILD=ARM32;MIPS32;X8632;X8664',
                   '%(llvm_src)s'],
                   env=llvm_cmake_config_env,
