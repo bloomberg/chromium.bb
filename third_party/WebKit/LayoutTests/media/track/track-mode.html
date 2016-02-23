@@ -3,6 +3,8 @@
     <head>
 
         <script src=../media-file.js></script>
+        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+             (Please avoid writing new tests using video-test.js) -->
         <script src=../video-test.js></script>
         <script>
 
@@ -58,7 +60,7 @@
                 consoleWrite("++ 0 events expected while mode = disabled");
                 consoleWrite("");
             }
-            
+
             function testHiddenAndShowing()
             {
                 consoleWrite("<b>++ 'hidden'</b>");
@@ -69,7 +71,7 @@
 
                 consoleWrite("++ at least " + textTrack.cues.length + " events expected while mode = showing");
             }
-            
+
             waitForEvent('cuechange',
                 function (event)
                 {
@@ -79,7 +81,7 @@
 
                 }
             );
-            
+
         </script>
     </head>
     <body>

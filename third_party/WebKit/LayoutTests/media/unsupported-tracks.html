@@ -1,6 +1,8 @@
 <video controls></video>
 <p>Test that QuickTime file with unsupported track types only generates an error.<p>
 <script src=media-file.js></script>
+<!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+     (Please avoid writing new tests using video-test.js) -->
 <script src=video-test.js></script>
 <script>
 video.src = findMediaFile("video", "content/unsupported_track");

@@ -3,6 +3,8 @@
         <title>Test that video play does not work unless a user gesture is involved in playing a video</title>
         <script src=media-controls.js></script>
         <script src=media-file.js></script>
+        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+             (Please avoid writing new tests using video-test.js) -->
         <script src=video-test.js></script>
         <script>
             var userGestureInitiated = 0;
@@ -21,7 +23,7 @@
                     }
                     var x = playCoords[0];
                     var y = playCoords[1];
-                     
+
                     userGestureInitiated = 1;
                     eventSender.mouseMoveTo(x, y);
                     eventSender.mouseDown();

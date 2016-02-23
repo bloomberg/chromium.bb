@@ -3,6 +3,8 @@
     <title>Test rendering of video control after exiting fullscreen</title>
     <script src=media-file.js></script>
     <script src=media-controls.js></script>
+    <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+         (Please avoid writing new tests using video-test.js) -->
     <script src=video-test.js></script>
     <script src=../fullscreen/full-screen-test.js></script>
     <script>
@@ -32,7 +34,7 @@
                 var x = playButtonCoordinates[0];
                 var y = playButtonCoordinates[1];
 
-                consoleWrite("** Move mouse to the play button and start playing the video **");                     
+                consoleWrite("** Move mouse to the play button and start playing the video **");
                 eventSender.mouseMoveTo(x, y);
                 eventSender.mouseDown();
                 eventSender.mouseUp();
@@ -78,4 +80,3 @@
     <video controls></video>
 </body>
 </html>
-

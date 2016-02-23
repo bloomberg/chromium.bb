@@ -1,9 +1,11 @@
 <html>
     <head>
+        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+             (Please avoid writing new tests using video-test.js) -->
         <script src=../../media-resources/video-test.js></script>
         <script src=../../media-resources/media-file.js></script>
         <script>
-            function loadMediaFrame() 
+            function loadMediaFrame()
             {
                 findMediaElement();
 
@@ -16,12 +18,12 @@
                         source = document.getElementById('source');
                         source.src = 'http://127.0.0.1:8000/media/resources/video-check-useragent.php?name=' + movie + '&type=' + type;
                         source.type = type;
-        
+
                         waitForEventAndFail('error');
                         waitForEventAndEnd('canplay');
                         video.load();
                 });
-        
+
                 frame.src = "data:text/html,<b>test</b>";
                 document.body.appendChild(frame);
             }

@@ -4,6 +4,8 @@
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
         <script src=../media-file.js></script>
+        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+             (Please avoid writing new tests using video-test.js) -->
         <script src=../video-test.js></script>
         <script src=../media-controls.js></script>
 
@@ -40,7 +42,7 @@
             testExpected("getComputedStyle(cueNode).color", "rgb(255, 0, 0)");
             testExpected("getComputedStyle(cueNode).padding", "0px");
             testExpected("getComputedStyle(cueNode).wordSpacing", "0px");
-            
+
             consoleWrite("<br>Test that filtering doesn't apply to elements which class equals 'cue' outside WebVTT scope.");
             cueNode = document.getElementsByClassName("cue")[0];
             testExpected("getComputedStyle(cueNode).display", "inline");

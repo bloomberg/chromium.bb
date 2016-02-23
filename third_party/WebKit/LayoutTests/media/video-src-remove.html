@@ -1,6 +1,8 @@
 <html>
 <body>
     <script src=media-file.js></script>
+    <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+         (Please avoid writing new tests using video-test.js) -->
     <script src=video-test.js></script>
     <div id=panel></div>
     <script>
@@ -15,7 +17,7 @@
         findMediaElement();
 
         var loadCount = 0;
-        
+
         function testSrc()
         {
             testExpected("stripExtension(relativeURL(video.currentSrc))", stripExtension(mediaFile));
@@ -41,7 +43,7 @@
             consoleWrite("");
             setTimeout(someTimeLater, 100) ;
         }
-        
+
         function someTimeLater()
         {
             testSrc();

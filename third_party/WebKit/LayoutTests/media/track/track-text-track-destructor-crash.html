@@ -4,6 +4,8 @@
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
         <script src=../media-file.js></script>
+        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+             (Please avoid writing new tests using video-test.js) -->
         <script src=../video-test.js></script>
         <script>
 
@@ -23,12 +25,12 @@
                 consoleWrite("SUCCESS: Did not crash");
                 endTest();
             }
-            
+
             function forceGC()
             {
                 if (window.GCController)
                     return GCController.collect();
-            
+
                 // Force garbage collection
                 for (var ndx = 0; ndx < 99000; ndx++)
                     var str = new String("1234");

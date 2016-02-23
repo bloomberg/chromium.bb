@@ -1,8 +1,10 @@
 <body>
 <script src=media-file.js></script>
+<!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+     (Please avoid writing new tests using video-test.js) -->
 <script src=video-test.js></script>
 <script>
-    waitForEvent('loadstart', function () { 
+    waitForEvent('loadstart', function () {
         video = mediaElement = document.getElementsByTagName('video')[0];
         testExpected("stripExtension(relativeURL(video.currentSrc))", stripExtension(findMediaFile("video", "content/test")));
         endTest();

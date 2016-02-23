@@ -1,6 +1,8 @@
 <html>
     <head>
         <title>drawing &lt;video&gt; to &lt;canvas&gt;</title>
+        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+             (Please avoid writing new tests using video-test.js) -->
         <script src=../http/tests/media/video-test.js></script>
 
         <script>
@@ -23,7 +25,7 @@
             function testPixel()
             {
                 var expected = results.values[results.current];
-                if (expected.time) 
+                if (expected.time)
                     ctx.drawImage(video, 0, 0, width, height);
 
                 var frame = ctx.getImageData(0, 0, width, height);
@@ -46,7 +48,7 @@
                 video.pause();
                 consoleWrite("");
                 var expected = results.values[results.current];
-                if (expected.time) 
+                if (expected.time)
                     run("video.currentTime = " + expected.time);
                 setTimeout(testPixel, 100);
             }
@@ -57,7 +59,7 @@
                 height = video.videoHeight / 2;
 
                 ctx = canvas.getContext("2d");
-                ctx.fillStyle = 'yellow'; 
+                ctx.fillStyle = 'yellow';
                 ctx.fillRect(0, 0, width, height);
                 testFrame();
             }
@@ -80,6 +82,6 @@
     </div>
 
     <p>Test &lt;video&gt; as a source for &lt;canvas&gt;.</p>
-    
+
     </body>
 </html>

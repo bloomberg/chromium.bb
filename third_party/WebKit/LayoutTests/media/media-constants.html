@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+         (Please avoid writing new tests using video-test.js) -->
     <script src=video-test.js></script>
     <script type="text/javascript">
-        function doTest () 
+        function doTest ()
         {
             testExpected("HTMLMediaElement.NETWORK_EMPTY", 0);
             testExpected("HTMLMediaElement.NETWORK_IDLE", 1);

@@ -2,6 +2,8 @@
 <html>
     <head>
         <script src=media-file.js></script>
+        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+             (Please avoid writing new tests using video-test.js) -->
         <script src=video-test.js></script>
 
         <script>
@@ -11,7 +13,7 @@
             function seekIncrement()
             {
                 // We want to verify that seeking by an increment smaller than the test movie's time scale
-                // (the smallest unit of time in that file) succeeds. test.mp4 has a time scale of 2500, 
+                // (the smallest unit of time in that file) succeeds. test.mp4 has a time scale of 2500,
                 // 0.0004 seconds, so start with that and decrease by half each time.
                 if (!increment)
                     increment = 0.0004;

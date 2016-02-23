@@ -1,6 +1,8 @@
 <html>
   <head>
       <script src=../../media-resources/media-file.js></script>
+      <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+           (Please avoid writing new tests using video-test.js) -->
       <script src=../../media-resources/video-test.js></script>
       <script>
           if (window.testRunner)
@@ -8,7 +10,7 @@
 
           function start() {
               findMediaElement();
-  
+
               waitForEventAndEnd('ended');
               waitForEvent('seeked', function() {
                   video.play();

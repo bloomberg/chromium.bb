@@ -2,8 +2,10 @@
 <html>
     <head>
         <script src=../media-file.js></script>
+        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+             (Please avoid writing new tests using video-test.js) -->
         <script src=../video-test.js></script>
-    
+
         <script>
             function clearSrc()
             {
@@ -28,7 +30,7 @@
                 endTest();
             }
 
-            function setup() 
+            function setup()
             {
                 consoleWrite("");
 
@@ -39,7 +41,7 @@
 
                 video.src = findMediaFile("video", "../content/test");
             }
-            
+
         </script>
     </head>
     <body onload="setup()">
@@ -48,6 +50,6 @@
         </video>
 
         <p>Test to ensure that a no text track cues are active after the video is unloaded.</p>
-    
+
     </body>
 </html>

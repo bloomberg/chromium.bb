@@ -1,28 +1,30 @@
 <html>
     <head>
         <script src=media-file.js></script>
+        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+             (Please avoid writing new tests using video-test.js) -->
         <script src=video-test.js></script>
 
-        
+
         <script>
             function loadedmetadata()
             {
                 failTest(relativeURL(video.currentSrc) + "loaded but should not" );
                 consoleWrite("");
             }
-    
+
             function errorEvent()
             {
                 testExpected("video.error.code", MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED);
-                
+
                 // "setTimeout()" is generally bad form in a layout test, but we need to verify
-                // that changing the 'src' attribute does not do something that happens 
+                // that changing the 'src' attribute does not do something that happens
                 // asynchronously so we don't have a lot of options.
                 setTimeout(function () { endTest(); }, 200) ;
                 run("video.removeAttribute('src')");
                 consoleWrite("");
             }
-    
+
             function setup()
             {
                 findMediaElement();
@@ -47,7 +49,7 @@
     <p>Test that removing 'src' attribute does NOT trigger load of &lt;source&gt; elements</p>
 
     <script>
-        
+
     </script>
 
 </body>

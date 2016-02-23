@@ -8,6 +8,8 @@
     <p>This tests that a mouse events on the controls will not be seen by the video element.</p>
     <p>Also tests keyboard input.</p>
     <script src=media-file.js></script>
+    <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+         (Please avoid writing new tests using video-test.js) -->
     <script src=video-test.js></script>
     <script src=media-controls.js></script>
     <script>
@@ -57,7 +59,7 @@
                 eventSender.mouseDown();
 
                 waitForEventAndFail("mousemove")
-                
+
                 // Check that the timeline also captures mousemove if the
                 // slider is being dragged.
                 eventSender.mouseMoveTo(coords[0]+10, coords[1]+10)

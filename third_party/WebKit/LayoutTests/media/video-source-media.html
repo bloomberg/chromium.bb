@@ -1,7 +1,9 @@
 <body>
+<!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+     (Please avoid writing new tests using video-test.js) -->
 <script src=video-test.js></script>
 <script>
-    waitForEvent('loadstart', function () { 
+    waitForEvent('loadstart', function () {
         video = mediaElement = document.getElementsByTagName('video')[0];
         testExpected("relativeURL(video.currentSrc)", "content/test.mp4");
         endTest();

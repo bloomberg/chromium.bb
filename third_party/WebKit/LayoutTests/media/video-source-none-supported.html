@@ -2,6 +2,8 @@
 <html>
 <head>
     <title>no usable &lt;source&gt; test</title>
+    <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+         (Please avoid writing new tests using video-test.js) -->
     <script src=video-test.js></script>
     <script>
         document.addEventListener("error", errorEvent, true);
@@ -11,7 +13,7 @@
             findMediaElement();
             consoleWrite("++ ERROR, src = " + relativeURL(event.target.src) + ", type = \"" + event.target.type + "\"");
             testExpected("event.target.tagName", "SOURCE", "==");
-            
+
             // Any more source elements pending?
             var nextSource = event.target.nextSibling;
             while (video.hasChildNodes()) {
@@ -25,8 +27,8 @@
                 consoleWrite("");
                 endTest();
             } else {
-                // Because the error event is fired asynchronously the network state can be either 
-                // NETWORK_LOADING or NETWORK_NO_SOURCE, depending on whether or not 
+                // Because the error event is fired asynchronously the network state can be either
+                // NETWORK_LOADING or NETWORK_NO_SOURCE, depending on whether or not
                 testExpected("event.target.parentNode.networkState", HTMLMediaElement.NETWORK_IDLE, ">");
             }
 
@@ -42,7 +44,7 @@
         <source src="doesnotexist.mp4">
     </video>
 
-    <p>1. Test that no usable &lt;source&gt; element leaves the media element with 
+    <p>1. Test that no usable &lt;source&gt; element leaves the media element with
     networkState == NETWORK_NO_SOURCE</p>
 </body>
 </html>

@@ -4,6 +4,8 @@
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
         <script src=../media-file.js></script>
+        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+             (Please avoid writing new tests using video-test.js) -->
         <script src=../video-test.js></script>
         <script>
 
@@ -36,7 +38,7 @@
                 findMediaElement();
 
                 consoleWrite("<i>**check initial metadata track state<" + "/i>");
-                track = document.querySelectorAll('track')[0]; 
+                track = document.querySelectorAll('track')[0];
                 testExpected("track.readyState", HTMLTrackElement.NONE);
                 testExpected("video.textTracks[0].mode", "disabled");
 
@@ -48,7 +50,7 @@
 
     <body onload="start()">
         <p>Tests that a 'metadata' track does not load automatically, but does load when the mode is changed.</p>
-        <video oncanplaythrough="canplaythrough()" > 
+        <video oncanplaythrough="canplaythrough()" >
             <track kind="metadata" src="captions-webvtt/metadata.vtt" onload="trackLoaded()">
         </video>
     </body>

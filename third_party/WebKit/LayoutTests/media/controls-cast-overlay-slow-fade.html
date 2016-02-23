@@ -6,6 +6,8 @@
         <script src="../resources/testharnessreport.js"></script>
         <script src="media-file.js"></script>
         <script src="media-controls.js"></script>
+        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+             (Please avoid writing new tests using video-test.js) -->
         <script src="video-test.js"></script>
     </head>
     <body>
@@ -13,7 +15,7 @@
         <script>
         var controls;
         var test;
-        // The cast button should be visible for at least the controlsMouseMovementTimeout, and no more 
+        // The cast button should be visible for at least the controlsMouseMovementTimeout, and no more
         // than that plus the fadeout time. Allow 500ms margin at either side.
         var hideTimeoutLowerBound = controlsMouseMovementTimeoutMs - 500;
         var hideTimeoutUpperBound = controlsMouseMovementTimeoutMs + controlsFadeOutDurationMs + 500;
@@ -27,7 +29,7 @@
         {
             findMediaElement();
             video.src = findMediaFile("video", "content/test");
-            video.addEventListener("playing", t.step_func(function() 
+            video.addEventListener("playing", t.step_func(function()
             {
                 setTimeout(t.step_func(function()
                 {

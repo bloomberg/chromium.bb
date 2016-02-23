@@ -7,8 +7,10 @@
     to NETWORK_NO_SOURCE. Setting src to a valid url should then trigger the loading
     events and end up with networkState >= NETWORK_LOADING.
      </p>
-    
+
     <script src=media-file.js></script>
+    <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+         (Please avoid writing new tests using video-test.js) -->
     <script src=video-test.js></script>
     <script>
         function testNetworkState(expected, endit, op)
@@ -17,7 +19,7 @@
             if (endit)
                 endTest();
         }
-        
+
         waitForEvent("loadstart");
         waitForEvent("loadedmetadata");
         waitForEvent("loadeddata");
@@ -25,14 +27,14 @@
         waitForEventAndFail("play");
         waitForEventAndFail("playing");
         waitForEvent("canplaythrough", function () { testNetworkState(HTMLMediaElement.NETWORK_IDLE, true, '>=' ); } );
-    
+
         function waitUntilNotLoading()
         {
             if (video.networkState == HTMLMediaElement.NETWORK_LOADING) {
                 setTimeout(waitUntilNotLoading, 100);
                 return;
             }
-            
+
             testNetworkState(HTMLMediaElement.NETWORK_NO_SOURCE);
             consoleWrite("");
 
@@ -42,7 +44,7 @@
             runSilently("video.src = '" + mediaFile + "'");
             enableFullTestDetailsPrinting();
         }
-        
+
         // first set the src to a bogus url, it should attempt a load
         consoleWrite("");
         testNetworkState(HTMLMediaElement.NETWORK_EMPTY);

@@ -3,6 +3,8 @@
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
         <title>&lt;video&gt; and &lt;source&gt; error test</title>
         <script src=media-file.js></script>
+        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+             (Please avoid writing new tests using video-test.js) -->
         <script src=video-test.js></script>
 
         <script>
@@ -65,10 +67,10 @@
             <source id=supported-format-mp4 src=content/test.mp4 type="video/mp4; codecs=&quot;avc1.4D400C&quot;">
             <source id=supported-format-ogv src=content/test.ogv type="video/ogg">
         </video>
-        
+
         <p>1. Test that errors fired while evaluating/loading &lt;source&gt; elements are fired at the
         &lt;source&gt; and not at the &lt;video&gt; element.
-        <br>2. Verifiy that an 'error' event fired while processing/loading a &lt;source&gt; element 
+        <br>2. Verifiy that an 'error' event fired while processing/loading a &lt;source&gt; element
         does not set the media element's 'error' attribute.</p>
 
         <script>start()</script>

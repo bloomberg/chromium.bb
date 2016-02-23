@@ -2,13 +2,15 @@
 <html>
 <head>
 <script src=media-file.js></script>
+<!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+     (Please avoid writing new tests using video-test.js) -->
 <script src=video-test.js></script>
 <script src=video-played.js></script>
 <script src="../resources/js-test.js"></script>
 
 <script type="text/javascript">
 
-if (window.internals) 
+if (window.internals)
     window.internals.settings.setMediaPlaybackRequiresUserGesture(true);
 
 function gotStream(stream)
@@ -64,6 +66,5 @@ function playPreview()
 <body onload="playPreview()">
 <video width="320" height="240" autoplay="autoplay"></video>
 <canvas width="1" height="1" ></canvas>
-</body> 
-</html> 
-
+</body>
+</html>

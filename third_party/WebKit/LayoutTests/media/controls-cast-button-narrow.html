@@ -6,6 +6,8 @@
         <script src="../resources/testharnessreport.js"></script>
         <script src="media-file.js"></script>
         <script src="media-controls.js"></script>
+        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+             (Please avoid writing new tests using video-test.js) -->
         <script src="video-test.js"></script>
     </head>
     <body>
@@ -41,7 +43,7 @@
             var y = buttonBoundingRect.top + buttonBoundingRect.height / 2;
             return new Array(x, y);
         }
-        async_test(function(t) 
+        async_test(function(t)
         {
             findMediaElement();
             video.src = findMediaFile("video", "content/test");
@@ -53,7 +55,7 @@
                 // Video should not have a cast button since the video is too narrow
                 button = castButton(video);
                 assert_equals(button.style.display, "none", "button should not be visible with no cast devices");
-                
+
                 // It should, however, have an overlay cast button instead
                 button = overlayCastButton(video);
                 rect = button.getBoundingClientRect();

@@ -4,11 +4,13 @@
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
         <script src=../media-file.js></script>
+        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+             (Please avoid writing new tests using video-test.js) -->
         <script src=../video-test.js></script>
-        <script>           
+        <script>
 
             var cues;
-            
+
             function logSpecURL(url, description)
             {
                 consoleWrite("<br><i>" + description + "</i>");
@@ -74,7 +76,7 @@
                 run("textCue.line = 102");
                 testExpected("textCue.line", 102);
 
-                logSpecURL("http://www.whatwg.org/specs/web-apps/current-work/multipage/the-video-element.html#dom-texttrackcue-line", 
+                logSpecURL("http://www.whatwg.org/specs/web-apps/current-work/multipage/the-video-element.html#dom-texttrackcue-line",
                            "On setting, if the new value is negative or greater than 100, then throw an IndexSizeError exception. Otherwise, set the text track cue text position to the new value.");
                 testDOMException("textCue.position = -200", "DOMException.INDEX_SIZE_ERR");
                 testDOMException("textCue.position = 110", "DOMException.INDEX_SIZE_ERR");

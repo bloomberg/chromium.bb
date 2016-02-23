@@ -2,22 +2,24 @@
     <head>
         <title>Test of 'played' attribute</title>
         <script src=media-file.js></script>
+        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+             (Please avoid writing new tests using video-test.js) -->
         <script src=video-test.js></script>
         <script src=video-played.js></script>
         <script>
-    
-            var testFunctions = 
-            [ 
+
+            var testFunctions =
+            [
                 PlayWithNoRanges,
                 CreateANewRange,
                 JumpAndCollapseTwoRanges,
                 TestLoopingAndPassToTheEnd
             ];
-    
+
             // NOTE: Result details are not printed for this test because time values are different from machine
             // to machine and run to run. Commenting out the following line turns on detailed logging back on, which
             // can be useful for debugging test failure.
-            disableFullTestDetailsPrinting(); 
+            disableFullTestDetailsPrinting();
 
             function PlayWithNoRanges()
             {
@@ -32,12 +34,12 @@
                 currentTimeRange++;
                 startPlayingInNewRange();
             }
-    
+
 
             function CreateANewRange()
             {
                 consoleWrite("<br><b><em>Create a new range</em></b>");
-        
+
                 var newTime = (video.played.end(0) + 0.05).toFixed(2);
                 runSilently("video.currentTime = " + newTime);
 
@@ -50,7 +52,7 @@
             function JumpAndCollapseTwoRanges()
             {
                 consoleWrite("<br><b><em>Test playing from one range into another, should collapse the two ranges</em></b>");
-    
+
                 timeRangeCount--;
                 currentTimeRange = timeRangeCount - 1;
                 var startTime = expectedStartTimes[0] - 0.1;
@@ -72,9 +74,9 @@
                 run("video.loop = true");
                 var startTime = (video.duration - 0.05).toFixed(2);
                 runSilently("video.currentTime = " + startTime);
-                
+
                 // We will end in the very first time range
-                currentTimeRange = 0; 
+                currentTimeRange = 0;
 
                 willPauseInExistingRange = true;
                 willExtendAnExistingRange = true;

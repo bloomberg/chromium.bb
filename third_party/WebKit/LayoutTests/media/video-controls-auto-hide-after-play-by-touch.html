@@ -6,6 +6,8 @@
   height: 240px;
 }
 </style>
+<!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+     (Please avoid writing new tests using video-test.js) -->
 <script src=video-test.js></script>
 <script src=media-file.js></script>
 <script src=media-controls.js></script>
@@ -17,7 +19,7 @@ function dispatchActivateEvent(target) {
     // Create a DOMActivate event and dispatch it
     var event = document.createEvent('UIEvents');
     event.initUIEvent('DOMActivate', true, true, window, 1)
-    target.dispatchEvent(event);                
+    target.dispatchEvent(event);
 }
 
 
@@ -37,7 +39,7 @@ function runTest()
     eventSender.gestureTap(clickX, clickY);
     eventSender.gestureTapDown(clickX, clickY);
     dispatchActivateEvent(controls);
-              
+
     testExpected("video.paused", false);
 
     runAfterHideMediaControlsTimerFired(function()

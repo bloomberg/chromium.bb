@@ -2,6 +2,8 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
         <title>&lt;video&gt; and &lt;source&gt; error test</title>
+        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+             (Please avoid writing new tests using video-test.js) -->
         <script src=video-test.js></script>
 
         <script>
@@ -27,7 +29,7 @@
                     logResult(false, "EVENT(error) from " + evt.target);
 
                 testExpected("video.error", null);
-                
+
                 if (++errorCount == expectedErrorCount) {
                     consoleWrite("");
                     setTimeout(endTest, 200);
@@ -53,7 +55,7 @@
             <source id=empty-src src="" type="video/ogg">
             <source id=no-extension-no-type src=nonexistent>
         </video>
-        
+
         <p>Test that 'error' events are fired from &lt;source&gt; element when it can not be used.</p>
 
     </body>

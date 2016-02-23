@@ -2,17 +2,19 @@
 <html>
     <head>
         <script src=media-file.js></script>
+        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+             (Please avoid writing new tests using video-test.js) -->
         <script src=video-test.js></script>
-        
+
         <script>
-    
+
             function errorEvent()
             {
                 logResult(false, "*** \"" + relativeURL(video.currentSrc) + "\" should not have been processed!" );
                 consoleWrite("");
                 endTest();
             }
-    
+
             function setup()
             {
                 video = document.createElement("video");

@@ -3,6 +3,8 @@
     <head>
 
         <script src=../media-file.js></script>
+        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+             (Please avoid writing new tests using video-test.js) -->
         <script src=../video-test.js></script>
         <script>
 
@@ -27,10 +29,10 @@
                 consoleWrite("<b>++ Test that it's readonly</b>");
                 run("textTrack.id = 'newvalue';");
                 testExpected("textTrack.id", "LoremIpsum");
-                
+
                 endTest();
             }
-            
+
         </script>
     </head>
     <body >

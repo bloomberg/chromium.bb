@@ -2,11 +2,13 @@
 <html>
     <head>
         <title>crash after removing &lt;source&gt; test</title>
+        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+             (Please avoid writing new tests using video-test.js) -->
         <script src=video-test.js></script>
         <script src=media-file.js></script>
         <script>
 
-            var testInfo = 
+            var testInfo =
             {
                 current : -1,
                 tests : [removeChild, innerHTML, replaceChild]
@@ -16,7 +18,7 @@
             {
                 consoleWrite("Removing all &lt;source&gt; elements with <i>removeChild()<" + "/i>");
                 for (var ndx = 0; ndx < sources.length; ++ndx) {
-                    consoleWrite(" -> removeChild(" + ndx + ")"); 
+                    consoleWrite(" -> removeChild(" + ndx + ")");
                     video.removeChild(sources[ndx]);
                }
             }
@@ -24,7 +26,7 @@
             function innerHTML()
             {
                 consoleWrite("Removing all &lt;source&gt; by setting <i>.innerHTML<" + "/i>");
-                consoleWrite(" -> video.innerHTML = ''"); 
+                consoleWrite(" -> video.innerHTML = ''");
             }
 
             function replaceChild(sources)
@@ -33,7 +35,7 @@
                 var span = document.createElement("span")
                 span.appendChild(document.createTextNode("Yo"));
                 for (var ndx = 0; ndx < sources.length; ++ndx) {
-                    consoleWrite(" -> replaceChild(" + ndx + ")"); 
+                    consoleWrite(" -> replaceChild(" + ndx + ")");
                    video.replaceChild(span, sources[ndx]);
                 }
             }
@@ -51,7 +53,7 @@
                 source.type = mimeTypeForExtension(source.src.split('.').pop());
                 video.appendChild(source);
             }
-            
+
             function runNextTest()
             {
                 consoleWrite("");
@@ -65,8 +67,8 @@
                 document.body.appendChild(video);
                 video.addEventListener("loadstart", runOneTest);
 
-                // Add a bunch of source elements with bogus urls because we want to remove elements 
-                // after the media engine begins processing sources, and we can't predict the delay 
+                // Add a bunch of source elements with bogus urls because we want to remove elements
+                // after the media engine begins processing sources, and we can't predict the delay
                 // between when the media element fires an 'error' event and our handler is called,
                 // but we need to guarantee that there are <source> elements that haven't been processed
                 // when we run the test.

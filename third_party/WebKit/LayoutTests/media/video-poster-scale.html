@@ -3,12 +3,14 @@
 <html>
     <head>
         <title>'poster' aspect ratio test</title>
+        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+             (Please avoid writing new tests using video-test.js) -->
         <script src=video-test.js></script>
-        <style> 
-            video { 
-                border: 3px solid red; 
+        <style>
+            video {
+                border: 3px solid red;
                 background-color: #ee00ee;
-            } 
+            }
             #wide { width: 320px; height: 150px; }
             #tall { width: 150px; height: 320px; }
             #big { width: 320px; height: 240px; }

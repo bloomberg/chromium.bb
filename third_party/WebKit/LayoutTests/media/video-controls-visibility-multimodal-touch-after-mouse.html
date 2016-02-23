@@ -6,6 +6,8 @@
   height: 240px;
 }
 </style>
+<!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+     (Please avoid writing new tests using video-test.js) -->
 <script src=video-test.js></script>
 <script src=media-file.js></script>
 <script src=media-controls.js></script>
@@ -28,7 +30,7 @@ function runTest()
     // Hover the control with the mouse.
     var coords = mediaControlsButtonCoordinates(video, "play-button");
     eventSender.mouseMoveTo(coords[0], coords[1]);
-    
+
     // And then tap (touch input) the play button.
     eventSender.gestureTapDown(coords[0], coords[1]);
     eventSender.gestureShowPress(coords[0], coords[1]);
@@ -48,7 +50,7 @@ function runTest()
         testExpected("getComputedStyle(controls).opacity", 0);
         endTest();
     }, video);
-    
+
 }
 </script>
 <body>

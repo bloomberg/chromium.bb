@@ -1,5 +1,7 @@
 <html>
     <head>
+        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+             (Please avoid writing new tests using video-test.js) -->
         <script src=video-test.js></script>
         <script>
             function setPreload(value, expected)
@@ -53,7 +55,7 @@
 
                 consoleWrite("++ Set to 'metadata'");
                 setPreload("metadata", "metadata");
-        
+
                 endTest();
             }
         </script>
@@ -64,4 +66,3 @@
         <video controls></video>
     </body>
 </html>
-

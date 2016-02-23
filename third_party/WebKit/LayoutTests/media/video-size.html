@@ -1,16 +1,18 @@
 <html>
     <head>
         <title>&lt;video&gt; element size and resize test</title>
+        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+             (Please avoid writing new tests using video-test.js) -->
         <script src=video-test.js></script>
         <script src=media-file.js></script>
 
         <script>
-            var movieInfo = 
+            var movieInfo =
             {
                 current:0,
-                movies: 
-                [ 
-                    {   
+                movies:
+                [
+                    {
                         src:null,
                         poster:null,
                         description:"no 'src' and no 'poster', with 'width' and 'height' attributes",

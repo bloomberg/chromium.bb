@@ -1,15 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+         (Please avoid writing new tests using video-test.js) -->
     <script src=../video-test.js></script>
     <script type="text/javascript">
-        function doTest () 
+        function doTest ()
         {
             testExpected("HTMLTrackElement.NONE", 0);
             testExpected("HTMLTrackElement.LOADING", 1);
             testExpected("HTMLTrackElement.LOADED", 2);
             testExpected("HTMLTrackElement.ERROR", 3);
-        
+
             endTest();
         }
     </script>

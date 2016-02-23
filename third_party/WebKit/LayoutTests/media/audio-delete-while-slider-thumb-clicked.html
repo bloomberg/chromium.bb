@@ -2,6 +2,8 @@
 <html>
     <head>
         <script src=media-file.js></script>
+        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+             (Please avoid writing new tests using video-test.js) -->
         <script src=video-test.js></script>
         <script src=media-controls.js></script>
         <script>
@@ -101,7 +103,7 @@
     <body onload="start()">
         This tests that events don't continue to target a slider thumb if the media element is deleted while scrubbing.
         <br>
-        <input type="button" id="button" value="Click Me!" onmouseup="log('button click!')"> 
+        <input type="button" id="button" value="Click Me!" onmouseup="log('button click!')">
         <br>
         <audio id="audio" autoplay onplaying="drag()" controls></audio><br><br>
         <div id="console"></div>

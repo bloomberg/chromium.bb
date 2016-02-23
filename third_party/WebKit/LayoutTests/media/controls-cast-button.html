@@ -6,6 +6,8 @@
         <script src="../resources/testharnessreport.js"></script>
         <script src="media-file.js"></script>
         <script src="media-controls.js"></script>
+        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+             (Please avoid writing new tests using video-test.js) -->
         <script src="video-test.js"></script>
     </head>
     <body>
@@ -41,7 +43,7 @@
             var y = buttonBoundingRect.top + buttonBoundingRect.height / 2;
             return new Array(x, y);
         }
-        async_test(function(t) 
+        async_test(function(t)
         {
             findMediaElement();
             video.src = findMediaFile("video", "content/test");
@@ -60,8 +62,8 @@
                 assert_not_equals(dimensions[0], 0, "button should exist");
                 assert_not_equals(dimensions[1], 0, "button should exist");
 
-                // Check its position is to the right of the timeline 
-                // (can't test against volume control or closed caption button, since these don't always exist) 
+                // Check its position is to the right of the timeline
+                // (can't test against volume control or closed caption button, since these don't always exist)
                 position = castButtonCoordinates(video);
                 timelinePosition = mediaControlsButtonCoordinates(video, "timeline");
                 assert_greater_than(position[0], timelinePosition[0], "button should be to right of timeline");

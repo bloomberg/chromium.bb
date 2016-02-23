@@ -2,9 +2,11 @@
     <head>
         <title>Test that media autoplay should not work if user gesture is required for playback</title>
         <script src=media-file.js></script>
+        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+             (Please avoid writing new tests using video-test.js) -->
         <script src=video-test.js></script>
         <script>
-            if (window.internals) 
+            if (window.internals)
                 window.internals.settings.setMediaPlaybackRequiresUserGesture(true);
 
             function testPlay()

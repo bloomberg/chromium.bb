@@ -4,6 +4,8 @@
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
         <script src=../media-file.js></script>
+        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+             (Please avoid writing new tests using video-test.js) -->
         <script src=../video-test.js></script>
     </head>
     <body>
@@ -23,7 +25,7 @@
             track = document.getElementById('testTrackEmpty');
             testExpected("track.readyState", HTMLTrackElement.NONE);
             track.addEventListener("load", function () { trackLoaded(); }, true);
-            track.src = "captions-webvtt/tc004-webvtt-file.vtt";   
+            track.src = "captions-webvtt/tc004-webvtt-file.vtt";
             track.track.mode = "hidden";
 
         </script>

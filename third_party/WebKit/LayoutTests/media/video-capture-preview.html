@@ -2,6 +2,8 @@
 <html>
 <head>
 <script src=media-file.js></script>
+<!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+     (Please avoid writing new tests using video-test.js) -->
 <script src=video-test.js></script>
 <script src=video-played.js></script>
 
@@ -10,7 +12,7 @@
 var previewURL = "";
 var localStream = null;
 
-if (window.internals) 
+if (window.internals)
     window.internals.settings.setMediaPlaybackRequiresUserGesture(true);
 
 function startPreview()
@@ -64,6 +66,5 @@ function playPreview()
 
 <body onload="playPreview()">
 <video width="320" height="240" autoplay="autoplay"></video>
-</body> 
-</html> 
-
+</body>
+</html>

@@ -2,17 +2,19 @@
 <html>
     <head>
         <title>load() and the &lt;source&gt; element</title>
+        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+             (Please avoid writing new tests using video-test.js) -->
         <script src=video-test.js></script>
         <script src=media-file.js></script>
         <script>
             var sources = [];
             var count = 0;
 
-            function canplaythrough() 
+            function canplaythrough()
             {
                 testExpected("stripExtension(relativeURL(video.currentSrc))", relativeURL(stripExtension(sources[1])));
                 ++count;
-                switch (count) 
+                switch (count)
                 {
                     case 1:
                         consoleWrite("<br>+++ Calling load().");

@@ -1,19 +1,21 @@
 <html>
 <body>
+    <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+         (Please avoid writing new tests using video-test.js) -->
     <script src=video-test.js></script>
 
     <script>
-        mediaElement.addEventListener('loadedmetadata', function() { 
+        mediaElement.addEventListener('loadedmetadata', function() {
             failTest("'loadedmetadata' event fired" );
         }, true);
 
-        waitForEvent('loadstart', function () { 
+        waitForEvent('loadstart', function () {
             findMediaElement();
             testExpected("relativeURL(video.currentSrc)", "content/bogus.mpeg");
             consoleWrite("");
         });
 
-        waitForEvent('error', function () { 
+        waitForEvent('error', function () {
             findMediaElement();
             testExpected("relativeURL(video.currentSrc)", "content/bogus.mpeg");
             testExpected("mediaElement.error.code", MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED);

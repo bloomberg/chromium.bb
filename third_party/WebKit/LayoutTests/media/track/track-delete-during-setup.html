@@ -14,7 +14,10 @@
 <script></script>
 <script></script>
 <script>setTimeout("try { var v = document.querySelector('video'); v.parentNode.removeChild(v); } catch(e) {}", 61);</script>
-<meta><script src=../video-test.js></script>
+<meta>
+<!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+     (Please avoid writing new tests using video-test.js) -->
+<script src=../video-test.js></script>
         <script>
 
             {
@@ -38,7 +41,7 @@
                 consoleWrite("<feOffset>");
                 findMediaElement();
 
-                track1 = document.querySelectorAll('track')[0]; 
+                track1 = document.querySelectorAll('track')[0];
                 testExpected("track1.readyState", HTMLTrackElement.NONE);
                 testExpected("track1.track.mode", "disabled");
 
@@ -47,5 +50,5 @@
             }
         </script>
     <body onload="start()">
-<command><aside><kbd><video oncanplaythrough="canplaythrough()" > 
+<command><aside><kbd><video oncanplaythrough="canplaythrough()" >
             <track src="captions-webvtt/metadata.vtt" onload="metadataTrackLoaded()">

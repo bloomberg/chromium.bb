@@ -2,12 +2,14 @@
 <html>
     <head>
         <script src=media-file.js></script>
+        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+             (Please avoid writing new tests using video-test.js) -->
         <script src=video-test.js></script>
-    
+
         <script>
             var seekCount = 0;
             var playCount = 0;
-    
+
             function play()
             {
                 if (video.readyState < HTMLMediaElement.HAVE_METADATA) {
@@ -20,14 +22,14 @@
 
                 consoleWrite("<br><em>++ seek to near the end, wait for 'seeked' event to announce loop.</em>");
                 testExpected("video.paused", false);
-                
+
                 // Pause playback so the movie can't possibly loop before the seeked event fires
                 run("video.pause()");
                 waitForEvent("seeked", seeked);
                 run("video.currentTime = video.duration - 0.4");
                 consoleWrite("");
             }
-    
+
             function seeked()
             {
                 switch (++seekCount)
@@ -46,7 +48,7 @@
                         run("video.pause()");
 
                         testExpected("mediaElement.currentTime", 0, '>=');
-    
+
                         // don't use "testExpected()" so we won't log the actual duration as the floating point result may differ with different engines
                         reportExpected(mediaElement.currentTime < mediaElement.duration, "mediaElement.currentTime", "<", "mediaElement.duration", mediaElement.currentTime);
                         run("video.loop = false");
@@ -63,11 +65,11 @@
                     default:
                         failTest("Video should have only seeked three times.");
                         break;
-                        
+
                 }
             }
-    
-            function ended() 
+
+            function ended()
             {
                 consoleWrite("<br><em>++ played to end and stopped.</em>");
                 testExpected("video.ended", true);
@@ -78,7 +80,7 @@
                 consoleWrite("");
                 endTest();
             }
-    
+
             function start()
             {
                 findMediaElement();
@@ -86,14 +88,14 @@
                 consoleWrite("<em>++ Test setting/removing the attribute.</em>");
                 testExpected("video.getAttribute('loop')", null);
                 testExpected("video.loop", false);
-            
+
                 run("video.loop = true");
                 testExpected("video.loop", true);
                 testExpected("video.getAttribute('loop')", null, "!=");
-            
+
                 run("video.removeAttribute('loop')");
                 testExpected("video.loop", false);
-            
+
                 waitForEvent('pause');
                 waitForEvent('play', play);
                 waitForEvent("ended", ended);

@@ -2,14 +2,16 @@
 <html>
     <head>
         <title>moving &lt;source&gt; element test</title>
+        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+             (Please avoid writing new tests using video-test.js) -->
         <script src=video-test.js></script>
         <script src=media-file.js></script>
         <script>
 
-            var testInfo = 
+            var testInfo =
             {
                 current : -1,
-                tests : 
+                tests :
                 [
                     { fcn : moveToEnd, errorCount : 0, moved : null, done : false, iteration : 1},
                     { fcn : moveToEnd, errorCount : 0, moved : null, done : false, iteration : 2},
@@ -90,7 +92,7 @@
                             test.done = true;
                             return;
                         } else if (!event.target.nextSibling) {
-                            logResult(true, "&lt;source&gt; moved was not processed"); 
+                            logResult(true, "&lt;source&gt; moved was not processed");
                             setTimeout(configureNextTest, 100);
                         }
                         break;
@@ -132,7 +134,7 @@
 
                     default:
                         if (event.target == test.moved) {
-                            logResult(true, "&lt;source&gt; moved was processed a second time."); 
+                            logResult(true, "&lt;source&gt; moved was processed a second time.");
                             setTimeout(configureNextTest, 100);
                         }  else if (!event.target.nextSibling) {
                             // We should never reach the end of the source list since the tests stops
@@ -156,7 +158,7 @@
                 source.type = mimeTypeForExtension(source.src.split('.').pop());
                 video.appendChild(source);
             }
-            
+
             function runNextTest()
             {
                 consoleWrite("");
@@ -170,8 +172,8 @@
                 video = mediaElement = document.createElement('video');
                 document.body.appendChild(video);
 
-                // Add a bunch of source elements with bogus urls because we want to rearrange elements 
-                // after the media engine begins processing sources, and we can't predict the delay 
+                // Add a bunch of source elements with bogus urls because we want to rearrange elements
+                // after the media engine begins processing sources, and we can't predict the delay
                 // between when the media element fires an 'error' event and our handler is called,
                 // but we need to guarantee that there are <source> elements that haven't been processed
                 // when we run the test.
@@ -198,7 +200,7 @@
     </head>
 
     <body>
-        <div>Test to make sure a &lt;source&gt; moved after the media element begins processing 
+        <div>Test to make sure a &lt;source&gt; moved after the media element begins processing
         is handled correctly.</div>
         <script>setup()</script>
     </body>

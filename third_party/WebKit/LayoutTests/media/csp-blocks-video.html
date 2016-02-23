@@ -1,13 +1,15 @@
 <meta http-equiv="Content-Security-Policy" content="media-src 'none'">
 <video controls></video>
 <script src=media-file.js></script>
+<!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+     (Please avoid writing new tests using video-test.js) -->
 <script src=video-test.js></script>
 <p>This test passes if it doesn't alert failure.</p>
 <script>
 var mediaFile = findMediaFile("video", "content/test");
 video.src = mediaFile;
 
-waitForEvent('loadedmetadata', function () { 
+waitForEvent('loadedmetadata', function () {
     alert('FAIL');
     endTest();
 } );

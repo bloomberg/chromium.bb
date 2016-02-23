@@ -1,5 +1,7 @@
 <video controls></video>
 <script src=media-file.js></script>
+<!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+     (Please avoid writing new tests using video-test.js) -->
 <script src=video-test.js></script>
 <script>
     testExpected("video.buffered.length", 0);
@@ -7,8 +9,8 @@
     testDOMException("video.buffered.end(-1)", "DOMException.INDEX_SIZE_ERR");
     testDOMException("video.buffered.start(0)", "DOMException.INDEX_SIZE_ERR");
     testDOMException("video.buffered.end(0)", "DOMException.INDEX_SIZE_ERR");
-    waitForEvent('canplaythrough', 
-        function () 
+    waitForEvent('canplaythrough',
+        function ()
         {
             testExpected("video.buffered.length", 1);
             testExpected("video.buffered.start(0)", 0);

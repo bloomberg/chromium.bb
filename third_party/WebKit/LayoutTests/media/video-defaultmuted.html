@@ -1,6 +1,8 @@
 <!doctype html>
 <html>
     <head>
+        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+             (Please avoid writing new tests using video-test.js) -->
         <script src=video-test.js></script>
         <script src=media-file.js></script>
         <script>
@@ -38,7 +40,7 @@
                     run("video.defaultMuted = " + newDefaultMuted);
                     testMuted(defaultMuted, newDefaultMuted);
                     testExpected("video.hasAttribute('muted')", newDefaultMuted);
-    
+
                     consoleWrite("<br>*** Change 'muted' IDL attribute, content attribute should not change");
                     run("video.muted = false");
                     testMuted(false, newDefaultMuted);

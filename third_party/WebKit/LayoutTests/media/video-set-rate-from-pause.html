@@ -2,6 +2,8 @@
 <html>
     <head>
         <script src=media-file.js></script>
+        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+             (Please avoid writing new tests using video-test.js) -->
         <script src=video-test.js></script>
         <script>
             function init() {
@@ -19,7 +21,7 @@
             function receivedPlay() {
                 waitForEventAndEnd('timeupdate');
                 video.playbackRate = 1;
-            }    
+            }
         </script>
     </head>
     <body onload="init()">

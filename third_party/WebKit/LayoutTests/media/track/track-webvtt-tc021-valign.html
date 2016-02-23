@@ -4,11 +4,13 @@
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
         <script src=../media-file.js></script>
+        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+             (Please avoid writing new tests using video-test.js) -->
         <script src=../video-test.js></script>
-        <script>            
+        <script>
 
             var numberOfTrackTests = 3;
-            
+
             function trackLoaded()
             {
                 numberOfTracksLoaded++;
@@ -22,7 +24,7 @@
             function testTrack(i)
             {
                 findMediaElement();
-                var expected = 
+                var expected =
                 {
                     length : 3,
                     tests:
@@ -42,14 +44,14 @@
                     ],
                 };
                 testCues(i, expected);
-                
+
                 allTestsEnded();
             }
 
             function testTrackError(i)
             {
                 findMediaElement();
-                var expected = 
+                var expected =
                 {
                     length : 3,
                     tests:
@@ -61,14 +63,14 @@
                     ],
                 };
                 testCues(i, expected);
-                
+
                 allTestsEnded();
             }
         </script>
     </head>
     <body onload="enableAllTextTracks()">
         <p>Tests cue vertical alignment (direction) from settings.</p>
-        <video> 
+        <video>
             <track src="captions-webvtt/tc021-valign.vtt" onload="trackLoaded()">
             <track src="captions-webvtt/tc021-valign-ltr.vtt" onload="trackLoaded()">
             <track src="captions-webvtt/tc021-valign-bad.vtt" onload="trackLoaded()">

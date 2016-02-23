@@ -7,35 +7,37 @@
             video { background-color: yellow; width: 320px; height: 240px;}
         </style>
         <script src=../media-file.js></script>
+        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+             (Please avoid writing new tests using video-test.js) -->
         <script src=../video-test.js></script>
         <script>
 
             var timer = null;
             var expectedLanguage;
-            var testList = 
+            var testList =
             {
                 current : -1,
-                tests : 
-                [ 
+                tests :
+                [
                     {
-                        description: "a track language matches one of the user's preferred languages exactly", 
-                        languages : ['fr', 'en', 'jp'], 
-                        expectedLanguage : "jp", 
+                        description: "a track language matches one of the user's preferred languages exactly",
+                        languages : ['fr', 'en', 'jp'],
+                        expectedLanguage : "jp",
                     },
                     {
-                        description: "a track language without locale exactly matches one of the user's preferred languages", 
-                        languages : ['fr-CH', 'da'], 
-                        expectedLanguage : "fr-CH", 
+                        description: "a track language without locale exactly matches one of the user's preferred languages",
+                        languages : ['fr-CH', 'da'],
+                        expectedLanguage : "fr-CH",
                     },
                     {
-                        description: "a track language without locale matches one of the user's preferred languages without locale", 
-                        languages : ['fr', 'es-MX'], 
-                        expectedLanguage : "es-MX", 
+                        description: "a track language without locale matches one of the user's preferred languages without locale",
+                        languages : ['fr', 'es-MX'],
+                        expectedLanguage : "es-MX",
                     },
                     {
-                        description: "no track language matches any of the user's preferred languages", 
-                        languages : ['fa', 'ru', 'no'], 
-                        expectedLanguage : "fa", 
+                        description: "no track language matches any of the user's preferred languages",
+                        languages : ['fa', 'ru', 'no'],
+                        expectedLanguage : "fa",
                     },
                 ]
             };
@@ -58,7 +60,7 @@
             function trackLoaded()
             {
                 consoleWrite("EVENT(load)");
-                
+
                 // Don't log the event name because the order of the two events in not predictable.
                 track = event.target;
                 testExpected("track.readyState", HTMLTrackElement.LOADED);
@@ -78,7 +80,7 @@
                 run("internals.setUserPreferredLanguages(['jp', 'es-ES', 'en', 'fr'])");
                 window.internals.settings.setTextTrackKindUserPreference('captions');
             }
-            
+
             function createTrackElement(language, src)
             {
                 var track = document.createElement('track');

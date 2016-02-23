@@ -4,11 +4,13 @@
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
         <script src=../media-file.js></script>
+        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
+             (Please avoid writing new tests using video-test.js) -->
         <script src=../video-test.js></script>
-        <script>            
+        <script>
 
             numberOfTrackTests = 2;
-            
+
             function trackLoaded()
             {
                 numberOfTracksLoaded++;
@@ -17,10 +19,10 @@
                     testTrack(1);
                 }
             }
-            
+
             function testTrack(i)
             {
-                var expected = 
+                var expected =
                 {
                     length : 2,
                     tests:
