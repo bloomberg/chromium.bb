@@ -16,6 +16,10 @@ extra_trybots = [
   {
     "mastername": "tryserver.chromium.win",
     "buildernames": ["win_optional_gpu_tests_rel"]
+  },
+  {
+    "mastername": "tryserver.chromium.mac",
+    "buildernames": ["mac_optional_gpu_tests_rel"]
   }
 ]
 
