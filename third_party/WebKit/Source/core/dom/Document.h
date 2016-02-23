@@ -388,7 +388,6 @@ public:
     // FIXME: Switch all callers of resolverChanged to these or better ones and then make them
     // do something smarter.
     void removedStyleSheet(StyleSheet*, StyleResolverUpdateMode = FullStyleUpdate);
-    void addedStyleSheet(StyleSheet*);
     void modifiedStyleSheet(StyleSheet*, StyleResolverUpdateMode = FullStyleUpdate);
     void changedSelectorWatch();
 

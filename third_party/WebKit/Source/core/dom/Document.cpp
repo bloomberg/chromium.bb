@@ -5684,11 +5684,6 @@ void Document::removedStyleSheet(StyleSheet* sheet, StyleResolverUpdateMode upda
     styleEngine().resolverChanged(updateMode);
 }
 
-void Document::addedStyleSheet(StyleSheet*)
-{
-    styleEngine().resolverChanged(FullStyleUpdate);
-}
-
 void Document::modifiedStyleSheet(StyleSheet* sheet, StyleResolverUpdateMode updateMode)
 {
     // If we're in document teardown, then we don't need this notification of our sheet's removal.

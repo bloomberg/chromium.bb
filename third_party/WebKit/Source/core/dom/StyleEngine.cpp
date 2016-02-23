@@ -157,7 +157,7 @@ void StyleEngine::injectAuthorSheet(PassRefPtrWillBeRawPtr<StyleSheetContents> a
 {
     m_injectedAuthorStyleSheets.append(CSSStyleSheet::create(authorSheet, m_document));
     markDocumentDirty();
-    document().addedStyleSheet(m_injectedAuthorStyleSheets.last().get());
+    resolverChanged(FullStyleUpdate);
 }
 
 void StyleEngine::addPendingSheet()
@@ -180,8 +180,6 @@ void StyleEngine::removePendingSheet(Node* styleSheetCandidateNode)
     if (m_pendingStylesheets)
         return;
 
-    // FIXME: We can't call addedStyleSheet or removedStyleSheet here because we don't know
-    // what's new. We should track that to tell the style system what changed.
     document().didRemoveAllPendingStylesheet();
 }
 
@@ -245,6 +243,7 @@ void StyleEngine::modifiedStyleSheetCandidateNode(Node* node)
     TreeScope& treeScope = isStyleElement(*node) ? node->treeScope() : *m_document;
     ASSERT(isStyleElement(*node) || treeScope == m_document);
     markTreeScopeDirty(treeScope);
+    resolverChanged(FullStyleUpdate);
 }
 
 bool StyleEngine::shouldUpdateDocumentStyleSheetCollection(StyleResolverUpdateMode updateMode) const

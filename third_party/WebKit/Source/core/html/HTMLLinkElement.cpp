@@ -643,10 +643,6 @@ void LinkStyle::removePendingSheet()
     if (type == NonBlocking) {
         // Tell StyleEngine to re-compute styleSheets of this m_owner's treescope.
         m_owner->document().styleEngine().modifiedStyleSheetCandidateNode(m_owner);
-        // Document::removePendingSheet() triggers the style selector recalc for blocking sheets.
-        // FIXME: We don't have enough knowledge at this point to know if we're adding or removing a sheet
-        // so we can't call addedStyleSheet() or removedStyleSheet().
-        m_owner->document().styleEngine().resolverChanged(FullStyleUpdate);
         return;
     }
 
@@ -689,7 +685,6 @@ void LinkStyle::setDisabledState(bool disabled)
             if (m_owner->shouldProcessStyle())
                 process();
         } else {
-            // FIXME: We don't have enough knowledge here to know if we should call addedStyleSheet() or removedStyleSheet().
             m_owner->document().styleEngine().resolverChanged(FullStyleUpdate);
         }
     }

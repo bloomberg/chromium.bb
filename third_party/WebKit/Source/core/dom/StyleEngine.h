@@ -163,8 +163,6 @@ public:
     bool shouldClearResolver() const;
     void resolverChanged(StyleResolverUpdateMode);
 
-    void markDocumentDirty();
-
     PassRefPtrWillBeRawPtr<CSSStyleSheet> createSheet(Element*, const String& text, TextPosition startPosition);
     void removeSheet(StyleSheetContents*);
 
@@ -198,6 +196,7 @@ private:
     bool shouldUpdateDocumentStyleSheetCollection(StyleResolverUpdateMode) const;
     bool shouldUpdateShadowTreeStyleSheetCollection(StyleResolverUpdateMode) const;
 
+    void markDocumentDirty();
     void markTreeScopeDirty(TreeScope&);
 
     bool isMaster() const { return m_isMaster; }
