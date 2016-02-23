@@ -13,7 +13,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_window.h"
@@ -166,18 +167,19 @@ std::string ChromeSigninClient::GetSigninScopedDeviceId() {
 }
 
 void ChromeSigninClient::OnSignedOut() {
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  size_t index = cache.GetIndexOfProfileWithPath(profile_->GetPath());
+  ProfileAttributesEntry* entry;
+  bool has_entry = g_browser_process->profile_manager()->
+      GetProfileAttributesStorage().
+      GetProfileAttributesWithPath(profile_->GetPath(), &entry);
 
   // If sign out occurs because Sync setup was in progress and the Profile got
-  // deleted, then the profile's no longer in the ProfileInfoCache.
-  if (index == std::string::npos)
+  // deleted, then the profile's no longer in the ProfileAttributesStorage.
+  if (!has_entry)
     return;
 
-  cache.SetLocalAuthCredentialsOfProfileAtIndex(index, std::string());
-  cache.SetAuthInfoOfProfileAtIndex(index, std::string(), base::string16());
-  cache.SetProfileSigninRequiredAtIndex(index, false);
+  entry->SetLocalAuthCredentials(std::string());
+  entry->SetAuthInfo(std::string(), base::string16());
+  entry->SetIsSigninRequired(false);
 }
 
 net::URLRequestContextGetter* ChromeSigninClient::GetURLRequestContext() {
@@ -239,11 +241,10 @@ void ChromeSigninClient::OnSignedIn(const std::string& account_id,
                                     const std::string& username,
                                     const std::string& password) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
-  size_t index = cache.GetIndexOfProfileWithPath(profile_->GetPath());
-  if (index != std::string::npos) {
-    cache.SetAuthInfoOfProfileAtIndex(index, gaia_id,
-                                      base::UTF8ToUTF16(username));
+  ProfileAttributesEntry* entry;
+  if (profile_manager->GetProfileAttributesStorage().
+          GetProfileAttributesWithPath(profile_->GetPath(), &entry)) {
+    entry->SetAuthInfo(gaia_id, base::UTF8ToUTF16(username));
     ProfileMetrics::UpdateReportedProfilesStatistics(profile_manager);
   }
 }
@@ -263,14 +264,14 @@ void ChromeSigninClient::OnErrorChanged() {
   if (g_browser_process->profile_manager() == nullptr)
     return;
 
-  ProfileInfoCache& cache = g_browser_process->profile_manager()->
-      GetProfileInfoCache();
-  size_t index = cache.GetIndexOfProfileWithPath(profile_->GetPath());
-  if (index == std::string::npos)
-    return;
+  ProfileAttributesEntry* entry;
 
-  cache.SetProfileIsAuthErrorAtIndex(index,
-      signin_error_controller_->HasError());
+  if (!g_browser_process->profile_manager()->GetProfileAttributesStorage().
+          GetProfileAttributesWithPath(profile_->GetPath(), &entry)) {
+    return;
+  }
+
+  entry->SetIsAuthError(signin_error_controller_->HasError());
 }
 
 void ChromeSigninClient::OnGetTokenInfoResponse(
@@ -278,10 +279,12 @@ void ChromeSigninClient::OnGetTokenInfoResponse(
   if (!token_info->HasKey("error")) {
     std::string handle;
     if (token_info->GetString("token_handle", &handle)) {
-      ProfileInfoCache& info_cache =
-          g_browser_process->profile_manager()->GetProfileInfoCache();
-      size_t index = info_cache.GetIndexOfProfileWithPath(profile_->GetPath());
-      info_cache.SetPasswordChangeDetectionTokenAtIndex(index, handle);
+      ProfileAttributesEntry* entry = nullptr;
+      bool has_entry = g_browser_process->profile_manager()->
+          GetProfileAttributesStorage().
+          GetProfileAttributesWithPath(profile_->GetPath(), &entry);
+      DCHECK(has_entry);
+      entry->SetPasswordChangeDetectionToken(handle);
     }
   }
   oauth_request_.reset();
@@ -362,11 +365,11 @@ void ChromeSigninClient::MaybeFetchSigninTokenHandle() {
   // and thus distinguish between a password mismatch due to the password
   // being changed and the user simply mis-typing it.
   if (profiles::IsLockAvailable(profile_)) {
-    ProfileInfoCache& info_cache =
-        g_browser_process->profile_manager()->GetProfileInfoCache();
+    ProfileAttributesStorage& storage =
+        g_browser_process->profile_manager()->GetProfileAttributesStorage();
     ProfileAttributesEntry* entry;
     // If we don't have a token for detecting a password change, create one.
-    if (info_cache.GetProfileAttributesWithPath(profile_->GetPath(), &entry) &&
+    if (storage.GetProfileAttributesWithPath(profile_->GetPath(), &entry) &&
         entry->GetPasswordChangeDetectionToken().empty() && !oauth_request_) {
       std::string account_id = SigninManagerFactory::GetForProfile(profile_)
           ->GetAuthenticatedAccountId();

@@ -45,8 +45,8 @@ class UserManagerScreenHandler
   void GetLocalizedValues(base::DictionaryValue* localized_strings);
 
  private:
-  // An observer for any changes to Profiles in the ProfileInfoCache so that
-  // all the visible user manager screens can be updated.
+  // An observer for any changes to Profiles in the ProfileAttributesStorage so
+  // that all the visible user manager screens can be updated.
   class ProfileUpdateObserver;
 
   // WebUIMessageHandler implementation.
@@ -112,9 +112,9 @@ class UserManagerScreenHandler
   void OnSwitchToProfileComplete(Profile* profile,
                                  Profile::CreateStatus profile_create_status);
 
-  // Observes the ProfileInfoCache and gets notified when a profile has been
-  // modified, so that the displayed user pods can be updated.
-  scoped_ptr<ProfileUpdateObserver> profileInfoCacheObserver_;
+  // Observes the ProfileAttributesStorage and gets notified when a profile has
+  // been modified, so that the displayed user pods can be updated.
+  scoped_ptr<ProfileUpdateObserver> profile_attributes_storage_observer_;
 
   // Authenticator used when local-auth fails.
   scoped_ptr<gaia::GaiaOAuthClient> oauth_client_;

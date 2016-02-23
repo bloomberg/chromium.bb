@@ -98,7 +98,7 @@ class ProfileManager : public base::NonThreadSafe,
 
   // Returns true if the profile pointer is known to point to an existing
   // profile.
-  bool IsValidProfile(void* profile);
+  bool IsValidProfile(const void* profile);
 
   // Returns the directory where the first created profile is stored,
   // relative to the user data directory currently in use.

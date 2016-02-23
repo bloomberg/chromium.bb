@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -22,6 +23,8 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
@@ -553,14 +556,17 @@ bool InlineLoginHandlerImpl::CanOffer(Profile* profile,
     if (g_browser_process && !same_email) {
       ProfileManager* profile_manager = g_browser_process->profile_manager();
       if (profile_manager) {
-        ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
-        for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i) {
-          // For backward compatibility, need to also check the username of the
-          // profile, since the GAIA ID may not have been set yet for the
-          // profile cache info.  It will get set once the profile is opened.
-          std::string profile_gaia_id = cache.GetGAIAIdOfProfileAtIndex(i);
-          std::string profile_email =
-              base::UTF16ToUTF8(cache.GetUserNameOfProfileAtIndex(i));
+        std::vector<ProfileAttributesEntry*> entries =
+            profile_manager->GetProfileAttributesStorage().
+                GetAllProfilesAttributes();
+
+        for (const ProfileAttributesEntry* entry : entries) {
+          // For backward compatibility, need to check also the username of the
+          // profile, since the GAIA ID may not have been set yet in the
+          // ProfileAttributesStorage.  It will be set once the profile
+          // is opened.
+          std::string profile_gaia_id = entry->GetGAIAId();
+          std::string profile_email = base::UTF16ToUTF8(entry->GetUserName());
           if (gaia_id == profile_gaia_id ||
               gaia::AreEmailsSame(email, profile_email)) {
             if (error_message) {
@@ -834,8 +840,8 @@ void InlineLoginHandlerImpl::FinishCompleteLogin(
     ProfileManager* profile_manager = g_browser_process->profile_manager();
     if (profile_manager) {
       ProfileAttributesEntry* entry;
-      if (profile_manager->GetProfileInfoCache()
-            .GetProfileAttributesWithPath(params.profile_path, &entry)) {
+      if (profile_manager->GetProfileAttributesStorage()
+              .GetProfileAttributesWithPath(params.profile_path, &entry)) {
         entry->SetIsSigninRequired(false);
       }
     }

@@ -8,7 +8,8 @@
 
 #include "base/base64.h"
 #include "build/build_config.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -28,10 +29,10 @@ TEST_F(LocalAuthTest, SetAndCheckCredentials) {
       TestingBrowserProcess::GetGlobal());
   ASSERT_TRUE(testing_profile_manager.SetUp());
   Profile* prof = testing_profile_manager.CreateTestingProfile("p1");
-  ProfileInfoCache& cache =
-      testing_profile_manager.profile_manager()->GetProfileInfoCache();
-  EXPECT_EQ(1U, cache.GetNumberOfProfiles());
-  EXPECT_EQ("", cache.GetLocalAuthCredentialsOfProfileAtIndex(0));
+  ProfileAttributesEntry* entry;
+  ASSERT_TRUE(testing_profile_manager.profile_attributes_storage()->
+      GetProfileAttributesWithPath(prof->GetPath(), &entry));
+  EXPECT_EQ("", entry->GetLocalAuthCredentials());
 
 #if defined(OS_MACOSX)
   OSCrypt::UseMockKeychain(true);
@@ -41,7 +42,7 @@ TEST_F(LocalAuthTest, SetAndCheckCredentials) {
   EXPECT_FALSE(LocalAuth::ValidateLocalAuthCredentials(prof, password));
 
   LocalAuth::SetLocalAuthCredentials(prof, password);
-  std::string passhash = cache.GetLocalAuthCredentialsOfProfileAtIndex(0);
+  std::string passhash = entry->GetLocalAuthCredentials();
 
   // We perform basic validation on the written record to ensure bugs don't slip
   // in that cannot be seen from the API:
@@ -60,7 +61,7 @@ TEST_F(LocalAuthTest, SetAndCheckCredentials) {
   EXPECT_FALSE(LocalAuth::ValidateLocalAuthCredentials(prof, password + "1"));
 
   LocalAuth::SetLocalAuthCredentials(prof, password);  // makes different salt
-  EXPECT_NE(passhash, cache.GetLocalAuthCredentialsOfProfileAtIndex(0));
+  EXPECT_NE(passhash, entry->GetLocalAuthCredentials());
 }
 
 TEST_F(LocalAuthTest, SetUpgradeAndCheckCredentials) {
@@ -68,28 +69,26 @@ TEST_F(LocalAuthTest, SetUpgradeAndCheckCredentials) {
       TestingBrowserProcess::GetGlobal());
   ASSERT_TRUE(testing_profile_manager.SetUp());
   Profile* prof = testing_profile_manager.CreateTestingProfile("p1");
-  ProfileInfoCache& cache =
-      testing_profile_manager.profile_manager()->GetProfileInfoCache();
 
 #if defined(OS_MACOSX)
   OSCrypt::UseMockKeychain(true);
 #endif
 
   std::string password("Some Password");
-  size_t profile_index = cache.GetIndexOfProfileWithPath(prof->GetPath());
-  LocalAuth::SetLocalAuthCredentialsWithEncoding(profile_index, password, '1');
+  ProfileAttributesEntry* entry;
+  ASSERT_TRUE(testing_profile_manager.profile_attributes_storage()->
+      GetProfileAttributesWithPath(prof->GetPath(), &entry));
+  LocalAuth::SetLocalAuthCredentialsWithEncoding(entry, password, '1');
 
   // Ensure we indeed persisted the correct encoding.
-  std::string oldpasshash = cache.GetLocalAuthCredentialsOfProfileAtIndex(
-      profile_index);
+  std::string oldpasshash = entry->GetLocalAuthCredentials();
   EXPECT_EQ('1', oldpasshash[0]);
 
   // Validate, ensure we can validate against the old encoding.
   EXPECT_TRUE(LocalAuth::ValidateLocalAuthCredentials(prof, password));
 
   // Ensure we updated the encoding.
-  std::string newpasshash = cache.GetLocalAuthCredentialsOfProfileAtIndex(
-      profile_index);
+  std::string newpasshash = entry->GetLocalAuthCredentials();
   EXPECT_EQ('2', newpasshash[0]);
   // Encoding '2' writes fewer bytes than encoding '1'.
   EXPECT_LE(newpasshash.length(), oldpasshash.length());

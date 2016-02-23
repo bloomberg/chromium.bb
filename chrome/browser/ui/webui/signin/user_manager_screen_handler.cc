@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -111,16 +112,14 @@ void OpenNewWindowForProfile(Profile* profile, Profile::CreateStatus status) {
       chrome::startup::IS_FIRST_RUN, false);
 }
 
-std::string GetAvatarImageAtIndex(
-    size_t index, ProfileInfoCache* info_cache) {
-  bool is_gaia_picture =
-      info_cache->IsUsingGAIAPictureOfProfileAtIndex(index) &&
-      info_cache->GetGAIAPictureOfProfileAtIndex(index);
+std::string GetAvatarImage(const ProfileAttributesEntry* entry) {
+  bool is_gaia_picture = entry->IsUsingGAIAPicture() &&
+                         entry->GetGAIAPicture() != nullptr;
 
   // If the avatar is too small (i.e. the old-style low resolution avatar),
   // it will be pixelated when displayed in the User Manager, so we should
   // return the placeholder avatar instead.
-  gfx::Image avatar_image = info_cache->GetAvatarIconOfProfileAtIndex(index);
+  gfx::Image avatar_image = entry->GetAvatarIcon();
   if (avatar_image.Width() <= profiles::kAvatarIconWidth ||
       avatar_image.Height() <= profiles::kAvatarIconHeight ) {
     avatar_image = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
@@ -224,7 +223,7 @@ void HandleLogRemoveUserWarningShown(const base::ListValue* args) {
 // ProfileUpdateObserver ------------------------------------------------------
 
 class UserManagerScreenHandler::ProfileUpdateObserver
-    : public ProfileInfoCacheObserver {
+    : public ProfileAttributesStorage::Observer {
  public:
   ProfileUpdateObserver(
       ProfileManager* profile_manager, UserManagerScreenHandler* handler)
@@ -232,16 +231,16 @@ class UserManagerScreenHandler::ProfileUpdateObserver
         user_manager_handler_(handler) {
     DCHECK(profile_manager_);
     DCHECK(user_manager_handler_);
-    profile_manager_->GetProfileInfoCache().AddObserver(this);
+    profile_manager_->GetProfileAttributesStorage().AddObserver(this);
   }
 
   ~ProfileUpdateObserver() override {
     DCHECK(profile_manager_);
-    profile_manager_->GetProfileInfoCache().RemoveObserver(this);
+    profile_manager_->GetProfileAttributesStorage().RemoveObserver(this);
   }
 
  private:
-  // ProfileInfoCacheObserver implementation:
+  // ProfileAttributesStorage::Observer implementation:
   // If any change has been made to a profile, propagate it to all the
   // visible user manager screens.
   void OnProfileAdded(const base::FilePath& profile_path) override {
@@ -294,7 +293,7 @@ class UserManagerScreenHandler::ProfileUpdateObserver
 // UserManagerScreenHandler ---------------------------------------------------
 
 UserManagerScreenHandler::UserManagerScreenHandler() : weak_ptr_factory_(this) {
-  profileInfoCacheObserver_.reset(
+  profile_attributes_storage_observer_.reset(
       new UserManagerScreenHandler::ProfileUpdateObserver(
           g_browser_process->profile_manager(), this));
 }
@@ -410,12 +409,11 @@ void UserManagerScreenHandler::HandleAuthenticatedLaunchUser(
   if (!base::GetValueAsFilePath(*profile_path_value, &profile_path))
     return;
 
-  ProfileInfoCache& info_cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-
   ProfileAttributesEntry* entry;
-  if (!info_cache.GetProfileAttributesWithPath(profile_path, &entry))
+  if (!g_browser_process->profile_manager()->GetProfileAttributesStorage().
+          GetProfileAttributesWithPath(profile_path, &entry)) {
     return;
+  }
 
   base::string16 email_address;
   if (!args->GetString(1, &email_address))
@@ -430,12 +428,8 @@ void UserManagerScreenHandler::HandleAuthenticatedLaunchUser(
 
   // Only try to validate locally or check the password change detection
   // if we actually have a local credential saved.
-  size_t profile_index = info_cache.GetIndexOfProfileWithPath(profile_path);
-  const bool has_local_credential =
-      !info_cache.GetLocalAuthCredentialsOfProfileAtIndex(profile_index)
-          .empty();
-  if (has_local_credential) {
-    if (LocalAuth::ValidateLocalAuthCredentials(profile_index, password)) {
+  if (!entry->GetLocalAuthCredentials().empty()) {
+    if (LocalAuth::ValidateLocalAuthCredentials(entry, password)) {
       ReportAuthenticationResult(true, ProfileMetrics::AUTH_LOCAL);
       return;
     }
@@ -508,11 +502,9 @@ void UserManagerScreenHandler::HandleLaunchUser(const base::ListValue* args) {
   if (!base::GetValueAsFilePath(*profile_path_value, &profile_path))
     return;
 
-  const ProfileInfoCache& info_cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  size_t profile_index = info_cache.GetIndexOfProfileWithPath(profile_path);
-
-  if (profile_index == std::string::npos) {
+  ProfileAttributesEntry* entry;
+  if (!g_browser_process->profile_manager()->GetProfileAttributesStorage().
+          GetProfileAttributesWithPath(profile_path, &entry)) {
     NOTREACHED();
     return;
   }
@@ -522,7 +514,7 @@ void UserManagerScreenHandler::HandleLaunchUser(const base::ListValue* args) {
   // unauthenticated version of "launch" instead of the proper one.  Thus,
   // we have to validate in (secure) C++ code that it really is a profile
   // not needing authentication.  If it is, just ignore the "launch" request.
-  if (info_cache.ProfileIsSigninRequiredAtIndex(profile_index))
+  if (entry->IsSigninRequired())
     return;
   ProfileMetrics::LogProfileAuthResult(ProfileMetrics::AUTH_UNNECESSARY);
 
@@ -574,10 +566,11 @@ void UserManagerScreenHandler::HandleRemoveUserWarningLoadStats(
 
   if (!chrome::FindAnyBrowser(profile, true)) {
     // If no windows are open for that profile, the statistics in
-    // ProfileInfoCache are up to date. The statistics in ProfileInfoCache are
-    // returned because the copy in user_pod_row.js may be outdated. However, if
-    // some statistics are missing in ProfileInfoCache (i.e. |item.success| is
-    // false), then the actual statistics are queried instead.
+    // ProfileAttributesStorage are up to date. The statistics in
+    // ProfileAttributesStorage are returned because the copy in user_pod_row.js
+    // may be outdated. However, if some statistics are missing in
+    // ProfileAttributesStorage (i.e. |item.success| is false), then the actual
+    // statistics are queried instead.
     base::DictionaryValue return_value;
     profiles::ProfileCategoryStats stats =
         profiles::GetProfileStatisticsFromCache(profile_path);
@@ -847,8 +840,9 @@ void UserManagerScreenHandler::GetLocalizedValues(
 
 void UserManagerScreenHandler::SendUserList() {
   base::ListValue users_list;
-  ProfileInfoCache* info_cache =
-      &g_browser_process->profile_manager()->GetProfileInfoCache();
+  std::vector<ProfileAttributesEntry*> entries =
+      g_browser_process->profile_manager()->GetProfileAttributesStorage().
+          GetAllProfilesAttributesSortedByName();
   user_auth_type_map_.clear();
 
   // Profile deletion is not allowed in Metro mode.
@@ -857,39 +851,32 @@ void UserManagerScreenHandler::SendUserList() {
   can_remove = !ash::Shell::HasInstance();
 #endif
 
-  for (size_t i = 0; i < info_cache->GetNumberOfProfiles(); ++i) {
+  for (const ProfileAttributesEntry* entry : entries) {
     // Don't show profiles still in the middle of being set up as new legacy
     // supervised users.
-    if (info_cache->IsOmittedProfileAtIndex(i))
+    if (entry->IsOmitted())
       continue;
 
     base::DictionaryValue* profile_value = new base::DictionaryValue();
-    base::FilePath profile_path = info_cache->GetPathOfProfileAtIndex(i);
+    base::FilePath profile_path = entry->GetPath();
 
-    profile_value->SetString(
-        kKeyUsername, info_cache->GetUserNameOfProfileAtIndex(i));
-    profile_value->SetString(
-        kKeyEmailAddress, info_cache->GetUserNameOfProfileAtIndex(i));
-    profile_value->SetString(
-        kKeyDisplayName,
-        profiles::GetAvatarNameForProfile(profile_path));
-    profile_value->Set(
-        kKeyProfilePath, base::CreateFilePathValue(profile_path));
+    profile_value->SetString(kKeyUsername, entry->GetUserName());
+    profile_value->SetString(kKeyEmailAddress, entry->GetUserName());
+    profile_value->SetString(kKeyDisplayName,
+                             profiles::GetAvatarNameForProfile(profile_path));
+    profile_value->Set(kKeyProfilePath,
+                       base::CreateFilePathValue(profile_path));
     profile_value->SetBoolean(kKeyPublicAccount, false);
     profile_value->SetBoolean(kKeyLegacySupervisedUser,
-                              info_cache->ProfileIsLegacySupervisedAtIndex(i));
-    profile_value->SetBoolean(
-        kKeyChildUser, info_cache->ProfileIsChildAtIndex(i));
-    profile_value->SetBoolean(
-        kKeyNeedsSignin, info_cache->ProfileIsSigninRequiredAtIndex(i));
-    profile_value->SetBoolean(
-        kKeyHasLocalCreds,
-        !info_cache->GetLocalAuthCredentialsOfProfileAtIndex(i).empty());
+                              entry->IsLegacySupervised());
+    profile_value->SetBoolean(kKeyChildUser, entry->IsChild());
+    profile_value->SetBoolean(kKeyNeedsSignin, entry->IsSigninRequired());
+    profile_value->SetBoolean(kKeyHasLocalCreds,
+                              !entry->GetLocalAuthCredentials().empty());
     profile_value->SetBoolean(kKeyIsOwner, false);
     profile_value->SetBoolean(kKeyCanRemove, can_remove);
     profile_value->SetBoolean(kKeyIsDesktop, true);
-    profile_value->SetString(
-        kKeyAvatarUrl, GetAvatarImageAtIndex(i, info_cache));
+    profile_value->SetString(kKeyAvatarUrl, GetAvatarImage(entry));
 
     profiles::ProfileCategoryStats stats =
         profiles::GetProfileStatisticsFromCache(profile_path);
@@ -953,11 +940,12 @@ void UserManagerScreenHandler::OnBrowserWindowReady(Browser* browser) {
   // Unlock the profile after browser opens so startup can read the lock bit.
   // Any necessary authentication must have been successful to reach this point.
   if (!browser->profile()->IsGuestSession()) {
-    ProfileInfoCache& info_cache =
-        g_browser_process->profile_manager()->GetProfileInfoCache();
-    size_t index = info_cache.GetIndexOfProfileWithPath(
-        browser->profile()->GetPath());
-    info_cache.SetProfileSigninRequiredAtIndex(index, false);
+    ProfileAttributesEntry* entry = nullptr;
+    bool has_entry = g_browser_process->profile_manager()->
+        GetProfileAttributesStorage().
+        GetProfileAttributesWithPath(browser->profile()->GetPath(), &entry);
+    DCHECK(has_entry);
+    entry->SetIsSigninRequired(false);
   }
 
   if (!url_hash_.empty()) {

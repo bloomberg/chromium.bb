@@ -5,12 +5,15 @@
 #include "chrome/browser/signin/local_auth.h"
 
 #include "base/base64.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
 #include "components/os_crypt/os_crypt.h"
@@ -158,14 +161,6 @@ bool DecodePasswordHashRecord(const std::string& encoded,
   return OSCrypt::DecryptString(unbase64, decoded);
 }
 
-size_t GetProfileInfoIndexOfProfile(const Profile* profile) {
-  DCHECK(profile);
-
-  ProfileInfoCache& info =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  return info.GetIndexOfProfileWithPath(profile->GetPath());
-}
-
 }  // namespace
 
 std::string LocalAuth::TruncateStringByBits(const std::string& str,
@@ -179,9 +174,10 @@ void LocalAuth::RegisterLocalAuthPrefs(
                                std::string());
 }
 
-void LocalAuth::SetLocalAuthCredentialsWithEncoding(size_t info_index,
-                                                    const std::string& password,
-                                                    char encoding_version) {
+void LocalAuth::SetLocalAuthCredentialsWithEncoding(
+    ProfileAttributesEntry* entry,
+    const std::string& password,
+    char encoding_version) {
   const HashEncoding& encoding = encodings[(encoding_version - '0') - 1];
 
   // Salt should be random data, as long as the hash length, and different with
@@ -201,42 +197,36 @@ void LocalAuth::SetLocalAuthCredentialsWithEncoding(size_t info_index,
 
   // Encode it and store it.
   std::string encoded = EncodePasswordHashRecord(record, encoding);
-  ProfileInfoCache& info =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  info.SetLocalAuthCredentialsOfProfileAtIndex(info_index, encoded);
+  entry->SetLocalAuthCredentials(encoded);
 }
 
-void LocalAuth::SetLocalAuthCredentials(size_t info_index,
+void LocalAuth::SetLocalAuthCredentials(ProfileAttributesEntry* entry,
                                         const std::string& password) {
-  if (info_index == std::string::npos) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK(entry);
   DCHECK(password.length());
   SetLocalAuthCredentialsWithEncoding(
-      info_index, password, '0' + NUM_HASH_ENCODINGS);
+      entry, password, '0' + NUM_HASH_ENCODINGS);
 }
 
 void LocalAuth::SetLocalAuthCredentials(const Profile* profile,
                                         const std::string& password) {
-  SetLocalAuthCredentials(GetProfileInfoIndexOfProfile(profile), password);
+  DCHECK(g_browser_process->profile_manager()->IsValidProfile(profile));
+  ProfileAttributesEntry* entry = nullptr;
+  bool has_entry = g_browser_process->profile_manager()->
+      GetProfileAttributesStorage().
+      GetProfileAttributesWithPath(profile->GetPath(), &entry);
+  DCHECK(has_entry);
+  SetLocalAuthCredentials(entry, password);
 }
 
-bool LocalAuth::ValidateLocalAuthCredentials(size_t info_index,
+bool LocalAuth::ValidateLocalAuthCredentials(ProfileAttributesEntry* entry,
                                              const std::string& password) {
-  if (info_index == std::string::npos) {
-    NOTREACHED();
-    return false;
-  }
+  DCHECK(entry);
 
   std::string record;
   char encoding;
 
-  ProfileInfoCache& info =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-
-  std::string encodedhash =
-      info.GetLocalAuthCredentialsOfProfileAtIndex(info_index);
+  std::string encodedhash = entry->GetLocalAuthCredentials();
   if (encodedhash.length() == 0 && password.length() == 0)
     return true;
   if (!DecodePasswordHashRecord(encodedhash, &record, &encoding))
@@ -266,12 +256,20 @@ bool LocalAuth::ValidateLocalAuthCredentials(size_t info_index,
 
   // Update the stored credentials to the latest encoding if necessary.
   if (passwords_match && (hash_encoding->version - '0') != NUM_HASH_ENCODINGS)
-    SetLocalAuthCredentials(info_index, password);
+    SetLocalAuthCredentials(entry, password);
   return passwords_match;
 }
 
 bool LocalAuth::ValidateLocalAuthCredentials(const Profile* profile,
                                              const std::string& password) {
-  return ValidateLocalAuthCredentials(GetProfileInfoIndexOfProfile(profile),
-                                      password);
+  DCHECK(g_browser_process->profile_manager()->IsValidProfile(profile));
+  ProfileAttributesEntry* entry;
+
+  if (!g_browser_process->profile_manager()->GetProfileAttributesStorage().
+          GetProfileAttributesWithPath(profile->GetPath(), &entry)) {
+    NOTREACHED();
+    return false;
+  }
+
+  return ValidateLocalAuthCredentials(entry, password);
 }
