@@ -261,6 +261,37 @@ TEST(WeakPtrTest, DerivedTarget) {
   EXPECT_EQ(&target, ptr.get());
 }
 
+TEST(WeakPtrFactoryTest, BooleanTesting) {
+  int data;
+  WeakPtrFactory<int> factory(&data);
+
+  WeakPtr<int> ptr_to_an_instance = factory.GetWeakPtr();
+  EXPECT_TRUE(ptr_to_an_instance);
+  EXPECT_FALSE(!ptr_to_an_instance);
+
+  if (ptr_to_an_instance) {
+  } else {
+    ADD_FAILURE() << "Pointer to an instance should result in true.";
+  }
+
+  if (!ptr_to_an_instance) {  // check for operator!().
+    ADD_FAILURE() << "Pointer to an instance should result in !x being false.";
+  }
+
+  WeakPtr<int> null_ptr;
+  EXPECT_FALSE(null_ptr);
+  EXPECT_TRUE(!null_ptr);
+
+  if (null_ptr) {
+    ADD_FAILURE() << "Null pointer should result in false.";
+  }
+
+  if (!null_ptr) {  // check for operator!().
+  } else {
+    ADD_FAILURE() << "Null pointer should result in !x being true.";
+  }
+}
+
 TEST(WeakPtrTest, InvalidateWeakPtrs) {
   int data;
   WeakPtrFactory<int> factory(&data);

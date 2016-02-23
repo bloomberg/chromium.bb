@@ -150,10 +150,31 @@ TEST(RefCountedUnitTest, ScopedRefPtrToOpaque) {
 }
 
 TEST(RefCountedUnitTest, BooleanTesting) {
-  scoped_refptr<SelfAssign> p;
-  EXPECT_FALSE(p);
-  p = new SelfAssign;
-  EXPECT_TRUE(p);
+  scoped_refptr<SelfAssign> ptr_to_an_instance = new SelfAssign;
+  EXPECT_TRUE(ptr_to_an_instance);
+  EXPECT_FALSE(!ptr_to_an_instance);
+
+  if (ptr_to_an_instance) {
+  } else {
+    ADD_FAILURE() << "Pointer to an instance should result in true.";
+  }
+
+  if (!ptr_to_an_instance) {  // check for operator!().
+    ADD_FAILURE() << "Pointer to an instance should result in !x being false.";
+  }
+
+  scoped_refptr<SelfAssign> null_ptr;
+  EXPECT_FALSE(null_ptr);
+  EXPECT_TRUE(!null_ptr);
+
+  if (null_ptr) {
+    ADD_FAILURE() << "Null pointer should result in false.";
+  }
+
+  if (!null_ptr) {  // check for operator!().
+  } else {
+    ADD_FAILURE() << "Null pointer should result in !x being true.";
+  }
 }
 
 TEST(RefCountedUnitTest, Equality) {
