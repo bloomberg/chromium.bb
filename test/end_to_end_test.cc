@@ -132,11 +132,7 @@ class EndToEndTestLarge
   }
 
   double GetPsnrThreshold() {
-#if CONFIG_AOM_QM
-    return kPsnrThreshold[cpu_used_][encoding_mode_] - 3.0;
-#else
     return kPsnrThreshold[cpu_used_][encoding_mode_];
-#endif
   }
 
   TestVideoParam test_video_param_;

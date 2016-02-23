@@ -39,6 +39,9 @@ struct vp10_extracfg {
   unsigned int rc_max_inter_bitrate_pct;
   unsigned int gf_cbr_boost_pct;
   unsigned int lossless;
+#if CONFIG_AOM_QM
+  unsigned int enable_qm;
+#endif
   unsigned int frame_parallel_decoding_mode;
   AQ_MODE aq_mode;
   unsigned int frame_periodic_boost;
@@ -68,6 +71,9 @@ static struct vp10_extracfg default_extra_cfg = {
   0,                    // rc_max_inter_bitrate_pct
   0,                    // gf_cbr_boost_pct
   0,                    // lossless
+#if CONFIG_AOM_QM
+  0,                    // enable_qm
+#endif
   1,                    // frame_parallel_decoding_mode
   NO_AQ,                // aq_mode
   0,                    // frame_periodic_delta_q
@@ -357,6 +363,10 @@ static vpx_codec_err_t set_encoder_config(
   oxcf->cq_level = vp10_quantizer_to_qindex(extra_cfg->cq_level);
   oxcf->fixed_q = -1;
 
+#if CONFIG_AOM_QM
+  oxcf->using_qm = extra_cfg->enable_qm;
+#endif
+
   oxcf->under_shoot_pct = cfg->rc_undershoot_pct;
   oxcf->over_shoot_pct = cfg->rc_overshoot_pct;
 
@@ -631,6 +641,15 @@ static vpx_codec_err_t ctrl_set_lossless(vpx_codec_alg_priv_t *ctx,
   extra_cfg.lossless = CAST(VP9E_SET_LOSSLESS, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
+
+#if CONFIG_AOM_QM
+static vpx_codec_err_t ctrl_set_enable_qm(vpx_codec_alg_priv_t *ctx,
+                                         va_list args) {
+  struct vp10_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.enable_qm = CAST(VP9E_SET_ENABLE_QM, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+#endif
 
 static vpx_codec_err_t ctrl_set_frame_parallel_decoding_mode(
     vpx_codec_alg_priv_t *ctx, va_list args) {
@@ -1228,6 +1247,9 @@ static vpx_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { VP9E_SET_MAX_INTER_BITRATE_PCT, ctrl_set_rc_max_inter_bitrate_pct },
   { VP9E_SET_GF_CBR_BOOST_PCT, ctrl_set_rc_gf_cbr_boost_pct },
   { VP9E_SET_LOSSLESS, ctrl_set_lossless },
+#if CONFIG_AOM_QM
+  { VP9E_SET_ENABLE_QM, ctrl_set_enable_qm },
+#endif
   { VP9E_SET_FRAME_PARALLEL_DECODING, ctrl_set_frame_parallel_decoding_mode },
   { VP9E_SET_AQ_MODE, ctrl_set_aq_mode },
   { VP9E_SET_FRAME_PERIODIC_BOOST, ctrl_set_frame_periodic_boost },

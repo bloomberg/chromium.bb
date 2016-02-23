@@ -365,6 +365,11 @@ static const arg_def_t tile_rows =
     ARG_DEF(NULL, "tile-rows", 1, "Number of tile rows to use, log2");
 static const arg_def_t lossless =
     ARG_DEF(NULL, "lossless", 1, "Lossless mode (0: false (default), 1: true)");
+#if CONFIG_AOM_QM
+static const arg_def_t enable_qm =
+    ARG_DEF(NULL, "enable_qm", 1,
+        "Enable quantisation matrices (0: false (default), 1: true)");
+#endif
 static const arg_def_t frame_parallel_decoding = ARG_DEF(
     NULL, "frame-parallel", 1, "Enable frame parallel decodability features");
 static const arg_def_t aq_mode = ARG_DEF(
@@ -431,6 +436,9 @@ static const arg_def_t *vp10_args[] = {
   &tile_cols, &tile_rows, &arnr_maxframes, &arnr_strength, &arnr_type,
   &tune_ssim, &cq_level, &max_intra_rate_pct, &max_inter_rate_pct,
   &gf_cbr_boost_pct, &lossless,
+#if CONFIG_AOM_QM
+  &enable_qm,
+#endif
   &frame_parallel_decoding, &aq_mode, &frame_periodic_boost,
   &noise_sens, &tune_content, &input_color_space,
   &min_gf_interval, &max_gf_interval,
@@ -443,7 +451,11 @@ static const int vp10_arg_ctrl_map[] = {
   VP8E_SET_ARNR_MAXFRAMES, VP8E_SET_ARNR_STRENGTH, VP8E_SET_ARNR_TYPE,
   VP8E_SET_TUNING, VP8E_SET_CQ_LEVEL, VP8E_SET_MAX_INTRA_BITRATE_PCT,
   VP9E_SET_MAX_INTER_BITRATE_PCT, VP9E_SET_GF_CBR_BOOST_PCT,
-  VP9E_SET_LOSSLESS, VP9E_SET_FRAME_PARALLEL_DECODING, VP9E_SET_AQ_MODE,
+  VP9E_SET_LOSSLESS,
+#if CONFIG_AOM_QM
+  VP9E_SET_ENABLE_QM,
+#endif
+  VP9E_SET_FRAME_PARALLEL_DECODING, VP9E_SET_AQ_MODE,
   VP9E_SET_FRAME_PERIODIC_BOOST, VP9E_SET_NOISE_SENSITIVITY,
   VP9E_SET_TUNE_CONTENT, VP9E_SET_COLOR_SPACE,
   VP9E_SET_MIN_GF_INTERVAL, VP9E_SET_MAX_GF_INTERVAL,

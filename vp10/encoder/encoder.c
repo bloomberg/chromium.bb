@@ -3826,6 +3826,10 @@ int vp10_get_compressed_data(VP10_COMP *cpi, unsigned int *frame_flags,
     for (i = 0; i < MAX_REF_FRAMES; ++i) cpi->scaled_ref_idx[i] = INVALID_IDX;
   }
 
+#if CONFIG_AOM_QM
+  cm->using_qmatrix = cpi->oxcf.using_qm;
+#endif
+
   if (oxcf->pass == 1) {
     cpi->td.mb.e_mbd.lossless[0] = is_lossless_requested(oxcf);
     vp10_first_pass(cpi, source);

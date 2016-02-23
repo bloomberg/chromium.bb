@@ -1116,6 +1116,9 @@ static void setup_quantization(VP10_COMMON *const cm,
   cm->uv_dc_delta_q = read_delta_q(rb);
   cm->uv_ac_delta_q = read_delta_q(rb);
   cm->dequant_bit_depth = cm->bit_depth;
+#if CONFIG_AOM_QM
+  cm->using_qmatrix = vpx_rb_read_bit(rb);
+#endif
 }
 
 static void setup_segmentation_dequant(VP10_COMMON *const cm) {
@@ -1125,6 +1128,7 @@ static void setup_segmentation_dequant(VP10_COMMON *const cm) {
   int lossless;
   int j = 0;
   int qmindex;
+  int using_qm = cm->using_qmatrix;
 #endif
   if (cm->seg.enabled) {
     for (i = 0; i < MAX_SEGMENTS; ++i) {
@@ -1140,8 +1144,9 @@ static void setup_segmentation_dequant(VP10_COMMON *const cm) {
       lossless = qindex == 0 && cm->y_dc_delta_q == 0 &&
                  cm->uv_dc_delta_q == 0 && cm->uv_ac_delta_q == 0;
       // NB: depends on base index so there is only 1 set per frame
-      // No quant weighting when lossless
-      qmindex = lossless ? QINDEX_RANGE - 1 : cm->base_qindex;
+      // No quant weighting when lossless or signalled not using QM
+      qmindex = (lossless || using_qm == 0) ?
+        QINDEX_RANGE - 1 : cm->base_qindex;
       for (j = 0; j < TX_SIZES; ++j) {
         cm->y_iqmatrix[i][1][j] = aom_iqmatrix(cm, qmindex, 0, j, 1);
         cm->y_iqmatrix[i][0][j] = aom_iqmatrix(cm, qmindex, 0, j, 0);
@@ -1164,8 +1169,9 @@ static void setup_segmentation_dequant(VP10_COMMON *const cm) {
 #if CONFIG_AOM_QM
     lossless = qindex == 0 && cm->y_dc_delta_q == 0 && cm->uv_dc_delta_q == 0 &&
                cm->uv_ac_delta_q == 0;
-    // No quant weighting when lossless
-    qmindex = lossless ? QINDEX_RANGE - 1 : cm->base_qindex;
+    // No quant weighting when lossless or signalled not using QM
+    qmindex = (lossless || using_qm == 0) ?
+        QINDEX_RANGE - 1 : cm->base_qindex;
     for (j = 0; j < TX_SIZES; ++j) {
       cm->y_iqmatrix[i][1][j] = aom_iqmatrix(cm, qmindex, 0, j, 1);
       cm->y_iqmatrix[i][0][j] = aom_iqmatrix(cm, qmindex, 0, j, 0);

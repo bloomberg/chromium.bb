@@ -392,7 +392,8 @@ void vp10_init_plane_quantizers(VP10_COMP *cpi, MACROBLOCK *x) {
 #if CONFIG_AOM_QM
   const int lossless = xd->lossless[segment_id];
   // Quant matrix only depends on the base QP so there is only one set per frame
-  int qmlevel = lossless ? NUM_QM_LEVELS - 1 : aom_get_qmlevel(cm->base_qindex);
+  int qmlevel = (lossless || cm->using_qmatrix == 0) ?
+    NUM_QM_LEVELS - 1 : aom_get_qmlevel(cm->base_qindex);
 #endif
 
   // Y

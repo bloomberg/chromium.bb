@@ -17,9 +17,6 @@
 namespace {
 
 const int kMaxPSNR = 100;
-#if CONFIG_AOM_QM
-const int kMaxPSNR_QM = 35;
-#endif
 
 class CpuSpeedTest
     : public ::libvpx_test::EncoderTest,
@@ -83,11 +80,7 @@ TEST_P(CpuSpeedTest, TestQ0) {
   init_flags_ = VPX_CODEC_USE_PSNR;
 
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
-#if CONFIG_AOM_QM
-  EXPECT_GE(min_psnr_, kMaxPSNR_QM);
-#else
   EXPECT_GE(min_psnr_, kMaxPSNR);
-#endif
 }
 
 TEST_P(CpuSpeedTest, TestScreencastQ0) {
@@ -102,11 +95,7 @@ TEST_P(CpuSpeedTest, TestScreencastQ0) {
   init_flags_ = VPX_CODEC_USE_PSNR;
 
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
-#if CONFIG_AOM_QM
-  EXPECT_GE(min_psnr_, kMaxPSNR_QM);
-#else
   EXPECT_GE(min_psnr_, kMaxPSNR);
-#endif
 }
 
 TEST_P(CpuSpeedTest, TestEncodeHighBitrate) {

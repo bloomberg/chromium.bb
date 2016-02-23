@@ -863,6 +863,9 @@ static void encode_quantization(const VP10_COMMON *const cm,
   write_delta_q(wb, cm->y_dc_delta_q);
   write_delta_q(wb, cm->uv_dc_delta_q);
   write_delta_q(wb, cm->uv_ac_delta_q);
+#if CONFIG_AOM_QM
+  vpx_wb_write_bit(wb, cm->using_qmatrix);
+#endif
 }
 
 static void encode_segmentation(VP10_COMMON *cm, MACROBLOCKD *xd,
