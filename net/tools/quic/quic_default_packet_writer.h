@@ -25,7 +25,7 @@ class QuicDefaultPacketWriter : public QuicPacketWriter {
   // QuicPacketWriter
   WriteResult WritePacket(const char* buffer,
                           size_t buf_len,
-                          const IPAddressNumber& self_address,
+                          const IPAddress& self_address,
                           const IPEndPoint& peer_address,
                           PerPacketOptions* options) override;
   bool IsWriteBlockedDataBuffered() const override;

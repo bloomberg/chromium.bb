@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/quic/quic_client_push_promise_index.h"
 #include "net/quic/quic_config.h"
@@ -127,7 +128,7 @@ class QuicClient : public QuicClientBase,
   void SendRequestsAndWaitForResponse(const std::vector<std::string>& url_list);
 
   // Migrate to a new socket during an active connection.
-  bool MigrateSocket(const IPAddressNumber& new_host);
+  bool MigrateSocket(const IPAddress& new_host);
 
   // From EpollCallbackInterface
   void OnRegistration(EpollServer* eps, int fd, int event_mask) override {}
@@ -160,11 +161,9 @@ class QuicClient : public QuicClientBase,
   // Otherwise, return -1.
   int GetLatestFD() const;
 
-  void set_bind_to_address(IPAddressNumber address) {
-    bind_to_address_ = address;
-  }
+  void set_bind_to_address(IPAddress address) { bind_to_address_ = address; }
 
-  IPAddressNumber bind_to_address() const { return bind_to_address_; }
+  IPAddress bind_to_address() const { return bind_to_address_; }
 
   void set_local_port(int local_port) { local_port_ = local_port; }
 
@@ -199,7 +198,7 @@ class QuicClient : public QuicClientBase,
   virtual int ReadPacket(char* buffer,
                          int buffer_len,
                          IPEndPoint* server_address,
-                         IPAddressNumber* client_ip);
+                         IPAddress* client_ip);
 
   // If |fd| is an open UDP socket, unregister and close it. Otherwise, do
   // nothing.
@@ -266,7 +265,8 @@ class QuicClient : public QuicClientBase,
   const IPEndPoint server_address_;
 
   // If initialized, the address to bind to.
-  IPAddressNumber bind_to_address_;
+  IPAddress bind_to_address_;
+
   // Local port to bind to. Initialize to 0.
   int local_port_;
 

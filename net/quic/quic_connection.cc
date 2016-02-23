@@ -82,7 +82,7 @@ bool Near(QuicPacketNumber a, QuicPacketNumber b) {
 }
 
 bool IsInitializedIPEndPoint(const IPEndPoint& address) {
-  return net::GetAddressFamily(address.address().bytes()) !=
+  return net::GetAddressFamily(address.address()) !=
          net::ADDRESS_FAMILY_UNSPECIFIED;
 }
 
@@ -1139,7 +1139,7 @@ void QuicConnection::SendVersionNegotiationPacket() {
           framer_.supported_versions()));
   WriteResult result = writer_->WritePacket(
       version_packet->data(), version_packet->length(),
-      self_address().address().bytes(), peer_address(), per_packet_options_);
+      self_address().address(), peer_address(), per_packet_options_);
 
   if (result.status == WRITE_STATUS_ERROR) {
     OnWriteError(result.error_code);
@@ -1645,8 +1645,8 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
   // during the WritePacket below.
   QuicTime packet_send_time = clock_->Now();
   WriteResult result = writer_->WritePacket(
-      packet->encrypted_buffer, encrypted_length,
-      self_address().address().bytes(), peer_address(), per_packet_options_);
+      packet->encrypted_buffer, encrypted_length, self_address().address(),
+      peer_address(), per_packet_options_);
   if (result.error_code == ERR_IO_PENDING) {
     DCHECK_EQ(WRITE_STATUS_BLOCKED, result.status);
   }

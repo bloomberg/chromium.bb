@@ -13,6 +13,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/quic/crypto/aes_128_gcm_12_encrypter.h"
 #include "net/quic/crypto/null_encrypter.h"
@@ -56,7 +57,6 @@ using base::IntToString;
 using base::StringPiece;
 using base::WaitableEvent;
 using net::EpollServer;
-using net::IPAddressNumber;
 using net::test::ConstructEncryptedPacket;
 using net::test::CryptoTestUtils;
 using net::test::GenerateBody;
@@ -407,8 +407,8 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
       server_thread_->server()->SetChloMultiplier(chlo_multiplier_);
     }
     server_thread_->Initialize();
-    server_address_ = IPEndPoint(server_address_.address().bytes(),
-                                 server_thread_->GetPort());
+    server_address_ =
+        IPEndPoint(server_address_.address(), server_thread_->GetPort());
     QuicDispatcher* dispatcher =
         QuicServerPeer::GetDispatcher(server_thread_->server());
     QuicDispatcherPeer::UseWriter(dispatcher, server_writer_);
@@ -569,8 +569,8 @@ TEST_P(EndToEndTest, SimpleRequestResponseWithLargeReject) {
 // TODO(rch): figure out how to detect missing v6 supprt (like on the linux
 // try bots) and selectively disable this test.
 TEST_P(EndToEndTest, DISABLED_SimpleRequestResponsev6) {
-  IPAddressNumber ip;
-  CHECK(net::ParseIPLiteralToNumber("::1", &ip));
+  IPAddress ip;
+  CHECK(ip.AssignFromIPLiteral("::1"));
   server_address_ = IPEndPoint(ip, server_address_.port());
   ASSERT_TRUE(Initialize());
 
@@ -1453,20 +1453,19 @@ TEST_P(EndToEndTest, StreamCancelErrorTest) {
 class WrongAddressWriter : public QuicPacketWriterWrapper {
  public:
   WrongAddressWriter() {
-    IPAddressNumber ip;
-    CHECK(net::ParseIPLiteralToNumber("127.0.0.2", &ip));
+    IPAddress ip;
+    CHECK(ip.AssignFromIPLiteral("127.0.0.2"));
     self_address_ = IPEndPoint(ip, 0);
   }
 
   WriteResult WritePacket(const char* buffer,
                           size_t buf_len,
-                          const IPAddressNumber& /*real_self_address*/,
+                          const IPAddress& /*real_self_address*/,
                           const IPEndPoint& peer_address,
                           PerPacketOptions* options) override {
     // Use wrong address!
-    return QuicPacketWriterWrapper::WritePacket(buffer, buf_len,
-                                                self_address_.address().bytes(),
-                                                peer_address, options);
+    return QuicPacketWriterWrapper::WritePacket(
+        buffer, buf_len, self_address_.address(), peer_address, options);
   }
 
   bool IsWriteBlockedDataBuffered() const override { return false; }
@@ -1481,12 +1480,11 @@ TEST_P(EndToEndTest, ConnectionMigrationClientIPChanged) {
   EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
 
   // Store the client IP address which was used to send the first request.
-  IPAddressNumber old_host =
-      client_->client()->GetLatestClientAddress().address().bytes();
+  IPAddress old_host = client_->client()->GetLatestClientAddress().address();
 
   // Migrate socket to the new IP address.
-  IPAddressNumber new_host;
-  CHECK(net::ParseIPLiteralToNumber("127.0.0.2", &new_host));
+  IPAddress new_host;
+  CHECK(new_host.AssignFromIPLiteral("127.0.0.2"));
   EXPECT_NE(old_host, new_host);
   ASSERT_TRUE(client_->client()->MigrateSocket(new_host));
 
@@ -1819,7 +1817,7 @@ TEST_P(EndToEndTest, ServerSendPublicResetWithDifferentConnectionId) {
   // race conditions.
   server_thread_->Pause();
   server_writer_->WritePacket(
-      packet->data(), packet->length(), server_address_.address().bytes(),
+      packet->data(), packet->length(), server_address_.address(),
       client_->client()->GetLatestClientAddress(), nullptr);
   server_thread_->Resume();
 
@@ -1848,8 +1846,8 @@ TEST_P(EndToEndTest, ClientSendPublicResetWithDifferentConnectionId) {
   scoped_ptr<QuicEncryptedPacket> packet(framer.BuildPublicResetPacket(header));
   client_writer_->WritePacket(
       packet->data(), packet->length(),
-      client_->client()->GetLatestClientAddress().address().bytes(),
-      server_address_, nullptr);
+      client_->client()->GetLatestClientAddress().address(), server_address_,
+      nullptr);
 
   // The connection should be unaffected.
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
@@ -1875,7 +1873,7 @@ TEST_P(EndToEndTest, ServerSendVersionNegotiationWithDifferentConnectionId) {
   // race conditions.
   server_thread_->Pause();
   server_writer_->WritePacket(
-      packet->data(), packet->length(), server_address_.address().bytes(),
+      packet->data(), packet->length(), server_address_.address(),
       client_->client()->GetLatestClientAddress(), nullptr);
   server_thread_->Resume();
 
@@ -1902,8 +1900,8 @@ TEST_P(EndToEndTest, BadPacketHeaderTruncated) {
                    0x11};
   client_writer_->WritePacket(
       &packet[0], sizeof(packet),
-      client_->client()->GetLatestClientAddress().address().bytes(),
-      server_address_, nullptr);
+      client_->client()->GetLatestClientAddress().address(), server_address_,
+      nullptr);
   // Give the server time to process the packet.
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
   // Pause the server so we can access the server's internals without races.
@@ -1941,8 +1939,8 @@ TEST_P(EndToEndTest, BadPacketHeaderFlags) {
   };
   client_writer_->WritePacket(
       &packet[0], sizeof(packet),
-      client_->client()->GetLatestClientAddress().address().bytes(),
-      server_address_, nullptr);
+      client_->client()->GetLatestClientAddress().address(), server_address_,
+      nullptr);
   // Give the server time to process the packet.
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
   // Pause the server so we can access the server's internals without races.
@@ -1977,8 +1975,8 @@ TEST_P(EndToEndTest, BadEncryptedData) {
   DVLOG(1) << "Sending bad packet.";
   client_writer_->WritePacket(
       damaged_packet.data(), damaged_packet.length(),
-      client_->client()->GetLatestClientAddress().address().bytes(),
-      server_address_, nullptr);
+      client_->client()->GetLatestClientAddress().address(), server_address_,
+      nullptr);
   // Give the server time to process the packet.
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
   // This error is sent to the connection's OnError (which ignores it), so the

@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/tools/balsa/balsa_frame.h"
 
@@ -88,7 +89,7 @@ class SimpleClient {
   // if the given address has port 0.
   virtual void Bind(IPEndPoint* local_address) = 0;
 
-  virtual void MigrateSocket(const IPAddressNumber& new_host) = 0;
+  virtual void MigrateSocket(const IPAddress& new_host) = 0;
 
   // Returns the local socket address of the client fd. Call only when
   // connected.
@@ -103,8 +104,8 @@ class SimpleClient {
   // Sets the IP address to bind to on future Connect()s in case Bind() is not
   // called in advance. If it's set to uninitialized IPAddress, default loopback
   // address will be used.
-  virtual IPAddressNumber bind_to_address() const = 0;
-  virtual void set_bind_to_address(IPAddressNumber address) = 0;
+  virtual IPAddress bind_to_address() const = 0;
+  virtual void set_bind_to_address(IPAddress address) = 0;
 
   // Returns true if the headers have been processed and are available.
   virtual bool response_headers_complete() const = 0;

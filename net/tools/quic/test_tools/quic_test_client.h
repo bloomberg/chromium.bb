@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/quic/proto/cached_network_parameters.pb.h"
 #include "net/quic/quic_framer.h"
@@ -127,10 +128,10 @@ class QuicTestClient : public test::SimpleClient,
   // DFATAL if called by users of SimpleClient.
   ssize_t SendAndWaitForResponse(const void* buffer, size_t size) override;
   void Bind(IPEndPoint* local_address) override;
-  void MigrateSocket(const IPAddressNumber& new_host) override;
+  void MigrateSocket(const IPAddress& new_host) override;
   std::string SerializeMessage(const HTTPMessage& message) override;
-  IPAddressNumber bind_to_address() const override;
-  void set_bind_to_address(IPAddressNumber address) override;
+  IPAddress bind_to_address() const override;
+  void set_bind_to_address(IPAddress address) override;
   const IPEndPoint& address() const override;
   size_t requests_sent() const override;
 

@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/quic/crypto/proof_source_chromium.h"
 #include "net/quic/quic_protocol.h"
@@ -76,8 +77,8 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  net::IPAddressNumber ip;
-  CHECK(net::ParseIPLiteralToNumber("::", &ip));
+  net::IPAddress ip;
+  CHECK(ip.AssignFromIPLiteral("::"));
 
   net::QuicConfig config;
   net::QuicServer server(

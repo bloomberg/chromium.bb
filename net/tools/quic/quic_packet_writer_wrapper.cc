@@ -15,12 +15,11 @@ QuicPacketWriterWrapper::QuicPacketWriterWrapper(QuicPacketWriter* writer)
 
 QuicPacketWriterWrapper::~QuicPacketWriterWrapper() {}
 
-WriteResult QuicPacketWriterWrapper::WritePacket(
-    const char* buffer,
-    size_t buf_len,
-    const IPAddressNumber& self_address,
-    const IPEndPoint& peer_address,
-    PerPacketOptions* options) {
+WriteResult QuicPacketWriterWrapper::WritePacket(const char* buffer,
+                                                 size_t buf_len,
+                                                 const IPAddress& self_address,
+                                                 const IPEndPoint& peer_address,
+                                                 PerPacketOptions* options) {
   return writer_->WritePacket(buffer, buf_len, self_address, peer_address,
                               options);
 }

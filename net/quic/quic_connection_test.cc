@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
+#include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/quic/congestion_control/loss_detection_interface.h"
 #include "net/quic/congestion_control/send_algorithm_interface.h"
@@ -266,7 +267,7 @@ class TestPacketWriter : public QuicPacketWriter {
   // QuicPacketWriter interface
   WriteResult WritePacket(const char* buffer,
                           size_t buf_len,
-                          const IPAddressNumber& self_address,
+                          const IPAddress& self_address,
                           const IPEndPoint& peer_address,
                           PerPacketOptions* options) override {
     QuicEncryptedPacket packet(buffer, buf_len);

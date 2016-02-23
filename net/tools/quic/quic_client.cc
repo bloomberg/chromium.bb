@@ -164,12 +164,12 @@ bool QuicClient::CreateUDPSocket() {
   if (bind_to_address_.size() != 0) {
     client_address = IPEndPoint(bind_to_address_, local_port_);
   } else if (address_family == AF_INET) {
-    IPAddressNumber any4;
-    CHECK(net::ParseIPLiteralToNumber("0.0.0.0", &any4));
+    IPAddress any4;
+    CHECK(any4.AssignFromIPLiteral("0.0.0.0"));
     client_address = IPEndPoint(any4, local_port_);
   } else {
-    IPAddressNumber any6;
-    CHECK(net::ParseIPLiteralToNumber("::", &any6));
+    IPAddress any6;
+    CHECK(any6.AssignFromIPLiteral("::"));
     client_address = IPEndPoint(any6, local_port_);
   }
 
@@ -384,7 +384,7 @@ bool QuicClient::WaitForEvents() {
   return session()->num_active_requests() != 0;
 }
 
-bool QuicClient::MigrateSocket(const IPAddressNumber& new_host) {
+bool QuicClient::MigrateSocket(const IPAddress& new_host) {
   if (!connected()) {
     return false;
   }
@@ -503,7 +503,7 @@ QuicPacketReader* QuicClient::CreateQuicPacketReader() {
 int QuicClient::ReadPacket(char* buffer,
                            int buffer_len,
                            IPEndPoint* server_address,
-                           IPAddressNumber* client_ip) {
+                           IPAddress* client_ip) {
   return QuicSocketUtils::ReadPacket(
       GetLatestFD(), buffer, buffer_len,
       overflow_supported_ ? &packets_dropped_ : nullptr, client_ip,
@@ -516,7 +516,7 @@ bool QuicClient::ReadAndProcessPacket() {
   char buf[2 * kMaxPacketSize];
 
   IPEndPoint server_address;
-  IPAddressNumber client_ip;
+  IPAddress client_ip;
 
   int bytes_read = ReadPacket(buf, arraysize(buf), &server_address, &client_ip);
 

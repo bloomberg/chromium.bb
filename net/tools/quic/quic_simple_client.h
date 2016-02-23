@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/http/http_response_headers.h"
 #include "net/log/net_log.h"
@@ -125,7 +126,7 @@ class QuicSimpleClient : public QuicClientBase,
       const base::CommandLine::StringVector& url_list);
 
   // Migrate to a new socket during an active connection.
-  bool MigrateSocket(const IPAddressNumber& new_host);
+  bool MigrateSocket(const IPAddress& new_host);
 
   // QuicChromiumPacketReader::Visitor
   void OnReadError(int result, const DatagramClientSocket* socket) override;
@@ -141,11 +142,9 @@ class QuicSimpleClient : public QuicClientBase,
   // Otherwise, deletes the data.  Takes ownerership of |data_to_resend|.
   void MaybeAddQuicDataToResend(QuicDataToResend* data_to_resend);
 
-  void set_bind_to_address(IPAddressNumber address) {
-    bind_to_address_ = address;
-  }
+  void set_bind_to_address(IPAddress address) { bind_to_address_ = address; }
 
-  IPAddressNumber bind_to_address() const { return bind_to_address_; }
+  IPAddress bind_to_address() const { return bind_to_address_; }
 
   void set_local_port(int local_port) { local_port_ = local_port; }
 
@@ -213,7 +212,8 @@ class QuicSimpleClient : public QuicClientBase,
   IPEndPoint client_address_;
 
   // If initialized, the address to bind to.
-  IPAddressNumber bind_to_address_;
+  IPAddress bind_to_address_;
+
   // Local port to bind to. Initialize to 0.
   int local_port_;
 

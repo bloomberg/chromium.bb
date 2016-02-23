@@ -13,6 +13,7 @@
 #include <sys/epoll.h>
 
 #include "base/logging.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/quic/quic_bug_tracker.h"
 #include "net/quic/quic_flags.h"
@@ -125,7 +126,7 @@ bool QuicPacketReader::ReadAndDispatchSinglePacket(
   char buf[kMaxPacketSize];
 
   IPEndPoint client_address;
-  IPAddressNumber server_ip;
+  IPAddress server_ip;
   int bytes_read = QuicSocketUtils::ReadPacket(
       fd, buf, arraysize(buf), packets_dropped, &server_ip, &client_address);
 

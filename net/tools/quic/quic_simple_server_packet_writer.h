@@ -17,6 +17,7 @@
 
 namespace net {
 
+class IPAddress;
 class QuicBlockedWriterInterface;
 class UDPServerSocket;
 struct WriteResult;
@@ -35,13 +36,12 @@ class QuicSimpleServerPacketWriter : public QuicPacketWriter {
   // Use this method to write packets rather than WritePacket:
   // QuicSimpleServerPacketWriter requires a callback to exist for every
   // write, which will be called once the write completes.
-  virtual WriteResult WritePacketWithCallback(
-      const char* buffer,
-      size_t buf_len,
-      const IPAddressNumber& self_address,
-      const IPEndPoint& peer_address,
-      PerPacketOptions* options,
-      WriteCallback callback);
+  virtual WriteResult WritePacketWithCallback(const char* buffer,
+                                              size_t buf_len,
+                                              const IPAddress& self_address,
+                                              const IPEndPoint& peer_address,
+                                              PerPacketOptions* options,
+                                              WriteCallback callback);
 
   void OnWriteComplete(int rv);
 
@@ -55,7 +55,7 @@ class QuicSimpleServerPacketWriter : public QuicPacketWriter {
   // Do not call WritePacket on its own -- use WritePacketWithCallback
   WriteResult WritePacket(const char* buffer,
                           size_t buf_len,
-                          const IPAddressNumber& self_address,
+                          const IPAddress& self_address,
                           const IPEndPoint& peer_address,
                           PerPacketOptions* options) override;
 

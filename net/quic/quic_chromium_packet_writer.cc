@@ -23,7 +23,7 @@ QuicChromiumPacketWriter::~QuicChromiumPacketWriter() {}
 WriteResult QuicChromiumPacketWriter::WritePacket(
     const char* buffer,
     size_t buf_len,
-    const IPAddressNumber& self_address,
+    const IPAddress& self_address,
     const IPEndPoint& peer_address,
     PerPacketOptions* /*options*/) {
   scoped_refptr<StringIOBuffer> buf(

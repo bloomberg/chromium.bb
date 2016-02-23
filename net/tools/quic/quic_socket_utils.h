@@ -13,6 +13,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/quic/quic_bandwidth.h"
 #include "net/quic/quic_types.h"
@@ -22,9 +23,9 @@ namespace net {
 class QuicSocketUtils {
  public:
   // If the msghdr contains IP_PKTINFO or IPV6_PKTINFO, this will return the
-  // IPAddressNumber in that header.  Returns an uninitialized IPAddress on
+  // IPAddress in that header.  Returns an uninitialized IPAddress on
   // failure.
-  static IPAddressNumber GetAddressFromMsghdr(struct msghdr* hdr);
+  static IPAddress GetAddressFromMsghdr(struct msghdr* hdr);
 
   // If the msghdr contains an SO_RXQ_OVFL entry, this will set dropped_packets
   // to the correct value and return true. Otherwise it will return false.
@@ -54,7 +55,7 @@ class QuicSocketUtils {
                         char* buffer,
                         size_t buf_len,
                         QuicPacketCount* dropped_packets,
-                        IPAddressNumber* self_address,
+                        IPAddress* self_address,
                         IPEndPoint* peer_address);
 
   // Writes buf_len to the socket. If writing is successful, sets the result's
@@ -64,14 +65,13 @@ class QuicSocketUtils {
   static WriteResult WritePacket(int fd,
                                  const char* buffer,
                                  size_t buf_len,
-                                 const IPAddressNumber& self_address,
+                                 const IPAddress& self_address,
                                  const IPEndPoint& peer_address);
 
   // A helper for WritePacket which fills in the cmsg with the supplied self
   // address.
   // Returns the length of the packet info structure used.
-  static size_t SetIpInfoInCmsg(const IPAddressNumber& self_address,
-                                cmsghdr* cmsg);
+  static size_t SetIpInfoInCmsg(const IPAddress& self_address, cmsghdr* cmsg);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicSocketUtils);

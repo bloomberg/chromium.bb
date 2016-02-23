@@ -615,7 +615,7 @@ void QuicTestClient::Bind(IPEndPoint* local_address) {
   DLOG(WARNING) << "Bind will be done during connect";
 }
 
-void QuicTestClient::MigrateSocket(const IPAddressNumber& new_host) {
+void QuicTestClient::MigrateSocket(const IPAddress& new_host) {
   client_->MigrateSocket(new_host);
 }
 
@@ -624,11 +624,11 @@ string QuicTestClient::SerializeMessage(const HTTPMessage& message) {
   return "";
 }
 
-IPAddressNumber QuicTestClient::bind_to_address() const {
+IPAddress QuicTestClient::bind_to_address() const {
   return client_->bind_to_address();
 }
 
-void QuicTestClient::set_bind_to_address(IPAddressNumber address) {
+void QuicTestClient::set_bind_to_address(IPAddress address) {
   client_->set_bind_to_address(address);
 }
 

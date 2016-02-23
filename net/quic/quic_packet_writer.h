@@ -12,6 +12,7 @@
 
 namespace net {
 
+class IPAddress;
 struct WriteResult;
 
 class NET_EXPORT_PRIVATE PerPacketOptions {
@@ -44,7 +45,7 @@ class NET_EXPORT_PRIVATE QuicPacketWriter {
   // implementation. Options may be ignored, depending on the implementation.
   virtual WriteResult WritePacket(const char* buffer,
                                   size_t buf_len,
-                                  const IPAddressNumber& self_address,
+                                  const IPAddress& self_address,
                                   const IPEndPoint& peer_address,
                                   PerPacketOptions* options) = 0;
 

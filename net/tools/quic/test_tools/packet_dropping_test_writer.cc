@@ -73,8 +73,8 @@ void PacketDroppingTestWriter::Initialize(QuicConnectionHelperInterface* helper,
 WriteResult PacketDroppingTestWriter::WritePacket(
     const char* buffer,
     size_t buf_len,
-    const net::IPAddressNumber& self_address,
-    const net::IPEndPoint& peer_address,
+    const IPAddress& self_address,
+    const IPEndPoint& peer_address,
     PerPacketOptions* options) {
   ++num_calls_to_write_;
   ReleaseOldPackets();
@@ -210,8 +210,8 @@ void PacketDroppingTestWriter::OnCanWrite() {
 PacketDroppingTestWriter::DelayedWrite::DelayedWrite(
     const char* buffer,
     size_t buf_len,
-    const net::IPAddressNumber& self_address,
-    const net::IPEndPoint& peer_address,
+    const IPAddress& self_address,
+    const IPEndPoint& peer_address,
     std::unique_ptr<PerPacketOptions> options,
     QuicTime send_time)
     : buffer(buffer, buf_len),
@@ -225,7 +225,7 @@ PacketDroppingTestWriter::DelayedWrite::DelayedWrite(
     PacketDroppingTestWriter::DelayedWrite&& other) = default;
 
 // TODO(rtenneti): on windows RValue reference gives errors.
-// IPAddressNumber has no move assignment operator.
+// IPAddress has no move assignment operator.
 //
 // PacketDroppingTestWriter::DelayedWrite&
 // PacketDroppingTestWriter::DelayedWrite::operator=(

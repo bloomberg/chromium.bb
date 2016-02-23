@@ -581,7 +581,7 @@ class BlockingWriter : public QuicPacketWriterWrapper {
 
   WriteResult WritePacket(const char* buffer,
                           size_t buf_len,
-                          const IPAddressNumber& self_client_address,
+                          const IPAddress& self_client_address,
                           const IPEndPoint& peer_client_address,
                           PerPacketOptions* options) override {
     // It would be quite possible to actually implement this method here with

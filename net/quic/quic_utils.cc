@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
+#include "net/base/ip_address.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_write_blocked_list.h"
 
@@ -513,12 +514,8 @@ PeerAddressChangeType QuicUtils::DetermineAddressChangeType(
     return migrating_ip_is_ipv4 ? IPV6_TO_IPV4_CHANGE : IPV6_TO_IPV6_CHANGE;
   }
 
-  // TODO(rtenneti): Implement better way to test SubnetMask length of 24 bits.
-  IPAddressNumber old_address_bytes = old_address.address().bytes();
-  IPAddressNumber new_address_bytes = new_address.address().bytes();
-  if (old_address_bytes[0] == new_address_bytes[0] &&
-      old_address_bytes[1] == new_address_bytes[1] &&
-      old_address_bytes[2] == new_address_bytes[2]) {
+  if (IPAddressMatchesPrefix(old_address.address(), new_address.address(),
+                             24)) {
     // Subnet part does not change (here, we use /24), which is considered to be
     // caused by NATs.
     return IPV4_SUBNET_CHANGE;

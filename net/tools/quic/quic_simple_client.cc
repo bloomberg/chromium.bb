@@ -107,12 +107,12 @@ bool QuicSimpleClient::CreateUDPSocket() {
   if (bind_to_address_.size() != 0) {
     client_address_ = IPEndPoint(bind_to_address_, local_port_);
   } else if (address_family == AF_INET) {
-    IPAddressNumber any4;
-    CHECK(net::ParseIPLiteralToNumber("0.0.0.0", &any4));
+    IPAddress any4;
+    CHECK(any4.AssignFromIPLiteral("0.0.0.0"));
     client_address_ = IPEndPoint(any4, local_port_);
   } else {
-    IPAddressNumber any6;
-    CHECK(net::ParseIPLiteralToNumber("::", &any6));
+    IPAddress any6;
+    CHECK(any6.AssignFromIPLiteral("::"));
     client_address_ = IPEndPoint(any6, local_port_);
   }
 
@@ -319,7 +319,7 @@ bool QuicSimpleClient::WaitForEvents() {
   return session()->num_active_requests() != 0;
 }
 
-bool QuicSimpleClient::MigrateSocket(const IPAddressNumber& new_host) {
+bool QuicSimpleClient::MigrateSocket(const IPAddress& new_host) {
   if (!connected()) {
     return false;
   }

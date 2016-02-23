@@ -31,8 +31,6 @@ using testing::_;
 
 namespace net {
 
-class IPAddress;
-
 namespace test {
 
 QuicAckFrame MakeAckFrame(QuicPacketNumber largest_observed) {

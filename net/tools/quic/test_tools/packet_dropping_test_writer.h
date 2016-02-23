@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
+#include "net/base/ip_address.h"
 #include "net/quic/quic_alarm.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/tools/quic/quic_epoll_clock.h"
@@ -49,7 +50,7 @@ class PacketDroppingTestWriter : public QuicPacketWriterWrapper {
   // QuicPacketWriter methods:
   WriteResult WritePacket(const char* buffer,
                           size_t buf_len,
-                          const IPAddressNumber& self_address,
+                          const IPAddress& self_address,
                           const IPEndPoint& peer_address,
                           PerPacketOptions* options) override;
 
@@ -126,7 +127,7 @@ class PacketDroppingTestWriter : public QuicPacketWriterWrapper {
    public:
     DelayedWrite(const char* buffer,
                  size_t buf_len,
-                 const IPAddressNumber& self_address,
+                 const IPAddress& self_address,
                  const IPEndPoint& peer_address,
                  std::unique_ptr<PerPacketOptions> options,
                  QuicTime send_time);
@@ -137,7 +138,7 @@ class PacketDroppingTestWriter : public QuicPacketWriterWrapper {
     ~DelayedWrite();
 
     std::string buffer;
-    const IPAddressNumber self_address;
+    const IPAddress self_address;
     const IPEndPoint peer_address;
     std::unique_ptr<PerPacketOptions> options;
     QuicTime send_time;
