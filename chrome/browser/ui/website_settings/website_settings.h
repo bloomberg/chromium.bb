@@ -77,7 +77,8 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
   };
 
   // UMA statistics for WebsiteSettings. Do not reorder or remove existing
-  // fields.
+  // fields. A Java counterpart will be generated for this enum.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.pageinfo
   enum WebsiteSettingsAction {
     WEBSITE_SETTINGS_OPENED = 0,
     WEBSITE_SETTINGS_PERMISSIONS_TAB_SELECTED = 1,

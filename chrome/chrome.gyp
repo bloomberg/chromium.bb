@@ -551,6 +551,7 @@
             'shortcut_source_java',
             'signin_metrics_enum_java',
             'tab_load_status_java',
+            'website_settings_action_java',
             '../base/base.gyp:base',
             '../build/android/java_google_api_keys.gyp:google_api_keys_java',
             '../chrome/android/chrome_apk.gyp:custom_tabs_service_aidl',
@@ -681,6 +682,15 @@
           'type': 'none',
           'variables': {
             'source_file': '../components/signin/core/browser/signin_metrics.h',
+          },
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
+        },
+        {
+          # GN: //chrome:website_settings_action_javagen
+          'target_name': 'website_settings_action_java',
+          'type': 'none',
+          'variables': {
+            'source_file': 'browser/ui/website_settings/website_settings.h',
           },
           'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },

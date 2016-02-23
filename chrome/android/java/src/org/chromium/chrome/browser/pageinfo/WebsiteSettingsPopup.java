@@ -689,6 +689,7 @@ public class WebsiteSettingsPopup implements OnClickListener {
             runAfterDismiss(new Runnable() {
                 @Override
                 public void run() {
+                    recordAction(WebsiteSettingsAction.WEBSITE_SETTINGS_SITE_SETTINGS_OPENED);
                     Bundle fragmentArguments =
                             SingleWebsitePreferences.createFragmentArgsForSite(mFullUrl);
                     fragmentArguments.putParcelable(SingleWebsitePreferences.EXTRA_WEB_CONTENTS,
@@ -708,6 +709,8 @@ public class WebsiteSettingsPopup implements OnClickListener {
                 @Override
                 public void run() {
                     if (!mWebContents.isDestroyed()) {
+                        recordAction(
+                                WebsiteSettingsAction.WEBSITE_SETTINGS_SECURITY_DETAILS_OPENED);
                         ConnectionInfoPopup.show(mContext, mWebContents);
                     }
                 }
@@ -842,6 +845,10 @@ public class WebsiteSettingsPopup implements OnClickListener {
         return animation;
     }
 
+    private void recordAction(int action) {
+        nativeRecordWebsiteSettingsAction(mNativeWebsiteSettingsPopup, action);
+    }
+
     /**
      * Shows a WebsiteSettings dialog for the provided WebContents. The popup adds itself to the
      * view hierarchy which owns the reference while it's visible.
@@ -858,4 +865,7 @@ public class WebsiteSettingsPopup implements OnClickListener {
     private static native long nativeInit(WebsiteSettingsPopup popup, WebContents webContents);
 
     private native void nativeDestroy(long nativeWebsiteSettingsPopupAndroid);
+
+    private native void nativeRecordWebsiteSettingsAction(
+            long nativeWebsiteSettingsPopupAndroid, int action);
 }

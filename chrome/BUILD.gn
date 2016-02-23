@@ -973,6 +973,13 @@ if (is_android) {
     ]
   }
 
+  # GYP: //chrome/chrome.gyp:website_settings_action_java
+  java_cpp_enum("website_settings_action_javagen") {
+    sources = [
+      "browser/ui/website_settings/website_settings.h",
+    ]
+  }
+
   # Some android targets still depend on --gc-sections to link.
   # TODO: remove --gc-sections for Debug builds (crbug.com/159847).
   config("gc_sections") {

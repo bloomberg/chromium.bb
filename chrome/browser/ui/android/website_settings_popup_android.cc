@@ -70,6 +70,14 @@ void WebsiteSettingsPopupAndroid::Destroy(JNIEnv* env,
   delete this;
 }
 
+void WebsiteSettingsPopupAndroid::RecordWebsiteSettingsAction(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jint action) {
+  presenter_->RecordWebsiteSettingsAction(
+      static_cast<WebsiteSettings::WebsiteSettingsAction>(action));
+}
+
 void WebsiteSettingsPopupAndroid::SetIdentityInfo(
     const IdentityInfo& identity_info) {
   JNIEnv* env = base::android::AttachCurrentThread();
