@@ -2413,6 +2413,13 @@
             'test/data/webui/settings/bluetooth_page_browsertest_chromeos.js',
             'test/data/webui/settings/change_picture_browsertest_chromeos.js',
           ],
+          'conditions': [
+            ['OS=="linux" or OS=="win"', {
+              'sources': [
+                'browser/extensions/api/input_ime/input_ime_apitest_nonchromeos.cc',
+              ]
+            }],
+          ]
         }],
         ['configuration_policy==1', {
           'sources': [ '<@(chrome_browser_tests_policy_sources)' ],

@@ -118,8 +118,10 @@ appWindow.registerCustomHook(function(bindingsAPI) {
     var view = null;
 
     // When window creation fails, |windowParams| will be undefined.
-    if (windowParams && windowParams.frameId)
-      view = appWindowNatives.GetFrame(windowParams.frameId);
+    if (windowParams && windowParams.frameId) {
+      view = appWindowNatives.GetFrame(
+          windowParams.frameId, true /* notifyBrowser */);
+    }
 
     if (!view) {
       // No route to created window. If given a callback, trigger it with an

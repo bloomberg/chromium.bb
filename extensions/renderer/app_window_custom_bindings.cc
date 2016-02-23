@@ -34,13 +34,14 @@ void AppWindowCustomBindings::GetFrame(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   // TODO(jeremya): convert this to IDL nocompile to get validation, and turn
   // these argument checks into CHECK().
-  if (args.Length() != 1)
+  if (args.Length() != 2)
     return;
 
-  if (!args[0]->IsInt32())
+  if (!args[0]->IsInt32() || !args[1]->IsBoolean())
     return;
 
   int frame_id = args[0]->Int32Value();
+  bool notify_browser = args[1]->BooleanValue();
 
   if (frame_id == MSG_ROUTING_NONE)
     return;
@@ -62,8 +63,10 @@ void AppWindowCustomBindings::GetFrame(
   blink::WebLocalFrame* app_web_frame = app_frame->GetWebFrame();
   app_web_frame->setOpener(opener);
 
-  content::RenderThread::Get()->Send(new ExtensionHostMsg_AppWindowReady(
-      app_frame->GetRenderView()->GetRoutingID()));
+  if (notify_browser) {
+    content::RenderThread::Get()->Send(new ExtensionHostMsg_AppWindowReady(
+        app_frame->GetRenderView()->GetRoutingID()));
+  }
 
   v8::Local<v8::Value> window =
       app_web_frame->mainWorldScriptContext()->Global();

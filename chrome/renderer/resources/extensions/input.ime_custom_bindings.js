@@ -9,6 +9,8 @@ var binding = require('binding').Binding.create('input.ime');
 
 var Event = require('event_bindings').Event;
 
+var appWindowNatives = requireNative('app_window_natives');
+
 binding.registerCustomHook(function(api) {
   var input_ime = api.compiledApi;
 
@@ -39,6 +41,19 @@ binding.registerCustomHook(function(api) {
     }
     $Function.call(Event.prototype.addListener, this, cb);
   };
+
+  api.apiFunctions.setCustomCallback('createWindow',
+      function(name, request, callback, windowParams) {
+    if (!callback) {
+      return;
+    }
+    var view;
+    if (windowParams && windowParams.frameId) {
+      view = appWindowNatives.GetFrame(
+          windowParams.frameId, false /* notifyBrowser */);
+    }
+    callback(view);
+  });
 });
 
 exports.binding = binding.generate();
