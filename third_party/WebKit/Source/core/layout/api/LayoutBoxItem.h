@@ -1,0 +1,55 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef LayoutBoxItem_h
+#define LayoutBoxItem_h
+
+#include "core/layout/LayoutBox.h"
+#include "core/layout/api/LayoutBoxModel.h"
+#include "platform/scroll/ScrollTypes.h"
+
+namespace blink {
+
+class LayoutBoxItem : public LayoutBoxModel {
+public:
+    explicit LayoutBoxItem(LayoutBox* layoutBox)
+        : LayoutBoxModel(layoutBox)
+    {
+    }
+
+    explicit LayoutBoxItem(const LayoutItem& item)
+        : LayoutBoxModel(item)
+    {
+        ASSERT(!item || item.isBox());
+    }
+
+    explicit LayoutBoxItem(std::nullptr_t) : LayoutBoxModel(nullptr) { }
+
+    LayoutBoxItem() { }
+
+    LayoutBoxItem enclosingBox() const
+    {
+        return LayoutBoxItem(toBox()->enclosingBox());
+    }
+
+    ScrollResultOneDimensional scroll(ScrollDirectionPhysical direction, ScrollGranularity granularity, float delta = 1)
+    {
+        return toBox()->scroll(direction, granularity, delta);
+    }
+
+private:
+    LayoutBox* toBox()
+    {
+        return toLayoutBox(layoutObject());
+    }
+
+    const LayoutBox* toBox() const
+    {
+        return toLayoutBox(layoutObject());
+    }
+};
+
+} // namespace blink
+
+#endif // LayoutBoxItem_h

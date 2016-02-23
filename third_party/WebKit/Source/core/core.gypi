@@ -501,6 +501,7 @@
         ],
         'webcore_rendering_files': [
             'layout/api/HitTestAction.h',
+            'layout/api/LayoutBoxItem.h',
             'layout/api/LayoutBoxModel.h',
             'layout/api/LayoutItem.h',
             'layout/api/LineLayoutAPIShim.h',

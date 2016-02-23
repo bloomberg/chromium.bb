@@ -108,6 +108,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/LayoutTextFragment.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutBoxItem.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/FocusController.h"
@@ -565,15 +566,15 @@ void Element::nativeApplyScroll(ScrollState& scrollState)
     } else {
         if (!layoutObject())
             return;
-        LayoutBox* curBox = layoutObject()->enclosingBox();
+        LayoutBoxItem curBox = LayoutBoxItem(toLayoutBox(layoutObject())).enclosingBox();
         // FIXME: Native scrollers should only consume the scroll they
         // apply. See crbug.com/457765.
-        if (deltaX && curBox->scroll(ScrollLeft, ScrollByPrecisePixel, deltaX).didScroll) {
+        if (deltaX && curBox.scroll(ScrollLeft, ScrollByPrecisePixel, deltaX).didScroll) {
             scrollState.consumeDeltaNative(scrollState.deltaX(), 0);
             scrolled = true;
         }
 
-        if (deltaY && curBox->scroll(ScrollUp, ScrollByPrecisePixel, deltaY).didScroll) {
+        if (deltaY && curBox.scroll(ScrollUp, ScrollByPrecisePixel, deltaY).didScroll) {
             scrollState.consumeDeltaNative(0, scrollState.deltaY());
             scrolled = true;
         }

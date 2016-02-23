@@ -36,6 +36,11 @@ public:
         return m_layoutObject->isBoxModelObject();
     }
 
+    bool isBox() const
+    {
+        return m_layoutObject->isBox();
+    }
+
     bool needsLayout()
     {
         return m_layoutObject->needsLayout();
