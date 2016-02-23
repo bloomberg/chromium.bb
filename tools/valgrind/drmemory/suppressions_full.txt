@@ -2072,7 +2072,6 @@ media.dll!mkvmuxer::Segment::AddFrame
 media.dll!media::WebmMuxer::AddFrame
 media.dll!media::WebmMuxer::OnEncodedVideo
 content.dll!content::MediaRecorderHandler::OnEncodedVideo
-content.dll!base::internal::RunnableAdapter<>::Run
 
 UNADDRESSABLE ACCESS
 name=bug_571551_b
@@ -2083,7 +2082,6 @@ media.dll!mkvmuxer::Segment::AddFrame
 media.dll!media::WebmMuxer::AddFrame
 media.dll!media::WebmMuxer::OnEncodedVideo
 content.dll!content::MediaRecorderHandler::OnEncodedVideo
-content.dll!base::internal::RunnableAdapter<>::Run
 
 HANDLE LEAK
 name=bug_571553
