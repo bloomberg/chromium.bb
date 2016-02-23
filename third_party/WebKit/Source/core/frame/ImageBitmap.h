@@ -25,6 +25,11 @@ class HTMLCanvasElement;
 class HTMLVideoElement;
 class ImageData;
 
+enum AlphaDisposition {
+    PremultiplyAlpha,
+    DontPremultiplyAlpha,
+};
+
 class CORE_EXPORT ImageBitmap final : public RefCountedWillBeGarbageCollectedFinalized<ImageBitmap>, public ScriptWrappable, public ImageLoaderClient, public CanvasImageSource, public ImageBitmapSource {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ImageBitmap);
@@ -38,7 +43,7 @@ public:
     static PassRefPtrWillBeRawPtr<ImageBitmap> create(PassRefPtr<StaticBitmapImage>, const IntRect&, const ImageBitmapOptions& = ImageBitmapOptions());
 
     StaticBitmapImage* bitmapImage() const { return (m_image) ? m_image.get() : nullptr; }
-    PassOwnPtr<uint8_t[]> copyBitmapData();
+    PassOwnPtr<uint8_t[]> copyBitmapData(AlphaDisposition alphaOp = DontPremultiplyAlpha);
     unsigned long width() const;
     unsigned long height() const;
     IntSize size() const;

@@ -4184,9 +4184,25 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLint int
         return;
     if (!validateTexFunc("texImage2D", TexImage, SourceImageBitmap, target, level, internalformat, bitmap->width(), bitmap->height(), 1, 0, format, type, 0, 0, 0))
         return;
-    StaticBitmapImage* imageForRender = bitmap->bitmapImage();
-    ASSERT(imageForRender);
-    texImage2DImpl(target, level, internalformat, format, type, imageForRender, WebGLImageConversion::HtmlDomImage, m_unpackFlipY, m_unpackPremultiplyAlpha);
+    OwnPtr<uint8_t[]> pixelData = bitmap->copyBitmapData(PremultiplyAlpha);
+    Vector<uint8_t> data;
+    bool needConversion = true;
+    if (format == GL_RGBA && type == GL_UNSIGNED_BYTE) {
+        needConversion = false;
+    } else {
+        if (type == GL_UNSIGNED_INT_10F_11F_11F_REV) {
+            // The UNSIGNED_INT_10F_11F_11F_REV type pack/unpack isn't implemented.
+            type = GL_FLOAT;
+        }
+        // In the case of ImageBitmap, we do not need to apply flipY or premultiplyAlpha.
+        if (!WebGLImageConversion::extractImageData(pixelData.get(), bitmap->size(), format, type, false, false, data)) {
+            synthesizeGLError(GL_INVALID_VALUE, "texImage2D", "bad image data");
+            return;
+        }
+    }
+    resetUnpackParameters();
+    texImage2DBase(target, level, internalformat, bitmap->width(), bitmap->height(), 0, format, type, needConversion ? data.data() : pixelData.get());
+    restoreUnpackParameters();
 }
 
 void WebGLRenderingContextBase::texParameter(GLenum target, GLenum pname, GLfloat paramf, GLint parami, bool isFloat)
@@ -4433,9 +4449,25 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint 
         return;
     if (!validateTexFunc("texSubImage2D", TexSubImage, SourceImageBitmap, target, level, 0, bitmap->width(), bitmap->height(), 1, 0, format, type, 0, 0, 0))
         return;
-    StaticBitmapImage* imageForRender = bitmap->bitmapImage();
-    ASSERT(imageForRender);
-    texSubImage2DImpl(target, level, xoffset, yoffset, format, type, imageForRender, WebGLImageConversion::HtmlDomImage, m_unpackFlipY, m_unpackPremultiplyAlpha);
+    if (type == GL_UNSIGNED_INT_10F_11F_11F_REV) {
+        // The UNSIGNED_INT_10F_11F_11F_REV type pack/unpack isn't implemented.
+        type = GL_FLOAT;
+    }
+    OwnPtr<uint8_t[]> pixelData = bitmap->copyBitmapData(PremultiplyAlpha);
+    Vector<uint8_t> data;
+    bool needConversion = true;
+    if (format == GL_RGBA && type == GL_UNSIGNED_BYTE) {
+        needConversion = false;
+    } else {
+        // In the case of ImageBitmap, we do not need to apply flipY or premultiplyAlpha.
+        if (!WebGLImageConversion::extractImageData(pixelData.get(), bitmap->size(), format, type, false, false, data)) {
+            synthesizeGLError(GL_INVALID_VALUE, "texSubImage2D", "bad image data");
+            return;
+        }
+    }
+    resetUnpackParameters();
+    webContext()->texSubImage2D(target, level, xoffset, yoffset, bitmap->width(), bitmap->height(), format, type, needConversion ? data.data() : pixelData.get());
+    restoreUnpackParameters();
 }
 
 void WebGLRenderingContextBase::uniform1f(const WebGLUniformLocation* location, GLfloat x)
