@@ -51,6 +51,7 @@ enum fd_param_id {
 	FD_GPU_ID,
 	FD_CHIP_ID,
 	FD_MAX_FREQ,
+	FD_TIMESTAMP,
 };
 
 /* bo flags: */

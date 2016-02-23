@@ -51,6 +51,7 @@ static int kgsl_pipe_get_param(struct fd_pipe *pipe,
 		*value = kgsl_pipe->devinfo.chip_id;
 		return 0;
 	case FD_MAX_FREQ:
+	case FD_TIMESTAMP:
 		/* unsupported on kgsl */
 		return -1;
 	default:

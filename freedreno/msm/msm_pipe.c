@@ -69,6 +69,8 @@ static int msm_pipe_get_param(struct fd_pipe *pipe,
 		return 0;
 	case FD_MAX_FREQ:
 		return query_param(pipe, MSM_PARAM_MAX_FREQ, value);
+	case FD_TIMESTAMP:
+		return query_param(pipe, MSM_PARAM_TIMESTAMP, value);
 	default:
 		ERROR_MSG("invalid param id: %d", param);
 		return -1;
