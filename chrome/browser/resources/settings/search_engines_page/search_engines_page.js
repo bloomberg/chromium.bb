@@ -12,6 +12,8 @@
 Polymer({
   is: 'settings-search-engines-page',
 
+  behaviors: [settings.WebUIListenerBehavior],
+
   properties: {
     /** @type {!Array<!SearchEngine>} */
     defaultEngines: {
@@ -35,28 +37,12 @@ Polymer({
     },
   },
 
-  /**
-   * Holds WebUI listeners that need to be removed when this element is
-   * destroyed.
-   * TODO(dpapad): Move listener tracking logic to a Polymer behavior class,
-   * such that it can be re-used.
-   * @private {!Array<!WebUIListener>}
-   */
-  webUIListeners_: [],
-
   /** @override */
   ready: function() {
     settings.SearchEnginesBrowserProxyImpl.getInstance().
         getSearchEnginesList().then(this.enginesChanged_.bind(this));
-    this.webUIListeners_.push(cr.addWebUIListener(
-        'search-engines-changed', this.enginesChanged_.bind(this)));
-  },
-
-  /** @override */
-  detached: function() {
-    this.webUIListeners_.forEach(function(listener) {
-      cr.removeWebUIListener(listener);
-    });
+    this.addWebUIListener(
+        'search-engines-changed', this.enginesChanged_.bind(this));
   },
 
   /**
