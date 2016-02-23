@@ -222,5 +222,13 @@
         {
             "group_name": "Enabled"
         }
+    ],
+    "use-new-media-cache": [
+        {
+            "enable_features": [
+                "use-new-media-cache"
+            ],
+            "group_name": "Enabled"
+        }
     ]
 }
