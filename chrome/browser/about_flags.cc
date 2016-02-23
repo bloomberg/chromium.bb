@@ -1713,7 +1713,7 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // OS_ANDROID
     {"enable-md-history", IDS_FLAGS_ENABLE_MATERIAL_DESIGN_HISTORY_NAME,
      IDS_FLAGS_ENABLE_MATERIAL_DESIGN_HISTORY_DESCRIPTION,
-     kOsDesktop | kOsAndroid,
+     kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kEnableMaterialDesignHistory)},
 #if defined(OS_WIN)
     {"enable-windows-desktop-search-redirection",

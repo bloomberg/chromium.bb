@@ -7,6 +7,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/browsing_history_handler.h"
+#include "chrome/browser/ui/webui/foreign_session_handler.h"
+#include "chrome/browser/ui/webui/history_login_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -20,11 +22,6 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
-
-#if !defined(OS_ANDROID)
-#include "chrome/browser/ui/webui/foreign_session_handler.h"
-#include "chrome/browser/ui/webui/history_login_handler.h"
-#endif
 
 namespace {
 
@@ -73,13 +70,10 @@ MdHistoryUI::MdHistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   web_ui->AddMessageHandler(new BrowsingHistoryHandler());
   web_ui->AddMessageHandler(new MetricsHandler());
 
-  // On mobile we deal with foreign sessions differently.
-#if !defined(OS_ANDROID)
   if (search::IsInstantExtendedAPIEnabled()) {
     web_ui->AddMessageHandler(new browser_sync::ForeignSessionHandler());
     web_ui->AddMessageHandler(new HistoryLoginHandler());
   }
-#endif
 
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, CreateMdHistoryUIHTMLSource(profile));

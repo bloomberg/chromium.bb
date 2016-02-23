@@ -36,8 +36,6 @@
 #include "chrome/browser/ui/webui/invalidations_ui.h"
 #include "chrome/browser/ui/webui/local_state/local_state_ui.h"
 #include "chrome/browser/ui/webui/log_web_ui_url.h"
-#include "chrome/browser/ui/webui/md_downloads/md_downloads_ui.h"
-#include "chrome/browser/ui/webui/md_history_ui.h"
 #include "chrome/browser/ui/webui/memory_internals/memory_internals_ui.h"
 #include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
 #include "chrome/browser/ui/webui/omnibox/omnibox_ui.h"
@@ -101,6 +99,8 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/webui/engagement/site_engagement_ui.h"
+#include "chrome/browser/ui/webui/md_downloads/md_downloads_ui.h"
+#include "chrome/browser/ui/webui/md_history_ui.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/quota_internals/quota_internals_ui.h"
 #include "chrome/browser/ui/webui/sync_file_system_internals/sync_file_system_internals_ui.h"
@@ -412,6 +412,11 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       ::switches::MdExtensionsEnabled()) {
     return &NewWebUI<extensions::ExtensionsUI>;
   }
+  // Material Design history is on its own host, rather than on an Uber page.
+  if (::switches::MdHistoryEnabled() &&
+      url.host() == chrome::kChromeUIHistoryHost) {
+    return &NewWebUI<MdHistoryUI>;
+  }
   if (url.host() == chrome::kChromeUIQuotaInternalsHost)
     return &NewWebUI<QuotaInternalsUI>;
   // Settings are implemented with native UI elements on Android.
@@ -421,6 +426,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       (url.host() == chrome::kChromeUISettingsHost &&
        ::switches::AboutInSettingsEnabled())) {
     return &NewWebUI<options::OptionsUI>;
+  }
+  if (SiteEngagementService::IsEnabled() &&
+      url.host() == chrome::kChromeUISiteEngagementHost) {
+    return &NewWebUI<SiteEngagementUI>;
   }
   if (url.host() == chrome::kChromeUISyncFileSystemInternalsHost)
     return &NewWebUI<SyncFileSystemInternalsUI>;
@@ -589,17 +598,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       url.host() == dom_distiller::kChromeUIDomDistillerHost) {
     return &NewWebUI<dom_distiller::DomDistillerUi>;
   }
-  // Material Design history is on its own host, rather than on an Uber page.
-  if (::switches::MdHistoryEnabled() &&
-      url.host() == chrome::kChromeUIHistoryHost) {
-    return &NewWebUI<MdHistoryUI>;
-  }
-#if !defined(OS_ANDROID)
-  if (SiteEngagementService::IsEnabled() &&
-      url.host() == chrome::kChromeUISiteEngagementHost) {
-    return &NewWebUI<SiteEngagementUI>;
-  }
-#endif
 
   return NULL;
 }

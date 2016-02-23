@@ -193,7 +193,7 @@
       <include name="IDR_HISTORY_HTML" file="resources\history\history.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_HISTORY_JS" file="resources\history\history.js" flattenhtml="true" type="BINDATA" />
 
-      <if expr="not is_ios">
+      <if expr="not is_android and not is_ios">
         <include name="IDR_MD_HISTORY_HISTORY_HTML" file="resources\md_history\history.html" type="BINDATA" />
         <include name="IDR_MD_HISTORY_HISTORY_ITEM_HTML" file="resources\md_history\history_item.html" type="BINDATA" />
         <include name="IDR_MD_HISTORY_HISTORY_ITEM_JS" file="resources\md_history\history_item.js" type="BINDATA" />
