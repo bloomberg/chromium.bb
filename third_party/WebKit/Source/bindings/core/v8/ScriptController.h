@@ -123,7 +123,7 @@ public:
     void enableEval();
     void disableEval(const String& errorMessage);
 
-    static bool canAccessFromCurrentOrigin(LocalFrame*);
+    static bool canAccessFromCurrentOrigin(v8::Isolate*, Frame*);
 
     static void setCaptureCallStackForUncaughtExceptions(v8::Isolate*, bool);
     void collectIsolatedContexts(Vector<std::pair<ScriptState*, SecurityOrigin*>>&);

@@ -84,11 +84,10 @@
 
 namespace blink {
 
-bool ScriptController::canAccessFromCurrentOrigin(LocalFrame *frame)
+bool ScriptController::canAccessFromCurrentOrigin(v8::Isolate* isolate, Frame* frame)
 {
     if (!frame)
         return false;
-    v8::Isolate* isolate = toIsolate(frame);
     return !isolate->InContext() || BindingSecurity::shouldAllowAccessToFrame(isolate, callingDOMWindow(isolate), frame, ReportSecurityError);
 }
 
