@@ -464,7 +464,7 @@ font longhands=font-style;font-variant;font-weight;font-stretch;font-size;line-h
 grid runtime_flag=CSSGridLayout, longhands=grid-template-columns;grid-template-rows;grid-template-areas;grid-auto-flow;grid-auto-columns;grid-auto-rows;grid-column-gap;grid-row-gap
 grid-area runtime_flag=CSSGridLayout, longhands=grid-row-start;grid-column-start;grid-row-end;grid-column-end
 grid-column runtime_flag=CSSGridLayout, longhands=grid-column-start;grid-column-end
-grid-gap runtime_flag=CSSGridLayout, longhands=grid-column-gap;grid-row-gap
+grid-gap runtime_flag=CSSGridLayout, longhands=grid-row-gap;grid-column-gap
 grid-row runtime_flag=CSSGridLayout, longhands=grid-row-start;grid-row-end
 grid-template runtime_flag=CSSGridLayout, longhands=grid-template-columns;grid-template-rows;grid-template-areas
 list-style longhands=list-style-type;list-style-position;list-style-image

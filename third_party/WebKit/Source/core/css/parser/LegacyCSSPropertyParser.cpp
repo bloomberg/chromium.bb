@@ -1386,23 +1386,23 @@ bool CSSPropertyParser::parseGridGapShorthand(bool important)
     if (!validUnit(value, FLength | FNonNeg))
         return false;
 
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> columnGap = createPrimitiveNumericValue(value);
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> rowGap = nullptr;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> rowGap = createPrimitiveNumericValue(value);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> columnGap = nullptr;
 
     value = m_valueList->next();
     if (value) {
         if (!validUnit(value, FLength | FNonNeg))
             return false;
 
-        rowGap = createPrimitiveNumericValue(value);
+        columnGap = createPrimitiveNumericValue(value);
         if (m_valueList->next())
             return false;
     } else {
-        rowGap = columnGap;
+        columnGap = rowGap;
     }
 
-    addProperty(CSSPropertyGridColumnGap, columnGap, important);
     addProperty(CSSPropertyGridRowGap, rowGap, important);
+    addProperty(CSSPropertyGridColumnGap, columnGap, important);
 
     return true;
 }
