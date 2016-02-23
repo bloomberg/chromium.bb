@@ -1,0 +1,89 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_UI_VIEWS_IME_IME_WINDOW_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_IME_IME_WINDOW_VIEW_H_
+
+#include <string>
+
+#include "base/memory/scoped_ptr.h"
+#include "base/strings/string16.h"
+#include "chrome/browser/ui/ime/ime_native_window.h"
+#include "chrome/browser/ui/ime/ime_window.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_observer.h"
+#include "extensions/browser/extension_icon_image.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/image/image.h"
+#include "ui/views/widget/widget_delegate.h"
+#include "ui/views/widget/widget_observer.h"
+
+class Profile;
+
+namespace extensions {
+class Extension;
+}
+
+namespace views {
+class WebView;
+}
+
+namespace ui {
+
+class ImeWindowFrameView;
+class ImeWindowHost;
+
+// The views implementation for the IME window UI.
+// This interacts with ImeWindow through the ImeNativeWindow interface.
+class ImeWindowView : public ImeNativeWindow,
+                      public views::WidgetDelegateView {
+ public:
+  ImeWindowView(ImeWindow* ime_window,
+                const gfx::Rect& bounds,
+                content::WebContents* contents);
+  ~ImeWindowView() override;
+
+  // ui::ImeNativeWindow:
+  void Show() override;
+  void Hide() override;
+  void Close() override;
+  void SetBounds(const gfx::Rect& bounds) override;
+  void UpdateWindowIcon() override;
+  bool IsVisible() const override;
+  gfx::Rect GetBounds() const override;
+
+  // views::WidgetDelegate:
+  views::View* GetContentsView() override;
+  views::NonClientFrameView* CreateNonClientFrameView(
+      views::Widget* widget) override;
+  bool CanActivate() const override;
+  bool CanResize() const override;
+  bool CanMaximize() const override;
+  bool CanMinimize() const override;
+  base::string16 GetWindowTitle() const override;
+  gfx::ImageSkia GetWindowAppIcon() override;
+  gfx::ImageSkia GetWindowIcon() override;
+  void DeleteDelegate() override;
+
+  // views::View:
+  ImeWindowFrameView* GetFrameView() const;
+  views::Widget* window() const { return window_; }
+  views::WebView* web_view() const { return web_view_; }
+
+ private:
+  ImeWindow* ime_window_;
+
+  // The native window.
+  views::Widget* window_;
+
+  // The web view control which hosts the web contents.
+  views::WebView* web_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(ImeWindowView);
+};
+
+}  // namespace ui
+
+#endif  // CHROME_BROWSER_UI_VIEWS_IME_IME_WINDOW_VIEW_H_

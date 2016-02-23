@@ -1822,7 +1822,7 @@
               'sources': [
                 '<@(chrome_interactive_ui_test_panels_views_sources)',
               ],
-            }],
+            }]
           ],
         }],
         ['chromeos==1 and branding=="Chrome"', {
@@ -2255,8 +2255,15 @@
           'dependencies': [
             '../third_party/boringssl/boringssl.gyp:boringssl',
           ]
-         }
-        ],
+        }, {
+          'conditions': [
+            ['OS == "linux" or OS == "win"', {
+              'sources': [
+                'browser/ui/views/ime/ime_window_browsertest.cc',
+              ],
+            }]
+          ]
+        }],
         [ 'cld_version==2', {
           'dependencies': [
             # Because the browser_tests use translate, they need CLD data.

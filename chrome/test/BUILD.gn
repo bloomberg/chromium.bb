@@ -962,6 +962,8 @@ if (!is_android) {
         sources += [ "//third_party/liblouis/nacl_wrapper/liblouis_wrapper_browsertest.cc" ]
         deps += [ "//chrome/browser/chromeos" ]
         data_deps += [ "//third_party/liblouis:liblouis_test_data" ]
+      } else if (is_linux || is_win) {
+        sources += [ "../browser/ui/views/ime/ime_window_browsertest.cc" ]
       }
 
       if (is_win || is_linux) {

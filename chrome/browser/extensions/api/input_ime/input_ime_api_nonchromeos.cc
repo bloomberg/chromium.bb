@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
+#include "chrome/browser/ui/ime/ime_window.h"
 #include "chrome/browser/ui/input_method/input_method_engine.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/input_ime.h"
@@ -25,6 +26,8 @@ namespace OnCompositionBoundsChanged =
 using ui::IMEEngineHandlerInterface;
 using input_method::InputMethodEngine;
 using input_method::InputMethodEngineBase;
+
+namespace input_ime = extensions::api::input_ime;
 
 namespace {
 
@@ -176,8 +179,44 @@ ExtensionFunction::ResponseAction InputImeDeactivateFunction::Run() {
 }
 
 ExtensionFunction::ResponseAction InputImeCreateWindowFunction::Run() {
-  // TODO(shuchen): Implement this API.
-  return RespondNow(NoArguments());
+  if (!IsInputImeEnabled())
+    return RespondNow(Error(kErrorAPIDisabled));
+
+  // TODO(shuchen): Only create the IME window when the extension is
+  // activated through the input.ime.activate() API.
+
+  // Using input_ime::CreateWindow::Params::Create() causes the link errors on
+  // Windows, only if the method name is 'createWindow'.
+  // So doing the by-hand parameter unpacking here.
+  // TODO(shuchen,rdevlin.cronin): investigate the root cause for the link
+  // errors.
+  const base::DictionaryValue* params = nullptr;
+  args_->GetDictionary(0, &params);
+  EXTENSION_FUNCTION_VALIDATE(params);
+  input_ime::CreateWindowOptions options;
+  input_ime::CreateWindowOptions::Populate(*params, &options);
+
+  gfx::Rect bounds(0, 0, 100, 100);  // Default bounds.
+  if (options.bounds.get()) {
+    bounds.set_x(options.bounds->left);
+    bounds.set_y(options.bounds->top);
+    bounds.set_width(options.bounds->width);
+    bounds.set_height(options.bounds->height);
+  }
+
+  // The ImeWindow is self-owned, so no need to hold its instance here.
+  ui::ImeWindow* ime_window = new ui::ImeWindow(
+      Profile::FromBrowserContext(browser_context()), extension(),
+      options.url.get() ? *options.url : url::kAboutBlankURL,
+      options.window_type == input_ime::WINDOW_TYPE_FOLLOWCURSOR ?
+          ui::ImeWindow::FOLLOW_CURSOR : ui::ImeWindow::NORMAL,
+      bounds);
+  ime_window->Show();
+
+  scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
+  result->Set("frameId", new base::FundamentalValue(ime_window->GetFrameId()));
+
+  return RespondNow(OneArgument(std::move(result)));
 }
 
 }  // namespace extensions
