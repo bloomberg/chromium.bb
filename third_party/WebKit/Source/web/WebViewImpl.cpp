@@ -4462,6 +4462,11 @@ bool WebViewImpl::detectContentOnTouch(const GestureEventWithHitTestResults& tar
     return true;
 }
 
+WebViewScheduler* WebViewImpl::scheduler() const
+{
+    return m_scheduler.get();
+}
+
 void WebViewImpl::setVisibilityState(WebPageVisibilityState visibilityState,
                                      bool isInitialState) {
     ASSERT(visibilityState == WebPageVisibilityStateVisible || visibilityState == WebPageVisibilityStateHidden || visibilityState == WebPageVisibilityStatePrerender);

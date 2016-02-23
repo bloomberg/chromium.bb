@@ -263,6 +263,18 @@ private:
             return nullptr;
         }
 
+        double virtualTimeSeconds() const override
+        {
+            ASSERT_NOT_REACHED();
+            return 0.0;
+        }
+
+        double monotonicallyIncreasingVirtualTimeSeconds() const override
+        {
+            ASSERT_NOT_REACHED();
+            return 0.0;
+        }
+
         Task* m_task;
     };
 

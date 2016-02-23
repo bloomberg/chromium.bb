@@ -19,11 +19,6 @@ namespace blink {
 namespace {
 double gCurrentTimeSecs = 0.0;
 
-double currentTime()
-{
-    return gCurrentTimeSecs;
-}
-
 // This class exists because gcc doesn't know how to move an OwnPtr.
 class RefCountedTaskContainer : public RefCounted<RefCountedTaskContainer> {
 public:
@@ -44,8 +39,10 @@ class DelayedTask {
 public:
     DelayedTask(WebTaskRunner::Task* task, double delaySeconds)
         : m_task(adoptRef(new RefCountedTaskContainer(task)))
-        , m_runTimeSeconds(monotonicallyIncreasingTime() + delaySeconds)
-        , m_delaySeconds(delaySeconds) { }
+        , m_runTimeSeconds(gCurrentTimeSecs + delaySeconds)
+        , m_delaySeconds(delaySeconds)
+    {
+    }
 
     bool operator<(const DelayedTask& other) const
     {
@@ -92,6 +89,17 @@ public:
     {
         ASSERT_NOT_REACHED();
         return nullptr;
+    }
+
+    double virtualTimeSeconds() const override
+    {
+        ASSERT_NOT_REACHED();
+        return 0.0;
+    }
+
+    double monotonicallyIncreasingVirtualTimeSeconds() const override
+    {
+        return gCurrentTimeSecs;
     }
 
     std::priority_queue<DelayedTask>* m_timerTasks; // NOT OWNED
@@ -280,26 +288,19 @@ class TimerTest : public testing::Test {
 public:
     void SetUp() override
     {
-        m_originalTimeFunction = setTimeFunctionsForTesting(currentTime);
-
         m_runTimes.clear();
         gCurrentTimeSecs = 10.0;
         m_startTime = gCurrentTimeSecs;
     }
 
-    void TearDown() override
-    {
-        setTimeFunctionsForTesting(m_originalTimeFunction);
-    }
-
     void countingTask(Timer<TimerTest>*)
     {
-        m_runTimes.append(monotonicallyIncreasingTime());
+        m_runTimes.append(gCurrentTimeSecs);
     }
 
     void recordNextFireTimeTask(Timer<TimerTest>* timer)
     {
-        m_nextFireTimes.append(monotonicallyIncreasingTime() + timer->nextFireInterval());
+        m_nextFireTimes.append(gCurrentTimeSecs + timer->nextFireInterval());
     }
 
     void advanceTimeBy(double timeSecs)
@@ -339,7 +340,6 @@ protected:
 
 private:
     TimerTestPlatform m_platform;
-    TimeFunction m_originalTimeFunction;
 };
 
 TEST_F(TimerTest, StartOneShot_Zero)
@@ -449,7 +449,7 @@ TEST_F(TimerTest, StartOneShot_NonZeroAndCancelThenRepost)
     runUntilIdle();
     EXPECT_FALSE(m_runTimes.size());
 
-    double secondPostTime = monotonicallyIncreasingTime();
+    double secondPostTime = gCurrentTimeSecs;
     timer.startOneShot(10, BLINK_FROM_HERE);
 
     ASSERT(hasOneTimerTask());

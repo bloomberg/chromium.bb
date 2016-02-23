@@ -158,23 +158,26 @@ TEST_F(WebViewSchedulerImplTest, RepeatingTimers_OneBackgroundOneForeground) {
 namespace {
 class VirtualTimeRecorderTask : public blink::WebTaskRunner::Task {
  public:
-  VirtualTimeRecorderTask(RendererSchedulerImpl* scheduler,
+  VirtualTimeRecorderTask(base::SimpleTestTickClock* clock,
+                          blink::WebTaskRunner* web_task_runner,
                           std::vector<base::TimeTicks>* out_real_times,
                           std::vector<size_t>* out_virtual_times_ms)
-      : scheduler_(scheduler),
+      : clock_(clock),
+        web_task_runner_(web_task_runner),
         out_real_times_(out_real_times),
         out_virtual_times_ms_(out_virtual_times_ms) {}
 
   ~VirtualTimeRecorderTask() override {}
 
   void run() override {
-    out_real_times_->push_back(scheduler_->tick_clock()->NowTicks());
+    out_real_times_->push_back(clock_->NowTicks());
     out_virtual_times_ms_->push_back(
-        scheduler_->MonotonicallyIncreasingVirtualTimeSeconds() * 1000.0);
+        web_task_runner_->monotonicallyIncreasingVirtualTimeSeconds() * 1000.0);
   }
 
  private:
-  RendererSchedulerImpl* scheduler_;              // NOT OWNED
+  base::SimpleTestTickClock* clock_;              // NOT OWNED
+  blink::WebTaskRunner* web_task_runner_;         // NOT OWNED
   std::vector<base::TimeTicks>* out_real_times_;  // NOT OWNED
   std::vector<size_t>* out_virtual_times_ms_;     // NOT OWNED
 };
@@ -185,26 +188,31 @@ TEST_F(WebViewSchedulerImplTest, VirtualTime_TimerFastForwarding) {
   std::vector<size_t> virtual_times_ms;
   base::TimeTicks initial_real_time = scheduler_->tick_clock()->NowTicks();
   size_t initial_virtual_time_ms =
-      scheduler_->MonotonicallyIncreasingVirtualTimeSeconds() * 1000.0;
+      web_frame_scheduler_->timerTaskRunner()
+          ->monotonicallyIncreasingVirtualTimeSeconds() *
+      1000.0;
 
   web_view_scheduler_->enableVirtualTime();
 
   web_frame_scheduler_->timerTaskRunner()->postDelayedTask(
       BLINK_FROM_HERE,
-      new VirtualTimeRecorderTask(scheduler_.get(), &real_times,
-                                  &virtual_times_ms),
+      new VirtualTimeRecorderTask(clock_.get(),
+                                  web_frame_scheduler_->timerTaskRunner(),
+                                  &real_times, &virtual_times_ms),
       2.0);
 
   web_frame_scheduler_->timerTaskRunner()->postDelayedTask(
       BLINK_FROM_HERE,
-      new VirtualTimeRecorderTask(scheduler_.get(), &real_times,
-                                  &virtual_times_ms),
+      new VirtualTimeRecorderTask(clock_.get(),
+                                  web_frame_scheduler_->timerTaskRunner(),
+                                  &real_times, &virtual_times_ms),
       20.0);
 
   web_frame_scheduler_->timerTaskRunner()->postDelayedTask(
       BLINK_FROM_HERE,
-      new VirtualTimeRecorderTask(scheduler_.get(), &real_times,
-                                  &virtual_times_ms),
+      new VirtualTimeRecorderTask(clock_.get(),
+                                  web_frame_scheduler_->timerTaskRunner(),
+                                  &real_times, &virtual_times_ms),
       200.0);
 
   mock_task_runner_->RunUntilIdle();
@@ -222,26 +230,31 @@ TEST_F(WebViewSchedulerImplTest, VirtualTime_LoadingTaskFastForwarding) {
   std::vector<size_t> virtual_times_ms;
   base::TimeTicks initial_real_time = scheduler_->tick_clock()->NowTicks();
   size_t initial_virtual_time_ms =
-      scheduler_->MonotonicallyIncreasingVirtualTimeSeconds() * 1000.0;
+      web_frame_scheduler_->timerTaskRunner()
+          ->monotonicallyIncreasingVirtualTimeSeconds() *
+      1000.0;
 
   web_view_scheduler_->enableVirtualTime();
 
   web_frame_scheduler_->loadingTaskRunner()->postDelayedTask(
       BLINK_FROM_HERE,
-      new VirtualTimeRecorderTask(scheduler_.get(), &real_times,
-                                  &virtual_times_ms),
+      new VirtualTimeRecorderTask(clock_.get(),
+                                  web_frame_scheduler_->loadingTaskRunner(),
+                                  &real_times, &virtual_times_ms),
       2.0);
 
   web_frame_scheduler_->loadingTaskRunner()->postDelayedTask(
       BLINK_FROM_HERE,
-      new VirtualTimeRecorderTask(scheduler_.get(), &real_times,
-                                  &virtual_times_ms),
+      new VirtualTimeRecorderTask(clock_.get(),
+                                  web_frame_scheduler_->loadingTaskRunner(),
+                                  &real_times, &virtual_times_ms),
       20.0);
 
   web_frame_scheduler_->loadingTaskRunner()->postDelayedTask(
       BLINK_FROM_HERE,
-      new VirtualTimeRecorderTask(scheduler_.get(), &real_times,
-                                  &virtual_times_ms),
+      new VirtualTimeRecorderTask(clock_.get(),
+                                  web_frame_scheduler_->loadingTaskRunner(),
+                                  &real_times, &virtual_times_ms),
       200.0);
 
   mock_task_runner_->RunUntilIdle();
@@ -255,7 +268,7 @@ TEST_F(WebViewSchedulerImplTest, VirtualTime_LoadingTaskFastForwarding) {
 }
 
 TEST_F(WebViewSchedulerImplTest,
-       RepeatingTimer_PageInBackground_MeansNothingForFirtualTime) {
+       RepeatingTimer_PageInBackground_MeansNothingForVirtualTime) {
   web_view_scheduler_->enableVirtualTime();
   web_view_scheduler_->setPageVisible(false);
   base::TimeTicks initial_real_time = scheduler_->tick_clock()->NowTicks();
@@ -267,6 +280,7 @@ TEST_F(WebViewSchedulerImplTest,
       1.0);
 
   mock_task_runner_->RunTasksWhile(mock_task_runner_->TaskRunCountBelow(2000));
+  // Virtual time means page visibility is ignored.
   EXPECT_EQ(1999, run_count);
 
   // The global tick clock has not moved, yet we ran a large number of "delayed"
