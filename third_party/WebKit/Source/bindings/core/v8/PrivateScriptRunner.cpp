@@ -241,7 +241,7 @@ v8::Local<v8::Value> PrivateScriptRunner::installClassIfNeeded(Document* documen
 
 namespace {
 
-void rethrowExceptionInPrivateScript(v8::Isolate* isolate, v8::TryCatch& block, ScriptState* scriptStateInUserScript, ExceptionState::Context errorContext, const char* propertyName, const char* interfaceName)
+void rethrowExceptionInPrivateScript(v8::Isolate* isolate, v8::TryCatch& block, ScriptState* scriptStateInUserScript, ExceptionState::ContextType errorContext, const char* propertyName, const char* interfaceName)
 {
     v8::Local<v8::Context> context = scriptStateInUserScript->context();
     v8::Local<v8::Value> exception = block.Exception();

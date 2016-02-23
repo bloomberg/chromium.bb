@@ -51,7 +51,7 @@ class CORE_EXPORT ExceptionState {
     WTF_MAKE_NONCOPYABLE(ExceptionState);
     USING_FAST_MALLOC(ExceptionState);
 public:
-    enum Context {
+    enum ContextType {
         ConstructionContext,
         ExecutionContext,
         DeletionContext,
@@ -65,7 +65,7 @@ public:
         UnknownContext, // FIXME: Remove this once we've flipped over to the new API.
     };
 
-    ExceptionState(Context context, const char* propertyName, const char* interfaceName, const v8::Local<v8::Object>& creationContext, v8::Isolate* isolate)
+    ExceptionState(ContextType context, const char* propertyName, const char* interfaceName, const v8::Local<v8::Object>& creationContext, v8::Isolate* isolate)
         : m_code(0)
         , m_context(context)
         , m_propertyName(propertyName)
@@ -73,7 +73,7 @@ public:
         , m_creationContext(creationContext)
         , m_isolate(isolate) { }
 
-    ExceptionState(Context context, const char* interfaceName, const v8::Local<v8::Object>& creationContext, v8::Isolate* isolate)
+    ExceptionState(ContextType context, const char* interfaceName, const v8::Local<v8::Object>& creationContext, v8::Isolate* isolate)
         : m_code(0)
         , m_context(context)
         , m_propertyName(0)
@@ -106,7 +106,7 @@ public:
     // This method clears out the exception which |this| has.
     void reject(ScriptPromiseResolver*);
 
-    Context context() const { return m_context; }
+    ContextType context() const { return m_context; }
     const char* propertyName() const { return m_propertyName; }
     const char* interfaceName() const { return m_interfaceName; }
 
@@ -121,7 +121,7 @@ public:
 
 protected:
     ExceptionCode m_code;
-    Context m_context;
+    ContextType m_context;
     String m_message;
     const char* m_propertyName;
     const char* m_interfaceName;
