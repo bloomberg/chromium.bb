@@ -783,13 +783,15 @@ public class NewTabPageView extends FrameLayout
         for (int i = 0; i < titles.length; i++) {
             final String url = urls[i];
             final String title = titles[i];
+            boolean offlineAvailable = mManager.isOfflineAvailable(url);
 
             // Look for an existing item to reuse.
             MostVisitedItem item = null;
             for (int j = 0; j < oldItemCount; j++) {
                 MostVisitedItem oldItem = oldItems[j];
                 if (oldItem != null && TextUtils.equals(url, oldItem.getUrl())
-                        && TextUtils.equals(title, oldItem.getTitle())) {
+                        && TextUtils.equals(title, oldItem.getTitle())
+                        && offlineAvailable == oldItem.isOfflineAvailable()) {
                     item = oldItem;
                     item.setIndex(i);
                     oldItems[j] = null;
@@ -799,10 +801,9 @@ public class NewTabPageView extends FrameLayout
 
             // If nothing can be reused, create a new item.
             if (item == null) {
-                String displayTitle = getTitleForDisplay(title, url);
-                item = new MostVisitedItem(mManager, title, url, i);
-                View view = mMostVisitedDesign.createMostVisitedItemView(inflater, url,
-                        displayTitle, item, isInitialLoad);
+                item = new MostVisitedItem(mManager, title, url, offlineAvailable, i);
+                View view =
+                        mMostVisitedDesign.createMostVisitedItemView(inflater, item, isInitialLoad);
                 item.initView(view);
             }
 
@@ -963,17 +964,16 @@ public class NewTabPageView extends FrameLayout
             }
         }
 
-        public View createMostVisitedItemView(LayoutInflater inflater, final String url,
-                String displayTitle, MostVisitedItem item,
-                final boolean isInitialLoad) {
+        public View createMostVisitedItemView(
+                LayoutInflater inflater, MostVisitedItem item, boolean isInitialLoad) {
             final MostVisitedItemView view = (MostVisitedItemView) inflater.inflate(
                     R.layout.most_visited_item, mMostVisitedLayout, false);
-            view.setTitle(displayTitle);
-            view.setOfflineAvailable(mManager.isOfflineAvailable(url));
+            view.setTitle(getTitleForDisplay(item.getTitle(), item.getUrl()));
+            view.setOfflineAvailable(item.isOfflineAvailable());
 
             LargeIconCallback iconCallback = new LargeIconCallbackImpl(item, isInitialLoad);
             if (isInitialLoad) mPendingLoadTasks++;
-            mManager.getLargeIconForUrl(url, mMinIconSize, iconCallback);
+            mManager.getLargeIconForUrl(item.getUrl(), mMinIconSize, iconCallback);
 
             return view;
         }

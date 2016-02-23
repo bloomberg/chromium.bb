@@ -49,6 +49,7 @@ public class MostVisitedItem implements OnCreateContextMenuListener,
     private MostVisitedItemManager mManager;
     private String mTitle;
     private String mUrl;
+    private boolean mOfflineAvailable;
     private int mIndex;
     private int mTileType;
     private View mView;
@@ -59,12 +60,15 @@ public class MostVisitedItem implements OnCreateContextMenuListener,
      * @param manager The NewTabPageManager used to handle clicks and context menu events.
      * @param title The title of the page.
      * @param url The URL of the page.
+     * @param offlineAvailable Whether there is an offline copy of the URL available.
      * @param index The index of this item in the list of most visited items.
      */
-    public MostVisitedItem(MostVisitedItemManager manager, String title, String url, int index) {
+    public MostVisitedItem(MostVisitedItemManager manager, String title, String url,
+            boolean offlineAvailable, int index) {
         mManager = manager;
         mTitle = title;
         mUrl = url;
+        mOfflineAvailable = offlineAvailable;
         mIndex = index;
         mTileType = MostVisitedTileType.NONE;
     }
@@ -99,6 +103,13 @@ public class MostVisitedItem implements OnCreateContextMenuListener,
      */
     public String getTitle() {
         return mTitle;
+    }
+
+    /**
+     * @return Whether this item is available offline.
+     */
+    public boolean isOfflineAvailable() {
+        return mOfflineAvailable;
     }
 
     /**

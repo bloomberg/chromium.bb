@@ -529,6 +529,16 @@ public class NewTabPage
             }
             mMostVisitedSites.recordTileTypeMetrics(tileTypes);
 
+            if (isNtpOfflinePagesEnabled()) {
+                final int maxNumTiles = 12;
+                for (int i = 0; i < items.length; i++) {
+                    if (items[i].isOfflineAvailable()) {
+                        RecordHistogram.recordEnumeratedHistogram(
+                                "NewTabPage.TileOfflineAvailable", i, maxNumTiles);
+                    }
+                }
+            }
+
             SyncSessionsMetrics.recordYoungestForeignTabAgeOnNTP();
         }
     };

@@ -31342,6 +31342,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.TileOfflineAvailable">
+  <owner>treib@chromium.org</owner>
+  <summary>
+    The number of times a tile was available offline, per tile index - compare
+    to the NewTabPage.SuggestionsImpression.* histograms. This is recorded when
+    the NTP finishes loading. Only measured on Android.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.TileType" enum="MostVisitedTileType">
   <owner>newt@chromium.org</owner>
   <summary>
