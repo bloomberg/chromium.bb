@@ -96,7 +96,7 @@ class ShellSurface : public SurfaceDelegate,
 
   // Sets the main surface for the window.
   static void SetMainSurface(aura::Window* window, Surface* surface);
-  static Surface* GetMainSurface(aura::Window* window);
+  static Surface* GetMainSurface(const aura::Window* window);
 
   // Returns a trace value representing the state of the surface.
   scoped_refptr<base::trace_event::TracedValue> AsTracedValue() const;

@@ -13,6 +13,7 @@
       ],
       'dependencies': [
         'arc_mojo_bindings',
+        'components.gyp:exo',
         'components.gyp:onc_component',
         '../base/base.gyp:base',
         '../chromeos/chromeos.gyp:chromeos',

@@ -131,8 +131,8 @@ Surface::Surface()
       delegate_(nullptr) {
   SetType(ui::wm::WINDOW_TYPE_CONTROL);
   SetName("ExoSurface");
-  Init(ui::LAYER_SOLID_COLOR);
   SetProperty(kSurfaceKey, this);
+  Init(ui::LAYER_SOLID_COLOR);
   SetEventTargeter(make_scoped_ptr(new CustomWindowTargeter));
   set_owned_by_parent(false);
   AddObserver(this);
@@ -157,7 +157,7 @@ Surface::~Surface() {
 }
 
 // static
-Surface* Surface::AsSurface(aura::Window* window) {
+Surface* Surface::AsSurface(const aura::Window* window) {
   return window->GetProperty(kSurfaceKey);
 }
 

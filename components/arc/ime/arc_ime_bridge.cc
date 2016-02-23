@@ -6,6 +6,8 @@
 
 #include "base/logging.h"
 #include "components/arc/ime/arc_ime_ipc_host_impl.h"
+#include "components/exo/shell_surface.h"
+#include "components/exo/surface.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -18,16 +20,12 @@ namespace arc {
 
 namespace {
 
-// TODO(kinaba): handling ARC windows by window names is the same temporary
-// workaroud also used in arc/input/arc_input_bridge_impl.cc. We need to move
-// it to more solid implementation after focus handling in components/exo is
-// stabilized.
 bool IsArcWindow(const aura::Window* window) {
-  return window->name() == "ExoSurface";
+  return exo::Surface::AsSurface(window);
 }
 
 bool IsArcTopLevelWindow(const aura::Window* window) {
-  return window->name() == "ExoShellSurface";
+  return exo::ShellSurface::GetMainSurface(window);
 }
 
 }  // namespace

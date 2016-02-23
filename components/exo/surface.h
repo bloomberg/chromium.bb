@@ -43,7 +43,7 @@ class Surface : public aura::Window,
   ~Surface() override;
 
   // Type-checking downcast routine.
-  static Surface* AsSurface(aura::Window* window);
+  static Surface* AsSurface(const aura::Window* window);
 
   // Set a buffer as the content of this surface. A buffer can only be attached
   // to one surface at a time.

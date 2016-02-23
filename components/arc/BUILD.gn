@@ -38,6 +38,7 @@ static_library("arc") {
     "//base",
     "//chromeos",
     "//chromeos:power_manager_proto",
+    "//components/exo",
     "//components/onc",
     "//components/prefs",
     "//components/signin/core/account_id",

@@ -225,7 +225,7 @@ void ShellSurface::SetMainSurface(aura::Window* window, Surface* surface) {
 }
 
 // static
-Surface* ShellSurface::GetMainSurface(aura::Window* window) {
+Surface* ShellSurface::GetMainSurface(const aura::Window* window) {
   return window->GetProperty(kMainSurfaceKey);
 }
 
