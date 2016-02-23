@@ -4433,10 +4433,7 @@ static inline CSSValueID mapFromPageBreakBetween(CSSValueID value)
 {
     if (value == CSSValueAlways)
         return CSSValuePage;
-    // TODO(mstensho): "avoid" should just return "avoid", not "avoid-page", according to the spec.
-    if (value == CSSValueAvoid)
-        return CSSValueAvoidPage;
-    if (value == CSSValueAuto || value == CSSValueLeft || value == CSSValueRight)
+    if (value == CSSValueAuto || value == CSSValueAvoid || value == CSSValueLeft || value == CSSValueRight)
         return value;
     return CSSValueInvalid;
 }
@@ -4445,32 +4442,14 @@ static inline CSSValueID mapFromColumnBreakBetween(CSSValueID value)
 {
     if (value == CSSValueAlways)
         return CSSValueColumn;
-    // TODO(mstensho): "avoid" should just return "avoid", not "avoid-column".
-    if (value == CSSValueAvoid)
-        return CSSValueAvoidColumn;
-    // TODO(mstensho): column break properties shouldn't take 'left' and 'right' values (but
-    // allowing it for now, since that's what we've always done).
-    if (value == CSSValueAuto || value == CSSValueLeft || value == CSSValueRight)
+    if (value == CSSValueAuto || value == CSSValueAvoid)
         return value;
     return CSSValueInvalid;
 }
 
-static inline CSSValueID mapFromPageBreakInside(CSSValueID value)
+static inline CSSValueID mapFromColumnOrPageBreakInside(CSSValueID value)
 {
-    // TODO(mstensho): "avoid" should just return "avoid", not "avoid-page", according to the spec.
-    if (value == CSSValueAvoid)
-        return CSSValueAvoidPage;
-    if (value == CSSValueAuto)
-        return value;
-    return CSSValueInvalid;
-}
-
-static inline CSSValueID mapFromColumnBreakInside(CSSValueID value)
-{
-    // TODO(mstensho): "avoid" should just return "avoid", not "avoid-column".
-    if (value == CSSValueAvoid)
-        return CSSValueAvoidColumn;
-    if (value == CSSValueAuto)
+    if (value == CSSValueAuto || value == CSSValueAvoid)
         return value;
     return CSSValueInvalid;
 }
@@ -4506,10 +4485,8 @@ bool CSSPropertyParser::consumeLegacyBreakProperty(CSSPropertyID property, bool 
         value = mapFromColumnBreakBetween(value);
         break;
     case CSSPropertyPageBreakInside:
-        value = mapFromPageBreakInside(value);
-        break;
     case CSSPropertyWebkitColumnBreakInside:
-        value = mapFromColumnBreakInside(value);
+        value = mapFromColumnOrPageBreakInside(value);
         break;
     default:
         ASSERT_NOT_REACHED();

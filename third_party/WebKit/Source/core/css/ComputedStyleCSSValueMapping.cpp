@@ -1331,9 +1331,6 @@ static EBreak mapToPageBreakValue(EBreak genericBreakValue)
     case BreakRecto:
     case BreakVerso:
         return BreakAuto;
-    case BreakLeft:
-    case BreakRight:
-        // TODO(mstensho): "left" and "right" should simply be mapped to that, not "always", according to spec.
     case BreakPage:
         return BreakAlways;
     case BreakAvoidPage:
