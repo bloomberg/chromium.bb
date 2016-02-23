@@ -4,6 +4,8 @@
 
 #include "tools/battor_agent/battor_finder.h"
 
+#include "base/command_line.h"
+#include "base/logging.h"
 #include "device/serial/serial.mojom.h"
 #include "device/serial/serial_device_enumerator.h"
 #include "mojo/public/cpp/bindings/array.h"
@@ -15,9 +17,13 @@ namespace {
 // The USB display name prefix that all BattOrs have.
 const char kBattOrDisplayNamePrefix[] = "BattOr";
 
+// The command line switch used to hard-code a BattOr path. Hard-coding
+// this path disables the normal method of finding a BattOr, which is to
+// search through serial devices for one with a matching display name.
+const char kBattOrPathSwitch[] = "battor-path";
+
 }  // namespace
 
-// Returns the path of the first BattOr that we find.
 std::string BattOrFinder::FindBattOr() {
   scoped_ptr<device::SerialDeviceEnumerator> serial_device_enumerator =
       device::SerialDeviceEnumerator::Create();
@@ -25,11 +31,26 @@ std::string BattOrFinder::FindBattOr() {
   mojo::Array<device::serial::DeviceInfoPtr> devices =
       serial_device_enumerator->GetDevices();
 
-  for (size_t i = 0; i < devices.size(); i++) {
-    std::string display_name = devices[i]->display_name.get();
-
-    if (display_name.find(kBattOrDisplayNamePrefix) != std::string::npos) {
-      return devices[i]->path;
+  std::string switch_specified_path =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          kBattOrPathSwitch);
+  if (switch_specified_path.empty()) {
+    // If we have no switch-specified path, look for a device with the right
+    // display name.
+    for (size_t i = 0; i < devices.size(); i++) {
+      std::string display_name = devices[i]->display_name.get();
+      if (display_name.find(kBattOrDisplayNamePrefix) != std::string::npos) {
+        LOG(INFO) << "Found BattOr with display name " << display_name
+                  << " at path " << devices[i]->path;
+        return devices[i]->path;
+      }
+    }
+  } else {
+    // If we have a switch-specified path, make sure it actually exists before
+    // returning it.
+    for (size_t i = 0; i < devices.size(); i++) {
+      if (devices[i]->path == switch_specified_path)
+        return switch_specified_path;
     }
   }
 

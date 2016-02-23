@@ -13,6 +13,7 @@ namespace battor {
 
 class BattOrFinder {
  public:
+  // Returns the path of the first BattOr that we find.
   static std::string FindBattOr();
 
   DISALLOW_COPY_AND_ASSIGN(BattOrFinder);

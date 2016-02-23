@@ -14,8 +14,10 @@
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "tools/battor_agent/battor_agent.h"
 #include "tools/battor_agent/battor_error.h"
@@ -32,16 +34,20 @@ const char kUiThreadName[] = "BattOr UI Thread";
 const int32_t kBattOrCommandTimeoutSeconds = 10;
 
 void PrintUsage() {
-  cout << "Usage: battor_agent <command> <arguments>" << endl
+  cout << "Usage: battor_agent <command> <arguments> <switches>" << endl
        << endl
        << "Commands:" << endl
        << endl
-       << "  StartTracing <path>" << endl
-       << "  StopTracing <path>" << endl
+       << "  StartTracing" << endl
+       << "  StopTracing" << endl
        << "  SupportsExplicitClockSync" << endl
-       << "  RecordClockSyncMarker <path> <marker>" << endl
-       << "  IssueClockSyncMarker <path>" << endl
-       << "  Help" << endl;
+       << "  RecordClockSyncMarker <marker>" << endl
+       << "  IssueClockSyncMarker" << endl
+       << "  Help" << endl
+       << endl
+       << "Switches:" << endl
+       << endl
+       << "  --battor-path=<path> Uses the specified BattOr path." << endl;
 }
 
 void PrintSupportsExplicitClockSync() {
@@ -50,12 +56,16 @@ void PrintSupportsExplicitClockSync() {
 
 // Retrieves argument argnum from the argument list, or an empty string if the
 // argument doesn't exist.
-std::string GetArg(int argnum, int argc, char* argv[]) {
-  if (argnum >= argc) {
+std::string GetArg(size_t argnum, base::CommandLine::StringVector args) {
+  if (argnum >= args.size()) {
     return std::string();
   }
 
-  return argv[argnum];
+#if defined(OS_WIN)
+  return base::WideToUTF8(args[argnum]);
+#else
+  return args[argnum];
+#endif
 }
 
 // Checks if an error occurred and, if it did, prints the error and exits
@@ -88,7 +98,8 @@ class BattOrAgentBin : public BattOrAgent::Listener {
 
   // Runs the BattOr binary and returns the exit code.
   int Run(int argc, char* argv[]) {
-    std::string cmd = GetArg(1, argc, argv);
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    std::string cmd = GetArg(0, command_line->GetArgs());
     if (cmd.empty()) {
       PrintUsage();
       exit(1);
@@ -101,16 +112,10 @@ class BattOrAgentBin : public BattOrAgent::Listener {
       return 0;
     }
 
-    std::string path = GetArg(2, argc, argv);
-    // If no path is specified, see if we can find a BattOr and use that.
-    if (path.empty())
-      path = BattOrFinder::FindBattOr();
-
     // If we don't have any BattOr to use, exit.
+    std::string path = BattOrFinder::FindBattOr();
     if (path.empty()) {
-      cout << "Unable to find a BattOr, and no explicit BattOr path was "
-              "specified."
-           << endl;
+      cout << "Unable to find a BattOr." << endl;
       exit(1);
     }
 
@@ -253,6 +258,7 @@ class BattOrAgentBin : public BattOrAgent::Listener {
 
 int main(int argc, char* argv[]) {
   base::AtExitManager exit_manager;
+  base::CommandLine::Init(argc, argv);
   battor::BattOrAgentBin bin;
   return bin.Run(argc, argv);
 }
