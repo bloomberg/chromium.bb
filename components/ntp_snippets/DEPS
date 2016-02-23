@@ -1,3 +1,8 @@
 include_rules = [
   "+components/keyed_service/core",
+  "+components/signin",
+  "+net/base",
+  "+net/http",
+  "+net/url_request",
+  "+google_apis/gaia",
 ]

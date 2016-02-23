@@ -20,6 +20,8 @@
         'ntp_snippets/inner_iterator.h',
         'ntp_snippets/ntp_snippet.cc',
         'ntp_snippets/ntp_snippet.h',
+        'ntp_snippets/ntp_snippets_fetcher.cc',
+        'ntp_snippets/ntp_snippets_fetcher.h',
         'ntp_snippets/ntp_snippets_service.cc',
         'ntp_snippets/ntp_snippets_service.h',
       ],

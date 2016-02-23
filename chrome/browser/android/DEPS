@@ -2,6 +2,7 @@ include_rules = [
   "-components/devtools_bridge",
   "+components/devtools_discovery",
   "+components/devtools_http_handler",
+  "+components/ntp_snippets",
   "+components/service_tab_launcher",
   "+components/toolbar",
   "+components/web_contents_delegate_android",

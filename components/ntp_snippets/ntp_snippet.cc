@@ -14,14 +14,14 @@ NTPSnippet::NTPSnippet(const GURL& url) : url_(url) {
 NTPSnippet::~NTPSnippet() {}
 
 // static
-std::unique_ptr<NTPSnippet> NTPSnippet::NTPSnippetFromDictionary(
+scoped_ptr<NTPSnippet> NTPSnippet::NTPSnippetFromDictionary(
     const base::DictionaryValue& dict) {
   // Need at least the url.
   std::string url;
   if (!dict.GetString("url", &url))
     return nullptr;
 
-  std::unique_ptr<NTPSnippet> snippet(new NTPSnippet(GURL(url)));
+  scoped_ptr<NTPSnippet> snippet(new NTPSnippet(GURL(url)));
 
   std::string site_title;
   if (dict.GetString("site_title", &site_title))

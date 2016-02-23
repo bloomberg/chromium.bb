@@ -8,6 +8,8 @@ source_set("ntp_snippets") {
     "inner_iterator.h",
     "ntp_snippet.cc",
     "ntp_snippet.h",
+    "ntp_snippets_fetcher.cc",
+    "ntp_snippets_fetcher.h",
     "ntp_snippets_service.cc",
     "ntp_snippets_service.h",
   ]
@@ -15,6 +17,9 @@ source_set("ntp_snippets") {
   public_deps = [
     "//base",
     "//components/keyed_service/core",
+    "//components/signin/core/browser",
+    "//google_apis",
+    "//net",
     "//url",
   ]
 }
@@ -28,6 +33,9 @@ source_set("unit_tests") {
 
   deps = [
     ":ntp_snippets",
+    "//base",
+    "//components/signin/core/browser:test_support",
+    "//net:test_support",
     "//testing/gtest",
   ]
 }

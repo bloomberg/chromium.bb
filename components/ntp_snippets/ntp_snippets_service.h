@@ -11,19 +11,22 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/sequenced_task_runner.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/ntp_snippets/inner_iterator.h"
 #include "components/ntp_snippets/ntp_snippet.h"
+#include "components/ntp_snippets/ntp_snippets_fetcher.h"
 
 namespace ntp_snippets {
 
 class NTPSnippetsServiceObserver;
 
 // Stores and vend fresh content data for the NTP.
-class NTPSnippetsService : public KeyedService {
+class NTPSnippetsService : public KeyedService, NTPSnippetsFetcher::Observer {
  public:
-  using NTPSnippetStorage = std::vector<std::unique_ptr<NTPSnippet>>;
+  using NTPSnippetStorage = std::vector<scoped_ptr<NTPSnippet>>;
   using const_iterator =
       InnerIterator<NTPSnippetStorage::const_iterator, const NTPSnippet>;
 
@@ -31,8 +34,14 @@ class NTPSnippetsService : public KeyedService {
   // 'en' or 'en-US'. Note that this code should only specify the language, not
   // the locale, so 'en_US' (english language with US locale) and 'en-GB_US'
   // (British english person in the US) are not language code.
-  explicit NTPSnippetsService(const std::string& application_language_code);
+  NTPSnippetsService(scoped_refptr<base::SequencedTaskRunner> file_task_runner,
+                     const std::string& application_language_code,
+                     scoped_ptr<NTPSnippetsFetcher> snippets_fetcher);
   ~NTPSnippetsService() override;
+
+  // Fetches snippets from the server. |overwrite| is true if existing snippets
+  // should be overwritten.
+  void FetchSnippets(bool overwrite);
 
   // Inherited from KeyedService.
   void Shutdown() override;
@@ -43,11 +52,6 @@ class NTPSnippetsService : public KeyedService {
   // Observer accessors.
   void AddObserver(NTPSnippetsServiceObserver* observer);
   void RemoveObserver(NTPSnippetsServiceObserver* observer);
-
-  // Expects the JSON to be a list of dictionaries with keys matching the
-  // properties of a snippet (url, title, site_title, etc...). The url is the
-  // only mandatory value.
-  bool LoadFromJSONString(const std::string& str);
 
   // Number of snippets available. Can only be called when is_loaded() is true.
   NTPSnippetStorage::size_type size() {
@@ -72,14 +76,43 @@ class NTPSnippetsService : public KeyedService {
   }
 
  private:
+  void OnFileReadDone(const std::string* json, bool success);
+  void OnSnippetsDownloaded(const base::FilePath& download_path);
+
+  // Expects the JSON to be a list of dictionaries with keys matching the
+  // properties of a snippet (url, title, site_title, etc...). The url is the
+  // only mandatory value.
+  bool LoadFromJSONString(const std::string& str);
+
   // True if the suggestions are loaded.
   bool loaded_;
+
+  // The SequencedTaskRunner on which file system operations will be run.
+  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
+
   // All the suggestions.
   NTPSnippetStorage snippets_;
+
   // The ISO 639-1 code of the language used by the application.
   const std::string application_language_code_;
+
   // The observers.
   base::ObserverList<NTPSnippetsServiceObserver> observers_;
+
+  // The snippets fetcher
+  scoped_ptr<NTPSnippetsFetcher> snippets_fetcher_;
+
+  // The callback from the snippets fetcher
+  scoped_ptr<NTPSnippetsFetcher::SnippetsAvailableCallbackList::Subscription>
+      snippets_fetcher_callback_;
+
+  base::WeakPtrFactory<NTPSnippetsService> weak_ptr_factory_;
+
+  friend class NTPSnippetsServiceTest;
+  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest, Loop);
+  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest, Full);
+  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest, ObserverLoaded);
+  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest, ObserverNotLoaded);
 
   DISALLOW_COPY_AND_ASSIGN(NTPSnippetsService);
 };

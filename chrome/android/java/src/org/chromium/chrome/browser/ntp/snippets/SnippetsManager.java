@@ -6,21 +6,19 @@ package org.chromium.chrome.browser.ntp.snippets;
 
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
-import android.os.Environment;
 import android.support.v7.widget.RecyclerView;
-import android.util.JsonReader;
 import android.widget.ImageView;
 
 import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
+import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge.SnippetsObserver;
+import org.chromium.chrome.browser.profiles.Profile;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,6 +49,7 @@ public class SnippetsManager {
 
     private NewTabPageManager mNewTabPageManager;
     private SnippetsAdapter mDataAdapter;
+    private SnippetsBridge mSnippetsBridge;
 
     /** Base type for anything to add to the snippets view
      */
@@ -86,15 +85,15 @@ public class SnippetsManager {
     public static class SnippetArticle implements SnippetListItem {
         public final String mTitle;
         public final String mPublisher;
-        public final String mSnippet;
+        public final String mPreviewText;
         public final String mUrl;
         public final String mThumbnailPath;
         public final int mPosition;
 
         private ThumbnailRenderingTask mThumbnailRenderingTask;
 
-        // Async task to create the thumbnail from a local file
-        // TODO(maybelle): This task to retrieve the thumbnail from local disk is temporary while
+        // Async task to create the thumbnail from a URL
+        // TODO(maybelle): This task to retrieve the thumbnail from the web is temporary while
         // we are prototyping this feature for clank. For the real production feature, we
         // will likely have to download/decode the thumbnail on the native side.
         private static class ThumbnailRenderingTask extends AsyncTask<String, Void, Drawable> {
@@ -106,8 +105,18 @@ public class SnippetsManager {
 
             @Override
             protected Drawable doInBackground(String... params) {
-                String thumbnailPath = params[0];
-                return Drawable.createFromPath(thumbnailPath);
+                InputStream is = null;
+                try {
+                    is = (InputStream) new URL(params[0]).getContent();
+                    return Drawable.createFromStream(is, "thumbnail");
+                } catch (MalformedURLException e) {
+                    Log.e(TAG, "Could not get image thumbnail due to malformed URL", e);
+                } catch (IOException e) {
+                    Log.e(TAG, "Could not get image thumbnail", e);
+                } finally {
+                    StreamUtil.closeQuietly(is);
+                }
+                return null;
             }
 
             @Override
@@ -116,11 +125,11 @@ public class SnippetsManager {
             }
         }
 
-        public SnippetArticle(String title, String publisher, String snippet, String url,
+        public SnippetArticle(String title, String publisher, String previewText, String url,
                 String thumbnailPath, int position) {
             mTitle = title;
             mPublisher = publisher;
-            mSnippet = snippet;
+            mPreviewText = previewText;
             mUrl = url;
             mThumbnailPath = thumbnailPath;
             mPosition = position;
@@ -146,117 +155,33 @@ public class SnippetsManager {
         }
     }
 
-    private class ReadFileTask extends AsyncTask<Void, Void, List<SnippetListItem>> {
-        private int mNumArticles;
-
-        @Override
-        protected List<SnippetListItem> doInBackground(Void... params) {
-            FileInputStream fis = null;
-            try {
-                fis = new FileInputStream(
-                        new File(Environment.getExternalStorageDirectory().getPath()
-                                + "/chrome/reading_list.json"));
-                List<SnippetListItem> listSnippetsGroups = readJsonStream(fis);
-                return listSnippetsGroups;
-            } catch (IOException ex) {
-                Log.e(TAG, "Exception reading file: %s ", ex);
-            } finally {
-                StreamUtil.closeQuietly(fis);
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(List<SnippetListItem> listSnippetsGroups) {
-            if (listSnippetsGroups == null) return;
-
-            mDataAdapter.setSnippetListItems(listSnippetsGroups);
-        }
-
-        private List<SnippetListItem> readJsonStream(InputStream in) throws IOException {
-            JsonReader reader = new JsonReader(new InputStreamReader(in, "UTF-8"));
-            try {
-                return readRecommendationsArray(reader);
-            } finally {
-                reader.close();
-            }
-        }
-
-        private List<SnippetListItem> readRecommendationsArray(JsonReader reader)
-                throws IOException {
-            List<SnippetListItem> listSnippetItems = new ArrayList<SnippetListItem>();
-            mNumArticles = 0;
-            reader.beginArray();
-            while (reader.hasNext()) {
-                readSnippetGroup(listSnippetItems, reader);
-            }
-            reader.endArray();
-            RecordHistogram.recordSparseSlowlyHistogram(
-                    "NewTabPage.Snippets.NumArticles", mNumArticles);
-            return listSnippetItems;
-        }
-
-        private void readSnippetGroup(List<SnippetListItem> listSnippetItems, JsonReader reader)
-                throws IOException {
-            reader.beginObject();
-            while (reader.hasNext()) {
-                String name = reader.nextName();
-                if (name.equals("recommendation_basis")) {
-                    listSnippetItems.add(new SnippetHeader(reader.nextString()));
-                } else if (name.equals("articles")) {
-                    readArticlesArray(listSnippetItems, reader);
-                }
-            }
-            reader.endObject();
-        }
-
-        private void readArticlesArray(List<SnippetListItem> listSnippetItems, JsonReader reader)
-                throws IOException {
-            reader.beginArray();
-            while (reader.hasNext()) {
-                listSnippetItems.add(readArticleDetails(reader));
-            }
-            reader.endArray();
-        }
-
-        private SnippetArticle readArticleDetails(JsonReader reader) throws IOException {
-            String headline = "";
-            String publisher = "";
-            String snippets = "";
-            String url = "";
-            String thumbnail = "";
-
-            reader.beginObject();
-            while (reader.hasNext()) {
-                String name = reader.nextName();
-                if (name.equals("headline")) {
-                    headline = reader.nextString();
-                } else if (name.equals("publisher")) {
-                    publisher = reader.nextString();
-                } else if (name.equals("snippet")) {
-                    snippets = reader.nextString();
-                } else if (name.equals("url")) {
-                    url = reader.nextString();
-                } else if (name.equals("thumbnail")) {
-                    thumbnail = reader.nextString();
-                } else {
-                    reader.skipValue();
-                }
-            }
-            reader.endObject();
-            return new SnippetsManager.SnippetArticle(
-                    headline, publisher, snippets, url, thumbnail, mNumArticles++);
-        }
-    }
-
-    public SnippetsManager(NewTabPageManager tabManager, RecyclerView mSnippetsView) {
+    public SnippetsManager(NewTabPageManager tabManager, Profile profile) {
         mNewTabPageManager = tabManager;
         mDataAdapter = new SnippetsAdapter(this);
+        mSnippetsBridge = new SnippetsBridge(profile, new SnippetsObserver() {
+            @Override
+            public void onSnippetsAvailable(
+                    String[] titles, String[] urls, String[] thumbnailUrls, String[] previewText) {
+                List<SnippetListItem> listItems = new ArrayList<SnippetListItem>();
+                for (int i = 0; i < titles.length; ++i) {
+                    SnippetArticle article = new SnippetArticle(
+                            titles[i], "", previewText[i], urls[i], thumbnailUrls[i], i);
+                    listItems.add(article);
+                }
+                mDataAdapter.setSnippetListItems(listItems);
+            }
+        });
+    }
+
+    public void setSnippetsView(RecyclerView mSnippetsView) {
         mSnippetsView.setAdapter(mDataAdapter);
-        new ReadFileTask().execute();
     }
 
     public void loadUrl(String url) {
         mNewTabPageManager.open(url);
+    }
+
+    public void destroy() {
+        mSnippetsBridge.destroy();
     }
 }

@@ -87,7 +87,6 @@ public class NewTabPageView extends FrameLayout
     private NewTabPageManager mManager;
     private MostVisitedDesign mMostVisitedDesign;
     private MostVisitedItem[] mMostVisitedItems;
-    private SnippetsManager mSnippetsManager;
     private boolean mFirstShow = true;
     private boolean mSearchProviderHasLogo = true;
     private boolean mHasReceivedMostVisitedSites;
@@ -250,7 +249,7 @@ public class NewTabPageView extends FrameLayout
      * @param searchProviderHasLogo Whether the search provider has a logo.
      */
     public void initialize(NewTabPageManager manager, boolean isSingleUrlBarMode,
-            boolean searchProviderHasLogo) {
+            boolean searchProviderHasLogo, SnippetsManager snippetsManager) {
         mManager = manager;
 
         mScrollView = (NewTabScrollView) findViewById(R.id.ntp_scrollview);
@@ -340,7 +339,6 @@ public class NewTabPageView extends FrameLayout
             RecordHistogram.recordEnumeratedHistogram(SnippetsManager.SNIPPETS_STATE_HISTOGRAM,
                     SnippetsManager.SNIPPETS_SHOWN, SnippetsManager.NUM_SNIPPETS_ACTIONS);
             mSnippetsView.setLayoutManager(new LinearLayoutManager(getContext()));
-            mSnippetsManager = new SnippetsManager(mManager, mSnippetsView);
             mSnippetsView.addOnScrollListener(new RecyclerView.OnScrollListener() {
                 private boolean mScrolledOnce = false;
                 @Override
@@ -355,6 +353,7 @@ public class NewTabPageView extends FrameLayout
                             SnippetsManager.NUM_SNIPPETS_ACTIONS);
                 }
             });
+            snippetsManager.setSnippetsView(mSnippetsView);
         }
 
         // Set up interests

@@ -3,25 +3,31 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/ntp_snippets/ntp_snippet.h"
+#include "components/ntp_snippets/ntp_snippets_fetcher.h"
 #include "components/ntp_snippets/ntp_snippets_service.h"
+#include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
+#include "components/signin/core/browser/fake_signin_manager.h"
+#include "components/signin/core/browser/test_signin_client.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
+namespace ntp_snippets {
 
-class SnippetObserver : public ntp_snippets::NTPSnippetsServiceObserver {
+class SnippetObserver : public NTPSnippetsServiceObserver {
  public:
   SnippetObserver() : loaded_(false), shutdown_(false) {}
   ~SnippetObserver() override {}
 
-  void NTPSnippetsServiceLoaded(
-      ntp_snippets::NTPSnippetsService* service) override {
+  void NTPSnippetsServiceLoaded(NTPSnippetsService* service) override {
     loaded_ = true;
   }
 
-  void NTPSnippetsServiceShutdown(
-      ntp_snippets::NTPSnippetsService* service) override {
+  void NTPSnippetsServiceShutdown(NTPSnippetsService* service) override {
     shutdown_ = true;
     loaded_ = false;
   }
@@ -38,22 +44,45 @@ class NTPSnippetsServiceTest : public testing::Test {
   NTPSnippetsServiceTest() {}
   ~NTPSnippetsServiceTest() override {}
 
+  void SetUp() override {
+    signin_client_.reset(new TestSigninClient(nullptr));
+    account_tracker_.reset(new AccountTrackerService());
+  }
+
+ protected:
+  scoped_ptr<NTPSnippetsService> CreateSnippetService() {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner(
+        base::ThreadTaskRunnerHandle::Get());
+    scoped_refptr<net::TestURLRequestContextGetter> request_context_getter =
+        new net::TestURLRequestContextGetter(task_runner.get());
+    FakeProfileOAuth2TokenService* token_service =
+        new FakeProfileOAuth2TokenService();
+    FakeSigninManagerBase* signin_manager =  new FakeSigninManagerBase(
+        signin_client_.get(), account_tracker_.get());
+
+    scoped_ptr<NTPSnippetsService> service(
+        new NTPSnippetsService(task_runner.get(), std::string("fr"),
+          make_scoped_ptr(new NTPSnippetsFetcher(task_runner.get(),
+            signin_manager, token_service, request_context_getter,
+            base::FilePath()))));
+    return service;
+  }
+
  private:
+  scoped_ptr<AccountTrackerService> account_tracker_;
+  scoped_ptr<TestSigninClient> signin_client_;
+  base::MessageLoop message_loop_;
   DISALLOW_COPY_AND_ASSIGN(NTPSnippetsServiceTest);
 };
 
-TEST_F(NTPSnippetsServiceTest, Create) {
-  std::string language_code("fr");
-  scoped_ptr<ntp_snippets::NTPSnippetsService> service(
-      new ntp_snippets::NTPSnippetsService(language_code));
 
+TEST_F(NTPSnippetsServiceTest, Create) {
+  scoped_ptr<NTPSnippetsService> service(CreateSnippetService());
   EXPECT_FALSE(service->is_loaded());
 }
 
 TEST_F(NTPSnippetsServiceTest, Loop) {
-  std::string language_code("fr");
-  scoped_ptr<ntp_snippets::NTPSnippetsService> service(
-      new ntp_snippets::NTPSnippetsService(language_code));
+  scoped_ptr<NTPSnippetsService> service(CreateSnippetService());
 
   EXPECT_FALSE(service->is_loaded());
 
@@ -71,15 +100,13 @@ TEST_F(NTPSnippetsServiceTest, Loop) {
     EXPECT_EQ(snippet.url(), GURL("http://localhost/foobar"));
   }
   // Without the const, this should not compile.
-  for (const ntp_snippets::NTPSnippet& snippet : *service) {
+  for (const NTPSnippet& snippet : *service) {
     EXPECT_EQ(snippet.url(), GURL("http://localhost/foobar"));
   }
 }
 
 TEST_F(NTPSnippetsServiceTest, Full) {
-  std::string language_code("fr");
-  scoped_ptr<ntp_snippets::NTPSnippetsService> service(
-      new ntp_snippets::NTPSnippetsService(language_code));
+  scoped_ptr<NTPSnippetsService> service(CreateSnippetService());
 
   std::string json_str(
       "{ \"recos\": [ "
@@ -112,9 +139,7 @@ TEST_F(NTPSnippetsServiceTest, Full) {
 }
 
 TEST_F(NTPSnippetsServiceTest, ObserverNotLoaded) {
-  std::string language_code("fr");
-  scoped_ptr<ntp_snippets::NTPSnippetsService> service(
-      new ntp_snippets::NTPSnippetsService(language_code));
+  scoped_ptr<NTPSnippetsService> service(CreateSnippetService());
 
   SnippetObserver observer;
   service->AddObserver(&observer);
@@ -131,9 +156,7 @@ TEST_F(NTPSnippetsServiceTest, ObserverNotLoaded) {
 }
 
 TEST_F(NTPSnippetsServiceTest, ObserverLoaded) {
-  std::string language_code("fr");
-  scoped_ptr<ntp_snippets::NTPSnippetsService> service(
-      new ntp_snippets::NTPSnippetsService(language_code));
+  scoped_ptr<NTPSnippetsService> service(CreateSnippetService());
 
   std::string json_str(
       "{ \"recos\": [ "
@@ -148,4 +171,4 @@ TEST_F(NTPSnippetsServiceTest, ObserverLoaded) {
 
   service->RemoveObserver(&observer);
 }
-}  // namespace
+}  // namespace ntp_snippets

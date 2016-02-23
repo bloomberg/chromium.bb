@@ -102,7 +102,7 @@ class SnippetCardItemViewHolder extends SnippetListItemViewHolder implements Vie
 
         mHeadlineTextView.setText(item.mTitle);
         mPublisherTextView.setText(item.mPublisher);
-        mArticleSnippetTextView.setText(item.mSnippet);
+        mArticleSnippetTextView.setText(item.mPreviewText);
         mUrl = item.mUrl;
         mPosition = item.mPosition;
 

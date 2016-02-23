@@ -47,6 +47,7 @@ import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.interests.InterestsPage;
 import org.chromium.chrome.browser.ntp.interests.InterestsPage.InterestsClickListener;
+import org.chromium.chrome.browser.ntp.snippets.SnippetsManager;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.preferences.DocumentModeManager;
 import org.chromium.chrome.browser.preferences.DocumentModePreference;
@@ -120,6 +121,7 @@ public class NewTabPage
     private String mAnimatedLogoUrl;
     private FakeboxDelegate mFakeboxDelegate;
     private OfflinePageBridge mOfflinePageBridge;
+    private SnippetsManager mSnippetsManager;
 
     // The timestamp at which the constructor was called.
     private final long mConstructedTimeNs;
@@ -587,10 +589,12 @@ public class NewTabPage
         mLogoBridge = new LogoBridge(mProfile);
         updateSearchProviderHasLogo();
 
+        mSnippetsManager = new SnippetsManager(mNewTabPageManager, mProfile);
+
         LayoutInflater inflater = LayoutInflater.from(activity);
         mNewTabPageView = (NewTabPageView) inflater.inflate(R.layout.new_tab_page, null);
         mNewTabPageView.initialize(mNewTabPageManager, isInSingleUrlBarMode(activity),
-                mSearchProviderHasLogo);
+                mSearchProviderHasLogo, mSnippetsManager);
 
         mIsTablet = DeviceFormFactor.isTablet(activity);
 
@@ -771,6 +775,10 @@ public class NewTabPage
         if (mLogoBridge != null) {
             mLogoBridge.destroy();
             mLogoBridge = null;
+        }
+        if (mSnippetsManager != null) {
+            mSnippetsManager.destroy();
+            mSnippetsManager = null;
         }
         if (mMostVisitedItemRemovedController != null) {
             mTab.getSnackbarManager().dismissSnackbars(mMostVisitedItemRemovedController);
