@@ -67,7 +67,11 @@ def Expire(ctx, url, dryrun):
   if dryrun:
     logging.notice('gsutil mv %s %s', url, target_url)
   else:
-    ctx.Move(url, target_url)
+    try:
+      ctx.Move(url, target_url)
+    except Exception as e:
+      # We can fail for lots of repeated random reasons.
+      logging.warn('Move of "%s" failed, ignoring: "%s"', url, e)
 
 
 def Examine(ctx, expired_cutoff, candidates, dryrun):
