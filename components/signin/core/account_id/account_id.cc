@@ -22,7 +22,7 @@ const char kGaiaIdKey[] = "gaia_id";
 const char kEmailKey[] = "email";
 
 // Prefix for GetGaiaIdKey().
-const char kKeyGaiaIdPrefix[] = "g:";
+const char kKeyGaiaIdPrefix[] = "g-";
 
 struct GoogleStringSingleton {
   GoogleStringSingleton() : google(kGoogle) {}
