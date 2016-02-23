@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_utils.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/single_split_view_listener.h"
 
 namespace {
@@ -31,15 +32,19 @@ static void VerifySplitViewLayout(const views::SingleSplitView& split) {
   EXPECT_FALSE(leading->bounds().Intersects(trailing->bounds()));
 
   if (split.orientation() == views::SingleSplitView::HORIZONTAL_SPLIT) {
-    EXPECT_EQ(leading->bounds().height(), split.bounds().height());
-    EXPECT_EQ(trailing->bounds().height(), split.bounds().height());
+    EXPECT_EQ(leading->bounds().height(),
+              split.bounds().height() - split.GetInsets().height());
+    EXPECT_EQ(trailing->bounds().height(),
+              split.bounds().height() - split.GetInsets().height());
     EXPECT_LT(leading->bounds().width() + trailing->bounds().width(),
-              split.bounds().width());
+              split.bounds().width() - split.GetInsets().width());
   } else if (split.orientation() == views::SingleSplitView::VERTICAL_SPLIT) {
-    EXPECT_EQ(leading->bounds().width(), split.bounds().width());
-    EXPECT_EQ(trailing->bounds().width(), split.bounds().width());
+    EXPECT_EQ(leading->bounds().width(),
+              split.bounds().width() - split.GetInsets().width());
+    EXPECT_EQ(trailing->bounds().width(),
+              split.bounds().width() - split.GetInsets().width());
     EXPECT_LT(leading->bounds().height() + trailing->bounds().height(),
-              split.bounds().height());
+              split.bounds().height() - split.GetInsets().height());
   } else {
     NOTREACHED();
   }
@@ -109,47 +114,59 @@ TEST(SingleSplitViewTest, Resize) {
     SingleSplitView::VERTICAL_SPLIT
   };
 
+  int borders[][4] = {
+      {0, 0, 0, 0}, {5, 5, 5, 5}, {10, 5, 5, 0},
+  };
+
   for (size_t orientation = 0; orientation < arraysize(orientations);
        ++orientation) {
-    // Create a split view.
-    SingleSplitView split(
-        new View(), new View(), orientations[orientation], NULL);
+    for (size_t border = 0; border < arraysize(borders); ++border) {
+      // Create a split view.
+      SingleSplitView split(new View(), new View(), orientations[orientation],
+                            NULL);
 
-    // Set initial size and divider offset.
-    EXPECT_EQ(test_cases[0].primary_axis_size,
-              test_cases[0].secondary_axis_size);
-    split.SetBounds(0, 0, test_cases[0].primary_axis_size,
-                    test_cases[0].secondary_axis_size);
-    split.set_divider_offset(test_cases[0].divider_offset);
-    split.Layout();
+      // Set initial size and divider offset.
+      EXPECT_EQ(test_cases[0].primary_axis_size,
+                test_cases[0].secondary_axis_size);
+      split.SetBounds(0, 0, test_cases[0].primary_axis_size,
+                      test_cases[0].secondary_axis_size);
 
-    // Run all test cases.
-    for (size_t i = 0; i < arraysize(test_cases); ++i) {
-      split.set_resize_leading_on_bounds_change(
-          test_cases[i].resize_leading_on_bounds_change);
-      if (split.orientation() == SingleSplitView::HORIZONTAL_SPLIT) {
-        split.SetBounds(0, 0, test_cases[i].primary_axis_size,
-                        test_cases[i].secondary_axis_size);
-      } else {
-        split.SetBounds(0, 0, test_cases[i].secondary_axis_size,
-                        test_cases[i].primary_axis_size);
+      if (border != 0)
+        split.SetBorder(
+            Border::CreateEmptyBorder(borders[border][0], borders[border][1],
+                                      borders[border][2], borders[border][3]));
+
+      split.set_divider_offset(test_cases[0].divider_offset);
+      split.Layout();
+
+      // Run all test cases.
+      for (size_t i = 0; i < arraysize(test_cases); ++i) {
+        split.set_resize_leading_on_bounds_change(
+            test_cases[i].resize_leading_on_bounds_change);
+        if (split.orientation() == SingleSplitView::HORIZONTAL_SPLIT) {
+          split.SetBounds(0, 0, test_cases[i].primary_axis_size,
+                          test_cases[i].secondary_axis_size);
+        } else {
+          split.SetBounds(0, 0, test_cases[i].secondary_axis_size,
+                          test_cases[i].primary_axis_size);
+        }
+
+        EXPECT_EQ(test_cases[i].divider_offset, split.divider_offset());
+        VerifySplitViewLayout(split);
       }
 
-      EXPECT_EQ(test_cases[i].divider_offset, split.divider_offset());
-      VerifySplitViewLayout(split);
+      // Special cases, one of the child views is hidden.
+      split.child_at(0)->SetVisible(false);
+      split.Layout();
+
+      EXPECT_EQ(split.GetContentsBounds().size(), split.child_at(1)->size());
+
+      split.child_at(0)->SetVisible(true);
+      split.child_at(1)->SetVisible(false);
+      split.Layout();
+
+      EXPECT_EQ(split.GetContentsBounds().size(), split.child_at(0)->size());
     }
-
-    // Special cases, one of the child views is hidden.
-    split.child_at(0)->SetVisible(false);
-    split.Layout();
-
-    EXPECT_EQ(split.size(), split.child_at(1)->size());
-
-    split.child_at(0)->SetVisible(true);
-    split.child_at(1)->SetVisible(false);
-    split.Layout();
-
-    EXPECT_EQ(split.size(), split.child_at(0)->size());
   }
 }
 

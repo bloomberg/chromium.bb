@@ -9,6 +9,7 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/single_split_view_listener.h"
 #include "ui/views/native_cursor.h"
 
@@ -45,7 +46,8 @@ SingleSplitView::SingleSplitView(View* leading,
 void SingleSplitView::Layout() {
   gfx::Rect leading_bounds;
   gfx::Rect trailing_bounds;
-  CalculateChildrenBounds(bounds(), &leading_bounds, &trailing_bounds);
+  CalculateChildrenBounds(GetContentsBounds(), &leading_bounds,
+                          &trailing_bounds);
 
   if (has_children()) {
     if (child_at(0)->visible())
@@ -87,6 +89,8 @@ gfx::Size SingleSplitView::GetPreferredSize() const {
     width += GetDividerSize();
   else
     height += GetDividerSize();
+  width += GetInsets().width();
+  height += GetInsets().height();
   return gfx::Size(width, height);
 }
 
@@ -123,24 +127,25 @@ void SingleSplitView::CalculateChildrenBounds(
   } else if (!is_leading_visible) {
     divider_at = 0;
   } else {
-    divider_at =
-        CalculateDividerOffset(divider_offset_, this->bounds(), bounds);
+    divider_at = CalculateDividerOffset(divider_offset_, bounds, bounds);
     divider_at = NormalizeDividerOffset(divider_at, bounds);
   }
 
   int divider_size = GetDividerSize();
 
   if (is_horizontal_) {
-    *leading_bounds = gfx::Rect(0, 0, divider_at, bounds.height());
+    *leading_bounds =
+        gfx::Rect(bounds.x(), bounds.y(), divider_at, bounds.height());
     *trailing_bounds =
-        gfx::Rect(divider_at + divider_size, 0,
+        gfx::Rect(divider_at + divider_size + bounds.x(), bounds.y(),
                   std::max(0, bounds.width() - divider_at - divider_size),
                   bounds.height());
   } else {
-    *leading_bounds = gfx::Rect(0, 0, bounds.width(), divider_at);
-    *trailing_bounds =
-        gfx::Rect(0, divider_at + divider_size, bounds.width(),
-                  std::max(0, bounds.height() - divider_at - divider_size));
+    *leading_bounds =
+        gfx::Rect(bounds.x(), bounds.y(), bounds.width(), divider_at);
+    *trailing_bounds = gfx::Rect(
+        bounds.x(), divider_at + divider_size + bounds.y(), bounds.width(),
+        std::max(0, bounds.height() - divider_at - divider_size));
   }
 }
 
@@ -153,7 +158,7 @@ bool SingleSplitView::OnMousePressed(const ui::MouseEvent& event) {
     return false;
   drag_info_.initial_mouse_offset = GetPrimaryAxisSize(event.x(), event.y());
   drag_info_.initial_divider_offset =
-      NormalizeDividerOffset(divider_offset_, bounds());
+      NormalizeDividerOffset(divider_offset_, GetContentsBounds());
   return true;
 }
 
@@ -196,8 +201,10 @@ void SingleSplitView::OnMouseCaptureLost() {
 }
 
 void SingleSplitView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  divider_offset_ = CalculateDividerOffset(divider_offset_, previous_bounds,
-                                           bounds());
+  gfx::Rect previous_content_bounds = previous_bounds;
+  previous_content_bounds.Inset(GetInsets());
+  divider_offset_ = CalculateDividerOffset(
+      divider_offset_, previous_content_bounds, GetContentsBounds());
 }
 
 bool SingleSplitView::IsPointInDivider(const gfx::Point& p) {
