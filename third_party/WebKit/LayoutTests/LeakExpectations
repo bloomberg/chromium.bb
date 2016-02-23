@@ -159,12 +159,3 @@ crbug.com/578297 [ Linux ] http/tests/media/media-source/mediasource-appendstrea
 # -----------------------------------------------------------------
 crbug.com/582376 cssom/cssvalue-comparison.html [ Leak ]
 crbug.com/582376 fast/css/getComputedStyle/computed-style-with-zoom.html [ Leak ]
-
-# -----------------------------------------------------------------
-# Pasteboard leaks on Linux
-# -----------------------------------------------------------------
-
-crbug.com/587874 [ Linux ] editing/pasteboard/copy-backslash-with-euc.html [ Leak ]
-crbug.com/587874 [ Linux ] editing/pasteboard/paste-and-sanitize.html [ Leak ]
-crbug.com/587874 [ Linux ] editing/pasteboard/paste-text-events.html [ Leak ]
-crbug.com/587874 [ Linux ] editing/pasteboard/paste-without-nesting.html [ Leak ]
