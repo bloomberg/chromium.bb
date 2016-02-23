@@ -7,7 +7,7 @@
  * 'settings-touchpad' is the settings subpage with touchpad settings.
  *
  * @group Chrome Settings Elements
- * @element settings-change-picture
+ * @element settings-touchpad
  */
 Polymer({
   is: 'settings-touchpad',
