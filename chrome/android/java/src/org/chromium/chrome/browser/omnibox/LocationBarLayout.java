@@ -1765,6 +1765,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         Editable text = mUrlBar.getText();
 
         return mUrlBar.isCursorAtEndOfTypedText()
+                && !mUrlBar.isPastedText()
                 && !mUrlBar.isHandlingBatchInput()
                 && BaseInputConnection.getComposingSpanEnd(text)
                         == BaseInputConnection.getComposingSpanStart(text);
