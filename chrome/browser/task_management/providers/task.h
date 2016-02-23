@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string16.h"
@@ -51,7 +53,7 @@ class Task {
        base::ProcessHandle handle);
   virtual ~Task();
 
-  // Gets the name of the given |profile| from the ProfileInfoCache.
+  // Gets the name of the given |profile| from the ProfileAttributesStorage.
   static base::string16 GetProfileNameFromProfile(Profile* profile);
 
   // Activates this TaskManager's task by bringing its container to the front
