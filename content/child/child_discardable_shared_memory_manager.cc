@@ -4,6 +4,7 @@
 
 #include "content/child/child_discardable_shared_memory_manager.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/atomic_sequence_num.h"
@@ -117,7 +118,9 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
                               50);
 
   // Round up to multiple of page size.
-  size_t pages = (size + base::GetPageSize() - 1) / base::GetPageSize();
+  size_t pages =
+      std::max((size + base::GetPageSize() - 1) / base::GetPageSize(),
+               static_cast<size_t>(1));
 
   // Default allocation size in pages.
   size_t allocation_pages = kAllocationSize / base::GetPageSize();

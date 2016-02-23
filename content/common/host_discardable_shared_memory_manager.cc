@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/discardable_memory.h"
 #include "base/numerics/safe_math.h"
+#include "base/process/memory.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
@@ -190,6 +191,8 @@ HostDiscardableSharedMemoryManager::current() {
 scoped_ptr<base::DiscardableMemory>
 HostDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
     size_t size) {
+  DCHECK_NE(size, 0u);
+
   DiscardableSharedMemoryId new_id =
       g_next_discardable_shared_memory_id.GetNext();
   base::ProcessHandle current_process_handle = base::GetCurrentProcessHandle();
@@ -200,10 +203,10 @@ HostDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
   AllocateLockedDiscardableSharedMemory(current_process_handle,
                                         ChildProcessHost::kInvalidUniqueID,
                                         size, new_id, &handle);
-  CHECK(base::SharedMemory::IsHandleValid(handle));
   scoped_ptr<base::DiscardableSharedMemory> memory(
       new base::DiscardableSharedMemory(handle));
-  CHECK(memory->Map(size));
+  if (!memory->Map(size))
+    base::TerminateBecauseOutOfMemory(size);
   // Close file descriptor to avoid running out.
   memory->Close();
   return make_scoped_ptr(new DiscardableMemoryImpl(

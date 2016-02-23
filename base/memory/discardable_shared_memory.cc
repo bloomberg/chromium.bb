@@ -206,7 +206,7 @@ DiscardableSharedMemory::LockResult DiscardableSharedMemory::Lock(
 
   size_t start = offset / base::GetPageSize();
   size_t end = start + length / base::GetPageSize();
-  DCHECK_LT(start, end);
+  DCHECK_LE(start, end);
   DCHECK_LE(end, AlignToPageSize(mapped_size_) / base::GetPageSize());
 
   // Add pages to |locked_page_count_|.
@@ -281,7 +281,7 @@ void DiscardableSharedMemory::Unlock(size_t offset, size_t length) {
 
   size_t start = offset / base::GetPageSize();
   size_t end = start + length / base::GetPageSize();
-  DCHECK_LT(start, end);
+  DCHECK_LE(start, end);
   DCHECK_LE(end, AlignToPageSize(mapped_size_) / base::GetPageSize());
 
   // Remove pages from |locked_page_count_|.

@@ -68,7 +68,7 @@ TEST(DiscardableSharedMemoryTest, LockAndUnlock) {
   EXPECT_FALSE(memory1.IsMemoryLocked());
 
   // Lock and unlock memory.
-  auto lock_rv = memory1.Lock(0, 0);
+  DiscardableSharedMemory::LockResult lock_rv = memory1.Lock(0, 0);
   EXPECT_EQ(DiscardableSharedMemory::SUCCESS, lock_rv);
   memory1.SetNow(Time::FromDoubleT(2));
   memory1.Unlock(0, 0);
@@ -145,7 +145,7 @@ TEST(DiscardableSharedMemoryTest, Purge) {
   EXPECT_TRUE(rv);
 
   // Lock should fail as memory has been purged.
-  auto lock_rv = memory2.Lock(0, 0);
+  DiscardableSharedMemory::LockResult lock_rv = memory2.Lock(0, 0);
   EXPECT_EQ(DiscardableSharedMemory::FAILED, lock_rv);
 
   ASSERT_FALSE(memory2.IsMemoryResident());
@@ -172,7 +172,7 @@ TEST(DiscardableSharedMemoryTest, LastUsed) {
 
   EXPECT_EQ(memory2.last_known_usage(), Time::FromDoubleT(1));
 
-  auto lock_rv = memory2.Lock(0, 0);
+  DiscardableSharedMemory::LockResult lock_rv = memory2.Lock(0, 0);
   EXPECT_EQ(DiscardableSharedMemory::SUCCESS, lock_rv);
 
   // This should fail as memory is locked.
@@ -242,7 +242,7 @@ TEST(DiscardableSharedMemoryTest, LockShouldAlwaysFailAfterSuccessfulPurge) {
   EXPECT_TRUE(rv);
 
   // Lock should fail as memory has been purged.
-  auto lock_rv = memory2.Lock(0, 0);
+  DiscardableSharedMemory::LockResult lock_rv = memory2.Lock(0, 0);
   EXPECT_EQ(DiscardableSharedMemory::FAILED, lock_rv);
 }
 
@@ -273,7 +273,8 @@ TEST(DiscardableSharedMemoryTest, LockAndUnlockRange) {
 
   // Lock first page again.
   memory2.SetNow(Time::FromDoubleT(3));
-  auto lock_rv = memory2.Lock(0, base::GetPageSize());
+  DiscardableSharedMemory::LockResult lock_rv =
+      memory2.Lock(0, base::GetPageSize());
   EXPECT_NE(DiscardableSharedMemory::FAILED, lock_rv);
 
   // Unlock first page.
@@ -338,7 +339,25 @@ TEST(DiscardableSharedMemoryTest, Close) {
   memory.Unlock(0, 0);
 
   // Lock and unlock memory.
-  auto lock_rv = memory.Lock(0, 0);
+  DiscardableSharedMemory::LockResult lock_rv = memory.Lock(0, 0);
+  EXPECT_EQ(DiscardableSharedMemory::SUCCESS, lock_rv);
+  memory.SetNow(Time::FromDoubleT(2));
+  memory.Unlock(0, 0);
+}
+
+TEST(DiscardableSharedMemoryTest, ZeroSize) {
+  TestDiscardableSharedMemory memory;
+  bool rv = memory.CreateAndMap(0);
+  ASSERT_TRUE(rv);
+
+  EXPECT_LE(0u, memory.mapped_size());
+
+  // Memory is initially locked. Unlock it.
+  memory.SetNow(Time::FromDoubleT(1));
+  memory.Unlock(0, 0);
+
+  // Lock and unlock memory.
+  DiscardableSharedMemory::LockResult lock_rv = memory.Lock(0, 0);
   EXPECT_EQ(DiscardableSharedMemory::SUCCESS, lock_rv);
   memory.SetNow(Time::FromDoubleT(2));
   memory.Unlock(0, 0);
