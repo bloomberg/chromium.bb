@@ -221,6 +221,8 @@ class GPU_EXPORT Texture {
 
   // Whether a particular level/face is cleared.
   bool IsLevelCleared(GLenum target, GLint level) const;
+  // Whether a particular level/face is partially cleared.
+  bool IsLevelPartiallyCleared(GLenum target, GLint level) const;
 
   // Whether the texture has been defined
   bool IsDefined() const {

@@ -199,6 +199,24 @@ struct Vec4f {
   GLfloat v[4];
 };
 
+struct TexSubCoord3D {
+  TexSubCoord3D(int _xoffset, int _yoffset, int _zoffset,
+                int _width, int _height, int _depth)
+      : xoffset(_xoffset),
+        yoffset(_yoffset),
+        zoffset(_zoffset),
+        width(_width),
+        height(_height),
+        depth(_depth) {}
+
+  int xoffset;
+  int yoffset;
+  int zoffset;
+  int width;
+  int height;
+  int depth;
+};
+
 }  // namespace
 
 class GLES2DecoderImpl;
@@ -1238,6 +1256,16 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
                   int yoffset,
                   int width,
                   int height) override;
+
+  // overridden from GLES2Decoder
+  bool ClearLevel3D(Texture* texture,
+                    unsigned target,
+                    int level,
+                    unsigned format,
+                    unsigned type,
+                    int width,
+                    int height,
+                    int depth) override;
 
   // Restore all GL state that affects clearing.
   void RestoreClearState();
@@ -6127,15 +6155,33 @@ void GLES2DecoderImpl::DoSampleCoverage(GLclampf value, GLboolean invert) {
 // Assumes framebuffer is complete.
 void GLES2DecoderImpl::ClearUnclearedAttachments(
     GLenum target, Framebuffer* framebuffer) {
-  if (target == GL_READ_FRAMEBUFFER_EXT) {
-    // bind this to the DRAW point, clear then bind back to READ
-    // TODO(gman): I don't think there is any guarantee that an FBO that
-    //   is complete on the READ attachment will be complete as a DRAW
-    //   attachment.
-    glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, 0);
-    glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, framebuffer->service_id());
+  // Clear textures that we can't use glClear first. These textures will be
+  // marked as cleared after the call and no longer be part of the following
+  // code.
+  framebuffer->ClearUnclearedIntOr3DTexturesOrPartiallyClearedTextures(
+      this, texture_manager());
+
+  bool cleared_int_renderbuffers = false;
+  Framebuffer* draw_framebuffer =
+      GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER);
+  if (framebuffer->HasUnclearedIntRenderbufferAttachments()) {
+    if (target == GL_READ_FRAMEBUFFER && draw_framebuffer != framebuffer) {
+      // TODO(zmo): There is no guarantee that an FBO that is complete on the
+      // READ attachment will be complete as a DRAW attachment.
+      glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, framebuffer->service_id());
+    }
+    state_.SetDeviceColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, false);
+
+    // TODO(zmo): Assume DrawBuffers() does not affect ClearBuffer().
+    framebuffer->ClearUnclearedIntRenderbufferAttachments(
+        renderbuffer_manager());
+
+    cleared_int_renderbuffers = true;
   }
+
   GLbitfield clear_bits = 0;
+  bool reset_draw_buffers = false;
   if (framebuffer->HasUnclearedColorAttachments()) {
     // We should always use alpha == 0 here, because 1) some draw buffers may
     // have alpha and some may not; 2) we won't have the same situation as the
@@ -6145,7 +6191,7 @@ void GLES2DecoderImpl::ClearUnclearedAttachments(
     clear_bits |= GL_COLOR_BUFFER_BIT;
     if (feature_info_->feature_flags().ext_draw_buffers ||
         feature_info_->IsES3Enabled()) {
-      framebuffer->PrepareDrawBuffersForClear();
+      reset_draw_buffers = framebuffer->PrepareDrawBuffersForClear();
     }
   }
 
@@ -6164,34 +6210,30 @@ void GLES2DecoderImpl::ClearUnclearedAttachments(
     clear_bits |= GL_DEPTH_BUFFER_BIT;
   }
 
-  state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, false);
-  glClear(clear_bits);
-
-  if ((clear_bits & GL_COLOR_BUFFER_BIT) != 0 &&
-      (feature_info_->feature_flags().ext_draw_buffers ||
-       feature_info_->IsES3Enabled())) {
-    framebuffer->RestoreDrawBuffersAfterClear();
+  if (clear_bits) {
+    if (!cleared_int_renderbuffers &&
+        target == GL_READ_FRAMEBUFFER && draw_framebuffer != framebuffer) {
+      // TODO(zmo): There is no guarantee that an FBO that is complete on the
+      // READ attachment will be complete as a DRAW attachment.
+      glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, framebuffer->service_id());
+    }
+    state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, false);
+    glClear(clear_bits);
   }
 
-  if (feature_info_->IsES3Enabled()) {
-    // TODO(zmo): track more state to know whether there are any integer
-    // buffers attached to the current framebuffer.
-    framebuffer->ClearIntegerBuffers();
+  if (cleared_int_renderbuffers || clear_bits) {
+    if (reset_draw_buffers)
+      framebuffer->RestoreDrawBuffersAfterClear();
+    RestoreClearState();
+    if (target == GL_READ_FRAMEBUFFER && draw_framebuffer != framebuffer) {
+      GLuint service_id = draw_framebuffer ? draw_framebuffer->service_id() :
+                                             GetBackbufferServiceId();
+      glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, service_id);
+    }
   }
 
   framebuffer_manager()->MarkAttachmentsAsCleared(
       framebuffer, renderbuffer_manager(), texture_manager());
-
-  RestoreClearState();
-
-  if (target == GL_READ_FRAMEBUFFER_EXT) {
-    glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, framebuffer->service_id());
-    Framebuffer* draw_framebuffer =
-        GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER_EXT);
-    GLuint service_id = draw_framebuffer ? draw_framebuffer->service_id() :
-                                           GetBackbufferServiceId();
-    glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, service_id);
-  }
 }
 
 void GLES2DecoderImpl::RestoreClearState() {
@@ -6340,6 +6382,9 @@ void GLES2DecoderImpl::DoFramebufferTextureLayer(
     framebuffer->AttachTextureLayer(attachment, texture_ref,
         texture_ref ? texture_ref->texture()->target() : 0,
         level, layer);
+  }
+  if (framebuffer == framebuffer_state_.bound_draw_framebuffer.get()) {
+    framebuffer_state_.clear_state_dirty = true;
   }
 }
 
@@ -10083,7 +10128,6 @@ bool GLES2DecoderImpl::ClearLevel(Texture* texture,
                                   int yoffset,
                                   int width,
                                   int height) {
-  // TODO(zmo): Implement clearing of 3D textures. crbug.com/597201.
   DCHECK(target != GL_TEXTURE_3D && target != GL_TEXTURE_2D_ARRAY);
   uint32_t channels = GLES2Util::GetChannelsForFormat(format);
   if ((feature_info_->feature_flags().angle_depth_texture ||
@@ -10128,7 +10172,7 @@ bool GLES2DecoderImpl::ClearLevel(Texture* texture,
     return true;
   }
 
-  static const uint32_t kMaxZeroSize = 1024 * 1024 * 4;
+  const uint32_t kMaxZeroSize = 1024 * 1024 * 4;
 
   uint32_t size;
   uint32_t padded_row_size;
@@ -10144,8 +10188,8 @@ bool GLES2DecoderImpl::ClearLevel(Texture* texture,
 
   if (size > kMaxZeroSize) {
     if (kMaxZeroSize < padded_row_size) {
-        // That'd be an awfully large texture.
-        return false;
+      // That'd be an awfully large texture.
+      return false;
     }
     // We should never have a large total size with a zero row size.
     DCHECK_GT(padded_row_size, 0U);
@@ -10171,6 +10215,114 @@ bool GLES2DecoderImpl::ClearLevel(Texture* texture,
                     zero.get());
     y += tile_height;
   }
+  TextureRef* bound_texture =
+      texture_manager()->GetTextureInfoForTarget(&state_, texture->target());
+  glBindTexture(texture->target(),
+                bound_texture ? bound_texture->service_id() : 0);
+  return true;
+}
+
+bool GLES2DecoderImpl::ClearLevel3D(Texture* texture,
+                                    unsigned target,
+                                    int level,
+                                    unsigned format,
+                                    unsigned type,
+                                    int width,
+                                    int height,
+                                    int depth) {
+  DCHECK(target == GL_TEXTURE_3D || target == GL_TEXTURE_2D_ARRAY);
+  DCHECK(feature_info_->IsES3Enabled());
+  if (width == 0 || height == 0 || depth == 0)
+    return true;
+
+  uint32_t size;
+  uint32_t padded_row_size;
+  // Here we use unpack buffer to upload zeros into the texture, one layer
+  // at a time. We haven't applied unpack parameters to GL except alignment.
+  if (!GLES2Util::ComputeImageDataSizes(
+          width, height, depth, format, type, state_.unpack_alignment, &size,
+          nullptr, &padded_row_size)) {
+    return false;
+  }
+  const uint32_t kMaxZeroSize = 1048 * 1048 * 2;
+  uint32_t buffer_size;
+  std::vector<TexSubCoord3D> subs;
+  if (size < kMaxZeroSize) {
+    // Case 1: one TexSubImage3D call clears the entire 3D texture.
+    buffer_size = size;
+    subs.push_back(TexSubCoord3D(0, 0, 0, width, height, depth));
+  } else {
+    uint32_t size_per_layer;
+    if (!SafeMultiplyUint32(padded_row_size, height, &size_per_layer)) {
+      return false;
+    }
+    if (size_per_layer < kMaxZeroSize) {
+      // Case 2: Each TexSubImage3D call clears 1 or more layers.
+      uint32_t depth_step = kMaxZeroSize / size_per_layer;
+      uint32_t num_of_slices = depth / depth_step;
+      if (num_of_slices * depth_step < static_cast<uint32_t>(depth))
+        num_of_slices++;
+      DCHECK_LT(0u, num_of_slices);
+      buffer_size = size_per_layer * depth_step;
+      int depth_of_last_slice = depth - (num_of_slices - 1) * depth_step;
+      DCHECK_LT(0, depth_of_last_slice);
+      for (uint32_t ii = 0; ii < num_of_slices; ++ii) {
+        int depth_ii =
+            (ii + 1 == num_of_slices ? depth_of_last_slice : depth_step);
+        subs.push_back(
+            TexSubCoord3D(0, 0, depth_step * ii, width, height, depth_ii));
+      }
+    } else {
+      // Case 3: Multiple TexSubImage3D calls clear 1 layer.
+      if (kMaxZeroSize < padded_row_size) {
+        // That'd be an awfully large texture.
+        return false;
+      }
+      uint32_t height_step = kMaxZeroSize / padded_row_size;
+      uint32_t num_of_slices = height / height_step;
+      if (num_of_slices * height_step < static_cast<uint32_t>(height))
+        num_of_slices++;
+      DCHECK_LT(0u, num_of_slices);
+      buffer_size = padded_row_size * height_step;
+      int height_of_last_slice = height - (num_of_slices - 1) * height_step;
+      DCHECK_LT(0, height_of_last_slice);
+      for (int zz = 0; zz < depth; ++zz) {
+        for (uint32_t ii = 0; ii < num_of_slices; ++ii) {
+          int height_ii =
+              (ii + 1 == num_of_slices ? height_of_last_slice : height_step);
+          subs.push_back(
+              TexSubCoord3D(0, height_step * ii, zz, width, height_ii, 1));
+        }
+      }
+    }
+  }
+
+  TRACE_EVENT1("gpu", "GLES2DecoderImpl::ClearLevel3D", "size", size);
+
+  GLuint buffer_id = 0;
+  glGenBuffersARB(1, &buffer_id);
+  glBindBuffer(GL_PIXEL_UNPACK_BUFFER, buffer_id);
+  {
+    scoped_ptr<char[]> zero(new char[buffer_size]);
+    memset(zero.get(), 0, buffer_size);
+    // TODO(zmo): Consider glMapBufferRange instead.
+    glBufferData(GL_PIXEL_UNPACK_BUFFER, size, zero.get(), GL_STATIC_DRAW);
+  }
+
+  glBindTexture(texture->target(), texture->service_id());
+
+  for (size_t ii = 0; ii < subs.size(); ++ii) {
+    glTexSubImage3D(target, level, subs[ii].xoffset, subs[ii].yoffset,
+                    subs[ii].zoffset, subs[ii].width, subs[ii].height,
+                    subs[ii].depth, format, type, nullptr);
+  }
+
+  Buffer* bound_buffer = buffer_manager()->GetBufferInfoForTarget(
+      &state_, GL_PIXEL_UNPACK_BUFFER);
+  glBindBuffer(GL_PIXEL_UNPACK_BUFFER,
+               bound_buffer ? bound_buffer->service_id() : 0);
+  glDeleteBuffersARB(1, &buffer_id);
+
   TextureRef* bound_texture =
       texture_manager()->GetTextureInfoForTarget(&state_, texture->target());
   glBindTexture(texture->target(),
@@ -13928,11 +14080,9 @@ void GLES2DecoderImpl::DoTexStorage3D(
     GLenum cur_format = feature_info_->IsES3Enabled() ?
                         internal_format : format;
     for (int ii = 0; ii < levels; ++ii) {
-      // TODO(zmo): Implement clearing of 3D textures. crbug.com/597201.
       texture_manager()->SetLevelInfo(texture_ref, target, ii, cur_format,
                                       level_width, level_height, level_depth, 0,
-                                      format, type,
-                                      gfx::Rect(level_width, level_height));
+                                      format, type, gfx::Rect());
       level_width = std::max(1, level_width >> 1);
       level_height = std::max(1, level_height >> 1);
       if (target == GL_TEXTURE_3D)

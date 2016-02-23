@@ -760,9 +760,6 @@ void GLES2DecoderTestBase::SetupExpectationsForFramebufferClearingMulti(
       .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
       .RetiresOnSaturation();
   if (target == GL_READ_FRAMEBUFFER_EXT) {
-    EXPECT_CALL(*gl_, BindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, 0))
-        .Times(1)
-        .RetiresOnSaturation();
     EXPECT_CALL(*gl_, BindFramebufferEXT(
         GL_DRAW_FRAMEBUFFER_EXT, read_framebuffer_service_id))
         .Times(1)
@@ -797,10 +794,6 @@ void GLES2DecoderTestBase::SetupExpectationsForFramebufferClearingMulti(
       restore_depth, restore_scissor_test, restore_scissor_x, restore_scissor_y,
       restore_scissor_width, restore_scissor_height);
   if (target == GL_READ_FRAMEBUFFER_EXT) {
-    EXPECT_CALL(*gl_, BindFramebufferEXT(
-        GL_READ_FRAMEBUFFER_EXT, read_framebuffer_service_id))
-        .Times(1)
-        .RetiresOnSaturation();
     EXPECT_CALL(*gl_, BindFramebufferEXT(
         GL_DRAW_FRAMEBUFFER_EXT, draw_framebuffer_service_id))
         .Times(1)

@@ -1257,14 +1257,24 @@ gfx::Rect Texture::GetLevelClearedRect(GLenum target, GLint level) const {
 bool Texture::IsLevelCleared(GLenum target, GLint level) const {
   size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
   if (face_index >= face_infos_.size() ||
-      level < base_level_ ||
+      level < 0 ||
       level >= static_cast<GLint>(face_infos_[face_index].level_infos.size())) {
     return true;
   }
-
   const Texture::LevelInfo& info = face_infos_[face_index].level_infos[level];
-
   return info.cleared_rect == gfx::Rect(info.width, info.height);
+}
+
+bool Texture::IsLevelPartiallyCleared(GLenum target, GLint level) const {
+  size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
+  if (face_index >= face_infos_.size() ||
+      level < 0 ||
+      level >= static_cast<GLint>(face_infos_[face_index].level_infos.size())) {
+    return false;
+  }
+  const Texture::LevelInfo& info = face_infos_[face_index].level_infos[level];
+  return (info.cleared_rect != gfx::Rect(info.width, info.height) &&
+          info.cleared_rect != gfx::Rect());
 }
 
 void Texture::InitTextureMaxAnisotropyIfNeeded(GLenum target) {
@@ -1295,30 +1305,40 @@ bool Texture::ClearLevel(
     return true;
   }
 
-  // Clear all remaining sub regions.
-  const int x[] = {
-      0, info.cleared_rect.x(), info.cleared_rect.right(), info.width};
-  const int y[] = {
-      0, info.cleared_rect.y(), info.cleared_rect.bottom(), info.height};
+  if (info.target == GL_TEXTURE_3D || info.target == GL_TEXTURE_2D_ARRAY) {
+    // For 3D textures, we always clear the entire texture.
+    DCHECK(info.cleared_rect == gfx::Rect());
+    bool cleared = decoder->ClearLevel3D(
+        this, info.target, info.level, info.format, info.type,
+        info.width, info.height, info.depth);
+    if (!cleared)
+      return false;
+  } else {
+    // Clear all remaining sub regions.
+    const int x[] = {
+        0, info.cleared_rect.x(), info.cleared_rect.right(), info.width};
+    const int y[] = {
+        0, info.cleared_rect.y(), info.cleared_rect.bottom(), info.height};
 
-  for (size_t j = 0; j < 3; ++j) {
-    for (size_t i = 0; i < 3; ++i) {
-      // Center of nine patch is already cleared.
-      if (j == 1 && i == 1)
-        continue;
+    for (size_t j = 0; j < 3; ++j) {
+      for (size_t i = 0; i < 3; ++i) {
+        // Center of nine patch is already cleared.
+        if (j == 1 && i == 1)
+          continue;
 
-      gfx::Rect rect(x[i], y[j], x[i + 1] - x[i], y[j + 1] - y[j]);
-      if (rect.IsEmpty())
-        continue;
+        gfx::Rect rect(x[i], y[j], x[i + 1] - x[i], y[j + 1] - y[j]);
+        if (rect.IsEmpty())
+          continue;
 
-      // NOTE: It seems kind of gross to call back into the decoder for this
-      // but only the decoder knows all the state (like unpack_alignment_)
-      // that's needed to be able to call GL correctly.
-      bool cleared = decoder->ClearLevel(this, info.target, info.level,
-                                         info.format, info.type, rect.x(),
-                                         rect.y(), rect.width(), rect.height());
-      if (!cleared)
-        return false;
+        // NOTE: It seems kind of gross to call back into the decoder for this
+        // but only the decoder knows all the state (like unpack_alignment_)
+        // that's needed to be able to call GL correctly.
+        bool cleared = decoder->ClearLevel(
+            this, info.target, info.level, info.format, info.type,
+            rect.x(), rect.y(), rect.width(), rect.height());
+        if (!cleared)
+          return false;
+      }
     }
   }
 
@@ -2222,9 +2242,9 @@ void TextureManager::ValidateAndDoTexSubImage(
   if (args.xoffset != 0 || args.yoffset != 0 || args.zoffset != 0 ||
       args.width != tex_width || args.height != tex_height ||
       args.depth != tex_depth) {
-    // TODO(zmo): Implement clearing of 3D textures. crbug.com/597201.
     gfx::Rect cleared_rect;
-    if (CombineAdjacentRects(
+    if (args.command_type == DoTexSubImageArguments::kTexSubImage2D &&
+        CombineAdjacentRects(
             texture->GetLevelClearedRect(args.target, args.level),
             gfx::Rect(args.xoffset, args.yoffset, args.width, args.height),
             &cleared_rect)) {
@@ -2250,8 +2270,8 @@ void TextureManager::ValidateAndDoTexSubImage(
       glTexSubImage2D(args.target, args.level, args.xoffset, args.yoffset,
                       args.width, args.height, AdjustTexFormat(args.format),
                       args.type, args.pixels);
-      return;
     }
+    return;
   }
 
   if (!texture_state->texsubimage_faster_than_teximage &&
@@ -2284,7 +2304,6 @@ void TextureManager::ValidateAndDoTexSubImage(
     }
   }
   SetLevelCleared(texture_ref, args.target, args.level, true);
-  return;
 }
 
 GLenum TextureManager::AdjustTexFormat(GLenum format) const {
@@ -2311,24 +2330,22 @@ void TextureManager::DoTexImage(
   GLsizei tex_height = 0;
   GLsizei tex_depth = 0;
   GLenum tex_type = 0;
-  GLenum tex_format = 0;
+  GLenum tex_internal_format = 0;
   bool level_is_same =
       texture->GetLevelSize(
           args.target, args.level, &tex_width, &tex_height, &tex_depth) &&
-      texture->GetLevelType(args.target, args.level, &tex_type, &tex_format) &&
       args.width == tex_width && args.height == tex_height &&
-      args.depth == tex_depth && args.type == tex_type &&
-      args.format == tex_format;
+      args.depth == tex_depth &&
+      texture->GetLevelType(
+          args.target, args.level, &tex_type, &tex_internal_format) &&
+      args.type == tex_type && args.internal_format == tex_internal_format;
 
   if (level_is_same && !args.pixels) {
     // Just set the level texture but mark the texture as uncleared.
-    // TODO(zmo): Implement clearing of 3D textures. crbug.com/597201.
-    bool set_as_cleared =
-        (args.command_type == DoTexImageArguments::kTexImage3D);
     SetLevelInfo(
         texture_ref, args.target, args.level, args.internal_format, args.width,
         args.height, args.depth, args.border, args.format, args.type,
-        set_as_cleared ? gfx::Rect(args.width, args.height) : gfx::Rect());
+        gfx::Rect());
     texture_state->tex_image_failed = false;
     return;
   }
@@ -2379,9 +2396,7 @@ void TextureManager::DoTexImage(
         GetAllGLErrors());
   }
   if (error == GL_NO_ERROR) {
-    // TODO(zmo): Implement clearing of 3D textures. crbug.com/597201.
-    bool set_as_cleared = (args.pixels != nullptr ||
-        args.command_type == DoTexImageArguments::kTexImage3D);
+    bool set_as_cleared = (args.pixels != nullptr);
     SetLevelInfo(
         texture_ref, args.target, args.level, args.internal_format, args.width,
         args.height, args.depth, args.border, args.format, args.type,

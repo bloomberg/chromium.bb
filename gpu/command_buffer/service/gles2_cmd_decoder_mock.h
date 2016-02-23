@@ -113,6 +113,15 @@ class MockGLES2Decoder : public GLES2Decoder {
                     int y_offset,
                     int width,
                     int height));
+  MOCK_METHOD8(ClearLevel3D,
+               bool(Texture* texture,
+                    unsigned target,
+                    int level,
+                    unsigned format,
+                    unsigned type,
+                    int width,
+                    int height,
+                    int depth));
   MOCK_METHOD0(GetErrorState, ErrorState *());
 
   MOCK_METHOD0(GetLogger, Logger*());

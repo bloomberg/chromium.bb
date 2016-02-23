@@ -74,14 +74,22 @@ class RenderbufferAttachment
   void SetCleared(RenderbufferManager* renderbuffer_manager,
                   TextureManager* /* texture_manager */,
                   bool cleared) override {
+    DCHECK(renderbuffer_manager);
     renderbuffer_manager->SetCleared(renderbuffer_.get(), cleared);
   }
+
+  bool IsPartiallyCleared() const override { return false; }
+
+  bool IsTextureAttachment() const override { return false; }
+  bool IsRenderbufferAttachment() const override { return true; }
 
   bool IsTexture(TextureRef* /* texture */) const override { return false; }
 
   bool IsRenderbuffer(Renderbuffer* renderbuffer) const override {
     return renderbuffer_.get() == renderbuffer;
   }
+
+  bool Is3D() const override { return false; }
 
   bool CanRenderTo(const FeatureInfo*) const override { return true; }
 
@@ -179,6 +187,10 @@ class TextureAttachment
 
   GLint layer() const { return layer_; }
 
+  GLenum target() const { return target_; }
+
+  GLint level() const { return level_; }
+
   GLuint object_name() const override { return texture_ref_->client_id(); }
 
   bool cleared() const override {
@@ -188,9 +200,17 @@ class TextureAttachment
   void SetCleared(RenderbufferManager* /* renderbuffer_manager */,
                   TextureManager* texture_manager,
                   bool cleared) override {
+    DCHECK(texture_manager);
     texture_manager->SetLevelCleared(
         texture_ref_.get(), target_, level_, cleared);
   }
+
+  bool IsPartiallyCleared() const override {
+    return texture_ref_->texture()->IsLevelPartiallyCleared(target_, level_);
+  }
+
+  bool IsTextureAttachment() const override { return true; }
+  bool IsRenderbufferAttachment() const override { return false; }
 
   bool IsTexture(TextureRef* texture) const override {
     return texture == texture_ref_.get();
@@ -198,6 +218,10 @@ class TextureAttachment
 
   bool IsRenderbuffer(Renderbuffer* /* renderbuffer */) const override {
     return false;
+  }
+
+  bool Is3D() const override {
+    return (target_ == GL_TEXTURE_3D || target_ == GL_TEXTURE_2D_ARRAY);
   }
 
   TextureRef* texture() const {
@@ -376,7 +400,44 @@ bool Framebuffer::HasUnclearedColorAttachments() const {
   return false;
 }
 
-void Framebuffer::ChangeDrawBuffersHelper(bool recover) const {
+bool Framebuffer::HasUnclearedIntRenderbufferAttachments() const {
+  for (AttachmentMap::const_iterator it = attachments_.begin();
+       it != attachments_.end(); ++it) {
+    if (!it->second->IsRenderbufferAttachment() || it->second->cleared())
+      continue;
+    if (GLES2Util::IsIntegerFormat(it->second->internal_format()))
+      return true;
+  }
+  return false;
+}
+
+void Framebuffer::ClearUnclearedIntRenderbufferAttachments(
+    RenderbufferManager* renderbuffer_manager) {
+  for (AttachmentMap::const_iterator it = attachments_.begin();
+       it != attachments_.end(); ++it) {
+    if (!it->second->IsRenderbufferAttachment() || it->second->cleared())
+      continue;
+    GLenum internal_format = it->second->internal_format();
+    if (GLES2Util::IsIntegerFormat(internal_format)) {
+      GLenum attaching_point = it->first;
+      DCHECK_LE(static_cast<GLenum>(GL_COLOR_ATTACHMENT0), attaching_point);
+      DCHECK_GT(GL_COLOR_ATTACHMENT0 + manager_->max_draw_buffers_,
+                attaching_point);
+      GLint drawbuffer = it->first - GL_COLOR_ATTACHMENT0;
+      if (GLES2Util::IsUnsignedIntegerFormat(internal_format)) {
+        const GLuint kZero[] = { 0u, 0u, 0u, 0u };
+        glClearBufferuiv(GL_COLOR, drawbuffer, kZero);
+      } else {
+        DCHECK(GLES2Util::IsSignedIntegerFormat(internal_format));
+        const static GLint kZero[] = { 0, 0, 0, 0 };
+        glClearBufferiv(GL_COLOR, drawbuffer, kZero);
+      }
+      it->second->SetCleared(renderbuffer_manager, nullptr, true);
+    }
+  }
+}
+
+bool Framebuffer::PrepareDrawBuffersForClear() const {
   scoped_ptr<GLenum[]> buffers(new GLenum[manager_->max_draw_buffers_]);
   for (uint32_t i = 0; i < manager_->max_draw_buffers_; ++i)
     buffers[i] = GL_NONE;
@@ -384,7 +445,13 @@ void Framebuffer::ChangeDrawBuffersHelper(bool recover) const {
        it != attachments_.end(); ++it) {
     if (it->first >= GL_COLOR_ATTACHMENT0 &&
         it->first < GL_COLOR_ATTACHMENT0 + manager_->max_draw_buffers_ &&
-        !GLES2Util::IsIntegerFormat(it->second->internal_format())) {
+        !it->second->cleared()) {
+      // There should be no partially cleared images, uncleared int/3d images.
+      // This is because ClearUnclearedIntOr3DImagesOrPartiallyClearedImages()
+      // is called before this.
+      DCHECK(!GLES2Util::IsIntegerFormat(it->second->internal_format()));
+      DCHECK(!it->second->IsPartiallyCleared());
+      DCHECK(!it->second->Is3D());
       buffers[it->first - GL_COLOR_ATTACHMENT0] = it->first;
     }
   }
@@ -395,40 +462,30 @@ void Framebuffer::ChangeDrawBuffersHelper(bool recover) const {
       break;
     }
   }
-  if (different) {
-    if (recover)
-      glDrawBuffersARB(manager_->max_draw_buffers_, draw_buffers_.get());
-    else
-      glDrawBuffersARB(manager_->max_draw_buffers_, buffers.get());
-  }
-}
-
-void Framebuffer::PrepareDrawBuffersForClear() const {
-  bool recover = false;
-  ChangeDrawBuffersHelper(recover);
+  if (different)
+    glDrawBuffersARB(manager_->max_draw_buffers_, buffers.get());
+  return different;
 }
 
 void Framebuffer::RestoreDrawBuffersAfterClear() const {
-  bool recover = true;
-  ChangeDrawBuffersHelper(recover);
+  glDrawBuffersARB(manager_->max_draw_buffers_, draw_buffers_.get());
 }
 
-void Framebuffer::ClearIntegerBuffers() {
+void Framebuffer::ClearUnclearedIntOr3DTexturesOrPartiallyClearedTextures(
+    GLES2Decoder* decoder,
+    TextureManager* texture_manager) {
   for (AttachmentMap::const_iterator it = attachments_.begin();
        it != attachments_.end(); ++it) {
-    GLenum internal_format = it->second->internal_format();
-    if (it->first >= GL_COLOR_ATTACHMENT0 &&
-        it->first < GL_COLOR_ATTACHMENT0 + manager_->max_draw_buffers_ &&
-        !it->second->cleared() &&
-        GLES2Util::IsIntegerFormat(internal_format)) {
-      GLint drawbuffer = it->first - GL_COLOR_ATTACHMENT0;
-      if (GLES2Util::IsUnsignedIntegerFormat(internal_format)) {
-        const static GLuint kZero[] = { 0u, 0u, 0u, 0u };
-        glClearBufferuiv(GL_COLOR, drawbuffer, kZero);
-      } else {  // IsUnsignedIntegerFormat(internal_format)
-        const static GLint kZero[] = { 0, 0, 0, 0 };
-        glClearBufferiv(GL_COLOR, drawbuffer, kZero);
-      }
+    if (!it->second->IsTextureAttachment() || it->second->cleared())
+      continue;
+    TextureAttachment* attachment =
+        reinterpret_cast<TextureAttachment*>(it->second.get());
+    if (attachment->IsPartiallyCleared() || attachment->Is3D() ||
+        GLES2Util::IsIntegerFormat(attachment->internal_format())) {
+      texture_manager->ClearTextureLevel(decoder,
+                                         attachment->texture(),
+                                         attachment->target(),
+                                         attachment->level());
     }
   }
 }

@@ -8,6 +8,7 @@
 #include "gpu/command_buffer/service/error_state_mock.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
+#include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 #include "gpu/command_buffer/service/gpu_service_test.h"
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
 #include "gpu/command_buffer/service/test_helper.h"
@@ -147,6 +148,7 @@ class FramebufferInfoTestBase : public GpuServiceTest {
     TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(gl_.get(),
         extensions, "", gl_version);
     feature_info_->InitializeForTesting();
+    decoder_.reset(new MockGLES2Decoder());
     manager_.CreateFramebuffer(kClient1Id, kService1Id);
     error_state_.reset(new ::testing::StrictMock<gles2::MockErrorState>());
     framebuffer_ = manager_.GetFramebuffer(kClient1Id);
@@ -159,6 +161,7 @@ class FramebufferInfoTestBase : public GpuServiceTest {
   scoped_ptr<TextureManager> texture_manager_;
   scoped_ptr<RenderbufferManager> renderbuffer_manager_;
   scoped_ptr<MockErrorState> error_state_;
+  scoped_ptr<MockGLES2Decoder> decoder_;
 };
 
 class FramebufferInfoTest : public FramebufferInfoTestBase {
@@ -550,6 +553,219 @@ TEST_F(FramebufferInfoTest, AttachTexture) {
   EXPECT_TRUE(framebuffer_->IsCleared());
 }
 
+TEST_F(FramebufferInfoTest, ClearPartiallyClearedAttachments) {
+  const GLuint kTextureClientId = 33;
+  const GLuint kTextureServiceId = 333;
+  texture_manager_->CreateTexture(kTextureClientId, kTextureServiceId);
+  scoped_refptr<TextureRef> texture(
+      texture_manager_->GetTexture(kTextureClientId));
+  ASSERT_TRUE(texture.get() != NULL);
+  texture_manager_->SetTarget(texture.get(), GL_TEXTURE_2D);
+  framebuffer_->AttachTexture(
+      GL_COLOR_ATTACHMENT0, texture.get(), GL_TEXTURE_2D, 0, 0);
+  const Framebuffer::Attachment* attachment =
+      framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0);
+  ASSERT_TRUE(attachment != NULL);
+
+  // Not cleared at all.
+  texture_manager_->SetLevelInfo(texture.get(), GL_TEXTURE_2D, 0, GL_RGBA, 4,
+                                 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                                 gfx::Rect());
+  EXPECT_FALSE(attachment->cleared());
+  EXPECT_FALSE(attachment->IsPartiallyCleared());
+  EXPECT_FALSE(framebuffer_->IsCleared());
+  EXPECT_TRUE(framebuffer_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
+  EXPECT_TRUE(framebuffer_->HasUnclearedColorAttachments());
+  // Clear it but nothing happens.
+  framebuffer_->ClearUnclearedIntOr3DTexturesOrPartiallyClearedTextures(
+      decoder_.get(), texture_manager_.get());
+  EXPECT_FALSE(attachment->cleared());
+  EXPECT_FALSE(attachment->IsPartiallyCleared());
+  EXPECT_FALSE(framebuffer_->IsCleared());
+  EXPECT_TRUE(framebuffer_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
+  EXPECT_TRUE(framebuffer_->HasUnclearedColorAttachments());
+
+  // Fully cleared.
+  texture_manager_->SetLevelInfo(texture.get(), GL_TEXTURE_2D, 0, GL_RGBA, 4,
+                                 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                                 gfx::Rect(0, 0, 4, 4));
+  EXPECT_TRUE(attachment->cleared());
+  EXPECT_FALSE(attachment->IsPartiallyCleared());
+  EXPECT_TRUE(framebuffer_->IsCleared());
+  EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
+  EXPECT_FALSE(framebuffer_->HasUnclearedColorAttachments());
+  // Clear it but nothing happens.
+  framebuffer_->ClearUnclearedIntOr3DTexturesOrPartiallyClearedTextures(
+      decoder_.get(), texture_manager_.get());
+  EXPECT_TRUE(attachment->cleared());
+  EXPECT_FALSE(attachment->IsPartiallyCleared());
+  EXPECT_TRUE(framebuffer_->IsCleared());
+  EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
+  EXPECT_FALSE(framebuffer_->HasUnclearedColorAttachments());
+
+  // Partially cleared.
+  texture_manager_->SetLevelInfo(texture.get(), GL_TEXTURE_2D, 0, GL_RGBA, 4,
+                                 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                                 gfx::Rect(1, 1, 2, 2));
+  EXPECT_FALSE(attachment->cleared());
+  EXPECT_TRUE(attachment->IsPartiallyCleared());
+  EXPECT_FALSE(framebuffer_->IsCleared());
+  EXPECT_TRUE(framebuffer_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
+  EXPECT_TRUE(framebuffer_->HasUnclearedColorAttachments());
+  // Now clear it.
+  EXPECT_CALL(*decoder_.get(), ClearLevel(texture->texture(),
+                                          GL_TEXTURE_2D,
+                                          0,
+                                          GL_RGBA,
+                                          GL_UNSIGNED_BYTE,
+                                          _, _, _, _))
+      .WillOnce(Return(true))
+      .WillOnce(Return(true))
+      .WillOnce(Return(true))
+      .WillOnce(Return(true))
+      .WillOnce(Return(true))
+      .WillOnce(Return(true))
+      .WillOnce(Return(true))
+      .WillOnce(Return(true))
+      .RetiresOnSaturation();
+  framebuffer_->ClearUnclearedIntOr3DTexturesOrPartiallyClearedTextures(
+      decoder_.get(), texture_manager_.get());
+  EXPECT_TRUE(attachment->cleared());
+  EXPECT_FALSE(attachment->IsPartiallyCleared());
+  EXPECT_TRUE(framebuffer_->IsCleared());
+  EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
+  EXPECT_FALSE(framebuffer_->HasUnclearedColorAttachments());
+}
+
+TEST_F(FramebufferInfoTest, Clear3DTextureAttachments) {
+  const GLuint kTextureClientId = 33;
+  const GLuint kTextureServiceId = 333;
+  texture_manager_->CreateTexture(kTextureClientId, kTextureServiceId);
+  scoped_refptr<TextureRef> texture(
+      texture_manager_->GetTexture(kTextureClientId));
+  ASSERT_TRUE(texture.get() != NULL);
+  texture_manager_->SetTarget(texture.get(), GL_TEXTURE_3D);
+  framebuffer_->AttachTexture(
+      GL_COLOR_ATTACHMENT0, texture.get(), GL_TEXTURE_3D, 0, 0);
+  const Framebuffer::Attachment* attachment =
+      framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0);
+  ASSERT_TRUE(attachment != NULL);
+
+  const int kWidth = 4;
+  const int kHeight = 8;
+  const int kDepth = 2;
+
+  // Fully cleared.
+  texture_manager_->SetLevelInfo(texture.get(), GL_TEXTURE_2D, 0, GL_RGBA8,
+                                 kWidth, kHeight, kDepth,
+                                 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                                 gfx::Rect(0, 0, kWidth, kHeight));
+  EXPECT_TRUE(attachment->cleared());
+  EXPECT_FALSE(attachment->IsPartiallyCleared());
+  EXPECT_TRUE(framebuffer_->IsCleared());
+  EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
+  EXPECT_FALSE(framebuffer_->HasUnclearedColorAttachments());
+  // Clear it but nothing happens.
+  framebuffer_->ClearUnclearedIntOr3DTexturesOrPartiallyClearedTextures(
+      decoder_.get(), texture_manager_.get());
+  EXPECT_TRUE(attachment->cleared());
+  EXPECT_FALSE(attachment->IsPartiallyCleared());
+  EXPECT_TRUE(framebuffer_->IsCleared());
+  EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
+  EXPECT_FALSE(framebuffer_->HasUnclearedColorAttachments());
+
+  // Not cleared at all.
+  texture_manager_->SetLevelInfo(texture.get(), GL_TEXTURE_3D, 0, GL_RGBA8,
+                                 kWidth, kHeight, kDepth,
+                                 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                                 gfx::Rect());
+  EXPECT_FALSE(attachment->cleared());
+  EXPECT_FALSE(attachment->IsPartiallyCleared());
+  EXPECT_FALSE(framebuffer_->IsCleared());
+  EXPECT_TRUE(framebuffer_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
+  EXPECT_TRUE(framebuffer_->HasUnclearedColorAttachments());
+  // Now clear it.
+  EXPECT_CALL(*decoder_.get(), ClearLevel3D(texture->texture(),
+                                            GL_TEXTURE_3D,
+                                            0,
+                                            GL_RGBA,
+                                            GL_UNSIGNED_BYTE,
+                                            kWidth, kHeight, kDepth))
+      .WillOnce(Return(true))
+      .RetiresOnSaturation();
+  framebuffer_->ClearUnclearedIntOr3DTexturesOrPartiallyClearedTextures(
+      decoder_.get(), texture_manager_.get());
+  EXPECT_TRUE(attachment->cleared());
+  EXPECT_FALSE(attachment->IsPartiallyCleared());
+  EXPECT_TRUE(framebuffer_->IsCleared());
+  EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
+  EXPECT_FALSE(framebuffer_->HasUnclearedColorAttachments());
+}
+
+TEST_F(FramebufferInfoTest, ClearIntegerTextureAttachments) {
+  const GLuint kTextureClientId = 33;
+  const GLuint kTextureServiceId = 333;
+  texture_manager_->CreateTexture(kTextureClientId, kTextureServiceId);
+  scoped_refptr<TextureRef> texture(
+      texture_manager_->GetTexture(kTextureClientId));
+  ASSERT_TRUE(texture.get() != NULL);
+  texture_manager_->SetTarget(texture.get(), GL_TEXTURE_2D);
+  framebuffer_->AttachTexture(
+      GL_COLOR_ATTACHMENT0, texture.get(), GL_TEXTURE_2D, 0, 0);
+  const Framebuffer::Attachment* attachment =
+      framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0);
+  ASSERT_TRUE(attachment != NULL);
+
+  const int kWidth = 4;
+  const int kHeight = 8;
+
+  // Fully cleared.
+  texture_manager_->SetLevelInfo(texture.get(), GL_TEXTURE_2D, 0, GL_RGBA8UI,
+                                 kWidth, kHeight, 1,
+                                 0, GL_RGBA_INTEGER, GL_UNSIGNED_BYTE,
+                                 gfx::Rect(0, 0, kWidth, kHeight));
+  EXPECT_TRUE(attachment->cleared());
+  EXPECT_FALSE(attachment->IsPartiallyCleared());
+  EXPECT_TRUE(framebuffer_->IsCleared());
+  EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
+  EXPECT_FALSE(framebuffer_->HasUnclearedColorAttachments());
+  // Clear it but nothing happens.
+  framebuffer_->ClearUnclearedIntOr3DTexturesOrPartiallyClearedTextures(
+      decoder_.get(), texture_manager_.get());
+  EXPECT_TRUE(attachment->cleared());
+  EXPECT_FALSE(attachment->IsPartiallyCleared());
+  EXPECT_TRUE(framebuffer_->IsCleared());
+  EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
+  EXPECT_FALSE(framebuffer_->HasUnclearedColorAttachments());
+
+  // Not cleared at all.
+  texture_manager_->SetLevelInfo(texture.get(), GL_TEXTURE_2D, 0, GL_RGBA8UI,
+                                 kWidth, kHeight, 1,
+                                 0, GL_RGBA_INTEGER, GL_UNSIGNED_BYTE,
+                                 gfx::Rect());
+  EXPECT_FALSE(attachment->cleared());
+  EXPECT_FALSE(attachment->IsPartiallyCleared());
+  EXPECT_FALSE(framebuffer_->IsCleared());
+  EXPECT_TRUE(framebuffer_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
+  EXPECT_TRUE(framebuffer_->HasUnclearedColorAttachments());
+  // Now clear it.
+  EXPECT_CALL(*decoder_.get(), ClearLevel(texture->texture(),
+                                          GL_TEXTURE_2D,
+                                          0,
+                                          GL_RGBA_INTEGER,
+                                          GL_UNSIGNED_BYTE,
+                                          0, 0, kWidth, kHeight))
+      .WillOnce(Return(true))
+      .RetiresOnSaturation();
+  framebuffer_->ClearUnclearedIntOr3DTexturesOrPartiallyClearedTextures(
+      decoder_.get(), texture_manager_.get());
+  EXPECT_TRUE(attachment->cleared());
+  EXPECT_FALSE(attachment->IsPartiallyCleared());
+  EXPECT_TRUE(framebuffer_->IsCleared());
+  EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
+  EXPECT_FALSE(framebuffer_->HasUnclearedColorAttachments());
+}
+
 TEST_F(FramebufferInfoTest, DrawBuffers) {
   const GLuint kTextureClientId[] = { 33, 34 };
   const GLuint kTextureServiceId[] = { 333, 334 };
@@ -588,7 +804,7 @@ TEST_F(FramebufferInfoTest, DrawBuffers) {
   EXPECT_TRUE(framebuffer_->IsCleared());
   EXPECT_FALSE(framebuffer_->HasUnclearedColorAttachments());
 
-  // Set a texture as uncleared.
+  // Set draw buffer 1 as uncleared.
   scoped_refptr<TextureRef> texture1(
       texture_manager_->GetTexture(kTextureClientId[1]));
   texture_manager_->SetTarget(texture1.get(), GL_TEXTURE_2D);
@@ -616,11 +832,13 @@ TEST_F(FramebufferInfoTest, DrawBuffers) {
               framebuffer_->GetDrawBuffer(i));
   }
 
-  // Nothing happens.
-  framebuffer_->PrepareDrawBuffersForClear();
-  framebuffer_->RestoreDrawBuffersAfterClear();
+  // Only draw buffer 1 needs clearing, so we need to mask draw buffer 0.
+  EXPECT_CALL(*gl_, DrawBuffersARB(kMaxDrawBuffers, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_TRUE(framebuffer_->PrepareDrawBuffersForClear());
 
-  // Now we disable a draw buffer 1.
+  // Now we disable draw buffer 1.
   buffers[1] = GL_NONE;
   framebuffer_->SetDrawBuffers(2, buffers);
   // We will enable the disabled draw buffer for clear(), and disable it
@@ -628,19 +846,14 @@ TEST_F(FramebufferInfoTest, DrawBuffers) {
   EXPECT_CALL(*gl_, DrawBuffersARB(kMaxDrawBuffers, _))
       .Times(1)
       .RetiresOnSaturation();
-  framebuffer_->PrepareDrawBuffersForClear();
-  EXPECT_CALL(*gl_, DrawBuffersARB(kMaxDrawBuffers, _))
-      .Times(1)
-      .RetiresOnSaturation();
-  framebuffer_->RestoreDrawBuffersAfterClear();
+  EXPECT_TRUE(framebuffer_->PrepareDrawBuffersForClear());
 
-  // Now remove draw buffer 1's attachment.
-  framebuffer_->AttachTexture(GL_COLOR_ATTACHMENT1, NULL, 0, 0, 0);
-  EXPECT_TRUE(framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT1) == NULL);
-
-  // Nothing happens.
-  framebuffer_->PrepareDrawBuffersForClear();
-  framebuffer_->RestoreDrawBuffersAfterClear();
+  // Now we disable draw buffer 0, enable draw buffer 1.
+  buffers[0] = GL_NONE;
+  buffers[1] = GL_COLOR_ATTACHMENT1;
+  framebuffer_->SetDrawBuffers(2, buffers);
+  // This is the perfect setting for clear. No need to call DrawBuffers().
+  EXPECT_FALSE(framebuffer_->PrepareDrawBuffersForClear());
 }
 
 class FramebufferInfoFloatTest : public FramebufferInfoTest {
