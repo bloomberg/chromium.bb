@@ -129,7 +129,7 @@ void MockUserManager::AddUser(const AccountId& account_id) {
 void MockUserManager::AddUserWithAffiliation(const AccountId& account_id,
                                              bool is_affiliated) {
   user_manager::User* user = user_manager::User::CreateRegularUser(account_id);
-  user->set_affiliation(is_affiliated);
+  user->SetAffiliation(is_affiliated);
   user_list_.push_back(user);
   ProfileHelper::Get()->SetProfileToUserMappingForTesting(user);
 }
@@ -145,7 +145,7 @@ void MockUserManager::ClearUserList() {
 bool MockUserManager::ShouldReportUser(const std::string& user_id) const {
   for (const auto& user : user_list_) {
     if (user->email() == user_id)
-      return user->is_affiliated();
+      return user->IsAffiliated();
   }
   NOTREACHED();
   return false;

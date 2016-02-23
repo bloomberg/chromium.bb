@@ -782,7 +782,7 @@ void SelectClientCertificates(
 
   // Use the device-wide system key slot only if the user is affiliated on the
   // device.
-  bool use_system_key_slot = user->is_affiliated();
+  const bool use_system_key_slot = user->IsAffiliated();
 
   scoped_ptr<SelectCertificatesState> state(new SelectCertificatesState(
       user->username_hash(), use_system_key_slot, cert_request_info, callback));

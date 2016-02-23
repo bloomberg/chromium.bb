@@ -455,7 +455,7 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 
       // Use the device-wide system key slot only if the user is affiliated on
       // the device.
-      params->use_system_key_slot = user->is_affiliated();
+      params->use_system_key_slot = user->IsAffiliated();
     }
   }
 

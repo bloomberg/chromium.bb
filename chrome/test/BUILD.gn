@@ -138,7 +138,6 @@ source_set("test_support") {
       "//components/guest_view/browser:test_support",
       "//components/infobars/core",
       "//components/sessions:test_support",
-      "//components/user_manager:test_support",
       "//components/web_resource:test_support",
       "//content/public/child",
       "//content/public/common",
@@ -204,7 +203,10 @@ source_set("test_support") {
     }
   }
   if (is_chromeos) {
-    public_deps += [ "//components/ownership" ]
+    public_deps += [
+      "//components/ownership",
+      "//components/user_manager:test_support",
+    ]
   }
 
   if (use_aura) {
@@ -873,7 +875,6 @@ if (!is_android) {
       "//components/safe_browsing_db:test_database_manager",
       "//components/strings",
       "//components/translate/core/common",
-      "//components/user_manager:test_support",
       "//content/test:browsertest_base",
       "//crypto:platform",
       "//crypto:test_support",
@@ -1042,6 +1043,7 @@ if (!is_android) {
       ]
       deps += [
         "//chromeos/ime:gencode",
+        "//components/user_manager:test_support",
         "//dbus",
         "//dbus:test_support",
         "//ui/login:resources",

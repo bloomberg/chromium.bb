@@ -84,7 +84,7 @@ IN_PROC_BROWSER_TEST_P(UserAffiliationBrowserTest, Affiliated) {
   EXPECT_EQ(GetParam().affiliated_,
             user_manager::UserManager::Get()
                 ->FindUser(AccountId::FromUserEmail(kAffiliatedUser))
-                ->is_affiliated());
+                ->IsAffiliated());
 }
 
 INSTANTIATE_TEST_CASE_P(AffiliationCheck,

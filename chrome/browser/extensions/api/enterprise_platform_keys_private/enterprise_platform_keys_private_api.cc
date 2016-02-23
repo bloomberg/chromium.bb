@@ -152,7 +152,7 @@ bool EPKPChallengeKeyBase::IsUserManaged() const {
           AccountId::FromUserEmail(email));
 
   if (user) {
-    return user->is_affiliated();
+    return user->IsAffiliated();
   }
 
   return false;

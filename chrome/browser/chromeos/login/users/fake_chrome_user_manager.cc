@@ -42,7 +42,7 @@ const user_manager::User* FakeChromeUserManager::AddUserWithAffiliation(
     const AccountId& account_id,
     bool is_affiliated) {
   user_manager::User* user = user_manager::User::CreateRegularUser(account_id);
-  user->set_affiliation(is_affiliated);
+  user->SetAffiliation(is_affiliated);
   user->set_username_hash(ProfileHelper::GetUserIdHashByUserIdForTesting(
       account_id.GetUserEmail()));
   user->SetStubImage(user_manager::UserImage(

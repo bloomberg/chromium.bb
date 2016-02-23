@@ -1192,7 +1192,7 @@ void ChromeUserManagerImpl::SetUserAffiliation(
     const bool is_affiliated = chromeos::IsUserAffiliated(
         user_affiliation_ids, connector->GetDeviceAffiliationIDs(),
         account_id.GetUserEmail(), connector->GetEnterpriseDomain());
-    user->set_affiliation(is_affiliated);
+    user->SetAffiliation(is_affiliated);
 
     if (user->GetType() == user_manager::USER_TYPE_REGULAR) {
       if (is_affiliated) {

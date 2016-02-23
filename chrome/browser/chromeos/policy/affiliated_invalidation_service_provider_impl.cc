@@ -157,7 +157,7 @@ void AffiliatedInvalidationServiceProviderImpl::Observe(
   }
   const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
-  if (!user || !user->is_affiliated()) {
+  if (!user || !user->IsAffiliated()) {
     // If the Profile belongs to a user who is not affiliated on the device,
     // ignore it.
     return;

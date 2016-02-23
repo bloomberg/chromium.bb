@@ -200,7 +200,7 @@ IN_PROC_BROWSER_TEST_P(EnterpriseDeviceAttributesTest, Success) {
   SetPolicy();
 
   EXPECT_EQ(GetParam().affiliated_, user_manager::UserManager::Get()->
-      FindUser(affiliated_account_id_)->is_affiliated());
+      FindUser(affiliated_account_id_)->IsAffiliated());
 
   // Device ID is available only for affiliated user.
   std::string device_id = GetParam().affiliated_ ? kDeviceId : "";

@@ -46,9 +46,9 @@ component("user_manager") {
   }
 }
 
-source_set("test_support") {
-  testonly = true
-  if (is_chromeos) {
+if (is_chromeos) {
+  source_set("test_support") {
+    testonly = true
     sources = [
       "fake_user_manager.cc",
       "fake_user_manager.h",
@@ -60,6 +60,20 @@ source_set("test_support") {
       "//components/signin/core/account_id",
       "//skia",
       "//ui/base",
+    ]
+  }
+
+  source_set("unit_tests") {
+    testonly = true
+    sources = [
+      "user_unittest.cc",
+    ]
+    deps = [
+      ":user_manager",
+      "//components/signin/core/account_id",
+      "//skia",
+      "//testing/gtest",
+      "//ui/gfx",
     ]
   }
 }

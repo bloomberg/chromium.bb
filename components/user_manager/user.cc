@@ -69,7 +69,22 @@ class GuestUser : public User {
   DISALLOW_COPY_AND_ASSIGN(GuestUser);
 };
 
-class KioskAppUser : public User {
+class DeviceLocalAccountUserBase : public User {
+ public:
+  // User:
+  bool IsAffiliated() const override;
+
+ protected:
+  explicit DeviceLocalAccountUserBase(const AccountId& account_id);
+  ~DeviceLocalAccountUserBase() override;
+  // User:
+  void SetAffiliation(bool) override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DeviceLocalAccountUserBase);
+};
+
+class KioskAppUser : public DeviceLocalAccountUserBase {
  public:
   explicit KioskAppUser(const AccountId& kiosk_app_account_id);
   ~KioskAppUser() override;
@@ -94,7 +109,7 @@ class SupervisedUser : public User {
   DISALLOW_COPY_AND_ASSIGN(SupervisedUser);
 };
 
-class PublicAccountUser : public User {
+class PublicAccountUser : public DeviceLocalAccountUserBase {
  public:
   explicit PublicAccountUser(const AccountId& account_id);
   ~PublicAccountUser() override;
@@ -181,6 +196,14 @@ bool User::is_active() const {
   return is_active_;
 }
 
+bool User::IsAffiliated() const {
+  return is_affiliated_;
+}
+
+void User::SetAffiliation(bool is_affiliated) {
+  is_affiliated_ = is_affiliated;
+}
+
 User* User::CreateRegularUser(const AccountId& account_id) {
   return new RegularUser(account_id);
 }
@@ -265,8 +288,25 @@ UserType GuestUser::GetType() const {
   return user_manager::USER_TYPE_GUEST;
 }
 
+DeviceLocalAccountUserBase::DeviceLocalAccountUserBase(
+    const AccountId& account_id) : User(account_id) {
+}
+
+DeviceLocalAccountUserBase::~DeviceLocalAccountUserBase() {
+}
+
+bool DeviceLocalAccountUserBase::IsAffiliated() const {
+  return true;
+}
+
+void DeviceLocalAccountUserBase::SetAffiliation(bool) {
+  // Device local accounts are always affiliated. No affiliation modification
+  // must happen.
+  NOTREACHED();
+}
+
 KioskAppUser::KioskAppUser(const AccountId& kiosk_app_account_id)
-    : User(kiosk_app_account_id) {
+    : DeviceLocalAccountUserBase(kiosk_app_account_id) {
   set_display_email(kiosk_app_account_id.GetUserEmail());
 }
 
@@ -293,7 +333,7 @@ std::string SupervisedUser::display_email() const {
 }
 
 PublicAccountUser::PublicAccountUser(const AccountId& account_id)
-    : User(account_id) {}
+    : DeviceLocalAccountUserBase(account_id) {}
 
 PublicAccountUser::~PublicAccountUser() {
 }

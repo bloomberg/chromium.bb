@@ -301,7 +301,6 @@ source_set("chrome_extensions_browsertests") {
     "//components/resources",
     "//components/strings",
     "//components/translate/core/common",
-    "//components/user_manager:test_support",
     "//crypto:platform",
     "//crypto:test_support",
     "//device/bluetooth:mocks",
@@ -336,6 +335,10 @@ source_set("chrome_extensions_browsertests") {
     "//ui/web_dialogs:test_support",
     "//v8",
   ]
+
+  if (is_chromeos) {
+    deps += [ "//components/user_manager:test_support" ]
+  }
 }
 
 # TODO(rockot) bug 505926: This should be deleted for the same reason as

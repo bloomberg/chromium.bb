@@ -47,7 +47,7 @@ const user_manager::User* FakeUserManager::AddUserWithAffiliation(
     const AccountId& account_id,
     bool is_affiliated) {
   user_manager::User* user = user_manager::User::CreateRegularUser(account_id);
-  user->set_affiliation(is_affiliated);
+  user->SetAffiliation(is_affiliated);
   users_.push_back(user);
   return user;
 }

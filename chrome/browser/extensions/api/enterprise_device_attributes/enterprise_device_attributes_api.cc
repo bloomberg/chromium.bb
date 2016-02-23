@@ -22,7 +22,7 @@ bool IsPermittedToGetDeviceId(content::BrowserContext* context) {
   const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(
           Profile::FromBrowserContext(context));
-  return user->is_affiliated();
+  return user->IsAffiliated();
 }
 
 // Returns the directory device id for the permitted extensions or an empty

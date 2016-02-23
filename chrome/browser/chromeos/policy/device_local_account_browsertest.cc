@@ -880,6 +880,16 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LoginScreen) {
 
   CheckPublicSessionPresent(account_id_1_);
   CheckPublicSessionPresent(account_id_2_);
+
+  ASSERT_TRUE(user_manager::UserManager::Get()->FindUser(account_id_1_));
+  EXPECT_TRUE(user_manager::UserManager::Get()
+                  ->FindUser(account_id_1_)
+                  ->IsAffiliated());
+
+  ASSERT_TRUE(user_manager::UserManager::Get()->FindUser(account_id_2_));
+  EXPECT_TRUE(user_manager::UserManager::Get()
+                  ->FindUser(account_id_2_)
+                  ->IsAffiliated());
 }
 
 // Flaky: http://crbug.com/512670.

@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/signin/core/account_id/account_id.h"
@@ -79,25 +80,15 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   // Returns true if user type has gaia account.
   static bool TypeHasGaiaAccount(UserType user_type);
 
-  // Returns the user type.
-  virtual UserType GetType() const = 0;
-
-  // The email the user used to log in.
-  // TODO(alemate): rename this to GetUserEmail() (see crbug.com/548923)
-  const std::string& email() const;
-
-  // The displayed user name.
-  base::string16 display_name() const { return display_name_; }
-
-  // If the user has to use SAML to log in.
-  bool using_saml() const { return using_saml_; }
-
   // UserInfo
   std::string GetEmail() const override;
   base::string16 GetDisplayName() const override;
   base::string16 GetGivenName() const override;
   const gfx::ImageSkia& GetImage() const override;
   const AccountId& GetAccountId() const override;
+
+  // Returns the user type.
+  virtual UserType GetType() const = 0;
 
   // Allows managing child status of the user. Used for RegularUser.
   virtual void SetIsChild(bool is_child);
@@ -109,15 +100,31 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   // Returns true if user is supervised.
   virtual bool IsSupervised() const;
 
+  // True if user image can be synced.
+  virtual bool CanSyncImage() const;
+
+  // The displayed (non-canonical) user email.
+  virtual std::string display_email() const;
+
+  // True if the user is affiliated to the device.
+  virtual bool IsAffiliated() const;
+
+  // The email the user used to log in.
+  // TODO(alemate): rename this to GetUserEmail() (see crbug.com/548923)
+  const std::string& email() const;
+
+  // The displayed user name.
+  base::string16 display_name() const { return display_name_; }
+
+  // If the user has to use SAML to log in.
+  bool using_saml() const { return using_saml_; }
+
   // Returns the account name part of the email. Use the display form of the
   // email if available and use_display_name == true. Otherwise use canonical.
   std::string GetAccountName(bool use_display_email) const;
 
   // Whether the user has a default image.
   bool HasDefaultImage() const;
-
-  // True if user image can be synced.
-  virtual bool CanSyncImage() const;
 
   int image_index() const { return image_index_; }
   bool has_raw_image() const { return user_image_.has_raw_image(); }
@@ -139,9 +146,6 @@ class USER_MANAGER_EXPORT User : public UserInfo {
 
   // True if image is being loaded from file.
   bool image_is_loading() const { return image_is_loading_; }
-
-  // The displayed (non-canonical) user email.
-  virtual std::string display_email() const;
 
   // OAuth token status for this user.
   OAuthTokenStatus oauth_token_status() const { return oauth_token_status_; }
@@ -166,9 +170,6 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   // True if the user Profile is created.
   bool is_profile_created() const { return profile_is_created_; }
 
-  // True if the user is affiliated to the device.
-  bool is_affiliated() const { return is_affiliated_; }
-
  protected:
   friend class UserManagerBase;
   friend class chromeos::ChromeUserManagerImpl;
@@ -181,6 +182,7 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   friend class chromeos::FakeChromeUserManager;
   friend class chromeos::MockUserManager;
   friend class chromeos::UserAddingScreenTest;
+  FRIEND_TEST_ALL_PREFIXES(UserTest, DeviceLocalAccountAffiliation);
 
   // Do not allow anyone else to create new User instances.
   static User* CreateRegularUser(const AccountId& account_id);
@@ -247,9 +249,7 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   // True if user has google account (not a guest or managed user).
   bool has_gaia_account() const;
 
-  void set_affiliation(bool is_affiliated) {
-    is_affiliated_ = is_affiliated;
-  }
+  virtual void SetAffiliation(bool is_affiliated);
 
  private:
   AccountId account_id_;

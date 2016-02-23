@@ -1042,7 +1042,7 @@ void UserSessionManager::UserProfileInitialized(Profile* profile,
     if (has_auth_cookies_) {
       const user_manager::User* user =
           user_manager::UserManager::Get()->FindUser(account_id);
-      if (user->is_affiliated()) {
+      if (user->IsAffiliated()) {
         CrosSettings::Get()->GetBoolean(
             kAccountsPrefTransferSAMLCookies,
             &transfer_saml_auth_cookies_on_subsequent_login);
