@@ -9,14 +9,12 @@ import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Queue;
 
 /**
  * A data structure that holds all the {@link Snackbar}s managed by {@link SnackbarManager}.
  */
 class SnackbarCollection {
-    private Deque<Snackbar> mStack = new LinkedList<>();
-    private Queue<Snackbar> mQueue = new LinkedList<>();
+    private Deque<Snackbar> mSnackbars = new LinkedList<>();
 
     /**
      * Adds a new snackbar to the collection. If the new snackbar is of
@@ -29,9 +27,9 @@ class SnackbarCollection {
             if (getCurrent() != null && !getCurrent().isTypeAction()) {
                 removeCurrent(false);
             }
-            mStack.push(snackbar);
+            mSnackbars.addFirst(snackbar);
         } else {
-            mQueue.offer(snackbar);
+            mSnackbars.addLast(snackbar);
         }
     }
 
@@ -44,7 +42,7 @@ class SnackbarCollection {
     }
 
     private Snackbar removeCurrent(boolean isAction) {
-        Snackbar current = !mStack.isEmpty() ? mStack.pop() : mQueue.poll();
+        Snackbar current = mSnackbars.pollFirst();
         if (current != null) {
             SnackbarController controller = current.getController();
             if (isAction) controller.onAction(current.getActionData());
@@ -57,11 +55,11 @@ class SnackbarCollection {
      * @return The snackbar that is currently displayed.
      */
     Snackbar getCurrent() {
-        return !mStack.isEmpty() ? mStack.peek() : mQueue.peek();
+        return mSnackbars.peekFirst();
     }
 
     boolean isEmpty() {
-        return mStack.isEmpty() && mQueue.isEmpty();
+        return mSnackbars.isEmpty();
     }
 
     void clear() {
@@ -80,15 +78,7 @@ class SnackbarCollection {
 
     boolean removeMatchingSnackbars(SnackbarController controller) {
         boolean snackbarRemoved = false;
-        Iterator<Snackbar> iter = mStack.iterator();
-        while (iter.hasNext()) {
-            Snackbar snackbar = iter.next();
-            if (snackbar.getController() == controller) {
-                iter.remove();
-                snackbarRemoved = true;
-            }
-        }
-        iter = mQueue.iterator();
+        Iterator<Snackbar> iter = mSnackbars.iterator();
         while (iter.hasNext()) {
             Snackbar snackbar = iter.next();
             if (snackbar.getController() == controller) {
@@ -101,16 +91,7 @@ class SnackbarCollection {
 
     boolean removeMatchingSnackbars(SnackbarController controller, Object data) {
         boolean snackbarRemoved = false;
-        Iterator<Snackbar> iter = mStack.iterator();
-        while (iter.hasNext()) {
-            Snackbar snackbar = iter.next();
-            if (snackbar.getController() == controller
-                    && objectsAreEqual(snackbar.getActionData(), data)) {
-                iter.remove();
-                snackbarRemoved = true;
-            }
-        }
-        iter = mQueue.iterator();
+        Iterator<Snackbar> iter = mSnackbars.iterator();
         while (iter.hasNext()) {
             Snackbar snackbar = iter.next();
             if (snackbar.getController() == controller
