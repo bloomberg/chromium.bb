@@ -19,6 +19,7 @@ include_rules = [
   "+content/shell/browser/shell_url_request_context_getter.h",
 
   # For device backend support.
+  "+device/bluetooth",
   "+device/core",
   "+device/hid",
   "+device/usb",

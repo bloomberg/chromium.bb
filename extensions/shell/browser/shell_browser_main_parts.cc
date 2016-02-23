@@ -50,6 +50,8 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/network/network_handler.h"
+#include "device/bluetooth/bluetooth_adapter_factory.h"
+#include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "extensions/shell/browser/shell_audio_controller_chromeos.h"
 #include "extensions/shell/browser/shell_network_controller_chromeos.h"
 #endif
@@ -103,6 +105,11 @@ void ShellBrowserMainParts::PostMainMessageLoopStart() {
   chromeos::DBusThreadManager::Initialize();
   chromeos::disks::DiskMountManager::Initialize();
 
+  bluez::BluezDBusManager::Initialize(
+      chromeos::DBusThreadManager::Get()->GetSystemBus(),
+      chromeos::DBusThreadManager::Get()->IsUsingStub(
+          chromeos::DBusClientBundle::BLUETOOTH));
+
   chromeos::NetworkHandler::Initialize();
   network_controller_.reset(new ShellNetworkController(
       base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(
@@ -112,7 +119,6 @@ void ShellBrowserMainParts::PostMainMessageLoopStart() {
       switches::kAppShellAllowRoaming)) {
     network_controller_->SetCellularAllowRoaming(true);
   }
-
 #else
   // Non-Chrome OS platforms are for developer convenience, so use a test IME.
   ui::InitializeInputMethodForTesting();
@@ -267,6 +273,8 @@ void ShellBrowserMainParts::PostDestroyThreads() {
   network_controller_.reset();
   chromeos::NetworkHandler::Shutdown();
   chromeos::disks::DiskMountManager::Shutdown();
+  device::BluetoothAdapterFactory::Shutdown();
+  bluez::BluezDBusManager::Shutdown();
   chromeos::DBusThreadManager::Shutdown();
 #endif
 }
