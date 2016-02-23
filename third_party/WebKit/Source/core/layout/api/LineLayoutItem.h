@@ -419,7 +419,8 @@ private:
     LayoutObject* m_layoutObject;
 
     friend class LineLayoutAPIShim;
-    friend class LineLayoutBlockFlow; // For layoutObject().
+    friend class LineLayoutBlockFlow;
+    friend class LineLayoutRubyRun;
 };
 
 } // namespace blink

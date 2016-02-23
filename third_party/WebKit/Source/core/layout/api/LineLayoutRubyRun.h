@@ -29,7 +29,7 @@ public:
 
     void getOverhang(bool firstLine, LineLayoutItem startLayoutItem, LineLayoutItem endLayoutItem, int& startOverhang, int& endOverhang) const
     {
-        toRubyRun()->getOverhang(firstLine, startLayoutItem, endLayoutItem, startOverhang, endOverhang);
+        toRubyRun()->getOverhang(firstLine, startLayoutItem.layoutObject(), endLayoutItem.layoutObject(), startOverhang, endOverhang);
     }
 
     LayoutRubyText* rubyText() const
