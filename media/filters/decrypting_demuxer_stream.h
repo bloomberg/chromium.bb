@@ -117,9 +117,6 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
   AudioDecoderConfig audio_config_;
   VideoDecoderConfig video_config_;
 
-  // Callback to request/cancel CDM ready notification.
-  SetCdmReadyCB set_cdm_ready_cb_;
-
   Decryptor* decryptor_;
 
   // The buffer returned by the demuxer that needs to be decrypted.

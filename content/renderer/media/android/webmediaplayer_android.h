@@ -299,7 +299,7 @@ class WebMediaPlayerAndroid
   // |cdm_ready_cb| provided.
   // If |cdm_ready_cb| is null, the existing callback will be fired with
   // NULL immediately and reset.
-  void SetCdmReadyCB(const media::CdmReadyCB& cdm_ready_cb);
+  void SetCdmReadyCB(const MediaSourceDelegate::CdmReadyCB& cdm_ready_cb);
 
   // Called when the ContentDecryptionModule has been attached to the
   // pipeline/decoders.
@@ -463,7 +463,7 @@ class WebMediaPlayerAndroid
   // side CDM will be used. This is similar to WebMediaPlayerImpl. For other key
   // systems, a browser side CDM will be used and we set CDM by calling
   // player_manager_->SetCdm() directly.
-  media::CdmReadyCB cdm_ready_cb_;
+  MediaSourceDelegate::CdmReadyCB cdm_ready_cb_;
 
   SkBitmap bitmap_;
 

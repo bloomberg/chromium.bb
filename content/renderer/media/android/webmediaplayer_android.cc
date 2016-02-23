@@ -1594,7 +1594,7 @@ void WebMediaPlayerAndroid::OnCdmAttached(
 }
 
 void WebMediaPlayerAndroid::SetCdmReadyCB(
-    const media::CdmReadyCB& cdm_ready_cb) {
+    const MediaSourceDelegate::CdmReadyCB& cdm_ready_cb) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(is_player_initialized_);
 

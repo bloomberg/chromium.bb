@@ -162,8 +162,6 @@ DecryptingDemuxerStream::~DecryptingDemuxerStream() {
     decryptor_->CancelDecrypt(GetDecryptorStreamType());
     decryptor_ = NULL;
   }
-  if (!set_cdm_ready_cb_.is_null())
-    base::ResetAndReturn(&set_cdm_ready_cb_).Run(CdmReadyCB());
   if (!init_cb_.is_null())
     base::ResetAndReturn(&init_cb_).Run(PIPELINE_ERROR_ABORT);
   if (!read_cb_.is_null())

@@ -148,7 +148,7 @@ void MediaSourceDelegate::InitializeMediaSource(
     const MediaSourceOpenedCB& media_source_opened_cb,
     const media::Demuxer::EncryptedMediaInitDataCB&
         encrypted_media_init_data_cb,
-    const media::SetCdmReadyCB& set_cdm_ready_cb,
+    const SetCdmReadyCB& set_cdm_ready_cb,
     const UpdateNetworkStateCB& update_network_state_cb,
     const DurationChangeCB& duration_change_cb,
     const base::Closure& waiting_for_decryption_key_cb) {
