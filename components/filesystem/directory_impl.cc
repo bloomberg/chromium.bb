@@ -68,29 +68,17 @@ void DirectoryImpl::OpenFile(const mojo::String& raw_path,
     return;
   }
 
-#if defined(OS_WIN)
-  // On Windows, FILE_FLAG_BACKUP_SEMANTICS is needed to open a directory.
-  if (base::DirectoryExists(path))
-    open_flags |= base::File::FLAG_BACKUP_SEMANTICS;
-#endif  // OS_WIN
-
-  base::File base_file(path, open_flags);
-  if (!base_file.IsValid()) {
-    callback.Run(GetError(base_file));
-    return;
-  }
-
-  base::File::Info info;
-  if (!base_file.GetInfo(&info)) {
-    callback.Run(FileError::FAILED);
-    return;
-  }
-
-  if (info.is_directory) {
+  if (base::DirectoryExists(path)) {
     // We must not return directories as files. In the file abstraction, we can
     // fetch raw file descriptors over mojo pipes, and passing a file
     // descriptor to a directory is a sandbox escape on Windows.
     callback.Run(FileError::NOT_A_FILE);
+    return;
+  }
+
+  base::File base_file(path, open_flags);
+  if (!base_file.IsValid()) {
+    callback.Run(GetError(base_file));
     return;
   }
 
@@ -110,29 +98,17 @@ void DirectoryImpl::OpenFileHandle(const mojo::String& raw_path,
     return;
   }
 
-#if defined(OS_WIN)
-  // On Windows, FILE_FLAG_BACKUP_SEMANTICS is needed to open a directory.
-  if (base::DirectoryExists(path))
-    open_flags |= base::File::FLAG_BACKUP_SEMANTICS;
-#endif  // OS_WIN
-
-  base::File base_file(path, open_flags);
-  if (!base_file.IsValid()) {
-    callback.Run(GetError(base_file), ScopedHandle());
-    return;
-  }
-
-  base::File::Info info;
-  if (!base_file.GetInfo(&info)) {
-    callback.Run(FileError::FAILED, ScopedHandle());
-    return;
-  }
-
-  if (info.is_directory) {
+  if (base::DirectoryExists(path)) {
     // We must not return directories as files. In the file abstraction, we can
     // fetch raw file descriptors over mojo pipes, and passing a file
     // descriptor to a directory is a sandbox escape on Windows.
     callback.Run(FileError::NOT_A_FILE, ScopedHandle());
+    return;
+  }
+
+  base::File base_file(path, open_flags);
+  if (!base_file.IsValid()) {
+    callback.Run(GetError(base_file), ScopedHandle());
     return;
   }
 

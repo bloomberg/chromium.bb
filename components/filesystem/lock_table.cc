@@ -14,6 +14,7 @@ LockTable::~LockTable() {}
 
 base::File::Error LockTable::LockFile(FileImpl* file) {
   DCHECK(file->IsValid());
+  DCHECK(file->path().IsAbsolute());
 
   auto it = locked_files_.find(file->path());
   if (it != locked_files_.end()) {
@@ -34,14 +35,14 @@ base::File::Error LockTable::LockFile(FileImpl* file) {
 base::File::Error LockTable::UnlockFile(FileImpl* file) {
   auto it = locked_files_.find(file->path());
   if (it != locked_files_.end()) {
-    locked_files_.erase(it);
-
     base::File::Error lock_err = file->RawUnlockFile();
     if (lock_err != base::File::FILE_OK) {
       // TODO(erg): When can we fail to release a lock?
       NOTREACHED();
       return lock_err;
     }
+
+    locked_files_.erase(it);
   }
 
   return base::File::FILE_OK;

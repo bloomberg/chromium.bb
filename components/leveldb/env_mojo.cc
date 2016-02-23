@@ -43,7 +43,7 @@ class MojoFileLock : public FileLock {
       : fname_(name), lock_(lock) {}
   ~MojoFileLock() override { DCHECK(!lock_); }
 
-  const std::string& name() { return fname_; }
+  const std::string& name() const { return fname_; }
 
   LevelDBFileThread::OpaqueLock* TakeLock() {
     LevelDBFileThread::OpaqueLock* to_return = lock_;
@@ -175,9 +175,6 @@ class MojoWritableFile : public leveldb::WritableFile {
       return MakeIOError(filename_, base::File::ErrorToString(error),
                          leveldb_env::kWritableFileSync, error);
     }
-
-    // TODO(erg): In the leveldb_env::ChromiumEnv, there is a whole system
-    // which makes backups of the data here. crbug.com/587185
 
     // leveldb's implicit contract for Sync() is that if this instance is for a
     // manifest file then the directory is also sync'ed. See leveldb's
