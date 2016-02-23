@@ -65,13 +65,9 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
       net::URLRequestContextGetter* request_context_getter);
 
 #if !defined(OS_ANDROID)
-  // Creates a CmaMediaPipelineClient which is responsible to create (CMA
-  // backend)
-  // for media playback and watch media pipeline status, called once per media
-  // player
-  // instance.
-  virtual scoped_refptr<media::CmaMediaPipelineClient>
-  CreateCmaMediaPipelineClient();
+  // Returns CmaMediaPipelineClient which is responsible to create
+  // CMA backend for media playback and watch media pipeline status.
+  scoped_refptr<media::CmaMediaPipelineClient> GetCmaMediaPipelineClient();
 #endif
 
   // Performs cleanup for process exit (but before AtExitManager cleanup).
@@ -164,9 +160,8 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   CastContentBrowserClient();
 
 #if !defined(OS_ANDROID)
-  media::CmaMediaPipelineClient* cma_media_pipeline_client() const {
-    return cma_media_pipeline_client_.get();
-  }
+  virtual scoped_refptr<media::CmaMediaPipelineClient>
+  CreateCmaMediaPipelineClient();
 #endif  // !defined(OS_ANDROID)
 
   URLRequestContextFactory* url_request_context_factory() const {

@@ -73,7 +73,7 @@ static scoped_ptr<mojo::ShellClient> CreateCastMojoMediaApplication(
     CastContentBrowserClient* browser_client) {
   scoped_ptr<::media::MojoMediaClient> mojo_media_client(
       new media::CastMojoMediaClient(
-          browser_client->CreateCmaMediaPipelineClient()));
+          browser_client->GetCmaMediaPipelineClient()));
   return scoped_ptr<mojo::ShellClient>(
       new ::media::MojoMediaApplication(std::move(mojo_media_client)));
 }
@@ -107,8 +107,10 @@ scoped_ptr<CastService> CastContentBrowserClient::CreateCastService(
 
 #if !defined(OS_ANDROID)
 scoped_refptr<media::CmaMediaPipelineClient>
-CastContentBrowserClient::CreateCmaMediaPipelineClient() {
-  return make_scoped_refptr(new media::CmaMediaPipelineClient());
+CastContentBrowserClient::GetCmaMediaPipelineClient() {
+  if (!cma_media_pipeline_client_.get())
+    cma_media_pipeline_client_ = CreateCmaMediaPipelineClient();
+  return cma_media_pipeline_client_;
 }
 #endif  // OS_ANDROID
 
@@ -142,11 +144,9 @@ content::BrowserMainParts* CastContentBrowserClient::CreateBrowserMainParts(
 void CastContentBrowserClient::RenderProcessWillLaunch(
     content::RenderProcessHost* host) {
 #if !defined(OS_ANDROID)
-  if (!cma_media_pipeline_client_.get())
-    cma_media_pipeline_client_ = CreateCmaMediaPipelineClient();
   scoped_refptr<media::CmaMessageFilterHost> cma_message_filter(
       new media::CmaMessageFilterHost(host->GetID(),
-                                      cma_media_pipeline_client_));
+                                      GetCmaMediaPipelineClient()));
   host->AddFilter(cma_message_filter.get());
 #endif  // !defined(OS_ANDROID)
 
@@ -160,6 +160,13 @@ void CastContentBrowserClient::RenderProcessWillLaunch(
       base::Bind(&CastContentBrowserClient::AddNetworkHintsMessageFilter,
                  base::Unretained(this), host->GetID()));
 }
+
+#if !defined(OS_ANDROID)
+scoped_refptr<media::CmaMediaPipelineClient>
+CastContentBrowserClient::CreateCmaMediaPipelineClient() {
+  return make_scoped_refptr(new media::CmaMediaPipelineClient());
+}
+#endif  // OS_ANDROID
 
 void CastContentBrowserClient::AddNetworkHintsMessageFilter(
     int render_process_id, net::URLRequestContext* context) {
