@@ -81,22 +81,6 @@ source_set("prefix_set") {
   ]
 }
 
-source_set("v4_get_hash_protocol_manager") {
-  sources = [
-    "v4_get_hash_protocol_manager.cc",
-    "v4_get_hash_protocol_manager.h",
-  ]
-  public_deps = [
-    ":proto",
-  ]
-  deps = [
-    ":util",
-    "//base",
-    "//net",
-    "//url:url",
-  ]
-}
-
 source_set("remote_database_manager") {
   sources = [
     "remote_database_manager.cc",
@@ -164,18 +148,49 @@ source_set("test_database_manager") {
   ]
 }
 
+source_set("v4_get_hash_protocol_manager") {
+  sources = [
+    "v4_get_hash_protocol_manager.cc",
+    "v4_get_hash_protocol_manager.h",
+  ]
+  public_deps = [
+    ":proto",
+  ]
+  deps = [
+    ":util",
+    ":v4_protocol_manager_util",
+    "//base",
+    "//net",
+    "//url:url",
+  ]
+}
+
+source_set("v4_protocol_manager_util") {
+  sources = [
+    "v4_protocol_manager_util.cc",
+    "v4_protocol_manager_util.h",
+  ]
+  deps = [
+    "//base",
+    "//net",
+    "//url:url",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
     "prefix_set_unittest.cc",
     "util_unittest.cc",
     "v4_get_hash_protocol_manager_unittest.cc",
+    "v4_protocol_manager_util_unittest.cc",
   ]
   deps = [
     ":prefix_set",
     ":proto",
     ":util",
     ":v4_get_hash_protocol_manager",
+    ":v4_protocol_manager_util",
     "//base",
     "//net",
     "//net:test_support",

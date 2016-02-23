@@ -33,7 +33,7 @@ namespace safe_browsing {
 class SafeBrowsingV4GetHashProtocolManagerTest : public testing::Test {
  protected:
   scoped_ptr<V4GetHashProtocolManager> CreateProtocolManager() {
-    V4GetHashProtocolConfig config;
+    V4ProtocolConfig config;
     config.client_name = kClient;
     config.version = kAppVer;
     config.key_param = kKeyParam;
@@ -161,86 +161,6 @@ TEST_F(SafeBrowsingV4GetHashProtocolManagerTest, TestGetHashErrorHandlingOK) {
   // No error, back off multiplier is unchanged.
   EXPECT_EQ(0ul, pm->gethash_error_count_);
   EXPECT_EQ(1ul, pm->gethash_back_off_mult_);
-}
-
-TEST_F(SafeBrowsingV4GetHashProtocolManagerTest, TestGetHashBackOffTimes) {
-  scoped_ptr<V4GetHashProtocolManager> pm(CreateProtocolManager());
-
-  // No errors or back off time yet.
-  EXPECT_EQ(0U, pm->gethash_error_count_);
-  EXPECT_EQ(1U, pm->gethash_back_off_mult_);
-  Time now = Time::Now();
-  EXPECT_TRUE(pm->next_gethash_time_ < now);
-
-  // 1 error.
-  pm->HandleGetHashError(now);
-  EXPECT_EQ(1U, pm->gethash_error_count_);
-  EXPECT_EQ(1U, pm->gethash_back_off_mult_);
-  EXPECT_LE(now + TimeDelta::FromMinutes(15), pm->next_gethash_time_);
-  EXPECT_GE(now + TimeDelta::FromMinutes(30), pm->next_gethash_time_);
-
-  // 2 errors.
-  pm->HandleGetHashError(now);
-  EXPECT_EQ(2U, pm->gethash_error_count_);
-  EXPECT_EQ(2U, pm->gethash_back_off_mult_);
-  EXPECT_LE(now + TimeDelta::FromMinutes(30), pm->next_gethash_time_);
-  EXPECT_GE(now + TimeDelta::FromMinutes(60), pm->next_gethash_time_);
-
-  // 3 errors.
-  pm->HandleGetHashError(now);
-  EXPECT_EQ(3U, pm->gethash_error_count_);
-  EXPECT_EQ(4U, pm->gethash_back_off_mult_);
-  EXPECT_LE(now + TimeDelta::FromMinutes(60), pm->next_gethash_time_);
-  EXPECT_GE(now + TimeDelta::FromMinutes(120), pm->next_gethash_time_);
-
-  // 4 errors.
-  pm->HandleGetHashError(now);
-  EXPECT_EQ(4U, pm->gethash_error_count_);
-  EXPECT_EQ(8U, pm->gethash_back_off_mult_);
-  EXPECT_LE(now + TimeDelta::FromMinutes(120), pm->next_gethash_time_);
-  EXPECT_GE(now + TimeDelta::FromMinutes(240), pm->next_gethash_time_);
-
-  // 5 errors.
-  pm->HandleGetHashError(now);
-  EXPECT_EQ(5U, pm->gethash_error_count_);
-  EXPECT_EQ(16U, pm->gethash_back_off_mult_);
-  EXPECT_LE(now + TimeDelta::FromMinutes(240), pm->next_gethash_time_);
-  EXPECT_GE(now + TimeDelta::FromMinutes(480), pm->next_gethash_time_);
-
-  // 6 errors.
-  pm->HandleGetHashError(now);
-  EXPECT_EQ(6U, pm->gethash_error_count_);
-  EXPECT_EQ(32U, pm->gethash_back_off_mult_);
-  EXPECT_LE(now + TimeDelta::FromMinutes(480), pm->next_gethash_time_);
-  EXPECT_GE(now + TimeDelta::FromMinutes(960), pm->next_gethash_time_);
-
-  // 7 errors.
-  pm->HandleGetHashError(now);
-  EXPECT_EQ(7U, pm->gethash_error_count_);
-  EXPECT_EQ(64U, pm->gethash_back_off_mult_);
-  EXPECT_LE(now + TimeDelta::FromMinutes(960), pm->next_gethash_time_);
-  EXPECT_GE(now + TimeDelta::FromMinutes(1920), pm->next_gethash_time_);
-
-  // 8 errors, reached max backoff.
-  pm->HandleGetHashError(now);
-  EXPECT_EQ(8U, pm->gethash_error_count_);
-  EXPECT_EQ(128U, pm->gethash_back_off_mult_);
-  EXPECT_EQ(now + TimeDelta::FromHours(24), pm->next_gethash_time_);
-
-  // 9 errors, reached max backoff and multiplier capped.
-  pm->HandleGetHashError(now);
-  EXPECT_EQ(9U, pm->gethash_error_count_);
-  EXPECT_EQ(128U, pm->gethash_back_off_mult_);
-  EXPECT_EQ(now + TimeDelta::FromHours(24), pm->next_gethash_time_);
-}
-
-TEST_F(SafeBrowsingV4GetHashProtocolManagerTest, TestGetHashUrl) {
-  scoped_ptr<V4GetHashProtocolManager> pm(CreateProtocolManager());
-
-  EXPECT_EQ(
-      "https://safebrowsing.googleapis.com/v4/encodedFullHashes/request_base64?"
-      "alt=proto&client_id=unittest&client_version=1.0&key=test_key_param",
-      pm->GetHashUrl("request_base64").spec());
 }
 
 TEST_F(SafeBrowsingV4GetHashProtocolManagerTest, TestGetHashRequest) {

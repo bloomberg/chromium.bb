@@ -94,12 +94,12 @@ void RemoteSafeBrowsingDatabaseManager::ClientRequest::OnRequestDone(
 
 // TODO(nparker): Add more tests for this class
 RemoteSafeBrowsingDatabaseManager::RemoteSafeBrowsingDatabaseManager()
-    : RemoteSafeBrowsingDatabaseManager(NULL, V4GetHashProtocolConfig()) {
+    : RemoteSafeBrowsingDatabaseManager(NULL, V4ProtocolConfig()) {
 }
 
 RemoteSafeBrowsingDatabaseManager::RemoteSafeBrowsingDatabaseManager(
       net::URLRequestContextGetter* request_context_getter,
-      const V4GetHashProtocolConfig& config)
+      const V4ProtocolConfig& config)
     : SafeBrowsingDatabaseManager(request_context_getter, config),
       enabled_(false) {
   // Decide which resource types to check. These two are the minimum.

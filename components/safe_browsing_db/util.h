@@ -84,9 +84,6 @@ struct SBCachedFullHashResult {
   std::vector<SBFullHashResult> full_hashes;
 };
 
-// Safe Browsing V4 server URL prefix.
-extern const char kSbV4UrlPrefix[];
-
 // SafeBrowsing list names.
 extern const char kMalwareList[];
 extern const char kPhishingList[];

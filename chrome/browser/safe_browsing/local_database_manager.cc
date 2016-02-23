@@ -272,13 +272,13 @@ void LocalSafeBrowsingDatabaseManager::SafeBrowsingCheck::
 
 LocalSafeBrowsingDatabaseManager::LocalSafeBrowsingDatabaseManager(
     const scoped_refptr<SafeBrowsingService>& service) :
-    LocalSafeBrowsingDatabaseManager(service, NULL, V4GetHashProtocolConfig()) {
+    LocalSafeBrowsingDatabaseManager(service, NULL, V4ProtocolConfig()) {
 }
 
 LocalSafeBrowsingDatabaseManager::LocalSafeBrowsingDatabaseManager(
     const scoped_refptr<SafeBrowsingService>& service,
     net::URLRequestContextGetter* request_context_getter,
-    const V4GetHashProtocolConfig& config)
+    const V4ProtocolConfig& config)
     : SafeBrowsingDatabaseManager(request_context_getter, config),
       sb_service_(service),
       database_(NULL),

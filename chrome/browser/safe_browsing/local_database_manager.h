@@ -41,7 +41,7 @@ class SafeBrowsingService;
 class SafeBrowsingDatabase;
 class ClientSideDetectionService;
 class DownloadProtectionService;
-struct V4GetHashProtocolConfig;
+struct V4ProtocolConfig;
 
 // Implemetation that manages a local database on disk.
 //
@@ -109,7 +109,7 @@ class LocalSafeBrowsingDatabaseManager
   LocalSafeBrowsingDatabaseManager(
       const scoped_refptr<SafeBrowsingService>& service,
       net::URLRequestContextGetter* request_context_getter,
-      const V4GetHashProtocolConfig& config);
+      const V4ProtocolConfig& config);
 
   //
   // SafeBrowsingDatabaseManager overrides

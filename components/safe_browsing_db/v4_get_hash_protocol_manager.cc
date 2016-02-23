@@ -7,23 +7,14 @@
 #include <utility>
 
 #include "base/base64.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
-#include "base/rand_util.h"
-#include "base/stl_util.h"
-#include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/timer/timer.h"
-#include "net/base/escape.h"
 #include "net/base/load_flags.h"
-#include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_status.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -55,13 +46,13 @@ enum ParseResultType {
 
   // Memory space for histograms is determined by the max.  ALWAYS
   // ADD NEW VALUES BEFORE THIS ONE.
-  PARSE_GET_HASH_RESULT_MAX = 6
+  PARSE_RESULT_TYPE_MAX = 6
 };
 
 // Record parsing errors of a GetHash result.
 void RecordParseGetHashResult(ParseResultType result_type) {
   UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.ParseV4HashResult", result_type,
-                            PARSE_GET_HASH_RESULT_MAX);
+                            PARSE_RESULT_TYPE_MAX);
 }
 
 }  // namespace
@@ -79,7 +70,7 @@ class V4GetHashProtocolManagerFactoryImpl
   ~V4GetHashProtocolManagerFactoryImpl() override {}
   V4GetHashProtocolManager* CreateProtocolManager(
       net::URLRequestContextGetter* request_context_getter,
-      const V4GetHashProtocolConfig& config) override {
+      const V4ProtocolConfig& config) override {
     return new V4GetHashProtocolManager(request_context_getter, config);
   }
 
@@ -95,34 +86,10 @@ V4GetHashProtocolManagerFactory* V4GetHashProtocolManager::factory_ = NULL;
 // static
 V4GetHashProtocolManager* V4GetHashProtocolManager::Create(
     net::URLRequestContextGetter* request_context_getter,
-    const V4GetHashProtocolConfig& config) {
+    const V4ProtocolConfig& config) {
   if (!factory_)
     factory_ = new V4GetHashProtocolManagerFactoryImpl();
   return factory_->CreateProtocolManager(request_context_getter, config);
-}
-
-// static
-// Backoff interval is MIN(((2^(n-1))*15 minutes) * (RAND + 1), 24 hours) where
-// n is the number of consecutive errors.
-base::TimeDelta V4GetHashProtocolManager::GetNextBackOffInterval(
-    size_t* error_count,
-    size_t* multiplier) {
-  DCHECK(multiplier && error_count);
-  (*error_count)++;
-  if (*error_count > 1 && *error_count < 9) {
-    // With error count 9 and above we will hit the 24 hour max interval.
-    // Cap the multiplier here to prevent integer overflow errors.
-    *multiplier *= 2;
-  }
-  base::TimeDelta next =
-      base::TimeDelta::FromMinutes(*multiplier * (1 + base::RandDouble()) * 15);
-
-  base::TimeDelta day = base::TimeDelta::FromHours(24);
-
-  if (next < day)
-    return next;
-  else
-    return day;
 }
 
 void V4GetHashProtocolManager::ResetGetHashErrors() {
@@ -132,30 +99,19 @@ void V4GetHashProtocolManager::ResetGetHashErrors() {
 
 V4GetHashProtocolManager::V4GetHashProtocolManager(
     net::URLRequestContextGetter* request_context_getter,
-    const V4GetHashProtocolConfig& config)
+    const V4ProtocolConfig& config)
     : gethash_error_count_(0),
       gethash_back_off_mult_(1),
       next_gethash_time_(Time::FromDoubleT(0)),
-      version_(config.version),
-      client_name_(config.client_name),
-      key_param_(config.key_param),
+      config_(config),
       request_context_getter_(request_context_getter),
       url_fetcher_id_(0) {
-  DCHECK(!version_.empty());
 }
 
 // static
 void V4GetHashProtocolManager::RecordGetHashResult(ResultType result_type) {
   UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.GetV4HashResult", result_type,
                             GET_HASH_RESULT_MAX);
-}
-
-void V4GetHashProtocolManager::RecordHttpResponseOrErrorCode(
-    const char* metric_name,
-    const net::URLRequestStatus& status,
-    int response_code) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY(
-      metric_name, status.is_success() ? response_code : status.error());
 }
 
 V4GetHashProtocolManager::~V4GetHashProtocolManager() {
@@ -338,8 +294,8 @@ void V4GetHashProtocolManager::OnURLFetchComplete(
 
   int response_code = source->GetResponseCode();
   net::URLRequestStatus status = source->GetStatus();
-  RecordHttpResponseOrErrorCode(kUmaV4HashResponseMetricName, status,
-                                response_code);
+  V4ProtocolManagerUtil::RecordHttpResponseOrErrorCode(
+      kUmaV4HashResponseMetricName, status, response_code);
 
   const FullHashCallback& callback = it->second;
   std::vector<SBFullHashResult> full_hashes;
@@ -377,39 +333,15 @@ void V4GetHashProtocolManager::OnURLFetchComplete(
 
 void V4GetHashProtocolManager::HandleGetHashError(const Time& now) {
   DCHECK(CalledOnValidThread());
-  base::TimeDelta next =
-      GetNextBackOffInterval(&gethash_error_count_, &gethash_back_off_mult_);
+  base::TimeDelta next = V4ProtocolManagerUtil::GetNextBackOffInterval(
+      &gethash_error_count_, &gethash_back_off_mult_);
   next_gethash_time_ = now + next;
 }
 
-// The API hash call uses the pver4 Safe Browsing server.
-GURL V4GetHashProtocolManager::GetHashUrl(
-    const std::string& request_base64) const {
-  std::string url =
-      ComposePver4Url(kSbV4UrlPrefix, "encodedFullHashes", request_base64,
-                      client_name_, version_, key_param_);
-  return GURL(url);
+GURL V4GetHashProtocolManager::GetHashUrl(const std::string& req_base64) const {
+  return V4ProtocolManagerUtil::GetRequestUrl(req_base64, "encodedFullHashes",
+                                              config_);
 }
 
-// static
-std::string V4GetHashProtocolManager::ComposePver4Url(
-    const std::string& prefix,
-    const std::string& method,
-    const std::string& request_base64,
-    const std::string& client_id,
-    const std::string& version,
-    const std::string& key_param) {
-  DCHECK(!prefix.empty() && !method.empty() && !client_id.empty() &&
-         !version.empty());
-  std::string url =
-      base::StringPrintf("%s/%s/%s?alt=proto&client_id=%s&client_version=%s",
-                         prefix.c_str(), method.c_str(), request_base64.c_str(),
-                         client_id.c_str(), version.c_str());
-  if (!key_param.empty()) {
-    base::StringAppendF(&url, "&key=%s",
-                        net::EscapeQueryParamValue(key_param, true).c_str());
-  }
-  return url;
-}
 
 }  // namespace safe_browsing

@@ -11,12 +11,12 @@
 namespace safe_browsing {
 
 SafeBrowsingDatabaseManager::SafeBrowsingDatabaseManager()
-    : SafeBrowsingDatabaseManager(NULL, V4GetHashProtocolConfig()) {
+    : SafeBrowsingDatabaseManager(NULL, V4ProtocolConfig()) {
 }
 
 SafeBrowsingDatabaseManager::SafeBrowsingDatabaseManager(
     net::URLRequestContextGetter* request_context_getter,
-    const V4GetHashProtocolConfig& config) {
+    const V4ProtocolConfig& config) {
   // Instantiate a V4GetHashProtocolManager.
   if (request_context_getter) {
     v4_get_hash_protocol_manager_.reset(V4GetHashProtocolManager::Create(

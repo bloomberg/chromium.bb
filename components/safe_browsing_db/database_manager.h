@@ -26,7 +26,7 @@ class URLRequestContextGetter;
 
 namespace safe_browsing {
 
-struct V4GetHashProtocolConfig;
+struct V4ProtocolConfig;
 class V4GetHashProtocolManager;
 
 // Base class to either the locally-managed or a remotely-managed database.
@@ -175,7 +175,7 @@ class SafeBrowsingDatabaseManager
   // Constructs the database manager.
   SafeBrowsingDatabaseManager(
       net::URLRequestContextGetter* request_context_getter,
-      const V4GetHashProtocolConfig& config);
+      const V4ProtocolConfig& config);
 
   virtual ~SafeBrowsingDatabaseManager();
 

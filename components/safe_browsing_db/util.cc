@@ -39,9 +39,6 @@ SBCachedFullHashResult::SBCachedFullHashResult(
 
 SBCachedFullHashResult::~SBCachedFullHashResult() {}
 
-// The Safe Browsing V4 server URL prefix.
-const char kSbV4UrlPrefix[] = "https://safebrowsing.googleapis.com/v4";
-
 // Listnames that browser can process.
 const char kMalwareList[] = "goog-malware-shavar";
 const char kPhishingList[] = "goog-phish-shavar";

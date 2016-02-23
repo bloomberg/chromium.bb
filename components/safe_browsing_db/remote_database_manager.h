@@ -24,7 +24,7 @@ class URLRequestContextGetter;
 
 namespace safe_browsing {
 
-struct V4GetHashProtocolConfig;
+struct V4ProtocolConfig;
 
 // An implementation that proxies requests to a service outside of Chromium.
 // Does not manage a local database.
@@ -37,7 +37,7 @@ class RemoteSafeBrowsingDatabaseManager : public SafeBrowsingDatabaseManager {
   // Must be initialized by calling StartOnIOThread() before using.
   RemoteSafeBrowsingDatabaseManager(
       net::URLRequestContextGetter* request_context_getter,
-      const V4GetHashProtocolConfig& config);
+      const V4ProtocolConfig& config);
 
   //
   // SafeBrowsingDatabaseManager implementation

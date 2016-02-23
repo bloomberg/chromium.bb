@@ -58,7 +58,7 @@ class SafeBrowsingProtocolManagerDelegate;
 class SafeBrowsingServiceFactory;
 class SafeBrowsingUIManager;
 class SafeBrowsingURLRequestContextGetter;
-struct V4GetHashProtocolConfig;
+struct V4ProtocolConfig;
 
 #if defined(FULL_SAFE_BROWSING)
 class IncidentReportingService;
@@ -105,7 +105,7 @@ class SafeBrowsingService
   virtual SafeBrowsingProtocolConfig GetProtocolConfig() const;
 
   // Create a v4 protocol config struct.
-  virtual V4GetHashProtocolConfig GetV4GetHashProtocolConfig() const;
+  virtual V4ProtocolConfig GetV4ProtocolConfig() const;
 
   // Returns the client_name field for both V3 and V4 protocol manager configs.
   std::string GetProtocolConfigClientName() const;

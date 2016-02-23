@@ -402,7 +402,7 @@ SafeBrowsingUIManager* SafeBrowsingService::CreateUIManager() {
 }
 
 SafeBrowsingDatabaseManager* SafeBrowsingService::CreateDatabaseManager() {
-  V4GetHashProtocolConfig config = GetV4GetHashProtocolConfig();
+  V4ProtocolConfig config = GetV4ProtocolConfig();
 #if defined(SAFE_BROWSING_DB_LOCAL)
   return new LocalSafeBrowsingDatabaseManager(this, NULL, config);
 #elif defined(SAFE_BROWSING_DB_REMOTE)
@@ -446,9 +446,9 @@ SafeBrowsingProtocolConfig SafeBrowsingService::GetProtocolConfig() const {
   return config;
 }
 
-V4GetHashProtocolConfig
-SafeBrowsingService::GetV4GetHashProtocolConfig() const {
-  V4GetHashProtocolConfig config;
+V4ProtocolConfig
+SafeBrowsingService::GetV4ProtocolConfig() const {
+  V4ProtocolConfig config;
   config.client_name = GetProtocolConfigClientName();
   config.version = SafeBrowsingProtocolManagerHelper::Version();
   config.key_param = google_apis::GetAPIKey();;

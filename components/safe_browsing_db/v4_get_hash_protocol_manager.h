@@ -15,7 +15,6 @@
 #include <string>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -24,8 +23,8 @@
 #include "base/timer/timer.h"
 #include "components/safe_browsing_db/safebrowsing.pb.h"
 #include "components/safe_browsing_db/util.h"
+#include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -34,13 +33,6 @@ class URLRequestContextGetter;
 }  // namespace net
 
 namespace safe_browsing {
-
-// Config passed to the constructor of a V4GetHashProtocolManager.
-struct V4GetHashProtocolConfig {
-  std::string client_name;
-  std::string version;
-  std::string key_param;
-};
 
 class V4GetHashProtocolManagerFactory;
 
@@ -67,7 +59,7 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate,
   // Create an instance of the safe browsing v4 protocol manager.
   static V4GetHashProtocolManager* Create(
       net::URLRequestContextGetter* request_context_getter,
-      const V4GetHashProtocolConfig& config);
+      const V4ProtocolConfig& config);
 
   // net::URLFetcherDelegate interface.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
@@ -116,24 +108,14 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate,
   // Record a GetHash result.
   static void RecordGetHashResult(ResultType result_type);
 
-  // Record HTTP response code when there's no error in fetching an HTTP
-  // request, and the error code, when there is.
-  // |metric_name| is the name of the UMA metric to record the response code or
-  // error code against, |status| represents the status of the HTTP request, and
-  // |response code| represents the HTTP response code received from the server.
-  static void RecordHttpResponseOrErrorCode(const char* metric_name,
-                                            const net::URLRequestStatus& status,
-                                            int response_code);
-
  protected:
   // Constructs a V4GetHashProtocolManager that issues
   // network requests using |request_context_getter|.
-  V4GetHashProtocolManager(net::URLRequestContextGetter* request_context_getter,
-                           const V4GetHashProtocolConfig& config);
+  V4GetHashProtocolManager(
+      net::URLRequestContextGetter* request_context_getter,
+      const V4ProtocolConfig& config);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4GetHashProtocolManagerTest,
-                           TestGetHashUrl);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4GetHashProtocolManagerTest,
                            TestGetHashRequest);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4GetHashProtocolManagerTest,
@@ -147,8 +129,6 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate,
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4GetHashProtocolManagerTest,
                            TestParseHashResponseInconsistentThreatTypes);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4GetHashProtocolManagerTest,
-                           TestGetHashBackOffTimes);
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4GetHashProtocolManagerTest,
                            TestGetHashErrorHandlingOK);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4GetHashProtocolManagerTest,
                            TestGetHashErrorHandlingNetwork);
@@ -156,9 +136,6 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate,
                            TestGetHashErrorHandlingResponseCode);
   friend class V4GetHashProtocolManagerFactoryImpl;
 
-  // Generates GetHashWithApis Pver4 request URL for retrieving full hashes.
-  // |request_base64| is the serialized FindFullHashesRequest protocol buffer
-  // encoded in base 64.
   GURL GetHashUrl(const std::string& request_base64) const;
 
   // Fills a FindFullHashesRequest protocol buffer for a request.
@@ -166,16 +143,6 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate,
   std::string GetHashRequest(const std::vector<SBPrefix>& prefixes,
                              const std::vector<PlatformType>& platforms,
                              ThreatType threat_type);
-
-  // Composes a URL using |prefix|, |method| (e.g.: encodedFullHashes).
-  // |request_base64|, |client_id|, |version| and |key_param|. |prefix|
-  // should contain the entire url prefix including scheme, host and path.
-  static std::string ComposePver4Url(const std::string& prefix,
-                                     const std::string& method,
-                                     const std::string& request_base64,
-                                     const std::string& client_id,
-                                     const std::string& version,
-                                     const std::string& key_param);
 
   // Parses a FindFullHashesResponse protocol buffer and fills the results in
   // |full_hashes| and |negative_cache_duration|. |data| is a serialized
@@ -185,12 +152,6 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate,
   bool ParseHashResponse(const std::string& data_base64,
                          std::vector<SBFullHashResult>* full_hashes,
                          base::TimeDelta* negative_cache_duration);
-
-  // Worker function for calculating the GetHash backoff times.
-  // |multiplier| is doubled for each consecutive error after the
-  // first, and |error_count| is incremented with each call.
-  static base::TimeDelta GetNextBackOffInterval(size_t* error_count,
-                                                size_t* multiplier);
 
   // Resets the gethash error counter and multiplier.
   void ResetGetHashErrors();
@@ -226,14 +187,8 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate,
   // successful.
   base::Time next_gethash_time_;
 
-  // Current product version sent in each request.
-  std::string version_;
-
-  // The safe browsing client name sent in each request.
-  std::string client_name_;
-
-  // The Google API key.
-  std::string key_param_;
+  // The config of the client making Pver4 requests.
+  const V4ProtocolConfig config_;
 
   // The context we use to issue network requests.
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
@@ -251,7 +206,7 @@ class V4GetHashProtocolManagerFactory {
   virtual ~V4GetHashProtocolManagerFactory() {}
   virtual V4GetHashProtocolManager* CreateProtocolManager(
       net::URLRequestContextGetter* request_context_getter,
-      const V4GetHashProtocolConfig& config) = 0;
+      const V4ProtocolConfig& config) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(V4GetHashProtocolManagerFactory);
