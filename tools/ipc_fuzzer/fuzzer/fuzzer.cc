@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/shared_memory_handle.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "ipc/ipc_message.h"
@@ -451,6 +452,18 @@ struct FuzzTraits<base::NullableString16> {
     return true;
   }
 };
+
+#if defined(OS_WIN) || defined(OS_MACOSX)
+template <>
+struct FuzzTraits<base::SharedMemoryHandle> {
+  static bool Fuzz(base::SharedMemoryHandle* p, Fuzzer* fuzzer) {
+    // This generates an invalid SharedMemoryHandle. Generating a valid
+    // SharedMemoryHandle requires setting/knowing state in both the sending and
+    // receiving process, which is not currently possible.
+    return true;
+  }
+};
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
 template <>
 struct FuzzTraits<base::Time> {
