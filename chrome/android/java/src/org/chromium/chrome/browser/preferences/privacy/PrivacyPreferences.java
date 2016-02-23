@@ -276,13 +276,13 @@ public class PrivacyPreferences extends PreferenceFragment
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         menu.clear();
         MenuItem help = menu.add(
-                Menu.NONE, R.id.menu_id_help_privacy, Menu.NONE, R.string.menu_help);
+                Menu.NONE, R.id.menu_id_targeted_help, Menu.NONE, R.string.menu_help);
         help.setIcon(R.drawable.ic_help_and_feedback);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.menu_id_help_privacy) {
+        if (item.getItemId() == R.id.menu_id_targeted_help) {
             HelpAndFeedback.getInstance(getActivity())
                     .show(getActivity(), getString(R.string.help_context_privacy),
                             Profile.getLastUsedProfile(), null);

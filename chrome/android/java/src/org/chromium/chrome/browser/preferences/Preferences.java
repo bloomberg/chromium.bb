@@ -191,7 +191,7 @@ public class Preferences extends AppCompatActivity implements
         super.onCreateOptionsMenu(menu);
         // By default, every screen in Settings shows a "Help & feedback" menu item.
         MenuItem help = menu.add(
-                Menu.NONE, R.id.menu_id_help_general, Menu.CATEGORY_SECONDARY, R.string.menu_help);
+                Menu.NONE, R.id.menu_id_general_help, Menu.CATEGORY_SECONDARY, R.string.menu_help);
         help.setIcon(R.drawable.ic_help_and_feedback);
         return true;
     }
@@ -210,7 +210,7 @@ public class Preferences extends AppCompatActivity implements
         if (item.getItemId() == android.R.id.home) {
             finish();
             return true;
-        } else if (item.getItemId() == R.id.menu_id_help_general) {
+        } else if (item.getItemId() == R.id.menu_id_general_help) {
             HelpAndFeedback.getInstance(this).show(this, getString(R.string.help_context_settings),
                     Profile.getLastUsedProfile(), null);
             return true;

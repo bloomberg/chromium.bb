@@ -14,14 +14,19 @@ import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.text.format.DateUtils;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 
 import org.chromium.base.CommandLine;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
+import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.infobar.DataReductionProxyInfoBar;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.third_party.android.datausagechart.NetworkStats;
 import org.chromium.third_party.android.datausagechart.NetworkStatsHistory;
@@ -88,6 +93,25 @@ public class DataReductionPreferences extends PreferenceFragment {
                     : DataReductionProxyUma.ACTION_OFF_TO_OFF;
         }
         DataReductionProxyUma.dataReductionProxyUIAction(statusChange);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        menu.clear();
+        MenuItem help = menu.add(
+                Menu.NONE, R.id.menu_id_targeted_help, Menu.NONE, R.string.menu_help);
+        help.setIcon(R.drawable.ic_help_and_feedback);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.menu_id_targeted_help) {
+            HelpAndFeedback.getInstance(getActivity())
+                    .show(getActivity(), getString(R.string.help_context_data_reduction),
+                            Profile.getLastUsedProfile(), null);
+            return true;
+        }
+        return false;
     }
 
     /**

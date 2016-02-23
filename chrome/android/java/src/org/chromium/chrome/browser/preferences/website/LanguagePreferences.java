@@ -79,31 +79,26 @@ public class LanguagePreferences extends PreferenceFragment {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         menu.clear();
         MenuItem help = menu.add(
-                Menu.NONE, R.id.menu_id_translate_help, Menu.NONE, R.string.menu_help);
+                Menu.NONE, R.id.menu_id_targeted_help, Menu.NONE, R.string.menu_help);
         help.setIcon(R.drawable.ic_help_and_feedback);
         help.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
 
-        MenuItem reset = menu.add(Menu.NONE, Menu.NONE, Menu.NONE,
-                R.string.reset_translate_defaults);
-        reset.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem menuItem) {
-                PrefServiceBridge.getInstance().resetTranslateDefaults();
-                Toast.makeText(getActivity(), getString(
-                        R.string.translate_prefs_toast_description),
-                        Toast.LENGTH_SHORT).show();
-                return true;
-            }
-        });
+        menu.add(Menu.NONE, R.id.menu_id_reset, Menu.NONE, R.string.reset_translate_defaults);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int itemId = item.getItemId();
-        if (itemId == R.id.menu_id_translate_help) {
+        if (itemId == R.id.menu_id_targeted_help) {
             HelpAndFeedback.getInstance(getActivity())
                     .show(getActivity(), getString(R.string.help_context_translate),
                             Profile.getLastUsedProfile(), null);
+            return true;
+        } else if (itemId == R.id.menu_id_reset) {
+            PrefServiceBridge.getInstance().resetTranslateDefaults();
+            Toast.makeText(getActivity(), getString(
+                    R.string.translate_prefs_toast_description),
+                    Toast.LENGTH_SHORT).show();
             return true;
         }
         return false;
