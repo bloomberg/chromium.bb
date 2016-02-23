@@ -12,6 +12,7 @@ import android.test.MoreAsserts;
 import android.test.suitebuilder.annotation.LargeTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
@@ -126,9 +127,12 @@ public class PrerenderTest extends ChromeTabbedActivityTestBase {
      * Note that this bug happened with the instant code. Now that we use Wicked Fast, we don't
      * deal with infobars ourselves.
      */
+    /*
     @LargeTest
     @Restriction({RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"TabContents"})
+    */
+    @DisabledTest  // Prerenderer disables infobars. crbug.com/588808
     public void testInfoBarDismissed() throws InterruptedException {
         final String url = mTestServer.getURL(
                 "/chrome/test/data/geolocation/geolocation_on_load.html");
