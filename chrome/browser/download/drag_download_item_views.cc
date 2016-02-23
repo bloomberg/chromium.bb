@@ -10,7 +10,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/download_item.h"
 #include "net/base/mime_util.h"
-#include "net/base/net_util.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/dragdrop/drag_drop_types.h"

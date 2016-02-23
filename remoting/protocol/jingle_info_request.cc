@@ -11,7 +11,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
-#include "net/base/net_util.h"
 #include "remoting/protocol/ice_config.h"
 #include "remoting/signaling/iq_sender.h"
 #include "third_party/webrtc/base/socketaddress.h"

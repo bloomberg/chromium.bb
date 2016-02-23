@@ -5,7 +5,6 @@
 #include "net/dns/mdns_client.h"
 
 #include "net/base/net_errors.h"
-#include "net/base/net_util.h"
 #include "net/base/network_interfaces.h"
 #include "net/dns/dns_protocol.h"
 #include "net/dns/mdns_client_impl.h"

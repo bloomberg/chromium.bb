@@ -17,7 +17,6 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "net/base/host_port_pair.h"
-#include "net/base/net_util.h"
 #include "net/base/upload_data_stream.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_request_info.h"

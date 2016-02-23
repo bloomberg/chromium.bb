@@ -7,7 +7,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "net/base/net_util.h"
 #include "net/base/request_priority.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_auth_handler_mock.h"

@@ -142,6 +142,14 @@ NET_EXPORT bool IsCanonicalizedHostCompliant(const std::string& host);
 // that falls in an IANA-reserved range.
 NET_EXPORT bool IsHostnameNonUnique(const std::string& hostname);
 
+// Returns true if |host| is one of the local hostnames
+// (e.g. "localhost") or IP addresses (IPv4 127.0.0.0/8 or IPv6 ::1).
+//
+// Note that this function does not check for IP addresses other than
+// the above, although other IP addresses may point to the local
+// machine.
+NET_EXPORT bool IsLocalhost(base::StringPiece host);
+
 // Strip the portions of |url| that aren't core to the network request.
 //   - user name / password
 //   - reference section

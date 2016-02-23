@@ -18,7 +18,6 @@
 #include "base/values.h"
 #include "net/base/auth.h"
 #include "net/base/io_buffer.h"
-#include "net/base/net_util.h"
 #include "net/http/http_auth_cache.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_request_info.h"

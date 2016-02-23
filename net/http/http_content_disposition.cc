@@ -12,7 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/escape.h"
 #include "net/base/net_string_util.h"
-#include "net/base/net_util.h"
 #include "net/http/http_util.h"
 
 namespace net {

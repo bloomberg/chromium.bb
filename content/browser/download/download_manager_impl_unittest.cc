@@ -37,7 +37,6 @@
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
-#include "net/base/net_util.h"
 #include "net/log/net_log.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"

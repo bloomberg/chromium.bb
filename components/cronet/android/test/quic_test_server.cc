@@ -14,7 +14,6 @@
 #include "components/cronet/android/test/cronet_test_util.h"
 #include "jni/QuicTestServer_jni.h"
 #include "net/base/ip_endpoint.h"
-#include "net/base/net_util.h"
 #include "net/base/test_data_directory.h"
 #include "net/quic/crypto/proof_source_chromium.h"
 #include "net/tools/quic/quic_in_memory_cache.h"

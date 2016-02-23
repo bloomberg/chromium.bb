@@ -44,7 +44,6 @@
 #include "media/cast/test/utility/in_process_receiver.h"
 #include "media/cast/test/utility/input_builder.h"
 #include "media/cast/test/utility/standalone_cast_environment.h"
-#include "net/base/net_util.h"
 
 #if defined(USE_X11)
 #include "media/cast/test/linux_output_window.h"

@@ -8,7 +8,6 @@
 #include "base/strings/stringprintf.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_util.h"
 #include "net/http/http_auth_controller.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_headers.h"

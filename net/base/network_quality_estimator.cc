@@ -18,8 +18,8 @@
 #include "build/build_config.h"
 #include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"
-#include "net/base/net_util.h"
 #include "net/base/network_interfaces.h"
+#include "net/base/url_util.h"
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
 

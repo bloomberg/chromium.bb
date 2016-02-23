@@ -48,7 +48,6 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/notification_types.h"
 #include "net/base/data_url.h"
-#include "net/base/net_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/url_request/url_request_slow_download_job.h"
 #include "net/url_request/url_request.h"

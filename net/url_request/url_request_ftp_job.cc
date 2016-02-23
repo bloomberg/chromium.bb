@@ -13,7 +13,6 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_util.h"
 #include "net/ftp/ftp_auth_cache.h"
 #include "net/ftp/ftp_response_info.h"
 #include "net/ftp/ftp_transaction_factory.h"

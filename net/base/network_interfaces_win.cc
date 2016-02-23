@@ -21,7 +21,6 @@
 #include "net/base/escape.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_util.h"
 #include "url/gurl.h"
 
 namespace net {

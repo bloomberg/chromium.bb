@@ -9,7 +9,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "net/base/net_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "third_party/WebKit/public/platform/WebHTTPHeaderVisitor.h"

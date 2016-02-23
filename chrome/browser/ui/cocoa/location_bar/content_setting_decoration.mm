@@ -21,7 +21,6 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
-#include "net/base/net_util.h"
 #include "ui/base/cocoa/appkit_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"

@@ -12,7 +12,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "net/base/ip_endpoint.h"
-#include "net/base/net_util.h"
 #include "third_party/webrtc/base/byteorder.h"
 #include "third_party/webrtc/base/socketaddress.h"
 #include "third_party/webrtc/p2p/base/candidate.h"

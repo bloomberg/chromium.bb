@@ -14,7 +14,6 @@
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {

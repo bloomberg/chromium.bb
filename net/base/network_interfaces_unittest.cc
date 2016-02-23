@@ -19,7 +19,6 @@
 #include "base/sys_byteorder.h"
 #include "base/time/time.h"
 #include "net/base/ip_endpoint.h"
-#include "net/base/net_util.h"
 
 #if !defined(OS_NACL) && !defined(OS_WIN)
 #include <net/if.h>

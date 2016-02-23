@@ -61,7 +61,6 @@
 #include "content/public/common/user_agent.h"
 #include "net/base/external_estimate_provider.h"
 #include "net/base/host_mapping_rules.h"
-#include "net/base/net_util.h"
 #include "net/base/network_quality_estimator.h"
 #include "net/base/sdch_manager.h"
 #include "net/cert/cert_verifier.h"

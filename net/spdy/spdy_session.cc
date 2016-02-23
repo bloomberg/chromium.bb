@@ -29,7 +29,6 @@
 #include "crypto/ec_private_key.h"
 #include "crypto/ec_signature_creator.h"
 #include "net/base/connection_type_histograms.h"
-#include "net/base/net_util.h"
 #include "net/base/proxy_delegate.h"
 #include "net/cert/asn1_util.h"
 #include "net/cert/cert_verify_result.h"

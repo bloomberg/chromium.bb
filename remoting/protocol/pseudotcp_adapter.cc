@@ -17,7 +17,6 @@
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_util.h"
 #include "remoting/protocol/p2p_datagram_socket.h"
 
 using cricket::PseudoTcp;

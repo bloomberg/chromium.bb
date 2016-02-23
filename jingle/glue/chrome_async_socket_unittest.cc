@@ -17,7 +17,6 @@
 #include "jingle/glue/resolving_client_socket_factory.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_util.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/http/transport_security_state.h"
 #include "net/socket/socket_test_util.h"

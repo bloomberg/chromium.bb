@@ -5,8 +5,8 @@
 #include "components/rappor/rappor_utils.h"
 
 #include "components/rappor/rappor_service.h"
-#include "net/base/net_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/base/url_util.h"
 #include "url/gurl.h"
 
 namespace rappor {

@@ -27,7 +27,6 @@
 #include "base/time/time.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_util.h"
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_test_util.h"
 #include "net/dns/mock_host_resolver.h"

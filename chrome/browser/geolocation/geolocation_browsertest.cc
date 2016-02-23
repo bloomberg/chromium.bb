@@ -34,7 +34,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/geoposition.h"
 #include "content/public/test/browser_test_utils.h"
-#include "net/base/net_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace {

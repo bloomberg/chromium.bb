@@ -32,7 +32,6 @@
 #include "net/base/load_flags.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_util.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/redirect_info.h"

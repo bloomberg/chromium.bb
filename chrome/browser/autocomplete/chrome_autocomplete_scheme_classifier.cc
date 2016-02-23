@@ -9,7 +9,6 @@
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "content/public/common/url_constants.h"
-#include "net/base/net_util.h"
 #include "url/url_util.h"
 
 ChromeAutocompleteSchemeClassifier::ChromeAutocompleteSchemeClassifier(

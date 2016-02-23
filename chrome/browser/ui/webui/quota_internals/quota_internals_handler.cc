@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/webui/quota_internals/quota_internals_types.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_ui.h"
-#include "net/base/net_util.h"
 
 using content::BrowserContext;
 

@@ -47,7 +47,6 @@
 #include "extensions/common/features/feature.h"
 #include "net/base/auth.h"
 #include "net/base/elements_upload_data_stream.h"
-#include "net/base/net_util.h"
 #include "net/base/request_priority.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_file_element_reader.h"

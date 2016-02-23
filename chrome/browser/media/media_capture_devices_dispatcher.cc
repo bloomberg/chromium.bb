@@ -32,7 +32,6 @@
 #include "content/public/common/media_stream_request.h"
 #include "extensions/common/constants.h"
 #include "media/base/media_switches.h"
-#include "net/base/net_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/shell.h"

@@ -14,7 +14,6 @@
 #include "base/i18n/case_conversion.h"
 #include "base/strings/string_util.h"
 #include "net/base/escape.h"
-#include "net/base/net_util.h"
 
 namespace {
 // The maximum number of characters to consider from an URL and page title

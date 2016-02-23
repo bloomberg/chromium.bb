@@ -12,7 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "net/base/mime_util.h"
-#include "net/base/net_util.h"
 
 namespace download_util {
 

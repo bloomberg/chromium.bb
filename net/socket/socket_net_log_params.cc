@@ -10,7 +10,6 @@
 #include "base/values.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
-#include "net/base/net_util.h"
 
 namespace net {
 

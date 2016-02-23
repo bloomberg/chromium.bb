@@ -163,7 +163,6 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_util.h"
 #include "net/base/url_util.h"
 #include "net/http/http_stream_factory.h"
 #include "net/ssl/ssl_config.h"

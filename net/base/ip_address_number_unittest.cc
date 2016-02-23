@@ -7,7 +7,6 @@
 #include "base/format_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {

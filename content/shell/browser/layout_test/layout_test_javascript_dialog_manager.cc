@@ -11,7 +11,6 @@
 #include "content/shell/browser/layout_test/blink_test_controller.h"
 #include "content/shell/browser/shell_javascript_dialog.h"
 #include "content/shell/common/shell_switches.h"
-#include "net/base/net_util.h"
 
 namespace content {
 

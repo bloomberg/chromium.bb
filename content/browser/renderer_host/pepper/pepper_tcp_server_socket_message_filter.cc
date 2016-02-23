@@ -17,7 +17,6 @@
 #include "content/public/common/socket_permission_request.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_util.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
 #include "ppapi/host/dispatch_host_message.h"

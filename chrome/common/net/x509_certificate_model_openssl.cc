@@ -26,7 +26,6 @@
 #include "crypto/openssl_util.h"
 #include "crypto/scoped_openssl_types.h"
 #include "net/base/address_family.h"
-#include "net/base/net_util.h"
 #include "net/cert/x509_util_openssl.h"
 #include "ui/base/l10n/l10n_util.h"
 

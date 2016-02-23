@@ -34,7 +34,6 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
-#include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN) && defined(USE_ASH)

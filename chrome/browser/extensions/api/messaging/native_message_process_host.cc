@@ -22,7 +22,6 @@
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_util.h"
 #include "url/gurl.h"
 
 namespace {

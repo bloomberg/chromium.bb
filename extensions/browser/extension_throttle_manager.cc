@@ -12,7 +12,7 @@
 #include "base/strings/string_util.h"
 #include "extensions/browser/extension_request_limiting_throttle.h"
 #include "extensions/common/constants.h"
-#include "net/base/net_util.h"
+#include "net/base/url_util.h"
 #include "net/log/net_log.h"
 #include "net/url_request/url_request.h"
 

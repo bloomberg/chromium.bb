@@ -35,7 +35,6 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/kiosk_mode_info.h"
 #include "net/base/filename_util.h"
-#include "net/base/net_util.h"
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)

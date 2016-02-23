@@ -15,7 +15,6 @@
 #include "content/public/common/content_switches.h"
 #include "jingle/glue/utils.h"
 #include "net/base/ip_address_number.h"
-#include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_interfaces.h"
 #include "third_party/webrtc/base/socketaddress.h"

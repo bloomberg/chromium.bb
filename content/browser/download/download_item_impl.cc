@@ -50,7 +50,6 @@
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/referrer.h"
-#include "net/base/net_util.h"
 
 namespace content {
 

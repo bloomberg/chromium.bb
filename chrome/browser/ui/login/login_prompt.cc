@@ -36,7 +36,6 @@
 #include "content/public/common/origin_util.h"
 #include "net/base/auth.h"
 #include "net/base/load_flags.h"
-#include "net/base/net_util.h"
 #include "net/http/http_auth_scheme.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request.h"

@@ -19,7 +19,6 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
-#include "net/base/net_util.h"
 #include "url/gurl.h"
 
 namespace extensions {

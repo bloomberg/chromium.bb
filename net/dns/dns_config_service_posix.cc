@@ -19,7 +19,6 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "net/base/ip_endpoint.h"
-#include "net/base/net_util.h"
 #include "net/dns/dns_hosts.h"
 #include "net/dns/dns_protocol.h"
 #include "net/dns/notify_watcher_mac.h"

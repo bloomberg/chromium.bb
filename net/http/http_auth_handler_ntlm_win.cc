@@ -11,7 +11,6 @@
 
 #include "base/strings/string_util.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_util.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/http/http_auth_sspi_win.h"
 

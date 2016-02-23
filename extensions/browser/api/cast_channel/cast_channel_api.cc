@@ -28,7 +28,6 @@
 #include "extensions/common/api/cast_channel/logging.pb.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_util.h"
 
 // Default timeout interval for connection setup.
 // Used if not otherwise specified at ConnectInfo::timeout.

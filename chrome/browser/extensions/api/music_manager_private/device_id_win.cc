@@ -25,7 +25,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/win/windows_version.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/base/net_util.h"
 
 #if defined(ENABLE_RLZ)
 #include "rlz/lib/machine_id.h"

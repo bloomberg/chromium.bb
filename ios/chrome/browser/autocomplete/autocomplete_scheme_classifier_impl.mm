@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "ios/chrome/browser/chrome_url_util.h"
-#include "net/base/net_util.h"
 #include "url/url_util.h"
 
 AutocompleteSchemeClassifierImpl::AutocompleteSchemeClassifierImpl() {}

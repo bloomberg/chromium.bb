@@ -26,7 +26,6 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
-#include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
 #include "net/dns/dns_hosts.h"
 #include "net/dns/dns_protocol.h"

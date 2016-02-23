@@ -24,7 +24,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "net/base/connection_type_histograms.h"
-#include "net/base/net_util.h"
 #include "net/base/port_util.h"
 #include "net/cert/cert_verifier.h"
 #include "net/http/http_basic_stream.h"

@@ -18,7 +18,6 @@
 #include "base/strings/stringize_macros.h"
 #include "base/values.h"
 #include "net/base/file_stream.h"
-#include "net/base/net_util.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/native_messaging/log_message_handler.h"

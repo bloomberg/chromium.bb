@@ -8,7 +8,6 @@
 
 #include "mojo/public/cpp/bindings/type_converter.h"
 #include "net/base/address_list.h"
-#include "net/base/net_util.h"
 
 namespace net {
 namespace {

@@ -15,7 +15,6 @@
 #include "base/run_loop.h"
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/test/utility/net_utility.h"
-#include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {

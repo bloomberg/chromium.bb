@@ -21,7 +21,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/javascript_message_type.h"
 #include "grit/components_strings.h"
-#include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/font_list.h"
 

@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/values.h"
-#include "net/base/net_util.h"
 #include "net/base/sys_addrinfo.h"
 
 namespace net {

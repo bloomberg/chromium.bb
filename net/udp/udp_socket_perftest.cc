@@ -10,7 +10,6 @@
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_util.h"
 #include "net/base/test_completion_callback.h"
 #include "net/test/net_test_suite.h"
 #include "net/udp/udp_client_socket.h"

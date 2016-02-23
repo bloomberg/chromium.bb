@@ -201,7 +201,6 @@
 #include "chrome/installer/util/module_util_win.h"
 #include "chrome/installer/util/shell_util.h"
 #include "components/startup_metric_utils/common/pre_read_field_trial_utils_win.h"
-#include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/gfx/win/dpi.h"
 #include "ui/shell_dialogs/select_file_dialog.h"

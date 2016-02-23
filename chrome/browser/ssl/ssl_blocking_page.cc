@@ -35,7 +35,6 @@
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/ssl_status.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_util.h"
 
 using base::TimeTicks;
 using content::InterstitialPage;

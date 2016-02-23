@@ -26,7 +26,7 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/base/hash_value.h"
-#include "net/base/net_util.h"
+#include "net/base/url_util.h"
 #include "net/cert/x509_certificate.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"

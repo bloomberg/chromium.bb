@@ -64,7 +64,6 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/net_internals_resources.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_util.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver.h"

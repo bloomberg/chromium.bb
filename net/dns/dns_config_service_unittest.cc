@@ -13,7 +13,6 @@
 #include "base/strings/string_split.h"
 #include "base/test/test_timeouts.h"
 #include "base/thread_task_runner_handle.h"
-#include "net/base/net_util.h"
 #include "net/dns/dns_protocol.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

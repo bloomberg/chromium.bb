@@ -17,7 +17,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_constants.h"
 #include "jni/DomDistillerTabUtils_jni.h"
-#include "net/base/net_util.h"
 #include "url/gurl.h"
 
 namespace android {

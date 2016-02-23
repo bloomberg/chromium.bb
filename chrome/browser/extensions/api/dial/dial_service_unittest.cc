@@ -11,7 +11,6 @@
 #include "chrome/browser/extensions/api/dial/dial_device_data.h"
 #include "chrome/browser/extensions/api/dial/dial_service.h"
 #include "net/base/ip_endpoint.h"
-#include "net/base/net_util.h"
 #include "net/base/network_interfaces.h"
 #include "net/log/test_net_log.h"
 #include "testing/gmock/include/gmock/gmock.h"

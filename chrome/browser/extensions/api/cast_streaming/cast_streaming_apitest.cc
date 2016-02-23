@@ -30,7 +30,6 @@
 #include "media/cast/test/utility/net_utility.h"
 #include "media/cast/test/utility/standalone_cast_environment.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_util.h"
 #include "net/base/rand_callback.h"
 #include "net/udp/udp_server_socket.h"
 #include "testing/gtest/include/gtest/gtest.h"

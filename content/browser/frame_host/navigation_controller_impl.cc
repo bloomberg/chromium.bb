@@ -79,7 +79,6 @@
 #include "content/public/common/content_switches.h"
 #include "media/base/mime_util.h"
 #include "net/base/escape.h"
-#include "net/base/net_util.h"
 #include "skia/ext/platform_canvas.h"
 #include "url/url_constants.h"
 

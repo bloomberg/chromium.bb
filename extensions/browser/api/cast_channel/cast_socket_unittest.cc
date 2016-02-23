@@ -26,7 +26,6 @@
 #include "extensions/common/api/cast_channel/cast_channel.pb.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_util.h"
 #include "net/log/test_net_log.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/ssl_client_socket.h"

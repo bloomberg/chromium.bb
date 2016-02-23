@@ -38,7 +38,6 @@
 #include "content/public/common/resource_response.h"
 #include "content/public/common/resource_type.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_util.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
 

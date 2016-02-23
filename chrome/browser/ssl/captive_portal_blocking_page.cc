@@ -26,7 +26,6 @@
 #include "components/wifi/wifi_service.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
-#include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_interfaces.h"
 #include "net/ssl/ssl_info.h"

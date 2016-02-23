@@ -13,7 +13,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
-#include "net/base/net_util.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/ftp/ftp_request_info.h"

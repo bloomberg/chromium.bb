@@ -14,7 +14,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_util.h"
 #include "net/socket/tcp_client_socket.h"
 
 namespace {

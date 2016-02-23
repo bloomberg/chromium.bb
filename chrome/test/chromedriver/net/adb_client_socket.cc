@@ -15,7 +15,6 @@
 #include "net/base/address_list.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_util.h"
 #include "net/socket/tcp_client_socket.h"
 
 namespace {

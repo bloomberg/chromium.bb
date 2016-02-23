@@ -64,7 +64,6 @@
 #include "extensions/common/extension.h"
 #include "grit/components_scaled_resources.h"
 #include "grit/theme_resources.h"
-#include "net/base/net_util.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/l10n/l10n_util_mac.h"

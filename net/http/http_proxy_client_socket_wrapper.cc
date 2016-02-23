@@ -12,7 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/values.h"
-#include "net/base/net_util.h"
 #include "net/base/proxy_delegate.h"
 #include "net/http/http_proxy_client_socket.h"
 #include "net/http/http_response_info.h"

@@ -12,7 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/history/core/browser/history_backend.h"
-#include "net/base/net_util.h"
+#include "net/base/url_util.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/protocol/typed_url_specifics.pb.h"
 
