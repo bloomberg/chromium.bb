@@ -190,7 +190,7 @@
   },
   {
     "prefix": "spv2",
-    "base": "paint",
+    "base": "compositing",
     "args": ["--enable-slimming-paint-v2"]
   },
   {
@@ -201,6 +201,11 @@
   {
     "prefix": "spv2",
     "base": "fast/borders",
+    "args": ["--enable-slimming-paint-v2"]
+  },
+  {
+    "prefix": "spv2",
+    "base": "paint",
     "args": ["--enable-slimming-paint-v2"]
   },
   {

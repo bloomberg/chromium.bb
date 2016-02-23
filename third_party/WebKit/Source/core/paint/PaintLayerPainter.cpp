@@ -348,7 +348,13 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsCon
         if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
             ObjectPaintProperties* objectPaintProperties = m_paintLayer.layoutObject()->objectPaintProperties();
             ASSERT(objectPaintProperties && objectPaintProperties->localBorderBoxProperties());
-            scopedPaintChunkProperties.emplace(context.paintController(),  objectPaintProperties->localBorderBoxProperties()->properties);
+            PaintChunkProperties properties(context.paintController().currentPaintChunkProperties());
+            auto& localBorderBoxProperties = *objectPaintProperties->localBorderBoxProperties();
+            properties.transform = localBorderBoxProperties.transform;
+            properties.clip = localBorderBoxProperties.clip;
+            properties.effect = localBorderBoxProperties.effect;
+            properties.backfaceHidden = m_paintLayer.layoutObject()->hasHiddenBackface();
+            scopedPaintChunkProperties.emplace(context.paintController(), properties);
         }
 
         bool shouldPaintBackground = isPaintingCompositedBackground && shouldPaintContent && !selectionOnly;

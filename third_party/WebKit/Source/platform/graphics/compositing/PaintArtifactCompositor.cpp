@@ -274,6 +274,7 @@ void PaintArtifactCompositor::update(const PaintArtifact& paintArtifact)
         layer->SetBounds(combinedBounds.size());
         layer->SetTransform(transform);
         layer->SetIsDrawable(true);
+        layer->SetDoubleSided(!paintChunk.properties.backfaceHidden);
         if (paintChunk.knownToBeOpaque)
             layer->SetContentsOpaque(true);
         layer->SetNeedsDisplay();

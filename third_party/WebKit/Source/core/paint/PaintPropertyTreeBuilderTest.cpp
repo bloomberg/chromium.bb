@@ -594,9 +594,9 @@ TEST_F(PaintPropertyTreeBuilderTest, TreeContextClipByNonStackingContext)
     LayoutObject& child = *document().getElementById("child")->layoutObject();
     ObjectPaintProperties* childProperties = child.objectPaintProperties();
 
-    EXPECT_EQ(scrollerProperties->overflowClip(), childProperties->localBorderBoxProperties()->properties.clip);
-    EXPECT_EQ(scrollerProperties->scrollTranslation(), childProperties->localBorderBoxProperties()->properties.transform);
-    EXPECT_EQ(nullptr, childProperties->localBorderBoxProperties()->properties.effect);
+    EXPECT_EQ(scrollerProperties->overflowClip(), childProperties->localBorderBoxProperties()->clip);
+    EXPECT_EQ(scrollerProperties->scrollTranslation(), childProperties->localBorderBoxProperties()->transform);
+    EXPECT_EQ(nullptr, childProperties->localBorderBoxProperties()->effect);
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, TreeContextUnclipFromParentStackingContext)
@@ -619,9 +619,9 @@ TEST_F(PaintPropertyTreeBuilderTest, TreeContextUnclipFromParentStackingContext)
     LayoutObject& child = *document().getElementById("child")->layoutObject();
     ObjectPaintProperties* childProperties = child.objectPaintProperties();
 
-    EXPECT_EQ(frameView->contentClip(), childProperties->localBorderBoxProperties()->properties.clip);
-    EXPECT_EQ(frameView->scrollTranslation(), childProperties->localBorderBoxProperties()->properties.transform);
-    EXPECT_EQ(scrollerProperties->effect(), childProperties->localBorderBoxProperties()->properties.effect);
+    EXPECT_EQ(frameView->contentClip(), childProperties->localBorderBoxProperties()->clip);
+    EXPECT_EQ(frameView->scrollTranslation(), childProperties->localBorderBoxProperties()->transform);
+    EXPECT_EQ(scrollerProperties->effect(), childProperties->localBorderBoxProperties()->effect);
 }
 
 } // namespace blink

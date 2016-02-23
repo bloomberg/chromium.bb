@@ -55,10 +55,33 @@ void PrintTo(const PaintChunk& chunk, std::ostream* os)
 void PrintTo(const PaintChunkProperties& properties, std::ostream* os)
 {
     *os << "PaintChunkProperties(";
+    bool printedProperty = false;
     if (properties.transform) {
         *os << "transform=";
         PrintTo(*properties.transform, os);
+        printedProperty = true;
     }
+
+    if (properties.clip) {
+        if (printedProperty)
+            *os << ", ";
+        *os << "clip=";
+        PrintTo(*properties.clip, os);
+        printedProperty = true;
+    }
+
+    if (properties.effect) {
+        if (printedProperty)
+            *os << ", ";
+        *os << "effect=";
+        PrintTo(*properties.effect, os);
+        printedProperty = true;
+    }
+
+    if (printedProperty)
+        *os << ", ";
+    *os << "backfaceHidden=" << properties.backfaceHidden;
+
     *os << ")";
 }
 

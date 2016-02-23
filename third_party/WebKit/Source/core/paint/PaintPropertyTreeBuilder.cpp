@@ -319,9 +319,9 @@ PassOwnPtr<ObjectPaintProperties::LocalBorderBoxProperties> recordTreeContextIfN
 
     OwnPtr<ObjectPaintProperties::LocalBorderBoxProperties> recordedContext = adoptPtr(new ObjectPaintProperties::LocalBorderBoxProperties);
     recordedContext->paintOffset = context.paintOffset;
-    recordedContext->properties.transform = context.currentTransform;
-    recordedContext->properties.clip = context.currentClip;
-    recordedContext->properties.effect = context.currentEffect;
+    recordedContext->transform = context.currentTransform;
+    recordedContext->clip = context.currentClip;
+    recordedContext->effect = context.currentEffect;
     return recordedContext.release();
 }
 

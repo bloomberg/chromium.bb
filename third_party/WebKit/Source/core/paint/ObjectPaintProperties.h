@@ -64,7 +64,9 @@ public:
     // at the right painting step.
     struct LocalBorderBoxProperties {
         LayoutPoint paintOffset;
-        PaintChunkProperties properties;
+        RefPtr<TransformPaintPropertyNode> transform;
+        RefPtr<ClipPaintPropertyNode> clip;
+        RefPtr<EffectPaintPropertyNode> effect;
     };
     LocalBorderBoxProperties* localBorderBoxProperties() const { return m_localBorderBoxProperties.get(); }
 

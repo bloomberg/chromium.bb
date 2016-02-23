@@ -25,10 +25,14 @@ namespace blink {
 // for each type (e.g., either transform or perspective, but not both).
 struct PaintChunkProperties {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-    // TODO(pdr): Add clip and scroll properties.
+
+    PaintChunkProperties() : backfaceHidden(false) { }
+
+    // TODO(pdr): Add scroll properties.
     RefPtr<TransformPaintPropertyNode> transform;
     RefPtr<ClipPaintPropertyNode> clip;
     RefPtr<EffectPaintPropertyNode> effect;
+    bool backfaceHidden;
 };
 
 // Equality is based only on the pointers and is not 'deep' which would require
@@ -37,7 +41,8 @@ inline bool operator==(const PaintChunkProperties& a, const PaintChunkProperties
 {
     return a.transform.get() == b.transform.get()
         && a.clip.get() == b.clip.get()
-        && a.effect.get() == b.effect.get();
+        && a.effect.get() == b.effect.get()
+        && a.backfaceHidden == b.backfaceHidden;
 }
 
 inline bool operator!=(const PaintChunkProperties& a, const PaintChunkProperties& b)
