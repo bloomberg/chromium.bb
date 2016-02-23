@@ -595,6 +595,7 @@ PDFiumEngine::PDFiumEngine(PDFEngine::Client* client)
   FPDF_FORMFILLINFO::FFI_GetCurrentPageIndex = Form_GetCurrentPageIndex;
   FPDF_FORMFILLINFO::FFI_GetPageViewRect = Form_GetPageViewRect;
   FPDF_FORMFILLINFO::FFI_GetPlatform = Form_GetPlatform;
+  FPDF_FORMFILLINFO::FFI_PageEvent = nullptr;
   FPDF_FORMFILLINFO::FFI_PopupMenu = Form_PopupMenu;
   FPDF_FORMFILLINFO::FFI_PostRequestURL = Form_PostRequestURL;
   FPDF_FORMFILLINFO::FFI_PutRequestURL = Form_PutRequestURL;
