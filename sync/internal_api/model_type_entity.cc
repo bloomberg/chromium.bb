@@ -51,7 +51,12 @@ ModelTypeEntity::ModelTypeEntity(const std::string& client_tag,
 ModelTypeEntity::~ModelTypeEntity() {}
 
 void ModelTypeEntity::CacheCommitData(EntityData* data) {
+  DCHECK(RequiresCommitRequest());
+  if (data->client_tag_hash.empty()) {
+    data->client_tag_hash = metadata_.client_tag_hash();
+  }
   commit_data_ = data->PassToPtr();
+  DCHECK(HasCommitData());
 }
 
 bool ModelTypeEntity::HasCommitData() const {
@@ -64,6 +69,10 @@ bool ModelTypeEntity::IsUnsynced() const {
 
 bool ModelTypeEntity::RequiresCommitRequest() const {
   return metadata_.sequence_number() > commit_requested_sequence_number_;
+}
+
+bool ModelTypeEntity::RequiresCommitData() const {
+  return RequiresCommitRequest() && !HasCommitData() && !metadata_.is_deleted();
 }
 
 bool ModelTypeEntity::UpdateIsReflection(int64_t update_version) const {
@@ -137,26 +146,27 @@ void ModelTypeEntity::Delete() {
   IncrementSequenceNumber();
   metadata_.set_is_deleted(true);
   metadata_.clear_specifics_hash();
-
-  EntityData data;
-  data.client_tag_hash = metadata_.client_tag_hash();
-  data.id = metadata_.server_id();
-  data.creation_time = syncer::ProtoTimeToTime(metadata_.creation_time());
-
-  CacheCommitData(&data);
+  // Clear any cached pending commit data.
+  if (HasCommitData()) commit_data_.reset();
 }
 
-void ModelTypeEntity::InitializeCommitRequestData(
-    CommitRequestData* request) const {
-  DCHECK(HasCommitData());
-  DCHECK_EQ(commit_data_->client_tag_hash, metadata_.client_tag_hash());
+void ModelTypeEntity::InitializeCommitRequestData(CommitRequestData* request) {
+  if (!metadata_.is_deleted()) {
+    DCHECK(HasCommitData());
+    DCHECK_EQ(commit_data_->client_tag_hash, metadata_.client_tag_hash());
+    request->entity = commit_data_;
+  } else {
+    // Make an EntityData with empty specifics to indicate deletion. This is
+    // done lazily here to simplify loading a pending deletion on startup.
+    EntityData data;
+    data.client_tag_hash = metadata_.client_tag_hash();
+    data.id = metadata_.server_id();
+    data.creation_time = syncer::ProtoTimeToTime(metadata_.creation_time());
+    request->entity = data.PassToPtr();
+  }
 
   request->sequence_number = metadata_.sequence_number();
   request->base_version = metadata_.server_version();
-  request->entity = commit_data_;
-}
-
-void ModelTypeEntity::SetCommitRequestInProgress() {
   commit_requested_sequence_number_ = metadata_.sequence_number();
 }
 
@@ -176,19 +186,6 @@ void ModelTypeEntity::ClearTransientSyncState() {
   // If we have any unacknowledged commit requests outstanding, they've been
   // dropped and we should forget about them.
   commit_requested_sequence_number_ = metadata_.acked_sequence_number();
-}
-
-void ModelTypeEntity::ClearSyncState() {
-  // TODO(stanisc): crbug/561830: Need to review this entire method. It looks
-  // like the tests expect this to reset some metadata state but not the data.
-  // We should be able to reimplement this once we have the code fore
-  // fetching the data from the service.
-  metadata_.set_server_version(kUncommittedVersion);
-  // TODO(stanisc): Why is this 1 and not 0? This leaves the item unsynced.
-  metadata_.set_sequence_number(1);
-  metadata_.set_acked_sequence_number(0);
-  metadata_.clear_server_id();
-  commit_requested_sequence_number_ = 0;
 }
 
 void ModelTypeEntity::IncrementSequenceNumber() {

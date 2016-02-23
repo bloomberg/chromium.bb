@@ -228,7 +228,8 @@ TEST_F(ModelTypeEntityTest, LocalDeletion) {
   entity->Delete();
   EXPECT_FALSE(HasSpecificsHash(entity));
 
-  EXPECT_TRUE(entity->HasCommitData());
+  EXPECT_FALSE(entity->HasCommitData());
+  EXPECT_FALSE(entity->RequiresCommitData());
   EXPECT_TRUE(entity->IsUnsynced());
 
   EXPECT_TRUE(entity->UpdateIsReflection(10));

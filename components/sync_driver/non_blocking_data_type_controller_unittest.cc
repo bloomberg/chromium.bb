@@ -261,7 +261,9 @@ class NonBlockingDataTypeControllerTest : public testing::Test,
   }
 
   void LoadModels() {
-    OnMetadataLoaded();
+    if (!type_processor_->IsAllowingChanges()) {
+      OnMetadataLoaded();
+    }
     controller_->LoadModels(
         base::Bind(&NonBlockingDataTypeControllerTest::LoadModelsDone,
                    base::Unretained(this)));

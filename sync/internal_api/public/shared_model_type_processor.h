@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
+#include "sync/api/data_batch.h"
 #include "sync/api/metadata_batch.h"
 #include "sync/api/metadata_change_list.h"
 #include "sync/api/model_type_change_processor.h"
@@ -89,7 +90,7 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
   void OnCommitCompleted(const sync_pb::DataTypeState& type_state,
                          const CommitResponseDataList& response_list) override;
   void OnUpdateReceived(const sync_pb::DataTypeState& type_state,
-                        const UpdateResponseDataList& response_list,
+                        const UpdateResponseDataList& updates,
                         const UpdateResponseDataList& pending_updates) override;
 
  private:
@@ -98,21 +99,29 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
   using EntityMap = std::map<std::string, scoped_ptr<ModelTypeEntity>>;
   using UpdateMap = std::map<std::string, scoped_ptr<UpdateResponseData>>;
 
-  // Complete the start process.
-  void ReadyToConnect();
+  // Callback for ModelTypeService::GetData(). Used when we need to load data
+  // for pending commits during the initialization process.
+  void OnDataLoaded(syncer::SyncError error, scoped_ptr<DataBatch> data_batch);
+
+  // Check conditions, and if met inform sync that we are ready to connect.
+  void ConnectIfReady();
 
   // Handle the first update received from the server after being enabled.
   void OnInitialUpdateReceived(const sync_pb::DataTypeState& type_state,
-                               const UpdateResponseDataList& response_list,
+                               const UpdateResponseDataList& updates,
                                const UpdateResponseDataList& pending_updates);
 
   // Sends all commit requests that are due to be sent to the sync thread.
   void FlushPendingCommitRequests();
 
-  // Clears any state related to outstanding communications with the
-  // CommitQueue.  Used when we want to disconnect from
-  // the current worker.
-  void ClearTransientSyncState();
+  // Computes the client tag hash for the given client |tag|.
+  std::string GetHashForTag(const std::string& tag);
+
+  // Gets the entity for the given tag, which must exist.
+  ModelTypeEntity* GetEntityForTag(const std::string& tag);
+
+  // Gets the entity for the given tag hash, which must exist.
+  ModelTypeEntity* GetEntityForTagHash(const std::string& tag_hash);
 
   syncer::ModelType type_;
   sync_pb::DataTypeState data_type_state_;
@@ -122,6 +131,9 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
 
   // Indicates whether the metadata has finished loading.
   bool is_metadata_loaded_;
+
+  // Indicates whether data for pending commits has finished loading.
+  bool is_pending_commit_data_loaded_;
 
   // Reference to the CommitQueue.
   //
@@ -148,7 +160,7 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
   // thread, we want to make sure that no tasks generated as part of the
   // now-obsolete connection to affect us.  But we also want the WeakPtr we
   // sent to the UI thread to remain valid.
-  base::WeakPtrFactory<SharedModelTypeProcessor> weak_ptr_factory_for_ui_;
+  base::WeakPtrFactory<SharedModelTypeProcessor> weak_ptr_factory_;
   base::WeakPtrFactory<SharedModelTypeProcessor> weak_ptr_factory_for_sync_;
 };
 

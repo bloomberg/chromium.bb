@@ -35,7 +35,7 @@ class SYNC_EXPORT ModelTypeProcessor {
   // handle.
   virtual void OnUpdateReceived(
       const sync_pb::DataTypeState& type_state,
-      const UpdateResponseDataList& response_list,
+      const UpdateResponseDataList& updates,
       const UpdateResponseDataList& pending_updates) = 0;
 };
 

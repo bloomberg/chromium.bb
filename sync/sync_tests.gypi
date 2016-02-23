@@ -183,7 +183,6 @@
         'test_support_sync_core',
       ],
       'sources': [
-        'internal_api/public/test/fake_metadata_change_list.h',
         'internal_api/public/test/fake_model_type_service.h',
         'internal_api/public/test/fake_sync_manager.h',
         'internal_api/public/test/model_type_store_test_util.h',
@@ -192,7 +191,6 @@
         'internal_api/public/test/test_entry_factory.h',
         'internal_api/public/test/test_internal_components_factory.h',
         'internal_api/public/test/test_user_share.h',
-        'internal_api/test/fake_metadata_change_list.cc',
         'internal_api/test/fake_model_type_service.cc',
         'internal_api/test/fake_sync_manager.cc',
         'internal_api/test/model_type_store_test_util.cc',

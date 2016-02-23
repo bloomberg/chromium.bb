@@ -60,6 +60,10 @@ class SYNC_EXPORT ModelTypeEntity {
   // this item.
   bool RequiresCommitRequest() const;
 
+  // Whether commit data is needed to be cached before a commit request can be
+  // created. Note that deletions do not require cached data.
+  bool RequiresCommitData() const;
+
   // Returns true if the specified update version does not contain new data.
   bool UpdateIsReflection(int64_t update_version) const;
 
@@ -85,11 +89,8 @@ class SYNC_EXPORT ModelTypeEntity {
   void Delete();
 
   // Initializes a message representing this item's uncommitted state
-  // to be forwarded to the sync server for committing.
-  void InitializeCommitRequestData(CommitRequestData* request) const;
-
-  // Notes that the current version of this item has been queued for commit.
-  void SetCommitRequestInProgress();
+  // and assumes that it is forwarded to the sync engine for commiting.
+  void InitializeCommitRequestData(CommitRequestData* request);
 
   // Receives a successful commit response.
   //
@@ -106,9 +107,6 @@ class SYNC_EXPORT ModelTypeEntity {
 
   // Clears any in-memory sync state associated with outstanding commits.
   void ClearTransientSyncState();
-
-  // Clears all sync state.  Invoked when a user signs out.
-  void ClearSyncState();
 
   // Takes the passed commit data and caches it in the instance.
   // The data is swapped from the input struct without copying.
