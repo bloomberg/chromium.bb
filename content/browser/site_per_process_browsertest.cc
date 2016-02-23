@@ -52,7 +52,7 @@
 #include "ui/gfx/switches.h"
 
 #if defined(OS_MACOSX)
-#include "ui/base/test/scoped_preferred_scroller_style_legacy_mac.h"
+#include "ui/base/test/scoped_preferred_scroller_style_mac.h"
 #endif
 
 namespace content {
@@ -2148,7 +2148,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                        MAYBE_FrameOwnerPropertiesPropagationScrolling) {
 #if defined(OS_MACOSX)
-  ui::test::ScopedPreferredScrollerStyleLegacy scroller_style_override;
+  ui::test::ScopedPreferredScrollerStyle scroller_style_override(false);
 #endif
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/frame_owner_properties_scrolling.html"));

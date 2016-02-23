@@ -10,7 +10,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/border.h"
-#include "ui/views/controls/scrollbar/native_scroll_bar.h"
+#include "ui/views/style/platform_style.h"
 #include "ui/views/widget/root_view.h"
 
 namespace views {
@@ -124,8 +124,8 @@ ScrollView::ScrollView()
       contents_viewport_(new Viewport()),
       header_(NULL),
       header_viewport_(new Viewport()),
-      horiz_sb_(new NativeScrollBar(true)),
-      vert_sb_(new NativeScrollBar(false)),
+      horiz_sb_(PlatformStyle::CreateScrollBar(true).release()),
+      vert_sb_(PlatformStyle::CreateScrollBar(false).release()),
       corner_view_(new ScrollCornerView()),
       min_height_(-1),
       max_height_(-1),
@@ -300,11 +300,15 @@ void ScrollView::Layout() {
     should_layout_contents = true;
   }
 
+  int height_offset = horiz_sb_required ?
+      horiz_sb_->GetContentOverlapSize() : 0;
+  int width_offset = vert_sb_required ?
+      vert_sb_->GetContentOverlapSize() : 0;
+
   if (horiz_sb_required) {
-    int height_offset = horiz_sb_->GetContentOverlapSize();
     horiz_sb_->SetBounds(contents_x,
                          viewport_bounds.bottom() - height_offset,
-                         viewport_bounds.right() - contents_x,
+                         viewport_bounds.right() - contents_x - width_offset,
                          horiz_sb_height + height_offset);
   }
   if (vert_sb_required) {
@@ -312,7 +316,7 @@ void ScrollView::Layout() {
     vert_sb_->SetBounds(viewport_bounds.right() - width_offset,
                         contents_y,
                         vert_sb_width + width_offset,
-                        viewport_bounds.bottom() - contents_y);
+                        viewport_bounds.bottom() - contents_y - height_offset);
   }
   if (corner_view_required) {
     // Show the resize corner.

@@ -10,6 +10,10 @@
 #include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
 #include "ui/views/test/test_views.h"
 
+#if defined(OS_MACOSX)
+#include "ui/base/test/scoped_preferred_scroller_style_mac.h"
+#endif
+
 namespace views {
 
 namespace {
@@ -17,6 +21,8 @@ namespace {
 const int kWidth = 100;
 const int kMinHeight = 50;
 const int kMaxHeight = 100;
+
+enum ScrollBarOrientation { HORIZONTAL, VERTICAL };
 
 // View implementation that allows setting the preferred size.
 class CustomView : public View {
@@ -47,6 +53,20 @@ class CustomView : public View {
   DISALLOW_COPY_AND_ASSIGN(CustomView);
 };
 
+void CheckScrollbarVisibility(const ScrollView& scroll_view,
+                              ScrollBarOrientation orientation,
+                              bool should_be_visible) {
+  const ScrollBar* scrollbar = orientation == HORIZONTAL
+                                   ? scroll_view.horizontal_scroll_bar()
+                                   : scroll_view.vertical_scroll_bar();
+  if (should_be_visible) {
+    ASSERT_TRUE(scrollbar);
+    EXPECT_TRUE(scrollbar->visible());
+  } else {
+    EXPECT_TRUE(!scrollbar || !scrollbar->visible());
+  }
+}
+
 }  // namespace
 
 // Verifies the viewport is sized to fit the available space.
@@ -60,7 +80,12 @@ TEST(ScrollViewTest, ViewportSizedToFit) {
 }
 
 // Verifies the scrollbars are added as necessary.
+// If on Mac, test the non-overlay scrollbars.
 TEST(ScrollViewTest, ScrollBars) {
+#if defined(OS_MACOSX)
+  ui::test::ScopedPreferredScrollerStyle scroller_style_override(false);
+#endif
+
   ScrollView scroll_view;
   View* contents = new View;
   scroll_view.SetContents(contents);
@@ -71,6 +96,8 @@ TEST(ScrollViewTest, ScrollBars) {
   scroll_view.Layout();
   EXPECT_EQ(100 - scroll_view.GetScrollBarWidth(), contents->parent()->width());
   EXPECT_EQ(100, contents->parent()->height());
+  CheckScrollbarVisibility(scroll_view, VERTICAL, true);
+  CheckScrollbarVisibility(scroll_view, HORIZONTAL, false);
   EXPECT_TRUE(!scroll_view.horizontal_scroll_bar() ||
               !scroll_view.horizontal_scroll_bar()->visible());
   ASSERT_TRUE(scroll_view.vertical_scroll_bar() != NULL);
@@ -82,10 +109,8 @@ TEST(ScrollViewTest, ScrollBars) {
   EXPECT_EQ(100, contents->parent()->width());
   EXPECT_EQ(100 - scroll_view.GetScrollBarHeight(),
             contents->parent()->height());
-  ASSERT_TRUE(scroll_view.horizontal_scroll_bar() != NULL);
-  EXPECT_TRUE(scroll_view.horizontal_scroll_bar()->visible());
-  EXPECT_TRUE(!scroll_view.vertical_scroll_bar() ||
-              !scroll_view.vertical_scroll_bar()->visible());
+  CheckScrollbarVisibility(scroll_view, VERTICAL, false);
+  CheckScrollbarVisibility(scroll_view, HORIZONTAL, true);
 
   // Both horizontal and vertical.
   contents->SetBounds(0, 0, 300, 400);
@@ -93,10 +118,8 @@ TEST(ScrollViewTest, ScrollBars) {
   EXPECT_EQ(100 - scroll_view.GetScrollBarWidth(), contents->parent()->width());
   EXPECT_EQ(100 - scroll_view.GetScrollBarHeight(),
             contents->parent()->height());
-  ASSERT_TRUE(scroll_view.horizontal_scroll_bar() != NULL);
-  EXPECT_TRUE(scroll_view.horizontal_scroll_bar()->visible());
-  ASSERT_TRUE(scroll_view.vertical_scroll_bar() != NULL);
-  EXPECT_TRUE(scroll_view.vertical_scroll_bar()->visible());
+  CheckScrollbarVisibility(scroll_view, VERTICAL, true);
+  CheckScrollbarVisibility(scroll_view, HORIZONTAL, true);
 
   // Add a border, test vertical scrollbar.
   const int kTopPadding = 1;
@@ -448,5 +471,64 @@ TEST(ScrollViewTest, CornerViewVisibility) {
   EXPECT_EQ(&scroll_view, corner_view->parent());
   EXPECT_TRUE(corner_view->visible());
 }
+
+#if defined(OS_MACOSX)
+// Tests the overlay scrollbars on Mac. Ensure that they show up properly and
+// do not overlap each other.
+TEST(ScrollViewTest, CocoaOverlayScrollBars) {
+  scoped_ptr<ui::test::ScopedPreferredScrollerStyle> scroller_style_override;
+  scroller_style_override.reset(
+      new ui::test::ScopedPreferredScrollerStyle(true));
+  ScrollView scroll_view;
+  View* contents = new View;
+  scroll_view.SetContents(contents);
+  scroll_view.SetBoundsRect(gfx::Rect(0, 0, 100, 100));
+
+  // Size the contents such that vertical scrollbar is needed.
+  // Since it is overlaid, the ViewPort size should match the ScrollView.
+  contents->SetBounds(0, 0, 50, 400);
+  scroll_view.Layout();
+  EXPECT_EQ(100, contents->parent()->width());
+  EXPECT_EQ(100, contents->parent()->height());
+  EXPECT_EQ(0, scroll_view.GetScrollBarWidth());
+  CheckScrollbarVisibility(scroll_view, VERTICAL, true);
+  CheckScrollbarVisibility(scroll_view, HORIZONTAL, false);
+
+  // Size the contents such that horizontal scrollbar is needed.
+  contents->SetBounds(0, 0, 400, 50);
+  scroll_view.Layout();
+  EXPECT_EQ(100, contents->parent()->width());
+  EXPECT_EQ(100, contents->parent()->height());
+  EXPECT_EQ(0, scroll_view.GetScrollBarHeight());
+  CheckScrollbarVisibility(scroll_view, VERTICAL, false);
+  CheckScrollbarVisibility(scroll_view, HORIZONTAL, true);
+
+  // Both horizontal and vertical scrollbars.
+  contents->SetBounds(0, 0, 300, 400);
+  scroll_view.Layout();
+  EXPECT_EQ(100, contents->parent()->width());
+  EXPECT_EQ(100, contents->parent()->height());
+  EXPECT_EQ(0, scroll_view.GetScrollBarWidth());
+  EXPECT_EQ(0, scroll_view.GetScrollBarHeight());
+  CheckScrollbarVisibility(scroll_view, VERTICAL, true);
+  CheckScrollbarVisibility(scroll_view, HORIZONTAL, true);
+
+  // Make sure the horizontal and vertical scrollbars don't overlap each other.
+  gfx::Rect vert_bounds = scroll_view.vertical_scroll_bar()->bounds();
+  gfx::Rect horiz_bounds = scroll_view.horizontal_scroll_bar()->bounds();
+  EXPECT_EQ(vert_bounds.x(), horiz_bounds.right());
+  EXPECT_EQ(horiz_bounds.y(), vert_bounds.bottom());
+
+  // Switch to the non-overlay style and check that the ViewPort is now sized
+  // to be smaller, and ScrollbarWidth and ScrollbarHeight are non-zero.
+  scroller_style_override.reset(
+      new ui::test::ScopedPreferredScrollerStyle(false));
+  EXPECT_EQ(100 - scroll_view.GetScrollBarWidth(), contents->parent()->width());
+  EXPECT_EQ(100 - scroll_view.GetScrollBarHeight(),
+            contents->parent()->height());
+  EXPECT_NE(0, scroll_view.GetScrollBarWidth());
+  EXPECT_NE(0, scroll_view.GetScrollBarHeight());
+}
+#endif
 
 }  // namespace views

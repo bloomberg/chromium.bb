@@ -17,17 +17,21 @@ class ScopedObjCClassSwizzler;
 namespace ui {
 namespace test {
 
-// Overrides system setting for scrollbar style with NSScrollerStyleLegacy,
-// which means "always show scrollbars".
-class ScopedPreferredScrollerStyleLegacy {
+// Overrides system setting for scrollbar style with NSScrollerOverlay if we
+// want the scrollbar to overlay. Otherwise, override with
+// NSScrollerStyleLegacy which means "always show scrollbars".
+class ScopedPreferredScrollerStyle {
  public:
-  ScopedPreferredScrollerStyleLegacy();
-  ~ScopedPreferredScrollerStyleLegacy();
+  explicit ScopedPreferredScrollerStyle(bool overlay);
+  ~ScopedPreferredScrollerStyle();
 
  private:
   scoped_ptr<base::mac::ScopedObjCClassSwizzler> swizzler_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScopedPreferredScrollerStyleLegacy);
+  // True if the scrollbar style should overlay.
+  bool overlay_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedPreferredScrollerStyle);
 };
 
 }  // namespace test

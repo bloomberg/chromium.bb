@@ -20,18 +20,6 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
   SkColor GetSystemColor(ColorId color_id) const override;
 
   // Overridden from NativeThemeBase:
-  void PaintScrollbarTrack(SkCanvas* canvas,
-                           Part part,
-                           State state,
-                           const ScrollbarTrackExtraParams& extra_params,
-                           const gfx::Rect& rect) const override;
-  void PaintScrollbarThumb(SkCanvas* sk_canvas,
-                           Part part,
-                           State state,
-                           const gfx::Rect& rect) const override;
-  void PaintScrollbarCorner(SkCanvas* canvas,
-                            State state,
-                            const gfx::Rect& rect) const override;
   void PaintMenuPopupBackground(
       SkCanvas* canvas,
       const gfx::Size& size,

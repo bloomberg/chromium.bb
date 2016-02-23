@@ -14,6 +14,7 @@ namespace views {
 class Border;
 class LabelButton;
 class LabelButtonBorder;
+class ScrollBar;
 
 // Cross-platform API for providing platform-specific styling for toolkit-views.
 class PlatformStyle {
@@ -25,6 +26,9 @@ class PlatformStyle {
 
   // Applies the current system theme to the default border created by |button|.
   static scoped_ptr<Border> CreateThemedLabelButtonBorder(LabelButton* button);
+
+  // Creates the default scrollbar for the given orientation.
+  static scoped_ptr<ScrollBar> CreateScrollBar(bool is_horizontal);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(PlatformStyle);

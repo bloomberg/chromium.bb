@@ -6,6 +6,7 @@
 
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/label_button_border.h"
+#import "ui/views/controls/scrollbar/cocoa_scroll_bar.h"
 #include "ui/views/style/mac/dialog_button_border_mac.h"
 
 namespace views {
@@ -17,6 +18,11 @@ scoped_ptr<LabelButtonBorder> PlatformStyle::CreateLabelButtonBorder(
     return make_scoped_ptr(new DialogButtonBorderMac());
 
   return make_scoped_ptr(new LabelButtonAssetBorder(style));
+}
+
+// static
+scoped_ptr<ScrollBar> PlatformStyle::CreateScrollBar(bool is_horizontal) {
+  return make_scoped_ptr(new CocoaScrollBar(is_horizontal));
 }
 
 }  // namespace views
