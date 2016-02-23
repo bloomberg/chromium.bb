@@ -27,6 +27,9 @@ class FileSystemApp : public mojo::ShellClient,
   ~FileSystemApp() override;
 
  private:
+  // Gets the system specific toplevel profile directory.
+  static base::FilePath GetUserDataDir();
+
   // |mojo::ShellClient| override:
   void Initialize(mojo::Shell* shell, const std::string& url,
                   uint32_t id) override;

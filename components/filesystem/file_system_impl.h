@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_FILESYSTEM_FILE_SYSTEM_IMPL_H_
 #define COMPONENTS_FILESYSTEM_FILE_SYSTEM_IMPL_H_
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "components/filesystem/public/interfaces/file_system.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -23,37 +24,31 @@ class FileSystemApp;
 
 class LockTable;
 
+// The base implementation of FileSystemImpl.
 class FileSystemImpl : public FileSystem {
  public:
+  // |persistent_dir| is the directory served to callers of
+  // |OpenPersistentFileSystem().
   FileSystemImpl(mojo::Connection* connection,
                  mojo::InterfaceRequest<FileSystem> request,
+                 base::FilePath persistent_dir,
                  LockTable* lock_table);
   ~FileSystemImpl() override;
 
   // |Files| implementation:
-
-  // Current valid values for |file_system| are "temp" for a temporary
-  // filesystem and "origin" for a persistent filesystem bound to the origin of
-  // the URL of the caller.
-  void OpenFileSystem(const mojo::String& file_system,
-                      mojo::InterfaceRequest<Directory> directory,
-                      FileSystemClientPtr client,
-                      const OpenFileSystemCallback& callback) override;
+  void OpenTempDirectory(
+      mojo::InterfaceRequest<Directory> directory,
+      const OpenTempDirectoryCallback& callback) override;
+  void OpenPersistentFileSystem(
+      mojo::InterfaceRequest<Directory> directory,
+      const OpenPersistentFileSystemCallback& callback) override;
 
  private:
-  // Gets the system specific toplevel profile directory.
-  base::FilePath GetSystemProfileDir() const;
-
-  // Takes the origin string from |remote_application_url_|.
-  std::string GetOriginFromRemoteApplicationURL() const;
-
-  // Sanitizes |origin| so it is an acceptable filesystem name.
-  void BuildSanitizedOrigin(const std::string& origin,
-                            std::string* sanitized_origin);
-
   const std::string remote_application_url_;
   mojo::StrongBinding<FileSystem> binding_;
   LockTable* lock_table_;
+
+  base::FilePath persistent_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemImpl);
 };

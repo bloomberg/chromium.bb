@@ -12,17 +12,13 @@
 
 namespace filesystem {
 
-class FilesTestBase : public mojo::test::ApplicationTestBase,
-                      public filesystem::FileSystemClient {
+class FilesTestBase : public mojo::test::ApplicationTestBase {
  public:
   FilesTestBase();
   ~FilesTestBase() override;
 
   // Overridden from mojo::test::ApplicationTestBase:
   void SetUp() override;
-
-  // Overridden from FileSystemClient:
-  void OnFileSystemShutdown() override;
 
  protected:
   // Note: This has an out parameter rather than returning the |DirectoryPtr|,
@@ -32,7 +28,6 @@ class FilesTestBase : public mojo::test::ApplicationTestBase,
   FileSystemPtr& files() { return files_; }
 
  private:
-  mojo::Binding<filesystem::FileSystemClient> binding_;
   FileSystemPtr files_;
 
   DISALLOW_COPY_AND_ASSIGN(FilesTestBase);

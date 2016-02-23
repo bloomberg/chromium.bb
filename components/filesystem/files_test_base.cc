@@ -13,7 +13,7 @@
 
 namespace filesystem {
 
-FilesTestBase::FilesTestBase() : binding_(this) {
+FilesTestBase::FilesTestBase() {
 }
 
 FilesTestBase::~FilesTestBase() {
@@ -24,14 +24,9 @@ void FilesTestBase::SetUp() {
   shell()->ConnectToInterface("mojo:filesystem", &files_);
 }
 
-void FilesTestBase::OnFileSystemShutdown() {
-}
-
 void FilesTestBase::GetTemporaryRoot(DirectoryPtr* directory) {
   FileError error = FileError::FAILED;
-  files()->OpenFileSystem("temp", GetProxy(directory),
-                          binding_.CreateInterfacePtrAndBind(),
-                          mojo::Capture(&error));
+  files()->OpenTempDirectory(GetProxy(directory), mojo::Capture(&error));
   ASSERT_TRUE(files().WaitForIncomingResponse());
   ASSERT_EQ(FileError::OK, error);
 }

@@ -7,21 +7,11 @@ module filesystem;
 import "components/filesystem/public/interfaces/directory.mojom";
 import "components/filesystem/public/interfaces/types.mojom";
 
-// Callback interface for FileSystem. When we call OpenFileSystem, we supply a
-// client to receive and handle the shutdown signal. Just because the shell has
-// closed the application connection to the FileSystem doesn't mean that we
-// should immediately kill all connections to our clients. We notify them that
-// we are shutting down so that they can flush any data and cleanly shutdown.
-//
-// Actual connection lifetime is controlled by the lifetime of the |directory|
-// object.
-interface FileSystemClient {
-  OnFileSystemShutdown();
-};
-
 interface FileSystem {
-  // Opens the root directory for the file system with the given name; null
-  // yields the default file system, if any.
-  OpenFileSystem(string? file_system, Directory& directory,
-                 FileSystemClient client) => (FileError error);
+  // Opens a temporary filesystem. Will return a different directory each time
+  // it is called.
+  OpenTempDirectory(Directory& directory) => (FileError error);
+
+  // Returns a directory which will persist to disk.
+  OpenPersistentFileSystem(Directory& directory) => (FileError error);
 };

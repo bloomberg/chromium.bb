@@ -19,8 +19,7 @@ using mojo::Capture;
 namespace leveldb {
 namespace {
 
-class LevelDBApptest : public mojo::test::ApplicationTestBase,
-                       public filesystem::FileSystemClient {
+class LevelDBApptest : public mojo::test::ApplicationTestBase {
  public:
   LevelDBApptest() {}
   ~LevelDBApptest() override {}
@@ -33,16 +32,12 @@ class LevelDBApptest : public mojo::test::ApplicationTestBase,
     shell()->ConnectToInterface("mojo:leveldb", &leveldb_);
   }
 
-  // Overridden from FileSystemClient:
-  void OnFileSystemShutdown() override {}
-
   // Note: This has an out parameter rather than returning the |DirectoryPtr|,
   // since |ASSERT_...()| doesn't work with return values.
-  void GetOriginRoot(filesystem::DirectoryPtr* directory) {
+  void GetUserDataDir(filesystem::DirectoryPtr* directory) {
     FileError error = FileError::FAILED;
-    files()->OpenFileSystem("origin", GetProxy(directory),
-                            bindings_.CreateInterfacePtrAndBind(this),
-                            mojo::Capture(&error));
+    files()->OpenPersistentFileSystem(GetProxy(directory),
+                                      mojo::Capture(&error));
     ASSERT_TRUE(files().WaitForIncomingResponse());
     ASSERT_EQ(FileError::OK, error);
   }
@@ -51,8 +46,6 @@ class LevelDBApptest : public mojo::test::ApplicationTestBase,
   LevelDBServicePtr& leveldb() { return leveldb_; }
 
  private:
-  mojo::WeakBindingSet<filesystem::FileSystemClient> bindings_;
-
   filesystem::FileSystemPtr files_;
   LevelDBServicePtr leveldb_;
 
@@ -61,7 +54,7 @@ class LevelDBApptest : public mojo::test::ApplicationTestBase,
 
 TEST_F(LevelDBApptest, Basic) {
   filesystem::DirectoryPtr directory;
-  GetOriginRoot(&directory);
+  GetUserDataDir(&directory);
 
   DatabaseError error;
   LevelDBDatabasePtr database;
@@ -106,7 +99,7 @@ TEST_F(LevelDBApptest, Basic) {
 
 TEST_F(LevelDBApptest, WriteBatch) {
   filesystem::DirectoryPtr directory;
-  GetOriginRoot(&directory);
+  GetUserDataDir(&directory);
 
   DatabaseError error;
   LevelDBDatabasePtr database;
@@ -162,7 +155,7 @@ TEST_F(LevelDBApptest, Reconnect) {
 
   {
     filesystem::DirectoryPtr directory;
-    GetOriginRoot(&directory);
+    GetUserDataDir(&directory);
 
     LevelDBDatabasePtr database;
     leveldb()->Open(std::move(directory), "test", GetProxy(&database),
@@ -183,7 +176,7 @@ TEST_F(LevelDBApptest, Reconnect) {
 
   {
     filesystem::DirectoryPtr directory;
-    GetOriginRoot(&directory);
+    GetUserDataDir(&directory);
 
     // Reconnect to the database.
     LevelDBDatabasePtr database;
@@ -207,7 +200,7 @@ TEST_F(LevelDBApptest, GetSnapshotSimple) {
   DatabaseError error;
 
   filesystem::DirectoryPtr directory;
-  GetOriginRoot(&directory);
+  GetUserDataDir(&directory);
 
   LevelDBDatabasePtr database;
   leveldb()->Open(std::move(directory), "test", GetProxy(&database),
@@ -225,7 +218,7 @@ TEST_F(LevelDBApptest, GetFromSnapshots) {
   DatabaseError error;
 
   filesystem::DirectoryPtr directory;
-  GetOriginRoot(&directory);
+  GetUserDataDir(&directory);
 
   LevelDBDatabasePtr database;
   leveldb()->Open(std::move(directory), "test", GetProxy(&database),
@@ -277,7 +270,7 @@ TEST_F(LevelDBApptest, GetFromSnapshots) {
 
 TEST_F(LevelDBApptest, InvalidArgumentOnInvalidSnapshot) {
   filesystem::DirectoryPtr directory;
-  GetOriginRoot(&directory);
+  GetUserDataDir(&directory);
 
   LevelDBDatabasePtr database;
   DatabaseError error = DatabaseError::INVALID_ARGUMENT;
