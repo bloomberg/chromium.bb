@@ -19,6 +19,17 @@ class ReadingListModelObserver {
   // is unsafe to use the model.
   virtual void ReadingListModelLoaded(const ReadingListModel* model) = 0;
 
+  // Invoked when the batch updates are about to start. It will only be called
+  // once before ReadingListModelCompletedBatchUpdates, even if several updates
+  // are taking place at the same time.
+  virtual void ReadingListModelBeganBatchUpdates(
+      const ReadingListModel* model) {}
+
+  // Invoked when the batch updates have completed. This is called once all
+  // batch updates are completed.
+  virtual void ReadingListModelCompletedBatchUpdates(
+      const ReadingListModel* model) {}
+
   // Invoked from the destructor of the model. The model is no longer valid
   // after this call.
   virtual void ReadingListModelBeingDeleted(const ReadingListModel* model) {}

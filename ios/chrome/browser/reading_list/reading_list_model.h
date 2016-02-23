@@ -25,10 +25,24 @@ class ChromeBrowserState;
 // (Usually the main thread). The observers callbacks are also sent on the main
 // thread.
 class ReadingListModel {
+ protected:
+  class ScopedReadingListBatchUpdate;
+
  public:
   // Returns true if the model finished loading. Until this returns true the
   // reading list is not ready for use.
   virtual bool loaded() const = 0;
+
+  // Returns true if the model is performing batch updates right now.
+  bool IsPerformingBatchUpdates() const;
+
+  // Tells model to prepare for batch updates.
+  // This method is reentrant, i.e. several batch updates may take place at the
+  // same time.
+  // Returns a scoped batch update object that should be retained while the
+  // batch update is performed. Deallocating this object will inform model that
+  // the batch update has completed.
+  std::unique_ptr<ScopedReadingListBatchUpdate> BeginBatchUpdates();
 
   // Returns the size of read and unread entries.
   virtual size_t unread_size() const = 0;
@@ -69,6 +83,27 @@ class ReadingListModel {
   virtual ~ReadingListModel();
   // The observers.
   base::ObserverList<ReadingListModelObserver> observers_;
+
+  // Tells model that batch updates have completed. Called from
+  // ReadingListBatchUpdateToken dtor.
+  void EndBatchUpdates();
+
+  // Helper class that is used to scope batch updates.
+  class ScopedReadingListBatchUpdate {
+   public:
+    explicit ScopedReadingListBatchUpdate(ReadingListModel* model)
+        : model_(model) {}
+
+    ~ScopedReadingListBatchUpdate() { model_->EndBatchUpdates(); }
+
+   private:
+    ReadingListModel* model_;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedReadingListBatchUpdate);
+  };
+
+ private:
+  unsigned int current_batch_updates_count_;
 
   DISALLOW_COPY_AND_ASSIGN(ReadingListModel);
 };

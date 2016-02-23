@@ -17,6 +17,7 @@ class ReadingListModelMemory : public ReadingListModel, public KeyedService {
   void Shutdown() override;
 
   bool loaded() const override;
+
   size_t unread_size() const override;
   size_t read_size() const override;
 
