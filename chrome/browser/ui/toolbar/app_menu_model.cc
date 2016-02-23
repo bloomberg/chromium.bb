@@ -868,8 +868,10 @@ bool AppMenuModel::AddGlobalErrorMenuItems() {
       SetIcon(GetIndexOfCommandId(error->MenuItemCommandID()),
               error->MenuItemIcon());
       menu_items_added = true;
-      content::RecordAction(
-          base::UserMetricsAction("Signin_Impression_FromMenu"));
+      if (IDC_SHOW_SIGNIN_ERROR == error->MenuItemCommandID()) {
+        content::RecordAction(
+            base::UserMetricsAction("Signin_Impression_FromMenu"));
+      }
     }
   }
   return menu_items_added;
