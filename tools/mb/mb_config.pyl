@@ -643,7 +643,6 @@
       'CrWinClang64(dbg)': 'win_clang_debug_bot',
       'Win LKGR (DrM)': 'gn_release_drmemory_drfuzz_x86',
       'Win LKGR (DrM 64)': 'gn_release_drmemory_drfuzz',
-      'Libfuzzer Upload Linux': 'gn_release_libfuzzer_asan',
       'Libfuzzer Upload Linux ASan': 'gn_release_libfuzzer_asan',
       'Libfuzzer Upload Linux MSan': 'gn_release_libfuzzer_msan',
       'Site Isolation Linux': 'gn_release_trybot',
