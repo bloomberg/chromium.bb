@@ -120,16 +120,19 @@ let non_matching_namePrefix = 'Some';
 }, {
   filters: [{
     name: matching_name,
-  }]
+  }],
+  optionalServices: matching_services
 }, {
   filters: [{
     name: matching_name,
     namePrefix: matching_namePrefix
-  }]
+  }],
+  optionalServices: matching_services
 }, {
   filters: [{
     namePrefix: matching_namePrefix
-  }]
+  }],
+  optionalServices: matching_services
 }, {
   filters: [{
     services: matching_services,
@@ -140,6 +143,8 @@ let non_matching_namePrefix = 'Some';
   promise_test(() => {
     testRunner.setBluetoothMockDataSet('GlucoseHeartRateAdapter');
     return requestDeviceWithKeyDown(args).then(device => {
+      // We always have access to the services in matching_services
+      // because we include them in a filter or in optionalServices.
       assert_in_array(matching_services[0], device.uuids);
       assert_equals(device.name, matching_name);
       assert_true(device.name.startsWith(matching_namePrefix));

@@ -493,6 +493,7 @@ LayoutTestBluetoothAdapterProvider::GetHeartRateAndHIDAdapter() {
   scoped_refptr<NiceMockBluetoothAdapter> adapter(GetEmptyAdapter());
 
   BluetoothDevice::UUIDList uuids;
+  uuids.push_back(BluetoothUUID(kGenericAccessServiceUUID));
   uuids.push_back(BluetoothUUID(kHeartRateServiceUUID));
   uuids.push_back(BluetoothUUID(kHumanInterfaceDeviceServiceUUID));
 
@@ -618,6 +619,7 @@ scoped_ptr<NiceMockBluetoothDevice>
 LayoutTestBluetoothAdapterProvider::GetGlucoseDevice(
     MockBluetoothAdapter* adapter) {
   BluetoothDevice::UUIDList uuids;
+  uuids.push_back(BluetoothUUID(kGenericAccessServiceUUID));
   uuids.push_back(BluetoothUUID(kTxPowerServiceUUID));
   uuids.push_back(BluetoothUUID(kGlucoseServiceUUID));
 
@@ -672,6 +674,7 @@ scoped_ptr<NiceMockBluetoothDevice>
 LayoutTestBluetoothAdapterProvider::GetHeartRateDevice(
     MockBluetoothAdapter* adapter) {
   BluetoothDevice::UUIDList uuids;
+  uuids.push_back(BluetoothUUID(kGenericAccessServiceUUID));
   uuids.push_back(BluetoothUUID(kHeartRateServiceUUID));
 
   return GetConnectableDevice(adapter, "Heart Rate Device", uuids);

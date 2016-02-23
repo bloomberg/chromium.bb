@@ -1266,14 +1266,23 @@ void BluetoothDispatcherHost::FinishClosingChooser(
     return;
   }
 
-  VLOG(1) << "Device: " << device->GetName();
-  VLOG(1) << "UUIDs: ";
-  for (BluetoothUUID uuid : device->GetUUIDs())
-    VLOG(1) << "\t" << uuid.canonical_value();
-
   const std::string& device_id_for_origin = allowed_devices_map_.AddDevice(
       session->origin, device->GetAddress(), session->filters,
       session->optional_services);
+
+  VLOG(1) << "Device: " << device->GetName();
+  VLOG(1) << "UUIDs: ";
+
+  device::BluetoothDevice::UUIDList filtered_uuids;
+  for (BluetoothUUID uuid : device->GetUUIDs()) {
+    if (allowed_devices_map_.IsOriginAllowedToAccessService(
+            session->origin, device_id_for_origin, uuid.canonical_value())) {
+      VLOG(1) << "\t Allowed: " << uuid.canonical_value();
+      filtered_uuids.push_back(uuid);
+    } else {
+      VLOG(1) << "\t Not Allowed: " << uuid.canonical_value();
+    }
+  }
 
   content::BluetoothDevice device_ipc(
       device_id_for_origin,  // id
@@ -1288,7 +1297,7 @@ void BluetoothDispatcherHost::FinishClosingChooser(
       device->GetProductID(),         // product_id
       device->GetDeviceID(),          // product_version
       content::BluetoothDevice::UUIDsFromBluetoothUUIDs(
-          device->GetUUIDs()));  // uuids
+          filtered_uuids));  // uuids
   RecordRequestDeviceOutcome(UMARequestDeviceOutcome::SUCCESS);
   Send(new BluetoothMsg_RequestDeviceSuccess(session->thread_id,
                                              session->request_id, device_ipc));

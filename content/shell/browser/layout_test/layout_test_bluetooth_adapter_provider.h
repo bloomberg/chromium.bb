@@ -173,7 +173,8 @@ class LayoutTestBluetoothAdapterProvider {
   // Inherits from |EmptyAdapter|
   // Internal Structure:
   //   - Heart Rate Device
-  //      - Advertised UUIDs:
+  //      - UUIDs:
+  //         - Generic Access UUID (0x1800)
   //         - Heart Rate UUID (0x180d)
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetMissingServiceHeartRateAdapter();
@@ -183,7 +184,8 @@ class LayoutTestBluetoothAdapterProvider {
   // The services in this adapter do not contain any characteristics.
   // Internal Structure:
   //   - Heart Rate Device
-  //      - Advertised UUIDs:
+  //      - UUIDs:
+  //         - Generic Access UUID (0x1800)
   //         - Heart Rate UUID (0x180d)
   //      - Services:
   //         - Generic Access Service
@@ -195,7 +197,8 @@ class LayoutTestBluetoothAdapterProvider {
   // Inherits from |EmptyAdapter|
   // Internal Structure:
   //   - Heart Rate Device
-  //      - Advertised UUIDs:
+  //      - UUIDs:
+  //         - Generic Access UUID (0x1800)
   //         - Heart Rate UUID (0x180d)
   //      - Services:
   //         - Generic Access Service - Characteristics as described in
@@ -209,7 +212,8 @@ class LayoutTestBluetoothAdapterProvider {
   // Inherits from |EmptyAdapter|
   // Internal Structure:
   //   - |ConnectableDevice|(adapter, "Heart Rate And HID Device", uuids)
-  //      - Advertised UUIDs:
+  //      - UUIDs:
+  //         - Generic Access UUID (0x1800)
   //         - Heart Rate UUID (0x180d)
   //         - Human Interface Device UUID (0x1812) (a blacklisted service)
   //      - Services:
@@ -327,7 +331,7 @@ class LayoutTestBluetoothAdapterProvider {
   // Devices
 
   // |BaseDevice|
-  // Adv UUIDs added:
+  // UUIDs added:
   // None.
   // Services added:
   // None.
@@ -366,8 +370,7 @@ class LayoutTestBluetoothAdapterProvider {
   // |BatteryDevice|
   // Inherits from |BaseDevice|(adapter, "Battery Device", uuids,
   //                            "00:00:00:00:00:01")
-  // Adv UUIDs added:
-  //   - Generic Access (0x1800)
+  // UUIDs added:
   //   - Battery Service UUID (0x180F)
   // Services added:
   // None.
@@ -377,8 +380,9 @@ class LayoutTestBluetoothAdapterProvider {
   // |GlucoseDevice|
   // Inherits from |BaseDevice|(adapter, "Glucose Device", uuids,
   //                            "00:00:00:00:00:02")
-  // Adv UUIDs added:
+  // UUIDs added:
   //   - Generic Access (0x1800)
+  //   - Tx Power (0x1804)
   //   - Glucose UUID (0x1808)
   // Services added:
   // None.
@@ -387,7 +391,7 @@ class LayoutTestBluetoothAdapterProvider {
 
   // |ConnectableDevice|
   // Inherits from |BaseDevice|(adapter, device_name)
-  // Adv UUIDs added:
+  // UUIDs added:
   // None.
   // Services added:
   // None.
@@ -403,7 +407,7 @@ class LayoutTestBluetoothAdapterProvider {
 
   // |UnconnectableDevice|
   // Inherits from |BaseDevice|(adapter, device_name)
-  // Adv UUIDs added:
+  // UUIDs added:
   //  - errorUUID(error_code)
   // Services added:
   // None.
@@ -418,7 +422,8 @@ class LayoutTestBluetoothAdapterProvider {
 
   // |HeartRateDevice|
   // Inherits from |ConnectableDevice|(adapter, "Heart Rate Device", uuids)
-  // Adv UUIDs added:
+  // UUIDs added:
+  //   - Generic Access (0x1800)
   //   - Heart Rate UUID (0x180D)
   // Services added:
   // None. Each user of the HeartRateDevice is in charge of adding the

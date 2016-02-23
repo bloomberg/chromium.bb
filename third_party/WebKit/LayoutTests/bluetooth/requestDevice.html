@@ -177,6 +177,18 @@ promise_test(() => {
 
 promise_test(() => {
   testRunner.setBluetoothMockDataSet('GlucoseHeartRateAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['glucose']}],
+                                   optionalServices: ['tx_power']})
+    .then(device => {
+      assert_equals(device.uuids.length, 2);
+      assert_in_array(BluetoothUUID.getService('glucose'), device.uuids);
+      assert_in_array(BluetoothUUID.getService('tx_power'), device.uuids);
+    });
+}, 'We should only see UUID\'s that we\'ve been given permission for.')
+
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('GlucoseHeartRateAdapter');
   // Both devices support the Generic Access service, but things need to
   // support both services to pass the filter, and neither has a Battery
   // service.
