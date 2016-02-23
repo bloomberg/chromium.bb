@@ -51275,6 +51275,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Tab.LostTabAgeWhenSwitchedToForeground" units="ms">
+  <owner>pkotwicz@chromium.org</owner>
+  <summary>
+    [Android] When a tab that was opened in the background (e.g. via &quot;Open
+    link in new tab&quot;) is evicted prior to the first time that it is shown,
+    we record the tab's age at the time that the tab is shown.
+  </summary>
+</histogram>
+
 <histogram name="Tab.NewTab" enum="NewTabType">
   <owner>lliabraa@chromium.org</owner>
   <owner>beaudoin@chromium.org</owner>

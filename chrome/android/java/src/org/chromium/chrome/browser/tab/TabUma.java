@@ -264,6 +264,13 @@ public class TabUma {
                 } else {
                     RecordHistogram.recordEnumeratedHistogram("Tab.BackgroundLoadStatus",
                             TAB_BACKGROUND_LOAD_LOST, TAB_BACKGROUND_LOAD_LIM);
+
+                    if (previousTimestampMillis > 0) {
+                        RecordHistogram.recordMediumTimesHistogram(
+                                "Tab.LostTabAgeWhenSwitchedToForeground",
+                                System.currentTimeMillis() - previousTimestampMillis,
+                                TimeUnit.MILLISECONDS);
+                    }
                 }
             } else if (mTabCreationState == TabCreationState.FROZEN_FOR_LAZY_LOAD) {
                 assert mRestoreStartedAtMillis == -1;
