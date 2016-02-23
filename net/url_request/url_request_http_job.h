@@ -162,9 +162,7 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   void DoneWithRequest(CompletionCause reason);
 
   // Callback functions for Cookie Monster
-  void DoLoadCookies();
-  void CheckCookiePolicyAndLoad(const CookieList& cookie_list);
-  void OnCookiesLoaded(const std::string& cookie_line);
+  void SetCookieHeaderAndStart(const CookieList& cookie_list);
   void DoStartTransaction();
 
   // Some servers send the body compressed, but specify the content length as

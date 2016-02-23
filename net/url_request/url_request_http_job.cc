@@ -261,8 +261,8 @@ void URLRequestHttpJob::Start() {
       (request_info_.load_flags & LOAD_DO_NOT_SEND_COOKIES) ||
       (request_info_.load_flags & LOAD_DO_NOT_SAVE_COOKIES) ||
       CanEnablePrivacyMode();
-  // Privacy mode could still be disabled in OnCookiesLoaded if we are going
-  // to send previously saved cookies.
+  // Privacy mode could still be disabled in SetCookieHeaderAndStart if we are
+  // going to send previously saved cookies.
   request_info_.privacy_mode = enable_privacy_mode ?
       PRIVACY_MODE_ENABLED : PRIVACY_MODE_DISABLED;
 
@@ -667,51 +667,37 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
 
   CookieStore* cookie_store = request_->context()->cookie_store();
   if (cookie_store && !(request_info_.load_flags & LOAD_DO_NOT_SEND_COOKIES)) {
-    cookie_store->GetAllCookiesForURLAsync(
-        request_->url(),
-        base::Bind(&URLRequestHttpJob::CheckCookiePolicyAndLoad,
+    CookieOptions options;
+    options.set_include_httponly();
+
+    // TODO(mkwst): If same-site cookies aren't enabled, pretend the request is
+    // same-site regardless, in order to include all cookies. Drop this check
+    // once we decide whether or not we're shipping this feature:
+    // https://crbug.com/459154
+    url::Origin requested_origin(request_->url());
+    if (!network_delegate() ||
+        !network_delegate()->AreExperimentalCookieFeaturesEnabled()) {
+      options.set_include_same_site();
+    } else if (requested_origin.IsSameOriginWith(
+                   url::Origin(request_->first_party_for_cookies())) &&
+               (IsMethodSafe(request_->method()) ||
+                requested_origin.IsSameOriginWith(request_->initiator()))) {
+      options.set_include_same_site();
+    }
+
+    cookie_store->GetCookieListWithOptionsAsync(
+        request_->url(), options,
+        base::Bind(&URLRequestHttpJob::SetCookieHeaderAndStart,
                    weak_factory_.GetWeakPtr()));
   } else {
     DoStartTransaction();
   }
 }
 
-void URLRequestHttpJob::DoLoadCookies() {
-  CookieOptions options;
-  options.set_include_httponly();
-
-  // TODO(mkwst): If same-site cookies aren't enabled, pretend the request is
-  // same-site regardless, in order to include all cookies. Drop this check once
-  // we decide whether or not we're shipping this feature:
-  // https://crbug.com/459154
-  url::Origin requested_origin(request_->url());
-  if (!network_delegate() ||
-      !network_delegate()->AreExperimentalCookieFeaturesEnabled()) {
-    options.set_include_same_site();
-  } else if (requested_origin.IsSameOriginWith(
-                 url::Origin(request_->first_party_for_cookies())) &&
-             (IsMethodSafe(request_->method()) ||
-              requested_origin.IsSameOriginWith(request_->initiator()))) {
-    options.set_include_same_site();
-  }
-
-  request_->context()->cookie_store()->GetCookiesWithOptionsAsync(
-      request_->url(), options, base::Bind(&URLRequestHttpJob::OnCookiesLoaded,
-                                           weak_factory_.GetWeakPtr()));
-}
-
-void URLRequestHttpJob::CheckCookiePolicyAndLoad(
-    const CookieList& cookie_list) {
-  if (CanGetCookies(cookie_list))
-    DoLoadCookies();
-  else
-    DoStartTransaction();
-}
-
-void URLRequestHttpJob::OnCookiesLoaded(const std::string& cookie_line) {
-  if (!cookie_line.empty()) {
+void URLRequestHttpJob::SetCookieHeaderAndStart(const CookieList& cookie_list) {
+  if (cookie_list.size() && CanGetCookies(cookie_list)) {
     request_info_.extra_headers.SetHeader(
-        HttpRequestHeaders::kCookie, cookie_line);
+        HttpRequestHeaders::kCookie, CookieStore::BuildCookieLine(cookie_list));
     // Disable privacy mode as we are sending cookies anyway.
     request_info_.privacy_mode = PRIVACY_MODE_DISABLED;
   }
