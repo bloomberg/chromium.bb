@@ -30,9 +30,7 @@
 
 #include "platform/WebThreadSupportingGC.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Deque.h"
 #include "wtf/HashMap.h"
-#include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/ThreadingPrimitives.h"
@@ -51,17 +49,18 @@ public:
     ~DatabaseThread();
     DECLARE_TRACE();
 
+    // Callable only from the main thread.
     void start();
     void terminate();
-    bool terminationRequested() const;
 
+    // Callable from the main thread or the database thread.
     void scheduleTask(PassOwnPtr<DatabaseTask>);
+    bool isDatabaseThread() const;
 
+    // Callable only from the database thread.
     void recordDatabaseOpen(Database*);
     void recordDatabaseClosed(Database*);
     bool isDatabaseOpen(Database*);
-
-    bool isDatabaseThread() { return m_thread && m_thread->isCurrentThread(); }
 
     SQLTransactionClient* transactionClient() { return m_transactionClient.get(); }
     SQLTransactionCoordinator* transactionCoordinator() { return m_transactionCoordinator.get(); }
@@ -84,7 +83,7 @@ private:
     Member<SQLTransactionCoordinator> m_transactionCoordinator;
     TaskSynchronizer* m_cleanupSync;
 
-    mutable Mutex m_terminationRequestedMutex;
+    Mutex m_terminationRequestedMutex;
     bool m_terminationRequested;
 };
 

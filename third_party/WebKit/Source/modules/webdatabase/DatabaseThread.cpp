@@ -36,13 +36,14 @@
 #include "platform/ThreadSafeFunctional.h"
 #include "platform/WebThreadSupportingGC.h"
 #include "public/platform/Platform.h"
+#include "wtf/MainThread.h"
 
 namespace blink {
 
 DatabaseThread::DatabaseThread()
     : m_transactionClient(adoptPtr(new SQLTransactionClient()))
     , m_transactionCoordinator(new SQLTransactionCoordinator())
-    , m_cleanupSync(0)
+    , m_cleanupSync(nullptr)
     , m_terminationRequested(false)
 {
 }
@@ -61,6 +62,7 @@ DEFINE_TRACE(DatabaseThread)
 
 void DatabaseThread::start()
 {
+    ASSERT(isMainThread());
     if (m_thread)
         return;
     m_thread = WebThreadSupportingGC::create("WebCore: Database");
@@ -74,6 +76,7 @@ void DatabaseThread::setupDatabaseThread()
 
 void DatabaseThread::terminate()
 {
+    ASSERT(isMainThread());
     TaskSynchronizer sync;
     {
         MutexLocker lock(m_terminationRequestedMutex);
@@ -88,12 +91,6 @@ void DatabaseThread::terminate()
     // thread are processed. However, it shouldn't block at all because
     // the database thread has already finished processing the cleanup task.
     m_thread.clear();
-}
-
-bool DatabaseThread::terminationRequested() const
-{
-    MutexLocker lock(m_terminationRequestedMutex);
-    return m_terminationRequested;
 }
 
 void DatabaseThread::cleanupDatabaseThread()
@@ -139,7 +136,12 @@ void DatabaseThread::recordDatabaseClosed(Database* database)
 {
     ASSERT(isDatabaseThread());
     ASSERT(database);
-    ASSERT(m_terminationRequested || m_openDatabaseSet.contains(database));
+#if ENABLE(ASSERT)
+    {
+        MutexLocker lock(m_terminationRequestedMutex);
+        ASSERT(m_terminationRequested || m_openDatabaseSet.contains(database));
+    }
+#endif
     m_openDatabaseSet.remove(database);
 }
 
@@ -151,10 +153,22 @@ bool DatabaseThread::isDatabaseOpen(Database* database)
     return !m_terminationRequested && m_openDatabaseSet.contains(database);
 }
 
+bool DatabaseThread::isDatabaseThread() const
+{
+    // This function is called only from the main thread or the database
+    // thread. If we are not in the main thread, we are in the database thread.
+    return !isMainThread();
+}
+
 void DatabaseThread::scheduleTask(PassOwnPtr<DatabaseTask> task)
 {
     ASSERT(m_thread);
-    ASSERT(!terminationRequested());
+#if ENABLE(ASSERT)
+    {
+        MutexLocker lock(m_terminationRequestedMutex);
+        ASSERT(!m_terminationRequested);
+    }
+#endif
     // WebThread takes ownership of the task.
     m_thread->postTask(BLINK_FROM_HERE, new Task(threadSafeBind(&DatabaseTask::run, task)));
 }
