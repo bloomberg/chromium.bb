@@ -38,6 +38,9 @@ class ConfirmAccountChangeFragment
     private static final String KEY_OLD_ACCOUNT_NAME = "lastAccountName";
     private static final String KEY_NEW_ACCOUNT_NAME = "newAccountName";
 
+    // Tracks whether to abort signin in onDismiss.
+    private boolean mAbortSignin = true;
+
     public static ConfirmAccountChangeFragment newInstance(String accountName) {
         ConfirmAccountChangeFragment dialogFragment = new ConfirmAccountChangeFragment();
         Bundle args = new Bundle();
@@ -85,8 +88,17 @@ class ConfirmAccountChangeFragment
         if (which == AlertDialog.BUTTON_POSITIVE) {
             RecordUserAction.record("Signin_ImportDataPrompt_ImportData");
             SigninManager.get(getActivity()).progressInteractiveSignInFlowAccountConfirmed();
+            mAbortSignin = false;
         } else if (which == AlertDialog.BUTTON_NEGATIVE) {
             RecordUserAction.record("Signin_ImportDataPrompt_Cancel");
+        }
+    }
+
+    @Override
+    public void onDismiss(DialogInterface dialogInterface) {
+        super.onDismiss(dialogInterface);
+        if (mAbortSignin) {
+            // Something other than BUTTON_POSITIVE is dismissing this fragment; abort signin.
             SigninManager.get(getActivity()).abortSignIn();
         }
     }
@@ -96,10 +108,7 @@ class ConfirmAccountChangeFragment
                 ClearSyncDataPreferences.class.getName());
         startActivity(intent);
 
-        // Cancel out of current sign in.
-        SigninManager.get(getActivity()).abortSignIn();
-        dismiss();
-
         RecordUserAction.record("Signin_ImportDataPrompt_DontImport");
+        dismiss();
     }
 }

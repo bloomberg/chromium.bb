@@ -22,6 +22,9 @@ class ConfirmManagedSigninFragment extends DialogFragment implements OnClickList
     private static final String TAG = "ConfirmManagedSignin";
     private static final String KEY_MANAGEMENT_DOMAIN = "managementDomain";
 
+    // Tracks whether to abort signin in onDismiss.
+    private boolean mAbortSignin = true;
+
     public static ConfirmManagedSigninFragment newInstance(String managementDomain) {
         ConfirmManagedSigninFragment dialogFragment = new ConfirmManagedSigninFragment();
         Bundle args = new Bundle();
@@ -51,17 +54,16 @@ class ConfirmManagedSigninFragment extends DialogFragment implements OnClickList
         if (which == AlertDialog.BUTTON_POSITIVE) {
             Log.d(TAG, "Accepted policy management, proceeding with sign-in.");
             SigninManager.get(getActivity()).progressInteractiveSignInFlowManagedConfirmed();
-        } else {
-            Log.d(TAG, "Policy confirmation rejected; abort sign-in.");
-            SigninManager.get(getActivity()).abortSignIn();
+            mAbortSignin = false;
         }
     }
 
     @Override
     public void onDismiss(DialogInterface dialogInterface) {
         super.onDismiss(dialogInterface);
-        // This makes dismissing the dialog equivalent to cancelling sign-in, and
-        // allows the listener to clean up any pending state.
-        onClick(dialogInterface, AlertDialog.BUTTON_NEGATIVE);
+        if (mAbortSignin) {
+            Log.d(TAG, "Policy confirmation rejected; abort sign-in.");
+            SigninManager.get(getActivity()).abortSignIn();
+        }
     }
 }
