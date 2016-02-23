@@ -434,6 +434,8 @@ TEST_F(GetUpdatesProcessorApplyUpdatesTest, Normal) {
 
   EXPECT_EQ(0, GetNonAppliedHandler()->GetPassiveApplyUpdatesCount());
   EXPECT_EQ(0, GetAppliedHandler()->GetPassiveApplyUpdatesCount());
+
+  EXPECT_TRUE(status.get_updates_request_types().Equals(GetGuTypes()));
 }
 
 // Verify that a configure cycle applies updates passively to the specified
@@ -455,6 +457,8 @@ TEST_F(GetUpdatesProcessorApplyUpdatesTest, Configure) {
 
   EXPECT_EQ(0, GetNonAppliedHandler()->GetApplyUpdatesCount());
   EXPECT_EQ(0, GetAppliedHandler()->GetApplyUpdatesCount());
+
+  EXPECT_TRUE(status.get_updates_request_types().Equals(GetGuTypes()));
 }
 
 // Verify that a poll cycle applies updates non-passively to the specified
@@ -475,6 +479,8 @@ TEST_F(GetUpdatesProcessorApplyUpdatesTest, Poll) {
 
   EXPECT_EQ(0, GetNonAppliedHandler()->GetPassiveApplyUpdatesCount());
   EXPECT_EQ(0, GetAppliedHandler()->GetPassiveApplyUpdatesCount());
+
+  EXPECT_TRUE(status.get_updates_request_types().Equals(GetGuTypes()));
 }
 
 class DownloadUpdatesDebugInfoTest : public ::testing::Test {

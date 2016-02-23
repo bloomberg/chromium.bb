@@ -36,13 +36,11 @@ class SYNC_EXPORT StatusController {
   StatusController();
   ~StatusController();
 
-  // ClientToServer messages.
-  const ModelTypeSet commit_request_types() const {
-    return model_neutral_.commit_request_types;
-  }
-  void set_commit_request_types(ModelTypeSet value) {
-    model_neutral_.commit_request_types = value;
-  }
+  // The types included in the get updates and commit client to server requests.
+  const ModelTypeSet get_updates_request_types() const;
+  void set_get_updates_request_types(ModelTypeSet value);
+  const ModelTypeSet commit_request_types() const;
+  void set_commit_request_types(ModelTypeSet value);
 
   // Various conflict counters.
   int num_encryption_conflicts() const;

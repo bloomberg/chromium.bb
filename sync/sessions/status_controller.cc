@@ -17,6 +17,22 @@ StatusController::StatusController() {
 
 StatusController::~StatusController() {}
 
+const ModelTypeSet StatusController::get_updates_request_types() const {
+  return model_neutral_.get_updates_request_types;
+}
+
+void StatusController::set_get_updates_request_types(ModelTypeSet value) {
+  model_neutral_.get_updates_request_types = value;
+}
+
+const ModelTypeSet StatusController::commit_request_types() const {
+  return model_neutral_.commit_request_types;
+}
+
+void StatusController::set_commit_request_types(ModelTypeSet value) {
+  model_neutral_.commit_request_types = value;
+}
+
 void StatusController::increment_num_updates_downloaded_by(int value) {
   model_neutral_.num_updates_downloaded_total += value;
 }

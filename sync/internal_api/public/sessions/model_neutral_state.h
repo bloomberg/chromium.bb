@@ -21,6 +21,9 @@ struct SYNC_EXPORT ModelNeutralState {
   ModelNeutralState();
   ~ModelNeutralState();
 
+  // The set of types for which updates were requested from the server.
+  ModelTypeSet get_updates_request_types;
+
   // The set of types for which commits were sent to the server.
   ModelTypeSet commit_request_types;
 
@@ -54,7 +57,7 @@ struct SYNC_EXPORT ModelNeutralState {
   bool items_committed;
 };
 
-bool HasSyncerError(const ModelNeutralState& state);
+SYNC_EXPORT bool HasSyncerError(const ModelNeutralState& state);
 
 }  // namespace sessions
 }  // namespace syncer

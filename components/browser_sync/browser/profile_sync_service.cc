@@ -72,6 +72,7 @@
 #include "sync/internal_api/public/configure_reason.h"
 #include "sync/internal_api/public/http_bridge_network_resources.h"
 #include "sync/internal_api/public/network_resources.h"
+#include "sync/internal_api/public/sessions/model_neutral_state.h"
 #include "sync/internal_api/public/sessions/type_debug_info_observer.h"
 #include "sync/internal_api/public/shutdown_reason.h"
 #include "sync/internal_api/public/sync_encryption_handler.h"
@@ -1136,7 +1137,12 @@ void ProfileSyncService::OnBackendInitialized(
 
 void ProfileSyncService::OnSyncCycleCompleted() {
   UpdateLastSyncedTime();
-  if (IsDataTypeControllerRunning(syncer::SESSIONS)) {
+  const syncer::sessions::SyncSessionSnapshot snapshot =
+      GetLastSessionSnapshot();
+  if (IsDataTypeControllerRunning(syncer::SESSIONS) &&
+      snapshot.model_neutral_state().get_updates_request_types.Has(
+          syncer::SESSIONS) &&
+      !syncer::sessions::HasSyncerError(snapshot.model_neutral_state())) {
     // Trigger garbage collection of old sessions now that we've downloaded
     // any new session data.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
