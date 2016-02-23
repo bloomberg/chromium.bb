@@ -61,12 +61,10 @@
   [Use this issue tracker
   query](https://code.google.com/p/chromium/issues/list?can=2&q=status%3Aunconfirmed&sort=-id&num=1000).
 
-* Press **h** to bring up a preview of the bug text.
-
-* Use **j** and **k** to advance through bugs.
+* Read the title of the bug.
 
 * If a bug looks like it might be network/download/safe-browsing related,
-  middle click (or command-click on OSX) to open in new tab.
+  middle click (or command-click on OSX) to open it in a new tab.
 
 * If a user provides a crash ID for a crasher for a bug that could be
   net-related, look at the crash stack at
@@ -91,10 +89,10 @@
   Internals>Network component (but not its subcomponents). To do this, go
   to the issue tracker and then click "Saved Queries".
   Add a query with these settings:
-  * Saved query name: Network Bug Triage
-  * Project: chromium
-  * Query: component=Internals>Network
-  * Subscription options: Notify Immediately
+    * Saved query name: Network Bug Triage
+    * Project: chromium
+    * Query: component=Internals>Network
+    * Subscription options: Notify Immediately
 
 * Look through uncomfirmed and untriaged component=Internals>Network bugs,
   prioritizing those updated within the last week. [Use this issue tracker
