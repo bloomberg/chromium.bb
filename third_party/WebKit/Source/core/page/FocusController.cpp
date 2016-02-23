@@ -743,7 +743,7 @@ bool FocusController::advanceFocusInDocumentOrder(LocalFrame* frame, Element* st
 
     Element* current = start;
     if (!current)
-        current = document->focusedElement();
+        current = document->sequentialFocusNavigationStartingPoint(type);
 
     // FIXME: Not quite correct when it comes to focus transitions leaving/entering the WebView itself
     bool caretBrowsing = frame->settings() && frame->settings()->caretBrowsingEnabled();
@@ -760,6 +760,7 @@ bool FocusController::advanceFocusInDocumentOrder(LocalFrame* frame, Element* st
         // searching for focusable elements there.
         if (frame->localFrameRoot() != frame->tree().top()) {
             document->clearFocusedElement();
+            document->setSequentialFocusNavigationStartingPoint(nullptr);
             toRemoteFrame(frame->localFrameRoot()->tree().parent())->advanceFocus(type, frame->localFrameRoot());
             return true;
         }
@@ -767,6 +768,7 @@ bool FocusController::advanceFocusInDocumentOrder(LocalFrame* frame, Element* st
         // We didn't find an element to focus, so we should try to pass focus to Chrome.
         if (!initialFocus && m_page->chromeClient().canTakeFocus(type)) {
             document->clearFocusedElement();
+            document->setSequentialFocusNavigationStartingPoint(nullptr);
             setFocusedFrame(nullptr);
             m_page->chromeClient().takeFocus(type);
             return true;

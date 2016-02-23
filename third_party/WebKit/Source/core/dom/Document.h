@@ -602,6 +602,8 @@ public:
     void setNeedsFocusedElementCheck();
     void setAutofocusElement(Element*);
     Element* autofocusElement() const { return m_autofocusElement.get(); }
+    void setSequentialFocusNavigationStartingPoint(Node*);
+    Element* sequentialFocusNavigationStartingPoint(WebFocusType) const;
 
     void setActiveHoverElement(PassRefPtrWillBeRawPtr<Element>);
     Element* activeHoverElement() const { return m_activeHoverElement.get(); }
@@ -1218,6 +1220,7 @@ private:
     Timer<Document> m_clearFocusedElementTimer;
     RefPtrWillBeMember<Element> m_autofocusElement;
     RefPtrWillBeMember<Element> m_focusedElement;
+    RefPtrWillBeMember<Range> m_sequentialFocusNavigationStartingPoint;
     RefPtrWillBeMember<Node> m_hoverNode;
     RefPtrWillBeMember<Element> m_activeHoverElement;
     RefPtrWillBeMember<Element> m_documentElement;

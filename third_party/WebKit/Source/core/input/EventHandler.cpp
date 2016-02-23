@@ -432,6 +432,7 @@ WebInputEventResult EventHandler::handleMousePressEvent(const MouseEventWithHitT
     Node* innerNode = event.innerNode();
 
     m_mousePressNode = innerNode;
+    m_frame->document()->setSequentialFocusNavigationStartingPoint(innerNode);
     m_dragStartPos = event.event().position();
 
     bool swallowEvent = false;
@@ -979,6 +980,7 @@ WebInputEventResult EventHandler::handleMousePressEvent(const PlatformMouseEvent
     }
 
     m_mousePressNode = mev.innerNode();
+    m_frame->document()->setSequentialFocusNavigationStartingPoint(mev.innerNode());
 
     RefPtrWillBeRawPtr<LocalFrame> subframe = subframeForHitTestResult(mev);
     if (subframe) {

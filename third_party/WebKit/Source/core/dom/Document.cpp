@@ -577,6 +577,7 @@ void Document::dispose()
     // these extra pointers or we will create a reference cycle.
     m_docType = nullptr;
     m_focusedElement = nullptr;
+    m_sequentialFocusNavigationStartingPoint = nullptr;
     m_hoverNode = nullptr;
     m_activeHoverElement = nullptr;
     m_titleElement = nullptr;
@@ -2244,6 +2245,7 @@ void Document::detach(const AttachContext& context)
         if (frameHost())
             frameHost()->chromeClient().focusedNodeChanged(oldFocusedElement.get(), nullptr);
     }
+    m_sequentialFocusNavigationStartingPoint = nullptr;
 
     if (this == &axObjectCacheOwner())
         clearAXObjectCache();
@@ -3632,6 +3634,7 @@ bool Document::setFocusedElement(PassRefPtrWillBeRawPtr<Element> prpNewFocusedEl
         }
         // Set focus on the new node
         m_focusedElement = newFocusedElement;
+        setSequentialFocusNavigationStartingPoint(m_focusedElement.get());
 
         m_focusedElement->setFocus(true);
         // Element::setFocus for frames can dispatch events.
@@ -3713,6 +3716,49 @@ SetFocusedElementDone:
 void Document::clearFocusedElement()
 {
     setFocusedElement(nullptr, FocusParams(SelectionBehaviorOnFocus::None, WebFocusTypeNone, nullptr));
+}
+
+void Document::setSequentialFocusNavigationStartingPoint(Node* node)
+{
+    if (!node) {
+        m_sequentialFocusNavigationStartingPoint = nullptr;
+        return;
+    }
+    ASSERT(node->document() == this);
+    if (!m_sequentialFocusNavigationStartingPoint)
+        m_sequentialFocusNavigationStartingPoint = Range::create(*this);
+    m_sequentialFocusNavigationStartingPoint->selectNodeContents(node->isElementNode() ? node : node->parentOrShadowHostElement(), ASSERT_NO_EXCEPTION);
+}
+
+Element* Document::sequentialFocusNavigationStartingPoint(WebFocusType type) const
+{
+    if (m_focusedElement)
+        return m_focusedElement.get();
+    if (!m_sequentialFocusNavigationStartingPoint)
+        return nullptr;
+    if (!m_sequentialFocusNavigationStartingPoint->collapsed()) {
+        Node* node = m_sequentialFocusNavigationStartingPoint->startContainer();
+        ASSERT(node == m_sequentialFocusNavigationStartingPoint->endContainer());
+        return node->isElementNode() ? toElement(node) : node->parentOrShadowHostElement();
+    }
+
+    // Range::selectNodeContents didn't select contents because the element had
+    // no children.
+    if (m_sequentialFocusNavigationStartingPoint->startContainer()->isElementNode()
+        && !m_sequentialFocusNavigationStartingPoint->startContainer()->hasChildren()
+        && m_sequentialFocusNavigationStartingPoint->startOffset() == 0)
+        return toElement(m_sequentialFocusNavigationStartingPoint->startContainer());
+
+    // A node selected by Range::selectNodeContents was removed from the
+    // document tree.
+    if (Node* nextNode = m_sequentialFocusNavigationStartingPoint->firstNode()) {
+        if (type == WebFocusTypeForward)
+            return ElementTraversal::previous(*nextNode);
+        if (nextNode->isElementNode())
+            return toElement(nextNode);
+        return ElementTraversal::next(*nextNode);
+    }
+    return nullptr;
 }
 
 void Document::setCSSTarget(Element* newTarget)
@@ -5880,6 +5926,7 @@ DEFINE_TRACE(Document)
     visitor->trace(m_implementation);
     visitor->trace(m_autofocusElement);
     visitor->trace(m_focusedElement);
+    visitor->trace(m_sequentialFocusNavigationStartingPoint);
     visitor->trace(m_hoverNode);
     visitor->trace(m_activeHoverElement);
     visitor->trace(m_documentElement);

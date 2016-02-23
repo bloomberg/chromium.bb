@@ -17,6 +17,10 @@ To test, put focus in "a". Pressing Tab should focus "a" through "k" in order, a
 
 Tabbing forward....
 
+<input value="h" tabindex="6"> focused
+<input value="i" tabindex="0"> focused
+<input value="j" tabindex="0"> focused
+<input value="k" tabindex="0"> focused
 <input value="a" tabindex="1"> focused
 <input value="b" tabindex="1"> focused
 <input value="c" tabindex="1"> focused
@@ -24,24 +28,20 @@ Tabbing forward....
 <input value="e" tabindex="3"> focused
 <input value="f" tabindex="4"> focused
 <input value="g" tabindex="6"> focused
-<input value="h" tabindex="6"> focused
-<input value="i" tabindex="0"> focused
-<input value="j" tabindex="0"> focused
-<input value="k" tabindex="0"> focused
 
 Tabbing backward....
 
-<input value="k" tabindex="0"> focused
-<input value="j" tabindex="0"> focused
-<input value="i" tabindex="0"> focused
-<input value="h" tabindex="6"> focused
-<input value="g" tabindex="6"> focused
 <input value="f" tabindex="4"> focused
 <input value="e" tabindex="3"> focused
 <input value="d" tabindex="1"> focused
 <input value="c" tabindex="1"> focused
 <input value="b" tabindex="1"> focused
 <input value="a" tabindex="1"> focused
+<input value="k" tabindex="0"> focused
+<input value="j" tabindex="0"> focused
+<input value="i" tabindex="0"> focused
+<input value="h" tabindex="6"> focused
+<input value="g" tabindex="6"> focused
 
 Test finished
 

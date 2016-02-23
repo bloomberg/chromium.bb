@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<body>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../forms/resources/common.js"></script>
+<div id="log"></div>
+<div id="container"></div>
+<script>
+if (!window.eventSender)
+    document.body.textContent = 'This test requires window.eventSender.';
+
+test(function() {
+    var container = document.querySelector('#container');
+    container.innerHTML = '<input id=prev><div style="height:200px;"><span>text</span></div><input id=next>';
+    hoverOverElement(container.querySelector('span'));
+    eventSender.mouseDown();
+    eventSender.keyDown('\t');
+    assert_equals(document.activeElement.id, 'next');
+
+    hoverOverElement(container.querySelector('div'));
+    eventSender.mouseDown();
+    eventSender.keyDown('\t', ['shiftKey']);
+    assert_equals(document.activeElement.id, 'prev');
+}, 'Mouse press should update sequential focus navigation starting point.');
+
+test(function() {
+    var container = document.querySelector('#container');
+    container.innerHTML = '<a href="#fragment"></a><input id=prev><a name="fragment"></a><input id=next>';
+    container.querySelector('a').click();
+    eventSender.keyDown('\t');
+    assert_equals(document.activeElement.id, 'next');
+}, 'Fragment navigation should update sequential focus navigation starting point.');
+
+test(function() {
+    var container = document.querySelector('#container');
+    container.innerHTML = '<input id=prev><input id=start><input id=next>';
+    container.querySelector('#start').focus();
+    container.querySelector('#start').blur();
+    eventSender.keyDown('\t');
+    assert_equals(document.activeElement.id, 'next');
+}, 'Focusing an element should update sequential focus navigation starting point.');
+
+test(function() {
+    var container = document.querySelector('#container');
+    container.innerHTML = '<input id=prev><input id=start><input id=next>';
+    container.querySelector('#start').focus();
+    container.querySelector('#start').remove();
+    eventSender.keyDown('\t');
+    assert_equals(document.activeElement.id, 'next');
+
+    container.innerHTML = '<input id=prev><input id=start><input id=next>';
+    container.querySelector('#start').focus();
+    container.querySelector('#start').remove();
+    eventSender.keyDown('\t', ['shiftKey']);
+    assert_equals(document.activeElement.id, 'prev');
+}, 'After removing a focused element from the documen tree, sequential focus navigation should start at a place where the focused element was.');
+</script>
+</body>

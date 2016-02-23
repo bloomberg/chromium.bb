@@ -1506,10 +1506,13 @@ bool FrameView::processUrlFragmentHelper(const String& name, UrlFragmentBehavior
     // clear focus, which matches the behavior of other browsers.
     if (anchorNode) {
         m_frame->document()->updateLayoutIgnorePendingStylesheets();
-        if (behavior == UrlFragmentScroll && anchorNode->isFocusable())
+        if (behavior == UrlFragmentScroll && anchorNode->isFocusable()) {
             anchorNode->focus();
-        else
+        } else {
+            if (behavior == UrlFragmentScroll)
+                m_frame->document()->setSequentialFocusNavigationStartingPoint(anchorNode);
             m_frame->document()->clearFocusedElement();
+        }
     }
     return true;
 }

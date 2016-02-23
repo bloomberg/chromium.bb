@@ -51,8 +51,6 @@ main window: A #0 (tabindex=1) blurred
 
 Option-tabbing forward...
 
-main window: A #0 (tabindex=1) focused
-main window: A #0 (tabindex=1) blurred
 main window: INPUT #2 (tabindex=2) focused
 main window: INPUT #2 (tabindex=2) blurred
 main window: A #2 (tabindex=2) focused
@@ -85,6 +83,8 @@ middle-child-2: window blurred
 main window: window focused
 main window: INPUT #3 (tabindex=0) focused
 main window: INPUT #3 (tabindex=0) blurred
+main window: A #0 (tabindex=1) focused
+main window: A #0 (tabindex=1) blurred
 
 Option-tabbing backward...
 
