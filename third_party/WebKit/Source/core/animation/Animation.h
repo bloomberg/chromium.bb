@@ -61,6 +61,7 @@ class CORE_EXPORT Animation final
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Animation);
 public:
     enum AnimationPlayState {
+        Unset,
         Idle,
         Pending,
         Running,

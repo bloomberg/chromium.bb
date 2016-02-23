@@ -393,14 +393,6 @@ TEST_F(AnimationAnimationTest, ReverseDoesNothingWithPlaybackRateZero)
     EXPECT_EQ(10, animation->currentTimeInternal());
 }
 
-TEST_F(AnimationAnimationTest, ReverseDoesNotSeekWithNoEffect)
-{
-    animation->setEffect(0);
-    animation->setCurrentTimeInternal(10);
-    animation->reverse();
-    EXPECT_EQ(10, animation->currentTimeInternal());
-}
-
 TEST_F(AnimationAnimationTest, ReverseSeeksToStart)
 {
     animation->setCurrentTimeInternal(-10);
@@ -825,8 +817,8 @@ TEST_F(AnimationAnimationTest, PauseAfterCancel)
     EXPECT_TRUE(std::isnan(animation->currentTime()));
     EXPECT_TRUE(std::isnan(animation->startTime()));
     animation->pause();
-    EXPECT_EQ(Animation::Paused, animation->playStateInternal());
-    EXPECT_EQ(0, animation->currentTime());
+    EXPECT_EQ(Animation::Pending, animation->playStateInternal());
+    EXPECT_TRUE(std::isnan(animation->currentTime()));
     EXPECT_TRUE(std::isnan(animation->startTime()));
 }
 

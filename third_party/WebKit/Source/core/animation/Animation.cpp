@@ -86,7 +86,7 @@ Animation::Animation(ExecutionContext* executionContext, AnimationTimeline& time
     , m_content(content)
     , m_timeline(&timeline)
     , m_paused(false)
-    , m_held(true)
+    , m_held(false)
     , m_isPausedForTesting(false)
     , m_isCompositedAnimationDisabledForTesting(false)
     , m_outdated(false)
@@ -135,7 +135,11 @@ void Animation::setCurrentTime(double newCurrentTime)
 {
     PlayStateUpdateScope updateScope(*this, TimingUpdateOnDemand);
 
+    if (playStateInternal() == Idle)
+        m_paused = true;
+
     m_currentTimePending = false;
+    m_playState = Unset;
     setCurrentTimeInternal(newCurrentTime / 1000, TimingUpdateOnDemand);
 
     if (calculatePlayState() == Finished)
@@ -174,9 +178,11 @@ void Animation::setCurrentTimeInternal(double newCurrentTime, TimingUpdateReason
 // Update timing to reflect updated animation clock due to tick
 void Animation::updateCurrentTimingState(TimingUpdateReason reason)
 {
+    if (m_playState == Idle)
+        return;
     if (m_held) {
         double newCurrentTime = m_holdTime;
-        if (playStateInternal() == Finished && !isNull(m_startTime) && m_timeline) {
+        if (m_playState == Finished && !isNull(m_startTime) && m_timeline) {
             // Add hystersis due to floating point error accumulation
             if (!limited(calculateCurrentTime() + 0.001 * m_playbackRate)) {
                 // The current time became unlimited, eg. due to a backwards
@@ -218,7 +224,8 @@ double Animation::currentTime()
 {
     PlayStateUpdateScope updateScope(*this, TimingUpdateOnDemand);
 
-    if (m_currentTimePending || playStateInternal() == Idle)
+    // TODO(dstockwell): remove m_currentTimePending
+    if (playStateInternal() == Idle || m_currentTimePending || (!m_held && !hasStartTime()))
         return std::numeric_limits<double>::quiet_NaN();
 
     return currentTimeInternal() * 1000;
@@ -228,8 +235,12 @@ double Animation::currentTimeInternal() const
 {
     double result = m_held ? m_holdTime : calculateCurrentTime();
 #if ENABLE(ASSERT)
-    const_cast<Animation*>(this)->updateCurrentTimingState(TimingUpdateOnDemand);
-    ASSERT(result == (m_held ? m_holdTime : calculateCurrentTime()));
+    // We can't enforce this check during Unset due to other
+    // assertions.
+    if (m_playState != Unset) {
+        const_cast<Animation*>(this)->updateCurrentTimingState(TimingUpdateOnDemand);
+        ASSERT(result == (m_held ? m_holdTime : calculateCurrentTime()));
+    }
 #endif
     return result;
 }
@@ -393,12 +404,12 @@ void Animation::setStartTime(double startTime)
 {
     PlayStateUpdateScope updateScope(*this, TimingUpdateOnDemand);
 
-    if (m_paused || playStateInternal() == Idle)
-        return;
     if (startTime == m_startTime)
         return;
 
     m_currentTimePending = false;
+    m_playState = Unset;
+    m_paused = false;
     setStartTimeInternal(startTime / 1000);
 }
 
@@ -478,6 +489,7 @@ const char* Animation::playStateString(AnimationPlayState playState)
 
 Animation::AnimationPlayState Animation::playStateInternal() const
 {
+    ASSERT(m_playState != Unset);
     return m_playState;
 }
 
@@ -506,11 +518,9 @@ void Animation::pause()
         newCurrentTime = m_playbackRate < 0 ? effectEnd() : 0;
     }
 
-    if (playing()) {
-        m_currentTimePending = true;
-    }
-
+    m_playState = Unset;
     m_paused = true;
+    m_currentTimePending = true;
     setCurrentTimeInternal(newCurrentTime, TimingUpdateOnDemand);
 }
 
@@ -537,23 +547,21 @@ void Animation::play()
 {
     PlayStateUpdateScope updateScope(*this, TimingUpdateOnDemand);
 
-    if (!playing())
+    if (!playing()) {
         m_startTime = nullValue();
+    }
 
     if (playStateInternal() == Idle) {
-        // We may not go into the pending state, but setting it to something other
-        // than Idle here will force an update.
-        ASSERT(isNull(m_startTime));
-        m_playState = Pending;
         m_held = true;
         m_holdTime = 0;
     }
 
+    double currentTime = this->currentTimeInternal();
+
+    m_playState = Unset;
     m_finished = false;
     unpauseInternal();
-    if (!m_content)
-        return;
-    double currentTime = this->currentTimeInternal();
+
     if (m_playbackRate > 0 && (currentTime < 0 || currentTime >= effectEnd())) {
         m_startTime = nullValue();
         setCurrentTimeInternal(0, TimingUpdateOnDemand);
@@ -867,8 +875,7 @@ void Animation::cancel()
     if (playStateInternal() == Idle)
         return;
 
-    m_holdTime = currentTimeInternal();
-    m_held = true;
+    m_held = false;
     m_paused = false;
     m_playState = Idle;
     m_startTime = nullValue();
@@ -959,6 +966,7 @@ Animation::PlayStateUpdateScope::PlayStateUpdateScope(Animation& animation, Timi
     , m_initialPlayState(m_animation->playStateInternal())
     , m_compositorPendingChange(compositorPendingChange)
 {
+    ASSERT(m_initialPlayState != Unset);
     m_animation->beginUpdatingState();
     m_animation->updateCurrentTimingState(reason);
 }

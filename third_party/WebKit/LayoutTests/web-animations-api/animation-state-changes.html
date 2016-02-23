@@ -39,6 +39,7 @@ function pendingStartTimeAndCurrentTimeAnimation() {
 function pausedAnimation() {
   var animation = idleAnimation();
   animation.pause();
+  animation.currentTime = 0;
   return animation;
 }
 
@@ -103,8 +104,8 @@ test(function() {
   var animation = idleAnimation();
   animation.pause();
   assert_unresolved(animation.startTime);
-  assert_equals(animation.currentTime, 0);
-  assert_equals(animation.playState, 'paused');
+  assert_unresolved(animation.currentTime);
+  assert_equals(animation.playState, 'pending');
 }, "idle -> pause()");
 
 test(function() {
@@ -135,16 +136,16 @@ test(function() {
   var animation = idleAnimation();
   animation.currentTime = 1000;
   assert_unresolved(animation.startTime);
-  assert_unresolved(animation.currentTime);
-  assert_equals(animation.playState, 'idle');
+  assert_equals(animation.currentTime, 1000);
+  assert_equals(animation.playState, 'paused');
 }, "idle -> set currentTime");
 
 test(function() {
   var animation = idleAnimation();
-  animation.startTime = 1000;
-  assert_unresolved(animation.startTime);
-  assert_unresolved(animation.currentTime);
-  assert_equals(animation.playState, 'idle');
+  animation.startTime = document.timeline.currentTime - 1000;
+  assert_equals(animation.startTime, document.timeline.currentTime - 1000);
+  assert_equals(animation.currentTime, 1000);
+  assert_equals(animation.playState, 'running');
 }, "idle -> set startTime");
 
 test(function() {
@@ -367,10 +368,10 @@ test(function() {
 
 test(function() {
   var animation = pausedAnimation();
-  animation.startTime = 1000;
-  assert_unresolved(animation.startTime);
-  assert_equals(animation.currentTime, 0);
-  assert_equals(animation.playState, 'paused');
+  animation.startTime = document.timeline.currentTime - 1000;
+  assert_equals(animation.startTime, document.timeline.currentTime - 1000);
+  assert_equals(animation.currentTime, 1000);
+  assert_equals(animation.playState, 'running');
 }, "paused -> set startTime");
 
 test(function() {
@@ -385,8 +386,8 @@ test(function() {
   var animation = finishedAnimation();
   animation.pause();
   assert_unresolved(animation.startTime);
-  assert_equals(animation.currentTime, duration);
-  assert_equals(animation.playState, 'paused');
+  assert_unresolved(animation.currentTime);
+  assert_equals(animation.playState, 'pending');
 }, "finished -> pause()");
 
 test(function() {
