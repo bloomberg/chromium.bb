@@ -1946,7 +1946,7 @@ void WebViewImpl::beginFrame(double lastFrameTimeMonotonic)
         }
     }
 
-    if (!m_page)
+    if (!mainFrameImpl())
         return;
 
     DocumentLifecycle::AllowThrottlingScope throttlingScope(mainFrameImpl()->frame()->document()->lifecycle());
