@@ -2661,7 +2661,7 @@ void FrameView::updateStyleAndLayoutIfNeededRecursive()
     }
 
     // These asserts ensure that parent frames are clean, when child frames finished updating layout and style.
-    ASSERT(!needsLayout());
+    RELEASE_ASSERT(!needsLayout());
     ASSERT(!m_frame->document()->hasSVGFilterElementsRequiringLayerUpdate());
 #if ENABLE(ASSERT)
     m_frame->document()->layoutView()->assertLaidOut();
