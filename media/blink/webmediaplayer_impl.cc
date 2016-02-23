@@ -1209,8 +1209,14 @@ void WebMediaPlayerImpl::Resume() {
     // It is safe to call GetCurrentFrameTimestamp() because VFC is stopped
     // during Suspend(). It won't be started again until after Resume() is
     // called.  Use the pipeline time if there's no video.
-    seek_time_ = hasVideo() ? compositor_->GetCurrentFrameTimestamp()
-                            : pipeline_.GetMediaTime();
+    if (!data_source_ || !data_source_->IsStreaming()) {
+      seek_time_ = hasVideo() ? compositor_->GetCurrentFrameTimestamp()
+                              : pipeline_.GetMediaTime();
+    } else {
+      // Resume from zero if a resource does not support range requests; this
+      // avoids a painful "read-the-whole-file" seek penalty.
+      seek_time_ = base::TimeDelta();
+    }
   }
 
   if (chunk_demuxer_)
