@@ -24,6 +24,47 @@ typedef bool (*AccessibilityMatchPredicate)(
     BrowserAccessibility* start_element,
     BrowserAccessibility* this_element);
 
+#define DECLARE_ACCESSIBILITY_PREDICATE(PredicateName) \
+    bool PredicateName(BrowserAccessibility* start_element, \
+                       BrowserAccessibility* this_element);
+
+DECLARE_ACCESSIBILITY_PREDICATE(AccessibilityArticlePredicate);
+DECLARE_ACCESSIBILITY_PREDICATE(AccessibilityBlockquotePredicate);
+DECLARE_ACCESSIBILITY_PREDICATE(AccessibilityButtonPredicate);
+DECLARE_ACCESSIBILITY_PREDICATE(AccessibilityCheckboxPredicate);
+DECLARE_ACCESSIBILITY_PREDICATE(AccessibilityComboboxPredicate);
+DECLARE_ACCESSIBILITY_PREDICATE(AccessibilityControlPredicate);
+DECLARE_ACCESSIBILITY_PREDICATE(AccessibilityFocusablePredicate);
+DECLARE_ACCESSIBILITY_PREDICATE(AccessibilityGraphicPredicate);
+DECLARE_ACCESSIBILITY_PREDICATE(AccessibilityHeadingPredicate);
+DECLARE_ACCESSIBILITY_PREDICATE(AccessibilityH1Predicate);
+DECLARE_ACCESSIBILITY_PREDICATE(AccessibilityH2Predicate);
+DECLARE_ACCESSIBILITY_PREDICATE(AccessibilityH3Predicate);
+DECLARE_ACCESSIBILITY_PREDICATE(AccessibilityH4Predicate);
+DECLARE_ACCESSIBILITY_PREDICATE(AccessibilityH5Predicate);
+DECLARE_ACCESSIBILITY_PREDICATE(AccessibilityH6Predicate);
+DECLARE_ACCESSIBILITY_PREDICATE(AccessibilityHeadingSameLevelPredicate);
+DECLARE_ACCESSIBILITY_PREDICATE(AccessibilityFramePredicate);
+DECLARE_ACCESSIBILITY_PREDICATE(AccessibilityLandmarkPredicate);
+DECLARE_ACCESSIBILITY_PREDICATE(AccessibilityLinkPredicate);
+DECLARE_ACCESSIBILITY_PREDICATE(AccessibilityListPredicate);
+DECLARE_ACCESSIBILITY_PREDICATE(AccessibilityListItemPredicate);
+DECLARE_ACCESSIBILITY_PREDICATE(AccessibilityLiveRegionPredicate);
+DECLARE_ACCESSIBILITY_PREDICATE(AccessibilityMainPredicate);
+DECLARE_ACCESSIBILITY_PREDICATE(AccessibilityMediaPredicate);
+DECLARE_ACCESSIBILITY_PREDICATE(AccessibilityRadioButtonPredicate);
+DECLARE_ACCESSIBILITY_PREDICATE(AccessibilityRadioGroupPredicate);
+DECLARE_ACCESSIBILITY_PREDICATE(AccessibilityTablePredicate);
+DECLARE_ACCESSIBILITY_PREDICATE(AccessibilityTextfieldPredicate);
+DECLARE_ACCESSIBILITY_PREDICATE(AccessibilityTextStyleBoldPredicate);
+DECLARE_ACCESSIBILITY_PREDICATE(AccessibilityTextStyleItalicPredicate);
+DECLARE_ACCESSIBILITY_PREDICATE(AccessibilityTextStyleUnderlinePredicate);
+DECLARE_ACCESSIBILITY_PREDICATE(AccessibilityTreePredicate);
+DECLARE_ACCESSIBILITY_PREDICATE(AccessibilityUnvisitedLinkPredicate);
+DECLARE_ACCESSIBILITY_PREDICATE(AccessibilityVisitedLinkPredicate);
+DECLARE_ACCESSIBILITY_PREDICATE(AccessibilityTextStyleBoldPredicate);
+
+
 // This class provides an interface for searching the accessibility tree from
 // a given starting node, with a few built-in options and allowing an arbitrary
 // number of predicates that can be used to restrict the search.

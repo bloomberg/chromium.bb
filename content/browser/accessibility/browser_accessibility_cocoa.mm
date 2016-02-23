@@ -218,39 +218,19 @@ AccessibilityMatchPredicate PredicateForSearchKey(NSString* searchKey) {
     return [](BrowserAccessibility* start, BrowserAccessibility* current) {
       return true;
     };
-  } else if ([searchKey isEqualToString:@"AXBlockquoteSameLevelSearchKey"] ||
-             [searchKey isEqualToString:@"AXBlockquoteSearchKey"]) {
-    return [](BrowserAccessibility* start, BrowserAccessibility* current) {
-      // TODO(dmazzoni): implement the "same level" part.
-      return current->GetRole() == ui::AX_ROLE_BLOCKQUOTE;
-    };
+  } else if ([searchKey isEqualToString:@"AXBlockquoteSameLevelSearchKey"]) {
+    // TODO(dmazzoni): implement the "same level" part.
+    return content::AccessibilityBlockquotePredicate;
+  } else if ([searchKey isEqualToString:@"AXBlockquoteSearchKey"]) {
+    return content::AccessibilityBlockquotePredicate;
   } else if ([searchKey isEqualToString:@"AXBoldFontSearchKey"]) {
-    // TODO(dmazzoni): implement this.
-    return nullptr;
+    return content::AccessibilityTextStyleBoldPredicate;
   } else if ([searchKey isEqualToString:@"AXButtonSearchKey"]) {
-    return [](BrowserAccessibility* start, BrowserAccessibility* current) {
-      return (current->GetRole() == ui::AX_ROLE_BUTTON ||
-              current->GetRole() == ui::AX_ROLE_MENU_BUTTON ||
-              current->GetRole() == ui::AX_ROLE_POP_UP_BUTTON ||
-              current->GetRole() == ui::AX_ROLE_SWITCH ||
-              current->GetRole() == ui::AX_ROLE_TOGGLE_BUTTON);
-    };
+    return content::AccessibilityButtonPredicate;
   } else if ([searchKey isEqualToString:@"AXCheckBoxSearchKey"]) {
-    return [](BrowserAccessibility* start, BrowserAccessibility* current) {
-      return (current->GetRole() == ui::AX_ROLE_CHECK_BOX ||
-              current->GetRole() == ui::AX_ROLE_MENU_ITEM_CHECK_BOX);
-    };
+    return content::AccessibilityCheckboxPredicate;
   } else if ([searchKey isEqualToString:@"AXControlSearchKey"]) {
-    return [](BrowserAccessibility* start, BrowserAccessibility* current) {
-      if (current->IsControl())
-        return true;
-      if (current->HasState(ui::AX_STATE_FOCUSABLE) &&
-          current->GetRole() != ui::AX_ROLE_IMAGE_MAP_LINK &&
-          current->GetRole() != ui::AX_ROLE_LINK) {
-        return true;
-      }
-      return false;
-    };
+    return content::AccessibilityControlPredicate;
   } else if ([searchKey isEqualToString:@"AXDifferentTypeSearchKey"]) {
     return [](BrowserAccessibility* start, BrowserAccessibility* current) {
       return current->GetRole() != start->GetRole();
@@ -262,102 +242,48 @@ AccessibilityMatchPredicate PredicateForSearchKey(NSString* searchKey) {
     // TODO(dmazzoni): implement this.
     return nullptr;
   } else if ([searchKey isEqualToString:@"AXFrameSearchKey"]) {
-    return [](BrowserAccessibility* start, BrowserAccessibility* current) {
-      if (current->IsWebAreaForPresentationalIframe())
-        return false;
-      if (!current->GetParent())
-        return false;
-      return (current->GetRole() == ui::AX_ROLE_WEB_AREA ||
-              current->GetRole() == ui::AX_ROLE_ROOT_WEB_AREA);
-    };
+    return content::AccessibilityFramePredicate;
   } else if ([searchKey isEqualToString:@"AXGraphicSearchKey"]) {
-    return [](BrowserAccessibility* start, BrowserAccessibility* current) {
-      return current->GetRole() == ui::AX_ROLE_IMAGE;
-    };
+    return content::AccessibilityGraphicPredicate;
   } else if ([searchKey isEqualToString:@"AXHeadingLevel1SearchKey"]) {
-    return [](BrowserAccessibility* start, BrowserAccessibility* current) {
-      return (current->GetRole() == ui::AX_ROLE_HEADING &&
-              current->GetIntAttribute(ui::AX_ATTR_HIERARCHICAL_LEVEL) == 1);
-    };
+    return content::AccessibilityH1Predicate;
   } else if ([searchKey isEqualToString:@"AXHeadingLevel2SearchKey"]) {
-    return [](BrowserAccessibility* start, BrowserAccessibility* current) {
-      return (current->GetRole() == ui::AX_ROLE_HEADING &&
-              current->GetIntAttribute(ui::AX_ATTR_HIERARCHICAL_LEVEL) == 2);
-    };
+    return content::AccessibilityH2Predicate;
   } else if ([searchKey isEqualToString:@"AXHeadingLevel3SearchKey"]) {
-    return [](BrowserAccessibility* start, BrowserAccessibility* current) {
-      return (current->GetRole() == ui::AX_ROLE_HEADING &&
-              current->GetIntAttribute(ui::AX_ATTR_HIERARCHICAL_LEVEL) == 3);
-    };
+    return content::AccessibilityH3Predicate;
   } else if ([searchKey isEqualToString:@"AXHeadingLevel4SearchKey"]) {
-    return [](BrowserAccessibility* start, BrowserAccessibility* current) {
-      return (current->GetRole() == ui::AX_ROLE_HEADING &&
-              current->GetIntAttribute(ui::AX_ATTR_HIERARCHICAL_LEVEL) == 4);
-    };
+    return content::AccessibilityH4Predicate;
   } else if ([searchKey isEqualToString:@"AXHeadingLevel5SearchKey"]) {
-    return [](BrowserAccessibility* start, BrowserAccessibility* current) {
-      return (current->GetRole() == ui::AX_ROLE_HEADING &&
-              current->GetIntAttribute(ui::AX_ATTR_HIERARCHICAL_LEVEL) == 5);
-    };
+    return content::AccessibilityH5Predicate;
   } else if ([searchKey isEqualToString:@"AXHeadingLevel6SearchKey"]) {
-    return [](BrowserAccessibility* start, BrowserAccessibility* current) {
-      return (current->GetRole() == ui::AX_ROLE_HEADING &&
-              current->GetIntAttribute(ui::AX_ATTR_HIERARCHICAL_LEVEL) == 6);
-    };
+    return content::AccessibilityH6Predicate;
   } else if ([searchKey isEqualToString:@"AXHeadingSameLevelSearchKey"]) {
-    return [](BrowserAccessibility* start, BrowserAccessibility* current) {
-      return (current->GetRole() == ui::AX_ROLE_HEADING &&
-              start->GetRole() == ui::AX_ROLE_HEADING &&
-              (current->GetIntAttribute(ui::AX_ATTR_HIERARCHICAL_LEVEL) ==
-               start->GetIntAttribute(ui::AX_ATTR_HIERARCHICAL_LEVEL)));
-    };
+    return content::AccessibilityHeadingSameLevelPredicate;
   } else if ([searchKey isEqualToString:@"AXHeadingSearchKey"]) {
-    return [](BrowserAccessibility* start, BrowserAccessibility* current) {
-      return current->GetRole() == ui::AX_ROLE_HEADING;
-    };
+    return content::AccessibilityHeadingPredicate;
   } else if ([searchKey isEqualToString:@"AXHighlightedSearchKey"]) {
     // TODO(dmazzoni): implement this.
     return nullptr;
   } else if ([searchKey isEqualToString:@"AXItalicFontSearchKey"]) {
-    // TODO(dmazzoni): implement this.
-    return nullptr;
+    return content::AccessibilityTextStyleItalicPredicate;
   } else if ([searchKey isEqualToString:@"AXLandmarkSearchKey"]) {
-    return [](BrowserAccessibility* start, BrowserAccessibility* current) {
-      return (current->GetRole() == ui::AX_ROLE_APPLICATION ||
-              current->GetRole() == ui::AX_ROLE_BANNER ||
-              current->GetRole() == ui::AX_ROLE_COMPLEMENTARY ||
-              current->GetRole() == ui::AX_ROLE_CONTENT_INFO ||
-              current->GetRole() == ui::AX_ROLE_FORM ||
-              current->GetRole() == ui::AX_ROLE_MAIN ||
-              current->GetRole() == ui::AX_ROLE_NAVIGATION ||
-              current->GetRole() == ui::AX_ROLE_SEARCH);
-    };
+    return content::AccessibilityLandmarkPredicate;
   } else if ([searchKey isEqualToString:@"AXLinkSearchKey"]) {
-    return [](BrowserAccessibility* start, BrowserAccessibility* current) {
-      return current->GetRole() == ui::AX_ROLE_LINK;
-    };
+    return content::AccessibilityLinkPredicate;
   } else if ([searchKey isEqualToString:@"AXListSearchKey"]) {
-    return [](BrowserAccessibility* start, BrowserAccessibility* current) {
-      return current->GetRole() == ui::AX_ROLE_LIST;
-    };
+    return content::AccessibilityListPredicate;
   } else if ([searchKey isEqualToString:@"AXLiveRegionSearchKey"]) {
-    return [](BrowserAccessibility* start, BrowserAccessibility* current) {
-      return current->HasStringAttribute(ui::AX_ATTR_LIVE_STATUS);
-    };
+    return content::AccessibilityLiveRegionPredicate;
   } else if ([searchKey isEqualToString:@"AXMisspelledWordSearchKey"]) {
     // TODO(dmazzoni): implement this.
     return nullptr;
   } else if ([searchKey isEqualToString:@"AXOutlineSearchKey"]) {
-    return [](BrowserAccessibility* start, BrowserAccessibility* current) {
-      return current->GetRole() == ui::AX_ROLE_TREE;
-    };
+    return content::AccessibilityTreePredicate;
   } else if ([searchKey isEqualToString:@"AXPlainTextSearchKey"]) {
     // TODO(dmazzoni): implement this.
     return nullptr;
   } else if ([searchKey isEqualToString:@"AXRadioGroupSearchKey"]) {
-    return [](BrowserAccessibility* start, BrowserAccessibility* current) {
-      return current->GetRole() == ui::AX_ROLE_RADIO_GROUP;
-    };
+    return content::AccessibilityRadioGroupPredicate;
   } else if ([searchKey isEqualToString:@"AXSameTypeSearchKey"]) {
     return [](BrowserAccessibility* start, BrowserAccessibility* current) {
       return current->GetRole() == start->GetRole();
@@ -370,33 +296,18 @@ AccessibilityMatchPredicate PredicateForSearchKey(NSString* searchKey) {
     // TODO(dmazzoni): implement this.
     return nullptr;
   } else if ([searchKey isEqualToString:@"AXTableSameLevelSearchKey"]) {
-    return [](BrowserAccessibility* start, BrowserAccessibility* current) {
-      // TODO(dmazzoni): implement the "same level" part.
-      return current->GetRole() == ui::AX_ROLE_GRID ||
-             current->GetRole() == ui::AX_ROLE_TABLE;
-    };
+    // TODO(dmazzoni): implement the "same level" part.
+    return content::AccessibilityTablePredicate;
   } else if ([searchKey isEqualToString:@"AXTableSearchKey"]) {
-    return [](BrowserAccessibility* start, BrowserAccessibility* current) {
-      return current->GetRole() == ui::AX_ROLE_GRID ||
-             current->GetRole() == ui::AX_ROLE_TABLE;
-    };
+    return content::AccessibilityTablePredicate;
   } else if ([searchKey isEqualToString:@"AXTextFieldSearchKey"]) {
-    return [](BrowserAccessibility* start, BrowserAccessibility* current) {
-      return current->IsSimpleTextControl() || current->IsRichTextControl();
-    };
+    return content::AccessibilityTextfieldPredicate;
   } else if ([searchKey isEqualToString:@"AXUnderlineSearchKey"]) {
-    // TODO(dmazzoni): implement this.
-    return nullptr;
+    return content::AccessibilityTextStyleUnderlinePredicate;
   } else if ([searchKey isEqualToString:@"AXUnvisitedLinkSearchKey"]) {
-    return [](BrowserAccessibility* start, BrowserAccessibility* current) {
-      return (current->GetRole() == ui::AX_ROLE_LINK &&
-              !current->HasState(ui::AX_STATE_VISITED));
-    };
+    return content::AccessibilityUnvisitedLinkPredicate;
   } else if ([searchKey isEqualToString:@"AXVisitedLinkSearchKey"]) {
-    return [](BrowserAccessibility* start, BrowserAccessibility* current) {
-      return (current->GetRole() == ui::AX_ROLE_LINK &&
-              current->HasState(ui::AX_STATE_VISITED));
-    };
+    return content::AccessibilityVisitedLinkPredicate;
   }
 
   return nullptr;

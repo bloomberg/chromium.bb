@@ -1333,9 +1333,8 @@ bool BrowserAccessibilityAndroid::HasOnlyTextAndImageChildren() const {
 }
 
 bool BrowserAccessibilityAndroid::IsIframe() const {
-  base::string16 html_tag = GetString16Attribute(
-      ui::AX_ATTR_HTML_TAG);
-  return html_tag == base::ASCIIToUTF16("iframe");
+  return (GetRole() == ui::AX_ROLE_IFRAME ||
+          GetRole() == ui::AX_ROLE_IFRAME_PRESENTATIONAL);
 }
 
 void BrowserAccessibilityAndroid::OnDataChanged() {

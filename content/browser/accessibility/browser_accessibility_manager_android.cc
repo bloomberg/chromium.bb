@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "content/browser/accessibility/browser_accessibility_android.h"
+#include "content/browser/accessibility/one_shot_accessibility_tree_search.h"
 #include "content/common/accessibility_messages.h"
 #include "jni/BrowserAccessibilityManager_jni.h"
 #include "ui/accessibility/ax_text_utils.h"
@@ -22,31 +23,96 @@
 using base::android::AttachCurrentThread;
 using base::android::ScopedJavaLocalRef;
 
-namespace {
+namespace content {
 
-enum AndroidHtmlElementType {
-  HTML_ELEMENT_TYPE_SECTION,
-  HTML_ELEMENT_TYPE_LIST,
-  HTML_ELEMENT_TYPE_CONTROL,
-  HTML_ELEMENT_TYPE_ANY
-};
+namespace {
 
 // These are special unofficial strings sent from TalkBack/BrailleBack
 // to jump to certain categories of web elements.
-AndroidHtmlElementType HtmlElementTypeFromString(base::string16 element_type) {
-  if (element_type == base::ASCIIToUTF16("SECTION"))
-    return HTML_ELEMENT_TYPE_SECTION;
-  else if (element_type == base::ASCIIToUTF16("LIST"))
-    return HTML_ELEMENT_TYPE_LIST;
-  else if (element_type == base::ASCIIToUTF16("CONTROL"))
-    return HTML_ELEMENT_TYPE_CONTROL;
-  else
-    return HTML_ELEMENT_TYPE_ANY;
+AccessibilityMatchPredicate PredicateForSearchKey(base::string16 element_type) {
+  if (element_type == base::ASCIIToUTF16("SECTION")) {
+    return [](BrowserAccessibility* start, BrowserAccessibility* node) {
+      switch (node->GetRole()) {
+        case ui::AX_ROLE_ARTICLE:
+        case ui::AX_ROLE_APPLICATION:
+        case ui::AX_ROLE_BANNER:
+        case ui::AX_ROLE_COMPLEMENTARY:
+        case ui::AX_ROLE_CONTENT_INFO:
+        case ui::AX_ROLE_HEADING:
+        case ui::AX_ROLE_MAIN:
+        case ui::AX_ROLE_NAVIGATION:
+        case ui::AX_ROLE_SEARCH:
+        case ui::AX_ROLE_REGION:
+          return true;
+        default:
+          return false;
+      }
+    };
+  } else if (element_type == base::ASCIIToUTF16("LIST")) {
+    return AccessibilityListPredicate;
+  } else if (element_type == base::ASCIIToUTF16("CONTROL")) {
+    return AccessibilityControlPredicate;
+  } else if (element_type == base::ASCIIToUTF16("ARTICLE")) {
+    return AccessibilityArticlePredicate;
+  } else if (element_type == base::ASCIIToUTF16("BUTTON")) {
+    return AccessibilityButtonPredicate;
+  } else if (element_type == base::ASCIIToUTF16("CHECKBOX")) {
+    return AccessibilityCheckboxPredicate;
+  } else if (element_type == base::ASCIIToUTF16("COMBOBOX")) {
+    return AccessibilityComboboxPredicate;
+  } else if (element_type == base::ASCIIToUTF16("TEXT_FIELD")) {
+    return AccessibilityTextfieldPredicate;
+  } else if (element_type == base::ASCIIToUTF16("FOCUSABLE")) {
+    return AccessibilityFocusablePredicate;
+  } else if (element_type == base::ASCIIToUTF16("GRAPHIC")) {
+    return AccessibilityGraphicPredicate;
+  } else if (element_type == base::ASCIIToUTF16("HEADING")) {
+    return AccessibilityHeadingPredicate;
+  } else if (element_type == base::ASCIIToUTF16("H1")) {
+    return AccessibilityH1Predicate;
+  } else if (element_type == base::ASCIIToUTF16("H2")) {
+    return AccessibilityH2Predicate;
+  } else if (element_type == base::ASCIIToUTF16("H3")) {
+    return AccessibilityH3Predicate;
+  } else if (element_type == base::ASCIIToUTF16("H4")) {
+    return AccessibilityH4Predicate;
+  } else if (element_type == base::ASCIIToUTF16("H5")) {
+    return AccessibilityH5Predicate;
+  } else if (element_type == base::ASCIIToUTF16("H6")) {
+    return AccessibilityH6Predicate;
+  } else if (element_type == base::ASCIIToUTF16("FRAME")) {
+    return AccessibilityFramePredicate;
+  } else if (element_type == base::ASCIIToUTF16("LANDMARK")) {
+    return AccessibilityLandmarkPredicate;
+  } else if (element_type == base::ASCIIToUTF16("LINK")) {
+    return AccessibilityLinkPredicate;
+  } else if (element_type == base::ASCIIToUTF16("LIST_ITEM")) {
+    return AccessibilityListItemPredicate;
+  } else if (element_type == base::ASCIIToUTF16("MAIN")) {
+    return AccessibilityMainPredicate;
+  } else if (element_type == base::ASCIIToUTF16("MEDIA")) {
+    return AccessibilityMediaPredicate;
+  } else if (element_type == base::ASCIIToUTF16("RADIO")) {
+    return AccessibilityRadioButtonPredicate;
+  } else if (element_type == base::ASCIIToUTF16("TABLE")) {
+    return AccessibilityTablePredicate;
+  } else if (element_type == base::ASCIIToUTF16("UNVISITED_LINK")) {
+    return AccessibilityUnvisitedLinkPredicate;
+  } else if (element_type == base::ASCIIToUTF16("VISITED_LINK")) {
+    return AccessibilityVisitedLinkPredicate;
+  }
+
+  // If we don't recognize the selector, return any element that's clickable.
+  // We mark all focusable nodes and leaf nodes as clickable because it's
+  // impossible to know whether a web node has a click handler or not, so
+  // to be safe we have to allow accessibility services to click on nearly
+  // anything that could possibly respond to a click.
+  return [](BrowserAccessibility* start, BrowserAccessibility* node) {
+    return static_cast<BrowserAccessibilityAndroid*>(node)->IsClickable();
+  };
 }
 
 }  // anonymous namespace
-
-namespace content {
 
 namespace aria_strings {
   const char kAriaLivePolite[] = "polite";
@@ -624,58 +690,36 @@ jint BrowserAccessibilityManagerAndroid::FindElementType(
     jint start_id,
     const JavaParamRef<jstring>& element_type_str,
     jboolean forwards) {
-  BrowserAccessibility* node = GetFromID(start_id);
-  if (!node)
+  BrowserAccessibility* start_node = GetFromID(start_id);
+  if (!start_node)
     return 0;
 
-  AndroidHtmlElementType element_type = HtmlElementTypeFromString(
+  BrowserAccessibilityManager* root_manager = GetRootManager();
+  if (!root_manager)
+    return 0;
+
+  BrowserAccessibility* root = root_manager->GetRoot();
+  if (!root)
+    return 0;
+
+  AccessibilityMatchPredicate predicate = PredicateForSearchKey(
       base::android::ConvertJavaStringToUTF16(env, element_type_str));
 
-  node = forwards ? NextInTreeOrder(node) : PreviousInTreeOrder(node);
-  while (node) {
-    switch(element_type) {
-      case HTML_ELEMENT_TYPE_SECTION:
-        if (node->GetRole() == ui::AX_ROLE_ARTICLE ||
-            node->GetRole() == ui::AX_ROLE_APPLICATION ||
-            node->GetRole() == ui::AX_ROLE_BANNER ||
-            node->GetRole() == ui::AX_ROLE_COMPLEMENTARY ||
-            node->GetRole() == ui::AX_ROLE_CONTENT_INFO ||
-            node->GetRole() == ui::AX_ROLE_HEADING ||
-            node->GetRole() == ui::AX_ROLE_MAIN ||
-            node->GetRole() == ui::AX_ROLE_NAVIGATION ||
-            node->GetRole() == ui::AX_ROLE_SEARCH ||
-            node->GetRole() == ui::AX_ROLE_REGION) {
-          return node->GetId();
-        }
-        break;
-      case HTML_ELEMENT_TYPE_LIST:
-        if (node->GetRole() == ui::AX_ROLE_LIST ||
-            node->GetRole() == ui::AX_ROLE_GRID ||
-            node->GetRole() == ui::AX_ROLE_TABLE ||
-            node->GetRole() == ui::AX_ROLE_TREE) {
-          return node->GetId();
-        }
-        break;
-      case HTML_ELEMENT_TYPE_CONTROL:
-        if (static_cast<BrowserAccessibilityAndroid*>(node)->IsFocusable())
-          return node->GetId();
-        break;
-      case HTML_ELEMENT_TYPE_ANY:
-        // In theory, the API says that an accessibility service could
-        // jump to an element by element name, like 'H1' or 'P'. This isn't
-        // currently used by any accessibility service, and we think it's
-        // better to keep them high-level like 'SECTION' or 'CONTROL', so we
-        // just fall back on linear navigation when we don't recognize the
-        // element type.
-        if (static_cast<BrowserAccessibilityAndroid*>(node)->IsClickable())
-          return node->GetId();
-        break;
-    }
+  OneShotAccessibilityTreeSearch tree_search(root);
+  tree_search.SetStartNode(start_node);
+  tree_search.SetDirection(
+      forwards ?
+          OneShotAccessibilityTreeSearch::FORWARDS :
+          OneShotAccessibilityTreeSearch::BACKWARDS);
+  tree_search.SetResultLimit(1);
+  tree_search.SetImmediateDescendantsOnly(false);
+  tree_search.SetVisibleOnly(false);
+  tree_search.AddPredicate(predicate);
 
-    node = forwards ? NextInTreeOrder(node) : PreviousInTreeOrder(node);
-  }
+  if (tree_search.CountMatches() == 0)
+    return 0;
 
-  return 0;
+  return tree_search.GetMatchAtIndex(0)->GetId();
 }
 
 jboolean BrowserAccessibilityManagerAndroid::NextAtGranularity(
