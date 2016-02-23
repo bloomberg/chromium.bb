@@ -56,8 +56,8 @@ class BindingState<Interface, false> {
     filters.Append<internal::MessageHeaderValidator>();
     filters.Append<typename Interface::RequestValidator_>();
 
-    router_ =
-        new internal::Router(std::move(handle), std::move(filters), waiter);
+    router_ = new internal::Router(std::move(handle), std::move(filters),
+                                   Interface::HasSyncMethods_, waiter);
     router_->set_incoming_receiver(&stub_);
     router_->set_connection_error_handler(
         [this]() { connection_error_handler_.Run(); });

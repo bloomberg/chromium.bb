@@ -162,6 +162,8 @@
         'public/cpp/bindings/lib/shared_ptr.h',
         'public/cpp/bindings/lib/string_serialization.cc',
         'public/cpp/bindings/lib/string_serialization.h',
+        'public/cpp/bindings/lib/sync_handle_watcher.cc',
+        'public/cpp/bindings/lib/sync_handle_watcher.h',
         'public/cpp/bindings/lib/validate_params.h',
         'public/cpp/bindings/lib/validation_errors.cc',
         'public/cpp/bindings/lib/validation_errors.h',

@@ -5,7 +5,9 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_CONNECTOR_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_CONNECTOR_H_
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "mojo/public/c/environment/async_waiter.h"
 #include "mojo/public/cpp/bindings/callback.h"
@@ -121,9 +123,31 @@ class Connector : public MessageReceiver {
     return message_pipe_.get();
   }
 
+  // Requests to register |message_pipe_| with SyncHandleWatcher whenever this
+  // instance is expecting incoming messages.
+  //
+  // Please note that UnregisterSyncHandleWatch() needs to be called as many
+  // times as successful RegisterSyncHandleWatch() calls in order to cancel the
+  // effect.
+  bool RegisterSyncHandleWatch();
+  void UnregisterSyncHandleWatch();
+
+  // Watches all handles registered with SyncHandleWatcher on the same thread.
+  // The method returns true when |*should_stop| is set to true; returns false
+  // when any failure occurs during the watch, including |message_pipe_| is
+  // closed.
+  bool RunSyncHandleWatch(const bool* should_stop);
+
+  // Whether currently the control flow is inside the sync handle watcher
+  // callback.
+  bool during_sync_handle_watcher_callback() const {
+    return sync_handle_watcher_callback_count_ > 0;
+  }
+
  private:
   static void CallOnHandleReady(void* closure, MojoResult result);
-  void OnHandleReady(MojoResult result);
+  void OnSyncHandleWatcherHandleReady(MojoResult result);
+  void OnHandleReadyInternal(MojoResult result);
 
   void WaitToReadMore();
 
@@ -155,16 +179,22 @@ class Connector : public MessageReceiver {
 
   bool paused_;
 
-  // If non-null, this will be set to true when the Connector is destroyed.  We
-  // use this flag to allow for the Connector to be destroyed as a side-effect
-  // of dispatching an incoming message.
-  bool* destroyed_flag_;
-
   // If sending messages is allowed from multiple threads, |lock_| is used to
   // protect modifications to |message_pipe_| and |drop_writes_|.
   scoped_ptr<base::Lock> lock_;
 
+  // If non-zero, |message_pipe_| should be registered with SyncHandleWatcher.
+  size_t register_sync_handle_watch_count_;
+  // Whether |message_pipe_| has been registered with SyncHandleWatcher.
+  bool registered_with_sync_handle_watcher_;
+  // If non-zero, currently the control flow is inside the sync handle watcher
+  // callback.
+  size_t sync_handle_watcher_callback_count_;
+  scoped_refptr<base::RefCountedData<bool>> should_stop_sync_handle_watch_;
+
   base::ThreadChecker thread_checker_;
+
+  base::WeakPtrFactory<Connector> weak_factory_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(Connector);
 };
