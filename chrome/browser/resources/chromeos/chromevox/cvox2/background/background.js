@@ -265,8 +265,11 @@ Background.prototype = {
     if (!newRange)
       return;
 
+    // Exclude saving ranges inside of the Panel and any parenting webviews.
     var panelUrl = chrome.extension.getURL('cvox2/background/panel.html');
-    if (newRange.start.node.root.docUrl.indexOf(panelUrl) != 0)
+    var testNode = newRange.start.node;
+    if (newRange.start.node.root.docUrl.indexOf(panelUrl) != 0 &&
+        newRange.start.node.role != RoleType.webView)
       this.savedRange_ = new cursors.Range(newRange.start, newRange.end);
 
     this.currentRange_ = newRange;

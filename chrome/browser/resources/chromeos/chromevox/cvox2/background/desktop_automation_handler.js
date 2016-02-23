@@ -170,16 +170,21 @@ DesktopAutomationHandler.prototype = {
         ChromeVoxState.instance.mode === ChromeVoxMode.CLASSIC)
       return;
 
-    // If initial focus was already placed on this page (e.g. if a user starts
-    // tabbing before load complete), then don't move ChromeVox's position on
-    // the page.
-    if (ChromeVoxState.instance.currentRange &&
-        ChromeVoxState.instance.currentRange.start.node.root == evt.target)
-      return;
+    chrome.automation.getFocus((function(focus) {
+      if (!focus)
+        return;
 
-    ChromeVoxState.instance.setCurrentRange(cursors.Range.fromNode(evt.target));
-    new Output().withRichSpeechAndBraille(
-        ChromeVoxState.instance.currentRange, null, evt.type).go();
+      // If initial focus was already placed on this page (e.g. if a user starts
+      // tabbing before load complete), then don't move ChromeVox's position on
+      // the page.
+      if (ChromeVoxState.instance.currentRange &&
+          ChromeVoxState.instance.currentRange.start.node.root == focus.root)
+        return;
+
+      ChromeVoxState.instance.setCurrentRange(cursors.Range.fromNode(focus));
+      new Output().withRichSpeechAndBraille(
+          ChromeVoxState.instance.currentRange, null, evt.type).go();
+    }).bind(this));
   },
 
   /** @override */
