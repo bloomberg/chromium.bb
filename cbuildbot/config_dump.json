@@ -22790,6 +22790,7 @@
     },
     "veyron_rialto-paladin": {
         "_template": "paladin",
+        "active_waterfall": "chromeos",
         "boards": [
             "veyron_rialto"
         ],
