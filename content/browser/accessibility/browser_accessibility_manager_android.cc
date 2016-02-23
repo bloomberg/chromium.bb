@@ -129,6 +129,10 @@ void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
   if (event_type == ui::AX_EVENT_TREE_CHANGED)
     return;
 
+  // Layout changes are handled in OnLocationChanges.
+  if (event_type == ui::AX_EVENT_LAYOUT_COMPLETE)
+    return;
+
   if (event_type == ui::AX_EVENT_HOVER) {
     HandleHoverEvent(node);
     return;
@@ -196,6 +200,25 @@ void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
       // It's okay to skip them.
       break;
   }
+}
+
+void BrowserAccessibilityManagerAndroid::OnLocationChanges(
+      const std::vector<AccessibilityHostMsg_LocationChangeParams>& params) {
+  // Android is not very efficient at handling notifications, and location
+  // changes in particular are frequent and not time-critical. If a lot of
+  // nodes changed location, just send a single notification after a short
+  // delay (to batch them), rather than lots of individual notifications.
+  if (params.size() > 3) {
+    JNIEnv* env = AttachCurrentThread();
+    ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+    if (obj.is_null())
+      return;
+    Java_BrowserAccessibilityManager_sendDelayedWindowContentChangedEvent(
+        env, obj.obj());
+    return;
+  }
+
+  BrowserAccessibilityManager::OnLocationChanges(params);
 }
 
 jint BrowserAccessibilityManagerAndroid::GetRootId(

@@ -41,6 +41,7 @@ public class BrowserAccessibilityManager {
     private static final int ACTION_SET_TEXT = 0x200000;
     private static final String ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE =
             "ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE";
+    private static final int WINDOW_CONTENT_CHANGED_DELAY_MS = 500;
 
     private final AccessibilityNodeProvider mAccessibilityNodeProvider;
     private ContentViewCore mContentViewCore;
@@ -61,6 +62,7 @@ public class BrowserAccessibilityManager {
     private int mSelectionEndIndex;
     protected int mAccessibilityFocusId;
     protected boolean mVisible = true;
+    private Runnable mSendWindowContentChangedRunnable;
 
     /**
      * Create a BrowserAccessibilityManager object, which is owned by the C++
@@ -148,7 +150,7 @@ public class BrowserAccessibilityManager {
         if (visible == mVisible) return;
 
         mVisible = visible;
-        mView.sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+        sendWindowContentChangedOnView();
     }
 
     /**
@@ -361,7 +363,7 @@ public class BrowserAccessibilityManager {
 
         // Invalidate the container view, since the chrome accessibility tree is now
         // ready and listed as the child of the container view.
-        mView.sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+        sendWindowContentChangedOnView();
 
         // (Re-) focus focused element, since we weren't able to create an
         // AccessibilityNodeInfo for this element before.
@@ -516,6 +518,39 @@ public class BrowserAccessibilityManager {
         moveAccessibilityFocusToId(newAccessibilityFocusId);
     }
 
+    /**
+     * Send a WINDOW_CONTENT_CHANGED event after a short delay. This helps throttle such
+     * events from firing too quickly during animations, for example.
+     */
+    @CalledByNative
+    private void sendDelayedWindowContentChangedEvent() {
+        if (mSendWindowContentChangedRunnable != null) return;
+
+        mSendWindowContentChangedRunnable = new Runnable() {
+            @Override
+            public void run() {
+                sendWindowContentChangedOnView();
+            }
+        };
+
+        mView.postDelayed(mSendWindowContentChangedRunnable, WINDOW_CONTENT_CHANGED_DELAY_MS);
+    }
+
+    private void sendWindowContentChangedOnView() {
+        // This can be called from a timeout, so we need to make sure we're still valid.
+        if (mNativeObj == 0 || mContentViewCore == null || mView == null) return;
+
+        if (mSendWindowContentChangedRunnable != null) {
+            mView.removeCallbacks(mSendWindowContentChangedRunnable);
+            mSendWindowContentChangedRunnable = null;
+        }
+        mView.sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+    }
+
+    private void sendWindowContentChangedOnVirtualView(int virtualViewId) {
+        sendAccessibilityEvent(virtualViewId, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+    }
+
     private void sendAccessibilityEvent(int virtualViewId, int eventType) {
         // The container view is indicated by a virtualViewId of NO_ID; post these events directly
         // since there's no web-specific information to attach.
@@ -656,9 +691,9 @@ public class BrowserAccessibilityManager {
         int rootId = nativeGetRootId(mNativeObj);
         if (rootId != mCurrentRootId) {
             mCurrentRootId = rootId;
-            mView.sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+            sendWindowContentChangedOnView();
         } else {
-            sendAccessibilityEvent(id, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+            sendWindowContentChangedOnVirtualView(id);
         }
     }
 
@@ -668,7 +703,7 @@ public class BrowserAccessibilityManager {
         mAccessibilityFocusRect = null;
         mUserHasTouchExplored = false;
         // Invalidate the host, since its child is now gone.
-        mView.sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+        sendWindowContentChangedOnView();
     }
 
     @CalledByNative
