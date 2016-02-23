@@ -150,11 +150,11 @@ final class ClassLoaderPatcher {
         // Switched from an array to an ArrayList in Lollipop.
         if (currentDirs instanceof List) {
             List<File> dirsAsList = (List<File>) currentDirs;
-            dirsAsList.add(nativeLibDir);
+            dirsAsList.add(0, nativeLibDir);
         } else {
             File[] dirsAsArray = (File[]) currentDirs;
             Reflect.setField(dexPathList, "nativeLibraryDirectories",
-                    Reflect.concatArrays(dirsAsArray, newDirs));
+                    Reflect.concatArrays(newDirs, dirsAsArray));
         }
 
         Object[] nativeLibraryPathElements;
@@ -168,7 +168,7 @@ final class ClassLoaderPatcher {
         Object[] additionalElements = makeNativePathElements(newDirs);
         Reflect.setField(
                 dexPathList, "nativeLibraryPathElements",
-                Reflect.concatArrays(nativeLibraryPathElements, additionalElements));
+                Reflect.concatArrays(additionalElements, nativeLibraryPathElements));
     }
 
     private static void copyChangedFiles(File srcDir, File dstDir) throws IOException {
