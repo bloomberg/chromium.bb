@@ -5,6 +5,8 @@
 #include "components/arc/arc_bridge_bootstrap.h"
 
 #include <fcntl.h>
+#include <grp.h>
+#include <unistd.h>
 
 #include <utility>
 
@@ -44,6 +46,8 @@ const pid_t kArcPid = 0x3DE0EA7C;
 
 const base::FilePath::CharType kArcBridgeSocketPath[] =
     FILE_PATH_LITERAL("/var/run/chrome/arc_bridge.sock");
+
+const char kArcBridgeSocketGroup[] = "arc-bridge";
 
 class ArcBridgeBootstrapImpl : public ArcBridgeBootstrap {
  public:
@@ -172,9 +176,28 @@ base::ScopedFD ArcBridgeBootstrapImpl::CreateSocket() {
     return base::ScopedFD();
   }
 
-  // TODO(lhchavez): Tighten the security around the socket by tying it to
-  // the user the instance will run as.
-  if (!base::SetPosixFilePermissions(socket_path, 0777)) {
+  // Change permissions on the socket.
+  struct group arc_bridge_group;
+  struct group* arc_bridge_group_res = nullptr;
+  char buf[10000];
+  if (HANDLE_EINTR(getgrnam_r(kArcBridgeSocketGroup, &arc_bridge_group, buf,
+                              sizeof(buf), &arc_bridge_group_res)) < 0) {
+    PLOG(ERROR) << "getgrnam_r";
+    return base::ScopedFD();
+  }
+
+  if (!arc_bridge_group_res) {
+    LOG(ERROR) << "Group '" << kArcBridgeSocketGroup << "' not found";
+    return base::ScopedFD();
+  }
+
+  if (HANDLE_EINTR(chown(kArcBridgeSocketPath, -1, arc_bridge_group.gr_gid)) <
+      0) {
+    PLOG(ERROR) << "chown";
+    return base::ScopedFD();
+  }
+
+  if (!base::SetPosixFilePermissions(socket_path, 0660)) {
     PLOG(ERROR) << "Could not set permissions: " << socket_path.value();
     return base::ScopedFD();
   }
