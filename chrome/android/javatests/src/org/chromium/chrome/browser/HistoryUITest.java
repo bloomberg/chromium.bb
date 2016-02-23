@@ -43,7 +43,6 @@ public class HistoryUITest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     public HistoryUITest() {
         super(ChromeActivity.class);
-        mSkipCheckHttpServer = true;
     }
 
     @Override

@@ -125,7 +125,6 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
 
     public CastTestBase() {
         super(ChromeActivity.class);
-        mSkipCheckHttpServer = true;
     }
 
     @Override

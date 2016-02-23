@@ -42,7 +42,6 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
 
     public SiteSettingsPreferencesTest() {
         super(ChromeActivity.class);
-        mSkipCheckHttpServer = true;
     }
 
     @Override

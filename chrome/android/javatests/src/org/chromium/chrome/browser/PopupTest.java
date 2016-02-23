@@ -36,7 +36,6 @@ public class PopupTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     public PopupTest() {
         super(ChromeActivity.class);
-        mSkipCheckHttpServer = true;
     }
 
     private int getNumInfobarsShowing() {

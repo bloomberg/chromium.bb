@@ -108,7 +108,6 @@ public class AddToHomescreenDialogHelperTest extends ChromeActivityTestCaseBase<
 
     public AddToHomescreenDialogHelperTest() {
         super(ChromeActivity.class);
-        mSkipCheckHttpServer = true;
     }
 
     @Override

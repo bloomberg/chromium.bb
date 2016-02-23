@@ -31,10 +31,6 @@ import java.util.concurrent.ExecutionException;
 public class PartnerDisableIncognitoModeIntegrationTest extends
         BasePartnerBrowserCustomizationIntegrationTest {
 
-    public PartnerDisableIncognitoModeIntegrationTest() {
-        mSkipCheckHttpServer = true;
-    }
-
     @Override
     public void startMainActivity() throws InterruptedException {
         // Each test will launch main activity, so purposefully omit here.

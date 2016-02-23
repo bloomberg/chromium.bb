@@ -43,10 +43,6 @@ public class FindTest extends ChromeTabbedActivityTestBase {
 
     private EmbeddedTestServer mTestServer;
 
-    public FindTest() {
-        mSkipCheckHttpServer = true;
-    }
-
     @Override
     protected void setUp() throws Exception {
         super.setUp();

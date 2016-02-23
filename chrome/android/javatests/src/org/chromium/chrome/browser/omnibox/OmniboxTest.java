@@ -58,7 +58,6 @@ public class OmniboxTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     public OmniboxTest() {
         super(ChromeActivity.class);
-        mSkipCheckHttpServer = true;
     }
 
     private void clearUrlBar() {

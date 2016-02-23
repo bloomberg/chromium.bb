@@ -56,7 +56,6 @@ public class QueryInOmniboxTest extends ChromeActivityTestCaseBase<ChromeActivit
 
     public QueryInOmniboxTest() {
         super(ChromeActivity.class);
-        mSkipCheckHttpServer = true;
     }
 
     @Override

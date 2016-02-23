@@ -33,7 +33,6 @@ public class FocusedEditableTextFieldZoomTest extends ChromeActivityTestCaseBase
 
     public FocusedEditableTextFieldZoomTest() {
         super(ChromeActivity.class);
-        mSkipCheckHttpServer = true;
     }
 
     @Override
