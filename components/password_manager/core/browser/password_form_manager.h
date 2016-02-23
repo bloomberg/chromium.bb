@@ -181,6 +181,16 @@ class PasswordFormManager : public PasswordStoreConsumer {
     has_generated_password_ = generated_password;
   }
 
+  bool is_manual_generation() { return is_manual_generation_; }
+  void set_is_manual_generation(bool is_manual_generation) {
+    is_manual_generation_ = is_manual_generation;
+  }
+
+  const base::string16& generation_element() { return generation_element_; }
+  void set_generation_element(const base::string16& generation_element) {
+    generation_element_ = generation_element;
+  }
+
   bool password_overridden() const { return password_overridden_; }
 
   bool retry_password_form_password_update() const {
@@ -399,6 +409,12 @@ class PasswordFormManager : public PasswordStoreConsumer {
   bool UploadChangePasswordForm(const autofill::ServerFieldType& password_type,
                                 const std::string& login_form_signature);
 
+  // Try to label a password field that was used for generation with information
+  // that the password was generated and upload |form_data|. For labelling
+  // |generation_element_| and |is_manual_generation_| fields are used. Returns
+  // true on success.
+  bool UploadGeneratedVote();
+
   // Create pending credentials from provisionally saved form and forms received
   // from password store.
   void CreatePendingCredentials();
@@ -472,14 +488,20 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // Whether this form has an auto generated password.
   bool has_generated_password_;
 
+  // Whether password generation was manually triggered.
+  bool is_manual_generation_;
+
+  // A password field name that is used for generation.
+  base::string16 generation_element_;
+
   // Whether the saved password was overridden.
   bool password_overridden_;
 
   // A form is considered to be "retry" password if it has only one field which
   // is a current password field.
   // This variable is true if the password passed through ProvisionallySave() is
-  // a password that is not equal to any password from stored for this origin
-  // credentials and it was entered on a retry password form.
+  // a password that is not part of any password form stored for this origin
+  // and it was entered on a retry password form.
   bool retry_password_form_password_update_;
 
   // Whether the user can choose to generate a password for this form.

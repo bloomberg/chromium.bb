@@ -34,7 +34,7 @@ message AutofillQueryResponseContents {
 
 // This message contains information about the field types in a single form.
 // It is sent by the toolbar to contribute to the field type statistics.
-// Next available id: 17
+// Next available id: 18
 message AutofillUploadContents {
   required string client_version = 1;
   required fixed64 form_signature = 2;
@@ -72,6 +72,16 @@ message AutofillUploadContents {
     // The label that is used alongside the field. Its value is truncated at
     // 200 characters.
     optional string label = 11;
+
+    enum PasswordGenerationType {
+      NO_GENERATION = 0;
+      AUTOMATICALLY_TRIGGERED_GENERATION_ON_SIGN_UP_FORM = 1;
+      AUTOMATICALLY_TRIGGERED_GENERATION_ON_CHANGE_PASSWORD_FORM = 2;
+      MANUALLY_TRIGGERED_GENERATION_ON_SIGN_UP_FORM = 3;
+      MANUALLY_TRIGGERED_GENERATION_ON_CHANGE_PASSWORD_FORM = 4;
+    }
+    // The type of password generation, if it happened.
+    optional PasswordGenerationType generation_type = 17;
   }
   // Signature of the form action host (e.g. Hash64Bit("example.com")).
   optional fixed64 action_signature = 13;

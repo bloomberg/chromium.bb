@@ -14,6 +14,7 @@
 #include "base/test/histogram_tester.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_manager.h"
+#include "components/autofill/core/browser/proto/server.pb.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
@@ -65,9 +66,10 @@ MATCHER_P(CheckUsername, username_value, "Username incorrect") {
   return arg.username_value == username_value;
 }
 
-MATCHER_P2(CheckUploadFormStructure,
+MATCHER_P3(CheckUploadFormStructure,
            form_signature,
            expected_types,
+           expected_generation_types,
            "Upload form structure is incorrect") {
   if (form_signature != arg.FormSignature()) {
     // An unexpected form is uploaded.
@@ -80,15 +82,35 @@ MATCHER_P2(CheckUploadFormStructure,
         return false;
       }
     } else {
-      if (field->possible_types().size() != 1) {
-        // Currently we expect only one type per field.
+      if (field->possible_types().size() > 1) {
+        // Currently we expect not more than 1 type per field.
         return false;
       }
-      if (expected_types.find(field->name)->second !=
-          *field->possible_types().begin()) {
-        // An unexpected field type is found.
-        return false;
+
+      if (field->possible_types().empty()) {
+        if (expected_types.find(field->name) != expected_types.end())
+          // A vote is expected but not found.
+          return false;
+      } else {
+        if (expected_types.find(field->name)->second !=
+            *field->possible_types().begin()) {
+          // An unexpected field type is found.
+          return false;
+        }
       }
+    }
+
+    if (expected_generation_types.find(field->name) ==
+        expected_generation_types.end()) {
+      if (field->generation_type() !=
+          autofill::AutofillUploadContents::Field::NO_GENERATION)
+        // Unexpected generation event is found.
+        return false;
+    } else {
+      if (expected_generation_types.find(field->name)->second !=
+          field->generation_type())
+        // Unexpected generation event is found.
+        return false;
     }
   }
   return true;
@@ -395,13 +417,19 @@ class PasswordFormManagerTest : public testing::Test {
       expected_types[saved_match()->password_element] =
           autofill::NOT_ACCOUNT_CREATION_PASSWORD;
     }
+
+    std::map<base::string16,
+             autofill::AutofillUploadContents::Field::PasswordGenerationType>
+        expected_generation_types;
+
     if (field_type) {
-      EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
-                  StartUploadRequest(
-                      CheckUploadFormStructure(
-                          pending_structure.FormSignature(), expected_types),
-                      false, expected_available_field_types,
-                      expected_login_signature, true));
+      EXPECT_CALL(
+          *client()->mock_driver()->mock_autofill_download_manager(),
+          StartUploadRequest(CheckUploadFormStructure(
+                                 pending_structure.FormSignature(),
+                                 expected_types, expected_generation_types),
+                             false, expected_available_field_types,
+                             expected_login_signature, true));
     } else {
       EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
                   StartUploadRequest(_, _, _, _, _))
@@ -469,6 +497,10 @@ class PasswordFormManagerTest : public testing::Test {
     std::string observed_form_signature =
         autofill::FormStructure(observed_form()->form_data).FormSignature();
 
+    std::map<base::string16,
+             autofill::AutofillUploadContents::Field::PasswordGenerationType>
+        expected_generation_types;
+
     std::string expected_login_signature;
     if (field_type == autofill::NEW_PASSWORD) {
       autofill::FormStructure pending_structure(saved_match()->form_data);
@@ -476,7 +508,8 @@ class PasswordFormManagerTest : public testing::Test {
     }
     EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
                 StartUploadRequest(CheckUploadFormStructure(
-                                       observed_form_signature, expected_types),
+                                       observed_form_signature, expected_types,
+                                       expected_generation_types),
                                    false, expected_available_field_types,
                                    expected_login_signature, true));
 
@@ -493,6 +526,94 @@ class PasswordFormManagerTest : public testing::Test {
       default:
         NOTREACHED();
     }
+  }
+
+  // The user types username and generates password on SignUp or change password
+  // form. The password generation might be triggered automatically or manually.
+  // This function checks that correct vote is uploaded on server.
+  void GeneratedVoteUploadTest(bool is_manual_generation,
+                               bool is_change_password_form) {
+    SCOPED_TRACE(testing::Message()
+                 << "is_manual_generation=" << is_manual_generation
+                 << " is_change_password_form=" << is_change_password_form);
+    PasswordForm form(*observed_form());
+    form.form_data = saved_match()->form_data;
+
+    if (is_change_password_form) {
+      // Turn |form| to a change password form.
+      form.new_password_element = ASCIIToUTF16("NewPasswd");
+
+      autofill::FormFieldData field;
+      field.label = ASCIIToUTF16("password");
+      field.name = ASCIIToUTF16("NewPasswd");
+      field.form_control_type = "password";
+      form.form_data.fields.push_back(field);
+    }
+
+    // Create submitted form.
+    PasswordForm submitted_form(form);
+    submitted_form.preferred = true;
+    submitted_form.username_value = saved_match()->username_value;
+    submitted_form.password_value = saved_match()->password_value;
+
+    if (is_change_password_form) {
+      submitted_form.new_password_value =
+          saved_match()->password_value + ASCIIToUTF16("1");
+    }
+
+    PasswordFormManager form_manager(password_manager(), client(),
+                                     client()->driver(), form, false);
+
+    ScopedVector<PasswordForm> result;
+    form_manager.SimulateFetchMatchingLoginsFromPasswordStore();
+    form_manager.OnGetPasswordStoreResults(std::move(result));
+
+    autofill::ServerFieldTypeSet expected_available_field_types;
+    expected_available_field_types.insert(autofill::UNKNOWN_TYPE);
+    expected_available_field_types.insert(autofill::PASSWORD);
+
+    form_manager.set_is_manual_generation(is_manual_generation);
+    base::string16 generation_element = is_change_password_form
+                                            ? form.new_password_element
+                                            : form.password_element;
+    form_manager.set_generation_element(generation_element);
+    form_manager.set_has_generated_password(true);
+
+    std::map<base::string16, autofill::ServerFieldType> expected_types;
+    expected_types[generation_element] = autofill::PASSWORD;
+
+    // Figure out expected generation event type.
+    autofill::AutofillUploadContents::Field::PasswordGenerationType
+      expected_generation_type =
+        is_manual_generation
+            ? (is_change_password_form
+                ? autofill::AutofillUploadContents::Field::
+                    MANUALLY_TRIGGERED_GENERATION_ON_CHANGE_PASSWORD_FORM
+                : autofill::AutofillUploadContents::Field::
+                    MANUALLY_TRIGGERED_GENERATION_ON_SIGN_UP_FORM)
+            : (is_change_password_form
+                ? autofill::AutofillUploadContents::Field::
+                    AUTOMATICALLY_TRIGGERED_GENERATION_ON_CHANGE_PASSWORD_FORM
+                : autofill::AutofillUploadContents::Field::
+                    AUTOMATICALLY_TRIGGERED_GENERATION_ON_SIGN_UP_FORM);
+
+    std::map<base::string16,
+             autofill::AutofillUploadContents::Field::PasswordGenerationType>
+        expected_generation_types;
+    expected_generation_types[generation_element] = expected_generation_type;
+
+    autofill::FormStructure form_structure(submitted_form.form_data);
+
+    EXPECT_CALL(
+        *client()->mock_driver()->mock_autofill_download_manager(),
+        StartUploadRequest(
+            CheckUploadFormStructure(form_structure.FormSignature(),
+                                     expected_types, expected_generation_types),
+            false, expected_available_field_types, std::string(), true));
+
+    form_manager.ProvisionallySave(
+        submitted_form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+    form_manager.Save();
   }
 
   PasswordForm* observed_form() { return &observed_form_; }
@@ -2779,13 +2900,29 @@ TEST_F(PasswordFormManagerTest,
   std::string expected_login_signature =
       autofill::FormStructure(saved_match()->form_data).FormSignature();
 
+  std::map<base::string16,
+           autofill::AutofillUploadContents::Field::PasswordGenerationType>
+      expected_generation_types;
+
   EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
               StartUploadRequest(CheckUploadFormStructure(
-                                     observed_form_signature, expected_types),
+                                     observed_form_signature, expected_types,
+                                     expected_generation_types),
                                  false, expected_available_field_types,
                                  expected_login_signature, true));
 
   form_manager.Update(*saved_match());
+}
+
+TEST_F(PasswordFormManagerTest, GeneratedVoteUpload) {
+  // Automatic generation, sign-up form.
+  GeneratedVoteUploadTest(false, false);
+  // Automatic generation, change password form.
+  GeneratedVoteUploadTest(false, true);
+  // Manual generation, sign-up form.
+  GeneratedVoteUploadTest(true, false);
+  // Manual generation, change password form.
+  GeneratedVoteUploadTest(true, true);
 }
 
 }  // namespace password_manager

@@ -120,6 +120,7 @@ PasswordGenerationAgent::PasswordGenerationAgent(
     PasswordAutofillAgent* password_agent)
     : content::RenderFrameObserver(render_frame),
       password_is_generated_(false),
+      is_manually_triggered_(false),
       password_edited_(false),
       generation_popup_shown_(false),
       editing_popup_shown_(false),
@@ -253,7 +254,8 @@ bool PasswordGenerationAgent::OnMessageReceived(const IPC::Message& message) {
                         OnPasswordAccepted)
     IPC_MESSAGE_HANDLER(AutofillMsg_FoundFormsEligibleForGeneration,
                         OnFormsEligibleForGenerationFound);
-    IPC_MESSAGE_HANDLER(AutofillMsg_GeneratePassword, OnGeneratePassword);
+    IPC_MESSAGE_HANDLER(AutofillMsg_UserTriggeredGeneratePassword,
+                        OnUserTriggeredGeneratePassword);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -438,11 +440,13 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
 
 void PasswordGenerationAgent::ShowGenerationPopup() {
   Send(new AutofillHostMsg_ShowPasswordGenerationPopup(
-           routing_id(),
-           render_frame()->GetRenderView()->ElementBoundsInWindow(
-               generation_element_),
-           generation_element_.maxLength(),
-           *generation_form_data_->form));
+      routing_id(),
+      render_frame()->GetRenderView()->ElementBoundsInWindow(
+          generation_element_),
+      generation_element_.maxLength(),
+      generation_element_.nameForAutofill(),
+      is_manually_triggered_,
+      *generation_form_data_->form));
   generation_popup_shown_ = true;
 }
 
@@ -459,7 +463,7 @@ void PasswordGenerationAgent::HidePopup() {
   Send(new AutofillHostMsg_HidePasswordGenerationPopup(routing_id()));
 }
 
-void PasswordGenerationAgent::OnGeneratePassword() {
+void PasswordGenerationAgent::OnUserTriggeredGeneratePassword() {
   blink::WebDocument doc = render_frame()->GetWebFrame()->document();
   if (doc.isNull())
     return;
@@ -485,6 +489,7 @@ void PasswordGenerationAgent::OnGeneratePassword() {
       password_elements, element->nameForAutofill());
   generation_form_data_.reset(new AccountCreationFormData(
       make_linked_ptr(password_form.release()), password_elements));
+  is_manually_triggered_ = true;
   ShowGenerationPopup();
 }
 

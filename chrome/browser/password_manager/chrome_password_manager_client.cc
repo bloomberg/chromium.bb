@@ -503,17 +503,21 @@ void ChromePasswordManagerClient::ShowPasswordGenerationPopup(
     content::RenderFrameHost* render_frame_host,
     const gfx::RectF& bounds,
     int max_length,
+    const base::string16& generation_element,
+    bool is_manually_triggered,
     const autofill::PasswordForm& form) {
   // TODO(gcasto): Validate data in PasswordForm.
 
+  auto* driver = driver_factory_->GetDriverForFrame(render_frame_host);
+  password_manager_.SetGenerationElementAndReasonForForm(
+      driver, form, generation_element, is_manually_triggered);
   gfx::RectF element_bounds_in_screen_space = GetBoundsInScreenSpace(bounds);
 
   popup_controller_ =
       autofill::PasswordGenerationPopupControllerImpl::GetOrCreate(
           popup_controller_, element_bounds_in_screen_space, form, max_length,
-          &password_manager_,
-          driver_factory_->GetDriverForFrame(render_frame_host), observer_,
-          web_contents(), web_contents()->GetNativeView());
+          &password_manager_, driver, observer_, web_contents(),
+          web_contents()->GetNativeView());
   popup_controller_->Show(true /* display_password */);
 }
 

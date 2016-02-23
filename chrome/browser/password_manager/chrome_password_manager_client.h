@@ -127,10 +127,15 @@ class ChromePasswordManagerClient
 
   // Causes the password generation UI to be shown for the specified form.
   // The popup will be anchored at |element_bounds|. The generated password
-  // will be no longer than |max_length|.
+  // will be no longer than |max_length|. |generation_element| should contain a
+  // name of a password field at which generation popup is attached.
+  // |is_manually_triggered| informs whether it is automatically or manually
+  // triggered generation.
   void ShowPasswordGenerationPopup(content::RenderFrameHost* render_frame_host,
                                    const gfx::RectF& bounds,
                                    int max_length,
+                                   const base::string16& generation_element,
+                                   bool is_manually_triggered,
                                    const autofill::PasswordForm& form);
 
   // Causes the password editing UI to be shown anchored at |element_bounds|.

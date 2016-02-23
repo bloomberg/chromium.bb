@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/proto/server.pb.h"
 #include "components/autofill/core/common/form_field_data.h"
 
 namespace autofill {
@@ -82,6 +83,15 @@ class AutofillField : public FormFieldData {
     return credit_card_number_offset_;
   }
 
+  void set_generation_type(
+      AutofillUploadContents::Field::PasswordGenerationType type) {
+    generation_type_ = type;
+  }
+  AutofillUploadContents::Field::PasswordGenerationType generation_type()
+      const {
+    return generation_type_;
+  }
+
   // Set |field_data|'s value to |value|. Uses |field|, |address_language_code|,
   // and |app_locale| as hints when filling exceptional cases like phone number
   // values and <select> fields. Returns |true| if the field has been filled,
@@ -147,6 +157,9 @@ class AutofillField : public FormFieldData {
   // a common prefix shared with other fields). Will be used for heuristics
   // parsing.
   base::string16 parseable_name_;
+
+  // The type of password generation event, if it happened.
+  AutofillUploadContents::Field::PasswordGenerationType generation_type_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillField);
 };

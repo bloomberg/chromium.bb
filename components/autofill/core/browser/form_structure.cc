@@ -1106,6 +1106,8 @@ void FormStructure::EncodeFormForUpload(AutofillUploadContents* upload) const {
 
       AutofillUploadContents::Field* added_field = upload->add_field();
       added_field->set_autofill_type(field_type);
+      if (field->generation_type())
+        added_field->set_generation_type(field->generation_type());
 
       unsigned sig = 0;
       // The signature is a required field. If it can't be parsed, the proto

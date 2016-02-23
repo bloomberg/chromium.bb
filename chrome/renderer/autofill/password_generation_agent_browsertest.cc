@@ -73,7 +73,7 @@ class PasswordGenerationAgentTest : public ChromeRenderViewTest {
 
   void ShowGenerationPopUpManually(const char* element_id) {
     FocusField(element_id);
-    AutofillMsg_GeneratePassword msg(0);
+    AutofillMsg_UserTriggeredGeneratePassword msg(0);
     password_generation_->OnMessageReceived(msg);
   }
 

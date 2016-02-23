@@ -133,6 +133,8 @@ std::ostream& operator<<(std::ostream& out,
       out << "\n type: " << field.type();
     if (!field.label().empty())
       out << "\n label: " << field.label();
+    if (field.generation_type())
+      out << "\n generation_type: " << field.generation_type();
   }
   return out;
 }

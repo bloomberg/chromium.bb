@@ -211,9 +211,21 @@ void PasswordManager::SetHasGeneratedPasswordForForm(
 
   UMA_HISTOGRAM_BOOLEAN("PasswordManager.GeneratedFormHasNoFormManager",
                         password_is_generated);
+}
 
-  if (!password_is_generated)
+void PasswordManager::SetGenerationElementAndReasonForForm(
+    password_manager::PasswordManagerDriver* driver,
+    const autofill::PasswordForm& form,
+    const base::string16& generation_element,
+    bool is_manually_triggered) {
+  DCHECK(client_->IsSavingAndFillingEnabledForCurrentPage());
+
+  PasswordFormManager* form_manager = GetMatchingPendingManager(form);
+  if (form_manager) {
+    form_manager->set_generation_element(generation_element);
+    form_manager->set_is_manual_generation(is_manually_triggered);
     return;
+  }
 
   // If there is no corresponding PasswordFormManager, we create one. This is
   // not the common case, and should only happen when there is a bug in our

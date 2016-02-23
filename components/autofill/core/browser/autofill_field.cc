@@ -20,6 +20,7 @@
 #include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/phone_number.h"
+#include "components/autofill/core/browser/proto/server.pb.h"
 #include "components/autofill/core/browser/state_names.h"
 #include "components/autofill/core/common/autofill_l10n_util.h"
 #include "components/autofill/core/common/autofill_switches.h"
@@ -443,7 +444,8 @@ AutofillField::AutofillField()
       html_mode_(HTML_MODE_NONE),
       phone_part_(IGNORED),
       credit_card_number_offset_(0),
-      previously_autofilled_(false) {}
+      previously_autofilled_(false),
+      generation_type_(AutofillUploadContents::Field::NO_GENERATION) {}
 
 AutofillField::AutofillField(const FormFieldData& field,
                              const base::string16& unique_name)
@@ -456,7 +458,8 @@ AutofillField::AutofillField(const FormFieldData& field,
       phone_part_(IGNORED),
       credit_card_number_offset_(0),
       previously_autofilled_(false),
-      parseable_name_(field.name) {}
+      parseable_name_(field.name),
+      generation_type_(AutofillUploadContents::Field::NO_GENERATION) {}
 
 AutofillField::~AutofillField() {}
 

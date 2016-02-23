@@ -104,7 +104,7 @@ class PasswordGenerationAgent : public content::RenderFrameObserver {
 
   // Sets |generation_element_| to the focused password field and shows a
   // generation popup at this field.
-  void OnGeneratePassword();
+  void OnUserTriggeredGeneratePassword();
 
   // Stores forms that are candidates for account creation.
   AccountCreationFormDataList possible_account_creation_forms_;
@@ -128,6 +128,9 @@ class PasswordGenerationAgent : public content::RenderFrameObserver {
   // If the password field at |generation_element_| contains a generated
   // password.
   bool password_is_generated_;
+
+  // True if password generation was manually triggered.
+  bool is_manually_triggered_;
 
   // True if a password was generated and the user edited it. Used for UMA
   // stats.

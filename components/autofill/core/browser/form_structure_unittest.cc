@@ -2144,8 +2144,13 @@ TEST_F(FormStructureTest,
   form_structure.reset(new FormStructure(form));
 
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
-  for (size_t i = 0; i < form_structure->field_count(); ++i)
+  for (size_t i = 0; i < form_structure->field_count(); ++i) {
     form_structure->field(i)->set_possible_types(possible_field_types[i]);
+    if (form_structure->field(i)->name == ASCIIToUTF16("password"))
+      form_structure->field(i)->set_generation_type(
+          autofill::AutofillUploadContents::Field::
+              MANUALLY_TRIGGERED_GENERATION_ON_SIGN_UP_FORM);
+  }
 
   ServerFieldTypeSet available_field_types;
   available_field_types.insert(NAME_FIRST);
@@ -2172,8 +2177,12 @@ TEST_F(FormStructureTest,
                         "Email", "email", 9U);
   test::FillUploadField(upload.add_field(), 239111655U, "username", "text",
                         "username", "email", 86U);
-  test::FillUploadField(upload.add_field(), 2051817934U, "password", "password",
-                        "password", "email", 76U);
+  auto* upload_password_field = upload.add_field();
+  test::FillUploadField(upload_password_field, 2051817934U, "password",
+                        "password", "password", "email", 76U);
+  upload_password_field->set_generation_type(
+      autofill::AutofillUploadContents::Field::
+          MANUALLY_TRIGGERED_GENERATION_ON_SIGN_UP_FORM);
 
   std::string expected_upload_string;
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));

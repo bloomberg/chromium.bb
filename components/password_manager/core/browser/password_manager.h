@@ -88,6 +88,14 @@ class PasswordManager : public LoginModel {
       const autofill::PasswordForm& form,
       bool password_is_generated);
 
+  // Update the generation element and whether generation was triggered
+  // manually.
+  void SetGenerationElementAndReasonForForm(
+      password_manager::PasswordManagerDriver* driver,
+      const autofill::PasswordForm& form,
+      const base::string16& generation_element,
+      bool is_manually_triggered);
+
   // TODO(isherman): This should not be public, but is currently being used by
   // the LoginPrompt code.
   // When a form is submitted, we prepare to save the password but wait
