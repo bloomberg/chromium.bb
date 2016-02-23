@@ -47,6 +47,7 @@ if (enable_nacl) {
       "libgcc_a",
       "libpnacl_irt_shim_a",
       "pnacl_llc_nexe",
+      "pnacl_sz_nexe",
     ]
 
     if (target_cpu == "arm") {

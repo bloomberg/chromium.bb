@@ -1111,11 +1111,13 @@ PP_Bool ManifestGetProgramURL(PP_Instance instance,
     // Also modify the ValidationCacheOfTranslatorNexes test to match.  When
     // Subzero is finally fully released for all sandbox architectures, the
     // --enable-pnacl-subzero flag can be removed.
-    if (pnacl_options->opt_level == 0 && !pnacl_options->is_debug &&
-        strcmp(GetSandboxArch(), "x86-32") == 0) {
-      pnacl_options->use_subzero = PP_TRUE;
-      // Subzero -O2 is closer to LLC -O0, so indicate -O2.
-      pnacl_options->opt_level = 2;
+    if (pnacl_options->opt_level == 0 && !pnacl_options->is_debug) {
+      const char* arch = GetSandboxArch();
+      if (strcmp(arch, "x86-32") == 0 || strcmp(arch, "x86-64") == 0) {
+        pnacl_options->use_subzero = PP_TRUE;
+        // Subzero -O2 is closer to LLC -O0, so indicate -O2.
+        pnacl_options->opt_level = 2;
+      }
     }
     return PP_TRUE;
   }

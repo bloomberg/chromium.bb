@@ -106,7 +106,8 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, SuccessfulLoadUMA, {
 // Test that a successful load adds stats to Subzero buckets.
 IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnaclSubzero, SuccessfulLoadUMA) {
   // Only test where Subzero is supported.
-  if (strcmp(nacl::GetSandboxArch(), "x86-32") != 0)
+  const char* arch = nacl::GetSandboxArch();
+  if (strcmp(arch, "x86-32") != 0 && strcmp(arch, "x86-64") != 0)
     return;
 
   base::HistogramTester histograms;
@@ -242,7 +243,9 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestGLibcVcacheExtension,
 // This includes pnacl-llc.nexe, pnacl-ld.nexe, and possibly pnacl-sz.nexe.
 IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl,
                        ValidationCacheOfTranslatorNexes) {
-  bool uses_subzero_with_o0 = (strcmp(nacl::GetSandboxArch(), "x86-32") == 0);
+  const char* arch = nacl::GetSandboxArch();
+  const bool uses_subzero_with_o0 =
+      (strcmp(arch, "x86-32") == 0 || strcmp(arch, "x86-64") == 0);
   base::HistogramBase::Count subzero_o0_count = (uses_subzero_with_o0 ? 1 : 0);
   base::HistogramTester histograms;
   // Run a load test w/ one pexe cache identity.
