@@ -228,6 +228,12 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs,
         classpath_idx = javac_cmd.index('-classpath')
         javac_cmd[classpath_idx + 1] += ':' + classes_dir
 
+      # Can happen when a target goes from having no sources, to having sources.
+      # It's created by the call to build_utils.Touch() below.
+      if options.incremental:
+        if os.path.exists(pdb_path) and not os.path.getsize(pdb_path):
+          os.unlink(pdb_path)
+
       # Don't include the output directory in the initial set of args since it
       # being in a temp dir makes it unstable (breaks md5 stamping).
       cmd = javac_cmd + ['-d', classes_dir] + java_files
@@ -253,6 +259,9 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs,
                '(http://crbug.com/551449).')
         os.unlink(pdb_path)
         attempt_build()
+    elif options.incremental:
+      # Make sure output exists.
+      build_utils.Touch(pdb_path)
 
     if options.main_class or options.manifest_entry:
       entries = []
