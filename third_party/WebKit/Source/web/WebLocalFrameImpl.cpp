@@ -2043,9 +2043,9 @@ void WebLocalFrameImpl::didCallIsSearchProviderInstalled()
     UseCounter::count(frame(), UseCounter::ExternalIsSearchProviderInstalled);
 }
 
-bool WebLocalFrameImpl::find(int identifier, const WebString& searchText, const WebFindOptions& options, bool wrapWithinFrame, WebRect* selectionRect)
+bool WebLocalFrameImpl::find(int identifier, const WebString& searchText, const WebFindOptions& options, bool wrapWithinFrame, WebRect* selectionRect, bool* activeNow)
 {
-    return ensureTextFinder().find(identifier, searchText, options, wrapWithinFrame, selectionRect);
+    return ensureTextFinder().find(identifier, searchText, options, wrapWithinFrame, selectionRect, activeNow);
 }
 
 void WebLocalFrameImpl::stopFinding(bool clearSelection)

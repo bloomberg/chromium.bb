@@ -56,7 +56,7 @@ public:
 
     bool find(
         int identifier, const WebString& searchText, const WebFindOptions&,
-        bool wrapWithinFrame, WebRect* selectionRect);
+        bool wrapWithinFrame, WebRect* selectionRect, bool* activeNow = nullptr);
     void stopFindingAndClearSelection();
     void scopeStringMatches(
         int identifier, const WebString& searchText, const WebFindOptions&,
@@ -148,8 +148,9 @@ private:
     // Add a WebKit TextMatch-highlight marker to nodes in a range.
     void addMarker(Range*, bool activeMatch);
 
-    // Sets the markers within a range as active or inactive.
-    void setMarkerActive(Range*, bool active);
+    // Sets the markers within a range as active or inactive. Returns true if at least
+    // one such marker found.
+    bool setMarkerActive(Range*, bool active);
 
     // Removes all markers.
     void unmarkAllTextMatches();

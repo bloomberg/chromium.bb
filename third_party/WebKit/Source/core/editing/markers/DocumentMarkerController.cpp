@@ -674,10 +674,11 @@ void DocumentMarkerController::shiftMarkers(Node* node, unsigned startOffset, in
         node->layoutObject()->setShouldDoFullPaintInvalidation();
 }
 
-void DocumentMarkerController::setMarkersActive(Range* range, bool active)
+bool DocumentMarkerController::setMarkersActive(Range* range, bool active)
 {
     if (!possiblyHasMarkers(DocumentMarker::AllMarkers()))
-        return;
+        return false;
+
     ASSERT(!m_markers.isEmpty());
 
     Node* startContainer = range->startContainer();
@@ -685,23 +686,25 @@ void DocumentMarkerController::setMarkersActive(Range* range, bool active)
 
     Node* pastLastNode = range->pastLastNode();
 
+    bool markerFound = false;
     for (Node* node = range->firstNode(); node != pastLastNode; node = NodeTraversal::next(*node)) {
         int startOffset = node == startContainer ? range->startOffset() : 0;
         int endOffset = node == endContainer ? range->endOffset() : INT_MAX;
-        setMarkersActive(node, startOffset, endOffset, active);
+        markerFound |= setMarkersActive(node, startOffset, endOffset, active);
     }
+    return markerFound;
 }
 
-void DocumentMarkerController::setMarkersActive(Node* node, unsigned startOffset, unsigned endOffset, bool active)
+bool DocumentMarkerController::setMarkersActive(Node* node, unsigned startOffset, unsigned endOffset, bool active)
 {
     MarkerLists* markers = m_markers.get(node);
     if (!markers)
-        return;
+        return false;
 
     bool docDirty = false;
     OwnPtrWillBeMember<MarkerList>& list = (*markers)[MarkerTypeToMarkerIndex(DocumentMarker::TextMatch)];
     if (!list)
-        return;
+        return false;
     MarkerList::iterator startPos = std::upper_bound(list->begin(), list->end(), startOffset, endsBefore);
     for (MarkerList::iterator marker = startPos; marker != list->end(); ++marker) {
 
@@ -716,6 +719,7 @@ void DocumentMarkerController::setMarkersActive(Node* node, unsigned startOffset
     // repaint the affected node
     if (docDirty && node->layoutObject())
         node->layoutObject()->setShouldDoFullPaintInvalidation();
+    return docDirty;
 }
 
 #ifndef NDEBUG

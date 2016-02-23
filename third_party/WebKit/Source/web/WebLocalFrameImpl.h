@@ -239,7 +239,7 @@ public:
     void replaceSelection(const WebString&) override;
     bool find(
         int identifier, const WebString& searchText, const WebFindOptions&,
-        bool wrapWithinFrame, WebRect* selectionRect) override;
+        bool wrapWithinFrame, WebRect* selectionRect, bool* activeNow = nullptr) override;
     void stopFinding(bool clearSelection) override;
     void scopeStringMatches(
         int identifier, const WebString& searchText, const WebFindOptions&,

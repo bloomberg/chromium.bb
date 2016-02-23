@@ -4112,6 +4112,53 @@ TEST_P(ParameterizedWebFrameTest, SetTickmarks)
     EXPECT_EQ(originalTickmarks, originalTickmarksAfterReset);
 }
 
+TEST_P(ParameterizedWebFrameTest, FindInPageJavaScriptUpdatesDOM)
+{
+    registerMockedHttpURLLoad("find.html");
+
+    FindUpdateWebFrameClient client;
+    FrameTestHelpers::WebViewHelper webViewHelper(this);
+    webViewHelper.initializeAndLoad(m_baseURL + "find.html", true, &client);
+    webViewHelper.resize(WebSize(640, 480));
+    runPendingTasks();
+
+    WebLocalFrame* frame = webViewHelper.webView()->mainFrame()->toWebLocalFrame();
+    const int findIdentifier = 12345;
+    static const char* kFindString = "foo";
+    WebString searchText = WebString::fromUTF8(kFindString);
+    WebFindOptions options;
+    bool activeNow;
+
+    frame->resetMatchCount();
+    frame->scopeStringMatches(findIdentifier, searchText, options, true);
+    runPendingTasks();
+    EXPECT_TRUE(client.findResultsAreReady());
+
+    // Find in a <div> element.
+    options.findNext = true;
+    EXPECT_TRUE(frame->find(findIdentifier, searchText, options, false, 0, &activeNow));
+    EXPECT_TRUE(activeNow);
+
+    // Insert new text, which contains occurence of |searchText|.
+    frame->executeScript(WebScriptSource(
+        "var newTextNode = document.createTextNode('bar5 foo5');"
+        "var textArea = document.getElementsByTagName('textarea')[0];"
+        "document.body.insertBefore(newTextNode, textArea);"));
+
+    // Find in a <input> element.
+    EXPECT_TRUE(frame->find(findIdentifier, searchText, options, false, 0, &activeNow));
+    EXPECT_TRUE(activeNow);
+
+    // Find in the inserted text node.
+    EXPECT_TRUE(frame->find(findIdentifier, searchText, options, false, 0, &activeNow));
+    frame->stopFinding(false);
+    WebRange range = frame->selectionRange();
+    EXPECT_EQ(5, range.startOffset());
+    EXPECT_EQ(8, range.endOffset());
+    EXPECT_TRUE(frame->document().focusedElement().isNull());
+    EXPECT_FALSE(activeNow);
+}
+
 static WebPoint topLeft(const WebRect& rect)
 {
     return WebPoint(rect.x, rect.y);

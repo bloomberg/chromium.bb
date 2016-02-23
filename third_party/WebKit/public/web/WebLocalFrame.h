@@ -235,7 +235,8 @@ public:
         const WebString& searchText,
         const WebFindOptions&,
         bool wrapWithinFrame,
-        WebRect* selectionRect) = 0;
+        WebRect* selectionRect,
+        bool* activeNow = nullptr) = 0;
 
     // Notifies the frame that we are no longer interested in searching.
     // This will abort any asynchronous scoping effort already under way

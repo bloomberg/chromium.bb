@@ -252,4 +252,21 @@ TEST_F(DocumentMarkerControllerTest, CompositionMarkersNotMerged)
     EXPECT_EQ(2u, markerController().markers().size());
 }
 
+TEST_F(DocumentMarkerControllerTest, SetMarkerActiveTest)
+{
+    setBodyInnerHTML("<b>foo</b>");
+    RefPtrWillBeRawPtr<Element> bElement = toElement(document().body()->firstChild());
+    EphemeralRange ephemeralRange = EphemeralRange::rangeOfContents(*bElement);
+    Position startBElement = toPositionInDOMTree(ephemeralRange.startPosition());
+    Position endBElement = toPositionInDOMTree(ephemeralRange.endPosition());
+    RefPtrWillBeRawPtr<Range> range = Range::create(document(), startBElement, endBElement);
+    // Try to make active a marker that doesn't exist.
+    EXPECT_FALSE(markerController().setMarkersActive(range.get(), true));
+
+    // Add a marker and try it once more.
+    markerController().addTextMatchMarker(range.get(), false);
+    EXPECT_EQ(1u, markerController().markers().size());
+    EXPECT_TRUE(markerController().setMarkersActive(range.get(), true));
+}
+
 } // namespace blink

@@ -5059,14 +5059,16 @@ void RenderFrameImpl::OnFind(int request_id,
 
   WebRect selection_rect;
   bool result = false;
+  bool active_now = false;
 
   // If something is selected when we start searching it means we cannot just
   // increment the current match ordinal; we need to re-generate it.
   WebRange current_selection = focused_frame->selectionRange();
 
   do {
-    result = search_frame->find(request_id, search_text, options,
-                                wrap_within_frame, &selection_rect);
+    result =
+        search_frame->find(request_id, search_text, options, wrap_within_frame,
+                           &selection_rect, &active_now);
 
     if (!result) {
       // Don't leave text selected as you move to the next frame.
@@ -5095,14 +5097,14 @@ void RenderFrameImpl::OnFind(int request_id,
       if (multi_frame && search_frame == focused_frame) {
         result = search_frame->find(request_id, search_text, options,
                                     true,  // Force wrapping.
-                                    &selection_rect);
+                                    &selection_rect, &active_now);
       }
     }
 
     render_view_->webview()->setFocusedFrame(search_frame);
   } while (!result && search_frame != focused_frame);
 
-  if (options.findNext && current_selection.isNull()) {
+  if (options.findNext && current_selection.isNull() && active_now) {
     // Force the main_frame to report the actual count.
     main_frame->increaseMatchCount(0, request_id);
   } else {

@@ -394,6 +394,58 @@ TEST_F(TextFinderTest, SequentialMatches)
     EXPECT_EQ(findInPageRect(textNode, 4, textNode, 6), matchRects[2]);
 }
 
+TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOM)
+{
+    document().body()->setInnerHTML("<b>XXXXFindMeYYYY</b><i></i>", ASSERT_NO_EXCEPTION);
+
+    int identifier = 0;
+    WebString searchText(String("FindMe"));
+    WebFindOptions findOptions; // Default.
+    bool wrapWithinFrame = true;
+    WebRect* selectionRect = nullptr;
+    bool activeNow;
+
+    textFinder().resetMatchCount();
+    textFinder().scopeStringMatches(identifier, searchText, findOptions, true);
+    while (textFinder().scopingInProgress())
+        runPendingTasks();
+
+    findOptions.findNext = true;
+    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect, &activeNow));
+    EXPECT_TRUE(activeNow);
+    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect, &activeNow));
+    EXPECT_TRUE(activeNow);
+
+    // Add new text to DOM and try FindNext.
+    Element* iElement = toElement(document().body()->lastChild());
+    ASSERT_TRUE(iElement);
+    iElement->setInnerHTML("ZZFindMe", ASSERT_NO_EXCEPTION);
+
+    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect, &activeNow));
+    Range* activeMatch = textFinder().activeMatch();
+    ASSERT_TRUE(activeMatch);
+    EXPECT_FALSE(activeNow);
+    EXPECT_EQ(2, activeMatch->startOffset());
+    EXPECT_EQ(8, activeMatch->endOffset());
+
+    // Restart full search and check that added text is found.
+    findOptions.findNext = false;
+    textFinder().resetMatchCount();
+    textFinder().cancelPendingScopingEffort();
+    textFinder().scopeStringMatches(identifier, searchText, findOptions, true);
+    while (textFinder().scopingInProgress())
+        runPendingTasks();
+    EXPECT_EQ(2, textFinder().totalMatchCount());
+
+    WebVector<WebFloatRect> matchRects;
+    textFinder().findMatchRects(matchRects);
+    ASSERT_EQ(2u, matchRects.size());
+    Node* textInBElement = document().body()->firstChild()->firstChild();
+    Node* textInIElement = document().body()->lastChild()->firstChild();
+    EXPECT_EQ(findInPageRect(textInBElement, 4, textInBElement, 10), matchRects[0]);
+    EXPECT_EQ(findInPageRect(textInIElement, 2, textInIElement, 8), matchRects[1]);
+}
+
 class TextFinderFakeTimerTest : public TextFinderTest {
 protected:
     void SetUp() override

@@ -112,7 +112,7 @@ private:
     const bool m_reset;
 };
 
-bool TextFinder::find(int identifier, const WebString& searchText, const WebFindOptions& options, bool wrapWithinFrame, WebRect* selectionRect)
+bool TextFinder::find(int identifier, const WebString& searchText, const WebFindOptions& options, bool wrapWithinFrame, WebRect* selectionRect, bool* activeNow)
 {
     if (!ownerFrame().frame() || !ownerFrame().frame()->page())
         return false;
@@ -163,17 +163,22 @@ bool TextFinder::find(int identifier, const WebString& searchText, const WebFind
         ownerFrame().viewImpl()->zoomToFindInPageRect(ownerFrame().frameView()->contentsToRootFrame(enclosingIntRect(LayoutObject::absoluteBoundingBoxRectForRange(m_activeMatch.get()))));
     }
 
-    setMarkerActive(m_activeMatch.get(), true);
     WebLocalFrameImpl* oldActiveFrame = mainFrameImpl->ensureTextFinder().m_currentActiveMatchFrame;
     mainFrameImpl->ensureTextFinder().m_currentActiveMatchFrame = &ownerFrame();
 
     // Make sure no node is focused. See http://crbug.com/38700.
     ownerFrame().frame()->document()->clearFocusedElement();
 
-    if (!options.findNext || activeSelection) {
-        // This is either a Find operation or a Find-next from a new start point
-        // due to a selection, so we set the flag to ask the scoping effort
-        // to find the active rect for us and report it back to the UI.
+    bool isActive = setMarkerActive(m_activeMatch.get(), true);
+    if (activeNow)
+        *activeNow = isActive;
+
+    if (!options.findNext || activeSelection || !isActive) {
+        // This is either a Find operation, a Find-next from a new start point
+        // due to a selection, or new matches were found during Find-next due
+        // to DOM alteration (that couldn't be set as active), so we set the
+        // flag to ask the scoping effort to find the active rect for us and
+        // report it back to the UI.
         m_locatingActiveRect = true;
     } else {
         if (oldActiveFrame != &ownerFrame()) {
@@ -680,11 +685,11 @@ void TextFinder::addMarker(Range* range, bool activeMatch)
     ownerFrame().frame()->document()->markers().addTextMatchMarker(range, activeMatch);
 }
 
-void TextFinder::setMarkerActive(Range* range, bool active)
+bool TextFinder::setMarkerActive(Range* range, bool active)
 {
     if (!range || range->collapsed())
-        return;
-    ownerFrame().frame()->document()->markers().setMarkersActive(range, active);
+        return false;
+    return ownerFrame().frame()->document()->markers().setMarkersActive(range, active);
 }
 
 void TextFinder::unmarkAllTextMatches()
