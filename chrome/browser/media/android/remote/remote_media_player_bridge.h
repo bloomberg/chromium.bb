@@ -24,11 +24,10 @@ class RemoteMediaPlayerManager;
 
 class RemoteMediaPlayerBridge : public media::MediaPlayerAndroid {
  public:
-  RemoteMediaPlayerBridge(
-      MediaPlayerAndroid* local_player,
-      const std::string& user_agent,
-      bool hide_url_log,
-      RemoteMediaPlayerManager* manager);
+  RemoteMediaPlayerBridge(int player_id,
+                          const std::string& user_agent,
+                          bool hide_url_log,
+                          RemoteMediaPlayerManager* manager);
   ~RemoteMediaPlayerBridge() override;
 
   static bool RegisterRemoteMediaPlayerBridge(JNIEnv* env);
@@ -118,7 +117,8 @@ class RemoteMediaPlayerBridge : public media::MediaPlayerAndroid {
   // are retrieved.
   void OnCookiesRetrieved(const std::string& cookies);
 
-  MediaPlayerAndroid* local_player_;
+  media::MediaPlayerAndroid* GetLocalPlayer();
+
   int width_;
   int height_;
   base::RepeatingTimer time_update_timer_;

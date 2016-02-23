@@ -50,6 +50,10 @@ class RemoteMediaPlayerManager : public content::BrowserMediaPlayerManager {
   void SwitchToRemotePlayer(int player_id, const std::string& casting_message);
   void SwitchToLocalPlayer(int player_id);
 
+  // Get the local player for a given player id, whether or not it is currently
+  // playing locally. Will return nullptr if the local player no longer exists.
+  media::MediaPlayerAndroid* GetLocalPlayer(int player_id);
+
  protected:
   void OnSetPoster(int player_id, const GURL& url) override;
 
@@ -57,8 +61,7 @@ class RemoteMediaPlayerManager : public content::BrowserMediaPlayerManager {
 
  private:
   // Returns a MediaPlayerAndroid implementation for playing the media remotely.
-  RemoteMediaPlayerBridge* CreateRemoteMediaPlayer(
-      media::MediaPlayerAndroid* local_player);
+  RemoteMediaPlayerBridge* CreateRemoteMediaPlayer(int player_id);
 
   // Replaces the remote player with the local player this class is holding.
   // Does nothing if there is no remote player.
@@ -97,10 +100,6 @@ class RemoteMediaPlayerManager : public content::BrowserMediaPlayerManager {
   // Get the remote player for a given player id, whether or not it is currently
   // playing remotely.
   RemoteMediaPlayerBridge* GetRemotePlayer(int player_id);
-
-  // Get the local player for a given player id, whether or not it is currently
-  // playing locally.
-  media::MediaPlayerAndroid* GetLocalPlayer(int player_id);
 
   void SwapCurrentPlayer(int player_id);
 

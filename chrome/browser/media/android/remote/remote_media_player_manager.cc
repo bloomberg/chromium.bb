@@ -41,9 +41,9 @@ void RemoteMediaPlayerManager::OnInitialize(
     const MediaPlayerHostMsg_Initialize_Params& media_params) {
   BrowserMediaPlayerManager::OnInitialize(media_params);
 
-  MediaPlayerAndroid* player = GetPlayer(media_params.player_id);
-  if (player) {
-    RemoteMediaPlayerBridge* remote_player = CreateRemoteMediaPlayer(player);
+  if (GetPlayer(media_params.player_id)) {
+    RemoteMediaPlayerBridge* remote_player =
+        CreateRemoteMediaPlayer(media_params.player_id);
     remote_player->OnPlayerCreated();
   }
 }
@@ -134,12 +134,9 @@ void RemoteMediaPlayerManager::DidDownloadPoster(
 }
 
 RemoteMediaPlayerBridge* RemoteMediaPlayerManager::CreateRemoteMediaPlayer(
-     MediaPlayerAndroid* local_player) {
-  RemoteMediaPlayerBridge* player = new RemoteMediaPlayerBridge(
-      local_player,
-      GetUserAgent(),
-      false,
-      this);
+    int player_id) {
+  RemoteMediaPlayerBridge* player =
+      new RemoteMediaPlayerBridge(player_id, GetUserAgent(), false, this);
   alternative_players_.push_back(player);
   player->Initialize();
   return player;
@@ -185,8 +182,8 @@ void RemoteMediaPlayerManager::ReplaceRemotePlayerWithLocal(int player_id) {
   Send(new MediaPlayerMsg_DidMediaPlayerPause(RoutingID(), player_id));
   Send(new MediaPlayerMsg_DisconnectedFromRemoteDevice(RoutingID(), player_id));
 
-  SwapCurrentPlayer(player_id);
   GetLocalPlayer(player_id)->SeekTo(remote_player->GetCurrentTime());
+  SwapCurrentPlayer(player_id);
   remote_player->Release();
   players_playing_remotely_.erase(player_id);
 }

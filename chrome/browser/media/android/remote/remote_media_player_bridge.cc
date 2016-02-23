@@ -25,6 +25,7 @@ using base::android::ConvertJavaStringToUTF8;
 using base::android::ScopedJavaLocalRef;
 using base::android::AttachCurrentThread;
 using content::BrowserThread;
+using media::MediaPlayerAndroid;
 
 namespace {
 /*
@@ -38,17 +39,20 @@ void DoNothing(int /*i*/) {}
 namespace remote_media {
 
 RemoteMediaPlayerBridge::RemoteMediaPlayerBridge(
-    MediaPlayerAndroid* local_player, const std::string& user_agent,
-    bool hide_url_log, RemoteMediaPlayerManager* manager)
-    : MediaPlayerAndroid(local_player->player_id(), manager,
+    int player_id,
+    const std::string& user_agent,
+    bool hide_url_log,
+    RemoteMediaPlayerManager* manager)
+    : MediaPlayerAndroid(player_id,
+                         manager,
                          base::Bind(&DoNothing),
-                         local_player->frame_url()),
-      local_player_(local_player),
+                         manager->GetLocalPlayer(player_id)->frame_url()),
       width_(0),
       height_(0),
       hide_url_log_(hide_url_log),
-      url_(local_player->GetUrl()),
-      first_party_for_cookies_(local_player->GetFirstPartyForCookies()),
+      url_(manager->GetLocalPlayer(player_id)->GetUrl()),
+      first_party_for_cookies_(
+          manager->GetLocalPlayer(player_id)->GetFirstPartyForCookies()),
       user_agent_(user_agent),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -60,10 +64,10 @@ RemoteMediaPlayerBridge::RemoteMediaPlayerBridge(
     j_url_string = ConvertUTF8ToJavaString(env, url_.spec());
   }
   ScopedJavaLocalRef<jstring> j_frame_url_string;
-  if (local_player->frame_url().is_valid()) {
+  GURL frameUrl = GetLocalPlayer()->frame_url();
+  if (frameUrl.is_valid()) {
     // Create a Java String for the URL.
-    j_frame_url_string = ConvertUTF8ToJavaString(
-        env, local_player->frame_url().spec());
+    j_frame_url_string = ConvertUTF8ToJavaString(env, frameUrl.spec());
   }
   java_bridge_.Reset(Java_RemoteMediaPlayerBridge_create(
       env, reinterpret_cast<intptr_t>(this), j_url_string.obj(),
@@ -89,11 +93,17 @@ bool RemoteMediaPlayerBridge::HasAudio() const {
 }
 
 int RemoteMediaPlayerBridge::GetVideoWidth() {
-  return local_player_->GetVideoWidth();
+  MediaPlayerAndroid* local_player = GetLocalPlayer();
+  if (!local_player)
+    return 0;
+  return local_player->GetVideoWidth();
 }
 
 int RemoteMediaPlayerBridge::GetVideoHeight() {
-  return local_player_->GetVideoHeight();
+  MediaPlayerAndroid* local_player = GetLocalPlayer();
+  if (!local_player)
+    return 0;
+  return local_player->GetVideoHeight();
 }
 
 void RemoteMediaPlayerBridge::OnVideoSizeChanged(int width, int height) {
@@ -135,14 +145,20 @@ void RemoteMediaPlayerBridge::OnTimeUpdateTimerFired() {
 
 void RemoteMediaPlayerBridge::PauseLocal(JNIEnv* env,
                                          const JavaParamRef<jobject>& obj) {
-  local_player_->Pause(true);
+  MediaPlayerAndroid* local_player = GetLocalPlayer();
+  if (!local_player)
+    return;
+  local_player->Pause(true);
   static_cast<RemoteMediaPlayerManager*>(manager())->OnPaused(player_id());
 }
 
 jint RemoteMediaPlayerBridge::GetLocalPosition(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  base::TimeDelta time = local_player_->GetCurrentTime();
+  MediaPlayerAndroid* local_player = GetLocalPlayer();
+  if (!local_player)
+    return 0;
+  base::TimeDelta time = local_player->GetCurrentTime();
   return static_cast<jint>(time.InMilliseconds());
 }
 
@@ -191,7 +207,10 @@ void RemoteMediaPlayerBridge::SetVideoSurface(gfx::ScopedJavaSurface surface) {
   // Since the remote player doesn't use it, we forward it to the local player
   // for the time when user disconnects and resumes local playback
   // (see crbug.com/420690).
-  local_player_->SetVideoSurface(std::move(surface));
+  MediaPlayerAndroid* local_player = GetLocalPlayer();
+  if (!local_player)
+    return;
+  local_player->SetVideoSurface(std::move(surface));
 }
 
 void RemoteMediaPlayerBridge::OnPlaying(JNIEnv* env,
@@ -236,12 +255,14 @@ bool RemoteMediaPlayerBridge::RegisterRemoteMediaPlayerBridge(JNIEnv* env) {
 
 void RemoteMediaPlayerBridge::RequestRemotePlayback() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  MediaPlayerAndroid* local_player = GetLocalPlayer();
+  if (!local_player)
+    return;
   JNIEnv* env = AttachCurrentThread();
   CHECK(env);
 
   Java_RemoteMediaPlayerBridge_requestRemotePlayback(
-      env, java_bridge_.obj(),
-      local_player_->GetCurrentTime().InMilliseconds());
+      env, java_bridge_.obj(), local_player->GetCurrentTime().InMilliseconds());
 }
 
 void RemoteMediaPlayerBridge::RequestRemotePlaybackControl() {
@@ -362,7 +383,10 @@ base::TimeDelta RemoteMediaPlayerBridge::GetDuration() {
   // TODO (aberent) This is for YouTube. Remove it when the YouTube receiver is
   // fixed.
   if (duration_ms == 0) {
-    return local_player_->GetDuration();
+    MediaPlayerAndroid* local_player = GetLocalPlayer();
+    if (!local_player)
+      return media::kInfiniteDuration();
+    return local_player->GetDuration();
   }
   return duration_ms < 0 ? media::kInfiniteDuration()
                          : base::TimeDelta::FromMilliseconds(duration_ms);
@@ -444,6 +468,11 @@ void RemoteMediaPlayerBridge::OnCookiesRetrieved(const std::string& cookies) {
   CHECK(env);
   Java_RemoteMediaPlayerBridge_setCookies(
       env, java_bridge_.obj(), ConvertUTF8ToJavaString(env, cookies).obj());
+}
+
+MediaPlayerAndroid* RemoteMediaPlayerBridge::GetLocalPlayer() {
+  return static_cast<RemoteMediaPlayerManager*>(manager())->GetLocalPlayer(
+      player_id());
 }
 
 }  // namespace remote_media
