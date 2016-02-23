@@ -30,6 +30,7 @@ class ArcImeIpcHost {
    public:
     virtual void OnTextInputTypeChanged(ui::TextInputType type) = 0;
     virtual void OnCursorRectChanged(const gfx::Rect& rect) = 0;
+    virtual void OnCancelComposition() = 0;
   };
 
   // Serializes and sends IME related requests through IPCs.

@@ -127,4 +127,8 @@ void ArcImeIpcHostImpl::OnCursorRectChanged(arc::CursorRectPtr rect) {
       rect->bottom - rect->top));
 }
 
+void ArcImeIpcHostImpl::OnCancelComposition() {
+  delegate_->OnCancelComposition();
+}
+
 }  // namespace arc

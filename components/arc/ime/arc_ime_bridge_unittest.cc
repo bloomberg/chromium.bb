@@ -29,7 +29,9 @@ class FakeArcImeIpcHost : public ArcImeIpcHost {
 
 class FakeInputMethod : public ui::DummyInputMethod {
  public:
-  FakeInputMethod() : client_(nullptr), count_show_ime_if_needed_(0) {}
+  FakeInputMethod() : client_(nullptr),
+                      count_show_ime_if_needed_(0),
+                      count_cancel_composition_(0) {}
 
   void SetFocusedTextInputClient(ui::TextInputClient* client) override {
     client_ = client;
@@ -43,13 +45,23 @@ class FakeInputMethod : public ui::DummyInputMethod {
     count_show_ime_if_needed_++;
   }
 
+  void CancelComposition(const ui::TextInputClient* client) override {
+    if (client == client_)
+      count_cancel_composition_++;
+  }
+
   int count_show_ime_if_needed() const {
     return count_show_ime_if_needed_;
+  }
+
+  int count_cancel_composition() const {
+    return count_cancel_composition_;
   }
 
  private:
   ui::TextInputClient* client_;
   int count_show_ime_if_needed_;
+  int count_cancel_composition_;
 };
 
 }  // namespace
@@ -124,6 +136,13 @@ TEST_F(ArcImeBridgeTest, ShowImeIfNeeded) {
   // Change to NONE should not trigger the showing event.
   instance_->OnTextInputTypeChanged(ui::TEXT_INPUT_TYPE_NONE);
   EXPECT_EQ(2, fake_input_method_->count_show_ime_if_needed());
+}
+
+TEST_F(ArcImeBridgeTest, CancelComposition) {
+  // The bridge should forward the cancel event to the input method.
+  fake_input_method_->SetFocusedTextInputClient(instance_.get());
+  instance_->OnCancelComposition();
+  EXPECT_EQ(1, fake_input_method_->count_cancel_composition());
 }
 
 }  // namespace arc

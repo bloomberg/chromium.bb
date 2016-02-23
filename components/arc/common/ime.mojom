@@ -44,6 +44,9 @@ interface ImeHost {
 
   // Notifies Chrome that the cursor poisition has changed.
   OnCursorRectChanged(CursorRect rect);
+
+  // Notifies Chrome that the current composition is canceled.
+  [MinVersion=1] OnCancelComposition();
 };
 
 interface ImeInstance {

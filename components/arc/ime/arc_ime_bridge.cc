@@ -157,6 +157,12 @@ void ArcImeBridge::OnCursorRectChanged(const gfx::Rect& rect) {
     input_method->OnCaretBoundsChanged(this);
 }
 
+void ArcImeBridge::OnCancelComposition() {
+  ui::InputMethod* const input_method = GetInputMethod();
+  if (input_method)
+    input_method->CancelComposition(this);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Oberridden from ui::TextInputClient:
 

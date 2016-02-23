@@ -40,6 +40,7 @@ class ArcImeIpcHostImpl : public ArcImeIpcHost,
   // arc::ImeHost overrides:
   void OnTextInputTypeChanged(arc::TextInputType type) override;
   void OnCursorRectChanged(arc::CursorRectPtr rect) override;
+  void OnCancelComposition() override;
 
  private:
   mojo::Binding<ImeHost> binding_;
