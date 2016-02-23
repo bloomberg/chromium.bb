@@ -42,7 +42,7 @@ ninja -C out-android/Debug blimp blimp_apk_incremental &&
 ## Engine inside a Docker container
 
 Create another out-directory and set the GN args. Note, when building to run
-inside a Docker container you'll need to set the target_os to "chromeos":
+inside a [Docker container](container.md) you'll need to set the target_os to "chromeos":
 
 ```bash
 mkdir -p out-chromeos/Debug
