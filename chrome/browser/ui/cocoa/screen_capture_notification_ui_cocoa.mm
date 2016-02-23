@@ -22,6 +22,7 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
+#include "ui/gfx/mac/nswindow_frame_controls.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/native_theme/native_theme_mac.h"
@@ -88,6 +89,7 @@ scoped_ptr<ScreenCaptureNotificationUI> ScreenCaptureNotificationUI::Create(
   [window setLevel:NSStatusWindowLevel];
   [window setMovableByWindowBackground:YES];
   [window setDelegate:self];
+  gfx::SetNSWindowVisibleOnAllWorkspaces(window, true);
 
   self = [super initWithWindow:window];
   if (self) {
