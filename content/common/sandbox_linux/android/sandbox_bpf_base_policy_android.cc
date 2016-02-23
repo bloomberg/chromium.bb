@@ -61,7 +61,9 @@ ResultExpr SandboxBPFBasePolicyAndroid::EvaluateSyscall(int sysno) const {
     // TODO(rsesek): restrict clone parameters.
     case __NR_clone:
     case __NR_epoll_pwait:
+    case __NR_fdatasync:
     case __NR_flock:
+    case __NR_fsync:
     case __NR_ftruncate:
 #if defined(__i386__) || defined(__arm__) || defined(__mips__)
     case __NR_ftruncate64:
@@ -89,6 +91,8 @@ ResultExpr SandboxBPFBasePolicyAndroid::EvaluateSyscall(int sysno) const {
     case __NR_pwrite64:
     case __NR_rt_sigtimedwait:
     case __NR_sched_getparam:
+    case __NR_sched_getscheduler:
+    case __NR_sched_setscheduler:
     case __NR_setpriority:
     case __NR_set_tid_address:
     case __NR_sigaltstack:
