@@ -20,6 +20,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
+#include "chrome/browser/chromeos/login/signin/token_handle_util.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
@@ -193,6 +194,9 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // Shows "critical TPM error" screen.
   void ShowTPMError();
 
+  // Shows "password changed" dialog.
+  void ShowPasswordChangedDialog();
+
   // Creates |login_performer_| if necessary and calls login() on it.
   void PerformLogin(const UserContext& user_context,
                     LoginPerformer::AuthorizationMode auth_mode);
@@ -240,6 +244,11 @@ class ExistingUserController : public LoginDisplay::Delegate,
 
   // Callback invoked when |oauth2_token_initializer_| has finished.
   void OnOAuth2TokensFetched(bool success, const UserContext& user_context);
+
+  // Callback invoked when |token_handle_util_| finishes token check.
+  void OnTokenHandleChecked(
+      const AccountId&,
+      TokenHandleUtil::TokenHandleStatus token_handle_status);
 
   // Public session auto-login timer.
   scoped_ptr<base::OneShotTimer> auto_login_timer_;
@@ -328,6 +337,8 @@ class ExistingUserController : public LoginDisplay::Delegate,
       bootstrap_user_context_initializer_;
 
   scoped_ptr<OAuth2TokenInitializer> oauth2_token_initializer_;
+
+  scoped_ptr<TokenHandleUtil> token_handle_util_;
 
   FRIEND_TEST_ALL_PREFIXES(ExistingUserControllerTest, ExistingUserLogin);
 

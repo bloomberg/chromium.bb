@@ -497,6 +497,23 @@ void ExistingUserController::ShowTPMError() {
   login_display_->ShowErrorScreen(LoginDisplay::TPM_ERROR);
 }
 
+void ExistingUserController::ShowPasswordChangedDialog() {
+  VLOG(1) << "Show password changed dialog"
+          << ", count=" << login_performer_->password_changed_callback_count();
+
+  // True if user has already made an attempt to enter old password and failed.
+  bool show_invalid_old_password_error =
+      login_performer_->password_changed_callback_count() > 1;
+
+  // Note: We allow owner using "full sync" mode which will recreate
+  // cryptohome and deal with owner private key being lost. This also allows
+  // us to recover from a lost owner password/homedir.
+  // TODO(gspencer): We shouldn't have to erase stateful data when
+  // doing this.  See http://crosbug.com/9115 http://crosbug.com/7792
+  login_display_->ShowPasswordChangedDialog(show_invalid_old_password_error,
+                                            display_email_);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ExistingUserController, LoginPerformer::Delegate implementation:
 //
@@ -674,23 +691,23 @@ void ExistingUserController::OnPasswordChangeDetected() {
     return;
   }
 
-  // True if user has already made an attempt to enter old password and failed.
-  bool show_invalid_old_password_error =
-      login_performer_->password_changed_callback_count() > 1;
-
-  VLOG(1) << "Show password changed dialog"
-          << ", count=" << login_performer_->password_changed_callback_count();
-
-  // Note: We allow owner using "full sync" mode which will recreate
-  // cryptohome and deal with owner private key being lost. This also allows
-  // us to recover from a lost owner password/homedir.
-  // TODO(gspencer): We shouldn't have to erase stateful data when
-  // doing this.  See http://crosbug.com/9115 http://crosbug.com/7792
-  login_display_->ShowPasswordChangedDialog(show_invalid_old_password_error,
-                                            display_email_);
-
   if (auth_status_consumer_)
     auth_status_consumer_->OnPasswordChangeDetected();
+
+  // If the password change happens after an online auth, do a TokenHandle check
+  // to find out whether the user password is really changed or not.
+  if (auth_mode() == LoginPerformer::AUTH_MODE_EXTENSION) {
+    token_handle_util_.reset(new TokenHandleUtil);
+    if (token_handle_util_->HasToken(last_login_attempt_account_id_)) {
+      token_handle_util_->CheckToken(
+          last_login_attempt_account_id_,
+          base::Bind(&ExistingUserController::OnTokenHandleChecked,
+                     weak_factory_.GetWeakPtr()));
+      return;
+    }
+  }
+
+  ShowPasswordChangedDialog();
 }
 
 void ExistingUserController::WhiteListCheckFailed(const std::string& email) {
@@ -1211,6 +1228,23 @@ void ExistingUserController::OnOAuth2TokensFetched(
   }
   UserSessionManager::GetInstance()->OnOAuth2TokensFetched(user_context);
   PerformLogin(user_context, LoginPerformer::AUTH_MODE_EXTENSION);
+}
+
+void ExistingUserController::OnTokenHandleChecked(
+    const AccountId&,
+    TokenHandleUtil::TokenHandleStatus token_handle_status) {
+  // If TokenHandle is invalid or unknown, continue with regular password
+  // changed flow.
+  if (token_handle_status != TokenHandleUtil::VALID) {
+    VLOG(1) << "Checked TokenHandle status=" << token_handle_status;
+    ShowPasswordChangedDialog();
+    return;
+  }
+
+  // Otherwise, show the unrecoverable cryptohome error UI and ask user's
+  // permission to collect a feedback.
+  VLOG(1) << "Show unrecoverable cryptohome error dialog.";
+  login_display_->ShowUnrecoverableCrypthomeErrorDialog(display_email_);
 }
 
 }  // namespace chromeos

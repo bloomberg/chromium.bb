@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -28,6 +29,7 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/feedback_util.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 #include "chrome/browser/chromeos/login/hwid_checker.h"
@@ -449,6 +451,13 @@ void SigninScreenHandler::DeclareLocalizedValues(
                IDS_ENTERPRISE_ENROLLMENT_AUTH_FATAL_ERROR);
   builder->Add("insecureURLEnrollmentError",
                IDS_ENTERPRISE_ENROLLMENT_AUTH_INSECURE_URL_ERROR);
+
+  builder->Add("unrecoverableCryptohomeErrorMessage",
+               IDS_LOGIN_UNRECOVERABLE_CRYPTOHOME_ERROR_MESSAGE);
+  builder->Add("unrecoverableCryptohomeErrorContinue",
+               IDS_LOGIN_UNRECOVERABLE_CRYPTOHOME_ERROR_CONTINUE);
+  builder->Add("unrecoverableCryptohomeErrorSendFeedback",
+               IDS_LOGIN_UNRECOVERABLE_CRYPTOHOME_ERROR_SEND_FEEDBACK);
 }
 
 void SigninScreenHandler::RegisterMessages() {
@@ -499,6 +508,8 @@ void SigninScreenHandler::RegisterMessages() {
               &SigninScreenHandler::HandleFirstIncorrectPasswordAttempt);
   AddCallback("maxIncorrectPasswordAttempts",
               &SigninScreenHandler::HandleMaxIncorrectPasswordAttempts);
+  AddCallback("sendFeedbackAndResyncUserData",
+              &SigninScreenHandler::HandleSendFeedbackAndResyncUserData);
 
   // This message is sent by the kiosk app menu, but is handled here
   // so we can tell the delegate to launch the app.
@@ -928,6 +939,11 @@ void SigninScreenHandler::ShowWhitelistCheckFailedError() {
   gaia_screen_handler_->ShowWhitelistCheckFailedError();
 }
 
+void SigninScreenHandler::ShowUnrecoverableCrypthomeErrorDialog(
+    const std::string& email) {
+  CallJS("login.UnrecoverableCryptohomeErrorScreen.show", email);
+}
+
 void SigninScreenHandler::Observe(int type,
                                   const content::NotificationSource& source,
                                   const content::NotificationDetails& details) {
@@ -1297,6 +1313,17 @@ void SigninScreenHandler::HandleMaxIncorrectPasswordAttempts(
   RecordReauthReason(account_id, ReauthReason::INCORRECT_PASSWORD_ENTERED);
 }
 
+void SigninScreenHandler::HandleSendFeedbackAndResyncUserData() {
+  const std::string description = base::StringPrintf(
+      "Auto generated feedback for http://crbug.com/547857.\n"
+      "(uniquifier:%s)",
+      base::Int64ToString(base::Time::Now().ToInternalValue()).c_str());
+  feedback_util::SendSysLogFeedback(
+      Profile::FromWebUI(web_ui()), description,
+      base::Bind(&SigninScreenHandler::OnSysLogFeedbackSent,
+                 weak_factory_.GetWeakPtr()));
+}
+
 bool SigninScreenHandler::AllWhitelistedUsersPresent() {
   CrosSettings* cros_settings = CrosSettings::Get();
   bool allow_new_user = false;
@@ -1390,6 +1417,12 @@ void SigninScreenHandler::OnCapsLockChanged(bool enabled) {
   caps_lock_enabled_ = enabled;
   if (page_is_ready())
     CallJS("login.AccountPickerScreen.setCapsLockState", caps_lock_enabled_);
+}
+
+void SigninScreenHandler::OnSysLogFeedbackSent(bool sent) {
+  LOG_IF(ERROR, !sent) << "Failed to send syslog feedback.";
+  // Recreate user's cryptohome after the feedkback is attempted.
+  HandleResyncUserData();
 }
 
 }  // namespace chromeos

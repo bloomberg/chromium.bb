@@ -1,0 +1,12 @@
+/* Copyright 2016 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+iron-icon[icon='warning'] {
+  -webkit-margin-end: 15px;
+  -webkit-margin-start: 0;
+  color: var(--google-yellow-500);
+  margin-bottom: 0;
+  margin-top: 0;
+}

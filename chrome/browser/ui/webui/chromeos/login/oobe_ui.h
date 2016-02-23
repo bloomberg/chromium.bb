@@ -94,6 +94,7 @@ class OobeUI : public OobeDisplay,
   static const char kScreenControllerPairing[];
   static const char kScreenHostPairing[];
   static const char kScreenDeviceDisabled[];
+  static const char kScreenUnrecoverableCryptohomeError[];
 
   OobeUI(content::WebUI* web_ui, const GURL& url);
   ~OobeUI() override;

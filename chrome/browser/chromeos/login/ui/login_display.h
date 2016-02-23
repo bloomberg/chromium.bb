@@ -141,6 +141,10 @@ class LoginDisplay {
   // signin but whitelist check fails.
   virtual void ShowWhitelistCheckFailedError() = 0;
 
+  // Show unrecoverable cryptohome error dialog.
+  virtual void ShowUnrecoverableCrypthomeErrorDialog(
+      const std::string& email) = 0;
+
   gfx::Rect background_bounds() const { return background_bounds_; }
   void set_background_bounds(const gfx::Rect& background_bounds) {
     background_bounds_ = background_bounds;

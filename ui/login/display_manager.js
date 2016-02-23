@@ -31,6 +31,8 @@
 /** @const */ var SCREEN_TERMS_OF_SERVICE = 'terms-of-service';
 /** @const */ var SCREEN_WRONG_HWID = 'wrong-hwid';
 /** @const */ var SCREEN_DEVICE_DISABLED = 'device-disabled';
+/** @const */ var SCREEN_UNRECOVERABLE_CRYPTOHOME_ERROR =
+    'unrecoverable-cryptohome-error';
 
 /* Accelerator identifiers. Must be kept in sync with webui_login_view.cc. */
 /** @const */ var ACCELERATOR_CANCEL = 'cancel';

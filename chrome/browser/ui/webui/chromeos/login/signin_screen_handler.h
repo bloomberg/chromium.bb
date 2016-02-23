@@ -95,6 +95,8 @@ class LoginDisplayWebUIHandler {
   virtual void ShowSigninScreenForCreds(const std::string& username,
                                         const std::string& password) = 0;
   virtual void ShowWhitelistCheckFailedError() = 0;
+  virtual void ShowUnrecoverableCrypthomeErrorDialog(
+      const std::string& email) = 0;
   virtual void LoadUsers(const base::ListValue& users_list,
                          bool show_guest) = 0;
  protected:
@@ -302,6 +304,7 @@ class SigninScreenHandler
   void ShowSigninScreenForCreds(const std::string& username,
                                 const std::string& password) override;
   void ShowWhitelistCheckFailedError() override;
+  void ShowUnrecoverableCrypthomeErrorDialog(const std::string& email) override;
   void LoadUsers(const base::ListValue& users_list, bool show_guest) override;
 
   // content::NotificationObserver implementation:
@@ -362,6 +365,7 @@ class SigninScreenHandler
   void HandleLogRemoveUserWarningShown();
   void HandleFirstIncorrectPasswordAttempt(const AccountId& account_id);
   void HandleMaxIncorrectPasswordAttempts(const AccountId& account_id);
+  void HandleSendFeedbackAndResyncUserData();
 
   // Sends the list of |keyboard_layouts| available for the |locale| that is
   // currently selected for the public session identified by |user_id|.
@@ -412,10 +416,8 @@ class SigninScreenHandler
   // Returns OobeUI object of NULL.
   OobeUI* GetOobeUI() const;
 
-  // Gets the easy unlock service associated with the user. Can return NULL if
-  // user cannot be found, or there is not associated service.
-  EasyUnlockService* GetEasyUnlockServiceForUser(
-      const std::string& username) const;
+  // Callback invoked after the syslog feedback is sent.
+  void OnSysLogFeedbackSent(bool sent);
 
   // Current UI state of the signin screen.
   UIState ui_state_ = UI_STATE_UNKNOWN;

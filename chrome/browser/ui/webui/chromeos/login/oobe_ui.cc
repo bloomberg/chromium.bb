@@ -200,6 +200,8 @@ const char OobeUI::kScreenFatalError[] = "fatal-error";
 const char OobeUI::kScreenControllerPairing[] = "controller-pairing";
 const char OobeUI::kScreenHostPairing[] = "host-pairing";
 const char OobeUI::kScreenDeviceDisabled[] = "device-disabled";
+const char OobeUI::kScreenUnrecoverableCryptohomeError[] =
+    "unrecoverable-cryptohome-error";
 
 OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
     : WebUIController(web_ui),
@@ -549,6 +551,8 @@ void OobeUI::InitializeScreenMaps() {
   screen_names_[SCREEN_OOBE_CONTROLLER_PAIRING] = kScreenControllerPairing;
   screen_names_[SCREEN_OOBE_HOST_PAIRING] = kScreenHostPairing;
   screen_names_[SCREEN_DEVICE_DISABLED] = kScreenDeviceDisabled;
+  screen_names_[SCREEN_UNRECOVERABLE_CRYPTOHOME_ERROR] =
+      kScreenUnrecoverableCryptohomeError;
 
   dim_overlay_screen_ids_.push_back(SCREEN_CONFIRM_PASSWORD);
   dim_overlay_screen_ids_.push_back(SCREEN_GAIA_SIGNIN);

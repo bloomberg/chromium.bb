@@ -12,3 +12,4 @@
 <include src="saml_confirm_password.js">
 <include src="throbber_notice.js">
 <include src="navigation_bar.js">
+<include src="unrecoverable_cryptohome_error_card.js">
