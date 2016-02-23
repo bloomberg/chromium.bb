@@ -29,6 +29,17 @@ mojom("test_interfaces") {
   with_environment = false
 }
 
+mojom("test_struct_traits_interfaces") {
+  testonly = true
+  sources = [
+    "struct_with_traits.mojom",
+  ]
+
+  typemaps = [ "struct_with_traits.typemap" ]
+
+  with_environment = false
+}
+
 mojom("test_interfaces_experimental") {
   testonly = true
   sources = [

@@ -376,6 +376,19 @@
       'includes': [ 'mojom_bindings_generator_explicit.gypi' ],
     },
     {
+      'target_name': 'mojo_public_test_interfaces_struct_traits',
+      'type': 'static_library',
+      'variables': {
+        'mojom_extra_generator_args': [
+          '--typemap', '<(DEPTH)/mojo/public/interfaces/bindings/tests/struct_with_traits.typemap',
+        ],
+      },
+      'sources': [
+        'public/interfaces/bindings/tests/struct_with_traits.mojom',
+      ],
+      'includes': [ 'mojom_bindings_generator.gypi' ],
+    },
+    {
       'target_name': 'mojo_public_test_interfaces_mojom_blink',
       'type': 'none',
       'variables': {

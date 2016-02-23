@@ -23,11 +23,10 @@ interface PicklePasser {
       => (array<array<PickledStruct>> passed);
 };
 
-// Used to verify support for native serialization of mojom-defined structs.
-// This is tested with a typemap applied to the Rect type from rect.mojom.
+// Used to verify support for native serialization of mojom-defined structs
+// using StrucTraits with different variants of the Rect type from rect.mojom.
 
 interface RectService {
   AddRect(Rect r);
   GetLargestRect() => (Rect largest);
 };
-

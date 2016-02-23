@@ -39,10 +39,37 @@ bool Deserialize_(internal::{{struct.name}}_Data* input,
 
 {%- for pf in struct.packed.packed_fields_in_ordinal_order %}
 {%-   set name = pf.field.name -%}
-{%-   set kind = pf.field.kind -%}
+{%-   set kind = pf.field.kind %}
+{%-   if kind|is_nullable_kind %}
+bool {{struct.name}}_Reader::has_{{name}}() const {
+{%-  if kind|is_union_kind %}
+  return !data_->{{name}}.is_null();
+{%-  elif kind|is_object_kind %}
+  return data_->{{name}}.ptr != nullptr;
+{%-  elif kind|is_interface_kind %}
+  return data_->{{name}}.handle.is_valid();
+{%-  elif kind|is_interface_request_kind %}
+  return data_->{{name}}.is_valid();
+{%-  elif kind|is_associated_interface_kind %}
+  return data_->{{name}}.interface_id == mojo::internal::kInvalidInterfaceId;
+{%-  elif kind|is_associated_interface_request_kind %}
+  return data_->{{name}} == mojo::internal::kInvalidInterfaceId;
+{%-  elif kind|is_any_handle_kind %}
+  return data_->{{name}}.is_valid();
+{%-  else %}
+  return !!data_->{{name}};
+{%-   endif %}
+}
+{%-   endif %}
 {%-   if kind|is_struct_kind and not kind|is_native_only_kind %}
 {{kind|get_name_for_kind}}_Reader {{struct.name}}_Reader::{{name}}() const {
   return {{kind|get_name_for_kind}}_Reader(data_->{{name}}.ptr, context_);
+}
+{%-   elif kind|is_string_kind %}
+base::StringPiece {{struct.name}}_Reader::{{name}}() const {
+  DCHECK(data_->{{name}}.ptr);
+  return base::StringPiece(data_->{{name}}.ptr->storage(),
+                           data_->{{name}}.ptr->size());
 }
 {%-   endif %}
 {%- endfor %}

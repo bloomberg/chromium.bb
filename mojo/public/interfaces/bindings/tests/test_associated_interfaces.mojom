@@ -7,7 +7,7 @@ module mojo.test;
 interface FooInterface {};
 
 struct StructContainsAssociated {
-  associated FooInterface foo_interface;
+  associated FooInterface? foo_interface;
   associated FooInterface& foo_request;
 };
 

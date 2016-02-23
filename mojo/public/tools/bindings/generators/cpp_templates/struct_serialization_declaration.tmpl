@@ -53,8 +53,13 @@ class {{struct.name}}_Reader {
 {%-   for pf in struct.packed.packed_fields_in_ordinal_order %}
 {%-     set kind = pf.field.kind -%}
 {%-     set name = pf.field.name -%}
+{%-     if kind|is_nullable_kind %}
+  bool has_{{name}}() const;
+{%-     endif %}
 {%-     if kind|is_struct_kind and not kind|is_native_only_kind %}
   {{kind|get_name_for_kind}}::Reader {{name}}() const;
+{%-     elif kind|is_string_kind %}
+  base::StringPiece {{name}}() const;
 {%-     elif kind|is_union_kind %}
   // TODO(rockot): Support reading unions. ({{name}}() omitted)
 {%-     elif kind|is_object_kind %}
@@ -86,10 +91,21 @@ struct {{struct.name}}_SerializerTraits_ {
   static size_t GetSize(const NativeType& input) {
     size_t size = sizeof(internal::{{struct.name}}_Data);
 {%- for pf in struct.packed.packed_fields_in_ordinal_order %}
-{%-   if pf.field.kind|is_object_kind %}
-    NOTREACHED() << "Mojom struct traits only support POD fields at this time. "
-        << "Cannot determine the size of field {{pf.field.name}}";
+    do {
+{%-   if pf.field.kind|is_nullable_kind %}
+      if (!mojo::StructTraits<{{struct.name}}, NativeType>
+              ::has_{{pf.field.name}}(input))
+        break;
 {%-   endif %}
+{%-   if pf.field.kind|is_string_kind %}
+      size += mojo::internal::String_Data::Traits::GetStorageSize(
+          static_cast<uint32_t>(mojo::StructTraits<{{struct.name}}, NativeType>
+              ::{{pf.field.name}}(input).size()));
+{%-   elif pf.field.kind|is_object_kind %}
+      NOTREACHED() << "Unsupported field type for StructTraits: "
+                   << "{{pf.field.name}}";
+{%-   endif %}
+    } while (false);
 {%- endfor %}
     return size;
   }
@@ -99,11 +115,30 @@ struct {{struct.name}}_SerializerTraits_ {
                         internal::{{struct.name}}_Data** output) {
     internal::{{struct.name}}_Data* result =
         internal::{{struct.name}}_Data::New(buffer);
-{%- for pf in struct.packed.packed_fields_in_ordinal_order %}
+{%- for pf in struct.packed.packed_fields_in_ordinal_order -%}
 {%-   set name = pf.field.name -%}
 {%-   set kind = pf.field.kind %}
-    result->{{name}} = mojo::StructTraits<{{struct.name}}, NativeType>
-        ::{{name}}(input);
+    do {
+{%-   if kind|is_nullable_kind %}
+      if (!mojo::StructTraits<{{struct.name}}, NativeType>
+              ::has_{{name}}(input))
+        break;
+{%-   endif %}
+{%-   if kind|is_string_kind %}
+      base::StringPiece input_{{name}} =
+          mojo::StructTraits<{{struct.name}}, NativeType>::{{name}}(input);
+      result->{{name}}.ptr =
+          mojo::internal::String_Data::New(input_{{name}}.size(), buffer);
+      memcpy(result->{{name}}.ptr->storage(), input_{{name}}.data(),
+             input_{{name}}.size());
+{%-   elif kind|is_object_kind %}
+      NOTREACHED() << "Unsupported field type for StructTraits: "
+                   << "{{pf.field.name}}";
+{%-   else %}
+      result->{{name}} = mojo::StructTraits<{{struct.name}}, NativeType>
+          ::{{name}}(input);
+{%-   endif %}
+    } while (false);
 {%- endfor %}
     *output = result;
   }
