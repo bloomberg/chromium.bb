@@ -88,19 +88,10 @@ class GpuWatchdogThread : public base::Thread,
   void OnSuspend() override;
   void OnResume() override;
 
-#if defined(OS_WIN)
-  base::TimeDelta GetWatchedThreadTime();
-#endif
-
   base::MessageLoop* watched_message_loop_;
   base::TimeDelta timeout_;
   volatile bool armed_;
   GpuWatchdogTaskObserver task_observer_;
-
-#if defined(OS_WIN)
-  void* watched_thread_handle_;
-  base::TimeDelta arm_cpu_time_;
-#endif
 
   // Time after which it's assumed that the computer has been suspended since
   // the task was posted.
