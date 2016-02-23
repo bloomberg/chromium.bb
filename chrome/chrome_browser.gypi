@@ -109,6 +109,8 @@
       'browser/browsing_data/history_counter.h',
       'browser/browsing_data/local_data_container.cc',
       'browser/browsing_data/local_data_container.h',
+      'browser/browsing_data/origin_filter_builder.cc',
+      'browser/browsing_data/origin_filter_builder.h',
       'browser/browsing_data/passwords_counter.cc',
       'browser/browsing_data/passwords_counter.h',
       'browser/character_encoding.cc',

@@ -56,6 +56,7 @@
       'browser/browsing_data/browsing_data_remover_unittest.cc',
       'browser/browsing_data/browsing_data_service_worker_helper_unittest.cc',
       'browser/browsing_data/cookies_tree_model_unittest.cc',
+      'browser/browsing_data/origin_filter_builder_unittest.cc',
       'browser/chrome_browser_application_mac_unittest.mm',
       'browser/chrome_content_browser_client_unittest.cc',
       'browser/chrome_elf_init_unittest_win.cc',

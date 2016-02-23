@@ -18,6 +18,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
+#include "chrome/browser/browsing_data/origin_filter_builder.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
@@ -343,7 +344,19 @@ void BrowsingDataRemover::RemoveImpl(const TimeRange& time_range,
   delete_end_ = time_range.end;
   remove_mask_ = remove_mask;
   origin_type_mask_ = origin_type_mask;
+
+  // TODO(msramek): Replace |remove_origin| with |filter| in all backends.
   const url::Origin remove_origin(remove_url);
+  OriginFilterBuilder builder(OriginFilterBuilder::BLACKLIST);
+  if (!remove_url.is_empty()) {
+    // Make sure that only URLs representing origins, with no extra components,
+    // are passed to this class.
+    DCHECK_EQ(remove_url, remove_url.GetOrigin());
+    builder.SetMode(OriginFilterBuilder::WHITELIST);
+    builder.AddOrigin(url::Origin(remove_origin));
+  }
+  base::Callback<bool(const GURL& url)> same_origin_filter =
+      builder.BuildSameOriginFilter();
 
   PrefService* prefs = profile_->GetPrefs();
   bool may_delete_history = prefs->GetBoolean(
@@ -379,6 +392,12 @@ void BrowsingDataRemover::RemoveImpl(const TimeRange& time_range,
         HistoryServiceFactory::GetForProfile(
             profile_, ServiceAccessType::EXPLICIT_ACCESS);
     if (history_service) {
+      // Selective history deletion is currently done through HistoryUI ->
+      // HistoryBackend -> HistoryService, and that is for individual URLs,
+      // not origins. The code below is currently unused, as the only callsite
+      // supplying |remove_url| is the unittest.
+      // TODO(msramek): Make it possible to delete history per origin, not just
+      // per URL, and use that functionality here.
       std::set<GURL> restrict_urls;
       if (!remove_url.is_empty())
         restrict_urls.insert(remove_url);
@@ -559,12 +578,8 @@ void BrowsingDataRemover::RemoveImpl(const TimeRange& time_range,
     content::RecordAction(UserMetricsAction("ClearBrowsingData_Downloads"));
     content::DownloadManager* download_manager =
         BrowserContext::GetDownloadManager(profile_);
-    if (remove_url.is_empty()) {
-      download_manager->RemoveDownloadsBetween(delete_begin_, delete_end_);
-    } else {
-      download_manager->RemoveDownloadsByOriginAndTime(
-          remove_origin, delete_begin_, delete_end_);
-    }
+    download_manager->RemoveDownloadsByURLAndTime(
+        same_origin_filter, delete_begin_, delete_end_);
     DownloadPrefs* download_prefs = DownloadPrefs::FromDownloadManager(
         download_manager);
     download_prefs->SetSaveFilePath(download_prefs->DownloadPath());

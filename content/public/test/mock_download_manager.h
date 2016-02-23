@@ -90,12 +90,10 @@ class MockDownloadManager : public DownloadManager {
 
   MOCK_METHOD2(MockStartDownload,
                void(DownloadCreateInfo*, ByteStreamReader*));
-  MOCK_METHOD3(RemoveDownloadsByOriginAndTime,
-               int(const url::Origin& origin,
+  MOCK_METHOD3(RemoveDownloadsByURLAndTime,
+               int(const base::Callback<bool(const GURL&)>& url_filter,
                    base::Time remove_begin,
                    base::Time remove_end));
-  MOCK_METHOD2(RemoveDownloadsBetween,
-               int(base::Time remove_begin, base::Time remove_end));
   MOCK_METHOD0(RemoveAllDownloads, int());
   MOCK_METHOD1(DownloadUrlMock, void(DownloadUrlParameters*));
   void DownloadUrl(scoped_ptr<DownloadUrlParameters> params) override {

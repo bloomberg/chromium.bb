@@ -115,8 +115,10 @@ class MockDownloadManager : public content::DownloadManager {
   MOCK_CONST_METHOD0(GetDelegate, content::DownloadManagerDelegate*());
   MOCK_METHOD0(Shutdown, void());
   MOCK_METHOD1(GetAllDownloads, void(DownloadVector*));
-  MOCK_METHOD3(RemoveDownloadsByOriginAndTime,
-               int(const url::Origin&, base::Time, base::Time));
+  MOCK_METHOD3(RemoveDownloadsByURLAndTime,
+               int(const base::Callback<bool(const GURL&)>& url_filter,
+                   base::Time,
+                   base::Time));
   MOCK_METHOD2(RemoveDownloadsBetween, int(base::Time, base::Time));
   MOCK_METHOD1(RemoveDownloads, int(base::Time));
   MOCK_METHOD0(RemoveAllDownloads, int());

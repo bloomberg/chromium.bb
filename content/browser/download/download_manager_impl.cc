@@ -519,19 +519,18 @@ void DownloadManagerImpl::RemoveUrlDownloader(UrlDownloader* downloader) {
 
 namespace {
 
-bool RemoveDownloadBetween(base::Time remove_begin,
-                           base::Time remove_end,
-                           const DownloadItemImpl* download_item) {
-  return download_item->GetStartTime() >= remove_begin &&
-         (remove_end.is_null() || download_item->GetStartTime() < remove_end);
+bool EmptyFilter(const GURL& url) {
+  return true;
 }
 
-bool RemoveDownloadByOriginAndTime(const url::Origin& origin,
-                                   base::Time remove_begin,
-                                   base::Time remove_end,
-                                   const DownloadItemImpl* download_item) {
-  return origin.IsSameOriginWith(url::Origin(download_item->GetURL())) &&
-         RemoveDownloadBetween(remove_begin, remove_end, download_item);
+bool RemoveDownloadByURLAndTime(
+    const base::Callback<bool(const GURL&)>& url_filter,
+          base::Time remove_begin,
+          base::Time remove_end,
+          const DownloadItemImpl* download_item) {
+  return url_filter.Run(download_item->GetURL()) &&
+         download_item->GetStartTime() >= remove_begin &&
+         (remove_end.is_null() || download_item->GetStartTime() < remove_end);
 }
 
 }  // namespace
@@ -554,24 +553,21 @@ int DownloadManagerImpl::RemoveDownloads(const DownloadRemover& remover) {
   return count;
 }
 
-int DownloadManagerImpl::RemoveDownloadsByOriginAndTime(
-    const url::Origin& origin,
+int DownloadManagerImpl::RemoveDownloadsByURLAndTime(
+    const base::Callback<bool(const GURL&)>& url_filter,
     base::Time remove_begin,
     base::Time remove_end) {
-  return RemoveDownloads(base::Bind(&RemoveDownloadByOriginAndTime,
-                                    base::ConstRef(origin), remove_begin,
-                                    remove_end));
-}
-
-int DownloadManagerImpl::RemoveDownloadsBetween(base::Time remove_begin,
-                                                base::Time remove_end) {
-  return RemoveDownloads(
-      base::Bind(&RemoveDownloadBetween, remove_begin, remove_end));
+  return RemoveDownloads(base::Bind(&RemoveDownloadByURLAndTime,
+                                    url_filter,
+                                    remove_begin, remove_end));
 }
 
 int DownloadManagerImpl::RemoveAllDownloads() {
+  const base::Callback<bool(const GURL&)> empty_filter =
+      base::Bind(&EmptyFilter);
   // The null times make the date range unbounded.
-  int num_deleted = RemoveDownloadsBetween(base::Time(), base::Time());
+  int num_deleted = RemoveDownloadsByURLAndTime(
+      empty_filter, base::Time(), base::Time());
   RecordClearAllSize(num_deleted);
   return num_deleted;
 }

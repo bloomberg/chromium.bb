@@ -73,11 +73,10 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
       scoped_ptr<ByteStreamReader> stream,
       const DownloadUrlParameters::OnStartedCallback& on_started) override;
 
-  int RemoveDownloadsByOriginAndTime(const url::Origin& origin,
-                                     base::Time remove_begin,
-                                     base::Time remove_end) override;
-  int RemoveDownloadsBetween(base::Time remove_begin,
-                             base::Time remove_end) override;
+  int RemoveDownloadsByURLAndTime(
+      const base::Callback<bool(const GURL&)>& url_filter,
+      base::Time remove_begin,
+      base::Time remove_end) override;
   int RemoveAllDownloads() override;
   void DownloadUrl(scoped_ptr<DownloadUrlParameters> params) override;
   void AddObserver(Observer* observer) override;

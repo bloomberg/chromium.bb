@@ -711,8 +711,16 @@ TEST_F(DownloadManagerTest, RemoveAllDownloads) {
   // result in them being removed from the DownloadManager list.
 }
 
-// Confirm that only downloads with same origin are removed.
-TEST_F(DownloadManagerTest, RemoveSameOriginDownloads) {
+namespace {
+
+base::Callback<bool(const GURL&)> GetSingleURLFilter(const GURL& url) {
+  return base::Bind(&GURL::operator==, base::Owned(new GURL(url)));
+}
+
+}  // namespace
+
+// Confirm that only downloads with the specified URL are removed.
+TEST_F(DownloadManagerTest, RemoveDownloadsByURL) {
   base::Time now(base::Time::Now());
   for (uint32_t i = 0; i < 2; ++i) {
     MockDownloadItemImpl& item(AddItemToManager());
@@ -724,9 +732,10 @@ TEST_F(DownloadManagerTest, RemoveSameOriginDownloads) {
   EXPECT_CALL(GetMockDownloadItem(0), Remove());
   EXPECT_CALL(GetMockDownloadItem(1), Remove()).Times(0);
 
-  url::Origin origin_to_clear(download_urls_[0]);
-  int remove_count = download_manager_->RemoveDownloadsByOriginAndTime(
-      origin_to_clear, base::Time(), base::Time::Max());
+  base::Callback<bool(const GURL&)> url_filter =
+      GetSingleURLFilter(download_urls_[0]);
+  int remove_count = download_manager_->RemoveDownloadsByURLAndTime(
+      url_filter, base::Time(), base::Time::Max());
   EXPECT_EQ(remove_count, 1);
 }
 
