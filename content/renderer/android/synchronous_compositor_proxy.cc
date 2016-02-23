@@ -46,9 +46,9 @@ SynchronousCompositorProxy::SynchronousCompositorProxy(
       min_page_scale_factor_(0.f),
       max_page_scale_factor_(0.f),
       need_animate_scroll_(false),
-      need_invalidate_(false),
+      need_invalidate_count_(0u),
       need_begin_frame_(false),
-      did_activate_pending_tree_(false) {
+      did_activate_pending_tree_count_(0u) {
   DCHECK(output_surface_);
   DCHECK(begin_frame_source_);
   DCHECK(input_handler_proxy_);
@@ -106,12 +106,12 @@ void SynchronousCompositorProxy::OnNeedsBeginFramesChange(
 }
 
 void SynchronousCompositorProxy::Invalidate() {
-  need_invalidate_ = true;
+  ++need_invalidate_count_;
   SendAsyncRendererStateIfNeeded();
 }
 
 void SynchronousCompositorProxy::DidActivatePendingTree() {
-  did_activate_pending_tree_ = true;
+  ++did_activate_pending_tree_count_;
   SendAsyncRendererStateIfNeeded();
   DeliverMessages();
 }
@@ -133,7 +133,7 @@ void SynchronousCompositorProxy::SendAsyncRendererStateIfNeeded() {
 }
 
 void SynchronousCompositorProxy::PopulateCommonParams(
-    SyncCompositorCommonRendererParams* params) {
+    SyncCompositorCommonRendererParams* params) const {
   params->version = ++version_;
   params->total_scroll_offset = total_scroll_offset_;
   params->max_scroll_offset = max_scroll_offset_;
@@ -142,12 +142,9 @@ void SynchronousCompositorProxy::PopulateCommonParams(
   params->min_page_scale_factor = min_page_scale_factor_;
   params->max_page_scale_factor = max_page_scale_factor_;
   params->need_animate_scroll = need_animate_scroll_;
-  params->need_invalidate = need_invalidate_;
+  params->need_invalidate_count = need_invalidate_count_;
   params->need_begin_frame = need_begin_frame_;
-  params->did_activate_pending_tree = did_activate_pending_tree_;
-
-  need_invalidate_ = false;
-  did_activate_pending_tree_ = false;
+  params->did_activate_pending_tree_count = did_activate_pending_tree_count_;
 }
 
 void SynchronousCompositorProxy::OnMessageReceived(

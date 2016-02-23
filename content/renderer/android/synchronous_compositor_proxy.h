@@ -83,7 +83,7 @@ class SynchronousCompositorProxy
 
   void ProcessCommonParams(
       const SyncCompositorCommonBrowserParams& common_params);
-  void PopulateCommonParams(SyncCompositorCommonRendererParams* params);
+  void PopulateCommonParams(SyncCompositorCommonRendererParams* params) const;
 
   // IPC handlers.
   void HandleInputEvent(
@@ -137,7 +137,7 @@ class SynchronousCompositorProxy
   scoped_ptr<SharedMemoryWithSize> software_draw_shm_;
 
   // To browser.
-  uint32_t version_;
+  mutable uint32_t version_;  // Mustable so PopulateCommonParams can be const.
   gfx::ScrollOffset total_scroll_offset_;  // Modified by both.
   gfx::ScrollOffset max_scroll_offset_;
   gfx::SizeF scrollable_size_;
@@ -145,9 +145,9 @@ class SynchronousCompositorProxy
   float min_page_scale_factor_;
   float max_page_scale_factor_;
   bool need_animate_scroll_;
-  bool need_invalidate_;
+  uint32_t need_invalidate_count_;
   bool need_begin_frame_;
-  bool did_activate_pending_tree_;
+  uint32_t did_activate_pending_tree_count_;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousCompositorProxy);
 };

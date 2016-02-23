@@ -95,9 +95,9 @@ class SynchronousCompositorHost : public SynchronousCompositorBase {
   // From renderer.
   uint32_t renderer_param_version_;
   bool need_animate_scroll_;
-  bool need_invalidate_;
+  uint32_t need_invalidate_count_;
   bool need_begin_frame_;
-  bool did_activate_pending_tree_;
+  uint32_t did_activate_pending_tree_count_;
 
   base::WeakPtrFactory<SynchronousCompositorHost> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(SynchronousCompositorHost);

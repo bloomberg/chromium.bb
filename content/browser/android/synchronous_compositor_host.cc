@@ -43,9 +43,9 @@ SynchronousCompositorHost::SynchronousCompositorHost(
       root_scroll_offset_updated_by_browser_(false),
       renderer_param_version_(0u),
       need_animate_scroll_(false),
-      need_invalidate_(false),
+      need_invalidate_count_(0u),
       need_begin_frame_(false),
-      did_activate_pending_tree_(false),
+      did_activate_pending_tree_count_(0u),
       weak_ptr_factory_(this) {
   client_->DidInitializeCompositor(this);
 }
@@ -404,18 +404,16 @@ void SynchronousCompositorHost::ProcessCommonParams(
     need_begin_frame_ = params.need_begin_frame;
     UpdateNeedsBeginFrames();
   }
-  need_invalidate_ = need_invalidate_ || params.need_invalidate;
-  did_activate_pending_tree_ =
-      did_activate_pending_tree_ || params.did_activate_pending_tree;
   root_scroll_offset_ = params.total_scroll_offset;
 
-  if (need_invalidate_) {
-    need_invalidate_ = false;
+  if (need_invalidate_count_ != params.need_invalidate_count) {
+    need_invalidate_count_ = params.need_invalidate_count;
     client_->PostInvalidate();
   }
 
-  if (did_activate_pending_tree_) {
-    did_activate_pending_tree_ = false;
+  if (did_activate_pending_tree_count_ !=
+      params.did_activate_pending_tree_count) {
+    did_activate_pending_tree_count_ = params.did_activate_pending_tree_count;
     client_->DidUpdateContent();
   }
 
