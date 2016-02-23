@@ -715,6 +715,8 @@
       'browser/android/contextualsearch/contextual_search_context.h',
       'browser/android/contextualsearch/contextual_search_delegate.cc',
       'browser/android/contextualsearch/contextual_search_delegate.h',
+      'browser/android/contextualsearch/contextual_search_field_trial.cc',
+      'browser/android/contextualsearch/contextual_search_field_trial.h',
       'browser/android/contextualsearch/contextual_search_manager.cc',
       'browser/android/contextualsearch/contextual_search_manager.h',
       'browser/android/contextualsearch/contextual_search_tab_helper.cc',

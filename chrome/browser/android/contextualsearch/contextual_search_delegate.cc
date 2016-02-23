@@ -12,6 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/android/contextualsearch/contextual_search_field_trial.h"
 #include "chrome/browser/android/contextualsearch/resolved_search_term.h"
 #include "chrome/browser/android/proto/client_discourse_context.pb.h"
 #include "chrome/browser/profiles/profile.h"
@@ -34,12 +35,6 @@ using content::ContentViewCore;
 
 namespace {
 
-const char kContextualSearchFieldTrialName[] = "ContextualSearch";
-const char kContextualSearchSurroundingSizeParamName[] = "surrounding_size";
-const char kContextualSearchIcingSurroundingSizeParamName[] =
-    "icing_surrounding_size";
-const char kContextualSearchResolverURLParamName[] = "resolver_url";
-const char kContextualSearchDoNotSendURLParamName[] = "do_not_send_url";
 const char kContextualSearchResponseDisplayTextParam[] = "display_text";
 const char kContextualSearchResponseSelectedTextParam[] = "selected_text";
 const char kContextualSearchResponseSearchTermParam[] = "search_term";
@@ -49,12 +44,6 @@ const char kContextualSearchPreventPreload[] = "prevent_preload";
 const char kContextualSearchMentions[] = "mentions";
 const char kContextualSearchServerEndpoint[] = "_/contextualsearch?";
 const int kContextualSearchRequestVersion = 2;
-const char kContextualSearchResolverUrl[] =
-    "contextual-search-resolver-url";
-// The default size of the content surrounding the selection to gather, allowing
-// room for other parameters.
-const int kContextualSearchDefaultContentSize = 1536;
-const int kContextualSearchDefaultIcingSurroundingSize = 400;
 const int kContextualSearchMaxSelection = 100;
 // The maximum length of a URL to build.
 const int kMaxURLSize = 2048;
@@ -84,6 +73,7 @@ ContextualSearchDelegate::ContextualSearchDelegate(
       search_term_callback_(search_term_callback),
       surrounding_callback_(surrounding_callback),
       icing_callback_(icing_callback) {
+  field_trial_.reset(new ContextualSearchFieldTrial());
 }
 
 ContextualSearchDelegate::~ContextualSearchDelegate() {
@@ -239,17 +229,7 @@ std::string ContextualSearchDelegate::GetSearchTermResolutionUrlString(
           NULL));
 
   // The switch/param should be the URL up to and including the endpoint.
-  std::string replacement_url;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-      kContextualSearchResolverUrl)) {
-    replacement_url =
-        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            kContextualSearchResolverUrl);
-  } else {
-    std::string param_value = variations::GetVariationParamValue(
-        kContextualSearchFieldTrialName, kContextualSearchResolverURLParamName);
-    if (!param_value.empty()) replacement_url = param_value;
-  }
+  std::string replacement_url = field_trial_->GetResolverURLPrefix();
 
   // If a replacement URL was specified above, do the substitution.
   if (!replacement_url.empty()) {
@@ -283,7 +263,7 @@ void ContextualSearchDelegate::GatherSurroundingTextWithCallback(
   context_.reset(new ContextualSearchContext(
       selection, use_resolved_search_term, url_to_send, encoding));
   content_view_core->RequestTextSurroundingSelection(
-      GetSearchTermSurroundingSize(), callback);
+      field_trial_->GetSurroundingSize(), callback);
 }
 
 void ContextualSearchDelegate::StartSearchTermRequestFromSelection(
@@ -327,7 +307,7 @@ void ContextualSearchDelegate::SaveSurroundingText(
       std::min(surrounding_length, std::max(0, context_->end_offset));
 
   // Call the Icing callback with a shortened copy of the surroundings.
-  int icing_surrounding_size = GetIcingSurroundingSize();
+  int icing_surrounding_size = field_trial_->GetIcingSurroundingSize();
   size_t selection_start = context_->start_offset;
   size_t selection_end = context_->end_offset;
   if (icing_surrounding_size >= 0 && selection_start < selection_end) {
@@ -388,9 +368,7 @@ bool ContextualSearchDelegate::CanSendPageURL(
     TemplateURLService* template_url_service) {
   // Check whether there is a Finch parameter preventing us from sending the
   // page URL.
-  std::string param_value = variations::GetVariationParamValue(
-      kContextualSearchFieldTrialName, kContextualSearchDoNotSendURLParamName);
-  if (!param_value.empty())
+  if (field_trial_->IsSendBasePageURLDisabled())
     return false;
 
   // Ensure that the default search provider is Google.
@@ -468,10 +446,12 @@ void ContextualSearchDelegate::DecodeSearchTermFromJsonResponse(
       *display_text = *search_term;
     }
     // Extract mentions for selection expansion.
-    base::ListValue* mentions_list = NULL;
-    dict->GetList(kContextualSearchMentions, &mentions_list);
-    if (mentions_list != NULL && mentions_list->GetSize() >= 2)
-      ExtractMentionsStartEnd(*mentions_list, mention_start, mention_end);
+    if (!field_trial_->IsDecodeMentionsDisabled()) {
+      base::ListValue* mentions_list = NULL;
+      dict->GetList(kContextualSearchMentions, &mentions_list);
+      if (mentions_list != NULL && mentions_list->GetSize() >= 2)
+        ExtractMentionsStartEnd(*mentions_list, mention_start, mention_end);
+    }
     // If either the selected text or the resolved term is not the search term,
     // use it as the alternate term.
     std::string selected_text;
@@ -489,18 +469,6 @@ void ContextualSearchDelegate::DecodeSearchTermFromJsonResponse(
   }
 }
 
-// Returns the size of the surroundings to be sent to the server for search term
-// resolution.
-int ContextualSearchDelegate::GetSearchTermSurroundingSize() {
-  const std::string param_value = variations::GetVariationParamValue(
-      kContextualSearchFieldTrialName,
-      kContextualSearchSurroundingSizeParamName);
-  int param_length;
-  if (!param_value.empty() && base::StringToInt(param_value, &param_length))
-    return param_length;
-  return kContextualSearchDefaultContentSize;
-}
-
 // Extract the Start/End of the mentions in the surrounding text
 // for selection-expansion.
 void ContextualSearchDelegate::ExtractMentionsStartEnd(
@@ -512,22 +480,6 @@ void ContextualSearchDelegate::ExtractMentionsStartEnd(
     *startResult = std::max(0, int_value);
   if (mentions_list.GetInteger(1, &int_value))
     *endResult = std::max(0, int_value);
-}
-
-// Returns the size of the surroundings to be sent to Icing.
-int ContextualSearchDelegate::GetIcingSurroundingSize() {
-  std::string param_string = variations::GetVariationParamValue(
-      kContextualSearchFieldTrialName,
-      kContextualSearchIcingSurroundingSizeParamName);
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          kContextualSearchIcingSurroundingSizeParamName)) {
-    param_string = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-        kContextualSearchIcingSurroundingSizeParamName);
-  }
-  int param_value;
-  if (!param_string.empty() && base::StringToInt(param_string, &param_value))
-    return param_value;
-  return kContextualSearchDefaultIcingSurroundingSize;
 }
 
 base::string16 ContextualSearchDelegate::SurroundingTextForIcing(

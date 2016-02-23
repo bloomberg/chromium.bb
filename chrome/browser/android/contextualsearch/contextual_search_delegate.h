@@ -24,6 +24,7 @@ class URLRequestContextGetter;
 
 class Profile;
 class TemplateURLService;
+class ContextualSearchFieldTrial;
 
 // Handles tasks for the ContextualSearchManager in a separable and testable
 // way, without the complication of being connected to a Java object.
@@ -169,13 +170,6 @@ class ContextualSearchDelegate
                                int* startResult,
                                int* endResult);
 
-  // Returns the surrounding size to use for the search term resolution
-  // request.
-  int GetSearchTermSurroundingSize();
-
-  // Returns the size of the surroundings to be sent to Icing.
-  int GetIcingSurroundingSize();
-
   // Generates a subset of the given surrounding_text string, for Icing
   // integration.
   // |surrounding_text| the entire text context that contains the selection.
@@ -201,6 +195,9 @@ class ContextualSearchDelegate
 
   // Holds the TemplateURLService. Not owned.
   TemplateURLService* template_url_service_;
+
+  // The field trial helper instance, always set up by the constructor.
+  scoped_ptr<ContextualSearchFieldTrial> field_trial_;
 
   // The callback for notifications of completed URL fetches.
   SearchTermResolutionCallback search_term_callback_;
