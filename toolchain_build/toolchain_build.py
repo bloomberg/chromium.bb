@@ -35,10 +35,10 @@ GCC_VERSION = '4.9.2'
 # to use in place of the package name when calling GitUrl (below).
 GIT_REVISIONS = {
     'binutils': {
-        'rev': 'cde986cc330c6d7ebd68e416ab66e0929abe4c8f',
-        'upstream-branch': 'upstream/binutils-2_25-branch',
-        'upstream-name': 'binutils-2.25.1',
-        'upstream-base': 'binutils-2_25_1',
+        'rev': '2c49145108878e9914173cd9c3aa36ab0cede6b3',
+        'upstream-branch': 'upstream/binutils-2_26-branch',
+        'upstream-name': 'binutils-2.26',
+        'upstream-base': 'binutils-2_26',
         },
     'gcc': {
         'rev': '336bd0bc1724efd6f8b2a4d7228e389dc1bc48da',
@@ -700,6 +700,8 @@ def HostTools(host, target):
               command.Command(
                   ConfigureCommand('binutils') +
                   ConfigureHostTool(host) +
+                  # The Mac compiler is too warning-happy for -Werror.
+                  WindowsAlternate([], [], ['--disable-werror']) +
                   ConfigureTargetArgs(target) + [
                       # Ensure that all the NaCl backends get included,
                       # just for convenience of using the same tools for
@@ -709,12 +711,7 @@ def HostTools(host, target):
                       # includes 64-bit secondary targets for 64-bit hosts.
                       '--enable-targets=arm-nacl,i686-nacl,x86_64-nacl',
                       '--enable-deterministic-archives',
-                      # TODO(mcgrathr): gold disabled on Mac hosts because
-                      # of newer OSX SDK problems with binutils' safe-ctype.h
-                      # vs <string>.  Reenable when we have an upstream fix
-                      # merged.
-                      WindowsAlternate('--enable-gold', '--enable-gold',
-                                       '--disable-gold'),
+                      '--enable-gold',
                       ] + WindowsAlternate([], ['--enable-plugins']))
               ] + DummyDirCommands(binutils_dummy_dirs) + [
               command.Command(MakeCommand(host)),

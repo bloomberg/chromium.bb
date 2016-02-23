@@ -563,11 +563,15 @@ def GenerateGitPatches(git_dir, info, run_cond=None):
                         ' '.join(args))
       return lines[0]
 
-    rev = revParse(['rev-parse', info['rev']])
-    upstream_base = revParse(['rev-parse', info['upstream-base']])
-    upstream_branch = revParse(['rev-parse',
-                                'refs/remotes/origin/' +
-                                info['upstream-branch']])
+    # This turns a rev-spec into a fully-expanded SHA1 of a commit object.
+    # If the specified rev is a tag, this will get the tagged commit.
+    def getCommit(rev):
+      return revParse(['rev-parse', rev + '^{commit}'])
+
+    rev = getCommit(info['rev'])
+    upstream_base = getCommit(info['upstream-base'])
+    upstream_branch = getCommit('refs/remotes/origin/' +
+                                info['upstream-branch'])
     upstream_snapshot = revParse(['merge-base', rev, upstream_branch])
 
     if rev == upstream_base:
