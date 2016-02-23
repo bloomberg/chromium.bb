@@ -150,21 +150,6 @@ void CancelTouches(UIGestureRecognizer* gesture_recognizer) {
     gesture_recognizer.enabled = YES;
   }
 }
-
-// Cancels all touch events for web view (long presses, tapping, scrolling).
-void CancelAllTouches(UIScrollView* web_scroll_view) {
-  // Disable web view scrolling.
-  CancelTouches(web_scroll_view.panGestureRecognizer);
-
-  // All user gestures are handled by a subview of web view scroll view
-  // (UIWebBrowserView for UIWebView and WKContentView for WKWebView).
-  for (UIView* subview in web_scroll_view.subviews) {
-    for (UIGestureRecognizer* recognizer in subview.gestureRecognizers) {
-      CancelTouches(recognizer);
-    }
-  }
-}
-
 }  // namespace
 
 @interface CRWWebController () <CRWNativeContentDelegate,
@@ -389,6 +374,8 @@ void CancelAllTouches(UIScrollView* web_scroll_view) {
 // YES if delegate supports showing context menu by responding to
 // webController:runContextMenu:atPoint:inView: selector.
 - (BOOL)supportsCustomContextMenu;
+// Cancels all touch events in the web view (long presses, tapping, scrolling).
+- (void)cancelAllTouches;
 // Returns the referrer for the current page.
 - (web::Referrer)currentReferrer;
 // Presents an error to the user because the CRWWebController cannot verify the
@@ -914,13 +901,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       [self contextMenuInfoForElement:_DOMElementForLastTouch.get()];
   CGPoint point = [gestureRecognizer locationInView:self.webView];
 
-  // Cancel all touches on the web view when showing custom context menu. This
-  // will suppress the system context menu and prevent further user interactions
-  // with web view (like scrolling the content and following links). This
-  // approach is similar to UIWebView and WKWebView workflow as both call
-  // -[UIApplication _cancelAllTouches] to cancel all touch events, once the
-  // long press is detected.
-  CancelAllTouches(self.webScrollView);
+  // Cancelling all touches has the intended side effect of suppressing the
+  // system's context menu.
+  [self cancelAllTouches];
   [self.UIDelegate webController:self
                   runContextMenu:info
                          atPoint:point
@@ -930,6 +913,25 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (BOOL)supportsCustomContextMenu {
   SEL runMenuSelector = @selector(webController:runContextMenu:atPoint:inView:);
   return [self.UIDelegate respondsToSelector:runMenuSelector];
+}
+
+- (void)cancelAllTouches {
+  // Disable web view scrolling.
+  CancelTouches(self.webScrollView.panGestureRecognizer);
+
+  // All user gestures are handled by a subview of web view scroll view
+  // (WKContentView).
+  for (UIView* subview in self.webScrollView.subviews) {
+    for (UIGestureRecognizer* recognizer in subview.gestureRecognizers) {
+      CancelTouches(recognizer);
+    }
+  }
+
+  // Just disabling/enabling the gesture recognizers is not enough to suppress
+  // the click handlers on the JS side. This JS performs the function of
+  // suppressing these handlers on the JS side.
+  NSString* suppressNextClick = @"__gCrWeb.suppressNextClick()";
+  [self evaluateJavaScript:suppressNextClick stringResultHandler:nil];
 }
 
 // TODO(shreyasv): This code is shared with SnapshotManager. Remove this and add

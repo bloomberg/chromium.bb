@@ -220,6 +220,16 @@ goog.require('__crWeb.message');
     return '{}';
   };
 
+  // Suppresses the next click such that they are not handled by JS click
+  // event handlers.
+  __gCrWeb['suppressNextClick'] = function() {
+    var suppressNextClick = function(evt) {
+      evt.preventDefault();
+      document.removeEventListener('click', suppressNextClick, false);
+    };
+    document.addEventListener('click', suppressNextClick);
+  };
+
   // Returns true if the top window or any frames inside contain an input
   // field of type 'password'.
   __gCrWeb['hasPasswordField'] = function() {
