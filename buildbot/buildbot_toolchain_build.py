@@ -33,6 +33,8 @@ TEMP_PACKAGES_FILE = os.path.join(TOOLCHAIN_BUILD_OUT_DIR, 'packages.txt')
 
 TOOLCHAIN_TESTS = {
 #   TOOLCHAIN_NAME:    [(MODE,  ARCH,  CLIB)]
+    'nacl_arm_newlib': [('opt', 'arm', 'newlib')],
+    'nacl_arm_newlib_raw': [('opt', 'arm', 'newlib')],
     'nacl_arm_glibc': [('opt', 'arm', 'glibc')],
     'nacl_arm_glibc_raw': [('opt', 'arm', 'glibc')],
     }

@@ -128,7 +128,7 @@ class PackageBuilder(object):
                        package names even if they aren't being built. A package
                        target is usually the platform, such as "$OS_$ARCH",
                        while the output package is usually the toolchain name,
-                       such as "nacl_arm_glibc".
+                       such as "nacl_arm_newlib".
         {
           '<package_target>': {
             '<output_package>':

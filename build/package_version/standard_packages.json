@@ -53,6 +53,8 @@
     "win_x86": [
       "nacl_arm_glibc",
       "nacl_arm_glibc_raw",
+      "nacl_arm_newlib",
+      "nacl_arm_newlib_raw",
       "nacl_x86_glibc",
       "nacl_x86_glibc_raw",
       "nacl_x86_newlib",
@@ -65,6 +67,8 @@
     "mac_x86": [
       "nacl_arm_glibc",
       "nacl_arm_glibc_raw",
+      "nacl_arm_newlib",
+      "nacl_arm_newlib_raw",
       "nacl_x86_glibc",
       "nacl_x86_glibc_raw",
       "nacl_x86_newlib",
@@ -78,6 +82,8 @@
       "arm_trusted",
       "nacl_arm_glibc",
       "nacl_arm_glibc_raw",
+      "nacl_arm_newlib",
+      "nacl_arm_newlib_raw",
       "nacl_x86_glibc",
       "nacl_x86_glibc_raw",
       "nacl_x86_newlib",
@@ -102,6 +108,10 @@
       # Packages contained within this revision set.
       "nacl_arm_glibc",
       "nacl_arm_glibc_raw"
+    ],
+    "nacl_arm_newlib": [
+      "nacl_arm_newlib",
+      "nacl_arm_newlib_raw"
     ],
     "nacl_x86_newlib": [
       "nacl_x86_newlib",
@@ -131,6 +141,7 @@
   "modes": {
     "nacl_core_sdk": [
       "arm_trusted",
+      "nacl_arm_newlib",
       "nacl_arm_glibc",
       "nacl_x86_glibc",
       "nacl_x86_newlib",
