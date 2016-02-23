@@ -97,12 +97,9 @@ Polymer({
     }
 
     this.showButton_ = !isDefault && canBeDefault;
-    if (canBeDefault) {
-      this.message_ = loadTimeData.getString(isDefault ?
-          'defaultBrowserDefault' :
-          'defaultBrowserNotDefault');
-    } else {
-      this.message_ = loadTimeData.getString('defaultBrowserUnknown');
+    if (!this.showButton) {
+      this.message_ = loadTimeData.getString(
+          canBeDefault ? 'defaultBrowserDefault' : 'defaultBrowserUnknown');
     }
   },
 
