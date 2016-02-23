@@ -497,14 +497,15 @@ TEST_F(CredentialManagerDispatcherTest,
   store_->AddLogin(affiliated_form1_);
   store_->AddLogin(affiliated_form2_);
 
-  MockAffiliatedMatchHelper* mock_helper = new MockAffiliatedMatchHelper;
-  store_->SetAffiliatedMatchHelper(make_scoped_ptr(mock_helper));
+  auto mock_helper = make_scoped_ptr(new MockAffiliatedMatchHelper);
+  store_->SetAffiliatedMatchHelper(std::move(mock_helper));
 
   std::vector<GURL> federations;
   std::vector<std::string> affiliated_realms;
   affiliated_realms.push_back(kTestAndroidRealm1);
-  mock_helper->ExpectCallToGetAffiliatedAndroidRealms(
-      dispatcher_->GetSynthesizedFormForOrigin(), affiliated_realms);
+  static_cast<MockAffiliatedMatchHelper*>(store_->affiliated_match_helper())
+      ->ExpectCallToGetAffiliatedAndroidRealms(
+          dispatcher_->GetSynthesizedFormForOrigin(), affiliated_realms);
   RunAllPendingTasks();
 
   TestPasswordStore::PasswordMap passwords = store_->stored_passwords();
@@ -669,6 +670,92 @@ TEST_F(CredentialManagerDispatcherTest,
   federations.push_back(GURL("https://not-example.com/"));
 
   EXPECT_CALL(*client_, NotifyUserAutoSigninBlockedOnFirstRunPtr(_)).Times(0);
+  dispatcher()->OnRequestCredential(kRequestId, true, true, federations);
+
+  ExpectZeroClickSignInFailure();
+}
+
+TEST_F(CredentialManagerDispatcherTest,
+       CredentialManagerOnRequestCredentialAffiliatedPasswordMatch) {
+  store_->AddLogin(affiliated_form1_);
+  client_->set_first_run_seen(true);
+  auto mock_helper = make_scoped_ptr(new MockAffiliatedMatchHelper);
+  store_->SetAffiliatedMatchHelper(std::move(mock_helper));
+
+  std::vector<GURL> federations;
+  std::vector<std::string> affiliated_realms;
+  affiliated_realms.push_back(kTestAndroidRealm1);
+  static_cast<MockAffiliatedMatchHelper*>(store_->affiliated_match_helper())
+      ->ExpectCallToGetAffiliatedAndroidRealms(
+          dispatcher_->GetSynthesizedFormForOrigin(), affiliated_realms);
+
+  // We pass in 'true' for the 'include_passwords' argument to ensure that
+  // password-type credentials are included as potential matches.
+  dispatcher()->OnRequestCredential(kRequestId, true, true, federations);
+
+  ExpectZeroClickSignInSuccess(CredentialType::CREDENTIAL_TYPE_PASSWORD);
+}
+
+TEST_F(CredentialManagerDispatcherTest,
+       CredentialManagerOnRequestCredentialAffiliatedPasswordNoMatch) {
+  store_->AddLogin(affiliated_form1_);
+  client_->set_first_run_seen(true);
+  auto mock_helper = make_scoped_ptr(new MockAffiliatedMatchHelper);
+  store_->SetAffiliatedMatchHelper(std::move(mock_helper));
+
+  std::vector<GURL> federations;
+  std::vector<std::string> affiliated_realms;
+  affiliated_realms.push_back(kTestAndroidRealm1);
+  static_cast<MockAffiliatedMatchHelper*>(store_->affiliated_match_helper())
+      ->ExpectCallToGetAffiliatedAndroidRealms(
+          dispatcher_->GetSynthesizedFormForOrigin(), affiliated_realms);
+
+  // We pass in 'false' for the 'include_passwords' argument to ensure that
+  // password-type credentials are excluded as potential matches.
+  dispatcher()->OnRequestCredential(kRequestId, true, false, federations);
+
+  ExpectZeroClickSignInFailure();
+}
+
+TEST_F(CredentialManagerDispatcherTest,
+       CredentialManagerOnRequestCredentialAffiliatedFederatedMatch) {
+  affiliated_form1_.federation_url = GURL("https://example.com/");
+  store_->AddLogin(affiliated_form1_);
+  client_->set_first_run_seen(true);
+  auto mock_helper = make_scoped_ptr(new MockAffiliatedMatchHelper);
+  store_->SetAffiliatedMatchHelper(std::move(mock_helper));
+
+  std::vector<GURL> federations;
+  federations.push_back(GURL("https://example.com/"));
+
+  std::vector<std::string> affiliated_realms;
+  affiliated_realms.push_back(kTestAndroidRealm1);
+  static_cast<MockAffiliatedMatchHelper*>(store_->affiliated_match_helper())
+      ->ExpectCallToGetAffiliatedAndroidRealms(
+          dispatcher_->GetSynthesizedFormForOrigin(), affiliated_realms);
+
+  dispatcher()->OnRequestCredential(kRequestId, true, true, federations);
+
+  ExpectZeroClickSignInSuccess(CredentialType::CREDENTIAL_TYPE_FEDERATED);
+}
+
+TEST_F(CredentialManagerDispatcherTest,
+       CredentialManagerOnRequestCredentialAffiliatedFederatedNoMatch) {
+  affiliated_form1_.federation_url = GURL("https://example.com/");
+  store_->AddLogin(affiliated_form1_);
+  client_->set_first_run_seen(true);
+  auto mock_helper = make_scoped_ptr(new MockAffiliatedMatchHelper);
+  store_->SetAffiliatedMatchHelper(std::move(mock_helper));
+
+  std::vector<GURL> federations;
+  federations.push_back(GURL("https://not-example.com/"));
+
+  std::vector<std::string> affiliated_realms;
+  affiliated_realms.push_back(kTestAndroidRealm1);
+  static_cast<MockAffiliatedMatchHelper*>(store_->affiliated_match_helper())
+      ->ExpectCallToGetAffiliatedAndroidRealms(
+          dispatcher_->GetSynthesizedFormForOrigin(), affiliated_realms);
+
   dispatcher()->OnRequestCredential(kRequestId, true, true, federations);
 
   ExpectZeroClickSignInFailure();
@@ -932,14 +1019,15 @@ TEST_F(CredentialManagerDispatcherTest,
   // ought to be returned automagically.
   store_->AddLogin(affiliated_form1_);
 
-  MockAffiliatedMatchHelper* mock_helper = new MockAffiliatedMatchHelper;
-  store_->SetAffiliatedMatchHelper(make_scoped_ptr(mock_helper));
+  auto mock_helper = make_scoped_ptr(new MockAffiliatedMatchHelper);
+  store_->SetAffiliatedMatchHelper(std::move(mock_helper));
 
   std::vector<GURL> federations;
   std::vector<std::string> affiliated_realms;
   affiliated_realms.push_back(kTestAndroidRealm1);
-  mock_helper->ExpectCallToGetAffiliatedAndroidRealms(
-      dispatcher_->GetSynthesizedFormForOrigin(), affiliated_realms);
+  static_cast<MockAffiliatedMatchHelper*>(store_->affiliated_match_helper())
+      ->ExpectCallToGetAffiliatedAndroidRealms(
+          dispatcher_->GetSynthesizedFormForOrigin(), affiliated_realms);
 
   dispatcher()->OnRequestCredential(kRequestId, true, true, federations);
 
@@ -953,15 +1041,16 @@ TEST_F(CredentialManagerDispatcherTest,
   store_->AddLogin(affiliated_form1_);
   store_->AddLogin(affiliated_form2_);
 
-  MockAffiliatedMatchHelper* mock_helper = new MockAffiliatedMatchHelper;
-  store_->SetAffiliatedMatchHelper(make_scoped_ptr(mock_helper));
+  auto mock_helper = make_scoped_ptr(new MockAffiliatedMatchHelper);
+  store_->SetAffiliatedMatchHelper(std::move(mock_helper));
 
   std::vector<GURL> federations;
   std::vector<std::string> affiliated_realms;
   affiliated_realms.push_back(kTestAndroidRealm1);
   affiliated_realms.push_back(kTestAndroidRealm2);
-  mock_helper->ExpectCallToGetAffiliatedAndroidRealms(
-      dispatcher_->GetSynthesizedFormForOrigin(), affiliated_realms);
+  static_cast<MockAffiliatedMatchHelper*>(store_->affiliated_match_helper())
+      ->ExpectCallToGetAffiliatedAndroidRealms(
+          dispatcher_->GetSynthesizedFormForOrigin(), affiliated_realms);
 
   dispatcher()->OnRequestCredential(kRequestId, true, true, federations);
 
@@ -975,13 +1064,14 @@ TEST_F(CredentialManagerDispatcherTest,
   // in.
   store_->AddLogin(affiliated_form1_);
 
-  MockAffiliatedMatchHelper* mock_helper = new MockAffiliatedMatchHelper;
-  store_->SetAffiliatedMatchHelper(make_scoped_ptr(mock_helper));
+  auto mock_helper = make_scoped_ptr(new MockAffiliatedMatchHelper);
+  store_->SetAffiliatedMatchHelper(std::move(mock_helper));
 
   std::vector<GURL> federations;
   std::vector<std::string> affiliated_realms;
-  mock_helper->ExpectCallToGetAffiliatedAndroidRealms(
-      dispatcher_->GetSynthesizedFormForOrigin(), affiliated_realms);
+  static_cast<MockAffiliatedMatchHelper*>(store_->affiliated_match_helper())
+      ->ExpectCallToGetAffiliatedAndroidRealms(
+          dispatcher_->GetSynthesizedFormForOrigin(), affiliated_realms);
 
   dispatcher()->OnRequestCredential(kRequestId, true, true, federations);
 
@@ -996,13 +1086,14 @@ TEST_F(CredentialManagerDispatcherTest,
   store_->AddLogin(form_);
   store_->AddLogin(affiliated_form1_);
 
-  MockAffiliatedMatchHelper* mock_helper = new MockAffiliatedMatchHelper;
-  store_->SetAffiliatedMatchHelper(make_scoped_ptr(mock_helper));
+  auto mock_helper = make_scoped_ptr(new MockAffiliatedMatchHelper);
+  store_->SetAffiliatedMatchHelper(std::move(mock_helper));
 
   std::vector<GURL> federations;
   std::vector<std::string> affiliated_realms;
-  mock_helper->ExpectCallToGetAffiliatedAndroidRealms(
-      dispatcher_->GetSynthesizedFormForOrigin(), affiliated_realms);
+  static_cast<MockAffiliatedMatchHelper*>(store_->affiliated_match_helper())
+      ->ExpectCallToGetAffiliatedAndroidRealms(
+          dispatcher_->GetSynthesizedFormForOrigin(), affiliated_realms);
 
   dispatcher()->OnRequestCredential(kRequestId, true, true, federations);
 

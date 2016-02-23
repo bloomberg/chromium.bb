@@ -49,17 +49,21 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
   ScopedVector<autofill::PasswordForm> affiliated_results;
   ScopedVector<autofill::PasswordForm> federated_results;
   for (auto& form : results) {
+    // Ensure that the form we're looking at matches the password and
+    // federation filters provided.
+    if (!((form->federation_url.is_empty() && include_passwords_) ||
+          (!form->federation_url.is_empty() &&
+           federations_.count(form->federation_url.spec())))) {
+      continue;
+    }
+
     // PasswordFrom and GURL have different definition of origin.
     // PasswordForm definition: scheme, host, port and path.
     // GURL definition: scheme, host, and port.
     // So we can't compare them directly.
     if (form->origin.GetOrigin() == origin_.GetOrigin()) {
-      if ((form->federation_url.is_empty() && include_passwords_) ||
-          (!form->federation_url.is_empty() &&
-           federations_.count(form->federation_url.spec()))) {
-        local_results.push_back(form);
-        form = nullptr;
-      }
+      local_results.push_back(form);
+      form = nullptr;
     } else if (affiliated_realms_.count(form->signon_realm) &&
                AffiliatedMatchHelper::IsValidAndroidCredential(*form)) {
       form->is_affiliation_based_match = true;
@@ -76,9 +80,6 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
   }
 
   if (!affiliated_results.empty()) {
-    // TODO(mkwst): This doesn't create a PasswordForm that we can use to create
-    // a FederatedCredential (via CreatePasswordFormFromCredentialInfo). We need
-    // to fix that.
     password_manager_util::TrimUsernameOnlyCredentials(&affiliated_results);
     local_results.insert(local_results.end(), affiliated_results.begin(),
                          affiliated_results.end());
