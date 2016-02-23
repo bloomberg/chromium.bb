@@ -150,43 +150,55 @@ TEST(EscapeTest, EscapeUrlEncodedDataSpace) {
 
 TEST(EscapeTest, UnescapeURLComponentASCII) {
   const UnescapeURLCaseASCII unescape_cases[] = {
-    {"", UnescapeRule::NORMAL, ""},
-    {"%2", UnescapeRule::NORMAL, "%2"},
-    {"%%%%%%", UnescapeRule::NORMAL, "%%%%%%"},
-    {"Don't escape anything", UnescapeRule::NORMAL, "Don't escape anything"},
-    {"Invalid %escape %2", UnescapeRule::NORMAL, "Invalid %escape %2"},
-    {"Some%20random text %25%2dOK", UnescapeRule::NONE,
-     "Some%20random text %25%2dOK"},
-    {"Some%20random text %25%2dOK", UnescapeRule::NORMAL,
-     "Some%20random text %25-OK"},
-    {"Some%20random text %25%2dOK", UnescapeRule::SPACES,
-     "Some random text %25-OK"},
-    {"Some%20random text %25%2dOK", UnescapeRule::URL_SPECIAL_CHARS,
-     "Some%20random text %-OK"},
-    {"Some%20random text %25%2dOK",
-     UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS,
-     "Some random text %-OK"},
-    {"%A0%B1%C2%D3%E4%F5", UnescapeRule::NORMAL, "\xA0\xB1\xC2\xD3\xE4\xF5"},
-    {"%Aa%Bb%Cc%Dd%Ee%Ff", UnescapeRule::NORMAL, "\xAa\xBb\xCc\xDd\xEe\xFf"},
-    // Certain URL-sensitive characters should not be unescaped unless asked.
-    {"Hello%20%13%10world %23# %3F? %3D= %26& %25% %2B+", UnescapeRule::SPACES,
-     "Hello %13%10world %23# %3F? %3D= %26& %25% %2B+"},
-    {"Hello%20%13%10world %23# %3F? %3D= %26& %25% %2B+",
-     UnescapeRule::URL_SPECIAL_CHARS,
-     "Hello%20%13%10world ## ?? == && %% ++"},
-    // We can neither escape nor unescape '@' since some websites expect it to
-    // be preserved as either '@' or "%40".
-    // See http://b/996720 and http://crbug.com/23933 .
-    {"me@my%40example", UnescapeRule::NORMAL, "me@my%40example"},
-    // Control characters.
-    {"%01%02%03%04%05%06%07%08%09 %25", UnescapeRule::URL_SPECIAL_CHARS,
-     "%01%02%03%04%05%06%07%08%09 %"},
-    {"%01%02%03%04%05%06%07%08%09 %25",
-     UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
-     "\x01\x02\x03\x04\x05\x06\x07\x08\x09 %25"},
-    {"Hello%20%13%10%02", UnescapeRule::SPACES, "Hello %13%10%02"},
-    {"Hello%20%13%10%02", UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
-     "Hello%20\x13\x10\x02"},
+      {"", UnescapeRule::NORMAL, ""},
+      {"%2", UnescapeRule::NORMAL, "%2"},
+      {"%%%%%%", UnescapeRule::NORMAL, "%%%%%%"},
+      {"Don't escape anything", UnescapeRule::NORMAL, "Don't escape anything"},
+      {"Invalid %escape %2", UnescapeRule::NORMAL, "Invalid %escape %2"},
+      {"Some%20random text %25%2dOK", UnescapeRule::NONE,
+       "Some%20random text %25%2dOK"},
+      {"Some%20random text %25%2dOK", UnescapeRule::NORMAL,
+       "Some%20random text %25-OK"},
+      {"Some%20random text %25%2dOK", UnescapeRule::SPACES,
+       "Some random text %25-OK"},
+      {"Some%20random text %25%2dOK", UnescapeRule::PATH_SEPARATORS,
+       "Some%20random text %25-OK"},
+      {"Some%20random text %25%2dOK",
+       UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS,
+       "Some%20random text %-OK"},
+      {"Some%20random text %25%2dOK",
+       UnescapeRule::SPACES |
+           UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS,
+       "Some random text %-OK"},
+      {"%A0%B1%C2%D3%E4%F5", UnescapeRule::NORMAL, "\xA0\xB1\xC2\xD3\xE4\xF5"},
+      {"%Aa%Bb%Cc%Dd%Ee%Ff", UnescapeRule::NORMAL, "\xAa\xBb\xCc\xDd\xEe\xFf"},
+      // Certain URL-sensitive characters should not be unescaped unless asked.
+      {"Hello%20%13%10world %23# %3F? %3D= %26& %25% %2B+",
+       UnescapeRule::SPACES, "Hello %13%10world %23# %3F? %3D= %26& %25% %2B+"},
+      {"Hello%20%13%10world %23# %3F? %3D= %26& %25% %2B+",
+       UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS,
+       "Hello%20%13%10world ## ?? == && %% ++"},
+      // We can neither escape nor unescape '@' since some websites expect it to
+      // be preserved as either '@' or "%40".
+      // See http://b/996720 and http://crbug.com/23933 .
+      {"me@my%40example", UnescapeRule::NORMAL, "me@my%40example"},
+      // Control characters.
+      {"%01%02%03%04%05%06%07%08%09 %25",
+       UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS,
+       "%01%02%03%04%05%06%07%08%09 %"},
+      {"%01%02%03%04%05%06%07%08%09 %25",
+       UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
+       "\x01\x02\x03\x04\x05\x06\x07\x08\x09 %25"},
+      {"Hello%20%13%10%02", UnescapeRule::SPACES, "Hello %13%10%02"},
+      {"Hello%20%13%10%02", UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
+       "Hello%20\x13\x10\x02"},
+
+      // '/' and '\\' should only be unescaped by PATH_SEPARATORS.
+      {"%2F%5C", UnescapeRule::PATH_SEPARATORS, "/\\"},
+      {"%2F%5C", UnescapeRule::SPACES |
+                     UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS |
+                     UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
+       "%2F%5C"},
   };
 
   for (size_t i = 0; i < arraysize(unescape_cases); i++) {
@@ -218,126 +230,135 @@ TEST(EscapeTest, UnescapeURLComponentASCII) {
 
 TEST(EscapeTest, UnescapeURLComponent) {
   const UnescapeURLCase unescape_cases[] = {
-    {L"", UnescapeRule::NORMAL, L""},
-    {L"%2", UnescapeRule::NORMAL, L"%2"},
-    {L"%%%%%%", UnescapeRule::NORMAL, L"%%%%%%"},
-    {L"Don't escape anything", UnescapeRule::NORMAL, L"Don't escape anything"},
-    {L"Invalid %escape %2", UnescapeRule::NORMAL, L"Invalid %escape %2"},
-    {L"Some%20random text %25%2dOK", UnescapeRule::NONE,
-     L"Some%20random text %25%2dOK"},
-    {L"Some%20random text %25%2dOK", UnescapeRule::NORMAL,
-     L"Some%20random text %25-OK"},
-    {L"Some%20random text %25%E2%80", UnescapeRule::NORMAL,
-     L"Some%20random text %25\xE2\x80"},
-    {L"Some%20random text %25%E2%80OK", UnescapeRule::NORMAL,
-     L"Some%20random text %25\xE2\x80OK"},
-    {L"Some%20random text %25%E2%80%84OK", UnescapeRule::NORMAL,
-     L"Some%20random text %25\xE2\x80\x84OK"},
+      {L"", UnescapeRule::NORMAL, L""},
+      {L"%2", UnescapeRule::NORMAL, L"%2"},
+      {L"%%%%%%", UnescapeRule::NORMAL, L"%%%%%%"},
+      {L"Don't escape anything", UnescapeRule::NORMAL,
+       L"Don't escape anything"},
+      {L"Invalid %escape %2", UnescapeRule::NORMAL, L"Invalid %escape %2"},
+      {L"Some%20random text %25%2dOK", UnescapeRule::NONE,
+       L"Some%20random text %25%2dOK"},
+      {L"Some%20random text %25%2dOK", UnescapeRule::NORMAL,
+       L"Some%20random text %25-OK"},
+      {L"Some%20random text %25%E2%80", UnescapeRule::NORMAL,
+       L"Some%20random text %25\xE2\x80"},
+      {L"Some%20random text %25%E2%80OK", UnescapeRule::NORMAL,
+       L"Some%20random text %25\xE2\x80OK"},
+      {L"Some%20random text %25%E2%80%84OK", UnescapeRule::NORMAL,
+       L"Some%20random text %25\xE2\x80\x84OK"},
 
-    // BiDi Control characters should not be unescaped unless explicity told to
-    // do so with UnescapeRule::SPOOFING_AND_CONTROL_CHARS
-    {L"Some%20random text %25%D8%9COK", UnescapeRule::NORMAL,
-     L"Some%20random text %25%D8%9COK"},
-    {L"Some%20random text %25%E2%80%8EOK", UnescapeRule::NORMAL,
-     L"Some%20random text %25%E2%80%8EOK"},
-    {L"Some%20random text %25%E2%80%8FOK", UnescapeRule::NORMAL,
-     L"Some%20random text %25%E2%80%8FOK"},
-    {L"Some%20random text %25%E2%80%AAOK", UnescapeRule::NORMAL,
-     L"Some%20random text %25%E2%80%AAOK"},
-    {L"Some%20random text %25%E2%80%ABOK", UnescapeRule::NORMAL,
-     L"Some%20random text %25%E2%80%ABOK"},
-    {L"Some%20random text %25%E2%80%AEOK", UnescapeRule::NORMAL,
-     L"Some%20random text %25%E2%80%AEOK"},
-    {L"Some%20random text %25%E2%81%A6OK", UnescapeRule::NORMAL,
-     L"Some%20random text %25%E2%81%A6OK"},
-    {L"Some%20random text %25%E2%81%A9OK", UnescapeRule::NORMAL,
-     L"Some%20random text %25%E2%81%A9OK"},
-    // UnescapeRule::SPOOFING_AND_CONTROL_CHARS should unescape BiDi Control
-    // characters.
-    {L"Some%20random text %25%D8%9COK",
-     UnescapeRule::NORMAL | UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
-     L"Some%20random text %25\xD8\x9COK"},
-    {L"Some%20random text %25%E2%80%8EOK",
-     UnescapeRule::NORMAL | UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
-     L"Some%20random text %25\xE2\x80\x8EOK"},
-    {L"Some%20random text %25%E2%80%8FOK",
-     UnescapeRule::NORMAL | UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
-     L"Some%20random text %25\xE2\x80\x8FOK"},
-    {L"Some%20random text %25%E2%80%AAOK",
-     UnescapeRule::NORMAL | UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
-     L"Some%20random text %25\xE2\x80\xAAOK"},
-    {L"Some%20random text %25%E2%80%ABOK",
-     UnescapeRule::NORMAL | UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
-     L"Some%20random text %25\xE2\x80\xABOK"},
-    {L"Some%20random text %25%E2%80%AEOK",
-     UnescapeRule::NORMAL | UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
-     L"Some%20random text %25\xE2\x80\xAEOK"},
-    {L"Some%20random text %25%E2%81%A6OK",
-     UnescapeRule::NORMAL | UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
-     L"Some%20random text %25\xE2\x81\xA6OK"},
-    {L"Some%20random text %25%E2%81%A9OK",
-     UnescapeRule::NORMAL | UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
-     L"Some%20random text %25\xE2\x81\xA9OK"},
+      // BiDi Control characters should not be unescaped unless explicity told
+      // to
+      // do so with UnescapeRule::SPOOFING_AND_CONTROL_CHARS
+      {L"Some%20random text %25%D8%9COK", UnescapeRule::NORMAL,
+       L"Some%20random text %25%D8%9COK"},
+      {L"Some%20random text %25%E2%80%8EOK", UnescapeRule::NORMAL,
+       L"Some%20random text %25%E2%80%8EOK"},
+      {L"Some%20random text %25%E2%80%8FOK", UnescapeRule::NORMAL,
+       L"Some%20random text %25%E2%80%8FOK"},
+      {L"Some%20random text %25%E2%80%AAOK", UnescapeRule::NORMAL,
+       L"Some%20random text %25%E2%80%AAOK"},
+      {L"Some%20random text %25%E2%80%ABOK", UnescapeRule::NORMAL,
+       L"Some%20random text %25%E2%80%ABOK"},
+      {L"Some%20random text %25%E2%80%AEOK", UnescapeRule::NORMAL,
+       L"Some%20random text %25%E2%80%AEOK"},
+      {L"Some%20random text %25%E2%81%A6OK", UnescapeRule::NORMAL,
+       L"Some%20random text %25%E2%81%A6OK"},
+      {L"Some%20random text %25%E2%81%A9OK", UnescapeRule::NORMAL,
+       L"Some%20random text %25%E2%81%A9OK"},
+      // UnescapeRule::SPOOFING_AND_CONTROL_CHARS should unescape BiDi Control
+      // characters.
+      {L"Some%20random text %25%D8%9COK",
+       UnescapeRule::NORMAL | UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
+       L"Some%20random text %25\xD8\x9COK"},
+      {L"Some%20random text %25%E2%80%8EOK",
+       UnescapeRule::NORMAL | UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
+       L"Some%20random text %25\xE2\x80\x8EOK"},
+      {L"Some%20random text %25%E2%80%8FOK",
+       UnescapeRule::NORMAL | UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
+       L"Some%20random text %25\xE2\x80\x8FOK"},
+      {L"Some%20random text %25%E2%80%AAOK",
+       UnescapeRule::NORMAL | UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
+       L"Some%20random text %25\xE2\x80\xAAOK"},
+      {L"Some%20random text %25%E2%80%ABOK",
+       UnescapeRule::NORMAL | UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
+       L"Some%20random text %25\xE2\x80\xABOK"},
+      {L"Some%20random text %25%E2%80%AEOK",
+       UnescapeRule::NORMAL | UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
+       L"Some%20random text %25\xE2\x80\xAEOK"},
+      {L"Some%20random text %25%E2%81%A6OK",
+       UnescapeRule::NORMAL | UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
+       L"Some%20random text %25\xE2\x81\xA6OK"},
+      {L"Some%20random text %25%E2%81%A9OK",
+       UnescapeRule::NORMAL | UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
+       L"Some%20random text %25\xE2\x81\xA9OK"},
 
-    // Certain banned characters should not be unescaped unless explicitly told
-    // to do so with UnescapeRule::SPOOFING_AND_CONTROL_CHARS.
-    // U+1F50F LOCK WITH INK PEN
-    {L"Some%20random text %25%F0%9F%94%8FOK", UnescapeRule::NORMAL,
-     L"Some%20random text %25%F0%9F%94%8FOK"},
-    // U+1F510 CLOSED LOCK WITH KEY
-    {L"Some%20random text %25%F0%9F%94%90OK", UnescapeRule::NORMAL,
-     L"Some%20random text %25%F0%9F%94%90OK"},
-    // U+1F512 LOCK
-    {L"Some%20random text %25%F0%9F%94%92OK", UnescapeRule::NORMAL,
-     L"Some%20random text %25%F0%9F%94%92OK"},
-    // U+1F513 OPEN LOCK
-    {L"Some%20random text %25%F0%9F%94%93OK", UnescapeRule::NORMAL,
-     L"Some%20random text %25%F0%9F%94%93OK"},
-    // UnescapeRule::SPOOFING_AND_CONTROL_CHARS should unescape banned
-    // characters.
-    {L"Some%20random text %25%F0%9F%94%8FOK",
-     UnescapeRule::NORMAL | UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
-     L"Some%20random text %25\xF0\x9F\x94\x8FOK"},
-    {L"Some%20random text %25%F0%9F%94%90OK",
-     UnescapeRule::NORMAL | UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
-     L"Some%20random text %25\xF0\x9F\x94\x90OK"},
-    {L"Some%20random text %25%F0%9F%94%92OK",
-     UnescapeRule::NORMAL | UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
-     L"Some%20random text %25\xF0\x9F\x94\x92OK"},
-    {L"Some%20random text %25%F0%9F%94%93OK",
-     UnescapeRule::NORMAL | UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
-     L"Some%20random text %25\xF0\x9F\x94\x93OK"},
+      // Certain banned characters should not be unescaped unless explicitly
+      // told
+      // to do so with UnescapeRule::SPOOFING_AND_CONTROL_CHARS.
+      // U+1F50F LOCK WITH INK PEN
+      {L"Some%20random text %25%F0%9F%94%8FOK", UnescapeRule::NORMAL,
+       L"Some%20random text %25%F0%9F%94%8FOK"},
+      // U+1F510 CLOSED LOCK WITH KEY
+      {L"Some%20random text %25%F0%9F%94%90OK", UnescapeRule::NORMAL,
+       L"Some%20random text %25%F0%9F%94%90OK"},
+      // U+1F512 LOCK
+      {L"Some%20random text %25%F0%9F%94%92OK", UnescapeRule::NORMAL,
+       L"Some%20random text %25%F0%9F%94%92OK"},
+      // U+1F513 OPEN LOCK
+      {L"Some%20random text %25%F0%9F%94%93OK", UnescapeRule::NORMAL,
+       L"Some%20random text %25%F0%9F%94%93OK"},
+      // UnescapeRule::SPOOFING_AND_CONTROL_CHARS should unescape banned
+      // characters.
+      {L"Some%20random text %25%F0%9F%94%8FOK",
+       UnescapeRule::NORMAL | UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
+       L"Some%20random text %25\xF0\x9F\x94\x8FOK"},
+      {L"Some%20random text %25%F0%9F%94%90OK",
+       UnescapeRule::NORMAL | UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
+       L"Some%20random text %25\xF0\x9F\x94\x90OK"},
+      {L"Some%20random text %25%F0%9F%94%92OK",
+       UnescapeRule::NORMAL | UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
+       L"Some%20random text %25\xF0\x9F\x94\x92OK"},
+      {L"Some%20random text %25%F0%9F%94%93OK",
+       UnescapeRule::NORMAL | UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
+       L"Some%20random text %25\xF0\x9F\x94\x93OK"},
 
-    {L"Some%20random text %25%2dOK", UnescapeRule::SPACES,
-     L"Some random text %25-OK"},
-    {L"Some%20random text %25%2dOK", UnescapeRule::URL_SPECIAL_CHARS,
-     L"Some%20random text %-OK"},
-    {L"Some%20random text %25%2dOK",
-     UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS,
-     L"Some random text %-OK"},
-    {L"%A0%B1%C2%D3%E4%F5", UnescapeRule::NORMAL, L"\xA0\xB1\xC2\xD3\xE4\xF5"},
-    {L"%Aa%Bb%Cc%Dd%Ee%Ff", UnescapeRule::NORMAL, L"\xAa\xBb\xCc\xDd\xEe\xFf"},
-    // Certain URL-sensitive characters should not be unescaped unless asked.
-    {L"Hello%20%13%10world %23# %3F? %3D= %26& %25% %2B+", UnescapeRule::SPACES,
-     L"Hello %13%10world %23# %3F? %3D= %26& %25% %2B+"},
-    {L"Hello%20%13%10world %23# %3F? %3D= %26& %25% %2B+",
-     UnescapeRule::URL_SPECIAL_CHARS,
-     L"Hello%20%13%10world ## ?? == && %% ++"},
-    // We can neither escape nor unescape '@' since some websites expect it to
-    // be preserved as either '@' or "%40".
-    // See http://b/996720 and http://crbug.com/23933 .
-    {L"me@my%40example", UnescapeRule::NORMAL, L"me@my%40example"},
-    // Control characters.
-    {L"%01%02%03%04%05%06%07%08%09 %25", UnescapeRule::URL_SPECIAL_CHARS,
-     L"%01%02%03%04%05%06%07%08%09 %"},
-    {L"%01%02%03%04%05%06%07%08%09 %25",
-     UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
-     L"\x01\x02\x03\x04\x05\x06\x07\x08\x09 %25"},
-    {L"Hello%20%13%10%02", UnescapeRule::SPACES, L"Hello %13%10%02"},
-    {L"Hello%20%13%10%02", UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
-     L"Hello%20\x13\x10\x02"},
-    {L"Hello\x9824\x9827", UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
-     L"Hello\x9824\x9827"},
+      {L"Some%20random text %25%2dOK", UnescapeRule::SPACES,
+       L"Some random text %25-OK"},
+      {L"Some%20random text %25%2dOK",
+       UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS,
+       L"Some%20random text %-OK"},
+      {L"Some%20random text %25%2dOK",
+       UnescapeRule::SPACES |
+           UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS,
+       L"Some random text %-OK"},
+      {L"%A0%B1%C2%D3%E4%F5", UnescapeRule::NORMAL,
+       L"\xA0\xB1\xC2\xD3\xE4\xF5"},
+      {L"%Aa%Bb%Cc%Dd%Ee%Ff", UnescapeRule::NORMAL,
+       L"\xAa\xBb\xCc\xDd\xEe\xFf"},
+      // Certain URL-sensitive characters should not be unescaped unless asked.
+      {L"Hello%20%13%10world %23# %3F? %3D= %26& %25% %2B+",
+       UnescapeRule::SPACES,
+       L"Hello %13%10world %23# %3F? %3D= %26& %25% %2B+"},
+      {L"Hello%20%13%10world %23# %3F? %3D= %26& %25% %2B+",
+       UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS,
+       L"Hello%20%13%10world ## ?? == && %% ++"},
+      // We can neither escape nor unescape '@' since some websites expect it to
+      // be preserved as either '@' or "%40".
+      // See http://b/996720 and http://crbug.com/23933 .
+      {L"me@my%40example", UnescapeRule::NORMAL, L"me@my%40example"},
+      // Control characters.
+      {L"%01%02%03%04%05%06%07%08%09 %25",
+       UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS,
+       L"%01%02%03%04%05%06%07%08%09 %"},
+      {L"%01%02%03%04%05%06%07%08%09 %25",
+       UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
+       L"\x01\x02\x03\x04\x05\x06\x07\x08\x09 %25"},
+      {L"Hello%20%13%10%02", UnescapeRule::SPACES, L"Hello %13%10%02"},
+      {L"Hello%20%13%10%02", UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
+       L"Hello%20\x13\x10\x02"},
+      {L"Hello\x9824\x9827", UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
+       L"Hello\x9824\x9827"},
   };
 
   for (size_t i = 0; i < arraysize(unescape_cases); i++) {

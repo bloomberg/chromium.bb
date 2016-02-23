@@ -78,20 +78,36 @@ class UnescapeRule {
     // just the absence of them). All other unescape rules imply "normal" in
     // addition to their special meaning. Things like escaped letters, digits,
     // and most symbols will get unescaped with this mode.
-    NORMAL = 1,
+    NORMAL = 1 << 0,
 
     // Convert %20 to spaces. In some places where we're showing URLs, we may
     // want this. In places where the URL may be copied and pasted out, then
     // you wouldn't want this since it might not be interpreted in one piece
     // by other applications.
-    SPACES = 2,
+    SPACES = 1 << 1,
+
+    // Unescapes '/' and '\\'. If these characters were unescaped, the resulting
+    // URL won't be the same as the source one. Moreover, they are dangerous to
+    // unescape in strings that will be used as file paths or names. This value
+    // should only be used when slashes don't have special meaning, like data
+    // URLs.
+    PATH_SEPARATORS = 1 << 2,
 
     // Unescapes various characters that will change the meaning of URLs,
-    // including '%', '+', '&', '/', '#'. If we unescaped these characters, the
-    // resulting URL won't be the same as the source one. This flag is used when
-    // generating final output like filenames for URLs where we won't be
-    // interpreting as a URL and want to do as much unescaping as possible.
-    URL_SPECIAL_CHARS = 4,
+    // including '%', '+', '&', '#'. Does not unescape path separators.
+    // If these characters were unescaped, the resulting URL won't be the same
+    // as the source one. This flag is used when generating final output like
+    // filenames for URLs where we won't be interpreting as a URL and want to do
+    // as much unescaping as possible.
+    URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS = 1 << 3,
+
+    // A combination of URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS and
+    // PATH_SEPARATORS. Warning about the use of PATH_SEPARATORS also apply
+    // here.
+    // TODO(mmenke):  Audit all uses of this and replace with the above values,
+    // as needed.
+    URL_SPECIAL_CHARS =
+        PATH_SEPARATORS | URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS,
 
     // Unescapes characters that can be used in spoofing attempts (such as LOCK)
     // and control characters (such as BiDi control characters and %01).  This
@@ -100,10 +116,10 @@ class UnescapeRule {
     //
     // DO NOT use SPOOFING_AND_CONTROL_CHARS if the URL is going to be displayed
     // in the UI for security reasons.
-    SPOOFING_AND_CONTROL_CHARS = 8,
+    SPOOFING_AND_CONTROL_CHARS = 1 << 4,
 
     // URL queries use "+" for space. This flag controls that replacement.
-    REPLACE_PLUS_WITH_SPACE = 16,
+    REPLACE_PLUS_WITH_SPACE = 1 << 5,
   };
 };
 

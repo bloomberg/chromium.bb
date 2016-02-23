@@ -290,7 +290,10 @@ STR UnescapeURLWithAdjustmentsImpl(
            (first_byte == ' ' && (rules & UnescapeRule::SPACES)) ||
            // Allow any of the prohibited but non-control characters when
            // we're doing "special" chars.
-           (first_byte > ' ' && (rules & UnescapeRule::URL_SPECIAL_CHARS)) ||
+           ((first_byte == '/' || first_byte == '\\') &&
+            (rules & UnescapeRule::PATH_SEPARATORS)) ||
+           (first_byte > ' ' && first_byte != '/' && first_byte != '\\' &&
+            (rules & UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS)) ||
            // Additionally allow non-display characters if requested.
            (first_byte < ' ' &&
             (rules & UnescapeRule::SPOOFING_AND_CONTROL_CHARS)))) {

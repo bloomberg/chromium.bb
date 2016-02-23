@@ -98,7 +98,8 @@ bool FileURLToFilePath(const GURL& url, base::FilePath* file_path) {
 
   // GURL stores strings as percent-encoded 8-bit, this will undo if possible.
   path = UnescapeURLComponent(
-      path, UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS);
+      path, UnescapeRule::SPACES |
+                UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
 
 #if defined(OS_WIN)
   if (base::IsStringUTF8(path)) {
