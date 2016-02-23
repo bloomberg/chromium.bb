@@ -38,6 +38,10 @@ public class PrerenderTest extends ChromeTabbedActivityTestBase {
 
     private EmbeddedTestServer mTestServer;
 
+    public PrerenderTest() {
+        mSkipCheckHttpServer = true;
+    }
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();

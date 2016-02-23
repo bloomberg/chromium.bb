@@ -59,6 +59,7 @@ public class InterceptNavigationDelegateTest extends ChromeActivityTestCaseBase<
 
     public InterceptNavigationDelegateTest() {
         super(ChromeActivity.class);
+        mSkipCheckHttpServer = true;
     }
 
     @Override

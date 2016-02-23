@@ -49,6 +49,10 @@ public class CustomTabExternalNavigationTest extends CustomTabActivityTestBase {
     private EmbeddedTestServer mTestServer;
     private ExternalNavigationHandler mUrlHandler;
 
+    public CustomTabExternalNavigationTest() {
+        mSkipCheckHttpServer = true;
+    }
+
     @Override
     public void setUp() throws Exception {
         mTestServer = EmbeddedTestServer.createAndStartFileServer(

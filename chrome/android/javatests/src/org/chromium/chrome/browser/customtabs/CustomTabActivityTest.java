@@ -106,6 +106,10 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     private String mTestPage2;
     private EmbeddedTestServer mTestServer;
 
+    public CustomTabActivityTest() {
+        mSkipCheckHttpServer = true;
+    }
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();

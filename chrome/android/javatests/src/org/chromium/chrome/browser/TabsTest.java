@@ -120,6 +120,10 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
             + "  <div id=\"test\">No resize event has been received yet.</div>"
             + "</body></html>");
 
+    public TabsTest() {
+        mSkipCheckHttpServer = true;
+    }
+
     @Override
     protected void tearDown() throws Exception {
         if (mTestServer != null) {

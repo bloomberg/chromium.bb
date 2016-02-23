@@ -31,6 +31,10 @@ public class ChromeTabCreatorTest extends ChromeTabbedActivityTestBase  {
 
     private EmbeddedTestServer mTestServer;
 
+    public ChromeTabCreatorTest() {
+        mSkipCheckHttpServer = true;
+    }
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();

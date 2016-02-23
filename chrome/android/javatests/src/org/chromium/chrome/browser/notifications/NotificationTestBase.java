@@ -37,6 +37,10 @@ public class NotificationTestBase extends ChromeTabbedActivityTestBase {
     private MockNotificationManagerProxy mMockNotificationManager;
     private EmbeddedTestServer mTestServer;
 
+    public NotificationTestBase() {
+        mSkipCheckHttpServer = true;
+    }
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();

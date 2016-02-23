@@ -34,6 +34,7 @@ public class TabUmaTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     public TabUmaTest() {
         super(ChromeActivity.class);
+        mSkipCheckHttpServer = true;
     }
 
     @Override

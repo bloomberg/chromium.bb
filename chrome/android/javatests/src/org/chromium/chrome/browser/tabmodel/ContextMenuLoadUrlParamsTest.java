@@ -52,6 +52,10 @@ public class ContextMenuLoadUrlParamsTest extends ChromeTabbedActivityTestBase {
         }
     }
 
+    public ContextMenuLoadUrlParamsTest() {
+        mSkipCheckHttpServer = true;
+    }
+
     @Override
     protected void setUp() throws Exception {
         // Plant RecordingTabModelSelector as the TabModelSelector used in Main. The factory has to

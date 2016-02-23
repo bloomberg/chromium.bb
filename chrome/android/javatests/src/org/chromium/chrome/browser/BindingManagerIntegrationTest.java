@@ -173,6 +173,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
 
     public BindingManagerIntegrationTest() {
         super(ChromeActivity.class);
+        mSkipCheckHttpServer = true;
     }
 
     /**

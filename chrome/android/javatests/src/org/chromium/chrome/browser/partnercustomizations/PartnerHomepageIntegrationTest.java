@@ -44,6 +44,10 @@ import java.util.concurrent.TimeoutException;
 public class PartnerHomepageIntegrationTest extends BasePartnerBrowserCustomizationIntegrationTest {
     private static final String TEST_PAGE = "/chrome/test/data/android/about.html";
 
+    public PartnerHomepageIntegrationTest() {
+        mSkipCheckHttpServer = true;
+    }
+
     @Override
     public void startMainActivity() throws InterruptedException {
         ThreadUtils.runOnUiThreadBlocking(new Runnable(){

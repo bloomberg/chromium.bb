@@ -67,6 +67,7 @@ public class PopularUrlsTest extends ChromeActivityTestCaseBase<ChromeActivity> 
 
     @Override
     protected void setUp() throws Exception {
+        mSkipCheckHttpServer = true;
         mStatus = new RunStatus(STATUS_FILE);
         mFailed = false;
         mDoShortWait = checkDoShortWait();

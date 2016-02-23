@@ -163,6 +163,10 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
     private EmbeddedTestServer mTestServer;
     private String mWebAppUrl;
 
+    public AppBannerManagerTest() {
+        mSkipCheckHttpServer = true;
+    }
+
     @Override
     public void startMainActivity() throws InterruptedException {
         startMainActivityOnBlankPage();

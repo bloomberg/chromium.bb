@@ -108,6 +108,7 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
 
     public UrlOverridingTest() {
         super(ChromeActivity.class);
+        mSkipCheckHttpServer = true;
     }
 
     @Override

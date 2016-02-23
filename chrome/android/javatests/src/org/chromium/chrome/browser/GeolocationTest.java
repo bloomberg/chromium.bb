@@ -65,6 +65,7 @@ public class GeolocationTest extends ChromeActivityTestCaseBase<ChromeActivity> 
 
     public GeolocationTest() {
         super(ChromeActivity.class);
+        mSkipCheckHttpServer = true;
     }
 
     @Override

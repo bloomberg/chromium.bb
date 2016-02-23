@@ -18,6 +18,10 @@ import org.chromium.net.test.EmbeddedTestServer;
  */
 public class MainActivityWithURLTest extends ChromeTabbedActivityTestBase {
 
+    public MainActivityWithURLTest() {
+        mSkipCheckHttpServer = true;
+    }
+
     @Override
     public void startMainActivity() {
         // Don't launch activity automatically.

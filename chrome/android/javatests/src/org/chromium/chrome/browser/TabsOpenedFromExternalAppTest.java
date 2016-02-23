@@ -153,6 +153,10 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
 
     private EmbeddedTestServer mTestServer;
 
+    public TabsOpenedFromExternalAppTest() {
+        mSkipCheckHttpServer = true;
+    }
+
     @Override
     public void startMainActivity() {
         // We'll start the activity explicitly in the tests, as we need to start it with an intent

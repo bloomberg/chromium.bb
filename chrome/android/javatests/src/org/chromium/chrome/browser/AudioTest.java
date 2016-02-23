@@ -24,6 +24,7 @@ public class AudioTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     public AudioTest() {
         super(ChromeActivity.class);
+        mSkipCheckHttpServer = true;
     }
 
     @Override

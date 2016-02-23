@@ -61,6 +61,7 @@ public class InfoBarContainerTest extends ChromeActivityTestCaseBase<ChromeActiv
 
     public InfoBarContainerTest() {
         super(ChromeActivity.class);
+        mSkipCheckHttpServer = true;
     }
 
     @Override

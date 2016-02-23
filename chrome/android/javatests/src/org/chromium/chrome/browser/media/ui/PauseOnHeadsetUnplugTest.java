@@ -35,6 +35,7 @@ public class PauseOnHeadsetUnplugTest extends ChromeActivityTestCaseBase<ChromeA
 
     public PauseOnHeadsetUnplugTest() {
         super(ChromeActivity.class);
+        mSkipCheckHttpServer = true;
     }
 
     @SmallTest

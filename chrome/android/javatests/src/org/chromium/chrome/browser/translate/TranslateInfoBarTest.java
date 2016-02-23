@@ -40,6 +40,7 @@ public class TranslateInfoBarTest extends ChromeActivityTestCaseBase<ChromeActiv
 
     public TranslateInfoBarTest() {
         super(ChromeActivity.class);
+        mSkipCheckHttpServer = true;
     }
 
     @Override

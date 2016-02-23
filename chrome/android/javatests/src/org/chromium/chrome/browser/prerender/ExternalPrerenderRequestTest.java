@@ -40,6 +40,7 @@ public class ExternalPrerenderRequestTest extends ChromeActivityTestCaseBase<Chr
 
     public ExternalPrerenderRequestTest() {
         super(ChromeActivity.class);
+        mSkipCheckHttpServer = true;
     }
 
     @Override

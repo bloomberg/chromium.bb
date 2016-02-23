@@ -82,6 +82,10 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
             + "</body>"
             + "</html>");
 
+    public FullscreenManagerTest() {
+        mSkipCheckHttpServer = true;
+    }
+
     @MediumTest
     @Feature({"Fullscreen"})
     public void testTogglePersistentFullscreen() throws InterruptedException {

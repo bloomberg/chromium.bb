@@ -25,6 +25,7 @@ public class VideoTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     public VideoTest() {
         super(ChromeActivity.class);
+        mSkipCheckHttpServer = true;
     }
 
     @DisableIf.Build(sdk_is_less_than = 19, message = "crbug.com/582067")
