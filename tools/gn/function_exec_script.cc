@@ -171,6 +171,13 @@ Value RunExecScript(Scope* scope,
   // Make the command line.
   const base::FilePath& python_path = build_settings->python_path();
   base::CommandLine cmdline(python_path);
+
+  // CommandLine tries to interpret arguments by default.  Passing "--" disables
+  // this for everything following the "--", so pass this as the very first
+  // thing to python.  Python ignores a -- before the .py file, and this makes
+  // CommandLine let through arguments without modifying them.
+  cmdline.AppendArg("--");
+
   cmdline.AppendArgPath(script_path);
 
   if (args.size() >= 2) {
