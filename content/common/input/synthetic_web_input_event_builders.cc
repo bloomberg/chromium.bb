@@ -61,8 +61,21 @@ WebMouseWheelEvent SyntheticWebMouseWheelEventBuilder::Build(float x,
                                                              float dy,
                                                              int modifiers,
                                                              bool precise) {
+  return Build(x, y, 0, 0, dx, dy, modifiers, precise);
+}
+
+WebMouseWheelEvent SyntheticWebMouseWheelEventBuilder::Build(float x,
+                                                             float y,
+                                                             float global_x,
+                                                             float global_y,
+                                                             float dx,
+                                                             float dy,
+                                                             int modifiers,
+                                                             bool precise) {
   WebMouseWheelEvent result;
   result.type = WebInputEvent::MouseWheel;
+  result.globalX = global_x;
+  result.globalY = global_y;
   result.x = x;
   result.y = y;
   result.deltaX = dx;

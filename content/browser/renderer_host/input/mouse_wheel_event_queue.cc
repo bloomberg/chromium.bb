@@ -85,6 +85,10 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
       (scrolling_device_ == blink::WebGestureDeviceUninitialized ||
        scrolling_device_ == blink::WebGestureDeviceTouchpad)) {
     GestureEventWithLatencyInfo scroll_update;
+    scroll_update.event.x = event_sent_for_gesture_ack_->event.x;
+    scroll_update.event.y = event_sent_for_gesture_ack_->event.y;
+    scroll_update.event.globalX = event_sent_for_gesture_ack_->event.globalX;
+    scroll_update.event.globalY = event_sent_for_gesture_ack_->event.globalY;
     scroll_update.event.type = WebInputEvent::GestureScrollUpdate;
     scroll_update.event.sourceDevice = blink::WebGestureDeviceTouchpad;
     scroll_update.event.resendingPluginId = -1;
@@ -154,13 +158,18 @@ void MouseWheelEventQueue::TryForwardNextEventToRenderer() {
   client_->SendMouseWheelEventImmediately(send_event);
 }
 
-void MouseWheelEventQueue::SendScrollEnd(
-    blink::WebGestureEvent::ScrollUnits units) {
+void MouseWheelEventQueue::SendScrollEnd(blink::WebGestureEvent update_event) {
   GestureEventWithLatencyInfo scroll_end;
   scroll_end.event.type = WebInputEvent::GestureScrollEnd;
   scroll_end.event.sourceDevice = blink::WebGestureDeviceTouchpad;
   scroll_end.event.resendingPluginId = -1;
-  scroll_end.event.data.scrollEnd.deltaUnits = units;
+  scroll_end.event.data.scrollEnd.deltaUnits =
+      update_event.data.scrollUpdate.deltaUnits;
+  scroll_end.event.x = update_event.x;
+  scroll_end.event.y = update_event.y;
+  scroll_end.event.globalX = update_event.globalX;
+  scroll_end.event.globalY = update_event.globalY;
+
   SendGesture(scroll_end);
 }
 
@@ -170,6 +179,10 @@ void MouseWheelEventQueue::SendGesture(
     case WebInputEvent::GestureScrollUpdate:
       if (needs_scroll_begin_) {
         GestureEventWithLatencyInfo scroll_begin(gesture);
+        scroll_begin.event.x = gesture.event.x;
+        scroll_begin.event.y = gesture.event.y;
+        scroll_begin.event.globalX = gesture.event.globalX;
+        scroll_begin.event.globalY = gesture.event.globalY;
         scroll_begin.event.type = WebInputEvent::GestureScrollBegin;
         scroll_begin.event.data.scrollBegin.deltaXHint =
             gesture.event.data.scrollUpdate.deltaX;
@@ -188,8 +201,7 @@ void MouseWheelEventQueue::SendGesture(
             FROM_HERE,
             base::TimeDelta::FromMilliseconds(scroll_transaction_ms_),
             base::Bind(&MouseWheelEventQueue::SendScrollEnd,
-                       base::Unretained(this),
-                       gesture.event.data.scrollUpdate.deltaUnits));
+                       base::Unretained(this), gesture.event));
       }
       break;
     case WebInputEvent::GestureScrollEnd:

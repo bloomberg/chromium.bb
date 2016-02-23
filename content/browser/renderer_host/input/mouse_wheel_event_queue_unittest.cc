@@ -24,6 +24,10 @@ using blink::WebMouseWheelEvent;
 namespace content {
 namespace {
 
+const float kWheelScrollX = 10;
+const float kWheelScrollY = 12;
+const float kWheelScrollGlobalX = 50;
+const float kWheelScrollGlobalY = 72;
 const int64_t kScrollEndTimeoutMs = 100;
 
 base::TimeDelta DefaultScrollEndTimeoutDelay() {
@@ -98,13 +102,15 @@ class MouseWheelEventQueueTest : public testing::Test,
 
   void SendMouseWheel(float x,
                       float y,
+                      float global_x,
+                      float global_y,
                       float dX,
                       float dY,
                       int modifiers,
                       bool high_precision) {
     queue_->QueueEvent(MouseWheelEventWithLatencyInfo(
-        SyntheticWebMouseWheelEventBuilder::Build(x, y, dX, dY, modifiers,
-                                                  high_precision)));
+        SyntheticWebMouseWheelEventBuilder::Build(
+            x, y, global_x, global_y, dX, dY, modifiers, high_precision)));
   }
 
   void SendGestureEvent(WebInputEvent::Type type) {
@@ -125,13 +131,15 @@ class MouseWheelEventQueueTest : public testing::Test,
     const WebGestureEvent::ScrollUnits scroll_units =
         high_precision ? WebGestureEvent::PrecisePixels
                        : WebGestureEvent::Pixels;
-    SendMouseWheel(10, 10, 1, 1, 0, high_precision);
+    SendMouseWheel(kWheelScrollX, kWheelScrollY, kWheelScrollGlobalX,
+                   kWheelScrollGlobalY, 1, 1, 0, high_precision);
     EXPECT_EQ(0U, queued_event_count());
     EXPECT_TRUE(event_in_flight());
     EXPECT_EQ(1U, GetAndResetSentEventCount());
 
     // The second mouse wheel should not be sent since one is already in queue.
-    SendMouseWheel(10, 10, 5, 5, 0, high_precision);
+    SendMouseWheel(kWheelScrollX, kWheelScrollY, kWheelScrollGlobalX,
+                   kWheelScrollGlobalY, 5, 5, 0, high_precision);
     EXPECT_EQ(1U, queued_event_count());
     EXPECT_TRUE(event_in_flight());
     EXPECT_EQ(0U, GetAndResetSentEventCount());
@@ -147,9 +155,17 @@ class MouseWheelEventQueueTest : public testing::Test,
     EXPECT_EQ(WebInputEvent::GestureScrollBegin, all_sent_events()[0].type);
     EXPECT_EQ(scroll_units,
               sent_gesture_events()[0].data.scrollBegin.deltaHintUnits);
+    EXPECT_EQ(kWheelScrollX, sent_gesture_events()[0].x);
+    EXPECT_EQ(kWheelScrollY, sent_gesture_events()[0].y);
+    EXPECT_EQ(kWheelScrollGlobalX, sent_gesture_events()[0].globalX);
+    EXPECT_EQ(kWheelScrollGlobalY, sent_gesture_events()[0].globalY);
     EXPECT_EQ(WebInputEvent::GestureScrollUpdate, all_sent_events()[1].type);
     EXPECT_EQ(scroll_units,
               sent_gesture_events()[1].data.scrollUpdate.deltaUnits);
+    EXPECT_EQ(kWheelScrollX, sent_gesture_events()[1].x);
+    EXPECT_EQ(kWheelScrollY, sent_gesture_events()[1].y);
+    EXPECT_EQ(kWheelScrollGlobalX, sent_gesture_events()[1].globalX);
+    EXPECT_EQ(kWheelScrollGlobalY, sent_gesture_events()[1].globalY);
     EXPECT_EQ(WebInputEvent::MouseWheel, all_sent_events()[2].type);
     EXPECT_EQ(3U, GetAndResetSentEventCount());
 
@@ -157,6 +173,10 @@ class MouseWheelEventQueueTest : public testing::Test,
     EXPECT_EQ(1U, all_sent_events().size());
     EXPECT_EQ(WebInputEvent::GestureScrollEnd, all_sent_events()[0].type);
     EXPECT_EQ(scroll_units, sent_gesture_events()[0].data.scrollEnd.deltaUnits);
+    EXPECT_EQ(kWheelScrollX, sent_gesture_events()[0].x);
+    EXPECT_EQ(kWheelScrollY, sent_gesture_events()[0].y);
+    EXPECT_EQ(kWheelScrollGlobalX, sent_gesture_events()[0].globalX);
+    EXPECT_EQ(kWheelScrollGlobalY, sent_gesture_events()[0].globalY);
   }
 
   scoped_ptr<MouseWheelEventQueue> queue_;
@@ -170,13 +190,15 @@ class MouseWheelEventQueueTest : public testing::Test,
 
 // Tests that mouse wheel events are queued properly.
 TEST_F(MouseWheelEventQueueTest, Basic) {
-  SendMouseWheel(10, 10, 1, 1, 0, false);
+  SendMouseWheel(kWheelScrollX, kWheelScrollY, kWheelScrollGlobalX,
+                 kWheelScrollGlobalY, 1, 1, 0, false);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_TRUE(event_in_flight());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
 
   // The second mouse wheel should not be sent since one is already in queue.
-  SendMouseWheel(10, 10, 5, 5, 0, false);
+  SendMouseWheel(kWheelScrollX, kWheelScrollY, kWheelScrollGlobalX,
+                 kWheelScrollGlobalY, 5, 5, 0, false);
   EXPECT_EQ(1U, queued_event_count());
   EXPECT_TRUE(event_in_flight());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
@@ -210,7 +232,8 @@ TEST_F(MouseWheelEventQueueTest, GestureSendingPrecisePixels) {
 
 TEST_F(MouseWheelEventQueueTest, GestureSendingInterrupted) {
   SetUpForGestureTesting(true);
-  SendMouseWheel(10, 10, 1, 1, 0, false);
+  SendMouseWheel(kWheelScrollX, kWheelScrollY, kWheelScrollGlobalX,
+                 kWheelScrollGlobalY, 1, 1, 0, false);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_TRUE(event_in_flight());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
@@ -232,7 +255,8 @@ TEST_F(MouseWheelEventQueueTest, GestureSendingInterrupted) {
   EXPECT_EQ(WebInputEvent::GestureScrollEnd, all_sent_events()[0].type);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
 
-  SendMouseWheel(10, 10, 1, 1, 0, false);
+  SendMouseWheel(kWheelScrollX, kWheelScrollY, kWheelScrollGlobalX,
+                 kWheelScrollGlobalY, 1, 1, 0, false);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_TRUE(event_in_flight());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
@@ -249,7 +273,8 @@ TEST_F(MouseWheelEventQueueTest, GestureSendingInterrupted) {
   SendGestureEvent(WebInputEvent::GestureScrollEnd);
   EXPECT_EQ(0U, all_sent_events().size());
 
-  SendMouseWheel(10, 10, 1, 1, 0, false);
+  SendMouseWheel(kWheelScrollX, kWheelScrollY, kWheelScrollGlobalX,
+                 kWheelScrollGlobalY, 1, 1, 0, false);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_TRUE(event_in_flight());
   EXPECT_EQ(1U, GetAndResetSentEventCount());

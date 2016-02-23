@@ -32,6 +32,14 @@ class CONTENT_EXPORT SyntheticWebMouseWheelEventBuilder {
                                          float dy,
                                          int modifiers,
                                          bool precise);
+  static blink::WebMouseWheelEvent Build(float x,
+                                         float y,
+                                         float global_x,
+                                         float global_y,
+                                         float dx,
+                                         float dy,
+                                         int modifiers,
+                                         bool precise);
 };
 
 class CONTENT_EXPORT SyntheticWebKeyboardEventBuilder {
