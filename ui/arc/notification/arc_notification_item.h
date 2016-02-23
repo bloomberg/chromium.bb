@@ -30,7 +30,7 @@ class ArcNotificationItem {
   void UpdateWithArcNotificationData(const ArcNotificationData& data);
 
   // Methods called from ArcNotificationManager:
-  void OnClosedFromAndroid();
+  void OnClosedFromAndroid(bool by_user);
 
   // Methods called from ArcNotificationItemDelegate:
   void Close(bool by_user);

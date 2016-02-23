@@ -48,6 +48,8 @@ class ArcNotificationManager : public ArcService,
       base::ScopedPtrHashMap<std::string, scoped_ptr<ArcNotificationItem>>;
   ItemMap items_;
 
+  bool ready_ = false;
+
   mojo::Binding<arc::NotificationsHost> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcNotificationManager);

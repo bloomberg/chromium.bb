@@ -22,6 +22,8 @@ ArcNotificationManager::~ArcNotificationManager() {
 }
 
 void ArcNotificationManager::OnNotificationsInstanceReady() {
+  DCHECK(!ready_);
+
   auto notifications_instance = arc_bridge_service()->notifications_instance();
   if (!notifications_instance) {
     VLOG(2) << "Request to refresh app list when bridge service is not ready.";
@@ -29,10 +31,17 @@ void ArcNotificationManager::OnNotificationsInstanceReady() {
   }
 
   notifications_instance->Init(binding_.CreateInterfacePtrAndBind());
+  ready_ = true;
 }
 
 void ArcNotificationManager::OnNotificationsInstanceClosed() {
-  // TODO(yoshiki): Handle this.
+  DCHECK(ready_);
+  while (!items_.empty()) {
+    auto item = items_.begin();
+    item->second->OnClosedFromAndroid(false /* by_user */);
+    items_.erase(item);
+  }
+  ready_ = false;
 }
 
 void ArcNotificationManager::OnNotificationPosted(ArcNotificationDataPtr data) {
@@ -56,7 +65,7 @@ void ArcNotificationManager::OnNotificationRemoved(const mojo::String& key) {
   }
 
   scoped_ptr<ArcNotificationItem> item(items_.take_and_erase(it));
-  item->OnClosedFromAndroid();
+  item->OnClosedFromAndroid(true /* by_user */);
 }
 
 void ArcNotificationManager::SendNotificationRemovedFromChrome(
