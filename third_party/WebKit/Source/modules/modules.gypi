@@ -830,6 +830,8 @@
       'cachestorage/GlobalCacheStorage.h',
       'cachestorage/InspectorCacheStorageAgent.cpp',
       'cachestorage/InspectorCacheStorageAgent.h',
+      'canvas2d/BaseRenderingContext2D.cpp',
+      'canvas2d/BaseRenderingContext2D.h',
       'canvas2d/CanvasGradient.cpp',
       'canvas2d/CanvasGradient.h',
       'canvas2d/CanvasPathMethods.cpp',
