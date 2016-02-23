@@ -504,6 +504,7 @@
             'layout/api/LayoutBoxItem.h',
             'layout/api/LayoutBoxModel.h',
             'layout/api/LayoutItem.h',
+            'layout/api/LayoutTextFragmentItem.h',
             'layout/api/LayoutTextItem.h',
             'layout/api/LineLayoutAPIShim.h',
             'layout/api/LineLayoutBlockFlow.h',
