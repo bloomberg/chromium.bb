@@ -27,13 +27,8 @@ bool AreCountersEnabled() {
     return false;
   }
 
-  // Enabled by default on desktop. Disabled on Android until the feature
-  // is finished.
-#if defined(OS_ANDROID)
-  return false;
-#else
+  // Enabled by default.
   return true;
-#endif
 }
 
 // A helper function to display the size of cache in units of MB or higher.

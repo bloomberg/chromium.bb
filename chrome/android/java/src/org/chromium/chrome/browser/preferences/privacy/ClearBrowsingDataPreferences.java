@@ -83,7 +83,7 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
 
         @Override
         public void onCounterFinished(String result) {
-            mCheckbox.setSummaryOn(result);
+            if (mCheckbox != null) mCheckbox.setSummaryOn(result);
         }
     }
 
