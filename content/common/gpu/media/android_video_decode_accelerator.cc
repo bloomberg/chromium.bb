@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
@@ -98,6 +99,13 @@ static inline const base::TimeDelta IdleTimerTimeOut() {
   return base::TimeDelta::FromSeconds(1);
 }
 
+// Time between when we notice an error, and when we actually notify somebody.
+// This is to prevent codec errors caused by SurfaceView fullscreen transitions
+// from breaking the pipeline, if we're about to be reset anyway.
+static inline const base::TimeDelta ErrorPostingDelay() {
+  return base::TimeDelta::FromSeconds(2);
+}
+
 // Handle OnFrameAvailable callbacks safely.  Since they occur asynchronously,
 // we take care that the AVDA that wants them still exists.  A WeakPtr to
 // the AVDA would be preferable, except that OnFrameAvailable callbacks can
@@ -149,12 +157,76 @@ class AndroidVideoDecodeAccelerator::OnFrameAvailableHandler
   DISALLOW_COPY_AND_ASSIGN(OnFrameAvailableHandler);
 };
 
-// Time between when we notice an error, and when we actually notify somebody.
-// This is to prevent codec errors caused by SurfaceView fullscreen transitions
-// from breaking the pipeline, if we're about to be reset anyway.
-static inline const base::TimeDelta ErrorPostingDelay() {
-  return base::TimeDelta::FromSeconds(2);
-}
+// Helper class to share an IO timer for DoIOTask() execution; prevents each
+// AVDA instance from starting its own high frequency timer.
+class AVDATimerManager {
+ public:
+  // Request periodic callback of |avda_instance|->DoIOTask(). Does nothing if
+  // the instance is already registered and the timer started. The first request
+  // will start the repeating timer on an interval of DecodePollDelay().
+  void StartTimer(AndroidVideoDecodeAccelerator* avda_instance) {
+    avda_instances_.insert(avda_instance);
+    if (io_timer_.IsRunning())
+      return;
+    io_timer_.Start(FROM_HERE, DecodePollDelay(), this,
+                    &AVDATimerManager::RunTimer);
+  }
+
+  // Stop callbacks to |avda_instance|->DoIOTask(). Does nothing if the instance
+  // is not registered. If there are no instances left, the repeating timer will
+  // be stopped.
+  void StopTimer(AndroidVideoDecodeAccelerator* avda_instance) {
+    // If the timer is running, defer erasures to avoid iterator invalidation.
+    if (timer_running_) {
+      pending_erase_.insert(avda_instance);
+      return;
+    }
+
+    avda_instances_.erase(avda_instance);
+    if (avda_instances_.empty())
+      io_timer_.Stop();
+  }
+
+ private:
+  friend struct base::DefaultLazyInstanceTraits<AVDATimerManager>;
+
+  AVDATimerManager() {}
+  ~AVDATimerManager() { NOTREACHED(); }
+
+  void RunTimer() {
+    {
+      // Call out to all AVDA instances, some of which may attempt to remove
+      // themselves from the list during this operation; those removals will be
+      // deferred until after all iterations are complete.
+      base::AutoReset<bool> scoper(&timer_running_, true);
+      for (auto* avda : avda_instances_)
+        avda->DoIOTask();
+    }
+
+    // Take care of any deferred erasures.
+    for (auto* avda : pending_erase_)
+      StopTimer(avda);
+    pending_erase_.clear();
+
+    // TODO(dalecurtis): We may want to consider chunking this if task execution
+    // takes too long for the combined timer.
+  }
+
+  std::set<AndroidVideoDecodeAccelerator*> avda_instances_;
+
+  // Since we can't delete while iterating when using a set, defer erasure until
+  // after iteration complete.
+  bool timer_running_ = false;
+  std::set<AndroidVideoDecodeAccelerator*> pending_erase_;
+
+  // Repeating timer responsible for draining pending IO to the codecs.
+  base::RepeatingTimer io_timer_;
+
+  DISALLOW_COPY_AND_ASSIGN(AVDATimerManager);
+};
+
+static base::LazyInstance<AVDATimerManager>::Leaky g_avda_timer =
+    LAZY_INSTANCE_INITIALIZER;
 
 AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
     const base::WeakPtr<gpu::gles2::GLES2Decoder> decoder,
@@ -186,6 +258,7 @@ AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
 
 AndroidVideoDecodeAccelerator::~AndroidVideoDecodeAccelerator() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  g_avda_timer.Pointer()->StopTimer(this);
 
 #if defined(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
   if (cdm_) {
@@ -793,7 +866,7 @@ void AndroidVideoDecodeAccelerator::ResetCodecState() {
   } else {
     DVLOG(3) << __FUNCTION__
              << " Deleting the MediaCodec and creating a new one.";
-    io_timer_.Stop();
+    g_avda_timer.Pointer()->StopTimer(this);
     media_codec_.reset();
     // Changing the codec will also notify the strategy to forget about any
     // output buffers it has currently.
@@ -863,7 +936,7 @@ void AndroidVideoDecodeAccelerator::Destroy() {
 
   weak_this_factory_.InvalidateWeakPtrs();
   if (media_codec_) {
-    io_timer_.Stop();
+    g_avda_timer.Pointer()->StopTimer(this);
     media_codec_.reset();
   }
   delete this;
@@ -983,12 +1056,10 @@ void AndroidVideoDecodeAccelerator::ManageTimer(bool did_work) {
     most_recent_work_ = now;
   }
 
-  if (should_be_running && !io_timer_.IsRunning()) {
-    io_timer_.Start(FROM_HERE, DecodePollDelay(), this,
-                    &AndroidVideoDecodeAccelerator::DoIOTask);
-  } else if (!should_be_running && io_timer_.IsRunning()) {
-    io_timer_.Stop();
-  }
+  if (should_be_running)
+    g_avda_timer.Pointer()->StartTimer(this);
+  else
+    g_avda_timer.Pointer()->StopTimer(this);
 }
 
 // static

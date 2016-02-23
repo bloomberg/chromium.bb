@@ -132,6 +132,8 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   void OnFrameAvailable();
 
  private:
+  friend class AVDATimerManager;
+
   // TODO(timav): evaluate the need for more states in the AVDA state machine.
   enum State {
     NO_ERROR,
@@ -139,8 +141,6 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
     WAITING_FOR_KEY,
     WAITING_FOR_EOS,
   };
-
-  static const base::TimeDelta kDecodePollDelay;
 
   // Configures |media_codec_| with the given codec parameters from the client.
   bool ConfigureMediaCodec();
@@ -283,9 +283,6 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
 
   // Owner of the GL context. Used to restore the context state.
   base::WeakPtr<gpu::gles2::GLES2Decoder> gl_decoder_;
-
-  // Repeating timer responsible for draining pending IO to the codec.
-  base::RepeatingTimer io_timer_;
 
   // Backing strategy that we'll use to connect PictureBuffers to frames.
   scoped_ptr<BackingStrategy> strategy_;
