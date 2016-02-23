@@ -936,7 +936,6 @@ public:
         V8SVGSVGElement_CreateSVGTransform_Method = 1091,
         V8SVGSVGElement_CreateSVGTransformFromMatrix_Method = 1092,
         FormNameAccessForNonDescendantImageElement = 1093,
-        FormControlsCollectionNameAccessForImageElement = 1094,
         V8SVGSVGElement_Viewport_AttributeGetter = 1095,
         V8RegExpPrototypeStickyGetter = 1096,
         V8RegExpPrototypeToString = 1097,

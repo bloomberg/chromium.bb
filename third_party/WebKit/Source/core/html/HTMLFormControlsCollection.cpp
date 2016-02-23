@@ -109,8 +109,7 @@ void HTMLFormControlsCollection::invalidateCache(Document* oldDocument) const
     m_cachedElementOffsetInArray = 0;
 }
 
-static HTMLElement* firstNamedItem(const FormAssociatedElement::List& elementsArray,
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement>>* imageElementsArray, const QualifiedName& attrName, const String& name)
+static HTMLElement* firstNamedItem(const FormAssociatedElement::List& elementsArray, const QualifiedName& attrName, const String& name)
 {
     ASSERT(attrName == idAttr || attrName == nameAttr);
 
@@ -119,18 +118,6 @@ static HTMLElement* firstNamedItem(const FormAssociatedElement::List& elementsAr
         if (elementsArray[i]->isEnumeratable() && element->fastGetAttribute(attrName) == name)
             return element;
     }
-
-    if (!imageElementsArray)
-        return nullptr;
-
-    for (unsigned i = 0; i < imageElementsArray->size(); ++i) {
-        HTMLImageElement* element = (*imageElementsArray)[i];
-        if (element->fastGetAttribute(attrName) == name) {
-            UseCounter::count(element->document(), UseCounter::FormNameAccessForImageElement);
-            return element;
-        }
-    }
-
     return nullptr;
 }
 
@@ -141,11 +128,9 @@ HTMLElement* HTMLFormControlsCollection::namedItem(const AtomicString& name) con
     // attribute. If a match is not found, the method then searches for an
     // object with a matching name attribute, but only on those elements
     // that are allowed a name attribute.
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement>>* imagesElements = isHTMLFieldSetElement(ownerNode()) ? 0 : &formImageElements();
-    if (HTMLElement* item = firstNamedItem(formControlElements(), imagesElements, idAttr, name))
+    if (HTMLElement* item = firstNamedItem(formControlElements(), idAttr, name))
         return item;
-
-    return firstNamedItem(formControlElements(), imagesElements, nameAttr, name);
+    return firstNamedItem(formControlElements(), nameAttr, name);
 }
 
 void HTMLFormControlsCollection::updateIdNameCache() const
@@ -176,6 +161,9 @@ void HTMLFormControlsCollection::updateIdNameCache() const
     }
 
     if (isHTMLFormElement(ownerNode())) {
+        // HTMLFormControlsCollection doesn't support named getter for IMG
+        // elements. However we still need to handle IMG elements here because
+        // HTMLFormElement named getter relies on this.
         const WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement>>& imageElementsArray = formImageElements();
         for (unsigned i = 0; i < imageElementsArray.size(); ++i) {
             HTMLImageElement* element = imageElementsArray[i];
@@ -201,9 +189,8 @@ void HTMLFormControlsCollection::namedGetter(const AtomicString& name, RadioNode
         return;
 
     if (namedItems.size() == 1) {
-        if (isHTMLImageElement(*namedItems[0]))
-            UseCounter::count(document(), UseCounter::FormControlsCollectionNameAccessForImageElement);
-        returnValue.setElement(namedItems.at(0));
+        if (!isHTMLImageElement(*namedItems[0]))
+            returnValue.setElement(namedItems.at(0));
         return;
     }
 
