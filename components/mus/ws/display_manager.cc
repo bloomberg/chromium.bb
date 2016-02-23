@@ -359,7 +359,13 @@ void DefaultDisplayManager::OnDamageRect(const gfx::Rect& damaged_region) {
 }
 
 void DefaultDisplayManager::DispatchEvent(ui::Event* event) {
-  delegate_->OnEvent(*event);
+  if (event->IsMouseEvent()) {
+    delegate_->OnEvent(ui::PointerEvent(*event->AsMouseEvent()));
+  } else if (event->IsTouchEvent()) {
+    delegate_->OnEvent(ui::PointerEvent(*event->AsTouchEvent()));
+  } else {
+    delegate_->OnEvent(*event);
+  }
 
 #if defined(USE_X11) || defined(USE_OZONE)
   // We want to emulate the WM_CHAR generation behaviour of Windows.

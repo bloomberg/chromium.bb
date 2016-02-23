@@ -145,15 +145,18 @@ TypeConverter<mus::mojom::EventType, ui::EventType>::Convert(
   switch (type) {
     case ui::ET_MOUSE_PRESSED:
     case ui::ET_TOUCH_PRESSED:
+    case ui::ET_POINTER_DOWN:
       return mus::mojom::EventType::POINTER_DOWN;
 
     case ui::ET_MOUSE_DRAGGED:
     case ui::ET_MOUSE_MOVED:
     case ui::ET_MOUSE_ENTERED:
     case ui::ET_TOUCH_MOVED:
+    case ui::ET_POINTER_MOVED:
       return mus::mojom::EventType::POINTER_MOVE;
 
     case ui::ET_MOUSE_EXITED:
+    case ui::ET_POINTER_EXITED:
       return mus::mojom::EventType::MOUSE_EXIT;
 
     case ui::ET_MOUSEWHEEL:
@@ -161,9 +164,11 @@ TypeConverter<mus::mojom::EventType, ui::EventType>::Convert(
 
     case ui::ET_MOUSE_RELEASED:
     case ui::ET_TOUCH_RELEASED:
+    case ui::ET_POINTER_UP:
       return mus::mojom::EventType::POINTER_UP;
 
     case ui::ET_TOUCH_CANCELLED:
+    case ui::ET_POINTER_CANCELLED:
       return mus::mojom::EventType::POINTER_CANCEL;
 
     case ui::ET_KEY_PRESSED:
@@ -190,7 +195,40 @@ mus::mojom::EventPtr TypeConverter<mus::mojom::EventPtr, ui::Event>::Convert(
   event->flags = input.flags();
   event->time_stamp = input.time_stamp().ToInternalValue();
 
-  if (input.IsMouseEvent()) {
+  if (input.IsPointerEvent()) {
+    const ui::PointerEvent* pointer_event =
+        static_cast<const ui::PointerEvent*>(&input);
+    const ui::PointerDetails& pointer_details =
+        pointer_event->pointer_details();
+
+    mus::mojom::PointerDataPtr pointer_data(mus::mojom::PointerData::New());
+    pointer_data->pointer_id = pointer_event->pointer_id();
+
+    switch (pointer_details.pointer_type) {
+      case ui::EventPointerType::POINTER_TYPE_MOUSE:
+        pointer_data->kind = mus::mojom::PointerKind::MOUSE;
+        break;
+      case ui::EventPointerType::POINTER_TYPE_TOUCH:
+        pointer_data->kind = mus::mojom::PointerKind::TOUCH;
+        break;
+      default:
+        NOTIMPLEMENTED();
+    }
+
+    mus::mojom::LocationDataPtr location_data(mus::mojom::LocationData::New());
+    SetPointerDataLocationFromEvent(*pointer_event, location_data.get());
+    pointer_data->location = std::move(location_data);
+
+    mus::mojom::BrushDataPtr brush_data(mus::mojom::BrushData::New());
+    brush_data->width = pointer_details.radius_x;
+    brush_data->height = pointer_details.radius_y;
+    brush_data->pressure = pointer_details.force;
+    brush_data->tilt_x = pointer_details.tilt_x;
+    brush_data->tilt_y = pointer_details.tilt_y;
+    pointer_data->brush_data = std::move(brush_data);
+    event->pointer_data = std::move(pointer_data);
+
+  } else if (input.IsMouseEvent()) {
     const ui::LocatedEvent* located_event =
         static_cast<const ui::LocatedEvent*>(&input);
     mus::mojom::PointerDataPtr pointer_data(mus::mojom::PointerData::New());

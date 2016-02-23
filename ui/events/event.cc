@@ -183,6 +183,16 @@ const GestureEvent* Event::AsGestureEvent() const {
   return static_cast<const GestureEvent*>(this);
 }
 
+MouseEvent* Event::AsMouseEvent() {
+  CHECK(IsMouseEvent());
+  return static_cast<MouseEvent*>(this);
+}
+
+const MouseEvent* Event::AsMouseEvent() const {
+  CHECK(IsMouseEvent());
+  return static_cast<const MouseEvent*>(this);
+}
+
 PointerEvent* Event::AsPointerEvent() {
   CHECK(IsPointerEvent());
   return static_cast<PointerEvent*>(this);
@@ -191,6 +201,16 @@ PointerEvent* Event::AsPointerEvent() {
 const PointerEvent* Event::AsPointerEvent() const {
   CHECK(IsPointerEvent());
   return static_cast<const PointerEvent*>(this);
+}
+
+TouchEvent* Event::AsTouchEvent() {
+  CHECK(IsTouchEvent());
+  return static_cast<TouchEvent*>(this);
+}
+
+const TouchEvent* Event::AsTouchEvent() const {
+  CHECK(IsTouchEvent());
+  return static_cast<const TouchEvent*>(this);
 }
 
 bool Event::HasNativeEvent() const {

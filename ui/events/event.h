@@ -29,7 +29,9 @@ class Transform;
 
 namespace ui {
 class EventTarget;
+class MouseEvent;
 class PointerEvent;
+class TouchEvent;
 enum class DomCode;
 
 class EVENTS_EXPORT Event {
@@ -207,10 +209,20 @@ class EVENTS_EXPORT Event {
   GestureEvent* AsGestureEvent();
   const GestureEvent* AsGestureEvent() const;
 
+  // Convenience methods to cast |this| to a MouseEvent. IsMouseEvent()
+  // must be true as a precondition to calling these methods.
+  MouseEvent* AsMouseEvent();
+  const MouseEvent* AsMouseEvent() const;
+
   // Convenience methods to cast |this| to a PointerEvent. IsPointerEvent()
   // must be true as a precondition to calling these methods.
   PointerEvent* AsPointerEvent();
   const PointerEvent* AsPointerEvent() const;
+
+  // Convenience methods to cast |this| to a TouchEvent. IsTouchEvent()
+  // must be true as a precondition to calling these methods.
+  TouchEvent* AsTouchEvent();
+  const TouchEvent* AsTouchEvent() const;
 
   // Returns true if the event has a valid |native_event_|.
   bool HasNativeEvent() const;

@@ -1062,5 +1062,58 @@ TEST_F(EventDispatcherTest, CaptureInNonClientAreaOverridesActualPoint) {
   EXPECT_TRUE(details->in_nonclient_area);
 }
 
+TEST_F(EventDispatcherTest, ProcessPointerEvents) {
+  scoped_ptr<ServerWindow> child(CreateChildWindow(WindowId(1, 3)));
+
+  root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
+  child->SetBounds(gfx::Rect(10, 10, 20, 20));
+
+  {
+    const ui::PointerEvent pointer_event(ui::MouseEvent(
+        ui::ET_MOUSE_PRESSED, gfx::Point(20, 25), gfx::Point(20, 25),
+        base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+    event_dispatcher()->ProcessEvent(
+        mojom::Event::From(static_cast<const ui::Event&>(pointer_event)));
+
+    scoped_ptr<DispatchedEventDetails> details =
+        test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
+    ASSERT_TRUE(details);
+    ASSERT_EQ(child.get(), details->window);
+
+    scoped_ptr<ui::Event> dispatched_event(
+        details->event.To<scoped_ptr<ui::Event>>());
+    ASSERT_TRUE(dispatched_event);
+    ASSERT_TRUE(dispatched_event->IsMouseEvent());
+
+    ui::MouseEvent* dispatched_mouse_event = dispatched_event->AsMouseEvent();
+    EXPECT_EQ(gfx::Point(20, 25), dispatched_mouse_event->root_location());
+    EXPECT_EQ(gfx::Point(10, 15), dispatched_mouse_event->location());
+  }
+
+  {
+    const int touch_id = 3;
+    const ui::PointerEvent pointer_event(
+        ui::TouchEvent(ui::ET_TOUCH_RELEASED, gfx::Point(25, 20), touch_id,
+                       base::TimeDelta()));
+    event_dispatcher()->ProcessEvent(
+        mojom::Event::From(static_cast<const ui::Event&>(pointer_event)));
+
+    scoped_ptr<DispatchedEventDetails> details =
+        test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
+    ASSERT_TRUE(details);
+    ASSERT_EQ(child.get(), details->window);
+
+    scoped_ptr<ui::Event> dispatched_event(
+        details->event.To<scoped_ptr<ui::Event>>());
+    ASSERT_TRUE(dispatched_event);
+    ASSERT_TRUE(dispatched_event->IsTouchEvent());
+
+    ui::TouchEvent* dispatched_touch_event = dispatched_event->AsTouchEvent();
+    EXPECT_EQ(gfx::Point(25, 20), dispatched_touch_event->root_location());
+    EXPECT_EQ(gfx::Point(15, 10), dispatched_touch_event->location());
+    EXPECT_EQ(touch_id, dispatched_touch_event->touch_id());
+  }
+}
+
 }  // namespace ws
 }  // namespace mus
