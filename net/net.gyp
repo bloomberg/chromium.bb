@@ -791,18 +791,6 @@
       ],
     },
     {
-      'target_name': 'cachetool',
-      'type': 'executable',
-      'dependencies': [
-        '../base/base.gyp:base',
-        'net',
-        'net_test_support',
-      ],
-      'sources': [
-        'tools/cachetool/cachetool.cc',
-      ],
-    },
-    {
       'target_name': 'dump_cache',
       'type': 'executable',
       'dependencies': [
