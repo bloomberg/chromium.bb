@@ -70,6 +70,8 @@ std::string GetAPIKey();
 
 std::string GetSafeSitesAPIKey();
 
+std::string GetRemotingAPIKey();
+
 // Represents the different sets of client IDs and secrets in use.
 enum OAuth2Client {
   CLIENT_MAIN,         // Several different features use this.
