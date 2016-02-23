@@ -87,7 +87,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabSize) {
 }
 
 // Flaky on linux: http://crbug.com/396364
-#if defined(OS_LINUX)
+// Flaky on Mac: https://crbug.com/588827
+#if defined(OS_LINUX) || defined(OS_MACOSX)
 #define MAYBE_TabUpdate DISABLED_TabUpdate
 #else
 #define MAYBE_TabUpdate TabUpdate
