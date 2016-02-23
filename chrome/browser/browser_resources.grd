@@ -485,6 +485,11 @@
       <if expr="enable_media_router">
         <part file="media_router_resources.grdp" />
       </if>
+      <if expr="not is_android and not is_ios and not chromeos">
+        <include name="IDR_IME_WINDOW_CLOSE" file="resources\input_ime\ime_window_close.png" type="BINDATA" />
+        <include name="IDR_IME_WINDOW_CLOSE_C" file="resources\input_ime\ime_window_close_click.png" type="BINDATA" />
+        <include name="IDR_IME_WINDOW_CLOSE_H" file="resources\input_ime\ime_window_close_hover.png" type="BINDATA" />
+      </if>
     </includes>
   </release>
 </grit>
