@@ -31,7 +31,7 @@ try:
   from apiclient import errors as apiclient_errors
   from oauth2client import file as oauth_client_fileio
   from oauth2client import client
-except ImportError as e:
+except (RuntimeError, ImportError) as e:
   apiclient_build = None
   oauth_client_fileio = None
 

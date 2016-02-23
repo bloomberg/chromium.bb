@@ -10,16 +10,21 @@ import argparse
 
 from chromite.lib import cros_logging as logging
 
-from infra_libs.ts_mon import config
-import googleapiclient.discovery
-
-
-# google-api-client has too much noisey logging.
-googleapiclient.discovery.logger.setLevel(logging.WARNING)
+try:
+  from infra_libs.ts_mon import config
+  import googleapiclient.discovery
+except (ImportError, RuntimeError) as e:
+  config = None
+  logging.warning('Failed to import ts_mon, monitoring is disabled: %s', e)
 
 
 def SetupTsMonGlobalState():
   """Uses a dummy argument parser to get the default behavior from ts-mon."""
+  if not config:
+    return
+
+  # google-api-client has too much noisey logging.
+  googleapiclient.discovery.logger.setLevel(logging.WARNING)
   parser = argparse.ArgumentParser()
   config.add_argparse_options(parser)
   config.process_argparse_options(parser.parse_args(args=[]))

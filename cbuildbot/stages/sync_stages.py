@@ -42,7 +42,10 @@ from chromite.lib import patch as cros_patch
 from chromite.lib import timeout_util
 from chromite.scripts import cros_mark_chrome_as_stable
 
-from infra_libs.ts_mon.common import metrics
+try:
+  from infra_libs.ts_mon.common import metrics
+except (ImportError, RuntimeError):
+  metrics = None
 
 
 site_config = config_lib.GetConfig()
