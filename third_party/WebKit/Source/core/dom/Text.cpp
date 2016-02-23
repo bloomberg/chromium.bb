@@ -34,6 +34,7 @@
 #include "core/events/ScopedEventQueue.h"
 #include "core/layout/LayoutText.h"
 #include "core/layout/LayoutTextCombine.h"
+#include "core/layout/api/LayoutTextItem.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/svg/SVGForeignObjectElement.h"
 #include "wtf/text/CString.h"
@@ -377,11 +378,11 @@ void Text::reattachIfNeeded(const AttachContext& context)
 
 void Text::recalcTextStyle(StyleRecalcChange change, Text* nextTextSibling)
 {
-    if (LayoutText* layoutObject = this->layoutObject()) {
+    if (LayoutTextItem layoutItem = LayoutTextItem(this->layoutObject())) {
         if (change != NoChange || needsStyleRecalc())
-            layoutObject->setStyle(document().ensureStyleResolver().styleForText(this));
+            layoutItem.setStyle(document().ensureStyleResolver().styleForText(this));
         if (needsStyleRecalc())
-            layoutObject->setText(dataImpl());
+            layoutItem.setText(dataImpl());
         clearNeedsStyleRecalc();
     } else if (needsStyleRecalc() || needsWhitespaceLayoutObject()) {
         reattach();

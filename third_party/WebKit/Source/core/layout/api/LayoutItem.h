@@ -41,6 +41,11 @@ public:
         return m_layoutObject->isBox();
     }
 
+    bool isText() const
+    {
+        return m_layoutObject->isText();
+    }
+
     bool needsLayout()
     {
         return m_layoutObject->needsLayout();
