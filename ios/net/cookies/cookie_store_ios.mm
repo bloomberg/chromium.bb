@@ -221,8 +221,8 @@ NSArray* GetAllCookies(NSHTTPCookieStorage* system_store,
 
 // Builds a cookie line (such as "key1=value1; key2=value2") from an array of
 // cookies.
-std::string BuildCookieLine(NSArray* cookies,
-                            const net::CookieOptions& options) {
+std::string BuildCookieLineWithOptions(NSArray* cookies,
+                                       const net::CookieOptions& options) {
   // The exclude_httponly() option would only be used by a javascript engine.
   DCHECK(!options.exclude_httponly());
 
@@ -520,35 +520,41 @@ void CookieStoreIOS::GetCookiesWithOptionsAsync(
       // engine.
       DCHECK(!options.exclude_httponly());
 
+      // TODO(mkwst): If/when iOS supports Same-Site cookies, we'll need to pass
+      // options in here as well. https://crbug.com/459154
       NSArray* cookies = GetCookiesForURL(system_store_,
                                           url, creation_time_manager_.get());
       if (!callback.is_null())
-        callback.Run(BuildCookieLine(cookies, options));
+        callback.Run(BuildCookieLineWithOptions(cookies, options));
       break;
   }
 }
 
-void CookieStoreIOS::GetAllCookiesForURLAsync(
+void CookieStoreIOS::GetCookieListWithOptionsAsync(
     const GURL& url,
+    const net::CookieOptions& options,
     const GetCookieListCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   switch (synchronization_state_) {
     case NOT_SYNCHRONIZED:
-      cookie_monster_->GetAllCookiesForURLAsync(url, callback);
+      cookie_monster_->GetCookieListWithOptionsAsync(url, options, callback);
       break;
     case SYNCHRONIZING:
-      tasks_pending_synchronization_.push_back(base::Bind(
-          &CookieStoreIOS::GetAllCookiesForURLAsync, this, url, callback));
+      tasks_pending_synchronization_.push_back(
+          base::Bind(&CookieStoreIOS::GetCookieListWithOptionsAsync, this, url,
+                     options, callback));
       break;
     case SYNCHRONIZED:
       if (!SystemCookiesAllowed()) {
         // If cookies are not allowed, the cookies are stashed in the
         // CookieMonster, so get them from there.
-        cookie_monster_->GetAllCookiesForURLAsync(url, callback);
+        cookie_monster_->GetCookieListWithOptionsAsync(url, options, callback);
         return;
       }
 
+      // TODO(mkwst): If/when iOS supports Same-Site cookies, we'll need to pass
+      // options in here as well. https://crbug.com/459154
       NSArray* cookies = GetCookiesForURL(system_store_,
                                           url, creation_time_manager_.get());
       net::CookieList cookie_list = CanonicalCookieListFromSystemCookies(

@@ -104,25 +104,31 @@ class CookieStoreTest : public testing::Test {
     CookieOptions options;
     if (!CookieStoreTestTraits::supports_http_only)
       options.set_include_httponly();
-    StringResultCookieCallback callback;
-    cs->GetCookiesWithOptionsAsync(
-        url, options,
-        base::Bind(&StringResultCookieCallback::Run,
-                   base::Unretained(&callback)));
-    callback.WaitUntilDone();
-    return callback.result();
+    return GetCookiesWithOptions(cs, url, options);
   }
 
   std::string GetCookiesWithOptions(CookieStore* cs,
                                     const GURL& url,
                                     const CookieOptions& options) {
     DCHECK(cs);
-    StringResultCookieCallback callback;
-    cs->GetCookiesWithOptionsAsync(
-        url, options, base::Bind(&StringResultCookieCallback::Run,
-                                 base::Unretained(&callback)));
+    GetCookieListCallback callback;
+    cs->GetCookieListWithOptionsAsync(
+        url, options,
+        base::Bind(&GetCookieListCallback::Run, base::Unretained(&callback)));
     callback.WaitUntilDone();
-    return callback.result();
+    return CookieStore::BuildCookieLine(callback.cookies());
+  }
+
+  CookieList GetCookieListWithOptions(CookieStore* cs,
+                                      const GURL& url,
+                                      const CookieOptions& options) {
+    DCHECK(cs);
+    GetCookieListCallback callback;
+    cs->GetCookieListWithOptionsAsync(
+        url, options,
+        base::Bind(&GetCookieListCallback::Run, base::Unretained(&callback)));
+    callback.WaitUntilDone();
+    return callback.cookies();
   }
 
   CookieList GetAllCookiesForURL(CookieStore* cs, const GURL& url) {
@@ -380,8 +386,17 @@ TYPED_TEST_P(CookieStoreTest, SetCookieWithDetailsAsync) {
       base::Time(), base::Time(), base::Time(), false, false, false,
       COOKIE_PRIORITY_DEFAULT));
 
-  CookieList cookies =
-      this->GetAllCookiesForURL(cs.get(), this->www_google_foo_.url());
+  // Get all the cookies for a given URL, regardless of properties. This 'get()'
+  // operation shouldn't update the access time, as the test checks that the
+  // access time is set properly upon creation. Updating the access time would
+  // make that difficult.
+  CookieOptions options;
+  options.set_include_httponly();
+  options.set_include_same_site();
+  options.set_do_not_update_access_time();
+
+  CookieList cookies = this->GetCookieListWithOptions(
+      cs.get(), this->www_google_foo_.url(), options);
   CookieList::iterator it = cookies.begin();
 
   ASSERT_TRUE(it != cookies.end());
@@ -402,7 +417,18 @@ TYPED_TEST_P(CookieStoreTest, SetCookieWithDetailsAsync) {
 
   ASSERT_TRUE(++it == cookies.end());
 
-  cookies = this->GetAllCookiesForURL(cs.get(), this->www_google_bar_.url());
+  // Verify that the cookie was set as 'httponly' by passing in a CookieOptions
+  // that excludes them and getting an empty result.
+  if (TypeParam::supports_http_only) {
+    cookies = this->GetCookieListWithOptions(
+        cs.get(), this->www_google_bar_.url(), CookieOptions());
+    it = cookies.begin();
+    ASSERT_TRUE(it == cookies.end());
+  }
+
+  // Get the cookie using the wide open |options|:
+  cookies = this->GetCookieListWithOptions(
+      cs.get(), this->www_google_bar_.url(), options);
   it = cookies.begin();
 
   ASSERT_TRUE(it != cookies.end());
@@ -420,7 +446,8 @@ TYPED_TEST_P(CookieStoreTest, SetCookieWithDetailsAsync) {
 
   EXPECT_TRUE(++it == cookies.end());
 
-  cookies = this->GetAllCookiesForURL(cs.get(), this->https_www_google_.url());
+  cookies = this->GetCookieListWithOptions(
+      cs.get(), this->https_www_google_.url(), options);
   it = cookies.begin();
 
   ASSERT_TRUE(it != cookies.end());
@@ -811,6 +838,9 @@ TYPED_TEST_P(CookieStoreTest, InvalidScheme_Read) {
                               kValidDomainCookieLine));
   this->MatchCookieLines(std::string(),
                          this->GetCookies(cs.get(), this->ftp_google_.url()));
+  EXPECT_EQ(0U, this->GetCookieListWithOptions(
+                        cs.get(), this->ftp_google_.url(), CookieOptions())
+                    .size());
 }
 
 TYPED_TEST_P(CookieStoreTest, PathTest) {
@@ -1221,6 +1251,28 @@ TYPED_TEST_P(CookieStoreTest, CookieOrdering) {
   EXPECT_EQ("d=1; a=4; e=1; b=1; c=1",
             this->GetCookies(cs.get(),
                              GURL("http://d.c.b.a.google.com/aa/bb/cc/dd")));
+
+  CookieOptions options;
+  CookieList cookies = this->GetCookieListWithOptions(
+      cs.get(), GURL("http://d.c.b.a.google.com/aa/bb/cc/dd"), options);
+  CookieList::const_iterator it = cookies.begin();
+
+  ASSERT_TRUE(it != cookies.end());
+  EXPECT_EQ("d", it->Name());
+
+  ASSERT_TRUE(++it != cookies.end());
+  EXPECT_EQ("a", it->Name());
+
+  ASSERT_TRUE(++it != cookies.end());
+  EXPECT_EQ("e", it->Name());
+
+  ASSERT_TRUE(++it != cookies.end());
+  EXPECT_EQ("b", it->Name());
+
+  ASSERT_TRUE(++it != cookies.end());
+  EXPECT_EQ("c", it->Name());
+
+  EXPECT_TRUE(++it == cookies.end());
 }
 
 // Check that GetAllCookiesAsync returns cookies from multiple domains, in the
@@ -1272,8 +1324,8 @@ TYPED_TEST_P(CookieStoreTest, DeleteCanonicalCookieAsync) {
   EXPECT_EQ("A=C", this->GetCookies(cs.get(), this->www_google_bar_.url()));
 
   // Delete the "/foo" cookie, and make sure only it was deleted.
-  CookieList cookies =
-      this->GetAllCookiesForURL(cs.get(), this->www_google_foo_.url());
+  CookieList cookies = this->GetCookieListWithOptions(
+      cs.get(), this->www_google_foo_.url(), CookieOptions());
   ASSERT_EQ(1u, cookies.size());
   EXPECT_EQ(1, this->DeleteCanonicalCookie(cs.get(), cookies[0]));
   EXPECT_EQ(1u, this->GetAllCookies(cs.get()).size());
@@ -1284,7 +1336,8 @@ TYPED_TEST_P(CookieStoreTest, DeleteCanonicalCookieAsync) {
   EXPECT_EQ(0, this->DeleteCanonicalCookie(cs.get(), cookies[0]));
 
   // Try to delete the "/bar" cookie after overwriting it with a new cookie.
-  cookies = this->GetAllCookiesForURL(cs.get(), this->www_google_bar_.url());
+  cookies = this->GetCookieListWithOptions(
+      cs.get(), this->www_google_bar_.url(), CookieOptions());
   ASSERT_EQ(1u, cookies.size());
   EXPECT_TRUE(
       this->SetCookie(cs.get(), this->http_www_google_.url(), "A=D;Path=/bar"));
@@ -1293,7 +1346,8 @@ TYPED_TEST_P(CookieStoreTest, DeleteCanonicalCookieAsync) {
   EXPECT_EQ("A=D", this->GetCookies(cs.get(), this->www_google_bar_.url()));
 
   // Delete the new "/bar" cookie.
-  cookies = this->GetAllCookiesForURL(cs.get(), this->www_google_bar_.url());
+  cookies = this->GetCookieListWithOptions(
+      cs.get(), this->www_google_bar_.url(), CookieOptions());
   ASSERT_EQ(1u, cookies.size());
   EXPECT_EQ(1, this->DeleteCanonicalCookie(cs.get(), cookies[0]));
   EXPECT_EQ(0u, this->GetAllCookies(cs.get()).size());

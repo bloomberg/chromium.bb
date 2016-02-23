@@ -148,16 +148,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
                 CookieMonsterDelegate* delegate,
                 int last_access_threshold_milliseconds);
 
-  // Returns all the cookies, for use in management UI, etc. Filters results
-  // using given url scheme, host / domain and path and options. This does not
-  // mark the cookies as having been accessed.
-  // The returned cookies are ordered by longest path, then earliest
-  // creation date.
-  void GetCookieListForURLWithOptionsAsync(
-      const GURL& url,
-      const CookieOptions& options,
-      const GetCookieListCallback& callback);
-
   // Replaces all the cookies by |list|. This method does not flush the backend.
   void SetAllCookiesAsync(const CookieList& list,
                           const SetCookiesCallback& callback);
@@ -184,8 +174,10 @@ class NET_EXPORT CookieMonster : public CookieStore {
   void GetCookiesWithOptionsAsync(const GURL& url,
                                   const CookieOptions& options,
                                   const GetCookiesCallback& callback) override;
-  void GetAllCookiesForURLAsync(const GURL& url,
-                                const GetCookieListCallback& callback) override;
+  void GetCookieListWithOptionsAsync(
+      const GURL& url,
+      const CookieOptions& options,
+      const GetCookieListCallback& callback) override;
   void GetAllCookiesAsync(const GetCookieListCallback& callback) override;
   void DeleteCookieAsync(const GURL& url,
                          const std::string& cookie_name,
@@ -241,6 +233,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
   class GetCookieListForURLWithOptionsTask;
   class GetAllCookiesTask;
   class GetCookiesWithOptionsTask;
+  class GetCookieListWithOptionsTask;
   class SetAllCookiesTask;
   class SetCookieWithDetailsTask;
   class SetCookieWithOptionsTask;
@@ -418,8 +411,8 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   CookieList GetAllCookies();
 
-  CookieList GetCookieListForURLWithOptions(const GURL& url,
-                                            const CookieOptions& options);
+  CookieList GetCookieListWithOptions(const GURL& url,
+                                      const CookieOptions& options);
 
   int DeleteAllCreatedBetween(const base::Time& delete_begin,
                               const base::Time& delete_end);

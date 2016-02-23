@@ -318,22 +318,6 @@ ChangeCausePair ChangeCauseMapping[] = {
     // DELETE_COOKIE_LAST_ENTRY
     {CookieMonsterDelegate::CHANGE_COOKIE_EXPLICIT, false}};
 
-std::string BuildCookieLine(const CanonicalCookieVector& cookies) {
-  std::string cookie_line;
-  for (CanonicalCookieVector::const_iterator it = cookies.begin();
-       it != cookies.end(); ++it) {
-    if (it != cookies.begin())
-      cookie_line += "; ";
-    // In Mozilla if you set a cookie like AAAA, it will have an empty token
-    // and a value of AAAA.  When it sends the cookie back, it will send AAAA,
-    // so we need to avoid sending =AAAA for a blank token value.
-    if (!(*it)->Name().empty())
-      cookie_line += (*it)->Name() + "=";
-    cookie_line += (*it)->Value();
-  }
-  return cookie_line;
-}
-
 void RunAsync(scoped_refptr<base::TaskRunner> proxy,
               const CookieStore::CookieChangedCallback& callback,
               const CanonicalCookie& cookie,
@@ -522,14 +506,13 @@ void CookieMonster::GetAllCookiesTask::Run() {
   }
 }
 
-// Task class for GetCookieListForURLWithOptionsAsync call.
-class CookieMonster::GetCookieListForURLWithOptionsTask
-    : public CookieMonsterTask {
+// Task class for GetCookieListWithOptionsAsync call.
+class CookieMonster::GetCookieListWithOptionsTask : public CookieMonsterTask {
  public:
-  GetCookieListForURLWithOptionsTask(CookieMonster* cookie_monster,
-                                     const GURL& url,
-                                     const CookieOptions& options,
-                                     const GetCookieListCallback& callback)
+  GetCookieListWithOptionsTask(CookieMonster* cookie_monster,
+                               const GURL& url,
+                               const CookieOptions& options,
+                               const GetCookieListCallback& callback)
       : CookieMonsterTask(cookie_monster),
         url_(url),
         options_(options),
@@ -539,20 +522,20 @@ class CookieMonster::GetCookieListForURLWithOptionsTask
   void Run() override;
 
  protected:
-  ~GetCookieListForURLWithOptionsTask() override {}
+  ~GetCookieListWithOptionsTask() override {}
 
  private:
   GURL url_;
   CookieOptions options_;
   GetCookieListCallback callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(GetCookieListForURLWithOptionsTask);
+  DISALLOW_COPY_AND_ASSIGN(GetCookieListWithOptionsTask);
 };
 
-void CookieMonster::GetCookieListForURLWithOptionsTask::Run() {
+void CookieMonster::GetCookieListWithOptionsTask::Run() {
   if (!callback_.is_null()) {
     CookieList cookies =
-        this->cookie_monster()->GetCookieListForURLWithOptions(url_, options_);
+        this->cookie_monster()->GetCookieListWithOptions(url_, options_);
     this->InvokeCallback(base::Bind(&GetCookieListCallback::Run,
                                     base::Unretained(&callback_), cookies));
   }
@@ -905,16 +888,6 @@ void CookieMonster::SetCookieWithDetailsAsync(
   DoCookieTaskForURL(task, url);
 }
 
-void CookieMonster::GetCookieListForURLWithOptionsAsync(
-    const GURL& url,
-    const CookieOptions& options,
-    const GetCookieListCallback& callback) {
-  scoped_refptr<GetCookieListForURLWithOptionsTask> task =
-      new GetCookieListForURLWithOptionsTask(this, url, options, callback);
-
-  DoCookieTaskForURL(task, url);
-}
-
 void CookieMonster::FlushStore(const base::Closure& callback) {
   base::AutoLock autolock(lock_);
   if (initialized_ && store_.get())
@@ -956,15 +929,12 @@ void CookieMonster::GetCookiesWithOptionsAsync(
   DoCookieTaskForURL(task, url);
 }
 
-void CookieMonster::GetAllCookiesForURLAsync(
+void CookieMonster::GetCookieListWithOptionsAsync(
     const GURL& url,
+    const CookieOptions& options,
     const GetCookieListCallback& callback) {
-  CookieOptions options;
-  options.set_include_httponly();
-  options.set_include_same_site();
-  options.set_do_not_update_access_time();
-  scoped_refptr<GetCookieListForURLWithOptionsTask> task =
-      new GetCookieListForURLWithOptionsTask(this, url, options, callback);
+  scoped_refptr<GetCookieListWithOptionsTask> task =
+      new GetCookieListWithOptionsTask(this, url, options, callback);
 
   DoCookieTaskForURL(task, url);
 }
@@ -1160,16 +1130,19 @@ CookieList CookieMonster::GetAllCookies() {
   return cookie_list;
 }
 
-CookieList CookieMonster::GetCookieListForURLWithOptions(
+CookieList CookieMonster::GetCookieListWithOptions(
     const GURL& url,
     const CookieOptions& options) {
   base::AutoLock autolock(lock_);
+
+  CookieList cookies;
+  if (!HasCookieableScheme(url))
+    return cookies;
 
   std::vector<CanonicalCookie*> cookie_ptrs;
   FindCookiesForHostAndDomain(url, options, &cookie_ptrs);
   std::sort(cookie_ptrs.begin(), cookie_ptrs.end(), CookieSorter);
 
-  CookieList cookies;
   cookies.reserve(cookie_ptrs.size());
   for (std::vector<CanonicalCookie*>::const_iterator it = cookie_ptrs.begin();
        it != cookie_ptrs.end(); it++)

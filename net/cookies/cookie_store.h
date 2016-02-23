@@ -43,6 +43,16 @@ class NET_EXPORT CookieStore : public base::RefCountedThreadSafe<CookieStore> {
       CookieChangedCallbackList;
   typedef CookieChangedCallbackList::Subscription CookieChangedSubscription;
 
+  // Returns the cookie line (e.g. "cookie1=value1; cookie2=value2") represented
+  // by |cookies|. The string is built in the same order as the given list.
+  //
+  // TODO(mkwst): We really should standardize on either
+  // 'std::vector<CanonicalCookie>' or 'std::vector<CanonicalCookie*>'.
+  static std::string BuildCookieLine(
+      const std::vector<CanonicalCookie>& cookies);
+  static std::string BuildCookieLine(
+      const std::vector<CanonicalCookie*>& cookies);
+
   // Sets the cookies specified by |cookie_list| returned from |url|
   // with options |options| in effect.  Expects a cookie line, like
   // "a=1; domain=b.com".
@@ -93,17 +103,31 @@ class NET_EXPORT CookieStore : public base::RefCountedThreadSafe<CookieStore> {
   //
   // The returned cookies are ordered by longest path, then earliest
   // creation date.
+  //
+  // TODO(mkwst): This method is deprecated; callsites should be updated to
+  // use 'GetCookieListWithOptionsAsync'.
   virtual void GetCookiesWithOptionsAsync(
       const GURL& url,
       const CookieOptions& options,
       const GetCookiesCallback& callback) = 0;
 
+  // Obtains a CookieList for the given |url| and |options|. The returned
+  // cookies are passed into |callback|, ordered by longest path, then earliest
+  // creation date.
+  virtual void GetCookieListWithOptionsAsync(
+      const GURL& url,
+      const CookieOptions& options,
+      const GetCookieListCallback& callback) = 0;
+
   // Returns all cookies associated with |url|, including http-only, and
   // same-site cookies. The returned cookies are ordered by longest path, then
   // by earliest creation date, and are not marked as having been accessed.
-  virtual void GetAllCookiesForURLAsync(
-      const GURL& url,
-      const GetCookieListCallback& callback) = 0;
+  //
+  // TODO(mkwst): This method is deprecated, and should be removed, either by
+  // updating callsites to use 'GetCookieListWithOptionsAsync' with an explicit
+  // CookieOptions, or by changing CookieOptions' defaults.
+  void GetAllCookiesForURLAsync(const GURL& url,
+                                const GetCookieListCallback& callback);
 
   // Returns all the cookies, for use in management UI, etc. This does not mark
   // the cookies as having been accessed. The returned cookies are ordered by

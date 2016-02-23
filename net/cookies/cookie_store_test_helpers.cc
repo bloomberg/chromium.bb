@@ -53,6 +53,12 @@ void DelayedCookieMonster::GetCookiesWithOptionsInternalCallback(
   did_run_ = true;
 }
 
+void DelayedCookieMonster::GetCookieListWithOptionsInternalCallback(
+    const CookieList& cookie_list) {
+  cookie_list_ = cookie_list;
+  did_run_ = true;
+}
+
 void DelayedCookieMonster::SetCookieWithOptionsAsync(
     const GURL& url,
     const std::string& cookie_line,
@@ -105,10 +111,21 @@ void DelayedCookieMonster::GetCookiesWithOptionsAsync(
       base::TimeDelta::FromMilliseconds(kDelayedTime));
 }
 
-void DelayedCookieMonster::GetAllCookiesForURLAsync(
+void DelayedCookieMonster::GetCookieListWithOptionsAsync(
     const GURL& url,
-    const GetCookieListCallback& callback) {
-  cookie_monster_->GetAllCookiesForURLAsync(url, callback);
+    const CookieOptions& options,
+    const CookieMonster::GetCookieListCallback& callback) {
+  did_run_ = false;
+  cookie_monster_->GetCookieListWithOptionsAsync(
+      url, options,
+      base::Bind(
+          &DelayedCookieMonster::GetCookieListWithOptionsInternalCallback,
+          base::Unretained(this)));
+  DCHECK_EQ(did_run_, true);
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&DelayedCookieMonster::InvokeGetCookieListCallback,
+                            base::Unretained(this), callback),
+      base::TimeDelta::FromMilliseconds(kDelayedTime));
 }
 
 void DelayedCookieMonster::GetAllCookiesAsync(
@@ -126,6 +143,12 @@ void DelayedCookieMonster::InvokeGetCookieStringCallback(
     const CookieMonster::GetCookiesCallback& callback) {
   if (!callback.is_null())
     callback.Run(cookie_);
+}
+
+void DelayedCookieMonster::InvokeGetCookieListCallback(
+    const CookieMonster::GetCookieListCallback& callback) {
+  if (!callback.is_null())
+    callback.Run(cookie_list_);
 }
 
 bool DelayedCookieMonster::SetCookieWithOptions(

@@ -126,7 +126,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
                                             const CookieOptions& options) {
     DCHECK(cm);
     GetCookieListCallback callback;
-    cm->GetCookieListForURLWithOptionsAsync(
+    cm->GetCookieListWithOptionsAsync(
         url, options,
         base::Bind(&GetCookieListCallback::Run, base::Unretained(&callback)));
     callback.WaitUntilDone();
@@ -827,8 +827,8 @@ ACTION_P2(DeleteAllAction, cookie_monster, callback) {
 }
 
 ACTION_P3(GetCookieListForUrlWithOptionsAction, cookie_monster, url, callback) {
-  cookie_monster->GetCookieListForURLWithOptionsAsync(url, CookieOptions(),
-                                                      callback->AsCallback());
+  cookie_monster->GetCookieListWithOptionsAsync(url, CookieOptions(),
+                                                callback->AsCallback());
 }
 
 ACTION_P3(GetAllCookiesForUrlAction, cookie_monster, url, callback) {
@@ -2492,7 +2492,7 @@ class MultiThreadedCookieMonsterTest : public CookieMonsterTest {
                                           const GURL& url,
                                           const CookieOptions& options,
                                           GetCookieListCallback* callback) {
-    cm->GetCookieListForURLWithOptionsAsync(
+    cm->GetCookieListWithOptionsAsync(
         url, options,
         base::Bind(&GetCookieListCallback::Run, base::Unretained(callback)));
   }

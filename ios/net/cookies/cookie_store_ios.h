@@ -130,8 +130,10 @@ class CookieStoreIOS : public net::CookieStore,
   void GetCookiesWithOptionsAsync(const GURL& url,
                                   const net::CookieOptions& options,
                                   const GetCookiesCallback& callback) override;
-  void GetAllCookiesForURLAsync(const GURL& url,
-                                const GetCookieListCallback& callback) override;
+  void GetCookieListWithOptionsAsync(
+      const GURL& url,
+      const net::CookieOptions& options,
+      const GetCookieListCallback& callback) override;
   void GetAllCookiesAsync(const GetCookieListCallback& callback) override;
   void DeleteCookieAsync(const GURL& url,
                          const std::string& cookie_name,

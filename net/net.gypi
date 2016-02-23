@@ -1396,6 +1396,7 @@
       'cookies/canonical_cookie_unittest.cc',
       'cookies/cookie_constants_unittest.cc',
       'cookies/cookie_monster_unittest.cc',
+      'cookies/cookie_store_unittest.cc',
       'cookies/cookie_util_unittest.cc',
       'cookies/parsed_cookie_unittest.cc',
       'der/input_unittest.cc',
