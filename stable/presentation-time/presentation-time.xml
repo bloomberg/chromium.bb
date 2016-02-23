@@ -232,6 +232,10 @@
         targeting the next few vblanks. If such prediction cannot
         usefully be done, the argument is zero.
 
+        If the output does not have a constant refresh rate, explicit
+        video mode switches excluded, then the refresh argument must
+        be zero.
+
         The 64-bit value combined from seq_hi and seq_lo is the value
         of the output's vertical retrace counter when the content
         update was first scanned out to the display. This value must
@@ -239,10 +243,6 @@
         GLX_OML_sync_control specification. Note, that if the display
         path has a non-zero latency, the time instant specified by
         this counter may differ from the timestamp's.
-
-        If the output does not have a constant refresh rate, explicit
-        video mode switches excluded, then the refresh argument must
-        be zero.
 
         If the output does not have a concept of vertical retrace or a
         refresh cycle, or the output device is self-refreshing without
