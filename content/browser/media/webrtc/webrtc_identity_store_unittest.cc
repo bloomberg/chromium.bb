@@ -6,7 +6,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/test/sequenced_worker_pool_owner.h"
-#include "content/browser/media/webrtc_identity_store.h"
+#include "content/browser/media/webrtc/webrtc_identity_store.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/net_errors.h"

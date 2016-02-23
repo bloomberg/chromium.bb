@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/media/webrtc_identity_store_backend.h"
+#include "content/browser/media/webrtc/webrtc_identity_store_backend.h"
 
 #include <stddef.h>
 #include <stdint.h>

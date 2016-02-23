@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/media/webrtc_identity_store.h"
+#include "content/browser/media/webrtc/webrtc_identity_store.h"
 #include "content/common/media/webrtc_identity_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "net/base/net_errors.h"

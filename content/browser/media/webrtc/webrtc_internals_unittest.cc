@@ -6,8 +6,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/values.h"
-#include "content/browser/media/webrtc_internals.h"
-#include "content/browser/media/webrtc_internals_ui_observer.h"
+#include "content/browser/media/webrtc/webrtc_internals.h"
+#include "content/browser/media/webrtc/webrtc_internals_ui_observer.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

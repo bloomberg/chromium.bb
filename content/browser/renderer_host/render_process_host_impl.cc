@@ -222,7 +222,7 @@
 #endif
 
 #if defined(ENABLE_WEBRTC)
-#include "content/browser/media/webrtc_internals.h"
+#include "content/browser/media/webrtc/webrtc_internals.h"
 #include "content/browser/renderer_host/media/media_stream_track_metrics_host.h"
 #include "content/browser/renderer_host/media/webrtc_identity_service_host.h"
 #include "content/browser/renderer_host/p2p/socket_dispatcher_host.h"

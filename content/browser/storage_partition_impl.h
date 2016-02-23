@@ -18,7 +18,7 @@
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/host_zoom_level_context.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
-#include "content/browser/media/webrtc_identity_store.h"
+#include "content/browser/media/webrtc/webrtc_identity_store.h"
 #include "content/browser/navigator_connect/navigator_connect_context_impl.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"

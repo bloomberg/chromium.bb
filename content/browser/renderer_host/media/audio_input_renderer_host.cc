@@ -18,7 +18,7 @@
 #include "build/build_config.h"
 #include "content/browser/media/capture/web_contents_audio_input_stream.h"
 #include "content/browser/media/media_internals.h"
-#include "content/browser/media/webrtc_internals.h"
+#include "content/browser/media/webrtc/webrtc_internals.h"
 #include "content/browser/renderer_host/media/audio_input_debug_writer.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/audio_input_sync_writer.h"

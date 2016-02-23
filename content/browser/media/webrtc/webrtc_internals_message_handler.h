@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_MEDIA_WEBRTC_INTERNALS_MESSAGE_HANDLER_H_
-#define CONTENT_BROWSER_MEDIA_WEBRTC_INTERNALS_MESSAGE_HANDLER_H_
+#ifndef CONTENT_BROWSER_MEDIA_WEBRTC_WEBRTC_INTERNALS_MESSAGE_HANDLER_H_
+#define CONTENT_BROWSER_MEDIA_WEBRTC_WEBRTC_INTERNALS_MESSAGE_HANDLER_H_
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "content/browser/media/webrtc_internals_ui_observer.h"
+#include "content/browser/media/webrtc/webrtc_internals_ui_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace base {
@@ -49,4 +49,4 @@ class WebRTCInternalsMessageHandler : public WebUIMessageHandler,
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_MEDIA_WEBRTC_INTERNALS_MESSAGE_HANDLER_H_
+#endif  // CONTENT_BROWSER_MEDIA_WEBRTC_WEBRTC_INTERNALS_MESSAGE_HANDLER_H_
