@@ -1409,8 +1409,6 @@ crbug.com/587779 [ Mac10.7 Retina Mac10.10 ] fast/dynamic/window-resize-scrollba
 
 crbug.com/587950 [ Mac Win ] virtual/threaded/animations/background-shorthand-crash.html [ Failure ]
 
-crbug.com/588056 [ Linux Debug ] webaudio/periodicwave-normalization.html [ Timeout Pass ]
-
 crbug.com/588061 [ Debug ] inspector/sources/debugger-breakpoints/debugger-reload-breakpoints-with-source-maps.html [ Pass Failure ]
 
 crbug.com/248063 [ Win ] plugins/plugin-clip-subframe.html [ Pass Failure ]
