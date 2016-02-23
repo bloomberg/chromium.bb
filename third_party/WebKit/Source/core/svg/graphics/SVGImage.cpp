@@ -154,31 +154,68 @@ IntSize SVGImage::containerSize() const
     // Assure that a container size is always given for a non-identity zoom level.
     ASSERT(layoutObject->style()->effectiveZoom() == 1);
 
+    // No set container size; use concrete object size.
+    return m_concreteObjectSize;
+}
+
+static float resolveWidthForRatio(float height, const FloatSize& intrinsicRatio)
+{
+    return height * intrinsicRatio.width() / intrinsicRatio.height();
+}
+
+static float resolveHeightForRatio(float width, const FloatSize& intrinsicRatio)
+{
+    return width * intrinsicRatio.height() / intrinsicRatio.width();
+}
+
+FloatSize SVGImage::calculateConcreteObjectSize(const FloatSize& defaultObjectSize) const
+{
+    SVGSVGElement* svg = svgRootElement(m_page.get());
+    if (!svg)
+        return FloatSize();
+
+    LayoutSVGRoot* layoutObject = toLayoutSVGRoot(svg->layoutObject());
+    if (!layoutObject)
+        return FloatSize();
+
     LayoutBox::IntrinsicSizingInfo intrinsicSizingInfo;
     layoutObject->computeIntrinsicSizingInfo(intrinsicSizingInfo);
 
-    if (intrinsicSizingInfo.size.isEmpty() && !intrinsicSizingInfo.aspectRatio.isEmpty()) {
-        if (!intrinsicSizingInfo.size.width() && intrinsicSizingInfo.size.height()) {
-            intrinsicSizingInfo.size.setWidth(
-                intrinsicSizingInfo.size.height() * intrinsicSizingInfo.aspectRatio.width() / intrinsicSizingInfo.aspectRatio.height());
-        } else if (intrinsicSizingInfo.size.width() && !intrinsicSizingInfo.size.height()) {
-            intrinsicSizingInfo.size.setHeight(
-                intrinsicSizingInfo.size.width() * intrinsicSizingInfo.aspectRatio.height() / intrinsicSizingInfo.aspectRatio.width());
-        }
+    // https://www.w3.org/TR/css3-images/#default-sizing
+
+    if (intrinsicSizingInfo.hasWidth && intrinsicSizingInfo.hasHeight)
+        return intrinsicSizingInfo.size;
+
+    if (svg->preserveAspectRatio()->currentValue()->align() == SVGPreserveAspectRatio::SVG_PRESERVEASPECTRATIO_NONE) {
+        // TODO(davve): The intrinsic aspect ratio is not used to resolve a missing intrinsic width
+        // or height when preserveAspectRatio is none. It's unclear whether this is correct. See
+        // crbug.com/584172.
+        return defaultObjectSize;
     }
 
-    // TODO(davve): In order to maintain aspect ratio the intrinsic
-    // size is faked from the viewBox as a last resort. This may cause
-    // unwanted side effects. Preferably we should be able to signal
-    // the intrinsic ratio in another way.
-    if (intrinsicSizingInfo.size.isEmpty())
-        intrinsicSizingInfo.size = rootElement->currentViewBoxRect().size();
+    if (intrinsicSizingInfo.hasWidth) {
+        if (intrinsicSizingInfo.aspectRatio.isEmpty())
+            return FloatSize(intrinsicSizingInfo.size.width(), defaultObjectSize.height());
 
-    if (!intrinsicSizingInfo.size.isEmpty())
-        return expandedIntSize(intrinsicSizingInfo.size);
+        return FloatSize(intrinsicSizingInfo.size.width(), resolveHeightForRatio(intrinsicSizingInfo.size.width(), intrinsicSizingInfo.aspectRatio));
+    }
 
-    // As last resort, use CSS replaced element fallback size.
-    return IntSize(300, 150);
+    if (intrinsicSizingInfo.hasHeight) {
+        if (intrinsicSizingInfo.aspectRatio.isEmpty())
+            return FloatSize(defaultObjectSize.width(), intrinsicSizingInfo.size.height());
+
+        return FloatSize(resolveWidthForRatio(intrinsicSizingInfo.size.height(), intrinsicSizingInfo.aspectRatio), intrinsicSizingInfo.size.height());
+    }
+
+    if (!intrinsicSizingInfo.aspectRatio.isEmpty()) {
+        // TODO(davve): According to the specification, the concrete object size should resolve as a
+        // contain constraint against the default object size at this stage. Until the
+        // defaultObjectSize is context sensitive, right now it's hard-coded to 300x150, we have to
+        // preserve legacy behavior by returning the aspectRatio as the concrete object size.
+        return intrinsicSizingInfo.aspectRatio;
+    }
+
+    return defaultObjectSize;
 }
 
 void SVGImage::drawForContainer(SkCanvas* canvas, const SkPaint& paint, const FloatSize containerSize, float zoom, const FloatRect& dstRect,
@@ -497,8 +534,8 @@ bool SVGImage::dataChanged(bool allDataReceived)
         loader.load(FrameLoadRequest(0, blankURL(), SubstituteData(data(), AtomicString("image/svg+xml", AtomicString::ConstructFromLiteral),
             AtomicString("UTF-8", AtomicString::ConstructFromLiteral), KURL(), ForceSynchronousLoad)));
 
-        // Set the intrinsic size before a container size is available.
-        m_intrinsicSize = containerSize();
+        // Set the concrete object size before a container size is available.
+        m_concreteObjectSize = roundedIntSize(calculateConcreteObjectSize(FloatSize(300, 150)));
     }
 
     return m_page;
