@@ -109,9 +109,9 @@ class DownloadRequestLimiter
     void DidNavigateMainFrame(
         const content::LoadCommittedDetails& details,
         const content::FrameNavigateParams& params) override;
-    // Invoked when a user gesture occurs (mouse click, enter or space). This
-    // may result in invoking Remove on DownloadRequestLimiter.
-    void DidGetUserGesture() override;
+    // Invoked when a user gesture occurs (mouse click, mouse scroll, tap, or
+    // key down). This may result in invoking Remove on DownloadRequestLimiter.
+    void DidGetUserInteraction(const blink::WebInputEvent::Type type) override;
     void WebContentsDestroyed() override;
 
     // Asks the user if they really want to allow the download.

@@ -97,9 +97,10 @@ void DownloadRequestLimiter::TabDownloadState::DidNavigateMainFrame(
   }
 }
 
-void DownloadRequestLimiter::TabDownloadState::DidGetUserGesture() {
-  if (is_showing_prompt()) {
-    // Don't change the state if the user clicks on the page somewhere.
+void DownloadRequestLimiter::TabDownloadState::DidGetUserInteraction(
+    const blink::WebInputEvent::Type type) {
+  if (is_showing_prompt() || type == blink::WebInputEvent::MouseWheel) {
+    // Don't change state if a prompt is showing or if the user has scrolled.
     return;
   }
 

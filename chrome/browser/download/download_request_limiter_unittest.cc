@@ -175,16 +175,17 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
     base::RunLoop().RunUntilIdle();
   }
 
-  void OnUserGesture() {
-    OnUserGestureFor(web_contents());
+  void OnUserInteraction(blink::WebInputEvent::Type type) {
+    OnUserInteractionFor(web_contents(), type);
   }
 
-  void OnUserGestureFor(WebContents* web_contents) {
+  void OnUserInteractionFor(WebContents* web_contents,
+                            blink::WebInputEvent::Type type) {
     DownloadRequestLimiter::TabDownloadState* state =
         download_request_limiter_->GetDownloadState(web_contents, nullptr,
                                                     false);
     if (state)
-      state->DidGetUserGesture();
+      state->DidGetUserInteraction(type);
   }
 
   void ExpectAndResetCounts(
@@ -313,7 +314,7 @@ TEST_F(DownloadRequestLimiterTest, DownloadRequestLimiter_ResetOnNavigation) {
 
   // Do a user gesture, because we're at allow all, this shouldn't change the
   // state.
-  OnUserGesture();
+  OnUserInteraction(blink::WebInputEvent::RawKeyDown);
   ASSERT_EQ(DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS,
             download_request_limiter_->GetDownloadStatus(web_contents()));
 
@@ -355,8 +356,34 @@ TEST_F(DownloadRequestLimiterTest, DownloadRequestLimiter_ResetOnUserGesture) {
   ASSERT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
             download_request_limiter_->GetDownloadStatus(web_contents()));
 
-  // Do a user gesture, which should reset back to allow one.
-  OnUserGesture();
+  // Do a user gesture with mouse scroll, which should be ignored.
+  OnUserInteraction(blink::WebInputEvent::MouseWheel);
+  ASSERT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+  // Do a user gesture with mouse click, which should reset back to allow one.
+  OnUserInteraction(blink::WebInputEvent::MouseDown);
+  ASSERT_EQ(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+
+  // Do one download, which should change to prompt before download.
+  CanDownload();
+  ExpectAndResetCounts(1, 0, 0, __LINE__);
+  ASSERT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+
+  // Do a user gesture with gesture tap, which should reset back to allow one.
+  OnUserInteraction(blink::WebInputEvent::GestureTapDown);
+  ASSERT_EQ(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+
+  // Do one download, which should change to prompt before download.
+  CanDownload();
+  ExpectAndResetCounts(1, 0, 0, __LINE__);
+  ASSERT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+
+  // Do a user gesture with keyboard down, which should reset back to allow one.
+  OnUserInteraction(blink::WebInputEvent::RawKeyDown);
   ASSERT_EQ(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD,
             download_request_limiter_->GetDownloadStatus(web_contents()));
 
@@ -374,7 +401,7 @@ TEST_F(DownloadRequestLimiterTest, DownloadRequestLimiter_ResetOnUserGesture) {
   ExpectAndResetCounts(0, 1, 1, __LINE__);
 
   // A user gesture now should NOT change the state.
-  OnUserGesture();
+  OnUserInteraction(blink::WebInputEvent::MouseDown);
   ASSERT_EQ(DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED,
             download_request_limiter_->GetDownloadStatus(web_contents()));
   // And make sure we really can't download.
@@ -454,7 +481,8 @@ TEST_F(DownloadRequestLimiterTest, DownloadRequestLimiter_RawWebContents) {
   ExpectAndResetCounts(1, 0, 0, __LINE__);
   EXPECT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
             download_request_limiter_->GetDownloadStatus(web_contents.get()));
-  OnUserGestureFor(web_contents.get());
+  OnUserInteractionFor(web_contents.get(),
+                       blink::WebInputEvent::GestureTapDown);
   EXPECT_EQ(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD,
             download_request_limiter_->GetDownloadStatus(web_contents.get()));
   CanDownloadFor(web_contents.get());
@@ -465,7 +493,7 @@ TEST_F(DownloadRequestLimiterTest, DownloadRequestLimiter_RawWebContents) {
   ExpectAndResetCounts(0, 1, 0, __LINE__);
   EXPECT_EQ(DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED,
             download_request_limiter_->GetDownloadStatus(web_contents.get()));
-  OnUserGestureFor(web_contents.get());
+  OnUserInteractionFor(web_contents.get(), blink::WebInputEvent::RawKeyDown);
   EXPECT_EQ(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD,
             download_request_limiter_->GetDownloadStatus(web_contents.get()));
   CanDownloadFor(web_contents.get());
