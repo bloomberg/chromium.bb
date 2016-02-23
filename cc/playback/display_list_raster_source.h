@@ -11,6 +11,9 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/thread_checker.h"
+#include "base/trace_event/memory_allocator_dump.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "cc/base/cc_export.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/playback/display_list_recording_source.h"
@@ -24,7 +27,8 @@ class DrawImage;
 class ImageDecodeController;
 
 class CC_EXPORT DisplayListRasterSource
-    : public base::RefCountedThreadSafe<DisplayListRasterSource> {
+    : public base::trace_event::MemoryDumpProvider,
+      public base::RefCountedThreadSafe<DisplayListRasterSource> {
  public:
   static scoped_refptr<DisplayListRasterSource>
   CreateFromDisplayListRecordingSource(const DisplayListRecordingSource* other,
@@ -111,6 +115,10 @@ class CC_EXPORT DisplayListRasterSource
   // of the raster source, since the raster source will access it during raster.
   void SetImageDecodeController(ImageDecodeController* image_decode_controller);
 
+  // base::trace_event::MemoryDumpProvider implementation
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
+
  protected:
   friend class base::RefCountedThreadSafe<DisplayListRasterSource>;
 
@@ -118,7 +126,7 @@ class CC_EXPORT DisplayListRasterSource
                           bool can_use_lcd_text);
   DisplayListRasterSource(const DisplayListRasterSource* other,
                           bool can_use_lcd_text);
-  virtual ~DisplayListRasterSource();
+  ~DisplayListRasterSource() override;
 
   // These members are const as this raster source may be in use on another
   // thread and so should not be touched after construction.
@@ -158,6 +166,9 @@ class CC_EXPORT DisplayListRasterSource
                                   const gfx::Rect& canvas_bitmap_rect,
                                   const gfx::Rect& canvas_playback_rect,
                                   float contents_scale) const;
+
+  // Used to ensure that memory dump logic always happens on the same thread.
+  base::ThreadChecker memory_dump_thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayListRasterSource);
 };

@@ -7,6 +7,9 @@
 #include <stddef.h>
 
 #include "base/containers/adapters.h"
+#include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/region.h"
 #include "cc/debug/debug_colors.h"
@@ -209,7 +212,16 @@ DisplayListRasterSource::DisplayListRasterSource(
       slow_down_raster_scale_factor_for_debug_(
           other->slow_down_raster_scale_factor_for_debug_),
       should_attempt_to_use_distance_field_text_(false),
-      image_decode_controller_(nullptr) {}
+      image_decode_controller_(nullptr) {
+  // In certain cases, ThreadTaskRunnerHandle isn't set (Android Webview).
+  // Don't register a dump provider in these cases.
+  // TODO(ericrk): Get this working in Android Webview. crbug.com/517156
+  if (base::ThreadTaskRunnerHandle::IsSet()) {
+    base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+        this, "cc::DisplayListRasterSource",
+        base::ThreadTaskRunnerHandle::Get());
+  }
+}
 
 DisplayListRasterSource::DisplayListRasterSource(
     const DisplayListRasterSource* other,
@@ -228,9 +240,23 @@ DisplayListRasterSource::DisplayListRasterSource(
           other->slow_down_raster_scale_factor_for_debug_),
       should_attempt_to_use_distance_field_text_(
           other->should_attempt_to_use_distance_field_text_),
-      image_decode_controller_(other->image_decode_controller_) {}
+      image_decode_controller_(other->image_decode_controller_) {
+  // In certain cases, ThreadTaskRunnerHandle isn't set (Android Webview).
+  // Don't register a dump provider in these cases.
+  // TODO(ericrk): Get this working in Android Webview. crbug.com/517156
+  if (base::ThreadTaskRunnerHandle::IsSet()) {
+    base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+        this, "cc::DisplayListRasterSource",
+        base::ThreadTaskRunnerHandle::Get());
+  }
+}
 
 DisplayListRasterSource::~DisplayListRasterSource() {
+  // For MemoryDumpProvider deregistration to work correctly, this must happen
+  // on the same thread that the DisplayListRasterSource was created on.
+  DCHECK(memory_dump_thread_checker_.CalledOnValidThread());
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      this);
 }
 
 void DisplayListRasterSource::PlaybackToSharedCanvas(
@@ -505,6 +531,24 @@ void DisplayListRasterSource::SetImageDecodeController(
   DCHECK(!image_decode_controller_ ||
          image_decode_controller_ == image_decode_controller);
   image_decode_controller_ = image_decode_controller;
+}
+
+bool DisplayListRasterSource::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  DCHECK(memory_dump_thread_checker_.CalledOnValidThread());
+
+  uint64_t memory_usage = GetPictureMemoryUsage();
+  if (memory_usage > 0) {
+    std::string dump_name = base::StringPrintf(
+        "cc/display_lists/display_list_raster_source_%p", this);
+    base::trace_event::MemoryAllocatorDump* dump =
+        pmd->CreateAllocatorDump(dump_name);
+    dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                    base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                    memory_usage);
+  }
+  return true;
 }
 
 }  // namespace cc
