@@ -1880,6 +1880,38 @@ TEST_F(InputRouterImplTest, OverscrollDispatch) {
             client_overscroll.current_fling_velocity);
 }
 
+// Tests that touch event stream validation passes when events are filtered
+// out. See crbug.com/581231 for details.
+TEST_F(InputRouterImplTest, TouchValidationPassesWithFilteredInputEvents) {
+  // Touch sequence with touch handler.
+  OnHasTouchEventHandlers(true);
+  PressTouchPoint(1, 1);
+  uint32_t touch_press_event_id = SendTouchEvent();
+  SendTouchEventACK(WebInputEvent::TouchStart,
+                    INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS,
+                    touch_press_event_id);
+
+  PressTouchPoint(1, 1);
+  touch_press_event_id = SendTouchEvent();
+  SendTouchEventACK(WebInputEvent::TouchStart,
+                    INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS,
+                    touch_press_event_id);
+
+  // This event will be filtered out, since no consumer exists.
+  ReleaseTouchPoint(1);
+  uint32_t touch_release_event_id = SendTouchEvent();
+  SendTouchEventACK(WebInputEvent::TouchEnd, INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
+                    touch_release_event_id);
+
+  // If the validator didn't see the filtered out release event, it will crash
+  // now, upon seeing a press for a touch which it believes to be still pressed.
+  PressTouchPoint(1, 1);
+  touch_press_event_id = SendTouchEvent();
+  SendTouchEventACK(WebInputEvent::TouchStart,
+                    INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS,
+                    touch_press_event_id);
+}
+
 namespace {
 
 class InputRouterImplScaleEventTest : public InputRouterImplTest {

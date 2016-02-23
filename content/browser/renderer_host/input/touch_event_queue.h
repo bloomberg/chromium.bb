@@ -35,6 +35,9 @@ class CONTENT_EXPORT TouchEventQueueClient {
   virtual void OnTouchEventAck(
       const TouchEventWithLatencyInfo& event,
       InputEventAckState ack_result) = 0;
+
+  virtual void OnFilteringTouchEvent(
+      const blink::WebTouchEvent& touch_event) = 0;
 };
 
 // A queue for throttling and coalescing touch-events.

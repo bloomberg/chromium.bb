@@ -15,7 +15,6 @@ namespace ui {
 enum class DomCode;
 struct GestureEventData;
 struct GestureEventDetails;
-class MotionEvent;
 }
 
 namespace content {

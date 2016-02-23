@@ -14,7 +14,6 @@
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/gesture_detection/gesture_event_data.h"
-#include "ui/events/gesture_detection/motion_event.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 
@@ -22,7 +21,6 @@ using blink::WebGestureEvent;
 using blink::WebInputEvent;
 using blink::WebTouchEvent;
 using blink::WebTouchPoint;
-using ui::MotionEvent;
 
 namespace content {
 

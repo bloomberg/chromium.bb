@@ -84,6 +84,9 @@ class TouchEventQueueTest : public testing::Test,
     }
   }
 
+  void OnFilteringTouchEvent(const blink::WebTouchEvent& touch_event) override {
+  }
+
  protected:
   void SetUpForTouchMoveSlopTesting(double slop_length_dips) {
     slop_length_dips_ = slop_length_dips;

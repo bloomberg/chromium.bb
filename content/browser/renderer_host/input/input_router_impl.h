@@ -91,6 +91,8 @@ class CONTENT_EXPORT InputRouterImpl
       const TouchEventWithLatencyInfo& touch_event) override;
   void OnTouchEventAck(const TouchEventWithLatencyInfo& event,
                        InputEventAckState ack_result) override;
+  void OnFilteringTouchEvent(
+      const blink::WebTouchEvent& touch_event) override;
 
   // GestureEventFilterClient
   void SendGestureEventImmediately(

@@ -270,6 +270,18 @@ void InputRouterImpl::OnTouchEventAck(const TouchEventWithLatencyInfo& event,
   ack_handler_->OnTouchEventAck(event, ack_result);
 }
 
+void InputRouterImpl::OnFilteringTouchEvent(
+    const WebTouchEvent& touch_event) {
+  // The event stream given to the renderer is not guaranteed to be
+  // valid based on the current TouchEventStreamValidator rules. This event will
+  // never be given to the renderer, but in order to ensure that the event
+  // stream |output_stream_validator_| sees is valid, we give events which are
+  // filtered out to the validator. crbug.com/589111 proposes adding an
+  // additional validator for the events which are actually sent to the
+  // renderer.
+  output_stream_validator_.Validate(touch_event);
+}
+
 void InputRouterImpl::OnGestureEventAck(
     const GestureEventWithLatencyInfo& event,
     InputEventAckState ack_result) {
