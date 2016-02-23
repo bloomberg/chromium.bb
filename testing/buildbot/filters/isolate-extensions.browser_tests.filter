@@ -1,1 +1,4 @@
 # List below tests to be excluded from running.
+
+# crbug.com/589177: ProcessManagerBrowserTest.FrameClassification is flaky with --site-per-process
+-ProcessManagerBrowserTest.FrameClassification
