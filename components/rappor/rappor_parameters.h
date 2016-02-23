@@ -11,8 +11,7 @@ namespace rappor {
 
 // Levels of noise added to a sample.
 enum NoiseLevel {
-  NO_NOISE = 0,
-  NORMAL_NOISE,
+  NORMAL_NOISE = 0,
   NUM_NOISE_LEVELS,
 };
 
@@ -29,11 +28,9 @@ enum RapporType {
 };
 
 enum Probability {
-  PROBABILITY_100,   // 100%
   PROBABILITY_75,    // 75%
   PROBABILITY_50,    // 50%
   PROBABILITY_25,    // 25%
-  PROBABILITY_0,     // 0%
 };
 
 
@@ -90,13 +87,6 @@ struct RapporParameters {
 namespace internal {
 
 const NoiseParameters kNoiseParametersForLevel[NUM_NOISE_LEVELS] = {
-    // NO_NOISE
-    {
-     rappor::PROBABILITY_0 /* Fake data probability */,
-     rappor::PROBABILITY_0 /* Fake one probability */,
-     rappor::PROBABILITY_100 /* One coin probability */,
-     rappor::PROBABILITY_0 /* Zero coin probability */,
-    },
     // NORMAL_NOISE
     {
      rappor::PROBABILITY_50 /* Fake data probability */,
