@@ -34,8 +34,12 @@ void BuildColumnSet(views::GridLayout* layout, ColumnSetType type) {
   column_set->AddPaddingColumn(0, views::kButtonHEdgeMarginNew);
   switch (type) {
     case SINGLE_VIEW_COLUMN_SET:
-      column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
-                            views::GridLayout::USE_PREF, 0, 0);
+      column_set->AddColumn(views::GridLayout::FILL,
+                            views::GridLayout::FILL,
+                            1,
+                            views::GridLayout::USE_PREF,
+                            0,
+                            0);
       break;
     case DOUBLE_BUTTON_COLUMN_SET:
       column_set->AddColumn(views::GridLayout::TRAILING,
@@ -112,6 +116,10 @@ void AutoSigninFirstRunDialogView::OnClosed() {
     controller_->OnCloseDialog();
   // This method is called twice. crbug.com/583330
   controller_ = nullptr;
+}
+
+gfx::Size AutoSigninFirstRunDialogView::GetPreferredSize() const {
+  return gfx::Size(kDesiredWidth, GetHeightForWidth(kDesiredWidth));
 }
 
 void AutoSigninFirstRunDialogView::ButtonPressed(views::Button* sender,

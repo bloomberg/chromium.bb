@@ -79,10 +79,7 @@
 
   // Layout.
   // Compute the bubble width using the title and the buttons.
-  const CGFloat contentWidth = 2 * kFramePadding + std::max(
-      NSWidth([titleView frame]),
-      NSWidth([_okButton frame]) + kRelatedControlHorizontalPadding +
-      NSWidth([_turnOffButton frame]));
+  const CGFloat contentWidth = kDesiredBubbleWidth;
   CGFloat curX = contentWidth - kFramePadding;
   CGFloat curY = kFramePadding;
   [_okButton setFrameOrigin:NSMakePoint(curX - NSWidth([_okButton frame]),
