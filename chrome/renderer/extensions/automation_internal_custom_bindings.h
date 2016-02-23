@@ -141,6 +141,9 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler,
   void UpdateOverallTreeChangeObserverFilter();
 
   // AXTreeDelegate implementation.
+  void OnNodeDataWillChange(ui::AXTree* tree,
+                            const ui::AXNodeData& old_node_data,
+                            const ui::AXNodeData& new_node_data) override;
   void OnTreeDataChanged(ui::AXTree* tree) override;
   void OnNodeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
   void OnSubtreeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
@@ -163,6 +166,7 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler,
   api::automation::TreeChangeObserverFilter
       tree_change_observer_overall_filter_;
   std::vector<int> deleted_node_ids_;
+  std::vector<int> text_changed_node_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationInternalCustomBindings);
 };

@@ -23,6 +23,9 @@ class FakeAXTreeDelegate : public AXTreeDelegate {
       : tree_data_changed_(false),
         root_changed_(false) {}
 
+  void OnNodeDataWillChange(AXTree* tree,
+                            const AXNodeData& old_node_data,
+                            const AXNodeData& new_node_data) override {}
   void OnTreeDataChanged(AXTree* tree) override {
     tree_data_changed_ = true;
   }

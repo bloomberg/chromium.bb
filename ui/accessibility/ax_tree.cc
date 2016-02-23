@@ -180,6 +180,8 @@ bool AXTree::UpdateNode(const AXNodeData& src,
   AXNode* node = GetFromId(src.id);
   if (node) {
     update_state->pending_nodes.erase(node);
+    if (delegate_)
+      delegate_->OnNodeDataWillChange(this, node->data(), src);
     node->SetData(src);
   } else {
     if (src.role != AX_ROLE_ROOT_WEB_AREA &&

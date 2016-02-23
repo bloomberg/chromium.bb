@@ -240,6 +240,11 @@
     nodeChanged,
 
     /**
+     * This node's text (name) changed.
+     */
+    textChanged,
+
+    /**
      * This node was removed.
      */
     nodeRemoved

@@ -96,7 +96,7 @@ LiveRegions.prototype = {
       this.outputLiveRegionChange_(node, null);
     }
 
-    if (relevant.indexOf('text') >= 0 && type == 'nodeChanged')
+    if (relevant.indexOf('text') >= 0 && type == 'textChanged')
       this.outputLiveRegionChange_(node, null);
 
     if (relevant.indexOf('removals') >= 0 && type == 'nodeRemoved')

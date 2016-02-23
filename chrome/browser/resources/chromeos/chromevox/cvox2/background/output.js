@@ -261,10 +261,6 @@ Output.ROLE_INFO_ = {
   radioGroup: {
     msgId: 'role_radiogroup',
   },
-  region: {
-    msgId: 'role_region',
-    inherits: 'abstractContainer'
-  },
   rowHeader: {
     msgId: 'role_rowheader',
     inherits: 'abstractContainer'
@@ -476,6 +472,9 @@ Output.RULES = {
     rootWebArea: {
       enter: '$name',
       speak: '$if($name, $name, $docUrl)'
+    },
+    region: {
+      speak: '$descendants'
     },
     row: {
       enter: '@row_granularity $tableRowIndex'
@@ -821,7 +820,7 @@ Output.prototype = {
   go: function() {
     // Speech.
     var queueMode = this.queueMode_;
-    if (Output.flushNextSpeechUtterance_ && this.speechBuffer_.length > 0) {
+    if (Output.flushNextSpeechUtterance_) {
       queueMode = cvox.QueueMode.FLUSH;
       Output.flushNextSpeechUtterance_ = false;
     }

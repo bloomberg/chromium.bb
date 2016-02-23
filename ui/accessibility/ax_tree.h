@@ -41,6 +41,11 @@ class AX_EXPORT AXTreeDelegate {
   AXTreeDelegate();
   virtual ~AXTreeDelegate();
 
+  // Called before a node's data gets updated.
+  virtual void OnNodeDataWillChange(AXTree* tree,
+                                    const AXNodeData& old_node_data,
+                                    const AXNodeData& new_node_data) = 0;
+
   // Called when tree data changes.
   virtual void OnTreeDataChanged(AXTree* tree) = 0;
 

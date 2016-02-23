@@ -989,6 +989,14 @@ void AutomationInternalCustomBindings::OnAccessibilityEvent(
   args->Set(0U, event_params);
   context()->DispatchEvent("automationInternal.onAccessibilityEvent", args);
 }
+void AutomationInternalCustomBindings::OnNodeDataWillChange(
+    ui::AXTree* tree,
+    const ui::AXNodeData& old_node_data,
+    const ui::AXNodeData& new_node_data) {
+  if (old_node_data.GetStringAttribute(ui::AX_ATTR_NAME) !=
+      new_node_data.GetStringAttribute(ui::AX_ATTR_NAME))
+    text_changed_node_ids_.push_back(new_node_data.id);
+}
 
 void AutomationInternalCustomBindings::OnTreeDataChanged(ui::AXTree* tree) {}
 
@@ -1030,7 +1038,7 @@ void AutomationInternalCustomBindings::OnAtomicUpdateFinished(
   if (iter == axtree_to_tree_cache_map_.end())
     return;
 
-  for (auto change : changes) {
+  for (const auto change : changes) {
     ui::AXNode* node = change.node;
     switch (change.type) {
       case NODE_CREATED:
@@ -1050,6 +1058,13 @@ void AutomationInternalCustomBindings::OnAtomicUpdateFinished(
         break;
     }
   }
+
+  for (int id : text_changed_node_ids_) {
+    LOG(ERROR) << "got id!" << id;
+    SendTreeChangeEvent(api::automation::TREE_CHANGE_TYPE_TEXTCHANGED, tree,
+                        tree->GetFromId(id));
+  }
+  text_changed_node_ids_.clear();
 }
 
 void AutomationInternalCustomBindings::SendTreeChangeEvent(

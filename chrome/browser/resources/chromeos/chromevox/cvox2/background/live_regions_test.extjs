@@ -221,3 +221,32 @@ TEST_F('LiveRegionsTest', 'LiveRegionCategoryFlush', function() {
       mockFeedback.replay();
     });
 });
+
+TEST_F('LiveRegionsTest', 'SilentOnNodeChange', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*!
+    <p>start</p>
+    <button>first</button>
+    <div role="button" id="live" aria-live="polite">
+      hello!
+    </div>
+    <script>
+      var live = document.getElementById('live');
+      var pressed = true;
+      setInterval(function() {
+        live.setAttribute('aria-pressed', pressed);
+        pressed = !pressed;
+      }, 50);
+    </script>
+  */},
+  function(root) {
+    var focusAfterNodeChange = window.setTimeout.bind(window, function() {
+      root.firstChild.nextSibling.focus();
+    }, 1000);
+    mockFeedback.call(focusAfterNodeChange)
+        .expectSpeech('hello!')
+        .expectNextSpeechUtteranceIsNot('hello!')
+        .expectNextSpeechUtteranceIsNot('hello!')       ;
+    mockFeedback.replay();
+  });
+});

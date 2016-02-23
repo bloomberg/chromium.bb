@@ -650,6 +650,11 @@ base::string16 BrowserAccessibilityManager::GetTextForRange(
   return text;
 }
 
+void BrowserAccessibilityManager::OnNodeDataWillChange(
+    ui::AXTree* tree,
+    const ui::AXNodeData& old_node_data,
+    const ui::AXNodeData& new_node_data) {}
+
 void BrowserAccessibilityManager::OnTreeDataChanged(ui::AXTree* tree) {
 }
 

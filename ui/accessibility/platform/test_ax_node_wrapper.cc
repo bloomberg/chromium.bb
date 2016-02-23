@@ -18,6 +18,9 @@ gfx::Vector2d g_offset;
 // A simple implementation of AXTreeDelegate to catch when AXNodes are
 // deleted so we can delete their wrappers.
 class TestAXTreeDelegate : public AXTreeDelegate {
+  void OnNodeDataWillChange(AXTree* tree,
+                            const AXNodeData& old_node_data,
+                            const AXNodeData& new_node_data) override {}
   void OnTreeDataChanged(AXTree* tree) override {}
   void OnNodeWillBeDeleted(AXTree* tree, AXNode* node) override {
     auto iter = g_node_to_wrapper_map.find(node);
