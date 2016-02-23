@@ -13,6 +13,7 @@ namespace blink {
 
 CompositorAnimationPlayer::CompositorAnimationPlayer()
     : m_animationPlayer(cc::AnimationPlayer::Create(cc::AnimationIdProvider::NextPlayerId()))
+    , m_delegate()
 {
 }
 
