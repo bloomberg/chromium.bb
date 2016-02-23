@@ -11,6 +11,7 @@
 #include "chrome/browser/task_management/task_manager_observer.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "content/public/browser/browser_thread.h"
+#include "gpu/ipc/common/memory_stats.h"
 
 namespace task_management {
 
@@ -117,10 +118,9 @@ void TaskGroup::RemoveTask(Task* task) {
   tasks_.erase(task->task_id());
 }
 
-void TaskGroup::Refresh(
-    const content::GPUVideoMemoryUsageStats& gpu_memory_stats,
-    base::TimeDelta update_interval,
-    int64_t refresh_flags) {
+void TaskGroup::Refresh(const gpu::VideoMemoryUsageStats& gpu_memory_stats,
+                        base::TimeDelta update_interval,
+                        int64_t refresh_flags) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // First refresh the enabled non-expensive resources usages on the UI thread.
@@ -180,7 +180,7 @@ Task* TaskGroup::GetTaskById(TaskId task_id) const {
 }
 
 void TaskGroup::RefreshGpuMemory(
-    const content::GPUVideoMemoryUsageStats& gpu_memory_stats) {
+    const gpu::VideoMemoryUsageStats& gpu_memory_stats) {
   auto itr = gpu_memory_stats.process_map.find(process_id_);
   if (itr == gpu_memory_stats.process_map.end()) {
     gpu_memory_ = -1;

@@ -18,7 +18,6 @@
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/common/gpu/gpu_stream_constants.h"
 #include "content/public/common/common_param_traits.h"
-#include "content/public/common/gpu_memory_stats.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
@@ -27,6 +26,7 @@
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/common/value_state.h"
 #include "gpu/config/gpu_info.h"
+#include "gpu/ipc/common/memory_stats.h"
 #include "gpu/ipc/gpu_command_buffer_traits.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
@@ -285,12 +285,12 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::GPUInfo)
   IPC_STRUCT_TRAITS_MEMBER(jpeg_decode_accelerator_supported)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(content::GPUVideoMemoryUsageStats::ProcessStats)
+IPC_STRUCT_TRAITS_BEGIN(gpu::VideoMemoryUsageStats::ProcessStats)
   IPC_STRUCT_TRAITS_MEMBER(video_memory)
   IPC_STRUCT_TRAITS_MEMBER(has_duplicates)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(content::GPUVideoMemoryUsageStats)
+IPC_STRUCT_TRAITS_BEGIN(gpu::VideoMemoryUsageStats)
   IPC_STRUCT_TRAITS_MEMBER(process_map)
   IPC_STRUCT_TRAITS_MEMBER(bytes_allocated)
   IPC_STRUCT_TRAITS_MEMBER(bytes_allocated_historical_max)
@@ -447,7 +447,7 @@ IPC_MESSAGE_CONTROL1(GpuHostMsg_GraphicsInfoCollected,
 
 // Response from GPU to a GpuMsg_GetVideoMemory.
 IPC_MESSAGE_CONTROL1(GpuHostMsg_VideoMemoryUsageStats,
-                     content::GPUVideoMemoryUsageStats /* GPU memory stats */)
+                     gpu::VideoMemoryUsageStats /* GPU memory stats */)
 
 // Message from GPU to add a GPU log message to the about:gpu page.
 IPC_MESSAGE_CONTROL3(GpuHostMsg_OnLogMessage,

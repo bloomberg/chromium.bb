@@ -15,6 +15,7 @@
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_switches.h"
+#include "gpu/ipc/common/memory_stats.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -43,7 +44,7 @@ class TestObserver : public GpuDataManagerObserver {
   void OnGpuInfoUpdate() override { gpu_info_updated_ = true; }
 
   void OnVideoMemoryUsageStatsUpdate(
-      const GPUVideoMemoryUsageStats& stats) override {
+      const gpu::VideoMemoryUsageStats& stats) override {
     video_memory_usage_stats_updated_ = true;
   }
 
@@ -356,7 +357,7 @@ TEST_F(GpuDataManagerImplPrivateTest, GPUVideoMemoryUsageStatsUpdate) {
   }
   EXPECT_FALSE(observer.video_memory_usage_stats_updated());
 
-  GPUVideoMemoryUsageStats vram_stats;
+  gpu::VideoMemoryUsageStats vram_stats;
   manager->UpdateVideoMemoryUsageStats(vram_stats);
   {
     base::RunLoop run_loop;

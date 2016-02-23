@@ -18,7 +18,10 @@
 #include "chrome/browser/task_management/providers/task.h"
 #include "chrome/browser/task_management/sampling/task_group_sampler.h"
 #include "chrome/browser/task_management/task_manager_observer.h"
-#include "content/public/common/gpu_memory_stats.h"
+
+namespace gpu {
+struct VideoMemoryUsageStats;
+}
 
 namespace task_management {
 
@@ -37,7 +40,7 @@ class TaskGroup {
   void AddTask(Task* task);
   void RemoveTask(Task* task);
 
-  void Refresh(const content::GPUVideoMemoryUsageStats& gpu_memory_stats,
+  void Refresh(const gpu::VideoMemoryUsageStats& gpu_memory_stats,
                base::TimeDelta update_interval,
                int64_t refresh_flags);
 
@@ -82,8 +85,7 @@ class TaskGroup {
   int idle_wakeups_per_second() const { return idle_wakeups_per_second_; }
 
  private:
-  void RefreshGpuMemory(
-      const content::GPUVideoMemoryUsageStats& gpu_memory_stats);
+  void RefreshGpuMemory(const gpu::VideoMemoryUsageStats& gpu_memory_stats);
 
   void RefreshWindowsHandles();
 

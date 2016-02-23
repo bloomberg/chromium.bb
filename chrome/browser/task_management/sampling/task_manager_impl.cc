@@ -297,7 +297,7 @@ void TaskManagerImpl::TaskRemoved(Task* task) {
 }
 
 void TaskManagerImpl::OnVideoMemoryUsageStatsUpdate(
-    const content::GPUVideoMemoryUsageStats& gpu_memory_stats) {
+    const gpu::VideoMemoryUsageStats& gpu_memory_stats) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   gpu_memory_stats_ = gpu_memory_stats;
