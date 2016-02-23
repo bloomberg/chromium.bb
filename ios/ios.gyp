@@ -23,6 +23,7 @@
         'provider/ios_provider_web.gyp:*',
         'testing/ios_testing.gyp:*',
         'third_party/fishhook/fishhook.gyp:*',
+        'third_party/ochamcrest/ochamcrest.gyp:*',
         'web/ios_web.gyp:*',
         'web/ios_web_inttests.gyp:*',
         'web/ios_web_shell.gyp:*',

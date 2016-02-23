@@ -341,6 +341,9 @@ deps_os = {
     'src/ios/third_party/gcdwebserver/src':
      Var('chromium_git') + '/external/github.com/swisspol/GCDWebServer.git' + '@' + '3d5fd0b8281a7224c057deb2d17709b5bea64836',
 
+    'src/ios/third_party/ochamcrest/src':
+     Var('chromium_git') + '/external/github.com/hamcrest/OCHamcrest.git' + '@' + '5b50930c66d1e537918a87eef0943d6750729dc5',
+
     'src/third_party/google_toolbox_for_mac/src':
       Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
 

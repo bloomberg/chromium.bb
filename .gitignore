@@ -185,6 +185,7 @@ vs-chromium-project.txt
 /ios/build/util/CANARY_VERSION
 /ios/third_party/fishhook/src
 /ios/third_party/gcdwebserver/src
+/ios/third_party/ochamcrest/src
 /llvm
 /media/cast/logging/cast_logging_proto_lib.xml
 /media/cdm/api
