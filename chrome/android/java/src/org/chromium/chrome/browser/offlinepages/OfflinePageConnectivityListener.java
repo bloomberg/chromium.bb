@@ -8,7 +8,6 @@ import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.net.ConnectionType;
 import org.chromium.net.NetworkChangeNotifier;
 
 /**
@@ -42,8 +41,7 @@ public class OfflinePageConnectivityListener
         Log.d(TAG, "Got connectivity event, connectionType: " + connectionType + ", controller "
                         + mSnackbarController);
 
-        boolean connected = (connectionType != ConnectionType.CONNECTION_NONE
-                && connectionType != ConnectionType.CONNECTION_BLUETOOTH);
+        boolean connected = NetworkChangeNotifier.isOnline();
         Log.d(TAG, "Connection changed, connected " + connected);
 
         // TODO(petewil): We should consider using the connection quality monitor instead
