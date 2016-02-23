@@ -873,10 +873,7 @@ void NativeWidgetAura::OnKeyEvent(ui::KeyEvent* event) {
   if (!window_->IsVisible())
     return;
 
-  FocusManager* focus_manager = GetWidget()->GetFocusManager();
   delegate_->OnKeyEvent(event);
-  if (!event->handled() && focus_manager)
-    focus_manager->OnKeyEvent(*event);
   event->SetHandled();
 }
 

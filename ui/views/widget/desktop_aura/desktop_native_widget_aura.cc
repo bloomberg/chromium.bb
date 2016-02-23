@@ -220,7 +220,7 @@ class FocusManagerEventHandler : public ui::EventHandler {
     Widget* widget = desktop_native_widget_aura_->GetWidget();
     if (widget && widget->GetFocusManager()->GetFocusedView() &&
         !widget->GetFocusManager()->OnKeyEvent(*event)) {
-      event->SetHandled();
+      event->StopPropagation();
     }
   }
 
@@ -1031,12 +1031,6 @@ void DesktopNativeWidgetAura::OnKeyEvent(ui::KeyEvent* event) {
     return;
 
   native_widget_delegate_->OnKeyEvent(event);
-  if (event->handled())
-    return;
-
-  if (GetWidget()->HasFocusManager() &&
-      !GetWidget()->GetFocusManager()->OnKeyEvent(*event))
-    event->SetHandled();
 }
 
 void DesktopNativeWidgetAura::OnMouseEvent(ui::MouseEvent* event) {

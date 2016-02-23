@@ -821,12 +821,6 @@ void NativeWidgetMus::OnKeyEvent(ui::KeyEvent* event) {
     return;
 
   native_widget_delegate_->OnKeyEvent(event);
-  if (event->handled())
-    return;
-
-  if (GetWidget()->HasFocusManager() &&
-      !GetWidget()->GetFocusManager()->OnKeyEvent(*event))
-    event->SetHandled();
 }
 
 void NativeWidgetMus::OnMouseEvent(ui::MouseEvent* event) {

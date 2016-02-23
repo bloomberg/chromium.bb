@@ -1644,5 +1644,33 @@ TEST_F(WidgetInputMethodInteractiveTest, TextField) {
   widget->CloseNow();
 }
 
+// Test input method should not work for accelerator.
+TEST_F(WidgetInputMethodInteractiveTest, AcceleratorInTextfield) {
+  Widget* widget = CreateWidget();
+  Textfield* textfield = new Textfield;
+  widget->GetRootView()->AddChildView(textfield);
+  ShowSync(widget);
+  textfield->SetTextInputType(ui::TEXT_INPUT_TYPE_TEXT);
+  textfield->RequestFocus();
+
+  ui::KeyEvent key_event(ui::ET_KEY_PRESSED,
+                         ui::VKEY_F, ui::EF_ALT_DOWN);
+  ui::Accelerator accelerator(key_event);
+  widget->GetFocusManager()->RegisterAccelerator(
+      accelerator, ui::AcceleratorManager::kNormalPriority,
+      textfield);
+
+  widget->OnKeyEvent(&key_event);
+  EXPECT_TRUE(key_event.stopped_propagation());
+
+  widget->GetFocusManager()->UnregisterAccelerators(textfield);
+
+  ui::KeyEvent key_event2(key_event);
+  widget->OnKeyEvent(&key_event2);
+  EXPECT_FALSE(key_event2.stopped_propagation());
+
+  widget->CloseNow();
+}
+
 }  // namespace test
 }  // namespace views
