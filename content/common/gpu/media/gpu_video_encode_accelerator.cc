@@ -88,7 +88,7 @@ void GpuVideoEncodeAccelerator::Initialize(
            << ", initial_bitrate=" << initial_bitrate;
   DCHECK(!encoder_);
 
-  if (!stub_->channel()->AddRoute(host_route_id_, this)) {
+  if (!stub_->channel()->AddRoute(host_route_id_, stub_->stream_id(), this)) {
     DLOG(ERROR) << "GpuVideoEncodeAccelerator::Initialize(): "
                    "failed to add route";
     SendCreateEncoderReply(init_done_msg, false);

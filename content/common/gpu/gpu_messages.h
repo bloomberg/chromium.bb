@@ -16,7 +16,7 @@
 #include "content/common/content_param_traits.h"
 #include "content/common/gpu/gpu_memory_uma_stats.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
-#include "content/common/gpu/gpu_stream_priority.h"
+#include "content/common/gpu/gpu_stream_constants.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/gpu_memory_stats.h"
 #include "gpu/command_buffer/common/capabilities.h"

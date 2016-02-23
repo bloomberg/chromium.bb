@@ -53,6 +53,7 @@ class TestGpuChannel : public GpuChannel {
                  gfx::GLShareGroup* share_group,
                  gpu::gles2::MailboxManager* mailbox_manager,
                  gpu::PreemptionFlag* preempting_flag,
+                 gpu::PreemptionFlag* preempted_flag,
                  base::SingleThreadTaskRunner* task_runner,
                  base::SingleThreadTaskRunner* io_task_runner,
                  int client_id,

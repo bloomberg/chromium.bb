@@ -181,52 +181,6 @@ TEST_F(GpuChannelTest, IncompatibleStreamIds) {
   EXPECT_FALSE(stub);
 }
 
-TEST_F(GpuChannelTest, IncompatibleStreamPriorities) {
-  int32_t kClientId = 1;
-  GpuChannel* channel = CreateChannel(kClientId, true, false);
-  ASSERT_TRUE(channel);
-
-  // Create first context.
-  int32_t kRouteId1 = 1;
-  int32_t kStreamId1 = 1;
-  GpuStreamPriority kStreamPriority1 = GpuStreamPriority::NORMAL;
-  GPUCreateCommandBufferConfig init_params;
-  init_params.share_group_id = MSG_ROUTING_NONE;
-  init_params.stream_id = kStreamId1;
-  init_params.stream_priority = kStreamPriority1;
-  init_params.attribs = std::vector<int>();
-  init_params.active_url = GURL();
-  init_params.gpu_preference = gfx::PreferIntegratedGpu;
-  bool succeeded = false;
-  HandleMessage(channel,
-                new GpuChannelMsg_CreateOffscreenCommandBuffer(
-                    gfx::Size(1, 1), init_params, kRouteId1, &succeeded));
-  EXPECT_TRUE(succeeded);
-
-  GpuCommandBufferStub* stub = channel->LookupCommandBuffer(kRouteId1);
-  EXPECT_TRUE(stub);
-
-  // Create second context in same share group but different stream.
-  int32_t kRouteId2 = 2;
-  int32_t kStreamId2 = kStreamId1;
-  GpuStreamPriority kStreamPriority2 = GpuStreamPriority::LOW;
-
-  init_params.share_group_id = MSG_ROUTING_NONE;
-  init_params.stream_id = kStreamId2;
-  init_params.stream_priority = kStreamPriority2;
-  init_params.attribs = std::vector<int>();
-  init_params.active_url = GURL();
-  init_params.gpu_preference = gfx::PreferIntegratedGpu;
-  succeeded = false;
-  HandleMessage(channel,
-                new GpuChannelMsg_CreateOffscreenCommandBuffer(
-                    gfx::Size(1, 1), init_params, kRouteId2, &succeeded));
-  EXPECT_FALSE(succeeded);
-
-  stub = channel->LookupCommandBuffer(kRouteId2);
-  EXPECT_FALSE(stub);
-}
-
 TEST_F(GpuChannelTest, StreamLifetime) {
   int32_t kClientId = 1;
   GpuChannel* channel = CreateChannel(kClientId, true, false);

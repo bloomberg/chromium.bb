@@ -332,7 +332,7 @@ void GpuVideoDecodeAccelerator::Initialize(
     IPC::Message* init_done_msg) {
   DCHECK(!video_decode_accelerator_);
 
-  if (!stub_->channel()->AddRoute(host_route_id_, this)) {
+  if (!stub_->channel()->AddRoute(host_route_id_, stub_->stream_id(), this)) {
     DLOG(ERROR) << "Initialize(): failed to add route";
     SendCreateDecoderReply(init_done_msg, false);
   }

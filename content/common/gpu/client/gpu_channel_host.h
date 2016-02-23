@@ -21,7 +21,7 @@
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
-#include "content/common/gpu/gpu_stream_priority.h"
+#include "content/common/gpu/gpu_stream_constants.h"
 #include "gpu/config/gpu_info.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_channel.h"
@@ -88,7 +88,7 @@ class GpuChannelHost : public IPC::Sender,
       base::WaitableEvent* shutdown_event,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
 
-  static const int32_t kDefaultStreamId = -1;
+  static const int32_t kDefaultStreamId = GPU_STREAM_DEFAULT;
   static const GpuStreamPriority kDefaultStreamPriority =
       GpuStreamPriority::NORMAL;
 

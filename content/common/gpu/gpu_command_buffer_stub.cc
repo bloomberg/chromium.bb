@@ -537,8 +537,8 @@ void GpuCommandBufferStub::OnInitialize(
                                          decoder_.get(),
                                          decoder_.get()));
   sync_point_client_ = sync_point_manager_->CreateSyncPointClient(
-      channel_->GetSyncPointOrderData(), gpu::CommandBufferNamespace::GPU_IO,
-      command_buffer_id_);
+      channel_->GetSyncPointOrderData(stream_id_),
+      gpu::CommandBufferNamespace::GPU_IO, command_buffer_id_);
 
   if (preemption_flag_.get())
     scheduler_->SetPreemptByFlag(preemption_flag_);
@@ -749,7 +749,7 @@ void GpuCommandBufferStub::OnParseError() {
 void GpuCommandBufferStub::OnSchedulingChanged(bool scheduled) {
   TRACE_EVENT1("gpu", "GpuCommandBufferStub::OnSchedulingChanged", "scheduled",
                scheduled);
-  channel_->OnStubSchedulingChanged(this, scheduled);
+  channel_->OnStreamRescheduled(stream_id_, scheduled);
 }
 
 void GpuCommandBufferStub::OnWaitForTokenInRange(int32_t start,

@@ -44,7 +44,8 @@ scoped_ptr<GpuChannel> TestGpuChannelManager::CreateGpuChannel(
     bool allow_real_time_streams) {
   return make_scoped_ptr(new TestGpuChannel(
       sink_, this, sync_point_manager(), share_group(), mailbox_manager(),
-      preempts ? preemption_flag() : nullptr, task_runner_.get(),
+      preempts ? preemption_flag() : nullptr,
+      preempts ? nullptr : preemption_flag(), task_runner_.get(),
       io_task_runner_.get(), client_id, client_tracing_id,
       allow_view_command_buffers, allow_real_time_streams));
 }
@@ -55,6 +56,7 @@ TestGpuChannel::TestGpuChannel(IPC::TestSink* sink,
                                gfx::GLShareGroup* share_group,
                                gpu::gles2::MailboxManager* mailbox_manager,
                                gpu::PreemptionFlag* preempting_flag,
+                               gpu::PreemptionFlag* preempted_flag,
                                base::SingleThreadTaskRunner* task_runner,
                                base::SingleThreadTaskRunner* io_task_runner,
                                int client_id,
@@ -67,6 +69,7 @@ TestGpuChannel::TestGpuChannel(IPC::TestSink* sink,
                  share_group,
                  mailbox_manager,
                  preempting_flag,
+                 preempted_flag,
                  task_runner,
                  io_task_runner,
                  client_id,
@@ -107,6 +110,12 @@ GpuChannelTestCommon::GpuChannelTestCommon()
                                                  sync_point_manager_.get(),
                                                  nullptr)) {}
 
-GpuChannelTestCommon::~GpuChannelTestCommon() {}
+GpuChannelTestCommon::~GpuChannelTestCommon() {
+  // Destroying channels causes tasks to run on the IO task runner.
+  channel_manager_ = nullptr;
+  // Clear pending tasks to avoid refptr cycles that get flagged by ASAN.
+  task_runner_->ClearPendingTasks();
+  io_task_runner_->ClearPendingTasks();
+}
 
 }  // namespace content

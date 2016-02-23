@@ -61,6 +61,10 @@ uint32_t SyncPointOrderData::GenerateUnprocessedOrderNumber(
 void SyncPointOrderData::BeginProcessingOrderNumber(uint32_t order_num) {
   DCHECK(processing_thread_checker_.CalledOnValidThread());
   DCHECK_GE(order_num, current_order_num_);
+  // Use thread-safe accessors here because |processed_order_num_| and
+  // |unprocessed_order_num_| are protected by a lock.
+  DCHECK_GT(order_num, processed_order_num());
+  DCHECK_LE(order_num, unprocessed_order_num());
   current_order_num_ = order_num;
   paused_ = false;
 

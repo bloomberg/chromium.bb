@@ -66,7 +66,7 @@ class GpuWatchdog;
 // managing the lifetimes of GPU channels and forwarding IPC requests from the
 // browser process to them based on the corresponding renderer ID.
 class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
-                          public IPC::Sender {
+                                         public IPC::Sender {
  public:
   GpuChannelManager(IPC::SyncChannel* channel,
                     GpuWatchdog* watchdog,
