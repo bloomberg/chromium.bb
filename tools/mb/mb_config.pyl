@@ -756,6 +756,7 @@
       'cast_shell_linux': 'cast_gn_release_trybot',
       'linux_deterministic': 'swarming_deterministic_gyp_release_bot',
       'linux_ecs_ozone': 'embedded_gyp_debug_bot',
+      'linux_optional_gpu_tests_rel': 'swarming_gpu_fyi_tests_gn_release_trybot',
     },
     'tryserver.chromium.mac': {
       'mac_chromium_gn_dbg': 'gn_debug_static_bot',
