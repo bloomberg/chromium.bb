@@ -11,7 +11,13 @@ namespace content {
 
 bool UseGestureBasedWheelScrolling() {
   base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
+// TODO(dtapuska): OSX has special code to deal with mouse wheel
+// and overscroll that needs to be fixed. crbug.com/587979
+#if defined(OS_MACOSX)
   return cmd->HasSwitch(switches::kEnableWheelGestures);
+#else
+  return !cmd->HasSwitch(switches::kDisableWheelGestures);
+#endif
 }
 
 }  // namespace content
