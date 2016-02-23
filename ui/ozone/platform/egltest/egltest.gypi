@@ -19,6 +19,8 @@
         'OZONE_IMPLEMENTATION',
       ],
       'dependencies': [
+        'ozone.gyp:ozone_base',
+        'ozone.gyp:ozone_common',
         '../../base/base.gyp:base',
         '../../third_party/khronos/khronos.gyp:khronos_headers',
         '../events/devices/events_devices.gyp:events_devices',

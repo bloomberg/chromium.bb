@@ -68,23 +68,6 @@ config("vgem_map") {
 # GYP version: ui/ozone/ozone.gyp:ozone_base
 component("ozone_base") {
   sources = [
-    "common/display_mode_proxy.cc",
-    "common/display_mode_proxy.h",
-    "common/display_snapshot_proxy.cc",
-    "common/display_snapshot_proxy.h",
-    "common/display_util.cc",
-    "common/display_util.h",
-    "common/egl_util.cc",
-    "common/egl_util.h",
-    "common/gpu/ozone_gpu_message_generator.cc",
-    "common/gpu/ozone_gpu_message_generator.h",
-    "common/gpu/ozone_gpu_message_params.cc",
-    "common/gpu/ozone_gpu_message_params.h",
-    "common/gpu/ozone_gpu_messages.h",
-    "common/native_display_delegate_ozone.cc",
-    "common/native_display_delegate_ozone.h",
-    "common/stub_overlay_manager.cc",
-    "common/stub_overlay_manager.h",
     "public/cursor_factory_ozone.cc",
     "public/cursor_factory_ozone.h",
     "public/gpu_platform_support.cc",
@@ -108,7 +91,7 @@ component("ozone_base") {
 
   defines = [ "OZONE_BASE_IMPLEMENTATION" ]
 
-  deps = [
+  public_deps = [
     "//base",
     "//ipc",
     "//skia",

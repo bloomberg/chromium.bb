@@ -20,10 +20,9 @@
 #include "ui/gfx/ipc/gfx_param_traits_macros.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
-#include "ui/ozone/ozone_base_export.h"
 
 #undef IPC_MESSAGE_EXPORT
-#define IPC_MESSAGE_EXPORT OZONE_BASE_EXPORT
+#define IPC_MESSAGE_EXPORT
 
 #define IPC_MESSAGE_START OzoneGpuMsgStart
 

@@ -30,6 +30,7 @@ source_set("x11") {
     "//ui/gfx/geometry",
     "//ui/gfx/x",
     "//ui/ozone:ozone_base",
+    "//ui/ozone/common",
     "//ui/platform_window/x11",
   ]
 

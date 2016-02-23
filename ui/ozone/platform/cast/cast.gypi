@@ -18,6 +18,8 @@
       'target_name': 'ozone_platform_cast',
       'type': 'static_library',
       'dependencies': [
+        'ozone.gyp:ozone_base',
+        'ozone.gyp:ozone_common',
         '../events/events.gyp:events',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',

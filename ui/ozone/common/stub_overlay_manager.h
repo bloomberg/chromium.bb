@@ -6,12 +6,11 @@
 #define UI_OZONE_COMMON_STUB_OVERLAY_MANAGER_H_
 
 #include "base/macros.h"
-#include "ui/ozone/ozone_base_export.h"
 #include "ui/ozone/public/overlay_manager_ozone.h"
 
 namespace ui {
 
-class OZONE_BASE_EXPORT StubOverlayManager : public OverlayManagerOzone {
+class StubOverlayManager : public OverlayManagerOzone {
  public:
   StubOverlayManager();
   ~StubOverlayManager() override;

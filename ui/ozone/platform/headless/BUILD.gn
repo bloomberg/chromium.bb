@@ -25,6 +25,7 @@ source_set("headless") {
     "//ui/events/platform",
     "//ui/gfx/geometry",
     "//ui/ozone:ozone_base",
+    "//ui/ozone/common",
     "//ui/platform_window",
   ]
 }

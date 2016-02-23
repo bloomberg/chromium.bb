@@ -34,6 +34,8 @@
       'target_name': 'ozone_platform_gbm',
       'type': 'static_library',
       'dependencies': [
+        'ozone.gyp:ozone_base',
+        'ozone.gyp:ozone_common',
         '../../base/base.gyp:base',
         '../../build/linux/system.gyp:libdrm',
         '../../third_party/minigbm/minigbm.gyp:minigbm',

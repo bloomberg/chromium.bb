@@ -26,6 +26,7 @@ source_set("egltest") {
     "//ui/events/platform",
     "//ui/gfx",
     "//ui/ozone:ozone_base",
+    "//ui/ozone/common",
     "//ui/platform_window",
   ]
 }

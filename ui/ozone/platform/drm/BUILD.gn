@@ -132,6 +132,7 @@ source_set("gbm") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/ozone:ozone_base",
+    "//ui/ozone/common",
     "//ui/platform_window",
   ]
 
@@ -190,6 +191,7 @@ source_set("gbm_unittests") {
     "//testing/gtest",
     "//ui/gfx",
     "//ui/ozone:platform",
+    "//ui/ozone/common",
   ]
 
   public_configs = [ ":libdrm" ]

@@ -19,6 +19,8 @@
         'OZONE_IMPLEMENTATION',
       ],
       'dependencies': [
+        'ozone.gyp:ozone_base',
+        'ozone.gyp:ozone_common',
         '../../base/base.gyp:base',
         '../base/ui_base.gyp:ui_base',
         '../events/events.gyp:events',

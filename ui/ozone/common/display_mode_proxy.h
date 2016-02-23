@@ -7,13 +7,12 @@
 
 #include "base/macros.h"
 #include "ui/display/types/display_mode.h"
-#include "ui/ozone/ozone_base_export.h"
 
 namespace ui {
 
 struct DisplayMode_Params;
 
-class OZONE_BASE_EXPORT DisplayModeProxy : public DisplayMode {
+class DisplayModeProxy : public DisplayMode {
  public:
   DisplayModeProxy(const DisplayMode_Params& params);
   ~DisplayModeProxy() override;

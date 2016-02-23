@@ -22,6 +22,8 @@
         'OZONE_IMPLEMENTATION',
       ],
       'dependencies': [
+        'ozone.gyp:ozone_base',
+        'ozone.gyp:ozone_common',
         '../../base/base.gyp:base',
         '../../skia/skia.gyp:skia',
         '../../third_party/wayland-protocols/wayland-protocols.gyp:xdg_shell_protocol',
