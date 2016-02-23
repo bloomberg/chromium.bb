@@ -439,6 +439,7 @@ void HTMLSelectElement::childrenChanged(const ChildrenChange& change)
 void HTMLSelectElement::optionElementChildrenChanged()
 {
     setNeedsValidityCheck();
+    setOptionsChangedOnLayoutObject();
 
     if (layoutObject()) {
         if (AXObjectCache* cache = layoutObject()->document().existingAXObjectCache())
