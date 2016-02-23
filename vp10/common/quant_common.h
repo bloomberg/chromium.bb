@@ -25,12 +25,13 @@ extern "C" {
 #define QINDEX_BITS 8
 #if CONFIG_AOM_QM
 // Total number of QM sets stored
-#define NUM_QM_LEVELS 16
+#define QM_LEVEL_BITS 4
+#define NUM_QM_LEVELS (1 << QM_LEVEL_BITS)
 /* Offset into the list of QMs. Actual number of levels used is
    (NUM_QM_LEVELS-AOM_QM_OFFSET)
    Lower value of AOM_QM_OFFSET implies more heavily weighted matrices.*/
-#define AOM_QM_FIRST 8
-#define AOM_QM_LAST NUM_QM_LEVELS
+#define DEFAULT_QM_FIRST (NUM_QM_LEVELS / 2)
+#define DEFAULT_QM_LAST (NUM_QM_LEVELS - 1)
 #endif
 
 struct VP10Common;
@@ -43,10 +44,9 @@ int vp10_get_qindex(const struct segmentation *seg, int segment_id,
 #if CONFIG_AOM_QM
 // Reduce the large number of quantizers to a smaller number of levels for which
 // different matrices may be defined
-static inline int aom_get_qmlevel(int qindex) {
-  int qmlevel =
-      (qindex * (AOM_QM_LAST - AOM_QM_FIRST) + QINDEX_RANGE / 2) / QINDEX_RANGE;
-  qmlevel = VPXMIN(qmlevel + AOM_QM_FIRST, NUM_QM_LEVELS - 1);
+static inline int aom_get_qmlevel(int qindex, int first, int last) {
+  int qmlevel = (qindex * (last + 1 - first) + QINDEX_RANGE / 2) / QINDEX_RANGE;
+  qmlevel = VPXMIN(qmlevel + first, NUM_QM_LEVELS - 1);
   return qmlevel;
 }
 void aom_qm_init(struct VP10Common *cm);

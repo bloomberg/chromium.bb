@@ -212,15 +212,13 @@ int vp10_get_qindex(const struct segmentation *seg, int segment_id,
 }
 
 #if CONFIG_AOM_QM
-qm_val_t* aom_iqmatrix(VP10_COMMON* cm, int qindex, int is_chroma,
+qm_val_t* aom_iqmatrix(VP10_COMMON* cm, int qmlevel, int is_chroma,
                        int log2sizem2, int is_intra) {
-  int scaled_q_index = aom_get_qmlevel(qindex);
-  return &cm->giqmatrix[scaled_q_index][!!is_chroma][!!is_intra][log2sizem2][0];
+  return &cm->giqmatrix[qmlevel][!!is_chroma][!!is_intra][log2sizem2][0];
 }
-qm_val_t* aom_qmatrix(VP10_COMMON* cm, int qindex, int is_chroma,
+qm_val_t* aom_qmatrix(VP10_COMMON* cm, int qmlevel, int is_chroma,
                       int log2sizem2, int is_intra) {
-  int scaled_q_index = aom_get_qmlevel(qindex);
-  return &cm->gqmatrix[scaled_q_index][!!is_chroma][!!is_intra][log2sizem2][0];
+  return &cm->gqmatrix[qmlevel][!!is_chroma][!!is_intra][log2sizem2][0];
 }
 
 static uint16_t

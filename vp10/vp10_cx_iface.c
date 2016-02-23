@@ -41,6 +41,8 @@ struct vp10_extracfg {
   unsigned int lossless;
 #if CONFIG_AOM_QM
   unsigned int enable_qm;
+  unsigned int qm_min;
+  unsigned int qm_max;
 #endif
   unsigned int frame_parallel_decoding_mode;
   AQ_MODE aq_mode;
@@ -54,25 +56,27 @@ struct vp10_extracfg {
 };
 
 static struct vp10_extracfg default_extra_cfg = {
-  0,                    // cpu_used
-  1,                    // enable_auto_alt_ref
-  0,                    // noise_sensitivity
-  0,                    // sharpness
-  0,                    // static_thresh
-  6,                    // tile_columns
-  0,                    // tile_rows
-  7,                    // arnr_max_frames
-  5,                    // arnr_strength
-  0,                    // min_gf_interval; 0 -> default decision
-  0,                    // max_gf_interval; 0 -> default decision
-  VPX_TUNE_PSNR,        // tuning
-  10,                   // cq_level
-  0,                    // rc_max_intra_bitrate_pct
-  0,                    // rc_max_inter_bitrate_pct
-  0,                    // gf_cbr_boost_pct
-  0,                    // lossless
+  0,              // cpu_used
+  1,              // enable_auto_alt_ref
+  0,              // noise_sensitivity
+  0,              // sharpness
+  0,              // static_thresh
+  6,              // tile_columns
+  0,              // tile_rows
+  7,              // arnr_max_frames
+  5,              // arnr_strength
+  0,              // min_gf_interval; 0 -> default decision
+  0,              // max_gf_interval; 0 -> default decision
+  VPX_TUNE_PSNR,  // tuning
+  10,             // cq_level
+  0,              // rc_max_intra_bitrate_pct
+  0,              // rc_max_inter_bitrate_pct
+  0,              // gf_cbr_boost_pct
+  0,              // lossless
 #if CONFIG_AOM_QM
-  0,                    // enable_qm
+  0,                 // enable_qm
+  DEFAULT_QM_FIRST,  // qm_min
+  DEFAULT_QM_LAST,   // qm_max
 #endif
   1,                    // frame_parallel_decoding_mode
   NO_AQ,                // aq_mode
@@ -365,6 +369,8 @@ static vpx_codec_err_t set_encoder_config(
 
 #if CONFIG_AOM_QM
   oxcf->using_qm = extra_cfg->enable_qm;
+  oxcf->qm_minlevel = extra_cfg->qm_min;
+  oxcf->qm_maxlevel = extra_cfg->qm_max;
 #endif
 
   oxcf->under_shoot_pct = cfg->rc_undershoot_pct;
@@ -647,6 +653,20 @@ static vpx_codec_err_t ctrl_set_enable_qm(vpx_codec_alg_priv_t *ctx,
                                          va_list args) {
   struct vp10_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.enable_qm = CAST(VP9E_SET_ENABLE_QM, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
+static vpx_codec_err_t ctrl_set_qm_min(vpx_codec_alg_priv_t *ctx,
+                                       va_list args) {
+  struct vp10_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.qm_min = CAST(VP9E_SET_QM_MIN, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
+static vpx_codec_err_t ctrl_set_qm_max(vpx_codec_alg_priv_t *ctx,
+                                       va_list args) {
+  struct vp10_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.qm_max = CAST(VP9E_SET_QM_MAX, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 #endif
@@ -1249,6 +1269,8 @@ static vpx_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { VP9E_SET_LOSSLESS, ctrl_set_lossless },
 #if CONFIG_AOM_QM
   { VP9E_SET_ENABLE_QM, ctrl_set_enable_qm },
+  { VP9E_SET_QM_MIN, ctrl_set_qm_min },
+  { VP9E_SET_QM_MAX, ctrl_set_qm_max },
 #endif
   { VP9E_SET_FRAME_PARALLEL_DECODING, ctrl_set_frame_parallel_decoding_mode },
   { VP9E_SET_AQ_MODE, ctrl_set_aq_mode },

@@ -324,6 +324,33 @@ enum vp8e_enc_control_id {
    */
 
   VP9E_SET_ENABLE_QM,
+
+  /*!\brief Codec control function to set the min quant matrix flatness.
+   *
+   * AOM can operate with different ranges of quantisation matrices.
+   * As quantisation levels increase, the matrices get flatter. This
+   * control sets the minimum level of flatness from which the matrices
+   * are determined.
+   *
+   *  By default, the encoder sets this minimum at half the available
+   *  range.
+   *
+   * Supported in codecs: AOM
+   */
+  VP9E_SET_QM_MIN,
+
+  /*!\brief Codec control function to set the max quant matrix flatness.
+   *
+   * AOM can operate with different ranges of quantisation matrices.
+   * As quantisation levels increase, the matrices get flatter. This
+   * control sets the maximum level of flatness possible.
+   *
+   * By default, the encoder sets this maximum at the top of the
+   * available range.
+   *
+   * Supported in codecs: AOM
+   */
+  VP9E_SET_QM_MAX,
 #endif
 
   /*!\brief Codec control function to set number of tile columns.
@@ -763,6 +790,12 @@ VPX_CTRL_USE_TYPE(VP9E_SET_LOSSLESS, unsigned int)
 #if CONFIG_AOM_QM
 VPX_CTRL_USE_TYPE(VP9E_SET_ENABLE_QM, unsigned int)
 #define VPX_CTRL_VP9E_SET_ENABLE_QM
+
+VPX_CTRL_USE_TYPE(VP9E_SET_QM_MIN, unsigned int)
+#define VPX_CTRL_VP9E_SET_QM_MIN
+
+VPX_CTRL_USE_TYPE(VP9E_SET_QM_MAX, unsigned int)
+#define VPX_CTRL_VP9E_SET_QM_MAX
 #endif
 
 VPX_CTRL_USE_TYPE(VP9E_SET_FRAME_PARALLEL_DECODING, unsigned int)

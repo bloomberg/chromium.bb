@@ -212,6 +212,8 @@ typedef struct VP10Common {
   qm_val_t *uv_qmatrix[MAX_SEGMENTS][2][TX_SIZES];
 
   int using_qmatrix;
+  int min_qmlevel;
+  int max_qmlevel;
 #endif
 
   /* We allocate a MODE_INFO struct for each macroblock, together with

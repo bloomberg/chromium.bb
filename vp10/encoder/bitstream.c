@@ -865,6 +865,10 @@ static void encode_quantization(const VP10_COMMON *const cm,
   write_delta_q(wb, cm->uv_ac_delta_q);
 #if CONFIG_AOM_QM
   vpx_wb_write_bit(wb, cm->using_qmatrix);
+  if (cm->using_qmatrix) {
+    vpx_wb_write_literal(wb, cm->min_qmlevel, QM_LEVEL_BITS);
+    vpx_wb_write_literal(wb, cm->max_qmlevel, QM_LEVEL_BITS);
+  }
 #endif
 }
 

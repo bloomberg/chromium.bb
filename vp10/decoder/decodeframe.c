@@ -1118,6 +1118,13 @@ static void setup_quantization(VP10_COMMON *const cm,
   cm->dequant_bit_depth = cm->bit_depth;
 #if CONFIG_AOM_QM
   cm->using_qmatrix = vpx_rb_read_bit(rb);
+  if (cm->using_qmatrix) {
+    cm->min_qmlevel = vpx_rb_read_literal(rb, QM_LEVEL_BITS);
+    cm->max_qmlevel = vpx_rb_read_literal(rb, QM_LEVEL_BITS);
+  } else {
+    cm->min_qmlevel = 0;
+    cm->max_qmlevel = 0;
+  }
 #endif
 }
 
@@ -1127,8 +1134,10 @@ static void setup_segmentation_dequant(VP10_COMMON *const cm) {
 #if CONFIG_AOM_QM
   int lossless;
   int j = 0;
-  int qmindex;
+  int qmlevel;
   int using_qm = cm->using_qmatrix;
+  int minqm = cm->min_qmlevel;
+  int maxqm = cm->max_qmlevel;
 #endif
   if (cm->seg.enabled) {
     for (i = 0; i < MAX_SEGMENTS; ++i) {
@@ -1145,13 +1154,14 @@ static void setup_segmentation_dequant(VP10_COMMON *const cm) {
                  cm->uv_dc_delta_q == 0 && cm->uv_ac_delta_q == 0;
       // NB: depends on base index so there is only 1 set per frame
       // No quant weighting when lossless or signalled not using QM
-      qmindex = (lossless || using_qm == 0) ?
-        QINDEX_RANGE - 1 : cm->base_qindex;
+      qmlevel = (lossless || using_qm == 0)
+                    ? NUM_QM_LEVELS - 1
+                    : aom_get_qmlevel(cm->base_qindex, minqm, maxqm);
       for (j = 0; j < TX_SIZES; ++j) {
-        cm->y_iqmatrix[i][1][j] = aom_iqmatrix(cm, qmindex, 0, j, 1);
-        cm->y_iqmatrix[i][0][j] = aom_iqmatrix(cm, qmindex, 0, j, 0);
-        cm->uv_iqmatrix[i][1][j] = aom_iqmatrix(cm, qmindex, 1, j, 1);
-        cm->uv_iqmatrix[i][0][j] = aom_iqmatrix(cm, qmindex, 1, j, 0);
+        cm->y_iqmatrix[i][1][j] = aom_iqmatrix(cm, qmlevel, 0, j, 1);
+        cm->y_iqmatrix[i][0][j] = aom_iqmatrix(cm, qmlevel, 0, j, 0);
+        cm->uv_iqmatrix[i][1][j] = aom_iqmatrix(cm, qmlevel, 1, j, 1);
+        cm->uv_iqmatrix[i][0][j] = aom_iqmatrix(cm, qmlevel, 1, j, 0);
       }
 #endif
     }
@@ -1170,13 +1180,14 @@ static void setup_segmentation_dequant(VP10_COMMON *const cm) {
     lossless = qindex == 0 && cm->y_dc_delta_q == 0 && cm->uv_dc_delta_q == 0 &&
                cm->uv_ac_delta_q == 0;
     // No quant weighting when lossless or signalled not using QM
-    qmindex = (lossless || using_qm == 0) ?
-        QINDEX_RANGE - 1 : cm->base_qindex;
+    qmlevel = (lossless || using_qm == 0)
+                  ? NUM_QM_LEVELS - 1
+                  : aom_get_qmlevel(cm->base_qindex, minqm, maxqm);
     for (j = 0; j < TX_SIZES; ++j) {
-      cm->y_iqmatrix[i][1][j] = aom_iqmatrix(cm, qmindex, 0, j, 1);
-      cm->y_iqmatrix[i][0][j] = aom_iqmatrix(cm, qmindex, 0, j, 0);
-      cm->uv_iqmatrix[i][1][j] = aom_iqmatrix(cm, qmindex, 1, j, 1);
-      cm->uv_iqmatrix[i][0][j] = aom_iqmatrix(cm, qmindex, 1, j, 0);
+      cm->y_iqmatrix[i][1][j] = aom_iqmatrix(cm, qmlevel, 0, j, 1);
+      cm->y_iqmatrix[i][0][j] = aom_iqmatrix(cm, qmlevel, 0, j, 0);
+      cm->uv_iqmatrix[i][1][j] = aom_iqmatrix(cm, qmlevel, 1, j, 1);
+      cm->uv_iqmatrix[i][0][j] = aom_iqmatrix(cm, qmlevel, 1, j, 0);
     }
 #endif
   }

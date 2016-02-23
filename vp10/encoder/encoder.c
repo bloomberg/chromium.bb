@@ -3828,6 +3828,8 @@ int vp10_get_compressed_data(VP10_COMP *cpi, unsigned int *frame_flags,
 
 #if CONFIG_AOM_QM
   cm->using_qmatrix = cpi->oxcf.using_qm;
+  cm->min_qmlevel = cpi->oxcf.qm_minlevel;
+  cm->max_qmlevel = cpi->oxcf.qm_maxlevel;
 #endif
 
   if (oxcf->pass == 1) {
