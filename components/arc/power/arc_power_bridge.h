@@ -31,6 +31,8 @@ class ArcPowerBridge : public ArcService,
   void OnAcquireDisplayWakeLock(DisplayWakeLockType type) override;
   void OnReleaseDisplayWakeLock(DisplayWakeLockType type) override;
 
+  void IsDisplayOn(const IsDisplayOnCallback& callback) override;
+
  private:
   void ReleaseAllDisplayWakeLocks();
 

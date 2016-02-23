@@ -1140,4 +1140,8 @@ bool DisplayConfigurator::RemoveVirtualDisplay(int64_t display_id) {
   return true;
 }
 
+bool DisplayConfigurator::IsDisplayOn() const {
+  return current_power_state_ != chromeos::DISPLAY_POWER_ALL_OFF;
+}
+
 }  // namespace ui

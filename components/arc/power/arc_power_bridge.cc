@@ -7,9 +7,11 @@
 #include <algorithm>
 #include <utility>
 
+#include "ash/shell.h"
 #include "base/logging.h"
 #include "chromeos/dbus/power_policy_controller.h"
 #include "components/arc/arc_service_manager.h"
+#include "ui/display/chromeos/display_configurator.h"
 
 namespace arc {
 
@@ -85,6 +87,11 @@ void ArcPowerBridge::OnReleaseDisplayWakeLock(
   }
   controller->RemoveWakeLock(it->second);
   wake_locks_.erase(it);
+}
+
+void ArcPowerBridge::IsDisplayOn(const IsDisplayOnCallback& callback) {
+  callback.Run(
+      ash::Shell::GetInstance()->display_configurator()->IsDisplayOn());
 }
 
 void ArcPowerBridge::ReleaseAllDisplayWakeLocks() {

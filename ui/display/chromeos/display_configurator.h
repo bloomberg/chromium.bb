@@ -277,6 +277,9 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   int64_t AddVirtualDisplay(gfx::Size display_size);
   bool RemoveVirtualDisplay(int64_t display_id);
 
+  // Returns true if there is at least one display on.
+  bool IsDisplayOn() const;
+
  private:
   class DisplayLayoutManagerImpl;
 

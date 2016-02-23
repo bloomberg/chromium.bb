@@ -34,6 +34,7 @@ static_library("arc") {
   ]
 
   deps = [
+    "//ash:ash",
     "//base",
     "//chromeos",
     "//chromeos:power_manager_proto",
@@ -48,6 +49,7 @@ static_library("arc") {
     "//ui/aura",
     "//ui/base:base",
     "//ui/base/ime",
+    "//ui/display:display",
     "//ui/events",
     "//ui/events:dom_keycode_converter",
   ]
