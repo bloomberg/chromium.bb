@@ -9971,7 +9971,7 @@ TEST_P(HttpNetworkTransactionTest, HonorAlternateProtocolHeader) {
 }
 
 TEST_P(HttpNetworkTransactionTest, EmptyAlternateProtocolHeader) {
-  session_deps_.parse_alternative_services = true;
+  session_deps_.parse_alternative_services = false;
   session_deps_.enable_alternative_service_with_different_host = false;
 
   MockRead data_reads[] = {
@@ -10660,7 +10660,7 @@ TEST_P(HttpNetworkTransactionTest, AlternateProtocolUnsafeBlocked) {
 }
 
 TEST_P(HttpNetworkTransactionTest, UseAlternateProtocolForNpnSpdy) {
-  session_deps_.parse_alternative_services = true;
+  session_deps_.parse_alternative_services = false;
   session_deps_.enable_alternative_service_with_different_host = false;
 
   HttpRequestInfo request;
@@ -10748,7 +10748,7 @@ TEST_P(HttpNetworkTransactionTest, UseAlternateProtocolForNpnSpdy) {
 }
 
 TEST_P(HttpNetworkTransactionTest, AlternateProtocolWithSpdyLateBinding) {
-  session_deps_.parse_alternative_services = true;
+  session_deps_.parse_alternative_services = false;
   session_deps_.enable_alternative_service_with_different_host = false;
 
   HttpRequestInfo request;
@@ -10869,7 +10869,7 @@ TEST_P(HttpNetworkTransactionTest, AlternateProtocolWithSpdyLateBinding) {
 }
 
 TEST_P(HttpNetworkTransactionTest, StallAlternateProtocolForNpnSpdy) {
-  session_deps_.parse_alternative_services = true;
+  session_deps_.parse_alternative_services = false;
   session_deps_.enable_alternative_service_with_different_host = false;
 
   HttpRequestInfo request;
@@ -10998,7 +10998,7 @@ class CapturingProxyResolverFactory : public ProxyResolverFactory {
 
 TEST_P(HttpNetworkTransactionTest,
        UseAlternateProtocolForTunneledNpnSpdy) {
-  session_deps_.parse_alternative_services = true;
+  session_deps_.parse_alternative_services = false;
   session_deps_.enable_alternative_service_with_different_host = false;
 
   ProxyConfig proxy_config;
@@ -11122,7 +11122,7 @@ TEST_P(HttpNetworkTransactionTest,
 
 TEST_P(HttpNetworkTransactionTest,
        UseAlternateProtocolForNpnSpdyWithExistingSpdySession) {
-  session_deps_.parse_alternative_services = true;
+  session_deps_.parse_alternative_services = false;
   session_deps_.enable_alternative_service_with_different_host = false;
 
   HttpRequestInfo request;
@@ -11946,7 +11946,7 @@ class UrlRecordingHttpAuthHandlerMock : public HttpAuthHandlerMock {
 // This test ensures that the URL passed into the proxy is upgraded to https
 // when doing an Alternate Protocol upgrade.
 TEST_P(HttpNetworkTransactionTest, SpdyAlternateProtocolThroughProxy) {
-  session_deps_.parse_alternative_services = true;
+  session_deps_.parse_alternative_services = false;
   session_deps_.enable_alternative_service_with_different_host = false;
 
   session_deps_.proxy_service =

@@ -204,6 +204,9 @@ class QuicNetworkTransactionTest
     request_.load_flags = 0;
     clock_->AdvanceTime(QuicTime::Delta::FromMilliseconds(20));
 
+    params_.parse_alternative_services = true;
+    params_.enable_alternative_service_with_different_host = true;
+
     scoped_refptr<X509Certificate> cert(
         ImportCertFromFile(GetTestCertsDirectory(), "wildcard.pem"));
     verify_details_.cert_verify_result.verified_cert = cert;
@@ -407,15 +410,9 @@ class QuicNetworkTransactionTest
         packet_number, stream_id, should_include_version, fin, headers, offset);
   }
 
-  void CreateSession() { CreateSessionWithFactory(&socket_factory_, false); }
+  void CreateSession() { CreateSessionWithFactory(&socket_factory_); }
 
-  void CreateSessionWithNextProtos() {
-    CreateSessionWithFactory(&socket_factory_, true);
-  }
-
-  // If |use_next_protos| is true, enables SPDY and QUIC.
-  void CreateSessionWithFactory(ClientSocketFactory* socket_factory,
-                                bool use_next_protos) {
+  void CreateSessionWithFactory(ClientSocketFactory* socket_factory) {
     params_.enable_quic = true;
     params_.quic_clock = clock_;
     params_.quic_random = &random_generator_;
@@ -440,11 +437,6 @@ class QuicNetworkTransactionTest
     }
 
     test_network_quality_estimator_->AddRTTObserver(&rtt_observer_);
-
-    if (use_next_protos) {
-      params_.parse_alternative_services = true;
-      params_.enable_alternative_service_with_different_host = true;
-    }
 
     session_.reset(new HttpNetworkSession(params_));
     session_->quic_stream_factory()->set_require_confirmation(false);
@@ -634,6 +626,8 @@ TEST_P(QuicNetworkTransactionTest, ForceQuic) {
   // the alternate-protocol job will "win".
   AddHangingNonAlternateProtocolSocketData();
 
+  params_.parse_alternative_services = false;
+  params_.enable_alternative_service_with_different_host = false;
   CreateSession();
 
   EXPECT_FALSE(rtt_observer_.rtt_notification_received());
@@ -703,6 +697,8 @@ TEST_P(QuicNetworkTransactionTest, QuicProxy) {
   // no attempt will be made to speak to the proxy over TCP.
 
   request_.url = GURL("http://mail.example.org/");
+  params_.parse_alternative_services = false;
+  params_.enable_alternative_service_with_different_host = false;
   CreateSession();
 
   SendRequestAndExpectQuicResponseFromProxyOnPort("hello!", 70);
@@ -750,7 +746,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyWithCert) {
 
   request_.url = GURL("http://" + origin_host);
   AddHangingNonAlternateProtocolSocketData();
-  CreateSessionWithNextProtos();
+  CreateSession();
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::CONFIRM_HANDSHAKE);
   SendRequestAndExpectQuicResponseFromProxyOnPort("hello!", 70);
 }
@@ -792,7 +788,7 @@ TEST_P(QuicNetworkTransactionTest, AlternativeServicesDifferentHost) {
   AddQuicRemoteAlternativeServiceMapping(
       MockCryptoClientStream::CONFIRM_HANDSHAKE, alternative);
   AddHangingNonAlternateProtocolSocketData();
-  CreateSessionWithNextProtos();
+  CreateSession();
 
   SendRequestAndExpectQuicResponse("hello!");
 }
@@ -812,6 +808,8 @@ TEST_P(QuicNetworkTransactionTest, ForceQuicWithErrorConnecting) {
   mock_quic_data1.AddSocketDataToFactory(&socket_factory_);
   mock_quic_data2.AddSocketDataToFactory(&socket_factory_);
 
+  params_.parse_alternative_services = false;
+  params_.enable_alternative_service_with_different_host = false;
   CreateSession();
 
   EXPECT_EQ(0U, test_network_quality_estimator_->watcher_count());
@@ -841,6 +839,8 @@ TEST_P(QuicNetworkTransactionTest, DoNotForceQuicForHttps) {
   SSLSocketDataProvider ssl(ASYNC, OK);
   socket_factory_.AddSSLSocketDataProvider(&ssl);
 
+  params_.parse_alternative_services = false;
+  params_.enable_alternative_service_with_different_host = false;
   CreateSession();
 
   SendRequestAndExpectHttpResponse("hello world");
@@ -874,7 +874,7 @@ TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceForQuic) {
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
 
   AddHangingNonAlternateProtocolSocketData();
-  CreateSessionWithNextProtos();
+  CreateSession();
 
   SendRequestAndExpectHttpResponse("hello world");
   SendRequestAndExpectQuicResponse("hello!");
@@ -909,7 +909,7 @@ TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceQuicSupportedVersion) {
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
 
   AddHangingNonAlternateProtocolSocketData();
-  CreateSessionWithNextProtos();
+  CreateSession();
 
   SendRequestAndExpectHttpResponse("hello world");
   SendRequestAndExpectQuicResponse("hello!");
@@ -932,7 +932,7 @@ TEST_P(QuicNetworkTransactionTest,
   socket_factory_.AddSocketDataProvider(&http_data);
   socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
 
-  CreateSessionWithNextProtos();
+  CreateSession();
 
   SendRequestAndExpectHttpResponse("hello world");
   SendRequestAndExpectHttpResponse("hello world");
@@ -993,7 +993,7 @@ TEST_P(QuicNetworkTransactionTest, UseExistingAlternativeServiceForQuic) {
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
 
   AddHangingNonAlternateProtocolSocketData();
-  CreateSessionWithNextProtos();
+  CreateSession();
 
   SendRequestAndExpectHttpResponse("hello world");
 
@@ -1083,7 +1083,7 @@ TEST_P(QuicNetworkTransactionTest, UseFirstExistingAlternativeServiceForQuic) {
 
   AddHangingNonAlternateProtocolSocketData();
 
-  CreateSessionWithNextProtos();
+  CreateSession();
 
   SendRequestAndExpectHttpResponse("hello world");
   SendRequestAndExpectQuicResponseOnPort("hello from foo!", 443);
@@ -1160,7 +1160,7 @@ TEST_P(QuicNetworkTransactionTest,
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
   AddHangingNonAlternateProtocolSocketData();
 
-  CreateSessionWithNextProtos();
+  CreateSession();
 
   // Send two HTTP requests, responses set up alt-svc lists for the origins.
   request_.url = GURL("https://www.example.org/");
@@ -1256,7 +1256,7 @@ TEST_P(QuicNetworkTransactionTest,
   mock_quic_data2.AddSocketDataToFactory(&socket_factory_);
   AddHangingNonAlternateProtocolSocketData();
 
-  CreateSessionWithNextProtos();
+  CreateSession();
 
   // Send HTTP requests, responses set up the alt-svc lists for the origins.
   SendRequestAndExpectHttpResponse("hello world from mail.example.org");
@@ -1301,7 +1301,7 @@ TEST_P(QuicNetworkTransactionTest, AlternativeServiceDifferentPort) {
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
 
   AddHangingNonAlternateProtocolSocketData();
-  CreateSessionWithNextProtos();
+  CreateSession();
 
   SendRequestAndExpectHttpResponse("hello world");
   SendRequestAndExpectQuicResponseOnPort("hello!", 137);
@@ -1334,7 +1334,7 @@ TEST_P(QuicNetworkTransactionTest, ConfirmAlternativeService) {
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
 
   AddHangingNonAlternateProtocolSocketData();
-  CreateSessionWithNextProtos();
+  CreateSession();
 
   AlternativeService alternative_service(QUIC,
                                          HostPortPair::FromURL(request_.url));
@@ -1380,7 +1380,7 @@ TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceProbabilityForQuic) {
 
   AddHangingNonAlternateProtocolSocketData();
   params_.alternative_service_probability_threshold = 0.25;
-  CreateSessionWithNextProtos();
+  CreateSession();
 
   SendRequestAndExpectHttpResponse("hello world");
   SendRequestAndExpectQuicResponse("hello!");
@@ -1402,7 +1402,7 @@ TEST_P(QuicNetworkTransactionTest,
   socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
 
   params_.alternative_service_probability_threshold = 0.75;
-  CreateSessionWithNextProtos();
+  CreateSession();
 
   SendRequestAndExpectHttpResponse("hello world");
   SendRequestAndExpectHttpResponse("hello world");
@@ -1424,7 +1424,7 @@ TEST_P(QuicNetworkTransactionTest,
   socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
 
   params_.alternative_service_probability_threshold = 0.75;
-  CreateSessionWithNextProtos();
+  CreateSession();
 
   SendRequestAndExpectHttpResponse("hello world");
   SendRequestAndExpectHttpResponse("hello world");
@@ -1456,7 +1456,7 @@ TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceForQuicForHttps) {
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
 
   AddHangingNonAlternateProtocolSocketData();
-  CreateSessionWithNextProtos();
+  CreateSession();
 
   // TODO(rtenneti): Test QUIC over HTTPS, GetSSLInfo().
   SendRequestAndExpectHttpResponse("hello world");
@@ -1492,7 +1492,9 @@ TEST_P(QuicNetworkTransactionTest, UseAlternateProtocolForQuic) {
   // the alternate-protocol job will "win".
   AddHangingNonAlternateProtocolSocketData();
 
-  CreateSessionWithNextProtos();
+  params_.parse_alternative_services = false;
+  params_.parse_alternative_services = false;
+  CreateSession();
 
   SendRequestAndExpectHttpResponse("hello world");
   SendRequestAndExpectQuicResponse("hello!");
@@ -1529,7 +1531,8 @@ TEST_P(QuicNetworkTransactionTest, AlternateProtocolDifferentPort) {
   // the alternate-protocol job will "win".
   AddHangingNonAlternateProtocolSocketData();
 
-  CreateSessionWithNextProtos();
+  params_.parse_alternative_services = false;
+  CreateSession();
 
   SendRequestAndExpectHttpResponse("hello world");
   SendRequestAndExpectQuicResponseOnPort("hello!", 137);
@@ -1565,7 +1568,8 @@ TEST_P(QuicNetworkTransactionTest, ConfirmAlternateProtocol) {
   // the alternate-protocol job will "win".
   AddHangingNonAlternateProtocolSocketData();
 
-  CreateSessionWithNextProtos();
+  params_.parse_alternative_services = false;
+  CreateSession();
 
   AlternativeService alternative_service(QUIC,
                                          HostPortPair::FromURL(request_.url));
@@ -1584,6 +1588,7 @@ TEST_P(QuicNetworkTransactionTest, ConfirmAlternateProtocol) {
 }
 
 TEST_P(QuicNetworkTransactionTest, UseAlternateProtocolProbabilityForQuic) {
+  params_.parse_alternative_services = false;
   MockRead http_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"),
       MockRead(kQuicAlternateProtocol50pctHeader), MockRead("hello world"),
@@ -1613,13 +1618,15 @@ TEST_P(QuicNetworkTransactionTest, UseAlternateProtocolProbabilityForQuic) {
   AddHangingNonAlternateProtocolSocketData();
 
   params_.alternative_service_probability_threshold = .25;
-  CreateSessionWithNextProtos();
+  params_.parse_alternative_services = false;
+  CreateSession();
 
   SendRequestAndExpectHttpResponse("hello world");
   SendRequestAndExpectQuicResponse("hello!");
 }
 
 TEST_P(QuicNetworkTransactionTest, DontUseAlternateProtocolProbabilityForQuic) {
+  params_.parse_alternative_services = false;
   MockRead http_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"),
       MockRead(kQuicAlternateProtocol50pctHeader), MockRead("hello world"),
@@ -1634,7 +1641,7 @@ TEST_P(QuicNetworkTransactionTest, DontUseAlternateProtocolProbabilityForQuic) {
   socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
 
   params_.alternative_service_probability_threshold = .75;
-  CreateSessionWithNextProtos();
+  CreateSession();
 
   SendRequestAndExpectHttpResponse("hello world");
   SendRequestAndExpectHttpResponse("hello world");
@@ -1642,6 +1649,7 @@ TEST_P(QuicNetworkTransactionTest, DontUseAlternateProtocolProbabilityForQuic) {
 
 TEST_P(QuicNetworkTransactionTest,
        DontUseAlternateProtocolWithBadProbabilityForQuic) {
+  params_.parse_alternative_services = false;
   MockRead http_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"),
       MockRead("Alternate-Protocol: 443:quic,p=2\r\n\r\n"),
@@ -1657,13 +1665,14 @@ TEST_P(QuicNetworkTransactionTest,
   socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
 
   params_.alternative_service_probability_threshold = .75;
-  CreateSessionWithNextProtos();
+  CreateSession();
 
   SendRequestAndExpectHttpResponse("hello world");
   SendRequestAndExpectHttpResponse("hello world");
 }
 
 TEST_P(QuicNetworkTransactionTest, UseAlternateProtocolForQuicForHttps) {
+  params_.parse_alternative_services = false;
   MockRead http_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"), MockRead(kQuicAlternateProtocolHeader),
       MockRead("hello world"),
@@ -1692,7 +1701,7 @@ TEST_P(QuicNetworkTransactionTest, UseAlternateProtocolForQuicForHttps) {
   // the alternate-protocol job will "win".
   AddHangingNonAlternateProtocolSocketData();
 
-  CreateSessionWithNextProtos();
+  CreateSession();
 
   // TODO(rtenneti): Test QUIC over HTTPS, GetSSLInfo().
   SendRequestAndExpectHttpResponse("hello world");
@@ -1744,7 +1753,7 @@ class QuicAltSvcCertificateVerificationTest
     refused_data.set_connect_data(refused_connect);
     socket_factory_.AddSocketDataProvider(&refused_data);
 
-    CreateSessionWithNextProtos();
+    CreateSession();
     AlternativeService alternative_service(QUIC, alternative);
     base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
     session_->http_server_properties()->SetAlternativeService(
@@ -1781,6 +1790,7 @@ TEST_P(QuicAltSvcCertificateVerificationTest,
 }
 
 TEST_P(QuicNetworkTransactionTest, HungAlternateProtocol) {
+  params_.parse_alternative_services = false;
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::COLD_START);
 
@@ -1816,7 +1826,7 @@ TEST_P(QuicNetworkTransactionTest, HungAlternateProtocol) {
   socket_factory.AddSocketDataProvider(&http_data2);
   socket_factory.AddSSLSocketDataProvider(&ssl_data_);
 
-  CreateSessionWithFactory(&socket_factory, true);
+  CreateSessionWithFactory(&socket_factory);
 
   // Run the first request.
   SendRequestAndExpectHttpResponse("hello world");
@@ -1852,7 +1862,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithHttpRace) {
   // the alternate-protocol job will "win".
   AddHangingNonAlternateProtocolSocketData();
 
-  CreateSessionWithNextProtos();
+  CreateSession();
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
   SendRequestAndExpectQuicResponse("hello!");
 }
@@ -1882,7 +1892,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithNoHttpRace) {
   host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
                          nullptr, net_log_.bound());
 
-  CreateSessionWithNextProtos();
+  CreateSession();
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
   SendRequestAndExpectQuicResponse("hello!");
 }
@@ -1917,7 +1927,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithProxy) {
                          nullptr, net_log_.bound());
 
   request_.url = GURL("http://mail.example.org/");
-  CreateSessionWithNextProtos();
+  CreateSession();
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
   SendRequestAndExpectHttpResponse("hello world");
 }
@@ -1952,7 +1962,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithConfirmationRequired) {
   host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
                          nullptr, net_log_.bound());
 
-  CreateSessionWithNextProtos();
+  CreateSession();
   session_->quic_stream_factory()->set_require_confirmation(true);
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
@@ -1998,7 +2008,7 @@ TEST_P(QuicNetworkTransactionTest,
   host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
                          nullptr, net_log_.bound());
 
-  CreateSessionWithNextProtos();
+  CreateSession();
   session_->quic_stream_factory()->set_require_confirmation(true);
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
@@ -2053,7 +2063,7 @@ TEST_P(QuicNetworkTransactionTest,
   host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
                          nullptr, net_log_.bound());
 
-  CreateSessionWithNextProtos();
+  CreateSession();
   session_->quic_stream_factory()->set_require_confirmation(true);
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
@@ -2096,7 +2106,7 @@ TEST_P(QuicNetworkTransactionTest, BrokenAlternateProtocol) {
   socket_factory_.AddSocketDataProvider(&http_data);
   socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
 
-  CreateSessionWithNextProtos();
+  CreateSession();
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::COLD_START);
   SendRequestAndExpectHttpResponse("hello from http");
   ExpectBrokenAlternateProtocolMapping();
@@ -2122,7 +2132,7 @@ TEST_P(QuicNetworkTransactionTest, BrokenAlternateProtocolReadError) {
   socket_factory_.AddSocketDataProvider(&http_data);
   socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
 
-  CreateSessionWithNextProtos();
+  CreateSession();
 
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::COLD_START);
   SendRequestAndExpectHttpResponse("hello from http");
@@ -2149,7 +2159,7 @@ TEST_P(QuicNetworkTransactionTest, NoBrokenAlternateProtocolIfTcpFails) {
   socket_factory_.AddSocketDataProvider(&http_data);
   socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
 
-  CreateSessionWithNextProtos();
+  CreateSession();
 
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::COLD_START);
   scoped_ptr<HttpNetworkTransaction> trans(
@@ -2188,7 +2198,7 @@ TEST_P(QuicNetworkTransactionTest, FailedZeroRttBrokenAlternateProtocol) {
   socket_factory_.AddSocketDataProvider(&http_data);
   socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
 
-  CreateSessionWithNextProtos();
+  CreateSession();
 
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
@@ -2219,7 +2229,7 @@ TEST_P(QuicNetworkTransactionTest, DISABLED_HangingZeroRttFallback) {
                                      0);
   socket_factory_.AddSocketDataProvider(&http_data);
 
-  CreateSessionWithNextProtos();
+  CreateSession();
 
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
@@ -2244,7 +2254,7 @@ TEST_P(QuicNetworkTransactionTest, BrokenAlternateProtocolOnConnectFailure) {
   socket_factory_.AddSocketDataProvider(&http_data);
   socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
 
-  CreateSessionWithNextProtos();
+  CreateSession();
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::COLD_START);
   SendRequestAndExpectHttpResponse("hello from http");
 
@@ -2283,7 +2293,7 @@ TEST_P(QuicNetworkTransactionTest, ConnectionCloseDuringConnect) {
   host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
                          nullptr, net_log_.bound());
 
-  CreateSessionWithNextProtos();
+  CreateSession();
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
   SendRequestAndExpectHttpResponse("hello world");
 }
@@ -2305,7 +2315,7 @@ TEST_P(QuicNetworkTransactionTest, SecureResourceOverSecureQuic) {
 
   request_.url = GURL("https://www.example.org:443");
   AddHangingNonAlternateProtocolSocketData();
-  CreateSessionWithNextProtos();
+  CreateSession();
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::CONFIRM_HANDSHAKE);
   SendRequestAndExpectQuicResponse("hello!");
   EXPECT_TRUE(rtt_observer_.rtt_notification_received());
@@ -2325,6 +2335,8 @@ TEST_P(QuicNetworkTransactionTest, QuicUpload) {
   // the alternate-protocol job will "win".
   AddHangingNonAlternateProtocolSocketData();
 
+  params_.parse_alternative_services = false;
+  params_.enable_alternative_service_with_different_host = false;
   CreateSession();
   request_.method = "POST";
   ChunkedUploadDataStream upload_data(0);

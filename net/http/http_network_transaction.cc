@@ -74,15 +74,16 @@ namespace {
 void ProcessAlternativeServices(HttpNetworkSession* session,
                                 const HttpResponseHeaders& headers,
                                 const HostPortPair& http_host_port_pair) {
-  if (session->params().parse_alternative_services &&
-      headers.HasHeader(kAlternativeServiceHeader)) {
-    std::string alternative_service_str;
-    headers.GetNormalizedHeader(kAlternativeServiceHeader,
-                                &alternative_service_str);
-    session->http_stream_factory()->ProcessAlternativeService(
-        session->http_server_properties(), alternative_service_str,
-        http_host_port_pair, *session);
-    // If there is an "Alt-Svc" header, then ignore "Alternate-Protocol".
+  if (session->params().parse_alternative_services) {
+    if (headers.HasHeader(kAlternativeServiceHeader)) {
+      std::string alternative_service_str;
+      headers.GetNormalizedHeader(kAlternativeServiceHeader,
+                                  &alternative_service_str);
+      session->http_stream_factory()->ProcessAlternativeService(
+          session->http_server_properties(), alternative_service_str,
+          http_host_port_pair, *session);
+    }
+    // If "Alt-Svc" is enabled, then ignore "Alternate-Protocol".
     return;
   }
 
