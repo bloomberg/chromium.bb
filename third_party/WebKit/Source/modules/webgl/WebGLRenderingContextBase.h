@@ -874,6 +874,7 @@ protected:
         SourceHTMLCanvasElement,
         SourceHTMLVideoElement,
         SourceImageBitmap,
+        SourceUnpackBuffer,
     };
 
     // Helper function for tex{Sub}Image{2|3}D to check if the input format/type/level/target/width/height/depth/border/xoffset/yoffset/zoffset are valid.

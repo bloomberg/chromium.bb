@@ -44,9 +44,27 @@ public:
     void renderbufferStorageMultisample(GLenum, GLsizei, GLenum, GLsizei, GLsizei);
 
     /* Texture objects */
+    void texImage2D(GLenum, GLint, GLint, GLsizei, GLsizei, GLint, GLenum, GLenum, GLintptr);
+    // Have to re-declair/re-define the following texImage2D functions from base class.
+    // This is because the above texImage2D() hides the name from base class.
+    void texImage2D(GLenum target, GLint level, GLint internalformat,
+        GLsizei width, GLsizei height, GLint border,
+        GLenum format, GLenum type, DOMArrayBufferView*);
+    void texImage2D(GLenum target, GLint level, GLint internalformat,
+        GLenum format, GLenum type, ImageData*);
+    void texImage2D(GLenum target, GLint level, GLint internalformat,
+        GLenum format, GLenum type, HTMLImageElement*, ExceptionState&);
+    void texImage2D(GLenum target, GLint level, GLint internalformat,
+        GLenum format, GLenum type, HTMLCanvasElement*, ExceptionState&);
+    void texImage2D(GLenum target, GLint level, GLint internalformat,
+        GLenum format, GLenum type, HTMLVideoElement*, ExceptionState&);
+    void texImage2D(GLenum target, GLint level, GLint internalformat,
+        GLenum format, GLenum type, PassRefPtrWillBeRawPtr<ImageBitmap>, ExceptionState&);
+
     void texStorage2D(GLenum, GLsizei, GLenum, GLsizei, GLsizei);
     void texStorage3D(GLenum, GLsizei, GLenum, GLsizei, GLsizei, GLsizei);
     void texImage3D(GLenum, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, DOMArrayBufferView*);
+    void texImage3D(GLenum, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, GLintptr);
     void texSubImage3D(GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, DOMArrayBufferView*);
     void texSubImage3D(GLenum, GLint, GLint, GLint, GLint, GLenum, GLenum, ImageData*);
     void texSubImage3D(GLenum, GLint, GLint, GLint, GLint, GLenum, GLenum, HTMLImageElement*, ExceptionState&);

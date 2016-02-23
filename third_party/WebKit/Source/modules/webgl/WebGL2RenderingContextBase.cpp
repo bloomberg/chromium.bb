@@ -840,6 +840,50 @@ bool WebGL2RenderingContextBase::validateTexStorage(const char* functionName, GL
     return true;
 }
 
+void WebGL2RenderingContextBase::texImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, GLintptr offset)
+{
+    if (isContextLost())
+        return;
+    if (!validateTexture2DBinding("texImage2D", target))
+        return;
+    if (!validateTexFunc("texImage2D", TexImage, SourceUnpackBuffer, target, level, internalformat, width, height, 1, border, format, type, 0, 0, 0))
+        return;
+    if (!validateValueFitNonNegInt32("texImage2D", "offset", offset))
+        return;
+
+    webContext()->texImage2D(target, level, convertTexInternalFormat(internalformat, type), width, height, border, format, type, reinterpret_cast<const void *>(offset));
+}
+
+void WebGL2RenderingContextBase::texImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, DOMArrayBufferView* data)
+{
+    WebGLRenderingContextBase::texImage2D(target, level, internalformat, width, height, border, format, type, data);
+}
+
+void WebGL2RenderingContextBase::texImage2D(GLenum target, GLint level, GLint internalformat, GLenum format, GLenum type, ImageData* imageData)
+{
+    WebGLRenderingContextBase::texImage2D(target, level, internalformat, format, type, imageData);
+}
+
+void WebGL2RenderingContextBase::texImage2D(GLenum target, GLint level, GLint internalformat, GLenum format, GLenum type, HTMLImageElement* image, ExceptionState& exceptionState)
+{
+    WebGLRenderingContextBase::texImage2D(target, level, internalformat, format, type, image, exceptionState);
+}
+
+void WebGL2RenderingContextBase::texImage2D(GLenum target, GLint level, GLint internalformat, GLenum format, GLenum type, HTMLCanvasElement* canvas, ExceptionState& exceptionState)
+{
+    WebGLRenderingContextBase::texImage2D(target, level, internalformat, format, type, canvas, exceptionState);
+}
+
+void WebGL2RenderingContextBase::texImage2D(GLenum target, GLint level, GLint internalformat, GLenum format, GLenum type, HTMLVideoElement* video, ExceptionState& exceptionState)
+{
+    WebGLRenderingContextBase::texImage2D(target, level, internalformat, format, type, video, exceptionState);
+}
+
+void WebGL2RenderingContextBase::texImage2D(GLenum target, GLint level, GLint internalformat, GLenum format, GLenum type, PassRefPtrWillBeRawPtr<ImageBitmap> imageBitMap, ExceptionState& exceptionState)
+{
+    WebGLRenderingContextBase::texImage2D(target, level, internalformat, format, type, imageBitMap, exceptionState);
+}
+
 void WebGL2RenderingContextBase::texStorage2D(GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height)
 {
     if (isContextLost() || !validateTexStorage("texStorage2D", target, levels, internalformat, width, height, 1, TexStorageType2D))
@@ -876,6 +920,20 @@ void WebGL2RenderingContextBase::texImage3D(GLenum target, GLint level, GLint in
     }
 
     webContext()->texImage3D(target, level, convertTexInternalFormat(internalformat, type), width, height, depth, border, format, type, data);
+}
+
+void WebGL2RenderingContextBase::texImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, GLintptr offset)
+{
+    if (isContextLost())
+        return;
+    if (!validateTexture3DBinding("texImage3D", target))
+        return;
+    if (!validateTexFunc("texImage3D", TexImage, SourceUnpackBuffer, target, level, internalformat, width, height, depth, border, format, type, 0, 0, 0))
+        return;
+    if (!validateValueFitNonNegInt32("texImage3D", "offset", offset))
+        return;
+
+    webContext()->texImage3D(target, level, convertTexInternalFormat(internalformat, type), width, height, depth, border, format, type, reinterpret_cast<const void *>(offset));
 }
 
 void WebGL2RenderingContextBase::texSubImage3DImpl(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLenum format, GLenum type, Image* image, WebGLImageConversion::ImageHtmlDomSource domSource, bool flipY, bool premultiplyAlpha)
