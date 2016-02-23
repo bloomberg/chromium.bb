@@ -135,9 +135,16 @@ TestHelper::~TestHelper() {
   shell_connection_.reset();
 }
 
-ApplicationTestBase::ApplicationTestBase() : test_helper_(nullptr) {}
+ApplicationTestBase::ApplicationTestBase() {}
 
 ApplicationTestBase::~ApplicationTestBase() {
+  CHECK(!g_shell_client_request.is_pending());
+  CHECK(!g_shell);
+
+  test_helper_.reset();
+
+  if (use_default_run_loop_)
+    Environment::DestroyDefaultRunLoop();
 }
 
 ShellClient* ApplicationTestBase::GetShellClient() {
@@ -147,8 +154,12 @@ ShellClient* ApplicationTestBase::GetShellClient() {
 void ApplicationTestBase::SetUp() {
   // A run loop is recommended for ShellConnection initialization and
   // communication.
-  if (ShouldCreateDefaultRunLoop())
+  // Check this in SetUp() instead of in the constructor because we cannot call
+  // virtual methods in the constructor.
+  if (ShouldCreateDefaultRunLoop()) {
+    use_default_run_loop_ = true;
     Environment::InstantiateDefaultRunLoop();
+  }
 
   CHECK(g_shell_client_request.is_pending());
   CHECK(g_shell);
@@ -158,13 +169,6 @@ void ApplicationTestBase::SetUp() {
 }
 
 void ApplicationTestBase::TearDown() {
-  CHECK(!g_shell_client_request.is_pending());
-  CHECK(!g_shell);
-
-  test_helper_.reset();
-
-  if (ShouldCreateDefaultRunLoop())
-    Environment::DestroyDefaultRunLoop();
 }
 
 bool ApplicationTestBase::ShouldCreateDefaultRunLoop() {
