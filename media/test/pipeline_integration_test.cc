@@ -105,16 +105,12 @@ const char kMP3[] = "audio/mpeg";
 #endif  // defined(USE_PROPRIETARY_CODECS)
 
 // Key used to encrypt test files.
-const uint8_t kSecretKey[] = {
-  0xeb, 0xdd, 0x62, 0xf1, 0x68, 0x14, 0xd2, 0x7b,
-  0x68, 0xef, 0x12, 0x2a, 0xfc, 0xe4, 0xae, 0x3c
-};
+const uint8_t kSecretKey[] = {0xeb, 0xdd, 0x62, 0xf1, 0x68, 0x14, 0xd2, 0x7b,
+                              0x68, 0xef, 0x12, 0x2a, 0xfc, 0xe4, 0xae, 0x3c};
 
 // The key ID for all encrypted files.
-const uint8_t kKeyId[] = {
-  0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
-  0x38, 0x39, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35
-};
+const uint8_t kKeyId[] = {0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
+                          0x38, 0x39, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35};
 
 const size_t kAppendWholeFile = std::numeric_limits<size_t>::max();
 
@@ -299,9 +295,7 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
     current_session_id_ = session_id;
   }
 
-  void OnResolve(PromiseResult expected) {
-    EXPECT_EQ(expected, RESOLVED);
-  }
+  void OnResolve(PromiseResult expected) { EXPECT_EQ(expected, RESOLVED); }
 
   void OnReject(PromiseResult expected,
                 media::MediaKeys::Exception exception_code,
@@ -312,10 +306,10 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
 
   scoped_ptr<SimpleCdmPromise> CreatePromise(PromiseResult expected) {
     scoped_ptr<media::SimpleCdmPromise> promise(new media::CdmCallbackPromise<>(
-        base::Bind(
-            &KeyProvidingApp::OnResolve, base::Unretained(this), expected),
-        base::Bind(
-            &KeyProvidingApp::OnReject, base::Unretained(this), expected)));
+        base::Bind(&KeyProvidingApp::OnResolve, base::Unretained(this),
+                   expected),
+        base::Bind(&KeyProvidingApp::OnReject, base::Unretained(this),
+                   expected)));
     return promise;
   }
 
@@ -324,10 +318,9 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
     scoped_ptr<media::NewSessionCdmPromise> promise(
         new media::CdmCallbackPromise<std::string>(
             base::Bind(&KeyProvidingApp::OnResolveWithSession,
-                       base::Unretained(this),
-                       expected),
-            base::Bind(
-                &KeyProvidingApp::OnReject, base::Unretained(this), expected)));
+                       base::Unretained(this), expected),
+            base::Bind(&KeyProvidingApp::OnReject, base::Unretained(this),
+                       expected)));
     return promise;
   }
 
@@ -520,9 +513,9 @@ class MockMediaSource {
             size_t seek_append_size) {
     chunk_demuxer_->StartWaitingForSeek(seek_time);
 
-    chunk_demuxer_->ResetParserState(
-        kSourceId,
-        base::TimeDelta(), kInfiniteDuration(), &last_timestamp_offset_);
+    chunk_demuxer_->ResetParserState(kSourceId, base::TimeDelta(),
+                                     kInfiniteDuration(),
+                                     &last_timestamp_offset_);
 
     DCHECK_LT(new_position, file_data_->data_size());
     current_position_ = new_position;
@@ -551,9 +544,8 @@ class MockMediaSource {
                     const uint8_t* pData,
                     int size) {
     CHECK(!chunk_demuxer_->IsParsingMediaSegment(kSourceId));
-    chunk_demuxer_->AppendData(kSourceId, pData, size,
-                               base::TimeDelta(), kInfiniteDuration(),
-                               &timestamp_offset,
+    chunk_demuxer_->AppendData(kSourceId, pData, size, base::TimeDelta(),
+                               kInfiniteDuration(), &timestamp_offset,
                                base::Bind(&MockMediaSource::InitSegmentReceived,
                                           base::Unretained(this)));
     last_timestamp_offset_ = timestamp_offset;
@@ -565,12 +557,8 @@ class MockMediaSource {
                               const uint8_t* pData,
                               int size) {
     CHECK(!chunk_demuxer_->IsParsingMediaSegment(kSourceId));
-    chunk_demuxer_->AppendData(kSourceId,
-                               pData,
-                               size,
-                               append_window_start,
-                               append_window_end,
-                               &timestamp_offset,
+    chunk_demuxer_->AppendData(kSourceId, pData, size, append_window_start,
+                               append_window_end, &timestamp_offset,
                                base::Bind(&MockMediaSource::InitSegmentReceived,
                                           base::Unretained(this)));
     last_timestamp_offset_ = timestamp_offset;
@@ -589,16 +577,14 @@ class MockMediaSource {
     chunk_demuxer_->Remove(kSourceId, start, end);
   }
 
-  void EndOfStream() {
-    chunk_demuxer_->MarkEndOfStream(PIPELINE_OK);
-  }
+  void EndOfStream() { chunk_demuxer_->MarkEndOfStream(PIPELINE_OK); }
 
   void Shutdown() {
     if (!chunk_demuxer_)
       return;
-    chunk_demuxer_->ResetParserState(
-        kSourceId,
-        base::TimeDelta(), kInfiniteDuration(), &last_timestamp_offset_);
+    chunk_demuxer_->ResetParserState(kSourceId, base::TimeDelta(),
+                                     kInfiniteDuration(),
+                                     &last_timestamp_offset_);
     chunk_demuxer_->Shutdown();
     chunk_demuxer_ = NULL;
   }
@@ -622,17 +608,16 @@ class MockMediaSource {
 
       CHECK_NE(codecs_param_start, std::string::npos);
 
-      codecs_param_start += 8; // Skip over the codecs=".
+      codecs_param_start += 8;  // Skip over the codecs=".
 
       size_t codecs_param_end = mimetype_.find("\"", codecs_param_start);
 
       CHECK_NE(codecs_param_end, std::string::npos);
 
-      std::string codecs_param =
-          mimetype_.substr(codecs_param_start,
-                           codecs_param_end - codecs_param_start);
-      codecs = base::SplitString(
-          codecs_param, ",", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+      std::string codecs_param = mimetype_.substr(
+          codecs_param_start, codecs_param_end - codecs_param_start);
+      codecs = base::SplitString(codecs_param, ",", base::KEEP_WHITESPACE,
+                                 base::SPLIT_WANT_NONEMPTY);
     }
 
     CHECK_EQ(chunk_demuxer_->AddId(kSourceId, type, codecs), ChunkDemuxer::kOk);
@@ -739,9 +724,8 @@ class PipelineIntegrationTest : public PipelineIntegrationTestHost {
     StartPipelineWithMediaSource(source);
   }
 
-  void StartPipelineWithEncryptedMedia(
-      MockMediaSource* source,
-      FakeEncryptedMedia* encrypted_media) {
+  void StartPipelineWithEncryptedMedia(MockMediaSource* source,
+                                       FakeEncryptedMedia* encrypted_media) {
     EXPECT_CALL(*source, InitSegmentReceived()).Times(AtLeast(1));
     EXPECT_CALL(*this, OnMetadata(_))
         .Times(AtMost(1))
@@ -1007,8 +991,7 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_MediaSource_Live) {
 
   ASSERT_TRUE(WaitUntilOnEnded());
 
-  EXPECT_EQ(kLiveTimelineOffset(),
-            demuxer_->GetTimelineOffset());
+  EXPECT_EQ(kLiveTimelineOffset(), demuxer_->GetTimelineOffset());
   source.Shutdown();
   Stop();
 }
@@ -1294,11 +1277,9 @@ TEST_F(PipelineIntegrationTest, MediaSource_ADTS_TimestampOffset) {
       source.last_timestamp_offset() - adts_preroll_duration;
 
   scoped_refptr<DecoderBuffer> second_file = ReadTestDataFile("sfx.adts");
-  source.AppendAtTimeWithWindow(append_time,
-                                append_time + adts_preroll_duration,
-                                kInfiniteDuration(),
-                                second_file->data(),
-                                second_file->data_size());
+  source.AppendAtTimeWithWindow(
+      append_time, append_time + adts_preroll_duration, kInfiniteDuration(),
+      second_file->data(), second_file->data_size());
   source.EndOfStream();
 
   EXPECT_EQ(592, source.last_timestamp_offset().InMilliseconds());
@@ -1428,10 +1409,8 @@ TEST_F(PipelineIntegrationTest, MediaSource_MP3_TimestampOffset) {
       source.last_timestamp_offset() - mp3_preroll_duration;
 
   scoped_refptr<DecoderBuffer> second_file = ReadTestDataFile("sfx.mp3");
-  source.AppendAtTimeWithWindow(append_time,
-                                append_time + mp3_preroll_duration,
-                                kInfiniteDuration(),
-                                second_file->data(),
+  source.AppendAtTimeWithWindow(append_time, append_time + mp3_preroll_duration,
+                                kInfiniteDuration(), second_file->data(),
                                 second_file->data_size());
   source.EndOfStream();
 
@@ -1878,17 +1857,15 @@ TEST_F(PipelineIntegrationTest, Rotated_Metadata_270) {
 // Verify audio decoder & renderer can handle aborted demuxer reads.
 TEST_F(PipelineIntegrationTest, ChunkDemuxerAbortRead_AudioOnly) {
   ASSERT_TRUE(TestSeekDuringRead("bear-320x240-audio-only.webm", kAudioOnlyWebM,
-                                 16384,
-                                 base::TimeDelta::FromMilliseconds(464),
-                                 base::TimeDelta::FromMilliseconds(617),
-                                 0x10CA, 19730));
+                                 16384, base::TimeDelta::FromMilliseconds(464),
+                                 base::TimeDelta::FromMilliseconds(617), 0x10CA,
+                                 19730));
 }
 
 // Verify video decoder & renderer can handle aborted demuxer reads.
 TEST_F(PipelineIntegrationTest, ChunkDemuxerAbortRead_VideoOnly) {
   ASSERT_TRUE(TestSeekDuringRead("bear-320x240-video-only.webm", kVideoOnlyWebM,
-                                 32768,
-                                 base::TimeDelta::FromMilliseconds(167),
+                                 32768, base::TimeDelta::FromMilliseconds(167),
                                  base::TimeDelta::FromMilliseconds(1668),
                                  0x1C896, 65536));
 }
@@ -1983,26 +1960,24 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_Opus441kHz) {
   ASSERT_EQ(PIPELINE_OK, Start("sfx-opus-441.webm"));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
-  EXPECT_EQ(48000,
-            demuxer_->GetStream(DemuxerStream::AUDIO)
-                ->audio_decoder_config()
-                .samples_per_second());
+  EXPECT_EQ(48000, demuxer_->GetStream(DemuxerStream::AUDIO)
+                       ->audio_decoder_config()
+                       .samples_per_second());
 }
 
 // Same as above but using MediaSource.
 TEST_F(PipelineIntegrationTest, BasicPlayback_MediaSource_Opus441kHz) {
-  MockMediaSource source(
-      "sfx-opus-441.webm", kOpusAudioOnlyWebM, kAppendWholeFile);
+  MockMediaSource source("sfx-opus-441.webm", kOpusAudioOnlyWebM,
+                         kAppendWholeFile);
   StartPipelineWithMediaSource(&source);
   source.EndOfStream();
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
   source.Shutdown();
   Stop();
-  EXPECT_EQ(48000,
-            demuxer_->GetStream(DemuxerStream::AUDIO)
-                ->audio_decoder_config()
-                .samples_per_second());
+  EXPECT_EQ(48000, demuxer_->GetStream(DemuxerStream::AUDIO)
+                       ->audio_decoder_config()
+                       .samples_per_second());
 }
 
 // Ensures audio-only playback with missing or negative timestamps works.  Tests

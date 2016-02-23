@@ -18,7 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
-#include "media/base/pipeline.h"
+#include "media/base/pipeline_impl.h"
 #include "media/base/renderer_factory.h"
 #include "media/base/surface_manager.h"
 #include "media/base/text_track.h"
@@ -308,7 +308,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
   scoped_refptr<base::TaskRunner> worker_task_runner_;
   scoped_refptr<MediaLog> media_log_;
-  Pipeline pipeline_;
+  PipelineImpl pipeline_;
 
   // The LoadType passed in the |load_type| parameter of the load() call.
   LoadType load_type_;

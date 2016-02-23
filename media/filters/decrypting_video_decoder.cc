@@ -14,7 +14,6 @@
 #include "media/base/cdm_context.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_log.h"
-#include "media/base/pipeline.h"
 #include "media/base/video_frame.h"
 
 namespace media {

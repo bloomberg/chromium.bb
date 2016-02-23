@@ -17,7 +17,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
 #include "media/base/media_log_event.h"
-#include "media/base/pipeline.h"
+#include "media/base/pipeline_impl.h"
 #include "media/base/pipeline_status.h"
 
 namespace media {
@@ -57,7 +57,7 @@ class MEDIA_EXPORT MediaLog : public base::RefCountedThreadSafe<MediaLog> {
   scoped_ptr<MediaLogEvent> CreateLoadEvent(const std::string& url);
   scoped_ptr<MediaLogEvent> CreateSeekEvent(float seconds);
   scoped_ptr<MediaLogEvent> CreatePipelineStateChangedEvent(
-      Pipeline::State state);
+      PipelineImpl::State state);
   scoped_ptr<MediaLogEvent> CreatePipelineErrorEvent(PipelineStatus error);
   scoped_ptr<MediaLogEvent> CreateVideoSizeSetEvent(
       size_t width, size_t height);

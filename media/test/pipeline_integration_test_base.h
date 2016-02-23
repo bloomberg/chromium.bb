@@ -15,7 +15,8 @@
 #include "media/base/demuxer.h"
 #include "media/base/media_keys.h"
 #include "media/base/null_video_sink.h"
-#include "media/base/pipeline.h"
+#include "media/base/pipeline_impl.h"
+#include "media/base/pipeline_status.h"
 #include "media/base/text_track.h"
 #include "media/base/text_track_config.h"
 #include "media/base/video_frame.h"
@@ -75,7 +76,7 @@ class PipelineIntegrationTestBase {
   // benchmarking purposes (e.g., underflow is disabled to ensure consistent
   // hashes).  May be combined using the bitwise or operator (and as such must
   // have values that are powers of two).
-  enum TestTypeFlags { kHashed = 1, kClockless = 2};
+  enum TestTypeFlags { kHashed = 1, kClockless = 2 };
   PipelineStatus Start(const std::string& filename, uint8_t test_type);
 
   void Play();
@@ -108,7 +109,7 @@ class PipelineIntegrationTestBase {
   bool clockless_playback_;
   scoped_ptr<Demuxer> demuxer_;
   scoped_ptr<DataSource> data_source_;
-  scoped_ptr<Pipeline> pipeline_;
+  scoped_ptr<PipelineImpl> pipeline_;
   scoped_refptr<NullAudioSink> audio_sink_;
   scoped_refptr<ClocklessAudioSink> clockless_audio_sink_;
   scoped_ptr<NullVideoSink> video_sink_;

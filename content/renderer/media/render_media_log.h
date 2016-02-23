@@ -12,6 +12,10 @@
 #include "content/common/content_export.h"
 #include "media/base/media_log.h"
 
+namespace base {
+class TickClock;
+}
+
 namespace content {
 
 // RenderMediaLog is an implementation of MediaLog that forwards events to the

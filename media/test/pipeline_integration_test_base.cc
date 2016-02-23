@@ -41,7 +41,7 @@ const char kNullAudioHash[] = "0.00,0.00,0.00,0.00,0.00,0.00,";
 PipelineIntegrationTestBase::PipelineIntegrationTestBase()
     : hashing_enabled_(false),
       clockless_playback_(false),
-      pipeline_(new Pipeline(message_loop_.task_runner(), new MediaLog())),
+      pipeline_(new PipelineImpl(message_loop_.task_runner(), new MediaLog())),
       ended_(false),
       pipeline_status_(PIPELINE_OK),
       last_video_frame_format_(PIXEL_FORMAT_UNKNOWN),
@@ -63,8 +63,7 @@ void PipelineIntegrationTestBase::OnSeeked(base::TimeDelta seek_time,
   pipeline_status_ = status;
 }
 
-void PipelineIntegrationTestBase::OnStatusCallback(
-    PipelineStatus status) {
+void PipelineIntegrationTestBase::OnStatusCallback(PipelineStatus status) {
   pipeline_status_ = status;
   message_loop_.PostTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 }
@@ -224,8 +223,7 @@ bool PipelineIntegrationTestBase::WaitUntilCurrentTimeIsAfter(
   message_loop_.PostDelayedTask(
       FROM_HERE,
       base::Bind(&PipelineIntegrationTestBase::QuitAfterCurrentTimeTask,
-                 base::Unretained(this),
-                 wait_time),
+                 base::Unretained(this), wait_time),
       base::TimeDelta::FromMilliseconds(10));
   message_loop_.Run();
   return (pipeline_status_ == PIPELINE_OK);
@@ -285,16 +283,12 @@ scoped_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer() {
       new FFmpegAudioDecoder(message_loop_.task_runner(), new MediaLog()));
 #endif
 
-  audio_decoders.push_back(
-      new OpusAudioDecoder(message_loop_.task_runner()));
+  audio_decoders.push_back(new OpusAudioDecoder(message_loop_.task_runner()));
 
   // Don't allow the audio renderer to resample buffers if hashing is enabled.
   if (!hashing_enabled_) {
     AudioParameters out_params(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                               CHANNEL_LAYOUT_STEREO,
-                               44100,
-                               16,
-                               512);
+                               CHANNEL_LAYOUT_STEREO, 44100, 16, 512);
     hardware_config_.UpdateOutputConfig(out_params);
   }
 

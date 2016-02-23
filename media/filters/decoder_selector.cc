@@ -16,7 +16,6 @@
 #include "media/base/cdm_context.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_log.h"
-#include "media/base/pipeline.h"
 #include "media/base/video_decoder.h"
 #include "media/filters/decoder_stream_traits.h"
 #include "media/filters/decrypting_demuxer_stream.h"

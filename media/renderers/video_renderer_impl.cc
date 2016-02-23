@@ -19,7 +19,7 @@
 #include "media/base/limits.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
-#include "media/base/pipeline.h"
+#include "media/base/pipeline_status.h"
 #include "media/base/video_frame.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "media/video/gpu_memory_buffer_video_frame_pool.h"

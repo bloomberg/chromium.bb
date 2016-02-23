@@ -12,7 +12,6 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_log.h"
-#include "media/base/pipeline.h"
 
 namespace media {
 

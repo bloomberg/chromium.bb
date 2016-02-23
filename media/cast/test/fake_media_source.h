@@ -38,6 +38,7 @@ class AudioFifo;
 class AudioTimestampHelper;
 class FFmpegGlue;
 class InMemoryUrlProtocol;
+class VideoFrame;
 
 namespace cast {
 
