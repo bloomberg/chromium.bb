@@ -7,6 +7,7 @@
 #include "base/files/file_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -136,6 +137,8 @@ class DiskCacheBackendTest : public DiskCacheTestWithCache {
   void BackendDisable3();
   void BackendDisable4();
   void BackendDisabledAPI();
+
+  void BackendEviction();
 };
 
 int DiskCacheBackendTest::GeneratePendingIO(net::TestCompletionCallback* cb) {
@@ -2900,6 +2903,49 @@ TEST_F(DiskCacheBackendTest, NewEvictionDisabledAPI) {
   InitCache();
   BackendDisabledAPI();
 }
+
+// Test that some eviction of some kind happens.
+void DiskCacheBackendTest::BackendEviction() {
+  const int kMaxSize = 200 * 1024;
+  const int kMaxEntryCount = 20;
+  const int kWriteSize = kMaxSize / kMaxEntryCount;
+
+  const int kWriteEntryCount = kMaxEntryCount * 2;
+
+  static_assert(kWriteEntryCount * kWriteSize > kMaxSize,
+                "must write more than MaxSize");
+
+  SetMaxSize(kMaxSize);
+  InitSparseCache(nullptr, nullptr);
+
+  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kWriteSize));
+  CacheTestFillBuffer(buffer->data(), kWriteSize, false);
+
+  std::string key_prefix("prefix");
+  for (int i = 0; i < kWriteEntryCount; ++i) {
+    AddDelay();
+    disk_cache::Entry* entry = NULL;
+    ASSERT_EQ(net::OK, CreateEntry(key_prefix + base::IntToString(i), &entry));
+    disk_cache::ScopedEntryPtr entry_closer(entry);
+    EXPECT_EQ(kWriteSize,
+              WriteData(entry, 1, 0, buffer.get(), kWriteSize, false));
+  }
+
+  int size = CalculateSizeOfAllEntries();
+  EXPECT_GT(kMaxSize, size);
+}
+
+TEST_F(DiskCacheBackendTest, BackendEviction) {
+  BackendEviction();
+}
+
+TEST_F(DiskCacheBackendTest, MemoryOnlyBackendEviction) {
+  SetMemoryOnlyMode();
+  BackendEviction();
+}
+
+// TODO(gavinp): Enable BackendEviction test for simple cache after performance
+// problems are addressed. See crbug.com/588184 for more information.
 
 TEST_F(DiskCacheTest, Backend_UsageStatsTimer) {
   MessageLoopHelper helper;
