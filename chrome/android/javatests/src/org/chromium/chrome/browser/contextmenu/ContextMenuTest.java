@@ -46,10 +46,6 @@ public class ContextMenuTest extends DownloadTestBase {
     private EmbeddedTestServer mTestServer;
     private String mTestUrl;
 
-    public ContextMenuTest() {
-        mSkipCheckHttpServer = true;
-    }
-
     @Override
     protected void setUp() throws Exception {
         mTestServer = EmbeddedTestServer.createAndStartFileServer(

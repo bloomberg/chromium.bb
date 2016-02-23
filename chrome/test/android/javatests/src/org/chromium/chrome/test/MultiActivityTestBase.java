@@ -139,7 +139,7 @@ public abstract class MultiActivityTestBase extends InstrumentationTestCase
         RecordHistogram.disableForTests();
         mContext = getInstrumentation().getTargetContext();
         CommandLineFlags.setUp(mContext, getClass().getMethod(getName()));
-        ApplicationTestUtils.setUp(mContext, true, true);
+        ApplicationTestUtils.setUp(mContext, true);
 
         // Make the DocumentTabModelSelector use a mocked out directory so that test runs don't
         // interfere with each other.

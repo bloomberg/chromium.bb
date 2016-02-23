@@ -27,10 +27,6 @@ public class ChromeActivityTest extends ChromeTabbedActivityTestBase {
 
     private EmbeddedTestServer mTestServer;
 
-    public ChromeActivityTest() {
-        mSkipCheckHttpServer = true;
-    }
-
     @Override
     protected void setUp() throws Exception {
         super.setUp();

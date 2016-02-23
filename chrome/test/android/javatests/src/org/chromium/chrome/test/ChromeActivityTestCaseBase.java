@@ -118,7 +118,6 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
     }
 
     protected boolean mSkipClearAppData = false;
-    protected boolean mSkipCheckHttpServer = false;
 
     private Thread.UncaughtExceptionHandler mDefaultUncaughtExceptionHandler;
 
@@ -144,8 +143,7 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
         super.setUp();
         mDefaultUncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler(new ChromeUncaughtExceptionHandler());
-        ApplicationTestUtils.setUp(
-                getInstrumentation().getTargetContext(), !mSkipClearAppData, !mSkipCheckHttpServer);
+        ApplicationTestUtils.setUp(getInstrumentation().getTargetContext(), !mSkipClearAppData);
         setActivityInitialTouchMode(false);
         startMainActivity();
     }

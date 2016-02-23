@@ -43,7 +43,6 @@ public class BookmarkTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     public BookmarkTest() {
         super(ChromeActivity.class);
-        mSkipCheckHttpServer = true;
     }
 
     private static final String TEST_PAGE = "/chrome/test/data/android/google.html";

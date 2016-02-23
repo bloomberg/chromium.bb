@@ -102,7 +102,6 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
     public ContextualSearchManagerTest() {
         super(ChromeActivity.class);
-        mSkipCheckHttpServer = true;
     }
 
     @Override

@@ -54,10 +54,6 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
 
     private EmbeddedTestServer mTestServer;
 
-    public NavigateTest() {
-        mSkipCheckHttpServer = true;
-    }
-
     @Override
     protected void setUp() throws Exception {
         super.setUp();

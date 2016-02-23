@@ -38,10 +38,6 @@ public class DownloadTest extends DownloadTestBase {
 
     private EmbeddedTestServer mTestServer;
 
-    public DownloadTest() {
-        mSkipCheckHttpServer = true;
-    }
-
     @Override
     protected void setUp() throws Exception {
         super.setUp();

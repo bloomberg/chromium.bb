@@ -34,7 +34,6 @@ public class FullscreenVideoTest extends ChromeActivityTestCaseBase<ChromeActivi
 
     public FullscreenVideoTest() {
         super(ChromeActivity.class);
-        mSkipCheckHttpServer = true;
     }
 
     @Override

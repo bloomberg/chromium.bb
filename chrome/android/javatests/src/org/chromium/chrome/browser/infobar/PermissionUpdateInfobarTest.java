@@ -43,10 +43,6 @@ public class PermissionUpdateInfobarTest extends ChromeTabbedActivityTestBase {
     private InfoBarTestAnimationListener mListener;
     private EmbeddedTestServer mTestServer;
 
-    public PermissionUpdateInfobarTest() {
-        mSkipCheckHttpServer = true;
-    }
-
     @Override
     public void startMainActivity() throws InterruptedException {
         startMainActivityOnBlankPage();

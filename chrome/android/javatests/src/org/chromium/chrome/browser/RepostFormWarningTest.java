@@ -35,7 +35,6 @@ public class RepostFormWarningTest extends ChromeActivityTestCaseBase<ChromeActi
 
     public RepostFormWarningTest() {
         super(ChromeActivity.class);
-        mSkipCheckHttpServer = true;
     }
 
     @Override

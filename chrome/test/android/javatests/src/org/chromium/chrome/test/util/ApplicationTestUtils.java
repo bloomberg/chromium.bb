@@ -32,7 +32,7 @@ public class ApplicationTestUtils {
 
     // TODO(jbudorick): fix deprecation warning crbug.com/537347
     @SuppressWarnings("deprecation")
-    public static void setUp(Context context, boolean clearAppData, boolean checkHttpServer)
+    public static void setUp(Context context, boolean clearAppData)
             throws Exception {
         if (clearAppData) {
             // Clear data and remove any tasks listed in Android's Overview menu between test runs.
@@ -51,8 +51,6 @@ public class ApplicationTestUtils {
         // Disable Omaha related activities.
         OmahaClient.setEnableCommunication(false);
         OmahaClient.setEnableUpdateDetection(false);
-
-        if (checkHttpServer) TestHttpServerClient.checkServerIsUp();
     }
 
     public static void tearDown(Context context) throws Exception {

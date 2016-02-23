@@ -22,10 +22,6 @@ public class NewTabPageNavigationTest extends ChromeTabbedActivityTestBase {
 
     private EmbeddedTestServer mTestServer;
 
-    public NewTabPageNavigationTest() {
-        mSkipCheckHttpServer = true;
-    }
-
     @Override
     protected void setUp() throws Exception {
         super.setUp();
