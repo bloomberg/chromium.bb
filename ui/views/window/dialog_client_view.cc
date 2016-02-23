@@ -252,10 +252,16 @@ void DialogClientView::ViewHierarchyChanged(
     CreateFootnoteView();
   } else if (!details.is_add && details.child != this) {
     if (details.child == ok_button_)
-      ok_button_ = NULL;
-    if (details.child == cancel_button_)
-      cancel_button_ = NULL;
+      ok_button_ = nullptr;
+    else if (details.child == cancel_button_)
+      cancel_button_ = nullptr;
+    else if (details.child == extra_view_)
+      extra_view_ = nullptr;
+    else if (details.child == footnote_view_)
+      footnote_view_ = nullptr;
   }
+
+  SetupFocusChain();
 }
 
 void DialogClientView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
@@ -378,6 +384,32 @@ gfx::Insets DialogClientView::GetButtonRowInsets() const {
 void DialogClientView::Close() {
   GetWidget()->Close();
   GetDialogDelegate()->OnClosed();
+}
+
+void DialogClientView::SetupFocusChain() {
+  // Create a vector of child views in the order of intended focus.
+  std::vector<View*> child_views;
+  child_views.push_back(contents_view());
+  child_views.push_back(extra_view_);
+  if (kIsOkButtonOnLeftSide) {
+    child_views.push_back(ok_button_);
+    child_views.push_back(cancel_button_);
+  } else {
+    child_views.push_back(cancel_button_);
+    child_views.push_back(ok_button_);
+  }
+  child_views.push_back(footnote_view_);
+
+  // Remove all null views from the vector.
+  child_views.erase(
+      std::remove(child_views.begin(), child_views.end(), nullptr),
+      child_views.end());
+
+  // Setup focus.
+  for (size_t i = 0; i < child_views.size(); i++) {
+    child_views[i]->SetNextFocusableView(
+        i + 1 != child_views.size() ? child_views[i + 1] : nullptr);
+  }
 }
 
 }  // namespace views

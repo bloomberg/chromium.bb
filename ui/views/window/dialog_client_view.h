@@ -96,6 +96,10 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   // Closes the widget.
   void Close();
 
+  // Sets up the focus chain for the child views. This is required since the
+  // delegate may choose to add/remove views at any time.
+  void SetupFocusChain();
+
   // The dialog buttons.
   LabelButton* ok_button_;
   LabelButton* cancel_button_;

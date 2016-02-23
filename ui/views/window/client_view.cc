@@ -92,6 +92,8 @@ void ClientView::ViewHierarchyChanged(
     // Insert |contents_view_| at index 0 so it is first in the focus chain.
     // (the OK/Cancel buttons are inserted before contents_view_)
     AddChildViewAt(contents_view_, 0);
+  } else if (!details.is_add && details.child == contents_view_) {
+    contents_view_ = nullptr;
   }
 }
 

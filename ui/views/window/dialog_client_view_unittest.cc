@@ -176,6 +176,45 @@ TEST_F(DialogClientViewTest, RemoveAndUpdateButtons) {
   EXPECT_FALSE(client_view()->cancel_button()->is_default());
 }
 
+// Test that views inside the dialog client view have the correct focus order.
+TEST_F(DialogClientViewTest, SetupFocusChain) {
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+  const bool kIsOkButtonOnLeftSide = true;
+#else
+  const bool kIsOkButtonOnLeftSide = false;
+#endif
+
+  // Initially the dialog client view only contains the content view.
+  EXPECT_EQ(nullptr, client_view()->GetContentsView()->GetNextFocusableView());
+
+  // Add OK and cancel buttons.
+  SetDialogButtons(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL);
+
+  if (kIsOkButtonOnLeftSide) {
+    EXPECT_EQ(client_view()->ok_button(),
+              client_view()->GetContentsView()->GetNextFocusableView());
+    EXPECT_EQ(client_view()->cancel_button(),
+              client_view()->ok_button()->GetNextFocusableView());
+    EXPECT_EQ(nullptr, client_view()->cancel_button()->GetNextFocusableView());
+  } else {
+    EXPECT_EQ(client_view()->cancel_button(),
+              client_view()->GetContentsView()->GetNextFocusableView());
+    EXPECT_EQ(client_view()->ok_button(),
+              client_view()->cancel_button()->GetNextFocusableView());
+    EXPECT_EQ(nullptr, client_view()->ok_button()->GetNextFocusableView());
+  }
+
+  // Add extra view and remove OK button.
+  View* extra_view = new StaticSizedView(gfx::Size(200, 200));
+  SetExtraView(extra_view);
+  SetDialogButtons(ui::DIALOG_BUTTON_CANCEL);
+
+  EXPECT_EQ(extra_view,
+            client_view()->GetContentsView()->GetNextFocusableView());
+  EXPECT_EQ(client_view()->cancel_button(), extra_view->GetNextFocusableView());
+  EXPECT_EQ(nullptr, client_view()->cancel_button()->GetNextFocusableView());
+}
+
 // Test that the contents view gets its preferred size in the basic dialog
 // configuration.
 TEST_F(DialogClientViewTest, ContentsSize) {
