@@ -109,7 +109,8 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
     size_t size) {
   base::AutoLock lock(lock_);
 
-  DCHECK_NE(size, 0u);
+  // TODO(reveman): Temporary diagnostics for http://crbug.com/577786.
+  CHECK_NE(size, 0u);
 
   UMA_HISTOGRAM_CUSTOM_COUNTS("Memory.DiscardableAllocationSize",
                               size / 1024,  // In KB
