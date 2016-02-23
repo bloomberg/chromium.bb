@@ -4,6 +4,7 @@
 'use strict';
 
 function perfTestCSSValue(options) {
+  var svgTag = options.svgTag;
   var property = options.property;
   var from = options.from;
   var to = options.to;
@@ -18,10 +19,17 @@ function perfTestCSSValue(options) {
   var N = PerfTestHelper.getN(1000);
   var targets = [];
   for (var i = 0; i < N; i++) {
-    var target = document.createElement('target');
+    var target;
+    if (svgTag) {
+      target = document.createElementNS("http://www.w3.org/2000/svg", svgTag);
+    } else {
+      target = document.createElement('target');
+    }
     targets.push(target);
     container.appendChild(target);
   }
+
+  var tag = svgTag || 'target';
 
   var api = PerfTestHelper.getParameter('api');
   switch (api) {
@@ -32,7 +40,7 @@ function perfTestCSSValue(options) {
       '  from {' + property + ': ' + from + ';}\n' +
       '  to {' + property + ': ' + to + ';}\n' +
       '}\n' +
-      'target {\n' +
+      tag + ' {\n' +
       '  -webkit-animation: anim ' + duration + 'ms linear infinite;\n' +
       '}\n';
     document.head.appendChild(style);

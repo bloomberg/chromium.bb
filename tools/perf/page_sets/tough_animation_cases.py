@@ -198,6 +198,9 @@ class ToughAnimationCasesPageSet(story.StorySet):
       # Why: Tests simple length animations using CSS Animations.
       # pylint: disable=line-too-long
       'file://tough_animation_cases/css_value_type_length_simple.html?api=css_animations&N=0316',
+      # Why: Tests path animations using CSS Animations.
+      # pylint: disable=line-too-long
+      'file://tough_animation_cases/css_value_type_path.html?api=css_animations&N=0316',
       # Why: Tests shadow animations using CSS Animations.
       # pylint: disable=line-too-long
       'file://tough_animation_cases/css_value_type_shadow.html?api=css_animations&N=0316',
@@ -220,6 +223,9 @@ class ToughAnimationCasesPageSet(story.StorySet):
       # Why: Tests simple length animations using Web Animations.
       # pylint: disable=line-too-long
       'file://tough_animation_cases/css_value_type_length_simple.html?api=web_animations&N=0316',
+      # Why: Tests path animations using Web Animations.
+      # pylint: disable=line-too-long
+      'file://tough_animation_cases/css_value_type_path.html?api=web_animations&N=0316',
       # Why: Tests shadow animations using Web Animations.
       # pylint: disable=line-too-long
       'file://tough_animation_cases/css_value_type_shadow.html?api=web_animations&N=0316',
