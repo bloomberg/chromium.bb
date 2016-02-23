@@ -16,6 +16,7 @@ const char kUpdateEngineServiceErrorFailed[] =
 
 // Methods.
 const char kAttemptUpdate[] = "AttemptUpdate";
+const char kGetLastAttemptError[] = "GetLastAttemptError";
 const char kGetStatus[] = "GetStatus";
 const char kRebootIfNeeded[] = "RebootIfNeeded";
 const char kSetChannel[] = "SetChannel";
