@@ -418,6 +418,7 @@ class ReportStage(generic_stages.BuilderStage,
     # Or, more correctly, the info currently retrieved from these stages should
     # be stored and retrieved from builder_run instead.
     self._completion_instance = completion_instance
+    self._post_completion = False
 
   def _UpdateRunStreak(self, builder_run, final_status):
     """Update the streak counter for this builder, if applicable, and notify.
@@ -721,8 +722,6 @@ class ReportStage(generic_stages.BuilderStage,
         sys.stdout, archive_urls=archive_urls,
         current_version=(self._run.attrs.release_tag or ''))
 
-    retry_stats.ReportStats(sys.stdout)
-
     build_id, db = self._run.GetCIDBHandle()
     if db:
       # TODO(akeshet): Eliminate this status string translate once
@@ -752,10 +751,26 @@ class ReportStage(generic_stages.BuilderStage,
                      summary=build_data.failure_message,
                      metadata_url=metadata_url)
 
-      #
+      # From this point forward, treat all exceptions as warnings.
+      self._post_completion = True
+
+      # Dump report about things we retry.
+      retry_stats.ReportStats(sys.stdout)
+
       # Dump performance stats for this build versus recent builds.
-      #
-      self.CollectComparativeBuildTimings(sys.stdout, build_id, db)
+      if db:
+        self.CollectComparativeBuildTimings(sys.stdout, build_id, db)
+
+  def _HandleStageException(self, exc_info):
+    """Override and don't set status to FAIL but FORGIVEN instead."""
+    if self._post_completion:
+      # If we've already reported the stage completion, treat exceptions as
+      # warnings so we keep reported success in-line with waterfall displayed
+      # results.
+      return self._HandleExceptionAsWarning(exc_info)
+
+    return super(ReportStage, self)._HandleStageException(exc_info)
+
 
 class DetectIrrelevantChangesStage(generic_stages.BoardSpecificBuilderStage):
   """Stage to detect irrelevant changes for slave per board base.
