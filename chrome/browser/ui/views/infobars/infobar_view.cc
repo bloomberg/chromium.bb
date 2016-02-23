@@ -241,6 +241,10 @@ void InfoBarView::Layout() {
               ((content_minimum_width > 0) ? kBeforeCloseButtonSpacing : 0),
           width() - kEdgeItemPadding - close_button_->width()),
       OffsetY(close_button_)));
+
+  // For accessibility reasons, the close button should come last.
+  DCHECK_EQ(close_button_->parent()->child_count() - 1,
+            close_button_->parent()->GetIndexOf(close_button_));
 }
 
 void InfoBarView::ViewHierarchyChanged(
@@ -276,12 +280,8 @@ void InfoBarView::ViewHierarchyChanged(
     close_button_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
     close_button_->SetFocusable(true);
-    child_container_->AddChildView(close_button_);
-  } else if ((close_button_ != NULL) && (details.parent == this) &&
-      (details.child != close_button_) && (close_button_->parent() == this) &&
-      (child_at(child_count() - 1) != close_button_)) {
-    // For accessibility, ensure the close button is the last child view.
-    RemoveChildView(close_button_);
+    // Subclasses should already be done adding child views by this point (see
+    // related DCHECK in Layout()).
     child_container_->AddChildView(close_button_);
   }
 
@@ -290,8 +290,8 @@ void InfoBarView::ViewHierarchyChanged(
                    ? InfoBarContainerDelegate::kDefaultBarTargetHeightMd
                    : InfoBarContainerDelegate::kDefaultBarTargetHeight;
   const int kMinimumVerticalPadding = 6;
-  for (int i = 0; i < child_count(); ++i) {
-    const int child_height = child_at(i)->height();
+  for (int i = 0; i < child_container_->child_count(); ++i) {
+    const int child_height = child_container_->child_at(i)->height();
     height = std::max(height, child_height + kMinimumVerticalPadding);
   }
   SetBarTargetHeight(height);
