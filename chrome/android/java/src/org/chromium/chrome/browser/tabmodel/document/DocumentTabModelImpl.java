@@ -176,8 +176,8 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
         mInitializationObservers = new ObserverList<InitializationObserver>();
         mObservers = new ObserverList<TabModelObserver>();
 
-        long time = SystemClock.elapsedRealtime();
         SharedPreferences prefs = mContext.getSharedPreferences(PREF_PACKAGE, Context.MODE_PRIVATE);
+        long time = SystemClock.elapsedRealtime();
         mLastShownTabId = prefs.getInt(
                 isIncognito() ? PREF_LAST_SHOWN_TAB_ID_INCOGNITO : PREF_LAST_SHOWN_TAB_ID_REGULAR,
                 Tab.INVALID_TAB_ID);
