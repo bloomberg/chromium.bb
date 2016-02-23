@@ -32,55 +32,12 @@ const int kHpageSize = (1 << kHpageShift);
 const int kHpageMask = (~(kHpageSize - 1));
 
 const int kProtection = (PROT_READ | PROT_WRITE);
-const int kMmapFlags = (MAP_ANONYMOUS | MAP_SHARED);
-const int kMmapHtlbFlags = (kMmapFlags | MAP_HUGETLB);
 const int kMremapFlags = (MREMAP_MAYMOVE | MREMAP_FIXED);
 
 // The number of hugepages we want to use to map chrome text section
 // to hugepages. With the help of AutoFDO, the hot functions are grouped
 // in to a small area of the binary.
 const int kNumHugePages = 15;
-
-// mremap syscall is always supported for small page segment on all kernels.
-// However, it is not the case for hugepage.
-// If not used carefully, mremap() a hugepage segment directly onto small page
-// text segment will cause irreversible damage to the existing text mapping
-// and cause process to segfault. This function will dynamically at run time
-// determine whether a process can safely execute mremap on a hugepage segment
-// without taking the process down.
-//
-// Inputs: none
-// Return: true if mremap on hugepage segment is supported on the host OS.
-static int HugetlbMremapSupported(void) {
-  void *haddr = 0, *raddr = 0, *taddr;
-  const size_t size = kHpageSize;
-  int ret = 0;
-
-  // use a pair of hugepage memory segments to test whether mremap() is
-  // supported
-  haddr = mmap(NULL, size, kProtection, kMmapHtlbFlags | MAP_NORESERVE, 0, 0);
-  if (haddr == MAP_FAILED) {
-    return 0;
-  }
-  taddr = mmap(NULL, size, kProtection, kMmapHtlbFlags | MAP_NORESERVE, 0, 0);
-  if (taddr == MAP_FAILED) {
-    munmap(haddr, size);
-    return 0;
-  }
-
-  raddr = mremap(haddr, size, size, kMremapFlags, taddr);
-  if (raddr != MAP_FAILED) {
-    ret = 1;
-    // clean up.  raddr == taddr; also haddr is implicitly unmapped
-    munmap(raddr, size);
-  } else {
-    // mremap fail, clean up both src and dst segments
-    munmap(haddr, size);
-    munmap(taddr, size);
-  }
-
-  return ret;
-}
 
 // Get an anonymous mapping backed by explicit transparent hugepage
 // Return NULL if such mapping can not be established.
@@ -129,21 +86,10 @@ static void NoAsanAlignedMemcpy(void* dst, void* src, size_t size) {
 // Effect: physical backing page changed from small page to hugepage. If there
 //         are error condition, the remapping operation is aborted.
 static void MremapHugetlbText(void* vaddr, const size_t hsize) {
-  void* haddr = MAP_FAILED;
-
-  if ((reinterpret_cast<intptr_t>(vaddr) & ~kHpageMask) == 0 &&
-      HugetlbMremapSupported()) {
-    // Try anon hugepage from static hugepage pool only if the source address
-    // is hugepage aligned, otherwise, mremap below has non-recoverable error.
-    haddr = mmap(NULL, hsize, kProtection, kMmapHtlbFlags, 0, 0);
-  }
-
-  if (haddr == MAP_FAILED) {
-    PLOG(INFO) << "static hugepage not available, trying transparent hugepage";
-    haddr = GetTransparentHugepageMapping(hsize);
-    if (haddr == NULL)
-      return;
-  }
+  DCHECK_EQ(0ul, reinterpret_cast<uintptr_t>(vaddr) & ~kHpageMask);
+  void* haddr = GetTransparentHugepageMapping(hsize);
+  if (haddr == NULL)
+    return;
 
   // Copy text segment to hugepage mapping. We are using a non-asan memcpy,
   // otherwise it would be flagged as a bunch of out of bounds reads.
@@ -167,20 +113,30 @@ static void MremapHugetlbText(void* vaddr, const size_t hsize) {
 // Top level text remapping function.
 //
 // Inputs: vaddr, the starting virtual address to remap to hugepage
-//         hsize, size of the memory segment to remap in bytes
+//         segsize, size of the memory segment to remap in bytes
 // Return: none
 // Effect: physical backing page changed from small page to hugepage. If there
 //         are error condition, the remaping operation is aborted.
 static void RemapHugetlbText(void* vaddr, const size_t segsize) {
-  int hsize = segsize;
-  if (segsize > kHpageSize * kNumHugePages)
-    hsize = kHpageSize * kNumHugePages;
+  // remove unaligned head regions
+  uintptr_t head_gap =
+      (kHpageSize - reinterpret_cast<uintptr_t>(vaddr) % kHpageSize) %
+      kHpageSize;
+  uintptr_t addr = reinterpret_cast<uintptr_t>(vaddr) + head_gap;
+
+  if (segsize < head_gap)
+    return;
+
+  size_t hsize = segsize - head_gap;
   hsize = hsize & kHpageMask;
+
+  if (hsize > kHpageSize * kNumHugePages)
+    hsize = kHpageSize * kNumHugePages;
 
   if (hsize == 0)
     return;
 
-  MremapHugetlbText(vaddr, hsize);
+  MremapHugetlbText(reinterpret_cast<void*>(addr), hsize);
 }
 
 // For a given ELF program header descriptor, iterates over all segments within
