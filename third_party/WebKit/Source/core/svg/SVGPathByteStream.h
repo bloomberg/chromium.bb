@@ -21,8 +21,7 @@
 #define SVGPathByteStream_h
 
 #include "wtf/Noncopyable.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -33,17 +32,17 @@ union ByteType {
     unsigned char bytes[sizeof(DataType)];
 };
 
-class SVGPathByteStream : public RefCounted<SVGPathByteStream> {
+class SVGPathByteStream {
     USING_FAST_MALLOC(SVGPathByteStream);
 public:
-    static PassRefPtr<SVGPathByteStream> create()
+    static PassOwnPtr<SVGPathByteStream> create()
     {
-        return adoptRef(new SVGPathByteStream);
+        return adoptPtr(new SVGPathByteStream);
     }
 
-    PassRefPtr<SVGPathByteStream> clone() const
+    PassOwnPtr<SVGPathByteStream> clone() const
     {
-        return adoptRef(new SVGPathByteStream(m_data));
+        return adoptPtr(new SVGPathByteStream(m_data));
     }
 
     typedef Vector<unsigned char> Data;

@@ -12,7 +12,7 @@ namespace blink {
 
 class PathInterpolationFunctions {
 public:
-    static PassRefPtr<SVGPathByteStream> appliedValue(const InterpolableValue&, const NonInterpolableValue*);
+    static PassOwnPtr<SVGPathByteStream> appliedValue(const InterpolableValue&, const NonInterpolableValue*);
 
     static void composite(UnderlyingValueOwner&, double underlyingFraction, const InterpolationType&, const InterpolationValue&);
 

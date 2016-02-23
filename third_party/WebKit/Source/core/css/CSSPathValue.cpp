@@ -9,24 +9,21 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<CSSPathValue> CSSPathValue::create(PassRefPtr<SVGPathByteStream> pathByteStream, StylePath* cachedPath)
+PassRefPtrWillBeRawPtr<CSSPathValue> CSSPathValue::create(PassRefPtr<StylePath> stylePath)
 {
-    return adoptRefWillBeNoop(new CSSPathValue(pathByteStream, cachedPath));
+    return adoptRefWillBeNoop(new CSSPathValue(stylePath));
 }
 
-PassRefPtrWillBeRawPtr<CSSPathValue> CSSPathValue::create(const String& pathString)
+PassRefPtrWillBeRawPtr<CSSPathValue> CSSPathValue::create(PassOwnPtr<SVGPathByteStream> pathByteStream)
 {
-    RefPtr<SVGPathByteStream> byteStream = SVGPathByteStream::create();
-    buildByteStreamFromString(pathString, *byteStream);
-    return CSSPathValue::create(byteStream.release());
+    return CSSPathValue::create(StylePath::create(pathByteStream));
 }
 
-CSSPathValue::CSSPathValue(PassRefPtr<SVGPathByteStream> pathByteStream, StylePath* cachedPath)
+CSSPathValue::CSSPathValue(PassRefPtr<StylePath> stylePath)
     : CSSValue(PathClass)
-    , m_pathByteStream(pathByteStream)
-    , m_cachedPath(cachedPath)
+    , m_stylePath(stylePath)
 {
-    ASSERT(m_pathByteStream);
+    ASSERT(m_stylePath);
 }
 
 CSSPathValue::~CSSPathValue()
@@ -37,7 +34,7 @@ namespace {
 
 PassRefPtrWillBeRawPtr<CSSPathValue> createPathValue()
 {
-    RefPtr<SVGPathByteStream> pathByteStream = SVGPathByteStream::create();
+    OwnPtr<SVGPathByteStream> pathByteStream = SVGPathByteStream::create();
     // Need to be registered as LSan ignored, as it will be reachable and
     // separately referred to by emptyPathValue() callers.
     LEAK_SANITIZER_IGNORE_OBJECT(pathByteStream.get());
@@ -52,11 +49,9 @@ CSSPathValue* CSSPathValue::emptyPathValue()
     return empty.get();
 }
 
-StylePath* CSSPathValue::cachedPath() const
+StylePath* CSSPathValue::stylePath() const
 {
-    if (!m_cachedPath)
-        m_cachedPath = StylePath::create(m_pathByteStream);
-    return m_cachedPath.get();
+    return m_stylePath.get();
 }
 
 String CSSPathValue::customCSSText() const
@@ -66,7 +61,7 @@ String CSSPathValue::customCSSText() const
 
 bool CSSPathValue::equals(const CSSPathValue& other) const
 {
-    return *m_pathByteStream == *other.m_pathByteStream;
+    return byteStream() == other.byteStream();
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(CSSPathValue)
@@ -76,7 +71,7 @@ DEFINE_TRACE_AFTER_DISPATCH(CSSPathValue)
 
 String CSSPathValue::pathString() const
 {
-    return buildStringFromByteStream(*m_pathByteStream);
+    return buildStringFromByteStream(byteStream());
 }
 
 } // namespace blink

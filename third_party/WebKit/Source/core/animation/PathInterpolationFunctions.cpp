@@ -148,9 +148,9 @@ void PathInterpolationFunctions::composite(UnderlyingValueOwner& underlyingValue
     underlyingValueOwner.mutableValue().nonInterpolableValue = value.nonInterpolableValue.get();
 }
 
-PassRefPtr<SVGPathByteStream> PathInterpolationFunctions::appliedValue(const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue)
+PassOwnPtr<SVGPathByteStream> PathInterpolationFunctions::appliedValue(const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue)
 {
-    RefPtr<SVGPathByteStream> pathByteStream = SVGPathByteStream::create();
+    OwnPtr<SVGPathByteStream> pathByteStream = SVGPathByteStream::create();
     InterpolatedSVGPathSource source(
         toInterpolableList(*toInterpolableList(interpolableValue).get(PathArgsIndex)),
         toSVGPathNonInterpolableValue(nonInterpolableValue)->pathSegTypes());

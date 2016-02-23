@@ -6,6 +6,7 @@
 #define CSSPathValue_h
 
 #include "core/css/CSSValue.h"
+#include "core/style/StylePath.h"
 #include "core/svg/SVGPathByteStream.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
@@ -16,27 +17,26 @@ class StylePath;
 
 class CSSPathValue : public CSSValue {
 public:
-    static PassRefPtrWillBeRawPtr<CSSPathValue> create(PassRefPtr<SVGPathByteStream>, StylePath* = nullptr);
-    static PassRefPtrWillBeRawPtr<CSSPathValue> create(const String&);
+    static PassRefPtrWillBeRawPtr<CSSPathValue> create(PassRefPtr<StylePath>);
+    static PassRefPtrWillBeRawPtr<CSSPathValue> create(PassOwnPtr<SVGPathByteStream>);
     ~CSSPathValue();
 
     static CSSPathValue* emptyPathValue();
 
-    StylePath* cachedPath() const;
+    StylePath* stylePath() const;
     String customCSSText() const;
 
     bool equals(const CSSPathValue&) const;
 
     DECLARE_TRACE_AFTER_DISPATCH();
 
-    const SVGPathByteStream& byteStream() const { return *m_pathByteStream; }
+    const SVGPathByteStream& byteStream() const { return m_stylePath->byteStream(); }
     String pathString() const;
 
 private:
-    CSSPathValue(PassRefPtr<SVGPathByteStream>, StylePath*);
+    CSSPathValue(PassRefPtr<StylePath>);
 
-    RefPtr<SVGPathByteStream> m_pathByteStream;
-    mutable RefPtr<StylePath> m_cachedPath;
+    RefPtr<StylePath> m_stylePath;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSPathValue, isPathValue());

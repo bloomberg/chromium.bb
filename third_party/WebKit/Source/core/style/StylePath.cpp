@@ -11,7 +11,7 @@
 
 namespace blink {
 
-StylePath::StylePath(PassRefPtr<SVGPathByteStream> pathByteStream)
+StylePath::StylePath(PassOwnPtr<SVGPathByteStream> pathByteStream)
     : m_byteStream(pathByteStream)
     , m_pathLength(std::numeric_limits<float>::quiet_NaN())
 {
@@ -22,7 +22,7 @@ StylePath::~StylePath()
 {
 }
 
-PassRefPtr<StylePath> StylePath::create(PassRefPtr<SVGPathByteStream> pathByteStream)
+PassRefPtr<StylePath> StylePath::create(PassOwnPtr<SVGPathByteStream> pathByteStream)
 {
     return adoptRef(new StylePath(pathByteStream));
 }
@@ -61,7 +61,7 @@ const SVGPathByteStream& StylePath::byteStream() const
 
 PassRefPtrWillBeRawPtr<CSSValue> StylePath::computedCSSValue() const
 {
-    return CSSPathValue::create(m_byteStream, const_cast<StylePath*>(this));
+    return CSSPathValue::create(const_cast<StylePath*>(this));
 }
 
 bool StylePath::equals(const StylePath& other) const

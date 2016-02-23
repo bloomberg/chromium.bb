@@ -977,7 +977,7 @@ RespectImageOrientationEnum StyleBuilderConverter::convertImageOrientation(Style
 
 PassRefPtr<StylePath> StyleBuilderConverter::convertPath(StyleResolverState&, const CSSValue& value)
 {
-    return toCSSPathValue(value).cachedPath();
+    return toCSSPathValue(value).stylePath();
 }
 
 PassRefPtr<StylePath> StyleBuilderConverter::convertPathOrNone(StyleResolverState& state, const CSSValue& value)

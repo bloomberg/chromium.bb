@@ -39,7 +39,7 @@ PassRefPtr<AnimatableValue> AnimatablePath::interpolateTo(const AnimatableValue*
     if (usesDefaultInterpolationWith(value))
         return defaultInterpolateTo(this, value, fraction);
 
-    RefPtr<SVGPathByteStream> byteStream = SVGPathByteStream::create();
+    OwnPtr<SVGPathByteStream> byteStream = SVGPathByteStream::create();
     SVGPathByteStreamBuilder builder(*byteStream);
 
     SVGPathByteStreamSource fromSource(path()->byteStream());

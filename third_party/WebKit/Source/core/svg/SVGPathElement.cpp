@@ -72,7 +72,7 @@ const StylePath* SVGPathElement::stylePath() const
 {
     if (LayoutObject* layoutObject = this->layoutObject())
         return layoutObject->styleRef().svgStyle().d();
-    return m_path->currentValue()->pathValue()->cachedPath();
+    return m_path->currentValue()->pathValue()->stylePath();
 }
 
 float SVGPathElement::pathLengthScaleFactor() const

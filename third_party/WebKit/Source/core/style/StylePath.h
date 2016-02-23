@@ -19,7 +19,7 @@ class SVGPathByteStream;
 
 class StylePath : public RefCounted<StylePath> {
 public:
-    static PassRefPtr<StylePath> create(PassRefPtr<SVGPathByteStream>);
+    static PassRefPtr<StylePath> create(PassOwnPtr<SVGPathByteStream>);
     ~StylePath();
 
     static StylePath* emptyPath();
@@ -35,9 +35,9 @@ public:
     bool equals(const StylePath&) const;
 
 private:
-    explicit StylePath(PassRefPtr<SVGPathByteStream>);
+    explicit StylePath(PassOwnPtr<SVGPathByteStream>);
 
-    RefPtr<SVGPathByteStream> m_byteStream;
+    OwnPtr<SVGPathByteStream> m_byteStream;
     mutable OwnPtr<Path> m_path;
     mutable float m_pathLength;
 };
