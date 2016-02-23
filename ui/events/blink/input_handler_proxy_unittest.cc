@@ -639,8 +639,9 @@ TEST_P(InputHandlerProxyTest, DISABLED_GestureScrollByCoarsePixels) {
   gesture_.type = WebInputEvent::GestureScrollBegin;
   gesture_.data.scrollBegin.deltaHintUnits =
       WebGestureEvent::ScrollUnits::Pixels;
-  EXPECT_CALL(mock_input_handler_, ScrollAnimated(::testing::_, ::testing::_))
+  EXPECT_CALL(mock_input_handler_, ScrollBegin(::testing::_, ::testing::_))
       .WillOnce(testing::Return(kImplThreadScrollState));
+  EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 
   gesture_.type = WebInputEvent::GestureScrollUpdate;

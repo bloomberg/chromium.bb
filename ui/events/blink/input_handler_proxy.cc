@@ -597,10 +597,18 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
   } else if (smooth_scroll_enabled_ &&
              gesture_event.data.scrollBegin.deltaHintUnits ==
                  blink::WebGestureEvent::ScrollUnits::Pixels) {
-    gfx::Vector2dF scroll_delta(-gesture_event.data.scrollBegin.deltaXHint,
-                                -gesture_event.data.scrollBegin.deltaYHint);
-    scroll_status = input_handler_->ScrollAnimated(
-        gfx::Point(gesture_event.x, gesture_event.y), scroll_delta);
+    // Generate a scroll begin/end combination to determine if
+    // this can actually be handled by the impl thread or not. But
+    // don't generate any scroll yet; GestureScrollUpdate will generate
+    // the scroll animation.
+    scroll_status = input_handler_->ScrollBegin(
+        &scroll_state, cc::InputHandler::ANIMATED_WHEEL);
+    if (scroll_status.thread == cc::InputHandler::SCROLL_ON_IMPL_THREAD) {
+      cc::ScrollStateData scroll_state_end_data;
+      scroll_state_end_data.is_ending = true;
+      cc::ScrollState scroll_state_end(scroll_state_end_data);
+      input_handler_->ScrollEnd(&scroll_state_end);
+    }
   } else {
     scroll_status =
         input_handler_->ScrollBegin(&scroll_state, cc::InputHandler::GESTURE);
