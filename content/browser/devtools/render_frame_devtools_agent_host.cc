@@ -672,6 +672,10 @@ bool RenderFrameDevToolsAgentHost::OnMessageReceived(
 bool RenderFrameDevToolsAgentHost::OnMessageReceived(
     const IPC::Message& message,
     RenderFrameHost* render_frame_host) {
+  bool is_current = current_ && current_->host() == render_frame_host;
+  bool is_pending = pending_ && pending_->host() == render_frame_host;
+  if (!is_current && !is_pending)
+    return false;
   if (!IsAttached())
     return false;
   bool handled = true;
