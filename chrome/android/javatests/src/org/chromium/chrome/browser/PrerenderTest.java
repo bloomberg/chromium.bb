@@ -10,20 +10,15 @@ import android.os.Environment;
 import android.test.FlakyTest;
 import android.test.MoreAsserts;
 import android.test.suitebuilder.annotation.LargeTest;
-import android.view.KeyEvent;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.chrome.R;
-import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
-import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.PrerenderTestHelper;
 import org.chromium.chrome.test.util.browser.TabTitleObserver;
-import org.chromium.content.browser.test.util.KeyUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.PageTransition;
 
@@ -90,16 +85,15 @@ public class PrerenderTest extends ChromeTabbedActivityTestBase {
     public void testPrerenderNotDead() throws InterruptedException, TimeoutException {
         String testUrl = mTestServer.getURL(
                 "/chrome/test/data/android/prerender/google.html");
-        PrerenderTestHelper.prerenderUrlAndFocusOmnibox(testUrl, this);
         final Tab tab = getActivity().getActivityTab();
+        PrerenderTestHelper.prerenderUrl(testUrl, tab);
         // Navigate should use the prerendered version.
-        assertEquals(TabLoadStatus.FULL_PRERENDERED_PAGE_LOAD,
-                loadUrlInTab(testUrl, PageTransition.TYPED | PageTransition.FROM_ADDRESS_BAR, tab));
+        assertEquals(TabLoadStatus.FULL_PRERENDERED_PAGE_LOAD, loadUrl(testUrl));
 
         // Prerender again with new text; make sure we get something different.
         String newTitle = "Welcome to the YouTube";
         testUrl = mTestServer.getURL("/chrome/test/data/android/prerender/youtube.html");
-        PrerenderTestHelper.prerenderUrlAndFocusOmnibox(testUrl, this);
+        PrerenderTestHelper.prerenderUrl(testUrl, tab);
 
         // Make sure the current tab title is NOT from the prerendered page.
         MoreAsserts.assertNotEqual(newTitle, tab.getTitle());
@@ -107,9 +101,7 @@ public class PrerenderTest extends ChromeTabbedActivityTestBase {
         TabTitleObserver observer = new TabTitleObserver(tab, newTitle);
 
         // Now commit and see the new title.
-        final UrlBar urlBar = (UrlBar) getActivity().findViewById(R.id.url_bar);
-        assertNotNull("urlBar is null", urlBar);
-        KeyUtils.singleKeyEventView(getInstrumentation(), urlBar, KeyEvent.KEYCODE_ENTER);
+        loadUrl(testUrl);
 
         observer.waitForTitleUpdate(5);
         assertEquals(newTitle, tab.getTitle());
@@ -124,18 +116,8 @@ public class PrerenderTest extends ChromeTabbedActivityTestBase {
     @Feature({"TabContents"})
     public void testPageLoadFinishNotification() throws InterruptedException {
         String url = mTestServer.getURL("/chrome/test/data/android/prerender/google.html");
-        PrerenderTestHelper.prerenderUrlAndFocusOmnibox(url, this);
-        // Now let's press enter to validate the suggestion. The prerendered page should be
-        // committed and we should get a page load finished notification (which would trigger the
-        // page load).
-        ChromeTabUtils.waitForTabPageLoaded(getActivity().getActivityTab(), new Runnable() {
-            @Override
-            public void run() {
-                final UrlBar urlBar = (UrlBar) getActivity().findViewById(R.id.url_bar);
-                assertNotNull("urlBar is null", urlBar);
-                KeyUtils.singleKeyEventView(getInstrumentation(), urlBar, KeyEvent.KEYCODE_ENTER);
-            }
-        });
+        PrerenderTestHelper.prerenderUrl(url, getActivity().getActivityTab());
+        loadUrl(url);
     }
 
     /**
@@ -150,18 +132,14 @@ public class PrerenderTest extends ChromeTabbedActivityTestBase {
     public void testInfoBarDismissed() throws InterruptedException {
         final String url = mTestServer.getURL(
                 "/chrome/test/data/geolocation/geolocation_on_load.html");
-        final ExternalPrerenderHandler handler = PrerenderTestHelper.prerenderUrlAndFocusOmnibox(
-                url, this);
+        final ExternalPrerenderHandler handler =
+                PrerenderTestHelper.prerenderUrl(url, getActivity().getActivityTab());
 
-        // Let's clear the URL bar, this will discard the prerendered WebContents and close the
+        // Cancel the prerender. This will discard the prerendered WebContents and close the
         // infobars.
-        final UrlBar urlBar = (UrlBar) getActivity().findViewById(R.id.url_bar);
-        assertNotNull(urlBar);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                urlBar.requestFocus();
-                urlBar.setText("");
                 handler.cancelCurrentPrerender();
             }
         });
