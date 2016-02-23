@@ -106,6 +106,12 @@ const char kAuthExtensionPath[]             = "auth-ext-path";
 // Whitelist for Negotiate Auth servers
 const char kAuthServerWhitelist[]           = "auth-server-whitelist";
 
+// This flag makes Chrome auto-open DevTools window for each tab. It is
+// intended to be used by developers and automation to not require user
+// interaction for opening DevTools.
+const char kAutoOpenDevToolsForTabs[] =
+    "auto-open-devtools-for-tabs";
+
 // This flag makes Chrome auto-select the provided choice when an extension asks
 // permission to start desktop capture. Should only be used for tests. For
 // instance, --auto-select-desktop-capture-source="Entire screen" will

@@ -85,6 +85,8 @@
             'browser/devtools/device/usb/android_usb_socket.h',
             'browser/devtools/device/usb/usb_device_provider.cc',
             'browser/devtools/device/usb/usb_device_provider.h',
+            'browser/devtools/devtools_auto_opener.cc',
+            'browser/devtools/devtools_auto_opener.h',
             'browser/devtools/devtools_contents_resizing_strategy.cc',
             'browser/devtools/devtools_contents_resizing_strategy.h',
             'browser/devtools/devtools_embedder_message_dispatcher.cc',

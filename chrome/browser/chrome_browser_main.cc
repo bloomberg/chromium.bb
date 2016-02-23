@@ -1185,6 +1185,9 @@ void ChromeBrowserMainParts::PostProfileInit() {
 #endif  // BUILDFLAG(ANDROID_JAVA_UI)
 
   LaunchDevToolsHandlerIfNeeded(parsed_command_line());
+  if (parsed_command_line().HasSwitch(::switches::kAutoOpenDevToolsForTabs))
+    g_browser_process->CreateDevToolsAutoOpener();
+
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PostProfileInit();
 }

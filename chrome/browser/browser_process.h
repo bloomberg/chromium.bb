@@ -184,6 +184,7 @@ class BrowserProcess {
 
   virtual void CreateDevToolsHttpProtocolHandler(const std::string& ip,
                                                  uint16_t port) = 0;
+  virtual void CreateDevToolsAutoOpener() = 0;
 
   virtual unsigned int AddRefModule() = 0;
   virtual unsigned int ReleaseModule() = 0;

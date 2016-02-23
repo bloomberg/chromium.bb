@@ -27,6 +27,7 @@
 class ChromeChildProcessWatcher;
 class ChromeDeviceClient;
 class ChromeResourceDispatcherHostDelegate;
+class DevToolsAutoOpener;
 class RemoteDebuggingServer;
 class PrefRegistrySimple;
 
@@ -111,6 +112,7 @@ class BrowserProcessImpl : public BrowserProcess,
   GpuModeManager* gpu_mode_manager() override;
   void CreateDevToolsHttpProtocolHandler(const std::string& ip,
                                          uint16_t port) override;
+  void CreateDevToolsAutoOpener() override;
   unsigned int AddRefModule() override;
   unsigned int ReleaseModule() override;
   bool IsShuttingDown() override;
@@ -221,6 +223,7 @@ class BrowserProcessImpl : public BrowserProcess,
 
 #if !defined(OS_ANDROID)
   scoped_ptr<RemoteDebuggingServer> remote_debugging_server_;
+  scoped_ptr<DevToolsAutoOpener> devtools_auto_opener_;
 #endif
 
 #if defined(ENABLE_PRINT_PREVIEW)

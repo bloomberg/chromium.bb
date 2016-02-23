@@ -91,6 +91,7 @@ class TestingBrowserProcess : public BrowserProcess {
   IntranetRedirectDetector* intranet_redirect_detector() override;
   void CreateDevToolsHttpProtocolHandler(const std::string& ip,
                                          uint16_t port) override;
+  void CreateDevToolsAutoOpener() override;
   unsigned int AddRefModule() override;
   unsigned int ReleaseModule() override;
   bool IsShuttingDown() override;

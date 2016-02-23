@@ -35,6 +35,7 @@
 #include "chrome/browser/component_updater/chrome_component_updater_configurator.h"
 #include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/devtools/devtools_auto_opener.h"
 #include "chrome/browser/devtools/remote_debugging_server.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_status_updater.h"
@@ -286,6 +287,7 @@ void BrowserProcessImpl::StartTearDown() {
 #if !defined(OS_ANDROID)
   // Debugger must be cleaned up before ProfileManager.
   remote_debugging_server_.reset();
+  devtools_auto_opener_.reset();
 #endif
 
   // Need to clear profiles (download managers) before the io_thread_.
@@ -685,6 +687,16 @@ void BrowserProcessImpl::CreateDevToolsHttpProtocolHandler(
   if (!remote_debugging_server_.get()) {
     remote_debugging_server_.reset(new RemoteDebuggingServer(ip, port));
   }
+#endif
+}
+
+void BrowserProcessImpl::CreateDevToolsAutoOpener() {
+  DCHECK(CalledOnValidThread());
+#if !defined(OS_ANDROID)
+  // StartupBrowserCreator::LaunchBrowser can be run multiple times when browser
+  // is started with several profiles or existing browser process is reused.
+  if (!devtools_auto_opener_.get())
+    devtools_auto_opener_.reset(new DevToolsAutoOpener());
 #endif
 }
 

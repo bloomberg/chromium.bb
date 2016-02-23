@@ -258,9 +258,14 @@ message_center::MessageCenter* TestingBrowserProcess::message_center() {
 IntranetRedirectDetector* TestingBrowserProcess::intranet_redirect_detector() {
   return nullptr;
 }
+
 void TestingBrowserProcess::CreateDevToolsHttpProtocolHandler(
     const std::string& ip,
-    uint16_t port) {}
+    uint16_t port) {
+}
+
+void TestingBrowserProcess::CreateDevToolsAutoOpener() {
+}
 
 unsigned int TestingBrowserProcess::AddRefModule() {
   return ++module_ref_count_;
