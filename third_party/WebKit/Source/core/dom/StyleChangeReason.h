@@ -18,6 +18,7 @@ namespace StyleChangeReason {
 extern const char ActiveStylesheetsUpdate[];
 extern const char Animation[];
 extern const char Attribute[];
+extern const char CleanupPlaceholderStyles[];
 extern const char CompositorProxy[];
 extern const char ControlValue[];
 extern const char Control[];

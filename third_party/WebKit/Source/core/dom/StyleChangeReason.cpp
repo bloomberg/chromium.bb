@@ -14,6 +14,7 @@ namespace StyleChangeReason {
 const char ActiveStylesheetsUpdate[] = "ActiveStylesheetsUpdate";
 const char Animation[] = "Animation";
 const char Attribute[] = "Attribute";
+const char CleanupPlaceholderStyles[] = "CleanupPlaceholderStyles";
 const char CompositorProxy[] = "CompositorProxy";
 const char ControlValue[] = "ControlValue";
 const char Control[] = "Control";

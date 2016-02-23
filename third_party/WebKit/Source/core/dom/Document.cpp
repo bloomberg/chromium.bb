@@ -1717,7 +1717,7 @@ static void assertLayoutTreeUpdated(Node& root)
 }
 #endif
 
-void Document::updateLayoutTree(StyleRecalcChange change)
+void Document::updateLayoutTreeIfNeeded()
 {
     ASSERT(isMainThread());
 
@@ -1733,7 +1733,7 @@ void Document::updateLayoutTree(StyleRecalcChange change)
     if (view()->shouldThrottleRendering())
         return;
 
-    if (change != Force && !needsLayoutTreeUpdate()) {
+    if (!needsLayoutTreeUpdate()) {
         if (lifecycle().state() < DocumentLifecycle::StyleClean) {
             // needsLayoutTreeUpdate may change to false without any actual layout tree update.
             // For example, needsAnimationTimingUpdate may change to false when time elapses.
@@ -1780,7 +1780,7 @@ void Document::updateLayoutTree(StyleRecalcChange change)
     // re-attaching our containing iframe, which when asked HTMLFrameElementBase::isURLAllowed
     // hits a null-dereference due to security code always assuming the document has a SecurityOrigin.
 
-    updateStyle(change);
+    updateStyle();
 
     notifyLayoutTreeOfSubtreeChanges();
 
@@ -1806,7 +1806,7 @@ void Document::updateLayoutTree(StyleRecalcChange change)
 #endif
 }
 
-void Document::updateStyle(StyleRecalcChange change)
+void Document::updateStyle()
 {
     ASSERT(!view()->shouldThrottleRendering());
     TRACE_EVENT_BEGIN0("blink,blink_style", "Document::updateStyle");
@@ -1815,10 +1815,11 @@ void Document::updateStyle(StyleRecalcChange change)
     HTMLFrameOwnerElement::UpdateSuspendScope suspendWidgetHierarchyUpdates;
     m_lifecycle.advanceTo(DocumentLifecycle::InStyleRecalc);
 
-    NthIndexCache nthIndexCache(*this);
-
+    StyleRecalcChange change = NoChange;
     if (styleChangeType() >= SubtreeStyleChange)
         change = Force;
+
+    NthIndexCache nthIndexCache(*this);
 
     // FIXME: Cannot access the ensureStyleResolver() before calling styleForDocument below because
     // apparently the StyleResolver's constructor has side effects. We should fix it.
@@ -2013,7 +2014,8 @@ void Document::updateLayoutTreeIgnorePendingStylesheets()
             // If new nodes have been added or style recalc has been done with style sheets still
             // pending, some nodes may not have had their real style calculated yet. Normally this
             // gets cleaned when style sheets arrive but here we need up-to-date style immediately.
-            updateLayoutTree(Force);
+            setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::CleanupPlaceholderStyles));
+            updateLayoutTreeIfNeeded();
         }
     }
     updateLayoutTreeIfNeeded();

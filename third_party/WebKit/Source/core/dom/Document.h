@@ -428,7 +428,7 @@ public:
     bool needsLayoutTreeUpdateForNode(const Node&) const;
     // Update ComputedStyles and attach LayoutObjects if necessary, but don't
     // lay out.
-    void updateLayoutTreeIfNeeded() { updateLayoutTree(NoChange); }
+    void updateLayoutTreeIfNeeded();
     // Same as updateLayoutTreeIfNeeded except ignoring pending stylesheets.
     void updateLayoutTreeIgnorePendingStylesheets();
     void updateLayoutTreeForNodeIfNeeded(Node*);
@@ -1109,8 +1109,7 @@ private:
     void updateUseShadowTreesIfNeeded();
     void evaluateMediaQueryListIfNeeded();
 
-    void updateLayoutTree(StyleRecalcChange);
-    void updateStyle(StyleRecalcChange);
+    void updateStyle();
     void notifyLayoutTreeOfSubtreeChanges();
 
     void detachParser();
