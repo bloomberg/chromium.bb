@@ -418,8 +418,11 @@ To adjust your search term, long press to select. To refine your search, slide t
 
 For example, some websites may respond to this request by showing you ads that aren’t based on other websites you’ve visited. Many websites will still collect and use your browsing data — for example to improve security, to provide content, ads and recommendations, and to generate reporting statistics.
       </message>
-      <message name="IDS_CLEAR_BROWSING_DATA_TITLE" desc="Button to Clear Browsing Data [CHAR-LIMIT=24]">
+      <message name="IDS_CLEAR_BROWSING_DATA_TITLE" desc="Title of the Clear Browsing Data screen. [CHAR-LIMIT=32]">
         Clear browsing data
+      </message>
+      <message name="IDS_CLEAR_BROWSING_DATA_SUMMARY" desc="Summary of the settings item that opens the Clear Browsing Data dialog.">
+        Clear history, cookies, site data, cache…
       </message>
       <message name="IDS_CLEAR_BROWSING_DATA_FOOTNOTE" desc="A summary string at the bottom of the Clear Browsing Data dialog, informing the user that not all data can be cleared through this dialog.">
         Saved site settings will not be deleted and may reflect your browsing habits.
