@@ -163,9 +163,9 @@ const char* pseudoTypeToString(CSSSelector::PseudoType pseudoType)
 } // namespace
 
 namespace InspectorScheduleStyleInvalidationTrackingEvent {
-PassRefPtr<TracedValue> fillCommonPart(Element& element, const InvalidationSet& invalidationSet, const char* invalidatedSelector)
+PassOwnPtr<TracedValue> fillCommonPart(Element& element, const InvalidationSet& invalidationSet, const char* invalidatedSelector)
 {
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setString("frame", toHexString(element.document().frame()));
     setNodeInfo(value.get(), &element, "nodeId", "nodeName");
     value->setString("invalidationSet", descendantInvalidationSetToIdString(invalidationSet));
@@ -181,30 +181,30 @@ const char InspectorScheduleStyleInvalidationTrackingEvent::Class[] = "class";
 const char InspectorScheduleStyleInvalidationTrackingEvent::Id[] = "id";
 const char InspectorScheduleStyleInvalidationTrackingEvent::Pseudo[] = "pseudo";
 
-PassRefPtr<TracedValue> InspectorScheduleStyleInvalidationTrackingEvent::idChange(Element& element, const InvalidationSet& invalidationSet, const AtomicString& id)
+PassOwnPtr<TracedValue> InspectorScheduleStyleInvalidationTrackingEvent::idChange(Element& element, const InvalidationSet& invalidationSet, const AtomicString& id)
 {
-    RefPtr<TracedValue> value = fillCommonPart(element, invalidationSet, Id);
+    OwnPtr<TracedValue> value = fillCommonPart(element, invalidationSet, Id);
     value->setString("changedId", id);
     return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorScheduleStyleInvalidationTrackingEvent::classChange(Element& element, const InvalidationSet& invalidationSet, const AtomicString& className)
+PassOwnPtr<TracedValue> InspectorScheduleStyleInvalidationTrackingEvent::classChange(Element& element, const InvalidationSet& invalidationSet, const AtomicString& className)
 {
-    RefPtr<TracedValue> value = fillCommonPart(element, invalidationSet, Class);
+    OwnPtr<TracedValue> value = fillCommonPart(element, invalidationSet, Class);
     value->setString("changedClass", className);
     return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorScheduleStyleInvalidationTrackingEvent::attributeChange(Element& element, const InvalidationSet& invalidationSet, const QualifiedName& attributeName)
+PassOwnPtr<TracedValue> InspectorScheduleStyleInvalidationTrackingEvent::attributeChange(Element& element, const InvalidationSet& invalidationSet, const QualifiedName& attributeName)
 {
-    RefPtr<TracedValue> value = fillCommonPart(element, invalidationSet, Attribute);
+    OwnPtr<TracedValue> value = fillCommonPart(element, invalidationSet, Attribute);
     value->setString("changedAttribute", attributeName.toString());
     return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorScheduleStyleInvalidationTrackingEvent::pseudoChange(Element& element, const InvalidationSet& invalidationSet, CSSSelector::PseudoType pseudoType)
+PassOwnPtr<TracedValue> InspectorScheduleStyleInvalidationTrackingEvent::pseudoChange(Element& element, const InvalidationSet& invalidationSet, CSSSelector::PseudoType pseudoType)
 {
-    RefPtr<TracedValue> value = fillCommonPart(element, invalidationSet, Attribute);
+    OwnPtr<TracedValue> value = fillCommonPart(element, invalidationSet, Attribute);
     value->setString("changedPseudo", pseudoTypeToString(pseudoType));
     return value.release();
 }
@@ -223,9 +223,9 @@ const char InspectorStyleInvalidatorInvalidateEvent::InvalidationSetMatchedTagNa
 const char InspectorStyleInvalidatorInvalidateEvent::PreventStyleSharingForParent[] = "Prevent style sharing for parent";
 
 namespace InspectorStyleInvalidatorInvalidateEvent {
-PassRefPtr<TracedValue> fillCommonPart(Element& element, const char* reason)
+PassOwnPtr<TracedValue> fillCommonPart(Element& element, const char* reason)
 {
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setString("frame", toHexString(element.document().frame()));
     setNodeInfo(value.get(), &element, "nodeId", "nodeName");
     value->setString("reason", reason);
@@ -233,14 +233,14 @@ PassRefPtr<TracedValue> fillCommonPart(Element& element, const char* reason)
 }
 } // namespace InspectorStyleInvalidatorInvalidateEvent
 
-PassRefPtr<TracedValue> InspectorStyleInvalidatorInvalidateEvent::data(Element& element, const char* reason)
+PassOwnPtr<TracedValue> InspectorStyleInvalidatorInvalidateEvent::data(Element& element, const char* reason)
 {
     return fillCommonPart(element, reason);
 }
 
-PassRefPtr<TracedValue> InspectorStyleInvalidatorInvalidateEvent::selectorPart(Element& element, const char* reason, const InvalidationSet& invalidationSet, const String& selectorPart)
+PassOwnPtr<TracedValue> InspectorStyleInvalidatorInvalidateEvent::selectorPart(Element& element, const char* reason, const InvalidationSet& invalidationSet, const String& selectorPart)
 {
-    RefPtr<TracedValue> value = fillCommonPart(element, reason);
+    OwnPtr<TracedValue> value = fillCommonPart(element, reason);
     value->beginArray("invalidationList");
     invalidationSet.toTracedValue(value.get());
     value->endArray();
@@ -248,9 +248,9 @@ PassRefPtr<TracedValue> InspectorStyleInvalidatorInvalidateEvent::selectorPart(E
     return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorStyleInvalidatorInvalidateEvent::invalidationList(Element& element, const Vector<RefPtr<InvalidationSet>>& invalidationList)
+PassOwnPtr<TracedValue> InspectorStyleInvalidatorInvalidateEvent::invalidationList(Element& element, const Vector<RefPtr<InvalidationSet>>& invalidationList)
 {
-    RefPtr<TracedValue> value = fillCommonPart(element, ElementHasPendingInvalidationList);
+    OwnPtr<TracedValue> value = fillCommonPart(element, ElementHasPendingInvalidationList);
     value->beginArray("invalidationList");
     for (const auto& invalidationSet : invalidationList)
         invalidationSet->toTracedValue(value.get());
@@ -258,11 +258,11 @@ PassRefPtr<TracedValue> InspectorStyleInvalidatorInvalidateEvent::invalidationLi
     return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorStyleRecalcInvalidationTrackingEvent::data(Node* node, const StyleChangeReasonForTracing& reason)
+PassOwnPtr<TracedValue> InspectorStyleRecalcInvalidationTrackingEvent::data(Node* node, const StyleChangeReasonForTracing& reason)
 {
     ASSERT(node);
 
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setString("frame", toHexString(node->document().frame()));
     setNodeInfo(value.get(), node, "nodeId", "nodeName");
     value->setString("reason", reason.reasonString());
@@ -272,7 +272,7 @@ PassRefPtr<TracedValue> InspectorStyleRecalcInvalidationTrackingEvent::data(Node
     return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorLayoutEvent::beginData(FrameView* frameView)
+PassOwnPtr<TracedValue> InspectorLayoutEvent::beginData(FrameView* frameView)
 {
     bool isPartial;
     unsigned needsLayoutObjects;
@@ -280,7 +280,7 @@ PassRefPtr<TracedValue> InspectorLayoutEvent::beginData(FrameView* frameView)
     LocalFrame& frame = frameView->frame();
     frame.view()->countObjectsNeedingLayout(needsLayoutObjects, totalObjects, isPartial);
 
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setInteger("dirtyObjects", needsLayoutObjects);
     value->setInteger("totalObjects", totalObjects);
     value->setBoolean("partialLayout", isPartial);
@@ -314,12 +314,12 @@ static void setGeneratingNodeInfo(TracedValue* value, const LayoutObject* layout
     setNodeInfo(value, node, idFieldName, nameFieldName);
 }
 
-PassRefPtr<TracedValue> InspectorLayoutEvent::endData(LayoutObject* rootForThisLayout)
+PassOwnPtr<TracedValue> InspectorLayoutEvent::endData(LayoutObject* rootForThisLayout)
 {
     Vector<FloatQuad> quads;
     rootForThisLayout->absoluteQuads(quads);
 
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     if (quads.size() >= 1) {
         createQuad(value.get(), "root", quads[0]);
         setGeneratingNodeInfo(value.get(), rootForThisLayout, "rootNode");
@@ -364,10 +364,10 @@ const char SvgChanged[] = "SVG changed";
 const char ScrollbarChanged[] = "Scrollbar changed";
 } // namespace LayoutInvalidationReason
 
-PassRefPtr<TracedValue> InspectorLayoutInvalidationTrackingEvent::data(const LayoutObject* layoutObject, LayoutInvalidationReasonForTracing reason)
+PassOwnPtr<TracedValue> InspectorLayoutInvalidationTrackingEvent::data(const LayoutObject* layoutObject, LayoutInvalidationReasonForTracing reason)
 {
     ASSERT(layoutObject);
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setString("frame", toHexString(layoutObject->frame()));
     setGeneratingNodeInfo(value.get(), layoutObject, "nodeId", "nodeName");
     value->setString("reason", reason);
@@ -376,21 +376,21 @@ PassRefPtr<TracedValue> InspectorLayoutInvalidationTrackingEvent::data(const Lay
     return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorPaintInvalidationTrackingEvent::data(const LayoutObject* layoutObject, const LayoutObject& paintContainer)
+PassOwnPtr<TracedValue> InspectorPaintInvalidationTrackingEvent::data(const LayoutObject* layoutObject, const LayoutObject& paintContainer)
 {
     ASSERT(layoutObject);
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setString("frame", toHexString(layoutObject->frame()));
     setGeneratingNodeInfo(value.get(), &paintContainer, "paintId");
     setGeneratingNodeInfo(value.get(), layoutObject, "nodeId", "nodeName");
     return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorScrollInvalidationTrackingEvent::data(const LayoutObject& layoutObject)
+PassOwnPtr<TracedValue> InspectorScrollInvalidationTrackingEvent::data(const LayoutObject& layoutObject)
 {
     static const char ScrollInvalidationReason[] = "Scroll with viewport-constrained element";
 
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setString("frame", toHexString(layoutObject.frame()));
     value->setString("reason", ScrollInvalidationReason);
     setGeneratingNodeInfo(value.get(), &layoutObject, "nodeId", "nodeName");
@@ -399,11 +399,11 @@ PassRefPtr<TracedValue> InspectorScrollInvalidationTrackingEvent::data(const Lay
     return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorSendRequestEvent::data(unsigned long identifier, LocalFrame* frame, const ResourceRequest& request)
+PassOwnPtr<TracedValue> InspectorSendRequestEvent::data(unsigned long identifier, LocalFrame* frame, const ResourceRequest& request)
 {
     String requestId = IdentifiersFactory::requestId(identifier);
 
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setString("requestId", requestId);
     value->setString("frame", toHexString(frame));
     value->setString("url", request.url().string());
@@ -423,11 +423,11 @@ PassRefPtr<TracedValue> InspectorSendRequestEvent::data(unsigned long identifier
     return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorReceiveResponseEvent::data(unsigned long identifier, LocalFrame* frame, const ResourceResponse& response)
+PassOwnPtr<TracedValue> InspectorReceiveResponseEvent::data(unsigned long identifier, LocalFrame* frame, const ResourceResponse& response)
 {
     String requestId = IdentifiersFactory::requestId(identifier);
 
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setString("requestId", requestId);
     value->setString("frame", toHexString(frame));
     value->setInteger("statusCode", response.httpStatusCode());
@@ -435,22 +435,22 @@ PassRefPtr<TracedValue> InspectorReceiveResponseEvent::data(unsigned long identi
     return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorReceiveDataEvent::data(unsigned long identifier, LocalFrame* frame, int encodedDataLength)
+PassOwnPtr<TracedValue> InspectorReceiveDataEvent::data(unsigned long identifier, LocalFrame* frame, int encodedDataLength)
 {
     String requestId = IdentifiersFactory::requestId(identifier);
 
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setString("requestId", requestId);
     value->setString("frame", toHexString(frame));
     value->setInteger("encodedDataLength", encodedDataLength);
     return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorResourceFinishEvent::data(unsigned long identifier, double finishTime, bool didFail)
+PassOwnPtr<TracedValue> InspectorResourceFinishEvent::data(unsigned long identifier, double finishTime, bool didFail)
 {
     String requestId = IdentifiersFactory::requestId(identifier);
 
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setString("requestId", requestId);
     value->setBoolean("didFail", didFail);
     if (finishTime)
@@ -466,9 +466,9 @@ static LocalFrame* frameForExecutionContext(ExecutionContext* context)
     return frame;
 }
 
-static PassRefPtr<TracedValue> genericTimerData(ExecutionContext* context, int timerId)
+static PassOwnPtr<TracedValue> genericTimerData(ExecutionContext* context, int timerId)
 {
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setInteger("timerId", timerId);
     if (LocalFrame* frame = frameForExecutionContext(context))
         value->setString("frame", toHexString(frame));
@@ -476,27 +476,27 @@ static PassRefPtr<TracedValue> genericTimerData(ExecutionContext* context, int t
     return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorTimerInstallEvent::data(ExecutionContext* context, int timerId, int timeout, bool singleShot)
+PassOwnPtr<TracedValue> InspectorTimerInstallEvent::data(ExecutionContext* context, int timerId, int timeout, bool singleShot)
 {
-    RefPtr<TracedValue> value = genericTimerData(context, timerId);
+    OwnPtr<TracedValue> value = genericTimerData(context, timerId);
     value->setInteger("timeout", timeout);
     value->setBoolean("singleShot", singleShot);
     return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorTimerRemoveEvent::data(ExecutionContext* context, int timerId)
+PassOwnPtr<TracedValue> InspectorTimerRemoveEvent::data(ExecutionContext* context, int timerId)
 {
     return genericTimerData(context, timerId);
 }
 
-PassRefPtr<TracedValue> InspectorTimerFireEvent::data(ExecutionContext* context, int timerId)
+PassOwnPtr<TracedValue> InspectorTimerFireEvent::data(ExecutionContext* context, int timerId)
 {
     return genericTimerData(context, timerId);
 }
 
-PassRefPtr<TracedValue> InspectorAnimationFrameEvent::data(ExecutionContext* context, int callbackId)
+PassOwnPtr<TracedValue> InspectorAnimationFrameEvent::data(ExecutionContext* context, int callbackId)
 {
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setInteger("id", callbackId);
     if (context->isDocument())
         value->setString("frame", toHexString(toDocument(context)->frame()));
@@ -506,9 +506,9 @@ PassRefPtr<TracedValue> InspectorAnimationFrameEvent::data(ExecutionContext* con
     return value.release();
 }
 
-PassRefPtr<TracedValue> genericIdleCallbackEvent(ExecutionContext* context, int id)
+PassOwnPtr<TracedValue> genericIdleCallbackEvent(ExecutionContext* context, int id)
 {
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setInteger("id", id);
     if (LocalFrame* frame = frameForExecutionContext(context))
         value->setString("frame", toHexString(frame));
@@ -516,29 +516,29 @@ PassRefPtr<TracedValue> genericIdleCallbackEvent(ExecutionContext* context, int 
     return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorIdleCallbackRequestEvent::data(ExecutionContext* context, int id, double timeout)
+PassOwnPtr<TracedValue> InspectorIdleCallbackRequestEvent::data(ExecutionContext* context, int id, double timeout)
 {
-    RefPtr<TracedValue> value = genericIdleCallbackEvent(context, id);
+    OwnPtr<TracedValue> value = genericIdleCallbackEvent(context, id);
     value->setInteger("timeout", timeout);
-    return value;
+    return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorIdleCallbackCancelEvent::data(ExecutionContext* context, int id)
+PassOwnPtr<TracedValue> InspectorIdleCallbackCancelEvent::data(ExecutionContext* context, int id)
 {
     return genericIdleCallbackEvent(context, id);
 }
 
-PassRefPtr<TracedValue> InspectorIdleCallbackFireEvent::data(ExecutionContext* context, int id, double allottedMilliseconds, bool timedOut)
+PassOwnPtr<TracedValue> InspectorIdleCallbackFireEvent::data(ExecutionContext* context, int id, double allottedMilliseconds, bool timedOut)
 {
-    RefPtr<TracedValue> value = genericIdleCallbackEvent(context, id);
+    OwnPtr<TracedValue> value = genericIdleCallbackEvent(context, id);
     value->setDouble("allottedMilliseconds", allottedMilliseconds);
     value->setBoolean("timedOut", timedOut);
-    return value;
+    return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorParseHtmlEvent::beginData(Document* document, unsigned startLine)
+PassOwnPtr<TracedValue> InspectorParseHtmlEvent::beginData(Document* document, unsigned startLine)
 {
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setInteger("startLine", startLine);
     value->setString("frame", toHexString(document->frame()));
     value->setString("url", document->url().string());
@@ -546,23 +546,23 @@ PassRefPtr<TracedValue> InspectorParseHtmlEvent::beginData(Document* document, u
     return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorParseHtmlEvent::endData(unsigned endLine)
+PassOwnPtr<TracedValue> InspectorParseHtmlEvent::endData(unsigned endLine)
 {
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setInteger("endLine", endLine);
     return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorParseAuthorStyleSheetEvent::data(const CSSStyleSheetResource* cachedStyleSheet)
+PassOwnPtr<TracedValue> InspectorParseAuthorStyleSheetEvent::data(const CSSStyleSheetResource* cachedStyleSheet)
 {
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setString("styleSheetUrl", cachedStyleSheet->url().string());
     return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorXhrReadyStateChangeEvent::data(ExecutionContext* context, XMLHttpRequest* request)
+PassOwnPtr<TracedValue> InspectorXhrReadyStateChangeEvent::data(ExecutionContext* context, XMLHttpRequest* request)
 {
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setString("url", request->url().string());
     value->setInteger("readyState", request->readyState());
     if (LocalFrame* frame = frameForExecutionContext(context))
@@ -571,9 +571,9 @@ PassRefPtr<TracedValue> InspectorXhrReadyStateChangeEvent::data(ExecutionContext
     return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorXhrLoadEvent::data(ExecutionContext* context, XMLHttpRequest* request)
+PassOwnPtr<TracedValue> InspectorXhrLoadEvent::data(ExecutionContext* context, XMLHttpRequest* request)
 {
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setString("url", request->url().string());
     if (LocalFrame* frame = frameForExecutionContext(context))
         value->setString("frame", toHexString(frame));
@@ -598,20 +598,20 @@ const char InspectorLayerInvalidationTrackingEvent::RemovedFromSquashingLayer[] 
 const char InspectorLayerInvalidationTrackingEvent::ReflectionLayerChanged[] = "Reflection layer change";
 const char InspectorLayerInvalidationTrackingEvent::NewCompositedLayer[] = "Assigned a new composited layer";
 
-PassRefPtr<TracedValue> InspectorLayerInvalidationTrackingEvent::data(const PaintLayer* layer, const char* reason)
+PassOwnPtr<TracedValue> InspectorLayerInvalidationTrackingEvent::data(const PaintLayer* layer, const char* reason)
 {
     const LayoutObject& paintInvalidationContainer = layer->layoutObject()->containerForPaintInvalidation();
 
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setString("frame", toHexString(paintInvalidationContainer.frame()));
     setGeneratingNodeInfo(value.get(), &paintInvalidationContainer, "paintId");
     value->setString("reason", reason);
     return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorPaintEvent::data(LayoutObject* layoutObject, const LayoutRect& clipRect, const GraphicsLayer* graphicsLayer)
+PassOwnPtr<TracedValue> InspectorPaintEvent::data(LayoutObject* layoutObject, const LayoutRect& clipRect, const GraphicsLayer* graphicsLayer)
 {
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setString("frame", toHexString(layoutObject->frame()));
     FloatQuad quad;
     localToPageQuad(*layoutObject, clipRect, &quad);
@@ -623,9 +623,9 @@ PassRefPtr<TracedValue> InspectorPaintEvent::data(LayoutObject* layoutObject, co
     return value.release();
 }
 
-PassRefPtr<TracedValue> frameEventData(LocalFrame* frame)
+PassOwnPtr<TracedValue> frameEventData(LocalFrame* frame)
 {
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setString("frame", toHexString(frame));
     bool isMainFrame = frame && frame->isMainFrame();
     value->setBoolean("isMainFrame", isMainFrame);
@@ -634,35 +634,35 @@ PassRefPtr<TracedValue> frameEventData(LocalFrame* frame)
 }
 
 
-PassRefPtr<TracedValue> InspectorCommitLoadEvent::data(LocalFrame* frame)
+PassOwnPtr<TracedValue> InspectorCommitLoadEvent::data(LocalFrame* frame)
 {
     return frameEventData(frame);
 }
 
-PassRefPtr<TracedValue> InspectorMarkLoadEvent::data(LocalFrame* frame)
+PassOwnPtr<TracedValue> InspectorMarkLoadEvent::data(LocalFrame* frame)
 {
     return frameEventData(frame);
 }
 
-PassRefPtr<TracedValue> InspectorScrollLayerEvent::data(LayoutObject* layoutObject)
+PassOwnPtr<TracedValue> InspectorScrollLayerEvent::data(LayoutObject* layoutObject)
 {
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setString("frame", toHexString(layoutObject->frame()));
     setGeneratingNodeInfo(value.get(), layoutObject, "nodeId");
     return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorUpdateLayerTreeEvent::data(LocalFrame* frame)
+PassOwnPtr<TracedValue> InspectorUpdateLayerTreeEvent::data(LocalFrame* frame)
 {
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setString("frame", toHexString(frame));
     return value.release();
 }
 
 namespace {
-PassRefPtr<TracedValue> fillLocation(const String& url, const TextPosition& textPosition)
+PassOwnPtr<TracedValue> fillLocation(const String& url, const TextPosition& textPosition)
 {
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setString("url", url);
     value->setInteger("lineNumber", textPosition.m_line.oneBasedInt());
     value->setInteger("columnNumber", textPosition.m_column.oneBasedInt());
@@ -670,22 +670,22 @@ PassRefPtr<TracedValue> fillLocation(const String& url, const TextPosition& text
 }
 }
 
-PassRefPtr<TracedValue> InspectorEvaluateScriptEvent::data(LocalFrame* frame, const String& url, const TextPosition& textPosition)
+PassOwnPtr<TracedValue> InspectorEvaluateScriptEvent::data(LocalFrame* frame, const String& url, const TextPosition& textPosition)
 {
-    RefPtr<TracedValue> value = fillLocation(url, textPosition);
+    OwnPtr<TracedValue> value = fillLocation(url, textPosition);
     value->setString("frame", toHexString(frame));
     setCallStack(value.get());
     return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorCompileScriptEvent::data(const String& url, const TextPosition& textPosition)
+PassOwnPtr<TracedValue> InspectorCompileScriptEvent::data(const String& url, const TextPosition& textPosition)
 {
     return fillLocation(url, textPosition);
 }
 
-PassRefPtr<TracedValue> InspectorFunctionCallEvent::data(ExecutionContext* context, int scriptId, const String& scriptName, int scriptLine)
+PassOwnPtr<TracedValue> InspectorFunctionCallEvent::data(ExecutionContext* context, int scriptId, const String& scriptName, int scriptLine)
 {
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setString("scriptId", String::number(scriptId));
     value->setString("scriptName", scriptName);
     value->setInteger("scriptLine", scriptLine);
@@ -695,27 +695,27 @@ PassRefPtr<TracedValue> InspectorFunctionCallEvent::data(ExecutionContext* conte
     return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorPaintImageEvent::data(const LayoutImage& layoutImage)
+PassOwnPtr<TracedValue> InspectorPaintImageEvent::data(const LayoutImage& layoutImage)
 {
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     setGeneratingNodeInfo(value.get(), &layoutImage, "nodeId");
     if (const ImageResource* resource = layoutImage.cachedImage())
         value->setString("url", resource->url().string());
     return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorPaintImageEvent::data(const LayoutObject& owningLayoutObject, const StyleImage& styleImage)
+PassOwnPtr<TracedValue> InspectorPaintImageEvent::data(const LayoutObject& owningLayoutObject, const StyleImage& styleImage)
 {
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     setGeneratingNodeInfo(value.get(), &owningLayoutObject, "nodeId");
     if (const ImageResource* resource = styleImage.cachedImage())
         value->setString("url", resource->url().string());
     return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorPaintImageEvent::data(const LayoutObject* owningLayoutObject, const ImageResource& imageResource)
+PassOwnPtr<TracedValue> InspectorPaintImageEvent::data(const LayoutObject* owningLayoutObject, const ImageResource& imageResource)
 {
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     setGeneratingNodeInfo(value.get(), owningLayoutObject, "nodeId");
     value->setString("url", imageResource.url().string());
     return value.release();
@@ -728,9 +728,9 @@ static size_t usedHeapSize()
     return heapStatistics.used_heap_size();
 }
 
-PassRefPtr<TracedValue> InspectorUpdateCountersEvent::data()
+PassOwnPtr<TracedValue> InspectorUpdateCountersEvent::data()
 {
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     if (isMainThread()) {
         value->setInteger("documents", InstanceCounters::counterValue(InstanceCounters::DocumentCounter));
         value->setInteger("nodes", InstanceCounters::counterValue(InstanceCounters::NodeCounter));
@@ -740,67 +740,67 @@ PassRefPtr<TracedValue> InspectorUpdateCountersEvent::data()
     return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorInvalidateLayoutEvent::data(LocalFrame* frame)
+PassOwnPtr<TracedValue> InspectorInvalidateLayoutEvent::data(LocalFrame* frame)
 {
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setString("frame", toHexString(frame));
     setCallStack(value.get());
     return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorRecalculateStylesEvent::data(LocalFrame* frame)
+PassOwnPtr<TracedValue> InspectorRecalculateStylesEvent::data(LocalFrame* frame)
 {
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setString("frame", toHexString(frame));
     setCallStack(value.get());
     return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorEventDispatchEvent::data(const Event& event)
+PassOwnPtr<TracedValue> InspectorEventDispatchEvent::data(const Event& event)
 {
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setString("type", event.type());
     setCallStack(value.get());
     return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorTimeStampEvent::data(ExecutionContext* context, const String& message)
+PassOwnPtr<TracedValue> InspectorTimeStampEvent::data(ExecutionContext* context, const String& message)
 {
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setString("message", message);
     if (LocalFrame* frame = frameForExecutionContext(context))
         value->setString("frame", toHexString(frame));
     return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorTracingSessionIdForWorkerEvent::data(const String& sessionId, const String& workerId, WorkerThread* workerThread)
+PassOwnPtr<TracedValue> InspectorTracingSessionIdForWorkerEvent::data(const String& sessionId, const String& workerId, WorkerThread* workerThread)
 {
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setString("sessionId", sessionId);
     value->setString("workerId", workerId);
     value->setDouble("workerThreadId", workerThread->platformThreadId());
     return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorTracingStartedInFrame::data(const String& sessionId, LocalFrame* frame)
+PassOwnPtr<TracedValue> InspectorTracingStartedInFrame::data(const String& sessionId, LocalFrame* frame)
 {
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setString("sessionId", sessionId);
     value->setString("page", toHexString(frame));
     return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorSetLayerTreeId::data(const String& sessionId, int layerTreeId)
+PassOwnPtr<TracedValue> InspectorSetLayerTreeId::data(const String& sessionId, int layerTreeId)
 {
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setString("sessionId", sessionId);
     value->setInteger("layerTreeId", layerTreeId);
     return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorAnimationEvent::data(const Animation& animation)
+PassOwnPtr<TracedValue> InspectorAnimationEvent::data(const Animation& animation)
 {
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setString("id", String::number(animation.sequenceNumber()));
     value->setString("state", animation.playState());
     if (const AnimationEffect* effect = animation.effect()) {
@@ -813,16 +813,16 @@ PassRefPtr<TracedValue> InspectorAnimationEvent::data(const Animation& animation
     return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorAnimationStateEvent::data(const Animation& animation)
+PassOwnPtr<TracedValue> InspectorAnimationStateEvent::data(const Animation& animation)
 {
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setString("state", animation.playState());
     return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorHitTestEvent::endData(const HitTestRequest& request, const HitTestLocation& location, const HitTestResult& result)
+PassOwnPtr<TracedValue> InspectorHitTestEvent::endData(const HitTestRequest& request, const HitTestLocation& location, const HitTestResult& result)
 {
-    RefPtr<TracedValue> value(TracedValue::create());
+    OwnPtr<TracedValue> value(TracedValue::create());
     value->setInteger("x", location.roundedPoint().x());
     value->setInteger("y", location.roundedPoint().y());
     if (location.isRectBasedTest())
@@ -837,7 +837,7 @@ PassRefPtr<TracedValue> InspectorHitTestEvent::endData(const HitTestRequest& req
         value->setBoolean("listBased", true);
     else if (Node* node = result.innerNode())
         setNodeInfo(value.get(), node, "nodeId", "nodeName");
-    return value;
+    return value.release();
 }
 
 } // namespace blink

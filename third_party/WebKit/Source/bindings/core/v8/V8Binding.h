@@ -1070,7 +1070,7 @@ private:
     mutable v8::Local<v8::Function> m_function;
 };
 
-PassRefPtr<TracedValue> devToolsTraceEventData(v8::Isolate*, ExecutionContext*, v8::Local<v8::Function>);
+PassOwnPtr<TracedValue> devToolsTraceEventData(v8::Isolate*, ExecutionContext*, v8::Local<v8::Function>);
 
 // Callback functions used by generated code.
 CORE_EXPORT void v8ConstructorAttributeGetter(v8::Local<v8::Name> propertyName, const v8::PropertyCallbackInfo<v8::Value>&);

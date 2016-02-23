@@ -745,7 +745,7 @@ private:
     ScrollingCoordinator* scrollingCoordinator() const;
 
     void prepareLayoutAnalyzer();
-    PassRefPtr<TracedValue> analyzerCounters();
+    PassOwnPtr<TracedValue> analyzerCounters();
 
     // LayoutObject for the viewport-defining element (see Document::viewportDefiningElement).
     LayoutObject* viewportLayoutObject();

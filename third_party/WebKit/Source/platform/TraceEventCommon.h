@@ -148,8 +148,8 @@
 //   class MyData {
 //    public:
 //     MyData() {}
-//     PassRefPtr<TracedValue> toTracedValue() {
-//       RefPtr<TracedValue> tracedValue = TracedValue::create();
+//     PassOwnPtr<TracedValue> toTracedValue() {
+//       OwnPtr<TracedValue> tracedValue = TracedValue::create();
 //       tracedValue->setInteger("foo", 1);
 //       tracedValue->beginArray("bar");
 //       tracedValue->pushInteger(2);

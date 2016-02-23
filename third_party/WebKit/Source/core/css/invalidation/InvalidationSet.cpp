@@ -288,7 +288,7 @@ void InvalidationSet::toTracedValue(TracedValue* value) const
 #ifndef NDEBUG
 void InvalidationSet::show() const
 {
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->beginArray("InvalidationSet");
     toTracedValue(value.get());
     value->endArray();

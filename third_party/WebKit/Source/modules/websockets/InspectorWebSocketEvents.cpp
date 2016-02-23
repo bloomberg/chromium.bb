@@ -9,9 +9,9 @@
 
 namespace blink {
 
-PassRefPtr<TracedValue> InspectorWebSocketCreateEvent::data(Document* document, unsigned long identifier, const KURL& url, const String& protocol)
+PassOwnPtr<TracedValue> InspectorWebSocketCreateEvent::data(Document* document, unsigned long identifier, const KURL& url, const String& protocol)
 {
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setInteger("identifier", identifier);
     value->setString("url", url.string());
     value->setString("frame", toHexString(document->frame()));
@@ -21,9 +21,9 @@ PassRefPtr<TracedValue> InspectorWebSocketCreateEvent::data(Document* document, 
     return value.release();
 }
 
-PassRefPtr<TracedValue> InspectorWebSocketEvent::data(Document* document, unsigned long identifier)
+PassOwnPtr<TracedValue> InspectorWebSocketEvent::data(Document* document, unsigned long identifier)
 {
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setInteger("identifier", identifier);
     value->setString("frame", toHexString(document->frame()));
     setCallStack(value.get());

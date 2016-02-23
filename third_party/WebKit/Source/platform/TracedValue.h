@@ -7,7 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "platform/EventTracer.h"
-#include "wtf/PassRefPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace base {
@@ -19,13 +19,13 @@ class TracedValue;
 namespace blink {
 
 // TracedValue copies all passed names and values and doesn't retain references.
-class PLATFORM_EXPORT TracedValue final : public RefCounted<TracedValue> {
+class PLATFORM_EXPORT TracedValue final {
     WTF_MAKE_NONCOPYABLE(TracedValue);
 
 public:
     ~TracedValue();
 
-    static PassRefPtr<TracedValue> create();
+    static PassOwnPtr<TracedValue> create();
 
     void endDictionary();
     void endArray();

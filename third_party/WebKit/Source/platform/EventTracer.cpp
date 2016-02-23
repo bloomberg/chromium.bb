@@ -72,8 +72,8 @@ TraceEvent::TraceEventHandle EventTracer::addTraceEvent(char phase, const unsign
     const char* name, const char* scope, unsigned long long id, unsigned long long bindId, double timestamp,
     int numArgs, const char* argNames[], const unsigned char argTypes[],
     const unsigned long long argValues[],
-    PassRefPtr<TracedValue> tracedValue1,
-    PassRefPtr<TracedValue> tracedValue2,
+    PassOwnPtr<TracedValue> tracedValue1,
+    PassOwnPtr<TracedValue> tracedValue2,
     unsigned flags)
 {
     scoped_refptr<base::trace_event::ConvertableToTraceFormat> convertables[2];

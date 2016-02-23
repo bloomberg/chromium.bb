@@ -104,9 +104,9 @@ void LayoutAnalyzer::pop(const LayoutObject& o)
     --m_depth;
 }
 
-PassRefPtr<TracedValue> LayoutAnalyzer::toTracedValue()
+PassOwnPtr<TracedValue> LayoutAnalyzer::toTracedValue()
 {
-    RefPtr<TracedValue> tracedValue(TracedValue::create());
+    OwnPtr<TracedValue> tracedValue(TracedValue::create());
     for (size_t i = 0; i < NumCounters; ++i) {
         if (m_counters[i] > 0)
             tracedValue->setInteger(nameForCounter(static_cast<Counter>(i)), m_counters[i]);

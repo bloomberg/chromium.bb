@@ -34,8 +34,8 @@
 #include "base/memory/ref_counted.h"
 #include "platform/PlatformExport.h"
 #include "wtf/Allocator.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 
 #include <stdint.h>
@@ -79,8 +79,8 @@ public:
         const char* argNames[],
         const unsigned char argTypes[],
         const unsigned long long argValues[],
-        PassRefPtr<TracedValue>,
-        PassRefPtr<TracedValue>,
+        PassOwnPtr<TracedValue>,
+        PassOwnPtr<TracedValue>,
         unsigned flags);
     static TraceEvent::TraceEventHandle addTraceEvent(char phase,
         const unsigned char* categoryEnabledFlag,

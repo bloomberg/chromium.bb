@@ -949,7 +949,7 @@ String DevToolsFunctionInfo::resourceName() const
     return m_resourceName;
 }
 
-PassRefPtr<TracedValue> devToolsTraceEventData(v8::Isolate* isolate, ExecutionContext* context, v8::Local<v8::Function> function)
+PassOwnPtr<TracedValue> devToolsTraceEventData(v8::Isolate* isolate, ExecutionContext* context, v8::Local<v8::Function> function)
 {
     DevToolsFunctionInfo info(function);
     return InspectorFunctionCallEvent::data(context, info.scriptId(), info.resourceName(), info.lineNumber());

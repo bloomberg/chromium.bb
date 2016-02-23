@@ -99,9 +99,9 @@ void dumpToTracedValue(const LayoutObject& object, bool traceGeometry, TracedVal
 
 } // namespace
 
-PassRefPtr<TracedValue> TracedLayoutObject::create(const LayoutView& view, bool traceGeometry)
+PassOwnPtr<TracedValue> TracedLayoutObject::create(const LayoutView& view, bool traceGeometry)
 {
-    RefPtr<TracedValue> tracedValue = TracedValue::create();
+    OwnPtr<TracedValue> tracedValue = TracedValue::create();
     dumpToTracedValue(view, traceGeometry, tracedValue.get());
     return tracedValue.release();
 }

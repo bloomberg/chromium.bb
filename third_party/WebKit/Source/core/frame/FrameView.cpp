@@ -826,13 +826,13 @@ void FrameView::prepareLayoutAnalyzer()
     m_analyzer->reset();
 }
 
-PassRefPtr<TracedValue> FrameView::analyzerCounters()
+PassOwnPtr<TracedValue> FrameView::analyzerCounters()
 {
     if (!m_analyzer)
         return TracedValue::create();
-    RefPtr<TracedValue> value = m_analyzer->toTracedValue();
+    OwnPtr<TracedValue> value = m_analyzer->toTracedValue();
     value->setString("host", layoutView()->document().location()->host());
-    return value;
+    return value.release();
 }
 
 #define PERFORM_LAYOUT_TRACE_CATEGORIES "blink,benchmark," TRACE_DISABLED_BY_DEFAULT("blink.debug.layout")

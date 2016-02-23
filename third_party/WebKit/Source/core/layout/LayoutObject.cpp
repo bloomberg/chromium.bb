@@ -1167,12 +1167,12 @@ void addJsonObjectForPoint(TracedValue* value, const char* name, const T& point)
     value->endDictionary();
 }
 
-static PassRefPtr<TracedValue> jsonObjectForPaintInvalidationInfo(const LayoutRect& rect, const String& invalidationReason)
+static PassOwnPtr<TracedValue> jsonObjectForPaintInvalidationInfo(const LayoutRect& rect, const String& invalidationReason)
 {
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     addJsonObjectForRect(value.get(), "rect", rect);
     value->setString("invalidation_reason", invalidationReason);
-    return value;
+    return value.release();
 }
 
 LayoutRect LayoutObject::computePaintInvalidationRect(const LayoutBoxModelObject& paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
@@ -1340,14 +1340,14 @@ void LayoutObject::invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState& chi
     }
 }
 
-static PassRefPtr<TracedValue> jsonObjectForOldAndNewRects(const LayoutRect& oldRect, const LayoutPoint& oldLocation, const LayoutRect& newRect, const LayoutPoint& newLocation)
+static PassOwnPtr<TracedValue> jsonObjectForOldAndNewRects(const LayoutRect& oldRect, const LayoutPoint& oldLocation, const LayoutRect& newRect, const LayoutPoint& newLocation)
 {
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     addJsonObjectForRect(value.get(), "oldRect", oldRect);
     addJsonObjectForPoint(value.get(), "oldLocation", oldLocation);
     addJsonObjectForRect(value.get(), "newRect", newRect);
     addJsonObjectForPoint(value.get(), "newLocation", newLocation);
-    return value;
+    return value.release();
 }
 
 LayoutRect LayoutObject::selectionRectInViewCoordinates() const

@@ -10,7 +10,7 @@
 
 namespace blink {
 
-scoped_ptr<base::Value> parseTracedValue(PassRefPtr<TracedValue> value)
+scoped_ptr<base::Value> parseTracedValue(PassOwnPtr<TracedValue> value)
 {
     base::JSONReader reader;
     CString utf8 = value->toString().utf8();
@@ -19,13 +19,13 @@ scoped_ptr<base::Value> parseTracedValue(PassRefPtr<TracedValue> value)
 
 TEST(TracedValueTest, FlatDictionary)
 {
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setInteger("int", 2014);
     value->setDouble("double", 0.0);
     value->setBoolean("bool", true);
     value->setString("string", "string");
 
-    scoped_ptr<base::Value> parsed = parseTracedValue(value);
+    scoped_ptr<base::Value> parsed = parseTracedValue(value.release());
     base::DictionaryValue* dictionary;
     ASSERT_TRUE(parsed->GetAsDictionary(&dictionary));
     int intValue;
@@ -41,7 +41,7 @@ TEST(TracedValueTest, FlatDictionary)
 
 TEST(TracedValueTest, Hierarchy)
 {
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setInteger("i0", 2014);
     value->beginDictionary("dict1");
     value->setInteger("i1", 2014);
@@ -61,7 +61,7 @@ TEST(TracedValueTest, Hierarchy)
     value->endArray();
     value->setString("s0", "foo");
 
-    scoped_ptr<base::Value> parsed = parseTracedValue(value);
+    scoped_ptr<base::Value> parsed = parseTracedValue(value.release());
     base::DictionaryValue* dictionary;
     ASSERT_TRUE(parsed->GetAsDictionary(&dictionary));
     int i0;
@@ -102,14 +102,14 @@ TEST(TracedValueTest, Hierarchy)
 
 TEST(TracedValueTest, Escape)
 {
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setString("s0", "value0\\");
     value->setString("s1", "value\n1");
     value->setString("s2", "\"value2\"");
     value->setString("s3\\", "value3");
     value->setString("\"s4\"", "value4");
 
-    scoped_ptr<base::Value> parsed = parseTracedValue(value);
+    scoped_ptr<base::Value> parsed = parseTracedValue(value.release());
     base::DictionaryValue* dictionary;
     ASSERT_TRUE(parsed->GetAsDictionary(&dictionary));
     std::string s0;

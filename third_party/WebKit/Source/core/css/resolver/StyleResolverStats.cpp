@@ -63,9 +63,9 @@ bool StyleResolverStats::allCountersEnabled() const
     return allCountersEnabled;
 }
 
-PassRefPtr<TracedValue> StyleResolverStats::toTracedValue() const
+PassOwnPtr<TracedValue> StyleResolverStats::toTracedValue() const
 {
-    RefPtr<TracedValue> tracedValue = TracedValue::create();
+    OwnPtr<TracedValue> tracedValue = TracedValue::create();
     tracedValue->setInteger("sharedStyleLookups", sharedStyleLookups);
     tracedValue->setInteger("sharedStyleCandidates", sharedStyleCandidates);
     tracedValue->setInteger("sharedStyleFound", sharedStyleFound);

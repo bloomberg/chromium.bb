@@ -47,7 +47,7 @@ public:
 
     void reset();
     bool allCountersEnabled() const;
-    PassRefPtr<TracedValue> toTracedValue() const;
+    PassOwnPtr<TracedValue> toTracedValue() const;
 
     unsigned sharedStyleLookups;
     unsigned sharedStyleCandidates;

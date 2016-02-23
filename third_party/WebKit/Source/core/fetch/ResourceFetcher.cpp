@@ -296,9 +296,9 @@ void ResourceFetcher::requestLoadStarted(Resource* resource, const FetchRequest&
     m_validatedURLs.add(request.resourceRequest().url());
 }
 
-static PassRefPtr<TracedValue> urlForTraceEvent(const KURL& url)
+static PassOwnPtr<TracedValue> urlForTraceEvent(const KURL& url)
 {
-    RefPtr<TracedValue> value = TracedValue::create();
+    OwnPtr<TracedValue> value = TracedValue::create();
     value->setString("url", url.string());
     return value.release();
 }

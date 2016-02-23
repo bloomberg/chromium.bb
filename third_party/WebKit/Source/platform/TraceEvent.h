@@ -37,7 +37,7 @@
 #include "wtf/Allocator.h"
 #include "wtf/DynamicAnnotations.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PassRefPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/text/CString.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -116,7 +116,7 @@
 //                    const char** arg_names,
 //                    const unsigned char* arg_types,
 //                    const unsigned long long* arg_values,
-//                    PassRefPtr<TracedValue> tracedValues[],
+//                    PassOwnPtr<TracedValue> tracedValues[],
 //                    unsigned char flags)
 #define TRACE_EVENT_API_ADD_TRACE_EVENT \
     blink::EventTracer::addTraceEvent
@@ -427,22 +427,22 @@ static inline void setTraceValue(TracedValue*, unsigned char* type, unsigned lon
     *type = TRACE_VALUE_TYPE_CONVERTABLE;
 }
 
-template<typename T> static inline void setTraceValue(const PassRefPtr<T>& ptr, unsigned char* type, unsigned long long* value)
+template<typename T> static inline void setTraceValue(const PassOwnPtr<T>& ptr, unsigned char* type, unsigned long long* value)
 {
     setTraceValue(ptr.get(), type, value);
 }
 
 template<typename T> struct TracedValueTraits {
     static const bool isTracedValue = false;
-    static PassRefPtr<TracedValue> moveFromIfTracedValue(const T&)
+    static PassOwnPtr<TracedValue> moveFromIfTracedValue(const T&)
     {
         return nullptr;
     }
 };
 
-template<typename T> struct TracedValueTraits<PassRefPtr<T>> {
+template<typename T> struct TracedValueTraits<PassOwnPtr<T>> {
     static const bool isTracedValue = std::is_convertible<T*, TracedValue*>::value;
-    static PassRefPtr<TracedValue> moveFromIfTracedValue(const PassRefPtr<T>& tracedValue)
+    static PassOwnPtr<TracedValue> moveFromIfTracedValue(const PassOwnPtr<T>& tracedValue)
     {
         return tracedValue;
     }
@@ -453,7 +453,7 @@ template<typename T> bool isTracedValue(const T&)
     return TracedValueTraits<T>::isTracedValue;
 }
 
-template<typename T> PassRefPtr<TracedValue> moveFromIfTracedValue(const T& value)
+template<typename T> PassOwnPtr<TracedValue> moveFromIfTracedValue(const T& value)
 {
     return TracedValueTraits<T>::moveFromIfTracedValue(value);
 }

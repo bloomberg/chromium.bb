@@ -9,9 +9,9 @@
 
 namespace blink {
 
-PassRefPtr<TracedValue> TracedValue::create()
+PassOwnPtr<TracedValue> TracedValue::create()
 {
-    return adoptRef(new TracedValue());
+    return adoptPtr(new TracedValue());
 }
 
 TracedValue::TracedValue()

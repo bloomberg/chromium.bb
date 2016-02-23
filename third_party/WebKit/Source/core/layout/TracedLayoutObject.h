@@ -13,7 +13,7 @@ class LayoutView;
 
 class TracedLayoutObject {
 public:
-    static PassRefPtr<TracedValue> create(const LayoutView&, bool traceGeometry = true);
+    static PassOwnPtr<TracedValue> create(const LayoutView&, bool traceGeometry = true);
 };
 
 } // namespace blink
