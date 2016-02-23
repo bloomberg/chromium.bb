@@ -703,6 +703,11 @@ base::Process StartSandboxedProcess(
       sandbox::MITIGATION_NONSYSTEM_FONT_DISABLE |
       sandbox::MITIGATION_IMAGE_LOAD_NO_REMOTE |
       sandbox::MITIGATION_IMAGE_LOAD_NO_LOW_LABEL;
+#if !defined(NACL_WIN64)
+  // Don't block font loading with GDI.
+  if (!gfx::win::ShouldUseDirectWrite())
+    mitigations ^= sandbox::MITIGATION_NONSYSTEM_FONT_DISABLE;
+#endif
 
   if (policy->SetProcessMitigations(mitigations) != sandbox::SBOX_ALL_OK)
     return base::Process();
