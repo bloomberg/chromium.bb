@@ -34,6 +34,11 @@ public:
         return toText()->firstTextBox();
     }
 
+    InlineTextBox* createInlineTextBox(int start, unsigned short length)
+    {
+        return toText()->createInlineTextBox(start, length);
+    }
+
     void extractTextBox(InlineTextBox* inlineTextBox)
     {
         toText()->extractTextBox(inlineTextBox);

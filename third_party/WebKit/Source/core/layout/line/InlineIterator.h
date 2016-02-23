@@ -34,7 +34,7 @@
 namespace blink {
 
 struct BidiIsolatedRun {
-    BidiIsolatedRun(LayoutObject& object, unsigned position, LayoutObject& root, BidiRun& runToReplace, unsigned char level)
+    BidiIsolatedRun(LineLayoutItem object, unsigned position, LineLayoutItem& root, BidiRun& runToReplace, unsigned char level)
         : object(object)
         , root(root)
         , runToReplace(runToReplace)
@@ -43,8 +43,8 @@ struct BidiIsolatedRun {
     {
     }
 
-    LayoutObject& object;
-    LayoutObject& root;
+    LineLayoutItem object;
+    LineLayoutItem root;
     BidiRun& runToReplace;
     unsigned position;
     unsigned char level;
@@ -518,7 +518,7 @@ template <>
 inline int InlineBidiResolver::findFirstTrailingSpaceAtRun(BidiRun* run)
 {
     ASSERT(run);
-    LineLayoutItem lastObject = LineLayoutItem(run->m_object);
+    LineLayoutItem lastObject = LineLayoutItem(run->m_lineLayoutItem);
     if (!lastObject.isText())
         return run->m_stop;
 
@@ -534,7 +534,7 @@ inline int InlineBidiResolver::findFirstTrailingSpaceAtRun(BidiRun* run)
 template <>
 inline BidiRun* InlineBidiResolver::addTrailingRun(BidiRunList<BidiRun>& runs, int start, int stop, BidiRun* run, BidiContext* context, TextDirection direction) const
 {
-    BidiRun* newTrailingRun = new BidiRun(start, stop, run->m_object, context, WTF::Unicode::OtherNeutral);
+    BidiRun* newTrailingRun = new BidiRun(start, stop, run->m_lineLayoutItem, context, WTF::Unicode::OtherNeutral);
     if (direction == LTR)
         runs.addRun(newTrailingRun);
     else
@@ -546,8 +546,8 @@ inline BidiRun* InlineBidiResolver::addTrailingRun(BidiRunList<BidiRun>& runs, i
 template <>
 inline bool InlineBidiResolver::needsToApplyL1Rule(BidiRunList<BidiRun>& runs)
 {
-    if (!runs.logicallyLastRun()->m_object->style()->breakOnlyAfterWhiteSpace()
-        || !runs.logicallyLastRun()->m_object->style()->autoWrap())
+    if (!runs.logicallyLastRun()->m_lineLayoutItem.style()->breakOnlyAfterWhiteSpace()
+        || !runs.logicallyLastRun()->m_lineLayoutItem.style()->autoWrap())
         return false;
     return true;
 }
@@ -561,10 +561,10 @@ static inline bool isIsolatedInline(LineLayoutItem object)
 static inline LineLayoutItem highestContainingIsolateWithinRoot(LineLayoutItem object, LineLayoutItem root)
 {
     ASSERT(object);
-    LineLayoutItem containingIsolateObj = 0;
+    LineLayoutItem containingIsolateObj(nullptr);
     while (object && object != root) {
         if (isIsolatedInline(object))
-            containingIsolateObj = object;
+            containingIsolateObj = LineLayoutItem(object);
 
         object = object.parent();
         ASSERT(object);
@@ -595,7 +595,7 @@ static inline BidiRun* addPlaceholderRunForIsolatedInline(InlineBidiResolver& re
     resolver.runs().addRun(isolatedRun);
     // FIXME: isolatedRuns() could be a hash of object->run and then we could cheaply
     // ASSERT here that we didn't create multiple objects for the same inline.
-    resolver.isolatedRuns().append(BidiIsolatedRun(*obj, pos, *root, *isolatedRun, resolver.context()->level()));
+    resolver.isolatedRuns().append(BidiIsolatedRun(obj, pos, root, *isolatedRun, resolver.context()->level()));
     return isolatedRun;
 }
 
