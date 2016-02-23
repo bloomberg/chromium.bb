@@ -567,13 +567,7 @@ void RenderWidget::OnResize(const ResizeParams& params) {
     return;
   }
 
-  bool orientation_changed =
-      screen_info_.orientationAngle != params.screen_info.orientationAngle;
-
   Resize(params);
-
-  if (orientation_changed)
-    OnOrientationChange();
 }
 
 void RenderWidget::OnEnableDeviceEmulation(
@@ -1060,6 +1054,10 @@ void RenderWidget::Redraw() {
 }
 
 void RenderWidget::Resize(const ResizeParams& params) {
+  bool orientation_changed =
+      screen_info_.orientationAngle != params.screen_info.orientationAngle ||
+      screen_info_.orientationType != params.screen_info.orientationType;
+
   screen_info_ = params.screen_info;
   SetDeviceScaleFactor(screen_info_.deviceScaleFactor);
 
@@ -1128,6 +1126,9 @@ void RenderWidget::Resize(const ResizeParams& params) {
 
   if (fullscreen_change)
     DidToggleFullscreen();
+
+  if (orientation_changed)
+    OnOrientationChange();
 
   // If a resize ack is requested and it isn't set-up, then no more resizes will
   // come in and in general things will go wrong.
