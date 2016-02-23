@@ -66,6 +66,10 @@ def main():
     subprocess.check_output(
         ["tar",
          "-zcf", args.output,
+         # Ensure tarball content group permissions are appropriately set for
+         # use as part of a "docker build". That is group readable with
+         # executable files also being group executable.
+         "--mode=g+rX",
          "-C", dockerfile_dirname, dockerfile_basename,
          "-C", startup_script_dirname, startup_script_basename,
          "-C", args.build_dir] + deps,
