@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
@@ -62,6 +63,57 @@
 #include "components/translate/core/browser/translate_infobar_delegate.h"
 #endif
 
+namespace {
+
+class MockTranslateBubbleFactory : public TranslateBubbleFactory {
+ public:
+  MockTranslateBubbleFactory() {}
+
+  void ShowImplementation(
+      BrowserWindow* window,
+      content::WebContents* web_contents,
+      translate::TranslateStep step,
+      translate::TranslateErrors::Type error_type) override {
+    if (model_) {
+      model_->SetViewState(
+          TranslateBubbleModelImpl::TranslateStepToViewState(step));
+      return;
+    }
+
+    ChromeTranslateClient* chrome_translate_client =
+        ChromeTranslateClient::FromWebContents(web_contents);
+    std::string source_language =
+        chrome_translate_client->GetLanguageState().original_language();
+    std::string target_language =
+        translate::TranslateDownloadManager::GetLanguageCode(
+            g_browser_process->GetApplicationLocale());
+
+    scoped_ptr<translate::TranslateUIDelegate> ui_delegate(
+        new translate::TranslateUIDelegate(
+            chrome_translate_client->GetTranslateManager()->GetWeakPtr(),
+            source_language,
+            target_language));
+    model_.reset(new TranslateBubbleModelImpl(step, std::move(ui_delegate)));
+  }
+
+  bool DismissBubble(bool explicitly_closed) {
+    if (!model_)
+      return false;
+    model_->TranslationDeclined(explicitly_closed);
+    model_.reset();
+    return true;
+  }
+
+  TranslateBubbleModel* model() { return model_.get(); }
+
+ private:
+  scoped_ptr<TranslateBubbleModel> model_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockTranslateBubbleFactory);
+};
+
+}  // namespace
+
 // An observer that keeps track of whether a navigation entry was committed.
 class NavEntryCommittedObserver : public content::NotificationObserver {
  public:
@@ -99,6 +151,48 @@ class TranslateManagerRenderViewHostTest
       : pref_callback_(
             base::Bind(&TranslateManagerRenderViewHostTest::OnPreferenceChanged,
                        base::Unretained(this))) {}
+
+#if !defined(USE_AURA)
+  // Ensure that we are testing under the bubble UI.
+  // TODO(groby): Remove once the bubble is enabled by default everywhere.
+  // http://crbug.com/507442
+  void EnableBubbleTest() {
+    if (TranslateService::IsTranslateBubbleEnabled()) {
+      bubble_factory_.reset(new MockTranslateBubbleFactory);
+      TranslateBubbleFactory::SetFactory(bubble_factory_.get());
+    }
+  }
+
+  bool TranslateUiVisible() {
+    if (bubble_factory_) {
+      TranslateBubbleModel* bubble = bubble_factory_->model();
+      return bubble != nullptr;
+    } else {
+      bool result = (GetTranslateInfoBar() != nullptr);
+      EXPECT_EQ(infobar_service()->infobar_count() != 0, result);
+      return result;
+    }
+  }
+
+  bool CloseTranslateUi() {
+    if (bubble_factory_) {
+      return bubble_factory_->DismissBubble(true);
+    } else {
+      return CloseTranslateInfoBar();
+    }
+  }
+
+  void SimulateTranslatePress() {
+    // Simulate the user translating.
+    if (bubble_factory_.get()) {
+      bubble_factory_->model()->Translate();
+    } else {
+      translate::TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
+      ASSERT_TRUE(infobar != nullptr);
+      infobar->Translate();
+    }
+  }
+#endif  // defined(USE_AURA)
 
   // Simulates navigating to a page and getting the page contents and language
   // for that navigation.
@@ -193,12 +287,16 @@ class TranslateManagerRenderViewHostTest
   // If there is 1 infobar and it is a translate infobar, deny translation and
   // returns true.  Returns false otherwise.
   bool DenyTranslation() {
-    translate::TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
-    if (!infobar)
-      return false;
-    infobar->TranslationDeclined();
-    infobar_service()->RemoveInfoBar(infobar_service()->infobar_at(0));
-    return true;
+    if (bubble_factory_.get()) {
+      return bubble_factory_->DismissBubble(true);
+    } else {
+      translate::TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
+      if (!infobar)
+        return false;
+      infobar->TranslationDeclined();
+      infobar_service()->RemoveInfoBar(infobar_service()->infobar_at(0));
+      return true;
+    }
   }
 #endif  // defined(USE_AURA)
 
@@ -365,47 +463,10 @@ class TranslateManagerRenderViewHostTest
   // WARNING: the pointers point to deleted objects, use only for comparison.
   std::set<infobars::InfoBarDelegate*> removed_infobars_;
 
+  scoped_ptr<MockTranslateBubbleFactory> bubble_factory_;
   DISALLOW_COPY_AND_ASSIGN(TranslateManagerRenderViewHostTest);
 };
 
-class MockTranslateBubbleFactory : public TranslateBubbleFactory {
- public:
-  MockTranslateBubbleFactory() {}
-
-  void ShowImplementation(
-      BrowserWindow* window,
-      content::WebContents* web_contents,
-      translate::TranslateStep step,
-      translate::TranslateErrors::Type error_type) override {
-    if (model_) {
-      model_->SetViewState(
-          TranslateBubbleModelImpl::TranslateStepToViewState(step));
-      return;
-    }
-
-    ChromeTranslateClient* chrome_translate_client =
-        ChromeTranslateClient::FromWebContents(web_contents);
-    std::string source_language =
-        chrome_translate_client->GetLanguageState().original_language();
-    std::string target_language =
-        translate::TranslateDownloadManager::GetLanguageCode(
-            g_browser_process->GetApplicationLocale());
-
-    scoped_ptr<translate::TranslateUIDelegate> ui_delegate(
-        new translate::TranslateUIDelegate(
-            chrome_translate_client->GetTranslateManager()->GetWeakPtr(),
-            source_language,
-            target_language));
-    model_.reset(new TranslateBubbleModelImpl(step, std::move(ui_delegate)));
-  }
-
-  TranslateBubbleModel* model() { return model_.get(); }
-
- private:
-  scoped_ptr<TranslateBubbleModel> model_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockTranslateBubbleFactory);
-};
 
 // A list of languages to fake being returned by the translate server.
 // Use only langauges for which Chrome's copy of ICU has
@@ -705,6 +766,8 @@ TEST_F(TranslateManagerRenderViewHostTest, TranslateUnknownLanguage) {
 // Tests that we show/don't show an info-bar for the languages.
 TEST_F(TranslateManagerRenderViewHostTest, TestLanguages) {
   // TODO(port): Test corresponding bubble translate UX: http://crbug.com/383235
+  // This actually doesn't make sense to port, because the check for supported
+  // languages moved out of the Infobar into the TranslateManager.
   if (TranslateService::IsTranslateBubbleEnabled())
     return;
 
@@ -744,17 +807,11 @@ TEST_F(TranslateManagerRenderViewHostTest, TestLanguages) {
 
 // Tests auto-translate on page.
 TEST_F(TranslateManagerRenderViewHostTest, AutoTranslateOnNavigate) {
-  // TODO(port): Test corresponding bubble translate UX: http://crbug.com/383235
-  if (TranslateService::IsTranslateBubbleEnabled())
-    return;
+  EnableBubbleTest();
 
   SimulateNavigation(GURL("http://www.google.fr"), "fr", true);
 
-  // Simulate the user translating.
-  translate::TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
-  ASSERT_TRUE(infobar != NULL);
-  infobar->Translate();
-  // Simulate the translate script being retrieved.
+  SimulateTranslatePress();
   SimulateTranslateScriptURLFetch(true);
   SimulateOnPageTranslated("fr", "en");
 
@@ -778,26 +835,26 @@ TEST_F(TranslateManagerRenderViewHostTest, AutoTranslateOnNavigate) {
 
 // Tests that multiple OnPageContents do not cause multiple infobars.
 TEST_F(TranslateManagerRenderViewHostTest, MultipleOnPageContents) {
-  // TODO(port): Test corresponding bubble translate UX: http://crbug.com/383235
-  if (TranslateService::IsTranslateBubbleEnabled())
-    return;
+  EnableBubbleTest();
 
   SimulateNavigation(GURL("http://www.google.fr"), "fr", true);
 
   // Simulate clicking 'Nope' (don't translate).
+  EXPECT_TRUE(TranslateUiVisible());
   EXPECT_TRUE(DenyTranslation());
-  EXPECT_EQ(0U, infobar_service()->infobar_count());
+  EXPECT_FALSE(TranslateUiVisible());
 
-  // Send a new PageContents, we should not show an infobar.
+  // Send a new PageContents, we should not show the translate UI.
   SimulateOnTranslateLanguageDetermined("fr", true);
-  EXPECT_EQ(0U, infobar_service()->infobar_count());
+  EXPECT_FALSE(TranslateUiVisible());
 
   // Do the same steps but simulate closing the infobar this time.
-  SimulateNavigation(GURL("http://www.youtube.fr"), "fr", true);
-  EXPECT_TRUE(CloseTranslateInfoBar());
-  EXPECT_EQ(0U, infobar_service()->infobar_count());
-  SimulateOnTranslateLanguageDetermined("fr", true);
-  EXPECT_EQ(0U, infobar_service()->infobar_count());
+  SimulateNavigation(GURL("http://www.youtube.de"), "de", true);
+  EXPECT_TRUE(TranslateUiVisible());
+  EXPECT_TRUE(CloseTranslateUi());
+  EXPECT_FALSE(TranslateUiVisible());
+  SimulateOnTranslateLanguageDetermined("de", true);
+  EXPECT_FALSE(TranslateUiVisible());
 }
 
 // Test that reloading the page brings back the infobar if the
