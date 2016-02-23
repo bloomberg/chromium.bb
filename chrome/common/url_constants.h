@@ -364,7 +364,7 @@ extern const char kChromeAccessibilityHelpURL[];
 extern const char kChromeAccessibilitySettingsURL[];
 #endif
 
-#if defined (ENABLE_ONE_CLICK_SIGNIN)
+#if BUILDFLAG(ENABLE_ONE_CLICK_SIGNIN)
 // "Learn more" URL for the one click signin infobar.
 extern const char kChromeSyncLearnMoreURL[];
 

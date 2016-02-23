@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/exclusive_access/exclusive_access_bubble_type.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
+#include "chrome/common/features.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/security_state/security_state_model.h"
 #include "components/signin/core/browser/signin_header_helper.h"
@@ -257,7 +258,7 @@ class BrowserWindow : public ui::BaseWindow {
       translate::TranslateErrors::Type error_type,
       bool is_user_gesture) = 0;
 
-#if defined(ENABLE_ONE_CLICK_SIGNIN)
+#if BUILDFLAG(ENABLE_ONE_CLICK_SIGNIN)
   enum OneClickSigninBubbleType {
     ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE,
     ONE_CLICK_SIGNIN_BUBBLE_TYPE_MODAL_DIALOG,

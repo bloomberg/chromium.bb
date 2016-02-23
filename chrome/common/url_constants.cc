@@ -427,13 +427,13 @@ const char kChromeAccessibilitySettingsURL[] =
     "/chromevox/background/options.html";
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(ENABLE_ONE_CLICK_SIGNIN)
+#if BUILDFLAG(ENABLE_ONE_CLICK_SIGNIN)
 const char kChromeSyncLearnMoreURL[] =
     "https://support.google.com/chrome/answer/165139";
 
 const char kChromeSyncMergeTroubleshootingURL[] =
     "https://support.google.com/chrome/answer/1181420#merge";
-#endif  // defined(ENABLE_ONE_CLICK_SIGNIN)
+#endif  // BUILDFLAG(ENABLE_ONE_CLICK_SIGNIN)
 
 #if defined(OS_MACOSX)
 const char kChromeEnterpriseSignInLearnMoreURL[] =

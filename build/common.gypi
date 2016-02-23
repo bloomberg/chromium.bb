@@ -2743,9 +2743,6 @@
       ['use_clipboard_aurax11==1', {
         'defines': ['USE_CLIPBOARD_AURAX11=1'],
       }],
-      ['enable_one_click_signin==1', {
-        'defines': ['ENABLE_ONE_CLICK_SIGNIN'],
-      }],
       ['image_loader_extension==1', {
         'defines': ['IMAGE_LOADER_EXTENSION=1'],
       }],

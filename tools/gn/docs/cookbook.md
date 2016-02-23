@@ -244,7 +244,7 @@ places are noted in the table below.
 | `enable_hidpi` (0/1)                    | `enable_hidpi` (true/false)                    | `//build/config/ui.gni`       |
 | `enable_managed_users` (0/1)            | `enable_managed_users` (true/false)            | `//build/config/features.gni` |
 | `enable_mdns` (0/1)                     | `enable_mdns` (true/false)                     | `//build/config/features.gni` |
-| `enable_one_click_signin` (0/1)         | `enable_one_click_signin` (true/false)         | `//build/config/features.gni` |
+| `enable_one_click_signin` (0/1)         | `enable_one_click_signin` (true/false)         | `//chrome/common/features.gni` |
 | `enable_pepper_cdms` (0/1)              | `enable_pepper_cdms` (true/false)              | `//build/config/features.gni` |
 | `enable_plugins` (0/1)                  | `enable_plugins` (true/false)                  | `//build/config/features.gni` |
 | `enable_plugin_installation` (0/1)      | `enable_plugin_installation` (true/false)      | `//build/config/features.gni` |
