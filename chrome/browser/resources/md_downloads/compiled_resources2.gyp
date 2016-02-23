@@ -46,7 +46,7 @@
         'item',
         'toolbar',
         '<(EXTERNS_GYP):chrome_send',
-        '../downloads/compiled_resources2.gyp:externs',
+        'externs',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

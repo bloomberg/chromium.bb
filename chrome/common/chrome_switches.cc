@@ -274,8 +274,10 @@ const char kDisableFieldTrialTestingConfig[] = "disable-field-trial-config";
 // Disable HTTP/2 and SPDY/3.1 protocols.
 const char kDisableHttp2[]                   = "disable-http2";
 
-// Disables the Material Design version of chrome://downloads.
-const char kDisableMaterialDesignDownloads[] = "disable-md-downloads";
+// Disable the behavior that the second click on a launcher item (the click when
+// the item is already active) minimizes the item.
+const char kDisableMinimizeOnSecondLauncherItemClick[] =
+    "disable-minimize-on-second-launcher-item-click";
 
 // Disables the new bookmark app system.
 const char kDisableNewBookmarkApps[]        = "disable-new-bookmark-apps";
@@ -414,9 +416,6 @@ const char kEnableExtensionActivityLogTesting[] =
 // running a tab's onunload js handler independently of the GUI -
 // crbug.com/142458 .
 const char kEnableFastUnload[] = "enable-fast-unload";
-
-// Enables the Material Design version of chrome://downloads.
-const char kEnableMaterialDesignDownloads[] = "enable-md-downloads";
 
 // Enables the Material Design version of chrome://extensions.
 const char kEnableMaterialDesignExtensions[] = "enable-md-extensions";

@@ -1604,12 +1604,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"v8-cache-options", IDS_FLAGS_V8_CACHE_OPTIONS_NAME,
      IDS_FLAGS_V8_CACHE_OPTIONS_DESCRIPTION, kOsAll,
      MULTI_VALUE_TYPE(kV8CacheOptionsChoices)},
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-    {"enable-md-downloads", IDS_FLAGS_ENABLE_MATERIAL_DESIGN_DOWNLOADS_NAME,
-     IDS_FLAGS_ENABLE_MATERIAL_DESIGN_DOWNLOADS_DESCRIPTION, kOsDesktop,
-     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableMaterialDesignDownloads,
-                               switches::kDisableMaterialDesignDownloads)},
-#endif
     {"enable-clear-browsing-data-counters",
      IDS_FLAGS_ENABLE_CLEAR_BROWSING_DATA_COUNTERS_NAME,
      IDS_FLAGS_ENABLE_CLEAR_BROWSING_DATA_COUNTERS_DESCRIPTION, kOsAll,

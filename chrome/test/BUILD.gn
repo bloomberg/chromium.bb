@@ -652,10 +652,6 @@ if (!is_android) {
     if (!enable_app_list) {
       sources -= [ "../browser/ui/webui/app_list/start_page_browsertest.js" ]
     }
-    if (!enable_supervised_users) {
-      sources -=
-          [ "../browser/ui/webui/downloads_ui_supervised_browsertest.js" ]
-    }
     if (!enable_print_preview) {
       sources -= [ "data/webui/print_preview.js" ]
     }

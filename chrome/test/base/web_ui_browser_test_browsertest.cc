@@ -32,13 +32,6 @@ class WebUIBrowserExpectFailTest : public WebUIBrowserTest {
     s_test_ = this;
   }
 
-  // Disable new downloads UI as it is very very slow. https://crbug.com/526577
-  // TODO(dbeam): remove this once the downloads UI is not slow.
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    WebUIBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kDisableMaterialDesignDownloads);
-  }
-
  protected:
   ~WebUIBrowserExpectFailTest() override {
     EXPECT_TRUE(s_test_);

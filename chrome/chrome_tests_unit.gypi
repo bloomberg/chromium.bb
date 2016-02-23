@@ -1558,7 +1558,6 @@
       'browser/ui/toolbar/toolbar_model_unittest.cc',
       'browser/ui/website_settings/permission_bubble_manager_unittest.cc',
       'browser/ui/website_settings/permission_menu_model_unittest.cc',
-      'browser/ui/webui/downloads_util_unittest.cc',
       'browser/ui/webui/help/version_updater_chromeos_unittest.cc',
       'browser/ui/webui/md_downloads/downloads_list_tracker_unittest.cc',
       'browser/ui/webui/md_downloads/md_downloads_dom_handler_unittest.cc',

@@ -708,13 +708,6 @@ class BrowserCloseManagerWithDownloadsBrowserTest :
     ASSERT_TRUE(scoped_download_directory_.CreateUniqueTempDir());
   }
 
-  // Disable new downloads UI as it is very very slow. https://crbug.com/526577
-  // TODO(dbeam): remove this once the downloads UI is not slow.
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    BrowserCloseManagerBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kDisableMaterialDesignDownloads);
-  }
-
   void SetDownloadPathForProfile(Profile* profile) {
     DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(profile);
     download_prefs->SetDownloadPath(download_path());

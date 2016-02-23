@@ -87,13 +87,6 @@ class FindInPageControllerTest : public InProcessBrowserTest {
     chrome::DisableFindBarAnimationsDuringTesting(true);
   }
 
-  // Disable new downloads UI as it is very very slow. https://crbug.com/526577
-  // TODO(dbeam): remove this once the downloads UI is not slow.
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kDisableMaterialDesignDownloads);
-  }
-
  protected:
   bool GetFindBarWindowInfoForBrowser(
       Browser* browser, gfx::Point* position, bool* fully_visible) {

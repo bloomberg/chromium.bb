@@ -202,10 +202,6 @@ void BrowserNavigatorTest::SetUpCommandLine(base::CommandLine* command_line) {
   // Disable settings-in-a-window so that we can use the settings page and
   // sub-pages to test browser navigation.
   command_line->AppendSwitch(::switches::kDisableSettingsWindow);
-
-  // Disable new downloads UI as it is very very slow. https://crbug.com/526577
-  // TODO(dbeam): remove this once the downloads UI is not slow.
-  command_line->AppendSwitch(switches::kDisableMaterialDesignDownloads);
 }
 
 void BrowserNavigatorTest::Observe(
@@ -1281,9 +1277,11 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 
 // TODO(linux_aura) http://crbug.com/163931
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
-#define MAYBE_NavigateFromDefaultToBookmarksInSameTab DISABLED_NavigateFromDefaultToBookmarksInSameTab
+#define MAYBE_NavigateFromDefaultToBookmarksInSameTab \
+    DISABLED_NavigateFromDefaultToBookmarksInSameTab
 #else
-#define MAYBE_NavigateFromDefaultToBookmarksInSameTab NavigateFromDefaultToBookmarksInSameTab
+#define MAYBE_NavigateFromDefaultToBookmarksInSameTab \
+    NavigateFromDefaultToBookmarksInSameTab
 #endif
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        MAYBE_NavigateFromDefaultToBookmarksInSameTab) {

@@ -505,9 +505,6 @@
       'browser/ui/webui/chrome_url_data_manager_browsertest.cc',
       'browser/ui/webui/chromeos/bluetooth_pairing_ui_browsertest-inl.h',
       'browser/ui/webui/constrained_web_dialog_ui_browsertest.cc',
-      'browser/ui/webui/downloads_dom_handler_browsertest.cc',
-      'browser/ui/webui/downloads_ui_browsertest.cc',
-      'browser/ui/webui/downloads_ui_browsertest.h',
       'browser/ui/webui/extensions/extension_settings_browsertest.cc',
       'browser/ui/webui/extensions/extension_settings_browsertest.h',
       'browser/ui/webui/identity_internals_ui_browsertest.cc',
@@ -901,8 +898,6 @@
       'browser/supervised_user/supervised_user_browsertest.cc',
       'browser/supervised_user/supervised_user_resource_throttle_browsertest.cc',
       'browser/supervised_user/supervised_user_service_browsertest.cc',
-      'browser/ui/webui/downloads_ui_supervised_browsertest.cc',
-      'browser/ui/webui/downloads_ui_supervised_browsertest.h',
     ],
     'chrome_browser_tests_app_list_sources': [
       'browser/apps/drive/drive_app_converter_browsertest.cc',
@@ -938,9 +933,6 @@
       'browser/ui/webui/chromeos/bluetooth_pairing_ui_browsertest.js',
       'browser/ui/webui/chromeos/certificate_manager_dialog_browsertest.js',
       'browser/ui/webui/chromeos/set_time_ui_browsertest.js',
-      'browser/ui/webui/downloads_ui_browsertest.js',
-      'browser/ui/webui/downloads_ui_browsertest_base.js',
-      'browser/ui/webui/downloads_ui_supervised_browsertest.js',
       'browser/ui/webui/extensions/chromeos/kiosk_apps_browsertest.js',
       'browser/ui/webui/extensions/extension_settings_browsertest.js',
       'browser/ui/webui/help/help_browsertest.js',
@@ -2601,10 +2593,6 @@
         }],
         ['enable_supervised_users==1', {
           'sources': [ '<@(chrome_browser_tests_supervised_user_sources)' ],
-        }, {
-          'sources!': [
-            'browser/ui/webui/downloads_ui_supervised_browsertest.js',
-          ],
         }],
         ['enable_pepper_cdms==1', {
           'dependencies': [

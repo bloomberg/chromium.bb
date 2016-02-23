@@ -11,7 +11,7 @@ var downloads = {};
 
 /**
  * The type of the download object. The definition is based on
- * chrome/browser/ui/webui/downloads_dom_handler.cc:CreateDownloadItemValue()
+ * MdDownloadsDOMHandler::CreateDownloadItemValue()
  * @typedef {{by_ext_id: string,
  *            by_ext_name: string,
  *            danger_type: string,

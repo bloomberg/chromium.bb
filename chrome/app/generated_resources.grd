@@ -1834,10 +1834,6 @@ Even if you have downloaded files from this website before, the website might ha
                desc="In the download view, 'Pause' link text">
         Pause
       </message>
-      <message name="IDS_DOWNLOAD_SEARCH_BUTTON"
-               desc="Title of the button in the download page that triggers a search">
-        Search downloads
-      </message>
       <message name="IDS_MD_DOWNLOAD_SEARCH"
                desc="Placeholder text/label for the search input in the download page">
         Search
@@ -1851,9 +1847,6 @@ Even if you have downloaded files from this website before, the website might ha
       </message>
       <message name="IDS_DOWNLOAD_NO_SEARCH_RESULTS" desc="A message shown for when a search yield no results (no matching downloads).">
         No search results found.
-      </message>
-      <message name="IDS_DOWNLOAD_NO_DOWNLOADS" desc="A message shown when the user has no downloads to show on chrome://downloads.">
-        No downloads found.
       </message>
       <message name="IDS_MD_DOWNLOAD_NO_DOWNLOADS" desc="A message shown when the user has no downloads to show on chrome://downloads.">
         Nothing to see here...
@@ -1869,10 +1862,6 @@ Even if you have downloaded files from this website before, the website might ha
       <message name="IDS_DOWNLOAD_LINK_CANCEL"
                desc="In the download view, 'Cancel' link text">
         Cancel
-      </message>
-      <message name="IDS_DOWNLOAD_LINK_RETRY"
-               desc="In the download view, 'Retry download' link text">
-        Retry download
       </message>
       <message name="IDS_MD_DOWNLOAD_LINK_RETRY"
                desc="In the download view, 'Retry' button text to retry downloading a file.">
@@ -1935,10 +1924,6 @@ Even if you have downloaded files from this website before, the website might ha
       <message name="IDS_DOWNLOAD_MORE_ACTIONS"
                desc="Tooltip of a button on the downloads page that shows a menu with actions like 'Open downloads folder' or 'Clear all'">
         More actions...
-      </message>
-      <message name="IDS_DOWNLOAD_BY_EXTENSION"
-               desc="Indicates which extension downloaded this file.">
-        Downloaded by &lt;a&gt;<ph name="EXTENSION">$1<ex>The Best Chrome Extension Ever</ex></ph>&lt;/a&gt;
       </message>
       <message name="IDS_DOWNLOAD_BY_EXTENSION_URL"
                desc="Indicates which extension downloaded this file by name and URL.">

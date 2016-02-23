@@ -25,8 +25,6 @@
 #include "chrome/browser/ui/webui/crashes_ui.h"
 #include "chrome/browser/ui/webui/device_log_ui.h"
 #include "chrome/browser/ui/webui/domain_reliability_internals_ui.h"
-#include "chrome/browser/ui/webui/downloads_ui.h"
-#include "chrome/browser/ui/webui/downloads_util.h"
 #include "chrome/browser/ui/webui/flags_ui.h"
 #include "chrome/browser/ui/webui/flash_ui.h"
 #include "chrome/browser/ui/webui/gcm_internals_ui.h"
@@ -396,11 +394,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host() == chrome::kChromeUIBookmarksHost)
     return &NewWebUI<BookmarksUI>;
   // Downloads list on Android uses the built-in download manager.
-  if (url.host() == chrome::kChromeUIDownloadsHost) {
-    if (MdDownloadsEnabled())
-      return &NewWebUI<MdDownloadsUI>;
-    return &NewWebUI<DownloadsUI>;
-  }
+  if (url.host() == chrome::kChromeUIDownloadsHost)
+    return &NewWebUI<MdDownloadsUI>;
   // Help is implemented with native UI elements on Android.
   if (url.host() == chrome::kChromeUIHelpFrameHost)
     return &NewWebUI<HelpUI>;
@@ -780,7 +775,7 @@ base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
 
   // Android uses the native download manager.
   if (page_url.host() == chrome::kChromeUIDownloadsHost)
-    return DownloadsUI::GetFaviconResourceBytes(scale_factor);
+    return MdDownloadsUI::GetFaviconResourceBytes(scale_factor);
 
   // Android doesn't use the Options pages.
   if (page_url.host() == chrome::kChromeUISettingsHost ||

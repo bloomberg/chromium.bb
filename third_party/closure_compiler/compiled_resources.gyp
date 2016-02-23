@@ -24,7 +24,6 @@
         '../../chrome/browser/resources/chromeos/braille_ime/compiled_resources.gyp:*',
         '../../chrome/browser/resources/chromeos/compiled_resources.gyp:*',
         '../../chrome/browser/resources/chromeos/network_ui/compiled_resources.gyp:*',
-        '../../chrome/browser/resources/downloads/compiled_resources.gyp:*',
         '../../chrome/browser/resources/extensions/compiled_resources.gyp:*',
         '../../chrome/browser/resources/help/compiled_resources.gyp:*',
         '../../chrome/browser/resources/history/compiled_resources.gyp:*',

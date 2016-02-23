@@ -14,7 +14,6 @@
       'target_name': 'compile_all_resources',
       'type': 'none',
       'dependencies': [
-        '<(DEPTH)/chrome/browser/resources/downloads/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/md_downloads/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/settings/compiled_resources2.gyp:*',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:*',
