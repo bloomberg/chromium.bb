@@ -86,16 +86,24 @@ static PassRefPtr<SkImage> premulSkImageToUnPremul(SkImage* input)
     return newSkImageFromRaster(info, dstPixels.release(), input->width() * info.bytesPerPixel());
 }
 
-static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const IntRect& cropRect, bool flipYEnabled, bool premultiplyAlphaEnabled)
+static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const IntRect& cropRect, bool flipYEnabled, bool premultiplyAlphaEnabled, bool isBitmapAlreadyPremultiplied = true)
 {
     ASSERT(image);
 
     IntRect imgRect(IntPoint(), IntSize(image->width(), image->height()));
     const IntRect srcRect = intersection(imgRect, cropRect);
 
+    // In the case when cropRect doesn't intersect the source image and it requires a umpremul image
+    // We immediately return a transparent black image with cropRect.size()
+    if (srcRect.isEmpty() && !premultiplyAlphaEnabled) {
+        SkImageInfo info = SkImageInfo::Make(cropRect.width(), cropRect.height(), kN32_SkColorType, kUnpremul_SkAlphaType);
+        OwnPtr<uint8_t[]> dstPixels = adoptArrayPtr(new uint8_t[cropRect.width() * cropRect.height() * info.bytesPerPixel()]());
+        return StaticBitmapImage::create(newSkImageFromRaster(info, dstPixels.release(), cropRect.width() * info.bytesPerPixel()));
+    }
+
     RefPtr<SkImage> skiaImage = image->imageForCurrentFrame();
-    // Attempt to get raw unpremultiplied image data.
-    if (((!premultiplyAlphaEnabled && !skiaImage->isOpaque()) || !skiaImage) && image->data()) {
+    // Attempt to get raw unpremultiplied image data, executed only when skiaImage is premultiplied.
+    if (((!premultiplyAlphaEnabled && !skiaImage->isOpaque()) || !skiaImage) && image->data() && isBitmapAlreadyPremultiplied) {
         // TODO(xidachen): GammaAndColorProfileApplied needs to be changed when working on color-space conversion
         OwnPtr<ImageDecoder> decoder(ImageDecoder::create(
             *(image->data()), ImageDecoder::AlphaNotPremultiplied,
@@ -121,8 +129,6 @@ static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const IntRect& crop
     }
 
     RefPtr<SkSurface> surface = adoptRef(SkSurface::NewRasterN32Premul(cropRect.width(), cropRect.height()));
-    // In the case where cropRect doesn't intesect the source image, we return a premultiplied transparent black SkImage.
-    // If we decide we want to grab meta data from m_image, we have to change this.
     if (srcRect.isEmpty())
         return StaticBitmapImage::create(adoptRef(surface->newImageSnapshot()));
 
@@ -150,6 +156,8 @@ ImageBitmap::ImageBitmap(HTMLImageElement* image, const IntRect& cropRect, Docum
 
     m_image = cropImage(image->cachedImage()->image(), cropRect, imageOrientationFlipYFlag, premultiplyAlphaEnabledFlag);
     m_image->setOriginClean(!image->wouldTaintOrigin(document->securityOrigin()));
+    if (!premultiplyAlphaEnabledFlag)
+        m_isPremultiplied = false;
 }
 
 ImageBitmap::ImageBitmap(HTMLVideoElement* video, const IntRect& cropRect, Document* document, const ImageBitmapOptions& options)
@@ -182,6 +190,8 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video, const IntRect& cropRect, Docum
         m_image = StaticBitmapImage::create(buffer->newSkImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown));
     }
     m_image->setOriginClean(!video->wouldTaintOrigin(document->securityOrigin()));
+    if (!premultiplyAlphaEnabledFlag)
+        m_isPremultiplied = false;
 }
 
 ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas, const IntRect& cropRect, const ImageBitmapOptions& options)
@@ -195,6 +205,8 @@ ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas, const IntRect& cropRect, con
     if (!premultiplyAlphaEnabledFlag)
         m_image = StaticBitmapImage::create(premulSkImageToUnPremul(m_image->imageForCurrentFrame().get()));
     m_image->setOriginClean(canvas->originClean());
+    if (!premultiplyAlphaEnabledFlag)
+        m_isPremultiplied = false;
 }
 
 ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect, const ImageBitmapOptions& options)
@@ -227,8 +239,10 @@ ImageBitmap::ImageBitmap(ImageBitmap* bitmap, const IntRect& cropRect, const Ima
     bool imageOrientationFlipYFlag;
     bool premultiplyAlphaEnabledFlag;
     parseOptions(options, imageOrientationFlipYFlag, premultiplyAlphaEnabledFlag);
-    m_image = cropImage(bitmap->bitmapImage(), cropRect, imageOrientationFlipYFlag, true);
+    m_image = cropImage(bitmap->bitmapImage(), cropRect, imageOrientationFlipYFlag, premultiplyAlphaEnabledFlag, bitmap->isPremultiplied());
     m_image->setOriginClean(bitmap->originClean());
+    if (!premultiplyAlphaEnabledFlag)
+        m_isPremultiplied = false;
 }
 
 ImageBitmap::ImageBitmap(PassRefPtr<StaticBitmapImage> image, const IntRect& cropRect, const ImageBitmapOptions& options)
@@ -238,6 +252,8 @@ ImageBitmap::ImageBitmap(PassRefPtr<StaticBitmapImage> image, const IntRect& cro
     parseOptions(options, imageOrientationFlipYFlag, premultiplyAlphaEnabledFlag);
     m_image = cropImage(image.get(), cropRect, imageOrientationFlipYFlag, premultiplyAlphaEnabledFlag);
     m_image->setOriginClean(image->originClean());
+    if (!premultiplyAlphaEnabledFlag)
+        m_isPremultiplied = false;
 }
 
 ImageBitmap::ImageBitmap(PassRefPtr<StaticBitmapImage> image)
