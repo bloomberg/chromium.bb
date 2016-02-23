@@ -32,8 +32,8 @@ class ChainShowBubbleDelegate : public MockBubbleDelegate {
 
   ~ChainShowBubbleDelegate() override { EXPECT_TRUE(closed_); }
 
-  void DidClose() override {
-    MockBubbleDelegate::DidClose();
+  void DidClose(BubbleCloseReason reason) override {
+    MockBubbleDelegate::DidClose(reason);
     BubbleReference ref = manager_->ShowBubble(std::move(delegate_));
     if (chained_bubble_)
       *chained_bubble_ = ref;
@@ -60,7 +60,7 @@ class ChainCloseBubbleDelegate : public MockBubbleDelegate {
 
   ~ChainCloseBubbleDelegate() override {}
 
-  void DidClose() override {
+  void DidClose(BubbleCloseReason reason) override {
     manager_->CloseAllBubbles(BUBBLE_CLOSE_FOCUS_LOST);
   }
 
@@ -353,7 +353,7 @@ TEST_F(BubbleManagerTest, BubblesDoNotChainOnDestroy) {
   scoped_ptr<MockBubbleDelegate> chained_delegate(new MockBubbleDelegate);
   EXPECT_CALL(*chained_delegate->bubble_ui(), Show(testing::_)).Times(0);
   EXPECT_CALL(*chained_delegate, ShouldClose(testing::_)).Times(0);
-  EXPECT_CALL(*chained_delegate, DidClose()).Times(0);
+  EXPECT_CALL(*chained_delegate, DidClose(testing::_)).Times(0);
 
   manager_->ShowBubble(make_scoped_ptr(new ChainShowBubbleDelegate(
       manager_.get(), std::move(chained_delegate), nullptr)));

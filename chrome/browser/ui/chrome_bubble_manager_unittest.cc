@@ -63,7 +63,7 @@ TEST_F(ChromeBubbleManagerTest, CloseMockBubbleOnNavigate) {
   scoped_ptr<MockBubbleDelegate> delegate(new MockBubbleDelegate);
   EXPECT_CALL(*delegate, ShouldClose(BUBBLE_CLOSE_NAVIGATED))
       .WillOnce(testing::Return(true));
-  EXPECT_CALL(*delegate, DidClose());
+  EXPECT_CALL(*delegate, DidClose(BUBBLE_CLOSE_NAVIGATED));
   EXPECT_CALL(*delegate, Destroyed());
 
   BubbleReference bubble_ref = manager_->ShowBubble(std::move(delegate));
@@ -93,7 +93,7 @@ TEST_F(ChromeBubbleManagerTest, CloseMockBubbleOnOwningFrameDestroy) {
       .WillRepeatedly(testing::Return(subframe0));
   EXPECT_CALL(*delegate, ShouldClose(BUBBLE_CLOSE_FRAME_DESTROYED))
       .WillOnce(testing::Return(true));
-  EXPECT_CALL(*delegate, DidClose());
+  EXPECT_CALL(*delegate, DidClose(BUBBLE_CLOSE_FRAME_DESTROYED));
   EXPECT_CALL(*delegate, Destroyed());
 
   BubbleReference bubble_ref = manager_->ShowBubble(std::move(delegate));

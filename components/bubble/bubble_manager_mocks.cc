@@ -18,7 +18,7 @@ scoped_ptr<MockBubbleDelegate> MockBubbleDelegate::Default() {
   EXPECT_CALL(*delegate, ShouldClose(testing::_))
       .Times(testing::AtMost(1))
       .WillRepeatedly(testing::Return(true));
-  EXPECT_CALL(*delegate, DidClose());
+  EXPECT_CALL(*delegate, DidClose(testing::_));
   EXPECT_CALL(*delegate, Destroyed());
   return make_scoped_ptr(delegate);
 }
@@ -28,7 +28,7 @@ scoped_ptr<MockBubbleDelegate> MockBubbleDelegate::Stubborn() {
   MockBubbleDelegate* delegate = new MockBubbleDelegate;
   EXPECT_CALL(*delegate, ShouldClose(testing::_))
       .WillRepeatedly(testing::Return(false));
-  EXPECT_CALL(*delegate, DidClose());
+  EXPECT_CALL(*delegate, DidClose(testing::_));
   EXPECT_CALL(*delegate, Destroyed());
   return make_scoped_ptr(delegate);
 }

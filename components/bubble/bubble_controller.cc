@@ -66,9 +66,9 @@ bool BubbleController::OwningFrameIs(
   return delegate_->OwningFrame() == frame;
 }
 
-void BubbleController::DoClose() {
+void BubbleController::DoClose(BubbleCloseReason reason) {
   DCHECK(bubble_ui_);
   bubble_ui_->Close();
   bubble_ui_.reset();
-  delegate_->DidClose();
+  delegate_->DidClose(reason);
 }

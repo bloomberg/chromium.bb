@@ -56,7 +56,7 @@ class BubbleController : public base::SupportsWeakPtr<BubbleController> {
   bool OwningFrameIs(const content::RenderFrameHost* frame) const;
 
   // Cleans up the delegate and its UI.
-  void DoClose();
+  void DoClose(BubbleCloseReason reason);
 
   BubbleManager* manager_;
   scoped_ptr<BubbleDelegate> delegate_;

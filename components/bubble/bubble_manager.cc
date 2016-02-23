@@ -122,7 +122,7 @@ bool BubbleManager::CloseAllMatchingBubbles(
   manager_state_ = original_state;
 
   for (auto controller : close_queue) {
-    controller->DoClose();
+    controller->DoClose(reason);
 
     FOR_EACH_OBSERVER(BubbleManagerObserver, observers_,
                       OnBubbleClosed(controller->AsWeakPtr(), reason));

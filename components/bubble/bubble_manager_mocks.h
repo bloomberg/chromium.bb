@@ -41,7 +41,7 @@ class MockBubbleDelegate : public BubbleDelegate {
   static scoped_ptr<MockBubbleDelegate> Stubborn();
 
   MOCK_CONST_METHOD1(ShouldClose, bool(BubbleCloseReason reason));
-  MOCK_METHOD0(DidClose, void());
+  MOCK_METHOD1(DidClose, void(BubbleCloseReason reason));
 
   // A scoped_ptr can't be returned in MOCK_METHOD.
   scoped_ptr<BubbleUi> BuildBubbleUi() override {

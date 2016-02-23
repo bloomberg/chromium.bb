@@ -31,7 +31,7 @@ class BubbleDelegate {
   virtual bool ShouldClose(BubbleCloseReason reason) const;
 
   // Called by BubbleController to notify a bubble that it has closed.
-  virtual void DidClose();
+  virtual void DidClose(BubbleCloseReason reason);
 
   // Called by BubbleController to build the UI that will represent this bubble.
   // BubbleDelegate should not keep a reference to this newly created UI.

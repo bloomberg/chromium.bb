@@ -12,7 +12,7 @@ bool BubbleDelegate::ShouldClose(BubbleCloseReason reason) const {
   return true;
 }
 
-void BubbleDelegate::DidClose() {}
+void BubbleDelegate::DidClose(BubbleCloseReason reason) {}
 
 bool BubbleDelegate::UpdateBubbleUi(BubbleUi* bubble_ui) {
   return false;
