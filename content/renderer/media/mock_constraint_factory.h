@@ -21,6 +21,8 @@ class MockConstraintFactory {
   blink::WebMediaTrackConstraintSet& basic() { return basic_; }
   blink::WebMediaTrackConstraintSet& AddAdvanced();
 
+  void DisableDefaultAudioConstraints();
+
  private:
   blink::WebMediaTrackConstraintSet basic_;
   std::vector<blink::WebMediaTrackConstraintSet> advanced_;

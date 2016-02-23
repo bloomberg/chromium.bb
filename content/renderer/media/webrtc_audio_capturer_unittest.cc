@@ -5,7 +5,7 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "content/public/renderer/media_stream_audio_sink.h"
-#include "content/renderer/media/mock_media_constraint_factory.h"
+#include "content/renderer/media/mock_constraint_factory.h"
 #include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
 #include "content/renderer/media/webrtc_audio_capturer.h"
 #include "content/renderer/media/webrtc_local_audio_track.h"
@@ -126,15 +126,16 @@ class WebRtcAudioCapturerTest : public testing::Test {
 TEST_F(WebRtcAudioCapturerTest, VerifyAudioParamsWithAudioProcessing) {
   // Turn off the default constraints to verify that the sink will get packets
   // with a buffer size smaller than 10ms.
-  MockMediaConstraintFactory constraint_factory;
+  MockConstraintFactory constraint_factory;
   constraint_factory.DisableDefaultAudioConstraints();
   VerifyAudioParams(constraint_factory.CreateWebMediaConstraints(), false);
 }
 
 TEST_F(WebRtcAudioCapturerTest, FailToCreateCapturerWithWrongConstraints) {
-  MockMediaConstraintFactory constraint_factory;
+  MockConstraintFactory constraint_factory;
   const std::string dummy_constraint = "dummy";
-  constraint_factory.AddMandatory(dummy_constraint, true);
+  // Set a non-audio constraint.
+  constraint_factory.basic().width.setExact(240);
 
   scoped_refptr<WebRtcAudioCapturer> capturer(
       WebRtcAudioCapturer::CreateCapturer(

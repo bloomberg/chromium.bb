@@ -29,4 +29,17 @@ blink::WebMediaConstraints MockConstraintFactory::CreateWebMediaConstraints()
   return constraints;
 }
 
+void MockConstraintFactory::DisableDefaultAudioConstraints() {
+  basic_.googEchoCancellation.setExact(false);
+  basic_.googExperimentalEchoCancellation.setExact(false);
+  basic_.googAutoGainControl.setExact(false);
+  basic_.googExperimentalAutoGainControl.setExact(false);
+  basic_.googNoiseSuppression.setExact(false);
+  basic_.googNoiseSuppression.setExact(false);
+  basic_.googHighpassFilter.setExact(false);
+  basic_.googTypingNoiseDetection.setExact(false);
+  basic_.googExperimentalNoiseSuppression.setExact(false);
+  basic_.googBeamforming.setExact(false);
+}
+
 }  // namespace content

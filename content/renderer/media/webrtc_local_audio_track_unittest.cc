@@ -8,7 +8,7 @@
 #include "build/build_config.h"
 #include "content/public/renderer/media_stream_audio_sink.h"
 #include "content/renderer/media/media_stream_audio_source.h"
-#include "content/renderer/media/mock_media_constraint_factory.h"
+#include "content/renderer/media/mock_constraint_factory.h"
 #include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
 #include "content/renderer/media/webrtc_audio_capturer.h"
 #include "content/renderer/media/webrtc_local_audio_track.h"
@@ -156,7 +156,7 @@ class WebRtcLocalAudioTrackTest : public ::testing::Test {
   void SetUp() override {
     params_.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                   media::CHANNEL_LAYOUT_STEREO, 48000, 16, 480);
-    MockMediaConstraintFactory constraint_factory;
+    MockConstraintFactory constraint_factory;
     blink_source_.initialize("dummy", blink::WebMediaStreamSource::TypeAudio,
                              "dummy",
                              false /* remote */, true /* readonly */);
@@ -415,7 +415,7 @@ TEST_F(WebRtcLocalAudioTrackTest, MAYBE_ConnectTracksToDifferentCapturers) {
   track_1->AddSink(sink_1.get());
 
   // Create a new capturer with new source with different audio format.
-  MockMediaConstraintFactory constraint_factory;
+  MockConstraintFactory constraint_factory;
   StreamDeviceInfo device(MEDIA_DEVICE_AUDIO_CAPTURE,
                           std::string(), std::string());
   scoped_refptr<WebRtcAudioCapturer> new_capturer(
@@ -469,7 +469,7 @@ TEST_F(WebRtcLocalAudioTrackTest, TrackWorkWithSmallBufferSize) {
                                 media::CHANNEL_LAYOUT_STEREO, 48000, 16, 128);
 
   // Create a capturer with new source which works with the format above.
-  MockMediaConstraintFactory factory;
+  MockConstraintFactory factory;
   factory.DisableDefaultAudioConstraints();
   scoped_refptr<WebRtcAudioCapturer> capturer(
       WebRtcAudioCapturer::CreateCapturer(

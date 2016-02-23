@@ -216,6 +216,7 @@ public:
     bool isEmpty() const override;
     bool hasMandatory() const override;
     WebString toString() const override;
+    bool hasExact() const { return m_hasExact; }
 
 private:
     unsigned m_ideal : 1;

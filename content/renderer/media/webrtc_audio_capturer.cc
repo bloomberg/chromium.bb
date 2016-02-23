@@ -170,9 +170,8 @@ bool WebRtcAudioCapturer::Initialize() {
   // If KEYBOARD_MIC effect is set, change the layout to the corresponding
   // layout that includes the keyboard mic.
   if ((device_info_.device.input.effects &
-          media::AudioParameters::KEYBOARD_MIC) &&
-      audio_constraints.GetProperty(
-          MediaAudioConstraints::kGoogExperimentalNoiseSuppression)) {
+       media::AudioParameters::KEYBOARD_MIC) &&
+      audio_constraints.GetGoogExperimentalNoiseSuppression()) {
     if (channel_layout == media::CHANNEL_LAYOUT_STEREO) {
       channel_layout = media::CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC;
       DVLOG(1) << "Changed stereo layout to stereo + keyboard mic layout due "

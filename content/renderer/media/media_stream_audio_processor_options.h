@@ -62,17 +62,16 @@ class CONTENT_EXPORT MediaAudioConstraints {
                         int effects);
   virtual ~MediaAudioConstraints();
 
-  // Gets the property of the constraint named by |key| in |constraints_|.
-  // Returns the constraint's value if the key is found; otherwise returns the
-  // default value of the constraint.
-  // Note, for constraint of |kEchoCancellation| or |kGoogEchoCancellation|,
-  // clients should use GetEchoCancellationProperty().
-  bool GetProperty(const std::string& key) const;
-
-  // Gets the property of the constraint named by |key| in |constraints_| as a
-  // string. Returns the constraint's string value if the key is found;
-  // otherwise returns an empty string.
-  std::string GetPropertyAsString(const std::string& key) const;
+  bool GetGoogAudioMirroring() const;
+  bool GetGoogAutoGainControl() const;
+  bool GetGoogExperimentalEchoCancellation() const;
+  bool GetGoogTypingNoiseDetection() const;
+  bool GetGoogNoiseSuppression() const;
+  bool GetGoogExperimentalNoiseSuppression() const;
+  bool GetGoogBeamforming() const;
+  bool GetGoogHighpassFilter() const;
+  bool GetGoogExperimentalAutoGainControl() const;
+  std::string GetGoogArrayGeometry() const;
 
   // Gets the property of echo cancellation defined in |constraints_|. The
   // returned value depends on a combination of |effects_|, |kEchoCancellation|
@@ -85,10 +84,7 @@ class CONTENT_EXPORT MediaAudioConstraints {
 
  private:
   // Gets the default value of constraint named by |key| in |constraints|.
-  bool GetDefaultValueForConstraint(
-      const blink::WebMediaConstraints& constraints,
-      const std::string& key) const;
-
+  bool GetDefaultValueForConstraint(const std::string& key) const;
   const blink::WebMediaConstraints constraints_;
   const int effects_;
   bool default_audio_processing_constraint_value_;
