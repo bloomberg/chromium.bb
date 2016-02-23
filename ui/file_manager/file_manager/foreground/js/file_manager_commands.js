@@ -1463,6 +1463,27 @@ CommandHandler.COMMANDS_['install-new-extension'] = /** @type {Command} */ ({
 });
 
 /**
+ * Opens the gear menu on Alt-E.
+ * @type {Command}
+ */
+CommandHandler.COMMANDS_['open-gear-menu'] = /** @type {Command} */ ({
+  /**
+   * @param {!Event} event Command event.
+   * @param {!FileManager} fileManager FileManager to use.
+   */
+  execute: function(event, fileManager) {
+    fileManager.ui.gearButton.showMenu(true);
+  },
+  /**
+   * @param {!Event} event Command event.
+   * @param {!FileManager} fileManager FileManager to use.
+   */
+  canExecute: function(event, fileManager) {
+    event.canExecute = CommandUtil.canExecuteAlways;
+  }
+});
+
+/**
  * Configures the currently selected volume.
  */
 CommandHandler.COMMANDS_['configure'] = /** @type {Command} */ ({

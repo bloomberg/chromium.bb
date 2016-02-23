@@ -66,7 +66,7 @@ function getTestCaseStepsForHiddenFiles(basicSet, hiddenEntrySet) {
       appId = id;
       remoteCall.waitForElement(appId, '#gear-button').then(this.next);
     },
-    // Click the gear menu.
+    // Open the gear menu by clicking the gear button.
     function() {
       remoteCall.callRemoteTestUtil(
           'fakeMouseClick', appId, ['#gear-button'], this.next);
@@ -222,10 +222,10 @@ testcase.hideGoogleDocs = function() {
       appId = results.windowId;
       remoteCall.waitForElement(appId, '#gear-button').then(this.next);
     },
-    // Click the gear menu.
+    // Open the gear meny by a shortcut (Alt-E).
     function() {
-      remoteCall.callRemoteTestUtil(
-          'fakeMouseDown', appId, ['#gear-button'], this.next);
+      remoteCall.fakeKeyDown(appId, 'body', 'U+0045', false, false, true)
+          .then(this.next);
     },
     // Wait for menu to appear.
     function(result) {
