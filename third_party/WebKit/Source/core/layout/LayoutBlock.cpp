@@ -116,6 +116,7 @@ LayoutBlock::LayoutBlock(ContainerNode* node)
     , m_beingDestroyed(false)
     , m_hasMarkupTruncation(false)
     , m_widthAvailableToChildrenChanged(false)
+    , m_heightAvailableToChildrenChanged(false)
     , m_hasOnlySelfCollapsingChildren(false)
     , m_descendantsWithFloatsMarkedForLayout(false)
     , m_hasPositionedObjects(false)
@@ -234,9 +235,10 @@ void LayoutBlock::styleWillChange(StyleDifference diff, const ComputedStyle& new
     LayoutBox::styleWillChange(diff, newStyle);
 }
 
-static bool borderOrPaddingLogicalWidthChanged(const ComputedStyle& oldStyle, const ComputedStyle& newStyle)
+enum LogicalExtent { LogicalWidth, LogicalHeight };
+static bool borderOrPaddingLogicalDimensionChanged(const ComputedStyle& oldStyle, const ComputedStyle& newStyle, LogicalExtent logicalExtent)
 {
-    if (newStyle.isHorizontalWritingMode()) {
+    if (newStyle.isHorizontalWritingMode() == (logicalExtent == LogicalWidth)) {
         return oldStyle.borderLeftWidth() != newStyle.borderLeftWidth()
             || oldStyle.borderRightWidth() != newStyle.borderRightWidth()
             || oldStyle.paddingLeft() != newStyle.paddingLeft()
@@ -279,9 +281,10 @@ void LayoutBlock::styleDidChange(StyleDifference diff, const ComputedStyle* oldS
 
     propagateStyleToAnonymousChildren(true);
 
-    // It's possible for our border/padding to change, but for the overall logical width of the block to
+    // It's possible for our border/padding to change, but for the overall logical width or height of the block to
     // end up being the same. We keep track of this change so in layoutBlock, we can know to set relayoutChildren=true.
-    m_widthAvailableToChildrenChanged |= oldStyle && diff.needsFullLayout() && needsLayout() && borderOrPaddingLogicalWidthChanged(*oldStyle, newStyle);
+    m_widthAvailableToChildrenChanged |= oldStyle && diff.needsFullLayout() && needsLayout() && borderOrPaddingLogicalDimensionChanged(*oldStyle, newStyle, LogicalWidth);
+    m_heightAvailableToChildrenChanged |= oldStyle && diff.needsFullLayout() && needsLayout() && borderOrPaddingLogicalDimensionChanged(*oldStyle, newStyle, LogicalHeight);
 }
 
 void LayoutBlock::invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState& childPaintInvalidationState)
@@ -892,10 +895,13 @@ void LayoutBlock::layout()
 
     if (needsScrollAnchoring)
         scrollableArea()->scrollAnchor().restore();
+
+    m_heightAvailableToChildrenChanged = false;
 }
 
 bool LayoutBlock::widthAvailableToChildrenHasChanged()
 {
+    // TODO(robhogan): Does m_widthAvailableToChildrenChanged always get reset when it needs to?
     bool widthAvailableToChildrenHasChanged = m_widthAvailableToChildrenChanged;
     m_widthAvailableToChildrenChanged = false;
 
@@ -995,6 +1001,13 @@ bool LayoutBlock::createsNewFormattingContext() const
         || isDocumentElement() || isColumnSpanAll() || isGridItem() || style()->containsPaint();
 }
 
+static inline bool changeInAvailableLogicalHeightAffectsChild(LayoutBlock* parent, LayoutBox& child)
+{
+    if (parent->style()->boxSizing() != BORDER_BOX)
+        return false;
+    return parent->style()->isHorizontalWritingMode() && !child.style()->isHorizontalWritingMode();
+}
+
 void LayoutBlock::updateBlockChildDirtyBitsBeforeLayout(bool relayoutChildren, LayoutBox& child)
 {
     if (child.isOutOfFlowPositioned()) {
@@ -1009,7 +1022,8 @@ void LayoutBlock::updateBlockChildDirtyBitsBeforeLayout(bool relayoutChildren, L
     bool hasRelativeLogicalHeight = child.hasRelativeLogicalHeight()
         || (child.isAnonymous() && this->hasRelativeLogicalHeight())
         || child.stretchesToViewport();
-    if (relayoutChildren || (hasRelativeLogicalHeight && !isLayoutView())) {
+    if (relayoutChildren || (hasRelativeLogicalHeight && !isLayoutView())
+        || (m_heightAvailableToChildrenChanged && changeInAvailableLogicalHeightAffectsChild(this, child))) {
         child.setChildNeedsLayout(MarkOnlyThis);
 
         // If the child has percentage padding or an embedded content box, we also need to invalidate the childs pref widths.
@@ -1206,7 +1220,7 @@ void LayoutBlock::layoutPositionedObjects(bool relayoutChildren, PositionedLayou
             continue;
         }
 
-        if (!positionedObject->normalChildNeedsLayout() && (relayoutChildren || needsLayoutDueToStaticPosition(positionedObject)))
+        if (!positionedObject->normalChildNeedsLayout() && (relayoutChildren || m_heightAvailableToChildrenChanged || needsLayoutDueToStaticPosition(positionedObject)))
             layoutScope.setChildNeedsLayout(positionedObject);
 
         // If relayoutChildren is set and the child has percentage padding or an embedded content box, we also need to invalidate the childs pref widths.

@@ -485,6 +485,7 @@ protected:
     unsigned m_beingDestroyed : 1;
     unsigned m_hasMarkupTruncation : 1;
     unsigned m_widthAvailableToChildrenChanged  : 1;
+    unsigned m_heightAvailableToChildrenChanged  : 1;
     mutable unsigned m_hasOnlySelfCollapsingChildren : 1;
     mutable unsigned m_descendantsWithFloatsMarkedForLayout : 1;
 
