@@ -29,7 +29,7 @@ void BackButton::SetLeadingMargin(int margin) {
   InvalidateLayout();
 }
 
-gfx::Point BackButton::CalculateInkDropCenter() const {
+gfx::Point BackButton::GetInkDropCenter() const {
   int visible_width = GetPreferredSize().width();
   return gfx::Point(
       GetMirroredXWithWidthInView(margin_leading_, visible_width) +

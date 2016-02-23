@@ -29,11 +29,6 @@ class VIEWS_EXPORT ButtonInkDropDelegate : public InkDropDelegate,
   ~ButtonInkDropDelegate() override;
 
   // InkDropDelegate:
-  void SetInkDropSize(int large_size,
-                      int large_corner_radius,
-                      int small_size,
-                      int small_corner_radius) override;
-  void OnLayout() override;
   void OnAction(InkDropState state) override;
   void SetHovered(bool is_hovered) override;
 

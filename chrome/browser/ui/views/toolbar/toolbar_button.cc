@@ -42,14 +42,6 @@ ToolbarButton::ToolbarButton(Profile* profile,
   set_ink_drop_delegate(ink_drop_delegate_.get());
   set_has_ink_drop_action_on_click(true);
   set_context_menu_controller(this);
-
-  const int kInkDropLargeSize = 32;
-  const int kInkDropLargeCornerRadius = 5;
-  const int kInkDropSmallSize = 24;
-  const int kInkDropSmallCornerRadius = 2;
-  ink_drop_delegate()->SetInkDropSize(
-      kInkDropLargeSize, kInkDropLargeCornerRadius, kInkDropSmallSize,
-      kInkDropSmallCornerRadius);
 }
 
 ToolbarButton::~ToolbarButton() {}

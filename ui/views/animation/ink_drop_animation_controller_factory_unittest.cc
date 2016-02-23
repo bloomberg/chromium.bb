@@ -58,8 +58,6 @@ InkDropAnimationControllerFactoryTest::InkDropAnimationControllerFactoryTest()
       InkDropAnimationControllerFactory::CreateInkDropAnimationController(
           &test_ink_drop_host_)
           .release());
-  ink_drop_animation_controller_->SetInkDropSize(gfx::Size(10, 10), 4,
-                                                 gfx::Size(8, 8), 2);
 
   zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
@@ -108,13 +106,6 @@ TEST_P(InkDropAnimationControllerFactoryTest,
 TEST_P(InkDropAnimationControllerFactoryTest, StateIsHiddenInitially) {
   EXPECT_EQ(InkDropState::HIDDEN,
             ink_drop_animation_controller_->GetTargetInkDropState());
-}
-
-TEST_P(InkDropAnimationControllerFactoryTest, HoveredStateAfterAnimateToState) {
-  ink_drop_animation_controller_->SetHovered(true);
-  ink_drop_animation_controller_->AnimateToState(InkDropState::ACTION_PENDING);
-
-  EXPECT_TRUE(ink_drop_animation_controller_->IsHovered());
 }
 
 TEST_P(InkDropAnimationControllerFactoryTest, TypicalQuickAction) {

@@ -6,6 +6,7 @@
 #define UI_VIEWS_ANIMATION_INK_DROP_HOST_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/views/views_export.h"
 
@@ -14,6 +15,9 @@ class Layer;
 }  // namespace ui
 
 namespace views {
+
+class InkDropAnimation;
+class InkDropHover;
 
 // Used by the InkDropAnimationController to add and remove the ink drop layers
 // from a host's layer tree. Typically the ink drop layer is added to a View's
@@ -33,11 +37,11 @@ class VIEWS_EXPORT InkDropHost {
   // Removes |ink_drop_layer| from the layer tree.
   virtual void RemoveInkDropLayer(ui::Layer* ink_drop_layer) = 0;
 
-  // Returns the Point where the ink drop should be centered.
-  virtual gfx::Point CalculateInkDropCenter() const = 0;
+  // Creates and returns the effect used for press.
+  virtual scoped_ptr<InkDropAnimation> CreateInkDropAnimation() const = 0;
 
-  // Returns true if the InkDropHover should be shown.
-  virtual bool ShouldShowInkDropHover() const = 0;
+  // Creates and returns the effect used for hover.
+  virtual scoped_ptr<InkDropHover> CreateInkDropHover() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InkDropHost);

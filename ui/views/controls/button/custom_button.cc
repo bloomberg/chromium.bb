@@ -11,6 +11,7 @@
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/animation/ink_drop_delegate.h"
+#include "ui/views/animation/ink_drop_hover.h"
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/image_button.h"
@@ -116,12 +117,6 @@ bool CustomButton::IsHotTracked() const {
 ////////////////////////////////////////////////////////////////////////////////
 // CustomButton, View overrides:
 
-void CustomButton::Layout() {
-  Button::Layout();
-  if (ink_drop_delegate_)
-    ink_drop_delegate_->OnLayout();
-}
-
 void CustomButton::OnEnabledChanged() {
   // TODO(bruthig): Is there any reason we are not calling
   // Button::OnEnabledChanged() here?
@@ -132,7 +127,9 @@ void CustomButton::OnEnabledChanged() {
     SetState(ShouldEnterHoveredState() ? STATE_HOVERED : STATE_NORMAL);
   else
     SetState(STATE_DISABLED);
-  UpdateInkDropHoverState();
+
+  if (ink_drop_delegate_)
+    ink_drop_delegate_->SetHovered(ShouldShowInkDropHover());
 }
 
 const char* CustomButton::GetClassName() const {
@@ -329,35 +326,15 @@ void CustomButton::VisibilityChanged(View* starting_from, bool visible) {
   SetState(visible && ShouldEnterHoveredState() ? STATE_HOVERED : STATE_NORMAL);
 }
 
+scoped_ptr<InkDropHover> CustomButton::CreateInkDropHover() const {
+  return ShouldShowInkDropHover() ? Button::CreateInkDropHover() : nullptr;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // CustomButton, gfx::AnimationDelegate implementation:
 
 void CustomButton::AnimationProgressed(const gfx::Animation* animation) {
   SchedulePaint();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// CustomButton, views::InkDropHost implementation:
-
-void CustomButton::AddInkDropLayer(ui::Layer* ink_drop_layer) {
-  SetPaintToLayer(true);
-  SetFillsBoundsOpaquely(false);
-  layer()->Add(ink_drop_layer);
-  layer()->StackAtBottom(ink_drop_layer);
-}
-
-void CustomButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
-  layer()->Remove(ink_drop_layer);
-  SetFillsBoundsOpaquely(true);
-  SetPaintToLayer(false);
-}
-
-gfx::Point CustomButton::CalculateInkDropCenter() const {
-  return GetLocalBounds().CenterPoint();
-}
-
-bool CustomButton::ShouldShowInkDropHover() const {
-  return enabled() && IsMouseHovered() && !InDrag();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -416,19 +393,8 @@ bool CustomButton::ShouldEnterHoveredState() {
   return check_mouse_position && IsMouseHovered();
 }
 
-void CustomButton::UpdateInkDropHoverState() {
-  if (ink_drop_delegate_)
-    ink_drop_delegate_->SetHovered(ShouldShowInkDropHover());
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // CustomButton, View overrides (protected):
-
-void CustomButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  Button::OnBoundsChanged(previous_bounds);
-  if (ink_drop_delegate_)
-    ink_drop_delegate_->OnLayout();
-}
 
 void CustomButton::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
@@ -451,6 +417,10 @@ void CustomButton::OnClickCanceled(const ui::Event& event) {
   if (ink_drop_delegate())
     ink_drop_delegate()->OnAction(views::InkDropState::HIDDEN);
   Button::OnClickCanceled(event);
+}
+
+bool CustomButton::ShouldShowInkDropHover() const {
+  return enabled() && IsMouseHovered() && !InDrag();
 }
 
 }  // namespace views

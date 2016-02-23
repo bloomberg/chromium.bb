@@ -23,14 +23,6 @@ BarControlButton::BarControlButton(views::ButtonListener* listener)
       ink_drop_delegate_(new views::ButtonInkDropDelegate(this, this)) {
   set_ink_drop_delegate(ink_drop_delegate_.get());
   set_has_ink_drop_action_on_click(true);
-
-  const int kInkDropLargeSize = 32;
-  const int kInkDropLargeCornerRadius = 4;
-  const int kInkDropSmallSize = 24;
-  const int kInkDropSmallCornerRadius = 2;
-  ink_drop_delegate()->SetInkDropSize(
-      kInkDropLargeSize, kInkDropLargeCornerRadius, kInkDropSmallSize,
-      kInkDropSmallCornerRadius);
 }
 
 BarControlButton::~BarControlButton() {}

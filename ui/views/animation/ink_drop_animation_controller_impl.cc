@@ -53,10 +53,7 @@ bool ShouldAnimateToHidden(InkDropState ink_drop_state) {
 InkDropAnimationControllerImpl::InkDropAnimationControllerImpl(
     InkDropHost* ink_drop_host)
     : ink_drop_host_(ink_drop_host),
-      ink_drop_large_corner_radius_(0),
-      ink_drop_small_corner_radius_(0),
       root_layer_(new ui::Layer(ui::LAYER_NOT_DRAWN)),
-      is_hovered_(false),
       can_destroy_after_hidden_animation_(true),
       hover_after_animation_timer_(nullptr) {
   root_layer_->set_name("InkDropAnimationControllerImpl:RootLayer");
@@ -107,7 +104,6 @@ void InkDropAnimationControllerImpl::AnimateToState(
 }
 
 void InkDropAnimationControllerImpl::SetHovered(bool is_hovered) {
-  is_hovered_ = is_hovered;
   SetHoveredInternal(is_hovered,
                      is_hovered ? base::TimeDelta::FromMilliseconds(
                                       kHoverFadeInFromUserInputDurationInMs)
@@ -115,50 +111,10 @@ void InkDropAnimationControllerImpl::SetHovered(bool is_hovered) {
                                       kHoverFadeOutFromUserInputDurationInMs));
 }
 
-bool InkDropAnimationControllerImpl::IsHovered() const {
-  return is_hovered_;
-}
-
-gfx::Size InkDropAnimationControllerImpl::GetInkDropLargeSize() const {
-  return ink_drop_large_size_;
-}
-
-void InkDropAnimationControllerImpl::SetInkDropSize(const gfx::Size& large_size,
-                                                    int large_corner_radius,
-                                                    const gfx::Size& small_size,
-                                                    int small_corner_radius) {
-  // TODO(bruthig): Fix the ink drop animations to work for non-square sizes.
-  DCHECK_EQ(large_size.width(), large_size.height())
-      << "The ink drop animation does not currently support non-square sizes.";
-  DCHECK_EQ(small_size.width(), small_size.height())
-      << "The ink drop animation does not currently support non-square sizes.";
-  ink_drop_large_size_ = large_size;
-  ink_drop_large_corner_radius_ = large_corner_radius;
-  ink_drop_small_size_ = small_size;
-  ink_drop_small_corner_radius_ = small_corner_radius;
-
-  DestroyInkDropAnimation();
-  DestroyInkDropHover();
-}
-
-void InkDropAnimationControllerImpl::SetInkDropCenter(
-    const gfx::Point& center_point) {
-  ink_drop_center_ = center_point;
-  if (ink_drop_animation_)
-    ink_drop_animation_->SetCenterPoint(ink_drop_center_);
-  if (hover_)
-    hover_->SetCenterPoint(ink_drop_center_);
-}
-
 void InkDropAnimationControllerImpl::CreateInkDropAnimation() {
   DestroyInkDropAnimation();
-
-  ink_drop_animation_.reset(new SquareInkDropAnimation(
-      ink_drop_large_size_, ink_drop_large_corner_radius_, ink_drop_small_size_,
-      ink_drop_small_corner_radius_));
-
+  ink_drop_animation_ = ink_drop_host_->CreateInkDropAnimation();
   ink_drop_animation_->AddObserver(this);
-  ink_drop_animation_->SetCenterPoint(ink_drop_center_);
   root_layer_->Add(ink_drop_animation_->GetRootLayer());
 }
 
@@ -173,9 +129,9 @@ void InkDropAnimationControllerImpl::DestroyInkDropAnimation() {
 void InkDropAnimationControllerImpl::CreateInkDropHover() {
   DestroyInkDropHover();
 
-  hover_.reset(
-      new InkDropHover(ink_drop_small_size_, ink_drop_small_corner_radius_));
-  hover_->SetCenterPoint(ink_drop_center_);
+  hover_ = ink_drop_host_->CreateInkDropHover();
+  if (!hover_)
+    return;
   root_layer_->Add(hover_->layer());
 }
 
@@ -221,9 +177,8 @@ void InkDropAnimationControllerImpl::SetHoveredInternal(
     return;
 
   if (is_hovered) {
-    if (!hover_)
-      CreateInkDropHover();
-    if (!IsVisible())
+    CreateInkDropHover();
+    if (hover_ && !IsVisible())
       hover_->FadeIn(animation_duration);
   } else {
     hover_->FadeOut(animation_duration);
@@ -249,9 +204,8 @@ void InkDropAnimationControllerImpl::StopHoverAfterAnimationTimer() {
 }
 
 void InkDropAnimationControllerImpl::HoverAfterAnimationTimerFired() {
-  SetHoveredInternal(ink_drop_host_->ShouldShowInkDropHover(),
-                     base::TimeDelta::FromMilliseconds(
-                         kHoverFadeInAfterAnimationDurationInMs));
+  SetHoveredInternal(true, base::TimeDelta::FromMilliseconds(
+                               kHoverFadeInAfterAnimationDurationInMs));
   hover_after_animation_timer_.reset();
 }
 

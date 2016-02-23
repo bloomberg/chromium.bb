@@ -1,0 +1,39 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef UI_VIEWS_ANIMATION_INK_DROP_HOST_VIEW_H_
+#define UI_VIEWS_ANIMATION_INK_DROP_HOST_VIEW_H_
+
+#include "base/memory/scoped_ptr.h"
+#include "ui/views/animation/ink_drop_host.h"
+#include "ui/views/view.h"
+
+namespace views {
+
+class InkDropAnimation;
+class InkDropHover;
+
+// A view that provides InkDropHost functionality.
+class VIEWS_EXPORT InkDropHostView : public views::View, public InkDropHost {
+ public:
+  InkDropHostView();
+  ~InkDropHostView() override;
+
+  // Overridden from views::InkDropHost:
+  void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
+  void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
+  scoped_ptr<InkDropAnimation> CreateInkDropAnimation() const override;
+  scoped_ptr<InkDropHover> CreateInkDropHover() const override;
+
+ protected:
+  // Overrideable methods to allow views to provide minor tweaks to the default
+  // ink drop.
+  virtual gfx::Point GetInkDropCenter() const;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InkDropHostView);
+};
+}
+
+#endif  // UI_VIEWS_ANIMATION_INK_DROP_HOST_VIEW_H_

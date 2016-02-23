@@ -23,19 +23,6 @@ class VIEWS_EXPORT InkDropDelegate {
   InkDropDelegate() {}
   virtual ~InkDropDelegate() {}
 
-  // Sets sizes for the animation layers that are squares with |large_size| and
-  // |small_size| being the length of each side. When painting rounded squares
-  // |large_corner_radius| and |small_corner_radius| are specifying the
-  // corner radius.
-  virtual void SetInkDropSize(int large_size,
-                              int large_corner_radius,
-                              int small_size,
-                              int small_corner_radius) = 0;
-
-  // Called when the bounds or layout of the View changes necessitating change
-  // in positioning of ink ripple layers.
-  virtual void OnLayout() = 0;
-
   // Called when ink ripple state changes.
   // TODO(bruthig): Replace the InkDropState parameter with an InkDropAction
   // enum.  The InkDropAction enum should be a subset of the InkDropState values

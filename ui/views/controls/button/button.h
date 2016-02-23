@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "ui/native_theme/native_theme.h"
-#include "ui/views/view.h"
+#include "ui/views/animation/ink_drop_host_view.h"
 
 namespace views {
 
@@ -26,7 +26,7 @@ class VIEWS_EXPORT ButtonListener {
 
 // A View representing a button. Depending on the specific type, the button
 // could be implemented by a native control or custom rendered.
-class VIEWS_EXPORT Button : public View {
+class VIEWS_EXPORT Button : public InkDropHostView {
  public:
   ~Button() override;
 

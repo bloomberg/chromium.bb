@@ -40,20 +40,6 @@ class VIEWS_EXPORT InkDropAnimationController {
   // Enables or disables the hover state.
   virtual void SetHovered(bool is_hovered) = 0;
 
-  // Returns true if the hover state is enabled.
-  virtual bool IsHovered() const = 0;
-
-  virtual gfx::Size GetInkDropLargeSize() const = 0;
-
-  // Sets the different sizes of the ink drop.
-  virtual void SetInkDropSize(const gfx::Size& large_size,
-                              int large_corner_radius,
-                              const gfx::Size& small_size,
-                              int small_corner_radius) = 0;
-
-  // Sets the |center_point| of the ink drop relative to its parent Layer.
-  virtual void SetInkDropCenter(const gfx::Point& center_point) = 0;
-
  protected:
   InkDropAnimationController() {}
 

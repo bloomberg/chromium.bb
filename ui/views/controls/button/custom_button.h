@@ -10,7 +10,6 @@
 #include "ui/events/event_constants.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/throb_animation.h"
-#include "ui/views/animation/ink_drop_host.h"
 #include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/controls/button/button.h"
 
@@ -22,9 +21,7 @@ class InkDropDelegate;
 // Note that this type of button is not focusable by default and will not be
 // part of the focus chain.  Call SetFocusable(true) to make it part of the
 // focus chain.
-class VIEWS_EXPORT CustomButton : public Button,
-                                  public gfx::AnimationDelegate,
-                                  public views::InkDropHost {
+class VIEWS_EXPORT CustomButton : public Button, public gfx::AnimationDelegate {
  public:
   // An enum describing the events on which a button should notify its listener.
   enum NotifyAction {
@@ -79,7 +76,6 @@ class VIEWS_EXPORT CustomButton : public Button,
   bool IsHotTracked() const;
 
   // Overridden from View:
-  void Layout() override;
   void OnEnabledChanged() override;
   const char* GetClassName() const override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
@@ -99,15 +95,10 @@ class VIEWS_EXPORT CustomButton : public Button,
   void OnDragDone() override;
   void GetAccessibleState(ui::AXViewState* state) override;
   void VisibilityChanged(View* starting_from, bool is_visible) override;
+  scoped_ptr<InkDropHover> CreateInkDropHover() const override;
 
   // Overridden from gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
-
-  // Overridden from views::InkDropHost:
-  void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
-  void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
-  gfx::Point CalculateInkDropCenter() const override;
-  bool ShouldShowInkDropHover() const override;
 
  protected:
   // Construct the Button with a Listener. See comment for Button's ctor.
@@ -138,16 +129,12 @@ class VIEWS_EXPORT CustomButton : public Button,
   // state). This does not take into account enabled state.
   bool ShouldEnterHoveredState();
 
-  // Updates the |ink_drop_delegate_|'s hover state.
-  void UpdateInkDropHoverState();
-
   InkDropDelegate* ink_drop_delegate() const { return ink_drop_delegate_; }
   void set_ink_drop_delegate(InkDropDelegate* ink_drop_delegate) {
     ink_drop_delegate_ = ink_drop_delegate;
   }
 
   // Overridden from View:
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
   void OnBlur() override;
@@ -161,6 +148,8 @@ class VIEWS_EXPORT CustomButton : public Button,
   }
 
  private:
+  bool ShouldShowInkDropHover() const;
+
   ButtonState state_;
 
   gfx::ThrobAnimation hover_animation_;

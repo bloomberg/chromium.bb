@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/vector_icons_public.h"
-#include "ui/views/animation/ink_drop_host.h"
+#include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -25,8 +25,7 @@ class InkDropDelegate;
 }
 
 // Represents an icon on the omnibox that shows a bubble when clicked.
-class BubbleIconView : public views::View,
-                       public views::InkDropHost,
+class BubbleIconView : public views::InkDropHostView,
                        public views::WidgetObserver {
  protected:
   enum ExecuteSource {
@@ -65,14 +64,13 @@ class BubbleIconView : public views::View,
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
+  void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
+  void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
+  scoped_ptr<views::InkDropHover> CreateInkDropHover() const override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
   // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
-
-  // views::InkDropHost:
-  void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
-  void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
 
   // views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
@@ -97,10 +95,6 @@ class BubbleIconView : public views::View,
 
   // views::View:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
-
-  // views::InkDropHost:
-  gfx::Point CalculateInkDropCenter() const override;
-  bool ShouldShowInkDropHover() const override;
 
   // Updates the icon after some state has changed.
   void UpdateIcon();

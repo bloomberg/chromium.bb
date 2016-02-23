@@ -26,6 +26,10 @@ class InkDropAnimationControllerImplTest : public testing::Test {
     return ink_drop_animation_controller_.IsHoverFadingInOrVisible();
   }
 
+  const InkDropHover* hover() const {
+    return ink_drop_animation_controller_.hover_.get();
+  }
+
   // The test target.
   InkDropAnimationControllerImpl ink_drop_animation_controller_;
 
@@ -53,16 +57,6 @@ InkDropAnimationControllerImplTest::InkDropAnimationControllerImplTest()
 }
 
 InkDropAnimationControllerImplTest::~InkDropAnimationControllerImplTest() {}
-
-TEST_F(InkDropAnimationControllerImplTest, SetHoveredIsHovered) {
-  ink_drop_host_.set_should_show_hover(true);
-
-  ink_drop_animation_controller_.SetHovered(true);
-  EXPECT_TRUE(ink_drop_animation_controller_.IsHovered());
-
-  ink_drop_animation_controller_.SetHovered(false);
-  EXPECT_FALSE(ink_drop_animation_controller_.IsHovered());
-}
 
 TEST_F(InkDropAnimationControllerImplTest, SetHoveredIsFadingInOrVisible) {
   ink_drop_host_.set_should_show_hover(true);
@@ -107,6 +101,17 @@ TEST_F(InkDropAnimationControllerImplTest,
 
   ink_drop_animation_controller_.AnimateToState(InkDropState::QUICK_ACTION);
   EXPECT_FALSE(is_hover_fading_in_or_visible());
+}
+
+// Verifies that there is not a crash when setting hovered state and the host
+// returns null for the hover.
+TEST_F(InkDropAnimationControllerImplTest,
+       SetHoveredFalseWorksWhenNoInkDropHoverExists) {
+  ink_drop_host_.set_should_show_hover(false);
+  ink_drop_animation_controller_.SetHovered(true);
+  EXPECT_FALSE(hover());
+  ink_drop_animation_controller_.SetHovered(false);
+  EXPECT_FALSE(hover());
 }
 
 }  // namespace views

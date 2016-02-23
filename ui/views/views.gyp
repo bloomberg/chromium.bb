@@ -27,6 +27,8 @@
       'animation/ink_drop_animation_observer.h',
       'animation/ink_drop_delegate.h',
       'animation/ink_drop_host.h',
+      'animation/ink_drop_host_view.cc',
+      'animation/ink_drop_host_view.h',
       'animation/ink_drop_hover.cc',
       'animation/ink_drop_hover.h',
       'animation/ink_drop_painted_layer_delegates.cc',

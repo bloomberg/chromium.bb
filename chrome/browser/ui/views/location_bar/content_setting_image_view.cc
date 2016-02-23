@@ -17,10 +17,10 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/views/animation/button_ink_drop_delegate.h"
+#include "ui/views/animation/ink_drop_hover.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
-
 
 namespace {
 // Time spent with animation fully open.
@@ -56,7 +56,6 @@ ContentSettingImageView::ContentSettingImageView(
     SetBackgroundImageGrid(kBackgroundImages);
   }
 
-  // TODO(varkha): Provide standard ink drop dimensions in LayoutConstants.
   image()->SetHorizontalAlignment(views::ImageView::LEADING);
   image()->set_interactive(true);
   image()->EnableCanvasFlippingForRTLUI(true);
@@ -66,14 +65,6 @@ ContentSettingImageView::ContentSettingImageView(
 
   slide_animator_.SetSlideDuration(kAnimationDurationMS);
   slide_animator_.SetTweenType(gfx::Tween::LINEAR);
-
-  const int kInkDropLargeSize = 32;
-  const int kInkDropLargeCornerRadius = 5;
-  const int kInkDropSmallSize = 24;
-  const int kInkDropSmallCornerRadius = 2;
-  ink_drop_delegate_->SetInkDropSize(
-      kInkDropLargeSize, kInkDropLargeCornerRadius, kInkDropSmallSize,
-      kInkDropSmallCornerRadius);
 }
 
 ContentSettingImageView::~ContentSettingImageView() {
@@ -166,16 +157,10 @@ const char* ContentSettingImageView::GetClassName() const {
   return "ContentSettingsImageView";
 }
 
-void ContentSettingImageView::Layout() {
-  IconLabelBubbleView::Layout();
-  ink_drop_delegate_->OnLayout();
-}
-
 void ContentSettingImageView::OnBoundsChanged(
     const gfx::Rect& previous_bounds) {
   if (bubble_view_)
     bubble_view_->OnAnchorBoundsChanged();
-  ink_drop_delegate_->OnLayout();
 }
 
 bool ContentSettingImageView::OnMousePressed(const ui::MouseEvent& event) {
@@ -226,38 +211,30 @@ void ContentSettingImageView::OnGestureEvent(ui::GestureEvent* event) {
     event->SetHandled();
 }
 
+void ContentSettingImageView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
+  image()->SetPaintToLayer(true);
+  image()->SetFillsBoundsOpaquely(false);
+  IconLabelBubbleView::AddInkDropLayer(ink_drop_layer);
+}
+
+void ContentSettingImageView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
+  IconLabelBubbleView::RemoveInkDropLayer(ink_drop_layer);
+  image()->SetFillsBoundsOpaquely(true);
+  image()->SetPaintToLayer(false);
+}
+
+scoped_ptr<views::InkDropHover> ContentSettingImageView::CreateInkDropHover()
+    const {
+  // Location bar views don't show hover effect.
+  return nullptr;
+}
+
 void ContentSettingImageView::OnNativeThemeChanged(
     const ui::NativeTheme* native_theme) {
   if (ui::MaterialDesignController::IsModeMaterial())
     UpdateImage();
 
   IconLabelBubbleView::OnNativeThemeChanged(native_theme);
-}
-
-void ContentSettingImageView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
-  image()->SetPaintToLayer(true);
-  image()->SetFillsBoundsOpaquely(false);
-  SetPaintToLayer(true);
-  SetFillsBoundsOpaquely(false);
-  layer()->Add(ink_drop_layer);
-  layer()->StackAtBottom(ink_drop_layer);
-}
-
-void ContentSettingImageView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
-  layer()->Remove(ink_drop_layer);
-  SetFillsBoundsOpaquely(true);
-  SetPaintToLayer(false);
-  image()->SetFillsBoundsOpaquely(true);
-  image()->SetPaintToLayer(false);
-}
-
-gfx::Point ContentSettingImageView::CalculateInkDropCenter() const {
-  return GetLocalBounds().CenterPoint();
-}
-
-bool ContentSettingImageView::ShouldShowInkDropHover() const {
-  // location bar views don't show hover effect.
-  return false;
 }
 
 void ContentSettingImageView::OnWidgetDestroying(views::Widget* widget) {

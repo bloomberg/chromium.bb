@@ -47,14 +47,6 @@ AppMenuButton::AppMenuButton(ToolbarView* toolbar_view)
   set_ink_drop_delegate(ink_drop_delegate_.get());
   if (!ui::MaterialDesignController::IsModeMaterial())
     icon_painter_.reset(new AppMenuIconPainter(this));
-
-  const int kInkDropLargeSize = 32;
-  const int kInkDropLargeCornerRadius = 5;
-  const int kInkDropSmallSize = 24;
-  const int kInkDropSmallCornerRadius = 2;
-  ink_drop_delegate()->SetInkDropSize(
-      kInkDropLargeSize, kInkDropLargeCornerRadius, kInkDropSmallSize,
-      kInkDropSmallCornerRadius);
 }
 
 AppMenuButton::~AppMenuButton() {
@@ -208,7 +200,7 @@ void AppMenuButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   image()->SetPaintToLayer(false);
 }
 
-gfx::Point AppMenuButton::CalculateInkDropCenter() const {
+gfx::Point AppMenuButton::GetInkDropCenter() const {
   // ToolbarView extends the bounds of the app button to the right in maximized
   // mode. So instead of using the center point of local bounds, we use the
   // center point (adjusted for RTL layouts) of the preferred size, which

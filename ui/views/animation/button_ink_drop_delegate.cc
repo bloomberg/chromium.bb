@@ -25,20 +25,6 @@ ButtonInkDropDelegate::ButtonInkDropDelegate(InkDropHost* ink_drop_host,
 ButtonInkDropDelegate::~ButtonInkDropDelegate() {
 }
 
-void ButtonInkDropDelegate::SetInkDropSize(int large_size,
-                                           int large_corner_radius,
-                                           int small_size,
-                                           int small_corner_radius) {
-  ink_drop_animation_controller_->SetInkDropSize(
-      gfx::Size(large_size, large_size), large_corner_radius,
-      gfx::Size(small_size, small_size), small_corner_radius);
-}
-
-void ButtonInkDropDelegate::OnLayout() {
-  ink_drop_animation_controller_->SetInkDropCenter(
-      ink_drop_host_->CalculateInkDropCenter());
-}
-
 void ButtonInkDropDelegate::OnAction(InkDropState state) {
   ink_drop_animation_controller_->AnimateToState(state);
 }
@@ -53,8 +39,10 @@ void ButtonInkDropDelegate::SetHovered(bool is_hovered) {
 void ButtonInkDropDelegate::OnMouseEvent(ui::MouseEvent* event) {
   switch (event->type()) {
     case ui::ET_MOUSE_ENTERED:
+      SetHovered(true);
+      break;
     case ui::ET_MOUSE_EXITED:
-      SetHovered(ink_drop_host_->ShouldShowInkDropHover());
+      SetHovered(false);
       break;
     default:
       return;

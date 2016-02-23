@@ -38,13 +38,6 @@ class VIEWS_EXPORT InkDropAnimationControllerImpl
   bool IsVisible() const override;
   void AnimateToState(InkDropState ink_drop_state) override;
   void SetHovered(bool is_hovered) override;
-  bool IsHovered() const override;
-  gfx::Size GetInkDropLargeSize() const override;
-  void SetInkDropSize(const gfx::Size& large_size,
-                      int large_corner_radius,
-                      const gfx::Size& small_size,
-                      int small_corner_radius) override;
-  void SetInkDropCenter(const gfx::Point& center_point) override;
 
  private:
   friend class InkDropAnimationControllerFactoryTest;
@@ -93,21 +86,6 @@ class VIEWS_EXPORT InkDropAnimationControllerImpl
   // hover should be shown or not.
   InkDropHost* ink_drop_host_;
 
-  // Cached size for the ink drop's large size animations.
-  gfx::Size ink_drop_large_size_;
-
-  // Cached corner radius for the ink drop's large size animations.
-  int ink_drop_large_corner_radius_;
-
-  // Cached size for the ink drop's small size animations.
-  gfx::Size ink_drop_small_size_;
-
-  // Cached corner radius for the ink drop's small size animations.
-  int ink_drop_small_corner_radius_;
-
-  // Cached center point for the ink drop.
-  gfx::Point ink_drop_center_;
-
   // The root Layer that parents the InkDropAnimation layers and the
   // InkDropHover layers. The |root_layer_| is the one that is added and removed
   // from the InkDropHost.
@@ -115,9 +93,6 @@ class VIEWS_EXPORT InkDropAnimationControllerImpl
 
   // The current InkDropHover. Lazily created using CreateInkDropHover();
   scoped_ptr<InkDropHover> hover_;
-
-  // The logical hover state of |this|.
-  bool is_hovered_;
 
   // The current InkDropAnimation. Created on demand using
   // CreateInkDropAnimation().

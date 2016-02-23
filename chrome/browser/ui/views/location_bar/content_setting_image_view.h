@@ -12,7 +12,6 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
-#include "ui/views/animation/ink_drop_host.h"
 #include "ui/views/painter.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget_observer.h"
@@ -40,7 +39,6 @@ class Label;
 // blocking, geolocation).
 class ContentSettingImageView : public IconLabelBubbleView,
                                 public gfx::AnimationDelegate,
-                                public views::InkDropHost,
                                 public views::WidgetObserver {
  public:
   // ContentSettingImageView takes ownership of its |image_model|.
@@ -75,19 +73,15 @@ class ContentSettingImageView : public IconLabelBubbleView,
 
   // views::View:
   const char* GetClassName() const override;
-  void Layout() override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
-  void OnNativeThemeChanged(const ui::NativeTheme* native_theme) override;
-
-  // views::InkDropHost:
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
-  gfx::Point CalculateInkDropCenter() const override;
-  bool ShouldShowInkDropHover() const override;
+  scoped_ptr<views::InkDropHover> CreateInkDropHover() const override;
+  void OnNativeThemeChanged(const ui::NativeTheme* native_theme) override;
 
   // views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;

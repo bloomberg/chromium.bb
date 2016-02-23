@@ -70,14 +70,6 @@ ToolbarActionView::ToolbarActionView(
 
   set_context_menu_controller(this);
 
-  const int kInkDropLargeSize = 32;
-  const int kInkDropLargeCornerRadius = 5;
-  const int kInkDropSmallSize = 24;
-  const int kInkDropSmallCornerRadius = 2;
-  ink_drop_delegate()->SetInkDropSize(
-      kInkDropLargeSize, kInkDropLargeCornerRadius, kInkDropSmallSize,
-      kInkDropSmallCornerRadius);
-
   // If the button is within a menu, we need to make it focusable in order to
   // have it accessible via keyboard navigation, but it shouldn't request focus
   // (because that would close the menu).

@@ -13,6 +13,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/animation/button_ink_drop_delegate.h"
+#include "ui/views/animation/ink_drop_hover.h"
 #include "ui/views/bubble/bubble_delegate.h"
 
 BubbleIconView::BubbleIconView(CommandUpdater* command_updater, int command_id)
@@ -26,15 +27,6 @@ BubbleIconView::BubbleIconView(CommandUpdater* command_updater, int command_id)
   image_->set_interactive(false);
   image_->EnableCanvasFlippingForRTLUI(true);
   image_->SetAccessibilityFocusable(true);
-
-  // TODO(varkha): Provide standard ink drop dimensions in LayoutConstants.
-  const int kInkDropLargeSize = 32;
-  const int kInkDropLargeCornerRadius = 5;
-  const int kInkDropSmallSize = 24;
-  const int kInkDropSmallCornerRadius = 2;
-  ink_drop_delegate_->SetInkDropSize(
-      kInkDropLargeSize, kInkDropLargeCornerRadius, kInkDropSmallSize,
-      kInkDropSmallCornerRadius);
 }
 
 BubbleIconView::~BubbleIconView() {
@@ -75,7 +67,6 @@ gfx::Size BubbleIconView::GetPreferredSize() const {
 void BubbleIconView::Layout() {
   View::Layout();
   image_->SetBoundsRect(GetLocalBounds());
-  ink_drop_delegate_->OnLayout();
 }
 
 bool BubbleIconView::OnMousePressed(const ui::MouseEvent& event) {
@@ -123,6 +114,23 @@ void BubbleIconView::ViewHierarchyChanged(
     UpdateIcon();
 }
 
+void BubbleIconView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
+  image_->SetPaintToLayer(true);
+  image_->SetFillsBoundsOpaquely(false);
+  views::InkDropHostView::AddInkDropLayer(ink_drop_layer);
+}
+
+void BubbleIconView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
+  views::InkDropHostView::RemoveInkDropLayer(ink_drop_layer);
+  image_->SetFillsBoundsOpaquely(true);
+  image_->SetPaintToLayer(false);
+}
+
+scoped_ptr<views::InkDropHover> BubbleIconView::CreateInkDropHover() const {
+  // BubbleIconView views don't show hover effect.
+  return nullptr;
+}
+
 void BubbleIconView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   UpdateIcon();
 }
@@ -133,23 +141,6 @@ void BubbleIconView::OnGestureEvent(ui::GestureEvent* event) {
     ExecuteCommand(EXECUTE_SOURCE_GESTURE);
     event->SetHandled();
   }
-}
-
-void BubbleIconView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
-  image_->SetPaintToLayer(true);
-  image_->SetFillsBoundsOpaquely(false);
-  SetPaintToLayer(true);
-  SetFillsBoundsOpaquely(false);
-  layer()->Add(ink_drop_layer);
-  layer()->StackAtBottom(ink_drop_layer);
-}
-
-void BubbleIconView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
-  layer()->Remove(ink_drop_layer);
-  SetFillsBoundsOpaquely(true);
-  SetPaintToLayer(false);
-  image_->SetFillsBoundsOpaquely(true);
-  image_->SetPaintToLayer(false);
 }
 
 void BubbleIconView::OnWidgetDestroying(views::Widget* widget) {
@@ -181,16 +172,6 @@ void BubbleIconView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   views::BubbleDelegateView* bubble = GetBubble();
   if (bubble)
     bubble->OnAnchorBoundsChanged();
-  ink_drop_delegate_->OnLayout();
-}
-
-gfx::Point BubbleIconView::CalculateInkDropCenter() const {
-  return GetLocalBounds().CenterPoint();
-}
-
-bool BubbleIconView::ShouldShowInkDropHover() const {
-  // BubbleIconView views don't show hover effect.
-  return false;
 }
 
 void BubbleIconView::UpdateIcon() {

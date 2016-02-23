@@ -13,6 +13,7 @@
 #include "ui/gfx/screen.h"
 #include "ui/views/animation/ink_drop_delegate.h"
 #include "ui/views/animation/ink_drop_host.h"
+#include "ui/views/animation/test/test_ink_drop_host.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
@@ -71,17 +72,10 @@ class TestInkDropDelegate : public InkDropDelegate {
                       bool* ink_hidden)
       : ink_drop_host_(ink_drop_host),
         ink_shown_(ink_shown),
-        ink_hidden_(ink_hidden) {
-    ink_drop_host_->AddInkDropLayer(nullptr);
-  }
+        ink_hidden_(ink_hidden) {}
   ~TestInkDropDelegate() override {}
 
   // InkDropDelegate:
-  void SetInkDropSize(int large_size,
-                      int large_corner_radius,
-                      int small_size,
-                      int small_corner_radius) override {}
-  void OnLayout() override {}
   void OnAction(InkDropState state) override {
     switch (state) {
       case InkDropState::ACTION_PENDING:
@@ -119,11 +113,6 @@ class TestButtonWithInkDrop : public TestCustomButton {
     set_ink_drop_delegate(ink_drop_delegate_.get());
   }
   ~TestButtonWithInkDrop() override {}
-
-  // views::InkDropHost:
-  void AddInkDropLayer(ui::Layer* ink_drop_layer) override {}
-  void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override {}
-  gfx::Point CalculateInkDropCenter() const override { return gfx::Point(); }
 
  private:
   scoped_ptr<views::InkDropDelegate> ink_drop_delegate_;

@@ -11,7 +11,7 @@
 #include "base/strings/string16.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/views/controls/image_view.h"
+#include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/controls/label.h"
 
 namespace gfx {
@@ -21,6 +21,7 @@ class ImageSkia;
 }
 
 namespace views {
+class ImageView;
 class Label;
 class Painter;
 }
@@ -28,7 +29,7 @@ class Painter;
 // View used to draw a bubble, containing an icon and a label. We use this as a
 // base for the classes that handle the location icon (including the EV bubble),
 // tab-to-search UI, and content settings.
-class IconLabelBubbleView : public views::View {
+class IconLabelBubbleView : public views::InkDropHostView {
  public:
   IconLabelBubbleView(int contained_image,
                       const gfx::FontList& font_list,
