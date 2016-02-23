@@ -141,17 +141,24 @@ ByteVector ByteVectorGenerator::GetRandomByteVector() {
 
 ByteVector ByteVectorGenerator::GetWeightedRandomByteVector(
     Probability probability) {
-  ByteVector bytes = GetRandomByteVector();
   switch (probability) {
-    case PROBABILITY_75:
+    case PROBABILITY_100:
+      return ByteVector(byte_count_, 0xff);
+    case PROBABILITY_75: {
+      ByteVector bytes = GetRandomByteVector();
       return *ByteVectorOr(GetRandomByteVector(), &bytes);
+    }
     case PROBABILITY_50:
-      return bytes;
-    case PROBABILITY_25:
+      return GetRandomByteVector();
+    case PROBABILITY_25: {
+      ByteVector bytes = GetRandomByteVector();
       return *ByteVectorAnd(GetRandomByteVector(), &bytes);
+    }
+    case PROBABILITY_0:
+      return ByteVector(byte_count_);
   }
   NOTREACHED();
-  return bytes;
+  return ByteVector(byte_count_);
 }
 
 HmacByteVectorGenerator::HmacByteVectorGenerator(

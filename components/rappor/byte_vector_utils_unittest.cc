@@ -111,6 +111,20 @@ TEST(ByteVectorTest, HmacNist) {
       std::string(random_50.begin(), random_50.end()));
 }
 
+TEST(ByteVectorTest, WeightedRandomStatistics0) {
+  ByteVectorGenerator generator(50u);
+  ByteVector random = generator.GetWeightedRandomByteVector(PROBABILITY_0);
+  int bit_count = CountBits(random);
+  EXPECT_EQ(bit_count, 0);
+}
+
+TEST(ByteVectorTest, WeightedRandomStatistics100) {
+  ByteVectorGenerator generator(50u);
+  ByteVector random = generator.GetWeightedRandomByteVector(PROBABILITY_100);
+  int bit_count = CountBits(random);
+  EXPECT_EQ(bit_count, 50 * 8);
+}
+
 TEST(ByteVectorTest, WeightedRandomStatistics50) {
   ByteVectorGenerator generator(50u);
   ByteVector random = generator.GetWeightedRandomByteVector(PROBABILITY_50);

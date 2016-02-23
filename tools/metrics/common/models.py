@@ -160,7 +160,9 @@ class ObjectNodeType(NodeType):
                   self.float_attributes +
                   self.string_attributes)
     for attr in attributes:
-      node.setAttribute(attr, str(obj[attr]))
+      value = str(obj[attr])
+      if value:
+        node.setAttribute(attr, value)
 
     PutComments(node, obj['comments'])
 

@@ -12,11 +12,37 @@ http://www.chromium.org/developers/design-documents/rappor
 for a description of rappor metrics.
 -->
 
+<noise-levels>
+<!--
+Noise levels that rappor metrics can be collected with.  This list should be
+kept in sync with NoiseLevel definitions in
+components/rappor/rappor_parameters.h.
+-->
+
+<noise-level name="NO_NOISE">
+  <summary>
+    Adds no noise at all. Only use this for non-sensitive fields, and only
+    for metrics from UMA opt-in users.
+  </summary>
+  <noise-values fake-prob="0.0" fake-one-prob="0.0" one-coin-prob="1.0"
+      zero-coin-prob="0.0"/>
+</noise-level>
+
+<noise-level name="NORMAL_NOISE">
+  <summary>
+    The most common amount of noise, suitable for most fields.
+  </summary>
+  <noise-values fake-prob="0.5" fake-one-prob="0.5" one-coin-prob="0.75"
+      zero-coin-prob="0.25"/>
+</noise-level>
+
+</noise-levels>
+
 <rappor-parameter-types>
 <!--
 Parameters that rappor metrics can be collected with.  This list should be
 kept in sync with parameter type definitions in
-components/rappor/rappor_service.cc.
+components/rappor/rappor_parameters.h.
 -->
 
 <rappor-parameters name="COARSE_RAPPOR_TYPE">
@@ -25,7 +51,7 @@ components/rappor/rappor_service.cc.
   </summary>
   <parameters num-cohorts="128" bytes="1" hash-functions="2" fake-prob="0.5"
       fake-one-prob="0.5" one-coin-prob="0.75" zero-coin-prob="0.25"
-      reporting-level="COARSE"/>
+      reporting-level="COARSE" noise-level="NORMAL_NOISE"/>
 </rappor-parameters>
 
 <rappor-parameters name="ETLD_PLUS_ONE">
@@ -35,7 +61,7 @@ components/rappor/rappor_service.cc.
   </summary>
   <parameters num-cohorts="128" bytes="16" hash-functions="2" fake-prob="0.5"
       fake-one-prob="0.5" one-coin-prob="0.75" zero-coin-prob="0.25"
-      reporting-level="FINE"/>
+      reporting-level="FINE" noise-level="NORMAL_NOISE"/>
 </rappor-parameters>
 
 <rappor-parameters name="SAFEBROWSING_RAPPOR_TYPE">
@@ -45,7 +71,7 @@ components/rappor/rappor_service.cc.
   </summary>
   <parameters num-cohorts="128" bytes="1" hash-functions="2" fake-prob="0.5"
       fake-one-prob="0.5" one-coin-prob="0.75" zero-coin-prob="0.25"
-      reporting-level="COARSE"/>
+      reporting-level="COARSE" noise-level="NORMAL_NOISE"/>
 </rappor-parameters>
 
 <rappor-parameters name="UMA_RAPPOR_TYPE">
@@ -54,7 +80,7 @@ components/rappor/rappor_service.cc.
   </summary>
   <parameters num-cohorts="128" bytes="4" hash-functions="2" fake-prob="0.5"
       fake-one-prob="0.5" one-coin-prob="0.75" zero-coin-prob="0.25"
-      reporting-level="FINE"/>
+      reporting-level="FINE" noise-level="NORMAL_NOISE"/>
 </rappor-parameters>
 
 </rappor-parameter-types>

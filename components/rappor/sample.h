@@ -32,12 +32,24 @@ class Sample {
   virtual void SetStringField(const std::string& field_name,
                               const std::string& value);
 
-  // Sets a group of boolean flags as a field in this sample.
+  // TODO(holte): Move all callers to the version with NoiseLevel.
+  virtual void SetFlagsField(const std::string& field_name,
+                             uint64_t flags,
+                             size_t num_flags);
+
+  // Sets a group of boolean flags as a field in this sample, with the
+  // specified noise level.
   // |flags| should be a set of boolean flags stored in the lowest |num_flags|
   // bits of |flags|.
   virtual void SetFlagsField(const std::string& field_name,
                              uint64_t flags,
-                             size_t num_flags);
+                             size_t num_flags,
+                             NoiseLevel noise_level);
+
+  // Sets an integer value field in this sample, at the given noise level.
+  virtual void SetUInt64Field(const std::string& field_name,
+                              uint64_t value,
+                              NoiseLevel noise_level);
 
   // Generate randomized reports and store them in |reports|.
   virtual void ExportMetrics(const std::string& secret,
@@ -60,11 +72,17 @@ class Sample {
   // Offset used for bloom filter hash functions.
   uint32_t bloom_offset_;
 
-  // Size of each of the different fields, in bytes.
-  std::map<std::string, size_t> sizes_;
+  struct FieldInfo {
+    // Size of the field, in bytes.
+    size_t size;
+    // The non-randomized report value for the field.
+    uint64_t value;
+    // The noise level to use when creating a report for the field.
+    NoiseLevel noise_level;
+  };
 
-  // The non-randomized report values for each field.
-  std::map<std::string, uint64_t> fields_;
+  // Information about all recorded fields.
+  std::map<std::string, FieldInfo> field_info_;
 
   DISALLOW_COPY_AND_ASSIGN(Sample);
 };
