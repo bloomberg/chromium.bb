@@ -1,0 +1,6 @@
+AXWebArea
+++AXGroup
+++++AXLink AXTitle='unread '
+++++++AXStaticText AXValue='unread '
+++++AXLink AXTitle='read'
+++++++AXStaticText AXValue='read'

@@ -33,10 +33,6 @@ function test()
     <div id="_6" aria-hidden="true">
         <div id="_7">Descendant of aria-hidden node</div>
     </div>
-<!-- Known failure: image isn't ignored due to:
-    if (m_layoutObject->isLayoutBlockFlow() && m_layoutObject->childrenInline() && !canSetFocusAttribute()) {
-        if (toLayoutBlockFlow(m_layoutObject)->firstLineBox() || mouseButtonListener()) {
--->
     <img id="_8" alt="" src="foo.png">
     <ol role="none" id="_9"><!-- list is presentational -->
       <li id="_10">List item also presentational</li>

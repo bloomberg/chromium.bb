@@ -225,43 +225,20 @@ Content within label refers to label container
   "result": {
     "accessibilityNode": {
       "nodeId": "<string>",
-      "ignored": false,
+      "ignored": true,
       "role": {
         "type": "role",
         "value": "img"
       },
-      "properties": [],
-      "name": {
-        "type": "computedString",
-        "value": "",
-        "sources": [
-          {
-            "type": "relatedElement",
-            "attribute": "aria-labelledby"
-          },
-          {
-            "type": "attribute",
-            "attribute": "aria-label"
-          },
-          {
-            "type": "attribute",
-            "attributeValue": {
-              "type": "string",
-              "value": ""
-            },
-            "value": {
-              "type": "computedString",
-              "value": ""
-            },
-            "attribute": "alt"
-          },
-          {
-            "type": "attribute",
-            "attribute": "title",
-            "superseded": true
+      "ignoredReasons": [
+        {
+          "name": "emptyAlt",
+          "value": {
+            "type": "boolean",
+            "value": true
           }
-        ]
-      }
+        }
+      ]
     }
   }
 }

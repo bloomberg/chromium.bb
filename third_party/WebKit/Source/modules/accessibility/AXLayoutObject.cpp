@@ -704,15 +704,6 @@ bool AXLayoutObject::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReason
         return true;
     }
 
-    if (m_layoutObject->isLayoutBlockFlow() && m_layoutObject->childrenInline() && !canSetFocusAttribute()) {
-        if (toLayoutBlockFlow(m_layoutObject)->firstLineBox() || mouseButtonListener())
-            return false;
-
-        if (ignoredReasons)
-            ignoredReasons->append(IgnoredReason(AXUninteresting));
-        return true;
-    }
-
     // ignore images seemingly used as spacers
     if (isImage()) {
         // If the image can take focus, it should not be ignored, lest the user not be able to interact with something important.
@@ -792,6 +783,23 @@ bool AXLayoutObject::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReason
 
     if (isScrollableContainer())
         return false;
+
+    // Ignore layout objects that are block flows with inline children. These
+    // are usually dummy layout objects that pad out the tree, but there are
+    // some exceptions below.
+    if (m_layoutObject->isLayoutBlockFlow() && m_layoutObject->childrenInline() && !canSetFocusAttribute()) {
+        // If the layout object has any plain text in it, that text will be
+        // inside a LineBox, so the layout object will have a first LineBox.
+        bool hasAnyText = !!toLayoutBlockFlow(m_layoutObject)->firstLineBox();
+
+        // Always include interesting-looking objects.
+        if (hasAnyText || mouseButtonListener())
+            return false;
+
+        if (ignoredReasons)
+            ignoredReasons->append(IgnoredReason(AXUninteresting));
+        return true;
+    }
 
     // By default, objects should be ignored so that the AX hierarchy is not
     // filled with unnecessary items.

@@ -852,6 +852,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityImg) {
   RunHtmlTest(FILE_PATH_LITERAL("img.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityImgEmptyAlt) {
+  RunHtmlTest(FILE_PATH_LITERAL("img-empty-alt.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityInputButton) {
   RunHtmlTest(FILE_PATH_LITERAL("input-button.html"));
 }
