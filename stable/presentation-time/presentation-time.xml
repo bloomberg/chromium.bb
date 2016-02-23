@@ -33,8 +33,8 @@
       The main feature of this interface is accurate presentation
       timing feedback to ensure smooth video playback while maintaining
       audio/video synchronization. Some features use the concept of a
-      presentation clock, which is defined in the presentation.clock_id
-      event.
+      presentation clock, which is defined in the
+      presentation.clock_id event.
 
       Request 'feedback' can be regarded as an additional wl_surface
       method. It is part of the double-buffered surface state update
@@ -65,9 +65,9 @@
 
     <request name="destroy" type="destructor">
       <description summary="unbind from the presentation interface">
-        Informs the server that the client will not be using this
-        protocol object anymore. This does not affect any existing
-        objects created by this interface.
+        Informs the server that the client will no longer be using
+        this protocol object. Existing objects created by this object
+        are not affected.
       </description>
     </request>
 
@@ -225,7 +225,7 @@
         chose. Having a stable presentation output association helps
         clients predict future output refreshes (vblank).
 
-        Argument 'refresh' gives the compositor's prediction of how
+        The 'refresh' argument gives the compositor's prediction of how
         many nanoseconds after tv_sec, tv_nsec the very next output
         refresh may occur. This is to further aid clients in
         predicting future refreshes, i.e., estimating the timestamps
