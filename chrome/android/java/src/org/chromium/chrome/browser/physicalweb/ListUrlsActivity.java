@@ -153,6 +153,12 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        UrlManager.getInstance(this).addObserver(this);
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         startRefresh(false, false);
@@ -236,10 +242,7 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
         // Clear the list adapter to trigger the empty list display.
         mAdapter.clear();
 
-        UrlManager urlManager = UrlManager.getInstance(this);
-        urlManager.addObserver(this);
-
-        Collection<String> urls = urlManager.getUrls(true);
+        Collection<String> urls = UrlManager.getInstance(this).getUrls(true);
 
         // Check the Physical Web preference to ensure we do not resolve URLs when Physical Web is
         // off or onboarding. Normally the user will not reach this activity unless the preference
@@ -271,8 +274,6 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
     }
 
     private void finishRefresh() {
-        UrlManager.getInstance(this).removeObserver(this);
-
         // Hide the busy indicator.
         mSwipeRefreshWidget.setRefreshing(false);
 
