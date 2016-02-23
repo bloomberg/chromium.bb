@@ -12,6 +12,14 @@ namespace content {
 // Maximum number of actions on a Platform Notification.
 static const size_t kPlatformNotificationMaxActions = 2;
 
+// The maximum reasonable notification icon size, scaled from dip units to
+// pixels using the largest supported scaling factor.
+static const int kPlatformNotificationMaxIconSizePx = 320;  // 80 dip * 4
+
+// The maximum reasonable action icon size, scaled from dip units to
+// pixels using the largest supported scaling factor.
+static const int kPlatformNotificationMaxActionIconSizePx = 128;  // 32 dip * 4
+
 }  // namespace content
 
 #endif  // CONTENT_COMMON_NOTIFICATION_CONSTANTS_H_

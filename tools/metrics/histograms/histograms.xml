@@ -58923,6 +58923,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="110" label="WSH_SEND_BLOB_DURING_BLOB_SEND"/>
   <int value="111" label="WSH_SEND_FRAME_DURING_BLOB_SEND"/>
   <int value="112" label="RFH_UNEXPECTED_LOAD_START"/>
+  <int value="113" label="NMF_INVALID_ARGUMENT"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions" type="int">

@@ -45,6 +45,23 @@ PlatformNotificationData SanitizeNotificationData(
   return sanitized_data;
 }
 
+// Returns true when |resources| looks ok, false otherwise.
+bool ValidateNotificationResources(const NotificationResources& resources) {
+  if (resources.notification_icon.width() >
+          kPlatformNotificationMaxIconSizePx ||
+      resources.notification_icon.height() >
+          kPlatformNotificationMaxIconSizePx) {
+    return false;
+  }
+  for (const auto& action_icon : resources.action_icons) {
+    if (action_icon.width() > kPlatformNotificationMaxActionIconSizePx ||
+        action_icon.height() > kPlatformNotificationMaxActionIconSizePx) {
+      return false;
+    }
+  }
+  return true;
+}
+
 }  // namespace
 
 NotificationMessageFilter::NotificationMessageFilter(
@@ -115,6 +132,11 @@ void NotificationMessageFilter::OnShowPlatformNotification(
   if (!RenderProcessHost::FromID(process_id_))
     return;
 
+  if (!ValidateNotificationResources(notification_resources)) {
+    bad_message::ReceivedBadMessage(this, bad_message::NMF_INVALID_ARGUMENT);
+    return;
+  }
+
   scoped_ptr<DesktopNotificationDelegate> delegate(
       new PageNotificationDelegate(process_id_, notification_id));
 
@@ -144,6 +166,11 @@ void NotificationMessageFilter::OnShowPersistentNotification(
   if (GetPermissionForOriginOnIO(origin) !=
       blink::WebNotificationPermissionAllowed) {
     bad_message::ReceivedBadMessage(this, bad_message::NMF_NO_PERMISSION_SHOW);
+    return;
+  }
+
+  if (!ValidateNotificationResources(notification_resources)) {
+    bad_message::ReceivedBadMessage(this, bad_message::NMF_INVALID_ARGUMENT);
     return;
   }
 

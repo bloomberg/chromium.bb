@@ -4,15 +4,36 @@
 
 #include "content/child/notifications/pending_notification.h"
 
+#include <algorithm>
+
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/thread_task_runner_handle.h"
+#include "content/common/notification_constants.h"
 #include "content/public/common/notification_resources.h"
+#include "skia/ext/image_operations.h"
 #include "url/gurl.h"
 
 namespace content {
+
+namespace {
+
+// Scales down |icon| to fit within |max_size_px| if its width or height is
+// larger than |max_size_px| and returns the result. Otherwise does nothing and
+// returns |icon| unchanged.
+SkBitmap ScaleDownIfNeeded(const SkBitmap& icon, int max_size_px) {
+  if (icon.width() > max_size_px || icon.height() > max_size_px) {
+    return skia::ImageOperations::Resize(icon,
+                                         skia::ImageOperations::RESIZE_BEST,
+                                         std::min(icon.width(), max_size_px),
+                                         std::min(icon.height(), max_size_px));
+  }
+  return icon;
+}
+
+}  // namespace
 
 PendingNotification::PendingNotification(
     const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner)
@@ -73,17 +94,18 @@ void PendingNotification::FetchImageResource(
                             image_loader, image_gurl));
 }
 
-void PendingNotification::DidFetchNotificationIcon(
-    const SkBitmap& notification_icon) {
-  notification_icon_ = notification_icon;
+void PendingNotification::DidFetchNotificationIcon(const SkBitmap& icon) {
+  notification_icon_ =
+      ScaleDownIfNeeded(icon, kPlatformNotificationMaxIconSizePx);
   fetches_finished_barrier_closure_.Run();
 }
 
 void PendingNotification::DidFetchActionIcon(size_t action_index,
-                                             const SkBitmap& action_icon) {
+                                             const SkBitmap& icon) {
   DCHECK_LT(action_index, action_icons_.size());
 
-  action_icons_[action_index] = action_icon;
+  action_icons_[action_index] =
+      ScaleDownIfNeeded(icon, kPlatformNotificationMaxActionIconSizePx);
   fetches_finished_barrier_closure_.Run();
 }
 

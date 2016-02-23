@@ -18,6 +18,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
+#include "content/common/notification_constants.h"
 #include "content/public/common/notification_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/Platform.h"
@@ -39,6 +40,7 @@ const char kBaseUrl[] = "http://test.com/";
 const char kIcon100x100[] = "100x100.png";
 const char kIcon110x110[] = "110x110.png";
 const char kIcon120x120[] = "120x120.png";
+const char kIcon500x500[] = "500x500.png";
 
 class FakeNotificationDelegate : public blink::WebNotificationDelegate {
  public:
@@ -166,6 +168,41 @@ TEST_F(PendingNotificationsTrackerTest, OneNotificationMultipleResources) {
   ASSERT_EQ(110, GetResources(0u)->action_icons[0].width());
   ASSERT_FALSE(GetResources(0u)->action_icons[1].drawsNothing());
   ASSERT_EQ(120, GetResources(0u)->action_icons[1].width());
+}
+
+TEST_F(PendingNotificationsTrackerTest, LargeIconsAreScaledDown) {
+  blink::WebNotificationData notification_data;
+  notification_data.icon = RegisterMockedURL(kIcon500x500);
+  notification_data.actions =
+      blink::WebVector<blink::WebNotificationAction>(static_cast<size_t>(1));
+  notification_data.actions[0].icon = notification_data.icon;
+
+  tracker()->FetchResources(
+      notification_data, nullptr /* delegate */,
+      base::Bind(&PendingNotificationsTrackerTest::DidFetchResources,
+                 base::Unretained(this), 0 /* index */));
+
+  ASSERT_EQ(1u, CountPendingNotifications());
+  ASSERT_EQ(0u, CountResources());
+
+  base::RunLoop().RunUntilIdle();
+  UnitTestSupport()->serveAsynchronousMockedRequests();
+
+  ASSERT_EQ(0u, CountPendingNotifications());
+  ASSERT_EQ(1u, CountResources());
+
+  ASSERT_FALSE(GetResources(0u)->notification_icon.drawsNothing());
+  ASSERT_EQ(kPlatformNotificationMaxIconSizePx,
+            GetResources(0u)->notification_icon.width());
+  ASSERT_EQ(kPlatformNotificationMaxIconSizePx,
+            GetResources(0u)->notification_icon.height());
+
+  ASSERT_EQ(1u, GetResources(0u)->action_icons.size());
+  ASSERT_FALSE(GetResources(0u)->action_icons[0].drawsNothing());
+  ASSERT_EQ(kPlatformNotificationMaxActionIconSizePx,
+            GetResources(0u)->action_icons[0].width());
+  ASSERT_EQ(kPlatformNotificationMaxActionIconSizePx,
+            GetResources(0u)->action_icons[0].height());
 }
 
 TEST_F(PendingNotificationsTrackerTest, TwoNotifications) {
