@@ -15,8 +15,8 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/gaia_info_update_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
@@ -44,12 +44,13 @@ namespace settings {
 
 ManageProfileHandler::ManageProfileHandler(Profile* profile)
     : profile_(profile), weak_factory_(this) {
-  g_browser_process->profile_manager()->GetProfileInfoCache().AddObserver(this);
+  g_browser_process->profile_manager()->
+      GetProfileAttributesStorage().AddObserver(this);
 }
 
 ManageProfileHandler::~ManageProfileHandler() {
   g_browser_process->profile_manager()->
-      GetProfileInfoCache().RemoveObserver(this);
+      GetProfileAttributesStorage().RemoveObserver(this);
 }
 
 void ManageProfileHandler::RegisterMessages() {
@@ -94,14 +95,12 @@ void ManageProfileHandler::RequestDefaultProfileIcons(
 
 void ManageProfileHandler::SendAvailableIcons() {
   base::ListValue image_url_list;
-  const ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
 
   // First add the GAIA picture if it is available.
-  size_t profile_index = cache.GetIndexOfProfileWithPath(profile_->GetPath());
-  if (profile_index != std::string::npos) {
-    const gfx::Image* icon =
-        cache.GetGAIAPictureOfProfileAtIndex(profile_index);
+  ProfileAttributesEntry* entry;
+  if (g_browser_process->profile_manager()->GetProfileAttributesStorage().
+          GetProfileAttributesWithPath(profile_->GetPath(), &entry)) {
+    const gfx::Image* icon = entry->GetGAIAPicture();
     if (icon) {
       gfx::Image icon2 = profiles::GetAvatarIconForWebUI(*icon, true);
       gaia_picture_url_ = webui::GetBitmapDataUrl(icon2.AsBitmap());
@@ -181,19 +180,18 @@ void ManageProfileHandler::ProfileIconSelectionChanged(
   // If the selection is the GAIA picture then also show the profile name in the
   // text field. This will display either the GAIA given name, if available,
   // or the first name.
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  size_t profile_index = cache.GetIndexOfProfileWithPath(profile_->GetPath());
-  if (profile_index == std::string::npos)
+  ProfileAttributesEntry* entry;
+  if (!g_browser_process->profile_manager()->GetProfileAttributesStorage().
+          GetProfileAttributesWithPath(profile_->GetPath(), &entry)) {
     return;
-  base::string16 gaia_name = cache.GetNameOfProfileAtIndex(profile_index);
+  }
+  base::string16 gaia_name = entry->GetName();
   if (gaia_name.empty())
     return;
 
-  base::StringValue gaia_name_value(gaia_name);
   web_ui()->CallJavascriptFunction(
       "settings.SyncPrivateApi.setProfileName",
-      gaia_name_value);
+      base::StringValue(gaia_name));
 }
 
 void ManageProfileHandler::RequestHasProfileShortcuts(
@@ -201,23 +199,22 @@ void ManageProfileHandler::RequestHasProfileShortcuts(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(ProfileShortcutManager::IsFeatureEnabled());
 
-  const ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  size_t profile_index = cache.GetIndexOfProfileWithPath(profile_->GetPath());
-  if (profile_index == std::string::npos)
+  ProfileAttributesStorage& storage =
+      g_browser_process->profile_manager()->GetProfileAttributesStorage();
+  ProfileAttributesEntry* entry;
+  if (!storage.GetProfileAttributesWithPath(profile_->GetPath(), &entry))
     return;
 
   // Don't show the add/remove desktop shortcut button in the single user case.
-  if (cache.GetNumberOfProfiles() <= 1)
+  if (storage.GetNumberOfProfiles() <= 1u)
     return;
 
-  const base::FilePath profile_path =
-      cache.GetPathOfProfileAtIndex(profile_index);
   ProfileShortcutManager* shortcut_manager =
       g_browser_process->profile_manager()->profile_shortcut_manager();
   shortcut_manager->HasProfileShortcuts(
-      profile_path, base::Bind(&ManageProfileHandler::OnHasProfileShortcuts,
-                               weak_factory_.GetWeakPtr()));
+      profile_->GetPath(),
+      base::Bind(&ManageProfileHandler::OnHasProfileShortcuts,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void ManageProfileHandler::OnHasProfileShortcuts(bool has_shortcuts) {

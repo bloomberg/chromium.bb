@@ -8,7 +8,6 @@
 #include "base/bind_helpers.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/pref_names.h"
@@ -25,7 +24,7 @@ ProfileInfoWatcher::ProfileInfoWatcher(
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   // The profile_manager might be NULL in testing environments.
   if (profile_manager)
-    profile_manager->GetProfileInfoCache().AddObserver(this);
+    profile_manager->GetProfileAttributesStorage().AddObserver(this);
 
   signin_allowed_pref_.Init(prefs::kSigninAllowed, profile_->GetPrefs(),
       base::Bind(&ProfileInfoWatcher::RunCallback, base::Unretained(this)));
@@ -35,7 +34,7 @@ ProfileInfoWatcher::~ProfileInfoWatcher() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   // The profile_manager might be NULL in testing environments.
   if (profile_manager)
-    profile_manager->GetProfileInfoCache().RemoveObserver(this);
+    profile_manager->GetProfileAttributesStorage().RemoveObserver(this);
 }
 
 void ProfileInfoWatcher::OnProfileAuthInfoChanged(

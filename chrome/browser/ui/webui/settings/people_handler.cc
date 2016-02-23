@@ -19,8 +19,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
@@ -183,10 +183,9 @@ void GetAccountNameAndIcon(const Profile& profile,
       chromeos::options::UserImageSource::GetUserImage(account_id);
   *icon_url = webui::GetPngDataUrl(image->front(), image->size());
 #else   // !defined(OS_CHROMEOS)
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  ProfileAttributesEntry* entry = nullptr;
-  if (cache.GetProfileAttributesWithPath(profile.GetPath(), &entry)) {
+  ProfileAttributesEntry* entry;
+  if (g_browser_process->profile_manager()->GetProfileAttributesStorage().
+          GetProfileAttributesWithPath(profile.GetPath(), &entry)) {
     *name = base::UTF16ToUTF8(entry->GetName());
 
     if (entry->IsUsingGAIAPicture() && entry->GetGAIAPicture()) {
@@ -221,7 +220,8 @@ PeopleHandler::PeopleHandler(Profile* profile)
   if (sync_service)
     sync_service_observer_.Add(sync_service);
 
-  g_browser_process->profile_manager()->GetProfileInfoCache().AddObserver(this);
+  g_browser_process->profile_manager()->
+      GetProfileAttributesStorage().AddObserver(this);
 
 #if defined(OS_CHROMEOS)
   registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
@@ -231,7 +231,7 @@ PeopleHandler::PeopleHandler(Profile* profile)
 
 PeopleHandler::~PeopleHandler() {
   g_browser_process->profile_manager()->
-      GetProfileInfoCache().RemoveObserver(this);
+      GetProfileAttributesStorage().RemoveObserver(this);
 
   // Early exit if running unit tests (no actual WebUI is attached).
   if (!web_ui())

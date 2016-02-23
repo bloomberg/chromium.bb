@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/profiles/profile_info_cache_observer.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/ui/webui/settings/md_settings_ui.h"
 
 namespace base {
@@ -21,7 +21,7 @@ namespace settings {
 
 // Chrome personal stuff profiles manage overlay UI handler.
 class ManageProfileHandler : public settings::SettingsPageUIHandler,
-                             public ProfileInfoCacheObserver {
+                             public ProfileAttributesStorage::Observer {
  public:
   explicit ManageProfileHandler(Profile* profile);
   ~ManageProfileHandler() override;
@@ -29,7 +29,7 @@ class ManageProfileHandler : public settings::SettingsPageUIHandler,
   // settings::SettingsPageUIHandler:
   void RegisterMessages() override;
 
-  // ProfileInfoCacheObserver:
+  // ProfileAttributesStorage::Observer:
   void OnProfileNameChanged(const base::FilePath& profile_path,
                             const base::string16& old_profile_name) override;
   void OnProfileAvatarChanged(const base::FilePath& profile_path) override;

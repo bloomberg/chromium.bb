@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "chrome/browser/profiles/profile_info_cache_observer.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "components/prefs/pref_member.h"
 
 class Profile;
@@ -17,7 +17,7 @@ class SigninManagerBase;
 
 // Watches profiles for changes in their cached info (e.g. the authenticated
 // username changes).
-class ProfileInfoWatcher : public ProfileInfoCacheObserver {
+class ProfileInfoWatcher : public ProfileAttributesStorage::Observer {
  public:
   ProfileInfoWatcher(Profile* profile, const base::Closure& callback);
   ~ProfileInfoWatcher() override;
@@ -26,7 +26,7 @@ class ProfileInfoWatcher : public ProfileInfoCacheObserver {
   std::string GetAuthenticatedUsername() const;
 
  private:
-  // ProfileInfoCacheObserver:
+  // ProfileAttributesStorage::Observer:
   void OnProfileAuthInfoChanged(const base::FilePath& profile_path) override;
 
   // Gets the SigninManagerBase for |profile_|.

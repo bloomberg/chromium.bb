@@ -16,7 +16,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -178,19 +179,18 @@ void AppLauncherLoginHandler::UpdateLogin() {
   std::string icon_url;
   Profile* profile = Profile::FromWebUI(web_ui());
   if (!username.empty()) {
-    ProfileInfoCache& cache =
-        g_browser_process->profile_manager()->GetProfileInfoCache();
-    size_t profile_index = cache.GetIndexOfProfileWithPath(profile->GetPath());
-    if (profile_index != std::string::npos) {
+    ProfileAttributesStorage& storage =
+        g_browser_process->profile_manager()->GetProfileAttributesStorage();
+    ProfileAttributesEntry* entry;
+    if (storage.GetProfileAttributesWithPath(profile->GetPath(), &entry)) {
       // Only show the profile picture and full name for the single profile
       // case. In the multi-profile case the profile picture is visible in the
       // title bar and the full name can be ambiguous.
-      if (cache.GetNumberOfProfiles() == 1) {
-        base::string16 name = cache.GetGAIANameOfProfileAtIndex(profile_index);
+      if (storage.GetNumberOfProfiles() == 1) {
+        base::string16 name = entry->GetGAIAName();
         if (!name.empty())
           header = CreateElementWithClass(name, "span", "profile-name", "");
-        const gfx::Image* image =
-            cache.GetGAIAPictureOfProfileAtIndex(profile_index);
+        const gfx::Image* image = entry->GetGAIAPicture();
         if (image)
           icon_url = webui::GetBitmapDataUrl(GetGAIAPictureForNTP(*image));
       }

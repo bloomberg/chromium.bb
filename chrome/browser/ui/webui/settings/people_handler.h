@@ -12,7 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
-#include "chrome/browser/profiles/profile_info_cache_observer.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/sync/sync_startup_tracker.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -48,7 +48,7 @@ class PeopleHandler : public content::WebUIMessageHandler,
 #if defined(OS_CHROMEOS)
                       public content::NotificationObserver,
 #endif
-                      public ProfileInfoCacheObserver {
+                      public ProfileAttributesStorage::Observer {
  public:
   explicit PeopleHandler(Profile* profile);
   ~PeopleHandler() override;
@@ -81,7 +81,7 @@ class PeopleHandler : public content::WebUIMessageHandler,
                const content::NotificationDetails& details) override;
 #endif
 
-  // ProfileInfoCacheObserver implementation.
+  // ProfileAttributesStorage::Observer implementation.
   void OnProfileNameChanged(const base::FilePath& profile_path,
                             const base::string16& old_profile_name) override;
   void OnProfileAvatarChanged(const base::FilePath& profile_path) override;
