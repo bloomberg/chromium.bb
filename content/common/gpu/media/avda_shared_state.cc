@@ -4,6 +4,7 @@
 
 #include "content/common/gpu/media/avda_shared_state.h"
 
+#include "base/time/time.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/scoped_make_current.h"
 
@@ -21,7 +22,10 @@ void AVDASharedState::SignalFrameAvailable() {
 }
 
 void AVDASharedState::WaitForFrameAvailable() {
-  frame_available_event_.Wait();
+  // 10msec covers >99.9% of cases, so just wait for up to that much before
+  // giving up.  If an error occurs, we might not ever get a notification.
+  const base::TimeDelta max_wait_time(base::TimeDelta::FromMilliseconds(10));
+  frame_available_event_.TimedWait(max_wait_time);
 }
 
 void AVDASharedState::did_attach_surface_texture() {
