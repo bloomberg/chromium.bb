@@ -29,6 +29,7 @@ class Transform;
 
 namespace ui {
 class EventTarget;
+class PointerEvent;
 enum class DomCode;
 
 class EVENTS_EXPORT Event {
@@ -198,13 +199,18 @@ class EVENTS_EXPORT Event {
 
   bool IsLocatedEvent() const {
     return IsMouseEvent() || IsScrollEvent() || IsTouchEvent() ||
-           IsGestureEvent();
+           IsGestureEvent() || IsPointerEvent();
   }
 
   // Convenience methods to cast |this| to a GestureEvent. IsGestureEvent()
   // must be true as a precondition to calling these methods.
   GestureEvent* AsGestureEvent();
   const GestureEvent* AsGestureEvent() const;
+
+  // Convenience methods to cast |this| to a PointerEvent. IsPointerEvent()
+  // must be true as a precondition to calling these methods.
+  PointerEvent* AsPointerEvent();
+  const PointerEvent* AsPointerEvent() const;
 
   // Returns true if the event has a valid |native_event_|.
   bool HasNativeEvent() const;
@@ -648,6 +654,7 @@ class EVENTS_EXPORT PointerEvent : public LocatedEvent {
  public:
   static const int32_t kMousePointerId;
 
+  explicit PointerEvent(const PointerEvent& pointer_event);
   explicit PointerEvent(const MouseEvent& mouse_event);
   explicit PointerEvent(const TouchEvent& touch_event);
 

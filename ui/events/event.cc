@@ -155,6 +155,11 @@ scoped_ptr<Event> Event::Clone(const Event& event) {
         new GestureEvent(static_cast<const GestureEvent&>(event)));
   }
 
+  if (event.IsPointerEvent()) {
+    return make_scoped_ptr(
+        new PointerEvent(static_cast<const PointerEvent&>(event)));
+  }
+
   if (event.IsScrollEvent()) {
     return make_scoped_ptr(
         new ScrollEvent(static_cast<const ScrollEvent&>(event)));
@@ -176,6 +181,16 @@ GestureEvent* Event::AsGestureEvent() {
 const GestureEvent* Event::AsGestureEvent() const {
   CHECK(IsGestureEvent());
   return static_cast<const GestureEvent*>(this);
+}
+
+PointerEvent* Event::AsPointerEvent() {
+  CHECK(IsPointerEvent());
+  return static_cast<PointerEvent*>(this);
+}
+
+const PointerEvent* Event::AsPointerEvent() const {
+  CHECK(IsPointerEvent());
+  return static_cast<const PointerEvent*>(this);
 }
 
 bool Event::HasNativeEvent() const {
@@ -643,6 +658,11 @@ void TouchEvent::FixRotationAngle() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // PointerEvent
+
+PointerEvent::PointerEvent(const PointerEvent& pointer_event)
+    : LocatedEvent(pointer_event),
+      pointer_id_(pointer_event.pointer_id()),
+      details_(pointer_event.pointer_details()) {}
 
 PointerEvent::PointerEvent(const MouseEvent& mouse_event)
     : LocatedEvent(mouse_event),

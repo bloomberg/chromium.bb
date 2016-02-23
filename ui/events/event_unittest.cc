@@ -802,4 +802,36 @@ TEST(EventTest, PointerDetailsPointer) {
             pointer_event_from_mouse.pointer_details());
 }
 
+TEST(EventTest, PointerEventClone) {
+  {
+    ui::PointerEvent ptr_event(
+        ui::TouchEvent(ET_TOUCH_PRESSED, gfx::Point(0, 0), 0, 0,
+                       ui::EventTimeForNow(), 10.0f, 5.0f, 0.0f, 15.0f));
+    scoped_ptr<ui::Event> clone(ui::Event::Clone(ptr_event));
+    EXPECT_TRUE(clone->IsPointerEvent());
+    ui::PointerEvent* clone_as_ptr = clone->AsPointerEvent();
+
+    EXPECT_EQ(ptr_event.type(), clone_as_ptr->type());
+    EXPECT_EQ(ptr_event.pointer_id(), clone_as_ptr->pointer_id());
+    EXPECT_EQ(ptr_event.pointer_details(), clone_as_ptr->pointer_details());
+    EXPECT_EQ(ptr_event.location(), clone_as_ptr->location());
+    EXPECT_EQ(ptr_event.root_location(), clone_as_ptr->root_location());
+  }
+
+  {
+    ui::PointerEvent ptr_event(
+        ui::MouseEvent(ET_MOUSE_PRESSED, gfx::Point(0, 0), gfx::Point(0, 0),
+                       ui::EventTimeForNow(), 0, 0));
+    scoped_ptr<ui::Event> clone(ui::Event::Clone(ptr_event));
+    EXPECT_TRUE(clone->IsPointerEvent());
+    ui::PointerEvent* clone_as_ptr = clone->AsPointerEvent();
+
+    EXPECT_EQ(ptr_event.type(), clone_as_ptr->type());
+    EXPECT_EQ(ptr_event.pointer_id(), clone_as_ptr->pointer_id());
+    EXPECT_EQ(ptr_event.pointer_details(), clone_as_ptr->pointer_details());
+    EXPECT_EQ(ptr_event.location(), clone_as_ptr->location());
+    EXPECT_EQ(ptr_event.root_location(), clone_as_ptr->root_location());
+  }
+}
+
 }  // namespace ui
