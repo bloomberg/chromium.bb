@@ -14,9 +14,11 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
+import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 
 import org.chromium.base.Log;
@@ -48,12 +50,12 @@ import java.util.Set;
  */
 class UrlManager {
     private static final String TAG = "PhysicalWeb";
-    private static final String PREFS_NAME = "org.chromium.chrome.browser.physicalweb.URL_CACHE";
-    private static final String PREFS_VERSION_KEY = "version";
-    private static final String PREFS_NEARBY_URLS_KEY = "nearby_urls";
-    private static final String PREFS_RESOLVED_URLS_KEY = "resolved_urls";
-    private static final String DEPRECATED_PREFS_URLS_KEY = "urls";
-    private static final int PREFS_VERSION = 2;
+    private static final String DEPRECATED_PREFS_NAME =
+            "org.chromium.chrome.browser.physicalweb.URL_CACHE";
+    private static final String PREFS_VERSION_KEY = "physicalweb_version";
+    private static final String PREFS_NEARBY_URLS_KEY = "physicalweb_nearby_urls";
+    private static final String PREFS_RESOLVED_URLS_KEY = "physicalweb_resolved_urls";
+    private static final int PREFS_VERSION = 3;
     private static final long STALE_NOTIFICATION_TIMEOUT_MILLIS = 30 * 60 * 1000;
     private static UrlManager sInstance = null;
     private final Context mContext;
@@ -249,7 +251,7 @@ class UrlManager {
     }
 
     private void initSharedPreferences() {
-        SharedPreferences prefs = mContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
         int prefsVersion = prefs.getInt(PREFS_VERSION_KEY, 0);
 
         // Check the version.
@@ -258,24 +260,29 @@ class UrlManager {
         }
 
         // Stored preferences are old, upgrade to the current version.
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.remove(DEPRECATED_PREFS_URLS_KEY);
-        editor.putInt(PREFS_VERSION_KEY, PREFS_VERSION);
-        editor.apply();
-
-        clearUrls();
+        // TODO(cco3): This code may be deleted around m53.
+        prefs.edit().putInt(PREFS_VERSION_KEY, PREFS_VERSION);
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                SharedPreferences oldPrefs =
+                        mContext.getSharedPreferences(DEPRECATED_PREFS_NAME, Context.MODE_PRIVATE);
+                oldPrefs.edit().clear().commit();
+                return null;
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     private Set<String> getStringSetFromSharedPreferences(String preferenceName) {
         // Check the version.
-        SharedPreferences prefs = mContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
         return prefs.getStringSet(preferenceName, new HashSet<String>());
     }
 
     private void setStringSetInSharedPreferences(String preferenceName,
                                                  Set<String> preferenceValue) {
         // Write the version.
-        SharedPreferences prefs = mContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putStringSet(preferenceName, preferenceValue);
         editor.apply();
