@@ -75,6 +75,11 @@ MATCHER_P(EqualsIssue, other, "") {
   return true;
 }
 
+MATCHER_P(StateChageInfoEquals, other, "") {
+  return arg.state == other.state && arg.close_reason == other.close_reason &&
+         arg.message == other.message;
+}
+
 class MockIssuesObserver : public IssuesObserver {
  public:
   explicit MockIssuesObserver(MediaRouter* router);
@@ -176,7 +181,8 @@ class MockPresentationConnectionStateChangedCallback {
  public:
   MockPresentationConnectionStateChangedCallback();
   ~MockPresentationConnectionStateChangedCallback();
-  MOCK_METHOD1(Run, void(content::PresentationConnectionState));
+  MOCK_METHOD1(Run,
+               void(const content::PresentationConnectionStateChangeInfo&));
 };
 
 }  // namespace media_router

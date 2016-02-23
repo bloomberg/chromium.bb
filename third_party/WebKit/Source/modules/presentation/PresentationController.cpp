@@ -78,6 +78,16 @@ void PresentationController::didChangeSessionState(WebPresentationConnectionClie
     connection->didChangeState(state);
 }
 
+void PresentationController::didCloseConnection(WebPresentationConnectionClient* connectionClient, WebPresentationConnectionCloseReason reason, const WebString& message)
+{
+    OwnPtr<WebPresentationConnectionClient> client = adoptPtr(connectionClient);
+
+    PresentationConnection* connection = findConnection(client.get());
+    if (!connection)
+        return;
+    connection->didClose(reason, message);
+}
+
 void PresentationController::didReceiveSessionTextMessage(WebPresentationConnectionClient* connectionClient, const WebString& message)
 {
     OwnPtr<WebPresentationConnectionClient> client = adoptPtr(connectionClient);

@@ -69,6 +69,12 @@ struct TypeConverter<media_router::Issue, media_router::interfaces::IssuePtr> {
 content::PresentationConnectionState PresentationConnectionStateFromMojo(
     media_router::interfaces::MediaRouter::PresentationConnectionState state);
 
+// PresentationConnectionCloseReason conversion.
+content::PresentationConnectionCloseReason
+PresentationConnectionCloseReasonFromMojo(
+    media_router::interfaces::MediaRouter::PresentationConnectionCloseReason
+        reason);
+
 // RouteRequestResult conversion.
 media_router::RouteRequestResult::ResultCode RouteRequestResultCodeFromMojo(
     media_router::interfaces::RouteRequestResultCode result_code);

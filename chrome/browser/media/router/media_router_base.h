@@ -28,13 +28,19 @@ class MediaRouterBase : public MediaRouter {
  protected:
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,
                            PresentationConnectionStateChangedCallback);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,
+                           PresentationConnectionStateChangedCallbackRemoved);
 
   void NotifyPresentationConnectionStateChange(
       const MediaRoute::Id& route_id,
       content::PresentationConnectionState state);
+  void NotifyPresentationConnectionClose(
+      const MediaRoute::Id& route_id,
+      content::PresentationConnectionCloseReason reason,
+      const std::string& message);
 
-  using PresentationConnectionStateChangedCallbacks =
-      base::CallbackList<void(content::PresentationConnectionState)>;
+  using PresentationConnectionStateChangedCallbacks = base::CallbackList<void(
+      const content::PresentationConnectionStateChangeInfo&)>;
   base::ScopedPtrHashMap<
       MediaRoute::Id,
       scoped_ptr<PresentationConnectionStateChangedCallbacks>>

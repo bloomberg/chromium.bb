@@ -432,11 +432,18 @@ void PresentationServiceImpl::Terminate(const mojo::String& presentation_url,
 
 void PresentationServiceImpl::OnConnectionStateChanged(
     const PresentationSessionInfo& connection,
-    PresentationConnectionState state) {
+    const PresentationConnectionStateChangeInfo& info) {
   DCHECK(client_.get());
-  client_->OnConnectionStateChanged(
-      presentation::PresentationSessionInfo::From(connection),
-      PresentationConnectionStateToMojo(state));
+  if (info.state == PRESENTATION_CONNECTION_STATE_CLOSED) {
+    client_->OnConnectionClosed(
+        presentation::PresentationSessionInfo::From(connection),
+        PresentationConnectionCloseReasonToMojo(info.close_reason),
+        info.message);
+  } else {
+    client_->OnConnectionStateChanged(
+        presentation::PresentationSessionInfo::From(connection),
+        PresentationConnectionStateToMojo(info.state));
+  }
 }
 
 bool PresentationServiceImpl::FrameMatches(

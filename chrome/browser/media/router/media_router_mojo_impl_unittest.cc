@@ -48,6 +48,11 @@ using testing::SaveArg;
 
 namespace media_router {
 
+using PresentationConnectionState =
+    interfaces::MediaRouter::PresentationConnectionState;
+using PresentationConnectionCloseReason =
+    interfaces::MediaRouter::PresentationConnectionCloseReason;
+
 namespace {
 
 const char kDescription[] = "description";
@@ -928,9 +933,6 @@ TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesError) {
 }
 
 TEST_F(MediaRouterMojoImplTest, PresentationConnectionStateChangedCallback) {
-  using PresentationConnectionState =
-      interfaces::MediaRouter::PresentationConnectionState;
-
   MediaRoute::Id route_id("route-id");
   const std::string kPresentationUrl("http://foo.fakeUrl");
   const std::string kPresentationId("pid");
@@ -943,36 +945,53 @@ TEST_F(MediaRouterMojoImplTest, PresentationConnectionStateChangedCallback) {
           base::Bind(&MockPresentationConnectionStateChangedCallback::Run,
                      base::Unretained(&callback)));
 
-  base::RunLoop run_loop;
-  EXPECT_CALL(callback, Run(content::PRESENTATION_CONNECTION_STATE_CLOSED))
-      .WillOnce(InvokeWithoutArgs([&run_loop]() {
-                  run_loop.Quit();
-                }));
-  media_router_proxy_->OnPresentationConnectionStateChanged(
-      route_id, PresentationConnectionState::CLOSED);
-  run_loop.Run();
+  {
+    base::RunLoop run_loop;
+    content::PresentationConnectionStateChangeInfo closed_info(
+        content::PRESENTATION_CONNECTION_STATE_CLOSED);
+    closed_info.close_reason =
+        content::PRESENTATION_CONNECTION_CLOSE_REASON_WENT_AWAY;
+    closed_info.message = "Foo";
 
-  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&callback));
+    EXPECT_CALL(callback, Run(StateChageInfoEquals(closed_info)))
+        .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
+    media_router_proxy_->OnPresentationConnectionClosed(
+        route_id, PresentationConnectionCloseReason::WENT_AWAY, "Foo");
+    run_loop.Run();
+    EXPECT_TRUE(Mock::VerifyAndClearExpectations(&callback));
+  }
 
-  base::RunLoop run_loop2;
-  // Right now we don't keep track of previous state so the callback will be
-  // invoked with the same state again.
-  EXPECT_CALL(callback, Run(content::PRESENTATION_CONNECTION_STATE_CLOSED))
-      .WillOnce(InvokeWithoutArgs([&run_loop2]() {
-                  run_loop2.Quit();
-                }));
-  media_router_proxy_->OnPresentationConnectionStateChanged(
-      route_id, PresentationConnectionState::CLOSED);
-  run_loop2.Run();
+  content::PresentationConnectionStateChangeInfo terminated_info(
+      content::PRESENTATION_CONNECTION_STATE_TERMINATED);
+  {
+    base::RunLoop run_loop;
+    EXPECT_CALL(callback, Run(StateChageInfoEquals(terminated_info)))
+        .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
+    media_router_proxy_->OnPresentationConnectionStateChanged(
+        route_id, PresentationConnectionState::TERMINATED);
+    run_loop.Run();
+
+    EXPECT_TRUE(Mock::VerifyAndClearExpectations(&callback));
+  }
+}
+
+TEST_F(MediaRouterMojoImplTest,
+       PresentationConnectionStateChangedCallbackRemoved) {
+  MediaRoute::Id route_id("route-id");
+  MockPresentationConnectionStateChangedCallback callback;
+  scoped_ptr<PresentationConnectionStateSubscription> subscription =
+      router()->AddPresentationConnectionStateChangedCallback(
+          route_id,
+          base::Bind(&MockPresentationConnectionStateChangedCallback::Run,
+                     base::Unretained(&callback)));
 
   // Callback has been removed, so we don't expect it to be called anymore.
   subscription.reset();
   EXPECT_TRUE(router()->presentation_connection_state_callbacks_.empty());
 
-  EXPECT_CALL(callback, Run(content::PRESENTATION_CONNECTION_STATE_CLOSED))
-      .Times(0);
+  EXPECT_CALL(callback, Run(_)).Times(0);
   media_router_proxy_->OnPresentationConnectionStateChanged(
-      route_id, PresentationConnectionState::CLOSED);
+      route_id, PresentationConnectionState::TERMINATED);
   ProcessEventLoop();
 }
 

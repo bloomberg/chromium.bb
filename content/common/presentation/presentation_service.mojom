@@ -16,6 +16,12 @@ enum PresentationConnectionState {
   TERMINATED
 };
 
+enum PresentationConnectionCloseReason {
+  CONNECTION_ERROR,
+  CLOSED,
+  WENT_AWAY
+};
+
 enum PresentationErrorType {
   NO_AVAILABLE_SCREENS,
   SESSION_REQUEST_CANCELLED,
@@ -118,6 +124,12 @@ interface PresentationServiceClient {
   // this frame has changed to |newState|.
   OnConnectionStateChanged(PresentationSessionInfo connection,
                            PresentationConnectionState newState);
+
+  // Caled when the state of |connection| started on this frame has changed to
+  // CLOSED.
+  OnConnectionClosed(PresentationSessionInfo connection,
+                     PresentationConnectionCloseReason reason,
+                     string message);
 
   // See PresentationService::ListenForSessionMessages.
   OnSessionMessagesReceived(PresentationSessionInfo sessionInfo,

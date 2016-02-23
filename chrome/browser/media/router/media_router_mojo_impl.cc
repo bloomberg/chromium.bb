@@ -710,6 +710,15 @@ void MediaRouterMojoImpl::OnPresentationConnectionStateChanged(
       route_id, mojo::PresentationConnectionStateFromMojo(state));
 }
 
+void MediaRouterMojoImpl::OnPresentationConnectionClosed(
+    const mojo::String& route_id,
+    interfaces::MediaRouter::PresentationConnectionCloseReason reason,
+    const mojo::String& message) {
+  NotifyPresentationConnectionClose(
+      route_id, mojo::PresentationConnectionCloseReasonFromMojo(reason),
+      message);
+}
+
 void MediaRouterMojoImpl::DoStartObservingMediaSinks(
     const MediaSource::Id& source_id) {
   DVLOG_WITH_INSTANCE(1) << "DoStartObservingMediaSinks: " << source_id;

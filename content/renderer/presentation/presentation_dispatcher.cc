@@ -55,6 +55,22 @@ blink::WebPresentationConnectionState GetWebPresentationConnectionStateFromMojo(
   }
 }
 
+blink::WebPresentationConnectionCloseReason
+GetWebPresentationConnectionCloseReasonFromMojo(
+    presentation::PresentationConnectionCloseReason mojoConnectionCloseReason) {
+  switch (mojoConnectionCloseReason) {
+    case presentation::PresentationConnectionCloseReason::CONNECTION_ERROR:
+      return blink::WebPresentationConnectionCloseReason::Error;
+    case presentation::PresentationConnectionCloseReason::CLOSED:
+      return blink::WebPresentationConnectionCloseReason::Closed;
+    case presentation::PresentationConnectionCloseReason::WENT_AWAY:
+      return blink::WebPresentationConnectionCloseReason::WentAway;
+    default:
+      NOTREACHED();
+      return blink::WebPresentationConnectionCloseReason::Error;
+  }
+}
+
 }  // namespace
 
 namespace content {
@@ -380,6 +396,20 @@ void PresentationDispatcher::OnConnectionStateChanged(
   controller_->didChangeSessionState(
       new PresentationConnectionClient(std::move(connection)),
       GetWebPresentationConnectionStateFromMojo(state));
+}
+
+void PresentationDispatcher::OnConnectionClosed(
+    presentation::PresentationSessionInfoPtr connection,
+    presentation::PresentationConnectionCloseReason reason,
+    const mojo::String& message) {
+  if (controller_)
+    return;
+
+  DCHECK(!connection.is_null());
+  controller_->didCloseConnection(
+      new PresentationConnectionClient(std::move(connection)),
+      GetWebPresentationConnectionCloseReasonFromMojo(reason),
+      blink::WebString::fromUTF8(message));
 }
 
 void PresentationDispatcher::OnSessionMessagesReceived(

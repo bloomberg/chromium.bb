@@ -40,5 +40,20 @@ presentation::PresentationConnectionState PresentationConnectionStateToMojo(
   return presentation::PresentationConnectionState::TERMINATED;
 }
 
+presentation::PresentationConnectionCloseReason
+PresentationConnectionCloseReasonToMojo(
+    content::PresentationConnectionCloseReason reason) {
+  switch (reason) {
+    case content::PRESENTATION_CONNECTION_CLOSE_REASON_CONNECTION_ERROR:
+      return presentation::PresentationConnectionCloseReason::CONNECTION_ERROR;
+    case content::PRESENTATION_CONNECTION_CLOSE_REASON_CLOSED:
+      return presentation::PresentationConnectionCloseReason::CLOSED;
+    case content::PRESENTATION_CONNECTION_CLOSE_REASON_WENT_AWAY:
+      return presentation::PresentationConnectionCloseReason::WENT_AWAY;
+  }
+  NOTREACHED();
+  return presentation::PresentationConnectionCloseReason::CONNECTION_ERROR;
+}
+
 }  // namespace content
 

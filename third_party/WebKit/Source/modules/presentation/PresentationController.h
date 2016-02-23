@@ -20,6 +20,7 @@ class LocalFrame;
 class PresentationConnection;
 class WebPresentationAvailabilityCallback;
 class WebPresentationConnectionClient;
+enum class WebPresentationConnectionCloseReason;
 enum class WebPresentationConnectionState;
 
 // The coordinator between the various page exposed properties and the content
@@ -50,6 +51,7 @@ public:
     // Implementation of WebPresentationController.
     void didStartDefaultSession(WebPresentationConnectionClient*) override;
     void didChangeSessionState(WebPresentationConnectionClient*, WebPresentationConnectionState) override;
+    void didCloseConnection(WebPresentationConnectionClient*, WebPresentationConnectionCloseReason, const WebString& message) override;
     void didReceiveSessionTextMessage(WebPresentationConnectionClient*, const WebString&) override;
     void didReceiveSessionBinaryMessage(WebPresentationConnectionClient*, const uint8_t* data, size_t length) override;
 

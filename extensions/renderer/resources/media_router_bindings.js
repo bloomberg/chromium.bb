@@ -123,6 +123,28 @@ define('media_router_bindings', [
   }
 
   /**
+   * Converts presentation connection close reason to Mojo enum value.
+   * @param {!string} reason
+   * @return {!mediaRouterMojom.MediaRouter.PresentationConnectionCloseReason}
+   */
+  function presentationConnectionCloseReasonToMojo_(reason) {
+    var PresentationConnectionCloseReason =
+        mediaRouterMojom.MediaRouter.PresentationConnectionCloseReason;
+    switch (state) {
+      case 'error':
+        return PresentationConnectionCloseReason.CONNECTION_ERROR;
+      case 'closed':
+        return PresentationConnectionCloseReason.CLOSED;
+      case 'went_away':
+        return PresentationConnectionCloseReason.WENT_AWAY;
+      default:
+        console.error('Unknown presentation connection close reason : ' +
+            reason);
+        return PresentationConnectionCloseReason.CONNECTION_ERROR;
+    }
+  }
+
+  /**
    * Parses the given route request Error object and converts it to the
    * corresponding result code.
    * @param {!Error} error
@@ -351,13 +373,26 @@ define('media_router_bindings', [
   /**
    * Called by the provider manager when the state of a presentation connected
    * to a route has changed.
-   * @param {!string} routeId
-   * @param {!string} state
+   * @param {string} routeId
+   * @param {string} state
    */
   MediaRouter.prototype.onPresentationConnectionStateChanged =
       function(routeId, state) {
     this.service_.onPresentationConnectionStateChanged(
         routeId, presentationConnectionStateToMojo_(state));
+  };
+
+  /**
+   * Called by the provider manager when the state of a presentation connected
+   * to a route has closed.
+   * @param {string} routeId
+   * @param {string} reason
+   * @param {string} message
+   */
+  MediaRouter.prototype.onPresentationConnectionClosed =
+      function(routeId, reason, message) {
+    this.service_.onPresentationConnectionClosed(
+        routeId, presentationConnectionCloseReasonToMojo_(state), message);
   };
 
   /**

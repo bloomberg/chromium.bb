@@ -18,6 +18,7 @@
 #include "modules/EventTargetModules.h"
 #include "modules/presentation/Presentation.h"
 #include "modules/presentation/PresentationConnectionAvailableEvent.h"
+#include "modules/presentation/PresentationConnectionCloseEvent.h"
 #include "modules/presentation/PresentationController.h"
 #include "modules/presentation/PresentationRequest.h"
 #include "public/platform/modules/presentation/WebPresentationConnectionClient.h"
@@ -58,6 +59,25 @@ const AtomicString& connectionStateToString(WebPresentationConnectionState state
 
     ASSERT_NOT_REACHED();
     return terminatedValue;
+}
+
+const AtomicString& connectionCloseReasonToString(WebPresentationConnectionCloseReason reason)
+{
+    DEFINE_STATIC_LOCAL(const AtomicString, errorValue, ("error", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, closedValue, ("closed", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, wentAwayValue, ("wentaway", AtomicString::ConstructFromLiteral));
+
+    switch (reason) {
+    case WebPresentationConnectionCloseReason::Error:
+        return errorValue;
+    case WebPresentationConnectionCloseReason::Closed:
+        return closedValue;
+    case WebPresentationConnectionCloseReason::WentAway:
+        return wentAwayValue;
+    }
+
+    ASSERT_NOT_REACHED();
+    return errorValue;
 }
 
 void throwPresentationDisconnectedError(ExceptionState& exceptionState)
@@ -361,12 +381,19 @@ void PresentationConnection::didChangeState(WebPresentationConnectionState state
         dispatchEvent(Event::create(EventTypeNames::terminate));
         return;
     // Closed state is handled in |didClose()|.
-    // TODO(imcheng): Add didClose() method and provide reason and message.
-    // (crbug.com/574234)
     case WebPresentationConnectionState::Closed:
         return;
     }
     ASSERT_NOT_REACHED();
+}
+
+void PresentationConnection::didClose(WebPresentationConnectionCloseReason reason, const String& message)
+{
+    if (m_state == WebPresentationConnectionState::Closed)
+        return;
+
+    m_state = WebPresentationConnectionState::Closed;
+    dispatchEvent(PresentationConnectionCloseEvent::create(EventTypeNames::close, connectionCloseReasonToString(reason), message));
 }
 
 void PresentationConnection::didFinishLoadingBlob(PassRefPtr<DOMArrayBuffer> buffer)

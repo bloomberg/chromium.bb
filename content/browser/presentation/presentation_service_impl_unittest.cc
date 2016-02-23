@@ -163,6 +163,17 @@ class MockPresentationServiceClient :
                void(const presentation::PresentationSessionInfo& connection,
                     presentation::PresentationConnectionState new_state));
 
+  void OnConnectionClosed(
+      presentation::PresentationSessionInfoPtr connection,
+      presentation::PresentationConnectionCloseReason reason,
+      const mojo::String& message) override {
+    OnConnectionClosed(*connection, reason, message);
+  }
+  MOCK_METHOD3(OnConnectionClosed,
+               void(const presentation::PresentationSessionInfo& connection,
+                    presentation::PresentationConnectionCloseReason reason,
+                    const mojo::String& message));
+
   MOCK_METHOD1(OnScreenAvailabilityNotSupported, void(const mojo::String& url));
 
   void OnSessionMessagesReceived(
@@ -472,14 +483,48 @@ TEST_F(PresentationServiceImplTest, ListenForConnectionStateChange) {
   presentation::PresentationSessionInfo presentation_connection;
   presentation_connection.url = kPresentationUrl;
   presentation_connection.id = kPresentationId;
-  base::RunLoop run_loop;
-  EXPECT_CALL(mock_client_,
-              OnConnectionStateChanged(
-                  Equals(presentation_connection),
-                  presentation::PresentationConnectionState::CLOSED))
-      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
-  state_changed_cb.Run(PRESENTATION_CONNECTION_STATE_CLOSED);
-  run_loop.Run();
+  {
+    base::RunLoop run_loop;
+    EXPECT_CALL(mock_client_,
+                OnConnectionStateChanged(
+                    Equals(presentation_connection),
+                    presentation::PresentationConnectionState::TERMINATED))
+        .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+    state_changed_cb.Run(PresentationConnectionStateChangeInfo(
+        PRESENTATION_CONNECTION_STATE_TERMINATED));
+    run_loop.Run();
+  }
+}
+
+TEST_F(PresentationServiceImplTest, ListenForConnectionClose) {
+  content::PresentationSessionInfo connection(kPresentationUrl,
+                                              kPresentationId);
+  content::PresentationConnectionStateChangedCallback state_changed_cb;
+  EXPECT_CALL(mock_delegate_, ListenForConnectionStateChange(_, _, _, _))
+      .WillOnce(SaveArg<3>(&state_changed_cb));
+  service_impl_->ListenForConnectionStateChange(connection);
+
+  // Trigger connection close. It should be propagated back up to
+  // |mock_client_|.
+  presentation::PresentationSessionInfo presentation_connection;
+  presentation_connection.url = kPresentationUrl;
+  presentation_connection.id = kPresentationId;
+  {
+    base::RunLoop run_loop;
+    PresentationConnectionStateChangeInfo closed_info(
+        PRESENTATION_CONNECTION_STATE_CLOSED);
+    closed_info.close_reason = PRESENTATION_CONNECTION_CLOSE_REASON_WENT_AWAY;
+    closed_info.message = "Foo";
+
+    EXPECT_CALL(mock_client_,
+                OnConnectionClosed(
+                    Equals(presentation_connection),
+                    presentation::PresentationConnectionCloseReason::WENT_AWAY,
+                    mojo::String("Foo")))
+        .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+    state_changed_cb.Run(closed_info);
+    run_loop.Run();
+  }
 }
 
 TEST_F(PresentationServiceImplTest, SetSameDefaultPresentationUrl) {

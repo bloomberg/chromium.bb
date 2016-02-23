@@ -38,7 +38,22 @@ void MediaRouterBase::NotifyPresentationConnectionStateChange(
   if (!callbacks)
     return;
 
-  callbacks->Notify(state);
+  callbacks->Notify(content::PresentationConnectionStateChangeInfo(state));
+}
+
+void MediaRouterBase::NotifyPresentationConnectionClose(
+    const MediaRoute::Id& route_id,
+    content::PresentationConnectionCloseReason reason,
+    const std::string& message) {
+  auto* callbacks = presentation_connection_state_callbacks_.get(route_id);
+  if (!callbacks)
+    return;
+
+  content::PresentationConnectionStateChangeInfo info(
+      content::PRESENTATION_CONNECTION_STATE_CLOSED);
+  info.close_reason = reason;
+  info.message = message;
+  callbacks->Notify(info);
 }
 
 void MediaRouterBase::OnPresentationConnectionStateCallbackRemoved(

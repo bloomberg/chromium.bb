@@ -11,6 +11,7 @@ namespace blink {
 
 class WebPresentationConnectionClient;
 class WebString;
+enum class WebPresentationConnectionCloseReason;
 enum class WebPresentationConnectionState;
 
 // The delegate Blink provides to WebPresentationClient in order to get updates.
@@ -24,6 +25,9 @@ public:
 
     // Called when the state of a session changes.
     virtual void didChangeSessionState(WebPresentationConnectionClient*, WebPresentationConnectionState) = 0;
+
+    // Called when a connection closes.
+    virtual void didCloseConnection(WebPresentationConnectionClient*, WebPresentationConnectionCloseReason, const WebString& message) = 0;
 
     // Called when a text message of a session is received.
     virtual void didReceiveSessionTextMessage(WebPresentationConnectionClient*, const WebString& message) = 0;

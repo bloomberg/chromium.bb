@@ -15,6 +15,12 @@ enum class WebPresentationConnectionState {
     Terminated,
 };
 
+enum class WebPresentationConnectionCloseReason {
+    Error = 0,
+    Closed,
+    WentAway
+};
+
 // The implementation the embedder has to provide for the Presentation API to work.
 class WebPresentationConnectionClient {
 public:

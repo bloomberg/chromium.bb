@@ -23,14 +23,29 @@ using PresentationSessionStartedCallback =
     base::Callback<void(const PresentationSessionInfo&)>;
 using PresentationSessionErrorCallback =
     base::Callback<void(const PresentationError&)>;
-using PresentationConnectionStateChangedCallback =
-    base::Callback<void(PresentationConnectionState)>;
 
 // Param #0: a vector of messages that are received.
 // Param #1: tells the callback handler that it may reuse strings or buffers
 //           in the messages contained within param #0.
 using PresentationSessionMessageCallback = base::Callback<
     void(const ScopedVector<content::PresentationSessionMessage>&, bool)>;
+
+struct PresentationConnectionStateChangeInfo {
+  explicit PresentationConnectionStateChangeInfo(
+      PresentationConnectionState state)
+      : state(state),
+        close_reason(PRESENTATION_CONNECTION_CLOSE_REASON_CONNECTION_ERROR) {}
+  ~PresentationConnectionStateChangeInfo() = default;
+
+  PresentationConnectionState state;
+
+  // |close_reason| and |messsage| are only used for state change to CLOSED.
+  PresentationConnectionCloseReason close_reason;
+  std::string message;
+};
+
+using PresentationConnectionStateChangedCallback =
+    base::Callback<void(const PresentationConnectionStateChangeInfo&)>;
 
 // An interface implemented by embedders to handle presentation API calls
 // forwarded from PresentationServiceImpl.

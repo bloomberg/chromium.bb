@@ -45,7 +45,7 @@ using MediaRouteResponseCallback =
 // |AddPresentationConnectionStateChangedCallback|. See the method comments for
 // details.
 using PresentationConnectionStateSubscription = base::CallbackList<void(
-    content::PresentationConnectionState)>::Subscription;
+    const content::PresentationConnectionStateChangeInfo&)>::Subscription;
 
 // An interface for handling resources related to media routing.
 // Responsible for registering observers for receiving sink availability

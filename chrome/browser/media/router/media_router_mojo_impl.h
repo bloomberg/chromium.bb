@@ -269,6 +269,10 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   void OnPresentationConnectionStateChanged(
       const mojo::String& route_id,
       interfaces::MediaRouter::PresentationConnectionState state) override;
+  void OnPresentationConnectionClosed(
+      const mojo::String& route_id,
+      interfaces::MediaRouter::PresentationConnectionCloseReason reason,
+      const mojo::String& message) override;
 
   // Converts the callback result of calling Mojo CreateRoute()/JoinRoute()
   // into a local callback.

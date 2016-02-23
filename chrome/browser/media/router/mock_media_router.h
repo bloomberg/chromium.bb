@@ -92,7 +92,8 @@ class MockMediaRouter : public MediaRouter {
                void(PresentationSessionMessagesObserver* observer));
 
  private:
-  base::CallbackList<void(content::PresentationConnectionState)>
+  base::CallbackList<void(
+      const content::PresentationConnectionStateChangeInfo&)>
       connection_state_callbacks_;
 };
 

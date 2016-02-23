@@ -102,6 +102,10 @@ class CONTENT_EXPORT PresentationDispatcher
   void OnConnectionStateChanged(
       presentation::PresentationSessionInfoPtr connection,
       presentation::PresentationConnectionState state) override;
+  void OnConnectionClosed(
+      presentation::PresentationSessionInfoPtr connection,
+      presentation::PresentationConnectionCloseReason reason,
+      const mojo::String& message) override;
   void OnSessionMessagesReceived(
       presentation::PresentationSessionInfoPtr session_info,
       mojo::Array<presentation::SessionMessagePtr> messages) override;

@@ -17,6 +17,9 @@ CONTENT_EXPORT presentation::PresentationErrorType PresentationErrorTypeToMojo(
 CONTENT_EXPORT presentation::PresentationConnectionState
 PresentationConnectionStateToMojo(PresentationConnectionState state);
 
+CONTENT_EXPORT presentation::PresentationConnectionCloseReason
+PresentationConnectionCloseReasonToMojo(
+    PresentationConnectionCloseReason reason);
 }  // namespace content
 
 namespace mojo {

@@ -277,6 +277,13 @@ interface MediaRouter {
     TERMINATED
   };
 
+  // Keep in sync with content/public/browser/presentation_session.h.
+  enum PresentationConnectionCloseReason {
+    CONNECTION_ERROR,
+    CLOSED,
+    WENT_AWAY
+  };
+
   // Registers a MediaRouteProvider with the MediaRouter.
   // Returns a string that uniquely identifies the Media Router browser
   // process.
@@ -302,5 +309,10 @@ interface MediaRouter {
   // changed to |state|.
   OnPresentationConnectionStateChanged(
       string route_id, PresentationConnectionState state);
+
+  // Called when the presentation connected to route |route_id| has closed.
+  OnPresentationConnectionClosed(
+      string route_id, PresentationConnectionCloseReason reason,
+      string message);
 };
 

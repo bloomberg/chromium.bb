@@ -12,6 +12,8 @@ using media_router::interfaces::MediaSinkPtr;
 
 using PresentationConnectionState =
     media_router::interfaces::MediaRouter::PresentationConnectionState;
+using PresentationConnectionCloseReason =
+    media_router::interfaces::MediaRouter::PresentationConnectionCloseReason;
 using RouteRequestResultCode = media_router::interfaces::RouteRequestResultCode;
 
 namespace mojo {
@@ -148,6 +150,22 @@ content::PresentationConnectionState PresentationConnectionStateFromMojo(
     default:
       NOTREACHED() << "Unknown PresentationConnectionState " << state;
       return content::PRESENTATION_CONNECTION_STATE_TERMINATED;
+  }
+}
+
+content::PresentationConnectionCloseReason
+PresentationConnectionCloseReasonFromMojo(
+    PresentationConnectionCloseReason reason) {
+  switch (reason) {
+    case PresentationConnectionCloseReason::CONNECTION_ERROR:
+      return content::PRESENTATION_CONNECTION_CLOSE_REASON_CONNECTION_ERROR;
+    case PresentationConnectionCloseReason::CLOSED:
+      return content::PRESENTATION_CONNECTION_CLOSE_REASON_CLOSED;
+    case PresentationConnectionCloseReason::WENT_AWAY:
+      return content::PRESENTATION_CONNECTION_CLOSE_REASON_WENT_AWAY;
+    default:
+      NOTREACHED() << "Unknown PresentationConnectionCloseReason " << reason;
+      return content::PRESENTATION_CONNECTION_CLOSE_REASON_CONNECTION_ERROR;
   }
 }
 

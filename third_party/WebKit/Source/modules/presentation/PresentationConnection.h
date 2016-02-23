@@ -70,6 +70,9 @@ public:
     // Notifies the connection about its state change.
     void didChangeState(WebPresentationConnectionState);
 
+    // Notifies the connection about its state change to 'closed'.
+    void didClose(WebPresentationConnectionCloseReason, const String& message);
+
     // Notifies the presentation about new message.
     void didReceiveTextMessage(const String& message);
     void didReceiveBinaryMessage(const uint8_t* data, size_t length);
