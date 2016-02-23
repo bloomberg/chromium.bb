@@ -123,9 +123,9 @@ gyp-arm-build() {
   # Setup environment for arm.
   export GYP_DEFINES="target_arch=arm"
   export GYP_CROSSCOMPILE=1
-  # NOTE: this step is also run implicitly as part of gclient runhooks --force
-  #       it uses the exported env vars so we have to run it again
-  build/gyp_nacl
+  # NOTE: gclient runhooks and gyp_nacl use the exported env vars so we have to
+  # run it again
+  gclient runhooks
 
   echo "@@@BUILD_STEP gyp_compile [${gypmode}]@@@"
   ninja -C ../out/${gypmode} -v

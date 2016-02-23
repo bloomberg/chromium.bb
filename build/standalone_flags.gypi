@@ -51,11 +51,8 @@
         'mac_sdk%': '<!(python <(DEPTH)/native_client/build/mac/find_sdk.py <(mac_sdk_min))',
 
       }],
-      ['OS=="linux" and target_arch!="mipsel" and target_arch!="arm"', {
+      ['OS=="linux"', {
         'clang%': 1,
-      }],
-      ['target_arch=="mipsel"', {
-        'mips_arch_variant%': 'r2',
       }],
       # Set ARM float abi compilation flag.
       ['OS=="android"', {
@@ -107,7 +104,43 @@
 
     'variables': {
       'variables': {
+        'variables': {
+          'conditions': [
+            # Compute the architecture that we're building on.
+            # This logic needs to be kept in sync with Chrome's common.gypi or
+            # subtle build errors will result when integrating into Chrome.
+            # Generally, a desync will result in NaCl libraries will be a
+            # different bittage than Chrome.  The kicker is that builds that
+            # explicitly specify target_arch will not notice this desync, (this
+            # logic is overridden) but builds that do not specify target_arch will
+            # break.  This can cause confusion because only some trybots break.
+            ['OS=="win" or OS=="ios"', {
+              'host_arch%': 'ia32',
+            }, {
+              # This handles the Linux platforms we generally deal with. Anything
+              # else gets passed through, which probably won't work very well;
+              # such hosts should pass an explicit target_arch to gyp.
+              #
+              # NOTE: currently only nacl is generating gyp files on an arm board.
+              #    The arm.* -> arm substitution in chrome's common.gypi isn't
+              #    appropriate in that context as we actually use target_arch==arm
+              #    to mean x86 -> arm cross compile. When actually running on an
+              #    arm board, we'll generate ia32 for now, so that the generation
+              #    succeeds.
+              'host_arch%':
+                  '<!(echo "<!pymod_do_main(detect_nacl_host_arch)" | sed -e "s/arm.*/ia32/")',
+            }],
+          ]
+        },
+        'host_arch%': '<(host_arch)',
+
         'make_clang_dir%': 'third_party/llvm-build/Release+Asserts',
+
+        # By default we build against a stable sysroot image to avoid
+        # depending on the packages installed on the local machine. Set this
+        # to 0 to build against locally installed headers and libraries (e.g.
+        # if packaging for a linux distro)
+        'use_sysroot%': 1,
 
         # Override branding to select the desired branding flavor.
         'branding%': 'Chromium',
@@ -123,29 +156,11 @@
         'buildtype%': 'Dev',
 
         'conditions': [
-          # Compute the architecture that we're building on.
-          # This logic needs to be kept in sync with Chrome's common.gypi or
-          # subtle build errors will result when integrating into Chrome.
-          # Generally, a desync will result in NaCl libraries will be a
-          # different bittage than Chrome.  The kicker is that builds that
-          # explicitly specify target_arch will not notice this desync, (this
-          # logic is overridden) but builds that do not specify target_arch will
-          # break.  This can cause confusion because only some trybots break.
-          ['OS=="win" or OS=="ios"', {
-            'host_arch%': 'ia32',
+          ['OS=="android"', { # Android target_arch defaults to ARM.
+            'target_arch%': 'arm',
           }, {
-            # This handles the Linux platforms we generally deal with. Anything
-            # else gets passed through, which probably won't work very well;
-            # such hosts should pass an explicit target_arch to gyp.
-            #
-            # NOTE: currently only nacl is generating gyp files on an arm board.
-            #    The arm.* -> arm substitution in chrome's common.gypi isn't
-            #    appropriate in that context as we actually use target_arch==arm
-            #    to mean x86 -> arm cross compile. When actually running on an
-            #    arm board, we'll generate ia32 for now, so that the generation
-            #    succeeds.
-            'host_arch%':
-                '<!(echo "<!pymod_do_main(detect_nacl_host_arch)" | sed -e "s/arm.*/ia32/")',
+            # By default, build for the architecture that we're building on.
+            'target_arch%': '<(host_arch)',
           }],
         ],
       },
@@ -153,32 +168,47 @@
       'branding%': '<(branding)',
       'buildtype%': '<(buildtype)',
       'host_arch%': '<(host_arch)',
+      'target_arch%': '<(target_arch)',
+      'use_sysroot%': '<(use_sysroot)',
       'make_clang_dir%': '<(make_clang_dir)',
 
       # If this is set clang is used as host compiler, but not as target
       # compiler. Always do this by default.
       'host_clang%': 1,
 
-      # The system root for cross-compiles. Default: none.
-      'sysroot%': '',
-
       # This variable is to allow us to build components as either static
       # libraries or dynamic shared libraries.
       'component%': 'static_library',
 
       'conditions': [
-        ['OS=="android"', { # Android target_arch defaults to ARM.
-          'target_arch%': 'arm',
-        }, {
-          # By default, build for the architecture that we're building on.
-          'target_arch%': '<(host_arch)',
-        }],
         # A flag for POSIX platforms
         ['OS=="win"', {
           'os_posix%': 0,
          }, {
           'os_posix%': 1,
         }],
+
+        # The system root for linux builds.
+        ['OS=="linux" and use_sysroot==1', {
+          # sysroot needs to be an absolute path otherwise it generates
+          # incorrect results when passed to pkg-config
+          'conditions': [
+            ['target_arch=="arm"', {
+              'sysroot%': '<!(cd <(DEPTH) && pwd -P)/build/linux/debian_wheezy_arm-sysroot',
+            }],
+            ['target_arch=="x64"', {
+              'sysroot%': '<!(cd <(DEPTH) && pwd -P)/build/linux/debian_wheezy_amd64-sysroot',
+            }],
+            ['target_arch=="ia32"', {
+              'sysroot%': '<!(cd <(DEPTH) && pwd -P)/build/linux/debian_wheezy_i386-sysroot',
+            }],
+            ['target_arch=="mipsel"', {
+              'sysroot%': '<!(cd <(DEPTH) && pwd -P)/build/linux/debian_wheezy_mips-sysroot',
+            }],
+          ],
+        }, {
+          'sysroot%': ''
+        }], # OS=="linux" and use_sysroot==1
       ],
     },
     # These come from the above variable scope.
@@ -189,6 +219,7 @@
     'make_clang_dir%': '<(make_clang_dir)',
     'os_posix%': '<(os_posix)',
     'sysroot%': '<(sysroot)',
+    'use_sysroot%': '<(use_sysroot)',
     'target_arch%': '<(target_arch)',
   },
 
@@ -263,6 +294,18 @@
           '-Wall', # TODO(bradnelson): why does this disappear?!?
         ],
         'conditions': [
+          ['sysroot!=""', {
+            'target_conditions': [
+              ['_toolset=="target"', {
+                'cflags': [
+                  '--sysroot=<(sysroot)',
+                ],
+                'ldflags': [
+                  '--sysroot=<(sysroot)',
+                  '<!(<(DEPTH)/build/linux/sysroot_ld_path.sh <(sysroot))',
+                ],
+            }]]
+          }],
           ['nacl_standalone==1 and OS=="linux"', {
             'cflags': ['-fPIC'],
           }],
@@ -314,18 +357,18 @@
                 # chromium/src/build/common.gypi, but these details really
                 # should be more fully harmonized and shared.
                 'conditions': [
-                  ['sysroot!=""', {
-                    'cflags': [
-                      '--sysroot=<(sysroot)',
-                    ],
-                    'ldflags': [
-                      '--sysroot=<(sysroot)',
-                    ],
-                  }],
                   ['arm_thumb==1', {
                     'cflags': [
                       '-mthumb',
                     ]
+                  }],
+                  ['clang==1 and OS!="android"', {
+                    'cflags': [
+                      '-target arm-linux-gnueabihf',
+                    ],
+                    'ldflags': [
+                      '-target arm-linux-gnueabihf',
+                    ],
                   }],
                   ['arm_version==7', {
                     'cflags': [
@@ -350,10 +393,11 @@
               ['_toolset=="target"', {
                 # Copied from chromium build/common.gypi
                 'conditions': [
-                  ['mips_arch_variant=="r2"', {
-                    'cflags': ['-mips32r2'],
-                  }, {
-                    'cflags': ['-mips32'],
+                  ['clang==1', {
+                    'cflags': [ '-target mipsel-linux-gnu', '-march=mips32r6', ],
+                    'ldflags': [ '-target mipsel-linux-gnu', ],
+                  }, { # clang==0
+                    'cflags': ['-mips32r6', '-Wa,-mips32r6', ],
                   }],
                 ],
               }],
