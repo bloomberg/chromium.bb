@@ -52,14 +52,22 @@ namespace {
 // by the ConsolidateCaptureFormats() method.
 bool IsCaptureFormatSmaller(const media::VideoCaptureFormat& format1,
                             const media::VideoCaptureFormat& format2) {
-  if (format1.frame_size.GetArea() == format2.frame_size.GetArea())
+  DCHECK(format1.frame_size.GetCheckedArea().IsValid());
+  DCHECK(format2.frame_size.GetCheckedArea().IsValid());
+  if (format1.frame_size.GetCheckedArea().ValueOrDefault(0) ==
+      format2.frame_size.GetCheckedArea().ValueOrDefault(0)) {
     return format1.frame_rate > format2.frame_rate;
-  return format1.frame_size.GetArea() < format2.frame_size.GetArea();
+  }
+  return format1.frame_size.GetCheckedArea().ValueOrDefault(0) <
+         format2.frame_size.GetCheckedArea().ValueOrDefault(0);
 }
 
 bool IsCaptureFormatSizeEqual(const media::VideoCaptureFormat& format1,
                               const media::VideoCaptureFormat& format2) {
-  return format1.frame_size.GetArea() == format2.frame_size.GetArea();
+  DCHECK(format1.frame_size.GetCheckedArea().IsValid());
+  DCHECK(format2.frame_size.GetCheckedArea().IsValid());
+  return format1.frame_size.GetCheckedArea().ValueOrDefault(0) ==
+         format2.frame_size.GetCheckedArea().ValueOrDefault(0);
 }
 
 // This function receives a list of capture formats, removes duplicated
