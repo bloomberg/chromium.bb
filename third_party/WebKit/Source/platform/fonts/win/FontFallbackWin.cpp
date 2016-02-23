@@ -126,10 +126,10 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontMana
     // Try Khmer OS before Vista fonts because 'Khmer OS' goes along better
     // with Latin and looks better/larger for the same size.
     static const UChar* khmerFonts[] = {L"Leelawadee UI", L"Khmer OS", L"MoolBoran", L"DaunPenh", L"Code2000", 0};
-    // For the following 6 scripts, two or fonts are listed. The fonts in
-    // the 1st slot are not available on Windows XP. To support these
-    // scripts on XP, listed in the rest of slots are widely used
-    // fonts.
+    // For the following scripts, two or more fonts are listed. The fonts in
+    // the 1st slot is preferred but may not not be available on older versions
+    // of Windows. To support these scripts the rest of the slots lists at least
+    // one widely used for likely to be available on XP or Windows 7.
     static const UChar* ethiopicFonts[] = {L"Nyala", L"Abyssinica SIL", L"Ethiopia Jiret", L"Visual Geez Unicode", L"GF Zemen Unicode", L"Ebrima", 0};
     static const UChar* oriyaFonts[] = {L"Kalinga", L"ori1Uni", L"Lohit Oriya", L"Nirmala UI", 0};
     static const UChar* laoFonts[] = {L"Leelawadee UI", L"DokChampa", L"Saysettha OT", L"Phetsarath OT", L"Code2000", 0};
@@ -139,8 +139,9 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontMana
     // http://www.bethmardutho.org/support/meltho/download/index.php
     static const UChar* syriacFonts[] = {L"Estrangelo Edessa", L"Estrangelo Nisibin", L"Code2000", 0};
     static const UChar* myanmarFonts[] = {L"Myanmar Text", L"Padauk", L"Parabaik", L"Myanmar3", L"Code2000", 0};
-    static const UChar* gothicFonts[] = {L"Segoe UI Symbol", 0};
-    static const UChar* oghamFonts[] = {L"Segoe UI Symbol", 0};
+    static const UChar* glagoliticFonts[] = {L"Segoe UI Historic", L"Segoe UI Symbol", 0};
+    static const UChar* gothicFonts[] = {L"Segoe UI Historic", L"Segoe UI Symbol", 0};
+    static const UChar* oghamFonts[] = {L"Segoe UI Historic", L"Segoe UI Symbol", 0};
     static const UChar* hangulFonts[] = {L"gulim", L"Malgun Gothic", 0};
     static const UChar* devanagariFonts[] = {L"mangal", L"Nirmala UI", 0};
     static const UChar* gujaratiFonts[] = {L"shruti", L"Nirmala UI", 0};
@@ -174,6 +175,7 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontMana
         {USCRIPT_YI, yiFonts},
         {USCRIPT_SYRIAC, syriacFonts},
         {USCRIPT_MYANMAR, myanmarFonts},
+        {USCRIPT_GLAGOLITIC, glagoliticFonts},
         {USCRIPT_GOTHIC, gothicFonts},
         {USCRIPT_OGHAM, oghamFonts},
         {USCRIPT_HANGUL, hangulFonts},
