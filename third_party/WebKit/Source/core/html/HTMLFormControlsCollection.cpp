@@ -197,6 +197,8 @@ void HTMLFormControlsCollection::namedGetter(const AtomicString& name, RadioNode
     // This path never returns a RadioNodeList for <img> because
     // onlyMatchingImgElements flag is false by default.
     returnValue.setRadioNodeList(ownerNode().radioNodeList(name));
+    if (isHTMLFieldSetElement(ownerNode()))
+        UseCounter::count(document(), UseCounter::FormControlsCollectionReturnsRadioNodeListForFieldSet);
 }
 
 void HTMLFormControlsCollection::supportedPropertyNames(Vector<String>& names)
