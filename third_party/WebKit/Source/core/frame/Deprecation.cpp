@@ -337,6 +337,9 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
     case UseCounter::BorderImageWithBorderStyleNone:
         return "Elements using the 'border-image' CSS property with no 'border-style' set should have no border, but currently do. Setting 'border-style' will be required in M51, around June 2016. See https://www.chromestatus.com/features/5542503914668032 for more details.";
 
+    case UseCounter::WebAnimationHyphenatedProperty:
+        return replacedWillBeRemoved("Hyphenated naming in Web Animations keyframes", "camelCase", 51, "5650817352728576");
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

@@ -118,6 +118,12 @@
       return expectFlip(from, to, 0.5);
     },
     interpolate: function(property, from, to, at, target) {
+      // Convert to camelCase
+      for (var i = property.length - 2; i > 0; --i) {
+        if (property[i] === '-') {
+          property = property.substring(0, i) + property[i + 1].toUpperCase() + property.substring(i + 2);
+        }
+      }
       this.interpolateKeyframes([
         {offset: 0, [property]: from},
         {offset: 1, [property]: to},

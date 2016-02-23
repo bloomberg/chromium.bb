@@ -8,6 +8,7 @@
 #include "core/css/CSSValueList.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/css/resolver/CSSToStyleMap.h"
+#include "core/frame/Deprecation.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/animation/SVGSMILElement.h"
 #include "wtf/text/StringBuilder.h"
@@ -28,7 +29,7 @@ static String removeSVGPrefix(const String& property)
     return property.substring(kSVGPrefixLength);
 }
 
-CSSPropertyID AnimationInputHelpers::keyframeAttributeToCSSProperty(const String& property)
+CSSPropertyID AnimationInputHelpers::keyframeAttributeToCSSProperty(const String& property, const Document& document)
 {
     // Disallow prefixed properties.
     if (property[0] == '-' || isASCIIUpper(property[0]))
@@ -37,6 +38,8 @@ CSSPropertyID AnimationInputHelpers::keyframeAttributeToCSSProperty(const String
         return CSSPropertyFloat;
     StringBuilder builder;
     for (size_t i = 0; i < property.length(); ++i) {
+        if (property[i] == '-')
+            Deprecation::countDeprecation(document, UseCounter::WebAnimationHyphenatedProperty);
         if (isASCIIUpper(property[i]))
             builder.append('-');
         builder.append(property[i]);

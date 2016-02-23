@@ -106,7 +106,7 @@ EffectModel* EffectInput::convert(Element* element, const Vector<Dictionary>& ke
             String value;
             DictionaryHelper::get(keyframeDictionary, property, value);
 
-            CSSPropertyID cssProperty = AnimationInputHelpers::keyframeAttributeToCSSProperty(property);
+            CSSPropertyID cssProperty = AnimationInputHelpers::keyframeAttributeToCSSProperty(property, element->document());
             if (cssProperty != CSSPropertyInvalid) {
                 if (!encounteredCompositableProperty && CompositorAnimations::isCompositableProperty(cssProperty))
                     encounteredCompositableProperty = true;
