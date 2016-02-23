@@ -326,6 +326,21 @@ TEST_F(RtcpParserTest, InjectReceiverReportPacketWithCastFeedback) {
   ExpectCastFeedback(parser2);
 }
 
+TEST_F(RtcpParserTest, ExtendedCastFeedbackDoesNotBreakParsing) {
+  TestRtcpPacketBuilder builder;
+  builder.AddRr(kSenderSsrc, 1);
+  builder.AddRb(kSourceSsrc);
+  builder.AddCast(kSenderSsrc, kSourceSsrc, kTargetDelay);
+  builder.AddCst2(std::vector<uint32_t>{kAckFrameId + 2, kAckFrameId + 3});
+
+  // Parse should succeed with the added CST2 section in the feedback, even
+  // though we don't currently parse it directly.
+  RtcpParser parser(kSourceSsrc, kSenderSsrc);
+  EXPECT_TRUE(parser.Parse(builder.Reader()));
+  ExpectLastReport(parser);
+  ExpectCastFeedback(parser);
+}
+
 TEST_F(RtcpParserTest, InjectReceiverReportWithReceiverLogVerificationBase) {
   static const uint32_t kTimeBaseMs = 12345678;
   static const uint32_t kTimeDelayMs = 10;

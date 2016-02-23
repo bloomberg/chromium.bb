@@ -152,6 +152,37 @@ void TestRtcpPacketBuilder::AddCast(uint32_t sender_ssrc,
   big_endian_writer_.WriteU8(0);  // Lost packet id mask.
 }
 
+void TestRtcpPacketBuilder::AddCst2(
+    const std::vector<uint32_t>& later_received_frames) {
+  big_endian_writer_.WriteU8('C');
+  big_endian_writer_.WriteU8('S');
+  big_endian_writer_.WriteU8('T');
+  big_endian_writer_.WriteU8('2');
+  big_endian_writer_.WriteU8(kFeedbackSeq);
+
+  std::vector<uint8_t> ack_bitmasks;
+  for (uint32_t ack_frame : later_received_frames) {
+    CHECK_LE(kAckFrameId, ack_frame);
+    const size_t bit_index = ack_frame - kAckFrameId - 1;
+    const size_t index = bit_index / 8;
+    const size_t bit_index_within_byte = bit_index % 8;
+    if (index >= ack_bitmasks.size())
+      ack_bitmasks.resize(index + 1);
+    ack_bitmasks[index] |= (1 << (8 - bit_index_within_byte - 1));
+  }
+
+  CHECK_LT(ack_bitmasks.size(), 256u);
+  big_endian_writer_.WriteU8(ack_bitmasks.size());
+  for (uint8_t ack_bits : ack_bitmasks)
+    big_endian_writer_.WriteU8(ack_bits);
+
+  // Pad to ensure the extra CST2 data chunk is 32-bit aligned.
+  for (size_t num_bytes_written = 6 + ack_bitmasks.size();
+       num_bytes_written % 4; ++num_bytes_written) {
+    big_endian_writer_.WriteU8(0);
+  }
+}
+
 void TestRtcpPacketBuilder::AddReceiverLog(uint32_t sender_ssrc) {
   AddRtcpHeader(204, 2);
   big_endian_writer_.WriteU32(sender_ssrc);

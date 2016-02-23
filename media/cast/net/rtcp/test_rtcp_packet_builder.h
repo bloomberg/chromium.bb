@@ -8,6 +8,7 @@
 #define MEDIA_CAST_RTCP_TEST_RTCP_PACKET_BUILDER_H_
 
 #include <stdint.h>
+#include <vector>
 
 #include "base/big_endian.h"
 #include "base/macros.h"
@@ -48,6 +49,7 @@ static const uint32_t kFrameIdWithLostPackets = 19;
 static const int kLostPacketId1 = 3;
 static const int kLostPacketId2 = 5;
 static const int kLostPacketId3 = 12;
+static const uint8_t kFeedbackSeq = 1;
 }  // namespace
 
 class TestRtcpPacketBuilder {
@@ -75,6 +77,8 @@ class TestRtcpPacketBuilder {
   void AddCast(uint32_t sender_ssrc,
                uint32_t media_ssrc,
                base::TimeDelta target_delay);
+  void AddCst2(const std::vector<uint32_t>& later_received_frames);
+
   void AddReceiverLog(uint32_t sender_ssrc);
   void AddReceiverFrameLog(uint32_t rtp_timestamp,
                            int num_events,
