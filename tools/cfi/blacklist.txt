@@ -36,7 +36,7 @@ type:cdm::*
 
 # invalid downcasts for IPC messages
 # https://crbug.com/520760
-fun:*MessageScannerImpl*MessageScannerImpl*
+src:*nacl_message_scanner.cc*
 
 # src/base/win/event_trace_provider_unittest.cc
 type:*EtwTraceProvider*

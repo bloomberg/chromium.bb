@@ -301,6 +301,16 @@
         "test": "blink_platform_unittests"
       },
       {
+        "args": [
+          "--gtest_filter=-SaveType/SavePageMultiFrameBrowserTest.ObjectElements/0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 10
+        },
+        "test": "browser_tests"
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },

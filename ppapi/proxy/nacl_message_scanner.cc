@@ -190,6 +190,7 @@ template <class MessageType>
 class MessageScannerImpl {
  public:
   explicit MessageScannerImpl(const IPC::Message* msg)
+      // The cast below is invalid. See https://crbug.com/520760.
       : msg_(static_cast<const MessageType*>(msg)) {
   }
   bool ScanMessage(ScanningResults* results) {
