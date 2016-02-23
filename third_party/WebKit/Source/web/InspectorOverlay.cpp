@@ -292,9 +292,9 @@ bool InspectorOverlay::handleInputEvent(const WebInputEvent& inputEvent)
     return handled;
 }
 
-void InspectorOverlay::setPausedInDebuggerMessage(const String* message)
+void InspectorOverlay::setPausedInDebuggerMessage(const String& message)
 {
-    m_pausedInDebuggerMessage = message ? *message : String();
+    m_pausedInDebuggerMessage = message;
     scheduleUpdate();
 }
 

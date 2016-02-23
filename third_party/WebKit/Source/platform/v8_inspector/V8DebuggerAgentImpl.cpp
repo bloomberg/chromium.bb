@@ -26,18 +26,19 @@
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
-using blink::protocol::TypeBuilder::Array;
-using blink::protocol::TypeBuilder::Debugger::AsyncOperation;
-using blink::protocol::TypeBuilder::Debugger::BreakpointId;
-using blink::protocol::TypeBuilder::Debugger::CallFrame;
-using blink::protocol::TypeBuilder::Debugger::CollectionEntry;
-using blink::protocol::TypeBuilder::Runtime::ExceptionDetails;
-using blink::protocol::TypeBuilder::Debugger::FunctionDetails;
-using blink::protocol::TypeBuilder::Debugger::GeneratorObjectDetails;
-using blink::protocol::TypeBuilder::Debugger::PromiseDetails;
-using blink::protocol::TypeBuilder::Runtime::ScriptId;
-using blink::protocol::TypeBuilder::Debugger::StackTrace;
-using blink::protocol::TypeBuilder::Runtime::RemoteObject;
+using blink::protocol::Array;
+using blink::protocol::OptionalValue;
+using blink::protocol::Debugger::AsyncOperation;
+using blink::protocol::Debugger::BreakpointId;
+using blink::protocol::Debugger::CallFrame;
+using blink::protocol::Debugger::CollectionEntry;
+using blink::protocol::Runtime::ExceptionDetails;
+using blink::protocol::Debugger::FunctionDetails;
+using blink::protocol::Debugger::GeneratorObjectDetails;
+using blink::protocol::Debugger::PromiseDetails;
+using blink::protocol::Runtime::ScriptId;
+using blink::protocol::Debugger::StackTrace;
+using blink::protocol::Runtime::RemoteObject;
 
 namespace blink {
 
@@ -57,11 +58,6 @@ static const char condition[] = "condition";
 static const char skipAllPauses[] = "skipAllPauses";
 
 } // namespace DebuggerAgentState;
-
-inline static bool asBool(const bool* const b)
-{
-    return b ? *b : false;
-}
 
 static const int maxSkipStepFrameCount = 128;
 
@@ -130,7 +126,7 @@ V8DebuggerAgentImpl::V8DebuggerAgentImpl(InjectedScriptManager* injectedScriptMa
     , m_state(nullptr)
     , m_frontend(nullptr)
     , m_isolate(debugger->isolate())
-    , m_breakReason(protocol::Frontend::Debugger::Reason::Other)
+    , m_breakReason(protocol::Debugger::Paused::ReasonEnum::Other)
     , m_scheduledDebuggerStep(NoStep)
     , m_skipNextDebuggerStepOut(false)
     , m_javaScriptPauseScheduled(false)
@@ -311,25 +307,32 @@ static bool matches(V8DebuggerImpl* debugger, const String& url, const String& p
     return url == pattern;
 }
 
-void V8DebuggerAgentImpl::setBreakpointByUrl(ErrorString* errorString, int lineNumber, const String* const optionalURL, const String* const optionalURLRegex, const int* const optionalColumnNumber, const String* const optionalCondition, BreakpointId* outBreakpointId, RefPtr<Array<protocol::TypeBuilder::Debugger::Location>>& locations)
+void V8DebuggerAgentImpl::setBreakpointByUrl(ErrorString* errorString,
+    int lineNumber,
+    const OptionalValue<String>& optionalURL,
+    const OptionalValue<String>& optionalURLRegex,
+    const OptionalValue<int>& optionalColumnNumber,
+    const OptionalValue<String>& optionalCondition,
+    BreakpointId* outBreakpointId,
+    OwnPtr<protocol::Array<protocol::Debugger::Location>>* locations)
 {
-    locations = Array<protocol::TypeBuilder::Debugger::Location>::create();
-    if (!optionalURL == !optionalURLRegex) {
+    *locations = Array<protocol::Debugger::Location>::create();
+    if (optionalURL.hasValue() == optionalURLRegex.hasValue()) {
         *errorString = "Either url or urlRegex must be specified.";
         return;
     }
 
-    String url = optionalURL ? *optionalURL : *optionalURLRegex;
+    String url = optionalURL.hasValue() ? optionalURL.get() : optionalURLRegex.get();
     int columnNumber = 0;
-    if (optionalColumnNumber) {
-        columnNumber = *optionalColumnNumber;
+    if (optionalColumnNumber.hasValue()) {
+        columnNumber = optionalColumnNumber.get();
         if (columnNumber < 0) {
             *errorString = "Incorrect column number";
             return;
         }
     }
-    String condition = optionalCondition ? *optionalCondition : "";
-    bool isRegex = optionalURLRegex;
+    String condition = optionalCondition.get("");
+    bool isRegex = optionalURLRegex.hasValue();
 
     String breakpointId = (isRegex ? "/" + url + "/" : url) + ':' + String::number(lineNumber) + ':' + String::number(columnNumber);
     RefPtr<JSONObject> breakpointsCookie = m_state->getObject(DebuggerAgentState::javaScriptBreakpoints);
@@ -349,27 +352,32 @@ void V8DebuggerAgentImpl::setBreakpointByUrl(ErrorString* errorString, int lineN
     for (auto& script : m_scripts) {
         if (!matches(m_debugger, script.value.sourceURL(), url, isRegex))
             continue;
-        RefPtr<protocol::TypeBuilder::Debugger::Location> location = resolveBreakpoint(breakpointId, script.key, breakpoint, UserBreakpointSource);
+        OwnPtr<protocol::Debugger::Location> location = resolveBreakpoint(breakpointId, script.key, breakpoint, UserBreakpointSource);
         if (location)
-            locations->addItem(location);
+            (*locations)->addItem(location.release());
     }
 
     *outBreakpointId = breakpointId;
 }
 
-static bool parseLocation(ErrorString* errorString, PassRefPtr<JSONObject> location, String* scriptId, int* lineNumber, int* columnNumber)
+static bool parseLocation(ErrorString* errorString, PassOwnPtr<protocol::Debugger::Location> location, String* scriptId, int* lineNumber, int* columnNumber)
 {
-    if (!location->getString("scriptId", scriptId) || !location->getNumber("lineNumber", lineNumber)) {
+    if (!location->hasScriptId() || !location->hasLineNumber()) {
         // FIXME: replace with input validation.
         *errorString = "scriptId and lineNumber are required.";
         return false;
     }
-    *columnNumber = 0;
-    location->getNumber("columnNumber", columnNumber);
+    *scriptId = location->getScriptId();
+    *lineNumber = location->getLineNumber();
+    *columnNumber = location->getColumnNumber(0);
     return true;
 }
 
-void V8DebuggerAgentImpl::setBreakpoint(ErrorString* errorString, const RefPtr<JSONObject>& location, const String* const optionalCondition, BreakpointId* outBreakpointId, RefPtr<protocol::TypeBuilder::Debugger::Location>& actualLocation)
+void V8DebuggerAgentImpl::setBreakpoint(ErrorString* errorString,
+    PassOwnPtr<protocol::Debugger::Location> location,
+    const OptionalValue<String>& optionalCondition,
+    BreakpointId* outBreakpointId,
+    OwnPtr<protocol::Debugger::Location>* actualLocation)
 {
     String scriptId;
     int lineNumber;
@@ -378,7 +386,7 @@ void V8DebuggerAgentImpl::setBreakpoint(ErrorString* errorString, const RefPtr<J
     if (!parseLocation(errorString, location, &scriptId, &lineNumber, &columnNumber))
         return;
 
-    String condition = optionalCondition ? *optionalCondition : emptyString();
+    String condition = optionalCondition.get("");
 
     String breakpointId = generateBreakpointId(scriptId, lineNumber, columnNumber, UserBreakpointSource);
     if (m_breakpointIdToDebuggerBreakpointIds.find(breakpointId) != m_breakpointIdToDebuggerBreakpointIds.end()) {
@@ -386,8 +394,8 @@ void V8DebuggerAgentImpl::setBreakpoint(ErrorString* errorString, const RefPtr<J
         return;
     }
     ScriptBreakpoint breakpoint(lineNumber, columnNumber, condition);
-    actualLocation = resolveBreakpoint(breakpointId, scriptId, breakpoint, UserBreakpointSource);
-    if (actualLocation)
+    *actualLocation = resolveBreakpoint(breakpointId, scriptId, breakpoint, UserBreakpointSource);
+    if (*actualLocation)
         *outBreakpointId = breakpointId;
     else
         *errorString = "Could not resolve breakpoint";
@@ -418,7 +426,9 @@ void V8DebuggerAgentImpl::removeBreakpoint(const String& breakpointId)
     m_breakpointIdToDebuggerBreakpointIds.remove(debuggerBreakpointIdsIterator);
 }
 
-void V8DebuggerAgentImpl::continueToLocation(ErrorString* errorString, const RefPtr<JSONObject>& location, const bool* interstateLocationOpt)
+void V8DebuggerAgentImpl::continueToLocation(ErrorString* errorString,
+    PassOwnPtr<protocol::Debugger::Location> location,
+    const protocol::OptionalValue<bool>& interstateLocationOpt)
 {
     if (!checkEnabled(errorString))
         return;
@@ -435,11 +445,11 @@ void V8DebuggerAgentImpl::continueToLocation(ErrorString* errorString, const Ref
         return;
 
     ScriptBreakpoint breakpoint(lineNumber, columnNumber, "");
-    m_continueToLocationBreakpointId = debugger().setBreakpoint(scriptId, breakpoint, &lineNumber, &columnNumber, asBool(interstateLocationOpt));
+    m_continueToLocationBreakpointId = debugger().setBreakpoint(scriptId, breakpoint, &lineNumber, &columnNumber, interstateLocationOpt.get(false));
     resume(errorString);
 }
 
-void V8DebuggerAgentImpl::getStepInPositions(ErrorString* errorString, const String& callFrameId, RefPtr<Array<protocol::TypeBuilder::Debugger::Location>>& positions)
+void V8DebuggerAgentImpl::getStepInPositions(ErrorString* errorString, const String& callFrameId, OwnPtr<Array<protocol::Debugger::Location>>* positions)
 {
     if (!isPaused() || m_currentCallStack.IsEmpty()) {
         *errorString = "Attempt to access callframe when debugger is not on pause";
@@ -461,13 +471,13 @@ void V8DebuggerAgentImpl::getStepInPositions(ErrorString* errorString, const Str
     injectedScript->getStepInPositions(errorString, callStack, callFrameId, positions);
 }
 
-void V8DebuggerAgentImpl::getBacktrace(ErrorString* errorString, RefPtr<Array<CallFrame>>& callFrames, RefPtr<StackTrace>& asyncStackTrace)
+void V8DebuggerAgentImpl::getBacktrace(ErrorString* errorString, OwnPtr<Array<CallFrame>>* callFrames, OwnPtr<StackTrace>* asyncStackTrace)
 {
     if (!assertPaused(errorString))
         return;
     m_currentCallStack.Reset(m_isolate, debugger().currentCallFrames());
-    callFrames = currentCallFrames();
-    asyncStackTrace = currentAsyncStackTrace();
+    *callFrames = currentCallFrames();
+    *asyncStackTrace = currentAsyncStackTrace();
 }
 
 bool V8DebuggerAgentImpl::isCallStackEmptyOrBlackboxed()
@@ -559,7 +569,7 @@ V8DebuggerAgentImpl::SkipPauseRequest V8DebuggerAgentImpl::shouldSkipStepPause()
     return RequestStepFrame;
 }
 
-PassRefPtr<protocol::TypeBuilder::Debugger::Location> V8DebuggerAgentImpl::resolveBreakpoint(const String& breakpointId, const String& scriptId, const ScriptBreakpoint& breakpoint, BreakpointSource source)
+PassOwnPtr<protocol::Debugger::Location> V8DebuggerAgentImpl::resolveBreakpoint(const String& breakpointId, const String& scriptId, const ScriptBreakpoint& breakpoint, BreakpointSource source)
 {
     ASSERT(enabled());
     // FIXME: remove these checks once crbug.com/520702 is resolved.
@@ -589,31 +599,41 @@ PassRefPtr<protocol::TypeBuilder::Debugger::Location> V8DebuggerAgentImpl::resol
     else
         debuggerBreakpointIdsIterator->value.append(debuggerBreakpointId);
 
-    RefPtr<protocol::TypeBuilder::Debugger::Location> location = protocol::TypeBuilder::Debugger::Location::create()
+    OwnPtr<protocol::Debugger::Location> location = protocol::Debugger::Location::create()
         .setScriptId(scriptId)
-        .setLineNumber(actualLineNumber);
-    location->setColumnNumber(actualColumnNumber);
-    return location;
+        .setLineNumber(actualLineNumber)
+        .setColumnNumber(actualColumnNumber).build();
+    return location.release();
 }
 
-void V8DebuggerAgentImpl::searchInContent(ErrorString* error, const String& scriptId, const String& query, const bool* const optionalCaseSensitive, const bool* const optionalIsRegex, RefPtr<Array<protocol::TypeBuilder::Debugger::SearchMatch>>& results)
+void V8DebuggerAgentImpl::searchInContent(ErrorString* error, const String& scriptId, const String& query,
+    const OptionalValue<bool>& optionalCaseSensitive,
+    const OptionalValue<bool>& optionalIsRegex,
+    OwnPtr<Array<protocol::Debugger::SearchMatch>>* results)
 {
     ScriptsMap::iterator it = m_scripts.find(scriptId);
     if (it != m_scripts.end())
-        results = V8ContentSearchUtil::searchInTextByLines(m_debugger, it->value.source(), query, asBool(optionalCaseSensitive), asBool(optionalIsRegex));
+        *results = V8ContentSearchUtil::searchInTextByLines(m_debugger, it->value.source(), query, optionalCaseSensitive.get(false), optionalIsRegex.get(false));
     else
         *error = "No script for id: " + scriptId;
 }
 
-void V8DebuggerAgentImpl::setScriptSource(ErrorString* error, const String& scriptId, const String& newContent, const bool* const preview, RefPtr<Array<CallFrame>>& newCallFrames, protocol::TypeBuilder::OptOutput<bool>* stackChanged, RefPtr<StackTrace>& asyncStackTrace, RefPtr<protocol::TypeBuilder::Debugger::SetScriptSourceError>& optOutCompileError)
+void V8DebuggerAgentImpl::setScriptSource(ErrorString* error,
+    const String& scriptId,
+    const String& newContent,
+    const OptionalValue<bool>& preview,
+    OwnPtr<protocol::Array<protocol::Debugger::CallFrame>>* newCallFrames,
+    OptionalValue<bool>* stackChanged,
+    OwnPtr<StackTrace>* asyncStackTrace,
+    OwnPtr<protocol::Debugger::SetScriptSourceError>* optOutCompileError)
 {
     if (!checkEnabled(error))
         return;
-    if (!debugger().setScriptSource(scriptId, newContent, asBool(preview), error, optOutCompileError, &m_currentCallStack, stackChanged))
+    if (!debugger().setScriptSource(scriptId, newContent, preview.get(false), error, optOutCompileError, &m_currentCallStack, stackChanged))
         return;
 
-    newCallFrames = currentCallFrames();
-    asyncStackTrace = currentAsyncStackTrace();
+    *newCallFrames = currentCallFrames();
+    *asyncStackTrace = currentAsyncStackTrace();
 
     ScriptsMap::iterator it = m_scripts.find(scriptId);
     if (it == m_scripts.end())
@@ -621,7 +641,10 @@ void V8DebuggerAgentImpl::setScriptSource(ErrorString* error, const String& scri
     it->value.setSource(newContent);
 }
 
-void V8DebuggerAgentImpl::restartFrame(ErrorString* errorString, const String& callFrameId, RefPtr<Array<CallFrame>>& newCallFrames, RefPtr<StackTrace>& asyncStackTrace)
+void V8DebuggerAgentImpl::restartFrame(ErrorString* errorString,
+    const String& callFrameId,
+    OwnPtr<Array<CallFrame>>* newCallFrames,
+    OwnPtr<StackTrace>* asyncStackTrace)
 {
     if (!isPaused() || m_currentCallStack.IsEmpty()) {
         *errorString = "Attempt to access callframe when debugger is not on pause";
@@ -642,8 +665,8 @@ void V8DebuggerAgentImpl::restartFrame(ErrorString* errorString, const String& c
     v8::Local<v8::Object> callStack = m_currentCallStack.Get(m_isolate);
     injectedScript->restartFrame(errorString, callStack, callFrameId);
     m_currentCallStack.Reset(m_isolate, debugger().currentCallFrames());
-    newCallFrames = currentCallFrames();
-    asyncStackTrace = currentAsyncStackTrace();
+    *newCallFrames = currentCallFrames();
+    *asyncStackTrace = currentAsyncStackTrace();
 }
 
 void V8DebuggerAgentImpl::getScriptSource(ErrorString* error, const String& scriptId, String* scriptSource)
@@ -658,7 +681,7 @@ void V8DebuggerAgentImpl::getScriptSource(ErrorString* error, const String& scri
     *scriptSource = it->value.source();
 }
 
-void V8DebuggerAgentImpl::getFunctionDetails(ErrorString* errorString, const String& functionId, RefPtr<FunctionDetails>& details)
+void V8DebuggerAgentImpl::getFunctionDetails(ErrorString* errorString, const String& functionId, OwnPtr<FunctionDetails>* details)
 {
     if (!checkEnabled(errorString))
         return;
@@ -672,10 +695,10 @@ void V8DebuggerAgentImpl::getFunctionDetails(ErrorString* errorString, const Str
         *errorString = "Function object id is obsolete";
         return;
     }
-    injectedScript->getFunctionDetails(errorString, functionId, &details);
+    injectedScript->getFunctionDetails(errorString, functionId, details);
 }
 
-void V8DebuggerAgentImpl::getGeneratorObjectDetails(ErrorString* errorString, const String& objectId, RefPtr<GeneratorObjectDetails>& details)
+void V8DebuggerAgentImpl::getGeneratorObjectDetails(ErrorString* errorString, const String& objectId, OwnPtr<GeneratorObjectDetails>* details)
 {
     if (!checkEnabled(errorString))
         return;
@@ -689,10 +712,10 @@ void V8DebuggerAgentImpl::getGeneratorObjectDetails(ErrorString* errorString, co
         *errorString = "Inspected frame has gone";
         return;
     }
-    injectedScript->getGeneratorObjectDetails(errorString, objectId, &details);
+    injectedScript->getGeneratorObjectDetails(errorString, objectId, details);
 }
 
-void V8DebuggerAgentImpl::getCollectionEntries(ErrorString* errorString, const String& objectId, RefPtr<protocol::TypeBuilder::Array<CollectionEntry>>& entries)
+void V8DebuggerAgentImpl::getCollectionEntries(ErrorString* errorString, const String& objectId, OwnPtr<protocol::Array<CollectionEntry>>* entries)
 {
     if (!checkEnabled(errorString))
         return;
@@ -706,10 +729,10 @@ void V8DebuggerAgentImpl::getCollectionEntries(ErrorString* errorString, const S
         *errorString = "Inspected frame has gone";
         return;
     }
-    injectedScript->getCollectionEntries(errorString, objectId, &entries);
+    injectedScript->getCollectionEntries(errorString, objectId, entries);
 }
 
-void V8DebuggerAgentImpl::schedulePauseOnNextStatement(protocol::Frontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data)
+void V8DebuggerAgentImpl::schedulePauseOnNextStatement(const String& breakReason, PassRefPtr<JSONObject> data)
 {
     ASSERT(enabled());
     if (m_scheduledDebuggerStep == StepInto || m_javaScriptPauseScheduled || isPaused())
@@ -885,7 +908,17 @@ bool V8DebuggerAgentImpl::callStackForId(ErrorString* errorString, const RemoteC
     return true;
 }
 
-void V8DebuggerAgentImpl::evaluateOnCallFrame(ErrorString* errorString, const String& callFrameId, const String& expression, const String* const objectGroup, const bool* const includeCommandLineAPI, const bool* const doNotPauseOnExceptionsAndMuteConsole, const bool* const returnByValue, const bool* generatePreview, RefPtr<RemoteObject>& result, protocol::TypeBuilder::OptOutput<bool>* wasThrown, RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>& exceptionDetails)
+void V8DebuggerAgentImpl::evaluateOnCallFrame(ErrorString* errorString,
+    const String& callFrameId,
+    const String& expression,
+    const OptionalValue<String>& objectGroup,
+    const OptionalValue<bool>& includeCommandLineAPI,
+    const OptionalValue<bool>& doNotPauseOnExceptionsAndMuteConsole,
+    const OptionalValue<bool>& returnByValue,
+    const OptionalValue<bool>& generatePreview,
+    OwnPtr<RemoteObject>* result,
+    OptionalValue<bool>* wasThrown,
+    OwnPtr<protocol::Runtime::ExceptionDetails>* exceptionDetails)
 {
     if (!isPaused() || m_currentCallStack.IsEmpty()) {
         *errorString = "Attempt to access callframe when debugger is not on pause";
@@ -910,23 +943,28 @@ void V8DebuggerAgentImpl::evaluateOnCallFrame(ErrorString* errorString, const St
     ASSERT(!callStack.IsEmpty());
 
     Optional<IgnoreExceptionsScope> ignoreExceptionsScope;
-    if (asBool(doNotPauseOnExceptionsAndMuteConsole))
+    if (doNotPauseOnExceptionsAndMuteConsole.get(false))
         ignoreExceptionsScope.emplace(m_debugger);
 
-    injectedScript->evaluateOnCallFrame(errorString, callStack, isAsync, callFrameId, expression, objectGroup ? *objectGroup : "", asBool(includeCommandLineAPI), asBool(returnByValue), asBool(generatePreview), &result, wasThrown, &exceptionDetails);
+    injectedScript->evaluateOnCallFrame(errorString, callStack, isAsync, callFrameId, expression, objectGroup.get(""), includeCommandLineAPI.get(false), returnByValue.get(false), generatePreview.get(false), result, wasThrown, exceptionDetails);
 }
 
-void V8DebuggerAgentImpl::setVariableValue(ErrorString* errorString, int scopeNumber, const String& variableName, const RefPtr<JSONObject>& newValue, const String* callFrameId, const String* functionObjectId)
+void V8DebuggerAgentImpl::setVariableValue(ErrorString* errorString,
+    int scopeNumber,
+    const String& variableName,
+    PassOwnPtr<protocol::Runtime::CallArgument> newValue,
+    const OptionalValue<String>& callFrameId,
+    const OptionalValue<String>& functionObjectId)
 {
     if (!checkEnabled(errorString))
         return;
     InjectedScript* injectedScript = nullptr;
-    if (callFrameId) {
+    if (callFrameId.hasValue()) {
         if (!isPaused() || m_currentCallStack.IsEmpty()) {
             *errorString = "Attempt to access callframe when debugger is not on pause";
             return;
         }
-        OwnPtr<RemoteCallFrameId> remoteId = RemoteCallFrameId::parse(*callFrameId);
+        OwnPtr<RemoteCallFrameId> remoteId = RemoteCallFrameId::parse(callFrameId.get());
         if (!remoteId) {
             *errorString = "Invalid call frame id";
             return;
@@ -936,8 +974,8 @@ void V8DebuggerAgentImpl::setVariableValue(ErrorString* errorString, int scopeNu
             *errorString = "Inspected frame has gone";
             return;
         }
-    } else if (functionObjectId) {
-        OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(*functionObjectId);
+    } else if (functionObjectId.hasValue()) {
+        OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(functionObjectId.get());
         if (!remoteId) {
             *errorString = "Invalid object id";
             return;
@@ -951,8 +989,7 @@ void V8DebuggerAgentImpl::setVariableValue(ErrorString* errorString, int scopeNu
         *errorString = "Either call frame or function object must be specified";
         return;
     }
-    String newValueString = newValue->toJSONString();
-
+    String newValueString = protocol::toValue(newValue)->toJSONString();
     v8::HandleScope scope(m_isolate);
     v8::Local<v8::Object> currentCallStack = m_currentCallStack.Get(m_isolate);
     injectedScript->setVariableValue(errorString, currentCallStack, callFrameId, functionObjectId, scopeNumber, variableName, newValueString);
@@ -966,13 +1003,14 @@ void V8DebuggerAgentImpl::setAsyncCallStackDepth(ErrorString* errorString, int d
     internalSetAsyncCallStackDepth(depth);
 }
 
-void V8DebuggerAgentImpl::enablePromiseTracker(ErrorString* errorString, const bool* captureStacks)
+void V8DebuggerAgentImpl::enablePromiseTracker(ErrorString* errorString,
+    const OptionalValue<bool>& captureStacks)
 {
     if (!checkEnabled(errorString))
         return;
     m_state->setBoolean(DebuggerAgentState::promiseTrackerEnabled, true);
-    m_state->setBoolean(DebuggerAgentState::promiseTrackerCaptureStacks, asBool(captureStacks));
-    m_promiseTracker->setEnabled(true, asBool(captureStacks));
+    m_state->setBoolean(DebuggerAgentState::promiseTrackerCaptureStacks, captureStacks.get(false));
+    m_promiseTracker->setEnabled(true, captureStacks.get(false));
 }
 
 void V8DebuggerAgentImpl::disablePromiseTracker(ErrorString* errorString)
@@ -983,7 +1021,7 @@ void V8DebuggerAgentImpl::disablePromiseTracker(ErrorString* errorString)
     m_promiseTracker->setEnabled(false, false);
 }
 
-void V8DebuggerAgentImpl::getPromiseById(ErrorString* errorString, int promiseId, const String* objectGroup, RefPtr<RemoteObject>& promise)
+void V8DebuggerAgentImpl::getPromiseById(ErrorString* errorString, int promiseId, const OptionalValue<String>& objectGroup, OwnPtr<RemoteObject>* promise)
 {
     if (!checkEnabled(errorString))
         return;
@@ -998,10 +1036,10 @@ void V8DebuggerAgentImpl::getPromiseById(ErrorString* errorString, int promiseId
         return;
     }
     InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(value->CreationContext());
-    promise = injectedScript->wrapObject(value, objectGroup ? *objectGroup : "");
+    *promise = injectedScript->wrapObject(value, objectGroup.get(""));
 }
 
-void V8DebuggerAgentImpl::didUpdatePromise(protocol::Frontend::Debugger::EventType::Enum eventType, PassRefPtr<protocol::TypeBuilder::Debugger::PromiseDetails> promise)
+void V8DebuggerAgentImpl::didUpdatePromise(const String& eventType, PassOwnPtr<protocol::Debugger::PromiseDetails> promise)
 {
     if (m_frontend)
         m_frontend->promiseUpdated(eventType, promise);
@@ -1153,10 +1191,9 @@ void V8DebuggerAgentImpl::flushAsyncOperationEvents(ErrorString*)
         }
 
         if (stack) {
-            RefPtr<AsyncOperation> operation = AsyncOperation::create()
+            OwnPtr<AsyncOperation> operation = AsyncOperation::create()
                 .setId(operationId)
-                .release();
-            operation->setStack(stack->buildInspectorObject());
+                .setStack(stack->buildInspectorObject()).build();
             m_frontend->asyncOperationStarted(operation.release());
         }
     }
@@ -1215,7 +1252,7 @@ void V8DebuggerAgentImpl::removeAsyncOperationBreakpoint(ErrorString* errorStrin
     m_asyncOperationBreakpoints.remove(operationId);
 }
 
-void V8DebuggerAgentImpl::setBlackboxedRanges(ErrorString* error, const String& scriptId, const RefPtr<JSONArray>& inPositions)
+void V8DebuggerAgentImpl::setBlackboxedRanges(ErrorString* error, const String& scriptId, PassOwnPtr<protocol::Array<protocol::Debugger::ScriptPosition>> inPositions)
 {
     ScriptsMap::iterator it = m_scripts.find(scriptId);
     if (it == m_scripts.end()) {
@@ -1230,19 +1267,16 @@ void V8DebuggerAgentImpl::setBlackboxedRanges(ErrorString* error, const String& 
 
     Vector<std::pair<int, int>> positions(inPositions->length());
     for (size_t i = 0; i < positions.size(); ++i) {
-        RefPtr<JSONObject> positionObj;
-        int line = 0;
-        int column = 0;
-        inPositions->get(i)->asObject(&positionObj);
-        if (!positionObj->getNumber("line", &line) || line < 0) {
+        OwnPtr<protocol::Debugger::ScriptPosition> position = inPositions->get(i);
+        if (!position->hasLine() || position->getLine() < 0) {
             *error = "Position missing 'line' or 'line' < 0.";
             return;
         }
-        if (!positionObj->getNumber("column", &column) || column < 0) {
+        if (!position->hasColumn() || position->getColumn() < 0) {
             *error = "Position missing 'column' or 'column' < 0.";
             return;
         }
-        positions[i] = std::make_pair(line, column);
+        positions[i] = std::make_pair(position->getLine(), position->getColumn());
     }
 
     for (size_t i = 1; i < positions.size(); ++i) {
@@ -1307,7 +1341,7 @@ void V8DebuggerAgentImpl::changeJavaScriptRecursionLevel(int step)
     }
 }
 
-PassRefPtr<Array<CallFrame>> V8DebuggerAgentImpl::currentCallFrames()
+PassOwnPtr<Array<CallFrame>> V8DebuggerAgentImpl::currentCallFrames()
 {
     if (m_pausedContext.IsEmpty() || m_currentCallStack.IsEmpty())
         return Array<CallFrame>::create();
@@ -1322,7 +1356,7 @@ PassRefPtr<Array<CallFrame>> V8DebuggerAgentImpl::currentCallFrames()
     return injectedScript->wrapCallFrames(currentCallStack, 0);
 }
 
-PassRefPtr<StackTrace> V8DebuggerAgentImpl::currentAsyncStackTrace()
+PassOwnPtr<StackTrace> V8DebuggerAgentImpl::currentAsyncStackTrace()
 {
     if (m_pausedContext.IsEmpty() || !trackingAsyncCalls())
         return nullptr;
@@ -1332,7 +1366,7 @@ PassRefPtr<StackTrace> V8DebuggerAgentImpl::currentAsyncStackTrace()
     const AsyncCallStackVector& callStacks = chain->callStacks();
     if (callStacks.isEmpty())
         return nullptr;
-    RefPtr<StackTrace> result;
+    OwnPtr<StackTrace> result;
     int asyncOrdinal = callStacks.size();
     for (AsyncCallStackVector::const_reverse_iterator it = callStacks.rbegin(); it != callStacks.rend(); ++it, --asyncOrdinal) {
         v8::HandleScope scope(m_isolate);
@@ -1342,10 +1376,9 @@ PassRefPtr<StackTrace> V8DebuggerAgentImpl::currentAsyncStackTrace()
             result.clear();
             continue;
         }
-        RefPtr<StackTrace> next = StackTrace::create()
+        OwnPtr<StackTrace> next = StackTrace::create()
             .setCallFrames(injectedScript->wrapCallFrames(callFrames, asyncOrdinal))
-            .release();
-        next->setDescription((*it)->description());
+            .setDescription((*it)->description()).build();
         if (result)
             next->setAsyncStackTrace(result.release());
         result.swap(next);
@@ -1401,7 +1434,7 @@ void V8DebuggerAgentImpl::didParseSource(const V8DebuggerParsedScript& parsedScr
     String sourceMapURL = script.sourceMappingURL();
     bool deprecatedCommentWasUsed = isDeprecatedSourceURL || isDeprecatedSourceMappingURL;
 
-    const String* sourceMapURLParam = sourceMapURL.isNull() ? nullptr : &sourceMapURL;
+    OptionalValue<String> sourceMapURLParam = sourceMapURL;
     const bool* isContentScriptParam = isContentScript ? &isContentScript : nullptr;
     const bool* isInternalScriptParam = isInternalScript ? &isInternalScript : nullptr;
     const bool* isLiveEditParam = isLiveEdit ? &isLiveEdit : nullptr;
@@ -1433,9 +1466,9 @@ void V8DebuggerAgentImpl::didParseSource(const V8DebuggerParsedScript& parsedScr
         breakpointObject->getNumber(DebuggerAgentState::lineNumber, &breakpoint.lineNumber);
         breakpointObject->getNumber(DebuggerAgentState::columnNumber, &breakpoint.columnNumber);
         breakpointObject->getString(DebuggerAgentState::condition, &breakpoint.condition);
-        RefPtr<protocol::TypeBuilder::Debugger::Location> location = resolveBreakpoint(cookie.key, parsedScript.scriptId, breakpoint, UserBreakpointSource);
+        OwnPtr<protocol::Debugger::Location> location = resolveBreakpoint(cookie.key, parsedScript.scriptId, breakpoint, UserBreakpointSource);
         if (location)
-            m_frontend->breakpointResolved(cookie.key, location);
+            m_frontend->breakpointResolved(cookie.key, location.release());
     }
 }
 
@@ -1472,17 +1505,18 @@ V8DebuggerAgentImpl::SkipPauseRequest V8DebuggerAgentImpl::didPause(v8::Local<v8
     if (!exception.IsEmpty()) {
         InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(context);
         if (injectedScript) {
-            m_breakReason = isPromiseRejection ? protocol::Frontend::Debugger::Reason::PromiseRejection : protocol::Frontend::Debugger::Reason::Exception;
-            m_breakAuxData = injectedScript->wrapObject(exception, V8DebuggerAgentImpl::backtraceObjectGroup)->openAccessors();
+            m_breakReason = isPromiseRejection ? protocol::Debugger::Paused::ReasonEnum::PromiseRejection : protocol::Debugger::Paused::ReasonEnum::Exception;
+            auto obj = injectedScript->wrapObject(exception, V8DebuggerAgentImpl::backtraceObjectGroup);
+            m_breakAuxData = obj ? obj->asValue() : nullptr;
             // m_breakAuxData might be null after this.
         }
     } else if (m_pausingOnAsyncOperation) {
-        m_breakReason = protocol::Frontend::Debugger::Reason::AsyncOperation;
+        m_breakReason = protocol::Debugger::Paused::ReasonEnum::AsyncOperation;
         m_breakAuxData = JSONObject::create();
         m_breakAuxData->setNumber("operationId", m_currentAsyncOperationId);
     }
 
-    RefPtr<Array<String>> hitBreakpointIds = Array<String>::create();
+    OwnPtr<Array<String>> hitBreakpointIds = Array<String>::create();
 
     for (const auto& point : hitBreakpoints) {
         DebugServerBreakpointToBreakpointIdAndSourceMap::iterator breakpointIterator = m_serverBreakpoints.find(point);
@@ -1491,15 +1525,15 @@ V8DebuggerAgentImpl::SkipPauseRequest V8DebuggerAgentImpl::didPause(v8::Local<v8
             hitBreakpointIds->addItem(localId);
 
             BreakpointSource source = breakpointIterator->value.second;
-            if (m_breakReason == protocol::Frontend::Debugger::Reason::Other && source == DebugCommandBreakpointSource)
-                m_breakReason = protocol::Frontend::Debugger::Reason::DebugCommand;
+            if (m_breakReason == protocol::Debugger::Paused::ReasonEnum::Other && source == DebugCommandBreakpointSource)
+                m_breakReason = protocol::Debugger::Paused::ReasonEnum::DebugCommand;
         }
     }
 
     if (!m_asyncOperationNotifications.isEmpty())
         flushAsyncOperationEvents(nullptr);
 
-    m_frontend->paused(currentCallFrames(), m_breakReason, m_breakAuxData, hitBreakpointIds, currentAsyncStackTrace());
+    m_frontend->paused(currentCallFrames(), m_breakReason, m_breakAuxData, hitBreakpointIds.release(), currentAsyncStackTrace());
     m_scheduledDebuggerStep = NoStep;
     m_javaScriptPauseScheduled = false;
     m_steppingFromFramework = false;
@@ -1528,7 +1562,7 @@ bool V8DebuggerAgentImpl::canBreakProgram()
     return debugger().canBreakProgram();
 }
 
-void V8DebuggerAgentImpl::breakProgram(protocol::Frontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data)
+void V8DebuggerAgentImpl::breakProgram(const String& breakReason, PassRefPtr<JSONObject> data)
 {
     ASSERT(enabled());
     if (m_skipAllPauses || !m_pausedContext.IsEmpty() || isCallStackEmptyOrBlackboxed())
@@ -1542,7 +1576,7 @@ void V8DebuggerAgentImpl::breakProgram(protocol::Frontend::Debugger::Reason::Enu
     debugger().breakProgram();
 }
 
-void V8DebuggerAgentImpl::breakProgramOnException(protocol::Frontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data)
+void V8DebuggerAgentImpl::breakProgramOnException(const String& breakReason, PassRefPtr<JSONObject> data)
 {
     if (m_debugger->pauseOnExceptionsState() == V8DebuggerImpl::DontPauseOnExceptions)
         return;
@@ -1567,7 +1601,7 @@ bool V8DebuggerAgentImpl::assertPaused(ErrorString* errorString)
 
 void V8DebuggerAgentImpl::clearBreakDetails()
 {
-    m_breakReason = protocol::Frontend::Debugger::Reason::Other;
+    m_breakReason = protocol::Debugger::Paused::ReasonEnum::Other;
     m_breakAuxData = nullptr;
 }
 

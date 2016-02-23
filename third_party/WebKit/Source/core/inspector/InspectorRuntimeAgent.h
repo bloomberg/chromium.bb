@@ -47,6 +47,8 @@ class V8RuntimeAgent;
 
 typedef String ErrorString;
 
+using protocol::OptionalValue;
+
 class CORE_EXPORT InspectorRuntimeAgent
     : public InspectorBaseAgent<InspectorRuntimeAgent, protocol::Frontend::Runtime>
     , public protocol::Dispatcher::RuntimeCommandHandler {
@@ -69,37 +71,18 @@ public:
     void restore() override;
 
     // Part of the protocol.
+    void evaluate(ErrorString*, const String& expression, const OptionalValue<String>& objectGroup, const OptionalValue<bool>& includeCommandLineAPI, const OptionalValue<bool>& doNotPauseOnExceptionsAndMuteConsole, const OptionalValue<int>& contextId, const OptionalValue<bool>& returnByValue, const OptionalValue<bool>& generatePreview, OwnPtr<protocol::Runtime::RemoteObject>* result, OptionalValue<bool>* wasThrown, OwnPtr<protocol::Runtime::ExceptionDetails>*) override;
+    void callFunctionOn(ErrorString*, const String& objectId, const String& functionDeclaration, PassOwnPtr<protocol::Array<protocol::Runtime::CallArgument>> arguments, const OptionalValue<bool>& doNotPauseOnExceptionsAndMuteConsole, const OptionalValue<bool>& returnByValue, const OptionalValue<bool>& generatePreview, OwnPtr<protocol::Runtime::RemoteObject>* result, OptionalValue<bool>* wasThrown) override;
+    void getProperties(ErrorString*, const String& objectId, const OptionalValue<bool>& ownProperties, const OptionalValue<bool>& accessorPropertiesOnly, const OptionalValue<bool>& generatePreview, OwnPtr<protocol::Array<protocol::Runtime::PropertyDescriptor>>* result, OwnPtr<protocol::Array<protocol::Runtime::InternalPropertyDescriptor>>* internalProperties, OwnPtr<protocol::Runtime::ExceptionDetails>*) override;
+    void releaseObject(ErrorString*, const String& objectId) override;
+    void releaseObjectGroup(ErrorString*, const String& objectGroup) override;
+    void run(ErrorString*) override;
     void enable(ErrorString*) override;
     void disable(ErrorString*) override;
-
-    void evaluate(ErrorString*,
-        const String& expression,
-        const String* objectGroup,
-        const bool* includeCommandLineAPI,
-        const bool* doNotPauseOnExceptionsAndMuteConsole,
-        const int* executionContextId,
-        const bool* returnByValue,
-        const bool* generatePreview,
-        RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>& result,
-        protocol::TypeBuilder::OptOutput<bool>* wasThrown,
-        RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>&) final;
-    void callFunctionOn(ErrorString*,
-                        const String& objectId,
-                        const String& expression,
-                        const RefPtr<JSONArray>* optionalArguments,
-                        const bool* doNotPauseOnExceptionsAndMuteConsole,
-                        const bool* returnByValue,
-                        const bool* generatePreview,
-                        RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>& result,
-                        protocol::TypeBuilder::OptOutput<bool>* wasThrown) final;
-    void releaseObject(ErrorString*, const String& objectId) final;
-    void getProperties(ErrorString*, const String& objectId, const bool* ownProperties, const bool* accessorPropertiesOnly, const bool* generatePreview, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Runtime::PropertyDescriptor>>& result, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Runtime::InternalPropertyDescriptor>>& internalProperties, RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>&) final;
-    void releaseObjectGroup(ErrorString*, const String& objectGroup) final;
-    void run(ErrorString*) override;
-    void isRunRequired(ErrorString*, bool* out_result) override;
-    void setCustomObjectFormatterEnabled(ErrorString*, bool) final;
-    void compileScript(ErrorString*, const String& inExpression, const String& inSourceURL, bool inPersistScript, int inExecutionContextId, protocol::TypeBuilder::OptOutput<protocol::TypeBuilder::Runtime::ScriptId>* optOutScriptId, RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>& optOutExceptionDetails) override;
-    void runScript(ErrorString*, const String& inScriptId, int inExecutionContextId, const String* inObjectGroup, const bool* inDoNotPauseOnExceptionsAndMuteConsole, const bool* includeCommandLineAPI, RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>& outResult, RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>& optOutExceptionDetails) override;
+    void isRunRequired(ErrorString*, bool* result) override;
+    void setCustomObjectFormatterEnabled(ErrorString*, bool enabled) override;
+    void compileScript(ErrorString*, const String& expression, const String& sourceURL, bool persistScript, int executionContextId, OptionalValue<String>* scriptId, OwnPtr<protocol::Runtime::ExceptionDetails>*) override;
+    void runScript(ErrorString*, const String& scriptId, int executionContextId, const OptionalValue<String>& objectGroup, const OptionalValue<bool>& doNotPauseOnExceptionsAndMuteConsole, const OptionalValue<bool>& includeCommandLineAPI, OwnPtr<protocol::Runtime::RemoteObject>* result, OwnPtr<protocol::Runtime::ExceptionDetails>*) override;
 
     virtual void muteConsole() = 0;
     virtual void unmuteConsole() = 0;

@@ -54,7 +54,7 @@ public:
     unsigned topLineNumber() const;
     unsigned topColumnNumber() const;
 
-    PassRefPtr<protocol::TypeBuilder::Runtime::StackTrace> buildInspectorObject() const;
+    PassOwnPtr<protocol::Runtime::StackTrace> buildInspectorObject() const;
     void toTracedValue(TracedValue*, const char* name) const;
     String toString() const;
 

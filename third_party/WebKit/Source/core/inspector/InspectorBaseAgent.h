@@ -37,6 +37,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/inspector_protocol/Dispatcher.h"
 #include "platform/inspector_protocol/Frontend.h"
+#include "platform/inspector_protocol/TypeBuilder.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
@@ -46,6 +47,8 @@ namespace blink {
 class Frontend;
 class InstrumentingAgents;
 class LocalFrame;
+
+using protocol::OptionalValue;
 
 class CORE_EXPORT InspectorAgent : public NoBaseWillBeGarbageCollectedFinalized<InspectorAgent> {
     USING_FAST_MALLOC_WILL_BE_REMOVED(InspectorAgent);

@@ -114,7 +114,6 @@ public:
     void didCommitLoadForLocalFrame(LocalFrame*) override;
     void restore() override;
     void flushPendingProtocolNotifications() override;
-    void disable(ErrorString*) override;
     void reset();
     void mediaQueryResultChanged();
 
@@ -128,27 +127,28 @@ public:
     bool getEditedStyleElement(int backendNodeId, String* content);
 
     void enable(ErrorString*, PassRefPtr<EnableCallback>) override;
-    void getComputedStyleForNode(ErrorString*, int nodeId, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::CSS::CSSComputedStyleProperty>>&) override;
-    void getPlatformFontsForNode(ErrorString*, int nodeId, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::CSS::PlatformFontUsage>>&) override;
-    void getInlineStylesForNode(ErrorString*, int nodeId, RefPtr<protocol::TypeBuilder::CSS::CSSStyle>& inlineStyle, RefPtr<protocol::TypeBuilder::CSS::CSSStyle>& attributes) override;
-    void getMatchedStylesForNode(ErrorString*, int nodeId, RefPtr<protocol::TypeBuilder::CSS::CSSStyle>& inlineStyle, RefPtr<protocol::TypeBuilder::CSS::CSSStyle>& attributesStyle, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::CSS::RuleMatch>>& matchedCSSRules, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::CSS::PseudoElementMatches>>&, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::CSS::InheritedStyleEntry>>& inheritedEntries, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::CSS::CSSKeyframesRule>>& cssKeyframesRules) override;
-    void getStyleSheetText(ErrorString*, const String& styleSheetId, String* result) override;
-    void setStyleSheetText(ErrorString*, const String& styleSheetId, const String& text, protocol::TypeBuilder::OptOutput<String>* sourceMapURL) override;
-    void setRuleSelector(ErrorString*, const String& styleSheetId, const RefPtr<JSONObject>& range, const String& selector, RefPtr<protocol::TypeBuilder::CSS::SelectorList>& result) override;
-    void setKeyframeKey(ErrorString*, const String& styleSheetId, const RefPtr<JSONObject>& range, const String& keyText, RefPtr<protocol::TypeBuilder::CSS::Value>& result) override;
-    void setStyleTexts(ErrorString*, const RefPtr<JSONArray>& edits, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::CSS::CSSStyle>>& result);
-    void setMediaText(ErrorString*, const String& styleSheetId, const RefPtr<JSONObject>& range, const String& text, RefPtr<protocol::TypeBuilder::CSS::CSSMedia>& result) override;
-    void createStyleSheet(ErrorString*, const String& frameId, protocol::TypeBuilder::CSS::StyleSheetId* outStyleSheetId) override;
-    void addRule(ErrorString*, const String& styleSheetId, const String& ruleText, const RefPtr<JSONObject>& location, RefPtr<protocol::TypeBuilder::CSS::CSSRule>& result) override;
-    void forcePseudoState(ErrorString*, int nodeId, const RefPtr<JSONArray>& forcedPseudoClasses) override;
-    void getMediaQueries(ErrorString*, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::CSS::CSSMedia>>& medias) override;
+    void disable(ErrorString*) override;
+    void getMatchedStylesForNode(ErrorString*, int nodeId, OwnPtr<protocol::CSS::CSSStyle>* inlineStyle, OwnPtr<protocol::CSS::CSSStyle>* attributesStyle, OwnPtr<protocol::Array<protocol::CSS::RuleMatch>>* matchedCSSRules, OwnPtr<protocol::Array<protocol::CSS::PseudoElementMatches>>*, OwnPtr<protocol::Array<protocol::CSS::InheritedStyleEntry>>*, OwnPtr<protocol::Array<protocol::CSS::CSSKeyframesRule>>*) override;
+    void getInlineStylesForNode(ErrorString*, int nodeId, OwnPtr<protocol::CSS::CSSStyle>* inlineStyle, OwnPtr<protocol::CSS::CSSStyle>* attributesStyle) override;
+    void getComputedStyleForNode(ErrorString*, int nodeId, OwnPtr<protocol::Array<protocol::CSS::CSSComputedStyleProperty>>*) override;
+    void getPlatformFontsForNode(ErrorString*, int nodeId, OwnPtr<protocol::Array<protocol::CSS::PlatformFontUsage>>* fonts) override;
+    void getStyleSheetText(ErrorString*, const String& styleSheetId, String* text) override;
+    void setStyleSheetText(ErrorString*, const String& styleSheetId, const String& text, OptionalValue<String>* sourceMapURL) override;
+    void setRuleSelector(ErrorString*, const String& styleSheetId, PassOwnPtr<protocol::CSS::SourceRange>, const String& selector, OwnPtr<protocol::CSS::SelectorList>*) override;
+    void setKeyframeKey(ErrorString*, const String& styleSheetId, PassOwnPtr<protocol::CSS::SourceRange>, const String& keyText, OwnPtr<protocol::CSS::Value>* outKeyText) override;
+    void setStyleTexts(ErrorString*, PassOwnPtr<protocol::Array<protocol::CSS::StyleDeclarationEdit>> edits, OwnPtr<protocol::Array<protocol::CSS::CSSStyle>>* styles) override;
+    void setMediaText(ErrorString*, const String& styleSheetId, PassOwnPtr<protocol::CSS::SourceRange>, const String& text, OwnPtr<protocol::CSS::CSSMedia>*) override;
+    void createStyleSheet(ErrorString*, const String& frameId, String* styleSheetId) override;
+    void addRule(ErrorString*, const String& styleSheetId, const String& ruleText, PassOwnPtr<protocol::CSS::SourceRange>, OwnPtr<protocol::CSS::CSSRule>*) override;
+    void forcePseudoState(ErrorString*, int nodeId, PassOwnPtr<protocol::Array<String>> forcedPseudoClasses) override;
+    void getMediaQueries(ErrorString*, OwnPtr<protocol::Array<protocol::CSS::CSSMedia>>*) override;
     void setEffectivePropertyValueForNode(ErrorString*, int nodeId, const String& propertyName, const String& value) override;
-    void getBackgroundColors(ErrorString*, int nodeId, RefPtr<protocol::TypeBuilder::Array<String>>& result) override;
+    void getBackgroundColors(ErrorString*, int nodeId, OwnPtr<protocol::Array<String>>* backgroundColors) override;
 
-    void collectMediaQueriesFromRule(CSSRule*, protocol::TypeBuilder::Array<protocol::TypeBuilder::CSS::CSSMedia>* mediaArray);
-    void collectMediaQueriesFromStyleSheet(CSSStyleSheet*, protocol::TypeBuilder::Array<protocol::TypeBuilder::CSS::CSSMedia>* mediaArray);
-    PassRefPtr<protocol::TypeBuilder::CSS::CSSMedia> buildMediaObject(const MediaList*, MediaListSource, const String&, CSSStyleSheet*);
-    PassRefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::CSS::CSSMedia>> buildMediaListChain(CSSRule*);
+    void collectMediaQueriesFromRule(CSSRule*, protocol::Array<protocol::CSS::CSSMedia>*);
+    void collectMediaQueriesFromStyleSheet(CSSStyleSheet*, protocol::Array<protocol::CSS::CSSMedia>*);
+    PassOwnPtr<protocol::CSS::CSSMedia> buildMediaObject(const MediaList*, MediaListSource, const String&, CSSStyleSheet*);
+    PassOwnPtr<protocol::Array<protocol::CSS::CSSMedia>> buildMediaListChain(CSSRule*);
 
     PassRefPtrWillBeRawPtr<CSSStyleDeclaration> findEffectiveDeclaration(CSSPropertyID, const WillBeHeapVector<RefPtrWillBeMember<CSSStyleDeclaration>>& styles);
     void setLayoutEditorValue(ErrorString*, Element*, RefPtrWillBeRawPtr<CSSStyleDeclaration>, CSSPropertyID, const String& value, bool forceImportant = false);
@@ -181,9 +181,9 @@ private:
     void updateActiveStyleSheets(Document*, StyleSheetsUpdateType);
     void setActiveStyleSheets(Document*, const WillBeHeapVector<RawPtrWillBeMember<CSSStyleSheet>>&, StyleSheetsUpdateType);
     CSSStyleDeclaration* setStyleText(ErrorString*, InspectorStyleSheetBase*, const SourceRange&, const String&);
-    bool multipleStyleTextsActions(ErrorString*, const RefPtr<JSONArray>& edits, HeapVector<RefPtrWillBeMember<StyleSheetAction>>* actions);
+    bool multipleStyleTextsActions(ErrorString*, PassOwnPtr<protocol::Array<protocol::CSS::StyleDeclarationEdit>>, HeapVector<RefPtrWillBeMember<StyleSheetAction>>* actions);
 
-    PassRefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::CSS::CSSKeyframesRule>> animationsForNode(Element*);
+    PassOwnPtr<protocol::Array<protocol::CSS::CSSKeyframesRule>> animationsForNode(Element*);
 
     void collectPlatformFontsForLayoutObject(LayoutObject*, HashCountedSet<String>*);
 
@@ -194,11 +194,11 @@ private:
     InspectorStyleSheet* viaInspectorStyleSheet(Document*, bool createIfAbsent);
     InspectorStyleSheet* assertInspectorStyleSheetForId(ErrorString*, const String&);
     InspectorStyleSheetBase* assertStyleSheetForId(ErrorString*, const String&);
-    protocol::TypeBuilder::CSS::StyleSheetOrigin::Enum detectOrigin(CSSStyleSheet* pageStyleSheet, Document* ownerDocument);
+    String detectOrigin(CSSStyleSheet* pageStyleSheet, Document* ownerDocument);
 
-    PassRefPtr<protocol::TypeBuilder::CSS::CSSRule> buildObjectForRule(CSSStyleRule*);
-    PassRefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::CSS::RuleMatch>> buildArrayForMatchedRuleList(CSSRuleList*, Element*, PseudoId);
-    PassRefPtr<protocol::TypeBuilder::CSS::CSSStyle> buildObjectForAttributesStyle(Element*);
+    PassOwnPtr<protocol::CSS::CSSRule> buildObjectForRule(CSSStyleRule*);
+    PassOwnPtr<protocol::Array<protocol::CSS::RuleMatch>> buildArrayForMatchedRuleList(CSSRuleList*, Element*, PseudoId);
+    PassOwnPtr<protocol::CSS::CSSStyle> buildObjectForAttributesStyle(Element*);
 
     // InspectorDOMAgent::DOMListener implementation
     void didRemoveDocument(Document*) override;

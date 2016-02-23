@@ -15,6 +15,8 @@ class V8RuntimeAgent;
 
 typedef String ErrorString;
 
+using protocol::OptionalValue;
+
 class V8HeapProfilerAgentImpl : public V8HeapProfilerAgent {
     WTF_MAKE_NONCOPYABLE(V8HeapProfilerAgentImpl);
 public:
@@ -29,19 +31,19 @@ public:
     void collectGarbage(ErrorString*) override;
 
     void enable(ErrorString*) override;
-    void startTrackingHeapObjects(ErrorString*, const bool* trackAllocations) override;
-    void stopTrackingHeapObjects(ErrorString*, const bool* reportProgress) override;
+    void startTrackingHeapObjects(ErrorString*, const OptionalValue<bool>& trackAllocations) override;
+    void stopTrackingHeapObjects(ErrorString*, const OptionalValue<bool>& reportProgress) override;
 
     void disable(ErrorString*) override;
 
-    void takeHeapSnapshot(ErrorString*, const bool* reportProgress) override;
+    void takeHeapSnapshot(ErrorString*, const OptionalValue<bool>& reportProgress) override;
 
-    void getObjectByHeapObjectId(ErrorString*, const String& heapSnapshotObjectId, const String* objectGroup, RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>& result) override;
+    void getObjectByHeapObjectId(ErrorString*, const String& heapSnapshotObjectId, const OptionalValue<String>& objectGroup, OwnPtr<protocol::Runtime::RemoteObject>* result) override;
     void addInspectedHeapObject(ErrorString*, const String& inspectedHeapObjectId) override;
     void getHeapObjectId(ErrorString*, const String& objectId, String* heapSnapshotObjectId) override;
 
     void startSampling(ErrorString*) override;
-    void stopSampling(ErrorString*, RefPtr<protocol::TypeBuilder::HeapProfiler::SamplingHeapProfile>&) override;
+    void stopSampling(ErrorString*, OwnPtr<protocol::HeapProfiler::SamplingHeapProfile>*) override;
 
     void requestHeapStatsUpdate() override;
 

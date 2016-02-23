@@ -80,7 +80,7 @@ public:
     void clear();
     bool handleInputEvent(const WebInputEvent&);
     void pageLayoutInvalidated();
-    void setPausedInDebuggerMessage(const String*);
+    void setPausedInDebuggerMessage(const String&);
 
     // Does not yet include paint.
     void updateAllLifecyclePhases();

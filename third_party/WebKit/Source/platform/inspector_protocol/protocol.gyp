@@ -5,6 +5,11 @@
 {
   'variables': {
     'blink_platform_output_dir': '<(SHARED_INTERMEDIATE_DIR)/blink/platform',
+    'jinja_module_files': [
+      # jinja2/__init__.py contains version string, so sufficient for package
+      '<(DEPTH)/third_party/jinja2/__init__.py',
+      '<(DEPTH)/third_party/markupsafe/__init__.py',  # jinja2 dep
+    ],
   },
 
   'targets': [
@@ -19,12 +24,17 @@
         {
           'action_name': 'generateInspectorProtocolBackendSources',
           'inputs': [
+            '<@(jinja_module_files)',
             # The python script in action below.
             'CodeGenerator.py',
-            # The helper script imported by CodeGenerator.py.
-            'CodeGeneratorStrings.py',
-            # Input file for the script.
+            # Input files for the script.
             '../../devtools/protocol.json',
+            'Dispatcher_h.template',
+            'Dispatcher_cpp.template',
+            'Frontend_h.template',
+            'Frontend_cpp.template',
+            'TypeBuilder_h.template',
+            'TypeBuilder_cpp.template',
           ],
           'outputs': [
             '<(blink_platform_output_dir)/inspector_protocol/Dispatcher.cpp',
@@ -34,10 +44,6 @@
             '<(blink_platform_output_dir)/inspector_protocol/TypeBuilder.cpp',
             '<(blink_platform_output_dir)/inspector_protocol/TypeBuilder.h',
           ],
-          'variables': {
-            'generator_include_dirs': [
-            ],
-          },
           'action': [
             'python',
             'CodeGenerator.py',

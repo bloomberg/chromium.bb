@@ -59,17 +59,17 @@ public:
     void networkStateChanged(LocalFrame*, bool online);
 
     // ApplicationCache API for InspectorFrontend
+    void getFramesWithManifests(ErrorString*, OwnPtr<protocol::Array<protocol::ApplicationCache::FrameWithManifest>>* frameIds) override;
     void enable(ErrorString*) override;
-    void getFramesWithManifests(ErrorString*, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::ApplicationCache::FrameWithManifest>>& result) override;
     void getManifestForFrame(ErrorString*, const String& frameId, String* manifestURL) override;
-    void getApplicationCacheForFrame(ErrorString*, const String& frameId, RefPtr<protocol::TypeBuilder::ApplicationCache::ApplicationCache>&) override;
+    void getApplicationCacheForFrame(ErrorString*, const String& frameId, OwnPtr<protocol::ApplicationCache::ApplicationCache>*) override;
 
 private:
     explicit InspectorApplicationCacheAgent(InspectedFrames*);
 
-    PassRefPtr<protocol::TypeBuilder::ApplicationCache::ApplicationCache> buildObjectForApplicationCache(const ApplicationCacheHost::ResourceInfoList&, const ApplicationCacheHost::CacheInfo&);
-    PassRefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::ApplicationCache::ApplicationCacheResource>> buildArrayForApplicationCacheResources(const ApplicationCacheHost::ResourceInfoList&);
-    PassRefPtr<protocol::TypeBuilder::ApplicationCache::ApplicationCacheResource> buildObjectForApplicationCacheResource(const ApplicationCacheHost::ResourceInfo&);
+    PassOwnPtr<protocol::ApplicationCache::ApplicationCache> buildObjectForApplicationCache(const ApplicationCacheHost::ResourceInfoList&, const ApplicationCacheHost::CacheInfo&);
+    PassOwnPtr<protocol::Array<protocol::ApplicationCache::ApplicationCacheResource>> buildArrayForApplicationCacheResources(const ApplicationCacheHost::ResourceInfoList&);
+    PassOwnPtr<protocol::ApplicationCache::ApplicationCacheResource> buildObjectForApplicationCacheResource(const ApplicationCacheHost::ResourceInfo&);
 
     DocumentLoader* assertFrameWithDocumentLoader(ErrorString*, String frameId);
 

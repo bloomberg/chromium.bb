@@ -34,7 +34,7 @@ public:
     void disable(ErrorString*) override;
     void setSamplingInterval(ErrorString*, int) override;
     void start(ErrorString*) override;
-    void stop(ErrorString*, RefPtr<protocol::TypeBuilder::Profiler::CPUProfile>&) override;
+    void stop(ErrorString*, OwnPtr<protocol::Profiler::CPUProfile>*) override;
 
     void consoleProfile(const String& title) override;
     void consoleProfileEnd(const String& title) override;
@@ -43,11 +43,10 @@ public:
     void idleFinished();
 
 private:
-    void stop(ErrorString*, RefPtr<protocol::TypeBuilder::Profiler::CPUProfile>*);
     String nextProfileId();
 
     void startProfiling(const String& title);
-    PassRefPtr<protocol::TypeBuilder::Profiler::CPUProfile> stopProfiling(const String& title, bool serialize);
+    PassOwnPtr<protocol::Profiler::CPUProfile> stopProfiling(const String& title, bool serialize);
 
     bool isRecording() const;
 

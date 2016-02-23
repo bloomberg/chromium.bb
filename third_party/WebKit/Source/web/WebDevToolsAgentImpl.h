@@ -124,7 +124,7 @@ private:
 
     // InspectorPageAgent::Client implementation.
     void pageLayoutInvalidated() override;
-    void setPausedInDebuggerMessage(const String*) override;
+    void setPausedInDebuggerMessage(const String&) override;
     void waitForCreateWindow(LocalFrame*) override;
 
     // protocol::FrontendChannel implementation.

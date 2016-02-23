@@ -14,8 +14,10 @@
 #include "platform/v8_inspector/V8StringUtil.h"
 #include "platform/v8_inspector/public/V8DebuggerClient.h"
 #include "platform/v8_inspector/public/V8EventListenerInfo.h"
+#include "wtf/HashSet.h"
 #include "wtf/NonCopyingSort.h"
 #include "wtf/RefPtr.h"
+#include "wtf/text/WTFString.h"
 #include <algorithm>
 
 namespace blink {

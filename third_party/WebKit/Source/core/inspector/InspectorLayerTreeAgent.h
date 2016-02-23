@@ -62,7 +62,6 @@ public:
     ~InspectorLayerTreeAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
-    void disable(ErrorString*) override;
     void restore() override;
 
     // Called from InspectorController
@@ -75,16 +74,17 @@ public:
 
     // Called from the front-end.
     void enable(ErrorString*) override;
-    void compositingReasons(ErrorString*, const String& layerId, RefPtr<protocol::TypeBuilder::Array<String>>&) override;
+    void disable(ErrorString*) override;
+    void compositingReasons(ErrorString*, const String& layerId, OwnPtr<protocol::Array<String>>* compositingReasons) override;
     void makeSnapshot(ErrorString*, const String& layerId, String* snapshotId) override;
-    void loadSnapshot(ErrorString*, const RefPtr<JSONArray>& tiles, String* snapshotId) override;
+    void loadSnapshot(ErrorString*, PassOwnPtr<protocol::Array<protocol::LayerTree::PictureTile>> tiles, String* snapshotId) override;
     void releaseSnapshot(ErrorString*, const String& snapshotId) override;
-    void replaySnapshot(ErrorString*, const String& snapshotId, const int* fromStep, const int* toStep, const double* scale, String* dataURL) override;
-    void profileSnapshot(ErrorString*, const String& snapshotId, const int* minRepeatCount, const double* minDuration, const RefPtr<JSONObject>* clipRect, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Array<double>>>&) override;
-    void snapshotCommandLog(ErrorString*, const String& snapshotId, RefPtr<protocol::TypeBuilder::Array<JSONObject>>&) override;
+    void profileSnapshot(ErrorString*, const String& snapshotId, const OptionalValue<int>& minRepeatCount, const OptionalValue<double>& minDuration, PassOwnPtr<protocol::DOM::Rect> clipRect, OwnPtr<protocol::Array<protocol::Array<double>>>* timings) override;
+    void replaySnapshot(ErrorString*, const String& snapshotId, const OptionalValue<int>& fromStep, const OptionalValue<int>& toStep, const OptionalValue<double>& scale, String* dataURL) override;
+    void snapshotCommandLog(ErrorString*, const String& snapshotId, OwnPtr<protocol::Array<RefPtr<JSONObject>>>* commandLog) override;
 
     // Called by other agents.
-    PassRefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::LayerTree::Layer>> buildLayerTree();
+    PassOwnPtr<protocol::Array<protocol::LayerTree::Layer>> buildLayerTree();
 
 private:
     static unsigned s_lastSnapshotId;
@@ -99,7 +99,7 @@ private:
 
     typedef HashMap<int, int> LayerIdToNodeIdMap;
     void buildLayerIdToNodeIdMap(PaintLayer*, LayerIdToNodeIdMap&);
-    void gatherGraphicsLayers(GraphicsLayer*, HashMap<int, int>& layerIdToNodeIdMap, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::LayerTree::Layer>>&, bool hasWheelEventHandlers, int scrollingRootLayerId);
+    void gatherGraphicsLayers(GraphicsLayer*, HashMap<int, int>& layerIdToNodeIdMap, OwnPtr<protocol::Array<protocol::LayerTree::Layer>>&, bool hasWheelEventHandlers, int scrollingRootLayerId);
     int idForNode(Node*);
 
     RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;

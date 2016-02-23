@@ -42,7 +42,7 @@ public:
     void disable(ErrorString*) override;
 
     // Protocol method implementations.
-    void start(ErrorString*, const String* categoryFilter, const String*, const double*, const String*, PassRefPtr<StartCallback>) override;
+    void start(ErrorString*, const OptionalValue<String>& categories, const OptionalValue<String>& options, const OptionalValue<double>& bufferUsageReportingInterval, const OptionalValue<String>& transferMode, PassRefPtr<StartCallback>) override;
     void end(ErrorString*, PassRefPtr<EndCallback>) override;
 
     // Methods for other agents to use.

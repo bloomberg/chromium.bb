@@ -485,7 +485,7 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
     m_pageConsoleAgent->setDebuggerAgent(debuggerAgent->v8Agent());
 
     m_pageRuntimeAgent->v8Agent()->setClearConsoleCallback(bind<>(&InspectorConsoleAgent::clearAllMessages, m_pageConsoleAgent.get()));
-    m_pageRuntimeAgent->v8Agent()->setInspectObjectCallback(bind<PassRefPtr<protocol::TypeBuilder::Runtime::RemoteObject>, PassRefPtr<JSONObject>>(&InspectorInspectorAgent::inspect, m_inspectorAgent.get()));
+    m_pageRuntimeAgent->v8Agent()->setInspectObjectCallback(bind<PassOwnPtr<protocol::Runtime::RemoteObject>, PassRefPtr<JSONObject>>(&InspectorInspectorAgent::inspect, m_inspectorAgent.get()));
 
     if (m_overlay)
         m_overlay->init(cssAgent, debuggerAgent, m_domAgent.get());
@@ -655,6 +655,7 @@ void WebDevToolsAgentImpl::sendProtocolResponse(int sessionId, int callId, PassR
         else
             m_stateCookie = stateToSend;
     }
+
     m_client->sendProtocolMessage(sessionId, callId, message->toJSONString(), stateToSend);
 }
 
@@ -685,7 +686,7 @@ void WebDevToolsAgentImpl::pageLayoutInvalidated()
         m_overlay->pageLayoutInvalidated();
 }
 
-void WebDevToolsAgentImpl::setPausedInDebuggerMessage(const String* message)
+void WebDevToolsAgentImpl::setPausedInDebuggerMessage(const String& message)
 {
     if (m_overlay)
         m_overlay->setPausedInDebuggerMessage(message);
@@ -752,11 +753,11 @@ bool WebDevToolsAgent::shouldInterruptForMessage(const WebString& message)
     String commandName;
     if (!protocol::Dispatcher::getCommandName(message, &commandName))
         return false;
-    return commandName == protocol::Dispatcher::commandName(protocol::Dispatcher::kDebugger_pauseCmd)
-        || commandName == protocol::Dispatcher::commandName(protocol::Dispatcher::kDebugger_setBreakpointCmd)
-        || commandName == protocol::Dispatcher::commandName(protocol::Dispatcher::kDebugger_setBreakpointByUrlCmd)
-        || commandName == protocol::Dispatcher::commandName(protocol::Dispatcher::kDebugger_removeBreakpointCmd)
-        || commandName == protocol::Dispatcher::commandName(protocol::Dispatcher::kDebugger_setBreakpointsActiveCmd);
+    return commandName == "Debugger.pause"
+        || commandName == "Debugger.setBreakpoint"
+        || commandName == "Debugger.setBreakpointByUrl"
+        || commandName == "Debugger.removeBreakpoint"
+        || commandName == "Debugger.setBreakpointsActive";
 }
 
 } // namespace blink

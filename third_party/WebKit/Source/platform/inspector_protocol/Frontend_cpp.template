@@ -1,0 +1,55 @@
+// This file is generated
+
+// Copyright (c) 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "platform/inspector_protocol/{{class_name}}.h"
+
+#include "wtf/text/CString.h"
+#include "wtf/text/WTFString.h"
+
+namespace blink {
+namespace protocol {
+
+Frontend::Frontend(FrontendChannel* frontendChannel)
+    : m_frontendChannel(frontendChannel)
+{% for domain in api.domains %}
+    , m_{{domain.domain | lower}}(frontendChannel)
+{% endfor %}
+{
+}
+
+{% for domain in api.domains %}
+  {% for event in domain.events %}
+    {% if "handlers" in event and not ("renderer" in event["handlers"]) %}{% continue %}{% endif %}
+void Frontend::{{domain.domain}}::{{event.name}}(
+    {%- for parameter in event.parameters %}
+      {% if "optional" in parameter -%}
+        {{resolve_type(parameter).optional_pass_type}}
+      {%- else -%}
+        {{resolve_type(parameter).pass_type}}
+      {%- endif %} {{parameter.name}}{%- if not loop.last -%}, {% endif -%}
+    {% endfor -%})
+{
+    RefPtr<JSONObject> jsonMessage = JSONObject::create();
+    jsonMessage->setString("method", "{{domain.domain}}.{{event.name}}");
+    RefPtr<JSONObject> paramsObject = JSONObject::create();
+    {% for parameter in event.parameters %}
+      {% if "optional" in parameter %}
+    {{resolve_type(parameter).optional_type}} opt_{{parameter.name}} = {{parameter.name}};
+    if (hasValue(opt_{{parameter.name}}))
+        paramsObject->setValue("{{parameter.name}}", toValue({{resolve_type(parameter).from_optional_out % ("opt_" + parameter.name)}}));
+      {% else %}
+    paramsObject->setValue("{{parameter.name}}", toValue({{parameter.name}}));
+      {% endif %}
+    {% endfor %}
+    jsonMessage->setObject("params", paramsObject);
+    if (m_frontendChannel)
+        m_frontendChannel->sendProtocolNotification(jsonMessage.release());
+}
+  {% endfor %}
+{% endfor %}
+
+} // namespace protocol
+} // namespace blink

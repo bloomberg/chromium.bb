@@ -22,21 +22,15 @@ static const char samplingHeapProfilerEnabled[] = "samplingHeapProfilerEnabled";
 
 namespace {
 
-bool asBool(const bool* value)
-{
-    return value && *value;
-}
-
 class HeapSnapshotProgress final : public v8::ActivityControl {
 public:
     HeapSnapshotProgress(protocol::Frontend::HeapProfiler* frontend)
         : m_frontend(frontend) { }
     ControlOption ReportProgressValue(int done, int total) override
     {
-        m_frontend->reportHeapSnapshotProgress(done, total, nullptr);
+        m_frontend->reportHeapSnapshotProgress(done, total, protocol::OptionalValue<bool>());
         if (done >= total) {
-            const bool finished = true;
-            m_frontend->reportHeapSnapshotProgress(total, total, &finished);
+            m_frontend->reportHeapSnapshotProgress(total, total, true);
         }
         m_frontend->flush();
         return kContinue;
@@ -120,7 +114,7 @@ public:
     WriteResult WriteHeapStatsChunk(v8::HeapStatsUpdate* updateData, int count) override
     {
         ASSERT(count > 0);
-        RefPtr<protocol::TypeBuilder::Array<int>> statsDiff = protocol::TypeBuilder::Array<int>::create();
+        OwnPtr<protocol::Array<int>> statsDiff = protocol::Array<int>::create();
         for (int i = 0; i < count; ++i) {
             statsDiff->addItem(updateData[i].index);
             statsDiff->addItem(updateData[i].count);
@@ -176,15 +170,15 @@ void V8HeapProfilerAgentImpl::collectGarbage(ErrorString*)
     m_isolate->LowMemoryNotification();
 }
 
-void V8HeapProfilerAgentImpl::startTrackingHeapObjects(ErrorString*, const bool* trackAllocations)
+void V8HeapProfilerAgentImpl::startTrackingHeapObjects(ErrorString*, const protocol::OptionalValue<bool>& trackAllocations)
 {
     m_state->setBoolean(HeapProfilerAgentState::heapObjectsTrackingEnabled, true);
-    bool allocationTrackingEnabled = asBool(trackAllocations);
+    bool allocationTrackingEnabled = trackAllocations.get(false);
     m_state->setBoolean(HeapProfilerAgentState::allocationTrackingEnabled, allocationTrackingEnabled);
     startTrackingHeapObjectsInternal(allocationTrackingEnabled);
 }
 
-void V8HeapProfilerAgentImpl::stopTrackingHeapObjects(ErrorString* error, const bool* reportProgress)
+void V8HeapProfilerAgentImpl::stopTrackingHeapObjects(ErrorString* error, const protocol::OptionalValue<bool>& reportProgress)
 {
     requestHeapStatsUpdate();
     takeHeapSnapshot(error, reportProgress);
@@ -208,7 +202,7 @@ void V8HeapProfilerAgentImpl::disable(ErrorString* error)
     m_state->setBoolean(HeapProfilerAgentState::heapProfilerEnabled, false);
 }
 
-void V8HeapProfilerAgentImpl::takeHeapSnapshot(ErrorString* errorString, const bool* reportProgress)
+void V8HeapProfilerAgentImpl::takeHeapSnapshot(ErrorString* errorString, const protocol::OptionalValue<bool>& reportProgress)
 {
     v8::HeapProfiler* profiler = m_isolate->GetHeapProfiler();
     if (!profiler) {
@@ -216,7 +210,7 @@ void V8HeapProfilerAgentImpl::takeHeapSnapshot(ErrorString* errorString, const b
         return;
     }
     OwnPtr<HeapSnapshotProgress> progress;
-    if (asBool(reportProgress))
+    if (reportProgress.get(false))
         progress = adoptPtr(new HeapSnapshotProgress(m_frontend));
 
     GlobalObjectNameResolver resolver(static_cast<V8RuntimeAgentImpl*>(m_runtimeAgent));
@@ -230,7 +224,7 @@ void V8HeapProfilerAgentImpl::takeHeapSnapshot(ErrorString* errorString, const b
     const_cast<v8::HeapSnapshot*>(snapshot)->Delete();
 }
 
-void V8HeapProfilerAgentImpl::getObjectByHeapObjectId(ErrorString* error, const String& heapSnapshotObjectId, const String* objectGroup, RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>& result)
+void V8HeapProfilerAgentImpl::getObjectByHeapObjectId(ErrorString* error, const String& heapSnapshotObjectId, const protocol::OptionalValue<String>& objectGroup, OwnPtr<protocol::Runtime::RemoteObject>* result)
 {
     bool ok;
     unsigned id = heapSnapshotObjectId.toUInt(&ok);
@@ -245,7 +239,7 @@ void V8HeapProfilerAgentImpl::getObjectByHeapObjectId(ErrorString* error, const 
         *error = "Object is not available";
         return;
     }
-    result = m_runtimeAgent->wrapObject(heapObject->CreationContext(), heapObject, objectGroup ? *objectGroup : "");
+    *result = m_runtimeAgent->wrapObject(heapObject->CreationContext(), heapObject, objectGroup.get(""));
     if (!result)
         *error = "Object is not available";
 }
@@ -307,27 +301,27 @@ void V8HeapProfilerAgentImpl::startSampling(ErrorString* errorString)
 }
 
 namespace {
-PassRefPtr<protocol::TypeBuilder::HeapProfiler::SamplingHeapProfileNode> buildSampingHeapProfileNode(const v8::AllocationProfile::Node* node)
+PassOwnPtr<protocol::HeapProfiler::SamplingHeapProfileNode> buildSampingHeapProfileNode(const v8::AllocationProfile::Node* node)
 {
-    auto children = protocol::TypeBuilder::Array<protocol::TypeBuilder::HeapProfiler::SamplingHeapProfileNode>::create();
+    auto children = protocol::Array<protocol::HeapProfiler::SamplingHeapProfileNode>::create();
     for (const auto* child : node->children)
         children->addItem(buildSampingHeapProfileNode(child));
     size_t totalSize = 0;
     for (const auto& allocation : node->allocations)
         totalSize += allocation.size * allocation.count;
-    RefPtr<protocol::TypeBuilder::HeapProfiler::SamplingHeapProfileNode> result = protocol::TypeBuilder::HeapProfiler::SamplingHeapProfileNode::create()
+    OwnPtr<protocol::HeapProfiler::SamplingHeapProfileNode> result = protocol::HeapProfiler::SamplingHeapProfileNode::create()
         .setFunctionName(toWTFString(node->name))
         .setScriptId(String::number(node->script_id))
         .setUrl(toWTFString(node->script_name))
         .setLineNumber(node->line_number)
         .setColumnNumber(node->column_number)
         .setTotalSize(totalSize)
-        .setChildren(children);
+        .setChildren(children).build();
     return result.release();
 }
 } // namespace
 
-void V8HeapProfilerAgentImpl::stopSampling(ErrorString* errorString, RefPtr<protocol::TypeBuilder::HeapProfiler::SamplingHeapProfile>& profile)
+void V8HeapProfilerAgentImpl::stopSampling(ErrorString* errorString, OwnPtr<protocol::HeapProfiler::SamplingHeapProfile>* profile)
 {
     v8::HeapProfiler* profiler = m_isolate->GetHeapProfiler();
     if (!profiler) {
@@ -343,8 +337,8 @@ void V8HeapProfilerAgentImpl::stopSampling(ErrorString* errorString, RefPtr<prot
         return;
     }
     v8::AllocationProfile::Node* root = v8Profile->GetRootNode();
-    profile = protocol::TypeBuilder::HeapProfiler::SamplingHeapProfile::create()
-        .setHead(buildSampingHeapProfileNode(root));
+    *profile = protocol::HeapProfiler::SamplingHeapProfile::create()
+        .setHead(buildSampingHeapProfileNode(root)).build();
 }
 
 } // namespace blink

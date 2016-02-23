@@ -62,7 +62,7 @@ public:
 
     // Called from the front-end.
     void enable(ErrorString*) override;
-    void getDatabaseTableNames(ErrorString*, const String& databaseId, RefPtr<protocol::TypeBuilder::Array<String>>& names) override;
+    void getDatabaseTableNames(ErrorString*, const String& databaseId, OwnPtr<protocol::Array<String>>* names) override;
     void executeSQL(ErrorString*, const String& databaseId, const String& query, PassRefPtr<ExecuteSQLCallback>) override;
 
     void didOpenDatabase(Database*, const String& domain, const String& name, const String& version);

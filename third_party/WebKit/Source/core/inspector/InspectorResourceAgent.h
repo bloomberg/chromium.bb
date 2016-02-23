@@ -75,7 +75,6 @@ public:
         return adoptPtrWillBeNoop(new InspectorResourceAgent(inspectedFrames));
     }
 
-    void disable(ErrorString*) override;
     void restore() override;
 
     ~InspectorResourceAgent() override;
@@ -120,7 +119,7 @@ public:
     void frameScheduledNavigation(LocalFrame*, double);
     void frameClearedScheduledNavigation(LocalFrame*);
 
-    PassRefPtr<protocol::TypeBuilder::Network::Initiator> buildInitiatorObject(Document*, const FetchInitiatorInfo&);
+    PassOwnPtr<protocol::Network::Initiator> buildInitiatorObject(Document*, const FetchInitiatorInfo&);
 
     void didCreateWebSocket(Document*, unsigned long identifier, const KURL& requestURL, const String&);
     void willSendWebSocketHandshakeRequest(Document*, unsigned long identifier, const WebSocketHandshakeRequest*);
@@ -132,21 +131,19 @@ public:
 
     // Called from frontend
     void enable(ErrorString*) override;
+    void disable(ErrorString*) override;
     void setUserAgentOverride(ErrorString*, const String& userAgent) override;
-    void setExtraHTTPHeaders(ErrorString*, const RefPtr<JSONObject>&) override;
+    void setExtraHTTPHeaders(ErrorString*, PassOwnPtr<protocol::Network::Headers>) override;
     void getResponseBody(ErrorString*, const String& requestId, PassRefPtr<GetResponseBodyCallback>) override;
     void addBlockedURL(ErrorString*, const String& url) override;
     void removeBlockedURL(ErrorString*, const String& url) override;
-
     void replayXHR(ErrorString*, const String& requestId) override;
-    void setMonitoringXHREnabled(ErrorString*, bool) override;
-
-    void canClearBrowserCache(ErrorString*, bool*) override;
-    void canClearBrowserCookies(ErrorString*, bool*) override;
-    void emulateNetworkConditions(ErrorString*, bool, double, double, double) override;
+    void setMonitoringXHREnabled(ErrorString*, bool enabled) override;
+    void canClearBrowserCache(ErrorString*, bool* result) override;
+    void canClearBrowserCookies(ErrorString*, bool* result) override;
+    void emulateNetworkConditions(ErrorString*, bool offline, double latency, double downloadThroughput, double uploadThroughput) override;
     void setCacheDisabled(ErrorString*, bool cacheDisabled) override;
-
-    void setDataSizeLimitsForTest(ErrorString*, int maxTotal, int maxResource) override;
+    void setDataSizeLimitsForTest(ErrorString*, int maxTotalSize, int maxResourceSize) override;
 
     // Called from other agents.
     void setHostId(const String&);
@@ -180,11 +177,11 @@ private:
 
     RefPtrWillBeMember<XHRReplayData> m_pendingXHRReplayData;
 
-    typedef HashMap<String, RefPtr<protocol::TypeBuilder::Network::Initiator>> FrameNavigationInitiatorMap;
+    typedef HashMap<String, OwnPtr<protocol::Network::Initiator>> FrameNavigationInitiatorMap;
     FrameNavigationInitiatorMap m_frameNavigationInitiatorMap;
 
     // FIXME: InspectorResourceAgent should now be aware of style recalculation.
-    RefPtr<protocol::TypeBuilder::Network::Initiator> m_styleRecalculationInitiator;
+    OwnPtr<protocol::Network::Initiator> m_styleRecalculationInitiator;
     bool m_isRecalculatingStyle;
 
     PersistentHeapHashSetWillBeHeapHashSet<Member<XMLHttpRequest>> m_replayXHRs;

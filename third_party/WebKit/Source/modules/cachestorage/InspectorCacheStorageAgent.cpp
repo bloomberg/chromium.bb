@@ -31,9 +31,9 @@
 
 #include <algorithm>
 
-using blink::protocol::TypeBuilder::Array;
-using blink::protocol::TypeBuilder::CacheStorage::Cache;
-using blink::protocol::TypeBuilder::CacheStorage::DataEntry;
+using blink::protocol::Array;
+using blink::protocol::CacheStorage::Cache;
+using blink::protocol::CacheStorage::DataEntry;
 
 typedef blink::protocol::Dispatcher::CacheStorageCommandHandler::DeleteCacheCallback DeleteCacheCallback;
 typedef blink::protocol::Dispatcher::CacheStorageCommandHandler::DeleteEntryCallback DeleteEntryCallback;
@@ -123,16 +123,16 @@ public:
 
     void onSuccess(const WebVector<WebString>& caches) override
     {
-        RefPtr<Array<Cache>> array = Array<Cache>::create();
+        OwnPtr<Array<Cache>> array = Array<Cache>::create();
         for (size_t i = 0; i < caches.size(); i++) {
             String name = String(caches[i]);
-            RefPtr<Cache> entry = Cache::create()
+            OwnPtr<Cache> entry = Cache::create()
                 .setSecurityOrigin(m_securityOrigin)
                 .setCacheName(name)
-                .setCacheId(buildCacheId(m_securityOrigin, name));
-            array->addItem(entry);
+                .setCacheId(buildCacheId(m_securityOrigin, name)).build();
+            array->addItem(entry.release());
         }
-        m_callback->sendSuccess(array);
+        m_callback->sendSuccess(array.release());
     }
 
     void onError(WebServiceWorkerCacheError error) override
@@ -196,14 +196,14 @@ public:
             m_responses.remove(m_params.pageSize, m_responses.size() - m_params.pageSize);
             hasMore = true;
         }
-        RefPtr<Array<DataEntry>> array = Array<DataEntry>::create();
+        OwnPtr<Array<DataEntry>> array = Array<DataEntry>::create();
         for (const auto& requestResponse : m_responses) {
-            RefPtr<DataEntry> entry = DataEntry::create()
+            OwnPtr<DataEntry> entry = DataEntry::create()
                 .setRequest(requestResponse.request)
-                .setResponse(requestResponse.response);
-            array->addItem(entry);
+                .setResponse(requestResponse.response).build();
+            array->addItem(entry.release());
         }
-        m_callback->sendSuccess(array, hasMore);
+        m_callback->sendSuccess(array.release(), hasMore);
     }
 
 private:
@@ -261,8 +261,8 @@ public:
     void onSuccess(const WebVector<WebServiceWorkerRequest>& requests) override
     {
         if (requests.isEmpty()) {
-            RefPtr<Array<DataEntry>> array = Array<DataEntry>::create();
-            m_callback->sendSuccess(array, false);
+            OwnPtr<Array<DataEntry>> array = Array<DataEntry>::create();
+            m_callback->sendSuccess(array.release(), false);
             return;
         }
         RefPtr<ResponsesAccumulator> accumulator = adoptRef(new ResponsesAccumulator(requests.size(), m_params, m_callback));
@@ -417,7 +417,7 @@ void InspectorCacheStorageAgent::requestCacheNames(ErrorString* errorString, con
     // Cache Storage API is restricted to trustworthy origins.
     if (!secOrigin->isPotentiallyTrustworthy()) {
         // Don't treat this as an error, just don't attempt to open and enumerate the caches.
-        callback->sendSuccess(Array<protocol::TypeBuilder::CacheStorage::Cache>::create());
+        callback->sendSuccess(Array<protocol::CacheStorage::Cache>::create());
         return;
     }
 

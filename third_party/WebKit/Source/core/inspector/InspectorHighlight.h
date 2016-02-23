@@ -46,11 +46,11 @@ public:
     InspectorHighlight();
     ~InspectorHighlight();
 
-    static bool getBoxModel(Node*, RefPtr<protocol::TypeBuilder::DOM::BoxModel>&);
+    static bool getBoxModel(Node*, OwnPtr<protocol::DOM::BoxModel>*);
     static InspectorHighlightConfig defaultConfig();
     static bool buildNodeQuads(Node*, FloatQuad* content, FloatQuad* padding, FloatQuad* border, FloatQuad* margin);
 
-    void appendPath(PassRefPtr<JSONArrayBase> path, const Color& fillColor, const Color& outlineColor, const String& name = String());
+    void appendPath(PassRefPtr<JSONArray> path, const Color& fillColor, const Color& outlineColor, const String& name = String());
     void appendQuad(const FloatQuad&, const Color& fillColor, const Color& outlineColor = Color::transparent, const String& name = String());
     void appendEventTargetQuads(Node* eventTargetNode, const InspectorHighlightConfig&);
     PassRefPtr<JSONObject> asJSONObject() const;

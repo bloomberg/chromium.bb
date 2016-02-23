@@ -43,12 +43,16 @@ void InspectorTracingAgent::restore()
 {
     emitMetadataEvents();
 }
-
-void InspectorTracingAgent::start(ErrorString*, const String* categoryFilter, const String*, const double*, const String*, PassRefPtr<StartCallback> callback)
+void InspectorTracingAgent::start(ErrorString*,
+    const OptionalValue<String>& categories,
+    const OptionalValue<String>& options,
+    const OptionalValue<double>& bufferUsageReportingInterval,
+    const OptionalValue<String>& transferMode,
+    PassRefPtr<StartCallback> callback)
 {
     ASSERT(sessionId().isEmpty());
     m_state->setString(TracingAgentState::sessionId, IdentifiersFactory::createIdentifier());
-    m_client->enableTracing(categoryFilter ? *categoryFilter : String());
+    m_client->enableTracing(categories.get(String()));
     emitMetadataEvents();
     callback->sendSuccess();
 }

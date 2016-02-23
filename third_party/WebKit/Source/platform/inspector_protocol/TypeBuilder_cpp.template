@@ -1,0 +1,69 @@
+// This file is generated
+
+// Copyright (c) 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "platform/inspector_protocol/{{class_name}}.h"
+
+namespace blink {
+namespace protocol {
+
+template<>
+PassRefPtr<JSONValue> toValue(const String& param)
+{
+    return JSONString::create(param);
+}
+
+OptionalValue<String> optional(const String& value)
+{
+    return value.isNull() ? OptionalValue<String>() : OptionalValue<String>(value);
+}
+
+// ------------- Enum values from types.
+{% for domain in api.domains %}
+  {% for type in domain.types %}
+    {% if "enum" in type %}
+
+namespace {{domain.domain}} {
+namespace {{type.id}}Enum {
+      {% for literal in type.enum %}
+const char* {{ literal | dash_to_camelcase}} = "{{literal}}";
+      {% endfor %}
+} // {{type.id}}Enum
+} // {{domain.domain}}
+    {% endif %}
+    {% for property in type.properties %}
+      {% if "enum" in property %}
+namespace {{domain.domain}} {
+        {% for literal in property.enum %}
+const char* {{type.id}}::{{property.name | to_title_case}}Enum::{{ literal | dash_to_camelcase}} = "{{literal}}";
+        {% endfor %}
+} // {{domain.domain}}
+      {% endif %}
+    {% endfor %}
+  {% endfor %}
+{% endfor %}
+
+// ------------- Enum values from params.
+{% for domain in api.domains %}
+  {% for command in join_arrays(domain, ["commands", "events"]) %}
+    {% for param in join_arrays(command, ["parameters", "returns"]) %}
+      {% if "enum" in param %}
+
+namespace {{domain.domain}} {
+namespace {{command.name | to_title_case}} {
+namespace {{param.name | to_title_case}}Enum {
+        {% for literal in param.enum %}
+const char* {{ literal | to_title_case}} = "{{literal}}";
+        {% endfor %}
+} // {{param.name | to_title_case}}Enum
+} // {{command.name | to_title_case }}
+} // {{domain.domain}}
+      {% endif %}
+    {% endfor %}
+  {% endfor %}
+{% endfor %}
+
+} // namespace protocol
+} // namespace blink

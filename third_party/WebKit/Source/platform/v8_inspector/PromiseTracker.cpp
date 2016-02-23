@@ -9,9 +9,7 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/PassOwnPtr.h"
 
-using blink::protocol::TypeBuilder::Array;
-using blink::protocol::TypeBuilder::Runtime::CallFrame;
-using blink::protocol::TypeBuilder::Debugger::PromiseDetails;
+using namespace blink::protocol;
 
 namespace blink {
 
@@ -24,8 +22,8 @@ public:
 
     ~PromiseWrapper()
     {
-        RefPtr<PromiseDetails> promiseDetails = PromiseDetails::create().setId(m_id);
-        m_tracker->m_agent->didUpdatePromise(protocol::Frontend::Debugger::EventType::Gc, promiseDetails.release());
+        OwnPtr<Debugger::PromiseDetails> promiseDetails = Debugger::PromiseDetails::create().setId(m_id).build();
+        m_tracker->m_agent->didUpdatePromise(Debugger::PromiseUpdated::EventTypeEnum::Gc, promiseDetails.release());
     }
 
 private:
@@ -110,21 +108,20 @@ void PromiseTracker::didReceiveV8PromiseEvent(v8::Local<v8::Context> context, v8
     bool isNewPromise = false;
     int id = promiseId(promise, &isNewPromise);
 
-    protocol::Frontend::Debugger::EventType::Enum eventType = isNewPromise ? protocol::Frontend::Debugger::EventType::New : protocol::Frontend::Debugger::EventType::Update;
+    String eventType = isNewPromise ? Debugger::PromiseUpdated::EventTypeEnum::New : Debugger::PromiseUpdated::EventTypeEnum::Update;
 
-    PromiseDetails::Status::Enum promiseStatus;
+    String promiseStatus;
     switch (status) {
     case 0:
-        promiseStatus = PromiseDetails::Status::Pending;
+        promiseStatus = Debugger::PromiseDetails::StatusEnum::Pending;
         break;
     case 1:
-        promiseStatus = PromiseDetails::Status::Resolved;
+        promiseStatus = Debugger::PromiseDetails::StatusEnum::Resolved;
         break;
     default:
-        promiseStatus = PromiseDetails::Status::Rejected;
+        promiseStatus = Debugger::PromiseDetails::StatusEnum::Rejected;
     };
-    RefPtr<PromiseDetails> promiseDetails = PromiseDetails::create().setId(id);
-    promiseDetails->setStatus(promiseStatus);
+    OwnPtr<Debugger::PromiseDetails> promiseDetails = Debugger::PromiseDetails::create().setId(id).setStatus(promiseStatus).build();
 
     if (!parentPromise.IsEmpty() && parentPromise->IsObject()) {
         v8::Local<v8::Object> handle = parentPromise->ToObject(context->GetIsolate());

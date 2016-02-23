@@ -29,11 +29,11 @@ public:
 
     // protocol::Dispatcher::EmulationCommandHandler implementation.
     void resetPageScaleFactor(ErrorString*) override;
-    void setPageScaleFactor(ErrorString*, double pageScaleFactor) override;
-    void setScriptExecutionDisabled(ErrorString*, bool) override;
-    void setTouchEmulationEnabled(ErrorString*, bool enabled, const String* configuration) override;
-    void setEmulatedMedia(ErrorString*, const String&) override;
-    void setCPUThrottlingRate(ErrorString*, double rate) override;
+    void setPageScaleFactor(ErrorString*, double in_pageScaleFactor) override;
+    void setScriptExecutionDisabled(ErrorString*, bool in_value) override;
+    void setTouchEmulationEnabled(ErrorString*, bool in_enabled, const protocol::OptionalValue<String>& in_configuration) override;
+    void setEmulatedMedia(ErrorString*, const String& in_media) override;
+    void setCPUThrottlingRate(ErrorString*, double in_rate) override;
 
     // InspectorBaseAgent overrides.
     void disable(ErrorString*) override;

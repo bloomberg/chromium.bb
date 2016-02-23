@@ -62,14 +62,14 @@
 #include "public/platform/modules/indexeddb/WebIDBTypes.h"
 #include "wtf/Vector.h"
 
-using blink::protocol::TypeBuilder::Array;
-using blink::protocol::TypeBuilder::IndexedDB::DatabaseWithObjectStores;
-using blink::protocol::TypeBuilder::IndexedDB::DataEntry;
-using blink::protocol::TypeBuilder::IndexedDB::Key;
-using blink::protocol::TypeBuilder::IndexedDB::KeyPath;
-using blink::protocol::TypeBuilder::IndexedDB::KeyRange;
-using blink::protocol::TypeBuilder::IndexedDB::ObjectStore;
-using blink::protocol::TypeBuilder::IndexedDB::ObjectStoreIndex;
+using blink::protocol::Array;
+using blink::protocol::IndexedDB::DatabaseWithObjectStores;
+using blink::protocol::IndexedDB::DataEntry;
+using blink::protocol::IndexedDB::Key;
+using blink::protocol::IndexedDB::KeyPath;
+using blink::protocol::IndexedDB::KeyRange;
+using blink::protocol::IndexedDB::ObjectStore;
+using blink::protocol::IndexedDB::ObjectStoreIndex;
 
 typedef blink::protocol::Dispatcher::IndexedDBCommandHandler::RequestDatabaseNamesCallback RequestDatabaseNamesCallback;
 typedef blink::protocol::Dispatcher::IndexedDBCommandHandler::RequestDatabaseCallback RequestDatabaseCallback;
@@ -117,7 +117,7 @@ public:
         }
 
         RefPtrWillBeRawPtr<DOMStringList> databaseNamesList = requestResult->domStringList();
-        RefPtr<protocol::TypeBuilder::Array<String>> databaseNames = protocol::TypeBuilder::Array<String>::create();
+        OwnPtr<protocol::Array<String>> databaseNames = protocol::Array<String>::create();
         for (size_t i = 0; i < databaseNamesList->length(); ++i)
             databaseNames->addItem(databaseNamesList->anonymousIndexedGetter(i));
         m_requestCallback->sendSuccess(databaseNames.release());
@@ -272,24 +272,23 @@ static IDBIndex* indexForObjectStore(IDBObjectStore* idbObjectStore, const Strin
     return idbIndex;
 }
 
-static PassRefPtr<KeyPath> keyPathFromIDBKeyPath(const IDBKeyPath& idbKeyPath)
+static PassOwnPtr<KeyPath> keyPathFromIDBKeyPath(const IDBKeyPath& idbKeyPath)
 {
-    RefPtr<KeyPath> keyPath;
+    OwnPtr<KeyPath> keyPath;
     switch (idbKeyPath.type()) {
     case IDBKeyPath::NullType:
-        keyPath = KeyPath::create().setType(KeyPath::Type::Null);
+        keyPath = KeyPath::create().setType(KeyPath::TypeEnum::Null).build();
         break;
     case IDBKeyPath::StringType:
-        keyPath = KeyPath::create().setType(KeyPath::Type::String);
-        keyPath->setString(idbKeyPath.string());
+        keyPath = KeyPath::create().setType(KeyPath::TypeEnum::String).setString(idbKeyPath.string()).build();
         break;
     case IDBKeyPath::ArrayType: {
-        keyPath = KeyPath::create().setType(KeyPath::Type::Array);
-        RefPtr<protocol::TypeBuilder::Array<String>> array = protocol::TypeBuilder::Array<String>::create();
+        keyPath = KeyPath::create().setType(KeyPath::TypeEnum::Array).build();
+        OwnPtr<protocol::Array<String>> array = protocol::Array<String>::create();
         const Vector<String>& stringArray = idbKeyPath.array();
         for (size_t i = 0; i < stringArray.size(); ++i)
             array->addItem(stringArray[i]);
-        keyPath->setArray(array);
+        keyPath->setArray(array.release());
         break;
     }
     default:
@@ -315,37 +314,37 @@ public:
 
         const IDBDatabaseMetadata databaseMetadata = idbDatabase->metadata();
 
-        RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::IndexedDB::ObjectStore>> objectStores = protocol::TypeBuilder::Array<protocol::TypeBuilder::IndexedDB::ObjectStore>::create();
+        OwnPtr<protocol::Array<protocol::IndexedDB::ObjectStore>> objectStores = protocol::Array<protocol::IndexedDB::ObjectStore>::create();
 
         for (const auto& storeMapEntry : databaseMetadata.objectStores) {
             const IDBObjectStoreMetadata& objectStoreMetadata = storeMapEntry.value;
 
-            RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::IndexedDB::ObjectStoreIndex>> indexes = protocol::TypeBuilder::Array<protocol::TypeBuilder::IndexedDB::ObjectStoreIndex>::create();
+            OwnPtr<protocol::Array<protocol::IndexedDB::ObjectStoreIndex>> indexes = protocol::Array<protocol::IndexedDB::ObjectStoreIndex>::create();
 
             for (const auto& metadataMapEntry : objectStoreMetadata.indexes) {
                 const IDBIndexMetadata& indexMetadata = metadataMapEntry.value;
 
-                RefPtr<ObjectStoreIndex> objectStoreIndex = ObjectStoreIndex::create()
+                OwnPtr<ObjectStoreIndex> objectStoreIndex = ObjectStoreIndex::create()
                     .setName(indexMetadata.name)
                     .setKeyPath(keyPathFromIDBKeyPath(indexMetadata.keyPath))
                     .setUnique(indexMetadata.unique)
-                    .setMultiEntry(indexMetadata.multiEntry);
-                indexes->addItem(objectStoreIndex);
+                    .setMultiEntry(indexMetadata.multiEntry).build();
+                indexes->addItem(objectStoreIndex.release());
             }
 
-            RefPtr<ObjectStore> objectStore = ObjectStore::create()
+            OwnPtr<ObjectStore> objectStore = ObjectStore::create()
                 .setName(objectStoreMetadata.name)
                 .setKeyPath(keyPathFromIDBKeyPath(objectStoreMetadata.keyPath))
                 .setAutoIncrement(objectStoreMetadata.autoIncrement)
-                .setIndexes(indexes);
-            objectStores->addItem(objectStore);
+                .setIndexes(indexes.release()).build();
+            objectStores->addItem(objectStore.release());
         }
-        RefPtr<DatabaseWithObjectStores> result = DatabaseWithObjectStores::create()
+        OwnPtr<DatabaseWithObjectStores> result = DatabaseWithObjectStores::create()
             .setName(databaseMetadata.name)
             .setIntVersion(databaseMetadata.intVersion)
-            .setObjectStores(objectStores);
+            .setObjectStores(objectStores.release()).build();
 
-        m_requestCallback->sendSuccess(result);
+        m_requestCallback->sendSuccess(result.release());
     }
 
     RequestCallback* requestCallback() override { return m_requestCallback.get(); }
@@ -356,13 +355,13 @@ private:
     RefPtr<RequestDatabaseCallback> m_requestCallback;
 };
 
-static IDBKey* idbKeyFromInspectorObject(JSONObject* key)
+static IDBKey* idbKeyFromInspectorObject(PassOwnPtr<protocol::IndexedDB::Key> key)
 {
     IDBKey* idbKey;
 
-    String type;
-    if (!key->getString("type", &type))
+    if (!key || !key->hasType())
         return nullptr;
+    String type = key->getType();
 
     DEFINE_STATIC_LOCAL(String, s_number, ("number"));
     DEFINE_STATIC_LOCAL(String, s_string, ("string"));
@@ -370,30 +369,22 @@ static IDBKey* idbKeyFromInspectorObject(JSONObject* key)
     DEFINE_STATIC_LOCAL(String, s_array, ("array"));
 
     if (type == s_number) {
-        double number;
-        if (!key->getNumber("number", &number))
+        if (!key->hasNumber())
             return nullptr;
-        idbKey = IDBKey::createNumber(number);
+        idbKey = IDBKey::createNumber(key->getNumber(0));
     } else if (type == s_string) {
-        String string;
-        if (!key->getString("string", &string))
+        if (!key->hasString())
             return nullptr;
-        idbKey = IDBKey::createString(string);
+        idbKey = IDBKey::createString(key->getString(String()));
     } else if (type == s_date) {
-        double date;
-        if (!key->getNumber("date", &date))
+        if (!key->hasDate())
             return nullptr;
-        idbKey = IDBKey::createDate(date);
+        idbKey = IDBKey::createDate(key->getDate(0));
     } else if (type == s_array) {
         IDBKey::KeyArray keyArray;
-        RefPtr<JSONArray> array = key->getArray("array");
-        for (size_t i = 0; i < array->length(); ++i) {
-            RefPtr<JSONValue> value = array->get(i);
-            RefPtr<JSONObject> object;
-            if (!value->asObject(&object))
-                return nullptr;
-            keyArray.append(idbKeyFromInspectorObject(object.get()));
-        }
+        auto array = key->getArray(nullptr);
+        for (size_t i = 0; array && i < array->length(); ++i)
+            keyArray.append(idbKeyFromInspectorObject(array->get(i)));
         idbKey = IDBKey::createArray(keyArray);
     } else {
         return nullptr;
@@ -402,27 +393,23 @@ static IDBKey* idbKeyFromInspectorObject(JSONObject* key)
     return idbKey;
 }
 
-static IDBKeyRange* idbKeyRangeFromKeyRange(JSONObject* keyRange)
+static IDBKeyRange* idbKeyRangeFromKeyRange(PassOwnPtr<protocol::IndexedDB::KeyRange> keyRange)
 {
-    RefPtr<JSONObject> lower = keyRange->getObject("lower");
-    IDBKey* idbLower = lower ? idbKeyFromInspectorObject(lower.get()) : nullptr;
-    if (lower && !idbLower)
+    IDBKey* idbLower = idbKeyFromInspectorObject(keyRange->getLower(nullptr));
+    if (keyRange->hasLower() && !idbLower)
         return nullptr;
 
-    RefPtr<JSONObject> upper = keyRange->getObject("upper");
-    IDBKey* idbUpper = upper ? idbKeyFromInspectorObject(upper.get()) : nullptr;
-    if (upper && !idbUpper)
+    IDBKey* idbUpper = idbKeyFromInspectorObject(keyRange->getUpper(nullptr));
+    if (keyRange->hasUpper() && !idbUpper)
         return nullptr;
 
-    bool lowerOpen;
-    if (!keyRange->getBoolean("lowerOpen", &lowerOpen))
+    if (!keyRange->hasLowerOpen())
         return nullptr;
-    IDBKeyRange::LowerBoundType lowerBoundType = lowerOpen ? IDBKeyRange::LowerBoundOpen : IDBKeyRange::LowerBoundClosed;
+    IDBKeyRange::LowerBoundType lowerBoundType = keyRange->getLowerOpen() ? IDBKeyRange::LowerBoundOpen : IDBKeyRange::LowerBoundClosed;
 
-    bool upperOpen;
-    if (!keyRange->getBoolean("upperOpen", &upperOpen))
+    if (!keyRange->hasUpperOpen())
         return nullptr;
-    IDBKeyRange::UpperBoundType upperBoundType = upperOpen ? IDBKeyRange::UpperBoundOpen : IDBKeyRange::UpperBoundClosed;
+    IDBKeyRange::UpperBoundType upperBoundType = keyRange->getUpperOpen() ? IDBKeyRange::UpperBoundOpen : IDBKeyRange::UpperBoundClosed;
 
     return IDBKeyRange::create(idbLower, idbUpper, lowerBoundType, upperBoundType);
 }
@@ -499,11 +486,11 @@ public:
         String key = keyJsonValue ? keyJsonValue->toJSONString() : errorMessage;
         String value = valueJsonValue ? valueJsonValue->toJSONString() : errorMessage;
         String primaryKey = primaryKeyJsonValue ? primaryKeyJsonValue->toJSONString() : errorMessage;
-        RefPtr<DataEntry> dataEntry = DataEntry::create()
+        OwnPtr<DataEntry> dataEntry = DataEntry::create()
             .setKey(key)
             .setPrimaryKey(primaryKey)
-            .setValue(value);
-        m_result->addItem(dataEntry);
+            .setValue(value).build();
+        m_result->addItem(dataEntry.release());
     }
 
     void end(bool hasMore)
@@ -533,7 +520,7 @@ private:
     RefPtr<RequestDataCallback> m_requestCallback;
     int m_skipCount;
     unsigned m_pageSize;
-    RefPtr<Array<DataEntry>> m_result;
+    OwnPtr<Array<DataEntry>> m_result;
 };
 
 class DataLoader final : public ExecutableWithDatabase {
@@ -699,7 +686,7 @@ void InspectorIndexedDBAgent::requestDatabase(ErrorString* errorString, const St
     databaseLoader->start(idbFactory, document->securityOrigin(), databaseName);
 }
 
-void InspectorIndexedDBAgent::requestData(ErrorString* errorString, const String& securityOrigin, const String& databaseName, const String& objectStoreName, const String& indexName, int skipCount, int pageSize, const RefPtr<JSONObject>* keyRange, const PassRefPtr<RequestDataCallback> requestCallback)
+void InspectorIndexedDBAgent::requestData(ErrorString* errorString, const String& securityOrigin, const String& databaseName, const String& objectStoreName, const String& indexName, int skipCount, int pageSize, PassOwnPtr<protocol::IndexedDB::KeyRange> keyRange, const PassRefPtr<RequestDataCallback> requestCallback)
 {
     LocalFrame* frame = m_inspectedFrames->frameWithSecurityOrigin(securityOrigin);
     Document* document = assertDocument(errorString, frame);
@@ -709,7 +696,7 @@ void InspectorIndexedDBAgent::requestData(ErrorString* errorString, const String
     if (!idbFactory)
         return;
 
-    IDBKeyRange* idbKeyRange = keyRange ? idbKeyRangeFromKeyRange(keyRange->get()) : nullptr;
+    IDBKeyRange* idbKeyRange = keyRange ? idbKeyRangeFromKeyRange(keyRange) : nullptr;
     if (keyRange && !idbKeyRange) {
         *errorString = "Can not parse key range.";
         return;

@@ -60,9 +60,9 @@ namespace {
 
 void reportTransactionFailed(ExecuteSQLCallback* requestCallback, SQLError* error)
 {
-    RefPtr<protocol::TypeBuilder::Database::Error> errorObject = protocol::TypeBuilder::Database::Error::create()
+    OwnPtr<protocol::Database::Error> errorObject = protocol::Database::Error::create()
         .setMessage(error->message())
-        .setCode(error->code());
+        .setCode(error->code()).build();
     requestCallback->sendSuccess(nullptr, nullptr, errorObject.release());
 }
 
@@ -84,12 +84,12 @@ public:
     {
         SQLResultSetRowList* rowList = resultSet->rows();
 
-        RefPtr<protocol::TypeBuilder::Array<String>> columnNames = protocol::TypeBuilder::Array<String>::create();
+        OwnPtr<protocol::Array<String>> columnNames = protocol::Array<String>::create();
         const Vector<String>& columns = rowList->columnNames();
         for (size_t i = 0; i < columns.size(); ++i)
             columnNames->addItem(columns[i]);
 
-        RefPtr<protocol::TypeBuilder::Array<JSONValue>> values = protocol::TypeBuilder::Array<JSONValue>::create();
+        OwnPtr<protocol::Array<RefPtr<JSONValue>>> values = protocol::Array<RefPtr<JSONValue>>::create();
         const Vector<SQLValue>& data = rowList->values();
         for (size_t i = 0; i < data.size(); ++i) {
             const SQLValue& value = rowList->values()[i];
@@ -270,21 +270,21 @@ void InspectorDatabaseAgent::restore()
     m_enabled = m_state->booleanProperty(DatabaseAgentState::databaseAgentEnabled, false);
 }
 
-void InspectorDatabaseAgent::getDatabaseTableNames(ErrorString* error, const String& databaseId, RefPtr<protocol::TypeBuilder::Array<String>>& names)
+void InspectorDatabaseAgent::getDatabaseTableNames(ErrorString* error, const String& databaseId, OwnPtr<protocol::Array<String>>* names)
 {
     if (!m_enabled) {
         *error = "Database agent is not enabled";
         return;
     }
 
-    names = protocol::TypeBuilder::Array<String>::create();
+    *names = protocol::Array<String>::create();
 
     Database* database = databaseForId(databaseId);
     if (database) {
         Vector<String> tableNames = database->tableNames();
         unsigned length = tableNames.size();
         for (unsigned i = 0; i < length; ++i)
-            names->addItem(tableNames[i]);
+            (*names)->addItem(tableNames[i]);
     }
 }
 

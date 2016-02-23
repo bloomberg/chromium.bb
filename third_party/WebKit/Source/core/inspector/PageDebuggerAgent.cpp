@@ -44,7 +44,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Page.h"
 
-using blink::protocol::TypeBuilder::Runtime::RemoteObject;
+using blink::protocol::Runtime::RemoteObject;
 
 namespace blink {
 

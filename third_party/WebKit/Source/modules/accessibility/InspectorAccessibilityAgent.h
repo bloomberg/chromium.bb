@@ -25,7 +25,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     // Protocol methods.
-    void getAXNode(ErrorString*, int nodeId, RefPtr<protocol::TypeBuilder::Accessibility::AXNode>& accessibilityNode) override;
+    void getAXNode(ErrorString*, int nodeId, OwnPtr<protocol::Accessibility::AXNode>* accessibilityNode) override;
 
 private:
     explicit InspectorAccessibilityAgent(Page*);

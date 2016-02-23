@@ -181,9 +181,13 @@ action("inspector_protocol_sources") {
   script = "inspector_protocol/CodeGenerator.py"
 
   inputs = [
-    # The helper script imported by CodeGenerator.py.
-    "inspector_protocol/CodeGeneratorStrings.py",
     protocol_file,
+    "inspector_protocol/Dispatcher_h.template",
+    "inspector_protocol/Dispatcher_cpp.template",
+    "inspector_protocol/Frontend_h.template",
+    "inspector_protocol/Frontend_cpp.template",
+    "inspector_protocol/TypeBuilder_h.template",
+    "inspector_protocol/TypeBuilder_cpp.template",
   ]
   outputs = [
     "$blink_platform_output_dir/inspector_protocol/Dispatcher.cpp",

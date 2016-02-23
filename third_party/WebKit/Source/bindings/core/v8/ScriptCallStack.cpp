@@ -103,7 +103,7 @@ unsigned ScriptCallStack::topColumnNumber() const
     return m_stackTrace->topColumnNumber();
 }
 
-PassRefPtr<protocol::TypeBuilder::Runtime::StackTrace> ScriptCallStack::buildInspectorObject() const
+PassOwnPtr<protocol::Runtime::StackTrace> ScriptCallStack::buildInspectorObject() const
 {
     return m_stackTrace->buildInspectorObject();
 }

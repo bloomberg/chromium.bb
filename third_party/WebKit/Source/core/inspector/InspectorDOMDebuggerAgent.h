@@ -66,15 +66,16 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     // DOMDebugger API for InspectorFrontend
-    void setXHRBreakpoint(ErrorString*, const String& url) override;
-    void removeXHRBreakpoint(ErrorString*, const String& url) override;
-    void setEventListenerBreakpoint(ErrorString*, const String& eventName, const String* targetName) override;
-    void removeEventListenerBreakpoint(ErrorString*, const String& eventName, const String* targetName) override;
-    void setInstrumentationBreakpoint(ErrorString*, const String& eventName) override;
-    void removeInstrumentationBreakpoint(ErrorString*, const String& eventName) override;
     void setDOMBreakpoint(ErrorString*, int nodeId, const String& type) override;
     void removeDOMBreakpoint(ErrorString*, int nodeId, const String& type) override;
-    void getEventListeners(ErrorString*, const String& objectId, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::DOMDebugger::EventListener>>& result) override;
+    void setEventListenerBreakpoint(ErrorString*, const String& eventName, const OptionalValue<String>& targetName) override;
+    void removeEventListenerBreakpoint(ErrorString*, const String& eventName, const OptionalValue<String>& targetName) override;
+    void setInstrumentationBreakpoint(ErrorString*, const String& eventName) override;
+    void removeInstrumentationBreakpoint(ErrorString*, const String& eventName) override;
+    void setXHRBreakpoint(ErrorString*, const String& url) override;
+    void removeXHRBreakpoint(ErrorString*, const String& url) override;
+    void getEventListeners(ErrorString*, const String& objectId, OwnPtr<protocol::Array<protocol::DOMDebugger::EventListener>>* listeners) override;
+
     // InspectorInstrumentation API
     void willInsertDOMNode(Node* parent);
     void didInvalidateStyleAttr(Node*);
@@ -115,15 +116,15 @@ private:
     void descriptionForDOMEvent(Node* target, int breakpointType, bool insertion, JSONObject* description);
     void updateSubtreeBreakpoints(Node*, uint32_t rootMask, bool set);
     bool hasBreakpoint(Node*, int type);
-    void setBreakpoint(ErrorString*, const String& eventName, const String* targetName);
-    void removeBreakpoint(ErrorString*, const String& eventName, const String* targetName);
+    void setBreakpoint(ErrorString*, const String& eventName, const String& targetName);
+    void removeBreakpoint(ErrorString*, const String& eventName, const String& targetName);
 
     void didAddBreakpoint();
     void didRemoveBreakpoint();
     void setEnabled(bool);
 
-    void eventListeners(v8::Local<v8::Context>, v8::Local<v8::Value>, const String& objectGroup, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::DOMDebugger::EventListener>>& listenersArray);
-    PassRefPtr<protocol::TypeBuilder::DOMDebugger::EventListener> buildObjectForEventListener(v8::Local<v8::Context>, const V8EventListenerInfo&, const String& objectGroupId);
+    void eventListeners(v8::Local<v8::Context>, v8::Local<v8::Value>, const String& objectGroup, protocol::Array<protocol::DOMDebugger::EventListener>* listenersArray);
+    PassOwnPtr<protocol::DOMDebugger::EventListener> buildObjectForEventListener(v8::Local<v8::Context>, const V8EventListenerInfo&, const String& objectGroupId);
 
     v8::Isolate* m_isolate;
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;

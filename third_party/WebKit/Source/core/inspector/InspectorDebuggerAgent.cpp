@@ -87,22 +87,34 @@ void InspectorDebuggerAgent::setSkipAllPauses(ErrorString* errorString, bool inS
     m_v8DebuggerAgent->setSkipAllPauses(errorString, inSkipped);
 }
 
-void InspectorDebuggerAgent::setBreakpointByUrl(ErrorString* errorString, int inLineNumber, const String* inUrl, const String* inUrlRegex, const int* inColumnNumber, const String* inCondition, protocol::TypeBuilder::Debugger::BreakpointId* outBreakpointId, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::Location>>& outLocations)
+void InspectorDebuggerAgent::setBreakpointByUrl(ErrorString* errorString, int inLineNumber,
+    const OptionalValue<String>& inUrl,
+    const OptionalValue<String>& inUrlRegex,
+    const OptionalValue<int>& inColumnNumber,
+    const OptionalValue<String>& inCondition,
+    protocol::Debugger::BreakpointId* outBreakpointId,
+    OwnPtr<Array<protocol::Debugger::Location>>* outLocations)
 {
     m_v8DebuggerAgent->setBreakpointByUrl(errorString, inLineNumber, inUrl, inUrlRegex, inColumnNumber, inCondition, outBreakpointId, outLocations);
 }
 
-void InspectorDebuggerAgent::setBreakpoint(ErrorString* errorString, const RefPtr<JSONObject>& inLocation, const String* inCondition, protocol::TypeBuilder::Debugger::BreakpointId* outBreakpointId, RefPtr<protocol::TypeBuilder::Debugger::Location>& outActualLocation)
+void InspectorDebuggerAgent::setBreakpoint(ErrorString* errorString, PassOwnPtr<protocol::Debugger::Location> inLocation,
+    const OptionalValue<String>& inCondition,
+    protocol::Debugger::BreakpointId* outBreakpointId,
+    OwnPtr<protocol::Debugger::Location>* outActualLocation)
 {
     m_v8DebuggerAgent->setBreakpoint(errorString, inLocation, inCondition, outBreakpointId, outActualLocation);
 }
 
-void InspectorDebuggerAgent::removeBreakpoint(ErrorString* errorString, const String& inBreakpointId)
+void InspectorDebuggerAgent::removeBreakpoint(ErrorString* errorString,
+    const String& inBreakpointId)
 {
     m_v8DebuggerAgent->removeBreakpoint(errorString, inBreakpointId);
 }
 
-void InspectorDebuggerAgent::continueToLocation(ErrorString* errorString, const RefPtr<JSONObject>& inLocation, const bool* inInterstatementLocation)
+void InspectorDebuggerAgent::continueToLocation(ErrorString* errorString,
+    PassOwnPtr<protocol::Debugger::Location> inLocation,
+    const OptionalValue<bool>& inInterstatementLocation)
 {
     m_v8DebuggerAgent->continueToLocation(errorString, inLocation, inInterstatementLocation);
 }
@@ -137,7 +149,12 @@ void InspectorDebuggerAgent::stepIntoAsync(ErrorString* errorString)
     m_v8DebuggerAgent->stepIntoAsync(errorString);
 }
 
-void InspectorDebuggerAgent::searchInContent(ErrorString* errorString, const String& inScriptId, const String& inQuery, const bool* inCaseSensitive, const bool* inIsRegex, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::SearchMatch>>& outResult)
+void InspectorDebuggerAgent::searchInContent(ErrorString* errorString,
+    const String& inScriptId,
+    const String& inQuery,
+    const OptionalValue<bool>& inCaseSensitive,
+    const OptionalValue<bool>& inIsRegex,
+    OwnPtr<Array<protocol::Debugger::SearchMatch>>* outResult)
 {
     m_v8DebuggerAgent->searchInContent(errorString, inScriptId, inQuery, inCaseSensitive, inIsRegex, outResult);
 }
@@ -147,60 +164,97 @@ void InspectorDebuggerAgent::canSetScriptSource(ErrorString* errorString, bool* 
     m_v8DebuggerAgent->canSetScriptSource(errorString, outResult);
 }
 
-void InspectorDebuggerAgent::setScriptSource(ErrorString* errorString, const String& inScriptId, const String& inScriptSource, const bool* inPreview, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::CallFrame>>& optOutCallFrames, protocol::TypeBuilder::OptOutput<bool>* optOutStackChanged, RefPtr<protocol::TypeBuilder::Debugger::StackTrace>& optOutAsyncStackTrace, RefPtr<protocol::TypeBuilder::Debugger::SetScriptSourceError>& optOutCompileError)
+void InspectorDebuggerAgent::setScriptSource(ErrorString* errorString,
+    const String& inScriptId,
+    const String& inScriptSource,
+    const OptionalValue<bool>& inPreview,
+    OwnPtr<Array<protocol::Debugger::CallFrame>>* optOutCallFrames,
+    OptionalValue<bool>* optOutStackChanged,
+    OwnPtr<protocol::Debugger::StackTrace>* optOutAsyncStackTrace,
+    OwnPtr<protocol::Debugger::SetScriptSourceError>* optOutCompileError)
 {
     m_v8DebuggerAgent->setScriptSource(errorString, inScriptId, inScriptSource, inPreview, optOutCallFrames, optOutStackChanged, optOutAsyncStackTrace, optOutCompileError);
 }
 
-void InspectorDebuggerAgent::restartFrame(ErrorString* errorString, const String& inCallFrameId, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::CallFrame>>& outCallFrames, RefPtr<protocol::TypeBuilder::Debugger::StackTrace>& optOutAsyncStackTrace)
+void InspectorDebuggerAgent::restartFrame(ErrorString* errorString,
+    const String& inCallFrameId,
+    OwnPtr<Array<protocol::Debugger::CallFrame>>* outCallFrames,
+    OwnPtr<protocol::Debugger::StackTrace>* optOutAsyncStackTrace)
 {
     m_v8DebuggerAgent->restartFrame(errorString, inCallFrameId, outCallFrames, optOutAsyncStackTrace);
 }
 
-void InspectorDebuggerAgent::getScriptSource(ErrorString* errorString, const String& inScriptId, String* outScriptSource)
+void InspectorDebuggerAgent::getScriptSource(ErrorString* errorString,
+    const String& inScriptId,
+    String* outScriptSource)
 {
     m_v8DebuggerAgent->getScriptSource(errorString, inScriptId, outScriptSource);
 }
 
-void InspectorDebuggerAgent::getFunctionDetails(ErrorString* errorString, const String& inFunctionId, RefPtr<protocol::TypeBuilder::Debugger::FunctionDetails>& outDetails)
+void InspectorDebuggerAgent::getFunctionDetails(ErrorString* errorString,
+    const String& inFunctionId,
+    OwnPtr<protocol::Debugger::FunctionDetails>* outDetails)
 {
     m_v8DebuggerAgent->getFunctionDetails(errorString, inFunctionId, outDetails);
 }
 
-void InspectorDebuggerAgent::getGeneratorObjectDetails(ErrorString* errorString, const String& inObjectId, RefPtr<protocol::TypeBuilder::Debugger::GeneratorObjectDetails>& outDetails)
+void InspectorDebuggerAgent::getGeneratorObjectDetails(ErrorString* errorString,
+    const String& inObjectId,
+    OwnPtr<protocol::Debugger::GeneratorObjectDetails>* outDetails)
 {
     m_v8DebuggerAgent->getGeneratorObjectDetails(errorString, inObjectId, outDetails);
 }
 
-void InspectorDebuggerAgent::getCollectionEntries(ErrorString* errorString, const String& inObjectId, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::CollectionEntry>>& outEntries)
+void InspectorDebuggerAgent::getCollectionEntries(ErrorString* errorString,
+    const String& inObjectId,
+    OwnPtr<Array<protocol::Debugger::CollectionEntry>>* outEntries)
 {
     m_v8DebuggerAgent->getCollectionEntries(errorString, inObjectId, outEntries);
 }
 
-void InspectorDebuggerAgent::setPauseOnExceptions(ErrorString* errorString, const String& inState)
+void InspectorDebuggerAgent::setPauseOnExceptions(ErrorString* errorString,
+    const String& inState)
 {
     m_v8DebuggerAgent->setPauseOnExceptions(errorString, inState);
 }
 
-void InspectorDebuggerAgent::evaluateOnCallFrame(ErrorString* errorString, const String& inCallFrameId, const String& inExpression, const String* inObjectGroup, const bool* inIncludeCommandLineAPI, const bool* inDoNotPauseOnExceptionsAndMuteConsole, const bool* inReturnByValue, const bool* inGeneratePreview, RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>& outResult, protocol::TypeBuilder::OptOutput<bool>* optOutWasThrown, RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>& optOutExceptionDetails)
+void InspectorDebuggerAgent::evaluateOnCallFrame(ErrorString* errorString,
+    const String& inCallFrameId,
+    const String& inExpression,
+    const OptionalValue<String>& inObjectGroup,
+    const OptionalValue<bool>& inIncludeCommandLineAPI,
+    const OptionalValue<bool>& inDoNotPauseOnExceptionsAndMuteConsole,
+    const OptionalValue<bool>& inReturnByValue,
+    const OptionalValue<bool>& inGeneratePreview,
+    OwnPtr<protocol::Runtime::RemoteObject>* outResult,
+    OptionalValue<bool>* optOutWasThrown,
+    OwnPtr<protocol::Runtime::ExceptionDetails>* optOutExceptionDetails)
 {
     MuteConsoleScope<InspectorDebuggerAgent> muteScope;
-    if (asBool(inDoNotPauseOnExceptionsAndMuteConsole))
+    if (inDoNotPauseOnExceptionsAndMuteConsole.get(false))
         muteScope.enter(this);
     m_v8DebuggerAgent->evaluateOnCallFrame(errorString, inCallFrameId, inExpression, inObjectGroup, inIncludeCommandLineAPI, inDoNotPauseOnExceptionsAndMuteConsole, inReturnByValue, inGeneratePreview, outResult, optOutWasThrown, optOutExceptionDetails);
 }
 
-void InspectorDebuggerAgent::setVariableValue(ErrorString* errorString, int inScopeNumber, const String& inVariableName, const RefPtr<JSONObject>& inNewValue, const String* inCallFrameId, const String* inFunctionObjectId)
+void InspectorDebuggerAgent::setVariableValue(ErrorString* errorString, int inScopeNumber,
+    const String& inVariableName,
+    PassOwnPtr<protocol::Runtime::CallArgument> inNewValue,
+    const OptionalValue<String>& inCallFrameId,
+    const OptionalValue<String>& inFunctionObjectId)
 {
     m_v8DebuggerAgent->setVariableValue(errorString, inScopeNumber, inVariableName, inNewValue, inCallFrameId, inFunctionObjectId);
 }
 
-void InspectorDebuggerAgent::getStepInPositions(ErrorString* errorString, const String& inCallFrameId, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::Location>>& optOutStepInPositions)
+void InspectorDebuggerAgent::getStepInPositions(ErrorString* errorString,
+    const String& inCallFrameId,
+    OwnPtr<Array<protocol::Debugger::Location>>* optOutStepInPositions)
 {
     m_v8DebuggerAgent->getStepInPositions(errorString, inCallFrameId, optOutStepInPositions);
 }
 
-void InspectorDebuggerAgent::getBacktrace(ErrorString* errorString, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::CallFrame>>& outCallFrames, RefPtr<protocol::TypeBuilder::Debugger::StackTrace>& optOutAsyncStackTrace)
+void InspectorDebuggerAgent::getBacktrace(ErrorString* errorString,
+    OwnPtr<Array<protocol::Debugger::CallFrame>>* outCallFrames,
+    OwnPtr<protocol::Debugger::StackTrace>* optOutAsyncStackTrace)
 {
     m_v8DebuggerAgent->getBacktrace(errorString, outCallFrames, optOutAsyncStackTrace);
 }
@@ -211,7 +265,8 @@ void InspectorDebuggerAgent::setAsyncCallStackDepth(ErrorString* errorString, in
     setTrackingAsyncCalls(m_v8DebuggerAgent->trackingAsyncCalls());
 }
 
-void InspectorDebuggerAgent::enablePromiseTracker(ErrorString* errorString, const bool* inCaptureStacks)
+void InspectorDebuggerAgent::enablePromiseTracker(ErrorString* errorString,
+    const OptionalValue<bool>& inCaptureStacks)
 {
     m_v8DebuggerAgent->enablePromiseTracker(errorString, inCaptureStacks);
 }
@@ -221,7 +276,11 @@ void InspectorDebuggerAgent::disablePromiseTracker(ErrorString* errorString)
     m_v8DebuggerAgent->disablePromiseTracker(errorString);
 }
 
-void InspectorDebuggerAgent::getPromiseById(ErrorString* errorString, int inPromiseId, const String* inObjectGroup, RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>& outPromise)
+void InspectorDebuggerAgent::getPromiseById(
+    ErrorString* errorString,
+    int inPromiseId,
+    const OptionalValue<String>& inObjectGroup,
+    OwnPtr<protocol::Runtime::RemoteObject>* outPromise)
 {
     m_v8DebuggerAgent->getPromiseById(errorString, inPromiseId, inObjectGroup, outPromise);
 }
@@ -241,7 +300,10 @@ void InspectorDebuggerAgent::removeAsyncOperationBreakpoint(ErrorString* errorSt
     m_v8DebuggerAgent->removeAsyncOperationBreakpoint(errorString, inOperationId);
 }
 
-void InspectorDebuggerAgent::setBlackboxedRanges(ErrorString* errorString, const String& inScriptId, const RefPtr<JSONArray>& inPositions)
+void InspectorDebuggerAgent::setBlackboxedRanges(
+    ErrorString* errorString,
+    const String& inScriptId,
+    PassOwnPtr<protocol::Array<protocol::Debugger::ScriptPosition>> inPositions)
 {
     m_v8DebuggerAgent->setBlackboxedRanges(errorString, inScriptId, inPositions);
 }
@@ -255,7 +317,7 @@ void InspectorDebuggerAgent::scriptExecutionBlockedByCSP(const String& directive
 {
     RefPtr<JSONObject> directive = JSONObject::create();
     directive->setString("directiveText", directiveText);
-    m_v8DebuggerAgent->breakProgramOnException(protocol::Frontend::Debugger::Reason::CSPViolation, directive.release());
+    m_v8DebuggerAgent->breakProgramOnException(protocol::Debugger::Paused::ReasonEnum::CSPViolation, directive.release());
 }
 
 void InspectorDebuggerAgent::willExecuteScript(int scriptId)

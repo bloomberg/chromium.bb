@@ -60,6 +60,7 @@
 #include "core/xmlhttprequest/XMLHttpRequest.h"
 #include "platform/JSONValues.h"
 #include "platform/blob/BlobData.h"
+#include "platform/inspector_protocol/Frontend.h"
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceLoadPriority.h"
@@ -74,9 +75,9 @@
 #include "wtf/RefPtr.h"
 #include "wtf/text/Base64.h"
 
-typedef blink::protocol::Dispatcher::NetworkCommandHandler::GetResponseBodyCallback GetResponseBodyCallback;
-
 namespace blink {
+
+using GetResponseBodyCallback = protocol::Dispatcher::NetworkCommandHandler::GetResponseBodyCallback;
 
 namespace ResourceAgentState {
 static const char resourceAgentEnabled[] = "resourceAgentEnabled";
@@ -108,12 +109,12 @@ bool matches(const String& url, const String& pattern)
     return true;
 }
 
-static PassRefPtr<JSONObject> buildObjectForHeaders(const HTTPHeaderMap& headers)
+static PassOwnPtr<protocol::Network::Headers> buildObjectForHeaders(const HTTPHeaderMap& headers)
 {
     RefPtr<JSONObject> headersObject = JSONObject::create();
     for (const auto& header : headers)
         headersObject->setString(header.key.string(), header.value);
-    return headersObject;
+    return protocol::FromValue<protocol::Network::Headers>::convert(headersObject);
 }
 
 class InspectorFileReaderLoaderClient final : public FileReaderLoaderClient {
@@ -192,52 +193,52 @@ KURL urlWithoutFragment(const KURL& url)
     return result;
 }
 
-protocol::TypeBuilder::Network::Request::MixedContentType::Enum mixedContentTypeForContextType(MixedContentChecker::ContextType contextType)
+String mixedContentTypeForContextType(MixedContentChecker::ContextType contextType)
 {
     switch (contextType) {
     case MixedContentChecker::ContextTypeNotMixedContent:
-        return protocol::TypeBuilder::Network::Request::MixedContentType::None;
+        return protocol::Network::Request::MixedContentTypeEnum::None;
     case MixedContentChecker::ContextTypeBlockable:
-        return protocol::TypeBuilder::Network::Request::MixedContentType::Blockable;
+        return protocol::Network::Request::MixedContentTypeEnum::Blockable;
     case MixedContentChecker::ContextTypeOptionallyBlockable:
     case MixedContentChecker::ContextTypeShouldBeBlockable:
-        return protocol::TypeBuilder::Network::Request::MixedContentType::Optionally_blockable;
+        return protocol::Network::Request::MixedContentTypeEnum::OptionallyBlockable;
     }
 
-    return protocol::TypeBuilder::Network::Request::MixedContentType::None;
+    return protocol::Network::Request::MixedContentTypeEnum::None;
 }
 
-protocol::TypeBuilder::Network::ResourcePriority::Enum resourcePriorityJSON(ResourceLoadPriority priority)
+String resourcePriorityJSON(ResourceLoadPriority priority)
 {
     switch (priority) {
-    case ResourceLoadPriorityVeryLow: return protocol::TypeBuilder::Network::ResourcePriority::VeryLow;
-    case ResourceLoadPriorityLow: return protocol::TypeBuilder::Network::ResourcePriority::Low;
-    case ResourceLoadPriorityMedium: return protocol::TypeBuilder::Network::ResourcePriority::Medium;
-    case ResourceLoadPriorityHigh: return protocol::TypeBuilder::Network::ResourcePriority::High;
-    case ResourceLoadPriorityVeryHigh: return protocol::TypeBuilder::Network::ResourcePriority::VeryHigh;
+    case ResourceLoadPriorityVeryLow: return protocol::Network::ResourcePriorityEnum::VeryLow;
+    case ResourceLoadPriorityLow: return protocol::Network::ResourcePriorityEnum::Low;
+    case ResourceLoadPriorityMedium: return protocol::Network::ResourcePriorityEnum::Medium;
+    case ResourceLoadPriorityHigh: return protocol::Network::ResourcePriorityEnum::High;
+    case ResourceLoadPriorityVeryHigh: return protocol::Network::ResourcePriorityEnum::VeryHigh;
     case ResourceLoadPriorityUnresolved: break;
     }
     ASSERT_NOT_REACHED();
-    return protocol::TypeBuilder::Network::ResourcePriority::Medium;
+    return protocol::Network::ResourcePriorityEnum::Medium;
 }
 
-protocol::TypeBuilder::Network::BlockedReason::Enum buildBlockedReason(ResourceRequestBlockedReason reason)
+String buildBlockedReason(ResourceRequestBlockedReason reason)
 {
     switch (reason) {
     case ResourceRequestBlockedReasonCSP:
-        return protocol::TypeBuilder::Network::BlockedReason::Enum::Csp;
+        return protocol::Network::BlockedReasonEnum::Csp;
     case ResourceRequestBlockedReasonMixedContent:
-        return protocol::TypeBuilder::Network::BlockedReason::Enum::Mixed_content;
+        return protocol::Network::BlockedReasonEnum::MixedContent;
     case ResourceRequestBlockedReasonOrigin:
-        return protocol::TypeBuilder::Network::BlockedReason::Enum::Origin;
+        return protocol::Network::BlockedReasonEnum::Origin;
     case ResourceRequestBlockedReasonInspector:
-        return protocol::TypeBuilder::Network::BlockedReason::Enum::Inspector;
+        return protocol::Network::BlockedReasonEnum::Inspector;
     case ResourceRequestBlockedReasonOther:
-        return protocol::TypeBuilder::Network::BlockedReason::Enum::Other;
+        return protocol::Network::BlockedReasonEnum::Other;
     case ResourceRequestBlockedReasonNone:
     default:
         ASSERT_NOT_REACHED();
-        return protocol::TypeBuilder::Network::BlockedReason::Enum::Other;
+        return protocol::Network::BlockedReasonEnum::Other;
     }
 }
 
@@ -249,9 +250,9 @@ void InspectorResourceAgent::restore()
         enable();
 }
 
-static PassRefPtr<protocol::TypeBuilder::Network::ResourceTiming> buildObjectForTiming(const ResourceLoadTiming& timing)
+static PassOwnPtr<protocol::Network::ResourceTiming> buildObjectForTiming(const ResourceLoadTiming& timing)
 {
-    return protocol::TypeBuilder::Network::ResourceTiming::create()
+    return protocol::Network::ResourceTiming::create()
         .setRequestTime(timing.requestTime())
         .setProxyStart(timing.calculateMillisecondDelta(timing.proxyStart()))
         .setProxyEnd(timing.calculateMillisecondDelta(timing.proxyEnd()))
@@ -266,25 +267,25 @@ static PassRefPtr<protocol::TypeBuilder::Network::ResourceTiming> buildObjectFor
         .setSendStart(timing.calculateMillisecondDelta(timing.sendStart()))
         .setSendEnd(timing.calculateMillisecondDelta(timing.sendEnd()))
         .setReceiveHeadersEnd(timing.calculateMillisecondDelta(timing.receiveHeadersEnd()))
-        .release();
+        .build();
 }
 
-static PassRefPtr<protocol::TypeBuilder::Network::Request> buildObjectForResourceRequest(const ResourceRequest& request)
+static PassOwnPtr<protocol::Network::Request> buildObjectForResourceRequest(const ResourceRequest& request)
 {
-    RefPtr<protocol::TypeBuilder::Network::Request> requestObject = protocol::TypeBuilder::Network::Request::create()
+    OwnPtr<protocol::Network::Request> requestObject = protocol::Network::Request::create()
         .setUrl(urlWithoutFragment(request.url()).string())
         .setMethod(request.httpMethod())
         .setHeaders(buildObjectForHeaders(request.httpHeaderFields()))
-        .setInitialPriority(resourcePriorityJSON(request.priority()));
+        .setInitialPriority(resourcePriorityJSON(request.priority())).build();
     if (request.httpBody() && !request.httpBody()->isEmpty()) {
         Vector<char> bytes;
         request.httpBody()->flatten(bytes);
         requestObject->setPostData(String::fromUTF8WithLatin1Fallback(bytes.data(), bytes.size()));
     }
-    return requestObject;
+    return requestObject.release();
 }
 
-static PassRefPtr<protocol::TypeBuilder::Network::Response> buildObjectForResourceResponse(const ResourceResponse& response, Resource* cachedResource = nullptr, bool* isEmpty = nullptr)
+static PassOwnPtr<protocol::Network::Response> buildObjectForResourceResponse(const ResourceResponse& response, Resource* cachedResource = nullptr, bool* isEmpty = nullptr)
 {
     if (response.isNull())
         return nullptr;
@@ -307,22 +308,22 @@ static PassRefPtr<protocol::TypeBuilder::Network::Response> buildObjectForResour
 
     int64_t encodedDataLength = response.resourceLoadInfo() ? response.resourceLoadInfo()->encodedDataLength : -1;
 
-    protocol::TypeBuilder::Security::SecurityState::Enum securityState = protocol::TypeBuilder::Security::SecurityState::Unknown;
+    String securityState = protocol::Security::SecurityStateEnum::Unknown;
     switch (response.securityStyle()) {
     case ResourceResponse::SecurityStyleUnknown:
-        securityState = protocol::TypeBuilder::Security::SecurityState::Unknown;
+        securityState = protocol::Security::SecurityStateEnum::Unknown;
         break;
     case ResourceResponse::SecurityStyleUnauthenticated:
-        securityState = protocol::TypeBuilder::Security::SecurityState::Neutral;
+        securityState = protocol::Security::SecurityStateEnum::Neutral;
         break;
     case ResourceResponse::SecurityStyleAuthenticationBroken:
-        securityState = protocol::TypeBuilder::Security::SecurityState::Insecure;
+        securityState = protocol::Security::SecurityStateEnum::Insecure;
         break;
     case ResourceResponse::SecurityStyleWarning:
-        securityState = protocol::TypeBuilder::Security::SecurityState::Warning;
+        securityState = protocol::Security::SecurityStateEnum::Warning;
         break;
     case ResourceResponse::SecurityStyleAuthenticated:
-        securityState = protocol::TypeBuilder::Security::SecurityState::Secure;
+        securityState = protocol::Security::SecurityStateEnum::Secure;
         break;
     }
 
@@ -334,7 +335,7 @@ static PassRefPtr<protocol::TypeBuilder::Network::Response> buildObjectForResour
     if (isEmpty)
         *isEmpty = !status && mimeType.isEmpty() && !headersMap.size();
 
-    RefPtr<protocol::TypeBuilder::Network::Response> responseObject = protocol::TypeBuilder::Network::Response::create()
+    OwnPtr<protocol::Network::Response> responseObject = protocol::Network::Response::create()
         .setUrl(urlWithoutFragment(response.url()).string())
         .setStatus(status)
         .setStatusText(statusText)
@@ -343,7 +344,7 @@ static PassRefPtr<protocol::TypeBuilder::Network::Response> buildObjectForResour
         .setConnectionReused(response.connectionReused())
         .setConnectionId(response.connectionID())
         .setEncodedDataLength(encodedDataLength)
-        .setSecurityState(securityState);
+        .setSecurityState(securityState).build();
 
     responseObject->setFromDiskCache(response.wasCached());
     responseObject->setFromServiceWorker(response.wasFetchedViaServiceWorker());
@@ -394,24 +395,24 @@ static PassRefPtr<protocol::TypeBuilder::Network::Response> buildObjectForResour
         int numInvalidSCTs = safeCast<int>(responseSecurityDetails->numInvalidSCTs);
         int numValidSCTs = safeCast<int>(responseSecurityDetails->numValidSCTs);
 
-        RefPtr<protocol::TypeBuilder::Network::CertificateValidationDetails> certificateValidationDetails = protocol::TypeBuilder::Network::CertificateValidationDetails::create()
+        OwnPtr<protocol::Network::CertificateValidationDetails> certificateValidationDetails = protocol::Network::CertificateValidationDetails::create()
             .setNumUnknownScts(numUnknownSCTs)
             .setNumInvalidScts(numInvalidSCTs)
-            .setNumValidScts(numValidSCTs);
+            .setNumValidScts(numValidSCTs).build();
 
-        RefPtr<protocol::TypeBuilder::Network::SecurityDetails> securityDetails = protocol::TypeBuilder::Network::SecurityDetails::create()
+        OwnPtr<protocol::Network::SecurityDetails> securityDetails = protocol::Network::SecurityDetails::create()
             .setProtocol(responseSecurityDetails->protocol)
             .setKeyExchange(responseSecurityDetails->keyExchange)
             .setCipher(responseSecurityDetails->cipher)
-            .setCertificateId(responseSecurityDetails->certID);
-        securityDetails->setCertificateValidationDetails(certificateValidationDetails);
+            .setCertificateId(responseSecurityDetails->certID).build();
+        securityDetails->setCertificateValidationDetails(certificateValidationDetails.release());
         if (responseSecurityDetails->mac.length() > 0)
             securityDetails->setMac(responseSecurityDetails->mac);
 
-        responseObject->setSecurityDetails(securityDetails);
+        responseObject->setSecurityDetails(securityDetails.release());
     }
 
-    return responseObject;
+    return responseObject.release();
 }
 
 InspectorResourceAgent::~InspectorResourceAgent()
@@ -454,8 +455,8 @@ void InspectorResourceAgent::didBlockRequest(LocalFrame* frame, const ResourceRe
     willSendRequestInternal(frame, identifier, loader, request, ResourceResponse(), initiatorInfo);
 
     String requestId = IdentifiersFactory::requestId(identifier);
-    protocol::TypeBuilder::Network::BlockedReason::Enum protocolReason = buildBlockedReason(reason);
-    frontend()->loadingFailed(requestId, monotonicallyIncreasingTime(), InspectorPageAgent::resourceTypeJson(m_resourcesData->resourceType(requestId)), String(), nullptr, &protocolReason);
+    String protocolReason = buildBlockedReason(reason);
+    frontend()->loadingFailed(requestId, monotonicallyIncreasingTime(), InspectorPageAgent::resourceTypeJson(m_resourcesData->resourceType(requestId)), String(), false, protocolReason);
 }
 
 void InspectorResourceAgent::willSendRequestInternal(LocalFrame* frame, unsigned long identifier, DocumentLoader* loader, const ResourceRequest& request, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& initiatorInfo)
@@ -474,19 +475,19 @@ void InspectorResourceAgent::willSendRequestInternal(LocalFrame* frame, unsigned
     }
 
     String frameId = loader->frame() ? IdentifiersFactory::frameId(loader->frame()) : "";
-    RefPtr<protocol::TypeBuilder::Network::Initiator> initiatorObject = buildInitiatorObject(loader->frame() ? loader->frame()->document() : 0, initiatorInfo);
+    OwnPtr<protocol::Network::Initiator> initiatorObject = buildInitiatorObject(loader->frame() ? loader->frame()->document() : 0, initiatorInfo);
     if (initiatorInfo.name == FetchInitiatorTypeNames::document) {
         FrameNavigationInitiatorMap::iterator it = m_frameNavigationInitiatorMap.find(frameId);
         if (it != m_frameNavigationInitiatorMap.end())
-            initiatorObject = it->value;
+            initiatorObject = it->value->clone();
     }
 
-    RefPtr<protocol::TypeBuilder::Network::Request> requestInfo(buildObjectForResourceRequest(request));
+    OwnPtr<protocol::Network::Request> requestInfo(buildObjectForResourceRequest(request));
 
     requestInfo->setMixedContentType(mixedContentTypeForContextType(MixedContentChecker::contextTypeForInspector(frame, request)));
 
-    protocol::TypeBuilder::Page::ResourceType::Enum resourceType = InspectorPageAgent::resourceTypeJson(type);
-    frontend()->requestWillBeSent(requestId, frameId, loaderId, urlWithoutFragment(loader->url()).string(), requestInfo.release(), monotonicallyIncreasingTime(), currentTime(), initiatorObject, buildObjectForResourceResponse(redirectResponse), &resourceType);
+    String resourceType = InspectorPageAgent::resourceTypeJson(type);
+    frontend()->requestWillBeSent(requestId, frameId, loaderId, urlWithoutFragment(loader->url()).string(), requestInfo.release(), monotonicallyIncreasingTime(), currentTime(), initiatorObject.release(), buildObjectForResourceResponse(redirectResponse), resourceType);
     if (m_pendingXHRReplayData && !m_pendingXHRReplayData->async())
         frontend()->flush();
 }
@@ -539,7 +540,7 @@ void InspectorResourceAgent::didReceiveResourceResponse(LocalFrame* frame, unsig
         cachedResource = InspectorPageAgent::cachedResource(frame, response.url());
 
     bool resourceIsEmpty = true;
-    RefPtr<protocol::TypeBuilder::Network::Response> resourceResponse = buildObjectForResourceResponse(response, cachedResource, &resourceIsEmpty);
+    OwnPtr<protocol::Network::Response> resourceResponse = buildObjectForResourceResponse(response, cachedResource, &resourceIsEmpty);
 
     InspectorPageAgent::ResourceType type = cachedResource ? InspectorPageAgent::cachedResourceType(*cachedResource) : InspectorPageAgent::OtherResource;
     // Override with already discovered resource type.
@@ -564,7 +565,7 @@ void InspectorResourceAgent::didReceiveResourceResponse(LocalFrame* frame, unsig
     m_resourcesData->setResourceType(requestId, type);
 
     if (resourceResponse && !resourceIsEmpty)
-        frontend()->responseReceived(requestId, frameId, loaderId, monotonicallyIncreasingTime(), InspectorPageAgent::resourceTypeJson(type), resourceResponse);
+        frontend()->responseReceived(requestId, frameId, loaderId, monotonicallyIncreasingTime(), InspectorPageAgent::resourceTypeJson(type), resourceResponse.release());
     // If we revalidated the resource and got Not modified, send content length following didReceiveResponse
     // as there will be no calls to didReceiveData from the network stack.
     if (isNotModified && cachedResource && cachedResource->encodedSize())
@@ -609,7 +610,7 @@ void InspectorResourceAgent::didFailLoading(unsigned long identifier, const Reso
 {
     String requestId = IdentifiersFactory::requestId(identifier);
     bool canceled = error.isCancellation();
-    frontend()->loadingFailed(requestId, monotonicallyIncreasingTime(), InspectorPageAgent::resourceTypeJson(m_resourcesData->resourceType(requestId)), error.localizedDescription(), canceled ? &canceled : 0, nullptr);
+    frontend()->loadingFailed(requestId, monotonicallyIncreasingTime(), InspectorPageAgent::resourceTypeJson(m_resourcesData->resourceType(requestId)), error.localizedDescription(), canceled);
 }
 
 void InspectorResourceAgent::scriptImported(unsigned long identifier, const String& sourceString)
@@ -777,35 +778,34 @@ void InspectorResourceAgent::didScheduleStyleRecalculation(Document* document)
         m_styleRecalculationInitiator = buildInitiatorObject(document, FetchInitiatorInfo());
 }
 
-PassRefPtr<protocol::TypeBuilder::Network::Initiator> InspectorResourceAgent::buildInitiatorObject(Document* document, const FetchInitiatorInfo& initiatorInfo)
+PassOwnPtr<protocol::Network::Initiator> InspectorResourceAgent::buildInitiatorObject(Document* document, const FetchInitiatorInfo& initiatorInfo)
 {
     RefPtr<ScriptCallStack> stackTrace = ScriptCallStack::capture();
     if (stackTrace) {
-        RefPtr<protocol::TypeBuilder::Network::Initiator> initiatorObject = protocol::TypeBuilder::Network::Initiator::create()
-            .setType(protocol::TypeBuilder::Network::Initiator::Type::Script);
+        OwnPtr<protocol::Network::Initiator> initiatorObject = protocol::Network::Initiator::create()
+            .setType(protocol::Network::Initiator::TypeEnum::Script).build();
         initiatorObject->setStack(stackTrace->buildInspectorObject());
-        return initiatorObject;
+        return initiatorObject.release();
     }
 
     while (document && !document->scriptableDocumentParser())
         document = document->ownerElement() ? document->ownerElement()->ownerDocument() : nullptr;
     if (document && document->scriptableDocumentParser()) {
-        RefPtr<protocol::TypeBuilder::Network::Initiator> initiatorObject = protocol::TypeBuilder::Network::Initiator::create()
-            .setType(protocol::TypeBuilder::Network::Initiator::Type::Parser);
+        OwnPtr<protocol::Network::Initiator> initiatorObject = protocol::Network::Initiator::create()
+            .setType(protocol::Network::Initiator::TypeEnum::Parser).build();
         initiatorObject->setUrl(urlWithoutFragment(document->url()).string());
         if (TextPosition::belowRangePosition() != initiatorInfo.position)
             initiatorObject->setLineNumber(initiatorInfo.position.m_line.oneBasedInt());
         else
             initiatorObject->setLineNumber(document->scriptableDocumentParser()->lineNumber().oneBasedInt());
-        return initiatorObject;
+        return initiatorObject.release();
     }
 
     if (m_isRecalculatingStyle && m_styleRecalculationInitiator)
-        return m_styleRecalculationInitiator;
+        return m_styleRecalculationInitiator->clone();
 
-    return protocol::TypeBuilder::Network::Initiator::create()
-        .setType(protocol::TypeBuilder::Network::Initiator::Type::Other)
-        .release();
+    return protocol::Network::Initiator::create()
+        .setType(protocol::Network::Initiator::TypeEnum::Other).build();
 }
 
 void InspectorResourceAgent::didCreateWebSocket(Document*, unsigned long identifier, const KURL& requestURL, const String&)
@@ -816,18 +816,18 @@ void InspectorResourceAgent::didCreateWebSocket(Document*, unsigned long identif
 void InspectorResourceAgent::willSendWebSocketHandshakeRequest(Document*, unsigned long identifier, const WebSocketHandshakeRequest* request)
 {
     ASSERT(request);
-    RefPtr<protocol::TypeBuilder::Network::WebSocketRequest> requestObject = protocol::TypeBuilder::Network::WebSocketRequest::create()
-        .setHeaders(buildObjectForHeaders(request->headerFields()));
-    frontend()->webSocketWillSendHandshakeRequest(IdentifiersFactory::requestId(identifier), monotonicallyIncreasingTime(), currentTime(), requestObject);
+    OwnPtr<protocol::Network::WebSocketRequest> requestObject = protocol::Network::WebSocketRequest::create()
+        .setHeaders(buildObjectForHeaders(request->headerFields())).build();
+    frontend()->webSocketWillSendHandshakeRequest(IdentifiersFactory::requestId(identifier), monotonicallyIncreasingTime(), currentTime(), requestObject.release());
 }
 
 void InspectorResourceAgent::didReceiveWebSocketHandshakeResponse(Document*, unsigned long identifier, const WebSocketHandshakeRequest* request, const WebSocketHandshakeResponse* response)
 {
     ASSERT(response);
-    RefPtr<protocol::TypeBuilder::Network::WebSocketResponse> responseObject = protocol::TypeBuilder::Network::WebSocketResponse::create()
+    OwnPtr<protocol::Network::WebSocketResponse> responseObject = protocol::Network::WebSocketResponse::create()
         .setStatus(response->statusCode())
         .setStatusText(response->statusText())
-        .setHeaders(buildObjectForHeaders(response->headerFields()));
+        .setHeaders(buildObjectForHeaders(response->headerFields())).build();
 
     if (!response->headersText().isEmpty())
         responseObject->setHeadersText(response->headersText());
@@ -836,7 +836,7 @@ void InspectorResourceAgent::didReceiveWebSocketHandshakeResponse(Document*, uns
         if (!request->headersText().isEmpty())
             responseObject->setRequestHeadersText(request->headersText());
     }
-    frontend()->webSocketHandshakeResponseReceived(IdentifiersFactory::requestId(identifier), monotonicallyIncreasingTime(), responseObject);
+    frontend()->webSocketHandshakeResponseReceived(IdentifiersFactory::requestId(identifier), monotonicallyIncreasingTime(), responseObject.release());
 }
 
 void InspectorResourceAgent::didCloseWebSocket(Document*, unsigned long identifier)
@@ -846,20 +846,20 @@ void InspectorResourceAgent::didCloseWebSocket(Document*, unsigned long identifi
 
 void InspectorResourceAgent::didReceiveWebSocketFrame(unsigned long identifier, int opCode, bool masked, const char* payload, size_t payloadLength)
 {
-    RefPtr<protocol::TypeBuilder::Network::WebSocketFrame> frameObject = protocol::TypeBuilder::Network::WebSocketFrame::create()
+    OwnPtr<protocol::Network::WebSocketFrame> frameObject = protocol::Network::WebSocketFrame::create()
         .setOpcode(opCode)
         .setMask(masked)
-        .setPayloadData(String::fromUTF8WithLatin1Fallback(payload, payloadLength));
-    frontend()->webSocketFrameReceived(IdentifiersFactory::requestId(identifier), monotonicallyIncreasingTime(), frameObject);
+        .setPayloadData(String::fromUTF8WithLatin1Fallback(payload, payloadLength)).build();
+    frontend()->webSocketFrameReceived(IdentifiersFactory::requestId(identifier), monotonicallyIncreasingTime(), frameObject.release());
 }
 
 void InspectorResourceAgent::didSendWebSocketFrame(unsigned long identifier, int opCode, bool masked, const char* payload, size_t payloadLength)
 {
-    RefPtr<protocol::TypeBuilder::Network::WebSocketFrame> frameObject = protocol::TypeBuilder::Network::WebSocketFrame::create()
+    OwnPtr<protocol::Network::WebSocketFrame> frameObject = protocol::Network::WebSocketFrame::create()
         .setOpcode(opCode)
         .setMask(masked)
-        .setPayloadData(String::fromUTF8WithLatin1Fallback(payload, payloadLength));
-    frontend()->webSocketFrameSent(IdentifiersFactory::requestId(identifier), monotonicallyIncreasingTime(), frameObject);
+        .setPayloadData(String::fromUTF8WithLatin1Fallback(payload, payloadLength)).build();
+    frontend()->webSocketFrameSent(IdentifiersFactory::requestId(identifier), monotonicallyIncreasingTime(), frameObject.release());
 }
 
 void InspectorResourceAgent::didReceiveWebSocketFrameError(unsigned long identifier, const String& errorMessage)
@@ -895,9 +895,9 @@ void InspectorResourceAgent::setUserAgentOverride(ErrorString*, const String& us
     m_state->setString(ResourceAgentState::userAgentOverride, userAgent);
 }
 
-void InspectorResourceAgent::setExtraHTTPHeaders(ErrorString*, const RefPtr<JSONObject>& headers)
+void InspectorResourceAgent::setExtraHTTPHeaders(ErrorString*, const PassOwnPtr<protocol::Network::Headers> headers)
 {
-    m_state->setObject(ResourceAgentState::extraRequestHeaders, headers);
+    m_state->setObject(ResourceAgentState::extraRequestHeaders, headers->asValue());
 }
 
 bool InspectorResourceAgent::getResponseBodyBlob(const String& requestId, PassRefPtr<GetResponseBodyCallback> callback)
@@ -1053,8 +1053,8 @@ void InspectorResourceAgent::didCommitLoad(LocalFrame* frame, DocumentLoader* lo
 
 void InspectorResourceAgent::frameScheduledNavigation(LocalFrame* frame, double)
 {
-    RefPtr<protocol::TypeBuilder::Network::Initiator> initiator = buildInitiatorObject(frame->document(), FetchInitiatorInfo());
-    m_frameNavigationInitiatorMap.set(IdentifiersFactory::frameId(frame), initiator);
+    OwnPtr<protocol::Network::Initiator> initiator = buildInitiatorObject(frame->document(), FetchInitiatorInfo());
+    m_frameNavigationInitiatorMap.set(IdentifiersFactory::frameId(frame), initiator.release());
 }
 
 void InspectorResourceAgent::frameClearedScheduledNavigation(LocalFrame* frame)

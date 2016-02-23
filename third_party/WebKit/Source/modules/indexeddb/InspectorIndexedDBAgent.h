@@ -49,14 +49,14 @@ public:
     ~InspectorIndexedDBAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
-    void disable(ErrorString*) override;
     void restore() override;
 
     // Called from the front-end.
     void enable(ErrorString*) override;
-    void requestDatabaseNames(ErrorString*, const String& securityOrigin, PassRefPtr<RequestDatabaseNamesCallback>) override;
-    void requestDatabase(ErrorString*, const String& securityOrigin, const String& databaseName, PassRefPtr<RequestDatabaseCallback>) override;
-    void requestData(ErrorString*, const String& securityOrigin, const String& databaseName, const String& objectStoreName, const String& indexName, int skipCount, int pageSize, const RefPtr<JSONObject>* keyRange, PassRefPtr<RequestDataCallback>) override;
+    void disable(ErrorString*) override;
+    void requestDatabaseNames(ErrorString*, const String& in_securityOrigin, PassRefPtr<RequestDatabaseNamesCallback>) override;
+    void requestDatabase(ErrorString*, const String& in_securityOrigin, const String& in_databaseName, PassRefPtr<RequestDatabaseCallback>) override;
+    void requestData(ErrorString*, const String& in_securityOrigin, const String& in_databaseName, const String& in_objectStoreName, const String& in_indexName, int in_skipCount, int in_pageSize, PassOwnPtr<protocol::IndexedDB::KeyRange> in_keyRange, PassRefPtr<RequestDataCallback>) override;
     void clearObjectStore(ErrorString*, const String& in_securityOrigin, const String& in_databaseName, const String& in_objectStoreName, PassRefPtr<ClearObjectStoreCallback>) override;
 
 private:

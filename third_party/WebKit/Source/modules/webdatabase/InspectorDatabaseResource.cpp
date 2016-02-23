@@ -57,12 +57,12 @@ DEFINE_TRACE(InspectorDatabaseResource)
 
 void InspectorDatabaseResource::bind(protocol::Frontend::Database* frontend)
 {
-    RefPtr<protocol::TypeBuilder::Database::Database> jsonObject = protocol::TypeBuilder::Database::Database::create()
+    OwnPtr<protocol::Database::Database> jsonObject = protocol::Database::Database::create()
         .setId(m_id)
         .setDomain(m_domain)
         .setName(m_name)
-        .setVersion(m_version);
-    frontend->addDatabase(jsonObject);
+        .setVersion(m_version).build();
+    frontend->addDatabase(jsonObject.release());
 }
 
 } // namespace blink

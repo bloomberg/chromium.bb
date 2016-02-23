@@ -97,25 +97,21 @@ namespace {
 const size_t maxTextSize = 10000;
 const UChar ellipsisUChar[] = { 0x2026, 0 };
 
-Color parseColor(const RefPtr<JSONObject>* colorObject)
+Color parseColor(PassOwnPtr<protocol::DOM::RGBA> rgba)
 {
-    if (!colorObject || !(*colorObject))
+    if (!rgba)
         return Color::transparent;
 
-    int r;
-    int g;
-    int b;
-    bool success = (*colorObject)->getNumber("r", &r);
-    success |= (*colorObject)->getNumber("g", &g);
-    success |= (*colorObject)->getNumber("b", &b);
-    if (!success)
+    if (!rgba->hasR() && !rgba->hasG() && !rgba->hasB())
         return Color::transparent;
 
-    double a;
-    success = (*colorObject)->getNumber("a", &a);
-    if (!success)
+    int r = rgba->getR();
+    int g = rgba->getG();
+    int b = rgba->getB();
+    if (!rgba->hasA())
         return Color(r, g, b);
 
+    double a = rgba->getA(1);
     // Clamp alpha to the [0..1] range.
     if (a < 0)
         a = 0;
@@ -125,29 +121,15 @@ Color parseColor(const RefPtr<JSONObject>* colorObject)
     return Color(r, g, b, static_cast<int>(a * 255));
 }
 
-Color parseConfigColor(const String& fieldName, JSONObject* configObject)
+bool parseQuad(PassOwnPtr<protocol::Array<double>> quadArray, FloatQuad* quad)
 {
-    const RefPtr<JSONObject> colorObject = configObject->getObject(fieldName);
-    return parseColor(&colorObject);
-}
-
-bool parseQuad(const RefPtr<JSONArray>& quadArray, FloatQuad* quad)
-{
-    if (!quadArray)
-        return false;
     const size_t coordinatesInQuad = 8;
-    double coordinates[coordinatesInQuad];
-    if (quadArray->length() != coordinatesInQuad)
+    if (!quadArray || quadArray->length() != coordinatesInQuad)
         return false;
-    for (size_t i = 0; i < coordinatesInQuad; ++i) {
-        if (!quadArray->get(i)->asNumber(coordinates + i))
-            return false;
-    }
-    quad->setP1(FloatPoint(coordinates[0], coordinates[1]));
-    quad->setP2(FloatPoint(coordinates[2], coordinates[3]));
-    quad->setP3(FloatPoint(coordinates[4], coordinates[5]));
-    quad->setP4(FloatPoint(coordinates[6], coordinates[7]));
-
+    quad->setP1(FloatPoint(quadArray->get(0), quadArray->get(1)));
+    quad->setP2(FloatPoint(quadArray->get(2), quadArray->get(3)));
+    quad->setP3(FloatPoint(quadArray->get(4), quadArray->get(5)));
+    quad->setP4(FloatPoint(quadArray->get(6), quadArray->get(7)));
     return true;
 }
 
@@ -215,53 +197,53 @@ String InspectorDOMAgent::toErrorString(ExceptionState& exceptionState)
     return "";
 }
 
-bool InspectorDOMAgent::getPseudoElementType(PseudoId pseudoId, protocol::TypeBuilder::DOM::PseudoType::Enum* type)
+bool InspectorDOMAgent::getPseudoElementType(PseudoId pseudoId, protocol::DOM::PseudoType* type)
 {
     switch (pseudoId) {
     case FIRST_LINE:
-        *type = protocol::TypeBuilder::DOM::PseudoType::First_line;
+        *type = protocol::DOM::PseudoTypeEnum::FirstLine;
         return true;
     case FIRST_LETTER:
-        *type = protocol::TypeBuilder::DOM::PseudoType::First_letter;
+        *type = protocol::DOM::PseudoTypeEnum::FirstLetter;
         return true;
     case BEFORE:
-        *type = protocol::TypeBuilder::DOM::PseudoType::Before;
+        *type = protocol::DOM::PseudoTypeEnum::Before;
         return true;
     case AFTER:
-        *type = protocol::TypeBuilder::DOM::PseudoType::After;
+        *type = protocol::DOM::PseudoTypeEnum::After;
         return true;
     case BACKDROP:
-        *type = protocol::TypeBuilder::DOM::PseudoType::Backdrop;
+        *type = protocol::DOM::PseudoTypeEnum::Backdrop;
         return true;
     case SELECTION:
-        *type = protocol::TypeBuilder::DOM::PseudoType::Selection;
+        *type = protocol::DOM::PseudoTypeEnum::Selection;
         return true;
     case FIRST_LINE_INHERITED:
-        *type = protocol::TypeBuilder::DOM::PseudoType::First_line_inherited;
+        *type = protocol::DOM::PseudoTypeEnum::FirstLineInherited;
         return true;
     case SCROLLBAR:
-        *type = protocol::TypeBuilder::DOM::PseudoType::Scrollbar;
+        *type = protocol::DOM::PseudoTypeEnum::Scrollbar;
         return true;
     case SCROLLBAR_THUMB:
-        *type = protocol::TypeBuilder::DOM::PseudoType::Scrollbar_thumb;
+        *type = protocol::DOM::PseudoTypeEnum::ScrollbarThumb;
         return true;
     case SCROLLBAR_BUTTON:
-        *type = protocol::TypeBuilder::DOM::PseudoType::Scrollbar_button;
+        *type = protocol::DOM::PseudoTypeEnum::ScrollbarButton;
         return true;
     case SCROLLBAR_TRACK:
-        *type = protocol::TypeBuilder::DOM::PseudoType::Scrollbar_track;
+        *type = protocol::DOM::PseudoTypeEnum::ScrollbarTrack;
         return true;
     case SCROLLBAR_TRACK_PIECE:
-        *type = protocol::TypeBuilder::DOM::PseudoType::Scrollbar_track_piece;
+        *type = protocol::DOM::PseudoTypeEnum::ScrollbarTrackPiece;
         return true;
     case SCROLLBAR_CORNER:
-        *type = protocol::TypeBuilder::DOM::PseudoType::Scrollbar_corner;
+        *type = protocol::DOM::PseudoTypeEnum::ScrollbarCorner;
         return true;
     case RESIZER:
-        *type = protocol::TypeBuilder::DOM::PseudoType::Resizer;
+        *type = protocol::DOM::PseudoTypeEnum::Resizer;
         return true;
     case INPUT_LIST_BUTTON:
-        *type = protocol::TypeBuilder::DOM::PseudoType::Input_list_button;
+        *type = protocol::DOM::PseudoTypeEnum::InputListButton;
         return true;
     default:
         return false;
@@ -544,7 +526,7 @@ void InspectorDOMAgent::disable(ErrorString* errorString)
     setDocument(nullptr);
 }
 
-void InspectorDOMAgent::getDocument(ErrorString* errorString, RefPtr<protocol::TypeBuilder::DOM::Node>& root)
+void InspectorDOMAgent::getDocument(ErrorString* errorString, OwnPtr<protocol::DOM::Node>* root)
 {
     // Backward compatibility. Mark agent as enabled when it requests document.
     if (!enabled())
@@ -557,7 +539,7 @@ void InspectorDOMAgent::getDocument(ErrorString* errorString, RefPtr<protocol::T
 
     discardFrontendBindings();
 
-    root = buildObjectForNode(m_document.get(), 2, m_documentNodeToIdMap.get());
+    *root = buildObjectForNode(m_document.get(), 2, m_documentNodeToIdMap.get());
 }
 
 void InspectorDOMAgent::pushChildNodesToFrontend(int nodeId, int depth)
@@ -583,7 +565,7 @@ void InspectorDOMAgent::pushChildNodesToFrontend(int nodeId, int depth)
         return;
     }
 
-    RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::Node>> children = buildArrayForContainerChildren(node, depth, nodeMap);
+    OwnPtr<protocol::Array<protocol::DOM::Node>> children = buildArrayForContainerChildren(node, depth, nodeMap);
     frontend()->setChildNodes(nodeId, children.release());
 }
 
@@ -613,20 +595,15 @@ Node* InspectorDOMAgent::nodeForId(int id)
     return nullptr;
 }
 
-void InspectorDOMAgent::requestChildNodes(ErrorString* errorString, int nodeId, const int* depth)
+void InspectorDOMAgent::requestChildNodes(ErrorString* errorString, int nodeId, const OptionalValue<int>& depth)
 {
-    int sanitizedDepth;
-
-    if (!depth)
-        sanitizedDepth = 1;
-    else if (*depth == -1)
-        sanitizedDepth = INT_MAX;
-    else if (*depth > 0)
-        sanitizedDepth = *depth;
-    else {
+    int sanitizedDepth = depth.get(1);
+    if (sanitizedDepth == 0 || sanitizedDepth < -1) {
         *errorString = "Please provide a positive integer as a depth or -1 for entire subtree";
         return;
     }
+    if (sanitizedDepth == -1)
+        sanitizedDepth = INT_MAX;
 
     pushChildNodesToFrontend(nodeId, sanitizedDepth);
 }
@@ -649,7 +626,7 @@ void InspectorDOMAgent::querySelector(ErrorString* errorString, int nodeId, cons
         *elementId = pushNodePathToFrontend(element.get());
 }
 
-void InspectorDOMAgent::querySelectorAll(ErrorString* errorString, int nodeId, const String& selectors, RefPtr<protocol::TypeBuilder::Array<int>>& result)
+void InspectorDOMAgent::querySelectorAll(ErrorString* errorString, int nodeId, const String& selectors, OwnPtr<protocol::Array<int>>* result)
 {
     Node* node = assertNode(errorString, nodeId);
     if (!node || !node->isContainerNode())
@@ -662,10 +639,10 @@ void InspectorDOMAgent::querySelectorAll(ErrorString* errorString, int nodeId, c
         return;
     }
 
-    result = protocol::TypeBuilder::Array<int>::create();
+    *result = protocol::Array<int>::create();
 
     for (unsigned i = 0; i < elements->length(); ++i)
-        result->addItem(pushNodePathToFrontend(elements->item(i)));
+        (*result)->addItem(pushNodePathToFrontend(elements->item(i)));
 }
 
 int InspectorDOMAgent::pushNodePathToFrontend(Node* nodeToPush, NodeToIdMap* nodeMap)
@@ -720,9 +697,9 @@ int InspectorDOMAgent::pushNodePathToFrontend(Node* nodeToPush)
     OwnPtrWillBeRawPtr<NodeToIdMap> newMap = adoptPtrWillBeNoop(new NodeToIdMap);
     NodeToIdMap* danglingMap = newMap.get();
     m_danglingNodeToIdMaps.append(newMap.release());
-    RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::Node>> children = protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::Node>::create();
+    OwnPtr<protocol::Array<protocol::DOM::Node>> children = protocol::Array<protocol::DOM::Node>::create();
     children->addItem(buildObjectForNode(node, 0, danglingMap));
-    frontend()->setChildNodes(0, children);
+    frontend()->setChildNodes(0, children.release());
 
     return pushNodePathToFrontend(nodeToPush, danglingMap);
 }
@@ -741,7 +718,7 @@ void InspectorDOMAgent::setAttributeValue(ErrorString* errorString, int elementI
     m_domEditor->setAttribute(element, name, value, errorString);
 }
 
-void InspectorDOMAgent::setAttributesAsText(ErrorString* errorString, int elementId, const String& text, const String* const name)
+void InspectorDOMAgent::setAttributesAsText(ErrorString* errorString, int elementId, const String& text, const OptionalValue<String>& name)
 {
     Element* element = assertEditableElement(errorString, elementId);
     if (!element)
@@ -763,10 +740,10 @@ void InspectorDOMAgent::setAttributesAsText(ErrorString* errorString, int elemen
         return;
     }
 
-    String caseAdjustedName = name ? (shouldIgnoreCase ? name->lower() : *name) : String();
+    String caseAdjustedName = shouldIgnoreCase ? name.get("").lower() : name.get("");
 
     AttributeCollection attributes = parsedElement->attributes();
-    if (attributes.isEmpty() && name) {
+    if (attributes.isEmpty() && name.hasValue()) {
         m_domEditor->removeAttribute(element, caseAdjustedName, errorString);
         return;
     }
@@ -777,12 +754,12 @@ void InspectorDOMAgent::setAttributesAsText(ErrorString* errorString, int elemen
         String attributeName = attribute.name().toString();
         if (shouldIgnoreCase)
             attributeName = attributeName.lower();
-        foundOriginalAttribute |= name && attributeName == caseAdjustedName;
+        foundOriginalAttribute |= name.hasValue() && attributeName == caseAdjustedName;
         if (!m_domEditor->setAttribute(element, attributeName, attribute.value(), errorString))
             return;
     }
 
-    if (!foundOriginalAttribute && name && !name->stripWhiteSpace().isEmpty())
+    if (!foundOriginalAttribute && name.hasValue() && !name.get().stripWhiteSpace().isEmpty())
         m_domEditor->removeAttribute(element, caseAdjustedName, errorString);
 }
 
@@ -939,14 +916,14 @@ static Node* nextNodeWithShadowDOMInMind(const Node& current, const Node* stayWi
     return nullptr;
 }
 
-void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrimmedQuery, const bool* optionalIncludeUserAgentShadowDOM, String* searchId, int* resultCount)
+void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrimmedQuery, const OptionalValue<bool>& optionalIncludeUserAgentShadowDOM, String* searchId, int* resultCount)
 {
     // FIXME: Few things are missing here:
     // 1) Search works with node granularity - number of matches within node is not calculated.
     // 2) There is no need to push all search results to the front-end at a time, pushing next / previous result
     //    is sufficient.
 
-    bool includeUserAgentShadowDOM = optionalIncludeUserAgentShadowDOM ? *optionalIncludeUserAgentShadowDOM : false;
+    bool includeUserAgentShadowDOM = optionalIncludeUserAgentShadowDOM.get(false);
 
     unsigned queryLength = whitespaceTrimmedQuery.length();
     bool startTagFound = !whitespaceTrimmedQuery.find('<');
@@ -1060,7 +1037,7 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
     *resultCount = resultsIt->size();
 }
 
-void InspectorDOMAgent::getSearchResults(ErrorString* errorString, const String& searchId, int fromIndex, int toIndex, RefPtr<protocol::TypeBuilder::Array<int>>& nodeIds)
+void InspectorDOMAgent::getSearchResults(ErrorString* errorString, const String& searchId, int fromIndex, int toIndex, OwnPtr<protocol::Array<int>>* nodeIds)
 {
     SearchResults::iterator it = m_searchResults.find(searchId);
     if (it == m_searchResults.end()) {
@@ -1074,9 +1051,9 @@ void InspectorDOMAgent::getSearchResults(ErrorString* errorString, const String&
         return;
     }
 
-    nodeIds = protocol::TypeBuilder::Array<int>::create();
+    *nodeIds = protocol::Array<int>::create();
     for (int i = fromIndex; i < toIndex; ++i)
-        nodeIds->addItem(pushNodePathToFrontend((it->value)[i].get()));
+        (*nodeIds)->addItem(pushNodePathToFrontend((it->value)[i].get()));
 }
 
 void InspectorDOMAgent::discardSearchResults(ErrorString*, const String& searchId)
@@ -1119,13 +1096,13 @@ void InspectorDOMAgent::nodeHighlightedInOverlay(Node* node)
     frontend()->nodeHighlightRequested(nodeId);
 }
 
-void InspectorDOMAgent::setSearchingForNode(ErrorString* errorString, SearchMode searchMode, JSONObject* highlightInspectorObject)
+void InspectorDOMAgent::setSearchingForNode(ErrorString* errorString, SearchMode searchMode, PassOwnPtr<protocol::DOM::HighlightConfig> highlightInspectorObject)
 {
     if (m_client)
         m_client->setInspectMode(searchMode, searchMode != NotSearching ? highlightConfigFromInspectorObject(errorString, highlightInspectorObject) : nullptr);
 }
 
-PassOwnPtr<InspectorHighlightConfig> InspectorDOMAgent::highlightConfigFromInspectorObject(ErrorString* errorString, JSONObject* highlightInspectorObject)
+PassOwnPtr<InspectorHighlightConfig> InspectorDOMAgent::highlightConfigFromInspectorObject(ErrorString* errorString, PassOwnPtr<protocol::DOM::HighlightConfig> highlightInspectorObject)
 {
     if (!highlightInspectorObject) {
         *errorString = "Internal error: highlight configuration parameter is missing";
@@ -1133,43 +1110,32 @@ PassOwnPtr<InspectorHighlightConfig> InspectorDOMAgent::highlightConfigFromInspe
     }
 
     OwnPtr<InspectorHighlightConfig> highlightConfig = adoptPtr(new InspectorHighlightConfig());
-    bool showInfo = false; // Default: false (do not show a tooltip).
-    highlightInspectorObject->getBoolean("showInfo", &showInfo);
-    highlightConfig->showInfo = showInfo;
-    bool showRulers = false; // Default: false (do not show rulers).
-    highlightInspectorObject->getBoolean("showRulers", &showRulers);
-    highlightConfig->showRulers = showRulers;
-    bool showExtensionLines = false; // Default: false (do not show extension lines).
-    highlightInspectorObject->getBoolean("showExtensionLines", &showExtensionLines);
-    highlightConfig->showExtensionLines = showExtensionLines;
-    bool displayAsMaterial = false;
-    highlightInspectorObject->getBoolean("displayAsMaterial", &displayAsMaterial);
-    highlightConfig->displayAsMaterial = displayAsMaterial;
-    highlightConfig->content = parseConfigColor("contentColor", highlightInspectorObject);
-    highlightConfig->contentOutline = parseConfigColor("contentOutlineColor", highlightInspectorObject);
-    highlightConfig->padding = parseConfigColor("paddingColor", highlightInspectorObject);
-    highlightConfig->border = parseConfigColor("borderColor", highlightInspectorObject);
-    highlightConfig->margin = parseConfigColor("marginColor", highlightInspectorObject);
-    highlightConfig->eventTarget = parseConfigColor("eventTargetColor", highlightInspectorObject);
-    highlightConfig->shape = parseConfigColor("shapeColor", highlightInspectorObject);
-    highlightConfig->shapeMargin = parseConfigColor("shapeMarginColor", highlightInspectorObject);
-    String selectorList;
-    highlightInspectorObject->getString("selectorList", &selectorList);
-    highlightConfig->selectorList = selectorList;
+    highlightConfig->showInfo = highlightInspectorObject->getShowInfo(false);
+    highlightConfig->showRulers = highlightInspectorObject->getShowRulers(false);
+    highlightConfig->showExtensionLines = highlightInspectorObject->getShowExtensionLines(false);
+    highlightConfig->displayAsMaterial = highlightInspectorObject->getDisplayAsMaterial(false);
+    highlightConfig->content = parseColor(highlightInspectorObject->getContentColor(nullptr));
+    highlightConfig->padding = parseColor(highlightInspectorObject->getPaddingColor(nullptr));
+    highlightConfig->border = parseColor(highlightInspectorObject->getBorderColor(nullptr));
+    highlightConfig->margin = parseColor(highlightInspectorObject->getMarginColor(nullptr));
+    highlightConfig->eventTarget = parseColor(highlightInspectorObject->getEventTargetColor(nullptr));
+    highlightConfig->shape = parseColor(highlightInspectorObject->getShapeColor(nullptr));
+    highlightConfig->shapeMargin = parseColor(highlightInspectorObject->getShapeMarginColor(nullptr));
+    highlightConfig->selectorList = highlightInspectorObject->getSelectorList("");
 
     return highlightConfig.release();
 }
 
-void InspectorDOMAgent::setInspectMode(ErrorString* errorString, const String& mode, const RefPtr<JSONObject>* highlightConfig)
+void InspectorDOMAgent::setInspectMode(ErrorString* errorString, const String& mode, PassOwnPtr<protocol::DOM::HighlightConfig> highlightConfig)
 {
     SearchMode searchMode;
-    if (mode == protocol::TypeBuilder::getEnumConstantValue(protocol::TypeBuilder::DOM::InspectMode::SearchForNode)) {
+    if (mode == protocol::DOM::InspectModeEnum::SearchForNode) {
         searchMode = SearchingForNormal;
-    } else if (mode == protocol::TypeBuilder::getEnumConstantValue(protocol::TypeBuilder::DOM::InspectMode::SearchForUAShadowDOM)) {
+    } else if (mode == protocol::DOM::InspectModeEnum::SearchForUAShadowDOM) {
         searchMode = SearchingForUAShadow;
-    } else if (mode == protocol::TypeBuilder::getEnumConstantValue(protocol::TypeBuilder::DOM::InspectMode::None)) {
+    } else if (mode == protocol::DOM::InspectModeEnum::None) {
         searchMode = NotSearching;
-    } else if (mode == protocol::TypeBuilder::getEnumConstantValue(protocol::TypeBuilder::DOM::InspectMode::ShowLayoutEditor)) {
+    } else if (mode == protocol::DOM::InspectModeEnum::ShowLayoutEditor) {
         searchMode = ShowLayoutEditor;
     } else {
         *errorString = "Unknown mode \"" + mode + "\" was provided.";
@@ -1179,16 +1145,16 @@ void InspectorDOMAgent::setInspectMode(ErrorString* errorString, const String& m
     if (searchMode != NotSearching && !pushDocumentUponHandlelessOperation(errorString))
         return;
 
-    setSearchingForNode(errorString, searchMode, highlightConfig ? highlightConfig->get() : nullptr);
+    setSearchingForNode(errorString, searchMode, highlightConfig);
 }
 
-void InspectorDOMAgent::highlightRect(ErrorString*, int x, int y, int width, int height, const RefPtr<JSONObject>* color, const RefPtr<JSONObject>* outlineColor)
+void InspectorDOMAgent::highlightRect(ErrorString*, int x, int y, int width, int height, PassOwnPtr<protocol::DOM::RGBA> color, PassOwnPtr<protocol::DOM::RGBA> outlineColor)
 {
     OwnPtr<FloatQuad> quad = adoptPtr(new FloatQuad(FloatRect(x, y, width, height)));
     innerHighlightQuad(quad.release(), color, outlineColor);
 }
 
-void InspectorDOMAgent::highlightQuad(ErrorString* errorString, const RefPtr<JSONArray>& quadArray, const RefPtr<JSONObject>* color, const RefPtr<JSONObject>* outlineColor)
+void InspectorDOMAgent::highlightQuad(ErrorString* errorString, PassOwnPtr<protocol::Array<double>> quadArray, PassOwnPtr<protocol::DOM::RGBA> color, PassOwnPtr<protocol::DOM::RGBA> outlineColor)
 {
     OwnPtr<FloatQuad> quad = adoptPtr(new FloatQuad());
     if (!parseQuad(quadArray, quad.get())) {
@@ -1198,7 +1164,7 @@ void InspectorDOMAgent::highlightQuad(ErrorString* errorString, const RefPtr<JSO
     innerHighlightQuad(quad.release(), color, outlineColor);
 }
 
-void InspectorDOMAgent::innerHighlightQuad(PassOwnPtr<FloatQuad> quad, const RefPtr<JSONObject>* color, const RefPtr<JSONObject>* outlineColor)
+void InspectorDOMAgent::innerHighlightQuad(PassOwnPtr<FloatQuad> quad, PassOwnPtr<protocol::DOM::RGBA> color, PassOwnPtr<protocol::DOM::RGBA> outlineColor)
 {
     OwnPtr<InspectorHighlightConfig> highlightConfig = adoptPtr(new InspectorHighlightConfig());
     highlightConfig->content = parseColor(color);
@@ -1225,22 +1191,22 @@ Node* InspectorDOMAgent::nodeForRemoteId(ErrorString* errorString, const String&
     return node;
 }
 
-void InspectorDOMAgent::highlightNode(ErrorString* errorString, const RefPtr<JSONObject>& highlightInspectorObject, const int* nodeId, const int* backendNodeId, const String* objectId)
+void InspectorDOMAgent::highlightNode(ErrorString* errorString, PassOwnPtr<protocol::DOM::HighlightConfig> highlightInspectorObject, const OptionalValue<int>& nodeId, const OptionalValue<int>& backendNodeId, const OptionalValue<String>& objectId)
 {
     Node* node = nullptr;
-    if (nodeId) {
-        node = assertNode(errorString, *nodeId);
-    } else if (backendNodeId) {
-        node = DOMNodeIds::nodeForId(*backendNodeId);
-    } else if (objectId) {
-        node = nodeForRemoteId(errorString, *objectId);
+    if (nodeId.hasValue()) {
+        node = assertNode(errorString, nodeId.get());
+    } else if (backendNodeId.hasValue()) {
+        node = DOMNodeIds::nodeForId(backendNodeId.get());
+    } else if (objectId.hasValue()) {
+        node = nodeForRemoteId(errorString, objectId.get());
     } else
         *errorString = "Either nodeId or objectId must be specified";
 
     if (!node)
         return;
 
-    OwnPtr<InspectorHighlightConfig> highlightConfig = highlightConfigFromInspectorObject(errorString, highlightInspectorObject.get());
+    OwnPtr<InspectorHighlightConfig> highlightConfig = highlightConfigFromInspectorObject(errorString, highlightInspectorObject);
     if (!highlightConfig)
         return;
 
@@ -1251,8 +1217,8 @@ void InspectorDOMAgent::highlightNode(ErrorString* errorString, const RefPtr<JSO
 void InspectorDOMAgent::highlightFrame(
     ErrorString*,
     const String& frameId,
-    const RefPtr<JSONObject>* color,
-    const RefPtr<JSONObject>* outlineColor)
+    PassOwnPtr<protocol::DOM::RGBA> color,
+    PassOwnPtr<protocol::DOM::RGBA> outlineColor)
 {
     LocalFrame* frame = IdentifiersFactory::frameById(m_inspectedFrames, frameId);
     // FIXME: Inspector doesn't currently work cross process.
@@ -1272,7 +1238,7 @@ void InspectorDOMAgent::hideHighlight(ErrorString*)
         m_client->hideHighlight();
 }
 
-void InspectorDOMAgent::copyTo(ErrorString* errorString, int nodeId, int targetElementId, const int* const anchorNodeId, int* newNodeId)
+void InspectorDOMAgent::copyTo(ErrorString* errorString, int nodeId, int targetElementId, const OptionalValue<int>& anchorNodeId, int* newNodeId)
 {
     Node* node = assertEditableNode(errorString, nodeId);
     if (!node)
@@ -1283,8 +1249,8 @@ void InspectorDOMAgent::copyTo(ErrorString* errorString, int nodeId, int targetE
         return;
 
     Node* anchorNode = nullptr;
-    if (anchorNodeId && *anchorNodeId) {
-        anchorNode = assertEditableChildNode(errorString, targetElement, *anchorNodeId);
+    if (anchorNodeId.hasValue() && anchorNodeId.get()) {
+        anchorNode = assertEditableChildNode(errorString, targetElement, anchorNodeId.get());
         if (!anchorNode)
             return;
     }
@@ -1301,7 +1267,7 @@ void InspectorDOMAgent::copyTo(ErrorString* errorString, int nodeId, int targetE
     *newNodeId = pushNodePathToFrontend(clonedNode.get());
 }
 
-void InspectorDOMAgent::moveTo(ErrorString* errorString, int nodeId, int targetElementId, const int* const anchorNodeId, int* newNodeId)
+void InspectorDOMAgent::moveTo(ErrorString* errorString, int nodeId, int targetElementId, const OptionalValue<int>& anchorNodeId, int* newNodeId)
 {
     Node* node = assertEditableNode(errorString, nodeId);
     if (!node)
@@ -1321,8 +1287,8 @@ void InspectorDOMAgent::moveTo(ErrorString* errorString, int nodeId, int targetE
     }
 
     Node* anchorNode = nullptr;
-    if (anchorNodeId && *anchorNodeId) {
-        anchorNode = assertEditableChildNode(errorString, targetElement, *anchorNodeId);
+    if (anchorNodeId.hasValue() && anchorNodeId.get()) {
+        anchorNode = assertEditableChildNode(errorString, targetElement, anchorNodeId.get());
         if (!anchorNode)
             return;
     }
@@ -1366,7 +1332,7 @@ void InspectorDOMAgent::focus(ErrorString* errorString, int nodeId)
     element->focus();
 }
 
-void InspectorDOMAgent::setFileInputFiles(ErrorString* errorString, int nodeId, const RefPtr<JSONArray>& files)
+void InspectorDOMAgent::setFileInputFiles(ErrorString* errorString, int nodeId, PassOwnPtr<protocol::Array<String>> files)
 {
     Node* node = assertNode(errorString, nodeId);
     if (!node)
@@ -1377,18 +1343,12 @@ void InspectorDOMAgent::setFileInputFiles(ErrorString* errorString, int nodeId, 
     }
 
     FileList* fileList = FileList::create();
-    for (const auto& file : *files) {
-        String path;
-        if (!(file)->asString(&path)) {
-            *errorString = "Files must be strings";
-            return;
-        }
-        fileList->append(File::create(path));
-    }
+    for (size_t index = 0; index < files->length(); ++index)
+        fileList->append(File::create(files->get(index)));
     toHTMLInputElement(node)->setFiles(fileList);
 }
 
-void InspectorDOMAgent::getBoxModel(ErrorString* errorString, int nodeId, RefPtr<protocol::TypeBuilder::DOM::BoxModel>& model)
+void InspectorDOMAgent::getBoxModel(ErrorString* errorString, int nodeId, OwnPtr<protocol::DOM::BoxModel>* model)
 {
     Node* node = assertNode(errorString, nodeId);
     if (!node)
@@ -1416,29 +1376,26 @@ void InspectorDOMAgent::getNodeForLocation(ErrorString* errorString, int x, int 
     *nodeId = pushNodePathToFrontend(node);
 }
 
-void InspectorDOMAgent::resolveNode(ErrorString* errorString, int nodeId, const String* const objectGroup, RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>& result)
+void InspectorDOMAgent::resolveNode(ErrorString* errorString, int nodeId, const OptionalValue<String>& objectGroup, OwnPtr<protocol::Runtime::RemoteObject>* result)
 {
-    String objectGroupName = objectGroup ? *objectGroup : "";
+    String objectGroupName = objectGroup.get("");
     Node* node = nodeForId(nodeId);
     if (!node) {
         *errorString = "No node with given id found";
         return;
     }
-    RefPtr<protocol::TypeBuilder::Runtime::RemoteObject> object = resolveNode(node, objectGroupName);
-    if (!object) {
+    *result = resolveNode(node, objectGroupName);
+    if (!*result)
         *errorString = "Node with given id does not belong to the document";
-        return;
-    }
-    result = object;
 }
 
-void InspectorDOMAgent::getAttributes(ErrorString* errorString, int nodeId, RefPtr<protocol::TypeBuilder::Array<String>>& result)
+void InspectorDOMAgent::getAttributes(ErrorString* errorString, int nodeId, OwnPtr<protocol::Array<String>>* result)
 {
     Element* element = assertElement(errorString, nodeId);
     if (!element)
         return;
 
-    result = buildArrayForElementAttributes(element);
+    *result = buildArrayForElementAttributes(element);
 }
 
 void InspectorDOMAgent::requestNode(ErrorString* errorString, const String& objectId, int* nodeId)
@@ -1463,22 +1420,22 @@ static String documentBaseURLString(Document* document)
     return document->baseURLForOverride(document->baseURL()).string();
 }
 
-static protocol::TypeBuilder::DOM::ShadowRootType::Enum shadowRootType(ShadowRoot* shadowRoot)
+static protocol::DOM::ShadowRootType shadowRootType(ShadowRoot* shadowRoot)
 {
     switch (shadowRoot->type()) {
     case ShadowRootType::UserAgent:
-        return protocol::TypeBuilder::DOM::ShadowRootType::User_agent;
+        return protocol::DOM::ShadowRootTypeEnum::UserAgent;
     case ShadowRootType::V0:
     case ShadowRootType::Open:
-        return protocol::TypeBuilder::DOM::ShadowRootType::Open;
+        return protocol::DOM::ShadowRootTypeEnum::Open;
     case ShadowRootType::Closed:
-        return protocol::TypeBuilder::DOM::ShadowRootType::Closed;
+        return protocol::DOM::ShadowRootTypeEnum::Closed;
     }
     ASSERT_NOT_REACHED();
-    return protocol::TypeBuilder::DOM::ShadowRootType::User_agent;
+    return protocol::DOM::ShadowRootTypeEnum::UserAgent;
 }
 
-PassRefPtr<protocol::TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* node, int depth, NodeToIdMap* nodesMap)
+PassOwnPtr<protocol::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* node, int depth, NodeToIdMap* nodesMap)
 {
     int id = bind(node, nodesMap);
     String localName;
@@ -1502,12 +1459,12 @@ PassRefPtr<protocol::TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNo
         break;
     }
 
-    RefPtr<protocol::TypeBuilder::DOM::Node> value = protocol::TypeBuilder::DOM::Node::create()
+    OwnPtr<protocol::DOM::Node> value = protocol::DOM::Node::create()
         .setNodeId(id)
         .setNodeType(static_cast<int>(node->nodeType()))
         .setNodeName(node->nodeName())
         .setLocalName(localName)
-        .setNodeValue(nodeValue);
+        .setNodeValue(nodeValue).build();
 
     bool forcePushChildren = false;
     if (node->isElementNode()) {
@@ -1524,10 +1481,10 @@ PassRefPtr<protocol::TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNo
 
         ElementShadow* shadow = element->shadow();
         if (shadow) {
-            RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::Node>> shadowRoots = protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::Node>::create();
+            OwnPtr<protocol::Array<protocol::DOM::Node>> shadowRoots = protocol::Array<protocol::DOM::Node>::create();
             for (ShadowRoot* root = &shadow->youngestShadowRoot(); root; root = root->olderShadowRoot())
                 shadowRoots->addItem(buildObjectForNode(root, 0, nodesMap));
-            value->setShadowRoots(shadowRoots);
+            value->setShadowRoots(shadowRoots.release());
             forcePushChildren = true;
         }
 
@@ -1544,11 +1501,11 @@ PassRefPtr<protocol::TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNo
         }
 
         if (element->pseudoId()) {
-            protocol::TypeBuilder::DOM::PseudoType::Enum pseudoType;
+            protocol::DOM::PseudoType pseudoType;
             if (InspectorDOMAgent::getPseudoElementType(element->pseudoId(), &pseudoType))
                 value->setPseudoType(pseudoType);
         } else {
-            RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::Node>> pseudoElements = buildArrayForPseudoElements(element, nodesMap);
+            OwnPtr<protocol::Array<protocol::DOM::Node>> pseudoElements = buildArrayForPseudoElements(element, nodesMap);
             if (pseudoElements) {
                 value->setPseudoElements(pseudoElements.release());
                 forcePushChildren = true;
@@ -1585,7 +1542,7 @@ PassRefPtr<protocol::TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNo
             m_cachedChildCount.set(id, nodeCount);
         if (forcePushChildren && !depth)
             depth = 1;
-        RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::Node>> children = buildArrayForContainerChildren(node, depth, nodesMap);
+        OwnPtr<protocol::Array<protocol::DOM::Node>> children = buildArrayForContainerChildren(node, depth, nodesMap);
         if (children->length() > 0 || depth) // Push children along with shadow in any case.
             value->setChildren(children.release());
     }
@@ -1593,9 +1550,9 @@ PassRefPtr<protocol::TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNo
     return value.release();
 }
 
-PassRefPtr<protocol::TypeBuilder::Array<String>> InspectorDOMAgent::buildArrayForElementAttributes(Element* element)
+PassOwnPtr<protocol::Array<String>> InspectorDOMAgent::buildArrayForElementAttributes(Element* element)
 {
-    RefPtr<protocol::TypeBuilder::Array<String>> attributesValue = protocol::TypeBuilder::Array<String>::create();
+    OwnPtr<protocol::Array<String>> attributesValue = protocol::Array<String>::create();
     // Go through all attributes and serialize them.
     AttributeCollection attributes = element->attributes();
     for (auto& attribute : attributes) {
@@ -1606,9 +1563,9 @@ PassRefPtr<protocol::TypeBuilder::Array<String>> InspectorDOMAgent::buildArrayFo
     return attributesValue.release();
 }
 
-PassRefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::Node>> InspectorDOMAgent::buildArrayForContainerChildren(Node* container, int depth, NodeToIdMap* nodesMap)
+PassOwnPtr<protocol::Array<protocol::DOM::Node>> InspectorDOMAgent::buildArrayForContainerChildren(Node* container, int depth, NodeToIdMap* nodesMap)
 {
-    RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::Node>> children = protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::Node>::create();
+    OwnPtr<protocol::Array<protocol::DOM::Node>> children = protocol::Array<protocol::DOM::Node>::create();
     if (depth == 0) {
         // Special-case the only text child - pretend that container's children have been requested.
         Node* firstChild = container->firstChild();
@@ -1630,12 +1587,12 @@ PassRefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::Node>> Inspe
     return children.release();
 }
 
-PassRefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::Node>> InspectorDOMAgent::buildArrayForPseudoElements(Element* element, NodeToIdMap* nodesMap)
+PassOwnPtr<protocol::Array<protocol::DOM::Node>> InspectorDOMAgent::buildArrayForPseudoElements(Element* element, NodeToIdMap* nodesMap)
 {
     if (!element->pseudoElement(BEFORE) && !element->pseudoElement(AFTER))
         return nullptr;
 
-    RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::Node>> pseudoElements = protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::Node>::create();
+    OwnPtr<protocol::Array<protocol::DOM::Node>> pseudoElements = protocol::Array<protocol::DOM::Node>::create();
     if (element->pseudoElement(BEFORE))
         pseudoElements->addItem(buildObjectForNode(element->pseudoElement(BEFORE), 0, nodesMap));
     if (element->pseudoElement(AFTER))
@@ -1643,18 +1600,18 @@ PassRefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::Node>> Inspe
     return pseudoElements.release();
 }
 
-PassRefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::BackendNode>> InspectorDOMAgent::buildArrayForDistributedNodes(InsertionPoint* insertionPoint)
+PassOwnPtr<protocol::Array<protocol::DOM::BackendNode>> InspectorDOMAgent::buildArrayForDistributedNodes(InsertionPoint* insertionPoint)
 {
-    RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::BackendNode>> distributedNodes = protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::BackendNode>::create();
+    OwnPtr<protocol::Array<protocol::DOM::BackendNode>> distributedNodes = protocol::Array<protocol::DOM::BackendNode>::create();
     for (size_t i = 0; i < insertionPoint->distributedNodesSize(); ++i) {
         Node* distributedNode = insertionPoint->distributedNodeAt(i);
         if (isWhitespace(distributedNode))
             continue;
 
-        RefPtr<protocol::TypeBuilder::DOM::BackendNode> backendNode = protocol::TypeBuilder::DOM::BackendNode::create()
+        OwnPtr<protocol::DOM::BackendNode> backendNode = protocol::DOM::BackendNode::create()
             .setNodeType(distributedNode->nodeType())
             .setNodeName(distributedNode->nodeName())
-            .setBackendNodeId(DOMNodeIds::idForNode(distributedNode));
+            .setBackendNodeId(DOMNodeIds::idForNode(distributedNode)).build();
         distributedNodes->addItem(backendNode.release());
     }
     return distributedNodes.release();
@@ -1738,7 +1695,7 @@ void InspectorDOMAgent::invalidateFrameOwnerElement(LocalFrame* frame)
     frontend()->childNodeRemoved(parentId, frameOwnerId);
     unbind(frameOwner, m_documentNodeToIdMap.get());
 
-    RefPtr<protocol::TypeBuilder::DOM::Node> value = buildObjectForNode(frameOwner, 0, m_documentNodeToIdMap.get());
+    OwnPtr<protocol::DOM::Node> value = buildObjectForNode(frameOwner, 0, m_documentNodeToIdMap.get());
     Node* previousSibling = innerPreviousSibling(frameOwner);
     int prevId = previousSibling ? m_documentNodeToIdMap->get(previousSibling) : 0;
     frontend()->childNodeInserted(parentId, prevId, value.release());
@@ -1780,7 +1737,7 @@ void InspectorDOMAgent::didInsertDOMNode(Node* node)
         // Children have been requested -> return value of a new child.
         Node* prevSibling = innerPreviousSibling(node);
         int prevId = prevSibling ? m_documentNodeToIdMap->get(prevSibling) : 0;
-        RefPtr<protocol::TypeBuilder::DOM::Node> value = buildObjectForNode(node, 0, m_documentNodeToIdMap.get());
+        OwnPtr<protocol::DOM::Node> value = buildObjectForNode(node, 0, m_documentNodeToIdMap.get());
         frontend()->childNodeInserted(parentId, prevId, value.release());
     }
 }
@@ -1847,7 +1804,7 @@ void InspectorDOMAgent::didRemoveDOMAttr(Element* element, const QualifiedName& 
 
 void InspectorDOMAgent::styleAttributeInvalidated(const WillBeHeapVector<RawPtrWillBeMember<Element>>& elements)
 {
-    RefPtr<protocol::TypeBuilder::Array<int>> nodeIds = protocol::TypeBuilder::Array<int>::create();
+    OwnPtr<protocol::Array<int>> nodeIds = protocol::Array<int>::create();
     for (unsigned i = 0, size = elements.size(); i < size; ++i) {
         Element* element = elements.at(i);
         int id = boundNodeId(element);
@@ -2031,22 +1988,15 @@ void InspectorDOMAgent::pushNodeByPathToFrontend(ErrorString* errorString, const
         *errorString = "No node with given path found";
 }
 
-void InspectorDOMAgent::pushNodesByBackendIdsToFrontend(ErrorString* errorString, const RefPtr<JSONArray>& backendNodeIds, RefPtr<protocol::TypeBuilder::Array<int>>& result)
+void InspectorDOMAgent::pushNodesByBackendIdsToFrontend(ErrorString* errorString, PassOwnPtr<protocol::Array<int>> backendNodeIds, OwnPtr<protocol::Array<int>>* result)
 {
-    result = protocol::TypeBuilder::Array<int>::create();
-    for (const auto& backendNode : *backendNodeIds) {
-        int backendNodeId;
-
-        if (!(backendNode)->asNumber(&backendNodeId)) {
-            *errorString = "Invalid argument type";
-            return;
-        }
-
-        Node* node = DOMNodeIds::nodeForId(backendNodeId);
+    *result = protocol::Array<int>::create();
+    for (size_t index = 0; index < backendNodeIds->length(); ++index) {
+        Node* node = DOMNodeIds::nodeForId(backendNodeIds->get(index));
         if (node && node->document().frame() && m_inspectedFrames->contains(node->document().frame()))
-            result->addItem(pushNodePathToFrontend(node));
+            (*result)->addItem(pushNodePathToFrontend(node));
         else
-            result->addItem(0);
+            (*result)->addItem(0);
     }
 }
 
@@ -2088,16 +2038,16 @@ void InspectorDOMAgent::getRelayoutBoundary(ErrorString* errorString, int nodeId
     *relayoutBoundaryNodeId = pushNodePathToFrontend(resultNode);
 }
 
-void InspectorDOMAgent::getHighlightObjectForTest(ErrorString* errorString, int nodeId, RefPtr<JSONObject>& result)
+void InspectorDOMAgent::getHighlightObjectForTest(ErrorString* errorString, int nodeId, RefPtr<JSONObject>* result)
 {
     Node* node = assertNode(errorString, nodeId);
     if (!node)
         return;
     InspectorHighlight highlight(node, InspectorHighlight::defaultConfig(), true);
-    result = highlight.asJSONObject();
+    *result = highlight.asJSONObject();
 }
 
-PassRefPtr<protocol::TypeBuilder::Runtime::RemoteObject> InspectorDOMAgent::resolveNode(Node* node, const String& objectGroup)
+PassOwnPtr<protocol::Runtime::RemoteObject> InspectorDOMAgent::resolveNode(Node* node, const String& objectGroup)
 {
     Document* document = node->isDocumentNode() ? &node->document() : node->ownerDocument();
     LocalFrame* frame = document ? document->frame() : nullptr;
@@ -2115,8 +2065,8 @@ PassRefPtr<protocol::TypeBuilder::Runtime::RemoteObject> InspectorDOMAgent::reso
 bool InspectorDOMAgent::pushDocumentUponHandlelessOperation(ErrorString* errorString)
 {
     if (!m_documentNodeToIdMap->contains(m_document)) {
-        RefPtr<protocol::TypeBuilder::DOM::Node> root;
-        getDocument(errorString, root);
+        OwnPtr<protocol::DOM::Node> root;
+        getDocument(errorString, &root);
         return errorString->isEmpty();
     }
     return true;

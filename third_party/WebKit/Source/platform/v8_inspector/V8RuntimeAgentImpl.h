@@ -44,6 +44,8 @@ class V8DebuggerImpl;
 
 typedef String ErrorString;
 
+using protocol::OptionalValue;
+
 class V8RuntimeAgentImpl : public V8RuntimeAgent {
     WTF_MAKE_NONCOPYABLE(V8RuntimeAgentImpl);
 public:
@@ -61,32 +63,52 @@ public:
     void disable(ErrorString*) override;
     void evaluate(ErrorString*,
         const String& expression,
-        const String* objectGroup,
-        const bool* includeCommandLineAPI,
-        const bool* doNotPauseOnExceptionsAndMuteConsole,
-        const int* executionContextId,
-        const bool* returnByValue,
-        const bool* generatePreview,
-        RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>& result,
-        protocol::TypeBuilder::OptOutput<bool>* wasThrown,
-        RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>&) override;
+        const OptionalValue<String>& objectGroup,
+        const OptionalValue<bool>& includeCommandLineAPI,
+        const OptionalValue<bool>& doNotPauseOnExceptionsAndMuteConsole,
+        const OptionalValue<int>& executionContextId,
+        const OptionalValue<bool>& returnByValue,
+        const OptionalValue<bool>& generatePreview,
+        OwnPtr<protocol::Runtime::RemoteObject>* result,
+        OptionalValue<bool>* wasThrown,
+        OwnPtr<protocol::Runtime::ExceptionDetails>*) override;
     void callFunctionOn(ErrorString*,
         const String& objectId,
         const String& expression,
-        const RefPtr<JSONArray>* optionalArguments,
-        const bool* doNotPauseOnExceptionsAndMuteConsole,
-        const bool* returnByValue,
-        const bool* generatePreview,
-        RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>& result,
-        protocol::TypeBuilder::OptOutput<bool>* wasThrown) override;
+        PassOwnPtr<protocol::Array<protocol::Runtime::CallArgument>> optionalArguments,
+        const OptionalValue<bool>& doNotPauseOnExceptionsAndMuteConsole,
+        const OptionalValue<bool>& returnByValue,
+        const OptionalValue<bool>& generatePreview,
+        OwnPtr<protocol::Runtime::RemoteObject>* result,
+        OptionalValue<bool>* wasThrown) override;
     void releaseObject(ErrorString*, const String& objectId) override;
-    void getProperties(ErrorString*, const String& objectId, const bool* ownProperties, const bool* accessorPropertiesOnly, const bool* generatePreview, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Runtime::PropertyDescriptor>>& result, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Runtime::InternalPropertyDescriptor>>& internalProperties, RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>&) override;
+    void getProperties(ErrorString*,
+        const String& objectId,
+        const OptionalValue<bool>& ownProperties,
+        const OptionalValue<bool>& accessorPropertiesOnly,
+        const OptionalValue<bool>& generatePreview,
+        OwnPtr<protocol::Array<protocol::Runtime::PropertyDescriptor>>* result,
+        OwnPtr<protocol::Array<protocol::Runtime::InternalPropertyDescriptor>>* internalProperties,
+        OwnPtr<protocol::Runtime::ExceptionDetails>*) override;
     void releaseObjectGroup(ErrorString*, const String& objectGroup) override;
     void run(ErrorString*) override;
-    void isRunRequired(ErrorString*, bool* out_result) override;
+    void isRunRequired(ErrorString*, bool* result) override;
     void setCustomObjectFormatterEnabled(ErrorString*, bool) override;
-    void compileScript(ErrorString*, const String& expression, const String& sourceURL, bool persistScript, int executionContextId, protocol::TypeBuilder::OptOutput<protocol::TypeBuilder::Runtime::ScriptId>*, RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>&) override;
-    void runScript(ErrorString*, const protocol::TypeBuilder::Runtime::ScriptId&, int executionContextId, const String* objectGroup, const bool* doNotPauseOnExceptionsAndMuteConsole, const bool* includeCommandLineAPI, RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>& result, RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>&) override;
+    void compileScript(ErrorString*,
+        const String& expression,
+        const String& sourceURL,
+        bool persistScript,
+        int executionContextId,
+        OptionalValue<protocol::Runtime::ScriptId>*,
+        OwnPtr<protocol::Runtime::ExceptionDetails>*) override;
+    void runScript(ErrorString*,
+        const protocol::Runtime::ScriptId&,
+        int executionContextId,
+        const OptionalValue<String>& objectGroup,
+        const OptionalValue<bool>& doNotPauseOnExceptionsAndMuteConsole,
+        const OptionalValue<bool>& includeCommandLineAPI,
+        OwnPtr<protocol::Runtime::RemoteObject>* result,
+        OwnPtr<protocol::Runtime::ExceptionDetails>*) override;
 
     V8DebuggerImpl* debugger() { return m_debugger; }
     InjectedScriptManager* injectedScriptManager() { return m_injectedScriptManager.get(); }
@@ -95,8 +117,8 @@ private:
     void setClearConsoleCallback(PassOwnPtr<ClearConsoleCallback>) override;
     void setInspectObjectCallback(PassOwnPtr<InspectCallback>) override;
     int ensureDefaultContextAvailable(v8::Local<v8::Context>) override;
-    PassRefPtr<protocol::TypeBuilder::Runtime::RemoteObject> wrapObject(v8::Local<v8::Context>, v8::Local<v8::Value>, const String& groupName, bool generatePreview = false) override;
-    PassRefPtr<protocol::TypeBuilder::Runtime::RemoteObject> wrapTable(v8::Local<v8::Context>, v8::Local<v8::Value> table, v8::Local<v8::Value> columns) override;
+    PassOwnPtr<protocol::Runtime::RemoteObject> wrapObject(v8::Local<v8::Context>, v8::Local<v8::Value>, const String& groupName, bool generatePreview = false) override;
+    PassOwnPtr<protocol::Runtime::RemoteObject> wrapTable(v8::Local<v8::Context>, v8::Local<v8::Value> table, v8::Local<v8::Value> columns) override;
     void disposeObjectGroup(const String&) override;
     v8::Local<v8::Value> findObject(const String& objectId, v8::Local<v8::Context>* = nullptr, String* groupName = nullptr) override;
     void addInspectedObject(PassOwnPtr<Inspectable>) override;
@@ -104,7 +126,7 @@ private:
 
     void reportExecutionContextCreated(v8::Local<v8::Context>, const String& type, const String& origin, const String& humanReadableName, const String& frameId) override;
     void reportExecutionContextDestroyed(v8::Local<v8::Context>) override;
-    PassRefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails> createExceptionDetails(v8::Isolate*, v8::Local<v8::Message>);
+    PassOwnPtr<protocol::Runtime::ExceptionDetails> createExceptionDetails(v8::Isolate*, v8::Local<v8::Message>);
 
     RefPtr<JSONObject> m_state;
     protocol::Frontend::Runtime* m_frontend;

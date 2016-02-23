@@ -19,9 +19,9 @@ static const char userInitiatedProfiling[] = "userInitiatedProfiling";
 
 namespace {
 
-PassRefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Profiler::PositionTickInfo>> buildInspectorObjectForPositionTicks(const v8::CpuProfileNode* node)
+PassOwnPtr<protocol::Array<protocol::Profiler::PositionTickInfo>> buildInspectorObjectForPositionTicks(const v8::CpuProfileNode* node)
 {
-    RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Profiler::PositionTickInfo>> array = protocol::TypeBuilder::Array<protocol::TypeBuilder::Profiler::PositionTickInfo>::create();
+    OwnPtr<protocol::Array<protocol::Profiler::PositionTickInfo>> array = protocol::Array<protocol::Profiler::PositionTickInfo>::create();
     unsigned lineCount = node->GetHitLineCount();
     if (!lineCount)
         return array.release();
@@ -29,30 +29,30 @@ PassRefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Profiler::Positio
     Vector<v8::CpuProfileNode::LineTick> entries(lineCount);
     if (node->GetLineTicks(&entries[0], lineCount)) {
         for (unsigned i = 0; i < lineCount; i++) {
-            RefPtr<protocol::TypeBuilder::Profiler::PositionTickInfo> line = protocol::TypeBuilder::Profiler::PositionTickInfo::create()
+            OwnPtr<protocol::Profiler::PositionTickInfo> line = protocol::Profiler::PositionTickInfo::create()
                 .setLine(entries[i].line)
-                .setTicks(entries[i].hit_count);
-            array->addItem(line);
+                .setTicks(entries[i].hit_count).build();
+            array->addItem(line.release());
         }
     }
 
     return array.release();
 }
 
-PassRefPtr<protocol::TypeBuilder::Profiler::CPUProfileNode> buildInspectorObjectFor(v8::Isolate* isolate, const v8::CpuProfileNode* node)
+PassOwnPtr<protocol::Profiler::CPUProfileNode> buildInspectorObjectFor(v8::Isolate* isolate, const v8::CpuProfileNode* node)
 {
     v8::HandleScope handleScope(isolate);
 
-    RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Profiler::CPUProfileNode>> children = protocol::TypeBuilder::Array<protocol::TypeBuilder::Profiler::CPUProfileNode>::create();
+    OwnPtr<protocol::Array<protocol::Profiler::CPUProfileNode>> children = protocol::Array<protocol::Profiler::CPUProfileNode>::create();
     const int childrenCount = node->GetChildrenCount();
     for (int i = 0; i < childrenCount; i++) {
         const v8::CpuProfileNode* child = node->GetChild(i);
         children->addItem(buildInspectorObjectFor(isolate, child));
     }
 
-    RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Profiler::PositionTickInfo>> positionTicks = buildInspectorObjectForPositionTicks(node);
+    OwnPtr<protocol::Array<protocol::Profiler::PositionTickInfo>> positionTicks = buildInspectorObjectForPositionTicks(node);
 
-    RefPtr<protocol::TypeBuilder::Profiler::CPUProfileNode> result = protocol::TypeBuilder::Profiler::CPUProfileNode::create()
+    OwnPtr<protocol::Profiler::CPUProfileNode> result = protocol::Profiler::CPUProfileNode::create()
         .setFunctionName(toWTFString(node->GetFunctionName()))
         .setScriptId(String::number(node->GetScriptId()))
         .setUrl(toWTFString(node->GetScriptResourceName()))
@@ -63,45 +63,45 @@ PassRefPtr<protocol::TypeBuilder::Profiler::CPUProfileNode> buildInspectorObject
         .setChildren(children.release())
         .setPositionTicks(positionTicks.release())
         .setDeoptReason(node->GetBailoutReason())
-        .setId(node->GetNodeId());
+        .setId(node->GetNodeId()).build();
     return result.release();
 }
 
-PassRefPtr<protocol::TypeBuilder::Array<int>> buildInspectorObjectForSamples(v8::CpuProfile* v8profile)
+PassOwnPtr<protocol::Array<int>> buildInspectorObjectForSamples(v8::CpuProfile* v8profile)
 {
-    RefPtr<protocol::TypeBuilder::Array<int>> array = protocol::TypeBuilder::Array<int>::create();
+    OwnPtr<protocol::Array<int>> array = protocol::Array<int>::create();
     int count = v8profile->GetSamplesCount();
     for (int i = 0; i < count; i++)
         array->addItem(v8profile->GetSample(i)->GetNodeId());
     return array.release();
 }
 
-PassRefPtr<protocol::TypeBuilder::Array<double>> buildInspectorObjectForTimestamps(v8::CpuProfile* v8profile)
+PassOwnPtr<protocol::Array<double>> buildInspectorObjectForTimestamps(v8::CpuProfile* v8profile)
 {
-    RefPtr<protocol::TypeBuilder::Array<double>> array = protocol::TypeBuilder::Array<double>::create();
+    OwnPtr<protocol::Array<double>> array = protocol::Array<double>::create();
     int count = v8profile->GetSamplesCount();
     for (int i = 0; i < count; i++)
         array->addItem(v8profile->GetSampleTimestamp(i));
     return array.release();
 }
 
-PassRefPtr<protocol::TypeBuilder::Profiler::CPUProfile> createCPUProfile(v8::Isolate* isolate, v8::CpuProfile* v8profile)
+PassOwnPtr<protocol::Profiler::CPUProfile> createCPUProfile(v8::Isolate* isolate, v8::CpuProfile* v8profile)
 {
-    RefPtr<protocol::TypeBuilder::Profiler::CPUProfile> profile = protocol::TypeBuilder::Profiler::CPUProfile::create()
+    OwnPtr<protocol::Profiler::CPUProfile> profile = protocol::Profiler::CPUProfile::create()
         .setHead(buildInspectorObjectFor(isolate, v8profile->GetTopDownRoot()))
         .setStartTime(static_cast<double>(v8profile->GetStartTime()) / 1000000)
-        .setEndTime(static_cast<double>(v8profile->GetEndTime()) / 1000000);
+        .setEndTime(static_cast<double>(v8profile->GetEndTime()) / 1000000).build();
     profile->setSamples(buildInspectorObjectForSamples(v8profile));
     profile->setTimestamps(buildInspectorObjectForTimestamps(v8profile));
     return profile.release();
 }
 
-PassRefPtr<protocol::TypeBuilder::Debugger::Location> currentDebugLocation(V8DebuggerImpl* debugger)
+PassOwnPtr<protocol::Debugger::Location> currentDebugLocation(V8DebuggerImpl* debugger)
 {
     OwnPtr<V8StackTrace> callStack = debugger->captureStackTrace(1);
-    RefPtr<protocol::TypeBuilder::Debugger::Location> location = protocol::TypeBuilder::Debugger::Location::create()
+    OwnPtr<protocol::Debugger::Location> location = protocol::Debugger::Location::create()
         .setScriptId(callStack->topScriptId())
-        .setLineNumber(callStack->topLineNumber());
+        .setLineNumber(callStack->topLineNumber()).build();
     location->setColumnNumber(callStack->topColumnNumber());
     return location.release();
 }
@@ -144,7 +144,7 @@ void V8ProfilerAgentImpl::consoleProfile(const String& title)
     String id = nextProfileId();
     m_startedProfiles.append(ProfileDescriptor(id, title));
     startProfiling(id);
-    m_frontend->consoleProfileStarted(id, currentDebugLocation(m_debugger), title.isNull() ? 0 : &title);
+    m_frontend->consoleProfileStarted(id, currentDebugLocation(m_debugger), title);
 }
 
 void V8ProfilerAgentImpl::consoleProfileEnd(const String& title)
@@ -171,11 +171,11 @@ void V8ProfilerAgentImpl::consoleProfileEnd(const String& title)
         if (id.isEmpty())
             return;
     }
-    RefPtr<protocol::TypeBuilder::Profiler::CPUProfile> profile = stopProfiling(id, true);
+    OwnPtr<protocol::Profiler::CPUProfile> profile = stopProfiling(id, true);
     if (!profile)
         return;
-    RefPtr<protocol::TypeBuilder::Debugger::Location> location = currentDebugLocation(m_debugger);
-    m_frontend->consoleProfileFinished(id, location, profile, resolvedTitle.isNull() ? 0 : &resolvedTitle);
+    OwnPtr<protocol::Debugger::Location> location = currentDebugLocation(m_debugger);
+    m_frontend->consoleProfileFinished(id, location.release(), profile.release(), resolvedTitle);
 }
 
 void V8ProfilerAgentImpl::enable(ErrorString*)
@@ -183,12 +183,12 @@ void V8ProfilerAgentImpl::enable(ErrorString*)
     m_enabled = true;
 }
 
-void V8ProfilerAgentImpl::disable(ErrorString*)
+void V8ProfilerAgentImpl::disable(ErrorString* errorString)
 {
     for (Vector<ProfileDescriptor>::reverse_iterator it = m_startedProfiles.rbegin(); it != m_startedProfiles.rend(); ++it)
         stopProfiling(it->m_id, false);
     m_startedProfiles.clear();
-    stop(0, 0);
+    stop(nullptr, nullptr);
     m_enabled = false;
 }
 
@@ -237,12 +237,7 @@ void V8ProfilerAgentImpl::start(ErrorString* error)
     m_state->setBoolean(ProfilerAgentState::userInitiatedProfiling, true);
 }
 
-void V8ProfilerAgentImpl::stop(ErrorString* errorString, RefPtr<protocol::TypeBuilder::Profiler::CPUProfile>& profile)
-{
-    stop(errorString, &profile);
-}
-
-void V8ProfilerAgentImpl::stop(ErrorString* errorString, RefPtr<protocol::TypeBuilder::Profiler::CPUProfile>* profile)
+void V8ProfilerAgentImpl::stop(ErrorString* errorString, OwnPtr<protocol::Profiler::CPUProfile>* profile)
 {
     if (!m_recordingCPUProfile) {
         if (errorString)
@@ -250,10 +245,10 @@ void V8ProfilerAgentImpl::stop(ErrorString* errorString, RefPtr<protocol::TypeBu
         return;
     }
     m_recordingCPUProfile = false;
-    RefPtr<protocol::TypeBuilder::Profiler::CPUProfile> cpuProfile = stopProfiling(m_frontendInitiatedProfileId, !!profile);
+    OwnPtr<protocol::Profiler::CPUProfile> cpuProfile = stopProfiling(m_frontendInitiatedProfileId, !!profile);
     if (profile) {
-        *profile = cpuProfile;
-        if (!cpuProfile && errorString)
+        *profile = cpuProfile.release();
+        if (!profile->get() && errorString)
             *errorString = "Profile is not found";
     }
     m_frontendInitiatedProfileId = String();
@@ -271,13 +266,13 @@ void V8ProfilerAgentImpl::startProfiling(const String& title)
     m_isolate->GetCpuProfiler()->StartProfiling(toV8String(m_isolate, title), true);
 }
 
-PassRefPtr<protocol::TypeBuilder::Profiler::CPUProfile> V8ProfilerAgentImpl::stopProfiling(const String& title, bool serialize)
+PassOwnPtr<protocol::Profiler::CPUProfile> V8ProfilerAgentImpl::stopProfiling(const String& title, bool serialize)
 {
     v8::HandleScope handleScope(m_isolate);
     v8::CpuProfile* profile = m_isolate->GetCpuProfiler()->StopProfiling(toV8String(m_isolate, title));
     if (!profile)
         return nullptr;
-    RefPtr<protocol::TypeBuilder::Profiler::CPUProfile> result;
+    OwnPtr<protocol::Profiler::CPUProfile> result;
     if (serialize)
         result = createCPUProfile(m_isolate, profile);
     profile->Delete();

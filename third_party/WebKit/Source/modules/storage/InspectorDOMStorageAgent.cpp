@@ -107,14 +107,14 @@ void InspectorDOMStorageAgent::disable(ErrorString*)
         controller->setInspectorAgent(nullptr);
 }
 
-void InspectorDOMStorageAgent::getDOMStorageItems(ErrorString* errorString, const RefPtr<JSONObject>& storageId, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Array<String>>>& items)
+void InspectorDOMStorageAgent::getDOMStorageItems(ErrorString* errorString, PassOwnPtr<protocol::DOMStorage::StorageId> storageId, OwnPtr<protocol::Array<protocol::Array<String>>>* items)
 {
     LocalFrame* frame;
     StorageArea* storageArea = findStorageArea(errorString, storageId, frame);
     if (!storageArea)
         return;
 
-    RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Array<String>>> storageItems = protocol::TypeBuilder::Array<protocol::TypeBuilder::Array<String>>::create();
+    OwnPtr<protocol::Array<protocol::Array<String>>> storageItems = protocol::Array<protocol::Array<String>>::create();
 
     TrackExceptionState exceptionState;
     for (unsigned i = 0; i < storageArea->length(exceptionState, frame); ++i) {
@@ -124,12 +124,12 @@ void InspectorDOMStorageAgent::getDOMStorageItems(ErrorString* errorString, cons
         String value(storageArea->getItem(name, exceptionState, frame));
         if (hadException(exceptionState, errorString))
             return;
-        RefPtr<protocol::TypeBuilder::Array<String>> entry = protocol::TypeBuilder::Array<String>::create();
+        OwnPtr<protocol::Array<String>> entry = protocol::Array<String>::create();
         entry->addItem(name);
         entry->addItem(value);
-        storageItems->addItem(entry);
+        storageItems->addItem(entry.release());
     }
-    items = storageItems.release();
+    *items = storageItems.release();
 }
 
 static String toErrorString(ExceptionState& exceptionState)
@@ -139,7 +139,7 @@ static String toErrorString(ExceptionState& exceptionState)
     return "";
 }
 
-void InspectorDOMStorageAgent::setDOMStorageItem(ErrorString* errorString, const RefPtr<JSONObject>& storageId, const String& key, const String& value)
+void InspectorDOMStorageAgent::setDOMStorageItem(ErrorString* errorString, PassOwnPtr<protocol::DOMStorage::StorageId> storageId, const String& key, const String& value)
 {
     LocalFrame* frame;
     StorageArea* storageArea = findStorageArea(0, storageId, frame);
@@ -153,7 +153,7 @@ void InspectorDOMStorageAgent::setDOMStorageItem(ErrorString* errorString, const
     *errorString = toErrorString(exceptionState);
 }
 
-void InspectorDOMStorageAgent::removeDOMStorageItem(ErrorString* errorString, const RefPtr<JSONObject>& storageId, const String& key)
+void InspectorDOMStorageAgent::removeDOMStorageItem(ErrorString* errorString, PassOwnPtr<protocol::DOMStorage::StorageId> storageId, const String& key)
 {
     LocalFrame* frame;
     StorageArea* storageArea = findStorageArea(0, storageId, frame);
@@ -167,11 +167,11 @@ void InspectorDOMStorageAgent::removeDOMStorageItem(ErrorString* errorString, co
     *errorString = toErrorString(exceptionState);
 }
 
-PassRefPtr<protocol::TypeBuilder::DOMStorage::StorageId> InspectorDOMStorageAgent::storageId(SecurityOrigin* securityOrigin, bool isLocalStorage)
+PassOwnPtr<protocol::DOMStorage::StorageId> InspectorDOMStorageAgent::storageId(SecurityOrigin* securityOrigin, bool isLocalStorage)
 {
-    return protocol::TypeBuilder::DOMStorage::StorageId::create()
+    return protocol::DOMStorage::StorageId::create()
         .setSecurityOrigin(securityOrigin->toRawString())
-        .setIsLocalStorage(isLocalStorage).release();
+        .setIsLocalStorage(isLocalStorage).build();
 }
 
 void InspectorDOMStorageAgent::didDispatchDOMStorageEvent(const String& key, const String& oldValue, const String& newValue, StorageType storageType, SecurityOrigin* securityOrigin)
@@ -179,30 +179,28 @@ void InspectorDOMStorageAgent::didDispatchDOMStorageEvent(const String& key, con
     if (!frontend())
         return;
 
-    RefPtr<protocol::TypeBuilder::DOMStorage::StorageId> id = storageId(securityOrigin, storageType == LocalStorage);
+    OwnPtr<protocol::DOMStorage::StorageId> id = storageId(securityOrigin, storageType == LocalStorage);
 
     if (key.isNull())
-        frontend()->domStorageItemsCleared(id);
+        frontend()->domStorageItemsCleared(id.release());
     else if (newValue.isNull())
-        frontend()->domStorageItemRemoved(id, key);
+        frontend()->domStorageItemRemoved(id.release(), key);
     else if (oldValue.isNull())
-        frontend()->domStorageItemAdded(id, key, newValue);
+        frontend()->domStorageItemAdded(id.release(), key, newValue);
     else
-        frontend()->domStorageItemUpdated(id, key, oldValue, newValue);
+        frontend()->domStorageItemUpdated(id.release(), key, oldValue, newValue);
 }
 
-StorageArea* InspectorDOMStorageAgent::findStorageArea(ErrorString* errorString, const RefPtr<JSONObject>& storageId, LocalFrame*& targetFrame)
+StorageArea* InspectorDOMStorageAgent::findStorageArea(ErrorString* errorString, PassOwnPtr<protocol::DOMStorage::StorageId> storageId, LocalFrame*& targetFrame)
 {
-    String securityOrigin;
-    bool isLocalStorage = false;
-    bool success = storageId->getString("securityOrigin", &securityOrigin);
-    if (success)
-        success = storageId->getBoolean("isLocalStorage", &isLocalStorage);
-    if (!success) {
+    if (!storageId->hasSecurityOrigin() || !storageId->hasIsLocalStorage()) {
         if (errorString)
             *errorString = "Invalid storageId format";
         return nullptr;
     }
+
+    String securityOrigin = storageId->getSecurityOrigin();
+    bool isLocalStorage = storageId->getIsLocalStorage();
 
     if (!m_page->mainFrame()->isLocalFrame())
         return nullptr;

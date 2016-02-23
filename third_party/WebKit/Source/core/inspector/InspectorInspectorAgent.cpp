@@ -86,7 +86,7 @@ void InspectorInspectorAgent::evaluateForTestInFrontend(long callId, const Strin
     }
 }
 
-void InspectorInspectorAgent::inspect(PassRefPtr<protocol::TypeBuilder::Runtime::RemoteObject> objectToInspect, PassRefPtr<JSONObject> hints)
+void InspectorInspectorAgent::inspect(PassOwnPtr<protocol::Runtime::RemoteObject> objectToInspect, PassRefPtr<JSONObject> hints)
 {
     if (frontend() && m_state->booleanProperty(InspectorAgentState::inspectorAgentEnabled, false))
         frontend()->inspect(objectToInspect, hints);

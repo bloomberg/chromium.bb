@@ -61,17 +61,17 @@ private:
     explicit InspectorDOMStorageAgent(Page*);
 
     // InspectorBaseAgent overrides.
-    void disable(ErrorString*) override;
     void restore() override;
 
     // protocol::Dispatcher::DOMStorageCommandHandler overrides.
     void enable(ErrorString*) override;
-    void getDOMStorageItems(ErrorString*, const RefPtr<JSONObject>& storageId, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Array<String>>>& items) override;
-    void setDOMStorageItem(ErrorString*, const RefPtr<JSONObject>& storageId, const String& key, const String& value) override;
-    void removeDOMStorageItem(ErrorString*, const RefPtr<JSONObject>& storageId, const String& key) override;
+    void disable(ErrorString*) override;
+    void getDOMStorageItems(ErrorString*, PassOwnPtr<protocol::DOMStorage::StorageId> in_storageId, OwnPtr<protocol::Array<protocol::Array<String>>>* out_entries) override;
+    void setDOMStorageItem(ErrorString*, PassOwnPtr<protocol::DOMStorage::StorageId> in_storageId, const String& in_key, const String& in_value) override;
+    void removeDOMStorageItem(ErrorString*, PassOwnPtr<protocol::DOMStorage::StorageId> in_storageId, const String& in_key) override;
 
-    StorageArea* findStorageArea(ErrorString*, const RefPtr<JSONObject>&, LocalFrame*&);
-    PassRefPtr<protocol::TypeBuilder::DOMStorage::StorageId> storageId(SecurityOrigin*, bool isLocalStorage);
+    StorageArea* findStorageArea(ErrorString*, PassOwnPtr<protocol::DOMStorage::StorageId>, LocalFrame*&);
+    PassOwnPtr<protocol::DOMStorage::StorageId> storageId(SecurityOrigin*, bool isLocalStorage);
 
     RawPtrWillBeMember<Page> m_page;
     bool m_isEnabled;

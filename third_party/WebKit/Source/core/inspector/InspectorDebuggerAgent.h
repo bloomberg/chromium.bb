@@ -36,6 +36,8 @@
 
 namespace blink {
 
+using protocol::Array;
+
 class CORE_EXPORT InspectorDebuggerAgent
     : public InspectorBaseAgent<InspectorDebuggerAgent, protocol::Frontend::Debugger>
     , public protocol::Dispatcher::DebuggerCommandHandler {
@@ -46,39 +48,39 @@ public:
     // protocol::Dispatcher::DebuggerCommandHandler implementation.
     void enable(ErrorString*) override;
     void disable(ErrorString*) override;
-    void setBreakpointsActive(ErrorString*, bool inActive) override;
-    void setSkipAllPauses(ErrorString*, bool inSkipped) override;
-    void setBreakpointByUrl(ErrorString*, int inLineNumber, const String* inUrl, const String* inUrlRegex, const int* inColumnNumber, const String* inCondition, protocol::TypeBuilder::Debugger::BreakpointId* outBreakpointId, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::Location>>& outLocations) override;
-    void setBreakpoint(ErrorString*, const RefPtr<JSONObject>& inLocation, const String* inCondition, protocol::TypeBuilder::Debugger::BreakpointId* outBreakpointId, RefPtr<protocol::TypeBuilder::Debugger::Location>& outActualLocation) override;
-    void removeBreakpoint(ErrorString*, const String& inBreakpointId) override;
-    void continueToLocation(ErrorString*, const RefPtr<JSONObject>& inLocation, const bool* inInterstatementLocation) override;
+    void setBreakpointsActive(ErrorString*, bool active) override;
+    void setSkipAllPauses(ErrorString*, bool skipped) override;
+    void setBreakpointByUrl(ErrorString*, int lineNumber, const OptionalValue<String>& url, const OptionalValue<String>& urlRegex, const OptionalValue<int>& columnNumber, const OptionalValue<String>& condition, String* breakpointId, OwnPtr<protocol::Array<protocol::Debugger::Location>>* locations) override;
+    void setBreakpoint(ErrorString*, PassOwnPtr<protocol::Debugger::Location>, const OptionalValue<String>& condition, String* breakpointId, OwnPtr<protocol::Debugger::Location>* actualLocation) override;
+    void removeBreakpoint(ErrorString*, const String& breakpointId) override;
+    void continueToLocation(ErrorString*, PassOwnPtr<protocol::Debugger::Location>, const OptionalValue<bool>& interstatementLocation) override;
     void stepOver(ErrorString*) override;
     void stepInto(ErrorString*) override;
     void stepOut(ErrorString*) override;
     void pause(ErrorString*) override;
     void resume(ErrorString*) override;
     void stepIntoAsync(ErrorString*) override;
-    void searchInContent(ErrorString*, const String& inScriptId, const String& inQuery, const bool* inCaseSensitive, const bool* inIsRegex, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::SearchMatch>>& outResult) override;
-    void canSetScriptSource(ErrorString*, bool* outResult) override;
-    void setScriptSource(ErrorString*, const String& inScriptId, const String& inScriptSource, const bool* inPreview, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::CallFrame>>& optOutCallFrames, protocol::TypeBuilder::OptOutput<bool>* optOutStackChanged, RefPtr<protocol::TypeBuilder::Debugger::StackTrace>& optOutAsyncStackTrace, RefPtr<protocol::TypeBuilder::Debugger::SetScriptSourceError>& optOutCompileError) override;
-    void restartFrame(ErrorString*, const String& inCallFrameId, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::CallFrame>>& outCallFrames, RefPtr<protocol::TypeBuilder::Debugger::StackTrace>& optOutAsyncStackTrace) override;
-    void getScriptSource(ErrorString*, const String& inScriptId, String* outScriptSource) override;
-    void getFunctionDetails(ErrorString*, const String& inFunctionId, RefPtr<protocol::TypeBuilder::Debugger::FunctionDetails>& outDetails) override;
-    void getGeneratorObjectDetails(ErrorString*, const String& inObjectId, RefPtr<protocol::TypeBuilder::Debugger::GeneratorObjectDetails>& outDetails) override;
-    void getCollectionEntries(ErrorString*, const String& inObjectId, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::CollectionEntry>>& outEntries) override;
-    void setPauseOnExceptions(ErrorString*, const String& inState) override;
-    void evaluateOnCallFrame(ErrorString*, const String& inCallFrameId, const String& inExpression, const String* inObjectGroup, const bool* inIncludeCommandLineAPI, const bool* inDoNotPauseOnExceptionsAndMuteConsole, const bool* inReturnByValue, const bool* inGeneratePreview, RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>& outResult, protocol::TypeBuilder::OptOutput<bool>* optOutWasThrown, RefPtr<protocol::TypeBuilder::Runtime::ExceptionDetails>& optOutExceptionDetails) override;
-    void setVariableValue(ErrorString*, int inScopeNumber, const String& inVariableName, const RefPtr<JSONObject>& inNewValue, const String* inCallFrameId, const String* inFunctionObjectId) override;
-    void getStepInPositions(ErrorString*, const String& inCallFrameId, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::Location>>& optOutStepInPositions) override;
-    void getBacktrace(ErrorString*, RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::CallFrame>>& outCallFrames, RefPtr<protocol::TypeBuilder::Debugger::StackTrace>& optOutAsyncStackTrace) override;
-    void setAsyncCallStackDepth(ErrorString*, int inMaxDepth) override;
-    void enablePromiseTracker(ErrorString*, const bool* inCaptureStacks) override;
+    void searchInContent(ErrorString*, const String& scriptId, const String& query, const OptionalValue<bool>& caseSensitive, const OptionalValue<bool>& isRegex, OwnPtr<protocol::Array<protocol::Debugger::SearchMatch>>* result) override;
+    void canSetScriptSource(ErrorString*, bool* result) override;
+    void setScriptSource(ErrorString*, const String& scriptId, const String& scriptSource, const OptionalValue<bool>& preview, OwnPtr<protocol::Array<protocol::Debugger::CallFrame>>* callFrames, OptionalValue<bool>* stackChanged, OwnPtr<protocol::Debugger::StackTrace>* asyncStackTrace, OwnPtr<protocol::Debugger::SetScriptSourceError>* compileError) override;
+    void restartFrame(ErrorString*, const String& callFrameId, OwnPtr<protocol::Array<protocol::Debugger::CallFrame>>* callFrames, OwnPtr<protocol::Debugger::StackTrace>* asyncStackTrace) override;
+    void getScriptSource(ErrorString*, const String& scriptId, String* scriptSource) override;
+    void getFunctionDetails(ErrorString*, const String& functionId, OwnPtr<protocol::Debugger::FunctionDetails>*) override;
+    void getGeneratorObjectDetails(ErrorString*, const String& objectId, OwnPtr<protocol::Debugger::GeneratorObjectDetails>*) override;
+    void getCollectionEntries(ErrorString*, const String& objectId, OwnPtr<protocol::Array<protocol::Debugger::CollectionEntry>>* entries) override;
+    void setPauseOnExceptions(ErrorString*, const String& state) override;
+    void evaluateOnCallFrame(ErrorString*, const String& callFrameId, const String& expression, const OptionalValue<String>& objectGroup, const OptionalValue<bool>& includeCommandLineAPI, const OptionalValue<bool>& doNotPauseOnExceptionsAndMuteConsole, const OptionalValue<bool>& returnByValue, const OptionalValue<bool>& generatePreview, OwnPtr<protocol::Runtime::RemoteObject>* result, OptionalValue<bool>* wasThrown, OwnPtr<protocol::Runtime::ExceptionDetails>*) override;
+    void setVariableValue(ErrorString*, int scopeNumber, const String& variableName, PassOwnPtr<protocol::Runtime::CallArgument> newValue, const OptionalValue<String>& callFrameId, const OptionalValue<String>& functionObjectId) override;
+    void getStepInPositions(ErrorString*, const String& callFrameId, OwnPtr<protocol::Array<protocol::Debugger::Location>>* stepInPositions) override;
+    void getBacktrace(ErrorString*, OwnPtr<protocol::Array<protocol::Debugger::CallFrame>>* callFrames, OwnPtr<protocol::Debugger::StackTrace>* asyncStackTrace) override;
+    void setAsyncCallStackDepth(ErrorString*, int maxDepth) override;
+    void enablePromiseTracker(ErrorString*, const OptionalValue<bool>& captureStacks) override;
     void disablePromiseTracker(ErrorString*) override;
-    void getPromiseById(ErrorString*, int inPromiseId, const String* inObjectGroup, RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>& outPromise) override;
+    void getPromiseById(ErrorString*, int promiseId, const OptionalValue<String>& objectGroup, OwnPtr<protocol::Runtime::RemoteObject>* promise) override;
     void flushAsyncOperationEvents(ErrorString*) override;
-    void setAsyncOperationBreakpoint(ErrorString*, int inOperationId) override;
-    void removeAsyncOperationBreakpoint(ErrorString*, int inOperationId) override;
-    void setBlackboxedRanges(ErrorString*, const String& inScriptId, const RefPtr<JSONArray>& inPositions) override;
+    void setAsyncOperationBreakpoint(ErrorString*, int operationId) override;
+    void removeAsyncOperationBreakpoint(ErrorString*, int operationId) override;
+    void setBlackboxedRanges(ErrorString*, const String& scriptId, PassOwnPtr<protocol::Array<protocol::Debugger::ScriptPosition>> positions) override;
 
     // Called by InspectorInstrumentation.
     bool isPaused();

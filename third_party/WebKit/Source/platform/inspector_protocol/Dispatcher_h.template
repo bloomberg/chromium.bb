@@ -1,0 +1,121 @@
+// This file is generated
+
+// Copyright (c) 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef {{class_name}}_h
+#define {{class_name}}_h
+
+#include "platform/inspector_protocol/TypeBuilder.h"
+
+namespace blink {
+namespace protocol {
+
+class FrontendChannel;
+class DispatcherImpl;
+using ErrorString = String;
+
+class PLATFORM_EXPORT Dispatcher: public RefCounted<Dispatcher> {
+public:
+    static PassRefPtr<Dispatcher> create(FrontendChannel* frontendChannel);
+    virtual ~Dispatcher() { }
+
+    class PLATFORM_EXPORT CallbackBase: public RefCounted<CallbackBase> {
+    public:
+        CallbackBase(PassRefPtr<DispatcherImpl> backendImpl, int sessionId, int id);
+        virtual ~CallbackBase();
+        void sendFailure(const ErrorString&);
+        bool isActive();
+
+    protected:
+        void sendIfActive(PassRefPtr<JSONObject> partialMessage, const ErrorString& invocationError, PassRefPtr<JSONValue> errorData);
+
+    private:
+        void disable() { m_alreadySent = true; }
+
+        RefPtr<DispatcherImpl> m_backendImpl;
+        int m_sessionId;
+        int m_id;
+        bool m_alreadySent;
+
+        friend class DispatcherImpl;
+    };
+
+{% for domain in api.domains %}
+    class PLATFORM_EXPORT {{domain.domain}}CommandHandler {
+    public:
+  {% for command in domain.commands %}
+    {% if "redirect" in command %}{% continue %}{% endif %}
+    {% if ("handlers" in command) and not ("renderer" in command["handlers"]) %}{% continue %}{% endif %}
+    {% if "async" in command %}
+        class PLATFORM_EXPORT {{command.name | to_title_case}}Callback : public CallbackBase {
+        public:
+            {{command.name | to_title_case}}Callback(PassRefPtr<DispatcherImpl>, int sessionId, int id);
+            void sendSuccess(
+            {%- for parameter in command.returns -%}
+              {%- if "optional" in parameter -%}
+                {{resolve_type(parameter).optional_pass_type}} {{parameter.name}}
+              {%- else -%}
+                {{resolve_type(parameter).pass_type}} {{parameter.name}}
+              {%- endif -%}
+              {%- if not loop.last -%}, {% endif -%}
+            {%- endfor -%}
+            );
+        };
+    {% endif %}
+        virtual void {{command.name}}(ErrorString*
+    {%- for parameter in command.parameters -%}
+        {%- if "optional" in parameter -%}
+            , {{resolve_type(parameter).optional_pass_type}} in_{{parameter.name}}
+        {%- else -%}
+            , {{resolve_type(parameter).pass_type}} in_{{parameter.name}}
+        {%- endif -%}
+    {%- endfor -%}
+    {%- if "async" in command -%}
+            , PassRefPtr<{{command.name | to_title_case}}Callback> callback
+    {%- else -%}
+      {%- for parameter in command.returns -%}
+        {%- if "optional" in parameter -%}
+            , {{resolve_type(parameter).optional_type}}* out_{{parameter.name}}
+        {%- else -%}
+            , {{resolve_type(parameter).type}}* out_{{parameter.name}}
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endif -%}
+        ) = 0;
+  {% endfor %}
+
+    protected:
+        virtual ~{{domain.domain}}CommandHandler() { }
+    };
+{% endfor %}
+
+{% for domain in api.domains %}
+    virtual void registerAgent({{domain.domain | to_title_case}}CommandHandler*) = 0;
+{% endfor %}
+
+    virtual void clearFrontend() = 0;
+
+    enum CommonErrorCode {
+        ParseError = 0,
+        InvalidRequest,
+        MethodNotFound,
+        InvalidParams,
+        InternalError,
+        ServerError,
+        LastEntry,
+    };
+
+    void reportProtocolError(int sessionId, int callId, CommonErrorCode, const String& errorMessage) const;
+    virtual void reportProtocolError(int sessionId, int callId, CommonErrorCode, const String& errorMessage, PassRefPtr<JSONValue> data) const = 0;
+    virtual void dispatch(int sessionId, const String& message) = 0;
+    static bool getCommandName(const String& message, String* result);
+};
+
+} // namespace protocol
+} // namespace blink
+
+using blink::protocol::ErrorString;
+
+#endif // !defined({{class_name}}_h)

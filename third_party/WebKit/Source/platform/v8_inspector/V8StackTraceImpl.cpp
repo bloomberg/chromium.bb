@@ -73,15 +73,15 @@ V8StackTraceImpl::Frame::~Frame()
 
 // buildInspectorObject() and ScriptCallStack's toTracedValue() should set the same fields.
 // If either of them is modified, the other should be also modified.
-PassRefPtr<protocol::TypeBuilder::Runtime::CallFrame> V8StackTraceImpl::Frame::buildInspectorObject() const
+PassOwnPtr<protocol::Runtime::CallFrame> V8StackTraceImpl::Frame::buildInspectorObject() const
 {
-    return protocol::TypeBuilder::Runtime::CallFrame::create()
+    return protocol::Runtime::CallFrame::create()
         .setFunctionName(m_functionName)
         .setScriptId(m_scriptId)
         .setUrl(m_scriptName)
         .setLineNumber(m_lineNumber)
         .setColumnNumber(m_columnNumber)
-        .release();
+        .build();
 }
 
 PassOwnPtr<V8StackTraceImpl> V8StackTraceImpl::create(V8DebuggerAgentImpl* agent, v8::Local<v8::StackTrace> stackTrace, size_t maxStackSize)
@@ -157,19 +157,19 @@ String V8StackTraceImpl::topScriptId() const
     return m_frames[0].m_scriptId;
 }
 
-PassRefPtr<protocol::TypeBuilder::Runtime::StackTrace> V8StackTraceImpl::buildInspectorObject() const
+PassOwnPtr<protocol::Runtime::StackTrace> V8StackTraceImpl::buildInspectorObject() const
 {
-    RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Runtime::CallFrame>> frames = protocol::TypeBuilder::Array<protocol::TypeBuilder::Runtime::CallFrame>::create();
+    OwnPtr<protocol::Array<protocol::Runtime::CallFrame>> frames = protocol::Array<protocol::Runtime::CallFrame>::create();
     for (size_t i = 0; i < m_frames.size(); i++)
         frames->addItem(m_frames.at(i).buildInspectorObject());
 
-    RefPtr<protocol::TypeBuilder::Runtime::StackTrace> stackTrace = protocol::TypeBuilder::Runtime::StackTrace::create()
-        .setCallFrames(frames.release());
+    OwnPtr<protocol::Runtime::StackTrace> stackTrace = protocol::Runtime::StackTrace::create()
+        .setCallFrames(frames.release()).build();
     if (!m_description.isEmpty())
         stackTrace->setDescription(m_description);
     if (m_parent)
         stackTrace->setParent(m_parent->buildInspectorObject());
-    return stackTrace;
+    return stackTrace.release();
 }
 
 String V8StackTraceImpl::toString() const

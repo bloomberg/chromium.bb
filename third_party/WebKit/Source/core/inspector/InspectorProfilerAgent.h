@@ -74,7 +74,7 @@ public:
     void disable(ErrorString*) override;
     void setSamplingInterval(ErrorString*, int) override;
     void start(ErrorString*) override;
-    void stop(ErrorString*, RefPtr<protocol::TypeBuilder::Profiler::CPUProfile>&) override;
+    void stop(ErrorString*, OwnPtr<protocol::Profiler::CPUProfile>*) override;
 
     void willProcessTask();
     void didProcessTask();

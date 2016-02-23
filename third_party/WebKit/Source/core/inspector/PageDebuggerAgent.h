@@ -34,9 +34,9 @@
 #include "core/CoreExport.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
 
-using blink::protocol::TypeBuilder::Runtime::ExceptionDetails;
-using blink::protocol::TypeBuilder::Runtime::ScriptId;
-using blink::protocol::TypeBuilder::Runtime::RemoteObject;
+using blink::protocol::Runtime::ExceptionDetails;
+using blink::protocol::Runtime::ScriptId;
+using blink::protocol::Runtime::RemoteObject;
 
 namespace blink {
 

@@ -107,7 +107,7 @@ void InspectorConsoleAgent::addMessageToConsole(ConsoleMessage* consoleMessage)
         return;
     if (!m_debuggerAgent || !m_debuggerAgent->enabled())
         return;
-    m_debuggerAgent->breakProgramOnException(protocol::Frontend::Debugger::Reason::Assert, nullptr);
+    m_debuggerAgent->breakProgramOnException(protocol::Debugger::Paused::ReasonEnum::Assert, nullptr);
 }
 
 void InspectorConsoleAgent::clearAllMessages()
@@ -122,54 +122,54 @@ void InspectorConsoleAgent::consoleMessagesCleared()
     frontend()->messagesCleared();
 }
 
-static protocol::TypeBuilder::Console::ConsoleMessage::Source::Enum messageSourceValue(MessageSource source)
+static String messageSourceValue(MessageSource source)
 {
     switch (source) {
-    case XMLMessageSource: return protocol::TypeBuilder::Console::ConsoleMessage::Source::Xml;
-    case JSMessageSource: return protocol::TypeBuilder::Console::ConsoleMessage::Source::Javascript;
-    case NetworkMessageSource: return protocol::TypeBuilder::Console::ConsoleMessage::Source::Network;
-    case ConsoleAPIMessageSource: return protocol::TypeBuilder::Console::ConsoleMessage::Source::Console_api;
-    case StorageMessageSource: return protocol::TypeBuilder::Console::ConsoleMessage::Source::Storage;
-    case AppCacheMessageSource: return protocol::TypeBuilder::Console::ConsoleMessage::Source::Appcache;
-    case RenderingMessageSource: return protocol::TypeBuilder::Console::ConsoleMessage::Source::Rendering;
-    case SecurityMessageSource: return protocol::TypeBuilder::Console::ConsoleMessage::Source::Security;
-    case OtherMessageSource: return protocol::TypeBuilder::Console::ConsoleMessage::Source::Other;
-    case DeprecationMessageSource: return protocol::TypeBuilder::Console::ConsoleMessage::Source::Deprecation;
+    case XMLMessageSource: return protocol::Console::ConsoleMessage::SourceEnum::Xml;
+    case JSMessageSource: return protocol::Console::ConsoleMessage::SourceEnum::Javascript;
+    case NetworkMessageSource: return protocol::Console::ConsoleMessage::SourceEnum::Network;
+    case ConsoleAPIMessageSource: return protocol::Console::ConsoleMessage::SourceEnum::ConsoleApi;
+    case StorageMessageSource: return protocol::Console::ConsoleMessage::SourceEnum::Storage;
+    case AppCacheMessageSource: return protocol::Console::ConsoleMessage::SourceEnum::Appcache;
+    case RenderingMessageSource: return protocol::Console::ConsoleMessage::SourceEnum::Rendering;
+    case SecurityMessageSource: return protocol::Console::ConsoleMessage::SourceEnum::Security;
+    case OtherMessageSource: return protocol::Console::ConsoleMessage::SourceEnum::Other;
+    case DeprecationMessageSource: return protocol::Console::ConsoleMessage::SourceEnum::Deprecation;
     }
-    return protocol::TypeBuilder::Console::ConsoleMessage::Source::Other;
+    return protocol::Console::ConsoleMessage::SourceEnum::Other;
 }
 
 
-static protocol::TypeBuilder::Console::ConsoleMessage::Type::Enum messageTypeValue(MessageType type)
+static String messageTypeValue(MessageType type)
 {
     switch (type) {
-    case LogMessageType: return protocol::TypeBuilder::Console::ConsoleMessage::Type::Log;
-    case ClearMessageType: return protocol::TypeBuilder::Console::ConsoleMessage::Type::Clear;
-    case DirMessageType: return protocol::TypeBuilder::Console::ConsoleMessage::Type::Dir;
-    case DirXMLMessageType: return protocol::TypeBuilder::Console::ConsoleMessage::Type::Dirxml;
-    case TableMessageType: return protocol::TypeBuilder::Console::ConsoleMessage::Type::Table;
-    case TraceMessageType: return protocol::TypeBuilder::Console::ConsoleMessage::Type::Trace;
-    case StartGroupMessageType: return protocol::TypeBuilder::Console::ConsoleMessage::Type::StartGroup;
-    case StartGroupCollapsedMessageType: return protocol::TypeBuilder::Console::ConsoleMessage::Type::StartGroupCollapsed;
-    case EndGroupMessageType: return protocol::TypeBuilder::Console::ConsoleMessage::Type::EndGroup;
-    case AssertMessageType: return protocol::TypeBuilder::Console::ConsoleMessage::Type::Assert;
-    case TimeEndMessageType: return protocol::TypeBuilder::Console::ConsoleMessage::Type::Log;
-    case CountMessageType: return protocol::TypeBuilder::Console::ConsoleMessage::Type::Log;
+    case LogMessageType: return protocol::Console::ConsoleMessage::TypeEnum::Log;
+    case ClearMessageType: return protocol::Console::ConsoleMessage::TypeEnum::Clear;
+    case DirMessageType: return protocol::Console::ConsoleMessage::TypeEnum::Dir;
+    case DirXMLMessageType: return protocol::Console::ConsoleMessage::TypeEnum::Dirxml;
+    case TableMessageType: return protocol::Console::ConsoleMessage::TypeEnum::Table;
+    case TraceMessageType: return protocol::Console::ConsoleMessage::TypeEnum::Trace;
+    case StartGroupMessageType: return protocol::Console::ConsoleMessage::TypeEnum::StartGroup;
+    case StartGroupCollapsedMessageType: return protocol::Console::ConsoleMessage::TypeEnum::StartGroupCollapsed;
+    case EndGroupMessageType: return protocol::Console::ConsoleMessage::TypeEnum::EndGroup;
+    case AssertMessageType: return protocol::Console::ConsoleMessage::TypeEnum::Assert;
+    case TimeEndMessageType: return protocol::Console::ConsoleMessage::TypeEnum::Log;
+    case CountMessageType: return protocol::Console::ConsoleMessage::TypeEnum::Log;
     }
-    return protocol::TypeBuilder::Console::ConsoleMessage::Type::Log;
+    return protocol::Console::ConsoleMessage::TypeEnum::Log;
 }
 
-static protocol::TypeBuilder::Console::ConsoleMessage::Level::Enum messageLevelValue(MessageLevel level)
+static String messageLevelValue(MessageLevel level)
 {
     switch (level) {
-    case DebugMessageLevel: return protocol::TypeBuilder::Console::ConsoleMessage::Level::Debug;
-    case LogMessageLevel: return protocol::TypeBuilder::Console::ConsoleMessage::Level::Log;
-    case WarningMessageLevel: return protocol::TypeBuilder::Console::ConsoleMessage::Level::Warning;
-    case ErrorMessageLevel: return protocol::TypeBuilder::Console::ConsoleMessage::Level::Error;
-    case InfoMessageLevel: return protocol::TypeBuilder::Console::ConsoleMessage::Level::Info;
-    case RevokedErrorMessageLevel: return protocol::TypeBuilder::Console::ConsoleMessage::Level::RevokedError;
+    case DebugMessageLevel: return protocol::Console::ConsoleMessage::LevelEnum::Debug;
+    case LogMessageLevel: return protocol::Console::ConsoleMessage::LevelEnum::Log;
+    case WarningMessageLevel: return protocol::Console::ConsoleMessage::LevelEnum::Warning;
+    case ErrorMessageLevel: return protocol::Console::ConsoleMessage::LevelEnum::Error;
+    case InfoMessageLevel: return protocol::Console::ConsoleMessage::LevelEnum::Info;
+    case RevokedErrorMessageLevel: return protocol::Console::ConsoleMessage::LevelEnum::RevokedError;
     }
-    return protocol::TypeBuilder::Console::ConsoleMessage::Level::Log;
+    return protocol::Console::ConsoleMessage::LevelEnum::Log;
 }
 
 void InspectorConsoleAgent::sendConsoleMessageToFrontend(ConsoleMessage* consoleMessage, bool generatePreview)
@@ -177,11 +177,11 @@ void InspectorConsoleAgent::sendConsoleMessageToFrontend(ConsoleMessage* console
     if (consoleMessage->workerGlobalScopeProxy())
         return;
 
-    RefPtr<protocol::TypeBuilder::Console::ConsoleMessage> jsonObj = protocol::TypeBuilder::Console::ConsoleMessage::create()
+    OwnPtr<protocol::Console::ConsoleMessage> jsonObj = protocol::Console::ConsoleMessage::create()
         .setSource(messageSourceValue(consoleMessage->source()))
         .setLevel(messageLevelValue(consoleMessage->level()))
         .setText(consoleMessage->message())
-        .setTimestamp(consoleMessage->timestamp());
+        .setTimestamp(consoleMessage->timestamp()).build();
     // FIXME: only send out type for ConsoleAPI source messages.
     jsonObj->setType(messageTypeValue(consoleMessage->type()));
     jsonObj->setLine(static_cast<int>(consoleMessage->lineNumber()));
@@ -198,27 +198,27 @@ void InspectorConsoleAgent::sendConsoleMessageToFrontend(ConsoleMessage* console
     if (arguments && arguments->argumentCount()) {
         ScriptState::Scope scope(arguments->scriptState());
         v8::Local<v8::Context> context = arguments->scriptState()->context();
-        RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Runtime::RemoteObject>> jsonArgs = protocol::TypeBuilder::Array<protocol::TypeBuilder::Runtime::RemoteObject>::create();
+        OwnPtr<protocol::Array<protocol::Runtime::RemoteObject>> jsonArgs = protocol::Array<protocol::Runtime::RemoteObject>::create();
         if (consoleMessage->type() == TableMessageType && generatePreview) {
             v8::Local<v8::Value> table = arguments->argumentAt(0).v8Value();
             v8::Local<v8::Value> columns = arguments->argumentCount() > 1 ? arguments->argumentAt(1).v8Value() : v8::Local<v8::Value>();
-            RefPtr<protocol::TypeBuilder::Runtime::RemoteObject> inspectorValue = m_runtimeAgent->wrapTable(context, table, columns);
+            OwnPtr<protocol::Runtime::RemoteObject> inspectorValue = m_runtimeAgent->wrapTable(context, table, columns);
             if (inspectorValue)
-                jsonArgs->addItem(inspectorValue);
+                jsonArgs->addItem(inspectorValue.release());
             else
                 jsonArgs = nullptr;
         } else {
             for (unsigned i = 0; i < arguments->argumentCount(); ++i) {
-                RefPtr<protocol::TypeBuilder::Runtime::RemoteObject> inspectorValue = m_runtimeAgent->wrapObject(context, arguments->argumentAt(i).v8Value(), "console", generatePreview);
+                OwnPtr<protocol::Runtime::RemoteObject> inspectorValue = m_runtimeAgent->wrapObject(context, arguments->argumentAt(i).v8Value(), "console", generatePreview);
                 if (!inspectorValue) {
                     jsonArgs = nullptr;
                     break;
                 }
-                jsonArgs->addItem(inspectorValue);
+                jsonArgs->addItem(inspectorValue.release());
             }
         }
         if (jsonArgs)
-            jsonObj->setParameters(jsonArgs);
+            jsonObj->setParameters(jsonArgs.release());
     }
     if (consoleMessage->callStack())
         jsonObj->setStack(consoleMessage->callStack()->buildInspectorObject());
@@ -226,7 +226,7 @@ void InspectorConsoleAgent::sendConsoleMessageToFrontend(ConsoleMessage* console
         jsonObj->setMessageId(consoleMessage->messageId());
     if (consoleMessage->relatedMessageId())
         jsonObj->setRelatedMessageId(consoleMessage->relatedMessageId());
-    frontend()->messageAdded(jsonObj);
+    frontend()->messageAdded(jsonObj.release());
     frontend()->flush();
 }
 

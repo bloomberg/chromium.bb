@@ -118,12 +118,12 @@ Vector<std::pair<int, String>> scriptRegexpMatchesByLines(const V8Regex& regex, 
     return result;
 }
 
-PassRefPtr<protocol::TypeBuilder::Debugger::SearchMatch> buildObjectForSearchMatch(int lineNumber, const String& lineContent)
+PassOwnPtr<protocol::Debugger::SearchMatch> buildObjectForSearchMatch(int lineNumber, const String& lineContent)
 {
-    return protocol::TypeBuilder::Debugger::SearchMatch::create()
+    return protocol::Debugger::SearchMatch::create()
         .setLineNumber(lineNumber)
         .setLineContent(lineContent)
-        .release();
+        .build();
 }
 
 PassOwnPtr<V8Regex> createSearchRegex(V8DebuggerImpl* debugger, const String& query, bool caseSensitive, bool isRegex)
@@ -173,16 +173,16 @@ String findSourceMapURL(const String& content, bool multiline, bool* deprecated)
     return findMagicComment(content, "sourceMappingURL", multiline, deprecated);
 }
 
-PassRefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::SearchMatch>> searchInTextByLines(V8Debugger* debugger, const String& text, const String& query, const bool caseSensitive, const bool isRegex)
+PassOwnPtr<protocol::Array<protocol::Debugger::SearchMatch>> searchInTextByLines(V8Debugger* debugger, const String& text, const String& query, const bool caseSensitive, const bool isRegex)
 {
-    RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::SearchMatch>> result = protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::SearchMatch>::create();
+    OwnPtr<protocol::Array<protocol::Debugger::SearchMatch>> result = protocol::Array<protocol::Debugger::SearchMatch>::create();
     OwnPtr<V8Regex> regex = createSearchRegex(static_cast<V8DebuggerImpl*>(debugger), query, caseSensitive, isRegex);
     Vector<std::pair<int, String>> matches = scriptRegexpMatchesByLines(*regex.get(), text);
 
     for (const auto& match : matches)
         result->addItem(buildObjectForSearchMatch(match.first, match.second));
 
-    return result;
+    return result.release();
 }
 
 } // namespace V8ContentSearchUtil

@@ -1,0 +1,400 @@
+// This file is generated
+
+// Copyright (c) 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "platform/inspector_protocol/{{class_name}}.h"
+
+#include "platform/JSONParser.h"
+#include "platform/inspector_protocol/FrontendChannel.h"
+#include "wtf/text/CString.h"
+
+namespace blink {
+namespace protocol {
+
+using protocol::OptionalValue;
+
+class DispatcherImpl : public Dispatcher {
+public:
+    DispatcherImpl(FrontendChannel* frontendChannel)
+        : m_frontendChannel(frontendChannel)
+{% for domain in api.domains %}
+        , m_{{domain.domain | lower}}Agent(0)
+{% endfor %}
+    {
+{% for domain in api.domains %}
+  {% for command in domain.commands %}
+    {% if "redirect" in command %}{% continue %}{% endif %}
+    {% if "handlers" in command and not ("renderer" in command["handlers"]) %}{% continue %}{% endif %}
+        m_dispatchMap.add("{{domain.domain}}.{{command.name}}", &DispatcherImpl::{{domain.domain}}_{{command.name}});
+  {% endfor %}
+{% endfor %}
+
+        // Initialize common errors.
+        m_commonErrors.insert(ParseError, -32700);
+        m_commonErrors.insert(InvalidRequest, -32600);
+        m_commonErrors.insert(MethodNotFound, -32601);
+        m_commonErrors.insert(InvalidParams, -32602);
+        m_commonErrors.insert(InternalError, -32603);
+        m_commonErrors.insert(ServerError, -32000);
+    }
+
+    virtual void clearFrontend() { m_frontendChannel = 0; }
+    virtual void dispatch(int sessionId, const String& message);
+    virtual void reportProtocolError(int sessionId, int callId, CommonErrorCode, const String& errorMessage, PassRefPtr<JSONValue> data) const;
+    using Dispatcher::reportProtocolError;
+
+    void sendResponse(int sessionId, int callId, const ErrorString& invocationError, PassRefPtr<JSONValue> errorData, PassRefPtr<JSONObject> result);
+    bool isActive() { return m_frontendChannel; }
+
+{% for domain in api.domains %}
+    virtual void registerAgent({{domain.domain}}CommandHandler* agent) { ASSERT(!m_{{domain.domain | lower}}Agent); m_{{domain.domain | lower}}Agent = agent; }
+{% endfor %}
+
+private:
+    using CallHandler = void (DispatcherImpl::*)(int sessionId, int callId, JSONObject* messageObject, JSONArray* protocolErrors);
+    using DispatchMap = HashMap<String, CallHandler>;
+
+{% for domain in api.domains %}
+  {% for command in domain.commands %}
+    {% if "redirect" in command %}{% continue %}{% endif %}
+    {% if "handlers" in command and not ("renderer" in command["handlers"]) %}{% continue %}{% endif %}
+    void {{domain.domain}}_{{command.name}}(int sessionId, int callId, JSONObject* requestMessageObject, JSONArray* protocolErrors);
+  {% endfor %}
+{% endfor %}
+
+    FrontendChannel* m_frontendChannel;
+
+{% for domain in api.domains %}
+    {{domain.domain}}CommandHandler* m_{{domain.domain | lower}}Agent;
+{% endfor %}
+
+    template<typename R, typename V, typename V0>
+    static R getPropertyValueImpl(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors, V0 initial_value, bool (*as_method)(JSONValue*, V*), const char* type_name);
+
+    static OptionalValue<int> getInteger(JSONObject* object, const char* name, bool isOptional, JSONArray* protocolErrors);
+    static OptionalValue<double> getNumber(JSONObject* object, const char* name, bool isOptional, JSONArray* protocolErrors);
+    static OptionalValue<String> getString(JSONObject* object, const char* name, bool isOptional, JSONArray* protocolErrors);
+    static OptionalValue<bool> getBoolean(JSONObject* object, const char* name, bool isOptional, JSONArray* protocolErrors);
+    static PassRefPtr<JSONObject> getObject(JSONObject* object, const char* name, bool isOptional, JSONArray* protocolErrors);
+    static PassRefPtr<JSONArray> getArray(JSONObject* object, const char* name, bool isOptional, JSONArray* protocolErrors);
+
+    void sendResponse(int sessionId, int callId, ErrorString invocationError, PassRefPtr<JSONObject> result)
+    {
+        sendResponse(sessionId, callId, invocationError, RefPtr<JSONValue>(), result);
+    }
+
+    void sendResponse(int sessionId, int callId, ErrorString invocationError)
+    {
+        sendResponse(sessionId, callId, invocationError, RefPtr<JSONValue>(), JSONObject::create());
+    }
+
+    static const char InvalidParamsFormatString[];
+
+    DispatchMap m_dispatchMap;
+    Vector<int> m_commonErrors;
+};
+
+const char DispatcherImpl::InvalidParamsFormatString[] = "Some arguments of method '%s' can't be processed";
+{% for domain in api.domains %}
+  {% for command in domain.commands %}
+    {% if "redirect" in command %}{% continue %}{% endif %}
+    {% if "handlers" in command and not ("renderer" in command["handlers"]) %}{% continue %}{% endif %}
+
+    {% if "async" in command %}
+Dispatcher::{{domain.domain}}CommandHandler::{{command.name | to_title_case}}Callback::{{command.name | to_title_case}}Callback(PassRefPtr<DispatcherImpl> backendImpl, int sessionId, int id) : CallbackBase(backendImpl, sessionId, id) { }
+
+void Dispatcher::{{domain.domain}}CommandHandler::{{command.name | to_title_case}}Callback::sendSuccess(
+      {%- for parameter in command.returns -%}
+        {%- if "optional" in parameter -%}
+        {{resolve_type(parameter).optional_pass_type}} {{parameter.name}}
+        {%- else -%}
+        {{resolve_type(parameter).pass_type}} {{parameter.name}}
+        {%- endif -%}
+        {%- if not loop.last -%}, {% endif -%}
+      {% endfor %})
+{
+    RefPtr<JSONObject> resultObject = JSONObject::create();
+      {% for parameter in command.returns %}
+        {% if "optional" in parameter %}
+    {{resolve_type(parameter).optional_type}} opt_{{parameter.name}} = {{parameter.name}};
+    if (hasValue({{parameter.name}}))
+        resultObject->setValue("{{parameter.name}}", toValue({{resolve_type(parameter).from_optional_out % ("opt_" + parameter.name)}}));
+       {% else %}
+    resultObject->setValue("{{parameter.name}}", toValue({{parameter.name}}));
+        {% endif %}
+      {% endfor %}
+    sendIfActive(resultObject.release(), ErrorString(), PassRefPtr<JSONValue>());
+}
+    {% endif %}
+
+void DispatcherImpl::{{domain.domain}}_{{command.name}}(int sessionId, int callId, JSONObject* requestMessageObject, JSONArray* protocolErrors)
+{
+    if (!m_{{domain.domain | lower}}Agent)
+        protocolErrors->pushString("Inspector handler is not available.");
+
+    if (protocolErrors->length()) {
+        reportProtocolError(sessionId, callId, InvalidParams, String::format(InvalidParamsFormatString, "{{domain.domain}}.{{command.name}}"), protocolErrors);
+        return;
+    }
+
+    {% if "parameters" in command %}
+    // Prepare input parameters.
+    RefPtr<JSONObject> paramsContainer = requestMessageObject->getObject("params");
+    JSONObject* paramsContainerPtr = paramsContainer.get();
+      {% for property in command.parameters %}
+    {{resolve_type(property).optional_type}} in_{{property.name}} = {{resolve_type(property).json_getter % ("paramsContainerPtr, \"" + property.name + "\", " + ("true" if "optional" in property else "false") + ", protocolErrors")}};
+      {% endfor %}
+    {% endif %}
+
+    if (protocolErrors->length()) {
+        reportProtocolError(sessionId, callId, InvalidParams, String::format(InvalidParamsFormatString, "{{domain.domain}}.{{command.name}}"), protocolErrors);
+        return;
+    }
+
+    {% if "async" in command %}
+    RefPtr<{{domain.domain}}CommandHandler::{{command.name | to_title_case}}Callback> callback = adoptRef(new {{domain.domain}}CommandHandler::{{command.name | to_title_case}}Callback(this, sessionId, callId));
+    {% elif "returns" in command %}
+    // Declare output parameters.
+    RefPtr<JSONObject> result = JSONObject::create();
+      {% for property in command.returns %}
+        {% if "optional" in property %}
+    {{resolve_type(property).optional_type}} out_{{property.name}};
+        {% else %}
+    {{resolve_type(property).type}} out_{{property.name}};
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+
+    ErrorString error;
+    m_{{domain.domain | lower}}Agent->{{command.name}}(&error
+      {%- for property in command.parameters -%}
+        {%- if "optional" in property -%}
+        , {{resolve_type(property).to_pass_type % ("in_" + property.name)}}
+        {%- else -%}
+        , {{resolve_type(property).from_optional_out % ("in_" + property.name)}}
+        {%- endif -%}
+      {%- endfor %}
+      {%- if "async" in command -%}
+        , callback.release()
+      {%- elif "returns" in command %}
+        {%- for property in command.returns -%}
+          , &out_{{property.name}}
+        {%- endfor %}
+      {% endif %});
+    {% if "returns" in command and not("async" in command) %}
+    if (!error.length()) {
+      {% for parameter in command.returns %}
+        {% if "optional" in parameter %}
+        if (hasValue(out_{{parameter.name}}))
+            result->setValue("{{parameter.name}}", toValue({{resolve_type(parameter).from_optional_out % ("out_" + parameter.name)}}));
+        {% else %}
+        result->setValue("{{parameter.name}}", toValue(out_{{resolve_type(parameter).to_pass_type % parameter.name}}));
+        {% endif %}
+      {% endfor %}
+    }
+    sendResponse(sessionId, callId, error, result);
+    {% elif not("async" in command) %}
+    sendResponse(sessionId, callId, error);
+    {% endif %}
+}
+  {% endfor %}
+{% endfor %}
+
+PassRefPtr<Dispatcher> Dispatcher::create(FrontendChannel* frontendChannel)
+{
+    return adoptRef(new DispatcherImpl(frontendChannel));
+}
+
+void DispatcherImpl::dispatch(int sessionId, const String& message)
+{
+    RefPtr<Dispatcher> protect(this);
+    int callId = 0;
+    RefPtr<JSONValue> parsedMessage = parseJSON(message);
+    ASSERT(parsedMessage);
+    RefPtr<JSONObject> messageObject = parsedMessage->asObject();
+    ASSERT(messageObject);
+
+    RefPtr<JSONValue> callIdValue = messageObject->get("id");
+    bool success = callIdValue->asNumber(&callId);
+    ASSERT_UNUSED(success, success);
+
+    RefPtr<JSONValue> methodValue = messageObject->get("method");
+    String method;
+    success = methodValue && methodValue->asString(&method);
+    ASSERT_UNUSED(success, success);
+
+    HashMap<String, CallHandler>::iterator it = m_dispatchMap.find(method);
+    if (it == m_dispatchMap.end()) {
+        reportProtocolError(sessionId, callId, MethodNotFound, "'" + method + "' wasn't found");
+        return;
+    }
+
+    RefPtr<JSONArray> protocolErrors = JSONArray::create();
+    ((*this).*it->value)(sessionId, callId, messageObject.get(), protocolErrors.get());
+}
+
+void DispatcherImpl::sendResponse(int sessionId, int callId, const ErrorString& invocationError, PassRefPtr<JSONValue> errorData, PassRefPtr<JSONObject> result)
+{
+    if (invocationError.length()) {
+        reportProtocolError(sessionId, callId, ServerError, invocationError, errorData);
+        return;
+    }
+
+    RefPtr<JSONObject> responseMessage = JSONObject::create();
+    responseMessage->setNumber("id", callId);
+    responseMessage->setObject("result", result);
+    if (m_frontendChannel)
+        m_frontendChannel->sendProtocolResponse(sessionId, callId, responseMessage.release());
+}
+
+void Dispatcher::reportProtocolError(int sessionId, int callId, CommonErrorCode code, const String& errorMessage) const
+{
+    reportProtocolError(sessionId, callId, code, errorMessage, PassRefPtr<JSONValue>());
+}
+
+void DispatcherImpl::reportProtocolError(int sessionId, int callId, CommonErrorCode code, const String& errorMessage, PassRefPtr<JSONValue> data) const
+{
+    ASSERT(code >=0);
+    ASSERT((unsigned)code < m_commonErrors.size());
+    ASSERT(m_commonErrors[code]);
+    RefPtr<JSONObject> error = JSONObject::create();
+    error->setNumber("code", m_commonErrors[code]);
+    error->setString("message", errorMessage);
+    ASSERT(error);
+    if (data)
+        error->setValue("data", data);
+    RefPtr<JSONObject> message = JSONObject::create();
+    message->setObject("error", error);
+    message->setNumber("id", callId);
+    if (m_frontendChannel)
+        m_frontendChannel->sendProtocolResponse(sessionId, callId, message.release());
+}
+
+template<typename R, typename V, typename V0>
+R DispatcherImpl::getPropertyValueImpl(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors, V0 initial_value, bool (*as_method)(JSONValue*, V*), const char* type_name)
+{
+    ASSERT(protocolErrors);
+
+    if (valueFound)
+        *valueFound = false;
+
+    V value = initial_value;
+
+    if (!object) {
+        if (!valueFound) {
+            // Required parameter in missing params container.
+            protocolErrors->pushString(String::format("'params' object must contain required parameter '%s' with type '%s'.", name, type_name));
+        }
+        return value;
+    }
+
+    JSONObject::const_iterator end = object->end();
+    JSONObject::const_iterator valueIterator = object->find(name);
+
+    if (valueIterator == end) {
+        if (!valueFound)
+            protocolErrors->pushString(String::format("Parameter '%s' with type '%s' was not found.", name, type_name));
+        return value;
+    }
+
+    if (!as_method(valueIterator->value.get(), &value))
+        protocolErrors->pushString(String::format("Parameter '%s' has wrong type. It must be '%s'.", name, type_name));
+    else
+        if (valueFound)
+            *valueFound = true;
+    return value;
+}
+
+struct AsMethodBridges {
+    static bool asInteger(JSONValue* value, int* output) { return value->asNumber(output); }
+    static bool asNumber(JSONValue* value, double* output) { return value->asNumber(output); }
+    static bool asString(JSONValue* value, String* output) { return value->asString(output); }
+    static bool asBoolean(JSONValue* value, bool* output) { return value->asBoolean(output); }
+    static bool asObject(JSONValue* value, RefPtr<JSONObject>* output) { return value->asObject(output); }
+    static bool asArray(JSONValue* value, RefPtr<JSONArray>* output) { return value->asArray(output); }
+};
+
+OptionalValue<int> DispatcherImpl::getInteger(JSONObject* object, const char* name, bool isOptional, JSONArray* protocolErrors)
+{
+    bool valueFound = false;
+    int result = getPropertyValueImpl<int, int, int>(object, name, isOptional ? &valueFound : 0, protocolErrors, 0, AsMethodBridges::asInteger, "Number");
+    return valueFound || !isOptional ? OptionalValue<int>(result) : OptionalValue<int>();
+}
+
+OptionalValue<double> DispatcherImpl::getNumber(JSONObject* object, const char* name, bool isOptional, JSONArray* protocolErrors)
+{
+    bool valueFound = false;
+    double result = getPropertyValueImpl<double, double, double>(object, name, isOptional ? &valueFound : 0, protocolErrors, 0, AsMethodBridges::asNumber, "Number");
+    return valueFound || !isOptional ? OptionalValue<double>(result) : OptionalValue<double>();
+}
+
+OptionalValue<String> DispatcherImpl::getString(JSONObject* object, const char* name, bool isOptional, JSONArray* protocolErrors)
+{
+    bool valueFound = false;
+    String result = getPropertyValueImpl<String, String, String>(object, name, isOptional ? &valueFound : 0, protocolErrors, "", AsMethodBridges::asString, "String");
+    return valueFound || !isOptional ? OptionalValue<String>(result) : OptionalValue<String>();
+}
+
+OptionalValue<bool> DispatcherImpl::getBoolean(JSONObject* object, const char* name, bool isOptional, JSONArray* protocolErrors)
+{
+    bool valueFound = false;
+    bool result = getPropertyValueImpl<bool, bool, bool>(object, name, isOptional ? &valueFound : 0, protocolErrors, false, AsMethodBridges::asBoolean, "Boolean");
+    return valueFound || !isOptional ? OptionalValue<bool>(result) : OptionalValue<bool>();
+}
+
+PassRefPtr<JSONObject> DispatcherImpl::getObject(JSONObject* object, const char* name, bool isOptional, JSONArray* protocolErrors)
+{
+    bool valueFound = false;
+    return getPropertyValueImpl<PassRefPtr<JSONObject>, RefPtr<JSONObject>, JSONObject*>(object, name, isOptional ? &valueFound : 0, protocolErrors, 0, AsMethodBridges::asObject, "Object");
+}
+
+PassRefPtr<JSONArray> DispatcherImpl::getArray(JSONObject* object, const char* name, bool isOptional, JSONArray* protocolErrors)
+{
+    bool valueFound = false;
+    return getPropertyValueImpl<PassRefPtr<JSONArray>, RefPtr<JSONArray>, JSONArray*>(object, name, isOptional ? &valueFound : 0, protocolErrors, 0, AsMethodBridges::asArray, "Array");
+}
+
+bool Dispatcher::getCommandName(const String& message, String* result)
+{
+    RefPtr<JSONValue> value = parseJSON(message);
+    if (!value)
+        return false;
+
+    RefPtr<JSONObject> object = value->asObject();
+    if (!object)
+        return false;
+
+    if (!object->getString("method", result))
+        return false;
+
+    return true;
+}
+
+Dispatcher::CallbackBase::CallbackBase(PassRefPtr<DispatcherImpl> backendImpl, int sessionId, int id)
+    : m_backendImpl(backendImpl), m_sessionId(sessionId), m_id(id), m_alreadySent(false) { }
+
+Dispatcher::CallbackBase::~CallbackBase() { }
+
+void Dispatcher::CallbackBase::sendFailure(const ErrorString& error)
+{
+    ASSERT(error.length());
+    sendIfActive(nullptr, error, PassRefPtr<JSONValue>());
+}
+
+bool Dispatcher::CallbackBase::isActive()
+{
+    return !m_alreadySent && m_backendImpl->isActive();
+}
+
+void Dispatcher::CallbackBase::sendIfActive(PassRefPtr<JSONObject> partialMessage, const ErrorString& invocationError, PassRefPtr<JSONValue> errorData)
+{
+    if (m_alreadySent)
+        return;
+    m_backendImpl->sendResponse(m_sessionId, m_id, invocationError, errorData, partialMessage);
+    m_alreadySent = true;
+}
+
+} // namespace protocol
+} // namespace blink

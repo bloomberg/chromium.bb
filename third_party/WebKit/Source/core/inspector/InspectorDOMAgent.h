@@ -102,13 +102,12 @@ public:
     }
 
     static String toErrorString(ExceptionState&);
-    static bool getPseudoElementType(PseudoId, protocol::TypeBuilder::DOM::PseudoType::Enum*);
+    static bool getPseudoElementType(PseudoId, String*);
     static ShadowRoot* userAgentShadowRoot(Node*);
 
     ~InspectorDOMAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
-    void disable(ErrorString*) override;
     void restore() override;
 
     WillBeHeapVector<RawPtrWillBeMember<Document>> documents();
@@ -116,45 +115,45 @@ public:
 
     // Methods called from the frontend for DOM nodes inspection.
     void enable(ErrorString*) override;
-    void querySelector(ErrorString*, int nodeId, const String& selectors, int* elementId) override;
-    void querySelectorAll(ErrorString*, int nodeId, const String& selectors, RefPtr<protocol::TypeBuilder::Array<int>>& result) override;
-    void getDocument(ErrorString*, RefPtr<protocol::TypeBuilder::DOM::Node>& root) override;
-    void requestChildNodes(ErrorString*, int nodeId, const int* depth) override;
-    void setAttributeValue(ErrorString*, int elementId, const String& name, const String& value) override;
-    void setAttributesAsText(ErrorString*, int elementId, const String& text, const String* name) override;
-    void removeAttribute(ErrorString*, int elementId, const String& name) override;
-    void removeNode(ErrorString*, int nodeId) override;
-    void setNodeName(ErrorString*, int nodeId, const String& name, int* newId) override;
-    void getOuterHTML(ErrorString*, int nodeId, WTF::String* outerHTML) override;
-    void setOuterHTML(ErrorString*, int nodeId, const String& outerHTML) override;
+    void disable(ErrorString*) override;
+    void getDocument(ErrorString*, OwnPtr<protocol::DOM::Node>* root) override;
+    void requestChildNodes(ErrorString*, int nodeId, const OptionalValue<int>& depth) override;
+    void querySelector(ErrorString*, int nodeId, const String& selector, int* outNodeId) override;
+    void querySelectorAll(ErrorString*, int nodeId, const String& selector, OwnPtr<protocol::Array<int>>* nodeIds) override;
+    void setNodeName(ErrorString*, int nodeId, const String& name, int* outNodeId) override;
     void setNodeValue(ErrorString*, int nodeId, const String& value) override;
-    void performSearch(ErrorString*, const String& whitespaceTrimmedQuery, const bool* includeUserAgentShadowDOM, String* searchId, int* resultCount) override;
-    void getSearchResults(ErrorString*, const String& searchId, int fromIndex, int toIndex, RefPtr<protocol::TypeBuilder::Array<int>>&) override;
+    void removeNode(ErrorString*, int nodeId) override;
+    void setAttributeValue(ErrorString*, int nodeId, const String& name, const String& value) override;
+    void setAttributesAsText(ErrorString*, int nodeId, const String& text, const OptionalValue<String>& name) override;
+    void removeAttribute(ErrorString*, int nodeId, const String& name) override;
+    void getOuterHTML(ErrorString*, int nodeId, String* outerHTML) override;
+    void setOuterHTML(ErrorString*, int nodeId, const String& outerHTML) override;
+    void performSearch(ErrorString*, const String& query, const OptionalValue<bool>& includeUserAgentShadowDOM, String* searchId, int* resultCount) override;
+    void getSearchResults(ErrorString*, const String& searchId, int fromIndex, int toIndex, OwnPtr<protocol::Array<int>>* nodeIds) override;
     void discardSearchResults(ErrorString*, const String& searchId) override;
-    void resolveNode(ErrorString*, int nodeId, const String* objectGroup, RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>& result) override;
-    void getAttributes(ErrorString*, int nodeId, RefPtr<protocol::TypeBuilder::Array<String>>& result) override;
-    void setInspectMode(ErrorString*, const String&, const RefPtr<JSONObject>* highlightConfig) override;
-    void requestNode(ErrorString*, const String& objectId, int* nodeId) override;
-    void pushNodeByPathToFrontend(ErrorString*, const String& path, int* nodeId) override;
-    void pushNodesByBackendIdsToFrontend(ErrorString*, const RefPtr<JSONArray>& nodeIds, RefPtr<protocol::TypeBuilder::Array<int>>&) override;
-    void setInspectedNode(ErrorString*, int nodeId) override;
+    void requestNode(ErrorString*, const String& objectId, int* outNodeId) override;
+    void setInspectMode(ErrorString*, const String& mode, PassOwnPtr<protocol::DOM::HighlightConfig>) override;
+    void highlightRect(ErrorString*, int x, int y, int width, int height, PassOwnPtr<protocol::DOM::RGBA> color, PassOwnPtr<protocol::DOM::RGBA> outlineColor) override;
+    void highlightQuad(ErrorString*, PassOwnPtr<protocol::Array<double>> quad, PassOwnPtr<protocol::DOM::RGBA> color, PassOwnPtr<protocol::DOM::RGBA> outlineColor) override;
+    void highlightNode(ErrorString*, PassOwnPtr<protocol::DOM::HighlightConfig>, const OptionalValue<int>& nodeId, const OptionalValue<int>& backendNodeId, const OptionalValue<String>& objectId) override;
     void hideHighlight(ErrorString*) override;
-    void highlightRect(ErrorString*, int x, int y, int width, int height, const RefPtr<JSONObject>* color, const RefPtr<JSONObject>* outlineColor) override;
-    void highlightQuad(ErrorString*, const RefPtr<JSONArray>& quad, const RefPtr<JSONObject>* color, const RefPtr<JSONObject>* outlineColor) override;
-    void highlightNode(ErrorString*, const RefPtr<JSONObject>& highlightConfig, const int* nodeId, const int* backendNodeId, const String* objectId) override;
-    void highlightFrame(ErrorString*, const String& frameId, const RefPtr<JSONObject>* color, const RefPtr<JSONObject>* outlineColor) override;
-
-    void copyTo(ErrorString*, int nodeId, int targetElementId, const int* anchorNodeId, int* newNodeId) override;
-    void moveTo(ErrorString*, int nodeId, int targetNodeId, const int* anchorNodeId, int* newNodeId) override;
+    void highlightFrame(ErrorString*, const String& frameId, PassOwnPtr<protocol::DOM::RGBA> contentColor, PassOwnPtr<protocol::DOM::RGBA> contentOutlineColor) override;
+    void pushNodeByPathToFrontend(ErrorString*, const String& path, int* outNodeId) override;
+    void pushNodesByBackendIdsToFrontend(ErrorString*, PassOwnPtr<protocol::Array<int>> backendNodeIds, OwnPtr<protocol::Array<int>>* nodeIds) override;
+    void setInspectedNode(ErrorString*, int nodeId) override;
+    void resolveNode(ErrorString*, int nodeId, const OptionalValue<String>& objectGroup, OwnPtr<protocol::Runtime::RemoteObject>*) override;
+    void getAttributes(ErrorString*, int nodeId, OwnPtr<protocol::Array<String>>* attributes) override;
+    void copyTo(ErrorString*, int nodeId, int targetNodeId, const OptionalValue<int>& insertBeforeNodeId, int* outNodeId) override;
+    void moveTo(ErrorString*, int nodeId, int targetNodeId, const OptionalValue<int>& insertBeforeNodeId, int* outNodeId) override;
     void undo(ErrorString*) override;
     void redo(ErrorString*) override;
     void markUndoableState(ErrorString*) override;
     void focus(ErrorString*, int nodeId) override;
-    void setFileInputFiles(ErrorString*, int nodeId, const RefPtr<JSONArray>& files) override;
-    void getBoxModel(ErrorString*, int nodeId, RefPtr<protocol::TypeBuilder::DOM::BoxModel>&) override;
-    void getNodeForLocation(ErrorString*, int x, int y, int* nodeId) override;
-    void getRelayoutBoundary(ErrorString*, int nodeId, int* relayoutBoundaryNodeId) override;
-    void getHighlightObjectForTest(ErrorString*, int nodeId, RefPtr<JSONObject>&) override;
+    void setFileInputFiles(ErrorString*, int nodeId, PassOwnPtr<protocol::Array<String>> files) override;
+    void getBoxModel(ErrorString*, int nodeId, OwnPtr<protocol::DOM::BoxModel>*) override;
+    void getNodeForLocation(ErrorString*, int x, int y, int* outNodeId) override;
+    void getRelayoutBoundary(ErrorString*, int nodeId, int* outNodeId) override;
+    void getHighlightObjectForTest(ErrorString*, int nodeId, RefPtr<JSONObject>* highlight) override;
 
     bool enabled() const;
     void releaseDanglingNodes();
@@ -185,7 +184,7 @@ public:
 
     static String documentURLString(Document*);
 
-    PassRefPtr<protocol::TypeBuilder::Runtime::RemoteObject> resolveNode(Node*, const String& objectGroup);
+    PassOwnPtr<protocol::Runtime::RemoteObject> resolveNode(Node*, const String& objectGroup);
 
     InspectorHistory* history() { return m_history.get(); }
 
@@ -208,8 +207,8 @@ private:
     void setDocument(Document*);
     void innerEnable();
 
-    void setSearchingForNode(ErrorString*, SearchMode, JSONObject* highlightConfig);
-    PassOwnPtr<InspectorHighlightConfig> highlightConfigFromInspectorObject(ErrorString*, JSONObject* highlightInspectorObject);
+    void setSearchingForNode(ErrorString*, SearchMode, PassOwnPtr<protocol::DOM::HighlightConfig>);
+    PassOwnPtr<InspectorHighlightConfig> highlightConfigFromInspectorObject(ErrorString*, PassOwnPtr<protocol::DOM::HighlightConfig> highlightInspectorObject);
 
     // Node-related methods.
     typedef WillBeHeapHashMap<RefPtrWillBeMember<Node>, int> NodeToIdMap;
@@ -226,18 +225,18 @@ private:
 
     void invalidateFrameOwnerElement(LocalFrame*);
 
-    PassRefPtr<protocol::TypeBuilder::DOM::Node> buildObjectForNode(Node*, int depth, NodeToIdMap*);
-    PassRefPtr<protocol::TypeBuilder::Array<String>> buildArrayForElementAttributes(Element*);
-    PassRefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::Node>> buildArrayForContainerChildren(Node* container, int depth, NodeToIdMap* nodesMap);
-    PassRefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::Node>> buildArrayForPseudoElements(Element*, NodeToIdMap* nodesMap);
-    PassRefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::DOM::BackendNode>> buildArrayForDistributedNodes(InsertionPoint*);
+    PassOwnPtr<protocol::DOM::Node> buildObjectForNode(Node*, int depth, NodeToIdMap*);
+    PassOwnPtr<protocol::Array<String>> buildArrayForElementAttributes(Element*);
+    PassOwnPtr<protocol::Array<protocol::DOM::Node>> buildArrayForContainerChildren(Node* container, int depth, NodeToIdMap* nodesMap);
+    PassOwnPtr<protocol::Array<protocol::DOM::Node>> buildArrayForPseudoElements(Element*, NodeToIdMap* nodesMap);
+    PassOwnPtr<protocol::Array<protocol::DOM::BackendNode>> buildArrayForDistributedNodes(InsertionPoint*);
 
     Node* nodeForPath(const String& path);
     Node* nodeForRemoteId(ErrorString*, const String& id);
 
     void discardFrontendBindings();
 
-    void innerHighlightQuad(PassOwnPtr<FloatQuad>, const RefPtr<JSONObject>* color, const RefPtr<JSONObject>* outlineColor);
+    void innerHighlightQuad(PassOwnPtr<FloatQuad>, PassOwnPtr<protocol::DOM::RGBA> color, PassOwnPtr<protocol::DOM::RGBA> outlineColor);
 
     bool pushDocumentUponHandlelessOperation(ErrorString*);
 

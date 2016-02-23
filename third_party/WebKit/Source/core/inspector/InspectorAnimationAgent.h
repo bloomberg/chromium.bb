@@ -33,26 +33,24 @@ public:
 
     // Base agent methods.
     void restore() override;
-    void disable(ErrorString*) override;
     void didCommitLoadForLocalFrame(LocalFrame*) override;
 
     // Protocol method implementations
+    void enable(ErrorString*) override;
+    void disable(ErrorString*) override;
     void getPlaybackRate(ErrorString*, double* playbackRate) override;
     void setPlaybackRate(ErrorString*, double playbackRate) override;
-    void getCurrentTime(ErrorString*, const String& animationId, double* currentTime) override;
-    void setPaused(ErrorString*, const RefPtr<JSONArray>& animationIds, bool paused) override;
+    void getCurrentTime(ErrorString*, const String& id, double* currentTime) override;
+    void setPaused(ErrorString*, PassOwnPtr<protocol::Array<String>> animations, bool paused) override;
     void setTiming(ErrorString*, const String& animationId, double duration, double delay) override;
-    void seekAnimations(ErrorString*, const RefPtr<JSONArray>& animationIds, double currentTime) override;
-    void resolveAnimation(ErrorString*, const String& animationId, RefPtr<protocol::TypeBuilder::Runtime::RemoteObject>& result) override;
-    void releaseAnimations(ErrorString*, const RefPtr<JSONArray>& animationIds) override;
+    void seekAnimations(ErrorString*, PassOwnPtr<protocol::Array<String>> animations, double currentTime) override;
+    void releaseAnimations(ErrorString*, PassOwnPtr<protocol::Array<String>> animations) override;
+    void resolveAnimation(ErrorString*, const String& animationId, OwnPtr<protocol::Runtime::RemoteObject>*) override;
 
     // API for InspectorInstrumentation
     void didCreateAnimation(unsigned);
     void animationPlayStateChanged(Animation*, Animation::AnimationPlayState, Animation::AnimationPlayState);
     void didClearDocumentOfWindowObject(LocalFrame*);
-
-    // API for InspectorFrontend
-    void enable(ErrorString*) override;
 
     // Methods for other agents to use.
     Animation* assertAnimation(ErrorString*, const String& id);
@@ -62,10 +60,10 @@ public:
 private:
     InspectorAnimationAgent(InspectedFrames*, InspectorDOMAgent*, InspectorCSSAgent*, V8RuntimeAgent*);
 
-    typedef protocol::TypeBuilder::Animation::Animation::Type::Enum AnimationType;
+    using AnimationType = protocol::Animation::Animation::TypeEnum;
 
-    PassRefPtr<protocol::TypeBuilder::Animation::Animation> buildObjectForAnimation(Animation&);
-    PassRefPtr<protocol::TypeBuilder::Animation::Animation> buildObjectForAnimation(Animation&, AnimationType, PassRefPtr<protocol::TypeBuilder::Animation::KeyframesRule> keyframeRule = nullptr);
+    PassOwnPtr<protocol::Animation::Animation> buildObjectForAnimation(Animation&);
+    PassOwnPtr<protocol::Animation::Animation> buildObjectForAnimation(Animation&, String, PassOwnPtr<protocol::Animation::KeyframesRule> keyframeRule = nullptr);
     double normalizedStartTime(Animation&);
     AnimationTimeline& referenceTimeline();
     Animation* animationClone(Animation*);
@@ -77,7 +75,7 @@ private:
     V8RuntimeAgent* m_runtimeAgent;
     PersistentHeapHashMapWillBeHeapHashMap<String, Member<Animation>> m_idToAnimation;
     PersistentHeapHashMapWillBeHeapHashMap<String, Member<Animation>> m_idToAnimationClone;
-    WillBeHeapHashMap<String, AnimationType> m_idToAnimationType;
+    WillBeHeapHashMap<String, String> m_idToAnimationType;
     bool m_isCloning;
     HashSet<String> m_clearedAnimations;
 };

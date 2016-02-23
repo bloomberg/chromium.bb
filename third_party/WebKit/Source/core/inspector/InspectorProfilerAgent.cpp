@@ -123,7 +123,7 @@ void InspectorProfilerAgent::start(ErrorString* error)
         m_client->profilingStarted();
 }
 
-void InspectorProfilerAgent::stop(ErrorString* errorString, RefPtr<protocol::TypeBuilder::Profiler::CPUProfile>& profile)
+void InspectorProfilerAgent::stop(ErrorString* errorString, OwnPtr<protocol::Profiler::CPUProfile>* profile)
 {
     if (m_client)
         m_client->profilingStopped();

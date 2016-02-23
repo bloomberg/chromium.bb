@@ -35,7 +35,7 @@ public:
     virtual String topFunctionName() const = 0;
 
     virtual ~V8StackTrace() { }
-    virtual PassRefPtr<protocol::TypeBuilder::Runtime::StackTrace> buildInspectorObject() const = 0;
+    virtual PassOwnPtr<protocol::Runtime::StackTrace> buildInspectorObject() const = 0;
     virtual String toString() const = 0;
 };
 

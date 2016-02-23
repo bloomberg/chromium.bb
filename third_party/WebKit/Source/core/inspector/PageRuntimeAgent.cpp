@@ -42,7 +42,7 @@
 #include "platform/v8_inspector/public/V8RuntimeAgent.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
-using blink::protocol::TypeBuilder::Runtime::ExceptionDetails;
+using blink::protocol::Runtime::ExceptionDetails;
 
 namespace blink {
 

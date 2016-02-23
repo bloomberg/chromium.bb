@@ -54,6 +54,8 @@ class TextResourceDecoder;
 
 typedef String ErrorString;
 
+using blink::protocol::OptionalValue;
+
 class CORE_EXPORT InspectorPageAgent final : public InspectorBaseAgent<InspectorPageAgent, protocol::Frontend::Page>, public protocol::Dispatcher::PageCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorPageAgent);
 public:
@@ -61,7 +63,7 @@ public:
     public:
         virtual ~Client() { }
         virtual void pageLayoutInvalidated() { }
-        virtual void setPausedInDebuggerMessage(const String*) { }
+        virtual void setPausedInDebuggerMessage(const String&) { }
         virtual void waitForCreateWindow(LocalFrame*) { }
     };
 
@@ -89,25 +91,26 @@ public:
 
     static PassRefPtr<SharedBuffer> resourceData(LocalFrame*, const KURL&, String* textEncodingName);
     static Resource* cachedResource(LocalFrame*, const KURL&);
-    static protocol::TypeBuilder::Page::ResourceType::Enum resourceTypeJson(ResourceType);
+    static String resourceTypeJson(ResourceType);
     static ResourceType cachedResourceType(const Resource&);
-    static protocol::TypeBuilder::Page::ResourceType::Enum cachedResourceTypeJson(const Resource&);
+    static String cachedResourceTypeJson(const Resource&);
     static PassOwnPtr<TextResourceDecoder> createResourceTextDecoder(const String& mimeType, const String& textEncodingName);
 
     // Page API for InspectorFrontend
     void enable(ErrorString*) override;
-    void addScriptToEvaluateOnLoad(ErrorString*, const String& source, String* result) override;
+    void disable(ErrorString*) override;
+    void addScriptToEvaluateOnLoad(ErrorString*, const String& scriptSource, String* identifier) override;
     void removeScriptToEvaluateOnLoad(ErrorString*, const String& identifier) override;
     void setAutoAttachToCreatedPages(ErrorString*, bool autoAttach) override;
-    void reload(ErrorString*, const bool* optionalIgnoreCache, const String* optionalScriptToEvaluateOnLoad) override;
+    void reload(ErrorString*, const OptionalValue<bool>& ignoreCache, const OptionalValue<String>& scriptToEvaluateOnLoad) override;
     void navigate(ErrorString*, const String& url, String* frameId) override;
-    void getResourceTree(ErrorString*, RefPtr<protocol::TypeBuilder::Page::FrameResourceTree>&) override;
+    void getResourceTree(ErrorString*, OwnPtr<protocol::Page::FrameResourceTree>* frameTree) override;
     void getResourceContent(ErrorString*, const String& frameId, const String& url, PassRefPtr<GetResourceContentCallback>) override;
-    void searchInResource(ErrorString*, const String& frameId, const String& url, const String& query, const bool* optionalCaseSensitive, const bool* optionalIsRegex, PassRefPtr<SearchInResourceCallback>) override;
+    void searchInResource(ErrorString*, const String& frameId, const String& url, const String& query, const OptionalValue<bool>& caseSensitive, const OptionalValue<bool>& isRegex, PassRefPtr<SearchInResourceCallback>) override;
     void setDocumentContent(ErrorString*, const String& frameId, const String& html) override;
-    void startScreencast(ErrorString*, const String* format, const int* quality, const int* maxWidth, const int* maxHeight, const int* everyNthFrame) override;
+    void startScreencast(ErrorString*, const OptionalValue<String>& format, const OptionalValue<int>& quality, const OptionalValue<int>& maxWidth, const OptionalValue<int>& maxHeight, const OptionalValue<int>& everyNthFrame) override;
     void stopScreencast(ErrorString*) override;
-    void setOverlayMessage(ErrorString*, const String*) override;
+    void setOverlayMessage(ErrorString*, const OptionalValue<String>& message) override;
 
     // InspectorInstrumentation API
     void didClearDocumentOfWindowObject(LocalFrame*);
@@ -128,7 +131,6 @@ public:
     void windowCreated(LocalFrame*);
 
     // Inspector Controller API
-    void disable(ErrorString*) override;
     void restore() override;
     bool screencastEnabled();
 
@@ -143,8 +145,8 @@ private:
 
     static bool dataContent(const char* data, unsigned size, const String& textEncodingName, bool withBase64Encode, String* result);
 
-    PassRefPtr<protocol::TypeBuilder::Page::Frame> buildObjectForFrame(LocalFrame*);
-    PassRefPtr<protocol::TypeBuilder::Page::FrameResourceTree> buildObjectForFrameTree(LocalFrame*);
+    PassOwnPtr<protocol::Page::Frame> buildObjectForFrame(LocalFrame*);
+    PassOwnPtr<protocol::Page::FrameResourceTree> buildObjectForFrameTree(LocalFrame*);
     RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
     RawPtrWillBeMember<InspectorDebuggerAgent> m_debuggerAgent;
     Client* m_client;

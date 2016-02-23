@@ -94,19 +94,19 @@ String frameId(LocalFrame* frame)
     return frame ? IdentifiersFactory::frameId(frame) : "";
 }
 
-protocol::TypeBuilder::Page::DialogType::Enum dialogTypeToProtocol(ChromeClient::DialogType dialogType)
+String dialogTypeToProtocol(ChromeClient::DialogType dialogType)
 {
     switch (dialogType) {
     case ChromeClient::AlertDialog:
-        return protocol::TypeBuilder::Page::DialogType::Alert;
+        return protocol::Page::DialogTypeEnum::Alert;
     case ChromeClient::ConfirmDialog:
-        return protocol::TypeBuilder::Page::DialogType::Confirm;
+        return protocol::Page::DialogTypeEnum::Confirm;
     case ChromeClient::PromptDialog:
-        return protocol::TypeBuilder::Page::DialogType::Prompt;
+        return protocol::Page::DialogTypeEnum::Prompt;
     case ChromeClient::HTMLDialog:
-        return protocol::TypeBuilder::Page::DialogType::Beforeunload;
+        return protocol::Page::DialogTypeEnum::Beforeunload;
     }
-    return protocol::TypeBuilder::Page::DialogType::Alert;
+    return protocol::Page::DialogTypeEnum::Alert;
 }
 
 } // namespace
@@ -278,37 +278,37 @@ Resource* InspectorPageAgent::cachedResource(LocalFrame* frame, const KURL& url)
     return cachedResource;
 }
 
-protocol::TypeBuilder::Page::ResourceType::Enum InspectorPageAgent::resourceTypeJson(InspectorPageAgent::ResourceType resourceType)
+String InspectorPageAgent::resourceTypeJson(InspectorPageAgent::ResourceType resourceType)
 {
     switch (resourceType) {
     case DocumentResource:
-        return protocol::TypeBuilder::Page::ResourceType::Document;
+        return protocol::Page::ResourceTypeEnum::Document;
     case FontResource:
-        return protocol::TypeBuilder::Page::ResourceType::Font;
+        return protocol::Page::ResourceTypeEnum::Font;
     case ImageResource:
-        return protocol::TypeBuilder::Page::ResourceType::Image;
+        return protocol::Page::ResourceTypeEnum::Image;
     case MediaResource:
-        return protocol::TypeBuilder::Page::ResourceType::Media;
+        return protocol::Page::ResourceTypeEnum::Media;
     case ScriptResource:
-        return protocol::TypeBuilder::Page::ResourceType::Script;
+        return protocol::Page::ResourceTypeEnum::Script;
     case StylesheetResource:
-        return protocol::TypeBuilder::Page::ResourceType::Stylesheet;
+        return protocol::Page::ResourceTypeEnum::Stylesheet;
     case TextTrackResource:
-        return protocol::TypeBuilder::Page::ResourceType::TextTrack;
+        return protocol::Page::ResourceTypeEnum::TextTrack;
     case XHRResource:
-        return protocol::TypeBuilder::Page::ResourceType::XHR;
+        return protocol::Page::ResourceTypeEnum::XHR;
     case FetchResource:
-        return protocol::TypeBuilder::Page::ResourceType::Fetch;
+        return protocol::Page::ResourceTypeEnum::Fetch;
     case EventSourceResource:
-        return protocol::TypeBuilder::Page::ResourceType::EventSource;
+        return protocol::Page::ResourceTypeEnum::EventSource;
     case WebSocketResource:
-        return protocol::TypeBuilder::Page::ResourceType::WebSocket;
+        return protocol::Page::ResourceTypeEnum::WebSocket;
     case ManifestResource:
-        return protocol::TypeBuilder::Page::ResourceType::Manifest;
+        return protocol::Page::ResourceTypeEnum::Manifest;
     case OtherResource:
-        return protocol::TypeBuilder::Page::ResourceType::Other;
+        return protocol::Page::ResourceTypeEnum::Other;
     }
-    return protocol::TypeBuilder::Page::ResourceType::Other;
+    return protocol::Page::ResourceTypeEnum::Other;
 }
 
 InspectorPageAgent::ResourceType InspectorPageAgent::cachedResourceType(const Resource& cachedResource)
@@ -340,7 +340,7 @@ InspectorPageAgent::ResourceType InspectorPageAgent::cachedResourceType(const Re
     return InspectorPageAgent::OtherResource;
 }
 
-protocol::TypeBuilder::Page::ResourceType::Enum InspectorPageAgent::cachedResourceTypeJson(const Resource& cachedResource)
+String InspectorPageAgent::cachedResourceTypeJson(const Resource& cachedResource)
 {
     return resourceTypeJson(cachedResourceType(cachedResource));
 }
@@ -416,13 +416,13 @@ void InspectorPageAgent::setAutoAttachToCreatedPages(ErrorString*, bool autoAtta
     m_state->setBoolean(PageAgentState::autoAttachToCreatedPages, autoAttach);
 }
 
-void InspectorPageAgent::reload(ErrorString*, const bool* const optionalIgnoreCache, const String* optionalScriptToEvaluateOnLoad)
+void InspectorPageAgent::reload(ErrorString*, const OptionalValue<bool>& optionalIgnoreCache, const OptionalValue<String>& optionalScriptToEvaluateOnLoad)
 {
-    m_pendingScriptToEvaluateOnLoadOnce = optionalScriptToEvaluateOnLoad ? *optionalScriptToEvaluateOnLoad : "";
+    m_pendingScriptToEvaluateOnLoadOnce = optionalScriptToEvaluateOnLoad.get("");
     ErrorString unused;
     m_debuggerAgent->setSkipAllPauses(&unused, true);
     m_reloading = true;
-    m_inspectedFrames->root()->reload(asBool(optionalIgnoreCache) ? FrameLoadTypeReloadFromOrigin : FrameLoadTypeReload, NotClientRedirect);
+    m_inspectedFrames->root()->reload(optionalIgnoreCache.get(false) ? FrameLoadTypeReloadFromOrigin : FrameLoadTypeReload, NotClientRedirect);
 }
 
 void InspectorPageAgent::navigate(ErrorString*, const String& url, String* outFrameId)
@@ -491,9 +491,9 @@ static WillBeHeapVector<RawPtrWillBeMember<Resource>> cachedResourcesForFrame(Lo
     return result;
 }
 
-void InspectorPageAgent::getResourceTree(ErrorString*, RefPtr<protocol::TypeBuilder::Page::FrameResourceTree>& object)
+void InspectorPageAgent::getResourceTree(ErrorString*, OwnPtr<protocol::Page::FrameResourceTree>* object)
 {
-    object = buildObjectForFrameTree(m_inspectedFrames->root());
+    *object = buildObjectForFrameTree(m_inspectedFrames->root());
 }
 
 void InspectorPageAgent::finishReload()
@@ -554,18 +554,18 @@ void InspectorPageAgent::searchContentAfterResourcesContentLoaded(const String& 
         return;
     }
 
-    RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Debugger::SearchMatch>> results;
+    OwnPtr<protocol::Array<protocol::Debugger::SearchMatch>> results;
     results = V8ContentSearchUtil::searchInTextByLines(m_debuggerAgent->debugger(), content, query, caseSensitive, isRegex);
-    callback->sendSuccess(results);
+    callback->sendSuccess(results.release());
 }
 
-void InspectorPageAgent::searchInResource(ErrorString*, const String& frameId, const String& url, const String& query, const bool* optionalCaseSensitive, const bool* optionalIsRegex, PassRefPtr<SearchInResourceCallback> callback)
+void InspectorPageAgent::searchInResource(ErrorString*, const String& frameId, const String& url, const String& query, const OptionalValue<bool>& optionalCaseSensitive, const OptionalValue<bool>& optionalIsRegex, PassRefPtr<SearchInResourceCallback> callback)
 {
     if (!m_enabled) {
         callback->sendFailure("Agent is not enabled.");
         return;
     }
-    m_inspectorResourceContentLoader->ensureResourcesContentLoaded(bind(&InspectorPageAgent::searchContentAfterResourcesContentLoaded, this, frameId, url, query, asBool(optionalCaseSensitive), asBool(optionalIsRegex), callback));
+    m_inspectorResourceContentLoader->ensureResourcesContentLoaded(bind(&InspectorPageAgent::searchContentAfterResourcesContentLoaded, this, frameId, url, query, optionalCaseSensitive.get(false), optionalIsRegex.get(false), callback));
 }
 
 void InspectorPageAgent::setDocumentContent(ErrorString* errorString, const String& frameId, const String& html)
@@ -702,14 +702,14 @@ void InspectorPageAgent::windowCreated(LocalFrame* created)
         m_client->waitForCreateWindow(created);
 }
 
-PassRefPtr<protocol::TypeBuilder::Page::Frame> InspectorPageAgent::buildObjectForFrame(LocalFrame* frame)
+PassOwnPtr<protocol::Page::Frame> InspectorPageAgent::buildObjectForFrame(LocalFrame* frame)
 {
-    RefPtr<protocol::TypeBuilder::Page::Frame> frameObject = protocol::TypeBuilder::Page::Frame::create()
+    OwnPtr<protocol::Page::Frame> frameObject = protocol::Page::Frame::create()
         .setId(frameId(frame))
         .setLoaderId(IdentifiersFactory::loaderId(frame->loader().documentLoader()))
         .setUrl(urlWithoutFragment(frame->document()->url()).string())
         .setMimeType(frame->loader().documentLoader()->responseMIMEType())
-        .setSecurityOrigin(frame->document()->securityOrigin()->toRawString());
+        .setSecurityOrigin(frame->document()->securityOrigin()->toRawString()).build();
     // FIXME: This doesn't work for OOPI.
     Frame* parentFrame = frame->tree().parent();
     if (parentFrame && parentFrame->isLocalFrame())
@@ -721,53 +721,53 @@ PassRefPtr<protocol::TypeBuilder::Page::Frame> InspectorPageAgent::buildObjectFo
         frameObject->setName(name);
     }
 
-    return frameObject;
+    return frameObject.release();
 }
 
-PassRefPtr<protocol::TypeBuilder::Page::FrameResourceTree> InspectorPageAgent::buildObjectForFrameTree(LocalFrame* frame)
+PassOwnPtr<protocol::Page::FrameResourceTree> InspectorPageAgent::buildObjectForFrameTree(LocalFrame* frame)
 {
-    RefPtr<protocol::TypeBuilder::Page::Frame> frameObject = buildObjectForFrame(frame);
-    RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Page::FrameResource>> subresources = protocol::TypeBuilder::Array<protocol::TypeBuilder::Page::FrameResource>::create();
-    RefPtr<protocol::TypeBuilder::Page::FrameResourceTree> result = protocol::TypeBuilder::Page::FrameResourceTree::create()
-        .setFrame(frameObject)
-        .setResources(subresources);
+    OwnPtr<protocol::Page::Frame> frameObject = buildObjectForFrame(frame);
+    OwnPtr<protocol::Array<protocol::Page::FrameResource>> subresources = protocol::Array<protocol::Page::FrameResource>::create();
 
     WillBeHeapVector<RawPtrWillBeMember<Resource>> allResources = cachedResourcesForFrame(frame, true);
     for (Resource* cachedResource : allResources) {
-        RefPtr<protocol::TypeBuilder::Page::FrameResource> resourceObject = protocol::TypeBuilder::Page::FrameResource::create()
+        OwnPtr<protocol::Page::FrameResource> resourceObject = protocol::Page::FrameResource::create()
             .setUrl(urlWithoutFragment(cachedResource->url()).string())
             .setType(cachedResourceTypeJson(*cachedResource))
-            .setMimeType(cachedResource->response().mimeType());
+            .setMimeType(cachedResource->response().mimeType()).build();
         if (cachedResource->wasCanceled())
             resourceObject->setCanceled(true);
         else if (cachedResource->status() == Resource::LoadError)
             resourceObject->setFailed(true);
-        subresources->addItem(resourceObject);
+        subresources->addItem(resourceObject.release());
     }
 
     WillBeHeapVector<RawPtrWillBeMember<Document>> allImports = InspectorPageAgent::importsForFrame(frame);
     for (Document* import : allImports) {
-        RefPtr<protocol::TypeBuilder::Page::FrameResource> resourceObject = protocol::TypeBuilder::Page::FrameResource::create()
+        OwnPtr<protocol::Page::FrameResource> resourceObject = protocol::Page::FrameResource::create()
             .setUrl(urlWithoutFragment(import->url()).string())
             .setType(resourceTypeJson(InspectorPageAgent::DocumentResource))
-            .setMimeType(import->suggestedMIMEType());
-        subresources->addItem(resourceObject);
+            .setMimeType(import->suggestedMIMEType()).build();
+        subresources->addItem(resourceObject.release());
     }
 
-    RefPtr<protocol::TypeBuilder::Array<protocol::TypeBuilder::Page::FrameResourceTree>> childrenArray;
+    OwnPtr<protocol::Page::FrameResourceTree> result = protocol::Page::FrameResourceTree::create()
+        .setFrame(frameObject.release())
+        .setResources(subresources.release()).build();
+
+    OwnPtr<protocol::Array<protocol::Page::FrameResourceTree>> childrenArray;
     for (Frame* child = frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (!child->isLocalFrame())
             continue;
-        if (!childrenArray) {
-            childrenArray = protocol::TypeBuilder::Array<protocol::TypeBuilder::Page::FrameResourceTree>::create();
-            result->setChildFrames(childrenArray);
-        }
+        if (!childrenArray)
+            childrenArray = protocol::Array<protocol::Page::FrameResourceTree>::create();
         childrenArray->addItem(buildObjectForFrameTree(toLocalFrame(child)));
     }
-    return result;
+    result->setChildFrames(childrenArray.release());
+    return result.release();
 }
 
-void InspectorPageAgent::startScreencast(ErrorString*, const String* format, const int* quality, const int* maxWidth, const int* maxHeight, const int* everyNthFrame)
+void InspectorPageAgent::startScreencast(ErrorString*, const OptionalValue<String>& format, const OptionalValue<int>& quality, const OptionalValue<int>& maxWidth, const OptionalValue<int>& maxHeight, const OptionalValue<int>& everyNthFrame)
 {
     m_state->setBoolean(PageAgentState::screencastEnabled, true);
 }
@@ -777,10 +777,10 @@ void InspectorPageAgent::stopScreencast(ErrorString*)
     m_state->setBoolean(PageAgentState::screencastEnabled, false);
 }
 
-void InspectorPageAgent::setOverlayMessage(ErrorString*, const String* message)
+void InspectorPageAgent::setOverlayMessage(ErrorString*, const OptionalValue<String>& message)
 {
     if (m_client)
-        m_client->setPausedInDebuggerMessage(message);
+        m_client->setPausedInDebuggerMessage(message.get(String()));
 }
 
 DEFINE_TRACE(InspectorPageAgent)
