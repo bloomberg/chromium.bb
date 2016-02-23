@@ -1,8 +1,8 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://md-settings/controls/settings_checkbox.html">
 <link rel="import" href="chrome://md-settings/search_engines_page/search_engines_page.html">
+<link rel="import" href="chrome://md-settings/search_engines_page/search_engines_browser_proxy.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_animated_pages.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_subheader.html">
 <link rel="import" href="chrome://md-settings/settings_shared_css.html">
@@ -16,16 +16,17 @@
       <neon-animatable id="main">
         <div class="settings-box first">
           <p class="start" i18n-content="searchExplanation"></p>
-          <select id="searchEnginesMenu"
-                on-change="defaultEngineGuidChanged_">
-            <template is="dom-repeat" items="[[searchEngines]]">
-              <option value="[[item.guid]]">[[item.name]]</option>
+          <select id="searchEnginesMenu" on-change="onDefaultEngineChanged_">
+            <template is="dom-repeat" items="[[searchEngines_]]">
+              <option selected$="[[item.default]]" value="[[item.modelIndex]]">
+                [[item.name]]
+              </option>
             </template>
           </select>
         </div>
         <div class="settings-box">
-          <paper-button class="link-button"
-              i18n-content="searchEnginesManage" on-tap="onSearchEnginesTap_">
+          <paper-button class="link-button" i18n-content="searchEnginesManage"
+              on-tap="onManageSearchEnginesTap_">
           </paper-button>
         </div>
       </neon-animatable>

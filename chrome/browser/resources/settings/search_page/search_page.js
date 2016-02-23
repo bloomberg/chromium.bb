@@ -6,13 +6,6 @@
  * @fileoverview
  * 'settings-search-page' is the settings page containing search settings.
  *
- * Example:
- *
- *    <iron-animated-pages>
- *      <settings-search-page prefs="{{prefs}}"></settings-search-page>
- *      ... other pages ...
- *    </iron-animated-pages>
- *
  * @group Chrome Settings Elements
  * @element settings-search-page
  */
@@ -30,56 +23,38 @@ Polymer({
 
     /**
      * List of default search engines available.
-     * @type {?Array<!SearchEngine>}
+     * @private {!Array<!SearchEngine>}
      */
-    searchEngines: {
+    searchEngines_: {
       type: Array,
-      value: function() { return []; },
+      value: function() { return []; }
     },
+
+    /** @private {!settings.SearchEnginesBrowserProxy} */
+    browserProxy_: Object,
   },
 
   /** @override */
   created: function() {
-    chrome.searchEnginesPrivate.onSearchEnginesChanged.addListener(
-        this.updateSearchEngines_.bind(this));
-    chrome.searchEnginesPrivate.getSearchEngines(
-        this.updateSearchEngines_.bind(this));
+    this.browserProxy_ = settings.SearchEnginesBrowserProxyImpl.getInstance();
   },
 
-  /**
-   * Persists the new default search engine back to Chrome. Called when the
-   * user selects a new default in the search engines dropdown.
-   * @private
-   */
-  defaultEngineGuidChanged_: function() {
-    chrome.searchEnginesPrivate.setSelectedSearchEngine(
-        this.$.searchEnginesMenu.value);
-  },
-
-
-  /**
-   * Updates the list of default search engines based on the given |engines|.
-   * @param {!Array<!SearchEngine>} engines All the search engines.
-   * @private
-   */
-  updateSearchEngines_: function(engines) {
-    var defaultEngines = [];
-
-    engines.forEach(function(engine) {
-      if (engine.type ==
-          chrome.searchEnginesPrivate.SearchEngineType.DEFAULT) {
-        defaultEngines.push(engine);
-        if (engine.isSelected) {
-          this.$.searchEnginesMenu.value = engine.guid;
-        }
-      }
-    }, this);
-
-    this.searchEngines = defaultEngines;
+  /** @override */
+  ready: function() {
+    var updateSearchEngines = function(searchEngines) {
+      this.set('searchEngines_', searchEngines.defaults);
+    }.bind(this);
+    this.browserProxy_.getSearchEnginesList().then(updateSearchEngines);
+    cr.addWebUIListener('search-engines-changed', updateSearchEngines);
   },
 
   /** @private */
-  onSearchEnginesTap_: function() {
+  onManageSearchEnginesTap_: function() {
     this.$.pages.setSubpageChain(['search-engines']);
+  },
+
+  /** @private */
+  onDefaultEngineChanged_: function() {
+    this.browserProxy_.setDefaultSearchEngine(this.$.searchEnginesMenu.value);
   },
 });
