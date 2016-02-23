@@ -21,6 +21,7 @@
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator_test_utils.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_client_config_parser.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
@@ -33,6 +34,7 @@
 #include "net/proxy/proxy_server.h"
 #include "net/socket/socket_test_util.h"
 #include "net/url_request/url_request_context_storage.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -132,8 +134,12 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
             .WithMockRequestOptions()
             .WithTestConfigClient()
             .Build();
+
     context_->set_client_socket_factory(mock_socket_factory_.get());
     test_context_->AttachToURLRequestContext(context_storage_.get());
+    delegate_ = test_context_->io_data()->CreateProxyDelegate();
+    context_->set_proxy_delegate(delegate_.get());
+
     context_->Init();
     ResetBackoffEntryReleaseTime();
     test_context_->test_config_client()->SetNow(base::Time::UnixEpoch());
@@ -143,11 +149,7 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     test_context_->test_config_client()->SetConfigServiceURL(
         GURL("http://configservice.com"));
 
-    delegate_.reset(
-        new DataReductionProxyDelegate(request_options(), config()));
-
     ASSERT_NE(nullptr, context_->network_delegate());
-
     // Set up the various test ClientConfigs.
     ClientConfig config =
         CreateConfig(kSuccessSessionKey, kConfigRefreshDurationSeconds, 0,

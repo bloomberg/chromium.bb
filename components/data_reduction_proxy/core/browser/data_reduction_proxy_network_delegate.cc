@@ -15,10 +15,8 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "components/data_reduction_proxy/core/common/lofi_decider.h"
 #include "net/base/load_flags.h"
-#include "net/base/net_util.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/proxy/proxy_info.h"
@@ -119,9 +117,7 @@ DataReductionProxyNetworkDelegate::DataReductionProxyNetworkDelegate(
     scoped_ptr<net::NetworkDelegate> network_delegate,
     DataReductionProxyConfig* config,
     DataReductionProxyRequestOptions* request_options,
-    const DataReductionProxyConfigurator* configurator,
-    net::NetLog* net_log,
-    DataReductionProxyEventCreator* event_creator)
+    const DataReductionProxyConfigurator* configurator)
     : LayeredNetworkDelegate(std::move(network_delegate)),
       total_received_bytes_(0),
       total_original_received_bytes_(0),
@@ -129,14 +125,10 @@ DataReductionProxyNetworkDelegate::DataReductionProxyNetworkDelegate(
       data_reduction_proxy_bypass_stats_(nullptr),
       data_reduction_proxy_request_options_(request_options),
       data_reduction_proxy_io_data_(nullptr),
-      configurator_(configurator),
-      net_log_(net_log),
-      event_creator_(event_creator) {
+      configurator_(configurator) {
   DCHECK(data_reduction_proxy_config_);
   DCHECK(data_reduction_proxy_request_options_);
   DCHECK(configurator_);
-  DCHECK(net_log_);
-  DCHECK(event_creator_);
 }
 
 DataReductionProxyNetworkDelegate::~DataReductionProxyNetworkDelegate() {
@@ -159,32 +151,6 @@ DataReductionProxyNetworkDelegate::SessionNetworkStatsInfoToValue() const {
   dict->SetString("session_original_content_length",
                   base::Int64ToString(total_original_received_bytes_));
   return dict;
-}
-
-void DataReductionProxyNetworkDelegate::OnResolveProxyInternal(
-    const GURL& url,
-    int load_flags,
-    const net::ProxyService& proxy_service,
-    net::ProxyInfo* result) {
-  OnResolveProxyHandler(url, load_flags, configurator_->GetProxyConfig(),
-                        proxy_service.proxy_retry_info(),
-                        data_reduction_proxy_config_, result);
-}
-
-void DataReductionProxyNetworkDelegate::OnProxyFallbackInternal(
-    const net::ProxyServer& bad_proxy,
-    int net_error) {
-  if (bad_proxy.is_valid() &&
-      data_reduction_proxy_config_->IsDataReductionProxy(
-          bad_proxy.host_port_pair(), nullptr)) {
-    event_creator_->AddProxyFallbackEvent(net_log_, bad_proxy.ToURI(),
-                                          net_error);
-  }
-
-  if (data_reduction_proxy_bypass_stats_) {
-    data_reduction_proxy_bypass_stats_->OnProxyFallback(
-        bad_proxy, net_error);
-  }
 }
 
 void DataReductionProxyNetworkDelegate::OnBeforeSendProxyHeadersInternal(
@@ -341,37 +307,6 @@ void DataReductionProxyNetworkDelegate::RecordContentLength(
     data_reduction_proxy_bypass_stats_->RecordBytesHistograms(
         request, data_reduction_proxy_io_data_->IsEnabled(),
         configurator_->GetProxyConfig());
-  }
-}
-
-void OnResolveProxyHandler(const GURL& url,
-                           int load_flags,
-                           const net::ProxyConfig& data_reduction_proxy_config,
-                           const net::ProxyRetryInfoMap& proxy_retry_info,
-                           const DataReductionProxyConfig* config,
-                           net::ProxyInfo* result) {
-  DCHECK(config);
-  DCHECK(result->is_empty() || result->is_direct() ||
-         !config->IsDataReductionProxy(result->proxy_server().host_port_pair(),
-                                       NULL));
-  bool data_saver_proxy_used = true;
-  if (result->proxy_server().is_direct() && result->proxy_list().size() == 1 &&
-      !url.SchemeIsWSOrWSS()) {
-    if (data_reduction_proxy_config.is_valid()) {
-      net::ProxyInfo data_reduction_proxy_info;
-      data_reduction_proxy_config.proxy_rules().Apply(
-          url, &data_reduction_proxy_info);
-      data_reduction_proxy_info.DeprioritizeBadProxies(proxy_retry_info);
-      if (!data_reduction_proxy_info.proxy_server().is_direct())
-        result->OverrideProxyList(data_reduction_proxy_info.proxy_list());
-    } else {
-      data_saver_proxy_used = false;
-    }
-    if (config->enabled_by_user_and_reachable() && url.SchemeIsHTTPOrHTTPS() &&
-        !url.SchemeIsCryptographic() && !net::IsLocalhost(url.host())) {
-      UMA_HISTOGRAM_BOOLEAN("DataReductionProxy.ConfigService.HTTPRequests",
-                            data_saver_proxy_used);
-    }
   }
 }
 

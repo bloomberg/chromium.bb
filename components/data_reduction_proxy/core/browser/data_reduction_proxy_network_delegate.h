@@ -25,7 +25,6 @@ class Value;
 namespace net {
 class HttpResponseHeaders;
 class HttpRequestHeaders;
-class NetLog;
 class NetworkDelegate;
 class ProxyConfig;
 class ProxyInfo;
@@ -39,7 +38,7 @@ namespace data_reduction_proxy {
 class DataReductionProxyBypassStats;
 class DataReductionProxyConfig;
 class DataReductionProxyConfigurator;
-class DataReductionProxyEventCreator;
+class DataReductionProxyExperimentsStats;
 class DataReductionProxyIOData;
 class DataReductionProxyRequestOptions;
 
@@ -62,19 +61,17 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
   // to the OnResolveProxyHandler and RecordBytesHistograms.
   typedef base::Callback<const net::ProxyConfig&()> ProxyConfigGetter;
 
-  // Constructs a DataReductionProxyNetworkdelegate object with the given
-  // |network_delegate|, |config|, |handler|, |configurator|,
-  // |net_log|, and |event_creator|. Takes ownership of and wraps the
-  // |network_delegate|, calling an internal implementation for each delegate
-  // method. For example, the implementation of OnHeadersReceived() calls
-  // OnHeadersReceivedInternal().
+  // Constructs a DataReductionProxyNetworkDelegate object with the given
+  // |network_delegate|, |config|, |handler|, |configurator|, and
+  // |experiments_stats|. Takes ownership of
+  // and wraps the |network_delegate|, calling an internal implementation for
+  // each delegate method. For example, the implementation of
+  // OnHeadersReceived() calls OnHeadersReceivedInternal().
   DataReductionProxyNetworkDelegate(
       scoped_ptr<net::NetworkDelegate> network_delegate,
       DataReductionProxyConfig* config,
       DataReductionProxyRequestOptions* handler,
-      const DataReductionProxyConfigurator* configurator,
-      net::NetLog* net_log,
-      DataReductionProxyEventCreator* event_creator);
+      const DataReductionProxyConfigurator* configurator);
   ~DataReductionProxyNetworkDelegate() override;
 
   // Initializes member variables to record data reduction proxy prefs and
@@ -88,21 +85,6 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
   base::Value* SessionNetworkStatsInfoToValue() const;
 
  private:
-  // Called as the proxy is being resolved for |url|. Allows the delegate to
-  // override the proxy resolution decision made by ProxyService. The delegate
-  // may override the decision by modifying the ProxyInfo |result|.
-  void OnResolveProxyInternal(const GURL& url,
-                              int load_flags,
-                              const net::ProxyService& proxy_service,
-                              net::ProxyInfo* result) override;
-
-  // Called when use of |bad_proxy| fails due to |net_error|. |net_error| is
-  // the network error encountered, if any, and OK if the fallback was
-  // for a reason other than a network error (e.g. the proxy service was
-  // explicitly directed to skip a proxy).
-  void OnProxyFallbackInternal(const net::ProxyServer& bad_proxy,
-                               int net_error) override;
-
   // Called after a proxy connection. Allows the delegate to read/write
   // |headers| before they get sent out. |headers| is valid only until
   // OnCompleted or OnURLRequestDestroyed is called for this request.
@@ -163,26 +145,8 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
 
   const DataReductionProxyConfigurator* configurator_;
 
-  net::NetLog* net_log_;
-
-  DataReductionProxyEventCreator* event_creator_;
-
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyNetworkDelegate);
 };
-
-// Adds data reduction proxies to |result|, where applicable, if result
-// otherwise uses a direct connection for |url|, and the data reduction proxy is
-// not bypassed. Also, configures |result| to proceed directly to the origin if
-// |result|'s current proxy is the data reduction proxy, the
-// |net::LOAD_BYPASS_DATA_REDUCTION_PROXY| |load_flag| is set, and the
-// DataCompressionProxyCriticalBypass Finch trial is set.
-void OnResolveProxyHandler(const GURL& url,
-                           int load_flags,
-                           const net::ProxyConfig& data_reduction_proxy_config,
-                           const net::ProxyRetryInfoMap& proxy_retry_info,
-                           const DataReductionProxyConfig* config,
-                           net::ProxyInfo* result);
-
 }  // namespace data_reduction_proxy
 
 #endif  // COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_NETWORK_DELEGATE_H_

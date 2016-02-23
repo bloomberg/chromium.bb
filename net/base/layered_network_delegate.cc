@@ -30,33 +30,6 @@ void LayeredNetworkDelegate::OnBeforeURLRequestInternal(
     GURL* new_url) {
 }
 
-void LayeredNetworkDelegate::OnResolveProxy(const GURL& url,
-                                            int load_flags,
-                                            const ProxyService& proxy_service,
-                                            ProxyInfo* result) {
-  OnResolveProxyInternal(url, load_flags, proxy_service, result);
-  nested_network_delegate_->NotifyResolveProxy(url, load_flags, proxy_service,
-                                               result);
-}
-
-void LayeredNetworkDelegate::OnResolveProxyInternal(
-    const GURL& url,
-    int load_flags,
-    const ProxyService& proxy_service,
-    ProxyInfo* result) {
-}
-
-void LayeredNetworkDelegate::OnProxyFallback(const ProxyServer& bad_proxy,
-                                             int net_error) {
-  OnProxyFallbackInternal(bad_proxy, net_error);
-  nested_network_delegate_->NotifyProxyFallback(bad_proxy, net_error);
-}
-
-void LayeredNetworkDelegate::OnProxyFallbackInternal(
-    const ProxyServer& bad_proxy,
-    int net_error) {
-}
-
 int LayeredNetworkDelegate::OnBeforeSendHeaders(
     URLRequest* request,
     const CompletionCallback& callback,

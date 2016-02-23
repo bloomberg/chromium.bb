@@ -29,6 +29,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_delegate.h"
+#include "net/base/proxy_delegate.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_transaction_test_util.h"
 #include "net/proxy/proxy_server.h"
@@ -782,6 +783,8 @@ class DataReductionProxyBypassProtocolEndToEndTest : public testing::Test {
             .WithMockClientSocketFactory(mock_socket_factory_.get())
             .WithURLRequestContext(context_.get())
             .Build();
+    proxy_delegate_ = drp_test_context_->io_data()->CreateProxyDelegate();
+    context_->set_proxy_delegate(proxy_delegate_.get());
   }
 
   void AttachToContextAndInit() {
@@ -803,6 +806,7 @@ class DataReductionProxyBypassProtocolEndToEndTest : public testing::Test {
   scoped_ptr<net::TestURLRequestContext> context_;
   scoped_ptr<net::URLRequestContextStorage> storage_;
   scoped_ptr<net::MockClientSocketFactory> mock_socket_factory_;
+  scoped_ptr<net::ProxyDelegate> proxy_delegate_;
   scoped_ptr<DataReductionProxyTestContext> drp_test_context_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyBypassProtocolEndToEndTest);

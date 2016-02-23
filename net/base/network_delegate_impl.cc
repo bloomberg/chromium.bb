@@ -14,16 +14,6 @@ int NetworkDelegateImpl::OnBeforeURLRequest(URLRequest* request,
   return OK;
 }
 
-void NetworkDelegateImpl::OnResolveProxy(const GURL& url,
-                                         int load_flags,
-                                         const ProxyService& proxy_service,
-                                         ProxyInfo* result) {
-}
-
-void NetworkDelegateImpl::OnProxyFallback(const ProxyServer& bad_proxy,
-                                          int net_error) {
-}
-
 int NetworkDelegateImpl::OnBeforeSendHeaders(URLRequest* request,
                                              const CompletionCallback& callback,
                                              HttpRequestHeaders* headers) {

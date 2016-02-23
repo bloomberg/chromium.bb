@@ -149,8 +149,9 @@ DataReductionProxyIOData::DataReductionProxyIOData(
                    base::Unretained(this))));
   }
 
-  proxy_delegate_.reset(
-      new DataReductionProxyDelegate(request_options_.get(), config_.get()));
+  proxy_delegate_.reset(new DataReductionProxyDelegate(
+      request_options_.get(), config_.get(), configurator_.get(),
+      event_creator_.get(), bypass_stats_.get(), net_log_));
  }
 
  DataReductionProxyIOData::DataReductionProxyIOData()
@@ -221,11 +222,18 @@ DataReductionProxyIOData::CreateNetworkDelegate(
   scoped_ptr<DataReductionProxyNetworkDelegate> network_delegate(
       new DataReductionProxyNetworkDelegate(
           std::move(wrapped_network_delegate), config_.get(),
-          request_options_.get(), configurator_.get(), net_log_,
-          event_creator_.get()));
+          request_options_.get(), configurator_.get()));
   if (track_proxy_bypass_statistics)
     network_delegate->InitIODataAndUMA(this, bypass_stats_.get());
   return network_delegate;
+}
+
+scoped_ptr<DataReductionProxyDelegate>
+DataReductionProxyIOData::CreateProxyDelegate() const {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  return make_scoped_ptr(new DataReductionProxyDelegate(
+      request_options_.get(), config_.get(), configurator_.get(),
+      event_creator_.get(), bypass_stats_.get(), net_log_));
 }
 
 // TODO(kundaji): Rename this method to something more descriptive.

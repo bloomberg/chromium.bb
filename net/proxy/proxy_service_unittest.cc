@@ -14,7 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
-#include "net/base/network_delegate_impl.h"
+#include "net/base/proxy_delegate.h"
 #include "net/base/test_completion_callback.h"
 #include "net/log/net_log.h"
 #include "net/log/test_net_log.h"
@@ -162,14 +162,13 @@ class MockProxyConfigService: public ProxyConfigService {
 };
 
 // A test network delegate that exercises the OnResolveProxy callback.
-class TestResolveProxyNetworkDelegate : public NetworkDelegateImpl {
+class TestResolveProxyDelegate : public ProxyDelegate {
  public:
-  TestResolveProxyNetworkDelegate()
+  TestResolveProxyDelegate()
       : on_resolve_proxy_called_(false),
         add_proxy_(false),
         remove_proxy_(false),
-        proxy_service_(NULL) {
-  }
+        proxy_service_(nullptr) {}
 
   void OnResolveProxy(const GURL& url,
                       int load_flags,
@@ -201,6 +200,23 @@ class TestResolveProxyNetworkDelegate : public NetworkDelegateImpl {
     return proxy_service_;
   }
 
+  void OnTunnelConnectCompleted(const HostPortPair& endpoint,
+                                const HostPortPair& proxy_server,
+                                int net_error) override {}
+  void OnFallback(const ProxyServer& bad_proxy, int net_error) override {}
+  void OnBeforeSendHeaders(URLRequest* request,
+                           const ProxyInfo& proxy_info,
+                           HttpRequestHeaders* headers) override {}
+  void OnBeforeTunnelRequest(const HostPortPair& proxy_server,
+                             HttpRequestHeaders* extra_headers) override {}
+  void OnTunnelHeadersReceived(
+      const HostPortPair& origin,
+      const HostPortPair& proxy_server,
+      const HttpResponseHeaders& response_headers) override {}
+  bool IsTrustedSpdyProxy(const net::ProxyServer& proxy_server) override {
+    return true;
+  }
+
  private:
   bool on_resolve_proxy_called_;
   bool add_proxy_;
@@ -209,18 +225,35 @@ class TestResolveProxyNetworkDelegate : public NetworkDelegateImpl {
 };
 
 // A test network delegate that exercises the OnProxyFallback callback.
-class TestProxyFallbackNetworkDelegate : public NetworkDelegateImpl {
+class TestProxyFallbackProxyDelegate : public ProxyDelegate {
  public:
-  TestProxyFallbackNetworkDelegate()
-      : on_proxy_fallback_called_(false),
-        proxy_fallback_net_error_(OK) {
-  }
+  TestProxyFallbackProxyDelegate()
+      : on_proxy_fallback_called_(false), proxy_fallback_net_error_(OK) {}
 
-  void OnProxyFallback(const ProxyServer& proxy_server,
-                       int net_error) override {
-    proxy_server_ = proxy_server;
+  // ProxyDelegate implementation:
+  void OnResolveProxy(const GURL& url,
+                      int load_flags,
+                      const ProxyService& proxy_service,
+                      ProxyInfo* result) override {}
+  void OnTunnelConnectCompleted(const HostPortPair& endpoint,
+                                const HostPortPair& proxy_server,
+                                int net_error) override {}
+  void OnFallback(const ProxyServer& bad_proxy, int net_error) override {
+    proxy_server_ = bad_proxy;
     proxy_fallback_net_error_ = net_error;
     on_proxy_fallback_called_ = true;
+  }
+  void OnBeforeSendHeaders(URLRequest* request,
+                           const ProxyInfo& proxy_info,
+                           HttpRequestHeaders* headers) override {}
+  void OnBeforeTunnelRequest(const HostPortPair& proxy_server,
+                             HttpRequestHeaders* extra_headers) override {}
+  void OnTunnelHeadersReceived(
+      const HostPortPair& origin,
+      const HostPortPair& proxy_server,
+      const HttpResponseHeaders& response_headers) override {}
+  bool IsTrustedSpdyProxy(const net::ProxyServer& proxy_server) override {
+    return true;
   }
 
   bool on_proxy_fallback_called() const {
@@ -366,13 +399,13 @@ TEST_F(ProxyServiceTest, OnResolveProxyCallbackAddProxy) {
   EXPECT_EQ(OK, rv);
 
   // Verify that network delegate is invoked.
-  TestResolveProxyNetworkDelegate delegate;
+  TestResolveProxyDelegate delegate;
   rv = service.ResolveProxy(url, LOAD_NORMAL, &info, callback.callback(), NULL,
                             &delegate, log.bound());
   EXPECT_TRUE(delegate.on_resolve_proxy_called());
   EXPECT_EQ(&service, delegate.proxy_service());
 
-  // Verify that the NetworkDelegate's behavior is stateless across
+  // Verify that the ProxyDelegate's behavior is stateless across
   // invocations of ResolveProxy. Start by having the callback add a proxy
   // and checking that subsequent requests are not affected.
   delegate.set_add_proxy(true);
@@ -398,7 +431,7 @@ TEST_F(ProxyServiceTest, OnResolveProxyCallbackAddProxy) {
 
 TEST_F(ProxyServiceTest, OnResolveProxyCallbackRemoveProxy) {
   // Same as OnResolveProxyCallbackAddProxy, but verify that the
-  // NetworkDelegate's behavior is stateless across invocations after it
+  // ProxyDelegate's behavior is stateless across invocations after it
   // *removes* a proxy.
   ProxyConfig config;
   config.proxy_rules().ParseFromString("foopy1:8080");
@@ -420,7 +453,7 @@ TEST_F(ProxyServiceTest, OnResolveProxyCallbackRemoveProxy) {
                                 NULL, NULL, log.bound());
   EXPECT_EQ(OK, rv);
 
-  TestResolveProxyNetworkDelegate delegate;
+  TestResolveProxyDelegate delegate;
   delegate.set_remove_proxy(true);
 
   // Callback should interpose:
@@ -576,12 +609,12 @@ TEST_F(ProxyServiceTest, PAC_FailoverWithoutDirect) {
   // Now, imagine that connecting to foopy:8080 fails: there is nothing
   // left to fallback to, since our proxy list was NOT terminated by
   // DIRECT.
-  NetworkDelegateImpl network_delegate;
+  TestResolveProxyDelegate proxy_delegate;
   TestCompletionCallback callback2;
   ProxyServer expected_proxy_server = info.proxy_server();
   rv = service.ReconsiderProxyAfterError(
       url, LOAD_NORMAL, ERR_PROXY_CONNECTION_FAILED, &info,
-      callback2.callback(), NULL, &network_delegate, BoundNetLog());
+      callback2.callback(), NULL, &proxy_delegate, BoundNetLog());
   // ReconsiderProxyAfterError returns error indicating nothing left.
   EXPECT_EQ(ERR_FAILED, rv);
   EXPECT_TRUE(info.is_empty());
@@ -690,12 +723,12 @@ TEST_F(ProxyServiceTest, PAC_FailoverAfterDirect) {
   EXPECT_EQ("foobar:10", info.proxy_server().ToURI());
 
   // Fallback 2.
-  NetworkDelegateImpl network_delegate;
+  TestResolveProxyDelegate proxy_delegate;
   ProxyServer expected_proxy_server3 = info.proxy_server();
   TestCompletionCallback callback3;
   rv = service.ReconsiderProxyAfterError(
       url, LOAD_NORMAL, ERR_PROXY_CONNECTION_FAILED, &info,
-      callback3.callback(), NULL, &network_delegate, BoundNetLog());
+      callback3.callback(), NULL, &proxy_delegate, BoundNetLog());
   EXPECT_EQ(OK, rv);
   EXPECT_TRUE(info.is_direct());
 
@@ -704,7 +737,7 @@ TEST_F(ProxyServiceTest, PAC_FailoverAfterDirect) {
   TestCompletionCallback callback4;
   rv = service.ReconsiderProxyAfterError(
       url, LOAD_NORMAL, ERR_PROXY_CONNECTION_FAILED, &info,
-      callback4.callback(), NULL, &network_delegate, BoundNetLog());
+      callback4.callback(), NULL, &proxy_delegate, BoundNetLog());
   EXPECT_EQ(OK, rv);
   EXPECT_FALSE(info.is_direct());
   EXPECT_EQ("foobar:20", info.proxy_server().ToURI());
@@ -714,7 +747,7 @@ TEST_F(ProxyServiceTest, PAC_FailoverAfterDirect) {
   TestCompletionCallback callback5;
   rv = service.ReconsiderProxyAfterError(
       url, LOAD_NORMAL, ERR_PROXY_CONNECTION_FAILED, &info,
-      callback5.callback(), NULL, &network_delegate, BoundNetLog());
+      callback5.callback(), NULL, &proxy_delegate, BoundNetLog());
   EXPECT_EQ(ERR_FAILED, rv);
   EXPECT_TRUE(info.is_empty());
 }
@@ -1175,7 +1208,7 @@ TEST_F(ProxyServiceTest, ProxyFallback) {
   EXPECT_EQ("foopy2:9090", info.proxy_server().ToURI());
   // Report back that the second proxy worked.  This will globally mark the
   // first proxy as bad.
-  TestProxyFallbackNetworkDelegate test_delegate;
+  TestProxyFallbackProxyDelegate test_delegate;
   service.ReportSuccess(info, &test_delegate);
   EXPECT_EQ("foopy1:8080", test_delegate.proxy_server().ToURI());
   EXPECT_EQ(ERR_PROXY_CONNECTION_FAILED,

@@ -24,8 +24,6 @@ class CookieOptions;
 class HttpRequestHeaders;
 class HttpResponseHeaders;
 class ProxyInfo;
-class ProxyServer;
-class ProxyService;
 class URLRequest;
 
 class NET_EXPORT NetworkDelegateImpl : public NetworkDelegate {
@@ -52,20 +50,6 @@ class NET_EXPORT NetworkDelegateImpl : public NetworkDelegate {
   int OnBeforeURLRequest(URLRequest* request,
                          const CompletionCallback& callback,
                          GURL* new_url) override;
-
-  // Called as the proxy is being resolved for |url|. Allows the delegate to
-  // override the proxy resolution decision made by ProxyService. The delegate
-  // may override the decision by modifying the ProxyInfo |result|.
-  void OnResolveProxy(const GURL& url,
-                      int load_flags,
-                      const ProxyService& proxy_service,
-                      ProxyInfo* result) override;
-
-  // Called when use of |bad_proxy| fails due to |net_error|. |net_error| is
-  // the network error encountered, if any, and OK if the fallback was
-  // for a reason other than a network error (e.g. the proxy service was
-  // explicitly directed to skip a proxy).
-  void OnProxyFallback(const ProxyServer& bad_proxy, int net_error) override;
 
   // Called right before the HTTP headers are sent. Allows the delegate to
   // read/write |headers| before they get sent out. |callback| and |headers| are

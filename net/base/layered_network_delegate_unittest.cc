@@ -20,7 +20,6 @@
 #include "net/http/http_response_headers.h"
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_info.h"
-#include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -44,17 +43,6 @@ class TestNetworkDelegateImpl : public NetworkDelegateImpl {
                          GURL* new_url) override {
     IncrementAndCompareCounter("on_before_url_request_count");
     return OK;
-  }
-
-  void OnResolveProxy(const GURL& url,
-                      int load_flags,
-                      const ProxyService& proxy_service,
-                      ProxyInfo* result) override {
-    IncrementAndCompareCounter("on_resolve_proxy_count");
-  }
-
-  void OnProxyFallback(const ProxyServer& bad_proxy, int net_error) override {
-    IncrementAndCompareCounter("on_proxy_fallback_count");
   }
 
   int OnBeforeSendHeaders(URLRequest* request,
@@ -191,13 +179,9 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
     scoped_refptr<HttpResponseHeaders> response_headers(
         new HttpResponseHeaders(""));
     TestCompletionCallback completion_callback;
-    scoped_ptr<ProxyService> proxy_service(ProxyService::CreateDirect());
-    scoped_ptr<ProxyInfo> proxy_info(new ProxyInfo());
 
     EXPECT_EQ(OK, OnBeforeURLRequest(request.get(),
                                      completion_callback.callback(), NULL));
-    OnResolveProxy(GURL(), 0, *proxy_service, proxy_info.get());
-    OnProxyFallback(ProxyServer(), 0);
     EXPECT_EQ(OK, OnBeforeSendHeaders(NULL, completion_callback.callback(),
                                       request_headers.get()));
     OnBeforeSendProxyHeaders(NULL, ProxyInfo(), request_headers.get());
@@ -227,20 +211,6 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
                                   GURL* new_url) override {
     ++(*counters_)["on_before_url_request_count"];
     EXPECT_EQ(1, (*counters_)["on_before_url_request_count"]);
-  }
-
-  void OnResolveProxyInternal(const GURL& url,
-                              int load_flags,
-                              const ProxyService& proxy_service,
-                              ProxyInfo* result) override {
-    ++(*counters_)["on_resolve_proxy_count"];
-    EXPECT_EQ(1, (*counters_)["on_resolve_proxy_count"]);
-  }
-
-  void OnProxyFallbackInternal(const ProxyServer& bad_proxy,
-                               int net_error) override {
-    ++(*counters_)["on_proxy_fallback_count"];
-    EXPECT_EQ(1, (*counters_)["on_proxy_fallback_count"]);
   }
 
   void OnBeforeSendHeadersInternal(URLRequest* request,

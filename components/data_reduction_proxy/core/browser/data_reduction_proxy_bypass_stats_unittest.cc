@@ -29,6 +29,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/base/proxy_delegate.h"
 #include "net/base/request_priority.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_response_headers.h"
@@ -561,6 +562,8 @@ class DataReductionProxyBypassStatsEndToEndTest : public testing::Test {
             .Build();
     drp_test_context_->AttachToURLRequestContext(&context_storage_);
     context_.set_client_socket_factory(&mock_socket_factory_);
+    proxy_delegate_ = drp_test_context_->io_data()->CreateProxyDelegate();
+    context_.set_proxy_delegate(proxy_delegate_.get());
   }
 
   // Create and execute a fake request using the data reduction proxy stack.
@@ -699,6 +702,7 @@ class DataReductionProxyBypassStatsEndToEndTest : public testing::Test {
   net::MockClientSocketFactory mock_socket_factory_;
   net::TestURLRequestContext context_;
   net::URLRequestContextStorage context_storage_;
+  scoped_ptr<net::ProxyDelegate> proxy_delegate_;
   scoped_ptr<DataReductionProxyTestContext> drp_test_context_;
 };
 

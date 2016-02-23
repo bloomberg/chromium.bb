@@ -38,8 +38,6 @@ class CookieOptions;
 class HttpRequestHeaders;
 class HttpResponseHeaders;
 class ProxyInfo;
-class ProxyServer;
-class ProxyService;
 class URLRequest;
 
 class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
@@ -64,12 +62,6 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
   int NotifyBeforeURLRequest(URLRequest* request,
                              const CompletionCallback& callback,
                              GURL* new_url);
-  void NotifyResolveProxy(const GURL& url,
-                          int load_flags,
-                          const ProxyService& proxy_service,
-                          ProxyInfo* result);
-  void NotifyProxyFallback(const ProxyServer& bad_proxy,
-                           int net_error);
   int NotifyBeforeSendHeaders(URLRequest* request,
                               const CompletionCallback& callback,
                               HttpRequestHeaders* headers);
@@ -139,20 +131,6 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
   virtual int OnBeforeURLRequest(URLRequest* request,
                                  const CompletionCallback& callback,
                                  GURL* new_url) = 0;
-
-  // Called as the proxy is being resolved for |url|. Allows the delegate to
-  // override the proxy resolution decision made by ProxyService. The delegate
-  // may override the decision by modifying the ProxyInfo |result|.
-  virtual void OnResolveProxy(const GURL& url,
-                              int load_flags,
-                              const ProxyService& proxy_service,
-                              ProxyInfo* result) = 0;
-
-  // Called when use of |bad_proxy| fails due to |net_error|. |net_error| is
-  // the network error encountered, if any, and OK if the fallback was
-  // for a reason other than a network error (e.g. the proxy service was
-  // explicitly directed to skip a proxy).
-  virtual void OnProxyFallback(const ProxyServer& bad_proxy, int net_error) = 0;
 
   // Called right before the HTTP headers are sent. Allows the delegate to
   // read/write |headers| before they get sent out. |callback| and |headers| are

@@ -25,8 +25,6 @@ class CookieOptions;
 class HttpRequestHeaders;
 class HttpResponseHeaders;
 class ProxyInfo;
-class ProxyServer;
-class ProxyService;
 class URLRequest;
 
 // WrappingNetworkDelegate takes a |network_delegate| and extends it. When
@@ -43,11 +41,6 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
   int OnBeforeURLRequest(URLRequest* request,
                          const CompletionCallback& callback,
                          GURL* new_url) final;
-  void OnResolveProxy(const GURL& url,
-                      int load_flags,
-                      const ProxyService& proxy_service,
-                      ProxyInfo* result) final;
-  void OnProxyFallback(const ProxyServer& bad_proxy, int net_error) final;
   int OnBeforeSendHeaders(URLRequest* request,
                           const CompletionCallback& callback,
                           HttpRequestHeaders* headers) final;
@@ -94,14 +87,6 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
   virtual void OnBeforeURLRequestInternal(URLRequest* request,
                                           const CompletionCallback& callback,
                                           GURL* new_url);
-
-  virtual void OnResolveProxyInternal(const GURL& url,
-                                      int load_flags,
-                                      const ProxyService& proxy_service,
-                                      ProxyInfo* result);
-
-  virtual void OnProxyFallbackInternal(const ProxyServer& bad_proxy,
-                                       int net_error);
 
   virtual void OnBeforeSendHeadersInternal(URLRequest* request,
                                            const CompletionCallback& callback,

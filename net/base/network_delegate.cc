@@ -26,23 +26,6 @@ int NetworkDelegate::NotifyBeforeURLRequest(
   return OnBeforeURLRequest(request, callback, new_url);
 }
 
-void NetworkDelegate::NotifyResolveProxy(
-    const GURL& url,
-    int load_flags,
-    const ProxyService& proxy_service,
-    ProxyInfo* result) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(result);
-  OnResolveProxy(url, load_flags, proxy_service, result);
-}
-
-void NetworkDelegate::NotifyProxyFallback(
-    const ProxyServer& bad_proxy,
-    int net_error) {
-  DCHECK(CalledOnValidThread());
-  OnProxyFallback(bad_proxy, net_error);
-}
-
 int NetworkDelegate::NotifyBeforeSendHeaders(
     URLRequest* request, const CompletionCallback& callback,
     HttpRequestHeaders* headers) {
