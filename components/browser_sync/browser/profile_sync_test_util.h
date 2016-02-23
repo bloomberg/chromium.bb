@@ -99,6 +99,10 @@ class ProfileSyncServiceBundle {
 
     void SetHistoryService(history::HistoryService* history_service);
 
+    void SetBookmarkModelCallback(
+        const base::Callback<bookmarks::BookmarkModel*(void)>&
+            get_bookmark_model_callback);
+
     void set_activate_model_creation() { activate_model_creation_ = true; }
 
     scoped_ptr<sync_driver::FakeSyncClient> Build();
@@ -114,6 +118,8 @@ class ProfileSyncServiceBundle {
         get_syncable_service_callback_;
     base::Callback<sync_driver::SyncService*(void)> get_sync_service_callback_;
     history::HistoryService* history_service_ = nullptr;
+    base::Callback<bookmarks::BookmarkModel*(void)>
+        get_bookmark_model_callback_;
     // If set, the built client will be able to build some ModelSafeWorker
     // instances.
     bool activate_model_creation_ = false;

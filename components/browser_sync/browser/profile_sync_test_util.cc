@@ -4,6 +4,7 @@
 
 #include "components/browser_sync/browser/profile_sync_test_util.h"
 
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/history/core/browser/history_model_worker.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/signin_manager_base.h"
@@ -32,6 +33,8 @@ class BundleSyncClient : public sync_driver::FakeSyncClient {
           syncer::ModelType type)>& get_syncable_service_callback,
       const base::Callback<sync_driver::SyncService*(void)>&
           get_sync_service_callback,
+      const base::Callback<bookmarks::BookmarkModel*(void)>&
+          get_bookmark_model_callback,
       scoped_refptr<base::SingleThreadTaskRunner> db_thread,
       scoped_refptr<base::SingleThreadTaskRunner> file_thread,
       history::HistoryService* history_service);
@@ -49,6 +52,7 @@ class BundleSyncClient : public sync_driver::FakeSyncClient {
       syncer::ModelSafeGroup group,
       syncer::WorkerLoopDestructionObserver* observer) override;
   history::HistoryService* GetHistoryService() override;
+  bookmarks::BookmarkModel* GetBookmarkModel() override;
 
  private:
   PrefService* const pref_service_;
@@ -60,6 +64,8 @@ class BundleSyncClient : public sync_driver::FakeSyncClient {
       get_syncable_service_callback_;
   const base::Callback<sync_driver::SyncService*(void)>
       get_sync_service_callback_;
+  const base::Callback<bookmarks::BookmarkModel*(void)>
+      get_bookmark_model_callback_;
   // These task runners, if not null, are used in CreateModelWorkerForGroup.
   const scoped_refptr<base::SingleThreadTaskRunner> db_thread_;
   const scoped_refptr<base::SingleThreadTaskRunner> file_thread_;
@@ -76,6 +82,8 @@ BundleSyncClient::BundleSyncClient(
         syncer::ModelType type)>& get_syncable_service_callback,
     const base::Callback<sync_driver::SyncService*(void)>&
         get_sync_service_callback,
+    const base::Callback<bookmarks::BookmarkModel*(void)>&
+        get_bookmark_model_callback,
     scoped_refptr<base::SingleThreadTaskRunner> db_thread,
     scoped_refptr<base::SingleThreadTaskRunner> file_thread,
     history::HistoryService* history_service)
@@ -86,6 +94,7 @@ BundleSyncClient::BundleSyncClient(
       personal_data_manager_(personal_data_manager),
       get_syncable_service_callback_(get_syncable_service_callback),
       get_sync_service_callback_(get_sync_service_callback),
+      get_bookmark_model_callback_(get_bookmark_model_callback),
       db_thread_(db_thread),
       file_thread_(file_thread),
       history_service_(history_service) {
@@ -160,6 +169,12 @@ history::HistoryService* BundleSyncClient::GetHistoryService() {
   return FakeSyncClient::GetHistoryService();
 }
 
+bookmarks::BookmarkModel* BundleSyncClient::GetBookmarkModel() {
+  if (get_bookmark_model_callback_.is_null())
+    return FakeSyncClient::GetBookmarkModel();
+  return get_bookmark_model_callback_.Run();
+}
+
 }  // namespace
 
 void EmptyNetworkTimeUpdate(const base::Time&,
@@ -209,13 +224,19 @@ void ProfileSyncServiceBundle::SyncClientBuilder::SetHistoryService(
   history_service_ = history_service;
 }
 
+void ProfileSyncServiceBundle::SyncClientBuilder::SetBookmarkModelCallback(
+    const base::Callback<bookmarks::BookmarkModel*(void)>&
+        get_bookmark_model_callback) {
+  get_bookmark_model_callback_ = get_bookmark_model_callback;
+}
+
 scoped_ptr<sync_driver::FakeSyncClient>
 ProfileSyncServiceBundle::SyncClientBuilder::Build() {
   return make_scoped_ptr(new BundleSyncClient(
       bundle_->component_factory(), bundle_->pref_service(),
       clear_browsing_data_callback_, bundle_->sync_sessions_client(),
       personal_data_manager_, get_syncable_service_callback_,
-      get_sync_service_callback_,
+      get_sync_service_callback_, get_bookmark_model_callback_,
       activate_model_creation_ ? bundle_->db_thread() : nullptr,
       activate_model_creation_ ? base::ThreadTaskRunnerHandle::Get() : nullptr,
       history_service_));

@@ -75,6 +75,7 @@
         '../google_apis/google_apis.gyp:google_apis',
         '../sync/sync.gyp:sync',
         '../testing/gmock.gyp:gmock',
+        'bookmarks_browser',
         'browser_sync_browser',
         'history_core_browser',
         'invalidation_impl',

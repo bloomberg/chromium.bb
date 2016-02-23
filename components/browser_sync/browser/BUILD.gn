@@ -107,6 +107,7 @@ source_set("test_support") {
     ":browser",
     "//base",
     "//base/test:test_support",
+    "//components/bookmarks/browser:browser",
     "//components/history/core/browser:browser",
     "//components/invalidation/impl",
     "//components/invalidation/impl:test_support",
