@@ -33,6 +33,12 @@ base::TimeTicks VirtualTimeDomain::Now() const {
   return now_;
 }
 
+base::TimeTicks VirtualTimeDomain::ComputeDelayedRunTime(
+    base::TimeTicks time_domain_now,
+    base::TimeDelta delay) const {
+  return time_domain_now + delay;
+}
+
 void VirtualTimeDomain::RequestWakeup(base::TimeTicks now,
                                       base::TimeDelta delay) {
   // We don't need to do anything here because the caller of AdvanceTo is

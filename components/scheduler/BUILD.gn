@@ -74,6 +74,8 @@ component("scheduler") {
     "renderer/renderer_web_scheduler_impl.h",
     "renderer/task_cost_estimator.cc",
     "renderer/task_cost_estimator.h",
+    "renderer/throttled_time_domain.cc",
+    "renderer/throttled_time_domain.h",
     "renderer/throttling_helper.cc",
     "renderer/throttling_helper.h",
     "renderer/user_model.cc",
