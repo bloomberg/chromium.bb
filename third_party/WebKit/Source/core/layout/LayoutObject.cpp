@@ -1986,7 +1986,7 @@ void LayoutObject::setStyle(PassRefPtr<ComputedStyle> style)
             container->setNeedsOverflowRecalcAfterStyleChange();
     }
 
-    if (updatedDiff.needsPaintInvalidationLayer())
+    if (diff.needsPaintInvalidationLayer() || updatedDiff.needsPaintInvalidationLayer())
         setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
     else if (diff.needsPaintInvalidationObject() || updatedDiff.needsPaintInvalidationObject())
         setShouldDoFullPaintInvalidation();

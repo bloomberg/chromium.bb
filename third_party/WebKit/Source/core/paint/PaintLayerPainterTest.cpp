@@ -361,4 +361,35 @@ TEST_P(PaintLayerPainterTest, PaintPhaseBlockBackground)
     EXPECT_TRUE(displayItemListContains(rootPaintController().displayItemList(), backgroundDiv, DisplayItem::BoxDecorationBackground));
 }
 
+TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnLayerRemoval)
+{
+    setBodyInnerHTML(
+        "<div id='layer' style='opacity: 0.5'>"
+        "  <div style='height: 100px'>"
+        "    <div style='height: 20px; outline: 1px solid red; background-color: green'>outline and background</div>"
+        "    <div style='float: left'>float</div>"
+        "  </div>"
+        "</div>");
+
+    LayoutBlock& layerDiv = *toLayoutBlock(document().getElementById("layer")->layoutObject());
+    PaintLayer& layer = *layerDiv.layer();
+    ASSERT_TRUE(layer.isSelfPaintingLayer());
+    EXPECT_TRUE(layer.needsPaintPhaseDescendantOutlines());
+    EXPECT_TRUE(layer.needsPaintPhaseFloat());
+    EXPECT_TRUE(layer.needsPaintPhaseDescendantBlockBackgrounds());
+
+    PaintLayer& htmlLayer = *toLayoutBlock(document().documentElement()->layoutObject())->layer();
+    EXPECT_FALSE(htmlLayer.needsPaintPhaseDescendantOutlines());
+    EXPECT_FALSE(htmlLayer.needsPaintPhaseFloat());
+    EXPECT_FALSE(htmlLayer.needsPaintPhaseDescendantBlockBackgrounds());
+
+    toHTMLElement(layerDiv.node())->setAttribute(HTMLNames::styleAttr, "opacity: 1");
+    document().view()->updateAllLifecyclePhases();
+
+    EXPECT_FALSE(layerDiv.hasLayer());
+    EXPECT_TRUE(htmlLayer.needsPaintPhaseDescendantOutlines());
+    EXPECT_TRUE(htmlLayer.needsPaintPhaseFloat());
+    EXPECT_TRUE(htmlLayer.needsPaintPhaseDescendantBlockBackgrounds());
+}
+
 } // namespace blink
