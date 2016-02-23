@@ -31,6 +31,7 @@
 #ifndef Animation_h
 #define Animation_h
 
+#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseProperty.h"
 #include "core/CSSPropertyNames.h"
@@ -97,10 +98,10 @@ public:
     String playState() const { return playStateString(playStateInternal()); }
     AnimationPlayState playStateInternal() const;
 
-    void pause();
-    void play();
-    void reverse();
-    void finish(ExceptionState&);
+    void pause(ExceptionState& = ASSERT_NO_EXCEPTION);
+    void play(ExceptionState& = ASSERT_NO_EXCEPTION);
+    void reverse(ExceptionState& = ASSERT_NO_EXCEPTION);
+    void finish(ExceptionState& = ASSERT_NO_EXCEPTION);
 
     ScriptPromise finished(ScriptState*);
     ScriptPromise ready(ScriptState*);

@@ -506,7 +506,7 @@ Animation::AnimationPlayState Animation::calculatePlayState()
     return Running;
 }
 
-void Animation::pause()
+void Animation::pause(ExceptionState& exceptionState)
 {
     if (m_paused)
         return;
@@ -515,6 +515,10 @@ void Animation::pause()
 
     double newCurrentTime = currentTimeInternal();
     if (calculatePlayState() == Idle) {
+        if (m_playbackRate < 0 && effectEnd() == std::numeric_limits<double>::infinity()) {
+            exceptionState.throwDOMException(InvalidStateError, "Cannot pause, Animation has infinite target effect end.");
+            return;
+        }
         newCurrentTime = m_playbackRate < 0 ? effectEnd() : 0;
     }
 
@@ -543,9 +547,15 @@ void Animation::unpauseInternal()
     setCurrentTimeInternal(currentTimeInternal(), TimingUpdateOnDemand);
 }
 
-void Animation::play()
+void Animation::play(ExceptionState& exceptionState)
 {
     PlayStateUpdateScope updateScope(*this, TimingUpdateOnDemand);
+
+    double currentTime = this->currentTimeInternal();
+    if (m_playbackRate < 0 && currentTime <= 0 && effectEnd() == std::numeric_limits<double>::infinity()) {
+        exceptionState.throwDOMException(InvalidStateError, "Cannot play reversed Animation with infinite target effect end.");
+        return;
+    }
 
     if (!playing()) {
         m_startTime = nullValue();
@@ -555,8 +565,6 @@ void Animation::play()
         m_held = true;
         m_holdTime = 0;
     }
-
-    double currentTime = this->currentTimeInternal();
 
     m_playState = Unset;
     m_finished = false;
@@ -571,14 +579,14 @@ void Animation::play()
     }
 }
 
-void Animation::reverse()
+void Animation::reverse(ExceptionState& exceptionState)
 {
     if (!m_playbackRate) {
         return;
     }
 
     setPlaybackRateInternal(-m_playbackRate);
-    play();
+    play(exceptionState);
 }
 
 void Animation::finish(ExceptionState& exceptionState)
