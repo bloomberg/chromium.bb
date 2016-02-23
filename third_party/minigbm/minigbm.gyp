@@ -11,7 +11,7 @@
       'targets': [
         {
           'target_name': 'minigbm',
-          'type': 'static_library',
+          'type': 'shared_library',
           'dependencies' : [
             '../../build/linux/system.gyp:libdrm',
           ],

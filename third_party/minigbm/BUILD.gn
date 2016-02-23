@@ -23,7 +23,7 @@ if (!use_system_minigbm) {
     packages = [ "libdrm" ]
   }
 
-  static_library("minigbm") {
+  shared_library("minigbm") {
     sources = [
       "src/cirrus.c",
       "src/exynos.c",
