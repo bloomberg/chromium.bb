@@ -30,6 +30,8 @@ site_config = config_lib.GetConfig()
 # Paladin constants for manifest names.
 PALADIN_COMMIT_ELEMENT = 'pending_commit'
 
+ANDROID_ELEMENT = 'android'
+ANDROID_VERSION_ATTR = 'version'
 CHROME_ELEMENT = 'chrome'
 CHROME_VERSION_ATTR = 'version'
 LKGM_ELEMENT = 'lkgm'
@@ -194,6 +196,22 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     manifest_dom.documentElement.appendChild(lkgm_element)
     self._WriteXml(manifest_dom, manifest)
 
+  def _AddAndroidVersionToManifest(self, manifest, android_version):
+    """Adds the Android element with version |android_version| to |manifest|.
+
+    The manifest file should contain the Android version to build for
+    PFQ slaves.
+
+    Args:
+      manifest: Path to the manifest
+      android_version: A string representing the version of Android
+    """
+    manifest_dom = minidom.parse(manifest)
+    android = manifest_dom.createElement(ANDROID_ELEMENT)
+    android.setAttribute(ANDROID_VERSION_ATTR, android_version)
+    manifest_dom.documentElement.appendChild(android)
+    self._WriteXml(manifest_dom, manifest)
+
   def _AddChromeVersionToManifest(self, manifest, chrome_version):
     """Adds the chrome element with version |chrome_version| to |manifest|.
 
@@ -261,6 +279,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     self.cros_source.Sync(detach=True)
 
   def CreateNewCandidate(self, validation_pool=None,
+                         android_version=None,
                          chrome_version=None,
                          retries=manifest_version.NUM_RETRIES,
                          build_id=None):
@@ -269,6 +288,8 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     Args:
       validation_pool: Validation pool to apply to the manifest before
         publishing.
+      android_version: The Android version to write in the manifest. Defaults
+        to None, in which case no version is written.
       chrome_version: The Chrome version to write in the manifest. Defaults
         to None, in which case no version is written.
       retries: Number of retries for updating the status. Defaults to
@@ -310,6 +331,10 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       self._AdjustRepoCheckoutToLocalManifest(manifest_dir)
 
     new_manifest = self.CreateManifest()
+
+    # For Android PFQ, add the version of Android to use.
+    if android_version:
+      self._AddAndroidVersionToManifest(new_manifest, android_version)
 
     # For Chrome PFQ, add the version of Chrome to use.
     if chrome_version:

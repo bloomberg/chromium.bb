@@ -364,6 +364,11 @@ VALID_CHROME_REVISIONS = [CHROME_REV_TOT, CHROME_REV_LATEST,
 ANDROID_PN = 'android-container'
 ANDROID_CP = 'chromeos-base/%s' % ANDROID_PN
 
+# Builds and validates the latest Android release.
+ANDROID_REV_LATEST = 'latest_release'
+VALID_ANDROID_REVISIONS = [ANDROID_REV_LATEST]
+
+
 # Builder types supported
 BAREMETAL_BUILD_SLAVE_TYPE = 'baremetal'
 VM_BUILD_SLAVE_TYPE = 'vm'

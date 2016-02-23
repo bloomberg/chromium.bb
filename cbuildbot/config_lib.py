@@ -480,6 +480,9 @@ def DefaultSettings():
       # branch.
       push_overlays=None,
 
+      # Uprev Android, values of 'latest_release', or None.
+      android_rev=None,
+
       # Uprev Chrome, values of 'tot', 'stable_release', or None.
       chrome_rev=None,
 

@@ -1069,6 +1069,7 @@ def GetConfig():
       uprev=False,
       overlays=constants.BOTH_OVERLAYS,
       manifest_version=True,
+      android_rev=constants.ANDROID_REV_LATEST,
       description='Preflight Android Uprev & Build (internal)',
       vm_tests=[constants.SMOKE_SUITE_TEST_TYPE,
                 constants.SIMPLE_AU_TEST_TYPE],

@@ -40,6 +40,7 @@ from chromite.lib import graphite
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 from chromite.lib import timeout_util
+from chromite.scripts import cros_mark_android_as_stable
 from chromite.scripts import cros_mark_chrome_as_stable
 
 try:
@@ -568,6 +569,28 @@ class ManifestVersionedSyncStage(SyncStage):
         dry_run=dry_run,
         master=self._run.config.master))
 
+  def _SetAndroidVersionIfApplicable(self, manifest):
+    """If 'android' is in |manifest|, write version to the BuilderRun object.
+
+    Args:
+      manifest: Path to the manifest.
+    """
+    manifest_dom = minidom.parse(manifest)
+    elements = manifest_dom.getElementsByTagName(lkgm_manager.ANDROID_ELEMENT)
+
+    if elements:
+      android_version = elements[0].getAttribute(
+          lkgm_manager.ANDROID_VERSION_ATTR)
+      logging.info(
+          'Android version was found in the manifest: %s', android_version)
+      # Update the metadata dictionary. This is necessary because the
+      # metadata dictionary is preserved through re-executions, so
+      # SyncAndroidStage can read the version from the dictionary
+      # later. This is easier than parsing the manifest again after
+      # the re-execution.
+      self._run.attrs.metadata.UpdateKeyDictWithDict(
+          'version', {'android': android_version})
+
   def _SetChromeVersionIfApplicable(self, manifest):
     """If 'chrome' is in |manifest|, write the version to the BuilderRun object.
 
@@ -713,6 +736,7 @@ class ManifestVersionedSyncStage(SyncStage):
       self._Print('\nRELEASETAG: %s\n' % (
           self.manifest_manager.current_version))
 
+    self._SetAndroidVersionIfApplicable(next_manifest)
     self._SetChromeVersionIfApplicable(next_manifest)
     # To keep local trybots working, remove restricted checkouts from the
     # official manifest we get from manifest-versions.
@@ -745,6 +769,7 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
     super(MasterSlaveLKGMSyncStage, self).__init__(builder_run, **kwargs)
     # lkgm_manager deals with making sure we're synced to whatever manifest
     # we get back in GetNextManifest so syncing again is redundant.
+    self._android_version = None
     self._chrome_version = None
 
   def _GetInitializedManager(self, internal):
@@ -804,7 +829,11 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
     build_id = self._run.attrs.metadata.GetDict().get('build_id')
     logging.info('Creating new candidate manifest, including chrome version '
                  '%s.', self._chrome_version)
+    if self._android_version:
+      logging.info('Adding Android version to new candidate manifest %s.',
+                   self._android_version)
     manifest = self.manifest_manager.CreateNewCandidate(
+        android_version=self._android_version,
         chrome_version=self._chrome_version,
         build_id=build_id)
     if MasterSlaveLKGMSyncStage.external_manager:
@@ -812,6 +841,11 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
           manifest, build_id=build_id)
 
     return manifest
+
+  def GetLatestAndroidVersion(self):
+    """Returns the version of Android to uprev."""
+    return cros_mark_android_as_stable.GetLatestBuild(
+        constants.ANDROID_BUCKET_URL, constants.ANDROID_BUILD_BRANCH)[0]
 
   def GetLatestChromeVersion(self):
     """Returns the version of Chrome to uprev."""
@@ -854,6 +888,10 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     """Performs the stage."""
+    if self._android_rev and self._run.config.master:
+      self._android_version = self.GetLatestAndroidVersion()
+      logging.info('Latest Android version is: %s', self._android_version)
+
     if (self._chrome_rev == constants.CHROME_REV_LATEST and
         self._run.config.master):
       # PFQ master needs to determine what version of Chrome to build

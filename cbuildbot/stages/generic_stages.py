@@ -101,6 +101,11 @@ class BuilderStage(object):
     if self._run.ShouldUploadPrebuilts():
       self._prebuilt_type = self._run.config.build_type
 
+    # Determine correct android_rev.
+    self._android_rev = self._run.config.android_rev
+    if self._run.options.android_rev:
+      self._android_rev = self._run.options.android_rev
+
     # Determine correct chrome_rev.
     self._chrome_rev = self._run.config.chrome_rev
     if self._run.options.chrome_rev:

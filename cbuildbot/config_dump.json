@@ -6,6 +6,7 @@
         "afdo_generate_min": false,
         "afdo_update_ebuild": false,
         "afdo_use": false,
+        "android_rev": null,
         "archive": true,
         "archive_build_debug": false,
         "binhost_base_url": null,
@@ -189,6 +190,7 @@
     "_templates": {
         "android-pfq": {
             "_template": "android-pfq",
+            "android_rev": "latest_release",
             "build_type": "android",
             "builder_class_name": "android_pfq_builders.AndroidPFQBuilder",
             "description": "Preflight Android Uprev & Build (internal)",

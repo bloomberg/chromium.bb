@@ -317,15 +317,6 @@ def _CheckChromeRootOption(_option, _opt_str, value, parser):
   parser.values.chrome_root = value
 
 
-def _CheckChromeRevOption(_option, _opt_str, value, parser):
-  """Validate the chrome_rev option."""
-  value = value.strip()
-  if value not in constants.VALID_CHROME_REVISIONS:
-    raise optparse.OptionValueError('Invalid chrome rev specified')
-
-  parser.values.chrome_rev = value
-
-
 def FindCacheDir(_parser, _options):
   return None
 
@@ -413,9 +404,12 @@ def _CreateParser():
                          'multiple copies of chromite. All these checkouts '
                          'will be contained in the directory specified here. '
                          'Default:%s' % osutils.GetGlobalTempDir())
-  parser.add_remote_option('--chrome_rev', default=None, type='string',
-                           action='callback', dest='chrome_rev',
-                           callback=_CheckChromeRevOption,
+  parser.add_remote_option('--android_rev', default=None, type='choice',
+                           choices=constants.VALID_ANDROID_REVISIONS,
+                           help=('Revision of Android to use, of type [%s]'
+                                 % '|'.join(constants.VALID_ANDROID_REVISIONS)))
+  parser.add_remote_option('--chrome_rev', default=None, type='choice',
+                           choices=constants.VALID_CHROME_REVISIONS,
                            help=('Revision of Chrome to use, of type [%s]'
                                  % '|'.join(constants.VALID_CHROME_REVISIONS)))
   parser.add_remote_option('--profile', default=None, type='string',

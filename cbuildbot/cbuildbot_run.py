@@ -39,6 +39,7 @@ from chromite.cbuildbot import constants
 from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import tree_status
 from chromite.lib import cidb
+from chromite.lib import cros_build_lib
 from chromite.lib import portage_util
 
 
@@ -100,6 +101,10 @@ class AttrTimeoutError(RunAttributesError):
     self.args = (attr, ) + tuple(args)
 
 
+class NoAndroidVersionError(Exception):
+  """For when Android version cannot be determined."""
+
+
 class LockableQueue(object):
   """Multiprocessing queue with associated recursive lock.
 
@@ -150,6 +155,7 @@ class RunAttributes(object):
   """
 
   REGULAR_ATTRS = frozenset((
+      'android_version',  # Set by SyncAndroidStage, if it runs.
       'chrome_version',   # Set by SyncChromeStage, if it runs.
       'manifest_manager', # Set by ManifestVersionedSyncStage.
       'release_tag',      # Set by cbuildbot after sync stage.
@@ -622,6 +628,7 @@ class _BuilderRunBase(object):
 
     # Certain run attributes have sensible defaults which can be set here.
     # This allows all code to safely assume that the run attribute exists.
+    attrs.android_version = None
     attrs.chrome_version = None
     attrs.metadata = metadata_lib.CBuildbotMetadata(
         multiprocess_manager=multiprocess_manager)
@@ -783,6 +790,47 @@ class _BuilderRunBase(object):
                                      self.buildnumber)
 
     return calc_version
+
+  def DetermineAndroidVersion(self, boards=None):
+    """Determine the current Android version in buildroot now and return it.
+
+    This uses the typical portage logic to determine which version of Android
+    is active right now in the buildroot.
+
+    Args:
+      boards: List of boards to check version of.
+
+    Returns:
+      The Android build ID of the container for the boards.
+
+    Raises:
+      NoAndroidVersionError: if no unique Android version can be determined.
+    """
+    version = None
+    try:
+      if boards:
+        # Verify that all boards have the same version.
+        for board in boards:
+          cpv = portage_util.BestVisible(constants.ANDROID_CP,
+                                         buildroot=self.buildroot,
+                                         board=board)
+          if version is None:
+            version = cpv.version_no_rev
+          elif version != cpv.version_no_rev:
+            raise NoAndroidVersionError(
+                'Different Android versions (%s vs %s) for %s' %
+                (version, cpv.version_no_rev, boards))
+
+      else:
+        # This is expected to fail until ANDROID_CP is in the main overlays.
+        cpv = portage_util.BestVisible(constants.ANDROID_CP,
+                                       buildroot=self.buildroot)
+        version = cpv.version_no_rev
+    except cros_build_lib.RunCommandError as ex:
+      raise NoAndroidVersionError(
+          'Android version could not be determined for %s' % boards, ex)
+
+    return version
 
   def DetermineChromeVersion(self):
     """Determine the current Chrome version in buildroot now and return it.

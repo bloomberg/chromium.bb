@@ -138,6 +138,7 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     options.remote_trybot = False
     options.latest_toolchain = False
     options.buildnumber = 1234
+    options.android_rev = None
     options.chrome_rev = None
     options.branch = 'dontcare'
     options.chrome_root = False

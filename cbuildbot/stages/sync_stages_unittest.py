@@ -174,6 +174,8 @@ class ManifestVersionedSyncStageTest(
     """Tests basic ManifestVersionedSyncStage with branch ooga_booga"""
     self.PatchObject(sync_stages.ManifestVersionedSyncStage, 'Initialize')
     self.PatchObject(sync_stages.ManifestVersionedSyncStage,
+                     '_SetAndroidVersionIfApplicable')
+    self.PatchObject(sync_stages.ManifestVersionedSyncStage,
                      '_SetChromeVersionIfApplicable')
     self.PatchObject(manifest_version.BuildSpecsManager, 'GetNextBuildSpec',
                      return_value=self.next_version)
