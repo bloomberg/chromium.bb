@@ -34,6 +34,7 @@ import org.chromium.android_webview.AwContentsStatics;
 import org.chromium.android_webview.AwCookieManager;
 import org.chromium.android_webview.AwDataReductionProxyManager;
 import org.chromium.android_webview.AwDevToolsServer;
+import org.chromium.android_webview.AwNetworkChangeNotifierRegistrationPolicy;
 import org.chromium.android_webview.AwQuotaManagerBridge;
 import org.chromium.android_webview.AwResource;
 import org.chromium.android_webview.AwSettings;
@@ -50,6 +51,7 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.browser.ContentViewStatics;
+import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.ResourceBundle;
 
 import java.io.File;
@@ -248,6 +250,9 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         setUpResources(webViewPackageName, context);
         ResourceBundle.initializeLocalePaks(context, R.array.locale_paks);
         initPlatSupportLibrary();
+        NetworkChangeNotifier.init(context);
+        NetworkChangeNotifier.setAutoDetectConnectivityState(
+                new AwNetworkChangeNotifierRegistrationPolicy());
         final int extraBindFlags = 0;
         AwBrowserProcess.configureChildProcessLauncher(webViewPackageName, extraBindFlags);
         AwBrowserProcess.start(context);
