@@ -40,44 +40,55 @@ bool ShouldBeProcessed(const AutofillField* field) {
 
 }  // namespace
 
+// There's an implicit precedence determined by the values assigned here. Email
+// is currently the most important followed by Phone, Address, Credit Card and
+// finally Name.
+const float FormField::kBaseEmailParserScore = 1.4f;
+const float FormField::kBasePhoneParserScore = 1.3f;
+const float FormField::kBaseAddressParserScore = 1.2f;
+const float FormField::kBaseCreditCardParserScore = 1.1f;
+const float FormField::kBaseNameParserScore = 1.0f;
+
 // static
-ServerFieldTypeMap FormField::ParseFormFields(
+FieldCandidatesMap FormField::ParseFormFields(
     const std::vector<AutofillField*>& fields,
     bool is_form_tag) {
-  ServerFieldTypeMap map;
-
   // Set up a working copy of the fields to be processed.
   std::vector<AutofillField*> remaining_fields;
   std::copy_if(fields.begin(), fields.end(),
                std::back_inserter(remaining_fields), ShouldBeProcessed);
 
+  FieldCandidatesMap field_candidates;
+
   // Email pass.
-  ParseFormFieldsPass(EmailField::Parse, &remaining_fields, &map);
-  const size_t email_count = map.size();
+  ParseFormFieldsPass(EmailField::Parse, &remaining_fields, &field_candidates);
+  const size_t email_count = field_candidates.size();
 
   // Phone pass.
-  ParseFormFieldsPass(PhoneField::Parse, &remaining_fields, &map);
+  ParseFormFieldsPass(PhoneField::Parse, &remaining_fields, &field_candidates);
 
   // Address pass.
-  ParseFormFieldsPass(AddressField::Parse, &remaining_fields, &map);
+  ParseFormFieldsPass(AddressField::Parse, &remaining_fields,
+                      &field_candidates);
 
   // Credit card pass.
-  ParseFormFieldsPass(CreditCardField::Parse, &remaining_fields, &map);
+  ParseFormFieldsPass(CreditCardField::Parse, &remaining_fields,
+                      &field_candidates);
 
   // Name pass.
-  ParseFormFieldsPass(NameField::Parse, &remaining_fields, &map);
+  ParseFormFieldsPass(NameField::Parse, &remaining_fields, &field_candidates);
 
   // Do not autofill a form if there are less than 3 recognized fields.
   // Otherwise it is very easy to have false positives. http://crbug.com/447332
   // For <form> tags, make an exception for email fields, which are commonly the
   // only recognized field on account registration sites.
   static const size_t kThreshold = 3;
-  const bool accept_parsing =
-      (map.size() >= kThreshold || (is_form_tag && email_count > 0));
+  const bool accept_parsing = (field_candidates.size() >= kThreshold ||
+                               (is_form_tag && email_count > 0));
   if (!accept_parsing)
-    map.clear();
+    field_candidates.clear();
 
-  return map;
+  return field_candidates;
 }
 
 // static
@@ -104,40 +115,6 @@ bool FormField::ParseFieldSpecifics(AutofillScanner* scanner,
 }
 
 // static
-FormField::ParseNameLabelResult FormField::ParseNameAndLabelSeparately(
-    AutofillScanner* scanner,
-    const base::string16& pattern,
-    int match_type,
-    AutofillField** match) {
-  if (scanner->IsEnd())
-    return RESULT_MATCH_NONE;
-
-  AutofillField* cur_match = nullptr;
-  size_t saved_cursor = scanner->SaveCursor();
-  bool parsed_name = ParseFieldSpecifics(scanner,
-                                         pattern,
-                                         match_type & ~MATCH_LABEL,
-                                         &cur_match);
-  scanner->RewindTo(saved_cursor);
-  bool parsed_label = ParseFieldSpecifics(scanner,
-                                          pattern,
-                                          match_type & ~MATCH_NAME,
-                                          &cur_match);
-  if (parsed_name && parsed_label) {
-    if (match)
-      *match = cur_match;
-    return RESULT_MATCH_NAME_LABEL;
-  }
-
-  scanner->RewindTo(saved_cursor);
-  if (parsed_name)
-    return RESULT_MATCH_NAME;
-  if (parsed_label)
-    return RESULT_MATCH_LABEL;
-  return RESULT_MATCH_NONE;
-}
-
-// static
 bool FormField::ParseEmptyLabel(AutofillScanner* scanner,
                                 AutofillField** match) {
   return ParseFieldSpecifics(scanner,
@@ -147,14 +124,16 @@ bool FormField::ParseEmptyLabel(AutofillScanner* scanner,
 }
 
 // static
-bool FormField::AddClassification(const AutofillField* field,
+void FormField::AddClassification(const AutofillField* field,
                                   ServerFieldType type,
-                                  ServerFieldTypeMap* map) {
+                                  float score,
+                                  FieldCandidatesMap* field_candidates) {
   // Several fields are optional.
-  if (!field)
-    return true;
+  if (field == nullptr)
+    return;
 
-  return map->insert(make_pair(field->unique_name(), type)).second;
+  FieldCandidates& candidates = (*field_candidates)[field->unique_name()];
+  candidates.AddFieldCandidate(type, score);
 }
 
 // static.
@@ -193,22 +172,21 @@ bool FormField::Match(const AutofillField* field,
 // static
 void FormField::ParseFormFieldsPass(ParseFunction parse,
                                     std::vector<AutofillField*>* fields,
-                                    ServerFieldTypeMap* map) {
+                                    FieldCandidatesMap* field_candidates) {
   // Store unmatched fields for further processing by the caller.
   std::vector<AutofillField*> remaining_fields;
 
   AutofillScanner scanner(*fields);
   while (!scanner.IsEnd()) {
     scoped_ptr<FormField> form_field(parse(&scanner));
-    if (!form_field) {
+    if (form_field == nullptr) {
       remaining_fields.push_back(scanner.Cursor());
       scanner.Advance();
-      continue;
+    } else {
+      // Add entries into |field_candidates| for each field type found in
+      // |fields|.
+      form_field->AddClassifications(field_candidates);
     }
-
-    // Add entries into the map for each field type found in |form_field|.
-    bool ok = form_field->ClassifyField(map);
-    DCHECK(ok);
   }
 
   std::swap(*fields, remaining_fields);

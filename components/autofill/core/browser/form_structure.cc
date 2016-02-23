@@ -24,6 +24,7 @@
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/field_candidates.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_field.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -350,12 +351,12 @@ void FormStructure::DetermineHeuristicTypes() {
   // prediction routines.
   if (active_field_count() >= kRequiredFieldsForPredictionRoutines &&
       (is_form_tag_ || is_formless_checkout_)) {
-    const ServerFieldTypeMap field_type_map =
+    const FieldCandidatesMap field_type_map =
         FormField::ParseFormFields(fields_.get(), is_form_tag_);
     for (AutofillField* field : fields_) {
       const auto iter = field_type_map.find(field->unique_name());
       if (iter != field_type_map.end())
-        field->set_heuristic_type(iter->second);
+        field->set_heuristic_type(iter->second.BestHeuristicType());
     }
   }
 

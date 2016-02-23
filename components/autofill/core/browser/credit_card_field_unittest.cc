@@ -24,7 +24,7 @@ class CreditCardFieldTest : public testing::Test {
  protected:
   ScopedVector<AutofillField> list_;
   scoped_ptr<const CreditCardField> field_;
-  ServerFieldTypeMap field_type_map_;
+  FieldCandidatesMap field_candidates_map_;
 
   // Parses the contents of |list_| as a form, and stores the result into
   // |field_|.
@@ -36,8 +36,8 @@ class CreditCardFieldTest : public testing::Test {
 
   // Associates fields with their corresponding types, based on the previous
   // call to Parse().
-  bool ClassifyField() {
-    return field_->ClassifyField(&field_type_map_);
+  void AddClassifications() {
+    return field_->AddClassifications(&field_candidates_map_);
   }
 
  private:
@@ -101,17 +101,19 @@ TEST_F(CreditCardFieldTest, ParseMiniumCreditCard) {
 
   Parse();
   ASSERT_NE(nullptr, field_.get());
-  EXPECT_TRUE(ClassifyField());
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("number1")) != field_type_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NUMBER, field_type_map_[ASCIIToUTF16("number1")]);
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("month2")) != field_type_map_.end());
-  EXPECT_EQ(CREDIT_CARD_EXP_MONTH, field_type_map_[ASCIIToUTF16("month2")]);
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("year3")) != field_type_map_.end());
+  AddClassifications();
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("number1")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_NUMBER,
+            field_candidates_map_[ASCIIToUTF16("number1")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("month2")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_EXP_MONTH,
+            field_candidates_map_[ASCIIToUTF16("month2")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("year3")) !=
+              field_candidates_map_.end());
   EXPECT_EQ(CREDIT_CARD_EXP_4_DIGIT_YEAR,
-      field_type_map_[ASCIIToUTF16("year3")]);
+            field_candidates_map_[ASCIIToUTF16("year3")].BestHeuristicType());
 }
 
 TEST_F(CreditCardFieldTest, ParseFullCreditCard) {
@@ -147,27 +149,31 @@ TEST_F(CreditCardFieldTest, ParseFullCreditCard) {
 
   Parse();
   ASSERT_NE(nullptr, field_.get());
-  EXPECT_TRUE(ClassifyField());
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("type")) != field_type_map_.end());
-  EXPECT_EQ(CREDIT_CARD_TYPE, field_type_map_[ASCIIToUTF16("type")]);
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("name")) != field_type_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NAME, field_type_map_[ASCIIToUTF16("name")]);
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("number")) != field_type_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NUMBER, field_type_map_[ASCIIToUTF16("number")]);
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("month")) != field_type_map_.end());
-  EXPECT_EQ(CREDIT_CARD_EXP_MONTH, field_type_map_[ASCIIToUTF16("month")]);
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("year")) != field_type_map_.end());
+  AddClassifications();
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("type")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_TYPE,
+            field_candidates_map_[ASCIIToUTF16("type")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("name")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_NAME,
+            field_candidates_map_[ASCIIToUTF16("name")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("number")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_NUMBER,
+            field_candidates_map_[ASCIIToUTF16("number")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("month")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_EXP_MONTH,
+            field_candidates_map_[ASCIIToUTF16("month")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("year")) !=
+              field_candidates_map_.end());
   EXPECT_EQ(CREDIT_CARD_EXP_4_DIGIT_YEAR,
-      field_type_map_[ASCIIToUTF16("year")]);
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("cvc")) != field_type_map_.end());
+            field_candidates_map_[ASCIIToUTF16("year")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("cvc")) !=
+              field_candidates_map_.end());
   EXPECT_EQ(CREDIT_CARD_VERIFICATION_CODE,
-      field_type_map_[ASCIIToUTF16("cvc")]);
+            field_candidates_map_[ASCIIToUTF16("cvc")].BestHeuristicType());
 }
 
 TEST_F(CreditCardFieldTest, ParseExpMonthYear) {
@@ -192,20 +198,23 @@ TEST_F(CreditCardFieldTest, ParseExpMonthYear) {
 
   Parse();
   ASSERT_NE(nullptr, field_.get());
-  EXPECT_TRUE(ClassifyField());
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("name1")) != field_type_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NAME, field_type_map_[ASCIIToUTF16("name1")]);
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("number2")) != field_type_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NUMBER, field_type_map_[ASCIIToUTF16("number2")]);
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("month3")) != field_type_map_.end());
-  EXPECT_EQ(CREDIT_CARD_EXP_MONTH, field_type_map_[ASCIIToUTF16("month3")]);
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("year4")) != field_type_map_.end());
+  AddClassifications();
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("name1")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_NAME,
+            field_candidates_map_[ASCIIToUTF16("name1")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("number2")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_NUMBER,
+            field_candidates_map_[ASCIIToUTF16("number2")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("month3")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_EXP_MONTH,
+            field_candidates_map_[ASCIIToUTF16("month3")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("year4")) !=
+              field_candidates_map_.end());
   EXPECT_EQ(CREDIT_CARD_EXP_4_DIGIT_YEAR,
-      field_type_map_[ASCIIToUTF16("year4")]);
+            field_candidates_map_[ASCIIToUTF16("year4")].BestHeuristicType());
 }
 
 TEST_F(CreditCardFieldTest, ParseExpMonthYear2) {
@@ -230,20 +239,23 @@ TEST_F(CreditCardFieldTest, ParseExpMonthYear2) {
 
   Parse();
   ASSERT_NE(nullptr, field_.get());
-  EXPECT_TRUE(ClassifyField());
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("name1")) != field_type_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NAME, field_type_map_[ASCIIToUTF16("name1")]);
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("number2")) != field_type_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NUMBER, field_type_map_[ASCIIToUTF16("number2")]);
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("month3")) != field_type_map_.end());
-  EXPECT_EQ(CREDIT_CARD_EXP_MONTH, field_type_map_[ASCIIToUTF16("month3")]);
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("year4")) != field_type_map_.end());
+  AddClassifications();
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("name1")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_NAME,
+            field_candidates_map_[ASCIIToUTF16("name1")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("number2")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_NUMBER,
+            field_candidates_map_[ASCIIToUTF16("number2")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("month3")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_EXP_MONTH,
+            field_candidates_map_[ASCIIToUTF16("month3")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("year4")) !=
+              field_candidates_map_.end());
   EXPECT_EQ(CREDIT_CARD_EXP_4_DIGIT_YEAR,
-      field_type_map_[ASCIIToUTF16("year4")]);
+            field_candidates_map_[ASCIIToUTF16("year4")].BestHeuristicType());
 }
 
 TEST_F(CreditCardFieldTest, ParseExpField) {
@@ -264,17 +276,19 @@ TEST_F(CreditCardFieldTest, ParseExpField) {
 
   Parse();
   ASSERT_NE(nullptr, field_.get());
-  EXPECT_TRUE(ClassifyField());
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("name1")) != field_type_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NAME, field_type_map_[ASCIIToUTF16("name1")]);
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("number2")) != field_type_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NUMBER, field_type_map_[ASCIIToUTF16("number2")]);
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("exp3")) != field_type_map_.end());
+  AddClassifications();
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("name1")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_NAME,
+            field_candidates_map_[ASCIIToUTF16("name1")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("number2")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_NUMBER,
+            field_candidates_map_[ASCIIToUTF16("number2")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("exp3")) !=
+              field_candidates_map_.end());
   EXPECT_EQ(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR,
-            field_type_map_[ASCIIToUTF16("exp3")]);
+            field_candidates_map_[ASCIIToUTF16("exp3")].BestHeuristicType());
 }
 
 TEST_F(CreditCardFieldTest, ParseExpField2DigitYear) {
@@ -295,17 +309,19 @@ TEST_F(CreditCardFieldTest, ParseExpField2DigitYear) {
 
   Parse();
   ASSERT_NE(nullptr, field_.get());
-  EXPECT_TRUE(ClassifyField());
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("name1")) != field_type_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NAME, field_type_map_[ASCIIToUTF16("name1")]);
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("number2")) != field_type_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NUMBER, field_type_map_[ASCIIToUTF16("number2")]);
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("exp3")) != field_type_map_.end());
+  AddClassifications();
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("name1")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_NAME,
+            field_candidates_map_[ASCIIToUTF16("name1")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("number2")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_NUMBER,
+            field_candidates_map_[ASCIIToUTF16("number2")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("exp3")) !=
+              field_candidates_map_.end());
   EXPECT_EQ(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR,
-            field_type_map_[ASCIIToUTF16("exp3")]);
+            field_candidates_map_[ASCIIToUTF16("exp3")].BestHeuristicType());
 }
 
 TEST_F(CreditCardFieldTest, ParseExpField2DigitYearDueToMaxLength) {
@@ -327,17 +343,19 @@ TEST_F(CreditCardFieldTest, ParseExpField2DigitYearDueToMaxLength) {
 
   Parse();
   ASSERT_NE(nullptr, field_.get());
-  EXPECT_TRUE(ClassifyField());
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("name1")) != field_type_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NAME, field_type_map_[ASCIIToUTF16("name1")]);
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("number2")) != field_type_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NUMBER, field_type_map_[ASCIIToUTF16("number2")]);
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("exp3")) != field_type_map_.end());
+  AddClassifications();
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("name1")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_NAME,
+            field_candidates_map_[ASCIIToUTF16("name1")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("number2")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_NUMBER,
+            field_candidates_map_[ASCIIToUTF16("number2")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("exp3")) !=
+              field_candidates_map_.end());
   EXPECT_EQ(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR,
-            field_type_map_[ASCIIToUTF16("exp3")]);
+            field_candidates_map_[ASCIIToUTF16("exp3")].BestHeuristicType());
 }
 
 TEST_F(CreditCardFieldTest, ParseExpField4DigitYear) {
@@ -358,17 +376,19 @@ TEST_F(CreditCardFieldTest, ParseExpField4DigitYear) {
 
   Parse();
   ASSERT_NE(nullptr, field_.get());
-  EXPECT_TRUE(ClassifyField());
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("name1")) != field_type_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NAME, field_type_map_[ASCIIToUTF16("name1")]);
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("number2")) != field_type_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NUMBER, field_type_map_[ASCIIToUTF16("number2")]);
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("exp3")) != field_type_map_.end());
+  AddClassifications();
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("name1")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_NAME,
+            field_candidates_map_[ASCIIToUTF16("name1")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("number2")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_NUMBER,
+            field_candidates_map_[ASCIIToUTF16("number2")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("exp3")) !=
+              field_candidates_map_.end());
   EXPECT_EQ(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR,
-            field_type_map_[ASCIIToUTF16("exp3")]);
+            field_candidates_map_[ASCIIToUTF16("exp3")].BestHeuristicType());
 }
 
 TEST_F(CreditCardFieldTest, ParseCreditCardHolderNameWithCCFullName) {
@@ -381,10 +401,11 @@ TEST_F(CreditCardFieldTest, ParseCreditCardHolderNameWithCCFullName) {
 
   Parse();
   ASSERT_NE(nullptr, field_.get());
-  EXPECT_TRUE(ClassifyField());
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("name1")) != field_type_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NAME, field_type_map_[ASCIIToUTF16("name1")]);
+  AddClassifications();
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("name1")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_NAME,
+            field_candidates_map_[ASCIIToUTF16("name1")].BestHeuristicType());
 }
 
 // Verifies that <input type="month"> controls are able to be parsed correctly.
@@ -403,15 +424,15 @@ TEST_F(CreditCardFieldTest, ParseMonthControl) {
 
   Parse();
   ASSERT_NE(nullptr, field_.get());
-  EXPECT_TRUE(ClassifyField());
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("number1")) != field_type_map_.end());
+  AddClassifications();
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("number1")) !=
+              field_candidates_map_.end());
   EXPECT_EQ(CREDIT_CARD_NUMBER,
-            field_type_map_[ASCIIToUTF16("number1")]);
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("date2")) != field_type_map_.end());
+            field_candidates_map_[ASCIIToUTF16("number1")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("date2")) !=
+              field_candidates_map_.end());
   EXPECT_EQ(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR,
-            field_type_map_[ASCIIToUTF16("date2")]);
+            field_candidates_map_[ASCIIToUTF16("date2")].BestHeuristicType());
 }
 
 // Verify that heuristics <input name="ccyear" maxlength="2"/> considers
@@ -434,17 +455,19 @@ TEST_F(CreditCardFieldTest, ParseCreditCardExpYear_2DigitMaxLength) {
 
   Parse();
   ASSERT_NE(nullptr, field_.get());
-  EXPECT_TRUE(ClassifyField());
-  ASSERT_TRUE(field_type_map_.find(ASCIIToUTF16("number")) !=
-              field_type_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NUMBER, field_type_map_[ASCIIToUTF16("number")]);
-  ASSERT_TRUE(field_type_map_.find(ASCIIToUTF16("month")) !=
-              field_type_map_.end());
-  EXPECT_EQ(CREDIT_CARD_EXP_MONTH, field_type_map_[ASCIIToUTF16("month")]);
-  ASSERT_TRUE(field_type_map_.find(ASCIIToUTF16("year")) !=
-              field_type_map_.end());
+  AddClassifications();
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("number")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_NUMBER,
+            field_candidates_map_[ASCIIToUTF16("number")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("month")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_EXP_MONTH,
+            field_candidates_map_[ASCIIToUTF16("month")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("year")) !=
+              field_candidates_map_.end());
   EXPECT_EQ(CREDIT_CARD_EXP_2_DIGIT_YEAR,
-            field_type_map_[ASCIIToUTF16("year")]);
+            field_candidates_map_[ASCIIToUTF16("year")].BestHeuristicType());
 }
 
 TEST_F(CreditCardFieldTest, ParseCreditCardNumberWithSplit) {
@@ -484,35 +507,40 @@ TEST_F(CreditCardFieldTest, ParseCreditCardNumberWithSplit) {
 
   Parse();
   ASSERT_NE(nullptr, field_.get());
-  EXPECT_TRUE(ClassifyField());
+  AddClassifications();
 
-  ASSERT_TRUE(field_type_map_.find(ASCIIToUTF16("number1")) !=
-              field_type_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NUMBER, field_type_map_[ASCIIToUTF16("number1")]);
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("number1")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_NUMBER,
+            field_candidates_map_[ASCIIToUTF16("number1")].BestHeuristicType());
   EXPECT_EQ(0U, list_[0]->credit_card_number_offset());
 
-  ASSERT_TRUE(field_type_map_.find(ASCIIToUTF16("number2")) !=
-              field_type_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NUMBER, field_type_map_[ASCIIToUTF16("number2")]);
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("number2")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_NUMBER,
+            field_candidates_map_[ASCIIToUTF16("number2")].BestHeuristicType());
   EXPECT_EQ(4U, list_[1]->credit_card_number_offset());
 
-  ASSERT_TRUE(field_type_map_.find(ASCIIToUTF16("number3")) !=
-              field_type_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NUMBER, field_type_map_[ASCIIToUTF16("number3")]);
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("number3")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_NUMBER,
+            field_candidates_map_[ASCIIToUTF16("number3")].BestHeuristicType());
   EXPECT_EQ(8U, list_[2]->credit_card_number_offset());
 
-  ASSERT_TRUE(field_type_map_.find(ASCIIToUTF16("number4")) !=
-              field_type_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NUMBER, field_type_map_[ASCIIToUTF16("number4")]);
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("number4")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_NUMBER,
+            field_candidates_map_[ASCIIToUTF16("number4")].BestHeuristicType());
   EXPECT_EQ(12U, list_[3]->credit_card_number_offset());
 
-  ASSERT_TRUE(field_type_map_.find(ASCIIToUTF16("month5")) !=
-              field_type_map_.end());
-  EXPECT_EQ(CREDIT_CARD_EXP_MONTH, field_type_map_[ASCIIToUTF16("month5")]);
-  ASSERT_TRUE(field_type_map_.find(ASCIIToUTF16("year6")) !=
-              field_type_map_.end());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("month5")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_EXP_MONTH,
+            field_candidates_map_[ASCIIToUTF16("month5")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("year6")) !=
+              field_candidates_map_.end());
   EXPECT_EQ(CREDIT_CARD_EXP_4_DIGIT_YEAR,
-            field_type_map_[ASCIIToUTF16("year6")]);
+            field_candidates_map_[ASCIIToUTF16("year6")].BestHeuristicType());
 }
 
 TEST_F(CreditCardFieldTest, ParseMultipleCreditCardNumbers) {
@@ -541,24 +569,28 @@ TEST_F(CreditCardFieldTest, ParseMultipleCreditCardNumbers) {
 
   Parse();
   ASSERT_NE(nullptr, field_.get());
-  EXPECT_TRUE(ClassifyField());
+  AddClassifications();
 
-  ASSERT_TRUE(field_type_map_.find(ASCIIToUTF16("name1")) !=
-              field_type_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NAME, field_type_map_[ASCIIToUTF16("name1")]);
-  ASSERT_TRUE(field_type_map_.find(ASCIIToUTF16("number2")) !=
-              field_type_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NUMBER, field_type_map_[ASCIIToUTF16("number2")]);
-  ASSERT_TRUE(field_type_map_.find(ASCIIToUTF16("number3")) !=
-              field_type_map_.end());
-  EXPECT_EQ(CREDIT_CARD_NUMBER, field_type_map_[ASCIIToUTF16("number3")]);
-  ASSERT_TRUE(field_type_map_.find(ASCIIToUTF16("month4")) !=
-              field_type_map_.end());
-  EXPECT_EQ(CREDIT_CARD_EXP_MONTH, field_type_map_[ASCIIToUTF16("month4")]);
-  ASSERT_TRUE(field_type_map_.find(ASCIIToUTF16("year5")) !=
-              field_type_map_.end());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("name1")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_NAME,
+            field_candidates_map_[ASCIIToUTF16("name1")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("number2")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_NUMBER,
+            field_candidates_map_[ASCIIToUTF16("number2")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("number3")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_NUMBER,
+            field_candidates_map_[ASCIIToUTF16("number3")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("month4")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_EXP_MONTH,
+            field_candidates_map_[ASCIIToUTF16("month4")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("year5")) !=
+              field_candidates_map_.end());
   EXPECT_EQ(CREDIT_CARD_EXP_4_DIGIT_YEAR,
-            field_type_map_[ASCIIToUTF16("year5")]);
+            field_candidates_map_[ASCIIToUTF16("year5")].BestHeuristicType());
 }
 
 }  // namespace autofill

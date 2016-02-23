@@ -161,6 +161,8 @@
         'autofill/core/browser/dialog_section.h',
         'autofill/core/browser/email_field.cc',
         'autofill/core/browser/email_field.h',
+        'autofill/core/browser/field_candidates.h',
+        'autofill/core/browser/field_candidates.cc',
         'autofill/core/browser/field_types.h',
         'autofill/core/browser/form_field.cc',
         'autofill/core/browser/form_field.h',

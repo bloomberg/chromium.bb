@@ -33,8 +33,7 @@ class PhoneField : public FormField {
   static scoped_ptr<FormField> Parse(AutofillScanner* scanner);
 
  protected:
-  // FormField:
-  bool ClassifyField(ServerFieldTypeMap* map) const override;
+  void AddClassifications(FieldCandidatesMap* field_candidates) const override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PhoneFieldTest, ParseOneLinePhone);

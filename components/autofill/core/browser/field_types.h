@@ -247,7 +247,6 @@ enum FieldTypeGroup {
 };
 
 typedef std::set<ServerFieldType> ServerFieldTypeSet;
-typedef std::map<base::string16, ServerFieldType> ServerFieldTypeMap;
 
 }  // namespace autofill
 

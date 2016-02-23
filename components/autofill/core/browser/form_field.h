@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
+#include "components/autofill/core/browser/field_candidates.h"
 #include "components/autofill/core/browser/field_types.h"
 
 namespace autofill {
@@ -27,8 +28,8 @@ class FormField {
 
   // Classifies each field in |fields| with its heuristically detected type.
   // Each field has a derived unique name that is used as the key into the
-  // returned ServerFieldTypeMap.
-  static ServerFieldTypeMap ParseFormFields(
+  // returned FieldCandidatesMap.
+  static FieldCandidatesMap ParseFormFields(
       const std::vector<AutofillField*>& fields,
       bool is_form_tag);
 
@@ -55,13 +56,12 @@ class FormField {
     MATCH_DEFAULT    = MATCH_LABEL | MATCH_NAME | MATCH_TEXT,
   };
 
-  // When parsing a field's label and name separately with a given pattern:
-  enum ParseNameLabelResult {
-    RESULT_MATCH_NONE,       // No match with the label or name.
-    RESULT_MATCH_LABEL,      // Only the label matches the pattern.
-    RESULT_MATCH_NAME,       // Only the name matches the pattern.
-    RESULT_MATCH_NAME_LABEL  // Name and label both match the pattern.
-  };
+  // Initial values assigned to FieldCandidates by their corresponding parsers.
+  static const float kBaseEmailParserScore;
+  static const float kBasePhoneParserScore;
+  static const float kBaseAddressParserScore;
+  static const float kBaseCreditCardParserScore;
+  static const float kBaseNameParserScore;
 
   // Only derived classes may instantiate.
   FormField() {}
@@ -82,25 +82,17 @@ class FormField {
                                   int match_type,
                                   AutofillField** match);
 
-  // Like ParseFieldSpecifics(), but applies |pattern| against the name and
-  // label of the current field separately. If the return value is
-  // RESULT_MATCH_NAME_LABEL, then |scanner| advances and |match| is filled if
-  // it is non-NULL. Otherwise |scanner| does not advance and |match| does not
-  // change.
-  static ParseNameLabelResult ParseNameAndLabelSeparately(
-      AutofillScanner* scanner,
-      const base::string16& pattern,
-      int match_type,
-      AutofillField** match);
-
   // Attempts to parse a field with an empty label.  Returns true
   // on success and fills |match| with a pointer to the field.
   static bool ParseEmptyLabel(AutofillScanner* scanner, AutofillField** match);
 
-  // Adds an association between a field and a type to |map|.
-  static bool AddClassification(const AutofillField* field,
+  // Adds an association between a |field| and a |type| into |field_candidates|.
+  // This association is weighted by |score|, the higher the stronger the
+  // association.
+  static void AddClassification(const AutofillField* field,
                                 ServerFieldType type,
-                                ServerFieldTypeMap* map);
+                                float score,
+                                FieldCandidatesMap* field_candidates);
 
   // Returns true iff |type| matches |match_type|.
   static bool MatchesFormControlType(const std::string& type, int match_type);
@@ -109,7 +101,8 @@ class FormField {
   // information.  |ParseFormFields| coordinates the parsing and extraction
   // of types from an input vector of |AutofillField| objects and delegates
   // the type extraction via this method.
-  virtual bool ClassifyField(ServerFieldTypeMap* map) const = 0;
+  virtual void AddClassifications(
+      FieldCandidatesMap* field_candidates) const = 0;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(FormFieldTest, Match);
@@ -137,10 +130,11 @@ class FormField {
   // |parse| method to match content to a given field type.
   // |fields| is both an input and an output parameter.  Upon exit |fields|
   // holds any remaining unclassified fields for further processing.
-  // Classification results of the processed fields are stored in |map|.
+  // Classification results of the processed fields are stored in
+  // |field_candidates|.
   static void ParseFormFieldsPass(ParseFunction parse,
                                   std::vector<AutofillField*>* fields,
-                                  ServerFieldTypeMap* map);
+                                  FieldCandidatesMap* field_candidates);
 
   DISALLOW_COPY_AND_ASSIGN(FormField);
 };

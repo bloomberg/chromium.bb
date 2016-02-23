@@ -24,8 +24,7 @@ class CreditCardField : public FormField {
   static scoped_ptr<FormField> Parse(AutofillScanner* scanner);
 
  protected:
-  // FormField:
-  bool ClassifyField(ServerFieldTypeMap* map) const override;
+  void AddClassifications(FieldCandidatesMap* field_candidates) const override;
 
  private:
   friend class CreditCardFieldTest;

@@ -42,19 +42,19 @@ class PhoneFieldTest : public testing::Test {
   void Clear() {
     list_.clear();
     field_.reset();
-    field_type_map_.clear();
+    field_candidates_map_.clear();
   }
 
   void CheckField(const std::string& name,
                   ServerFieldType expected_type) const {
-    auto it = field_type_map_.find(ASCIIToUTF16(name));
-    ASSERT_TRUE(it != field_type_map_.end()) << name;
-    EXPECT_EQ(expected_type, it->second) << name;
+    auto it = field_candidates_map_.find(ASCIIToUTF16(name));
+    ASSERT_TRUE(it != field_candidates_map_.end()) << name;
+    EXPECT_EQ(expected_type, it->second.BestHeuristicType()) << name;
   }
 
   ScopedVector<AutofillField> list_;
   scoped_ptr<PhoneField> field_;
-  ServerFieldTypeMap field_type_map_;
+  FieldCandidatesMap field_candidates_map_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PhoneFieldTest);
@@ -87,7 +87,7 @@ TEST_F(PhoneFieldTest, ParseOneLinePhone) {
     AutofillScanner scanner(list_.get());
     field_ = Parse(&scanner);
     ASSERT_NE(nullptr, field_.get());
-    ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
+    field_->AddClassifications(&field_candidates_map_);
     CheckField("phone1", PHONE_HOME_WHOLE_NUMBER);
   }
 }
@@ -110,7 +110,7 @@ TEST_F(PhoneFieldTest, ParseTwoLinePhone) {
     AutofillScanner scanner(list_.get());
     field_ = Parse(&scanner);
     ASSERT_NE(nullptr, field_.get());
-    ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
+    field_->AddClassifications(&field_candidates_map_);
     CheckField("areacode1", PHONE_HOME_CITY_CODE);
     CheckField("phone2", PHONE_HOME_NUMBER);
   }
@@ -151,11 +151,11 @@ TEST_F(PhoneFieldTest, ThreePartPhoneNumber) {
     AutofillScanner scanner(list_.get());
     field_ = Parse(&scanner);
     ASSERT_NE(nullptr, field_.get());
-    ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
+    field_->AddClassifications(&field_candidates_map_);
     CheckField("areacode1", PHONE_HOME_CITY_CODE);
     CheckField("prefix2", PHONE_HOME_NUMBER);
     CheckField("suffix3", PHONE_HOME_NUMBER);
-    EXPECT_FALSE(ContainsKey(field_type_map_, ASCIIToUTF16("ext4")));
+    EXPECT_FALSE(ContainsKey(field_candidates_map_, ASCIIToUTF16("ext4")));
   }
 }
 
@@ -184,7 +184,7 @@ TEST_F(PhoneFieldTest, ThreePartPhoneNumberPrefixSuffix) {
     AutofillScanner scanner(list_.get());
     field_ = Parse(&scanner);
     ASSERT_NE(nullptr, field_.get());
-    ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
+    field_->AddClassifications(&field_candidates_map_);
     CheckField("areacode1", PHONE_HOME_CITY_CODE);
     CheckField("prefix2", PHONE_HOME_NUMBER);
     CheckField("suffix3", PHONE_HOME_NUMBER);
@@ -216,7 +216,7 @@ TEST_F(PhoneFieldTest, ThreePartPhoneNumberPrefixSuffix2) {
     AutofillScanner scanner(list_.get());
     field_ = Parse(&scanner);
     ASSERT_NE(nullptr, field_.get());
-    ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
+    field_->AddClassifications(&field_candidates_map_);
     CheckField("phone1", PHONE_HOME_CITY_CODE);
     CheckField("phone2", PHONE_HOME_NUMBER);
     CheckField("phone3", PHONE_HOME_NUMBER);
@@ -245,7 +245,7 @@ TEST_F(PhoneFieldTest, CountryAndCityAndPhoneNumber) {
     AutofillScanner scanner(list_.get());
     field_ = Parse(&scanner);
     ASSERT_NE(nullptr, field_.get());
-    ASSERT_TRUE(field_->ClassifyField(&field_type_map_));
+    field_->AddClassifications(&field_candidates_map_);
     CheckField("country", PHONE_HOME_COUNTRY_CODE);
     CheckField("phone", PHONE_HOME_CITY_AND_NUMBER);
   }

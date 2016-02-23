@@ -25,10 +25,17 @@ class AddressField : public FormField {
   static scoped_ptr<FormField> Parse(AutofillScanner* scanner);
 
  protected:
-  // FormField:
-  bool ClassifyField(ServerFieldTypeMap* map) const override;
+  void AddClassifications(FieldCandidatesMap* field_candidates) const override;
 
  private:
+  // When parsing a field's label and name separately with a given pattern:
+  enum ParseNameLabelResult {
+    RESULT_MATCH_NONE,       // No match with the label or name.
+    RESULT_MATCH_LABEL,      // Only the label matches the pattern.
+    RESULT_MATCH_NAME,       // Only the name matches the pattern.
+    RESULT_MATCH_NAME_LABEL  // Name and label both match the pattern.
+  };
+
   FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseOneLineAddress);
   FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseTwoLineAddress);
   FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseThreeLineAddress);
@@ -57,6 +64,17 @@ class AddressField : public FormField {
   // Parses the current field pointed to by |scanner|, if it exists, and tries
   // to figure out whether the field's type: city, state, zip, or none of those.
   bool ParseCityStateZipCode(AutofillScanner* scanner);
+
+  // Like ParseFieldSpecifics(), but applies |pattern| against the name and
+  // label of the current field separately. If the return value is
+  // RESULT_MATCH_NAME_LABEL, then |scanner| advances and |match| is filled if
+  // it is non-NULL. Otherwise |scanner| does not advance and |match| does not
+  // change.
+  ParseNameLabelResult ParseNameAndLabelSeparately(
+      AutofillScanner* scanner,
+      const base::string16& pattern,
+      int match_type,
+      AutofillField** match);
 
   // Run matches on the name and label separately. If the return result is
   // RESULT_MATCH_NAME_LABEL, then |scanner| advances and the field is set.

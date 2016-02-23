@@ -312,35 +312,37 @@ CreditCardField::CreditCardField()
 CreditCardField::~CreditCardField() {
 }
 
-bool CreditCardField::ClassifyField(ServerFieldTypeMap* map) const {
-  bool ok = true;
+void CreditCardField::AddClassifications(
+    FieldCandidatesMap* field_candidates) const {
   for (size_t index = 0; index < numbers_.size(); ++index) {
-    ok = ok && AddClassification(numbers_[index], CREDIT_CARD_NUMBER, map);
+    AddClassification(numbers_[index], CREDIT_CARD_NUMBER,
+                      kBaseCreditCardParserScore, field_candidates);
   }
 
-  ok = ok && AddClassification(type_, CREDIT_CARD_TYPE, map);
-  ok = ok &&
-       AddClassification(verification_, CREDIT_CARD_VERIFICATION_CODE, map);
+  AddClassification(type_, CREDIT_CARD_TYPE, kBaseCreditCardParserScore,
+                    field_candidates);
+  AddClassification(verification_, CREDIT_CARD_VERIFICATION_CODE,
+                    kBaseCreditCardParserScore, field_candidates);
 
   // If the heuristics detected first and last name in separate fields,
   // then ignore both fields. Putting them into separate fields is probably
   // wrong, because the credit card can also contain a middle name or middle
   // initial.
   if (cardholder_last_ == nullptr)
-    ok = ok && AddClassification(cardholder_, CREDIT_CARD_NAME, map);
+    AddClassification(cardholder_, CREDIT_CARD_NAME, kBaseCreditCardParserScore,
+                      field_candidates);
 
   if (expiration_date_) {
     DCHECK(!expiration_month_);
     DCHECK(!expiration_year_);
-    ok =
-        ok && AddClassification(expiration_date_, GetExpirationYearType(), map);
+    AddClassification(expiration_date_, GetExpirationYearType(),
+                      kBaseCreditCardParserScore, field_candidates);
   } else {
-    ok = ok && AddClassification(expiration_month_, CREDIT_CARD_EXP_MONTH, map);
-    ok =
-        ok && AddClassification(expiration_year_, GetExpirationYearType(), map);
+    AddClassification(expiration_month_, CREDIT_CARD_EXP_MONTH,
+                      kBaseCreditCardParserScore, field_candidates);
+    AddClassification(expiration_year_, GetExpirationYearType(),
+                      kBaseCreditCardParserScore, field_candidates);
   }
-
-  return ok;
 }
 
 bool CreditCardField::ParseExpirationDate(AutofillScanner* scanner) {

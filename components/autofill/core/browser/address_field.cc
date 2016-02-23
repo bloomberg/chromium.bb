@@ -126,7 +126,8 @@ AddressField::AddressField()
       country_(NULL) {
 }
 
-bool AddressField::ClassifyField(ServerFieldTypeMap* map) const {
+void AddressField::AddClassifications(
+    FieldCandidatesMap* field_candidates) const {
   // The page can request the address lines as a single textarea input or as
   // multiple text fields (or not at all), but it shouldn't be possible to
   // request both.
@@ -134,15 +135,24 @@ bool AddressField::ClassifyField(ServerFieldTypeMap* map) const {
   DCHECK(!(address2_ && street_address_));
   DCHECK(!(address3_ && street_address_));
 
-  return AddClassification(company_, COMPANY_NAME, map) &&
-         AddClassification(address1_, ADDRESS_HOME_LINE1, map) &&
-         AddClassification(address2_, ADDRESS_HOME_LINE2, map) &&
-         AddClassification(address3_, ADDRESS_HOME_LINE3, map) &&
-         AddClassification(street_address_, ADDRESS_HOME_STREET_ADDRESS, map) &&
-         AddClassification(city_, ADDRESS_HOME_CITY, map) &&
-         AddClassification(state_, ADDRESS_HOME_STATE, map) &&
-         AddClassification(zip_, ADDRESS_HOME_ZIP, map) &&
-         AddClassification(country_, ADDRESS_HOME_COUNTRY, map);
+  AddClassification(company_, COMPANY_NAME, kBaseAddressParserScore,
+                    field_candidates);
+  AddClassification(address1_, ADDRESS_HOME_LINE1, kBaseAddressParserScore,
+                    field_candidates);
+  AddClassification(address2_, ADDRESS_HOME_LINE2, kBaseAddressParserScore,
+                    field_candidates);
+  AddClassification(address3_, ADDRESS_HOME_LINE3, kBaseAddressParserScore,
+                    field_candidates);
+  AddClassification(street_address_, ADDRESS_HOME_STREET_ADDRESS,
+                    kBaseAddressParserScore, field_candidates);
+  AddClassification(city_, ADDRESS_HOME_CITY, kBaseAddressParserScore,
+                    field_candidates);
+  AddClassification(state_, ADDRESS_HOME_STATE, kBaseAddressParserScore,
+                    field_candidates);
+  AddClassification(zip_, ADDRESS_HOME_ZIP, kBaseAddressParserScore,
+                    field_candidates);
+  AddClassification(country_, ADDRESS_HOME_COUNTRY, kBaseAddressParserScore,
+                    field_candidates);
 }
 
 bool AddressField::ParseCompany(AutofillScanner* scanner) {
@@ -269,6 +279,39 @@ bool AddressField::ParseState(AutofillScanner* scanner) {
                              UTF8ToUTF16(kStateRe),
                              kStateMatchType,
                              &state_);
+}
+
+AddressField::ParseNameLabelResult AddressField::ParseNameAndLabelSeparately(
+    AutofillScanner* scanner,
+    const base::string16& pattern,
+    int match_type,
+    AutofillField** match) {
+  if (scanner->IsEnd())
+    return RESULT_MATCH_NONE;
+
+  AutofillField* cur_match = nullptr;
+  size_t saved_cursor = scanner->SaveCursor();
+  bool parsed_name = ParseFieldSpecifics(scanner,
+                                         pattern,
+                                         match_type & ~MATCH_LABEL,
+                                         &cur_match);
+  scanner->RewindTo(saved_cursor);
+  bool parsed_label = ParseFieldSpecifics(scanner,
+                                          pattern,
+                                          match_type & ~MATCH_NAME,
+                                          &cur_match);
+  if (parsed_name && parsed_label) {
+    if (match)
+      *match = cur_match;
+    return RESULT_MATCH_NAME_LABEL;
+  }
+
+  scanner->RewindTo(saved_cursor);
+  if (parsed_name)
+    return RESULT_MATCH_NAME;
+  if (parsed_label)
+    return RESULT_MATCH_LABEL;
+  return RESULT_MATCH_NONE;
 }
 
 bool AddressField::ParseCityStateZipCode(AutofillScanner* scanner) {

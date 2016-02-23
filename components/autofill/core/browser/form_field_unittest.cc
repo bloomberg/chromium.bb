@@ -148,14 +148,16 @@ TEST(FormFieldTest, ParseFormFields) {
   fields.push_back(new AutofillField(field_data, field_data.label));
 
   // Checkable element shouldn't interfere with inference of Address line2.
-  const ServerFieldTypeMap field_type_map =
+  const FieldCandidatesMap field_candidates_map =
       FormField::ParseFormFields(fields.get(), true);
-  ASSERT_EQ(3U, field_type_map.size());
+  ASSERT_EQ(3U, field_candidates_map.size());
 
   EXPECT_EQ(ADDRESS_HOME_LINE1,
-            field_type_map.find(ASCIIToUTF16("Address line1"))->second);
+            field_candidates_map.find(ASCIIToUTF16("Address line1"))
+                ->second.BestHeuristicType());
   EXPECT_EQ(ADDRESS_HOME_LINE2,
-            field_type_map.find(ASCIIToUTF16("Address line2"))->second);
+            field_candidates_map.find(ASCIIToUTF16("Address line2"))
+                ->second.BestHeuristicType());
 }
 
 }  // namespace autofill

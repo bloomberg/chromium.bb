@@ -24,8 +24,10 @@ scoped_ptr<FormField> EmailField::Parse(AutofillScanner* scanner) {
 EmailField::EmailField(const AutofillField* field) : field_(field) {
 }
 
-bool EmailField::ClassifyField(ServerFieldTypeMap* map) const {
-  return AddClassification(field_, EMAIL_ADDRESS, map);
+void EmailField::AddClassifications(
+    FieldCandidatesMap* field_candidates) const {
+  AddClassification(field_, EMAIL_ADDRESS, kBaseEmailParserScore,
+                    field_candidates);
 }
 
 }  // namespace autofill

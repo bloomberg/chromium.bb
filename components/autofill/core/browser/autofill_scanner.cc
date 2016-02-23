@@ -9,7 +9,7 @@
 
 namespace autofill {
 
-AutofillScanner::AutofillScanner(std::vector<AutofillField*>& fields)
+AutofillScanner::AutofillScanner(const std::vector<AutofillField*>& fields)
     : cursor_(fields.begin()),
       saved_cursor_(fields.begin()),
       begin_(fields.begin()),
