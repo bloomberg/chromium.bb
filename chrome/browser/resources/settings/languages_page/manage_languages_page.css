@@ -5,11 +5,3 @@
 iron-list {
   height: 300px;
 }
-
-paper-item {
-  display: flex;
-}
-
-paper-item .language-name {
-  flex: 1;
-}
