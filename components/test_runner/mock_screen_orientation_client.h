@@ -31,7 +31,6 @@ class TEST_RUNNER_EXPORT MockScreenOrientationClient
 
   blink::WebScreenOrientationType CurrentOrientationType() const;
   unsigned CurrentOrientationAngle() const;
-  bool is_active() const { return is_active_; }
 
  private:
   // From blink::WebScreenOrientationClient.
@@ -52,7 +51,6 @@ class TEST_RUNNER_EXPORT MockScreenOrientationClient
   blink::WebScreenOrientationLockType current_lock_;
   blink::WebScreenOrientationType device_orientation_;
   blink::WebScreenOrientationType current_orientation_;
-  bool is_active_;
 
   DISALLOW_COPY_AND_ASSIGN(MockScreenOrientationClient);
 };

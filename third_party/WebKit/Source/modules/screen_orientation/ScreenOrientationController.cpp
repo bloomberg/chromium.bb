@@ -40,6 +40,9 @@ ScreenOrientationController::ScreenOrientationController(LocalFrame& frame, WebS
     , PlatformEventController(frame.page())
     , m_client(client)
     , m_dispatchEventTimer(this, &ScreenOrientationController::dispatchEventTimerFired)
+    , m_override(false)
+    , m_overrideType(WebScreenOrientationUndefined)
+    , m_overrideAngle(0)
 {
 }
 
@@ -73,6 +76,16 @@ WebScreenOrientationType ScreenOrientationController::computeOrientation(const I
     }
 }
 
+unsigned short ScreenOrientationController::effectiveAngle(ChromeClient& chromeClient)
+{
+    return m_override ? m_overrideAngle : chromeClient.screenInfo().orientationAngle;
+}
+
+WebScreenOrientationType ScreenOrientationController::effectiveType(ChromeClient& chromeClient)
+{
+    return m_override ? m_overrideType : chromeClient.screenInfo().orientationType;
+}
+
 void ScreenOrientationController::updateOrientation()
 {
     ASSERT(m_orientation);
@@ -80,16 +93,15 @@ void ScreenOrientationController::updateOrientation()
     ASSERT(frame()->host());
 
     ChromeClient& chromeClient = frame()->host()->chromeClient();
-    WebScreenInfo screenInfo = chromeClient.screenInfo();
-    WebScreenOrientationType orientationType = screenInfo.orientationType;
+    WebScreenOrientationType orientationType = effectiveType(chromeClient);
     if (orientationType == WebScreenOrientationUndefined) {
         // The embedder could not provide us with an orientation, deduce it ourselves.
-        orientationType = computeOrientation(chromeClient.screenInfo().rect, screenInfo.orientationAngle);
+        orientationType = computeOrientation(chromeClient.screenInfo().rect, effectiveAngle(chromeClient));
     }
     ASSERT(orientationType != WebScreenOrientationUndefined);
 
     m_orientation->setType(orientationType);
-    m_orientation->setAngle(screenInfo.orientationAngle);
+    m_orientation->setAngle(effectiveAngle(chromeClient));
 }
 
 bool ScreenOrientationController::isActiveAndVisible() const
@@ -106,7 +118,7 @@ void ScreenOrientationController::pageVisibilityChanged()
 
     // The orientation type and angle are tied in a way that if the angle has
     // changed, the type must have changed.
-    unsigned short currentAngle = frame()->host()->chromeClient().screenInfo().orientationAngle;
+    unsigned short currentAngle = effectiveAngle(frame()->host()->chromeClient());
 
     // FIXME: sendOrientationChangeEvent() currently send an event all the
     // children of the frame, so it should only be called on the frame on
@@ -168,6 +180,20 @@ void ScreenOrientationController::unlock()
     if (!m_client)
         return;
     m_client->unlockOrientation();
+}
+
+void ScreenOrientationController::setOverride(WebScreenOrientationType type, unsigned short angle)
+{
+    m_override = true;
+    m_overrideType = type;
+    m_overrideAngle = angle;
+    notifyOrientationChanged();
+}
+
+void ScreenOrientationController::clearOverride()
+{
+    m_override = false;
+    notifyOrientationChanged();
 }
 
 void ScreenOrientationController::dispatchEventTimerFired(Timer<ScreenOrientationController>*)

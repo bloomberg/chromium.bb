@@ -3,25 +3,16 @@
 <script src="../http/tests/inspector/inspector-test.js"></script>
 <script>
 
-var windowOrientationChangeEvent = false;
-var screenOrientationChangeEvent = false;
-
-window.addEventListener("orientationchange", function() { windowOrientationChangeEvent = true; maybeLog(); });
-screen.orientation.addEventListener("change", function() { screenOrientationChangeEvent = true; maybeLog(); });
+if (!window.testRunner)
+    debug("This test requires testRunner");
 
 function dump()
 {
     return "angle: " + screen.orientation.angle + "; type: " + screen.orientation.type;
 }
 
-function maybeLog()
-{
-    if (windowOrientationChangeEvent && screenOrientationChangeEvent) {
-        windowOrientationChangeEvent = false;
-        screenOrientationChangeEvent = false;
-        console.log(dump());
-    }
-}
+if (window.testRunner)
+    testRunner.setMockScreenOrientation("landscape-primary");
 
 function test()
 {
@@ -38,27 +29,29 @@ function test()
 
     function testOverride(angle, orientation, next)
     {
-        InspectorTest.addConsoleSniffer(addDumpResult.bind(null, next));
-        InspectorTest.EmulationAgent.invoke_setDeviceMetricsOverride({width: 0, height: 0, deviceScaleFactor: 0, mobile: true, fitWindow: false, screenOrientation: {type: orientation, angle: angle}}, function() {});
+        var protocolCallback = addDumpResult.bind(null, next);
+        if (orientation) {
+           InspectorTest.ScreenOrientationAgent.setScreenOrientationOverride(angle, orientation, protocolCallback);
+        } else {
+            InspectorTest.ScreenOrientationAgent.clearScreenOrientationOverride(protocolCallback);
+        }
     }
 
     function testError(angle, orientation, next)
     {
-        InspectorTest.EmulationAgent.invoke_setDeviceMetricsOverride({width: 0, height: 0, deviceScaleFactor: 0, mobile: true, fitWindow: false, screenOrientation: {type: orientation, angle: angle}}, next);
-    }
+        InspectorTest.ScreenOrientationAgent.setScreenOrientationOverride(angle, orientation, protocolCallback);
 
-    var original;
+        function protocolCallback(error)
+        {
+            InspectorTest.addResult(error);
+            next();
+        }
+    }
 
     InspectorTest.runTestSuite([
         function initial(next)
         {
-            InspectorTest.evaluateInPage("dump()", dumpCallback);
-
-            function dumpCallback(result)
-            {
-                original = result.value;
-                next();
-            }
+            addDumpResult(next);
         },
 
         function setWrongAngle1(next)
@@ -103,18 +96,7 @@ function test()
 
         function clearOverride(next)
         {
-            InspectorTest.EmulationAgent.clearDeviceMetricsOverride(checkInitial);
-
-            function checkInitial()
-            {
-                InspectorTest.evaluateInPage("dump()", dumpCallback);
-            }
-
-            function dumpCallback(result)
-            {
-                InspectorTest.addResult("Equals to initial: " + (original === result.value ? "true" : "false"));
-                next();
-            }
+            testOverride(0, "", next);
         }
     ]);
 }

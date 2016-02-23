@@ -62,7 +62,6 @@ private:
     WebDeviceEmulationParams m_emulationParams;
 
     bool m_isOverlayScrollbarsEnabled;
-    bool m_isOrientationEventEnabled;
     float m_originalDefaultMinimumPageScaleFactor;
     float m_originalDefaultMaximumPageScaleFactor;
     bool m_embedderTextAutosizingEnabled;

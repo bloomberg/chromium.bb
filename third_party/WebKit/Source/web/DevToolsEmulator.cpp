@@ -51,7 +51,6 @@ DevToolsEmulator::DevToolsEmulator(WebViewImpl* webViewImpl)
     , m_deviceMetricsEnabled(false)
     , m_emulateMobileEnabled(false)
     , m_isOverlayScrollbarsEnabled(false)
-    , m_isOrientationEventEnabled(false)
     , m_originalDefaultMinimumPageScaleFactor(0)
     , m_originalDefaultMaximumPageScaleFactor(0)
     , m_embedderTextAutosizingEnabled(webViewImpl->page()->settings().textAutosizingEnabled())
@@ -256,8 +255,6 @@ void DevToolsEmulator::enableMobileEmulation()
     m_emulateMobileEnabled = true;
     m_isOverlayScrollbarsEnabled = RuntimeEnabledFeatures::overlayScrollbarsEnabled();
     RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(true);
-    m_isOrientationEventEnabled = RuntimeEnabledFeatures::orientationEventEnabled();
-    RuntimeEnabledFeatures::setOrientationEventEnabled(true);
     m_webViewImpl->page()->settings().setUseMobileViewportStyle(true);
     m_webViewImpl->enableViewport();
     m_webViewImpl->settings()->setViewportMetaEnabled(true);
@@ -287,7 +284,6 @@ void DevToolsEmulator::disableMobileEmulation()
     if (!m_emulateMobileEnabled)
         return;
     RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(m_isOverlayScrollbarsEnabled);
-    RuntimeEnabledFeatures::setOrientationEventEnabled(m_isOrientationEventEnabled);
     m_webViewImpl->disableViewport();
     m_webViewImpl->settings()->setViewportMetaEnabled(false);
     m_webViewImpl->page()->frameHost().visualViewport().initializeScrollbars();

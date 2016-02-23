@@ -15,8 +15,7 @@ MockScreenOrientationClient::MockScreenOrientationClient()
     : main_frame_(NULL),
       current_lock_(blink::WebScreenOrientationLockDefault),
       device_orientation_(blink::WebScreenOrientationPortraitPrimary),
-      current_orientation_(blink::WebScreenOrientationPortraitPrimary),
-      is_active_(false) {
+      current_orientation_(blink::WebScreenOrientationPortraitPrimary) {
 }
 
 MockScreenOrientationClient::~MockScreenOrientationClient() {
@@ -26,14 +25,12 @@ void MockScreenOrientationClient::ResetData() {
   current_lock_ = blink::WebScreenOrientationLockDefault;
   device_orientation_ = blink::WebScreenOrientationPortraitPrimary;
   current_orientation_ = blink::WebScreenOrientationPortraitPrimary;
-  is_active_ = true;
 }
 
 void MockScreenOrientationClient::UpdateDeviceOrientation(
     blink::WebLocalFrame* main_frame,
     blink::WebScreenOrientationType orientation) {
   main_frame_ = main_frame;
-  is_active_ = true;
   if (device_orientation_ == orientation)
     return;
   device_orientation_ = orientation;
