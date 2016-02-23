@@ -64,3 +64,6 @@ WebRtcBrowserTest.CanMakeAudioCallAndThenRenegotiateToVideo
 
 # https://crbug.com/505714
 NaClBrowserTestGLibc.PPAPICore
+
+# https://crbug.com/589174
+WebContentsImplBrowserTest.SetTitleOnUnload
