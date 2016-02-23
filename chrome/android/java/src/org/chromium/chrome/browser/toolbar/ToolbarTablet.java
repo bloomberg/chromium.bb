@@ -370,6 +370,7 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
             mLocationBar.getContainerView().setVisibility(View.INVISIBLE);
             if (mShowMenuBadge) {
                 mMenuBadge.setVisibility(View.GONE);
+                setMenuButtonContentDescription(false);
             }
         } else {
             mIsInTabSwitcherMode = false;

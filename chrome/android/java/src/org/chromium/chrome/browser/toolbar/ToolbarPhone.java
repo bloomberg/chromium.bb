@@ -1429,6 +1429,9 @@ public class ToolbarPhone extends ToolbarLayout
         for (View view : mBrowsingModeViews) {
             view.setVisibility(browsingViewsVisibility);
         }
+        if (mShowMenuBadge) {
+            setMenuButtonContentDescription(!isInTabSwitcherMode);
+        }
         getProgressBar().setVisibility(
                 isInTabSwitcherMode || isTabSwitcherAnimationRunning() ? INVISIBLE : VISIBLE);
         updateVisualsForToolbarState(isInTabSwitcherMode);

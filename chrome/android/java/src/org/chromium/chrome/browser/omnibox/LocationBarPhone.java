@@ -391,6 +391,8 @@ public class LocationBarPhone extends LocationBarLayout {
         mShowMenuBadge = true;
         mMenuBadge.setImageResource(shouldUseLightDrawables()
                 ? R.drawable.badge_update_light : R.drawable.badge_update_dark);
+        mMenuButton.setContentDescription(getResources().getString(
+                R.string.accessibility_toolbar_btn_menu_update));
 
         if (!animate || mIsMenuBadgeAnimationRunning) {
             mMenuBadge.setVisibility(View.VISIBLE);
@@ -430,6 +432,9 @@ public class LocationBarPhone extends LocationBarLayout {
     public void removeAppMenuUpdateBadge(boolean animate) {
         boolean wasShowingMenuBadge = mShowMenuBadge;
         mShowMenuBadge = false;
+        mMenuButton.setContentDescription(getResources().getString(
+                R.string.accessibility_toolbar_btn_menu));
+
         if (!animate || !wasShowingMenuBadge) {
             if (showMenuButtonInOmnibox()) {
                 mMenuBadge.setVisibility(View.GONE);
