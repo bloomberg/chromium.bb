@@ -58,6 +58,30 @@ TEST_F(BluetoothBlacklistTest, ExcludeWritesUUID) {
   EXPECT_TRUE(blacklist.IsExcludedFromWrites(exclude_writes_uuid));
 }
 
+TEST_F(BluetoothBlacklistTest, InvalidUUID) {
+  BluetoothBlacklist& blacklist = BluetoothBlacklist::Get();
+  BluetoothUUID empty_string_uuid("");
+  EXPECT_DEATH_IF_SUPPORTED(
+      blacklist.AddOrDie(empty_string_uuid, BluetoothBlacklist::Value::EXCLUDE),
+      "");
+  EXPECT_DEATH_IF_SUPPORTED(blacklist.IsExcluded(empty_string_uuid), "");
+  EXPECT_DEATH_IF_SUPPORTED(blacklist.IsExcludedFromReads(empty_string_uuid),
+                            "");
+  EXPECT_DEATH_IF_SUPPORTED(blacklist.IsExcludedFromWrites(empty_string_uuid),
+                            "");
+
+  BluetoothUUID invalid_string_uuid("Not a valid UUID string.");
+  EXPECT_DEATH_IF_SUPPORTED(
+      blacklist.AddOrDie(invalid_string_uuid,
+                         BluetoothBlacklist::Value::EXCLUDE),
+      "");
+  EXPECT_DEATH_IF_SUPPORTED(blacklist.IsExcluded(invalid_string_uuid), "");
+  EXPECT_DEATH_IF_SUPPORTED(blacklist.IsExcludedFromReads(invalid_string_uuid),
+                            "");
+  EXPECT_DEATH_IF_SUPPORTED(blacklist.IsExcludedFromWrites(invalid_string_uuid),
+                            "");
+}
+
 // Abreviated UUIDs used to create, or test against, the blacklist work
 // correctly compared to full UUIDs.
 TEST_F(BluetoothBlacklistTest, AbreviatedUUIDs) {

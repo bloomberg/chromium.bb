@@ -27,11 +27,13 @@ BluetoothBlacklist& BluetoothBlacklist::Get() {
 
 void BluetoothBlacklist::AddOrDie(const device::BluetoothUUID& uuid,
                                   Value value) {
+  CHECK(uuid.IsValid());
   auto insert_result = blacklisted_uuids_.insert(std::make_pair(uuid, value));
   CHECK(insert_result.second);
 }
 
 bool BluetoothBlacklist::IsExcluded(const BluetoothUUID& uuid) const {
+  CHECK(uuid.IsValid());
   const auto& it = blacklisted_uuids_.find(uuid);
   if (it == blacklisted_uuids_.end())
     return false;
@@ -51,6 +53,7 @@ bool BluetoothBlacklist::IsExcluded(
 }
 
 bool BluetoothBlacklist::IsExcludedFromReads(const BluetoothUUID& uuid) const {
+  CHECK(uuid.IsValid());
   const auto& it = blacklisted_uuids_.find(uuid);
   if (it == blacklisted_uuids_.end())
     return false;
@@ -58,6 +61,7 @@ bool BluetoothBlacklist::IsExcludedFromReads(const BluetoothUUID& uuid) const {
 }
 
 bool BluetoothBlacklist::IsExcludedFromWrites(const BluetoothUUID& uuid) const {
+  CHECK(uuid.IsValid());
   const auto& it = blacklisted_uuids_.find(uuid);
   if (it == blacklisted_uuids_.end())
     return false;
