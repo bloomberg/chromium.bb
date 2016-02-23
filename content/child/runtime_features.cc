@@ -180,6 +180,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kEnableSlimmingPaintV2))
     WebRuntimeFeatures::enableSlimmingPaintV2(true);
 
+  if (base::FeatureList::IsEnabled(features::kRenderingPipelineThrottling))
+    WebRuntimeFeatures::enableRenderingPipelineThrottling(true);
+
   // Enable explicitly enabled features, and then disable explicitly disabled
   // ones.
   if (command_line.HasSwitch(switches::kEnableBlinkFeatures)) {

@@ -166,6 +166,8 @@ public:
 
     BLINK_EXPORT static void enableScrollAnchoring(bool);
 
+    BLINK_EXPORT static void enableRenderingPipelineThrottling(bool);
+
     // TODO(nhiroki): Remove after ExtendableMessageEvent is shipped
     // (crbug.com/543198).
     BLINK_EXPORT static bool isServiceWorkerExtendableMessageEventEnabled();
