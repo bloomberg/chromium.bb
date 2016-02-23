@@ -177,8 +177,8 @@ if (!chrome.embeddedSearch) {
         LogMostVisitedNavigation(position, provider);
       };
 
-      this.navigateContentWindow = function(destination, disposition) {
-        NavigateContentWindow(destination, disposition);
+      this.navigateContentWindow = function(rid, disposition) {
+        NavigateContentWindow(rid, disposition);
       };
 
       this.undoAllMostVisitedDeletions = function() {

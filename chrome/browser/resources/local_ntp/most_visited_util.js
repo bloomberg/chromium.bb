@@ -165,9 +165,10 @@ function createMostVisitedLink(params, href, title, text, direction, provider) {
                                             provider || '');
     }
 
-    if (!isServerSuggestion) {
+    if ('rid' in params) {
       e.preventDefault();
-      ntpApiHandle.navigateContentWindow(href, getDispositionFromEvent(e));
+      ntpApiHandle.navigateContentWindow(params.rid,
+                                         getDispositionFromEvent(e));
     }
     // Else follow <a> normally, so transition type would be LINK.
   };

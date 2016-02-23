@@ -379,7 +379,7 @@ var renderTile = function(data) {
         ev.button == 1,  // MIDDLE BUTTON
         ev.altKey, ev.ctrlKey, ev.metaKey, ev.shiftKey);
 
-      window.chrome.embeddedSearch.newTabPage.navigateContentWindow(this.href,
+      window.chrome.embeddedSearch.newTabPage.navigateContentWindow(data.rid,
                                                                     disp);
     });
   }
