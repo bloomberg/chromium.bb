@@ -57,25 +57,41 @@ cr.define('options', function() {
     /** @override */
     updatePosition: function(id, newPosition) {
       this.dragId_ = id;
-      // Find the closest parent.
       var layout = this.displayLayoutMap_[id];
-      this.dragParentId_ = this.findClosest_(layout, newPosition);
-      var parent = this.displayLayoutMap_[this.dragParentId_];
+
+      // Find the closest parent.
+      var parentId = this.findClosest_(layout, newPosition);
+      var parent = this.displayLayoutMap_[parentId];
 
       // Find the closest edge.
-      this.dragLayoutType_ =
-          layout.getLayoutTypeForPosition(parent.div, newPosition);
+      var layoutType = layout.getLayoutTypeForPosition(parent.div, newPosition);
+
+      // Calculate the new position and delta.
+      var oldPos = {x: layout.div.offsetLeft, y: layout.div.offsetTop};
+      var newPos = layout.getSnapPosition(newPosition, parent.div, layoutType);
+      var deltaPos = {x: newPos.x - oldPos.x, y: newPos.y - oldPos.y};
+
+      // Check for collisions.
+      this.collideAndModifyDelta_(layout, deltaPos);
+      if (deltaPos.x == 0 && deltaPos.y == 0)
+        return;
 
       // Update the div (but not the actual layout type or offset yet),
-      layout.snapAndSetDivPosition(
-          newPosition, parent.div, this.dragLayoutType_);
+      newPos = {x: oldPos.x + deltaPos.x, y: oldPos.y + deltaPos.y};
+      layout.setDivPosition(newPos, parent.div, layoutType);
 
-      this.highlightEdge_(this.dragParentId_, this.dragLayoutType_);
+      // If the edge changed, update and highlight it.
+      if (layoutType != this.dragLayoutType_ ||
+          parentId != this.dragParentId_) {
+        this.dragLayoutType_ = layoutType;
+        this.dragParentId_ = parentId;
+        this.highlightEdge_(this.dragParentId_, this.dragLayoutType_);
+      }
     },
 
     /** @override */
     finalizePosition: function(id) {
-      if (id != this.dragId_) {
+      if (id != this.dragId_ || !this.dragParentId_) {
         this.dragId_ = '';
         return false;
       }
@@ -197,11 +213,21 @@ cr.define('options', function() {
       var parent = this.displayLayoutMap_[newParentId];
 
       // Find the closest edge.
-      orphan.layoutType = orphan.getLayoutTypeForPosition(parent.div, pos);
+      var layoutType = orphan.getLayoutTypeForPosition(parent.div, pos);
+
+      // Snap from the nearest corner to the desired locaiton and get the delta.
+      var cornerPos = orphan.getCornerPos(parent.div, pos);
+      pos = orphan.getSnapPosition(pos, parent.div, layoutType);
+      var deltaPos = {x: pos.x - cornerPos.x, y: pos.y - cornerPos.y};
+
+      // Check for collisions.
+      this.collideAndModifyDelta_(orphan, deltaPos);
+      pos = {x: cornerPos.x + deltaPos.x, y: cornerPos.y + deltaPos.y};
 
       // Update the div and adjust the corners.
-      orphan.snapAndSetDivPosition(pos, parent.div, orphan.layoutType);
-      orphan.adjustCorners(parent.div, orphan.layoutType);
+      orphan.layoutType = layoutType;
+      orphan.setDivPosition(pos, parent.div, layoutType);
+      orphan.adjustCorners(parent.div, layoutType);
 
       // Calculate the bounds from the new div position.
       orphan.calculateOffset(this.visualScale_, parent);
@@ -277,6 +303,35 @@ cr.define('options', function() {
         }
       }
       return closestId;
+    },
+
+    /**
+     * Intersects |layout| with each other layout and reduces |deltaPos| to
+     * avoid any collisions (or sets it to [0,0] if the div can not be moved
+     * in the direction of |deltaPos|).
+     * @param {!options.DisplayLayout} layout
+     * @param {!options.DisplayPosition} deltaPos
+     */
+    collideAndModifyDelta_: function(layout, deltaPos) {
+      var keys = Object.keys(
+          /** @type {!Object<!options.DisplayLayout>}*/ (
+              this.displayLayoutMap_));
+      var others = new Set(keys);
+      others.delete(layout.id);
+      var checkCollisions = true;
+      while (checkCollisions) {
+        checkCollisions = false;
+        for (var tid of others) {
+          var tlayout = this.displayLayoutMap_[tid];
+          if (layout.collideWithDivAndModifyDelta(tlayout.div, deltaPos)) {
+            if (deltaPos.x == 0 && deltaPos.y == 0)
+              return;
+            others.delete(tid);
+            checkCollisions = true;
+            break;
+          }
+        }
+      }
     },
 
     /**

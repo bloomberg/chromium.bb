@@ -212,26 +212,33 @@ cr.define('options', function() {
     },
 
     /**
-     * Snap |newPosition| to the edge specified by |layoutType| and call
-     * setDivPosition.
+     * Return the position closest to |newPosition| along the edge of
+     * |parentDiv| specified by |layoutType|.
      * @param {options.DisplayPosition} newPosition
      * @param {?HTMLElement} parentDiv
      * @param {!options.DisplayLayoutType} layoutType
+     * @return {!options.DisplayPosition}
      */
-    snapAndSetDivPosition(newPosition, parentDiv, layoutType) {
-      var snapX = (layoutType == options.DisplayLayoutType.LEFT ||
-                   layoutType == options.DisplayLayoutType.RIGHT) ?
-          0 /* infinite */ :
-          undefined /* default */;
-      var snapY = (layoutType == options.DisplayLayoutType.TOP ||
-                   layoutType == options.DisplayLayoutType.BOTTOM) ?
-          0 /* infinite */ :
-          undefined /* default */;
+    getSnapPosition: function(newPosition, parentDiv, layoutType) {
+      var x;
+      if (layoutType == options.DisplayLayoutType.LEFT) {
+        x = parentDiv.offsetLeft - this.div.offsetWidth;
+      } else if (layoutType == options.DisplayLayoutType.RIGHT) {
+        x = parentDiv.offsetLeft + parentDiv.offsetWidth;
+      } else {
+        x = this.snapToX(newPosition.x, parentDiv);
+      }
 
-      newPosition.x = this.snapToX(newPosition.x, parentDiv, snapX);
-      newPosition.y = this.snapToY(newPosition.y, parentDiv, snapY);
+      var y;
+      if (layoutType == options.DisplayLayoutType.TOP) {
+        y = parentDiv.offsetTop - this.div.offsetHeight;
+      } else if (layoutType == options.DisplayLayoutType.BOTTOM) {
+        y = parentDiv.offsetTop + parentDiv.offsetHeight;
+      } else {
+        y = this.snapToY(newPosition.y, parentDiv);
+      }
 
-      this.setDivPosition(newPosition, parentDiv, layoutType);
+      return {x: x, y: y};
     },
 
     /**
@@ -241,7 +248,7 @@ cr.define('options', function() {
      * @param {?HTMLElement} parentDiv
      * @param {!options.DisplayLayoutType} layoutType
      */
-    setDivPosition(newPosition, parentDiv, layoutType) {
+    setDivPosition: function(newPosition, parentDiv, layoutType) {
       var div = this.div;
       switch (layoutType) {
         case options.DisplayLayoutType.RIGHT:
@@ -261,6 +268,27 @@ cr.define('options', function() {
           div.style.left = newPosition.x + 'px';
           break;
       }
+    },
+
+    /**
+     * Return the position of the corner of the div closest to |pos|.
+     * @param {?HTMLElement} parentDiv
+     * @param {options.DisplayPosition} pos
+     * @return {!options.DisplayPosition}
+     * @private
+     */
+    getCornerPos: function(parentDiv, pos) {
+      var x;
+      if (pos.x > parentDiv.offsetLeft + parentDiv.offsetWidth / 2)
+        x = parentDiv.offsetLeft + parentDiv.offsetWidth;
+      else
+        x = parentDiv.offsetLeft - this.div.offsetWidth;
+      var y;
+      if (pos.y > parentDiv.offsetTop + parentDiv.offsetHeight / 2)
+        y = parentDiv.offsetTop + parentDiv.offsetHeight;
+      else
+        y = parentDiv.offsetTop - this.div.offsetHeight;
+      return {x: x, y: y};
     },
 
     /**
@@ -307,11 +335,10 @@ cr.define('options', function() {
       var y = position.y + div.offsetHeight / 2;
 
       // Determine the distance from the new position to both of the near edges.
-      var div = parentDiv;
-      var left = div.offsetLeft;
-      var top = div.offsetTop;
-      var width = div.offsetWidth;
-      var height = div.offsetHeight;
+      var left = parentDiv.offsetLeft;
+      var top = parentDiv.offsetTop;
+      var width = parentDiv.offsetWidth;
+      var height = parentDiv.offsetHeight;
 
       // Signed deltas to the center of the div.
       var dx = x - (left + width / 2);
@@ -360,6 +387,61 @@ cr.define('options', function() {
       return snapToEdge_(
           y, this.div.offsetHeight, parentDiv.offsetTop, parentDiv.offsetHeight,
           opt_snapDistance);
+    },
+
+    /**
+     * Intersects this.div with |otherDiv|. If there is a collision, modifies
+     * |deltaPos| to limit movement to a single axis and avoid the collision
+     * and returns true.
+     * @param {?HTMLElement} otherDiv
+     * @param {!options.DisplayPosition} deltaPos
+     * @return {boolean} Whether there was a collision.
+     */
+    collideWithDivAndModifyDelta: function(otherDiv, deltaPos) {
+      var div = this.div;
+      var newX = div.offsetLeft + deltaPos.x;
+      var newY = div.offsetTop + deltaPos.y;
+
+      if ((newX + div.offsetWidth <= otherDiv.offsetLeft) ||
+          (newX >= otherDiv.offsetLeft + otherDiv.offsetWidth) ||
+          (newY + div.offsetHeight <= otherDiv.offsetTop) ||
+          (newY >= otherDiv.offsetTop + otherDiv.offsetHeight)) {
+        return false;
+      }
+
+      if (Math.abs(deltaPos.x) > Math.abs(deltaPos.y)) {
+        if (deltaPos.x > 0) {
+          var x = otherDiv.offsetLeft - div.offsetWidth;
+          if (x > div.offsetLeft)
+            deltaPos.x = x - div.offsetLeft;
+          else
+            deltaPos.x = 0;
+        } else {
+          var x = otherDiv.offsetLeft + otherDiv.offsetWidth;
+          if (x < div.offsetLeft)
+            deltaPos.x = x - div.offsetLeft;
+          else
+            deltaPos.x = 0;
+        }
+        deltaPos.y = 0;
+      } else {
+        deltaPos.x = 0;
+        if (deltaPos.y > 0) {
+          var y = otherDiv.offsetTop - div.offsetHeight;
+          if (y > div.offsetTop)
+            deltaPos.y = y - div.offsetTop;
+          else
+            deltaPos.y = 0;
+        } else if (deltaPos.y < 0) {
+          var y = otherDiv.offsetTop + otherDiv.offsetTop;
+          if (y < div.offsetTop)
+            deltaPos.y = y - div.offsetTop;
+          else
+            deltaPos.y = 0;
+        }
+      }
+
+      return true;
     }
   };
 
