@@ -346,9 +346,11 @@ static bool acceptsEditingFocus(const Element& element)
 
 static bool isOriginPotentiallyTrustworthy(SecurityOrigin* origin, String* errorMessage)
 {
+    if (origin->isPotentiallyTrustworthy())
+        return true;
     if (errorMessage)
-        return origin->isPotentiallyTrustworthy(*errorMessage);
-    return origin->isPotentiallyTrustworthy();
+        *errorMessage = origin->isPotentiallyTrustworthyErrorMessage();
+    return false;
 }
 
 uint64_t Document::s_globalTreeVersion = 0;

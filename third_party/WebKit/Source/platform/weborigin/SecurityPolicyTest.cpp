@@ -170,11 +170,10 @@ TEST(SecurityPolicyTest, TrustworthyWhiteList)
     };
 
     for (const char* url : insecureURLs) {
-        String errorMessage;
         RefPtr<SecurityOrigin> origin = SecurityOrigin::createFromString(url);
-        EXPECT_FALSE(origin->isPotentiallyTrustworthy(errorMessage));
+        EXPECT_FALSE(origin->isPotentiallyTrustworthy());
         SecurityPolicy::addOriginTrustworthyWhiteList(origin);
-        EXPECT_TRUE(origin->isPotentiallyTrustworthy(errorMessage));
+        EXPECT_TRUE(origin->isPotentiallyTrustworthy());
     }
 
     // Tests that adding URLs that have inner-urls to the whitelist
@@ -199,17 +198,15 @@ TEST(SecurityPolicyTest, TrustworthyWhiteList)
         },
     };
     for (const TestCase& test : insecureURLsWithInnerOrigin) {
-        String errorMessage;
-
         // Actually origins of both URLs should be same.
         RefPtr<SecurityOrigin> origin1 = SecurityOrigin::createFromString(test.url);
         RefPtr<SecurityOrigin> origin2 = SecurityOrigin::createFromString(test.anotherUrlInOrigin);
 
-        EXPECT_FALSE(origin1->isPotentiallyTrustworthy(errorMessage));
-        EXPECT_FALSE(origin2->isPotentiallyTrustworthy(errorMessage));
+        EXPECT_FALSE(origin1->isPotentiallyTrustworthy());
+        EXPECT_FALSE(origin2->isPotentiallyTrustworthy());
         SecurityPolicy::addOriginTrustworthyWhiteList(origin1);
-        EXPECT_TRUE(origin1->isPotentiallyTrustworthy(errorMessage));
-        EXPECT_TRUE(origin2->isPotentiallyTrustworthy(errorMessage));
+        EXPECT_TRUE(origin1->isPotentiallyTrustworthy());
+        EXPECT_TRUE(origin2->isPotentiallyTrustworthy());
     }
 }
 

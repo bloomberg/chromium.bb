@@ -353,15 +353,6 @@ bool SecurityOrigin::canDisplay(const KURL& url) const
     return true;
 }
 
-bool SecurityOrigin::isPotentiallyTrustworthy(String& errorMessage) const
-{
-    if (isPotentiallyTrustworthy())
-        return true;
-
-    errorMessage = "Only secure origins are allowed (see: https://goo.gl/Y0ZkNV).";
-    return false;
-}
-
 bool SecurityOrigin::isPotentiallyTrustworthy() const
 {
     ASSERT(m_protocol != "data");
@@ -372,6 +363,12 @@ bool SecurityOrigin::isPotentiallyTrustworthy() const
         return true;
 
     return false;
+}
+
+// static
+String SecurityOrigin::isPotentiallyTrustworthyErrorMessage()
+{
+    return "Only secure origins are allowed (see: https://goo.gl/Y0ZkNV).";
 }
 
 void SecurityOrigin::grantLoadLocalResources()

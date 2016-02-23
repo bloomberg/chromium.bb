@@ -139,8 +139,10 @@ public:
     // machine or over the network from a
     // cryptographically-authenticated origin, as described in
     // https://w3c.github.io/webappsec/specs/powerfulfeatures/#is-origin-trustworthy.
-    bool isPotentiallyTrustworthy(String& errorMessage) const;
     bool isPotentiallyTrustworthy() const;
+
+    // Returns a human-readable error message describing that a non-secure origin's access to a feature is denied.
+    static String isPotentiallyTrustworthyErrorMessage();
 
     // Returns true if this SecurityOrigin can load local resources, such
     // as images, iframes, and style sheets, and can link to local URLs.

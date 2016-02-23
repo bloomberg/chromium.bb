@@ -71,8 +71,10 @@ PassOwnPtr<WebServiceWorkerCacheStorage> assertCacheStorage(ErrorString* errorSt
     RefPtr<SecurityOrigin> secOrigin = SecurityOrigin::createFromString(securityOrigin);
 
     // Cache Storage API is restricted to trustworthy origins.
-    if (!secOrigin->isPotentiallyTrustworthy(*errorString))
+    if (!secOrigin->isPotentiallyTrustworthy()) {
+        *errorString = secOrigin->isPotentiallyTrustworthyErrorMessage();
         return nullptr;
+    }
 
     String identifier = createDatabaseIdentifierFromSecurityOrigin(secOrigin.get());
     OwnPtr<WebServiceWorkerCacheStorage> cache = adoptPtr(Platform::current()->cacheStorage(identifier));

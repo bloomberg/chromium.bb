@@ -157,15 +157,12 @@ TEST_F(SecurityOriginTest, IsPotentiallyTrustworthy)
         SCOPED_TRACE(i);
         RefPtr<SecurityOrigin> origin = SecurityOrigin::createFromString(inputs[i].url);
         String errorMessage;
-        EXPECT_EQ(inputs[i].accessGranted, origin->isPotentiallyTrustworthy(errorMessage));
-        EXPECT_EQ(inputs[i].accessGranted, errorMessage.isEmpty());
+        EXPECT_EQ(inputs[i].accessGranted, origin->isPotentiallyTrustworthy());
     }
 
     // Unique origins are not considered secure.
     RefPtr<SecurityOrigin> uniqueOrigin = SecurityOrigin::createUnique();
-    String errorMessage;
-    EXPECT_FALSE(uniqueOrigin->isPotentiallyTrustworthy(errorMessage));
-    EXPECT_EQ("Only secure origins are allowed (see: https://goo.gl/Y0ZkNV).", errorMessage);
+    EXPECT_FALSE(uniqueOrigin->isPotentiallyTrustworthy());
 }
 
 TEST_F(SecurityOriginTest, IsSecure)

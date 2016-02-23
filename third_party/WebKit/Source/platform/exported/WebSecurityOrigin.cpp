@@ -126,9 +126,9 @@ bool WebSecurityOrigin::canRequest(const WebURL& url) const
 bool WebSecurityOrigin::isPotentiallyTrustworthy(WebString& errorMessage) const
 {
     ASSERT(m_private);
-    WTF::String message(errorMessage);
-    bool result = m_private->isPotentiallyTrustworthy(message);
-    errorMessage = message;
+    bool result = m_private->isPotentiallyTrustworthy();
+    if (!result)
+        errorMessage = WTF::String(m_private->isPotentiallyTrustworthyErrorMessage());
     return result;
 }
 

@@ -381,7 +381,10 @@ bool WorkerGlobalScope::isSecureContext(String& errorMessage, const SecureContex
     // |isSecureContext| check here, we can check the responsible
     // document for a privileged context at worker creation time, pass
     // it in via WorkerThreadStartupData, and check it here.
-    return securityOrigin()->isPotentiallyTrustworthy(errorMessage);
+    if (securityOrigin()->isPotentiallyTrustworthy())
+        return true;
+    errorMessage = securityOrigin()->isPotentiallyTrustworthyErrorMessage();
+    return false;
 }
 
 void WorkerGlobalScope::removeURLFromMemoryCache(const KURL& url)

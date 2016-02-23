@@ -52,7 +52,10 @@ bool WorkletGlobalScope::isSecureContext(String& errorMessage, const SecureConte
     // Until there are APIs that are available in worklets and that
     // require a privileged context test that checks ancestors, just do
     // a simple check here.
-    return securityOrigin()->isPotentiallyTrustworthy(errorMessage);
+    if (securityOrigin()->isPotentiallyTrustworthy())
+        return true;
+    errorMessage = securityOrigin()->isPotentiallyTrustworthyErrorMessage();
+    return false;
 }
 
 KURL WorkletGlobalScope::virtualCompleteURL(const String& url) const
