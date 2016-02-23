@@ -16,6 +16,7 @@
 #include "content/browser/service_worker/service_worker_context_watcher.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_version.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -143,17 +144,27 @@ scoped_refptr<ServiceWorkerDevToolsAgentHost> GetMatchingServiceWorker(
     const ServiceWorkerDevToolsAgentHost::List& agent_hosts,
     const GURL& url) {
   scoped_refptr<ServiceWorkerDevToolsAgentHost> best_host;
-  std::string best_scope;
+  bool best_host_scope_matched = false;
+  int best_host_scope_length = 0;
+
   for (auto host : agent_hosts) {
     if (host->GetURL().host_piece() != url.host_piece())
       continue;
-    std::string path = host->GetURL().path();
-    std::string file = host->GetURL().ExtractFileName();
-    std::string scope = path.substr(0, path.length() - file.length());
-    // Choose the latest, longest scope match worker.
-    if (scope.length() >= best_scope.length()) {
+    const bool scope_matched =
+        ServiceWorkerUtils::ScopeMatches(host->scope(), url);
+    const int scope_length = host->scope().spec().length();
+    bool replace = false;
+    if (!best_host)
+      replace = true;
+    else if (best_host_scope_matched)
+      replace = scope_matched && scope_length >= best_host_scope_length;
+    else
+      replace = scope_matched || scope_length >= best_host_scope_length;
+
+    if (replace) {
       best_host = host;
-      best_scope = scope;
+      best_host_scope_matched = scope_matched;
+      best_host_scope_length = scope_length;
     }
   }
   return best_host;

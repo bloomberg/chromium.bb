@@ -59,6 +59,7 @@ void RegisterToWorkerDevToolsManagerOnUI(
     const base::WeakPtr<ServiceWorkerContextCore>& service_worker_context_weak,
     int64_t service_worker_version_id,
     const GURL& url,
+    const GURL& scope,
     const base::Callback<void(int worker_devtools_agent_route_id,
                               bool wait_for_debugger)>& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -69,13 +70,10 @@ void RegisterToWorkerDevToolsManagerOnUI(
     worker_devtools_agent_route_id = rph->GetNextRoutingID();
     wait_for_debugger =
         ServiceWorkerDevToolsManager::GetInstance()->WorkerCreated(
-            process_id,
-            worker_devtools_agent_route_id,
+            process_id, worker_devtools_agent_route_id,
             ServiceWorkerDevToolsManager::ServiceWorkerIdentifier(
-                service_worker_context,
-                service_worker_context_weak,
-                service_worker_version_id,
-                url));
+                service_worker_context, service_worker_context_weak,
+                service_worker_version_id, url, scope));
   }
   BrowserThread::PostTask(
       BrowserThread::IO,
@@ -272,12 +270,13 @@ class EmbeddedWorkerInstance::StartTask {
 
     // Register the instance to DevToolsManager on UI thread.
     const int64_t service_worker_version_id = params->service_worker_version_id;
+    const GURL& scope = params->scope;
     GURL script_url(params->script_url);
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(RegisterToWorkerDevToolsManagerOnUI, process_id,
                    instance_->context_.get(), instance_->context_,
-                   service_worker_version_id, script_url,
+                   service_worker_version_id, script_url, scope,
                    base::Bind(&StartTask::OnRegisteredToDevToolsManager,
                               weak_factory_.GetWeakPtr(), base::Passed(&params),
                               is_new_process)));

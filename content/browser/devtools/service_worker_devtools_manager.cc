@@ -16,19 +16,21 @@ ServiceWorkerDevToolsManager::ServiceWorkerIdentifier::ServiceWorkerIdentifier(
     const ServiceWorkerContextCore* context,
     base::WeakPtr<ServiceWorkerContextCore> context_weak,
     int64_t version_id,
-    const GURL& url)
+    const GURL& url,
+    const GURL& scope)
     : context_(context),
       context_weak_(context_weak),
       version_id_(version_id),
-      url_(url) {}
+      url_(url),
+      scope_(scope) {}
 
 ServiceWorkerDevToolsManager::ServiceWorkerIdentifier::ServiceWorkerIdentifier(
     const ServiceWorkerIdentifier& other)
     : context_(other.context_),
       context_weak_(other.context_weak_),
       version_id_(other.version_id_),
-      url_(other.url_) {
-}
+      url_(other.url_),
+      scope_(other.scope_) {}
 
 ServiceWorkerDevToolsManager::
 ServiceWorkerIdentifier::~ServiceWorkerIdentifier() {

@@ -47,7 +47,8 @@ class CONTENT_EXPORT ServiceWorkerDevToolsManager {
         const ServiceWorkerContextCore* context,
         base::WeakPtr<ServiceWorkerContextCore> context_weak,
         int64_t version_id,
-        const GURL& url);
+        const GURL& url,
+        const GURL& scope);
     ServiceWorkerIdentifier(const ServiceWorkerIdentifier& other);
     ~ServiceWorkerIdentifier();
 
@@ -59,12 +60,14 @@ class CONTENT_EXPORT ServiceWorkerDevToolsManager {
     }
     int64_t version_id() const { return version_id_; }
     GURL url() const { return url_; }
+    GURL scope() const { return scope_; }
 
    private:
     const ServiceWorkerContextCore* const context_;
     const base::WeakPtr<ServiceWorkerContextCore> context_weak_;
     const int64_t version_id_;
     const GURL url_;
+    const GURL scope_;
   };
 
   // Returns the ServiceWorkerDevToolsManager singleton.

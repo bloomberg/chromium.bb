@@ -109,6 +109,10 @@ int64_t ServiceWorkerDevToolsAgentHost::service_worker_version_id() const {
   return service_worker_->version_id();
 }
 
+GURL ServiceWorkerDevToolsAgentHost::scope() const {
+  return service_worker_->scope();
+}
+
 bool ServiceWorkerDevToolsAgentHost::Matches(
     const ServiceWorkerIdentifier& other) {
   return service_worker_->Matches(other);

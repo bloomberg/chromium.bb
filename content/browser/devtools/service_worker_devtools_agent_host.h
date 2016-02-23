@@ -40,6 +40,7 @@ class ServiceWorkerDevToolsAgentHost : public WorkerDevToolsAgentHost {
   void OnAttachedStateChanged(bool attached) override;
 
   int64_t service_worker_version_id() const;
+  GURL scope() const;
 
   bool Matches(const ServiceWorkerIdentifier& other);
 
