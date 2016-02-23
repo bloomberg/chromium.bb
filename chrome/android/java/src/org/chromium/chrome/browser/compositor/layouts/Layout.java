@@ -1120,7 +1120,9 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
      */
     public EventFilter findInterceptingEventFilter(
             MotionEvent e, Point offsets, boolean isKeyboardShowing) {
-        for (int i = 0; i < mSceneOverlays.size(); i++) {
+        // The last added overlay will be drawn on top of everything else, therefore the last
+        // filter added should have the first chance to intercept any touch events.
+        for (int i = mSceneOverlays.size() - 1; i >= 0; i--) {
             EventFilter eventFilter = mSceneOverlays.get(i).getEventFilter();
             if (offsets != null) eventFilter.setCurrentMotionEventOffsets(offsets.x, offsets.y);
             if (eventFilter.onInterceptTouchEvent(e, isKeyboardShowing)) return eventFilter;
