@@ -463,9 +463,6 @@ void ReadWriteSocket(int fd,
 
   BufferConstIterator send_iterator(send.begin());
   BufferConstIterator send_end(send.end());
-  struct timeval timeout;
-  timeout.tv_sec = 10;
-  timeout.tv_usec = 0;
   while (!read_complete || !write_complete) {
     fd_set rfd;
     FD_ZERO(&rfd);
@@ -477,27 +474,23 @@ void ReadWriteSocket(int fd,
     if (!write_complete) {
       FD_SET(fd, &wfd);
     }
-    struct timeval tv = timeout;
 
-    // Should not timeout, but added to fail test and allow to proceed.
-    EXPECT_LT(0, select(fd + 1, &rfd, &wfd, NULL, &tv));
+    ASSERT_LT(0, select(fd + 1, &rfd, &wfd, NULL, NULL));
     if (!FD_ISSET(fd, &rfd) && !FD_ISSET(fd, &wfd)) {
       FAIL() << "Select returned with neither readable nor writable fd.";
     }
 
     if (!read_complete && FD_ISSET(fd, &rfd)) {
-      if (received_count == read_vector->size()) {
-        read_vector->resize(read_vector->size() + kReceiveBufferSize);
-      }
+      read_vector->resize(read_vector->size() + kReceiveBufferSize);
       ssize_t len =
           ki_recv(fd, read_vector->data() + received_count,
                   read_vector->size() - received_count, /* flags */ 0);
       ASSERT_LE(0, len) << "Read should succeed";
       if (len == 0) {
         read_complete = true;
-        read_vector->resize(received_count);
       }
       received_count += len;
+      read_vector->resize(received_count);
     }
     if (!write_complete && FD_ISSET(fd, &wfd)) {
       ssize_t len = ki_send(fd, &(*send_iterator),
@@ -560,12 +553,12 @@ TEST_F(UnixSocketMultithreadedTest, DISABLED_SendRecv) {
   EXPECT_EQ(kMainSendSize, thread_buffer_.size());
   EXPECT_EQ(kThreadSendSize, main_read_buf.size());
   for (size_t i = 0; i != thread_buffer_.size(); ++i) {
-    EXPECT_EQ(pattern[i % pattern_size], thread_buffer_[i])
-        << "Invalid result at position " << i << "in data received by thread";
+    ASSERT_EQ(pattern[i % pattern_size], thread_buffer_[i])
+        << "Invalid result at position " << i << " in data received by thread";
   }
   for (size_t i = 0; i != main_read_buf.size(); ++i) {
-    EXPECT_EQ(kThreadPattern[i % sizeof(kThreadPattern)], main_read_buf[i])
-        << "Invalid result at position " << i << "in data received by main";
+    ASSERT_EQ(kThreadPattern[i % sizeof(kThreadPattern)], main_read_buf[i])
+        << "Invalid result at position " << i << " in data received by main";
   }
 }
 
