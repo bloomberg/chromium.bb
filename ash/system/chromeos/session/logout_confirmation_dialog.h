@@ -35,8 +35,7 @@ class LogoutConfirmationDialog : public views::DialogDelegateView {
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
-  void OnClosed() override;
-  void DeleteDelegate() override;
+  void WindowClosing() override;
 
  private:
   void UpdateLabel();

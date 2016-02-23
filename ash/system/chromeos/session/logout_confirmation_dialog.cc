@@ -84,13 +84,9 @@ base::string16 LogoutConfirmationDialog::GetDialogButtonLabel(
   return views::DialogDelegateView::GetDialogButtonLabel(button);
 }
 
-void LogoutConfirmationDialog::OnClosed() {
+void LogoutConfirmationDialog::WindowClosing() {
   update_timer_.Stop();
   controller_->OnDialogClosed();
-}
-
-void LogoutConfirmationDialog::DeleteDelegate() {
-  delete this;
 }
 
 void LogoutConfirmationDialog::UpdateLabel() {

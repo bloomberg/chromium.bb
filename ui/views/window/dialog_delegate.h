@@ -109,9 +109,6 @@ class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
   // Returns whether this particular dialog should use the new dialog style.
   virtual bool UseNewStyleForThisDialog() const;
 
-  // Called when the window has been closed.
-  virtual void OnClosed() {}
-
   // A helper for accessing the DialogClientView object contained by this
   // delegate's Window.
   const DialogClientView* GetDialogClientView() const;
