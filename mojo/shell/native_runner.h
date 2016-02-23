@@ -22,6 +22,8 @@ class FilePath;
 namespace mojo {
 namespace shell {
 
+class Identity;
+
 // ApplicationManager requires implementations of NativeRunner and
 // NativeRunnerFactory to run native applications.
 class NativeRunner {
@@ -32,6 +34,7 @@ class NativeRunner {
   // thread/process.
   virtual void Start(
       const base::FilePath& app_path,
+      const Identity& target,
       bool start_sandboxed,
       InterfaceRequest<mojom::ShellClient> request,
       const base::Callback<void(base::ProcessId)>& pid_available_callback,

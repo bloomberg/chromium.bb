@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//build/config/chrome_build.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/features.gni")
@@ -11,6 +12,7 @@ import("//build/config/ui.gni")
 import("//build/config/win/console_app.gni")
 import("//build/config/win/manifest.gni")
 import("//chrome/chrome_repack_locales.gni")
+import("//chrome/common/features.gni")
 import("//chrome/version.gni")
 
 declare_args() {
@@ -187,6 +189,7 @@ if (!is_android) {
 
       public_deps = [
         ":xdg_mime",  # Needs to be public for installer to consume files.
+        "//chrome/common:features",
       ]
 
       # GYP has this in a 'profiling==0 and linux_disable_pie==0' condition.
@@ -203,6 +206,10 @@ if (!is_android) {
           "//build/config/linux:x11",
           "//build/config/linux:xext",
         ]
+      }
+
+      if (enable_package_mash_services) {
+        deps += [ "//chrome/app/mash" ]
       }
     }
 
@@ -293,6 +300,7 @@ if (is_mac || is_win) {
     deps = [
       ":browser_dependencies",
       "//build/config/sanitizers:deps",
+      "//chrome/common:features",
     ]
     if (is_win) {
       output_name = "chrome"
@@ -369,6 +377,10 @@ if (is_mac || is_win) {
     if (enable_plugins && enable_pdf && !is_multi_dll_chrome) {
       deps += [ "//pdf" ]
     }
+
+    if (enable_package_mash_services) {
+      deps += [ "//chrome/app/mash" ]
+    }
   }
 
   if (is_multi_dll_chrome) {
@@ -395,6 +407,7 @@ if (is_mac || is_win) {
         ":chrome_child_manifest",
         ":chrome_dll_version",
         "//build/config/sanitizers:deps",
+        "//chrome/common:features",
         "//components/browser_watcher:browser_watcher_client",
         "//components/crash/content/app",
         "//content/public/app:child",

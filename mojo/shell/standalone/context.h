@@ -5,8 +5,6 @@
 #ifndef MOJO_SHELL_STANDALONE_CONTEXT_H_
 #define MOJO_SHELL_STANDALONE_CONTEXT_H_
 
-#include <vector>
-
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -15,7 +13,6 @@
 #include "base/time/time.h"
 #include "mojo/edk/embedder/process_delegate.h"
 #include "mojo/shell/application_manager.h"
-#include "mojo/shell/runner/host/command_line_switch.h"
 #include "mojo/shell/standalone/tracer.h"
 #include "url/gurl.h"
 
@@ -25,7 +22,7 @@ class SingleThreadTaskRunner;
 
 namespace mojo {
 namespace shell {
-struct CommandLineSwitch;
+class NativeRunnerDelegate;
 
 // The "global" context for the shell's main process.
 class Context : public edk::ProcessDelegate {
@@ -35,9 +32,8 @@ class Context : public edk::ProcessDelegate {
 
   static void EnsureEmbedderIsInitialized();
 
-  void set_command_line_switches(
-      const std::vector<CommandLineSwitch>& command_line_switches) {
-    command_line_switches_ = command_line_switches;
+  void set_native_runner_delegate(NativeRunnerDelegate* delegate) {
+    native_runner_delegate_ = delegate;
   }
 
   // This must be called with a message loop set up for the current thread,
@@ -70,7 +66,8 @@ class Context : public edk::ProcessDelegate {
   Tracer tracer_;
   scoped_ptr<ApplicationManager> application_manager_;
   base::Time main_entry_time_;
-  std::vector<CommandLineSwitch> command_line_switches_;
+
+  NativeRunnerDelegate* native_runner_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(Context);
 };

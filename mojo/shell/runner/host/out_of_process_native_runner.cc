@@ -14,7 +14,6 @@
 #include "base/logging.h"
 #include "base/task_runner.h"
 #include "mojo/shell/runner/host/child_process_host.h"
-#include "mojo/shell/runner/host/command_line_switch.h"
 #include "mojo/shell/runner/host/in_process_native_runner.h"
 
 namespace mojo {
@@ -22,9 +21,8 @@ namespace shell {
 
 OutOfProcessNativeRunner::OutOfProcessNativeRunner(
     base::TaskRunner* launch_process_runner,
-    const std::vector<CommandLineSwitch>& command_line_switches)
-    : launch_process_runner_(launch_process_runner),
-      command_line_switches_(command_line_switches) {}
+    NativeRunnerDelegate* delegate)
+    : launch_process_runner_(launch_process_runner), delegate_(delegate) {}
 
 OutOfProcessNativeRunner::~OutOfProcessNativeRunner() {
   if (child_process_host_ && !app_path_.empty())
@@ -33,6 +31,7 @@ OutOfProcessNativeRunner::~OutOfProcessNativeRunner() {
 
 void OutOfProcessNativeRunner::Start(
     const base::FilePath& app_path,
+    const Identity& target,
     bool start_sandboxed,
     InterfaceRequest<mojom::ShellClient> request,
     const base::Callback<void(base::ProcessId)>& pid_available_callback,
@@ -42,9 +41,8 @@ void OutOfProcessNativeRunner::Start(
   DCHECK(app_completed_callback_.is_null());
   app_completed_callback_ = app_completed_callback;
 
-  child_process_host_.reset(new ChildProcessHost(launch_process_runner_,
-                                                 start_sandboxed, app_path,
-                                                 command_line_switches_));
+  child_process_host_.reset(new ChildProcessHost(
+      launch_process_runner_, delegate_, start_sandboxed, target, app_path));
   child_process_host_->Start(base::Bind(
       &OutOfProcessNativeRunner::OnProcessLaunched, base::Unretained(this),
       base::Passed(&request), pid_available_callback));
@@ -86,15 +84,14 @@ void OutOfProcessNativeRunner::OnProcessLaunched(
 
 OutOfProcessNativeRunnerFactory::OutOfProcessNativeRunnerFactory(
     base::TaskRunner* launch_process_runner,
-    const std::vector<CommandLineSwitch>& command_line_switches)
-    : launch_process_runner_(launch_process_runner),
-      command_line_switches_(command_line_switches) {}
+    NativeRunnerDelegate* delegate)
+    : launch_process_runner_(launch_process_runner), delegate_(delegate) {}
 OutOfProcessNativeRunnerFactory::~OutOfProcessNativeRunnerFactory() {}
 
 scoped_ptr<shell::NativeRunner> OutOfProcessNativeRunnerFactory::Create(
     const base::FilePath& app_path) {
-  return make_scoped_ptr(new OutOfProcessNativeRunner(launch_process_runner_,
-                                                      command_line_switches_));
+  return make_scoped_ptr(
+      new OutOfProcessNativeRunner(launch_process_runner_, delegate_));
 }
 
 }  // namespace shell

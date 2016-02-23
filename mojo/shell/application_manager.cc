@@ -338,7 +338,7 @@ void ApplicationManager::OnGotResolvedURL(
     bool start_sandboxed = false;
     base::FilePath path = util::UrlToFilePath(file_url.To<GURL>());
     scoped_ptr<NativeRunner> runner = native_runner_factory_->Create(path);
-    runner->Start(path, start_sandboxed, std::move(request),
+    runner->Start(path, target, start_sandboxed, std::move(request),
                   base::Bind(&ApplicationManager::ApplicationPIDAvailable,
                              weak_ptr_factory_.GetWeakPtr(), instance->id()),
                   base::Bind(&ApplicationManager::CleanupRunner,

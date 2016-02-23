@@ -21,8 +21,8 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/system/core.h"
+#include "mojo/shell/native_runner_delegate.h"
 #include "mojo/shell/runner/common/switches.h"
-#include "mojo/shell/runner/host/command_line_switch.h"
 
 #if defined(OS_LINUX) && !defined(OS_ANDROID)
 #include "sandbox/linux/services/namespace_sandbox.h"
@@ -35,16 +35,17 @@
 namespace mojo {
 namespace shell {
 
-ChildProcessHost::ChildProcessHost(
-    base::TaskRunner* launch_process_runner,
-    bool start_sandboxed,
-    const base::FilePath& app_path,
-    const std::vector<CommandLineSwitch>& command_line_switches)
+ChildProcessHost::ChildProcessHost(base::TaskRunner* launch_process_runner,
+                                   NativeRunnerDelegate* delegate,
+                                   bool start_sandboxed,
+                                   const Identity& target,
+                                   const base::FilePath& app_path)
     : launch_process_runner_(launch_process_runner),
+      delegate_(delegate),
       start_sandboxed_(start_sandboxed),
+      target_(target),
       app_path_(app_path),
       start_child_process_event_(false, false),
-      command_line_switches_(command_line_switches),
       weak_factory_(this) {
   node_channel_.reset(new edk::PlatformChannelPair);
   primordial_pipe_token_ = edk::GenerateRandomToken();
@@ -55,6 +56,7 @@ ChildProcessHost::ChildProcessHost(
 
 ChildProcessHost::ChildProcessHost(ScopedHandle channel)
     : launch_process_runner_(nullptr),
+      delegate_(nullptr),
       start_sandboxed_(false),
       start_child_process_event_(false, false),
       weak_factory_(this) {
@@ -149,8 +151,10 @@ void ChildProcessHost::DoLaunch() {
   child_command_line.AppendSwitchASCII(switches::kPrimordialPipeToken,
                                        primordial_pipe_token_);
 
-  for (const CommandLineSwitch& pair : command_line_switches_)
-    child_command_line.AppendSwitchASCII(pair.key, pair.value);
+  if (delegate_) {
+    delegate_->AdjustCommandLineArgumentsForTarget(target_,
+                                                   &child_command_line);
+  }
 
   base::LaunchOptions options;
 #if defined(OS_WIN)

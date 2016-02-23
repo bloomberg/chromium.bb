@@ -72,10 +72,9 @@ class MojoMessageLoop : public base::MessageLoop {
 // Manages the thread to startup mojo.
 class BackgroundShell::MojoThread : public base::SimpleThread {
  public:
-  explicit MojoThread(
-      const std::vector<CommandLineSwitch>& command_line_switches)
+  explicit MojoThread(NativeRunnerDelegate* native_runner_delegate)
       : SimpleThread("mojo-background-shell"),
-        command_line_switches_(command_line_switches) {}
+        native_runner_delegate_(native_runner_delegate) {}
   ~MojoThread() override {}
 
   void CreateShellClientRequest(base::WaitableEvent* signal,
@@ -126,7 +125,7 @@ class BackgroundShell::MojoThread : public base::SimpleThread {
 
     scoped_ptr<Context> context(new Context);
     context_ = context.get();
-    context_->set_command_line_switches(command_line_switches_);
+    context_->set_native_runner_delegate(native_runner_delegate_);
     context_->Init(shell_dir);
 
     message_loop_->Run();
@@ -156,7 +155,7 @@ class BackgroundShell::MojoThread : public base::SimpleThread {
   // Created in Run() on the background thread.
   Context* context_ = nullptr;
 
-  const std::vector<CommandLineSwitch> command_line_switches_;
+  NativeRunnerDelegate* native_runner_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoThread);
 };
@@ -167,10 +166,9 @@ BackgroundShell::~BackgroundShell() {
   thread_->Stop();
 }
 
-void BackgroundShell::Init(
-    const std::vector<CommandLineSwitch>& command_line_switches) {
+void BackgroundShell::Init(NativeRunnerDelegate* native_runner_delegate) {
   DCHECK(!thread_);
-  thread_.reset(new MojoThread(command_line_switches));
+  thread_.reset(new MojoThread(native_runner_delegate));
   thread_->Start();
 }
 

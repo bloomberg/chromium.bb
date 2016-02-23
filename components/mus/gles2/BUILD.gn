@@ -53,7 +53,7 @@ source_set("gles2") {
   if (is_android) {
     deps += [ "//mojo/platform_handle:platform_handle_impl" ]
   } else {
-    deps += [ "//mojo/platform_handle:for_shared_library" ]
+    deps += [ "//mojo/platform_handle" ]
   }
 
   if (use_ozone) {

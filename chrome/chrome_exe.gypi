@@ -202,6 +202,7 @@
             '../content/content.gyp:content_app_both',
             # Needed for chrome_main.cc initialization of libraries.
             '../build/linux/system.gyp:pangocairo',
+            'chrome_features.gyp:chrome_common_features',
             # Needed to use the master_preferences functions
             'installer_util',
           ],

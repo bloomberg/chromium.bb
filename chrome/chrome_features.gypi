@@ -33,6 +33,9 @@
     'android_java_ui%': '<(android_java_ui)',
     'use_vulcanize%': '<(use_vulcanize)',
 
+    # GN only, but defined here so BUILDFLAG works without ifdef.
+    'enable_package_mash_services%': 0,
+
     # Grit defines based on the feature flags. These must be manually added to
     # grit targets.
     'chrome_grit_defines': [

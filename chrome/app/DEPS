@@ -3,6 +3,7 @@ include_rules = [
   "+chrome/browser",
   "+chrome/child",
   "+chrome/chrome_watcher",
+  "+chrome/common/chrome_features.h",
   "+chrome/grit",  # For generated headers
   "+chrome/installer",
   "+chrome/plugin/chrome_content_plugin_client.h",

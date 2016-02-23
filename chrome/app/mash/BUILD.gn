@@ -1,0 +1,64 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//mojo/public/mojo_application_manifest.gni")
+
+source_set("mash") {
+  sources = [
+    "mash_runner.cc",
+    "mash_runner.h",
+  ]
+  deps = [
+    ":manifest",
+    "//ash/mus:lib",
+    "//ash/resources",
+    "//base:i18n",
+    "//components/mus:lib",
+    "//components/resource_provider:lib",
+    "//content/public/common",
+    "//mash/quick_launch:lib",
+    "//mash/shell:lib",
+    "//mash/wm:lib",
+    "//mojo/common:mojo_scheme_register",
+    "//mojo/shell",
+    "//mojo/shell/background:lib",
+    "//mojo/shell/public/cpp",
+    "//mojo/shell/public/interfaces",
+    "//mojo/shell/runner/common",
+    "//mojo/shell/runner/host:child_process_base",
+    "//mojo/shell/runner/host:lib",
+    "//url",
+  ]
+
+  if (is_linux && !is_android) {
+    deps += [ "//components/font_service:lib" ]
+  }
+}
+
+mojo_application_manifest("manifest") {
+  type = "exe"
+  application_name = "chrome_mash"
+  source = "chrome_mash_manifest.json"
+  deps = [
+    "//ash/mus:manifest",
+    "//components/mus:manifest",
+    "//components/resource_provider:manifest",
+    "//mash/quick_launch:manifest",
+    "//mash/shell:manifest",
+    "//mash/wm:manifest",
+  ]
+  packaged_applications = [
+    "ash_sysui",
+    "desktop_wm",
+    "mash_shell",
+    "mus",
+    "quick_launch",
+    "resource_provider",
+  ]
+
+  if (is_linux && !is_android) {
+    deps += [ "//components/font_service:manifest" ]
+    packaged_applications += [ "font_service" ]
+  }
+}

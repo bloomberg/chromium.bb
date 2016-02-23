@@ -34,7 +34,6 @@
 #include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/connect_params.h"
-#include "mojo/shell/runner/host/command_line_switch.h"
 #include "mojo/shell/runner/host/in_process_native_runner.h"
 #include "mojo/shell/runner/host/out_of_process_native_runner.h"
 #include "mojo/shell/standalone/tracer.h"
@@ -99,7 +98,8 @@ void OnInstanceQuit(const GURL& url, const Identity& identity) {
 
 Context::Context()
     : io_thread_(CreateIOThread("io_thread")),
-      main_entry_time_(base::Time::Now()) {}
+      main_entry_time_(base::Time::Now()),
+      native_runner_delegate_(nullptr) {}
 
 Context::~Context() {
   DCHECK(!base::MessageLoop::current());
@@ -145,7 +145,7 @@ void Context::Init(const base::FilePath& shell_file_root) {
         new InProcessNativeRunnerFactory(blocking_pool_.get()));
   } else {
     runner_factory.reset(new OutOfProcessNativeRunnerFactory(
-        blocking_pool_.get(), command_line_switches_));
+        blocking_pool_.get(), native_runner_delegate_));
   }
   application_manager_.reset(new ApplicationManager(
       std::move(runner_factory), blocking_pool_.get(), true));

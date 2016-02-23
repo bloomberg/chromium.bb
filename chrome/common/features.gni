@@ -17,6 +17,10 @@ declare_args() {
   # Use vulcanized HTML/CSS/JS resources to speed up WebUI (chrome://)
   # pages. https://github.com/polymer/vulcanize
   use_vulcanize = true
+
+  # Set to true to bundle all the mash related mojo services into chrome.
+  # Specify --mash to chrome to have chrome start the mash environment.
+  enable_package_mash_services = is_chromeos
 }
 
 enable_one_click_signin = is_win || is_mac || (is_linux && !is_chromeos)

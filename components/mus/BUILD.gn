@@ -36,6 +36,7 @@ if (is_android) {
     deps = [
       ":lib",
       ":manifest",
+      "//mojo/platform_handle:for_shared_library",
       "//mojo/shell/public/cpp:sources",
     ]
 

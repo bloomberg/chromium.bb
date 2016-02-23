@@ -7,8 +7,6 @@
 
 #include <stdint.h>
 
-#include <vector>
-
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -23,20 +21,20 @@ namespace mojo {
 namespace shell {
 
 class ChildProcessHost;
-struct CommandLineSwitch;
+class NativeRunnerDelegate;
 
 // An implementation of |NativeRunner| that loads/runs the given app (from the
 // file system) in a separate process (of its own).
 class OutOfProcessNativeRunner : public NativeRunner {
  public:
-  OutOfProcessNativeRunner(
-      base::TaskRunner* launch_process_runner,
-      const std::vector<CommandLineSwitch>& command_line_switches);
+  OutOfProcessNativeRunner(base::TaskRunner* launch_process_runner,
+                           NativeRunnerDelegate* delegate);
   ~OutOfProcessNativeRunner() override;
 
   // NativeRunner:
   void Start(
       const base::FilePath& app_path,
+      const Identity& identity,
       bool start_sandboxed,
       InterfaceRequest<mojom::ShellClient> request,
       const base::Callback<void(base::ProcessId)>& pid_available_callback,
@@ -56,11 +54,10 @@ class OutOfProcessNativeRunner : public NativeRunner {
       base::ProcessId pid);
 
   base::TaskRunner* const launch_process_runner_;
+  NativeRunnerDelegate* delegate_;
 
   base::FilePath app_path_;
   base::Closure app_completed_callback_;
-
-  std::vector<CommandLineSwitch> command_line_switches_;
 
   scoped_ptr<ChildProcessHost> child_process_host_;
 
@@ -69,16 +66,15 @@ class OutOfProcessNativeRunner : public NativeRunner {
 
 class OutOfProcessNativeRunnerFactory : public NativeRunnerFactory {
  public:
-  OutOfProcessNativeRunnerFactory(
-      base::TaskRunner* launch_process_runner,
-      const std::vector<CommandLineSwitch>& command_line_switches);
+  OutOfProcessNativeRunnerFactory(base::TaskRunner* launch_process_runner,
+                                  NativeRunnerDelegate* delegate);
   ~OutOfProcessNativeRunnerFactory() override;
 
   scoped_ptr<NativeRunner> Create(const base::FilePath& app_path) override;
 
  private:
   base::TaskRunner* const launch_process_runner_;
-  std::vector<CommandLineSwitch> command_line_switches_;
+  NativeRunnerDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(OutOfProcessNativeRunnerFactory);
 };

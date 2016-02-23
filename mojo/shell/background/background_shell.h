@@ -17,7 +17,7 @@ class GURL;
 namespace mojo {
 namespace shell {
 
-struct CommandLineSwitch;
+class NativeRunnerDelegate;
 
 // BackgroundShell starts up the mojo shell on a background thread, and
 // destroys the thread in the destructor. Once created use CreateApplication()
@@ -28,9 +28,8 @@ class BackgroundShell {
   BackgroundShell();
   ~BackgroundShell();
 
-  // Starts the background shell. |command_line_switches| are additional
-  // switches applied to any processes spawned by this call.
-  void Init(const std::vector<CommandLineSwitch>& command_line_switches);
+  // Starts the background shell.
+  void Init(NativeRunnerDelegate* native_runner_delegate);
 
   // Obtains an InterfaceRequest for the specified url.
   InterfaceRequest<mojom::ShellClient> CreateShellClientRequest(

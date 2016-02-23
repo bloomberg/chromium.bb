@@ -6,6 +6,8 @@
 
 #include "mojo/shell/runner/host/child_process_host.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -18,7 +20,7 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/process_delegate.h"
 #include "mojo/message_pump/message_pump_mojo.h"
-#include "mojo/shell/runner/host/command_line_switch.h"
+#include "mojo/shell/native_runner_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -38,6 +40,30 @@ class ProcessDelegate : public edk::ProcessDelegate {
  private:
   void OnShutdownComplete() override {}
   DISALLOW_COPY_AND_ASSIGN(ProcessDelegate);
+};
+
+class NativeRunnerDelegateImpl : public NativeRunnerDelegate {
+ public:
+  NativeRunnerDelegateImpl() {}
+  ~NativeRunnerDelegateImpl() override {}
+
+  size_t get_and_clear_adjust_count() {
+    size_t count = 0;
+    std::swap(count, adjust_count_);
+    return count;
+  }
+
+ private:
+  // NativeRunnerDelegate:
+  void AdjustCommandLineArgumentsForTarget(
+      const Identity& target,
+      base::CommandLine* command_line) override {
+    adjust_count_++;
+  }
+
+  size_t adjust_count_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(NativeRunnerDelegateImpl);
 };
 
 #if defined(OS_ANDROID)
@@ -64,9 +90,10 @@ TEST(ChildProcessHostTest, MAYBE_StartJoin) {
   ProcessDelegate delegate;
   edk::InitIPCSupport(&delegate, io_thread.task_runner());
 
-  ChildProcessHost child_process_host(blocking_pool.get(), false,
-                                      base::FilePath(),
-                                      std::vector<CommandLineSwitch>());
+  NativeRunnerDelegateImpl native_runner_delegate;
+  ChildProcessHost child_process_host(blocking_pool.get(),
+                                      &native_runner_delegate, false,
+                                      Identity(), base::FilePath());
   base::RunLoop run_loop;
   child_process_host.Start(
       base::Bind(&ProcessReadyCallbackAdapater, run_loop.QuitClosure()));
@@ -78,6 +105,7 @@ TEST(ChildProcessHostTest, MAYBE_StartJoin) {
   EXPECT_EQ(123, exit_code);
   blocking_pool->Shutdown();
   edk::ShutdownIPCSupport();
+  EXPECT_EQ(1u, native_runner_delegate.get_and_clear_adjust_count());
 }
 
 }  // namespace

@@ -5,7 +5,13 @@
 #include "chrome/app/chrome_main_delegate.h"
 
 #include "build/build_config.h"
+#include "chrome/common/features.h"
 #include "content/public/app/content_main.h"
+
+#if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
+#include "base/command_line.h"
+#include "chrome/app/mash/mash_runner.h"
+#endif
 
 #if defined(OS_WIN)
 #include "base/debug/dump_without_crashing.h"
@@ -62,6 +68,17 @@ int ChromeMain(int argc, const char** argv) {
 #else
   params.argc = argc;
   params.argv = argv;
+#endif
+
+#if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
+#if !defined(OS_WIN)
+  base::CommandLine::Init(params.argc, params.argv);
+#endif
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  // TODO(sky): only do this for dev builds and if on canary channel.
+  if (command_line.HasSwitch("mash"))
+    return MashMain();
 #endif
 
   int rv = content::ContentMain(params);

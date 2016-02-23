@@ -1,0 +1,5 @@
+{
+  "url": "exe://chrome_mash/",
+  "name": "Chrome",
+  "capabilities": { }
+}

@@ -33,6 +33,7 @@ source_set("shell") {
     "identity.cc",
     "identity.h",
     "native_runner.h",
+    "native_runner_delegate.h",
     "switches.cc",
     "switches.h",
   ]

@@ -158,7 +158,7 @@ test("window_manager_unittests") {
     "//mojo/edk/test:run_all_unittests",
     "//mojo/environment:chromium",
     "//mojo/gles2",
-    "//mojo/platform_handle",
+    "//mojo/platform_handle:for_shared_library",
     "//mojo/public/cpp/bindings:bindings",
     "//mojo/shell/public/interfaces",
     "//testing/gtest",

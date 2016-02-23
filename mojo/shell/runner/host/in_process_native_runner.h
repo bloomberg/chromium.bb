@@ -32,6 +32,7 @@ class InProcessNativeRunner : public NativeRunner,
   // NativeRunner:
   void Start(
       const base::FilePath& app_path,
+      const Identity& target,
       bool start_sandboxed,
       InterfaceRequest<mojom::ShellClient> request,
       const base::Callback<void(base::ProcessId)>& pid_available_callback,

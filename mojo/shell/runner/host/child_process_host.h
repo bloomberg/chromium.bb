@@ -19,6 +19,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "mojo/shell/identity.h"
 #include "mojo/shell/runner/child/child_controller.mojom.h"
 #include "mojo/shell/runner/host/child_process_host.h"
 
@@ -29,7 +30,8 @@ class TaskRunner;
 namespace mojo {
 namespace shell {
 
-struct CommandLineSwitch;
+class Identity;
+class NativeRunnerDelegate;
 
 // This class represents a "child process host". Handles launching and
 // connecting a platform-specific "pipe" to the child, and supports joining the
@@ -49,9 +51,10 @@ class ChildProcessHost {
   // can be sandboxed if |start_sandboxed| is true. |app_path| is a path to the
   // mojo application we wish to start.
   ChildProcessHost(base::TaskRunner* launch_process_runner,
+                   NativeRunnerDelegate* delegate,
                    bool start_sandboxed,
-                   const base::FilePath& app_path,
-                   const std::vector<CommandLineSwitch>& switches);
+                   const Identity& target,
+                   const base::FilePath& app_path);
   // Allows a ChildProcessHost to be instantiated for an existing channel
   // created by someone else (e.g. an app that launched its own process).
   explicit ChildProcessHost(ScopedHandle channel);
@@ -79,7 +82,9 @@ class ChildProcessHost {
   void AppCompleted(int32_t result);
 
   scoped_refptr<base::TaskRunner> launch_process_runner_;
+  NativeRunnerDelegate* delegate_;
   bool start_sandboxed_;
+  Identity target_;
   const base::FilePath app_path_;
   base::Process child_process_;
   // Used for the ChildController binding.
@@ -97,8 +102,6 @@ class ChildProcessHost {
 
   // A token the child can use to connect a primordial pipe to the host.
   std::string primordial_pipe_token_;
-
-  const std::vector<CommandLineSwitch> command_line_switches_;
 
   base::WeakPtrFactory<ChildProcessHost> weak_factory_;
 

@@ -26,6 +26,5 @@ include_rules = [
 specific_include_rules = {
   "platform_test_helper_mus.cc": [
     "+mojo/shell/background",
-    "+mojo/shell/runner/host/command_line_switch.h",
   ],
 }

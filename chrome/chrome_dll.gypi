@@ -121,6 +121,7 @@
           ],
           'dependencies': [
             '<@(chromium_browser_dependencies)',
+            'chrome_features.gyp:chrome_common_features',
             '../content/content.gyp:content_app_browser',
           ],
           'conditions': [
@@ -347,6 +348,7 @@
             '../components/components.gyp:browser_watcher_client',
             '../content/content.gyp:content_app_child',
             '../third_party/kasko/kasko.gyp:kasko',
+            'chrome_features.gyp:chrome_common_features',
             'chrome_version_resources',
             'policy_path_parser',
           ],
