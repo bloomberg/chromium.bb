@@ -207,22 +207,23 @@ testcase.clickFirstSearchResult = function() {
   steps.push(
     function(id) {
       appId = id;
-      remoteCall.callRemoteTestUtil('fakeKeyDown',
-                                   appId,
-                                   ['#autocomplete-list', 'Down', false],
-                                   this.next);
+      remoteCall.callRemoteTestUtil(
+          'fakeKeyDown', appId,
+          ['#autocomplete-list', 'Down', false, false, false],
+          this.next);
     },
     function(result) {
       chrome.test.assertTrue(result);
-      remoteCall.waitForElement(appId,
-                                ['#autocomplete-list li[selected]']).
-                                then(this.next);
+      remoteCall.waitForElement(
+          appId,
+          ['#autocomplete-list li[selected]']).
+          then(this.next);
     },
     function(result) {
-      remoteCall.callRemoteTestUtil('fakeMouseDown',
-                                    appId,
-                                    ['#autocomplete-list li[selected]'],
-                                    this.next);
+      remoteCall.callRemoteTestUtil(
+          'fakeMouseDown', appId,
+          ['#autocomplete-list li[selected]'],
+          this.next);
     },
     function(result)
     {
@@ -251,16 +252,16 @@ testcase.pressEnterToSearch = function() {
   steps.push(
     function(id) {
       appId = id;
-      remoteCall.callRemoteTestUtil('fakeEvent',
-                                    appId,
-                                    ['#search-box input', 'focus'],
-                                    this.next);
+      remoteCall.callRemoteTestUtil(
+          'fakeEvent', appId,
+          ['#search-box input', 'focus'],
+          this.next);
     },
     function(result) {
-      remoteCall.callRemoteTestUtil('fakeKeyDown',
-                                    appId,
-                                    ['#search-box input', 'Enter', false],
-                                    this.next);
+      remoteCall.callRemoteTestUtil(
+          'fakeKeyDown', appId,
+          ['#search-box input', 'Enter', false, false, false],
+          this.next);
     },
     function(result) {
       remoteCall.waitForFileListChange(appId, BASIC_DRIVE_ENTRY_SET.length).

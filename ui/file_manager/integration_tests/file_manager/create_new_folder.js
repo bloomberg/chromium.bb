@@ -31,10 +31,10 @@ function selectFirstListItem(windowId) {
         'div.detail-table > list > li[selected]');
   }).then(function() {
     // Push Down.
-    return remoteCall.callRemoteTestUtil('fakeKeyDown',
-                                         windowId,
-                                         // Down
-                                         ['#file-list', 'Down', true]);
+    return remoteCall.callRemoteTestUtil(
+        'fakeKeyDown', windowId,
+        // Down
+        ['#file-list', 'Down', true, false, false]);
   }).then(function() {
     // Wait for selection.
     return remoteCall.waitForElement(windowId,
@@ -62,10 +62,10 @@ function createNewFolder(windowId, path, initialEntrySet) {
   return Promise.resolve(
   ).then(function() {
     // Push Ctrl + E.
-    return remoteCall.callRemoteTestUtil('fakeKeyDown',
-                                         windowId,
-                                         // Ctrl + E
-                                         ['#file-list', 'U+0045', true]);
+    return remoteCall.callRemoteTestUtil(
+        'fakeKeyDown', windowId,
+        // Ctrl + E
+        ['#file-list', 'U+0045', true, false, false]);
   }).then(function() {
     // Wait for rename text field.
     return remoteCall.waitForElement(windowId, 'li[renaming] input.rename');
@@ -93,7 +93,7 @@ function createNewFolder(windowId, path, initialEntrySet) {
     return remoteCall.callRemoteTestUtil(
         'fakeKeyDown',
         windowId,
-        ['input.rename', 'Enter', false]);
+        ['input.rename', 'Enter', false, false, false]);
   }).then(function() {
     // Wait until rename completes.
     return remoteCall.waitForElementLost(windowId, 'input.rename');

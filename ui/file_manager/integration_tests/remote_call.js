@@ -204,13 +204,15 @@ RemoteCall.prototype.waitForElementLost =
  * @param {string} keyIdentifer Key identifier.
  * @param {boolean} ctrlKey Control key flag.
  * @param {boolean} shiftKey Shift key flag.
+ * @param {boolean} altKey Alt key flag.
  * @return {Promise} Promise to be fulfilled or rejected depending on the
  *     result.
  */
 RemoteCall.prototype.fakeKeyDown =
-    function(windowId, query, keyIdentifer, ctrlKey, shiftKey) {
+    function(windowId, query, keyIdentifer, ctrlKey, shiftKey, altKey) {
   var resultPromise = this.callRemoteTestUtil(
-      'fakeKeyDown', windowId, [query, keyIdentifer, ctrlKey, shiftKey]);
+      'fakeKeyDown', windowId,
+      [query, keyIdentifer, ctrlKey, shiftKey, altKey]);
   return resultPromise.then(function(result) {
     if (result)
       return true;

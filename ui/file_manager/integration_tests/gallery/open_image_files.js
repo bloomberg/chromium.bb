@@ -113,7 +113,8 @@ function openMultipleImagesAndChangeToSlideMode(testVolumeName, volumeType) {
     return confirmTwoImagesAreLoadedInThumbnailMode(appId).then(function() {
       // Press Enter key and mode should be changed to slide mode.
       return gallery.callRemoteTestUtil(
-          'fakeKeyDown', appId, [null /* active element */, 'Enter', false]);
+          'fakeKeyDown', appId,
+          [null /* active element */, 'Enter', false, false, false]);
     }).then(function() {
       // Wait until it changes to slide mode.
       return gallery.waitForElement(appId, '.gallery[mode="slide"]');

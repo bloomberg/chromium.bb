@@ -21,10 +21,10 @@ testcase.searchBoxFocus = function() {
     },
     // Press the Ctrl-F key.
     function(element) {
-      remoteCall.callRemoteTestUtil('fakeKeyDown',
-                                    appId,
-                                    ['body', 'U+0046', true],
-                                    this.next);
+      remoteCall.callRemoteTestUtil(
+          'fakeKeyDown', appId,
+          ['body', 'U+0046', true, false, false],
+          this.next);
     },
     // Check that the search box has the focus.
     function(result) {
@@ -33,10 +33,10 @@ testcase.searchBoxFocus = function() {
           then(this.next); },
     // Press the Esc key.
     function(element) {
-      remoteCall.callRemoteTestUtil('fakeKeyDown',
-                                    appId,
-                                    ['#search-box input', 'U+001B', false],
-                                    this.next);
+      remoteCall.callRemoteTestUtil(
+          'fakeKeyDown', appId,
+          ['#search-box input', 'U+001B', false, false, false],
+          this.next);
     },
     // Check that the file list has the focus.
     function(result) {
@@ -270,7 +270,7 @@ function tabindexFocus(dialogParams, volumeName, expectedSet, initialize,
     promise = promise.then(function() {
       // Closes the window by pressing Enter.
       return remoteCall.callRemoteTestUtil(
-          'fakeKeyDown', appId, ['#file-list', 'Enter', false]);
+          'fakeKeyDown', appId, ['#file-list', 'Enter', false, false, false]);
     });
 
     return promise;
