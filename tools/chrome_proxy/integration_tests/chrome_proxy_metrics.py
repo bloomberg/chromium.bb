@@ -262,6 +262,8 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
     lo_fi_preview_response_count = 0
 
     for resp in self.IterResponses(tab):
+      if '/csi?' in resp.response.url:
+        continue
       if 'favicon.ico' in resp.response.url:
         continue
       if resp.response.url.startswith('data:'):
