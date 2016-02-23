@@ -97,7 +97,9 @@ MojoContextState::MojoContextState(blink::WebFrame* frame,
                                    bool for_layout_tests)
     : frame_(frame),
       module_added_(false),
-      module_prefix_(frame_->securityOrigin().toString().utf8() + "/") {
+      module_prefix_(for_layout_tests
+                         ? "layout-test-mojom://"
+                         : frame_->securityOrigin().toString().utf8() + "/") {
   gin::PerContextData* context_data = gin::PerContextData::From(context);
   gin::ContextHolder* context_holder = context_data->context_holder();
   runner_.reset(new MojoMainRunner(frame_, context_holder));
