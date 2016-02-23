@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/test_runner/test_info_extractor.h"
+#include "content/shell/browser/layout_test/test_info_extractor.h"
 
 #include <iostream>
 
@@ -15,7 +15,7 @@
 #include "build/build_config.h"
 #include "net/base/filename_util.h"
 
-namespace test_runner {
+namespace content {
 
 namespace {
 
@@ -146,4 +146,4 @@ scoped_ptr<TestInfo> TestInfoExtractor::GetNextTest() {
   return GetTestInfoFromLayoutTestName(test_string);
 }
 
-}  // namespace test_runner
+}  // namespace content

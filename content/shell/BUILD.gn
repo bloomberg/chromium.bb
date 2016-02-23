@@ -80,6 +80,8 @@ static_library("content_shell_lib") {
     "browser/layout_test/layout_test_url_request_context_getter.h",
     "browser/layout_test/notify_done_forwarder.cc",
     "browser/layout_test/notify_done_forwarder.h",
+    "browser/layout_test/test_info_extractor.cc",
+    "browser/layout_test/test_info_extractor.h",
     "browser/shell.cc",
     "browser/shell.h",
     "browser/shell_access_token_store.cc",

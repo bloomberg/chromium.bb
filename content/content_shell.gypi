@@ -128,6 +128,8 @@
         'shell/browser/layout_test/layout_test_url_request_context_getter.h',
         'shell/browser/layout_test/notify_done_forwarder.cc',
         'shell/browser/layout_test/notify_done_forwarder.h',
+        'shell/browser/layout_test/test_info_extractor.cc',
+        'shell/browser/layout_test/test_info_extractor.h',
         'shell/browser/shell.cc',
         'shell/browser/shell.h',
         'shell/browser/shell_access_token_store.cc',

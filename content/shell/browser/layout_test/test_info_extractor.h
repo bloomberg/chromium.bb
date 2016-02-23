@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_TEST_RUNNER_TEST_INFO_EXTRACTOR_H_
-#define COMPONENTS_TEST_RUNNER_TEST_INFO_EXTRACTOR_H_
+#ifndef CONTENT_SHELL_BROWSER_LAYOUT_TEST_TEST_INFO_EXTRACTOR_H_
+#define CONTENT_SHELL_BROWSER_LAYOUT_TEST_TEST_INFO_EXTRACTOR_H_
 
 #include <stddef.h>
 
@@ -12,12 +12,11 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "components/test_runner/test_runner_export.h"
 #include "url/gurl.h"
 
-namespace test_runner {
+namespace content {
 
-struct TEST_RUNNER_EXPORT TestInfo {
+struct TestInfo {
   TestInfo(const GURL& url,
            bool enable_pixel_dumping,
            const std::string& expected_pixel_hash,
@@ -30,7 +29,7 @@ struct TEST_RUNNER_EXPORT TestInfo {
   base::FilePath current_working_directory;
 };
 
-class TEST_RUNNER_EXPORT TestInfoExtractor {
+class TestInfoExtractor {
  public:
   explicit TestInfoExtractor(const base::CommandLine::StringVector& cmd_args);
   ~TestInfoExtractor();
@@ -44,6 +43,6 @@ class TEST_RUNNER_EXPORT TestInfoExtractor {
   DISALLOW_COPY_AND_ASSIGN(TestInfoExtractor);
 };
 
-}  // namespace test_runner
+}  // namespace content
 
-#endif  // COMPONENTS_TEST_RUNNER_TEST_INFO_EXTRACTOR_H_
+#endif  // CONTENT_SHELL_BROWSER_LAYOUT_TEST_TEST_INFO_EXTRACTOR_H_

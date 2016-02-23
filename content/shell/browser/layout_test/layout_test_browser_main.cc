@@ -19,10 +19,10 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
-#include "components/test_runner/test_info_extractor.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/url_constants.h"
 #include "content/shell/browser/layout_test/blink_test_controller.h"
+#include "content/shell/browser/layout_test/test_info_extractor.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/renderer/layout_test/blink_test_helpers.h"
@@ -35,7 +35,7 @@
 
 namespace {
 
-bool RunOneTest(const test_runner::TestInfo& test_info,
+bool RunOneTest(const content::TestInfo& test_info,
                 bool* ran_at_least_once,
                 const scoped_ptr<content::BrowserMainRunner>& main_runner) {
   if (!content::BlinkTestController::Get()->PrepareForLayoutTest(
@@ -81,9 +81,9 @@ int RunTests(const scoped_ptr<content::BrowserMainRunner>& main_runner) {
 
   base::CommandLine::StringVector args =
       base::CommandLine::ForCurrentProcess()->GetArgs();
-  test_runner::TestInfoExtractor test_extractor(args);
+  content::TestInfoExtractor test_extractor(args);
   bool ran_at_least_once = false;
-  scoped_ptr<test_runner::TestInfo> test_info;
+  scoped_ptr<content::TestInfo> test_info;
   while ((test_info = test_extractor.GetNextTest())) {
     if (!RunOneTest(*test_info, &ran_at_least_once, main_runner))
       break;

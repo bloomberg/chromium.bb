@@ -64,8 +64,6 @@ component("test_runner") {
     "spell_check_client.h",
     "test_common.cc",
     "test_common.h",
-    "test_info_extractor.cc",
-    "test_info_extractor.h",
     "test_interfaces.cc",
     "test_interfaces.h",
     "test_plugin.cc",
