@@ -36,7 +36,8 @@ namespace content {
 namespace {
 
 ServiceWorkerClientInfo FocusOnUIThread(int render_process_id,
-                                        int render_frame_id) {
+                                        int render_frame_id,
+                                        const std::string& client_uuid) {
   RenderFrameHostImpl* render_frame_host =
       RenderFrameHostImpl::FromID(render_process_id, render_frame_id);
   WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
@@ -57,8 +58,8 @@ ServiceWorkerClientInfo FocusOnUIThread(int render_process_id,
   // Move the web contents to the foreground.
   web_contents->Activate();
 
-  return ServiceWorkerProviderHost::GetWindowClientInfoOnUI(render_process_id,
-                                                            render_frame_id);
+  return ServiceWorkerProviderHost::GetWindowClientInfoOnUI(
+      render_process_id, render_frame_id, client_uuid);
 }
 
 // PlzNavigate
@@ -440,7 +441,8 @@ void ServiceWorkerProviderHost::Focus(const GetClientInfoCallback& callback) {
   }
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&FocusOnUIThread, render_process_id_, route_id_), callback);
+      base::Bind(&FocusOnUIThread, render_process_id_, route_id_, client_uuid_),
+      callback);
 }
 
 void ServiceWorkerProviderHost::GetWindowClientInfo(
@@ -452,14 +454,15 @@ void ServiceWorkerProviderHost::GetWindowClientInfo(
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&ServiceWorkerProviderHost::GetWindowClientInfoOnUI,
-                 render_process_id_, route_id_),
+                 render_process_id_, route_id_, client_uuid_),
       callback);
 }
 
 // static
 ServiceWorkerClientInfo ServiceWorkerProviderHost::GetWindowClientInfoOnUI(
     int render_process_id,
-    int render_frame_id) {
+    int render_frame_id,
+    const std::string& client_uuid) {
   RenderFrameHostImpl* render_frame_host =
       RenderFrameHostImpl::FromID(render_process_id, render_frame_id);
   if (!render_frame_host)
@@ -469,8 +472,8 @@ ServiceWorkerClientInfo ServiceWorkerProviderHost::GetWindowClientInfoOnUI(
   // for a frame that is actually being navigated and isn't exactly what we are
   // expecting.
   return ServiceWorkerClientInfo(
-      render_frame_host->GetVisibilityState(), render_frame_host->IsFocused(),
-      render_frame_host->GetLastCommittedURL(),
+      client_uuid, render_frame_host->GetVisibilityState(),
+      render_frame_host->IsFocused(), render_frame_host->GetLastCommittedURL(),
       render_frame_host->GetParent() ? REQUEST_CONTEXT_FRAME_TYPE_NESTED
                                      : REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
       render_frame_host->frame_tree_node()->last_focus_time(),

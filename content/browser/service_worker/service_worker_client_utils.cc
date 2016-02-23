@@ -176,15 +176,13 @@ void DidNavigate(const base::WeakPtr<ServiceWorkerContextCore>& context,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!context) {
-    callback.Run(SERVICE_WORKER_ERROR_ABORT, std::string(),
-                 ServiceWorkerClientInfo());
+    callback.Run(SERVICE_WORKER_ERROR_ABORT, ServiceWorkerClientInfo());
     return;
   }
 
   if (render_process_id == ChildProcessHost::kInvalidUniqueID &&
       render_frame_id == MSG_ROUTING_NONE) {
-    callback.Run(SERVICE_WORKER_ERROR_FAILED, std::string(),
-                 ServiceWorkerClientInfo());
+    callback.Run(SERVICE_WORKER_ERROR_FAILED, ServiceWorkerClientInfo());
     return;
   }
 
@@ -196,14 +194,13 @@ void DidNavigate(const base::WeakPtr<ServiceWorkerContextCore>& context,
         provider_host->frame_id() != render_frame_id) {
       continue;
     }
-    provider_host->GetWindowClientInfo(
-        base::Bind(callback, SERVICE_WORKER_OK, provider_host->client_uuid()));
+    provider_host->GetWindowClientInfo(base::Bind(callback, SERVICE_WORKER_OK));
     return;
   }
 
   // If here, it means that no provider_host was found, in which case, the
   // renderer should still be informed that the window was opened.
-  callback.Run(SERVICE_WORKER_OK, std::string(), ServiceWorkerClientInfo());
+  callback.Run(SERVICE_WORKER_OK, ServiceWorkerClientInfo());
 }
 
 void AddWindowClient(
@@ -225,12 +222,11 @@ void AddNonWindowClient(ServiceWorkerProviderHost* host,
       options.client_type != host_client_type)
     return;
 
-  ServiceWorkerClientInfo client_info(blink::WebPageVisibilityStateHidden,
-                                      false,  // is_focused
-                                      host->document_url(),
-                                      REQUEST_CONTEXT_FRAME_TYPE_NONE,
-                                      base::TimeTicks(), host_client_type);
-  client_info.client_uuid = host->client_uuid();
+  ServiceWorkerClientInfo client_info(
+      host->client_uuid(), blink::WebPageVisibilityStateHidden,
+      false,  // is_focused
+      host->document_url(), REQUEST_CONTEXT_FRAME_TYPE_NONE, base::TimeTicks(),
+      host_client_type);
   clients->push_back(client_info);
 }
 
@@ -243,8 +239,8 @@ void OnGetWindowClientsOnUI(
 
   for (const auto& it : clients_info) {
     ServiceWorkerClientInfo info =
-        ServiceWorkerProviderHost::GetWindowClientInfoOnUI(base::get<0>(it),
-                                                           base::get<1>(it));
+        ServiceWorkerProviderHost::GetWindowClientInfoOnUI(
+            base::get<0>(it), base::get<1>(it), base::get<2>(it));
 
     // If the request to the provider_host returned an empty
     // ServiceWorkerClientInfo, that means that it wasn't possible to associate
@@ -259,7 +255,6 @@ void OnGetWindowClientsOnUI(
     if (info.url.GetOrigin() != script_url.GetOrigin())
       continue;
 
-    info.client_uuid = base::get<2>(it);
     clients->push_back(info);
   }
 
@@ -369,6 +364,49 @@ void NavigateClient(const GURL& url,
       base::Bind(
           &NavigateClientOnUI, url, script_url, process_id, frame_id,
           base::Bind(&DidNavigate, context, script_url.GetOrigin(), callback)));
+}
+
+void GetClient(
+    const base::WeakPtr<ServiceWorkerVersion>& controller,
+    const std::string& client_uuid,
+    const base::WeakPtr<ServiceWorkerContextCore>& context,
+    const ServiceWorkerProviderHost::GetClientInfoCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  ServiceWorkerProviderHost* provider_host =
+      context->GetProviderHostByClientID(client_uuid);
+
+  if (!provider_host) {
+    // The client may already have been closed, just ignore.
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::Bind(callback, ServiceWorkerClientInfo()));
+    return;
+  }
+
+  if (provider_host->document_url().GetOrigin() !=
+      controller->script_url().GetOrigin()) {
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::Bind(callback, ServiceWorkerClientInfo()));
+    return;
+  }
+
+  if (provider_host->client_type() == blink::WebServiceWorkerClientTypeWindow) {
+    provider_host->GetWindowClientInfo(callback);
+    return;
+  }
+
+  DCHECK(provider_host->client_type() ==
+             blink::WebServiceWorkerClientTypeWorker ||
+         provider_host->client_type() ==
+             blink::WebServiceWorkerClientTypeSharedWorker);
+
+  ServiceWorkerClientInfo client_info(
+      provider_host->client_uuid(), blink::WebPageVisibilityStateHidden,
+      false,  // is_focused
+      provider_host->document_url(), REQUEST_CONTEXT_FRAME_TYPE_NONE,
+      base::TimeTicks(), provider_host->client_type());
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(callback, client_info));
 }
 
 void GetClients(const base::WeakPtr<ServiceWorkerVersion>& controller,

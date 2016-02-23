@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 
 class GURL;
@@ -25,7 +26,6 @@ namespace service_worker_client_utils {
 
 using NavigationCallback =
     base::Callback<void(ServiceWorkerStatusCode status,
-                        const std::string& client_uuid,
                         const ServiceWorkerClientInfo& client_info)>;
 using ServiceWorkerClients = std::vector<ServiceWorkerClientInfo>;
 using ClientsCallback = base::Callback<void(ServiceWorkerClients* clients)>;
@@ -46,6 +46,14 @@ void NavigateClient(const GURL& url,
                     int frame_id,
                     const base::WeakPtr<ServiceWorkerContextCore>& context,
                     const NavigationCallback& callback);
+
+// Gets a client matched by |client_uuid|. |callback| is called with the client
+// information on completion.
+void GetClient(
+    const base::WeakPtr<ServiceWorkerVersion>& controller,
+    const std::string& client_uuid,
+    const base::WeakPtr<ServiceWorkerContextCore>& context,
+    const ServiceWorkerProviderHost::GetClientInfoCallback& callback);
 
 // Collects clients matched with |options|. |callback| is called with the client
 // information sorted in MRU order (most recently focused order) on completion.

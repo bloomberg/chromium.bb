@@ -267,6 +267,7 @@ void ServiceWorkerContextClient::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_MessageToWorker, OnPostMessage)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_CrossOriginMessageToWorker,
                         OnCrossOriginMessageToWorker)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetClient, OnDidGetClient)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetClients, OnDidGetClients)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_OpenWindowResponse,
                         OnOpenWindowResponse)
@@ -297,6 +298,15 @@ void ServiceWorkerContextClient::BindServiceRegistry(
 
 blink::WebURL ServiceWorkerContextClient::scope() const {
   return service_worker_scope_;
+}
+
+void ServiceWorkerContextClient::getClient(
+    const blink::WebString& id,
+    blink::WebServiceWorkerClientCallbacks* callbacks) {
+  DCHECK(callbacks);
+  int request_id = context_->client_callbacks.Add(callbacks);
+  Send(new ServiceWorkerHostMsg_GetClient(
+      GetRoutingID(), request_id, base::UTF16ToUTF8(base::StringPiece16(id))));
 }
 
 void ServiceWorkerContextClient::getClients(
@@ -873,6 +883,26 @@ void ServiceWorkerContextClient::OnCrossOriginMessageToWorker(
   proxy_->dispatchCrossOriginMessageEvent(web_client, message, ports);
 }
 
+void ServiceWorkerContextClient::OnDidGetClient(
+    int request_id,
+    const ServiceWorkerClientInfo& client) {
+  TRACE_EVENT0("ServiceWorker", "ServiceWorkerContextClient::OnDidGetClient");
+  blink::WebServiceWorkerClientCallbacks* callbacks =
+      context_->client_callbacks.Lookup(request_id);
+  if (!callbacks) {
+    NOTREACHED() << "Got stray response: " << request_id;
+    return;
+  }
+  scoped_ptr<blink::WebServiceWorkerClientInfo> web_client;
+  if (!client.IsEmpty()) {
+    DCHECK(client.IsValid());
+    web_client.reset(new blink::WebServiceWorkerClientInfo(
+        ToWebServiceWorkerClientInfo(client)));
+  }
+  callbacks->onSuccess(blink::adoptWebPtr(web_client.release()));
+  context_->client_callbacks.Remove(request_id);
+}
+
 void ServiceWorkerContextClient::OnDidGetClients(
     int request_id, const std::vector<ServiceWorkerClientInfo>& clients) {
   TRACE_EVENT0("ServiceWorker",
@@ -910,7 +940,7 @@ void ServiceWorkerContextClient::OnOpenWindowResponse(
     web_client.reset(new blink::WebServiceWorkerClientInfo(
         ToWebServiceWorkerClientInfo(client)));
   }
-  callbacks->onSuccess(adoptWebPtr(web_client.release()));
+  callbacks->onSuccess(blink::adoptWebPtr(web_client.release()));
   context_->client_callbacks.Remove(request_id);
 }
 
@@ -946,7 +976,7 @@ void ServiceWorkerContextClient::OnFocusClientResponse(
     scoped_ptr<blink::WebServiceWorkerClientInfo> web_client (
         new blink::WebServiceWorkerClientInfo(
             ToWebServiceWorkerClientInfo(client)));
-    callback->onSuccess(adoptWebPtr(web_client.release()));
+    callback->onSuccess(blink::adoptWebPtr(web_client.release()));
   } else {
     callback->onError(blink::WebServiceWorkerError(
         blink::WebServiceWorkerError::ErrorTypeNotFound,
@@ -973,7 +1003,7 @@ void ServiceWorkerContextClient::OnNavigateClientResponse(
     web_client.reset(new blink::WebServiceWorkerClientInfo(
         ToWebServiceWorkerClientInfo(client)));
   }
-  callbacks->onSuccess(adoptWebPtr(web_client.release()));
+  callbacks->onSuccess(blink::adoptWebPtr(web_client.release()));
   context_->client_callbacks.Remove(request_id);
 }
 

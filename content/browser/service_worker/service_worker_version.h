@@ -535,6 +535,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // Message handlers.
 
+  // This corresponds to the spec's get(id) steps.
+  void OnGetClient(int request_id, const std::string& client_uuid);
+
   // This corresponds to the spec's matchAll(options) steps.
   void OnGetClients(int request_id,
                     const ServiceWorkerClientQueryOptions& options);
@@ -544,7 +547,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnOpenWindow(int request_id, GURL url);
   void OnOpenWindowFinished(int request_id,
                             ServiceWorkerStatusCode status,
-                            const std::string& client_uuid,
                             const ServiceWorkerClientInfo& client_info);
 
   void OnSetCachedMetadata(const GURL& url, const std::vector<char>& data);
@@ -562,15 +564,13 @@ class CONTENT_EXPORT ServiceWorkerVersion
                         const GURL& url);
   void OnNavigateClientFinished(int request_id,
                                 ServiceWorkerStatusCode status,
-                                const std::string& client_uuid,
-                                const ServiceWorkerClientInfo& client);
+                                const ServiceWorkerClientInfo& client_info);
   void OnSkipWaiting(int request_id);
   void OnClaimClients(int request_id);
   void OnPongFromWorker();
 
   void OnFocusClientFinished(int request_id,
-                             const std::string& client_uuid,
-                             const ServiceWorkerClientInfo& client);
+                             const ServiceWorkerClientInfo& client_info);
 
   void OnRegisterForeignFetchScopes(const std::vector<GURL>& sub_scopes,
                                     const std::vector<url::Origin>& origins);
@@ -582,6 +582,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void StartWorkerInternal();
 
   void DidSkipWaiting(int request_id);
+
+  void OnGetClientFinished(int request_id,
+                           const ServiceWorkerClientInfo& client_info);
 
   void OnGetClientsFinished(int request_id, ServiceWorkerClients* clients);
 

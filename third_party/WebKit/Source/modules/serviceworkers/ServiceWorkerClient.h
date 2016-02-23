@@ -16,11 +16,16 @@
 namespace blink {
 
 class ExecutionContext;
+class ScriptPromiseResolver;
 class ScriptState;
 
 class MODULES_EXPORT ServiceWorkerClient : public GarbageCollectedFinalized<ServiceWorkerClient>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
+    // To be used by CallbackPromiseAdapter.
+    using WebType = OwnPtr<WebServiceWorkerClientInfo>;
+
+    static ServiceWorkerClient* take(ScriptPromiseResolver*, PassOwnPtr<WebServiceWorkerClientInfo>);
     static ServiceWorkerClient* create(const WebServiceWorkerClientInfo&);
 
     virtual ~ServiceWorkerClient();

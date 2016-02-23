@@ -92,6 +92,8 @@ class ServiceWorkerContextClient
 
   // WebServiceWorkerContextClient overrides.
   blink::WebURL scope() const override;
+  void getClient(const blink::WebString&,
+                 blink::WebServiceWorkerClientCallbacks*) override;
   void getClients(const blink::WebServiceWorkerClientQueryOptions&,
                   blink::WebServiceWorkerClientsCallbacks*) override;
   void openWindow(const blink::WebURL&,
@@ -227,6 +229,7 @@ class ServiceWorkerContextClient
       const base::string16& message,
       const std::vector<TransferredMessagePort>& sent_message_ports,
       const std::vector<int>& new_routing_ids);
+  void OnDidGetClient(int request_id, const ServiceWorkerClientInfo& client);
   void OnDidGetClients(
       int request_id, const std::vector<ServiceWorkerClientInfo>& clients);
   void OnOpenWindowResponse(int request_id,

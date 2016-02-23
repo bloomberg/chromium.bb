@@ -153,6 +153,12 @@ public:
 
     // Ownership of the passed callbacks is transferred to the callee, callee
     // should delete the callbacks after calling either onSuccess or onError.
+    // WebServiceWorkerClientInfo and WebServiceWorkerError ownerships are
+    // passed to the WebServiceWorkerClientCallbacks implementation.
+    virtual void getClient(const WebString&, WebServiceWorkerClientCallbacks* callbacks) { BLINK_ASSERT_NOT_REACHED(); }
+
+    // Ownership of the passed callbacks is transferred to the callee, callee
+    // should delete the callbacks after calling either onSuccess or onError.
     // WebServiceWorkerClientsInfo and WebServiceWorkerError ownerships are
     // passed to the WebServiceWorkerClientsCallbacks implementation.
     virtual void getClients(const WebServiceWorkerClientQueryOptions&, WebServiceWorkerClientsCallbacks* callbacks) { BLINK_ASSERT_NOT_REACHED(); }

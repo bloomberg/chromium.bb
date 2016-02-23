@@ -60,6 +60,7 @@ public:
     virtual ~ServiceWorkerGlobalScopeClient() { }
 
     // Called from ServiceWorkerClients.
+    virtual void getClient(const WebString&, WebServiceWorkerClientCallbacks*) = 0;
     virtual void getClients(const WebServiceWorkerClientQueryOptions&, WebServiceWorkerClientsCallbacks*) = 0;
     virtual void openWindow(const WebURL&, WebServiceWorkerClientCallbacks*) = 0;
     virtual void setCachedMetadata(const WebURL&, const char*, size_t) = 0;

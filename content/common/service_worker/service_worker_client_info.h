@@ -20,7 +20,8 @@ namespace content {
 // constructor to fill the properties.
 struct ServiceWorkerClientInfo {
   ServiceWorkerClientInfo();
-  ServiceWorkerClientInfo(blink::WebPageVisibilityState page_visibility_state,
+  ServiceWorkerClientInfo(const std::string& client_uuid,
+                          blink::WebPageVisibilityState page_visibility_state,
                           bool is_focused,
                           const GURL& url,
                           RequestContextFrameType frame_type,
@@ -39,8 +40,8 @@ struct ServiceWorkerClientInfo {
   bool is_focused;
   GURL url;
   RequestContextFrameType frame_type;
-  blink::WebServiceWorkerClientType client_type;
   base::TimeTicks last_focus_time;
+  blink::WebServiceWorkerClientType client_type;
 };
 
 }  // namespace content

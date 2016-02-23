@@ -47,6 +47,11 @@ ServiceWorkerGlobalScopeClientImpl::~ServiceWorkerGlobalScopeClientImpl()
 {
 }
 
+void ServiceWorkerGlobalScopeClientImpl::getClient(const WebString& id, WebServiceWorkerClientCallbacks* callbacks)
+{
+    m_client.getClient(id, callbacks);
+}
+
 void ServiceWorkerGlobalScopeClientImpl::getClients(const WebServiceWorkerClientQueryOptions& options, WebServiceWorkerClientsCallbacks* callbacks)
 {
     m_client.getClients(options, callbacks);

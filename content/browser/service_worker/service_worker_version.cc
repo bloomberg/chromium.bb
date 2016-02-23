@@ -892,6 +892,7 @@ void ServiceWorkerVersion::OnReportConsoleMessage(int source_identifier,
 bool ServiceWorkerVersion::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ServiceWorkerVersion, message)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_GetClient, OnGetClient)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_GetClients,
                         OnGetClients)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_OpenWindow,
@@ -942,6 +943,32 @@ void ServiceWorkerVersion::DispatchExtendableMessageEventAfterStartWorker(
       request_id,
       ServiceWorkerMsg_ExtendableMessageEvent(
           request_id, message, sent_message_ports, new_routing_ids));
+}
+
+void ServiceWorkerVersion::OnGetClient(int request_id,
+                                       const std::string& client_uuid) {
+  TRACE_EVENT_ASYNC_BEGIN1("ServiceWorker", "ServiceWorkerVersion::OnGetClient",
+                           request_id, "client_uuid", client_uuid);
+  service_worker_client_utils::GetClient(
+      weak_factory_.GetWeakPtr(), client_uuid, context_,
+      base::Bind(&ServiceWorkerVersion::OnGetClientFinished,
+                 weak_factory_.GetWeakPtr(), request_id));
+}
+
+void ServiceWorkerVersion::OnGetClientFinished(
+    int request_id,
+    const ServiceWorkerClientInfo& client_info) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  TRACE_EVENT_ASYNC_END1("ServiceWorker", "ServiceWorkerVersion::OnGetClient",
+                         request_id, "client_type", client_info.client_type);
+
+  // When Clients.get() is called on the script evaluation phase, the running
+  // status can be STARTING here.
+  if (running_status() != STARTING && running_status() != RUNNING)
+    return;
+
+  embedded_worker_->SendMessage(
+      ServiceWorkerMsg_DidGetClient(request_id, client_info));
 }
 
 void ServiceWorkerVersion::OnGetClients(
@@ -1028,7 +1055,6 @@ void ServiceWorkerVersion::OnOpenWindow(int request_id, GURL url) {
 void ServiceWorkerVersion::OnOpenWindowFinished(
     int request_id,
     ServiceWorkerStatusCode status,
-    const std::string& client_uuid,
     const ServiceWorkerClientInfo& client_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -1041,16 +1067,8 @@ void ServiceWorkerVersion::OnOpenWindowFinished(
     return;
   }
 
-  ServiceWorkerClientInfo client(client_info);
-
-  // If the |client_info| is empty, it means that the opened window wasn't
-  // controlled but the action still succeeded. The renderer process is
-  // expecting an empty client in such case.
-  if (!client.IsEmpty())
-    client.client_uuid = client_uuid;
-
-  embedded_worker_->SendMessage(ServiceWorkerMsg_OpenWindowResponse(
-      request_id, client));
+  embedded_worker_->SendMessage(
+      ServiceWorkerMsg_OpenWindowResponse(request_id, client_info));
 }
 
 void ServiceWorkerVersion::OnSetCachedMetadata(const GURL& url,
@@ -1133,24 +1151,19 @@ void ServiceWorkerVersion::OnFocusClient(int request_id,
     return;
   }
   provider_host->Focus(base::Bind(&ServiceWorkerVersion::OnFocusClientFinished,
-                                  weak_factory_.GetWeakPtr(), request_id,
-                                  client_uuid));
+                                  weak_factory_.GetWeakPtr(), request_id));
 }
 
 void ServiceWorkerVersion::OnFocusClientFinished(
     int request_id,
-    const std::string& client_uuid,
-    const ServiceWorkerClientInfo& client) {
+    const ServiceWorkerClientInfo& client_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (running_status() != RUNNING)
     return;
 
-  ServiceWorkerClientInfo client_info(client);
-  client_info.client_uuid = client_uuid;
-
-  embedded_worker_->SendMessage(ServiceWorkerMsg_FocusClientResponse(
-      request_id, client_info));
+  embedded_worker_->SendMessage(
+      ServiceWorkerMsg_FocusClientResponse(request_id, client_info));
 }
 
 void ServiceWorkerVersion::OnNavigateClient(int request_id,
@@ -1199,7 +1212,6 @@ void ServiceWorkerVersion::OnNavigateClient(int request_id,
 void ServiceWorkerVersion::OnNavigateClientFinished(
     int request_id,
     ServiceWorkerStatusCode status,
-    const std::string& client_uuid,
     const ServiceWorkerClientInfo& client_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -1212,16 +1224,8 @@ void ServiceWorkerVersion::OnNavigateClientFinished(
     return;
   }
 
-  ServiceWorkerClientInfo client(client_info);
-
-  // If the |client_info| is empty, it means that the navigated client wasn't
-  // controlled but the action still succeeded. The renderer process is
-  // expecting an empty client in such case.
-  if (!client.IsEmpty())
-    client.client_uuid = client_uuid;
-
   embedded_worker_->SendMessage(
-      ServiceWorkerMsg_NavigateClientResponse(request_id, client));
+      ServiceWorkerMsg_NavigateClientResponse(request_id, client_info));
 }
 
 void ServiceWorkerVersion::OnSkipWaiting(int request_id) {

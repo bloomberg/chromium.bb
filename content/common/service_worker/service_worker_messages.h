@@ -275,6 +275,11 @@ IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_GeofencingEventFinished,
 // Routed to the target ServiceWorkerVersion.
 IPC_MESSAGE_ROUTED0(ServiceWorkerHostMsg_Pong)
 
+// Asks the browser to retrieve client of the sender ServiceWorker.
+IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_GetClient,
+                    int /* request_id */,
+                    std::string /* client_uuid */)
+
 // Asks the browser to retrieve clients of the sender ServiceWorker.
 IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_GetClients,
                     int /* request_id */,
@@ -514,6 +519,11 @@ IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_ClaimClientsError,
 
 // Sent via EmbeddedWorker to Ping the worker, expecting a Pong in response.
 IPC_MESSAGE_CONTROL0(ServiceWorkerMsg_Ping)
+
+// Sent via EmbeddedWorker as a response of GetClient.
+IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_DidGetClient,
+                     int /* request_id */,
+                     content::ServiceWorkerClientInfo)
 
 // Sent via EmbeddedWorker as a response of GetClients.
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_DidGetClients,
