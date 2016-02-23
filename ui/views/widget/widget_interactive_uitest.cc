@@ -654,6 +654,7 @@ TEST_F(WidgetTestInteractive, ViewFocusOnHWNDEnabledChanges) {
   }
 
   widget->Show();
+  widget->GetNativeWindow()->GetHost()->Show();
   const HWND hwnd = HWNDForWidget(widget);
   EXPECT_TRUE(::IsWindow(hwnd));
   EXPECT_TRUE(::IsWindowEnabled(hwnd));
@@ -739,6 +740,69 @@ TEST_F(WidgetTestInteractive, WidgetNotActivatedOnFakeActivationMessages) {
   ::SetActiveWindow(win32_native_window1);
   EXPECT_EQ(true, widget1.active());
   EXPECT_EQ(false, widget2.active());
+}
+
+// On Windows if we create a fullscreen window on a thread, then it affects the
+// way other windows on the thread interact with the taskbar. To workaround
+// this we reduce the bounds of a fullscreen window by 1px when it loses
+// activation. This test verifies the same.
+TEST_F(WidgetTestInteractive, FullscreenBoundsReducedOnActivationLoss) {
+  Widget widget1;
+  Widget::InitParams params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW);
+  params.native_widget = new DesktopNativeWidgetAura(&widget1);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  widget1.Init(params);
+  widget1.SetBounds(gfx::Rect(0, 0, 200, 200));
+  widget1.Show();
+
+  widget1.Activate();
+  RunPendingMessages();
+  EXPECT_EQ(::GetActiveWindow(),
+            widget1.GetNativeWindow()->GetHost()->GetAcceleratedWidget());
+
+  widget1.SetFullscreen(true);
+  EXPECT_TRUE(widget1.IsFullscreen());
+  // Ensure that the StopIgnoringPosChanges task in HWNDMessageHandler runs.
+  // This task is queued when a widget becomes fullscreen.
+  RunPendingMessages();
+  EXPECT_EQ(::GetActiveWindow(),
+            widget1.GetNativeWindow()->GetHost()->GetAcceleratedWidget());
+  gfx::Rect fullscreen_bounds = widget1.GetWindowBoundsInScreen();
+
+  Widget widget2;
+  params.native_widget = new DesktopNativeWidgetAura(&widget2);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  widget2.Init(params);
+  widget2.SetBounds(gfx::Rect(0, 0, 200, 200));
+  widget2.Show();
+
+  widget2.Activate();
+  RunPendingMessages();
+  EXPECT_EQ(::GetActiveWindow(),
+            widget2.GetNativeWindow()->GetHost()->GetAcceleratedWidget());
+
+  gfx::Rect fullscreen_bounds_after_activation_loss =
+      widget1.GetWindowBoundsInScreen();
+
+  // After deactivation loss the bounds of the fullscreen widget should be
+  // reduced by 1px.
+  EXPECT_EQ(fullscreen_bounds.height() -
+            fullscreen_bounds_after_activation_loss.height(), 1);
+
+  widget1.Activate();
+  RunPendingMessages();
+  EXPECT_EQ(::GetActiveWindow(),
+            widget1.GetNativeWindow()->GetHost()->GetAcceleratedWidget());
+
+  gfx::Rect fullscreen_bounds_after_activate =
+      widget1.GetWindowBoundsInScreen();
+
+  // After activation the bounds of the fullscreen widget should be restored.
+  EXPECT_EQ(fullscreen_bounds, fullscreen_bounds_after_activate);
+
+  widget1.CloseNow();
+  widget2.CloseNow();
 }
 #endif  // defined(OS_WIN)
 

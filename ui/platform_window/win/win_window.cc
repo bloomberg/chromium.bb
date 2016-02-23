@@ -74,9 +74,11 @@ void WinWindow::SetBounds(const gfx::Rect& bounds) {
       GetWindowLong(hwnd(), GWL_STYLE),
       GetWindowLong(hwnd(), GWL_EXSTYLE),
       bounds);
+  unsigned int flags = SWP_NOREPOSITION;
+  if (!::IsWindowVisible(hwnd()))
+    flags |= SWP_NOACTIVATE;
   SetWindowPos(hwnd(), NULL, window_bounds.x(), window_bounds.y(),
-               window_bounds.width(), window_bounds.height(),
-               SWP_NOREPOSITION);
+               window_bounds.width(), window_bounds.height(), flags);
 }
 
 gfx::Rect WinWindow::GetBounds() {

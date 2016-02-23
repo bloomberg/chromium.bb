@@ -333,6 +333,7 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
       dwm_transition_desired_(false),
       sent_window_size_changing_(false),
       left_button_down_on_caption_(false),
+      background_fullscreen_hack_(false),
       autohide_factory_(this),
       weak_factory_(this) {}
 
@@ -525,25 +526,8 @@ void HWNDMessageHandler::GetWindowPlacement(
 
 void HWNDMessageHandler::SetBounds(const gfx::Rect& bounds_in_pixels,
                                    bool force_size_changed) {
-  LONG style = GetWindowLong(hwnd(), GWL_STYLE);
-  if (style & WS_MAXIMIZE)
-    SetWindowLong(hwnd(), GWL_STYLE, style & ~WS_MAXIMIZE);
-
-  gfx::Size old_size = GetClientAreaBounds().size();
-  SetWindowPos(hwnd(), NULL, bounds_in_pixels.x(), bounds_in_pixels.y(),
-               bounds_in_pixels.width(), bounds_in_pixels.height(),
-               SWP_NOACTIVATE | SWP_NOZORDER);
-
-  // If HWND size is not changed, we will not receive standard size change
-  // notifications. If |force_size_changed| is |true|, we should pretend size is
-  // changed.
-  if (old_size == bounds_in_pixels.size() && force_size_changed) {
-    delegate_->HandleClientSizeChanged(GetClientAreaBounds().size());
-    ResetWindowRegion(false, true);
-  }
-
-  if (direct_manipulation_helper_)
-    direct_manipulation_helper_->SetBounds(bounds_in_pixels);
+  background_fullscreen_hack_ = false;
+  SetBoundsInternal(bounds_in_pixels, force_size_changed);
 }
 
 void HWNDMessageHandler::SetSize(const gfx::Size& size) {
@@ -844,6 +828,7 @@ void HWNDMessageHandler::SetWindowIcons(const gfx::ImageSkia& window_icon,
 }
 
 void HWNDMessageHandler::SetFullscreen(bool fullscreen) {
+  background_fullscreen_hack_ = false;
   fullscreen_handler()->SetFullscreen(fullscreen);
   // If we are out of fullscreen and there was a pending DWM transition for the
   // window, then go ahead and do it now.
@@ -929,7 +914,8 @@ LRESULT HWNDMessageHandler::OnWndProc(UINT message,
   }
 
   if (message == WM_ACTIVATE && IsTopLevelWindow(window))
-    PostProcessActivateMessage(LOWORD(w_param), !!HIWORD(w_param));
+    PostProcessActivateMessage(LOWORD(w_param), !!HIWORD(w_param),
+                               reinterpret_cast<HWND>(l_param));
   return result;
 }
 
@@ -1027,12 +1013,51 @@ void HWNDMessageHandler::SetInitialFocus() {
   }
 }
 
-void HWNDMessageHandler::PostProcessActivateMessage(int activation_state,
-                                                    bool minimized) {
+void HWNDMessageHandler::PostProcessActivateMessage(
+    int activation_state,
+    bool minimized,
+    HWND window_gaining_or_losing_activation) {
   DCHECK(IsTopLevelWindow(hwnd()));
   const bool active = activation_state != WA_INACTIVE && !minimized;
   if (delegate_->CanActivate())
     delegate_->HandleActivationChanged(active);
+
+  if (!::IsWindow(window_gaining_or_losing_activation))
+    window_gaining_or_losing_activation = ::GetForegroundWindow();
+
+  // If the window losing activation is a fullscreen window, we reduce the size
+  // of the window by 1px. i.e. Not fullscreen. This is to work around an
+  // apparent bug in the Windows taskbar where in it tracks fullscreen state on
+  // a per thread basis. This causes it not be a topmost window when any
+  // maximized window on a thread which has a fullscreen window is active. This
+  // affects the way these windows interact with the taskbar, they obscure it
+  // when maximized, autohide does not work correctly, etc.
+  // By reducing the size of the fullscreen window by 1px, we ensure that the
+  // taskbar no longer treats the window and in turn the thread as a fullscreen
+  // thread. This in turn ensures that maximized windows on the same thread
+  /// don't obscure the taskbar, etc.
+  if (!active) {
+    if (fullscreen_handler_->fullscreen() &&
+        ::IsWindow(window_gaining_or_losing_activation)) {
+      // Reduce the bounds of the window by 1px to ensure that Windows does
+      // not treat this like a fullscreen window.
+      MONITORINFO monitor_info = {sizeof(monitor_info)};
+      GetMonitorInfo(MonitorFromWindow(hwnd(), MONITOR_DEFAULTTOPRIMARY),
+                      &monitor_info);
+      gfx::Rect shrunk_rect(monitor_info.rcMonitor);
+      shrunk_rect.set_height(shrunk_rect.height() - 1);
+      background_fullscreen_hack_ = true;
+      SetBoundsInternal(shrunk_rect, false);
+    }
+  } else if (background_fullscreen_hack_) {
+    // Restore the bounds of the window to fullscreen.
+    DCHECK(fullscreen_handler_->fullscreen());
+    background_fullscreen_hack_ = false;
+    MONITORINFO monitor_info = {sizeof(monitor_info)};
+    GetMonitorInfo(MonitorFromWindow(hwnd(), MONITOR_DEFAULTTOPRIMARY),
+                   &monitor_info);
+    SetBoundsInternal(gfx::Rect(monitor_info.rcMonitor), false);
+  }
 }
 
 void HWNDMessageHandler::RestoreEnabledIfNecessary() {
@@ -1078,6 +1103,9 @@ void HWNDMessageHandler::TrackMouseEvents(DWORD mouse_tracking_flags) {
 }
 
 void HWNDMessageHandler::ClientAreaSizeChanged() {
+  // Ignore size changes due to fullscreen windows losing activation.
+  if (background_fullscreen_hack_)
+    return;
   gfx::Size s = GetClientAreaBounds().size();
   delegate_->HandleClientSizeChanged(s);
 }
@@ -2165,9 +2193,17 @@ void HWNDMessageHandler::OnWindowPosChanging(WINDOWPOS* window_pos) {
         GetMonitorAndRects(window_rect, &monitor, &monitor_rect, &work_area)) {
       bool work_area_changed = (monitor_rect == last_monitor_rect_) &&
                                (work_area != last_work_area_);
+      // If the size of a background fullscreen window changes again, then we
+      // should reset the |background_fullscreen_hack_| flag.
+      if (background_fullscreen_hack_ &&
+          (!(window_pos->flags & SWP_NOSIZE) &&
+            (monitor_rect.height() - window_pos->cy != 1))) {
+          background_fullscreen_hack_ = false;
+      }
       if (monitor && (monitor == last_monitor_) &&
           ((fullscreen_handler_->fullscreen() &&
-            !fullscreen_handler_->metro_snap()) ||
+            !fullscreen_handler_->metro_snap() &&
+            !background_fullscreen_hack_) ||
             work_area_changed)) {
         // A rect for the monitor we're on changed.  Normally Windows notifies
         // us about this (and thus we're reaching here due to the SetWindowPos()
@@ -2573,6 +2609,30 @@ bool HWNDMessageHandler::HandleMouseInputForCaption(unsigned int message,
       break;
   }
   return handled;
+}
+
+void HWNDMessageHandler::SetBoundsInternal(const gfx::Rect& bounds_in_pixels,
+                                           bool force_size_changed) {
+  LONG style = GetWindowLong(hwnd(), GWL_STYLE);
+  if (style & WS_MAXIMIZE)
+    SetWindowLong(hwnd(), GWL_STYLE, style & ~WS_MAXIMIZE);
+
+  gfx::Size old_size = GetClientAreaBounds().size();
+  SetWindowPos(hwnd(), NULL, bounds_in_pixels.x(), bounds_in_pixels.y(),
+               bounds_in_pixels.width(), bounds_in_pixels.height(),
+               SWP_NOACTIVATE | SWP_NOZORDER);
+
+  // If HWND size is not changed, we will not receive standard size change
+  // notifications. If |force_size_changed| is |true|, we should pretend size is
+  // changed.
+  if (old_size == bounds_in_pixels.size() && force_size_changed &&
+      !background_fullscreen_hack_) {
+    delegate_->HandleClientSizeChanged(GetClientAreaBounds().size());
+    ResetWindowRegion(false, true);
+  }
+
+  if (direct_manipulation_helper_)
+    direct_manipulation_helper_->SetBounds(bounds_in_pixels);
 }
 
 
