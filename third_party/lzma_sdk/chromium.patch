@@ -1,5 +1,5 @@
---- a\CpuArch.c	2015-03-25 08:17:41.042711000 -0400
-+++ lzma_sdk\CpuArch.c	2016-02-12 16:32:45.484718900 -0500
+--- /usr/local/google/home/waffles/Downloads/C/CpuArch.c	2015-03-25 05:17:41.000000000 -0700
++++ CpuArch.c	2016-02-19 12:42:20.327993932 -0800
 @@ -45,7 +45,8 @@
      "push %%EDX\n\t"
      "popf\n\t"
@@ -10,12 +10,16 @@
    #endif
    return flag;
  }
-@@ -79,7 +80,13 @@
+@@ -78,8 +79,17 @@
+ 
    #else
  
++  // When built using GCC and -fPIC (until GCC 5.0), ebx points to the global
++  // offset table, so the value must be preserved before executing cpuid.
++  // Attempting to explicitly clobber ebx is a compile-time error.
    __asm__ __volatile__ (
 -  #if defined(MY_CPU_X86) && defined(__PIC__)
-+  #if defined(MY_CPU_AMD64)
++  #if defined(MY_CPU_AMD64) && defined(__PIC__)
 +    "mov %%rbx, %%rdi\n"
 +    "cpuid\n"
 +    "xchg %%rdi, %%rbx\n"

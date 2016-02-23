@@ -14,5 +14,5 @@ Only the C code required to open 7z archive files and uncompress LZMA
 compression has been included.
 
 The patch in chromium.patch was applied to CpuArch.c to fix register corruption
-that can occur on 64-bit platforms and register clobbering that occurred on Mac
-builds (but in principle can occur anywhere).
+that can occur on 64-bit platforms built with -fPIC and register clobbering that
+occurred on Mac builds (but in principle can occur anywhere).

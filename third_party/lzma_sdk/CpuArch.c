@@ -79,8 +79,11 @@ void MyCPUID(UInt32 function, UInt32 *a, UInt32 *b, UInt32 *c, UInt32 *d)
 
   #else
 
+  // When built using GCC and -fPIC (until GCC 5.0), ebx points to the global
+  // offset table, so the value must be preserved before executing cpuid.
+  // Attempting to explicitly clobber ebx is a compile-time error.
   __asm__ __volatile__ (
-  #if defined(MY_CPU_AMD64)
+  #if defined(MY_CPU_AMD64) && defined(__PIC__)
     "mov %%rbx, %%rdi\n"
     "cpuid\n"
     "xchg %%rdi, %%rbx\n"
@@ -102,7 +105,7 @@ void MyCPUID(UInt32 function, UInt32 *a, UInt32 *b, UInt32 *c, UInt32 *d)
     : "0" (function)) ;
 
   #endif
-  
+
   #else
 
   int CPUInfo[4];
