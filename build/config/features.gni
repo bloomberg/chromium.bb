@@ -41,7 +41,6 @@ declare_args() {
   debug_devtools = false
 
   # Enables WebRTC.
-  # TODO(GYP) make mac work.
   enable_webrtc = !is_ios
 
   # Enables the Media Router.

@@ -4,7 +4,6 @@
 
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
-import("//build_overrides/webrtc.gni")
 import("//testing/test.gni")
 import("//tools/grit/repack.gni")
 
@@ -77,7 +76,10 @@ test("components_unittests") {
   ]
 
   if (is_ios) {
-    deps += [ "//components/translate/ios/browser:unit_tests" ]
+    deps += [
+      "//components/signin/ios/browser:unit_tests",
+      "//components/translate/ios/browser:unit_tests",
+    ]
 
     if (target_cpu != "arm") {
       # TODO(GYP): iOS arm builds of libwebp don't work yet.
@@ -88,6 +90,9 @@ test("components_unittests") {
       "//components/auto_login_parser:unit_tests",
       "//components/autofill/content/browser:unit_tests",
       "//components/autofill/content/renderer:unit_tests",
+      "//components/autofill/core/browser:unit_tests",
+      "//components/autofill/core/common:unit_tests",
+      "//components/browser_sync/browser:unit_tests",
       "//components/bubble:unit_tests",
       "//components/captive_portal:unit_tests",
       "//components/certificate_transparency:unit_tests",
@@ -104,9 +109,15 @@ test("components_unittests") {
       "//components/domain_reliability:unit_tests",
       "//components/error_page/renderer:unit_tests",
       "//components/favicon/content:unit_tests",
+      "//components/favicon/core:unit_tests",
+      "//components/favicon_base:unit_tests",
+      "//components/gcm_driver:unit_tests",
       "//components/gcm_driver/crypto:unit_tests",
       "//components/guest_view/browser:unit_tests",
       "//components/history/content/browser:unit_tests",
+      "//components/history/core/browser:unit_tests",
+      "//components/history/core/common:unit_tests",
+      "//components/invalidation/impl:unit_tests",
       "//components/json_schema:unit_tests",
       "//components/keyed_service/content:unit_tests",
       "//components/language_usage_metrics:unit_tests",
@@ -116,22 +127,29 @@ test("components_unittests") {
       "//components/navigation_interception:unit_tests",
       "//components/network_hints/renderer:unit_tests",
       "//components/offline_pages:unit_tests",
+      "//components/omnibox/browser:unit_tests",
       "//components/packed_ct_ev_whitelist:unit_tests",
       "//components/page_load_metrics/browser:unit_tests",
       "//components/page_load_metrics/renderer:unit_tests",
       "//components/password_manager/content/browser:unit_tests",
+      "//components/password_manager/core/browser:unit_tests",
+      "//components/password_manager/core/common:unit_tests",
+      "//components/password_manager/sync/browser:unit_tests",
       "//components/power:unit_tests",
       "//components/precache/content:unit_tests",
       "//components/precache/core:unit_tests",
       "//components/query_parser:unit_tests",
+      "//components/rappor:unit_tests",
       "//components/safe_browsing_db:unit_tests",
       "//components/safe_json:unit_tests",
       "//components/scheduler:unit_tests",
       "//components/search:unit_tests",
       "//components/search_engines:unit_tests",
       "//components/search_provider_logos:unit_tests",
+      "//components/signin/core/browser:unit_tests",
       "//components/ssl_config:unit_tests",
       "//components/sync_bookmarks:unit_tests",
+      "//components/sync_driver:unit_tests",
       "//components/sync_sessions:unit_tests",
       "//components/test_runner:test_runner",
       "//components/tracing:unit_tests",
@@ -216,32 +234,6 @@ test("components_unittests") {
       "//components/policy/core/browser:unit_tests",
       "//components/policy/core/common:unit_tests",
     ]
-  }
-
-  if (!is_ios || ios_use_webrtc) {
-    deps += [
-      "//components/autofill/core/browser:unit_tests",
-      "//components/autofill/core/common:unit_tests",
-      "//components/browser_sync/browser:unit_tests",
-      "//components/favicon/core:unit_tests",
-      "//components/favicon_base:unit_tests",
-      "//components/gcm_driver:unit_tests",
-      "//components/history/core/browser:unit_tests",
-      "//components/history/core/common:unit_tests",
-      "//components/invalidation/impl:unit_tests",
-      "//components/omnibox/browser:unit_tests",
-      "//components/password_manager/core/browser:unit_tests",
-      "//components/password_manager/core/common:unit_tests",
-      "//components/password_manager/sync/browser:unit_tests",
-      "//components/rappor:unit_tests",
-      "//components/search:unit_tests",
-      "//components/signin/core/browser:unit_tests",
-      "//components/sync_driver:unit_tests",
-    ]
-  }
-
-  if (ios_use_webrtc) {
-    deps += [ "//components/signin/ios/browser:unit_tests" ]
   }
 
   if (toolkit_views) {
