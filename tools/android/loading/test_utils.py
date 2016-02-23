@@ -43,8 +43,39 @@ class FakePageTrack(devtools_monitor.Track):
 
 
 def MakeRequest(
-    url, source_url, start_time, headers_time, end_time,
+    url, source_url, start_time=None, headers_time=None, end_time=None,
     magic_content_type=False, initiator_type='other'):
+  """Make a dependent request.
+
+  Args:
+    url: a url, or number which will be used as a url.
+    source_url: a url or number which will be used as the source (initiating)
+      url. If the source url is not present, then url will be a root. The
+      convention in tests is to use a source_url of 'null' in this case.
+    start_time: The request start time in milliseconds. If None, this is set to
+      the current request id in seconds. If None, the two other time parameters
+      below must also be None.
+    headers_time: The timestamp when resource headers were received, or None.
+    end_time: The timestamp when the resource was finished, or None.
+    magic_content_type (bool): if true, set a magic content type that makes url
+      always be detected as a valid source and destination request.
+    initiator_type: the initiator type to use.
+
+  Returns:
+    A request_track.Request.
+
+  """
+  assert ((start_time is None and
+           headers_time is None and
+           end_time is None) or
+          (start_time is not None and
+           headers_time is not None and
+           end_time is not None)), \
+      'Need no time specified or all times specified'
+  if start_time is None:
+    # Use the request id in seconds for timestamps. This guarantees increasing
+    # times which makes request dependencies behave as expected.
+    start_time = headers_time = end_time = MakeRequest._next_request_id * 1000
   assert initiator_type in ('other', 'parser')
   timing = request_track.TimingAsList(request_track.TimingFromDict({
       # connectEnd should be ignored.

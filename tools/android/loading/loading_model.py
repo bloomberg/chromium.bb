@@ -38,6 +38,7 @@ class ResourceGraph(object):
   EDGE_KIND_KEY = 'edge_kind'
   EDGE_KINDS = request_track.Request.INITIATORS + (
       'script_inferred', 'after-load', 'before-load', 'timing')
+
   def __init__(self, trace, content_lens=None, frame_lens=None,
                activity=None):
     """Create from a LoadingTrace (or json of a trace).
@@ -179,11 +180,13 @@ class ResourceGraph(object):
       if self._node_filter(n.Node()) and n.Url() in other_map:
         yield(n, other_map[n.Url()])
 
-  def Cost(self, path_list=None):
+  def Cost(self, path_list=None, costs_out=None):
     """Compute cost of current model.
 
     Args:
       path_list: if not None, gets a list of NodeInfo in the longest path.
+      costs_out: if not None, gets a vector of node costs by node index. Any
+        filtered nodes will have zero cost.
 
     Returns:
       Cost of the longest path.
@@ -199,6 +202,9 @@ class ResourceGraph(object):
         cost += self.NodeCost(n)
       costs[n.Index()] = cost
     max_cost = max(costs)
+    if costs_out is not None:
+      del costs_out[:-1]
+      costs_out.extend(costs)
     assert max_cost > 0  # Otherwise probably the filter went awry.
     if path_list is not None:
       del path_list[:-1]
@@ -385,7 +391,7 @@ class ResourceGraph(object):
 
     def EdgeAnnotations(self, s):
       assert s.Node() in self.Node().Successors()
-      return self._edge_annotations.get(s, [])
+      return self._edge_annotations.get(s, {})
 
     def ContentType(self):
       if self._request is None:
