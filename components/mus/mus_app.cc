@@ -4,6 +4,8 @@
 
 #include "components/mus/mus_app.h"
 
+#include <set>
+
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "base/threading/platform_thread.h"
@@ -15,10 +17,13 @@
 #include "components/mus/ws/window_tree_host_connection.h"
 #include "components/mus/ws/window_tree_host_impl.h"
 #include "components/mus/ws/window_tree_impl.h"
+#include "components/resource_provider/public/cpp/resource_loader.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/shell.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_paths.h"
 #include "ui/events/event_switches.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gl/gl_surface.h"
@@ -38,6 +43,14 @@ using mus::mojom::Gpu;
 
 namespace mus {
 
+namespace {
+
+const char kResourceFileStrings[] = "mus_app_resources_strings.pak";
+const char kResourceFile100[] = "mus_app_resources_100.pak";
+const char kResourceFile200[] = "mus_app_resources_200.pak";
+
+}  // namespace
+
 // TODO(sky): this is a pretty typical pattern, make it easier to do.
 struct MandolineUIServicesApp::PendingRequest {
   scoped_ptr<mojo::InterfaceRequest<mojom::DisplayManager>> dm_request;
@@ -52,6 +65,31 @@ MandolineUIServicesApp::~MandolineUIServicesApp() {
     gpu_state_->StopThreads();
   // Destroy |connection_manager_| first, since it depends on |event_source_|.
   connection_manager_.reset();
+}
+
+void MandolineUIServicesApp::InitializeResources(mojo::Shell* shell) {
+  if (ui::ResourceBundle::HasSharedInstance())
+    return;
+
+  std::set<std::string> resource_paths;
+  resource_paths.insert(kResourceFileStrings);
+  resource_paths.insert(kResourceFile100);
+  resource_paths.insert(kResourceFile200);
+
+  resource_provider::ResourceLoader resource_loader(shell, resource_paths);
+  if (!resource_loader.BlockUntilLoaded())
+    return;
+  CHECK(resource_loader.loaded());
+  ui::RegisterPathProvider();
+
+  // Initialize resource bundle with 1x and 2x cursor bitmaps.
+  ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(
+      resource_loader.ReleaseFile(kResourceFileStrings),
+      base::MemoryMappedFile::Region::kWholeFile);
+  ui::ResourceBundle::GetSharedInstance().AddDataPackFromFile(
+      resource_loader.ReleaseFile(kResourceFile100), ui::SCALE_FACTOR_100P);
+  ui::ResourceBundle::GetSharedInstance().AddDataPackFromFile(
+      resource_loader.ReleaseFile(kResourceFile200), ui::SCALE_FACTOR_200P);
 }
 
 void MandolineUIServicesApp::Initialize(mojo::Shell* shell,
@@ -69,6 +107,8 @@ void MandolineUIServicesApp::Initialize(mojo::Shell* shell,
     ui::test::SetUseOverrideRedirectWindowByDefault(true);
   }
 #endif
+
+  InitializeResources(shell);
 
 #if defined(USE_OZONE)
   // The ozone platform can provide its own event source. So initialize the

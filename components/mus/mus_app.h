@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -58,6 +59,8 @@ class MandolineUIServicesApp
   // Holds InterfaceRequests received before the first WindowTreeHost Display
   // has been established.
   struct PendingRequest;
+
+  void InitializeResources(mojo::Shell* shell);
 
   // mojo::ShellClient:
   void Initialize(mojo::Shell* shell, const std::string& url,

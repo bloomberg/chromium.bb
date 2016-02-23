@@ -6,6 +6,7 @@ import("//build/config/ui.gni")
 import("//testing/test.gni")
 import("//mojo/public/mojo_application.gni")
 import("//mojo/public/mojo_application_manifest.gni")
+import("//tools/grit/repack.gni")
 
 if (is_android) {
   import("//build/config/android/config.gni")
@@ -74,6 +75,9 @@ source_set("lib") {
   ]
 
   deps = [
+    ":resources_100",
+    ":resources_200",
+    ":resources_strings",
     "//base",
     "//cc",
     "//cc/surfaces",
@@ -82,6 +86,7 @@ source_set("lib") {
     "//components/mus/public/interfaces",
     "//components/mus/surfaces",
     "//components/mus/ws:lib",
+    "//components/resource_provider/public/cpp",
     "//mojo/common:common_base",
     "//mojo/services/tracing/public/cpp",
     "//mojo/shell/public/cpp",
@@ -89,6 +94,10 @@ source_set("lib") {
     "//ui/gl:gl",
     "//ui/platform_window:platform_impls",
     "//ui/platform_window:platform_window",
+  ]
+
+  data_deps = [
+    "//components/resource_provider",
   ]
 
   if (use_x11) {
@@ -101,4 +110,34 @@ source_set("lib") {
   if (use_ozone) {
     deps += [ "//ui/ozone:ozone" ]
   }
+}
+
+repack("resources_strings") {
+  sources = [
+    "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
+  ]
+  output = "$root_out_dir/mus/resources/mus_app_resources_strings.pak"
+  deps = [
+    "//ui/strings",
+  ]
+}
+
+repack("resources_100") {
+  sources = [
+    "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
+  ]
+  output = "$root_out_dir/mus/resources/mus_app_resources_100.pak"
+  deps = [
+    "//ui/resources",
+  ]
+}
+
+repack("resources_200") {
+  sources = [
+    "$root_gen_dir/ui/resources/ui_resources_200_percent.pak",
+  ]
+  output = "$root_out_dir/mus/resources/mus_app_resources_200.pak"
+  deps = [
+    "//ui/resources",
+  ]
 }
