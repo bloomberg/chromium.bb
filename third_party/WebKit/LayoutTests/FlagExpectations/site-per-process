@@ -1,12 +1,6 @@
 # These tests currently fail when they run with --site-per-process.
 # See https://crbug.com/477150.
 
-# https://crbug.com/587909 - Regression caused by recent render pipeline throttling changes.
-http/tests/misc/dns-prefetch-control.html [ Timeout ]
-http/tests/navigatorconnect/connect-cross-origin.html [ Timeout ]
-http/tests/security/document-origin.html [ Timeout ]
-http/tests/serviceworker/navigation-redirect.html [ Timeout ]
-
 # https://crbug.com/584984 - Recent, uninvestigated yet regression.
 http/tests/security/opened-document-security-origin-resets-on-navigation.html [ Crash ]
 
@@ -62,13 +56,13 @@ http/tests/security/javascriptURL/javascriptURL-execution-context-iframe-src-htm
 http/tests/security/javascriptURL/javascriptURL-execution-context-iframe-src-setAttribute.html [ Failure ]
 http/tests/security/javascriptURL/javascriptURL-execution-context-iframe-src-setAttributeNode.html [ Failure ]
 http/tests/security/javascriptURL/javascriptURL-execution-context-iframe-src-setAttributeNS.html [ Failure ]
-http/tests/security/xss-DENIED-iframe-src-alias.html [ Crash Failure Timeout ]
+http/tests/security/xss-DENIED-iframe-src-alias.html [ Crash Failure ]
 http/tests/security/xss-DENIED-javascript-with-spaces.html [ Failure ]
 
 # https://crbug.com/582245 - no exception, b/c BindingSecurity::shouldAllowAccessTo exits early when |!target|.
 http/tests/security/xss-DENIED-getSVGDocument-iframe.html [ Failure ]
 http/tests/security/xss-DENIED-getSVGDocument-object.html [ Failure ]
-http/tests/security/xssAuditor/block-does-not-leak-location.html [ Failure Timeout ]
+http/tests/security/xssAuditor/block-does-not-leak-location.html [ Failure ]
 http/tests/security/xssAuditor/block-does-not-leak-referrer.html [ Failure ]
 http/tests/security/xssAuditor/full-block-script-tag-cross-domain.html [ Failure ]
 
@@ -81,7 +75,7 @@ http/tests/security/mixedContent/insecure-iframe-in-iframe.html [ Failure ]
 
 # https://crbug.com/582551 - testRunner.overridePreference doesn't impact all renderers.
 http/tests/security/powerfulFeatureRestrictions/geolocation-on-sandboxed-insecure-origin.html [ Failure ]
-http/tests/security/powerfulFeatureRestrictions/geolocation-on-secure-origin-in-insecure-origin.html [ Failure Timeout ]
+http/tests/security/powerfulFeatureRestrictions/geolocation-on-secure-origin-in-insecure-origin.html [ Failure ]
 
 # https://crbug.com/584845 - bad message - RFH_NO_PROXY_TO_PARENT from OnDispatchLoad.
 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-cross-in-same-none-block.html [ Timeout ]
@@ -232,7 +226,7 @@ http/tests/misc/copy-resolves-urls.html [ Missing ]
 http/tests/misc/selectionAsMarkup.html [ Missing ]
 http/tests/navigation/pushstate-whitelisted-at-blob-denied.html [ Missing ]
 http/tests/security/cookies/third-party-cookie-blocking-main-frame.html [ Missing ]
-http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change.html [ Missing Timeout ]
+http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change.html [ Missing ]
 http/tests/security/originHeader/origin-header-for-https.html [ Missing ]
 http/tests/security/powerfulFeatureRestrictions/durable-storage-on-insecure-origin.html [ Missing ]
 http/tests/security/referrer-on-client-redirect.html [ Missing ]
