@@ -10,6 +10,13 @@
 <dom-module id="settings-shared">
   <template>
     <style>
+      :root {
+        --settings-secondary: {
+          color: #969696;
+          font-weight: 400;
+        }
+      }
+
       h2 {
         @apply(--layout-center);
         color: var(--paper-grey-500);
@@ -117,7 +124,7 @@
       }
 
       .list-frame .secondary {
-        color: #969696;
+        @apply(--settings-secondary);
       }
 
       .list-item {
@@ -196,8 +203,7 @@
       }
 
       .settings-box .secondary {
-        color: #969696;
-        font-weight: 400;
+        @apply(--settings-secondary);
       }
 
       .settings-box .middle {

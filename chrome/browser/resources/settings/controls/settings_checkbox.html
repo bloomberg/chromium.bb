@@ -8,7 +8,7 @@
 <dom-module id="settings-checkbox">
   <link rel="import" type="css" href="chrome://resources/cr_elements/shared.css">
   <template>
-    <style is="custom-style">
+    <style is="custom-style" include="settings-shared">
       :host {
         display: block;
         margin-bottom: 10px;
@@ -21,6 +21,10 @@
         --paper-checkbox-checked-color: var(--google-blue-500);
         --paper-checkbox-unchecked-color: #969696;
         -webkit-margin-start: 2px;
+      }
+
+      .secondary {
+        @apply(--settings-secondary);
       }
     </style>
     <cr-events id="events"></cr-events>
