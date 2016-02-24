@@ -706,6 +706,9 @@ void AddSearchEnginesStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("searchEngines",
                                   IDS_SETTINGS_SEARCH_ENGINES);
   html_source->AddLocalizedString(
+      "searchEnginesDefault",
+      IDS_SETTINGS_SEARCH_ENGINES_DEFAULT_ENGINES);
+  html_source->AddLocalizedString(
       "searchEnginesOther",
       IDS_SETTINGS_SEARCH_ENGINES_OTHER_ENGINES);
   html_source->AddLocalizedString(

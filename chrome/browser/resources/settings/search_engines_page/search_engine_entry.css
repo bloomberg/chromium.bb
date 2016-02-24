@@ -2,37 +2,34 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+:host([is-default]) {
+  font-weight: 500;
+}
+
 .name-column,
 .keyword-column {
   flex: 3;
 }
 
-.name-column {
-  display: flex;
-}
-
 .url-column {
-  flex: 3.5;
+  flex: 4;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .icon-container {
-  flex: 1;
-  margin: auto;
-  text-align: center;
+  -webkit-margin-end: 8px;
 }
 
 .name {
-  flex: 3;
   margin: auto;
 }
 
 #container {
   border-top: 1px solid lightgray;
   display: flex;
-  padding: 10px 0;
+  padding: 2px 0;
 }
 
 .dropdown-content {
@@ -42,4 +39,8 @@
 
 paper-item:hover {
   background-color: #f0f0f0;
+}
+
+paper-icon-button {
+  -webkit-padding-end: 0;
 }

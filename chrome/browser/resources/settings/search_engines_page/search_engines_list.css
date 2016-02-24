@@ -15,3 +15,7 @@
 .headers .url {
   flex: 4.5;
 }
+
+div {
+  margin: 0 40px;
+}

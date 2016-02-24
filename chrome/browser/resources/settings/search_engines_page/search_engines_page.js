@@ -29,12 +29,6 @@ Polymer({
 
     /** @private {boolean} */
     showAddSearchEngineDialog_: Boolean,
-
-    /** @private {boolean} */
-    otherSearchEnginesExpanded_: {
-      type: Boolean,
-      value: true,
-    },
   },
 
   /** @override */

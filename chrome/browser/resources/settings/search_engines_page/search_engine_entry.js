@@ -18,13 +18,29 @@ Polymer({
 
     /** @private {boolean} */
     showEditSearchEngineDialog_: Boolean,
+
+    /** @type {boolean} */
+    isDefault: {
+      reflectToAttribute: true,
+      type: Boolean,
+      computed: 'computeIsDefault_(engine)'
+    },
   },
 
   /** @private {!settings.SearchEnginesBrowserProxy} */
   browserProxy_: null,
 
+  /** @override */
   created: function() {
     this.browserProxy_ = settings.SearchEnginesBrowserProxyImpl.getInstance();
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeIsDefault_: function() {
+    return this.engine.default;
   },
 
   /** @private */

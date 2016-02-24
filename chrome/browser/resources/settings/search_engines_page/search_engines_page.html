@@ -3,7 +3,6 @@
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://md-settings/search_engines_page/search_engines_browser_proxy.html">
 <link rel="import" href="chrome://md-settings/search_engines_page/search_engine_dialog.html">
 <link rel="import" href="chrome://md-settings/search_engines_page/search_engines_list.html">
@@ -14,36 +13,24 @@
 <dom-module id="settings-search-engines-page">
   <template>
     <style include="settings-shared">
-      .other-label-container {
-        display: flex;
-      }
-
-      .other-label-container span {
-        flex: 1;
+      .label {
+        margin: 20px;
       }
     </style>
-    <div class="settings-box block">
+    <div>
+      <div class="label" i18n-content="searchEnginesDefault"></div>
       <settings-search-engines-list engines="[[defaultEngines]]">
       </settings-search-engines-list>
-    </div>
-    <div class="settings-box">
-      <a is="action-link" i18n-content="searchEnginesAddSearchEngine"
-          on-tap="onAddSearchEngineTap_" id="addSearchEngine"></a>
     </div>
     <template is="dom-if" if="[[showAddSearchEngineDialog_]]" restamp>
       <settings-search-engine-dialog></settings-search-engine-dialog>
     </template>
-    <div class="settings-box block">
-      <div class="other-label-container">
-        <span i18n-content="searchEnginesOther"></span>
-        <cr-expand-button expanded="{{otherSearchEnginesExpanded_}}">
-        </cr-expand-button>
-      </div>
-
-      <iron-collapse id="collapse" opened=[[otherSearchEnginesExpanded_]]>
-        <settings-search-engines-list engines="[[otherEngines]]">
-        </settings-search-engines-list>
-      </iron-collapse>
+    <div>
+      <div class="label" i18n-content="searchEnginesOther"></div>
+      <a is="action-link" i18n-content="searchEnginesAddSearchEngine"
+          on-tap="onAddSearchEngineTap_" id="addSearchEngine"></a>
+      <settings-search-engines-list engines="[[otherEngines]]">
+      </settings-search-engines-list>
     </div>
   </template>
   <script src="search_engines_page.js"></script>

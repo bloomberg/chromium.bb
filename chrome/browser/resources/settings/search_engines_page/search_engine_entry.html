@@ -1,9 +1,11 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-dropdown/iron-dropdown.html">
+<link rel="import" href="chrome://md-settings/search_engines_page/search_engine_dialog.html">
 <link rel="import" href="chrome://md-settings/search_engines_page/search_engines_browser_proxy.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-dropdown/iron-dropdown.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
-<link rel="import" href="chrome://md-settings/search_engines_page/search_engine_dialog.html">
 <link rel="import" href="chrome://md-settings/settings_shared_css.html">
 
 <dom-module id="settings-search-engine-entry">
@@ -17,13 +19,17 @@
     <div id="container" class="list-item">
       <div class="name-column">
         <span class="icon-container">
-          <iron-icon src="[[engine.iconURL]]"></iron-icon>
+          <template is="dom-if" if="[[engine.iconURL]]">
+            <iron-icon src="[[engine.iconURL]]"></iron-icon>
+          </template>
+          <template is="dom-if" if="[[!engine.iconURL]]">
+            <iron-icon icon="icons:find-in-page"></iron-icon>
+          </template>
         </span>
-        <div class="name">[[engine.displayName]]</div>
+        <span class="name">[[engine.displayName]]</span>
       </div>
       <div class="keyword-column">[[engine.keyword]]</div>
       <div class="url-column">[[engine.url]]</div>
-      <div class="icon-container">
         <paper-icon-button icon="more-vert" toggles active="{{editMenuOpened}}">
         </paper-icon-button>
         <iron-dropdown opened="{{editMenuOpened}}" horizontal-align="right"
@@ -39,7 +45,6 @@
                 hidden="[[engine.default]]" id="delete"></paper-item>
           <div>
         </iron-dropdown>
-      </div>
     </div>
   </template>
   <script src="search_engine_entry.js"></script>

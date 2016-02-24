@@ -471,6 +471,9 @@
   <message name="IDS_SETTINGS_SEARCH_ENGINES_NOT_VALID" desc="Text indicating that the input to a given text field in the add/edit search engine dialog is not invalid.">
    Not valid
   </message>
+  <message name="IDS_SETTINGS_SEARCH_ENGINES_DEFAULT_ENGINES" desc="Label for 'default' Search Engines section">
+    Default search engines
+  </message>
   <message name="IDS_SETTINGS_SEARCH_ENGINES_OTHER_ENGINES" desc="Label for 'other' Search Engines section">
     Other search engines
   </message>
