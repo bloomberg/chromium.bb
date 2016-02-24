@@ -26,14 +26,9 @@ IncidentType ResourceRequestIncident::GetType() const {
 }
 
 std::string ResourceRequestIncident::GetKey() const {
-  // Use a static key per resource request type in addition to a fixed digest
-  // below to ensure that only one incident per user (and incident type) is
-  // reported.
-  return payload()->resource_request().type() ==
-                 ClientIncidentReport_IncidentData_ResourceRequestIncident::
-                     TYPE_SCRIPT
-             ? "script_request_incident"
-             : "domain_request_incident";
+  // Use a static key in addition to a fixed digest below to ensure that only
+  // one incident per user is reported.
+  return "resource_request_incident";
 }
 
 uint32_t ResourceRequestIncident::ComputeDigest() const {

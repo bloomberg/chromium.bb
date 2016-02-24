@@ -257,7 +257,7 @@ void SafeBrowsingService::Initialize() {
 
   incident_service_.reset(CreateIncidentReportingService());
   resource_request_detector_.reset(new ResourceRequestDetector(
-      incident_service_->GetIncidentReceiver()));
+      database_manager_, incident_service_->GetIncidentReceiver()));
 #endif  // !defined(FULL_SAFE_BROWSING)
 
   // Track the safe browsing preference of existing profiles.

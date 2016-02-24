@@ -12,6 +12,7 @@
 #include "chrome/browser/safe_browsing/incident_reporting/incident_receiver.h"
 #include "chrome/browser/safe_browsing/incident_reporting/mock_incident_receiver.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
+#include "components/safe_browsing_db/test_database_manager.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -25,42 +26,60 @@
 #include "url/gurl.h"
 
 using ::testing::IsNull;
+using ::testing::Return;
 using ::testing::StrictMock;
 using ::testing::WithArg;
 using ::testing::_;
 
-namespace {
-const char kScriptMatchingTestUrl[] = "http://example.com/foo/bar/baz.js";
-const char kScriptMatchingTestUrlParams[] =
-    "http://example.com/foo/bar/baz.js#abc?foo=bar";
-const char kScriptNonMatchingTestUrl[] =
-    "http://example.com/nonmatching/bar/baz.js";
-
-const char kDomainMatchingTestUrl[] =
-    "http://example892904760932459706783457.com/some/request";
-const char kDomainMatchingTestUrlScript[] =
-    "http://example892904760932459706783457.com/path/to/script.js";
-const char kDomainNonMatchingTestUrl[] =
-    "http://example892904760932459706783458.com/some/request";
-}  // namespace
-
 namespace safe_browsing {
+
+namespace {
 
 class FakeResourceRequestDetector : public ResourceRequestDetector {
  public:
-  explicit FakeResourceRequestDetector(
+  FakeResourceRequestDetector(
+      scoped_refptr<SafeBrowsingDatabaseManager> database_manager,
       scoped_ptr<IncidentReceiver> incident_receiver)
-      : ResourceRequestDetector(std::move(incident_receiver)) {
+      : ResourceRequestDetector(database_manager,
+                                std::move(incident_receiver)) {
     FakeResourceRequestDetector::set_allow_null_profile_for_testing(true);
   }
 };
 
+class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
+ public:
+  MockSafeBrowsingDatabaseManager() {}
+
+  MOCK_METHOD2(CheckResourceUrl, bool(
+      const GURL& url,
+      SafeBrowsingDatabaseManager::Client* client));
+
+ protected:
+  ~MockSafeBrowsingDatabaseManager() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockSafeBrowsingDatabaseManager);
+};
+
+}  // namespace
+
+ACTION_P3(CallClientWithResult, url, threat_type, threat_hash) {
+  arg1->OnCheckResourceUrlResult(url, threat_type, threat_hash);
+  return false;
+}
+
 class ResourceRequestDetectorTest : public testing::Test {
  protected:
+  using ResourceRequestIncidentMessage =
+      ClientIncidentReport::IncidentData::ResourceRequestIncident;
+
   ResourceRequestDetectorTest()
       : mock_incident_receiver_(
             new StrictMock<safe_browsing::MockIncidentReceiver>()),
+        mock_database_manager_(
+            new StrictMock<MockSafeBrowsingDatabaseManager>),
         fake_resource_request_detector_(
+            mock_database_manager_,
             make_scoped_ptr(mock_incident_receiver_)) {}
 
   scoped_ptr<net::URLRequest> GetTestURLRequest(
@@ -84,6 +103,27 @@ class ResourceRequestDetectorTest : public testing::Test {
     return url_request;
   }
 
+  void ExpectNoDatabaseCheck() {
+    EXPECT_CALL(*mock_database_manager_, CheckResourceUrl(_, _))
+        .Times(0);
+  }
+
+  void ExpectNegativeSyncDatabaseCheck(const std::string& url) {
+    EXPECT_CALL(*mock_database_manager_, CheckResourceUrl(GURL(url), _))
+        .WillOnce(Return(true));
+  }
+
+  void ExpectAsyncDatabaseCheck(const std::string& url,
+                                bool is_blacklisted,
+                                const std::string& digest) {
+    SBThreatType threat_type = is_blacklisted
+        ? SB_THREAT_TYPE_BLACKLISTED_RESOURCE
+        : SB_THREAT_TYPE_SAFE;
+    const GURL gurl(url);
+    EXPECT_CALL(*mock_database_manager_, CheckResourceUrl(gurl, _))
+        .WillOnce(CallClientWithResult(gurl, threat_type, digest));
+  }
+
   void ExpectNoIncident(const std::string& url,
                         content::ResourceType resource_type) {
     scoped_ptr<net::URLRequest> request(GetTestURLRequest(url, resource_type));
@@ -98,8 +138,8 @@ class ResourceRequestDetectorTest : public testing::Test {
   void ExpectIncidentAdded(
       const std::string& url,
       content::ResourceType resource_type,
-      ClientIncidentReport_IncidentData_ResourceRequestIncident_Type
-          expected_type) {
+      ResourceRequestIncidentMessage::Type expected_type,
+      const std::string& expected_digest) {
     scoped_ptr<net::URLRequest> request(GetTestURLRequest(url, resource_type));
     scoped_ptr<Incident> incident;
     EXPECT_CALL(*mock_incident_receiver_, DoAddIncidentForProfile(IsNull(), _))
@@ -108,16 +148,19 @@ class ResourceRequestDetectorTest : public testing::Test {
     fake_resource_request_detector_.OnResourceRequest(request.get());
     base::RunLoop().RunUntilIdle();
 
+    ASSERT_TRUE(incident);
     scoped_ptr<ClientIncidentReport_IncidentData> incident_data =
         incident->TakePayload();
-    ASSERT_TRUE(incident_data->has_resource_request());
-    const ClientIncidentReport_IncidentData_ResourceRequestIncident&
-        script_request_incident = incident_data->resource_request();
+    ASSERT_TRUE(incident_data && incident_data->has_resource_request());
+    const ResourceRequestIncidentMessage& script_request_incident =
+        incident_data->resource_request();
     EXPECT_TRUE(script_request_incident.has_digest());
-    EXPECT_TRUE(script_request_incident.type() == expected_type);
+    EXPECT_EQ(expected_digest, script_request_incident.digest());
+    EXPECT_EQ(expected_type, script_request_incident.type());
   }
 
   StrictMock<safe_browsing::MockIncidentReceiver>* mock_incident_receiver_;
+  scoped_refptr<MockSafeBrowsingDatabaseManager> mock_database_manager_;
   FakeResourceRequestDetector fake_resource_request_detector_;
 
  private:
@@ -126,48 +169,58 @@ class ResourceRequestDetectorTest : public testing::Test {
   net::TestURLRequestContext context_;
 };
 
-// Script request tests
-
-TEST_F(ResourceRequestDetectorTest, NoEventForIgnoredResourceTypes) {
-  ExpectNoIncident(kScriptNonMatchingTestUrl, content::RESOURCE_TYPE_IMAGE);
+TEST_F(ResourceRequestDetectorTest, NoDbCheckForIgnoredResourceTypes) {
+  ExpectNoDatabaseCheck();
+  ExpectNoIncident(
+      "http://www.example.com/index.html", content::RESOURCE_TYPE_MAIN_FRAME);
 }
 
-TEST_F(ResourceRequestDetectorTest, NoEventForNonMatchingScript) {
-  ExpectNoIncident(kScriptNonMatchingTestUrl, content::RESOURCE_TYPE_SCRIPT);
+TEST_F(ResourceRequestDetectorTest, NoDbCheckForUnsupportedSchemes) {
+  ExpectNoDatabaseCheck();
+  ExpectNoIncident(
+      "file:///usr/local/script.js", content::RESOURCE_TYPE_SCRIPT);
+  ExpectNoIncident(
+      "chrome-extension://abcdefghi/script.js", content::RESOURCE_TYPE_SCRIPT);
 }
 
-TEST_F(ResourceRequestDetectorTest, EventForBaseMatchingScript) {
-  ExpectIncidentAdded(
-      kScriptMatchingTestUrl, content::RESOURCE_TYPE_SCRIPT,
-      ClientIncidentReport_IncidentData_ResourceRequestIncident::TYPE_SCRIPT);
+TEST_F(ResourceRequestDetectorTest, NoEventForNegativeSynchronousDbCheck) {
+  const std::string url = "http://www.example.com/script.js";
+  ExpectNegativeSyncDatabaseCheck(url);
+  ExpectNoIncident(url, content::RESOURCE_TYPE_SCRIPT);
 }
 
-TEST_F(ResourceRequestDetectorTest, EventForMatchingScriptWithParams) {
-  ExpectIncidentAdded(
-      kScriptMatchingTestUrlParams, content::RESOURCE_TYPE_SCRIPT,
-      ClientIncidentReport_IncidentData_ResourceRequestIncident::TYPE_SCRIPT);
+TEST_F(ResourceRequestDetectorTest, NoEventForNegativeAsynchronousDbCheck) {
+  const std::string url = "http://www.example.com/script.js";
+  ExpectAsyncDatabaseCheck(url, false, "");
+  ExpectNoIncident(url, content::RESOURCE_TYPE_SCRIPT);
 }
 
-// Domain request tests
+TEST_F(ResourceRequestDetectorTest, EventAddedForSupportedSchemes) {
+  std::string schemes[] = {"http", "https"};
+  const std::string digest = "dummydigest";
+  const std::string domain_path = "www.example.com/script.js";
 
-TEST_F(ResourceRequestDetectorTest, NoEventForNonMatchingDomainSubFrame) {
-  ExpectNoIncident(kDomainNonMatchingTestUrl, content::RESOURCE_TYPE_SUB_FRAME);
+  for (const auto& scheme : schemes) {
+    const std::string url = scheme + "://" + domain_path;
+    ExpectAsyncDatabaseCheck(url, true, digest);
+    ExpectIncidentAdded(
+        url, content::RESOURCE_TYPE_SCRIPT,
+        ResourceRequestIncidentMessage::TYPE_PATTERN, digest);
+  }
 }
 
-TEST_F(ResourceRequestDetectorTest, NoEventForMatchingDomainTopLevel) {
-  ExpectNoIncident(kDomainMatchingTestUrl, content::RESOURCE_TYPE_MAIN_FRAME);
-}
-
-TEST_F(ResourceRequestDetectorTest, EventForMatchingDomainSubFrame) {
-  ExpectIncidentAdded(
-      kDomainMatchingTestUrl, content::RESOURCE_TYPE_SUB_FRAME,
-      ClientIncidentReport_IncidentData_ResourceRequestIncident::TYPE_DOMAIN);
-}
-
-TEST_F(ResourceRequestDetectorTest, EventForMatchingDomainScript) {
-  ExpectIncidentAdded(
-      kDomainMatchingTestUrlScript, content::RESOURCE_TYPE_SCRIPT,
-      ClientIncidentReport_IncidentData_ResourceRequestIncident::TYPE_DOMAIN);
+TEST_F(ResourceRequestDetectorTest, EventAddedForSupportedResourceTypes) {
+  content::ResourceType supported_types[] = {
+    content::RESOURCE_TYPE_IMAGE, content::RESOURCE_TYPE_SCRIPT,
+    content::RESOURCE_TYPE_SUB_FRAME,
+  };
+  const std::string url = "http://www.example.com/";
+  const std::string digest = "dummydigest";
+  for (auto resource_type : supported_types) {
+    ExpectAsyncDatabaseCheck(url, true, digest);
+    ExpectIncidentAdded(url, resource_type,
+                        ResourceRequestIncidentMessage::TYPE_PATTERN, digest);
+  }
 }
 
 }  // namespace safe_browsing

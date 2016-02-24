@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_receiver.h"
+#include "components/safe_browsing_db/database_manager.h"
 
 namespace net {
 class URLRequest;
@@ -17,12 +18,15 @@ class URLRequest;
 
 namespace safe_browsing {
 
+class SafeBrowsingService;
+
 class ClientIncidentReport_IncidentData_ResourceRequestIncident;
 
 // Observes network requests and reports suspicious activity.
 class ResourceRequestDetector {
  public:
-  explicit ResourceRequestDetector(
+  ResourceRequestDetector(
+      scoped_refptr<SafeBrowsingDatabaseManager> sb_database_manager,
       scoped_ptr<IncidentReceiver> incident_receiver);
   ~ResourceRequestDetector();
 
@@ -35,11 +39,6 @@ class ResourceRequestDetector {
   void set_allow_null_profile_for_testing(bool allow_null_profile_for_testing);
 
  private:
-  void InitializeHashSets();
-
-  void DetectDomainRequests(const net::URLRequest* request);
-  void DetectScriptRequests(const net::URLRequest* request);
-
   void ReportIncidentOnUIThread(
       int render_process_id,
       int render_frame_id,
@@ -47,6 +46,7 @@ class ResourceRequestDetector {
           incident_data);
 
   scoped_ptr<IncidentReceiver> incident_receiver_;
+  scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
   base::hash_set<std::string> script_set_;
   base::hash_set<std::string> domain_set_;
   bool allow_null_profile_for_testing_;

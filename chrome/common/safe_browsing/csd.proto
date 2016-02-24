@@ -483,8 +483,7 @@ message ClientIncidentReport {
     message ResourceRequestIncident {
       enum Type {
         UNKNOWN = 0;
-        TYPE_SCRIPT = 1;
-        TYPE_DOMAIN = 2;
+        TYPE_PATTERN = 3;
       }
       optional bytes digest = 1;
       optional string origin = 2;
