@@ -128,13 +128,13 @@
         var XMLSerializerOld = window.XMLSerializer;
         var XPathEvaluatorOld = window.XPathEvaluator;
         var XPathResultOld = window.XPathResult;
-    
+
         // FIXME: find a way to test these Constructors
         // var ImageOld = window.Image;
         // var OptionOld = window.Option;
         // var XMLHttpRequestOld = window.XMLHttpRequest;
         // var XSLTProcessorOld = window.XSLTProcessor;
-    
+
         // Attributes
         var clientInformationOld = window.clientInformation;
         var closedOld = window.closed;
@@ -145,7 +145,6 @@
         var devicePixelRatioOld = window.devicePixelRatio;
         var documentOld = window.document;
         var embedsOld = window.embeds;
-        var eventOld = window.event;
         var framesOld = window.frames;
         var historyOld = window.history;
         var imagesOld = window.images;
@@ -238,7 +237,16 @@
         var setTimeoutOld = window.setTimeout;
         var stopOld = window.stop;
 
-        setTimeout(function() {
+        // Postpone verifying that old values haven't changed until
+        // the main frame notifies us that it has already attempted
+        // xss to set the property values.
+        window.addEventListener("message", receiveMessage, false);
+        function receiveMessage(event) {
+            if (event.data != "READY-FOR-OLD-VALUES-VERIFICATION") {
+                log("UNEXPECTED MESSAGE: " + event.data);
+                return;
+            }
+
             // Constructors
             shouldBe("window.Attr", "AttrOld");
             shouldBe("window.CDATASection", "CDATASectionOld");
@@ -342,7 +350,6 @@
             shouldBe("window.devicePixelRatio", "devicePixelRatioOld");
             shouldBe("window.document", "documentOld");
             shouldBe("window.embeds", "embedsOld");
-            shouldBe("window.event", "eventOld");
             shouldBe("window.frameElement", "null");
             shouldBe("window.frames", "framesOld");
             shouldBe("window.history", "historyOld");
@@ -447,7 +454,9 @@
             shouldBe("window.setTimeout", "setTimeoutOld");
 
             shouldBe("window.stop", "stopOld");
-        }, 0);
+
+            window.parent.postMessage("TEST-COMPLETED", "*");
+        }
     </script>
 </body>
 </html>

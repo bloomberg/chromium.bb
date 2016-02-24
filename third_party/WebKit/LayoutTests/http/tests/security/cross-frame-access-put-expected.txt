@@ -92,7 +92,6 @@ ALERT: PASS: window.defaultstatus should be '' and is.
 ALERT: PASS: window.devicePixelRatio should be '1' and is.
 ALERT: PASS: window.document should be '[object HTMLDocument]' and is.
 ALERT: PASS: window.embeds should be 'undefined' and is.
-ALERT: PASS: window.event should be 'undefined' and is.
 ALERT: PASS: window.frameElement should be 'null' and is.
 ALERT: PASS: window.frames should be '[object Window]' and is.
 ALERT: PASS: window.history should be '[object History]' and is.
