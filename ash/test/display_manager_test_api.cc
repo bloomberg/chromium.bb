@@ -4,6 +4,7 @@
 
 #include "ash/test/display_manager_test_api.h"
 
+#include <cstdarg>
 #include <vector>
 
 #include "ash/ash_switches.h"
@@ -40,10 +41,9 @@ std::vector<DisplayInfo> CreateDisplayInfoListFromString(
       specs, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   size_t index = 0;
 
-  DisplayManager::DisplayList list =
-      display_manager->IsInUnifiedMode()
-          ? display_manager->software_mirroring_display_list()
-          : display_manager->active_display_list();
+  DisplayList list = display_manager->IsInUnifiedMode()
+                         ? display_manager->software_mirroring_display_list()
+                         : display_manager->active_display_list();
 
   for (std::vector<std::string>::const_iterator iter = parts.begin();
        iter != parts.end(); ++iter, ++index) {
@@ -185,6 +185,26 @@ scoped_ptr<DisplayLayout> CreateDisplayLayout(
   builder.SetSecondaryPlacement(ScreenUtil::GetSecondaryDisplay().id(),
                                 position, offset);
   return builder.Build();
+}
+
+DisplayIdList CreateDisplayIdList2(int64_t id1, int64_t id2) {
+  DisplayIdList list;
+  list.push_back(id1);
+  list.push_back(id2);
+  SortDisplayIdList(&list);
+  return list;
+}
+
+DisplayIdList CreateDisplayIdListN(size_t count, ...) {
+  DisplayIdList list;
+  va_list args;
+  va_start(args, count);
+  for (size_t i = 0; i < count; i++) {
+    int64_t id = va_arg(args, int64_t);
+    list.push_back(id);
+  }
+  SortDisplayIdList(&list);
+  return list;
 }
 
 }  // namespace test

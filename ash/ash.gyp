@@ -824,6 +824,8 @@
       'display/display_color_manager_chromeos_unittest.cc',
       'display/display_error_observer_chromeos_unittest.cc',
       'display/display_info_unittest.cc',
+      'display/display_layout_unittest.cc',
+      'display/display_layout_builder_unittest.cc',
       'display/display_manager_unittest.cc',
       'display/display_util_unittest.cc',
       'display/extended_mouse_warp_controller_unittest.cc',

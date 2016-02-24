@@ -79,26 +79,15 @@ ExtendedMouseWarpController::ExtendedMouseWarpController(
   ash::DisplayManager* display_manager =
       Shell::GetInstance()->display_manager();
 
-  // For the time being, 3 or more displays are always always laid out
-  // horizontally, with each display being RIGHT of the previous one.
-  if (display_manager->GetNumDisplays() > 2) {
-    for (size_t i = 1; i < display_manager->GetNumDisplays(); ++i) {
-      const gfx::Display& left = display_manager->GetDisplayAt(i - 1);
-      const gfx::Display& right = display_manager->GetDisplayAt(i);
+  // TODO(oshima): Use ComputeBondary instead and try all combinations.
+  for (const auto* placement :
+       display_manager->GetCurrentDisplayLayout().placement_list) {
+    DisplayPlacement::Position position = placement->position;
+    const gfx::Display& a =
+        display_manager->GetDisplayForId(placement->parent_display_id);
+    const gfx::Display& b =
+        display_manager->GetDisplayForId(placement->display_id);
 
-      AddWarpRegion(
-          CreateVerticalEdgeBounds(left, right, DisplayPlacement::RIGHT),
-          drag_source != nullptr);
-    }
-  } else {
-    // Make sure to set |a| as the primary display, and |b| as the secondary
-    // display. DisplayPlacement::Position is defined in terms of primary.
-    DisplayPlacement::Position position =
-        display_manager->GetCurrentDisplayLayout().placement.position;
-    const gfx::Display& a = gfx::Screen::GetScreen()->GetPrimaryDisplay();
-    const gfx::Display& b = ScreenUtil::GetSecondaryDisplay();
-
-    // TODO(oshima): Use ComputeBondary instead.
     if (position == DisplayPlacement::TOP ||
         position == DisplayPlacement::BOTTOM) {
       AddWarpRegion(CreateHorizontalEdgeBounds(a, b, position),

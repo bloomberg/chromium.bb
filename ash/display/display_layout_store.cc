@@ -16,7 +16,7 @@
 namespace ash {
 
 DisplayLayoutStore::DisplayLayoutStore()
-    : default_display_layout_(new DisplayLayout) {
+    : default_display_placement_(DisplayPlacement::RIGHT, 0) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kAshSecondaryDisplayLayout)) {
     std::string value = command_line->GetSwitchValueASCII(
@@ -25,14 +25,14 @@ DisplayLayoutStore::DisplayLayoutStore()
     int offset = 0;
     if (sscanf(value.c_str(), "%c,%d", &layout, &offset) == 2) {
       if (layout == 't')
-        default_display_layout_->placement.position = DisplayPlacement::TOP;
+        default_display_placement_.position = DisplayPlacement::TOP;
       else if (layout == 'b')
-        default_display_layout_->placement.position = DisplayPlacement::BOTTOM;
+        default_display_placement_.position = DisplayPlacement::BOTTOM;
       else if (layout == 'r')
-        default_display_layout_->placement.position = DisplayPlacement::RIGHT;
+        default_display_placement_.position = DisplayPlacement::RIGHT;
       else if (layout == 'l')
-        default_display_layout_->placement.position = DisplayPlacement::LEFT;
-      default_display_layout_->placement.offset = offset;
+        default_display_placement_.position = DisplayPlacement::LEFT;
+      default_display_placement_.offset = offset;
     }
   }
 }
@@ -40,17 +40,16 @@ DisplayLayoutStore::DisplayLayoutStore()
 DisplayLayoutStore::~DisplayLayoutStore() {
 }
 
-void DisplayLayoutStore::SetDefaultDisplayLayout(
-    scoped_ptr<DisplayLayout> layout) {
+void DisplayLayoutStore::SetDefaultDisplayPlacement(
+    const DisplayPlacement& placement) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kAshSecondaryDisplayLayout))
-    default_display_layout_ = std::move(layout);
+    default_display_placement_ = placement;
 }
 
 void DisplayLayoutStore::RegisterLayoutForDisplayIdList(
     const DisplayIdList& list,
     scoped_ptr<DisplayLayout> layout) {
-  DCHECK_EQ(2u, list.size());
 
   // Do not overwrite the valid data with old invalid date.
   if (layouts_.count(list) && !CompareDisplayIds(list[0], list[1]))
@@ -58,15 +57,18 @@ void DisplayLayoutStore::RegisterLayoutForDisplayIdList(
 
   // Old data may not have the display_id/parent_display_id.
   // Guess these values based on the saved primary_id.
-  if (layout->placement.display_id == gfx::Display::kInvalidDisplayID) {
+  if (layout->placement_list.size() >= 1 &&
+      layout->placement_list[0]->display_id ==
+          gfx::Display::kInvalidDisplayID) {
     if (layout->primary_id == list[1]) {
-      layout->placement.display_id = list[0];
-      layout->placement.parent_display_id = list[1];
+      layout->placement_list[0]->display_id = list[0];
+      layout->placement_list[0]->parent_display_id = list[1];
     } else {
-      layout->placement.display_id = list[1];
-      layout->placement.parent_display_id = list[0];
+      layout->placement_list[0]->display_id = list[1];
+      layout->placement_list[0]->parent_display_id = list[0];
     }
   }
+  DCHECK(DisplayLayout::Validate(list, *layout.get())) << layout->ToString();
   layouts_[list] = std::move(layout);
 }
 
@@ -77,11 +79,7 @@ const DisplayLayout& DisplayLayoutStore::GetRegisteredDisplayLayout(
   const DisplayLayout* layout = iter != layouts_.end()
                                     ? iter->second.get()
                                     : CreateDefaultDisplayLayout(list);
-  DCHECK_EQ(layout->primary_id, layout->placement.parent_display_id);
-  DCHECK((layout->placement.display_id == list[0] &&
-          layout->placement.parent_display_id == list[1]) ||
-         (layout->placement.display_id == list[1] &&
-          layout->placement.parent_display_id == list[0]));
+  DCHECK(DisplayLayout::Validate(list, *layout)) << layout->ToString();
   DCHECK_NE(layout->primary_id, gfx::Display::kInvalidDisplayID);
   return *layout;
 }
@@ -99,10 +97,17 @@ void DisplayLayoutStore::UpdateMultiDisplayState(const DisplayIdList& list,
 
 DisplayLayout* DisplayLayoutStore::CreateDefaultDisplayLayout(
     const DisplayIdList& list) {
-  scoped_ptr<DisplayLayout> layout(default_display_layout_->Copy());
+  scoped_ptr<DisplayLayout> layout(new DisplayLayout);
+  // The first display is the primary by default.
   layout->primary_id = list[0];
-  layout->placement.display_id = list[1];
-  layout->placement.parent_display_id = list[0];
+  layout->placement_list.clear();
+  for (size_t i = 0; i < list.size() - 1; i++) {
+    scoped_ptr<DisplayPlacement> placement(
+        new DisplayPlacement(default_display_placement_));
+    placement->display_id = list[i + 1];
+    placement->parent_display_id = list[i];
+    layout->placement_list.push_back(std::move(placement));
+  }
   layouts_[list] = std::move(layout);
   auto iter = layouts_.find(list);
   return iter->second.get();

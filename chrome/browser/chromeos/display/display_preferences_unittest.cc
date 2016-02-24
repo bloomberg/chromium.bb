@@ -107,8 +107,8 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
     std::string name = ash::DisplayIdListToString(list);
     DictionaryPrefUpdate update(&local_state_, prefs::kSecondaryDisplays);
     ash::DisplayLayout display_layout;
-    display_layout.placement.position = position;
-    display_layout.placement.offset = offset;
+    display_layout.placement_list.push_back(
+        new ash::DisplayPlacement(position, offset));
     display_layout.primary_id = primary_id;
 
     DCHECK(!name.empty());
@@ -190,12 +190,13 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
     pref_data->SetInteger("orientation", static_cast<int>(rotation));
   }
 
-  std::string GetRegisteredDisplayLayoutStr(const ash::DisplayIdList& list) {
+  std::string GetRegisteredDisplayPlacementStr(const ash::DisplayIdList& list) {
     return ash::Shell::GetInstance()
         ->display_manager()
         ->layout_store()
         ->GetRegisteredDisplayLayout(list)
-        .ToString();
+        .placement_list[0]
+        ->ToString();
   }
 
   PrefService* local_state() { return &local_state_; }
@@ -218,7 +219,7 @@ TEST_F(DisplayPreferencesTest, ListedLayoutOverrides) {
 
   ash::DisplayIdList list = display_manager->GetCurrentDisplayIdList();
   ash::DisplayIdList dummy_list =
-      ash::CreateDisplayIdList(list[0], list[1] + 1);
+      ash::test::CreateDisplayIdList2(list[0], list[1] + 1);
   ASSERT_NE(list[0], dummy_list[1]);
 
   StoreDisplayLayoutPrefForList(list, ash::DisplayPlacement::TOP, 20);
@@ -238,11 +239,15 @@ TEST_F(DisplayPreferencesTest, ListedLayoutOverrides) {
   // The new layout overrides old layout.
   // Inverted one of for specified pair (id1, id2).  Not used for the list
   // (id1, dummy_id) since dummy_id is not connected right now.
-  EXPECT_EQ("top, 20, default_unified",
-            shell->display_manager()->GetCurrentDisplayLayout().ToString());
-  EXPECT_EQ("top, 20, default_unified", GetRegisteredDisplayLayoutStr(list));
-  EXPECT_EQ("left, 30, default_unified",
-            GetRegisteredDisplayLayoutStr(dummy_list));
+  EXPECT_EQ("id=2200000001, parent=2200000000, top, 20",
+            shell->display_manager()
+                ->GetCurrentDisplayLayout()
+                .placement_list[0]
+                ->ToString());
+  EXPECT_EQ("id=2200000001, parent=2200000000, top, 20",
+            GetRegisteredDisplayPlacementStr(list));
+  EXPECT_EQ("id=2200000002, parent=2200000000, left, 30",
+            GetRegisteredDisplayPlacementStr(dummy_list));
 }
 
 TEST_F(DisplayPreferencesTest, BasicStores) {
@@ -272,14 +277,15 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   display_manager->SetLayoutForCurrentDisplays(
       ash::test::CreateDisplayLayout(ash::DisplayPlacement::TOP, 10));
   const ash::DisplayLayout& layout = display_manager->GetCurrentDisplayLayout();
-  EXPECT_EQ(ash::DisplayPlacement::TOP, layout.placement.position);
-  EXPECT_EQ(10, layout.placement.offset);
+  EXPECT_EQ(ash::DisplayPlacement::TOP, layout.placement_list[0]->position);
+  EXPECT_EQ(10, layout.placement_list[0]->offset);
 
   ash::DisplayLayoutBuilder dummy_layout_builder(id1);
   dummy_layout_builder.SetSecondaryPlacement(dummy_id,
                                              ash::DisplayPlacement::LEFT, 20);
   scoped_ptr<ash::DisplayLayout> dummy_layout(dummy_layout_builder.Build());
-  StoreDisplayLayoutPrefForTest(id1, dummy_id, *dummy_layout);
+  ash::DisplayIdList list = ash::test::CreateDisplayIdList2(id1, dummy_id);
+  StoreDisplayLayoutPrefForTest(list, *dummy_layout);
 
   // Can't switch to a display that does not exist.
   window_tree_host_manager->SetPrimaryDisplayId(dummy_id);
@@ -295,7 +301,6 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
       local_state()->GetDictionary(prefs::kSecondaryDisplays);
   const base::DictionaryValue* layout_value = nullptr;
   std::string key = base::Int64ToString(id1) + "," + base::Int64ToString(id2);
-
   std::string dummy_key =
       base::Int64ToString(id1) + "," + base::Int64ToString(dummy_id);
   EXPECT_TRUE(displays->GetDictionary(dummy_key, &layout_value));
@@ -303,8 +308,12 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   ash::DisplayLayout stored_layout;
   EXPECT_TRUE(ash::DisplayLayout::ConvertFromValue(*layout_value,
                                                    &stored_layout));
-  EXPECT_EQ(dummy_layout->placement.position, stored_layout.placement.position);
-  EXPECT_EQ(dummy_layout->placement.offset, stored_layout.placement.offset);
+  ASSERT_EQ(1u, stored_layout.placement_list.size());
+
+  EXPECT_EQ(dummy_layout->placement_list[0]->position,
+            stored_layout.placement_list[0]->position);
+  EXPECT_EQ(dummy_layout->placement_list[0]->offset,
+            stored_layout.placement_list[0]->offset);
 
   bool mirrored = true;
   EXPECT_TRUE(layout_value->GetBoolean(kMirroredKey, &mirrored));
@@ -368,6 +377,8 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
 
   window_tree_host_manager->SetPrimaryDisplayId(id2);
 
+  EXPECT_EQ(id2, gfx::Screen::GetScreen()->GetPrimaryDisplay().id());
+
   EXPECT_TRUE(properties->GetDictionary(base::Int64ToString(id1), &property));
   width = 0;
   height = 0;
@@ -389,13 +400,20 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
 
   // The layout is swapped.
   EXPECT_TRUE(displays->GetDictionary(key, &layout_value));
+
   EXPECT_TRUE(ash::DisplayLayout::ConvertFromValue(*layout_value,
                                                    &stored_layout));
-  EXPECT_EQ(ash::DisplayPlacement::BOTTOM, stored_layout.placement.position);
-  EXPECT_EQ(-10, stored_layout.placement.offset);
-  EXPECT_EQ(id1, stored_layout.placement.display_id);
-  EXPECT_EQ(id2, stored_layout.placement.parent_display_id);
+  ASSERT_EQ(1u, stored_layout.placement_list.size());
+  const ash::DisplayPlacement& stored_placement =
+      *stored_layout.placement_list[0];
+  EXPECT_EQ(ash::DisplayPlacement::BOTTOM, stored_placement.position);
+  EXPECT_EQ(-10, stored_placement.offset);
+  EXPECT_EQ(id1, stored_placement.display_id);
+  EXPECT_EQ(id2, stored_placement.parent_display_id);
   EXPECT_EQ(id2, stored_layout.primary_id);
+
+  if (true)
+    return;
 
   mirrored = true;
   EXPECT_TRUE(layout_value->GetBoolean(kMirroredKey, &mirrored));
@@ -563,10 +581,13 @@ TEST_F(DisplayPreferencesTest, StoreForSwappedDisplay) {
     ash::DisplayLayout stored_layout;
     EXPECT_TRUE(
         ash::DisplayLayout::ConvertFromValue(*new_value, &stored_layout));
-    EXPECT_EQ(ash::DisplayPlacement::LEFT, stored_layout.placement.position);
-    EXPECT_EQ(0, stored_layout.placement.offset);
-    EXPECT_EQ(id1, stored_layout.placement.display_id);
-    EXPECT_EQ(id2, stored_layout.placement.parent_display_id);
+    ASSERT_EQ(1u, stored_layout.placement_list.size());
+    const ash::DisplayPlacement& stored_placement =
+        *stored_layout.placement_list[0];
+    EXPECT_EQ(ash::DisplayPlacement::LEFT, stored_placement.position);
+    EXPECT_EQ(0, stored_placement.offset);
+    EXPECT_EQ(id1, stored_placement.display_id);
+    EXPECT_EQ(id2, stored_placement.parent_display_id);
     EXPECT_EQ(id2, stored_layout.primary_id);
   }
 
@@ -579,10 +600,13 @@ TEST_F(DisplayPreferencesTest, StoreForSwappedDisplay) {
     ash::DisplayLayout stored_layout;
     EXPECT_TRUE(
         ash::DisplayLayout::ConvertFromValue(*new_value, &stored_layout));
-    EXPECT_EQ(ash::DisplayPlacement::TOP, stored_layout.placement.position);
-    EXPECT_EQ(10, stored_layout.placement.offset);
-    EXPECT_EQ(id1, stored_layout.placement.display_id);
-    EXPECT_EQ(id2, stored_layout.placement.parent_display_id);
+    ASSERT_EQ(1u, stored_layout.placement_list.size());
+    const ash::DisplayPlacement& stored_placement =
+        *stored_layout.placement_list[0];
+    EXPECT_EQ(ash::DisplayPlacement::TOP, stored_placement.position);
+    EXPECT_EQ(10, stored_placement.offset);
+    EXPECT_EQ(id1, stored_placement.display_id);
+    EXPECT_EQ(id2, stored_placement.parent_display_id);
     EXPECT_EQ(id2, stored_layout.primary_id);
   }
 
@@ -596,10 +620,13 @@ TEST_F(DisplayPreferencesTest, StoreForSwappedDisplay) {
     EXPECT_TRUE(displays->GetDictionary(key, &new_value));
     EXPECT_TRUE(
         ash::DisplayLayout::ConvertFromValue(*new_value, &stored_layout));
-    EXPECT_EQ(ash::DisplayPlacement::BOTTOM, stored_layout.placement.position);
-    EXPECT_EQ(-10, stored_layout.placement.offset);
-    EXPECT_EQ(id2, stored_layout.placement.display_id);
-    EXPECT_EQ(id1, stored_layout.placement.parent_display_id);
+    ASSERT_EQ(1u, stored_layout.placement_list.size());
+    const ash::DisplayPlacement& stored_placement =
+        *stored_layout.placement_list[0];
+    EXPECT_EQ(ash::DisplayPlacement::BOTTOM, stored_placement.position);
+    EXPECT_EQ(-10, stored_placement.offset);
+    EXPECT_EQ(id2, stored_placement.display_id);
+    EXPECT_EQ(id1, stored_placement.parent_display_id);
     EXPECT_EQ(id1, stored_layout.primary_id);
   }
 }
@@ -664,9 +691,10 @@ TEST_F(DisplayPreferencesTest, DontStoreInGuestMode) {
   // Settings are still notified to the system.
   gfx::Screen* screen = gfx::Screen::GetScreen();
   EXPECT_EQ(id2, screen->GetPrimaryDisplay().id());
-  EXPECT_EQ(ash::DisplayPlacement::BOTTOM,
-            display_manager->GetCurrentDisplayLayout().placement.position);
-  EXPECT_EQ(-10, display_manager->GetCurrentDisplayLayout().placement.offset);
+  const ash::DisplayPlacement& placement =
+      *display_manager->GetCurrentDisplayLayout().placement_list[0];
+  EXPECT_EQ(ash::DisplayPlacement::BOTTOM, placement.position);
+  EXPECT_EQ(-10, placement.offset);
   const gfx::Display& primary_display = screen->GetPrimaryDisplay();
   EXPECT_EQ("178x176", primary_display.bounds().size().ToString());
   EXPECT_EQ(gfx::Display::ROTATE_90, primary_display.rotation());
@@ -991,7 +1019,7 @@ TEST_F(DisplayPreferencesTest, SaveUnifiedMode) {
 
 TEST_F(DisplayPreferencesTest, RestoreUnifiedMode) {
   int64_t id1 = gfx::Screen::GetScreen()->GetPrimaryDisplay().id();
-  ash::DisplayIdList list = ash::CreateDisplayIdList(id1, id1 + 1);
+  ash::DisplayIdList list = ash::test::CreateDisplayIdList2(id1, id1 + 1);
   StoreDisplayBoolPropertyForList(list, "default_unified", true);
   StoreDisplayPropertyForList(
       list, "primary-id",

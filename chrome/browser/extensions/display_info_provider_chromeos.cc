@@ -66,7 +66,8 @@ bool PointIsOverRadiusVector(const gfx::Point& point,
          static_cast<int64_t>(point.y()) * static_cast<int64_t>(vector.x());
 }
 
-// Created ash::DisplayLayout value for |rectangle| compared to the |reference|
+// Created ash::DisplayPlacement value for |rectangle| compared to the
+// |reference|
 // rectangle.
 // The layout consists of two values:
 //   - position: Whether the rectangle is positioned left, right, over or under
@@ -96,8 +97,9 @@ bool PointIsOverRadiusVector(const gfx::Point& point,
 //
 // The rectangle shares an egde with the reference's bottom edge, but it's
 // center point is in the left area.
-ash::DisplayPlacement GetPlacementForRectangles(const gfx::Rect& reference,
-                                                const gfx::Rect& rectangle) {
+scoped_ptr<ash::DisplayPlacement> CreatePlacementForRectangles(
+    const gfx::Rect& reference,
+    const gfx::Rect& rectangle) {
   // Translate coordinate system so origin is in the reference's top left point
   // (so the reference's down-diagonal vector starts in the (0, 0)) and scale it
   // up by two (to avoid division when calculating the rectangle's center
@@ -151,7 +153,7 @@ ash::DisplayPlacement GetPlacementForRectangles(const gfx::Rect& reference,
                 position == ash::DisplayPlacement::RIGHT)
                    ? rectangle.y()
                    : rectangle.x();
-  return ash::DisplayPlacement(position, offset);
+  return make_scoped_ptr(new ash::DisplayPlacement(position, offset));
 }
 
 // Updates the display layout for the target display in reference to the primary
@@ -160,12 +162,14 @@ void UpdateDisplayLayout(const gfx::Rect& primary_display_bounds,
                          int64_t primary_display_id,
                          const gfx::Rect& target_display_bounds,
                          int64_t target_display_id) {
+  scoped_ptr<ash::DisplayPlacement> placement(CreatePlacementForRectangles(
+      primary_display_bounds, target_display_bounds));
+  placement->display_id = target_display_id;
+  placement->parent_display_id = primary_display_id;
+
   scoped_ptr<ash::DisplayLayout> layout(new ash::DisplayLayout);
-  layout->placement =
-      GetPlacementForRectangles(primary_display_bounds, target_display_bounds);
+  layout->placement_list.push_back(std::move(placement));
   layout->primary_id = primary_display_id;
-  layout->placement.display_id = target_display_id;
-  layout->placement.parent_display_id = primary_display_id;
 
   ash::Shell::GetInstance()
       ->display_configuration_controller()

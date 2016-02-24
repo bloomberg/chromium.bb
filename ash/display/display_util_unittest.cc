@@ -91,31 +91,41 @@ TEST_F(DisplayUtilTest, RotatedDisplay) {
   }
 }
 
-TEST_F(DisplayUtilTest, CreateDisplayIdPair) {
-  DisplayIdList list = CreateDisplayIdList(10, 1);
-  EXPECT_EQ(1, list[0]);
-  EXPECT_EQ(10, list[1]);
-  list = CreateDisplayIdList(10, 100);
-  EXPECT_EQ(10, list[0]);
-  EXPECT_EQ(100, list[1]);
+TEST_F(DisplayUtilTest, GenerateDisplayIdList) {
+  DisplayIdList list;
+  {
+    int64_t ids[] = {10, 1};
+    list = GenerateDisplayIdList(std::begin(ids), std::end(ids));
+    EXPECT_EQ(1, list[0]);
+    EXPECT_EQ(10, list[1]);
+  }
+  {
+    int64_t ids[] = {10, 100};
+    list = GenerateDisplayIdList(std::begin(ids), std::end(ids));
+    EXPECT_EQ(10, list[0]);
+    EXPECT_EQ(100, list[1]);
+  }
   {
     test::ScopedSetInternalDisplayId set_internal(100);
-    list = CreateDisplayIdList(10, 100);
+    int64_t ids[] = {10, 100};
+    list = GenerateDisplayIdList(std::begin(ids), std::end(ids));
     EXPECT_EQ(100, list[0]);
     EXPECT_EQ(10, list[1]);
 
-    list = CreateDisplayIdList(100, 10);
+    std::swap(ids[0], ids[1]);
+    list = GenerateDisplayIdList(std::begin(ids), std::end(ids));
     EXPECT_EQ(100, list[0]);
     EXPECT_EQ(10, list[1]);
   }
-
   {
     test::ScopedSetInternalDisplayId set_internal(10);
-    list = CreateDisplayIdList(10, 100);
+    int64_t ids[] = {10, 100};
+    list = GenerateDisplayIdList(std::begin(ids), std::end(ids));
     EXPECT_EQ(10, list[0]);
     EXPECT_EQ(100, list[1]);
 
-    list = CreateDisplayIdList(100, 10);
+    std::swap(ids[0], ids[1]);
+    list = GenerateDisplayIdList(std::begin(ids), std::end(ids));
     EXPECT_EQ(10, list[0]);
     EXPECT_EQ(100, list[1]);
   }

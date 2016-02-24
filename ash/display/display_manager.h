@@ -82,8 +82,6 @@ class ASH_EXPORT DisplayManager
     virtual void PostDisplayConfigurationChange() = 0;
   };
 
-  typedef std::vector<gfx::Display> DisplayList;
-
   // How the second display will be used.
   // 1) EXTENDED mode extends the desktop to the second dislpay.
   // 2) MIRRORING mode copies the content of the primary display to
@@ -390,9 +388,7 @@ private:
   // When the size of |display_list| equals 2, the bounds are updated using
   // the layout registered for the display pair. For more than 2 displays,
   // the bounds are updated using horizontal layout.
-  // Returns true if any of the non-primary display's bounds has been changed
-  // from current value, or false otherwise.
-  bool UpdateNonPrimaryDisplayBoundsForLayout(
+  void UpdateNonPrimaryDisplayBoundsForLayout(
       DisplayList* display_list,
       std::vector<size_t>* updated_indices);
 
@@ -400,10 +396,15 @@ private:
 
   void RunPendingTasksForTest();
 
+  // Applies the |layout| and updates the bounds of displays in |display_list|.
+  // |updated_ids| contains the ids for displays whose bounds have changed.
   void ApplyDisplayLayout(const DisplayLayout& layout,
-                          DisplayList* display_list);
+                          DisplayList* display_list,
+                          std::vector<int64_t>* updated_ids);
 
-  void ApplyDisplayPlacement(const DisplayPlacement& placement,
+  // Apply the display placement to the display layout.
+  // Returns true if the display bounds has been updated.
+  bool ApplyDisplayPlacement(const DisplayPlacement& placement,
                              DisplayList* display_list);
 
   Delegate* delegate_;  // not owned.

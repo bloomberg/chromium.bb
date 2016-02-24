@@ -124,17 +124,19 @@ void LoadDisplayLayouts() {
     }
 
     if (it.key().find(",") != std::string::npos) {
-      std::vector<std::string> ids = base::SplitString(
+      std::vector<std::string> ids_str = base::SplitString(
           it.key(), ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
       int64_t id1 = gfx::Display::kInvalidDisplayID;
       int64_t id2 = gfx::Display::kInvalidDisplayID;
-      if (!base::StringToInt64(ids[0], &id1) ||
-          !base::StringToInt64(ids[1], &id2) ||
+      if (!base::StringToInt64(ids_str[0], &id1) ||
+          !base::StringToInt64(ids_str[1], &id2) ||
           id1 == gfx::Display::kInvalidDisplayID ||
           id2 == gfx::Display::kInvalidDisplayID) {
         continue;
       }
-      ash::DisplayIdList list = ash::CreateDisplayIdList(id1, id2);
+      int64_t ids[] = {id1, id2};
+      ash::DisplayIdList list =
+          ash::GenerateDisplayIdList(std::begin(ids), std::end(ids));
       layout_store->RegisterLayoutForDisplayIdList(list, std::move(layout));
     }
   }
@@ -390,10 +392,9 @@ void LoadDisplayPreferences(bool first_run_after_boot) {
 }
 
 // Stores the display layout for given display pairs.
-void StoreDisplayLayoutPrefForTest(int64_t id1,
-                                   int64_t id2,
+void StoreDisplayLayoutPrefForTest(const ash::DisplayIdList& list,
                                    const ash::DisplayLayout& layout) {
-  StoreDisplayLayoutPref(ash::CreateDisplayIdList(id1, id2), layout);
+  StoreDisplayLayoutPref(list, layout);
 }
 
 // Stores the given |power_state|.

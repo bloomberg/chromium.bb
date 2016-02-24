@@ -334,10 +334,10 @@ void DisplayOptionsHandler::SendDisplayInfo(
   scoped_ptr<base::Value> layout_value = base::Value::CreateNullValue();
   scoped_ptr<base::Value> offset_value = base::Value::CreateNullValue();
   if (display_manager->GetNumDisplays() > 1) {
-    const ash::DisplayLayout& layout =
-        display_manager->GetCurrentDisplayLayout();
-    layout_value.reset(new base::FundamentalValue(layout.placement.position));
-    offset_value.reset(new base::FundamentalValue(layout.placement.offset));
+    const ash::DisplayPlacement* placement =
+        display_manager->GetCurrentDisplayLayout().placement_list[0];
+    layout_value.reset(new base::FundamentalValue(placement->position));
+    offset_value.reset(new base::FundamentalValue(placement->offset));
   }
 
   web_ui()->CallJavascriptFunction(

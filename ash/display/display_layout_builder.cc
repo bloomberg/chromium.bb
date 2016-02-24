@@ -27,18 +27,34 @@ DisplayLayoutBuilder& DisplayLayoutBuilder::SetMirrored(bool mirrored) {
   return *this;
 }
 
+DisplayLayoutBuilder& DisplayLayoutBuilder::AddDisplayPlacement(
+    int64_t display_id,
+    int64_t parent_display_id,
+    DisplayPlacement::Position position,
+    int offset) {
+  scoped_ptr<DisplayPlacement> placement(new DisplayPlacement);
+  placement->position = position;
+  placement->offset = offset;
+  placement->display_id = display_id;
+  placement->parent_display_id = parent_display_id;
+  layout_->placement_list.push_back(std::move(placement));
+  return *this;
+}
+
 DisplayLayoutBuilder& DisplayLayoutBuilder::SetSecondaryPlacement(
     int64_t secondary_id,
     DisplayPlacement::Position position,
     int offset) {
-  layout_->placement.position = position;
-  layout_->placement.offset = offset;
-  layout_->placement.display_id = secondary_id;
-  layout_->placement.parent_display_id = layout_->primary_id;
+  layout_->placement_list.clear();
+  AddDisplayPlacement(secondary_id, layout_->primary_id, position, offset);
   return *this;
 }
 
 scoped_ptr<DisplayLayout> DisplayLayoutBuilder::Build() {
+  std::sort(layout_->placement_list.begin(), layout_->placement_list.end(),
+            [](const DisplayPlacement* a, const DisplayPlacement* b) {
+              return a->display_id < b->display_id;
+            });
   return std::move(layout_);
 }
 

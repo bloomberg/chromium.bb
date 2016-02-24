@@ -102,6 +102,10 @@ scoped_ptr<DisplayLayout> CreateDisplayLayout(
     DisplayPlacement::Position position,
     int offset);
 
+// Creates the DisplayIdList from ints.
+DisplayIdList CreateDisplayIdList2(int64_t id1, int64_t id2);
+DisplayIdList CreateDisplayIdListN(size_t count, ...);
+
 }  // namespace test
 }  // namespace ash
 

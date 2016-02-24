@@ -398,6 +398,9 @@ void WindowTreeHostManager::SetPrimaryDisplayId(int64_t id) {
       window_tree_hosts_.size() < 2) {
     return;
   }
+  // TODO(oshima): Implement swapping primary for 2> displays.
+  if (GetDisplayManager()->GetNumDisplays() > 2)
+    return;
 
   const gfx::Display& new_primary_display =
       GetDisplayManager()->GetDisplayForId(id);
@@ -442,7 +445,7 @@ void WindowTreeHostManager::SetPrimaryDisplayId(int64_t id) {
   // Only update the layout if it is requested to swap primary display.
   if (layout.primary_id != new_primary_display.id()) {
     scoped_ptr<DisplayLayout> swapped_layout(layout.Copy());
-    swapped_layout->placement.Swap();
+    swapped_layout->placement_list[0]->Swap();
     swapped_layout->primary_id = new_primary_display.id();
     DisplayIdList list = display_manager->GetCurrentDisplayIdList();
     GetDisplayManager()->layout_store()->RegisterLayoutForDisplayIdList(

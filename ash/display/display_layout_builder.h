@@ -28,6 +28,12 @@ class ASH_EXPORT DisplayLayoutBuilder final {
 
   DisplayLayoutBuilder& SetMirrored(bool mirrored);
 
+  // Adds a display placement.
+  DisplayLayoutBuilder& AddDisplayPlacement(int64_t display_id,
+                                            int64_t parent_id,
+                                            DisplayPlacement::Position position,
+                                            int offset);
+
   // Sets the display placement for the secondary display.
   DisplayLayoutBuilder& SetSecondaryPlacement(
       int64_t secondary_id,

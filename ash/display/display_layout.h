@@ -13,6 +13,11 @@
 #include "ash/ash_export.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
+
+namespace gfx {
+class Display;
+}
 
 namespace base {
 class Value;
@@ -24,6 +29,8 @@ namespace ash {
 // An identifier used to manage display layout in DisplayManager /
 // DisplayLayoutStore.
 using DisplayIdList = std::vector<int64_t>;
+
+using DisplayList = std::vector<gfx::Display>;
 
 // DisplayPlacement specifies where the display (D) is placed relative
 // to parent (P) display.  In the following example, the display (D)
@@ -53,11 +60,18 @@ struct ASH_EXPORT DisplayPlacement {
   // based on the top/left edge of the primary display.
   int offset;
 
+  explicit DisplayPlacement(const DisplayPlacement& placement);
   DisplayPlacement(Position position, int offset);
+  DisplayPlacement();
 
   DisplayPlacement& Swap();
 
   std::string ToString() const;
+
+  // Used by JSONValueConverter to generate DisplayPlacement from a
+  // JSON value.  See json_value_converter.h.
+  static void RegisterJSONConverter(
+      base::JSONValueConverter<DisplayPlacement>* converter);
 };
 
 class ASH_EXPORT DisplayLayout final {
@@ -69,10 +83,15 @@ class ASH_EXPORT DisplayLayout final {
   static bool ConvertFromValue(const base::Value& value, DisplayLayout* layout);
   static bool ConvertToValue(const DisplayLayout& layout, base::Value* value);
 
+  // Used by JSONValueConverter to generate DisplayLayout from a
+  // JSON value.  See json_value_converter.h.
   static void RegisterJSONConverter(
       base::JSONValueConverter<DisplayLayout>* converter);
 
-  DisplayPlacement placement;
+  // Validates the layout object.
+  static bool Validate(const DisplayIdList& list, const DisplayLayout& layout);
+
+  ScopedVector<DisplayPlacement> placement_list;
 
   // True if displays are mirrored.
   bool mirrored;
@@ -83,11 +102,14 @@ class ASH_EXPORT DisplayLayout final {
   // The id of the display used as a primary display.
   int64_t primary_id;
 
-  // Returns string representation of the layout for debugging/testing.
-  // This includes "unified" only if the unified desktop feature is enabled.
-  std::string ToString() const;
-
   scoped_ptr<DisplayLayout> Copy() const;
+
+  // Test if the |layout| has the same placement list. Other fields such
+  // as mirrored, primary_id are ignored.
+  bool HasSamePlacementList(const DisplayLayout& layout) const;
+
+  // Returns string representation of the layout for debugging/testing.
+  std::string ToString() const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DisplayLayout);

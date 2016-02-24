@@ -154,10 +154,14 @@ DisplayChangeObserver::~DisplayChangeObserver() {
 ui::MultipleDisplayState DisplayChangeObserver::GetStateForDisplayIds(
     const ui::DisplayConfigurator::DisplayStateList& display_states) const {
   UpdateInternalDisplayId(display_states);
-  if (display_states.size() != 2)
-    return ui::MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED;
-  DisplayIdList list = CreateDisplayIdList(display_states[0]->display_id(),
-                                           display_states[1]->display_id());
+  if (display_states.size() == 1)
+    return ui::MULTIPLE_DISPLAY_STATE_SINGLE;
+  DisplayIdList list =
+      GenerateDisplayIdList(display_states.begin(), display_states.end(),
+                            [](const ui::DisplaySnapshot* display_state) {
+                              return display_state->display_id();
+                            });
+
   const DisplayLayout& layout = Shell::GetInstance()
                                     ->display_manager()
                                     ->layout_store()

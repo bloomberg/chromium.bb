@@ -270,18 +270,18 @@ TEST_F(DisplayManagerTest, EmulatorTest) {
   display_manager()->AddRemoveDisplay();
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
   EXPECT_EQ("0 1 0", GetCountSummary());
-  reset();
 }
 
 // Tests support for 3 displays.
-TEST_F(DisplayManagerTest, UpdateThreeDisplaysTest) {
+TEST_F(DisplayManagerTest, UpdateThreeDisplaysWithDefaultLayout) {
   if (!SupportsMultipleDisplays())
     return;
 
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
 
-  // Test with three displays.
-  UpdateDisplay("0+0-640x480,640+0-320x200,960+0-400x300");
+  // Test with three displays. Native origin will not affect ash
+  // display layout.
+  UpdateDisplay("0+0-640x480,1000+0-320x200,2000+0-400x300");
 
   EXPECT_EQ(3U, display_manager()->GetNumDisplays());
   EXPECT_EQ("0,0 640x480",
@@ -298,10 +298,10 @@ TEST_F(DisplayManagerTest, UpdateThreeDisplaysTest) {
   EXPECT_EQ("0,0 640x480", changed()[0].bounds().ToString());
   // Secondary and terniary displays are on right.
   EXPECT_EQ("640,0 320x200", added()[0].bounds().ToString());
-  EXPECT_EQ("640,0 320x200",
+  EXPECT_EQ("1000,0 320x200",
             GetDisplayInfo(added()[0]).bounds_in_native().ToString());
   EXPECT_EQ("960,0 400x300", added()[1].bounds().ToString());
-  EXPECT_EQ("960,0 400x300",
+  EXPECT_EQ("2000,0 400x300",
             GetDisplayInfo(added()[1]).bounds_in_native().ToString());
 
   // Verify calling ReconfigureDisplays doesn't change anything.
@@ -314,7 +314,140 @@ TEST_F(DisplayManagerTest, UpdateThreeDisplaysTest) {
   EXPECT_EQ("960,0 400x300",
             display_manager()->GetDisplayAt(2).bounds().ToString());
 
-  reset();
+  DisplayPlacement default_placement(DisplayPlacement::BOTTOM, 10);
+  display_manager()->layout_store()->SetDefaultDisplayPlacement(
+      default_placement);
+
+  // Test with new displays.
+  UpdateDisplay("640x480");
+  UpdateDisplay("640x480,320x200,400x300");
+
+  EXPECT_EQ("0,0 640x480",
+            display_manager()->GetDisplayAt(0).bounds().ToString());
+  EXPECT_EQ("10,480 320x200",
+            display_manager()->GetDisplayAt(1).bounds().ToString());
+  EXPECT_EQ("20,680 400x300",
+            display_manager()->GetDisplayAt(2).bounds().ToString());
+}
+
+TEST_F(DisplayManagerTest, LayoutMorethanThreeDisplaysTest) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  int64_t primary_id = gfx::Screen::GetScreen()->GetPrimaryDisplay().id();
+  DisplayIdList list = ash::test::CreateDisplayIdListN(
+      3, primary_id, primary_id + 1, primary_id + 2);
+  {
+    // Layout: [2]
+    //         [1][P]
+    DisplayLayoutBuilder builder(primary_id);
+    builder.AddDisplayPlacement(list[1], primary_id, DisplayPlacement::LEFT,
+                                10);
+    builder.AddDisplayPlacement(list[2], list[1], DisplayPlacement::TOP, 10);
+    display_manager()->layout_store()->RegisterLayoutForDisplayIdList(
+        list, builder.Build());
+
+    UpdateDisplay("640x480,320x200,400x300");
+
+    EXPECT_EQ(3U, display_manager()->GetNumDisplays());
+
+    EXPECT_EQ("0,0 640x480",
+              display_manager()->GetDisplayAt(0).bounds().ToString());
+    EXPECT_EQ("-320,10 320x200",
+              display_manager()->GetDisplayAt(1).bounds().ToString());
+    EXPECT_EQ("-310,-290 400x300",
+              display_manager()->GetDisplayAt(2).bounds().ToString());
+  }
+  {
+    // Layout: [1]
+    //         [P][2]
+    DisplayLayoutBuilder builder(primary_id);
+    builder.AddDisplayPlacement(list[1], primary_id, DisplayPlacement::TOP, 10);
+    builder.AddDisplayPlacement(list[2], primary_id, DisplayPlacement::RIGHT,
+                                10);
+    display_manager()->layout_store()->RegisterLayoutForDisplayIdList(
+        list, builder.Build());
+
+    UpdateDisplay("640x480,320x200,400x300");
+
+    EXPECT_EQ(3U, display_manager()->GetNumDisplays());
+
+    EXPECT_EQ("0,0 640x480",
+              display_manager()->GetDisplayAt(0).bounds().ToString());
+    EXPECT_EQ("10,-200 320x200",
+              display_manager()->GetDisplayAt(1).bounds().ToString());
+    EXPECT_EQ("640,10 400x300",
+              display_manager()->GetDisplayAt(2).bounds().ToString());
+  }
+  {
+    // Layout: [P]
+    //         [2]
+    //         [1]
+    DisplayLayoutBuilder builder(primary_id);
+    builder.AddDisplayPlacement(list[1], list[2], DisplayPlacement::BOTTOM, 10);
+    builder.AddDisplayPlacement(list[2], primary_id, DisplayPlacement::BOTTOM,
+                                10);
+    display_manager()->layout_store()->RegisterLayoutForDisplayIdList(
+        list, builder.Build());
+
+    UpdateDisplay("640x480,320x200,400x300");
+
+    EXPECT_EQ(3U, display_manager()->GetNumDisplays());
+
+    EXPECT_EQ("0,0 640x480",
+              display_manager()->GetDisplayAt(0).bounds().ToString());
+    EXPECT_EQ("20,780 320x200",
+              display_manager()->GetDisplayAt(1).bounds().ToString());
+    EXPECT_EQ("10,480 400x300",
+              display_manager()->GetDisplayAt(2).bounds().ToString());
+  }
+
+  {
+    list = ash::test::CreateDisplayIdListN(5, primary_id, primary_id + 1,
+                                           primary_id + 2, primary_id + 3,
+                                           primary_id + 4);
+    // Layout: [P][2]
+    //      [3][4]
+    //      [1]
+    DisplayLayoutBuilder builder(primary_id);
+    builder.AddDisplayPlacement(list[2], primary_id, DisplayPlacement::RIGHT,
+                                10);
+    builder.AddDisplayPlacement(list[1], list[3], DisplayPlacement::BOTTOM, 10);
+    builder.AddDisplayPlacement(list[3], list[4], DisplayPlacement::LEFT, 10);
+    builder.AddDisplayPlacement(list[4], primary_id, DisplayPlacement::BOTTOM,
+                                10);
+    display_manager()->layout_store()->RegisterLayoutForDisplayIdList(
+        list, builder.Build());
+
+    UpdateDisplay("640x480,320x200,400x300,300x200,200x100");
+
+    EXPECT_EQ(5U, display_manager()->GetNumDisplays());
+
+    EXPECT_EQ("0,0 640x480",
+              display_manager()->GetDisplayAt(0).bounds().ToString());
+    // 2nd is right of the primary.
+    EXPECT_EQ("640,10 400x300",
+              display_manager()->GetDisplayAt(2).bounds().ToString());
+    // 4th is bottom of the primary.
+    EXPECT_EQ("10,480 200x100",
+              display_manager()->GetDisplayAt(4).bounds().ToString());
+    // 3rd is the left of 4th.
+    EXPECT_EQ("-290,480 300x200",
+              display_manager()->GetDisplayAt(3).bounds().ToString());
+    // 1st is the bottom of 3rd.
+    EXPECT_EQ("-280,680 320x200",
+              display_manager()->GetDisplayAt(1).bounds().ToString());
+  }
+}
+
+TEST_F(DisplayManagerTest, NoMirrorInThreeDisplays) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  UpdateDisplay("640x480,320x200,400x300");
+  display_manager()->SetMirrorMode(true);
+  EXPECT_FALSE(display_manager()->IsInMirrorMode());
+  EXPECT_EQ(3u, display_manager()->GetNumDisplays());
 }
 
 TEST_F(DisplayManagerTest, OverscanInsetsTest) {
@@ -1625,7 +1758,7 @@ TEST_F(DisplayManagerTest, UnifiedDesktopWithHardwareMirroring) {
   // if the displays are configured to use mirroring when running on desktop.
   // This is a workdaround to force the display manager to forget
   // the mirroing layout.
-  DisplayIdList list = CreateDisplayIdList(1, 2);
+  DisplayIdList list = test::CreateDisplayIdList2(1, 2);
   DisplayLayoutBuilder builder(
       display_manager()->layout_store()->GetRegisteredDisplayLayout(list));
   builder.SetMirrored(false);
@@ -2050,7 +2183,7 @@ TEST_F(DisplayManagerTest, RejectInvalidLayoutData) {
   good_builder.SetSecondaryPlacement(id2, DisplayPlacement::LEFT, 0);
   scoped_ptr<DisplayLayout> good(good_builder.Build());
 
-  DisplayIdList good_list = CreateDisplayIdList(id1, id2);
+  DisplayIdList good_list = test::CreateDisplayIdList2(id1, id2);
   layout_store->RegisterLayoutForDisplayIdList(good_list, good->Copy());
 
   DisplayLayoutBuilder bad(id1);
@@ -2070,16 +2203,17 @@ TEST_F(DisplayManagerTest, GuessDisplayIdFieldsInDisplayLayout) {
   int64_t id2 = 10002;
 
   scoped_ptr<DisplayLayout> old_layout(new DisplayLayout);
-  old_layout->placement = DisplayPlacement(DisplayPlacement::BOTTOM, 0);
+  old_layout->placement_list.push_back(
+      new DisplayPlacement(DisplayPlacement::BOTTOM, 0));
   old_layout->primary_id = id1;
 
   DisplayLayoutStore* layout_store = display_manager()->layout_store();
-  DisplayIdList list = CreateDisplayIdList(id1, id2);
+  DisplayIdList list = test::CreateDisplayIdList2(id1, id2);
   layout_store->RegisterLayoutForDisplayIdList(list, std::move(old_layout));
   const DisplayLayout& stored = layout_store->GetRegisteredDisplayLayout(list);
 
-  EXPECT_EQ(id1, stored.placement.parent_display_id);
-  EXPECT_EQ(id2, stored.placement.display_id);
+  EXPECT_EQ(id1, stored.placement_list[0]->parent_display_id);
+  EXPECT_EQ(id2, stored.placement_list[0]->display_id);
 }
 
 #endif  // OS_CHROMEOS

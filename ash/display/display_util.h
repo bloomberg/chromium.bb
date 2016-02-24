@@ -62,11 +62,9 @@ ASH_EXPORT bool SetDisplayUIScale(int64_t display_id, float scale);
 // Tests if the |info| has display mode that matches |ui_scale|.
 bool HasDisplayModeForUIScale(const DisplayInfo& info, float ui_scale);
 
-// Computes the bounds that defines the bounds between two displays
-// based on the layout |position|.
+// Computes the bounds that defines the bounds between two displays.
 void ComputeBoundary(const gfx::Display& primary_display,
                      const gfx::Display& secondary_display,
-                     DisplayPlacement::Position position,
                      gfx::Rect* primary_edge_in_screen,
                      gfx::Rect* secondary_edge_in_screen);
 
@@ -89,9 +87,31 @@ ASH_EXPORT int FindDisplayIndexContainingPoint(
     const std::vector<gfx::Display>& displays,
     const gfx::Point& point_in_screen);
 
-// Creates the DisplayIdList where ids are sorted using |CompareDisplayIds|
-// below.
-ASH_EXPORT DisplayIdList CreateDisplayIdList(int64_t id1, int64_t id2);
+// Sorts id list using |CompareDisplayIds| below.
+ASH_EXPORT void SortDisplayIdList(DisplayIdList* list);
+
+// Default id generator.
+class DefaultDisplayIdGenerator {
+ public:
+  int64_t operator()(int64_t id) { return id; }
+};
+
+// Generate sorted DisplayIdList from iterators.
+template <class ForwardIterator, class Generator = DefaultDisplayIdGenerator>
+DisplayIdList GenerateDisplayIdList(ForwardIterator first,
+                                    ForwardIterator last,
+                                    Generator generator = Generator()) {
+  DisplayIdList list;
+  while (first != last) {
+    list.push_back(generator(*first));
+    ++first;
+  }
+  SortDisplayIdList(&list);
+  return list;
+}
+
+// Creates sorted DisplayIdList.
+ASH_EXPORT DisplayIdList CreateDisplayIdList(const DisplayList& list);
 
 ASH_EXPORT std::string DisplayIdListToString(const DisplayIdList& list);
 

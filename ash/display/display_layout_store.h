@@ -21,7 +21,7 @@ class ASH_EXPORT DisplayLayoutStore {
   DisplayLayoutStore();
   ~DisplayLayoutStore();
 
-  void SetDefaultDisplayLayout(scoped_ptr<DisplayLayout> layout);
+  void SetDefaultDisplayPlacement(const DisplayPlacement& placement);
 
   // Registeres the display layout info for the specified display(s).
   void RegisterLayoutForDisplayIdList(const DisplayIdList& list,
@@ -42,8 +42,8 @@ class ASH_EXPORT DisplayLayoutStore {
   // Creates new layout for display list from |default_display_layout_|.
   DisplayLayout* CreateDefaultDisplayLayout(const DisplayIdList& display_list);
 
-  // The default display layout.
-  scoped_ptr<DisplayLayout> default_display_layout_;
+  // The default display placement.
+  DisplayPlacement default_display_placement_;
 
   // Display layout per list of devices.
   std::map<DisplayIdList, scoped_ptr<DisplayLayout>> layouts_;
