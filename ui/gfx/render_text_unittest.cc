@@ -3048,27 +3048,36 @@ TEST_F(RenderTextTest, TextDoesntClip) {
                                     kCanvasSize.height());
     {
 #if !defined(OS_CHROMEOS)
+      int top_test_height = kTestSize;
+#if defined(OS_WIN)
+      // Windows 8+ draws 1 pixel above the display rect.
+      if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+        top_test_height = kTestSize - 1;
+#endif // OS_WIN
       // TODO(dschuyler): On ChromeOS text draws above the GetStringSize rect.
       SCOPED_TRACE("TextDoesntClip Top Side");
       rect_buffer.EnsureSolidRect(SK_ColorWHITE, 0, 0, kCanvasSize.width(),
-                                  kTestSize);
-#endif
+                                  top_test_height);
+#endif // !OS_CHROMEOS
     }
     {
+      int bottom_test_y = kTestSize + string_size.height();
+      int bottom_test_height = kTestSize;
+#if defined(OS_WIN)
+      // Windows 8+ draws 1 pixel below the display rect.
+      if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+        bottom_test_y = kTestSize + string_size.height() + 1;
+        bottom_test_height = kTestSize - 1;
+      }
+#endif // OS_WIN
       SCOPED_TRACE("TextDoesntClip Bottom Side");
-      rect_buffer.EnsureSolidRect(SK_ColorWHITE, 0,
-                                  kTestSize + string_size.height(),
-                                  kCanvasSize.width(), kTestSize);
+      rect_buffer.EnsureSolidRect(SK_ColorWHITE, 0, bottom_test_y,
+                                  kCanvasSize.width(), bottom_test_height);
     }
     {
       SCOPED_TRACE("TextDoesntClip Left Side");
-#if defined(OS_WIN)
-      // TODO(dschuyler): On Windows XP the Unicode test draws to the left edge
-      // as if it is ignoring the SetDisplayRect shift by kTestSize.  This
-      // appears to be a preexisting issue that wasn't revealed by the prior
-      // unit tests.
-#elif defined(OS_MACOSX) || defined(OS_CHROMEOS)
-      // TODO(dschuyler): On Windows (non-XP), Chrome OS and Mac smoothing draws
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+      // TODO(dschuyler): On Windows, Chrome OS and Mac smoothing draws to the
       // left of text.  This appears to be a preexisting issue that wasn't
       // revealed by the prior unit tests.
       rect_buffer.EnsureSolidRect(SK_ColorWHITE, 0, kTestSize, kTestSize - 1,
