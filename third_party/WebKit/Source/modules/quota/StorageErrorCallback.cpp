@@ -34,17 +34,16 @@
 
 namespace blink {
 
-StorageErrorCallback::CallbackTask::CallbackTask(StorageErrorCallback* callback, ExceptionCode ec)
-    : m_callback(callback)
-    , m_ec(ec)
+PassOwnPtr<ExecutionContextTask> StorageErrorCallback::createSameThreadTask(StorageErrorCallback* callback, ExceptionCode ec)
 {
+    return blink::createSameThreadTask(&StorageErrorCallback::run, callback, ec);
 }
 
-void StorageErrorCallback::CallbackTask::performTask(ExecutionContext*)
+void StorageErrorCallback::run(StorageErrorCallback* callback, ExceptionCode ec)
 {
-    if (!m_callback)
+    if (!callback)
         return;
-    m_callback->handleEvent(DOMError::create(m_ec));
+    callback->handleEvent(DOMError::create(ec));
 }
 
 } // namespace blink

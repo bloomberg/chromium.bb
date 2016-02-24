@@ -68,7 +68,7 @@ void StorageQuotaClientImpl::requestQuota(ExecutionContext* executionContext, We
         webFrame->client()->requestStorageQuota(storageType, newQuotaInBytes, callbacks);
     } else {
         // Requesting quota in Worker is not supported.
-        executionContext->postTask(BLINK_FROM_HERE, StorageErrorCallback::CallbackTask::create(errorCallback, NotSupportedError));
+        executionContext->postTask(BLINK_FROM_HERE, StorageErrorCallback::createSameThreadTask(errorCallback, NotSupportedError));
     }
 }
 
