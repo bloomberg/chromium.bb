@@ -114,7 +114,7 @@ class HttpNetworkTransactionSSLTest : public testing::Test {
 };
 
 // Tests that HttpNetworkTransaction attempts to fallback from
-// TLS 1.2 to TLS 1.1, then from TLS 1.1 to TLS 1.0.
+// TLS 1.2 to TLS 1.1.
 TEST_F(HttpNetworkTransactionSSLTest, SSLFallback) {
   ssl_config_service_ = new TLS12SSLConfigService;
   session_params_.ssl_config_service = ssl_config_service_.get();
@@ -133,19 +133,11 @@ TEST_F(HttpNetworkTransactionSSLTest, SSLFallback) {
   StaticSocketDataProvider data2(NULL, 0, NULL, 0);
   mock_socket_factory_.AddSocketDataProvider(&data2);
 
-  // |ssl_data3| contains the handshake result for a TLS 1.0
-  // handshake which will be attempted after the TLS 1.1
-  // handshake fails.
-  SSLSocketDataProvider ssl_data3(ASYNC, ERR_SSL_PROTOCOL_ERROR);
-  mock_socket_factory_.AddSSLSocketDataProvider(&ssl_data3);
-  StaticSocketDataProvider data3(NULL, 0, NULL, 0);
-  mock_socket_factory_.AddSocketDataProvider(&data3);
-
   HttpNetworkSession session(session_params_);
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, &session);
 
   TestCompletionCallback callback;
-  // This will consume |ssl_data1|, |ssl_data2| and |ssl_data3|.
+  // This will consume |ssl_data1| and |ssl_data2|.
   int rv =
       callback.GetResult(trans.Start(GetRequestInfo("https://www.paypal.com/"),
                                      callback.callback(), BoundNetLog()));
@@ -153,12 +145,12 @@ TEST_F(HttpNetworkTransactionSSLTest, SSLFallback) {
 
   SocketDataProviderArray<SocketDataProvider>& mock_data =
       mock_socket_factory_.mock_data();
-  // Confirms that |ssl_data1|, |ssl_data2| and |ssl_data3| are consumed.
-  EXPECT_EQ(3u, mock_data.next_index());
+  // Confirms that |ssl_data1| and |ssl_data2| are consumed.
+  EXPECT_EQ(2u, mock_data.next_index());
 
   SSLConfig& ssl_config = GetServerSSLConfig(&trans);
-  // |version_max| fallbacks to TLS 1.0.
-  EXPECT_EQ(SSL_PROTOCOL_VERSION_TLS1, ssl_config.version_max);
+  // |version_max| falls back to TLS 1.1.
+  EXPECT_EQ(SSL_PROTOCOL_VERSION_TLS1_1, ssl_config.version_max);
   EXPECT_TRUE(ssl_config.version_fallback);
 }
 
@@ -216,4 +208,3 @@ TEST_F(HttpNetworkTransactionSSLTest, TokenBinding) {
 #endif  // !defined(OS_IOS)
 
 }  // namespace net
-

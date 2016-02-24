@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/single_thread_task_runner.h"
@@ -87,6 +88,10 @@ bool IsRC4EnabledByDefault() {
       base::FieldTrialList::FindFullName("RC4Ciphers");
   return base::StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE);
 }
+
+const base::Feature kSSLVersionFallbackTLSv11 {
+    "SSLVersionFallbackTLSv1.1", base::FEATURE_DISABLED_BY_DEFAULT,
+};
 
 }  // namespace
 
@@ -197,6 +202,15 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
       ssl_config::prefs::kRC4Enabled,
       new base::FundamentalValue(IsRC4EnabledByDefault()));
 
+  // Restore the TLS 1.1 fallback leg if enabled via features.
+  // TODO(davidben): Remove this when the fallback removal has succeeded.
+  // https://crbug.com/536200.
+  if (base::FeatureList::IsEnabled(kSSLVersionFallbackTLSv11)) {
+    local_state->SetDefaultPrefValue(
+        ssl_config::prefs::kSSLVersionFallbackMin,
+        new base::StringValue(switches::kSSLVersionTLSv11));
+  }
+
   PrefChangeRegistrar::NamedChangeCallback local_state_callback =
       base::Bind(&SSLConfigServiceManagerPref::OnPreferenceChanged,
                  base::Unretained(this), local_state);
@@ -294,7 +308,9 @@ void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
     uint16_t supported_version_max = config->version_max;
     config->version_max = std::min(supported_version_max, version_max);
   }
-  if (version_fallback_min) {
+  // Values below TLS 1.1 are invalid.
+  if (version_fallback_min &&
+      version_fallback_min >= net::SSL_PROTOCOL_VERSION_TLS1_1) {
     config->version_fallback_min = version_fallback_min;
   }
   config->disabled_cipher_suites = disabled_cipher_suites_;

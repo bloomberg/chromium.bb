@@ -2729,12 +2729,12 @@ uint16_t GetSSLVersionFallbackMin(Profile* profile) {
 IN_PROC_BROWSER_TEST_F(PolicyTest, SSLVersionFallbackMin) {
   PrefService* prefs = g_browser_process->local_state();
 
-  const std::string new_value("tls1.2");
+  const std::string new_value("tls1.1");
   const std::string default_value(
       prefs->GetString(ssl_config::prefs::kSSLVersionFallbackMin));
 
   EXPECT_NE(default_value, new_value);
-  EXPECT_NE(net::SSL_PROTOCOL_VERSION_TLS1_2,
+  EXPECT_EQ(net::SSL_PROTOCOL_VERSION_TLS1_2,
             GetSSLVersionFallbackMin(browser()->profile()));
 
   PolicyMap policies;
@@ -2746,7 +2746,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SSLVersionFallbackMin) {
                NULL);
   UpdateProviderPolicy(policies);
 
-  EXPECT_EQ(net::SSL_PROTOCOL_VERSION_TLS1_2,
+  EXPECT_EQ(net::SSL_PROTOCOL_VERSION_TLS1_1,
             GetSSLVersionFallbackMin(browser()->profile()));
 }
 

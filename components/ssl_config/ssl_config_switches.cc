@@ -12,7 +12,7 @@ const char kSSLVersionMax[] = "ssl-version-max";
 // Specifies the minimum SSL/TLS version ("tls1", "tls1.1", or "tls1.2").
 const char kSSLVersionMin[] = "ssl-version-min";
 
-// Specifies the minimum SSL/TLS version ("tls1", "tls1.1", or "tls1.2") that
+// Specifies the minimum SSL/TLS version ("tls1.1" or "tls1.2") that
 // TLS fallback will accept.
 const char kSSLVersionFallbackMin[] = "ssl-version-fallback-min";
 

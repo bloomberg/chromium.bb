@@ -1437,61 +1437,31 @@ int HttpNetworkTransaction::HandleSSLHandshakeError(int error) {
     return OK;
   }
 
+  // TODO(davidben): Remove this code once the dedicated error code is no
+  // longer needed and the flags to re-enable the fallback expire.
   bool should_fallback = false;
   uint16_t version_max = server_ssl_config_.version_max;
 
   switch (error) {
+    // This could be a TLS-intolerant server or a server that chose a
+    // cipher suite defined only for higher protocol versions (such as
+    // an TLS 1.1 server that chose a TLS-1.2-only cipher suite).  Fall
+    // back to the next lower version and retry.
     case ERR_CONNECTION_CLOSED:
     case ERR_SSL_PROTOCOL_ERROR:
     case ERR_SSL_VERSION_OR_CIPHER_MISMATCH:
-      if (version_max >= SSL_PROTOCOL_VERSION_TLS1 &&
-          version_max > server_ssl_config_.version_min) {
-        // This could be a TLS-intolerant server or a server that chose a
-        // cipher suite defined only for higher protocol versions (such as
-        // an SSL 3.0 server that chose a TLS-only cipher suite).  Fall
-        // back to the next lower version and retry.
-        // NOTE: if the SSLClientSocket class doesn't support TLS 1.1,
-        // specifying TLS 1.1 in version_max will result in a TLS 1.0
-        // handshake, so falling back from TLS 1.1 to TLS 1.0 will simply
-        // repeat the TLS 1.0 handshake. To avoid this problem, the default
-        // version_max should match the maximum protocol version supported
-        // by the SSLClientSocket class.
-        version_max--;
-
-        // Fallback to the lower SSL version.
-        // While SSL 3.0 fallback should be eliminated because of security
-        // reasons, there is a high risk of breaking the servers if this is
-        // done in general.
-        should_fallback = true;
-      }
-      break;
+    // Some servers trigger the TLS 1.1 fallback with ERR_CONNECTION_RESET
+    // (https://crbug.com/433406).
     case ERR_CONNECTION_RESET:
-      if (version_max >= SSL_PROTOCOL_VERSION_TLS1_1 &&
-          version_max > server_ssl_config_.version_min) {
-        // Some network devices that inspect application-layer packets seem to
-        // inject TCP reset packets to break the connections when they see TLS
-        // 1.1 in ClientHello or ServerHello. See http://crbug.com/130293.
-        //
-        // Only allow ERR_CONNECTION_RESET to trigger a fallback from TLS 1.1 or
-        // 1.2. We don't lose much in this fallback because the explicit IV for
-        // CBC mode in TLS 1.1 is approximated by record splitting in TLS
-        // 1.0. The fallback will be more painful for TLS 1.2 when we have GCM
-        // support.
-        //
-        // ERR_CONNECTION_RESET is a common network error, so we don't want it
-        // to trigger a version fallback in general, especially the TLS 1.0 ->
-        // SSL 3.0 fallback, which would drop TLS extensions.
-        version_max--;
-        should_fallback = true;
-      }
-      break;
+    // This was added for the TLS 1.0 fallback (https://crbug.com/260358) which
+    // has since been removed, but other servers may be relying on it for the
+    // TLS 1.1 fallback. It will be removed with the remainder of the fallback.
     case ERR_SSL_BAD_RECORD_MAC_ALERT:
-      if (version_max >= SSL_PROTOCOL_VERSION_TLS1_1 &&
+      // Fallback down to a TLS 1.1 ClientHello. By default, this is rejected
+      // but surfaces ERR_SSL_FALLBACK_BEYOND_MINIMUM_VERSION to help diagnose
+      // server bugs.
+      if (version_max >= SSL_PROTOCOL_VERSION_TLS1_2 &&
           version_max > server_ssl_config_.version_min) {
-        // Some broken SSL devices negotiate TLS 1.0 when sent a TLS 1.1 or
-        // 1.2 ClientHello, but then return a bad_record_mac alert. See
-        // crbug.com/260358. In order to make the fallback as minimal as
-        // possible, this fallback is only triggered for >= TLS 1.1.
         version_max--;
         should_fallback = true;
       }

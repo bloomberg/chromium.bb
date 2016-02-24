@@ -12,7 +12,7 @@ const uint16_t kDefaultSSLVersionMin = SSL_PROTOCOL_VERSION_TLS1;
 
 const uint16_t kDefaultSSLVersionMax = SSL_PROTOCOL_VERSION_TLS1_2;
 
-const uint16_t kDefaultSSLVersionFallbackMin = SSL_PROTOCOL_VERSION_TLS1_1;
+const uint16_t kDefaultSSLVersionFallbackMin = SSL_PROTOCOL_VERSION_TLS1_2;
 
 SSLConfig::CertAndStatus::CertAndStatus() : cert_status(0) {}
 
