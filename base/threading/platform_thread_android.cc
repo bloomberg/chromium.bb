@@ -28,13 +28,12 @@ namespace internal {
 // above an Android system threshold that enables heavy throttling starting at
 // 10; we want to be lower-priority than Chrome's other threads without
 // incurring this behavior.
-// - DISPLAY is -6 due to being midway between Android's DISPLAY (-4) and
-// URGENT_DISPLAY (-8).
+// - DISPLAY corresponds to Android's PRIORITY_DISPLAY = -4 value.
 // - REALTIME_AUDIO corresponds to Android's THREAD_PRIORITY_AUDIO = -16 value.
 const ThreadPriorityToNiceValuePair kThreadPriorityToNiceValueMap[4] = {
     {ThreadPriority::BACKGROUND, 9},
     {ThreadPriority::NORMAL, 0},
-    {ThreadPriority::DISPLAY, -6},
+    {ThreadPriority::DISPLAY, -4},
     {ThreadPriority::REALTIME_AUDIO, -16},
 };
 
