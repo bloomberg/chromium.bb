@@ -20,6 +20,14 @@ IPAddress::IPAddress(const IPAddressNumber& address) : ip_address_(address) {}
 IPAddress::IPAddress(const uint8_t* address, size_t address_len)
     : ip_address_(address, address + address_len) {}
 
+IPAddress::IPAddress(uint8_t b0, uint8_t b1, uint8_t b2, uint8_t b3) {
+  ip_address_.reserve(4);
+  ip_address_.push_back(b0);
+  ip_address_.push_back(b1);
+  ip_address_.push_back(b2);
+  ip_address_.push_back(b3);
+}
+
 IPAddress::~IPAddress() {}
 
 bool IPAddress::IsIPv4() const {

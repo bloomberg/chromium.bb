@@ -449,9 +449,7 @@ QuicVersion QuicVersionMin() {
 }
 
 IPAddress Loopback4() {
-  IPAddress addr;
-  CHECK(addr.AssignFromIPLiteral("127.0.0.1"));
-  return addr;
+  return IPAddress(127, 0, 0, 1);
 }
 
 IPAddress Loopback6() {
@@ -461,9 +459,7 @@ IPAddress Loopback6() {
 }
 
 IPAddress Any4() {
-  IPAddress any4;
-  CHECK(any4.AssignFromIPLiteral("0.0.0.0"));
-  return any4;
+  return IPAddress(0, 0, 0, 0);
 }
 
 void GenerateBody(string* body, int length) {

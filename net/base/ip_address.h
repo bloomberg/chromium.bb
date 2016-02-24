@@ -39,6 +39,10 @@ class NET_EXPORT IPAddress {
   // parameter. The input is expected to be in network byte order.
   IPAddress(const uint8_t* address, size_t address_len);
 
+  // Initializes |ip_address_| from the 4 bX bytes. The bytes are expected to be
+  // in network byte order.
+  IPAddress(uint8_t b0, uint8_t b1, uint8_t b2, uint8_t b3);
+
   ~IPAddress();
 
   // Returns true if the IP has |kIPv4AddressSize| elements.

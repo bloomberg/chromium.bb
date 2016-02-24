@@ -1283,8 +1283,7 @@ TEST_F(SupportsQuicServerPropertiesTest, SetSupportsQuic) {
   EXPECT_FALSE(impl_.GetSupportsQuic(&address));
   EXPECT_TRUE(address.empty());
 
-  IPAddress actual_address;
-  CHECK(actual_address.AssignFromIPLiteral("127.0.0.1"));
+  IPAddress actual_address(127, 0, 0, 1);
   impl_.SetSupportsQuic(true, actual_address);
 
   EXPECT_TRUE(impl_.GetSupportsQuic(&address));

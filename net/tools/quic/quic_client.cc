@@ -164,8 +164,7 @@ bool QuicClient::CreateUDPSocket() {
   if (bind_to_address_.size() != 0) {
     client_address = IPEndPoint(bind_to_address_, local_port_);
   } else if (address_family == AF_INET) {
-    IPAddress any4;
-    CHECK(any4.AssignFromIPLiteral("0.0.0.0"));
+    IPAddress any4(0, 0, 0, 0);
     client_address = IPEndPoint(any4, local_port_);
   } else {
     IPAddress any6;

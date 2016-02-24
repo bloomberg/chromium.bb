@@ -31,9 +31,7 @@ QuicP2PSession::QuicP2PSession(const QuicConfig& config,
   // ToString() to format addresses for logging and ToString() is not allowed
   // for empty addresses.
   // TODO(sergeyu): Fix QuicConnection and remove SetSelfAddress() call below.
-  net::IPAddress ip;
-  bool success = ip.AssignFromIPLiteral("0.0.0.0");
-  DCHECK(success);
+  net::IPAddress ip(0, 0, 0, 0);
   this->connection()->SetSelfAddress(net::IPEndPoint(ip, 0));
 }
 

@@ -1453,8 +1453,7 @@ TEST_P(EndToEndTest, StreamCancelErrorTest) {
 class WrongAddressWriter : public QuicPacketWriterWrapper {
  public:
   WrongAddressWriter() {
-    IPAddress ip;
-    CHECK(ip.AssignFromIPLiteral("127.0.0.2"));
+    IPAddress ip(127, 0, 0, 2);
     self_address_ = IPEndPoint(ip, 0);
   }
 
@@ -1483,8 +1482,7 @@ TEST_P(EndToEndTest, ConnectionMigrationClientIPChanged) {
   IPAddress old_host = client_->client()->GetLatestClientAddress().address();
 
   // Migrate socket to the new IP address.
-  IPAddress new_host;
-  CHECK(new_host.AssignFromIPLiteral("127.0.0.2"));
+  IPAddress new_host(127, 0, 0, 2);
   EXPECT_NE(old_host, new_host);
   ASSERT_TRUE(client_->client()->MigrateSocket(new_host));
 

@@ -167,8 +167,7 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams> {
 
   // Starts the QUIC server listening on a random port.
   void StartServer() {
-    IPAddress ip;
-    CHECK(ip.AssignFromIPLiteral("127.0.0.1"));
+    IPAddress ip(127, 0, 0, 1);
     server_address_ = IPEndPoint(ip, 0);
     server_config_.SetInitialStreamFlowControlWindowToSend(
         kInitialStreamFlowControlWindowForTest);
