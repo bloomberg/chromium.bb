@@ -75,7 +75,6 @@ class ApplicationTestBase : public testing::Test {
 
  private:
   scoped_ptr<TestHelper> test_helper_;
-  bool use_default_run_loop_ = false;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ApplicationTestBase);
 };

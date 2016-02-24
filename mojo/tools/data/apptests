@@ -65,10 +65,12 @@ if config.target_os != config.OS_ANDROID:
       'test': 'mojo:media_apptests',
       'type': 'gtest_isolated',
     },
-    {
-      'test': 'mojo:media_pipeline_integration_apptests',
-      'type': 'gtest_isolated',
-    },
+    # TODO(media): these tests fail in debug, which has no bot-coverage.
+    # http://crbug.com/587523
+#    {
+#      'test': 'mojo:media_pipeline_integration_apptests',
+#      'type': 'gtest_isolated',
+#    },
     # TODO(rockot): Flaky. Re-enable when brokering is sorted out.
     # http://crbug.com/569367.
 #    {
