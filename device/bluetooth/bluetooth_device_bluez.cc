@@ -244,6 +244,18 @@ uint16_t BluetoothDeviceBlueZ::GetDeviceID() const {
   return device_id;
 }
 
+uint16_t BluetoothDeviceBlueZ::GetAppearance() const {
+  bluez::BluetoothDeviceClient::Properties* properties =
+      bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->GetProperties(
+          object_path_);
+  DCHECK(properties);
+
+  if (!properties->appearance.is_valid())
+    return kAppearanceNotPresent;
+
+  return properties->appearance.value();
+}
+
 bool BluetoothDeviceBlueZ::IsPaired() const {
   bluez::BluetoothDeviceClient::Properties* properties =
       bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->GetProperties(

@@ -469,6 +469,7 @@ void BluetoothAdapterBlueZ::DevicePropertyChanged(
   }
 
   if (property_name == properties->bluetooth_class.name() ||
+      property_name == properties->appearance.name() ||
       property_name == properties->address.name() ||
       property_name == properties->alias.name() ||
       property_name == properties->paired.name() ||

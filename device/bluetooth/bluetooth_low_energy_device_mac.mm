@@ -106,6 +106,13 @@ uint16_t BluetoothLowEnergyDeviceMac::GetDeviceID() const {
   return 0;
 }
 
+uint16_t BluetoothLowEnergyDeviceMac::GetAppearance() const {
+  // TODO(crbug.com/588083): Implementing GetAppearance()
+  // on mac, win, and android platforms for chrome
+  NOTIMPLEMENTED();
+  return 0;
+}
+
 int BluetoothLowEnergyDeviceMac::GetRSSI() const {
   return rssi_;
 }

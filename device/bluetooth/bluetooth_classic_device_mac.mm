@@ -102,6 +102,13 @@ uint16_t BluetoothClassicDeviceMac::GetDeviceID() const {
   return 0;
 }
 
+uint16_t BluetoothClassicDeviceMac::GetAppearance() const {
+  // TODO(crbug.com/588083): Implementing GetAppearance()
+  // on mac, win, and android platforms for chrome
+  NOTIMPLEMENTED();
+  return 0;
+}
+
 bool BluetoothClassicDeviceMac::IsPaired() const {
   return [device_ isPaired];
 }

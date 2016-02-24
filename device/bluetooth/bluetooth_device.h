@@ -78,6 +78,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
 
   // The value returned if the RSSI or transmit power cannot be read.
   static const int kUnknownPower = 127;
+  // The value returned if the appearance is not present.
+  static const uint16_t kAppearanceNotPresent = 0xffc0;
 
   struct DEVICE_BLUETOOTH_EXPORT ConnectionInfo {
     int rssi;
@@ -223,6 +225,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // number in BCD format, where available.
   virtual uint16_t GetDeviceID() const = 0;
 
+  // Returns the appearance of the device.
+  virtual uint16_t GetAppearance() const = 0;
+
   // Returns the name of the device suitable for displaying, this may
   // be a synthesized string containing the address and localized type name
   // if the device has no obtained name.
@@ -232,6 +237,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // aware of, by decoding the bluetooth class information. The returned
   // values are unique, and do not overlap, so DEVICE_KEYBOARD is not also
   // DEVICE_PERIPHERAL.
+  //
+  // Returns the type of the device, limited to those we support or are aware
+  // of, by decoding the bluetooth class information for Classic devices or
+  // by decoding the device's appearance for LE devices. For example,
+  // Microsoft Universal Foldable Keyboard only advertises the appearance.
   DeviceType GetDeviceType() const;
 
   // Indicates whether the device is known to support pairing based on its
