@@ -122,6 +122,7 @@ MediaSource status=stable
 MediaSourceExperimental depends_on=MediaSource, status=experimental
 MediaStreamSpeech status=experimental
 MemoryInfoInWorkers status=experimental
+MobileLayoutTheme
 NavigatorConnect status=experimental
 NavigatorContentUtils
 WebNFC status=experimental

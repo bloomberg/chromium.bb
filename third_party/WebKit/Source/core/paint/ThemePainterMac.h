@@ -32,7 +32,7 @@ class LayoutThemeMac;
 
 class ThemePainterMac final : public ThemePainter {
 public:
-    ThemePainterMac(LayoutThemeMac& layoutTheme) : m_layoutTheme(layoutTheme) { }
+    ThemePainterMac(LayoutThemeMac&, Theme*);
 
 private:
     bool paintCapsLockIndicator(const LayoutObject&, const PaintInfo&, const IntRect&) override;

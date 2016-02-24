@@ -70,11 +70,6 @@
           'WTF_USE_QCMSLIB=1'
         ],
       }],
-      ['OS=="mac"', {
-        'feature_defines': [
-          'WTF_USE_NEW_THEME=1'
-        ],
-      }],
       # Mac OS X uses Accelerate.framework FFT by default instead of FFmpeg.
       ['OS!="mac" and OS!="android"', {
         'feature_defines': [

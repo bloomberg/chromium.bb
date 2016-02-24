@@ -13,7 +13,7 @@ PassRefPtr<LayoutTheme> LayoutThemeLinux::create()
     return adoptRef(new LayoutThemeLinux());
 }
 
-LayoutTheme& LayoutTheme::theme()
+LayoutTheme& LayoutTheme::nativeTheme()
 {
     DEFINE_STATIC_REF(LayoutTheme, layoutTheme, (LayoutThemeLinux::create()));
     return *layoutTheme;

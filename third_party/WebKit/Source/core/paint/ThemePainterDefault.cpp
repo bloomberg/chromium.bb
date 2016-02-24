@@ -133,6 +133,11 @@ IntRect convertToPaintingRect(const LayoutObject& inputLayoutObject, const Layou
 
 } // namespace
 
+ThemePainterDefault::ThemePainterDefault()
+    : ThemePainter(nullptr)
+{
+}
+
 bool ThemePainterDefault::paintCheckbox(const LayoutObject& o, const PaintInfo& i, const IntRect& rect)
 {
     WebThemeEngine::ExtraParams extraParams;

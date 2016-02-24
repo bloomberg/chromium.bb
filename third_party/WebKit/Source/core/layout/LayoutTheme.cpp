@@ -42,12 +42,14 @@
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/SpinButtonElement.h"
 #include "core/html/shadow/TextControlInnerElements.h"
+#include "core/layout/LayoutThemeMobile.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/FileMetadata.h"
 #include "platform/FloatConversion.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/Theme.h"
 #include "platform/fonts/FontSelector.h"
 #include "platform/text/PlatformLocale.h"
 #include "platform/text/StringTruncator.h"
@@ -56,21 +58,24 @@
 #include "public/platform/WebRect.h"
 #include "wtf/text/StringBuilder.h"
 
-#if USE(NEW_THEME)
-#include "platform/Theme.h"
-#endif
-
 // The methods in this file are shared by all themes on every platform.
 
 namespace blink {
 
 using namespace HTMLNames;
 
-LayoutTheme::LayoutTheme()
+LayoutTheme& LayoutTheme::theme()
+{
+    if (RuntimeEnabledFeatures::mobileLayoutThemeEnabled()) {
+        DEFINE_STATIC_REF(LayoutTheme, layoutThemeMobile, (LayoutThemeMobile::create()));
+        return *layoutThemeMobile;
+    }
+    return nativeTheme();
+}
+
+LayoutTheme::LayoutTheme(Theme* platformTheme)
     : m_hasCustomFocusRingColor(false)
-#if USE(NEW_THEME)
-    , m_platformTheme(platformTheme())
-#endif
+    , m_platformTheme(platformTheme)
 {
 }
 
@@ -103,99 +108,105 @@ void LayoutTheme::adjustStyle(ComputedStyle& style, Element* e)
         return;
     }
 
-#if USE(NEW_THEME)
-    switch (part) {
-    case CheckboxPart:
-    case InnerSpinButtonPart:
-    case RadioPart:
-    case PushButtonPart:
-    case SquareButtonPart:
-    case ButtonPart: {
-        // Border
-        LengthBox borderBox(style.borderTopWidth(), style.borderRightWidth(), style.borderBottomWidth(), style.borderLeftWidth());
-        borderBox = m_platformTheme->controlBorder(part, style.font().fontDescription(), borderBox, style.effectiveZoom());
-        if (borderBox.top().value() != static_cast<int>(style.borderTopWidth())) {
-            if (borderBox.top().value())
-                style.setBorderTopWidth(borderBox.top().value());
-            else
-                style.resetBorderTop();
-        }
-        if (borderBox.right().value() != static_cast<int>(style.borderRightWidth())) {
-            if (borderBox.right().value())
-                style.setBorderRightWidth(borderBox.right().value());
-            else
-                style.resetBorderRight();
-        }
-        if (borderBox.bottom().value() != static_cast<int>(style.borderBottomWidth())) {
-            style.setBorderBottomWidth(borderBox.bottom().value());
-            if (borderBox.bottom().value())
+    if (m_platformTheme) {
+        switch (part) {
+        case CheckboxPart:
+        case InnerSpinButtonPart:
+        case RadioPart:
+        case PushButtonPart:
+        case SquareButtonPart:
+        case ButtonPart: {
+            // Border
+            LengthBox borderBox(style.borderTopWidth(), style.borderRightWidth(), style.borderBottomWidth(), style.borderLeftWidth());
+            borderBox = m_platformTheme->controlBorder(part, style.font().fontDescription(), borderBox, style.effectiveZoom());
+            if (borderBox.top().value() != static_cast<int>(style.borderTopWidth())) {
+                if (borderBox.top().value())
+                    style.setBorderTopWidth(borderBox.top().value());
+                else
+                    style.resetBorderTop();
+            }
+            if (borderBox.right().value() != static_cast<int>(style.borderRightWidth())) {
+                if (borderBox.right().value())
+                    style.setBorderRightWidth(borderBox.right().value());
+                else
+                    style.resetBorderRight();
+            }
+            if (borderBox.bottom().value() != static_cast<int>(style.borderBottomWidth())) {
                 style.setBorderBottomWidth(borderBox.bottom().value());
-            else
-                style.resetBorderBottom();
-        }
-        if (borderBox.left().value() != static_cast<int>(style.borderLeftWidth())) {
-            style.setBorderLeftWidth(borderBox.left().value());
-            if (borderBox.left().value())
+                if (borderBox.bottom().value())
+                    style.setBorderBottomWidth(borderBox.bottom().value());
+                else
+                    style.resetBorderBottom();
+            }
+            if (borderBox.left().value() != static_cast<int>(style.borderLeftWidth())) {
                 style.setBorderLeftWidth(borderBox.left().value());
-            else
-                style.resetBorderLeft();
+                if (borderBox.left().value())
+                    style.setBorderLeftWidth(borderBox.left().value());
+                else
+                    style.resetBorderLeft();
+            }
+
+            // Padding
+            LengthBox paddingBox = m_platformTheme->controlPadding(part, style.font().fontDescription(), style.paddingBox(), style.effectiveZoom());
+            if (paddingBox != style.paddingBox())
+                style.setPaddingBox(paddingBox);
+
+            // Whitespace
+            if (m_platformTheme->controlRequiresPreWhiteSpace(part))
+                style.setWhiteSpace(PRE);
+
+            // Width / Height
+            // The width and height here are affected by the zoom.
+            // FIXME: Check is flawed, since it doesn't take min-width/max-width into account.
+            LengthSize controlSize = m_platformTheme->controlSize(part, style.font().fontDescription(), LengthSize(style.width(), style.height()), style.effectiveZoom());
+            if (controlSize.width() != style.width())
+                style.setWidth(controlSize.width());
+            if (controlSize.height() != style.height())
+                style.setHeight(controlSize.height());
+
+            // Min-Width / Min-Height
+            LengthSize minControlSize = m_platformTheme->minimumControlSize(part, style.font().fontDescription(), style.effectiveZoom());
+            if (minControlSize.width() != style.minWidth())
+                style.setMinWidth(minControlSize.width());
+            if (minControlSize.height() != style.minHeight())
+                style.setMinHeight(minControlSize.height());
+
+            // Font
+            FontDescription controlFont = m_platformTheme->controlFont(part, style.font().fontDescription(), style.effectiveZoom());
+            if (controlFont != style.font().fontDescription()) {
+                // Reset our line-height
+                style.setLineHeight(ComputedStyle::initialLineHeight());
+
+                // Now update our font.
+                if (style.setFontDescription(controlFont))
+                    style.font().update(nullptr);
+            }
         }
-
-        // Padding
-        LengthBox paddingBox = m_platformTheme->controlPadding(part, style.font().fontDescription(), style.paddingBox(), style.effectiveZoom());
-        if (paddingBox != style.paddingBox())
-            style.setPaddingBox(paddingBox);
-
-        // Whitespace
-        if (m_platformTheme->controlRequiresPreWhiteSpace(part))
-            style.setWhiteSpace(PRE);
-
-        // Width / Height
-        // The width and height here are affected by the zoom.
-        // FIXME: Check is flawed, since it doesn't take min-width/max-width into account.
-        LengthSize controlSize = m_platformTheme->controlSize(part, style.font().fontDescription(), LengthSize(style.width(), style.height()), style.effectiveZoom());
-        if (controlSize.width() != style.width())
-            style.setWidth(controlSize.width());
-        if (controlSize.height() != style.height())
-            style.setHeight(controlSize.height());
-
-        // Min-Width / Min-Height
-        LengthSize minControlSize = m_platformTheme->minimumControlSize(part, style.font().fontDescription(), style.effectiveZoom());
-        if (minControlSize.width() != style.minWidth())
-            style.setMinWidth(minControlSize.width());
-        if (minControlSize.height() != style.minHeight())
-            style.setMinHeight(minControlSize.height());
-
-        // Font
-        FontDescription controlFont = m_platformTheme->controlFont(part, style.font().fontDescription(), style.effectiveZoom());
-        if (controlFont != style.font().fontDescription()) {
-            // Reset our line-height
-            style.setLineHeight(ComputedStyle::initialLineHeight());
-
-            // Now update our font.
-            if (style.setFontDescription(controlFont))
-                style.font().update(nullptr);
+        default:
+            break;
         }
     }
-    default:
-        break;
+
+    if (!m_platformTheme) {
+        // Call the appropriate style adjustment method based off the appearance value.
+        switch (style.appearance()) {
+        case CheckboxPart:
+            return adjustCheckboxStyle(style);
+        case RadioPart:
+            return adjustRadioStyle(style);
+        case PushButtonPart:
+        case SquareButtonPart:
+        case ButtonPart:
+            return adjustButtonStyle(style);
+        case InnerSpinButtonPart:
+            return adjustInnerSpinButtonStyle(style);
+        default:
+            break;
+        }
     }
-#endif
 
     // Call the appropriate style adjustment method based off the appearance value.
     switch (style.appearance()) {
-#if !USE(NEW_THEME)
-    case CheckboxPart:
-        return adjustCheckboxStyle(style);
-    case RadioPart:
-        return adjustRadioStyle(style);
-    case PushButtonPart:
-    case SquareButtonPart:
-    case ButtonPart:
-        return adjustButtonStyle(style);
-    case InnerSpinButtonPart:
-        return adjustInnerSpinButtonStyle(style);
-#endif
     case MenulistPart:
         return adjustMenuListStyle(style, e);
     case MenulistButtonPart:
@@ -368,11 +379,9 @@ int LayoutTheme::baselinePosition(const LayoutObject* o) const
 
     const LayoutBox* box = toLayoutBox(o);
 
-#if USE(NEW_THEME)
-    return box->size().height() + box->marginTop() + m_platformTheme->baselinePositionAdjustment(o->style()->appearance()) * o->style()->effectiveZoom();
-#else
+    if (m_platformTheme)
+        return box->size().height() + box->marginTop() + m_platformTheme->baselinePositionAdjustment(o->style()->appearance()) * o->style()->effectiveZoom();
     return box->size().height() + box->marginTop();
-#endif
 }
 
 bool LayoutTheme::isControlContainer(ControlPart appearance) const
@@ -413,9 +422,8 @@ bool LayoutTheme::isControlStyled(const ComputedStyle& style) const
 
 void LayoutTheme::addVisualOverflow(const LayoutObject& object, IntRect& borderBox)
 {
-#if USE(NEW_THEME)
-    m_platformTheme->addVisualOverflow(object.style()->appearance(), controlStatesForLayoutObject(object), object.style()->effectiveZoom(), borderBox);
-#endif
+    if (m_platformTheme)
+        m_platformTheme->addVisualOverflow(object.style()->appearance(), controlStatesForLayoutObject(object), object.style()->effectiveZoom(), borderBox);
 }
 
 bool LayoutTheme::shouldDrawDefaultFocusRing(const LayoutObject& layoutObject) const
@@ -572,8 +580,6 @@ bool LayoutTheme::isSpinUpButtonPartHovered(const LayoutObject& o)
     return element->upDownState() == SpinButtonElement::Up;
 }
 
-#if !USE(NEW_THEME)
-
 void LayoutTheme::adjustCheckboxStyle(ComputedStyle& style) const
 {
     // A summary of the rules for checkbox designed to match WinIE:
@@ -611,7 +617,6 @@ void LayoutTheme::adjustButtonStyle(ComputedStyle& style) const
 void LayoutTheme::adjustInnerSpinButtonStyle(ComputedStyle&) const
 {
 }
-#endif
 
 void LayoutTheme::adjustMenuListStyle(ComputedStyle&, Element*) const
 {

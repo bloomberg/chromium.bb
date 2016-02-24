@@ -50,6 +50,12 @@ void _NSDrawCarbonThemeListBox(NSRect frame, BOOL enabled, BOOL flipped, BOOL al
 
 namespace blink {
 
+ThemePainterMac::ThemePainterMac(LayoutThemeMac& layoutTheme, Theme* platformTheme)
+    : ThemePainter(platformTheme)
+    , m_layoutTheme(layoutTheme)
+{
+}
+
 bool ThemePainterMac::paintTextField(const LayoutObject& o, const PaintInfo& paintInfo, const IntRect& r)
 {
     LocalCurrentGraphicsContext localContext(paintInfo.context, &paintInfo.cullRect().m_rect, r);

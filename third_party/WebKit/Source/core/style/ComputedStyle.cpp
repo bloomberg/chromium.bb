@@ -83,6 +83,11 @@ PassRefPtr<ComputedStyle> ComputedStyle::createInitialStyle()
     return adoptRef(new ComputedStyle(InitialStyle));
 }
 
+void ComputedStyle::invalidateInitialStyle()
+{
+    initialStyle()->setTapHighlightColor(initialTapHighlightColor());
+}
+
 PassRefPtr<ComputedStyle> ComputedStyle::createAnonymousStyleWithDisplay(const ComputedStyle& parentStyle, EDisplay display)
 {
     RefPtr<ComputedStyle> newStyle = ComputedStyle::create();

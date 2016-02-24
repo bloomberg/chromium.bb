@@ -8,6 +8,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
 #include "core/page/Page.h"
+#include "core/style/ComputedStyle.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/WebLayerTreeView.h"
 #include "web/WebInputEventConversion.h"
@@ -52,6 +53,7 @@ DevToolsEmulator::DevToolsEmulator(WebViewImpl* webViewImpl)
     , m_emulateMobileEnabled(false)
     , m_isOverlayScrollbarsEnabled(false)
     , m_isOrientationEventEnabled(false)
+    , m_isMobileLayoutThemeEnabled(false)
     , m_originalDefaultMinimumPageScaleFactor(0)
     , m_originalDefaultMaximumPageScaleFactor(0)
     , m_embedderTextAutosizingEnabled(webViewImpl->page()->settings().textAutosizingEnabled())
@@ -258,6 +260,9 @@ void DevToolsEmulator::enableMobileEmulation()
     RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(true);
     m_isOrientationEventEnabled = RuntimeEnabledFeatures::orientationEventEnabled();
     RuntimeEnabledFeatures::setOrientationEventEnabled(true);
+    m_isMobileLayoutThemeEnabled = RuntimeEnabledFeatures::mobileLayoutThemeEnabled();
+    RuntimeEnabledFeatures::setMobileLayoutThemeEnabled(true);
+    ComputedStyle::invalidateInitialStyle();
     m_webViewImpl->page()->settings().setUseMobileViewportStyle(true);
     m_webViewImpl->enableViewport();
     m_webViewImpl->settings()->setViewportMetaEnabled(true);
@@ -288,6 +293,8 @@ void DevToolsEmulator::disableMobileEmulation()
         return;
     RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(m_isOverlayScrollbarsEnabled);
     RuntimeEnabledFeatures::setOrientationEventEnabled(m_isOrientationEventEnabled);
+    RuntimeEnabledFeatures::setMobileLayoutThemeEnabled(m_isMobileLayoutThemeEnabled);
+    ComputedStyle::invalidateInitialStyle();
     m_webViewImpl->disableViewport();
     m_webViewImpl->settings()->setViewportMetaEnabled(false);
     m_webViewImpl->page()->frameHost().visualViewport().initializeScrollbars();

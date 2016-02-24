@@ -63,6 +63,7 @@ private:
 
     bool m_isOverlayScrollbarsEnabled;
     bool m_isOrientationEventEnabled;
+    bool m_isMobileLayoutThemeEnabled;
     float m_originalDefaultMinimumPageScaleFactor;
     float m_originalDefaultMaximumPageScaleFactor;
     bool m_embedderTextAutosizingEnabled;

@@ -37,6 +37,9 @@ namespace blink {
 class LayoutBox;
 
 class ThemePainterDefault final : public ThemePainter {
+public:
+    ThemePainterDefault();
+
 private:
     bool paintCheckbox(const LayoutObject&, const PaintInfo&, const IntRect&) override;
     bool paintRadio(const LayoutObject&, const PaintInfo&, const IntRect&) override;

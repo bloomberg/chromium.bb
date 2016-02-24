@@ -345,13 +345,11 @@
         ['OS=="win" and buildtype=="Official"', {
           'msvs_shard': 5,
         }],
-        ['use_default_render_theme==0 and OS != "android"', {
+        ['OS=="win"', {
           'sources!': [
-            'layout/LayoutThemeDefault.cpp',
-            'layout/LayoutThemeDefault.h',
+            'layout/LayoutThemeFontProviderDefault.cpp',
           ],
-        }],
-        ['OS!="win"', {
+        },{ # OS!="win"
           'sources!': [
             'layout/LayoutThemeFontProviderWin.cpp',
             'layout/LayoutThemeWin.cpp',
@@ -363,13 +361,7 @@
             ['include', '<(DEPTH)/third_party/WebKit/Source/build/win/Precompile.cpp'],
           ],
         }],
-        ['OS=="mac"', {
-          'sources!': [
-            # LayoutThemeFontProvider is used by LayoutThemeDefault.
-            'layout/LayoutThemeFontProvider.cpp',
-            'layout/LayoutThemeFontProvider.h',
-          ],
-        },{ # OS!="mac"
+        ['OS!="mac"', {
           'sources!': [
             'layout/LayoutThemeMac.h',
             'layout/LayoutThemeMac.mm',
@@ -379,11 +371,6 @@
           'sources!': [
             'layout/LayoutThemeLinux.cpp',
             'layout/LayoutThemeLinux.h',
-          ],
-        }],
-        ['OS != "linux" and OS != "android"', {
-          'sources!': [
-            'layout/LayoutThemeFontProviderLinux.cpp',
           ],
         }],
         ['OS!="android"', {
@@ -434,8 +421,6 @@
             ['include', 'platform/mac/WebCoreTextRenderer\\.mm$'],
             ['include', 'platform/text/mac/ShapeArabic\\.c$'],
             ['include', 'platform/text/mac/String(Impl)?Mac\\.mm$'],
-            # Use USE_NEW_THEME on Mac.
-            ['include', 'platform/Theme\\.cpp$'],
           ],
         }, { # OS!="mac"
           'sources!': [
@@ -445,12 +430,6 @@
         ['OS=="win" and chromium_win_pch==1', {
           'sources/': [
             ['include', '<(DEPTH)/third_party/WebKit/Source/build/win/Precompile.cpp'],
-          ],
-        }],
-        ['use_default_render_theme==0 and OS != "android"', {
-          'sources!': [
-            'paint/ThemePainterDefault.cpp',
-            'paint/ThemePainterDefault.h',
           ],
         }],
       ],
@@ -615,14 +594,6 @@
             'testing/v8',
           ],
           'conditions': [
-            ['use_default_render_theme==0 and OS != "android"', {
-              'sources!': [
-                'layout/LayoutThemeDefault.cpp',
-                'layout/LayoutThemeDefault.h',
-                'paint/ThemePainterDefault.cpp',
-                'paint/ThemePainterDefault.h',
-              ],
-            }],
             ['OS=="win"', {
               # In generated bindings code: 'switch contains default but no
               # case'.
@@ -642,6 +613,9 @@
                   },
                 },
               },
+              'sources!': [
+                'layout/LayoutThemeFontProviderDefault.cpp',
+              ],
             }, {
               'sources!': [
                 'layout/LayoutThemeFontProviderWin.cpp',
@@ -658,16 +632,6 @@
               ],
             }],
             ['OS=="mac"', {
-              'sources!': [
-                # LayoutThemeSkia is not used on mac since LayoutThemeMac
-                # does not reference the Skia code that is used by Windows, Linux and Android.
-                'layout/LayoutThemeSkia.cpp',
-                'layout/LayoutThemeSkia.h',
-
-                # LayoutThemeFontProvider is used by LayoutThemeSkia.
-                'layout/LayoutThemeFontProvider.cpp',
-                'layout/LayoutThemeFontProvider.h',
-              ],
               'link_settings': {
                 'libraries': [
                   '$(SDKROOT)/System/Library/Frameworks/Carbon.framework',
@@ -684,11 +648,6 @@
               'sources!': [
                 'layout/LayoutThemeLinux.cpp',
                 'layout/LayoutThemeLinux.h',
-              ],
-            }],
-            ['OS != "linux" and OS != "android"', {
-              'sources!': [
-                'layout/LayoutThemeFontProviderLinux.cpp',
               ],
             }],
             ['OS=="android"', {

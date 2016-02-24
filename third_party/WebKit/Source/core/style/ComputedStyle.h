@@ -369,6 +369,7 @@ public:
     static PassRefPtr<ComputedStyle> create();
     static PassRefPtr<ComputedStyle> createAnonymousStyleWithDisplay(const ComputedStyle& parentStyle, EDisplay);
     static PassRefPtr<ComputedStyle> clone(const ComputedStyle&);
+    static void invalidateInitialStyle();
 
     // Computes how the style change should be propagated down the tree.
     static StyleRecalcChange stylePropagationDiff(const ComputedStyle* oldStyle, const ComputedStyle* newStyle);

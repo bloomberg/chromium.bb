@@ -263,6 +263,7 @@ source_set("remaining") {
 
   if (is_win) {
     cflags += [ "/wd4334" ]
+    sources -= [ "layout/LayoutThemeFontProviderDefault.cpp" ]
   } else {  # !is_win
     sources -= [
       "layout/LayoutThemeFontProviderWin.cpp",
@@ -270,14 +271,12 @@ source_set("remaining") {
       "layout/LayoutThemeWin.h",
     ]
   }
+
   if (!is_linux) {
     sources -= [
       "layout/LayoutThemeLinux.cpp",
       "layout/LayoutThemeLinux.h",
     ]
-    if (!is_android) {
-      sources -= [ "layout/LayoutThemeFontProviderLinux.cpp" ]
-    }
   }
 
   if (!is_android) {
@@ -288,14 +287,6 @@ source_set("remaining") {
   }
 
   if (is_mac) {
-    sources -= [
-      "layout/LayoutThemeDefault.cpp",
-      "layout/LayoutThemeDefault.h",
-      "layout/LayoutThemeFontProvider.cpp",
-      "layout/LayoutThemeFontProvider.h",
-      "paint/ThemePainterDefault.cpp",
-      "paint/ThemePainterDefault.h",
-    ]
     libs += [ "Carbon.framework" ]
   } else {  # !is_mac
     sources -= [ "editing/commands/SmartReplaceCF.cpp" ]

@@ -11,7 +11,7 @@ PassRefPtr<LayoutTheme> LayoutThemeWin::create()
     return adoptRef(new LayoutThemeWin());
 }
 
-LayoutTheme& LayoutTheme::theme()
+LayoutTheme& LayoutTheme::nativeTheme()
 {
     DEFINE_STATIC_REF(LayoutTheme, layoutTheme, (LayoutThemeWin::create()));
     return *layoutTheme;

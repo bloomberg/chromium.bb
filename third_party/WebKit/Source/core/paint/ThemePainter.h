@@ -30,12 +30,15 @@ namespace blink {
 
 class IntRect;
 class LayoutObject;
+class Theme;
 
 struct PaintInfo;
 
 class ThemePainter {
     DISALLOW_NEW();
 public:
+    explicit ThemePainter(Theme*);
+
     // This method is called to paint the widget as a background of the LayoutObject.  A widget's foreground, e.g., the
     // text of a button, is always rendered by the engine itself.  The boolean return value indicates
     // whether the CSS border/background should also be painted.
@@ -47,13 +50,10 @@ public:
     void paintSliderTicks(const LayoutObject&, const PaintInfo&, const IntRect&);
 
 protected:
-#if !USE(NEW_THEME)
     virtual bool paintCheckbox(const LayoutObject&, const PaintInfo&, const IntRect&) { return true; }
     virtual bool paintRadio(const LayoutObject&, const PaintInfo&, const IntRect&) { return true; }
     virtual bool paintButton(const LayoutObject&, const PaintInfo&, const IntRect&) { return true; }
     virtual bool paintInnerSpinButton(const LayoutObject&, const PaintInfo&, const IntRect&) { return true; }
-#endif
-
     virtual bool paintTextField(const LayoutObject&, const PaintInfo&, const IntRect&) { return true; }
     virtual bool paintTextArea(const LayoutObject&, const PaintInfo&, const IntRect&) { return true; }
     virtual bool paintMenuList(const LayoutObject&, const PaintInfo&, const IntRect&) { return true; }
@@ -70,6 +70,9 @@ protected:
     bool paintUsingFallbackTheme(const LayoutObject&, const PaintInfo&, const IntRect&);
     bool paintCheckboxUsingFallbackTheme(const LayoutObject&, const PaintInfo&, const IntRect&);
     bool paintRadioUsingFallbackTheme(const LayoutObject&, const PaintInfo&, const IntRect&);
+
+private:
+    Theme* m_platformTheme; // The platform-specific theme.
 };
 
 } // namespace blink

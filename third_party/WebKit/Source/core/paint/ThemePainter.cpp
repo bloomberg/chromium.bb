@@ -35,14 +35,11 @@
 #include "core/paint/MediaControlsPainter.h"
 #include "core/paint/PaintInfo.h"
 #include "core/style/ComputedStyle.h"
+#include "platform/Theme.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebFallbackThemeEngine.h"
 #include "public/platform/WebRect.h"
-
-#if USE(NEW_THEME)
-#include "platform/Theme.h"
-#endif
 
 // The methods in this file are shared by all themes on every platform.
 
@@ -60,6 +57,11 @@ static WebFallbackThemeEngine::State getWebFallbackThemeState(const LayoutObject
     return WebFallbackThemeEngine::StateNormal;
 }
 
+ThemePainter::ThemePainter(Theme* platformTheme)
+    : m_platformTheme(platformTheme)
+{
+}
+
 bool ThemePainter::paint(const LayoutObject& o, const PaintInfo& paintInfo, const IntRect&r)
 {
     ControlPart part = o.styleRef().appearance();
@@ -67,24 +69,23 @@ bool ThemePainter::paint(const LayoutObject& o, const PaintInfo& paintInfo, cons
     if (LayoutTheme::theme().shouldUseFallbackTheme(o.styleRef()))
         return paintUsingFallbackTheme(o, paintInfo, r);
 
-#if USE(NEW_THEME)
-    switch (part) {
-    case CheckboxPart:
-    case RadioPart:
-    case PushButtonPart:
-    case SquareButtonPart:
-    case ButtonPart:
-    case InnerSpinButtonPart:
-        platformTheme()->paint(part, LayoutTheme::controlStatesForLayoutObject(o), const_cast<GraphicsContext&>(paintInfo.context), r, o.styleRef().effectiveZoom(), o.view()->frameView());
-        return false;
-    default:
-        break;
+    if (m_platformTheme) {
+        switch (part) {
+        case CheckboxPart:
+        case RadioPart:
+        case PushButtonPart:
+        case SquareButtonPart:
+        case ButtonPart:
+        case InnerSpinButtonPart:
+            m_platformTheme->paint(part, LayoutTheme::controlStatesForLayoutObject(o), const_cast<GraphicsContext&>(paintInfo.context), r, o.styleRef().effectiveZoom(), o.view()->frameView());
+            return false;
+        default:
+            break;
+        }
     }
-#endif
 
     // Call the appropriate paint method based off the appearance value.
     switch (part) {
-#if !USE(NEW_THEME)
     case CheckboxPart:
         return paintCheckbox(o, paintInfo, r);
     case RadioPart:
@@ -95,7 +96,6 @@ bool ThemePainter::paint(const LayoutObject& o, const PaintInfo& paintInfo, cons
         return paintButton(o, paintInfo, r);
     case InnerSpinButtonPart:
         return paintInnerSpinButton(o, paintInfo, r);
-#endif
     case MenulistPart:
         return paintMenuList(o, paintInfo, r);
     case MeterPart:

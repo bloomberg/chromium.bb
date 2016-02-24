@@ -70,6 +70,7 @@ unsigned LayoutThemeDefault::m_inactiveSelectionForegroundColor = 0xff323232;
 double LayoutThemeDefault::m_caretBlinkInterval;
 
 LayoutThemeDefault::LayoutThemeDefault()
+    : LayoutTheme(nullptr)
 {
     m_caretBlinkInterval = LayoutTheme::caretBlinkInterval();
 }
