@@ -691,6 +691,8 @@
     },
     'official.desktop.continuous': {
       'precise64 trunk': 'gn_official',
+      'precise64 beta': 'gn_official',
+      'precise64 stable': 'gn_official',
     },
     'tryserver.blink': {
       'linux_blink_dbg': 'swarming_gn_debug_bot_minimal_symbols_x64',
