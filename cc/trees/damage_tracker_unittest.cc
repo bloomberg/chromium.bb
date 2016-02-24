@@ -1196,7 +1196,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForMask) {
 
   // Then test the property change.
   ClearDamageForAllSurfaces(root.get());
-  mask_layer->SetStackingOrderChanged(true);
+  mask_layer->NoteLayerPropertyChanged();
 
   EmulateDrawingOneFrame(root.get());
   child_damage_rect =
@@ -1270,7 +1270,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplicaMask) {
   // CASE 1: a property change on the mask should damage only the reflected
   //         region on the target surface.
   ClearDamageForAllSurfaces(root.get());
-  replica_mask_layer->SetStackingOrderChanged(true);
+  replica_mask_layer->NoteLayerPropertyChanged();
   EmulateDrawingOneFrame(root.get());
 
   gfx::Rect grand_child_damage_rect =
@@ -1348,7 +1348,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplicaMaskWithTransformOrigin) {
   // A property change on the replica_mask should damage the reflected region on
   // the target surface.
   ClearDamageForAllSurfaces(root.get());
-  replica_mask_layer->SetStackingOrderChanged(true);
+  replica_mask_layer->NoteLayerPropertyChanged();
 
   EmulateDrawingOneFrame(root.get());
 

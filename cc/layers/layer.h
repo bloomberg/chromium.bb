@@ -650,10 +650,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   // side.
   int num_dependents_need_push_properties_;
 
-  // Tracks whether this layer may have changed stacking order with its
-  // siblings.
-  bool stacking_order_changed_;
-
   // The update rect is the region of the compositor resource that was
   // actually updated by the compositor. For layers that may do updating
   // outside the compositor's control (i.e. plugin layers), this information

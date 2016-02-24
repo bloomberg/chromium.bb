@@ -571,8 +571,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   virtual base::DictionaryValue* LayerTreeAsJson() const;
 
-  void SetStackingOrderChanged(bool stacking_order_changed);
-
   bool LayerPropertyChanged() const;
 
   void ResetAllChangeTrackingForSubtree();
@@ -764,7 +762,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   bool user_scrollable_horizontal_ : 1;
   bool user_scrollable_vertical_ : 1;
-  bool stacking_order_changed_ : 1;
   // Whether the "back" of this layer should draw.
   bool double_sided_ : 1;
   bool should_flatten_transform_ : 1;

@@ -69,7 +69,7 @@ message LayerProperties {
   optional PictureLayerProperties picture = 6;
 }
 
-// NEXT ID: 54
+// NEXT ID: 53
 message BaseLayerProperties {
   optional Point3F transform_origin = 1;
   optional uint32 background_color = 2;
@@ -83,7 +83,7 @@ message BaseLayerProperties {
   optional bool draws_content = 9;
   optional bool hide_layer_and_subtree = 10;
   optional bool has_render_surface = 11;
-  optional bool subtree_property_changed = 53;
+  optional bool subtree_property_changed = 47;
   // TODO(nyquist): Add support for FilterOperation. See crbug.com/541321.
   // repeated FilterOperation filters = 12;
   // repeated FilterOperation background_filters = 13;
@@ -125,7 +125,6 @@ message BaseLayerProperties {
   optional Vector2dF scroll_compensation_adjustment = 45;
 
   optional Rect update_rect = 46;
-  optional bool stacking_order_changed = 47;
 
   // TODO(nyquist): Figure out what to do with LayerAnimationController.
   // optional LayerAnimationController layer_animation_controller = 48;

@@ -3278,20 +3278,9 @@ class LayerTreeHostTestPushPropertiesAddingToTreeRequiresPush
     int last_source_frame_number = layer_tree_host()->source_frame_number() - 1;
     switch (last_source_frame_number) {
       case 0:
+        // All layers except root will need push properties as they are added
+        // as a child to some other layer which changes their stacking order.
         EXPECT_FALSE(root_->needs_push_properties());
-        EXPECT_FALSE(root_->descendant_needs_push_properties());
-        EXPECT_FALSE(child_->needs_push_properties());
-        EXPECT_FALSE(child_->descendant_needs_push_properties());
-        EXPECT_FALSE(grandchild1_->needs_push_properties());
-        EXPECT_FALSE(grandchild1_->descendant_needs_push_properties());
-        EXPECT_FALSE(grandchild2_->needs_push_properties());
-        EXPECT_FALSE(grandchild2_->descendant_needs_push_properties());
-        EXPECT_FALSE(grandchild3_->needs_push_properties());
-        EXPECT_FALSE(grandchild3_->descendant_needs_push_properties());
-
-        layer_tree_host()->SetRootLayer(root_);
-
-        EXPECT_TRUE(root_->needs_push_properties());
         EXPECT_TRUE(root_->descendant_needs_push_properties());
         EXPECT_TRUE(child_->needs_push_properties());
         EXPECT_TRUE(child_->descendant_needs_push_properties());
@@ -3301,6 +3290,12 @@ class LayerTreeHostTestPushPropertiesAddingToTreeRequiresPush
         EXPECT_FALSE(grandchild2_->descendant_needs_push_properties());
         EXPECT_TRUE(grandchild3_->needs_push_properties());
         EXPECT_FALSE(grandchild3_->descendant_needs_push_properties());
+
+        layer_tree_host()->SetRootLayer(root_);
+
+        // Now, even the root will need to push properties.
+        EXPECT_TRUE(root_->needs_push_properties());
+        EXPECT_TRUE(root_->descendant_needs_push_properties());
         break;
       case 1:
         EndTest();

@@ -102,9 +102,8 @@ class LayerSerializationTest : public testing::Test {
     src->SetNeedsPushProperties();
     src->SetLayerTreeHost(layer_tree_host_.get());
 
-    // The following two members are reset during serialization, so
-    // store the original values.
-    bool stacking_order_changed = src->stacking_order_changed_;
+    // The following member is reset during serialization, so store the original
+    // values.
     gfx::Rect update_rect = src->update_rect_;
 
     // Serialize |src| to protobuf and read the first entry in the
@@ -185,7 +184,6 @@ class LayerSerializationTest : public testing::Test {
     EXPECT_EQ(src->scroll_compensation_adjustment_,
               dest->scroll_compensation_adjustment_);
     EXPECT_EQ(update_rect, dest->update_rect_);
-    EXPECT_EQ(stacking_order_changed, dest->stacking_order_changed_);
 
     if (src->scroll_parent_) {
       ASSERT_TRUE(dest->scroll_parent_);
@@ -213,8 +211,7 @@ class LayerSerializationTest : public testing::Test {
       EXPECT_FALSE(dest->clip_children_);
     }
 
-    // The following two members should have been reset during serialization.
-    EXPECT_FALSE(src->stacking_order_changed_);
+    // The following member should have been reset during serialization.
     EXPECT_EQ(gfx::Rect(), src->update_rect_);
 
     // Before deleting |dest|, the LayerTreeHost must be unset.
@@ -293,7 +290,6 @@ class LayerSerializationTest : public testing::Test {
     layer->scroll_offset_ = gfx::ScrollOffset(3, 14);
     layer->scroll_compensation_adjustment_ = gfx::Vector2dF(6.28f, 3.14f);
     layer->update_rect_ = gfx::Rect(14, 15);
-    layer->stacking_order_changed_ = true;
 
     VerifyBaseLayerPropertiesSerializationAndDeserialization(layer.get());
   }
@@ -344,7 +340,6 @@ class LayerSerializationTest : public testing::Test {
     layer->scroll_offset_ = gfx::ScrollOffset(3, 14);
     layer->scroll_compensation_adjustment_ = gfx::Vector2dF(6.28f, 3.14f);
     layer->update_rect_ = gfx::Rect(14, 15);
-    layer->stacking_order_changed_ = !layer->stacking_order_changed_;
 
     VerifyBaseLayerPropertiesSerializationAndDeserialization(layer.get());
   }
@@ -1109,6 +1104,20 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
   node = layer_tree_host_->property_trees()->transform_tree.Node(
       root->transform_tree_index());
   EXPECT_TRUE(node->data.transform_changed);
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
+      root->PushPropertiesTo(root_impl.get());
+      child->PushPropertiesTo(child_impl.get());
+      child2->PushPropertiesTo(child2_impl.get());
+      grand_child->PushPropertiesTo(grand_child_impl.get());
+      layer_tree_host_->property_trees()->transform_tree.ResetChangeTracking());
+
+  gfx::Transform arbitrary_transform;
+  arbitrary_transform.Scale3d(0.1f, 0.2f, 0.3f);
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
+  root->SetTransform(arbitrary_transform);
+  node = layer_tree_host_->property_trees()->transform_tree.Node(
+      root->transform_tree_index());
+  EXPECT_TRUE(node->data.transform_changed);
 }
 
 TEST_F(LayerTest, AddAndRemoveChild) {
@@ -1658,58 +1667,6 @@ TEST_F(LayerTest, PushPropertiesCausesLayerPropertyChangedForOpacity) {
   test_layer->PushPropertiesTo(impl_layer.get());
 
   EXPECT_TRUE(impl_layer->LayerPropertyChanged());
-}
-
-TEST_F(LayerTest,
-       PushPropsDoesntCauseLayerPropertyChangedDuringImplOnlyTransformAnim) {
-  scoped_refptr<Layer> test_layer = Layer::Create(layer_settings_);
-  scoped_ptr<LayerImpl> impl_layer =
-      LayerImpl::Create(host_impl_.active_tree(), 1);
-
-  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1,
-                                  layer_tree_host_->SetRootLayer(test_layer));
-
-  scoped_ptr<AnimationRegistrar> registrar;
-  if (settings().use_compositor_animation_timelines) {
-    AddAnimatedTransformToLayerWithPlayer(impl_layer->id(), timeline_impl(),
-                                          1.0, 0, 100);
-  } else {
-    registrar = AnimationRegistrar::Create();
-    impl_layer->layer_animation_controller()->SetAnimationRegistrar(
-        registrar.get());
-
-    AddAnimatedTransformToController(impl_layer->layer_animation_controller(),
-                                     1.0, 0, 100);
-  }
-
-  gfx::Transform transform;
-  transform.Rotate(45.0);
-  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetTransform(transform));
-
-  EXPECT_FALSE(impl_layer->LayerPropertyChanged());
-  test_layer->PushPropertiesTo(impl_layer.get());
-  EXPECT_TRUE(impl_layer->LayerPropertyChanged());
-
-  impl_layer->ResetAllChangeTrackingForSubtree();
-  if (settings().use_compositor_animation_timelines) {
-    int animation_id = AddAnimatedTransformToLayerWithPlayer(
-        impl_layer->id(), timeline_impl(), 1.0, 0, 100);
-    GetAnimationFromLayerWithExistingPlayer(impl_layer->id(), timeline_impl(),
-                                            animation_id)
-        ->set_is_impl_only(true);
-  } else {
-    AddAnimatedTransformToController(impl_layer->layer_animation_controller(),
-                                     1.0, 0, 100);
-    impl_layer->layer_animation_controller()
-        ->GetAnimation(Animation::TRANSFORM)
-        ->set_is_impl_only(true);
-  }
-  transform.Rotate(45.0);
-  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetTransform(transform));
-
-  EXPECT_FALSE(impl_layer->LayerPropertyChanged());
-  test_layer->PushPropertiesTo(impl_layer.get());
-  EXPECT_FALSE(impl_layer->LayerPropertyChanged());
 }
 
 TEST_F(LayerTest,
@@ -2612,6 +2569,25 @@ TEST_F(LayerTest, SimplePropertiesSerialization) {
   layer_src_b->SetMaskLayer(layer_src_b_mask.get());
   layer_src_b->SetReplicaLayer(layer_src_b_replica.get());
 
+  proto::LayerUpdate layer_update_root;
+  // Only layers with descendants that require pushing properties will
+  // return true from ToLayerPropertiesProto and AddChild will change the
+  // stacking order of child which will make it push properties.
+  EXPECT_TRUE(layer_src_root->ToLayerPropertiesProto(&layer_update_root));
+  proto::LayerUpdate layer_update_a;
+  EXPECT_TRUE(layer_src_a->ToLayerPropertiesProto(&layer_update_a));
+  proto::LayerUpdate layer_update_b;
+  EXPECT_TRUE(layer_src_b->ToLayerPropertiesProto(&layer_update_b));
+  proto::LayerUpdate layer_update_c;
+  EXPECT_FALSE(layer_src_c->ToLayerPropertiesProto(&layer_update_c));
+  proto::LayerUpdate layer_update_d;
+  EXPECT_FALSE(layer_src_d->ToLayerPropertiesProto(&layer_update_d));
+  layer_update_root.Clear();
+  layer_update_a.Clear();
+  layer_update_b.Clear();
+  layer_update_c.Clear();
+  layer_update_d.Clear();
+
   layer_src_a->SetNeedsPushProperties();
   layer_src_b->SetNeedsPushProperties();
   layer_src_b_mask->SetNeedsPushProperties();
@@ -2619,20 +2595,15 @@ TEST_F(LayerTest, SimplePropertiesSerialization) {
 
   // Only layers with descendants that require pushing properties will
   // return true from ToLayerPropertiesProto.
-  proto::LayerUpdate layer_update_root;
   EXPECT_TRUE(layer_src_root->ToLayerPropertiesProto(&layer_update_root));
-  proto::LayerUpdate layer_update_a;
   EXPECT_FALSE(layer_src_a->ToLayerPropertiesProto(&layer_update_a));
-  proto::LayerUpdate layer_update_b;
   EXPECT_TRUE(layer_src_b->ToLayerPropertiesProto(&layer_update_b));
   proto::LayerUpdate layer_update_b_mask;
   EXPECT_FALSE(layer_src_b_mask->ToLayerPropertiesProto(&layer_update_b_mask));
   proto::LayerUpdate layer_update_b_replica;
   EXPECT_FALSE(
       layer_src_b_replica->ToLayerPropertiesProto(&layer_update_b_replica));
-  proto::LayerUpdate layer_update_c;
   EXPECT_FALSE(layer_src_c->ToLayerPropertiesProto(&layer_update_c));
-  proto::LayerUpdate layer_update_d;
   EXPECT_FALSE(layer_src_d->ToLayerPropertiesProto(&layer_update_d));
 
   // All flags for pushing properties should have been cleared.

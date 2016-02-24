@@ -62,7 +62,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
           MainThreadScrollingReason::kNotScrollingOnMain),
       user_scrollable_horizontal_(true),
       user_scrollable_vertical_(true),
-      stacking_order_changed_(false),
       double_sided_(true),
       should_flatten_transform_(true),
       should_flatten_transform_from_property_tree_(false),
@@ -610,7 +609,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   update_rect_.Union(layer->update_rect());
   layer->SetUpdateRect(update_rect_);
 
-  layer->SetStackingOrderChanged(stacking_order_changed_);
   layer->SetDebugInfo(debug_info_);
 
   if (frame_timing_requests_dirty_) {
@@ -619,7 +617,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   }
 
   // Reset any state that should be cleared for the next update.
-  stacking_order_changed_ = false;
   layer_property_changed_ = false;
   update_rect_ = gfx::Rect();
   needs_push_properties_ = false;
@@ -684,13 +681,6 @@ base::DictionaryValue* LayerImpl::LayerTreeAsJson() const {
   result->Set("Children", list);
 
   return result;
-}
-
-void LayerImpl::SetStackingOrderChanged(bool stacking_order_changed) {
-  if (stacking_order_changed) {
-    stacking_order_changed_ = true;
-    NoteLayerPropertyChangedForSubtree();
-  }
 }
 
 bool LayerImpl::LayerPropertyChanged() const {
@@ -1269,7 +1259,6 @@ void LayerImpl::SetTransformAndInvertibility(const gfx::Transform& transform,
   }
   transform_ = transform;
   transform_is_invertible_ = transform_is_invertible;
-  NoteLayerPropertyChangedForSubtree();
 }
 
 bool LayerImpl::TransformIsAnimating() const {

@@ -52,7 +52,6 @@ scoped_refptr<Layer> Layer::Create(const LayerSettings& settings) {
 Layer::Layer(const LayerSettings& settings)
     : needs_push_properties_(false),
       num_dependents_need_push_properties_(0),
-      stacking_order_changed_(false),
       // Layer IDs start from 1.
       layer_id_(g_next_layer_id.GetNext() + 1),
       ignore_set_needs_commit_(false),
@@ -291,7 +290,7 @@ void Layer::InsertChild(scoped_refptr<Layer> child, size_t index) {
   AddDrawableDescendants(child->NumDescendantsThatDrawContent() +
                          (child->DrawsContent() ? 1 : 0));
   child->SetParent(this);
-  child->stacking_order_changed_ = true;
+  child->SetSubtreePropertyChanged();
 
   index = std::min(index, children_.size());
   children_.insert(children_.begin() + index, child);
@@ -684,6 +683,7 @@ void Layer::SetTransform(const gfx::Transform& transform) {
   if (transform_ == transform)
     return;
 
+  SetSubtreePropertyChanged();
   if (layer_tree_host_) {
     if (TransformNode* transform_node =
             layer_tree_host_->property_trees()->transform_tree.Node(
@@ -697,6 +697,7 @@ void Layer::SetTransform(const gfx::Transform& transform) {
             Are2dAxisAligned(transform_, transform, &invertible);
         transform_node->data.local = transform;
         transform_node->data.needs_local_transform_update = true;
+        transform_node->data.transform_changed = true;
         layer_tree_host_->property_trees()->transform_tree.set_needs_update(
             true);
         if (preserves_2d_axis_alignment)
@@ -1363,8 +1364,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   update_rect_.Union(layer->update_rect());
   layer->SetUpdateRect(update_rect_);
 
-  layer->SetStackingOrderChanged(stacking_order_changed_);
-
   if (layer->layer_animation_controller() && layer_animation_controller_)
     layer_animation_controller_->PushAnimationUpdatesTo(
         layer->layer_animation_controller());
@@ -1375,7 +1374,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   }
 
   // Reset any state that should be cleared for the next update.
-  stacking_order_changed_ = false;
   subtree_property_changed_ = false;
   update_rect_ = gfx::Rect();
 
@@ -1590,14 +1588,12 @@ void Layer::LayerSpecificPropertiesToProto(proto::LayerProperties* proto) {
   // See crbug.com/570374.
 
   RectToProto(update_rect_, base->mutable_update_rect());
-  base->set_stacking_order_changed(stacking_order_changed_);
 
   // TODO(nyquist): Figure out what to do with LayerAnimationController.
   // See crbug.com/570376.
   // TODO(nyquist): Figure out what to do with FrameTimingRequests. See
   // crbug.com/570377.
 
-  stacking_order_changed_ = false;
   update_rect_ = gfx::Rect();
 }
 
@@ -1693,7 +1689,6 @@ void Layer::FromLayerSpecificPropertiesProto(
       ProtoToVector2dF(base.scroll_compensation_adjustment());
 
   update_rect_.Union(ProtoToRect(base.update_rect()));
-  stacking_order_changed_ = base.stacking_order_changed();
 }
 
 scoped_ptr<LayerImpl> Layer::CreateLayerImpl(LayerTreeImpl* tree_impl) {
