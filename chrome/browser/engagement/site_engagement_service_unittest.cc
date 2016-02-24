@@ -736,6 +736,10 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
   histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementScoreHistogram,
                               0);
   histograms.ExpectTotalCount(
+      SiteEngagementMetrics::kEngagementScoreHistogramHTTP, 0);
+  histograms.ExpectTotalCount(
+      SiteEngagementMetrics::kEngagementScoreHistogramHTTPS, 0);
+  histograms.ExpectTotalCount(
       SiteEngagementMetrics::kOriginsWithMaxEngagementHistogram, 0);
   histograms.ExpectTotalCount(
       SiteEngagementMetrics::kOriginsWithMaxDailyEngagementHistogram, 0);
@@ -753,6 +757,10 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
                                 0, 1);
   histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementScoreHistogram,
                               0);
+  histograms.ExpectTotalCount(
+      SiteEngagementMetrics::kEngagementScoreHistogramHTTP, 0);
+  histograms.ExpectTotalCount(
+      SiteEngagementMetrics::kEngagementScoreHistogramHTTPS, 0);
   histograms.ExpectUniqueSample(SiteEngagementMetrics::kMeanEngagementHistogram,
                                 0, 1);
   histograms.ExpectUniqueSample(
@@ -796,6 +804,10 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
   // Recorded per origin.
   histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementScoreHistogram,
                               1);
+  histograms.ExpectTotalCount(
+      SiteEngagementMetrics::kEngagementScoreHistogramHTTP, 0);
+  histograms.ExpectTotalCount(
+      SiteEngagementMetrics::kEngagementScoreHistogramHTTPS, 1);
   histograms.ExpectUniqueSample(
       SiteEngagementMetrics::kOriginsWithMaxEngagementHistogram, 0, 2);
   histograms.ExpectUniqueSample(
@@ -861,6 +873,10 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
   // Recorded per origin.
   histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementScoreHistogram,
                               4);
+  histograms.ExpectTotalCount(
+      SiteEngagementMetrics::kEngagementScoreHistogramHTTP, 2);
+  histograms.ExpectTotalCount(
+      SiteEngagementMetrics::kEngagementScoreHistogramHTTPS, 2);
   histograms.ExpectUniqueSample(
       SiteEngagementMetrics::kOriginsWithMaxEngagementHistogram, 0, 3);
   histograms.ExpectUniqueSample(
@@ -933,6 +949,10 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
                               4);
   histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementScoreHistogram,
                               7);
+  histograms.ExpectTotalCount(
+      SiteEngagementMetrics::kEngagementScoreHistogramHTTP, 4);
+  histograms.ExpectTotalCount(
+      SiteEngagementMetrics::kEngagementScoreHistogramHTTPS, 3);
   histograms.ExpectUniqueSample(
       SiteEngagementMetrics::kOriginsWithMaxEngagementHistogram, 0, 4);
   histograms.ExpectBucketCount(

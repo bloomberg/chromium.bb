@@ -33,6 +33,12 @@ const char SiteEngagementMetrics::kMedianEngagementHistogram[] =
 const char SiteEngagementMetrics::kEngagementScoreHistogram[] =
     "SiteEngagementService.EngagementScore";
 
+const char SiteEngagementMetrics::kEngagementScoreHistogramHTTP[] =
+    "SiteEngagementService.EngagementScore.HTTP";
+
+const char SiteEngagementMetrics::kEngagementScoreHistogramHTTPS[] =
+    "SiteEngagementService.EngagementScore.HTTPS";
+
 const char SiteEngagementMetrics::kOriginsWithMaxEngagementHistogram[] =
     "SiteEngagementService.OriginsWithMaxEngagement";
 
@@ -85,6 +91,11 @@ void SiteEngagementMetrics::RecordEngagementScores(
   for (const auto& value : score_map) {
     UMA_HISTOGRAM_COUNTS_100(kEngagementScoreHistogram, value.second);
     score_buckets.lower_bound(value.second)->second++;
+
+    if (value.first.SchemeIs(url::kHttpsScheme))
+      UMA_HISTOGRAM_COUNTS_100(kEngagementScoreHistogramHTTPS, value.second);
+    else if (value.first.SchemeIs(url::kHttpScheme))
+      UMA_HISTOGRAM_COUNTS_100(kEngagementScoreHistogramHTTP, value.second);
   }
 
   for (const auto& b : score_buckets) {

@@ -47080,6 +47080,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SiteEngagementService.EngagementScore.HTTP">
+  <owner>calamity@chromium.org</owner>
+  <owner>dominickn@chromium.org</owner>
+  <owner>felt@chromium.org</owner>
+  <summary>
+    Distribution of the engagement scores accumulated by a user, recorded at
+    startup per non-incognito profile, and then upon the first
+    engagement-increasing event every hour thereafter. Limited specifically to
+    HTTP URLs.
+  </summary>
+</histogram>
+
+<histogram name="SiteEngagementService.EngagementScore.HTTPS">
+  <owner>calamity@chromium.org</owner>
+  <owner>dominickn@chromium.org</owner>
+  <owner>felt@chromium.org</owner>
+  <summary>
+    Distribution of the engagement scores accumulated by a user, recorded at
+    startup per non-incognito profile, and then upon the first
+    engagement-increasing event every hour thereafter. Limited specifically to
+    HTTPS URLs.
+  </summary>
+</histogram>
+
 <histogram name="SiteEngagementService.EngagementScoreBucket" units="%">
   <owner>calamity@chromium.org</owner>
   <summary>
