@@ -1772,6 +1772,8 @@ void FrameView::clearLayoutSubtreeRootsAndMarkContainingBlocks()
 
 void FrameView::addOrthogonalWritingModeRoot(LayoutBox& root)
 {
+    ASSERT(!root.isLayoutFullScreen() && !root.isLayoutFullScreenPlaceholder()
+        && !root.isLayoutScrollbarPart());
     m_orthogonalWritingModeRootList.add(root);
 }
 
@@ -2379,8 +2381,7 @@ void FrameView::updateScrollCorner()
     if (cornerStyle) {
         if (!m_scrollCorner)
             m_scrollCorner = LayoutScrollbarPart::createAnonymous(doc);
-        m_scrollCorner->adjustStyleBeforeSet(cornerStyle.get());
-        m_scrollCorner->setStyle(cornerStyle.release());
+        m_scrollCorner->setStyleWithWritingModeOfParent(cornerStyle.release());
         setScrollCornerNeedsPaintInvalidation();
     } else if (m_scrollCorner) {
         m_scrollCorner->destroy();

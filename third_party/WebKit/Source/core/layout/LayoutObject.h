@@ -913,6 +913,9 @@ public:
     // and so only should be called when the style is known not to have changed (or from setStyle).
     void setStyleInternal(PassRefPtr<ComputedStyle> style) { m_style = style; }
 
+    void setStyleWithWritingModeOfParent(PassRefPtr<ComputedStyle>);
+    void addChildWithWritingModeOfParent(LayoutObject* newChild, LayoutObject* beforeChild);
+
     void firstLineStyleDidChange(const ComputedStyle& oldStyle, const ComputedStyle& newStyle);
 
     // This function returns an enclosing non-anonymous LayoutBlock for this

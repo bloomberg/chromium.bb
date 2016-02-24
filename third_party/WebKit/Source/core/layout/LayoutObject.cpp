@@ -2133,6 +2133,22 @@ void LayoutObject::propagateStyleToAnonymousChildren(bool blockChildrenOnly)
     }
 }
 
+void LayoutObject::setStyleWithWritingModeOfParent(PassRefPtr<ComputedStyle> style)
+{
+    if (parent())
+        style->setWritingMode(parent()->styleRef().writingMode());
+    setStyle(style);
+}
+
+void LayoutObject::addChildWithWritingModeOfParent(LayoutObject* newChild, LayoutObject* beforeChild)
+{
+    if (newChild->mutableStyleRef().setWritingMode(styleRef().writingMode())
+        && newChild->isBoxModelObject()) {
+        newChild->setHorizontalWritingMode(isHorizontalWritingMode());
+    }
+    addChild(newChild, beforeChild);
+}
+
 void LayoutObject::updateFillImages(const FillLayer* oldLayers, const FillLayer& newLayers)
 {
     // Optimize the common case

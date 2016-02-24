@@ -42,6 +42,10 @@ public:
     {
         setDocumentForAnonymous(&owner->document());
     }
+
+    // Must call setStyleWithWritingModeOfParent() instead.
+    void setStyle(PassRefPtr<ComputedStyle>) = delete;
+
 private:
     bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutFullScreenPlaceholder || LayoutBlockFlow::isOfType(type); }
     void willBeDestroyed() override;
@@ -110,7 +114,7 @@ void LayoutFullScreen::updateStyle()
 
     fullscreenStyle->setBackgroundColor(StyleColor(Color::black));
 
-    setStyle(fullscreenStyle);
+    setStyleWithWritingModeOfParent(fullscreenStyle);
 }
 
 LayoutObject* LayoutFullScreen::wrapLayoutObject(LayoutObject* object, LayoutObject* parent, Document* document)
@@ -135,7 +139,7 @@ LayoutObject* LayoutFullScreen::wrapLayoutObject(LayoutObject* object, LayoutObj
             // the line box tree underneath our |containingBlock| is not longer valid.
             containingBlock->deleteLineBoxTree();
 
-            parent->addChild(fullscreenLayoutObject, object);
+            parent->addChildWithWritingModeOfParent(fullscreenLayoutObject, object);
             object->remove();
 
             // Always just do a full layout to ensure that line boxes get deleted properly.
@@ -191,12 +195,13 @@ void LayoutFullScreen::createPlaceholder(PassRefPtr<ComputedStyle> style, const 
 
     if (!m_placeholder) {
         m_placeholder = new LayoutFullScreenPlaceholder(this);
-        m_placeholder->setStyle(style);
+        m_placeholder->setStyleWithWritingModeOfParent(style);
         if (parent()) {
-            parent()->addChild(m_placeholder, this);
+            parent()->addChildWithWritingModeOfParent(m_placeholder, this);
             parent()->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::Fullscreen);
         }
     } else {
         m_placeholder->setStyle(style);
+        m_placeholder->setStyleWithWritingModeOfParent(style);
     }
 }

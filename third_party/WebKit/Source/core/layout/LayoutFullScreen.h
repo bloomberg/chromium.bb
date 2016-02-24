@@ -48,6 +48,9 @@ public:
 
     void updateStyle();
 
+    // Must call setStyleWithWritingModeOfParent() instead.
+    void setStyle(PassRefPtr<ComputedStyle>) = delete;
+
 private:
     LayoutFullScreen();
     void willBeDestroyed() override;
