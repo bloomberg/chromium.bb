@@ -11,7 +11,7 @@ raw cssText:
     /* leading comment */
     firstProperty: rgba(1, 2, 3, 0);
     color: red;   /* comment1 */
-    margin: 0;/* comment2 */ /* like: property */
+    zoom: 1;/* comment2 */ /* like: property */
     padding: 0;
 }
 
@@ -20,7 +20,7 @@ raw cssText:
 {
     /* leading comment */
     color: red;   /* comment1 */
-    margin: 0;/* comment2 */ /* like: property */
+    zoom: 1;/* comment2 */ /* like: property */
     padding: 0;
 }
 
@@ -30,7 +30,7 @@ raw cssText:
     /* leading comment */
     color: red;   /* comment1 */
     middleProperty: middleValue /* comment */;
-    margin: 0;/* comment2 */ /* like: property */
+    zoom: 1;/* comment2 */ /* like: property */
     padding: 0;
 }
 
@@ -39,7 +39,7 @@ raw cssText:
 {
     /* leading comment */
     color: red;   /* comment1 */
-    margin: 0;/* comment2 */ /* like: property */
+    zoom: 1;/* comment2 */ /* like: property */
     padding: 0;
 }
 
@@ -48,7 +48,7 @@ raw cssText:
 {
     /* leading comment */
     color: red;   /* comment1 */
-    margin: 0;/* comment2 */ /* like: property */
+    zoom: 1;/* comment2 */ /* like: property */
     padding: 0;
     endProperty: endValue;
 }
@@ -58,7 +58,7 @@ raw cssText:
 {
     /* leading comment */
     color: red;   /* comment1 */
-    margin: 0;/* comment2 */ /* like: property */
+    zoom: 1;/* comment2 */ /* like: property */
     padding: 0;
 }
 
@@ -67,7 +67,7 @@ raw cssText:
 {
     /* leading comment */
     /* color: red; */   /* comment1 */
-    margin: 0;/* comment2 */ /* like: property */
+    zoom: 1;/* comment2 */ /* like: property */
     padding: 0;
 }
 
@@ -76,7 +76,7 @@ raw cssText:
 {
     /* leading comment */
     /* color: red; */   /* comment1 */
-    margin: 0;/* comment2 */ /* like: property */
+    zoom: 1;/* comment2 */ /* like: property */
     /* padding: 0; */
 }
 
@@ -85,7 +85,7 @@ raw cssText:
 {
     /* leading comment */
     /* color: red; */   /* comment1 */
-    /* margin: 0; *//* comment2 */ /* like: property */
+    /* zoom: 1; *//* comment2 */ /* like: property */
     /* padding: 0; */
 }
 
@@ -95,7 +95,7 @@ raw cssText:
     /* leading comment */
     propA: valA;
     /* color: red; */   /* comment1 */
-    /* margin: 0; *//* comment2 */ /* like: property */
+    /* zoom: 1; *//* comment2 */ /* like: property */
     /* padding: 0; */
 }
 
@@ -106,7 +106,7 @@ raw cssText:
     propA: valA;
     /* color: red; */   /* comment1 */
     propB: valB;
-    /* margin: 0; *//* comment2 */ /* like: property */
+    /* zoom: 1; *//* comment2 */ /* like: property */
     /* padding: 0; */
 }
 
@@ -117,7 +117,7 @@ raw cssText:
     propA: valA;
     /* color: red; */   /* comment1 */
     propB: valB;
-    /* margin: 0; *//* comment2 */ /* like: property */
+    /* zoom: 1; *//* comment2 */ /* like: property */
     /* padding: 0; */
     propC: valC;
 }
@@ -129,7 +129,7 @@ raw cssText:
     propA: valA;
     color: red;   /* comment1 */
     propB: valB;
-    /* margin: 0; *//* comment2 */ /* like: property */
+    /* zoom: 1; *//* comment2 */ /* like: property */
     /* padding: 0; */
     propC: valC;
 }
@@ -141,7 +141,7 @@ raw cssText:
     propA: valA;
     color: red;   /* comment1 */
     propB: valB;
-    /* margin: 0; *//* comment2 */ /* like: property */
+    /* zoom: 1; *//* comment2 */ /* like: property */
     padding: 0;
     propC: valC;
 }
@@ -153,7 +153,7 @@ raw cssText:
     propA: valA;
     color: red;   /* comment1 */
     propB: valB;
-    margin: 0;/* comment2 */ /* like: property */
+    zoom: 1;/* comment2 */ /* like: property */
     padding: 0;
     propC: valC;
 }
@@ -166,7 +166,7 @@ raw cssText:
     propA: valA;
     color: red;   /* comment1 */
     propB: valB;
-    margin: 0;/* comment2 */ /* like: property */
+    zoom: 1;/* comment2 */ /* like: property */
     padding: 0;
     propC: valC;
 }
@@ -180,7 +180,7 @@ raw cssText:
     propA: valA;
     color: red;   /* comment1 */
     propB: valB;
-    margin: 0;/* comment2 */ /* like: property */
+    zoom: 1;/* comment2 */ /* like: property */
     padding: 0;
     propC: valC;
 }
@@ -195,7 +195,7 @@ raw cssText:
     propA: valA;
     color: red;   /* comment1 */
     propB: valB;
-    margin: 0;/* comment2 */ /* like: property */
+    zoom: 1;/* comment2 */ /* like: property */
     padding: 0;
     propC: valC;
 }
@@ -204,49 +204,49 @@ Running: initUnformattedStyle
 
 Running: testUnformattedInsertStart
 raw cssText:
-{/*leading comment*/firstProperty: firstValue;color:red;margin:0;padding:0;}
+{/*leading comment*/firstProperty: firstValue;color:red;zoom:1;padding:0;}
 
 Running: testUnformattedRemoveStart
 raw cssText:
-{/*leading comment*/color:red;margin:0;padding:0;}
+{/*leading comment*/color:red;zoom:1;padding:0;}
 
 Running: testUnformattedInsertMiddle
 raw cssText:
-{/*leading comment*/color:red;middleProperty: middleValue;margin:0;padding:0;}
+{/*leading comment*/color:red;middleProperty: middleValue;zoom:1;padding:0;}
 
 Running: testUnformattedRemoveMiddle
 raw cssText:
-{/*leading comment*/color:red;margin:0;padding:0;}
+{/*leading comment*/color:red;zoom:1;padding:0;}
 
 Running: testUnformattedInsertEnd
 raw cssText:
-{/*leading comment*/color:red;margin:0;padding:0;endProperty: endValue;}
+{/*leading comment*/color:red;zoom:1;padding:0;endProperty: endValue;}
 
 Running: testUnformattedRemoveEnd
 raw cssText:
-{/*leading comment*/color:red;margin:0;padding:0;}
+{/*leading comment*/color:red;zoom:1;padding:0;}
 
 Running: testUnformattedDisableStart
 raw cssText:
-{/*leading comment*//* color:red; */margin:0;padding:0;}
+{/*leading comment*//* color:red; */zoom:1;padding:0;}
 
 Running: testUnformattedDisableEnd
 raw cssText:
-{/*leading comment*//* color:red; */margin:0;/* padding:0; */}
+{/*leading comment*//* color:red; */zoom:1;/* padding:0; */}
 
 Running: testUnformattedDisableMiddle
 raw cssText:
-{/*leading comment*//* color:red; *//* margin:0; *//* padding:0; */}
+{/*leading comment*//* color:red; *//* zoom:1; *//* padding:0; */}
 
 Running: testUnformattedEnableStart
 raw cssText:
-{/*leading comment*/color:red;/* margin:0; *//* padding:0; */}
+{/*leading comment*/color:red;/* zoom:1; *//* padding:0; */}
 
 Running: testUnformattedEnableEnd
 raw cssText:
-{/*leading comment*/color:red;/* margin:0; */padding:0;}
+{/*leading comment*/color:red;/* zoom:1; */padding:0;}
 
 Running: testUnformattedEnableMiddle
 raw cssText:
-{/*leading comment*/color:red;margin:0;padding:0;}
+{/*leading comment*/color:red;zoom:1;padding:0;}
 
