@@ -98,21 +98,34 @@ class FFmpegDemuxerTest : public testing::Test {
 
   MOCK_METHOD1(CheckPoint, void(int v));
 
-  void InitializeDemuxerWithTimelineOffset(bool enable_text,
-                                           base::Time timeline_offset) {
-    EXPECT_CALL(host_, SetDuration(_));
+  void InitializeDemuxerInternal(bool enable_text,
+                                 media::PipelineStatus expected_pipeline_status,
+                                 base::Time timeline_offset) {
+    if (expected_pipeline_status == PIPELINE_OK)
+      EXPECT_CALL(host_, SetDuration(_));
     WaitableMessageLoopEvent event;
     demuxer_->Initialize(&host_, event.GetPipelineStatusCB(), enable_text);
     demuxer_->timeline_offset_ = timeline_offset;
-    event.RunAndWaitForStatus(PIPELINE_OK);
-  }
-
-  void InitializeDemuxerText(bool enable_text) {
-    InitializeDemuxerWithTimelineOffset(enable_text, base::Time());
+    event.RunAndWaitForStatus(expected_pipeline_status);
   }
 
   void InitializeDemuxer() {
-    InitializeDemuxerText(false);
+    InitializeDemuxerInternal(/*enable_text=*/false, PIPELINE_OK, base::Time());
+  }
+
+  void InitializeDemuxerWithText() {
+    InitializeDemuxerInternal(/*enable_text=*/true, PIPELINE_OK, base::Time());
+  }
+
+  void InitializeDemuxerWithTimelineOffset(base::Time timeline_offset) {
+    InitializeDemuxerInternal(/*enable_text=*/false, PIPELINE_OK,
+                              timeline_offset);
+  }
+
+  void InitializeDemuxerAndExpectPipelineStatus(
+      media::PipelineStatus expected_pipeline_status) {
+    InitializeDemuxerInternal(/*enable_text=*/false, expected_pipeline_status,
+                              base::Time());
   }
 
   MOCK_METHOD2(OnReadDoneCalled, void(int, int64_t));
@@ -357,7 +370,7 @@ TEST_F(FFmpegDemuxerTest, Initialize_MultitrackText) {
   DemuxerStream* text_stream = NULL;
   EXPECT_CALL(host_, AddTextStream(_, _))
       .WillOnce(SaveArg<0>(&text_stream));
-  InitializeDemuxerText(true);
+  InitializeDemuxerWithText();
   ASSERT_TRUE(text_stream);
   EXPECT_EQ(DemuxerStream::TEXT, text_stream->type());
 
@@ -430,7 +443,7 @@ TEST_F(FFmpegDemuxerTest, Read_Text) {
   DemuxerStream* text_stream = NULL;
   EXPECT_CALL(host_, AddTextStream(_, _))
       .WillOnce(SaveArg<0>(&text_stream));
-  InitializeDemuxerText(true);
+  InitializeDemuxerWithText();
   ASSERT_TRUE(text_stream);
   EXPECT_EQ(DemuxerStream::TEXT, text_stream->type());
 
@@ -453,7 +466,7 @@ TEST_F(FFmpegDemuxerTest, Read_VideoPositiveStartTime) {
   // Test the start time is the first timestamp of the video and audio stream.
   CreateDemuxer("nonzero-start-time.webm");
   InitializeDemuxerWithTimelineOffset(
-      false, base::Time::FromJsTime(kTimelineOffsetMs));
+      base::Time::FromJsTime(kTimelineOffsetMs));
 
   // Attempt a read from the video stream and run the message loop until done.
   DemuxerStream* video = demuxer_->GetStream(DemuxerStream::VIDEO);
@@ -689,7 +702,7 @@ TEST_F(FFmpegDemuxerTest, Read_EndOfStreamText) {
   DemuxerStream* text_stream = NULL;
   EXPECT_CALL(host_, AddTextStream(_, _))
       .WillOnce(SaveArg<0>(&text_stream));
-  InitializeDemuxerText(true);
+  InitializeDemuxerWithText();
   ASSERT_TRUE(text_stream);
   EXPECT_EQ(DemuxerStream::TEXT, text_stream->type());
 
@@ -787,7 +800,7 @@ TEST_F(FFmpegDemuxerTest, SeekText) {
   DemuxerStream* text_stream = NULL;
   EXPECT_CALL(host_, AddTextStream(_, _))
       .WillOnce(SaveArg<0>(&text_stream));
-  InitializeDemuxerText(true);
+  InitializeDemuxerWithText();
   ASSERT_TRUE(text_stream);
   EXPECT_EQ(DemuxerStream::TEXT, text_stream->type());
 
@@ -1115,11 +1128,9 @@ TEST_F(FFmpegDemuxerTest, NaturalSizeWithPASP) {
   EXPECT_EQ(gfx::Size(639, 360), video_config.natural_size());
 }
 
-#endif
-
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
 TEST_F(FFmpegDemuxerTest, HEVC_in_MP4_container) {
   CreateDemuxer("bear-hevc-frag.mp4");
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
   InitializeDemuxer();
 
   DemuxerStream* video = demuxer_->GetStream(DemuxerStream::VIDEO);
@@ -1130,12 +1141,14 @@ TEST_F(FFmpegDemuxerTest, HEVC_in_MP4_container) {
 
   video->Read(NewReadCB(FROM_HERE, 1042, 200200, false));
   message_loop_.Run();
-}
+#else
+  InitializeDemuxerAndExpectPipelineStatus(DEMUXER_ERROR_NO_SUPPORTED_STREAMS);
 #endif
+}
 
-#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
 TEST_F(FFmpegDemuxerTest, Read_AC3_Audio) {
   CreateDemuxer("bear-ac3-only-frag.mp4");
+#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
   InitializeDemuxer();
 
   // Attempt a read from the audio stream and run the message loop until done.
@@ -1147,10 +1160,14 @@ TEST_F(FFmpegDemuxerTest, Read_AC3_Audio) {
 
   audio->Read(NewReadCB(FROM_HERE, 836, 34830, true));
   message_loop_.Run();
+#else
+  InitializeDemuxerAndExpectPipelineStatus(DEMUXER_ERROR_NO_SUPPORTED_STREAMS);
+#endif
 }
 
 TEST_F(FFmpegDemuxerTest, Read_EAC3_Audio) {
   CreateDemuxer("bear-eac3-only-frag.mp4");
+#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
   InitializeDemuxer();
 
   // Attempt a read from the audio stream and run the message loop until done.
@@ -1162,7 +1179,11 @@ TEST_F(FFmpegDemuxerTest, Read_EAC3_Audio) {
 
   audio->Read(NewReadCB(FROM_HERE, 872, 34830, true));
   message_loop_.Run();
+#else
+  InitializeDemuxerAndExpectPipelineStatus(DEMUXER_ERROR_NO_SUPPORTED_STREAMS);
+#endif
 }
-#endif  // ENABLE_AC3_EAC3_AUDIO_DEMUXING
+
+#endif  // defined(USE_PROPRIETARY_CODECS)
 
 }  // namespace media

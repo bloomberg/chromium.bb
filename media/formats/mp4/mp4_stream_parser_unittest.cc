@@ -46,6 +46,10 @@ MATCHER(AuxInfoUnavailableLog, "") {
   return CONTAINS_STRING(arg, "Aux Info is not available.");
 }
 
+MATCHER_P(ErrorLog, error_string, "") {
+  return CONTAINS_STRING(arg, error_string);
+}
+
 class MP4StreamParserTest : public testing::Test {
  public:
   MP4StreamParserTest()
@@ -300,14 +304,19 @@ TEST_F(MP4StreamParserTest, VideoSamplesStartWithAUDs) {
   ParseMP4File("bear-1280x720-av_with-aud-nalus_frag.mp4", 512);
 }
 
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
 TEST_F(MP4StreamParserTest, HEVC_in_MP4_container) {
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+  bool expect_success = true;
+  EXPECT_MEDIA_LOG(VideoCodecLog("hevc"));
+#else
+  bool expect_success = false;
+  EXPECT_MEDIA_LOG(ErrorLog("Parse unsupported video format hev1"));
+#endif
   InitializeParserAndExpectLiveness(DemuxerStream::LIVENESS_RECORDED);
   scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile("bear-hevc-frag.mp4");
-  EXPECT_MEDIA_LOG(VideoCodecLog("hevc"));
-  EXPECT_TRUE(AppendDataInPieces(buffer->data(), buffer->data_size(), 512));
+  EXPECT_EQ(expect_success,
+            AppendDataInPieces(buffer->data(), buffer->data_size(), 512));
 }
-#endif
 
 TEST_F(MP4StreamParserTest, CENC) {
   // Encrypted test mp4 files have non-zero duration and are treated as
@@ -342,27 +351,43 @@ TEST_F(MP4StreamParserTest, NaturalSizeWithPASP) {
   EXPECT_EQ(gfx::Size(639, 360), video_decoder_config_.natural_size());
 }
 
-#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
 TEST_F(MP4StreamParserTest, DemuxingAC3) {
   std::set<int> audio_object_types;
   audio_object_types.insert(kAC3);
   parser_.reset(new MP4StreamParser(audio_object_types, false));
+
+#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+  bool expect_success = true;
+#else
+  bool expect_success = false;
+  EXPECT_MEDIA_LOG(ErrorLog("Unsupported audio format 0x61632d33 in stsd box"));
+#endif
+
   InitializeParserAndExpectLiveness(DemuxerStream::LIVENESS_RECORDED);
   scoped_refptr<DecoderBuffer> buffer =
       ReadTestDataFile("bear-ac3-only-frag.mp4");
-  EXPECT_TRUE(AppendDataInPieces(buffer->data(), buffer->data_size(), 512));
+  EXPECT_EQ(expect_success,
+            AppendDataInPieces(buffer->data(), buffer->data_size(), 512));
 }
 
 TEST_F(MP4StreamParserTest, DemuxingEAC3) {
   std::set<int> audio_object_types;
   audio_object_types.insert(kEAC3);
   parser_.reset(new MP4StreamParser(audio_object_types, false));
+
+#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+  bool expect_success = true;
+#else
+  bool expect_success = false;
+  EXPECT_MEDIA_LOG(ErrorLog("Unsupported audio format 0x65632d33 in stsd box"));
+#endif
+
   InitializeParserAndExpectLiveness(DemuxerStream::LIVENESS_RECORDED);
   scoped_refptr<DecoderBuffer> buffer =
       ReadTestDataFile("bear-eac3-only-frag.mp4");
-  EXPECT_TRUE(AppendDataInPieces(buffer->data(), buffer->data_size(), 512));
+  EXPECT_EQ(expect_success,
+            AppendDataInPieces(buffer->data(), buffer->data_size(), 512));
 }
-#endif
 
 }  // namespace mp4
 }  // namespace media
