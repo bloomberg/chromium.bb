@@ -1251,10 +1251,12 @@ PasswordForm* PasswordFormManager::FindBestMatchForUpdatePassword(
 
 PasswordForm* PasswordFormManager::FindBestSavedMatch(
     const PasswordForm* form) const {
-  PasswordFormMap::const_iterator it =
-      best_matches_.find(provisionally_saved_form_->username_value);
+  PasswordFormMap::const_iterator it = best_matches_.find(form->username_value);
   if (it != best_matches_.end())
     return it->second.get();
+  if (form->type == autofill::PasswordForm::TYPE_API)
+    // Match Credential API forms only by username.
+    return nullptr;
   if (!form->username_element.empty() || !form->new_password_element.empty())
     return nullptr;
   for (const auto& stored_match : best_matches_) {

@@ -439,9 +439,12 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // Try to find best matched to |form| from |best_matches_| by the rules:
   // 1. If there is an element in |best_matches_| with the same username then
   // return it;
-  // 2. If |form| has no username and there is an element from |best_matches_|
-  // with the same password as in |form| then return it;
-  // 3. Otherwise return nullptr.
+  // 2. If |form| is created with Credential API return nullptr, i.e. we match
+  // Credentials API forms only by username;
+  // 3. If |form| has no |username_element| and no |new_password_element| (i.e.
+  // a form contains only one field which is a password) and there is an element
+  // from |best_matches_| with the same password as in |form| then return it;
+  // 4. Otherwise return nullptr.
   autofill::PasswordForm* FindBestSavedMatch(
       const autofill::PasswordForm* form) const;
 

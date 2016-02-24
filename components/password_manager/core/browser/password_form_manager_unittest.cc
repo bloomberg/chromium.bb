@@ -2925,4 +2925,42 @@ TEST_F(PasswordFormManagerTest, GeneratedVoteUpload) {
   GeneratedVoteUploadTest(true, true);
 }
 
+TEST_F(PasswordFormManagerTest, TestSavingAPIFormsWithSamePassword) {
+  // Turn |observed_form| and |saved_match| to API created forms.
+  observed_form()->username_element.clear();
+  observed_form()->type = autofill::PasswordForm::TYPE_API;
+  saved_match()->username_element.clear();
+  saved_match()->type = autofill::PasswordForm::TYPE_API;
+
+  PasswordFormManager form_manager(password_manager(), client(),
+                                   client()->driver(), *observed_form(), false);
+  SimulateMatchingPhase(&form_manager, RESULT_SAVED_MATCH);
+
+  // User submits new credentials with the same password as in already saved
+  // one.
+  PasswordForm credentials(*observed_form());
+  credentials.username_value =
+      saved_match()->username_value + ASCIIToUTF16("1");
+  credentials.password_value = saved_match()->password_value;
+  credentials.preferred = true;
+
+  form_manager.ProvisionallySave(
+      credentials, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+
+  EXPECT_TRUE(form_manager.IsNewLogin());
+
+  PasswordForm new_credentials;
+  EXPECT_CALL(*mock_store(), AddLogin(_))
+      .WillOnce(SaveArg<0>(&new_credentials));
+
+  form_manager.Save();
+  Mock::VerifyAndClearExpectations(mock_store());
+
+  EXPECT_EQ(saved_match()->username_value + ASCIIToUTF16("1"),
+            new_credentials.username_value);
+  EXPECT_EQ(saved_match()->password_value, new_credentials.password_value);
+  EXPECT_EQ(base::string16(), new_credentials.username_element);
+  EXPECT_EQ(autofill::PasswordForm::TYPE_API, new_credentials.type);
+}
+
 }  // namespace password_manager
