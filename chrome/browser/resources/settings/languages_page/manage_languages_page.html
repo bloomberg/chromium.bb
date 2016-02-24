@@ -14,35 +14,37 @@
   <template>
     <style include="settings-shared"></style>
     <settings-languages languages="{{languages}}"></settings-languages>
-    <div class="settings-box block content">
-      <h2 i18n-content="enabledLanguages"></h2>
-      <div class="list-frame vertical-list">
-        <template is="dom-repeat" items="{{languages.enabledLanguages}}">
-          <div class="list-item">
-            <div class="language-name start"
-                title="[[item.language.nativeDisplayName]]">
-              [[item.language.displayName]]
-            </div>
-            <paper-icon-button icon="clear" on-tap="onRemoveLanguageTap_"
-                hidden$="[[!canRemoveLanguage_(item.language.code, prefs.intl.app_locale.value)]]">
-            </paper-icon-button>
-          </div>
-        </template>
-      </div>
-      <h2 i18n-content="allLanguages"></h2>
-      <div class="list-frame vertical-list">
-        <iron-list items="{{availableLanguages_}}" as="item">
-          <template>
-            <div class="list-item" on-tap="onAddLanguageTap_">
-              <div class="language-name">
-                <span>[[item.displayName]]</span> -
-                <span>[[item.nativeDisplayName]]</span>
+    <div class="settings-box first content">
+      <div class="start">
+        <h2 i18n-content="enabledLanguages"></h2>
+        <div class="list-frame vertical-list">
+          <template is="dom-repeat" items="{{languages.enabledLanguages}}">
+            <div class="list-item">
+              <div class="language-name start"
+                  title="[[item.language.nativeDisplayName]]">
+                [[item.language.displayName]]
               </div>
-              <iron-icon icon="done" hidden$="[[!item.enabled]]">
-              </iron-icon>
+              <paper-icon-button icon="clear" on-tap="onRemoveLanguageTap_"
+                  hidden$="[[!canRemoveLanguage_(item.language.code, prefs.intl.app_locale.value)]]">
+              </paper-icon-button>
             </div>
           </template>
-        </iron-list>
+        </div>
+        <h2 i18n-content="allLanguages"></h2>
+        <div class="list-frame vertical-list">
+          <iron-list items="{{availableLanguages_}}" as="item">
+            <template>
+              <div class="list-item" on-tap="onAddLanguageTap_">
+                <div class="language-name">
+                  <span>[[item.displayName]]</span> -
+                  <span>[[item.nativeDisplayName]]</span>
+                </div>
+                <iron-icon icon="done" hidden$="[[!item.enabled]]">
+                </iron-icon>
+              </div>
+            </template>
+          </iron-list>
+        </div>
       </div>
     </div>
   </template>
