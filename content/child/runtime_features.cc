@@ -142,8 +142,8 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
     WebRuntimeFeatures::enableNetworkInformation(true);
   }
 
-  if (command_line.HasSwitch(switches::kEnableCredentialManagerAPI))
-    WebRuntimeFeatures::enableCredentialManagerAPI(true);
+  if (!base::FeatureList::IsEnabled(features::kCredentialManagementAPI))
+    WebRuntimeFeatures::enableCredentialManagerAPI(false);
 
   if (command_line.HasSwitch(switches::kReducedReferrerGranularity))
     WebRuntimeFeatures::enableReducedReferrerGranularity(true);

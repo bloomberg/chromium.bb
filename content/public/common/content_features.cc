@@ -14,6 +14,11 @@ namespace features {
 const base::Feature kBrotliEncoding{"brotli-encoding",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the credential management API:
+// https://w3c.github.io/webappsec-credential-management/
+const base::Feature kCredentialManagementAPI{"CredentialManagementAPI",
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Downloads resumption will be controllable via a flag until it's enabled
 // permanently. See https://crbug.com/7648
 const base::Feature kDownloadResumption{"DownloadResumption",

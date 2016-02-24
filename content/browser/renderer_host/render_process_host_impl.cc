@@ -1430,7 +1430,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDomAutomationController,
     switches::kEnableBlinkFeatures,
     switches::kEnableBrowserSideNavigation,
-    switches::kEnableCredentialManagerAPI,
     switches::kEnableDisplayList2dCanvas,
     switches::kEnableDistanceFieldText,
     switches::kEnableExperimentalCanvasFeatures,

@@ -1398,7 +1398,7 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(switches::kEnableTabAudioMuting)},
     {"enable-credential-manager-api", IDS_FLAGS_CREDENTIAL_MANAGER_API_NAME,
      IDS_FLAGS_CREDENTIAL_MANAGER_API_DESCRIPTION, kOsAll,
-     SINGLE_VALUE_TYPE(switches::kEnableCredentialManagerAPI)},
+     FEATURE_VALUE_TYPE(features::kCredentialManagementAPI)},
     {"reduced-referrer-granularity",
      IDS_FLAGS_REDUCED_REFERRER_GRANULARITY_NAME,
      IDS_FLAGS_REDUCED_REFERRER_GRANULARITY_DESCRIPTION, kOsAll,

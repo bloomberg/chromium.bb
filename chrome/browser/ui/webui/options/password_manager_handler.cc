@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/webui/options/password_manager_handler.h"
 
 #include "base/bind.h"
-#include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -32,7 +32,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
-#include "content/public/common/content_switches.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -149,8 +149,7 @@ void PasswordManagerHandler::GetLocalizedValues(
   localized_strings->SetBoolean("disableShowPasswords", disable_show_passwords);
   localized_strings->SetBoolean(
       "enableCredentialManagerAPI",
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableCredentialManagerAPI));
+      base::FeatureList::IsEnabled(features::kCredentialManagementAPI));
 }
 
 void PasswordManagerHandler::RegisterMessages() {

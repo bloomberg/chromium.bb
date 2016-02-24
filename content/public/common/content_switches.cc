@@ -324,9 +324,6 @@ const char kEnableLCDText[]                 = "enable-lcd-text";
 // Only valid if GPU rasterization is enabled as well.
 const char kEnableDistanceFieldText[]       = "enable-distance-field-text";
 
-// Enable the experimental Credential Manager JavaScript API.
-const char kEnableCredentialManagerAPI[]    = "enable-credential-manager-api";
-
 // Enable the creation of compositing layers when it would prevent LCD text.
 const char kEnablePreferCompositingToLCDText[] =
     "enable-prefer-compositing-to-lcd-text";

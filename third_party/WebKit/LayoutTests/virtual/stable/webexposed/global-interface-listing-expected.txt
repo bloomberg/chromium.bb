@@ -488,6 +488,17 @@ interface ConvolverNode : AudioNode
     method constructor
     setter buffer
     setter normalize
+interface Credential
+    getter iconURL
+    getter id
+    getter name
+    getter type
+    method constructor
+interface CredentialsContainer
+    method constructor
+    method get
+    method requireUserMediation
+    method store
 interface Crypto
     getter subtle
     method constructor
@@ -1085,6 +1096,10 @@ interface EventTarget
     method constructor
     method dispatchEvent
     method removeEventListener
+interface FederatedCredential : Credential
+    getter protocol
+    getter provider
+    method constructor
 interface File : Blob
     getter lastModified
     getter lastModifiedDate
@@ -3027,6 +3042,7 @@ interface Navigator
     getter appVersion
     getter bluetooth
     getter cookieEnabled
+    getter credentials
     getter doNotTrack
     getter geolocation
     getter hardwareConcurrency
@@ -3192,6 +3208,14 @@ interface OscillatorNode : AudioSourceNode
 interface PageTransitionEvent : Event
     getter persisted
     method constructor
+interface PasswordCredential : Credential
+    getter additionalData
+    getter idName
+    getter passwordName
+    method constructor
+    setter additionalData
+    setter idName
+    setter passwordName
 interface Path2D
     method arc
     method arcTo
