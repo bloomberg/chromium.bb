@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_SETTINGS_API_BUBBLE_HELPER_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_SETTINGS_API_BUBBLE_HELPER_VIEWS_H_
 
-struct AutocompleteMatch;
+#include "components/omnibox/browser/autocomplete_match.h"
+
 class Browser;
 class Profile;
 
@@ -26,7 +27,7 @@ void MaybeShowExtensionControlledHomeNotification(Browser* browser);
 void MaybeShowExtensionControlledSearchNotification(
     Profile* profile,
     content::WebContents* web_contents,
-    const AutocompleteMatch& match);
+    AutocompleteMatch::Type match_type);
 
 // Shows a bubble notifying the user that the new tab page is controlled by an
 // extension. This bubble is shown only the first time the new tab page is shown

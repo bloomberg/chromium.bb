@@ -158,7 +158,7 @@ class OmniboxViewViews
   int GetWidth() const override;
   bool IsImeShowingPopup() const override;
   void ShowImeIfNeeded() override;
-  void OnMatchOpened(const AutocompleteMatch& match) override;
+  void OnMatchOpened(AutocompleteMatch::Type match_type) override;
   int GetOmniboxTextLength() const override;
   void EmphasizeURLComponents() override;
 

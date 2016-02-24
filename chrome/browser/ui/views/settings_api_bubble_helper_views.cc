@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/extensions/extension_message_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/settings_api_bubble_helper_views.h"
 #include "chrome/browser/ui/views/toolbar/app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/home_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
@@ -62,13 +61,13 @@ void MaybeShowExtensionControlledHomeNotification(Browser* browser) {
 void MaybeShowExtensionControlledSearchNotification(
     Profile* profile,
     content::WebContents* web_contents,
-    const AutocompleteMatch& match) {
+    AutocompleteMatch::Type match_type) {
 #if !defined(OS_WIN)
   return;
 #endif
 
-  if (AutocompleteMatch::IsSearchType(match.type) &&
-      match.type != AutocompleteMatchType::SEARCH_OTHER_ENGINE) {
+  if (AutocompleteMatch::IsSearchType(match_type) &&
+      match_type != AutocompleteMatchType::SEARCH_OTHER_ENGINE) {
     Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
     ToolbarView* toolbar =
         BrowserView::GetBrowserViewForBrowser(browser)->toolbar();

@@ -226,8 +226,8 @@ class OmniboxView {
   // only ever return true on mobile ports.
   virtual bool IsIndicatingQueryRefinement() const;
 
-  // Called after a |match| has been opened.
-  virtual void OnMatchOpened(const AutocompleteMatch& match);
+  // Called after a match has been opened.
+  virtual void OnMatchOpened(AutocompleteMatch::Type match_type);
 
   // Returns |text| with any leading javascript schemas stripped.
   static base::string16 StripJavascriptSchemas(const base::string16& text);
