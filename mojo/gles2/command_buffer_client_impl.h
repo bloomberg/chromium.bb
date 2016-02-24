@@ -41,7 +41,6 @@ class CommandBufferClientImpl
   explicit CommandBufferClientImpl(
       CommandBufferDelegate* delegate,
       const std::vector<int32_t>& attribs,
-      const MojoAsyncWaiter* async_waiter,
       mojo::ScopedMessagePipeHandle command_buffer_handle);
   ~CommandBufferClientImpl() override;
 
@@ -115,8 +114,6 @@ class CommandBufferClientImpl
 
   uint64_t next_fence_sync_release_;
   uint64_t flushed_fence_sync_release_;
-
-  const MojoAsyncWaiter* async_waiter_;
 };
 
 }  // gles2

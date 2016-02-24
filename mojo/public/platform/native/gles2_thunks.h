@@ -22,8 +22,7 @@ struct MojoGLES2ControlThunks {
   MojoGLES2Context (*GLES2CreateContext)(MojoHandle handle,
                                          const int32_t* attrib_list,
                                          MojoGLES2ContextLost lost_callback,
-                                         void* closure,
-                                         const MojoAsyncWaiter* async_waiter);
+                                         void* closure);
   void (*GLES2DestroyContext)(MojoGLES2Context context);
   void (*GLES2MakeCurrent)(MojoGLES2Context context);
   void (*GLES2SwapBuffers)();

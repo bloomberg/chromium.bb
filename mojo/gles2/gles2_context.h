@@ -31,7 +31,6 @@ class GLES2Context : public CommandBufferDelegate,
                      public MojoGLES2ContextPrivate {
  public:
   explicit GLES2Context(const std::vector<int32_t>& attribs,
-                        const MojoAsyncWaiter* async_waiter,
                         mojo::ScopedMessagePipeHandle command_buffer_handle,
                         MojoGLES2ContextLost lost_callback,
                         void* closure);
