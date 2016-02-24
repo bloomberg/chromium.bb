@@ -62,6 +62,8 @@ class CastTransportSenderIPC
       const media::cast::RtpReceiverStatistics* rtp_receiver_statistics)
       override;
 
+  void SetOptions(const base::DictionaryValue& options) final {}
+
   void OnNotifyStatusChange(
       media::cast::CastTransportStatus status);
   void OnRawEvents(const std::vector<media::cast::PacketEvent>& packet_events,

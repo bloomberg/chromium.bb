@@ -54,44 +54,12 @@ class UdpTransport;
 
 class CastTransportSenderImpl : public CastTransportSender {
  public:
-  // |external_transport| is only used for testing.
-  // |raw_events_callback|: Raw events will be returned on this callback
-  // which will be invoked every |raw_events_callback_interval|.
-  // This can be a null callback, i.e. if user is not interested in raw events.
-  // |raw_events_callback_interval|: This can be |base::TimeDelta()| if
-  // |raw_events_callback| is a null callback.
-  // |options| contains optional settings for the transport, possible
-  // keys are:
-  //   "DSCP" (value ignored)
-  //       - Turns DSCP on (higher IP Precedence and Type of Service).
-  //   "disable_non_blocking_io" (value ignored)
-  //       - Windows only.  Turns off non-blocking IO for the socket.
-  //         Note: Non-blocking IO is, by default, enabled on all platforms.
-  //   "pacer_target_burst_size": int
-  //        - Specifies how many packets to send per 10 ms ideally.
-  //   "pacer_max_burst_size": int
-  //        - Specifies how many pakcets to send per 10 ms, maximum.
-  //   "send_buffer_min_size": int
-  //        - Specifies the minimum socket send buffer size.
-  //   "disable_wifi_scan" (value ignored)
-  //        - Disable wifi scans while streaming.
-  //   "media_streaming_mode" (value ignored)
-  //        - Turn media streaming mode on.
-  // Note, these options may be ignored on some platforms.
-  // TODO(hubbe): Too many callbacks, replace with an interface.
-  // http://crbug.com/557477
   CastTransportSenderImpl(
-      net::NetLog* net_log,
-      base::TickClock* clock,
-      const net::IPEndPoint& local_end_point,
-      const net::IPEndPoint& remote_end_point,
-      scoped_ptr<base::DictionaryValue> options,
-      const CastTransportStatusCallback& status_callback,
-      const BulkRawEventsCallback& raw_events_callback,
-      base::TimeDelta raw_events_callback_interval,
-      const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner,
-      const PacketReceiverCallback& packet_callback,
-      PacketSender* external_transport);
+      base::TickClock* clock,  // Owned by the caller.
+      base::TimeDelta logging_flush_interval,
+      scoped_ptr<Client> client,
+      scoped_ptr<PacketSender> transport,
+      const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner);
 
   ~CastTransportSenderImpl() final;
 
@@ -114,6 +82,20 @@ class CastTransportSenderImpl : public CastTransportSender {
   void ResendFrameForKickstart(uint32_t ssrc, uint32_t frame_id) final;
 
   PacketReceiverCallback PacketReceiverForTesting() final;
+
+  // Possible keys of |options| handled here are:
+  //   "pacer_target_burst_size": int
+  //        - Specifies how many packets to send per 10 ms ideally.
+  //   "pacer_max_burst_size": int
+  //        - Specifies how many pakcets to send per 10 ms, maximum.
+  //   "send_buffer_min_size": int
+  //        - Specifies the minimum socket send buffer size.
+  //   "disable_wifi_scan" (value ignored)
+  //        - Disable wifi scans while streaming.
+  //   "media_streaming_mode" (value ignored)
+  //        - Turn media streaming mode on.
+  // Note, these options may be ignored on some platforms.
+  void SetOptions(const base::DictionaryValue& options) final;
 
   // CastTransportReceiver implementation.
   void AddValidSsrc(uint32_t ssrc) final;
@@ -143,8 +125,8 @@ class CastTransportSenderImpl : public CastTransportSender {
                      bool cancel_rtx_if_not_in_list,
                      const DedupInfo& dedup_info);
 
-  // If |raw_events_callback_| is non-null, calls it with events collected
-  // in |recent_frame_events_| and |recent_packet_events_| since last call.
+  // If |logging_flush_interval| is set, this is called at approximate periodic
+  // intervals.
   void SendRawEvents();
 
   // Called when a packet is received.
@@ -159,17 +141,17 @@ class CastTransportSenderImpl : public CastTransportSender {
                              const RtcpCastMessageCallback& cast_message_cb,
                              const RtcpCastMessage& cast_message);
 
-  base::TickClock* clock_;  // Not owned by this class.
-  CastTransportStatusCallback status_callback_;
-  scoped_refptr<base::SingleThreadTaskRunner> transport_task_runner_;
+  base::TickClock* const clock_;  // Not owned by this class.
+  const base::TimeDelta logging_flush_interval_;
+  const scoped_ptr<Client> transport_client_;
+  const scoped_ptr<PacketSender> transport_;
+  const scoped_refptr<base::SingleThreadTaskRunner> transport_task_runner_;
 
-  // FrameEvents and PacketEvents pending delivery via |raw_events_callback_|.
-  // Do not add elements to these when |raw_events_callback_.is_null()|.
+  // FrameEvents and PacketEvents pending delivery via raw events callback.
+  // Do not add elements to these when |logging_flush_interval| is
+  // |base::TimeDelta()|.
   std::vector<FrameEvent> recent_frame_events_;
   std::vector<PacketEvent> recent_packet_events_;
-
-  // Interface to a UDP socket.
-  scoped_ptr<UdpTransport> transport_;
 
   // Packet sender that performs pacing.
   PacedSender pacer_;
@@ -189,9 +171,6 @@ class CastTransportSenderImpl : public CastTransportSender {
   TransportEncryptionHandler audio_encryptor_;
   TransportEncryptionHandler video_encryptor_;
 
-  BulkRawEventsCallback raw_events_callback_;
-  base::TimeDelta raw_events_callback_interval_;
-
   // Right after a frame is sent we record the number of bytes sent to the
   // socket. We record the corresponding bytes sent for the most recent ACKed
   // audio packet.
@@ -200,10 +179,9 @@ class CastTransportSenderImpl : public CastTransportSender {
   // Packets that don't match these ssrcs are ignored.
   std::set<uint32_t> valid_ssrcs_;
 
-  // Called with incoming packets. (Unless they match the
-  // channels created by Initialize{Audio,Video}.
-  PacketReceiverCallback packet_callback_;
-
+  // While non-null, global WiFi behavior modifications are in effect. This is
+  // used, for example, to turn off WiFi scanning that tends to interfere with
+  // the reliability of UDP packet transmission.
   scoped_ptr<net::ScopedWifiOptions> wifi_options_autoreset_;
 
   base::WeakPtrFactory<CastTransportSenderImpl> weak_factory_;

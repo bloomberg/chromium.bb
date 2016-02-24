@@ -45,6 +45,7 @@ class MockCastTransportSender : public CastTransportSender {
                     base::TimeDelta target_delay,
                     const ReceiverRtcpEventSubscriber::RtcpEvents* rtcp_events,
                     const RtpReceiverStatistics* rtp_receiver_statistics));
+  MOCK_METHOD1(SetOptions, void(const base::DictionaryValue& options));
 };
 
 }  // namespace cast

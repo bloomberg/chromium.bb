@@ -33,6 +33,7 @@ namespace cast {
 class CastEnvironment;
 class CastReceiver;
 class UdpTransport;
+class InProcessReceiver;
 
 // Common base functionality for an in-process Cast receiver.  This is meant to
 // be subclassed with the OnAudioFrame() and OnVideoFrame() methods implemented,
@@ -40,6 +41,23 @@ class UdpTransport;
 // rather than on the boilerplate "glue" code.
 class InProcessReceiver {
  public:
+  class TransportClient : public CastTransportSender::Client {
+   public:
+    explicit TransportClient(InProcessReceiver* in_process_receiver)
+        : in_process_receiver_(in_process_receiver) {}
+
+    void OnStatusChanged(CastTransportStatus status) final;
+    void OnLoggingEventsReceived(
+        scoped_ptr<std::vector<FrameEvent>> frame_events,
+        scoped_ptr<std::vector<PacketEvent>> packet_events) final {}
+    void ProcessRtpPacket(scoped_ptr<Packet> packet) final;
+
+   private:
+    InProcessReceiver* in_process_receiver_;
+
+    DISALLOW_COPY_AND_ASSIGN(TransportClient);
+  };
+
   // Construct a receiver with the given configuration.  |remote_end_point| can
   // be left empty, if the transport should automatically mate with the first
   // remote sender it encounters.

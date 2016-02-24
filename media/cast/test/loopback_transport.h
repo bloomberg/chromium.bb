@@ -36,6 +36,11 @@ class LoopBackTransport : public PacketSender {
 
   int64_t GetBytesSent() final;
 
+  void StartReceiving(
+      const PacketReceiverCallbackWithStatus& packet_receiver) final {}
+
+  void StopReceiving() final {}
+
   // Initiailize this loopback transport.
   // Establish a flow of packets from |pipe| to |packet_receiver|.
   //

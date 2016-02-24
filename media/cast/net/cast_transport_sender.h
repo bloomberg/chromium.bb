@@ -25,6 +25,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/tick_clock.h"
+#include "base/values.h"
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/net/cast_transport_defines.h"
@@ -42,6 +43,7 @@ class NetLog;
 
 namespace media {
 namespace cast {
+
 struct RtpReceiverStatistics;
 struct RtcpTimeData;
 
@@ -54,19 +56,36 @@ typedef base::Callback<void(scoped_ptr<std::vector<FrameEvent>>,
                             scoped_ptr<std::vector<PacketEvent>>)>
     BulkRawEventsCallback;
 
+// TODO(xjz): Rename CastTransportSender as it also deals with receiving
+// packets. http://crbug.com/589157.
 // The application should only trigger this class from the transport thread.
 class CastTransportSender : public base::NonThreadSafe {
  public:
+  // Interface used for receiving status updates, raw events, and RTP packets
+  // from CastTransportSender.
+  class Client {
+   public:
+    virtual ~Client(){};
+
+    // Audio and Video transport status change is reported on this callback.
+    virtual void OnStatusChanged(CastTransportStatus status) = 0;
+
+    // Raw events will be invoked on this callback periodically, according to
+    // the configured logging flush interval passed to
+    // CastTransportSender::Create().
+    virtual void OnLoggingEventsReceived(
+        scoped_ptr<std::vector<FrameEvent>> frame_events,
+        scoped_ptr<std::vector<PacketEvent>> packet_events) = 0;
+
+    // Called to pass RTP packets to the Client.
+    virtual void ProcessRtpPacket(scoped_ptr<Packet> packet) = 0;
+  };
+
   static scoped_ptr<CastTransportSender> Create(
-      net::NetLog* net_log,
-      base::TickClock* clock,
-      const net::IPEndPoint& local_end_point,
-      const net::IPEndPoint& remote_end_point,
-      scoped_ptr<base::DictionaryValue> options,
-      const CastTransportStatusCallback& status_callback,
-      const BulkRawEventsCallback& raw_events_callback,
-      base::TimeDelta raw_events_callback_interval,
-      const PacketReceiverCallback& packet_callback,
+      base::TickClock* clock,  // Owned by the caller.
+      base::TimeDelta logging_flush_interval,
+      scoped_ptr<Client> client,
+      scoped_ptr<PacketSender> transport,
       const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner);
 
   virtual ~CastTransportSender() {}
@@ -122,6 +141,9 @@ class CastTransportSender : public base::NonThreadSafe {
       base::TimeDelta target_delay,
       const ReceiverRtcpEventSubscriber::RtcpEvents* rtcp_events,
       const RtpReceiverStatistics* rtp_receiver_statistics) = 0;
+
+  // Set options for the PacedSender and Wifi.
+  virtual void SetOptions(const base::DictionaryValue& options) = 0;
 };
 
 }  // namespace cast

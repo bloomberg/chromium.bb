@@ -16,6 +16,7 @@
 #include "media/cast/cast_sender.h"
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/net/cast_transport_sender.h"
+#include "media/cast/net/udp_transport.h"
 
 namespace content {
 class PowerSaveBlocker;
@@ -30,18 +31,13 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
  private:
   ~CastTransportHostFilter() override;
 
-  void NotifyStatusChange(int32_t channel_id,
-                          media::cast::CastTransportStatus result);
-  void SendRawEvents(
-      int32_t channel_id,
-      scoped_ptr<std::vector<media::cast::FrameEvent>> frame_events,
-      scoped_ptr<std::vector<media::cast::PacketEvent>> packet_events);
+  // Status callback to create UdpTransport.
+  void OnStatusChanged(int32_t channel_id,
+                       media::cast::CastTransportStatus status);
   void SendRtt(int32_t channel_id, uint32_t ssrc, base::TimeDelta rtt);
   void SendCastMessage(int32_t channel_id,
                        uint32_t ssrc,
                        const media::cast::RtcpCastMessage& cast_message);
-  void ReceivedPacket(int32_t channel_id,
-                      scoped_ptr<media::cast::Packet> packet);
 
   // BrowserMessageFilter implementation.
   bool OnMessageReceived(const IPC::Message& message) override;

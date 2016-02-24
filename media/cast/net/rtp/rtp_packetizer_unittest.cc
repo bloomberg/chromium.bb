@@ -80,6 +80,11 @@ class TestRtpPacketTransport : public PacketSender {
 
   int64_t GetBytesSent() final { return 0; }
 
+  void StartReceiving(
+      const PacketReceiverCallbackWithStatus& packet_receiver) final {}
+
+  void StopReceiving() final {}
+
   size_t number_of_packets_received() const { return packets_sent_; }
 
   void set_expected_number_of_packets(size_t expected_number_of_packets) {

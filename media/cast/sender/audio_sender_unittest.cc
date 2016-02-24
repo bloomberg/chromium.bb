@@ -35,6 +35,21 @@ void SaveOperationalStatus(OperationalStatus* out_status,
   *out_status = in_status;
 }
 
+class TransportClient : public CastTransportSender::Client {
+ public:
+  TransportClient() {}
+
+  void OnStatusChanged(CastTransportStatus status) final {
+    EXPECT_EQ(TRANSPORT_AUDIO_INITIALIZED, status);
+  };
+  void OnLoggingEventsReceived(
+      scoped_ptr<std::vector<FrameEvent>> frame_events,
+      scoped_ptr<std::vector<PacketEvent>> packet_events) final{};
+  void ProcessRtpPacket(scoped_ptr<Packet> packet) final{};
+
+  DISALLOW_COPY_AND_ASSIGN(TransportClient);
+};
+
 }  // namespace
 
 class TestPacketSender : public PacketSender {
@@ -57,6 +72,11 @@ class TestPacketSender : public PacketSender {
   }
 
   int64_t GetBytesSent() final { return 0; }
+
+  void StartReceiving(
+      const PacketReceiverCallbackWithStatus& packet_receiver) final {}
+
+  void StopReceiving() final {}
 
   int number_of_rtp_packets() const { return number_of_rtp_packets_; }
 
@@ -86,20 +106,11 @@ class AudioSenderTest : public ::testing::Test {
     audio_config_.bitrate = kDefaultAudioEncoderBitrate;
     audio_config_.rtp_payload_type = 127;
 
-    net::IPEndPoint dummy_endpoint;
-
-    transport_sender_.reset(new CastTransportSenderImpl(
-        NULL,
-        testing_clock_,
-        net::IPEndPoint(),
-        dummy_endpoint,
-        make_scoped_ptr(new base::DictionaryValue),
-        base::Bind(&UpdateCastTransportStatus),
-        BulkRawEventsCallback(),
-        base::TimeDelta(),
-        task_runner_,
-        PacketReceiverCallback(),
-        &transport_));
+    transport_ = new TestPacketSender();
+    transport_sender_.reset(
+        new CastTransportSenderImpl(testing_clock_, base::TimeDelta(),
+                                    make_scoped_ptr(new TransportClient()),
+                                    make_scoped_ptr(transport_), task_runner_));
     OperationalStatus operational_status = STATUS_UNINITIALIZED;
     audio_sender_.reset(new AudioSender(
         cast_environment_,
@@ -112,12 +123,8 @@ class AudioSenderTest : public ::testing::Test {
 
   ~AudioSenderTest() override {}
 
-  static void UpdateCastTransportStatus(CastTransportStatus status) {
-    EXPECT_EQ(TRANSPORT_AUDIO_INITIALIZED, status);
-  }
-
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
-  TestPacketSender transport_;
+  TestPacketSender* transport_;               // Owned by CastTransportSender.
   scoped_ptr<CastTransportSenderImpl> transport_sender_;
   scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
   scoped_ptr<AudioSender> audio_sender_;
@@ -135,8 +142,8 @@ TEST_F(AudioSenderTest, Encode20ms) {
 
   audio_sender_->InsertAudio(std::move(bus), testing_clock_->NowTicks());
   task_runner_->RunTasks();
-  EXPECT_LE(1, transport_.number_of_rtp_packets());
-  EXPECT_LE(1, transport_.number_of_rtcp_packets());
+  EXPECT_LE(1, transport_->number_of_rtp_packets());
+  EXPECT_LE(1, transport_->number_of_rtcp_packets());
 }
 
 TEST_F(AudioSenderTest, RtcpTimer) {
@@ -155,8 +162,8 @@ TEST_F(AudioSenderTest, RtcpTimer) {
       base::TimeDelta::FromMilliseconds(1 + kRtcpReportIntervalMs * 3 / 2);
   testing_clock_->Advance(max_rtcp_timeout);
   task_runner_->RunTasks();
-  EXPECT_LE(1, transport_.number_of_rtp_packets());
-  EXPECT_LE(1, transport_.number_of_rtcp_packets());
+  EXPECT_LE(1, transport_->number_of_rtp_packets());
+  EXPECT_LE(1, transport_->number_of_rtcp_packets());
 }
 
 }  // namespace cast

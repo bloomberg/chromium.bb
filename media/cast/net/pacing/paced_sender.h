@@ -131,6 +131,13 @@ class PacedSender : public PacedPacketSender,
   bool SendRtcpPacket(uint32_t ssrc, PacketRef packet) final;
   void CancelSendingPacket(const PacketKey& packet_key) final;
 
+  void SetTargetBurstSize(int burst_size) {
+    target_burst_size_ = current_max_burst_size_ = next_max_burst_size_ =
+        next_next_max_burst_size_ = burst_size;
+  }
+
+  void SetMaxBurstSize(int burst_size) { max_burst_size_ = burst_size; }
+
  private:
   // Actually sends the packets to the transport.
   void SendStoredPackets();

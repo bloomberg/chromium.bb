@@ -126,6 +126,8 @@ typedef base::Callback<void(scoped_ptr<Packet> packet)> PacketReceiverCallback;
 typedef base::Callback<bool(scoped_ptr<Packet> packet)>
     PacketReceiverCallbackWithStatus;
 
+// TODO(xjz): Rename PacketSender as it also deals with receiving packets.
+// http://crbug.com/589157.
 class PacketSender {
  public:
   // Send a packet to the network. Returns false if the network is blocked
@@ -137,6 +139,13 @@ class PacketSender {
 
   // Returns the number of bytes ever sent.
   virtual int64_t GetBytesSent() = 0;
+
+  // Start receiving packets. Pakets are submitted to |packet_receiver|.
+  virtual void StartReceiving(
+      const PacketReceiverCallbackWithStatus& packet_receiver) = 0;
+
+  // Stop receiving packets.
+  virtual void StopReceiving() = 0;
 
   virtual ~PacketSender() {}
 };

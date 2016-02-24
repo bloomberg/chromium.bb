@@ -23,6 +23,19 @@ using media::cast::UdpTransport;
 namespace media {
 namespace cast {
 
+void InProcessReceiver::TransportClient::OnStatusChanged(
+    CastTransportStatus status) {
+  LOG_IF(ERROR, status == media::cast::TRANSPORT_SOCKET_ERROR)
+      << "Transport socket error occurred.  InProcessReceiver is likely "
+         "dead.";
+  VLOG(1) << "CastTransportStatus is now " << status;
+}
+
+void InProcessReceiver::TransportClient::ProcessRtpPacket(
+    scoped_ptr<Packet> packet) {
+  in_process_receiver_->ReceivePacket(std::move(packet));
+}
+
 InProcessReceiver::InProcessReceiver(
     const scoped_refptr<CastEnvironment>& cast_environment,
     const net::IPEndPoint& local_end_point,
@@ -63,8 +76,8 @@ void InProcessReceiver::Stop() {
 
 void InProcessReceiver::StopOnMainThread(base::WaitableEvent* event) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  cast_receiver_.reset(NULL);
-  transport_.reset(NULL);
+  cast_receiver_.reset(nullptr);
+  transport_.reset(nullptr);
   weak_factory_.InvalidateWeakPtrs();
   event->Signal();
 }
@@ -81,17 +94,13 @@ void InProcessReceiver::StartOnMainThread() {
   DCHECK(!transport_ && !cast_receiver_);
 
   transport_ = CastTransportSender::Create(
-      NULL,
-      cast_environment_->Clock(),
-      local_end_point_,
-      remote_end_point_,
-      scoped_ptr<base::DictionaryValue>(new base::DictionaryValue),
-      base::Bind(&InProcessReceiver::UpdateCastTransportStatus,
-                 base::Unretained(this)),
-      BulkRawEventsCallback(),
-      base::TimeDelta(),
-      base::Bind(&InProcessReceiver::ReceivePacket,
-                 base::Unretained(this)),
+      cast_environment_->Clock(), base::TimeDelta(),
+      make_scoped_ptr(new InProcessReceiver::TransportClient(this)),
+      make_scoped_ptr(new UdpTransport(
+          nullptr, cast_environment_->GetTaskRunner(CastEnvironment::MAIN),
+          local_end_point_, remote_end_point_,
+          base::Bind(&InProcessReceiver::UpdateCastTransportStatus,
+                     base::Unretained(this)))),
       cast_environment_->GetTaskRunner(CastEnvironment::MAIN));
 
   cast_receiver_ = CastReceiver::Create(

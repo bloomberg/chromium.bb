@@ -16,7 +16,46 @@ namespace {
 // How often to send raw events.
 const int kSendRawEventsIntervalSecs = 1;
 
+class TransportClient : public media::cast::CastTransportSender::Client {
+ public:
+  TransportClient(int32_t channel_id,
+                  cast::CastTransportHostFilter* cast_transport_host_filter)
+      : channel_id_(channel_id),
+        cast_transport_host_filter_(cast_transport_host_filter) {}
+
+  void OnStatusChanged(media::cast::CastTransportStatus status) final;
+  void OnLoggingEventsReceived(
+      scoped_ptr<std::vector<media::cast::FrameEvent>> frame_events,
+      scoped_ptr<std::vector<media::cast::PacketEvent>> packet_events) final;
+  void ProcessRtpPacket(scoped_ptr<media::cast::Packet> packet) final;
+
+ private:
+  const int32_t channel_id_;
+  cast::CastTransportHostFilter* const cast_transport_host_filter_;
+
+  DISALLOW_COPY_AND_ASSIGN(TransportClient);
+};
+
+void TransportClient::OnStatusChanged(media::cast::CastTransportStatus status) {
+  cast_transport_host_filter_->Send(
+      new CastMsg_NotifyStatusChange(channel_id_, status));
 }
+
+void TransportClient::OnLoggingEventsReceived(
+    scoped_ptr<std::vector<media::cast::FrameEvent>> frame_events,
+    scoped_ptr<std::vector<media::cast::PacketEvent>> packet_events) {
+  if (frame_events->empty() && packet_events->empty())
+    return;
+  cast_transport_host_filter_->Send(
+      new CastMsg_RawEvents(channel_id_, *packet_events, *frame_events));
+}
+
+void TransportClient::ProcessRtpPacket(scoped_ptr<media::cast::Packet> packet) {
+  cast_transport_host_filter_->Send(
+      new CastMsg_ReceivedPacket(channel_id_, *packet));
+}
+
+}  // namespace
 
 namespace cast {
 
@@ -25,6 +64,12 @@ CastTransportHostFilter::CastTransportHostFilter()
       weak_factory_(this) {}
 
 CastTransportHostFilter::~CastTransportHostFilter() {}
+
+void CastTransportHostFilter::OnStatusChanged(
+    int32_t channel_id,
+    media::cast::CastTransportStatus status) {
+  Send(new CastMsg_NotifyStatusChange(channel_id, status));
+}
 
 bool CastTransportHostFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
@@ -47,27 +92,6 @@ bool CastTransportHostFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void CastTransportHostFilter::ReceivedPacket(
-    int32_t channel_id,
-    scoped_ptr<media::cast::Packet> packet) {
-  Send(new CastMsg_ReceivedPacket(channel_id, *packet));
-}
-
-void CastTransportHostFilter::NotifyStatusChange(
-    int32_t channel_id,
-    media::cast::CastTransportStatus status) {
-  Send(new CastMsg_NotifyStatusChange(channel_id, status));
-}
-
-void CastTransportHostFilter::SendRawEvents(
-    int32_t channel_id,
-    scoped_ptr<std::vector<media::cast::FrameEvent>> frame_events,
-    scoped_ptr<std::vector<media::cast::PacketEvent>> packet_events) {
-  if (frame_events->empty() && packet_events->empty())
-    return;
-  Send(new CastMsg_RawEvents(channel_id, *packet_events, *frame_events));
 }
 
 void CastTransportHostFilter::SendRtt(int32_t channel_id,
@@ -100,24 +124,19 @@ void CastTransportHostFilter::OnNew(int32_t channel_id,
     id_map_.Remove(channel_id);
   }
 
+  scoped_ptr<media::cast::UdpTransport> udp_transport(
+      new media::cast::UdpTransport(
+          g_browser_process->net_log(), base::ThreadTaskRunnerHandle::Get(),
+          local_end_point, remote_end_point,
+          base::Bind(&CastTransportHostFilter::OnStatusChanged,
+                     weak_factory_.GetWeakPtr(), channel_id)));
+  udp_transport->SetUdpOptions(options);
   scoped_ptr<media::cast::CastTransportSender> sender =
       media::cast::CastTransportSender::Create(
-          g_browser_process->net_log(),
-          &clock_,
-          local_end_point,
-          remote_end_point,
-          make_scoped_ptr(options.DeepCopy()),
-          base::Bind(&CastTransportHostFilter::NotifyStatusChange,
-                     weak_factory_.GetWeakPtr(),
-                     channel_id),
-          base::Bind(&CastTransportHostFilter::SendRawEvents,
-                     weak_factory_.GetWeakPtr(),
-                     channel_id),
-          base::TimeDelta::FromSeconds(kSendRawEventsIntervalSecs),
-          base::Bind(&CastTransportHostFilter::ReceivedPacket,
-                     weak_factory_.GetWeakPtr(),
-                     channel_id),
-          base::ThreadTaskRunnerHandle::Get());
+          &clock_, base::TimeDelta::FromSeconds(kSendRawEventsIntervalSecs),
+          make_scoped_ptr(new TransportClient(channel_id, this)),
+          std::move(udp_transport), base::ThreadTaskRunnerHandle::Get());
+  sender->SetOptions(options);
   id_map_.AddWithID(sender.release(), channel_id);
 }
 
@@ -263,6 +282,5 @@ void CastTransportHostFilter::OnSendRtcpFromRtpReceiver(
         << "on non-existing channel";
   }
 }
-
 
 }  // namespace cast

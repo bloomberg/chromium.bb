@@ -66,14 +66,14 @@ TEST(UdpTransport, SendAndReceive) {
                               message_loop.task_runner(),
                               free_local_port1,
                               free_local_port2,
-                              65536,
                               base::Bind(&UpdateCastTransportStatus));
+  send_transport.SetSendBufferSize(65536);
   UdpTransport recv_transport(NULL,
                               message_loop.task_runner(),
                               free_local_port2,
                               net::IPEndPoint(empty_addr_number, 0),
-                              65536,
                               base::Bind(&UpdateCastTransportStatus));
+  recv_transport.SetSendBufferSize(65536);
 
   Packet packet;
   packet.push_back('t');

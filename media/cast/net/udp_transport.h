@@ -11,10 +11,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/net/cast_transport_sender.h"
+#include "media/cast/net/pacing/paced_sender.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/udp/diff_serv_code_point.h"
@@ -44,17 +46,34 @@ class UdpTransport : public PacketSender {
       const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_proxy,
       const net::IPEndPoint& local_end_point,
       const net::IPEndPoint& remote_end_point,
-      int32_t send_buffer_size,
       const CastTransportStatusCallback& status_callback);
   ~UdpTransport() final;
 
   // Start receiving packets. Packets are submitted to |packet_receiver|.
-  void StartReceiving(const PacketReceiverCallbackWithStatus& packet_receiver);
-  void StopReceiving();
+  void StartReceiving(
+      const PacketReceiverCallbackWithStatus& packet_receiver) final;
+  void StopReceiving() final;
 
   // Set a new DSCP value to the socket. The value will be set right before
   // the next send.
   void SetDscp(net::DiffServCodePoint dscp);
+
+  // Set UdpTransport options.
+  // Possible keys are:
+  //   "pacer_max_burst_size": int
+  //        - Specifies how many pakcets to send per 10 ms, maximum.
+  //   "send_buffer_min_size": int
+  //        - Specifies the minimum socket send buffer size.
+  //   "DSCP" (value ignored)
+  //       - Turns DSCP on (higher IP Precedence and Type of Service).
+  //   "disable_non_blocking_io" (value ignored)
+  //       - Windows only.  Turns off non-blocking IO for the socket.
+  //         Note: Non-blocking IO is, by default, enabled on all platforms.
+  void SetUdpOptions(const base::DictionaryValue& options);
+
+  // This has to be called before |StartReceiving()| to change the
+  // |send_buffer_size_|. Calling |SetUdpOptions()| will automatically call it.
+  void SetSendBufferSize(int32_t send_buffer_size);
 
 #if defined(OS_WIN)
   // Switch to use non-blocking IO. Must be called before StartReceiving().

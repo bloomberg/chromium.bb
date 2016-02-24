@@ -47,6 +47,11 @@ class TestPacketSender : public PacketSender {
 
   int64_t GetBytesSent() final { return bytes_sent_; }
 
+  void StartReceiving(
+      const PacketReceiverCallbackWithStatus& packet_receiver) final {}
+
+  void StopReceiving() final {}
+
   void AddExpectedSize(int expected_packet_size, int repeat_count) {
     for (int i = 0; i < repeat_count; ++i) {
       expected_packet_size_.push_back(expected_packet_size);
