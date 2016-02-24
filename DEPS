@@ -501,6 +501,9 @@ deps_os = {
     'src/third_party/ub-uiautomator/lib':
       Var('chromium_git') + '/chromium/third_party/ub-uiautomator.git' + '@' + '00270549ce3161ae72ceb24712618ea28b4f9434',
 
+    'src/third_party/leakcanary/src':
+      Var('chromium_git') + '/external/github.com/square/leakcanary.git' + '@' + '608ded739e036a3aa69db47ac43777dcee506f8e',
+
     'src/third_party/lss':
       Var('chromium_git') + '/external/linux-syscall-support/lss.git' + '@' + Var('lss_revision'),
 
