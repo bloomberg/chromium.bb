@@ -14,9 +14,11 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/extensions/browser_extension_window_controller.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bubble_controller.h"
+#import "chrome/browser/ui/cocoa/exclusive_access_bubble_window_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
@@ -523,6 +525,10 @@ class Command;
 // Adds or removes the tab strip and toolbar from the current window. The
 // window must be in immersive or AppKit Fullscreen.
 - (void)updateFullscreenWithToolbar:(BOOL)withToolbar;
+
+// Exits extension fullscreen if we're currently in the mode. Returns YES
+// if we exited fullscreen.
+- (BOOL)exitExtensionFullscreenIfPossible;
 
 // Updates the contents of the fullscreen exit bubble with |url| and
 // |bubbleType|.

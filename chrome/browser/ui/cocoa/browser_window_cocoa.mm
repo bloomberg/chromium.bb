@@ -735,8 +735,17 @@ bool BrowserWindowCocoa::PreHandleKeyboardEvent(
 
 void BrowserWindowCocoa::HandleKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
-  if ([BrowserWindowUtils shouldHandleKeyboardEvent:event])
-    [BrowserWindowUtils handleKeyboardEvent:event.os_event inWindow:window()];
+  if ([BrowserWindowUtils shouldHandleKeyboardEvent:event]) {
+    if (![BrowserWindowUtils handleKeyboardEvent:event.os_event
+                                        inWindow:window()]) {
+
+      // TODO(spqchan): This is a temporary fix for exit extension fullscreen.
+      // A priority system for exiting extension fullscreen when there is a
+      // conflict is being experimented. See Issue 536047.
+      if (event.windowsKeyCode == ui::VKEY_ESCAPE)
+        [controller_ exitExtensionFullscreenIfPossible];
+    }
+  }
 }
 
 void BrowserWindowCocoa::CutCopyPaste(int command_id) {

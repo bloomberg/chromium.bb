@@ -1981,6 +1981,16 @@ willAnimateFromState:(BookmarkBar::State)oldState
   [self showFullscreenExitBubbleIfNecessary];
 }
 
+- (BOOL)exitExtensionFullscreenIfPossible {
+  if (browser_->exclusive_access_manager()
+          ->fullscreen_controller()
+          ->IsExtensionFullscreenOrPending()) {
+    browser_->extension_window_controller()->SetFullscreenMode(NO, GURL());
+    return YES;
+  }
+  return NO;
+}
+
 - (void)setFullscreenToolbarHidden:(BOOL)shouldHide {
   if (shouldHideFullscreenToolbar_ == shouldHide)
     return;
