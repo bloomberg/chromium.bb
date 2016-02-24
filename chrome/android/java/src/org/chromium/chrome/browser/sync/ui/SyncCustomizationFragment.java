@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.sync.ui;
 
-import android.accounts.Account;
 import android.app.DialogFragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
@@ -40,7 +39,6 @@ import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.ModelType;
 import org.chromium.sync.PassphraseType;
 import org.chromium.sync.StopSource;
-import org.chromium.sync.signin.AccountManagerHelper;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -292,17 +290,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
     private void updateSyncAccountsListState() {
         SyncedAccountPreference accountList =
                 (SyncedAccountPreference) findPreference(PREFERENCE_SYNC_ACCOUNT_LIST);
-
-        // We remove the the SyncedAccountPreference if there's only 1 account on the device, so
-        // it's possible for accountList to be null
-        if (accountList != null) {
-            Account[] accounts = AccountManagerHelper.get(getActivity()).getGoogleAccounts();
-            if (accounts.length <= 1) {
-                getPreferenceScreen().removePreference(accountList);
-            } else {
-                accountList.setEnabled(mSyncSwitchPreference.isChecked());
-            }
-        }
+        accountList.setEnabled(mSyncSwitchPreference.isChecked());
     }
 
     /**
