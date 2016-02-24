@@ -97,9 +97,11 @@ void TaskGraphWorkQueue::ScheduleTasks(NamespaceToken token, TaskGraph* graph) {
       continue;
 
     // Skip if already running.
-    if (std::find(task_namespace.running_tasks.begin(),
-                  task_namespace.running_tasks.end(),
-                  node.task) != task_namespace.running_tasks.end())
+    if (std::any_of(task_namespace.running_tasks.begin(),
+                    task_namespace.running_tasks.end(),
+                    [&node](const CategorizedTask& task) {
+                      return task.second == node.task;
+                    }))
       continue;
 
     task_namespace.ready_to_run_tasks[node.category].push_back(PrioritizedTask(
@@ -127,9 +129,11 @@ void TaskGraphWorkQueue::ScheduleTasks(NamespaceToken token, TaskGraph* graph) {
       continue;
 
     // Skip if already running.
-    if (std::find(task_namespace.running_tasks.begin(),
-                  task_namespace.running_tasks.end(),
-                  node.task) != task_namespace.running_tasks.end())
+    if (std::any_of(task_namespace.running_tasks.begin(),
+                    task_namespace.running_tasks.end(),
+                    [&node](const CategorizedTask& task) {
+                      return task.second == node.task;
+                    }))
       continue;
 
     DCHECK(std::find(task_namespace.completed_tasks.begin(),
@@ -195,7 +199,8 @@ TaskGraphWorkQueue::PrioritizedTask TaskGraphWorkQueue::GetNextTaskToRun(
   }
 
   // Add task to |running_tasks|.
-  task_namespace->running_tasks.push_back(task.task);
+  task_namespace->running_tasks.push_back(
+      std::make_pair(task.category, task.task));
 
   return task;
 }
@@ -205,8 +210,11 @@ void TaskGraphWorkQueue::CompleteTask(const PrioritizedTask& completed_task) {
   scoped_refptr<Task> task(completed_task.task);
 
   // Remove task from |running_tasks|.
-  auto it = std::find(task_namespace->running_tasks.begin(),
-                      task_namespace->running_tasks.end(), task);
+  auto it = std::find_if(task_namespace->running_tasks.begin(),
+                         task_namespace->running_tasks.end(),
+                         [&completed_task](const CategorizedTask& task) {
+                           return task.second == completed_task.task;
+                         });
   DCHECK(it != task_namespace->running_tasks.end());
   std::swap(*it, task_namespace->running_tasks.back());
   task_namespace->running_tasks.pop_back();

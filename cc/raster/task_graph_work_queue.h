@@ -46,6 +46,8 @@ class CC_EXPORT TaskGraphWorkQueue {
     uint16_t priority;
   };
 
+  using CategorizedTask = std::pair<uint16_t, scoped_refptr<Task>>;
+
   // Helper classes and static methods used by dependent classes.
   struct TaskNamespace {
     typedef std::vector<TaskNamespace*> Vector;
@@ -64,7 +66,7 @@ class CC_EXPORT TaskGraphWorkQueue {
     Task::Vector completed_tasks;
 
     // This set contains all currently running tasks.
-    Task::Vector running_tasks;
+    std::vector<CategorizedTask> running_tasks;
   };
 
   TaskGraphWorkQueue();
@@ -143,6 +145,19 @@ class CC_EXPORT TaskGraphWorkQueue {
   const std::map<uint16_t, TaskNamespace::Vector>& ready_to_run_namespaces()
       const {
     return ready_to_run_namespaces_;
+  }
+
+  size_t NumRunningTasksForCategory(uint16_t category) const {
+    size_t count = 0;
+    for (const auto& task_namespace_entry : namespaces_) {
+      for (const auto& categorized_task :
+           task_namespace_entry.second.running_tasks) {
+        if (categorized_task.first == category) {
+          ++count;
+        }
+      }
+    }
+    return count;
   }
 
   // Helper function which ensures that graph dependencies were correctly
