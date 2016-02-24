@@ -118,6 +118,21 @@ TEST_F(UnixDomainServerSocketTest, AcceptWithForbiddenUser) {
   EXPECT_FALSE(accepted_socket);
 }
 
+TEST_F(UnixDomainServerSocketTest, UnimplementedMethodsFail) {
+  const bool kUseAbstractNamespace = false;
+  UnixDomainServerSocket server_socket(CreateAuthCallback(true),
+                                       kUseAbstractNamespace);
+
+  IPEndPoint ep;
+  EXPECT_EQ(ERR_NOT_IMPLEMENTED, server_socket.Listen(ep, 0));
+  EXPECT_EQ(ERR_NOT_IMPLEMENTED,
+      server_socket.ListenWithAddressAndPort(kInvalidSocketPath,
+                                             0,
+                                             /*backlog=*/1));
+
+  EXPECT_EQ(ERR_ADDRESS_INVALID, server_socket.GetLocalAddress(&ep));
+}
+
 // Normal cases including read/write are tested by UnixDomainClientSocketTest.
 
 }  // namespace

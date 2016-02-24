@@ -67,6 +67,14 @@ int UnixDomainServerSocket::Listen(const IPEndPoint& address, int backlog) {
   return ERR_NOT_IMPLEMENTED;
 }
 
+int UnixDomainServerSocket::ListenWithAddressAndPort(
+    const std::string& address_string,
+    uint16_t port,
+    int backlog) {
+  NOTIMPLEMENTED();
+  return ERR_NOT_IMPLEMENTED;
+}
+
 int UnixDomainServerSocket::BindAndListen(const std::string& socket_path,
                                           int backlog) {
   DCHECK(!listen_socket_);

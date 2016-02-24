@@ -52,6 +52,9 @@ class NET_EXPORT UnixDomainServerSocket : public ServerSocket {
 
   // ServerSocket implementation.
   int Listen(const IPEndPoint& address, int backlog) override;
+  int ListenWithAddressAndPort(const std::string& address_string,
+                               uint16_t port,
+                               int backlog) override;
   int GetLocalAddress(IPEndPoint* address) const override;
   int Accept(scoped_ptr<StreamSocket>* socket,
              const CompletionCallback& callback) override;
