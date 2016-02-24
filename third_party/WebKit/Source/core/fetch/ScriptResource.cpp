@@ -64,7 +64,7 @@ ScriptResource::~ScriptResource()
 
 void ScriptResource::didAddClient(ResourceClient* client)
 {
-    ASSERT(client->resourceClientType() == ScriptResourceClient::expectedType());
+    ASSERT(ScriptResourceClient::isExpectedType(client));
     Resource::didAddClient(client);
 }
 

@@ -51,7 +51,7 @@ public:
         while (m_index < size) {
             ResourceClient* next = m_clientVector[m_index++];
             if (m_clientSet.contains(next)) {
-                ASSERT(T::expectedType() == ResourceClient::expectedType() || next->resourceClientType() == T::expectedType());
+                ASSERT(T::isExpectedType(next));
                 return static_cast<T*>(next);
             }
         }

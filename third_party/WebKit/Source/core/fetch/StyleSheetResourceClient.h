@@ -36,8 +36,8 @@ class CSSStyleSheetResource;
 class StyleSheetResourceClient : public ResourceClient {
 public:
     ~StyleSheetResourceClient() override {}
-    static ResourceClientType expectedType() { return StyleSheetType; }
-    ResourceClientType resourceClientType() const final { return expectedType(); }
+    static bool isExpectedType(ResourceClient* client) { return client->resourceClientType() == StyleSheetType; }
+    ResourceClientType resourceClientType() const final { return StyleSheetType; }
     virtual void setCSSStyleSheet(const String& /* href */, const KURL& /* baseURL */, const String& /* charset */, const CSSStyleSheetResource*) {}
     virtual void setXSLStyleSheet(const String& /* href */, const KURL& /* baseURL */, const String& /* sheet */) {}
 };

@@ -72,8 +72,8 @@ inline DocumentResource* toDocumentResource(const RefPtrWillBeRawPtr<Resource>& 
 class DocumentResourceClient : public ResourceClient {
 public:
     ~DocumentResourceClient() override {}
-    static ResourceClientType expectedType() { return DocumentType; }
-    ResourceClientType resourceClientType() const override { return expectedType(); }
+    static bool isExpectedType(ResourceClient* client) { return client->resourceClientType() == DocumentType; }
+    ResourceClientType resourceClientType() const final { return DocumentType; }
 };
 
 } // namespace blink

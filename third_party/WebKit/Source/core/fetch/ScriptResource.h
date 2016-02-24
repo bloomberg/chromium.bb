@@ -46,8 +46,8 @@ class ScriptResource;
 class CORE_EXPORT ScriptResourceClient : public ResourceClient {
 public:
     ~ScriptResourceClient() override {}
-    static ResourceClientType expectedType() { return ScriptType; }
-    ResourceClientType resourceClientType() const final { return expectedType(); }
+    static bool isExpectedType(ResourceClient* client) { return client->resourceClientType() == ScriptType; }
+    ResourceClientType resourceClientType() const final { return ScriptType; }
 
     virtual void notifyAppendData(ScriptResource* resource) { }
 };

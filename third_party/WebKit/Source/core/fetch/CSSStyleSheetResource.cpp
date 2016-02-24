@@ -81,7 +81,7 @@ DEFINE_TRACE(CSSStyleSheetResource)
 
 void CSSStyleSheetResource::didAddClient(ResourceClient* c)
 {
-    ASSERT(c->resourceClientType() == StyleSheetResourceClient::expectedType());
+    ASSERT(StyleSheetResourceClient::isExpectedType(c));
     // Resource::didAddClient() must be before setCSSStyleSheet(),
     // because setCSSStyleSheet() may cause scripts to be executed, which could destroy 'c' if it is an instance of HTMLLinkElement.
     // see the comment of HTMLLinkElement::setCSSStyleSheet.

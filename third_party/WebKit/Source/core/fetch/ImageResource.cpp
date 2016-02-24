@@ -118,7 +118,7 @@ void ImageResource::didAddClient(ResourceClient* c)
         m_image->setData(m_data, true);
     }
 
-    ASSERT(c->resourceClientType() == ImageResourceClient::expectedType());
+    ASSERT(ImageResourceClient::isExpectedType(c));
     if (m_image && !m_image->isNull())
         static_cast<ImageResourceClient*>(c)->imageChanged(this);
 
@@ -128,7 +128,7 @@ void ImageResource::didAddClient(ResourceClient* c)
 void ImageResource::didRemoveClient(ResourceClient* c)
 {
     ASSERT(c);
-    ASSERT(c->resourceClientType() == ImageResourceClient::expectedType());
+    ASSERT(ImageResourceClient::isExpectedType(c));
 
     Resource::didRemoveClient(c);
 }

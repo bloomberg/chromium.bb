@@ -103,8 +103,8 @@ DEFINE_RESOURCE_TYPE_CASTS(Font);
 class FontResourceClient : public ResourceClient {
 public:
     ~FontResourceClient() override {}
-    static ResourceClientType expectedType() { return FontType; }
-    ResourceClientType resourceClientType() const final { return expectedType(); }
+    static bool isExpectedType(ResourceClient* client) { return client->resourceClientType() == FontType; }
+    ResourceClientType resourceClientType() const final { return FontType; }
     virtual void fontLoaded(FontResource*) {}
     virtual void didStartFontLoad(FontResource*) {}
     virtual void fontLoadShortLimitExceeded(FontResource*) {}

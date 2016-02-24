@@ -104,8 +104,8 @@ inline PassRefPtrWillBeRawPtr<RawResource> toRawResource(const PassRefPtrWillBeR
 class CORE_EXPORT RawResourceClient : public ResourceClient {
 public:
     ~RawResourceClient() override {}
-    static ResourceClientType expectedType() { return RawResourceType; }
-    ResourceClientType resourceClientType() const final { return expectedType(); }
+    static bool isExpectedType(ResourceClient* client) { return client->resourceClientType() == RawResourceType; }
+    ResourceClientType resourceClientType() const final { return RawResourceType; }
 
     virtual void dataSent(Resource*, unsigned long long /* bytesSent */, unsigned long long /* totalBytesToBeSent */) { }
     virtual void responseReceived(Resource*, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) { }

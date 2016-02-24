@@ -48,8 +48,8 @@ public:
     virtual ~ResourceClient() { }
     virtual void notifyFinished(Resource*) { }
 
-    static ResourceClientType expectedType() { return BaseResourceType; }
-    virtual ResourceClientType resourceClientType() const { return expectedType(); }
+    static bool isExpectedType(ResourceClient*) { return true; }
+    virtual ResourceClientType resourceClientType() const { return BaseResourceType; }
 
     virtual ResourcePriority computeResourcePriority() const { return ResourcePriority(); }
 
