@@ -597,7 +597,6 @@ _waterfall_config_map = {
     constants.WATERFALL_INTERNAL: frozenset([
         # Experimental Paladins.
         'lakitu_next-paladin',
-        'veyron_minnie-cheets-paladin',
         'veyron_rialto-paladin',
         'whirlwind-paladin',
 
@@ -1651,6 +1650,7 @@ def GetConfig():
       'strago',
       'stumpy',
       'tricky',
+      'veyron_minnie-cheets',
       'veyron_mighty',
       'veyron_pinky',
       'veyron_speedy',
