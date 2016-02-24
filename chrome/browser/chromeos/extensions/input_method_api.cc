@@ -47,6 +47,8 @@ namespace OnDictionaryLoaded =
     extensions::api::input_method_private::OnDictionaryLoaded;
 namespace OnImeMenuActivationChanged =
     extensions::api::input_method_private::OnImeMenuActivationChanged;
+namespace OnImeMenuListChanged =
+    extensions::api::input_method_private::OnImeMenuListChanged;
 
 namespace {
 
@@ -232,6 +234,8 @@ InputMethodAPI::InputMethodAPI(content::BrowserContext* context)
       ->RegisterObserver(this, OnDictionaryLoaded::kEventName);
   EventRouter::Get(context_)
       ->RegisterObserver(this, OnImeMenuActivationChanged::kEventName);
+  EventRouter::Get(context_)
+      ->RegisterObserver(this, OnImeMenuListChanged::kEventName);
   ExtensionFunctionRegistry* registry =
       ExtensionFunctionRegistry::GetInstance();
   registry->RegisterFunction<InputMethodPrivateGetInputMethodConfigFunction>();
@@ -275,7 +279,8 @@ void InputMethodAPI::OnListenerAdded(
     if (details.event_name == OnDictionaryLoaded::kEventName) {
       dictionary_event_router_->DispatchLoadedEventIfLoaded();
     }
-  } else if (details.event_name == OnImeMenuActivationChanged::kEventName &&
+  } else if ((details.event_name == OnImeMenuActivationChanged::kEventName ||
+              details.event_name == OnImeMenuListChanged::kEventName) &&
              !ime_menu_event_router_.get()) {
     ime_menu_event_router_.reset(
         new chromeos::ExtensionImeMenuEventRouter(context_));

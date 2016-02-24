@@ -64174,6 +64174,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="392" label="DISPLAY_SOURCE_ON_SINKS_UPDATED"/>
   <int value="393" label="INPUT_IME_ON_COMPOSITION_BOUNDS_CHANGED"/>
   <int value="394" label="INPUT_METHOD_PRIVATE_ON_IME_MENU_ACTIVATION_CHANGED"/>
+  <int value="395" label="INPUT_METHOD_PRIVATE_ON_IME_MENU_LIST_CHANGED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult" type="int">

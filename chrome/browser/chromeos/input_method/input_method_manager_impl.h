@@ -238,6 +238,10 @@ class InputMethodManagerImpl : public InputMethodManager,
   // Record input method usage histograms.
   void RecordInputMethodUsage(const std::string& input_method_id);
 
+  // Notifies the current input method or the list of active input method IDs
+  // changed.
+  void NotifyImeMenuListChanged();
+
   scoped_ptr<InputMethodDelegate> delegate_;
 
   // The current UI session status.

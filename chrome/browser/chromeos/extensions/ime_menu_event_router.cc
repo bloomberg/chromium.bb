@@ -12,6 +12,8 @@
 
 namespace OnImeMenuActivationChanged =
     extensions::api::input_method_private::OnImeMenuActivationChanged;
+namespace OnImeMenuListChanged =
+    extensions::api::input_method_private::OnImeMenuListChanged;
 
 namespace chromeos {
 
@@ -38,6 +40,22 @@ void ExtensionImeMenuEventRouter::ImeMenuActivationChanged(bool activation) {
   scoped_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::INPUT_METHOD_PRIVATE_ON_IME_MENU_ACTIVATION_CHANGED,
       OnImeMenuActivationChanged::kEventName, std::move(args)));
+  event->restrict_to_browser_context = context_;
+  router->BroadcastEvent(std::move(event));
+}
+
+void ExtensionImeMenuEventRouter::ImeMenuListChanged() {
+  extensions::EventRouter* router = extensions::EventRouter::Get(context_);
+
+  if (!router->HasEventListener(OnImeMenuListChanged::kEventName))
+    return;
+
+  scoped_ptr<base::ListValue> args(new base::ListValue());
+
+  // The router will only send the event to extensions that are listening.
+  scoped_ptr<extensions::Event> event(new extensions::Event(
+      extensions::events::INPUT_METHOD_PRIVATE_ON_IME_MENU_LIST_CHANGED,
+      OnImeMenuListChanged::kEventName, std::move(args)));
   event->restrict_to_browser_context = context_;
   router->BroadcastEvent(std::move(event));
 }

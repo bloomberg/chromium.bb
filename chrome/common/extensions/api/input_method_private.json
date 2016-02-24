@@ -258,6 +258,11 @@
             "description": "Whether the IME menu is currently active."
           }
         ]
+      }, {
+        "name": "onImeMenuListChanged",
+        "type": "function",
+        "description": "Fired when the input method or the list of active input method IDs is changed.",
+        "parameters": []
       }
     ]
   }

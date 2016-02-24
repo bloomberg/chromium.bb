@@ -481,6 +481,8 @@ void InputMethodManagerImpl::StateImpl::AddInputMethodExtension(
     if (contain)
       manager_->MaybeInitializeCandidateWindowController();
   }
+
+  manager_->NotifyImeMenuListChanged();
 }
 
 void InputMethodManagerImpl::StateImpl::RemoveInputMethodExtension(
@@ -1033,6 +1035,8 @@ void InputMethodManagerImpl::ChangeInputMethodInternal(
   // Update input method indicators (e.g. "US", "DV") in Chrome windows.
   FOR_EACH_OBSERVER(InputMethodManager::Observer, observers_,
                     InputMethodChanged(this, profile, show_message));
+  // Update the current input method in IME menu.
+  NotifyImeMenuListChanged();
 }
 
 void InputMethodManagerImpl::LoadNecessaryComponentExtensions(
@@ -1166,6 +1170,11 @@ void InputMethodManagerImpl::CandidateWindowClosed() {
 void InputMethodManagerImpl::ImeMenuActivationChanged(bool is_active) {
   FOR_EACH_OBSERVER(InputMethodManager::ImeMenuObserver, ime_menu_observers_,
                     ImeMenuActivationChanged(is_active));
+}
+
+void InputMethodManagerImpl::NotifyImeMenuListChanged() {
+  FOR_EACH_OBSERVER(InputMethodManager::ImeMenuObserver, ime_menu_observers_,
+                    ImeMenuListChanged());
 }
 
 void InputMethodManagerImpl::MaybeInitializeCandidateWindowController() {

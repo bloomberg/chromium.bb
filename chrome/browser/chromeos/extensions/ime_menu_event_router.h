@@ -25,6 +25,7 @@ class ExtensionImeMenuEventRouter
 
   // input_method::InputMethodManager::ImeMenuObserver:
   void ImeMenuActivationChanged(bool activation) override;
+  void ImeMenuListChanged() override;
 
  private:
   content::BrowserContext* context_;

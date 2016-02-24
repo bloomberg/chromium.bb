@@ -77,6 +77,9 @@ class UI_BASE_IME_EXPORT InputMethodManager {
 
     // Called when the IME menu is activated or deactivated.
     virtual void ImeMenuActivationChanged(bool is_active) = 0;
+    // Called when the current input method or the list of active input method
+    // IDs is changed.
+    virtual void ImeMenuListChanged() = 0;
 
     DISALLOW_ASSIGN(ImeMenuObserver);
   };
