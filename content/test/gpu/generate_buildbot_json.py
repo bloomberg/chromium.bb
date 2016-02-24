@@ -212,16 +212,6 @@ FYI_WATERFALL = {
       'swarming': True,
       'os_type': 'win',
     },
-    'Win7 Release dEQP (NVIDIA)': {
-      'deqp': True,
-      'swarming_dimensions': {
-        'gpu': '10de:104a',
-        'os': 'Windows-2008ServerR2-SP1'
-      },
-      'build_config': 'Release',
-      'swarming': True,
-      'os_type': 'win',
-    },
     'Win7 x64 Release (NVIDIA)': {
       'swarming_dimensions': {
         'gpu': '10de:104a',
@@ -360,19 +350,6 @@ FYI_WATERFALL = {
       'swarming': True,
       'os_type': 'linux',
     },
-    'Linux Release dEQP (NVIDIA)': {
-      'deqp': True,
-      'swarming_dimensions': {
-        'gpu': '10de:104a',
-        'os': 'Linux'
-      },
-      'build_config': 'Release',
-      # TODO(kbr): switch this to use Swarming, and put the physical
-      # machine into the Swarming pool, once we're convinced it's
-      # working well.
-      'swarming': False,
-      'os_type': 'linux',
-    },
 
     # The following "optional" testers don't actually exist on the
     # waterfall. They are present here merely to specify additional
@@ -463,6 +440,32 @@ COMMON_GTESTS = {
     ],
     'swarming_shards': 4
   },
+
+  'angle_deqp_gles3_tests': {
+    'tester_configs': [
+      {
+        'fyi_only': True,
+        # TODO(jmadill): Run this on the optional tryservers.
+        'run_on_optional': False,
+        # Run only on the Win7 and Linux Release NVIDIA 32-bit bots
+        # (and trybots) for the time being, at least until more capacity is
+        # added.
+        'build_configs': ['Release'],
+        'swarming_dimension_sets': [
+          {
+            'gpu': '10de:104a',
+            'os': 'Windows-2008ServerR2-SP1'
+          },
+          {
+            'gpu': '10de:104a',
+            'os': 'Linux'
+          }
+        ],
+      }
+    ],
+    'swarming_shards': 12
+  },
+
   # Until we have more capacity, run angle_end2end_tests only on the
   # FYI waterfall, the ANGLE trybots (which mirror the FYI waterfall),
   # and the optional trybots (mainly used during ANGLE rolls).
@@ -564,17 +567,6 @@ NON_SWARMED_GTESTS = {
            'TabCaptureApiPixelTest.EndToEnd*'
      ]
   }
-}
-
-DEQP_GTESTS = {
-  'angle_deqp_gles3_tests': {
-    'tester_configs': [
-      {
-        'os_types': ['win', 'linux']
-      }
-    ],
-    'swarming_shards': 12
-  },
 }
 
 TELEMETRY_TESTS = {
@@ -842,14 +834,10 @@ def generate_all_tests(waterfall, is_fyi):
     tests[builder] = {}
   for name, config in waterfall['testers'].iteritems():
     gtests = []
-    if config.get('deqp'):
-      gtests.extend(generate_gtests(name, config, DEQP_GTESTS, is_fyi))
-    else:
-      gtests.extend(generate_gtests(name, config, COMMON_GTESTS, is_fyi))
+    gtests.extend(generate_gtests(name, config, COMMON_GTESTS, is_fyi))
     isolated_scripts = []
-    if not config.get('deqp'):
-      isolated_scripts.extend(generate_telemetry_tests(
-          name, config, TELEMETRY_TESTS, is_fyi))
+    isolated_scripts.extend(generate_telemetry_tests(
+        name, config, TELEMETRY_TESTS, is_fyi))
     cur_tests = {}
     if gtests:
       cur_tests['gtest_tests'] = sorted(gtests, key=lambda x: x['test'])
