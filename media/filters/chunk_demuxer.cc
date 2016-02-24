@@ -160,11 +160,12 @@ size_t ChunkDemuxerStream::GetBufferedSize() const {
   return stream_->GetBufferedSize();
 }
 
-void ChunkDemuxerStream::OnNewMediaSegment(DecodeTimestamp start_timestamp) {
-  DVLOG(2) << "ChunkDemuxerStream::OnNewMediaSegment("
+void ChunkDemuxerStream::OnStartOfCodedFrameGroup(
+    DecodeTimestamp start_timestamp) {
+  DVLOG(2) << "ChunkDemuxerStream::OnStartOfCodedFrameGroup("
            << start_timestamp.InSecondsF() << ")";
   base::AutoLock auto_lock(lock_);
-  stream_->OnNewMediaSegment(start_timestamp);
+  stream_->OnStartOfCodedFrameGroup(start_timestamp);
 }
 
 bool ChunkDemuxerStream::UpdateAudioConfig(

@@ -68,11 +68,11 @@ class MEDIA_EXPORT SourceBufferStream {
 
   ~SourceBufferStream();
 
-  // Signals that the next buffers appended are part of a new media segment
-  // starting at |media_segment_start_time|.
+  // Signals that the next buffers appended are part of a new coded frame group
+  // starting at |coded_frame_group_start_time|.
   // TODO(acolwell/wolenetz): This should be changed to a presentation
   // timestamp. See http://crbug.com/402502
-  void OnNewMediaSegment(DecodeTimestamp media_segment_start_time);
+  void OnStartOfCodedFrameGroup(DecodeTimestamp coded_frame_group_start_time);
 
   // Add the |buffers| to the SourceBufferStream. Buffers within the queue are
   // expected to be in order, but multiple calls to Append() may add buffers out
@@ -211,7 +211,7 @@ class MEDIA_EXPORT SourceBufferStream {
   // if in between seeking (i.e. |selected_range_| is null).
   DecodeTimestamp GetNextBufferTimestamp();
 
-  // Finds the range that should contain a media segment that begins with
+  // Finds the range that should contain a coded frame group that begins with
   // |start_timestamp| and returns the iterator pointing to it. Returns
   // |ranges_.end()| if there's no such existing range.
   RangeList::iterator FindExistingRangeFor(DecodeTimestamp start_timestamp);
@@ -241,13 +241,8 @@ class MEDIA_EXPORT SourceBufferStream {
   bool ShouldSeekToStartOfBuffered(base::TimeDelta seek_timestamp) const;
 
   // Returns true if the timestamps of |buffers| are monotonically increasing
-  // since the previous append to the media segment, false otherwise.
-  bool IsMonotonicallyIncreasing(const BufferQueue& buffers) const;
-
-  // Returns true if |next_timestamp| and |next_is_keyframe| are valid for
-  // the first buffer after the previous append.
-  bool IsNextTimestampValid(DecodeTimestamp next_timestamp,
-                            bool next_is_keyframe) const;
+  // since the previous append to the coded frame group, false otherwise.
+  bool IsMonotonicallyIncreasing(const BufferQueue& buffers);
 
   // Returns true if |selected_range_| is the only range in |ranges_| that
   // HasNextBufferPosition().
@@ -299,6 +294,15 @@ class MEDIA_EXPORT SourceBufferStream {
   // NULL. After the range is removed, |*itr| is to the range after the one that
   // was removed or to |ranges_.end()| if the last range was removed.
   void DeleteAndRemoveRange(RangeList::iterator* itr);
+
+  // Helper function used when updating |range_for_next_append_|.
+  // Returns a guess of what the next append timestamp will be based on
+  // |last_appended_buffer_timestamp_|, |new_coded_frame_group_| and
+  // |coded_frame_group_start_time_|. Returns kNoDecodeTimestamp() if unable to
+  // guess, which can occur prior to first OnStartOfCodedFrameGroup(), or
+  // when the most recent GOP appended to since the last
+  // OnStartOfCodedFrameGroup() is removed.
+  DecodeTimestamp PotentialNextAppendTimestamp() const;
 
   // Helper function used by Remove() and PrepareRangesForNextAppend() to
   // remove buffers and ranges between |start| and |end|.
@@ -397,17 +401,19 @@ class MEDIA_EXPORT SourceBufferStream {
   // emitted buffer emptied |track_buffer_|.
   bool just_exhausted_track_buffer_ = false;
 
-  // The start time of the current media segment being appended.
-  DecodeTimestamp media_segment_start_time_;
+  // The start time of the current coded frame group being appended.
+  DecodeTimestamp coded_frame_group_start_time_;
 
-  // Points to the range containing the current media segment being appended.
+  // Points to the range containing the current coded frame group being
+  // appended.
   RangeList::iterator range_for_next_append_;
 
-  // True when the next call to Append() begins a new media segment.
-  bool new_media_segment_ = false;
+  // True when the next call to Append() begins a new coded frame group.
+  // TODO(wolenetz): Simplify by passing this flag into Append().
+  bool new_coded_frame_group_ = false;
 
-  // The timestamp of the last buffer appended to the media segment, set to
-  // kNoDecodeTimestamp() if the beginning of the segment.
+  // The timestamp of the last buffer appended to the coded frame group, set to
+  // kNoDecodeTimestamp() if the beginning of the group.
   DecodeTimestamp last_appended_buffer_timestamp_ = kNoDecodeTimestamp();
   base::TimeDelta last_appended_buffer_duration_ = kNoTimestamp();
   bool last_appended_buffer_is_keyframe_ = false;
@@ -449,6 +455,7 @@ class MEDIA_EXPORT SourceBufferStream {
   int num_splice_generation_success_logs_ = 0;
   int num_track_buffer_gap_warning_logs_ = 0;
   int num_garbage_collect_algorithm_logs_ = 0;
+  int num_strange_same_timestamps_logs_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(SourceBufferStream);
 };

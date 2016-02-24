@@ -37,40 +37,59 @@ class SourceBufferRange {
     ALLOW_GAPS
   };
 
-  // Buffers with the same timestamp are only allowed under certain conditions.
-  // More precisely, it is allowed in all situations except when the previous
-  // frame is not a key frame and the current is a key frame.
-  // Examples of situations where DTS of two consecutive frames can be equal:
+  // Sequential buffers with the same decode timestamp make sense under certain
+  // conditions, typically when the first buffer is a keyframe. Due to some
+  // atypical media append behaviors where a new keyframe might have the same
+  // timestamp as a previous non-keyframe, the playback of the sequence might
+  // involve some throwaway decode work. This method supports detecting this
+  // situation so that callers can log warnings (it returns true in this case
+  // only).
+  // For all other cases, including more typical same-DTS sequences, this method
+  // returns false. Examples of typical situations where DTS of two consecutive
+  // frames can be equal:
   // - Video: VP8 Alt-Ref frames.
   // - Video: IPBPBP...: DTS for I frame and for P frame can be equal.
   // - Text track cues that start at same time.
   // Returns true if |prev_is_keyframe| and |current_is_keyframe| indicate a
-  // same timestamp situation that is allowed. False is returned otherwise.
-  static bool AllowSameTimestamp(bool prev_is_keyframe,
-                                 bool current_is_keyframe);
+  // same timestamp situation that is atypical. False is returned otherwise.
+  static bool IsUncommonSameTimestampSequence(bool prev_is_keyframe,
+                                              bool current_is_keyframe);
 
   // Creates a source buffer range with |new_buffers|. |new_buffers| cannot be
   // empty and the front of |new_buffers| must be a keyframe.
-  // |media_segment_start_time| refers to the starting timestamp for the media
-  // segment to which these buffers belong.
+  // |range_start_time| refers to the starting timestamp for the coded frame
+  // group to which these buffers belong.
   SourceBufferRange(GapPolicy gap_policy,
                     const BufferQueue& new_buffers,
-                    DecodeTimestamp media_segment_start_time,
+                    DecodeTimestamp range_start_time,
                     const InterbufferDistanceCB& interbuffer_distance_cb);
 
   ~SourceBufferRange();
 
   // Appends |buffers| to the end of the range and updates |keyframe_map_| as
-  // it encounters new keyframes. Assumes |buffers| belongs at the end of the
-  // range.
-  void AppendBuffersToEnd(const BufferQueue& buffers);
-  bool CanAppendBuffersToEnd(const BufferQueue& buffers) const;
+  // it encounters new keyframes.
+  // If |new_buffers_group_start_timestamp| is kNoDecodeTimestamp(), then the
+  // first buffer in |buffers| must come directly after the last buffer in this
+  // range (within the fudge room).
+  // If |new_buffers_group_start_timestamp| is set otherwise, then that time
+  // must come directly after the last buffer in this range (within the fudge
+  // room). The latter scenario is required when a muxed coded frame group has
+  // such a large jagged start across tracks that its first buffer is not within
+  // the fudge room, yet its group start was.
+  void AppendBuffersToEnd(const BufferQueue& buffers,
+                          DecodeTimestamp new_buffers_group_start_timestamp);
+  bool CanAppendBuffersToEnd(
+      const BufferQueue& buffers,
+      DecodeTimestamp new_buffers_group_start_timestamp) const;
 
   // Appends the buffers from |range| into this range.
   // The first buffer in |range| must come directly after the last buffer
   // in this range.
   // If |transfer_current_position| is true, |range|'s |next_buffer_index_|
   // is transfered to this SourceBufferRange.
+  // Note: Use these only to merge existing ranges. |range|'s first buffer
+  // timestamp must be adjacent to this range. No group start timestamp
+  // adjacency is involved in these methods.
   void AppendRangeToEnd(const SourceBufferRange& range,
                         bool transfer_current_position);
   bool CanAppendRangeToEnd(const SourceBufferRange& range) const;
@@ -94,7 +113,8 @@ class SourceBufferRange {
   // and creates and returns a new SourceBufferRange with the buffers from that
   // keyframe onward. The buffers in the new SourceBufferRange are moved out of
   // this range. If there is no keyframe at or after |timestamp|, SplitRange()
-  // returns null and this range is unmodified.
+  // returns null and this range is unmodified. This range can become empty if
+  // |timestamp| <= the DTS of the first buffer in this range.
   SourceBufferRange* SplitRange(DecodeTimestamp timestamp);
 
   // Deletes the buffers from this range starting at |timestamp|, exclusive if
@@ -203,7 +223,7 @@ class SourceBufferRange {
 
   // Returns true if |timestamp| is the timestamp of the next buffer in
   // sequence after |buffers_.back()|, false otherwise.
-  bool IsNextInSequence(DecodeTimestamp timestamp, bool is_key_frame) const;
+  bool IsNextInSequence(DecodeTimestamp timestamp) const;
 
   // Adds all buffers which overlap [start, end) to the end of |buffers|.  If
   // no buffers exist in the range returns false, true otherwise.
@@ -279,15 +299,17 @@ class SourceBufferRange {
   // GetNextBuffer(), set to -1 before Seek().
   int next_buffer_index_;
 
-  // If the first buffer in this range is the beginning of a media segment,
-  // |media_segment_start_time_| is the time when the media segment begins.
-  // |media_segment_start_time_| may be <= the timestamp of the first buffer in
-  // |buffers_|. |media_segment_start_time_| is kNoTimestamp() if this range
-  // does not start at the beginning of a media segment, which can only happen
-  // garbage collection or after an end overlap that results in a split range
-  // (we don't have a way of knowing the media segment timestamp for the new
-  // range).
-  DecodeTimestamp media_segment_start_time_;
+  // If the first buffer in this range is the beginning of a coded frame group,
+  // |range_start_time_| is the time when the coded frame group begins. This is
+  // especially important in muxed media where the first coded frames for each
+  // track do not necessarily begin at the same time.
+  // |range_start_time_| may be <= the timestamp of the first buffer in
+  // |buffers_|. |range_start_time_| is kNoDecodeTimestamp() if this range does
+  // not start at the beginning of a coded frame group, which can happen by
+  // range removal or split when we don't have a way of knowing, across
+  // potentially multiple muxed streams, the coded frame group start timestamp
+  // for the new range.
+  DecodeTimestamp range_start_time_;
 
   // Called to get the largest interbuffer distance seen so far in the stream.
   InterbufferDistanceCB interbuffer_distance_cb_;

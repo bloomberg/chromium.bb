@@ -22,34 +22,38 @@ static bool CompareStreamParserBufferToTimeDelta(
   return buffer->GetDecodeTimestamp() < decode_timestamp;
 }
 
-bool SourceBufferRange::AllowSameTimestamp(
-    bool prev_is_keyframe, bool current_is_keyframe) {
-  return prev_is_keyframe || !current_is_keyframe;
+bool SourceBufferRange::IsUncommonSameTimestampSequence(
+    bool prev_is_keyframe,
+    bool current_is_keyframe) {
+  return current_is_keyframe && !prev_is_keyframe;
 }
 
 SourceBufferRange::SourceBufferRange(
-    GapPolicy gap_policy, const BufferQueue& new_buffers,
-    DecodeTimestamp media_segment_start_time,
+    GapPolicy gap_policy,
+    const BufferQueue& new_buffers,
+    DecodeTimestamp range_start_time,
     const InterbufferDistanceCB& interbuffer_distance_cb)
     : gap_policy_(gap_policy),
       keyframe_map_index_base_(0),
       next_buffer_index_(-1),
-      media_segment_start_time_(media_segment_start_time),
+      range_start_time_(range_start_time),
       interbuffer_distance_cb_(interbuffer_distance_cb),
       size_in_bytes_(0) {
   CHECK(!new_buffers.empty());
   DCHECK(new_buffers.front()->is_key_frame());
   DCHECK(!interbuffer_distance_cb.is_null());
-  AppendBuffersToEnd(new_buffers);
+  AppendBuffersToEnd(new_buffers, range_start_time_);
 }
 
 SourceBufferRange::~SourceBufferRange() {}
 
-void SourceBufferRange::AppendBuffersToEnd(const BufferQueue& new_buffers) {
-  DCHECK(buffers_.empty() || CanAppendBuffersToEnd(new_buffers));
-  DCHECK(media_segment_start_time_ == kNoDecodeTimestamp() ||
-         media_segment_start_time_ <=
-             new_buffers.front()->GetDecodeTimestamp());
+void SourceBufferRange::AppendBuffersToEnd(
+    const BufferQueue& new_buffers,
+    DecodeTimestamp new_buffers_group_start_timestamp) {
+  CHECK(buffers_.empty() ||
+        CanAppendBuffersToEnd(new_buffers, new_buffers_group_start_timestamp));
+  DCHECK(range_start_time_ == kNoDecodeTimestamp() ||
+         range_start_time_ <= new_buffers.front()->GetDecodeTimestamp());
 
   AdjustEstimatedDurationForNewAppend(new_buffers);
 
@@ -154,10 +158,9 @@ SourceBufferRange* SourceBufferRange::SplitRange(DecodeTimestamp timestamp) {
   DecodeTimestamp new_range_start_timestamp = kNoDecodeTimestamp();
   if (GetStartTimestamp() < buffers_.front()->GetDecodeTimestamp() &&
       timestamp < removed_buffers.front()->GetDecodeTimestamp()) {
-    // The split is in the gap between |media_segment_start_time_| and
-    // the first buffer of the new range so we should set the start
-    // time of the new range to |timestamp| so we preserve part of the
-    // gap in the new range.
+    // The split is in the gap between |range_start_time_| and the first buffer
+    // of the new range so we should set the start time of the new range to
+    // |timestamp| so we preserve part of the gap in the new range.
     new_range_start_timestamp = timestamp;
   }
 
@@ -174,8 +177,14 @@ SourceBufferRange* SourceBufferRange::SplitRange(DecodeTimestamp timestamp) {
   // this range and |split_range| accordingly.
   if (next_buffer_index_ >= static_cast<int>(buffers_.size())) {
     split_range->next_buffer_index_ = next_buffer_index_ - keyframe_index;
-    CHECK_GE(split_range->next_buffer_index_, 0)
-        << split_range->next_buffer_index_;
+
+    int split_range_next_buffer_index = split_range->next_buffer_index_;
+    CHECK_GE(split_range_next_buffer_index, 0);
+    // Note that a SourceBufferRange's |next_buffer_index_| can be the index
+    // of a buffer one beyond what is currently in |buffers_|.
+    CHECK_LE(split_range_next_buffer_index,
+             static_cast<int>(split_range->buffers_.size()));
+
     ResetNextBufferPosition();
   }
 
@@ -271,10 +280,9 @@ size_t SourceBufferRange::DeleteGOPFromFront(BufferQueue* deleted_buffers) {
                                     << buffers_deleted;
   }
 
-  // Invalidate media segment start time if we've deleted the first buffer of
-  // the range.
+  // Invalidate range start time if we've deleted the first buffer of the range.
   if (buffers_deleted > 0)
-    media_segment_start_time_ = kNoDecodeTimestamp();
+    range_start_time_ = kNoDecodeTimestamp();
 
   return total_bytes_deleted;
 }
@@ -483,25 +491,31 @@ void SourceBufferRange::AppendRangeToEnd(const SourceBufferRange& range,
   if (transfer_current_position && range.next_buffer_index_ >= 0)
     next_buffer_index_ = range.next_buffer_index_ + buffers_.size();
 
-  AppendBuffersToEnd(range.buffers_);
+  AppendBuffersToEnd(range.buffers_, kNoDecodeTimestamp());
 }
 
 bool SourceBufferRange::CanAppendRangeToEnd(
     const SourceBufferRange& range) const {
-  return CanAppendBuffersToEnd(range.buffers_);
+  return CanAppendBuffersToEnd(range.buffers_, kNoDecodeTimestamp());
 }
 
 bool SourceBufferRange::CanAppendBuffersToEnd(
-    const BufferQueue& buffers) const {
+    const BufferQueue& buffers,
+    DecodeTimestamp new_buffers_group_start_timestamp) const {
   DCHECK(!buffers_.empty());
-  return IsNextInSequence(buffers.front()->GetDecodeTimestamp(),
-                          buffers.front()->is_key_frame());
+  if (new_buffers_group_start_timestamp == kNoDecodeTimestamp()) {
+    return IsNextInSequence(buffers.front()->GetDecodeTimestamp());
+  }
+  DCHECK(new_buffers_group_start_timestamp >= GetEndTimestamp());
+  DCHECK(buffers.front()->GetDecodeTimestamp() >=
+         new_buffers_group_start_timestamp);
+  return IsNextInSequence(new_buffers_group_start_timestamp);
 }
 
 bool SourceBufferRange::BelongsToRange(DecodeTimestamp timestamp) const {
   DCHECK(!buffers_.empty());
 
-  return (IsNextInSequence(timestamp, false) ||
+  return (IsNextInSequence(timestamp) ||
           (GetStartTimestamp() <= timestamp && timestamp <= GetEndTimestamp()));
 }
 
@@ -525,7 +539,7 @@ bool SourceBufferRange::EndOverlaps(const SourceBufferRange& range) const {
 
 DecodeTimestamp SourceBufferRange::GetStartTimestamp() const {
   DCHECK(!buffers_.empty());
-  DecodeTimestamp start_timestamp = media_segment_start_time_;
+  DecodeTimestamp start_timestamp = range_start_time_;
   if (start_timestamp == kNoDecodeTimestamp())
     start_timestamp = buffers_.front()->GetDecodeTimestamp();
   return start_timestamp;
@@ -555,11 +569,10 @@ DecodeTimestamp SourceBufferRange::NextKeyframeTimestamp(
   if (itr == keyframe_map_.end())
     return kNoDecodeTimestamp();
 
-  // If the timestamp is inside the gap between the start of the media
-  // segment and the first buffer, then just pretend there is a
-  // keyframe at the specified timestamp.
-  if (itr == keyframe_map_.begin() &&
-      timestamp > media_segment_start_time_ &&
+  // If the timestamp is inside the gap between the start of the coded frame
+  // group and the first buffer, then just pretend there is a keyframe at the
+  // specified timestamp.
+  if (itr == keyframe_map_.begin() && timestamp > range_start_time_ &&
       timestamp < itr->first) {
     return timestamp;
   }
@@ -577,17 +590,11 @@ DecodeTimestamp SourceBufferRange::KeyframeBeforeTimestamp(
   return GetFirstKeyframeAtOrBefore(timestamp)->first;
 }
 
-bool SourceBufferRange::IsNextInSequence(
-    DecodeTimestamp timestamp, bool is_key_frame) const {
+bool SourceBufferRange::IsNextInSequence(DecodeTimestamp timestamp) const {
   DecodeTimestamp end = buffers_.back()->GetDecodeTimestamp();
-  if (end < timestamp &&
-      (gap_policy_ == ALLOW_GAPS ||
-       timestamp <= end + GetFudgeRoom())) {
-    return true;
-  }
-
-  return timestamp == end && AllowSameTimestamp(
-      buffers_.back()->is_key_frame(), is_key_frame);
+  return (end == timestamp ||
+          (end < timestamp &&
+           (gap_policy_ == ALLOW_GAPS || timestamp <= end + GetFudgeRoom())));
 }
 
 base::TimeDelta SourceBufferRange::GetFudgeRoom() const {
