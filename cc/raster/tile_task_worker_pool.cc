@@ -129,60 +129,60 @@ void TileTaskWorkerPool::PlaybackToMemory(
     stride = info.minRowBytes();
   DCHECK_GT(stride, 0u);
 
-  {
-    TRACE_EVENT0("cc", "TileTaskWorkerPool::PlaybackToMemory::ConvertPixels");
-
-    switch (format) {
-      case RGBA_8888:
-      case BGRA_8888: {
-        skia::RefPtr<SkSurface> surface = skia::AdoptRef(
-            SkSurface::NewRasterDirect(info, memory, stride, &surface_props));
-        AutoSkipImageCanvas canvas(surface->getCanvas(), include_images);
-        raster_source->PlaybackToCanvas(canvas, canvas_bitmap_rect,
-                                        canvas_playback_rect, scale);
-        return;
-      }
-      case RGBA_4444:
-      case ETC1: {
-        skia::RefPtr<SkSurface> surface =
-            skia::AdoptRef(SkSurface::NewRaster(info, &surface_props));
-        AutoSkipImageCanvas canvas(surface->getCanvas(), include_images);
-        // TODO(reveman): Improve partial raster support by reducing the size of
-        // playback rect passed to PlaybackToCanvas. crbug.com/519070
-        raster_source->PlaybackToCanvas(canvas, canvas_bitmap_rect,
-                                        canvas_bitmap_rect, scale);
-
-        if (format == ETC1) {
-          DCHECK_EQ(size.width() % 4, 0);
-          DCHECK_EQ(size.height() % 4, 0);
-          scoped_ptr<TextureCompressor> texture_compressor =
-              TextureCompressor::Create(TextureCompressor::kFormatETC1);
-          texture_compressor->Compress(
-              reinterpret_cast<const uint8_t*>(
-                  surface->peekPixels(nullptr, nullptr)),
-              reinterpret_cast<uint8_t*>(memory), size.width(), size.height(),
-              TextureCompressor::kQualityHigh);
-        } else {
-          SkImageInfo dst_info = SkImageInfo::Make(
-              info.width(), info.height(), ResourceFormatToSkColorType(format),
-              info.alphaType(), info.profileType());
-          bool rv =
-              surface->getCanvas()->readPixels(dst_info, memory, stride, 0, 0);
-          DCHECK(rv);
-        }
-        return;
-      }
-      case ALPHA_8:
-      case LUMINANCE_8:
-      case RGB_565:
-      case RED_8:
-      case LUMINANCE_F16:
-        NOTREACHED();
-        return;
+  switch (format) {
+    case RGBA_8888:
+    case BGRA_8888: {
+      skia::RefPtr<SkSurface> surface = skia::AdoptRef(
+          SkSurface::NewRasterDirect(info, memory, stride, &surface_props));
+      AutoSkipImageCanvas canvas(surface->getCanvas(), include_images);
+      raster_source->PlaybackToCanvas(canvas, canvas_bitmap_rect,
+                                      canvas_playback_rect, scale);
+      return;
     }
+    case RGBA_4444:
+    case ETC1: {
+      skia::RefPtr<SkSurface> surface =
+          skia::AdoptRef(SkSurface::NewRaster(info, &surface_props));
+      AutoSkipImageCanvas canvas(surface->getCanvas(), include_images);
+      // TODO(reveman): Improve partial raster support by reducing the size of
+      // playback rect passed to PlaybackToCanvas. crbug.com/519070
+      raster_source->PlaybackToCanvas(canvas, canvas_bitmap_rect,
+                                      canvas_bitmap_rect, scale);
 
-    NOTREACHED();
+      if (format == ETC1) {
+        TRACE_EVENT0("cc",
+                     "TileTaskWorkerPool::PlaybackToMemory::CompressETC1");
+        DCHECK_EQ(size.width() % 4, 0);
+        DCHECK_EQ(size.height() % 4, 0);
+        scoped_ptr<TextureCompressor> texture_compressor =
+            TextureCompressor::Create(TextureCompressor::kFormatETC1);
+        texture_compressor->Compress(reinterpret_cast<const uint8_t*>(
+                                         surface->peekPixels(nullptr, nullptr)),
+                                     reinterpret_cast<uint8_t*>(memory),
+                                     size.width(), size.height(),
+                                     TextureCompressor::kQualityHigh);
+      } else {
+        TRACE_EVENT0("cc",
+                     "TileTaskWorkerPool::PlaybackToMemory::ConvertRGBA4444");
+        SkImageInfo dst_info = SkImageInfo::Make(
+            info.width(), info.height(), ResourceFormatToSkColorType(format),
+            info.alphaType(), info.profileType());
+        bool rv =
+            surface->getCanvas()->readPixels(dst_info, memory, stride, 0, 0);
+        DCHECK(rv);
+      }
+      return;
+    }
+    case ALPHA_8:
+    case LUMINANCE_8:
+    case RGB_565:
+    case RED_8:
+    case LUMINANCE_F16:
+      NOTREACHED();
+      return;
   }
+
+  NOTREACHED();
 }
 
 }  // namespace cc
