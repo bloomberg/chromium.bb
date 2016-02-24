@@ -144,6 +144,24 @@ void RecordUMAForTransferredWindowType(aura::Window* window) {
   ash::MultiProfileUMA::RecordTeleportWindowType(window_type);
 }
 
+bool HasSystemModalTransientChildWindow(aura::Window* window) {
+  if (window == nullptr)
+    return false;
+
+  aura::Window* system_modal_container = window->GetRootWindow()->GetChildById(
+      ash::kShellWindowId_SystemModalContainer);
+  if (window->parent() == system_modal_container)
+    return true;
+
+  aura::Window::Windows::const_iterator it =
+      wm::GetTransientChildren(window).begin();
+  for (; it != wm::GetTransientChildren(window).end(); ++it) {
+    if (HasSystemModalTransientChildWindow(*it))
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 namespace chrome {
@@ -603,11 +621,7 @@ void MultiUserWindowManagerChromeOS::SetWindowVisibility(
   // Note that in some cases (e.g. unit test) windows might not have a root
   // window.
   if (!visible && window->GetRootWindow()) {
-    // Get the system modal container for the window's root window.
-    aura::Window* system_modal_container =
-        window->GetRootWindow()->GetChildById(
-            ash::kShellWindowId_SystemModalContainer);
-    if (window->parent() == system_modal_container) {
+    if (HasSystemModalTransientChildWindow(window)) {
       // The window is system modal and we need to find the parent which owns
       // it so that we can switch to the desktop accordingly.
       AccountId account_id = GetUserPresentingWindow(window);

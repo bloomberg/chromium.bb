@@ -1571,7 +1571,8 @@ bool ChromeLauncherController::ShelfBoundsChangesProbablyWithUser(
     const std::string& user_id) const {
   Profile* other_profile = multi_user_util::GetProfileFromAccountId(
       AccountId::FromUserEmail(user_id));
-  DCHECK_NE(other_profile, profile_);
+  if (other_profile == profile_)
+    return false;
 
   // Note: The Auto hide state from preferences is not the same as the actual
   // visibility of the shelf. Depending on all the various states (full screen,
