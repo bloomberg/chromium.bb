@@ -69,14 +69,11 @@ bool ApplicationManager::TestAPI::HasRunningInstanceForURL(
 ////////////////////////////////////////////////////////////////////////////////
 // ApplicationManager, public:
 
-ApplicationManager::ApplicationManager(bool register_mojo_url_schemes)
-    : ApplicationManager(nullptr, nullptr, register_mojo_url_schemes) {}
-
 ApplicationManager::ApplicationManager(
     scoped_ptr<NativeRunnerFactory> native_runner_factory,
-    base::TaskRunner* task_runner,
+    base::TaskRunner* file_task_runner,
     bool register_mojo_url_schemes)
-    : task_runner_(task_runner),
+    : file_task_runner_(file_task_runner),
       native_runner_factory_(std::move(native_runner_factory)),
       weak_ptr_factory_(this) {
   SetLoaderForURL(make_scoped_ptr(new ShellApplicationLoader(this)),
@@ -219,8 +216,8 @@ void ApplicationManager::AddListener(
 // ApplicationManager, private:
 
 void ApplicationManager::InitPackageManager(bool register_mojo_url_schemes) {
-  scoped_ptr<ApplicationLoader> loader(
-      new package_manager::Loader(task_runner_, register_mojo_url_schemes));
+  scoped_ptr<ApplicationLoader> loader(new package_manager::Loader(
+      file_task_runner_, register_mojo_url_schemes));
 
   mojom::ShellClientRequest request;
   GURL url("mojo://package_manager/");

@@ -280,7 +280,7 @@ void CapabilityFilterTest::RunWildcardTest() {
 
 
 void CapabilityFilterTest::SetUp() {
-  application_manager_.reset(new ApplicationManager(true));
+  application_manager_.reset(new ApplicationManager(nullptr, nullptr, true));
   application_manager_->SetInstanceQuitCallback(
       base::Bind(&CapabilityFilterTest::OnInstanceQuit,
                  base::Unretained(this)));

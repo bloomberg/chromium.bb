@@ -56,18 +56,16 @@ class ApplicationManager : public ShellClient,
     DISALLOW_COPY_AND_ASSIGN(TestAPI);
   };
 
-  // Creates an ApplicationManager.
-  explicit ApplicationManager(bool register_mojo_url_schemes);
   // |native_runner_factory| is an instance of an object capable of vending
   // implementations of NativeRunner, e.g. for in or out-of-process execution.
   // See native_runner.h and RunNativeApplication().
-  // |task_runner| provides access to a thread to perform file copy operations
-  // on. This may be null only in testing environments where applications are
-  // loaded via ApplicationLoader implementations.
+  // |file_task_runner| provides access to a thread to perform file copy
+  // operations on. This may be null only in testing environments where
+  // applications are loaded via ApplicationLoader implementations.
   // When |register_mojo_url_schemes| is true, mojo: and exe: URL schems are
   // registered as "standard" which faciliates resolving.
   ApplicationManager(scoped_ptr<NativeRunnerFactory> native_runner_factory,
-                     base::TaskRunner* task_runner,
+                     base::TaskRunner* file_task_runner,
                      bool register_mojo_url_schemes);
   ~ApplicationManager() override;
 
@@ -185,7 +183,7 @@ class ApplicationManager : public ShellClient,
   WeakInterfacePtrSet<mojom::ApplicationManagerListener> listeners_;
 
   base::Callback<void(const Identity&)> instance_quit_callback_;
-  base::TaskRunner* task_runner_;
+  base::TaskRunner* file_task_runner_;
   scoped_ptr<NativeRunnerFactory> native_runner_factory_;
   std::vector<scoped_ptr<NativeRunner>> native_runners_;
   WeakBindingSet<mojom::ApplicationManager> bindings_;
