@@ -36,11 +36,10 @@
       presentation clock, which is defined in the
       presentation.clock_id event.
 
-      Request 'feedback' can be regarded as an additional wl_surface
-      method. It is part of the double-buffered surface state update
-      mechanism, where other requests first set up the state and then
-      wl_surface.commit atomically applies the state into use. In
-      other words, wl_surface.commit submits a content update.
+      A content update for a wl_surface is submitted by a
+      wl_surface.commit request. Request 'feedback' associates with
+      the wl_surface.commit and provides feedback on the content
+      update, particularly the final realized presentation time.
 
 <!-- Completing presentation -->
 
