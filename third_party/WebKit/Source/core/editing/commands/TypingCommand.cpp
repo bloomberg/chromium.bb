@@ -208,16 +208,16 @@ void TypingCommand::insertText(Document& document, const String& text, const Vis
     applyTextInsertionCommand(frame.get(), cmd, selectionForInsertion, currentSelection);
 }
 
-bool TypingCommand::insertLineBreak(Document& document, Options options)
+bool TypingCommand::insertLineBreak(Document& document)
 {
     if (RefPtrWillBeRawPtr<TypingCommand> lastTypingCommand = lastTypingCommandIfStillOpenForTyping(document.frame())) {
-        lastTypingCommand->setShouldRetainAutocorrectionIndicator(options & RetainAutocorrectionIndicator);
+        lastTypingCommand->setShouldRetainAutocorrectionIndicator(false);
         EditingState editingState;
         lastTypingCommand->insertLineBreak(&editingState);
         return !editingState.isAborted();
     }
 
-    return TypingCommand::create(document, InsertLineBreak, "", options)->apply();
+    return TypingCommand::create(document, InsertLineBreak, "", 0)->apply();
 }
 
 bool TypingCommand::insertParagraphSeparatorInQuotedContent(Document& document)
@@ -231,16 +231,16 @@ bool TypingCommand::insertParagraphSeparatorInQuotedContent(Document& document)
     return TypingCommand::create(document, InsertParagraphSeparatorInQuotedContent)->apply();
 }
 
-bool TypingCommand::insertParagraphSeparator(Document& document, Options options)
+bool TypingCommand::insertParagraphSeparator(Document& document)
 {
     if (RefPtrWillBeRawPtr<TypingCommand> lastTypingCommand = lastTypingCommandIfStillOpenForTyping(document.frame())) {
-        lastTypingCommand->setShouldRetainAutocorrectionIndicator(options & RetainAutocorrectionIndicator);
+        lastTypingCommand->setShouldRetainAutocorrectionIndicator(false);
         EditingState editingState;
         lastTypingCommand->insertParagraphSeparator(&editingState);
         return !editingState.isAborted();
     }
 
-    return TypingCommand::create(document, InsertParagraphSeparator, "", options)->apply();
+    return TypingCommand::create(document, InsertParagraphSeparator, "", 0)->apply();
 }
 
 PassRefPtrWillBeRawPtr<TypingCommand> TypingCommand::lastTypingCommandIfStillOpenForTyping(LocalFrame* frame)

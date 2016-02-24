@@ -58,13 +58,12 @@ public:
     typedef unsigned Options;
 
     static void deleteSelection(Document&, Options = 0);
-    static void deleteKeyPressed(Document&, Options = 0, TextGranularity = CharacterGranularity);
+    static void deleteKeyPressed(Document&, Options, TextGranularity = CharacterGranularity);
     static void forwardDeleteKeyPressed(Document&, EditingState*, Options = 0, TextGranularity = CharacterGranularity);
     static void insertText(Document&, const String&, Options, TextCompositionType = TextCompositionNone);
     static void insertText(Document&, const String&, const VisibleSelection&, Options, TextCompositionType = TextCompositionNone);
-    static bool insertLineBreak(Document&, Options);
-    // TODO(tkent): |Options| argument should be removed. It's always 0.
-    static bool insertParagraphSeparator(Document&, Options);
+    static bool insertLineBreak(Document&);
+    static bool insertParagraphSeparator(Document&);
     static bool insertParagraphSeparatorInQuotedContent(Document&);
     static void closeTyping(LocalFrame*);
 

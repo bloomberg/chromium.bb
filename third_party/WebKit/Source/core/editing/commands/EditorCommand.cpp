@@ -558,7 +558,7 @@ static bool executeInsertLineBreak(LocalFrame& frame, Event* event, EditorComman
         // InsertLineBreak is not implemented in IE or Firefox, so this behavior is only needed for
         // backward compatibility with ourselves, and for consistency with other commands.
         ASSERT(frame.document());
-        return TypingCommand::insertLineBreak(*frame.document(), 0);
+        return TypingCommand::insertLineBreak(*frame.document());
     }
     ASSERT_NOT_REACHED();
     return false;
@@ -585,7 +585,7 @@ static bool executeInsertOrderedList(LocalFrame& frame, Event*, EditorCommandSou
 static bool executeInsertParagraph(LocalFrame& frame, Event*, EditorCommandSource, const String&)
 {
     ASSERT(frame.document());
-    return TypingCommand::insertParagraphSeparator(*frame.document(), 0);
+    return TypingCommand::insertParagraphSeparator(*frame.document());
 }
 
 static bool executeInsertTab(LocalFrame& frame, Event* event, EditorCommandSource, const String&)
