@@ -45,6 +45,7 @@ class CONTENT_EXPORT BlobConsolidation {
     ConsolidatedItem(storage::DataElement::Type type,
                      uint64_t offset,
                      uint64_t length);
+    ConsolidatedItem(const ConsolidatedItem& other);
     ~ConsolidatedItem();
 
     storage::DataElement::Type type;

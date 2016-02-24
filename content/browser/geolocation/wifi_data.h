@@ -37,6 +37,7 @@ struct AccessPointDataLess {
 // All data for wifi.
 struct CONTENT_EXPORT WifiData {
   WifiData();
+  WifiData(const WifiData& other);
   ~WifiData();
 
   // Determines whether a new set of WiFi data differs significantly from this.

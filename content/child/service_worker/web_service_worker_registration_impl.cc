@@ -42,6 +42,9 @@ WebServiceWorkerRegistrationImpl::QueuedTask::QueuedTask(
     const scoped_refptr<WebServiceWorkerImpl>& worker)
     : type(type), worker(worker) {}
 
+WebServiceWorkerRegistrationImpl::QueuedTask::QueuedTask(
+    const QueuedTask& other) = default;
+
 WebServiceWorkerRegistrationImpl::QueuedTask::~QueuedTask() {}
 
 WebServiceWorkerRegistrationImpl::WebServiceWorkerRegistrationImpl(

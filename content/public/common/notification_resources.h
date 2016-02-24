@@ -15,6 +15,7 @@ namespace content {
 // Structure to hold the resources associated with a Web Notification.
 struct CONTENT_EXPORT NotificationResources {
   NotificationResources();
+  NotificationResources(const NotificationResources& other);
   ~NotificationResources();
 
   // Main icon for the notification. The bitmap may be empty if the developer

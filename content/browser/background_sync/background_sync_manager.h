@@ -164,6 +164,7 @@ class CONTENT_EXPORT BackgroundSyncManager
         std::map<RegistrationKey, scoped_refptr<RefCountedRegistration>>;
 
     BackgroundSyncRegistrations();
+    BackgroundSyncRegistrations(const BackgroundSyncRegistrations& other);
     ~BackgroundSyncRegistrations();
 
     RegistrationMap registration_map;

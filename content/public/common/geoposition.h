@@ -32,6 +32,8 @@ struct CONTENT_EXPORT Geoposition {
   // error code is set to ERROR_CODE_NONE.
   Geoposition();
 
+  Geoposition(const Geoposition& other);
+
   // A valid fix has a valid latitude, longitude, accuracy and timestamp.
   bool Validate() const;
 

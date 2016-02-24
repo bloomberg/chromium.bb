@@ -58,6 +58,9 @@ PepperNetworkProxyHost::~PepperNetworkProxyHost() {
 
 PepperNetworkProxyHost::UIThreadData::UIThreadData() : is_allowed(false) {}
 
+PepperNetworkProxyHost::UIThreadData::UIThreadData(const UIThreadData& other) =
+    default;
+
 PepperNetworkProxyHost::UIThreadData::~UIThreadData() {}
 
 // static

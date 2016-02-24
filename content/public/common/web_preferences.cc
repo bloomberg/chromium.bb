@@ -208,6 +208,8 @@ WebPreferences::WebPreferences()
       base::ASCIIToUTF16("Times New Roman");
 }
 
+WebPreferences::WebPreferences(const WebPreferences& other) = default;
+
 WebPreferences::~WebPreferences() {
 }
 

@@ -15,6 +15,7 @@ namespace content {
 // Describes the new location for a plugin window.
 struct WebPluginGeometry {
   WebPluginGeometry();
+  WebPluginGeometry(const WebPluginGeometry& other);
   ~WebPluginGeometry();
 
   bool Equals(const WebPluginGeometry& rhs) const;

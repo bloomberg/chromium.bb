@@ -129,6 +129,7 @@ struct CONTENT_EXPORT ServiceWorkerFetchRequest {
                             const ServiceWorkerHeaderMap& headers,
                             const Referrer& referrer,
                             bool is_reload);
+  ServiceWorkerFetchRequest(const ServiceWorkerFetchRequest& other);
   ~ServiceWorkerFetchRequest();
 
   FetchRequestMode mode;
@@ -160,6 +161,7 @@ struct CONTENT_EXPORT ServiceWorkerResponse {
                         uint64_t blob_size,
                         const GURL& stream_url,
                         blink::WebServiceWorkerResponseError error);
+  ServiceWorkerResponse(const ServiceWorkerResponse& other);
   ~ServiceWorkerResponse();
 
   GURL url;

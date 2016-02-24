@@ -153,6 +153,8 @@ DOMStorageNamespace* DOMStorageHost::GetNamespace(int connection_id) {
 // NamespaceAndArea
 
 DOMStorageHost::NamespaceAndArea::NamespaceAndArea() {}
+DOMStorageHost::NamespaceAndArea::NamespaceAndArea(
+    const NamespaceAndArea& other) = default;
 DOMStorageHost::NamespaceAndArea::~NamespaceAndArea() {}
 
 }  // namespace content

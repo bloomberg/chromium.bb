@@ -9,6 +9,8 @@ namespace content {
 FileChooserParams::FileChooserParams() : mode(Open), need_local_path(true) {
 }
 
+FileChooserParams::FileChooserParams(const FileChooserParams& other) = default;
+
 FileChooserParams::~FileChooserParams() {
 }
 

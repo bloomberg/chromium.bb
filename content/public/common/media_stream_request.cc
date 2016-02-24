@@ -57,6 +57,8 @@ MediaStreamDevice::MediaStreamDevice(
       input(sample_rate, channel_layout, frames_per_buffer) {
 }
 
+MediaStreamDevice::MediaStreamDevice(const MediaStreamDevice& other) = default;
+
 MediaStreamDevice::~MediaStreamDevice() {}
 
 bool MediaStreamDevice::IsEqual(const MediaStreamDevice& second) const {
@@ -96,6 +98,9 @@ MediaStreamDevice::AudioDeviceParameters::AudioDeviceParameters(
       frames_per_buffer(frames_per_buffer),
       effects() {}
 
+MediaStreamDevice::AudioDeviceParameters::AudioDeviceParameters(
+    const AudioDeviceParameters& other) = default;
+
 MediaStreamDevice::AudioDeviceParameters::~AudioDeviceParameters() {}
 
 MediaStreamRequest::MediaStreamRequest(
@@ -121,6 +126,9 @@ MediaStreamRequest::MediaStreamRequest(
       video_type(video_type),
       all_ancestors_have_same_origin(false) {
 }
+
+MediaStreamRequest::MediaStreamRequest(const MediaStreamRequest& other) =
+    default;
 
 MediaStreamRequest::~MediaStreamRequest() {}
 

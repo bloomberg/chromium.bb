@@ -106,6 +106,7 @@ class CONTENT_EXPORT GamepadProvider :
   struct ClosureAndThread {
     ClosureAndThread(const base::Closure& c,
                      const scoped_refptr<base::SingleThreadTaskRunner>& m);
+    ClosureAndThread(const ClosureAndThread& other);
     ~ClosureAndThread();
 
     base::Closure closure;

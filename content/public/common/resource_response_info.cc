@@ -25,6 +25,9 @@ ResourceResponseInfo::ResourceResponseInfo()
           blink::WebServiceWorkerResponseTypeDefault),
       is_using_lofi(false) {}
 
+ResourceResponseInfo::ResourceResponseInfo(const ResourceResponseInfo& other) =
+    default;
+
 ResourceResponseInfo::~ResourceResponseInfo() {
 }
 

@@ -37,6 +37,7 @@ struct CONTENT_EXPORT PepperPluginInfo {
   };
 
   PepperPluginInfo();
+  PepperPluginInfo(const PepperPluginInfo& other);
   ~PepperPluginInfo();
 
   WebPluginInfo ToWebPluginInfo() const;

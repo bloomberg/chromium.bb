@@ -42,6 +42,9 @@ SyntheticSmoothMoveGestureParams::SyntheticSmoothMoveGestureParams()
       prevent_fling(true),
       add_slop(true) {}
 
+SyntheticSmoothMoveGestureParams::SyntheticSmoothMoveGestureParams(
+    const SyntheticSmoothMoveGestureParams& other) = default;
+
 SyntheticSmoothMoveGestureParams::~SyntheticSmoothMoveGestureParams() {}
 
 SyntheticSmoothMoveGesture::SyntheticSmoothMoveGesture(

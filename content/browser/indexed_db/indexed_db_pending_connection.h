@@ -24,6 +24,7 @@ struct CONTENT_EXPORT IndexedDBPendingConnection {
       int child_process_id_in,
       int64_t transaction_id_in,
       int64_t version_in);
+  IndexedDBPendingConnection(const IndexedDBPendingConnection& other);
   ~IndexedDBPendingConnection();
   scoped_refptr<IndexedDBCallbacks> callbacks;
   scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks;

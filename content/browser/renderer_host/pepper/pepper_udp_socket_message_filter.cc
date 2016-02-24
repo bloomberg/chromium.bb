@@ -60,6 +60,9 @@ PepperUDPSocketMessageFilter::PendingSend::PendingSend(
     : address(address), port(port), buffer(buffer), context(context) {
 }
 
+PepperUDPSocketMessageFilter::PendingSend::PendingSend(
+    const PendingSend& other) = default;
+
 PepperUDPSocketMessageFilter::PendingSend::~PendingSend() {
 }
 

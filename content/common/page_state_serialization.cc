@@ -671,6 +671,9 @@ ExplodedHttpBodyElement::ExplodedHttpBodyElement()
       file_modification_time(std::numeric_limits<double>::quiet_NaN()) {
 }
 
+ExplodedHttpBodyElement::ExplodedHttpBodyElement(
+    const ExplodedHttpBodyElement& other) = default;
+
 ExplodedHttpBodyElement::~ExplodedHttpBodyElement() {
 }
 

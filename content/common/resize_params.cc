@@ -13,6 +13,8 @@ ResizeParams::ResizeParams()
       display_mode(blink::WebDisplayModeUndefined),
       needs_resize_ack(false) {}
 
+ResizeParams::ResizeParams(const ResizeParams& other) = default;
+
 ResizeParams::~ResizeParams() {}
 
 }  // namespace content

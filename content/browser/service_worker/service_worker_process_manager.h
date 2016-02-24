@@ -93,6 +93,7 @@ class CONTENT_EXPORT ServiceWorkerProcessManager {
   struct ProcessInfo {
     explicit ProcessInfo(const scoped_refptr<SiteInstance>& site_instance);
     explicit ProcessInfo(int process_id);
+    ProcessInfo(const ProcessInfo& other);
     ~ProcessInfo();
 
     // Stores the SiteInstance the Worker lives inside. This needs to outlive

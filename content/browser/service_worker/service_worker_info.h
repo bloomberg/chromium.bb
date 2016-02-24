@@ -37,6 +37,7 @@ struct CONTENT_EXPORT ServiceWorkerVersionInfo {
                            int process_id,
                            int thread_id,
                            int devtools_agent_route_id);
+  ServiceWorkerVersionInfo(const ServiceWorkerVersionInfo& other);
   ~ServiceWorkerVersionInfo();
 
   ServiceWorkerVersion::RunningStatus running_status;
@@ -69,6 +70,7 @@ struct CONTENT_EXPORT ServiceWorkerRegistrationInfo {
       const ServiceWorkerVersionInfo& waiting_version,
       const ServiceWorkerVersionInfo& installing_version,
       int64_t active_version_total_size_bytes);
+  ServiceWorkerRegistrationInfo(const ServiceWorkerRegistrationInfo& other);
   ~ServiceWorkerRegistrationInfo();
 
   GURL pattern;

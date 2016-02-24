@@ -12,6 +12,9 @@ AXEventNotificationDetails::AXEventNotificationDetails()
       ax_tree_id(-1) {
 }
 
+AXEventNotificationDetails::AXEventNotificationDetails(
+    const AXEventNotificationDetails& other) = default;
+
 AXEventNotificationDetails::~AXEventNotificationDetails() {}
 
 }  // namespace content

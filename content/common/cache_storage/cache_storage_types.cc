@@ -13,4 +13,7 @@ CacheStorageCacheQueryParams::CacheStorageCacheQueryParams()
 CacheStorageBatchOperation::CacheStorageBatchOperation() {
 }
 
+CacheStorageBatchOperation::CacheStorageBatchOperation(
+    const CacheStorageBatchOperation& other) = default;
+
 }  // namespace content

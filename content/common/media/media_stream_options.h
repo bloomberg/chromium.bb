@@ -36,6 +36,7 @@ struct CONTENT_EXPORT TrackControls {
  public:
   TrackControls();
   TrackControls(bool request);
+  TrackControls(const TrackControls& other);
   ~TrackControls();
   bool requested;
 

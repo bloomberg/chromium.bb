@@ -89,6 +89,7 @@ class WebContents : public PageNavigator,
  public:
   struct CONTENT_EXPORT CreateParams {
     explicit CreateParams(BrowserContext* context);
+    CreateParams(const CreateParams& other);
     ~CreateParams();
     CreateParams(BrowserContext* context, SiteInstance* site);
 

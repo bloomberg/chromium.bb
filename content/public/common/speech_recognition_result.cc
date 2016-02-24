@@ -10,6 +10,9 @@ SpeechRecognitionResult::SpeechRecognitionResult()
     : is_provisional(false) {
 }
 
+SpeechRecognitionResult::SpeechRecognitionResult(
+    const SpeechRecognitionResult& other) = default;
+
 SpeechRecognitionResult::~SpeechRecognitionResult() {
 }
 

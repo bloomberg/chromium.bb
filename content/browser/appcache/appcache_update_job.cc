@@ -140,6 +140,8 @@ AppCacheUpdateJob::UrlToFetch::UrlToFetch(const GURL& url,
       existing_response_info(info) {
 }
 
+AppCacheUpdateJob::UrlToFetch::UrlToFetch(const UrlToFetch& other) = default;
+
 AppCacheUpdateJob::UrlToFetch::~UrlToFetch() {
 }
 

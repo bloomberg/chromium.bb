@@ -91,6 +91,7 @@ class PepperCompositorHost : public ppapi::host::ResourceHost {
   struct LayerData {
     LayerData(const scoped_refptr<cc::Layer>& cc,
               const ppapi::CompositorLayerData& pp);
+    LayerData(const LayerData& other);
     ~LayerData();
 
     scoped_refptr<cc::Layer> cc_layer;

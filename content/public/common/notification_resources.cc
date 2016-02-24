@@ -8,6 +8,9 @@ namespace content {
 
 NotificationResources::NotificationResources() {}
 
+NotificationResources::NotificationResources(
+    const NotificationResources& other) = default;
+
 NotificationResources::~NotificationResources() {}
 
 }  // namespace content

@@ -35,6 +35,9 @@ BlobConsolidation::ConsolidatedItem::ConsolidatedItem(DataElement::Type type,
       expected_modification_time(0) {
 }
 
+BlobConsolidation::ConsolidatedItem::ConsolidatedItem(
+    const ConsolidatedItem& other) = default;
+
 BlobConsolidation::BlobConsolidation() : total_memory_(0) {
 }
 

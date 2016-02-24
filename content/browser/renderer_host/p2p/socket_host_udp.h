@@ -58,6 +58,7 @@ class CONTENT_EXPORT P2PSocketHostUdp : public P2PSocketHost {
                   const std::vector<char>& content,
                   const rtc::PacketOptions& options,
                   uint64_t id);
+    PendingPacket(const PendingPacket& other);
     ~PendingPacket();
     net::IPEndPoint to;
     scoped_refptr<net::IOBuffer> data;

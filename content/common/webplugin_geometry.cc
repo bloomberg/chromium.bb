@@ -12,6 +12,8 @@ WebPluginGeometry::WebPluginGeometry()
       visible(false) {
 }
 
+WebPluginGeometry::WebPluginGeometry(const WebPluginGeometry& other) = default;
+
 WebPluginGeometry::~WebPluginGeometry() {
 }
 

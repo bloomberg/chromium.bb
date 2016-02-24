@@ -262,6 +262,8 @@ GLHelperScaling::ScalerStage::ScalerStage(ShaderType shader_,
       vertically_flip_texture(vertically_flip_texture_),
       swizzle(swizzle_) {}
 
+GLHelperScaling::ScalerStage::ScalerStage(const ScalerStage& other) = default;
+
 // The important inputs for this function is |x_ops| and
 // |y_ops|. They represent scaling operations to be done
 // on an imag of size |src_size|. If |quality| is SCALER_QUALITY_BEST,

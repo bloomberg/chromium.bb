@@ -84,6 +84,9 @@ P2PSocketHostUdp::PendingPacket::PendingPacket(
   memcpy(data->data(), &content[0], size);
 }
 
+P2PSocketHostUdp::PendingPacket::PendingPacket(const PendingPacket& other) =
+    default;
+
 P2PSocketHostUdp::PendingPacket::~PendingPacket() {
 }
 

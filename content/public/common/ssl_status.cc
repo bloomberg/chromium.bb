@@ -32,6 +32,8 @@ SSLStatus::SSLStatus(SecurityStyle security_style,
       content_status(NORMAL_CONTENT),
       signed_certificate_timestamp_ids(signed_certificate_timestamp_ids) {}
 
+SSLStatus::SSLStatus(const SSLStatus& other) = default;
+
 SSLStatus::~SSLStatus() {}
 
 }  // namespace content

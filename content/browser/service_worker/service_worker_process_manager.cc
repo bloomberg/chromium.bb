@@ -40,6 +40,9 @@ ServiceWorkerProcessManager::ProcessInfo::ProcessInfo(int process_id)
     : process_id(process_id) {
 }
 
+ServiceWorkerProcessManager::ProcessInfo::ProcessInfo(
+    const ProcessInfo& other) = default;
+
 ServiceWorkerProcessManager::ProcessInfo::~ProcessInfo() {
 }
 

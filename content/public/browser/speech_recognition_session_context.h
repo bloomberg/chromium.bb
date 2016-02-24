@@ -22,6 +22,7 @@ namespace content {
 // SpeechRecognitionManager::LookupSessionByContext methods).
 struct CONTENT_EXPORT SpeechRecognitionSessionContext {
   SpeechRecognitionSessionContext();
+  SpeechRecognitionSessionContext(const SpeechRecognitionSessionContext& other);
   ~SpeechRecognitionSessionContext();
 
   int render_process_id;

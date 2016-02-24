@@ -86,6 +86,7 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
   struct QueuedTask {
     QueuedTask(QueuedTaskType type,
                const scoped_refptr<WebServiceWorkerImpl>& worker);
+    QueuedTask(const QueuedTask& other);
     ~QueuedTask();
     QueuedTaskType type;
     scoped_refptr<WebServiceWorkerImpl> worker;

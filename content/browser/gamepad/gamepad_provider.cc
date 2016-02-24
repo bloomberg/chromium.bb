@@ -39,6 +39,9 @@ GamepadProvider::ClosureAndThread::ClosureAndThread(
     : closure(c), task_runner(m) {
 }
 
+GamepadProvider::ClosureAndThread::ClosureAndThread(
+    const ClosureAndThread& other) = default;
+
 GamepadProvider::ClosureAndThread::~ClosureAndThread() {
 }
 

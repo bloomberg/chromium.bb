@@ -28,6 +28,8 @@ WebContents::CreateParams::CreateParams(BrowserContext* context,
       context(nullptr),
       renderer_initiated_creation(false) {}
 
+WebContents::CreateParams::CreateParams(const CreateParams& other) = default;
+
 WebContents::CreateParams::~CreateParams() {
 }
 

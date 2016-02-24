@@ -81,6 +81,7 @@ class CONTENT_EXPORT SpeechRecognizerImpl
 
   struct FSMEventArgs {
     explicit FSMEventArgs(FSMEvent event_value);
+    FSMEventArgs(const FSMEventArgs& other);
     ~FSMEventArgs();
 
     FSMEvent event;

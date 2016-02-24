@@ -298,6 +298,7 @@ class CONTENT_EXPORT ChildThreadImpl
 };
 
 struct ChildThreadImpl::Options {
+  Options(const Options& other);
   ~Options();
 
   class Builder;

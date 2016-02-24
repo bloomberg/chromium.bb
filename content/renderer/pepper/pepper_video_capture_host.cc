@@ -412,6 +412,9 @@ PepperVideoCaptureHost::BufferInfo::BufferInfo()
     : in_use(false), data(NULL), buffer() {
 }
 
+PepperVideoCaptureHost::BufferInfo::BufferInfo(const BufferInfo& other) =
+    default;
+
 PepperVideoCaptureHost::BufferInfo::~BufferInfo() {
 }
 

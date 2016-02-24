@@ -106,6 +106,8 @@ struct CONTENT_EXPORT MediaStreamDevice {
       int channel_layout,
       int frames_per_buffer);
 
+  MediaStreamDevice(const MediaStreamDevice& other);
+
   ~MediaStreamDevice();
 
   bool IsEqual(const MediaStreamDevice& second) const;
@@ -134,6 +136,7 @@ struct CONTENT_EXPORT MediaStreamDevice {
     AudioDeviceParameters(int sample_rate,
                           int channel_layout,
                           int frames_per_buffer);
+    AudioDeviceParameters(const AudioDeviceParameters& other);
 
     ~AudioDeviceParameters();
 
@@ -202,6 +205,8 @@ struct CONTENT_EXPORT MediaStreamRequest {
       const std::string& requested_video_device_id,
       MediaStreamType audio_type,
       MediaStreamType video_type);
+
+  MediaStreamRequest(const MediaStreamRequest& other);
 
   ~MediaStreamRequest();
 

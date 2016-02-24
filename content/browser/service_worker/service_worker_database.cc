@@ -284,6 +284,9 @@ ServiceWorkerDatabase::RegistrationData::RegistrationData()
       resources_total_size_bytes(0) {
 }
 
+ServiceWorkerDatabase::RegistrationData::RegistrationData(
+    const RegistrationData& other) = default;
+
 ServiceWorkerDatabase::RegistrationData::~RegistrationData() {
 }
 

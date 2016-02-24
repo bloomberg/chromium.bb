@@ -145,6 +145,8 @@ PepperCompositorHost::LayerData::LayerData(
     const scoped_refptr<cc::Layer>& cc,
     const ppapi::CompositorLayerData& pp) : cc_layer(cc), pp_layer(pp) {}
 
+PepperCompositorHost::LayerData::LayerData(const LayerData& other) = default;
+
 PepperCompositorHost::LayerData::~LayerData() {}
 
 PepperCompositorHost::PepperCompositorHost(

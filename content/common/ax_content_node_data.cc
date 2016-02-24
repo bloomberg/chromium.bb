@@ -33,6 +33,8 @@ typename std::vector<std::pair<FirstType, SecondType>>::const_iterator
 AXContentNodeData::AXContentNodeData() {
 }
 
+AXContentNodeData::AXContentNodeData(const AXContentNodeData& other) = default;
+
 AXContentNodeData::~AXContentNodeData() {
 }
 

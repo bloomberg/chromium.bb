@@ -9,6 +9,9 @@ namespace content {
 FileChooserFileInfo::FileChooserFileInfo() : length(0), is_directory(false) {
 }
 
+FileChooserFileInfo::FileChooserFileInfo(const FileChooserFileInfo& other) =
+    default;
+
 FileChooserFileInfo::~FileChooserFileInfo() {
 }
 

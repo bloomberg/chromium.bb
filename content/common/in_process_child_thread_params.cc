@@ -12,6 +12,9 @@ InProcessChildThreadParams::InProcessChildThreadParams(
     : channel_name_(channel_name), io_runner_(io_runner) {
 }
 
+InProcessChildThreadParams::InProcessChildThreadParams(
+    const InProcessChildThreadParams& other) = default;
+
 InProcessChildThreadParams::~InProcessChildThreadParams() {
 }
 

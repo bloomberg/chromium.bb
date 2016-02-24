@@ -39,6 +39,7 @@ struct CONTENT_EXPORT SSLStatus {
             const SignedCertificateTimestampIDStatusList&
                 signed_certificate_timestamp_ids,
             const net::SSLInfo& ssl_info);
+  SSLStatus(const SSLStatus& other);
   ~SSLStatus();
 
   bool Equals(const SSLStatus& status) const {

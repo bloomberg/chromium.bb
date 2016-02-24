@@ -27,6 +27,7 @@ namespace content {
 // in resource_response.cc.
 struct ResourceResponseInfo {
   CONTENT_EXPORT ResourceResponseInfo();
+  CONTENT_EXPORT ResourceResponseInfo(const ResourceResponseInfo& other);
   CONTENT_EXPORT ~ResourceResponseInfo();
 
   // The time at which the request was made that resulted in this response.

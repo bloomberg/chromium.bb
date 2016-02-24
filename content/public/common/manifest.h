@@ -27,6 +27,7 @@ struct CONTENT_EXPORT Manifest {
   // http://w3c.github.io/manifest/#dfn-icon-object
   struct CONTENT_EXPORT Icon {
     Icon();
+    Icon(const Icon& other);
     ~Icon();
 
     // MUST be a valid url. If an icon doesn't have a valid URL, it will not be
@@ -71,6 +72,7 @@ struct CONTENT_EXPORT Manifest {
   };
 
   Manifest();
+  Manifest(const Manifest& other);
   ~Manifest();
 
   // Returns whether this Manifest had no attribute set. A newly created

@@ -16,4 +16,7 @@ LoadCommittedDetails::LoadCommittedDetails()
       http_status_code(0) {
 }
 
+LoadCommittedDetails::LoadCommittedDetails(const LoadCommittedDetails& other) =
+    default;
+
 }  // namespace content

@@ -50,6 +50,9 @@ ServiceWorkerFetchRequest::ServiceWorkerFetchRequest(
       is_reload(is_reload),
       fetch_type(ServiceWorkerFetchType::FETCH) {}
 
+ServiceWorkerFetchRequest::ServiceWorkerFetchRequest(
+    const ServiceWorkerFetchRequest& other) = default;
+
 ServiceWorkerFetchRequest::~ServiceWorkerFetchRequest() {}
 
 ServiceWorkerResponse::ServiceWorkerResponse()
@@ -78,6 +81,9 @@ ServiceWorkerResponse::ServiceWorkerResponse(
       blob_size(blob_size),
       stream_url(stream_url),
       error(error) {}
+
+ServiceWorkerResponse::ServiceWorkerResponse(
+    const ServiceWorkerResponse& other) = default;
 
 ServiceWorkerResponse::~ServiceWorkerResponse() {}
 

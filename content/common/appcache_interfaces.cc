@@ -31,6 +31,8 @@ AppCacheInfo::AppCacheInfo()
       is_complete(false) {
 }
 
+AppCacheInfo::AppCacheInfo(const AppCacheInfo& other) = default;
+
 AppCacheInfo::~AppCacheInfo() {
 }
 
@@ -45,6 +47,9 @@ AppCacheResourceInfo::AppCacheResourceInfo()
       is_explicit(false),
       response_id(kAppCacheNoResponseId) {
 }
+
+AppCacheResourceInfo::AppCacheResourceInfo(const AppCacheResourceInfo& other) =
+    default;
 
 AppCacheResourceInfo::~AppCacheResourceInfo() {
 }

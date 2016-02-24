@@ -16,6 +16,9 @@ ServiceWorkerUsageInfo::ServiceWorkerUsageInfo(const GURL& origin)
 ServiceWorkerUsageInfo::ServiceWorkerUsageInfo() : total_size_bytes(0) {
 }
 
+ServiceWorkerUsageInfo::ServiceWorkerUsageInfo(
+    const ServiceWorkerUsageInfo& other) = default;
+
 ServiceWorkerUsageInfo::~ServiceWorkerUsageInfo() {
 }
 

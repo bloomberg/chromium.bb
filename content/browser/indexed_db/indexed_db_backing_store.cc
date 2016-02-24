@@ -798,6 +798,8 @@ IndexedDBBackingStore::RecordIdentifier::RecordIdentifier()
 IndexedDBBackingStore::RecordIdentifier::~RecordIdentifier() {}
 
 IndexedDBBackingStore::Cursor::CursorOptions::CursorOptions() {}
+IndexedDBBackingStore::Cursor::CursorOptions::CursorOptions(
+    const CursorOptions& other) = default;
 IndexedDBBackingStore::Cursor::CursorOptions::~CursorOptions() {}
 
 // Values match entries in tools/metrics/histograms/histograms.xml

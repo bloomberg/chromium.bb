@@ -27,6 +27,8 @@ WebPluginMimeType::WebPluginMimeType(const std::string& m,
   file_extensions.push_back(f);
 }
 
+WebPluginMimeType::WebPluginMimeType(const WebPluginMimeType& other) = default;
+
 WebPluginMimeType::~WebPluginMimeType() {}
 
 WebPluginInfo::WebPluginInfo()

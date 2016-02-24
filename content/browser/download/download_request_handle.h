@@ -45,6 +45,7 @@ class CONTENT_EXPORT DownloadRequestHandleInterface {
 class CONTENT_EXPORT DownloadRequestHandle
     : public DownloadRequestHandleInterface {
  public:
+  DownloadRequestHandle(const DownloadRequestHandle& other);
   ~DownloadRequestHandle() override;
 
   // Create a null DownloadRequestHandle: getters will return null, and

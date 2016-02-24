@@ -195,6 +195,8 @@ DOMStorageNamespace::AreaHolder::AreaHolder(
     : area_(area), open_count_(count) {
 }
 
+DOMStorageNamespace::AreaHolder::AreaHolder(const AreaHolder& other) = default;
+
 DOMStorageNamespace::AreaHolder::~AreaHolder() {
 }
 

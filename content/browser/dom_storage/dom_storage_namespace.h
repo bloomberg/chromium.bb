@@ -86,6 +86,7 @@ class CONTENT_EXPORT DOMStorageNamespace
     int open_count_;
     AreaHolder();
     AreaHolder(DOMStorageArea* area, int count);
+    AreaHolder(const AreaHolder& other);
     ~AreaHolder();
   };
   typedef std::map<GURL, AreaHolder> AreaMap;

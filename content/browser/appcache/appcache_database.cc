@@ -191,6 +191,8 @@ AppCacheDatabase::GroupRecord::GroupRecord()
     : group_id(0) {
 }
 
+AppCacheDatabase::GroupRecord::GroupRecord(const GroupRecord& other) = default;
+
 AppCacheDatabase::GroupRecord::~GroupRecord() {
 }
 

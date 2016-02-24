@@ -17,6 +17,7 @@ namespace content {
 // Result of file chooser.
 struct CONTENT_EXPORT FileChooserFileInfo {
   FileChooserFileInfo();
+  FileChooserFileInfo(const FileChooserFileInfo& other);
   ~FileChooserFileInfo();
 
   base::FilePath file_path;

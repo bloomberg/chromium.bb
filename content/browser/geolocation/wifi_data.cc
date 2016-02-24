@@ -23,6 +23,8 @@ AccessPointData::~AccessPointData() {}
 
 WifiData::WifiData() {}
 
+WifiData::WifiData(const WifiData& other) = default;
+
 WifiData::~WifiData() {}
 
 bool WifiData::DiffersSignificantly(const WifiData& other) const {

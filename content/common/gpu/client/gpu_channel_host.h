@@ -227,6 +227,7 @@ class GpuChannelHost : public IPC::Sender,
    private:
     struct ListenerInfo {
       ListenerInfo();
+      ListenerInfo(const ListenerInfo& other);
       ~ListenerInfo();
 
       base::WeakPtr<IPC::Listener> listener;
@@ -248,6 +249,7 @@ class GpuChannelHost : public IPC::Sender,
 
   struct StreamFlushInfo {
     StreamFlushInfo();
+    StreamFlushInfo(const StreamFlushInfo& other);
     ~StreamFlushInfo();
 
     // These are global per stream.

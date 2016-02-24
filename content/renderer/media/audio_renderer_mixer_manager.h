@@ -80,6 +80,7 @@ class CONTENT_EXPORT AudioRendererMixerManager {
              const media::AudioParameters& params,
              const std::string& device_id,
              const url::Origin& security_origin);
+    MixerKey(const MixerKey& other);
     int source_render_frame_id;
     media::AudioParameters params;
     std::string device_id;

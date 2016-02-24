@@ -51,6 +51,7 @@ class CONTENT_EXPORT AppCacheDatabase {
  public:
   struct CONTENT_EXPORT GroupRecord {
     GroupRecord();
+    GroupRecord(const GroupRecord& other);
     ~GroupRecord();
 
     int64_t group_id;

@@ -336,6 +336,8 @@ AppCacheDiskCache::PendingCall::PendingCall(
     const net::CompletionCallback& callback)
     : call_type(call_type), key(key), entry(entry), callback(callback) {}
 
+AppCacheDiskCache::PendingCall::PendingCall(const PendingCall& other) = default;
+
 AppCacheDiskCache::PendingCall::~PendingCall() {}
 
 int AppCacheDiskCache::Init(

@@ -28,6 +28,7 @@ struct CONTENT_EXPORT FaviconURL {
   FaviconURL(const GURL& url,
              IconType type,
              const std::vector<gfx::Size>& sizes);
+  FaviconURL(const FaviconURL& other);
   ~FaviconURL();
 
   // The url of the icon.

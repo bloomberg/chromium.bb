@@ -18,6 +18,9 @@ IndexedDBPendingConnection::IndexedDBPendingConnection(
       transaction_id(transaction_id_in),
       version(version_in) {}
 
+IndexedDBPendingConnection::IndexedDBPendingConnection(
+    const IndexedDBPendingConnection& other) = default;
+
 IndexedDBPendingConnection::~IndexedDBPendingConnection() {}
 
 }  // namespace content

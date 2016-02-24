@@ -37,6 +37,7 @@ struct CONTENT_EXPORT OpenURLParams {
                 WindowOpenDisposition disposition,
                 ui::PageTransition transition,
                 bool is_renderer_initiated);
+  OpenURLParams(const OpenURLParams& other);
   ~OpenURLParams();
 
   // The URL/referrer to be opened.

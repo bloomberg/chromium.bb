@@ -18,6 +18,9 @@ namespace content {
 
 DownloadRequestHandleInterface::~DownloadRequestHandleInterface() {}
 
+DownloadRequestHandle::DownloadRequestHandle(
+    const DownloadRequestHandle& other) = default;
+
 DownloadRequestHandle::~DownloadRequestHandle() {}
 
 DownloadRequestHandle::DownloadRequestHandle()

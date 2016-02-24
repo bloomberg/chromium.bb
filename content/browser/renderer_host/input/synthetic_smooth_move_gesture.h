@@ -24,6 +24,8 @@ namespace content {
 class CONTENT_EXPORT SyntheticSmoothMoveGestureParams {
  public:
   SyntheticSmoothMoveGestureParams();
+  SyntheticSmoothMoveGestureParams(
+      const SyntheticSmoothMoveGestureParams& other);
   ~SyntheticSmoothMoveGestureParams();
 
   enum InputType { MOUSE_DRAG_INPUT, MOUSE_WHEEL_INPUT, TOUCH_INPUT };

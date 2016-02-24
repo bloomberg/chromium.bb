@@ -19,6 +19,7 @@ struct CONTENT_EXPORT ServiceWorkerUsageInfo {
   ServiceWorkerUsageInfo(const GURL& origin, const std::vector<GURL>& scopes);
   ServiceWorkerUsageInfo(const GURL& origin);
   ServiceWorkerUsageInfo();
+  ServiceWorkerUsageInfo(const ServiceWorkerUsageInfo& other);
   ~ServiceWorkerUsageInfo();
 
   // The origin this object is describing.

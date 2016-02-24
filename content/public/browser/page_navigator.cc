@@ -51,6 +51,8 @@ OpenURLParams::OpenURLParams()
       user_gesture(true) {
 }
 
+OpenURLParams::OpenURLParams(const OpenURLParams& other) = default;
+
 OpenURLParams::~OpenURLParams() {
 }
 

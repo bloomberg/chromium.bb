@@ -96,6 +96,9 @@ DidDeleteRegistrationParams::DidDeleteRegistrationParams()
     : registration_id(kInvalidServiceWorkerRegistrationId) {
 }
 
+ServiceWorkerStorage::DidDeleteRegistrationParams::DidDeleteRegistrationParams(
+    const DidDeleteRegistrationParams& other) = default;
+
 ServiceWorkerStorage::
 DidDeleteRegistrationParams::~DidDeleteRegistrationParams() {
 }

@@ -62,6 +62,7 @@ enum AppCacheErrorReason {
 // Type to hold information about a single appcache resource.
 struct CONTENT_EXPORT AppCacheResourceInfo {
   AppCacheResourceInfo();
+  AppCacheResourceInfo(const AppCacheResourceInfo& other);
   ~AppCacheResourceInfo();
 
   GURL url;

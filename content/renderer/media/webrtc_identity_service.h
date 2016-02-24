@@ -69,6 +69,7 @@ class CONTENT_EXPORT WebRTCIdentityService : public RenderProcessObserver {
     RequestInfo(const WebRTCIdentityMsg_RequestIdentity_Params& params,
                 const SuccessCallback& success_callback,
                 const FailureCallback& failure_callback);
+    RequestInfo(const RequestInfo& other);
     ~RequestInfo();
 
     WebRTCIdentityMsg_RequestIdentity_Params params;

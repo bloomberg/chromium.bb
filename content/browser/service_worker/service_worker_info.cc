@@ -51,6 +51,9 @@ ServiceWorkerVersionInfo::ServiceWorkerVersionInfo(
       thread_id(thread_id),
       devtools_agent_route_id(devtools_agent_route_id) {}
 
+ServiceWorkerVersionInfo::ServiceWorkerVersionInfo(
+    const ServiceWorkerVersionInfo& other) = default;
+
 ServiceWorkerVersionInfo::~ServiceWorkerVersionInfo() {}
 
 ServiceWorkerRegistrationInfo::ServiceWorkerRegistrationInfo()
@@ -86,6 +89,9 @@ ServiceWorkerRegistrationInfo::ServiceWorkerRegistrationInfo(
       waiting_version(waiting_version),
       installing_version(installing_version),
       stored_version_size_bytes(stored_version_size_bytes) {}
+
+ServiceWorkerRegistrationInfo::ServiceWorkerRegistrationInfo(
+    const ServiceWorkerRegistrationInfo& other) = default;
 
 ServiceWorkerRegistrationInfo::~ServiceWorkerRegistrationInfo() {}
 

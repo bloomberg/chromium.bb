@@ -10,6 +10,8 @@ DropData::DropData()
     : did_originate_from_renderer(false),
       referrer_policy(blink::WebReferrerPolicyDefault) {}
 
+DropData::DropData(const DropData& other) = default;
+
 DropData::~DropData() {
 }
 

@@ -45,6 +45,7 @@ class CONTENT_EXPORT FrameTree {
 
   class CONTENT_EXPORT NodeIterator {
    public:
+    NodeIterator(const NodeIterator& other);
     ~NodeIterator();
 
     NodeIterator& operator++();

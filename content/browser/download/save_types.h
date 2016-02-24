@@ -63,6 +63,8 @@ struct SaveFileCreateInfo {
                      const std::string& content_disposition,
                      int64_t total_bytes);
 
+  SaveFileCreateInfo(const SaveFileCreateInfo& other);
+
   ~SaveFileCreateInfo();
 
   // SaveItem fields.

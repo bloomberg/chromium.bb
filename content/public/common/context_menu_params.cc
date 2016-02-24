@@ -35,6 +35,8 @@ ContextMenuParams::ContextMenuParams()
       input_field_type(blink::WebContextMenuData::InputFieldTypeNone) {
 }
 
+ContextMenuParams::ContextMenuParams(const ContextMenuParams& other) = default;
+
 ContextMenuParams::~ContextMenuParams() {
 }
 

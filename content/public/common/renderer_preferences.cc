@@ -52,6 +52,9 @@ RendererPreferences::RendererPreferences()
       , default_font_size(0)
 {}
 
+RendererPreferences::RendererPreferences(const RendererPreferences& other) =
+    default;
+
 RendererPreferences::~RendererPreferences() { }
 
 }  // namespace content

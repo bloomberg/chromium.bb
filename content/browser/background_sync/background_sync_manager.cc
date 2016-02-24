@@ -139,6 +139,9 @@ BackgroundSyncManager::BackgroundSyncRegistrations::
     : next_id(BackgroundSyncRegistration::kInitialId) {
 }
 
+BackgroundSyncManager::BackgroundSyncRegistrations::BackgroundSyncRegistrations(
+    const BackgroundSyncRegistrations& other) = default;
+
 BackgroundSyncManager::BackgroundSyncRegistrations::
     ~BackgroundSyncRegistrations() {
 }

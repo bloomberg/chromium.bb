@@ -19,6 +19,8 @@ Manifest::Icon::Icon()
     : density(kDefaultDensity) {
 }
 
+Manifest::Icon::Icon(const Icon& other) = default;
+
 Manifest::Icon::~Icon() {
 }
 
@@ -35,6 +37,8 @@ Manifest::Manifest()
       theme_color(Manifest::kInvalidOrMissingColor),
       background_color(Manifest::kInvalidOrMissingColor) {
 }
+
+Manifest::Manifest(const Manifest& other) = default;
 
 Manifest::~Manifest() {
 }

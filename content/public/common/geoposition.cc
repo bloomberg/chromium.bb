@@ -29,6 +29,8 @@ Geoposition::Geoposition()
       error_code(ERROR_CODE_NONE) {
 }
 
+Geoposition::Geoposition(const Geoposition& other) = default;
+
 bool Geoposition::Validate() const {
   return latitude >= -90. && latitude <= 90. &&
          longitude >= -180. && longitude <= 180. &&

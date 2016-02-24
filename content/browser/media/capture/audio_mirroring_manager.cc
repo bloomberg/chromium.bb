@@ -209,6 +209,9 @@ AudioMirroringManager::StreamRoutingState::StreamRoutingState(
     diverter(stream_diverter),
     destination(NULL) {}
 
+AudioMirroringManager::StreamRoutingState::StreamRoutingState(
+    const StreamRoutingState& other) = default;
+
 AudioMirroringManager::StreamRoutingState::~StreamRoutingState() {}
 
 }  // namespace content

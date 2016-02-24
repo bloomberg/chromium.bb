@@ -49,6 +49,7 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
 
   struct UIThreadStuff {
     UIThreadStuff();
+    UIThreadStuff(const UIThreadStuff& other);
     ~UIThreadStuff();
     base::ProcessId resolved_render_process_id;
     scoped_refptr<storage::FileSystemContext> file_system_context;

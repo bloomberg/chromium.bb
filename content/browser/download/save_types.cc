@@ -45,6 +45,9 @@ SaveFileCreateInfo::SaveFileCreateInfo(const GURL& url,
       total_bytes(total_bytes),
       save_source(SaveFileCreateInfo::SAVE_FILE_FROM_NET) {}
 
+SaveFileCreateInfo::SaveFileCreateInfo(const SaveFileCreateInfo& other) =
+    default;
+
 SaveFileCreateInfo::~SaveFileCreateInfo() {}
 
 }  // namespace content

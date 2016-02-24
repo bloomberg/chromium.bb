@@ -12,6 +12,9 @@ PlatformNotificationAction::~PlatformNotificationAction() {}
 
 PlatformNotificationData::PlatformNotificationData() {}
 
+PlatformNotificationData::PlatformNotificationData(
+    const PlatformNotificationData& other) = default;
+
 PlatformNotificationData::~PlatformNotificationData() {}
 
 }  // namespace content

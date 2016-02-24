@@ -15,6 +15,9 @@ FrameNavigateParams::FrameNavigateParams()
       should_update_history(false) {
 }
 
+FrameNavigateParams::FrameNavigateParams(const FrameNavigateParams& other) =
+    default;
+
 FrameNavigateParams::~FrameNavigateParams() {
 }
 

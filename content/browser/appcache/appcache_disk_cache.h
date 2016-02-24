@@ -89,6 +89,8 @@ class CONTENT_EXPORT AppCacheDiskCache
                 Entry** entry,
                 const net::CompletionCallback& callback);
 
+    PendingCall(const PendingCall& other);
+
     ~PendingCall();
   };
   typedef std::vector<PendingCall> PendingCalls;

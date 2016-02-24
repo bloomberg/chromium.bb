@@ -21,6 +21,7 @@ class CONTENT_EXPORT InProcessChildThreadParams {
   InProcessChildThreadParams(
       const std::string& channel_name,
       scoped_refptr<base::SequencedTaskRunner> io_runner);
+  InProcessChildThreadParams(const InProcessChildThreadParams& other);
   ~InProcessChildThreadParams();
 
   const std::string& channel_name() const { return channel_name_; }

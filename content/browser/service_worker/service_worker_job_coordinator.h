@@ -56,6 +56,7 @@ class CONTENT_EXPORT ServiceWorkerJobCoordinator {
   class JobQueue {
    public:
     JobQueue();
+    JobQueue(const JobQueue& other);
     ~JobQueue();
 
     // Adds a job to the queue. If an identical job is already at the end of the

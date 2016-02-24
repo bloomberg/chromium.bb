@@ -96,6 +96,7 @@ class CONTENT_EXPORT VideoCaptureImpl
   // for capturing and callbacks to the client.
   struct ClientInfo {
     ClientInfo();
+    ClientInfo(const ClientInfo& other);
     ~ClientInfo();
     media::VideoCaptureParams params;
     VideoCaptureStateUpdateCB state_update_cb;

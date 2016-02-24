@@ -122,6 +122,7 @@ class CONTENT_EXPORT AudioMirroringManager {
 
     StreamRoutingState(const SourceFrameRef& source_frame,
                        Diverter* stream_diverter);
+    StreamRoutingState(const StreamRoutingState& other);
     ~StreamRoutingState();
   };
 

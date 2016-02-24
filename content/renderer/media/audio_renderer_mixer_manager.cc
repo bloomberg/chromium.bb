@@ -174,4 +174,6 @@ AudioRendererMixerManager::MixerKey::MixerKey(
       device_id(device_id),
       security_origin(security_origin) {}
 
+AudioRendererMixerManager::MixerKey::MixerKey(const MixerKey& other) = default;
+
 }  // namespace content

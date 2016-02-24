@@ -33,6 +33,7 @@ struct CONTENT_EXPORT DropData {
   };
 
   DropData();
+  DropData(const DropData& other);
   ~DropData();
 
   // Whether this drag originated from a renderer.

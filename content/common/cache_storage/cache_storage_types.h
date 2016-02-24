@@ -39,6 +39,7 @@ enum CacheStorageCacheOperationType {
 // A single batch operation for the Cache API.
 struct CONTENT_EXPORT CacheStorageBatchOperation {
   CacheStorageBatchOperation();
+  CacheStorageBatchOperation(const CacheStorageBatchOperation& other);
 
   CacheStorageCacheOperationType operation_type;
   ServiceWorkerFetchRequest request;

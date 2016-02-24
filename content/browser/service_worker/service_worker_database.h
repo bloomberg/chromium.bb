@@ -75,6 +75,7 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
     int64_t resources_total_size_bytes;
 
     RegistrationData();
+    RegistrationData(const RegistrationData& other);
     ~RegistrationData();
   };
 

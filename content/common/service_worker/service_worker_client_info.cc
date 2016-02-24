@@ -34,6 +34,9 @@ ServiceWorkerClientInfo::ServiceWorkerClientInfo(
       last_focus_time(last_focus_time),
       client_type(client_type) {}
 
+ServiceWorkerClientInfo::ServiceWorkerClientInfo(
+    const ServiceWorkerClientInfo& other) = default;
+
 bool ServiceWorkerClientInfo::IsEmpty() const {
   return page_visibility_state == blink::WebPageVisibilityStateLast &&
          is_focused == false &&

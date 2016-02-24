@@ -79,6 +79,7 @@ class CONTENT_EXPORT PepperUDPSocketMessageFilter
                 int port,
                 const scoped_refptr<net::IOBufferWithSize>& buffer,
                 const ppapi::host::ReplyMessageContext& context);
+    PendingSend(const PendingSend& other);
     ~PendingSend();
 
     net::IPAddressNumber address;

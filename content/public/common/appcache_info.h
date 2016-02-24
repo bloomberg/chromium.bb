@@ -32,6 +32,7 @@ enum AppCacheStatus {
 
 struct CONTENT_EXPORT AppCacheInfo {
   AppCacheInfo();
+  AppCacheInfo(const AppCacheInfo& other);
   ~AppCacheInfo();
 
   GURL manifest_url;

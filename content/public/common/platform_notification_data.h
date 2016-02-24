@@ -37,6 +37,7 @@ struct CONTENT_EXPORT PlatformNotificationAction {
 // synchronized with the WebNotificationData structure defined in the Blink API.
 struct CONTENT_EXPORT PlatformNotificationData {
   PlatformNotificationData();
+  PlatformNotificationData(const PlatformNotificationData& other);
   ~PlatformNotificationData();
 
   // The maximum size of developer-provided data to be stored in the |data|

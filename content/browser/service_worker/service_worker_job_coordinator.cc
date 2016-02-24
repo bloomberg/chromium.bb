@@ -23,6 +23,9 @@ bool IsRegisterJob(const ServiceWorkerRegisterJobBase& job) {
 
 ServiceWorkerJobCoordinator::JobQueue::JobQueue() {}
 
+ServiceWorkerJobCoordinator::JobQueue::JobQueue(const JobQueue& other) =
+    default;
+
 ServiceWorkerJobCoordinator::JobQueue::~JobQueue() {
   DCHECK(jobs_.empty()) << "Destroying JobQueue with " << jobs_.size()
                         << " unfinished jobs";

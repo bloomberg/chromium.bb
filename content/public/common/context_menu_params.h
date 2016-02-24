@@ -54,6 +54,7 @@ struct CONTENT_EXPORT CustomContextMenuContext {
 //              could be used for more contextual actions.
 struct CONTENT_EXPORT ContextMenuParams {
   ContextMenuParams();
+  ContextMenuParams(const ContextMenuParams& other);
   ~ContextMenuParams();
 
   // This is the type of Context Node that the context menu was invoked on.

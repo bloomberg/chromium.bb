@@ -95,6 +95,7 @@ class PepperVideoCaptureHost : public ppapi::host::ResourceHost {
   // Buffers of video frame.
   struct BufferInfo {
     BufferInfo();
+    BufferInfo(const BufferInfo& other);
     ~BufferInfo();
 
     bool in_use;

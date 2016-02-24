@@ -72,6 +72,7 @@ class PepperBroker : public base::RefCountedThreadSafe<PepperBroker> {
 
   struct PendingConnection {
     PendingConnection();
+    PendingConnection(const PendingConnection& other);
     ~PendingConnection();
 
     bool is_authorized;

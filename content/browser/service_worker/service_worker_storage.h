@@ -274,6 +274,7 @@ class CONTENT_EXPORT ServiceWorkerStorage
     StatusCallback callback;
 
     DidDeleteRegistrationParams();
+    DidDeleteRegistrationParams(const DidDeleteRegistrationParams& other);
     ~DidDeleteRegistrationParams();
   };
 

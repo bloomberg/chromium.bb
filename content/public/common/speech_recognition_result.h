@@ -33,6 +33,7 @@ struct CONTENT_EXPORT SpeechRecognitionResult {
   bool is_provisional;
 
   SpeechRecognitionResult();
+  SpeechRecognitionResult(const SpeechRecognitionResult& other);
   ~SpeechRecognitionResult();
 };
 

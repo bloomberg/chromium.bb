@@ -260,6 +260,8 @@ ChildThreadImpl::Options::Options()
       use_mojo_channel(false) {
 }
 
+ChildThreadImpl::Options::Options(const Options& other) = default;
+
 ChildThreadImpl::Options::~Options() {
 }
 

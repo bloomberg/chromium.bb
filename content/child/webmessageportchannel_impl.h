@@ -106,6 +106,7 @@ class WebMessagePortChannelImpl
 
   struct Message {
     Message();
+    Message(const Message& other);
     ~Message();
 
     MessagePortMessage message;

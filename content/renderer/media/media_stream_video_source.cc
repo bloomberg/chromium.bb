@@ -576,6 +576,9 @@ MediaStreamVideoSource::TrackDescriptor::TrackDescriptor(
       callback(callback) {
 }
 
+MediaStreamVideoSource::TrackDescriptor::TrackDescriptor(
+    const TrackDescriptor& other) = default;
+
 MediaStreamVideoSource::TrackDescriptor::~TrackDescriptor() {
 }
 

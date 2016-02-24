@@ -208,6 +208,9 @@ void PepperBroker::OnBrokerPermissionResult(PPB_Broker_Impl* client,
 
 PepperBroker::PendingConnection::PendingConnection() : is_authorized(false) {}
 
+PepperBroker::PendingConnection::PendingConnection(
+    const PendingConnection& other) = default;
+
 PepperBroker::PendingConnection::~PendingConnection() {}
 
 void PepperBroker::ReportFailureToClients(int error_code) {

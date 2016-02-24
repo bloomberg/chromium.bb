@@ -61,6 +61,9 @@ CommonNavigationParams::CommonNavigationParams(
       navigation_start(navigation_start) {
 }
 
+CommonNavigationParams::CommonNavigationParams(
+    const CommonNavigationParams& other) = default;
+
 CommonNavigationParams::~CommonNavigationParams() {
 }
 
@@ -83,6 +86,9 @@ BeginNavigationParams::BeginNavigationParams(
       has_user_gesture(has_user_gesture),
       skip_service_worker(skip_service_worker),
       request_context_type(request_context_type) {}
+
+BeginNavigationParams::BeginNavigationParams(
+    const BeginNavigationParams& other) = default;
 
 StartNavigationParams::StartNavigationParams()
     : is_post(false),
@@ -111,6 +117,9 @@ StartNavigationParams::StartNavigationParams(
       transferred_request_child_id(transferred_request_child_id),
       transferred_request_request_id(transferred_request_request_id) {
 }
+
+StartNavigationParams::StartNavigationParams(
+    const StartNavigationParams& other) = default;
 
 StartNavigationParams::~StartNavigationParams() {
 }
@@ -165,6 +174,9 @@ RequestNavigationParams::RequestNavigationParams(
       should_clear_history_list(should_clear_history_list),
       should_create_service_worker(false),
       service_worker_provider_id(kInvalidServiceWorkerProviderId) {}
+
+RequestNavigationParams::RequestNavigationParams(
+    const RequestNavigationParams& other) = default;
 
 RequestNavigationParams::~RequestNavigationParams() {
 }

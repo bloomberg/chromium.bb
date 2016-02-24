@@ -27,6 +27,8 @@ TrackControls::TrackControls()
 TrackControls::TrackControls(bool request)
     : requested(request) {}
 
+TrackControls::TrackControls(const TrackControls& other) = default;
+
 TrackControls::~TrackControls() {}
 
 StreamControls::StreamControls()

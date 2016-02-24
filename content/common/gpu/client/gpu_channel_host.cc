@@ -47,6 +47,9 @@ GpuChannelHost::StreamFlushInfo::StreamFlushInfo()
       flush_count(0),
       flush_id(0) {}
 
+GpuChannelHost::StreamFlushInfo::StreamFlushInfo(const StreamFlushInfo& other) =
+    default;
+
 GpuChannelHost::StreamFlushInfo::~StreamFlushInfo() {}
 
 // static
@@ -467,6 +470,9 @@ GpuChannelHost::~GpuChannelHost() {
 }
 
 GpuChannelHost::MessageFilter::ListenerInfo::ListenerInfo() {}
+
+GpuChannelHost::MessageFilter::ListenerInfo::ListenerInfo(
+    const ListenerInfo& other) = default;
 
 GpuChannelHost::MessageFilter::ListenerInfo::~ListenerInfo() {}
 

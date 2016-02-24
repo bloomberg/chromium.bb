@@ -18,6 +18,9 @@ SpeechRecognitionSessionContext::SpeechRecognitionSessionContext()
       request_id(0) {
 }
 
+SpeechRecognitionSessionContext::SpeechRecognitionSessionContext(
+    const SpeechRecognitionSessionContext& other) = default;
+
 SpeechRecognitionSessionContext::~SpeechRecognitionSessionContext() {
 }
 

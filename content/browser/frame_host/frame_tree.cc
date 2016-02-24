@@ -40,6 +40,8 @@ std::set<SiteInstance*> CollectSiteInstances(FrameTree* tree) {
 
 }  // namespace
 
+FrameTree::NodeIterator::NodeIterator(const NodeIterator& other) = default;
+
 FrameTree::NodeIterator::~NodeIterator() {}
 
 FrameTree::NodeIterator& FrameTree::NodeIterator::operator++() {

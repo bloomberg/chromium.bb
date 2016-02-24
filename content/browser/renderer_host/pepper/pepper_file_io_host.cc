@@ -147,6 +147,9 @@ PepperFileIOHost::UIThreadStuff::UIThreadStuff() {
   resolved_render_process_id = base::kNullProcessId;
 }
 
+PepperFileIOHost::UIThreadStuff::UIThreadStuff(const UIThreadStuff& other) =
+    default;
+
 PepperFileIOHost::UIThreadStuff::~UIThreadStuff() {}
 
 int32_t PepperFileIOHost::OnHostMsgOpen(

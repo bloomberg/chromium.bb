@@ -227,6 +227,7 @@ struct CONTENT_EXPORT WebPreferences {
   // chrome, except for the cases where it would require lots of extra work for
   // the embedder to use the same default value.
   WebPreferences();
+  WebPreferences(const WebPreferences& other);
   ~WebPreferences();
 };
 

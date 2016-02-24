@@ -32,6 +32,7 @@ struct CONTENT_EXPORT ExplodedHttpBodyElement {
   std::string blob_uuid;
 
   ExplodedHttpBodyElement();
+  ExplodedHttpBodyElement(const ExplodedHttpBodyElement& other);
   ~ExplodedHttpBodyElement();
 };
 

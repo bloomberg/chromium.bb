@@ -350,6 +350,8 @@ void WebMessagePortChannelImpl::OnMessagesQueued() {
 
 WebMessagePortChannelImpl::Message::Message() {}
 
+WebMessagePortChannelImpl::Message::Message(const Message& other) = default;
+
 WebMessagePortChannelImpl::Message::~Message() {}
 
 }  // namespace content

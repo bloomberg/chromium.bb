@@ -835,6 +835,9 @@ SpeechRecognizerImpl::FSMEventArgs::FSMEventArgs(FSMEvent event_value)
       engine_error(SPEECH_RECOGNITION_ERROR_NONE) {
 }
 
+SpeechRecognizerImpl::FSMEventArgs::FSMEventArgs(const FSMEventArgs& other) =
+    default;
+
 SpeechRecognizerImpl::FSMEventArgs::~FSMEventArgs() {
 }
 

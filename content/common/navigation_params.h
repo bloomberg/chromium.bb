@@ -60,6 +60,7 @@ struct CONTENT_EXPORT CommonNavigationParams {
                          const GURL& history_url_for_data_url,
                          LoFiState lofi_state,
                          const base::TimeTicks& navigation_start);
+  CommonNavigationParams(const CommonNavigationParams& other);
   ~CommonNavigationParams();
 
   // The URL to navigate to.
@@ -134,6 +135,7 @@ struct CONTENT_EXPORT BeginNavigationParams {
                         bool has_user_gesture,
                         bool skip_service_worker,
                         RequestContextType request_context_type);
+  BeginNavigationParams(const BeginNavigationParams& other);
 
   // The request method: GET, POST, etc.
   std::string method;
@@ -179,6 +181,7 @@ struct CONTENT_EXPORT StartNavigationParams {
 #endif
       int transferred_request_child_id,
       int transferred_request_request_id);
+  StartNavigationParams(const StartNavigationParams& other);
   ~StartNavigationParams();
 
   // Whether the navigation is a POST request (as opposed to a GET).
@@ -224,6 +227,7 @@ struct CONTENT_EXPORT RequestNavigationParams {
                           int current_history_list_length,
                           bool is_view_source,
                           bool should_clear_history_list);
+  RequestNavigationParams(const RequestNavigationParams& other);
   ~RequestNavigationParams();
 
   // Whether or not the user agent override string should be used.

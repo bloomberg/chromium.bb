@@ -33,6 +33,9 @@ PluginPowerSaverHelper::PeripheralPlugin::PeripheralPlugin(
     : content_origin(content_origin),
       unthrottle_callback(unthrottle_callback) {}
 
+PluginPowerSaverHelper::PeripheralPlugin::PeripheralPlugin(
+    const PeripheralPlugin& other) = default;
+
 PluginPowerSaverHelper::PeripheralPlugin::~PeripheralPlugin() {
 }
 

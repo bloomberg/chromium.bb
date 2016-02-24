@@ -19,6 +19,7 @@ namespace content {
 struct CONTENT_EXPORT AXEventNotificationDetails {
  public:
   AXEventNotificationDetails();
+  AXEventNotificationDetails(const AXEventNotificationDetails& other);
   ~AXEventNotificationDetails();
 
   ui::AXTreeUpdate update;

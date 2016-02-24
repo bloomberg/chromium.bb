@@ -164,6 +164,7 @@ class CONTENT_EXPORT MediaStreamVideoSource
                     const VideoCaptureDeliverFrameCB& frame_callback,
                     const blink::WebMediaConstraints& constraints,
                     const ConstraintsCallback& callback);
+    TrackDescriptor(const TrackDescriptor& other);
     ~TrackDescriptor();
 
     MediaStreamVideoTrack* track;

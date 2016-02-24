@@ -101,6 +101,7 @@ class CONTENT_EXPORT AppCacheUpdateJob
 
   struct UrlToFetch {
     UrlToFetch(const GURL& url, bool checked, AppCacheResponseInfo* info);
+    UrlToFetch(const UrlToFetch& other);
     ~UrlToFetch();
 
     GURL url;

@@ -22,6 +22,7 @@ struct CONTENT_EXPORT LoadCommittedDetails {
   // By default, the entry will be filled according to a new main frame
   // navigation.
   LoadCommittedDetails();
+  LoadCommittedDetails(const LoadCommittedDetails& other);
 
   // The committed entry. This will be the active entry in the controller.
   NavigationEntry* entry;

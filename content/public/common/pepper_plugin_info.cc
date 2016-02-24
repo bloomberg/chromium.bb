@@ -21,6 +21,8 @@ PepperPluginInfo::PepperPluginInfo()
       permissions(0) {
 }
 
+PepperPluginInfo::PepperPluginInfo(const PepperPluginInfo& other) = default;
+
 PepperPluginInfo::~PepperPluginInfo() {
 }
 

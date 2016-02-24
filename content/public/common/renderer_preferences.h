@@ -35,6 +35,7 @@ enum TapMultipleTargetsStrategy {
 
 struct CONTENT_EXPORT RendererPreferences {
   RendererPreferences();
+  RendererPreferences(const RendererPreferences& other);
   ~RendererPreferences();
 
   // Whether the renderer's current browser context accept drops from the OS

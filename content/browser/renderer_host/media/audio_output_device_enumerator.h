@@ -50,6 +50,7 @@ struct AudioOutputDeviceEnumeration {
       const std::vector<AudioOutputDeviceInfo>& devices,
       bool has_actual_devices);
   AudioOutputDeviceEnumeration();
+  AudioOutputDeviceEnumeration(const AudioOutputDeviceEnumeration& other);
   ~AudioOutputDeviceEnumeration();
 
   std::vector<AudioOutputDeviceInfo> devices;

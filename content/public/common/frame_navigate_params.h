@@ -21,6 +21,7 @@ namespace content {
 // Struct used by WebContentsObserver.
 struct CONTENT_EXPORT FrameNavigateParams {
   FrameNavigateParams();
+  FrameNavigateParams(const FrameNavigateParams& other);
   ~FrameNavigateParams();
 
   // Page ID of this navigation. The renderer creates a new unique page ID

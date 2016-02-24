@@ -14,6 +14,7 @@ namespace content {
 
 struct CONTENT_EXPORT ResizeParams {
   ResizeParams();
+  ResizeParams(const ResizeParams& other);
   ~ResizeParams();
 
   // Information about the screen (dpi, depth, etc..).

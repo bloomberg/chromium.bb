@@ -20,6 +20,9 @@ WebRTCIdentityService::RequestInfo::RequestInfo(
       success_callback(success_callback),
       failure_callback(failure_callback) {}
 
+WebRTCIdentityService::RequestInfo::RequestInfo(const RequestInfo& other) =
+    default;
+
 WebRTCIdentityService::RequestInfo::~RequestInfo() {}
 
 WebRTCIdentityService::WebRTCIdentityService() : next_request_id_(1) {

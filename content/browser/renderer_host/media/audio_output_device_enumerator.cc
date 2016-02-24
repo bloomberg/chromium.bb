@@ -54,6 +54,9 @@ AudioOutputDeviceEnumeration::AudioOutputDeviceEnumeration(
 AudioOutputDeviceEnumeration::AudioOutputDeviceEnumeration()
     : has_actual_devices(false) {}
 
+AudioOutputDeviceEnumeration::AudioOutputDeviceEnumeration(
+    const AudioOutputDeviceEnumeration& other) = default;
+
 AudioOutputDeviceEnumeration::~AudioOutputDeviceEnumeration() {}
 
 AudioOutputDeviceEnumerator::AudioOutputDeviceEnumerator(

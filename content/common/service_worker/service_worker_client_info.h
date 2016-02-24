@@ -27,6 +27,7 @@ struct ServiceWorkerClientInfo {
                           RequestContextFrameType frame_type,
                           base::TimeTicks last_focus_time,
                           blink::WebServiceWorkerClientType client_type);
+  ServiceWorkerClientInfo(const ServiceWorkerClientInfo& other);
 
   // Returns whether the instance is empty.
   bool IsEmpty() const;

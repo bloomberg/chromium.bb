@@ -101,6 +101,7 @@ class VideoCaptureImpl::ClientBuffer2
 };
 
 VideoCaptureImpl::ClientInfo::ClientInfo() {}
+VideoCaptureImpl::ClientInfo::ClientInfo(const ClientInfo& other) = default;
 VideoCaptureImpl::ClientInfo::~ClientInfo() {}
 
 VideoCaptureImpl::VideoCaptureImpl(

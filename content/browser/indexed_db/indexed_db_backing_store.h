@@ -287,6 +287,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
 
     struct CursorOptions {
       CursorOptions();
+      CursorOptions(const CursorOptions& other);
       ~CursorOptions();
       int64_t database_id;
       int64_t object_store_id;

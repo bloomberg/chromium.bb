@@ -9,6 +9,9 @@ namespace content {
 BluetoothScanFilter::BluetoothScanFilter() : services() {
 }
 
+BluetoothScanFilter::BluetoothScanFilter(const BluetoothScanFilter& other) =
+    default;
+
 BluetoothScanFilter::~BluetoothScanFilter() {
 }
 

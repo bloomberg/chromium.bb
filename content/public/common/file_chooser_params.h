@@ -18,6 +18,7 @@ namespace content {
 // Struct used by WebContentsDelegate.
 struct CONTENT_EXPORT FileChooserParams {
   FileChooserParams();
+  FileChooserParams(const FileChooserParams& other);
   ~FileChooserParams();
 
   enum Mode {

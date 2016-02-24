@@ -26,6 +26,7 @@ struct CONTENT_EXPORT WebPluginMimeType {
   WebPluginMimeType(const std::string& m,
                     const std::string& f,
                     const std::string& d);
+  WebPluginMimeType(const WebPluginMimeType& other);
   ~WebPluginMimeType();
 
   // The name of the mime type (e.g., "application/x-shockwave-flash").
