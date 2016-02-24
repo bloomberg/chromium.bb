@@ -31578,6 +31578,35 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Notifications.Icon.FileSize" units="bytes">
+  <owner>mvanouwerkerk@chromium.org</owner>
+  <summary>The number of bytes loaded for a Web Notification icon.</summary>
+</histogram>
+
+<histogram name="Notifications.Icon.LoadFailTime" units="ms">
+  <owner>mvanouwerkerk@chromium.org</owner>
+  <summary>
+    The number of milliseconds it took to fail loading an icon for a Web
+    Notification.
+  </summary>
+</histogram>
+
+<histogram name="Notifications.Icon.LoadFinishTime" units="ms">
+  <owner>mvanouwerkerk@chromium.org</owner>
+  <summary>
+    The number of milliseconds it took to finish successfully loading an icon
+    for a Web Notification.
+  </summary>
+</histogram>
+
+<histogram name="Notifications.Icon.ScaleDownTime" units="ms">
+  <owner>mvanouwerkerk@chromium.org</owner>
+  <summary>
+    The number of milliseconds it took to scale down an icon for a Web
+    Notification.
+  </summary>
+</histogram>
+
 <histogram name="Notifications.PerNotificationActions"
     enum="NotificationActionType">
   <owner>dewittj@chromium.org</owner>

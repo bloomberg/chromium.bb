@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
+#include "base/time/time.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 
 class GURL;
@@ -98,6 +99,8 @@ class NotificationImageLoader
   scoped_ptr<blink::WebURLLoader> url_loader_;
 
   std::vector<uint8_t> buffer_;
+
+  base::TimeTicks start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationImageLoader);
 };

@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/common/notification_constants.h"
 #include "content/public/common/notification_resources.h"
@@ -25,6 +26,7 @@ namespace {
 // returns |icon| unchanged.
 SkBitmap ScaleDownIfNeeded(const SkBitmap& icon, int max_size_px) {
   if (icon.width() > max_size_px || icon.height() > max_size_px) {
+    SCOPED_UMA_HISTOGRAM_TIMER("Notifications.Icon.ScaleDownTime");
     return skia::ImageOperations::Resize(icon,
                                          skia::ImageOperations::RESIZE_BEST,
                                          std::min(icon.width(), max_size_px),

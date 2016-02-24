@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "content/child/image_decoder.h"
 #include "third_party/WebKit/public/platform/Platform.h"
@@ -39,6 +40,8 @@ void NotificationImageLoader::StartOnMainThread(const GURL& image_url) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK(!url_loader_);
 
+  start_time_ = base::TimeTicks::Now();
+
   WebURL image_web_url(image_url);
   WebURLRequest request(image_web_url);
   request.setRequestContext(WebURLRequest::RequestContextImage);
@@ -63,6 +66,9 @@ void NotificationImageLoader::didFinishLoading(
     int64_t total_encoded_data_length) {
   DCHECK(!completed_);
 
+  UMA_HISTOGRAM_LONG_TIMES("Notifications.Icon.LoadFinishTime",
+                           base::TimeTicks::Now() - start_time_);
+
   RunCallbackOnWorkerThread();
 }
 
@@ -70,6 +76,9 @@ void NotificationImageLoader::didFail(WebURLLoader* loader,
                                       const WebURLError& error) {
   if (completed_)
     return;
+
+  UMA_HISTOGRAM_LONG_TIMES("Notifications.Icon.LoadFailTime",
+                           base::TimeTicks::Now() - start_time_);
 
   RunCallbackOnWorkerThread();
 }
@@ -89,6 +98,10 @@ void NotificationImageLoader::RunCallbackOnWorkerThread() {
 
 SkBitmap NotificationImageLoader::GetDecodedImage() const {
   DCHECK(completed_);
+
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Notifications.Icon.FileSize", buffer_.size(), 1,
+                              10000000 /* ~10mb */, 50);
+
   if (buffer_.empty())
     return SkBitmap();
 
