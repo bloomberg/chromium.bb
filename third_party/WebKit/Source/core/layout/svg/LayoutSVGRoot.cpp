@@ -278,8 +278,8 @@ PositionWithAffinity LayoutSVGRoot::positionForPoint(const LayoutPoint& point)
         return LayoutReplaced::positionForPoint(point);
 
     LayoutObject* layoutObject = closestDescendant;
-    AffineTransform transform = closestDescendant->localToParentTransform();
-    transform.translate(toLayoutSVGText(closestDescendant)->location().x(), toLayoutSVGText(closestDescendant)->location().y());
+    AffineTransform transform = layoutObject->localToParentTransform();
+    transform.translate(toLayoutSVGText(layoutObject)->location().x(), toLayoutSVGText(layoutObject)->location().y());
     while (layoutObject) {
         layoutObject = layoutObject->parent();
         if (layoutObject->isSVGRoot())
