@@ -264,6 +264,8 @@ DisplayInfo::DisplayInfo(int64_t id, const std::string& name, bool has_overscan)
       clear_overscan_insets_(false),
       color_profile_(ui::COLOR_PROFILE_STANDARD) {}
 
+DisplayInfo::DisplayInfo(const DisplayInfo& other) = default;
+
 DisplayInfo::~DisplayInfo() {
 }
 

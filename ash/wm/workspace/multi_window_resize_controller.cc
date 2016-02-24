@@ -148,6 +148,9 @@ MultiWindowResizeController::ResizeWindows::ResizeWindows()
       direction(TOP_BOTTOM){
 }
 
+MultiWindowResizeController::ResizeWindows::ResizeWindows(
+    const ResizeWindows& other) = default;
+
 MultiWindowResizeController::ResizeWindows::~ResizeWindows() {
 }
 

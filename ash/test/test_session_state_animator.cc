@@ -97,6 +97,9 @@ TestSessionStateAnimator::ActiveAnimation::ActiveAnimation(
       failed_callback(failed_callback) {
 }
 
+TestSessionStateAnimator::ActiveAnimation::ActiveAnimation(
+    const ActiveAnimation& other) = default;
+
 TestSessionStateAnimator::ActiveAnimation::~ActiveAnimation() {
 }
 

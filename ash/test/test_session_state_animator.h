@@ -93,6 +93,7 @@ class TestSessionStateAnimator : public SessionStateAnimator {
         AnimationSpeed speed,
         base::Closure success_callback,
         base::Closure failed_callback);
+    ActiveAnimation(const ActiveAnimation& other);
     virtual ~ActiveAnimation();
 
     // The time epoch that this animation was scheduled.

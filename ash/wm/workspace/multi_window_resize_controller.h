@@ -61,6 +61,7 @@ class ASH_EXPORT MultiWindowResizeController :
   // Used to track the two resizable windows and direction.
   struct ResizeWindows {
     ResizeWindows();
+    ResizeWindows(const ResizeWindows& other);
     ~ResizeWindows();
 
     // Returns true if |other| equals this ResizeWindows. This does *not*

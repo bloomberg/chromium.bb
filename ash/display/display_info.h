@@ -95,6 +95,7 @@ class ASH_EXPORT DisplayInfo {
 
   DisplayInfo();
   DisplayInfo(int64_t id, const std::string& name, bool has_overscan);
+  DisplayInfo(const DisplayInfo& other);
   ~DisplayInfo();
 
   int64_t id() const { return id_; }
