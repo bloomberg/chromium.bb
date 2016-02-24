@@ -31,6 +31,7 @@ class LabelPattern {
                const SourceDir& dir,
                const base::StringPiece& name,
                const Label& toolchain_label);
+  LabelPattern(const LabelPattern& other);
   ~LabelPattern();
 
   // Converts the given input string to a pattern. This does special stuff

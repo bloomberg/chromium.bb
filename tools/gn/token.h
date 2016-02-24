@@ -58,6 +58,7 @@ class Token {
 
   Token();
   Token(const Location& location, Type t, const base::StringPiece& v);
+  Token(const Token& other);
 
   Type type() const { return type_; }
   const base::StringPiece& value() const { return value_; }

@@ -28,6 +28,9 @@ SubstitutionPattern::Subrange::~Subrange() {
 SubstitutionPattern::SubstitutionPattern() : origin_(nullptr) {
 }
 
+SubstitutionPattern::SubstitutionPattern(const SubstitutionPattern& other) =
+    default;
+
 SubstitutionPattern::~SubstitutionPattern() {
 }
 

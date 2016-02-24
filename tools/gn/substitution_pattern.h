@@ -34,6 +34,7 @@ class SubstitutionPattern {
   };
 
   SubstitutionPattern();
+  SubstitutionPattern(const SubstitutionPattern& other);
   ~SubstitutionPattern();
 
   // Parses the given string and fills in the pattern. The pattern must only

@@ -214,6 +214,8 @@ Label::Label(const SourceDir& dir, const base::StringPiece& name)
   name_.assign(name.data(), name.size());
 }
 
+Label::Label(const Label& other) = default;
+
 Label::~Label() {
 }
 

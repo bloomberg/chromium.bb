@@ -12,6 +12,8 @@
 SubstitutionList::SubstitutionList() {
 }
 
+SubstitutionList::SubstitutionList(const SubstitutionList& other) = default;
+
 SubstitutionList::~SubstitutionList() {
 }
 

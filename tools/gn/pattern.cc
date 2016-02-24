@@ -60,6 +60,8 @@ Pattern::Pattern(const std::string& s) {
        subranges_[1].type == Subrange::LITERAL);
 }
 
+Pattern::Pattern(const Pattern& other) = default;
+
 Pattern::~Pattern() {
 }
 
@@ -150,6 +152,8 @@ bool Pattern::RecursiveMatch(const std::string& s,
 
 PatternList::PatternList() {
 }
+
+PatternList::PatternList(const PatternList& other) = default;
 
 PatternList::~PatternList() {
 }

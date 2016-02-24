@@ -17,6 +17,8 @@ Token::Token(const Location& location,
       location_(location) {
 }
 
+Token::Token(const Token& other) = default;
+
 bool Token::IsIdentifierEqualTo(const char* v) const {
   return type_ == IDENTIFIER && value_ == v;
 }

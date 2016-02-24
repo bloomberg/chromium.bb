@@ -14,6 +14,7 @@
 class SubstitutionList {
  public:
   SubstitutionList();
+  SubstitutionList(const SubstitutionList& other);
   ~SubstitutionList();
 
   bool Parse(const Value& value, Err* err);

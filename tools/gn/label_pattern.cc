@@ -61,6 +61,8 @@ LabelPattern::LabelPattern(Type type,
   name.CopyToString(&name_);
 }
 
+LabelPattern::LabelPattern(const LabelPattern& other) = default;
+
 LabelPattern::~LabelPattern() {
 }
 

@@ -54,6 +54,8 @@ class Err {
       const std::string msg,
       const std::string& help_text = std::string());
 
+  Err(const Err& other);
+
   ~Err();
 
   bool has_error() const { return has_error_; }

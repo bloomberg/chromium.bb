@@ -29,6 +29,7 @@ class Label {
 
   // Makes a label with an empty toolchain.
   Label(const SourceDir& dir, const base::StringPiece& name);
+  Label(const Label& other);
   ~Label();
 
   // Resolives a string from a build file that may be relative to the
