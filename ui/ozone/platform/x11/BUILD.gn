@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+visibility = [ "//ui/ozone/*" ]
+
 source_set("x11") {
   sources = [
     "client_native_pixmap_factory_x11.cc",

@@ -10,6 +10,8 @@ declare_args() {
   use_drm_atomic = false
 }
 
+visibility = [ "//ui/ozone/*" ]
+
 pkg_config("libdrm") {
   packages = [ "libdrm" ]
 }

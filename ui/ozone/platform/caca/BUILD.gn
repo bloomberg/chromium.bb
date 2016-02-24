@@ -4,6 +4,8 @@
 
 import("//build/config/linux/pkg_config.gni")
 
+visibility = [ "//ui/ozone/*" ]
+
 source_set("caca") {
   sources = [
     "caca_event_source.cc",

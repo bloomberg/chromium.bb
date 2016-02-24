@@ -30,4 +30,6 @@ source_set("common") {
   public_deps = [
     "//ui/ozone:ozone_base",
   ]
+
+  visibility = [ "//ui/ozone/platform/*" ]
 }

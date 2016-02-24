@@ -5,6 +5,8 @@
 import("//tools/generate_library_loader/generate_library_loader.gni")
 import("//ui/ozone/ozone.gni")
 
+visibility = [ "//ui/ozone/*" ]
+
 source_set("egltest") {
   sources = [
     "client_native_pixmap_factory_egltest.cc",
@@ -71,5 +73,7 @@ if (is_linux && ozone_platform_ozonex) {
     deps = [
       "//build/config/sanitizers:deps",
     ]
+
+    visibility += [ "//chromecast/*" ]
   }
 }

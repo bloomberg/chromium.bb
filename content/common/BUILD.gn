@@ -287,10 +287,7 @@ source_set("common") {
   if (use_ozone) {
     configs += [ "//ui/ozone:vgem_map" ]
 
-    deps += [
-      "//ui/ozone:ozone",
-      "//ui/ozone:ozone_base",
-    ]
+    deps += [ "//ui/ozone" ]
   } else {
     sources -= [
       "cursors/webcursor_ozone.cc",

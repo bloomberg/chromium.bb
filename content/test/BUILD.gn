@@ -800,10 +800,7 @@ test("content_unittests") {
   }
 
   if (use_ozone) {
-    deps += [
-      "//ui/ozone",
-      "//ui/ozone:ozone_base",
-    ]
+    deps += [ "//ui/ozone" ]
   } else {
     sources -=
         [ "../browser/compositor/software_output_device_ozone_unittest.cc" ]

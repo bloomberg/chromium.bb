@@ -267,10 +267,7 @@ component("gl") {
       "gl_implementation_ozone.cc",
       "gl_surface_ozone.cc",
     ]
-    deps += [
-      "//ui/ozone",
-      "//ui/ozone:ozone_base",
-    ]
+    deps += [ "//ui/ozone" ]
   }
 }
 
