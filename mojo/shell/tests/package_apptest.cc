@@ -44,7 +44,7 @@ TEST_F(PackageApptest, Basic) {
     std::string root_name;
     root_service->GetName(base::Bind(&ReceiveName, &root_name, &run_loop));
     run_loop.Run();
-    uint32_t id = mojom::Shell::kInvalidApplicationID;
+    uint32_t id = mojom::Connector::kInvalidApplicationID;
     EXPECT_TRUE(connection->GetRemoteApplicationID(&id));
     ids.insert(id);
   }
@@ -60,7 +60,7 @@ TEST_F(PackageApptest, Basic) {
     service_a->GetName(base::Bind(&ReceiveName, &a_name, &run_loop));
     run_loop.Run();
     EXPECT_EQ("A", a_name);
-    uint32_t id = mojom::Shell::kInvalidApplicationID;
+    uint32_t id = mojom::Connector::kInvalidApplicationID;
     EXPECT_TRUE(connection->GetRemoteApplicationID(&id));
     ids.insert(id);
   }
@@ -74,7 +74,7 @@ TEST_F(PackageApptest, Basic) {
     service_b->GetName(base::Bind(&ReceiveName, &b_name, &run_loop));
     run_loop.Run();
     EXPECT_EQ("B", b_name);
-    uint32_t id = mojom::Shell::kInvalidApplicationID;
+    uint32_t id = mojom::Connector::kInvalidApplicationID;
     EXPECT_TRUE(connection->GetRemoteApplicationID(&id));
     ids.insert(id);
   }

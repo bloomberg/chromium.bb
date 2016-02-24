@@ -157,7 +157,7 @@ void Context::Init(const base::FilePath& shell_file_root) {
   scoped_ptr<ConnectParams> params(new ConnectParams);
   params->set_source(CreateShellIdentity());
   params->set_target(Identity(GURL("mojo:tracing"), std::string(),
-                              mojom::Shell::kUserInherit,
+                              mojom::Connector::kUserInherit,
                               GetPermissiveCapabilityFilter()));
   params->set_remote_interfaces(GetProxy(&tracing_remote_interfaces));
   params->set_local_interfaces(std::move(tracing_local_interfaces));
@@ -229,7 +229,7 @@ void Context::Run(const GURL& url) {
   scoped_ptr<ConnectParams> params(new ConnectParams);
   params->set_source(CreateShellIdentity());
   params->set_target(
-      Identity(url, std::string(), mojom::Shell::kUserRoot,
+      Identity(url, std::string(), mojom::Connector::kUserRoot,
                GetPermissiveCapabilityFilter()));
   params->set_remote_interfaces(GetProxy(&remote_interfaces));
   params->set_local_interfaces(std::move(local_interfaces));

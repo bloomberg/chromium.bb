@@ -602,7 +602,7 @@ TEST_F(ApplicationManagerTest, TestEndApplicationClosure) {
   scoped_ptr<ConnectParams> params(new ConnectParams);
   params->set_source(CreateShellIdentity());
   params->set_target(
-      Identity(GURL("test:test"), "", mojom::Shell::kUserRoot,
+      Identity(GURL("test:test"), "", mojom::Connector::kUserRoot,
                GetPermissiveCapabilityFilter()));
   application_manager_->SetInstanceQuitCallback(
       base::Bind(&QuitClosure, params->target(), &called));

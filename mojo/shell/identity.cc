@@ -30,7 +30,7 @@ CapabilityFilter CanonicalizeFilter(const CapabilityFilter& filter) {
 Identity::Identity() {}
 
 Identity::Identity(const GURL& url)
-    : Identity(url, url.spec(), mojom::Shell::kUserRoot) {}
+    : Identity(url, url.spec(), mojom::Connector::kUserRoot) {}
 
 Identity::Identity(const GURL& url, const std::string& qualifier,
                    uint32_t user_id)
@@ -63,7 +63,7 @@ bool Identity::operator==(const Identity& other) const {
 
 Identity CreateShellIdentity() {
   return Identity(GURL("mojo://shell/"), std::string(),
-                  mojom::Shell::kUserRoot, GetPermissiveCapabilityFilter());
+                  mojom::Connector::kUserRoot, GetPermissiveCapabilityFilter());
 }
 
 }  // namespace shell

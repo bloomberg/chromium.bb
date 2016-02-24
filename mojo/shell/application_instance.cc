@@ -33,7 +33,7 @@ ApplicationInstance::ApplicationInstance(
       queue_requests_(false),
       native_runner_(nullptr),
       pid_(base::kNullProcessId) {
-  DCHECK_NE(Shell::kInvalidApplicationID, id_);
+  DCHECK_NE(kInvalidApplicationID, id_);
 }
 
 ApplicationInstance::~ApplicationInstance() {
@@ -67,6 +67,18 @@ void ApplicationInstance::BindPIDReceiver(
 }
 
 // Shell implementation:
+void ApplicationInstance::GetConnector(mojom::ConnectorRequest request) {
+  connectors_.AddBinding(this, std::move(request));
+}
+
+void ApplicationInstance::QuitApplication() {
+  queue_requests_ = true;
+  shell_client_->OnQuitRequested(
+      base::Bind(&ApplicationInstance::OnQuitRequestedResult,
+                 base::Unretained(this)));
+}
+
+// Connector implementation:
 void ApplicationInstance::Connect(
     const String& app_url,
     uint32_t user_id,
@@ -101,11 +113,8 @@ void ApplicationInstance::Connect(
   }
 }
 
-void ApplicationInstance::QuitApplication() {
-  queue_requests_ = true;
-  shell_client_->OnQuitRequested(
-      base::Bind(&ApplicationInstance::OnQuitRequestedResult,
-                 base::Unretained(this)));
+void ApplicationInstance::Clone(mojom::ConnectorRequest request) {
+  connectors_.AddBinding(this, std::move(request));
 }
 
 void ApplicationInstance::SetPID(uint32_t pid) {
@@ -114,9 +123,9 @@ void ApplicationInstance::SetPID(uint32_t pid) {
 }
 
 uint32_t ApplicationInstance::GenerateUniqueID() const {
-  static uint32_t id = Shell::kInvalidApplicationID;
+  static uint32_t id = kInvalidApplicationID;
   ++id;
-  CHECK_NE(Shell::kInvalidApplicationID, id);
+  CHECK_NE(kInvalidApplicationID, id);
   return id;
 }
 
@@ -130,7 +139,7 @@ void ApplicationInstance::CallAcceptConnection(
 
   ApplicationInstance* source =
       manager_->GetApplicationInstance(params->source());
-  uint32_t source_id = source ? source->id() : Shell::kInvalidApplicationID;
+  uint32_t source_id = source ? source->id() : kInvalidApplicationID;
   shell_client_->AcceptConnection(
       params->source().url().spec(), params->source().user_id(), source_id,
       params->TakeRemoteInterfaces(), params->TakeLocalInterfaces(),

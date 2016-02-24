@@ -20,9 +20,8 @@ struct CapabilityFilter {
   map<string, array<string>> filter;
 };
 
-// An interface through which a Mojo application may communicate with the Mojo
-// system and request connections to other applications.
-interface Shell {
+// Encapsulates establishing connections with other Mojo applications.
+interface Connector {
   const uint32 kInvalidApplicationID = 0;
   const uint32 kUserRoot = 0;
   const uint32 kUserInherit = 1;
@@ -82,6 +81,18 @@ interface Shell {
           InterfaceProvider&? remote_interfaces,
           InterfaceProvider? local_interfaces,
           CapabilityFilter filter) => (uint32 application_id);
+
+  // Clones this Connector so it can be passed to another thread.
+  Clone(Connector& request);
+};
+
+// Wraps functionality exposed by the Shell to a Mojo application instance.
+interface Shell {
+  // Obtain a Connector that can be used to create connections with other
+  // applications. The connector is bound in the shell to the instance that
+  // vended this Shell interface, all connectors created and cloned frmo this
+  // one are bound to the lifetime of this instance.
+  GetConnector(Connector& connector);
 
   // When there are no more instantiated services in an application, it should
   // start its shutdown process by calling this method. Additionally, it should

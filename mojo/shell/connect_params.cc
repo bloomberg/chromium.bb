@@ -17,7 +17,7 @@ ConnectParams::~ConnectParams() {}
 
 void ConnectParams::SetTargetURL(const GURL& target_url) {
   target_ = Identity(target_url, target_.qualifier(),
-                     mojom::Shell::kUserInherit, target_.filter());
+                     mojom::Connector::kUserInherit, target_.filter());
 }
 
 }  // namespace shell

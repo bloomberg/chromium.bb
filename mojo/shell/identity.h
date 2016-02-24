@@ -21,7 +21,7 @@ namespace shell {
 class Identity {
  public:
   Identity();
-  // Assumes user = mojom::Shell::kUserRoot.
+  // Assumes user = mojom::Connector::kUserRoot.
   // Used in tests or for shell-initiated connections.
   explicit Identity(const GURL& in_url);
   Identity(const GURL& in_url,

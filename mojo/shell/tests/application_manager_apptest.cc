@@ -30,7 +30,7 @@ class ApplicationManagerAppTestDelegate
       public CreateInstanceForHandleTest {
  public:
   ApplicationManagerAppTestDelegate()
-      : target_id_(mojom::Shell::kInvalidApplicationID),
+      : target_id_(mojom::Connector::kInvalidApplicationID),
         binding_(this) {}
   ~ApplicationManagerAppTestDelegate() override {}
 
@@ -176,9 +176,9 @@ TEST_F(ApplicationManagerAppTest, CreateInstanceForHandle) {
   //    mojo:application_manager_apptests)
   base::MessageLoop::current()->Run();
 
-  uint32_t remote_id = mojom::Shell::kInvalidApplicationID;
+  uint32_t remote_id = mojom::Connector::kInvalidApplicationID;
   EXPECT_TRUE(connection->GetRemoteApplicationID(&remote_id));
-  EXPECT_NE(mojom::Shell::kInvalidApplicationID, remote_id);
+  EXPECT_NE(mojom::Connector::kInvalidApplicationID, remote_id);
 
   // 3. Validate that this test suite's URL was received from the application
   //    manager.

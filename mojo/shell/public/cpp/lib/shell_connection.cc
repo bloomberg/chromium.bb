@@ -9,7 +9,9 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/shell/public/cpp/connector.h"
 #include "mojo/shell/public/cpp/lib/connection_impl.h"
+#include "mojo/shell/public/cpp/lib/connector_impl.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
 
@@ -84,15 +86,6 @@ class AppRefCountImpl : public AppRefCount {
   DISALLOW_COPY_AND_ASSIGN(AppRefCountImpl);
 };
 
-
-ShellConnection::ConnectParams::ConnectParams(const std::string& url)
-    : url_(url),
-      filter_(shell::mojom::CapabilityFilter::New()),
-      user_id_(shell::mojom::Shell::kUserInherit) {
-  filter_->filter.SetToEmpty();
-}
-ShellConnection::ConnectParams::~ConnectParams() {}
-
 ////////////////////////////////////////////////////////////////////////////////
 // ShellConnection, public:
 
@@ -125,39 +118,16 @@ void ShellConnection::WaitForInitialize() {
 // ShellConnection, Shell implementation:
 
 scoped_ptr<Connection> ShellConnection::Connect(const std::string& url) {
-  ConnectParams params(url);
-  params.set_filter(CreatePermissiveCapabilityFilter());
-  return Connect(&params);
+  return connector_->Connect(url);
 }
 
-scoped_ptr<Connection> ShellConnection::Connect(ConnectParams* params) {
-  if (!shell_)
-    return nullptr;
-  DCHECK(params);
-  std::string application_url = params->url().spec();
-  // We allow all interfaces on outgoing connections since we are presumably in
-  // a position to know who we're talking to.
-  // TODO(beng): is this a valid assumption or do we need to figure some way to
-  //             filter here too?
-  std::set<std::string> allowed;
-  allowed.insert("*");
-  shell::mojom::InterfaceProviderPtr local_interfaces;
-  shell::mojom::InterfaceProviderRequest local_request =
-      GetProxy(&local_interfaces);
-  shell::mojom::InterfaceProviderPtr remote_interfaces;
-  shell::mojom::InterfaceProviderRequest remote_request =
-      GetProxy(&remote_interfaces);
-  scoped_ptr<internal::ConnectionImpl> registry(new internal::ConnectionImpl(
-      application_url, application_url,
-      shell::mojom::Shell::kInvalidApplicationID, params->user_id(),
-      std::move(remote_interfaces), std::move(local_request), allowed));
-  shell_->Connect(application_url,
-                  params->user_id(),
-                  std::move(remote_request),
-                  std::move(local_interfaces),
-                  params->TakeFilter(),
-                  registry->GetConnectCallback());
-  return std::move(registry);
+scoped_ptr<Connection> ShellConnection::Connect(
+    Connector::ConnectParams* params) {
+  return connector_->Connect(params);
+}
+
+scoped_ptr<Connector> ShellConnection::CloneConnector() const {
+  return connector_->Clone();
 }
 
 void ShellConnection::Quit() {
@@ -186,6 +156,11 @@ void ShellConnection::Initialize(shell::mojom::ShellPtr shell,
                                  uint32_t user_id) {
   shell_ = std::move(shell);
   shell_.set_connection_error_handler([this]() { OnConnectionError(); });
+
+  shell::mojom::ConnectorPtr connector;
+  shell_->GetConnector(GetProxy(&connector));
+  connector_.reset(new ConnectorImpl(connector.PassInterface()));
+
   client_->Initialize(this, url, id, user_id);
 }
 

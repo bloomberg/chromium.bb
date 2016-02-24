@@ -194,7 +194,7 @@ class ApplicationManager : public ShellClient,
   DISALLOW_COPY_AND_ASSIGN(ApplicationManager);
 };
 
-mojom::Shell::ConnectCallback EmptyConnectCallback();
+mojom::Connector::ConnectCallback EmptyConnectCallback();
 
 }  // namespace shell
 }  // namespace mojo

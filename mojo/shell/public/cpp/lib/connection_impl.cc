@@ -40,7 +40,7 @@ ConnectionImpl::ConnectionImpl(
       weak_factory_(this) {}
 
 ConnectionImpl::ConnectionImpl()
-    : remote_id_(shell::mojom::Shell::kInvalidApplicationID),
+    : remote_id_(shell::mojom::Connector::kInvalidApplicationID),
       remote_ids_valid_(false),
       local_registry_(shell::mojom::InterfaceProviderRequest(), this),
       allow_all_interfaces_(true),
@@ -48,7 +48,7 @@ ConnectionImpl::ConnectionImpl()
 
 ConnectionImpl::~ConnectionImpl() {}
 
-shell::mojom::Shell::ConnectCallback ConnectionImpl::GetConnectCallback() {
+shell::mojom::Connector::ConnectCallback ConnectionImpl::GetConnectCallback() {
   return base::Bind(&ConnectionImpl::OnGotInstanceID,
                     weak_factory_.GetWeakPtr());
 }

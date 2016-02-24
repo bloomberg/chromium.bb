@@ -20,8 +20,8 @@ namespace test {
 namespace {
 // Share the application URL with multiple application tests.
 String g_url;
-uint32_t g_id = shell::mojom::Shell::kInvalidApplicationID;
-uint32_t g_user_id = shell::mojom::Shell::kUserRoot;
+uint32_t g_id = shell::mojom::Connector::kInvalidApplicationID;
+uint32_t g_user_id = shell::mojom::Connector::kUserRoot;
 
 // ShellClient request handle passed from the shell in MojoMain, stored in
 // between SetUp()/TearDown() so we can (re-)intialize new ShellConnections.

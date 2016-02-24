@@ -22,6 +22,7 @@
 namespace mojo {
 
 class AppRefCountImpl;
+class Connector;
 
 // Encapsulates a connection to the Mojo Shell in two parts:
 // - a bound InterfacePtr to mojo::shell::mojom::Shell, the primary mechanism
@@ -84,7 +85,8 @@ class ShellConnection : public Shell, public shell::mojom::ShellClient {
 
   // Shell:
   scoped_ptr<Connection> Connect(const std::string& url) override;
-  scoped_ptr<Connection> Connect(ConnectParams* params) override;
+  scoped_ptr<Connection> Connect(Connector::ConnectParams* params) override;
+  scoped_ptr<Connector> CloneConnector() const override;
   void Quit() override;
   scoped_ptr<AppRefCount> CreateAppRefCount() override;
 
@@ -125,6 +127,7 @@ class ShellConnection : public Shell, public shell::mojom::ShellClient {
   mojo::ShellClient* client_;
   Binding<shell::mojom::ShellClient> binding_;
   shell::mojom::ShellPtr shell_;
+  scoped_ptr<Connector> connector_;
   Closure termination_closure_;
   bool quit_requested_;
   int ref_count_;

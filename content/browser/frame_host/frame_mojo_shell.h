@@ -19,7 +19,8 @@ class ServiceRegistryImpl;
 // This provides the |mojo::shell::mojom::Shell| service interface to each
 // frame's ServiceRegistry, giving frames the ability to connect to Mojo
 // applications.
-class FrameMojoShell : public mojo::shell::mojom::Shell {
+class FrameMojoShell : public mojo::shell::mojom::Shell,
+                       public mojo::shell::mojom::Connector {
  public:
   explicit FrameMojoShell(RenderFrameHost* frame_host);
   ~FrameMojoShell() override;
@@ -29,19 +30,24 @@ class FrameMojoShell : public mojo::shell::mojom::Shell {
 
  private:
   // mojo::Shell:
+  void GetConnector(mojo::shell::mojom::ConnectorRequest request) override;
+  void QuitApplication() override;
+
+  // mojo::Connector:
   void Connect(
       const mojo::String& application_url,
       uint32_t user_id,
       mojo::shell::mojom::InterfaceProviderRequest services,
       mojo::shell::mojom::InterfaceProviderPtr exposed_services,
       mojo::shell::mojom::CapabilityFilterPtr filter,
-      const ConnectCallback& callback) override;
-  void QuitApplication() override;
+      const mojo::shell::mojom::Connector::ConnectCallback& callback) override;
+  void Clone(mojo::shell::mojom::ConnectorRequest request) override;
 
   ServiceRegistryImpl* GetServiceRegistry();
 
   RenderFrameHost* frame_host_;
   mojo::WeakBindingSet<mojo::shell::mojom::Shell> bindings_;
+  mojo::WeakBindingSet<mojo::shell::mojom::Connector> connectors_;
 
   // ServiceRegistry providing browser services to connected applications.
   scoped_ptr<ServiceRegistryImpl> service_registry_;

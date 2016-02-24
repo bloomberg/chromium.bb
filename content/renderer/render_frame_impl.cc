@@ -6079,8 +6079,10 @@ mojo::shell::mojom::InterfaceProviderPtr RenderFrameImpl::ConnectToApplication(
   mojo::Array<mojo::String> all_interfaces;
   all_interfaces.push_back("*");
   filter->filter.insert("*", std::move(all_interfaces));
-  mojo_shell_->Connect(
-      url.spec(), mojo::shell::mojom::Shell::kUserInherit,
+  mojo::shell::mojom::ConnectorPtr connector;
+  mojo_shell_->GetConnector(GetProxy(&connector));
+  connector->Connect(
+      url.spec(), mojo::shell::mojom::Connector::kUserInherit,
       GetProxy(&interface_provider), nullptr, std::move(filter),
       base::Bind(&OnGotInstanceID));
   return interface_provider;

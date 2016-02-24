@@ -6,15 +6,11 @@
 #define MOJO_SHELL_PUBLIC_CPP_SHELL_H_
 
 #include "mojo/shell/public/cpp/connection.h"
+#include "mojo/shell/public/cpp/connector.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
-#include "mojo/shell/public/interfaces/shell_client.mojom.h"
 #include "url/gurl.h"
 
 namespace mojo {
-
-shell::mojom::CapabilityFilterPtr CreatePermissiveCapabilityFilter();
-
-using ShellClientRequest = InterfaceRequest<shell::mojom::ShellClient>;
 
 // An interface implementation can keep this object as a member variable to
 // hold a reference to the ShellConnection, keeping it alive as long as the
@@ -35,39 +31,17 @@ class AppRefCount {
 // ShellConnection, this is the primary interface exposed to clients.
 class Shell {
  public:
-  class ConnectParams {
-   public:
-    explicit ConnectParams(const std::string& url);
-    ~ConnectParams();
-
-    const GURL& url() { return url_; }
-    shell::mojom::CapabilityFilterPtr TakeFilter() {
-      return std::move(filter_);
-    }
-    void set_filter(shell::mojom::CapabilityFilterPtr filter) {
-      filter_ = std::move(filter);
-    }
-    void set_user_id(uint32_t user_id) { user_id_ = user_id; }
-    uint32_t user_id() const { return user_id_; }
-
-   private:
-    GURL url_;
-    shell::mojom::CapabilityFilterPtr filter_;
-    uint32_t user_id_;
-
-    DISALLOW_COPY_AND_ASSIGN(ConnectParams);
-  };
-
   // Requests a new connection to an application. Returns a pointer to the
   // connection if the connection is permitted by this application's delegate,
   // or nullptr otherwise. Caller takes ownership.
   virtual scoped_ptr<Connection> Connect(const std::string& url) = 0;
-  virtual scoped_ptr<Connection> Connect(ConnectParams* params) = 0;
+  virtual scoped_ptr<Connection> Connect(Connector::ConnectParams* params) = 0;
 
   // Connect to application identified by |request->url| and connect to the
   // service implementation of the interface identified by |Interface|.
   template <typename Interface>
-  void ConnectToInterface(ConnectParams* params, InterfacePtr<Interface>* ptr) {
+  void ConnectToInterface(Connector::ConnectParams* params,
+                          InterfacePtr<Interface>* ptr) {
     scoped_ptr<Connection> connection = Connect(params);
     if (connection)
       connection->GetInterface(ptr);
@@ -75,10 +49,14 @@ class Shell {
   template <typename Interface>
   void ConnectToInterface(const std::string& url,
                           InterfacePtr<Interface>* ptr) {
-    ConnectParams params(url);
+    Connector::ConnectParams params(url);
     params.set_filter(CreatePermissiveCapabilityFilter());
     return ConnectToInterface(&params, ptr);
   }
+
+  // Returns a clone of the ShellConnection's Connector that can be passed to
+  // other threads.
+  virtual scoped_ptr<Connector> CloneConnector() const = 0;
 
   // Initiate shutdown of this application. This may involve a round trip to the
   // Shell to ensure there are no inbound service requests.

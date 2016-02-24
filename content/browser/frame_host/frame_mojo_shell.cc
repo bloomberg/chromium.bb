@@ -45,6 +45,14 @@ void FrameMojoShell::BindRequest(
   bindings_.AddBinding(this, std::move(shell_request));
 }
 
+void FrameMojoShell::GetConnector(
+    mojo::shell::mojom::ConnectorRequest request) {
+  connectors_.AddBinding(this, std::move(request));
+}
+
+void FrameMojoShell::QuitApplication() {
+}
+
 // TODO(xhwang): Currently no callers are exposing |exposed_services|. So we
 // drop it and replace it with services we provide in the browser. In the
 // future we may need to support both.
@@ -54,7 +62,7 @@ void FrameMojoShell::Connect(
     mojo::shell::mojom::InterfaceProviderRequest services,
     mojo::shell::mojom::InterfaceProviderPtr /* exposed_services */,
     mojo::shell::mojom::CapabilityFilterPtr filter,
-    const ConnectCallback& callback) {
+    const mojo::shell::mojom::Connector::ConnectCallback& callback) {
   // TODO(beng): user_id is dropped on the floor right now. Figure out what to
   //             do with it.
   mojo::shell::mojom::InterfaceProviderPtr frame_services;
@@ -71,7 +79,8 @@ void FrameMojoShell::Connect(
       std::move(frame_services), capability_filter, callback);
 }
 
-void FrameMojoShell::QuitApplication() {
+void FrameMojoShell::Clone(mojo::shell::mojom::ConnectorRequest request) {
+  connectors_.AddBinding(this, std::move(request));
 }
 
 ServiceRegistryImpl* FrameMojoShell::GetServiceRegistry() {

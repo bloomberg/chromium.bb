@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process_handle.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/weak_binding_set.h"
 #include "mojo/shell/capability_filter.h"
 #include "mojo/shell/connect_params.h"
 #include "mojo/shell/identity.h"
@@ -31,6 +32,7 @@ class NativeRunner;
 // Encapsulates a connection to an instance of an application, tracked by the
 // shell's ApplicationManager.
 class ApplicationInstance : public mojom::Shell,
+                            public mojom::Connector,
                             public mojom::PIDReceiver {
  public:
   ApplicationInstance(
@@ -56,13 +58,17 @@ class ApplicationInstance : public mojom::Shell,
 
  private:
   // Shell implementation:
+  void GetConnector(mojom::ConnectorRequest request) override;
+  void QuitApplication() override;
+
+  // Connector implementation:
   void Connect(const String& app_url,
                uint32_t user_id,
                shell::mojom::InterfaceProviderRequest remote_interfaces,
                shell::mojom::InterfaceProviderPtr local_interfaces,
                mojom::CapabilityFilterPtr filter,
                const ConnectCallback& callback) override;
-  void QuitApplication() override;
+  void Clone(mojom::ConnectorRequest request) override;
 
   // PIDReceiver implementation:
   void SetPID(uint32_t pid) override;
@@ -87,6 +93,7 @@ class ApplicationInstance : public mojom::Shell,
   mojom::ShellClientPtr shell_client_;
   Binding<mojom::Shell> binding_;
   Binding<mojom::PIDReceiver> pid_receiver_binding_;
+  WeakBindingSet<mojom::Connector> connectors_;
   bool queue_requests_;
   std::vector<ConnectParams*> queued_client_requests_;
   NativeRunner* native_runner_;

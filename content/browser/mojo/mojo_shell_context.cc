@@ -160,7 +160,7 @@ class MojoShellContext::Proxy {
       mojo::shell::mojom::InterfaceProviderRequest request,
       mojo::shell::mojom::InterfaceProviderPtr exposed_services,
       const mojo::shell::CapabilityFilter& filter,
-      const mojo::shell::mojom::Shell::ConnectCallback& callback) {
+      const mojo::shell::mojom::Connector::ConnectCallback& callback) {
     if (task_runner_ == base::ThreadTaskRunnerHandle::Get()) {
       if (shell_context_) {
         shell_context_->ConnectToApplicationOnOwnThread(
@@ -262,7 +262,7 @@ void MojoShellContext::ConnectToApplication(
     mojo::shell::mojom::InterfaceProviderRequest request,
     mojo::shell::mojom::InterfaceProviderPtr exposed_services,
     const mojo::shell::CapabilityFilter& filter,
-    const mojo::shell::mojom::Shell::ConnectCallback& callback) {
+    const mojo::shell::mojom::Connector::ConnectCallback& callback) {
   proxy_.Get()->ConnectToApplication(url, requestor_url, std::move(request),
                                      std::move(exposed_services), filter,
                                      callback);
@@ -274,15 +274,15 @@ void MojoShellContext::ConnectToApplicationOnOwnThread(
     mojo::shell::mojom::InterfaceProviderRequest request,
     mojo::shell::mojom::InterfaceProviderPtr exposed_services,
     const mojo::shell::CapabilityFilter& filter,
-    const mojo::shell::mojom::Shell::ConnectCallback& callback) {
+    const mojo::shell::mojom::Connector::ConnectCallback& callback) {
   scoped_ptr<mojo::shell::ConnectParams> params(new mojo::shell::ConnectParams);
   // TODO(beng): kUserRoot is obviously wrong.
   params->set_source(
       mojo::shell::Identity(requestor_url, std::string(),
-                            mojo::shell::mojom::Shell::kUserRoot,
+                            mojo::shell::mojom::Connector::kUserRoot,
                             mojo::shell::GetPermissiveCapabilityFilter()));
   params->set_target(mojo::shell::Identity(
-      url, std::string(), mojo::shell::mojom::Shell::kUserRoot, filter));
+      url, std::string(), mojo::shell::mojom::Connector::kUserRoot, filter));
   params->set_remote_interfaces(std::move(request));
   params->set_local_interfaces(std::move(exposed_services));
   params->set_connect_callback(callback);

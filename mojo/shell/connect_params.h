@@ -50,10 +50,11 @@ class ConnectParams {
     return std::move(local_interfaces_);
   }
 
-  void set_connect_callback(const shell::mojom::Shell::ConnectCallback& value) {
+  void set_connect_callback(
+      const shell::mojom::Connector::ConnectCallback& value) {
     connect_callback_ = value;
   }
-  const shell::mojom::Shell::ConnectCallback& connect_callback() const {
+  const shell::mojom::Connector::ConnectCallback& connect_callback() const {
     return connect_callback_;
   }
 
@@ -66,7 +67,7 @@ class ConnectParams {
 
   shell::mojom::InterfaceProviderRequest remote_interfaces_;
   shell::mojom::InterfaceProviderPtr local_interfaces_;
-  shell::mojom::Shell::ConnectCallback connect_callback_;
+  shell::mojom::Connector::ConnectCallback connect_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectParams);
 };

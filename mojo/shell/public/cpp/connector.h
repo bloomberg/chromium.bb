@@ -1,0 +1,88 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef MOJO_SHELL_PUBLIC_CPP_CONNECTOR_H_
+#define MOJO_SHELL_PUBLIC_CPP_CONNECTOR_H_
+
+#include "mojo/shell/public/cpp/connection.h"
+#include "mojo/shell/public/interfaces/shell.mojom.h"
+#include "url/gurl.h"
+
+namespace mojo {
+
+shell::mojom::CapabilityFilterPtr CreatePermissiveCapabilityFilter();
+
+// An interface that encapsulates the Mojo Shell's broker interface by which
+// connections between applications are established. Once Connect() is called,
+// this class is bound to the thread the call was made on and it cannot be
+// passed to another thread without calling Clone().
+// An instance of this class is created internally by ShellConnection for use
+// on the thread ShellConnection is instantiated on, and this interface is
+// wrapped by the Shell interface.
+// To use this interface on other threads, call Shell::CloneConnector() and
+// pass the result to another thread. To pass to subsequent threads, call
+// Clone() on instances of this object.
+// While instances of this object are owned by the caller, the underlying
+// connection with the shell is bound to the lifetime of the instance that
+// created it, i.e. when the application is terminated the Connector pipe is
+// closed.
+class Connector {
+ public:
+  class ConnectParams {
+   public:
+    explicit ConnectParams(const std::string& url);
+    ~ConnectParams();
+
+    const GURL& url() { return url_; }
+    shell::mojom::CapabilityFilterPtr TakeFilter() {
+      return std::move(filter_);
+    }
+    void set_filter(shell::mojom::CapabilityFilterPtr filter) {
+      filter_ = std::move(filter);
+    }
+    void set_user_id(uint32_t user_id) { user_id_ = user_id; }
+    uint32_t user_id() const { return user_id_; }
+
+   private:
+    GURL url_;
+    shell::mojom::CapabilityFilterPtr filter_;
+    uint32_t user_id_;
+
+    DISALLOW_COPY_AND_ASSIGN(ConnectParams);
+  };
+
+  // Requests a new connection to an application. Returns a pointer to the
+  // connection if the connection is permitted by this application's delegate,
+  // or nullptr otherwise. Caller takes ownership.
+  // Once this method is called, this object is bound to the thread on which the
+  // call took place. To pass to another thread, call Clone() and pass the
+  // result.
+  virtual scoped_ptr<Connection> Connect(const std::string& url) = 0;
+  virtual scoped_ptr<Connection> Connect(ConnectParams* params) = 0;
+
+  // Connect to application identified by |request->url| and connect to the
+  // service implementation of the interface identified by |Interface|.
+  template <typename Interface>
+  void ConnectToInterface(ConnectParams* params, InterfacePtr<Interface>* ptr) {
+    scoped_ptr<Connection> connection = Connect(params);
+    if (connection)
+      connection->GetInterface(ptr);
+  }
+  template <typename Interface>
+  void ConnectToInterface(const std::string& url,
+                          InterfacePtr<Interface>* ptr) {
+    ConnectParams params(url);
+    params.set_filter(CreatePermissiveCapabilityFilter());
+    return ConnectToInterface(&params, ptr);
+  }
+
+  // Creates a new instance of this class which may be passed to another thread.
+  // The returned object may be passed multiple times until Connect() is called,
+  // at which point this method must be called again to pass again.
+  virtual scoped_ptr<Connector> Clone() = 0;
+};
+
+}  // namespace mojo
+
+#endif  // MOJO_SHELL_PUBLIC_CPP_CONNECTOR_H_

@@ -78,12 +78,12 @@ void ApplicationManager::Connect(scoped_ptr<ConnectParams> params) {
                        params->target().url().spec());
   DCHECK(params->target().url().is_valid());
 
-  if (params->target().user_id() == mojom::Shell::kUserInherit) {
+  if (params->target().user_id() == mojom::Connector::kUserInherit) {
     ApplicationInstance* source = GetApplicationInstance(params->source());
     Identity target = params->target();
     // TODO(beng): we should CHECK source.
     target.set_user_id(source ? source->identity().user_id()
-                              : mojom::Shell::kUserRoot);
+                              : mojom::Connector::kUserRoot);
     params->set_target(target);
   }
 
@@ -179,8 +179,8 @@ void ApplicationManager::CreateInstanceForHandle(
   // client code using this identity.
   CapabilityFilter local_filter = filter->filter.To<CapabilityFilter>();
   // TODO(beng): obtain userid from the inbound connection.
-  Identity target_id(url.To<GURL>(), std::string(), mojom::Shell::kUserInherit,
-                     local_filter);
+  Identity target_id(url.To<GURL>(), std::string(),
+                     mojom::Connector::kUserInherit, local_filter);
   mojom::ShellClientRequest request;
   ApplicationInstance* instance = CreateInstance(target_id, &request);
   instance->BindPIDReceiver(std::move(pid_receiver));
@@ -223,7 +223,7 @@ bool ApplicationManager::ConnectToExistingInstance(
   ApplicationInstance* instance = GetApplicationInstance((*params)->target());
   if (!instance) {
     Identity root_identity = (*params)->target();
-    root_identity.set_user_id(mojom::Shell::kUserRoot);
+    root_identity.set_user_id(mojom::Connector::kUserRoot);
     instance = GetApplicationInstance(root_identity);
     if (!instance) return false;
   }

@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
 
     mojo::edk::InitIPCSupport(&process_delegate, io_thread.task_runner().get());
 
-    mojo::ShellClientRequest request;
+    mojo::shell::mojom::ShellClientRequest request;
     scoped_ptr<mojo::shell::RunnerConnection> connection(
         mojo::shell::RunnerConnection::ConnectToRunner(
             &request, mojo::ScopedMessagePipeHandle()));
