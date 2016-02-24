@@ -2770,9 +2770,6 @@
       ['notifications==1', {
         'defines': ['ENABLE_NOTIFICATIONS'],
       }],
-      ['enable_hidpi==1', {
-        'defines': ['ENABLE_HIDPI=1'],
-      }],
       ['enable_topchrome_md==1', {
         'defines': ['ENABLE_TOPCHROME_MD=1'],
       }],

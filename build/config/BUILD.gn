@@ -228,9 +228,6 @@ config("feature_flags") {
   if (enable_image_loader_extension) {
     defines += [ "IMAGE_LOADER_EXTENSION=1" ]
   }
-  if (enable_hidpi) {
-    defines += [ "ENABLE_HIDPI=1" ]
-  }
   if (enable_topchrome_md) {
     defines += [ "ENABLE_TOPCHROME_MD=1" ]
   }

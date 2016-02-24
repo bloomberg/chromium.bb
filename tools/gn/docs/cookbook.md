@@ -241,7 +241,7 @@ places are noted in the table below.
 | `enable_chromevox_next` (0/1)           | `enable_chromevox_next` (true/false)           | `//build/config/features.gni` |
 | `enable_extensions` (0/1)               | `enable_extensions` (true/false)               | `//build/config/features.gni` |
 | `enable_google_now` (0/1)               | `enable_google_now` (true/false)               | `//build/config/features.gni` |
-| `enable_hidpi` (0/1)                    | `enable_hidpi` (true/false)                    | `//build/config/ui.gni`       |
+| `enable_hidpi` (0/1)                    | `enable_hidpi` (true/false)                    | `//ui/base/ui_features.gni`   |
 | `enable_managed_users` (0/1)            | `enable_managed_users` (true/false)            | `//build/config/features.gni` |
 | `enable_mdns` (0/1)                     | `enable_mdns` (true/false)                     | `//build/config/features.gni` |
 | `enable_one_click_signin` (0/1)         | `enable_one_click_signin` (true/false)         | `//chrome/common/features.gni` |

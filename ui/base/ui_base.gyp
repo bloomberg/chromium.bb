@@ -41,12 +41,23 @@
         }],
     ],
     },
+    { # GN version: //ui/base:ui_features
+      'target_name': 'ui_features',
+      'includes': [ '../../build/buildflag_header.gypi' ],
+      'variables': {
+        'buildflag_header_path': 'ui/base/ui_features.h',
+        'buildflag_flags': [
+          'ENABLE_HIDPI=<(enable_hidpi)',
+        ],
+      },
+    },
     {
       # GN version: //ui/base
       'target_name': 'ui_base',
       'type': '<(component)',
       'dependencies': [
         'ui_data_pack',
+        'ui_features',
         '../../base/base.gyp:base',
         '../../base/base.gyp:base_i18n',
         '../../base/base.gyp:base_static',

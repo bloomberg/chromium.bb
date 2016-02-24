@@ -7,6 +7,7 @@ import("//build/config/ui.gni")
 import("//build_overrides/v8.gni")
 import("//chrome/version.gni")
 import("//third_party/icu/config.gni")
+import("//ui/base/ui_features.gni")
 
 config("mini_installer_compiler_flags") {
   cflags = [

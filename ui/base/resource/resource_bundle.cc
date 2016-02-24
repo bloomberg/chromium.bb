@@ -32,6 +32,7 @@
 #include "ui/base/resource/data_pack.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/base/ui_features.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
@@ -637,7 +638,7 @@ void ResourceBundle::InitSharedInstance(Delegate* delegate) {
 #elif defined(OS_CHROMEOS)
   // TODO(oshima): Include 200P only if the device support 200P
   supported_scale_factors.push_back(SCALE_FACTOR_200P);
-#elif defined(OS_LINUX) && defined(ENABLE_HIDPI)
+#elif defined(OS_LINUX) && BUILDFLAG(ENABLE_HIDPI)
   supported_scale_factors.push_back(SCALE_FACTOR_200P);
 #elif defined(OS_WIN)
   bool default_to_100P = true;
