@@ -132,9 +132,8 @@ float GetUnscaledEndcapWidth() {
 void DrawHighlight(gfx::Canvas* canvas,
                    const SkPoint& p,
                    SkScalar radius,
-                   SkAlpha alpha) {
-  const SkColor colors[2] = { SkColorSetA(SK_ColorWHITE, alpha),
-                              SkColorSetA(SK_ColorWHITE, 0) };
+                   SkColor color) {
+  const SkColor colors[2] = { color, SkColorSetA(color, 0) };
   skia::RefPtr<SkShader> shader = skia::AdoptRef(SkGradientShader::CreateRadial(
       p, radius, colors, nullptr, 2, SkShader::kClamp_TileMode));
   SkPaint paint;
@@ -1278,13 +1277,16 @@ void Tab::PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas) {
   const int kPinnedTitleChangeGradientRadius = 20;
   const float radius = kPinnedTitleChangeGradientRadius;
   double x = radius;
-  int alpha = 255;
+  SkColor hover_color =
+      GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR);
   if (pinned_title_change_animation_->current_part_index() == 0) {
     x = pinned_title_change_animation_->CurrentValueBetween(
             width() + radius - kPinnedTitleChangeInitialXOffset, radius);
   } else if (pinned_title_change_animation_->current_part_index() == 2) {
     x = pinned_title_change_animation_->CurrentValueBetween(radius, -radius);
-    alpha = pinned_title_change_animation_->CurrentValueBetween(255, 0);
+    const int alpha =
+        pinned_title_change_animation_->CurrentValueBetween(255, 0);
+    hover_color = SkColorSetA(hover_color, static_cast<SkAlpha>(alpha));
   }
   SkPoint p;
   p.set(SkDoubleToScalar(x), 0);
@@ -1296,14 +1298,14 @@ void Tab::PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas) {
     GetFillPath(scale, &fill);
     canvas->ClipPath(fill, true);
     p.scale(SkFloatToScalar(scale));
-    DrawHighlight(canvas, p, SkFloatToScalar(radius * scale), alpha);
+    DrawHighlight(canvas, p, SkFloatToScalar(radius * scale), hover_color);
   } else {
     gfx::Canvas background_canvas(size(), canvas->image_scale(), false);
     PaintInactiveTabBackground(&background_canvas);
     gfx::ImageSkia background_image(background_canvas.ExtractImageRep());
     canvas->DrawImageInt(background_image, 0, 0);
     gfx::Canvas hover_canvas(size(), canvas->image_scale(), false);
-    DrawHighlight(&hover_canvas, p, SkFloatToScalar(radius), alpha);
+    DrawHighlight(&hover_canvas, p, SkFloatToScalar(radius), hover_color);
     gfx::ImageSkia hover_image = gfx::ImageSkiaOperations::CreateMaskedImage(
         gfx::ImageSkia(hover_canvas.ExtractImageRep()), background_image);
     canvas->DrawImageInt(hover_image, 0, 0);
@@ -1355,6 +1357,7 @@ void Tab::PaintTabBackgroundUsingFillId(gfx::Canvas* canvas,
                                         bool has_custom_image,
                                         int y_offset) {
   const ui::ThemeProvider* tp = GetThemeProvider();
+  const SkColor toolbar_color = tp->GetColor(ThemeProperties::COLOR_TOOLBAR);
   gfx::ImageSkia* fill_image = tp->GetImageSkiaNamed(fill_id);
   // The tab image needs to be lined up with the background image
   // so that it feels partially transparent.  These offsets represent the tab
@@ -1366,7 +1369,8 @@ void Tab::PaintTabBackgroundUsingFillId(gfx::Canvas* canvas,
       std::max(SkFloatToScalar(width() / 4.f), kMinHoverRadius);
   const bool draw_hover = !is_active && hover_controller_.ShouldDraw();
   SkPoint hover_location(PointToSkPoint(hover_controller_.location()));
-  const SkAlpha hover_alpha = hover_controller_.GetAlpha();
+  const SkColor hover_color =
+      SkColorSetA(toolbar_color, hover_controller_.GetAlpha());
 
   if (ui::MaterialDesignController::IsModeMaterial()) {
     gfx::ScopedCanvas scoped_canvas(canvas);
@@ -1386,15 +1390,15 @@ void Tab::PaintTabBackgroundUsingFillId(gfx::Canvas* canvas,
         canvas->TileImageInt(*fill_image, x_offset, y_offset, 0, 0, width(),
                              height());
       } else {
-        paint.setColor(tp->GetColor(is_active ?
-            static_cast<int>(ThemeProperties::COLOR_TOOLBAR) :
-            ThemeProperties::COLOR_BACKGROUND_TAB));
+        paint.setColor(
+            is_active ? toolbar_color
+                      : tp->GetColor(ThemeProperties::COLOR_BACKGROUND_TAB));
         canvas->DrawRect(gfx::ScaleToEnclosingRect(GetLocalBounds(), scale),
                          paint);
       }
       if (draw_hover) {
         hover_location.scale(SkFloatToScalar(scale));
-        DrawHighlight(canvas, hover_location, radius * scale, hover_alpha);
+        DrawHighlight(canvas, hover_location, radius * scale, hover_color);
       }
     }
 
@@ -1421,7 +1425,7 @@ void Tab::PaintTabBackgroundUsingFillId(gfx::Canvas* canvas,
       canvas->DrawImageInt(background_image, 0, 0);
 
       gfx::Canvas hover_canvas(size(), canvas->image_scale(), false);
-      DrawHighlight(&hover_canvas, hover_location, radius, hover_alpha);
+      DrawHighlight(&hover_canvas, hover_location, radius, hover_color);
       gfx::ImageSkia result = gfx::ImageSkiaOperations::CreateMaskedImage(
           gfx::ImageSkia(hover_canvas.ExtractImageRep()), background_image);
       canvas->DrawImageInt(result, 0, 0);

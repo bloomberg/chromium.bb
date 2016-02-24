@@ -9,7 +9,7 @@
 namespace views {
 
 // Amount to scale the opacity.
-static const double kSubtleOpacityScale = 0.25;
+static const double kSubtleOpacityScale = 0.45;
 static const double kPronouncedOpacityScale = 1.0;
 
 // How long the hover state takes.
