@@ -4,6 +4,8 @@
 
 package org.chromium.content.browser.test.util;
 
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
+
 import android.graphics.Rect;
 import android.test.ActivityInstrumentationTestCase2;
 import android.util.JsonReader;
@@ -15,12 +17,17 @@ import org.chromium.content_public.browser.WebContents;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
  * Collection of DOM-based utilities.
  */
 public class DOMUtils {
+
+    private static final long MEDIA_TIMEOUT_SECONDS = scaleTimeout(10);
+    private static final long MEDIA_TIMEOUT_MILLISECONDS = MEDIA_TIMEOUT_SECONDS * 1000;
+
     /**
      * Plays the media with given {@code id}.
      * @param webContents The WebContents in which the media element lives.
@@ -34,7 +41,8 @@ public class DOMUtils {
         sb.append("  if (media) media.play();");
         sb.append("})();");
         JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                webContents, sb.toString());
+                webContents, sb.toString(),
+                MEDIA_TIMEOUT_SECONDS, TimeUnit.SECONDS);
     }
 
     /**
@@ -50,7 +58,8 @@ public class DOMUtils {
         sb.append("  if (media) media.pause();");
         sb.append("})();");
         JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                webContents, sb.toString());
+                webContents, sb.toString(),
+                MEDIA_TIMEOUT_SECONDS, TimeUnit.SECONDS);
     }
 
     /**
@@ -108,7 +117,7 @@ public class DOMUtils {
                     return false;
                 }
             }
-        });
+        }, MEDIA_TIMEOUT_MILLISECONDS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 
     /**
