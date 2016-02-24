@@ -142,9 +142,11 @@ class QuicSimpleClient : public QuicClientBase,
   // Otherwise, deletes the data.  Takes ownerership of |data_to_resend|.
   void MaybeAddQuicDataToResend(QuicDataToResend* data_to_resend);
 
-  void set_bind_to_address(IPAddress address) { bind_to_address_ = address; }
+  void set_bind_to_address(const IPAddress& address) {
+    bind_to_address_ = address;
+  }
 
-  IPAddress bind_to_address() const { return bind_to_address_; }
+  const IPAddress& bind_to_address() const { return bind_to_address_; }
 
   void set_local_port(int local_port) { local_port_ = local_port; }
 

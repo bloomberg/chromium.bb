@@ -131,7 +131,7 @@ class QuicTestClient : public test::SimpleClient,
   void MigrateSocket(const IPAddress& new_host) override;
   std::string SerializeMessage(const HTTPMessage& message) override;
   IPAddress bind_to_address() const override;
-  void set_bind_to_address(IPAddress address) override;
+  void set_bind_to_address(const IPAddress& address) override;
   const IPEndPoint& address() const override;
   size_t requests_sent() const override;
 

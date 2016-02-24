@@ -105,7 +105,7 @@ class SimpleClient {
   // called in advance. If it's set to uninitialized IPAddress, default loopback
   // address will be used.
   virtual IPAddress bind_to_address() const = 0;
-  virtual void set_bind_to_address(IPAddress address) = 0;
+  virtual void set_bind_to_address(const IPAddress& address) = 0;
 
   // Returns true if the headers have been processed and are available.
   virtual bool response_headers_complete() const = 0;

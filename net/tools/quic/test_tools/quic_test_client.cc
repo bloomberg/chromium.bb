@@ -628,7 +628,7 @@ IPAddress QuicTestClient::bind_to_address() const {
   return client_->bind_to_address();
 }
 
-void QuicTestClient::set_bind_to_address(IPAddress address) {
+void QuicTestClient::set_bind_to_address(const IPAddress& address) {
   client_->set_bind_to_address(address);
 }
 
