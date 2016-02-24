@@ -86,7 +86,7 @@ FastMobileScrolling
 FileAPIBlobClose status=experimental
 FileSystem status=stable
 ForeignFetch status=experimental
-FormDataNewMethods status=experimental
+FormDataNewMethods status=stable
 FullscreenUnprefixed status=test
 FrameTimingSupport status=experimental
 Geofencing status=experimental

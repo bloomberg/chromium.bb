@@ -229,6 +229,15 @@ interface FileReaderSync
 interface FormData
     method append
     method constructor
+    method delete
+    method entries
+    method forEach
+    method get
+    method getAll
+    method has
+    method keys
+    method set
+    method values
 interface Headers
     method append
     method constructor
