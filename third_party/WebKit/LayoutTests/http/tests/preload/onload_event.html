@@ -10,7 +10,8 @@
     var videoLoaded = false;
     var audioLoaded = false;
     var trackLoaded = false;
-    var gibrishLoaded = false;
+    var gibberishLoaded = false;
+    var gibberishErrored = false;
     var noTypeLoaded = false;
 </script>
 <link rel=preload href="../resources/dummy.js" as=script onload="scriptLoaded = true;">
@@ -20,7 +21,7 @@
 <link rel=preload href="../resources/test.mp4" as=video onload="videoLoaded = true;">
 <link rel=preload href="../resources/test.oga" as=audio onload="audioLoaded = true;">
 <link rel=preload href="../security/resources/captions.vtt" as=track onload="trackLoaded = true;">
-<link rel=preload href="../resources/dummy.xml" as=foobarxmlthing onload="gibrishLoaded = true;">
+<link rel=preload href="../resources/dummy.xml" as=foobarxmlthing onload="gibberishLoaded = true;" onerror="gibberishErrored = true;">
 <link rel=preload href="../resources/dummy.xml" onload="noTypeLoaded = true;">
 <script src="../resources/slow-script.pl?delay=500"></script>
 <script>
@@ -32,7 +33,8 @@
         assert_true(videoLoaded, "video triggered load event");
         assert_true(audioLoaded, "audio triggered load event");
         assert_true(trackLoaded, "track triggered load event");
-        assert_true(gibrishLoaded, "gibrish as value triggered load event");
+        assert_false(gibberishLoaded, "gibberish as value triggered load event");
+        assert_true(gibberishErrored, "gibberish as value triggered error event");
         assert_true(noTypeLoaded, "empty as triggered load event");
         t.done();
     });

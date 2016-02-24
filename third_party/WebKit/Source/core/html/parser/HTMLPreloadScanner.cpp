@@ -204,9 +204,13 @@ public:
             resourceWidth.isSet = true;
         }
 
+        Resource::Type type;
+        if (!resourceType(type))
+            return nullptr;
+
         // The element's 'referrerpolicy' attribute (if present) takes precedence over the document's referrer policy.
         ReferrerPolicy referrerPolicy = (m_referrerPolicy != ReferrerPolicyDefault && RuntimeEnabledFeatures::referrerPolicyAttributeEnabled()) ? m_referrerPolicy : documentReferrerPolicy;
-        OwnPtr<PreloadRequest> request = PreloadRequest::create(initiatorFor(m_tagImpl), position, m_urlToLoad, predictedBaseURL, resourceType(), referrerPolicy, resourceWidth, clientHintsPreferences, requestType);
+        OwnPtr<PreloadRequest> request = PreloadRequest::create(initiatorFor(m_tagImpl), position, m_urlToLoad, predictedBaseURL, type, referrerPolicy, resourceWidth, clientHintsPreferences, requestType);
         request->setCrossOrigin(m_crossOrigin);
         request->setCharset(charset());
         request->setDefer(m_defer);
@@ -362,22 +366,25 @@ private:
         return m_charset;
     }
 
-    Resource::Type resourceType() const
+    bool resourceType(Resource::Type& type) const
     {
-        if (match(m_tagImpl, scriptTag))
-            return Resource::Script;
-        if (match(m_tagImpl, imgTag) || match(m_tagImpl, videoTag) || (match(m_tagImpl, inputTag) && m_inputIsImage))
-            return Resource::Image;
-        if (match(m_tagImpl, linkTag) && m_linkIsStyleSheet)
-            return Resource::CSSStyleSheet;
-        if (m_linkIsPreconnect)
-            return Resource::Raw;
-        if (m_linkIsPreload)
-            return LinkLoader::getTypeFromAsAttribute(m_asAttributeValue, nullptr);
-        if (match(m_tagImpl, linkTag) && m_linkIsImport)
-            return Resource::ImportResource;
-        ASSERT_NOT_REACHED();
-        return Resource::Raw;
+        if (match(m_tagImpl, scriptTag)) {
+            type = Resource::Script;
+        } else if (match(m_tagImpl, imgTag) || match(m_tagImpl, videoTag) || (match(m_tagImpl, inputTag) && m_inputIsImage)) {
+            type = Resource::Image;
+        } else if (match(m_tagImpl, linkTag) && m_linkIsStyleSheet) {
+            type = Resource::CSSStyleSheet;
+        } else if (m_linkIsPreconnect) {
+            type = Resource::Raw;
+        } else if (m_linkIsPreload) {
+            if (!LinkLoader::getResourceTypeFromAsAttribute(m_asAttributeValue, type))
+                return false;
+        } else if (match(m_tagImpl, linkTag) && m_linkIsImport) {
+            type = Resource::ImportResource;
+        } else {
+            ASSERT_NOT_REACHED();
+        }
+        return true;
     }
 
     bool shouldPreconnect() const

@@ -102,7 +102,7 @@ TEST(LinkLoaderTest, Preload)
         {"data://example.test/cat.woff", "font", ResourceLoadPriorityMedium, WebURLRequest::RequestContextFont, true, ""},
         // TODO(yoav): subresource should be *very* low priority (rather than low).
         {"data://example.test/cat.empty", "", ResourceLoadPriorityLow, WebURLRequest::RequestContextSubresource, true, ""},
-        {"data://example.test/cat.blob", "blabla", ResourceLoadPriorityLow, WebURLRequest::RequestContextSubresource, true, ""},
+        {"data://example.test/cat.blob", "blabla", ResourceLoadPriorityLow, WebURLRequest::RequestContextSubresource, false, ""},
         {"bla://example.test/cat.gif", "image", ResourceLoadPriorityUnresolved, WebURLRequest::RequestContextImage, false, ""},
     };
 

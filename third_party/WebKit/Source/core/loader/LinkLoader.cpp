@@ -168,23 +168,26 @@ static void preconnectIfNeeded(const LinkRelAttribute& relAttribute, const KURL&
     }
 }
 
-Resource::Type LinkLoader::getTypeFromAsAttribute(const String& as, Document* document)
+bool LinkLoader::getResourceTypeFromAsAttribute(const String& as, Resource::Type& type)
 {
-    if (equalIgnoringCase(as, "image"))
-        return Resource::Image;
-    if (equalIgnoringCase(as, "script"))
-        return Resource::Script;
-    if (equalIgnoringCase(as, "style"))
-        return Resource::CSSStyleSheet;
-    if (equalIgnoringCase(as, "audio") || equalIgnoringCase(as, "video"))
-        return Resource::Media;
-    if (equalIgnoringCase(as, "font"))
-        return Resource::Font;
-    if (equalIgnoringCase(as, "track"))
-        return Resource::TextTrack;
-    if (document && !as.isEmpty())
-        document->addConsoleMessage(ConsoleMessage::create(OtherMessageSource, WarningMessageLevel, String("<link rel=preload> must have a valid `as` value")));
-    return Resource::LinkPreload;
+    if (equalIgnoringCase(as, "image")) {
+        type = Resource::Image;
+    } else if (equalIgnoringCase(as, "script")) {
+        type = Resource::Script;
+    } else if (equalIgnoringCase(as, "style")) {
+        type = Resource::CSSStyleSheet;
+    } else if (equalIgnoringCase(as, "audio") || equalIgnoringCase(as, "video")) {
+        type = Resource::Media;
+    } else if (equalIgnoringCase(as, "font")) {
+        type = Resource::Font;
+    } else if (equalIgnoringCase(as, "track")) {
+        type = Resource::TextTrack;
+    } else {
+        type = Resource::LinkPreload;
+        if (!as.isEmpty())
+            return false;
+    }
+    return true;
 }
 
 void LinkLoader::createLinkPreloadResourceClient(Resource* resource)
@@ -215,7 +218,7 @@ void LinkLoader::createLinkPreloadResourceClient(Resource* resource)
     }
 }
 
-static Resource* preloadIfNeeded(const LinkRelAttribute& relAttribute, const KURL& href, Document& document, const String& as, CrossOriginAttributeValue crossOrigin, LinkCaller caller)
+static Resource* preloadIfNeeded(const LinkRelAttribute& relAttribute, const KURL& href, Document& document, const String& as, CrossOriginAttributeValue crossOrigin, LinkCaller caller, bool& errorOccurred)
 {
     if (!document.loader() || !relAttribute.isLinkPreload())
         return nullptr;
@@ -228,7 +231,13 @@ static Resource* preloadIfNeeded(const LinkRelAttribute& relAttribute, const KUR
     }
     if (caller == LinkCalledFromHeader)
         UseCounter::count(document, UseCounter::LinkHeaderPreload);
-    Resource::Type type = LinkLoader::getTypeFromAsAttribute(as, &document);
+    Resource::Type type;
+    if (!LinkLoader::getResourceTypeFromAsAttribute(as, type)) {
+        document.addConsoleMessage(ConsoleMessage::create(OtherMessageSource, WarningMessageLevel, String("<link rel=preload> must have a valid `as` value")));
+        errorOccurred = true;
+        return nullptr;
+    }
+
     ResourceRequest resourceRequest(document.completeURL(href));
     ResourceFetcher::determineRequestContext(resourceRequest, type, false);
     FetchRequest linkRequest(resourceRequest, FetchInitiatorTypeNames::link);
@@ -263,8 +272,9 @@ bool LinkLoader::loadLinkFromHeader(const String& headerValue, const KURL& baseU
                 preconnectIfNeeded(relAttribute, url, *document, header.crossOrigin(), networkHintsInterface, LinkCalledFromHeader);
         }
         if (canLoadResources != DoNotLoadResources) {
+            bool errorOccurred = false;
             if (RuntimeEnabledFeatures::linkPreloadEnabled())
-                preloadIfNeeded(relAttribute, url, *document, header.as(), header.crossOrigin(), LinkCalledFromHeader);
+                preloadIfNeeded(relAttribute, url, *document, header.as(), header.crossOrigin(), LinkCalledFromHeader, errorOccurred);
         }
         // TODO(yoav): Add more supported headers as needed.
     }
@@ -281,8 +291,11 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, CrossOriginAttri
 
     preconnectIfNeeded(relAttribute, href, document, crossOrigin, networkHintsInterface, LinkCalledFromMarkup);
 
+    bool errorOccurred = false;
     if (m_client->shouldLoadLink())
-        createLinkPreloadResourceClient(preloadIfNeeded(relAttribute, href, document, as, crossOrigin, LinkCalledFromMarkup));
+        createLinkPreloadResourceClient(preloadIfNeeded(relAttribute, href, document, as, crossOrigin, LinkCalledFromMarkup, errorOccurred));
+    if (errorOccurred)
+        m_linkLoadingErrorTimer.startOneShot(0, BLINK_FROM_HERE);
 
     if (href.isEmpty() || !href.isValid())
         released();
