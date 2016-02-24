@@ -17,36 +17,49 @@ public class DeviceFormFactor {
     /**
      * The minimum width that would classify the device as a tablet or a large tablet.
      */
-    private static final int MINIMUM_TABLET_WIDTH_DP = 600;
+    public static final int MINIMUM_TABLET_WIDTH_DP = 600;
     private static final int MINIMUM_LARGE_TABLET_WIDTH_DP = 720;
+
+    private static Boolean sIsTablet = null;
+    private static Boolean sIsLargeTablet = null;
 
     /**
      * @param context Android's context.
-     * @return        Whether the app should treat the device as a tablet for layout.
+     * @return        Whether the app should treat the device as a tablet for layout. This method
+     *                does not depend on the current window size and is not affected by
+     *                multi-window. It is dependent only on the device's size.
      */
     @CalledByNative
     public static boolean isTablet(Context context) {
-        int minimumScreenWidthDp = context.getResources().getConfiguration().smallestScreenWidthDp;
-        return minimumScreenWidthDp >= MINIMUM_TABLET_WIDTH_DP;
+        if (sIsTablet == null) {
+            sIsTablet = getSmallestDeviceWidthDp(context.getResources().getDisplayMetrics())
+                    >= MINIMUM_TABLET_WIDTH_DP;
+        }
+        return sIsTablet;
     }
 
     /**
      * @param context Android's context.
-     * @return True if the current screen's minimum dimension is larger than 720dp.
+     * @return True if the current device's minimum dimension is larger than 720dp. This method
+     *                does not depend on the current window size and is not affected by
+     *                multi-window.
      */
     public static boolean isLargeTablet(Context context) {
-        int minimumScreenWidthDp = context.getResources().getConfiguration().smallestScreenWidthDp;
-        return minimumScreenWidthDp >= MINIMUM_LARGE_TABLET_WIDTH_DP;
+        if (sIsLargeTablet == null) {
+            sIsLargeTablet = getSmallestDeviceWidthDp(context.getResources().getDisplayMetrics())
+                    >= MINIMUM_LARGE_TABLET_WIDTH_DP;
+        }
+        return sIsLargeTablet;
     }
 
     /**
-     * @param context Android's context.
-     * @return True if the device's minimum dimension is larger than 600dp.
+     * Calculates the minimum device width in dp.
+     * @param metrics The {@link DisplayMetrics} to use for calculating device size.
+     * @return The smaller of device width and height in dp.
      */
-    public static boolean isDeviceTablet(Context context) {
-        DisplayMetrics metrics = context.getResources().getDisplayMetrics();
-        int smallestDeviceWidthDp = (int) Math.min(metrics.heightPixels / metrics.density,
-                metrics.widthPixels / metrics.density);
-        return smallestDeviceWidthDp >= MINIMUM_TABLET_WIDTH_DP;
+    public static int getSmallestDeviceWidthDp(DisplayMetrics metrics) {
+        int smallestDeviceWidthDp = Math.round(Math.min(metrics.heightPixels / metrics.density,
+                metrics.widthPixels / metrics.density));
+        return smallestDeviceWidthDp;
     }
 }

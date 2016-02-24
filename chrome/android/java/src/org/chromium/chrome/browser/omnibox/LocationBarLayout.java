@@ -242,8 +242,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
 
     private Runnable mShowSuggestions;
 
-    private boolean mIsTablet;
-
     /**
      * Listener for receiving the messages related with interacting with the omnibox during startup.
      */
@@ -672,12 +670,11 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     public LocationBarLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
 
-        mIsTablet = DeviceFormFactor.isTablet(context);
-
         LayoutInflater.from(context).inflate(R.layout.location_bar, this, true);
         mNavigationButton = (ImageView) findViewById(R.id.navigation_button);
         assert mNavigationButton != null : "Missing navigation type view.";
-        mNavigationButtonType = mIsTablet ? NavigationButtonType.PAGE : NavigationButtonType.EMPTY;
+        mNavigationButtonType = DeviceFormFactor.isTablet(context)
+                ? NavigationButtonType.PAGE : NavigationButtonType.EMPTY;
 
         mSecurityButton = (ImageButton) findViewById(R.id.security_button);
         mSecurityIconType = ConnectionSecurityLevel.NONE;
@@ -975,7 +972,8 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         }
 
         if (mUrlFocusChangeListener != null) mUrlFocusChangeListener.onUrlFocusChange(hasFocus);
-        changeLocationBarIcon((!mIsTablet || !hasFocus) && isSecurityButtonShown());
+        changeLocationBarIcon(
+                (!DeviceFormFactor.isTablet(getContext()) || !hasFocus) && isSecurityButtonShown());
         mUrlBar.setCursorVisible(hasFocus);
         if (mQueryInTheOmnibox) mUrlBar.setSelection(mUrlBar.getSelectionEnd());
 
@@ -1134,14 +1132,15 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
 
     // Updates the navigation button based on the URL string
     private void updateNavigationButton() {
+        boolean isTablet = DeviceFormFactor.isTablet(getContext());
         NavigationButtonType type = NavigationButtonType.EMPTY;
-        if (mIsTablet && !mSuggestionItems.isEmpty()) {
+        if (isTablet && !mSuggestionItems.isEmpty()) {
             // If there are suggestions showing, show the icon for the default suggestion.
             type = suggestionTypeToNavigationButtonType(
                     mSuggestionItems.get(0).getSuggestion());
         } else if (mQueryInTheOmnibox) {
             type = NavigationButtonType.MAGNIFIER;
-        } else if (mIsTablet) {
+        } else if (isTablet) {
             type = NavigationButtonType.PAGE;
         }
 
@@ -1247,7 +1246,8 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
      * @param enabled Whether the security button should be displayed.
      */
     private void updateSecurityButton(boolean enabled) {
-        changeLocationBarIcon(enabled && (!mIsTablet || !mUrlHasFocus));
+        changeLocationBarIcon(enabled
+                && (!DeviceFormFactor.isTablet(getContext()) || !mUrlHasFocus));
         mSecurityButtonShown = enabled;
         updateLocationBarIconContainerVisibility();
     }

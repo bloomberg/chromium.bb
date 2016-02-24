@@ -113,7 +113,6 @@ public class CompositorViewHolder extends FrameLayout
     private View mView;
 
     private TabObserver mTabObserver;
-    private boolean mIsTablet;
     private boolean mEnableCompositorTabStrip;
 
     // Cache objects that should not be created frequently.
@@ -205,7 +204,6 @@ public class CompositorViewHolder extends FrameLayout
         };
 
         mEnableCompositorTabStrip = DeviceFormFactor.isTablet(getContext());
-        mIsTablet = DeviceFormFactor.isTablet(getContext());
 
         addOnLayoutChangeListener(new OnLayoutChangeListener() {
             @Override
@@ -501,7 +499,7 @@ public class CompositorViewHolder extends FrameLayout
         if (mLayoutManager != null) {
             mLayoutManager.onUpdate();
 
-            if (!mIsTablet && mControlContainer != null) {
+            if (!DeviceFormFactor.isTablet(getContext()) && mControlContainer != null) {
                 if (mProgressBarDrawingInfo == null) mProgressBarDrawingInfo = new DrawingInfo();
                 mControlContainer.getProgressBarDrawingInfo(mProgressBarDrawingInfo);
             } else {

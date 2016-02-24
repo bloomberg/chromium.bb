@@ -207,7 +207,7 @@ by a child template that "extends" this file.
             android:taskAffinity=""
             android:persistableMode="persistAcrossReboots"
             android:autoRemoveFromRecents="false"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
             android:hardwareAccelerated="false">
         </activity>
         <activity-alias android:name="com.google.android.apps.chrome.document.DocumentActivity"
@@ -221,7 +221,7 @@ by a child template that "extends" this file.
             android:taskAffinity=""
             android:persistableMode="persistNever"
             android:autoRemoveFromRecents="false"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
             android:hardwareAccelerated="false">
         </activity>
         <activity-alias android:name="com.google.android.apps.chrome.document.IncognitoDocumentActivity"
@@ -240,7 +240,7 @@ by a child template that "extends" this file.
              android:windowBackground="@drawable/window_background"
              android:windowSoftInputMode="adjustResize"
              android:launchMode="singleTask"
-             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc"
+             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
              android:hardwareAccelerated="false">
         </activity>
         <activity android:name="org.chromium.chrome.browser.multiwindow.MultiInstanceChromeTabbedActivity"

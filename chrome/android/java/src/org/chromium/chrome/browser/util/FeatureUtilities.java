@@ -116,7 +116,7 @@ public class FeatureUtilities {
      */
     public static boolean isDocumentModeEligible(Context context) {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-                && !DeviceFormFactor.isDeviceTablet(context);
+                && !DeviceFormFactor.isTablet(context);
     }
 
     /**
