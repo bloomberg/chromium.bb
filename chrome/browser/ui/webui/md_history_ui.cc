@@ -57,6 +57,8 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
   source->AddResourcePath("history_toolbar.js",
                           IDR_MD_HISTORY_HISTORY_TOOLBAR_JS);
   source->AddResourcePath("history.js", IDR_MD_HISTORY_HISTORY_JS);
+  source->AddResourcePath("shared_style.html",
+                          IDR_MD_HISTORY_SHARED_STYLE_HTML);
 
   source->SetDefaultResource(IDR_MD_HISTORY_HISTORY_HTML);
   source->SetJsonPath("strings.js");

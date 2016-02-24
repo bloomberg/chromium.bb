@@ -94,7 +94,7 @@ Polymer({
    * @private
    */
   showIcon_: function() {
-    this.$['website-icon'].style.backgroundImage =
+    this.$.icon.style.backgroundImage =
         getFaviconImageSet(this.websiteUrl);
   },
 

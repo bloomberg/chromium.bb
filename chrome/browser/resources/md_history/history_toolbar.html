@@ -3,10 +3,11 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_search_field/cr_search_field.html">
+<link rel="import" href="chrome://history/shared_style.html">
 
 <dom-module id="history-toolbar">
   <template>
-
+    <style include="shared-style"></style>
     <style>
       :host {
         background: rgb(63, 85, 102);
@@ -38,7 +39,7 @@
 
       #items {
         margin: 0 auto;
-        max-width: 960px;
+        max-width: var(--card-max-width);
       }
 
       #number-selected {
@@ -53,8 +54,7 @@
       }
 
       #centered-buttons {
-        flex: 1 1 960px;
-        max-width: 960px;
+        flex: 0 1 var(--card-max-width);
       }
 
       paper-button {

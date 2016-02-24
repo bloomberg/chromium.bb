@@ -1,0 +1,42 @@
+<dom-module id="shared-style">
+  <template>
+    <style>
+      :root {
+        --card-border-color: rgba(0, 0, 0, 0.14);
+        --card-max-width: 960px;
+        --card-min-width: 500px;
+      }
+
+      .card-title {
+        @apply(--layout-center);
+        @apply(--layout-horizontal);
+        -webkit-padding-start: 20px;
+        background: #fafafa;
+        border-bottom: 1px solid var(--card-border-color);
+        border-radius: 2px 2px 0 0;
+        color: #333;
+        font-size: 14px;
+        font-weight: 500;
+        height: 48px;
+      }
+
+      .website-icon {
+        -webkit-margin-end: 16px;
+        height: 16px;
+        min-width: 16px;
+      }
+
+      .website-title {
+        color: #333;
+        overflow: hidden;
+        text-decoration: none;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .website-title:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </template>
+</dom-module>
