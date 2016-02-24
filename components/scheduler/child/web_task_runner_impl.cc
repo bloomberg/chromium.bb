@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "components/scheduler/base/task_queue.h"
-#include "components/scheduler/base/time_domain.h"
 #include "third_party/WebKit/public/platform/WebTraceLocation.h"
 
 namespace scheduler {
@@ -39,16 +38,6 @@ void WebTaskRunnerImpl::postDelayedTask(
       base::Bind(&WebTaskRunnerImpl::runTask,
                  base::Passed(scoped_ptr<blink::WebTaskRunner::Task>(task))),
       base::TimeDelta::FromMillisecondsD(delayMs));
-}
-
-double WebTaskRunnerImpl::virtualTimeSeconds() const {
-  return (task_queue_->GetTimeDomain()->Now() - base::TimeTicks::UnixEpoch())
-      .InSecondsF();
-}
-
-double WebTaskRunnerImpl::monotonicallyIncreasingVirtualTimeSeconds() const {
-  return task_queue_->GetTimeDomain()->Now().ToInternalValue() /
-         static_cast<double>(base::Time::kMicrosecondsPerSecond);
 }
 
 blink::WebTaskRunner* WebTaskRunnerImpl::clone() {

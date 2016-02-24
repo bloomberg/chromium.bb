@@ -446,7 +446,6 @@ public:
     void detachCompositorAnimationTimeline(CompositorAnimationTimeline*);
     CompositorAnimationTimeline* linkHighlightsTimeline() const { return m_linkHighlightsTimeline.get(); }
 
-    WebViewScheduler* scheduler() const override;
     void setVisibilityState(WebPageVisibilityState, bool) override;
 
     bool hasOpenedPopup() const { return m_pagePopup; }
@@ -525,6 +524,8 @@ public:
     PageScaleConstraintsSet& pageScaleConstraintsSet() const;
 
     FloatSize elasticOverscroll() const { return m_elasticOverscroll; }
+
+    WebViewScheduler* scheduler() const { return m_scheduler.get(); }
 
     // Attaches the PaintArtifactCompositor's tree to this WebView's layer tree
     // view.

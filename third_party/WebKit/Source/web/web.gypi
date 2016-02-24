@@ -282,7 +282,6 @@
       'tests/TopControlsTest.cpp',
       'tests/TouchActionTest.cpp',
       'tests/ViewportTest.cpp',
-      'tests/VirtualTimeTest.cpp',
       'tests/VisualViewportTest.cpp',
       'tests/WebDocumentTest.cpp',
       'tests/WebFrameSerializerTest.cpp',

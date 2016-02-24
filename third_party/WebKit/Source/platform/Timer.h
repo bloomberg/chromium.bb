@@ -67,7 +67,7 @@ public:
     double repeatInterval() const { return m_repeatInterval; }
 
     void augmentRepeatInterval(double delta) {
-        double now = timerMonotonicallyIncreasingTime();
+        double now = monotonicallyIncreasingTime();
         setNextFireTime(now, m_nextFireTime - now + delta);
         m_repeatInterval += delta;
     }
@@ -82,12 +82,10 @@ protected:
 private:
     virtual void fired() = 0;
 
-    virtual WebTaskRunner* timerTaskRunner() const;
+    virtual WebTaskRunner* timerTaskRunner();
 
     NO_LAZY_SWEEP_SANITIZE_ADDRESS
     virtual bool canFire() const { return true; }
-
-    double timerMonotonicallyIncreasingTime() const;
 
     void setNextFireTime(double now, double delay);
 

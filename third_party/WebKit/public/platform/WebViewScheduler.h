@@ -21,25 +21,6 @@ public:
 
     // Creaters a new WebFrameScheduler, the caller is responsible for deleting it.
     virtual WebPassOwnPtr<WebFrameScheduler> createFrameScheduler() = 0;
-
-    // Instructs this WebViewScheduler to use virtual time. When virtual time is enabled
-    // the system doesn't actually sleep for the delays between tasks before executing
-    // them. E.g: A-E are delayed tasks
-    //
-    // |    A   B C  D           E  (normal)
-    // |-----------------------------> time
-    //
-    // |ABCDE                       (virtual time)
-    // |-----------------------------> time
-    virtual void enableVirtualTime() = 0;
-
-    // Controls whether or not virtual time is allowed to advance. If virtual time
-    // is not allowed to advance then delayed tasks posted to the WebTaskRunners owned
-    // by any child WebFrameSchedulers will be paused. If virtual time is allowed to
-    // advance then tasks will be run in time order (as usual) but virtual time will
-    // fast forward so that the system doesn't actually sleep for the delays between
-    // tasks before executing them.
-    virtual void setAllowVirtualTimeToAdvance(bool) = 0;
 };
 
 } // namespace blink

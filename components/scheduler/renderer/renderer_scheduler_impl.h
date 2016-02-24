@@ -76,6 +76,8 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
   void SuspendTimerQueue() override;
   void ResumeTimerQueue() override;
   void SetTimerQueueSuspensionWhenBackgroundedEnabled(bool enabled) override;
+  double VirtualTimeSeconds() const override;
+  double MonotonicallyIncreasingVirtualTimeSeconds() const override;
 
   // RenderWidgetSignals::Observer implementation:
   void SetAllRenderWidgetsHidden(bool hidden) override;
