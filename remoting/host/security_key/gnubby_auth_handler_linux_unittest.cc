@@ -16,7 +16,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/socket/unix_domain_client_socket_posix.h"
-#include "remoting/host/security_key/gnubby_auth_handler_linux.h"
+#include "remoting/host/security_key/gnubby_auth_handler.h"
 #include "remoting/host/security_key/gnubby_socket.h"
 #include "remoting/proto/internal.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -57,9 +57,7 @@ class GnubbyAuthHandlerLinuxTest : public testing::Test {
     send_message_callback_ =
         base::Bind(&GnubbyAuthHandlerLinuxTest::SendMessageToClient,
                    base::Unretained(this));
-    auth_handler_linux_.reset(new GnubbyAuthHandlerLinux());
-    auth_handler_ = auth_handler_linux_.get();
-    auth_handler_->SetSendMessageCallback(send_message_callback_);
+    auth_handler_ = remoting::GnubbyAuthHandler::Create(send_message_callback_);
   }
 
   void WaitForSendMessageToClient() {
@@ -119,10 +117,7 @@ class GnubbyAuthHandlerLinuxTest : public testing::Test {
   scoped_ptr<base::RunLoop> run_loop_;
 
   // Object under test.
-  scoped_ptr<GnubbyAuthHandlerLinux> auth_handler_linux_;
-
-  // GnubbyAuthHandler interface for |auth_handler_linux_|.
-  GnubbyAuthHandler* auth_handler_;
+  scoped_ptr<GnubbyAuthHandler> auth_handler_;
 
   GnubbyAuthHandler::SendMessageCallback send_message_callback_;
 
@@ -138,7 +133,7 @@ class GnubbyAuthHandlerLinuxTest : public testing::Test {
 };
 
 TEST_F(GnubbyAuthHandlerLinuxTest, NotClosedAfterRequest) {
-  ASSERT_EQ(0u, auth_handler_linux_->GetActiveSocketsMapSizeForTest());
+  ASSERT_EQ(0u, auth_handler_->GetActiveConnectionCountForTest());
 
   auth_handler_->CreateGnubbyConnection();
 
@@ -156,11 +151,11 @@ TEST_F(GnubbyAuthHandlerLinuxTest, NotClosedAfterRequest) {
   ASSERT_TRUE(auth_handler_->IsValidConnectionId(1));
 
   // Verify that completing a request/response cycle didn't close the socket.
-  ASSERT_EQ(1u, auth_handler_linux_->GetActiveSocketsMapSizeForTest());
+  ASSERT_EQ(1u, auth_handler_->GetActiveConnectionCountForTest());
 }
 
 TEST_F(GnubbyAuthHandlerLinuxTest, HandleTwoRequests) {
-  ASSERT_EQ(0u, auth_handler_linux_->GetActiveSocketsMapSizeForTest());
+  ASSERT_EQ(0u, auth_handler_->GetActiveConnectionCountForTest());
 
   auth_handler_->CreateGnubbyConnection();
 
@@ -186,11 +181,11 @@ TEST_F(GnubbyAuthHandlerLinuxTest, HandleTwoRequests) {
 
   // Verify that completing two request/response cycles didn't close the
   // socket.
-  ASSERT_EQ(1u, auth_handler_linux_->GetActiveSocketsMapSizeForTest());
+  ASSERT_EQ(1u, auth_handler_->GetActiveConnectionCountForTest());
 }
 
 TEST_F(GnubbyAuthHandlerLinuxTest, HandleTwoIndependentRequests) {
-  ASSERT_EQ(0u, auth_handler_linux_->GetActiveSocketsMapSizeForTest());
+  ASSERT_EQ(0u, auth_handler_->GetActiveConnectionCountForTest());
 
   auth_handler_->CreateGnubbyConnection();
 
@@ -221,23 +216,23 @@ TEST_F(GnubbyAuthHandlerLinuxTest, HandleTwoIndependentRequests) {
   ASSERT_FALSE(auth_handler_->IsValidConnectionId(1));
 
   // Verify that the initial socket was released properly.
-  ASSERT_EQ(1u, auth_handler_linux_->GetActiveSocketsMapSizeForTest());
+  ASSERT_EQ(1u, auth_handler_->GetActiveConnectionCountForTest());
 }
 
 TEST_F(GnubbyAuthHandlerLinuxTest, DidReadTimeout) {
-  ASSERT_EQ(0u, auth_handler_linux_->GetActiveSocketsMapSizeForTest());
+  ASSERT_EQ(0u, auth_handler_->GetActiveConnectionCountForTest());
   auth_handler_->CreateGnubbyConnection();
 
   net::UnixDomainClientSocket client_socket(socket_path_.value(), false);
   net::TestCompletionCallback connect_callback;
   int rv = client_socket.Connect(connect_callback.callback());
   ASSERT_EQ(net::OK, connect_callback.GetResult(rv));
-  auth_handler_linux_->SetRequestTimeoutForTest(base::TimeDelta());
-  ASSERT_EQ(0u, auth_handler_linux_->GetActiveSocketsMapSizeForTest());
+  auth_handler_->SetRequestTimeoutForTest(base::TimeDelta());
+  ASSERT_EQ(0u, auth_handler_->GetActiveConnectionCountForTest());
 }
 
 TEST_F(GnubbyAuthHandlerLinuxTest, ClientErrorMessageDelivered) {
-  ASSERT_EQ(0u, auth_handler_linux_->GetActiveSocketsMapSizeForTest());
+  ASSERT_EQ(0u, auth_handler_->GetActiveConnectionCountForTest());
   auth_handler_->CreateGnubbyConnection();
 
   net::UnixDomainClientSocket client_socket(socket_path_.value(), false);
@@ -246,7 +241,7 @@ TEST_F(GnubbyAuthHandlerLinuxTest, ClientErrorMessageDelivered) {
   ASSERT_EQ(net::OK, connect_callback.GetResult(rv));
 
   auth_handler_->SendErrorAndCloseConnection(1);
-  ASSERT_EQ(0u, auth_handler_linux_->GetActiveSocketsMapSizeForTest());
+  ASSERT_EQ(0u, auth_handler_->GetActiveConnectionCountForTest());
 }
 
 }  // namespace remoting

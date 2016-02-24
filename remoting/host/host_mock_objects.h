@@ -25,6 +25,7 @@
 #include "third_party/webrtc/modules/desktop_capture/mouse_cursor_monitor.h"
 
 namespace base {
+class TimeDelta;
 class SingleThreadTaskRunner;
 }  // namespace base
 
@@ -148,6 +149,8 @@ class MockGnubbyAuthHandler : public GnubbyAuthHandler {
   MOCK_METHOD2(SendClientResponse,
                void(int connection_id, const std::string& response));
   MOCK_METHOD1(SendErrorAndCloseConnection, void(int connection_id));
+  MOCK_CONST_METHOD0(GetActiveConnectionCountForTest, size_t());
+  MOCK_METHOD1(SetRequestTimeoutForTest, void(const base::TimeDelta& timeout));
 
   void SetSendMessageCallback(
       const GnubbyAuthHandler::SendMessageCallback& callback) override;

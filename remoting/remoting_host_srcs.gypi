@@ -214,7 +214,6 @@
       'host/screen_resolution.h',
       'host/security_key/gnubby_auth_handler.h',
       'host/security_key/gnubby_auth_handler_linux.cc',
-      'host/security_key/gnubby_auth_handler_linux.h',
       'host/security_key/gnubby_auth_handler_mac.cc',
       'host/security_key/gnubby_auth_handler_win.cc',
       'host/security_key/gnubby_extension.cc',

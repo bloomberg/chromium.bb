@@ -12,6 +12,7 @@
 
 namespace base {
 class FilePath;
+class TimeDelta;
 }  // namespace base
 
 namespace remoting {
@@ -53,6 +54,12 @@ class GnubbyAuthHandler {
 
   // Closes the gnubby connection represented by |gnubby_connection_id|.
   virtual void SendErrorAndCloseConnection(int gnubby_connection_id) = 0;
+
+  // Returns the number of active gnubby connections.
+  virtual size_t GetActiveConnectionCountForTest() const = 0;
+
+  // Sets the timeout used when waiting for a gnubby response.
+  virtual void SetRequestTimeoutForTest(const base::TimeDelta& timeout) = 0;
 };
 
 }  // namespace remoting
