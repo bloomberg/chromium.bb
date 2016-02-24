@@ -481,34 +481,41 @@ String String::format(const char *format, ...)
     return StringImpl::create(reinterpret_cast<const LChar*>(buffer.data()), len);
 }
 
+template<typename IntegerType>
+static String integerToString(IntegerType input)
+{
+    IntegerToStringConverter<IntegerType> converter(input);
+    return StringImpl::create(converter.characters8(), converter.length());
+}
+
 String String::number(int number)
 {
-    return numberToStringSigned<String>(number);
+    return integerToString(number);
 }
 
 String String::number(unsigned number)
 {
-    return numberToStringUnsigned<String>(number);
+    return integerToString(number);
 }
 
 String String::number(long number)
 {
-    return numberToStringSigned<String>(number);
+    return integerToString(number);
 }
 
 String String::number(unsigned long number)
 {
-    return numberToStringUnsigned<String>(number);
+    return integerToString(number);
 }
 
 String String::number(long long number)
 {
-    return numberToStringSigned<String>(number);
+    return integerToString(number);
 }
 
 String String::number(unsigned long long number)
 {
-    return numberToStringUnsigned<String>(number);
+    return integerToString(number);
 }
 
 String String::number(double number, unsigned precision, TrailingZerosTruncatingPolicy trailingZerosTruncatingPolicy)

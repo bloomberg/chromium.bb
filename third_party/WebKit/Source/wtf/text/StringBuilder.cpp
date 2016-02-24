@@ -306,34 +306,41 @@ void StringBuilder::append(const LChar* characters, unsigned length)
     }
 }
 
+template<typename IntegerType>
+static void appendIntegerInternal(StringBuilder& builder, IntegerType input)
+{
+    IntegerToStringConverter<IntegerType> converter(input);
+    builder.append(converter.characters8(), converter.length());
+}
+
 void StringBuilder::appendNumber(int number)
 {
-    numberToStringSigned<StringBuilder>(number, this);
+    appendIntegerInternal(*this, number);
 }
 
 void StringBuilder::appendNumber(unsigned number)
 {
-    numberToStringUnsigned<StringBuilder>(number, this);
+    appendIntegerInternal(*this, number);
 }
 
 void StringBuilder::appendNumber(long number)
 {
-    numberToStringSigned<StringBuilder>(number, this);
+    appendIntegerInternal(*this, number);
 }
 
 void StringBuilder::appendNumber(unsigned long number)
 {
-    numberToStringUnsigned<StringBuilder>(number, this);
+    appendIntegerInternal(*this, number);
 }
 
 void StringBuilder::appendNumber(long long number)
 {
-    numberToStringSigned<StringBuilder>(number, this);
+    appendIntegerInternal(*this, number);
 }
 
 void StringBuilder::appendNumber(unsigned long long number)
 {
-    numberToStringUnsigned<StringBuilder>(number, this);
+    appendIntegerInternal(*this, number);
 }
 
 static void expandLCharToUCharInplace(UChar* buffer, size_t length)
