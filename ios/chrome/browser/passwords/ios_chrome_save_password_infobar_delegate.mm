@@ -99,7 +99,7 @@ bool IOSChromeSavePasswordInfoBarDelegate::Cancel() {
 bool IOSChromeSavePasswordInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
   base::scoped_nsobject<OpenUrlCommand> command([[OpenUrlCommand alloc]
-       initWithURL:GURL(password_manager::kPasswordManagerAccountDashboardURL)
+       initWithURL:GURL(password_manager::kPasswordManagerHelpCenterSmartLock)
           referrer:web::Referrer()
         windowName:nil
        inIncognito:NO

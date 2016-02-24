@@ -15,6 +15,9 @@ extern const base::FilePath::CharType kLoginDataFileName[];
 // URL to the password manager account dashboard.
 extern const char kPasswordManagerAccountDashboardURL[];
 
+// URL to the help center article about Smart Lock;
+extern const char kPasswordManagerHelpCenterSmartLock[];
+
 }  // namespace password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_CONSTANTS_H_

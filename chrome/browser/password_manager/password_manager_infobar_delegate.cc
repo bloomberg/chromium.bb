@@ -39,7 +39,7 @@ base::string16 PasswordManagerInfoBarDelegate::GetMessageText() const {
 }
 
 GURL PasswordManagerInfoBarDelegate::GetLinkURL() const {
-  return GURL(password_manager::kPasswordManagerAccountDashboardURL);
+  return GURL(password_manager::kPasswordManagerHelpCenterSmartLock);
 }
 
 bool PasswordManagerInfoBarDelegate::LinkClicked(

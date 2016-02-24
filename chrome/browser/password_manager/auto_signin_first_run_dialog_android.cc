@@ -86,7 +86,7 @@ void AutoSigninFirstRunDialogAndroid::CancelDialog(JNIEnv* env, jobject obj) {}
 
 void AutoSigninFirstRunDialogAndroid::OnLinkClicked(JNIEnv* env, jobject obj) {
   web_contents_->OpenURL(content::OpenURLParams(
-      GURL(password_manager::kPasswordManagerAccountDashboardURL),
+      GURL(password_manager::kPasswordManagerHelpCenterSmartLock),
       content::Referrer(), NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,
       false /* is_renderer_initiated */));
 }
