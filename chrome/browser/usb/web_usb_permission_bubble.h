@@ -11,8 +11,8 @@
 #include "components/bubble/bubble_reference.h"
 #include "components/webusb/public/interfaces/webusb_permission_bubble.mojom.h"
 #include "mojo/public/cpp/bindings/array.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/weak_binding_set.h"
 
 namespace content {
 class RenderFrameHost;
@@ -39,7 +39,7 @@ class ChromeWebUsbPermissionBubble : public webusb::WebUsbPermissionBubble {
 
  private:
   content::RenderFrameHost* const render_frame_host_;
-  mojo::BindingSet<webusb::WebUsbPermissionBubble> bindings_;
+  mojo::WeakBindingSet<webusb::WebUsbPermissionBubble> bindings_;
   std::vector<BubbleReference> bubbles_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeWebUsbPermissionBubble);

@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "mash/shell/public/interfaces/shell.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/weak_binding_set.h"
+#include "mojo/public/cpp/bindings/weak_interface_ptr_set.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 
@@ -63,8 +63,9 @@ class ShellApplicationDelegate
   mojo::Shell* shell_;
   std::map<std::string, scoped_ptr<mojo::Connection>> connections_;
   bool screen_locked_;
-  mojo::BindingSet<mash::shell::mojom::Shell> bindings_;
-  mojo::InterfacePtrSet<mojom::ScreenlockStateListener> screenlock_listeners_;
+  mojo::WeakBindingSet<mash::shell::mojom::Shell> bindings_;
+  mojo::WeakInterfacePtrSet<mojom::ScreenlockStateListener>
+      screenlock_listeners_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellApplicationDelegate);
 };

@@ -9,8 +9,8 @@
 
 #include "device/usb/public/interfaces/permission_provider.mojom.h"
 #include "mojo/public/cpp/bindings/array.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/weak_binding_set.h"
 
 namespace content {
 class RenderFrameHost;
@@ -44,7 +44,7 @@ class WebUSBPermissionProvider : public device::usb::PermissionProvider {
       mojo::InterfaceRequest<device::usb::PermissionProvider> request) override;
 
  private:
-  mojo::BindingSet<PermissionProvider> bindings_;
+  mojo::WeakBindingSet<PermissionProvider> bindings_;
   content::RenderFrameHost* const render_frame_host_;
 };
 

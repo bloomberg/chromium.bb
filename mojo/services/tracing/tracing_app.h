@@ -10,9 +10,9 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/weak_binding_set.h"
+#include "mojo/public/cpp/bindings/weak_interface_ptr_set.h"
 #include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
 #include "mojo/services/tracing/trace_data_sink.h"
 #include "mojo/services/tracing/trace_recorder_impl.h"
@@ -64,9 +64,9 @@ class TracingApp
 
   scoped_ptr<TraceDataSink> sink_;
   ScopedVector<TraceRecorderImpl> recorder_impls_;
-  mojo::InterfacePtrSet<TraceProvider> provider_ptrs_;
+  mojo::WeakInterfacePtrSet<TraceProvider> provider_ptrs_;
   mojo::Binding<TraceCollector> collector_binding_;
-  mojo::BindingSet<StartupPerformanceDataCollector>
+  mojo::WeakBindingSet<StartupPerformanceDataCollector>
       startup_performance_data_collector_bindings_;
   StartupPerformanceTimes startup_performance_times_;
   bool tracing_active_;

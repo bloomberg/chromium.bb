@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_CHROME_INTERFACE_FACTORY_H_
 
 #include "content/public/common/mojo_shell_connection.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/weak_binding_set.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "ui/keyboard/keyboard.mojom.h"
 
@@ -32,7 +32,7 @@ class ChromeInterfaceFactory
       mojo::InterfaceRequest<keyboard::mojom::Keyboard> request) override;
 
   scoped_ptr<KeyboardUIService> keyboard_ui_service_;
-  mojo::BindingSet<keyboard::mojom::Keyboard> keyboard_bindings_;
+  mojo::WeakBindingSet<keyboard::mojom::Keyboard> keyboard_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeInterfaceFactory);
 };
