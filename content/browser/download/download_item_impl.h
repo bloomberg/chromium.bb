@@ -474,13 +474,13 @@ class CONTENT_EXPORT DownloadItemImpl
 
   // Will be false for save package downloads retrieved from the history.
   // TODO(rdsmith): Replace with a generalized enum for "download source".
-  const bool is_save_package_download_;
+  const bool is_save_package_download_ = false;
 
   // The handle to the request information.  Used for operations outside the
   // download system.
   scoped_ptr<DownloadRequestHandleInterface> request_handle_;
 
-  uint32_t download_id_;
+  uint32_t download_id_ = kInvalidId;
 
   // Display name for the download. If this is empty, then the display name is
   // considered to be |target_path_.BaseName()|.
@@ -498,7 +498,7 @@ class CONTENT_EXPORT DownloadItemImpl
   base::FilePath target_path_;
 
   // Whether the target should be overwritten, uniquified or prompted for.
-  TargetDisposition target_disposition_;
+  TargetDisposition target_disposition_ = TARGET_DISPOSITION_OVERWRITE;
 
   // The chain of redirects that leading up to and including the final URL.
   std::vector<GURL> url_chain_;
@@ -521,11 +521,11 @@ class CONTENT_EXPORT DownloadItemImpl
   // the target path.
   base::FilePath forced_file_path_;
 
-  // Page transition that triggered the download.
-  ui::PageTransition transition_type_;
+  // Page transition that triggerred the download.
+  ui::PageTransition transition_type_ = ui::PAGE_TRANSITION_LINK;
 
   // Whether the download was triggered with a user gesture.
-  bool has_user_gesture_;
+  bool has_user_gesture_ = false;
 
   // Information from the request.
   // Content-disposition field from the header.
@@ -544,13 +544,13 @@ class CONTENT_EXPORT DownloadItemImpl
   std::string remote_address_;
 
   // Total bytes expected.
-  int64_t total_bytes_;
+  int64_t total_bytes_ = 0;
 
   // Current received bytes.
-  int64_t received_bytes_;
+  int64_t received_bytes_ = 0;
 
   // Current speed. Calculated by the DownloadFile.
-  int64_t bytes_per_sec_;
+  int64_t bytes_per_sec_ = 0;
 
   // Sha256 hash of the content.  This might be empty either because
   // the download isn't done yet or because the hash isn't needed
@@ -568,16 +568,16 @@ class CONTENT_EXPORT DownloadItemImpl
   std::string etag_;
 
   // Last reason.
-  DownloadInterruptReason last_reason_;
+  DownloadInterruptReason last_reason_ = DOWNLOAD_INTERRUPT_REASON_NONE;
 
   // Start time for recording statistics.
   base::TimeTicks start_tick_;
 
   // The current state of this download.
-  DownloadInternalState state_;
+  DownloadInternalState state_ = INITIAL_INTERNAL;
 
   // Current danger type for the download.
-  DownloadDangerType danger_type_;
+  DownloadDangerType danger_type_ = DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS;
 
   // The views of this item in the download shelf and download contents.
   base::ObserverList<Observer> observers_;
@@ -589,44 +589,44 @@ class CONTENT_EXPORT DownloadItemImpl
   base::Time end_time_;
 
   // Our delegate.
-  DownloadItemImplDelegate* delegate_;
+  DownloadItemImplDelegate* delegate_ = nullptr;
 
   // In progress downloads may be paused by the user, we note it here.
-  bool is_paused_;
+  bool is_paused_ = false;
 
   // The number of times this download has been resumed automatically.
-  int auto_resume_count_;
+  int auto_resume_count_ = 0;
 
   // A flag for indicating if the download should be opened at completion.
-  bool open_when_complete_;
+  bool open_when_complete_ = false;
 
   // A flag for indicating if the downloaded file is externally removed.
-  bool file_externally_removed_;
+  bool file_externally_removed_ = false;
 
   // True if the download was auto-opened. We set this rather than using
   // an observer as it's frequently possible for the download to be auto opened
   // before the observer is added.
-  bool auto_opened_;
+  bool auto_opened_ = false;
 
   // True if the item was downloaded temporarily.
-  bool is_temporary_;
+  bool is_temporary_ = false;
 
   // True if we've saved all the data for the download.
-  bool all_data_saved_;
+  bool all_data_saved_ = false;
 
   // Error return from DestinationError.  Stored separately from
   // last_reason_ so that we can avoid handling destination errors until
   // after file name determination has occurred.
-  DownloadInterruptReason destination_error_;
+  DownloadInterruptReason destination_error_ = DOWNLOAD_INTERRUPT_REASON_NONE;
 
   // Did the user open the item either directly or indirectly (such as by
   // setting always open files of this type)? The shelf also sets this field
   // when the user closes the shelf before the item has been opened but should
   // be treated as though the user opened it.
-  bool opened_;
+  bool opened_ = false;
 
   // Did the delegate delay calling Complete on this download?
-  bool delegate_delayed_complete_;
+  bool delegate_delayed_complete_ = false;
 
   // DownloadFile associated with this download.  Note that this
   // pointer may only be used or destroyed on the FILE thread.
