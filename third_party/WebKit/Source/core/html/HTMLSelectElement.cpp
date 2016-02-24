@@ -810,11 +810,6 @@ void HTMLSelectElement::setRecalcListItems()
     // is in the document or not.
 
     m_shouldRecalcListItems = true;
-    // Manual selection anchor is reset when manipulating the select
-    // programmatically.
-    // TODO(tkent): Don't do so. crbug.com/435302.
-    m_activeSelectionAnchor = nullptr;
-    m_activeSelectionEnd = nullptr;
     setOptionsChangedOnLayoutObject();
     if (!inDocument()) {
         if (HTMLOptionsCollection* collection = cachedCollection<HTMLOptionsCollection>(SelectOptions))
@@ -996,6 +991,10 @@ void HTMLSelectElement::optionRemoved(const HTMLOptionElement& option)
         m_lastOnChangeOption.clear();
     if (m_optionToScrollTo == &option)
         m_optionToScrollTo.clear();
+    if (m_activeSelectionAnchor == &option)
+        m_activeSelectionAnchor.clear();
+    if (m_activeSelectionEnd == &option)
+        m_activeSelectionEnd.clear();
     if (option.selected())
         setAutofilled(false);
 }

@@ -154,6 +154,10 @@ shouldBeEqualToString('selectionPattern("sl15")', "01000");
 shouldBeEqualToString('mouseMoveToOption("sl15", 3); selectionPattern("sl15")', "01110");
 shouldBeEqualToString('mouseMoveToOption("sl15", 2); selectionPattern("sl15")', "01100");
 eventSender.mouseUp(0);
+// activeSelectionEnd is the third OPTION.  upArrow should select the previous
+// one of the third OPTION.  Adding new OPTION shouldn't clear
+// activeSelectionEnd.
+shouldBeEqualToString('sl15.add(new Option("a")); eventSender.keyDown("upArrow"); selectionPattern("sl15")', "010000");
 
 debug("16) Active-selection after type-ahead");
 shouldBeEqualToString("mouseClickOnSelect('sl16', 1); selectionPattern('sl16')", "01000");
