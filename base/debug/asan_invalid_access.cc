@@ -60,36 +60,33 @@ NOINLINE void CorruptMemoryBlock(bool induce_crash) {
 static const size_t kArraySize = 5;
 
 void AsanHeapOverflow() {
-  scoped_ptr<int[]> array(new int[kArraySize]);
-  // Declares the dummy value as volatile to make sure it doesn't get optimized
-  // away.
-  int volatile dummy = 0;
-  dummy = array[kArraySize];
-  base::debug::Alias(const_cast<int*>(&dummy));
+  // Declares the array as volatile to make sure it doesn't get optimized away.
+  scoped_ptr<volatile int[]> array(
+      const_cast<volatile int*>(new int[kArraySize]));
+  int dummy = array[kArraySize];
+  base::debug::Alias(&dummy);
 }
 
 void AsanHeapUnderflow() {
-  scoped_ptr<int[]> array(new int[kArraySize]);
-  // Declares the dummy value as volatile to make sure it doesn't get optimized
-  // away.
-  int volatile dummy = 0;
+  // Declares the array as volatile to make sure it doesn't get optimized away.
+  scoped_ptr<volatile int[]> array(
+      const_cast<volatile int*>(new int[kArraySize]));
   // We need to store the underflow address in a temporary variable as trying to
   // access array[-1] will trigger a warning C4245: "conversion from 'int' to
   // 'size_t', signed/unsigned mismatch".
-  int* underflow_address = &array[0] - 1;
-  dummy = *underflow_address;
-  base::debug::Alias(const_cast<int*>(&dummy));
+  volatile int* underflow_address = &array[0] - 1;
+  int dummy = *underflow_address;
+  base::debug::Alias(&dummy);
 }
 
 void AsanHeapUseAfterFree() {
-  scoped_ptr<int[]> array(new int[kArraySize]);
-  // Declares the dummy value as volatile to make sure it doesn't get optimized
-  // away.
-  int volatile dummy = 0;
-  int* dangling = array.get();
+  // Declares the array as volatile to make sure it doesn't get optimized away.
+  scoped_ptr<volatile int[]> array(
+      const_cast<volatile int*>(new int[kArraySize]));
+  volatile int* dangling = array.get();
   array.reset();
-  dummy = dangling[kArraySize / 2];
-  base::debug::Alias(const_cast<int*>(&dummy));
+  int dummy = dangling[kArraySize / 2];
+  base::debug::Alias(&dummy);
 }
 
 #endif  // ADDRESS_SANITIZER || SYZYASAN
