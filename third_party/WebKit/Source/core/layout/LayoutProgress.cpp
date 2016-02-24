@@ -74,6 +74,16 @@ bool LayoutProgress::isDeterminate() const
         && HTMLProgressElement::InvalidPosition != position());
 }
 
+bool LayoutProgress::isAnimationTimerActive() const
+{
+    return m_animationTimer.isActive();
+}
+
+bool LayoutProgress::isAnimating() const
+{
+    return m_animating;
+}
+
 void LayoutProgress::animationTimerFired(Timer<LayoutProgress>*)
 {
     setShouldDoFullPaintInvalidation();
@@ -86,7 +96,7 @@ void LayoutProgress::updateAnimationState()
     m_animationDuration = LayoutTheme::theme().animationDurationForProgressBar();
     m_animationRepeatInterval = LayoutTheme::theme().animationRepeatIntervalForProgressBar();
 
-    bool animating = style()->hasAppearance() && m_animationDuration > 0;
+    bool animating = !isDeterminate() && style()->hasAppearance() && m_animationDuration > 0;
     if (animating == m_animating)
         return;
 

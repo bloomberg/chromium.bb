@@ -46,6 +46,9 @@ public:
 protected:
     void willBeDestroyed() override;
 
+    bool isAnimating() const;
+    bool isAnimationTimerActive() const;
+
 private:
     bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectProgress || LayoutBlockFlow::isOfType(type); }
 
@@ -58,6 +61,8 @@ private:
     double m_animationDuration;
     bool m_animating;
     Timer<LayoutProgress> m_animationTimer;
+
+    friend class LayoutProgressTest;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutProgress, isProgress());

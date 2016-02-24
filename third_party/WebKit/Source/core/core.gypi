@@ -3981,6 +3981,7 @@
             'layout/LayoutMultiColumnFlowThreadTest.cpp',
             'layout/LayoutObjectTest.cpp',
             'layout/LayoutPartTest.cpp',
+            'layout/LayoutProgressTest.cpp',
             'layout/LayoutTableCellTest.cpp',
             'layout/LayoutTableRowTest.cpp',
             'layout/LayoutTestHelper.cpp',
