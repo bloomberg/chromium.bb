@@ -310,6 +310,10 @@ Output.ROLE_INFO_ = {
   toolbar: {
     msgId: 'role_toolbar'
   },
+  toggleButton: {
+    msgId: 'role_checkbox',
+    inherits: 'checkBox'
+  },
   tree: {
     msgId: 'role_tree'
   },
@@ -1322,8 +1326,13 @@ Output.prototype = {
   node_: function(node, prevNode, type, buff) {
     // Navigate is the default event.
     var eventBlock = Output.RULES[type] || Output.RULES['navigate'];
-    var roleBlock = eventBlock[node.role] || eventBlock['default'];
-    var speakFormat = roleBlock.speak || eventBlock['default'].speak;
+    var roleBlock = eventBlock[node.role] || {};
+    var parentRole = (Output.ROLE_INFO_[node.role] || {}).inherits;
+    var parentRoleBlock = eventBlock[parentRole || ''] || {};
+    var speakFormat = roleBlock.speak ||
+        parentRoleBlock.speak ||
+        eventBlock['default'].speak;
+
     this.format_(node, speakFormat, buff);
   },
 

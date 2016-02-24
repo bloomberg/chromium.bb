@@ -615,3 +615,17 @@ TEST_F('OutputE2ETest', 'AuralStyledHeadings', function() {
       }
   });
 });
+TEST_F('OutputE2ETest', 'ToggleButton', function() {
+  this.runWithLoadedTree(function() {/*!
+      <div role="button" aria-pressed="true">Subscribe</div>*/},
+    function(root) {
+      var el = root.firstChild;
+      var o = new Output().withSpeech(cursors.Range.fromNode(el));
+      assertEqualsJSON({string_: '|Subscribe|Check box|not checked', spans_: [
+        {value: {earconId: 'CHECK_OFF'}, start: 0, end: 0},
+        {value: 'name', start: 1, end:10},
+        {value: 'role', start: 11, end: 20},
+        {value: 'state', start: 21, end: 32}
+      ]}, o.speechOutputForTest);
+  });
+});
