@@ -4,6 +4,8 @@
 
 #include "blimp/engine/session/blimp_engine_session.h"
 
+#include <string>
+
 #include "base/strings/utf_string_conversions.h"
 #include "blimp/common/create_blimp_message.h"
 #include "blimp/common/proto/tab_control.pb.h"
@@ -11,6 +13,7 @@
 #include "blimp/engine/app/ui/blimp_layout_manager.h"
 #include "blimp/engine/app/ui/blimp_screen.h"
 #include "blimp/engine/app/ui/blimp_ui_context_factory.h"
+#include "blimp/engine/app/ui/blimp_window_tree_host.h"
 #include "blimp/engine/common/blimp_browser_context.h"
 #include "blimp/net/blimp_connection.h"
 #include "blimp/net/blimp_message_multiplexer.h"
@@ -38,9 +41,6 @@
 #include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/core/focus_controller.h"
 
-#if !defined(USE_X11)
-#include "blimp/engine/app/ui/blimp_window_tree_host.h"
-#endif
 
 namespace blimp {
 namespace engine {
@@ -190,15 +190,11 @@ void BlimpEngineSession::Initialize() {
   DCHECK(!gfx::Screen::GetScreen());
   gfx::Screen::SetScreenInstance(screen_.get());
 
-#if defined(USE_X11)
-  window_tree_host_.reset(aura::WindowTreeHost::Create(
-      gfx::Rect(screen_->GetPrimaryDisplay().size())));
-#else
   context_factory_.reset(new BlimpUiContextFactory());
   aura::Env::GetInstance()->set_context_factory(context_factory_.get());
   window_tree_host_.reset(new BlimpWindowTreeHost());
-#endif
 
+  screen_->set_window_tree_host(window_tree_host_.get());
   window_tree_host_->InitHost();
   window_tree_host_->window()->SetLayoutManager(
       new BlimpLayoutManager(window_tree_host_->window()));
@@ -209,10 +205,6 @@ void BlimpEngineSession::Initialize() {
                                     focus_client_.get());
   capture_client_.reset(
       new aura::client::DefaultCaptureClient(window_tree_host_->window()));
-
-#if defined(USE_X11)
-  window_tree_host_->Show();
-#endif
 
   window_tree_host_->SetBounds(gfx::Rect(screen_->GetPrimaryDisplay().size()));
 
@@ -295,6 +287,12 @@ void BlimpEngineSession::HandleResize(float device_pixel_ratio,
                                       const gfx::Size& size) {
   DVLOG(1) << "Resize to " << size.ToString() << ", " << device_pixel_ratio;
   screen_->UpdateDisplayScaleAndSize(device_pixel_ratio, size);
+  window_tree_host_->SetBounds(gfx::Rect(size));
+  if (web_contents_) {
+    const gfx::Size size_in_dips = screen_->GetPrimaryDisplay().bounds().size();
+    web_contents_->GetNativeView()->SetBounds(gfx::Rect(size_in_dips));
+  }
+
   if (web_contents_ && web_contents_->GetRenderViewHost() &&
       web_contents_->GetRenderViewHost()->GetWidget()) {
     web_contents_->GetRenderViewHost()->GetWidget()->WasResized();

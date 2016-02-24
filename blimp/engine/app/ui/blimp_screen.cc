@@ -4,6 +4,11 @@
 
 #include "blimp/engine/app/ui/blimp_screen.h"
 
+#include "ui/aura/window.h"
+#include "ui/aura/window_tree_host.h"
+#include "ui/gfx/display_observer.h"
+#include "ui/gfx/geometry/size.h"
+
 namespace blimp {
 namespace engine {
 
@@ -20,7 +25,22 @@ BlimpScreen::~BlimpScreen() {}
 
 void BlimpScreen::UpdateDisplayScaleAndSize(float scale,
                                             const gfx::Size& size) {
+  if (scale == display_.device_scale_factor() &&
+      size == display_.GetSizeInPixel()) {
+    return;
+  }
+
+  uint32_t metrics = gfx::DisplayObserver::DISPLAY_METRIC_NONE;
+  if (scale != display_.device_scale_factor())
+    metrics |= gfx::DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR;
+
+  if (size != display_.GetSizeInPixel())
+    metrics |= gfx::DisplayObserver::DISPLAY_METRIC_BOUNDS;
+
   display_.SetScaleAndBounds(scale, gfx::Rect(size));
+
+  FOR_EACH_OBSERVER(gfx::DisplayObserver, observers_,
+                    OnDisplayMetricsChanged(display_, metrics));
 }
 
 gfx::Point BlimpScreen::GetCursorScreenPoint() {
@@ -33,8 +53,9 @@ gfx::NativeWindow BlimpScreen::GetWindowUnderCursor() {
 }
 
 gfx::NativeWindow BlimpScreen::GetWindowAtScreenPoint(const gfx::Point& point) {
-  NOTIMPLEMENTED();
-  return gfx::NativeWindow(nullptr);
+  return window_tree_host_
+             ? window_tree_host_->window()->GetTopWindowContainingPoint(point)
+             : gfx::NativeWindow(nullptr);
 }
 
 int BlimpScreen::GetNumDisplays() const {
@@ -64,9 +85,13 @@ gfx::Display BlimpScreen::GetPrimaryDisplay() const {
   return display_;
 }
 
-void BlimpScreen::AddObserver(gfx::DisplayObserver* observer) {}
+void BlimpScreen::AddObserver(gfx::DisplayObserver* observer) {
+  observers_.AddObserver(observer);
+}
 
-void BlimpScreen::RemoveObserver(gfx::DisplayObserver* observer) {}
+void BlimpScreen::RemoveObserver(gfx::DisplayObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
 
 }  // namespace engine
 }  // namespace blimp

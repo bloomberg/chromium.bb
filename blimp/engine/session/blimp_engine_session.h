@@ -162,7 +162,7 @@ class BlimpEngineSession
 
   // Represents the (currently single) browser window into which tab(s) will
   // be rendered.
-  scoped_ptr<aura::WindowTreeHost> window_tree_host_;
+  scoped_ptr<BlimpWindowTreeHost> window_tree_host_;
 
   // Used to apply standard focus conventions to the windows in the
   // WindowTreeHost hierarchy.

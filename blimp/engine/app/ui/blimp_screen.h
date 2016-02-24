@@ -8,8 +8,13 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
+
+namespace aura {
+class WindowTreeHost;
+}
 
 namespace blimp {
 namespace engine {
@@ -19,6 +24,10 @@ class BlimpScreen : public gfx::Screen {
  public:
   BlimpScreen();
   ~BlimpScreen() override;
+
+  void set_window_tree_host(aura::WindowTreeHost* window_tree_host) {
+    window_tree_host_ = window_tree_host;
+  }
 
   // Updates the size reported by the primary display.
   void UpdateDisplayScaleAndSize(float scale, const gfx::Size& size);
@@ -37,8 +46,9 @@ class BlimpScreen : public gfx::Screen {
   void RemoveObserver(gfx::DisplayObserver* observer) override;
 
  private:
+  aura::WindowTreeHost* window_tree_host_;
   gfx::Display display_;
-
+  base::ObserverList<gfx::DisplayObserver> observers_;
   DISALLOW_COPY_AND_ASSIGN(BlimpScreen);
 };
 
