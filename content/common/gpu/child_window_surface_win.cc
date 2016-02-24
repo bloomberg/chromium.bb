@@ -8,6 +8,7 @@
 #include "base/win/scoped_hdc.h"
 #include "base/win/wrapped_window_proc.h"
 #include "content/common/gpu/gpu_channel_manager.h"
+#include "content/common/gpu/gpu_channel_manager_delegate.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "ui/base/win/hidden_window.h"
 #include "ui/gfx/native_widget_types.h"
@@ -125,8 +126,8 @@ bool ChildWindowSurfaceWin::InitializeNativeWindow() {
       windowRect.right - windowRect.left, windowRect.bottom - windowRect.top,
       ui::GetHiddenWindow(), NULL, NULL, NULL);
   gfx::SetWindowUserData(window_, this);
-  manager_->Send(new GpuHostMsg_AcceleratedSurfaceCreatedChildWindow(
-      parent_window_, window_));
+  manager_->delegate()->SendAcceleratedSurfaceCreatedChildWindow(parent_window_,
+                                                                 window_);
   return true;
 }
 
