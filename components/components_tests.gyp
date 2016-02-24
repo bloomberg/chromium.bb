@@ -78,6 +78,7 @@
     ],
     'browser_sync_unittest_sources': [
       'browser_sync/browser/profile_sync_service_autofill_unittest.cc',
+      'browser_sync/browser/profile_sync_service_bookmark_unittest.cc',
       'browser_sync/browser/profile_sync_service_startup_unittest.cc',
       'browser_sync/browser/profile_sync_service_unittest.cc',
       'browser_sync/browser/profile_sync_service_typed_url_unittest.cc',

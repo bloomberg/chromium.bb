@@ -49,6 +49,7 @@ source_set("unit_tests") {
 
   sources = [
     "profile_sync_service_autofill_unittest.cc",
+    "profile_sync_service_bookmark_unittest.cc",
     "profile_sync_service_startup_unittest.cc",
     "profile_sync_service_typed_url_unittest.cc",
     "profile_sync_service_unittest.cc",
@@ -61,6 +62,9 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/autofill/core/browser:test_support",
     "//components/autofill/core/common:common",
+    "//components/bookmarks/browser:browser",
+    "//components/bookmarks/managed:managed",
+    "//components/bookmarks/test:test",
     "//components/browser_sync/common",
     "//components/dom_distiller/core",
     "//components/history/core/browser:browser",
@@ -71,6 +75,7 @@ source_set("unit_tests") {
     "//components/signin/core/browser:test_support",
     "//components/signin/core/common:common",
     "//components/strings",
+    "//components/sync_bookmarks:sync_bookmarks",
     "//components/sync_driver",
     "//components/sync_driver:test_support",
     "//components/sync_sessions",
@@ -82,6 +87,7 @@ source_set("unit_tests") {
     "//components/webdata_services:test_support",
     "//google_apis",
     "//net",
+    "//sync:test_support_sync_internal_api",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/base",

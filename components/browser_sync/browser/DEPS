@@ -1,6 +1,8 @@
 include_rules = [
   "+components/autofill/core",
   "+components/bookmarks/browser",
+  "+components/bookmarks/managed",
+  "+components/bookmarks/test",
   "+components/dom_distiller/core",
   "+components/history/core/browser",
   "+components/invalidation",

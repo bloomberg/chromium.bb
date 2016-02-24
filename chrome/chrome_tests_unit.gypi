@@ -232,7 +232,6 @@
       'browser/status_icons/status_icon_unittest.cc',
       'browser/status_icons/status_tray_unittest.cc',
       'browser/storage/durable_storage_permission_context_unittest.cc',
-      'browser/sync/profile_sync_service_bookmark_unittest.cc',
       'browser/sync/profile_sync_service_factory_unittest.cc',
       'browser/sync/sync_startup_tracker_unittest.cc',
       'browser/task_profiler/task_profiler_data_serializer_unittest.cc',
