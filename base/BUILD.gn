@@ -1853,7 +1853,10 @@ test("base_unittests") {
 
   if (is_linux) {
     sources -= [ "file_version_info_unittest.cc" ]
-    sources += [ "nix/xdg_util_unittest.cc" ]
+
+    if (is_desktop_linux) {
+      sources += [ "nix/xdg_util_unittest.cc" ]
+    }
 
     deps += [ "//base/test:malloc_wrapper" ]
 
