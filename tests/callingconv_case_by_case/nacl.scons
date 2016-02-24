@@ -51,14 +51,13 @@ def MakeSelfTestEnv(base_env, extra_flags):
   return (envlist, link_env)
 
 def MakeCrossEnvs(base_env, gcc_flags, clang_flags):
-  """ Make a list of four (nearly identical) envs, some of which use gcc
+  """ Make a list of four (nearly identical) envs, some of which use nacl-clang
   and some use pnacl, for compiling the four modules to test consistency.
   """
   envlist = []
   # For module0
   cc1_env = base_env.Clone()
-  if cc1_env.Bit('bitcode'):
-    cc1_env.PNaClForceNative()
+  cc1_env.PNaClForceNative()
   cc1_env.Append(CCFLAGS=clang_flags)
   envlist.append(cc1_env)
   # For module1
@@ -77,7 +76,7 @@ def MakeCrossEnvs(base_env, gcc_flags, clang_flags):
   return (envlist, link_env)
 
 
-if not env.Bit('bitcode') and not env.Bit('nacl_clang'):
+if not env.Bit('bitcode'):
   # For gcc, only do a self-consistency test.
   if env.Bit('build_x86'):
     # Assume for nacl-gcc the bots have at least SSE2.
@@ -87,7 +86,7 @@ if not env.Bit('bitcode') and not env.Bit('nacl_clang'):
   envlist, link_env = MakeSelfTestEnv(env, extra_flags)
   test_configurations.append((envlist, link_env, ''))
 else:
-  # For PNaCl/nacl-clang, do a self-consistency + a cross toolchain check.
+  # For PNaCl, do a self-consistency + a cross toolchain check.
   envlist, link_env = MakeSelfTestEnv(env, [])
   test_configurations.append((envlist, link_env, '_self'))
   if env.Bit('build_arm'):

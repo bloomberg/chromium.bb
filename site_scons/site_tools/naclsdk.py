@@ -321,16 +321,16 @@ def PNaClForceNative(env):
   if env.Bit('built_elsewhere'):
     _StubOutEnvToolsForBuiltElsewhere(env)
 
-# Get an environment for nacl-gcc when in PNaCl mode.
+# Get an environment for nacl-clang when in PNaCl mode.
 def PNaClGetNNaClEnv(env):
-  assert(env.Bit('bitcode') or env.Bit('nacl_clang'))
+  assert(env.Bit('bitcode'))
   assert(not env.Bit('build_mips32'))
 
   # This is kind of a hack. We clone the environment,
   # clear the bitcode bit, and then reload naclsdk.py
   native_env = env.Clone()
   native_env.ClearBits('bitcode')
-  native_env.ClearBits('nacl_clang')
+  native_env.SetBits('nacl_clang')
   if env.Bit('built_elsewhere'):
     _StubOutEnvToolsForBuiltElsewhere(env)
   else:
@@ -681,13 +681,14 @@ def generate(env):
     _SetEnvForNativeSdk(env, root)
 
   if (env.Bit('bitcode') or env.Bit('nacl_clang')) and env.Bit('build_x86'):
-    # Get GDB from the nacl-gcc toolchain even when using PNaCl.
+    # Get GDB from the nacl-gcc glibc toolchain even when using PNaCl.
     # TODO(mseaborn): We really want the nacl-gdb binary to be in a
     # separate tarball from the nacl-gcc toolchain, then this step
     # will not be necessary.
     # See http://code.google.com/p/nativeclient/issues/detail?id=2773
     temp_env = env.Clone()
     temp_env.ClearBits('bitcode', 'nacl_clang')
+    temp_env.SetBits('nacl_glibc')
     temp_root = temp_env.GetToolchainDir()
     _SetEnvForNativeSdk(temp_env, temp_root)
     env.Replace(GDB=temp_env['GDB'])

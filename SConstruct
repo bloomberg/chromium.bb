@@ -1236,6 +1236,7 @@ def GetToolchainDir(env, platform_build_dir=None, toolchain_name=None,
     if is_pnacl:
       toolchain_arg = 'pnacl_%s_dir' % lib_name
     else:
+      assert lib_name == 'glibc'
       toolchain_arg = 'nacl_%s_dir' % lib_name
 
     custom_toolchain_dir = ARGUMENTS.get(toolchain_arg, None)

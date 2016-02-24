@@ -20,7 +20,7 @@ if env.Bit('build_arm') or env.Bit('build_mips32'):
       Return()
     nacl_x86_toolchain_dir = env.GetToolchainDir(target_arch='x86',
                                                  is_pnacl=False,
-                                                 lib_name='newlib')
+                                                 lib_name='glibc')
     nacl_gdb_path = os.path.join(nacl_x86_toolchain_dir, 'bin', 'i686-nacl-gdb')
     env.Replace(GDB=nacl_gdb_path)
   else:
