@@ -375,6 +375,12 @@ public class SigninHelper {
         }
     }
 
+    @VisibleForTesting
+    public static void resetAccountRenameEventIndex(Context context) {
+        PreferenceManager.getDefaultSharedPreferences(context)
+                .edit().putInt(ACCOUNT_RENAME_EVENT_INDEX_PREFS_KEY, 0).apply();
+    }
+
     public static boolean checkAndClearAccountsChangedPref(Context context) {
         if (PreferenceManager.getDefaultSharedPreferences(context)
                 .getBoolean(ACCOUNTS_CHANGED_PREFS_KEY, false)) {
