@@ -835,35 +835,28 @@ DownloadItemImpl::ResumeMode DownloadItemImpl::GetResumeMode() const {
   // We can't continue without a handle on the intermediate file.
   // We also can't continue if we don't have some verifier to make sure
   // we're getting the same file.
-  const bool force_restart =
+  bool restart_required =
       (current_path_.empty() || (etag_.empty() && last_modified_time_.empty()));
 
   // We won't auto-restart if we've used up our attempts or the
   // download has been paused by user action.
-  const bool force_user =
+  bool user_action_required =
       (auto_resume_count_ >= kMaxAutoResumeAttempts || is_paused_);
-
-  ResumeMode mode = RESUME_MODE_INVALID;
 
   switch(last_reason_) {
     case DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR:
     case DOWNLOAD_INTERRUPT_REASON_NETWORK_TIMEOUT:
-      if (force_restart && force_user)
-        mode = RESUME_MODE_USER_RESTART;
-      else if (force_restart)
-        mode = RESUME_MODE_IMMEDIATE_RESTART;
-      else if (force_user)
-        mode = RESUME_MODE_USER_CONTINUE;
-      else
-        mode = RESUME_MODE_IMMEDIATE_CONTINUE;
       break;
 
     case DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE:
+    // The server disagreed with the file offset that we sent.
+
     case DOWNLOAD_INTERRUPT_REASON_FILE_TOO_SHORT:
-      if (force_user)
-        mode = RESUME_MODE_USER_RESTART;
-      else
-        mode = RESUME_MODE_IMMEDIATE_RESTART;
+      // The [possibly persisted] file offset disagreed with the file on disk.
+
+      // The intermediate stub is not usable and the server is resonding. Hence
+      // retrying the request from the beginning is likely to work.
+      restart_required = true;
       break;
 
     case DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED:
@@ -873,18 +866,28 @@ DownloadItemImpl::ResumeMode DownloadItemImpl::GetResumeMode() const {
     case DOWNLOAD_INTERRUPT_REASON_SERVER_UNREACHABLE:
     case DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN:
     case DOWNLOAD_INTERRUPT_REASON_CRASH:
-      if (force_restart)
-        mode = RESUME_MODE_USER_RESTART;
-      else
-        mode = RESUME_MODE_USER_CONTINUE;
+      // It is not clear whether attempting a resumption is acceptable at this
+      // time or whether it would work at all. Hence allow the user to retry the
+      // download manually.
+      user_action_required = true;
+      break;
+
+    case DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE:
+      // There was no space. Require user interaction so that the user may, for
+      // example, choose a different location to store the file. Or they may
+      // free up some space on the targret device and retry. But try to reuse
+      // the partial stub.
+      user_action_required = true;
       break;
 
     case DOWNLOAD_INTERRUPT_REASON_FILE_FAILED:
     case DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED:
-    case DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE:
     case DOWNLOAD_INTERRUPT_REASON_FILE_NAME_TOO_LONG:
     case DOWNLOAD_INTERRUPT_REASON_FILE_TOO_LARGE:
-      mode = RESUME_MODE_USER_RESTART;
+      // Assume the partial stub is unusable. Also it may not be possible to
+      // restart immediately.
+      user_action_required = true;
+      restart_required = true;
       break;
 
     case DOWNLOAD_INTERRUPT_REASON_NONE:
@@ -897,11 +900,20 @@ DownloadItemImpl::ResumeMode DownloadItemImpl::GetResumeMode() const {
     case DOWNLOAD_INTERRUPT_REASON_SERVER_UNAUTHORIZED:
     case DOWNLOAD_INTERRUPT_REASON_SERVER_CERT_PROBLEM:
     case DOWNLOAD_INTERRUPT_REASON_SERVER_FORBIDDEN:
-      mode = RESUME_MODE_INVALID;
-      break;
+      // Unhandled.
+      return RESUME_MODE_INVALID;
   }
 
-  return mode;
+  if (user_action_required && restart_required)
+    return RESUME_MODE_USER_RESTART;
+
+  if (restart_required)
+    return RESUME_MODE_IMMEDIATE_RESTART;
+
+  if (user_action_required)
+    return RESUME_MODE_USER_CONTINUE;
+
+  return RESUME_MODE_IMMEDIATE_CONTINUE;
 }
 
 void DownloadItemImpl::UpdateValidatorsOnResumption(

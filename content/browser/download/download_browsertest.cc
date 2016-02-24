@@ -1576,7 +1576,7 @@ IN_PROC_BROWSER_TEST_P(DownloadResumptionContentTest,
   TestFileErrorInjector::FileErrorInfo err = {
       request_handler.url().spec(),
       TestFileErrorInjector::FILE_OPERATION_RENAME_ANNOTATE, 0,
-      DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE};
+      DOWNLOAD_INTERRUPT_REASON_FILE_FAILED};
   injector->AddError(err);
   injector->InjectErrors();
 
@@ -1585,8 +1585,7 @@ IN_PROC_BROWSER_TEST_P(DownloadResumptionContentTest,
       initiator_shell_for_resumption(), request_handler.url()));
   WaitForInterrupt(download);
   ASSERT_EQ(DownloadItem::INTERRUPTED, download->GetState());
-  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE,
-            download->GetLastReason());
+  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_FILE_FAILED, download->GetLastReason());
   EXPECT_TRUE(download->GetFullPath().empty());
   // Target path should still be intact.
   EXPECT_FALSE(download->GetTargetFilePath().empty());
