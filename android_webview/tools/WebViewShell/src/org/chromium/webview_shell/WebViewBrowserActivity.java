@@ -360,6 +360,11 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
                 }
                 createAndInitializeWebView();
                 return true;
+            case R.id.menu_clear_cache:
+                if (mWebView != null) {
+                    mWebView.clearCache(true);
+                }
+                return true;
             case R.id.menu_about:
                 about();
                 hideKeyboard(mUrlBar);
