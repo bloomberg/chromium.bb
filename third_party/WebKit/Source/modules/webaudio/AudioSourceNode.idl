@@ -28,6 +28,5 @@
 
 [
     NoInterfaceObject,
-    DependentLifetime
 ] interface AudioSourceNode : AudioNode {
 };
