@@ -119,15 +119,16 @@ namespace usb {
     // The request type.
     RequestType requestType;
 
-    // The <code>bRequest</code> field, see <i>Universal Serial Bus Specification
-    // Revision 1.1</i> &sect; 9.3.
+    // The <code>bRequest</code> field, see <i>Universal Serial Bus
+    // Specification Revision 1.1</i> &sect; 9.3.
     long request;
     // The <code>wValue</code> field, see <i>Ibid</i>.
     long value;
     // The <code>wIndex</code> field, see <i>Ibid</i>.
     long index;
 
-    // The amount of data to receive (required only by input transfers).
+    // The maximum number of bytes to receive (required only by input
+    // transfers).
     long? length;
 
     // The data to transmit (required only by output transfers).
@@ -146,7 +147,8 @@ namespace usb {
     // be claimed.
     long endpoint;
 
-    // The amount of data to receive (required only by input transfers).
+    // The maximum number of bytes to receive (required only by input
+    // transfers).
     long? length;
 
     // The data to transmit (required only by output transfers).
