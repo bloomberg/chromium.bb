@@ -40,8 +40,6 @@
 #include "components/omnibox/browser/url_index_private_data.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/search_terms_data.h"
-#include "components/search_engines/template_url.h"
-#include "components/search_engines/template_url_service.h"
 #include "sql/transaction.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -182,16 +180,15 @@ class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
  public:
   FakeAutocompleteProviderClient() : pool_owner_(3, "Background Pool") {
     bookmark_model_ = bookmarks::TestBookmarkClient::CreateModel();
-    set_template_url_service(
-        make_scoped_ptr(new TemplateURLService(nullptr, 0)));
     if (history_dir_.CreateUniqueTempDir()) {
       history_service_ = history::CreateHistoryService(
           history_dir_.path(), GetAcceptLanguages(), true);
     }
 
     in_memory_url_index_.reset(new InMemoryURLIndex(
-        bookmark_model_.get(), history_service_.get(), pool_owner_.pool().get(),
-        history_dir_.path(), GetAcceptLanguages(), SchemeSet()));
+        bookmark_model_.get(), history_service_.get(), nullptr,
+        pool_owner_.pool().get(), history_dir_.path(), GetAcceptLanguages(),
+        SchemeSet()));
     in_memory_url_index_->Init();
   }
 
@@ -821,31 +818,6 @@ TEST_F(HistoryQuickProviderTest, PreventInlineAutocomplete) {
   // The above still holds even with an extra trailing slash.
   RunTest(ASCIIToUTF16("popularsitewithroot.com/"), true, expected_urls, true,
           ASCIIToUTF16("popularsitewithroot.com"), base::string16());
-}
-
-TEST_F(HistoryQuickProviderTest, CullSearchResults) {
-  // Set up a default search engine.
-  TemplateURLData data;
-  data.SetShortName(ASCIIToUTF16("TestEngine"));
-  data.SetKeyword(ASCIIToUTF16("TestEngine"));
-  data.SetURL("http://testsearch.com/?q={searchTerms}");
-  TemplateURLService* template_url_service = client_->GetTemplateURLService();
-  TemplateURL* template_url = new TemplateURL(data);
-  template_url_service->Add(template_url);
-  template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
-  template_url_service->Load();
-
-  // A search results page should not be returned when typing a query.
-  std::vector<std::string> expected_urls;
-  RunTest(ASCIIToUTF16("thequery"), false, expected_urls, false,
-          ASCIIToUTF16("anotherengine.com/?q=thequery"), base::string16());
-
-  // A search results page should not be returned when typing the engine URL.
-  expected_urls.clear();
-  expected_urls.push_back("http://testsearch.com/");
-  RunTest(ASCIIToUTF16("testsearch"), false, expected_urls, true,
-          ASCIIToUTF16("testsearch.com"),
-                    ASCIIToUTF16(".com"));
 }
 
 TEST_F(HistoryQuickProviderTest, DoesNotProvideMatchesOnFocus) {
