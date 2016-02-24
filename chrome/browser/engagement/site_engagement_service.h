@@ -64,6 +64,11 @@ class SiteEngagementScore {
     // considered 'useful'.
     BOOTSTRAP_POINTS,
 
+    // The boundaries between low/medium and medium/high engagement as returned
+    // by GetEngagementLevel().
+    MEDIUM_ENGAGEMENT_BOUNDARY,
+    HIGH_ENGAGEMENT_BOUNDARY,
+
     MAX_VARIATION
   };
 
@@ -80,6 +85,8 @@ class SiteEngagementScore {
   static double GetWebAppInstalledPoints();
   static double GetFirstDailyEngagementPoints();
   static double GetBootstrapPoints();
+  static double GetMediumEngagementBoundary();
+  static double GetHighEngagementBoundary();
 
   // Update the default engagement settings via variations.
   static void UpdateFromVariations();
@@ -190,6 +197,14 @@ class SiteEngagementService : public KeyedService,
                               public history::HistoryServiceObserver,
                               public SiteEngagementScoreProvider {
  public:
+  enum EngagementLevel {
+    ENGAGEMENT_LEVEL_NONE,
+    ENGAGEMENT_LEVEL_LOW,
+    ENGAGEMENT_LEVEL_MEDIUM,
+    ENGAGEMENT_LEVEL_HIGH,
+    ENGAGEMENT_LEVEL_MAX,
+  };
+
   // The name of the site engagement variation field trial.
   static const char kEngagementParams[];
 
@@ -208,6 +223,13 @@ class SiteEngagementService : public KeyedService,
   // decisions. Clients should avoid using engagement in their heuristic until
   // this is true.
   bool IsBootstrapped();
+
+  // Returns the engagement level of |url|. This is the recommended API for
+  // clients
+  EngagementLevel GetEngagementLevel(const GURL& url) const;
+
+  // Returns whether |url| has at least the given |level| of engagement.
+  bool IsEngagementAtLeast(const GURL& url, EngagementLevel level) const;
 
   // Update the engagement score of the origin matching |url| for navigation.
   void HandleNavigation(const GURL& url, ui::PageTransition transition);
@@ -251,6 +273,7 @@ class SiteEngagementService : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest,
                            CleanupOriginsOnHistoryDeletion);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, IsBootstrapped);
+  FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, EngagementLevel);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, ScoreDecayHistograms);
   FRIEND_TEST_ALL_PREFIXES(AppBannerSettingsHelperTest, SiteEngagementTrigger);
 

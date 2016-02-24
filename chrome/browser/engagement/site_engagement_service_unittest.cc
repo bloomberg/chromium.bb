@@ -1177,6 +1177,119 @@ TEST_F(SiteEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
   }
 }
 
+TEST_F(SiteEngagementServiceTest, EngagementLevel) {
+  static_assert(SiteEngagementService::ENGAGEMENT_LEVEL_NONE !=
+                    SiteEngagementService::ENGAGEMENT_LEVEL_LOW,
+                "enum values should not be equal");
+  static_assert(SiteEngagementService::ENGAGEMENT_LEVEL_LOW !=
+                    SiteEngagementService::ENGAGEMENT_LEVEL_MEDIUM,
+                "enum values should not be equal");
+  static_assert(SiteEngagementService::ENGAGEMENT_LEVEL_MEDIUM !=
+                    SiteEngagementService::ENGAGEMENT_LEVEL_HIGH,
+                "enum values should not be equal");
+  static_assert(SiteEngagementService::ENGAGEMENT_LEVEL_HIGH !=
+                    SiteEngagementService::ENGAGEMENT_LEVEL_MAX,
+                "enum values should not be equal");
+
+  base::SimpleTestClock* clock = new base::SimpleTestClock();
+  scoped_ptr<SiteEngagementService> service(
+      new SiteEngagementService(profile(), make_scoped_ptr(clock)));
+
+  base::Time current_day = GetReferenceTime();
+  clock->SetNow(current_day);
+
+  GURL url1("https://www.google.com/");
+  GURL url2("http://www.google.com/");
+
+  EXPECT_EQ(SiteEngagementService::ENGAGEMENT_LEVEL_NONE,
+            service->GetEngagementLevel(url1));
+  EXPECT_EQ(SiteEngagementService::ENGAGEMENT_LEVEL_NONE,
+            service->GetEngagementLevel(url2));
+  EXPECT_TRUE(service->IsEngagementAtLeast(
+      url1, SiteEngagementService::ENGAGEMENT_LEVEL_NONE));
+  EXPECT_FALSE(service->IsEngagementAtLeast(
+      url1, SiteEngagementService::ENGAGEMENT_LEVEL_LOW));
+  EXPECT_FALSE(service->IsEngagementAtLeast(
+      url1, SiteEngagementService::ENGAGEMENT_LEVEL_MEDIUM));
+  EXPECT_FALSE(service->IsEngagementAtLeast(
+      url1, SiteEngagementService::ENGAGEMENT_LEVEL_HIGH));
+  EXPECT_FALSE(service->IsEngagementAtLeast(
+      url1, SiteEngagementService::ENGAGEMENT_LEVEL_MAX));
+
+  // Bring url1 to LOW engagement.
+  service->AddPoints(url1, 1.0);
+  EXPECT_EQ(SiteEngagementService::ENGAGEMENT_LEVEL_LOW,
+            service->GetEngagementLevel(url1));
+  EXPECT_EQ(SiteEngagementService::ENGAGEMENT_LEVEL_NONE,
+            service->GetEngagementLevel(url2));
+  EXPECT_TRUE(service->IsEngagementAtLeast(
+      url1, SiteEngagementService::ENGAGEMENT_LEVEL_NONE));
+  EXPECT_TRUE(service->IsEngagementAtLeast(
+      url1, SiteEngagementService::ENGAGEMENT_LEVEL_LOW));
+  EXPECT_FALSE(service->IsEngagementAtLeast(
+      url1, SiteEngagementService::ENGAGEMENT_LEVEL_MEDIUM));
+  EXPECT_FALSE(service->IsEngagementAtLeast(
+      url1, SiteEngagementService::ENGAGEMENT_LEVEL_HIGH));
+  EXPECT_FALSE(service->IsEngagementAtLeast(
+      url1, SiteEngagementService::ENGAGEMENT_LEVEL_MAX));
+
+  // Bring url2 to MEDIUM engagement.
+  service->AddPoints(url2, 5.0);
+  EXPECT_EQ(SiteEngagementService::ENGAGEMENT_LEVEL_LOW,
+            service->GetEngagementLevel(url1));
+  EXPECT_EQ(SiteEngagementService::ENGAGEMENT_LEVEL_MEDIUM,
+            service->GetEngagementLevel(url2));
+  EXPECT_TRUE(service->IsEngagementAtLeast(
+      url2, SiteEngagementService::ENGAGEMENT_LEVEL_NONE));
+  EXPECT_TRUE(service->IsEngagementAtLeast(
+      url2, SiteEngagementService::ENGAGEMENT_LEVEL_LOW));
+  EXPECT_TRUE(service->IsEngagementAtLeast(
+      url2, SiteEngagementService::ENGAGEMENT_LEVEL_MEDIUM));
+  EXPECT_FALSE(service->IsEngagementAtLeast(
+      url2, SiteEngagementService::ENGAGEMENT_LEVEL_HIGH));
+  EXPECT_FALSE(service->IsEngagementAtLeast(
+      url2, SiteEngagementService::ENGAGEMENT_LEVEL_MAX));
+
+  // Bring url2 to HIGH engagement.
+  for (int i = 0; i < 9; ++i) {
+    current_day += base::TimeDelta::FromDays(1);
+    clock->SetNow(current_day);
+    service->AddPoints(url2, 5.0);
+  }
+  EXPECT_EQ(SiteEngagementService::ENGAGEMENT_LEVEL_HIGH,
+            service->GetEngagementLevel(url2));
+
+  EXPECT_TRUE(service->IsEngagementAtLeast(
+      url2, SiteEngagementService::ENGAGEMENT_LEVEL_NONE));
+  EXPECT_TRUE(service->IsEngagementAtLeast(
+      url2, SiteEngagementService::ENGAGEMENT_LEVEL_LOW));
+  EXPECT_TRUE(service->IsEngagementAtLeast(
+      url2, SiteEngagementService::ENGAGEMENT_LEVEL_MEDIUM));
+  EXPECT_TRUE(service->IsEngagementAtLeast(
+      url2, SiteEngagementService::ENGAGEMENT_LEVEL_HIGH));
+  EXPECT_FALSE(service->IsEngagementAtLeast(
+      url2, SiteEngagementService::ENGAGEMENT_LEVEL_MAX));
+
+  // Bring url2 to MAX engagement.
+  for (int i = 0; i < 10; ++i) {
+    current_day += base::TimeDelta::FromDays(1);
+    clock->SetNow(current_day);
+    service->AddPoints(url2, 5.0);
+  }
+  EXPECT_EQ(SiteEngagementService::ENGAGEMENT_LEVEL_MAX,
+            service->GetEngagementLevel(url2));
+  EXPECT_TRUE(service->IsEngagementAtLeast(
+      url2, SiteEngagementService::ENGAGEMENT_LEVEL_NONE));
+  EXPECT_TRUE(service->IsEngagementAtLeast(
+      url2, SiteEngagementService::ENGAGEMENT_LEVEL_LOW));
+  EXPECT_TRUE(service->IsEngagementAtLeast(
+      url2, SiteEngagementService::ENGAGEMENT_LEVEL_MEDIUM));
+  EXPECT_TRUE(service->IsEngagementAtLeast(
+      url2, SiteEngagementService::ENGAGEMENT_LEVEL_HIGH));
+  EXPECT_TRUE(service->IsEngagementAtLeast(
+      url2, SiteEngagementService::ENGAGEMENT_LEVEL_MAX));
+}
+
 TEST_F(SiteEngagementServiceTest, ScoreDecayHistograms) {
   base::SimpleTestClock* clock = new base::SimpleTestClock();
   scoped_ptr<SiteEngagementService> service(

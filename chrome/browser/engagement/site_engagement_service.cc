@@ -40,15 +40,17 @@ bool g_updated_from_variations = false;
 // Keys used in the variations params. Order matches
 // SiteEngagementScore::Variation enum.
 const char* kVariationNames[] = {
-  "max_points_per_day",
-  "decay_period_in_days",
-  "decay_points",
-  "navigation_points",
-  "user_input_points",
-  "visible_media_playing_points",
-  "hidden_media_playing_points",
-  "web_app_installed_points",
-  "first_daily_engagement_points",
+    "max_points_per_day",
+    "decay_period_in_days",
+    "decay_points",
+    "navigation_points",
+    "user_input_points",
+    "visible_media_playing_points",
+    "hidden_media_playing_points",
+    "web_app_installed_points",
+    "first_daily_engagement_points",
+    "medium_engagement_boundary",
+    "high_engagement_boundary",
 };
 
 // Length of time between metrics logging.
@@ -127,6 +129,8 @@ double SiteEngagementScore::param_values[] = {
     5,     // WEB_APP_INSTALLED_POINTS
     0.5,   // FIRST_DAILY_ENGAGEMENT
     8,     // BOOTSTRAP_POINTS
+    5,     // MEDIUM_ENGAGEMENT_BOUNDARY
+    50,    // HIGH_ENGAGEMENT_BOUNDARY
 };
 
 const char* SiteEngagementScore::kRawScoreKey = "rawScore";
@@ -173,6 +177,14 @@ double SiteEngagementScore::GetFirstDailyEngagementPoints() {
 
 double SiteEngagementScore::GetBootstrapPoints() {
   return param_values[BOOTSTRAP_POINTS];
+}
+
+double SiteEngagementScore::GetMediumEngagementBoundary() {
+  return param_values[MEDIUM_ENGAGEMENT_BOUNDARY];
+}
+
+double SiteEngagementScore::GetHighEngagementBoundary() {
+  return param_values[HIGH_ENGAGEMENT_BOUNDARY];
 }
 
 void SiteEngagementScore::UpdateFromVariations() {
@@ -347,6 +359,8 @@ void SiteEngagementScore::SetParamValuesForTesting() {
   param_values[HIDDEN_MEDIA_POINTS] = 0.01;
   param_values[WEB_APP_INSTALLED_POINTS] = 5;
   param_values[BOOTSTRAP_POINTS] = 8;
+  param_values[MEDIUM_ENGAGEMENT_BOUNDARY] = 5;
+  param_values[HIGH_ENGAGEMENT_BOUNDARY] = 50;
 
   // This is set to zero to avoid interference with tests and is set when
   // testing this functionality.
@@ -535,6 +549,48 @@ std::map<GURL, double> SiteEngagementService::GetScoreMap() const {
 bool SiteEngagementService::IsBootstrapped() {
   return GetTotalEngagementPoints() >=
          SiteEngagementScore::GetBootstrapPoints();
+}
+
+SiteEngagementService::EngagementLevel
+SiteEngagementService::GetEngagementLevel(const GURL& url) const {
+  DCHECK_LT(SiteEngagementScore::GetMediumEngagementBoundary(),
+            SiteEngagementScore::GetHighEngagementBoundary());
+  double score = GetScore(url);
+  if (score == 0)
+    return ENGAGEMENT_LEVEL_NONE;
+
+  if (score < SiteEngagementScore::GetMediumEngagementBoundary())
+    return ENGAGEMENT_LEVEL_LOW;
+
+  if (score < SiteEngagementScore::GetHighEngagementBoundary())
+    return ENGAGEMENT_LEVEL_MEDIUM;
+
+  if (score < SiteEngagementScore::kMaxPoints)
+    return ENGAGEMENT_LEVEL_HIGH;
+
+  return ENGAGEMENT_LEVEL_MAX;
+}
+
+bool SiteEngagementService::IsEngagementAtLeast(
+    const GURL& url,
+    EngagementLevel level) const {
+  DCHECK_LT(SiteEngagementScore::GetMediumEngagementBoundary(),
+            SiteEngagementScore::GetHighEngagementBoundary());
+  double score = GetScore(url);
+  switch (level) {
+    case ENGAGEMENT_LEVEL_NONE:
+      return true;
+    case ENGAGEMENT_LEVEL_LOW:
+      return score > 0;
+    case ENGAGEMENT_LEVEL_MEDIUM:
+      return score >= SiteEngagementScore::GetMediumEngagementBoundary();
+    case ENGAGEMENT_LEVEL_HIGH:
+      return score >= SiteEngagementScore::GetHighEngagementBoundary();
+    case ENGAGEMENT_LEVEL_MAX:
+      return score == SiteEngagementScore::kMaxPoints;
+  }
+  NOTREACHED();
+  return false;
 }
 
 SiteEngagementService::SiteEngagementService(Profile* profile,
