@@ -39,7 +39,7 @@ void AutoSigninFirstRunDialogAndroid::ShowDialog() {
       Profile::FromBrowserContext(web_contents_->GetBrowserContext());
 
   bool is_smartlock_branding_enabled =
-      password_bubble_experiment::IsSmartLockBrandingEnabled(
+      password_bubble_experiment::IsSmartLockUser(
           ProfileSyncServiceFactory::GetForProfile(profile));
   base::string16 explanation;
   gfx::Range explanation_link_range = gfx::Range();
