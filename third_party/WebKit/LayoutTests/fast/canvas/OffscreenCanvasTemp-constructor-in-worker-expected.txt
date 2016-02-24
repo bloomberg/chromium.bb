@@ -1,4 +1,4 @@
-Tests that the OffScreenCanvas can be constructed on a worker thread.
+Tests that the OffscreenCanvasTemp can be constructed on a worker thread.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 

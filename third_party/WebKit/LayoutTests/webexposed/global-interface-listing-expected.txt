@@ -3679,12 +3679,6 @@ interface Notification : EventTarget
 interface NumberValue : StyleValue
     getter value
     method constructor
-interface OffScreenCanvas
-    getter height
-    getter width
-    method constructor
-    setter height
-    setter width
 interface OfflineAudioCompletionEvent : Event
     getter renderedBuffer
     method constructor
@@ -3695,6 +3689,12 @@ interface OfflineAudioContext : AudioContext
     method startRendering
     method suspend
     setter oncomplete
+interface OffscreenCanvasTemp
+    getter height
+    getter width
+    method constructor
+    setter height
+    setter width
 interface Option
     method constructor
 interface OscillatorNode : AudioSourceNode

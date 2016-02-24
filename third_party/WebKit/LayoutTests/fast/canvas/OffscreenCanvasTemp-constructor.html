@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <script src="../../resources/js-test.js"></script>
 <script>
-description("Tests that the constructor of the OffScreenCanvas can be called on the main thread");
+description("Tests that the constructor of the OffscreenCanvasTemp can be called on the main thread");
 
-var aCanvas = new OffScreenCanvas(50, 50);
+var aCanvas = new OffscreenCanvasTemp(50, 50);
 shouldBe("aCanvas.width", "50");
 shouldBe("aCanvas.height", "50");
 

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <script src="../../resources/js-test.js"></script>
 <script>
-description("Tests that the OffScreenCanvas can handle invalid arguments");
+description("Tests that the OffscreenCanvasTemp can handle invalid arguments");
 
 // Since blink uses signed int internally, this case tests how the constructor
 // responds to the arguments that are larger than INT_MAX which would cause
@@ -10,7 +10,7 @@ var setWidth = Math.pow(2, 31);
 var setHeight = Math.pow(2, 31);
 var obj = {Name: "John Doe", Age: 30};
 
-var canvas1 = new OffScreenCanvas(setWidth, setHeight);
+var canvas1 = new OffscreenCanvasTemp(setWidth, setHeight);
 shouldBe("canvas1.width", "setWidth-1");
 shouldBe("canvas1.height", "setHeight-1");
 
@@ -19,9 +19,9 @@ canvas1.height = null;
 shouldBe("canvas1.width", "0");
 shouldBe("canvas1.height", "0");
 
-shouldThrow("new OffScreenCanvas(-1, -1)");
+shouldThrow("new OffscreenCanvasTemp(-1, -1)");
 
-var canvas2 = new OffScreenCanvas(null, null);
+var canvas2 = new OffscreenCanvasTemp(null, null);
 shouldBe("canvas2.width", "0");
 shouldBe("canvas2.height", "0");
 
@@ -36,5 +36,5 @@ shouldThrow("canvas2.height = -1");
 shouldThrow("canvas2.width = obj");
 shouldThrow("canvas2.height = obj");
 
-shouldThrow("new OffScreenCanvas(obj, obj)");
+shouldThrow("new OffscreenCanvasTemp(obj, obj)");
 </script>

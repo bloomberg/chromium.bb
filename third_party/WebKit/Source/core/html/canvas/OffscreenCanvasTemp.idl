@@ -7,7 +7,7 @@
     GarbageCollected,
     Exposed=(Window,Worker),
     RuntimeEnabled=ExperimentalCanvasFeatures,
-] interface OffScreenCanvas {
+] interface OffscreenCanvasTemp {
     [EnforceRange] attribute unsigned long width;
     [EnforceRange] attribute unsigned long height;
 };
