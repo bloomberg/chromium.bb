@@ -38,6 +38,7 @@ const CGFloat kBackgroundRGBComponents[] = {0.75f, 0.74f, 0.76f};
 @implementation CRWWebViewContentView
 
 @synthesize webViewType = _webViewType;
+@synthesize shouldUseInsetForTopPadding = _shouldUseInsetForTopPadding;
 
 - (instancetype)initWithWebView:(UIView*)webView
                      scrollView:(UIScrollView*)scrollView {
@@ -122,14 +123,22 @@ const CGFloat kBackgroundRGBComponents[] = {0.75f, 0.74f, 0.76f};
 }
 
 - (CGFloat)topContentPadding {
-  return self.webViewType == web::WK_WEB_VIEW_TYPE
-             ? _topContentPadding
-             : [_scrollView contentInset].top;
+  BOOL isSettingWebViewFrame = self.webViewType == web::WK_WEB_VIEW_TYPE &&
+                               !self.shouldUseInsetForTopPadding;
+  return isSettingWebViewFrame ? _topContentPadding
+                               : [_scrollView contentInset].top;
 }
 
 - (void)setTopContentPadding:(CGFloat)newTopPadding {
-  if (self.webViewType == web::WK_WEB_VIEW_TYPE) {
+  if (self.webViewType == web::WK_WEB_VIEW_TYPE &&
+      !self.shouldUseInsetForTopPadding) {
     if (_topContentPadding != newTopPadding) {
+      // Update the content offset of the scroll view to match the padding
+      // that will be included in the frame.
+      CGFloat paddingChange = newTopPadding - _topContentPadding;
+      CGPoint contentOffset = [_scrollView contentOffset];
+      contentOffset.y += paddingChange;
+      [_scrollView setContentOffset:contentOffset];
       _topContentPadding = newTopPadding;
       // Update web view frame immediately to make |topContentPadding|
       // animatable.
@@ -139,6 +148,15 @@ const CGFloat kBackgroundRGBComponents[] = {0.75f, 0.74f, 0.76f};
     UIEdgeInsets inset = [_scrollView contentInset];
     inset.top = newTopPadding;
     [_scrollView setContentInset:inset];
+  }
+}
+
+- (void)setShouldUseInsetForTopPadding:(BOOL)shouldUseInsetForTopPadding {
+  if (_shouldUseInsetForTopPadding != shouldUseInsetForTopPadding) {
+    CGFloat oldTopContentPadding = self.topContentPadding;
+    self.topContentPadding = 0.0f;
+    _shouldUseInsetForTopPadding = shouldUseInsetForTopPadding;
+    self.topContentPadding = oldTopContentPadding;
   }
 }
 

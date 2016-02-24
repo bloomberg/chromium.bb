@@ -45,6 +45,11 @@
 // Retuns the type of the web view this proxy manages.
 @property(nonatomic, readonly) web::WebViewType webViewType;
 
+// Whether or not the content view should use the content inset when setting
+// |topContentPadding|. Implementations may or may not respect the setting
+// of this property.
+@property(nonatomic, assign) BOOL shouldUseInsetForTopPadding;
+
 // Register the given insets for the given caller.
 - (void)registerInsets:(UIEdgeInsets)insets forCaller:(id)caller;
 

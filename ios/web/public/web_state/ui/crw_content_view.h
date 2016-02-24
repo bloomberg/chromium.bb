@@ -26,6 +26,12 @@
 // TODO(stuartmorgan): See if this can be removed from the public interface.
 - (BOOL)isViewAlive;
 
+@optional
+
+// Whether or not the content view should use the content inset when setting
+// |topContentPadding|.
+@property(nonatomic, assign) BOOL shouldUseInsetForTopPadding;
+
 @end
 
 // Convenience type for content views.
