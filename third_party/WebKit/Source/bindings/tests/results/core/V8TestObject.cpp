@@ -3107,7 +3107,7 @@ static void locationWithCallWithAttributeSetter(v8::Local<v8::Value> v8Value, co
     if (!cppValue.prepare())
         return;
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    impl->setHrefCallWith(executionContext, callingDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()), cppValue);
+    impl->setHrefCallWith(executionContext, currentDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()), cppValue);
 }
 
 static void locationWithCallWithAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4231,7 +4231,7 @@ static void setterCallWithActiveWindowAndFirstWindowStringAttributeAttributeSett
     V8StringResource<> cppValue = v8Value;
     if (!cppValue.prepare())
         return;
-    impl->setSetterCallWithActiveWindowAndFirstWindowStringAttribute(callingDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()), cppValue);
+    impl->setSetterCallWithActiveWindowAndFirstWindowStringAttribute(currentDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()), cppValue);
 }
 
 static void setterCallWithActiveWindowAndFirstWindowStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -9359,7 +9359,7 @@ static void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethod
 static void callWithActiveWindowMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    impl->callWithActiveWindow(callingDOMWindow(info.GetIsolate()));
+    impl->callWithActiveWindow(currentDOMWindow(info.GetIsolate()));
 }
 
 static void callWithActiveWindowMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -9370,7 +9370,7 @@ static void callWithActiveWindowMethodCallback(const v8::FunctionCallbackInfo<v8
 static void callWithActiveWindowScriptWindowMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    impl->callWithActiveWindowScriptWindow(callingDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()));
+    impl->callWithActiveWindowScriptWindow(currentDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()));
 }
 
 static void callWithActiveWindowScriptWindowMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

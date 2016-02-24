@@ -61,7 +61,7 @@ static void locationAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Func
     V8StringResource<> cppValue = v8Value;
     if (!cppValue.prepare())
         return;
-    impl->setHref(callingDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()), cppValue);
+    impl->setHref(currentDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()), cppValue);
 }
 
 static void locationAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

@@ -60,26 +60,26 @@ public:
     Frame* frame() const { return m_frame.get(); }
     void reset() { m_frame = nullptr; }
 
-    void setHref(LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow, const String&);
+    void setHref(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String&);
     String href() const;
 
-    void assign(LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow, const String&);
-    void replace(LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow, const String&);
-    void reload(LocalDOMWindow* callingWindow);
+    void assign(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String&);
+    void replace(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String&);
+    void reload(LocalDOMWindow* currentWindow);
 
-    void setProtocol(LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow, const String&, ExceptionState&);
+    void setProtocol(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String&, ExceptionState&);
     String protocol() const;
-    void setHost(LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow, const String&);
+    void setHost(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String&);
     String host() const;
-    void setHostname(LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow, const String&);
+    void setHostname(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String&);
     String hostname() const;
-    void setPort(LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow, const String&);
+    void setPort(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String&);
     String port() const;
-    void setPathname(LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow, const String&);
+    void setPathname(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String&);
     String pathname() const;
-    void setSearch(LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow, const String&);
+    void setSearch(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String&);
     String search() const;
-    void setHash(LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow, const String&);
+    void setHash(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String&);
     String hash() const;
     String origin() const;
 
@@ -96,7 +96,7 @@ private:
     explicit Location(Frame*);
 
     enum class SetLocation { Normal, ReplaceThisFrame };
-    void setLocation(const String&, LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow, SetLocation = SetLocation::Normal);
+    void setLocation(const String&, LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, SetLocation = SetLocation::Normal);
 
     const KURL& url() const;
 
