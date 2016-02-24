@@ -33,11 +33,12 @@ class GFX_EXPORT MultiAnimation : public Animation {
   // for 200ms with a % between .25 and .75 use the following three values: 200,
   // 100, 400.
   struct Part {
-    Part() : time_ms(0), start_time_ms(0), end_time_ms(0), type(Tween::ZERO) {}
-    Part(int time_ms, Tween::Type type)
+    Part() : Part(0, Tween::ZERO) {}
+    Part(int time_ms, Tween::Type type) : Part(time_ms, 0, time_ms, type) {}
+    Part(int time_ms, int start_time_ms, int end_time_ms, Tween::Type type)
         : time_ms(time_ms),
-          start_time_ms(0),
-          end_time_ms(time_ms),
+          start_time_ms(start_time_ms),
+          end_time_ms(end_time_ms),
           type(type) {}
 
     int time_ms;

@@ -52,7 +52,7 @@ class Tab : public gfx::AnimationDelegate,
   // The Tab's class name.
   static const char kViewClassName[];
 
-  explicit Tab(TabController* controller);
+  Tab(TabController* controller, gfx::AnimationContainer* container);
   ~Tab() override;
 
   TabController* controller() const { return controller_; }
@@ -71,9 +71,6 @@ class Tab : public gfx::AnimationDelegate,
   bool detached() const { return detached_; }
 
   SkColor button_color() const { return button_color_; }
-
-  // Sets the container all animations run from.
-  void SetAnimationContainer(gfx::AnimationContainer* container);
 
   // Returns true if this tab is the active tab.
   bool IsActive() const;
@@ -247,7 +244,7 @@ class Tab : public gfx::AnimationDelegate,
   // Paint with the "immersive mode" light-bar style.
   void PaintImmersiveTab(gfx::Canvas* canvas);
 
-  // Paint various portions of the Tab
+  // Paint various portions of the Tab.
   void PaintTabBackground(gfx::Canvas* canvas);
   void PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas);
   void PaintInactiveTabBackground(gfx::Canvas* canvas);

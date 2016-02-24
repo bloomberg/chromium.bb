@@ -310,9 +310,6 @@ class TabStrip : public views::View,
 
   void Init();
 
-  // Creates and returns a new tab. The caller owners the returned tab.
-  Tab* CreateTab();
-
   // Invoked from |AddTabAt| after the newly created tab has been inserted.
   void StartInsertTabAnimation(int model_index);
 

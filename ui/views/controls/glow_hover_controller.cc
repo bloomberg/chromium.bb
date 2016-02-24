@@ -9,8 +9,8 @@
 namespace views {
 
 // Amount to scale the opacity.
-static const double kTrackOpacityScale = 0.25;
-static const double kHighlightOpacityScale = 1.0;
+static const double kSubtleOpacityScale = 0.25;
+static const double kPronouncedOpacityScale = 1.0;
 
 // How long the hover state takes.
 static const int kTrackHoverDurationMs = 400;
@@ -18,7 +18,7 @@ static const int kTrackHoverDurationMs = 400;
 GlowHoverController::GlowHoverController(views::View* view)
     : view_(view),
       animation_(this),
-      opacity_scale_(kTrackOpacityScale) {
+      opacity_scale_(kSubtleOpacityScale) {
   animation_.set_delegate(this);
 }
 
@@ -39,13 +39,13 @@ void GlowHoverController::SetLocation(const gfx::Point& location) {
 void GlowHoverController::Show(Style style) {
   switch (style) {
     case SUBTLE:
-      opacity_scale_ = kTrackOpacityScale;
+      opacity_scale_ = kSubtleOpacityScale;
       animation_.SetSlideDuration(kTrackHoverDurationMs);
       animation_.SetTweenType(gfx::Tween::EASE_OUT);
       animation_.Show();
       break;
     case PRONOUNCED:
-      opacity_scale_ = kHighlightOpacityScale;
+      opacity_scale_ = kPronouncedOpacityScale;
       // Force the end state to show immediately.
       animation_.Show();
       animation_.End();
@@ -69,8 +69,8 @@ double GlowHoverController::GetAnimationValue() const {
 }
 
 SkAlpha GlowHoverController::GetAlpha() const {
-  return static_cast<SkAlpha>(gfx::ToFlooredInt(
-      0.5 + animation_.CurrentValueBetween(0., 255 * opacity_scale_)));
+  return static_cast<SkAlpha>(animation_.CurrentValueBetween(
+      0, gfx::ToRoundedInt(255 * opacity_scale_)));
 }
 
 bool GlowHoverController::ShouldDraw() const {

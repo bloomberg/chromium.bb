@@ -40,9 +40,7 @@ TEST(MultiAnimationTest, Basic) {
 TEST(MultiAnimationTest, DifferingStartAndEnd) {
   // Create a MultiAnimation with two parts.
   MultiAnimation::Parts parts;
-  parts.push_back(MultiAnimation::Part(200, Tween::LINEAR));
-  parts[0].start_time_ms = 100;
-  parts[0].end_time_ms = 400;
+  parts.push_back(MultiAnimation::Part(200, 100, 400, Tween::LINEAR));
 
   MultiAnimation animation(parts, MultiAnimation::GetDefaultTimerInterval());
   AnimationContainerElement* as_element =

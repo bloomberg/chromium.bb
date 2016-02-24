@@ -251,7 +251,7 @@ TEST_F(TabTest, HitTestTopPixel) {
   InitWidget(&widget);
 
   FakeTabController tab_controller;
-  Tab tab(&tab_controller);
+  Tab tab(&tab_controller, nullptr);
   widget.GetContentsView()->AddChildView(&tab);
   tab.SetBoundsRect(gfx::Rect(gfx::Point(0, 0), Tab::GetStandardSize()));
 
@@ -286,7 +286,7 @@ TEST_F(TabTest, LayoutAndVisibilityOfElements) {
   InitWidget(&widget);
 
   FakeTabController controller;
-  Tab tab(&controller);
+  Tab tab(&controller, nullptr);
   widget.GetContentsView()->AddChildView(&tab);
 
   SkBitmap bitmap;
@@ -341,7 +341,7 @@ TEST_F(TabTest, TooltipProvidedByTab) {
   InitWidget(&widget);
 
   FakeTabController controller;
-  Tab tab(&controller);
+  Tab tab(&controller, nullptr);
   widget.GetContentsView()->AddChildView(&tab);
   tab.SetBoundsRect(gfx::Rect(Tab::GetStandardSize()));
 
@@ -391,7 +391,7 @@ TEST_F(TabTest, TooltipProvidedByTab) {
 // shouldn't change the insets of the close button.
 TEST_F(TabTest, CloseButtonLayout) {
   FakeTabController tab_controller;
-  Tab tab(&tab_controller);
+  Tab tab(&tab_controller, nullptr);
   tab.SetBounds(0, 0, 100, 50);
   LayoutTab(&tab);
   gfx::Insets close_button_insets = GetCloseButton(tab)->GetInsets();
@@ -413,7 +413,7 @@ TEST_F(TabTest, LayeredThrobber) {
   InitWidget(&widget);
 
   FakeTabController tab_controller;
-  Tab tab(&tab_controller);
+  Tab tab(&tab_controller, nullptr);
   widget.GetContentsView()->AddChildView(&tab);
   tab.SetBoundsRect(gfx::Rect(Tab::GetStandardSize()));
 
@@ -464,7 +464,7 @@ TEST_F(TabTest, LayeredThrobber) {
 
 TEST_F(TabTest, TitleHiddenWhenSmall) {
   FakeTabController tab_controller;
-  Tab tab(&tab_controller);
+  Tab tab(&tab_controller, nullptr);
   tab.SetBounds(0, 0, 100, 50);
   EXPECT_GT(GetTitleWidth(tab), 0);
   tab.SetBounds(0, 0, 0, 50);

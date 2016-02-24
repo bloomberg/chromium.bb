@@ -756,7 +756,7 @@ void TabStrip::StopAllHighlighting() {
 void TabStrip::AddTabAt(int model_index,
                         const TabRendererData& data,
                         bool is_active) {
-  Tab* tab = CreateTab();
+  Tab* tab = new Tab(this, animation_container_.get());
   AddChildView(tab);
   tab->SetData(data);
   UpdateTabsClosingMap(model_index, 1);
@@ -1093,18 +1093,16 @@ void TabStrip::SetImmersiveStyle(bool enable) {
 }
 
 SkAlpha TabStrip::GetInactiveAlpha(bool for_new_tab_button) const {
-  static const SkAlpha kInactiveTabAlphaOpaque = 255;
-  static const double kMultiSelectionMultiplier = 0.6;
-
-  SkAlpha base_alpha = kInactiveTabAlphaOpaque;
 #if defined(USE_ASH)
   static const SkAlpha kInactiveTabAlphaAsh = 230;
-  base_alpha = kInactiveTabAlphaAsh;
+  const SkAlpha base_alpha = kInactiveTabAlphaAsh;
 #else
   static const SkAlpha kInactiveTabAlphaGlass = 200;
-  if (GetWidget()->ShouldWindowContentsBeTransparent())
-    base_alpha = kInactiveTabAlphaGlass;
+  static const SkAlpha kInactiveTabAlphaOpaque = 255;
+  const SkAlpha base_alpha = GetWidget()->ShouldWindowContentsBeTransparent() ?
+      kInactiveTabAlphaGlass : kInactiveTabAlphaOpaque;
 #endif  // USE_ASH
+  static const double kMultiSelectionMultiplier = 0.6;
   return (for_new_tab_button || (GetSelectionModel().size() <= 1)) ?
       base_alpha : static_cast<SkAlpha>(kMultiSelectionMultiplier * base_alpha);
 }
@@ -1402,9 +1400,9 @@ int TabStrip::GetBackgroundResourceId(bool* custom_image) const {
   const bool incognito = controller()->IsIncognito();
   const int id = incognito ?
       IDR_THEME_TAB_BACKGROUND_INCOGNITO : IDR_THEME_TAB_BACKGROUND;
-  const int frame_id = incognito ? IDR_THEME_FRAME_INCOGNITO : IDR_THEME_FRAME;
-  *custom_image = tp->HasCustomImage(id) || tp->HasCustomImage(frame_id) ||
-      (incognito && tp->HasCustomImage(IDR_THEME_FRAME));
+  *custom_image =
+      tp->HasCustomImage(id) || tp->HasCustomImage(IDR_THEME_FRAME) ||
+      (incognito && tp->HasCustomImage(IDR_THEME_FRAME_INCOGNITO));
   return id;
 }
 
@@ -1702,12 +1700,6 @@ void TabStrip::Init() {
     drop_indicator_width = drop_image->width();
     drop_indicator_height = drop_image->height();
   }
-}
-
-Tab* TabStrip::CreateTab() {
-  Tab* tab = new Tab(this);
-  tab->SetAnimationContainer(animation_container_.get());
-  return tab;
 }
 
 void TabStrip::StartInsertTabAnimation(int model_index) {

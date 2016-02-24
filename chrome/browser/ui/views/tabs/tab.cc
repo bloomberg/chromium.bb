@@ -68,9 +68,6 @@ using base::UserMetricsAction;
 
 namespace {
 
-// How long the pulse throb takes.
-const int kPulseDurationMs = 200;
-
 // Width of touch tabs.
 const int kTouchWidth = 120;
 
@@ -92,16 +89,6 @@ const double kSelectedTabOpacity = 0.3;
 
 // Inactive selected tabs have their throb value scaled by this.
 const double kSelectedTabThrobScale = 0.95 - kSelectedTabOpacity;
-
-// Durations for the various parts of the pinned tab title animation.
-const int kPinnedTitleChangeAnimationDuration1MS = 1600;
-const int kPinnedTitleChangeAnimationStart1MS = 0;
-const int kPinnedTitleChangeAnimationEnd1MS = 1900;
-const int kPinnedTitleChangeAnimationDuration2MS = 0;
-const int kPinnedTitleChangeAnimationDuration3MS = 550;
-const int kPinnedTitleChangeAnimationStart3MS = 150;
-const int kPinnedTitleChangeAnimationEnd3MS = 800;
-const int kPinnedTitleChangeAnimationIntervalMS = 40;
 
 // Offset from the right edge for the start of the pinned title change
 // animation.
@@ -140,13 +127,6 @@ const int kTabCloseButtonSize = 16;
 // stroke inner edge is (GetUnscaledEndcapWidth() * scale) + 1.
 float GetUnscaledEndcapWidth() {
   return GetLayoutInsets(TAB).left() - 0.5f;
-}
-
-// Stop()s |animation| and then deletes it. We do this rather than just deleting
-// so that the delegate is notified before the destruction.
-void StopAndDeleteAnimation(scoped_ptr<gfx::Animation> animation) {
-  if (animation)
-    animation->Stop();
 }
 
 void DrawHighlight(gfx::Canvas* canvas,
@@ -504,7 +484,7 @@ Tab::ImageCache* Tab::image_cache_ = NULL;
 ////////////////////////////////////////////////////////////////////////////////
 // Tab, public:
 
-Tab::Tab(TabController* controller)
+Tab::Tab(TabController* controller, gfx::AnimationContainer* container)
     : controller_(controller),
       closing_(false),
       dragging_(false),
@@ -512,6 +492,9 @@ Tab::Tab(TabController* controller)
       favicon_hiding_offset_(0),
       immersive_loading_step_(0),
       should_display_crashed_favicon_(false),
+      pulse_animation_(new gfx::ThrobAnimation(this)),
+      crash_icon_animation_(new FaviconCrashAnimation(this)),
+      animation_container_(container),
       throbber_(nullptr),
       media_indicator_button_(nullptr),
       close_button_(nullptr),
@@ -571,14 +554,43 @@ Tab::Tab(TabController* controller)
   AddChildView(close_button_);
 
   set_context_menu_controller(this);
+
+  const int kPulseDurationMs = 200;
+  pulse_animation_->SetSlideDuration(kPulseDurationMs);
+  pulse_animation_->SetContainer(animation_container_.get());
+
+  const int kPinnedTitleChangeAnimationDuration1MS = 1600;
+  const int kPinnedTitleChangeAnimationStart1MS = 0;
+  const int kPinnedTitleChangeAnimationEnd1MS = 1900;
+  const int kPinnedTitleChangeAnimationDuration2MS = 0;
+  const int kPinnedTitleChangeAnimationDuration3MS = 550;
+  const int kPinnedTitleChangeAnimationStart3MS = 150;
+  const int kPinnedTitleChangeAnimationEnd3MS = 800;
+  const int kPinnedTitleChangeAnimationIntervalMS = 40;
+  gfx::MultiAnimation::Parts parts;
+  parts.push_back(gfx::MultiAnimation::Part(
+      kPinnedTitleChangeAnimationDuration1MS,
+      kPinnedTitleChangeAnimationStart1MS,
+      kPinnedTitleChangeAnimationEnd1MS,
+      gfx::Tween::EASE_OUT));
+  parts.push_back(gfx::MultiAnimation::Part(
+      kPinnedTitleChangeAnimationDuration2MS,
+      gfx::Tween::ZERO));
+  parts.push_back(gfx::MultiAnimation::Part(
+      kPinnedTitleChangeAnimationDuration3MS,
+      kPinnedTitleChangeAnimationStart3MS,
+      kPinnedTitleChangeAnimationEnd3MS,
+      gfx::Tween::EASE_IN));
+  const base::TimeDelta timeout =
+      base::TimeDelta::FromMilliseconds(kPinnedTitleChangeAnimationIntervalMS);
+  pinned_title_change_animation_.reset(new gfx::MultiAnimation(parts, timeout));
+  pinned_title_change_animation_->SetContainer(animation_container_.get());
+  pinned_title_change_animation_->set_delegate(this);
+
+  hover_controller_.SetAnimationContainer(animation_container_.get());
 }
 
 Tab::~Tab() {
-}
-
-void Tab::SetAnimationContainer(gfx::AnimationContainer* container) {
-  animation_container_ = container;
-  hover_controller_.SetAnimationContainer(container);
 }
 
 bool Tab::IsActive() const {
@@ -619,17 +631,14 @@ void Tab::SetData(const TabRendererData& data) {
   }
   title_->SetText(title);
 
-  if (data_.IsCrashed()) {
-    if (!should_display_crashed_favicon_ && !crash_icon_animation_) {
-      data_.media_state = TAB_MEDIA_STATE_NONE;
-      crash_icon_animation_.reset(new FaviconCrashAnimation(this));
-      crash_icon_animation_->Start();
-    }
-  } else {
-    if (crash_icon_animation_)
-        crash_icon_animation_.reset();
+  if (!data_.IsCrashed()) {
+    crash_icon_animation_->Stop();
     should_display_crashed_favicon_ = false;
     favicon_hiding_offset_ = 0;
+  } else if (!should_display_crashed_favicon_ &&
+             !crash_icon_animation_->is_animating()) {
+    data_.media_state = TAB_MEDIA_STATE_NONE;
+    crash_icon_animation_->Start();
   }
 
   if (data_.media_state != old.media_state)
@@ -657,48 +666,20 @@ void Tab::UpdateLoadingAnimation(TabRendererData::NetworkState state) {
 }
 
 void Tab::StartPulse() {
-  pulse_animation_.reset(new gfx::ThrobAnimation(this));
-  pulse_animation_->SetSlideDuration(kPulseDurationMs);
-  if (animation_container_.get())
-    pulse_animation_->SetContainer(animation_container_.get());
   pulse_animation_->StartThrobbing(std::numeric_limits<int>::max());
 }
 
 void Tab::StopPulse() {
-  StopAndDeleteAnimation(std::move(pulse_animation_));
+  pulse_animation_->Stop();
 }
 
 void Tab::StartPinnedTabTitleAnimation() {
-  if (!data().pinned)
-    return;
-  if (!pinned_title_change_animation_) {
-    gfx::MultiAnimation::Parts parts;
-    parts.push_back(
-        gfx::MultiAnimation::Part(kPinnedTitleChangeAnimationDuration1MS,
-                                 gfx::Tween::EASE_OUT));
-    parts.push_back(
-        gfx::MultiAnimation::Part(kPinnedTitleChangeAnimationDuration2MS,
-                                 gfx::Tween::ZERO));
-    parts.push_back(
-        gfx::MultiAnimation::Part(kPinnedTitleChangeAnimationDuration3MS,
-                                 gfx::Tween::EASE_IN));
-    parts[0].start_time_ms = kPinnedTitleChangeAnimationStart1MS;
-    parts[0].end_time_ms = kPinnedTitleChangeAnimationEnd1MS;
-    parts[2].start_time_ms = kPinnedTitleChangeAnimationStart3MS;
-    parts[2].end_time_ms = kPinnedTitleChangeAnimationEnd3MS;
-    base::TimeDelta timeout = base::TimeDelta::FromMilliseconds(
-        kPinnedTitleChangeAnimationIntervalMS);
-    pinned_title_change_animation_.reset(
-        new gfx::MultiAnimation(parts, timeout));
-    if (animation_container_.get())
-      pinned_title_change_animation_->SetContainer(animation_container_.get());
-    pinned_title_change_animation_->set_delegate(this);
-  }
-  pinned_title_change_animation_->Start();
+  if (data().pinned)
+    pinned_title_change_animation_->Start();
 }
 
 void Tab::StopPinnedTabTitleAnimation() {
-  StopAndDeleteAnimation(std::move(pinned_title_change_animation_));
+  pinned_title_change_animation_->Stop();
 }
 
 int Tab::GetWidthOfLargestSelectableRegion() const {
@@ -780,9 +761,8 @@ float Tab::GetInverseDiagonalSlope() {
 void Tab::AnimationProgressed(const gfx::Animation* animation) {
   // Ignore if the pulse animation is being performed on active tab because
   // it repaints the same image. See |Tab::PaintTabBackground()|.
-  if (animation == pulse_animation_.get() && IsActive())
-    return;
-  SchedulePaint();
+  if ((animation != pulse_animation_.get()) || !IsActive())
+    SchedulePaint();
 }
 
 void Tab::AnimationCanceled(const gfx::Animation* animation) {
@@ -797,21 +777,19 @@ void Tab::AnimationEnded(const gfx::Animation* animation) {
 // Tab, views::ButtonListener overrides:
 
 void Tab::ButtonPressed(views::Button* sender, const ui::Event& event) {
-  if (media_indicator_button_ && media_indicator_button_->visible()) {
-    if (media_indicator_button_->enabled())
-      content::RecordAction(UserMetricsAction("CloseTab_MuteToggleAvailable"));
-    else if (data_.media_state == TAB_MEDIA_STATE_AUDIO_PLAYING)
-      content::RecordAction(UserMetricsAction("CloseTab_AudioIndicator"));
-    else
-      content::RecordAction(UserMetricsAction("CloseTab_RecordingIndicator"));
-  } else {
+  if (!media_indicator_button_ || !media_indicator_button_->visible())
     content::RecordAction(UserMetricsAction("CloseTab_NoMediaIndicator"));
-  }
+  else if (media_indicator_button_->enabled())
+    content::RecordAction(UserMetricsAction("CloseTab_MuteToggleAvailable"));
+  else if (data_.media_state == TAB_MEDIA_STATE_AUDIO_PLAYING)
+    content::RecordAction(UserMetricsAction("CloseTab_AudioIndicator"));
+  else
+    content::RecordAction(UserMetricsAction("CloseTab_RecordingIndicator"));
 
   const CloseTabSource source =
       (event.type() == ui::ET_MOUSE_RELEASED &&
-       (event.flags() & ui::EF_FROM_TOUCH) == 0) ? CLOSE_TAB_FROM_MOUSE :
-      CLOSE_TAB_FROM_TOUCH;
+       !(event.flags() & ui::EF_FROM_TOUCH)) ? CLOSE_TAB_FROM_MOUSE
+                                             : CLOSE_TAB_FROM_TOUCH;
   DCHECK_EQ(close_button_, sender);
   controller_->CloseTab(this, source);
   if (event.type() == ui::ET_GESTURE_TAP)
@@ -1230,9 +1208,9 @@ void Tab::PaintTab(gfx::Canvas* canvas) {
 void Tab::PaintImmersiveTab(gfx::Canvas* canvas) {
   // Use transparency for the draw-attention animation.
   int alpha = 255;
-  if (pulse_animation_ && pulse_animation_->is_animating() && !data().pinned) {
+  if (pulse_animation_->is_animating() && !data().pinned) {
     alpha = pulse_animation_->CurrentValueBetween(
-        255, static_cast<int>(255 * kImmersiveTabMinThrobOpacity));
+        255, gfx::ToRoundedInt(255 * kImmersiveTabMinThrobOpacity));
   }
 
   // Draw a gray rectangle to represent the tab. This works for pinned tabs as
@@ -1280,8 +1258,7 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas) {
     PaintTabBackgroundUsingFillId(canvas, true, kActiveTabFillId,
                                   has_custom_image, y_offset);
   } else {
-    if (pinned_title_change_animation_ &&
-        pinned_title_change_animation_->is_animating())
+    if (pinned_title_change_animation_->is_animating())
       PaintInactiveTabBackgroundWithTitleChange(canvas);
     else
       PaintInactiveTabBackground(canvas);
@@ -1626,9 +1603,8 @@ double Tab::GetThrobValue() {
 
   // Showing both the pulse and title change animation at the same time is too
   // much.
-  if (pulse_animation_ && pulse_animation_->is_animating() &&
-      (!pinned_title_change_animation_ ||
-       !pinned_title_change_animation_->is_animating())) {
+  if (pulse_animation_->is_animating() &&
+      !pinned_title_change_animation_->is_animating()) {
     val += pulse_animation_->GetCurrentValue() * offset;
   } else if (hover_controller_.ShouldDraw()) {
     val += hover_controller_.GetAnimationValue() * offset;
@@ -1670,7 +1646,7 @@ void Tab::ScheduleIconPaint() {
     return;
 
   // Extends the area to the bottom when the crash animation is in progress.
-  if (crash_icon_animation_)
+  if (crash_icon_animation_->is_animating())
     bounds.set_height(height() - bounds.y());
   bounds.set_x(GetMirroredXForRect(bounds));
   SchedulePaintInRect(bounds);
