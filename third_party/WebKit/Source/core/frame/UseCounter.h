@@ -727,11 +727,6 @@ public:
         HTMLKeygenElement = 886,
         // The above items are available in M45 branch.
 
-        V8SVGElement_OffsetParent_AttributeGetter = 887,
-        V8SVGElement_OffsetTop_AttributeGetter = 888,
-        V8SVGElement_OffsetLeft_AttributeGetter = 889,
-        V8SVGElement_OffsetWidth_AttributeGetter = 890,
-        V8SVGElement_OffsetHeight_AttributeGetter = 891,
         HTMLMediaElementPreloadNone = 892,
         HTMLMediaElementPreloadMetadata = 893,
         HTMLMediaElementPreloadAuto = 894,
