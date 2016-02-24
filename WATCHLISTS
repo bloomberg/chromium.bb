@@ -376,9 +376,6 @@
                   'components/gcm_driver/|'\
                   'google_apis/gcm/',
     },
-    'gcm_crypto': {
-      'filepath': 'components/gcm_driver/crypto/',
-    },
     'geolocation': {
       'filepath': 'chrome/browser/geolocation/|'\
                   'content/browser/geolocation|'\
@@ -1363,8 +1360,7 @@
     'filebrowse': ['rginda+watch@chromium.org'],
     'filesapp': ['mtomasz+watch@chromium.org'],
     'ftp': ['phajdan.jr@chromium.org'],
-    'gcm': ['zea+watch@chromium.org'],
-    'gcm_crypto': ['peter@chromium.org'],
+    'gcm': ['zea+watch@chromium.org', 'peter@chromium.org'],
     'geolocation': ['mvanouwerkerk@chromium.org',
                     'mlamouri+watch-geolocation@chromium.org'],
     'gfx_geometry': ['cc-bugs@chromium.org'],
