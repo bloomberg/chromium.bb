@@ -328,6 +328,10 @@ public class BrowserAccessibilityManager {
 
         if (event.getAction() == MotionEvent.ACTION_HOVER_EXIT) {
             mIsHovering = false;
+            if (mLastHoverId != View.NO_ID) {
+                sendAccessibilityEvent(mLastHoverId, AccessibilityEvent.TYPE_VIEW_HOVER_EXIT);
+                mLastHoverId = View.NO_ID;
+            }
             if (mPendingScrollToMakeNodeVisible) {
                 nativeScrollToMakeNodeVisible(
                         mNativeObj, mAccessibilityFocusId);
@@ -719,10 +723,13 @@ public class BrowserAccessibilityManager {
     @CalledByNative
     private void handleHover(int id) {
         if (mLastHoverId == id) return;
+        if (!mIsHovering) return;
 
         // Always send the ENTER and then the EXIT event, to match a standard Android View.
         sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_HOVER_ENTER);
-        sendAccessibilityEvent(mLastHoverId, AccessibilityEvent.TYPE_VIEW_HOVER_EXIT);
+        if (mLastHoverId != View.NO_ID) {
+            sendAccessibilityEvent(mLastHoverId, AccessibilityEvent.TYPE_VIEW_HOVER_EXIT);
+        }
         mLastHoverId = id;
     }
 
