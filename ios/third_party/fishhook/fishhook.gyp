@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //ios/third_party/fishhook
       'target_name': 'fishhook',
       'type': 'static_library',
       'sources': [
