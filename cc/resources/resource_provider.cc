@@ -1575,12 +1575,12 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
     return;
 
   ReturnedResourceArray to_return;
+  to_return.reserve(unused.size());
+  std::vector<GLbyte*> unverified_sync_tokens;
 
-  GLES2Interface* gl = ContextGL();
   bool need_sync_token = false;
-  for (size_t i = 0; i < unused.size(); ++i) {
-    ResourceId local_id = unused[i];
-
+  GLES2Interface* gl = ContextGL();
+  for (ResourceId local_id : unused) {
     ResourceMap::iterator it = resources_.find(local_id);
     CHECK(it != resources_.end());
     Resource& resource = it->second;
@@ -1627,11 +1627,11 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
 
     ReturnedResource returned;
     returned.id = child_id;
-    returned.sync_token = resource.mailbox().sync_token();
+    if (resource.needs_sync_token())
+      need_sync_token = true;
+    else
+      returned.sync_token = resource.mailbox().sync_token();
 
-    need_sync_token |=
-        (Resource::LOCALLY_USED == resource.synchronization_state() &&
-         IsGpuResourceType(resource.type));
     returned.count = resource.imported_count;
     returned.lost = is_lost;
     to_return.push_back(returned);
@@ -1640,17 +1640,35 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
     child_info->child_to_parent_map.erase(child_id);
     resource.imported_count = 0;
     DeleteResourceInternal(it, style);
+
+    // Before returning any sync tokens, they must be verified. Note that we
+    // need to verify the sync token inside of the "to_return" array.
+    if (to_return.back().sync_token.HasData() &&
+        !to_return.back().sync_token.verified_flush()) {
+      unverified_sync_tokens.push_back(to_return.back().sync_token.GetData());
+    }
   }
+
+  gpu::SyncToken new_sync_token;
   if (need_sync_token && child_info->needs_sync_tokens) {
     DCHECK(gl);
-    const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
-    gl->ShallowFlushCHROMIUM();
+    const uint64_t fence_sync = gl->InsertFenceSyncCHROMIUM();
+    gl->OrderingBarrierCHROMIUM();
+    gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, new_sync_token.GetData());
+    unverified_sync_tokens.push_back(new_sync_token.GetData());
+  }
 
-    gpu::SyncToken sync_token;
-    gl->GenSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
-    for (size_t i = 0; i < to_return.size(); ++i) {
-      if (!to_return[i].sync_token.HasData())
-        to_return[i].sync_token = sync_token;
+  if (!unverified_sync_tokens.empty()) {
+    DCHECK(gl);
+    gl->VerifySyncTokensCHROMIUM(unverified_sync_tokens.data(),
+                                 unverified_sync_tokens.size());
+  }
+
+  if (new_sync_token.HasData()) {
+    DCHECK(need_sync_token && child_info->needs_sync_tokens);
+    for (ReturnedResource& returned_resource : to_return) {
+      if (!returned_resource.sync_token.HasData())
+        returned_resource.sync_token = new_sync_token;
     }
   }
 

@@ -207,6 +207,7 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
   resource_provider->CopyToResource(resources_.back()->id(),
                                     static_cast<const uint8_t*>(pixels),
                                     internal_content_bounds_);
+  resource_provider->GenerateSyncTokenForResource(resources_.back()->id());
 }
 
 void HeadsUpDisplayLayerImpl::ReleaseResources() {

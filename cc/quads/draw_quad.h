@@ -124,6 +124,12 @@ class CC_EXPORT DrawQuad {
       return ids + count;
     }
 
+    const ResourceId* const_begin() const { return ids; }
+    const ResourceId* const_end() const {
+      DCHECK_LE(count, kMaxResourceIdCount);
+      return ids + count;
+    }
+
     uint32_t count;
     ResourceId ids[kMaxResourceIdCount];
   };
