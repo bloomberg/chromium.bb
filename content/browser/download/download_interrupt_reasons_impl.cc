@@ -83,7 +83,8 @@ DownloadInterruptReason ConvertNetErrorToInterruptReason(
     case net::ERR_TIMED_OUT:
       return DOWNLOAD_INTERRUPT_REASON_NETWORK_TIMEOUT;
 
-    // The network connection has been lost.
+    // The network connection was lost or changed.
+    case net::ERR_NETWORK_CHANGED:
     case net::ERR_INTERNET_DISCONNECTED:
       return DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED;
 
