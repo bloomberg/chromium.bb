@@ -179,7 +179,10 @@ VisualStudioWriter::SolutionProject::~SolutionProject() = default;
 
 VisualStudioWriter::VisualStudioWriter(const BuildSettings* build_settings,
                                        Version version)
-    : build_settings_(build_settings) {
+    : build_settings_(build_settings),
+      ninja_path_output_(build_settings->build_dir(),
+                         build_settings->root_path_utf8(),
+                         EscapingMode::ESCAPE_NINJA_COMMAND) {
   const Value* value = build_settings->build_args().GetArgOverride("is_debug");
   is_debug_config_ = value == nullptr || value->boolean_value();
   config_platform_ = "Win32";
@@ -496,12 +499,14 @@ bool VisualStudioWriter::WriteProjectFileContents(
                     "$(VCTargetsPath)\\BuildCustomizations\\masm.targets"));
   project.SubElement("ImportGroup", XmlAttributes("Label", "ExtensionTargets"));
 
+  std::string ninja_target = GetNinjaTarget(target);
+
   {
     scoped_ptr<XmlElementWriter> build =
         project.SubElement("Target", XmlAttributes("Name", "Build"));
     build->SubElement(
-        "Exec",
-        XmlAttributes("Command", "call ninja.exe -C $(OutDir) $(ProjectName)"));
+        "Exec", XmlAttributes("Command",
+                              "call ninja.exe -C $(OutDir) " + ninja_target));
   }
 
   {
@@ -510,7 +515,7 @@ bool VisualStudioWriter::WriteProjectFileContents(
     clean->SubElement(
         "Exec",
         XmlAttributes("Command",
-                      "call ninja.exe -C $(OutDir) -tclean $(ProjectName)"));
+                      "call ninja.exe -C $(OutDir) -tclean " + ninja_target));
   }
 
   return true;
@@ -750,4 +755,12 @@ void VisualStudioWriter::ResolveSolutionFolders() {
     }
     parents.push_back(folder);
   }
+}
+
+std::string VisualStudioWriter::GetNinjaTarget(const Target* target) {
+  std::ostringstream ninja_target_out;
+  DCHECK(!target->dependency_output_file().value().empty());
+  ninja_path_output_.WriteFile(ninja_target_out,
+                               target->dependency_output_file());
+  return ninja_target_out.str();
 }

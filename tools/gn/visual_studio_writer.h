@@ -11,6 +11,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "tools/gn/path_output.h"
 
 namespace base {
 class FilePath;
@@ -91,6 +92,8 @@ class VisualStudioWriter {
   // and updates |root_folder_dir_|. Also sets |parent_folder| for |projects_|.
   void ResolveSolutionFolders();
 
+  std::string GetNinjaTarget(const Target* target);
+
   const BuildSettings* build_settings_;
 
   // Toolset version.
@@ -120,6 +123,9 @@ class VisualStudioWriter {
 
   // Semicolon-separated Windows SDK include directories.
   std::string windows_kits_include_dirs_;
+
+  // Path formatter for ninja targets.
+  PathOutput ninja_path_output_;
 
   DISALLOW_COPY_AND_ASSIGN(VisualStudioWriter);
 };
