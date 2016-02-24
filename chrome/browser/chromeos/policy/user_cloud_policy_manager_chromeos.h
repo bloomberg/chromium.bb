@@ -132,10 +132,8 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
 
   // Cancels waiting for the policy fetch and flags the
   // ConfigurationPolicyProvider ready (assuming all other initialization tasks
-  // have completed). Pass |true| if policy fetch was successful (either
-  // because policy was successfully fetched, or if DMServer has notified us
-  // that the user is not managed).
-  void CancelWaitForPolicyFetch(bool success);
+  // have completed).
+  void CancelWaitForPolicyFetch();
 
   void StartRefreshSchedulerIfReady();
 
@@ -154,11 +152,6 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
   // Whether to wait for a policy fetch to complete before reporting
   // IsInitializationComplete().
   bool wait_for_policy_fetch_;
-
-  // Whether we should allow policy fetches to fail, or wait forever until they
-  // succeed (typically we won't allow them to fail until we have loaded policy
-  // at least once).
-  bool allow_failed_policy_fetches_;
 
   // A timer that puts a hard limit on the maximum time to wait for the initial
   // policy fetch.

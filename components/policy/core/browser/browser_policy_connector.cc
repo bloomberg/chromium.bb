@@ -42,7 +42,9 @@ void ReportRegexSuccessMetric(bool success) {
 }
 
 // Regexes that match many of the larger public email providers as we know
-// these users are not from hosted enterprise domains.
+// these users are not from hosted enterprise domains. Keep this list in sync
+// with the EnterpriseDomainRegex enum in histograms.xml (i.e. only add things
+// at the end).
 const wchar_t* const kNonManagedDomainPatterns[] = {
   L"aol\\.com",
   L"googlemail\\.com",
@@ -54,7 +56,6 @@ const wchar_t* const kNonManagedDomainPatterns[] = {
   L"qq\\.com",
   L"yahoo(\\.co|\\.com|)\\.[^.]+",  // yahoo.com, yahoo.co.uk, yahoo.com.tw
   L"yandex\\.ru",
-  L"consumer\\.example\\.com",
 };
 
 // Returns true if |domain| matches the regex |pattern|.

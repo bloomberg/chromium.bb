@@ -49,8 +49,6 @@ class UserPolicyTestHelper {
                     const base::DictionaryValue& recommended_policy,
                     Profile* profile);
 
-  void DeletePolicyFile();
-
  private:
   void WritePolicyFile(const base::DictionaryValue& mandatory,
                        const base::DictionaryValue& recommended);
