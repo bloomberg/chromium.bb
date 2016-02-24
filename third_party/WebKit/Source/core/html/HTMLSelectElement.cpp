@@ -85,8 +85,6 @@ HTMLSelectElement::HTMLSelectElement(Document& document, HTMLFormElement* form)
     , m_typeAhead(this)
     , m_size(0)
     , m_lastOnChangeOption(nullptr)
-    , m_activeSelectionAnchorIndex(-1)
-    , m_activeSelectionEndIndex(-1)
     , m_multiple(false)
     , m_activeSelectionState(false)
     , m_shouldRecalcListItems(false)
@@ -129,7 +127,7 @@ void HTMLSelectElement::optionSelectedByUser(int optionIndex, bool fireOnChangeN
     // elements to send change events.  This produces that same behavior for
     // changes triggered by other code running on behalf of the user.
     if (!usesMenuList()) {
-        updateSelectedState(optionToListIndex(optionIndex), allowMultipleSelection, false);
+        updateSelectedState(item(optionIndex), allowMultipleSelection, false);
         setNeedsValidityCheck();
         if (fireOnChangeNow)
             listBoxOnChange();
@@ -213,7 +211,9 @@ void HTMLSelectElement::listBoxSelectItem(int listIndex, bool allowMultiplySelec
     if (!multiple()) {
         optionSelectedByUser(listToOptionIndex(listIndex), fireOnChangeNow, false);
     } else {
-        updateSelectedState(listIndex, allowMultiplySelections, shift);
+        HTMLElement* element = listItems()[listIndex];
+        if (isHTMLOptionElement(element))
+            updateSelectedState(toHTMLOptionElement(element), allowMultiplySelections, shift);
         setNeedsValidityCheck();
         if (fireOnChangeNow)
             listBoxOnChange();
@@ -230,9 +230,15 @@ bool HTMLSelectElement::usesMenuList() const
 
 int HTMLSelectElement::activeSelectionEndListIndex() const
 {
-    if (m_activeSelectionEndIndex >= 0)
-        return m_activeSelectionEndIndex;
-    return lastSelectedListIndex();
+    HTMLOptionElement* option = activeSelectionEnd();
+    return option ? option->listIndex() : -1;
+}
+
+HTMLOptionElement* HTMLSelectElement::activeSelectionEnd() const
+{
+    if (m_activeSelectionEnd)
+        return m_activeSelectionEnd.get();
+    return lastSelectedOption();
 }
 
 void HTMLSelectElement::add(const HTMLOptionElementOrHTMLOptGroupElement& element, const HTMLElementOrLong& before, ExceptionState& exceptionState)
@@ -550,17 +556,17 @@ bool HTMLSelectElement::isRequiredFormControl() const
     return isRequired();
 }
 
-// Returns the 1st valid item |skip| items from |listIndex| in direction
+// Returns the 1st valid OPTION |skip| items from |listIndex| in direction
 // |direction| if there is one.
-// Otherwise, it returns the valid item closest to that boundary which is past
+// Otherwise, it returns the valid OPTION closest to that boundary which is past
 // |listIndex| if there is one.
-// Otherwise, it returns |listIndex|.
-// Valid means that it is enabled and an option element.
-int HTMLSelectElement::nextValidIndex(int listIndex, SkipDirection direction, int skip) const
+// Otherwise, it returns nullptr.
+// Valid means that it is enabled and visible.
+HTMLOptionElement* HTMLSelectElement::nextValidOption(int listIndex, SkipDirection direction, int skip) const
 {
     ASSERT(direction == SkipBackwards || direction == SkipForwards);
     const ListItems& listItems = this->listItems();
-    int lastGoodIndex = listIndex;
+    HTMLOptionElement* lastGoodOption = nullptr;
     int size = listItems.size();
     for (listIndex += direction; listIndex >= 0 && listIndex < size; listIndex += direction) {
         --skip;
@@ -573,42 +579,40 @@ int HTMLSelectElement::nextValidIndex(int listIndex, SkipDirection direction, in
             continue;
         if (!usesMenuList() && !element->layoutObject())
             continue;
-        lastGoodIndex = listIndex;
+        lastGoodOption = toHTMLOptionElement(element);
         if (skip <= 0)
             break;
     }
-    return lastGoodIndex;
+    return lastGoodOption;
 }
 
-int HTMLSelectElement::nextSelectableListIndex(int startIndex) const
+HTMLOptionElement* HTMLSelectElement::nextSelectableOption(HTMLOptionElement* startOption) const
 {
-    return nextValidIndex(startIndex, SkipForwards, 1);
+    return nextValidOption(startOption ? startOption->listIndex() : -1, SkipForwards, 1);
 }
 
-int HTMLSelectElement::previousSelectableListIndex(int startIndex) const
+HTMLOptionElement* HTMLSelectElement::previousSelectableOption(HTMLOptionElement* startOption) const
 {
-    if (startIndex == -1)
-        startIndex = listItems().size();
-    return nextValidIndex(startIndex, SkipBackwards, 1);
+    return nextValidOption(startOption ? startOption->listIndex() : listItems().size(), SkipBackwards, 1);
 }
 
-int HTMLSelectElement::firstSelectableListIndex() const
+HTMLOptionElement* HTMLSelectElement::firstSelectableOption() const
 {
-    const ListItems& items = listItems();
-    int index = nextValidIndex(items.size(), SkipBackwards, INT_MAX);
-    if (static_cast<size_t>(index) == items.size())
-        return -1;
-    return index;
+    // TODO(tkent): This is not efficient.  nextSlectableOption(nullptr) is
+    // faster.
+    return nextValidOption(listItems().size(), SkipBackwards, INT_MAX);
 }
 
-int HTMLSelectElement::lastSelectableListIndex() const
+HTMLOptionElement* HTMLSelectElement::lastSelectableOption() const
 {
-    return nextValidIndex(-1, SkipForwards, INT_MAX);
+    // TODO(tkent): This is not efficient.  previousSlectableOption(nullptr) is
+    // faster.
+    return nextValidOption(-1, SkipForwards, INT_MAX);
 }
 
 // Returns the index of the next valid item one page away from |startIndex| in
 // direction |direction|.
-int HTMLSelectElement::nextSelectableListIndexPageAway(int startIndex, SkipDirection direction) const
+HTMLOptionElement* HTMLSelectElement::nextSelectableOptionPageAway(HTMLOptionElement* startOption, SkipDirection direction) const
 {
     const ListItems& items = listItems();
     // Can't use m_size because layoutObject forces a minimum size.
@@ -620,9 +624,10 @@ int HTMLSelectElement::nextSelectableListIndexPageAway(int startIndex, SkipDirec
     // If there is a valid option item one page away, the index is chosen.
     // If there is no exact one page away valid option, returns startIndex or
     // the most far index.
+    int startIndex = startOption ? startOption->listIndex() : -1;
     int edgeIndex = (direction == SkipForwards) ? 0 : (items.size() - 1);
     int skipAmount = pageSize + ((direction == SkipForwards) ? startIndex : (edgeIndex - startIndex));
-    return nextValidIndex(edgeIndex, direction, skipAmount);
+    return nextValidOption(edgeIndex, direction, skipAmount);
 }
 
 void HTMLSelectElement::selectAll()
@@ -636,8 +641,8 @@ void HTMLSelectElement::selectAll()
     saveLastSelection();
 
     m_activeSelectionState = true;
-    setActiveSelectionAnchorIndex(nextSelectableListIndex(-1));
-    setActiveSelectionEndIndex(previousSelectableListIndex(-1));
+    setActiveSelectionAnchor(nextSelectableOption(nullptr));
+    setActiveSelectionEnd(previousSelectableOption(nullptr));
 
     updateListBoxSelection(false, false);
     listBoxOnChange();
@@ -656,9 +661,9 @@ void HTMLSelectElement::saveLastSelection()
         m_lastOnChangeSelection.append(isHTMLOptionElement(*element) && toHTMLOptionElement(element)->selected());
 }
 
-void HTMLSelectElement::setActiveSelectionAnchorIndex(int index)
+void HTMLSelectElement::setActiveSelectionAnchor(HTMLOptionElement* option)
 {
-    m_activeSelectionAnchorIndex = index;
+    m_activeSelectionAnchor = option;
 
     // Cache the selection state so we can restore the old selection as the new
     // selection pivots around this anchor index.
@@ -676,9 +681,9 @@ void HTMLSelectElement::setActiveSelectionAnchorIndex(int index)
     }
 }
 
-void HTMLSelectElement::setActiveSelectionEndIndex(int index)
+void HTMLSelectElement::setActiveSelectionEnd(HTMLOptionElement* option)
 {
-    m_activeSelectionEndIndex = index;
+    m_activeSelectionEnd = option;
 }
 
 void HTMLSelectElement::updateListBoxSelection(bool deselectOtherOptions, bool scroll)
@@ -686,8 +691,10 @@ void HTMLSelectElement::updateListBoxSelection(bool deselectOtherOptions, bool s
     ASSERT(layoutObject());
     ASSERT(layoutObject()->isListBox() || m_multiple);
 
-    int start = std::min(m_activeSelectionAnchorIndex, m_activeSelectionEndIndex);
-    int end = std::max(m_activeSelectionAnchorIndex, m_activeSelectionEndIndex);
+    int activeSelectionAnchorIndex = m_activeSelectionAnchor ? m_activeSelectionAnchor->listIndex() : -1;
+    int activeSelectionEndIndex = m_activeSelectionEnd ? m_activeSelectionEnd->listIndex() : -1;
+    int start = std::min(activeSelectionAnchorIndex, activeSelectionEndIndex);
+    int end = std::max(activeSelectionAnchorIndex, activeSelectionEndIndex);
 
     const ListItems& items = listItems();
     for (int i = 0; i < static_cast<int>(items.size()); ++i) {
@@ -763,7 +770,7 @@ void HTMLSelectElement::scrollToSelection()
         return;
     if (usesMenuList())
         return;
-    scrollToIndex(activeSelectionEndListIndex());
+    scrollToOption(activeSelectionEnd());
     if (AXObjectCache* cache = document().existingAXObjectCache())
         cache->listboxActiveIndexChanged(this);
 }
@@ -805,8 +812,9 @@ void HTMLSelectElement::setRecalcListItems()
     m_shouldRecalcListItems = true;
     // Manual selection anchor is reset when manipulating the select
     // programmatically.
-    m_activeSelectionAnchorIndex = -1;
-    m_activeSelectionEndIndex = -1;
+    // TODO(tkent): Don't do so. crbug.com/435302.
+    m_activeSelectionAnchor = nullptr;
+    m_activeSelectionEnd = nullptr;
     setOptionsChangedOnLayoutObject();
     if (!inDocument()) {
         if (HTMLOptionsCollection* collection = cachedCollection<HTMLOptionsCollection>(SelectOptions))
@@ -926,37 +934,28 @@ void HTMLSelectElement::setSuggestedIndex(int suggestedIndex)
 
     if (LayoutObject* layoutObject = this->layoutObject())  {
         layoutObject->updateFromElement();
-        scrollToIndex(suggestedIndex);
+        scrollToOption(item(listToOptionIndex(suggestedIndex)));
     }
     if (popupIsVisible())
         m_popup->updateFromElement();
 }
 
-void HTMLSelectElement::scrollToIndex(int listIndex)
+void HTMLSelectElement::scrollToOption(HTMLOptionElement* option)
 {
-    if (listIndex < 0)
+    if (!option)
         return;
     if (usesMenuList())
         return;
-    const ListItems& items = listItems();
-    int listSize = static_cast<int>(items.size());
-    if (listIndex >= listSize)
-        return;
-    // TODO(tkent): The following isHTMLOptionElement check should be
-    // unnecessary. The specified listIndex must point an HTMLOptionElement, but
-    // our code about activeSelection{Anchor,End}Index is not reliable.
-    if (!isHTMLOptionElement(*items[listIndex]))
-        return;
     bool hasPendingTask = m_optionToScrollTo;
-    // We'd like to keep an HTMLOptionElement reference rather than |listIndex|
-    // because the task should work even if unselected option is inserted before
-    // |listIndex| before executing scrollToIndexTask().
-    m_optionToScrollTo = toHTMLOptionElement(items[listIndex]);
+    // We'd like to keep an HTMLOptionElement reference rather than the index of
+    // the option because the task should work even if unselected option is
+    // inserted before executing scrollToOptionTask().
+    m_optionToScrollTo = option;
     if (!hasPendingTask)
-        document().postTask(BLINK_FROM_HERE, createSameThreadTask(&HTMLSelectElement::scrollToIndexTask, PassRefPtrWillBeRawPtr<HTMLSelectElement>(this)));
+        document().postTask(BLINK_FROM_HERE, createSameThreadTask(&HTMLSelectElement::scrollToOptionTask, PassRefPtrWillBeRawPtr<HTMLSelectElement>(this)));
 }
 
-void HTMLSelectElement::scrollToIndexTask()
+void HTMLSelectElement::scrollToOptionTask()
 {
     RefPtrWillBeRawPtr<HTMLOptionElement> option = m_optionToScrollTo.release();
     if (!option || !inDocument())
@@ -975,19 +974,19 @@ void HTMLSelectElement::optionSelectionStateChanged(HTMLOptionElement* option, b
 {
     ASSERT(option->ownerSelectElement() == this);
     if (optionIsSelected)
-        selectOption(option->index());
+        selectOption(option);
     else if (!usesMenuList() || multiple())
-        selectOption(-1);
+        selectOption(nullptr);
     else
-        selectOption(nextSelectableListIndex(-1));
+        selectOption(nextSelectableOption(nullptr));
 }
 
-void HTMLSelectElement::optionInserted(const HTMLOptionElement& option, bool optionIsSelected)
+void HTMLSelectElement::optionInserted(HTMLOptionElement& option, bool optionIsSelected)
 {
     ASSERT(option.ownerSelectElement() == this);
     setRecalcListItems();
     if (optionIsSelected)
-        selectOption(option.index());
+        selectOption(&option);
 }
 
 void HTMLSelectElement::optionRemoved(const HTMLOptionElement& option)
@@ -1001,26 +1000,30 @@ void HTMLSelectElement::optionRemoved(const HTMLOptionElement& option)
         setAutofilled(false);
 }
 
+void HTMLSelectElement::selectOption(int optionIndex, SelectOptionFlags flags)
+{
+    selectOption(optionIndex < 0 ? nullptr : item(optionIndex), flags);
+}
+
+void HTMLSelectElement::selectOption(HTMLOptionElement* option, SelectOptionFlags flags)
+{
+    selectOption(option, option ? option->index() : -1, flags);
+}
+
 // TODO(tkent): This function is not efficient.  It contains multiple O(N)
 // operations. crbug.com/577989.
-void HTMLSelectElement::selectOption(int optionIndex, SelectOptionFlags flags)
+void HTMLSelectElement::selectOption(HTMLOptionElement* element, int optionIndex, SelectOptionFlags flags)
 {
     TRACE_EVENT0("blink", "HTMLSelectElement::selectOption");
     bool shouldDeselect = !m_multiple || (flags & DeselectOtherOptions);
 
-    const ListItems& items = listItems();
-    // optionToListIndex is O(N).
-    int listIndex = optionToListIndex(optionIndex);
+    ASSERT((!element && optionIndex < 0) || (element && optionIndex >= 0));
 
     // selectedIndex() is O(N).
     if (isAutofilled() && selectedIndex() != optionIndex)
         setAutofilled(false);
 
-    HTMLOptionElement* element = nullptr;
-    if (listIndex >= 0) {
-        // listIndex must point an HTMLOptionElement if listIndex is not -1
-        // because optionToListIndex() returned it.
-        element = toHTMLOptionElement(items[listIndex]);
+    if (element) {
         element->setSelectedState(true);
         if (flags & MakeOptionDirty)
             element->setDirty(true);
@@ -1032,12 +1035,12 @@ void HTMLSelectElement::selectOption(int optionIndex, SelectOptionFlags flags)
 
     // We should update active selection after finishing OPTION state change
     // because setActiveSelectionAnchorIndex() stores OPTION's selection state.
-    if (listIndex >= 0) {
-        // setActiveSelectionAnchorIndex is O(N).
-        if (m_activeSelectionAnchorIndex < 0 || shouldDeselect)
-            setActiveSelectionAnchorIndex(listIndex);
-        if (m_activeSelectionEndIndex < 0 || shouldDeselect)
-            setActiveSelectionEndIndex(listIndex);
+    if (element) {
+        // setActiveSelectionAnchor is O(N).
+        if (!m_activeSelectionAnchor || shouldDeselect)
+            setActiveSelectionAnchor(element);
+        if (!m_activeSelectionEnd || shouldDeselect)
+            setActiveSelectionEnd(element);
     }
 
     // For the menu list case, this is what makes the selected element appear.
@@ -1059,9 +1062,8 @@ void HTMLSelectElement::selectOption(int optionIndex, SelectOptionFlags flags)
             // Need to check usesMenuList() again because
             // dispatchInputAndChangeEventForMenuList() might change the status.
             if (usesMenuList()) {
-                // didSetSelectedIndex() is O(N) because of listToOptionIndex
-                // and optionToListIndex.
-                toLayoutMenuList(layoutObject)->didSetSelectedIndex(listIndex);
+                // didSetSelectedIndex() is O(N) because of optionToListIndex.
+                toLayoutMenuList(layoutObject)->didSetSelectedIndex(optionIndex);
             }
         }
     }
@@ -1340,25 +1342,26 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event* event)
         const String& keyIdentifier = keyEvent->keyIdentifier();
         bool handled = true;
         const ListItems& listItems = this->listItems();
-        int listIndex = optionToListIndex(selectedIndex());
+        HTMLOptionElement* option = selectedOption();
+        int listIndex = option ? option->listIndex() : -1;
 
         if (keyIdentifier == "Down" || keyIdentifier == "Right")
-            listIndex = nextValidIndex(listIndex, SkipForwards, 1);
+            option = nextValidOption(listIndex, SkipForwards, 1);
         else if (keyIdentifier == "Up" || keyIdentifier == "Left")
-            listIndex = nextValidIndex(listIndex, SkipBackwards, 1);
+            option = nextValidOption(listIndex, SkipBackwards, 1);
         else if (keyIdentifier == "PageDown")
-            listIndex = nextValidIndex(listIndex, SkipForwards, 3);
+            option = nextValidOption(listIndex, SkipForwards, 3);
         else if (keyIdentifier == "PageUp")
-            listIndex = nextValidIndex(listIndex, SkipBackwards, 3);
+            option = nextValidOption(listIndex, SkipBackwards, 3);
         else if (keyIdentifier == "Home")
-            listIndex = nextValidIndex(-1, SkipForwards, 1);
+            option = nextValidOption(-1, SkipForwards, 1);
         else if (keyIdentifier == "End")
-            listIndex = nextValidIndex(listItems.size(), SkipBackwards, 1);
+            option = nextValidOption(listItems.size(), SkipBackwards, 1);
         else
             handled = false;
 
-        if (handled && static_cast<size_t>(listIndex) < listItems.size())
-            selectOption(listToOptionIndex(listIndex), DeselectOtherOptions | MakeOptionDirty | DispatchInputAndChangeEvent);
+        if (handled && option)
+            selectOption(option, DeselectOtherOptions | MakeOptionDirty | DispatchInputAndChangeEvent);
 
         if (handled)
             event->setDefaultHandled();
@@ -1418,15 +1421,9 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event* event)
     }
 }
 
-void HTMLSelectElement::updateSelectedState(int listIndex, bool multi, bool shift)
+void HTMLSelectElement::updateSelectedState(HTMLOptionElement* clickedOption, bool multi, bool shift)
 {
-    ASSERT(listIndex >= 0);
-
-    HTMLElement* clickedElement = listItems()[listIndex];
-    ASSERT(clickedElement);
-    if (isHTMLOptGroupElement(clickedElement))
-        return;
-
+    ASSERT(clickedOption);
     // Save the selection so it can be compared to the new selection when
     // dispatching change events during mouseup, or after autoscroll finishes.
     saveLastSelection();
@@ -1436,51 +1433,48 @@ void HTMLSelectElement::updateSelectedState(int listIndex, bool multi, bool shif
     bool shiftSelect = m_multiple && shift;
     bool multiSelect = m_multiple && multi && !shift;
 
-    if (isHTMLOptionElement(*clickedElement)) {
-        HTMLOptionElement& option = toHTMLOptionElement(*clickedElement);
-        // Keep track of whether an active selection (like during drag
-        // selection), should select or deselect.
-        if (option.selected() && multiSelect) {
-            m_activeSelectionState = false;
-            option.setSelectedState(false);
-            option.setDirty(true);
-        }
+    // Keep track of whether an active selection (like during drag selection),
+    // should select or deselect.
+    if (clickedOption->selected() && multiSelect) {
+        m_activeSelectionState = false;
+        clickedOption->setSelectedState(false);
+        clickedOption->setDirty(true);
     }
 
     // If we're not in any special multiple selection mode, then deselect all
     // other items, excluding the clicked option. If no option was clicked, then
     // this will deselect all items in the list.
     if (!shiftSelect && !multiSelect)
-        deselectItemsWithoutValidation(clickedElement);
+        deselectItemsWithoutValidation(clickedOption);
 
     // If the anchor hasn't been set, and we're doing a single selection or a
     // shift selection, then initialize the anchor to the first selected index.
-    if (m_activeSelectionAnchorIndex < 0 && !multiSelect)
-        setActiveSelectionAnchorIndex(selectedIndex());
+    if (!m_activeSelectionAnchor && !multiSelect)
+        setActiveSelectionAnchor(selectedOption());
 
     // Set the selection state of the clicked option.
-    if (isHTMLOptionElement(*clickedElement) && !toHTMLOptionElement(*clickedElement).isDisabledFormControl()) {
-        toHTMLOptionElement(*clickedElement).setSelectedState(true);
-        toHTMLOptionElement(*clickedElement).setDirty(true);
+    if (!clickedOption->isDisabledFormControl()) {
+        clickedOption->setSelectedState(true);
+        clickedOption->setDirty(true);
     }
 
     // If there was no selectedIndex() for the previous initialization, or If
     // we're doing a single selection, or a multiple selection (using cmd or
     // ctrl), then initialize the anchor index to the listIndex that just got
     // clicked.
-    if (m_activeSelectionAnchorIndex < 0 || !shiftSelect)
-        setActiveSelectionAnchorIndex(listIndex);
+    if (!m_activeSelectionAnchor || !shiftSelect)
+        setActiveSelectionAnchor(clickedOption);
 
-    setActiveSelectionEndIndex(listIndex);
+    setActiveSelectionEnd(clickedOption);
     updateListBoxSelection(!multiSelect);
 }
 
-int HTMLSelectElement::listIndexForEventTargetOption(const Event& event)
+HTMLOptionElement* HTMLSelectElement::eventTargetOption(const Event& event)
 {
     Node* targetNode = event.target()->toNode();
     if (!targetNode || !isHTMLOptionElement(*targetNode))
-        return -1;
-    return listIndexForOption(toHTMLOptionElement(*targetNode));
+        return nullptr;
+    return toHTMLOptionElement(targetNode);
 }
 
 int HTMLSelectElement::listIndexForOption(const HTMLOptionElement& option)
@@ -1511,7 +1505,6 @@ void HTMLSelectElement::handleMouseRelease()
 
 void HTMLSelectElement::listBoxDefaultEventHandler(Event* event)
 {
-    const ListItems& listItems = this->listItems();
     if (event->type() == EventTypeNames::gesturetap && event->isGestureEvent()) {
         focus();
         // Calling focus() may cause us to lose our layoutObject or change the
@@ -1521,10 +1514,9 @@ void HTMLSelectElement::listBoxDefaultEventHandler(Event* event)
 
         // Convert to coords relative to the list box if needed.
         GestureEvent& gestureEvent = toGestureEvent(*event);
-        int listIndex = listIndexForEventTargetOption(gestureEvent);
-        if (listIndex >= 0) {
+        if (HTMLOptionElement* option = eventTargetOption(gestureEvent)) {
             if (!isDisabledFormControl()) {
-                updateSelectedState(listIndex, true, gestureEvent.shiftKey());
+                updateSelectedState(option, true, gestureEvent.shiftKey());
                 listBoxOnChange();
             }
             event->setDefaultHandled();
@@ -1539,13 +1531,12 @@ void HTMLSelectElement::listBoxDefaultEventHandler(Event* event)
 
         // Convert to coords relative to the list box if needed.
         MouseEvent* mouseEvent = toMouseEvent(event);
-        int listIndex = listIndexForEventTargetOption(*mouseEvent);
-        if (listIndex >= 0) {
+        if (HTMLOptionElement* option = eventTargetOption(*mouseEvent)) {
             if (!isDisabledFormControl()) {
 #if OS(MACOSX)
-                updateSelectedState(listIndex, mouseEvent->metaKey(), mouseEvent->shiftKey());
+                updateSelectedState(option, mouseEvent->metaKey(), mouseEvent->shiftKey());
 #else
-                updateSelectedState(listIndex, mouseEvent->ctrlKey(), mouseEvent->shiftKey());
+                updateSelectedState(option, mouseEvent->ctrlKey(), mouseEvent->shiftKey());
 #endif
             }
             if (LocalFrame* frame = document().frame())
@@ -1565,19 +1556,18 @@ void HTMLSelectElement::listBoxDefaultEventHandler(Event* event)
         if (m_lastOnChangeSelection.isEmpty())
             return;
 
-        int listIndex = listIndexForEventTargetOption(*mouseEvent);
-        if (listIndex >= 0) {
+        if (HTMLOptionElement* option = eventTargetOption(*mouseEvent)) {
             if (!isDisabledFormControl()) {
                 if (m_multiple) {
                     // Only extend selection if there is something selected.
-                    if (m_activeSelectionAnchorIndex < 0)
+                    if (!m_activeSelectionAnchor)
                         return;
 
-                    setActiveSelectionEndIndex(listIndex);
+                    setActiveSelectionEnd(option);
                     updateListBoxSelection(false);
                 } else {
-                    setActiveSelectionAnchorIndex(listIndex);
-                    setActiveSelectionEndIndex(listIndex);
+                    setActiveSelectionAnchor(option);
+                    setActiveSelectionEnd(option);
                     updateListBoxSelection(true);
                 }
             }
@@ -1595,62 +1585,61 @@ void HTMLSelectElement::listBoxDefaultEventHandler(Event* event)
         const String& keyIdentifier = toKeyboardEvent(event)->keyIdentifier();
 
         bool handled = false;
-        int endIndex = 0;
-        if (m_activeSelectionEndIndex < 0) {
+        HTMLOptionElement* endOption = nullptr;
+        if (!m_activeSelectionEnd) {
             // Initialize the end index
             if (keyIdentifier == "Down" || keyIdentifier == "PageDown") {
-                int startIndex = lastSelectedListIndex();
+                HTMLOptionElement* startOption = lastSelectedOption();
                 handled = true;
                 if (keyIdentifier == "Down")
-                    endIndex = nextSelectableListIndex(startIndex);
+                    endOption = nextSelectableOption(startOption);
                 else
-                    endIndex = nextSelectableListIndexPageAway(startIndex, SkipForwards);
+                    endOption = nextSelectableOptionPageAway(startOption, SkipForwards);
             } else if (keyIdentifier == "Up" || keyIdentifier == "PageUp") {
-                int startIndex = optionToListIndex(selectedIndex());
+                HTMLOptionElement* startOption = selectedOption();
                 handled = true;
                 if (keyIdentifier == "Up")
-                    endIndex = previousSelectableListIndex(startIndex);
+                    endOption = previousSelectableOption(startOption);
                 else
-                    endIndex = nextSelectableListIndexPageAway(startIndex, SkipBackwards);
+                    endOption = nextSelectableOptionPageAway(startOption, SkipBackwards);
             }
         } else {
             // Set the end index based on the current end index.
             if (keyIdentifier == "Down") {
-                endIndex = nextSelectableListIndex(m_activeSelectionEndIndex);
+                endOption = nextSelectableOption(m_activeSelectionEnd.get());
                 handled = true;
             } else if (keyIdentifier == "Up") {
-                endIndex = previousSelectableListIndex(m_activeSelectionEndIndex);
+                endOption = previousSelectableOption(m_activeSelectionEnd.get());
                 handled = true;
             } else if (keyIdentifier == "PageDown") {
-                endIndex = nextSelectableListIndexPageAway(m_activeSelectionEndIndex, SkipForwards);
+                endOption = nextSelectableOptionPageAway(m_activeSelectionEnd.get(), SkipForwards);
                 handled = true;
             } else if (keyIdentifier == "PageUp") {
-                endIndex = nextSelectableListIndexPageAway(m_activeSelectionEndIndex, SkipBackwards);
+                endOption = nextSelectableOptionPageAway(m_activeSelectionEnd.get(), SkipBackwards);
                 handled = true;
             }
         }
         if (keyIdentifier == "Home") {
-            endIndex = firstSelectableListIndex();
+            endOption = firstSelectableOption();
             handled = true;
         } else if (keyIdentifier == "End") {
-            endIndex = lastSelectableListIndex();
+            endOption = lastSelectableOption();
             handled = true;
         }
 
         if (isSpatialNavigationEnabled(document().frame())) {
             // Check if the selection moves to the boundary.
-            if (keyIdentifier == "Left" || keyIdentifier == "Right" || ((keyIdentifier == "Down" || keyIdentifier == "Up") && endIndex == m_activeSelectionEndIndex))
+            if (keyIdentifier == "Left" || keyIdentifier == "Right" || ((keyIdentifier == "Down" || keyIdentifier == "Up") && endOption == m_activeSelectionEnd))
                 return;
         }
 
-        if (endIndex >= 0 && handled) {
+        if (endOption && handled) {
             // Save the selection so it can be compared to the new selection
             // when dispatching change events immediately after making the new
             // selection.
             saveLastSelection();
 
-            ASSERT_UNUSED(listItems, !listItems.size() || static_cast<size_t>(endIndex) < listItems.size());
-            setActiveSelectionEndIndex(endIndex);
+            setActiveSelectionEnd(endOption);
 
             bool selectNewItem = !m_multiple || toKeyboardEvent(event)->shiftKey() || !isSpatialNavigationEnabled(document().frame());
             if (selectNewItem)
@@ -1658,13 +1647,13 @@ void HTMLSelectElement::listBoxDefaultEventHandler(Event* event)
             // If the anchor is unitialized, or if we're going to deselect all
             // other options, then set the anchor index equal to the end index.
             bool deselectOthers = !m_multiple || (!toKeyboardEvent(event)->shiftKey() && selectNewItem);
-            if (m_activeSelectionAnchorIndex < 0 || deselectOthers) {
+            if (!m_activeSelectionAnchor || deselectOthers) {
                 if (deselectOthers)
                     deselectItemsWithoutValidation();
-                setActiveSelectionAnchorIndex(m_activeSelectionEndIndex);
+                setActiveSelectionAnchor(m_activeSelectionEnd.get());
             }
 
-            scrollToIndex(endIndex);
+            scrollToOption(endOption);
             if (selectNewItem) {
                 updateListBoxSelection(deselectOthers);
                 listBoxOnChange();
@@ -1687,7 +1676,7 @@ void HTMLSelectElement::listBoxDefaultEventHandler(Event* event)
         } else if (m_multiple && keyCode == ' ' && isSpatialNavigationEnabled(document().frame())) {
             // Use space to toggle selection change.
             m_activeSelectionState = !m_activeSelectionState;
-            updateSelectedState(listToOptionIndex(m_activeSelectionEndIndex), true /*multi*/, false /*shift*/);
+            updateSelectedState(m_activeSelectionEnd.get(), true /*multi*/, false /*shift*/);
             listBoxOnChange();
             event->setDefaultHandled();
         }
@@ -1722,15 +1711,15 @@ void HTMLSelectElement::defaultEventHandler(Event* event)
     HTMLFormControlElementWithState::defaultEventHandler(event);
 }
 
-int HTMLSelectElement::lastSelectedListIndex() const
+HTMLOptionElement* HTMLSelectElement::lastSelectedOption() const
 {
     const ListItems& items = listItems();
     for (size_t i = items.size(); i;) {
         HTMLElement* element = items[--i];
         if (isHTMLOptionElement(*element) && toHTMLOptionElement(element)->selected())
-            return i;
+            return toHTMLOptionElement(element);
     }
-    return -1;
+    return nullptr;
 }
 
 int HTMLSelectElement::indexOfSelectedOption() const
@@ -1809,7 +1798,7 @@ void HTMLSelectElement::finishParsingChildren()
     updateListItemSelectedStates();
     if (usesMenuList())
         return;
-    scrollToIndex(optionToListIndex(selectedIndex()));
+    scrollToOption(selectedOption());
     if (AXObjectCache* cache = document().existingAXObjectCache())
         cache->listboxActiveIndexChanged(this);
 }
@@ -1845,6 +1834,8 @@ DEFINE_TRACE(HTMLSelectElement)
     visitor->trace(m_listItems);
 #endif
     visitor->trace(m_lastOnChangeOption);
+    visitor->trace(m_activeSelectionAnchor);
+    visitor->trace(m_activeSelectionEnd);
     visitor->trace(m_optionToScrollTo);
     visitor->trace(m_popup);
     HTMLFormControlElementWithState::trace(visitor);
@@ -1871,13 +1862,10 @@ HTMLOptionElement* HTMLSelectElement::spatialNavigationFocusedOption()
 {
     if (!isSpatialNavigationEnabled(document().frame()))
         return nullptr;
-    int focusedIndex = activeSelectionEndListIndex();
-    if (focusedIndex < 0)
-        focusedIndex = firstSelectableListIndex();
-    if (focusedIndex < 0)
-        return nullptr;
-    HTMLElement* focused = listItems()[focusedIndex];
-    return isHTMLOptionElement(focused) ? toHTMLOptionElement(focused) : nullptr;
+    HTMLOptionElement* focusedOption = activeSelectionEnd();
+    if (!focusedOption)
+        focusedOption = firstSelectableOption();
+    return focusedOption;
 }
 
 String HTMLSelectElement::itemText(const Element& element) const

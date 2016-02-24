@@ -124,6 +124,174 @@ TEST_F(HTMLSelectElementTest, PopupIsVisible)
     EXPECT_FALSE(select->popupIsVisible());
 }
 
+TEST_F(HTMLSelectElementTest, FirstSelectableOption)
+{
+    {
+        document().documentElement()->setInnerHTML("<select></select>", ASSERT_NO_EXCEPTION);
+        document().view()->updateAllLifecyclePhases();
+        HTMLSelectElement* select = toHTMLSelectElement(document().body()->firstChild());
+        EXPECT_EQ(nullptr, select->firstSelectableOption());
+    }
+    {
+        document().documentElement()->setInnerHTML("<select><option id=o1></option><option id=o2></option></select>", ASSERT_NO_EXCEPTION);
+        document().view()->updateAllLifecyclePhases();
+        HTMLSelectElement* select = toHTMLSelectElement(document().body()->firstChild());
+        EXPECT_EQ("o1", select->firstSelectableOption()->fastGetAttribute(HTMLNames::idAttr));
+    }
+    {
+        document().documentElement()->setInnerHTML("<select><option id=o1 disabled></option><option id=o2></option></select>", ASSERT_NO_EXCEPTION);
+        document().view()->updateAllLifecyclePhases();
+        HTMLSelectElement* select = toHTMLSelectElement(document().body()->firstChild());
+        EXPECT_EQ("o2", select->firstSelectableOption()->fastGetAttribute(HTMLNames::idAttr));
+    }
+    {
+        document().documentElement()->setInnerHTML("<select><option id=o1 style='display:none'></option><option id=o2></option></select>", ASSERT_NO_EXCEPTION);
+        document().view()->updateAllLifecyclePhases();
+        HTMLSelectElement* select = toHTMLSelectElement(document().body()->firstChild());
+        EXPECT_EQ("o2", select->firstSelectableOption()->fastGetAttribute(HTMLNames::idAttr));
+    }
+    {
+        document().documentElement()->setInnerHTML("<select><optgroup><option id=o1></option><option id=o2></option></optgroup></select>", ASSERT_NO_EXCEPTION);
+        document().view()->updateAllLifecyclePhases();
+        HTMLSelectElement* select = toHTMLSelectElement(document().body()->firstChild());
+        EXPECT_EQ("o1", select->firstSelectableOption()->fastGetAttribute(HTMLNames::idAttr));
+    }
+}
+
+TEST_F(HTMLSelectElementTest, LastSelectableOption)
+{
+    {
+        document().documentElement()->setInnerHTML("<select></select>", ASSERT_NO_EXCEPTION);
+        document().view()->updateAllLifecyclePhases();
+        HTMLSelectElement* select = toHTMLSelectElement(document().body()->firstChild());
+        EXPECT_EQ(nullptr, select->lastSelectableOption());
+    }
+    {
+        document().documentElement()->setInnerHTML("<select><option id=o1></option><option id=o2></option></select>", ASSERT_NO_EXCEPTION);
+        document().view()->updateAllLifecyclePhases();
+        HTMLSelectElement* select = toHTMLSelectElement(document().body()->firstChild());
+        EXPECT_EQ("o2", select->lastSelectableOption()->fastGetAttribute(HTMLNames::idAttr));
+    }
+    {
+        document().documentElement()->setInnerHTML("<select><option id=o1></option><option id=o2 disabled></option></select>", ASSERT_NO_EXCEPTION);
+        document().view()->updateAllLifecyclePhases();
+        HTMLSelectElement* select = toHTMLSelectElement(document().body()->firstChild());
+        EXPECT_EQ("o1", select->lastSelectableOption()->fastGetAttribute(HTMLNames::idAttr));
+    }
+    {
+        document().documentElement()->setInnerHTML("<select><option id=o1></option><option id=o2 style='display:none'></option></select>", ASSERT_NO_EXCEPTION);
+        document().view()->updateAllLifecyclePhases();
+        HTMLSelectElement* select = toHTMLSelectElement(document().body()->firstChild());
+        EXPECT_EQ("o1", select->lastSelectableOption()->fastGetAttribute(HTMLNames::idAttr));
+    }
+    {
+        document().documentElement()->setInnerHTML("<select><optgroup><option id=o1></option><option id=o2></option></optgroup></select>", ASSERT_NO_EXCEPTION);
+        document().view()->updateAllLifecyclePhases();
+        HTMLSelectElement* select = toHTMLSelectElement(document().body()->firstChild());
+        EXPECT_EQ("o2", select->lastSelectableOption()->fastGetAttribute(HTMLNames::idAttr));
+    }
+}
+
+TEST_F(HTMLSelectElementTest, NextSelectableOption)
+{
+    {
+        document().documentElement()->setInnerHTML("<select></select>", ASSERT_NO_EXCEPTION);
+        document().view()->updateAllLifecyclePhases();
+        HTMLSelectElement* select = toHTMLSelectElement(document().body()->firstChild());
+        EXPECT_EQ(nullptr, select->nextSelectableOption(nullptr));
+    }
+    {
+        document().documentElement()->setInnerHTML("<select><option id=o1></option><option id=o2></option></select>", ASSERT_NO_EXCEPTION);
+        document().view()->updateAllLifecyclePhases();
+        HTMLSelectElement* select = toHTMLSelectElement(document().body()->firstChild());
+        EXPECT_EQ("o1", select->nextSelectableOption(nullptr)->fastGetAttribute(HTMLNames::idAttr));
+    }
+    {
+        document().documentElement()->setInnerHTML("<select><option id=o1 disabled></option><option id=o2></option></select>", ASSERT_NO_EXCEPTION);
+        document().view()->updateAllLifecyclePhases();
+        HTMLSelectElement* select = toHTMLSelectElement(document().body()->firstChild());
+        EXPECT_EQ("o2", select->nextSelectableOption(nullptr)->fastGetAttribute(HTMLNames::idAttr));
+    }
+    {
+        document().documentElement()->setInnerHTML("<select><option id=o1 style='display:none'></option><option id=o2></option></select>", ASSERT_NO_EXCEPTION);
+        document().view()->updateAllLifecyclePhases();
+        HTMLSelectElement* select = toHTMLSelectElement(document().body()->firstChild());
+        EXPECT_EQ("o2", select->nextSelectableOption(nullptr)->fastGetAttribute(HTMLNames::idAttr));
+    }
+    {
+        document().documentElement()->setInnerHTML("<select><optgroup><option id=o1></option><option id=o2></option></optgroup></select>", ASSERT_NO_EXCEPTION);
+        document().view()->updateAllLifecyclePhases();
+        HTMLSelectElement* select = toHTMLSelectElement(document().body()->firstChild());
+        EXPECT_EQ("o1", select->nextSelectableOption(nullptr)->fastGetAttribute(HTMLNames::idAttr));
+    }
+    {
+        document().documentElement()->setInnerHTML("<select><option id=o1></option><option id=o2></option></select>", ASSERT_NO_EXCEPTION);
+        document().view()->updateAllLifecyclePhases();
+        HTMLSelectElement* select = toHTMLSelectElement(document().body()->firstChild());
+        HTMLOptionElement* option = toHTMLOptionElement(document().getElementById("o1"));
+        EXPECT_EQ("o2", select->nextSelectableOption(option)->fastGetAttribute(HTMLNames::idAttr));
+
+        EXPECT_EQ(nullptr, select->nextSelectableOption(toHTMLOptionElement(document().getElementById("o2"))));
+    }
+    {
+        document().documentElement()->setInnerHTML("<select><option id=o1></option><optgroup><option id=o2></option></optgroup></select>", ASSERT_NO_EXCEPTION);
+        document().view()->updateAllLifecyclePhases();
+        HTMLSelectElement* select = toHTMLSelectElement(document().body()->firstChild());
+        HTMLOptionElement* option = toHTMLOptionElement(document().getElementById("o1"));
+        EXPECT_EQ("o2", select->nextSelectableOption(option)->fastGetAttribute(HTMLNames::idAttr));
+    }
+}
+
+TEST_F(HTMLSelectElementTest, PreviousSelectableOption)
+{
+    {
+        document().documentElement()->setInnerHTML("<select></select>", ASSERT_NO_EXCEPTION);
+        document().view()->updateAllLifecyclePhases();
+        HTMLSelectElement* select = toHTMLSelectElement(document().body()->firstChild());
+        EXPECT_EQ(nullptr, select->previousSelectableOption(nullptr));
+    }
+    {
+        document().documentElement()->setInnerHTML("<select><option id=o1></option><option id=o2></option></select>", ASSERT_NO_EXCEPTION);
+        document().view()->updateAllLifecyclePhases();
+        HTMLSelectElement* select = toHTMLSelectElement(document().body()->firstChild());
+        EXPECT_EQ("o2", select->previousSelectableOption(nullptr)->fastGetAttribute(HTMLNames::idAttr));
+    }
+    {
+        document().documentElement()->setInnerHTML("<select><option id=o1></option><option id=o2 disabled></option></select>", ASSERT_NO_EXCEPTION);
+        document().view()->updateAllLifecyclePhases();
+        HTMLSelectElement* select = toHTMLSelectElement(document().body()->firstChild());
+        EXPECT_EQ("o1", select->previousSelectableOption(nullptr)->fastGetAttribute(HTMLNames::idAttr));
+    }
+    {
+        document().documentElement()->setInnerHTML("<select><option id=o1></option><option id=o2 style='display:none'></option></select>", ASSERT_NO_EXCEPTION);
+        document().view()->updateAllLifecyclePhases();
+        HTMLSelectElement* select = toHTMLSelectElement(document().body()->firstChild());
+        EXPECT_EQ("o1", select->previousSelectableOption(nullptr)->fastGetAttribute(HTMLNames::idAttr));
+    }
+    {
+        document().documentElement()->setInnerHTML("<select><optgroup><option id=o1></option><option id=o2></option></optgroup></select>", ASSERT_NO_EXCEPTION);
+        document().view()->updateAllLifecyclePhases();
+        HTMLSelectElement* select = toHTMLSelectElement(document().body()->firstChild());
+        EXPECT_EQ("o2", select->previousSelectableOption(nullptr)->fastGetAttribute(HTMLNames::idAttr));
+    }
+    {
+        document().documentElement()->setInnerHTML("<select><option id=o1></option><option id=o2></option></select>", ASSERT_NO_EXCEPTION);
+        document().view()->updateAllLifecyclePhases();
+        HTMLSelectElement* select = toHTMLSelectElement(document().body()->firstChild());
+        HTMLOptionElement* option = toHTMLOptionElement(document().getElementById("o2"));
+        EXPECT_EQ("o1", select->previousSelectableOption(option)->fastGetAttribute(HTMLNames::idAttr));
+
+        EXPECT_EQ(nullptr, select->previousSelectableOption(toHTMLOptionElement(document().getElementById("o1"))));
+    }
+    {
+        document().documentElement()->setInnerHTML("<select><option id=o1></option><optgroup><option id=o2></option></optgroup></select>", ASSERT_NO_EXCEPTION);
+        document().view()->updateAllLifecyclePhases();
+        HTMLSelectElement* select = toHTMLSelectElement(document().body()->firstChild());
+        HTMLOptionElement* option = toHTMLOptionElement(document().getElementById("o2"));
+        EXPECT_EQ("o1", select->previousSelectableOption(option)->fastGetAttribute(HTMLNames::idAttr));
+    }
+}
+
 TEST_F(HTMLSelectElementTest, ActiveSelectionEndAfterOptionRemoval)
 {
     document().documentElement()->setInnerHTML("<select><optgroup><option selected>o1</option></optgroup></select>", ASSERT_NO_EXCEPTION);

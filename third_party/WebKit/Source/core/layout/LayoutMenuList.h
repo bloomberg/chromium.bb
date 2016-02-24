@@ -40,7 +40,7 @@ public:
 
     HTMLSelectElement* selectElement() const;
     void setOptionsChanged(bool changed) { m_optionsChanged = changed; }
-    void didSetSelectedIndex(int listIndex);
+    void didSetSelectedIndex(int optionIndex);
     String text() const;
 
     const char* name() const override { return "LayoutMenuList"; }

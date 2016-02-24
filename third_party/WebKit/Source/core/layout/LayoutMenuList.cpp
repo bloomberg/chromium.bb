@@ -313,9 +313,9 @@ void LayoutMenuList::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, 
         minLogicalWidth = maxLogicalWidth;
 }
 
-void LayoutMenuList::didSetSelectedIndex(int listIndex)
+void LayoutMenuList::didSetSelectedIndex(int optionIndex)
 {
-    didUpdateActiveOption(selectElement()->listToOptionIndex(listIndex));
+    didUpdateActiveOption(optionIndex);
 }
 
 void LayoutMenuList::didUpdateActiveOption(int optionIndex)
