@@ -277,10 +277,8 @@ class LocationBarView : public LocationBar,
   int GetVerticalEdgeThickness() const;
 
   // Returns the total amount of space reserved above or below the content,
-  // which is the vertical edge thickness plus the padding next to it.  If
-  // |for_bubble| is true, this computes the relevant value for bubbles as
-  // opposed to normal content (e.g. the omnibox).
-  int GetVerticalEdgeThicknessWithPadding(bool for_bubble) const;
+  // which is the vertical edge thickness plus the padding next to it.
+  int GetVerticalEdgeThicknessWithPadding() const;
 
   // Updates |location_icon_view_| based on the current state and theme.
   void RefreshLocationIcon();

@@ -12,6 +12,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/painter.h"
 
@@ -53,6 +54,14 @@ IconLabelBubbleView::IconLabelBubbleView(int contained_image,
   if (elide_in_middle)
     label_->SetElideBehavior(gfx::ELIDE_MIDDLE);
   AddChildView(label_);
+
+  // Bubbles are given the full internal height of the location bar so that all
+  // child views in the location bar have the same height. The visible height of
+  // the bubble should be smaller, so use an empty border to shrink down the
+  // content bounds so the background gets painted correctly.
+  const int padding = GetLayoutConstant(LOCATION_BAR_BUBBLE_VERTICAL_PADDING);
+  SetBorder(
+      views::Border::CreateEmptyBorder(gfx::Insets(padding, 0, padding, 0)));
 }
 
 IconLabelBubbleView::~IconLabelBubbleView() {
@@ -199,8 +208,10 @@ const char* IconLabelBubbleView::GetClassName() const {
 void IconLabelBubbleView::OnPaint(gfx::Canvas* canvas) {
   if (!ShouldShowBackground())
     return;
-  if (background_painter_)
-    background_painter_->Paint(canvas, size());
+  if (background_painter_) {
+    views::Painter::PaintPainterAt(canvas, background_painter_.get(),
+                                   GetContentsBounds());
+  }
   if (background())
     background()->Paint(canvas, this);
 }

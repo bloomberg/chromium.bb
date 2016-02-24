@@ -204,19 +204,18 @@ void LocationBarView::Init() {
   }
   // Shrink large fonts to make them fit.
   // TODO(pkasting): Stretch the location bar instead in this case.
-  const int vertical_padding = GetVerticalEdgeThicknessWithPadding(false);
+  const int vertical_padding = GetVerticalEdgeThicknessWithPadding();
   const int location_height =
       std::max(GetPreferredSize().height() - (vertical_padding * 2), 0);
   font_list = font_list.DeriveWithHeightUpperBound(location_height);
 
-  // Determine the font for use inside the bubbles.  The bubble background
-  // images have 1 px thick edges, which we don't want to overlap.
-  const int kBubbleInteriorVerticalPadding =
+  // Determine the font for use inside the bubbles.
+  const int kBubbleFontVerticalPadding =
       ui::MaterialDesignController::IsModeMaterial() ? 2 : 1;
   const int bubble_padding =
-      GetVerticalEdgeThicknessWithPadding(true) +
-      kBubbleInteriorVerticalPadding;
-  const int bubble_height = GetPreferredSize().height() - (bubble_padding * 2);
+      GetLayoutConstant(LOCATION_BAR_BUBBLE_VERTICAL_PADDING) +
+      kBubbleFontVerticalPadding;
+  const int bubble_height = location_height - (bubble_padding * 2);
   gfx::FontList bubble_font_list =
       font_list.DeriveWithHeightUpperBound(bubble_height);
 
@@ -261,8 +260,7 @@ void LocationBarView::Init() {
   AddChildView(suggested_text_view_);
 
   keyword_hint_view_ = new KeywordHintView(
-      profile(), font_list, bubble_font_list,
-      bubble_height + 2 * kBubbleInteriorVerticalPadding,
+      profile(), font_list, bubble_font_list, location_height,
       GetColor(LocationBarView::DEEMPHASIZED_TEXT), background_color);
   AddChildView(keyword_hint_view_);
 
@@ -592,19 +590,16 @@ void LocationBarView::Layout() {
   // to position our child views in this case, because other things may be
   // positioned relative to them (e.g. the "bookmark added" bubble if the user
   // hits ctrl-d).
-  const int bubble_vertical_padding = GetVerticalEdgeThicknessWithPadding(true);
-  const int bubble_height =
-      std::max(height() - (bubble_vertical_padding * 2), 0);
   const int bubble_horizontal_padding =
       GetLayoutConstant(LOCATION_BAR_BUBBLE_HORIZONTAL_PADDING);
-  const int vertical_padding = GetVerticalEdgeThicknessWithPadding(false);
+  const int vertical_padding = GetVerticalEdgeThicknessWithPadding();
   const int location_height = std::max(height() - (vertical_padding * 2), 0);
 
   location_icon_view_->SetLabel(base::string16());
   location_icon_view_->SetBackground(false);
   if (ShouldShowKeywordBubble()) {
-    leading_decorations.AddDecoration(bubble_vertical_padding, bubble_height,
-                                      true, 0, bubble_horizontal_padding,
+    leading_decorations.AddDecoration(vertical_padding, location_height, true,
+                                      0, bubble_horizontal_padding,
                                       item_padding, selected_keyword_view_);
     if (selected_keyword_view_->keyword() != keyword) {
       selected_keyword_view_->SetKeyword(keyword);
@@ -628,7 +623,7 @@ void LocationBarView::Layout() {
     // The largest fraction of the omnibox that can be taken by the EV bubble.
     const double kMaxBubbleFraction = 0.5;
     leading_decorations.AddDecoration(
-        bubble_vertical_padding, bubble_height, false, kMaxBubbleFraction,
+        vertical_padding, location_height, false, kMaxBubbleFraction,
         bubble_horizontal_padding, item_padding, location_icon_view_);
   } else {
     leading_decorations.AddDecoration(vertical_padding, location_height,
@@ -670,7 +665,7 @@ void LocationBarView::Layout() {
            content_setting_views_.rbegin()); i != content_setting_views_.rend();
        ++i) {
     if ((*i)->visible()) {
-      trailing_decorations.AddDecoration(bubble_vertical_padding, bubble_height,
+      trailing_decorations.AddDecoration(vertical_padding, location_height,
                                          false, 0, item_padding, item_padding,
                                          *i);
     }
@@ -858,11 +853,9 @@ int LocationBarView::GetVerticalEdgeThickness() const {
                         : GetLayoutConstant(LOCATION_BAR_BORDER_THICKNESS);
 }
 
-int LocationBarView::GetVerticalEdgeThicknessWithPadding(
-    bool for_bubble) const {
+int LocationBarView::GetVerticalEdgeThicknessWithPadding() const {
   return GetVerticalEdgeThickness() +
-      GetLayoutConstant(for_bubble ? LOCATION_BAR_BUBBLE_VERTICAL_PADDING
-                                   : LOCATION_BAR_VERTICAL_PADDING);
+         GetLayoutConstant(LOCATION_BAR_VERTICAL_PADDING);
 }
 
 void LocationBarView::RefreshLocationIcon() {

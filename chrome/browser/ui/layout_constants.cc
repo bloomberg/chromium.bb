@@ -14,7 +14,7 @@ int GetLayoutConstant(LayoutConstant constant) {
   const int kIconLabelViewTrailingPadding[] = {2, 8, 8};
   const int kLocationBarBorderThickness[] = {2, 1, 1};
   const int kLocationBarBubbleHorizontalPadding[] = {1, 4, 4};
-  const int kLocationBarBubbleVerticalPadding[] = {1, 4, 4};
+  const int kLocationBarBubbleVerticalPadding[] = {1, 3, 3};
   const int kLocationBarHeight[] = {27, 28, 32};
   const int kLocationBarHorizontalPadding[] = {3, 6, 6};
   const int kLocationBarVerticalPadding[] = {0, 1, 1};
