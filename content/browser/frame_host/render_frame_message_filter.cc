@@ -21,6 +21,7 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -391,10 +392,13 @@ void RenderFrameMessageFilter::OnGetCookies(int render_frame_id,
   base::debug::Alias(url_buf);
 
   net::URLRequestContext* context = GetRequestContextForURL(url);
-  context->cookie_store()->GetAllCookiesForURLAsync(
-      url, base::Bind(&RenderFrameMessageFilter::CheckPolicyForCookies, this,
-                      render_frame_id, url, first_party_for_cookies,
-                      reply_msg));
+
+  net::CookieOptions options;
+  options.set_include_same_site();
+  context->cookie_store()->GetCookieListWithOptionsAsync(
+      url, options,
+      base::Bind(&RenderFrameMessageFilter::CheckPolicyForCookies, this,
+                 render_frame_id, url, first_party_for_cookies, reply_msg));
 }
 
 void RenderFrameMessageFilter::OnCookiesEnabled(
@@ -423,11 +427,8 @@ void RenderFrameMessageFilter::CheckPolicyForCookies(
       GetContentClient()->browser()->AllowGetCookie(
           url, first_party_for_cookies, cookie_list, resource_context_,
           render_process_id_, render_frame_id)) {
-    // Gets the cookies from cookie store if allowed.
-    context->cookie_store()->GetCookiesWithOptionsAsync(
-        url, net::CookieOptions(),
-        base::Bind(&RenderFrameMessageFilter::SendGetCookiesResponse,
-                   this, reply_msg));
+    SendGetCookiesResponse(reply_msg,
+                           net::CookieStore::BuildCookieLine(cookie_list));
   } else {
     SendGetCookiesResponse(reply_msg, std::string());
   }

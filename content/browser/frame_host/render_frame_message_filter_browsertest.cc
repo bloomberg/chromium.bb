@@ -24,6 +24,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -48,7 +49,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest, Cookies) {
   SetupCrossSiteRedirector(embedded_test_server());
 
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.ServeFilesFromSourceDirectory("content/test/data");
+  https_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("content/test/data")));
   ASSERT_TRUE(https_server.Start());
 
   // The server sends a HttpOnly cookie. The RenderFrameMessageFilter should
@@ -100,6 +102,26 @@ IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest, Cookies) {
   EXPECT_EQ("A=1; B=2; C=3; D=4",
             GetCookieFromJS(web_contents_https->GetMainFrame()));
   EXPECT_EQ("B=2; D=4", GetCookieFromJS(web_contents_http->GetMainFrame()));
+}
+
+// SameSite cookies (that aren't marked as http-only) should be available to
+// JavaScript.
+IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest, SameSiteCookies) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  SetupCrossSiteRedirector(embedded_test_server());
+
+  // The server sends a SameSite cookie. The RenderFrameMessageFilter should
+  // allow this to be sent to the renderer.
+  GURL url = embedded_test_server()->GetURL("/set-cookie?samesite=1;SameSite");
+  NavigateToURL(shell(), url);
+
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  EXPECT_EQ("http://127.0.0.1/",
+            web_contents->GetSiteInstance()->GetSiteURL().spec());
+
+  EXPECT_EQ("samesite=1", GetCookieFromJS(web_contents->GetMainFrame()));
 }
 
 // The RenderFrameMessageFilter will kill processes when they access the cookies
