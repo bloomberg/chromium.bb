@@ -46,11 +46,9 @@ source_set("lib") {
     "//url",
   ]
 
-  if (!is_component_build) {
-    data_deps = [
-      "//mojo/services/tracing",
-    ]
-  }
+  data_deps = [
+    "//mojo/services/tracing",
+  ]
 
   # This target includes some files behind #ifdef OS... guards. Since gn is not
   # smart enough to understand preprocess includes, it does complains about
