@@ -203,6 +203,64 @@ void ImeWindowFrameView::OnPaint(gfx::Canvas* canvas) {
   PaintFrameBackground(canvas);
 }
 
+bool ImeWindowFrameView::OnMousePressed(const ui::MouseEvent& event) {
+  if (event.IsOnlyLeftMouseButton()) {
+    gfx::Point mouse_location = event.location();
+    views::View::ConvertPointToScreen(this, &mouse_location);
+    return ime_window_view_->OnTitlebarPointerPressed(
+        mouse_location, ImeWindowView::PointerType::MOUSE);
+  }
+  return false;
+}
+
+bool ImeWindowFrameView::OnMouseDragged(const ui::MouseEvent& event) {
+  gfx::Point mouse_location = event.location();
+  views::View::ConvertPointToScreen(this, &mouse_location);
+  return ime_window_view_->OnTitlebarPointerDragged(
+      mouse_location, ImeWindowView::PointerType::MOUSE);
+}
+
+void ImeWindowFrameView::OnMouseReleased(const ui::MouseEvent& event) {
+  ime_window_view_->OnTitlebarPointerReleased(
+      ImeWindowView::PointerType::MOUSE);
+}
+
+void ImeWindowFrameView::OnMouseCaptureLost() {
+  ime_window_view_->OnTitlebarPointerCaptureLost();
+}
+
+void ImeWindowFrameView::OnGestureEvent(ui::GestureEvent* event) {
+  bool handled = false;
+  switch (event->type()) {
+    case ui::ET_GESTURE_TAP_DOWN: {
+      gfx::Point loc(event->location());
+      views::View::ConvertPointToScreen(this, &loc);
+      handled = ime_window_view_->OnTitlebarPointerPressed(
+          loc, ImeWindowView::PointerType::TOUCH);
+      break;
+    }
+
+    case ui::ET_GESTURE_SCROLL_UPDATE: {
+      gfx::Point loc(event->location());
+      views::View::ConvertPointToScreen(this, &loc);
+      handled = ime_window_view_->OnTitlebarPointerDragged(
+          loc, ImeWindowView::PointerType::TOUCH);
+      break;
+    }
+
+    case ui::ET_GESTURE_END:
+      ime_window_view_->OnTitlebarPointerReleased(
+          ImeWindowView::PointerType::TOUCH);
+      handled = true;
+      break;
+
+    default:
+      break;
+  }
+  if (handled)
+    event->SetHandled();
+}
+
 void ImeWindowFrameView::ButtonPressed(views::Button* sender,
                                        const ui::Event& event) {
   if (sender == close_button_)

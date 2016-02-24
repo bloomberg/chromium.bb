@@ -40,10 +40,20 @@ class ImeWindowHost;
 class ImeWindowView : public ImeNativeWindow,
                       public views::WidgetDelegateView {
  public:
+  enum class PointerType { MOUSE, TOUCH };
+
   ImeWindowView(ImeWindow* ime_window,
                 const gfx::Rect& bounds,
                 content::WebContents* contents);
   ~ImeWindowView() override;
+
+  // Methods to deal with mouse/touch dragging on the non client view.
+  bool OnTitlebarPointerPressed(const gfx::Point& pointer_location,
+                                PointerType pointer_type);
+  bool OnTitlebarPointerDragged(const gfx::Point& pointer_location,
+                                PointerType pointer_type);
+  void OnTitlebarPointerReleased(PointerType pointer_type);
+  void OnTitlebarPointerCaptureLost();
 
   // ui::ImeNativeWindow:
   void Show() override;
@@ -73,7 +83,16 @@ class ImeWindowView : public ImeNativeWindow,
   views::WebView* web_view() const { return web_view_; }
 
  private:
+  enum class DragState { NO_DRAG, POSSIBLE_DRAG, ACTIVE_DRAG };
+  void EndDragging();
+
   ImeWindow* ime_window_;
+
+  // Member variables for dragging.
+  PointerType dragging_pointer_type_;
+  gfx::Point pointer_location_on_press_;
+  DragState dragging_state_;
+  gfx::Rect bounds_on_drag_start_;
 
   // The native window.
   views::Widget* window_;

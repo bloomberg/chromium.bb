@@ -29,6 +29,8 @@ ImeWindowView::ImeWindowView(ImeWindow* ime_window,
                              const gfx::Rect& bounds,
                              content::WebContents* contents)
     : ime_window_(ime_window),
+      dragging_pointer_type_(PointerType::MOUSE),
+      dragging_state_(DragState::NO_DRAG),
       window_(nullptr),
       web_view_(nullptr) {
   window_ = new views::Widget;
@@ -88,6 +90,56 @@ gfx::Rect ImeWindowView::GetBounds() const {
   return GetWidget()->GetWindowBoundsInScreen();
 }
 
+bool ImeWindowView::OnTitlebarPointerPressed(
+    const gfx::Point& pointer_location, PointerType pointer_type) {
+  if (dragging_state_ != DragState::NO_DRAG &&
+      dragging_pointer_type_ != pointer_type) {
+    return false;
+  }
+
+  dragging_state_ = DragState::POSSIBLE_DRAG;
+  pointer_location_on_press_ = pointer_location;
+  dragging_pointer_type_ = pointer_type;
+  return true;
+}
+
+bool ImeWindowView::OnTitlebarPointerDragged(
+    const gfx::Point& pointer_location, PointerType pointer_type) {
+  if (dragging_state_ == DragState::NO_DRAG)
+    return false;
+  if (dragging_pointer_type_ != pointer_type)
+    return false;
+
+  if (dragging_state_ == DragState::POSSIBLE_DRAG &&
+      ExceededDragThreshold(pointer_location - pointer_location_on_press_)) {
+    gfx::Rect bounds = GetWidget()->GetWindowBoundsInScreen();
+    bounds_on_drag_start_ = bounds;
+    dragging_state_ = DragState::ACTIVE_DRAG;
+  }
+  if (dragging_state_ == DragState::ACTIVE_DRAG) {
+    gfx::Point target_position = pointer_location -
+        (pointer_location_on_press_ - bounds_on_drag_start_.origin());
+    gfx::Rect bounds = GetWidget()->GetWindowBoundsInScreen();
+    bounds.set_origin(target_position);
+    GetWidget()->SetBounds(bounds);
+  }
+  return true;
+}
+
+void ImeWindowView::OnTitlebarPointerReleased(PointerType pointer_type) {
+  if (dragging_pointer_type_ == pointer_type &&
+      dragging_state_ == DragState::ACTIVE_DRAG) {
+    EndDragging();
+  }
+}
+
+void ImeWindowView::OnTitlebarPointerCaptureLost() {
+  if (dragging_state_ == DragState::ACTIVE_DRAG) {
+    GetWidget()->SetBounds(bounds_on_drag_start_);
+    EndDragging();
+  }
+}
+
 views::View* ImeWindowView::GetContentsView() {
   return this;
 }
@@ -137,6 +189,10 @@ void ImeWindowView::DeleteDelegate() {
 ImeWindowFrameView* ImeWindowView::GetFrameView() const {
   return static_cast<ImeWindowFrameView*>(
       window_->non_client_view()->frame_view());
+}
+
+void ImeWindowView::EndDragging() {
+  dragging_state_ = DragState::NO_DRAG;
 }
 
 }  // namespace ui

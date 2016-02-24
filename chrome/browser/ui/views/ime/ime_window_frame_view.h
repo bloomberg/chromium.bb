@@ -53,6 +53,11 @@ class ImeWindowFrameView : public views::NonClientFrameView,
   gfx::Size GetMaximumSize() const override;
   void Layout() override;
   void OnPaint(gfx::Canvas* canvas) override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  bool OnMouseDragged(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
+  void OnMouseCaptureLost() override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
