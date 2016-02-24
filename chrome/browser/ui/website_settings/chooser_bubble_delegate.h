@@ -12,6 +12,7 @@
 #include "components/bubble/bubble_delegate.h"
 
 class Browser;
+class GURL;
 
 // Subclass ChooserBubbleDelegate to implement a chooser bubble, which has
 // some introductory text and a list of options that users can pick one of.
@@ -23,6 +24,10 @@ class Browser;
 // collecting metrics.
 // After Select/Cancel/Close is called, this object is destroyed and call back
 // into it is not allowed.
+// TODO(juncai): Change class name ChooserBubbleDelegate to
+// ChooserBubbleController since it better reflects its responsibilities and
+// clarifies the roles of this class.
+// https://crbug.com/588933
 class ChooserBubbleDelegate : public BubbleDelegate {
  public:
   explicit ChooserBubbleDelegate(content::RenderFrameHost* owner);
@@ -52,6 +57,9 @@ class ChooserBubbleDelegate : public BubbleDelegate {
     virtual ~Observer() {}
   };
 
+  // Open help center URL.
+  void OpenHelpCenterUrl() const;
+
   // BubbleDelegate:
   std::string GetName() const override;
   scoped_ptr<BubbleUi> BuildBubbleUi() override;
@@ -76,6 +84,9 @@ class ChooserBubbleDelegate : public BubbleDelegate {
   // Called when the user clicks outside the dialog or the dialog otherwise
   // closes without the user taking an explicit action.
   virtual void Close() = 0;
+
+  // Get help center URL.
+  virtual GURL GetHelpCenterUrl() const = 0;
 
   // Only one observer may be registered at a time.
   void set_observer(Observer* observer) { observer_ = observer; }

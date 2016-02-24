@@ -578,6 +578,9 @@ extern const char kWindowsXPVistaDeprecationURL[];
 // Chooser.
 extern const char kChooserBluetoothOverviewURL[];
 
+// The URL for the WebUsb help center article.
+extern const char kChooserUsbOverviewURL[];
+
 }  // namespace chrome
 
 #endif  // CHROME_COMMON_URL_CONSTANTS_H_

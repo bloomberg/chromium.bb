@@ -45,6 +45,7 @@ class UsbChooserBubbleDelegate : public ChooserBubbleDelegate,
   void Select(size_t index) override;
   void Cancel() override;
   void Close() override;
+  GURL GetHelpCenterUrl() const override;
 
   // device::UsbService::Observer:
   void OnDeviceAdded(scoped_refptr<device::UsbDevice> device) override;

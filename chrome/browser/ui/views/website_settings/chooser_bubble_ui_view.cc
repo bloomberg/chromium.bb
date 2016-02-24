@@ -4,8 +4,11 @@
 
 #include "chrome/browser/ui/views/website_settings/chooser_bubble_ui_view.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -30,10 +33,14 @@
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/label_button_border.h"
+#include "ui/views/controls/separator.h"
+#include "ui/views/controls/styled_label.h"
+#include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/controls/table/table_view.h"
 #include "ui/views/controls/table/table_view_observer.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
+#include "ui/views/layout/layout_constants.h"
 
 namespace {
 
@@ -42,16 +49,6 @@ const int kChooserPermissionBubbleWidth = 300;
 
 // Chooser permission bubble height
 const int kChooserPermissionBubbleHeight = 200;
-
-// Spacing constant for outer margin. This is added to the
-// bubble margin itself to equalize the margins at 13px.
-const int kBubbleOuterMargin = 5;
-
-// Spacing between major items should be 9px.
-const int kItemMajorSpacing = 9;
-
-// Button border size, draws inside the spacing distance.
-const int kButtonBorderSize = 2;
 
 }  // namespace
 
@@ -65,6 +62,7 @@ class ChooserTableModel;
 // View implementation for the chooser bubble.
 class ChooserBubbleUiViewDelegate : public views::BubbleDelegateView,
                                     public views::ButtonListener,
+                                    public views::StyledLabelListener,
                                     public views::TableViewObserver {
  public:
   ChooserBubbleUiViewDelegate(views::View* anchor_view,
@@ -75,13 +73,18 @@ class ChooserBubbleUiViewDelegate : public views::BubbleDelegateView,
 
   void Close();
 
-  // BubbleDelegateView:
+  // views::BubbleDelegateView:
   bool ShouldShowWindowTitle() const override;
   base::string16 GetWindowTitle() const override;
   void OnWidgetDestroying(views::Widget* widget) override;
 
-  // ButtonListener:
+  // views::ButtonListener:
   void ButtonPressed(views::Button* button, const ui::Event& event) override;
+
+  // views::StyledLabelListener:
+  void StyledLabelLinkClicked(views::StyledLabel* label,
+                              const gfx::Range& range,
+                              int event_flags) override;
 
   // views::TableViewObserver:
   void OnSelectionChanged() override;
@@ -98,7 +101,6 @@ class ChooserBubbleUiViewDelegate : public views::BubbleDelegateView,
   ChooserBubbleDelegate* chooser_bubble_delegate_;
 
   views::LabelButton* connect_button_;
-  views::LabelButton* cancel_button_;
   views::TableView* table_view_;
   ChooserTableModel* chooser_table_model_;
   bool button_pressed_;
@@ -146,6 +148,24 @@ ChooserBubbleUiViewDelegate::ChooserBubbleUiViewDelegate(
       owner_(owner),
       chooser_bubble_delegate_(chooser_bubble_delegate),
       button_pressed_(false) {
+  // TODO(juncai): try using DialogClientView to build the chooser UI view since
+  // they look similar.
+  // https://crbug.com/587545
+  // ------------------------------------
+  // | Chooser bubble title             |
+  // | -------------------------------- |
+  // | | option 0                     | |
+  // | | option 1                     | |
+  // | | option 2                     | |
+  // | |                              | |
+  // | |                              | |
+  // | |                              | |
+  // | -------------------------------- |
+  // |           [ Connect ] [ Cancel ] |
+  // |----------------------------------|
+  // | Not seeing your device? Get help |
+  // ------------------------------------
+
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
 
@@ -153,9 +173,8 @@ ChooserBubbleUiViewDelegate::ChooserBubbleUiViewDelegate(
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
                         views::GridLayout::USE_PREF, 0, 0);
 
-  layout->StartRow(1, 0);
-
-  // Create a table view
+  // Lay out the table view.
+  layout->StartRow(0, 0);
   std::vector<ui::TableColumn> table_columns;
   table_columns.push_back(ChooserTableColumn(
       0, "" /* Empty string makes the column title invisible */));
@@ -165,33 +184,22 @@ ChooserBubbleUiViewDelegate::ChooserBubbleUiViewDelegate(
   table_view_->set_select_on_remove(false);
   chooser_table_model_->SetObserver(table_view_);
   table_view_->SetObserver(this);
+  table_view_->SetEnabled(chooser_bubble_delegate_->NumOptions() > 0);
   layout->AddView(table_view_->CreateParentIfNecessary(), 1, 1,
                   views::GridLayout::FILL, views::GridLayout::FILL,
                   kChooserPermissionBubbleWidth,
                   kChooserPermissionBubbleHeight);
-  if (chooser_bubble_delegate_->NumOptions() == 0) {
-    table_view_->SetEnabled(false);
-  }
 
-  layout->AddPaddingRow(0, kItemMajorSpacing);
-
-  views::View* button_row = new views::View();
-  views::GridLayout* button_layout = new views::GridLayout(button_row);
-  views::ColumnSet* button_columns = button_layout->AddColumnSet(0);
-  button_row->SetLayoutManager(button_layout);
-  layout->StartRow(1, 0);
-  layout->AddView(button_row);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   // Lay out the Connect/Cancel buttons.
-  button_columns->AddColumn(views::GridLayout::TRAILING,
-                            views::GridLayout::FILL, 100,
-                            views::GridLayout::USE_PREF, 0, 0);
-  button_columns->AddPaddingColumn(0,
-                                   kItemMajorSpacing - (2 * kButtonBorderSize));
-  button_columns->AddColumn(views::GridLayout::TRAILING,
-                            views::GridLayout::FILL, 0,
-                            views::GridLayout::USE_PREF, 0, 0);
-  button_layout->StartRow(0, 0);
+  layout->StartRow(0, 0);
+  views::View* button_row = new views::View();
+  views::BoxLayout* button_layout = new views::BoxLayout(
+      views::BoxLayout::kHorizontal, 0, 0, views::kRelatedButtonHSpacing);
+  button_layout->set_main_axis_alignment(
+      views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
+  button_row->SetLayoutManager(button_layout);
 
   base::string16 connect_text =
       l10n_util::GetStringUTF16(IDS_CHOOSER_BUBBLE_CONNECT_BUTTON_TEXT);
@@ -199,16 +207,35 @@ ChooserBubbleUiViewDelegate::ChooserBubbleUiViewDelegate(
   connect_button_->SetStyle(views::Button::STYLE_BUTTON);
   // Disable the connect button at the beginning since no device selected yet.
   connect_button_->SetEnabled(false);
-  button_layout->AddView(connect_button_);
+  button_row->AddChildView(connect_button_);
   chooser_table_model_->SetConnectButton(connect_button_);
 
   base::string16 cancel_text =
       l10n_util::GetStringUTF16(IDS_CHOOSER_BUBBLE_CANCEL_BUTTON_TEXT);
-  cancel_button_ = new views::LabelButton(this, cancel_text);
-  cancel_button_->SetStyle(views::Button::STYLE_BUTTON);
-  button_layout->AddView(cancel_button_);
+  views::LabelButton* cancel_button = new views::LabelButton(this, cancel_text);
+  cancel_button->SetStyle(views::Button::STYLE_BUTTON);
+  button_row->AddChildView(cancel_button);
+  layout->AddView(button_row);
 
-  button_layout->AddPaddingRow(0, kBubbleOuterMargin);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+
+  // Lay out the separator.
+  layout->StartRow(0, 0);
+  layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
+
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+
+  // Lay out the styled label.
+  layout->StartRow(0, 0);
+  base::string16 link =
+      l10n_util::GetStringUTF16(IDS_CHOOSER_BUBBLE_GET_HELP_LINK_TEXT);
+  size_t offset;
+  base::string16 text = l10n_util::GetStringFUTF16(
+      IDS_CHOOSER_BUBBLE_FOOTNOTE_TEXT, link, &offset);
+  views::StyledLabel* label = new views::StyledLabel(text, this);
+  label->AddStyleRange(gfx::Range(offset, offset + link.length()),
+                       views::StyledLabel::RangeStyleInfo::CreateForLink());
+  layout->AddView(label);
 }
 
 ChooserBubbleUiViewDelegate::~ChooserBubbleUiViewDelegate() {
@@ -254,6 +281,13 @@ void ChooserBubbleUiViewDelegate::ButtonPressed(views::Button* button,
     owner_->Close();
     owner_ = nullptr;
   }
+}
+
+void ChooserBubbleUiViewDelegate::StyledLabelLinkClicked(
+    views::StyledLabel* label,
+    const gfx::Range& range,
+    int event_flags) {
+  chooser_bubble_delegate_->OpenHelpCenterUrl();
 }
 
 void ChooserBubbleUiViewDelegate::OnSelectionChanged() {

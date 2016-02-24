@@ -6,7 +6,9 @@
 
 #include "base/stl_util.h"
 #include "chrome/browser/ui/bluetooth/bluetooth_chooser_desktop.h"
+#include "chrome/common/url_constants.h"
 #include "components/bubble/bubble_controller.h"
+#include "url/gurl.h"
 
 BluetoothChooserBubbleDelegate::BluetoothChooserBubbleDelegate(
     content::RenderFrameHost* owner)
@@ -54,6 +56,10 @@ void BluetoothChooserBubbleDelegate::Close() {
     bluetooth_chooser_->CallEventHandler(
         content::BluetoothChooser::Event::CANCELLED, std::string());
   }
+}
+
+GURL BluetoothChooserBubbleDelegate::GetHelpCenterUrl() const {
+  return GURL(chrome::kChooserBluetoothOverviewURL);
 }
 
 void BluetoothChooserBubbleDelegate::AddDevice(

@@ -769,4 +769,7 @@ const char kWindowsXPVistaDeprecationURL[] =
 const char kChooserBluetoothOverviewURL[] =
     "https://support.google.com/chrome?p=bluetooth";
 
+const char kChooserUsbOverviewURL[] =
+    "https://support.google.com/chrome?p=webusb";
+
 }  // namespace chrome

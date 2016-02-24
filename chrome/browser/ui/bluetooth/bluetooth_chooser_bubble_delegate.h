@@ -29,6 +29,7 @@ class BluetoothChooserBubbleDelegate : public ChooserBubbleDelegate {
   void Select(size_t index) override;
   void Cancel() override;
   void Close() override;
+  GURL GetHelpCenterUrl() const override;
 
   // Shows a new device in the chooser.
   void AddDevice(const std::string& device_id,

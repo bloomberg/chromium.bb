@@ -14516,6 +14516,14 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_CHOOSER_BUBBLE_CANCEL_BUTTON_TEXT" desc="The text that is shown on the cancel button in the chooser popup.">
         Cancel
       </message>
+      <!-- Chooser Bubble Footnote Text -->
+      <message name="IDS_CHOOSER_BUBBLE_FOOTNOTE_TEXT" desc="This text is shown at the bottom of the chooser popup with a link to part of its text.">
+        Not seeing your device? <ph name="GET_HELP_LINK">$1<ex>Get help</ex></ph>
+      </message>
+      <!-- Chooser Bubble Get Help Link Text -->
+      <message name="IDS_CHOOSER_BUBBLE_GET_HELP_LINK_TEXT" desc="Text of the 'Get help' link at the bottom of the chooser popup.">
+        Get help
+      </message>
     </if>
 
     <if expr="is_android">

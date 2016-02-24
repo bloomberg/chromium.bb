@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
+#include "chrome/common/url_constants.h"
 #include "components/bubble/bubble_controller.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -159,6 +160,10 @@ void UsbChooserBubbleDelegate::OnDeviceAdded(
     if (observer())
       observer()->OnOptionAdded(devices_.size() - 1);
   }
+}
+
+GURL UsbChooserBubbleDelegate::GetHelpCenterUrl() const {
+  return GURL(chrome::kChooserUsbOverviewURL);
 }
 
 void UsbChooserBubbleDelegate::OnDeviceRemoved(
