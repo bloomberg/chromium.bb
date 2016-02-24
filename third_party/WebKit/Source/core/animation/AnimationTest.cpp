@@ -818,7 +818,7 @@ TEST_F(AnimationAnimationTest, PauseAfterCancel)
     EXPECT_TRUE(std::isnan(animation->startTime()));
     animation->pause();
     EXPECT_EQ(Animation::Pending, animation->playStateInternal());
-    EXPECT_TRUE(std::isnan(animation->currentTime()));
+    EXPECT_EQ(0, animation->currentTime());
     EXPECT_TRUE(std::isnan(animation->startTime()));
 }
 

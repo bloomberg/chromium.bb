@@ -110,7 +110,7 @@ test(() => {
   assert_equals(animations[1].currentTime, 2000);
   assert_equals(animations[1].effect.timing.duration, 3500);
 
-  assert_equals(animations[2].currentTime, null);
+  assert_equals(animations[2].currentTime, 0);
   assert_equals(animations[2].effect.timing.duration, 2500);
 }, 'Removing same animation names should cancel animations from the end of the name list.');
 
@@ -133,7 +133,7 @@ test(() => {
   assert_equals(animations[1].currentTime, 2000);
   assert_equals(animations[1].effect.timing.duration, 2500);
 
-  assert_equals(animations[2].currentTime, null);
+  assert_equals(animations[2].currentTime, 0);
   assert_equals(animations[2].effect.timing.duration, 1500);
 }, 'Adding same animation names should start additional animations from the end of the name list.');
 </script>

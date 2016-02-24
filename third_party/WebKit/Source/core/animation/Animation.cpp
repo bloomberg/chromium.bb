@@ -224,8 +224,7 @@ double Animation::currentTime()
 {
     PlayStateUpdateScope updateScope(*this, TimingUpdateOnDemand);
 
-    // TODO(dstockwell): remove m_currentTimePending
-    if (playStateInternal() == Idle || m_currentTimePending || (!m_held && !hasStartTime()))
+    if (playStateInternal() == Idle || (!m_held && !hasStartTime()))
         return std::numeric_limits<double>::quiet_NaN();
 
     return currentTimeInternal() * 1000;
