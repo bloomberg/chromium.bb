@@ -65,16 +65,21 @@ class DevToolsWindowCreationObserver {
   DevToolsWindowCreationObserver();
   ~DevToolsWindowCreationObserver();
 
-  DevToolsWindow* devtools_window() { return devtools_window_; }
+  using DevToolsWindows = std::vector<DevToolsWindow*>;
+  const DevToolsWindows& devtools_windows() { return devtools_windows_; }
+  DevToolsWindow* devtools_window();
+
   void Wait();
   void WaitForLoad();
+  void CloseAllSync();
 
  private:
   friend class DevToolsWindow;
 
   void DevToolsWindowCreated(DevToolsWindow* devtools_window);
 
-  DevToolsWindow* devtools_window_;
+  base::Callback<void(DevToolsWindow*)> creation_callback_;
+  DevToolsWindows devtools_windows_;
   scoped_refptr<content::MessageLoopRunner> runner_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsWindowCreationObserver);

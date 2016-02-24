@@ -312,6 +312,17 @@ void DevToolsWindow::AddCreationCallbackForTest(
   g_creation_callbacks.Get().push_back(callback);
 }
 
+// static
+void DevToolsWindow::RemoveCreationCallbackForTest(
+    const CreationCallback& callback) {
+  for (size_t i = 0; i < g_creation_callbacks.Get().size(); ++i) {
+    if (g_creation_callbacks.Get().at(i).Equals(callback)) {
+      g_creation_callbacks.Get().erase(g_creation_callbacks.Get().begin() + i);
+      return;
+    }
+  }
+}
+
 DevToolsWindow::~DevToolsWindow() {
   life_stage_ = kClosing;
 
@@ -751,8 +762,8 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
   task_management::WebContentsTags::CreateForDevToolsContents(
       main_web_contents_);
 
-  std::vector<base::Callback<void(DevToolsWindow*)>> copy;
-  g_creation_callbacks.Get().swap(copy);
+  std::vector<base::Callback<void(DevToolsWindow*)>> copy(
+      g_creation_callbacks.Get());
   for (const auto& callback : copy)
     callback.Run(this);
 }

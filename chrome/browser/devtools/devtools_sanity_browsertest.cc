@@ -1029,32 +1029,32 @@ class DevToolsAutoOpenerTest : public DevToolsSanityTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kAutoOpenDevToolsForTabs);
+    observer_.reset(new DevToolsWindowCreationObserver());
   }
+ protected:
+  scoped_ptr<DevToolsWindowCreationObserver> observer_;
 };
 
 IN_PROC_BROWSER_TEST_F(DevToolsAutoOpenerTest, TestAutoOpenForTabs) {
-  {
-    scoped_refptr<content::DevToolsAgentHost> agent(
-        content::DevToolsAgentHost::GetOrCreateFor(GetInspectedTab()));
-    DevToolsWindow* window = DevToolsWindow::FindDevToolsWindow(agent.get());
-    ASSERT_TRUE(window);
-    DevToolsWindowTesting::CloseDevToolsWindowSync(window);
-  }
   {
     DevToolsWindowCreationObserver observer;
     AddTabAtIndexToBrowser(browser(), 0, GURL("about:blank"),
         ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false);
     observer.WaitForLoad();
-    DevToolsWindowTesting::CloseDevToolsWindowSync(observer.devtools_window());
+  }
+  Browser* new_browser = nullptr;
+  {
+    DevToolsWindowCreationObserver observer;
+    new_browser = CreateBrowser(browser()->profile());
+    observer.WaitForLoad();
   }
   {
     DevToolsWindowCreationObserver observer;
-    Browser* new_browser = CreateBrowser(browser()->profile());
     AddTabAtIndexToBrowser(new_browser, 0, GURL("about:blank"),
         ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false);
     observer.WaitForLoad();
-    DevToolsWindowTesting::CloseDevToolsWindowSync(observer.devtools_window());
   }
+  observer_->CloseAllSync();
 }
 
 class DevToolsReattachAfterCrashTest : public DevToolsSanityTest {

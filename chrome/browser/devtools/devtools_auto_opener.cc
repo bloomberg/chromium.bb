@@ -20,5 +20,6 @@ void DevToolsAutoOpener::TabInsertedAt(
     content::WebContents* contents,
     int index,
     bool foreground) {
-  DevToolsWindow::OpenDevToolsWindow(contents);
+  if (!DevToolsWindow::IsDevToolsWindow(contents))
+    DevToolsWindow::OpenDevToolsWindow(contents);
 }
