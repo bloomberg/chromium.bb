@@ -67,6 +67,7 @@
 #include "chrome/browser/password_manager/account_chooser_dialog_android.h"
 #include "chrome/browser/password_manager/auto_signin_first_run_dialog_android.h"
 #include "chrome/browser/password_manager/generated_password_saved_infobar_delegate_android.h"
+#include "chrome/browser/password_manager/update_password_infobar_delegate.h"
 #include "chrome/browser/ui/android/snackbars/auto_signin_prompt_controller.h"
 #endif
 
@@ -241,6 +242,13 @@ bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
 #if defined(OS_MACOSX) || BUILDFLAG(ANDROID_JAVA_UI)
     if (form_to_save->IsBlacklisted())
       return false;
+#if BUILDFLAG(ANDROID_JAVA_UI)
+    if (update_password && IsUpdatePasswordUIEnabled()) {
+      UpdatePasswordInfoBarDelegate::Create(web_contents(),
+                                            std::move(form_to_save));
+      return true;
+    }
+#endif
     std::string uma_histogram_suffix(
         password_manager::metrics_util::GroupIdToString(
             password_manager::metrics_util::MonitoredDomainGroupId(
@@ -583,8 +591,12 @@ bool ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled() {
 }
 
 bool ChromePasswordManagerClient::IsUpdatePasswordUIEnabled() const {
-  // Currently Password update UI is implemented only for Bubble UI.
+#if BUILDFLAG(ANDROID_JAVA_UI)
+  return base::FeatureList::IsEnabled(
+      password_manager::features::kEnablePasswordChangeSupport);
+#else
   return IsTheHotNewBubbleUIEnabled();
+#endif
 }
 
 bool ChromePasswordManagerClient::EnabledForSyncSignin() {

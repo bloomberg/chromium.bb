@@ -2386,6 +2386,14 @@ You can control the Physical Web in Chrome privacy settings.
       <message name="IDS_PHYSICAL_WEB_BOTTOM_BAR" desc="A message displayed in the nearby URLs list activity informing the user that a notification will appear whenever devices broadcasting URLs are nearby">
         Future nearby Physical Web pages will show up in your notifications list
       </message>
+
+    <!-- Password Manager strings -->
+      <message name="IDS_UPDATE_PASSWORD" desc="A message shown to users to allow updating a saved password for a site, shown in an infobar that appears after the user uses a different password to sign in to the site or uses a password change form.">
+        Do you want <ph name="PASSWORD_MANAGER_BRAND">^1<ex>Google Chrome</ex></ph> to update your password for this site?
+      </message>
+      <message name="IDS_UPDATE_PASSWORD_FOR_ACCOUNT" desc="A message shown to users to allow updating a saved password for a site, where user has multiple credentials saved, shown in an infobar that appears after user uses new password to sign in to the site or uses a password change form.">
+        Do you want <ph name="PASSWORD_MANAGER_BRAND">^1<ex>Google Chrome</ex></ph> to update the password for <ph name="USERNAME">^2<ex>don.john.lemon@example.com</ex></ph> for this site?
+      </message>
     </messages>
   </release>
 </grit>

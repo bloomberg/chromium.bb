@@ -130,6 +130,7 @@ class InfoBarDelegate {
     CHROME_WINDOW_ERROR = 60,
     CONFIRM_DANGEROUS_DOWNLOAD = 61,
     DESKTOP_SEARCH_REDIRECTION_INFOBAR_DELEGATE = 62,
+    UPDATE_PASSWORD_INFOBAR_DELEGATE = 63,
   };
 
   // Describes navigation events, used to decide whether infobars should be

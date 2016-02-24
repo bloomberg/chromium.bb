@@ -463,6 +463,8 @@
       'browser/ui/android/infobars/simple_confirm_infobar_builder.h',
       'browser/ui/android/infobars/translate_infobar.cc',
       'browser/ui/android/infobars/translate_infobar.h',
+      'browser/ui/android/infobars/update_password_infobar.cc',
+      'browser/ui/android/infobars/update_password_infobar.h',
       'browser/ui/android/javascript_app_modal_dialog_android.cc',
       'browser/ui/android/login_prompt_android.cc',
       'browser/ui/android/omnibox/omnibox_url_emphasizer.cc',

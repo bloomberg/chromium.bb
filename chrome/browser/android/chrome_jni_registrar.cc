@@ -147,6 +147,7 @@
 #include "chrome/browser/ui/android/infobars/save_password_infobar.h"
 #include "chrome/browser/ui/android/infobars/simple_confirm_infobar_builder.h"
 #include "chrome/browser/ui/android/infobars/translate_infobar.h"
+#include "chrome/browser/ui/android/infobars/update_password_infobar.h"
 #include "chrome/browser/ui/android/javascript_app_modal_dialog_android.h"
 #include "chrome/browser/ui/android/omnibox/omnibox_url_emphasizer.h"
 #include "chrome/browser/ui/android/omnibox/omnibox_view_util.h"
@@ -370,6 +371,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"TranslateInfoBarDelegate", RegisterTranslateInfoBarDelegate},
     {"TtsPlatformImpl", TtsPlatformImplAndroid::Register},
     {"UmaSessionStats", RegisterUmaSessionStats},
+    {"UpdatePasswordInfoBar", UpdatePasswordInfoBar::Register},
     {"UrlUtilities", RegisterUrlUtilities},
     {"Variations", variations::android::RegisterVariations},
     {"VariationsSeedBridge", variations::android::RegisterVariationsSeedBridge},
