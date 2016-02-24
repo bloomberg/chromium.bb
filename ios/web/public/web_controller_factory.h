@@ -6,7 +6,6 @@
 #define IOS_WEB_PUBLIC_WEB_CONTROLLER_FACTORY_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "ios/web/public/web_view_type.h"
 
 @class CRWWebController;
 
@@ -14,23 +13,6 @@ namespace web {
 
 class BrowserState;
 class WebStateImpl;
-
-// Returns a new instance of CRWWebViewController.
-// Note: Callers are responsible for releasing the returned web controller.
-// DEPRECATED: use CreateWebController(scoped_ptr<WebStateImpl>) instead.
-// TODO(crbug.com/588176): Remove this function.
-CRWWebController* CreateWebController(WebViewType web_view_type,
-                                      scoped_ptr<WebStateImpl> web_state);
-
-// Returns a new instance of CRWWebViewController.
-// Temporary factory method for use in components that require a web controller.
-// By requiring only the BrowserState, this eliminates the dependency on
-// WebStateImpl from components.
-// Note: Callers are responsible for releasing the returned web controller.
-// DEPRECATED: use CreateWebController(scoped_ptr<WebStateImpl>) instead.
-// TODO(crbug.com/588176): Remove this function.
-CRWWebController* CreateWebController(WebViewType web_view_type,
-                                      BrowserState* browser_state);
 
 // Returns a new instance of CRWWebViewController.
 // Note: Callers are responsible for releasing the returned web controller.
