@@ -51,7 +51,7 @@ gfx::ImageSkia CreateGrayscaleImage(gfx::Size size, uint8_t greyscale_value) {
 class FakeDesktopMediaListBaseImpl : public DesktopMediaListBase {
  public:
   explicit FakeDesktopMediaListBaseImpl(DesktopMediaID::Type type)
-      : DesktopMediaListBase(base::TimeDelta::FromMilliseconds(1)),
+      : DesktopMediaListBase(base::TimeDelta()),
         media_type_(type) {
     SetThumbnailSize(gfx::Size(kThumbnailSize, kThumbnailSize));
 
@@ -78,7 +78,6 @@ class FakeDesktopMediaListBaseImpl : public DesktopMediaListBase {
     fake_thumbnails_.erase(fake_thumbnails_.begin() + index);
   }
 
- private:
   void Refresh() override {
     UpdateSourcesList(fake_sources_);
 
@@ -92,8 +91,6 @@ class FakeDesktopMediaListBaseImpl : public DesktopMediaListBase {
       }
     }
     refreshed_thumbnail_map_ = current_thumbnail_map_;
-
-    ScheduleNextRefresh();
   }
 
   std::vector<DesktopMediaListBase::SourceDescription> fake_sources_;
@@ -226,6 +223,7 @@ TEST_F(CombinedDesktopMediaListTest, AddSource) {
   EXPECT_CALL(observer_, OnSourceThumbnailChanged(combined_list_.get(), index))
       .WillOnce(QuitMessageLoop(&message_loop_));
 
+  list1_->Refresh();
   message_loop_.Run();
 
   list2_->AddFakeSource(index, base::UTF8ToUTF16("Test media"), index);
@@ -238,6 +236,7 @@ TEST_F(CombinedDesktopMediaListTest, AddSource) {
                                                   2 * kDefaultSourceCount + 1))
       .WillOnce(QuitMessageLoop(&message_loop_));
 
+  list2_->Refresh();
   message_loop_.Run();
 
   // Verify last source for list1_ and first source for list2_.
@@ -260,6 +259,7 @@ TEST_F(CombinedDesktopMediaListTest, RemoveSource) {
           CheckListSize(combined_list_.get(), 2 * kDefaultSourceCount - 1),
           QuitMessageLoop(&message_loop_)));
 
+  list1_->Refresh();
   message_loop_.Run();
 
   list2_->RemoveFakeSource(index);
@@ -270,6 +270,7 @@ TEST_F(CombinedDesktopMediaListTest, RemoveSource) {
           CheckListSize(combined_list_.get(), 2 * kDefaultSourceCount - 2),
           QuitMessageLoop(&message_loop_)));
 
+  list2_->Refresh();
   message_loop_.Run();
 
   // Verify last source for list1_ and first source for list2_.
@@ -299,6 +300,7 @@ TEST_F(CombinedDesktopMediaListTest, MoveSource) {
                             kDefaultSourceCount - 2))
       .WillOnce(QuitMessageLoop(&message_loop_));
 
+  list1_->Refresh();
   message_loop_.Run();
 
   // Swap sources.
@@ -316,6 +318,7 @@ TEST_F(CombinedDesktopMediaListTest, MoveSource) {
                             2 * kDefaultSourceCount - 2))
       .WillOnce(QuitMessageLoop(&message_loop_));
 
+  list2_->Refresh();
   message_loop_.Run();
 }
 
@@ -332,6 +335,7 @@ TEST_F(CombinedDesktopMediaListTest, UpdateTitle) {
                                              kDefaultSourceCount - 1))
       .WillOnce(QuitMessageLoop(&message_loop_));
 
+  list1_->Refresh();
   message_loop_.Run();
 
   // Change title.
@@ -344,6 +348,7 @@ TEST_F(CombinedDesktopMediaListTest, UpdateTitle) {
                                              2 * kDefaultSourceCount - 1))
       .WillOnce(QuitMessageLoop(&message_loop_));
 
+  list2_->Refresh();
   message_loop_.Run();
 
   EXPECT_EQ(combined_list_->GetSource(kDefaultSourceCount - 1).name,
@@ -364,6 +369,7 @@ TEST_F(CombinedDesktopMediaListTest, UpdateThumbnail) {
                                                   kDefaultSourceCount - 1))
       .WillOnce(QuitMessageLoop(&message_loop_));
 
+  list1_->Refresh();
   message_loop_.Run();
 
   // Change thumbnail.
@@ -375,5 +381,6 @@ TEST_F(CombinedDesktopMediaListTest, UpdateThumbnail) {
                                                   2 * kDefaultSourceCount - 1))
       .WillOnce(QuitMessageLoop(&message_loop_));
 
+  list2_->Refresh();
   message_loop_.Run();
 }
