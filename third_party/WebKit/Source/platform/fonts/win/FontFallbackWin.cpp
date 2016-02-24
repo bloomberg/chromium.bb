@@ -100,15 +100,9 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontMana
     };
 
     static const FontMap fontMap[] = {
-        {USCRIPT_LATIN, L"times new roman"},
-        {USCRIPT_GREEK, L"times new roman"},
-        {USCRIPT_CYRILLIC, L"times new roman"},
-        // FIXME: Consider trying new Vista fonts before XP fonts for CJK.
-        // Some Vista users do want to use Vista cleartype CJK fonts. If we
-        // did, the results of tests with CJK characters would have to be
-        // regenerated for Vista.
-        {USCRIPT_THAANA, L"mv boli"},
-        {USCRIPT_MONGOLIAN, L"mongolian balti"},
+        { USCRIPT_LATIN, L"Times New Roman" },
+        { USCRIPT_GREEK, L"Times New Roman" },
+        { USCRIPT_CYRILLIC, L"Times New Roman" },
         // For USCRIPT_COMMON, we map blocks to scripts when
         // that makes sense.
     };
@@ -118,87 +112,185 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontMana
         const UChar** families;
     };
 
-    // Kartika on Vista or earlier lacks the support for Chillu
-    // letters added to Unicode 5.1.
-    // Try AnjaliOldLipi (a very widely used Malaylalam font with the full
-    // Unicode 5.x support) before falling back to Kartika.
-    static const UChar* malayalamFonts[] = {L"AnjaliOldLipi", L"Lohit Malayalam", L"Kartika", L"Rachana", L"Nirmala UI", 0};
-    // Try Khmer OS before Vista fonts because 'Khmer OS' goes along better
-    // with Latin and looks better/larger for the same size.
-    static const UChar* khmerFonts[] = {L"Leelawadee UI", L"Khmer OS", L"MoolBoran", L"DaunPenh", L"Code2000", 0};
-    // For the following scripts, two or more fonts are listed. The fonts in
-    // the 1st slot is preferred but may not not be available on older versions
-    // of Windows. To support these scripts the rest of the slots lists at least
-    // one widely used for likely to be available on XP or Windows 7.
-    static const UChar* ethiopicFonts[] = {L"Nyala", L"Abyssinica SIL", L"Ethiopia Jiret", L"Visual Geez Unicode", L"GF Zemen Unicode", L"Ebrima", 0};
-    static const UChar* oriyaFonts[] = {L"Kalinga", L"ori1Uni", L"Lohit Oriya", L"Nirmala UI", 0};
-    static const UChar* laoFonts[] = {L"Leelawadee UI", L"DokChampa", L"Saysettha OT", L"Phetsarath OT", L"Code2000", 0};
-    static const UChar* tibetanFonts[] = {L"Microsoft Himalaya", L"Jomolhari", L"Tibetan Machine Uni", 0};
-    static const UChar* sinhalaFonts[] = {L"Iskoola Pota", L"AksharUnicode", L"Nirmala UI", 0};
-    static const UChar* yiFonts[] = {L"Microsoft Yi Balti", L"Nuosu SIL", L"Code2000", 0};
-    // http://www.bethmardutho.org/support/meltho/download/index.php
-    static const UChar* syriacFonts[] = {L"Estrangelo Edessa", L"Estrangelo Nisibin", L"Code2000", 0};
-    static const UChar* myanmarFonts[] = {L"Myanmar Text", L"Padauk", L"Parabaik", L"Myanmar3", L"Code2000", 0};
-    static const UChar* glagoliticFonts[] = {L"Segoe UI Historic", L"Segoe UI Symbol", 0};
-    static const UChar* gothicFonts[] = {L"Segoe UI Historic", L"Segoe UI Symbol", 0};
-    static const UChar* oghamFonts[] = {L"Segoe UI Historic", L"Segoe UI Symbol", 0};
-    static const UChar* hangulFonts[] = {L"gulim", L"Malgun Gothic", 0};
-    static const UChar* devanagariFonts[] = {L"mangal", L"Nirmala UI", 0};
-    static const UChar* gujaratiFonts[] = {L"shruti", L"Nirmala UI", 0};
-    static const UChar* bengaliFonts[] = {L"vrinda", L"Nirmala UI", 0};
-    static const UChar* teluguFonts[] = {L"gautami", L"Nirmala UI", 0};
-    static const UChar* tamilFonts[] = {L"latha", L"Nirmala UI", 0};
-    static const UChar* kannadaFonts[] = {L"tunga", L"Nirmala UI", 0};
-    static const UChar* gurumukhiFonts[] = {L"raavi", L"Nirmala UI", 0};
-    static const UChar* thaiFonts[] = {L"tahoma", L"Leelawadee UI", L"Leelawadee", 0};
-    static const UChar* hebrewFonts[] = {L"david", L"Segoe UI", 0};
-    static const UChar* arabicFonts[] = {L"tahoma", L"Segoe UI", 0};
-    static const UChar* tifinaghFonts[] = {L"ebrima", 0};
-    static const UChar* georgianFonts[] = {L"sylfaen", L"Segoe UI", 0};
-    static const UChar* armenianFonts[] = {L"sylfaen", L"Segoe UI", 0};
-    static const UChar* canadianAboriginalFonts[] = {L"euphemia", L"Gadugi", 0};
-    static const UChar* cherokeeFonts[] = {L"plantagenet cherokee", L"Gadugi", 0};
-    static const UChar* simplifiedHanFonts[] = {L"simsun", L"Microsoft YaHei", 0};
-    static const UChar* traditionalHanFonts[] = {L"pmingliu", L"Microsoft JhengHei", 0};
-    static const UChar* hiraganaFonts[] = {L"ms pgothic", L"Yu Gothic", L"Microsoft YaHei", 0};
-    static const UChar* katakanaFonts[] = {L"ms pgothic", L"Yu Gothic", L"Microsoft YaHei", 0};
-    static const UChar* katakanaOrHiraganaFonts[] = {L"ms pgothic", L"Yu Gothic", L"Microsoft YaHei", 0};
+    // For the following scripts, multiple fonts may be listed. They are tried
+    // in order. The first slot is preferred but the font may not be available,
+    // if so the remaining slots are tried in order.
+    // In general the order is the Windows 10 font follow by the 8.1, 8.0 and
+    // finally the font for Windows 7.
+    // For scripts where an optional or region specific font may be available
+    // that should be listed before the generic one.
+    // Based on the "Script and Font Support in Windows" MSDN documentation [1]
+    // with overrides and additional fallbacks as needed.
+    // 1: https://msdn.microsoft.com/en-us/goglobal/bb688099.aspx
+    static const UChar* arabicFonts[] = { L"Tahoma", L"Segoe UI", 0 };
+    static const UChar* armenianFonts[] = { L"Segoe UI", L"Sylfaen", 0 };
+    static const UChar* bengaliFonts[] = { L"Nirmala UI", L"Vrinda", 0 };
+    static const UChar* brahmiFonts[] = { L"Segoe UI Historic", 0 };
+    static const UChar* brailleFonts[] = { L"Segoe UI Symbol", 0 };
+    static const UChar* bugineseFonts[] = { L"Leelawadee UI", 0 };
+    static const UChar* canadianAaboriginalFonts[] = { L"Gadugi",
+        L"Euphemia", 0 };
+    static const UChar* carianFonts[] = { L"Segoe UI Historic", 0 };
+    static const UChar* cherokeeFonts[] = { L"Gadugi", L"Plantagenet", 0 };
+    static const UChar* copticFonts[] = { L"Segoe UI Symbol", 0 };
+    static const UChar* cuneiformFonts[] = { L"Segoe UI Historic", 0 };
+    static const UChar* cypriotFonts[] = { L"Segoe UI Historic", 0 };
+    static const UChar* deseretFonts[] = { L"Segoe UI Symbol", 0 };
+    static const UChar* devanagariFonts[] = { L"Nirmala UI", L"Mangal", 0 };
+    static const UChar* egyptianHieroglyphsFonts[] = { L"Segoe UI Historic",
+        0 };
+    static const UChar* ethiopicFonts[] = { L"Nyala", L"Abyssinica SIL",
+        L"Ethiopia Jiret", L"Visual Geez Unicode", L"GF Zemen Unicode",
+        L"Ebrima", 0 };
+    static const UChar* georgianFonts[] = { L"Segoe UI", L"Sylfaen", 0 };
+    static const UChar* glagoliticFonts[] = { L"Segoe UI Historic",
+        L"Segoe UI Symbol", 0 };
+    static const UChar* gothicFonts[] = { L"Segoe UI Historic",
+        L"Segoe UI Symbol", 0 };
+    static const UChar* gujaratiFonts[] = { L"Nirmala UI", L"Shruti", 0 };
+    static const UChar* gurmukhiFonts[] = { L"Nirmala UI", L"Raavi", 0 };
+    static const UChar* hangulFonts[] = { L"Malgun Gothic", L"Gulim", 0 };
+    static const UChar* hebrewFonts[] = { L"David", L"Segoe UI", 0 };
+    static const UChar* hiraganaFonts[] = { L"MS PGothic", L"Yu Gothic",
+        L"Microsoft YaHei", 0 };
+    static const UChar* imperialAramaicFonts[] = { L"Segoe UI Historic", 0 };
+    static const UChar* inscriptionalPahlaviFonts[] = { L"Segoe UI Historic",
+        0 };
+    static const UChar* inscriptionalParthianFonts[] = { L"Segoe UI Historic",
+        0 };
+    static const UChar* javaneseFonts[] = { L"Javanese Text", 0 };
+    static const UChar* kannadaFonts[] = { L"Tunga", L"Nirmala UI", 0 };
+    static const UChar* katakanaFonts[] = { L"MS PGothic", L"Yu Gothic",
+        L"Microsoft YaHei", 0 };
+    static const UChar* katakanaOrHiraganaFonts[] = { L"MS PGothic",
+        L"Yu Gothic", L"Microsoft YaHei", 0 };
+    static const UChar* kharoshthiFonts[] = { L"Segoe UI Historic", 0 };
+    // Try Khmer OS before Vista fonts as it goes along better with Latin
+    // and looks better/larger for the same size.
+    static const UChar* khmerFonts[] = { L"Leelawadee UI", L"Khmer UI",
+        L"Khmer OS", L"MoolBoran", L"DaunPenh", 0 };
+    static const UChar* laoFonts[] = { L"Leelawadee UI", L"Lao UI",
+        L"DokChampa", L"Saysettha OT", L"Phetsarath OT", L"Code2000", 0 };
+    static const UChar* lisuFonts[] = { L"Segoe UI", 0 };
+    static const UChar* lycianFonts[] = { L"Segoe UI Historic", 0 };
+    static const UChar* lydianFonts[] = { L"Segoe UI Historic", 0 };
+    static const UChar* malayalamFonts[] = { L"Nirmala UI", L"Kartika", 0 };
+    static const UChar* meroiticCursiveFonts[] = { L"Segoe UI Historic",
+        L"Segoe UI Symbol", 0 };
+    static const UChar* mongolianFonts[] = { L"Mongolian Baiti", 0 };
+    static const UChar* myanmarFonts[] = { L"Myanmar Text", L"Padauk",
+        L"Parabaik", L"Myanmar3", L"Code2000", 0 };
+    static const UChar* newTaiLueFonts[] = { L"Microsoft New Tai Lue", 0 };
+    static const UChar* nkoFonts[] = { L"Ebrima", 0 };
+    static const UChar* oghamFonts[] = { L"Segoe UI Historic",
+        L"Segoe UI Symbol", 0 };
+    static const UChar* olChikiFonts[] = { L"Nirmala UI", 0 };
+    static const UChar* oldItalicFonts[] = { L"Segoe UI Historic",
+        L"Segoe UI Symbol", 0 };
+    static const UChar* oldPersianFonts[] = { L"Segoe UI Historic", 0 };
+    static const UChar* oldSouthArabianFonts[] = { L"Segoe UI Historic", 0 };
+    static const UChar* oriyaFonts[] = { L"Kalinga", L"ori1Uni",
+        L"Lohit Oriya", L"Nirmala UI", 0 };
+    static const UChar* orkhonFonts[] = { L"Segoe UI Historic",
+        L"Segoe UI Symbol", 0 };
+    static const UChar* osmanyaFonts[] = { L"Ebrima", 0 };
+    static const UChar* phagsPaFonts[] = { L"Microsoft PhagsPa", 0 };
+    static const UChar* runicFonts[] = { L"Segoe UI Historic",
+        L"Segoe UI Symbol", 0 };
+    static const UChar* shavianFonts[] = { L"Segoe UI Historic", 0 };
+    static const UChar* simplifiedHanFonts[] = { L"simsun", L"Microsoft YaHei",
+        0 };
+    static const UChar* sinhalaFonts[] = { L"Iskoola Pota", L"AksharUnicode",
+        L"Nirmala UI", 0 };
+    static const UChar* soraSompengFonts[] = { L"Nirmala UI", 0 };
+    static const UChar* symbolsFonts[] = { L"Segoe UI Symbol", 0 };
+    static const UChar* syriacFonts[] = { L"Estrangelo Edessa",
+        L"Estrangelo Nisibin", L"Code2000", 0 };
+    static const UChar* taiLeFonts[] = { L"Microsoft Tai Le", 0 };
+    static const UChar* tamilFonts[] = { L"Nirmala UI", L"Latha", 0 };
+    static const UChar* teluguFonts[] = { L"Nirmala UI", L"Gautami", 0 };
+    static const UChar* thaanaFonts[] = { L"MV Boli", 0 };
+    static const UChar* thaiFonts[] = { L"Tahoma", L"Leelawadee UI",
+        L"Leelawadee", 0 };
+    static const UChar* tibetanFonts[] = { L"Microsoft Himalaya", L"Jomolhari",
+        L"Tibetan Machine Uni", 0 };
+    static const UChar* tifinaghFonts[] = { L"Ebrima", 0 };
+    static const UChar* traditionalHanFonts[] = { L"pmingliu",
+        L"Microsoft JhengHei", 0 };
+    static const UChar* vaiFonts[] = { L"Ebrima", 0 };
+    static const UChar* yiFonts[] = { L"Microsoft Yi Baiti", L"Nuosu SIL",
+        L"Code2000", 0 };
 
     static const ScriptToFontFamilies scriptToFontFamilies[] = {
-        {USCRIPT_MALAYALAM, malayalamFonts},
-        {USCRIPT_KHMER, khmerFonts},
-        {USCRIPT_ETHIOPIC, ethiopicFonts},
-        {USCRIPT_ORIYA, oriyaFonts},
-        {USCRIPT_LAO, laoFonts},
-        {USCRIPT_TIBETAN, tibetanFonts},
-        {USCRIPT_SINHALA, sinhalaFonts},
-        {USCRIPT_YI, yiFonts},
-        {USCRIPT_SYRIAC, syriacFonts},
-        {USCRIPT_MYANMAR, myanmarFonts},
-        {USCRIPT_GLAGOLITIC, glagoliticFonts},
-        {USCRIPT_GOTHIC, gothicFonts},
-        {USCRIPT_OGHAM, oghamFonts},
-        {USCRIPT_HANGUL, hangulFonts},
-        {USCRIPT_DEVANAGARI, devanagariFonts},
-        {USCRIPT_GUJARATI, gujaratiFonts},
-        {USCRIPT_BENGALI, bengaliFonts},
-        {USCRIPT_TELUGU, teluguFonts},
-        {USCRIPT_TAMIL, tamilFonts},
-        {USCRIPT_KANNADA, kannadaFonts},
-        {USCRIPT_GURMUKHI, gurumukhiFonts},
-        {USCRIPT_THAI, thaiFonts},
-        {USCRIPT_HEBREW, hebrewFonts},
-        {USCRIPT_ARABIC, arabicFonts},
-        {USCRIPT_TIFINAGH, tifinaghFonts},
-        {USCRIPT_GEORGIAN, georgianFonts},
-        {USCRIPT_ARMENIAN, armenianFonts},
-        {USCRIPT_CANADIAN_ABORIGINAL, canadianAboriginalFonts},
-        {USCRIPT_CHEROKEE, cherokeeFonts},
-        {USCRIPT_SIMPLIFIED_HAN, simplifiedHanFonts},
-        {USCRIPT_TRADITIONAL_HAN, traditionalHanFonts},
-        {USCRIPT_HIRAGANA, hiraganaFonts},
-        {USCRIPT_KATAKANA, katakanaFonts},
-        {USCRIPT_KATAKANA_OR_HIRAGANA, katakanaOrHiraganaFonts},
+        { USCRIPT_ARABIC, arabicFonts },
+        { USCRIPT_ARMENIAN, armenianFonts },
+        { USCRIPT_BENGALI, bengaliFonts },
+        { USCRIPT_BRAHMI, brahmiFonts },
+        { USCRIPT_BRAILLE, brailleFonts },
+        { USCRIPT_BUGINESE, bugineseFonts },
+        { USCRIPT_CANADIAN_ABORIGINAL, canadianAaboriginalFonts },
+        { USCRIPT_CARIAN, carianFonts },
+        { USCRIPT_CHEROKEE, cherokeeFonts },
+        { USCRIPT_COPTIC, copticFonts },
+        { USCRIPT_CUNEIFORM, cuneiformFonts },
+        { USCRIPT_CYPRIOT, cypriotFonts },
+        { USCRIPT_DESERET, deseretFonts },
+        { USCRIPT_DEVANAGARI, devanagariFonts },
+        { USCRIPT_EGYPTIAN_HIEROGLYPHS, egyptianHieroglyphsFonts },
+        { USCRIPT_ETHIOPIC, ethiopicFonts },
+        { USCRIPT_GEORGIAN, georgianFonts },
+        { USCRIPT_GLAGOLITIC, glagoliticFonts },
+        { USCRIPT_GOTHIC, gothicFonts },
+        { USCRIPT_GUJARATI, gujaratiFonts },
+        { USCRIPT_GURMUKHI, gurmukhiFonts },
+        { USCRIPT_HANGUL, hangulFonts },
+        { USCRIPT_HEBREW, hebrewFonts },
+        { USCRIPT_HIRAGANA, hiraganaFonts },
+        { USCRIPT_IMPERIAL_ARAMAIC, imperialAramaicFonts },
+        { USCRIPT_INSCRIPTIONAL_PAHLAVI, inscriptionalPahlaviFonts },
+        { USCRIPT_INSCRIPTIONAL_PARTHIAN, inscriptionalParthianFonts },
+        { USCRIPT_JAVANESE, javaneseFonts },
+        { USCRIPT_KANNADA, kannadaFonts },
+        { USCRIPT_KATAKANA, katakanaFonts },
+        { USCRIPT_KATAKANA_OR_HIRAGANA, katakanaOrHiraganaFonts },
+        { USCRIPT_KHAROSHTHI, kharoshthiFonts },
+        { USCRIPT_KHMER, khmerFonts },
+        { USCRIPT_LAO, laoFonts },
+        { USCRIPT_LISU, lisuFonts },
+        { USCRIPT_LYCIAN, lycianFonts },
+        { USCRIPT_LYDIAN, lydianFonts },
+        { USCRIPT_MALAYALAM, malayalamFonts },
+        { USCRIPT_MEROITIC_CURSIVE, meroiticCursiveFonts },
+        { USCRIPT_MONGOLIAN, mongolianFonts },
+        { USCRIPT_MYANMAR, myanmarFonts },
+        { USCRIPT_NEW_TAI_LUE, newTaiLueFonts },
+        { USCRIPT_NKO, nkoFonts },
+        { USCRIPT_OGHAM, oghamFonts },
+        { USCRIPT_OL_CHIKI, olChikiFonts },
+        { USCRIPT_OLD_ITALIC, oldItalicFonts },
+        { USCRIPT_OLD_PERSIAN, oldPersianFonts },
+        { USCRIPT_OLD_SOUTH_ARABIAN, oldSouthArabianFonts },
+        { USCRIPT_ORIYA, oriyaFonts },
+        { USCRIPT_ORKHON, orkhonFonts },
+        { USCRIPT_OSMANYA, osmanyaFonts },
+        { USCRIPT_PHAGS_PA, phagsPaFonts },
+        { USCRIPT_RUNIC, runicFonts },
+        { USCRIPT_SHAVIAN, shavianFonts },
+        { USCRIPT_SIMPLIFIED_HAN, simplifiedHanFonts },
+        { USCRIPT_SINHALA, sinhalaFonts },
+        { USCRIPT_SORA_SOMPENG, soraSompengFonts },
+        { USCRIPT_SYMBOLS, symbolsFonts },
+        { USCRIPT_SYRIAC, syriacFonts },
+        { USCRIPT_TAI_LE, taiLeFonts },
+        { USCRIPT_TAMIL, tamilFonts },
+        { USCRIPT_TELUGU, teluguFonts },
+        { USCRIPT_THAANA, thaanaFonts },
+        { USCRIPT_THAI, thaiFonts },
+        { USCRIPT_TIBETAN, tibetanFonts },
+        { USCRIPT_TIFINAGH, tifinaghFonts },
+        { USCRIPT_TRADITIONAL_HAN, traditionalHanFonts },
+        { USCRIPT_VAI, vaiFonts },
+        { USCRIPT_YI, yiFonts }
     };
 
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(fontMap); ++i)
