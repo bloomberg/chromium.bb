@@ -9,6 +9,8 @@
 #import <Carbon/Carbon.h>
 
 #include "base/logging.h"
+#include "base/mac/mac_logging.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
@@ -439,6 +441,7 @@ KeyboardCode KeyboardCodeFromKeyCode(unsigned short keyCode) {
 
 DomKey DomKeyFromKeyCode(unsigned short keyCode) {
   switch (keyCode) {
+    case kVK_ANSI_KeypadEnter:
     case kVK_Return:
       return DomKey::ENTER;
     case kVK_Tab:
@@ -535,11 +538,6 @@ DomKey DomKeyFromKeyCode(unsigned short keyCode) {
 
 DomKey DomKeyFromCharCode(unichar char_code) {
   switch (char_code) {
-    case 0x03:
-      return DomKey::ENTER;  // Numpad Enter
-    // Mac maps backspace to forward delete unicode.
-    case 0x7f:
-      return DomKey::BACKSPACE;
     case NSUpArrowFunctionKey:
       return DomKey::ARROW_UP;
     case NSDownArrowFunctionKey:
@@ -633,6 +631,54 @@ DomKey DomKeyFromCharCode(unichar char_code) {
     default:
       return DomKey::FromCharacter(char_code);
   }
+}
+
+UniChar MacKeycodeAndModifiersToCharacter(unsigned short mac_keycode,
+                                          int modifiers) {
+  // Convert NSEvent modifiers to format UCKeyTranslate accepts. See docs
+  // on UCKeyTranslate for more info.
+  int unicode_modifiers = 0;
+  if (modifiers & NSShiftKeyMask)
+    unicode_modifiers |= shiftKey;
+  if (modifiers & NSAlphaShiftKeyMask)
+    unicode_modifiers |= alphaLock;
+  // if (modifiers & NSControlKeyMask)
+  //   unicode_modifiers |= controlKey;
+  if (modifiers & NSAlternateKeyMask)
+    unicode_modifiers |= optionKey;
+  // if (modifiers & NSCommandKeyMask)
+  //   unicode_modifiers |= cmdKey;
+  UInt32 modifier_key_state = (unicode_modifiers >> 8) & 0xFF;
+
+  base::ScopedCFTypeRef<TISInputSourceRef> input_source_copy(
+      TISCopyCurrentKeyboardLayoutInputSource());
+  CFDataRef layout_data = static_cast<CFDataRef>(TISGetInputSourceProperty(
+      input_source_copy, kTISPropertyUnicodeKeyLayoutData));
+  const UCKeyboardLayout* layout =
+      reinterpret_cast<const UCKeyboardLayout*>(CFDataGetBytePtr(layout_data));
+
+  UInt32 dead_key_state = 0;
+  UniCharCount char_count = 0;
+  // According Apple's doc UCKeyTranslate::maxStringLength maybe up to 255 but
+  // would actually be rare to get more than 4.
+  UniChar unicode_string[4];
+  OSStatus status =
+      UCKeyTranslate(layout, static_cast<UInt16>(mac_keycode), kUCKeyActionDown,
+                     modifier_key_state, LMGetKbdLast(), 0, &dead_key_state,
+                     arraysize(unicode_string), &char_count, unicode_string);
+
+  OSSTATUS_DCHECK(status == noErr, status);
+  if (dead_key_state != 0) {
+    // A dead key, injecting space to get the diacritic in an isolated form.
+    status = UCKeyTranslate(layout, static_cast<UInt16>(kVK_Space),
+                            kUCKeyActionDown, 0, LMGetKbdLast(), 0,
+                            &dead_key_state, arraysize(unicode_string),
+                            &char_count, unicode_string);
+    OSSTATUS_DCHECK(status == noErr, status);
+  }
+
+  // TODO(chongz): Handle multiple character case. Should be rare.
+  return unicode_string[0];
 }
 
 }  // namespace
@@ -742,12 +788,38 @@ DomCode DomCodeFromNSEvent(NSEvent* event) {
 
 DomKey DomKeyFromNSEvent(NSEvent* event) {
   // Apply the lookup based on the character first since that has the
-  // Keyboard layout and modifers already applied; whereas the keyCode
+  // Keyboard layout and modifiers already applied; whereas the keyCode
   // doesn't.
   if ([event type] == NSKeyDown || [event type] == NSKeyUp) {
+    // Have to use [event characters] to handle dead key state.
     NSString* characters = [event characters];
-    if ([characters length] > 0)
-      return DomKeyFromCharCode([characters characterAtIndex:0]);
+    if ([characters length] > 0) {
+      // An invalid dead key combination will produce two characters, according
+      // to spec DomKey should be the last character.
+      // e.g. On French keyboard [+a will produce "^q", DomKey should be 'q'.
+      unichar dom_key_char =
+          [characters characterAtIndex:[characters length] - 1];
+      const bool is_ctrl_down = ([event modifierFlags] & NSControlKeyMask) &&
+                                !([event modifierFlags] & NSAlternateKeyMask);
+      const bool is_command_down = [event modifierFlags] & NSCommandKeyMask;
+      // On Mac Blink won't insert ASCII character if either Ctrl or Command, or
+      // both, are down.
+      // See EditingBehavior::shouldInsertCharacter()
+      if (std::iscntrl(dom_key_char) ||
+          (dom_key_char < 0x80 && (is_ctrl_down || is_command_down))) {
+        // According to spec if the key combination produces a non-printable
+        // character, the key value should be the character without modifiers
+        // except Shift and AltGr.
+        // See https://w3c.github.io/uievents/#keys-guidelines
+        const int kAllowedModifiersMask =
+            NSShiftKeyMask | NSAlphaShiftKeyMask | NSAlternateKeyMask;
+        // MacKeycodeAndModifiersToCharacter() is efficient (around 6E-4 ms).
+        dom_key_char = MacKeycodeAndModifiersToCharacter(
+            [event keyCode], [event modifierFlags] & kAllowedModifiersMask);
+      }
+      if (!std::iscntrl(dom_key_char))
+        return DomKeyFromCharCode(dom_key_char);
+    }
   }
   return DomKeyFromKeyCode([event keyCode]);
 }
