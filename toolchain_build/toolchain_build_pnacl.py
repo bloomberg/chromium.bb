@@ -928,7 +928,7 @@ def HostTools(host, options):
                                             else 'yes'),
                    '--enable-debug=' + ('yes' if HostIsDebug(options)
                                         else 'no'),
-                   '--enable-targets=x86,arm,mips,js',
+                   '--enable-targets=x86,arm,mips',
                    '--enable-subzero-targets=ARM32,MIPS32,X8632,X8664',
                    '--enable-werror=' + ('yes' if llvm_do_werror else 'no'),
                    # Backtraces require TLS, which is missing on OSX 10.6
