@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Security-Policy" content="script-src 'nonce-abcdefg' 'unsafe-dynamic' http://localhost:8000">
+    <script src="/resources/testharness.js" nonce="abcdefg"></script>
+    <script src="/resources/testharnessreport.js" nonce="abcdefg"></script>
+</head>
+<body>
+    <script nonce="abcdefg">
+        function generateURL(type) {
+          return 'http://localhost:8000/security/contentSecurityPolicy/resources/loaded.js?' + type;
+        }
+
+        var loaded = {};
+        var blocked = {};
+        window.addEventListener("message", function (e) {
+          loaded[e.data] = true;
+        });
+        document.addEventListener("securitypolicyviolation", function (e) {
+          blocked[e.lineNumber] = true;
+        });
+
+        async_test(function (t) {
+          document.write("<scr" + "ipt src='" + generateURL("write") + "'></scr" + "ipt>");
+          setTimeout(t.step_func_done(function () {
+            assert_equals(loaded[generateURL("write")], undefined);
+            assert_true(blocked[24]);
+          }, 1));
+        }, "Script injected via 'document.write' is not allowed with 'unsafe-dynamic', even if whitelisted.");
+
+        async_test(function (t) {
+          document.write("<scr" + "ipt defer src='" + generateURL("write-defer") + "'></scr" + "ipt>");
+          setTimeout(t.step_func_done(function () {
+            assert_equals(loaded[generateURL("write-defer")], undefined);
+            assert_true(blocked[32]);
+          }, 1));
+        }, "Deferred script injected via 'document.write' is not allowed with 'unsafe-dynamic', even if whitelisted.");
+
+        async_test(function (t) {
+          document.write("<scr" + "ipt async src='" + generateURL("write-async") + "'></scr" + "ipt>");
+          setTimeout(t.step_func_done(function () {
+            assert_equals(loaded[generateURL("write-async")], undefined);
+            assert_true(blocked[40]);
+          }, 1));
+        }, "Async script injected via 'document.write' is not allowed with 'unsafe-dynamic', even if whitelisted.");
+    </script>
+</body>
+</html>

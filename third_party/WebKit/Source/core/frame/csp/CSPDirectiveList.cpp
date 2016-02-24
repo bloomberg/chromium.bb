@@ -131,6 +131,8 @@ bool CSPDirectiveList::checkHash(SourceListDirective* directive, const CSPHashVa
 
 bool CSPDirectiveList::checkDynamic(SourceListDirective* directive) const
 {
+    if (!m_policy->experimentalFeaturesEnabled())
+        return false;
     return !directive || directive->allowDynamic();
 }
 
@@ -237,7 +239,11 @@ bool CSPDirectiveList::checkInlineAndReportViolation(SourceListDirective* direct
 
 bool CSPDirectiveList::checkSourceAndReportViolation(SourceListDirective* directive, const KURL& url, const String& effectiveDirective, ContentSecurityPolicy::RedirectStatus redirectStatus) const
 {
-    if (checkSource(directive, url, redirectStatus))
+    if (!directive)
+        return true;
+
+    // We ignore URL-based whitelists if we're allowing dynamic script injection.
+    if (checkSource(directive, url, redirectStatus) && !checkDynamic(directive))
         return true;
 
     String prefix;
@@ -267,8 +273,10 @@ bool CSPDirectiveList::checkSourceAndReportViolation(SourceListDirective* direct
         prefix = "Refused to load the stylesheet '";
 
     String suffix = String();
+    if (checkDynamic(directive))
+        suffix = " 'unsafe-dynamic' is present, so host-based whitelisting is disabled.";
     if (directive == m_defaultSrc)
-        suffix = " Note that '" + effectiveDirective + "' was not explicitly set, so 'default-src' is used as a fallback.";
+        suffix = suffix + " Note that '" + effectiveDirective + "' was not explicitly set, so 'default-src' is used as a fallback.";
 
     reportViolation(directive->text(), effectiveDirective, prefix + url.elidedString() + "' because it violates the following Content Security Policy directive: \"" + directive->text() + "\"." + suffix + "\n", url);
     return denyIfEnforcingPolicy();
