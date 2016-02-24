@@ -8,13 +8,10 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/image_decoder.h"
-
-class SkBitmap;
 
 namespace base {
 class SequencedTaskRunner;
@@ -56,38 +53,8 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader> {
 
  private:
   friend class base::RefCountedThreadSafe<UserImageLoader>;
-
-  // Contains attributes we need to know about each image we decode.
-  struct ImageInfo {
-    ImageInfo(const base::FilePath& file_path,
-              int pixels_per_side,
-              ImageDecoder::ImageCodec image_codec,
-              const LoadedCallback& loaded_cb);
-    ~ImageInfo();
-
-    const base::FilePath file_path;
-    const int pixels_per_side;
-    const ImageDecoder::ImageCodec image_codec;
-    const LoadedCallback loaded_cb;
-  };
-
-  class UserImageRequest : public ImageDecoder::ImageRequest {
-   public:
-    UserImageRequest(const ImageInfo& image_info,
-                     const std::string& image_data,
-                     const scoped_refptr<UserImageLoader>& user_image_loader);
-    ~UserImageRequest() override;
-
-    // ImageDecoder::ImageRequest implementation. These callbacks will only be
-    // invoked via user_image_loader_'s background_task_runner_.
-    void OnImageDecoded(const SkBitmap& decoded_image) override;
-    void OnDecodeImageFailed() override;
-
-   private:
-    const ImageInfo image_info_;
-    std::vector<unsigned char> image_data_;
-    scoped_refptr<UserImageLoader> user_image_loader_;
-  };
+  struct ImageInfo;
+  class UserImageRequest;
 
   ~UserImageLoader();
 
