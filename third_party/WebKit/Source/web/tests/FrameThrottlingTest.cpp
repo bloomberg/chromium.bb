@@ -279,6 +279,42 @@ TEST_F(FrameThrottlingTest, UnthrottlingTriggersRepaint)
     EXPECT_TRUE(displayItems2.contains(SimCanvas::Rect, "green"));
 }
 
+TEST_F(FrameThrottlingTest, UnthrottlingTriggersRepaintInCompositedChild)
+{
+    // Create a hidden frame with a composited child layer.
+    SimRequest mainResource("https://example.com/", "text/html");
+    SimRequest frameResource("https://example.com/iframe.html", "text/html");
+
+    loadURL("https://example.com/");
+    mainResource.complete("<iframe id=frame sandbox src=iframe.html></iframe>");
+    frameResource.complete(
+        "<style>"
+        "div { "
+        "  width: 100px;"
+        "  height: 100px;"
+        "  background-color: green;"
+        "  transform: translateZ(0);"
+        "}"
+        "</style><div></div>");
+
+    // Move the frame offscreen to throttle it.
+    auto* frameElement = toHTMLIFrameElement(document().getElementById("frame"));
+    frameElement->setAttribute(styleAttr, "transform: translateY(480px)");
+    EXPECT_FALSE(frameElement->contentDocument()->view()->canThrottleRendering());
+    compositeFrame();
+    EXPECT_TRUE(frameElement->contentDocument()->view()->canThrottleRendering());
+
+    // Scroll down to unthrottle the frame. The first frame we composite after
+    // scrolling won't contain the frame yet, but will schedule another repaint.
+    webView().mainFrameImpl()->frameView()->setScrollPosition(DoublePoint(0, 480), ProgrammaticScroll);
+    auto displayItems = compositeFrame();
+    EXPECT_FALSE(displayItems.contains(SimCanvas::Rect, "green"));
+
+    // Now the composited child contents should be visible again.
+    auto displayItems2 = compositeFrame();
+    EXPECT_TRUE(displayItems2.contains(SimCanvas::Rect, "green"));
+}
+
 TEST_F(FrameThrottlingTest, ChangeStyleInThrottledFrame)
 {
     // Create a hidden frame which is throttled.

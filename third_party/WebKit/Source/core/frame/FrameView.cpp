@@ -4110,7 +4110,7 @@ void FrameView::notifyRenderThrottlingObservers()
         // partially painted version of this frame's contents if we skipped
         // painting them while the frame was throttled.
         if (LayoutView* layoutView = this->layoutView())
-            layoutView->setShouldDoFullPaintInvalidation(PaintInvalidationBecameVisible);
+            layoutView->invalidatePaintForViewAndCompositedLayers();
     }
 }
 
