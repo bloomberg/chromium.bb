@@ -426,8 +426,6 @@ scoped_refptr<T> make_scoped_refptr(T* t) {
   return scoped_refptr<T>(t);
 }
 
-// Temporary operator overloads to facilitate the transition. See
-// https://crbug.com/110610.
 template <typename T, typename U>
 bool operator==(const scoped_refptr<T>& lhs, const U* rhs) {
   return lhs.get() == rhs;
