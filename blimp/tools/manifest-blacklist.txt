@@ -1,0 +1,14 @@
+# Listing of filename patterns to be excluded from the Blimp Docker manifest.
+# Wildcards (* or ?) are allowed.
+
+*.mojo
+./libfont_service_library.so
+./libtracing_library.so
+./libmus_library.so
+./libosmesa.so
+./libresource_provider_library.so
+./mojo_runner
+gen/*
+mus/mus.mojo
+snapshot_blob.bin
+
