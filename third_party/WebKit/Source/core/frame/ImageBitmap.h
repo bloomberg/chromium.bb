@@ -50,7 +50,6 @@ public:
 
     bool isNeutered() const { return m_isNeutered; }
     bool originClean() const { return m_image->originClean(); }
-    bool isPremultiplied() const { return m_isPremultiplied; }
     PassRefPtr<StaticBitmapImage> transfer();
     void close();
 
@@ -83,7 +82,6 @@ private:
 
     RefPtr<StaticBitmapImage> m_image;
     bool m_isNeutered = false;
-    bool m_isPremultiplied = true;
 };
 
 } // namespace blink
