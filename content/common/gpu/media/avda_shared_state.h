@@ -50,10 +50,19 @@ class AVDASharedState : public base::RefCounted<AVDASharedState> {
     return surface_texture_is_attached_;
   }
 
+  // TODO(liberato): move the surface texture here and make these calls
+  // attach / detach it also.  There are several changes going on in avda
+  // concurrently, so I don't want to change that until the dust settles.
+  // AVDACodecImage would no longer hold the surface texture.
+
   // Call this when the SurfaceTexture is attached to a GL context.  This will
   // update surface_texture_is_attached(), and set the context() and surface()
   // to match.
-  void did_attach_surface_texture();
+  void DidAttachSurfaceTexture();
+
+  // Call this when the SurfaceTexture is detached from its GL context.  This
+  // will cause us to forget the last binding.
+  void DidDetachSurfaceTexture();
 
  private:
   // Platform gl texture Id for |surface_texture_|.  This will be zero if

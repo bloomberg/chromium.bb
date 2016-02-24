@@ -1165,4 +1165,8 @@ GLint GLES2InterfaceStub::GetFragDataIndexEXT(GLuint /* program */,
                                               const char* /* name */) {
   return 0;
 }
+void GLES2InterfaceStub::UniformMatrix4fvStreamTextureMatrixCHROMIUM(
+    GLint /* location */,
+    GLboolean /* transpose */,
+    const GLfloat* /* default_value */) {}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_STUB_IMPL_AUTOGEN_H_

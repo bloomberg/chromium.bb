@@ -5329,4 +5329,41 @@ TEST_F(GLES2FormatTest, GetFragDataIndexEXT) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate) {
+  const int kSomeBaseValueToTestWith = 51;
+  static GLfloat data[] = {
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 0),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 1),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 2),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 3),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 4),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 5),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 6),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 7),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 8),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 9),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 10),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 11),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 12),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 13),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 14),
+      static_cast<GLfloat>(kSomeBaseValueToTestWith + 15),
+  };
+  cmds::UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate& cmd =
+      *GetBufferAs<
+          cmds::UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate>();
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLint>(11), static_cast<GLboolean>(12), data);
+  EXPECT_EQ(
+      static_cast<uint32_t>(
+          cmds::UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate::kCmdId),
+      cmd.header.command);
+  EXPECT_EQ(sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)),
+            cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLint>(11), cmd.location);
+  EXPECT_EQ(static_cast<GLboolean>(12), cmd.transpose);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
+}
+
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_TEST_AUTOGEN_H_

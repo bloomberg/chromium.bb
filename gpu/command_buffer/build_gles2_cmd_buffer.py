@@ -3905,6 +3905,14 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoUniformMatrix4fv',
     'unit_test': False,
   },
+  'UniformMatrix4fvStreamTextureMatrixCHROMIUM': {
+    'type': 'PUT',
+    'count': 16,
+    'decoder_func': 'DoUniformMatrix4fvStreamTextureMatrixCHROMIUM',
+    'extension': "CHROMIUM_uniform_stream_texture_matrix",
+    'unit_test': False,
+    'client_test': False,
+  },
   'UniformMatrix4x2fv': {
     'type': 'PUTn',
     'count': 8,

@@ -37,6 +37,7 @@
 #include "gpu/command_buffer/service/error_state.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
+#include "gpu/command_buffer/service/gl_stream_texture_image.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_clear_framebuffer.h"
 #include "gpu/command_buffer/service/gles2_cmd_copy_texture_chromium.h"
@@ -1625,6 +1626,10 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   void DoUniformMatrix4fv(
       GLint fake_location, GLsizei count, GLboolean transpose,
       const GLfloat* value);
+  void DoUniformMatrix4fvStreamTextureMatrixCHROMIUM(
+      GLint fake_location,
+      GLboolean transpose,
+      const GLfloat* default_value);
   void DoUniformMatrix2x3fv(
       GLint fake_location, GLsizei count, GLboolean transpose,
       const GLfloat* value);
@@ -7484,6 +7489,46 @@ void GLES2DecoderImpl::DoUniformMatrix4fv(
     return;
   }
   glUniformMatrix4fv(real_location, count, transpose, value);
+}
+
+void GLES2DecoderImpl::DoUniformMatrix4fvStreamTextureMatrixCHROMIUM(
+    GLint fake_location,
+    GLboolean transpose,
+    const GLfloat* default_value) {
+  float gl_matrix[16];
+
+  // If we can't get a matrix from the texture, then use a default.
+  // TODO(liberato): remove |default_value| and replace with an identity matrix.
+  // It is only present as a transitionary step until StreamTexture supplies
+  // the matrix via GLImage.  Once that happens, GLRenderer can quit sending
+  // in a default.
+  memcpy(gl_matrix, default_value, sizeof(gl_matrix));
+
+  // This refers to the bound external texture on the active unit.
+  TextureUnit& unit = state_.texture_units[state_.active_texture_unit];
+  if (TextureRef* texture_ref = unit.bound_texture_external_oes.get()) {
+    if (GLStreamTextureImage* image =
+            texture_ref->texture()->GetLevelStreamTextureImage(
+                GL_TEXTURE_EXTERNAL_OES, 0)) {
+      image->GetTextureMatrix(gl_matrix);
+    }
+  } else {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
+                       "DoUniformMatrix4vStreamTextureMatrix",
+                       "no texture bound");
+    return;
+  }
+
+  GLenum type = 0;
+  GLint real_location = -1;
+  GLsizei count = 1;
+  if (!PrepForSetUniformByLocation(fake_location, "glUniformMatrix4fv",
+                                   Program::kUniformMatrix4f, &real_location,
+                                   &type, &count)) {
+    return;
+  }
+
+  glUniformMatrix4fv(real_location, count, transpose, gl_matrix);
 }
 
 void GLES2DecoderImpl::DoUniformMatrix2x3fv(

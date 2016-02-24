@@ -1921,5 +1921,13 @@ GLint MojoGLES2Impl::GetFragDataIndexEXT(GLuint program, const char* name) {
   MojoGLES2MakeCurrent(context_);
   return glGetFragDataIndexEXT(program, name);
 }
+void MojoGLES2Impl::UniformMatrix4fvStreamTextureMatrixCHROMIUM(
+    GLint location,
+    GLboolean transpose,
+    const GLfloat* default_value) {
+  MojoGLES2MakeCurrent(context_);
+  glUniformMatrix4fvStreamTextureMatrixCHROMIUM(location, transpose,
+                                                default_value);
+}
 
 }  // namespace mojo

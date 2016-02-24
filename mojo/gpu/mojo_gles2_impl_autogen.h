@@ -888,6 +888,10 @@ class MojoGLES2Impl : public gpu::gles2::GLES2Interface {
                                GLuint colorNumber,
                                const char* name) override;
   GLint GetFragDataIndexEXT(GLuint program, const char* name) override;
+  void UniformMatrix4fvStreamTextureMatrixCHROMIUM(
+      GLint location,
+      GLboolean transpose,
+      const GLfloat* default_value) override;
 
  private:
   MojoGLES2Context context_;

@@ -3576,4 +3576,21 @@ void GLES2Implementation::ApplyScreenSpaceAntialiasingCHROMIUM() {
   CheckGLError();
 }
 
+void GLES2Implementation::UniformMatrix4fvStreamTextureMatrixCHROMIUM(
+    GLint location,
+    GLboolean transpose,
+    const GLfloat* default_value) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix()
+                     << "] glUniformMatrix4fvStreamTextureMatrixCHROMIUM("
+                     << location << ", " << GLES2Util::GetStringBool(transpose)
+                     << ", " << static_cast<const void*>(default_value) << ")");
+  size_t count = 16;
+  for (size_t ii = 0; ii < count; ++ii)
+    GPU_CLIENT_LOG("value[" << ii << "]: " << default_value[ii]);
+  helper_->UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate(
+      location, transpose, default_value);
+  CheckGLError();
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_IMPL_AUTOGEN_H_

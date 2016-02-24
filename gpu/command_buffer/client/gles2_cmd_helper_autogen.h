@@ -3196,4 +3196,19 @@ void GetFragDataIndexEXT(GLuint program,
   }
 }
 
+void UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate(
+    GLint location,
+    GLboolean transpose,
+    const GLfloat* default_value) {
+  const uint32_t size = gles2::cmds::
+      UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate::ComputeSize();
+  gles2::cmds::UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate* c =
+      GetImmediateCmdSpaceTotalSize<
+          gles2::cmds::UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate>(
+          size);
+  if (c) {
+    c->Init(location, transpose, default_value);
+  }
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_AUTOGEN_H_

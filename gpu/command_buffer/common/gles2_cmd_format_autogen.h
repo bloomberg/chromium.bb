@@ -15704,4 +15704,61 @@ static_assert(offsetof(GetFragDataIndexEXT, index_shm_id) == 12,
 static_assert(offsetof(GetFragDataIndexEXT, index_shm_offset) == 16,
               "offset of GetFragDataIndexEXT index_shm_offset should be 16");
 
+struct UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate {
+  typedef UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate ValueType;
+  static const CommandId kCmdId =
+      kUniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeDataSize() {
+    return static_cast<uint32_t>(sizeof(GLfloat) * 16);
+  }
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType) + ComputeDataSize());
+  }
+
+  void SetHeader() { header.SetCmdByTotalSize<ValueType>(ComputeSize()); }
+
+  void Init(GLint _location,
+            GLboolean _transpose,
+            const GLfloat* _default_value) {
+    SetHeader();
+    location = _location;
+    transpose = _transpose;
+    memcpy(ImmediateDataAddress(this), _default_value, ComputeDataSize());
+  }
+
+  void* Set(void* cmd,
+            GLint _location,
+            GLboolean _transpose,
+            const GLfloat* _default_value) {
+    static_cast<ValueType*>(cmd)->Init(_location, _transpose, _default_value);
+    const uint32_t size = ComputeSize();
+    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
+  }
+
+  gpu::CommandHeader header;
+  int32_t location;
+  uint32_t transpose;
+};
+
+static_assert(sizeof(UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate) ==
+                  12,
+              "size of UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate "
+              "should be 12");
+static_assert(offsetof(UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate,
+                       header) == 0,
+              "offset of UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate "
+              "header should be 0");
+static_assert(offsetof(UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate,
+                       location) == 4,
+              "offset of UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate "
+              "location should be 4");
+static_assert(offsetof(UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate,
+                       transpose) == 8,
+              "offset of UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate "
+              "transpose should be 8");
+
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_

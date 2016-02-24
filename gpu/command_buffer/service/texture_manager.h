@@ -28,6 +28,7 @@ namespace gpu {
 namespace gles2 {
 
 class GLES2Decoder;
+class GLStreamTextureImage;
 struct ContextState;
 struct DecoderFramebufferState;
 class Display;
@@ -167,12 +168,25 @@ class GPU_EXPORT Texture {
                      gl::GLImage* image,
                      ImageState state);
 
+  // Set the GLStreamTextureImage for a particular level.  This is identical
+  // to SetLevelImage, but it also permits GetLevelStreamTextureImage to return
+  // the image.
+  void SetLevelStreamTextureImage(GLenum target,
+                                  GLint level,
+                                  GLStreamTextureImage* image,
+                                  ImageState state);
+
   // Get the image associated with a particular level. Returns NULL if level
   // does not exist.
   gl::GLImage* GetLevelImage(GLint target,
                              GLint level,
                              ImageState* state) const;
   gl::GLImage* GetLevelImage(GLint target, GLint level) const;
+
+  // Like GetLevelImage, but will return NULL if the image wasn't set via
+  // a call to SetLevelStreamTextureImage.
+  GLStreamTextureImage* GetLevelStreamTextureImage(GLint target,
+                                                   GLint level) const;
 
   bool HasImages() const {
     return has_images_;
@@ -278,6 +292,7 @@ class GPU_EXPORT Texture {
     GLenum format;
     GLenum type;
     scoped_refptr<gl::GLImage> image;
+    scoped_refptr<GLStreamTextureImage> stream_texture_image;
     ImageState image_state;
     uint32_t estimated_size;
     bool internal_workaround;
@@ -292,6 +307,17 @@ class GPU_EXPORT Texture {
     // This contains slots for all levels starting at 0.
     std::vector<LevelInfo> level_infos;
   };
+
+  // Helper for SetLevel*Image.  |stream_texture_image| may be null.
+  void SetLevelImageInternal(GLenum target,
+                             GLint level,
+                             gl::GLImage* image,
+                             GLStreamTextureImage* stream_texture_image,
+                             ImageState state);
+
+  // Helper for GetLevel*Image.  Returns the LevelInfo for |target| and |level|
+  // if it's set, else NULL.
+  const LevelInfo* GetLevelInfo(GLint target, GLint level) const;
 
   // Set the info for a particular level.
   void SetLevelInfo(GLenum target,
@@ -852,6 +878,12 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
                      GLint level,
                      gl::GLImage* image,
                      Texture::ImageState state);
+
+  void SetLevelStreamTextureImage(TextureRef* ref,
+                                  GLenum target,
+                                  GLint level,
+                                  GLStreamTextureImage* image,
+                                  Texture::ImageState state);
 
   size_t GetSignatureSize() const;
 

@@ -17,6 +17,7 @@ class GLImage;
 
 namespace gpu {
 namespace gles2 {
+class GLStreamTextureImage;
 class TextureRef;
 }
 }
@@ -64,8 +65,9 @@ class CONTENT_EXPORT AndroidDeferredRenderingBackingStrategy
 
   // Return the AVDACodecImage for a given PictureBuffer's texture.
   AVDACodecImage* GetImageForPicture(const media::PictureBuffer&);
-  void SetImageForPicture(const media::PictureBuffer& picture_buffer,
-                          const scoped_refptr<gl::GLImage>& image);
+  void SetImageForPicture(
+      const media::PictureBuffer& picture_buffer,
+      const scoped_refptr<gpu::gles2::GLStreamTextureImage>& image);
 
   scoped_refptr<AVDASharedState> shared_state_;
 

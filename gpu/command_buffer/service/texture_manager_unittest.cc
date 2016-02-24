@@ -15,6 +15,7 @@
 #include "gpu/command_buffer/service/error_state_mock.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
+#include "gpu/command_buffer/service/gl_stream_texture_image.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 #include "gpu/command_buffer/service/gpu_service_test.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
@@ -138,6 +139,38 @@ const GLint TextureManagerTest::kMaxCubeMapLevels;
 const GLint TextureManagerTest::kMaxExternalLevels;
 const GLint TextureManagerTest::kMax3dLevels;
 #endif
+
+class GLStreamTextureImageStub : public GLStreamTextureImage {
+ public:
+  GLStreamTextureImageStub() {}
+
+  // Overridden from GLImage:
+  void Destroy(bool have_context) override {}
+  gfx::Size GetSize() override { return gfx::Size(); }
+  unsigned GetInternalFormat() override { return 0; }
+  bool BindTexImage(unsigned target) override { return false; }
+  void ReleaseTexImage(unsigned target) override {}
+  bool CopyTexImage(unsigned target) override { return false; }
+  bool CopyTexSubImage(unsigned target,
+                       const gfx::Point& offset,
+                       const gfx::Rect& rect) override {
+    return false;
+  }
+  bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
+                            int z_order,
+                            gfx::OverlayTransform transform,
+                            const gfx::Rect& bounds_rect,
+                            const gfx::RectF& crop_rect) override {
+    return false;
+  }
+  void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
+                    uint64_t process_tracing_id,
+                    const std::string& dump_name) override {}
+  void GetTextureMatrix(float matrix[16]) override {}
+
+ protected:
+  ~GLStreamTextureImageStub() override {}
+};
 
 TEST_F(TextureManagerTest, Basic) {
   const GLuint kClient1Id = 1;
@@ -1508,6 +1541,7 @@ TEST_F(TextureTest, GetLevelImage) {
   manager_->SetLevelImage(texture_ref_.get(), GL_TEXTURE_2D, 1, image.get(),
                           Texture::BOUND);
   EXPECT_FALSE(texture->GetLevelImage(GL_TEXTURE_2D, 1) == NULL);
+  EXPECT_TRUE(texture->GetLevelStreamTextureImage(GL_TEXTURE_2D, 1) == NULL);
   // Remove it.
   manager_->SetLevelImage(texture_ref_.get(), GL_TEXTURE_2D, 1, nullptr,
                           Texture::UNBOUND);
@@ -1518,6 +1552,41 @@ TEST_F(TextureTest, GetLevelImage) {
   manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 1, GL_RGBA, 2, 2, 1,
                          0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(2, 2));
   EXPECT_TRUE(texture->GetLevelImage(GL_TEXTURE_2D, 1) == NULL);
+  EXPECT_TRUE(texture->GetLevelStreamTextureImage(GL_TEXTURE_2D, 1) == NULL);
+}
+
+TEST_F(TextureTest, GetLevelStreamTextureImage) {
+  manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_EXTERNAL_OES);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_EXTERNAL_OES, 0,
+                         GL_RGBA, 2, 2, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                         gfx::Rect(2, 2));
+  Texture* texture = texture_ref_->texture();
+
+  // Set image.
+  scoped_refptr<GLStreamTextureImage> image(new GLStreamTextureImageStub);
+  manager_->SetLevelStreamTextureImage(texture_ref_.get(),
+                                       GL_TEXTURE_EXTERNAL_OES, 0, image.get(),
+                                       Texture::BOUND);
+  EXPECT_FALSE(texture->GetLevelImage(GL_TEXTURE_EXTERNAL_OES, 0) == NULL);
+  EXPECT_FALSE(
+      texture->GetLevelStreamTextureImage(GL_TEXTURE_EXTERNAL_OES, 0) == NULL);
+  // Replace it as a normal image.
+  manager_->SetLevelImage(texture_ref_.get(), GL_TEXTURE_EXTERNAL_OES, 0,
+                          image.get(), Texture::BOUND);
+  EXPECT_FALSE(texture->GetLevelImage(GL_TEXTURE_EXTERNAL_OES, 0) == NULL);
+  EXPECT_TRUE(texture->GetLevelStreamTextureImage(GL_TEXTURE_EXTERNAL_OES, 0) ==
+              NULL);
+
+  // Image should be reset when SetLevelInfo is called.
+  manager_->SetLevelStreamTextureImage(texture_ref_.get(),
+                                       GL_TEXTURE_EXTERNAL_OES, 0, image.get(),
+                                       Texture::UNBOUND);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_EXTERNAL_OES, 0,
+                         GL_RGBA, 2, 2, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                         gfx::Rect(2, 2));
+  EXPECT_TRUE(texture->GetLevelImage(GL_TEXTURE_EXTERNAL_OES, 0) == NULL);
+  EXPECT_TRUE(texture->GetLevelStreamTextureImage(GL_TEXTURE_EXTERNAL_OES, 0) ==
+              NULL);
 }
 
 namespace {

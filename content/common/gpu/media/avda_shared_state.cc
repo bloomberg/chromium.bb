@@ -28,13 +28,19 @@ void AVDASharedState::WaitForFrameAvailable() {
   frame_available_event_.TimedWait(max_wait_time);
 }
 
-void AVDASharedState::did_attach_surface_texture() {
+void AVDASharedState::DidAttachSurfaceTexture() {
   context_ = gfx::GLContext::GetCurrent();
   surface_ = gfx::GLSurface::GetCurrent();
   DCHECK(context_);
   DCHECK(surface_);
 
   surface_texture_is_attached_ = true;
+}
+
+void AVDASharedState::DidDetachSurfaceTexture() {
+  context_ = nullptr;
+  surface_ = nullptr;
+  surface_texture_is_attached_ = false;
 }
 
 }  // namespace content

@@ -5013,6 +5013,34 @@ error::Error GLES2DecoderImpl::HandleApplyScreenSpaceAntialiasingCHROMIUM(
   return error::kNoError;
 }
 
+error::Error
+GLES2DecoderImpl::HandleUniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  const gles2::cmds::UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate& c =
+      *static_cast<const gles2::cmds::
+                       UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate*>(
+          cmd_data);
+  (void)c;
+  GLint location = static_cast<GLint>(c.location);
+  GLboolean transpose = static_cast<GLboolean>(c.transpose);
+  uint32_t data_size;
+  if (!ComputeDataSize(1, sizeof(GLfloat), 16, &data_size)) {
+    return error::kOutOfBounds;
+  }
+  if (data_size > immediate_data_size) {
+    return error::kOutOfBounds;
+  }
+  const GLfloat* default_value =
+      GetImmediateDataAs<const GLfloat*>(c, data_size, immediate_data_size);
+  if (default_value == NULL) {
+    return error::kOutOfBounds;
+  }
+  DoUniformMatrix4fvStreamTextureMatrixCHROMIUM(location, transpose,
+                                                default_value);
+  return error::kNoError;
+}
+
 bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
   switch (cap) {
     case GL_BLEND:

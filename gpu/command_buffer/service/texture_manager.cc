@@ -22,6 +22,7 @@
 #include "gpu/command_buffer/service/error_state.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
+#include "gpu/command_buffer/service/gl_stream_texture_image.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
@@ -911,6 +912,7 @@ void Texture::SetLevelInfo(GLenum target,
   info.format = format;
   info.type = type;
   info.image = 0;
+  info.stream_texture_image = 0;
   info.image_state = UNBOUND;
   info.internal_workaround = false;
 
@@ -1347,10 +1349,11 @@ bool Texture::ClearLevel(
   return true;
 }
 
-void Texture::SetLevelImage(GLenum target,
-                            GLint level,
-                            gl::GLImage* image,
-                            ImageState state) {
+void Texture::SetLevelImageInternal(GLenum target,
+                                    GLint level,
+                                    gl::GLImage* image,
+                                    GLStreamTextureImage* stream_texture_image,
+                                    ImageState state) {
   DCHECK_GE(level, 0);
   size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
   DCHECK_LT(static_cast<size_t>(face_index),
@@ -1362,15 +1365,29 @@ void Texture::SetLevelImage(GLenum target,
   DCHECK_EQ(info.target, target);
   DCHECK_EQ(info.level, level);
   info.image = image;
+  info.stream_texture_image = stream_texture_image;
   info.image_state = state;
 
   UpdateCanRenderCondition();
   UpdateHasImages();
 }
 
-gl::GLImage* Texture::GetLevelImage(GLint target,
-                                    GLint level,
-                                    ImageState* state) const {
+void Texture::SetLevelImage(GLenum target,
+                            GLint level,
+                            gl::GLImage* image,
+                            ImageState state) {
+  SetLevelImageInternal(target, level, image, nullptr, state);
+}
+
+void Texture::SetLevelStreamTextureImage(GLenum target,
+                                         GLint level,
+                                         GLStreamTextureImage* image,
+                                         ImageState state) {
+  SetLevelImageInternal(target, level, image, image, state);
+}
+
+const Texture::LevelInfo* Texture::GetLevelInfo(GLint target,
+                                                GLint level) const {
   if (target != GL_TEXTURE_2D && target != GL_TEXTURE_EXTERNAL_OES &&
       target != GL_TEXTURE_RECTANGLE_ARB) {
     return NULL;
@@ -1380,17 +1397,35 @@ gl::GLImage* Texture::GetLevelImage(GLint target,
   if (level >= 0 && face_index < face_infos_.size() &&
       static_cast<size_t>(level) < face_infos_[face_index].level_infos.size()) {
     const LevelInfo& info = face_infos_[face_index].level_infos[level];
-    if (info.target != 0) {
-      if (state)
-        *state = info.image_state;
-      return info.image.get();
-    }
+    if (info.target != 0)
+      return &info;
   }
   return NULL;
 }
 
+gl::GLImage* Texture::GetLevelImage(GLint target,
+                                    GLint level,
+                                    ImageState* state) const {
+  const LevelInfo* info = GetLevelInfo(target, level);
+  if (!info)
+    return nullptr;
+
+  if (state)
+    *state = info->image_state;
+  return info->image.get();
+}
+
 gl::GLImage* Texture::GetLevelImage(GLint target, GLint level) const {
   return GetLevelImage(target, level, nullptr);
+}
+
+GLStreamTextureImage* Texture::GetLevelStreamTextureImage(GLint target,
+                                                          GLint level) const {
+  const LevelInfo* info = GetLevelInfo(target, level);
+  if (!info)
+    return nullptr;
+
+  return info->stream_texture_image.get();
 }
 
 void Texture::DumpLevelMemory(base::trace_event::ProcessMemoryDump* pmd,
@@ -1886,6 +1921,15 @@ void TextureManager::SetLevelImage(TextureRef* ref,
                                    Texture::ImageState state) {
   DCHECK(ref);
   ref->texture()->SetLevelImage(target, level, image, state);
+}
+
+void TextureManager::SetLevelStreamTextureImage(TextureRef* ref,
+                                                GLenum target,
+                                                GLint level,
+                                                GLStreamTextureImage* image,
+                                                Texture::ImageState state) {
+  DCHECK(ref);
+  ref->texture()->SetLevelStreamTextureImage(target, level, image, state);
 }
 
 size_t TextureManager::GetSignatureSize() const {

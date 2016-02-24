@@ -1712,6 +1712,13 @@ void GL_APIENTRY GLES2BindFragDataLocationEXT(GLuint program,
 GLint GL_APIENTRY GLES2GetFragDataIndexEXT(GLuint program, const char* name) {
   return gles2::GetGLContext()->GetFragDataIndexEXT(program, name);
 }
+void GL_APIENTRY
+GLES2UniformMatrix4fvStreamTextureMatrixCHROMIUM(GLint location,
+                                                 GLboolean transpose,
+                                                 const GLfloat* default_value) {
+  gles2::GetGLContext()->UniformMatrix4fvStreamTextureMatrixCHROMIUM(
+      location, transpose, default_value);
+}
 
 namespace gles2 {
 
@@ -3011,6 +3018,11 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glGetFragDataIndexEXT",
         reinterpret_cast<GLES2FunctionPointer>(glGetFragDataIndexEXT),
+    },
+    {
+        "glUniformMatrix4fvStreamTextureMatrixCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glUniformMatrix4fvStreamTextureMatrixCHROMIUM),
     },
     {
         NULL, NULL,

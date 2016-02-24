@@ -13,6 +13,7 @@
 #include "content/common/gpu/media/avda_codec_image.h"
 #include "content/common/gpu/media/avda_return_on_failure.h"
 #include "content/common/gpu/media/avda_shared_state.h"
+#include "gpu/command_buffer/service/gl_stream_texture_image.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "ui/gl/android/surface_texture.h"
 #include "ui/gl/gl_bindings.h"
@@ -105,7 +106,7 @@ AVDACodecImage* AndroidDeferredRenderingBackingStrategy::GetImageForPicture(
 
 void AndroidDeferredRenderingBackingStrategy::SetImageForPicture(
     const media::PictureBuffer& picture_buffer,
-    const scoped_refptr<gl::GLImage>& image) {
+    const scoped_refptr<gpu::gles2::GLStreamTextureImage>& image) {
   gpu::gles2::TextureRef* texture_ref = GetTextureForPicture(picture_buffer);
   RETURN_IF_NULL(texture_ref);
 
@@ -145,8 +146,8 @@ void AndroidDeferredRenderingBackingStrategy::SetImageForPicture(
   const gpu::gles2::Texture::ImageState image_state =
       surface_texture_ ? gpu::gles2::Texture::UNBOUND
                        : gpu::gles2::Texture::BOUND;
-  texture_manager->SetLevelImage(texture_ref, GetTextureTarget(), 0,
-                                 image.get(), image_state);
+  texture_manager->SetLevelStreamTextureImage(texture_ref, GetTextureTarget(),
+                                              0, image.get(), image_state);
 }
 
 void AndroidDeferredRenderingBackingStrategy::UseCodecBufferForPictureBuffer(
@@ -170,7 +171,7 @@ void AndroidDeferredRenderingBackingStrategy::AssignOnePictureBuffer(
     const media::PictureBuffer& picture_buffer) {
   // Attach a GLImage to each texture that will use the surface texture.
   // We use a refptr here in case SetImageForPicture fails.
-  scoped_refptr<gl::GLImage> gl_image =
+  scoped_refptr<gpu::gles2::GLStreamTextureImage> gl_image =
       new AVDACodecImage(shared_state_, media_codec_,
                          state_provider_->GetGlDecoder(), surface_texture_);
   SetImageForPicture(picture_buffer, gl_image);

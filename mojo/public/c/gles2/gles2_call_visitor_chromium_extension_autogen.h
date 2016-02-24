@@ -578,3 +578,9 @@ VISIT_GL_CALL(GetFragDataIndexEXT,
               GLint,
               (GLuint program, const char* name),
               (program, name))
+VISIT_GL_CALL(UniformMatrix4fvStreamTextureMatrixCHROMIUM,
+              void,
+              (GLint location,
+               GLboolean transpose,
+               const GLfloat* default_value),
+              (location, transpose, default_value))

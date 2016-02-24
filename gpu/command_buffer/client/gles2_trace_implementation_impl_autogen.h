@@ -2492,4 +2492,14 @@ GLint GLES2TraceImplementation::GetFragDataIndexEXT(GLuint program,
   return gl_->GetFragDataIndexEXT(program, name);
 }
 
+void GLES2TraceImplementation::UniformMatrix4fvStreamTextureMatrixCHROMIUM(
+    GLint location,
+    GLboolean transpose,
+    const GLfloat* default_value) {
+  TRACE_EVENT_BINARY_EFFICIENT0(
+      "gpu", "GLES2Trace::UniformMatrix4fvStreamTextureMatrixCHROMIUM");
+  gl_->UniformMatrix4fvStreamTextureMatrixCHROMIUM(location, transpose,
+                                                   default_value);
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_TRACE_IMPLEMENTATION_IMPL_AUTOGEN_H_
