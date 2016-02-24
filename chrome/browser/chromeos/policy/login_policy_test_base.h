@@ -34,6 +34,10 @@ class LoginPolicyTestBase : public chromeos::OobeBaseTest {
   virtual void GetMandatoryPoliciesValue(base::DictionaryValue* policy) const;
   virtual void GetRecommendedPoliciesValue(base::DictionaryValue* policy) const;
 
+  UserPolicyTestHelper* user_policy_helper() {
+    return user_policy_helper_.get();
+  }
+
   void SkipToLoginScreen();
   void LogIn(const std::string& user_id, const std::string& password);
 
