@@ -61,6 +61,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/glsl/constructors/' +
               'glsl-construct-vec-mat-index.html',
               ['win'], bug=525188)
+    self.Flaky('conformance/extensions/ext-disjoint-timer-query.html',
+        ['win'], bug=588617)
 
     # Win7 / Intel failures
     self.Fail('conformance/textures/misc/' +
