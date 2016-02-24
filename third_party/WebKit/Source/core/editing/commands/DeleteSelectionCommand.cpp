@@ -470,7 +470,7 @@ void DeleteSelectionCommand::handleGeneralDelete(EditingState* editingState)
         return;
 
     // Never remove the start block unless it's a table, in which case we won't merge content in.
-    if (startNode->isSameNode(m_startBlock.get()) && !startOffset && canHaveChildrenForEditing(startNode) && !isHTMLTableElement(*startNode)) {
+    if (startNode == m_startBlock.get() && !startOffset && canHaveChildrenForEditing(startNode) && !isHTMLTableElement(*startNode)) {
         startOffset = 0;
         startNode = NodeTraversal::next(*startNode);
         if (!startNode)

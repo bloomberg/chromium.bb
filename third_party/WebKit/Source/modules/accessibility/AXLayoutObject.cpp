@@ -578,7 +578,7 @@ bool AXLayoutObject::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReason
     if (controlObject && controlObject->isCheckboxOrRadio() && controlObject->nameFromLabelElement()) {
         if (ignoredReasons) {
             HTMLLabelElement* label = labelElementContainer();
-            if (label && !label->isSameNode(node())) {
+            if (label && label != node()) {
                 AXObject* labelAXObject = axObjectCache().getOrCreate(label);
                 ignoredReasons->append(IgnoredReason(AXLabelContainer, labelAXObject));
             }

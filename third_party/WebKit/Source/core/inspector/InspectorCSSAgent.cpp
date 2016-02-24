@@ -207,7 +207,7 @@ bool getColorsFromRect(LayoutRect rect, Document& document, Element* topElement,
 
     for (auto e = elementsUnderRect.rbegin(); !foundTopElement && e != elementsUnderRect.rend(); ++e) {
         const Element* element = *e;
-        if (element->isSameNode(topElement))
+        if (element == topElement)
             foundTopElement = true;
 
         const LayoutObject* layoutObject = element->layoutObject();

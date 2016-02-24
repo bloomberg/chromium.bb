@@ -81,5 +81,5 @@
 
     // FIXME: isSameNode has been removed from the spec:
     // https://www.w3.org/Bugs/Public/show_bug.cgi?id=27424
-    [MeasureAs=NodeIsSameNode] boolean isSameNode(Node? other);
+    [MeasureAs=NodeIsSameNode, ImplementedAs=isSameNodeDeprecated] boolean isSameNode(Node? other);
 };

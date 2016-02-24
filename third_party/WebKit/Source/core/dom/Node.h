@@ -234,7 +234,9 @@ public:
     virtual PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep) = 0;
     void normalize();
 
-    bool isSameNode(Node* other) const { return this == other; }
+    // TODO(yosin): Once we drop |Node.prototype.isSameNode()|, we should
+    // get rid of |isSameNodeDeprecated()|.
+    bool isSameNodeDeprecated(Node* other) const { return this == other; }
     bool isEqualNode(Node*) const;
     bool isDefaultNamespace(const AtomicString& namespaceURI) const;
     const AtomicString& lookupPrefix(const AtomicString& namespaceURI) const;
