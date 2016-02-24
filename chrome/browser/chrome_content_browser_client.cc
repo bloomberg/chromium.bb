@@ -1628,12 +1628,14 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 #if !defined(DISABLE_NACL)
       switches::kEnableNaClDebug,
       switches::kEnableNaClNonSfiMode,
-      switches::kEnablePNaClSubzero,
 #endif
       switches::kEnableNetBenchmarking,
       switches::kEnableNewBookmarkApps,
 #if defined(OS_ANDROID)
       switches::kEnableOfflinePagesAsBookmarks,
+#endif
+#if !defined(DISABLE_NACL)
+      switches::kForcePNaClSubzero,
 #endif
       switches::kJavaScriptHarmony,
       switches::kMessageLoopHistogrammer,
@@ -1678,7 +1680,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 #if !defined(DISABLE_NACL)
       switches::kEnableNaClDebug,
       switches::kEnableNaClNonSfiMode,
-      switches::kEnablePNaClSubzero,
+      switches::kForcePNaClSubzero,
       switches::kNaClDangerousNoSandboxNonSfi,
 #endif
       switches::kPpapiFlashPath,

@@ -1086,6 +1086,28 @@ bool CreateJsonManifest(PP_Instance instance,
   return false;
 }
 
+bool ShouldUseSubzero(const PP_PNaClOptions* pnacl_options) {
+  // Always use Subzero if explicitly overridden on the command line.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kForcePNaClSubzero))
+    return true;
+  // Otherwise, don't use Subzero for a debug pexe file since Subzero's parser
+  // is likely to reject an unfinalized pexe.
+  if (pnacl_options->is_debug)
+    return false;
+  // Only use Subzero for optlevel=0.
+  if (pnacl_options->opt_level != 0)
+    return false;
+  // Check a whitelist of architectures.
+  const char* arch = GetSandboxArch();
+  if (strcmp(arch, "x86-32") == 0)
+    return true;
+  if (strcmp(arch, "x86-64") == 0)
+    return true;
+
+  return false;
+}
+
 PP_Bool ManifestGetProgramURL(PP_Instance instance,
                               PP_Var* pp_full_url,
                               PP_PNaClOptions* pnacl_options,
@@ -1103,21 +1125,10 @@ PP_Bool ManifestGetProgramURL(PP_Instance instance,
                               &error_info)) {
     *pp_full_url = ppapi::StringVar::StringToPPVar(full_url);
     *pp_uses_nonsfi_mode = PP_FromBool(uses_nonsfi_mode);
-    // Check if we should use Subzero (x86-32 / non-debugging case for now).
-    // TODO(stichnot): When phasing in Subzero for a new target architecture,
-    // add it behind the --enable-pnacl-subzero flag, and add a clause here:
-    //   && base::CommandLine::ForCurrentProcess()->HasSwitch(
-    //         switches::kEnablePNaClSubzero)
-    // Also modify the ValidationCacheOfTranslatorNexes test to match.  When
-    // Subzero is finally fully released for all sandbox architectures, the
-    // --enable-pnacl-subzero flag can be removed.
-    if (pnacl_options->opt_level == 0 && !pnacl_options->is_debug) {
-      const char* arch = GetSandboxArch();
-      if (strcmp(arch, "x86-32") == 0 || strcmp(arch, "x86-64") == 0) {
-        pnacl_options->use_subzero = PP_TRUE;
-        // Subzero -O2 is closer to LLC -O0, so indicate -O2.
-        pnacl_options->opt_level = 2;
-      }
+    if (ShouldUseSubzero(pnacl_options)) {
+      pnacl_options->use_subzero = PP_TRUE;
+      // Subzero -O2 is closer to LLC -O0, so indicate -O2.
+      pnacl_options->opt_level = 2;
     }
     return PP_TRUE;
   }

@@ -283,7 +283,7 @@ bool NaClBrowserTestPnacl::IsAPnaclTest() {
 void NaClBrowserTestPnaclSubzero::SetUpCommandLine(
     base::CommandLine* command_line) {
   NaClBrowserTestPnacl::SetUpCommandLine(command_line);
-  command_line->AppendSwitch(switches::kEnablePNaClSubzero);
+  command_line->AppendSwitch(switches::kForcePNaClSubzero);
 }
 
 base::FilePath::StringType NaClBrowserTestNonSfiMode::Variant() {
