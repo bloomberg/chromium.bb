@@ -48,13 +48,12 @@ class OpenSSLInitSingleton {
 #if defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
     const bool has_neon =
         (android_getCpuFeatures() & ANDROID_CPU_ARM_FEATURE_NEON) != 0;
-    // CRYPTO_set_NEON_capable is called before |SSL_library_init| because this
-    // stops BoringSSL from probing for NEON support via SIGILL in the case
-    // that getauxval isn't present.
-    CRYPTO_set_NEON_capable(has_neon);
-    // See https://code.google.com/p/chromium/issues/detail?id=341598
     base::CPU cpu;
-    CRYPTO_set_NEON_functional(!cpu.has_broken_neon());
+    // CRYPTO_set_NEON_capable is called before |SSL_library_init| because this
+    // stops BoringSSL from probing for NEON support via SIGILL in the case that
+    // getauxval isn't present. Also workaround a CPU with broken NEON
+    // support. See https://code.google.com/p/chromium/issues/detail?id=341598
+    CRYPTO_set_NEON_capable(has_neon && !cpu.has_broken_neon());
 #endif
 
     SSL_library_init();
