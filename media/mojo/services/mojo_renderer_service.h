@@ -94,13 +94,14 @@ class MojoRendererService : interfaces::Renderer {
   mojo::StrongBinding<interfaces::Renderer> binding_;
 
   base::WeakPtr<CdmContextProvider> cdm_context_provider_;
-  scoped_ptr<media::Renderer> renderer_;
 
   State state_;
 
-  // Note: stream_provider_ must be destructed after renderer_ to avoid access
-  // violation.
+  // Note: |stream_provider_| must be destructed after |renderer_| to avoid
+  // access violation.
   scoped_ptr<DemuxerStreamProviderShim> stream_provider_;
+
+  scoped_ptr<media::Renderer> renderer_;
 
   base::RepeatingTimer time_update_timer_;
   uint64_t last_media_time_usec_;

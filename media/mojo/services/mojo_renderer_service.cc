@@ -21,8 +21,8 @@ MojoRendererService::MojoRendererService(
     mojo::InterfaceRequest<interfaces::Renderer> request)
     : binding_(this, std::move(request)),
       cdm_context_provider_(cdm_context_provider),
-      renderer_(std::move(renderer)),
       state_(STATE_UNINITIALIZED),
+      renderer_(std::move(renderer)),
       last_media_time_usec_(0),
       weak_factory_(this) {
   DVLOG(1) << __FUNCTION__;
