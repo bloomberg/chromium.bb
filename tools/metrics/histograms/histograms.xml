@@ -33087,6 +33087,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PageLoad.AbortTiming.UnknownNavigation" units="ms">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Measures the time from navigation start to the time the page load was
+    aborted by a navigation with unknown transition type.
+  </summary>
+</histogram>
+
 <histogram name="PageLoad.Clients.GoogleCaptcha.Events"
     enum="GoogleCaptchaEvent">
   <owner>mdw@chromium.org</owner>
@@ -86803,6 +86811,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="PageLoad.AbortTiming.Other"/>
   <affected-histogram name="PageLoad.AbortTiming.Reload"/>
   <affected-histogram name="PageLoad.AbortTiming.Stop"/>
+  <affected-histogram name="PageLoad.AbortTiming.UnknownNavigation"/>
   <affected-histogram name="PageLoad.Timing2.NavigationToFirstBackground"/>
 </histogram_suffixes>
 
