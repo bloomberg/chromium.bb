@@ -182,7 +182,7 @@ nacl_list="g++-mingw-w64-i686 lib32z1-dev
 # be more than one with the same name in the case of multiarch). Expand into an
 # array.
 mesa_packages=($(dpkg-query -Wf'${package} ${status}\n' \
-                            libgl1-mesa-glx-lts-\* | \
+                            libgl1-mesa-glx-lts-\* 2>/dev/null | \
                  grep " ok installed" | cut -d " " -f 1 | sort -u))
 if [ "${#mesa_packages[@]}" -eq 0 ]; then
   mesa_variant=""
