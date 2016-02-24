@@ -41,9 +41,24 @@
         -webkit-margin-start: 4px;
       }
 
+      [is='action-link'],
+      [is='action-link']:active,
+      [is='action-link']:hover,
+      [is='action-link']:visited,
+      paper-button.primary-button {
+        /* TODO(dbeam): change all other colors in this file into --google or
+         * --paper where applicable. */
+        color: var(--google-blue-700);
+      }
+
+      [is='action-link']:hover {
+        /* TODO(dbeam): check with bettes@ on this one, but I'm pretty sure we
+         * shouldn't be showing much :hover stuff on Polymer pages. */
+        text-decoration: none;
+      }
+
       paper-button.primary-button {
         --paper-button: {
-          color: rgb(66, 133, 244);
           font-weight: 500;
           text-align: start;
         };
