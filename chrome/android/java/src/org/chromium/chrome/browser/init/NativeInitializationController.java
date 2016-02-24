@@ -100,9 +100,7 @@ class NativeInitializationController {
                     return;
                 }
                 ChromeApplication chrome = (ChromeApplication) mContext;
-                ChildProcessLauncher.setChildProcessCreationParams(
-                        chrome.getChildProcessCreationParams());
-                ChildProcessLauncher.warmUp(mContext);
+                ChildProcessLauncher.warmUp(mContext, chrome.getChildProcessCreationParams());
                 ThreadUtils.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {

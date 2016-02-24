@@ -181,10 +181,11 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
             System.exit(-1);
         }
         final Context context = app.getApplicationContext();
+        final ChromeApplication chrome = (ChromeApplication) context;
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... params) {
-                ChildProcessLauncher.warmUp(context);
+                ChildProcessLauncher.warmUp(context, chrome.getChildProcessCreationParams());
                 return null;
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);

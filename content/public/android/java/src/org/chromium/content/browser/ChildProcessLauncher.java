@@ -578,8 +578,10 @@ public class ChildProcessLauncher {
      * in parallel to other startup work. Must not be called on the UI thread. Spare connection is
      * created in sandboxed child process.
      * @param context the application context used for the connection.
+     * @param params child process creation params.
      */
-    public static void warmUp(Context context) {
+    public static void warmUp(Context context, ChildProcessCreationParams params) {
+        setChildProcessCreationParams(params);
         synchronized (ChildProcessLauncher.class) {
             assert !ThreadUtils.runningOnUiThread();
             if (sSpareSandboxedConnection == null) {

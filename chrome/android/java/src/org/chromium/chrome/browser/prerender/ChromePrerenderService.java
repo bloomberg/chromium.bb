@@ -19,6 +19,7 @@ import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ApplicationInitialization;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
@@ -37,10 +38,22 @@ public class ChromePrerenderService extends Service {
     public static final String KEY_PRERENDER_HEIGHT = "prerender_height";
     public static final String KEY_REFERRER = "referrer";
 
-    private static class LauncherWarmUpTask extends AsyncTask<Context, Void, Void> {
+    private static class LauncherWarmUpTaskParams {
+        final Context mContext;
+        final ChildProcessLauncher.ChildProcessCreationParams mParams;
+
+        LauncherWarmUpTaskParams(
+                Context context, ChildProcessLauncher.ChildProcessCreationParams params) {
+            mContext = context;
+            mParams = params;
+        }
+    }
+
+    private static class LauncherWarmUpTask
+            extends AsyncTask<LauncherWarmUpTaskParams, Void, Void> {
         @Override
-        protected Void doInBackground(Context... args) {
-            ChildProcessLauncher.warmUp(args[0]);
+        protected Void doInBackground(LauncherWarmUpTaskParams... args) {
+            ChildProcessLauncher.warmUp(args[0].mContext, args[0].mParams);
             return null;
         }
     }
@@ -75,7 +88,10 @@ public class ChromePrerenderService extends Service {
         mMessenger = new Messenger(new IncomingHandler(getApplicationContext()));
 
         try {
-            new LauncherWarmUpTask().execute(getApplicationContext());
+            final Context context = getApplicationContext();
+            final ChromeApplication chrome = (ChromeApplication) context;
+            new LauncherWarmUpTask().execute(new LauncherWarmUpTaskParams(
+                            context, chrome.getChildProcessCreationParams()));
             ChromeBrowserInitializer.getInstance(this).handleSynchronousStartup();
 
             ApplicationInitialization.enableFullscreenFlags(
