@@ -140,7 +140,7 @@
           <ph name="SETTINGS_TITLE">&lt;span jscontent="settingsTitle"&gt;&lt;/span&gt;<ex>Settings</ex></ph>
           &gt;
           <ph name="ADVANCED_TITLE">&lt;span jscontent="advancedTitle"&gt;&lt;/span&gt;<ex>Under the Hood</ex></ph>
-          and deselect &quot;<ph name="NO_PREFETCH_DESCRIPTION">&lt;span jscontent="noNetworkPredictionTitle"&gt;&lt;/span&gt;<ex>Prefetch resources to load pages more quickly</ex></ph>.&quot;
+          and deselect &quot;<ph name="NO_PREFETCH_DESCRIPTION">&lt;span jscontent="noNetworkPredictionTitle"&gt;&lt;/span&gt;<ex>Use a prediction service to load pages more quickly</ex></ph>.&quot;
           If this does not resolve the issue, we recommend selecting this option
           again for improved performance.
         </message>
