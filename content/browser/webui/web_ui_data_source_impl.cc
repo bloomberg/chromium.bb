@@ -12,9 +12,11 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/grit/content_resources.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
+#include "ui/base/template_expressions.h"
 #include "ui/base/webui/jstemplate_builder.h"
 #include "ui/base/webui/web_ui_util.h"
 
@@ -35,8 +37,7 @@ void WebUIDataSource::Add(BrowserContext* browser_context,
 // URLDataSource.
 class WebUIDataSourceImpl::InternalDataSource : public URLDataSource {
  public:
-  InternalDataSource(WebUIDataSourceImpl* parent) : parent_(parent) {
-  }
+  explicit InternalDataSource(WebUIDataSourceImpl* parent) : parent_(parent) {}
 
   ~InternalDataSource() override {}
 
@@ -79,9 +80,7 @@ class WebUIDataSourceImpl::InternalDataSource : public URLDataSource {
 };
 
 WebUIDataSourceImpl::WebUIDataSourceImpl(const std::string& source_name)
-    : URLDataSourceImpl(
-          source_name,
-          new InternalDataSource(this)),
+    : URLDataSourceImpl(source_name, new InternalDataSource(this)),
       source_name_(source_name),
       default_resource_(-1),
       add_csp_(true),
@@ -89,26 +88,30 @@ WebUIDataSourceImpl::WebUIDataSourceImpl(const std::string& source_name)
       frame_src_set_(false),
       deny_xframe_options_(true),
       disable_set_font_strings_(false),
-      replace_existing_source_(true) {
-}
+      replace_existing_source_(true) {}
 
 WebUIDataSourceImpl::~WebUIDataSourceImpl() {
 }
 
 void WebUIDataSourceImpl::AddString(const std::string& name,
                                     const base::string16& value) {
+  // TODO(dschuyler): Share only one copy of these strings.
   localized_strings_.SetString(name, value);
+  replacements_[name] = base::UTF16ToUTF8(value);
 }
 
 void WebUIDataSourceImpl::AddString(const std::string& name,
                                     const std::string& value) {
   localized_strings_.SetString(name, value);
+  replacements_[name] = value;
 }
 
 void WebUIDataSourceImpl::AddLocalizedString(const std::string& name,
                                              int ids) {
   localized_strings_.SetString(
       name, GetContentClient()->GetLocalizedString(ids));
+  replacements_[name] =
+      base::UTF16ToUTF8(GetContentClient()->GetLocalizedString(ids));
 }
 
 void WebUIDataSourceImpl::AddLocalizedStrings(
@@ -118,6 +121,11 @@ void WebUIDataSourceImpl::AddLocalizedStrings(
 
 void WebUIDataSourceImpl::AddBoolean(const std::string& name, bool value) {
   localized_strings_.SetBoolean(name, value);
+  // TODO(dschuyler): Change name of |localized_strings_| to |load_time_data_|
+  // or similar. These values haven't been found as strings for
+  // localization. The boolean values are not added to |replacements_|
+  // for the same reason, that they are used as flags, rather than string
+  // replacements.
 }
 
 void WebUIDataSourceImpl::SetJsonPath(const std::string& path) {
@@ -211,7 +219,19 @@ void WebUIDataSourceImpl::StartDataRequest(
   if (result != path_to_idr_map_.end())
     resource_id = result->second;
   DCHECK_NE(resource_id, -1);
-  SendFromResourceBundle(callback, resource_id);
+  scoped_refptr<base::RefCountedMemory> response(
+      GetContentClient()->GetDataResourceBytes(resource_id));
+
+  // TODO(dschuyler): improve filtering of which resource to run template
+  // expansion upon.
+  if (GetMimeType(path) == "text/html") {
+    std::string replaced = ui::ReplaceTemplateExpressions(
+        base::StringPiece(response->front_as<char>(), response->size()),
+        replacements_);
+    response = base::RefCountedString::TakeString(&replaced);
+  }
+
+  callback.Run(response.get());
 }
 
 void WebUIDataSourceImpl::SendLocalizedStringsAsJSON(
@@ -224,13 +244,6 @@ void WebUIDataSourceImpl::SendLocalizedStringsAsJSON(
 
   webui::AppendJsonJS(&localized_strings_, &template_data);
   callback.Run(base::RefCountedString::TakeString(&template_data));
-}
-
-void WebUIDataSourceImpl::SendFromResourceBundle(
-    const URLDataSource::GotDataCallback& callback, int idr) {
-  scoped_refptr<base::RefCountedStaticMemory> response(
-      GetContentClient()->GetDataResourceBytes(idr));
-  callback.Run(response.get());
 }
 
 }  // namespace content
