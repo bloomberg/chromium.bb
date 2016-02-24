@@ -24,8 +24,8 @@
 #include "content/common/gpu/x_util.h"
 #include "content/common/process_control.mojom.h"
 #include "gpu/config/gpu_info.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/weak_binding_set.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gpu {
@@ -163,7 +163,7 @@ class GpuChildThread : public ChildThreadImpl,
   scoped_ptr<GpuProcessControlImpl> process_control_;
 
   // Bindings to the ProcessControl impl.
-  mojo::WeakBindingSet<ProcessControl> process_control_bindings_;
+  mojo::BindingSet<ProcessControl> process_control_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChildThread);
 };

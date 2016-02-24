@@ -7,7 +7,7 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/weak_binding_set.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell.h"
@@ -47,7 +47,7 @@ class TargetApplicationDelegate
     bindings_.AddBinding(this, std::move(request));
   }
 
-  mojo::WeakBindingSet<mojo::shell::test::TestNativeService> bindings_;
+  mojo::BindingSet<mojo::shell::test::TestNativeService> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(TargetApplicationDelegate);
 };

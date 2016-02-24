@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
-#include "mojo/public/cpp/bindings/weak_binding_set.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace mus {
 namespace ws {
@@ -29,7 +29,7 @@ class WindowTreeFactory : public mus::mojom::WindowTreeFactory {
  private:
   ConnectionManager* connection_manager_;
 
-  mojo::WeakBindingSet<mus::mojom::WindowTreeFactory> binding_;
+  mojo::BindingSet<mus::mojom::WindowTreeFactory> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeFactory);
 };

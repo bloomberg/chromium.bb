@@ -21,7 +21,7 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
-#include "mojo/public/cpp/bindings/weak_binding_set.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell.h"
@@ -136,7 +136,7 @@ class TargetApplicationDelegate : public mojo::ShellClient,
 
   mojo::Shell* shell_;
   base::Process target_;
-  mojo::WeakBindingSet<Driver> bindings_;
+  mojo::BindingSet<Driver> bindings_;
   base::WeakPtrFactory<TargetApplicationDelegate> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TargetApplicationDelegate);

@@ -9,7 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/values.h"
-#include "mojo/public/cpp/bindings/weak_binding_set.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/services/package_manager/public/interfaces/catalog.mojom.h"
 #include "mojo/services/package_manager/public/interfaces/resolver.mojom.h"
 #include "mojo/services/package_manager/public/interfaces/shell_resolver.mojom.h"
@@ -146,9 +146,9 @@ class PackageManager : public mojo::ShellClient,
   base::TaskRunner* blocking_pool_;
   GURL system_package_dir_;
 
-  mojo::WeakBindingSet<mojom::Resolver> resolver_bindings_;
-  mojo::WeakBindingSet<mojom::ShellResolver> shell_resolver_bindings_;
-  mojo::WeakBindingSet<mojom::Catalog> catalog_bindings_;
+  mojo::BindingSet<mojom::Resolver> resolver_bindings_;
+  mojo::BindingSet<mojom::ShellResolver> shell_resolver_bindings_;
+  mojo::BindingSet<mojom::Catalog> catalog_bindings_;
 
   ApplicationCatalogStore* catalog_store_;
   std::map<std::string, ApplicationInfo> catalog_;

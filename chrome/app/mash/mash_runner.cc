@@ -20,7 +20,7 @@
 #include "mash/shell/shell_application_delegate.h"
 #include "mash/wm/window_manager_application.h"
 #include "mojo/common/mojo_scheme_register.h"
-#include "mojo/public/cpp/bindings/weak_binding_set.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/shell/background/background_shell.h"
 #include "mojo/shell/identity.h"
 #include "mojo/shell/native_runner_delegate.h"
@@ -105,7 +105,7 @@ class DefaultShellClient : public mojo::ShellClient,
     return nullptr;
   }
 
-  mojo::WeakBindingSet<ShellClientFactory> shell_client_factory_bindings_;
+  mojo::BindingSet<ShellClientFactory> shell_client_factory_bindings_;
   scoped_ptr<mojo::ShellClient> shell_client_;
   scoped_ptr<mojo::ShellConnection> shell_connection_;
 

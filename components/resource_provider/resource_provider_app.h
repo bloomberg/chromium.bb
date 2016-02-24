@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "components/resource_provider/public/interfaces/resource_provider.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/weak_binding_set.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell_client.h"
@@ -39,7 +39,7 @@ class ResourceProviderApp : public mojo::ShellClient,
 
   mojo::TracingImpl tracing_;
 
-  mojo::WeakBindingSet<ResourceProvider> bindings_;
+  mojo::BindingSet<ResourceProvider> bindings_;
 
   // The name of the app that the resource provider code lives in. When using
   // core services, it'll be the url of that. Otherwise it'll just be
