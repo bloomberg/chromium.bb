@@ -68,27 +68,27 @@ static inline char *align(uint32_t offset, uint32_t alignment) {
 }
 
 /* Thread management global variables. */
-const int __nc_kMaxCachedMemoryBlocks = 50;
+static const int __nc_kMaxCachedMemoryBlocks = 50;
 
 int __nc_thread_initialized;
 
 /* Mutex used to synchronize thread management code. */
-pthread_mutex_t  __nc_thread_management_lock;
+static pthread_mutex_t __nc_thread_management_lock = PTHREAD_MUTEX_INITIALIZER;
 
 /*
  * Condition variable that gets signaled when all the threads
  * except the main thread have terminated.
  */
-static pthread_cond_t __nc_last_thread_cond;
+static pthread_cond_t __nc_last_thread_cond = PTHREAD_COND_INITIALIZER;
 pthread_t __nc_initial_thread_id;
 
 /* Number of threads currently running in this NaCl module. */
-int __nc_running_threads_counter = 1;
+static int __nc_running_threads_counter = 1;
 
 /* We have two queues of memory blocks - one for each type. */
-STAILQ_HEAD(tailhead, entry) __nc_thread_memory_blocks[2];
+static STAILQ_HEAD(tailhead, entry) __nc_thread_memory_blocks[2];
 /* We need a counter for each queue to keep track of number of blocks. */
-int __nc_memory_block_counter[2];
+static int __nc_memory_block_counter[2];
 
 /* Internal functions */
 
@@ -253,9 +253,6 @@ void __nc_initialize_globals(void) {
    */
   __nc_initialize_interfaces();
 
-  if (pthread_mutex_init(&__nc_thread_management_lock, NULL) != 0)
-    __builtin_trap();
-
   /*
    * Tell ThreadSanitizer to not generate happens-before arcs between uses of
    * this mutex. Otherwise we miss to many real races.
@@ -264,8 +261,6 @@ void __nc_initialize_globals(void) {
    */
   ANNOTATE_NOT_HAPPENS_BEFORE_MUTEX(&__nc_thread_management_lock);
 
-  if (pthread_cond_init(&__nc_last_thread_cond, NULL) != 0)
-    __builtin_trap();
   STAILQ_INIT(&__nc_thread_memory_blocks[0]);
   STAILQ_INIT(&__nc_thread_memory_blocks[1]);
 
