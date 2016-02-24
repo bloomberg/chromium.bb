@@ -10289,7 +10289,7 @@ bool GLES2DecoderImpl::ClearLevel3D(Texture* texture,
           nullptr, &padded_row_size)) {
     return false;
   }
-  const uint32_t kMaxZeroSize = 1048 * 1048 * 2;
+  const uint32_t kMaxZeroSize = 1024 * 1024 * 2;
   uint32_t buffer_size;
   std::vector<TexSubCoord3D> subs;
   if (size < kMaxZeroSize) {
@@ -10351,7 +10351,8 @@ bool GLES2DecoderImpl::ClearLevel3D(Texture* texture,
     scoped_ptr<char[]> zero(new char[buffer_size]);
     memset(zero.get(), 0, buffer_size);
     // TODO(zmo): Consider glMapBufferRange instead.
-    glBufferData(GL_PIXEL_UNPACK_BUFFER, size, zero.get(), GL_STATIC_DRAW);
+    glBufferData(
+        GL_PIXEL_UNPACK_BUFFER, buffer_size, zero.get(), GL_STATIC_DRAW);
   }
 
   glBindTexture(texture->target(), texture->service_id());

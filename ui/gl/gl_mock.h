@@ -42,19 +42,40 @@ class MockGLInterface {
       const void* /*data*/) {
     NOTREACHED();
   }
+
   void TexSubImage3D(
-      GLenum /*target*/, GLint /*level*/, GLint /*xoffset*/, GLint /*yoffset*/,
-      GLint /*zoffset*/, GLsizei /*width*/, GLsizei /*height*/,
-      GLsizei /*depth*/, GLenum /*format*/, GLenum /*type*/,
-      const void* /*pixels*/) {
-    NOTREACHED();
+      GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset,
+      GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type,
+      const void* pixels) {
+    if (pixels == nullptr) {
+      TexSubImage3DNoData(target, level, xoffset, yoffset, zoffset,
+                          width, height, depth, format, type);
+    } else {
+      NOTREACHED();
+    }
   }
+
+  MOCK_METHOD10(TexSubImage3DNoData,
+                void(GLenum target,
+                     GLint level,
+                     GLint xoffset,
+                     GLint yoffset,
+                     GLint zoffset,
+                     GLsizei width,
+                     GLsizei height,
+                     GLsizei depth,
+                     GLenum format,
+                     GLenum type));
 
  private:
   static MockGLInterface* interface_;
 
   // Static mock functions that invoke the member functions of interface_.
   #include "gl_bindings_autogen_mock.h"
+
+  static void GL_BINDING_CALL Mock_glTexSubImage3DNoData(
+      GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset,
+      GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type);
 };
 
 }  // namespace gfx
