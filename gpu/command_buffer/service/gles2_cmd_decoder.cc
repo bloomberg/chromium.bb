@@ -13559,14 +13559,21 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
   // before presenting.
   if (source_target == GL_TEXTURE_EXTERNAL_OES) {
     // TODO(hkuang): get the StreamTexture transform matrix in GPU process
-    // instead of using kIdentityMatrix crbug.com/226218.
+    // instead of using kIdentityMatrix crbug.com/226218.  AVDACodecImage does
+    // this correctly, but others (e.g., stream_texture_android.cc) don't.
+    // (crbug.com/371500, crbug.com/588837)
+    GLfloat transform_matrix[16];
+    memcpy(transform_matrix, kIdentityMatrix, sizeof(transform_matrix));
+    if (GLStreamTextureImage* image =
+            source_texture->GetLevelStreamTextureImage(GL_TEXTURE_EXTERNAL_OES,
+                                                       0)) {
+      image->GetTextureMatrix(transform_matrix);
+    }
     copy_texture_CHROMIUM_->DoCopyTextureWithTransform(
-        this, source_target, source_texture->service_id(),
-        dest_target, dest_texture->service_id(), source_width, source_height,
-        unpack_flip_y == GL_TRUE,
-        unpack_premultiply_alpha == GL_TRUE,
-        unpack_unmultiply_alpha == GL_TRUE,
-        kIdentityMatrix);
+        this, source_target, source_texture->service_id(), dest_target,
+        dest_texture->service_id(), source_width, source_height,
+        unpack_flip_y == GL_TRUE, unpack_premultiply_alpha == GL_TRUE,
+        unpack_unmultiply_alpha == GL_TRUE, transform_matrix);
   } else {
     copy_texture_CHROMIUM_->DoCopyTexture(
         this, source_target, source_texture->service_id(),

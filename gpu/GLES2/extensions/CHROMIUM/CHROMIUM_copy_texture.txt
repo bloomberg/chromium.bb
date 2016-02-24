@@ -74,6 +74,9 @@ New Procedures and Functions
     no alpha processing occurs.  This is the equivalent of having neither flag
     set.
 
+    When <source_id> refers to a stream texture, the texture matrix will be
+    applied as part of the copy operation.
+
     INVALID_OPERATION is generated if <internal_format> is not one of the valid formats
     described above.
 
