@@ -17,6 +17,10 @@
 
 using content::BrowserThread;
 
+namespace net {
+class URLRequestContextGetter;
+}  // namespace net
+
 namespace {
 
 // Android field trial for controlling types_to_check.
@@ -94,14 +98,7 @@ void RemoteSafeBrowsingDatabaseManager::ClientRequest::OnRequestDone(
 
 // TODO(nparker): Add more tests for this class
 RemoteSafeBrowsingDatabaseManager::RemoteSafeBrowsingDatabaseManager()
-    : RemoteSafeBrowsingDatabaseManager(NULL, V4ProtocolConfig()) {
-}
-
-RemoteSafeBrowsingDatabaseManager::RemoteSafeBrowsingDatabaseManager(
-      net::URLRequestContextGetter* request_context_getter,
-      const V4ProtocolConfig& config)
-    : SafeBrowsingDatabaseManager(request_context_getter, config),
-      enabled_(false) {
+    : enabled_(false) {
   // Decide which resource types to check. These two are the minimum.
   resource_types_to_check_.insert(content::RESOURCE_TYPE_MAIN_FRAME);
   resource_types_to_check_.insert(content::RESOURCE_TYPE_SUB_FRAME);
@@ -283,8 +280,11 @@ void RemoteSafeBrowsingDatabaseManager::CancelCheck(Client* client) {
   NOTREACHED();
 }
 
-void RemoteSafeBrowsingDatabaseManager::StartOnIOThread() {
+void RemoteSafeBrowsingDatabaseManager::StartOnIOThread(
+      net::URLRequestContextGetter* request_context_getter,
+      const V4ProtocolConfig& config) {
   VLOG(1) << "RemoteSafeBrowsingDatabaseManager starting";
+  SafeBrowsingDatabaseManager::StartOnIOThread(request_context_getter, config);
   enabled_ = true;
 }
 
@@ -301,6 +301,8 @@ void RemoteSafeBrowsingDatabaseManager::StopOnIOThread(bool shutdown) {
     req->OnRequestDone(SB_THREAT_TYPE_SAFE, std::string());
   }
   enabled_ = false;
+
+  SafeBrowsingDatabaseManager::StopOnIOThread(shutdown);
 }
 
 }  // namespace safe_browsing

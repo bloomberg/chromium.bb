@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace safe_browsing {
 
@@ -124,7 +125,9 @@ void TestSafeBrowsingDatabaseManager::CheckApiBlacklistUrl(const GURL& url,
   NOTIMPLEMENTED();
 }
 
-void TestSafeBrowsingDatabaseManager::StartOnIOThread() {
+void TestSafeBrowsingDatabaseManager::StartOnIOThread(
+    net::URLRequestContextGetter* request_context_getter,
+    const V4ProtocolConfig& config) {
 }
 
 void TestSafeBrowsingDatabaseManager::StopOnIOThread(bool shutdown) {

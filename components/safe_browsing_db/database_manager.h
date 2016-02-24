@@ -158,30 +158,25 @@ class SafeBrowsingDatabaseManager
   // accessing the database at all.
   virtual void CheckApiBlacklistUrl(const GURL& url, Client* client);
 
-  // Called to initialize objects that are used on the io_thread.  This may be
-  // called multiple times during the life of the DatabaseManager. Must be
-  // called on IO thread.
-  virtual void StartOnIOThread() = 0;
-
-  // Called to stop or shutdown operations on the io_thread. This may be called
-  // multiple times during the life of the DatabaseManager. Must be called
-  // on IO thread. If shutdown is true, the manager is disabled permanently.
-  virtual void StopOnIOThread(bool shutdown) = 0;
-
- protected:
-  // Use this constructor for testing only.
-  SafeBrowsingDatabaseManager();
-
-  // Constructs the database manager.
-  SafeBrowsingDatabaseManager(
+  // Called to initialize objects that are used on the io_thread, such as the
+  // v4 protocol manager.  This may be called multiple times during the life of
+  // the DatabaseManager. Must be called on IO thread.
+  virtual void StartOnIOThread(
       net::URLRequestContextGetter* request_context_getter,
       const V4ProtocolConfig& config);
+
+  // Called to stop or shutdown operations on the io_thread.
+  virtual void StopOnIOThread(bool shutdown);
+
+ protected:
+  SafeBrowsingDatabaseManager();
 
   virtual ~SafeBrowsingDatabaseManager();
 
   friend class base::RefCountedThreadSafe<SafeBrowsingDatabaseManager>;
 
-  std::unique_ptr<V4GetHashProtocolManager> v4_get_hash_protocol_manager_;
+  // Created and destroyed via StartonIOThread/StopOnIOThread.
+  V4GetHashProtocolManager* v4_get_hash_protocol_manager_;
 };  // class SafeBrowsingDatabaseManager
 
 }  // namespace safe_browsing

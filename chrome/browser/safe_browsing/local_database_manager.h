@@ -101,15 +101,9 @@ class LocalSafeBrowsingDatabaseManager
     DISALLOW_COPY_AND_ASSIGN(SafeBrowsingCheck);
   };
 
-  // Use this constructor for testing only.
-  explicit LocalSafeBrowsingDatabaseManager(
-      const scoped_refptr<SafeBrowsingService>& service);
-
   // Creates the safe browsing service.  Need to initialize before using.
   LocalSafeBrowsingDatabaseManager(
-      const scoped_refptr<SafeBrowsingService>& service,
-      net::URLRequestContextGetter* request_context_getter,
-      const V4ProtocolConfig& config);
+      const scoped_refptr<SafeBrowsingService>& service);
 
   //
   // SafeBrowsingDatabaseManager overrides
@@ -136,7 +130,9 @@ class LocalSafeBrowsingDatabaseManager
   bool IsMalwareKillSwitchOn() override;
   bool IsCsdWhitelistKillSwitchOn() override;
   void CancelCheck(Client* client) override;
-  void StartOnIOThread() override;
+  void StartOnIOThread(
+      net::URLRequestContextGetter* request_context_getter,
+      const V4ProtocolConfig& config) override;
   void StopOnIOThread(bool shutdown) override;
   bool download_protection_enabled() const override;
 

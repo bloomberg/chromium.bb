@@ -52,6 +52,7 @@ source_set("database_manager") {
     ":util",
     ":v4_get_hash_protocol_manager",
     "//base:base",
+    "//content/public/browser",
     "//content/public/common",
     "//net",
     "//url:url",
@@ -93,6 +94,7 @@ source_set("remote_database_manager") {
     "//base:base",
     "//components/variations",
     "//content/public/browser",
+    "//net",
     "//url:url",
   ]
 }
@@ -145,6 +147,7 @@ source_set("test_database_manager") {
   deps = [
     ":database_manager",
     "//base:base",
+    "//net",
   ]
 }
 

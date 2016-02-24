@@ -402,11 +402,10 @@ SafeBrowsingUIManager* SafeBrowsingService::CreateUIManager() {
 }
 
 SafeBrowsingDatabaseManager* SafeBrowsingService::CreateDatabaseManager() {
-  V4ProtocolConfig config = GetV4ProtocolConfig();
 #if defined(SAFE_BROWSING_DB_LOCAL)
-  return new LocalSafeBrowsingDatabaseManager(this, NULL, config);
+  return new LocalSafeBrowsingDatabaseManager(this);
 #elif defined(SAFE_BROWSING_DB_REMOTE)
-  return new RemoteSafeBrowsingDatabaseManager(NULL, config);
+  return new RemoteSafeBrowsingDatabaseManager();
 #else
   return NULL;
 #endif
@@ -504,10 +503,11 @@ void SafeBrowsingService::StartOnIOThread(
   enabled_ = true;
 
   SafeBrowsingProtocolConfig config = GetProtocolConfig();
+  V4ProtocolConfig v4_config = GetV4ProtocolConfig();
 
 #if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
   DCHECK(database_manager_.get());
-  database_manager_->StartOnIOThread();
+  database_manager_->StartOnIOThread(url_request_context_getter, v4_config);
 #endif
 
 #if defined(SAFE_BROWSING_DB_LOCAL)

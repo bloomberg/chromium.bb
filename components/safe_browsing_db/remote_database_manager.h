@@ -30,14 +30,9 @@ struct V4ProtocolConfig;
 // Does not manage a local database.
 class RemoteSafeBrowsingDatabaseManager : public SafeBrowsingDatabaseManager {
  public:
-  // Use this constructor for testing only.
-  RemoteSafeBrowsingDatabaseManager();
-
   // Construct RemoteSafeBrowsingDatabaseManager.
   // Must be initialized by calling StartOnIOThread() before using.
-  RemoteSafeBrowsingDatabaseManager(
-      net::URLRequestContextGetter* request_context_getter,
-      const V4ProtocolConfig& config);
+  RemoteSafeBrowsingDatabaseManager();
 
   //
   // SafeBrowsingDatabaseManager implementation
@@ -51,7 +46,9 @@ class RemoteSafeBrowsingDatabaseManager : public SafeBrowsingDatabaseManager {
   bool download_protection_enabled() const override;
   bool CheckBrowseUrl(const GURL& url, Client* client) override;
   void CancelCheck(Client* client) override;
-  void StartOnIOThread() override;
+  void StartOnIOThread(
+      net::URLRequestContextGetter* request_context_getter,
+      const V4ProtocolConfig& config) override;
   void StopOnIOThread(bool shutdown) override;
 
   // These will fail with DCHECK() since their functionality isn't implemented.

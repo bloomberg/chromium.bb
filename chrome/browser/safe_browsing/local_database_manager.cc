@@ -37,6 +37,7 @@
 #include "components/safe_browsing_db/v4_get_hash_protocol_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "url/url_constants.h"
 
 using content::BrowserThread;
@@ -271,16 +272,8 @@ void LocalSafeBrowsingDatabaseManager::SafeBrowsingCheck::
 }
 
 LocalSafeBrowsingDatabaseManager::LocalSafeBrowsingDatabaseManager(
-    const scoped_refptr<SafeBrowsingService>& service) :
-    LocalSafeBrowsingDatabaseManager(service, NULL, V4ProtocolConfig()) {
-}
-
-LocalSafeBrowsingDatabaseManager::LocalSafeBrowsingDatabaseManager(
-    const scoped_refptr<SafeBrowsingService>& service,
-    net::URLRequestContextGetter* request_context_getter,
-    const V4ProtocolConfig& config)
-    : SafeBrowsingDatabaseManager(request_context_getter, config),
-      sb_service_(service),
+    const scoped_refptr<SafeBrowsingService>& service)
+    : sb_service_(service),
       database_(NULL),
       enabled_(false),
       enable_download_protection_(false),
@@ -703,8 +696,12 @@ void LocalSafeBrowsingDatabaseManager::ResetDatabase() {
       base::Bind(&LocalSafeBrowsingDatabaseManager::OnResetDatabase, this));
 }
 
-void LocalSafeBrowsingDatabaseManager::StartOnIOThread() {
+void LocalSafeBrowsingDatabaseManager::StartOnIOThread(
+    net::URLRequestContextGetter* request_context_getter,
+    const V4ProtocolConfig& config) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  SafeBrowsingDatabaseManager::StartOnIOThread(request_context_getter, config);
+
   if (enabled_)
     return;
 
@@ -725,6 +722,7 @@ void LocalSafeBrowsingDatabaseManager::StartOnIOThread() {
 
 void LocalSafeBrowsingDatabaseManager::StopOnIOThread(bool shutdown) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  SafeBrowsingDatabaseManager::StopOnIOThread(shutdown);
 
   DoStopOnIOThread();
   if (shutdown) {

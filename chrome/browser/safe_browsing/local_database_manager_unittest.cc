@@ -13,8 +13,10 @@
 #include "base/run_loop.h"
 #include "chrome/browser/safe_browsing/local_database_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "components/safe_browsing_db/v4_get_hash_protocol_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "url/gurl.h"
@@ -313,7 +315,7 @@ TEST_F(LocalDatabaseManagerTest, ServiceStopWithPendingChecks) {
   SafeBrowsingDatabaseManager::Client client;
 
   // Start the service and flush tasks to ensure database is made available.
-  db_manager->StartOnIOThread();
+  db_manager->StartOnIOThread(NULL, V4ProtocolConfig());
   content::RunAllBlockingPoolTasksUntilIdle();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(db_manager->DatabaseAvailable());
