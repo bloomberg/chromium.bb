@@ -4,6 +4,8 @@
 
 #include "components/leveldb/env_mojo.h"
 
+#include <errno.h>
+
 #include "base/trace_event/trace_event.h"
 #include "third_party/leveldatabase/chromium_logger.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
