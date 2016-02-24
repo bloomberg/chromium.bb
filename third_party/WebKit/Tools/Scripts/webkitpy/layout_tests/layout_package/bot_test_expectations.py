@@ -106,7 +106,7 @@ class ResultsJSON(object):
 
 
 class BotTestExpectationsFactory(object):
-    RESULTS_URL_PREFIX = 'http://test-results.appspot.com/testfile?master=ChromiumWebkit&testtype=layout-tests&name=results-small.json&builder='
+    RESULTS_URL_PREFIX = 'http://test-results.appspot.com/testfile?master=ChromiumWebkit&testtype=webkit_tests&name=results-small.json&builder='
 
     def _results_json_for_port(self, port_name, builder_category):
         builder = builders.builder_name_for_port_name(port_name)
