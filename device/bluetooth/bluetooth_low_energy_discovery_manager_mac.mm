@@ -57,8 +57,7 @@ void BluetoothLowEnergyDiscoveryManagerMac::TryStartDiscovery() {
     for (auto& service_uuid : services_uuids_) {
       NSString* uuidString =
           base::SysUTF8ToNSString(service_uuid.canonical_value().c_str());
-      Class aClass = NSClassFromString(@"CBUUID");
-      CBUUID* uuid = [aClass UUIDWithString:uuidString];
+      CBUUID* uuid = [CBUUID UUIDWithString:uuidString];
       [services addObject:uuid];
     }
   };

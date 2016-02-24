@@ -82,8 +82,7 @@ BluetoothAdapterMac::BluetoothAdapterMac()
         [[BluetoothLowEnergyCentralManagerDelegate alloc]
             initWithDiscoveryManager:low_energy_discovery_manager_.get()
                           andAdapter:this]);
-    Class aClass = NSClassFromString(@"CBCentralManager");
-    low_energy_central_manager_.reset([[aClass alloc]
+    low_energy_central_manager_.reset([[CBCentralManager alloc]
         initWithDelegate:low_energy_central_manager_delegate_.get()
                    queue:dispatch_get_main_queue()]);
     low_energy_discovery_manager_->SetCentralManager(
@@ -225,8 +224,7 @@ bool BluetoothAdapterMac::IsLowEnergyAvailable() {
 void BluetoothAdapterMac::SetCentralManagerForTesting(
     CBCentralManager* central_manager) {
   CHECK(BluetoothAdapterMac::IsLowEnergyAvailable());
-  [central_manager performSelector:@selector(setDelegate:)
-                        withObject:low_energy_central_manager_delegate_];
+  central_manager.delegate = low_energy_central_manager_delegate_;
   low_energy_central_manager_.reset(central_manager);
   low_energy_discovery_manager_->SetCentralManager(
       low_energy_central_manager_.get());

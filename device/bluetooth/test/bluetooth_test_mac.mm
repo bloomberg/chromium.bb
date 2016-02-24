@@ -127,7 +127,7 @@ BluetoothDevice* BluetoothTestMac::DiscoverLowEnergyDevice(int device_ordinal) {
       [central_manager_delegate centralManager:central_manager
                          didDiscoverPeripheral:peripheral
                              advertisementData:advertisement_data
-                                          RSSI:[NSNumber numberWithInt:0]];
+                                          RSSI:@(0)];
       break;
     }
     case 2: {
@@ -147,7 +147,7 @@ BluetoothDevice* BluetoothTestMac::DiscoverLowEnergyDevice(int device_ordinal) {
       [central_manager_delegate centralManager:central_manager
                          didDiscoverPeripheral:peripheral
                              advertisementData:advertisement_data
-                                          RSSI:[NSNumber numberWithInt:0]];
+                                          RSSI:@(0)];
       break;
     }
     case 3: {
@@ -160,7 +160,7 @@ BluetoothDevice* BluetoothTestMac::DiscoverLowEnergyDevice(int device_ordinal) {
       [central_manager_delegate centralManager:central_manager
                          didDiscoverPeripheral:peripheral
                              advertisementData:advertisement_data
-                                          RSSI:[NSNumber numberWithInt:0]];
+                                          RSSI:@(0)];
       break;
     }
     case 4: {
@@ -173,7 +173,7 @@ BluetoothDevice* BluetoothTestMac::DiscoverLowEnergyDevice(int device_ordinal) {
       [central_manager_delegate centralManager:central_manager
                          didDiscoverPeripheral:peripheral
                              advertisementData:advertisement_data
-                                          RSSI:[NSNumber numberWithInt:0]];
+                                          RSSI:@(0)];
       break;
     }
   }

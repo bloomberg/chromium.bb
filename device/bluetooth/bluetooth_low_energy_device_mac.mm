@@ -119,7 +119,7 @@ bool BluetoothLowEnergyDeviceMac::IsConnected() const {
 }
 
 bool BluetoothLowEnergyDeviceMac::IsGattConnected() const {
-  return (GetPeripheralState() == CBPeripheralStateConnected);
+  return ([peripheral_ state] == CBPeripheralStateConnected);
 }
 
 bool BluetoothLowEnergyDeviceMac::IsConnectable() const {
@@ -257,18 +257,4 @@ std::string BluetoothLowEnergyDeviceMac::GetPeripheralHashAddress(
                            sizeof(raw));
   std::string hash = base::HexEncode(raw, sizeof(raw));
   return BluetoothDevice::CanonicalizeAddress(hash);
-}
-
-CBPeripheralState BluetoothLowEnergyDeviceMac::GetPeripheralState() const {
-  Class peripheral_class = NSClassFromString(@"CBPeripheral");
-  base::scoped_nsobject<NSMethodSignature> signature([[peripheral_class
-      instanceMethodSignatureForSelector:@selector(state)] retain]);
-  base::scoped_nsobject<NSInvocation> invocation(
-      [[NSInvocation invocationWithMethodSignature:signature] retain]);
-  [invocation setTarget:peripheral_];
-  [invocation setSelector:@selector(state)];
-  [invocation invoke];
-  CBPeripheralState state = CBPeripheralStateDisconnected;
-  [invocation getReturnValue:&state];
-  return state;
 }

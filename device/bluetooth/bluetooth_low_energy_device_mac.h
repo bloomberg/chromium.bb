@@ -108,9 +108,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
   friend class BluetoothAdapterMac;
   friend class BluetoothAdapterMacTest;
 
-  // Equivalent to [peripheral_ state].  Allows compilation on OS X 10.6.
-  CBPeripheralState GetPeripheralState() const;
-
   // CoreBluetooth data structure.
   base::scoped_nsobject<CBPeripheral> peripheral_;
 
