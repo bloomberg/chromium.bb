@@ -123,7 +123,7 @@ AccountChooserDialogAndroid::~AccountChooserDialogAndroid() {}
 void AccountChooserDialogAndroid::ShowDialog() {
   JNIEnv* env = AttachCurrentThread();
   bool is_smartlock_branding_enabled =
-      password_bubble_experiment::IsSmartLockBrandingEnabled(
+      password_bubble_experiment::IsSmartLockUser(
           ProfileSyncServiceFactory::GetForProfile(
               Profile::FromBrowserContext(web_contents_->GetBrowserContext())));
   base::string16 title;
