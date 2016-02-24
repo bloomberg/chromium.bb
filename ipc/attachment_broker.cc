@@ -138,6 +138,8 @@ void AttachmentBroker::NotifyObserver(
 }
 
 AttachmentBroker::ObserverInfo::ObserverInfo() {}
+AttachmentBroker::ObserverInfo::ObserverInfo(const ObserverInfo& other) =
+    default;
 AttachmentBroker::ObserverInfo::~ObserverInfo() {}
 
 }  // namespace IPC

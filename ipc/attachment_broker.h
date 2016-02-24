@@ -142,6 +142,7 @@ class IPC_EXPORT AttachmentBroker : public Listener {
 
   struct ObserverInfo {
     ObserverInfo();
+    ObserverInfo(const ObserverInfo& other);
     ~ObserverInfo();
 
     Observer* observer;
