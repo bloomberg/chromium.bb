@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 #include "components/scheduler/scheduler_export.h"
 #include "third_party/WebKit/public/platform/WebTaskRunner.h"
 
@@ -26,6 +27,8 @@ class SCHEDULER_EXPORT WebTaskRunnerImpl : public blink::WebTaskRunner {
   void postDelayedTask(const blink::WebTraceLocation& web_location,
                        blink::WebTaskRunner::Task* task,
                        double delayMs) override;
+  double virtualTimeSeconds() const override;
+  double monotonicallyIncreasingVirtualTimeSeconds() const override;
   blink::WebTaskRunner* clone() override;
 
   // blink::WebTaskRunner::Task should be wrapped by base::Passed() when
@@ -36,6 +39,8 @@ class SCHEDULER_EXPORT WebTaskRunnerImpl : public blink::WebTaskRunner {
   static void runTask(scoped_ptr<blink::WebTaskRunner::Task>);
 
  private:
+  base::TimeTicks Now() const;
+
   scoped_refptr<TaskQueue> task_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(WebTaskRunnerImpl);

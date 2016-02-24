@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "components/scheduler/base/task_queue.h"
+#include "components/scheduler/base/time_domain.h"
 #include "third_party/WebKit/public/platform/WebTraceLocation.h"
 
 namespace scheduler {
@@ -38,6 +39,24 @@ void WebTaskRunnerImpl::postDelayedTask(
       base::Bind(&WebTaskRunnerImpl::runTask,
                  base::Passed(scoped_ptr<blink::WebTaskRunner::Task>(task))),
       base::TimeDelta::FromMillisecondsD(delayMs));
+}
+
+double WebTaskRunnerImpl::virtualTimeSeconds() const {
+  return (Now() - base::TimeTicks::UnixEpoch()).InSecondsF();
+}
+
+double WebTaskRunnerImpl::monotonicallyIncreasingVirtualTimeSeconds() const {
+  return Now().ToInternalValue() /
+         static_cast<double>(base::Time::kMicrosecondsPerSecond);
+}
+
+base::TimeTicks WebTaskRunnerImpl::Now() const {
+  TimeDomain* time_domain = task_queue_->GetTimeDomain();
+  // It's possible task_queue_ has been Unregistered which can lead to a null
+  // TimeDomain.  If that happens just return the current real time.
+  if (!time_domain)
+    return base::TimeTicks::Now();
+  return time_domain->Now();
 }
 
 blink::WebTaskRunner* WebTaskRunnerImpl::clone() {

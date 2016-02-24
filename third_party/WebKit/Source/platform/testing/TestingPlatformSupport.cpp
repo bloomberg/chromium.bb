@@ -130,6 +130,18 @@ public:
         return new TestingPlatformMockWebTaskRunner(m_tasks);
     }
 
+    double virtualTimeSeconds() const override
+    {
+        ASSERT_NOT_REACHED();
+        return 0.0;
+    }
+
+    double monotonicallyIncreasingVirtualTimeSeconds() const override
+    {
+        ASSERT_NOT_REACHED();
+        return 0.0;
+    }
+
 private:
     Deque<OwnPtr<WebTaskRunner::Task>>* m_tasks; // NOT OWNED
 };

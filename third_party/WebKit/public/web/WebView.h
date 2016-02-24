@@ -60,6 +60,7 @@ class WebSettings;
 class WebSpellCheckClient;
 class WebString;
 class WebViewClient;
+class WebViewScheduler;
 struct WebActiveWheelFlingParameters;
 struct WebDeviceEmulationParams;
 struct WebFloatPoint;
@@ -453,6 +454,10 @@ public:
     virtual void setShowPaintRects(bool) = 0;
     virtual void setShowFPSCounter(bool) = 0;
     virtual void setShowScrollBottleneckRects(bool) = 0;
+
+    // Scheduling -----------------------------------------------------------
+
+    virtual WebViewScheduler* scheduler() const = 0;
 
     // Visibility -----------------------------------------------------------
 

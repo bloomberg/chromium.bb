@@ -72,7 +72,7 @@ private:
     DOMTimer(ExecutionContext*, PassOwnPtrWillBeRawPtr<ScheduledAction>, int interval, bool singleShot, int timeoutID);
     void fired() override;
 
-    WebTaskRunner* timerTaskRunner() override;
+    WebTaskRunner* timerTaskRunner() const override;
 
     int m_timeoutID;
     int m_nestingLevel;

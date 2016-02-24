@@ -123,13 +123,4 @@ void FakeRendererScheduler::ResumeTimerQueue() {
 void FakeRendererScheduler::SetTimerQueueSuspensionWhenBackgroundedEnabled(
     bool enabled) {}
 
-double FakeRendererScheduler::VirtualTimeSeconds() const {
-  return 0.0;
-}
-
-double FakeRendererScheduler::
-    MonotonicallyIncreasingVirtualTimeSeconds() const {
-  return 0.0;
-}
-
 }  // namespace content
