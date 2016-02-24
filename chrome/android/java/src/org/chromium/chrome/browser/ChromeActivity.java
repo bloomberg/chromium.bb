@@ -696,7 +696,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         recordKeyboardLocaleUma();
 
         // TODO(treib): Remove this when we have the proper morning reads fetching logic in place
-        if (CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_NTP_SNIPPETS)) {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SNIPPETS)) {
             // Initialize snippets
             SnippetsController.get(this).fetchSnippets(false);
         }

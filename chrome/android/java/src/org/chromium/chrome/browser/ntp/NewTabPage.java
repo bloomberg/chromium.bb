@@ -654,7 +654,7 @@ public class NewTabPage
     }
 
     private void updateSearchProviderHasLogo() {
-        if (CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_NTP_SNIPPETS)) {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SNIPPETS)) {
             mSearchProviderHasLogo = false;
             if (mNewTabPageView != null) mNewTabPageView.setSearchProviderHasLogo(false);
         } else {

@@ -89,11 +89,6 @@ public abstract class ChromeSwitches {
     public static final String DISABLE_LOFI_SNACKBAR = "disable-lo-fi-snackbar";
 
     /**
-     * Enable content snippets on the NTP
-     */
-    public static final String ENABLE_NTP_SNIPPETS = "enable-ntp-snippets";
-
-    /**
      * Enable interests on the NTP
      */
     public static final String ENABLE_INTERESTS = "enable-interests";

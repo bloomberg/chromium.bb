@@ -29,5 +29,7 @@ public abstract class ChromeFeatureList {
         return nativeIsEnabled(featureName);
     }
 
+    public static final String NTP_SNIPPETS = "NTPSnippets";
+
     private static native boolean nativeIsEnabled(String featureName);
 }

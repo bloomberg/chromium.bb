@@ -25,6 +25,7 @@ namespace {
 // other locations in the code base (e.g. chrome/, components/, etc).
 const base::Feature* kFeaturesExposedToJava[] = {
     &kNTPOfflinePagesFeature,
+    &kNTPSnippetsFeature,
     &kPhysicalWebFeature,
 };
 
@@ -32,6 +33,10 @@ const base::Feature* kFeaturesExposedToJava[] = {
 
 const base::Feature kNTPOfflinePagesFeature {
   "NTPOfflinePages", base::FEATURE_DISABLED_BY_DEFAULT
+};
+
+const base::Feature kNTPSnippetsFeature {
+  "NTPSnippets", base::FEATURE_DISABLED_BY_DEFAULT
 };
 
 const base::Feature kPhysicalWebFeature {

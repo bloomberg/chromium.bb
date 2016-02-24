@@ -13,6 +13,7 @@ namespace chrome {
 namespace android {
 
 extern const base::Feature kNTPOfflinePagesFeature;
+extern const base::Feature kNTPSnippetsFeature;
 extern const base::Feature kPhysicalWebFeature;
 
 bool RegisterChromeFeatureListJni(JNIEnv* env);
