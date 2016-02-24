@@ -53,19 +53,8 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader> {
 
  private:
   friend class base::RefCountedThreadSafe<UserImageLoader>;
-  struct ImageInfo;
-  class UserImageRequest;
 
   ~UserImageLoader();
-
-  // Decodes the image |data| if |data_is_ready| is true.
-  void DecodeImage(const ImageInfo& image_info,
-                   const std::string* data,
-                   bool data_is_ready);
-
-  // The foreground task runner on which |this| is instantiated, Start() is
-  // called and LoadedCallbacks are invoked.
-  scoped_refptr<base::SequencedTaskRunner> foreground_task_runner_;
 
   // The background task runner on which file I/O, image decoding and resizing
   // are done.
