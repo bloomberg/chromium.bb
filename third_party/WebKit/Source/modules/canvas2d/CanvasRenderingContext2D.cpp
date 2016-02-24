@@ -446,7 +446,7 @@ void CanvasRenderingContext2D::setFont(const String& newFont)
     if (!canvas()->document().frame())
         return;
 
-    canvas()->document().updateLayoutTreeForNodeIfNeeded(canvas());
+    canvas()->document().updateLayoutTreeForNode(canvas());
 
     // The following early exit is dependent on the cache not being empty
     // because an empty cache may indicate that a style change has occured
@@ -628,7 +628,7 @@ static inline TextDirection toTextDirection(CanvasRenderingContext2DState::Direc
 String CanvasRenderingContext2D::direction() const
 {
     if (state().direction() == CanvasRenderingContext2DState::DirectionInherit)
-        canvas()->document().updateLayoutTreeForNodeIfNeeded(canvas());
+        canvas()->document().updateLayoutTreeForNode(canvas());
     return toTextDirection(state().direction(), canvas()) == RTL ? rtl : ltr;
 }
 
@@ -678,7 +678,7 @@ TextMetrics* CanvasRenderingContext2D::measureText(const String& text)
     if (!canvas()->document().frame())
         return metrics;
 
-    canvas()->document().updateLayoutTreeForNodeIfNeeded(canvas());
+    canvas()->document().updateLayoutTreeForNode(canvas());
     const Font& font = accessFont();
 
     TextDirection direction;
@@ -726,7 +726,7 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, double x, do
     // accessFont needs the style to be up to date, but updating style can cause script to run,
     // (e.g. due to autofocus) which can free the canvas (set size to 0, for example), so update
     // style before grabbing the drawingCanvas.
-    canvas()->document().updateLayoutTreeForNodeIfNeeded(canvas());
+    canvas()->document().updateLayoutTreeForNode(canvas());
 
     SkCanvas* c = drawingCanvas();
     if (!c)

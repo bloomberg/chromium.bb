@@ -553,7 +553,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
 
     Document& document = styledNode->document();
 
-    document.updateLayoutTreeForNodeIfNeeded(styledNode);
+    document.updateLayoutTreeForNode(styledNode);
 
     // The style recalc could have caused the styled node to be discarded or replaced
     // if it was a PseudoElement so we need to update it.

@@ -167,7 +167,7 @@ void XMLErrors::insertErrorMessageBlock()
         documentElement->parserAppendChild(reportElement);
 
     // FIXME: Why do we need to call this manually?
-    m_document->updateLayoutTreeIfNeeded();
+    m_document->updateLayoutTree();
 }
 
 } // namespace blink

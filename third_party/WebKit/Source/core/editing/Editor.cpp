@@ -1036,7 +1036,7 @@ void Editor::setBaseWritingDirection(WritingDirection direction)
             return;
         focusedElement->setAttribute(dirAttr, direction == LeftToRightWritingDirection ? "ltr" : "rtl");
         focusedElement->dispatchInputEvent();
-        frame().document()->updateLayoutTreeIfNeeded();
+        frame().document()->updateLayoutTree();
         return;
     }
 
@@ -1336,7 +1336,7 @@ void Editor::toggleOverwriteModeEnabled()
 void Editor::tidyUpHTMLStructure(Document& document)
 {
     // hasEditableStyle() needs up-to-date ComputedStyle.
-    document.updateLayoutTreeIfNeeded();
+    document.updateLayoutTree();
     bool needsValidStructure = document.hasEditableStyle() || (document.documentElement() && document.documentElement()->hasEditableStyle());
     if (!needsValidStructure)
         return;

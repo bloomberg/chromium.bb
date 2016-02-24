@@ -310,7 +310,7 @@ unsigned Internals::updateStyleAndReturnAffectedElementCount(ExceptionState& exc
     }
 
     unsigned beforeCount = document->styleEngine().styleForElementCount();
-    document->updateLayoutTreeIfNeeded();
+    document->updateLayoutTree();
     return document->styleEngine().styleForElementCount() - beforeCount;
 }
 

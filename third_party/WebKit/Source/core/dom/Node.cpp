@@ -528,13 +528,13 @@ void Node::normalize()
 
 bool Node::isContentEditable(UserSelectAllTreatment treatment) const
 {
-    document().updateLayoutTreeIfNeeded();
+    document().updateLayoutTree();
     return hasEditableStyle(Editable, treatment);
 }
 
 bool Node::isContentRichlyEditable() const
 {
-    document().updateLayoutTreeIfNeeded();
+    document().updateLayoutTree();
     return hasEditableStyle(RichlyEditable, UserSelectAllIsAlwaysNonEditable);
 }
 

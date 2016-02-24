@@ -220,7 +220,7 @@ void HTMLAreaElement::setFocus(bool shouldBeFocused)
 
 void HTMLAreaElement::updateFocusAppearance(SelectionBehaviorOnFocus selectionBehavior)
 {
-    document().updateLayoutTreeForNodeIfNeeded(this);
+    document().updateLayoutTreeForNode(this);
     if (!isFocusable())
         return;
 

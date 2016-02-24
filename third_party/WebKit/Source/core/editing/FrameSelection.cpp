@@ -914,7 +914,7 @@ void FrameSelection::focusedOrActiveStateChanged()
     if (Element* element = document->focusedElement())
         element->focusStateChanged();
 
-    document->updateLayoutTreeIfNeeded();
+    document->updateLayoutTree();
 
     // Because LayoutObject::selectionBackgroundColor() and
     // LayoutObject::selectionForegroundColor() check if the frame is active,

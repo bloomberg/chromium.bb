@@ -20,7 +20,7 @@ String EventHitRegion::regionIdFromAbsoluteLocation(HTMLCanvasElement& canvas, c
         return String();
 
     Document& document = canvas.document();
-    document.updateLayoutTreeForNodeIfNeeded(&canvas);
+    document.updateLayoutTreeForNode(&canvas);
 
     // Adjust offsetLocation to be relative to the canvas's position.
     LayoutBox* box = canvas.layoutBox();

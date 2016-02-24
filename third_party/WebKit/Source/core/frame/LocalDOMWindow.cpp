@@ -791,7 +791,7 @@ void LocalDOMWindow::alert(const String& message)
         }
     }
 
-    frame()->document()->updateLayoutTreeIfNeeded();
+    frame()->document()->updateLayoutTree();
 
     FrameHost* host = frame()->host();
     if (!host)
@@ -813,7 +813,7 @@ bool LocalDOMWindow::confirm(const String& message)
         }
     }
 
-    frame()->document()->updateLayoutTreeIfNeeded();
+    frame()->document()->updateLayoutTree();
 
     FrameHost* host = frame()->host();
     if (!host)
@@ -835,7 +835,7 @@ String LocalDOMWindow::prompt(const String& message, const String& defaultValue)
         }
     }
 
-    frame()->document()->updateLayoutTreeIfNeeded();
+    frame()->document()->updateLayoutTree();
 
     FrameHost* host = frame()->host();
     if (!host)
@@ -1090,7 +1090,7 @@ PassRefPtrWillBeRawPtr<CSSRuleList> LocalDOMWindow::getMatchedCSSRules(Element* 
 
     unsigned rulesToInclude = StyleResolver::AuthorCSSRules;
     PseudoId pseudoId = CSSSelector::pseudoId(pseudoType);
-    element->document().updateLayoutTreeIfNeeded();
+    element->document().updateLayoutTree();
     return frame()->document()->ensureStyleResolver().pseudoCSSRulesForElement(element, pseudoId, rulesToInclude);
 }
 

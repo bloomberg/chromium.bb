@@ -1214,7 +1214,7 @@ Element* Document::scrollingElement()
 {
     if (RuntimeEnabledFeatures::scrollTopLeftInteropEnabled()) {
         if (inQuirksMode()) {
-            updateLayoutTreeIfNeeded();
+            updateLayoutTree();
             HTMLBodyElement* body = firstBodyElement();
             if (body && body->layoutObject() && body->layoutObject()->hasOverflowClip())
                 return nullptr;
@@ -1720,7 +1720,7 @@ static void assertLayoutTreeUpdated(Node& root)
 }
 #endif
 
-void Document::updateLayoutTreeIfNeeded()
+void Document::updateLayoutTree()
 {
     ASSERT(isMainThread());
 
@@ -1911,12 +1911,12 @@ bool Document::needsLayoutTreeUpdateForNode(const Node& node) const
     return false;
 }
 
-void Document::updateLayoutTreeForNodeIfNeeded(Node* node)
+void Document::updateLayoutTreeForNode(Node* node)
 {
     ASSERT(node);
     if (!needsLayoutTreeUpdateForNode(*node))
         return;
-    updateLayoutTreeIfNeeded();
+    updateLayoutTree();
 }
 
 void Document::updateLayout()
@@ -1935,7 +1935,7 @@ void Document::updateLayout()
     if (HTMLFrameOwnerElement* owner = ownerElement())
         owner->document().updateLayout();
 
-    updateLayoutTreeIfNeeded();
+    updateLayoutTree();
 
     if (!isActive())
         return;
@@ -1984,7 +1984,7 @@ void Document::clearFocusedElementSoon()
 
 void Document::clearFocusedElementTimerFired(Timer<Document>*)
 {
-    updateLayoutTreeIfNeeded();
+    updateLayoutTree();
     m_clearFocusedElementTimer.stop();
 
     if (m_focusedElement && !m_focusedElement->isFocusable())
@@ -2018,10 +2018,10 @@ void Document::updateLayoutTreeIgnorePendingStylesheets()
             // pending, some nodes may not have had their real style calculated yet. Normally this
             // gets cleaned when style sheets arrive but here we need up-to-date style immediately.
             setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::CleanupPlaceholderStyles));
-            updateLayoutTreeIfNeeded();
+            updateLayoutTree();
         }
     }
-    updateLayoutTreeIfNeeded();
+    updateLayoutTree();
 }
 
 void Document::updateLayoutIgnorePendingStylesheets(Document::RunPostLayoutTasks runPostLayoutTasks)
@@ -2702,7 +2702,7 @@ void Document::implicitClose()
     // necessary and can in fact be actively harmful if pages are loading at a rate of > 60fps
     // (if your platform is syncing flushes and limiting them to 60fps).
     if (!ownerElement() || (ownerElement()->layoutObject() && !ownerElement()->layoutObject()->needsLayout())) {
-        updateLayoutTreeIfNeeded();
+        updateLayoutTree();
 
         // Always do a layout after loading if needed.
         if (view() && layoutView() && (!layoutView()->firstChild() || layoutView()->needsLayout()))
@@ -3627,7 +3627,7 @@ bool Document::setFocusedElement(PassRefPtrWillBeRawPtr<Element> prpNewFocusedEl
     }
 
     if (newFocusedElement)
-        updateLayoutTreeForNodeIfNeeded(newFocusedElement.get());
+        updateLayoutTreeForNode(newFocusedElement.get());
     if (newFocusedElement && newFocusedElement->isFocusable()) {
         if (newFocusedElement->isRootEditableElement() && !acceptsEditingFocus(*newFocusedElement)) {
             // delegate blocks focus change
@@ -3709,7 +3709,7 @@ bool Document::setFocusedElement(PassRefPtrWillBeRawPtr<Element> prpNewFocusedEl
         frameHost()->chromeClient().focusedNodeChanged(oldFocusedElement.get(), m_focusedElement.get());
 
 SetFocusedElementDone:
-    updateLayoutTreeIfNeeded();
+    updateLayoutTree();
     if (LocalFrame* frame = this->frame())
         frame->selection().didChangeFocus();
     return !focusChangeBlocked;
@@ -4487,7 +4487,7 @@ static Editor::Command command(Document* document, const String& commandName)
     if (!frame || frame->document() != document)
         return Editor::Command();
 
-    document->updateLayoutTreeIfNeeded();
+    document->updateLayoutTree();
     return frame->editor().command(commandName, CommandFromDOM);
 }
 
@@ -4804,7 +4804,7 @@ void Document::finishedParsing()
         // we force the styles to be up to date before calling FrameLoader::finishedParsing().
         // See https://bugs.webkit.org/show_bug.cgi?id=36864 starting around comment 35.
         if (mainResourceWasAlreadyRequested)
-            updateLayoutTreeIfNeeded();
+            updateLayoutTree();
 
         frame->loader().finishedParsing();
 

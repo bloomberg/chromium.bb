@@ -301,12 +301,12 @@ TEST_F(DocumentTest, FrameTimingRelayout)
     EXPECT_FALSE(document().view()->frameTimingRequestsDirty());
 
     // Just calling update should have no effect.
-    document().updateLayoutTreeIfNeeded();
+    document().updateLayoutTree();
     EXPECT_FALSE(document().view()->frameTimingRequestsDirty());
 
     // Calling update with a style change should flag Frame Timing as dirty.
     document().setChildNeedsStyleRecalc();
-    document().updateLayoutTreeIfNeeded();
+    document().updateLayoutTree();
     EXPECT_TRUE(document().view()->frameTimingRequestsDirty());
 }
 

@@ -427,10 +427,10 @@ public:
     bool needsLayoutTreeUpdateForNode(const Node&) const;
     // Update ComputedStyles and attach LayoutObjects if necessary, but don't
     // lay out.
-    void updateLayoutTreeIfNeeded();
-    // Same as updateLayoutTreeIfNeeded except ignoring pending stylesheets.
+    void updateLayoutTree();
+    // Same as updateLayoutTree() except ignoring pending stylesheets.
     void updateLayoutTreeIgnorePendingStylesheets();
-    void updateLayoutTreeForNodeIfNeeded(Node*);
+    void updateLayoutTreeForNode(Node*);
     void updateLayout();
     void layoutUpdated();
     enum RunPostLayoutTasks {

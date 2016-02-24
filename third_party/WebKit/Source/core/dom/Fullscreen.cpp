@@ -446,7 +446,7 @@ void Fullscreen::didEnterFullScreenForElement(Element* element)
 
     // FIXME: This should not call updateStyleIfNeeded.
     document()->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::FullScreen));
-    document()->updateLayoutTreeIfNeeded();
+    document()->updateLayoutTree();
 
     m_fullScreenElement->didBecomeFullscreenElement();
 

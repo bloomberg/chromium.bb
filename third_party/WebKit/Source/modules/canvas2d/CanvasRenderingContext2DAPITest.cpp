@@ -288,7 +288,7 @@ TEST_F(CanvasRenderingContext2DAPITest, AccessibilityRectTestForDrawFocusIfNeede
     HTMLCanvasElement* canvas = toHTMLCanvasElement(document().getElementById("canvas"));
     CanvasRenderingContext2D* context = static_cast<CanvasRenderingContext2D*>(canvas->renderingContext());
 
-    document().updateLayoutTreeForNodeIfNeeded(canvas);
+    document().updateLayoutTreeForNode(canvas);
 
     context->beginPath();
     context->rect(10, 10, 40, 40);

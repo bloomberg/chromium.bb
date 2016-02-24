@@ -135,7 +135,7 @@ EffectModel* EffectInput::convert(Element* element, const Vector<Dictionary>& ke
 
     // TODO(alancutter): Remove this once composited animations no longer depend on AnimatableValues.
     if (encounteredCompositableProperty && element->inActiveDocument())
-        element->document().updateLayoutTreeForNodeIfNeeded(element);
+        element->document().updateLayoutTreeForNode(element);
 
     StringKeyframeEffectModel* keyframeEffectModel = StringKeyframeEffectModel::create(keyframes);
     if (!RuntimeEnabledFeatures::cssAdditiveAnimationsEnabled()) {

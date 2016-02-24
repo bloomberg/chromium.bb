@@ -793,7 +793,7 @@ void FrameView::performPreLayoutTasks()
         document->evaluateMediaQueryList();
     }
 
-    document->updateLayoutTreeIfNeeded();
+    document->updateLayoutTree();
     lifecycle().advanceTo(DocumentLifecycle::StyleClean);
 
     if (m_frame->isMainFrame() && !m_viewportScrollableArea) {
@@ -1523,7 +1523,7 @@ void FrameView::setFragmentAnchor(Node* anchorNode)
     m_fragmentAnchor = anchorNode;
 
     // We need to update the layout tree before scrolling.
-    m_frame->document()->updateLayoutTreeIfNeeded();
+    m_frame->document()->updateLayoutTree();
 
     // If layout is needed, we will scroll in performPostLayoutTasks. Otherwise, scroll immediately.
     LayoutView* layoutView = this->layoutView();
@@ -2622,7 +2622,7 @@ void FrameView::updateStyleAndLayoutIfNeededRecursive()
     // region but then become included later by the second frame adding rects to the dirty region
     // when it lays out.
 
-    m_frame->document()->updateLayoutTreeIfNeeded();
+    m_frame->document()->updateLayoutTree();
 
     if (needsLayout())
         layout();
@@ -2654,7 +2654,7 @@ void FrameView::updateStyleAndLayoutIfNeededRecursive()
     // When SVG filters are invalidated using Document::scheduleSVGFilterLayerUpdateHack() they may trigger an
     // extra style recalc. See PaintLayer::filterNeedsPaintInvalidation().
     if (m_frame->document()->hasSVGFilterElementsRequiringLayerUpdate()) {
-        m_frame->document()->updateLayoutTreeIfNeeded();
+        m_frame->document()->updateLayoutTree();
 
         if (needsLayout())
             layout();
