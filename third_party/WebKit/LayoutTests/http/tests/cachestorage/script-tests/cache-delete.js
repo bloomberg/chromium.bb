@@ -64,33 +64,52 @@ cache_test(function(cache) {
         });
   }, 'Cache.delete with a non-existent entry');
 
-var cache_entries = {
-  a: {
-    request: new Request('http://example.com/abc'),
-    response: new Response('')
+prepopulated_cache_test(simple_entries, function(cache, entries) {
+    return cache.matchAll(entries.a_with_query.request,
+                          { ignoreSearch: true })
+      .then(function(result) {
+          assert_response_array_equivalent(
+            result,
+            [
+              entries.a.response,
+              entries.a_with_query.response
+            ]);
+          return cache.delete(entries.a_with_query.request,
+                              { ignoreSearch: true });
+        })
+      .then(function(result) {
+          return cache.matchAll(entries.a_with_query.request,
+                                { ignoreSearch: true });
+        })
+      .then(function(result) {
+          assert_response_array_equivalent(result, []);
+        });
   },
+  'Cache.delete with ignoreSearch option (request with search parameters)');
 
-  b: {
-    request: new Request('http://example.com/b'),
-    response: new Response('')
+prepopulated_cache_test(simple_entries, function(cache, entries) {
+    return cache.matchAll(entries.a_with_query.request,
+                          { ignoreSearch: true })
+      .then(function(result) {
+          assert_response_array_equivalent(
+            result,
+            [
+              entries.a.response,
+              entries.a_with_query.response
+            ]);
+          // cache.delete()'s behavior should be the same if ignoreSearch is
+          // not provided or if ignoreSearch is false.
+          return cache.delete(entries.a_with_query.request,
+                              { ignoreSearch: false });
+        })
+      .then(function(result) {
+          return cache.matchAll(entries.a_with_query.request,
+                                { ignoreSearch: true });
+        })
+      .then(function(result) {
+          assert_response_array_equivalent(result, [ entries.a.response ]);
+        });
   },
-
-  a_with_query: {
-    request: new Request('http://example.com/abc?q=r'),
-    response: new Response('')
-  }
-};
-
-function prepopulated_cache_test(test_function, description) {
-  cache_test(function(cache) {
-      return Promise.all(Object.keys(cache_entries).map(function(k) {
-          return cache.put(cache_entries[k].request.clone(),
-                           cache_entries[k].response.clone());
-        }))
-        .then(function() {
-            return test_function(cache);
-          });
-    }, description);
-}
+  'Cache.delete with ignoreSearch option (when it is specified as false)');
 
 done();

@@ -813,7 +813,7 @@ void CacheStorageCache::PutImpl(scoped_ptr<PutContext> put_context) {
   scoped_ptr<ServiceWorkerFetchRequest> request_copy(
       new ServiceWorkerFetchRequest(*put_context->request));
 
-  DeleteImpl(std::move(request_copy),
+  DeleteImpl(std::move(request_copy), CacheStorageCacheQueryParams(),
              base::Bind(&CacheStorageCache::PutDidDelete,
                         weak_ptr_factory_.GetWeakPtr(),
                         base::Passed(std::move(put_context))));
@@ -1035,17 +1035,27 @@ void CacheStorageCache::Delete(const CacheStorageBatchOperation& operation,
                  weak_ptr_factory_.GetWeakPtr(), callback);
   scheduler_->ScheduleOperation(
       base::Bind(&CacheStorageCache::DeleteImpl, weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(std::move(request)), pending_callback));
+                 base::Passed(std::move(request)), operation.match_params,
+                 pending_callback));
 }
 
 void CacheStorageCache::DeleteImpl(
     scoped_ptr<ServiceWorkerFetchRequest> request,
+    const CacheStorageCacheQueryParams& match_params,
     const ErrorCallback& callback) {
   DCHECK_NE(BACKEND_UNINITIALIZED, backend_state_);
   if (backend_state_ != BACKEND_OPEN) {
     callback.Run(CACHE_STORAGE_ERROR_STORAGE);
     return;
   }
+
+  if (match_params.ignore_search) {
+    OpenAllEntries(base::Bind(&CacheStorageCache::DeleteDidOpenAllEntries,
+                              weak_ptr_factory_.GetWeakPtr(),
+                              base::Passed(std::move(request)), callback));
+    return;
+  }
+
   scoped_ptr<disk_cache::Entry*> entry(new disk_cache::Entry*);
 
   disk_cache::Entry** entry_ptr = entry.get();
@@ -1061,6 +1071,30 @@ void CacheStorageCache::DeleteImpl(
                                open_entry_callback);
   if (rv != net::ERR_IO_PENDING)
     open_entry_callback.Run(rv);
+}
+
+void CacheStorageCache::DeleteDidOpenAllEntries(
+    scoped_ptr<ServiceWorkerFetchRequest> request,
+    const ErrorCallback& callback,
+    scoped_ptr<OpenAllEntriesContext> entries_context,
+    CacheStorageError error) {
+  if (error != CACHE_STORAGE_OK) {
+    callback.Run(error);
+    return;
+  }
+
+  GURL request_url_without_query = RemoveQueryParam(request->url);
+  for (Entries::iterator iter = entries_context->entries.begin();
+       iter != entries_context->entries.end(); iter++) {
+    disk_cache::Entry* entry(*iter);
+    if (request_url_without_query == RemoveQueryParam(GURL(entry->GetKey())))
+      entry->Doom();
+  }
+
+  entries_context.reset();
+
+  UpdateCacheSize();
+  callback.Run(CACHE_STORAGE_OK);
 }
 
 void CacheStorageCache::DeleteDidOpenEntry(

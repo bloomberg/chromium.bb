@@ -223,7 +223,13 @@ class CONTENT_EXPORT CacheStorageCache
   void Delete(const CacheStorageBatchOperation& operation,
               const ErrorCallback& callback);
   void DeleteImpl(scoped_ptr<ServiceWorkerFetchRequest> request,
+                  const CacheStorageCacheQueryParams& match_params,
                   const ErrorCallback& callback);
+  void DeleteDidOpenAllEntries(
+      scoped_ptr<ServiceWorkerFetchRequest> request,
+      const ErrorCallback& callback,
+      scoped_ptr<OpenAllEntriesContext> entries_context,
+      CacheStorageError error);
   void DeleteDidOpenEntry(const GURL& origin,
                           scoped_ptr<ServiceWorkerFetchRequest> request,
                           const CacheStorageCache::ErrorCallback& callback,

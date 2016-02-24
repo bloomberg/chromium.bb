@@ -408,10 +408,13 @@ class CacheStorageCacheTest : public testing::Test {
                     responses, body_handles);
   }
 
-  bool Delete(const ServiceWorkerFetchRequest& request) {
+  bool Delete(const ServiceWorkerFetchRequest& request,
+              const CacheStorageCacheQueryParams& match_params =
+                  CacheStorageCacheQueryParams()) {
     CacheStorageBatchOperation operation;
     operation.operation_type = CACHE_STORAGE_CACHE_OPERATION_TYPE_DELETE;
     operation.request = request;
+    operation.match_params = match_params;
 
     CacheStorageError error =
         BatchOperation(std::vector<CacheStorageBatchOperation>(1, operation));
@@ -940,6 +943,61 @@ TEST_P(CacheStorageCacheTestP, DeleteBody) {
   EXPECT_TRUE(Put(body_request_, body_response_));
   EXPECT_TRUE(Match(body_request_));
   EXPECT_TRUE(Delete(body_request_));
+}
+
+TEST_P(CacheStorageCacheTestP, DeleteWithIgnoreSearchTrue) {
+  EXPECT_TRUE(Put(no_body_request_, no_body_response_));
+  EXPECT_TRUE(Put(body_request_, body_response_));
+  EXPECT_TRUE(Put(body_request_with_query_, body_response_with_query_));
+
+  EXPECT_TRUE(Keys());
+  EXPECT_EQ(3u, callback_strings_.size());
+  std::vector<std::string> expected_keys;
+  expected_keys.push_back(no_body_request_.url.spec());
+  expected_keys.push_back(body_request_.url.spec());
+  expected_keys.push_back(body_request_with_query_.url.spec());
+  EXPECT_TRUE(VerifyKeys(expected_keys));
+
+  // The following delete operation will remove both of body_request_ and
+  // body_request_with_query_ from cache storage.
+  CacheStorageCacheQueryParams match_params;
+  match_params.ignore_search = true;
+  EXPECT_TRUE(Delete(body_request_with_query_, match_params));
+
+  EXPECT_TRUE(Keys());
+  EXPECT_EQ(1u, callback_strings_.size());
+  expected_keys.clear();
+  expected_keys.push_back(no_body_request_.url.spec());
+  EXPECT_TRUE(VerifyKeys(expected_keys));
+}
+
+TEST_P(CacheStorageCacheTestP, DeleteWithIgnoreSearchFalse) {
+  EXPECT_TRUE(Put(no_body_request_, no_body_response_));
+  EXPECT_TRUE(Put(body_request_, body_response_));
+  EXPECT_TRUE(Put(body_request_with_query_, body_response_with_query_));
+
+  EXPECT_TRUE(Keys());
+  EXPECT_EQ(3u, callback_strings_.size());
+  std::vector<std::string> expected_keys;
+  expected_keys.push_back(no_body_request_.url.spec());
+  expected_keys.push_back(body_request_.url.spec());
+  expected_keys.push_back(body_request_with_query_.url.spec());
+  EXPECT_TRUE(VerifyKeys(expected_keys));
+
+  // Default value of ignore_search is false.
+  CacheStorageCacheQueryParams match_params;
+  match_params.ignore_search = false;
+  EXPECT_EQ(match_params.ignore_search,
+            CacheStorageCacheQueryParams().ignore_search);
+
+  EXPECT_TRUE(Delete(body_request_with_query_, match_params));
+
+  EXPECT_TRUE(Keys());
+  EXPECT_EQ(2u, callback_strings_.size());
+  expected_keys.clear();
+  expected_keys.push_back(no_body_request_.url.spec());
+  expected_keys.push_back(body_request_.url.spec());
+  EXPECT_TRUE(VerifyKeys(expected_keys));
 }
 
 TEST_P(CacheStorageCacheTestP, QuickStressNoBody) {
