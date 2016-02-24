@@ -538,7 +538,10 @@ inline Element* adjustToElement(Node* node, WebFocusType type)
         return nullptr;
     if (node->isElementNode())
         return toElement(node);
-    return (type == WebFocusTypeForward) ? ElementTraversal::next(*node) : ElementTraversal::previous(*node);
+    // The returned element is used as an *exclusive* start element. Thus, we should return the result of ElementTraversal::previous(*node),
+    // instead of ElementTraversal::next(*node), if type == WebFocusTypeForward, and vice-versa.
+    // The caller will call ElementTraversal::{next/previous} for the returned value and get the {next|previous} element of the |node|.
+    return (type == WebFocusTypeForward) ? ElementTraversal::previous(*node) : ElementTraversal::next(*node);
 }
 
 } // anonymous namespace
