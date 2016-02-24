@@ -34,7 +34,7 @@ class GLSurfaceMock : public gfx::GLSurface {
   MOCK_METHOD0(GetShareHandle, void*());
   MOCK_METHOD0(GetDisplay, void*());
   MOCK_METHOD0(GetConfig, void*());
-  MOCK_METHOD0(GetFormat, unsigned());
+  MOCK_METHOD0(GetFormat, GLSurface::Format());
 
  protected:
   virtual ~GLSurfaceMock();

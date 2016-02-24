@@ -125,14 +125,6 @@ scoped_ptr<ui::ScopedMakeCurrent> StreamTexture::MakeStubCurrent() {
   scoped_ptr<ui::ScopedMakeCurrent> scoped_make_current;
   bool needs_make_current =
       !owner_stub_->decoder()->GetGLContext()->IsCurrent(NULL);
-  // On Android we should not have to perform a real context switch here when
-  // using virtual contexts.
-  DCHECK(!needs_make_current ||
-         !owner_stub_->decoder()
-              ->GetContextGroup()
-              ->feature_info()
-              ->workarounds()
-              .use_virtualized_gl_contexts);
   if (needs_make_current) {
     scoped_make_current.reset(new ui::ScopedMakeCurrent(
         owner_stub_->decoder()->GetGLContext(), owner_stub_->surface()));

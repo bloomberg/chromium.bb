@@ -16,6 +16,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/sys_info.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "ui/gfx/geometry/rect.h"
@@ -436,8 +437,7 @@ void GetEGLInitDisplays(bool supports_angle_d3d,
 }
 
 GLSurfaceEGL::GLSurfaceEGL() :
-    config_(nullptr),
-    format_(SURFACE_DEFAULT) {}
+    config_(nullptr) {}
 
 bool GLSurfaceEGL::InitializeOneOff() {
   static bool initialized = false;
@@ -617,10 +617,6 @@ NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(EGLNativeWindowType window)
   if (GetClientRect(window_, &windowRect))
     size_ = gfx::Rect(windowRect).size();
 #endif
-}
-
-bool NativeViewGLSurfaceEGL::Initialize() {
-  return Initialize(SURFACE_DEFAULT);
 }
 
 bool NativeViewGLSurfaceEGL::Initialize(GLSurface::Format format) {
@@ -933,6 +929,19 @@ PbufferGLSurfaceEGL::PbufferGLSurfaceEGL(const gfx::Size& size)
   // cases use a (1, 1) surface.
   if (size_.GetArea() == 0)
     size_.SetSize(1, 1);
+}
+
+bool PbufferGLSurfaceEGL::Initialize() {
+  GLSurface::Format format = SURFACE_DEFAULT;
+#if defined(OS_ANDROID)
+  // This is to allow context virtualization which requires on- and offscreen
+  // to use a compatible config. We expect the client to request RGB565
+  // onscreen surface also for this to work (with the exception of
+  // fullscreen video).
+  if (base::SysInfo::IsLowEndDevice())
+    format = SURFACE_RGB565;
+#endif
+  return Initialize(format);
 }
 
 bool PbufferGLSurfaceEGL::Initialize(GLSurface::Format format) {

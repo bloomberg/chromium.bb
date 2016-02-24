@@ -190,9 +190,9 @@ void* GLSurface::GetConfig() {
   return NULL;
 }
 
-unsigned GLSurface::GetFormat() {
+GLSurface::Format GLSurface::GetFormat() {
   NOTIMPLEMENTED();
-  return 0;
+  return SURFACE_DEFAULT;
 }
 
 VSyncProvider* GLSurface::GetVSyncProvider() {
@@ -373,7 +373,7 @@ void* GLSurfaceAdapter::GetConfig() {
   return surface_->GetConfig();
 }
 
-unsigned GLSurfaceAdapter::GetFormat() {
+GLSurface::Format GLSurfaceAdapter::GetFormat() {
   return surface_->GetFormat();
 }
 

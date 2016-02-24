@@ -26,8 +26,18 @@ bool GLContextOSMesa::Initialize(GLSurface* compatible_surface,
   OSMesaContext share_handle = static_cast<OSMesaContext>(
       share_group() ? share_group()->GetHandle() : nullptr);
 
-  GLuint format = compatible_surface->GetFormat();
-  DCHECK_NE(format, (unsigned)0);
+  GLuint format = 0;
+  switch (compatible_surface->GetFormat()) {
+    case GLSurface::SURFACE_OSMESA_BGRA:
+      format = OSMESA_BGRA;
+      break;
+    case GLSurface::SURFACE_OSMESA_RGBA:
+      format = OSMESA_RGBA;
+      break;
+    default:
+      NOTREACHED();
+      return false;
+  }
   context_ = OSMesaCreateContextExt(format,
                                     0,  // depth bits
                                     0,  // stencil bits

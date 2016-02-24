@@ -38,8 +38,10 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
 
   // Minimum bit depth of surface.
   enum Format {
-    SURFACE_ARGB8888 = 1, // 32 bits
-    SURFACE_RGB565 = 2,  // 16 bits
+    SURFACE_ARGB8888,
+    SURFACE_RGB565,
+    SURFACE_OSMESA_BGRA,
+    SURFACE_OSMESA_RGBA,
     SURFACE_DEFAULT = SURFACE_ARGB8888
   };
 
@@ -152,7 +154,7 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   virtual void* GetConfig();
 
   // Get the GL pixel format of the surface, if available.
-  virtual unsigned GetFormat();
+  virtual GLSurface::Format GetFormat();
 
   // Get access to a helper providing time of recent refresh and period
   // of screen refresh. If unavailable, returns NULL.
@@ -211,12 +213,7 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
 
   // Create a GL surface used for offscreen rendering.
   static scoped_refptr<GLSurface> CreateOffscreenGLSurface(
-      const gfx::Size& size) {
-    return CreateOffscreenGLSurface(size, SURFACE_DEFAULT);
-  }
-
-  static scoped_refptr<GLSurface> CreateOffscreenGLSurface(
-      const gfx::Size& size, GLSurface::Format format);
+      const gfx::Size& size);
 
   static GLSurface* GetCurrent();
 
@@ -279,7 +276,7 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   void* GetShareHandle() override;
   void* GetDisplay() override;
   void* GetConfig() override;
-  unsigned GetFormat() override;
+  GLSurface::Format GetFormat() override;
   VSyncProvider* GetVSyncProvider() override;
   bool ScheduleOverlayPlane(int z_order,
                             OverlayTransform transform,

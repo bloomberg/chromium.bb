@@ -161,19 +161,6 @@ gpu::CommandBufferId GetCommandBufferID(int channel_id, int32_t route_id) {
       (static_cast<uint64_t>(channel_id) << 32) | route_id);
 }
 
-gfx::GLSurface::Format GetSurfaceFormatFromAttribute(
-    const gpu::gles2::ContextCreationAttribHelper& attrib,
-    bool use_virtualized_gl_context) {
-  gfx::GLSurface::Format format = gfx::GLSurface::SURFACE_DEFAULT;  // ARGB8888
-  if (!use_virtualized_gl_context &&
-      attrib.red_size <= 5 &&
-      attrib.green_size <= 6 &&
-      attrib.blue_size <= 5 &&
-      attrib.alpha_size == 0) {
-    format = gfx::GLSurface::SURFACE_RGB565;
-  }
-  return format;
-}
 }  // namespace
 
 GpuCommandBufferStub::GpuCommandBufferStub(
@@ -251,8 +238,17 @@ GpuCommandBufferStub::GpuCommandBufferStub(
   // only a single context. See crbug.com/510243 for details.
   use_virtualized_gl_context_ |= mailbox_manager->UsesSync();
 
-  surface_format_ = GetSurfaceFormatFromAttribute(attrib_parser,
-                                                  use_virtualized_gl_context_);
+#if defined(OS_ANDROID)
+  if (attrib_parser.red_size <= 5 &&
+      attrib_parser.green_size <= 6 &&
+      attrib_parser.blue_size <= 5 &&
+      attrib_parser.alpha_size == 0)
+    surface_format_ = gfx::GLSurface::SURFACE_RGB565;
+  gfx::GLSurface* defaultOffscreenSurface =
+      channel_->gpu_channel_manager()->GetDefaultOffscreenSurface();
+  if (surface_format_ != defaultOffscreenSurface->GetFormat())
+    use_virtualized_gl_context_ = false;
+#endif
 
   if (offscreen && initial_size_.IsEmpty()) {
     // If we're an offscreen surface with zero width and/or height, set to a
@@ -562,8 +558,9 @@ void GpuCommandBufferStub::OnInitialize(
   }
 
   scoped_refptr<gfx::GLContext> context;
-  if (use_virtualized_gl_context_ && channel_->share_group()) {
-    context = channel_->share_group()->GetSharedContext();
+  gfx::GLShareGroup* share_group = channel_->share_group();
+  if (use_virtualized_gl_context_ && share_group) {
+    context = share_group->GetSharedContext();
     if (!context.get()) {
       context = gfx::GLContext::CreateGLContext(
           channel_->share_group(),
@@ -579,12 +576,10 @@ void GpuCommandBufferStub::OnInitialize(
     // This should be a non-virtual GL context.
     DCHECK(context->GetHandle());
     context = new gpu::GLContextVirtual(
-        channel_->share_group(), context.get(), decoder_->AsWeakPtr());
+        share_group, context.get(), decoder_->AsWeakPtr());
     if (!context->Initialize(surface_.get(), gpu_preference_)) {
-      // TODO(sievers): The real context created above for the default
-      // offscreen surface might not be compatible with this surface.
-      // Need to adjust at least GLX to be able to create the initial context
-      // with a config that is compatible with onscreen and offscreen surfaces.
+      // The real context created above for the default offscreen surface
+      // might not be compatible with this surface.
       context = NULL;
 
       DLOG(ERROR) << "Failed to initialize virtual GL context.";
@@ -594,7 +589,7 @@ void GpuCommandBufferStub::OnInitialize(
   }
   if (!context.get()) {
     context = gfx::GLContext::CreateGLContext(
-        channel_->share_group(), surface_.get(), gpu_preference_);
+        share_group, surface_.get(), gpu_preference_);
   }
   if (!context.get()) {
     DLOG(ERROR) << "Failed to create context.";

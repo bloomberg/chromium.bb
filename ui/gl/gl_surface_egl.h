@@ -84,7 +84,7 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   explicit NativeViewGLSurfaceEGL(EGLNativeWindowType window);
 
   // Implement GLSurface.
-  bool Initialize() override;
+  using GLSurfaceEGL::Initialize;
   bool Initialize(GLSurface::Format format) override;
   void Destroy() override;
   bool Resize(const gfx::Size& size,
@@ -157,6 +157,7 @@ class GL_EXPORT PbufferGLSurfaceEGL : public GLSurfaceEGL {
   explicit PbufferGLSurfaceEGL(const gfx::Size& size);
 
   // Implement GLSurface.
+  bool Initialize() override;
   bool Initialize(GLSurface::Format format) override;
   void Destroy() override;
   bool IsOffscreen() override;
