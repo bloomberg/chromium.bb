@@ -4738,7 +4738,12 @@ TEST_F(CompositedSelectionBoundsTest, EditableDiv) { runTest("composited_selecti
 TEST_F(CompositedSelectionBoundsTest, EmptyEditableInput) { runTest("composited_selection_bounds_empty_editable_input.html"); }
 TEST_F(CompositedSelectionBoundsTest, EmptyEditableArea) { runTest("composited_selection_bounds_empty_editable_area.html"); }
 
+// Fails on Mac ASan 64 bot. https://crbug.com/588769.
+#if OS(MACOSX) && defined(ADDRESS_SANITIZER)
+TEST_P(ParameterizedWebFrameTest, DISABLED_CompositedSelectionBoundsCleared)
+#else
 TEST_P(ParameterizedWebFrameTest, CompositedSelectionBoundsCleared)
+#endif
 {
     RuntimeEnabledFeatures::setCompositedSelectionUpdateEnabled(true);
 
