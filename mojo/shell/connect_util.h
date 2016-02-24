@@ -10,6 +10,7 @@
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/system/handle.h"
 #include "mojo/shell/identity.h"
+#include "mojo/shell/public/interfaces/shell.mojom.h"
 
 class GURL;
 
@@ -44,7 +45,8 @@ inline void ConnectToInterface(ApplicationManager* application_manager,
                                InterfacePtr<Interface>* ptr) {
   ScopedMessagePipeHandle service_handle = ConnectToInterfaceByName(
       application_manager, source,
-      Identity(application_url, std::string(), GetPermissiveCapabilityFilter()),
+      Identity(application_url, std::string(), mojom::Shell::kUserInherit,
+               GetPermissiveCapabilityFilter()),
       Interface::Name_);
   ptr->Bind(InterfacePtrInfo<Interface>(std::move(service_handle), 0u));
 }

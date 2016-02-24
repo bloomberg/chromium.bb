@@ -28,9 +28,6 @@ class ConnectParams {
    ConnectParams();
    ~ConnectParams();
 
-  // Sets |source_|. If |source| is null, |source_| is reset.
-  void SetSource(ApplicationInstance* source);
-
   // The following methods set both |target_| and |target_url_request_|.
   void SetTargetURL(const GURL& target_url);
 

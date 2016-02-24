@@ -34,7 +34,8 @@ class NetworkServiceDelegate : public ShellClient,
 
  private:
   // mojo::ShellClient implementation.
-  void Initialize(Shell* shell, const std::string& url, uint32_t id) override;
+  void Initialize(Shell* shell, const std::string& url,
+                  uint32_t id, uint32_t user_id) override;
   bool AcceptConnection(Connection* connection) override;
   bool ShellConnectionLost() override;
   void Quit() override;

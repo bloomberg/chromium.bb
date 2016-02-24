@@ -21,7 +21,7 @@ class WindowTypeLauncher : public mojo::ShellClient {
  private:
   // mojo::ShellClient:
   void Initialize(mojo::Shell* shell, const std::string& url,
-                  uint32_t id) override;
+                  uint32_t id, uint32_t user_id) override;
 
   scoped_ptr<views::AuraInit> aura_init_;
 

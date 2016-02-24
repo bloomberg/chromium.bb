@@ -356,7 +356,7 @@ WindowTypeLauncher::WindowTypeLauncher() {}
 WindowTypeLauncher::~WindowTypeLauncher() {}
 
 void WindowTypeLauncher::Initialize(mojo::Shell* shell, const std::string& url,
-                                    uint32_t id) {
+                                    uint32_t id, uint32_t user_id) {
   aura_init_.reset(new views::AuraInit(shell, "views_mus_resources.pak"));
 
   views::WindowManagerConnection::Create(shell);

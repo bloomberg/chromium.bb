@@ -57,6 +57,7 @@ class ApplicationInstance : public mojom::Shell,
  private:
   // Shell implementation:
   void Connect(const String& app_url,
+               uint32_t user_id,
                shell::mojom::InterfaceProviderRequest remote_interfaces,
                shell::mojom::InterfaceProviderPtr local_interfaces,
                mojom::CapabilityFilterPtr filter,

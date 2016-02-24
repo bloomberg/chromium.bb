@@ -115,7 +115,8 @@ class ServiceApplication : public ShellClient,
 
  private:
   // Overridden from ShellClient:
-  void Initialize(Shell* shell, const std::string& url, uint32_t id) override {
+  void Initialize(Shell* shell, const std::string& url, uint32_t id,
+                  uint32_t user_id) override {
     shell_ = shell;
     // ServiceApplications have no capability filter and can thus connect
     // directly to the validator application.
@@ -162,7 +163,7 @@ TestApplication::TestApplication() : shell_(nullptr) {}
 TestApplication::~TestApplication() {}
 
 void TestApplication::Initialize(Shell* shell, const std::string& url,
-                                 uint32_t id) {
+                                 uint32_t id, uint32_t user_id) {
   shell_ = shell;
   url_ = url;
 }
@@ -327,7 +328,9 @@ void CapabilityFilterTest::RunApplication(const std::string& url,
   shell::mojom::InterfaceProviderPtr local_interfaces;
   new InterfaceProviderImpl(GetProxy(&local_interfaces), validator_);
   scoped_ptr<ConnectParams> params(new ConnectParams);
-  params->set_target(Identity(GURL(url), std::string(), filter));
+  params->set_source(CreateShellIdentity());
+  params->set_target(Identity(GURL(url), std::string(),
+                              mojom::Shell::kUserInherit, filter));
   params->set_remote_interfaces(GetProxy(&remote_interfaces));
   params->set_local_interfaces(std::move(local_interfaces));
   quit_identities_.insert(params->target());

@@ -50,10 +50,13 @@ void FrameMojoShell::BindRequest(
 // future we may need to support both.
 void FrameMojoShell::Connect(
     const mojo::String& application_url,
+    uint32_t user_id,
     mojo::shell::mojom::InterfaceProviderRequest services,
     mojo::shell::mojom::InterfaceProviderPtr /* exposed_services */,
     mojo::shell::mojom::CapabilityFilterPtr filter,
     const ConnectCallback& callback) {
+  // TODO(beng): user_id is dropped on the floor right now. Figure out what to
+  //             do with it.
   mojo::shell::mojom::InterfaceProviderPtr frame_services;
   service_provider_bindings_.AddBinding(GetServiceRegistry(),
                                         GetProxy(&frame_services));

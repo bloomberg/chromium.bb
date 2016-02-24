@@ -7,63 +7,76 @@ module mojo.shell.mojom;
 import "mojo/shell/public/interfaces/interface_provider.mojom";
 import "mojo/shell/public/interfaces/shell.mojom";
 
-// TODO(beng): rewrite these comments.
-// This is the primary interface implemented by every Mojo application. It
-// allows the application to receive its startup arguments from the shell, and
-// to be notified of events that occur during its execution.
-//
-// TODO(aa): It would be good to reorder the parameters once we have interface
-// versioning.
+// Implemented by something "known to" the Mojo Shell (e.g. an application or
+// service), for which an instance is tracked. It allows the implementor to
+// receive lifecycle events and service inbound connection attempts.
 interface ShellClient {
-  // Initializes the application with the specified arguments. This method is
-  // guaranteed to be called before any other method is called, and will only be
-  // called once.
+  // Called by the shell once an instance for this application has been created.
+  // This method will be called exactly once before any other method is called.
   //
-  // The |url| parameter is the identity of the application as far as the shell
-  // is concerned. This will be the URL the application was found at, after all
-  // mappings, resolution, and redirects. And it will not include the
-  // querystring, since the querystring is not part of an application's
-  // identity.
-  // 
-  // The |id| parameter is the identifier of the instance in the
-  // ApplicationManager. It can be passed to other shell interfaces that request
-  // an instance identifier.
-  Initialize(Shell shell, string url, uint32 id);
+  // Parameters:
+  //
+  //  shell
+  //    An interface back to the shell by which new connections may be
+  //    established.
+  //
+  //  url
+  //    The resolved URL used in the connection request that resulted in this
+  //    application being initialized.
+  //
+  //  id
+  //    A unique identifier used by the shell to identify this instance.
+  //
+  //  user_id
+  //    Identifies the user this instance is run as in the shell. This may
+  //    differ from the user the application that caused this application to be
+  //    instantiated is run as. This will always be a valid user id, never
+  //    Shell::kUserInherit.
+  //
+  Initialize(Shell shell, string url, uint32 id, uint32 user_id);
 
-  // Called when another application (identified by |requestor_url|) attempts to
-  // open a connection to this application.
+  // Called when another application attempts to open a connection to this
+  // application. An application implements this method to complete the exchange
+  // of interface implementations with the remote application. See also
+  // documentation in shell.mojom for Connect(). The application originating
+  // the request is referred to as the "source" and the one receiving the
+  // "target".
   //
-  // If the other application wants to request services from this application,
-  // it will have passed a valid interface request through the |services|
-  // parameter (i.e. one containing a valid message pipe endpoint). This
-  // application may then bind an implementation of |InterfaceProvider| to that
-  // request in order to make services available to the other application.
+  // Parameters:
   //
-  // If the other application wants to offer services to this application, it
-  // will have passed a bound interface through the |exposed_services|
-  // parameter. This application may then request services through that
-  // interface.
+  //  requestor_url
+  //    The URL of the source application.
   //
-  // It is possible that both parameters will be valid/bound if the other
-  // application wants to both request services from and offer services to this
-  // application.
+  //  requestor_id
+  //    A unique identifier used by the shell to identify the source
+  //    application's instance.
   //
-  // This application is free to ignore the |services| or |exposed_services|
-  // parameters if it does not wish to offer or request services.
+  //  requestor_user_id
+  //    An identifier for the user the source application is run as. This may
+  //    differ from the application the target is run as (i.e. the one received
+  //    via Initialize() above). This will always be a valid user id, never
+  //    Shell::kUserInherit.
   //
-  // |allowed_interfaces| is a set of interface names that the shell has
-  // determined can be exposed by this application to the connecting
-  // application. When this parameter is empty, this application should expose
-  // no services to the connecting application. When this parameter contains
-  // only the single string value "*" the application may expose all of its
-  // services to the connecting application.
+  //  local_interfaces
+  //    A request for an InterfaceProvider by which the source application may
+  //    seek to bind interface implementations exported by the target.
   //
-  // |resolved_url| is the URL that was requested to create this connection,
-  // after all mappings, resolutions, and redirects. This will include any
-  // querystring that was part of the request.
+  //  remote_interfaces
+  //    An InterfaceProvider by which the target application may bind interface
+  //    implementations exported by the source.
+  //
+  //  allowed_interfaces
+  //    A whitelist of interface names that should be exported to the source,
+  //    according to the security policy described by the source and target's
+  //    manifests. Attempts to bind interfaces not in this whitelist must not be
+  //    fulfilled.
+  //
+  //  resolved_url
+  //    The resolved URL used to complete this connection.
   //
   AcceptConnection(string requestor_url,
                    uint32 requestor_id,
+                   uint32 requestor_user_id,
                    InterfaceProvider&? local_interfaces,
                    InterfaceProvider? remote_interfaces,
                    array<string> allowed_interfaces,

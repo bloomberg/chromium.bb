@@ -26,10 +26,15 @@ class ShellClient {
   virtual ~ShellClient();
 
   // Called once a bidirectional connection with the shell has been established.
-  // |url| is the URL used to start the application. |id| is a unique identifier
-  // the shell uses to identify this specific instance of the application.
+  // |url| is the URL used to start the application.
+  // |id| is a unique identifier the shell uses to identify this specific
+  // instance of the application.
+  // |user_id| identifies the user this instance is run as.
   // Called exactly once before any other method.
-  virtual void Initialize(Shell* shell, const std::string& url, uint32_t id);
+  virtual void Initialize(Shell* shell,
+                          const std::string& url,
+                          uint32_t id,
+                          uint32_t user_id = 0);
 
   // Called when a connection to this client is brokered by the shell. Override
   // to expose services to the remote application. Return true if the connection

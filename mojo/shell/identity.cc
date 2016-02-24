@@ -4,6 +4,8 @@
 
 #include "mojo/shell/identity.h"
 
+#include "mojo/shell/public/interfaces/shell.mojom.h"
+
 namespace mojo {
 namespace shell {
 namespace {
@@ -28,18 +30,17 @@ CapabilityFilter CanonicalizeFilter(const CapabilityFilter& filter) {
 Identity::Identity() {}
 
 Identity::Identity(const GURL& url)
-    : url_(url),
-      qualifier_(url_.spec()) {}
+    : Identity(url, url.spec(), mojom::Shell::kUserRoot) {}
 
-Identity::Identity(const GURL& url, const std::string& qualifier)
-    : url_(url),
-      qualifier_(qualifier.empty() ? url_.spec() : qualifier) {}
+Identity::Identity(const GURL& url, const std::string& qualifier,
+                   uint32_t user_id)
+    : Identity(url, qualifier, user_id, CapabilityFilter()) {}
 
-Identity::Identity(const GURL& url,
-                   const std::string& qualifier,
-                   CapabilityFilter filter)
+Identity::Identity(const GURL& url, const std::string& qualifier,
+                   uint32_t user_id, CapabilityFilter filter)
     : url_(url),
       qualifier_(qualifier.empty() ? url_.spec() : qualifier),
+      user_id_(user_id),
       filter_(CanonicalizeFilter(filter)) {}
 
 Identity::~Identity() {}
@@ -50,17 +51,19 @@ bool Identity::operator<(const Identity& other) const {
   // TODO(beng): figure out how it should work.
   if (url_ != other.url_)
     return url_ < other.url_;
-  return qualifier_ < other.qualifier_;
+  if (qualifier_ != other.qualifier_)
+    return qualifier_ < other.qualifier_;
+  return user_id_ < other.user_id_;
 }
 
 bool Identity::operator==(const Identity& other) const {
   return other.url_ == url_ && other.qualifier_ == qualifier_ &&
-    other.filter_ == filter_;
+    other.filter_ == filter_ && other.user_id_ == user_id_;
 }
 
 Identity CreateShellIdentity() {
   return Identity(GURL("mojo://shell/"), std::string(),
-                  GetPermissiveCapabilityFilter());
+                  mojom::Shell::kUserRoot, GetPermissiveCapabilityFilter());
 }
 
 }  // namespace shell

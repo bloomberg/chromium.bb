@@ -105,7 +105,8 @@ void WindowManagerApplication::OnAcceleratorRegistrarDestroyed(
 
 void WindowManagerApplication::Initialize(mojo::Shell* shell,
                                           const std::string& url,
-                                          uint32_t id) {
+                                          uint32_t id,
+                                          uint32_t user_id) {
   shell_ = shell;
   tracing_.Initialize(shell, url);
 

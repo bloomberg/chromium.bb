@@ -29,29 +29,6 @@
 namespace mojo {
 namespace shell {
 
-namespace {
-
-class ShellApplicationLoader : public ApplicationLoader {
- public:
-  explicit ShellApplicationLoader(ApplicationManager* manager)
-      : manager_(manager) {}
-  ~ShellApplicationLoader() override {}
-
- private:
-  // Overridden from ApplicationLoader:
-  void Load(const GURL& url, mojom::ShellClientRequest request) override {
-    DCHECK(request.is_pending());
-    shell_connection_.reset(new ShellConnection(manager_, std::move(request)));
-  }
-
-  ApplicationManager* manager_;
-  scoped_ptr<ShellConnection> shell_connection_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShellApplicationLoader);
-};
-
-}  // namespace
-
 // static
 ApplicationManager::TestAPI::TestAPI(ApplicationManager* manager)
     : manager_(manager) {
@@ -76,8 +53,9 @@ ApplicationManager::ApplicationManager(
     : file_task_runner_(file_task_runner),
       native_runner_factory_(std::move(native_runner_factory)),
       weak_ptr_factory_(this) {
-  SetLoaderForURL(make_scoped_ptr(new ShellApplicationLoader(this)),
-                  GURL("mojo://shell/"));
+  mojom::ShellClientRequest request;
+  CreateInstance(CreateShellIdentity(), &request);
+  shell_connection_.reset(new ShellConnection(this, std::move(request)));
 
   InitPackageManager(register_mojo_url_schemes);
 }
@@ -99,6 +77,15 @@ void ApplicationManager::Connect(scoped_ptr<ConnectParams> params) {
                        TRACE_EVENT_SCOPE_THREAD, "original_url",
                        params->target().url().spec());
   DCHECK(params->target().url().is_valid());
+
+  if (params->target().user_id() == mojom::Shell::kUserInherit) {
+    ApplicationInstance* source = GetApplicationInstance(params->source());
+    Identity target = params->target();
+    // TODO(beng): we should CHECK source.
+    target.set_user_id(source ? source->identity().user_id()
+                              : mojom::Shell::kUserRoot);
+    params->set_target(target);
+  }
 
   // Connect to an existing matching instance, if possible.
   if (ConnectToExistingInstance(&params))
@@ -191,7 +178,9 @@ void ApplicationManager::CreateInstanceForHandle(
   // created instance is identified by |url| and may be subsequently reached by
   // client code using this identity.
   CapabilityFilter local_filter = filter->filter.To<CapabilityFilter>();
-  Identity target_id(url.To<GURL>(), std::string(), local_filter);
+  // TODO(beng): obtain userid from the inbound connection.
+  Identity target_id(url.To<GURL>(), std::string(), mojom::Shell::kUserInherit,
+                     local_filter);
   mojom::ShellClientRequest request;
   ApplicationInstance* instance = CreateInstance(target_id, &request);
   instance->BindPIDReceiver(std::move(pid_receiver));
@@ -232,8 +221,12 @@ void ApplicationManager::InitPackageManager(bool register_mojo_url_schemes) {
 bool ApplicationManager::ConnectToExistingInstance(
     scoped_ptr<ConnectParams>* params) {
   ApplicationInstance* instance = GetApplicationInstance((*params)->target());
-  if (!instance)
-    return false;
+  if (!instance) {
+    Identity root_identity = (*params)->target();
+    root_identity.set_user_id(mojom::Shell::kUserRoot);
+    instance = GetApplicationInstance(root_identity);
+    if (!instance) return false;
+  }
   instance->ConnectToClient(std::move(*params));
   return true;
 }
@@ -312,7 +305,8 @@ void ApplicationManager::OnGotResolvedURL(
   // TODO(beng): this clobbers the filter passed via Connect().
   if (!base_filter.is_null())
     filter = base_filter->filter.To<CapabilityFilter>();
-  Identity target(params->target().url(), params->target().qualifier(), filter);
+  Identity target(params->target().url(), params->target().qualifier(),
+                  params->target().user_id(), filter);
 
   mojom::ShellClientRequest request;
   ApplicationInstance* instance = CreateInstance(target, &request);
@@ -329,7 +323,8 @@ void ApplicationManager::OnGotResolvedURL(
     // from the original request rather than for the package itself, which will
     // always be the same.
     CreateShellClient(source,
-                      Identity(resolved_gurl, target.qualifier(), filter),
+                      Identity(resolved_gurl, target.qualifier(),
+                               target.user_id(), filter),
                       target.url(), std::move(request));
   } else {
     bool start_sandboxed = false;

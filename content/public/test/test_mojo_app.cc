@@ -21,7 +21,7 @@ TestMojoApp::~TestMojoApp() {
 }
 
 void TestMojoApp::Initialize(mojo::Shell* shell, const std::string& url,
-                             uint32_t id) {
+                             uint32_t id, uint32_t user_id) {
   shell_ = shell;
 }
 

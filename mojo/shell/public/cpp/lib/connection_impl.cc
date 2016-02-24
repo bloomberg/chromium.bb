@@ -23,6 +23,7 @@ ConnectionImpl::ConnectionImpl(
     const std::string& connection_url,
     const std::string& remote_url,
     uint32_t remote_id,
+    uint32_t remote_user_id,
     shell::mojom::InterfaceProviderPtr remote_interfaces,
     shell::mojom::InterfaceProviderRequest local_interfaces,
     const std::set<std::string>& allowed_interfaces)
@@ -30,6 +31,7 @@ ConnectionImpl::ConnectionImpl(
       remote_url_(remote_url),
       remote_id_(remote_id),
       remote_ids_valid_(false),
+      remote_user_id_(remote_user_id),
       local_registry_(std::move(local_interfaces), this),
       remote_interfaces_(std::move(remote_interfaces)),
       allowed_interfaces_(allowed_interfaces),
@@ -60,6 +62,10 @@ const std::string& ConnectionImpl::GetConnectionURL() {
 
 const std::string& ConnectionImpl::GetRemoteApplicationURL() {
   return remote_url_;
+}
+
+uint32_t ConnectionImpl::GetRemoteUserID() const {
+  return remote_user_id_;
 }
 
 void ConnectionImpl::SetRemoteInterfaceProviderConnectionErrorHandler(

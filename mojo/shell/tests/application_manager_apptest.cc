@@ -38,7 +38,8 @@ class ApplicationManagerAppTestDelegate
 
  private:
   // mojo::ShellClient:
-  void Initialize(Shell* shell, const std::string& url, uint32_t id) override {}
+  void Initialize(Shell* shell, const std::string& url, uint32_t id,
+                  uint32_t user_id) override {}
   bool AcceptConnection(Connection* connection) override {
     connection->AddInterface<CreateInstanceForHandleTest>(this);
     return true;

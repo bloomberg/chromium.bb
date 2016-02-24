@@ -26,7 +26,8 @@ class TestRequestTrackerApplication
   ~TestRequestTrackerApplication() override;
 
   // mojo::ShellClient methods:
-  void Initialize(Shell* shell, const std::string& url, uint32_t id) override;
+  void Initialize(Shell* shell, const std::string& url,
+                  uint32_t id, uint32_t user_id) override;
   bool AcceptConnection(Connection* connection) override;
 
   // InterfaceFactory<TestTimeService> methods:

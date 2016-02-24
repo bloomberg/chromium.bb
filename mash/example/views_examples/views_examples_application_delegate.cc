@@ -18,7 +18,8 @@ ViewsExamplesApplicationDelegate::~ViewsExamplesApplicationDelegate() {
 
 void ViewsExamplesApplicationDelegate::Initialize(mojo::Shell* shell,
                                                   const std::string& url,
-                                                  uint32_t id) {
+                                                  uint32_t id,
+                                                  uint32_t user_id) {
   tracing_.Initialize(shell, url);
   aura_init_.reset(new views::AuraInit(shell, "views_mus_resources.pak"));
 

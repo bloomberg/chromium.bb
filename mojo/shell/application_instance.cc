@@ -44,7 +44,7 @@ ApplicationInstance::~ApplicationInstance() {
 
 void ApplicationInstance::InitializeApplication() {
   shell_client_->Initialize(binding_.CreateInterfacePtrAndBind(),
-                            identity_.url().spec(), id_);
+                            identity_.url().spec(), id_, identity_.user_id());
   binding_.set_connection_error_handler([this]() { OnConnectionError(); });
 }
 
@@ -69,6 +69,7 @@ void ApplicationInstance::BindPIDReceiver(
 // Shell implementation:
 void ApplicationInstance::Connect(
     const String& app_url,
+    uint32_t user_id,
     shell::mojom::InterfaceProviderRequest remote_interfaces,
     shell::mojom::InterfaceProviderPtr local_interfaces,
     mojom::CapabilityFilterPtr filter,
@@ -86,8 +87,9 @@ void ApplicationInstance::Connect(
       capability_filter = filter->filter.To<CapabilityFilter>();
 
     scoped_ptr<ConnectParams> params(new ConnectParams);
-    params->SetSource(this);
-    params->set_target(Identity(url, std::string(), capability_filter));
+    params->set_source(identity_);
+    params->set_target(
+        Identity(url, std::string(), user_id, capability_filter));
     params->set_remote_interfaces(std::move(remote_interfaces));
     params->set_local_interfaces(std::move(local_interfaces));
     params->set_connect_callback(callback);
@@ -130,9 +132,9 @@ void ApplicationInstance::CallAcceptConnection(
       manager_->GetApplicationInstance(params->source());
   uint32_t source_id = source ? source->id() : Shell::kInvalidApplicationID;
   shell_client_->AcceptConnection(
-      params->source().url().spec(), source_id, params->TakeRemoteInterfaces(),
-      params->TakeLocalInterfaces(), Array<String>::From(interfaces),
-      params->target().url().spec());
+      params->source().url().spec(), params->source().user_id(), source_id,
+      params->TakeRemoteInterfaces(), params->TakeLocalInterfaces(),
+      Array<String>::From(interfaces), params->target().url().spec());
 }
 
 void ApplicationInstance::OnConnectionError() {

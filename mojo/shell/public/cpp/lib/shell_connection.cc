@@ -86,7 +86,9 @@ class AppRefCountImpl : public AppRefCount {
 
 
 ShellConnection::ConnectParams::ConnectParams(const std::string& url)
-    : url_(url), filter_(shell::mojom::CapabilityFilter::New()) {
+    : url_(url),
+      filter_(shell::mojom::CapabilityFilter::New()),
+      user_id_(shell::mojom::Shell::kUserInherit) {
   filter_->filter.SetToEmpty();
 }
 ShellConnection::ConnectParams::~ConnectParams() {}
@@ -147,9 +149,10 @@ scoped_ptr<Connection> ShellConnection::Connect(ConnectParams* params) {
       GetProxy(&remote_interfaces);
   scoped_ptr<internal::ConnectionImpl> registry(new internal::ConnectionImpl(
       application_url, application_url,
-      shell::mojom::Shell::kInvalidApplicationID, std::move(remote_interfaces),
-      std::move(local_request), allowed));
+      shell::mojom::Shell::kInvalidApplicationID, params->user_id(),
+      std::move(remote_interfaces), std::move(local_request), allowed));
   shell_->Connect(application_url,
+                  params->user_id(),
                   std::move(remote_request),
                   std::move(local_interfaces),
                   params->TakeFilter(),
@@ -179,22 +182,24 @@ scoped_ptr<AppRefCount> ShellConnection::CreateAppRefCount() {
 
 void ShellConnection::Initialize(shell::mojom::ShellPtr shell,
                                  const mojo::String& url,
-                                 uint32_t id) {
+                                 uint32_t id,
+                                 uint32_t user_id) {
   shell_ = std::move(shell);
   shell_.set_connection_error_handler([this]() { OnConnectionError(); });
-  client_->Initialize(this, url, id);
+  client_->Initialize(this, url, id, user_id);
 }
 
 void ShellConnection::AcceptConnection(
     const String& requestor_url,
     uint32_t requestor_id,
+    uint32_t requestor_user_id,
     shell::mojom::InterfaceProviderRequest local_interfaces,
     shell::mojom::InterfaceProviderPtr remote_interfaces,
     Array<String> allowed_interfaces,
     const String& url) {
   scoped_ptr<Connection> registry(new internal::ConnectionImpl(
-      url, requestor_url, requestor_id, std::move(remote_interfaces),
-      std::move(local_interfaces),
+      url, requestor_url, requestor_id, requestor_user_id,
+      std::move(remote_interfaces), std::move(local_interfaces),
       allowed_interfaces.To<std::set<std::string>>()));
   if (!client_->AcceptConnection(registry.get()))
     return;

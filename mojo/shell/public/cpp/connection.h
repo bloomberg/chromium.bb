@@ -82,6 +82,9 @@ class Connection {
   // Returns the URL identifying the remote application on this connection.
   virtual const std::string& GetRemoteApplicationURL() = 0;
 
+  // Returns the User ID for the remote application.
+  virtual uint32_t GetRemoteUserID() const = 0;
+
   // Register a handler to receive an error notification on the pipe to the
   // remote application's InterfaceProvider.
   virtual void SetRemoteInterfaceProviderConnectionErrorHandler(

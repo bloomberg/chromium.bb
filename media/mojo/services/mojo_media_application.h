@@ -28,7 +28,8 @@ class MojoMediaApplication
   // mojo::ShellClient implementation.
   void Initialize(mojo::Shell* shell,
                   const std::string& url,
-                  uint32_t id) final;
+                  uint32_t id,
+                  uint32_t user_id) final;
   bool AcceptConnection(mojo::Connection* connection) final;
 
   // mojo::InterfaceFactory<interfaces::ServiceFactory> implementation.

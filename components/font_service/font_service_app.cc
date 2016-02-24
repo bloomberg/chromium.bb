@@ -59,7 +59,7 @@ FontServiceApp::FontServiceApp() {}
 FontServiceApp::~FontServiceApp() {}
 
 void FontServiceApp::Initialize(mojo::Shell* shell, const std::string& url,
-                                uint32_t id) {
+                                uint32_t id, uint32_t user_id) {
   tracing_.Initialize(shell, url);
 }
 

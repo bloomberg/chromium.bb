@@ -256,7 +256,8 @@ SysUIApplication::~SysUIApplication() {}
 
 void SysUIApplication::Initialize(mojo::Shell* shell,
                                   const std::string& url,
-                                  uint32_t id) {
+                                  uint32_t id,
+                                  uint32_t user_id) {
   ash_init_.reset(new AshInit());
   ash_init_->Initialize(shell);
 }

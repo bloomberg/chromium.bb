@@ -21,10 +21,15 @@ namespace shell {
 class Identity {
  public:
   Identity();
+  // Assumes user = mojom::Shell::kUserRoot.
+  // Used in tests or for shell-initiated connections.
   explicit Identity(const GURL& in_url);
-  Identity(const GURL& in_url, const std::string& in_qualifier);
   Identity(const GURL& in_url,
            const std::string& in_qualifier,
+           uint32_t user_id);
+  Identity(const GURL& in_url,
+           const std::string& in_qualifier,
+           uint32_t user,
            CapabilityFilter filter);
   ~Identity();
 
@@ -33,12 +38,16 @@ class Identity {
   bool operator==(const Identity& other) const;
 
   const GURL& url() const { return url_; }
+  uint32_t user_id() const { return user_id_; }
+  void set_user_id(uint32_t user_id) { user_id_ = user_id; }
   const std::string& qualifier() const { return qualifier_; }
   const CapabilityFilter& filter() const { return filter_; }
 
  private:
   GURL url_;
   std::string qualifier_;
+
+  uint32_t user_id_;
 
   // TODO(beng): CapabilityFilter is not currently included in equivalence
   //             checks for Identity since we're not currently clear on the

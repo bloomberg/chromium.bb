@@ -34,6 +34,7 @@ class SequencedWorkerPool;
 }
 
 namespace mojo {
+class ShellConnection;
 namespace shell {
 
 class ApplicationInstance;
@@ -186,6 +187,7 @@ class ApplicationManager : public ShellClient,
   base::TaskRunner* file_task_runner_;
   scoped_ptr<NativeRunnerFactory> native_runner_factory_;
   std::vector<scoped_ptr<NativeRunner>> native_runners_;
+  scoped_ptr<ShellConnection> shell_connection_;
   WeakBindingSet<mojom::ApplicationManager> bindings_;
   base::WeakPtrFactory<ApplicationManager> weak_ptr_factory_;
 

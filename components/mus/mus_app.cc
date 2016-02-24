@@ -94,7 +94,8 @@ void MandolineUIServicesApp::InitializeResources(mojo::Shell* shell) {
 
 void MandolineUIServicesApp::Initialize(mojo::Shell* shell,
                                         const std::string& url,
-                                        uint32_t id) {
+                                        uint32_t id,
+                                        uint32_t user_id) {
   shell_ = shell;
   surfaces_state_ = new SurfacesState;
 

@@ -11,21 +11,13 @@
 namespace mojo {
 namespace shell {
 
-  ConnectParams::ConnectParams() {}
+ConnectParams::ConnectParams() {}
 
-  ConnectParams::~ConnectParams() {}
-
-  void ConnectParams::SetSource(ApplicationInstance* source) {
-  if (!source) {
-    source_ = Identity();
-    return;
-  }
-
-  source_ = source->identity();
-}
+ConnectParams::~ConnectParams() {}
 
 void ConnectParams::SetTargetURL(const GURL& target_url) {
-  target_ = Identity(target_url, target_.qualifier(), target_.filter());
+  target_ = Identity(target_url, target_.qualifier(),
+                     mojom::Shell::kUserInherit, target_.filter());
 }
 
 }  // namespace shell

@@ -30,7 +30,7 @@ define('main', [
     domAutomationController.setAutomationId(0);
     var shellPipe = serviceRegistry.connectToService(shellMojom.Shell.name);
     var shell = new shellMojom.Shell.proxyClass(new router.Router(shellPipe));
-    shell.connect(TEST_APP_URL,
+    shell.connect(TEST_APP_URL, 1,
         function (services) {
           var test = connectToService(services, testMojom.TestMojoService);
           test.getRequestorURL().then(function(response) {

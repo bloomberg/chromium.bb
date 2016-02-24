@@ -31,6 +31,7 @@ class FrameMojoShell : public mojo::shell::mojom::Shell {
   // mojo::Shell:
   void Connect(
       const mojo::String& application_url,
+      uint32_t user_id,
       mojo::shell::mojom::InterfaceProviderRequest services,
       mojo::shell::mojom::InterfaceProviderPtr exposed_services,
       mojo::shell::mojom::CapabilityFilterPtr filter,

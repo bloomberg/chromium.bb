@@ -70,7 +70,7 @@ class PackageManager : public mojo::ShellClient,
 
   // mojo::ShellClient:
   void Initialize(mojo::Shell* shell, const std::string& url,
-                  uint32_t id) override;
+                  uint32_t id, uint32_t user_id) override;
   bool AcceptConnection(mojo::Connection* connection) override;
 
   // mojo::InterfaceFactory<mojom::Resolver>:

@@ -49,7 +49,7 @@ void NetworkServiceDelegate::RemoveObserver(
 }
 
 void NetworkServiceDelegate::Initialize(Shell* shell, const std::string& url,
-                                        uint32_t id) {
+                                        uint32_t id, uint32_t user_id) {
   shell_ = shell;
 
   // TODO(erg): Find everything else that writes to the filesystem and

@@ -47,10 +47,13 @@ class Shell {
     void set_filter(shell::mojom::CapabilityFilterPtr filter) {
       filter_ = std::move(filter);
     }
+    void set_user_id(uint32_t user_id) { user_id_ = user_id; }
+    uint32_t user_id() const { return user_id_; }
 
    private:
     GURL url_;
     shell::mojom::CapabilityFilterPtr filter_;
+    uint32_t user_id_;
 
     DISALLOW_COPY_AND_ASSIGN(ConnectParams);
   };

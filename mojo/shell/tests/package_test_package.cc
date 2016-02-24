@@ -49,7 +49,8 @@ class ProvidedShellClient
 
  private:
   // mojo::ShellClient:
-  void Initialize(Shell* shell, const std::string& url, uint32_t id) override {
+  void Initialize(Shell* shell, const std::string& url,
+                  uint32_t id, uint32_t user_id) override {
     shell_ = shell;
     bindings_.set_connection_error_handler(
         base::Bind(&ProvidedShellClient::OnConnectionError,
@@ -104,7 +105,8 @@ class PackageTestShellClient
 
  private:
   // mojo::ShellClient:
-  void Initialize(Shell* shell, const std::string& url, uint32_t id) override {
+  void Initialize(Shell* shell, const std::string& url,
+                  uint32_t id, uint32_t user_id) override {
     shell_ = shell;
     bindings_.set_connection_error_handler(
         base::Bind(&PackageTestShellClient::OnConnectionError,
