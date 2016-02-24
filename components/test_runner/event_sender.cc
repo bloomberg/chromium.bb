@@ -2594,13 +2594,17 @@ void EventSender::DoMouseUp(const WebMouseEvent& e) {
 
   WebPoint client_point(e.x, e.y);
   WebPoint screen_point(e.globalX, e.globalY);
-  FinishDragAndDrop(
-      e,
-      view_->dragTargetDragOver(
-          client_point,
-          screen_point,
-          current_drag_effects_allowed_,
-          e.modifiers));
+  blink::WebDragOperation drag_effect = view_->dragTargetDragOver(
+      client_point,
+      screen_point,
+      current_drag_effects_allowed_,
+      e.modifiers);
+
+  // Bail if dragover caused cancellation.
+  if (current_drag_data_.isNull())
+    return;
+
+  FinishDragAndDrop(e, drag_effect);
 }
 
 void EventSender::DoMouseMove(const WebMouseEvent& e) {
