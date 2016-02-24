@@ -22,7 +22,7 @@ namespace {
 bool IsSmartLockBrandingEnabled(Profile* profile) {
   const ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
-  return password_bubble_experiment::IsSmartLockBrandingEnabled(sync_service);
+  return password_bubble_experiment::IsSmartLockUser(sync_service);
 }
 
 }  // namespace
