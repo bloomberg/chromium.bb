@@ -203,7 +203,7 @@ MojoShellContext::MojoShellContext() {
   bool register_mojo_url_schemes = false;
 
   application_manager_.reset(new mojo::shell::ApplicationManager(
-      nullptr, file_task_runner.get(), register_mojo_url_schemes));
+      nullptr, file_task_runner.get(), register_mojo_url_schemes, nullptr));
 
   application_manager_->set_default_loader(
       scoped_ptr<mojo::shell::ApplicationLoader>(new DefaultApplicationLoader));

@@ -37,16 +37,20 @@ test("mojo_shell_unittests") {
   sources = [
     "application_manager_unittest.cc",
     "capability_filter_unittest.cc",
+    "run_all_unittests.cc",
   ]
 
   deps = [
     ":test_bindings",
     ":test_support",
     "//base",
-    "//mojo/edk/system:test_utils",
-    "//mojo/edk/test:run_all_unittests",
+    "//base/test:test_support",
+    "//mojo/edk/system",
     "//mojo/public/cpp/system",
     "//mojo/shell",
+    "//mojo/shell/background:lib",
+    "//mojo/shell/background:main",
+    "//mojo/shell/background/tests:unittests",
     "//mojo/shell/public/cpp",
     "//mojo/util:filename_util",
     "//testing/gtest",

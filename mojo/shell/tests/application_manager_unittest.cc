@@ -13,6 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/services/package_manager/package_manager.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/connect_util.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
@@ -397,7 +398,8 @@ class ApplicationManagerTest : public testing::Test {
   ~ApplicationManagerTest() override {}
 
   void SetUp() override {
-    application_manager_.reset(new ApplicationManager(nullptr, nullptr, true));
+    application_manager_.reset(
+        new ApplicationManager(nullptr, nullptr, true, nullptr));
     test_loader_ = new TestApplicationLoader(&context_);
     application_manager_->set_default_loader(
         scoped_ptr<ApplicationLoader>(test_loader_));
@@ -468,7 +470,7 @@ TEST_F(ApplicationManagerTest, ClientError) {
 
 TEST_F(ApplicationManagerTest, Deletes) {
   {
-    ApplicationManager am(nullptr, nullptr, true);
+    ApplicationManager am(nullptr, nullptr, true, nullptr);
     TestApplicationLoader* default_loader =
         new TestApplicationLoader(&context_);
     TestApplicationLoader* url_loader1 = new TestApplicationLoader(&context_);

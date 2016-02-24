@@ -38,10 +38,8 @@ int LauncherProcessMain() {
   Context shell_context;
   {
     base::MessageLoop message_loop;
-    base::FilePath shell_dir;
-    PathService::Get(base::DIR_MODULE, &shell_dir);
     CHECK(base::i18n::InitializeICU());
-    shell_context.Init(shell_dir);
+    shell_context.Init(nullptr);
 
     message_loop.PostTask(
         FROM_HERE,

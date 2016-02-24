@@ -1,0 +1,49 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef MOJO_SHELL_BACKGROUND_TESTS_TEST_APPLICATION_CATALOG_STORE_H_
+#define MOJO_SHELL_BACKGROUND_TESTS_TEST_APPLICATION_CATALOG_STORE_H_
+
+#include <string>
+
+#include "base/memory/scoped_ptr.h"
+#include "base/values.h"
+#include "mojo/services/package_manager/package_manager.h"
+
+class GURL;
+
+namespace mojo {
+namespace shell {
+
+// ApplicationCatalogStore implementation that takes the ListValue to return
+// as store.
+class TestApplicationCatalogStore
+    : public package_manager::ApplicationCatalogStore {
+ public:
+  explicit TestApplicationCatalogStore(scoped_ptr<base::ListValue> store);
+  ~TestApplicationCatalogStore() override;
+
+  bool get_store_called() const { return get_store_called_; }
+
+  // ApplicationCatalogStore:
+  const base::ListValue* GetStore() override;
+  void UpdateStore(scoped_ptr<base::ListValue> store) override;
+
+ private:
+  bool get_store_called_ = false;
+  scoped_ptr<base::ListValue> store_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestApplicationCatalogStore);
+};
+
+// Returns a dictionary for an app with the specified url, name and a
+// permissive filter.
+scoped_ptr<base::DictionaryValue> BuildPermissiveSerializedAppInfo(
+    const GURL& url,
+    const std::string& name);
+
+}  // namespace shell
+}  // namespace mojo
+
+#endif  // MOJO_SHELL_BACKGROUND_TESTS_TEST_APPLICATION_CATALOG_STORE_H_

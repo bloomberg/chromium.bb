@@ -38,10 +38,13 @@ CapabilityFilter BuildCapabilityFilterFromDictionary(
 ApplicationInfo BuildApplicationInfoFromDictionary(
     const base::DictionaryValue& value) {
   ApplicationInfo info;
-  CHECK(value.GetString("url", &info.url));
-  CHECK(value.GetString("name", &info.name));
+  std::string url_string;
+  CHECK(value.GetString(ApplicationCatalogStore::kUrlKey, &url_string));
+  info.url = GURL(url_string);
+  CHECK(value.GetString(ApplicationCatalogStore::kNameKey, &info.name));
   const base::DictionaryValue* capabilities = nullptr;
-  CHECK(value.GetDictionary("capabilities", &capabilities));
+  CHECK(value.GetDictionary(ApplicationCatalogStore::kCapabilitiesKey,
+                            &capabilities));
   info.base_filter = BuildCapabilityFilterFromDictionary(*capabilities);
   return info;
 }
@@ -49,8 +52,8 @@ ApplicationInfo BuildApplicationInfoFromDictionary(
 void SerializeEntry(const ApplicationInfo& entry,
                     base::DictionaryValue** value) {
   *value = new base::DictionaryValue;
-  (*value)->SetString("url", entry.url);
-  (*value)->SetString("name", entry.name);
+  (*value)->SetString(ApplicationCatalogStore::kUrlKey, entry.url.spec());
+  (*value)->SetString(ApplicationCatalogStore::kNameKey, entry.name);
   base::DictionaryValue* capabilities = new base::DictionaryValue;
   for (const auto& pair : entry.base_filter) {
     scoped_ptr<base::ListValue> interfaces(new base::ListValue);
@@ -58,7 +61,8 @@ void SerializeEntry(const ApplicationInfo& entry,
       interfaces->AppendString(iface_name);
     capabilities->Set(pair.first, std::move(interfaces));
   }
-  (*value)->Set("capabilities", make_scoped_ptr(capabilities));
+  (*value)->Set(ApplicationCatalogStore::kCapabilitiesKey,
+                make_scoped_ptr(capabilities));
 }
 
 scoped_ptr<base::Value> ReadManifest(const base::FilePath& manifest_path) {
@@ -72,15 +76,21 @@ scoped_ptr<base::Value> ReadManifest(const base::FilePath& manifest_path) {
 
 }  // namespace
 
+// static
+const char ApplicationCatalogStore::kUrlKey[] = "url";
+// static
+const char ApplicationCatalogStore::kNameKey[] = "name";
+// static
+const char ApplicationCatalogStore::kCapabilitiesKey[] = "capabilities";
+
 ApplicationInfo::ApplicationInfo() {}
 ApplicationInfo::~ApplicationInfo() {}
 
-ApplicationCatalogStore::~ApplicationCatalogStore() {}
-
 PackageManager::PackageManager(base::TaskRunner* blocking_pool,
-                               bool register_schemes)
+                               bool register_schemes,
+                               scoped_ptr<ApplicationCatalogStore> catalog)
     : blocking_pool_(blocking_pool),
-      catalog_store_(nullptr),
+      catalog_store_(std::move(catalog)),
       weak_factory_(this) {
   if (register_schemes)
     mojo::RegisterMojoSchemes();
@@ -92,6 +102,8 @@ PackageManager::PackageManager(base::TaskRunner* blocking_pool,
       mojo::util::FilePathToFileURL(shell_dir).Resolve(std::string());
   system_package_dir_ =
       mojo::util::AddTrailingSlashIfNeeded(system_package_dir_);
+
+  DeserializeCatalog();
 }
 PackageManager::~PackageManager() {}
 
@@ -146,10 +158,10 @@ void PackageManager::ResolveProtocolScheme(
 void PackageManager::ResolveMojoURL(const mojo::String& mojo_url,
                                     const ResolveMojoURLCallback& callback) {
   GURL resolved_url = mojo_url.To<GURL>();
-  auto alias_iter = mojo_url_aliases_.find(mojo_url);
+  auto alias_iter = mojo_url_aliases_.find(resolved_url);
   std::string qualifier;
   if (alias_iter != mojo_url_aliases_.end()) {
-    resolved_url = GURL(alias_iter->second.first);
+    resolved_url = alias_iter->second.first;
     qualifier = alias_iter->second.second;
   } else {
     qualifier = resolved_url.host();
@@ -163,13 +175,14 @@ void PackageManager::GetEntries(
     const GetEntriesCallback& callback) {
   mojo::Map<mojo::String, mojom::CatalogEntryPtr> entries;
   std::vector<mojo::String> urls_vec = urls.PassStorage();
-  for (const auto& url : urls_vec) {
+  for (const std::string& url_string : urls_vec) {
+    const GURL url(url_string);
     if (catalog_.find(url) == catalog_.end())
       continue;
     const ApplicationInfo& info = catalog_[url];
     mojom::CatalogEntryPtr entry(mojom::CatalogEntry::New());
     entry->name = info.name;
-    entries[info.url] = std::move(entry);
+    entries[info.url.spec()] = std::move(entry);
   }
   callback.Run(std::move(entries));
 }
@@ -178,7 +191,7 @@ void PackageManager::CompleteResolveMojoURL(
     const GURL& resolved_url,
     const std::string& qualifier,
     const ResolveMojoURLCallback& callback) {
-  auto info_iter = catalog_.find(resolved_url.spec());
+  auto info_iter = catalog_.find(resolved_url);
   CHECK(info_iter != catalog_.end());
 
   GURL file_url;
@@ -209,7 +222,7 @@ void PackageManager::CompleteResolveMojoURL(
 }
 
 bool PackageManager::IsURLInCatalog(const GURL& url) const {
-  return catalog_.find(url.spec()) != catalog_.end();
+  return catalog_.find(url) != catalog_.end();
 }
 
 void PackageManager::EnsureURLInCatalog(
@@ -240,21 +253,18 @@ void PackageManager::EnsureURLInCatalog(
 }
 
 void PackageManager::DeserializeCatalog() {
-  ApplicationInfo info;
-  info.url = "mojo://shell/";
-  info.name = "Mojo Shell";
-  catalog_[info.url] = info;
-
   if (!catalog_store_)
     return;
-  base::ListValue* catalog = nullptr;
-  catalog_store_->GetStore(&catalog);
+  const base::ListValue* catalog = catalog_store_->GetStore();
   CHECK(catalog);
+  // TODO(sky): make this handle aliases.
   for (auto it = catalog->begin(); it != catalog->end(); ++it) {
     const base::DictionaryValue* dictionary = nullptr;
     const base::Value* v = *it;
     CHECK(v->GetAsDictionary(&dictionary));
-    DeserializeApplication(dictionary);
+    const ApplicationInfo app_info =
+        BuildApplicationInfoFromDictionary(*dictionary);
+    catalog_[app_info.url] = app_info;
   }
 }
 
@@ -283,7 +293,7 @@ const ApplicationInfo& PackageManager::DeserializeApplication(
         applications->GetDictionary(i, &child);
         const ApplicationInfo& child_info = DeserializeApplication(child);
         mojo_url_aliases_[child_info.url] =
-            std::make_pair(info.url, GURL(child_info.url).host());
+            std::make_pair(info.url, child_info.url.host());
       }
     }
   }
@@ -324,7 +334,7 @@ void PackageManager::OnReadManifestImpl(const GURL& url,
     DeserializeApplication(dictionary);
   } else {
     ApplicationInfo info;
-    info.url = url.spec();
+    info.url = url;
     info.name = url.spec();
     catalog_[info.url] = info;
   }

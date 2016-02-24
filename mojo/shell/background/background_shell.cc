@@ -12,6 +12,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/simple_thread.h"
 #include "mojo/message_pump/message_pump_mojo.h"
+#include "mojo/services/package_manager/package_manager.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/application_manager.h"
 #include "mojo/shell/capability_filter.h"
@@ -72,9 +73,9 @@ class MojoMessageLoop : public base::MessageLoop {
 // Manages the thread to startup mojo.
 class BackgroundShell::MojoThread : public base::SimpleThread {
  public:
-  explicit MojoThread(NativeRunnerDelegate* native_runner_delegate)
+  explicit MojoThread(scoped_ptr<BackgroundShell::InitParams> init_params)
       : SimpleThread("mojo-background-shell"),
-        native_runner_delegate_(native_runner_delegate) {}
+        init_params_(std::move(init_params)) {}
   ~MojoThread() override {}
 
   void CreateShellClientRequest(base::WaitableEvent* signal,
@@ -120,13 +121,14 @@ class BackgroundShell::MojoThread : public base::SimpleThread {
 
     message_loop_->BindToCurrentThread();
 
-    base::FilePath shell_dir;
-    PathService::Get(base::DIR_MODULE, &shell_dir);
-
     scoped_ptr<Context> context(new Context);
     context_ = context.get();
-    context_->set_native_runner_delegate(native_runner_delegate_);
-    context_->Init(shell_dir);
+    scoped_ptr<mojo::shell::Context::InitParams> context_init_params(
+        new mojo::shell::Context::InitParams);
+    context_init_params->app_catalog = std::move(init_params_->app_catalog);
+    context_init_params->native_runner_delegate =
+        init_params_->native_runner_delegate;
+    context_->Init(std::move(context_init_params));
 
     message_loop_->Run();
 
@@ -155,10 +157,13 @@ class BackgroundShell::MojoThread : public base::SimpleThread {
   // Created in Run() on the background thread.
   Context* context_ = nullptr;
 
-  NativeRunnerDelegate* native_runner_delegate_;
+  scoped_ptr<BackgroundShell::InitParams> init_params_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoThread);
 };
+
+BackgroundShell::InitParams::InitParams() {}
+BackgroundShell::InitParams::~InitParams() {}
 
 BackgroundShell::BackgroundShell() {}
 
@@ -166,9 +171,9 @@ BackgroundShell::~BackgroundShell() {
   thread_->Stop();
 }
 
-void BackgroundShell::Init(NativeRunnerDelegate* native_runner_delegate) {
+void BackgroundShell::Init(scoped_ptr<InitParams> init_params) {
   DCHECK(!thread_);
-  thread_.reset(new MojoThread(native_runner_delegate));
+  thread_.reset(new MojoThread(std::move(init_params)));
   thread_->Start();
 }
 

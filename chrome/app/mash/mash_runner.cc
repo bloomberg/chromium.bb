@@ -181,7 +181,10 @@ void MashRunner::RunMain() {
   // in chrome.
   NativeRunnerDelegateImpl native_runner_delegate;
   mojo::shell::BackgroundShell background_shell;
-  background_shell.Init(&native_runner_delegate);
+  scoped_ptr<mojo::shell::BackgroundShell::InitParams> init_params(
+      new mojo::shell::BackgroundShell::InitParams);
+  init_params->native_runner_delegate = &native_runner_delegate;
+  background_shell.Init(std::move(init_params));
   shell_client_.reset(new DefaultShellClient);
   shell_connection_.reset(new mojo::ShellConnection(
       shell_client_.get(),

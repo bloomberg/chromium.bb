@@ -28,6 +28,7 @@
 #include "components/tracing/tracing_switches.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/services/package_manager/package_manager.h"
 #include "mojo/services/tracing/public/cpp/switches.h"
 #include "mojo/services/tracing/public/cpp/trace_provider_impl.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
@@ -96,10 +97,12 @@ void OnInstanceQuit(const GURL& url, const Identity& identity) {
 
 }  // namespace
 
+Context::InitParams::InitParams() {}
+Context::InitParams::~InitParams() {}
+
 Context::Context()
     : io_thread_(CreateIOThread("io_thread")),
-      main_entry_time_(base::Time::Now()),
-      native_runner_delegate_(nullptr) {}
+      main_entry_time_(base::Time::Now()) {}
 
 Context::~Context() {
   DCHECK(!base::MessageLoop::current());
@@ -112,7 +115,7 @@ void Context::EnsureEmbedderIsInitialized() {
   setup.Get();
 }
 
-void Context::Init(const base::FilePath& shell_file_root) {
+void Context::Init(scoped_ptr<InitParams> init_params) {
   TRACE_EVENT0("mojo_shell", "Context::Init");
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -144,11 +147,17 @@ void Context::Init(const base::FilePath& shell_file_root) {
     runner_factory.reset(
         new InProcessNativeRunnerFactory(blocking_pool_.get()));
   } else {
+    NativeRunnerDelegate* native_runner_delegate = init_params ?
+        init_params->native_runner_delegate : nullptr;
     runner_factory.reset(new OutOfProcessNativeRunnerFactory(
-        blocking_pool_.get(), native_runner_delegate_));
+        blocking_pool_.get(), native_runner_delegate));
   }
-  application_manager_.reset(new ApplicationManager(
-      std::move(runner_factory), blocking_pool_.get(), true));
+  scoped_ptr<package_manager::ApplicationCatalogStore> app_catalog;
+  if (init_params)
+    app_catalog = std::move(init_params->app_catalog);
+  application_manager_.reset(new ApplicationManager(std::move(runner_factory),
+                                                    blocking_pool_.get(), true,
+                                                    std::move(app_catalog)));
 
   shell::mojom::InterfaceProviderPtr tracing_remote_interfaces;
   shell::mojom::InterfaceProviderPtr tracing_local_interfaces;

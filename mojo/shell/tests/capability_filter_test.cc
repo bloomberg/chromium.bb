@@ -11,6 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/bindings/weak_binding_set.h"
+#include "mojo/services/package_manager/package_manager.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
@@ -281,7 +282,8 @@ void CapabilityFilterTest::RunWildcardTest() {
 
 
 void CapabilityFilterTest::SetUp() {
-  application_manager_.reset(new ApplicationManager(nullptr, nullptr, true));
+  application_manager_.reset(
+      new ApplicationManager(nullptr, nullptr, true, nullptr));
   application_manager_->SetInstanceQuitCallback(
       base::Bind(&CapabilityFilterTest::OnInstanceQuit,
                  base::Unretained(this)));

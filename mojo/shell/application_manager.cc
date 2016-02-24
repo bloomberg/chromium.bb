@@ -49,7 +49,8 @@ bool ApplicationManager::TestAPI::HasRunningInstanceForURL(
 ApplicationManager::ApplicationManager(
     scoped_ptr<NativeRunnerFactory> native_runner_factory,
     base::TaskRunner* file_task_runner,
-    bool register_mojo_url_schemes)
+    bool register_mojo_url_schemes,
+    scoped_ptr<package_manager::ApplicationCatalogStore> app_catalog)
     : file_task_runner_(file_task_runner),
       native_runner_factory_(std::move(native_runner_factory)),
       weak_ptr_factory_(this) {
@@ -57,7 +58,7 @@ ApplicationManager::ApplicationManager(
   CreateInstance(CreateShellIdentity(), &request);
   shell_connection_.reset(new ShellConnection(this, std::move(request)));
 
-  InitPackageManager(register_mojo_url_schemes);
+  InitPackageManager(register_mojo_url_schemes, std::move(app_catalog));
 }
 
 ApplicationManager::~ApplicationManager() {
@@ -204,9 +205,11 @@ void ApplicationManager::AddListener(
 ////////////////////////////////////////////////////////////////////////////////
 // ApplicationManager, private:
 
-void ApplicationManager::InitPackageManager(bool register_mojo_url_schemes) {
+void ApplicationManager::InitPackageManager(
+    bool register_mojo_url_schemes,
+    scoped_ptr<package_manager::ApplicationCatalogStore> app_catalog) {
   scoped_ptr<ApplicationLoader> loader(new package_manager::Loader(
-      file_task_runner_, register_mojo_url_schemes));
+      file_task_runner_, register_mojo_url_schemes, std::move(app_catalog)));
 
   mojom::ShellClientRequest request;
   GURL url("mojo://package_manager/");

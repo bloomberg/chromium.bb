@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/weak_binding_set.h"
 #include "mojo/public/cpp/bindings/weak_interface_ptr_set.h"
+#include "mojo/services/package_manager/package_manager.h"
 #include "mojo/services/package_manager/public/interfaces/shell_resolver.mojom.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/capability_filter.h"
@@ -65,9 +66,11 @@ class ApplicationManager : public ShellClient,
   // applications are loaded via ApplicationLoader implementations.
   // When |register_mojo_url_schemes| is true, mojo: and exe: URL schems are
   // registered as "standard" which faciliates resolving.
-  ApplicationManager(scoped_ptr<NativeRunnerFactory> native_runner_factory,
-                     base::TaskRunner* file_task_runner,
-                     bool register_mojo_url_schemes);
+  ApplicationManager(
+      scoped_ptr<NativeRunnerFactory> native_runner_factory,
+      base::TaskRunner* file_task_runner,
+      bool register_mojo_url_schemes,
+      scoped_ptr<package_manager::ApplicationCatalogStore> app_catalog);
   ~ApplicationManager() override;
 
   // Provide a callback to be notified whenever an instance is destroyed.
@@ -120,7 +123,9 @@ class ApplicationManager : public ShellClient,
                                mojom::PIDReceiverRequest pid_receiver) override;
   void AddListener(mojom::ApplicationManagerListenerPtr listener) override;
 
-  void InitPackageManager(bool register_mojo_url_schemes);
+  void InitPackageManager(
+      bool register_mojo_url_schemes,
+      scoped_ptr<package_manager::ApplicationCatalogStore> app_catalog);
 
   // Attempt to complete the connection requested by |params| by connecting to
   // an existing instance. If there is an existing instance, |params| is taken,

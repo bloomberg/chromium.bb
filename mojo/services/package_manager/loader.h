@@ -18,9 +18,13 @@ class ShellConnection;
 
 namespace package_manager {
 
+class ApplicationCatalogStore;
+
 class Loader : public mojo::shell::ApplicationLoader {
  public:
-  Loader(base::TaskRunner* blocking_pool, bool register_mojo_url_schemes);
+  Loader(base::TaskRunner* blocking_pool,
+         bool register_mojo_url_schemes,
+         scoped_ptr<package_manager::ApplicationCatalogStore> app_catalog);
   ~Loader() override;
 
   // mojo::shell::ApplicationLoader:
@@ -30,6 +34,7 @@ class Loader : public mojo::shell::ApplicationLoader {
  private:
   base::TaskRunner* blocking_pool_;
   bool register_mojo_url_schemes_;
+  scoped_ptr<package_manager::ApplicationCatalogStore> app_catalog_;
   scoped_ptr<mojo::ShellClient> client_;
   scoped_ptr<mojo::ShellConnection> connection_;
 

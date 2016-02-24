@@ -10,9 +10,14 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/services/package_manager/package_manager.h"
 #include "mojo/shell/public/interfaces/shell_client.mojom.h"
 
 class GURL;
+
+namespace package_manager {
+class ApplicationCatalogStore;
+}
 
 namespace mojo {
 namespace shell {
@@ -25,11 +30,20 @@ class NativeRunnerDelegate;
 // then be bound to an ApplicationImpl.
 class BackgroundShell {
  public:
+  struct InitParams {
+    InitParams();
+    ~InitParams();
+
+    NativeRunnerDelegate* native_runner_delegate = nullptr;
+    scoped_ptr<package_manager::ApplicationCatalogStore> app_catalog;
+  };
+
   BackgroundShell();
   ~BackgroundShell();
 
-  // Starts the background shell.
-  void Init(NativeRunnerDelegate* native_runner_delegate);
+  // Starts the background shell. |command_line_switches| are additional
+  // switches applied to any processes spawned by this call.
+  void Init(scoped_ptr<InitParams> init_params);
 
   // Obtains an InterfaceRequest for the specified url.
   InterfaceRequest<mojom::ShellClient> CreateShellClientRequest(

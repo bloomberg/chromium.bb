@@ -30,7 +30,7 @@ struct ApplicationInfo {
   ApplicationInfo();
   ~ApplicationInfo();
 
-  std::string url;
+  GURL url;
   std::string name;
   CapabilityFilter base_filter;
 };
@@ -40,15 +40,25 @@ struct ApplicationInfo {
 // of the contents of the store, so no one else must modify its contents.
 class ApplicationCatalogStore {
  public:
+  // Value is a string.
+  static const char kUrlKey[];
+  // Value is a string.
+  static const char kNameKey[];
+  // Value is a dictionary that maps from the filter to a list of string
+  // interfaces.
+  static const char kCapabilitiesKey[];
+
+  virtual ~ApplicationCatalogStore() {}
+
   // Called during initialization to construct the PackageManagerImpl's catalog.
-  virtual void GetStore(base::ListValue** store) = 0;
+  // Returns a serialized list of the apps. Each entry in the returned list
+  // corresponds to an app (as a dictionary). Each dictionary has a url, name
+  // and capabilities. The return value is owned by the caller.
+  virtual const base::ListValue* GetStore() = 0;
 
   // Write the catalog to the store. Called when the PackageManagerImpl learns
   // of a newly encountered application.
   virtual void UpdateStore(scoped_ptr<base::ListValue> store) = 0;
-
- protected:
-  virtual ~ApplicationCatalogStore();
 };
 
 class PackageManager : public mojo::ShellClient,
@@ -61,12 +71,13 @@ class PackageManager : public mojo::ShellClient,
  public:
   // If |register_schemes| is true, mojo: and exe: schemes are registered as
   // "standard".
-  PackageManager(base::TaskRunner* blocking_pool, bool register_schemes);
+  PackageManager(base::TaskRunner* blocking_pool,
+                 bool register_schemes,
+                 scoped_ptr<ApplicationCatalogStore> catalog);
   ~PackageManager() override;
 
  private:
-  using MojoURLAliasMap =
-      std::map<std::string, std::pair<std::string, std::string>>;
+  using MojoURLAliasMap = std::map<GURL, std::pair<GURL, std::string>>;
 
   // mojo::ShellClient:
   void Initialize(mojo::Shell* shell, const std::string& url,
@@ -150,8 +161,8 @@ class PackageManager : public mojo::ShellClient,
   mojo::WeakBindingSet<mojom::ShellResolver> shell_resolver_bindings_;
   mojo::WeakBindingSet<mojom::Catalog> catalog_bindings_;
 
-  ApplicationCatalogStore* catalog_store_;
-  std::map<std::string, ApplicationInfo> catalog_;
+  scoped_ptr<ApplicationCatalogStore> catalog_store_;
+  std::map<GURL, ApplicationInfo> catalog_;
 
   // Used when an app handles multiple urls. Maps from app (as url) to url of
   // app that is responsible for handling it. The value is a pair of the

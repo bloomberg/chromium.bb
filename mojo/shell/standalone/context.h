@@ -20,6 +20,10 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
+namespace package_manager {
+class ApplicationCatalogStore;
+}
+
 namespace mojo {
 namespace shell {
 class NativeRunnerDelegate;
@@ -27,18 +31,22 @@ class NativeRunnerDelegate;
 // The "global" context for the shell's main process.
 class Context : public edk::ProcessDelegate {
  public:
+  struct InitParams {
+    InitParams();
+    ~InitParams();
+
+    NativeRunnerDelegate* native_runner_delegate = nullptr;
+    scoped_ptr<package_manager::ApplicationCatalogStore> app_catalog;
+  };
+
   Context();
   ~Context() override;
 
   static void EnsureEmbedderIsInitialized();
 
-  void set_native_runner_delegate(NativeRunnerDelegate* delegate) {
-    native_runner_delegate_ = delegate;
-  }
-
   // This must be called with a message loop set up for the current thread,
   // which must remain alive until after Shutdown() is called.
-  void Init(const base::FilePath& shell_file_root);
+  void Init(scoped_ptr<InitParams> init_params);
 
   // If Init() was called and succeeded, this must be called before destruction.
   void Shutdown();
@@ -66,8 +74,6 @@ class Context : public edk::ProcessDelegate {
   Tracer tracer_;
   scoped_ptr<ApplicationManager> application_manager_;
   base::Time main_entry_time_;
-
-  NativeRunnerDelegate* native_runner_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(Context);
 };
