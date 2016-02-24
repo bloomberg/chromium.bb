@@ -2100,6 +2100,7 @@ def GetConfig():
   site_config.Add(
       'master-release', _release,
       boards=[],
+      buildslave_type=constants.GCE_WIMPY_BUILD_SLAVE_TYPE,
       master=True,
       sync_chrome=False,
       chrome_sdk=False,
