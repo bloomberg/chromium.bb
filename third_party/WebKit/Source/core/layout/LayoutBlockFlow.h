@@ -190,9 +190,9 @@ public:
     void setStaticInlinePositionForChild(LayoutBox&, LayoutUnit inlinePosition);
     void updateStaticInlinePositionForChild(LayoutBox&, LayoutUnit logicalTop, IndentTextOrNot = DoNotIndentText);
 
-    static bool shouldSkipCreatingRunsForObject(LayoutObject* obj)
+    static bool shouldSkipCreatingRunsForObject(LineLayoutItem obj)
     {
-        return obj->isFloating() || (obj->isOutOfFlowPositioned() && !obj->style()->isOriginalDisplayInlineType() && !obj->container()->isLayoutInline());
+        return obj.isFloating() || (obj.isOutOfFlowPositioned() && !obj.style()->isOriginalDisplayInlineType() && !obj.container().isLayoutInline());
     }
 
     LayoutMultiColumnFlowThread* multiColumnFlowThread() const { return m_rareData ? m_rareData->m_multiColumnFlowThread : 0; }
