@@ -149,7 +149,7 @@ all other OS specific variables will be false.
         Copied to Chrome
       </message>
       <message name="IDS_IOS_DISCONNECT_DIALOG_TITLE" desc="The title of the disconnect dialog [Length: 30em].">
-        Use Chrome without a Google Account.
+        Sign out of Chrome?
       </message>
       <message name="IDS_IOS_FIRSTRUN_TERMS_TITLE" desc="Title for the Terms of Service page shown to user on First Run. [Length: 30em]">
         Google Chrome Terms of Service
