@@ -71,7 +71,7 @@ private:
 {% endfor %}
 
     template<typename R, typename V, typename V0>
-    static R getPropertyValueImpl(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors, V0 initial_value, bool (*as_method)(JSONValue*, V*), const char* type_name);
+    static R getPropertyValueImpl(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors, V0 initial_value, bool (*as_method)(PassRefPtr<JSONValue>, V*), const char* type_name);
 
     static OptionalValue<int> getInteger(JSONObject* object, const char* name, bool isOptional, JSONArray* protocolErrors);
     static OptionalValue<double> getNumber(JSONObject* object, const char* name, bool isOptional, JSONArray* protocolErrors);
@@ -213,7 +213,7 @@ void DispatcherImpl::dispatch(int sessionId, const String& message)
     int callId = 0;
     RefPtr<JSONValue> parsedMessage = parseJSON(message);
     ASSERT(parsedMessage);
-    RefPtr<JSONObject> messageObject = parsedMessage->asObject();
+    RefPtr<JSONObject> messageObject = JSONObject::cast(parsedMessage.release());
     ASSERT(messageObject);
 
     RefPtr<JSONValue> callIdValue = messageObject->get("id");
@@ -273,7 +273,7 @@ void DispatcherImpl::reportProtocolError(int sessionId, int callId, CommonErrorC
 }
 
 template<typename R, typename V, typename V0>
-R DispatcherImpl::getPropertyValueImpl(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors, V0 initial_value, bool (*as_method)(JSONValue*, V*), const char* type_name)
+R DispatcherImpl::getPropertyValueImpl(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors, V0 initial_value, bool (*as_method)(PassRefPtr<JSONValue>, V*), const char* type_name)
 {
     ASSERT(protocolErrors);
 
@@ -308,12 +308,12 @@ R DispatcherImpl::getPropertyValueImpl(JSONObject* object, const char* name, boo
 }
 
 struct AsMethodBridges {
-    static bool asInteger(JSONValue* value, int* output) { return value->asNumber(output); }
-    static bool asNumber(JSONValue* value, double* output) { return value->asNumber(output); }
-    static bool asString(JSONValue* value, String* output) { return value->asString(output); }
-    static bool asBoolean(JSONValue* value, bool* output) { return value->asBoolean(output); }
-    static bool asObject(JSONValue* value, RefPtr<JSONObject>* output) { return value->asObject(output); }
-    static bool asArray(JSONValue* value, RefPtr<JSONArray>* output) { return value->asArray(output); }
+    static bool asInteger(PassRefPtr<JSONValue> value, int* output) { return value->asNumber(output); }
+    static bool asNumber(PassRefPtr<JSONValue> value, double* output) { return value->asNumber(output); }
+    static bool asString(PassRefPtr<JSONValue> value, String* output) { return value->asString(output); }
+    static bool asBoolean(PassRefPtr<JSONValue> value, bool* output) { return value->asBoolean(output); }
+    static bool asObject(PassRefPtr<JSONValue> value, RefPtr<JSONObject>* output) { *output = JSONObject::cast(value); return *output; }
+    static bool asArray(PassRefPtr<JSONValue> value, RefPtr<JSONArray>* output) { *output = JSONArray::cast(value); return *output; }
 };
 
 OptionalValue<int> DispatcherImpl::getInteger(JSONObject* object, const char* name, bool isOptional, JSONArray* protocolErrors)
@@ -362,7 +362,7 @@ bool Dispatcher::getCommandName(const String& message, String* result)
     if (!value)
         return false;
 
-    RefPtr<JSONObject> object = value->asObject();
+    RefPtr<JSONObject> object = JSONObject::cast(value.release());
     if (!object)
         return false;
 

@@ -183,7 +183,7 @@ static PassRefPtr<JSONObject> ensurePropertyObject(PassRefPtr<JSONObject> object
 {
     JSONObject::iterator it = object->find(propertyName);
     if (it != object->end())
-        return it->value->asObject();
+        return JSONObject::cast(it->value);
 
     RefPtr<JSONObject> result = JSONObject::create();
     object->setObject(propertyName, result);
@@ -537,7 +537,7 @@ PassRefPtr<JSONObject> InspectorDOMDebuggerAgent::preparePauseOnNativeEventData(
     if (it == breakpoints->end())
         return nullptr;
     bool match = false;
-    RefPtr<JSONObject> breakpointsByTarget = it->value->asObject();
+    RefPtr<JSONObject> breakpointsByTarget = JSONObject::cast(it->value);
     breakpointsByTarget->getBoolean(DOMDebuggerAgentState::eventTargetAny, &match);
     if (!match && targetName)
         breakpointsByTarget->getBoolean(targetName->lower(), &match);

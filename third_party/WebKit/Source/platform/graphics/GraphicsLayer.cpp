@@ -580,7 +580,7 @@ static bool compareFloatRects(const FloatRect& a, const FloatRect& b)
 template <typename T>
 static PassRefPtr<JSONArray> pointAsJSONArray(const T& point)
 {
-    RefPtr<JSONArray> array = adoptRef(new JSONArray);
+    RefPtr<JSONArray> array = JSONArray::create();
     array->pushNumber(point.x());
     array->pushNumber(point.y());
     return array;
@@ -589,7 +589,7 @@ static PassRefPtr<JSONArray> pointAsJSONArray(const T& point)
 template <typename T>
 static PassRefPtr<JSONArray> sizeAsJSONArray(const T& size)
 {
-    RefPtr<JSONArray> array = adoptRef(new JSONArray);
+    RefPtr<JSONArray> array = JSONArray::create();
     array->pushNumber(size.width());
     array->pushNumber(size.height());
     return array;
@@ -598,7 +598,7 @@ static PassRefPtr<JSONArray> sizeAsJSONArray(const T& size)
 template <typename T>
 static PassRefPtr<JSONArray> rectAsJSONArray(const T& rect)
 {
-    RefPtr<JSONArray> array = adoptRef(new JSONArray);
+    RefPtr<JSONArray> array = JSONArray::create();
     array->pushNumber(rect.x());
     array->pushNumber(rect.y());
     array->pushNumber(rect.width());
@@ -613,9 +613,9 @@ static double roundCloseToZero(double number)
 
 static PassRefPtr<JSONArray> transformAsJSONArray(const TransformationMatrix& t)
 {
-    RefPtr<JSONArray> array = adoptRef(new JSONArray);
+    RefPtr<JSONArray> array = JSONArray::create();
     {
-        RefPtr<JSONArray> row = adoptRef(new JSONArray);
+        RefPtr<JSONArray> row = JSONArray::create();
         row->pushNumber(roundCloseToZero(t.m11()));
         row->pushNumber(roundCloseToZero(t.m12()));
         row->pushNumber(roundCloseToZero(t.m13()));
@@ -623,7 +623,7 @@ static PassRefPtr<JSONArray> transformAsJSONArray(const TransformationMatrix& t)
         array->pushArray(row);
     }
     {
-        RefPtr<JSONArray> row = adoptRef(new JSONArray);
+        RefPtr<JSONArray> row = JSONArray::create();
         row->pushNumber(roundCloseToZero(t.m21()));
         row->pushNumber(roundCloseToZero(t.m22()));
         row->pushNumber(roundCloseToZero(t.m23()));
@@ -631,7 +631,7 @@ static PassRefPtr<JSONArray> transformAsJSONArray(const TransformationMatrix& t)
         array->pushArray(row);
     }
     {
-        RefPtr<JSONArray> row = adoptRef(new JSONArray);
+        RefPtr<JSONArray> row = JSONArray::create();
         row->pushNumber(roundCloseToZero(t.m31()));
         row->pushNumber(roundCloseToZero(t.m32()));
         row->pushNumber(roundCloseToZero(t.m33()));
@@ -639,7 +639,7 @@ static PassRefPtr<JSONArray> transformAsJSONArray(const TransformationMatrix& t)
         array->pushArray(row);
     }
     {
-        RefPtr<JSONArray> row = adoptRef(new JSONArray);
+        RefPtr<JSONArray> row = JSONArray::create();
         row->pushNumber(roundCloseToZero(t.m41()));
         row->pushNumber(roundCloseToZero(t.m42()));
         row->pushNumber(roundCloseToZero(t.m43()));
@@ -658,7 +658,7 @@ static String pointerAsString(const void* ptr)
 
 PassRefPtr<JSONObject> GraphicsLayer::layerTreeAsJSON(LayerTreeFlags flags, RenderingContextMap& renderingContextMap) const
 {
-    RefPtr<JSONObject> json = adoptRef(new JSONObject);
+    RefPtr<JSONObject> json = JSONObject::create();
 
     if (flags & LayerTreeIncludesDebugInfo) {
         json->setString("this", pointerAsString(this));
@@ -730,7 +730,7 @@ PassRefPtr<JSONObject> GraphicsLayer::layerTreeAsJSON(LayerTreeFlags flags, Rend
             Vector<FloatRect>& rects = it->value.invalidationRects;
             if (!rects.isEmpty()) {
                 std::sort(rects.begin(), rects.end(), &compareFloatRects);
-                RefPtr<JSONArray> rectsJSON = adoptRef(new JSONArray);
+                RefPtr<JSONArray> rectsJSON = JSONArray::create();
                 for (auto& rect : rects) {
                     if (rect.isEmpty())
                         continue;
@@ -743,7 +743,7 @@ PassRefPtr<JSONObject> GraphicsLayer::layerTreeAsJSON(LayerTreeFlags flags, Rend
         if (flags & LayerTreeIncludesPaintInvalidationObjects) {
             Vector<String>& clients = it->value.invalidationObjects;
             if (!clients.isEmpty()) {
-                RefPtr<JSONArray> clientsJSON = adoptRef(new JSONArray);
+                RefPtr<JSONArray> clientsJSON = JSONArray::create();
                 for (auto& clientString : clients)
                     clientsJSON->pushString(clientString);
                 json->setArray("paintInvalidationClients", clientsJSON);
@@ -752,7 +752,7 @@ PassRefPtr<JSONObject> GraphicsLayer::layerTreeAsJSON(LayerTreeFlags flags, Rend
     }
 
     if ((flags & LayerTreeIncludesPaintingPhases) && m_paintingPhase) {
-        RefPtr<JSONArray> paintingPhasesJSON = adoptRef(new JSONArray);
+        RefPtr<JSONArray> paintingPhasesJSON = JSONArray::create();
         if (m_paintingPhase & GraphicsLayerPaintBackground)
             paintingPhasesJSON->pushString("GraphicsLayerPaintBackground");
         if (m_paintingPhase & GraphicsLayerPaintForeground)
@@ -777,7 +777,7 @@ PassRefPtr<JSONObject> GraphicsLayer::layerTreeAsJSON(LayerTreeFlags flags, Rend
 
     if (flags & (LayerTreeIncludesDebugInfo | LayerTreeIncludesCompositingReasons)) {
         bool debug = flags & LayerTreeIncludesDebugInfo;
-        RefPtr<JSONArray> compositingReasonsJSON = adoptRef(new JSONArray);
+        RefPtr<JSONArray> compositingReasonsJSON = JSONArray::create();
         for (size_t i = 0; i < kNumberOfCompositingReasons; ++i) {
             if (m_debugInfo.compositingReasons() & kCompositingReasonStringMap[i].reason)
                 compositingReasonsJSON->pushString(debug ? kCompositingReasonStringMap[i].description : kCompositingReasonStringMap[i].shortName);
@@ -793,7 +793,7 @@ PassRefPtr<JSONObject> GraphicsLayer::layerTreeAsJSON(LayerTreeFlags flags, Rend
     }
 
     if (m_children.size()) {
-        RefPtr<JSONArray> childrenJSON = adoptRef(new JSONArray);
+        RefPtr<JSONArray> childrenJSON = JSONArray::create();
         for (size_t i = 0; i < m_children.size(); i++)
             childrenJSON->pushObject(m_children[i]->layerTreeAsJSON(flags, renderingContextMap));
         json->setArray("children", childrenJSON);
