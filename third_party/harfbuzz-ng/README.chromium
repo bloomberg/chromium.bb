@@ -1,8 +1,8 @@
 Name: harfbuzz-ng
 Short Name: harfbuzz-ng
 URL: http://harfbuzz.org
-Version: 1.1.3
-Date: 20151124
+Version: 1.2.1
+Date: 20160222
 Security Critical: yes
 License: MIT
 License File: COPYING
@@ -20,5 +20,11 @@ the NEWS file from HarfBuzz' release notes, and bump the version numbers
 in README.chromium.
 
 Local changes:
-* Disabled test_langs_sorted() in hb-ot-tag.cc to fix
-  "unused function" compile error
+    * Custom revert: Change mark strategy back to UNICODE_LATE from
+      GDEF_LATE for the default shaper - contributed by Behdad to unblock
+      the HarfBuzz roll in Blink while the issue about broken quote glyphs
+      in Times New Roman Italic can be resolved in upstream.
+    * Upstream commit ebd7431f824
+      "Partially revert 86c68c7a2c97"
+      in order to fix mark positioning in
+      fast/text/international/arabic-vertical-offset.html
