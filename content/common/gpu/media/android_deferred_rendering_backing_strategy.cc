@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+
 #include "content/common/gpu/media/android_deferred_rendering_backing_strategy.h"
 
 #include "base/bind.h"
@@ -14,11 +17,25 @@
 #include "content/common/gpu/media/avda_return_on_failure.h"
 #include "content/common/gpu/media/avda_shared_state.h"
 #include "gpu/command_buffer/service/gl_stream_texture_image.h"
+#include "gpu/command_buffer/service/gles2_cmd_copy_texture_chromium.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "ui/gl/android/surface_texture.h"
+#include "ui/gl/egl_util.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_surface_egl.h"
+#include "ui/gl/scoped_binders.h"
+#include "ui/gl/scoped_make_current.h"
 
 namespace content {
+
+namespace {
+// clang-format off
+const float kIdentityMatrix[16] = {1.0f, 0.0f, 0.0f, 0.0f,
+                                   0.0f, 1.0f, 0.0f, 0.0f,
+                                   0.0f, 0.0f, 1.0f, 0.0f,
+                                   0.0f, 0.0f, 0.0f, 1.0f};
+// clang-format on
+}
 
 AndroidDeferredRenderingBackingStrategy::
     AndroidDeferredRenderingBackingStrategy(AVDAStateProvider* state_provider)
@@ -64,6 +81,11 @@ void AndroidDeferredRenderingBackingStrategy::Cleanup(
   // the service_id that we created for it.
   for (const std::pair<int, media::PictureBuffer>& entry : buffers)
     SetImageForPicture(entry.second, nullptr);
+
+  // If we're rendering to a SurfaceTexture we can make a copy of the current
+  // front buffer so that the PictureBuffer textures are still valid.
+  if (surface_texture_)
+    CopySurfaceTextureToPictures(buffers);
 
   // Now that no AVDACodecImages refer to the SurfaceTexture's texture, delete
   // the texture name.
@@ -233,6 +255,84 @@ bool AndroidDeferredRenderingBackingStrategy::ArePicturesOverlayable() {
   // SurfaceView frames are always overlayable because that's the only way to
   // display them.
   return !surface_texture_;
+}
+
+void AndroidDeferredRenderingBackingStrategy::CopySurfaceTextureToPictures(
+    const AndroidVideoDecodeAccelerator::OutputBufferMap& buffers) {
+  DVLOG(3) << __FUNCTION__;
+
+  // Don't try to copy if the SurfaceTexture was never attached because that
+  // means it was never updated.
+  if (!shared_state_->surface_texture_is_attached())
+    return;
+
+  gpu::gles2::GLES2Decoder* gl_decoder = state_provider_->GetGlDecoder().get();
+  if (!gl_decoder)
+    return;
+
+  scoped_ptr<ui::ScopedMakeCurrent> scoped_make_current;
+  if (!shared_state_->context()->IsCurrent(NULL)) {
+    scoped_make_current.reset(new ui::ScopedMakeCurrent(
+        shared_state_->context(), shared_state_->surface()));
+    if (!scoped_make_current->Succeeded())
+      return;
+  }
+
+  const gfx::Size size = state_provider_->GetSize();
+
+  // Create a 2D texture to hold a copy of the SurfaceTexture's front buffer.
+  GLuint tmp_texture_id;
+  glGenTextures(1, &tmp_texture_id);
+  {
+    gfx::ScopedTextureBinder texture_binder(GL_TEXTURE_2D, tmp_texture_id);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size.width(), size.height(), 0,
+                 GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+  }
+
+  // TODO(liberato,watk): Use the SurfaceTexture matrix when copying.
+  gpu::CopyTextureCHROMIUMResourceManager copier;
+  copier.Initialize(
+      gl_decoder,
+      gl_decoder->GetContextGroup()->feature_info()->feature_flags());
+  copier.DoCopyTextureWithTransform(gl_decoder, GL_TEXTURE_EXTERNAL_OES,
+                                    shared_state_->surface_texture_service_id(),
+                                    GL_TEXTURE_2D, tmp_texture_id, size.width(),
+                                    size.height(), false, false, false,
+                                    kIdentityMatrix);
+
+  // Create an EGLImage from the 2D texture we just copied into. By associating
+  // the EGLImage with the PictureBuffer textures they will remain valid even
+  // after we delete the 2D texture and EGLImage.
+  const EGLImageKHR egl_image = eglCreateImageKHR(
+      gfx::GLSurfaceEGL::GetHardwareDisplay(), eglGetCurrentContext(),
+      EGL_GL_TEXTURE_2D_KHR, reinterpret_cast<EGLClientBuffer>(tmp_texture_id),
+      nullptr /* attrs */);
+
+  glDeleteTextures(1, &tmp_texture_id);
+  DCHECK_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
+
+  if (egl_image == EGL_NO_IMAGE_KHR) {
+    DLOG(ERROR) << "Failed creating EGLImage: " << ui::GetLastEGLErrorString();
+    return;
+  }
+
+  for (const std::pair<int, media::PictureBuffer>& entry : buffers) {
+    gpu::gles2::TextureRef* texture_ref = GetTextureForPicture(entry.second);
+    gfx::ScopedTextureBinder texture_binder(
+        GL_TEXTURE_EXTERNAL_OES, texture_ref->texture()->service_id());
+    glEGLImageTargetTexture2DOES(GL_TEXTURE_EXTERNAL_OES, egl_image);
+    DCHECK_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
+  }
+
+  EGLBoolean result =
+      eglDestroyImageKHR(gfx::GLSurfaceEGL::GetHardwareDisplay(), egl_image);
+  if (result == EGL_FALSE) {
+    DLOG(ERROR) << "Error destroying EGLImage: "
+                << ui::GetLastEGLErrorString();
+  }
 }
 
 }  // namespace content

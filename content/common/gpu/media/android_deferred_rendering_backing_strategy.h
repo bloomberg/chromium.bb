@@ -69,6 +69,13 @@ class CONTENT_EXPORT AndroidDeferredRenderingBackingStrategy
       const media::PictureBuffer& picture_buffer,
       const scoped_refptr<gpu::gles2::GLStreamTextureImage>& image);
 
+  // Make a copy of the SurfaceTexture's front buffer and associate all given
+  // picture buffer textures with it. The picture buffer textures will not
+  // dependend on |this|, the SurfaceTexture, the MediaCodec or the VDA, so it's
+  // used to back the picture buffers when the VDA is being destroyed.
+  void CopySurfaceTextureToPictures(
+      const AndroidVideoDecodeAccelerator::OutputBufferMap& buffers);
+
   scoped_refptr<AVDASharedState> shared_state_;
 
   AVDAStateProvider* state_provider_;
