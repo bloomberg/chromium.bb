@@ -80,6 +80,8 @@ class IoThreadClientThrottle : public content::ResourceThrottle {
   int render_frame_id() const { return render_frame_id_; }
 
  private:
+  scoped_ptr<AwContentsIoThreadClient> GetIoThreadClient() const;
+
   int render_process_id_;
   int render_frame_id_;
   net::URLRequest* request_;
@@ -102,17 +104,23 @@ const char* IoThreadClientThrottle::GetNameForLogging() const {
   return "IoThreadClientThrottle";
 }
 
+scoped_ptr<AwContentsIoThreadClient>
+IoThreadClientThrottle::GetIoThreadClient() const {
+  if (content::ResourceRequestInfo::OriginatedFromServiceWorker(request_))
+    return AwContentsIoThreadClient::GetServiceWorkerIoThreadClient();
+
+  return AwContentsIoThreadClient::FromID(render_process_id_, render_frame_id_);
+}
+
 void IoThreadClientThrottle::WillStartRequest(bool* defer) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (render_frame_id_ < 1)
-    return;
-  DCHECK(render_process_id_);
+  // valid render_frame_id_ implies nonzero render_processs_id_
+  DCHECK((render_frame_id_ < 1) || (render_process_id_ != 0));
   *defer = false;
 
   // Defer all requests of a pop up that is still not associated with Java
   // client so that the client will get a chance to override requests.
-  scoped_ptr<AwContentsIoThreadClient> io_client =
-      AwContentsIoThreadClient::FromID(render_process_id_, render_frame_id_);
+  scoped_ptr<AwContentsIoThreadClient> io_client = GetIoThreadClient();
   if (io_client && io_client->PendingAssociation()) {
     *defer = true;
     AwResourceDispatcherHostDelegate::AddPendingThrottle(
@@ -146,8 +154,7 @@ bool IoThreadClientThrottle::MaybeBlockRequest() {
 }
 
 bool IoThreadClientThrottle::ShouldBlockRequest() {
-  scoped_ptr<AwContentsIoThreadClient> io_client =
-      AwContentsIoThreadClient::FromID(render_process_id_, render_frame_id_);
+  scoped_ptr<AwContentsIoThreadClient> io_client = GetIoThreadClient();
   if (!io_client)
     return false;
 
