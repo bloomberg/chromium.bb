@@ -83,21 +83,21 @@ struct IDBDatabaseMetadata {
     DISALLOW_NEW();
     // FIXME: These can probably be collapsed into 0.
     enum {
-        NoIntVersion = -1,
-        DefaultIntVersion = 0
+        NoVersion = -1,
+        DefaultVersion = 0
     };
 
     typedef HashMap<int64_t, IDBObjectStoreMetadata> ObjectStoreMap;
 
     IDBDatabaseMetadata()
-        : intVersion(NoIntVersion)
+        : version(NoVersion)
     {
     }
 
-    IDBDatabaseMetadata(const String& name, int64_t id, int64_t intVersion, int64_t maxObjectStoreId)
+    IDBDatabaseMetadata(const String& name, int64_t id, int64_t version, int64_t maxObjectStoreId)
         : name(name)
         , id(id)
-        , intVersion(intVersion)
+        , version(version)
         , maxObjectStoreId(maxObjectStoreId)
     {
     }
@@ -106,7 +106,7 @@ struct IDBDatabaseMetadata {
 
     String name;
     int64_t id;
-    int64_t intVersion;
+    int64_t version;
     int64_t maxObjectStoreId;
 
     ObjectStoreMap objectStores;

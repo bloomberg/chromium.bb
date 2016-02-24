@@ -888,11 +888,11 @@ TEST(IndexedDBLevelDBCodingTest, ComparisonTest) {
   keys.push_back(
       DatabaseMetaDataKey::Encode(1, DatabaseMetaDataKey::DATABASE_NAME));
   keys.push_back(
-      DatabaseMetaDataKey::Encode(1, DatabaseMetaDataKey::USER_VERSION));
+      DatabaseMetaDataKey::Encode(1, DatabaseMetaDataKey::USER_STRING_VERSION));
   keys.push_back(
       DatabaseMetaDataKey::Encode(1, DatabaseMetaDataKey::MAX_OBJECT_STORE_ID));
   keys.push_back(
-      DatabaseMetaDataKey::Encode(1, DatabaseMetaDataKey::USER_INT_VERSION));
+      DatabaseMetaDataKey::Encode(1, DatabaseMetaDataKey::USER_VERSION));
   keys.push_back(
       ObjectStoreMetaDataKey::Encode(1, 1, ObjectStoreMetaDataKey::NAME));
   keys.push_back(

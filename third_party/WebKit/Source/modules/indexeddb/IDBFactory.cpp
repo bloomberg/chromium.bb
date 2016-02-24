@@ -104,7 +104,7 @@ IDBOpenDBRequest* IDBFactory::open(ScriptState* scriptState, const String& name,
 IDBOpenDBRequest* IDBFactory::openInternal(ScriptState* scriptState, const String& name, int64_t version, ExceptionState& exceptionState)
 {
     IDBDatabase::recordApiCallsHistogram(IDBOpenCall);
-    ASSERT(version >= 1 || version == IDBDatabaseMetadata::NoIntVersion);
+    ASSERT(version >= 1 || version == IDBDatabaseMetadata::NoVersion);
     if (!isContextValid(scriptState->executionContext()))
         return nullptr;
     if (!scriptState->executionContext()->securityOrigin()->canAccessDatabase()) {
@@ -128,7 +128,7 @@ IDBOpenDBRequest* IDBFactory::openInternal(ScriptState* scriptState, const Strin
 IDBOpenDBRequest* IDBFactory::open(ScriptState* scriptState, const String& name, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBFactory::open");
-    return openInternal(scriptState, name, IDBDatabaseMetadata::NoIntVersion, exceptionState);
+    return openInternal(scriptState, name, IDBDatabaseMetadata::NoVersion, exceptionState);
 }
 
 IDBOpenDBRequest* IDBFactory::deleteDatabase(ScriptState* scriptState, const String& name, ExceptionState& exceptionState)
@@ -142,7 +142,7 @@ IDBOpenDBRequest* IDBFactory::deleteDatabase(ScriptState* scriptState, const Str
         return nullptr;
     }
 
-    IDBOpenDBRequest* request = IDBOpenDBRequest::create(scriptState, nullptr, 0, IDBDatabaseMetadata::DefaultIntVersion);
+    IDBOpenDBRequest* request = IDBOpenDBRequest::create(scriptState, nullptr, 0, IDBDatabaseMetadata::DefaultVersion);
 
     if (!m_permissionClient->allowIndexedDB(scriptState->executionContext(), name)) {
         request->onError(DOMException::create(UnknownError, permissionDeniedErrorMessage));

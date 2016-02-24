@@ -193,7 +193,7 @@ class CONTENT_EXPORT IndexedDBDatabase
                               scoped_refptr<IndexedDBCallbacks> callbacks,
                               scoped_ptr<IndexedDBConnection> connection,
                               IndexedDBTransaction* transaction);
-  void VersionChangeAbortOperation(int64_t previous_int_version,
+  void VersionChangeAbortOperation(int64_t previous_version,
                                    IndexedDBTransaction* transaction);
   void DeleteIndexOperation(int64_t object_store_id,
                             int64_t index_id,

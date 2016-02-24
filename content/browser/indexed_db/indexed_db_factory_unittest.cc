@@ -283,11 +283,8 @@ TEST_F(IndexedDBFactoryTest, BackingStoreReleasedOnForcedClose) {
       new MockIndexedDBDatabaseCallbacks());
   const int64_t transaction_id = 1;
   IndexedDBPendingConnection connection(
-      callbacks,
-      db_callbacks,
-      0, /* child_process_id */
-      transaction_id,
-      IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION);
+      callbacks, db_callbacks, 0, /* child_process_id */
+      transaction_id, IndexedDBDatabaseMetadata::DEFAULT_VERSION);
   factory()->Open(ASCIIToUTF16("db"),
                   connection,
                   NULL /* request_context */,
@@ -316,11 +313,8 @@ TEST_F(IndexedDBFactoryTest, BackingStoreReleaseDelayedOnClose) {
       new MockIndexedDBDatabaseCallbacks());
   const int64_t transaction_id = 1;
   IndexedDBPendingConnection connection(
-      callbacks,
-      db_callbacks,
-      0, /* child_process_id */
-      transaction_id,
-      IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION);
+      callbacks, db_callbacks, 0, /* child_process_id */
+      transaction_id, IndexedDBDatabaseMetadata::DEFAULT_VERSION);
   factory()->Open(ASCIIToUTF16("db"),
                   connection,
                   NULL /* request_context */,
@@ -411,11 +405,8 @@ TEST_F(IndexedDBFactoryTest, ForceCloseReleasesBackingStore) {
       new MockIndexedDBDatabaseCallbacks());
   const int64_t transaction_id = 1;
   IndexedDBPendingConnection connection(
-      callbacks,
-      db_callbacks,
-      0, /* child_process_id */
-      transaction_id,
-      IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION);
+      callbacks, db_callbacks, 0, /* child_process_id */
+      transaction_id, IndexedDBDatabaseMetadata::DEFAULT_VERSION);
   factory()->Open(ASCIIToUTF16("db"),
                   connection,
                   NULL /* request_context */,

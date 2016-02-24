@@ -76,11 +76,8 @@ TEST(IndexedDBDatabaseTest, ConnectionLifecycle) {
       new MockIndexedDBDatabaseCallbacks());
   const int64_t transaction_id1 = 1;
   IndexedDBPendingConnection connection1(
-      request1,
-      callbacks1,
-      kFakeChildProcessId,
-      transaction_id1,
-      IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION);
+      request1, callbacks1, kFakeChildProcessId, transaction_id1,
+      IndexedDBDatabaseMetadata::DEFAULT_VERSION);
   db->OpenConnection(connection1);
 
   EXPECT_FALSE(backing_store->HasOneRef());  // db, connection count > 0
@@ -90,11 +87,8 @@ TEST(IndexedDBDatabaseTest, ConnectionLifecycle) {
       new MockIndexedDBDatabaseCallbacks());
   const int64_t transaction_id2 = 2;
   IndexedDBPendingConnection connection2(
-      request2,
-      callbacks2,
-      kFakeChildProcessId,
-      transaction_id2,
-      IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION);
+      request2, callbacks2, kFakeChildProcessId, transaction_id2,
+      IndexedDBDatabaseMetadata::DEFAULT_VERSION);
   db->OpenConnection(connection2);
 
   EXPECT_FALSE(backing_store->HasOneRef());  // local and connection
@@ -134,11 +128,8 @@ TEST(IndexedDBDatabaseTest, ForcedClose) {
   scoped_refptr<MockIndexedDBCallbacks> request(new MockIndexedDBCallbacks());
   const int64_t upgrade_transaction_id = 3;
   IndexedDBPendingConnection connection(
-      request,
-      callbacks,
-      kFakeChildProcessId,
-      upgrade_transaction_id,
-      IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION);
+      request, callbacks, kFakeChildProcessId, upgrade_transaction_id,
+      IndexedDBDatabaseMetadata::DEFAULT_VERSION);
   database->OpenConnection(connection);
   EXPECT_EQ(database.get(), request->connection()->database());
 
@@ -198,11 +189,8 @@ TEST(IndexedDBDatabaseTest, PendingDelete) {
       new MockIndexedDBDatabaseCallbacks());
   const int64_t transaction_id1 = 1;
   IndexedDBPendingConnection connection(
-      request1,
-      callbacks1,
-      kFakeChildProcessId,
-      transaction_id1,
-      IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION);
+      request1, callbacks1, kFakeChildProcessId, transaction_id1,
+      IndexedDBDatabaseMetadata::DEFAULT_VERSION);
   db->OpenConnection(connection);
 
   EXPECT_FALSE(backing_store->HasOneRef());  // local and db
@@ -246,13 +234,9 @@ class IndexedDBDatabaseOperationTest : public testing::Test {
     callbacks_ = new MockIndexedDBDatabaseCallbacks();
     const int64_t transaction_id = 1;
     db_->OpenConnection(IndexedDBPendingConnection(
-        request_,
-        callbacks_,
-        kFakeChildProcessId,
-        transaction_id,
-        IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION));
-    EXPECT_EQ(IndexedDBDatabaseMetadata::NO_INT_VERSION,
-              db_->metadata().int_version);
+        request_, callbacks_, kFakeChildProcessId, transaction_id,
+        IndexedDBDatabaseMetadata::DEFAULT_VERSION));
+    EXPECT_EQ(IndexedDBDatabaseMetadata::NO_VERSION, db_->metadata().version);
 
     transaction_ = IndexedDBClassFactory::Get()->CreateIndexedDBTransaction(
         transaction_id, callbacks_, std::set<int64_t>() /*scope*/,

@@ -941,8 +941,7 @@ TEST_F(IndexedDBBackingStoreTest, InvalidIds) {
 TEST_F(IndexedDBBackingStoreTest, CreateDatabase) {
   const base::string16 database_name(ASCIIToUTF16("db1"));
   int64_t database_id;
-  const base::string16 version(ASCIIToUTF16("old_string_version"));
-  const int64_t int_version = 9;
+  const int64_t version = 9;
 
   const int64_t object_store_id = 99;
   const base::string16 object_store_name(ASCIIToUTF16("object_store1"));
@@ -958,7 +957,7 @@ TEST_F(IndexedDBBackingStoreTest, CreateDatabase) {
 
   {
     leveldb::Status s = backing_store_->CreateIDBDatabaseMetaData(
-        database_name, int_version, &database_id);
+        database_name, version, &database_id);
     EXPECT_TRUE(s.ok());
     EXPECT_GT(database_id, 0);
 
@@ -1001,7 +1000,7 @@ TEST_F(IndexedDBBackingStoreTest, CreateDatabase) {
     EXPECT_TRUE(found);
 
     // database.name is not filled in by the implementation.
-    EXPECT_EQ(int_version, database.int_version);
+    EXPECT_EQ(version, database.version);
     EXPECT_EQ(database_id, database.id);
 
     s = backing_store_->GetObjectStores(database.id, &database.object_stores);
@@ -1028,10 +1027,10 @@ TEST_F(IndexedDBBackingStoreTest, GetDatabaseNames) {
   const int64_t db1_version = 1LL;
   int64_t db1_id;
 
-  // Database records with DEFAULT_INT_VERSION represent stale data,
+  // Database records with DEFAULT_VERSION represent stale data,
   // and should not be enumerated.
   const base::string16 db2_name(ASCIIToUTF16("db2"));
-  const int64_t db2_version = IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION;
+  const int64_t db2_version = IndexedDBDatabaseMetadata::DEFAULT_VERSION;
   int64_t db2_id;
 
   leveldb::Status s =

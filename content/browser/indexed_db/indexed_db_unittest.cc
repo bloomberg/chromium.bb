@@ -278,11 +278,8 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnCommitFailure) {
       new MockIndexedDBDatabaseCallbacks());
   const int64_t transaction_id = 1;
   IndexedDBPendingConnection connection(
-      callbacks,
-      db_callbacks,
-      0 /* child_process_id */,
-      transaction_id,
-      IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION);
+      callbacks, db_callbacks, 0 /* child_process_id */, transaction_id,
+      IndexedDBDatabaseMetadata::DEFAULT_VERSION);
   factory->Open(base::ASCIIToUTF16("db"),
                 connection,
                 NULL /* request_context */,

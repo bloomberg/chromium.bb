@@ -13,12 +13,12 @@ Tests that database names are correctly loaded and saved in IndexedDBModel.
 Dumping database:
 Dumping database:
 testDatabase1
-    intVersion: 1
+    version: 1
     objectStores:
 
 Dumping database:
 testDatabase1
-    intVersion: 2
+    version: 2
     objectStores:
     testObjectStore1
         keyPath: "test.key.path"
@@ -27,7 +27,7 @@ testDatabase1
 
 Dumping database:
 testDatabase1
-    intVersion: 3
+    version: 3
     objectStores:
     testObjectStore1
         keyPath: "test.key.path"
@@ -40,7 +40,7 @@ testDatabase1
 
 Dumping database:
 testDatabase1
-    intVersion: 4
+    version: 4
     objectStores:
     testObjectStore1
         keyPath: "test.key.path"
@@ -57,7 +57,7 @@ testDatabase1
 
 Dumping database:
 testDatabase1
-    intVersion: 5
+    version: 5
     objectStores:
     testObjectStore1
         keyPath: "test.key.path"
@@ -78,7 +78,7 @@ testDatabase1
 
 Dumping database:
 testDatabase1
-    intVersion: 6
+    version: 6
     objectStores:
     testObjectStore1
         keyPath: "test.key.path"
@@ -95,7 +95,7 @@ testDatabase1
 
 Dumping database:
 testDatabase1
-    intVersion: 7
+    version: 7
     objectStores:
     testObjectStore1
         keyPath: "test.key.path"
@@ -108,7 +108,7 @@ testDatabase1
 
 Dumping database:
 testDatabase1
-    intVersion: 8
+    version: 8
     objectStores:
     testObjectStore1
         keyPath: "test.key.path"
@@ -117,7 +117,7 @@ testDatabase1
 
 Dumping database:
 testDatabase1
-    intVersion: 9
+    version: 9
     objectStores:
 
 

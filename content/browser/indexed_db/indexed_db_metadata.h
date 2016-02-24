@@ -61,17 +61,14 @@ struct CONTENT_EXPORT IndexedDBObjectStoreMetadata {
 
 struct CONTENT_EXPORT IndexedDBDatabaseMetadata {
   // TODO(jsbell): These can probably be collapsed into 0.
-  enum {
-    NO_INT_VERSION = -1,
-    DEFAULT_INT_VERSION = 0
-  };
+  enum { NO_VERSION = -1, DEFAULT_VERSION = 0 };
 
   typedef std::map<int64_t, IndexedDBObjectStoreMetadata> ObjectStoreMap;
 
   IndexedDBDatabaseMetadata();
   IndexedDBDatabaseMetadata(const base::string16& name,
                             int64_t id,
-                            int64_t int_version,
+                            int64_t version,
                             int64_t max_object_store_id);
   IndexedDBDatabaseMetadata(const IndexedDBDatabaseMetadata& other);
   ~IndexedDBDatabaseMetadata();
@@ -79,7 +76,7 @@ struct CONTENT_EXPORT IndexedDBDatabaseMetadata {
 
   base::string16 name;
   int64_t id;
-  int64_t int_version;
+  int64_t version;
   int64_t max_object_store_id;
 
   ObjectStoreMap object_stores;

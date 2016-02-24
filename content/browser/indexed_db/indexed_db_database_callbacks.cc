@@ -35,7 +35,7 @@ void IndexedDBDatabaseCallbacks::OnVersionChange(int64_t old_version,
   if (!dispatcher_host_.get())
     return;
 
-  dispatcher_host_->Send(new IndexedDBMsg_DatabaseCallbacksIntVersionChange(
+  dispatcher_host_->Send(new IndexedDBMsg_DatabaseCallbacksVersionChange(
       ipc_thread_id_, ipc_database_callbacks_id_, old_version, new_version));
 }
 

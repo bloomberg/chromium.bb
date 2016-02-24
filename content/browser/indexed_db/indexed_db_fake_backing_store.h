@@ -30,7 +30,7 @@ class IndexedDBFakeBackingStore : public IndexedDBBackingStore {
                                          IndexedDBDatabaseMetadata*,
                                          bool* found) override;
   leveldb::Status CreateIDBDatabaseMetaData(const base::string16& name,
-                                            int64_t int_version,
+                                            int64_t version,
                                             int64_t* row_id) override;
   bool UpdateIDBDatabaseIntVersion(Transaction*,
                                    int64_t row_id,

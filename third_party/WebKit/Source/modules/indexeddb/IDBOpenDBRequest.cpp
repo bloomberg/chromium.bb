@@ -74,7 +74,7 @@ void IDBOpenDBRequest::onBlocked(int64_t oldVersion)
     IDB_TRACE("IDBOpenDBRequest::onBlocked()");
     if (!shouldEnqueueEvent())
         return;
-    Nullable<unsigned long long> newVersionNullable = (m_version == IDBDatabaseMetadata::DefaultIntVersion) ? Nullable<unsigned long long>() : Nullable<unsigned long long>(m_version);
+    Nullable<unsigned long long> newVersionNullable = (m_version == IDBDatabaseMetadata::DefaultVersion) ? Nullable<unsigned long long>() : Nullable<unsigned long long>(m_version);
     enqueueEvent(IDBVersionChangeEvent::create(EventTypeNames::blocked, oldVersion, newVersionNullable));
 }
 
@@ -95,17 +95,17 @@ void IDBOpenDBRequest::onUpgradeNeeded(int64_t oldVersion, PassOwnPtr<WebIDBData
     IDBDatabase* idbDatabase = IDBDatabase::create(executionContext(), backend, m_databaseCallbacks.release());
     idbDatabase->setMetadata(metadata);
 
-    if (oldVersion == IDBDatabaseMetadata::NoIntVersion) {
-        // This database hasn't had an integer version before.
-        oldVersion = IDBDatabaseMetadata::DefaultIntVersion;
+    if (oldVersion == IDBDatabaseMetadata::NoVersion) {
+        // This database hasn't had a version before.
+        oldVersion = IDBDatabaseMetadata::DefaultVersion;
     }
     IDBDatabaseMetadata oldMetadata(metadata);
-    oldMetadata.intVersion = oldVersion;
+    oldMetadata.version = oldVersion;
 
     m_transaction = IDBTransaction::create(scriptState(), m_transactionId, idbDatabase, this, oldMetadata);
     setResult(IDBAny::create(idbDatabase));
 
-    if (m_version == IDBDatabaseMetadata::NoIntVersion)
+    if (m_version == IDBDatabaseMetadata::NoVersion)
         m_version = 1;
     enqueueEvent(IDBVersionChangeEvent::create(EventTypeNames::upgradeneeded, oldVersion, m_version, dataLoss, dataLossMessage));
 }
@@ -144,9 +144,9 @@ void IDBOpenDBRequest::onSuccess(int64_t oldVersion)
     IDB_TRACE("IDBOpenDBRequest::onSuccess()");
     if (!shouldEnqueueEvent())
         return;
-    if (oldVersion == IDBDatabaseMetadata::NoIntVersion) {
+    if (oldVersion == IDBDatabaseMetadata::NoVersion) {
         // This database hasn't had an integer version before.
-        oldVersion = IDBDatabaseMetadata::DefaultIntVersion;
+        oldVersion = IDBDatabaseMetadata::DefaultVersion;
     }
     setResult(IDBAny::createUndefined());
     enqueueEvent(IDBVersionChangeEvent::create(EventTypeNames::success, oldVersion, Nullable<unsigned long long>()));

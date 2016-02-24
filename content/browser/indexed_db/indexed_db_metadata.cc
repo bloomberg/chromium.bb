@@ -49,17 +49,16 @@ IndexedDBObjectStoreMetadata::~IndexedDBObjectStoreMetadata() = default;
 IndexedDBObjectStoreMetadata& IndexedDBObjectStoreMetadata::operator=(
     const IndexedDBObjectStoreMetadata& other) = default;
 
-IndexedDBDatabaseMetadata::IndexedDBDatabaseMetadata()
-    : int_version(NO_INT_VERSION) {}
+IndexedDBDatabaseMetadata::IndexedDBDatabaseMetadata() : version(NO_VERSION) {}
 
 IndexedDBDatabaseMetadata::IndexedDBDatabaseMetadata(
     const base::string16& name,
     int64_t id,
-    int64_t int_version,
+    int64_t version,
     int64_t max_object_store_id)
     : name(name),
       id(id),
-      int_version(int_version),
+      version(version),
       max_object_store_id(max_object_store_id) {}
 
 IndexedDBDatabaseMetadata::IndexedDBDatabaseMetadata(

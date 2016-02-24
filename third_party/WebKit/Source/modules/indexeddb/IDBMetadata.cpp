@@ -11,7 +11,7 @@ namespace blink {
 IDBDatabaseMetadata::IDBDatabaseMetadata(const WebIDBMetadata& webMetadata)
     : name(webMetadata.name)
     , id(webMetadata.id)
-    , intVersion(webMetadata.intVersion)
+    , version(webMetadata.version)
     , maxObjectStoreId(webMetadata.maxObjectStoreId)
 {
     for (size_t i = 0; i < webMetadata.objectStores.size(); ++i) {

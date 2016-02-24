@@ -150,7 +150,7 @@ IndexedDBDatabase::IndexedDBDatabase(const base::string16& name,
     : backing_store_(backing_store),
       metadata_(name,
                 kInvalidId,
-                IndexedDBDatabaseMetadata::NO_INT_VERSION,
+                IndexedDBDatabaseMetadata::NO_VERSION,
                 kInvalidId),
       identifier_(unique_identifier),
       factory_(factory) {
@@ -216,7 +216,7 @@ leveldb::Status IndexedDBDatabase::OpenInternal() {
                                            &metadata_.object_stores);
 
   return backing_store_->CreateIDBDatabaseMetaData(
-      metadata_.name, metadata_.int_version, &metadata_.id);
+      metadata_.name, metadata_.version, &metadata_.id);
 }
 
 IndexedDBDatabase::~IndexedDBDatabase() {
@@ -1516,7 +1516,7 @@ void IndexedDBDatabase::VersionChangeOperation(
     IndexedDBTransaction* transaction) {
   IDB_TRACE1(
       "IndexedDBDatabase::VersionChangeOperation", "txn.id", transaction->id());
-  int64_t old_version = metadata_.int_version;
+  int64_t old_version = metadata_.version;
   DCHECK_GT(version, old_version);
 
   if (!backing_store_->UpdateIDBDatabaseIntVersion(
@@ -1532,10 +1532,9 @@ void IndexedDBDatabase::VersionChangeOperation(
   }
 
   transaction->ScheduleAbortTask(
-      base::Bind(&IndexedDBDatabase::VersionChangeAbortOperation,
-                 this,
-                 metadata_.int_version));
-  metadata_.int_version = version;
+      base::Bind(&IndexedDBDatabase::VersionChangeAbortOperation, this,
+                 metadata_.version));
+  metadata_.version = version;
 
   DCHECK(!pending_second_half_open_);
   pending_second_half_open_.reset(
@@ -1553,7 +1552,7 @@ void IndexedDBDatabase::TransactionFinished(IndexedDBTransaction* transaction,
   if (transaction->mode() == blink::WebIDBTransactionModeVersionChange) {
     if (pending_second_half_open_) {
       if (committed) {
-        DCHECK_EQ(pending_second_half_open_->version(), metadata_.int_version);
+        DCHECK_EQ(pending_second_half_open_->version(), metadata_.version);
         DCHECK(metadata_.id != kInvalidId);
 
         // Connection was already minted for OnUpgradeNeeded callback.
@@ -1609,7 +1608,7 @@ size_t IndexedDBDatabase::PendingDeleteCount() const {
 void IndexedDBDatabase::ProcessPendingCalls() {
   if (pending_run_version_change_transaction_call_ && ConnectionCount() == 1) {
     DCHECK(pending_run_version_change_transaction_call_->version() >
-           metadata_.int_version);
+           metadata_.version);
     scoped_ptr<PendingUpgradeCall> pending_call =
         std::move(pending_run_version_change_transaction_call_);
     RunVersionChangeTransactionFinal(pending_call->callbacks(),
@@ -1702,11 +1701,10 @@ void IndexedDBDatabase::OpenConnection(
     // The database was deleted then immediately re-opened; OpenInternal()
     // recreates it in the backing store.
     if (OpenInternal().ok()) {
-      DCHECK_EQ(IndexedDBDatabaseMetadata::NO_INT_VERSION,
-                metadata_.int_version);
+      DCHECK_EQ(IndexedDBDatabaseMetadata::NO_VERSION, metadata_.version);
     } else {
       base::string16 message;
-      if (connection.version == IndexedDBDatabaseMetadata::NO_INT_VERSION) {
+      if (connection.version == IndexedDBDatabaseMetadata::NO_VERSION) {
         message = ASCIIToUTF16(
             "Internal error opening database with no version specified.");
       } else {
@@ -1723,11 +1721,11 @@ void IndexedDBDatabase::OpenConnection(
   // We infer that the database didn't exist from its lack of either type of
   // version.
   bool is_new_database =
-      metadata_.int_version == IndexedDBDatabaseMetadata::NO_INT_VERSION;
+      metadata_.version == IndexedDBDatabaseMetadata::NO_VERSION;
 
-  if (connection.version == IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION) {
+  if (connection.version == IndexedDBDatabaseMetadata::DEFAULT_VERSION) {
     // For unit tests only - skip upgrade steps. Calling from script with
-    // DEFAULT_INT_VERSION throws exception.
+    // DEFAULT_VERSION throws exception.
     // TODO(jsbell): DCHECK that not in unit tests.
     DCHECK(is_new_database);
     connection.callbacks->OnSuccess(
@@ -1739,7 +1737,7 @@ void IndexedDBDatabase::OpenConnection(
 
   // We may need to change the version.
   int64_t local_version = connection.version;
-  if (local_version == IndexedDBDatabaseMetadata::NO_INT_VERSION) {
+  if (local_version == IndexedDBDatabaseMetadata::NO_VERSION) {
     if (!is_new_database) {
       connection.callbacks->OnSuccess(
           CreateConnection(connection.database_callbacks,
@@ -1752,7 +1750,7 @@ void IndexedDBDatabase::OpenConnection(
     local_version = 1;
   }
 
-  if (local_version > metadata_.int_version) {
+  if (local_version > metadata_.version) {
     RunVersionChangeTransaction(connection.callbacks,
                                 CreateConnection(connection.database_callbacks,
                                                  connection.child_process_id),
@@ -1760,16 +1758,16 @@ void IndexedDBDatabase::OpenConnection(
                                 local_version);
     return;
   }
-  if (local_version < metadata_.int_version) {
+  if (local_version < metadata_.version) {
     connection.callbacks->OnError(IndexedDBDatabaseError(
         blink::WebIDBDatabaseExceptionVersionError,
         ASCIIToUTF16("The requested version (") +
             Int64ToString16(local_version) +
             ASCIIToUTF16(") is less than the existing version (") +
-            Int64ToString16(metadata_.int_version) + ASCIIToUTF16(").")));
+            Int64ToString16(metadata_.version) + ASCIIToUTF16(").")));
     return;
   }
-  DCHECK_EQ(local_version, metadata_.int_version);
+  DCHECK_EQ(local_version, metadata_.version);
   connection.callbacks->OnSuccess(
       CreateConnection(connection.database_callbacks,
                        connection.child_process_id),
@@ -1789,7 +1787,7 @@ void IndexedDBDatabase::RunVersionChangeTransaction(
     // close_pending set.
     for (const auto* iter : connections_) {
       if (iter != connection.get()) {
-        iter->callbacks()->OnVersionChange(metadata_.int_version,
+        iter->callbacks()->OnVersionChange(metadata_.version,
                                            requested_version);
       }
     }
@@ -1833,7 +1831,7 @@ void IndexedDBDatabase::DeleteDatabase(
       // Front end ensures the event is not fired at connections that have
       // close_pending set.
       connection->callbacks()->OnVersionChange(
-          metadata_.int_version, IndexedDBDatabaseMetadata::NO_INT_VERSION);
+          metadata_.version, IndexedDBDatabaseMetadata::NO_VERSION);
     }
     // OnBlocked will be fired at the request when one of the other
     // connections acks that the OnVersionChange was ignored.
@@ -1864,9 +1862,9 @@ void IndexedDBDatabase::DeleteDatabaseFinal(
     }
     return;
   }
-  int64_t old_version = metadata_.int_version;
+  int64_t old_version = metadata_.version;
   metadata_.id = kInvalidId;
-  metadata_.int_version = IndexedDBDatabaseMetadata::NO_INT_VERSION;
+  metadata_.version = IndexedDBDatabaseMetadata::NO_VERSION;
   metadata_.object_stores.clear();
   callbacks->OnSuccess(old_version);
   factory_->DatabaseDeleted(identifier_);
@@ -1886,10 +1884,10 @@ void IndexedDBDatabase::ForceClose() {
 void IndexedDBDatabase::VersionChangeIgnored() {
   if (pending_run_version_change_transaction_call_)
     pending_run_version_change_transaction_call_->callbacks()->OnBlocked(
-        metadata_.int_version);
+        metadata_.version);
 
   for (const auto& pending_delete_call : pending_delete_calls_)
-    pending_delete_call->callbacks()->OnBlocked(metadata_.int_version);
+    pending_delete_call->callbacks()->OnBlocked(metadata_.version);
 }
 
 
@@ -1956,11 +1954,11 @@ void IndexedDBDatabase::DeleteObjectStoreAbortOperation(
 }
 
 void IndexedDBDatabase::VersionChangeAbortOperation(
-    int64_t previous_int_version,
+    int64_t previous_version,
     IndexedDBTransaction* transaction) {
   DCHECK(!transaction);
   IDB_TRACE("IndexedDBDatabase::VersionChangeAbortOperation");
-  metadata_.int_version = previous_int_version;
+  metadata_.version = previous_version;
 }
 
 }  // namespace content

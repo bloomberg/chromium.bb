@@ -409,14 +409,13 @@ class CONTENT_EXPORT IndexedDBBackingStore
       const base::string16& name,
       IndexedDBDatabaseMetadata* metadata,
       bool* success) WARN_UNUSED_RESULT;
-  virtual leveldb::Status CreateIDBDatabaseMetaData(
-      const base::string16& name,
-      int64_t int_version,
-      int64_t* row_id);
+  virtual leveldb::Status CreateIDBDatabaseMetaData(const base::string16& name,
+                                                    int64_t version,
+                                                    int64_t* row_id);
   virtual bool UpdateIDBDatabaseIntVersion(
       IndexedDBBackingStore::Transaction* transaction,
       int64_t row_id,
-      int64_t int_version);
+      int64_t version);
   virtual leveldb::Status DeleteDatabase(const base::string16& name);
 
   // Assumes caller has already closed the backing store.

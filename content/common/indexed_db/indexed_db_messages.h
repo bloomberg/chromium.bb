@@ -341,7 +341,7 @@ IPC_STRUCT_END()
 IPC_STRUCT_BEGIN(IndexedDBDatabaseMetadata)
   IPC_STRUCT_MEMBER(int64_t, id)
   IPC_STRUCT_MEMBER(base::string16, name)
-  IPC_STRUCT_MEMBER(int64_t, int_version)
+  IPC_STRUCT_MEMBER(int64_t, version)
   IPC_STRUCT_MEMBER(int64_t, max_object_store_id)
   IPC_STRUCT_MEMBER(std::vector<IndexedDBObjectStoreMetadata>, object_stores)
 IPC_STRUCT_END()
@@ -423,7 +423,7 @@ IPC_MESSAGE_CONTROL1(IndexedDBMsg_CallbacksUpgradeNeeded,
 IPC_MESSAGE_CONTROL2(IndexedDBMsg_DatabaseCallbacksForcedClose,
                      int32_t, /* ipc_thread_id */
                      int32_t) /* ipc_database_callbacks_id */
-IPC_MESSAGE_CONTROL4(IndexedDBMsg_DatabaseCallbacksIntVersionChange,
+IPC_MESSAGE_CONTROL4(IndexedDBMsg_DatabaseCallbacksVersionChange,
                      int32_t, /* ipc_thread_id */
                      int32_t, /* ipc_database_callbacks_id */
                      int64_t, /* old_version */

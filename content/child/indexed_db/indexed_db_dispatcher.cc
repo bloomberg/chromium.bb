@@ -87,7 +87,7 @@ WebIDBMetadata IndexedDBDispatcher::ConvertMetadata(
   WebIDBMetadata web_metadata;
   web_metadata.id = idb_metadata.id;
   web_metadata.name = idb_metadata.name;
-  web_metadata.intVersion = idb_metadata.int_version;
+  web_metadata.version = idb_metadata.version;
   web_metadata.maxObjectStoreId = idb_metadata.max_object_store_id;
   web_metadata.objectStores =
       WebVector<WebIDBMetadata::ObjectStore>(idb_metadata.object_stores.size());
@@ -151,8 +151,8 @@ void IndexedDBDispatcher::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksUpgradeNeeded, OnUpgradeNeeded)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_DatabaseCallbacksForcedClose,
                         OnForcedClose)
-    IPC_MESSAGE_HANDLER(IndexedDBMsg_DatabaseCallbacksIntVersionChange,
-                        OnIntVersionChange)
+    IPC_MESSAGE_HANDLER(IndexedDBMsg_DatabaseCallbacksVersionChange,
+                        OnVersionChange)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_DatabaseCallbacksAbort, OnAbort)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_DatabaseCallbacksComplete, OnComplete)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -780,10 +780,10 @@ void IndexedDBDispatcher::OnForcedClose(int32_t ipc_thread_id,
   callbacks->onForcedClose();
 }
 
-void IndexedDBDispatcher::OnIntVersionChange(int32_t ipc_thread_id,
-                                             int32_t ipc_database_callbacks_id,
-                                             int64_t old_version,
-                                             int64_t new_version) {
+void IndexedDBDispatcher::OnVersionChange(int32_t ipc_thread_id,
+                                          int32_t ipc_database_callbacks_id,
+                                          int64_t old_version,
+                                          int64_t new_version) {
   DCHECK_EQ(ipc_thread_id, CurrentWorkerId());
   WebIDBDatabaseCallbacks* callbacks =
       pending_database_callbacks_.Lookup(ipc_database_callbacks_id);

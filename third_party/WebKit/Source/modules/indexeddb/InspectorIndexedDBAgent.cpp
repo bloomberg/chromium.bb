@@ -341,7 +341,7 @@ public:
         }
         OwnPtr<DatabaseWithObjectStores> result = DatabaseWithObjectStores::create()
             .setName(databaseMetadata.name)
-            .setIntVersion(databaseMetadata.intVersion)
+            .setVersion(databaseMetadata.version)
             .setObjectStores(objectStores.release()).build();
 
         m_requestCallback->sendSuccess(result.release());

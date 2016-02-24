@@ -547,7 +547,7 @@ STATIC_ASSERT_ENUM(WebIDBKeyPathTypeNull, IDBKeyPath::NullType);
 STATIC_ASSERT_ENUM(WebIDBKeyPathTypeString, IDBKeyPath::StringType);
 STATIC_ASSERT_ENUM(WebIDBKeyPathTypeArray, IDBKeyPath::ArrayType);
 
-STATIC_ASSERT_ENUM(WebIDBMetadata::NoIntVersion, IDBDatabaseMetadata::NoIntVersion);
+STATIC_ASSERT_ENUM(WebIDBMetadata::NoVersion, IDBDatabaseMetadata::NoVersion);
 
 STATIC_ASSERT_ENUM(WebFileSystem::TypeTemporary, FileSystemTypeTemporary);
 STATIC_ASSERT_ENUM(WebFileSystem::TypePersistent, FileSystemTypePersistent);

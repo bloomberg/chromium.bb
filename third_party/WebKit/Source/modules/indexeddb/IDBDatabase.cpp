@@ -373,7 +373,7 @@ void IDBDatabase::onVersionChange(int64_t oldVersion, int64_t newVersion)
         return;
     }
 
-    Nullable<unsigned long long> newVersionNullable = (newVersion == IDBDatabaseMetadata::NoIntVersion) ? Nullable<unsigned long long>() : Nullable<unsigned long long>(newVersion);
+    Nullable<unsigned long long> newVersionNullable = (newVersion == IDBDatabaseMetadata::NoVersion) ? Nullable<unsigned long long>() : Nullable<unsigned long long>(newVersion);
     enqueueEvent(IDBVersionChangeEvent::create(EventTypeNames::versionchange, oldVersion, newVersionNullable));
 }
 

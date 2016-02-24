@@ -242,10 +242,10 @@ class CONTENT_EXPORT IndexedDBDispatcher : public WorkerThread::Observer {
                   int32_t ipc_database_id,
                   int64_t transaction_id);
   void OnForcedClose(int32_t ipc_thread_id, int32_t ipc_database_id);
-  void OnIntVersionChange(int32_t ipc_thread_id,
-                          int32_t ipc_database_id,
-                          int64_t old_version,
-                          int64_t new_version);
+  void OnVersionChange(int32_t ipc_thread_id,
+                       int32_t ipc_database_id,
+                       int64_t old_version,
+                       int64_t new_version);
 
   // Reset cursor prefetch caches for all cursors except exception_cursor_id.
   void ResetCursorPrefetchCaches(int64_t transaction_id,

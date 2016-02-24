@@ -413,11 +413,10 @@ WARN_UNUSED_RESULT leveldb::Status IndexedDBBackingStore::SetUpMetadata() {
           INTERNAL_CONSISTENCY_ERROR_UNTESTED(SET_UP_METADATA);
           return InternalInconsistencyStatus();
         }
-        std::string int_version_key = DatabaseMetaDataKey::Encode(
-            database_id, DatabaseMetaDataKey::USER_INT_VERSION);
-        PutVarInt(transaction.get(),
-                  int_version_key,
-                  IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION);
+        std::string version_key = DatabaseMetaDataKey::Encode(
+            database_id, DatabaseMetaDataKey::USER_VERSION);
+        PutVarInt(transaction.get(), version_key,
+                  IndexedDBDatabaseMetadata::DEFAULT_VERSION);
       }
     }
     if (s.ok() && db_schema_version < 2) {
@@ -1220,19 +1219,18 @@ std::vector<base::string16> IndexedDBBackingStore::GetDatabaseNames(
 
     // Look up version by id.
     bool found = false;
-    int64_t database_version = IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION;
+    int64_t database_version = IndexedDBDatabaseMetadata::DEFAULT_VERSION;
     *s = GetVarInt(db_.get(),
                    DatabaseMetaDataKey::Encode(
-                       database_id, DatabaseMetaDataKey::USER_INT_VERSION),
-                   &database_version,
-                   &found);
+                       database_id, DatabaseMetaDataKey::USER_VERSION),
+                   &database_version, &found);
     if (!s->ok() || !found) {
       INTERNAL_READ_ERROR_UNTESTED(GET_DATABASE_NAMES);
       continue;
     }
 
     // Ignore stale metadata from failed initial opens.
-    if (database_version != IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION)
+    if (database_version != IndexedDBDatabaseMetadata::DEFAULT_VERSION)
       found_names.push_back(database_name_key.database_name());
   }
 
@@ -1257,11 +1255,9 @@ leveldb::Status IndexedDBBackingStore::GetIDBDatabaseMetaData(
   if (!*found)
     return leveldb::Status::OK();
 
-  s = GetVarInt(db_.get(),
-                DatabaseMetaDataKey::Encode(
-                    metadata->id, DatabaseMetaDataKey::USER_INT_VERSION),
-                &metadata->int_version,
-                found);
+  s = GetVarInt(db_.get(), DatabaseMetaDataKey::Encode(
+                               metadata->id, DatabaseMetaDataKey::USER_VERSION),
+                &metadata->version, found);
   if (!s.ok()) {
     INTERNAL_READ_ERROR_UNTESTED(GET_IDBDATABASE_METADATA);
     return s;
@@ -1271,8 +1267,8 @@ leveldb::Status IndexedDBBackingStore::GetIDBDatabaseMetaData(
     return InternalInconsistencyStatus();
   }
 
-  if (metadata->int_version == IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION)
-    metadata->int_version = IndexedDBDatabaseMetadata::NO_INT_VERSION;
+  if (metadata->version == IndexedDBDatabaseMetadata::DEFAULT_VERSION)
+    metadata->version = IndexedDBDatabaseMetadata::NO_VERSION;
 
   s = GetMaxObjectStoreId(
       db_.get(), metadata->id, &metadata->max_object_store_id);
@@ -1331,7 +1327,7 @@ WARN_UNUSED_RESULT static leveldb::Status GetNewDatabaseId(
 
 leveldb::Status IndexedDBBackingStore::CreateIDBDatabaseMetaData(
     const base::string16& name,
-    int64_t int_version,
+    int64_t version,
     int64_t* row_id) {
   // TODO(jsbell): Don't persist metadata if open fails. http://crbug.com/395472
   scoped_refptr<LevelDBTransaction> transaction =
@@ -1342,16 +1338,15 @@ leveldb::Status IndexedDBBackingStore::CreateIDBDatabaseMetaData(
     return s;
   DCHECK_GE(*row_id, 0);
 
-  if (int_version == IndexedDBDatabaseMetadata::NO_INT_VERSION)
-    int_version = IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION;
+  if (version == IndexedDBDatabaseMetadata::NO_VERSION)
+    version = IndexedDBDatabaseMetadata::DEFAULT_VERSION;
 
   PutInt(transaction.get(),
          DatabaseNameKey::Encode(origin_identifier_, name),
          *row_id);
-  PutVarInt(transaction.get(),
-            DatabaseMetaDataKey::Encode(*row_id,
-                                        DatabaseMetaDataKey::USER_INT_VERSION),
-            int_version);
+  PutVarInt(transaction.get(), DatabaseMetaDataKey::Encode(
+                                   *row_id, DatabaseMetaDataKey::USER_VERSION),
+            version);
   PutVarInt(
       transaction.get(),
       DatabaseMetaDataKey::Encode(
@@ -1367,14 +1362,14 @@ leveldb::Status IndexedDBBackingStore::CreateIDBDatabaseMetaData(
 bool IndexedDBBackingStore::UpdateIDBDatabaseIntVersion(
     IndexedDBBackingStore::Transaction* transaction,
     int64_t row_id,
-    int64_t int_version) {
-  if (int_version == IndexedDBDatabaseMetadata::NO_INT_VERSION)
-    int_version = IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION;
-  DCHECK_GE(int_version, 0) << "int_version was " << int_version;
-  PutVarInt(transaction->transaction(),
-            DatabaseMetaDataKey::Encode(row_id,
-                                        DatabaseMetaDataKey::USER_INT_VERSION),
-            int_version);
+    int64_t version) {
+  if (version == IndexedDBDatabaseMetadata::NO_VERSION)
+    version = IndexedDBDatabaseMetadata::DEFAULT_VERSION;
+  DCHECK_GE(version, 0) << "version was " << version;
+  PutVarInt(
+      transaction->transaction(),
+      DatabaseMetaDataKey::Encode(row_id, DatabaseMetaDataKey::USER_VERSION),
+      version);
   return true;
 }
 
