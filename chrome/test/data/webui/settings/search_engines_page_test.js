@@ -4,18 +4,6 @@
 
 cr.define('settings_search_engines_page', function() {
   /**
-   * TODO(dpapad): Similar class exists in webui_resource_async_browsertest.js.
-   * Move somewhere else and re-use.
-   * @constructor
-   */
-  var PromiseResolver = function() {
-    this.promise = new Promise(function(resolve, reject) {
-      this.resolve = resolve;
-      this.reject = reject;
-    }.bind(this));
-  };
-
-  /**
    * A test version of SearchEnginesBrowserProxy. Provides helper methods
    * for allowing tests to know when a method was called, as well as
    * specifying mock responses.

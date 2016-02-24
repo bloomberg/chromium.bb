@@ -35,6 +35,7 @@ WebUIResourceAsyncTest.prototype = {
   extraLibraries: [
     ROOT_PATH + 'third_party/mocha/mocha.js',
     ROOT_PATH + 'chrome/test/data/webui/mocha_adapter.js',
+    ROOT_PATH + 'chrome/test/data/webui/promise_resolver.js',
     ROOT_PATH + 'ui/webui/resources/js/cr.js',
   ],
 };
@@ -153,14 +154,6 @@ TEST_F('WebUIResourceAsyncTest', 'WebUIListeners', function() {
     });
 
     test('addWebUIListener_MulitpleListeners', function() {
-      /** @constructor */
-      var PromiseResolver = function() {
-        this.promise = new Promise(function(resolve, reject) {
-          this.resolve = resolve;
-          this.reject = reject;
-        }.bind(this));
-      };
-
       var resolver1 = new PromiseResolver();
       var resolver2 = new PromiseResolver();
       listener1 = cr.addWebUIListener(EVENT_NAME, resolver1.resolve);

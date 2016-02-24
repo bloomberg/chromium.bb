@@ -115,6 +115,7 @@ CrSettingsSearchEnginesTest.prototype = {
 
   /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
+    '../promise_resolver.js',
     'search_engines_page_test.js',
   ]),
 };
