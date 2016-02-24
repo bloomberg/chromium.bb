@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "gin/per_context_data.h"
-#include "mojo/public/cpp/environment/environment.h"
 
 namespace mojo {
 namespace edk {
@@ -32,29 +31,27 @@ gin::Handle<WaitingCallback> WaitingCallback::Create(
     MojoHandleSignals signals) {
   gin::Handle<WaitingCallback> waiting_callback = gin::CreateHandle(
       isolate, new WaitingCallback(isolate, callback, handle_wrapper));
-  waiting_callback->wait_id_ = Environment::GetDefaultAsyncWaiter()->AsyncWait(
-      handle_wrapper->get().value(),
-      signals,
-      MOJO_DEADLINE_INDEFINITE,
-      &WaitingCallback::CallOnHandleReady,
-      waiting_callback.get());
+
+  waiting_callback->handle_watcher_.Start(
+      handle_wrapper->get(), signals, MOJO_DEADLINE_INDEFINITE,
+      base::Bind(&WaitingCallback::OnHandleReady,
+                 base::Unretained(waiting_callback.get())));
   return waiting_callback;
 }
 
 void WaitingCallback::Cancel() {
-  if (!wait_id_)
+  if (!handle_watcher_.is_watching())
     return;
 
-  handle_wrapper_->RemoveCloseObserver(this);
-  handle_wrapper_ = NULL;
-  Environment::GetDefaultAsyncWaiter()->CancelWait(wait_id_);
-  wait_id_ = 0;
+  RemoveHandleCloseObserver();
+  handle_watcher_.Stop();
 }
 
 WaitingCallback::WaitingCallback(v8::Isolate* isolate,
                                  v8::Handle<v8::Function> callback,
                                  gin::Handle<HandleWrapper> handle_wrapper)
-    : wait_id_(0), handle_wrapper_(handle_wrapper.get()), weak_factory_(this) {
+    : handle_wrapper_(handle_wrapper.get()),
+      weak_factory_(this) {
   handle_wrapper_->AddCloseObserver(this);
   v8::Handle<v8::Context> context = isolate->GetCurrentContext();
   runner_ = gin::PerContextData::From(context)->runner()->GetWeakPtr();
@@ -67,25 +64,18 @@ WaitingCallback::~WaitingCallback() {
   Cancel();
 }
 
-// static
-void WaitingCallback::CallOnHandleReady(void* closure, MojoResult result) {
-  static_cast<WaitingCallback*>(closure)->OnHandleReady(result);
-}
-
-void WaitingCallback::ClearWaitId() {
-  wait_id_ = 0;
+void WaitingCallback::RemoveHandleCloseObserver() {
   handle_wrapper_->RemoveCloseObserver(this);
   handle_wrapper_ = nullptr;
 }
 
 void WaitingCallback::OnHandleReady(MojoResult result) {
-  ClearWaitId();
+  RemoveHandleCloseObserver();
   CallCallback(result);
 }
 
 void WaitingCallback::CallCallback(MojoResult result) {
-  // ClearWaitId must already have been called.
-  DCHECK(!wait_id_);
+  DCHECK(!handle_watcher_.is_watching());
   DCHECK(!handle_wrapper_);
 
   if (!runner_)
@@ -107,11 +97,11 @@ void WaitingCallback::CallCallback(MojoResult result) {
 }
 
 void WaitingCallback::OnWillCloseHandle() {
-  Environment::GetDefaultAsyncWaiter()->CancelWait(wait_id_);
+  handle_watcher_.Stop();
 
   // This may be called from GC, so we can't execute Javascript now, call
-  // ClearWaitId explicitly, and CallCallback asynchronously.
-  ClearWaitId();
+  // RemoveHandleCloseObserver explicitly, and CallCallback asynchronously.
+  RemoveHandleCloseObserver();
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&WaitingCallback::CallCallback, weak_factory_.GetWeakPtr(),

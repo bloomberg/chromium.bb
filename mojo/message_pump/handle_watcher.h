@@ -45,6 +45,8 @@ class MOJO_MESSAGE_PUMP_EXPORT HandleWatcher {
   // Stops listening. Does nothing if not in the process of listening.
   void Stop();
 
+  bool is_watching() const { return !!state_; }
+
  private:
   class StateBase;
   class SameThreadWatchingState;

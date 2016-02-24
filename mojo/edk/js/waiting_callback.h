@@ -12,7 +12,7 @@
 #include "gin/wrappable.h"
 #include "mojo/edk/js/handle.h"
 #include "mojo/edk/js/handle_close_observer.h"
-#include "mojo/public/c/environment/async_waiter.h"
+#include "mojo/message_pump/handle_watcher.h"
 #include "mojo/public/cpp/system/core.h"
 
 namespace mojo {
@@ -42,21 +42,19 @@ class WaitingCallback : public gin::Wrappable<WaitingCallback>,
                   gin::Handle<HandleWrapper> handle_wrapper);
   ~WaitingCallback() override;
 
-  // Callback from MojoAsyncWaiter. |closure| is the WaitingCallback.
-  static void CallOnHandleReady(void* closure, MojoResult result);
-
-  // Invoked from CallOnHandleReady() (CallOnHandleReady() must be static).
+  // Callback from common::HandleWatcher.
   void OnHandleReady(MojoResult result);
 
   // Invoked by the HandleWrapper if the handle is closed while this wait is
   // still in progress.
   void OnWillCloseHandle() override;
 
-  void ClearWaitId();
+  void RemoveHandleCloseObserver();
   void CallCallback(MojoResult result);
 
   base::WeakPtr<gin::Runner> runner_;
-  MojoAsyncWaitID wait_id_;
+
+  common::HandleWatcher handle_watcher_;
 
   HandleWrapper* handle_wrapper_;
   base::WeakPtrFactory<WaitingCallback> weak_factory_;

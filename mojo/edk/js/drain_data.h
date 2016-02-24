@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_vector.h"
 #include "gin/runner.h"
-#include "mojo/public/c/environment/async_waiter.h"
+#include "mojo/message_pump/handle_watcher.h"
 #include "mojo/public/cpp/system/core.h"
 #include "v8/include/v8.h"
 
@@ -34,11 +34,8 @@ class DrainData {
  private:
   ~DrainData();
 
-  // Registers an "async waiter" that calls DataReady() via WaitCompleted().
+  // Waits for data to be available. DataReady() will be notified.
   void WaitForData();
-  static void WaitCompleted(void* self, MojoResult result) {
-    static_cast<DrainData*>(self)->DataReady(result);
-  }
 
   // Use ReadData() to read whatever is availble now on handle_ and save
   // it in data_buffers_.
@@ -53,7 +50,7 @@ class DrainData {
 
   v8::Isolate* isolate_;
   ScopedDataPipeConsumerHandle handle_;
-  MojoAsyncWaitID wait_id_;
+  common::HandleWatcher handle_watcher_;
   base::WeakPtr<gin::Runner> runner_;
   v8::UniquePersistent<v8::Promise::Resolver> resolver_;
   ScopedVector<DataBuffer> data_buffers_;

@@ -7,12 +7,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/bind.h"
 #include "gin/array_buffer.h"
 #include "gin/converter.h"
 #include "gin/dictionary.h"
 #include "gin/per_context_data.h"
 #include "gin/per_isolate_data.h"
-#include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/system/core.h"
 
 namespace mojo {
@@ -20,10 +20,7 @@ namespace edk {
 namespace js {
 
 DrainData::DrainData(v8::Isolate* isolate, mojo::Handle handle)
-    : isolate_(isolate),
-      handle_(DataPipeConsumerHandle(handle.value())),
-      wait_id_(0) {
-
+    : isolate_(isolate), handle_(DataPipeConsumerHandle(handle.value())) {
   v8::Handle<v8::Context> context(isolate_->GetCurrentContext());
   runner_ = gin::PerContextData::From(context)->runner()->GetWeakPtr();
 
@@ -39,22 +36,16 @@ v8::Handle<v8::Value> DrainData::GetPromise() {
 }
 
 DrainData::~DrainData() {
-  if (wait_id_)
-    Environment::GetDefaultAsyncWaiter()->CancelWait(wait_id_);
   resolver_.Reset();
 }
 
 void DrainData::WaitForData() {
-  wait_id_ = Environment::GetDefaultAsyncWaiter()->AsyncWait(
-      handle_.get().value(),
-      MOJO_HANDLE_SIGNAL_READABLE,
-      MOJO_DEADLINE_INDEFINITE,
-      &DrainData::WaitCompleted,
-      this);
+  handle_watcher_.Start(
+      handle_.get(), MOJO_HANDLE_SIGNAL_READABLE, MOJO_DEADLINE_INDEFINITE,
+      base::Bind(&DrainData::DataReady, base::Unretained(this)));
 }
 
 void DrainData::DataReady(MojoResult result) {
-  wait_id_ = 0;
   if (result != MOJO_RESULT_OK) {
     DeliverData(result);
     return;

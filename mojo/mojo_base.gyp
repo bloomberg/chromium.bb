@@ -36,31 +36,6 @@
       'type': 'none',
     },
     {
-      # GN version: //mojo/message_pump
-      'target_name': 'mojo_message_pump_lib',
-      'type': '<(component)',
-      'defines': [
-        'MOJO_MESSAGE_PUMP_IMPLEMENTATION',
-      ],
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        '<(mojo_system_for_component)',
-      ],
-      'export_dependent_settings': [
-        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-      ],
-      'sources': [
-        'message_pump/handle_watcher.cc',
-        'message_pump/handle_watcher.h',
-        'message_pump/message_pump_mojo.cc',
-        'message_pump/message_pump_mojo.h',
-        'message_pump/message_pump_mojo_handler.h',
-        'message_pump/time_helper.cc',
-        'message_pump/time_helper.h',
-      ],
-    },
-    {
       # GN version: //mojo/common
       'target_name': 'mojo_common_lib',
       'type': '<(component)',
@@ -135,8 +110,8 @@
         'mojo_edk.gyp:mojo_common_test_support',
         'mojo_edk.gyp:mojo_run_all_unittests',
         'mojo_environment_chromium',
-        'mojo_message_pump_lib',
         'mojo_public.gyp:mojo_cpp_bindings',
+        'mojo_public.gyp:mojo_message_pump_lib',
         'mojo_public.gyp:mojo_public_test_utils',
         'mojo_url_type_converters',
       ],
@@ -182,7 +157,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        'mojo_message_pump_lib',
+        'mojo_public.gyp:mojo_message_pump_lib',
         '<(mojo_system_for_component)',
       ],
       'sources': [
@@ -244,7 +219,7 @@
       'dependencies': [
         '../base/base.gyp:base_i18n',
         'mojo_application_bindings',
-        'mojo_message_pump_lib',
+        'mojo_public.gyp:mojo_message_pump_lib',
         'mojo_services.gyp:network_type_converters',
       ],
     },

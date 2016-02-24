@@ -11,7 +11,6 @@
 #include "gin/test/gtest.h"
 #include "mojo/edk/js/core.h"
 #include "mojo/edk/js/support.h"
-#include "mojo/public/cpp/environment/environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {

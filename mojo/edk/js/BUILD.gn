@@ -42,7 +42,7 @@ source_set("js") {
   ]
 
   deps = [
-    "//mojo/public/cpp/environment",
+    "//mojo/message_pump",
     "//mojo/public/cpp/system",
   ]
 }
