@@ -11114,7 +11114,6 @@
         "afdo_use": false,
         "boards": [],
         "branch_util_test": true,
-        "buildslave_type": "gce_wimpy",
         "chrome_sdk": false,
         "health_alert_recipients": [
             "chromeos-infra-eng@grotations.appspotmail.com",
