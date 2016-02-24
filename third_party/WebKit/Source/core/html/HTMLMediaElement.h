@@ -68,6 +68,11 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement, public WillBeHeapSupple
 public:
     static WebMimeRegistry::SupportsType supportsType(const ContentType&);
 
+    enum class RecordMetricsBehavior {
+        DoNotRecord,
+        DoRecord
+    };
+
     static void setMediaStreamRegistry(URLRegistry*);
     static bool isMediaStreamURL(const String& url);
 
@@ -132,7 +137,6 @@ public:
     TimeRanges* seekable() const;
     bool ended() const;
     bool autoplay() const;
-    enum class RecordMetricsBehavior { DoNotRecord, DoRecord };
     bool shouldAutoplay(const RecordMetricsBehavior = RecordMetricsBehavior::DoNotRecord);
     bool loop() const;
     void setLoop(bool);
@@ -150,7 +154,7 @@ public:
     void durationChanged(double duration, bool requestSeek);
 
     // controls
-    bool shouldShowControls() const;
+    bool shouldShowControls(const RecordMetricsBehavior = RecordMetricsBehavior::DoNotRecord) const;
     double volume() const;
     void setVolume(double, ExceptionState&);
     bool muted() const;

@@ -19294,6 +19294,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Controls.Show" enum="MediaControlsShowReason">
+  <owner>mlamouri@chromium.org</owner>
+  <summary>
+    Record whether the default media controls where shown and why every time
+    they could be shown.
+  </summary>
+</histogram>
+
 <histogram name="Media.CrosBeamformingDeviceState"
     enum="CrosBeamformingDeviceState">
   <owner>ajm@chromium.org</owner>
@@ -72799,6 +72807,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="37" label="WTV (Windows Television)"/>
   <int value="38" label="DASH"/>
   <int value="39" label="SmoothStream"/>
+</enum>
+
+<enum name="MediaControlsShowReason" type="int">
+  <int value="0" label="Attribute"/>
+  <int value="1" label="Fullscreen"/>
+  <int value="2" label="No scripts allowed"/>
+  <int value="3" label="Not shown"/>
 </enum>
 
 <enum name="MediaElementAutoPlay" type="int">

@@ -111,6 +111,14 @@ namespace {
 // URL protocol used to signal that the media source API is being used.
 const char mediaSourceBlobProtocol[] = "blob";
 
+enum MediaControlsShow {
+    MediaControlsShowAttribute = 0,
+    MediaControlsShowFullscreen,
+    MediaControlsShowNoScript,
+    MediaControlsShowNotShown,
+    MediaControlsShowMax
+};
+
 #if !LOG_DISABLED
 String urlForLoggingMedia(const KURL& url)
 {
@@ -2078,19 +2086,32 @@ void HTMLMediaElement::setLoop(bool b)
     setBooleanAttribute(loopAttr, b);
 }
 
-bool HTMLMediaElement::shouldShowControls() const
+bool HTMLMediaElement::shouldShowControls(const RecordMetricsBehavior recordMetrics) const
 {
+    DEFINE_STATIC_LOCAL(EnumerationHistogram, showControlsHistogram, ("Media.Controls.Show", MediaControlsShowMax));
+
+    if (fastHasAttribute(controlsAttr)) {
+        if (recordMetrics == RecordMetricsBehavior::DoRecord)
+            showControlsHistogram.count(MediaControlsShowAttribute);
+        return true;
+    }
+
+    if (isFullscreen()) {
+        if (recordMetrics == RecordMetricsBehavior::DoRecord)
+            showControlsHistogram.count(MediaControlsShowFullscreen);
+        return true;
+    }
+
     LocalFrame* frame = document().frame();
-
-    // always show controls when scripting is disabled
-    if (frame && !frame->script().canExecuteScripts(NotAboutToExecuteScript))
+    if (frame && !frame->script().canExecuteScripts(NotAboutToExecuteScript)) {
+        if (recordMetrics == RecordMetricsBehavior::DoRecord)
+            showControlsHistogram.count(MediaControlsShowNoScript);
         return true;
+    }
 
-    // Always show controls when in full screen mode.
-    if (isFullscreen())
-        return true;
-
-    return fastHasAttribute(controlsAttr);
+    if (recordMetrics == RecordMetricsBehavior::DoRecord)
+        showControlsHistogram.count(MediaControlsShowNotShown);
+    return false;
 }
 
 double HTMLMediaElement::volume() const
@@ -3346,7 +3367,8 @@ void HTMLMediaElement::configureMediaControls()
 
     ensureMediaControls();
     mediaControls()->reset();
-    if (shouldShowControls())
+
+    if (shouldShowControls(RecordMetricsBehavior::DoRecord))
         mediaControls()->show();
     else
         mediaControls()->hide();
