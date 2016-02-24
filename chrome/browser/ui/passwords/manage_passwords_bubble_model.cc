@@ -296,19 +296,8 @@ void ManagePasswordsBubbleModel::OnManageLinkClicked() {
 
 void ManagePasswordsBubbleModel::OnBrandLinkClicked() {
   dismissal_reason_ = metrics_util::CLICKED_BRAND_NAME;
-  switch (GetSmartLockBrandingState(GetProfile())) {
-    case password_bubble_experiment::SmartLockBranding::FULL:
-      PasswordsModelDelegateFromWebContents(web_contents())
-          ->NavigateToExternalPasswordManager();
-      break;
-    case password_bubble_experiment::SmartLockBranding::SAVE_BUBBLE_ONLY:
-      PasswordsModelDelegateFromWebContents(web_contents())
-          ->NavigateToSmartLockHelpPage();
-      break;
-    case password_bubble_experiment::SmartLockBranding::NONE:
-      NOTREACHED();
-      break;
-  }
+  PasswordsModelDelegateFromWebContents(web_contents())
+      ->NavigateToSmartLockHelpPage();
 }
 
 void ManagePasswordsBubbleModel::OnAutoSignInToastTimeout() {

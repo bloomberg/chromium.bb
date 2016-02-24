@@ -100,7 +100,7 @@ PasswordDialogControllerImpl::GetAutoSigninText() const {
 }
 
 void PasswordDialogControllerImpl::OnSmartLockLinkClicked() {
-  delegate_->NavigateToExternalPasswordManager();
+  delegate_->NavigateToSmartLockHelpPage();
 }
 
 void PasswordDialogControllerImpl::OnChooseCredentials(

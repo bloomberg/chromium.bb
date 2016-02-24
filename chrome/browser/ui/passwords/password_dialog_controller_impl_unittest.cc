@@ -173,4 +173,9 @@ TEST_F(PasswordDialogControllerTest, AutoSigninPromoTurnOff) {
       password_manager::prefs::kCredentialsEnableAutosignin));
 }
 
+TEST_F(PasswordDialogControllerTest, OnBrandLinkClicked) {
+  EXPECT_CALL(ui_controller_mock(), NavigateToSmartLockHelpPage());
+  controller().OnSmartLockLinkClicked();
+}
+
 }  // namespace

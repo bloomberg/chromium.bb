@@ -364,6 +364,13 @@ TEST_F(ManagePasswordsBubbleModelTest, OmitSmartLockWarmWelcome) {
       password_manager::prefs::kWasSavePrompFirstRunExperienceShown));
 }
 
+TEST_F(ManagePasswordsBubbleModelTest, OnBrandLinkClicked) {
+  PretendPasswordWaiting();
+
+  EXPECT_CALL(*controller(), NavigateToSmartLockHelpPage());
+  model()->OnBrandLinkClicked();
+}
+
 namespace {
 
 enum class SmartLockStatus { ENABLE, DISABLE };
@@ -485,56 +492,3 @@ const ManageLinkTestCase kManageLinkTestCases[] = {
 INSTANTIATE_TEST_CASE_P(Default,
                         ManagePasswordsBubbleModelManageLinkTest,
                         ::testing::ValuesIn(kManageLinkTestCases));
-
-enum class BrandLinkTarget { SMART_LOCK_HOME, SMART_LOCK_HELP };
-
-struct BrandLinkTestCase {
-  const char* experiment_group;
-  SmartLockStatus smartlock_status;
-  BrandLinkTarget expected_target;
-};
-
-class ManagePasswordsBubbleModelBrandLinkTest
-    : public ManagePasswordsBubbleModelTest,
-      public ::testing::WithParamInterface<BrandLinkTestCase> {};
-
-TEST_P(ManagePasswordsBubbleModelBrandLinkTest, OnBrandLinkClicked) {
-  BrandLinkTestCase test_case = GetParam();
-  TestSyncService* sync_service = static_cast<TestSyncService*>(
-      ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-          profile(), &TestingSyncFactoryFunction));
-  sync_service->set_smartlock_enabled(test_case.smartlock_status ==
-                                      SmartLockStatus::ENABLE);
-  if (test_case.experiment_group) {
-    base::FieldTrialList::CreateFieldTrial(kBrandingExperimentName,
-                                           test_case.experiment_group);
-  }
-
-  PretendManagingPasswords();
-
-  switch (test_case.expected_target) {
-    case BrandLinkTarget::SMART_LOCK_HOME:
-      EXPECT_CALL(*controller(), NavigateToExternalPasswordManager());
-      break;
-    case BrandLinkTarget::SMART_LOCK_HELP:
-      EXPECT_CALL(*controller(), NavigateToSmartLockHelpPage());
-      break;
-  }
-
-  model()->OnBrandLinkClicked();
-}
-
-namespace {
-
-const BrandLinkTestCase kBrandLinkTestCases[] = {
-    {kSmartLockBrandingGroupName, SmartLockStatus::ENABLE,
-     BrandLinkTarget::SMART_LOCK_HOME},
-    {kSmartLockBrandingSavePromptOnlyGroupName, SmartLockStatus::ENABLE,
-     BrandLinkTarget::SMART_LOCK_HELP},
-};
-
-}  // namespace
-
-INSTANTIATE_TEST_CASE_P(Default,
-                        ManagePasswordsBubbleModelBrandLinkTest,
-                        ::testing::ValuesIn(kBrandLinkTestCases));
