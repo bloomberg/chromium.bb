@@ -13,7 +13,7 @@
     {
       # GN version: //mojo/platform_handle:platform_handle/platform_handle_impl
       'target_name': 'platform_handle',
-      'type': 'static_library',
+      'type': '<(component)',
       'include_dirs': [
         '../..',
       ],
