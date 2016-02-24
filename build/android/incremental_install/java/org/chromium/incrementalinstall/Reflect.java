@@ -46,9 +46,9 @@ final class Reflect {
      * Concatenates two arrays into a new array. The arrays must be of the same
      * type.
      */
-    static Object[] concatArrays(Object[] left, Object[] right) {
+    static Object[] concatArrays(Object[] arrType, Object[] left, Object[] right) {
         Object[] result = (Object[]) Array.newInstance(
-                left.getClass().getComponentType(), left.length + right.length);
+                arrType.getClass().getComponentType(), left.length + right.length);
         System.arraycopy(left, 0, result, 0, left.length);
         System.arraycopy(right, 0, result, left.length, right.length);
         return result;

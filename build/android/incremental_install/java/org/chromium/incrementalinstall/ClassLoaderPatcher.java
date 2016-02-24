@@ -94,8 +94,8 @@ final class ClassLoaderPatcher {
         Object dexPathList = Reflect.getField(mClassLoader, "pathList");
         Object[] dexElements = (Object[]) Reflect.getField(dexPathList, "dexElements");
         Object[] additionalElements = makeDexElements(dexFilesArr, optimizedDir);
-        Reflect.setField(
-                dexPathList, "dexElements", Reflect.concatArrays(dexElements, additionalElements));
+        Reflect.setField(dexPathList, "dexElements",
+                Reflect.concatArrays(dexElements, dexElements, additionalElements));
     }
 
     /**
@@ -150,11 +150,11 @@ final class ClassLoaderPatcher {
         // Switched from an array to an ArrayList in Lollipop.
         if (currentDirs instanceof List) {
             List<File> dirsAsList = (List<File>) currentDirs;
-            dirsAsList.add(nativeLibDir);
+            dirsAsList.add(0, nativeLibDir);
         } else {
             File[] dirsAsArray = (File[]) currentDirs;
             Reflect.setField(dexPathList, "nativeLibraryDirectories",
-                    Reflect.concatArrays(dirsAsArray, newDirs));
+                    Reflect.concatArrays(newDirs, newDirs, dirsAsArray));
         }
 
         Object[] nativeLibraryPathElements;
@@ -166,9 +166,9 @@ final class ClassLoaderPatcher {
             return;
         }
         Object[] additionalElements = makeNativePathElements(newDirs);
-        Reflect.setField(
-                dexPathList, "nativeLibraryPathElements",
-                Reflect.concatArrays(nativeLibraryPathElements, additionalElements));
+        Reflect.setField(dexPathList, "nativeLibraryPathElements",
+                Reflect.concatArrays(nativeLibraryPathElements, additionalElements,
+                        nativeLibraryPathElements));
     }
 
     private static void copyChangedFiles(File srcDir, File dstDir) throws IOException {
