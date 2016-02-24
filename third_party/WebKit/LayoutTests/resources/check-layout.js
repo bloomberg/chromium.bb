@@ -16,6 +16,14 @@ function insertAfter(nodeToAdd, referenceNode)
         referenceNode.parentNode.appendChild(nodeToAdd);
 }
 
+function positionedAncestor(node)
+{
+    var ancestor = node.parentNode;
+    while (getComputedStyle(ancestor).position == 'static')
+        ancestor = ancestor.parentNode;
+    return ancestor;
+}
+
 function checkSubtreeExpectedValues(parent, failures)
 {
     var checkedLayout = checkExpectedValues(parent, failures);
@@ -57,6 +65,20 @@ function checkExpectedValues(node, failures)
     if (expectedOffset) {
         if (isNaN(expectedOffset) || Math.abs(node.offsetTop - expectedOffset) >= 1)
             failures.push("Expected " + expectedOffset + " for offsetTop, but got " + node.offsetTop + ". ");
+    }
+
+    var expectedOffset = checkAttribute(output, node, "data-positioned-offset-x");
+    if (expectedOffset) {
+        var actualOffset = node.getBoundingClientRect().left - positionedAncestor(node).getBoundingClientRect().left;
+        if (isNaN(expectedOffset) || Math.abs(actualOffset - expectedOffset) >= 1)
+            failures.push("Expected " + expectedOffset + " for getBoundingClientRect().left offset, but got " + actualOffset + ". ");
+    }
+
+    var expectedOffset = checkAttribute(output, node, "data-positioned-offset-y");
+    if (expectedOffset) {
+        var actualOffset = node.getBoundingClientRect().top - positionedAncestor(node).getBoundingClientRect().top;
+        if (isNaN(expectedOffset) || Math.abs(actualOffset - expectedOffset) >= 1)
+            failures.push("Expected " + expectedOffset + " for getBoundingClientRect().top offset, but got " + actualOffset + ". ");
     }
 
     var expectedWidth = checkAttribute(output, node, "data-expected-client-width");

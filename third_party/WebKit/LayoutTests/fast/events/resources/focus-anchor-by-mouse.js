@@ -1,7 +1,8 @@
 window.onload = function() {
     if (window.eventSender) {
         var aElement = document.getElementById('anchor');
-        eventSender.mouseMoveTo(aElement.offsetLeft + 2, aElement.offsetTop + 2);
+        var aRect = aElement.getBoundingClientRect();
+        eventSender.mouseMoveTo(aRect.left + 2, aRect.top + 2);
         eventSender.mouseDown();
     }
 };

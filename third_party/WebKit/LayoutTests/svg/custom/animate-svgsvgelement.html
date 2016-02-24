@@ -7,13 +7,13 @@
     var height_test = async_test("Test height");
     function do_width_test() {
         width_test.step(function() {
-            assert_equals(document.querySelector('svg').offsetWidth, 0, "width should be zero when the animation has ended.");
+            assert_equals(document.querySelector('svg').getBoundingClientRect().width, 0, "width should be zero when the animation has ended.");
         });
         width_test.done();
     }
     function do_height_test() {
         height_test.step(function() {
-            assert_equals(document.querySelector('svg').offsetHeight, 0, "height should be zero when the animation has ended.");
+            assert_equals(document.querySelector('svg').getBoundingClientRect().height, 0, "height should be zero when the animation has ended.");
         });
         height_test.done();
     }

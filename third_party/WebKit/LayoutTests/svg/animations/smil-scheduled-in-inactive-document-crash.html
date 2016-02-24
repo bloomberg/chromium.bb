@@ -18,9 +18,10 @@ var svg = document.querySelector("svg");
 svg.pauseAnimations();
 
 setTimeout(function() {
-  eventSender.mouseMoveTo(svg.offsetLeft + 20, svg.offsetTop + 20);
+  var rect = svg.getBoundingClientRect();
+  eventSender.mouseMoveTo(rect.left + 20, rect.top + 20);
   eventSender.mouseDown();
   eventSender.mouseUp();
+  finishJSTest();
 }, 0);
-finishJSTest();
 </script>

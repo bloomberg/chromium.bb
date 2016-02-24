@@ -5,19 +5,21 @@ function moveMouseOver(element)
     if (!window.eventSender || !window.internals)
         return;
 
-    var x = element.offsetLeft + element.offsetWidth / 2;
+    var rect = element.getBoundingClientRect();
+    var x = rect.left + rect.width / 2;
     var y;
     if (element.hasChildNodes() || window.internals.shadowRoot(element))
-        y = element.offsetTop + defaultPaddingSize / 2;
+        y = rect.top + defaultPaddingSize / 2;
     else
-        y = element.offsetTop + element.offsetHeight / 2;
+        y = rect.top + rect.height / 2;
     eventSender.mouseMoveTo(x, y);
 }
 
 function touchLocation(node)
 {
-    var x = node.offsetLeft + 5;
-    var y = node.offsetTop + defaultPaddingSize + 5;
+    var rect = node.getBoundingClientRect();
+    var x = rect.left + 5;
+    var y = rect.top + defaultPaddingSize + 5;
     eventSender.addTouchPoint(x, y);
     eventSender.touchStart();
     eventSender.leapForward(100);
@@ -30,9 +32,11 @@ function selectTextNode(node)
     getSelection().setBaseAndExtent(node, 0, node, node.length);
 }
 
-function dragMouse(node) {
-    var x = node.offsetLeft + 5;
-    var y = node.offsetTop + defaultPaddingSize + 5;
+function dragMouse(node)
+{
+    var rect = node.getBoundingClientRect();
+    var x = rect.left + 5;
+    var y = rect.top + defaultPaddingSize + 5;
 
     eventSender.mouseMoveTo(x, y);
     eventSender.mouseDown();
@@ -42,9 +46,11 @@ function dragMouse(node) {
     eventSender.mouseMoveTo(x, y);
 }
 
-function scrollMouseWheel(node) {
-    var x = node.offsetLeft + 5;
-    var y = node.offsetTop + defaultPaddingSize + 5;
+function scrollMouseWheel(node)
+{
+    var rect = node.getBoundingClientRect();
+    var x = rect.left + 5;
+    var y = rect.top + defaultPaddingSize + 5;
     eventSender.mouseMoveTo(x, y);
     eventSender.mouseScrollBy(0, 120);
 }
@@ -176,6 +182,6 @@ function clickElement(elementId)
 function showSandboxTree()
 {
     var sandbox = document.getElementById('sandbox');
-    sandbox.offsetLeft;
+    sandbox.clientLeft;
     debug('\n\nFlat Tree will be:\n' + dumpFlatTree(sandbox));
 }
