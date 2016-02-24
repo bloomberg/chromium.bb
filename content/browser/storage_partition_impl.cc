@@ -591,6 +591,14 @@ BackgroundSyncContextImpl* StoragePartitionImpl::GetBackgroundSyncContext() {
   return background_sync_context_.get();
 }
 
+void StoragePartitionImpl::OpenLocalStorage(
+    const mojo::String& origin,
+    LevelDBObserverPtr observer,
+    mojo::InterfaceRequest<LevelDBWrapper> request) {
+  dom_storage_context_->OpenLocalStorage(origin, std::move(observer),
+                                         std::move(request));
+}
+
 void StoragePartitionImpl::ClearDataImpl(
     uint32_t remove_mask,
     uint32_t quota_storage_remove_mask,
@@ -890,6 +898,11 @@ WebRTCIdentityStore* StoragePartitionImpl::GetWebRTCIdentityStore() {
 
 BrowserContext* StoragePartitionImpl::browser_context() const {
   return browser_context_;
+}
+
+void StoragePartitionImpl::Bind(
+    mojo::InterfaceRequest<StoragePartitionService> request) {
+  bindings_.AddBinding(this, std::move(request));
 }
 
 void StoragePartitionImpl::OverrideQuotaManagerForTesting(

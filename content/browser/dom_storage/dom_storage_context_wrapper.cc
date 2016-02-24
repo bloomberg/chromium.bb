@@ -17,6 +17,7 @@
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
 #include "content/browser/dom_storage/dom_storage_task_runner.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
+#include "content/browser/level_db_wrapper_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/local_storage_usage_info.h"
 #include "content/public/browser/session_storage_usage_info.h"
@@ -164,6 +165,31 @@ void DOMStorageContextWrapper::Flush() {
   context_->task_runner()->PostShutdownBlockingTask(
       FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
       base::Bind(&DOMStorageContextImpl::Flush, context_));
+}
+
+void DOMStorageContextWrapper::OpenLocalStorage(
+    const mojo::String& origin,
+    LevelDBObserverPtr observer,
+    mojo::InterfaceRequest<LevelDBWrapper> request) {
+  if (level_db_wrappers_.find(origin) == level_db_wrappers_.end()) {
+    level_db_wrappers_[origin] = make_scoped_ptr(new LevelDBWrapperImpl(
+        origin,
+        base::Bind(&DOMStorageContextWrapper::LevelDBWrapperImplHasNoBindings,
+                   base::Unretained(this),
+                   origin.get())));
+  }
+  // TODO(jam): call LevelDB service (once per this object) to open the database
+  // for LocalStorage and keep a pointer to it in this class. Then keep a map
+  // from origins to LevelDBWrapper object. Each call here for the same origin
+  // should use the same LevelDBWrapper object.
+
+  level_db_wrappers_[origin]->Bind(std::move(request), std::move(observer));
+}
+
+void DOMStorageContextWrapper::LevelDBWrapperImplHasNoBindings(
+    const std::string& origin) {
+  DCHECK(level_db_wrappers_.find(origin) != level_db_wrappers_.end());
+  level_db_wrappers_.erase(origin);
 }
 
 }  // namespace content

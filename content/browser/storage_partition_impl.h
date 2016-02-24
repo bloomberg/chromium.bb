@@ -23,12 +23,15 @@
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/content_export.h"
+#include "content/common/storage_partition_service.mojom.h"
 #include "content/public/browser/storage_partition.h"
+#include "mojo/public/cpp/bindings/weak_binding_set.h"
 #include "storage/browser/quota/special_storage_policy.h"
 
 namespace content {
 
-class StoragePartitionImpl : public StoragePartition {
+class StoragePartitionImpl : public StoragePartition,
+                             public StoragePartitionService {
  public:
   CONTENT_EXPORT ~StoragePartitionImpl() override;
 
@@ -61,6 +64,12 @@ class StoragePartitionImpl : public StoragePartition {
   PlatformNotificationContextImpl* GetPlatformNotificationContext() override;
   BackgroundSyncContextImpl* GetBackgroundSyncContext() override;
 
+  // StoragePartitionService interface.
+  void OpenLocalStorage(
+      const mojo::String& origin,
+      LevelDBObserverPtr observer,
+      mojo::InterfaceRequest<LevelDBWrapper> request) override;
+
   void ClearDataForOrigin(uint32_t remove_mask,
                           uint32_t quota_storage_remove_mask,
                           const GURL& storage_origin,
@@ -80,6 +89,9 @@ class StoragePartitionImpl : public StoragePartition {
 
   // Can return nullptr while |this| is being destroyed.
   BrowserContext* browser_context() const;
+
+  // Called by each renderer process once.
+  void Bind(mojo::InterfaceRequest<StoragePartitionService> request);
 
   struct DataDeletionHelper;
   struct QuotaManagedDataDeletionHelper;
@@ -193,6 +205,8 @@ class StoragePartitionImpl : public StoragePartition {
   scoped_refptr<NavigatorConnectContextImpl> navigator_connect_context_;
   scoped_refptr<PlatformNotificationContextImpl> platform_notification_context_;
   scoped_refptr<BackgroundSyncContextImpl> background_sync_context_;
+
+  mojo::WeakBindingSet<StoragePartitionService> bindings_;
 
   // Raw pointer that should always be valid. The BrowserContext owns the
   // StoragePartitionImplMap which then owns StoragePartitionImpl. When the

@@ -71,6 +71,7 @@ class RenderWidgetHostImpl;
 class RenderWidgetHostViewFrameSubscriber;
 class StoragePartition;
 class StoragePartitionImpl;
+class StoragePartitionService;
 
 typedef base::Thread* (*RendererMainThreadFactoryFunction)(
     const InProcessChildThreadParams& params);
@@ -302,6 +303,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // Registers Mojo services to be exposed to the renderer.
   void RegisterMojoServices();
+
+  void CreateStoragePartitionService(
+      mojo::InterfaceRequest<StoragePartitionService> request);
 
   // Control message handlers.
   void OnShutdownRequest();

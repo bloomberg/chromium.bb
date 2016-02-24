@@ -1092,6 +1092,10 @@ void RenderProcessHostImpl::RegisterMojoServices() {
       make_scoped_refptr(storage_partition_impl_->GetNavigatorConnectContext()),
       message_port_message_filter_));
 
+  mojo_application_host_->service_registry()->AddService(
+      base::Bind(&RenderProcessHostImpl::CreateStoragePartitionService,
+                 base::Unretained(this)));
+
 #if defined(OS_ANDROID)
   ServiceRegistrarAndroid::RegisterProcessHostServices(
       mojo_application_host_->service_registry_android());
@@ -1099,6 +1103,15 @@ void RenderProcessHostImpl::RegisterMojoServices() {
 
   GetContentClient()->browser()->RegisterRenderProcessMojoServices(
       mojo_application_host_->service_registry());
+}
+
+void RenderProcessHostImpl::CreateStoragePartitionService(
+    mojo::InterfaceRequest<StoragePartitionService> request) {
+  // DO NOT REMOVE THIS COMMAND LINE CHECK WITHOUT SECURITY REVIEW!
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kMojoLocalStorage)) {
+    storage_partition_impl_->Bind(std::move(request));
+  }
 }
 
 int RenderProcessHostImpl::GetNextRoutingID() {

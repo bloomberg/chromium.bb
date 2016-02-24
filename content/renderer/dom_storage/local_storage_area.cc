@@ -4,13 +4,20 @@
 
 #include "content/renderer/dom_storage/local_storage_area.h"
 
+#include "content/common/storage_partition_service.mojom.h"
+
 using blink::WebString;
 using blink::WebURL;
 
 namespace content {
 
-LocalStorageArea::LocalStorageArea(const url::Origin& origin)
-    : origin_(origin) {
+LocalStorageArea::LocalStorageArea(
+    const url::Origin& origin,
+    StoragePartitionService* storage_partition_service)
+    : origin_(origin), binding_(this) {
+  storage_partition_service->OpenLocalStorage(
+      origin_.Serialize(), binding_.CreateInterfacePtrAndBind(),
+      mojo::GetProxy(&leveldb_));
 }
 
 LocalStorageArea::~LocalStorageArea() {
@@ -42,6 +49,19 @@ void LocalStorageArea::clear(const WebURL& page_url) {
 
 size_t LocalStorageArea::memoryBytesUsedByCache() const {
   return 0u;
+}
+
+void LocalStorageArea::KeyChanged(mojo::Array<uint8_t> key,
+                                  mojo::Array<uint8_t> new_value,
+                                  mojo::Array<uint8_t> old_value,
+                                  const mojo::String& source) {
+}
+
+void LocalStorageArea::KeyDeleted(mojo::Array<uint8_t> key,
+                                  const mojo::String& source) {
+}
+
+void LocalStorageArea::AllDeleted(const mojo::String& source) {
 }
 
 }  // namespace content

@@ -863,6 +863,9 @@ void RenderThreadImpl::Init() {
   if (MojoShellConnection::Get())
     CreateRenderWidgetWindowTreeClientFactory();
 #endif
+
+  service_registry()->ConnectToRemoteService(
+      mojo::GetProxy(&storage_partition_service_));
 }
 
 RenderThreadImpl::~RenderThreadImpl() {
@@ -1136,6 +1139,10 @@ void RenderThreadImpl::RegisterPendingRenderFrameConnect(
           make_scoped_refptr(new PendingRenderFrameConnect(
               routing_id, std::move(services), std::move(exposed_services)))));
   CHECK(result.second) << "Inserting a duplicate item.";
+}
+
+StoragePartitionService* RenderThreadImpl::GetStoragePartitionService() {
+  return storage_partition_service_.get();
 }
 
 int RenderThreadImpl::GenerateRoutingID() {

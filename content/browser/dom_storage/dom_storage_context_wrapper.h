@@ -5,11 +5,13 @@
 #ifndef CONTENT_BROWSER_DOM_STORAGE_DOM_STORAGE_CONTEXT_WRAPPER_H_
 #define CONTENT_BROWSER_DOM_STORAGE_DOM_STORAGE_CONTEXT_WRAPPER_H_
 
+#include <map>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
+#include "content/common/storage_partition_service.mojom.h"
 #include "content/public/browser/dom_storage_context.h"
 
 namespace base {
@@ -23,9 +25,10 @@ class SpecialStoragePolicy;
 namespace content {
 
 class DOMStorageContextImpl;
+class LevelDBWrapperImpl;
 
-// This is owned by BrowserContext (aka Profile) and encapsulates all
-// per-profile dom storage state.
+// This is owned by Storage Partition and encapsulates all its dom storage
+// state.
 class CONTENT_EXPORT DOMStorageContextWrapper :
     NON_EXPORTED_BASE(public DOMStorageContext),
     public base::RefCountedThreadSafe<DOMStorageContextWrapper> {
@@ -58,6 +61,12 @@ class CONTENT_EXPORT DOMStorageContextWrapper :
 
   void Flush();
 
+  // See StoragePartitionService interface.
+  void OpenLocalStorage(
+      const mojo::String& origin,
+      LevelDBObserverPtr observer,
+      mojo::InterfaceRequest<LevelDBWrapper> request);
+
  private:
   friend class DOMStorageMessageFilter;  // for access to context()
   friend class SessionStorageNamespaceImpl;  // ditto
@@ -65,6 +74,13 @@ class CONTENT_EXPORT DOMStorageContextWrapper :
 
   ~DOMStorageContextWrapper() override;
   DOMStorageContextImpl* context() const { return context_.get(); }
+
+  void LevelDBWrapperImplHasNoBindings(const std::string& origin);
+
+  // Used for mojo-based LocalStorage implementation (behind
+  // --mojo-local-storage for now). Maps between an origin and its prefixed
+  // LevelDB view.
+  std::map<std::string, scoped_ptr<LevelDBWrapperImpl>> level_db_wrappers_;
 
   scoped_refptr<DOMStorageContextImpl> context_;
 

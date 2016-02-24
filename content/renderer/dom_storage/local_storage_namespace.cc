@@ -15,7 +15,9 @@ using blink::WebString;
 
 namespace content {
 
-LocalStorageNamespace::LocalStorageNamespace() {
+LocalStorageNamespace::LocalStorageNamespace(
+    StoragePartitionService* storage_partition_service)
+    : storage_partition_service_(storage_partition_service) {
 }
 
 LocalStorageNamespace::~LocalStorageNamespace() {
@@ -23,7 +25,8 @@ LocalStorageNamespace::~LocalStorageNamespace() {
 
 WebStorageArea* LocalStorageNamespace::createStorageArea(
     const WebString& origin) {
-  return new LocalStorageArea(url::Origin(blink::WebStringToGURL(origin)));
+  return new LocalStorageArea(
+      url::Origin(blink::WebStringToGURL(origin)), storage_partition_service_);
 }
 
 bool LocalStorageNamespace::isSameNamespace(

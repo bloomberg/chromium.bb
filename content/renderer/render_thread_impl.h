@@ -26,6 +26,7 @@
 #include "content/common/content_export.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
+#include "content/common/storage_partition_service.mojom.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/gpu/compositor_dependencies.h"
 #include "net/base/network_change_notifier.h"
@@ -455,6 +456,8 @@ class CONTENT_EXPORT RenderThreadImpl
       mojo::shell::mojom::InterfaceProviderRequest services,
       mojo::shell::mojom::InterfaceProviderPtr exposed_services);
 
+  StoragePartitionService* GetStoragePartitionService();
+
  protected:
   RenderThreadImpl(const InProcessChildThreadParams& params,
                    scoped_ptr<scheduler::RendererScheduler> scheduler);
@@ -702,6 +705,8 @@ class CONTENT_EXPORT RenderThreadImpl
   typedef std::map<int, scoped_refptr<PendingRenderFrameConnect>>
       PendingRenderFrameConnectMap;
   PendingRenderFrameConnectMap pending_render_frame_connects_;
+
+  StoragePartitionServicePtr storage_partition_service_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderThreadImpl);
 };

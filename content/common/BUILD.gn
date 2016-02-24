@@ -532,6 +532,7 @@ mojom("mojo_bindings") {
     "background_sync_service.mojom",
     "geolocation_service.mojom",
     "image_downloader/image_downloader.mojom",
+    "leveldb_wrapper.mojom",
     "permission_service.mojom",
     "presentation/presentation_service.mojom",
     "process_control.mojom",
@@ -539,6 +540,7 @@ mojom("mojo_bindings") {
     "render_widget_window_tree_client_factory.mojom",
     "service_port_service.mojom",
     "service_worker/embedded_worker_setup.mojom",
+    "storage_partition_service.mojom",
     "vr_service.mojom",
     "wake_lock_service.mojom",
   ]
@@ -546,6 +548,7 @@ mojom("mojo_bindings") {
   import_dirs = [ "//mojo/services" ]
 
   public_deps = [
+    "//components/leveldb/public/interfaces",
     "//components/mus/public/interfaces",
     "//content/public/common:mojo_bindings",
     "//mojo/shell/public/interfaces",

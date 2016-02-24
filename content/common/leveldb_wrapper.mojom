@@ -1,0 +1,42 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module content;
+
+import "components/leveldb/public/interfaces/leveldb.mojom";
+
+struct KeyValue {
+  array<uint8> key;
+  array<uint8> value;
+};
+
+// A wrapper around leveldb that supports giving notifications when values
+// change.
+interface LevelDBWrapper {
+  // Sets the database entry for "key" to "value". Returns OK on success.
+  Put(array<uint8> key, array<uint8> value, string source)
+    => (leveldb.DatabaseError status);
+
+  // Remove the database entry (if any) for "key".  Returns OK on
+  // success, and a non-OK status on error.  It is not an error if "key"
+  // did not exist in the database.
+  Delete(array<uint8> key, string source) => (leveldb.DatabaseError status);
+
+  // Removes all the entries.
+  DeleteAll(string source) => (leveldb.DatabaseError status);
+
+  // Returns the value of the given key.
+  Get(array<uint8> key) => (leveldb.DatabaseError status, array<uint8> value);
+
+  // Only used with small databases. Returns all key/value pairs.
+  GetAll() => (leveldb.DatabaseError status, array<KeyValue> data);
+};
+
+// Gives information about changes to a LevelDB database.
+interface LevelDBObserver {
+  KeyChanged(array<uint8> key, array<uint8> new_value, array<uint8> old_value,
+             string source);
+  KeyDeleted(array<uint8> key, string source);
+  AllDeleted(string source);
+};

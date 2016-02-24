@@ -419,7 +419,8 @@ void RendererBlinkPlatformImpl::suddenTerminationChanged(bool enabled) {
 WebStorageNamespace* RendererBlinkPlatformImpl::createLocalStorageNamespace() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kMojoLocalStorage)) {
-    return new LocalStorageNamespace();
+    return new LocalStorageNamespace(
+        RenderThreadImpl::current()->GetStoragePartitionService());
   }
   return new WebStorageNamespaceImpl();
 }
