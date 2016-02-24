@@ -1793,7 +1793,7 @@ void WebViewImpl::performResize()
     // controls hide so that the ICB will always be the same size as the
     // viewport with the top controls shown.
     IntSize ICBSize = m_size;
-    if (!topControls().shrinkViewport())
+    if (RuntimeEnabledFeatures::inertTopControlsEnabled() && !topControls().shrinkViewport())
         ICBSize.expand(0, -topControls().height());
 
     pageScaleConstraintsSet().didChangeInitialContainingBlockSize(ICBSize);

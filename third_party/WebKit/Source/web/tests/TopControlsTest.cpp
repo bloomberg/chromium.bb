@@ -72,6 +72,8 @@ public:
 
     WebViewImpl* initialize(const std::string& pageName = "large-div.html")
     {
+        RuntimeEnabledFeatures::setInertTopControlsEnabled(true);
+
         // Load a page with large body and set viewport size to 400x400 to ensure
         // main frame is scrollable.
         m_helper.initializeAndLoad(m_baseURL + pageName, true, 0, 0, &configureSettings);

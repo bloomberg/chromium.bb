@@ -1137,6 +1137,20 @@ IntRect FrameView::computeVisibleArea()
 
 FloatSize FrameView::viewportSizeForViewportUnits() const
 {
+    float zoom = frame().pageZoomFactor();
+
+    if (m_frame->settings() && !RuntimeEnabledFeatures::inertTopControlsEnabled()) {
+        FloatSize viewportSize;
+
+        LayoutView* layoutView = this->layoutView();
+        if (!layoutView)
+            return viewportSize;
+
+        viewportSize.setWidth(layoutView->viewWidth(IncludeScrollbars) / zoom);
+        viewportSize.setHeight(layoutView->viewHeight(IncludeScrollbars) / zoom);
+        return viewportSize;
+    }
+
     FloatSize size(layoutSize(IncludeScrollbars));
 
     // We use the layoutSize rather than frameRect to calculate viewport units
@@ -1153,8 +1167,7 @@ FloatSize FrameView::viewportSizeForViewportUnits() const
         size.expand(0, topControls.height() / pageScaleAtLayoutWidth);
     }
 
-    float scale = frame().pageZoomFactor();
-    size.scale(1 / scale);
+    size.scale(1 / zoom);
     return size;
 }
 
