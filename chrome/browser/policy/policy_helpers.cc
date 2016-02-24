@@ -13,7 +13,7 @@
 #include "chromeos/chromeos_switches.h"
 #endif
 
-#if !defined(OS_CHROMEOS) && !defined(OS_IOS)
+#if !defined(OS_CHROMEOS)
 #include "google_apis/gaia/gaia_urls.h"
 #endif
 
@@ -41,8 +41,6 @@ bool OverrideBlacklistForURL(const GURL& url, bool* block, int* reason) {
   *reason = net::ERR_BLOCKED_ENROLLMENT_CHECK_PENDING;
   *block = true;
   return true;
-#elif defined(OS_IOS)
-  return false;
 #else
   static const char kServiceLoginAuth[] = "/ServiceLoginAuth";
 

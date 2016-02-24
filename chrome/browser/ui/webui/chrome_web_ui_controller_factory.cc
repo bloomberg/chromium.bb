@@ -97,8 +97,16 @@
 #include "chrome/browser/ui/webui/media_router/media_router_ui.h"
 #endif
 
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+#include "chrome/browser/ui/webui/net_export_ui.h"
+#include "chrome/browser/ui/webui/popular_sites_internals_ui.h"
+#else
+#include "chrome/browser/signin/easy_unlock_service.h"
+#include "chrome/browser/signin/easy_unlock_service_factory.h"
+#include "chrome/browser/ui/webui/copresence_ui.h"
+#include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/browser/ui/webui/engagement/site_engagement_ui.h"
+#include "chrome/browser/ui/webui/inspect_ui.h"
 #include "chrome/browser/ui/webui/md_downloads/md_downloads_ui.h"
 #include "chrome/browser/ui/webui/md_history_ui.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
@@ -106,26 +114,6 @@
 #include "chrome/browser/ui/webui/sync_file_system_internals/sync_file_system_internals_ui.h"
 #include "chrome/browser/ui/webui/system_info_ui.h"
 #include "chrome/browser/ui/webui/uber/uber_ui.h"
-#endif
-
-#if defined(OS_ANDROID) || defined(OS_IOS)
-#include "chrome/browser/ui/webui/net_export_ui.h"
-#else
-#include "chrome/browser/signin/easy_unlock_service.h"
-#include "chrome/browser/signin/easy_unlock_service_factory.h"
-#include "chrome/browser/ui/webui/copresence_ui.h"
-#include "chrome/browser/ui/webui/devtools_ui.h"
-#include "chrome/browser/ui/webui/inspect_ui.h"
-#endif
-
-#if defined(OS_ANDROID)
-#include "chrome/browser/ui/webui/popular_sites_internals_ui.h"
-#endif
-
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
-#include "chrome/browser/ui/webui/signin/inline_login_ui.h"
-#include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
-#include "chrome/browser/ui/webui/signin/user_manager_ui.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -162,6 +150,9 @@
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
+#include "chrome/browser/ui/webui/signin/inline_login_ui.h"
+#include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
+#include "chrome/browser/ui/webui/signin/user_manager_ui.h"
 #endif
 
 #if defined(OS_WIN)
@@ -494,9 +485,11 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   }
 #endif  // !defined(GOOGLE_CHROME_BUILD) && !defined(NDEBUG)
 #endif  // defined(OS_CHROMEOS)
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(OS_ANDROID)
   if (url.host() == chrome::kChromeUINetExportHost)
     return &NewWebUI<NetExportUI>;
+  if (url.host() == chrome::kChromeUIPopularSitesInternalsHost)
+    return &NewWebUI<PopularSitesInternalsUI>;
 #else
   if (url.host() == chrome::kChromeUICopresenceHost)
     return &NewWebUI<CopresenceUI>;
@@ -509,17 +502,15 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host() == chrome::kChromeUIInspectHost)
     return &NewWebUI<InspectUI>;
 #endif
-#if defined(OS_ANDROID)
-  if (url.host() == chrome::kChromeUIPopularSitesInternalsHost)
-    return &NewWebUI<PopularSitesInternalsUI>;
-#endif
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
   if (url.host() == chrome::kChromeUIChromeSigninHost)
     return &NewWebUI<InlineLoginUI>;
   if (url.host() == chrome::kChromeUIUserManagerHost)
     return &NewWebUI<UserManagerUI>;
   if (url.host() == chrome::kChromeUISyncConfirmationHost)
     return &NewWebUI<SyncConfirmationUI>;
+  if (url.host() == chrome::kChromeUIProfileSigninConfirmationHost)
+    return &NewWebUI<ProfileSigninConfirmationUI>;
 #endif
 
   /****************************************************************************
@@ -550,10 +541,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       switches::MdPolicyPageEnabled()) {
     return &NewWebUI<PolicyMaterialDesignUI>;
   }
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-  if (url.host() == chrome::kChromeUIProfileSigninConfirmationHost)
-    return &NewWebUI<ProfileSigninConfirmationUI>;
-#endif
 #endif  // defined(ENABLE_CONFIGURATION_POLICY)
 
 #if defined(ENABLE_APP_LIST)

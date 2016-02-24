@@ -655,14 +655,9 @@ TEST_F(SearchTest, GetSearchURLs) {
 }
 
 TEST_F(SearchTest, GetSearchResultPrefetchBaseURL) {
-#if defined(OS_IOS)
-  EXPECT_FALSE(ShouldPrefetchSearchResults());
-  EXPECT_EQ(GURL(), GetSearchResultPrefetchBaseURL(profile()));
-#else
   EXPECT_TRUE(ShouldPrefetchSearchResults());
   EXPECT_EQ(GURL("https://foo.com/instant?ion=1&foo=foo#foo=foo&strk"),
             GetSearchResultPrefetchBaseURL(profile()));
-#endif
 }
 
 struct ExtractSearchTermsTestCase {

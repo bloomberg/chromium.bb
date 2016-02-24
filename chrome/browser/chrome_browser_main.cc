@@ -80,6 +80,7 @@
 #include "chrome/browser/tracing/navigation_tracing.h"
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
+#include "chrome/browser/ui/app_modal/chrome_javascript_native_dialog_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/host_desktop.h"
@@ -97,6 +98,7 @@
 #include "chrome/common/env_vars.h"
 #include "chrome/common/features.h"
 #include "chrome/common/logging_chrome.h"
+#include "chrome/common/media/media_resource_provider.h"
 #include "chrome/common/net/net_resource_provider.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profiling.h"
@@ -143,6 +145,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "grit/platform_locale_settings.h"
+#include "media/base/media_resources.h"
 #include "net/base/net_module.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/http/http_network_layer.h"
@@ -213,12 +216,6 @@
 #include "chrome/browser/mac/keystone_glue.h"
 #endif  // defined(OS_MACOSX)
 
-#if !defined(OS_IOS)
-#include "chrome/browser/ui/app_modal/chrome_javascript_native_dialog_factory.h"
-#include "chrome/common/media/media_resource_provider.h"
-#include "media/base/media_resources.h"
-#endif  // !defined(OS_IOS)
-
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 #include "chrome/browser/first_run/upgrade_util.h"
 #endif
@@ -252,7 +249,7 @@
 #include "ui/aura/env.h"
 #endif  // defined(USE_AURA)
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
 #include "chrome/browser/chrome_webusb_browser_client.h"
 #include "components/webusb/webusb_detector.h"
 #endif
@@ -1169,9 +1166,7 @@ void ChromeBrowserMainParts::PreProfileInit() {
   javascript_dialog_extensions_client::InstallClient();
 #endif  // defined(ENABLE_EXTENSIONS)
 
-#if !defined(OS_IOS)
   InstallChromeJavaScriptNativeDialogFactory();
-#endif  // !defined(OS_IOS)
 }
 
 void ChromeBrowserMainParts::PostProfileInit() {
@@ -1223,7 +1218,7 @@ void ChromeBrowserMainParts::PostBrowserStart() {
       base::TimeDelta::FromMinutes(1));
 #endif  // defined(ENABLE_WEBRTC)
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
   // WebUSB is an experimental web API. The sites these notifications will link
   // to will only work if the experiment is enabled.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -1573,10 +1568,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
   // Configure modules that need access to resources.
   net::NetModule::SetResourceProvider(chrome_common_net::NetResourceProvider);
-#if !defined(OS_IOS)
   media::SetLocalizedStringProvider(
       chrome_common_media::LocalizedStringProvider);
-#endif
 
   // In unittest mode, this will do nothing.  In normal mode, this will create
   // the global IntranetRedirectDetector instance, which will promptly go to
@@ -1840,10 +1833,8 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
   // shut down.
   process_power_collector_.reset();
 
-#if !defined(OS_IOS)
   webusb_detector_.reset();
   webusb_browser_client_.reset();
-#endif
 
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PostMainMessageLoopRun();

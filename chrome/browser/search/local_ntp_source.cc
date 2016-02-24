@@ -212,7 +212,7 @@ void LocalNtpSource::StartDataRequest(
     return;
   }
 
-#if !defined(GOOGLE_CHROME_BUILD) && !defined(OS_IOS)
+#if !defined(GOOGLE_CHROME_BUILD)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kLocalNtpReload)) {
     if (stripped_path == "local-ntp.html" || stripped_path == "local-ntp.js" ||
@@ -222,7 +222,7 @@ void LocalNtpSource::StartDataRequest(
       return;
     }
   }
-#endif  // !defined(GOOGLE_CHROME_BUILD) && !defined(OS_IOS)
+#endif  // !defined(GOOGLE_CHROME_BUILD)
 
   float scale = 1.0f;
   std::string filename;

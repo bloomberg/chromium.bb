@@ -116,9 +116,9 @@ class OffTheRecordProfileImpl : public Profile {
   // Allows a profile to track changes in zoom levels in its parent profile.
   void TrackZoomLevelsFromParent();
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(OS_ANDROID)
   void UseSystemProxy();
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
+#endif  // defined(OS_ANDROID)
 
   PrefProxyConfigTracker* CreateProxyConfigTracker();
   // Callback function for tracking parent's zoom level changes.

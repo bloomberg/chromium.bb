@@ -55,7 +55,7 @@
 #include "components/ui/zoom/zoom_controller.h"
 #endif
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(OS_ANDROID)
 #include "components/autofill/core/browser/autofill_save_card_infobar_delegate_mobile.h"
 #include "components/autofill/core/browser/autofill_save_card_infobar_mobile.h"
 #include "components/infobars/core/infobar.h"
@@ -190,7 +190,7 @@ void ChromeAutofillClient::OnUnmaskVerificationResult(
 void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
     const CreditCard& card,
     const base::Closure& callback) {
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(OS_ANDROID)
   InfoBarService::FromWebContents(web_contents())->AddInfoBar(
       CreateSaveCardInfoBarMobile(
           make_scoped_ptr(new AutofillSaveCardInfoBarDelegateMobile(
@@ -216,7 +216,7 @@ void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
     const CreditCard& card,
     scoped_ptr<base::DictionaryValue> legal_message,
     const base::Closure& callback) {
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(OS_ANDROID)
   InfoBarService::FromWebContents(web_contents())->AddInfoBar(
       CreateSaveCardInfoBarMobile(
           make_scoped_ptr(new AutofillSaveCardInfoBarDelegateMobile(

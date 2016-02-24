@@ -63,10 +63,10 @@
 #include "chrome/browser/media/protected_media_identifier_permission_context_factory.h"
 #endif  // defined(OS_ANDROID)
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(OS_ANDROID)
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/proxy_config/proxy_prefs.h"
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
+#endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/preferences.h"

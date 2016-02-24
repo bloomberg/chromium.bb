@@ -81,11 +81,11 @@ KeyedService* BookmarkModelFactory::BuildServiceInstanceFor(
                        content::BrowserThread::GetMessageLoopProxyForThread(
                            content::BrowserThread::UI));
   bool register_bookmark_undo_service_as_observer = true;
-#if !defined(OS_IOS) && !BUILDFLAG(ANDROID_JAVA_UI)
+#if !BUILDFLAG(ANDROID_JAVA_UI)
   register_bookmark_undo_service_as_observer =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBookmarkUndo);
-#endif  // !defined(OS_IOS) && !BUILDFLAG(ANDROID_JAVA_UI)
+#endif  // !BUILDFLAG(ANDROID_JAVA_UI)
   if (register_bookmark_undo_service_as_observer)
     BookmarkUndoServiceFactory::GetForProfile(profile)->Start(bookmark_model);
 

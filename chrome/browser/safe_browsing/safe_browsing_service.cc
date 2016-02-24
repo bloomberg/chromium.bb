@@ -473,8 +473,6 @@ std::string SafeBrowsingService::GetProtocolConfigClientName() const {
   // Mark client string to allow server to differentiate mobile.
 #if defined(OS_ANDROID)
   client_name.append("-a");
-#elif defined(OS_IOS)
-  client_name.append("-i");
 #endif
 
 #endif  // defined(OS_WIN)

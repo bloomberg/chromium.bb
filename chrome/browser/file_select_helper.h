@@ -156,7 +156,7 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
   // callback is received from the enumeration code.
   void EnumerateDirectoryEnd();
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MACOSX)
   // Must be called on the FILE_USER_BLOCKING thread. Each selected file that is
   // a package will be zipped, and the zip will be passed to the render view
   // host in place of the package.
@@ -172,7 +172,7 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
   // temporary destination, if the zip was successful. Otherwise returns an
   // empty path.
   static base::FilePath ZipPackage(const base::FilePath& path);
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+#endif  // defined(OS_MACOSX)
 
   // Utility method that passes |files| to the render view host, and ends the
   // file chooser.

@@ -50,7 +50,7 @@ using content::MessageLoopRunner;
 
 namespace {
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
 void OnProfileDownloadedFail(const base::string16& full_name) {
   ASSERT_TRUE(false) << "Profile download should not have succeeded.";
 }
@@ -209,7 +209,7 @@ TEST_F(SupervisedUserServiceTest, ChangesIncludedSessionOnChangedSettings) {
   EXPECT_FALSE(supervised_user_service_->IncludesSyncSessionsType());
 }
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
 // Ensure that the CustodianProfileDownloaderService shuts down cleanly. If no
 // DCHECK is hit when the service is destroyed, this test passed.
 TEST_F(SupervisedUserServiceTest, ShutDownCustodianProfileDownloader) {

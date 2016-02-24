@@ -125,7 +125,7 @@ class OpenURLIterator {
   DISALLOW_COPY_AND_ASSIGN(OpenURLIterator);
 };
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
 bool ShouldOpenAll(gfx::NativeWindow parent,
                    const std::vector<const BookmarkNode*>& nodes) {
   int child_count = 0;
@@ -158,7 +158,7 @@ int ChildURLCountTotal(const BookmarkNode* node) {
   return result;
 }
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
 // Returns in |urls|, the url and title pairs for each open tab in browser.
 void GetURLsForOpenTabs(Browser* browser,
                         std::vector<std::pair<GURL, base::string16> >* urls) {
@@ -173,7 +173,7 @@ void GetURLsForOpenTabs(Browser* browser,
 
 }  // namespace
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
 void OpenAll(gfx::NativeWindow parent,
              content::PageNavigator* navigator,
              const std::vector<const BookmarkNode*>& nodes,
@@ -267,6 +267,6 @@ bool HasBookmarkURLsAllowedInIncognitoMode(
   }
   return false;
 }
-#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace chrome

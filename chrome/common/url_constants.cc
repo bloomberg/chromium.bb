@@ -136,7 +136,7 @@ const char kChromeUITabModalConfirmDialogURL[] =
     "chrome://tab-modal-confirm-dialog/";
 #endif
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
 const char kChromeUICopresenceURL[] = "chrome://copresence/";
 #endif
 
@@ -321,7 +321,7 @@ const char kChromeUIMetroFlowHost[] = "make-metro";
 const char kChromeUITabModalConfirmDialogHost[] = "tab-modal-confirm-dialog";
 #endif
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
 const char kChromeUICopresenceHost[] = "copresence";
 #endif
 
@@ -652,7 +652,7 @@ const char* const kChromeHostURLs[] = {
   kChromeUISystemInfoHost,
   kChromeUIUberHost,
 #endif
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(OS_ANDROID)
   kChromeUINetExportHost,
 #else  // non-mobile
   kChromeUICopresenceHost,

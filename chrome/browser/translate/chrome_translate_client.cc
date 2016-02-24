@@ -313,7 +313,7 @@ void ChromeTranslateClient::ShowBubble(
     translate::TranslateStep step,
     translate::TranslateErrors::Type error_type) {
 // The bubble is implemented only on the desktop platforms.
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
 
   // |browser| might be NULL when testing. In this case, Show(...) should be

@@ -52,7 +52,7 @@ void MostVisitedIframeSource::StartDataRequest(
   GURL url(chrome::kChromeSearchMostVisitedUrl + path_and_query);
   std::string path(url.path());
 
-#if !defined(GOOGLE_CHROME_BUILD) && !defined(OS_IOS)
+#if !defined(GOOGLE_CHROME_BUILD)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kLocalNtpReload)) {
     std::string rel_path = "most_visited_" + path.substr(1);

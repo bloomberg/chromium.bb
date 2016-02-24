@@ -48,7 +48,7 @@ class ChromeCrashReporterClient : public crash_reporter::CrashReporterClient {
                                     bool succeeded) override;
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   void GetProductNameAndVersion(const char** product_name,
                                 const char** version) override;
   base::FilePath GetReporterLogFilename() override;

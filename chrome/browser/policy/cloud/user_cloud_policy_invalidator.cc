@@ -47,8 +47,6 @@ UserCloudPolicyInvalidator::GetPolicyType() {
   return enterprise_management::DeviceRegisterRequest::USER;
 #elif defined(OS_ANDROID)
   return enterprise_management::DeviceRegisterRequest::ANDROID_BROWSER;
-#elif defined(OS_IOS)
-  return enterprise_management::DeviceRegisterRequest::IOS_BROWSER;
 #else
   return enterprise_management::DeviceRegisterRequest::BROWSER;
 #endif

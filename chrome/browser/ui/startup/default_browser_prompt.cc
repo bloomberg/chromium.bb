@@ -139,7 +139,7 @@ int DefaultBrowserInfoBarDelegate::GetIconId() const {
 }
 
 gfx::VectorIconId DefaultBrowserInfoBarDelegate::GetVectorIconId() const {
-#if defined(OS_MACOSX) || defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
   return gfx::VectorIconId::VECTOR_ICON_NONE;
 #else
   return gfx::VectorIconId::CHROME_PRODUCT;

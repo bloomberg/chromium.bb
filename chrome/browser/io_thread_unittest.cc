@@ -762,7 +762,7 @@ class IOThreadTestWithIOThreadObject : public testing::Test {
   }
 
   ~IOThreadTestWithIOThreadObject() override {
-#if defined(USE_NSS_CERTS) || defined(OS_IOS)
+#if defined(USE_NSS_CERTS)
     // Reset OCSPIOLoop thread checks, so that the test runner can run
     // futher tests in the same process.
     RunOnIOThreadBlocking(base::Bind(&net::ResetNSSHttpIOForTesting));

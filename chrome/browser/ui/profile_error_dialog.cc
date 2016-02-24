@@ -14,7 +14,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 void ShowProfileErrorDialog(ProfileErrorType type, int message_id) {
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(OS_ANDROID)
   NOTIMPLEMENTED();
 #else
   UMA_HISTOGRAM_ENUMERATION("Profile.ProfileError", type, PROFILE_ERROR_END);

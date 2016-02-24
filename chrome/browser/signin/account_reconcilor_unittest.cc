@@ -817,12 +817,6 @@ TEST_F(AccountReconcilorTest, AddAccountToCookieCompletedWithBogusAccount) {
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
 }
 
-#if !defined(OS_IOS)
-// These tests don't run on iOS because that platform uses a different
-// implementation of FakeOAuth2TokenServiceDelegate.  However, iOS also removes
-// accounts when an auth error is detected, so the scenarios being tested here
-// do not apply.
-
 TEST_F(AccountReconcilorTest, NoLoopWithBadPrimary) {
   // Connect profile to a primary account and then add a secondary account.
   const std::string account_id1 =
@@ -907,8 +901,6 @@ TEST_F(AccountReconcilorTest, WontMergeAccountsWithError) {
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
   ASSERT_FALSE(reconcilor->error_during_last_reconcile_);
 }
-
-#endif  // OS_IOS
 
 INSTANTIATE_TEST_CASE_P(AccountReconcilorMaybeEnabled,
                         AccountReconcilorTest,

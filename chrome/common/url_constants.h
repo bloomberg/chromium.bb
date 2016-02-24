@@ -125,7 +125,7 @@ extern const char kChromeUIMetroFlowURL[];
 extern const char kChromeUITabModalConfirmDialogURL[];
 #endif
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
 extern const char kChromeUICopresenceURL[];
 extern const char kChromeUICopresenceHost[];
 #endif

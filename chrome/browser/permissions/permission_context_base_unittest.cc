@@ -368,7 +368,7 @@ TEST_F(PermissionContextBaseTests, TestGrantAndRevokeWithInfobars) {
 }
 #endif
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
 // Simulates granting and revoking of permissions using permission bubbles.
 // This test shouldn't run on mobile because mobile platforms use infobars.
 TEST_F(PermissionContextBaseTests, TestGrantAndRevokeWithBubbles) {

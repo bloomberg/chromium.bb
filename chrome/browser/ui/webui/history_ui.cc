@@ -31,7 +31,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
 #include "chrome/browser/ui/webui/foreign_session_handler.h"
 #include "chrome/browser/ui/webui/history_login_handler.h"
 #endif
@@ -139,7 +139,7 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
       switches::kHistoryEnableGroupByDomain);
   // Supervised users get the "group by domain" version, but not on mobile,
   // because that version isn't adjusted for small screens yet. crbug.com/452859
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
   group_by_domain = group_by_domain || profile->IsSupervised();
 #endif
   source->AddBoolean("groupByDomain", group_by_domain);
@@ -168,7 +168,7 @@ HistoryUI::HistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   web_ui->AddMessageHandler(new MetricsHandler());
 
   // On mobile we deal with foreign sessions differently.
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
   if (search::IsInstantExtendedAPIEnabled()) {
     web_ui->AddMessageHandler(new browser_sync::ForeignSessionHandler());
     web_ui->AddMessageHandler(new HistoryLoginHandler());

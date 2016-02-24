@@ -25,7 +25,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -41,8 +41,8 @@ TEST_F(ChromeContentBrowserClientTest, ShouldAssignSiteForURL) {
   EXPECT_TRUE(client.ShouldAssignSiteForURL(GURL("https://www.google.com")));
 }
 
-// BrowserWithTestWindowTest doesn't work on iOS and Android.
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+// BrowserWithTestWindowTest doesn't work on Android.
+#if !defined(OS_ANDROID)
 
 using ChromeContentBrowserClientWindowTest = BrowserWithTestWindowTest;
 
@@ -90,7 +90,7 @@ TEST_F(ChromeContentBrowserClientWindowTest, OpenURL) {
   EXPECT_EQ(previous_count + 2, browser()->tab_strip_model()->count());
 }
 
-#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+#endif  // !defined(OS_ANDROID)
 
 #if defined(ENABLE_WEBRTC)
 
@@ -325,7 +325,7 @@ TEST_F(BlinkSettingsFieldTrialTest, ResourcePrioritiesIncreasePriorities) {
             command_line().GetSwitchValueASCII(switches::kBlinkSettings));
 }
 
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
+#if !defined(OS_ANDROID)
 namespace content {
 
 class InstantNTPURLRewriteTest : public BrowserWithTestWindowTest {
@@ -374,4 +374,4 @@ TEST_F(InstantNTPURLRewriteTest, UberURLHandler_InstantExtendedNewTabPage) {
 }
 
 }  // namespace content
-#endif  // !defined(OS_IOS) && !defined(OS_ANDROID)
+#endif  // !defined(OS_ANDROID)

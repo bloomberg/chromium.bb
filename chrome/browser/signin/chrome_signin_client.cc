@@ -252,7 +252,7 @@ void ChromeSigninClient::OnSignedIn(const std::string& account_id,
 void ChromeSigninClient::PostSignedIn(const std::string& account_id,
                                       const std::string& username,
                                       const std::string& password) {
-#if !defined(OS_ANDROID) && !defined(OS_IOS) && !defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   // Don't store password hash except when lock is available for the user.
   if (!password.empty() && profiles::IsLockAvailable(profile_))
     LocalAuth::SetLocalAuthCredentials(profile_, password);
@@ -358,7 +358,7 @@ GaiaAuthFetcher* ChromeSigninClient::CreateGaiaAuthFetcher(
 }
 
 void ChromeSigninClient::MaybeFetchSigninTokenHandle() {
-#if !defined(OS_ANDROID) && !defined(OS_IOS) && !defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   // We get a "handle" that can be used to reference the signin token on the
   // server.  We fetch this if we don't have one so that later we can check
   // it to know if the signin token to which it is attached has been revoked

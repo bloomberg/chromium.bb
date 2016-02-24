@@ -51,7 +51,7 @@ const int kPrunedPaths[] = {
   base::DIR_PROGRAM_FILESX86,
   base::DIR_WINDOWS,
 #endif
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MACOSX)
   chrome::DIR_USER_APPLICATIONS,
   chrome::DIR_USER_LIBRARY,
 #endif

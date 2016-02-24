@@ -27,6 +27,7 @@
 #include "components/data_usage/core/data_use_aggregator.h"
 #include "components/data_usage/core/data_use_amortizer.h"
 #include "components/data_usage/core/data_use_annotator.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/prefs/pref_member.h"
 #include "components/syncable_prefs/testing_pref_service_syncable.h"
 #include "content/public/browser/resource_request_info.h"
@@ -42,10 +43,6 @@
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/event_router_forwarder.h"
-#endif
-
-#if !defined(OS_IOS)
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #endif
 
 namespace {
@@ -200,7 +197,6 @@ class ChromeNetworkDelegateTest : public testing::Test {
 // DataUse.TrafficSize.System.Dimensions and DataUse.MessageSize.ServiceName
 // histograms. AppState and ConnectionType dimensions are always Foreground and
 // NotCellular respectively.
-#if !defined(OS_IOS)
 TEST_F(ChromeNetworkDelegateTest, DataUseMeasurementServiceTest) {
   Initialize();
   base::HistogramTester histogram_tester;
@@ -284,8 +280,6 @@ TEST_F(ChromeNetworkDelegateTest, DataUseMeasurementUserTestWithRedirect) {
       "DataUse.TrafficSize.System.Upstream.Foreground.NotCellular", 0);
   histogram_tester.ExpectTotalCount("DataUse.MessageSize.Suggestions", 0);
 }
-
-#endif
 
 TEST_F(ChromeNetworkDelegateTest, DisableSameSiteCookiesIffFlagDisabled) {
   Initialize();

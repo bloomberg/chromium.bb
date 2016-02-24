@@ -17,7 +17,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/metrics/metrics_pref_names.h"
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(OS_ANDROID)
 #include "chrome/browser/chrome_browser_field_trials_mobile.h"
 #else
 #include "chrome/browser/chrome_browser_field_trials_desktop.h"
@@ -56,7 +56,7 @@ void ChromeBrowserFieldTrials::SetupFieldTrials() {
   // Field trials that are shared by all platforms.
   InstantiateDynamicTrials();
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(OS_ANDROID)
   chrome::SetupMobileFieldTrials(parsed_command_line_);
 #else
   chrome::SetupDesktopFieldTrials(parsed_command_line_);

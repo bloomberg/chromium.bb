@@ -176,7 +176,7 @@ int ReloadPluginInfoBarDelegate::GetIconId() const {
 }
 
 gfx::VectorIconId ReloadPluginInfoBarDelegate::GetVectorIconId() const {
-#if !defined(OS_MACOSX) && !defined(OS_IOS) && !defined(OS_ANDROID)
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
   return gfx::VectorIconId::EXTENSION_CRASHED;
 #else
   return gfx::VectorIconId::VECTOR_ICON_NONE;
@@ -391,7 +391,7 @@ void PluginObserver::OnCouldNotLoadPlugin(const base::FilePath& plugin_path) {
       InfoBarService::FromWebContents(web_contents()),
       infobars::InfoBarDelegate::PLUGIN_OBSERVER,
       IDR_INFOBAR_PLUGIN_CRASHED,
-#if !defined(OS_MACOSX) && !defined(OS_IOS) && !defined(OS_ANDROID)
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
       gfx::VectorIconId::EXTENSION_CRASHED,
 #else
       gfx::VectorIconId::VECTOR_ICON_NONE,

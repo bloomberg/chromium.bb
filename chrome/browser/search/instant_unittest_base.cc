@@ -42,7 +42,7 @@ void InstantUnitTestBase::TearDown() {
   BrowserWithTestWindowTest::TearDown();
 }
 
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
+#if !defined(OS_ANDROID)
 void InstantUnitTestBase::SetUpWithoutQueryExtraction() {
   SetUpHelper();
 }

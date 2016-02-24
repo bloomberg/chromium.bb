@@ -22,6 +22,7 @@
 #include "net/log/net_log.h"
 #include "net/proxy/dhcp_proxy_script_fetcher_factory.h"
 #include "net/proxy/proxy_config_service.h"
+#include "net/proxy/proxy_resolver_v8.h"
 #include "net/proxy/proxy_script_fetcher_impl.h"
 #include "net/proxy/proxy_service.h"
 #include "net/proxy/proxy_service_v8.h"
@@ -32,11 +33,7 @@
 #include "chromeos/network/dhcp_proxy_script_fetcher_chromeos.h"
 #endif  // defined(OS_CHROMEOS)
 
-#if !defined(OS_IOS)
-#include "net/proxy/proxy_resolver_v8.h"
-#endif
-
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
+#if !defined(OS_ANDROID)
 #include "chrome/browser/net/utility_process_mojo_proxy_resolver_factory.h"
 #include "net/proxy/proxy_service_mojo.h"
 #endif
@@ -125,9 +122,6 @@ scoped_ptr<net::ProxyService> ProxyServiceFactory::CreateProxyService(
     const base::CommandLine& command_line,
     bool quick_check_enabled) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-#if defined(OS_IOS)
-  bool use_v8 = false;
-#else
   bool use_v8 = !command_line.HasSwitch(switches::kWinHttpProxyResolver);
   // TODO(eroman): Figure out why this doesn't work in single-process mode.
   // Should be possible now that a private isolate is used.
@@ -136,7 +130,6 @@ scoped_ptr<net::ProxyService> ProxyServiceFactory::CreateProxyService(
     LOG(ERROR) << "Cannot use V8 Proxy resolver in single process mode.";
     use_v8 = false;  // Fallback to non-v8 implementation.
   }
-#endif  // defined(OS_IOS)
 
   size_t num_pac_threads = 0u;  // Use default number of threads.
 
@@ -156,9 +149,6 @@ scoped_ptr<net::ProxyService> ProxyServiceFactory::CreateProxyService(
 
   scoped_ptr<net::ProxyService> proxy_service;
   if (use_v8) {
-#if defined(OS_IOS)
-    NOTREACHED();
-#else
     scoped_ptr<net::DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher;
 #if defined(OS_CHROMEOS)
     dhcp_proxy_script_fetcher.reset(
@@ -194,7 +184,6 @@ scoped_ptr<net::ProxyService> ProxyServiceFactory::CreateProxyService(
           std::move(dhcp_proxy_script_fetcher), context->host_resolver(),
           net_log, network_delegate);
     }
-#endif  // defined(OS_IOS)
   } else {
     proxy_service = net::ProxyService::CreateUsingSystemProxyResolver(
         std::move(proxy_config_service), num_pac_threads, net_log);

@@ -174,7 +174,7 @@ class ProfileManager : public base::NonThreadSafe,
   // profile specfic desktop shortcuts.
   ProfileShortcutManager* profile_shortcut_manager();
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
   // Schedules the profile at the given path to be deleted on shutdown. If we're
   // deleting the last profile, a new one will be created in its place, and in
   // that case the callback will be called when profile creation is complete.
@@ -275,7 +275,7 @@ class ProfileManager : public base::NonThreadSafe,
   // creation and adds it to the set managed by this ProfileManager.
   Profile* CreateAndInitializeProfile(const base::FilePath& profile_dir);
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
   // Schedules the profile at the given path to be deleted on shutdown,
   // and marks the new profile as active.
   void FinishDeletingProfile(const base::FilePath& profile_dir,
@@ -309,7 +309,7 @@ class ProfileManager : public base::NonThreadSafe,
                     Profile* profile,
                     Profile::CreateStatus status);
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
   // Updates the last active user of the current session.
   // On Chrome OS updating this user will have no effect since when browser is
   // restored after crash there's another preference that is taken into account.
@@ -342,7 +342,7 @@ class ProfileManager : public base::NonThreadSafe,
       const CreateCallback& original_callback,
       Profile* loaded_profile,
       Profile::CreateStatus status);
-#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+#endif  // !defined(OS_ANDROID)
 
   // Object to cache various information about profiles. Contains information
   // about every profile which has been created for this instance of Chrome,
@@ -361,9 +361,9 @@ class ProfileManager : public base::NonThreadSafe,
   // default.
   bool logged_in_;
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
   BrowserListObserver browser_list_observer_;
-#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+#endif  // !defined(OS_ANDROID)
 
   // Maps profile path to ProfileInfo (if profile has been created). Use
   // RegisterProfile() to add into this map. This map owns all loaded profile

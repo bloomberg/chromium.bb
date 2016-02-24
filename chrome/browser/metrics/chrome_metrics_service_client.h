@@ -28,7 +28,7 @@ class PluginMetricsProvider;
 class PrefRegistrySimple;
 class PrefService;
 
-#if !defined(OS_CHROMEOS) && !defined(OS_IOS)
+#if !defined(OS_CHROMEOS)
 class SigninStatusMetricsProvider;
 #endif
 

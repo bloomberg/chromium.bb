@@ -30,14 +30,11 @@ namespace policy {
 
 namespace {
 
-#if defined(OS_IOS)
-const em::DeviceRegisterRequest::Type kCloudPolicyRegistrationType =
-    em::DeviceRegisterRequest::IOS_BROWSER;
-#elif defined(OS_ANDROID)
+#if defined(OS_ANDROID)
 const em::DeviceRegisterRequest::Type kCloudPolicyRegistrationType =
     em::DeviceRegisterRequest::ANDROID_BROWSER;
 #else
-#error "This file can be built only on OS_IOS or OS_ANDROID."
+#error "This file can be built only on OS_ANDROID."
 #endif
 
 }  // namespace
@@ -59,11 +56,6 @@ UserPolicySigninService::UserPolicySigninService(
       oauth2_token_service_(token_service),
       profile_prefs_(profile->GetPrefs()),
       weak_factory_(this) {
-#if defined(OS_IOS)
-  // iOS doesn't create this service with the Profile; instead it's created
-  // a little bit later. See UserPolicySigninServiceFactory.
-  InitializeOnProfileReady(profile);
-#endif
 }
 
 UserPolicySigninService::~UserPolicySigninService() {}

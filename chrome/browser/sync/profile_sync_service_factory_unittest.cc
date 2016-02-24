@@ -28,7 +28,7 @@ class ProfileSyncServiceFactoryTest : public testing::Test {
     std::vector<syncer::ModelType> datatypes;
 
     // Desktop types.
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
     datatypes.push_back(syncer::APPS);
 #if defined(ENABLE_APP_LIST)
     if (app_list::switches::IsAppListSyncEnabled())
@@ -45,7 +45,7 @@ class ProfileSyncServiceFactoryTest : public testing::Test {
     datatypes.push_back(syncer::THEMES);
     datatypes.push_back(syncer::SUPERVISED_USERS);
     datatypes.push_back(syncer::SUPERVISED_USER_SHARED_SETTINGS);
-#endif // !OS_ANDROID && !OS_IOS
+#endif // !OS_ANDROID
 
     // Common types.
     datatypes.push_back(syncer::AUTOFILL);

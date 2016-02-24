@@ -29,6 +29,7 @@
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/media/media_resource_provider.h"
 #include "chrome/common/net/net_resource_provider.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/resource_usage_reporter.mojom.h"
@@ -42,6 +43,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
+#include "media/base/media_resources.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_module.h"
@@ -54,11 +56,6 @@
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/renderer/extensions/extension_localization_peer.h"
-#endif
-
-#if !defined(OS_IOS)
-#include "chrome/common/media/media_resource_provider.h"
-#include "media/base/media_resources.h"
 #endif
 
 using blink::WebCache;
@@ -271,10 +268,8 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver()
 
   // Configure modules that need access to resources.
   net::NetModule::SetResourceProvider(chrome_common_net::NetResourceProvider);
-#if !defined(OS_IOS)
   media::SetLocalizedStringProvider(
       chrome_common_media::LocalizedStringProvider);
-#endif
 
   InitFieldTrialObserving(command_line);
 }

@@ -2050,7 +2050,7 @@ TEST_F(SessionsSyncManagerTest, NotifiedOfLocalRemovalOfForeignSession) {
   ASSERT_TRUE(observer()->notified_of_update());
 }
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(OS_ANDROID)
 // Tests that opening the other devices page triggers a session sync refresh.
 // This page only exists on mobile platforms today; desktop has a
 // search-enhanced NTP without other devices.
@@ -2062,7 +2062,7 @@ TEST_F(SessionsSyncManagerTest, NotifiedOfRefresh) {
   NavigateAndCommitActiveTab(GURL("chrome://newtab/#open_tabs"));
   EXPECT_TRUE(observer()->notified_of_refresh());
 }
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
+#endif  // defined(OS_ANDROID)
 
 // Tests receipt of duplicate tab IDs in the same window.  This should never
 // happen, but we want to make sure the client won't do anything bad if it does

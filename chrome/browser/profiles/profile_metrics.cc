@@ -28,7 +28,7 @@ const int kMaximumReportedProfileCount = 5;
 
 const int kMaximumDaysOfDisuse = 4 * 7;  // Should be integral number of weeks.
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
 size_t number_of_profile_switches_ = 0;
 #endif
 
@@ -42,7 +42,7 @@ enum ProfileOpenState {
   PROFILE_UNOPENED
 };
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
 ProfileOpenState GetProfileOpenState(
     ProfileManager* manager,
     const base::FilePath& path) {
@@ -100,7 +100,7 @@ void LogLockedProfileInformation(ProfileManager* manager) {
 bool HasProfileAtIndexBeenActiveSince(const ProfileInfoCache& info_cache,
                                       int index,
                                       const base::Time& active_limit) {
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
   // TODO(mlerman): iOS and Android should set an ActiveTime in the
   // ProfileInfoCache. (see ProfileManager::OnBrowserSetLastActive)
   if (info_cache.GetProfileActiveTimeAtIndex(index) < active_limit)
@@ -193,7 +193,7 @@ void ProfileMetrics::UpdateReportedProfilesStatistics(ProfileManager* manager) {
 #endif
 }
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
 void ProfileMetrics::LogNumberOfProfileSwitches() {
   UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfSwitches",
                            number_of_profile_switches_);
@@ -346,7 +346,7 @@ void ProfileMetrics::LogProfileOpenMethod(ProfileOpen metric) {
                             NUM_PROFILE_OPEN_METRICS);
 }
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
 void ProfileMetrics::LogProfileSwitch(
     ProfileOpen metric,
     ProfileManager* manager,

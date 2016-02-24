@@ -829,9 +829,9 @@ void BrowserProcessImpl::RegisterPrefs(PrefRegistrySimple* registry) {
 
   registry->RegisterBooleanPref(prefs::kAllowCrossOriginAuthPrompt, false);
 
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
   registry->RegisterBooleanPref(prefs::kEulaAccepted, false);
-#endif  // defined(OS_CHROMEOS) || defined(OS_ANDROID) || defined(OS_IOS)
+#endif  // defined(OS_CHROMEOS) || defined(OS_ANDROID)
 #if defined(OS_WIN)
   if (base::win::GetVersion() >= base::win::VERSION_WIN7) {
     registry->RegisterStringPref(prefs::kRelaunchMode,
@@ -1027,7 +1027,7 @@ void BrowserProcessImpl::CreateLocalState() {
 
   // This preference must be kept in sync with external values; update them
   // whenever the preference or its controlling policy changes.
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
   pref_change_registrar_.Add(
       metrics::prefs::kMetricsReportingEnabled,
       base::Bind(&BrowserProcessImpl::ApplyMetricsReportingPolicy,
@@ -1066,7 +1066,7 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
   if (local_state_->IsManagedPreference(prefs::kDefaultBrowserSettingEnabled))
     ApplyDefaultBrowserPolicy();
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
   ApplyMetricsReportingPolicy();
 #endif
 
@@ -1096,7 +1096,7 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
 #endif
 #endif  // defined(ENABLE_PLUGINS)
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
   storage_monitor::StorageMonitor::Create();
 #endif
 
@@ -1227,7 +1227,7 @@ void BrowserProcessImpl::ApplyAllowCrossOriginAuthPromptPolicy() {
 }
 
 void BrowserProcessImpl::ApplyMetricsReportingPolicy() {
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
   CHECK(BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(
@@ -1239,7 +1239,7 @@ void BrowserProcessImpl::ApplyMetricsReportingPolicy() {
 void BrowserProcessImpl::CacheDefaultWebClientState() {
 #if defined(OS_CHROMEOS)
   cached_default_web_client_state_ = shell_integration::IS_DEFAULT;
-#elif !defined(OS_ANDROID) && !defined(OS_IOS)
+#elif !defined(OS_ANDROID)
   cached_default_web_client_state_ = shell_integration::GetDefaultBrowser();
 #endif
 }

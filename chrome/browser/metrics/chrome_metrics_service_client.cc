@@ -95,7 +95,7 @@ namespace {
 const int kMaxHistogramGatheringWaitDuration = 60000;  // 60 seconds.
 
 // Standard interval between log uploads, in seconds.
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(OS_ANDROID)
 const int kStandardUploadIntervalSeconds = 5 * 60;  // Five minutes.
 const int kStandardUploadIntervalCellularSeconds = 15 * 60;  // Fifteen minutes.
 #else
@@ -304,7 +304,7 @@ ChromeMetricsServiceClient::CreateUploader(
 }
 
 base::TimeDelta ChromeMetricsServiceClient::GetStandardUploadInterval() {
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(OS_ANDROID)
   if (IsCellularLogicEnabled())
     return base::TimeDelta::FromSeconds(kStandardUploadIntervalCellularSeconds);
 #endif

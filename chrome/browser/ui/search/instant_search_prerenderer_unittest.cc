@@ -478,7 +478,7 @@ TEST_F(ReuseInstantSearchBasePageTest,
                                            ASCIIToUTF16("joy")));
 }
 
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
+#if !defined(OS_ANDROID)
 class TestUsePrerenderPage : public InstantSearchPrerendererTest {
  protected:
   void SetUp() override {

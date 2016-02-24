@@ -9,7 +9,7 @@
 #include "build/build_config.h"
 #include "content/public/browser/url_data_source.h"
 
-#if !defined(GOOGLE_CHROME_BUILD) && !defined(OS_IOS)
+#if !defined(GOOGLE_CHROME_BUILD)
 
 namespace local_ntp {
 
@@ -29,5 +29,5 @@ void SendLocalFileResourceWithOrigin(
 
 }  // namespace local_ntp
 
-#endif  // !defined(GOOGLE_CHROME_BUILD) && !defined(OS_IOS)
+#endif  // !defined(GOOGLE_CHROME_BUILD)
 #endif  // CHROME_BROWSER_SEARCH_LOCAL_FILES_NTP_SOURCE_H_

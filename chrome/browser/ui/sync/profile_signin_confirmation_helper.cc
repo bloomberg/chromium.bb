@@ -52,19 +52,10 @@ SkColor GetSigninConfirmationPromptBarColor(ui::NativeTheme* theme,
 }
 
 bool HasBeenShutdown(Profile* profile) {
-#if defined(OS_IOS)
-  // This check is not useful on iOS: the browser can be shut down without
-  // explicit user action (for example, in response to memory pressure), and
-  // this should be invisible to the user. The desktop assumption that the
-  // profile going through a restart indicates something about user intention
-  // does not hold. We rely on the other profile dirtiness checks.
-  return false;
-#else
   bool has_been_shutdown = !profile->IsNewProfile();
   if (has_been_shutdown)
     DVLOG(1) << "ProfileSigninConfirmationHelper: profile is not new";
   return has_been_shutdown;
-#endif
 }
 
 bool HasSyncedExtensions(Profile* profile) {

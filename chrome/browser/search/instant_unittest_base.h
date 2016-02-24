@@ -26,7 +26,7 @@ class InstantUnitTestBase : public BrowserWithTestWindowTest {
   void SetUp() override;
   void TearDown() override;
 
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
+#if !defined(OS_ANDROID)
   // Query extraction is always enabled on Android and iOS.
   void SetUpWithoutQueryExtraction();
 #endif

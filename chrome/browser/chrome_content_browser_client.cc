@@ -288,7 +288,7 @@
 #include "chrome/browser/media/router/presentation_service_delegate_impl.h"
 #endif
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
 #include "components/webusb/public/interfaces/webusb_permission_bubble.mojom.h"
 #endif
 
@@ -678,7 +678,7 @@ void CreateUsbDeviceManager(
   tab_helper->CreateDeviceManager(render_frame_host, std::move(request));
 }
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
 void CreateWebUsbPermissionBubble(
     RenderFrameHost* render_frame_host,
     mojo::InterfaceRequest<webusb::WebUsbPermissionBubble> request) {
@@ -693,7 +693,7 @@ void CreateWebUsbPermissionBubble(
       UsbTabHelper::GetOrCreateForWebContents(web_contents);
   tab_helper->CreatePermissionBubble(render_frame_host, std::move(request));
 }
-#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+#endif  // !defined(OS_ANDROID)
 
 bool GetDataSaverEnabledPref(const PrefService* prefs) {
   // Enable data saver only when data saver pref is enabled and not part of
@@ -2727,10 +2727,10 @@ void ChromeContentBrowserClient::RegisterRenderFrameMojoServices(
     content::ServiceRegistry* registry,
     content::RenderFrameHost* render_frame_host) {
   registry->AddService(base::Bind(&CreateUsbDeviceManager, render_frame_host));
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
   registry->AddService(
       base::Bind(&CreateWebUsbPermissionBubble, render_frame_host));
-#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+#endif  // !defined(OS_ANDROID)
 }
 
 void ChromeContentBrowserClient::RegisterInProcessMojoApplications(
@@ -2758,7 +2758,7 @@ void ChromeContentBrowserClient::OpenURL(
 #if BUILDFLAG(ANDROID_JAVA_UI)
   service_tab_launcher::ServiceTabLauncher::GetInstance()->LaunchTab(
       browser_context, params, callback);
-#elif !defined(OS_IOS)
+#else
   chrome::NavigateParams nav_params(
       Profile::FromBrowserContext(browser_context),
       params.url,
@@ -2768,8 +2768,6 @@ void ChromeContentBrowserClient::OpenURL(
 
   Navigate(&nav_params);
   callback.Run(nav_params.target_contents);
-#else
-  NOTIMPLEMENTED();
 #endif
 }
 

@@ -11,8 +11,6 @@
 ChromeFallbackIconClient::ChromeFallbackIconClient() {
 #if defined(OS_CHROMEOS)
   font_list_.push_back("Noto Sans");
-#elif defined(OS_IOS)
-  font_list_.push_back("Helvetica Neue");
 #else
   font_list_.push_back(l10n_util::GetStringUTF8(IDS_SANS_SERIF_FONT_FAMILY));
 #endif

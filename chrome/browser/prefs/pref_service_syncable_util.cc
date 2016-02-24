@@ -12,7 +12,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(OS_ANDROID)
 #include "components/proxy_config/proxy_config_pref_names.h"
 #endif
 
@@ -36,7 +36,7 @@ syncable_prefs::PrefServiceSyncable* CreateIncognitoPrefServiceSyncable(
   std::vector<const char*> overlay_pref_names;
   overlay_pref_names.push_back(prefs::kBrowserWindowPlacement);
   overlay_pref_names.push_back(prefs::kSaveFileDefaultDirectory);
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(OS_ANDROID)
   overlay_pref_names.push_back(proxy_config::prefs::kProxy);
 #endif
   return pref_service->CreateIncognitoPrefService(

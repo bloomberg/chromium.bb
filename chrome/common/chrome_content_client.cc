@@ -602,7 +602,7 @@ std::string ChromeContentClient::GetProcessTypeNameInEnglish(int type) {
   return "Unknown";
 }
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MACOSX)
 bool ChromeContentClient::GetSandboxProfileForSandboxType(
     int sandbox_type,
     int* sandbox_profile_resource_id) const {

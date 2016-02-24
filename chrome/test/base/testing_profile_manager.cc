@@ -216,7 +216,7 @@ void TestingProfileManager::SetLoggedIn(bool logged_in) {
 }
 
 void TestingProfileManager::UpdateLastUser(Profile* last_active) {
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
   profile_manager_->UpdateLastUser(last_active);
 #endif
 }

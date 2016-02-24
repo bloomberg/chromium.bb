@@ -150,8 +150,6 @@ class TestingBrowserProcess : public BrowserProcess {
   unsigned int module_ref_count_;
   std::string app_locale_;
 
-  // TODO(ios): Add back members as more code is compiled.
-#if !defined(OS_IOS)
 #if defined(ENABLE_CONFIGURATION_POLICY)
   scoped_ptr<policy::BrowserPolicyConnector> browser_policy_connector_;
   bool created_browser_policy_connector_ = false;
@@ -172,7 +170,6 @@ class TestingBrowserProcess : public BrowserProcess {
 #endif
 
   scoped_refptr<safe_browsing::SafeBrowsingService> sb_service_;
-#endif  // !defined(OS_IOS)
 
   scoped_ptr<network_time::NetworkTimeTracker> network_time_tracker_;
 

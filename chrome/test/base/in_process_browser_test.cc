@@ -76,7 +76,7 @@
 #include "chrome/browser/captive_portal/captive_portal_service.h"
 #endif
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
 #include "components/storage_monitor/test_storage_monitor.h"
 #endif
 
@@ -525,7 +525,7 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
         browser_->tab_strip_model()->GetActiveWebContents());
   }
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
   // Do not use the real StorageMonitor for tests, which introduces another
   // source of variability and potential slowness.
   ASSERT_TRUE(storage_monitor::TestStorageMonitor::CreateForBrowserTests());

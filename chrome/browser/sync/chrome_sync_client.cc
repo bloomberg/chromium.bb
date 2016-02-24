@@ -375,7 +375,7 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
     case syncer::SUPERVISED_USER_SETTINGS:
       return SupervisedUserSettingsServiceFactory::GetForProfile(profile_)->
           AsWeakPtr();
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
     case syncer::SUPERVISED_USERS:
       return SupervisedUserSyncServiceFactory::GetForProfile(profile_)->
           AsWeakPtr();

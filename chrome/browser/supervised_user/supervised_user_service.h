@@ -71,7 +71,7 @@ class SupervisedUserService : public KeyedService,
                               public extensions::ManagementPolicy::Provider,
 #endif
                               public SyncTypePreferenceProvider,
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
                               public sync_driver::SyncServiceObserver,
                               public chrome::BrowserListObserver,
 #endif
@@ -150,7 +150,7 @@ class SupervisedUserService : public KeyedService,
   // custodian.
   base::string16 GetExtensionsLockedMessage() const;
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
   // Initializes this profile for syncing, using the provided |refresh_token| to
   // mint access tokens for Sync.
   void InitSync(const std::string& refresh_token);
@@ -182,13 +182,13 @@ class SupervisedUserService : public KeyedService,
   // SyncTypePreferenceProvider implementation:
   syncer::ModelTypeSet GetPreferredDataTypes() const override;
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
   // sync_driver::SyncServiceObserver implementation:
   void OnStateChanged() override;
 
   // chrome::BrowserListObserver implementation:
   void OnBrowserSetLastActive(Browser* browser) override;
-#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+#endif  // !defined(OS_ANDROID)
 
   // SupervisedUserURLFilter::Observer implementation:
   void OnSiteListUpdated() override;
@@ -258,7 +258,7 @@ class SupervisedUserService : public KeyedService,
 
   void SetActive(bool active);
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
   void OnCustodianProfileDownloaded(const base::string16& full_name);
 
   void OnSupervisedUserRegistered(const AuthErrorCallback& callback,

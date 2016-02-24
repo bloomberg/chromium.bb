@@ -39,7 +39,7 @@ void RemoveValueSilently(const base::WeakPtr<JsonPrefStore> pref_store,
 // Preference tracking and protection is not required on platforms where other
 // apps do not have access to chrome's persistent storage.
 const bool ProfilePrefStoreManager::kPlatformSupportsPreferenceTracking =
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_IOS)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
     false;
 #else
     true;

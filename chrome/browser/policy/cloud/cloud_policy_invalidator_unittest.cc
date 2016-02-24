@@ -1095,11 +1095,6 @@ INSTANTIATE_TEST_CASE_P(
     CloudPolicyInvalidatorUserTypedTestInstance,
     CloudPolicyInvalidatorUserTypedTest,
     testing::Values(em::DeviceRegisterRequest::ANDROID_BROWSER));
-#elif defined(OS_IOS)
-INSTANTIATE_TEST_CASE_P(
-    CloudPolicyInvalidatorUserTypedTestInstance,
-    CloudPolicyInvalidatorUserTypedTest,
-    testing::Values(em::DeviceRegisterRequest::IOS_BROWSER));
 #else
 INSTANTIATE_TEST_CASE_P(
     CloudPolicyInvalidatorUserTypedTestInstance,

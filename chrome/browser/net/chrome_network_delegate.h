@@ -16,11 +16,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "net/base/network_delegate_impl.h"
-
-#if !defined(OS_IOS)
 #include "components/data_use_measurement/content/data_use_measurement.h"
-#endif
+#include "net/base/network_delegate_impl.h"
 
 class ChromeExtensionsNetworkDelegate;
 class PrefService;
@@ -219,10 +216,8 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
   // When true, allow access to all file:// URLs.
   static bool g_allow_file_access_;
 
-// Component to measure data use.
-#if !defined(OS_IOS)
+  // Component to measure data use.
   data_use_measurement::DataUseMeasurement data_use_measurement_;
-#endif
 
   bool experimental_web_platform_features_enabled_;
 

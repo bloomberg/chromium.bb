@@ -23,7 +23,7 @@ namespace {
 const base::FilePath::CharType kAndroidCacheFilename[] =
     FILE_PATH_LITERAL("AndroidCache");
 }
-#endif  // defined(OS_IOS)
+#endif
 
 ChromeHistoryBackendClient::ChromeHistoryBackendClient(
     bookmarks::BookmarkModel* bookmark_model)

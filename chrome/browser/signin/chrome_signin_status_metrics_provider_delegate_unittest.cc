@@ -11,7 +11,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
 TEST(ChromeSigninStatusMetricsProviderDelegateTest,
      UpdateStatusWhenBrowserAdded) {
   content::TestBrowserThreadBundle thread_bundle;

@@ -55,11 +55,6 @@ void LaunchDateAndTimeSettingsOnFile() {
   chrome::ShowSettingsSubPageForProfile(ProfileManager::GetActiveUserProfile(),
                                         sub_page);
 
-#elif defined(OS_IOS)
-  // TODO(blundell): Remove this once iOS has its own version of this class.
-  // iOS does not have a way to launch the date and time settings.
-  NOTREACHED();
-
 #elif defined(OS_LINUX)
   struct ClockCommand {
     const char* pathname;

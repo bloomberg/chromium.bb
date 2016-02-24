@@ -45,7 +45,7 @@ class ChromeRenderViewObserver : public content::RenderViewObserver {
   void DidStartLoading() override;
   void Navigate(const GURL& url) override;
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
   void OnWebUIJavaScript(const base::string16& javascript);
 #endif
 #if defined(ENABLE_EXTENSIONS)

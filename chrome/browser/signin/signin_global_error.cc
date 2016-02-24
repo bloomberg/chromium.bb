@@ -28,7 +28,7 @@
 #include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
 #include "chrome/browser/signin/signin_promo.h"
 #endif
 
@@ -88,7 +88,7 @@ void SigninGlobalError::ExecuteMenuItem(Browser* browser) {
 #endif
 
   // Global errors don't show up in the wrench menu on mobile.
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
   LoginUIService* login_ui = LoginUIServiceFactory::GetForProfile(profile_);
   if (login_ui->current_login_ui()) {
     login_ui->current_login_ui()->FocusUI();
