@@ -4,6 +4,9 @@
 
 import("//base/android/linker/config.gni")
 import("//build/config/android/rules.gni")
+import("//chrome/common/features.gni")
+import("//third_party/leakcanary/config.gni")
+import("channel.gni")
 
 declare_args() {
   # Whether chrome_public_apk should use the crazy linker.
@@ -21,6 +24,16 @@ declare_args() {
   chrome_public_apk_load_library_from_apk =
       chromium_linker_supported &&
       (target_cpu == "arm64" || target_cpu == "x64")
+}
+
+default_chrome_public_jinja_variables = [
+  "channel=$android_channel",
+  "enable_leakcanary=$enable_leakcanary",
+]
+if (enable_configuration_policy) {
+  default_chrome_public_jinja_variables += [ "configuration_policy=1" ]
+} else {
+  default_chrome_public_jinja_variables += [ "configuration_policy=0" ]
 }
 
 # GYP: //chrome/android/chrome_apk.gypi

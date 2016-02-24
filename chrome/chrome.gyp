@@ -591,6 +591,7 @@
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_javalib',
             '../third_party/gif_player/gif_player.gyp:gif_player_java',
             '../third_party/jsr-305/jsr-305.gyp:jsr_305_javalib',
+            '../third_party/leakcanary/leakcanary.gyp:leakcanary_java',
             '../ui/android/ui_android.gyp:ui_java',
           ],
           'variables': {

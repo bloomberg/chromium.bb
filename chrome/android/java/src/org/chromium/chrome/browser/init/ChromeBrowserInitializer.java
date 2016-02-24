@@ -13,6 +13,8 @@ import android.os.Process;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
+import com.squareup.leakcanary.LeakCanary;
+
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
@@ -23,6 +25,7 @@ import org.chromium.base.Log;
 import org.chromium.base.ResourceExtractor;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
+import org.chromium.base.annotations.RemovableInRelease;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
@@ -93,6 +96,14 @@ public class ChromeBrowserInitializer {
     private ChromeBrowserInitializer(Context context) {
         mApplication = (ChromeApplication) context.getApplicationContext();
         mHandler = new Handler(Looper.getMainLooper());
+        initLeakCanary();
+    }
+
+    @RemovableInRelease
+    private void initLeakCanary() {
+        // Watch that Activity objects are not retained after their onDestroy() has been called.
+        // This is a no-op in release builds.
+        LeakCanary.install(mApplication);
     }
 
     /**
