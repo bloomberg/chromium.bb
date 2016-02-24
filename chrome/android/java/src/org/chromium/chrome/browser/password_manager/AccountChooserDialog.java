@@ -153,6 +153,7 @@ public class AccountChooserDialog
                 @Override
                 public void onClick(View view) {
                     nativeOnLinkClicked(mNativeAccountChooserDialog);
+                    mDialog.dismiss();
                 }
             }, mTitleLinkStart, mTitleLinkEnd, Spanned.SPAN_INCLUSIVE_INCLUSIVE);
             titleMessageText.setText(spanableTitle, TextView.BufferType.SPANNABLE);
