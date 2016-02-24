@@ -602,12 +602,12 @@ _waterfall_config_map = {
         'whirlwind-paladin',
 
         # Experimental Canaries (Group)
+        'auron-release-group',
         'glados-release-group',
         'storm-release-group',
 
         # Experimental Canaries
         'amd64-generic-goofy-release',
-        'auron-release',
         'kayle-release',
         'kunimitsu-release-group',
         'lakitu_next-release',
