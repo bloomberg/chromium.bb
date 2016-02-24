@@ -768,10 +768,6 @@ void LayoutBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox, La
     if (remainingLogicalHeight < lineHeight || (shouldBreakAtLineToAvoidWidow() && lineBreakToAvoidWidow() == lineIndex)) {
         LayoutUnit paginationStrut = calculatePaginationStrutToFitContent(logicalOffset, remainingLogicalHeight, lineHeight);
         LayoutUnit newLogicalOffset = logicalOffset + paginationStrut;
-        // The new offset may require us to insert a new row for columns (fragmentainer group).
-        // Give the multicol machinery an opportunity to do so (before checking the height of a
-        // column that wouldn't have existed yet otherwise).
-        paginatedContentWasLaidOut(newLogicalOffset + lineHeight);
         // Moving to a different page or column may mean that its height is different.
         pageLogicalHeight = pageLogicalHeightForOffset(newLogicalOffset);
         if (lineHeight > pageLogicalHeight) {
@@ -779,6 +775,7 @@ void LayoutBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox, La
             // TODO(mstensho): Get rid of this. This is just utter weirdness, but the other browsers
             // also do something slightly similar, although in much more specific cases than we do here,
             // and printing Google Docs depends on it.
+            paginatedContentWasLaidOut(logicalOffset + lineHeight);
             return;
         }
 
@@ -802,6 +799,7 @@ void LayoutBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox, La
             lineBox.setPaginationStrut(paginationStrut);
             lineBox.setIsFirstAfterPageBreak(true);
         }
+        paginatedContentWasLaidOut(newLogicalOffset + lineHeight);
         return;
     }
 

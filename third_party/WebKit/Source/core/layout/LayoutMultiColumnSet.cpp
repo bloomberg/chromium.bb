@@ -72,6 +72,32 @@ const MultiColumnFragmentainerGroup& LayoutMultiColumnSet::fragmentainerGroupAtV
 
 LayoutUnit LayoutMultiColumnSet::pageLogicalHeightForOffset(LayoutUnit offsetInFlowThread) const
 {
+    const MultiColumnFragmentainerGroup &lastRow = lastFragmentainerGroup();
+    if (!lastRow.logicalHeight()) {
+        // In the first layout pass of an auto-height multicol container, height isn't set. No need
+        // to perform the series of complicated dance steps below to figure out that we should
+        // simply return 0. Bail now.
+        ASSERT(m_fragmentainerGroups.size() == 1);
+        return LayoutUnit();
+    }
+    if (offsetInFlowThread >= lastRow.logicalTopInFlowThread() + lastRow.logicalHeight() * usedColumnCount()) {
+        // The offset is outside the bounds of the fragmentainer groups that we have established at
+        // this point. If we're nested inside another fragmentation context, we need to calculate
+        // the height on our own.
+        const LayoutMultiColumnFlowThread* flowThread = multiColumnFlowThread();
+        if (FragmentationContext* enclosingFragmentationContext = flowThread->enclosingFragmentationContext()) {
+            // We'd ideally like to translate |offsetInFlowThread| to an offset in the coordinate
+            // space of the enclosing fragmentation context here, but that's hard, since the offset
+            // is out of bounds. So just use the bottom we have found so far.
+            LayoutUnit enclosingContextBottom = lastRow.blockOffsetInEnclosingFragmentationContext() + lastRow.logicalHeight();
+            LayoutUnit enclosingFragmentainerHeight = enclosingFragmentationContext->fragmentainerLogicalHeightAt(enclosingContextBottom);
+            // Constrain against specified height / max-height.
+            LayoutUnit currentMulticolHeight = logicalTopFromMulticolContentEdge() + lastRow.logicalTop() + lastRow.logicalHeight();
+            LayoutUnit multicolHeightWithExtraRow = currentMulticolHeight + enclosingFragmentainerHeight;
+            multicolHeightWithExtraRow = std::min(multicolHeightWithExtraRow, flowThread->maxColumnLogicalHeight());
+            return std::max(LayoutUnit(1), multicolHeightWithExtraRow - currentMulticolHeight);
+        }
+    }
     return fragmentainerGroupAtFlowThreadOffset(offsetInFlowThread).logicalHeight();
 }
 
