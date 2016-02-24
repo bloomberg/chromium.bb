@@ -190,7 +190,8 @@ STATES = (
     'TIMED_OUT',
     'BOT_DIED',
     'CANCELED',
-    'ALL')
+    'ALL',
+    'DEDUPED')
 
 
 def main():
@@ -211,7 +212,7 @@ def main():
       help='End date in UTC; defaults to tomorrow: %default')
   group.add_option(
       '--state', default='ALL', type='choice', choices=STATES,
-      help='State to filter on')
+      help='State to filter on. Values are: %s' % ', '.join(STATES))
   group.add_option(
       '--tags', action='append', default=[], help='Tags to filter on')
   parser.add_option_group(group)
