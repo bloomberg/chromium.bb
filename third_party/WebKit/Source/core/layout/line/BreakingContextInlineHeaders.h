@@ -86,7 +86,7 @@ public:
         m_lineInfo.setPreviousLineBrokeCleanly(false);
     }
 
-    LayoutObject* currentObject() { return m_current.lineLayoutItem(); }
+    LineLayoutItem currentItem() { return m_current.lineLayoutItem(); }
     InlineIterator lineBreak() { return m_lineBreak; }
     bool atEnd() { return m_atEnd; }
 
@@ -474,7 +474,7 @@ inline void BreakingContext::handleReplaced()
     // Break on replaced elements if either has normal white-space,
     // or if the replaced element is ruby that can break before.
     if ((m_autoWrap || ComputedStyle::autoWrap(m_lastWS)) && (!m_current.lineLayoutItem().isImage() || m_allowImagesToBreak)
-        && (!m_current.lineLayoutItem().isRubyRun() || toLayoutRubyRun(m_current.lineLayoutItem())->canBreakBefore(m_layoutTextInfo.m_lineBreakIterator))) {
+        && (!m_current.lineLayoutItem().isRubyRun() || LineLayoutRubyRun(m_current.lineLayoutItem()).canBreakBefore(m_layoutTextInfo.m_lineBreakIterator))) {
         m_width.commit();
         m_lineBreak.moveToStartOf(m_current.lineLayoutItem());
     }

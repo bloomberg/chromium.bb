@@ -42,6 +42,11 @@ public:
         return toRubyRun()->rubyBase();
     }
 
+    bool canBreakBefore(const LazyLineBreakIterator& iterator) const
+    {
+        return toRubyRun()->canBreakBefore(iterator);
+    }
+
 private:
     LayoutRubyRun* toRubyRun()
     {
