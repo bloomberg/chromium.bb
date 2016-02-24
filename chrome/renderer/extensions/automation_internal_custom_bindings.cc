@@ -1060,7 +1060,6 @@ void AutomationInternalCustomBindings::OnAtomicUpdateFinished(
   }
 
   for (int id : text_changed_node_ids_) {
-    LOG(ERROR) << "got id!" << id;
     SendTreeChangeEvent(api::automation::TREE_CHANGE_TYPE_TEXTCHANGED, tree,
                         tree->GetFromId(id));
   }
