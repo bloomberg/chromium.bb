@@ -113,6 +113,7 @@ Editor::RevealSelectionScope::~RevealSelectionScope()
 // we should use the target control's selection for this editing operation.
 VisibleSelection Editor::selectionForCommand(Event* event)
 {
+    frame().selection().updateIfNeeded();
     VisibleSelection selection = frame().selection().selection();
     if (!event)
         return selection;
