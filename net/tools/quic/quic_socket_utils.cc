@@ -152,24 +152,28 @@ int QuicSocketUtils::ReadPacket(int fd,
 
 size_t QuicSocketUtils::SetIpInfoInCmsg(const IPAddress& self_address,
                                         cmsghdr* cmsg) {
-  if (GetAddressFamily(self_address) == ADDRESS_FAMILY_IPV4) {
+  if (self_address.IsIPv4()) {
     cmsg->cmsg_len = CMSG_LEN(sizeof(in_pktinfo));
     cmsg->cmsg_level = IPPROTO_IP;
     cmsg->cmsg_type = IP_PKTINFO;
     in_pktinfo* pktinfo = reinterpret_cast<in_pktinfo*>(CMSG_DATA(cmsg));
     memset(pktinfo, 0, sizeof(in_pktinfo));
     pktinfo->ipi_ifindex = 0;
-    memcpy(&pktinfo->ipi_spec_dst, &self_address.bytes()[0],
+    memcpy(&pktinfo->ipi_spec_dst, self_address.bytes().data(),
            self_address.size());
     return sizeof(in_pktinfo);
-  } else {
+  } else if (self_address.IsIPv6()) {
     cmsg->cmsg_len = CMSG_LEN(sizeof(in6_pktinfo));
     cmsg->cmsg_level = IPPROTO_IPV6;
     cmsg->cmsg_type = IPV6_PKTINFO;
     in6_pktinfo* pktinfo = reinterpret_cast<in6_pktinfo*>(CMSG_DATA(cmsg));
     memset(pktinfo, 0, sizeof(in6_pktinfo));
-    memcpy(&pktinfo->ipi6_addr, &self_address.bytes()[0], self_address.size());
+    memcpy(&pktinfo->ipi6_addr, self_address.bytes().data(),
+           self_address.size());
     return sizeof(in6_pktinfo);
+  } else {
+    NOTREACHED() << "Unrecognized IPAddress";
+    return 0;
   }
 }
 

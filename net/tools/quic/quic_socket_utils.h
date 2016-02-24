@@ -23,8 +23,7 @@ namespace net {
 class QuicSocketUtils {
  public:
   // If the msghdr contains IP_PKTINFO or IPV6_PKTINFO, this will return the
-  // IPAddress in that header.  Returns an uninitialized IPAddress on
-  // failure.
+  // IPAddress in that header.  Returns an empty IPAddress on failure.
   static IPAddress GetAddressFromMsghdr(struct msghdr* hdr);
 
   // If the msghdr contains an SO_RXQ_OVFL entry, this will set dropped_packets
