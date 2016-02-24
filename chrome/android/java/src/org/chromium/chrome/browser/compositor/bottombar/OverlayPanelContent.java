@@ -67,7 +67,7 @@ public class OverlayPanelContent {
 
     /**
      * Whether the ContentViewCore is processing a pending navigation.
-     * NOTE(pedrosimonetti): This is being used to prevent redirections on the SERP to
+     * NOTE(pedrosimonetti): This is being used to prevent redirections on the SERP to be
      * interpreted as a regular navigation, which should cause the Contextual Search Panel
      * to be promoted as a Tab. This was added to work around a server bug that has been fixed.
      * Just checking for whether the Content has been touched is enough to determine whether a
@@ -235,6 +235,11 @@ public class OverlayPanelContent {
                     }
 
                     @Override
+                    public void navigationEntryCommitted() {
+                        mContentDelegate.onNavigationEntryCommitted();
+                    }
+
+                    @Override
                     public void didStartProvisionalLoadForFrame(long frameId, long parentFrameId,
                             boolean isMainFrame, String validatedUrl, boolean isErrorPage,
                             boolean isIframeSrcdoc) {
@@ -309,8 +314,10 @@ public class OverlayPanelContent {
             mLoadedUrl = url;
             mDidStartLoadingUrl = true;
             mIsProcessingPendingNavigation = true;
-            mContentViewCore.getWebContents().getNavigationController().loadUrl(
-                    new LoadUrlParams(url));
+            if (!mContentDelegate.handleInterceptLoadUrl(mContentViewCore, url)) {
+                mContentViewCore.getWebContents().getNavigationController().loadUrl(
+                        new LoadUrlParams(url));
+            }
         }
     }
 
@@ -374,7 +381,7 @@ public class OverlayPanelContent {
         mIsContentViewShowing = isVisible;
 
         if (isVisible) {
-            // If the last call to loadUrl was sepcified to be delayed, load it now.
+            // If the last call to loadUrl was specified to be delayed, load it now.
             if (!TextUtils.isEmpty(mPendingUrl)) {
                 loadUrl(mPendingUrl, true);
             }
