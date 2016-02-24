@@ -18932,6 +18932,27 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Audio.InputDevicePropertyChangedMac"
+    enum="AudioDevicePropertyResult">
+  <owner>henrika@chromium.org</owner>
+  <summary>
+    Lists device properties that have been changed during an audio input stream
+    session. We update a map of different property changes during a session and
+    all these values are recorded when an AUAudioInputStream object is closed,
+    hence multiple enum values can be emitted when the histogram is stored.
+  </summary>
+</histogram>
+
+<histogram name="Media.Audio.InputDevicePropertyChangedStartupFailedMac"
+    enum="AudioDevicePropertyResult">
+  <owner>henrika@chromium.org</owner>
+  <summary>
+    Lists device properties that have been changed during an audio input stream
+    session. Only sampled when Media.Audio.InputStartupSuccessMac reports
+    'Failure' and multiple enum values can be emitted each time that happens.
+  </summary>
+</histogram>
+
 <histogram name="Media.Audio.InputStartupSuccessMac" enum="BooleanSuccess">
   <owner>henrika@chromium.org</owner>
   <summary>
@@ -58378,6 +58399,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="14" label="kCodecPCM_ALAW"/>
   <int value="15" label="kCodecALAC"/>
   <int value="16" label="kCodecAC3"/>
+</enum>
+
+<enum name="AudioDevicePropertyResult" type="int">
+  <int value="0" label="Other"/>
+  <int value="1" label="Device has changed"/>
+  <int value="2" label="IO stopped abnormally"/>
+  <int value="3" label="Hog mode"/>
+  <int value="4" label="Bufer frame size"/>
+  <int value="5" label="Buffer frame size range"/>
+  <int value="6" label="Stream configuration"/>
+  <int value="7" label="Actual sample rate"/>
+  <int value="8" label="Nominal sample rate"/>
+  <int value="9" label="Device is running somewhere"/>
+  <int value="10" label="Device is running"/>
+  <int value="11" label="Device is alive"/>
+  <int value="12" label="Stream physical format"/>
 </enum>
 
 <enum name="AudioFramesPerBuffer" type="int">

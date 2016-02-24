@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "media/audio/mac/audio_low_latency_input_mac.h"
-
 #include <CoreServices/CoreServices.h>
 
 #include "base/logging.h"
@@ -36,16 +35,22 @@ static bool FormatIsInterleaved(UInt32 format_flags) {
   return !(format_flags & kAudioFormatFlagIsNonInterleaved);
 }
 
+// Converts the 32-bit non-terminated 4 byte string into an std::string.
+// Example: code=1735354734 <=> 'goin' <=> kAudioDevicePropertyDeviceIsRunning.
+static std::string FourCharFormatCodeToString(UInt32 code) {
+  char code_string[5];
+  // Converts a 32-bit integer from the host’s native byte order to big-endian.
+  UInt32 code_id = CFSwapInt32HostToBig(code);
+  bcopy(&code_id, code_string, 4);
+  code_string[4] = '\0';
+  return std::string(code_string);
+}
+
 static std::ostream& operator<<(std::ostream& os,
                                 const AudioStreamBasicDescription& format) {
-  // The 32-bit integer format.mFormatID is actually a non-terminated 4 byte
-  // string. Example: kAudioFormatLinearPCM = 'lpcm'.
-  char format_id_string[5];
-  // Converts a 32-bit integer from the host’s native byte order to big-endian.
-  UInt32 format_id = CFSwapInt32HostToBig(format.mFormatID);
-  bcopy(&format_id, format_id_string, 4);
+  std::string format_string = FourCharFormatCodeToString(format.mFormatID);
   os << "sample rate       : " << format.mSampleRate << std::endl
-     << "format ID         : " << format_id_string << std::endl
+     << "format ID         : " << format_string << std::endl
      << "format flags      : " << format.mFormatFlags << std::endl
      << "bytes per packet  : " << format.mBytesPerPacket << std::endl
      << "frames per packet : " << format.mFramesPerPacket << std::endl
@@ -56,6 +61,47 @@ static std::ostream& operator<<(std::ostream& os,
      << "interleaved       : "
      << (FormatIsInterleaved(format.mFormatFlags) ? "yes" : "no");
   return os;
+}
+
+// Property address to monitor device changes. Use wildcards to match any and
+// all values for their associated type. Filtering for device-specific
+// notifications will take place in the callback.
+const AudioObjectPropertyAddress
+    AUAudioInputStream::kDeviceChangePropertyAddress = {
+        kAudioObjectPropertySelectorWildcard, kAudioObjectPropertyScopeWildcard,
+        kAudioObjectPropertyElementWildcard};
+
+// Maps internal enumerator values (e.g. kAudioDevicePropertyDeviceHasChanged)
+// into local values that are suitable for UMA stats.
+// See AudioObjectPropertySelector in CoreAudio/AudioHardware.h for details.
+enum AudioDevicePropertyResult {
+  PROPERTY_OTHER = 0,  // Use for all non-supported property changes
+  PROPERTY_DEVICE_HAS_CHANGED = 1,
+  PROPERTY_IO_STOPPED_ABNORMALLY = 2,
+  PROPERTY_HOG_MODE = 3,
+  PROPERTY_BUFFER_FRAME_SIZE = 4,
+  PROPERTY_BUFFER_FRAME_SIZE_RANGE = 5,
+  PROPERTY_STREAM_CONFIGURATION = 6,
+  PROPERTY_ACTUAL_SAMPLE_RATE = 7,
+  PROPERTY_NOMINAL_SAMPLE_RATE = 8,
+  PROPERTY_DEVICE_IS_RUNNING_SOMEWHERE = 9,
+  PROPERTY_DEVICE_IS_RUNNING = 10,
+  PROPERTY_DEVICE_IS_ALIVE = 11,
+  PROPERTY_STREAM_PHYSICAL_FORMAT = 12,
+  PROPERTY_MAX = PROPERTY_STREAM_PHYSICAL_FORMAT
+};
+
+// Add the provided value in |result| to a UMA histogram.
+static void LogDevicePropertyChange(bool startup_failed,
+                                    AudioDevicePropertyResult result) {
+  if (startup_failed) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Media.Audio.InputDevicePropertyChangedStartupFailedMac", result,
+        PROPERTY_MAX + 1);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("Media.Audio.InputDevicePropertyChangedMac",
+                              result, PROPERTY_MAX + 1);
+  }
 }
 
 static OSStatus GetInputDeviceStreamFormat(
@@ -93,7 +139,8 @@ AUAudioInputStream::AUAudioInputStream(AudioManagerMac* manager,
       input_callback_is_active_(false),
       start_was_deferred_(false),
       buffer_size_was_changed_(false),
-      audio_unit_render_has_worked_(false) {
+      audio_unit_render_has_worked_(false),
+      device_listener_is_active_(false) {
   DCHECK(manager_);
 
   // Set up the desired (output) format specified by the client.
@@ -135,6 +182,7 @@ AUAudioInputStream::AUAudioInputStream(AudioManagerMac* manager,
 
 AUAudioInputStream::~AUAudioInputStream() {
   DVLOG(1) << "~dtor";
+  DCHECK(!device_listener_is_active_);
 }
 
 // Obtain and open the AUHAL AudioOutputUnit for recording.
@@ -150,6 +198,9 @@ bool AUAudioInputStream::Open() {
     HandleError(kAudioUnitErr_InvalidElement);
     return false;
   }
+
+  // Start listening for changes in device properties.
+  RegisterDeviceChangeListener();
 
   // The requested sample-rate must match the hardware sample-rate.
   int sample_rate =
@@ -427,7 +478,14 @@ void AUAudioInputStream::Close() {
   if (IsRunning()) {
     Stop();
   }
+  // Uninitialize and dispose the audio unit.
   CloseAudioUnit();
+  // Disable the listener for device property changes.
+  DeRegisterDeviceChangeListener();
+  // Check if any device property changes are added by filtering out a selected
+  // set of the |device_property_changes_map_| map. Add UMA stats if valuable
+  // data is found.
+  AddDevicePropertyChangesToUMA(false);
   // Inform the audio manager that we have been closed. This will cause our
   // destruction.
   manager_->ReleaseInputStream(this);
@@ -750,22 +808,76 @@ OSStatus AUAudioInputStream::Provide(UInt32 number_of_frames,
   return noErr;
 }
 
+OSStatus AUAudioInputStream::OnDevicePropertyChanged(
+    AudioObjectID object_id,
+    UInt32 num_addresses,
+    const AudioObjectPropertyAddress addresses[],
+    void* context) {
+  AUAudioInputStream* self = static_cast<AUAudioInputStream*>(context);
+  return self->DevicePropertyChanged(object_id, num_addresses, addresses);
+}
+
+OSStatus AUAudioInputStream::DevicePropertyChanged(
+    AudioObjectID object_id,
+    UInt32 num_addresses,
+    const AudioObjectPropertyAddress addresses[]) {
+  if (object_id != input_device_id_)
+    return noErr;
+
+  // Listeners will be called when possibly many properties have changed.
+  // Consequently, the implementation of a listener must go through the array of
+  // addresses to see what exactly has changed.
+  for (UInt32 i = 0; i < num_addresses; ++i) {
+    const UInt32 property = addresses[i].mSelector;
+    // Use selector as key to a map and increase its value. We are not
+    // interested in all property changes but store all here anyhow.
+    // Filtering will be done later in AddDevicePropertyChangesToUMA();
+    ++device_property_changes_map_[property];
+  }
+  return noErr;
+}
+
+void AUAudioInputStream::RegisterDeviceChangeListener() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!device_listener_is_active_);
+  DVLOG(1) << "RegisterDeviceChangeListener";
+  if (input_device_id_ == kAudioObjectUnknown)
+    return;
+  device_property_changes_map_.clear();
+  OSStatus result = AudioObjectAddPropertyListener(
+      input_device_id_, &kDeviceChangePropertyAddress,
+      &AUAudioInputStream::OnDevicePropertyChanged, this);
+  OSSTATUS_DLOG_IF(ERROR, result != noErr, result)
+      << "AudioObjectAddPropertyListener() failed!";
+  device_listener_is_active_ = (result == noErr);
+}
+
+void AUAudioInputStream::DeRegisterDeviceChangeListener() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!device_listener_is_active_)
+    return;
+  DVLOG(1) << "DeRegisterDeviceChangeListener";
+  if (input_device_id_ == kAudioObjectUnknown)
+    return;
+  device_listener_is_active_ = false;
+  OSStatus result = AudioObjectRemovePropertyListener(
+      input_device_id_, &kDeviceChangePropertyAddress,
+      &AUAudioInputStream::OnDevicePropertyChanged, this);
+  OSSTATUS_DLOG_IF(ERROR, result != noErr, result)
+      << "AudioObjectRemovePropertyListener() failed!";
+}
+
 int AUAudioInputStream::HardwareSampleRate() {
   // Determine the default input device's sample-rate.
   AudioDeviceID device_id = kAudioObjectUnknown;
   UInt32 info_size = sizeof(device_id);
 
   AudioObjectPropertyAddress default_input_device_address = {
-    kAudioHardwarePropertyDefaultInputDevice,
-    kAudioObjectPropertyScopeGlobal,
-    kAudioObjectPropertyElementMaster
-  };
+      kAudioHardwarePropertyDefaultInputDevice, kAudioObjectPropertyScopeGlobal,
+      kAudioObjectPropertyElementMaster};
   OSStatus result = AudioObjectGetPropertyData(kAudioObjectSystemObject,
-                                               &default_input_device_address,
-                                               0,
-                                               0,
-                                               &info_size,
-                                               &device_id);
+                                               &default_input_device_address, 0,
+                                               0, &info_size, &device_id);
   if (result != noErr)
     return 0.0;
 
@@ -773,16 +885,10 @@ int AUAudioInputStream::HardwareSampleRate() {
   info_size = sizeof(nominal_sample_rate);
 
   AudioObjectPropertyAddress nominal_sample_rate_address = {
-    kAudioDevicePropertyNominalSampleRate,
-    kAudioObjectPropertyScopeGlobal,
-    kAudioObjectPropertyElementMaster
-  };
-  result = AudioObjectGetPropertyData(device_id,
-                                      &nominal_sample_rate_address,
-                                      0,
-                                      0,
-                                      &info_size,
-                                      &nominal_sample_rate);
+      kAudioDevicePropertyNominalSampleRate, kAudioObjectPropertyScopeGlobal,
+      kAudioObjectPropertyElementMaster};
+  result = AudioObjectGetPropertyData(device_id, &nominal_sample_rate_address,
+                                      0, 0, &info_size, &nominal_sample_rate);
   if (result != noErr)
     return 0.0;
 
@@ -798,40 +904,35 @@ double AUAudioInputStream::GetHardwareLatency() {
   // Get audio unit latency.
   Float64 audio_unit_latency_sec = 0.0;
   UInt32 size = sizeof(audio_unit_latency_sec);
-  OSStatus result = AudioUnitGetProperty(audio_unit_,
-                                         kAudioUnitProperty_Latency,
-                                         kAudioUnitScope_Global,
-                                         0,
-                                         &audio_unit_latency_sec,
-                                         &size);
+  OSStatus result = AudioUnitGetProperty(
+      audio_unit_, kAudioUnitProperty_Latency, kAudioUnitScope_Global, 0,
+      &audio_unit_latency_sec, &size);
   OSSTATUS_DLOG_IF(WARNING, result != noErr, result)
       << "Could not get audio unit latency";
 
   // Get input audio device latency.
   AudioObjectPropertyAddress property_address = {
-    kAudioDevicePropertyLatency,
-    kAudioDevicePropertyScopeInput,
-    kAudioObjectPropertyElementMaster
-  };
+      kAudioDevicePropertyLatency, kAudioDevicePropertyScopeInput,
+      kAudioObjectPropertyElementMaster};
   UInt32 device_latency_frames = 0;
   size = sizeof(device_latency_frames);
   result = AudioObjectGetPropertyData(input_device_id_, &property_address, 0,
                                       nullptr, &size, &device_latency_frames);
   DLOG_IF(WARNING, result != noErr) << "Could not get audio device latency.";
 
-  return static_cast<double>((audio_unit_latency_sec *
-      format_.mSampleRate) + device_latency_frames);
+  return static_cast<double>((audio_unit_latency_sec * format_.mSampleRate) +
+                             device_latency_frames);
 }
 
 double AUAudioInputStream::GetCaptureLatency(
     const AudioTimeStamp* input_time_stamp) {
   // Get the delay between between the actual recording instant and the time
   // when the data packet is provided as a callback.
-  UInt64 capture_time_ns = AudioConvertHostTimeToNanos(
-      input_time_stamp->mHostTime);
+  UInt64 capture_time_ns =
+      AudioConvertHostTimeToNanos(input_time_stamp->mHostTime);
   UInt64 now_ns = AudioConvertHostTimeToNanos(AudioGetCurrentHostTime());
-  double delay_frames = static_cast<double>
-      (1e-9 * (now_ns - capture_time_ns) * format_.mSampleRate);
+  double delay_frames = static_cast<double>(1e-9 * (now_ns - capture_time_ns) *
+                                            format_.mSampleRate);
 
   // Total latency is composed by the dynamic latency and the fixed
   // hardware latency.
@@ -841,10 +942,8 @@ double AUAudioInputStream::GetCaptureLatency(
 int AUAudioInputStream::GetNumberOfChannelsFromStream() {
   // Get the stream format, to be able to read the number of channels.
   AudioObjectPropertyAddress property_address = {
-    kAudioDevicePropertyStreamFormat,
-    kAudioDevicePropertyScopeInput,
-    kAudioObjectPropertyElementMaster
-  };
+      kAudioDevicePropertyStreamFormat, kAudioDevicePropertyScopeInput,
+      kAudioObjectPropertyElementMaster};
   AudioStreamBasicDescription stream_format;
   UInt32 size = sizeof(stream_format);
   OSStatus result = AudioObjectGetPropertyData(
@@ -877,8 +976,8 @@ void AUAudioInputStream::HandleError(OSStatus err) {
   // carries one extra level of information.
   UMA_HISTOGRAM_SPARSE_SLOWLY("Media.InputErrorMac",
                               GetInputCallbackIsActive() ? err : (err * -1));
-  NOTREACHED() << "error " << GetMacOSStatusErrorString(err)
-               << " (" << err << ")";
+  NOTREACHED() << "error " << GetMacOSStatusErrorString(err) << " (" << err
+               << ")";
   if (sink_)
     sink_->OnError(this);
 }
@@ -886,13 +985,10 @@ void AUAudioInputStream::HandleError(OSStatus err) {
 bool AUAudioInputStream::IsVolumeSettableOnChannel(int channel) {
   Boolean is_settable = false;
   AudioObjectPropertyAddress property_address = {
-    kAudioDevicePropertyVolumeScalar,
-    kAudioDevicePropertyScopeInput,
-    static_cast<UInt32>(channel)
-  };
-  OSStatus result = AudioObjectIsPropertySettable(input_device_id_,
-                                                  &property_address,
-                                                  &is_settable);
+      kAudioDevicePropertyVolumeScalar, kAudioDevicePropertyScopeInput,
+      static_cast<UInt32>(channel)};
+  OSStatus result = AudioObjectIsPropertySettable(
+      input_device_id_, &property_address, &is_settable);
   return (result == noErr) ? is_settable : false;
 }
 
@@ -950,25 +1046,105 @@ void AUAudioInputStream::AddHistogramsForFailedStartup() {
                             manager_->low_latency_input_streams());
   UMA_HISTOGRAM_COUNTS_1000("Media.Audio.NumberOfBasicInputStreamsMac",
                             manager_->basic_input_streams());
-  // |number_of_frames_| is set at construction and corresponds to the requested
-  // (by the client) number of audio frames per I/O buffer connected to the
-  // selected input device. Ideally, this size will be the same as the native
-  // I/O buffer size given by |io_buffer_frame_size_|.
+  // |number_of_frames_| is set at construction and corresponds to the
+  // requested (by the client) number of audio frames per I/O buffer connected
+  // to the selected input device. Ideally, this size will be the same as the
+  // native I/O buffer size given by |io_buffer_frame_size_|.
   UMA_HISTOGRAM_SPARSE_SLOWLY("Media.Audio.RequestedInputBufferFrameSizeMac",
                               number_of_frames_);
   DVLOG(1) << "number_of_frames_: " << number_of_frames_;
-  // This value indicates the number of frames in the IO buffers connected to
-  // the selected input device. It has been set by the audio manger in Open()
-  // and can be the same as |number_of_frames_|, which is the desired buffer
-  // size. These two values might differ if other streams are using the same
-  // device and any of these streams have asked for a smaller buffer size.
+  // This value indicates the number of frames in the IO buffers connected
+  // to the selected input device. It has been set by the audio manger in
+  // Open() and can be the same as |number_of_frames_|, which is the desired
+  // buffer size. These two values might differ if other streams are using the
+  // same device and any of these streams have asked for a smaller buffer size.
   UMA_HISTOGRAM_SPARSE_SLOWLY("Media.Audio.ActualInputBufferFrameSizeMac",
                               io_buffer_frame_size_);
   DVLOG(1) << "io_buffer_frame_size_: " << io_buffer_frame_size_;
-  // TODO(henrika): this value will currently always report true. It should be
-  // fixed when we understand the problem better.
+  // TODO(henrika): this value will currently always report true. It should
+  // be fixed when we understand the problem better.
   UMA_HISTOGRAM_BOOLEAN("Media.Audio.AutomaticGainControlMac",
                         GetAutomaticGainControl());
+  // Disable the listener for device property changes. Ensures that we don't
+  // need a lock when reading the map.
+  DeRegisterDeviceChangeListener();
+  // Check if any device property changes are added by filtering out a selected
+  // set of the |device_property_changes_map_| map. Add UMA stats if valuable
+  // data is found.
+  AddDevicePropertyChangesToUMA(true);
+}
+
+void AUAudioInputStream::AddDevicePropertyChangesToUMA(bool startup_failed) {
+  DVLOG(1) << "AddDevicePropertyChangesToUMA";
+  DCHECK(!device_listener_is_active_);
+  // Scan the map of all available property changes (notification types) and
+  // filter out some that make sense to add to UMA stats.
+  // TODO(henrika): figure out if the set of stats is sufficient or not.
+  for (auto it = device_property_changes_map_.begin();
+       it != device_property_changes_map_.end(); ++it) {
+    UInt32 device_property = it->first;
+    int change_count = it->second;
+    AudioDevicePropertyResult uma_result = PROPERTY_OTHER;
+    switch (device_property) {
+      case kAudioDevicePropertyDeviceHasChanged:
+        uma_result = PROPERTY_DEVICE_HAS_CHANGED;
+        DVLOG(1) << "kAudioDevicePropertyDeviceHasChanged";
+        break;
+      case kAudioDevicePropertyIOStoppedAbnormally:
+        uma_result = PROPERTY_IO_STOPPED_ABNORMALLY;
+        DVLOG(1) << "kAudioDevicePropertyIOStoppedAbnormally";
+        break;
+      case kAudioDevicePropertyHogMode:
+        uma_result = PROPERTY_HOG_MODE;
+        DVLOG(1) << "kAudioDevicePropertyHogMode";
+        break;
+      case kAudioDevicePropertyBufferFrameSize:
+        uma_result = PROPERTY_BUFFER_FRAME_SIZE;
+        DVLOG(1) << "kAudioDevicePropertyBufferFrameSize";
+        break;
+      case kAudioDevicePropertyBufferFrameSizeRange:
+        uma_result = PROPERTY_BUFFER_FRAME_SIZE_RANGE;
+        DVLOG(1) << "kAudioDevicePropertyBufferFrameSizeRange";
+        break;
+      case kAudioDevicePropertyStreamConfiguration:
+        uma_result = PROPERTY_STREAM_CONFIGURATION;
+        DVLOG(1) << "kAudioDevicePropertyStreamConfiguration";
+        break;
+      case kAudioDevicePropertyActualSampleRate:
+        uma_result = PROPERTY_ACTUAL_SAMPLE_RATE;
+        DVLOG(1) << "kAudioDevicePropertyActualSampleRate";
+        break;
+      case kAudioDevicePropertyNominalSampleRate:
+        uma_result = PROPERTY_NOMINAL_SAMPLE_RATE;
+        DVLOG(1) << "kAudioDevicePropertyNominalSampleRate";
+        break;
+      case kAudioDevicePropertyDeviceIsRunningSomewhere:
+        uma_result = PROPERTY_DEVICE_IS_RUNNING_SOMEWHERE;
+        DVLOG(1) << "kAudioDevicePropertyDeviceIsRunningSomewhere";
+        break;
+      case kAudioDevicePropertyDeviceIsRunning:
+        uma_result = PROPERTY_DEVICE_IS_RUNNING;
+        DVLOG(1) << "kAudioDevicePropertyDeviceIsRunning";
+        break;
+      case kAudioDevicePropertyDeviceIsAlive:
+        uma_result = PROPERTY_DEVICE_IS_ALIVE;
+        DVLOG(1) << "kAudioDevicePropertyDeviceIsAlive";
+        break;
+      case kAudioStreamPropertyPhysicalFormat:
+        uma_result = PROPERTY_STREAM_PHYSICAL_FORMAT;
+        DVLOG(1) << "kAudioStreamPropertyPhysicalFormat";
+        break;
+      default:
+        uma_result = PROPERTY_OTHER;
+        DVLOG(1) << "Property change is ignored";
+        break;
+    }
+    DVLOG(1) << "property: " << device_property << " ("
+             << FourCharFormatCodeToString(device_property) << ")"
+             << " changed: " << change_count;
+    LogDevicePropertyChange(startup_failed, uma_result);
+  }
+  device_property_changes_map_.clear();
 }
 
 }  // namespace media

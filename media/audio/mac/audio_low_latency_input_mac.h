@@ -38,14 +38,12 @@
 
 #include <AudioUnit/AudioUnit.h>
 #include <CoreAudio/CoreAudio.h>
-#include <stddef.h>
-#include <stdint.h>
+#include <map>
 
 #include "base/atomicops.h"
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -94,6 +92,8 @@ class MEDIA_EXPORT AUAudioInputStream
   size_t requested_buffer_size() const { return number_of_frames_; }
 
  private:
+  static const AudioObjectPropertyAddress kDeviceChangePropertyAddress;
+
   // Callback functions called on a real-time priority I/O thread from the audio
   // unit. These methods are called when recorded audio is available.
   static OSStatus DataIsAvailable(void* context,
@@ -110,6 +110,23 @@ class MEDIA_EXPORT AUAudioInputStream
   // Pushes recorded data to consumer of the input audio stream.
   OSStatus Provide(UInt32 number_of_frames, AudioBufferList* io_data,
                    const AudioTimeStamp* time_stamp);
+
+  // Callback functions called on different system threads from the Core Audio
+  // framework. These methods are called when device properties are changed.
+  static OSStatus OnDevicePropertyChanged(
+      AudioObjectID object_id,
+      UInt32 num_addresses,
+      const AudioObjectPropertyAddress addresses[],
+      void* context);
+  OSStatus DevicePropertyChanged(AudioObjectID object_id,
+                                 UInt32 num_addresses,
+                                 const AudioObjectPropertyAddress addresses[]);
+
+  // Registers OnDevicePropertyChanged() to receive notifications when device
+  // properties changes.
+  void RegisterDeviceChangeListener();
+  // Stop listening for changes in device properties.
+  void DeRegisterDeviceChangeListener();
 
   // Gets the fixed capture hardware latency and store it during initialization.
   // Returns 0 if not available.
@@ -142,6 +159,10 @@ class MEDIA_EXPORT AUAudioInputStream
 
   // Adds extra UMA stats when it has been detected that startup failed.
   void AddHistogramsForFailedStartup();
+
+  // Scans the map of all available property changes (notification types) and
+  // filters out some that make sense to add to UMA stats.
+  void AddDevicePropertyChangesToUMA(bool startup_failed);
 
   // Verifies that Open(), Start(), Stop() and Close() are all called on the
   // creating thread which is the main browser thread (CrBrowserMain) on Mac.
@@ -217,6 +238,21 @@ class MEDIA_EXPORT AUAudioInputStream
 
   // Set to true once when AudioUnitRender() succeeds for the first time.
   bool audio_unit_render_has_worked_;
+
+  // Maps unique representations of device property notification types and
+  // number of times we have been notified about a change in such a type.
+  // While the notifier is active, this member is modified by several different
+  // internal thread. My guess is that a serial dispatch queue is used under
+  // the hood and it executes one task at a time in the order in which they are
+  // added to the queue. The currently executing task runs on a distinct thread
+  // (which can vary from task to task) that is managed by the dispatch queue.
+  // The map is always read on the creating thread but only while the notifier
+  // is disabled, hence no lock is required.
+  std::map<UInt32, int> device_property_changes_map_;
+
+  // Set to true when we are listening for changes in device properties.
+  // Only touched on the creating thread.
+  bool device_listener_is_active_;
 
   DISALLOW_COPY_AND_ASSIGN(AUAudioInputStream);
 };
