@@ -77,7 +77,7 @@ static PassOwnPtr<protocol::Runtime::ExceptionDetails> toExceptionDetails(PassRe
     if (stackTrace && stackTrace->length() > 0) {
         OwnPtr<protocol::Array<protocol::Runtime::CallFrame>> frames = protocol::Array<protocol::Runtime::CallFrame>::create();
         for (unsigned i = 0; i < stackTrace->length(); ++i) {
-            RefPtr<JSONObject> stackFrame = JSONObject::cast(stackTrace->get(i));
+            RefPtr<JSONObject> stackFrame = stackTrace->get(i)->asObject();
             int lineNumber = 0;
             stackFrame->getNumber("lineNumber", &lineNumber);
             int column = 0;
@@ -204,7 +204,7 @@ void InjectedScript::getStepInPositions(ErrorString* errorString, v8::Local<v8::
             return;
         }
         if (resultValue->type() == JSONValue::TypeArray) {
-            *positions = Array<protocol::Debugger::Location>::runtimeCast(resultValue.release());
+            *positions = Array<protocol::Debugger::Location>::runtimeCast(resultValue->asArray());
             return;
         }
     }
@@ -260,7 +260,7 @@ void InjectedScript::getFunctionDetails(ErrorString* errorString, const String& 
             *errorString = "Internal error";
         return;
     }
-    *result = FunctionDetails::runtimeCast(resultValue);
+    *result = FunctionDetails::runtimeCast(resultValue->asObject());
 }
 
 void InjectedScript::getGeneratorObjectDetails(ErrorString* errorString, const String& objectId, OwnPtr<GeneratorObjectDetails>* result)
@@ -275,7 +275,7 @@ void InjectedScript::getGeneratorObjectDetails(ErrorString* errorString, const S
             *errorString = "Internal error";
         return;
     }
-    *result = GeneratorObjectDetails::runtimeCast(resultValue);
+    *result = GeneratorObjectDetails::runtimeCast(resultValue->asObject());
 }
 
 void InjectedScript::getCollectionEntries(ErrorString* errorString, const String& objectId, OwnPtr<Array<CollectionEntry>>* result)
@@ -290,7 +290,7 @@ void InjectedScript::getCollectionEntries(ErrorString* errorString, const String
             *errorString = "Internal error";
         return;
     }
-    *result = Array<CollectionEntry>::runtimeCast(resultValue.release());
+    *result = Array<CollectionEntry>::runtimeCast(resultValue->asArray());
 }
 
 void InjectedScript::getProperties(ErrorString* errorString, const String& objectId, bool ownProperties, bool accessorPropertiesOnly, bool generatePreview, OwnPtr<Array<PropertyDescriptor>>* properties, OwnPtr<protocol::Runtime::ExceptionDetails>* exceptionDetails)
@@ -313,7 +313,7 @@ void InjectedScript::getProperties(ErrorString* errorString, const String& objec
         *errorString = "Internal error";
         return;
     }
-    *properties = Array<PropertyDescriptor>::runtimeCast(result.release());
+    *properties = Array<PropertyDescriptor>::runtimeCast(result->asArray());
 }
 
 void InjectedScript::getInternalProperties(ErrorString* errorString, const String& objectId, OwnPtr<Array<InternalPropertyDescriptor>>* properties, OwnPtr<protocol::Runtime::ExceptionDetails>* exceptionDetails)
@@ -330,7 +330,7 @@ void InjectedScript::getInternalProperties(ErrorString* errorString, const Strin
         *errorString = "Internal error";
         return;
     }
-    OwnPtr<Array<InternalPropertyDescriptor>> array = Array<InternalPropertyDescriptor>::runtimeCast(result.release());
+    OwnPtr<Array<InternalPropertyDescriptor>> array = Array<InternalPropertyDescriptor>::runtimeCast(result->asArray());
     if (array->length() > 0)
         *properties = array.release();
 }
@@ -340,8 +340,8 @@ void InjectedScript::releaseObject(const String& objectId)
     RefPtr<JSONValue> parsedObjectId = parseJSON(objectId);
     if (!parsedObjectId)
         return;
-    RefPtr<JSONObject> object = JSONObject::cast(parsedObjectId);
-    if (!object)
+    RefPtr<JSONObject> object;
+    if (!parsedObjectId->asObject(&object))
         return;
     int boundId = 0;
     if (!object->getNumber("id", &boundId))
@@ -379,7 +379,7 @@ PassOwnPtr<Array<CallFrame>> InjectedScript::wrapCallFrames(v8::Local<v8::Object
     ASSERT(!hadException);
     RefPtr<JSONValue> result = toJSONValue(context(), callFramesValue);
     if (result && result->type() == JSONValue::TypeArray)
-        return Array<CallFrame>::runtimeCast(result.release());
+        return Array<CallFrame>::runtimeCast(result->asArray());
     return Array<CallFrame>::create();
 }
 
@@ -395,7 +395,8 @@ PassOwnPtr<protocol::Runtime::RemoteObject> InjectedScript::wrapObject(v8::Local
     v8::Local<v8::Value> r = callFunctionWithEvalEnabled(function, hadException);
     if (hadException)
         return nullptr;
-    return protocol::Runtime::RemoteObject::runtimeCast(toJSONValue(context(), r));
+    RefPtr<JSONObject> rawResult = toJSONValue(context(), r)->asObject();
+    return protocol::Runtime::RemoteObject::runtimeCast(rawResult);
 }
 
 PassOwnPtr<protocol::Runtime::RemoteObject> InjectedScript::wrapTable(v8::Local<v8::Value> table, v8::Local<v8::Value> columns) const
@@ -412,7 +413,8 @@ PassOwnPtr<protocol::Runtime::RemoteObject> InjectedScript::wrapTable(v8::Local<
     v8::Local<v8::Value>  r = callFunctionWithEvalEnabled(function, hadException);
     if (hadException)
         return nullptr;
-    return protocol::Runtime::RemoteObject::runtimeCast(toJSONValue(context(), r));
+    RefPtr<JSONObject> rawResult = toJSONValue(context(), r)->asObject();
+    return protocol::Runtime::RemoteObject::runtimeCast(rawResult);
 }
 
 v8::Local<v8::Value> InjectedScript::findObject(const RemoteObjectId& objectId) const
@@ -511,7 +513,7 @@ void InjectedScript::makeEvalCall(ErrorString* errorString, V8FunctionCall& func
         ASSERT(errorString->length());
         return;
     }
-    RefPtr<JSONObject> resultPair = JSONObject::cast(result);
+    RefPtr<JSONObject> resultPair = result->asObject();
     if (!resultPair) {
         *errorString = "Internal error: result is not an Object";
         return;

@@ -92,7 +92,7 @@ void InspectorAgentRegistry::restore(const String& savedState)
 {
     RefPtr<JSONValue> state = parseJSON(savedState);
     if (state)
-        m_state = JSONObject::cast(state);
+        m_state = state->asObject();
     if (!m_state)
         m_state = JSONObject::create();
 

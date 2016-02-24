@@ -134,6 +134,26 @@ bool JSONValue::asString(String*) const
     return false;
 }
 
+bool JSONValue::asObject(RefPtr<JSONObject>*)
+{
+    return false;
+}
+
+bool JSONValue::asArray(RefPtr<JSONArray>*)
+{
+    return false;
+}
+
+PassRefPtr<JSONObject> JSONValue::asObject()
+{
+    return nullptr;
+}
+
+PassRefPtr<JSONArray> JSONValue::asArray()
+{
+    return nullptr;
+}
+
 String JSONValue::toJSONString() const
 {
     StringBuilder result;
@@ -244,57 +264,75 @@ void JSONString::writeJSON(StringBuilder* output) const
     doubleQuoteStringForJSON(m_stringValue, output);
 }
 
-JSONObject::~JSONObject()
+JSONObjectBase::~JSONObjectBase()
 {
 }
 
-void JSONObject::setBoolean(const String& name, bool value)
+bool JSONObjectBase::asObject(RefPtr<JSONObject>* output)
+{
+    static_assert(sizeof(JSONObject) == sizeof(JSONObjectBase), "cannot cast");
+    *output = static_cast<JSONObject*>(this);
+    return true;
+}
+
+PassRefPtr<JSONObject> JSONObjectBase::asObject()
+{
+    return openAccessors();
+}
+
+void JSONObjectBase::setBoolean(const String& name, bool value)
 {
     setValue(name, JSONBasicValue::create(value));
 }
 
-void JSONObject::setNumber(const String& name, double value)
+void JSONObjectBase::setNumber(const String& name, double value)
 {
     setValue(name, JSONBasicValue::create(value));
 }
 
-void JSONObject::setString(const String& name, const String& value)
+void JSONObjectBase::setString(const String& name, const String& value)
 {
     setValue(name, JSONString::create(value));
 }
 
-void JSONObject::setValue(const String& name, PassRefPtr<JSONValue> value)
+void JSONObjectBase::setValue(const String& name, PassRefPtr<JSONValue> value)
 {
     ASSERT(value);
     if (m_data.set(name, value).isNewEntry)
         m_order.append(name);
 }
 
-void JSONObject::setObject(const String& name, PassRefPtr<JSONObject> value)
+void JSONObjectBase::setObject(const String& name, PassRefPtr<JSONObject> value)
 {
     ASSERT(value);
     if (m_data.set(name, value).isNewEntry)
         m_order.append(name);
 }
 
-void JSONObject::setArray(const String& name, PassRefPtr<JSONArray> value)
+void JSONObjectBase::setArray(const String& name, PassRefPtr<JSONArray> value)
 {
     ASSERT(value);
     if (m_data.set(name, value).isNewEntry)
         m_order.append(name);
 }
 
-JSONObject::iterator JSONObject::find(const String& name)
+JSONObject* JSONObjectBase::openAccessors()
+{
+    static_assert(sizeof(JSONObject) == sizeof(JSONObjectBase), "cannot cast");
+    return static_cast<JSONObject*>(this);
+}
+
+JSONObjectBase::iterator JSONObjectBase::find(const String& name)
 {
     return m_data.find(name);
 }
 
-JSONObject::const_iterator JSONObject::find(const String& name) const
+JSONObjectBase::const_iterator JSONObjectBase::find(const String& name) const
 {
     return m_data.find(name);
 }
 
-bool JSONObject::getBoolean(const String& name, bool* output) const
+bool JSONObjectBase::getBoolean(const String& name, bool* output) const
 {
     RefPtr<JSONValue> value = get(name);
     if (!value)
@@ -302,7 +340,7 @@ bool JSONObject::getBoolean(const String& name, bool* output) const
     return value->asBoolean(output);
 }
 
-bool JSONObject::getString(const String& name, String* output) const
+bool JSONObjectBase::getString(const String& name, String* output) const
 {
     RefPtr<JSONValue> value = get(name);
     if (!value)
@@ -310,17 +348,23 @@ bool JSONObject::getString(const String& name, String* output) const
     return value->asString(output);
 }
 
-PassRefPtr<JSONObject> JSONObject::getObject(const String& name) const
+PassRefPtr<JSONObject> JSONObjectBase::getObject(const String& name) const
 {
-    return JSONObject::cast(get(name));
+    RefPtr<JSONValue> value = get(name);
+    if (!value)
+        return nullptr;
+    return value->asObject();
 }
 
-PassRefPtr<JSONArray> JSONObject::getArray(const String& name) const
+PassRefPtr<JSONArray> JSONObjectBase::getArray(const String& name) const
 {
-    return JSONArray::cast(get(name));
+    RefPtr<JSONValue> value = get(name);
+    if (!value)
+        return nullptr;
+    return value->asArray();
 }
 
-PassRefPtr<JSONValue> JSONObject::get(const String& name) const
+PassRefPtr<JSONValue> JSONObjectBase::get(const String& name) const
 {
     Dictionary::const_iterator it = m_data.find(name);
     if (it == m_data.end())
@@ -328,14 +372,14 @@ PassRefPtr<JSONValue> JSONObject::get(const String& name) const
     return it->value;
 }
 
-bool JSONObject::booleanProperty(const String& name, bool defaultValue) const
+bool JSONObjectBase::booleanProperty(const String& name, bool defaultValue) const
 {
     bool result = defaultValue;
     getBoolean(name, &result);
     return result;
 }
 
-void JSONObject::remove(const String& name)
+void JSONObjectBase::remove(const String& name)
 {
     m_data.remove(name);
     for (size_t i = 0; i < m_order.size(); ++i) {
@@ -346,7 +390,7 @@ void JSONObject::remove(const String& name)
     }
 }
 
-void JSONObject::writeJSON(StringBuilder* output) const
+void JSONObjectBase::writeJSON(StringBuilder* output) const
 {
     output->append('{');
     for (size_t i = 0; i < m_order.size(); ++i) {
@@ -361,7 +405,7 @@ void JSONObject::writeJSON(StringBuilder* output) const
     output->append('}');
 }
 
-void JSONObject::prettyWriteJSONInternal(StringBuilder* output, int depth) const
+void JSONObjectBase::prettyWriteJSONInternal(StringBuilder* output, int depth) const
 {
     output->appendLiteral("{\n");
     for (size_t i = 0; i < m_order.size(); ++i) {
@@ -379,18 +423,31 @@ void JSONObject::prettyWriteJSONInternal(StringBuilder* output, int depth) const
     output->append('}');
 }
 
-JSONObject::JSONObject()
+JSONObjectBase::JSONObjectBase()
     : JSONValue(TypeObject)
     , m_data()
     , m_order()
 {
 }
 
-JSONArray::~JSONArray()
+JSONArrayBase::~JSONArrayBase()
 {
 }
 
-void JSONArray::writeJSON(StringBuilder* output) const
+bool JSONArrayBase::asArray(RefPtr<JSONArray>* output)
+{
+    static_assert(sizeof(JSONArrayBase) == sizeof(JSONArray), "cannot cast");
+    *output = static_cast<JSONArray*>(this);
+    return true;
+}
+
+PassRefPtr<JSONArray> JSONArrayBase::asArray()
+{
+    static_assert(sizeof(JSONArrayBase) == sizeof(JSONArray), "cannot cast");
+    return static_cast<JSONArray*>(this);
+}
+
+void JSONArrayBase::writeJSON(StringBuilder* output) const
 {
     output->append('[');
     for (Vector<RefPtr<JSONValue>>::const_iterator it = m_data.begin(); it != m_data.end(); ++it) {
@@ -401,7 +458,7 @@ void JSONArray::writeJSON(StringBuilder* output) const
     output->append(']');
 }
 
-void JSONArray::prettyWriteJSONInternal(StringBuilder* output, int depth) const
+void JSONArrayBase::prettyWriteJSONInternal(StringBuilder* output, int depth) const
 {
     output->append('[');
     bool lastInsertedNewLine = false;
@@ -431,51 +488,51 @@ void JSONArray::prettyWriteJSONInternal(StringBuilder* output, int depth) const
     output->append(']');
 }
 
-JSONArray::JSONArray()
+JSONArrayBase::JSONArrayBase()
     : JSONValue(TypeArray)
     , m_data()
 {
 }
 
-void JSONArray::pushBoolean(bool value)
+void JSONArrayBase::pushBoolean(bool value)
 {
     m_data.append(JSONBasicValue::create(value));
 }
 
-void JSONArray::pushInt(int value)
+void JSONArrayBase::pushInt(int value)
 {
     m_data.append(JSONBasicValue::create(value));
 }
 
-void JSONArray::pushNumber(double value)
+void JSONArrayBase::pushNumber(double value)
 {
     m_data.append(JSONBasicValue::create(value));
 }
 
-void JSONArray::pushString(const String& value)
+void JSONArrayBase::pushString(const String& value)
 {
     m_data.append(JSONString::create(value));
 }
 
-void JSONArray::pushValue(PassRefPtr<JSONValue> value)
+void JSONArrayBase::pushValue(PassRefPtr<JSONValue> value)
 {
     ASSERT(value);
     m_data.append(value);
 }
 
-void JSONArray::pushObject(PassRefPtr<JSONObject> value)
+void JSONArrayBase::pushObject(PassRefPtr<JSONObject> value)
 {
     ASSERT(value);
     m_data.append(value);
 }
 
-void JSONArray::pushArray(PassRefPtr<JSONArray> value)
+void JSONArrayBase::pushArray(PassRefPtr<JSONArray> value)
 {
     ASSERT(value);
     m_data.append(value);
 }
 
-PassRefPtr<JSONValue> JSONArray::get(size_t index)
+PassRefPtr<JSONValue> JSONArrayBase::get(size_t index)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(index < m_data.size());
     return m_data[index];

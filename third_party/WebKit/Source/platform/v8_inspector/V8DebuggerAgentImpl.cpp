@@ -1455,7 +1455,7 @@ void V8DebuggerAgentImpl::didParseSource(const V8DebuggerParsedScript& parsedScr
         return;
 
     for (auto& cookie : *breakpointsCookie) {
-        RefPtr<JSONObject> breakpointObject = JSONObject::cast(cookie.value);
+        RefPtr<JSONObject> breakpointObject = cookie.value->asObject();
         bool isRegex;
         breakpointObject->getBoolean(DebuggerAgentState::isRegex, &isRegex);
         String url;

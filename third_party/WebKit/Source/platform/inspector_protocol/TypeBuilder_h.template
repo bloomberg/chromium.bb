@@ -113,7 +113,12 @@ struct FromValue
 {
     static PassOwnPtr<T> convert(RefPtr<JSONValue> value)
     {
-        return T::runtimeCast(JSONObject::cast(value.release()));
+        if (!value)
+            return nullptr;
+        RefPtr<JSONObject> object;
+        bool success = value->asObject(&object);
+        ASSERT_UNUSED(success, success);
+        return T::runtimeCast(object.release());
     }
 };
 
@@ -179,7 +184,9 @@ struct FromValue<protocol::Array<T>>
 {
     static PassOwnPtr<protocol::Array<T>> convert(RefPtr<JSONValue> value)
     {
-        return protocol::Array<T>::runtimeCast(JSONArray::cast(value));
+        RefPtr<JSONArray> array = value->asArray();
+        ASSERT_UNUSED(array, array);
+        return protocol::Array<T>::runtimeCast(array);
     }
 };
 
@@ -193,12 +200,12 @@ public:
         return result.release();
     }
 
-    static PassOwnPtr<Array<T>> runtimeCast(PassRefPtr<JSONValue> array)
+    static PassOwnPtr<Array<T>> runtimeCast(PassRefPtr<JSONArray> array)
     {
-        if (!array || array->type() != JSONValue::TypeArray)
+        if (!array)
             return nullptr;
         OwnPtr<Array<T>> result = adoptPtr(new Array<T>());
-        result->m_array = JSONArray::cast(array);
+        result->m_array = array;
         return result.release();
     }
 
@@ -232,12 +239,12 @@ public:
         return result.release();
     }
 
-    static PassOwnPtr<Array<T>> runtimeCast(PassRefPtr<JSONValue> array)
+    static PassOwnPtr<Array<T>> runtimeCast(PassRefPtr<JSONArray> array)
     {
-        if (!array || array->type() != JSONValue::TypeArray)
+        if (!array)
             return nullptr;
         OwnPtr<Array<T>> result = adoptPtr(new Array<T>());
-        result->m_array = JSONArray::cast(array);
+        result->m_array = array;
         return result.release();
     }
 
@@ -319,11 +326,9 @@ namespace {{domain.domain}} {
 // {{type.description}}
 class PLATFORM_EXPORT {{type.id}} {
 public:
-    static PassOwnPtr<{{type.id}}> runtimeCast(PassRefPtr<JSONValue> value)
+    static PassOwnPtr<{{type.id}}> runtimeCast(PassRefPtr<JSONObject> object)
     {
-        if (!value || value->type() != JSONValue::TypeObject)
-            return nullptr;
-        return adoptPtr(new {{type.id}}(JSONObject::cast(value)));
+        return adoptPtr(new {{type.id}}(object));
     }
 
     {{type.id}}() : m_object(JSONObject::create()) { }
