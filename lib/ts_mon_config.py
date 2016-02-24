@@ -27,4 +27,8 @@ def SetupTsMonGlobalState():
   googleapiclient.discovery.logger.setLevel(logging.WARNING)
   parser = argparse.ArgumentParser()
   config.add_argparse_options(parser)
-  config.process_argparse_options(parser.parse_args(args=[]))
+  try:
+    config.process_argparse_options(parser.parse_args(args=[]))
+  except Exception as e:
+    logging.warning('Failed to configure ts_mon, monitoring is disabled: %s', e,
+                    exc_info=True)
