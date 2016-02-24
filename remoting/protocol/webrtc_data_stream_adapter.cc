@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
@@ -134,8 +135,11 @@ void WebrtcDataStreamAdapter::Channel::OnError() {
     return;
 
   state_ = State::CLOSED;
-  if (adapter_)
-    adapter_->OnChannelError(this);
+
+  // Notify the adapter about the error asychronously.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(&WebrtcDataStreamAdapter::OnChannelError, adapter_));
 }
 
 void WebrtcDataStreamAdapter::Channel::OnMessage(
@@ -226,7 +230,7 @@ void WebrtcDataStreamAdapter::OnChannelConnected(Channel* channel) {
   pending_channel.connected_callback.Run(std::move(pending_channel.channel));
 }
 
-void WebrtcDataStreamAdapter::OnChannelError(Channel* channel) {
+void WebrtcDataStreamAdapter::OnChannelError() {
   error_callback_.Run(CHANNEL_CONNECTION_ERROR);
 }
 

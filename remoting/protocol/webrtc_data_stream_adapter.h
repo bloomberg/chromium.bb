@@ -53,7 +53,7 @@ class WebrtcDataStreamAdapter : public MessageChannelFactory {
   struct PendingChannel;
 
   void OnChannelConnected(Channel* channel);
-  void OnChannelError(Channel* channel);
+  void OnChannelError();
 
   const bool outgoing_;
   ErrorCallback error_callback_;

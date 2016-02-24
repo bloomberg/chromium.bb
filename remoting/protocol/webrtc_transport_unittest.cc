@@ -119,10 +119,12 @@ class WebrtcTransportTest : public testing::Test {
     host_event_handler_.set_connected_callback(base::Bind(&base::DoNothing));
     client_event_handler_.set_connected_callback(base::Bind(&base::DoNothing));
 
-    host_event_handler_.set_error_callback(base::Bind(
-        &WebrtcTransportTest::OnSessionError, base::Unretained(this)));
-    client_event_handler_.set_error_callback(base::Bind(
-        &WebrtcTransportTest::OnSessionError, base::Unretained(this)));
+    host_event_handler_.set_error_callback(
+        base::Bind(&WebrtcTransportTest::OnSessionError, base::Unretained(this),
+                   TransportRole::SERVER));
+    client_event_handler_.set_error_callback(
+        base::Bind(&WebrtcTransportTest::OnSessionError, base::Unretained(this),
+                   TransportRole::CLIENT));
 
     // Start both transports.
     host_transport_->Start(
@@ -150,7 +152,8 @@ class WebrtcTransportTest : public testing::Test {
     host_event_handler_.set_connected_callback(base::Closure());
     client_event_handler_.set_connected_callback(base::Closure());
 
-    EXPECT_EQ(OK, error_);
+    EXPECT_EQ(OK, client_error_);
+    EXPECT_EQ(OK, host_error_);
   }
 
   void CreateClientDataStream() {
@@ -177,8 +180,21 @@ class WebrtcTransportTest : public testing::Test {
       run_loop_->Quit();
   }
 
-  void OnSessionError(ErrorCode error) {
-    error_ = error;
+  void OnSessionError(TransportRole role, ErrorCode error) {
+    if (role == TransportRole::SERVER) {
+      host_error_ = error;
+      if (destroy_on_error_) {
+        host_message_pipe_.reset();
+        host_transport_.reset();
+      }
+    } else {
+      CHECK(role == TransportRole::CLIENT);
+      client_error_ = error;
+      if (destroy_on_error_) {
+        client_message_pipe_.reset();
+        client_transport_.reset();
+      }
+    }
     run_loop_->Quit();
   }
 
@@ -205,7 +221,10 @@ class WebrtcTransportTest : public testing::Test {
   scoped_ptr<MessagePipe> client_message_pipe_;
   scoped_ptr<MessagePipe> host_message_pipe_;
 
-  ErrorCode error_ = OK;
+  ErrorCode client_error_ = OK;
+  ErrorCode host_error_ = OK;
+
+  bool destroy_on_error_ = false;
 };
 
 TEST_F(WebrtcTransportTest, Connects) {
@@ -251,6 +270,34 @@ TEST_F(WebrtcTransportTest, DataStreamLate) {
 
   EXPECT_TRUE(client_message_pipe_);
   EXPECT_TRUE(host_message_pipe_);
+}
+
+TEST_F(WebrtcTransportTest, TerminateDataChannel) {
+  InitializeConnection();
+  StartConnection();
+  WaitUntilConnected();
+
+  CreateClientDataStream();
+  CreateHostDataStream();
+
+  run_loop_.reset(new base::RunLoop());
+  run_loop_->Run();
+
+  EXPECT_TRUE(client_message_pipe_);
+  EXPECT_TRUE(host_message_pipe_);
+
+  destroy_on_error_ = true;
+
+  // Destroy pipe on one side of the of the connection. It should get closed on
+  // the other side.
+  client_message_pipe_.reset();
+
+  run_loop_.reset(new base::RunLoop());
+  run_loop_->Run();
+
+  // Check that OnSessionError() has been called.
+  EXPECT_EQ(CHANNEL_CONNECTION_ERROR, host_error_);
+  EXPECT_FALSE(host_transport_);
 }
 
 }  // namespace protocol
