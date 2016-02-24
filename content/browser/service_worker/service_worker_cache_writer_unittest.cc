@@ -11,7 +11,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/stl_util.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -90,6 +89,8 @@ class MockServiceWorkerResponseReader : public ServiceWorkerResponseReader {
   size_t pending_buffer_len_;
   scoped_refptr<HttpResponseInfoIOBuffer> pending_info_;
   net::CompletionCallback pending_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockServiceWorkerResponseReader);
 };
 
 void MockServiceWorkerResponseReader::ReadInfo(
@@ -236,6 +237,8 @@ class MockServiceWorkerResponseWriter : public ServiceWorkerResponseWriter {
   size_t data_written_;
 
   net::CompletionCallback pending_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockServiceWorkerResponseWriter);
 };
 
 void MockServiceWorkerResponseWriter::WriteInfo(
@@ -311,14 +314,14 @@ void MockServiceWorkerResponseWriter::CompletePendingWrite() {
 
 class ServiceWorkerCacheWriterTest : public ::testing::Test {
  public:
-  ServiceWorkerCacheWriterTest()
-      : readers_deleter_(&readers_), writers_deleter_(&writers_) {}
+  ServiceWorkerCacheWriterTest() {}
+  ~ServiceWorkerCacheWriterTest() override {}
 
   MockServiceWorkerResponseReader* ExpectReader() {
     scoped_ptr<MockServiceWorkerResponseReader> reader(
         new MockServiceWorkerResponseReader);
     MockServiceWorkerResponseReader* borrowed_reader = reader.get();
-    readers_.push_back(reader.release());  // give ownership to |readers_|
+    readers_.push_back(std::move(reader));
     return borrowed_reader;
   }
 
@@ -326,7 +329,7 @@ class ServiceWorkerCacheWriterTest : public ::testing::Test {
     scoped_ptr<MockServiceWorkerResponseWriter> writer(
         new MockServiceWorkerResponseWriter);
     MockServiceWorkerResponseWriter* borrowed_writer = writer.get();
-    writers_.push_back(writer.release());  // give ownership to |writers_|
+    writers_.push_back(std::move(writer));
     return borrowed_writer;
   }
 
@@ -340,17 +343,8 @@ class ServiceWorkerCacheWriterTest : public ::testing::Test {
   }
 
  protected:
-  // TODO(ellyjones): when unique_ptr<> is allowed, make these instead:
-  //   std::list<unique_ptr<...>>
-  // Right now, these cannot use scoped_ptr.
-  // Their elements are deleted by the STLElementDeleters below when this object
-  // goes out of scope.
-  std::list<MockServiceWorkerResponseReader*> readers_;
-  std::list<MockServiceWorkerResponseWriter*> writers_;
-  STLElementDeleter<std::list<MockServiceWorkerResponseReader*>>
-      readers_deleter_;
-  STLElementDeleter<std::list<MockServiceWorkerResponseWriter*>>
-      writers_deleter_;
+  std::list<scoped_ptr<MockServiceWorkerResponseReader>> readers_;
+  std::list<scoped_ptr<MockServiceWorkerResponseWriter>> writers_;
   scoped_ptr<ServiceWorkerCacheWriter> cache_writer_;
   bool write_complete_ = false;
   net::Error last_error_;
@@ -358,14 +352,15 @@ class ServiceWorkerCacheWriterTest : public ::testing::Test {
   scoped_ptr<ServiceWorkerResponseReader> CreateReader() {
     if (readers_.empty())
       return make_scoped_ptr<ServiceWorkerResponseReader>(nullptr);
-    scoped_ptr<ServiceWorkerResponseReader> reader(readers_.front());
+    scoped_ptr<ServiceWorkerResponseReader> reader(std::move(readers_.front()));
     readers_.pop_front();
     return reader;
   }
+
   scoped_ptr<ServiceWorkerResponseWriter> CreateWriter() {
     if (writers_.empty())
       return make_scoped_ptr<ServiceWorkerResponseWriter>(nullptr);
-    scoped_ptr<ServiceWorkerResponseWriter> writer(writers_.front());
+    scoped_ptr<ServiceWorkerResponseWriter> writer(std::move(writers_.front()));
     writers_.pop_front();
     return writer;
   }
@@ -391,6 +386,9 @@ class ServiceWorkerCacheWriterTest : public ::testing::Test {
     return cache_writer_->MaybeWriteData(buf.get(), data.size(),
                                          CreateWriteCallback());
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerCacheWriterTest);
 };
 
 // Passthrough tests:
