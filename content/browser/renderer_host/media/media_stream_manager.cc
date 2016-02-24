@@ -61,17 +61,14 @@
 #include "chromeos/audio/cras_audio_handler.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "media/capture/device_monitor_mac.h"
+#endif
+
 namespace content {
 
 base::LazyInstance<base::ThreadLocalPointer<MediaStreamManager>>::Leaky
     g_media_stream_manager_tls_ptr = LAZY_INSTANCE_INITIALIZER;
-
-// Forward declaration of DeviceMonitorMac and its only useable method.
-class DeviceMonitorMac {
- public:
-  void StartMonitoring(
-    const scoped_refptr<base::SingleThreadTaskRunner>& device_task_runner);
-};
 
 namespace {
 // Creates a random label used to identify requests.

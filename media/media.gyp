@@ -512,6 +512,8 @@
         'capture/video/win/video_capture_device_mf_win.h',
         'capture/video/win/video_capture_device_win.cc',
         'capture/video/win/video_capture_device_win.h',
+        'capture/device_monitor_mac.h',
+        'capture/device_monitor_mac.mm',
         'cdm/aes_decryptor.cc',
         'cdm/aes_decryptor.h',
         'cdm/cdm_adapter.cc',

@@ -2,23 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DEVICE_MONITOR_MAC_H_
-#define CONTENT_BROWSER_DEVICE_MONITOR_MAC_H_
+#ifndef MEDIA_CAPTURE_DEVICE_MONITOR_MAC_H_
+#define MEDIA_CAPTURE_DEVICE_MONITOR_MAC_H_
 
 #include "base/macros.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/threading/thread_checker.h"
+#include "media/base/media_export.h"
 
 namespace {
 class DeviceMonitorMacImpl;
 }
 
-namespace content {
+namespace media {
 
 // Class to track audio/video devices removal or addition via callback to
 // base::SystemMonitor ProcessDevicesChanged(). A single object of this class
 // is created from the browser main process and lives as long as this one.
-class DeviceMonitorMac {
+class MEDIA_EXPORT DeviceMonitorMac {
  public:
   DeviceMonitorMac();
   ~DeviceMonitorMac();
@@ -28,7 +29,7 @@ class DeviceMonitorMac {
   // OS supports it. The |device_task_runner| argument represents the thread on
   // which device enumeration will occur.
   void StartMonitoring(
-    const scoped_refptr<base::SingleThreadTaskRunner>& device_task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& device_task_runner);
 
   // Method called by the internal DeviceMonitorMacImpl object
   // |device_monitor_impl_| when a device of type |type| has been added to or
@@ -48,4 +49,4 @@ class DeviceMonitorMac {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_DEVICE_MONITOR_MAC_H_
+#endif  // MEDIA_CAPTURE_DEVICE_MONITOR_MAC_H_

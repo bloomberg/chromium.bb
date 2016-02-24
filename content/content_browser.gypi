@@ -536,8 +536,6 @@
       # needed on all platforms.
       'browser/compositor/surface_utils.cc',
       'browser/compositor/surface_utils.h',
-      'browser/device_monitor_mac.h',
-      'browser/device_monitor_mac.mm',
       'browser/device_sensors/ambient_light_mac.cc',
       'browser/device_sensors/ambient_light_mac.h',
       'browser/device_sensors/data_fetcher_shared_memory.h',
@@ -2080,6 +2078,7 @@
         'browser/geolocation/empty_wifi_data_provider.cc',
       ],
       'dependencies': [
+        '../media/media.gyp:media',
         '../third_party/mozilla/mozilla.gyp:mozilla',
         '../third_party/sudden_motion_sensor/sudden_motion_sensor.gyp:sudden_motion_sensor',
         '../ui/accelerated_widget_mac/accelerated_widget_mac.gyp:accelerated_widget_mac',

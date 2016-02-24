@@ -37,6 +37,9 @@ class AudioManager;
 class DeviceMonitorLinux;
 #endif
 class UserInputMonitor;
+#if defined(OS_MACOSX)
+class DeviceMonitorMac;
+#endif
 namespace midi {
 class MidiManager;
 }  // namespace midi
@@ -66,8 +69,6 @@ struct MainFunctionParams;
 
 #if defined(OS_ANDROID)
 class ScreenOrientationDelegate;
-#elif defined(OS_MACOSX)
-class DeviceMonitorMac;
 #elif defined(OS_WIN)
 class SystemMessageWindowWin;
 #endif
@@ -131,7 +132,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   void StopStartupTracingTimer();
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-  DeviceMonitorMac* device_monitor_mac() const {
+  media::DeviceMonitorMac* device_monitor_mac() const {
     return device_monitor_mac_.get();
   }
 #endif
@@ -253,7 +254,7 @@ class CONTENT_EXPORT BrowserMainLoop {
 #if defined(OS_LINUX) && defined(USE_UDEV)
   scoped_ptr<media::DeviceMonitorLinux> device_monitor_linux_;
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
-  scoped_ptr<DeviceMonitorMac> device_monitor_mac_;
+  scoped_ptr<media::DeviceMonitorMac> device_monitor_mac_;
 #endif
 #if defined(USE_OZONE)
   scoped_ptr<ui::ClientNativePixmapFactory> client_native_pixmap_factory_;

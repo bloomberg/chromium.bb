@@ -115,6 +115,8 @@ component("media") {
     "capture/content/thread_safe_capture_oracle.h",
     "capture/content/video_capture_oracle.cc",
     "capture/content/video_capture_oracle.h",
+    "capture/device_monitor_mac.h",
+    "capture/device_monitor_mac.mm",
     "capture/video/android/video_capture_device_android.cc",
     "capture/video/android/video_capture_device_android.h",
     "capture/video/android/video_capture_device_factory_android.cc",

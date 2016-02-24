@@ -15,6 +15,7 @@ include_rules = [
   "+gin/v8_initializer.h",
   "+media/media_features.h",
   "+media/audio",  # For audio input for speech input feature.
+  "+media/capture",  # For Video Device monitoring in Mac.
   "+media/base",  # For Android JNI registration.
   "+media/capture",  # For Device Monitoring
   "+media/filters",  # For reporting GPU decoding UMA.
