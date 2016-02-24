@@ -783,6 +783,13 @@ PassRefPtr<JSONObject> GraphicsLayer::layerTreeAsJSON(LayerTreeFlags flags, Rend
                 compositingReasonsJSON->pushString(debug ? kCompositingReasonStringMap[i].description : kCompositingReasonStringMap[i].shortName);
         }
         json->setArray("compositingReasons", compositingReasonsJSON);
+
+        RefPtr<JSONArray> squashingDisallowedReasonsJSON = adoptRef(new JSONArray);
+        for (size_t i = 0; i < kNumberOfSquashingDisallowedReasons; ++i) {
+            if (m_debugInfo.squashingDisallowedReasons() & kSquashingDisallowedReasonStringMap[i].reason)
+                squashingDisallowedReasonsJSON->pushString(debug ? kSquashingDisallowedReasonStringMap[i].description : kSquashingDisallowedReasonStringMap[i].shortName);
+        }
+        json->setArray("squashingDisallowedReasons", squashingDisallowedReasonsJSON);
     }
 
     if (m_children.size()) {
@@ -836,6 +843,11 @@ String GraphicsLayer::debugName(cc::Layer* layer) const
 void GraphicsLayer::setCompositingReasons(CompositingReasons reasons)
 {
     m_debugInfo.setCompositingReasons(reasons);
+}
+
+void GraphicsLayer::setSquashingDisallowedReasons(SquashingDisallowedReasons reasons)
+{
+    m_debugInfo.setSquashingDisallowedReasons(reasons);
 }
 
 void GraphicsLayer::setOwnerNodeId(int nodeId)

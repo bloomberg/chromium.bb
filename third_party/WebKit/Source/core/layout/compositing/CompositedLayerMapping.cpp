@@ -209,7 +209,7 @@ CompositedLayerMapping::~CompositedLayerMapping()
     destroyGraphicsLayers();
 }
 
-PassOwnPtr<GraphicsLayer> CompositedLayerMapping::createGraphicsLayer(CompositingReasons reasons)
+PassOwnPtr<GraphicsLayer> CompositedLayerMapping::createGraphicsLayer(CompositingReasons reasons, SquashingDisallowedReasons squashingDisallowedReasons)
 {
     GraphicsLayerFactory* graphicsLayerFactory = nullptr;
     if (Page* page = layoutObject()->frame()->page())
@@ -218,6 +218,7 @@ PassOwnPtr<GraphicsLayer> CompositedLayerMapping::createGraphicsLayer(Compositin
     OwnPtr<GraphicsLayer> graphicsLayer = GraphicsLayer::create(graphicsLayerFactory, this);
 
     graphicsLayer->setCompositingReasons(reasons);
+    graphicsLayer->setSquashingDisallowedReasons(squashingDisallowedReasons);
     if (Node* owningNode = m_owningLayer.layoutObject()->generatingNode())
         graphicsLayer->setOwnerNodeId(DOMNodeIds::idForNode(owningNode));
 
@@ -226,7 +227,7 @@ PassOwnPtr<GraphicsLayer> CompositedLayerMapping::createGraphicsLayer(Compositin
 
 void CompositedLayerMapping::createPrimaryGraphicsLayer()
 {
-    m_graphicsLayer = createGraphicsLayer(m_owningLayer.compositingReasons());
+    m_graphicsLayer = createGraphicsLayer(m_owningLayer.compositingReasons(), m_owningLayer.squashingDisallowedReasons());
 
     updateOpacity(layoutObject()->styleRef());
     updateTransform(layoutObject()->styleRef());
@@ -346,6 +347,7 @@ void CompositedLayerMapping::updateCompositingReasons()
     // All other layers owned by this mapping will have the same compositing reason
     // for their lifetime, so they are initialized only when created.
     m_graphicsLayer->setCompositingReasons(m_owningLayer.compositingReasons());
+    m_graphicsLayer->setSquashingDisallowedReasons(m_owningLayer.squashingDisallowedReasons());
 }
 
 bool CompositedLayerMapping::owningLayerClippedByLayerNotAboveCompositedAncestor(const PaintLayer* scrollParent)

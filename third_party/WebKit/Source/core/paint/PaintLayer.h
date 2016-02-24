@@ -57,6 +57,7 @@
 #include "core/paint/PaintLayerStackingNode.h"
 #include "core/paint/PaintLayerStackingNodeIterator.h"
 #include "platform/graphics/CompositingReasons.h"
+#include "platform/graphics/SquashingDisallowedReasons.h"
 #include "public/platform/WebBlendMode.h"
 #include "wtf/Allocator.h"
 #include "wtf/OwnPtr.h"
@@ -116,6 +117,10 @@ struct PaintLayerRareData {
 
     // Once computed, indicates all that a layer needs to become composited using the CompositingReasons enum bitfield.
     CompositingReasons compositingReasons;
+
+    // This captures reasons why a paint layer might be forced to be separately
+    // composited rather than sharing a backing with another layer.
+    SquashingDisallowedReasons squashingDisallowedReasons;
 
     // If the layer paints into its own backings, this keeps track of the backings.
     // It's nullptr if the layer is not composited or paints into grouped backing.
@@ -589,6 +594,9 @@ public:
 
     CompositingReasons compositingReasons() const { ASSERT(isAllowedToQueryCompositingState()); return m_rareData ? m_rareData->compositingReasons : CompositingReasonNone; }
     void setCompositingReasons(CompositingReasons, CompositingReasons mask = CompositingReasonAll);
+
+    SquashingDisallowedReasons squashingDisallowedReasons() const { ASSERT(isAllowedToQueryCompositingState()); return m_rareData ? m_rareData->squashingDisallowedReasons : SquashingDisallowedReasonsNone; }
+    void setSquashingDisallowedReasons(SquashingDisallowedReasons);
 
     bool hasCompositingDescendant() const { ASSERT(isAllowedToQueryCompositingState()); return m_hasCompositingDescendant; }
     void setHasCompositingDescendant(bool);

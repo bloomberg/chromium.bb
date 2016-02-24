@@ -35,6 +35,7 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/CompositingReasons.h"
 #include "platform/graphics/PaintInvalidationReason.h"
+#include "platform/graphics/SquashingDisallowedReasons.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"
@@ -58,6 +59,9 @@ public:
 
     CompositingReasons compositingReasons() const { return m_compositingReasons; }
     void setCompositingReasons(CompositingReasons reasons) { m_compositingReasons = reasons; }
+
+    SquashingDisallowedReasons squashingDisallowedReasons() const { return m_squashingDisallowedReasons; }
+    void setSquashingDisallowedReasons(SquashingDisallowedReasons reasons) { m_squashingDisallowedReasons = reasons; }
     void setOwnerNodeId(int id) { m_ownerNodeId = id; }
 
     void appendAnnotatedInvalidateRect(const FloatRect&, PaintInvalidationReason);
@@ -66,6 +70,7 @@ public:
 private:
     void appendAnnotatedInvalidateRects(base::trace_event::TracedValue*) const;
     void appendCompositingReasons(base::trace_event::TracedValue*) const;
+    void appendSquashingDisallowedReasons(base::trace_event::TracedValue*) const;
     void appendOwnerNodeId(base::trace_event::TracedValue*) const;
 
     struct AnnotatedInvalidationRect {
@@ -75,6 +80,7 @@ private:
     };
 
     CompositingReasons m_compositingReasons;
+    SquashingDisallowedReasons m_squashingDisallowedReasons;
     int m_ownerNodeId;
     Vector<AnnotatedInvalidationRect> m_invalidations;
     Vector<AnnotatedInvalidationRect> m_previousInvalidations;

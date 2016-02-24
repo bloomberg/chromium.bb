@@ -124,6 +124,7 @@ PaintLayerRareData::PaintLayerRareData()
     : enclosingPaginationLayer(nullptr)
     , potentialCompositingReasonsFromStyle(CompositingReasonNone)
     , compositingReasons(CompositingReasonNone)
+    , squashingDisallowedReasons(SquashingDisallowedReasonsNone)
     , groupedMapping(nullptr)
 {
 }
@@ -1030,6 +1031,15 @@ void PaintLayer::setCompositingReasons(CompositingReasons reasons, CompositingRe
     CompositingReasons newReasons = (reasons & mask) | (oldReasons & ~mask);
     if (m_rareData || newReasons != CompositingReasonNone)
         ensureRareData().compositingReasons = newReasons;
+}
+
+void PaintLayer::setSquashingDisallowedReasons(SquashingDisallowedReasons reasons)
+{
+    SquashingDisallowedReasons oldReasons = m_rareData ? m_rareData->squashingDisallowedReasons : SquashingDisallowedReasonsNone;
+    if (oldReasons == reasons)
+        return;
+    if (m_rareData || reasons != SquashingDisallowedReasonsNone)
+        ensureRareData().squashingDisallowedReasons = reasons;
 }
 
 void PaintLayer::setHasCompositingDescendant(bool hasCompositingDescendant)

@@ -240,7 +240,7 @@ private:
     void createPrimaryGraphicsLayer();
     void destroyGraphicsLayers();
 
-    PassOwnPtr<GraphicsLayer> createGraphicsLayer(CompositingReasons);
+    PassOwnPtr<GraphicsLayer> createGraphicsLayer(CompositingReasons, SquashingDisallowedReasons = SquashingDisallowedReasonsNone);
     bool toggleScrollbarLayerIfNeeded(OwnPtr<GraphicsLayer>&, bool needsLayer, CompositingReasons);
 
     LayoutBoxModelObject* layoutObject() const { return m_owningLayer.layoutObject(); }

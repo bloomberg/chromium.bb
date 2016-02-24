@@ -30,6 +30,7 @@
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutPoint.h"
+#include "platform/graphics/SquashingDisallowedReasons.h"
 #include "wtf/Allocator.h"
 
 namespace blink {
@@ -84,7 +85,7 @@ private:
 
     void assignLayersToBackingsInternal(PaintLayer*, SquashingState&, Vector<PaintLayer*>& layersNeedingPaintInvalidation);
     void assignLayersToBackingsForReflectionLayer(PaintLayer* reflectionLayer, Vector<PaintLayer*>& layersNeedingPaintInvalidation);
-    CompositingReasons getReasonsPreventingSquashing(const PaintLayer*, const SquashingState&);
+    SquashingDisallowedReasons getReasonsPreventingSquashing(const PaintLayer*, const SquashingState&);
     bool squashingWouldExceedSparsityTolerance(const PaintLayer* candidate, const SquashingState&);
     void updateSquashingAssignment(PaintLayer*, SquashingState&, CompositingStateTransitionType, Vector<PaintLayer*>& layersNeedingPaintInvalidation);
     bool needsOwnBacking(const PaintLayer*) const;

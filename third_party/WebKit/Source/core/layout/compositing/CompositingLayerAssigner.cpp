@@ -112,10 +112,10 @@ CompositingStateTransitionType CompositingLayerAssigner::computeCompositedLayerU
     return update;
 }
 
-CompositingReasons CompositingLayerAssigner::getReasonsPreventingSquashing(const PaintLayer* layer, const CompositingLayerAssigner::SquashingState& squashingState)
+SquashingDisallowedReasons CompositingLayerAssigner::getReasonsPreventingSquashing(const PaintLayer* layer, const CompositingLayerAssigner::SquashingState& squashingState)
 {
     if (!squashingState.haveAssignedBackingsToEntireSquashingLayerSubtree)
-        return CompositingReasonSquashingWouldBreakPaintOrder;
+        return SquashingDisallowedReasonWouldBreakPaintOrder;
 
     ASSERT(squashingState.hasMostRecentMapping);
     const PaintLayer& squashingLayer = squashingState.mostRecentMapping->owningLayer();
@@ -128,55 +128,55 @@ CompositingReasons CompositingLayerAssigner::getReasonsPreventingSquashing(const
     //
     // compositing/video/video-controls-layer-creation.html
     if (layer->layoutObject()->isVideo() || squashingLayer.layoutObject()->isVideo())
-        return CompositingReasonSquashingVideoIsDisallowed;
+        return SquashingDisallowedReasonSquashingVideoIsDisallowed;
 
     // Don't squash iframes, frames or plugins.
     // FIXME: this is only necessary because there is frame code that assumes that composited frames are not squashed.
     if (layer->layoutObject()->isLayoutPart() || squashingLayer.layoutObject()->isLayoutPart())
-        return CompositingReasonSquashingLayoutPartIsDisallowed;
+        return SquashingDisallowedReasonSquashingLayoutPartIsDisallowed;
 
     if (layer->reflectionInfo())
-        return CompositingReasonSquashingReflectionIsDisallowed;
+        return SquashingDisallowedReasonSquashingReflectionIsDisallowed;
 
     if (squashingWouldExceedSparsityTolerance(layer, squashingState))
-        return CompositingReasonSquashingSparsityExceeded;
+        return SquashingDisallowedReasonSquashingSparsityExceeded;
 
     if (layer->layoutObject()->style()->hasBlendMode() || squashingLayer.layoutObject()->style()->hasBlendMode())
-        return CompositingReasonSquashingBlendingIsDisallowed;
+        return SquashingDisallowedReasonSquashingBlendingIsDisallowed;
 
     // FIXME: this is not efficient, since it walks up the tree. We should store these values on the CompositingInputsCache.
     if (layer->clippingContainer() != squashingLayer.clippingContainer() && !squashingLayer.compositedLayerMapping()->containingSquashedLayer(layer->clippingContainer(), squashingState.nextSquashedLayerIndex))
-        return CompositingReasonSquashingClippingContainerMismatch;
+        return SquashingDisallowedReasonClippingContainerMismatch;
 
     // Composited descendants need to be clipped by a child containment graphics layer, which would not be available if the layer is
     // squashed (and therefore has no CLM nor a child containment graphics layer).
     if (m_compositor->clipsCompositingDescendants(layer))
-        return CompositingReasonSquashedLayerClipsCompositingDescendants;
+        return SquashingDisallowedReasonSquashedLayerClipsCompositingDescendants;
 
     if (layer->scrollsWithRespectTo(&squashingLayer))
-        return CompositingReasonScrollsWithRespectToSquashingLayer;
+        return SquashingDisallowedReasonScrollsWithRespectToSquashingLayer;
 
     if (layer->scrollParent() && layer->hasCompositingDescendant())
-        return CompositingReasonScrollChildWithCompositedDescendants;
+        return SquashingDisallowedReasonScrollChildWithCompositedDescendants;
 
     if (layer->opacityAncestor() != squashingLayer.opacityAncestor())
-        return CompositingReasonSquashingOpacityAncestorMismatch;
+        return SquashingDisallowedReasonOpacityAncestorMismatch;
 
     if (layer->transformAncestor() != squashingLayer.transformAncestor())
-        return CompositingReasonSquashingTransformAncestorMismatch;
+        return SquashingDisallowedReasonTransformAncestorMismatch;
 
     if (layer->hasFilter() || layer->filterAncestor() != squashingLayer.filterAncestor())
-        return CompositingReasonSquashingFilterMismatch;
+        return SquashingDisallowedReasonFilterMismatch;
 
     if (layer->nearestFixedPositionLayer() != squashingLayer.nearestFixedPositionLayer())
-        return CompositingReasonSquashingNearestFixedPositionMismatch;
+        return SquashingDisallowedReasonNearestFixedPositionMismatch;
     ASSERT(layer->layoutObject()->style()->position() != FixedPosition);
 
     if ((squashingLayer.layoutObject()->style()->subtreeWillChangeContents() && squashingLayer.layoutObject()->style()->isRunningAnimationOnCompositor())
         || squashingLayer.layoutObject()->style()->shouldCompositeForCurrentAnimations())
-        return CompositingReasonSquashingLayerIsAnimating;
+        return SquashingDisallowedReasonSquashingLayerIsAnimating;
 
-    return CompositingReasonNone;
+    return SquashingDisallowedReasonsNone;
 }
 
 void CompositingLayerAssigner::updateSquashingAssignment(PaintLayer* layer, SquashingState& squashingState, const CompositingStateTransitionType compositedLayerUpdate,
@@ -248,9 +248,11 @@ static ScrollingCoordinator* scrollingCoordinatorFromLayer(PaintLayer& layer)
 void CompositingLayerAssigner::assignLayersToBackingsInternal(PaintLayer* layer, SquashingState& squashingState, Vector<PaintLayer*>& layersNeedingPaintInvalidation)
 {
     if (requiresSquashing(layer->compositingReasons())) {
-        CompositingReasons reasonsPreventingSquashing = getReasonsPreventingSquashing(layer, squashingState);
-        if (reasonsPreventingSquashing)
-            layer->setCompositingReasons(layer->compositingReasons() | reasonsPreventingSquashing);
+        SquashingDisallowedReasons reasonsPreventingSquashing = getReasonsPreventingSquashing(layer, squashingState);
+        if (reasonsPreventingSquashing) {
+            layer->setCompositingReasons(layer->compositingReasons() | CompositingReasonSquashingDisallowed);
+            layer->setSquashingDisallowedReasons(reasonsPreventingSquashing);
+        }
     }
 
     CompositingStateTransitionType compositedLayerUpdate = computeCompositedLayerUpdate(layer);
