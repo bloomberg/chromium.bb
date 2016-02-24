@@ -43,7 +43,7 @@
           </div>
 <if expr="not chromeos">
           <template is="dom-if" if="[[!syncStatus.signedIn]]">
-            <paper-button class="primary-button" on-tap="onSigninTap_" raised
+            <paper-button class="secondary-button" on-tap="onSigninTap_"
                 disabled="[[syncStatus.setupInProgress]]">
                 [[i18n('syncSignin')]]
             </paper-button>
@@ -74,7 +74,7 @@
         <template is="dom-if"
             if="[[isAdvancedSyncSettingsVisible_(syncStatus)]]">
           <div class="settings-box">
-            <paper-button on-tap="onSyncTap_" raised>
+            <paper-button on-tap="onSyncTap_" class="primary-button">
               [[i18n('syncPageTitle')]]
             </paper-button>
           </div>
@@ -89,7 +89,7 @@
 </if>
 
         <div class="settings-box">
-          <paper-button class="link-button" i18n-content="manageOtherPeople"
+          <paper-button class="primary-button" i18n-content="manageOtherPeople"
               on-tap="onManageOtherPeople_">
           </paper-button>
         </div>
