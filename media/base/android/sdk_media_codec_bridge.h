@@ -162,10 +162,12 @@ class MEDIA_EXPORT VideoCodecBridge : public SdkMediaCodecBridge {
   // Create, start, and return a VideoCodecBridge decoder or NULL on failure.
   static VideoCodecBridge* CreateDecoder(
       const VideoCodec& codec,  // e.g. media::kCodecVP8
-      bool is_secure,
-      const gfx::Size& size,  // Output frame size.
-      jobject surface,        // Output surface, optional.
-      jobject media_crypto);  // MediaCrypto object, optional.
+      bool is_secure,           // Will be used with encrypted content.
+      const gfx::Size& size,    // Output frame size.
+      jobject surface,          // Output surface, optional.
+      jobject media_crypto,     // MediaCrypto object, optional.
+      bool allow_adaptive_playback =
+          true);  // Should adaptive playback be allowed if supported.
 
   // Create, start, and return a VideoCodecBridge encoder or NULL on failure.
   static VideoCodecBridge* CreateEncoder(

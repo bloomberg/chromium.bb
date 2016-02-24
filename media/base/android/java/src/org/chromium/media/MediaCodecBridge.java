@@ -410,9 +410,9 @@ class MediaCodecBridge {
 
     @CalledByNative
     private boolean configureVideo(MediaFormat format, Surface surface, MediaCrypto crypto,
-            int flags) {
+            int flags, boolean allowAdaptivePlayback) {
         try {
-            if (mAdaptivePlaybackSupported) {
+            if (mAdaptivePlaybackSupported && allowAdaptivePlayback) {
                 format.setInteger(MediaFormat.KEY_MAX_WIDTH, MAX_ADAPTIVE_PLAYBACK_WIDTH);
                 format.setInteger(MediaFormat.KEY_MAX_HEIGHT, MAX_ADAPTIVE_PLAYBACK_HEIGHT);
             }

@@ -560,11 +560,13 @@ bool VideoCodecBridge::IsKnownUnaccelerated(const VideoCodec& codec,
 }
 
 // static
-VideoCodecBridge* VideoCodecBridge::CreateDecoder(const VideoCodec& codec,
-                                                  bool is_secure,
-                                                  const gfx::Size& size,
-                                                  jobject surface,
-                                                  jobject media_crypto) {
+VideoCodecBridge* VideoCodecBridge::CreateDecoder(
+    const VideoCodec& codec,
+    bool is_secure,
+    const gfx::Size& size,
+    jobject surface,
+    jobject media_crypto,
+    bool allow_adaptive_playback) {
   if (!MediaCodecUtil::IsMediaCodecAvailable())
     return nullptr;
 
@@ -583,9 +585,9 @@ VideoCodecBridge* VideoCodecBridge::CreateDecoder(const VideoCodec& codec,
       Java_MediaCodecBridge_createVideoDecoderFormat(
           env, j_mime.obj(), size.width(), size.height()));
   DCHECK(!j_format.is_null());
-  if (!Java_MediaCodecBridge_configureVideo(env, bridge->media_codec(),
-                                            j_format.obj(), surface,
-                                            media_crypto, 0)) {
+  if (!Java_MediaCodecBridge_configureVideo(
+          env, bridge->media_codec(), j_format.obj(), surface, media_crypto, 0,
+          allow_adaptive_playback)) {
     return nullptr;
   }
 
@@ -620,7 +622,7 @@ VideoCodecBridge* VideoCodecBridge::CreateEncoder(const VideoCodec& codec,
   DCHECK(!j_format.is_null());
   if (!Java_MediaCodecBridge_configureVideo(env, bridge->media_codec(),
                                             j_format.obj(), nullptr, nullptr,
-                                            kConfigureFlagEncode)) {
+                                            kConfigureFlagEncode, true)) {
     return nullptr;
   }
 

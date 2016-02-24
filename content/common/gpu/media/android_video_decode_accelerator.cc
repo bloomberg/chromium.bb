@@ -809,7 +809,7 @@ bool AndroidVideoDecodeAccelerator::ConfigureMediaCodec() {
   // when it's known from the bitstream.
   media_codec_.reset(media::VideoCodecBridge::CreateDecoder(
       codec_, needs_protected_surface_, gfx::Size(320, 240),
-      surface_.j_surface().obj(), media_crypto));
+      surface_.j_surface().obj(), media_crypto, false));
 
   strategy_->CodecChanged(media_codec_.get(), output_picture_buffers_);
   if (!media_codec_) {
