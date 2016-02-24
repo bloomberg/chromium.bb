@@ -62,18 +62,19 @@ const char kResultHistogram[] = "UMA.CreatePersistentHistogram.Result";
 // so that, if the structure of that object changes, stored older versions
 // will be safely ignored.
 enum : uint32_t {
-  kTypeIdHistogram   = 0xF1645910 + 1,  // SHA1(Histogram) v1
+  kTypeIdHistogram   = 0xF1645910 + 2,  // SHA1(Histogram) v2
   kTypeIdRangesArray = 0xBCEA225A + 1,  // SHA1(RangesArray) v1
   kTypeIdCountsArray = 0x53215530 + 1,  // SHA1(CountsArray) v1
 };
 
 // This data must be held in persistent memory in order for processes to
-// locate and use histograms created elsewhere.
+// locate and use histograms created elsewhere. All elements must be of a
+// fixed width to ensure 32/64-bit interoperability.
 struct PersistentHistogramData {
-  int histogram_type;
-  int flags;
-  int minimum;
-  int maximum;
+  int32_t histogram_type;
+  int32_t flags;
+  int32_t minimum;
+  int32_t maximum;
   uint32_t bucket_count;
   PersistentMemoryAllocator::Reference ranges_ref;
   uint32_t ranges_checksum;
