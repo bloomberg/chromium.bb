@@ -110,6 +110,11 @@ class Error(Exception):
   pass
 
 
+class IsolatedErrorNoCommand(isolated_format.IsolatedError):
+  """Signals an early abort due to lack of command specified."""
+  pass
+
+
 class Aborted(Error):
   """Operation aborted."""
   pass
@@ -1829,7 +1834,7 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, require_command):
       if require_command and not bundle.command:
         # TODO(vadimsh): All fetch operations are already enqueue and there's no
         # easy way to cancel them.
-        raise isolated_format.IsolatedError('No command to run')
+        raise IsolatedErrorNoCommand()
 
     with tools.Profiler('GetRest'):
       # Create file system hierarchy.
