@@ -61,7 +61,7 @@ private:
 class CORE_EXPORT AnimatableColor final : public AnimatableValue {
 public:
     static PassRefPtr<AnimatableColor> create(const AnimatableColorImpl&, const AnimatableColorImpl& visitedLinkColor);
-    Color color() const { return m_color.toColor(); }
+    Color getColor() const { return m_color.toColor(); }
     Color visitedLinkColor() const { return m_visitedLinkColor.toColor(); }
 
 protected:

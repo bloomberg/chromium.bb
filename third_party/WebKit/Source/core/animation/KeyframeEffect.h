@@ -69,7 +69,7 @@ public:
     const EffectModel* model() const { return m_model.get(); }
     EffectModel* model() { return m_model.get(); }
     void setModel(EffectModel* model) { m_model = model; }
-    Priority priority() const { return m_priority; }
+    Priority getPriority() const { return m_priority; }
     Element* target() const { return m_target; }
 
     void notifySampledEffectRemovedFromAnimationStack();

@@ -293,7 +293,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     ComputedStyle* style = state.style();
     switch (property) {
     case CSSPropertyBackgroundColor:
-        style->setBackgroundColor(toAnimatableColor(value)->color());
+        style->setBackgroundColor(toAnimatableColor(value)->getColor());
         style->setVisitedLinkBackgroundColor(toAnimatableColor(value)->visitedLinkColor());
         return;
     case CSSPropertyBackgroundImage:
@@ -313,7 +313,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->accessSVGStyle().setBaselineShiftValue(animatableValueToLength(value, state));
         return;
     case CSSPropertyBorderBottomColor:
-        style->setBorderBottomColor(toAnimatableColor(value)->color());
+        style->setBorderBottomColor(toAnimatableColor(value)->getColor());
         style->setVisitedLinkBorderBottomColor(toAnimatableColor(value)->visitedLinkColor());
         return;
     case CSSPropertyBorderBottomLeftRadius:
@@ -339,21 +339,21 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setBorderImageWidth(animatableValueToBorderImageLengthBox(value, state));
         return;
     case CSSPropertyBorderLeftColor:
-        style->setBorderLeftColor(toAnimatableColor(value)->color());
+        style->setBorderLeftColor(toAnimatableColor(value)->getColor());
         style->setVisitedLinkBorderLeftColor(toAnimatableColor(value)->visitedLinkColor());
         return;
     case CSSPropertyBorderLeftWidth:
         style->setBorderLeftWidth(animatableLineWidthClamp<unsigned>(value));
         return;
     case CSSPropertyBorderRightColor:
-        style->setBorderRightColor(toAnimatableColor(value)->color());
+        style->setBorderRightColor(toAnimatableColor(value)->getColor());
         style->setVisitedLinkBorderRightColor(toAnimatableColor(value)->visitedLinkColor());
         return;
     case CSSPropertyBorderRightWidth:
         style->setBorderRightWidth(animatableLineWidthClamp<unsigned>(value));
         return;
     case CSSPropertyBorderTopColor:
-        style->setBorderTopColor(toAnimatableColor(value)->color());
+        style->setBorderTopColor(toAnimatableColor(value)->getColor());
         style->setVisitedLinkBorderTopColor(toAnimatableColor(value)->visitedLinkColor());
         return;
     case CSSPropertyBorderTopLeftRadius:
@@ -375,7 +375,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setClip(animatableValueToLengthBox(value, state));
         return;
     case CSSPropertyColor:
-        style->setColor(toAnimatableColor(value)->color());
+        style->setColor(toAnimatableColor(value)->getColor());
         style->setVisitedLinkColor(toAnimatableColor(value)->visitedLinkColor());
         return;
     case CSSPropertyFillOpacity:
@@ -384,7 +384,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyFill:
         {
             const AnimatableSVGPaint* svgPaint = toAnimatableSVGPaint(value);
-            style->accessSVGStyle().setFillPaint(svgPaint->paintType(), svgPaint->color(), svgPaint->uri(), true, false);
+            style->accessSVGStyle().setFillPaint(svgPaint->paintType(), svgPaint->getColor(), svgPaint->uri(), true, false);
             style->accessSVGStyle().setFillPaint(svgPaint->visitedLinkPaintType(), svgPaint->visitedLinkColor(), svgPaint->visitedLinkURI(), false, true);
         }
         return;
@@ -398,7 +398,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setFlexBasis(animatableValueToLength(value, state, ValueRangeNonNegative));
         return;
     case CSSPropertyFloodColor:
-        style->setFloodColor(toAnimatableColor(value)->color());
+        style->setFloodColor(toAnimatableColor(value)->getColor());
         return;
     case CSSPropertyFloodOpacity:
         style->setFloodOpacity(clampTo<float>(toAnimatableDouble(value)->toDouble(), 0, 1));
@@ -422,7 +422,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setLeft(animatableValueToLength(value, state));
         return;
     case CSSPropertyLightingColor:
-        style->setLightingColor(toAnimatableColor(value)->color());
+        style->setLightingColor(toAnimatableColor(value)->getColor());
         return;
     case CSSPropertyLineHeight:
         if (value->isLength())
@@ -471,7 +471,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setOrphans(clampTo<short>(round(toAnimatableDouble(value)->toDouble()), 1));
         return;
     case CSSPropertyOutlineColor:
-        style->setOutlineColor(toAnimatableColor(value)->color());
+        style->setOutlineColor(toAnimatableColor(value)->getColor());
         style->setVisitedLinkOutlineColor(toAnimatableColor(value)->visitedLinkColor());
         return;
     case CSSPropertyOutlineOffset:
@@ -499,7 +499,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setStrokeWidth(animatableValueToUnzoomedLength(value, state, ValueRangeNonNegative));
         return;
     case CSSPropertyStopColor:
-        style->setStopColor(toAnimatableColor(value)->color());
+        style->setStopColor(toAnimatableColor(value)->getColor());
         return;
     case CSSPropertyStopOpacity:
         style->setStopOpacity(clampTo<float>(toAnimatableDouble(value)->toDouble(), 0, 1));
@@ -519,12 +519,12 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyStroke:
         {
             const AnimatableSVGPaint* svgPaint = toAnimatableSVGPaint(value);
-            style->accessSVGStyle().setStrokePaint(svgPaint->paintType(), svgPaint->color(), svgPaint->uri(), true, false);
+            style->accessSVGStyle().setStrokePaint(svgPaint->paintType(), svgPaint->getColor(), svgPaint->uri(), true, false);
             style->accessSVGStyle().setStrokePaint(svgPaint->visitedLinkPaintType(), svgPaint->visitedLinkColor(), svgPaint->visitedLinkURI(), false, true);
         }
         return;
     case CSSPropertyTextDecorationColor:
-        style->setTextDecorationColor(toAnimatableColor(value)->color());
+        style->setTextDecorationColor(toAnimatableColor(value)->getColor());
         style->setVisitedLinkTextDecorationColor(toAnimatableColor(value)->visitedLinkColor());
         return;
     case CSSPropertyTextIndent:
@@ -552,7 +552,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setColumnGap(clampTo(toAnimatableDouble(value)->toDouble(), 0));
         return;
     case CSSPropertyColumnRuleColor:
-        style->setColumnRuleColor(toAnimatableColor(value)->color());
+        style->setColumnRuleColor(toAnimatableColor(value)->getColor());
         style->setVisitedLinkColumnRuleColor(toAnimatableColor(value)->visitedLinkColor());
         return;
     case CSSPropertyColumnWidth:
@@ -608,7 +608,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setShapeImageThreshold(clampTo<float>(toAnimatableDouble(value)->toDouble(), 0, 1));
         return;
     case CSSPropertyWebkitTextStrokeColor:
-        style->setTextStrokeColor(toAnimatableColor(value)->color());
+        style->setTextStrokeColor(toAnimatableColor(value)->getColor());
         style->setVisitedLinkTextStrokeColor(toAnimatableColor(value)->visitedLinkColor());
         return;
     case CSSPropertyTransform: {

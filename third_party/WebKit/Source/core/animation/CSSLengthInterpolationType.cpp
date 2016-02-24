@@ -29,7 +29,7 @@ public:
     }
     static bool hasPercentage(const NonInterpolableValue* nonInterpolableValue)
     {
-        ASSERT(!nonInterpolableValue || nonInterpolableValue->type() == CSSLengthNonInterpolableValue::staticType);
+        ASSERT(!nonInterpolableValue || nonInterpolableValue->getType() == CSSLengthNonInterpolableValue::staticType);
         return static_cast<bool>(nonInterpolableValue);
     }
 

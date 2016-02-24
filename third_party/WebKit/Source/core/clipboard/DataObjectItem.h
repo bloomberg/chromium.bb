@@ -44,7 +44,7 @@ class Blob;
 
 class CORE_EXPORT DataObjectItem : public GarbageCollectedFinalized<DataObjectItem> {
 public:
-    enum Kind {
+    enum ItemKind {
         StringKind,
         FileKind
     };
@@ -56,7 +56,7 @@ public:
     static DataObjectItem* createFromSharedBuffer(const String& filename, PassRefPtr<SharedBuffer>);
     static DataObjectItem* createFromPasteboard(const String& type, uint64_t sequenceNumber);
 
-    Kind kind() const { return m_kind; }
+    ItemKind kind() const { return m_kind; }
     String type() const { return m_type; }
     String getAsString() const;
     Blob* getAsFile() const;
@@ -75,11 +75,11 @@ private:
         InternalSource,
     };
 
-    DataObjectItem(Kind, const String& type);
-    DataObjectItem(Kind, const String& type, uint64_t sequenceNumber);
+    DataObjectItem(ItemKind, const String& type);
+    DataObjectItem(ItemKind, const String& type, uint64_t sequenceNumber);
 
     DataSource m_source;
-    Kind m_kind;
+    ItemKind m_kind;
     String m_type;
 
     String m_data;

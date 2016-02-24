@@ -871,7 +871,7 @@ void InspectorCSSAgent::getMatchedStylesForNode(ErrorString* errorString, int no
     }
 
     Element* originalElement = element;
-    PseudoId elementPseudoId = element->pseudoId();
+    PseudoId elementPseudoId = element->getPseudoId();
     if (elementPseudoId) {
         element = element->parentOrShadowHostElement();
         if (!element) {
@@ -1777,7 +1777,7 @@ PassOwnPtr<protocol::Array<protocol::CSS::RuleMatch>> InspectorCSSAgent::buildAr
         OwnPtr<protocol::Array<int>> matchingSelectors = protocol::Array<int>::create();
         const CSSSelectorList& selectorList = rule->styleRule()->selectorList();
         long index = 0;
-        PseudoId elementPseudoId = matchesForPseudoId ? matchesForPseudoId : element->pseudoId();
+        PseudoId elementPseudoId = matchesForPseudoId ? matchesForPseudoId : element->getPseudoId();
         for (const CSSSelector* selector = selectorList.first(); selector; selector = CSSSelectorList::next(*selector)) {
             const CSSSelector* firstTagHistorySelector = selector;
             bool matched = false;
@@ -1885,7 +1885,7 @@ void InspectorCSSAgent::resetPseudoStates()
 
 WillBeHeapVector<RefPtrWillBeMember<CSSStyleDeclaration>> InspectorCSSAgent::matchingStyles(Element* element)
 {
-    PseudoId pseudoId = element->pseudoId();
+    PseudoId pseudoId = element->getPseudoId();
     if (pseudoId)
         element = element->parentElement();
     StyleResolver& styleResolver = element->ownerDocument()->ensureStyleResolver();
@@ -2021,7 +2021,7 @@ void InspectorCSSAgent::setEffectivePropertyValueForNode(ErrorString* errorStrin
 {
     // TODO: move testing from CSSAgent to layout editor.
     Element* element = elementForId(errorString, nodeId);
-    if (!element || element->pseudoId())
+    if (!element || element->getPseudoId())
         return;
 
     CSSPropertyID property = cssPropertyID(propertyName);

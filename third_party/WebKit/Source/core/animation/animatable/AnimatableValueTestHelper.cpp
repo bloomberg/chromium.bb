@@ -46,7 +46,7 @@ void PrintTo(const AnimatableClipPathOperation& animValue, ::std::ostream* os)
 void PrintTo(const AnimatableColor& animColor, ::std::ostream* os)
 {
     *os << "AnimatableColor("
-        << animColor.color().serialized().utf8().data() << ", "
+        << animColor.getColor().serialized().utf8().data() << ", "
         << animColor.visitedLinkColor().serialized().utf8().data() << ")";
 }
 

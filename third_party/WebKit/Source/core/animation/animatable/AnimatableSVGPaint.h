@@ -56,7 +56,7 @@ public:
     }
     SVGPaintType paintType() const { return m_type; }
     SVGPaintType visitedLinkPaintType() const { return m_visitedLinkType; }
-    Color color() const { return m_color->color(); }
+    Color getColor() const { return m_color->getColor(); }
     Color visitedLinkColor() const { return m_color->visitedLinkColor(); }
     const String& uri() const { return m_uri; }
     const String& visitedLinkURI() const { return m_visitedLinkURI; }

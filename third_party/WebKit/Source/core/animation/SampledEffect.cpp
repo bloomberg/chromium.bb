@@ -9,7 +9,7 @@ namespace blink {
 SampledEffect::SampledEffect(KeyframeEffect* effect)
     : m_effect(effect)
     , m_sequenceNumber(effect->animation()->sequenceNumber())
-    , m_priority(effect->priority())
+    , m_priority(effect->getPriority())
 {
 }
 

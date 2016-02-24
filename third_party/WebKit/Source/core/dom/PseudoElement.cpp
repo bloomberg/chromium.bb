@@ -177,7 +177,7 @@ Node* PseudoElement::findAssociatedNode() const
     // The ::backdrop element is parented to the LayoutView, not to the node
     // that it's associated with. We need to make sure ::backdrop sends the
     // events to the parent node correctly.
-    if (pseudoId() == BACKDROP)
+    if (getPseudoId() == BACKDROP)
         return parentOrShadowHostNode();
 
     ASSERT(layoutObject());

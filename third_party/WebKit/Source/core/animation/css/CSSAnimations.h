@@ -183,7 +183,7 @@ private:
     private:
         const Element& transitionTarget() const { return *m_transitionTarget; }
         EventTarget* eventTarget() const;
-        PseudoId pseudoId() const { return m_transitionTarget->pseudoId(); }
+        PseudoId getPseudoId() const { return m_transitionTarget->getPseudoId(); }
         Document& document() const { return m_transitionTarget->document(); }
 
         RawPtrWillBeMember<Element> m_transitionTarget;

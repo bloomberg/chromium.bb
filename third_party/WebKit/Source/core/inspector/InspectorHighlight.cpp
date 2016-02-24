@@ -189,9 +189,9 @@ PassRefPtr<JSONObject> buildElementInfo(Element* element)
         }
     }
     if (pseudoElement) {
-        if (pseudoElement->pseudoId() == BEFORE)
+        if (pseudoElement->getPseudoId() == BEFORE)
             classNames.appendLiteral("::before");
-        else if (pseudoElement->pseudoId() == AFTER)
+        else if (pseudoElement->getPseudoId() == AFTER)
             classNames.appendLiteral("::after");
     }
     if (!classNames.isEmpty())

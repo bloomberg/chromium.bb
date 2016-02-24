@@ -83,7 +83,7 @@ DataObjectItem* DataObjectItem::createFromPasteboard(const String& type, uint64_
     return new DataObjectItem(StringKind, type, sequenceNumber);
 }
 
-DataObjectItem::DataObjectItem(Kind kind, const String& type)
+DataObjectItem::DataObjectItem(ItemKind kind, const String& type)
     : m_source(InternalSource)
     , m_kind(kind)
     , m_type(type)
@@ -91,7 +91,7 @@ DataObjectItem::DataObjectItem(Kind kind, const String& type)
 {
 }
 
-DataObjectItem::DataObjectItem(Kind kind, const String& type, uint64_t sequenceNumber)
+DataObjectItem::DataObjectItem(ItemKind kind, const String& type, uint64_t sequenceNumber)
     : m_source(PasteboardSource)
     , m_kind(kind)
     , m_type(type)

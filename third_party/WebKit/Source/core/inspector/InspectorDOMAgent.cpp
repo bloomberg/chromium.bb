@@ -1500,9 +1500,9 @@ PassOwnPtr<protocol::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* node
             forcePushChildren = true;
         }
 
-        if (element->pseudoId()) {
+        if (element->getPseudoId()) {
             protocol::DOM::PseudoType pseudoType;
-            if (InspectorDOMAgent::getPseudoElementType(element->pseudoId(), &pseudoType))
+            if (InspectorDOMAgent::getPseudoElementType(element->getPseudoId(), &pseudoType))
                 value->setPseudoType(pseudoType);
         } else {
             OwnPtr<protocol::Array<protocol::DOM::Node>> pseudoElements = buildArrayForPseudoElements(element, nodesMap);

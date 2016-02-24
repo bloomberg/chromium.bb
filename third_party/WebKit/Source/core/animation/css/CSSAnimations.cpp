@@ -778,7 +778,7 @@ void CSSAnimations::TransitionEventDelegate::onEventCondition(const AnimationEff
         const Timing& timing = animationNode.specifiedTiming();
         double elapsedTime = timing.iterationDuration;
         const AtomicString& eventType = EventTypeNames::transitionend;
-        String pseudoElement = PseudoElement::pseudoElementNameForEvents(pseudoId());
+        String pseudoElement = PseudoElement::pseudoElementNameForEvents(getPseudoId());
         RefPtrWillBeRawPtr<TransitionEvent> event = TransitionEvent::create(eventType, propertyName, elapsedTime, pseudoElement);
         event->setTarget(eventTarget());
         document().enqueueAnimationFrameEvent(event);

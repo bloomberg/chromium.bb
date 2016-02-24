@@ -253,11 +253,11 @@ public:
     bool isHTMLElement() const { return getFlag(IsHTMLFlag); }
     bool isSVGElement() const { return getFlag(IsSVGFlag); }
 
-    bool isPseudoElement() const { return pseudoId() != NOPSEUDO; }
-    bool isBeforePseudoElement() const { return pseudoId() == BEFORE; }
-    bool isAfterPseudoElement() const { return pseudoId() == AFTER; }
-    bool isFirstLetterPseudoElement() const { return pseudoId() == FIRST_LETTER; }
-    virtual PseudoId pseudoId() const { return NOPSEUDO; }
+    bool isPseudoElement() const { return getPseudoId() != NOPSEUDO; }
+    bool isBeforePseudoElement() const { return getPseudoId() == BEFORE; }
+    bool isAfterPseudoElement() const { return getPseudoId() == AFTER; }
+    bool isFirstLetterPseudoElement() const { return getPseudoId() == FIRST_LETTER; }
+    virtual PseudoId getPseudoId() const { return NOPSEUDO; }
 
     bool isCustomElement() const { return getFlag(CustomElementFlag); }
     enum CustomElementState {
