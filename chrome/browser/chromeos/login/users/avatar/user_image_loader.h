@@ -36,19 +36,21 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader> {
 
   // All file I/O, decoding and resizing are done via |background_task_runner|.
   UserImageLoader(
-      ImageDecoder::ImageCodec image_codec,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner);
 
-  // Load an image in the background and call |loaded_cb| with the resulting
-  // UserImage (which may be empty in case of error). If |pixels_per_side| is
-  // positive, the image is cropped to a square and shrunk so that it does not
-  // exceed |pixels_per_side|x|pixels_per_side|. The first variant of this
-  // method reads the image from |file_path| on disk, the second processes
-  // |data| read into memory already.
+  // Load an image with |image_codec| in the background and call |loaded_cb|
+  // with the resulting UserImage (which may be empty in case of error). If
+  // |pixels_per_side| is positive, the image is cropped to a square and
+  // shrunk so that it does not exceed
+  // |pixels_per_side|x|pixels_per_side|. The first variant of this method
+  // reads the image from |file_path| on disk, the second processes |data|
+  // read into memory already.
   void StartWithFilePath(const base::FilePath& file_path,
+                         ImageDecoder::ImageCodec image_codec,
                          int pixels_per_side,
                          const LoadedCallback& loaded_cb);
   void StartWithData(scoped_ptr<std::string> data,
+                     ImageDecoder::ImageCodec image_codec,
                      int pixels_per_side,
                      const LoadedCallback& loaded_cb);
 
@@ -59,11 +61,13 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader> {
   struct ImageInfo {
     ImageInfo(const base::FilePath& file_path,
               int pixels_per_side,
+              ImageDecoder::ImageCodec image_codec,
               const LoadedCallback& loaded_cb);
     ~ImageInfo();
 
     const base::FilePath file_path;
     const int pixels_per_side;
+    const ImageDecoder::ImageCodec image_codec;
     const LoadedCallback loaded_cb;
   };
 
@@ -104,9 +108,6 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader> {
   // The background task runner on which file I/O, image decoding and resizing
   // are done.
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
-
-  // Specify how the file should be decoded in the utility process.
-  const ImageDecoder::ImageCodec image_codec_;
 
   DISALLOW_COPY_AND_ASSIGN(UserImageLoader);
 };

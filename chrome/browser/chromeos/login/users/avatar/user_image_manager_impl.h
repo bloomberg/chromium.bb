@@ -156,11 +156,8 @@ class UserImageManagerImpl
   // The user manager.
   user_manager::UserManager* user_manager_;
 
-  // Loader for JPEG user images.
+  // Loader for user images.
   scoped_refptr<UserImageLoader> image_loader_;
-
-  // Unsafe loader instance for all user images formats.
-  scoped_refptr<UserImageLoader> unsafe_image_loader_;
 
   // Whether the |profile_downloader_| is downloading the profile image for the
   // currently logged-in user (and not just the full name). Only valid when a

@@ -25,9 +25,11 @@ namespace chromeos {
 
 UserImageLoader::ImageInfo::ImageInfo(const base::FilePath& file_path,
                                       int pixels_per_side,
+                                      ImageDecoder::ImageCodec image_codec,
                                       const LoadedCallback& loaded_cb)
     : file_path(file_path),
       pixels_per_side(pixels_per_side),
+      image_codec(image_codec),
       loaded_cb(loaded_cb) {}
 
 UserImageLoader::ImageInfo::~ImageInfo() {
@@ -47,31 +49,32 @@ UserImageLoader::UserImageRequest::~UserImageRequest() {
 }
 
 UserImageLoader::UserImageLoader(
-    ImageDecoder::ImageCodec image_codec,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner)
     : foreground_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      background_task_runner_(background_task_runner),
-      image_codec_(image_codec) {
-}
+      background_task_runner_(background_task_runner) {}
 
 UserImageLoader::~UserImageLoader() {
 }
 
 void UserImageLoader::StartWithFilePath(const base::FilePath& file_path,
+                                        ImageDecoder::ImageCodec image_codec,
                                         int pixels_per_side,
                                         const LoadedCallback& loaded_cb) {
   background_task_runner_->PostTask(
       FROM_HERE, base::Bind(&UserImageLoader::ReadAndDecodeImage, this,
-                            ImageInfo(file_path, pixels_per_side, loaded_cb)));
+                            ImageInfo(file_path, pixels_per_side, image_codec,
+                                      loaded_cb)));
 }
 
 void UserImageLoader::StartWithData(scoped_ptr<std::string> data,
+                                    ImageDecoder::ImageCodec image_codec,
                                     int pixels_per_side,
                                     const LoadedCallback& loaded_cb) {
   background_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&UserImageLoader::DecodeImage, this, base::Passed(&data),
-                 ImageInfo(base::FilePath(), pixels_per_side, loaded_cb)));
+                 ImageInfo(base::FilePath(), pixels_per_side, image_codec,
+                           loaded_cb)));
 }
 
 void UserImageLoader::ReadAndDecodeImage(const ImageInfo& image_info) {
@@ -92,7 +95,8 @@ void UserImageLoader::DecodeImage(const scoped_ptr<std::string> data,
 
   UserImageRequest* image_request =
       new UserImageRequest(image_info, *data, this);
-  ImageDecoder::StartWithOptions(image_request, *data, image_codec_, false);
+  ImageDecoder::StartWithOptions(image_request, *data, image_info.image_codec,
+                                 false);
 }
 
 void UserImageLoader::UserImageRequest::OnImageDecoded(
@@ -129,7 +133,7 @@ void UserImageLoader::UserImageRequest::OnImageDecoded(
   final_image_skia.MakeThreadSafe();
   user_manager::UserImage user_image(final_image_skia, image_data_);
   user_image.set_file_path(image_info_.file_path);
-  if (user_image_loader_->image_codec_ == ImageDecoder::ROBUST_JPEG_CODEC)
+  if (image_info_.image_codec == ImageDecoder::ROBUST_JPEG_CODEC)
     user_image.MarkAsSafe();
   user_image_loader_->foreground_task_runner_->PostTask(
       FROM_HERE, base::Bind(image_info_.loaded_cb, user_image));
