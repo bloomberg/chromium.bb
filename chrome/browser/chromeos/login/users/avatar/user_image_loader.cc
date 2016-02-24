@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task_runner_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "components/user_manager/user_image/user_image.h"
@@ -60,38 +61,32 @@ void UserImageLoader::StartWithFilePath(const base::FilePath& file_path,
                                         ImageDecoder::ImageCodec image_codec,
                                         int pixels_per_side,
                                         const LoadedCallback& loaded_cb) {
-  background_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&UserImageLoader::ReadAndDecodeImage, this,
-                            ImageInfo(file_path, pixels_per_side, image_codec,
-                                      loaded_cb)));
+  std::string* data = new std::string;
+  base::PostTaskAndReplyWithResult(
+      background_task_runner_.get(), FROM_HERE,
+      base::Bind(&base::ReadFileToString, file_path, data),
+      base::Bind(&UserImageLoader::DecodeImage, this,
+                 ImageInfo(file_path, pixels_per_side, image_codec, loaded_cb),
+                 base::Owned(data)));
 }
 
 void UserImageLoader::StartWithData(scoped_ptr<std::string> data,
                                     ImageDecoder::ImageCodec image_codec,
                                     int pixels_per_side,
                                     const LoadedCallback& loaded_cb) {
-  background_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&UserImageLoader::DecodeImage, this, base::Passed(&data),
-                 ImageInfo(base::FilePath(), pixels_per_side, image_codec,
-                           loaded_cb)));
+  DecodeImage(
+      ImageInfo(base::FilePath(), pixels_per_side, image_codec, loaded_cb),
+      data.get(), true /* data_is_ready */);
 }
 
-void UserImageLoader::ReadAndDecodeImage(const ImageInfo& image_info) {
-  DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
-
-  scoped_ptr<std::string> data(new std::string);
-  if (!base::ReadFileToString(image_info.file_path, data.get()))
-    LOG(ERROR) << "Failed to read image " << image_info.file_path.value();
-
-  // In case ReadFileToString() fails, |data| is empty and DecodeImage() calls
-  // back to OnDecodeImageFailed().
-  DecodeImage(std::move(data), image_info);
-}
-
-void UserImageLoader::DecodeImage(const scoped_ptr<std::string> data,
-                                  const ImageInfo& image_info) {
-  DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
+void UserImageLoader::DecodeImage(const ImageInfo& image_info,
+                                  const std::string* data,
+                                  bool data_is_ready) {
+  if (!data_is_ready) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(image_info.loaded_cb, user_manager::UserImage()));
+    return;
+  }
 
   UserImageRequest* image_request =
       new UserImageRequest(image_info, *data, this);
@@ -135,16 +130,22 @@ void UserImageLoader::UserImageRequest::OnImageDecoded(
   user_image.set_file_path(image_info_.file_path);
   if (image_info_.image_codec == ImageDecoder::ROBUST_JPEG_CODEC)
     user_image.MarkAsSafe();
+  // TODO(satorux): Remove the foreground_task_runner_ stuff.
   user_image_loader_->foreground_task_runner_->PostTask(
       FROM_HERE, base::Bind(image_info_.loaded_cb, user_image));
-  delete this;
+  user_image_loader_->foreground_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(base::Bind(&base::DeletePointer<UserImageRequest>, this)));
 }
 
 void UserImageLoader::UserImageRequest::OnDecodeImageFailed() {
   DCHECK(task_runner()->RunsTasksOnCurrentThread());
+  // TODO(satorux): Remove the foreground_task_runner_ stuff.
   user_image_loader_->foreground_task_runner_->PostTask(
       FROM_HERE, base::Bind(image_info_.loaded_cb, user_manager::UserImage()));
-  delete this;
+  user_image_loader_->foreground_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(base::Bind(&base::DeletePointer<UserImageRequest>, this)));
 }
 
 }  // namespace chromeos

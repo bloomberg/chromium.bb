@@ -76,6 +76,7 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader> {
     UserImageRequest(const ImageInfo& image_info,
                      const std::string& image_data,
                      const scoped_refptr<UserImageLoader>& user_image_loader);
+    ~UserImageRequest() override;
 
     // ImageDecoder::ImageRequest implementation. These callbacks will only be
     // invoked via user_image_loader_'s background_task_runner_.
@@ -83,8 +84,6 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader> {
     void OnDecodeImageFailed() override;
 
    private:
-    ~UserImageRequest() override;
-
     const ImageInfo image_info_;
     std::vector<unsigned char> image_data_;
     scoped_refptr<UserImageLoader> user_image_loader_;
@@ -92,14 +91,10 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader> {
 
   ~UserImageLoader();
 
-  // Reads the image from |image_info.file_path| and starts the decoding
-  // process. This method may only be invoked via the |background_task_runner_|.
-  void ReadAndDecodeImage(const ImageInfo& image_info);
-
-  // Decodes the image |data|. This method may only be invoked via the
-  // |background_task_runner_|.
-  void DecodeImage(const scoped_ptr<std::string> data,
-                   const ImageInfo& image_info);
+  // Decodes the image |data| if |data_is_ready| is true.
+  void DecodeImage(const ImageInfo& image_info,
+                   const std::string* data,
+                   bool data_is_ready);
 
   // The foreground task runner on which |this| is instantiated, Start() is
   // called and LoadedCallbacks are invoked.
