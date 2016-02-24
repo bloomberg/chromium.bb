@@ -189,7 +189,8 @@ TEST(TCMallocFreeTest, BadPointerInFirstPageOfTheLargeObject) {
   TCMallocDoFreeForTest(p);
 }
 
-TEST(TCMallocFreeTest, BadPageAlignedPointerInsideLargeObject) {
+// TODO(ssid): Fix flakiness and enable the test, crbug.com/571549.
+TEST(TCMallocFreeTest, DISABLED_BadPageAlignedPointerInsideLargeObject) {
   const size_t kPageSize = base::GetPageSize();
   const size_t kMaxSize = 10 * kPageSize;
   char* p = reinterpret_cast<char*>(TCMallocDoMallocForTest(kMaxSize + 1));
