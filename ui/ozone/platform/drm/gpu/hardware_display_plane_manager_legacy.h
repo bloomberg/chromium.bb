@@ -8,13 +8,11 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "ui/ozone/ozone_export.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager.h"
 
 namespace ui {
 
-class OZONE_EXPORT HardwareDisplayPlaneManagerLegacy
-    : public HardwareDisplayPlaneManager {
+class HardwareDisplayPlaneManagerLegacy : public HardwareDisplayPlaneManager {
  public:
   HardwareDisplayPlaneManagerLegacy();
   ~HardwareDisplayPlaneManagerLegacy() override;

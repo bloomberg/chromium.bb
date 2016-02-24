@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "ui/ozone/ozone_export.h"
 #include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
 
 namespace ui {
@@ -21,7 +20,7 @@ class DrmDevice;
 // Wrapper for a DRM allocated buffer. Keeps track of the native properties of
 // the buffer and wraps the pixel memory into a SkSurface which can be used to
 // draw into using Skia.
-class OZONE_EXPORT DrmBuffer : public ScanoutBuffer {
+class DrmBuffer : public ScanoutBuffer {
  public:
   DrmBuffer(const scoped_refptr<DrmDevice>& drm);
 

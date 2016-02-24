@@ -12,7 +12,6 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
-#include "ui/ozone/ozone_export.h"
 #include "ui/ozone/platform/drm/common/scoped_drm_types.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane.h"
 #include "ui/ozone/platform/drm/gpu/overlay_plane.h"
@@ -28,7 +27,7 @@ class DrmDevice;
 
 // This contains the list of planes controlled by one HDC on a given DRM fd.
 // It is owned by the HDC and filled by the CrtcController.
-struct OZONE_EXPORT HardwareDisplayPlaneList {
+struct HardwareDisplayPlaneList {
   HardwareDisplayPlaneList();
   ~HardwareDisplayPlaneList();
 
@@ -67,7 +66,7 @@ struct OZONE_EXPORT HardwareDisplayPlaneList {
 #endif  // defined(USE_DRM_ATOMIC)
 };
 
-class OZONE_EXPORT HardwareDisplayPlaneManager {
+class HardwareDisplayPlaneManager {
  public:
   HardwareDisplayPlaneManager();
   virtual ~HardwareDisplayPlaneManager();

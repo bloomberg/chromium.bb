@@ -18,7 +18,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "ui/gfx/swap_result.h"
-#include "ui/ozone/ozone_export.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager.h"
 #include "ui/ozone/platform/drm/gpu/overlay_plane.h"
 
@@ -86,7 +85,7 @@ class DrmDevice;
 // only a subset of connectors can be active independently, showing different
 // framebuffers. Though, in this case, it would be possible to have all
 // connectors active if some use the same CRTC to mirror the display.
-class OZONE_EXPORT HardwareDisplayController {
+class HardwareDisplayController {
   typedef base::Callback<void(gfx::SwapResult)> PageFlipCallback;
 
  public:

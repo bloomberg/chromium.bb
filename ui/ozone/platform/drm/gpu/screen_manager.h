@@ -12,7 +12,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/ozone/ozone_export.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
 
 typedef struct _drmModeModeInfo drmModeModeInfo;
@@ -30,7 +29,7 @@ class DrmWindow;
 class ScanoutBufferGenerator;
 
 // Responsible for keeping track of active displays and configuring them.
-class OZONE_EXPORT ScreenManager {
+class ScreenManager {
  public:
   ScreenManager(ScanoutBufferGenerator* surface_generator);
   virtual ~ScreenManager();

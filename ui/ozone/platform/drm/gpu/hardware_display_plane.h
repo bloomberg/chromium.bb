@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "ui/ozone/ozone_export.h"
 #include "ui/ozone/platform/drm/common/scoped_drm_types.h"
 
 namespace gfx {
@@ -22,7 +21,7 @@ namespace ui {
 
 class DrmDevice;
 
-class OZONE_EXPORT HardwareDisplayPlane {
+class HardwareDisplayPlane {
  public:
   enum Type { kDummy, kPrimary, kOverlay, kCursor };
 

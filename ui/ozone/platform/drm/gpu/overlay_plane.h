@@ -12,7 +12,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/overlay_transform.h"
-#include "ui/ozone/ozone_export.h"
 
 namespace ui {
 
@@ -21,7 +20,7 @@ class ScanoutBuffer;
 struct OverlayPlane;
 typedef std::vector<OverlayPlane> OverlayPlaneList;
 
-struct OZONE_EXPORT OverlayPlane {
+struct OverlayPlane {
   // Simpler constructor for the primary plane.
   explicit OverlayPlane(const scoped_refptr<ScanoutBuffer>& buffer);
 
