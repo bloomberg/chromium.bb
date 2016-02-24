@@ -593,14 +593,7 @@ config("compiler_codegen") {
         ]
       }
     } else if (current_cpu == "arm") {
-      if (is_clang) {
-        # Disable an incorrect loop optimization.
-        # See http://llvm.org/bugs/show_bug.cgi?id=26600.
-        cflags += [
-          "-mllvm",
-          "-enable-interleaved-mem-accesses=0",
-        ]
-      } else {
+      if (!is_clang) {
         # Clang doesn't support these flags.
         cflags += [
           # The tree-sra optimization (scalar replacement for
