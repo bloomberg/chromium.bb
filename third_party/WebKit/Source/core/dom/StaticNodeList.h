@@ -33,7 +33,6 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
-#include <v8.h>
 
 namespace blink {
 
@@ -58,11 +57,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    ptrdiff_t AllocationSize()
-    {
-        return m_nodes.capacity() * sizeof(RefPtrWillBeMember<NodeType>);
-    }
-
     WillBeHeapVector<RefPtrWillBeMember<NodeType>> m_nodes;
 };
 
@@ -74,14 +68,12 @@ PassRefPtrWillBeRawPtr<StaticNodeTypeList<NodeType>> StaticNodeTypeList<NodeType
 {
     RefPtrWillBeRawPtr<StaticNodeTypeList<NodeType>> nodeList = adoptRefWillBeNoop(new StaticNodeTypeList<NodeType>);
     nodeList->m_nodes.swap(nodes);
-    v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(nodeList->AllocationSize());
     return nodeList.release();
 }
 
 template <typename NodeType>
 StaticNodeTypeList<NodeType>::~StaticNodeTypeList()
 {
-    v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(-AllocationSize());
 }
 
 template <typename NodeType>

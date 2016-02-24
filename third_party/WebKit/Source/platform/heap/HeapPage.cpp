@@ -544,7 +544,7 @@ bool NormalPageHeap::coalesce()
         if (startOfGap != page->payloadEnd())
             addToFreeList(startOfGap, page->payloadEnd() - startOfGap);
     }
-    Heap::decreaseAllocatedObjectSize(freedSize);
+    threadState()->decreaseAllocatedObjectSize(freedSize);
     ASSERT(m_promptlyFreedSize == freedSize);
     m_promptlyFreedSize = 0;
     return true;
@@ -662,16 +662,16 @@ void NormalPageHeap::setRemainingAllocationSize(size_t newRemainingAllocationSiz
     //  - if previous alloc checkpoint is larger, allocation size has increased.
     //  - if smaller, a net reduction in size since last call to updateRemainingAllocationSize().
     if (m_lastRemainingAllocationSize > m_remainingAllocationSize)
-        Heap::increaseAllocatedObjectSize(m_lastRemainingAllocationSize - m_remainingAllocationSize);
+        threadState()->increaseAllocatedObjectSize(m_lastRemainingAllocationSize - m_remainingAllocationSize);
     else if (m_lastRemainingAllocationSize != m_remainingAllocationSize)
-        Heap::decreaseAllocatedObjectSize(m_remainingAllocationSize - m_lastRemainingAllocationSize);
+        threadState()->decreaseAllocatedObjectSize(m_remainingAllocationSize - m_lastRemainingAllocationSize);
     m_lastRemainingAllocationSize = m_remainingAllocationSize;
 }
 
 void NormalPageHeap::updateRemainingAllocationSize()
 {
     if (m_lastRemainingAllocationSize > remainingAllocationSize()) {
-        Heap::increaseAllocatedObjectSize(m_lastRemainingAllocationSize - remainingAllocationSize());
+        threadState()->increaseAllocatedObjectSize(m_lastRemainingAllocationSize - remainingAllocationSize());
         m_lastRemainingAllocationSize = remainingAllocationSize();
     }
     ASSERT(m_lastRemainingAllocationSize == remainingAllocationSize());
@@ -838,7 +838,7 @@ Address LargeObjectHeap::doAllocateLargeObjectPage(size_t allocationSize, size_t
     largeObject->link(&m_firstPage);
 
     Heap::increaseAllocatedSpace(largeObject->size());
-    Heap::increaseAllocatedObjectSize(largeObject->size());
+    threadState()->increaseAllocatedObjectSize(largeObject->size());
     return result;
 }
 
@@ -1117,6 +1117,7 @@ void NormalPage::sweep()
 {
     size_t markedObjectSize = 0;
     Address startOfGap = payload();
+    NormalPageHeap* pageHeap = heapForNormalPage();
     for (Address headerAddress = startOfGap; headerAddress < payloadEnd(); ) {
         HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(headerAddress);
         size_t size = header->size();
@@ -1124,7 +1125,7 @@ void NormalPage::sweep()
         ASSERT(size < blinkPagePayloadSize());
 
         if (header->isPromptlyFreed())
-            heapForNormalPage()->decreasePromptlyFreedSize(size);
+            pageHeap->decreasePromptlyFreedSize(size);
         if (header->isFree()) {
             // Zero the memory in the free list header to maintain the
             // invariant that memory on the free list is zero filled.
@@ -1155,7 +1156,7 @@ void NormalPage::sweep()
             continue;
         }
         if (startOfGap != headerAddress) {
-            heapForNormalPage()->addToFreeList(startOfGap, headerAddress - startOfGap);
+            pageHeap->addToFreeList(startOfGap, headerAddress - startOfGap);
 #if !ENABLE(ASSERT) && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
             // Discarding pages increases page faults and may regress performance.
             // So we enable this only on low-RAM devices.
@@ -1169,7 +1170,7 @@ void NormalPage::sweep()
         startOfGap = headerAddress;
     }
     if (startOfGap != payloadEnd()) {
-        heapForNormalPage()->addToFreeList(startOfGap, payloadEnd() - startOfGap);
+        pageHeap->addToFreeList(startOfGap, payloadEnd() - startOfGap);
 #if !ENABLE(ASSERT) && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
         if (Heap::isLowEndDevice())
             discardPages(startOfGap + sizeof(FreeListEntry), payloadEnd());
@@ -1177,7 +1178,7 @@ void NormalPage::sweep()
     }
 
     if (markedObjectSize)
-        Heap::increaseMarkedObjectSize(markedObjectSize);
+        pageHeap->threadState()->increaseMarkedObjectSize(markedObjectSize);
 }
 
 void NormalPage::makeConsistentForGC()
@@ -1202,7 +1203,7 @@ void NormalPage::makeConsistentForGC()
         headerAddress += header->size();
     }
     if (markedObjectSize)
-        Heap::increaseMarkedObjectSize(markedObjectSize);
+        heapForNormalPage()->threadState()->increaseMarkedObjectSize(markedObjectSize);
 }
 
 void NormalPage::makeConsistentForMutator()
@@ -1466,7 +1467,7 @@ void LargeObjectPage::removeFromHeap()
 void LargeObjectPage::sweep()
 {
     heapObjectHeader()->unmark();
-    Heap::increaseMarkedObjectSize(size());
+    heap()->threadState()->increaseMarkedObjectSize(size());
 }
 
 void LargeObjectPage::makeConsistentForGC()
@@ -1474,7 +1475,7 @@ void LargeObjectPage::makeConsistentForGC()
     HeapObjectHeader* header = heapObjectHeader();
     if (header->isMarked()) {
         header->unmark();
-        Heap::increaseMarkedObjectSize(size());
+        heap()->threadState()->increaseMarkedObjectSize(size());
     } else {
         header->markDead();
     }

@@ -34,7 +34,6 @@
 
 #include "core/html/CollectionIndexCache.h"
 #include "wtf/Vector.h"
-#include <v8.h>
 
 namespace blink {
 
@@ -59,12 +58,6 @@ public:
     void invalidate();
 
 private:
-    ptrdiff_t allocationSize() const { return m_cachedList.capacity() * sizeof(NodeType*); }
-    static void reportExtraMemoryCostForCollectionItemsCache(ptrdiff_t diff)
-    {
-        v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(diff);
-    }
-
     bool m_listValid;
     WillBeHeapVector<RawPtrWillBeMember<NodeType>> m_cachedList;
 };
@@ -78,8 +71,6 @@ CollectionItemsCache<Collection, NodeType>::CollectionItemsCache()
 template <typename Collection, typename NodeType>
 CollectionItemsCache<Collection, NodeType>::~CollectionItemsCache()
 {
-    if (ptrdiff_t diff = allocationSize())
-        reportExtraMemoryCostForCollectionItemsCache(-diff);
 }
 
 template <typename Collection, typename NodeType>
@@ -100,13 +91,10 @@ unsigned CollectionItemsCache<Collection, NodeType>::nodeCount(const Collection&
 
     NodeType* currentNode = collection.traverseToFirst();
     unsigned currentIndex = 0;
-    ptrdiff_t oldCapacity = allocationSize();
     while (currentNode) {
         m_cachedList.append(currentNode);
         currentNode = collection.traverseForwardToOffset(currentIndex + 1, *currentNode, currentIndex);
     }
-    if (ptrdiff_t diff = allocationSize() - oldCapacity)
-        reportExtraMemoryCostForCollectionItemsCache(diff);
 
     this->setCachedNodeCount(m_cachedList.size());
     m_listValid = true;

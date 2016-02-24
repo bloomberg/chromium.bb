@@ -59,5 +59,6 @@ source_set("heap") {
     "//base",
     "//third_party/WebKit/Source/platform/heap/asm",
     "//third_party/icu",
+    "//v8",
   ]
 }

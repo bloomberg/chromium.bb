@@ -657,6 +657,8 @@ void Heap::resetHeapCounters()
     s_markedObjectSize = 0;
     s_wrapperCountAtLastGC = s_wrapperCount;
     s_collectedWrapperCount = 0;
+    for (ThreadState* state : ThreadState::attachedThreads())
+        state->resetHeapCounters();
 }
 
 CallbackStack* Heap::s_markingStack;

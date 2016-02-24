@@ -520,6 +520,11 @@ public:
     void leaveStaticReferenceRegistrationDisabledScope();
 #endif
 
+    void resetHeapCounters();
+    void increaseAllocatedObjectSize(size_t);
+    void decreaseAllocatedObjectSize(size_t);
+    void increaseMarkedObjectSize(size_t);
+
 private:
     enum SnapshotType {
         HeapSnapshot,
@@ -597,6 +602,8 @@ private:
     void takeSnapshot(SnapshotType);
     void clearHeapAges();
     int heapIndexOfVectorHeapLeastRecentlyExpanded(int beginHeapIndex, int endHeapIndex);
+
+    void reportMemoryToV8();
 
     // Should only be called under protection of threadAttachMutex().
     const Vector<OwnPtr<BlinkGCInterruptor>>& interruptors() const { return m_interruptors; }
@@ -678,6 +685,11 @@ private:
     static const int likelyToBePromptlyFreedArraySize = (1 << 8);
     static const int likelyToBePromptlyFreedArrayMask = likelyToBePromptlyFreedArraySize - 1;
     OwnPtr<int[]> m_likelyToBePromptlyFreed;
+
+    // Stats for heap memory of this thread.
+    size_t m_allocatedObjectSize;
+    size_t m_markedObjectSize;
+    size_t m_reportedMemoryToV8;
 };
 
 template<ThreadAffinity affinity> class ThreadStateFor;

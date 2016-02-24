@@ -64,6 +64,8 @@
 #include <pthread_np.h>
 #endif
 
+#include <v8.h>
+
 namespace blink {
 
 WTF::ThreadSpecific<ThreadState*>* ThreadState::s_threadSpecific = nullptr;
@@ -99,6 +101,7 @@ ThreadState::ThreadState()
     , m_gcMixinMarker(nullptr)
     , m_shouldFlushHeapDoesNotContainCache(false)
     , m_gcState(NoGCScheduled)
+    , m_isolate(nullptr)
     , m_traceDOMWrappers(nullptr)
 #if defined(ADDRESS_SANITIZER)
     , m_asanFakeStack(__asan_get_current_fake_stack())
@@ -106,6 +109,9 @@ ThreadState::ThreadState()
 #if defined(LEAK_SANITIZER)
     , m_disabledStaticPersistentsRegistration(0)
 #endif
+    , m_allocatedObjectSize(0)
+    , m_markedObjectSize(0)
+    , m_reportedMemoryToV8(0)
 {
     ASSERT(checkThread());
     ASSERT(!**s_threadSpecific);
@@ -691,6 +697,8 @@ void ThreadState::scheduleGCIfNeeded()
         return;
     ASSERT(!sweepForbidden());
 
+    reportMemoryToV8();
+
     if (shouldForceMemoryPressureGC()) {
         completeSweep();
         if (shouldForceMemoryPressureGC()) {
@@ -1248,6 +1256,41 @@ void ThreadState::leaveSafePoint(SafePointAwareMutexLocker* locker)
     m_stackState = BlinkGC::HeapPointersOnStack;
     clearSafePointScopeMarker();
     preSweep();
+}
+
+void ThreadState::reportMemoryToV8()
+{
+    if (!m_isolate)
+        return;
+
+    size_t currentHeapSize = m_allocatedObjectSize + m_markedObjectSize;
+    int64_t diff = static_cast<int64_t>(currentHeapSize) - static_cast<int64_t>(m_reportedMemoryToV8);
+    m_isolate->AdjustAmountOfExternalAllocatedMemory(diff);
+    m_reportedMemoryToV8 = currentHeapSize;
+}
+
+void ThreadState::resetHeapCounters()
+{
+    m_allocatedObjectSize = 0;
+    m_markedObjectSize = 0;
+}
+
+void ThreadState::increaseAllocatedObjectSize(size_t delta)
+{
+    m_allocatedObjectSize += delta;
+    Heap::increaseAllocatedObjectSize(delta);
+}
+
+void ThreadState::decreaseAllocatedObjectSize(size_t delta)
+{
+    m_allocatedObjectSize -= delta;
+    Heap::decreaseAllocatedObjectSize(delta);
+}
+
+void ThreadState::increaseMarkedObjectSize(size_t delta)
+{
+    m_markedObjectSize += delta;
+    Heap::increaseMarkedObjectSize(delta);
 }
 
 void ThreadState::copyStackUntilSafePointScope()
