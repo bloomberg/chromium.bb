@@ -52,6 +52,15 @@ def PsoFromLLVMAssembly(base_name):
                              llvm_passes='')
 
 
+def MakeAndTranslatePll(dest, source_file):
+  return MakeAndTranslatePso(
+      dest, [env.ComponentObject(source_file)],
+      # Skip the pre-opt passes because they add TLS functions.  However,
+      # we still need to run the post-opt passes so that the LLVM IR passes
+      # the PNaCl ABI checker.
+      llvm_passes='-convert-to-pso -pnacl-abi-simplify-postopt')
+
+
 # Under SFI NaCl, the loader currently depends on the allocate_code_data()
 # interface provided by the IRT.
 is_broken = not env.Bit('tests_use_irt') and not env.Bit('nonsfi_nacl')
@@ -64,7 +73,7 @@ dso3 = PsoFromLLVMAssembly('data_only_pso_largebss')
 
 dynloader_test = env.ComponentProgram(
     'dynloader_test', ['dynloader_test.c'],
-    EXTRA_LIBS=['${NONIRT_LIBS}', 'pnacl_dynloader', 'platform'])
+    EXTRA_LIBS=['${NONIRT_LIBS}', 'pnacl_dynloader'])
 
 node = env.CommandSelLdrTestNacl(
     'dynloader_test.out', dynloader_test, [dso1, dso2, dso3],
@@ -79,21 +88,32 @@ env.AddNodeToTestSuite(
 if env['TOOLCHAIN_FEATURE_VERSION'] < 18:
   Return()
 
-dso4 = MakeAndTranslatePso(
-    'test_pll', [env.ComponentObject('test_pll.c')],
-    # Skip the pre-opt passes because they add TLS functions.  However, we
-    # still need to run the post-opt passes so that the LLVM IR passes the
-    # PNaCl ABI checker.
-    llvm_passes='-convert-to-pso -pnacl-abi-simplify-postopt')
+test_pll = MakeAndTranslatePll('test_pll', 'test_pll.c')
 
 pll_symbols_test = env.ComponentProgram(
     'pll_symbols_test', ['pll_symbols_test.cc'],
-    EXTRA_LIBS=['${NONIRT_LIBS}', 'pnacl_dynloader', 'platform'])
+    EXTRA_LIBS=['${NONIRT_LIBS}', 'pnacl_dynloader', 'pll_loader'])
 
 node = env.CommandSelLdrTestNacl(
-    'pll_symbols_test.out', pll_symbols_test, [dso4],
+    'pll_symbols_test.out', pll_symbols_test, [test_pll],
     # Add '-a' to enable filesystem access for opening DSOs.
     sel_ldr_flags=['-a'])
 env.AddNodeToTestSuite(
     node, ['small_tests', 'toolchain_tests'],
     'run_pll_symbols_test', is_broken=is_broken)
+
+
+test_pll_a = MakeAndTranslatePll('test_pll_a', 'test_pll_a.c')
+test_pll_b = MakeAndTranslatePll('test_pll_b', 'test_pll_b.c')
+
+pll_loader_test = env.ComponentProgram(
+    'pll_loader_test', ['pll_loader_test.cc'],
+    EXTRA_LIBS=['${NONIRT_LIBS}', 'pll_loader'])
+
+node = env.CommandSelLdrTestNacl(
+    'pll_loader_test.out', pll_loader_test, [test_pll_a, test_pll_b],
+    # Add '-a' to enable filesystem access for opening DSOs.
+    sel_ldr_flags=['-a'])
+env.AddNodeToTestSuite(
+    node, ['small_tests', 'toolchain_tests'],
+    'run_pll_loader_test', is_broken=is_broken)

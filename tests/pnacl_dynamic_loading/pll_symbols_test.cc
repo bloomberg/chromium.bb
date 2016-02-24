@@ -6,6 +6,8 @@
 #include <string.h>
 
 #include "native_client/src/include/nacl_assert.h"
+#include "native_client/src/untrusted/pll_loader/pll_loader.h"
+#include "native_client/src/untrusted/pll_loader/pll_root.h"
 #include "native_client/src/untrusted/pnacl_dynloader/dynloader.h"
 
 // This tests the symbol tables created by the ConvertToPSO pass.
@@ -13,26 +15,6 @@
 namespace {
 
 const unsigned kFormatVersion = 2;
-
-struct PLLRoot {
-  size_t format_version;
-  const char *string_table;
-
-  // Exports.
-  void *const *exported_ptrs;
-  const size_t *exported_names;
-  size_t export_count;
-
-  // Imports.
-  void *const *imported_ptrs;
-  const size_t *imported_names;
-  size_t import_count;
-
-  // Hash Table, for quick exported symbol lookup.
-  size_t bucket_count;
-  const int32_t *hash_buckets;
-  const uint32_t *hash_chains;
-};
 
 const char *GetExportedSymbolName(const PLLRoot *root, size_t i) {
   return root->string_table + root->exported_names[i];
@@ -63,33 +45,8 @@ void *GetExportedSymSlow(const PLLRoot *root, const char *name) {
   return NULL;
 }
 
-uint32_t HashString(const char *sp) {
-  uint32_t h = 5381;
-  for (unsigned char c = *sp; c != '\0'; c = *++sp)
-    h = h * 33 + c;
-  return h;
-}
-
 void *GetExportedSymHash(const PLLRoot *root, const char *name) {
-  uint32_t hash = HashString(name);
-  uint32_t bucket_index = hash % root->bucket_count;
-  int32_t chain_index = root->hash_buckets[bucket_index];
-  // Bucket empty -- value not found.
-  if (chain_index == -1)
-    return NULL;
-
-  for (; chain_index < root->export_count; chain_index++) {
-    uint32_t chain_value = root->hash_chains[chain_index];
-    if ((hash & ~1) == (chain_value & ~1) &&
-        strcmp(name, GetExportedSymbolName(root, chain_index)) == 0)
-      return root->exported_ptrs[chain_index];
-
-    // End of chain -- value not found.
-    if ((chain_value & 1) == 1)
-      return NULL;
-  }
-
-  ASSERT(false);
+  return PLLModule(root).GetExportedSym(name);
 }
 
 void VerifyHashTable(const PLLRoot *root) {
@@ -97,7 +54,8 @@ void VerifyHashTable(const PLLRoot *root) {
   // corresponding with the hashes of "exported_names", in order.
   for (uint32_t chain_index = 0; chain_index < root->export_count;
        chain_index++) {
-    uint32_t hash = HashString(GetExportedSymbolName(root, chain_index));
+    uint32_t hash = PLLModule::HashString(
+        GetExportedSymbolName(root, chain_index));
     ASSERT_EQ(hash & ~1, root->hash_chains[chain_index] & ~1);
   }
 
@@ -114,7 +72,8 @@ void VerifyHashTable(const PLLRoot *root) {
       // and the hash matches the hash_buckets[] index.
       bool chain_terminated = false;
       for (; chain_index < root->export_count; chain_index++) {
-        uint32_t hash = HashString(GetExportedSymbolName(root, chain_index));
+        uint32_t hash = PLLModule::HashString(
+            GetExportedSymbolName(root, chain_index));
         ASSERT_EQ(bucket_index, hash % root->bucket_count);
         if ((root->hash_chains[chain_index] & 1) == 1) {
           chain_terminated = true;

@@ -3222,6 +3222,7 @@ nacl_env.Append(
     'src/untrusted/irt/nacl_headers.scons',
     'src/untrusted/minidump_generator/nacl.scons',
     'src/untrusted/nacl/nacl.scons',
+    'src/untrusted/pll_loader/nacl.scons',
     'src/untrusted/pnacl_dynloader/nacl.scons',
     'src/untrusted/valgrind/nacl.scons',
     ####  ALPHABETICALLY SORTED ####

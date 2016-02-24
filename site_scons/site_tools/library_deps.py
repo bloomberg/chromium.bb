@@ -72,6 +72,13 @@ LIBRARY_DEPENDENCIES_DEFAULT = {
     'irt_support_private': [
         'platform',
         ],
+    'pnacl_dynloader': [
+        'platform',
+        ],
+    'pll_loader': [
+        'platform',
+        'pnacl_dynloader',
+        ],
     }
 
 # Untrusted only library dependencies.
