@@ -199,12 +199,6 @@ autofill::PersonalDataManager* IOSChromeSyncClient::GetPersonalDataManager() {
   return PersonalDataManagerFactory::GetForBrowserState(browser_state_);
 }
 
-sync_driver::ClearBrowsingDataCallback
-IOSChromeSyncClient::GetClearBrowsingDataCallback() {
-  return base::Bind(&IOSChromeSyncClient::ClearBrowsingData,
-                    base::Unretained(this));
-}
-
 base::Closure IOSChromeSyncClient::GetPasswordStateChangedCallback() {
   return base::Bind(
       &IOSChromePasswordStoreFactory::OnPasswordsSyncedStatePotentiallyChanged,
@@ -382,11 +376,6 @@ IOSChromeSyncClient::CreateModelWorkerForGroup(
 sync_driver::SyncApiComponentFactory*
 IOSChromeSyncClient::GetSyncApiComponentFactory() {
   return component_factory_.get();
-}
-
-void IOSChromeSyncClient::ClearBrowsingData(base::Time start, base::Time end) {
-  // This method should never be called on iOS.
-  NOTREACHED();
 }
 
 void IOSChromeSyncClient::SetSyncApiComponentFactoryForTesting(

@@ -133,10 +133,6 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   void SetSpareBootstrapToken(const std::string& token);
 #endif
 
-  // Get/Set number of rollback attempts allowed.
-  virtual int GetRemainingRollbackTries() const;
-  virtual void SetRemainingRollbackTries(int times);
-
   // Get/set/clear first sync time of current user. Used to roll back browsing
   // data later when user signs out.
   base::Time GetFirstSyncTime() const;

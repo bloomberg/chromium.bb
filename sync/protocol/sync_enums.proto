@@ -96,7 +96,7 @@ message SyncEnums {
                                 // a server.
     DISABLED_BY_ADMIN    = 10;  // An administrator disabled sync for this
                                 // domain.
-    USER_ROLLBACK        = 11;  // Client told to stop syncing and roll back.
+    DEPRECATED_USER_ROLLBACK        = 11;  // Deprecated in M50.
     PARTIAL_FAILURE      = 12;  // Return when client want to update several
                                 // data types, but some of them failed(e.g.
                                 // throttled).

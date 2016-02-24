@@ -36,6 +36,8 @@ void CleanupDeprecatedTrackedPreferences(
       "safebrowsing.incident_report_sent",
       // TODO(mad): Remove in M48+.
       "software_reporter.prompt_reason",
+      // TODO(zea): Remove in M52+,
+      "sync.remaining_rollback_tries"
   };
 
   for (size_t i = 0; i < arraysize(kDeprecatedTrackedPreferences); ++i) {

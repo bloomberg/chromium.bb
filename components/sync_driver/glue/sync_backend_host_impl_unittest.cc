@@ -120,8 +120,7 @@ class MockSyncFrontend : public sync_driver::SyncFrontend {
 class FakeSyncManagerFactory : public syncer::SyncManagerFactory {
  public:
   explicit FakeSyncManagerFactory(FakeSyncManager** fake_manager)
-     : SyncManagerFactory(NORMAL),
-       fake_manager_(fake_manager) {
+     : fake_manager_(fake_manager) {
     *fake_manager_ = NULL;
   }
   ~FakeSyncManagerFactory() override {}

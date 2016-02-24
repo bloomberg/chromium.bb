@@ -159,10 +159,7 @@ bool StartupController::TryStart() {
   // defer the heavy lifting for sync init until things have calmed down.
   if (sync_prefs_->IsFirstSetupComplete()) {
     // For first time, defer start if data type hasn't requested sync to avoid
-    // stressing browser start. If |first_start_| is false, most likely the
-    // first attempt to start is intercepted by backup. When backup finishes,
-    // TryStart() is called again and we should start immediately to avoid
-    // unnecessary delay.
+    // stressing browser start.
     if (!received_start_request_ && first_start_)
       return StartUp(STARTUP_BACKEND_DEFERRED);
     else

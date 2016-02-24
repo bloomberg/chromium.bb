@@ -32,7 +32,6 @@
 #include "components/sync_driver/glue/sync_backend_host_mock.h"
 #include "components/sync_driver/pref_names.h"
 #include "components/sync_driver/sync_api_component_factory_mock.h"
-#include "components/sync_driver/sync_driver_features.h"
 #include "components/sync_driver/sync_driver_switches.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "components/sync_driver/sync_service_observer.h"
@@ -240,9 +239,6 @@ class ProfileSyncServiceTest : public ::testing::Test {
     component_factory_ = profile_sync_service_bundle_.component_factory();
     ProfileSyncServiceBundle::SyncClientBuilder builder(
         &profile_sync_service_bundle_);
-    builder.SetClearBrowsingDataCallback(
-        base::Bind(&ProfileSyncServiceTest::ClearBrowsingDataCallback,
-                   base::Unretained(this)));
     ProfileSyncService::InitParams init_params =
         profile_sync_service_bundle_.CreateBasicInitParams(behavior,
                                                            builder.Build());
@@ -268,8 +264,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
   }
 
   void InitializeForNthSync() {
-    // Set first sync time before initialize to disable backup and simulate
-    // a complete sync setup.
+    // Set first sync time before initialize to simulate a complete sync setup.
     sync_driver::SyncPrefs sync_prefs(
         service_->GetSyncClient()->GetPrefService());
     sync_prefs.SetFirstSyncTime(base::Time::Now());
@@ -378,10 +373,6 @@ class ProfileSyncServiceTest : public ::testing::Test {
     return component_factory_;
   }
 
-  void ClearBrowsingDataCallback(base::Time start, base::Time end) {
-    clear_browsing_date_start_ = start;
-  }
-
  protected:
   void PumpLoop() {
     base::RunLoop run_loop;
@@ -389,9 +380,6 @@ class ProfileSyncServiceTest : public ::testing::Test {
                                                   run_loop.QuitClosure());
     run_loop.Run();
   }
-
-  // The requested start time when ClearBrowsingDataCallback is called.
-  base::Time clear_browsing_date_start_;
 
  private:
   base::MessageLoop message_loop_;
@@ -423,7 +411,6 @@ TEST_F(ProfileSyncServiceTest, SuccessfulInitialization) {
   InitializeForNthSync();
   EXPECT_FALSE(service()->IsManaged());
   EXPECT_TRUE(service()->IsSyncActive());
-  EXPECT_EQ(ProfileSyncService::SYNC, service()->backend_mode());
 }
 
 // Verify that the SetSetupInProgress function call updates state
@@ -639,107 +626,6 @@ TEST_F(ProfileSyncServiceTest, SignOutRevokeAccessToken) {
 }
 #endif
 
-#if BUILDFLAG(ENABLE_PRE_SYNC_BACKUP)
-TEST_F(ProfileSyncServiceTest, DontStartBackupOnBrowserStart) {
-  CreateServiceWithoutSignIn();
-  InitializeForFirstSync();
-  PumpLoop();
-  EXPECT_EQ(ProfileSyncService::IDLE, service()->backend_mode());
-}
-
-TEST_F(ProfileSyncServiceTest, BackupBeforeFirstSync) {
-  CreateServiceWithoutSignIn();
-  ExpectDataTypeManagerCreation(2, GetDefaultConfigureCalledCallback());
-  std::vector<bool> delete_dir_param;
-  ExpectSyncBackendHostCreationCollectDeleteDir(2, &delete_dir_param);
-  InitializeForFirstSync();
-
-  signin_manager()->SetAuthenticatedAccountInfo(kGaiaId, kEmail);
-  IssueTestTokens();
-  PumpLoop();
-
-  // At this time, backup is finished. Task is posted to start sync again.
-  EXPECT_EQ(ProfileSyncService::BACKUP, service()->backend_mode());
-  EXPECT_FALSE(service()->IsSyncActive());
-  EXPECT_EQ(1u, delete_dir_param.size());
-  EXPECT_TRUE(delete_dir_param[0]);
-
-  // Pump loop to start sync.
-  PumpLoop();
-  EXPECT_EQ(ProfileSyncService::SYNC, service()->backend_mode());
-  EXPECT_TRUE(service()->IsSyncActive());
-  EXPECT_EQ(2u, delete_dir_param.size());
-  EXPECT_TRUE(delete_dir_param[0]);
-}
-
-// Test backup is done again on browser start if user signed in last session
-// but backup didn't finish when last session was closed.
-TEST_F(ProfileSyncServiceTest, ResumeBackupIfAborted) {
-  IssueTestTokens();
-  CreateService(AUTO_START);
-  ExpectDataTypeManagerCreation(2, GetDefaultConfigureCalledCallback());
-  std::vector<bool> delete_dir_param;
-  ExpectSyncBackendHostCreationCollectDeleteDir(2, &delete_dir_param);
-  InitializeForFirstSync();
-  PumpLoop();
-
-  // At this time, backup is finished. Task is posted to start sync again.
-  EXPECT_EQ(ProfileSyncService::BACKUP, service()->backend_mode());
-  EXPECT_FALSE(service()->IsSyncActive());
-  EXPECT_EQ(1u, delete_dir_param.size());
-  EXPECT_TRUE(delete_dir_param[0]);
-
-  // Pump loop to start sync.
-  PumpLoop();
-  EXPECT_EQ(ProfileSyncService::SYNC, service()->backend_mode());
-  EXPECT_TRUE(service()->IsSyncActive());
-  EXPECT_EQ(2u, delete_dir_param.size());
-  EXPECT_TRUE(delete_dir_param[0]);
-}
-
-TEST_F(ProfileSyncServiceTest, Rollback) {
-  CreateService(browser_sync::MANUAL_START);
-  service()->SetFirstSetupComplete();
-  ExpectDataTypeManagerCreation(2, GetDefaultConfigureCalledCallback());
-  std::vector<bool> delete_dir_param;
-  ExpectSyncBackendHostCreationCollectDeleteDir(2, &delete_dir_param);
-  IssueTestTokens();
-  InitializeForNthSync();
-  EXPECT_TRUE(service()->IsSyncActive());
-  EXPECT_EQ(ProfileSyncService::SYNC, service()->backend_mode());
-
-  // First sync time should be recorded.
-  sync_driver::SyncPrefs sync_prefs(
-      service()->GetSyncClient()->GetPrefService());
-  base::Time first_sync_time = sync_prefs.GetFirstSyncTime();
-  EXPECT_FALSE(first_sync_time.is_null());
-
-  syncer::SyncProtocolError client_cmd;
-  client_cmd.action = syncer::DISABLE_SYNC_AND_ROLLBACK;
-  service()->OnActionableError(client_cmd);
-  EXPECT_EQ(ProfileSyncService::IDLE, service()->backend_mode());
-
-  // Pump loop to run rollback.
-  PumpLoop();
-  EXPECT_EQ(ProfileSyncService::ROLLBACK, service()->backend_mode());
-
-  // Browser data should be cleared during rollback.
-  EXPECT_EQ(first_sync_time, clear_browsing_date_start_);
-
-  client_cmd.action = syncer::ROLLBACK_DONE;
-  service()->OnActionableError(client_cmd);
-  EXPECT_EQ(ProfileSyncService::IDLE, service()->backend_mode());
-
-  // First sync time is erased after rollback is done.
-  EXPECT_TRUE(sync_prefs.GetFirstSyncTime().is_null());
-
-  EXPECT_EQ(2u, delete_dir_param.size());
-  EXPECT_FALSE(delete_dir_param[0]);
-  EXPECT_FALSE(delete_dir_param[1]);
-}
-
-#endif  // ENABLE_PRE_SYNC_BACKUP
-
 // Verify that LastSyncedTime is cleared when the user signs out.
 TEST_F(ProfileSyncServiceTest, ClearLastSyncedTimeOnSignOut) {
   IssueTestTokens();
@@ -834,7 +720,6 @@ TEST_F(ProfileSyncServiceTest, OnLocalSetPassphraseEncryption) {
       1, GetRecordingConfigureCalledCallback(&configure_reason));
   InitializeForNthSync();
   EXPECT_TRUE(service()->IsSyncActive());
-  EXPECT_EQ(ProfileSyncService::SYNC, service()->backend_mode());
   testing::Mock::VerifyAndClearExpectations(component_factory());
   EXPECT_EQ(syncer::CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE, configure_reason);
   sync_driver::DataTypeManager::ConfigureResult result;
@@ -878,7 +763,6 @@ TEST_F(ProfileSyncServiceTest,
   ExpectDataTypeManagerCreation(
       1, GetRecordingConfigureCalledCallback(&configure_reason));
   InitializeForNthSync();
-  EXPECT_EQ(ProfileSyncService::SYNC, service()->backend_mode());
   testing::Mock::VerifyAndClearExpectations(component_factory());
   EXPECT_EQ(syncer::CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE, configure_reason);
   sync_driver::DataTypeManager::ConfigureResult result;
@@ -933,7 +817,6 @@ TEST_F(ProfileSyncServiceTest,
   ExpectSyncBackendHostCreationCaptureClearServerData(&captured_callback);
   ExpectDataTypeManagerCreation(1, GetDefaultConfigureCalledCallback());
   InitializeForNthSync();
-  EXPECT_EQ(ProfileSyncService::SYNC, service()->backend_mode());
   testing::Mock::VerifyAndClearExpectations(component_factory());
 
   // Simulate user entering encryption passphrase.
@@ -1018,7 +901,6 @@ TEST_F(ProfileSyncServiceTest, ResetSyncData) {
   syncer::SyncProtocolError client_cmd;
   client_cmd.action = syncer::RESET_LOCAL_SYNC_DATA;
   service()->OnActionableError(client_cmd);
-  EXPECT_EQ(ProfileSyncService::SYNC, service()->backend_mode());
 }
 
 // Regression test for crbug/555434. The issue is that check for sessions DTC in

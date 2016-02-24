@@ -12,8 +12,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/browsing_data/browsing_data_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -248,12 +246,6 @@ autofill::PersonalDataManager* ChromeSyncClient::GetPersonalDataManager() {
   return autofill::PersonalDataManagerFactory::GetForProfile(profile_);
 }
 
-sync_driver::ClearBrowsingDataCallback
-ChromeSyncClient::GetClearBrowsingDataCallback() {
-  return base::Bind(&ChromeSyncClient::ClearBrowsingData,
-                    base::Unretained(this));
-}
-
 base::Closure ChromeSyncClient::GetPasswordStateChangedCallback() {
   return base::Bind(
       &PasswordStoreFactory::OnPasswordsSyncedStatePotentiallyChanged,
@@ -482,28 +474,6 @@ ChromeSyncClient::CreateModelWorkerForGroup(
 sync_driver::SyncApiComponentFactory*
 ChromeSyncClient::GetSyncApiComponentFactory() {
   return component_factory_.get();
-}
-
-void ChromeSyncClient::ClearBrowsingData(base::Time start, base::Time end) {
-  BrowsingDataRemover* remover =
-      BrowsingDataRemoverFactory::GetForBrowserContext(profile_);
-  remover->Remove(BrowsingDataRemover::TimeRange(start, end),
-                  BrowsingDataRemover::REMOVE_ALL, BrowsingDataHelper::ALL);
-
-  password_store_->RemoveLoginsSyncedBetween(start, end);
-}
-
-void ChromeSyncClient::SetBrowsingDataRemoverObserverForTesting(
-    BrowsingDataRemover::Observer* observer) {
-  BrowsingDataRemover* remover =
-      BrowsingDataRemoverFactory::GetForBrowserContext(profile_);
-  if (browsing_data_remover_observer_)
-    remover->RemoveObserver(browsing_data_remover_observer_);
-
-  if (observer)
-    remover->AddObserver(observer);
-
-  browsing_data_remover_observer_ = observer;
 }
 
 void ChromeSyncClient::SetSyncApiComponentFactoryForTesting(

@@ -80,9 +80,6 @@ class SYNC_EXPORT InternalComponentsFactory {
     // Use this if you want BuildDirectoryBackingStore to create/use a real
     // on disk store.
     STORAGE_ON_DISK,
-    // Use this to defer creating on-disk database until
-    // DirectoryBackingStore::SaveChanges() is called.
-    STORAGE_ON_DISK_DEFERRED,
     // Use this to test the case where a directory fails to load.
     STORAGE_INVALID
   };

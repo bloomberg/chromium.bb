@@ -331,7 +331,7 @@ ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
   scoped_ptr<syncer::AttachmentDownloader> attachment_downloader;
   // Only construct an AttachmentUploader and AttachmentDownload if we have sync
   // credentials. We may not have sync credentials because there may not be a
-  // signed in sync user (e.g. sync is running in "backup" mode).
+  // signed in sync user.
   if (!user_share.sync_credentials.account_id.empty() &&
       !user_share.sync_credentials.scope_set.empty()) {
     scoped_refptr<OAuth2TokenServiceRequest::TokenServiceProvider>

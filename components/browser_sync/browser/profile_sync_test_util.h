@@ -79,10 +79,6 @@ class ProfileSyncServiceBundle {
 
     ~SyncClientBuilder();
 
-    // Setters for the various additional data for the client to return.
-    void SetClearBrowsingDataCallback(
-        sync_driver::ClearBrowsingDataCallback clear_browsing_data_callback);
-
     void SetPersonalDataManager(
         autofill::PersonalDataManager* personal_data_manager);
 
@@ -111,7 +107,6 @@ class ProfileSyncServiceBundle {
     // Associated bundle to source objects from.
     ProfileSyncServiceBundle* const bundle_;
 
-    sync_driver::ClearBrowsingDataCallback clear_browsing_data_callback_;
     autofill::PersonalDataManager* personal_data_manager_;
     base::Callback<base::WeakPtr<syncer::SyncableService>(
         syncer::ModelType type)>

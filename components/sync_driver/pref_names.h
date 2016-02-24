@@ -64,7 +64,6 @@ extern const char kSyncSessionsGUID[];
 extern const char kSyncSpareBootstrapToken[];
 #endif  // defined(OS_CHROMEOS)
 
-extern const char kSyncRemainingRollbackTries[];
 extern const char kSyncFirstSyncTime[];
 
 extern const char kSyncPassphrasePrompted[];

@@ -96,8 +96,6 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_METHOD1(SetDecryptionPassphrase, bool(const std::string& passphrase));
   MOCK_METHOD2(SetEncryptionPassphrase, void(const std::string& passphrase,
                                              PassphraseType type));
-
-  MOCK_METHOD1(StartUpSlowBackendComponents, void(BackendMode));
 };
 
 #endif  // COMPONENTS_BROWSER_SYNC_BROWSER_PROFILE_SYNC_SERVICE_MOCK_H_

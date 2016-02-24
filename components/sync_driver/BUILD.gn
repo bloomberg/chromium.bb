@@ -13,8 +13,6 @@ source_set("sync_driver") {
     "backend_data_type_configurer.h",
     "backend_migrator.cc",
     "backend_migrator.h",
-    "backup_rollback_controller.cc",
-    "backup_rollback_controller.h",
     "change_processor.cc",
     "change_processor.h",
     "data_type_controller.cc",
@@ -122,7 +120,6 @@ source_set("sync_driver") {
   ]
 
   public_deps = [
-    ":features",
     "//third_party/cacheinvalidation",
   ]
   deps = [
@@ -205,7 +202,6 @@ source_set("unit_tests") {
   sources = [
     "about_sync_util_unittest.cc",
     "backend_migrator_unittest.cc",
-    "backup_rollback_controller_unittest.cc",
     "data_type_manager_impl_unittest.cc",
     "device_info_data_type_controller_unittest.cc",
     "device_info_service_unittest.cc",
@@ -256,13 +252,4 @@ source_set("unit_tests") {
       "//components/policy:policy_component",
     ]
   }
-}
-
-buildflag_header("features") {
-  header = "sync_driver_features.h"
-
-  # Whether to back up data before sync.
-  enable_pre_sync_backup = is_win || is_mac || (is_linux && !is_chromeos)
-
-  flags = [ "ENABLE_PRE_SYNC_BACKUP=$enable_pre_sync_backup" ]
 }

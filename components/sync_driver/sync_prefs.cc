@@ -79,7 +79,6 @@ void SyncPrefs::RegisterProfilePrefs(
 
   registry->RegisterBooleanPref(prefs::kSyncHasAuthError, false);
   registry->RegisterStringPref(prefs::kSyncSessionsGUID, std::string());
-  registry->RegisterIntegerPref(prefs::kSyncRemainingRollbackTries, 0);
   registry->RegisterBooleanPref(prefs::kSyncPassphrasePrompted, false);
   registry->RegisterIntegerPref(prefs::kSyncMemoryPressureWarningCount, -1);
   registry->RegisterBooleanPref(prefs::kSyncShutdownCleanly, false);
@@ -336,14 +335,6 @@ void SyncPrefs::SetSpareBootstrapToken(const std::string& token) {
   pref_service_->SetString(prefs::kSyncSpareBootstrapToken, token);
 }
 #endif
-
-int SyncPrefs::GetRemainingRollbackTries() const {
-  return pref_service_->GetInteger(prefs::kSyncRemainingRollbackTries);
-}
-
-void SyncPrefs::SetRemainingRollbackTries(int times) {
-  pref_service_->SetInteger(prefs::kSyncRemainingRollbackTries, times);
-}
 
 void SyncPrefs::OnSyncManagedPrefChanged() {
   DCHECK(CalledOnValidThread());

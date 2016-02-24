@@ -14,8 +14,6 @@ enum ShutdownReason {
   STOP_SYNC,         // Sync is asked to stop, e.g. due to scarce resource.
   DISABLE_SYNC,      // Sync is disabled, e.g. user sign out, dashboard clear.
   BROWSER_SHUTDOWN,  // Browser is closed.
-  SWITCH_MODE_SYNC,  // Engine is shut down and a new engine will start in
-                     // sync mode.
 };
 
 }  // namespace syncer

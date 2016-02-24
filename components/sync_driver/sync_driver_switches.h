@@ -12,9 +12,7 @@ namespace switches {
 // All switches in alphabetical order. The switches should be documented
 // alongside the definition of their values in the .cc file.
 extern const char kSyncDeferredStartupTimeoutSeconds[];
-extern const char kSyncDisableBackup[];
 extern const char kSyncDisableDeferredStartup[];
-extern const char kSyncDisableRollback[];
 extern const char kSyncEnableClearDataOnPassphraseEncryption[];
 extern const char kSyncEnableGetUpdateAvoidance[];
 extern const char kSyncEnableUSSDeviceInfo[];

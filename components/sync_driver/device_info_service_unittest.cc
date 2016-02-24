@@ -55,7 +55,6 @@ void AssertEqual(const DeviceInfoSpecifics& s1, const DeviceInfoSpecifics& s2) {
   ASSERT_EQ(s1.device_type(), s2.device_type());
   ASSERT_EQ(s1.sync_user_agent(), s2.sync_user_agent());
   ASSERT_EQ(s1.chrome_version(), s2.chrome_version());
-  ASSERT_EQ(s1.backup_timestamp(), s2.backup_timestamp());
   ASSERT_EQ(s1.signin_scoped_device_id(), s2.signin_scoped_device_id());
 }
 
@@ -189,7 +188,6 @@ class DeviceInfoServiceTest : public testing::Test,
         base::StringPrintf("sync user agent %d", label));
     specifics.set_chrome_version(
         base::StringPrintf("chrome version %d", label));
-    specifics.set_backup_timestamp(label);
     specifics.set_signin_scoped_device_id(
         base::StringPrintf("signin scoped device id %d", label));
     return specifics;
@@ -275,7 +273,6 @@ TEST_F(DeviceInfoServiceTest, NonEmptyStoreLoad) {
 
   scoped_ptr<WriteBatch> batch = store()->CreateWriteBatch();
   DeviceInfoSpecifics specifics(GenerateTestSpecifics());
-  specifics.set_backup_timestamp(6);
   store()->WriteData(batch.get(), "tag", specifics.SerializeAsString());
   store()->CommitWriteBatch(std::move(batch),
                             base::Bind(&AssertResultIsSuccess));

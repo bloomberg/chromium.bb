@@ -41,8 +41,6 @@ class TestProfileSyncService : public ProfileSyncService {
   // and cause memory leak in test.
   syncer::WeakHandle<syncer::JsEventHandler> GetJsEventHandler() override;
 
-  bool NeedBackup() const override;
-
  private:
   syncer::TestIdFactory id_factory_;
 

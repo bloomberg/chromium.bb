@@ -80,10 +80,6 @@ scoped_ptr<base::ListValue> MakeRepeatedValue(const F& fields,
   return list;
 }
 
-base::string16 TimestampToString(int64_t tm) {
-  return base::TimeFormatShortDateAndTime(syncer::ProtoTimeToTime(tm));
-}
-
 }  // namespace
 
 // Helper macros to reduce the amount of boilerplate.
@@ -412,7 +408,6 @@ scoped_ptr<base::DictionaryValue> DeviceInfoSpecificsToValue(
   SET_ENUM(device_type, GetDeviceTypeString);
   SET_STR(sync_user_agent);
   SET_STR(chrome_version);
-  SET_TIME_STR(backup_timestamp);
   SET_STR(signin_scoped_device_id);
   return value;
 }

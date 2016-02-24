@@ -11,7 +11,6 @@
 #include "sync/engine/syncer.h"
 #include "sync/engine/sync_scheduler_impl.h"
 #include "sync/sessions/sync_session_context.h"
-#include "sync/syncable/deferred_on_disk_directory_backing_store.h"
 #include "sync/syncable/on_disk_directory_backing_store.h"
 
 using base::TimeDelta;
@@ -68,10 +67,6 @@ InternalComponentsFactoryImpl::BuildDirectoryBackingStore(
   if (storage == STORAGE_ON_DISK) {
     return scoped_ptr<syncable::DirectoryBackingStore>(
         new syncable::OnDiskDirectoryBackingStore(dir_name, backing_filepath));
-  } else if (storage == STORAGE_ON_DISK_DEFERRED) {
-    return scoped_ptr<syncable::DirectoryBackingStore>(
-        new syncable::DeferredOnDiskDirectoryBackingStore(dir_name,
-                                                          backing_filepath));
   } else {
     NOTREACHED();
     return scoped_ptr<syncable::DirectoryBackingStore>();

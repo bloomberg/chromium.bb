@@ -15,8 +15,6 @@
 #include "net/url_request/url_request_test_util.h"
 #include "sync/internal_api/public/engine/passive_model_worker.h"
 
-using sync_driver::ClearBrowsingDataCallback;
-
 namespace browser_sync {
 
 namespace {
@@ -26,7 +24,6 @@ class BundleSyncClient : public sync_driver::FakeSyncClient {
   BundleSyncClient(
       sync_driver::SyncApiComponentFactory* factory,
       PrefService* pref_service,
-      const ClearBrowsingDataCallback& clear_browsing_data_callback,
       sync_sessions::SyncSessionsClient* sync_sessions_client,
       autofill::PersonalDataManager* personal_data_manager,
       const base::Callback<base::WeakPtr<syncer::SyncableService>(
@@ -42,7 +39,6 @@ class BundleSyncClient : public sync_driver::FakeSyncClient {
   ~BundleSyncClient() override;
 
   PrefService* GetPrefService() override;
-  ClearBrowsingDataCallback GetClearBrowsingDataCallback() override;
   sync_sessions::SyncSessionsClient* GetSyncSessionsClient() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
@@ -56,7 +52,6 @@ class BundleSyncClient : public sync_driver::FakeSyncClient {
 
  private:
   PrefService* const pref_service_;
-  const ClearBrowsingDataCallback clear_browsing_data_callback_;
   sync_sessions::SyncSessionsClient* const sync_sessions_client_;
   autofill::PersonalDataManager* const personal_data_manager_;
   const base::Callback<base::WeakPtr<syncer::SyncableService>(
@@ -75,7 +70,6 @@ class BundleSyncClient : public sync_driver::FakeSyncClient {
 BundleSyncClient::BundleSyncClient(
     sync_driver::SyncApiComponentFactory* factory,
     PrefService* pref_service,
-    const ClearBrowsingDataCallback& clear_browsing_data_callback,
     sync_sessions::SyncSessionsClient* sync_sessions_client,
     autofill::PersonalDataManager* personal_data_manager,
     const base::Callback<base::WeakPtr<syncer::SyncableService>(
@@ -89,7 +83,6 @@ BundleSyncClient::BundleSyncClient(
     history::HistoryService* history_service)
     : sync_driver::FakeSyncClient(factory),
       pref_service_(pref_service),
-      clear_browsing_data_callback_(clear_browsing_data_callback),
       sync_sessions_client_(sync_sessions_client),
       personal_data_manager_(personal_data_manager),
       get_syncable_service_callback_(get_syncable_service_callback),
@@ -105,10 +98,6 @@ BundleSyncClient::~BundleSyncClient() = default;
 
 PrefService* BundleSyncClient::GetPrefService() {
   return pref_service_;
-}
-
-ClearBrowsingDataCallback BundleSyncClient::GetClearBrowsingDataCallback() {
-  return clear_browsing_data_callback_;
 }
 
 sync_sessions::SyncSessionsClient* BundleSyncClient::GetSyncSessionsClient() {
@@ -195,11 +184,6 @@ ProfileSyncServiceBundle::SyncClientBuilder::SyncClientBuilder(
     ProfileSyncServiceBundle* bundle)
     : bundle_(bundle) {}
 
-void ProfileSyncServiceBundle::SyncClientBuilder::SetClearBrowsingDataCallback(
-    ClearBrowsingDataCallback clear_browsing_data_callback) {
-  clear_browsing_data_callback_ = clear_browsing_data_callback;
-}
-
 void ProfileSyncServiceBundle::SyncClientBuilder::SetPersonalDataManager(
     autofill::PersonalDataManager* personal_data_manager) {
   personal_data_manager_ = personal_data_manager;
@@ -234,9 +218,9 @@ scoped_ptr<sync_driver::FakeSyncClient>
 ProfileSyncServiceBundle::SyncClientBuilder::Build() {
   return make_scoped_ptr(new BundleSyncClient(
       bundle_->component_factory(), bundle_->pref_service(),
-      clear_browsing_data_callback_, bundle_->sync_sessions_client(),
-      personal_data_manager_, get_syncable_service_callback_,
-      get_sync_service_callback_, get_bookmark_model_callback_,
+      bundle_->sync_sessions_client(), personal_data_manager_,
+      get_syncable_service_callback_, get_sync_service_callback_,
+      get_bookmark_model_callback_,
       activate_model_creation_ ? bundle_->db_thread() : nullptr,
       activate_model_creation_ ? base::ThreadTaskRunnerHandle::Get() : nullptr,
       history_service_));

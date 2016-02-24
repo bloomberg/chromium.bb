@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/time/time.h"
 #include "components/sync_driver/sync_api_component_factory.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
@@ -52,8 +51,6 @@ namespace sync_driver {
 
 class SyncService;
 
-typedef base::Callback<void(base::Time, base::Time)> ClearBrowsingDataCallback;
-
 // Interface for clients of the Sync API to plumb through necessary dependent
 // components. This interface is purely for abstracting dependencies, and
 // should not contain any non-trivial functional logic.
@@ -78,10 +75,6 @@ class SyncClient {
   virtual bookmarks::BookmarkModel* GetBookmarkModel() = 0;
   virtual favicon::FaviconService* GetFaviconService() = 0;
   virtual history::HistoryService* GetHistoryService() = 0;
-
-  // Returns a callback that will be invoked when the sync service wishes to
-  // have browsing data cleared.
-  virtual ClearBrowsingDataCallback GetClearBrowsingDataCallback() = 0;
 
   // Returns a callback that will register the types specific to the current
   // platform.

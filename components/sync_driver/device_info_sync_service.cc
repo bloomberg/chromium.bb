@@ -59,8 +59,7 @@ void RecordDeviceIdChangedHistogram(const std::string& device_id_from_sync,
 
 DeviceInfoSyncService::DeviceInfoSyncService(
     LocalDeviceInfoProvider* local_device_info_provider)
-    : local_device_backup_time_(-1),
-      local_device_info_provider_(local_device_info_provider) {
+    : local_device_info_provider_(local_device_info_provider) {
   DCHECK(local_device_info_provider);
 }
 
@@ -108,19 +107,6 @@ SyncMergeResult DeviceInfoSyncService::MergeDataAndStartSyncing(
       scoped_ptr<DeviceInfo> synced_local_device_info =
           make_scoped_ptr(CreateDeviceInfo(*iter));
 
-      // Retrieve local device backup timestamp value from the sync data.
-      bool has_synced_backup_time =
-          iter->GetSpecifics().device_info().has_backup_timestamp();
-      int64_t synced_backup_time =
-          has_synced_backup_time
-              ? iter->GetSpecifics().device_info().backup_timestamp()
-              : -1;
-
-      // Overwrite |local_device_backup_time_| with this value if it
-      // hasn't been set yet.
-      if (!has_local_device_backup_time() && has_synced_backup_time) {
-        set_local_device_backup_time(synced_backup_time);
-      }
       // TODO(pavely): Remove histogram once device_id mismatch is understood
       // (crbug/481596).
       if (synced_local_device_info->signin_scoped_device_id() !=
@@ -130,12 +116,11 @@ SyncMergeResult DeviceInfoSyncService::MergeDataAndStartSyncing(
             local_device_info->signin_scoped_device_id());
       }
 
-      // Store the synced device info for the local device only
+      // Store the synced device info for the local device only if
       // it is the same as the local info. Otherwise store the local
       // device info and issue a change further below after finishing
       // processing the |initial_sync_data|.
-      if (synced_local_device_info->Equals(*local_device_info) &&
-          synced_backup_time == local_device_backup_time()) {
+      if (synced_local_device_info->Equals(*local_device_info)) {
         change_type = SyncChange::ACTION_INVALID;
       } else {
         num_items_updated++;
@@ -185,7 +170,6 @@ void DeviceInfoSyncService::StopSyncing(syncer::ModelType type) {
   all_data_.clear();
   sync_processor_.reset();
   error_handler_.reset();
-  clear_local_device_backup_time();
 
   if (was_syncing) {
     NotifyObservers();
@@ -284,56 +268,6 @@ void DeviceInfoSyncService::NotifyObservers() {
   FOR_EACH_OBSERVER(Observer, observers_, OnDeviceInfoChange());
 }
 
-void DeviceInfoSyncService::UpdateLocalDeviceBackupTime(
-    base::Time backup_time) {
-  set_local_device_backup_time(syncer::TimeToProtoTime(backup_time));
-
-  if (sync_processor_.get()) {
-    // Local device info must be available in advance
-    DCHECK(local_device_info_provider_->GetLocalDeviceInfo());
-    const std::string& local_id =
-        local_device_info_provider_->GetLocalDeviceInfo()->guid();
-
-    SyncDataMap::iterator iter = all_data_.find(local_id);
-    DCHECK(iter != all_data_.end());
-
-    syncer::SyncData& data = iter->second;
-    if (UpdateBackupTime(&data)) {
-      // Local device backup time has changed.
-      // Push changes to the server via the |sync_processor_|.
-      SyncChangeList change_list;
-      change_list.push_back(SyncChange(
-          FROM_HERE, syncer::SyncChange::ACTION_UPDATE, data));
-      sync_processor_->ProcessSyncChanges(FROM_HERE, change_list);
-    }
-  }
-}
-
-bool DeviceInfoSyncService::UpdateBackupTime(syncer::SyncData* sync_data) {
-  DCHECK(has_local_device_backup_time());
-  DCHECK(sync_data->GetSpecifics().has_device_info());
-  const sync_pb::DeviceInfoSpecifics& source_specifics =
-      sync_data->GetSpecifics().device_info();
-
-  if (!source_specifics.has_backup_timestamp() ||
-      source_specifics.backup_timestamp() != local_device_backup_time()) {
-    sync_pb::EntitySpecifics entity(sync_data->GetSpecifics());
-    entity.mutable_device_info()->set_backup_timestamp(
-        local_device_backup_time());
-    *sync_data = CreateLocalData(entity);
-
-    return true;
-  }
-
-  return false;
-}
-
-base::Time DeviceInfoSyncService::GetLocalDeviceBackupTime() const {
-  return has_local_device_backup_time()
-             ? syncer::ProtoTimeToTime(local_device_backup_time())
-             : base::Time();
-}
-
 SyncData DeviceInfoSyncService::CreateLocalData(const DeviceInfo* info) {
   sync_pb::EntitySpecifics entity;
   sync_pb::DeviceInfoSpecifics& specifics = *entity.mutable_device_info();
@@ -344,10 +278,6 @@ SyncData DeviceInfoSyncService::CreateLocalData(const DeviceInfo* info) {
   specifics.set_sync_user_agent(info->sync_user_agent());
   specifics.set_device_type(info->device_type());
   specifics.set_signin_scoped_device_id(info->signin_scoped_device_id());
-
-  if (has_local_device_backup_time()) {
-    specifics.set_backup_timestamp(local_device_backup_time());
-  }
 
   return CreateLocalData(entity);
 }

@@ -99,8 +99,6 @@ class SyncService : public DataTypeEncryptionHandler {
   // an initial configuration has successfully completed, although there may
   // be datatype specific, auth, or other transient errors. To see which
   // datetypes are actually syncing, see GetActiveTypes() below.
-  // Note that if sync is in backup or rollback mode, IsSyncActive() will be
-  // false.
   virtual bool IsSyncActive() const = 0;
 
   // Triggers a GetUpdates call for the specified |types|, pulling any new data

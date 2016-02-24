@@ -674,8 +674,7 @@ void SupervisedUserService::FinishSetupSyncWhenReady() {
   // Continue in FinishSetupSync() once the Sync backend has been initialized.
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
-  if (service->IsBackendInitialized() &&
-      service->backend_mode() == ProfileSyncService::SYNC) {
+  if (service->IsBackendInitialized()) {
     FinishSetupSync();
   } else {
     service->AddObserver(this);
@@ -687,7 +686,6 @@ void SupervisedUserService::FinishSetupSync() {
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
   DCHECK(service->IsBackendInitialized());
-  DCHECK(service->backend_mode() == ProfileSyncService::SYNC);
 
   // Sync nothing (except types which are set via GetPreferredDataTypes).
   bool sync_everything = false;
@@ -1023,8 +1021,7 @@ syncer::ModelTypeSet SupervisedUserService::GetPreferredDataTypes() const {
 void SupervisedUserService::OnStateChanged() {
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
-  if (waiting_for_sync_initialization_ && service->IsBackendInitialized() &&
-      service->backend_mode() == ProfileSyncService::SYNC) {
+  if (waiting_for_sync_initialization_ && service->IsBackendInitialized()) {
     waiting_for_sync_initialization_ = false;
     service->RemoveObserver(this);
     FinishSetupSync();

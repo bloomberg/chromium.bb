@@ -38,8 +38,6 @@ class IOSChromeSyncClient : public sync_driver::SyncClient {
   bookmarks::BookmarkModel* GetBookmarkModel() override;
   favicon::FaviconService* GetFaviconService() override;
   history::HistoryService* GetHistoryService() override;
-  sync_driver::ClearBrowsingDataCallback GetClearBrowsingDataCallback()
-      override;
   base::Closure GetPasswordStateChangedCallback() override;
   sync_driver::SyncApiComponentFactory::RegisterDataTypesMethod
   GetRegisterPlatformTypesCallback() override;

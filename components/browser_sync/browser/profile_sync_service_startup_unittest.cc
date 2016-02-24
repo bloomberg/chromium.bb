@@ -74,16 +74,6 @@ ACTION_P3(InvokeOnConfigureDone, sync_service, error_callback, result) {
   sync_service->OnConfigureDone(configure_result);
 }
 
-class TestProfileSyncServiceNoBackup : public ProfileSyncService {
- public:
-  explicit TestProfileSyncServiceNoBackup(
-      ProfileSyncService::InitParams init_params)
-      : ProfileSyncService(std::move(init_params)) {}
-
- protected:
-  bool NeedBackup() const override { return false; }
-};
-
 class ProfileSyncServiceStartupTest : public testing::Test {
  public:
   ProfileSyncServiceStartupTest() {
@@ -105,8 +95,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
         profile_sync_service_bundle_.CreateBasicInitParams(start_behavior,
                                                            builder.Build());
 
-    sync_service_.reset(
-        new TestProfileSyncServiceNoBackup(std::move(init_params)));
+    sync_service_.reset(new ProfileSyncService(std::move(init_params)));
     sync_service_->RegisterDataTypeController(
         new sync_driver::FakeDataTypeController(syncer::BOOKMARKS));
     sync_service_->AddObserver(&observer_);

@@ -12,8 +12,6 @@ namespace sync_driver {
 
 namespace {
 
-void DummyClearBrowsingDataCallback(base::Time start, base::Time end) {}
-
 void DummyRegisterPlatformTypesCallback(SyncService* sync_service,
                                         syncer::ModelTypeSet,
                                         syncer::ModelTypeSet) {}
@@ -50,10 +48,6 @@ favicon::FaviconService* FakeSyncClient::GetFaviconService() {
 
 history::HistoryService* FakeSyncClient::GetHistoryService() {
   return nullptr;
-}
-
-ClearBrowsingDataCallback FakeSyncClient::GetClearBrowsingDataCallback() {
-  return base::Bind(&DummyClearBrowsingDataCallback);
 }
 
 base::Closure FakeSyncClient::GetPasswordStateChangedCallback() {

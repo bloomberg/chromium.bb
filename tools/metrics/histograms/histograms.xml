@@ -50212,6 +50212,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sync.FirstSyncDelayByBackup" units="ms">
+  <obsolete>
+    Backup logic has been removed since 02/2016.
+  </obsolete>
   <owner>haitaol@chromium.org</owner>
   <summary>First sync delay casued by backing up user data.</summary>
 </histogram>

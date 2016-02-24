@@ -25,7 +25,6 @@ class FakeSyncClient : public SyncClient {
   bookmarks::BookmarkModel* GetBookmarkModel() override;
   favicon::FaviconService* GetFaviconService() override;
   history::HistoryService* GetHistoryService() override;
-  ClearBrowsingDataCallback GetClearBrowsingDataCallback() override;
   base::Closure GetPasswordStateChangedCallback() override;
   sync_driver::SyncApiComponentFactory::RegisterDataTypesMethod
   GetRegisterPlatformTypesCallback() override;

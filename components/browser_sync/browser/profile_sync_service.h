@@ -25,7 +25,6 @@
 #include "build/build_config.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/signin_manager_base.h"
-#include "components/sync_driver/backup_rollback_controller.h"
 #include "components/sync_driver/data_type_controller.h"
 #include "components/sync_driver/data_type_manager.h"
 #include "components/sync_driver/data_type_manager_observer.h"
@@ -219,16 +218,7 @@ class ProfileSyncService : public sync_driver::SyncService,
     SETUP_INCOMPLETE,
     DATATYPES_NOT_INITIALIZED,
     INITIALIZED,
-    BACKUP_USER_DATA,
-    ROLLBACK_USER_DATA,
     UNKNOWN_ERROR,
-  };
-
-  enum BackendMode {
-    IDLE,       // No backend.
-    SYNC,       // Backend for syncing.
-    BACKUP,     // Backend for backup.
-    ROLLBACK    // Backend for rollback.
   };
 
   // Bundles the arguments for ProfileSyncService construction. This is a
@@ -567,11 +557,6 @@ class ProfileSyncService : public sync_driver::SyncService,
 
   virtual bool IsDataTypeControllerRunning(syncer::ModelType type) const;
 
-  // Returns the current mode the backend is in.
-  BackendMode backend_mode() const;
-
-  base::Time GetDeviceBackupTimeForTesting() const;
-
   // This triggers a Directory::SaveChanges() call on the sync thread.
   // It should be used to persist data to disk when the process might be
   // killed in the near future.
@@ -622,8 +607,6 @@ class ProfileSyncService : public sync_driver::SyncService,
       const tracked_objects::Location& from_here,
       const std::string& message,
       bool delete_sync_database);
-
-  virtual bool NeedBackup() const;
 
   // This is a cache of the last authentication response we received from the
   // sync server. The UI queries this to display appropriate messaging to the
@@ -733,9 +716,8 @@ class ProfileSyncService : public sync_driver::SyncService,
 
   void ClearUnrecoverableError();
 
-  // Starts up the backend sync components. |mode| specifies the kind of
-  // backend to start, one of SYNC, BACKUP or ROLLBACK.
-  virtual void StartUpSlowBackendComponents(BackendMode mode);
+  // Starts up the backend sync components.
+  virtual void StartUpSlowBackendComponents();
 
   // Collects preferred sync data types from |preference_providers_|.
   syncer::ModelTypeSet GetDataTypesFromPreferenceProviders() const;
@@ -759,9 +741,6 @@ class ProfileSyncService : public sync_driver::SyncService,
                                     bool delete_sync_database,
                                     UnrecoverableErrorReason reason);
 
-  // Returns the type of manager to use according to |backend_mode_|.
-  syncer::SyncManagerFactory::MANAGER_TYPE GetManagerType() const;
-
   // Update UMA for syncing backend.
   void UpdateBackendInitUMA(bool success);
 
@@ -776,22 +755,6 @@ class ProfileSyncService : public sync_driver::SyncService,
 
   // Update first sync time stored in preferences
   void UpdateFirstSyncTimePref();
-
-  // Clear browsing data since first sync during rollback.
-  void ClearBrowsingDataSinceFirstSync();
-
-  // Post background task to check sync backup DB state if needed.
-  void CheckSyncBackupIfNeeded();
-
-  // Callback to receive backup DB check result.
-  void CheckSyncBackupCallback(base::Time backup_time);
-
-  // Callback function to call |startup_controller_|.TryStart() after
-  // backup/rollback finishes;
-  void TryStartSyncAfterBackup();
-
-  // Clean up prefs and backup DB when rollback is not needed.
-  void CleanUpBackup();
 
   // Tell the sync server that this client has disabled sync.
   void RemoveClientFromServer() const;
@@ -986,23 +949,6 @@ class ProfileSyncService : public sync_driver::SyncService,
 
   browser_sync::ProfileSyncServiceStartBehavior start_behavior_;
   scoped_ptr<browser_sync::StartupController> startup_controller_;
-
-  scoped_ptr<sync_driver::BackupRollbackController> backup_rollback_controller_;
-
-  // Mode of current backend.
-  BackendMode backend_mode_;
-
-  // Whether backup is needed before sync starts.
-  bool need_backup_;
-
-  // Whether backup is finished.
-  bool backup_finished_;
-
-  base::Time backup_start_time_;
-
-  // Last time when pre-sync data was saved. NULL pointer means backup data
-  // state is unknown. If time value is null, backup data doesn't exist.
-  scoped_ptr<base::Time> last_backup_time_;
 
   // The full path to the sync data directory.
   base::FilePath directory_path_;

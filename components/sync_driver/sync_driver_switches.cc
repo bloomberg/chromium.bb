@@ -10,15 +10,9 @@ namespace switches {
 const char kSyncDeferredStartupTimeoutSeconds[] =
     "sync-deferred-startup-timeout-seconds";
 
-// Disable data backup when user's not signed in.
-const char kSyncDisableBackup[] = "disable-sync-backup";
-
 // Enables deferring sync backend initialization until user initiated changes
 // occur.
 const char kSyncDisableDeferredStartup[] = "sync-disable-deferred-startup";
-
-// Disable sync rollback.
-const char kSyncDisableRollback[] = "disable-sync-rollback";
 
 // Enables clearing of sync data when a user enables passphrase encryption.
 const char kSyncEnableClearDataOnPassphraseEncryption[] =
