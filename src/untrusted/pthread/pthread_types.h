@@ -55,7 +55,7 @@ typedef struct nc_thread_descriptor {
   unsigned int rdlock_count;  /* number of rdlocks this thread holds */
   nc_thread_memory_block_t *stack_node;
   nc_thread_memory_block_t *tls_node;
-  nc_thread_function start_func;
+  void *(*start_func)(void *thread_arg);
   void *state;
   /*
    * irt_thread_data is used when libpthread is linked into the IRT.

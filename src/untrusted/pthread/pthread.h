@@ -462,8 +462,6 @@ int pthread_rwlock_destroy(pthread_rwlock_t *rwlock);
 
 
 /* Threads */
-/** Thread entry function type. */
-typedef void *(*nc_thread_function)(void *p);
 /** Thread identifier type. */
 typedef struct __nc_basic_thread_data *pthread_t;
 
