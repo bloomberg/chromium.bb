@@ -606,14 +606,14 @@ void VisualStudioWriter::WriteSolutionFileContents(
   SourceDir solution_dir(FilePathToUTF8(solution_dir_path));
   for (const SolutionEntry* folder : folders_) {
     out << "Project(\"" << kGuidTypeFolder << "\") = \"(" << folder->name
-        << ")\", \"" << RebasePath(folder->path, solution_dir, "/") << "\", \""
+        << ")\", \"" << RebasePath(folder->path, solution_dir) << "\", \""
         << folder->guid << "\"" << std::endl;
     out << "EndProject" << std::endl;
   }
 
   for (const SolutionEntry* project : projects_) {
     out << "Project(\"" << kGuidTypeProject << "\") = \"" << project->name
-        << "\", \"" << RebasePath(project->path, solution_dir, "/") << "\", \""
+        << "\", \"" << RebasePath(project->path, solution_dir) << "\", \""
         << project->guid << "\"" << std::endl;
     out << "EndProject" << std::endl;
   }
