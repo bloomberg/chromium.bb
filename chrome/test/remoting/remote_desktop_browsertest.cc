@@ -210,7 +210,8 @@ content::WebContents* RemoteDesktopBrowserTest::LaunchChromotingApp(
   // The active WebContents instance should be the source of the LOAD_STOP
   // notification.
   content::NavigationController* controller =
-      content::Source<content::NavigationController>(observer.source()).ptr();
+      content::Source<content::NavigationController>(
+          observer.matched_source()).ptr();
 
   content::WebContents* web_contents = controller->GetWebContents();
   _ASSERT_TRUE(web_contents);

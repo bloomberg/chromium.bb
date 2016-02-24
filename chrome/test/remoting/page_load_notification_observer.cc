@@ -5,6 +5,7 @@
 #include "chrome/test/remoting/page_load_notification_observer.h"
 
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 
@@ -16,7 +17,8 @@ PageLoadNotificationObserver::PageLoadNotificationObserver(const GURL& target)
           base::Bind(&PageLoadNotificationObserver::IsTargetLoaded,
                      base::Unretained(this))),
       target_(target),
-      ignore_url_parameters_(false) {
+      ignore_url_parameters_(false),
+      matched_source_(content::NotificationService::AllSources()) {
 }
 
 PageLoadNotificationObserver::~PageLoadNotificationObserver() {}
@@ -25,14 +27,19 @@ bool PageLoadNotificationObserver::IsTargetLoaded() {
   content::NavigationController* controller =
       content::Source<content::NavigationController>(source()).ptr();
   GURL current_url = controller->GetWebContents()->GetURL();
+  bool result = false;
   if (ignore_url_parameters_) {
     GURL::Replacements strip_query;
     strip_query.ClearQuery();
-    return current_url.ReplaceComponents(strip_query) ==
+    result = current_url.ReplaceComponents(strip_query) ==
         target_.ReplaceComponents(strip_query);
   } else {
-    return current_url == target_;
+    result = current_url == target_;
   }
+  if (result) {
+    matched_source_ = source();
+  }
+  return result;
 }
 
 }  // namespace remoting

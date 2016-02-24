@@ -28,11 +28,19 @@ class PageLoadNotificationObserver
     ignore_url_parameters_ = ignore_url_parameters;
   }
 
+  // WindowedNotificationObserver caches the source parameter whenever
+  // a page load occurs. Since we're only interested in the one for which
+  // IsTargetLoaded returns true, we have to cache it separately.
+  const content::NotificationSource& matched_source() {
+    return matched_source_;
+  }
+
  private:
   bool IsTargetLoaded();
 
   GURL target_;
   bool ignore_url_parameters_;
+  content::NotificationSource matched_source_;
 
   DISALLOW_COPY_AND_ASSIGN(PageLoadNotificationObserver);
 };
