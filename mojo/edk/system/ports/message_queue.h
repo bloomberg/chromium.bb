@@ -9,6 +9,7 @@
 
 #include <deque>
 #include <functional>
+#include <limits>
 #include <vector>
 
 #include "base/macros.h"
@@ -19,7 +20,7 @@ namespace edk {
 namespace ports {
 
 const uint64_t kInitialSequenceNum = 1;
-const uint64_t kInvalidSequenceNum = 0xFFFFFFFF;
+const uint64_t kInvalidSequenceNum = std::numeric_limits<uint64_t>::max();
 
 // An incoming message queue for a port. MessageQueue keeps track of the highest
 // known sequence number and can indicate whether the next sequential message is
