@@ -41,22 +41,11 @@ void DecodeFinished(scoped_ptr<base::SharedMemory> shm) {
 }
 
 bool VerifyDecodeParams(const AcceleratedJpegDecoderMsg_Decode_Params& params) {
-  if (params.input_buffer_id < 0) {
-    LOG(ERROR) << "BitstreamBuffer id " << params.input_buffer_id
-               << " out of range";
-    return false;
-  }
-
   const int kJpegMaxDimension = UINT16_MAX;
   if (params.coded_size.IsEmpty() ||
       params.coded_size.width() > kJpegMaxDimension ||
       params.coded_size.height() > kJpegMaxDimension) {
     LOG(ERROR) << "invalid coded_size " << params.coded_size.ToString();
-    return false;
-  }
-
-  if (!base::SharedMemory::IsHandleValid(params.input_buffer_handle)) {
-    LOG(ERROR) << "invalid input_buffer_handle";
     return false;
   }
 

@@ -708,14 +708,28 @@ void AndroidVideoDecodeAccelerator::SendDecodedFrameToClient(
 void AndroidVideoDecodeAccelerator::Decode(
     const media::BitstreamBuffer& bitstream_buffer) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (bitstream_buffer.id() != -1 && bitstream_buffer.size() == 0) {
+
+  if (bitstream_buffer.id() >= 0 && bitstream_buffer.size() > 0) {
+    DecodeBuffer(bitstream_buffer);
+    return;
+  }
+
+  if (base::SharedMemory::IsHandleValid(bitstream_buffer.handle()))
+    base::SharedMemory::CloseHandle(bitstream_buffer.handle());
+
+  if (bitstream_buffer.id() < 0) {
+    POST_ERROR(INVALID_ARGUMENT,
+               "Invalid bistream_buffer, id: " << bitstream_buffer.id());
+  } else {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&AndroidVideoDecodeAccelerator::NotifyEndOfBitstreamBuffer,
                    weak_this_factory_.GetWeakPtr(), bitstream_buffer.id()));
-    return;
   }
+}
 
+void AndroidVideoDecodeAccelerator::DecodeBuffer(
+    const media::BitstreamBuffer& bitstream_buffer) {
   pending_bitstream_buffers_.push(
       std::make_pair(bitstream_buffer, base::Time::Now()));
   TRACE_COUNTER1("media", "AVDA::PendingBitstreamBufferCount",
@@ -793,7 +807,7 @@ void AndroidVideoDecodeAccelerator::ReusePictureBuffer(
 void AndroidVideoDecodeAccelerator::Flush() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  Decode(media::BitstreamBuffer(-1, base::SharedMemoryHandle(), 0));
+  DecodeBuffer(media::BitstreamBuffer(-1, base::SharedMemoryHandle(), 0));
 }
 
 bool AndroidVideoDecodeAccelerator::ConfigureMediaCodec() {

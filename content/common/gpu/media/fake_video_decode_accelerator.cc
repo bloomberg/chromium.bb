@@ -67,6 +67,16 @@ bool FakeVideoDecodeAccelerator::Initialize(const Config& config,
 
 void FakeVideoDecodeAccelerator::Decode(
     const media::BitstreamBuffer& bitstream_buffer) {
+  // We won't really read from the bitstream_buffer, close the handle.
+  if (base::SharedMemory::IsHandleValid(bitstream_buffer.handle()))
+    base::SharedMemory::CloseHandle(bitstream_buffer.handle());
+
+  if (bitstream_buffer.id() < 0) {
+    LOG(ERROR) << "Invalid bitstream: id=" << bitstream_buffer.id();
+    client_->NotifyError(INVALID_ARGUMENT);
+    return;
+  }
+
   int bitstream_buffer_id = bitstream_buffer.id();
   queued_bitstream_ids_.push(bitstream_buffer_id);
   child_task_runner_->PostTask(

@@ -829,6 +829,13 @@ void VTVideoDecodeAccelerator::FlushDone(TaskType type) {
 
 void VTVideoDecodeAccelerator::Decode(const media::BitstreamBuffer& bitstream) {
   DCHECK(gpu_thread_checker_.CalledOnValidThread());
+  if (bitstream.id() < 0) {
+    DLOG(ERROR) << "Invalid bitstream, id: " << bitstream.id();
+    if (base::SharedMemory::IsHandleValid(bitstream.handle()))
+      base::SharedMemory::CloseHandle(bitstream.handle());
+    NotifyError(INVALID_ARGUMENT, SFT_INVALID_STREAM);
+    return;
+  }
   DCHECK_EQ(0u, assigned_bitstream_ids_.count(bitstream.id()));
   assigned_bitstream_ids_.insert(bitstream.id());
   Frame* frame = new Frame(bitstream.id());

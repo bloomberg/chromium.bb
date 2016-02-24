@@ -494,21 +494,6 @@ void GpuVideoDecodeAccelerator::OnSetCdm(int cdm_id) {
 void GpuVideoDecodeAccelerator::OnDecode(
     const AcceleratedVideoDecoderMsg_Decode_Params& params) {
   DCHECK(video_decode_accelerator_);
-  if (params.bitstream_buffer_id < 0) {
-    DLOG(ERROR) << "BitstreamBuffer id " << params.bitstream_buffer_id
-                << " out of range";
-    if (child_task_runner_->BelongsToCurrentThread()) {
-      NotifyError(media::VideoDecodeAccelerator::INVALID_ARGUMENT);
-    } else {
-      child_task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(&GpuVideoDecodeAccelerator::NotifyError,
-                     base::Unretained(this),
-                     media::VideoDecodeAccelerator::INVALID_ARGUMENT));
-    }
-    return;
-  }
-
   media::BitstreamBuffer bitstream_buffer(params.bitstream_buffer_id,
                                           params.buffer_handle, params.size,
                                           params.presentation_timestamp);

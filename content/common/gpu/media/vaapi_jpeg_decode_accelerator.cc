@@ -289,6 +289,15 @@ void VaapiJpegDecodeAccelerator::Decode(
 
   DVLOG(4) << "Mapping new input buffer id: " << bitstream_buffer.id()
            << " size: " << bitstream_buffer.size();
+
+  if (bitstream_buffer.id() < 0) {
+    LOG(ERROR) << "Invalid bitstream_buffer, id: " << bitstream_buffer.id();
+    if (base::SharedMemory::IsHandleValid(bitstream_buffer.handle()))
+      base::SharedMemory::CloseHandle(bitstream_buffer.handle());
+    NotifyErrorFromDecoderThread(bitstream_buffer.id(), INVALID_ARGUMENT);
+    return;
+  }
+
   scoped_ptr<base::SharedMemory> shm(
       new base::SharedMemory(bitstream_buffer.handle(), true));
 

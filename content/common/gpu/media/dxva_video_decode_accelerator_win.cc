@@ -246,21 +246,6 @@ static IMFSample* CreateInputSample(const uint8_t* stream,
   return sample.Detach();
 }
 
-static IMFSample* CreateSampleFromInputBuffer(
-    const media::BitstreamBuffer& bitstream_buffer,
-    uint32_t stream_size,
-    DWORD alignment) {
-  base::SharedMemory shm(bitstream_buffer.handle(), true);
-  RETURN_ON_FAILURE(shm.Map(bitstream_buffer.size()),
-                    "Failed in base::SharedMemory::Map", NULL);
-
-  return CreateInputSample(reinterpret_cast<const uint8_t*>(shm.memory()),
-                           bitstream_buffer.size(),
-                           std::min<uint32_t>(bitstream_buffer.size(),
-                                              stream_size),
-                           alignment);
-}
-
 // Helper function to create a COM object instance from a DLL. The alternative
 // is to use the CoCreateInstance API which requires the COM apartment to be
 // initialized which is not the case on the GPU main thread. We want to avoid
@@ -942,15 +927,28 @@ void DXVAVideoDecodeAccelerator::Decode(
     const media::BitstreamBuffer& bitstream_buffer) {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
 
+  // SharedMemory will take over the ownership of handle.
+  base::SharedMemory shm(bitstream_buffer.handle(), true);
+
   State state = GetState();
   RETURN_AND_NOTIFY_ON_FAILURE((state == kNormal || state == kStopped ||
                                 state == kFlushing),
            "Invalid state: " << state, ILLEGAL_STATE,);
+  if (bitstream_buffer.id() < 0) {
+    RETURN_AND_NOTIFY_ON_FAILURE(
+        false, "Invalid bitstream_buffer, id: " << bitstream_buffer.id(),
+        INVALID_ARGUMENT, );
+  }
 
   base::win::ScopedComPtr<IMFSample> sample;
-  sample.Attach(CreateSampleFromInputBuffer(bitstream_buffer,
-                                            input_stream_info_.cbSize,
-                                            input_stream_info_.cbAlignment));
+  RETURN_AND_NOTIFY_ON_FAILURE(shm.Map(bitstream_buffer.size()),
+                               "Failed in base::SharedMemory::Map",
+                               PLATFORM_FAILURE, );
+
+  sample.Attach(CreateInputSample(
+      reinterpret_cast<const uint8_t*>(shm.memory()), bitstream_buffer.size(),
+      std::min<uint32_t>(bitstream_buffer.size(), input_stream_info_.cbSize),
+      input_stream_info_.cbAlignment));
   RETURN_AND_NOTIFY_ON_FAILURE(sample.get(), "Failed to create input sample",
                                PLATFORM_FAILURE, );
 

@@ -167,6 +167,10 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   // Requests picture buffers from the client.
   void RequestPictureBuffers();
 
+  // Decode the content in the |bitstream_buffer|. Note that a
+  // |bitstream_buffer| of id as -1 indicates a flush command.
+  void DecodeBuffer(const media::BitstreamBuffer& bitstream_buffer);
+
   // This callback is called after CDM obtained a MediaCrypto object.
   void OnMediaCryptoReady(media::MediaDrmBridge::JavaObjectPtr media_crypto,
                           bool needs_protected_surface);

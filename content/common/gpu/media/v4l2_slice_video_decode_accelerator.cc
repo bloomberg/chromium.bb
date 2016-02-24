@@ -1190,6 +1190,14 @@ void V4L2SliceVideoDecodeAccelerator::Decode(
             << ", size=" << bitstream_buffer.size();
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
+  if (bitstream_buffer.id() < 0) {
+    LOG(ERROR) << "Invalid bitstream_buffer, id: " << bitstream_buffer.id();
+    if (base::SharedMemory::IsHandleValid(bitstream_buffer.handle()))
+      base::SharedMemory::CloseHandle(bitstream_buffer.handle());
+    NOTIFY_ERROR(INVALID_ARGUMENT);
+    return;
+  }
+
   decoder_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&V4L2SliceVideoDecodeAccelerator::DecodeTask,
                             base::Unretained(this), bitstream_buffer));

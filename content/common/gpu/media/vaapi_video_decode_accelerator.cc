@@ -673,6 +673,12 @@ void VaapiVideoDecodeAccelerator::Decode(
   TRACE_EVENT1("Video Decoder", "VAVDA::Decode", "Buffer id",
                bitstream_buffer.id());
 
+  RETURN_AND_NOTIFY_ON_FAILURE(
+      bitstream_buffer.id() >= 0 &&
+          base::SharedMemory::IsHandleValid(bitstream_buffer.handle()),
+      "Invalid bitstream_buffer, id: " << bitstream_buffer.id(),
+      INVALID_ARGUMENT, );
+
   // We got a new input buffer from the client, map it and queue for later use.
   MapAndQueueNewInputBuffer(bitstream_buffer);
 
