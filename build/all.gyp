@@ -186,6 +186,13 @@
             '../third_party/crashpad/crashpad/crashpad.gyp:*',
             '../third_party/ocmock/ocmock.gyp:*',
           ],
+          'conditions': [
+            ['enable_ipc_fuzzer==1', {
+              'dependencies': [
+                '../tools/ipc_fuzzer/ipc_fuzzer.gyp:*',
+              ],
+            }],
+          ],
         }],
         ['OS=="linux"', {
           'dependencies': [
@@ -725,7 +732,7 @@
               ],
             }],
             ['enable_ipc_fuzzer==1 and component!="shared_library" and '
-                 '(OS=="linux" or OS=="win")', {
+                 '(OS=="linux" or OS=="win" or OS=="mac")', {
               'dependencies': [
                 '../tools/ipc_fuzzer/ipc_fuzzer.gyp:*',
               ],
