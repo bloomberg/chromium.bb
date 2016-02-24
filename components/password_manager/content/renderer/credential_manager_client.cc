@@ -40,7 +40,6 @@ CredentialManagerClient::CredentialManagerClient(
 }
 
 CredentialManagerClient::~CredentialManagerClient() {
-  ClearCallbacksMapWithErrors(&failed_sign_in_callbacks_);
   ClearCallbacksMapWithErrors(&store_callbacks_);
   ClearCallbacksMapWithErrors(&require_user_mediation_callbacks_);
   ClearCallbacksMapWithErrors(&get_callbacks_);

@@ -32,18 +32,13 @@ struct CredentialInfo;
 // calls to 'navigator.credential.*' and the password manager internals which
 // live in the browser process.
 //
-// One instance of CredentialManagerClient is created per RenderThread,
-// held in a scoped_ptr on ChromeContentRendererClient. The client holds
-// a raw pointer to the RenderThread on which it lives, and uses that pointer
-// to send messages to the browser process, and to route responses to itself.
-//
-// When the render thread is shut down (or the client is destructed), the
-// routing is removed, the pointer is cleared, and any pending responses are
-// rejected.
+// One instance of CredentialManagerClient is created per RenderView,
+// acts as RenderViewObserver so it can send messages to the browser process,
+// and route responses to itself.
+// Once RenderView is gone away, the instance will be deleted.
 //
 // Note that each RenderView's WebView holds a pointer to the
-// CredentialManagerClient (set in 'OnRenderViewCreated()'). The client is
-// guaranteed to outlive the views that point to it.
+// CredentialManagerClient (set in 'OnRenderViewCreated()') but does not own it.
 class CredentialManagerClient : public blink::WebCredentialManagerClient,
                                 public content::RenderViewObserver {
  public:
@@ -83,7 +78,6 @@ class CredentialManagerClient : public blink::WebCredentialManagerClient,
 
   // Track the various blink::WebCredentialManagerClient::*Callbacks objects
   // generated from Blink. This class takes ownership of these objects.
-  NotificationCallbacksMap failed_sign_in_callbacks_;
   NotificationCallbacksMap store_callbacks_;
   NotificationCallbacksMap require_user_mediation_callbacks_;
   RequestCallbacksMap get_callbacks_;

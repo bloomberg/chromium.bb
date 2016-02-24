@@ -67,10 +67,6 @@ namespace blink {
 class WebSecurityOrigin;
 }
 
-namespace password_manager {
-class CredentialManagerClient;
-}
-
 #if defined(ENABLE_WEBRTC)
 class WebRtcLoggingMessageFilter;
 #endif
@@ -205,8 +201,6 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
 
   scoped_ptr<network_hints::PrescientNetworkingDispatcher>
       prescient_networking_dispatcher_;
-  scoped_ptr<password_manager::CredentialManagerClient>
-      credential_manager_client_;
 
   OriginTrialKeyManager origin_trial_key_manager_;
 
