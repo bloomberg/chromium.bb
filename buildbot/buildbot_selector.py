@@ -95,10 +95,6 @@ BOT_ASSIGNMENT = {
     ######################################################################
     'nacl-precise64_validator_opt':
         python + ' buildbot/buildbot_standard.py opt 64 glibc --validator',
-    'nacl-precise64_newlib_dbg_valgrind':
-        bash + ' buildbot/buildbot_valgrind.sh newlib',
-    'nacl-precise64_glibc_dbg_valgrind':
-        bash + ' buildbot/buildbot_valgrind.sh glibc',
     # Android trybots.
     'nacl-precise64-newlib-dbg-android':
         echo + ' "Android bots are disabled and going away"',
