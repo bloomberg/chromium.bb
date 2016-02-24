@@ -486,6 +486,16 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
 
+    # New BSD license. http://crbug.com/98455
+    'tools/swarming_client/third_party/google': [
+        'UNKNOWN',
+    ],
+
+    # Apache v2.0.
+    'tools/swarming_client/third_party/googleapiclient': [
+        'UNKNOWN',
+    ],
+
     # http://crbug.com/334668
     # MIT license.
     'tools/swarming_client/third_party/httplib2': [
