@@ -2184,6 +2184,7 @@
     },
     "auron-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "boards": [
             "auron"
         ]
@@ -2226,7 +2227,6 @@
     },
     "auron-release-group": {
         "_template": "release",
-        "active_waterfall": "chromeos",
         "boards": [
             "auron"
         ],
