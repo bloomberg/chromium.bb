@@ -5,6 +5,7 @@
 package org.chromium.ui.base;
 
 import android.content.Context;
+import android.util.DisplayMetrics;
 
 import org.chromium.base.annotations.CalledByNative;
 
@@ -30,10 +31,22 @@ public class DeviceFormFactor {
     }
 
     /**
+     * @param context Android's context.
      * @return True if the current screen's minimum dimension is larger than 720dp.
      */
     public static boolean isLargeTablet(Context context) {
         int minimumScreenWidthDp = context.getResources().getConfiguration().smallestScreenWidthDp;
         return minimumScreenWidthDp >= MINIMUM_LARGE_TABLET_WIDTH_DP;
+    }
+
+    /**
+     * @param context Android's context.
+     * @return True if the device's minimum dimension is larger than 600dp.
+     */
+    public static boolean isDeviceTablet(Context context) {
+        DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+        int smallestDeviceWidthDp = (int) Math.min(metrics.heightPixels / metrics.density,
+                metrics.widthPixels / metrics.density);
+        return smallestDeviceWidthDp >= MINIMUM_TABLET_WIDTH_DP;
     }
 }
