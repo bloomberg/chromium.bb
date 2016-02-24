@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "cc/animation/scrollbar_animation_controller.h"
+#include "cc/input/scrollbar_animation_controller.h"
 #include "cc/layers/layer.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"

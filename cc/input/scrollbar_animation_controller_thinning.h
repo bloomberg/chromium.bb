@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_ANIMATION_SCROLLBAR_ANIMATION_CONTROLLER_THINNING_H_
-#define CC_ANIMATION_SCROLLBAR_ANIMATION_CONTROLLER_THINNING_H_
+#ifndef CC_INPUT_SCROLLBAR_ANIMATION_CONTROLLER_THINNING_H_
+#define CC_INPUT_SCROLLBAR_ANIMATION_CONTROLLER_THINNING_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "cc/animation/scrollbar_animation_controller.h"
 #include "cc/base/cc_export.h"
+#include "cc/input/scrollbar_animation_controller.h"
 
 namespace cc {
 class LayerImpl;
@@ -50,11 +50,7 @@ class CC_EXPORT ScrollbarAnimationControllerThinning
  private:
   // Describes whether the current animation should INCREASE (darken / thicken)
   // a bar or DECREASE it (lighten / thin).
-  enum AnimationChange {
-    NONE,
-    INCREASE,
-    DECREASE
-  };
+  enum AnimationChange { NONE, INCREASE, DECREASE };
   float OpacityAtAnimationProgress(float progress);
   float ThumbThicknessScaleAtAnimationProgress(float progress);
   float AdjustScale(float new_value,
@@ -77,4 +73,4 @@ class CC_EXPORT ScrollbarAnimationControllerThinning
 
 }  // namespace cc
 
-#endif  // CC_ANIMATION_SCROLLBAR_ANIMATION_CONTROLLER_THINNING_H_
+#endif  // CC_INPUT_SCROLLBAR_ANIMATION_CONTROLLER_THINNING_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/animation/scrollbar_animation_controller_linear_fade.h"
+#include "cc/input/scrollbar_animation_controller_linear_fade.h"
 
 #include "cc/layers/solid_color_scrollbar_layer_impl.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
@@ -51,14 +51,9 @@ class ScrollbarAnimationControllerLinearFadeTest
 
     scoped_ptr<LayerImpl> scroll_layer =
         LayerImpl::Create(host_impl_.active_tree(), 1);
-    scrollbar_layer_ =
-        SolidColorScrollbarLayerImpl::Create(host_impl_.active_tree(),
-                                             2,
-                                             orientation(),
-                                             kThumbThickness,
-                                             kTrackStart,
-                                             kIsLeftSideVerticalScrollbar,
-                                             kIsOverlayScrollbar);
+    scrollbar_layer_ = SolidColorScrollbarLayerImpl::Create(
+        host_impl_.active_tree(), 2, orientation(), kThumbThickness,
+        kTrackStart, kIsLeftSideVerticalScrollbar, kIsOverlayScrollbar);
     clip_layer_ = LayerImpl::Create(host_impl_.active_tree(), 3);
     scroll_layer->SetScrollClipLayer(clip_layer_->id());
     LayerImpl* scroll_layer_ptr = scroll_layer.get();

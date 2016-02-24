@@ -7,7 +7,7 @@
 #include <unordered_map>
 
 #include "base/thread_task_runner_handle.h"
-#include "cc/animation/scrollbar_animation_controller.h"
+#include "cc/input/scrollbar_animation_controller.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/painted_scrollbar_layer.h"
 #include "cc/layers/painted_scrollbar_layer_impl.h"

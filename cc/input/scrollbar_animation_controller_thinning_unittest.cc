@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/animation/scrollbar_animation_controller_thinning.h"
+#include "cc/input/scrollbar_animation_controller_thinning.h"
 
 #include "cc/layers/solid_color_scrollbar_layer_impl.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
@@ -54,14 +54,9 @@ class ScrollbarAnimationControllerThinningTest
     const int kTrackStart = 0;
     const bool kIsLeftSideVerticalScrollbar = false;
     const bool kIsOverlayScrollbar = true;
-    scrollbar_layer_ =
-        SolidColorScrollbarLayerImpl::Create(host_impl_.active_tree(),
-                                             kId,
-                                             HORIZONTAL,
-                                             kThumbThickness,
-                                             kTrackStart,
-                                             kIsLeftSideVerticalScrollbar,
-                                             kIsOverlayScrollbar);
+    scrollbar_layer_ = SolidColorScrollbarLayerImpl::Create(
+        host_impl_.active_tree(), kId, HORIZONTAL, kThumbThickness, kTrackStart,
+        kIsLeftSideVerticalScrollbar, kIsOverlayScrollbar);
 
     scrollbar_layer_->SetScrollLayerId(scroll_layer_ptr->id());
     clip_layer_->SetBounds(gfx::Size(100, 100));

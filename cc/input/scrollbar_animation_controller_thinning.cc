@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/animation/scrollbar_animation_controller_thinning.h"
+#include "cc/input/scrollbar_animation_controller_thinning.h"
 
 #include "base/time/time.h"
 #include "cc/layers/layer_impl.h"
@@ -49,8 +49,7 @@ ScrollbarAnimationControllerThinning::ScrollbarAnimationControllerThinning(
   ApplyOpacityAndThumbThicknessScale(kIdleOpacity, kIdleThicknessScale);
 }
 
-ScrollbarAnimationControllerThinning::~ScrollbarAnimationControllerThinning() {
-}
+ScrollbarAnimationControllerThinning::~ScrollbarAnimationControllerThinning() {}
 
 void ScrollbarAnimationControllerThinning::RunAnimationFrame(float progress) {
   float opacity = OpacityAtAnimationProgress(progress);

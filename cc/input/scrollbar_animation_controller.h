@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_ANIMATION_SCROLLBAR_ANIMATION_CONTROLLER_H_
-#define CC_ANIMATION_SCROLLBAR_ANIMATION_CONTROLLER_H_
+#ifndef CC_INPUT_SCROLLBAR_ANIMATION_CONTROLLER_H_
+#define CC_INPUT_SCROLLBAR_ANIMATION_CONTROLLER_H_
 
 #include "base/cancelable_callback.h"
 #include "base/memory/weak_ptr.h"
@@ -83,4 +83,4 @@ class CC_EXPORT ScrollbarAnimationController {
 
 }  // namespace cc
 
-#endif  // CC_ANIMATION_SCROLLBAR_ANIMATION_CONTROLLER_H_
+#endif  // CC_INPUT_SCROLLBAR_ANIMATION_CONTROLLER_H_

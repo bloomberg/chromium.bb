@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/animation/scrollbar_animation_controller_linear_fade.h"
+#include "cc/input/scrollbar_animation_controller_linear_fade.h"
 
 #include "base/time/time.h"
 #include "cc/layers/layer_impl.h"
@@ -35,8 +35,7 @@ ScrollbarAnimationControllerLinearFade::ScrollbarAnimationControllerLinearFade(
                                    duration) {}
 
 ScrollbarAnimationControllerLinearFade::
-    ~ScrollbarAnimationControllerLinearFade() {
-}
+    ~ScrollbarAnimationControllerLinearFade() {}
 
 void ScrollbarAnimationControllerLinearFade::RunAnimationFrame(float progress) {
   ApplyOpacityToScrollbars(1.f - progress);
