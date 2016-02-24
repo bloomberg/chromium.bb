@@ -28,10 +28,6 @@ namespace base {
 class CommandLine;
 }
 
-namespace gpu {
-struct VideoMemoryUsageStats;
-}
-
 namespace content {
 
 class CONTENT_EXPORT GpuDataManagerImplPrivate {
@@ -70,7 +66,7 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   void UpdateGpuInfo(const gpu::GPUInfo& gpu_info);
 
   void UpdateVideoMemoryUsageStats(
-      const gpu::VideoMemoryUsageStats& video_memory_usage_stats);
+      const GPUVideoMemoryUsageStats& video_memory_usage_stats);
 
   void AppendRendererCommandLine(base::CommandLine* command_line) const;
 

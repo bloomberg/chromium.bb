@@ -523,7 +523,6 @@
             'gles2_cmd_helper',
             'gpu_config',
             'gpu_ipc',
-            'gpu_ipc_common',
           ],
           'sources': [
             'gpu_export.h',
@@ -604,14 +603,6 @@
           ],
         },
         {
-          # GN version: //gpu/ipc/common
-          'target_name': 'gpu_ipc_common',
-          'type': 'static_library',
-          'includes': [
-            'gpu_ipc_common.gypi',
-          ],
-        },
-        {
           'target_name': 'gpu_config',
           'type': 'static_library',
           'includes': [
@@ -644,7 +635,6 @@
             'gles2_cmd_helper.gypi',
             'gpu_config.gypi',
             'gpu_ipc.gypi',
-            'gpu_ipc_common.gypi',
             '../build/android/increase_size_for_speed.gypi',
           ],
           'defines': [
@@ -704,14 +694,6 @@
             'gpu',
           ],
         },
-        {
-          # GN version: //gpu/ipc/common
-          'target_name': 'gpu_ipc_common',
-          'type': 'none',
-          'dependencies': [
-            'gpu',
-          ],
-        },
       ],
     }],
     ['disable_nacl!=1 and OS=="win" and target_arch=="ia32"', {
@@ -746,30 +728,6 @@
           },
           'includes': [
             'gpu_ipc.gypi',
-          ],
-          'dependencies': [
-            '../base/base.gyp:base_win64',
-            '../ipc/ipc.gyp:ipc_win64',
-            'command_buffer_common_win64',
-          ],
-          'defines': [
-            '<@(nacl_win64_defines)',
-            'GPU_IMPLEMENTATION',
-          ],
-          'configurations': {
-            'Common_Base': {
-              'msvs_target_platform': 'x64',
-            },
-          },
-        },
-        {
-          'target_name': 'gpu_ipc_common_win64',
-          'type': 'static_library',
-          'variables': {
-            'nacl_win64_target': 1,
-          },
-          'includes': [
-            'gpu_ipc_common.gypi',
           ],
           'dependencies': [
             '../base/base.gyp:base_win64',

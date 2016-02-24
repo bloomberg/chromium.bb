@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_IPC_COMMON_MEMORY_STATS_H_
-#define GPU_IPC_COMMON_MEMORY_STATS_H_
+#ifndef CONTENT_PUBLIC_COMMON_GPU_MEMORY_STATS_H_
+#define CONTENT_PUBLIC_COMMON_GPU_MEMORY_STATS_H_
 
 // Provides access to the GPU information for the system
 // on which chrome is currently running.
@@ -13,17 +13,17 @@
 #include <map>
 
 #include "base/process/process.h"
-#include "gpu/gpu_export.h"
+#include "content/common/content_export.h"
 
-namespace gpu {
+namespace content {
 
 // Note: we use uint64_t instead of size_t for byte count because this struct
 // is sent over IPC which could span 32 & 64 bit processes.
-struct GPU_EXPORT VideoMemoryUsageStats {
-  VideoMemoryUsageStats();
-  ~VideoMemoryUsageStats();
+struct CONTENT_EXPORT GPUVideoMemoryUsageStats {
+  GPUVideoMemoryUsageStats();
+  ~GPUVideoMemoryUsageStats();
 
-  struct GPU_EXPORT ProcessStats {
+  struct CONTENT_EXPORT ProcessStats {
     ProcessStats();
     ~ProcessStats();
 
@@ -47,6 +47,6 @@ struct GPU_EXPORT VideoMemoryUsageStats {
   uint64_t bytes_allocated_historical_max;
 };
 
-}  // namespace gpu
+}  // namespace content
 
-#endif  // GPU_IPC_COMMON_MEMORY_STATS_H_
+#endif  // CONTENT_PUBLIC_COMMON_GPU_MEMORY_STATS_H_

@@ -180,13 +180,13 @@ class TaskManagerModelGpuDataManagerObserver
   }
 
   static void NotifyVideoMemoryUsageStats(
-      const gpu::VideoMemoryUsageStats& video_memory_usage_stats) {
+      const content::GPUVideoMemoryUsageStats& video_memory_usage_stats) {
     TaskManager::GetInstance()->model()->NotifyVideoMemoryUsageStats(
         video_memory_usage_stats);
   }
 
-  void OnVideoMemoryUsageStatsUpdate(
-      const gpu::VideoMemoryUsageStats& video_memory_usage_stats) override {
+  void OnVideoMemoryUsageStatsUpdate(const content::GPUVideoMemoryUsageStats&
+                                         video_memory_usage_stats) override {
     if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
       NotifyVideoMemoryUsageStats(video_memory_usage_stats);
     } else {
@@ -662,7 +662,7 @@ bool TaskManagerModel::GetVideoMemory(int index,
   PerProcessValues& values(
       per_process_cache_[GetResource(index)->GetProcess()]);
   if (!values.is_video_memory_valid) {
-    gpu::VideoMemoryUsageStats::ProcessMap::const_iterator i =
+    content::GPUVideoMemoryUsageStats::ProcessMap::const_iterator i =
         video_memory_usage_stats_.process_map.find(pid);
     if (i == video_memory_usage_stats_.process_map.end())
       return false;
@@ -1248,7 +1248,7 @@ void TaskManagerModel::Refresh() {
 }
 
 void TaskManagerModel::NotifyVideoMemoryUsageStats(
-    const gpu::VideoMemoryUsageStats& video_memory_usage_stats) {
+    const content::GPUVideoMemoryUsageStats& video_memory_usage_stats) {
   DCHECK(pending_video_memory_usage_stats_update_);
   video_memory_usage_stats_ = video_memory_usage_stats;
   pending_video_memory_usage_stats_update_ = false;

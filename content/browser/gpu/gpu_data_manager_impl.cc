@@ -5,7 +5,6 @@
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 
 #include "content/browser/gpu/gpu_data_manager_impl_private.h"
-#include "gpu/ipc/common/memory_stats.h"
 
 namespace content {
 
@@ -145,7 +144,7 @@ void GpuDataManagerImpl::UpdateGpuInfo(const gpu::GPUInfo& gpu_info) {
 }
 
 void GpuDataManagerImpl::UpdateVideoMemoryUsageStats(
-    const gpu::VideoMemoryUsageStats& video_memory_usage_stats) {
+    const GPUVideoMemoryUsageStats& video_memory_usage_stats) {
   base::AutoLock auto_lock(lock_);
   private_->UpdateVideoMemoryUsageStats(video_memory_usage_stats);
 }

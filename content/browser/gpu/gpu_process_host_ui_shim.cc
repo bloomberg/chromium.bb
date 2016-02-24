@@ -24,7 +24,6 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/public/browser/browser_thread.h"
-#include "gpu/ipc/common/memory_stats.h"
 
 #if defined(OS_MACOSX)
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
@@ -272,7 +271,7 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
 #endif
 
 void GpuProcessHostUIShim::OnVideoMemoryUsageStatsReceived(
-    const gpu::VideoMemoryUsageStats& video_memory_usage_stats) {
+    const GPUVideoMemoryUsageStats& video_memory_usage_stats) {
   GpuDataManagerImpl::GetInstance()->UpdateVideoMemoryUsageStats(
       video_memory_usage_stats);
 }

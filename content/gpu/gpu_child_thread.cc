@@ -22,7 +22,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/gpu/content_gpu_client.h"
 #include "gpu/config/gpu_info_collector.h"
-#include "gpu/ipc/common/memory_stats.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "ui/gl/gl_implementation.h"
@@ -352,7 +351,7 @@ void GpuChildThread::OnCollectGraphicsInfo() {
 }
 
 void GpuChildThread::OnGetVideoMemoryUsageStats() {
-  gpu::VideoMemoryUsageStats video_memory_usage_stats;
+  GPUVideoMemoryUsageStats video_memory_usage_stats;
   if (gpu_channel_manager_)
     gpu_channel_manager_->gpu_memory_manager()->GetVideoMemoryUsageStats(
         &video_memory_usage_stats);

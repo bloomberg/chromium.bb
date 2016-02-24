@@ -1161,7 +1161,6 @@
             '../device/bluetooth/bluetooth.gyp:device_bluetooth',
             '../gin/gin.gyp:gin',
             '../gpu/gpu.gyp:gpu',
-            '../gpu/gpu.gyp:gpu_ipc_common',
             '../gpu/gpu.gyp:gpu_unittest_utils',
             '../ipc/ipc.gyp:test_support_ipc',
             '../media/media.gyp:media_test_support',

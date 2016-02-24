@@ -7,13 +7,10 @@
 
 #include "base/process/kill.h"
 #include "content/common/content_export.h"
+#include "content/public/common/gpu_memory_stats.h"
 #include "content/public/common/three_d_api_types.h"
 
 class GURL;
-
-namespace gpu {
-struct VideoMemoryUsageStats;
-}
 
 namespace content {
 
@@ -26,7 +23,7 @@ class CONTENT_EXPORT GpuDataManagerObserver {
 
   // Called for any observers whenever there is a GPU video memory update.
   virtual void OnVideoMemoryUsageStatsUpdate(
-      const gpu::VideoMemoryUsageStats& video_memory_usage_stats) {}
+      const GPUVideoMemoryUsageStats& video_memory_usage_stats) {}
 
   // Indicates that client 3D APIs (Pepper 3D, WebGL) were just blocked on the
   // given page, specifically because the GPU was reset recently.
