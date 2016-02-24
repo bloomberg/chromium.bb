@@ -223,33 +223,33 @@ camera.views.Album.prototype.setSelectedIndex = function(index) {
 camera.views.Album.prototype.onKeyPressed = function(event) {
   var selectedIndexes = this.selectedIndexes;
 
-  var changeSelection = function(index, fallback) {
-    // Expand selection if shift-key is pressed and the index is not null;
-    // otherwise, select only a picture instead.
-    if (event.shiftKey && index !== null) {
+  var changeSelection = function(index) {
+    // Expand selection if shift-key is pressed; otherwise, select one picture.
+    if (index === null)
+      return;
+    if (event.shiftKey)
       this.expandSelectionTo_(index);
-    } else {
-      this.setSelectedIndex(index !== null ? index : fallback);
-    }
+    else
+      this.setSelectedIndex(index);
   }.bind(this);
 
   switch (camera.util.getShortcutIdentifier(event)) {
     case 'Shift-Down':
     case 'Down':
       if (this.pictures.length) {
-        if (!selectedIndexes.length) {
+        var leadIndex = this.lastSelectedIndex();
+        if (leadIndex === null) {
           changeSelection(this.pictures.length - 1);
         } else {
           var newIndex = null;
-          var min = Math.min.apply(null, selectedIndexes);
-          for (var index = min - 1; index >= 0; index--) {
-            if (this.pictures[min].element.offsetLeft ==
-                this.pictures[index].element.offsetLeft) {
-              newIndex = index;
+          for (var i = leadIndex - 1; i >= 0; i--) {
+            if (this.pictures[leadIndex].element.offsetLeft ==
+                this.pictures[i].element.offsetLeft) {
+              newIndex = i;
               break;
             }
           }
-          changeSelection(newIndex, min);
+          changeSelection(newIndex);
         }
       }
       event.preventDefault();
@@ -257,19 +257,19 @@ camera.views.Album.prototype.onKeyPressed = function(event) {
     case 'Shift-Up':
     case 'Up':
       if (this.pictures.length) {
-        if (!selectedIndexes.length) {
+        var leadIndex = this.lastSelectedIndex();
+        if (leadIndex === null) {
           changeSelection(0);
         } else {
           var newIndex = null;
-          var max = Math.max.apply(null, selectedIndexes);
-          for (var index = max + 1; index < this.pictures.length; index++) {
-            if (this.pictures[max].element.offsetLeft ==
-                this.pictures[index].element.offsetLeft) {
-              newIndex = index;
+          for (var i = leadIndex + 1; i < this.pictures.length; i++) {
+            if (this.pictures[leadIndex].element.offsetLeft ==
+                this.pictures[i].element.offsetLeft) {
+              newIndex = i;
               break;
             }
           }
-          changeSelection(newIndex, max);
+          changeSelection(newIndex);
         }
       }
       event.preventDefault();
@@ -277,12 +277,12 @@ camera.views.Album.prototype.onKeyPressed = function(event) {
     case 'Shift-Right':
     case 'Right':
     if (this.pictures.length) {
-        if (!selectedIndexes.length) {
+        var leadIndex = this.lastSelectedIndex();
+        if (leadIndex === null) {
           changeSelection(this.pictures.length - 1);
         } else {
-          var min = Math.min.apply(null, selectedIndexes);
-          var newIndex = (min > 0) ? min - 1 : null;
-          changeSelection(newIndex, 0);
+          var newIndex = (leadIndex > 0) ? leadIndex - 1 : null;
+          changeSelection(newIndex);
         }
       }
       event.preventDefault();
@@ -290,12 +290,13 @@ camera.views.Album.prototype.onKeyPressed = function(event) {
     case 'Shift-Left':
     case 'Left':
       if (this.pictures.length) {
-        if (!selectedIndexes.length) {
+        var leadIndex = this.lastSelectedIndex();
+        if (leadIndex === null) {
           changeSelection(0);
         } else {
-          var max = Math.max.apply(null, selectedIndexes);
-          var newIndex = (max < this.pictures.length - 1) ? max + 1 : null;
-          changeSelection(newIndex, this.pictures.length - 1);
+          var newIndex = (leadIndex < this.pictures.length - 1) ?
+              leadIndex + 1 : null;
+          changeSelection(newIndex);
         }
       }
       event.preventDefault();
@@ -364,34 +365,65 @@ camera.views.Album.prototype.toggleSelection_ = function(index) {
  * @private
  */
 camera.views.Album.prototype.expandSelectionTo_ = function(index) {
-  if (this.selectedIndexes.length) {
-    var selectPicture = function(i) {
-      // Remove the index from the selection if it was selected.
-      var removal = this.selectedIndexes.indexOf(i);
-      if (removal !== -1)
-        this.selectedIndexes.splice(removal, 1);
-      this.setPictureSelected(i);
-      this.selectedIndexes.push(i);
-    }.bind(this);
+  var selectPicture = function(i) {
+    // Remove the index from the selection if it was selected.
+    var removal = this.selectedIndexes.indexOf(i);
+    if (removal !== -1)
+      this.selectedIndexes.splice(removal, 1);
+    this.setPictureSelected(i);
+    this.selectedIndexes.push(i);
+  }.bind(this);
 
-    // Expand the current selection from its min or max index till the
-    // specified index and make the specified index the last selection.
+  var leadIndex = this.lastSelectedIndex();
+  if (leadIndex !== null) {
     var min = Math.min.apply(null, this.selectedIndexes);
     var max = Math.max.apply(null, this.selectedIndexes);
-    if (max < index) {
-      for (var i = max + 1; i <= index; i++)
-        selectPicture(i);
-    } else if (min > index) {
-      for (var i = min - 1; i >= index; i--)
-        selectPicture(i);
+    var continuous = this.selectedIndexes.length > 1;
+    for (var i = min + 1; i < max; i++) {
+      if (this.selectedIndexes.indexOf(i) == -1) {
+        continuous = false;
+        break;
+      }
+    }
+    if (continuous) {
+      // Expand the current selection from its min or max index till the
+      // new index and make the new index the last selection.
+      if (max < index) {
+        for (var i = max + 1; i <= index; i++)
+          selectPicture(i);
+      } else if (min > index) {
+        for (var i = min - 1; i >= index; i--)
+          selectPicture(i);
+      } else {
+        // Deselect pictures and make the new selection if the new index is
+        // between the current min and max index and the last selected index is
+        // min or max index.
+        if (leadIndex < index && leadIndex == min) {
+          this.setSelectedIndex(max);
+          for (var i = max - 1; i >= index; i--)
+            selectPicture(i);
+        } else if (leadIndex > index && leadIndex == max) {
+          this.setSelectedIndex(min);
+          for (var i = min + 1; i <= index; i++)
+            selectPicture(i);
+        } else if (leadIndex !== index) {
+          // Simply update the last selected index.
+          selectPicture(index);
+        }
+      }
     } else {
-      // Just select one picture if the specified index is between the current
-      // selection's min and max index.
-      selectPicture(index);
+      // Expand the current selection from the last selected picture till the
+      // new index and make the new index the last selection.
+      if (leadIndex <= index) {
+        for (var i = leadIndex + 1; i <= index; i++)
+          selectPicture(i);
+      } else {
+        for (var i = leadIndex - 1; i >= index; i--)
+          selectPicture(i);
+      }
     }
   } else {
-    this.setPictureSelected(index);
-    this.selectedIndexes.push(index);
+    selectPicture(index);
   }
   this.updateOnSelectionChanged_();
 };
