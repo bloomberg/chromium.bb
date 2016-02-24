@@ -39,6 +39,7 @@
       'target_name': 'toolbar_test_support',
       'type': 'static_library',
       'dependencies': [
+        'components_resources.gyp:components_resources',
         'toolbar',
       ],
       'include_dirs': [
