@@ -1175,6 +1175,10 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
      * @return Whether or not to force the top controls Android view to hide.
      */
     public boolean forceHideTopControlsAndroidView() {
+        for (int i = 0; i < mSceneOverlays.size(); i++) {
+            // If any overlay wants to hide tha Android version of the top controls, hide them.
+            if (mSceneOverlays.get(i).shouldHideAndroidTopControls()) return true;
+        }
         return false;
     }
 

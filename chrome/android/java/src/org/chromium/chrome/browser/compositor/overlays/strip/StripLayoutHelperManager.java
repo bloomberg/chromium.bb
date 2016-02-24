@@ -154,6 +154,11 @@ public class StripLayoutHelperManager implements SceneOverlay {
         getActiveStripLayoutHelper().getVirtualViews(views);
     }
 
+    @Override
+    public boolean shouldHideAndroidTopControls() {
+        return false;
+    }
+
     /**
      * @return The brightness of background tabs in the tabstrip.
      */
