@@ -187,7 +187,6 @@ public:
     void setViewportMetaMergeContentQuirk(bool) override;
     void setViewportMetaNonUserScalableQuirk(bool) override;
     void setViewportMetaZeroValuesQuirk(bool) override;
-    void setWebAudioEnabled(bool) override;
     void setWebGLErrorsToConsoleEnabled(bool) override;
     void setWebSecurityEnabled(bool) override;
     void setWideViewportQuirkEnabled(bool) override;

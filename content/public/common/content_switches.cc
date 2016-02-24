@@ -972,9 +972,6 @@ const char kRendererWaitForJavaDebugger[] = "renderer-wait-for-java-debugger";
 const char kEnableAggressiveDOMStorageFlushing[] =
     "enable-aggressive-domstorage-flushing";
 
-// Disable web audio API.
-const char kDisableWebAudio[]               = "disable-webaudio";
-
 // Enable audio for desktop share.
 const char kEnableAudioSupportForDesktopShare[] =
     "enable-audio-support-for-desktop-share";

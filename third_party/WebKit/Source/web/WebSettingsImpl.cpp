@@ -482,11 +482,6 @@ void WebSettingsImpl::setOfflineWebApplicationCacheEnabled(bool enabled)
     m_settings->setOfflineWebApplicationCacheEnabled(enabled);
 }
 
-void WebSettingsImpl::setWebAudioEnabled(bool enabled)
-{
-    m_settings->setWebAudioEnabled(enabled);
-}
-
 void WebSettingsImpl::setExperimentalWebGLEnabled(bool enabled)
 {
     m_settings->setWebGLEnabled(enabled);

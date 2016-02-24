@@ -97,9 +97,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kDisableSharedWorkers))
     WebRuntimeFeatures::enableSharedWorker(false);
 
-  if (command_line.HasSwitch(switches::kDisableWebAudio))
-    WebRuntimeFeatures::enableWebAudio(false);
-
   if (command_line.HasSwitch(switches::kDisableSpeechAPI))
     WebRuntimeFeatures::enableScriptedSpeech(false);
 

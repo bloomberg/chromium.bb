@@ -1556,7 +1556,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableLowEndDeviceMode,
     switches::kDisableLowEndDeviceMode,
 #if defined(OS_ANDROID)
-    switches::kDisableWebAudio,
     switches::kEnableUnifiedMediaPipeline,
     switches::kIPCSyncCompositing,
     switches::kRendererWaitForJavaDebugger,

@@ -5,8 +5,8 @@
 [
     ImplementedAs=DOMWindowWebAudio,
 ] partial interface Window {
-    [MeasureAs=AudioContext, RuntimeEnabled=WebAudio] attribute AudioContextConstructor AudioContext;
-    [MeasureAs=OfflineAudioContext, RuntimeEnabled=WebAudio] attribute OfflineAudioContextConstructor OfflineAudioContext;
-    [DeprecateAs=PrefixedAudioContext, RuntimeEnabled=WebAudio] attribute AudioContextConstructor webkitAudioContext;
-    [DeprecateAs=PrefixedOfflineAudioContext, RuntimeEnabled=WebAudio] attribute OfflineAudioContextConstructor webkitOfflineAudioContext;
+    [MeasureAs=AudioContext] attribute AudioContextConstructor AudioContext;
+    [MeasureAs=OfflineAudioContext] attribute OfflineAudioContextConstructor OfflineAudioContext;
+    [DeprecateAs=PrefixedAudioContext] attribute AudioContextConstructor webkitAudioContext;
+    [DeprecateAs=PrefixedOfflineAudioContext] attribute OfflineAudioContextConstructor webkitOfflineAudioContext;
 };

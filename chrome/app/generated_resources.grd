@@ -5530,15 +5530,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FLAGS_WEBVR_DESCRIPTION" desc="Description for the flag to enable WebVR APIs.">
         Enabling this option allows web applications to access experimental Virtual Reality APIs.
-      </message>
-      <if expr="is_android">
-        <message name="IDS_FLAGS_WEBAUDIO_NAME" desc="Name of the 'Disable WebAudio' lab.">
-          WebAudio
-        </message>
-        <message name="IDS_FLAGS_WEBAUDIO_DESCRIPTION" desc="Description for the flag for WebAudio.">
-          Allows web sites to access the WebAudio API.
-        </message>
-      </if>
+      </message>     
       <message name="IDS_FLAGS_COMPOSITING_FOR_FIXED_POSITION_NAME" desc="Name of the 'Compositing for fixed position elements' lab.">
         Compositing for fixed position elements.
       </message>

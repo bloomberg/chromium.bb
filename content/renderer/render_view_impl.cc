@@ -961,9 +961,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setAllowFileAccessFromFileURLs(
       prefs.allow_file_access_from_file_urls);
 
-  // Enable the web audio API if requested on the command line.
-  settings->setWebAudioEnabled(prefs.webaudio_enabled);
-
   // Enable experimental WebGL support if requested on command line
   // and support is compiled in.
   settings->setExperimentalWebGLEnabled(prefs.experimental_webgl_enabled);

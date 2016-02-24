@@ -225,11 +225,6 @@ void WebRuntimeFeatures::enableTouch(bool enable)
     RuntimeEnabledFeatures::setTouchEnabled(enable);
 }
 
-void WebRuntimeFeatures::enableWebAudio(bool enable)
-{
-    RuntimeEnabledFeatures::setWebAudioEnabled(enable);
-}
-
 void WebRuntimeFeatures::enableWebGLDraftExtensions(bool enable)
 {
     RuntimeEnabledFeatures::setWebGLDraftExtensionsEnabled(enable);

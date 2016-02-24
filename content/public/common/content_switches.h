@@ -280,8 +280,6 @@ CONTENT_EXPORT extern const char kRemoteDebuggingSocketName[];
 CONTENT_EXPORT extern const char kRendererWaitForJavaDebugger[];
 #endif
 
-CONTENT_EXPORT extern const char kDisableWebAudio[];
-
 #if defined(OS_CHROMEOS)
 CONTENT_EXPORT extern const char kDisablePanelFitting[];
 CONTENT_EXPORT extern const char kDisableVaapiAcceleratedVideoEncode[];
