@@ -92,11 +92,6 @@ class CONTENT_EXPORT BrowserMessageFilter
     peer_process_ = std::move(peer_process);
   }
 
-  // Checks that the given message can be dispatched on the UI thread, depending
-  // on the platform.  If not, returns false and an error ot the sender.
-  static bool CheckCanDispatchOnUI(const IPC::Message& message,
-                                   IPC::Sender* sender);
-
   // Called by bad_message.h helpers if a message couldn't be deserialized. This
   // kills the renderer.  Can be called on any thread.  This doesn't log the
   // error details to UMA, so use the bad_message.h for your module instead.

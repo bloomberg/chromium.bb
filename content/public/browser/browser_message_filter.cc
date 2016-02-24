@@ -69,11 +69,6 @@ class BrowserMessageFilter::Internal : public IPC::MessageFilter {
       return DispatchMessage(message);
     }
 
-    if (thread == BrowserThread::UI &&
-        !BrowserMessageFilter::CheckCanDispatchOnUI(message, filter_.get())) {
-      return true;
-    }
-
     BrowserThread::PostTask(
         thread, FROM_HERE,
         base::Bind(
@@ -155,31 +150,6 @@ bool BrowserMessageFilter::Send(IPC::Message* message) {
 base::TaskRunner* BrowserMessageFilter::OverrideTaskRunnerForMessage(
     const IPC::Message& message) {
   return nullptr;
-}
-
-bool BrowserMessageFilter::CheckCanDispatchOnUI(const IPC::Message& message,
-                                                IPC::Sender* sender) {
-#if defined(OS_WIN)
-  // On Windows there's a potential deadlock with sync messsages going in
-  // a circle from browser -> plugin -> renderer -> browser.
-  // On Linux we can avoid this by avoiding sync messages from browser->plugin.
-  // On Mac we avoid this by not supporting windowed plugins.
-  if (message.is_sync() && !message.is_caller_pumping_messages()) {
-    // NOTE: IF YOU HIT THIS ASSERT, THE SOLUTION IS ALMOST NEVER TO RUN A
-    // NESTED MESSAGE LOOP IN THE RENDERER!!!
-    // That introduces reentrancy which causes hard to track bugs.  You should
-    // find a way to either turn this into an asynchronous message, or one
-    // that can be answered on the IO thread.
-    NOTREACHED() << "Can't send sync messages to UI thread without pumping "
-        "messages in the renderer or else deadlocks can occur if the page "
-        "has windowed plugins! (message type " << message.type() << ")";
-    IPC::Message* reply = IPC::SyncMessage::GenerateReply(&message);
-    reply->set_reply_error();
-    sender->Send(reply);
-    return false;
-  }
-#endif
-  return true;
 }
 
 void BrowserMessageFilter::ShutdownForBadMessage() {

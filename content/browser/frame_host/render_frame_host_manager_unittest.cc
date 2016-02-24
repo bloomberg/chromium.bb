@@ -674,8 +674,6 @@ TEST_F(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
   base::string16 unused;
   FrameHostMsg_RunBeforeUnloadConfirm before_unload_msg(
       ntp_rfh->GetRoutingID(), kChromeURL, msg, false, &result, &unused);
-  // Enable pumping for check in BrowserMessageFilter::CheckCanDispatchOnUI.
-  before_unload_msg.EnableMessagePumping();
   EXPECT_TRUE(ntp_rfh->OnMessageReceived(before_unload_msg));
   EXPECT_TRUE(ntp_process_host->sink().GetUniqueMessageMatching(IPC_REPLY_ID));
 
