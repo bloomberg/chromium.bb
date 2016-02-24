@@ -704,7 +704,7 @@ RootInlineBox* LayoutBlockFlow::createLineBoxesFromBidiRuns(unsigned bidiLevel, 
         return nullptr;
 
     // FIXME: Why is this only done when we had runs?
-    lineInfo.setLastLine(!end.object());
+    lineInfo.setLastLine(!end.lineLayoutItem());
 
     RootInlineBox* lineBox = constructLine(bidiRuns, lineInfo);
     if (!lineBox)
@@ -803,7 +803,7 @@ void LayoutBlockFlow::appendFloatsToLastLine(LineLayoutState& layoutState, const
     for (; it != end; ++it) {
         FloatingObject& floatingObject = *it->get();
         // If we've reached the start of clean lines any remaining floating children belong to them.
-        if (floatingObject.layoutObject() == cleanLineStart.object() && layoutState.endLine()) {
+        if (floatingObject.layoutObject() == cleanLineStart.lineLayoutItem() && layoutState.endLine()) {
             layoutState.setEndLineMatched(layoutState.endLineMatched() || matchedEndLine(layoutState, resolver, cleanLineStart, cleanLineBidiStatus));
             if (layoutState.endLineMatched()) {
                 layoutState.setLastFloat(&floatingObject);
@@ -878,12 +878,12 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
         // This is a short-cut for empty lines.
         if (layoutState.lineInfo().isEmpty()) {
             if (lastRootBox())
-                lastRootBox()->setLineBreakInfo(endOfLine.object(), endOfLine.offset(), resolver.status());
+                lastRootBox()->setLineBreakInfo(endOfLine.lineLayoutItem(), endOfLine.offset(), resolver.status());
             resolver.runs().deleteRuns();
         } else {
             VisualDirectionOverride override = (styleToUse.rtlOrdering() == VisualOrder ? (styleToUse.direction() == LTR ? VisualLeftToRightOverride : VisualRightToLeftOverride) : NoVisualOverride);
             if (isNewUBAParagraph && styleToUse.unicodeBidi() == Plaintext && !resolver.context()->parent()) {
-                TextDirection direction = determinePlaintextDirectionality(resolver.position().root(), resolver.position().object(), resolver.position().offset());
+                TextDirection direction = determinePlaintextDirectionality(resolver.position().root(), resolver.position().lineLayoutItem(), resolver.position().offset());
                 resolver.setStatus(BidiStatus(direction, isOverride(styleToUse.unicodeBidi())));
             }
             // FIXME: This ownership is reversed. We should own the BidiRunList and pass it to createBidiRunsForLine.
@@ -907,7 +907,7 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
             resolver.markCurrentRunEmpty(); // FIXME: This can probably be replaced by an ASSERT (or just removed).
 
             if (lineBox) {
-                lineBox->setLineBreakInfo(endOfLine.object(), endOfLine.offset(), resolver.status());
+                lineBox->setLineBreakInfo(endOfLine.lineLayoutItem(), endOfLine.offset(), resolver.status());
                 if (layoutState.usesPaintInvalidationBounds())
                     layoutState.updatePaintInvalidationRangeFromBox(lineBox);
 
@@ -1842,7 +1842,7 @@ bool LayoutBlockFlow::matchedEndLine(LineLayoutState& layoutState, const InlineB
     RootInlineBox* originalEndLine = layoutState.endLine();
     RootInlineBox* line = originalEndLine;
     for (int i = 0; i < numLines && line; i++, line = line->nextRootBox()) {
-        if (line->lineBreakObj() == resolver.position().object() && line->lineBreakPos() == resolver.position().offset()) {
+        if (line->lineBreakObj() == resolver.position().lineLayoutItem() && line->lineBreakPos() == resolver.position().offset()) {
             // We have a match.
             if (line->lineBreakBidiStatus() != resolver.status())
                 return false; // ...but the bidi state doesn't match.

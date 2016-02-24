@@ -64,7 +64,7 @@ public:
 
     InlineIterator()
         : m_root(nullptr)
-        , m_obj(nullptr)
+        , m_lineLayoutItem(nullptr)
         , m_nextBreakablePosition(-1)
         , m_pos(0)
     {
@@ -72,7 +72,7 @@ public:
 
     InlineIterator(LineLayoutItem root, LineLayoutItem o, unsigned p)
         : m_root(root)
-        , m_obj(o)
+        , m_lineLayoutItem(o)
         , m_nextBreakablePosition(-1)
         , m_pos(p)
     {
@@ -87,13 +87,13 @@ public:
 
     void moveTo(LineLayoutItem object, unsigned offset, int nextBreak = -1)
     {
-        m_obj = object;
+        m_lineLayoutItem = object;
         m_pos = offset;
         m_nextBreakablePosition = nextBreak;
     }
 
-    LineLayoutItem object() const { return m_obj; }
-    void setObject(LineLayoutItem object) { m_obj = object; }
+    LineLayoutItem lineLayoutItem() const { return m_lineLayoutItem; }
+    void setLineLayoutItem(LineLayoutItem lineLayoutItem) { m_lineLayoutItem = lineLayoutItem; }
 
     int nextBreakablePosition() const { return m_nextBreakablePosition; }
     void setNextBreakablePosition(int position) { m_nextBreakablePosition = position; }
@@ -108,13 +108,13 @@ public:
 
     inline bool atTextParagraphSeparator() const
     {
-        return m_obj && m_obj.preservesNewline() && m_obj.isText() && LineLayoutText(m_obj).textLength()
-            && !LineLayoutText(m_obj).isWordBreak() && LineLayoutText(m_obj).characterAt(m_pos) == '\n';
+        return m_lineLayoutItem && m_lineLayoutItem.preservesNewline() && m_lineLayoutItem.isText() && LineLayoutText(m_lineLayoutItem).textLength()
+            && !LineLayoutText(m_lineLayoutItem).isWordBreak() && LineLayoutText(m_lineLayoutItem).characterAt(m_pos) == '\n';
     }
 
     inline bool atParagraphSeparator() const
     {
-        return (m_obj && m_obj.isBR()) || atTextParagraphSeparator();
+        return (m_lineLayoutItem && m_lineLayoutItem.isBR()) || atTextParagraphSeparator();
     }
 
     UChar characterAt(unsigned) const;
@@ -124,7 +124,7 @@ public:
 
 private:
     LineLayoutItem m_root;
-    LineLayoutItem m_obj;
+    LineLayoutItem m_lineLayoutItem;
 
     int m_nextBreakablePosition;
     unsigned m_pos;
@@ -132,12 +132,12 @@ private:
 
 inline bool operator==(const InlineIterator& it1, const InlineIterator& it2)
 {
-    return it1.offset() == it2.offset() && it1.object() == it2.object();
+    return it1.offset() == it2.offset() && it1.lineLayoutItem() == it2.lineLayoutItem();
 }
 
 inline bool operator!=(const InlineIterator& it1, const InlineIterator& it2)
 {
-    return it1.offset() != it2.offset() || it1.object() != it2.object();
+    return it1.offset() != it2.offset() || it1.lineLayoutItem() != it2.lineLayoutItem();
 }
 
 static inline WTF::Unicode::CharDirection embedCharFromDirection(TextDirection dir, EUnicodeBidi unicodeBidi)
@@ -362,9 +362,9 @@ static inline LineLayoutItem bidiFirstIncludingEmptyInlines(LineLayoutBlockFlow 
 
 inline void InlineIterator::fastIncrementInTextNode()
 {
-    ASSERT(m_obj);
-    ASSERT(m_obj.isText());
-    ASSERT(m_pos <= LineLayoutText(m_obj).textLength());
+    ASSERT(m_lineLayoutItem);
+    ASSERT(m_lineLayoutItem.isText());
+    ASSERT(m_pos <= LineLayoutText(m_lineLayoutItem).textLength());
     if (m_pos < INT_MAX)
         m_pos++;
 }
@@ -403,12 +403,12 @@ private:
 
 static inline bool endOfLineHasIsolatedObjectAncestor(const InlineIterator& isolatedIterator, const InlineIterator& ancestorItertor)
 {
-    if (!isolatedIterator.object() || !treatAsIsolated(isolatedIterator.object().styleRef()))
+    if (!isolatedIterator.lineLayoutItem() || !treatAsIsolated(isolatedIterator.lineLayoutItem().styleRef()))
         return false;
 
-    LineLayoutItem innerIsolatedObject = isolatedIterator.object();
+    LineLayoutItem innerIsolatedObject = isolatedIterator.lineLayoutItem();
     while (innerIsolatedObject && innerIsolatedObject != isolatedIterator.root()) {
-        if (innerIsolatedObject == ancestorItertor.object())
+        if (innerIsolatedObject == ancestorItertor.lineLayoutItem())
             return true;
         innerIsolatedObject = innerIsolatedObject.parent();
     }
@@ -417,36 +417,36 @@ static inline bool endOfLineHasIsolatedObjectAncestor(const InlineIterator& isol
 
 inline void InlineIterator::increment(InlineBidiResolver* resolver, IncrementRule rule)
 {
-    if (!m_obj)
+    if (!m_lineLayoutItem)
         return;
 
     if (rule == FastIncrementInIsolatedLayout
         && resolver && resolver->inIsolate()
         && !endOfLineHasIsolatedObjectAncestor(resolver->endOfLine(), resolver->position())) {
-        moveTo(bidiNextSkippingEmptyInlines(m_root, m_obj, resolver), 0);
+        moveTo(bidiNextSkippingEmptyInlines(m_root, m_lineLayoutItem, resolver), 0);
         return;
     }
 
-    if (m_obj.isText()) {
+    if (m_lineLayoutItem.isText()) {
         fastIncrementInTextNode();
-        if (m_pos < LineLayoutText(m_obj).textLength())
+        if (m_pos < LineLayoutText(m_lineLayoutItem).textLength())
             return;
     }
     // bidiNext can return 0, so use moveTo instead of moveToStartOf
-    moveTo(bidiNextSkippingEmptyInlines(m_root, m_obj, resolver), 0);
+    moveTo(bidiNextSkippingEmptyInlines(m_root, m_lineLayoutItem, resolver), 0);
 }
 
 inline bool InlineIterator::atEnd() const
 {
-    return !m_obj;
+    return !m_lineLayoutItem;
 }
 
 inline UChar InlineIterator::characterAt(unsigned index) const
 {
-    if (!m_obj || !m_obj.isText())
+    if (!m_lineLayoutItem || !m_lineLayoutItem.isText())
         return 0;
 
-    return LineLayoutText(m_obj).characterAt(index);
+    return LineLayoutText(m_lineLayoutItem).characterAt(index);
 }
 
 inline UChar InlineIterator::current() const
@@ -467,8 +467,8 @@ ALWAYS_INLINE WTF::Unicode::CharDirection InlineIterator::direction() const
     if (UChar c = current())
         return WTF::Unicode::direction(c);
 
-    if (m_obj && m_obj.isListMarker())
-        return m_obj.style()->isLeftToRightDirection() ? WTF::Unicode::LeftToRight : WTF::Unicode::RightToLeft;
+    if (m_lineLayoutItem && m_lineLayoutItem.isListMarker())
+        return m_lineLayoutItem.style()->isLeftToRightDirection() ? WTF::Unicode::LeftToRight : WTF::Unicode::RightToLeft;
 
     return WTF::Unicode::OtherNeutral;
 }
@@ -482,9 +482,9 @@ inline void InlineBidiResolver::increment()
 template <>
 inline bool InlineBidiResolver::isEndOfLine(const InlineIterator& end)
 {
-    bool inEndOfLine = m_current == end || m_current.atEnd() || (inIsolate() && m_current.object() == end.object());
+    bool inEndOfLine = m_current == end || m_current.atEnd() || (inIsolate() && m_current.lineLayoutItem() == end.lineLayoutItem());
     if (inIsolate() && inEndOfLine) {
-        m_current.moveTo(m_current.object(), end.offset(), m_current.nextBreakablePosition());
+        m_current.moveTo(m_current.lineLayoutItem(), end.offset(), m_current.nextBreakablePosition());
         m_last = m_current;
         updateStatusLastFromCurrentDirection(WTF::Unicode::OtherNeutral);
     }
@@ -574,7 +574,7 @@ static inline LineLayoutItem highestContainingIsolateWithinRoot(LineLayoutItem o
 
 static inline unsigned numberOfIsolateAncestors(const InlineIterator& iter)
 {
-    LineLayoutItem object = iter.object();
+    LineLayoutItem object = iter.lineLayoutItem();
     if (!object)
         return 0;
     unsigned count = 0;
@@ -696,7 +696,7 @@ static void adjustMidpointsAndAppendRunsForObjectIfNeeded(LineLayoutItem obj, un
     if (haveNextMidpoint)
         nextMidpoint = lineMidpointState.midpoints()[lineMidpointState.currentMidpoint()];
     if (lineMidpointState.betweenMidpoints()) {
-        if (!(haveNextMidpoint && nextMidpoint.object() == obj))
+        if (!(haveNextMidpoint && nextMidpoint.lineLayoutItem() == obj))
             return;
         // This is a new start point. Stop ignoring objects and
         // adjust our start.
@@ -706,7 +706,7 @@ static void adjustMidpointsAndAppendRunsForObjectIfNeeded(LineLayoutItem obj, un
         if (start < end)
             return adjustMidpointsAndAppendRunsForObjectIfNeeded(obj, start, end, root, resolver, behavior, tracker);
     } else {
-        if (!haveNextMidpoint || (obj != nextMidpoint.object())) {
+        if (!haveNextMidpoint || (obj != nextMidpoint.lineLayoutItem())) {
             appendRunObjectIfNecessary(obj, start, end, root, resolver, behavior, tracker);
             return;
         }
@@ -742,8 +742,8 @@ inline void InlineBidiResolver::appendRun(BidiRunList<BidiRun>& runs)
         // FIXME: Could this initialize from this->inIsolate() instead of walking up the layout tree?
         IsolateTracker isolateTracker(runs, numberOfIsolateAncestors(m_sor));
         int start = m_sor.offset();
-        LineLayoutItem obj = m_sor.object();
-        while (obj && obj != m_eor.object() && obj != m_endOfRunAtEndOfLine.object()) {
+        LineLayoutItem obj = m_sor.lineLayoutItem();
+        while (obj && obj != m_eor.lineLayoutItem() && obj != m_endOfRunAtEndOfLine.lineLayoutItem()) {
             if (isolateTracker.inIsolate())
                 addFakeRunIfNecessary(obj, start, obj.length(), m_sor.root(), *this, isolateTracker);
             else
@@ -752,10 +752,10 @@ inline void InlineBidiResolver::appendRun(BidiRunList<BidiRun>& runs)
             start = 0;
             obj = bidiNextSkippingEmptyInlines(m_sor.root(), obj, &isolateTracker);
         }
-        bool isEndOfLine = obj == m_endOfLine.object() && !m_endOfLine.offset();
+        bool isEndOfLine = obj == m_endOfLine.lineLayoutItem() && !m_endOfLine.offset();
         if (obj && !isEndOfLine) {
-            unsigned pos = obj == m_eor.object() ? m_eor.offset() : INT_MAX;
-            if (obj == m_endOfRunAtEndOfLine.object() && m_endOfRunAtEndOfLine.offset() <= pos) {
+            unsigned pos = obj == m_eor.lineLayoutItem() ? m_eor.offset() : INT_MAX;
+            if (obj == m_endOfRunAtEndOfLine.lineLayoutItem() && m_endOfRunAtEndOfLine.offset() <= pos) {
                 m_reachedEndOfLine = true;
                 pos = m_endOfRunAtEndOfLine.offset();
             }
@@ -771,7 +771,7 @@ inline void InlineBidiResolver::appendRun(BidiRunList<BidiRun>& runs)
             m_reachedEndOfLine = true;
         // If isolateTrack is inIsolate, the next |start of run| can not be the current isolated layoutObject.
         if (isolateTracker.inIsolate())
-            m_eor.moveTo(bidiNextSkippingEmptyInlines(m_eor.root(), m_eor.object()), 0);
+            m_eor.moveTo(bidiNextSkippingEmptyInlines(m_eor.root(), m_eor.lineLayoutItem()), 0);
         else
             m_eor.increment();
         m_sor = m_eor;
