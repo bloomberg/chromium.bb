@@ -26,7 +26,7 @@ bool HandleTestFileRequestCallback(
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
   if (!base::ReadFileToString(
           test_data_dir.AppendASCII("webui").AppendASCII(url_substr[1]),
-          &contents, std::string::npos))
+          &contents))
     return false;
 
   base::RefCountedString* ref_contents = new base::RefCountedString();

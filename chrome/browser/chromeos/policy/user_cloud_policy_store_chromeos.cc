@@ -500,7 +500,8 @@ void UserCloudPolicyStoreChromeOS::LoadPolicyKey(const base::FilePath& path,
     return;
   }
 
-  const bool read_success = base::ReadFileToString(path, key, kKeySizeLimit);
+  const bool read_success =
+      base::ReadFileToStringWithMaxSize(path, key, kKeySizeLimit);
   // If the read was successful and the file size is 0 or if the read fails
   // due to file size exceeding |kKeySizeLimit|, log error.
   if ((read_success && key->length() == 0) ||

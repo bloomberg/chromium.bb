@@ -68,7 +68,8 @@ const char* const kUnprivilegedConfigKeys[] = {
 bool ReadConfig(const base::FilePath& filename,
                 scoped_ptr<base::DictionaryValue>* config_out) {
   std::string file_content;
-  if (!base::ReadFileToString(filename, &file_content, kMaxConfigFileSize)) {
+  if (!base::ReadFileToStringWithMaxSize(filename, &file_content,
+                                         kMaxConfigFileSize)) {
     PLOG(ERROR) << "Failed to read '" << filename.value() << "'.";
     return false;
   }

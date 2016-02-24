@@ -46,7 +46,7 @@ bool GetResource(const std::string& id,
   if (id.find(".mojom") != std::string::npos) {
     std::string contents;
     CHECK(base::ReadFileToString(mojo::test::GetFilePathForJSResource(id),
-                                 &contents, std::string::npos))
+                                 &contents))
         << id;
     base::RefCountedString* ref_contents = new base::RefCountedString;
     ref_contents->data() = contents;
@@ -58,8 +58,7 @@ bool GetResource(const std::string& id,
   CHECK(base::PathService::Get(content::DIR_TEST_DATA, &path));
   path = path.AppendASCII(id.substr(0, id.find("?")));
   std::string contents;
-  CHECK(base::ReadFileToString(path, &contents, std::string::npos))
-      << path.value();
+  CHECK(base::ReadFileToString(path, &contents)) << path.value();
   base::RefCountedString* ref_contents = new base::RefCountedString;
   ref_contents->data() = contents;
   callback.Run(ref_contents);

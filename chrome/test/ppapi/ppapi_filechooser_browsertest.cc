@@ -239,7 +239,7 @@ IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTest,
 
   ASSERT_TRUE(base::PathExists(actual_filename));
   std::string file_contents;
-  ASSERT_TRUE(base::ReadFileToString(actual_filename, &file_contents, 100));
+  ASSERT_TRUE(base::ReadFileToString(actual_filename, &file_contents));
   EXPECT_EQ("Hello from PPAPI", file_contents);
 }
 
@@ -260,7 +260,7 @@ IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTest,
 
   ASSERT_TRUE(base::PathExists(actual_filename));
   std::string file_contents;
-  ASSERT_TRUE(base::ReadFileToString(actual_filename, &file_contents, 100));
+  ASSERT_TRUE(base::ReadFileToString(actual_filename, &file_contents));
   EXPECT_EQ("Hello from PPAPI", file_contents);
 }
 
@@ -295,7 +295,7 @@ IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTest,
 
   ASSERT_TRUE(base::PathExists(actual_filename));
   std::string file_contents;
-  ASSERT_TRUE(base::ReadFileToString(actual_filename, &file_contents, 100));
+  ASSERT_TRUE(base::ReadFileToString(actual_filename, &file_contents));
   EXPECT_EQ("Hello from PPAPI", file_contents);
 }
 
@@ -343,7 +343,7 @@ IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTestWithSBService,
 
   ASSERT_TRUE(base::PathExists(actual_filename));
   std::string file_contents;
-  ASSERT_TRUE(base::ReadFileToString(actual_filename, &file_contents, 100));
+  ASSERT_TRUE(base::ReadFileToString(actual_filename, &file_contents));
   EXPECT_EQ("Hello from PPAPI", file_contents);
 }
 

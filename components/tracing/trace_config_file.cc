@@ -82,9 +82,9 @@ TraceConfigFile::TraceConfigFile()
   }
 
   std::string trace_config_file_content;
-  if (!base::ReadFileToString(trace_config_file,
-                              &trace_config_file_content,
-                              kTraceConfigFileSizeLimit)) {
+  if (!base::ReadFileToStringWithMaxSize(trace_config_file,
+                                         &trace_config_file_content,
+                                         kTraceConfigFileSizeLimit)) {
     DLOG(WARNING) << "Cannot read the trace config file correctly.";
     return;
   }

@@ -86,7 +86,8 @@ policy::PolicyLoadResult LoadPolicyFromDisk(
   }
   std::string data;
 
-  if (!base::ReadFileToString(policy_path, &data, kPolicySizeLimit) ||
+  if (!base::ReadFileToStringWithMaxSize(policy_path, &data,
+                                         kPolicySizeLimit) ||
       !result.policy.ParseFromString(data)) {
     LOG(WARNING) << "Failed to read or parse policy data from "
                  << policy_path.value();
@@ -94,7 +95,7 @@ policy::PolicyLoadResult LoadPolicyFromDisk(
     return result;
   }
 
-  if (!base::ReadFileToString(key_path, &data, kKeySizeLimit) ||
+  if (!base::ReadFileToStringWithMaxSize(key_path, &data, kKeySizeLimit) ||
       !result.key.ParseFromString(data)) {
     // Log an error on missing key data, but do not trigger a load failure
     // for now since there are still old unsigned cached policy blobs in the

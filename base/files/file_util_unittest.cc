@@ -2066,26 +2066,26 @@ TEST_F(FileUtilTest, ReadFileToString) {
   EXPECT_EQ(kTestData, data);
 
   data = "temp";
-  EXPECT_FALSE(ReadFileToString(file_path, &data, 0));
+  EXPECT_FALSE(ReadFileToStringWithMaxSize(file_path, &data, 0));
   EXPECT_EQ(0u, data.length());
 
   data = "temp";
-  EXPECT_FALSE(ReadFileToString(file_path, &data, 2));
+  EXPECT_FALSE(ReadFileToStringWithMaxSize(file_path, &data, 2));
   EXPECT_EQ("01", data);
 
   data.clear();
-  EXPECT_FALSE(ReadFileToString(file_path, &data, 3));
+  EXPECT_FALSE(ReadFileToStringWithMaxSize(file_path, &data, 3));
   EXPECT_EQ("012", data);
 
   data.clear();
-  EXPECT_TRUE(ReadFileToString(file_path, &data, 4));
+  EXPECT_TRUE(ReadFileToStringWithMaxSize(file_path, &data, 4));
   EXPECT_EQ("0123", data);
 
   data.clear();
-  EXPECT_TRUE(ReadFileToString(file_path, &data, 6));
+  EXPECT_TRUE(ReadFileToStringWithMaxSize(file_path, &data, 6));
   EXPECT_EQ("0123", data);
 
-  EXPECT_TRUE(ReadFileToString(file_path, NULL, 6));
+  EXPECT_TRUE(ReadFileToStringWithMaxSize(file_path, NULL, 6));
 
   EXPECT_TRUE(ReadFileToString(file_path, NULL));
 
@@ -2101,7 +2101,7 @@ TEST_F(FileUtilTest, ReadFileToString) {
   EXPECT_EQ(0u, data.length());
 
   data = "temp";
-  EXPECT_FALSE(ReadFileToString(file_path, &data, 6));
+  EXPECT_FALSE(ReadFileToStringWithMaxSize(file_path, &data, 6));
   EXPECT_EQ(0u, data.length());
 }
 

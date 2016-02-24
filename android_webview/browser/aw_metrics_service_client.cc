@@ -46,7 +46,7 @@ void GetOrCreateGUID(const base::FilePath guid_file_path, std::string* guid) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
 
   // Try to read an existing GUID.
-  if (base::ReadFileToString(guid_file_path, guid, GUID_SIZE)) {
+  if (base::ReadFileToStringWithMaxSize(guid_file_path, guid, GUID_SIZE)) {
     if (base::IsValidGUID(*guid))
       return;
     else
