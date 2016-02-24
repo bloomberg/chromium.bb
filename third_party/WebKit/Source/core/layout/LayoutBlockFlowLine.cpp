@@ -58,7 +58,7 @@ public:
 
     void addRunWithExpansions(BidiRun& run, bool& isAfterExpansion, TextJustify textJustify)
     {
-        LayoutText* text = toLayoutText(run.m_lineLayoutItem);
+        LayoutText* text = toLayoutText(run.m_object);
         unsigned opportunitiesInRun;
         if (text->is8Bit()) {
             opportunitiesInRun = Character::expansionOpportunityCount(text->characters8() + run.m_start,
@@ -92,13 +92,13 @@ public:
             if (!r->m_box || r == trailingSpaceRun)
                 continue;
 
-            if (r->m_lineLayoutItem.isText()) {
+            if (r->m_object->isText()) {
                 unsigned opportunitiesInRun = m_runsWithExpansions[i++];
 
                 RELEASE_ASSERT(opportunitiesInRun <= m_totalOpportunities);
 
                 // Don't justify for white-space: pre.
-                if (r->m_lineLayoutItem.style()->whiteSpace() != PRE) {
+                if (r->m_object->style()->whiteSpace() != PRE) {
                     InlineTextBox* textBox = toInlineTextBox(r->m_box);
                     RELEASE_ASSERT(m_totalOpportunities);
                     int expansion = (availableLogicalWidth - totalLogicalWidth) * opportunitiesInRun / m_totalOpportunities;
@@ -132,14 +132,14 @@ static inline InlineBox* createInlineBoxForLayoutObject(LayoutObject* obj, bool 
 
 static inline InlineTextBox* createInlineBoxForText(BidiRun& run, bool isOnlyRun)
 {
-    ASSERT(run.m_lineLayoutItem.isText());
-    LineLayoutText text = LineLayoutText(run.m_lineLayoutItem);
-    InlineTextBox* textBox = text.createInlineTextBox(run.m_start, run.m_stop - run.m_start);
+    ASSERT(run.m_object->isText());
+    LayoutText* text = toLayoutText(run.m_object);
+    InlineTextBox* textBox = text->createInlineTextBox(run.m_start, run.m_stop - run.m_start);
     // We only treat a box as text for a <br> if we are on a line by ourself or in strict mode
     // (Note the use of strict mode.  In "almost strict" mode, we don't treat the box for <br> as text.)
-    if (text.isBR())
-        textBox->setIsText(isOnlyRun || text.document().inNoQuirksMode());
-    textBox->setDirOverride(run.dirOverride(text.style()->rtlOrdering() == VisualOrder));
+    if (text->isBR())
+        textBox->setIsText(isOnlyRun || text->document().inNoQuirksMode());
+    textBox->setDirOverride(run.dirOverride(text->style()->rtlOrdering() == VisualOrder));
     if (run.m_hasHyphen)
         textBox->setHasHyphen(true);
     return textBox;
@@ -241,17 +241,17 @@ static bool reachedEndOfTextRun(const BidiRunList<BidiRun>& bidiRuns)
     if (!run)
         return true;
     unsigned pos = run->stop();
-    LineLayoutItem r = run->m_lineLayoutItem;
-    if (!r.isText() || r.isBR())
+    LayoutObject* r = run->m_object;
+    if (!r->isText() || r->isBR())
         return false;
-    LineLayoutText layoutText(r);
-    unsigned length = layoutText.textLength();
+    LayoutText* layoutText = toLayoutText(r);
+    unsigned length = layoutText->textLength();
     if (pos >= length)
         return true;
 
-    if (layoutText.is8Bit())
-        return endsWithASCIISpaces(layoutText.characters8(), pos, length);
-    return endsWithASCIISpaces(layoutText.characters16(), pos, length);
+    if (layoutText->is8Bit())
+        return endsWithASCIISpaces(layoutText->characters8(), pos, length);
+    return endsWithASCIISpaces(layoutText->characters16(), pos, length);
 }
 
 RootInlineBox* LayoutBlockFlow::constructLine(BidiRunList<BidiRun>& bidiRuns, const LineInfo& lineInfo)
@@ -264,17 +264,17 @@ RootInlineBox* LayoutBlockFlow::constructLine(BidiRunList<BidiRun>& bidiRuns, co
     for (BidiRun* r = bidiRuns.firstRun(); r; r = r->next()) {
         // Create a box for our object.
         bool isOnlyRun = (runCount == 1);
-        if (runCount == 2 && !r->m_lineLayoutItem.isListMarker())
-            isOnlyRun = (!style()->isLeftToRightDirection() ? bidiRuns.lastRun() : bidiRuns.firstRun())->m_lineLayoutItem.isListMarker();
+        if (runCount == 2 && !r->m_object->isListMarker())
+            isOnlyRun = (!style()->isLeftToRightDirection() ? bidiRuns.lastRun() : bidiRuns.firstRun())->m_object->isListMarker();
 
         if (lineInfo.isEmpty())
             continue;
 
         InlineBox* box;
-        if (r->m_lineLayoutItem.isText())
+        if (r->m_object->isText())
             box = createInlineBoxForText(*r, isOnlyRun);
         else
-            box = createInlineBoxForLayoutObject(r->m_lineLayoutItem, false, isOnlyRun);
+            box = createInlineBoxForLayoutObject(r->m_object, false, isOnlyRun);
         r->m_box = box;
 
         ASSERT(box);
@@ -288,9 +288,9 @@ RootInlineBox* LayoutBlockFlow::constructLine(BidiRunList<BidiRun>& bidiRuns, co
         // then we need to construct inline boxes as necessary to properly enclose the
         // run's inline box. Segments can only be siblings at the root level, as
         // they are positioned separately.
-        if (!parentBox || (!parentBox->lineLayoutItem().isEqual(r->m_lineLayoutItem.parent()))) {
+        if (!parentBox || (!parentBox->lineLayoutItem().isEqual(r->m_object->parent()))) {
             // Create new inline boxes all the way back to the appropriate insertion point.
-            parentBox = createLineBoxes(r->m_lineLayoutItem.parent(), lineInfo, box);
+            parentBox = createLineBoxes(r->m_object->parent(), lineInfo, box);
         } else {
             // Append the inline box to this line.
             parentBox->addToLine(box);
@@ -300,7 +300,7 @@ RootInlineBox* LayoutBlockFlow::constructLine(BidiRunList<BidiRun>& bidiRuns, co
 
         if (box->isInlineTextBox()) {
             if (AXObjectCache* cache = document().existingAXObjectCache())
-                cache->inlineTextBoxesUpdated(r->m_lineLayoutItem);
+                cache->inlineTextBoxesUpdated(r->m_object);
         }
     }
 
@@ -317,8 +317,8 @@ RootInlineBox* LayoutBlockFlow::constructLine(BidiRunList<BidiRun>& bidiRuns, co
     // paint borders/margins/padding.  This knowledge will ultimately be used when
     // we determine the horizontal positions and widths of all the inline boxes on
     // the line.
-    bool isLogicallyLastRunWrapped = bidiRuns.logicallyLastRun()->m_lineLayoutItem && bidiRuns.logicallyLastRun()->m_lineLayoutItem.isText() ? !reachedEndOfTextRun(bidiRuns) : true;
-    lastLineBox()->determineSpacingForFlowBoxes(lineInfo.isLastLine(), isLogicallyLastRunWrapped, bidiRuns.logicallyLastRun()->m_lineLayoutItem);
+    bool isLogicallyLastRunWrapped = bidiRuns.logicallyLastRun()->m_object && bidiRuns.logicallyLastRun()->m_object->isText() ? !reachedEndOfTextRun(bidiRuns) : true;
+    lastLineBox()->determineSpacingForFlowBoxes(lineInfo.isLastLine(), isLogicallyLastRunWrapped, bidiRuns.logicallyLastRun()->m_object);
 
     // Now mark the line boxes as being constructed.
     lastLineBox()->setConstructed();
@@ -415,8 +415,8 @@ void LayoutBlockFlow::setMarginsForRubyRun(BidiRun* run, LayoutRubyRun* layoutRu
     int endOverhang;
     LayoutObject* nextObject = nullptr;
     for (BidiRun* runWithNextObject = run->next(); runWithNextObject; runWithNextObject = runWithNextObject->next()) {
-        if (!runWithNextObject->m_lineLayoutItem.isOutOfFlowPositioned() && !runWithNextObject->m_box->isLineBreak()) {
-            nextObject = runWithNextObject->m_lineLayoutItem;
+        if (!runWithNextObject->m_object->isOutOfFlowPositioned() && !runWithNextObject->m_box->isLineBreak()) {
+            nextObject = runWithNextObject->m_object;
             break;
         }
     }
@@ -594,8 +594,8 @@ void LayoutBlockFlow::computeInlineDirectionPositionsForLine(RootInlineBox* line
     updateLogicalInlinePositions(this, lineLogicalLeft, lineLogicalRight, availableLogicalWidth, isFirstLine, indentText, LayoutUnit());
     bool needsWordSpacing;
 
-    if (firstRun && firstRun->m_lineLayoutItem.isAtomicInlineLevel()) {
-        LayoutBox* layoutBox = toLayoutBox(firstRun->m_lineLayoutItem);
+    if (firstRun && firstRun->m_object->isAtomicInlineLevel()) {
+        LayoutBox* layoutBox = toLayoutBox(firstRun->m_object);
         updateLogicalInlinePositions(this, lineLogicalLeft, lineLogicalRight, availableLogicalWidth, isFirstLine, indentText, layoutBox->logicalHeight());
     }
 
@@ -619,13 +619,13 @@ BidiRun* LayoutBlockFlow::computeInlineDirectionPositionsForSegment(RootInlineBo
 
     BidiRun* r = firstRun;
     for (; r; r = r->next()) {
-        if (!r->m_box || r->m_lineLayoutItem.isOutOfFlowPositioned() || r->m_box->isLineBreak()) {
+        if (!r->m_box || r->m_object->isOutOfFlowPositioned() || r->m_box->isLineBreak()) {
             continue; // Positioned objects are only participating to figure out their
                 // correct static x position.  They have no effect on the width.
                 // Similarly, line break boxes have no effect on the width.
         }
-        if (r->m_lineLayoutItem.isText()) {
-            LayoutText* rt = toLayoutText(r->m_lineLayoutItem);
+        if (r->m_object->isText()) {
+            LayoutText* rt = toLayoutText(r->m_object);
             if (textAlign == JUSTIFY && r != trailingSpaceRun && textJustify != TextJustifyNone) {
                 if (!isAfterExpansion)
                     toInlineTextBox(r->m_box)->setCanHaveLeadingExpansion(true);
@@ -641,8 +641,8 @@ BidiRun* LayoutBlockFlow::computeInlineDirectionPositionsForSegment(RootInlineBo
             setLogicalWidthForTextRun(lineBox, r, rt, totalLogicalWidth, lineInfo, textBoxDataMap, verticalPositionCache, wordMeasurements);
         } else {
             isAfterExpansion = false;
-            if (!r->m_lineLayoutItem.isLayoutInline()) {
-                LayoutBox* layoutBox = toLayoutBox(r->m_lineLayoutItem);
+            if (!r->m_object->isLayoutInline()) {
+                LayoutBox* layoutBox = toLayoutBox(r->m_object);
                 if (layoutBox->isRubyRun())
                     setMarginsForRubyRun(r, toLayoutRubyRun(layoutBox), previousObject, lineInfo);
                 r->m_box->setLogicalWidth(logicalWidthForChild(*layoutBox));
@@ -652,7 +652,7 @@ BidiRun* LayoutBlockFlow::computeInlineDirectionPositionsForSegment(RootInlineBo
         }
 
         totalLogicalWidth += r->m_box->logicalWidth();
-        previousObject = r->m_lineLayoutItem;
+        previousObject = r->m_object;
     }
 
     if (isAfterExpansion)
@@ -678,15 +678,15 @@ void LayoutBlockFlow::computeBlockDirectionPositionsForLine(RootInlineBox* lineB
 
         // Align positioned boxes with the top of the line box.  This is
         // a reasonable approximation of an appropriate y position.
-        if (r->m_lineLayoutItem.isOutOfFlowPositioned())
+        if (r->m_object->isOutOfFlowPositioned())
             r->m_box->setLogicalTop(logicalHeight());
 
         // Position is used to properly position both replaced elements and
         // to update the static normal flow x/y of positioned elements.
-        if (r->m_lineLayoutItem.isText())
-            toLayoutText(r->m_lineLayoutItem)->positionLineBox(r->m_box);
-        else if (r->m_lineLayoutItem.isBox())
-            toLayoutBox(r->m_lineLayoutItem)->positionLineBox(r->m_box);
+        if (r->m_object->isText())
+            toLayoutText(r->m_object)->positionLineBox(r->m_box);
+        else if (r->m_object->isBox())
+            toLayoutBox(r->m_object)->positionLineBox(r->m_box);
     }
 }
 
@@ -1734,7 +1734,7 @@ RootInlineBox* LayoutBlockFlow::determineStartPosition(LineLayoutState& layoutSt
     } else {
         TextDirection direction = style()->direction();
         if (style()->unicodeBidi() == Plaintext)
-            direction = determinePlaintextDirectionality(LineLayoutItem(this));
+            direction = determinePlaintextDirectionality(this);
         resolver.setStatus(BidiStatus(direction, isOverride(style()->unicodeBidi())));
         InlineIterator iter = InlineIterator(LineLayoutBlockFlow(this), bidiFirstSkippingEmptyInlines(LineLayoutBlockFlow(this), resolver.runs(), &resolver), 0);
         resolver.setPosition(iter, numberOfIsolateAncestors(iter));

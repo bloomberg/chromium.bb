@@ -35,9 +35,9 @@ class BidiContext;
 class InlineBox;
 
 struct BidiRun : BidiCharacterRun {
-    BidiRun(int start, int stop, LineLayoutItem lineLayoutItem, BidiContext* context, WTF::Unicode::CharDirection dir)
+    BidiRun(int start, int stop, LayoutObject* object, BidiContext* context, WTF::Unicode::CharDirection dir)
         : BidiCharacterRun(start, stop, context, dir)
-        , m_lineLayoutItem(lineLayoutItem)
+        , m_object(object)
         , m_box(nullptr)
     {
         // Stored in base class to save space.
@@ -45,9 +45,10 @@ struct BidiRun : BidiCharacterRun {
     }
 
     BidiRun* next() { return static_cast<BidiRun*>(m_next); }
+    LayoutObject* object() { return m_object; }
 
 public:
-    LineLayoutItem m_lineLayoutItem;
+    LayoutObject* m_object;
     InlineBox* m_box;
 };
 
