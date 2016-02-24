@@ -51,11 +51,11 @@ int CreateTCPServerSocket(const std::string& host,
                           bool disable_nagle,
                           int* listen_fd);
 
-int CreateTCPClientSocket(int* connect_fd,
-                          const std::string& host,
+int CreateTCPClientSocket(const std::string& host,
                           const std::string& port,
                           bool is_numeric_host_address,
-                          bool disable_nagle);
+                          bool disable_nagle,
+                          int* connect_fd);
 
 }  // namespace net
 

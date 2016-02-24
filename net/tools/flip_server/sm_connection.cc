@@ -103,7 +103,7 @@ void SMConnection::InitSMConnection(SMConnectionPoolInterface* connection_pool,
     server_ip_ = server_ip;
     server_port_ = server_port;
     int ret = CreateTCPClientSocket(
-        &fd_, server_ip, server_port, true, acceptor_->disable_nagle_);
+        server_ip, server_port, true, acceptor_->disable_nagle_, &fd_);
 
     if (ret < 0) {
       LOG(ERROR) << "-1 Could not create connected socket";
