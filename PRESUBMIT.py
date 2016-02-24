@@ -1561,7 +1561,9 @@ def _CheckNoDeprecatedCompiledResourcesGYP(input_api, output_api):
   return [output_api.PresubmitError(
       "Found new compiled_resources.gyp files:\n%s\n\n"
       "compiled_resources.gyp files are deprecated,\n"
-      "please use compiled_resources2.gyp instead" %
+      "please use compiled_resources2.gyp instead:\n"
+      "https://chromium.googlesource.com/chromium/src/+/master/docs/closure_compilation.md"
+      %
       "\n".join(added_compiled_resources))]
 
 
