@@ -195,6 +195,8 @@ static NEVER_INLINE void partitionsOutOfMemoryUsingLessThan16M()
 void Partitions::handleOutOfMemory()
 {
     volatile size_t totalUsage = totalSizeOfCommittedPages();
+    uint32_t allocPageErrorCode = getAllocPageErrorCode();
+    base::debug::Alias(&allocPageErrorCode);
 
     if (totalUsage >= 2UL * 1024 * 1024 * 1024)
         partitionsOutOfMemoryUsing2G();

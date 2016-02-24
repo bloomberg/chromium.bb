@@ -136,6 +136,12 @@ WTF_EXPORT ALWAYS_INLINE uintptr_t roundDownToSystemPage(uintptr_t address)
     return address & kSystemPageBaseMask;
 }
 
+// Only allowed inside WTF for investigating WTF::initializeWithoutV8 crashes.
+// Guess, the function fails because of mmap (or VirtualAlloc) failure.
+// The following function returns errno (or GetLastError code) when mmap
+// (or VirtualAlloc) fails.
+uint32_t getAllocPageErrorCode();
+
 } // namespace WTF
 
 #endif // WTF_PageAllocator_h
