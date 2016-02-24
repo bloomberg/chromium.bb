@@ -539,7 +539,7 @@ class UnixSocketMultithreadedTest : public UnixSocketTest {
 
 }  // namespace
 
-TEST_F(UnixSocketMultithreadedTest, DISABLED_SendRecv) {
+TEST_F(UnixSocketMultithreadedTest, SendRecv) {
   pthread_t thread = CreateThread();
 
   uint8_t pattern[] = {0xA5, 0x00, 0xC3, 0xFF};
