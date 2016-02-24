@@ -902,8 +902,11 @@ class CONTENT_EXPORT RenderFrameImpl
   // Loads a data url.
   void LoadDataURL(const CommonNavigationParams& params,
                    const RequestNavigationParams& request_params,
-                   blink::WebFrame* frame,
-                   blink::WebFrameLoadType load_type);
+                   blink::WebLocalFrame* frame,
+                   blink::WebFrameLoadType load_type,
+                   blink::WebHistoryItem item_for_history_navigation,
+                   blink::WebHistoryLoadType history_load_type,
+                   bool is_client_redirect);
 
   // Sends a proper FrameHostMsg_DidFailProvisionalLoadWithError_Params IPC for
   // the failed request |request|.

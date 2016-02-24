@@ -5484,6 +5484,13 @@ void RenderFrameImpl::NavigateInternal(
       load_type = blink::WebFrameLoadType::ReplaceCurrentItem;
     }
 
+    // PlzNavigate: check if the navigation being committed originated as a
+    // client redirect.
+    bool is_client_redirect =
+        browser_side_navigation
+            ? !!(common_params.transition & ui::PAGE_TRANSITION_CLIENT_REDIRECT)
+            : false;
+
     // Perform a navigation to a data url if needed.
     // Note: the base URL might be invalid, so also check the data URL string.
     if (!common_params.base_url_for_data_url.is_empty() ||
@@ -5492,15 +5499,10 @@ void RenderFrameImpl::NavigateInternal(
 #endif
         (browser_side_navigation &&
          common_params.url.SchemeIs(url::kDataScheme))) {
-      LoadDataURL(common_params, request_params, frame_, load_type);
+      LoadDataURL(common_params, request_params, frame_, load_type,
+                  item_for_history_navigation, history_load_type,
+                  is_client_redirect);
     } else {
-      // PlzNavigate: check if the navigation being committed originated as a
-      // client redirect.
-      bool is_client_redirect = browser_side_navigation
-                                    ? !!(common_params.transition &
-                                         ui::PAGE_TRANSITION_CLIENT_REDIRECT)
-                                    : false;
-
       // Load the request.
       frame_->load(request, load_type, item_for_history_navigation,
                    history_load_type, is_client_redirect);
@@ -5746,10 +5748,14 @@ void RenderFrameImpl::BeginNavigation(blink::WebURLRequest* request,
       GetRequestBodyForWebURLRequest(*request)));
 }
 
-void RenderFrameImpl::LoadDataURL(const CommonNavigationParams& params,
-                                  const RequestNavigationParams& request_params,
-                                  WebFrame* frame,
-                                  blink::WebFrameLoadType load_type) {
+void RenderFrameImpl::LoadDataURL(
+    const CommonNavigationParams& params,
+    const RequestNavigationParams& request_params,
+    WebLocalFrame* frame,
+    blink::WebFrameLoadType load_type,
+    blink::WebHistoryItem item_for_history_navigation,
+    blink::WebHistoryLoadType history_load_type,
+    bool is_client_redirect) {
   // A loadData request with a specified base URL.
   GURL data_url = params.url;
 #if defined(OS_ANDROID)
@@ -5773,14 +5779,13 @@ void RenderFrameImpl::LoadDataURL(const CommonNavigationParams& params,
         params.url : params.base_url_for_data_url;
     bool replace = load_type == blink::WebFrameLoadType::ReloadFromOrigin ||
                    load_type == blink::WebFrameLoadType::Reload;
+
     frame->loadData(
-        WebData(data.c_str(), data.length()),
-        WebString::fromUTF8(mime_type),
-        WebString::fromUTF8(charset),
-        base_url,
+        WebData(data.c_str(), data.length()), WebString::fromUTF8(mime_type),
+        WebString::fromUTF8(charset), base_url,
         // Needed so that history-url-only changes don't become reloads.
-        params.history_url_for_data_url,
-        replace);
+        params.history_url_for_data_url, replace, load_type,
+        item_for_history_navigation, history_load_type, is_client_redirect);
   } else {
     CHECK(false) << "Invalid URL passed: "
                  << params.url.possibly_invalid_spec();

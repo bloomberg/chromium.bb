@@ -927,32 +927,11 @@ void WebLocalFrameImpl::loadHistoryItem(const WebHistoryItem& item, WebHistoryLo
     load(request, WebFrameLoadType::BackForward, item, loadType, false);
 }
 
-void WebLocalFrameImpl::loadData(const WebData& data, const WebString& mimeType, const WebString& textEncoding, const WebURL& baseURL, const WebURL& unreachableURL, bool replace)
-{
-    ASSERT(frame());
-
-    // If we are loading substitute data to replace an existing load, then
-    // inherit all of the properties of that original request. This way,
-    // reload will re-attempt the original request. It is essential that
-    // we only do this when there is an unreachableURL since a non-empty
-    // unreachableURL informs FrameLoader::reload to load unreachableURL
-    // instead of the currently loaded URL.
-    ResourceRequest request;
-    if (replace && !unreachableURL.isEmpty() && frame()->loader().provisionalDocumentLoader())
-        request = frame()->loader().provisionalDocumentLoader()->originalRequest();
-    request.setURL(baseURL);
-    request.setCheckForBrowserSideNavigation(false);
-
-    FrameLoadRequest frameRequest(0, request, SubstituteData(data, mimeType, textEncoding, unreachableURL));
-    ASSERT(frameRequest.substituteData().isValid());
-    frameRequest.setReplacesCurrentItem(replace);
-    frame()->loader().load(frameRequest);
-}
-
 void WebLocalFrameImpl::loadHTMLString(const WebData& data, const WebURL& baseURL, const WebURL& unreachableURL, bool replace)
 {
     ASSERT(frame());
-    loadData(data, WebString::fromUTF8("text/html"), WebString::fromUTF8("UTF-8"), baseURL, unreachableURL, replace);
+    loadData(data, WebString::fromUTF8("text/html"), WebString::fromUTF8("UTF-8"), baseURL, unreachableURL, replace,
+        WebFrameLoadType::Standard, WebHistoryItem(), WebHistoryDifferentDocumentLoad, false);
 }
 
 void WebLocalFrameImpl::stopLoading()
@@ -1973,6 +1952,37 @@ void WebLocalFrameImpl::load(const WebURLRequest& request, WebFrameLoadType webF
     FrameLoadRequest frameRequest = FrameLoadRequest(nullptr, resourceRequest);
     if (isClientRedirect)
         frameRequest.setClientRedirect(ClientRedirect);
+    RefPtrWillBeRawPtr<HistoryItem> historyItem = PassRefPtrWillBeRawPtr<HistoryItem>(item);
+    frame()->loader().load(
+        frameRequest, static_cast<FrameLoadType>(webFrameLoadType), historyItem.get(),
+        static_cast<HistoryLoadType>(webHistoryLoadType));
+}
+
+void WebLocalFrameImpl::loadData(const WebData& data, const WebString& mimeType,
+    const WebString& textEncoding, const WebURL& baseURL, const WebURL& unreachableURL, bool replace,
+    WebFrameLoadType webFrameLoadType, const WebHistoryItem& item,
+    WebHistoryLoadType webHistoryLoadType, bool isClientRedirect)
+{
+    ASSERT(frame());
+
+    // If we are loading substitute data to replace an existing load, then
+    // inherit all of the properties of that original request. This way,
+    // reload will re-attempt the original request. It is essential that
+    // we only do this when there is an unreachableURL since a non-empty
+    // unreachableURL informs FrameLoader::reload to load unreachableURL
+    // instead of the currently loaded URL.
+    ResourceRequest request;
+    if (replace && !unreachableURL.isEmpty() && frame()->loader().provisionalDocumentLoader())
+        request = frame()->loader().provisionalDocumentLoader()->originalRequest();
+    request.setURL(baseURL);
+    request.setCheckForBrowserSideNavigation(false);
+
+    FrameLoadRequest frameRequest(0, request, SubstituteData(data, mimeType, textEncoding, unreachableURL));
+    ASSERT(frameRequest.substituteData().isValid());
+    frameRequest.setReplacesCurrentItem(replace);
+    if (isClientRedirect)
+        frameRequest.setClientRedirect(ClientRedirect);
+
     RefPtrWillBeRawPtr<HistoryItem> historyItem = PassRefPtrWillBeRawPtr<HistoryItem>(item);
     frame()->loader().load(
         frameRequest, static_cast<FrameLoadType>(webFrameLoadType), historyItem.get(),

@@ -131,9 +131,6 @@ public:
     void reloadLoFiImages() override;
     void loadRequest(const WebURLRequest&) override;
     void loadHistoryItem(const WebHistoryItem&, WebHistoryLoadType, WebURLRequest::CachePolicy) override;
-    void loadData(
-        const WebData&, const WebString& mimeType, const WebString& textEncoding,
-        const WebURL& baseURL, const WebURL& unreachableURL, bool replace) override;
     void loadHTMLString(
         const WebData& html, const WebURL& baseURL, const WebURL& unreachableURL,
         bool replace) override;
@@ -225,6 +222,10 @@ public:
     WebURLRequest requestForReload(WebFrameLoadType, const WebURL&) const override;
     void load(const WebURLRequest&, WebFrameLoadType, const WebHistoryItem&,
         WebHistoryLoadType, bool isClientRedirect) override;
+    void loadData(
+        const WebData&, const WebString& mimeType, const WebString& textEncoding,
+        const WebURL& baseURL, const WebURL& unreachableURL, bool replace, WebFrameLoadType,
+        const WebHistoryItem&, WebHistoryLoadType, bool isClientRedirect) override;
     bool isLoading() const override;
     bool isResourceLoadInProgress() const override;
     bool isNavigationScheduled() const override;

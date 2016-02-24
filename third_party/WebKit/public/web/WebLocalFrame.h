@@ -105,6 +105,24 @@ public:
         bool isClientRedirect = false)
         = 0;
 
+    // Loads the given data with specific mime type and optional text
+    // encoding.  For HTML data, baseURL indicates the security origin of
+    // the document and is used to resolve links.  If specified,
+    // unreachableURL is reported via WebDataSource::unreachableURL.  If
+    // replace is false, then this data will be loaded as a normal
+    // navigation.  Otherwise, the current history item will be replaced.
+    virtual void loadData(const WebData&,
+        const WebString& mimeType,
+        const WebString& textEncoding,
+        const WebURL& baseURL,
+        const WebURL& unreachableURL = WebURL(),
+        bool replace = false,
+        WebFrameLoadType = WebFrameLoadType::Standard,
+        const WebHistoryItem& = WebHistoryItem(),
+        WebHistoryLoadType = WebHistoryDifferentDocumentLoad,
+        bool isClientRedirect = false)
+        = 0;
+
     // Navigation State -------------------------------------------------------
 
     // Returns true if the current frame's load event has not completed.

@@ -306,13 +306,6 @@ void WebRemoteFrameImpl::loadHistoryItem(const WebHistoryItem&, WebHistoryLoadTy
     ASSERT_NOT_REACHED();
 }
 
-void WebRemoteFrameImpl::loadData(
-    const WebData&, const WebString& mimeType, const WebString& textEncoding,
-    const WebURL& baseURL, const WebURL& unreachableURL, bool replace)
-{
-    ASSERT_NOT_REACHED();
-}
-
 void WebRemoteFrameImpl::loadHTMLString(
     const WebData& html, const WebURL& baseURL, const WebURL& unreachableURL,
     bool replace)

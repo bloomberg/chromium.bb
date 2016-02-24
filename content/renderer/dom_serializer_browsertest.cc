@@ -152,7 +152,8 @@ class DomSerializerTests : public ContentBrowserTest,
 
       ASSERT_TRUE(web_frame != NULL);
 
-      web_frame->loadData(data, "text/html", encoding_info, base_url);
+      web_frame->toWebLocalFrame()->loadData(data, "text/html", encoding_info,
+                                             base_url);
     }
 
     runner->Run();
