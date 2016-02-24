@@ -30,6 +30,7 @@ class InputServiceLinux : public base::MessageLoop::DestructionObserver {
     enum Type { TYPE_BLUETOOTH, TYPE_USB, TYPE_SERIO, TYPE_UNKNOWN };
 
     InputDeviceInfo();
+    InputDeviceInfo(const InputDeviceInfo& other);
 
     std::string id;
     std::string name;

@@ -102,6 +102,9 @@ UsbEndpointDescriptor::UsbEndpointDescriptor(
       usage_type(usage_type),
       polling_interval(polling_interval) {}
 
+UsbEndpointDescriptor::UsbEndpointDescriptor(
+    const UsbEndpointDescriptor& other) = default;
+
 UsbEndpointDescriptor::~UsbEndpointDescriptor() = default;
 
 UsbInterfaceDescriptor::UsbInterfaceDescriptor(uint8_t interface_number,
@@ -115,6 +118,9 @@ UsbInterfaceDescriptor::UsbInterfaceDescriptor(uint8_t interface_number,
       interface_subclass(interface_subclass),
       interface_protocol(interface_protocol) {}
 
+UsbInterfaceDescriptor::UsbInterfaceDescriptor(
+    const UsbInterfaceDescriptor& other) = default;
+
 UsbInterfaceDescriptor::~UsbInterfaceDescriptor() = default;
 
 UsbConfigDescriptor::UsbConfigDescriptor(uint8_t configuration_value,
@@ -125,6 +131,9 @@ UsbConfigDescriptor::UsbConfigDescriptor(uint8_t configuration_value,
       self_powered(self_powered),
       remote_wakeup(remote_wakeup),
       maximum_power(maximum_power) {}
+
+UsbConfigDescriptor::UsbConfigDescriptor(const UsbConfigDescriptor& other) =
+    default;
 
 UsbConfigDescriptor::~UsbConfigDescriptor() = default;
 

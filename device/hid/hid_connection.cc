@@ -196,9 +196,13 @@ bool HidConnection::IsReportIdProtected(uint8_t report_id) {
 
 PendingHidReport::PendingHidReport() {}
 
+PendingHidReport::PendingHidReport(const PendingHidReport& other) = default;
+
 PendingHidReport::~PendingHidReport() {}
 
 PendingHidRead::PendingHidRead() {}
+
+PendingHidRead::PendingHidRead(const PendingHidRead& other) = default;
 
 PendingHidRead::~PendingHidRead() {}
 

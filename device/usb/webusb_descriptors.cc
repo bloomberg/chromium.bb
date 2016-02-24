@@ -359,10 +359,16 @@ void OnReadBosDescriptorHeader(scoped_refptr<UsbDeviceHandle> device_handle,
 
 WebUsbFunctionSubset::WebUsbFunctionSubset() : first_interface(0) {}
 
+WebUsbFunctionSubset::WebUsbFunctionSubset(const WebUsbFunctionSubset& other) =
+    default;
+
 WebUsbFunctionSubset::~WebUsbFunctionSubset() {}
 
 WebUsbConfigurationSubset::WebUsbConfigurationSubset()
     : configuration_value(0) {}
+
+WebUsbConfigurationSubset::WebUsbConfigurationSubset(
+    const WebUsbConfigurationSubset& other) = default;
 
 WebUsbConfigurationSubset::~WebUsbConfigurationSubset() {}
 

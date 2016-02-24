@@ -18,6 +18,7 @@ class UsbDeviceHandle;
 
 struct WebUsbFunctionSubset {
   WebUsbFunctionSubset();
+  WebUsbFunctionSubset(const WebUsbFunctionSubset& other);
   ~WebUsbFunctionSubset();
 
   uint8_t first_interface;
@@ -27,6 +28,7 @@ struct WebUsbFunctionSubset {
 
 struct WebUsbConfigurationSubset {
   WebUsbConfigurationSubset();
+  WebUsbConfigurationSubset(const WebUsbConfigurationSubset& other);
   ~WebUsbConfigurationSubset();
 
   uint8_t configuration_value;

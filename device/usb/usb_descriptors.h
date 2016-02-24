@@ -57,6 +57,7 @@ struct UsbEndpointDescriptor {
                         UsbUsageType usage_type,
                         uint16_t polling_interval);
   UsbEndpointDescriptor() = delete;
+  UsbEndpointDescriptor(const UsbEndpointDescriptor& other);
   ~UsbEndpointDescriptor();
 
   uint8_t address;
@@ -76,6 +77,7 @@ struct UsbInterfaceDescriptor {
                          uint8_t interface_subclass,
                          uint8_t interface_protocol);
   UsbInterfaceDescriptor() = delete;
+  UsbInterfaceDescriptor(const UsbInterfaceDescriptor& other);
   ~UsbInterfaceDescriptor();
 
   uint8_t interface_number;
@@ -93,6 +95,7 @@ struct UsbConfigDescriptor {
                       bool remote_wakeup,
                       uint16_t maximum_power);
   UsbConfigDescriptor() = delete;
+  UsbConfigDescriptor(const UsbConfigDescriptor& other);
   ~UsbConfigDescriptor();
 
   uint8_t configuration_value;

@@ -30,6 +30,8 @@ UsbDeviceFilter::UsbDeviceFilter()
       interface_protocol_set_(false) {
 }
 
+UsbDeviceFilter::UsbDeviceFilter(const UsbDeviceFilter& other) = default;
+
 UsbDeviceFilter::~UsbDeviceFilter() {
 }
 

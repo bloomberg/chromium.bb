@@ -166,6 +166,9 @@ InputServiceLinux::InputDeviceInfo::InputDeviceInfo()
       is_touchpad(false),
       is_touchscreen(false) {}
 
+InputServiceLinux::InputDeviceInfo::InputDeviceInfo(
+    const InputDeviceInfo& other) = default;
+
 InputServiceLinux::InputServiceLinux() {
 }
 

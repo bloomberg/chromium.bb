@@ -11,6 +11,8 @@ HidCollectionInfo::HidCollectionInfo()
             HidUsageAndPage::kPageUndefined) {
 }
 
+HidCollectionInfo::HidCollectionInfo(const HidCollectionInfo& other) = default;
+
 HidCollectionInfo::~HidCollectionInfo() {
 }
 

@@ -13,6 +13,7 @@ namespace device {
 
 struct HidCollectionInfo {
   HidCollectionInfo();
+  HidCollectionInfo(const HidCollectionInfo& other);
   ~HidCollectionInfo();
 
   // Collection's usage ID.

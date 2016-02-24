@@ -23,6 +23,7 @@ class UsbDevice;
 class UsbDeviceFilter {
  public:
   UsbDeviceFilter();
+  UsbDeviceFilter(const UsbDeviceFilter& other);
   ~UsbDeviceFilter();
 
   void SetVendorId(uint16_t vendor_id);

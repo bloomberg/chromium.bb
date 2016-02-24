@@ -97,6 +97,7 @@ class HidConnection : public base::RefCountedThreadSafe<HidConnection> {
 
 struct PendingHidReport {
   PendingHidReport();
+  PendingHidReport(const PendingHidReport& other);
   ~PendingHidReport();
 
   scoped_refptr<net::IOBuffer> buffer;
@@ -105,6 +106,7 @@ struct PendingHidReport {
 
 struct PendingHidRead {
   PendingHidRead();
+  PendingHidRead(const PendingHidRead& other);
   ~PendingHidRead();
 
   HidConnection::ReadCallback callback;
