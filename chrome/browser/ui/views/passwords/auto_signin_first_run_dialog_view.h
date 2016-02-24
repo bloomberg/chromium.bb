@@ -31,10 +31,10 @@ class AutoSigninFirstRunDialogView : public views::DialogDelegateView,
   bool ShouldShowWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
   views::View* GetInitiallyFocusedView() override;
-  void WindowClosing() override;
 
   // views::DialogDelegate:
   int GetDialogButtons() const override;
+  void OnClosed() override;
 
   // views::View
   gfx::Size GetPreferredSize() const override;

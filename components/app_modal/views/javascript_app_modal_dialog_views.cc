@@ -111,6 +111,18 @@ bool JavaScriptAppModalDialogViews::Accept() {
   return true;
 }
 
+void JavaScriptAppModalDialogViews::OnClosed() {
+  parent_->OnClose();
+}
+
+views::Widget* JavaScriptAppModalDialogViews::GetWidget() {
+  return message_box_view_->GetWidget();
+}
+
+const views::Widget* JavaScriptAppModalDialogViews::GetWidget() const {
+  return message_box_view_->GetWidget();
+}
+
 base::string16 JavaScriptAppModalDialogViews::GetDialogButtonLabel(
     ui::DialogButton button) const {
   if (parent_->is_before_unload_dialog()) {
@@ -144,18 +156,6 @@ views::View* JavaScriptAppModalDialogViews::GetInitiallyFocusedView() {
   if (message_box_view_->text_box())
     return message_box_view_->text_box();
   return views::DialogDelegate::GetInitiallyFocusedView();
-}
-
-void JavaScriptAppModalDialogViews::WindowClosing() {
-  parent_->OnClose();
-}
-
-views::Widget* JavaScriptAppModalDialogViews::GetWidget() {
-  return message_box_view_->GetWidget();
-}
-
-const views::Widget* JavaScriptAppModalDialogViews::GetWidget() const {
-  return message_box_view_->GetWidget();
 }
 
 }  // namespace app_modal
