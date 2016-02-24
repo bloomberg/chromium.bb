@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test premature GC upon OscillatorNode and AudioBufferSourceNode</title>
+    <script src="../resources/js-test.js"></script>
+  </head>
+
+  <body>
+    <script type="text/javascript">
+      description("Test premature GC upon OscillatorNode and AudioBufferSourceNode");
+      window.jsTestIsAsync = true;
+
+      var sampleRate = 44100;
+      var renderLength = 2 * sampleRate;
+
+      var context = new OfflineAudioContext(1, renderLength, sampleRate);
+
+      // Immediately execute this code inside of the closure. This way |osc| is
+      // contained in the scope and will be a possible target of GC. However,
+      // it will survive GC since it has a pending activity because it is
+      // scheduled. Thus |onended| will be fired eventually.
+      (function () {
+        var osc = context.createOscillator();
+        osc.connect(context.destination);
+        osc.onended = function () {
+          testPassed('OscillatorNode survived GC and onended event fired.');
+        };
+
+        // Play the oscillator for 1 second.
+        osc.start();
+        osc.stop(1);
+      })();
+
+      // The below does the same thing, but with AudioBufferSourceNode.
+      (function () {
+        var source = context.createBufferSource();
+        var dummy = context.createBuffer(1, sampleRate, sampleRate);
+        source.buffer = dummy;
+
+        source.connect(context.destination);
+
+        source.onended = function () {
+          testPassed('AudioBufferSourceNode survived GC and onended event fired.');
+        };
+
+        source.start();
+      })();
+
+      // Suspend the rendering at 0.1 second and perform GC. The reference to
+      // the oscillator and the buffer source should not be collected.
+      context.suspend(0.1).then(function () {
+        gc();
+        context.resume();
+      });
+
+      context.startRendering().then(function () {
+        finishJSTest();
+      });
+
+      succesfullyParsed = true;
+    </script>
+  </body>
+</html>

@@ -130,6 +130,9 @@ public:
     EventListener* onended();
     void setOnended(PassRefPtrWillBeRawPtr<EventListener>);
 
+    // ScriptWrappable
+    bool hasPendingActivity() const final;
+
 protected:
     explicit AudioScheduledSourceNode(AbstractAudioContext&);
     AudioScheduledSourceHandler& audioScheduledSourceHandler() const;

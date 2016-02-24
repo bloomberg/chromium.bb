@@ -263,5 +263,17 @@ void AudioScheduledSourceNode::setOnended(PassRefPtrWillBeRawPtr<EventListener> 
     setAttributeEventListener(EventTypeNames::ended, listener);
 }
 
+bool AudioScheduledSourceNode::hasPendingActivity() const
+{
+    // To avoid the leak, a node should be collected regardless of its
+    // playback state if the context is closed.
+    if (context()->isContextClosed())
+        return false;
+
+    // If a node is scheduled or playing, do not collect the node prematurely
+    // even its reference is out of scope. Then fire onended event if assigned.
+    return audioScheduledSourceHandler().isPlayingOrScheduled();
+}
+
 } // namespace blink
 
