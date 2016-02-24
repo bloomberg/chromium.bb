@@ -46,6 +46,7 @@ AudioSyncReader::AudioSyncReader(base::SharedMemory* shared_memory,
       packet_size_(shared_memory_->requested_size()),
       renderer_callback_count_(0),
       renderer_missed_callback_count_(0),
+      trailing_renderer_missed_callback_count_(0),
 #if defined(OS_MACOSX)
       maximum_wait_time_(params.GetBufferDuration() / 2),
 #else
@@ -65,6 +66,21 @@ AudioSyncReader::AudioSyncReader(base::SharedMemory* shared_memory,
 AudioSyncReader::~AudioSyncReader() {
   if (!renderer_callback_count_)
     return;
+
+  DVLOG(1) << "Trailing glitch count on destruction: "
+           << trailing_renderer_missed_callback_count_;
+
+  // Subtract 'trailing' count of callbacks missed just before the destructor
+  // call. This happens if the renderer process was killed or e.g. the page
+  // refreshed while the output device was open etc.
+  // This trims off the end of both the missed and total counts so that we
+  // preserve the proportion of counts before the teardown period.
+  DCHECK_LE(trailing_renderer_missed_callback_count_,
+            renderer_missed_callback_count_);
+  DCHECK_LE(trailing_renderer_missed_callback_count_, renderer_callback_count_);
+
+  renderer_missed_callback_count_ -= trailing_renderer_missed_callback_count_;
+  renderer_callback_count_ -= trailing_renderer_missed_callback_count_;
 
   // Recording the percentage of deadline misses gives us a rough overview of
   // how many users might be running into audio glitches.
@@ -107,6 +123,7 @@ void AudioSyncReader::UpdatePendingBytes(uint32_t bytes,
 void AudioSyncReader::Read(AudioBus* dest) {
   ++renderer_callback_count_;
   if (!WaitUntilDataIsReady()) {
+    ++trailing_renderer_missed_callback_count_;
     ++renderer_missed_callback_count_;
     if (renderer_missed_callback_count_ <= 100) {
       LOG(WARNING) << "AudioSyncReader::Read timed out, audio glitch count="
@@ -117,6 +134,8 @@ void AudioSyncReader::Read(AudioBus* dest) {
     dest->Zero();
     return;
   }
+
+  trailing_renderer_missed_callback_count_ = 0;
 
   if (mute_audio_)
     dest->Zero();

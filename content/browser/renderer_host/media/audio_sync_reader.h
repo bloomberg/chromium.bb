@@ -75,6 +75,7 @@ class AudioSyncReader : public media::AudioOutputController::SyncReader {
   // report a UMA stat during destruction.
   size_t renderer_callback_count_;
   size_t renderer_missed_callback_count_;
+  size_t trailing_renderer_missed_callback_count_;
 
   // The maximum amount of time to wait for data from the renderer.  Calculated
   // from the parameters given at construction.
