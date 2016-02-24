@@ -199,7 +199,7 @@ unsigned ImageInternalFormat(VideoPixelFormat format, size_t plane) {
   switch (format) {
     case PIXEL_FORMAT_I420:
       DCHECK_LE(plane, 2u);
-      return GL_RED_EXT;
+      return GL_R8_EXT;
     case PIXEL_FORMAT_NV12:
       DCHECK_LE(plane, 1u);
       return GL_RGB_YCBCR_420V_CHROMIUM;

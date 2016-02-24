@@ -88,7 +88,7 @@ GLenum GLDataFormat(ResourceFormat format) {
 }
 
 GLenum GLInternalFormat(ResourceFormat format) {
-  return GLDataFormat(format);
+  return (format == RED_8) ? GL_R8_EXT : GLDataFormat(format);
 }
 
 gfx::BufferFormat BufferFormat(ResourceFormat format) {

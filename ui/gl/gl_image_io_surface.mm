@@ -16,6 +16,7 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_helper.h"
+#include "ui/gl/gl_version_info.h"
 #include "ui/gl/scoped_binders.h"
 
 // Note that this must be included after gl_bindings.h to avoid conflicts.
@@ -68,7 +69,7 @@ STRINGIZE(
 
 bool ValidInternalFormat(unsigned internalformat) {
   switch (internalformat) {
-    case GL_RED:
+    case GL_R8:
     case GL_BGRA_EXT:
     case GL_RGB:
     case GL_RGB_YCBCR_420V_CHROMIUM:
@@ -107,7 +108,9 @@ bool ValidFormat(BufferFormat format) {
 GLenum TextureFormat(BufferFormat format) {
   switch (format) {
     case BufferFormat::R_8:
-      return GL_RED;
+      return gfx::GLContext::GetCurrent()->GetVersionInfo()->IsES3Capable()
+                 ? GL_R8
+                 : GL_RED;
     case BufferFormat::BGRA_8888:
     case BufferFormat::RGBA_8888:
       return GL_RGBA;
