@@ -1825,7 +1825,7 @@ WebInputEventResult EventHandler::handleWheelEvent(const PlatformWheelEvent& eve
         return WebInputEventResult::NotHandled;
 
     ScrollResult scrollResult = scrollAreaWithWheelEvent(event, *view->scrollableArea());
-    if (m_frame->settings() && m_frame->settings()->reportWheelOverscroll())
+    if (m_frame->isMainFrame() && m_frame->settings() && m_frame->settings()->reportWheelOverscroll())
         handleOverscroll(scrollResult);
     if (scrollResult.didScroll()) {
         setFrameWasScrolledByUser();
@@ -2330,6 +2330,8 @@ static inline FloatSize adjustOverscroll(FloatSize unusedDelta)
 
 void EventHandler::handleOverscroll(const ScrollResult& scrollResult, const FloatPoint& position, const FloatSize& velocity)
 {
+    ASSERT(m_frame->isMainFrame());
+
     FloatSize unusedDelta(scrollResult.unusedScrollDeltaX, scrollResult.unusedScrollDeltaY);
     unusedDelta = adjustOverscroll(unusedDelta);
     resetOverscroll(scrollResult.didScrollX, scrollResult.didScrollY);
@@ -2430,9 +2432,11 @@ WebInputEventResult EventHandler::handleGestureScrollUpdate(const PlatformGestur
 
     // Try to scroll the frame view.
     ScrollResult scrollResult = m_frame->applyScrollDelta(granularity, delta, false);
-    FloatPoint position = FloatPoint(gestureEvent.position().x(), gestureEvent.position().y());
-    FloatSize velocity = FloatSize(gestureEvent.velocityX(), gestureEvent.velocityY());
-    handleOverscroll(scrollResult, position, velocity);
+    if (m_frame->isMainFrame()) {
+        FloatPoint position = FloatPoint(gestureEvent.position().x(), gestureEvent.position().y());
+        FloatSize velocity = FloatSize(gestureEvent.velocityX(), gestureEvent.velocityY());
+        handleOverscroll(scrollResult, position, velocity);
+    }
     if (scrollResult.didScroll()) {
         setFrameWasScrolledByUser();
         return WebInputEventResult::HandledSystem;
