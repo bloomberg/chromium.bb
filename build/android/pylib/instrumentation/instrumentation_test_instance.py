@@ -290,11 +290,7 @@ class InstrumentationTestInstance(test_instance.TestInstance):
   def _initializeDataDependencyAttributes(self, args, isolate_delegate):
     self._data_deps = []
     if args.isolate_file_path:
-      if os.path.isabs(args.isolate_file_path):
-        self._isolate_abs_path = args.isolate_file_path
-      else:
-        self._isolate_abs_path = os.path.join(
-            constants.DIR_SOURCE_ROOT, args.isolate_file_path)
+      self._isolate_abs_path = os.path.abspath(args.isolate_file_path)
       self._isolate_delegate = isolate_delegate
       self._isolated_abs_path = os.path.join(
           constants.GetOutDirectory(), '%s.isolated' % self._test_package)
@@ -344,7 +340,7 @@ class InstrumentationTestInstance(test_instance.TestInstance):
         })
 
   def _initializeFlagAttributes(self, args):
-    self._flags = ['--enable-test-intents']
+    self._flags = ['--disable-fre', '--enable-test-intents']
     # TODO(jbudorick): Transition "--device-flags" to "--device-flags-file"
     if hasattr(args, 'device_flags') and args.device_flags:
       with open(args.device_flags) as device_flags_file:
