@@ -81,6 +81,6 @@ gcc_toolchain("mipsel") {
   toolchain_cpu = "mipsel"
   toolchain_os = "linux"
   is_clang = false
-  use_ccache = false
+  cc_wrapper = ""
   use_goma = false
 }

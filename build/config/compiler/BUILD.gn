@@ -6,7 +6,7 @@ import("//build/config/android/config.gni")
 import("//build/config/chrome_build.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/nacl/config.gni")
-import("//build/toolchain/ccache.gni")
+import("//build/toolchain/cc_wrapper.gni")
 
 if (current_cpu == "arm") {
   import("//build/config/arm.gni")
@@ -88,7 +88,7 @@ if (gold_path == false) {
 
 if (use_debug_fission == "default") {
   use_debug_fission = is_debug && !is_win && use_gold &&
-                      linux_use_bundled_binutils && !use_ccache
+                      linux_use_bundled_binutils && cc_wrapper == ""
 }
 
 # default_include_dirs ---------------------------------------------------------

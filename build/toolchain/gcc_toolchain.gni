@@ -4,7 +4,7 @@
 
 import("//build/config/nacl/config.gni")
 import("//build/config/sanitizers/sanitizers.gni")
-import("//build/toolchain/ccache.gni")
+import("//build/toolchain/cc_wrapper.gni")
 import("//build/toolchain/goma.gni")
 import("//build/toolchain/toolchain.gni")
 
@@ -80,9 +80,10 @@ if (is_cfi) {
 #      default setting.
 #  - is_nacl_glibc
 #      Whether NaCl code is built using Glibc instead of Newlib.
-#  - use_ccache
-#      Override the global use_ccache setting, useful to opt-out of ccache in
-#      a particular toolchain by setting use_ccache = false in it.
+#  - cc_wrapper
+#      Override the global cc_wrapper setting. e.g. "ccache" or "icecc".
+#      useful to opt-out of cc_wrapper in a particular toolchain by setting
+#      cc_wrapper = "" in it.
 #  - use_goma
 #      Override the global use_goma setting, useful to opt-out of goma in a
 #      particular toolchain by setting use_gome = false in it.
@@ -100,17 +101,17 @@ template("gcc_toolchain") {
     assert(defined(invoker.toolchain_os),
            "gcc_toolchain() must specify a \"toolchain_os\"")
 
-    if (defined(invoker.use_ccache)) {
-      use_ccache = invoker.use_ccache
+    if (defined(invoker.cc_wrapper)) {
+      cc_wrapper = invoker.cc_wrapper
     }
     if (defined(invoker.use_goma)) {
       use_goma = invoker.use_goma
     }
     if (use_goma) {
-      assert(!use_ccache, "Goma and ccache can't be used together.")
+      assert(cc_wrapper == "", "Goma and cc_wrapper can't be used together.")
       compiler_prefix = "$goma_dir/gomacc "
-    } else if (use_ccache) {
-      compiler_prefix = "ccache "
+    } else if (cc_wrapper != "") {
+      compiler_prefix = cc_wrapper + " "
     } else {
       compiler_prefix = ""
     }
@@ -425,10 +426,6 @@ template("gcc_toolchain") {
   }
 }
 
-declare_args() {
-  clang_dir = "//third_party/llvm-build/Release+Asserts"
-}
-
 # This is a shorthand for gcc_toolchain instances based on the
 # Chromium-built version of Clang.  Only the toolchain_cpu and
 # toolchain_os variables need to be specified by the invoker, and
@@ -448,7 +445,8 @@ template("clang_toolchain") {
   }
 
   gcc_toolchain(target_name) {
-    prefix = rebase_path(clang_dir + "/bin", root_build_dir)
+    prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
+                         root_build_dir)
     cc = "$prefix/clang"
     cxx = "$prefix/clang++"
     ld = cxx

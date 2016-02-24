@@ -70,7 +70,7 @@ you can also use the absolute path here.)
 You just need to set the use\_ccache variable. Do so like the following:
 
 ```shell
-gn gen out-gn --args='use_ccache=true'
+gn gen out-gn --args='cc_wrapper="ccache"'
 ```
 
 ## Build

@@ -54,7 +54,7 @@ template("pnacl_toolchain") {
   # When the compilers are run via goma or ccache rather than directly by
   # GN/Ninja, the goma/ccache wrapper handles .bat files but gets confused
   # by being given the scriptprefix.
-  if (host_os == "win" && !use_goma && !use_ccache) {
+  if (host_os == "win" && !use_goma && cc_wrapper == "") {
     compiler_scriptprefix = scriptprefix
   } else {
     compiler_scriptprefix = ""
