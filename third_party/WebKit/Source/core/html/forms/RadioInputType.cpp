@@ -85,6 +85,9 @@ HTMLInputElement* RadioInputType::findNextFocusableRadioButtonInGroup(HTMLInputE
 
 void RadioInputType::handleKeydownEvent(KeyboardEvent* event)
 {
+    // TODO(tkent): We should return more earlier.
+    if (!element().layoutObject())
+        return;
     BaseCheckableInputType::handleKeydownEvent(event);
     if (event->defaultHandled())
         return;
