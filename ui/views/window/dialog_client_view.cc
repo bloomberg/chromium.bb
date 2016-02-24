@@ -58,25 +58,24 @@ DialogClientView::DialogClientView(Widget* owner, View* contents_view)
       cancel_button_(NULL),
       extra_view_(NULL),
       footnote_view_(NULL),
-      notified_delegate_(false) {
-}
+      delegate_allowed_close_(false) {}
 
 DialogClientView::~DialogClientView() {
 }
 
 void DialogClientView::AcceptWindow() {
-  // Only notify the delegate once. See |notified_delegate_|'s comment.
-  if (!notified_delegate_ && GetDialogDelegate()->Accept(false)) {
-    notified_delegate_ = true;
-    Close();
+  // Only notify the delegate once. See |delegate_allowed_close_|'s comment.
+  if (!delegate_allowed_close_ && GetDialogDelegate()->Accept(false)) {
+    delegate_allowed_close_ = true;
+    GetWidget()->Close();
   }
 }
 
 void DialogClientView::CancelWindow() {
-  // Only notify the delegate once. See |notified_delegate_|'s comment.
-  if (!notified_delegate_ && GetDialogDelegate()->Cancel()) {
-    notified_delegate_ = true;
-    Close();
+  // Only notify the delegate once. See |delegate_allowed_close_|'s comment.
+  if (!delegate_allowed_close_ && GetDialogDelegate()->Cancel()) {
+    delegate_allowed_close_ = true;
+    GetWidget()->Close();
   }
 }
 
@@ -122,17 +121,11 @@ void DialogClientView::UpdateDialogButtons() {
 // DialogClientView, ClientView overrides:
 
 bool DialogClientView::CanClose() {
-  if (notified_delegate_)
-    return true;
-
-  // The dialog is closing but no Accept or Cancel action has been performed
-  // before: it's a Close action.
-  if (GetDialogDelegate()->Close()) {
-    notified_delegate_ = true;
-    GetDialogDelegate()->OnClosed();
-    return true;
-  }
-  return false;
+  // If the dialog is closing but no Accept or Cancel action has been performed
+  // before, it's a Close action.
+  if (!delegate_allowed_close_)
+    delegate_allowed_close_ = GetDialogDelegate()->Close();
+  return delegate_allowed_close_;
 }
 
 DialogClientView* DialogClientView::AsDialogClientView() {
@@ -239,7 +232,7 @@ void DialogClientView::Layout() {
 
 bool DialogClientView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   DCHECK_EQ(accelerator.key_code(), ui::VKEY_ESCAPE);
-  Close();
+  GetWidget()->Close();
   return true;
 }
 
@@ -300,7 +293,7 @@ DialogClientView::DialogClientView(View* contents_view)
       cancel_button_(NULL),
       extra_view_(NULL),
       footnote_view_(NULL),
-      notified_delegate_(false) {}
+      delegate_allowed_close_(false) {}
 
 DialogDelegate* DialogClientView::GetDialogDelegate() const {
   return GetWidget()->widget_delegate()->AsDialogDelegate();
@@ -381,10 +374,7 @@ gfx::Insets DialogClientView::GetButtonRowInsets() const {
                   kButtonVEdgeMarginNew, kButtonHEdgeMarginNew);
 }
 
-void DialogClientView::Close() {
-  GetWidget()->Close();
-  GetDialogDelegate()->OnClosed();
-}
+
 
 void DialogClientView::SetupFocusChain() {
   // Create a vector of child views in the order of intended focus.

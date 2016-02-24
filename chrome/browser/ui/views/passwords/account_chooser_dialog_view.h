@@ -36,11 +36,11 @@ class AccountChooserDialogView : public views::DialogDelegateView,
   base::string16 GetWindowTitle() const override;
   bool ShouldShowWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
+  void WindowClosing() override;
 
   // DialogDelegate:
   int GetDialogButtons() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
-  void OnClosed() override;
 
   // views::View
   gfx::Size GetPreferredSize() const override;

@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/passwords/account_chooser_dialog_view.h"
 #include "chrome/browser/ui/views/passwords/auto_signin_first_run_dialog_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -200,7 +201,7 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
                   &password_manager::CredentialInfo::type,
                   password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY)));
   EXPECT_CALL(*controller(), OnDialogClosed());
-  EXPECT_TRUE(dialog->Close());
+  dialog->GetWidget()->Close();
 
   EXPECT_FALSE(controller()->current_autosignin_prompt());
 }
@@ -261,7 +262,7 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
                   &password_manager::CredentialInfo::type,
                   password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY)));
   EXPECT_CALL(*controller(), OnDialogClosed());
-  EXPECT_TRUE(dialog->Close());
+  dialog->GetWidget()->Close();
   EXPECT_FALSE(controller()->current_autosignin_prompt());
 }
 
@@ -292,7 +293,6 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
   controller()->ChooseCredential(
       form, password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
 
-  EXPECT_CALL(*controller(), OnDialogClosed());
   EXPECT_TRUE(controller()->current_autosignin_prompt());
 }
 
@@ -377,12 +377,10 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest, PopupAutoSigninPrompt) {
   EXPECT_EQ(password_manager::ui::INACTIVE_STATE, controller()->GetState());
   AutoSigninFirstRunDialogView* dialog =
       controller()->current_autosignin_prompt();
-  // This is the way how ESC is processed. It's important to reproduce it
-  // because of double AutoSigninFirstRunDialogView::OnClosed call due to a bug
-  // http://crbug.com/583330.
   ui::Accelerator esc(ui::VKEY_ESCAPE, 0);
   EXPECT_CALL(*controller(), OnDialogClosed());
   EXPECT_TRUE(dialog->GetWidget()->client_view()->AcceleratorPressed(esc));
+  content::RunAllPendingInMessageLoop();
   testing::Mock::VerifyAndClearExpectations(controller());
   EXPECT_TRUE(
       password_bubble_experiment::ShouldShowAutoSignInPromptFirstRunExperience(
@@ -433,7 +431,6 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
   blocked_form.reset(new autofill::PasswordForm(form));
   client()->NotifyUserAutoSigninBlockedOnFirstRun(std::move(blocked_form));
   client()->NotifySuccessfulLoginWithExistingPassword(form);
-  EXPECT_CALL(*controller(), OnDialogClosed());
   ASSERT_TRUE(controller()->current_autosignin_prompt());
 }
 

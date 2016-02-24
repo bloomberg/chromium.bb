@@ -99,6 +99,11 @@ bool AccountChooserDialogView::ShouldShowCloseButton() const {
   return false;
 }
 
+void AccountChooserDialogView::WindowClosing() {
+  if (controller_)
+    controller_->OnCloseDialog();
+}
+
 int AccountChooserDialogView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_CANCEL;
 }
@@ -106,11 +111,6 @@ int AccountChooserDialogView::GetDialogButtons() const {
 base::string16 AccountChooserDialogView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   return l10n_util::GetStringUTF16(IDS_APP_CANCEL);
-}
-
-void AccountChooserDialogView::OnClosed() {
-  if (controller_)
-    controller_->OnCloseDialog();
 }
 
 gfx::Size AccountChooserDialogView::GetPreferredSize() const {

@@ -30,13 +30,15 @@ class LogoutConfirmationDialog : public views::DialogDelegateView {
 
   void Update(base::TimeTicks logout_time);
 
+  // Called when |controller_| is no longer valid.
+  void ControllerGone();
+
   // views::DialogDelegateView:
   bool Accept() override;
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
-  void OnClosed() override;
-  void DeleteDelegate() override;
+  void WindowClosing() override;
 
  private:
   void UpdateLabel();

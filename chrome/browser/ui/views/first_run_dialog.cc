@@ -111,11 +111,6 @@ views::View* FirstRunDialog::CreateExtraView() {
   return link;
 }
 
-void FirstRunDialog::OnClosed() {
-  first_run::SetShouldShowWelcomePage();
-  Done();
-}
-
 bool FirstRunDialog::Accept() {
   GetWidget()->Hide();
 
@@ -135,6 +130,11 @@ bool FirstRunDialog::Accept() {
 
 int FirstRunDialog::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_OK;
+}
+
+void FirstRunDialog::WindowClosing() {
+  first_run::SetShouldShowWelcomePage();
+  Done();
 }
 
 void FirstRunDialog::LinkClicked(views::Link* source, int event_flags) {

@@ -30,7 +30,7 @@ LogoutConfirmationController::~LogoutConfirmationController() {
   if (Shell::HasInstance())
     Shell::GetInstance()->RemoveShellObserver(this);
   if (dialog_)
-    dialog_->GetWidget()->Close();
+    dialog_->ControllerGone();
 }
 
 void LogoutConfirmationController::ConfirmLogout(

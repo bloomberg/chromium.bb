@@ -105,17 +105,15 @@ views::View* AutoSigninFirstRunDialogView::GetInitiallyFocusedView() {
   return ok_button_;
 }
 
+void AutoSigninFirstRunDialogView::WindowClosing() {
+  if (controller_)
+    controller_->OnCloseDialog();
+}
+
 int AutoSigninFirstRunDialogView::GetDialogButtons() const {
   // None because ESC is equivalent to Cancel. It shouldn't turn off the auto
   // signin.
   return ui::DIALOG_BUTTON_NONE;
-}
-
-void AutoSigninFirstRunDialogView::OnClosed() {
-  if (controller_)
-    controller_->OnCloseDialog();
-  // This method is called twice. crbug.com/583330
-  controller_ = nullptr;
 }
 
 gfx::Size AutoSigninFirstRunDialogView::GetPreferredSize() const {

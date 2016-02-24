@@ -134,10 +134,6 @@ bool ProfileSigninConfirmationDialogViews::Cancel() {
   return true;
 }
 
-void ProfileSigninConfirmationDialogViews::OnClosed() {
-  Cancel();
-}
-
 ui::ModalType ProfileSigninConfirmationDialogViews::GetModalType() const {
   return ui::MODAL_TYPE_WINDOW;
 }
@@ -228,6 +224,10 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
       explanation_label_, 1, 1,
       views::GridLayout::FILL, views::GridLayout::FILL,
       kPreferredWidth, explanation_label_->GetHeightForWidth(kPreferredWidth));
+}
+
+void ProfileSigninConfirmationDialogViews::WindowClosing() {
+  Cancel();
 }
 
 void ProfileSigninConfirmationDialogViews::StyledLabelLinkClicked(

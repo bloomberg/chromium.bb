@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_install_prompt_test_helper.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/extensions/extension_settings_handler.h"
 #include "chrome/common/extensions/extension_test_util.h"
@@ -26,6 +27,7 @@
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/window/dialog_client_view.h"
 
 using extensions::PermissionIDSet;
 using extensions::PermissionMessage;
@@ -152,6 +154,20 @@ class ExtensionInstallDialogViewTest
             ExtensionInstallPrompt::INSTALL_PROMPT) {}
   ~ExtensionInstallDialogViewTest() override {}
 
+  views::DialogDelegateView* CreateAndShowPrompt(
+      ExtensionInstallPromptTestHelper* helper) {
+    scoped_ptr<ExtensionInstallDialogView> dialog(
+        new ExtensionInstallDialogView(profile(), web_contents(),
+                                       helper->GetCallback(), CreatePrompt()));
+    views::DialogDelegateView* delegate_view = dialog.get();
+
+    views::Widget* modal_dialog = views::DialogDelegate::CreateDialogWidget(
+        dialog.release(), nullptr, browser()->window()->GetNativeWindow());
+    modal_dialog->Show();
+
+    return delegate_view;
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstallDialogViewTest);
 };
@@ -160,46 +176,25 @@ class ExtensionInstallDialogViewTest
 // cancel the install.
 IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewTest, NotifyDelegate) {
   {
+    // User presses install.
     ExtensionInstallPromptTestHelper helper;
-    scoped_ptr<ExtensionInstallDialogView> dialog(
-        new ExtensionInstallDialogView(profile(), web_contents(),
-                                       helper.GetCallback(),
-                                       CreatePrompt()));
-    views::DialogDelegateView* delegate_view = dialog.get();
-
-    delegate_view->Accept();
-    delegate_view->OnClosed();
-    dialog.reset();
-
+    views::DialogDelegateView* delegate_view = CreateAndShowPrompt(&helper);
+    delegate_view->GetDialogClientView()->AcceptWindow();
     EXPECT_EQ(ExtensionInstallPrompt::Result::ACCEPTED, helper.result());
   }
-
   {
-    // The user cancels the install.
+    // User presses cancel.
     ExtensionInstallPromptTestHelper helper;
-    scoped_ptr<ExtensionInstallDialogView> dialog(
-        new ExtensionInstallDialogView(profile(), web_contents(),
-                                       helper.GetCallback(),
-                                       CreatePrompt()));
-    views::DialogDelegateView* delegate_view = dialog.get();
-
-    delegate_view->Cancel();
-    delegate_view->OnClosed();
-    dialog.reset();
-
+    views::DialogDelegateView* delegate_view = CreateAndShowPrompt(&helper);
+    delegate_view->GetDialogClientView()->CancelWindow();
     EXPECT_EQ(ExtensionInstallPrompt::Result::USER_CANCELED, helper.result());
   }
-
   {
-    // Corner case: Dialog is closed without the user explicitly choosing to
-    // proceed or cancel.
+    // Dialog is closed without the user explicitly choosing to proceed or
+    // cancel.
     ExtensionInstallPromptTestHelper helper;
-    scoped_ptr<ExtensionInstallDialogView> dialog(
-        new ExtensionInstallDialogView(profile(), web_contents(),
-                                       helper.GetCallback(),
-                                       CreatePrompt()));
-    dialog.reset();
-
+    views::DialogDelegateView* delegate_view = CreateAndShowPrompt(&helper);
+    delegate_view->GetWidget()->Close();
     // TODO(devlin): Should this be ABORTED?
     EXPECT_EQ(ExtensionInstallPrompt::Result::USER_CANCELED, helper.result());
   }

@@ -62,6 +62,11 @@ void LogoutConfirmationDialog::Update(base::TimeTicks logout_time) {
   UpdateLabel();
 }
 
+void LogoutConfirmationDialog::ControllerGone() {
+  controller_ = nullptr;
+  GetWidget()->Close();
+}
+
 bool LogoutConfirmationDialog::Accept() {
   logout_time_ = controller_->clock()->NowTicks();
   UpdateLabel();
@@ -84,13 +89,10 @@ base::string16 LogoutConfirmationDialog::GetDialogButtonLabel(
   return views::DialogDelegateView::GetDialogButtonLabel(button);
 }
 
-void LogoutConfirmationDialog::OnClosed() {
+void LogoutConfirmationDialog::WindowClosing() {
   update_timer_.Stop();
-  controller_->OnDialogClosed();
-}
-
-void LogoutConfirmationDialog::DeleteDelegate() {
-  delete this;
+  if (controller_)
+    controller_->OnDialogClosed();
 }
 
 void LogoutConfirmationDialog::UpdateLabel() {

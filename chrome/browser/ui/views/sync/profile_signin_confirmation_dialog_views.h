@@ -51,10 +51,12 @@ class ProfileSigninConfirmationDialogViews : public views::DialogDelegateView,
   views::View* CreateExtraView() override;
   bool Accept() override;
   bool Cancel() override;
-  void OnClosed() override;
   ui::ModalType GetModalType() const override;
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
+
+  // views::WidgetDelegate::
+  void WindowClosing() override;
 
   // views::StyledLabelListener:
   void StyledLabelLinkClicked(views::StyledLabel* label,

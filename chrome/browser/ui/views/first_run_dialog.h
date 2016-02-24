@@ -33,9 +33,11 @@ class FirstRunDialog : public views::DialogDelegateView,
 
   // views::DialogDelegate:
   views::View* CreateExtraView() override;
-  void OnClosed() override;
   bool Accept() override;
   int GetDialogButtons() const override;
+
+  // views::WidgetDelegate:
+  void WindowClosing() override;
 
   // views::LinkListener:
   void LinkClicked(views::Link* source, int event_flags) override;

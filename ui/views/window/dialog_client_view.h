@@ -93,9 +93,6 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   // Returns the insets for the buttons and extra view.
   gfx::Insets GetButtonRowInsets() const;
 
-  // Closes the widget.
-  void Close();
-
   // Sets up the focus chain for the child views. This is required since the
   // delegate may choose to add/remove views at any time.
   void SetupFocusChain();
@@ -111,10 +108,10 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   View* footnote_view_;
 
   // True if we've notified the delegate the window is closing and the delegate
-  // allosed the close. In some situations it's possible to get two closes (see
+  // allowed the close. In some situations it's possible to get two closes (see
   // http://crbug.com/71940). This is used to avoid notifying the delegate
   // twice, which can have bad consequences.
-  bool notified_delegate_;
+  bool delegate_allowed_close_;
 
   DISALLOW_COPY_AND_ASSIGN(DialogClientView);
 };
