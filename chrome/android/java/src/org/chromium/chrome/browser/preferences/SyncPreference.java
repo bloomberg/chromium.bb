@@ -58,7 +58,9 @@ public class SyncPreference extends Preference {
         // TODO(crbug/557784): Surface IDS_SYNC_UPGRADE_CLIENT string when we require the user
         // to upgrade
 
-        if (AndroidSyncSettings.isSyncEnabled(context)) {
+        boolean syncEnabled = AndroidSyncSettings.isSyncEnabled(context);
+
+        if (syncEnabled) {
             if (!profileSyncService.isBackendInitialized()) {
                 return res.getString(R.string.sync_setup_progress);
             }
@@ -66,16 +68,12 @@ public class SyncPreference extends Preference {
             if (profileSyncService.isPassphraseRequiredForDecryption()) {
                 return res.getString(R.string.sync_need_passphrase);
             }
-        }
 
-        boolean syncEnabled = AndroidSyncSettings.isSyncEnabled(context);
-
-        if (syncEnabled) {
             Account account = ChromeSigninController.get(context).getSignedInUser();
             return String.format(
                     context.getString(R.string.account_management_sync_summary), account.name);
-        } else {
-            return context.getString(R.string.sync_is_disabled);
         }
+
+        return context.getString(R.string.sync_is_disabled);
     }
 }
