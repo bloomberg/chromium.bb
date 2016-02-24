@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/thread_task_runner_handle.h"
@@ -32,11 +33,15 @@ chromeos::NetworkStateHandler* GetStateHandler() {
 ArcNetHostImpl::ArcNetHostImpl(ArcBridgeService* bridge_service)
     : ArcService(bridge_service), binding_(this) {
   arc_bridge_service()->AddObserver(this);
+  GetStateHandler()->AddObserver(this, FROM_HERE);
 }
 
 ArcNetHostImpl::~ArcNetHostImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
   arc_bridge_service()->RemoveObserver(this);
+  if (chromeos::NetworkHandler::IsInitialized()) {
+    GetStateHandler()->RemoveObserver(this, FROM_HERE);
+  }
 }
 
 void ArcNetHostImpl::OnNetInstanceReady() {
@@ -111,6 +116,19 @@ void ArcNetHostImpl::GetWifiEnabledState(
 
 void ArcNetHostImpl::StartScan() {
   GetStateHandler()->RequestScan();
+}
+
+void ArcNetHostImpl::ScanCompleted(const chromeos::DeviceState* /*unused*/) {
+  if (arc_bridge_service()->net_version() < 1) {
+    VLOG(1) << "ArcBridgeService does not support ScanCompleted.";
+    return;
+  }
+
+  arc_bridge_service()->net_instance()->ScanCompleted();
+}
+
+void ArcNetHostImpl::OnShuttingDown() {
+  GetStateHandler()->RemoveObserver(this, FROM_HERE);
 }
 
 }  // namespace arc

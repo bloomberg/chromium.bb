@@ -12,6 +12,7 @@
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
+#include "chromeos/network/network_state_handler_observer.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/net.mojom.h"
@@ -24,6 +25,7 @@ class ArcBridgeService;
 // Private implementation of ArcNetHost.
 class ArcNetHostImpl : public ArcService,
                        public ArcBridgeService::Observer,
+                       public chromeos::NetworkStateHandlerObserver,
                        public NetHost {
  public:
   // The constructor will register an Observer with ArcBridgeService.
@@ -41,6 +43,12 @@ class ArcNetHostImpl : public ArcService,
 
   // Called when a StartScan call is sent from ARC.
   void StartScan() override;
+
+  // Overriden from chromeos::NetworkStateHandlerObserver.
+  void ScanCompleted(const chromeos::DeviceState* /*unused*/) override;
+
+  // Overriden from chromeos::NetworkStateHandlerObserver.
+  void OnShuttingDown() override;
 
   // Overridden from ArcBridgeService::Observer:
   void OnNetInstanceReady() override;

@@ -41,4 +41,7 @@ interface NetHost {
 interface NetInstance {
   // Establishes full-duplex communication with the host.
   Init@0(NetHost host_ptr);
+
+  // Notifies the instance of a WiFI AP scan being completed.
+  [MinVersion=1] ScanCompleted@1();
 };

@@ -176,6 +176,7 @@ class ArcBridgeService : public ArcBridgeHost {
   int32_t ime_version() const { return ime_ptr_.version(); }
   int32_t input_version() const { return input_ptr_.version(); }
   int32_t intent_helper_version() const { return intent_helper_ptr_.version(); }
+  int32_t net_version() const { return net_ptr_.version(); }
   int32_t notifications_version() const { return notifications_ptr_.version(); }
   int32_t power_version() const { return power_ptr_.version(); }
   int32_t process_version() const { return process_ptr_.version(); }
