@@ -106,6 +106,8 @@ int64_t MultiBufferReader::TryRead(uint8_t* data, int64_t len) {
     if (i->second->end_of_stream())
       break;
     size_t offset = p & ((1LL << multibuffer_->block_size_shift()) - 1);
+    if (offset > static_cast<size_t>(i->second->data_size()))
+      break;
     size_t tocopy =
         std::min<size_t>(len - bytes_read, i->second->data_size() - offset);
     memcpy(data, i->second->data() + offset, tocopy);
