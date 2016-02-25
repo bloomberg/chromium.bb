@@ -33,6 +33,11 @@ def main(argv):
       'kill', help='Shutdown all existing emulators')
   sub_parsers.add_parser(
       'delete', help='Deleting all the avd files')
+  wait_parser = sub_parsers.add_parser(
+      'wait', help='Wait for emulators to finish booting')
+  wait_parser.add_argument('-n', '--num', dest='wait_num',
+                           help='Number of emulators to wait for', type=int,
+                           default=1)
   run_parser = sub_parsers.add_parser('run', help='Run emulators')
   run_parser.add_argument('--name', help='Optinaly, name of existing AVD to '
                           'launch. If not specified, AVD\'s will be created')
@@ -71,74 +76,74 @@ def main(argv):
   if arguments.command == 'kill':
     logging.info('Killing all existing emulator and existing the program')
     emulator.KillAllEmulators()
-    return
-  if arguments.command == 'delete':
+  elif arguments.command == 'delete':
     emulator.DeleteAllTempAVDs()
-    return
-
-  # Check if SDK exist in ANDROID_SDK_ROOT
-  if not install_emulator_deps.CheckSDK():
-    raise Exception('Emulator SDK not installed in %s'
-                     % constants.ANDROID_SDK_ROOT)
-
-  # Check if KVM is enabled for x86 AVD
-  if arguments.abi == 'x86':
-    if not install_emulator_deps.CheckKVM():
-      logging.warning('KVM is not installed or enabled')
-      arguments.enable_kvm = False
-
-  # Check if targeted system image exist
-  if not install_emulator_deps.CheckSystemImage(arguments.abi,
-                                                arguments.api_level):
-    logging.critical('ERROR: System image for %s AVD not installed. Run '
-                     'install_emulator_deps.py', arguments.abi)
-    return 1
-
-  # If AVD is specified, check that the SDK has the required target. If not,
-  # check that the SDK has the desired target for the temporary AVD's.
-  api_level = arguments.api_level
-  if arguments.name:
-    android = os.path.join(constants.ANDROID_SDK_ROOT, 'tools',
-                           'android')
-    avds_output = cmd_helper.GetCmdOutput([android, 'list', 'avd'])
-    names = re.findall(r'Name: (\w+)', avds_output)
-    api_levels = re.findall(r'API level (\d+)', avds_output)
-    try:
-      avd_index = names.index(arguments.name)
-    except ValueError:
-      logging.critical('ERROR: Specified AVD %s does not exist.',
-                       arguments.name)
-      return 1
-    api_level = int(api_levels[avd_index])
-
-  if not install_emulator_deps.CheckSDKPlatform(api_level):
-    logging.critical('ERROR: Emulator SDK missing required target for API %d. '
-                     'Run install_emulator_deps.py.')
-    return 1
-
-  if arguments.name:
-    emulator.LaunchEmulator(
-        arguments.name,
-        arguments.abi,
-        enable_kvm=arguments.enable_kvm,
-        kill_and_launch=arguments.reset_and_launch,
-        sdcard_size=arguments.sdcard_size,
-        storage_size=arguments.partition_size,
-        headless=arguments.headless
-    )
+  elif arguments.command == 'wait':
+    emulator.WaitForEmulatorLaunch(arguments.wait_num)
   else:
-    emulator.LaunchTempEmulators(
-        arguments.emulator_count,
-        arguments.abi,
-        arguments.api_level,
-        enable_kvm=arguments.enable_kvm,
-        kill_and_launch=arguments.kill_and_launch,
-        sdcard_size=arguments.sdcard_size,
-        storage_size=arguments.partition_size,
-        wait_for_boot=True,
-        headless=arguments.headless
-    )
-  logging.info('Emulator launch completed')
+    # Check if SDK exist in ANDROID_SDK_ROOT
+    if not install_emulator_deps.CheckSDK():
+      raise Exception('Emulator SDK not installed in %s'
+                       % constants.ANDROID_SDK_ROOT)
+
+    # Check if KVM is enabled for x86 AVD
+    if arguments.abi == 'x86':
+      if not install_emulator_deps.CheckKVM():
+        logging.warning('KVM is not installed or enabled')
+        arguments.enable_kvm = False
+
+    # Check if targeted system image exist
+    if not install_emulator_deps.CheckSystemImage(arguments.abi,
+                                                  arguments.api_level):
+      logging.critical('ERROR: System image for %s AVD not installed. Run '
+                       'install_emulator_deps.py', arguments.abi)
+      return 1
+
+    # If AVD is specified, check that the SDK has the required target. If not,
+    # check that the SDK has the desired target for the temporary AVD's.
+    api_level = arguments.api_level
+    if arguments.name:
+      android = os.path.join(constants.ANDROID_SDK_ROOT, 'tools',
+                             'android')
+      avds_output = cmd_helper.GetCmdOutput([android, 'list', 'avd'])
+      names = re.findall(r'Name: (\w+)', avds_output)
+      api_levels = re.findall(r'API level (\d+)', avds_output)
+      try:
+        avd_index = names.index(arguments.name)
+      except ValueError:
+        logging.critical('ERROR: Specified AVD %s does not exist.',
+                         arguments.name)
+        return 1
+      api_level = int(api_levels[avd_index])
+
+    if not install_emulator_deps.CheckSDKPlatform(api_level):
+      logging.critical('ERROR: Emulator SDK missing required target for API %d.'
+                       ' Run install_emulator_deps.py.')
+      return 1
+
+    if arguments.name:
+      emulator.LaunchEmulator(
+          arguments.name,
+          arguments.abi,
+          enable_kvm=arguments.enable_kvm,
+          kill_and_launch=arguments.reset_and_launch,
+          sdcard_size=arguments.sdcard_size,
+          storage_size=arguments.partition_size,
+          headless=arguments.headless
+      )
+    else:
+      emulator.LaunchTempEmulators(
+          arguments.emulator_count,
+          arguments.abi,
+          arguments.api_level,
+          enable_kvm=arguments.enable_kvm,
+          kill_and_launch=arguments.kill_and_launch,
+          sdcard_size=arguments.sdcard_size,
+          storage_size=arguments.partition_size,
+          wait_for_boot=True,
+          headless=arguments.headless
+      )
+    logging.info('Emulator launch completed')
   return 0
 
 if __name__ == '__main__':
