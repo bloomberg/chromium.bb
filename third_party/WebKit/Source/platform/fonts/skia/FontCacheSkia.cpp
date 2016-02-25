@@ -110,56 +110,6 @@ PassRefPtr<SimpleFontData> FontCache::fallbackOnStandardFontStyle(
     return nullptr;
 }
 
-#if !OS(WIN) && !OS(ANDROID)
-PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(const FontDescription& fontDescription, UChar32 c, const SimpleFontData*)
-{
-    // First try the specified font with standard style & weight.
-    if (fontDescription.style() == FontStyleItalic
-        || fontDescription.weight() >= FontWeight600) {
-        RefPtr<SimpleFontData> fontData = fallbackOnStandardFontStyle(
-            fontDescription, c);
-        if (fontData)
-            return fontData;
-    }
-
-    FontCache::PlatformFallbackFont fallbackFont;
-    FontCache::getFontForCharacter(c, fontDescription.locale().ascii().data(), &fallbackFont);
-    if (fallbackFont.name.isEmpty())
-        return nullptr;
-
-    FontFaceCreationParams creationParams;
-    creationParams = FontFaceCreationParams(fallbackFont.filename, fallbackFont.fontconfigInterfaceId, fallbackFont.ttcIndex);
-
-    // Changes weight and/or italic of given FontDescription depends on
-    // the result of fontconfig so that keeping the correct font mapping
-    // of the given character. See http://crbug.com/32109 for details.
-    bool shouldSetSyntheticBold = false;
-    bool shouldSetSyntheticItalic = false;
-    FontDescription description(fontDescription);
-    if (fallbackFont.isBold && description.weight() < FontWeightBold)
-        description.setWeight(FontWeightBold);
-    if (!fallbackFont.isBold && description.weight() >= FontWeightBold) {
-        shouldSetSyntheticBold = true;
-        description.setWeight(FontWeightNormal);
-    }
-    if (fallbackFont.isItalic && description.style() == FontStyleNormal)
-        description.setStyle(FontStyleItalic);
-    if (!fallbackFont.isItalic && (description.style() == FontStyleItalic || description.style() == FontStyleOblique)) {
-        shouldSetSyntheticItalic = true;
-        description.setStyle(FontStyleNormal);
-    }
-
-    FontPlatformData* substitutePlatformData = getFontPlatformData(description, creationParams);
-    if (!substitutePlatformData)
-        return nullptr;
-    FontPlatformData platformData = FontPlatformData(*substitutePlatformData);
-    platformData.setSyntheticBold(shouldSetSyntheticBold);
-    platformData.setSyntheticItalic(shouldSetSyntheticItalic);
-    return fontDataFromFontPlatformData(&platformData, DoNotRetain);
-}
-
-#endif // !OS(WIN) && !OS(ANDROID)
-
 PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(const FontDescription& description, ShouldRetain shouldRetain)
 {
     const FontFaceCreationParams fallbackCreationParams(getFallbackFontFamily(description));
