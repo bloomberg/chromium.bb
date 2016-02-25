@@ -89,12 +89,18 @@ TEST_F('PrintPreviewUtilsUnitTest', 'PageRanges', function() {
 });
 
 TEST_F('PrintPreviewUtilsUnitTest', 'InvalidPageRanges', function() {
-  assertTrue(pageRangeTextToPageRanges("10-100000", 100) === null);
-  assertTrue(pageRangeTextToPageRanges("1,100000", 100) === null);
-  assertTrue(pageRangeTextToPageRanges("1,2,0,56", 100) === null);
-  assertTrue(pageRangeTextToPageRanges("-1,1,2,,56", 100) === null);
-  assertTrue(pageRangeTextToPageRanges("1,2,56-40", 100) === null);
-  assertTrue(pageRangeTextToPageRanges("101-110", 100) === null);
+  assertEquals(PageRangeStatus.LIMIT_ERROR,
+      pageRangeTextToPageRanges("10-100000", 100));
+  assertEquals(PageRangeStatus.LIMIT_ERROR,
+      pageRangeTextToPageRanges("1,100000", 100));
+  assertEquals(PageRangeStatus.SYNTAX_ERROR,
+      pageRangeTextToPageRanges("1,2,0,56", 100));
+  assertEquals(PageRangeStatus.SYNTAX_ERROR,
+      pageRangeTextToPageRanges("-1,1,2,,56", 100));
+  assertEquals(PageRangeStatus.SYNTAX_ERROR,
+      pageRangeTextToPageRanges("1,2,56-40", 100));
+  assertEquals(PageRangeStatus.LIMIT_ERROR,
+      pageRangeTextToPageRanges("101-110", 100));
 });
 
 TEST_F('PrintPreviewUtilsUnitTest', 'PageRangeTextToPageList', function() {

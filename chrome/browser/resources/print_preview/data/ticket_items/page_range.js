@@ -35,8 +35,9 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     wouldValueBeValid: function(value) {
-      return null != pageRangeTextToPageRanges(
+      var result = pageRangeTextToPageRanges(
           value, this.getDocumentInfoInternal().pageCount);
+      return result instanceof Array;
     },
 
     /**
@@ -69,7 +70,8 @@ cr.define('print_preview.ticket_items', function() {
      *     ranges.
      */
     getPageRanges: function() {
-      return pageRangeTextToPageRanges(this.getValue()) || [];
+      var pageRanges = pageRangeTextToPageRanges(this.getValue());
+      return pageRanges instanceof Array ? pageRanges : [];
     },
 
     /**
@@ -81,7 +83,24 @@ cr.define('print_preview.ticket_items', function() {
     getDocumentPageRanges: function() {
       var pageRanges = pageRangeTextToPageRanges(
           this.getValue(), this.getDocumentInfoInternal().pageCount);
-      return pageRanges || [];
+      return pageRanges instanceof Array ? pageRanges : [];
+    },
+
+    /**
+     * @return {!number} Number of pages reported by the document.
+     */
+    getDocumentNumPages: function() {
+      return this.getDocumentInfoInternal().pageCount;
+    },
+
+    /**
+     * @return {!PageRangeStatus}
+     */
+    checkValidity: function() {
+      var pageRanges = pageRangeTextToPageRanges(
+          this.getValue(), this.getDocumentInfoInternal().pageCount);
+      return pageRanges instanceof Array ?
+          PageRangeStatus.NO_ERROR : pageRanges;
     },
   };
 

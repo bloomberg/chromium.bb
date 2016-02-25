@@ -138,17 +138,30 @@ cr.define('print_preview', function() {
           PageSettings.Classes_.CUSTOM_RADIO)[0];
       this.customHintEl_ = this.getElement().getElementsByClassName(
           PageSettings.Classes_.CUSTOM_HINT)[0];
-      this.customHintEl_.textContent = loadTimeData.getStringF(
-          'pageRangeInstruction',
-          loadTimeData.getString('examplePageRangeText'));
     },
 
     /**
-     * @param {boolean} isVisible Whether the custom hint is visible.
+     * @param {!PageRangeStatus} validity (of page range)
      * @private
      */
-    setInvalidStateVisible_: function(isVisible) {
-      if (isVisible) {
+    setInvalidStateVisible_: function(validity) {
+      if (validity !== PageRangeStatus.NO_ERROR) {
+        var message;
+        if (validity === PageRangeStatus.LIMIT_ERROR) {
+          if (this.pageRangeTicketItem_.getDocumentNumPages()) {
+            message = loadTimeData.getStringF(
+                'pageRangeLimitInstructionWithValue',
+                this.pageRangeTicketItem_.getDocumentNumPages());
+          } else {
+            message = loadTimeData.getString(
+                'pageRangeLimitInstruction');
+          }
+        } else {
+          message = loadTimeData.getStringF(
+              'pageRangeSyntaxInstruction',
+              loadTimeData.getString('examplePageRangeText'));
+        }
+        this.customHintEl_.textContent = message;
         this.customInput_.classList.add('invalid');
         fadeInElement(this.customHintEl_);
       } else {
@@ -247,10 +260,11 @@ cr.define('print_preview', function() {
             this.customInput_.value = pageRangeStr;
           }
           this.customRadio_.checked = true;
-          this.setInvalidStateVisible_(!this.pageRangeTicketItem_.isValid());
+          this.setInvalidStateVisible_(
+              this.pageRangeTicketItem_.checkValidity());
         } else {
           this.allRadio_.checked = true;
-          this.setInvalidStateVisible_(false);
+          this.setInvalidStateVisible_(PageRangeStatus.NO_ERROR);
         }
       }
       this.updateUiStateInternal();

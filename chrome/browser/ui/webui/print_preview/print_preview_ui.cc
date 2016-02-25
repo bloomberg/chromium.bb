@@ -243,8 +243,13 @@ content::WebUIDataSource* CreatePrintPreviewUISource() {
   source->AddString(
       "noDestsPromoLearnMoreUrl",
       chrome::kCloudPrintNoDestinationsLearnMoreURL);
-  source->AddLocalizedString("pageRangeInstruction",
-                             IDS_PRINT_PREVIEW_PAGE_RANGE_INSTRUCTION);
+  source->AddLocalizedString("pageRangeLimitInstruction",
+                             IDS_PRINT_PREVIEW_PAGE_RANGE_LIMIT_INSTRUCTION);
+  source->AddLocalizedString(
+      "pageRangeLimitInstructionWithValue",
+      IDS_PRINT_PREVIEW_PAGE_RANGE_LIMIT_INSTRUCTION_WITH_VALUE);
+  source->AddLocalizedString("pageRangeSyntaxInstruction",
+                             IDS_PRINT_PREVIEW_PAGE_RANGE_SYNTAX_INSTRUCTION);
   source->AddLocalizedString("copiesInstruction",
                              IDS_PRINT_PREVIEW_COPIES_INSTRUCTION);
   source->AddLocalizedString("incrementTitle",

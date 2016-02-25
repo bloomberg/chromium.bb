@@ -72,16 +72,25 @@ function removeDuplicates(inArray) {
   return out;
 }
 
+/** @enum {number} */
+var PageRangeStatus = {
+  NO_ERROR: 0,
+  SYNTAX_ERROR: -1,
+  LIMIT_ERROR: -2
+};
+
 /**
  * Returns a list of ranges in |pageRangeText|. The ranges are
  * listed in the order they appear in |pageRangeText| and duplicates are not
- * eliminated. If |pageRangeText| is not valid null is returned.
+ * eliminated. If |pageRangeText| is not valid, PageRangeStatus.SYNTAX_ERROR
+ * is returned.
  * A valid selection has a parsable format and every page identifier is
- * greater the 0 and less or equal to |totalPageCount| unless wildcards are
- * used(see examples).
+ * greater than 0 unless wildcards are used(see examples).
+ * If a page is greater than |totalPageCount|, PageRangeStatus.LIMIT_ERROR
+ * is returned.
  * If |totalPageCount| is 0 or undefined function uses impossibly large number
  * instead.
- * Wildcard the first number must be larger then 0 and less or equal then
+ * Wildcard the first number must be larger than 0 and less or equal then
  * |totalPageCount|. If it's missed then 1 is used as the first number.
  * Wildcard the second number must be larger then the first number. If it's
  * missed then |totalPageCount| is used as the second number.
@@ -94,7 +103,7 @@ function removeDuplicates(inArray) {
  * Example: "1-4dsf, 11" is invalid regardless of |totalPageCount|.
  * @param {string} pageRangeText The text to be checked.
  * @param {number=} opt_totalPageCount The total number of pages.
- * @return {?Array<{from: number, to: number}>} An array of page range objects.
+ * @return {!PageRangeStatus|!Array<{from: number, to: number}>}
  */
 function pageRangeTextToPageRanges(pageRangeText, opt_totalPageCount) {
   if (pageRangeText == '') {
@@ -113,20 +122,22 @@ function pageRangeTextToPageRanges(pageRangeText, opt_totalPageCount) {
     var match = parts[i].match(regex);
     if (match) {
       if (!isPositiveInteger(match[1]) && match[1] !== '')
-        return null;
+        return PageRangeStatus.SYNTAX_ERROR;
       if (!isPositiveInteger(match[2]) && match[2] !== '')
-        return null;
+        return PageRangeStatus.SYNTAX_ERROR;
       var from = match[1] ? parseInt(match[1], 10) : 1;
       var to = match[2] ? parseInt(match[2], 10) : totalPageCount;
-      if (from > to || to > totalPageCount)
-        return null;
+      if (from > to)
+        return PageRangeStatus.SYNTAX_ERROR;
+      if (to > totalPageCount)
+        return PageRangeStatus.LIMIT_ERROR;
       pageRanges.push({'from': from, 'to': to});
     } else {
       if (!isPositiveInteger(parts[i]))
-        return null;
+        return PageRangeStatus.SYNTAX_ERROR;
       var singlePageNumber = parseInt(parts[i], 10);
       if (singlePageNumber > totalPageCount)
-        return null;
+        return PageRangeStatus.LIMIT_ERROR;
       pageRanges.push({'from': singlePageNumber, 'to': singlePageNumber});
     }
   }
@@ -146,7 +157,7 @@ function pageRangeTextToPageRanges(pageRangeText, opt_totalPageCount) {
 function pageRangeTextToPageList(pageRangeText, totalPageCount) {
   var pageRanges = pageRangeTextToPageRanges(pageRangeText, totalPageCount);
   var pageList = [];
-  if (pageRanges) {
+  if (pageRanges instanceof Array) {
     for (var i = 0; i < pageRanges.length; ++i) {
       for (var j = pageRanges[i].from; j <= Math.min(pageRanges[i].to,
                                                      totalPageCount); ++j) {
