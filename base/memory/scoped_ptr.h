@@ -90,7 +90,6 @@
 // This is an implementation designed to match the anticipated future TR2
 // implementation of the scoped_ptr class.
 
-#include <assert.h>
 #include <stddef.h>
 #include <stdlib.h>
 
@@ -100,6 +99,7 @@
 #include <utility>
 
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/move.h"
 #include "base/template_util.h"
@@ -359,13 +359,13 @@ class scoped_ptr {
   void reset(element_type* p = nullptr) { impl_.reset(p); }
 
   // Accessors to get the owned object.
-  // operator* and operator-> will assert() if there is no current object.
+  // operator* and operator-> will DCHECK() if there is no current object.
   element_type& operator*() const {
-    assert(impl_.get() != nullptr);
+    DCHECK(impl_.get() != nullptr);
     return *impl_.get();
   }
   element_type* operator->() const  {
-    assert(impl_.get() != nullptr);
+    DCHECK(impl_.get() != nullptr);
     return impl_.get();
   }
   element_type* get() const { return impl_.get(); }
@@ -472,7 +472,7 @@ class scoped_ptr<T[], D> {
 
   // Accessors to get the owned array.
   element_type& operator[](size_t i) const {
-    assert(impl_.get() != nullptr);
+    DCHECK(impl_.get() != nullptr);
     return impl_.get()[i];
   }
   element_type* get() const { return impl_.get(); }
