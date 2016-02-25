@@ -36,9 +36,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         bug=478572)
     self.Fail('conformance/extensions/ext-sRGB.html',
         bug=540900)
-    self.Flaky('conformance/textures/image/tex-image-and-sub-image-2d-' +
-               'with-image-rgb-rgb-unsigned_byte.html',
-        ['win', 'linux', 'mac', 'chromeos'], bug=586183)
     # We need to add WebGL 1 check in command buffer that format/type from
     # TexSubImage2D have to match the current texture's.
     self.Fail('conformance/textures/misc/tex-sub-image-2d-bad-args.html',
