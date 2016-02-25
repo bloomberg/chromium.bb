@@ -43,4 +43,6 @@ paper-item:hover {
 
 paper-icon-button {
   -webkit-padding-end: 0;
+  padding-bottom: var(--search-engines-list-item-vertical-space);
+  padding-top: var(--search-engines-list-item-vertical-space);
 }

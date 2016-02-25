@@ -29,11 +29,9 @@
       <div class="label" i18n-content="searchEnginesOther"></div>
       <!-- TODO(dbeam): why does on-click work with keyboard but on-tap
            doesn't? -->
-      <div class="label">
+      <settings-search-engines-list engines="[[otherEngines]]">
         <a is="action-link" i18n-content="searchEnginesAddSearchEngine"
             on-tap="onAddSearchEngineTap_" id="addSearchEngine"></a>
-      </div>
-      <settings-search-engines-list engines="[[otherEngines]]">
       </settings-search-engines-list>
     </div>
   </template>

@@ -2,6 +2,10 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+:host {
+  --search-engines-list-item-vertical-space: 8px;
+}
+
 .headers {
   display: flex;
   padding: 10px 0;
@@ -18,4 +22,8 @@
 
 div {
   margin: 0 40px;
+}
+
+::content [is='action-link'] {
+  margin: var(--search-engines-list-item-vertical-space) 0;
 }
