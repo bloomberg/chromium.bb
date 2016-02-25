@@ -226,19 +226,19 @@ const char kResponseInfoWithID[] = "{"
 
 const char kResponseRegisterStart[] = "{"
     "     \"action\": \"start\","
-    "     \"user\": \"user@host.com\""
+    "     \"user\": \"user@consumer.example.com\""
     "}";
 
 const char kResponseRegisterClaimTokenNoConfirm[] = "{"
     "    \"action\": \"getClaimToken\","
-    "    \"user\": \"user@host.com\","
+    "    \"user\": \"user@consumer.example.com\","
     "    \"error\": \"pending_user_action\","
     "    \"timeout\": 1"
     "}";
 
 const char kResponseRegisterClaimTokenConfirm[] = "{"
     "    \"action\": \"getClaimToken\","
-    "    \"user\": \"user@host.com\","
+    "    \"user\": \"user@consumer.example.com\","
     "    \"token\": \"MySampleToken\","
     "    \"claim_url\": \"http://someurl.com/\""
     "}";
@@ -247,7 +247,7 @@ const char kResponseCloudPrintConfirm[] = "{ \"success\": true }";
 
 const char kResponseRegisterComplete[] = "{"
     "    \"action\": \"complete\","
-    "    \"user\": \"user@host.com\","
+    "    \"user\": \"user@consumer.example.com\","
     "    \"device_id\": \"my_id\""
     "}";
 
@@ -264,20 +264,22 @@ const char kResponseGaiaId[] = "{"
 const char kURLInfo[] = "http://1.2.3.4:8888/privet/info";
 
 const char kURLRegisterStart[] =
-    "http://1.2.3.4:8888/privet/register?action=start&user=user%40host.com";
+    "http://1.2.3.4:8888/privet/register?action=start&"
+    "user=user%40consumer.example.com";
 
 const char kURLRegisterClaimToken[] =
     "http://1.2.3.4:8888/privet/register?action=getClaimToken&"
-    "user=user%40host.com";
+    "user=user%40consumer.example.com";
 
 const char kURLCloudPrintConfirm[] =
     "https://www.google.com/cloudprint/confirm?token=MySampleToken";
 
 const char kURLRegisterComplete[] =
-    "http://1.2.3.4:8888/privet/register?action=complete&user=user%40host.com";
+    "http://1.2.3.4:8888/privet/register?action=complete&"
+    "user=user%40consumer.example.com";
 
 const char kSampleGaiaId[] = "12345";
-const char kSampleUser[] = "user@host.com";
+const char kSampleUser[] = "user@consumer.example.com";
 
 class TestMessageLoopCondition {
  public:

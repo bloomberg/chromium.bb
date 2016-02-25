@@ -376,6 +376,8 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       return (403, 'No authorization')
 
     policy = self.server.GetPolicies()
+    if ('managed_users' not in policy):
+      return (500, 'error in config - no managed users')
     username = self.server.ResolveUser(auth)
     if ('*' not in policy['managed_users'] and
         username not in policy['managed_users']):
@@ -990,7 +992,7 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
         pass
 
   def GetPolicies(self):
-    """Returns the policies to be used, reloaded form the backend file every
+    """Returns the policies to be used, reloaded from the backend file every
        time this is called.
     """
     policy = {}
