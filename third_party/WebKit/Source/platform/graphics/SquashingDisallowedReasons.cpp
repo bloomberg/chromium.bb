@@ -54,6 +54,9 @@ const SquashingDisallowedReasonStringMap kSquashingDisallowedReasonStringMap[] =
     { SquashingDisallowedReasonSquashingLayerIsAnimating,
         "squashingLayerIsAnimating",
         "Cannot squash into a layer that is animating." },
+    { SquashingDisallowedReasonRenderingContextMismatch,
+        "squashingLayerRenderingContextMismatch",
+        "Cannot squash layers with different 3D contexts." },
 };
 
 const size_t kNumberOfSquashingDisallowedReasons = WTF_ARRAY_LENGTH(kSquashingDisallowedReasonStringMap);

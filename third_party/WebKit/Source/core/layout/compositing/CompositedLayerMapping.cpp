@@ -1459,8 +1459,7 @@ void CompositedLayerMapping::updateRenderingContext()
     }
 
     UpdateRenderingContextFunctor functor = { id };
-    ApplyToGraphicsLayersMode mode = ApplyToAllGraphicsLayers & ~ApplyToSquashingLayer;
-    ApplyToGraphicsLayers<UpdateRenderingContextFunctor>(this, functor, mode);
+    ApplyToGraphicsLayers<UpdateRenderingContextFunctor>(this, functor, ApplyToAllGraphicsLayers);
 }
 
 struct UpdateShouldFlattenTransformFunctor {

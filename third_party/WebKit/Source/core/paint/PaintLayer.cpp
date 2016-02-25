@@ -432,6 +432,13 @@ static PaintLayer* enclosingLayerForContainingBlock(PaintLayer* layer)
     return 0;
 }
 
+static const PaintLayer* enclosingLayerForContainingBlock(const PaintLayer* layer)
+{
+    if (const LayoutObject* containingBlock = layer->layoutObject()->containingBlock())
+        return containingBlock->enclosingLayer();
+    return 0;
+}
+
 PaintLayer* PaintLayer::renderingContextRoot()
 {
     PaintLayer* renderingContext = 0;
@@ -440,6 +447,19 @@ PaintLayer* PaintLayer::renderingContextRoot()
         renderingContext = this;
 
     for (PaintLayer* current = enclosingLayerForContainingBlock(this); current && current->shouldPreserve3D(); current = enclosingLayerForContainingBlock(current))
+        renderingContext = current;
+
+    return renderingContext;
+}
+
+const PaintLayer* PaintLayer::renderingContextRoot() const
+{
+    const PaintLayer* renderingContext = 0;
+
+    if (shouldPreserve3D())
+        renderingContext = this;
+
+    for (const PaintLayer* current = enclosingLayerForContainingBlock(this); current && current->shouldPreserve3D(); current = enclosingLayerForContainingBlock(current))
         renderingContext = current;
 
     return renderingContext;

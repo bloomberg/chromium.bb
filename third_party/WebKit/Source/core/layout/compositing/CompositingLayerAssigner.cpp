@@ -165,6 +165,9 @@ SquashingDisallowedReasons CompositingLayerAssigner::getReasonsPreventingSquashi
     if (layer->transformAncestor() != squashingLayer.transformAncestor())
         return SquashingDisallowedReasonTransformAncestorMismatch;
 
+    if (layer->renderingContextRoot() != squashingLayer.renderingContextRoot())
+        return SquashingDisallowedReasonRenderingContextMismatch;
+
     if (layer->hasFilter() || layer->filterAncestor() != squashingLayer.filterAncestor())
         return SquashingDisallowedReasonFilterMismatch;
 

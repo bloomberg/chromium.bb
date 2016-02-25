@@ -276,6 +276,7 @@ public:
 
     void updateTransformationMatrix();
     PaintLayer* renderingContextRoot();
+    const PaintLayer* renderingContextRoot() const;
 
     LayoutSize offsetForInFlowPosition() const { return m_rareData ? m_rareData->offsetForInFlowPosition : LayoutSize(); }
 
