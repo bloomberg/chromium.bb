@@ -15,7 +15,6 @@
 #include "base/process/process_handle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/weak_binding_set.h"
-#include "mojo/shell/capability_filter.h"
 #include "mojo/shell/connect_params.h"
 #include "mojo/shell/identity.h"
 #include "mojo/shell/public/interfaces/application_manager.mojom.h"
@@ -66,7 +65,6 @@ class ApplicationInstance : public mojom::Shell,
                uint32_t user_id,
                shell::mojom::InterfaceProviderRequest remote_interfaces,
                shell::mojom::InterfaceProviderPtr local_interfaces,
-               mojom::CapabilityFilterPtr filter,
                const ConnectCallback& callback) override;
   void Clone(mojom::ConnectorRequest request) override;
 

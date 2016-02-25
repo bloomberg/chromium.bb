@@ -27,10 +27,6 @@ class Identity {
   Identity(const GURL& in_url,
            const std::string& in_qualifier,
            uint32_t user_id);
-  Identity(const GURL& in_url,
-           const std::string& in_qualifier,
-           uint32_t user,
-           CapabilityFilter filter);
   ~Identity();
 
   bool operator<(const Identity& other) const;
@@ -41,6 +37,7 @@ class Identity {
   uint32_t user_id() const { return user_id_; }
   void set_user_id(uint32_t user_id) { user_id_ = user_id; }
   const std::string& qualifier() const { return qualifier_; }
+  void SetFilter(const CapabilityFilter& filter);
   const CapabilityFilter& filter() const { return filter_; }
 
  private:

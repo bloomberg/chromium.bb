@@ -180,9 +180,7 @@ void BackgroundShell::Init(scoped_ptr<InitParams> init_params) {
 mojom::ShellClientRequest BackgroundShell::CreateShellClientRequest(
     const GURL& url) {
   scoped_ptr<ConnectParams> params(new ConnectParams);
-  params->set_target(
-      Identity(url, std::string(), mojom::Connector::kUserRoot,
-               GetPermissiveCapabilityFilter()));
+  params->set_target(Identity(url, std::string(), mojom::Connector::kUserRoot));
   mojom::ShellClientRequest request;
   base::WaitableEvent signal(true, false);
   thread_->message_loop()->task_runner()->PostTask(

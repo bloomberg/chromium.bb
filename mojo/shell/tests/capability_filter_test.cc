@@ -332,7 +332,7 @@ void CapabilityFilterTest::RunApplication(const std::string& url,
   scoped_ptr<ConnectParams> params(new ConnectParams);
   params->set_source(CreateShellIdentity());
   params->set_target(Identity(GURL(url), std::string(),
-                              mojom::Connector::kUserInherit, filter));
+                              mojom::Connector::kUserInherit));
   params->set_remote_interfaces(GetProxy(&remote_interfaces));
   params->set_local_interfaces(std::move(local_interfaces));
   quit_identities_.insert(params->target());

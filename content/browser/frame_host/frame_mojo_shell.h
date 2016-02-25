@@ -39,7 +39,6 @@ class FrameMojoShell : public mojo::shell::mojom::Shell,
       uint32_t user_id,
       mojo::shell::mojom::InterfaceProviderRequest services,
       mojo::shell::mojom::InterfaceProviderPtr exposed_services,
-      mojo::shell::mojom::CapabilityFilterPtr filter,
       const mojo::shell::mojom::Connector::ConnectCallback& callback) override;
   void Clone(mojo::shell::mojom::ConnectorRequest request) override;
 

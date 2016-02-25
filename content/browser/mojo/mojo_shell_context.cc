@@ -159,13 +159,12 @@ class MojoShellContext::Proxy {
       const GURL& requestor_url,
       mojo::shell::mojom::InterfaceProviderRequest request,
       mojo::shell::mojom::InterfaceProviderPtr exposed_services,
-      const mojo::shell::CapabilityFilter& filter,
       const mojo::shell::mojom::Connector::ConnectCallback& callback) {
     if (task_runner_ == base::ThreadTaskRunnerHandle::Get()) {
       if (shell_context_) {
         shell_context_->ConnectToApplicationOnOwnThread(
             url, requestor_url, std::move(request), std::move(exposed_services),
-            filter, callback);
+            callback);
       }
     } else {
       // |shell_context_| outlives the main MessageLoop, so it's safe for it to
@@ -175,7 +174,7 @@ class MojoShellContext::Proxy {
           base::Bind(&MojoShellContext::ConnectToApplicationOnOwnThread,
                      base::Unretained(shell_context_), url, requestor_url,
                      base::Passed(&request), base::Passed(&exposed_services),
-                     filter, callback));
+                     callback));
     }
   }
 
@@ -261,11 +260,9 @@ void MojoShellContext::ConnectToApplication(
     const GURL& requestor_url,
     mojo::shell::mojom::InterfaceProviderRequest request,
     mojo::shell::mojom::InterfaceProviderPtr exposed_services,
-    const mojo::shell::CapabilityFilter& filter,
     const mojo::shell::mojom::Connector::ConnectCallback& callback) {
   proxy_.Get()->ConnectToApplication(url, requestor_url, std::move(request),
-                                     std::move(exposed_services), filter,
-                                     callback);
+                                     std::move(exposed_services), callback);
 }
 
 void MojoShellContext::ConnectToApplicationOnOwnThread(
@@ -273,16 +270,18 @@ void MojoShellContext::ConnectToApplicationOnOwnThread(
     const GURL& requestor_url,
     mojo::shell::mojom::InterfaceProviderRequest request,
     mojo::shell::mojom::InterfaceProviderPtr exposed_services,
-    const mojo::shell::CapabilityFilter& filter,
     const mojo::shell::mojom::Connector::ConnectCallback& callback) {
   scoped_ptr<mojo::shell::ConnectParams> params(new mojo::shell::ConnectParams);
   // TODO(beng): kUserRoot is obviously wrong.
-  params->set_source(
-      mojo::shell::Identity(requestor_url, std::string(),
-                            mojo::shell::mojom::Connector::kUserRoot,
-                            mojo::shell::GetPermissiveCapabilityFilter()));
+  // TODO(beng): We need to set a permissive filter here temporarily because
+  //             content is known as a bogus system: URL that the application
+  //             manager doesn't understand.
+  mojo::shell::Identity source_id(
+      requestor_url, std::string(), mojo::shell::mojom::Connector::kUserRoot);
+  source_id.SetFilter(mojo::shell::GetPermissiveCapabilityFilter());
+  params->set_source(source_id);
   params->set_target(mojo::shell::Identity(
-      url, std::string(), mojo::shell::mojom::Connector::kUserRoot, filter));
+      url, std::string(), mojo::shell::mojom::Connector::kUserRoot));
   params->set_remote_interfaces(std::move(request));
   params->set_local_interfaces(std::move(exposed_services));
   params->set_connect_callback(callback);

@@ -14,6 +14,7 @@
 #include "mojo/common/common_type_converters.h"
 #include "mojo/common/url_type_converters.h"
 #include "mojo/shell/application_manager.h"
+#include "mojo/shell/capability_filter.h"
 
 namespace mojo {
 namespace shell {
@@ -84,7 +85,6 @@ void ApplicationInstance::Connect(
     uint32_t user_id,
     shell::mojom::InterfaceProviderRequest remote_interfaces,
     shell::mojom::InterfaceProviderPtr local_interfaces,
-    mojom::CapabilityFilterPtr filter,
     const ConnectCallback& callback) {
   GURL url = app_url.To<GURL>();
   if (!url.is_valid()) {
@@ -94,14 +94,9 @@ void ApplicationInstance::Connect(
   }
   if (allow_any_application_ ||
       identity_.filter().find(url.spec()) != identity_.filter().end()) {
-    CapabilityFilter capability_filter = GetPermissiveCapabilityFilter();
-    if (!filter.is_null())
-      capability_filter = filter->filter.To<CapabilityFilter>();
-
     scoped_ptr<ConnectParams> params(new ConnectParams);
     params->set_source(identity_);
-    params->set_target(
-        Identity(url, std::string(), user_id, capability_filter));
+    params->set_target(Identity(url, std::string(), user_id));
     params->set_remote_interfaces(std::move(remote_interfaces));
     params->set_local_interfaces(std::move(local_interfaces));
     params->set_connect_callback(callback);

@@ -50,7 +50,6 @@ class Shell {
   void ConnectToInterface(const std::string& url,
                           InterfacePtr<Interface>* ptr) {
     Connector::ConnectParams params(url);
-    params.set_filter(CreatePermissiveCapabilityFilter());
     return ConnectToInterface(&params, ptr);
   }
 

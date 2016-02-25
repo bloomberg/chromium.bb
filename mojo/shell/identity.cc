@@ -34,14 +34,9 @@ Identity::Identity(const GURL& url)
 
 Identity::Identity(const GURL& url, const std::string& qualifier,
                    uint32_t user_id)
-    : Identity(url, qualifier, user_id, CapabilityFilter()) {}
-
-Identity::Identity(const GURL& url, const std::string& qualifier,
-                   uint32_t user_id, CapabilityFilter filter)
     : url_(url),
       qualifier_(qualifier.empty() ? url_.spec() : qualifier),
-      user_id_(user_id),
-      filter_(CanonicalizeFilter(filter)) {}
+      user_id_(user_id) {}
 
 Identity::~Identity() {}
 
@@ -57,13 +52,22 @@ bool Identity::operator<(const Identity& other) const {
 }
 
 bool Identity::operator==(const Identity& other) const {
+  // We specifically don't include filter in the equivalence check because we
+  // don't quite know how this should work yet.
+  // TODO(beng): figure out how it should work.
   return other.url_ == url_ && other.qualifier_ == qualifier_ &&
-    other.filter_ == filter_ && other.user_id_ == user_id_;
+         other.user_id_ == user_id_;
+}
+
+void Identity::SetFilter(const CapabilityFilter& filter) {
+  filter_ = CanonicalizeFilter(filter);
 }
 
 Identity CreateShellIdentity() {
-  return Identity(GURL("mojo://shell/"), std::string(),
-                  mojom::Connector::kUserRoot, GetPermissiveCapabilityFilter());
+  Identity id =
+      Identity(GURL("mojo://shell/"), "", mojom::Connector::kUserRoot);
+  id.SetFilter(GetPermissiveCapabilityFilter());
+  return id;
 }
 
 }  // namespace shell

@@ -6073,17 +6073,11 @@ mojo::shell::mojom::InterfaceProviderPtr RenderFrameImpl::ConnectToApplication(
   if (!mojo_shell_)
     GetServiceRegistry()->ConnectToRemoteService(mojo::GetProxy(&mojo_shell_));
   mojo::shell::mojom::InterfaceProviderPtr interface_provider;
-  mojo::shell::mojom::CapabilityFilterPtr filter(
-      mojo::shell::mojom::CapabilityFilter::New());
-  mojo::Array<mojo::String> all_interfaces;
-  all_interfaces.push_back("*");
-  filter->filter.insert("*", std::move(all_interfaces));
   mojo::shell::mojom::ConnectorPtr connector;
   mojo_shell_->GetConnector(GetProxy(&connector));
   connector->Connect(
       url.spec(), mojo::shell::mojom::Connector::kUserInherit,
-      GetProxy(&interface_provider), nullptr, std::move(filter),
-      base::Bind(&OnGotInstanceID));
+      GetProxy(&interface_provider), nullptr, base::Bind(&OnGotInstanceID));
   return interface_provider;
 }
 

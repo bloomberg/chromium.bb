@@ -19,13 +19,13 @@ class CapabilityFilterApplicationTest : public CapabilityFilterTest {
   DISALLOW_COPY_AND_ASSIGN(CapabilityFilterApplicationTest);
 };
 
-TEST_F(CapabilityFilterApplicationTest, Blocking) {
+TEST_F(CapabilityFilterApplicationTest, DISABLED_Blocking) {
   CreateLoader<TestApplication>("test:trusted");
   CreateLoader<TestApplication>("test:untrusted");
   RunBlockingTest();
 }
 
-TEST_F(CapabilityFilterApplicationTest, Wildcards) {
+TEST_F(CapabilityFilterApplicationTest, DISABLED_Wildcards) {
   CreateLoader<TestApplication>("test:wildcard");
   CreateLoader<TestApplication>("test:blocked");
   CreateLoader<TestApplication>("test:wildcard2");

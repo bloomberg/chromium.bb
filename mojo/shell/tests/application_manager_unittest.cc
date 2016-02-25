@@ -604,8 +604,7 @@ TEST_F(ApplicationManagerTest, TestEndApplicationClosure) {
   scoped_ptr<ConnectParams> params(new ConnectParams);
   params->set_source(CreateShellIdentity());
   params->set_target(
-      Identity(GURL("test:test"), "", mojom::Connector::kUserRoot,
-               GetPermissiveCapabilityFilter()));
+      Identity(GURL("test:test"), "", mojom::Connector::kUserRoot));
   application_manager_->SetInstanceQuitCallback(
       base::Bind(&QuitClosure, params->target(), &called));
   application_manager_->Connect(std::move(params));

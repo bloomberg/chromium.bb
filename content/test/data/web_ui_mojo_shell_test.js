@@ -45,7 +45,6 @@ define('main', [
                 response.url == 'chrome://mojo-web-ui/');
           });
         },
-        function (exposedServices) {},
-        new shellMojom.CapabilityFilter({ filter: new Map([["*", ["*"]]]) }));
+        function (exposedServices) {});
   };
 });

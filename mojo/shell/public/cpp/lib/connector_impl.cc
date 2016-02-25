@@ -10,9 +10,7 @@ namespace mojo {
 
 Connector::ConnectParams::ConnectParams(const std::string& url)
     : url_(url),
-      filter_(shell::mojom::CapabilityFilter::New()),
       user_id_(shell::mojom::Connector::kUserInherit) {
-  filter_->filter.SetToEmpty();
 }
 Connector::ConnectParams::~ConnectParams() {}
 
@@ -22,7 +20,6 @@ ConnectorImpl::~ConnectorImpl() {}
 
 scoped_ptr<Connection> ConnectorImpl::Connect(const std::string& url) {
   ConnectParams params(url);
-  params.set_filter(CreatePermissiveCapabilityFilter());
   return Connect(&params);
 }
 
@@ -59,7 +56,6 @@ scoped_ptr<Connection> ConnectorImpl::Connect(ConnectParams* params) {
                       params->user_id(),
                       std::move(remote_request),
                       std::move(local_interfaces),
-                      params->TakeFilter(),
                       registry->GetConnectCallback());
   return std::move(registry);
 }

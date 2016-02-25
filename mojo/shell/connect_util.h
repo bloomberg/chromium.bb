@@ -45,8 +45,7 @@ inline void ConnectToInterface(ApplicationManager* application_manager,
                                InterfacePtr<Interface>* ptr) {
   ScopedMessagePipeHandle service_handle = ConnectToInterfaceByName(
       application_manager, source,
-      Identity(application_url, std::string(), mojom::Connector::kUserInherit,
-               GetPermissiveCapabilityFilter()),
+      Identity(application_url, std::string(), mojom::Connector::kUserInherit),
       Interface::Name_);
   ptr->Bind(InterfacePtrInfo<Interface>(std::move(service_handle), 0u));
 }

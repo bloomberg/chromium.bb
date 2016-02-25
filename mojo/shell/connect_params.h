@@ -28,9 +28,6 @@ class ConnectParams {
    ConnectParams();
    ~ConnectParams();
 
-  // The following methods set both |target_| and |target_url_request_|.
-  void SetTargetURL(const GURL& target_url);
-
   void set_source(const Identity& source) { source_ = source;  }
   const Identity& source() const { return source_; }
   void set_target(const Identity& target) { target_ = target; }

@@ -11,8 +11,6 @@
 
 namespace mojo {
 
-shell::mojom::CapabilityFilterPtr CreatePermissiveCapabilityFilter();
-
 // An interface that encapsulates the Mojo Shell's broker interface by which
 // connections between applications are established. Once Connect() is called,
 // this class is bound to the thread the call was made on and it cannot be
@@ -35,18 +33,11 @@ class Connector {
     ~ConnectParams();
 
     const GURL& url() { return url_; }
-    shell::mojom::CapabilityFilterPtr TakeFilter() {
-      return std::move(filter_);
-    }
-    void set_filter(shell::mojom::CapabilityFilterPtr filter) {
-      filter_ = std::move(filter);
-    }
     void set_user_id(uint32_t user_id) { user_id_ = user_id; }
     uint32_t user_id() const { return user_id_; }
 
    private:
     GURL url_;
-    shell::mojom::CapabilityFilterPtr filter_;
     uint32_t user_id_;
 
     DISALLOW_COPY_AND_ASSIGN(ConnectParams);
@@ -73,7 +64,6 @@ class Connector {
   void ConnectToInterface(const std::string& url,
                           InterfacePtr<Interface>* ptr) {
     ConnectParams params(url);
-    params.set_filter(CreatePermissiveCapabilityFilter());
     return ConnectToInterface(&params, ptr);
   }
 

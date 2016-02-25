@@ -178,10 +178,10 @@ void ApplicationManager::CreateInstanceForHandle(
   // manually by other code, not in response to a Connect() request. The newly
   // created instance is identified by |url| and may be subsequently reached by
   // client code using this identity.
-  CapabilityFilter local_filter = filter->filter.To<CapabilityFilter>();
   // TODO(beng): obtain userid from the inbound connection.
   Identity target_id(url.To<GURL>(), std::string(),
-                     mojom::Connector::kUserInherit, local_filter);
+                     mojom::Connector::kUserInherit);
+  target_id.SetFilter(filter->filter.To<CapabilityFilter>());
   mojom::ShellClientRequest request;
   ApplicationInstance* instance = CreateInstance(target_id, &request);
   instance->BindPIDReceiver(std::move(pid_receiver));
@@ -304,12 +304,13 @@ void ApplicationManager::OnGotResolvedURL(
     return;
 
   Identity source = params->source();
-  CapabilityFilter filter = params->target().filter();
-  // TODO(beng): this clobbers the filter passed via Connect().
+  // |base_filter| can be null when there is no manifest, e.g. for URL types
+  // not resolvable by the resolver.
+  CapabilityFilter filter = GetPermissiveCapabilityFilter();
   if (!base_filter.is_null())
     filter = base_filter->filter.To<CapabilityFilter>();
-  Identity target(params->target().url(), params->target().qualifier(),
-                  params->target().user_id(), filter);
+  Identity target = params->target();
+  target.SetFilter(filter);
 
   mojom::ShellClientRequest request;
   ApplicationInstance* instance = CreateInstance(target, &request);
@@ -325,10 +326,9 @@ void ApplicationManager::OnGotResolvedURL(
     // In cases where a package alias is resolved, we have to use the qualifier
     // from the original request rather than for the package itself, which will
     // always be the same.
-    CreateShellClient(source,
-                      Identity(resolved_gurl, target.qualifier(),
-                               target.user_id(), filter),
-                      target.url(), std::move(request));
+    CreateShellClient(
+        source, Identity(resolved_gurl, target.qualifier(), target.user_id()),
+        target.url(), std::move(request));
   } else {
     bool start_sandboxed = false;
     base::FilePath path = util::UrlToFilePath(file_url.To<GURL>());

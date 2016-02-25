@@ -61,7 +61,6 @@ void FrameMojoShell::Connect(
     uint32_t user_id,
     mojo::shell::mojom::InterfaceProviderRequest services,
     mojo::shell::mojom::InterfaceProviderPtr /* exposed_services */,
-    mojo::shell::mojom::CapabilityFilterPtr filter,
     const mojo::shell::mojom::Connector::ConnectCallback& callback) {
   // TODO(beng): user_id is dropped on the floor right now. Figure out what to
   //             do with it.
@@ -69,14 +68,10 @@ void FrameMojoShell::Connect(
   service_provider_bindings_.AddBinding(GetServiceRegistry(),
                                         GetProxy(&frame_services));
 
-  mojo::shell::CapabilityFilter capability_filter =
-      mojo::shell::GetPermissiveCapabilityFilter();
-  if (!filter.is_null())
-    capability_filter = filter->filter.To<mojo::shell::CapabilityFilter>();
   MojoShellContext::ConnectToApplication(
       application_url.To<GURL>(),
       frame_host_->GetSiteInstance()->GetSiteURL(), std::move(services),
-      std::move(frame_services), capability_filter, callback);
+      std::move(frame_services), callback);
 }
 
 void FrameMojoShell::Clone(mojo::shell::mojom::ConnectorRequest request) {

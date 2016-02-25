@@ -235,13 +235,4 @@ void ShellConnection::Release() {
     Quit();
 }
 
-shell::mojom::CapabilityFilterPtr CreatePermissiveCapabilityFilter() {
-  shell::mojom::CapabilityFilterPtr filter(
-      shell::mojom::CapabilityFilter::New());
-  Array<String> all_interfaces;
-  all_interfaces.push_back("*");
-  filter->filter.insert("*", std::move(all_interfaces));
-  return filter;
-}
-
 }  // namespace mojo
