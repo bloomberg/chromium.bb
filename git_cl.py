@@ -3584,35 +3584,35 @@ def CMDformat(parser, args):
   # formatted. This is used to block during the presubmit.
   return_value = 0
 
-  if opts.full:
-    if clang_diff_files:
+  if clang_diff_files:
+    if opts.full:
       cmd = [clang_format_tool]
       if not opts.dry_run and not opts.diff:
         cmd.append('-i')
       stdout = RunCommand(cmd + clang_diff_files, cwd=top_dir)
       if opts.diff:
         sys.stdout.write(stdout)
-  else:
-    env = os.environ.copy()
-    env['PATH'] = str(os.path.dirname(clang_format_tool))
-    try:
-      script = clang_format.FindClangFormatScriptInChromiumTree(
-          'clang-format-diff.py')
-    except clang_format.NotFoundError, e:
-      DieWithError(e)
+    else:
+      env = os.environ.copy()
+      env['PATH'] = str(os.path.dirname(clang_format_tool))
+      try:
+        script = clang_format.FindClangFormatScriptInChromiumTree(
+            'clang-format-diff.py')
+      except clang_format.NotFoundError, e:
+        DieWithError(e)
 
-    cmd = [sys.executable, script, '-p0']
-    if not opts.dry_run and not opts.diff:
-      cmd.append('-i')
+      cmd = [sys.executable, script, '-p0']
+      if not opts.dry_run and not opts.diff:
+        cmd.append('-i')
 
-    diff_cmd = BuildGitDiffCmd('-U0', upstream_commit, clang_diff_files)
-    diff_output = RunGit(diff_cmd)
+      diff_cmd = BuildGitDiffCmd('-U0', upstream_commit, clang_diff_files)
+      diff_output = RunGit(diff_cmd)
 
-    stdout = RunCommand(cmd, stdin=diff_output, cwd=top_dir, env=env)
-    if opts.diff:
-      sys.stdout.write(stdout)
-    if opts.dry_run and len(stdout) > 0:
-      return_value = 2
+      stdout = RunCommand(cmd, stdin=diff_output, cwd=top_dir, env=env)
+      if opts.diff:
+        sys.stdout.write(stdout)
+      if opts.dry_run and len(stdout) > 0:
+        return_value = 2
 
   # Similar code to above, but using yapf on .py files rather than clang-format
   # on C/C++ files
