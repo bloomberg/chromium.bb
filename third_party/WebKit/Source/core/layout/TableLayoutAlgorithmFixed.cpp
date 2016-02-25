@@ -81,7 +81,7 @@ int TableLayoutAlgorithmFixed::calcWidthArray()
     int usedWidth = 0;
 
     // iterate over all <col> elements
-    unsigned nEffCols = m_table->numEffCols();
+    unsigned nEffCols = m_table->numEffectiveColumns();
     m_width.resize(nEffCols);
     m_width.fill(Length(Auto));
 
@@ -105,17 +105,17 @@ int TableLayoutAlgorithmFixed::calcWidthArray()
         while (span) {
             unsigned spanInCurrentEffectiveColumn;
             if (currentEffectiveColumn >= nEffCols) {
-                m_table->appendColumn(span);
+                m_table->appendEffectiveColumn(span);
                 nEffCols++;
                 m_width.append(Length());
                 spanInCurrentEffectiveColumn = span;
             } else {
-                if (span < m_table->spanOfEffCol(currentEffectiveColumn)) {
-                    m_table->splitColumn(currentEffectiveColumn, span);
+                if (span < m_table->spanOfEffectiveColumn(currentEffectiveColumn)) {
+                    m_table->splitEffectiveColumn(currentEffectiveColumn, span);
                     nEffCols++;
                     m_width.append(Length());
                 }
-                spanInCurrentEffectiveColumn = m_table->spanOfEffCol(currentEffectiveColumn);
+                spanInCurrentEffectiveColumn = m_table->spanOfEffectiveColumn(currentEffectiveColumn);
             }
             // TODO(alancutter): Make this work correctly for calc lengths.
             if ((colStyleLogicalWidth.isFixed() || colStyleLogicalWidth.hasPercent()) && colStyleLogicalWidth.isPositive()) {
@@ -154,7 +154,7 @@ int TableLayoutAlgorithmFixed::calcWidthArray()
 
         unsigned usedSpan = 0;
         while (usedSpan < span && currentColumn < nEffCols) {
-            float eSpan = m_table->spanOfEffCol(currentColumn);
+            float eSpan = m_table->spanOfEffectiveColumn(currentColumn);
             // Only set if no col element has already set it.
             if (m_width[currentColumn].isAuto() && logicalWidth.type() != Auto) {
                 m_width[currentColumn] = logicalWidth;
@@ -206,14 +206,14 @@ void TableLayoutAlgorithmFixed::applyPreferredLogicalWidthQuirks(LayoutUnit& min
 void TableLayoutAlgorithmFixed::layout()
 {
     int tableLogicalWidth = m_table->logicalWidth() - m_table->bordersPaddingAndSpacingInRowDirection();
-    unsigned nEffCols = m_table->numEffCols();
+    unsigned nEffCols = m_table->numEffectiveColumns();
 
     // FIXME: It is possible to be called without having properly updated our internal representation.
     // This means that our preferred logical widths were not recomputed as expected.
     if (nEffCols != m_width.size()) {
         calcWidthArray();
         // FIXME: Table layout shouldn't modify our table structure (but does due to columns and column-groups).
-        nEffCols = m_table->numEffCols();
+        nEffCols = m_table->numEffectiveColumns();
     }
 
     Vector<int> calcWidth(nEffCols, 0);
@@ -239,7 +239,7 @@ void TableLayoutAlgorithmFixed::layout()
             totalPercent += m_width[i].percent();
         } else if (m_width[i].isAuto()) {
             numAuto++;
-            autoSpan += m_table->spanOfEffCol(i);
+            autoSpan += m_table->spanOfEffectiveColumn(i);
         }
     }
 
@@ -278,7 +278,7 @@ void TableLayoutAlgorithmFixed::layout()
         int lastAuto = 0;
         for (unsigned i = 0; i < nEffCols; i++) {
             if (m_width[i].isAuto()) {
-                unsigned span = m_table->spanOfEffCol(i);
+                unsigned span = m_table->spanOfEffectiveColumn(i);
                 int w = remainingWidth * span / autoSpan;
                 calcWidth[i] = w + hspacing * (span - 1);
                 remainingWidth -= w;
@@ -309,14 +309,14 @@ void TableLayoutAlgorithmFixed::layout()
             calcWidth[nEffCols - 1] += remainingWidth;
     }
 
+    ASSERT(m_table->effectiveColumnPositions().size() == nEffCols + 1);
     int pos = 0;
     for (unsigned i = 0; i < nEffCols; i++) {
-        m_table->setColumnPosition(i, pos);
+        m_table->setEffectiveColumnPosition(i, pos);
         pos += calcWidth[i] + hspacing;
     }
-    int colPositionsSize = m_table->columnPositions().size();
-    if (colPositionsSize > 0)
-        m_table->setColumnPosition(colPositionsSize - 1, pos);
+    // The extra position is for the imaginary column after the last column.
+    m_table->setEffectiveColumnPosition(nEffCols, pos);
 }
 
 void TableLayoutAlgorithmFixed::willChangeTableLayout()

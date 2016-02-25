@@ -71,7 +71,7 @@ void dumpToTracedValue(const LayoutObject& object, bool traceGeometry, TracedVal
     if (object.isTableCell()) {
         const LayoutTableCell& c = toLayoutTableCell(object);
         tracedValue->setDouble("row", c.rowIndex());
-        tracedValue->setDouble("col", c.col());
+        tracedValue->setDouble("col", c.absoluteColumnIndex());
         if (c.rowSpan() != 1)
             tracedValue->setDouble("rowSpan", c.rowSpan());
         if (c.colSpan() != 1)

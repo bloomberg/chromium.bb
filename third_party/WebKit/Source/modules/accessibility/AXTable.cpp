@@ -169,7 +169,7 @@ bool AXTable::isDataTable() const
     if (!firstBody)
         return false;
 
-    int numCols = firstBody->numColumns();
+    int numCols = firstBody->numEffectiveColumns();
     int numRows = firstBody->numRows();
 
     // If there's only one cell, it's not a good AXTable candidate.
@@ -422,7 +422,7 @@ void AXTable::addChildren()
     }
 
     // make the columns based on the number of columns in the first body
-    unsigned length = initialTableSection->numColumns();
+    unsigned length = initialTableSection->numEffectiveColumns();
     for (unsigned i = 0; i < length; ++i) {
         AXTableColumn* column = toAXTableColumn(axCache.getOrCreate(ColumnRole));
         column->setColumnIndex((int)i);

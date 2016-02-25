@@ -27,7 +27,7 @@ void TableSectionPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& p
         return;
 
     unsigned totalRows = m_layoutTableSection.numRows();
-    unsigned totalCols = m_layoutTableSection.table()->columns().size();
+    unsigned totalCols = m_layoutTableSection.table()->numEffectiveColumns();
 
     if (!totalRows || !totalCols)
         return;
@@ -57,12 +57,12 @@ static inline bool compareCellPositionsWithOverflowingCells(LayoutTableCell* ele
     if (elem1->rowIndex() != elem2->rowIndex())
         return elem1->rowIndex() < elem2->rowIndex();
 
-    return elem1->col() < elem2->col();
+    return elem1->absoluteColumnIndex() < elem2->absoluteColumnIndex();
 }
 
 void TableSectionPainter::paintCollapsedBorders(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, const CollapsedBorderValue& currentBorderValue)
 {
-    if (!m_layoutTableSection.numRows() || !m_layoutTableSection.table()->columns().size())
+    if (!m_layoutTableSection.numRows() || !m_layoutTableSection.table()->effectiveColumns().size())
         return;
 
     LayoutPoint adjustedPaintOffset = paintOffset + m_layoutTableSection.location();
@@ -74,7 +74,7 @@ void TableSectionPainter::paintCollapsedBorders(const PaintInfo& paintInfo, cons
     LayoutRect tableAlignedRect = m_layoutTableSection.logicalRectForWritingModeAndDirection(localPaintInvalidationRect);
 
     CellSpan dirtiedRows = m_layoutTableSection.dirtiedRows(tableAlignedRect);
-    CellSpan dirtiedColumns = m_layoutTableSection.dirtiedColumns(tableAlignedRect);
+    CellSpan dirtiedColumns = m_layoutTableSection.dirtiedEffectiveColumns(tableAlignedRect);
 
     if (dirtiedColumns.start() >= dirtiedColumns.end())
         return;
@@ -103,7 +103,7 @@ void TableSectionPainter::paintObject(const PaintInfo& paintInfo, const LayoutPo
     LayoutRect tableAlignedRect = m_layoutTableSection.logicalRectForWritingModeAndDirection(localPaintInvalidationRect);
 
     CellSpan dirtiedRows = m_layoutTableSection.dirtiedRows(tableAlignedRect);
-    CellSpan dirtiedColumns = m_layoutTableSection.dirtiedColumns(tableAlignedRect);
+    CellSpan dirtiedColumns = m_layoutTableSection.dirtiedEffectiveColumns(tableAlignedRect);
 
     if (dirtiedColumns.start() >= dirtiedColumns.end())
         return;
@@ -129,7 +129,7 @@ void TableSectionPainter::paintObject(const PaintInfo& paintInfo, const LayoutPo
         // The overflowing cells should be scarce to avoid adding a lot of cells to the HashSet.
 #if ENABLE(ASSERT)
         unsigned totalRows = m_layoutTableSection.numRows();
-        unsigned totalCols = m_layoutTableSection.table()->columns().size();
+        unsigned totalCols = m_layoutTableSection.table()->effectiveColumns().size();
         ASSERT(overflowingCells.size() < totalRows * totalCols * gMaxAllowedOverflowingCellRatioForFastPaintPath);
 #endif
 
@@ -185,7 +185,7 @@ void TableSectionPainter::paintCell(const LayoutTableCell& cell, PaintPhase orig
         // We need to handle painting a stack of backgrounds. This stack (from bottom to top) consists of
         // the column group, column, row group, row, and then the cell.
 
-        LayoutTable::ColAndColGroup colAndColGroup = m_layoutTableSection.table()->colElement(cell.col());
+        LayoutTable::ColAndColGroup colAndColGroup = m_layoutTableSection.table()->colElementAtAbsoluteColumn(cell.absoluteColumnIndex());
         LayoutTableCol* column = colAndColGroup.col;
         LayoutTableCol* columnGroup = colAndColGroup.colgroup;
         TableCellPainter tableCellPainter(cell);

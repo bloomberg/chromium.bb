@@ -48,7 +48,7 @@ enum SkipEmptySectionsValue { DoNotSkipEmptySections, SkipEmptySections };
 // structure. The reason is that LayoutTableSection children have a local
 // view over what their structure is but don't account for other
 // LayoutTableSection. Thus LayoutTable helps keep consistency across
-// LayoutTableSection. See e.g. m_column below.
+// LayoutTableSection. See e.g. |m_effectiveColumns| below.
 //
 // LayoutTable expects only 3 types of children:
 // - zero or more LayoutTableCol
@@ -103,6 +103,33 @@ enum SkipEmptySectionsValue { DoNotSkipEmptySections, SkipEmptySections };
 // table (or the anonymous table row group) in 2. Also note that even
 // though the second <tablecell> and <tablerow> are siblings in the DOM tree,
 // they are not in the layout tree.
+//
+//
+// Note about absolute column index vs effective column index:
+//
+// To save memory at the expense of massive code complexity, the code tries
+// to coalesce columns. This means that we try to the wider column grouping
+// seen over the LayoutTableSections.
+//
+// Note that this is also a defensive pattern as <td colspan="6666666666">
+// only allocates a single entry in this Vector. This argument is weak
+// though as we cap colspans in HTMLTableCellElement.
+//
+// The following example would have 2 entries [ 3, 2 ] in effectiveColumns():
+// <table>
+//   <tr>
+//     <td colspan="3"></td>
+//     <td colspan="2"></td>
+//   </tr>
+// </table>
+//
+// Columns can be split if we add a row with a different colspan structure.
+// See splitEffectiveColumn() and appendEffectiveColumn() for operations
+// over effectiveColumns() and effectiveColumnPositions().
+//
+// See absoluteColumnToEffectiveColumn() for converting an absolute column
+// index into an index into effectiveColumns() and effectiveColumnPositions().
+
 class CORE_EXPORT LayoutTable final : public LayoutBlock {
 public:
     explicit LayoutTable(Element*);
@@ -204,14 +231,14 @@ public:
         recalcSections();
     }
 
-    const Vector<ColumnStruct>& columns() const { return m_columns; }
-    const Vector<int>& columnPositions() const { return m_columnPos; }
-    void setColumnPosition(unsigned index, int position)
+    const Vector<ColumnStruct>& effectiveColumns() const { return m_effectiveColumns; }
+    const Vector<int>& effectiveColumnPositions() const { return m_effectiveColumnPositions; }
+    void setEffectiveColumnPosition(unsigned index, int position)
     {
         // Note that if our horizontal border-spacing changed, our position will change but not
         // our column's width. In practice, horizontal border-spacing won't change often.
-        m_columnLogicalWidthChanged |= m_columnPos[index] != position;
-        m_columnPos[index] = position;
+        m_columnLogicalWidthChanged |= m_effectiveColumnPositions[index] != position;
+        m_effectiveColumnPositions[index] = position;
     }
 
     LayoutTableSection* header() const { return m_head; }
@@ -225,39 +252,39 @@ public:
     // This function returns 0 if the table has no non-empty sections.
     LayoutTableSection* topNonEmptySection() const;
 
-    unsigned lastColumnIndex() const { return numEffCols() - 1; }
+    unsigned lastEffectiveColumnIndex() const { return numEffectiveColumns() - 1; }
 
-    void splitColumn(unsigned position, unsigned firstSpan);
-    void appendColumn(unsigned span);
-    unsigned numEffCols() const { return m_columns.size(); }
-    unsigned spanOfEffCol(unsigned effCol) const { return m_columns[effCol].span; }
+    void splitEffectiveColumn(unsigned index, unsigned firstSpan);
+    void appendEffectiveColumn(unsigned span);
+    unsigned numEffectiveColumns() const { return m_effectiveColumns.size(); }
+    unsigned spanOfEffectiveColumn(unsigned effectiveColumnIndex) const { return m_effectiveColumns[effectiveColumnIndex].span; }
 
-    unsigned colToEffCol(unsigned column) const
+    unsigned absoluteColumnToEffectiveColumn(unsigned absoluteColumnIndex) const
     {
         if (!m_hasCellColspanThatDeterminesTableWidth)
-            return column;
+            return absoluteColumnIndex;
 
-        unsigned effColumn = 0;
-        unsigned numColumns = numEffCols();
-        for (unsigned c = 0; effColumn < numColumns && c + m_columns[effColumn].span - 1 < column; ++effColumn)
-            c += m_columns[effColumn].span;
-        return effColumn;
+        unsigned effectiveColumn = 0;
+        unsigned numColumns = numEffectiveColumns();
+        for (unsigned c = 0; effectiveColumn < numColumns && c + m_effectiveColumns[effectiveColumn].span - 1 < absoluteColumnIndex; ++effectiveColumn)
+            c += m_effectiveColumns[effectiveColumn].span;
+        return effectiveColumn;
     }
 
-    unsigned effColToCol(unsigned effCol) const
+    unsigned effectiveColumnToAbsoluteColumn(unsigned effectiveColumnIndex) const
     {
         if (!m_hasCellColspanThatDeterminesTableWidth)
-            return effCol;
+            return effectiveColumnIndex;
 
         unsigned c = 0;
-        for (unsigned i = 0; i < effCol; i++)
-            c += m_columns[i].span;
+        for (unsigned i = 0; i < effectiveColumnIndex; i++)
+            c += m_effectiveColumns[i].span;
         return c;
     }
 
     LayoutUnit borderSpacingInRowDirection() const
     {
-        if (unsigned effectiveColumnCount = numEffCols())
+        if (unsigned effectiveColumnCount = numEffectiveColumns())
             return static_cast<LayoutUnit>(effectiveColumnCount + 1) * hBorderSpacing();
 
         return LayoutUnit();
@@ -301,12 +328,12 @@ public:
             return col ? col : colgroup;
         }
     };
-    ColAndColGroup colElement(unsigned col) const
+    ColAndColGroup colElementAtAbsoluteColumn(unsigned absoluteColumnIndex) const
     {
-        // The common case is to not have columns, make that case fast.
+        // The common case is to not have col/colgroup elements, make that case fast.
         if (!m_hasColElements)
             return ColAndColGroup();
-        return slowColElement(col);
+        return slowColElementAtAbsoluteColumn(absoluteColumnIndex);
     }
 
     bool needsSectionRecalc() const { return m_needsSectionRecalc; }
@@ -390,7 +417,7 @@ private:
     int firstLineBoxBaseline() const override;
     int inlineBlockBaseline(LineDirectionMode) const override;
 
-    ColAndColGroup slowColElement(unsigned col) const;
+    ColAndColGroup slowColElementAtAbsoluteColumn(unsigned col) const;
 
     void updateColumnCache() const;
     void invalidateCachedColumns();
@@ -415,36 +442,21 @@ private:
     // which is called by various getter methods (e.g. borderBefore(), borderAfter()).
     // They allow dirty layout even after DocumentLifecycle::LayoutClean which seems not proper. crbug.com/538236.
 
-    mutable Vector<int> m_columnPos;
+    // Holds spans (number of absolute columns) of effective columns.
+    // See "absolute column index vs effective column index" in comments of LayoutTable.
+    mutable Vector<ColumnStruct> m_effectiveColumns;
 
-    // This Vector holds the columns counts over the entire table.
-    //
-    // To save memory at the expense of massive code complexity, the code tries
-    // to coalesce columns. This means that we try to the wider column grouping
-    // seen over the LayoutTableSections.
-    //
-    // Note that this is also a defensive pattern as <td colspan="6666666666">
-    // only allocates a single entry in this Vector. This argument is weak
-    // though as we cap colspans in HTMLTableCellElement.
-    //
-    // The following example would have 2 ColumnStruct [ 3, 2 ]:
-    // <table>
-    //   <tr>
-    //     <td colspan="3"></td>
-    //     <td colspan="2"></td>
-    //   </tr>
-    // </table>
-    //
-    // Columns can be split if we add a row with a different colspan structure.
-    // See splitColumn and appendColumn for operations over |m_columns|.
-    //
-    // See colToEffCol for converting an absolute column index into an
-    // index into |m_columns|.
-    mutable Vector<ColumnStruct> m_columns;
+    // Holds the logical layout positions of effective columns, and the last item (whose index
+    // is numEffectiveColumns()) holds the position of the imaginary column after the last column.
+    // Because of the last item, m_effectiveColumnPositions.size() is always numEffectiveColumns() + 1.
+    mutable Vector<int> m_effectiveColumnPositions;
 
     // The captions associated with this object.
     mutable Vector<LayoutTableCaption*> m_captions;
 
+    // Holds pointers to LayoutTableCol objects for <col>s and <colgroup>s under this table.
+    // There is no direct relationship between the size of and index into this vector and
+    // those of m_effectiveColumns because they hold different things.
     mutable Vector<LayoutTableCol*> m_columnLayoutObjects;
 
     mutable LayoutTableSection* m_head;
@@ -481,8 +493,8 @@ private:
     mutable bool m_hasCellColspanThatDeterminesTableWidth : 1;
     bool hasCellColspanThatDeterminesTableWidth() const
     {
-        for (unsigned c = 0; c < numEffCols(); c++) {
-            if (m_columns[c].span > 1)
+        for (unsigned c = 0; c < numEffectiveColumns(); c++) {
+            if (m_effectiveColumns[c].span > 1)
                 return true;
         }
         return false;

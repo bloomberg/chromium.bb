@@ -193,8 +193,8 @@ void AXTableCell::columnIndexRange(std::pair<unsigned, unsigned>& columnRange)
         return;
 
     LayoutTableCell* cell = toLayoutTableCell(m_layoutObject);
-    columnRange.first = cell->table()->colToEffCol(cell->col());
-    columnRange.second = cell->table()->colToEffCol(cell->col() + cell->colSpan()) - columnRange.first;
+    columnRange.first = cell->table()->absoluteColumnToEffectiveColumn(cell->absoluteColumnIndex());
+    columnRange.second = cell->table()->absoluteColumnToEffectiveColumn(cell->absoluteColumnIndex() + cell->colSpan()) - columnRange.first;
 }
 
 SortDirection AXTableCell::sortDirection() const

@@ -66,7 +66,7 @@ LayoutTable::LayoutTable(Element* element)
     , m_borderEnd(0)
 {
     ASSERT(!childrenInline());
-    m_columnPos.fill(0, 1);
+    m_effectiveColumnPositions.fill(0, 1);
 }
 
 LayoutTable::~LayoutTable()
@@ -83,7 +83,7 @@ void LayoutTable::styleDidChange(StyleDifference diff, const ComputedStyle* oldS
     // In the collapsed border model, there is no cell spacing.
     m_hSpacing = collapseBorders() ? 0 : style()->horizontalBorderSpacing();
     m_vSpacing = collapseBorders() ? 0 : style()->verticalBorderSpacing();
-    m_columnPos[0] = m_hSpacing;
+    m_effectiveColumnPositions[0] = m_hSpacing;
 
     if (!m_tableLayout || style()->isFixedTableLayout() != oldFixedTableLayout) {
         if (m_tableLayout)
@@ -734,12 +734,12 @@ LayoutTableSection* LayoutTable::topNonEmptySection() const
     return section;
 }
 
-void LayoutTable::splitColumn(unsigned position, unsigned firstSpan)
+void LayoutTable::splitEffectiveColumn(unsigned index, unsigned firstSpan)
 {
-    // We split the column at "position", taking "firstSpan" cells from the span.
-    ASSERT(m_columns[position].span > firstSpan);
-    m_columns.insert(position, ColumnStruct(firstSpan));
-    m_columns[position + 1].span -= firstSpan;
+    // We split the column at |index|, taking |firstSpan| cells from the span.
+    ASSERT(m_effectiveColumns[index].span > firstSpan);
+    m_effectiveColumns.insert(index, firstSpan);
+    m_effectiveColumns[index + 1].span -= firstSpan;
 
     // Propagate the change in our columns representation to the sections that don't need
     // cell recalc. If they do, they will be synced up directly with m_columns later.
@@ -751,16 +751,16 @@ void LayoutTable::splitColumn(unsigned position, unsigned firstSpan)
         if (section->needsCellRecalc())
             continue;
 
-        section->splitColumn(position, firstSpan);
+        section->splitEffectiveColumn(index, firstSpan);
     }
 
-    m_columnPos.grow(numEffCols() + 1);
+    m_effectiveColumnPositions.grow(numEffectiveColumns() + 1);
 }
 
-void LayoutTable::appendColumn(unsigned span)
+void LayoutTable::appendEffectiveColumn(unsigned span)
 {
-    unsigned newColumnIndex = m_columns.size();
-    m_columns.append(ColumnStruct(span));
+    unsigned newColumnIndex = m_effectiveColumns.size();
+    m_effectiveColumns.append(span);
 
     // Unless the table has cell(s) with colspan that exceed the number of columns afforded
     // by the other rows in the table we can use the fast path when mapping columns to effective columns.
@@ -776,10 +776,10 @@ void LayoutTable::appendColumn(unsigned span)
         if (section->needsCellRecalc())
             continue;
 
-        section->appendColumn(newColumnIndex);
+        section->appendEffectiveColumn(newColumnIndex);
     }
 
-    m_columnPos.grow(numEffCols() + 1);
+    m_effectiveColumnPositions.grow(numEffectiveColumns() + 1);
 }
 
 LayoutTableCol* LayoutTable::firstColumn() const
@@ -806,7 +806,7 @@ void LayoutTable::updateColumnCache() const
     m_columnLayoutObjectsValid = true;
 }
 
-LayoutTable::ColAndColGroup LayoutTable::slowColElement(unsigned col) const
+LayoutTable::ColAndColGroup LayoutTable::slowColElementAtAbsoluteColumn(unsigned absoluteColumnIndex) const
 {
     ASSERT(m_hasColElements);
 
@@ -822,10 +822,10 @@ LayoutTable::ColAndColGroup LayoutTable::slowColElement(unsigned col) const
         ASSERT(span >= 1);
         unsigned endCol = columnCount + span - 1;
         columnCount += span;
-        if (columnCount > col) {
+        if (columnCount > absoluteColumnIndex) {
             ColAndColGroup colAndColGroup;
-            bool isAtStartEdge = startCol == col;
-            bool isAtEndEdge = endCol == col;
+            bool isAtStartEdge = startCol == absoluteColumnIndex;
+            bool isAtEndEdge = endCol == absoluteColumnIndex;
             if (columnLayoutObject->isTableColumnGroup()) {
                 colAndColGroup.colgroup = columnLayoutObject;
                 colAndColGroup.adjoinsStartBorderOfColGroup = isAtStartEdge;
@@ -901,14 +901,14 @@ void LayoutTable::recalcSections() const
     for (LayoutObject* child = firstChild(); child; child = child->nextSibling()) {
         if (child->isTableSection()) {
             LayoutTableSection* section = toLayoutTableSection(child);
-            unsigned sectionCols = section->numColumns();
+            unsigned sectionCols = section->numEffectiveColumns();
             if (sectionCols > maxCols)
                 maxCols = sectionCols;
         }
     }
 
-    m_columns.resize(maxCols);
-    m_columnPos.resize(maxCols + 1);
+    m_effectiveColumns.resize(maxCols);
+    m_effectiveColumnPositions.resize(maxCols + 1);
 
     ASSERT(selfNeedsLayout());
 
@@ -921,7 +921,7 @@ int LayoutTable::calcBorderStart() const
         return LayoutBlock::borderStart();
 
     // Determined by the first cell of the first row. See the CSS 2.1 spec, section 17.6.2.
-    if (!numEffCols())
+    if (!numEffectiveColumns())
         return 0;
 
     int borderWidth = 0;
@@ -933,7 +933,7 @@ int LayoutTable::calcBorderStart() const
         borderWidth = tableStartBorder.width();
 
     // TODO(dgrogan): This logic doesn't properly account for the first column in the first column-group case.
-    if (LayoutTableCol* column = colElement(0).innermostColOrColGroup()) {
+    if (LayoutTableCol* column = colElementAtAbsoluteColumn(0).innermostColOrColGroup()) {
         // FIXME: We don't account for direction on columns and column groups.
         const BorderValue& columnAdjoiningBorder = column->style()->borderStart();
         if (columnAdjoiningBorder.style() == BHIDDEN)
@@ -975,7 +975,7 @@ int LayoutTable::calcBorderEnd() const
         return LayoutBlock::borderEnd();
 
     // Determined by the last cell of the first row. See the CSS 2.1 spec, section 17.6.2.
-    if (!numEffCols())
+    if (!numEffectiveColumns())
         return 0;
 
     int borderWidth = 0;
@@ -986,10 +986,10 @@ int LayoutTable::calcBorderEnd() const
     if (tableEndBorder.style() > BHIDDEN)
         borderWidth = tableEndBorder.width();
 
-    unsigned endColumn = numEffCols() - 1;
+    unsigned endColumn = numEffectiveColumns() - 1;
 
     // TODO(dgrogan): This logic doesn't properly account for the last column in the last column-group case.
-    if (LayoutTableCol* column = colElement(endColumn).innermostColOrColGroup()) {
+    if (LayoutTableCol* column = colElementAtAbsoluteColumn(endColumn).innermostColOrColGroup()) {
         // FIXME: We don't account for direction on columns and column groups.
         const BorderValue& columnAdjoiningBorder = column->style()->borderEnd();
         if (columnAdjoiningBorder.style() == BHIDDEN)
@@ -1214,7 +1214,7 @@ LayoutTableCell* LayoutTable::cellAbove(const LayoutTableCell* cell) const
 
     // Look up the cell in the section's grid, which requires effective col index
     if (section) {
-        unsigned effCol = colToEffCol(cell->col());
+        unsigned effCol = absoluteColumnToEffectiveColumn(cell->absoluteColumnIndex());
         LayoutTableSection::CellStruct& aboveCell = section->cellAt(rAbove, effCol);
         return aboveCell.primaryCell();
     }
@@ -1241,7 +1241,7 @@ LayoutTableCell* LayoutTable::cellBelow(const LayoutTableCell* cell) const
 
     // Look up the cell in the section's grid, which requires effective col index
     if (section) {
-        unsigned effCol = colToEffCol(cell->col());
+        unsigned effCol = absoluteColumnToEffectiveColumn(cell->absoluteColumnIndex());
         LayoutTableSection::CellStruct& belowCell = section->cellAt(rBelow, effCol);
         return belowCell.primaryCell();
     }
@@ -1253,7 +1253,7 @@ LayoutTableCell* LayoutTable::cellBefore(const LayoutTableCell* cell) const
     recalcSectionsIfNeeded();
 
     LayoutTableSection* section = cell->section();
-    unsigned effCol = colToEffCol(cell->col());
+    unsigned effCol = absoluteColumnToEffectiveColumn(cell->absoluteColumnIndex());
     if (!effCol)
         return nullptr;
 
@@ -1266,8 +1266,8 @@ LayoutTableCell* LayoutTable::cellAfter(const LayoutTableCell* cell) const
 {
     recalcSectionsIfNeeded();
 
-    unsigned effCol = colToEffCol(cell->col() + cell->colSpan());
-    if (effCol >= numEffCols())
+    unsigned effCol = absoluteColumnToEffectiveColumn(cell->absoluteColumnIndex() + cell->colSpan());
+    if (effCol >= numEffectiveColumns())
         return nullptr;
     return cell->section()->primaryCellAt(cell->rowIndex(), effCol);
 }
@@ -1414,7 +1414,7 @@ void LayoutTable::invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState& chil
             continue;
         for (LayoutTableRow* row = toLayoutTableSection(section)->firstRow(); row; row = row->nextRow()) {
             for (LayoutTableCell* cell = row->firstCell(); cell; cell = cell->nextCell()) {
-                ColAndColGroup colAndColGroup = colElement(cell->col());
+                ColAndColGroup colAndColGroup = colElementAtAbsoluteColumn(cell->absoluteColumnIndex());
                 LayoutTableCol* column = colAndColGroup.col;
                 LayoutTableCol* columnGroup = colAndColGroup.colgroup;
                 // Table cells paint container's background on the container's backing instead of its own (if any),

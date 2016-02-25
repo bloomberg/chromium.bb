@@ -50,14 +50,14 @@ protected:
 TEST_F(LayoutTableCellDeathTest, CanSetColumn)
 {
     static const unsigned columnIndex = 10;
-    m_cell->setCol(columnIndex);
-    EXPECT_EQ(columnIndex, m_cell->col());
+    m_cell->setAbsoluteColumnIndex(columnIndex);
+    EXPECT_EQ(columnIndex, m_cell->absoluteColumnIndex());
 }
 
 TEST_F(LayoutTableCellDeathTest, CanSetColumnToMaxColumnIndex)
 {
-    m_cell->setCol(maxColumnIndex);
-    EXPECT_EQ(maxColumnIndex, m_cell->col());
+    m_cell->setAbsoluteColumnIndex(maxColumnIndex);
+    EXPECT_EQ(maxColumnIndex, m_cell->absoluteColumnIndex());
 }
 
 // FIXME: Re-enable these tests once ASSERT_DEATH is supported for Android.
@@ -66,12 +66,12 @@ TEST_F(LayoutTableCellDeathTest, CanSetColumnToMaxColumnIndex)
 
 TEST_F(LayoutTableCellDeathTest, CrashIfColumnOverflowOnSetting)
 {
-    ASSERT_DEATH(m_cell->setCol(maxColumnIndex + 1), "");
+    ASSERT_DEATH(m_cell->setAbsoluteColumnIndex(maxColumnIndex + 1), "");
 }
 
 TEST_F(LayoutTableCellDeathTest, CrashIfSettingUnsetColumnIndex)
 {
-    ASSERT_DEATH(m_cell->setCol(unsetColumnIndex), "");
+    ASSERT_DEATH(m_cell->setAbsoluteColumnIndex(unsetColumnIndex), "");
 }
 
 #endif

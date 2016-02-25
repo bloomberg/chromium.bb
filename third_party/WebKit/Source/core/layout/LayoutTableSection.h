@@ -169,6 +169,7 @@ public:
         bool hasCells() const { return cells.size() > 0; }
     };
 
+    // The index is effective column index.
     typedef Vector<CellStruct> Row;
 
     struct RowStruct {
@@ -226,20 +227,20 @@ public:
     const LayoutTableCell* firstRowCellAdjoiningTableStart() const;
     const LayoutTableCell* firstRowCellAdjoiningTableEnd() const;
 
-    CellStruct& cellAt(unsigned row,  unsigned col) { return m_grid[row].row[col]; }
-    const CellStruct& cellAt(unsigned row, unsigned col) const { return m_grid[row].row[col]; }
-    LayoutTableCell* primaryCellAt(unsigned row, unsigned col)
+    CellStruct& cellAt(unsigned row,  unsigned effectiveColumn) { return m_grid[row].row[effectiveColumn]; }
+    const CellStruct& cellAt(unsigned row, unsigned effectiveColumn) const { return m_grid[row].row[effectiveColumn]; }
+    LayoutTableCell* primaryCellAt(unsigned row, unsigned effectiveColumn)
     {
-        CellStruct& c = m_grid[row].row[col];
+        CellStruct& c = m_grid[row].row[effectiveColumn];
         return c.primaryCell();
     }
-    const LayoutTableCell* primaryCellAt(unsigned row, unsigned col) const { return const_cast<LayoutTableSection*>(this)->primaryCellAt(row, col); }
+    const LayoutTableCell* primaryCellAt(unsigned row, unsigned effectiveColumn) const { return const_cast<LayoutTableSection*>(this)->primaryCellAt(row, effectiveColumn); }
 
     LayoutTableRow* rowLayoutObjectAt(unsigned row) { return m_grid[row].rowLayoutObject; }
     const LayoutTableRow* rowLayoutObjectAt(unsigned row) const { return m_grid[row].rowLayoutObject; }
 
-    void appendColumn(unsigned pos);
-    void splitColumn(unsigned pos, unsigned first);
+    void appendEffectiveColumn(unsigned pos);
+    void splitEffectiveColumn(unsigned pos, unsigned first);
 
     enum BlockBorderSide { BorderBefore, BorderAfter };
     int calcBlockDirectionOuterBorder(BlockBorderSide) const;
@@ -253,7 +254,7 @@ public:
     int outerBorderEnd() const { return m_outerBorderEnd; }
 
     unsigned numRows() const { return m_grid.size(); }
-    unsigned numColumns() const;
+    unsigned numEffectiveColumns() const;
 
     // recalcCells() is used when we are not sure about the section's structure
     // and want to do an expensive (but safe) reconstruction of m_grid from
@@ -300,7 +301,7 @@ public:
     LayoutRect logicalRectForWritingModeAndDirection(const LayoutRect&) const;
 
     CellSpan dirtiedRows(const LayoutRect& paintInvalidationRect) const;
-    CellSpan dirtiedColumns(const LayoutRect& paintInvalidationRect) const;
+    CellSpan dirtiedEffectiveColumns(const LayoutRect& paintInvalidationRect) const;
     const HashSet<LayoutTableCell*>& overflowingCells() const { return m_overflowingCells; }
     bool hasMultipleCellLevels() const { return m_hasMultipleCellLevels; }
 
@@ -354,12 +355,12 @@ private:
     void computeOverflowFromCells(unsigned totalRows, unsigned nEffCols);
 
     CellSpan fullTableRowSpan() const { return CellSpan(0, m_grid.size()); }
-    CellSpan fullTableColumnSpan() const { return CellSpan(0, table()->columns().size()); }
+    CellSpan fullTableEffectiveColumnSpan() const { return CellSpan(0, table()->numEffectiveColumns()); }
 
     // These two functions take a rectangle as input that has been flipped by logicalRectForWritingModeAndDirection.
     // The returned span of rows or columns is end-exclusive, and empty if start==end.
     CellSpan spannedRows(const LayoutRect& flippedRect) const;
-    CellSpan spannedColumns(const LayoutRect& flippedRect) const;
+    CellSpan spannedEffectiveColumns(const LayoutRect& flippedRect) const;
 
     void setLogicalPositionForCell(LayoutTableCell*, unsigned effectiveColumn) const;
 

@@ -184,13 +184,13 @@ const BorderValue& LayoutTableCol::borderAdjoiningCellEndBorder(const LayoutTabl
 
 const BorderValue& LayoutTableCol::borderAdjoiningCellBefore(const LayoutTableCell* cell) const
 {
-    ASSERT_UNUSED(cell, table()->colElement(cell->col() + cell->colSpan()).innermostColOrColGroup() == this);
+    ASSERT_UNUSED(cell, table()->colElementAtAbsoluteColumn(cell->absoluteColumnIndex() + cell->colSpan()).innermostColOrColGroup() == this);
     return style()->borderStart();
 }
 
 const BorderValue& LayoutTableCol::borderAdjoiningCellAfter(const LayoutTableCell* cell) const
 {
-    ASSERT_UNUSED(cell, table()->colElement(cell->col() - 1).innermostColOrColGroup() == this);
+    ASSERT_UNUSED(cell, table()->colElementAtAbsoluteColumn(cell->absoluteColumnIndex() - 1).innermostColOrColGroup() == this);
     return style()->borderEnd();
 }
 

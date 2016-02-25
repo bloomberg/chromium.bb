@@ -102,20 +102,20 @@ public:
     // Called from HTMLTableCellElement.
     void colSpanOrRowSpanChanged();
 
-    void setCol(unsigned column)
+    void setAbsoluteColumnIndex(unsigned column)
     {
         if (UNLIKELY(column > maxColumnIndex))
             CRASH();
 
-        m_column = column;
+        m_absoluteColumnIndex = column;
     }
 
-    bool hasCol() const { return m_column != unsetColumnIndex; }
+    bool hasSetAbsoluteColumnIndex() const { return m_absoluteColumnIndex != unsetColumnIndex; }
 
-    unsigned col() const
+    unsigned absoluteColumnIndex() const
     {
-        ASSERT(hasCol());
-        return m_column;
+        ASSERT(hasSetAbsoluteColumnIndex());
+        return m_absoluteColumnIndex;
     }
 
     LayoutTableRow* row() const { return toLayoutTableRow(parent()); }
@@ -137,7 +137,7 @@ public:
         Length styleWidth = style()->logicalWidth();
         if (!styleWidth.isAuto())
             return styleWidth;
-        if (LayoutTableCol* firstColumn = table()->colElement(col()).innermostColOrColGroup())
+        if (LayoutTableCol* firstColumn = table()->colElementAtAbsoluteColumn(absoluteColumnIndex()).innermostColOrColGroup())
             return logicalWidthFromColumns(firstColumn, styleWidth);
         return styleWidth;
     }
@@ -345,7 +345,7 @@ private:
     void previousSibling() const = delete;
 
     // Note MSVC will only pack members if they have identical types, hence we use unsigned instead of bool here.
-    unsigned m_column : 29;
+    unsigned m_absoluteColumnIndex : 29;
     unsigned m_cellWidthChanged : 1;
     unsigned m_hasColSpan: 1;
     unsigned m_hasRowSpan: 1;

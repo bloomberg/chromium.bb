@@ -50,7 +50,7 @@ static_assert(sizeof(CollapsedBorderValue) == 8, "CollapsedBorderValue should st
 
 LayoutTableCell::LayoutTableCell(Element* element)
     : LayoutBlockFlow(element)
-    , m_column(unsetColumnIndex)
+    , m_absoluteColumnIndex(unsetColumnIndex)
     , m_cellWidthChanged(false)
     , m_intrinsicPaddingBefore(0)
     , m_intrinsicPaddingAfter(0)
@@ -106,7 +106,7 @@ void LayoutTableCell::colSpanOrRowSpanChanged()
 
 Length LayoutTableCell::logicalWidthFromColumns(LayoutTableCol* firstColForThisCell, Length widthFromStyle) const
 {
-    ASSERT(firstColForThisCell && firstColForThisCell == table()->colElement(col()).innermostColOrColGroup());
+    ASSERT(firstColForThisCell && firstColForThisCell == table()->colElementAtAbsoluteColumn(absoluteColumnIndex()).innermostColOrColGroup());
     LayoutTableCol* tableCol = firstColForThisCell;
 
     unsigned colSpanCount = colSpan();
@@ -468,8 +468,8 @@ static CollapsedBorderValue chooseBorder(const CollapsedBorderValue& border1, co
 
 bool LayoutTableCell::hasStartBorderAdjoiningTable() const
 {
-    bool isStartColumn = !col();
-    bool isEndColumn = table()->colToEffCol(col() + colSpan() - 1) == table()->numEffCols() - 1;
+    bool isStartColumn = !absoluteColumnIndex();
+    bool isEndColumn = table()->absoluteColumnToEffectiveColumn(absoluteColumnIndex() + colSpan() - 1) == table()->numEffectiveColumns() - 1;
     bool hasSameDirectionAsTable = hasSameDirectionAs(table());
 
     // The table direction determines the row direction. In mixed directionality, we cannot guarantee that
@@ -479,8 +479,8 @@ bool LayoutTableCell::hasStartBorderAdjoiningTable() const
 
 bool LayoutTableCell::hasEndBorderAdjoiningTable() const
 {
-    bool isStartColumn = !col();
-    bool isEndColumn = table()->colToEffCol(col() + colSpan() - 1) == table()->numEffCols() - 1;
+    bool isStartColumn = !absoluteColumnIndex();
+    bool isEndColumn = table()->absoluteColumnToEffectiveColumn(absoluteColumnIndex() + colSpan() - 1) == table()->numEffectiveColumns() - 1;
     bool hasSameDirectionAsTable = hasSameDirectionAs(table());
 
     // The table direction determines the row direction. In mixed directionality, we cannot guarantee that
@@ -522,7 +522,7 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedStartBorder(IncludeBorderC
     }
 
     // (5) Our column and column group's start borders.
-    LayoutTable::ColAndColGroup colAndColGroup = table->colElement(col());
+    LayoutTable::ColAndColGroup colAndColGroup = table->colElementAtAbsoluteColumn(absoluteColumnIndex());
     if (colAndColGroup.colgroup && colAndColGroup.adjoinsStartBorderOfColGroup) {
         // Only apply the colgroup's border if this cell touches the colgroup edge.
         result = chooseBorder(result, CollapsedBorderValue(colAndColGroup.colgroup->borderAdjoiningCellStartBorder(this), includeColor ? colAndColGroup.colgroup->resolveColor(startColorProperty) : Color(), BCOLGROUP));
@@ -540,7 +540,7 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedStartBorder(IncludeBorderC
 
     // (6) The end border of the preceding column.
     if (cellBefore) {
-        LayoutTable::ColAndColGroup colAndColGroup = table->colElement(col() - 1);
+        LayoutTable::ColAndColGroup colAndColGroup = table->colElementAtAbsoluteColumn(absoluteColumnIndex() - 1);
         // Only apply the colgroup's border if this cell touches the colgroup edge.
         if (colAndColGroup.colgroup && colAndColGroup.adjoinsEndBorderOfColGroup) {
             result = chooseBorder(CollapsedBorderValue(colAndColGroup.colgroup->borderAdjoiningCellEndBorder(this), includeColor ? colAndColGroup.colgroup->resolveColor(endColorProperty) : Color(), BCOLGROUP), result);
@@ -572,7 +572,7 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedEndBorder(IncludeBorderCol
     LayoutTable* table = this->table();
     // Note: We have to use the effective column information instead of whether we have a cell after as a table doesn't
     // have to be regular (any row can have less cells than the total cell count).
-    bool isEndColumn = table->colToEffCol(col() + colSpan() - 1) == table->numEffCols() - 1;
+    bool isEndColumn = table->absoluteColumnToEffectiveColumn(absoluteColumnIndex() + colSpan() - 1) == table->numEffectiveColumns() - 1;
 
     // For end border, we need to check, in order of precedence:
     // (1) Our end border.
@@ -604,7 +604,7 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedEndBorder(IncludeBorderCol
     }
 
     // (5) Our column and column group's end borders.
-    LayoutTable::ColAndColGroup colAndColGroup = table->colElement(col() + colSpan() - 1);
+    LayoutTable::ColAndColGroup colAndColGroup = table->colElementAtAbsoluteColumn(absoluteColumnIndex() + colSpan() - 1);
     if (colAndColGroup.colgroup && colAndColGroup.adjoinsEndBorderOfColGroup) {
         // Only apply the colgroup's border if this cell touches the colgroup edge.
         result = chooseBorder(result, CollapsedBorderValue(colAndColGroup.colgroup->borderAdjoiningCellEndBorder(this), includeColor ? colAndColGroup.colgroup->resolveColor(endColorProperty) : Color(), BCOLGROUP));
@@ -622,7 +622,7 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedEndBorder(IncludeBorderCol
 
     // (6) The start border of the next column.
     if (!isEndColumn) {
-        LayoutTable::ColAndColGroup colAndColGroup = table->colElement(col() + colSpan());
+        LayoutTable::ColAndColGroup colAndColGroup = table->colElementAtAbsoluteColumn(absoluteColumnIndex() + colSpan());
         if (colAndColGroup.colgroup && colAndColGroup.adjoinsStartBorderOfColGroup) {
             // Only apply the colgroup's border if this cell touches the colgroup edge.
             result = chooseBorder(result, CollapsedBorderValue(colAndColGroup.colgroup->borderAdjoiningCellStartBorder(this), includeColor ? colAndColGroup.colgroup->resolveColor(startColorProperty) : Color(), BCOLGROUP));
@@ -706,7 +706,7 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedBeforeBorder(IncludeBorder
 
     if (!currSection) {
         // (8) Our column and column group's before borders.
-        LayoutTableCol* colElt = table->colElement(col()).innermostColOrColGroup();
+        LayoutTableCol* colElt = table->colElementAtAbsoluteColumn(absoluteColumnIndex()).innermostColOrColGroup();
         if (colElt) {
             result = chooseBorder(result, CollapsedBorderValue(colElt->style()->borderBefore(), includeColor ? colElt->resolveColor(beforeColorProperty) : Color(), BCOL));
             if (!result.exists())
@@ -776,7 +776,7 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedAfterBorder(IncludeBorderC
 
     if (!currSection) {
         // (8) Our column and column group's after borders.
-        LayoutTableCol* colElt = table->colElement(col()).innermostColOrColGroup();
+        LayoutTableCol* colElt = table->colElementAtAbsoluteColumn(absoluteColumnIndex()).innermostColOrColGroup();
         if (colElt) {
             result = chooseBorder(result, CollapsedBorderValue(colElt->style()->borderAfter(), includeColor ? colElt->resolveColor(afterColorProperty) : Color(), BCOL));
             if (!result.exists())
