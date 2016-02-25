@@ -22,13 +22,15 @@ VertexArrayManager::VertexArrayManager()
 }
 
 VertexArrayManager::~VertexArrayManager() {
-  DCHECK(vertex_attrib_managers_.empty());
+  DCHECK(client_vertex_attrib_managers_.empty());
+  DCHECK(other_vertex_attrib_managers_.empty());
   CHECK_EQ(vertex_attrib_manager_count_, 0u);
 }
 
 void VertexArrayManager::Destroy(bool have_context) {
   have_context_ = have_context;
-  vertex_attrib_managers_.clear();
+  client_vertex_attrib_managers_.clear();
+  other_vertex_attrib_managers_.clear();
 }
 
 scoped_refptr<VertexAttribManager>
@@ -41,9 +43,11 @@ VertexArrayManager::CreateVertexAttribManager(GLuint client_id,
 
   if (client_visible) {
     std::pair<VertexAttribManagerMap::iterator, bool> result =
-        vertex_attrib_managers_.insert(
+        client_vertex_attrib_managers_.insert(
             std::make_pair(client_id, vertex_attrib_manager));
     DCHECK(result.second);
+  } else {
+    other_vertex_attrib_managers_.push_back(vertex_attrib_manager);
   }
 
   return vertex_attrib_manager;
@@ -51,16 +55,18 @@ VertexArrayManager::CreateVertexAttribManager(GLuint client_id,
 
 VertexAttribManager* VertexArrayManager::GetVertexAttribManager(
     GLuint client_id) {
-  VertexAttribManagerMap::iterator it = vertex_attrib_managers_.find(client_id);
-  return it != vertex_attrib_managers_.end() ? it->second.get() : NULL;
+  VertexAttribManagerMap::iterator it =
+      client_vertex_attrib_managers_.find(client_id);
+  return it != client_vertex_attrib_managers_.end() ? it->second.get() : NULL;
 }
 
 void VertexArrayManager::RemoveVertexAttribManager(GLuint client_id) {
-  VertexAttribManagerMap::iterator it = vertex_attrib_managers_.find(client_id);
-  if (it != vertex_attrib_managers_.end()) {
+  VertexAttribManagerMap::iterator it =
+      client_vertex_attrib_managers_.find(client_id);
+  if (it != client_vertex_attrib_managers_.end()) {
     VertexAttribManager* vertex_attrib_manager = it->second.get();
     vertex_attrib_manager->MarkAsDeleted();
-    vertex_attrib_managers_.erase(it);
+    client_vertex_attrib_managers_.erase(it);
   }
 }
 
@@ -78,8 +84,8 @@ bool VertexArrayManager::GetClientId(
     GLuint service_id, GLuint* client_id) const {
   // This doesn't need to be fast. It's only used during slow queries.
   for (VertexAttribManagerMap::const_iterator it =
-      vertex_attrib_managers_.begin();
-      it != vertex_attrib_managers_.end(); ++it) {
+           client_vertex_attrib_managers_.begin();
+       it != client_vertex_attrib_managers_.end(); ++it) {
     if (it->second->service_id() == service_id) {
       *client_id = it->first;
       return true;

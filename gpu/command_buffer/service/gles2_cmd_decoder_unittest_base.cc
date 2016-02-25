@@ -504,18 +504,18 @@ void GLES2DecoderTestBase::ResetDecoder() {
     return;
   // All Tests should have read all their GLErrors before getting here.
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-
-  EXPECT_CALL(*gl_, DeleteBuffersARB(1, _))
-      .Times(2)
-      .RetiresOnSaturation();
-  if (group_->feature_info()->feature_flags().native_vertex_array_object) {
-    EXPECT_CALL(*gl_, DeleteVertexArraysOES(1, Pointee(kServiceVertexArrayId)))
-        .Times(1)
-        .RetiresOnSaturation();
+  if (!decoder_->WasContextLost()) {
+    EXPECT_CALL(*gl_, DeleteBuffersARB(1, _)).Times(2).RetiresOnSaturation();
+    if (group_->feature_info()->feature_flags().native_vertex_array_object) {
+      EXPECT_CALL(*gl_,
+                  DeleteVertexArraysOES(1, Pointee(kServiceVertexArrayId)))
+          .Times(1)
+          .RetiresOnSaturation();
+    }
   }
 
   decoder_->EndDecoding();
-  decoder_->Destroy(true);
+  decoder_->Destroy(!decoder_->WasContextLost());
   decoder_.reset();
   group_->Destroy(mock_decoder_.get(), false);
   engine_.reset();
