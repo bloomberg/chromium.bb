@@ -40,8 +40,13 @@ const char kTestSinkName[] = "test-sink-1";
 const char kCheckSessionScript[] = "checkSession();";
 const char kCheckStartFailedScript[] = "checkStartFailed('%s', '%s');";
 const char kStartSessionScript[] = "startSession();";
-const char kTerminateSessionScript[] = "terminateSession()";
+const char kTerminateSessionScript[] =
+    "terminateSessionAndWaitForStateChange();";
 const char kWaitDeviceScript[] = "waitUntilDeviceAvailable();";
+const char kSendMessageAndExpectResponseScript[] =
+    "sendMessageAndExpectResponse('%s');";
+const char kSendMessageAndExpectConnectionCloseOnErrorScript[] =
+    "sendMessageAndExpectConnectionCloseOnError()";
 const char kChooseSinkScript[] =
     "var sinks = document.getElementById('media-router-container')."
     "  shadowRoot.getElementById('sink-list').getElementsByTagName('span');"
@@ -83,10 +88,10 @@ const char kFindSinkScript[] =
     "}}"
     "domAutomationController.send(false);";
 
-std::string GetStartedSessionId(content::WebContents* web_contents) {
+std::string GetStartedConnectionId(content::WebContents* web_contents) {
   std::string session_id;
   CHECK(content::ExecuteScriptAndExtractString(
-      web_contents, "window.domAutomationController.send(startedSession.id)",
+      web_contents, "window.domAutomationController.send(startedConnection.id)",
       &session_id));
   return session_id;
 }
@@ -394,9 +399,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Basic) {
   WaitUntilSinkDiscoveredOnUI();
   ChooseSink(web_contents, kTestSinkName);
   ExecuteJavaScriptAPI(web_contents, kCheckSessionScript);
-  Wait(base::TimeDelta::FromSeconds(5));
-
-  std::string session_id(GetStartedSessionId(web_contents));
+  std::string session_id(GetStartedConnectionId(web_contents));
   EXPECT_FALSE(session_id.empty());
 
   std::string default_request_session_id(
@@ -404,6 +407,44 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Basic) {
   EXPECT_EQ(session_id, default_request_session_id);
 
   ExecuteJavaScriptAPI(web_contents, kTerminateSessionScript);
+}
+
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
+                       MANUAL_SendAndOnMessage) {
+  OpenTestPage(FILE_PATH_LITERAL("basic_test.html"));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+  ExecuteJavaScriptAPI(web_contents, kWaitDeviceScript);
+  StartSession(web_contents);
+  WaitUntilSinkDiscoveredOnUI();
+  ChooseSink(web_contents, kTestSinkName);
+  ExecuteJavaScriptAPI(web_contents, kCheckSessionScript);
+  std::string session_id(GetStartedConnectionId(web_contents));
+  EXPECT_FALSE(session_id.empty());
+
+  ExecuteJavaScriptAPI(
+      web_contents,
+      base::StringPrintf(kSendMessageAndExpectResponseScript, "foo"));
+}
+
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_OnClose) {
+  SetTestData(FILE_PATH_LITERAL("close_route_with_error_on_send.json"));
+  OpenTestPage(FILE_PATH_LITERAL("basic_test.html"));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+  ExecuteJavaScriptAPI(web_contents, kWaitDeviceScript);
+  StartSession(web_contents);
+  WaitUntilSinkDiscoveredOnUI();
+  ChooseSink(web_contents, kTestSinkName);
+  ExecuteJavaScriptAPI(web_contents, kCheckSessionScript);
+  std::string session_id(GetStartedConnectionId(web_contents));
+  EXPECT_FALSE(session_id.empty());
+
+  ExecuteJavaScriptAPI(
+      web_contents,
+      base::StringPrintf(kSendMessageAndExpectConnectionCloseOnErrorScript));
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
@@ -446,7 +487,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
   WaitUntilSinkDiscoveredOnUI();
   ChooseSink(web_contents, kTestSinkName);
   ExecuteJavaScriptAPI(web_contents, kCheckSessionScript);
-  std::string session_id(GetStartedSessionId(web_contents));
+  std::string session_id(GetStartedConnectionId(web_contents));
 
   OpenTestPageInNewTab(FILE_PATH_LITERAL("basic_test.html"));
   content::WebContents* new_web_contents =
@@ -476,7 +517,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
   WaitUntilSinkDiscoveredOnUI();
   ChooseSink(web_contents, kTestSinkName);
   ExecuteJavaScriptAPI(web_contents, kCheckSessionScript);
-  std::string session_id(GetStartedSessionId(web_contents));
+  std::string session_id(GetStartedConnectionId(web_contents));
 
   SetTestData(FILE_PATH_LITERAL("fail_reconnect_session.json"));
   OpenTestPage(FILE_PATH_LITERAL("fail_reconnect_session.html"));

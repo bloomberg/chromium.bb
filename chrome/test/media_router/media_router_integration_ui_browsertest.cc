@@ -29,7 +29,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Dialog_Basic) {
       "domAutomationController.send("
       "window.document.getElementById('media-router-container')."
       "sinksToShow_.length)");
-  ASSERT_EQ(2, ExecuteScriptAndExtractInt(dialog_contents, sink_length_script));
+  ASSERT_GT(ExecuteScriptAndExtractInt(dialog_contents, sink_length_script), 0);
 
   ChooseSink(web_contents, kTestSinkName);
 
@@ -112,7 +112,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
       "domAutomationController.send("
       "window.document.getElementById('media-router-container')."
       "sinksToShow_.length)");
-  ASSERT_EQ(2, ExecuteScriptAndExtractInt(dialog_contents, sink_length_script));
+  ASSERT_GT(ExecuteScriptAndExtractInt(dialog_contents, sink_length_script), 0);
 
   base::TimeTicks start_time(base::TimeTicks::Now());
   ChooseSink(web_contents, kTestSinkName);

@@ -6,6 +6,7 @@
   'variables': {
     'media_router_integration_test_resources': [
       'resources/basic_test.html',
+      'resources/close_route_with_error_on_send.json',
       'resources/common.js',
       'resources/fail_create_route.json',
       'resources/fail_reconnect_session.html',
