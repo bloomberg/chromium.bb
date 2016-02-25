@@ -489,6 +489,13 @@ message ClientIncidentReport {
       optional string origin = 2;
       optional Type type = 3 [default = UNKNOWN];
     }
+    message SuspiciousModuleIncident {
+      optional string path = 1;
+      optional ClientDownloadRequest.Digests digest = 2;
+      optional string version = 3;
+      optional ClientDownloadRequest.SignatureInfo signature = 4;
+      optional ClientDownloadRequest.ImageHeaders image_headers = 5;
+    }
     optional int64 incident_time_msec = 1;
     optional TrackedPreferenceIncident tracked_preference = 2;
     optional BinaryIntegrityIncident binary_integrity = 3;
@@ -496,6 +503,7 @@ message ClientIncidentReport {
     // Note: skip tag 5 because it was previously used.
     optional VariationsSeedSignatureIncident variations_seed_signature = 6;
     optional ResourceRequestIncident resource_request = 7;
+    optional SuspiciousModuleIncident suspicious_module = 8;
   }
 
   repeated IncidentData incident = 1;

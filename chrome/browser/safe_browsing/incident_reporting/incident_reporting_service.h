@@ -98,6 +98,11 @@ class IncidentReportingService : public content::NotificationObserver {
   // Registers |callback| to be run after some delay following process launch.
   void RegisterDelayedAnalysisCallback(const DelayedAnalysisCallback& callback);
 
+  // Registers |callback| to be run after some delay following process launch if
+  // a profile participating in extended reporting is found.
+  void RegisterExtendedReportingOnlyDelayedAnalysisCallback(
+      const DelayedAnalysisCallback& callback);
+
   // Adds |download_manager| to the set monitored for client download request
   // storage.
   void AddDownloadManager(content::DownloadManager* download_manager);
@@ -332,6 +337,10 @@ class IncidentReportingService : public content::NotificationObserver {
 
   // Callbacks registered for performing delayed analysis.
   DelayedCallbackRunner delayed_analysis_callbacks_;
+
+  // Callbacks registered for performing delayed analysis that should only
+  // be executed for safebrowsing extended reporting users.
+  DelayedCallbackRunner extended_reporting_only_delayed_analysis_callbacks_;
 
   DownloadMetadataManager download_metadata_manager_;
 

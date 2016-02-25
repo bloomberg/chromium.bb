@@ -43512,6 +43512,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SBIRS.SuspiciousModuleDetectionTime" units="ms">
+  <owner>proberge@google.com</owner>
+  <summary>
+    The elapsed time to check loaded modules against the module whitelist.
+  </summary>
+</histogram>
+
+<histogram name="SBIRS.SuspiciousModuleReportCount" units="modules">
+  <owner>proberge@google.com</owner>
+  <summary>The number of suspicious modules found.</summary>
+</histogram>
+
+<histogram name="SBIRS.SuspiciousModuleReportingTime" units="ms">
+  <owner>proberge@google.com</owner>
+  <summary>
+    The elapsed time to create incidents for suspicious modules.
+  </summary>
+</histogram>
+
 <histogram name="SBIRS.UploadResult" enum="ReportProcessingResult">
   <owner>caitkp@google.com</owner>
   <summary>

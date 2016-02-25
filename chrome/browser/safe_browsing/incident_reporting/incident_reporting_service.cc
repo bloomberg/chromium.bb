@@ -116,6 +116,22 @@ bool IsFieldTrialEnabled() {
   return base::StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE);
 }
 
+bool ProfileCanAcceptIncident(Profile* profile, const Incident& incident) {
+  if (profile->IsOffTheRecord())
+    return false;
+  if (!profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled))
+    return false;
+  switch (incident.GetMinimumProfileConsent()) {
+    case MinimumProfileConsent::SAFE_BROWSING_ENABLED:
+      return true;
+    case MinimumProfileConsent::SAFE_BROWSING_EXTENDED_REPORTING_ENABLED:
+      return profile->GetPrefs()->GetBoolean(
+          prefs::kSafeBrowsingExtendedReportingEnabled);
+  }
+  NOTREACHED();
+  return false;
+}
+
 }  // namespace
 
 struct IncidentReportingService::ProfileContext {
@@ -215,11 +231,11 @@ void IncidentReportingService::Receiver::AddIncidentForProcess(
     scoped_ptr<Incident> incident) {
   if (thread_runner_->BelongsToCurrentThread()) {
     AddIncidentOnMainThread(service_, nullptr, std::move(incident));
-  } else if (!thread_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&IncidentReportingService::Receiver::AddIncidentOnMainThread,
-                 service_, nullptr, base::Passed(&incident)))) {
-    LogIncidentDataType(DISCARDED, *incident);
+  } else {
+    thread_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&IncidentReportingService::Receiver::AddIncidentOnMainThread,
+                   service_, nullptr, base::Passed(&incident)));
   }
 }
 
@@ -320,6 +336,11 @@ IncidentReportingService::IncidentReportingService(
           content::BrowserThread::GetBlockingPool()
               ->GetTaskRunnerWithShutdownBehavior(
                   base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)),
+      extended_reporting_only_delayed_analysis_callbacks_(
+          base::TimeDelta::FromMilliseconds(kDefaultCallbackIntervalMs),
+          content::BrowserThread::GetBlockingPool()
+              ->GetTaskRunnerWithShutdownBehavior(
+                  base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)),
       download_metadata_manager_(content::BrowserThread::GetBlockingPool()),
       receiver_weak_ptr_factory_(this),
       weak_ptr_factory_(this) {
@@ -387,6 +408,27 @@ void IncidentReportingService::RegisterDelayedAnalysisCallback(
     delayed_analysis_callbacks_.Start();
 }
 
+void IncidentReportingService::
+    RegisterExtendedReportingOnlyDelayedAnalysisCallback(
+        const DelayedAnalysisCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // |callback| will be run on the blocking pool. The receiver will bounce back
+  // to the origin thread if needed.
+  extended_reporting_only_delayed_analysis_callbacks_.RegisterCallback(
+      base::Bind(callback, base::Passed(GetIncidentReceiver())));
+
+  // Start running the callbacks if any profiles have opted into Safebrowsing
+  // extended reporting. If none are now, running will commence if/when such a
+  // profile is added.
+  Profile* profile = FindEligibleProfile();
+  if (profile &&
+      profile->GetPrefs()->GetBoolean(
+          prefs::kSafeBrowsingExtendedReportingEnabled)) {
+    extended_reporting_only_delayed_analysis_callbacks_.Start();
+  }
+}
+
 void IncidentReportingService::AddDownloadManager(
     content::DownloadManager* download_manager) {
   download_metadata_manager_.AddDownloadManager(download_manager);
@@ -413,6 +455,8 @@ IncidentReportingService::IncidentReportingService(
                        this,
                        &IncidentReportingService::OnCollationTimeout),
       delayed_analysis_callbacks_(delayed_task_interval, delayed_task_runner),
+      extended_reporting_only_delayed_analysis_callbacks_(delayed_task_interval,
+                                                          delayed_task_runner),
       download_metadata_manager_(content::BrowserThread::GetBlockingPool()),
       receiver_weak_ptr_factory_(this),
       weak_ptr_factory_(this) {
@@ -471,6 +515,11 @@ void IncidentReportingService::OnProfileAdded(Profile* profile) {
     // enabled for this new profile. Start is idempotent, so this is safe even
     // if they're already running.
     delayed_analysis_callbacks_.Start();
+
+    if (profile->GetPrefs()->GetBoolean(
+            prefs::kSafeBrowsingExtendedReportingEnabled)) {
+      extended_reporting_only_delayed_analysis_callbacks_.Start();
+    }
 
     // Start a new report if there are process-wide incidents, or incidents for
     // this profile.
@@ -908,12 +957,6 @@ void IncidentReportingService::ProcessIncidentsIfCollectionComplete() {
     ProfileContext* context = profile_and_context.second;
     if (context->incidents.empty())
       continue;
-    if (!IsEnabledForProfile(profile_and_context.first)) {
-      for (const auto& incident : context->incidents)
-        LogIncidentDataType(DROPPED, *incident);
-      context->incidents.clear();
-      continue;
-    }
     StateStore::Transaction transaction(context->state_store.get());
     std::vector<PersistentIncidentState> states;
     // Prep persistent data and prune any incidents already sent.
@@ -922,6 +965,9 @@ void IncidentReportingService::ProcessIncidentsIfCollectionComplete() {
       if (context->state_store->HasBeenReported(state.type, state.key,
                                                 state.digest)) {
         LogIncidentDataType(PRUNED, *incident);
+      } else if (!ProfileCanAcceptIncident(profile_and_context.first,
+                                           *incident)) {
+        LogIncidentDataType(DROPPED, *incident);
       } else if (!has_download) {
         LogIncidentDataType(NO_DOWNLOAD, *incident);
         // Drop the incident and mark for future pruning since no executable
