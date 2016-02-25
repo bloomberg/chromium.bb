@@ -168,6 +168,52 @@ TEST_F(AutofillFieldTest, Type) {
   EXPECT_EQ(NAME, field.Type().group());
 }
 
+// Tests that a credit card related prediction made by the heuristics overrides
+// an unrecognized autocomplete attribute.
+TEST_F(AutofillFieldTest, Type_CreditCardOverrideHtml_Heuristics) {
+  AutofillField field;
+
+  field.SetHtmlType(HTML_TYPE_UNRECOGNIZED, HTML_MODE_NONE);
+
+  // A credit card heuristic prediction overrides the unrecognized type.
+  field.set_heuristic_type(CREDIT_CARD_NUMBER);
+  EXPECT_EQ(CREDIT_CARD_NUMBER, field.Type().GetStorableType());
+
+  // A non credit card heuristic prediction doesn't override the unrecognized
+  // type.
+  field.set_heuristic_type(NAME_FIRST);
+  EXPECT_EQ(UNKNOWN_TYPE, field.Type().GetStorableType());
+
+  // A credit card heuristic prediction doesn't override a known specified html
+  // type.
+  field.SetHtmlType(HTML_TYPE_NAME, HTML_MODE_NONE);
+  field.set_heuristic_type(CREDIT_CARD_NUMBER);
+  EXPECT_EQ(NAME_FULL, field.Type().GetStorableType());
+}
+
+// Tests that a credit card related prediction made by the server overrides an
+// unrecognized autocomplete attribute.
+TEST_F(AutofillFieldTest, Type_CreditCardOverrideHtml_ServerPredicitons) {
+  AutofillField field;
+
+  field.SetHtmlType(HTML_TYPE_UNRECOGNIZED, HTML_MODE_NONE);
+
+  // A credit card server prediction overrides the unrecognized type.
+  field.set_server_type(CREDIT_CARD_NUMBER);
+  EXPECT_EQ(CREDIT_CARD_NUMBER, field.Type().GetStorableType());
+
+  // A non credit card server prediction doesn't override the unrecognized
+  // type.
+  field.set_server_type(NAME_FIRST);
+  EXPECT_EQ(UNKNOWN_TYPE, field.Type().GetStorableType());
+
+  // A credit card server prediction doesn't override a known specified html
+  // type.
+  field.SetHtmlType(HTML_TYPE_NAME, HTML_MODE_NONE);
+  field.set_server_type(CREDIT_CARD_NUMBER);
+  EXPECT_EQ(NAME_FULL, field.Type().GetStorableType());
+}
+
 TEST_F(AutofillFieldTest, IsEmpty) {
   AutofillField field;
   ASSERT_EQ(base::string16(), field.value);

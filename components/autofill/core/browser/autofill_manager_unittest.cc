@@ -2116,7 +2116,8 @@ TEST_F(AutofillManagerTest, FillAddressForm_AutocompleteOff) {
   }
 }
 
-// Test that a field with an unrecognized autocomplete attribute is not filled.
+// Test that a credit card field with an unrecognized autocomplete attribute
+// gets filled.
 TEST_F(AutofillManagerTest, FillCreditCardForm_UnrecognizedAttribute) {
   // Set up the form data.
   FormData form;
@@ -2153,8 +2154,8 @@ TEST_F(AutofillManagerTest, FillCreditCardForm_UnrecognizedAttribute) {
   ExpectFilledField("Card Number", "cardnumber", "4234567890123456", "text",
                     response_data.fields[1]);
 
-  // The expiration month should not be filled.
-  ExpectFilledField("Expiration Date", "ccmonth", "", "text",
+  // The expiration month should be filled.
+  ExpectFilledField("Expiration Date", "ccmonth", "04/2012", "text",
                     response_data.fields[2]);
 }
 
@@ -3666,7 +3667,8 @@ TEST_F(AutofillManagerTest, OnDidFillAutofillFormDataAndUnfocus_Upload) {
   autofill_manager_->WaitForAsyncUploadProcess();
 }
 
-// Test that no suggestions are returned for a field with an unrecognized
+// Test that suggestions are returned for credit card fields with an
+// unrecognized
 // autocomplete attribute.
 TEST_F(AutofillManagerTest, GetCreditCardSuggestions_UnrecognizedAttribute) {
   // Set up the form data.
@@ -3697,10 +3699,10 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_UnrecognizedAttribute) {
   GetAutofillSuggestions(form, form.fields[1]);
   EXPECT_TRUE(external_delegate_->on_suggestions_returned_seen());
 
-  // Suggestions should not be returned for the third field because of its
-  // unrecognized autocomplete attribute.
+  // Suggestions should still be returned for the third field because it is a
+  // credit card field.
   GetAutofillSuggestions(form, form.fields[2]);
-  EXPECT_FALSE(external_delegate_->on_suggestions_returned_seen());
+  EXPECT_TRUE(external_delegate_->on_suggestions_returned_seen());
 }
 
 // Test to verify suggestions appears for forms having credit card number split

@@ -496,8 +496,12 @@ void AutofillField::SetHtmlType(HtmlFieldType type, HtmlFieldMode mode) {
 }
 
 AutofillType AutofillField::Type() const {
-  if (html_type_ != HTML_TYPE_UNSPECIFIED)
+  // Use the html type specified by the website unless it is unrecognized and
+  // autofill predicts a credit card type.
+  if (html_type_ != HTML_TYPE_UNSPECIFIED &&
+      !(html_type_ == HTML_TYPE_UNRECOGNIZED && IsCreditCardPrediction())) {
     return AutofillType(html_type_, html_mode_);
+  }
 
   if (server_type_ != NO_SERVER_DATA) {
     // See http://crbug.com/429236 for background on why we might not always
@@ -631,6 +635,11 @@ bool AutofillField::FindValueInSelectControl(const FormFieldData& field,
     }
   }
   return false;
+}
+
+bool AutofillField::IsCreditCardPrediction() const {
+  return AutofillType(server_type_).group() == CREDIT_CARD ||
+         AutofillType(heuristic_type_).group() == CREDIT_CARD;
 }
 
 }  // namespace autofill
