@@ -103,16 +103,10 @@ void MemEntryImpl::Open() {
 }
 
 bool MemEntryImpl::InUse() const {
-  if (type() == PARENT_ENTRY) {
-    return ref_count_ > 0;
-  } else {
-    // TODO(gavinp): Can't this just be a DCHECK? How would ref_count_ not be
-    // zero?
+  if (type() == CHILD_ENTRY)
+    return parent_->InUse();
 
-    // A child entry is never in use. Thus one can always be evicted, even while
-    // its parent entry is open and in use.
-    return false;
-  }
+  return ref_count_ > 0;
 }
 
 int MemEntryImpl::GetStorageSize() const {

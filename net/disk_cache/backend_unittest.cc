@@ -2947,6 +2947,44 @@ TEST_F(DiskCacheBackendTest, MemoryOnlyBackendEviction) {
 // TODO(gavinp): Enable BackendEviction test for simple cache after performance
 // problems are addressed. See crbug.com/588184 for more information.
 
+// This overly specific looking test is a regression test aimed at
+// crbug.com/589186.
+TEST_F(DiskCacheBackendTest, MemoryOnlyUseAfterFree) {
+  SetMemoryOnlyMode();
+
+  const int kMaxSize = 200 * 1024;
+  const int kMaxEntryCount = 20;
+  const int kWriteSize = kMaxSize / kMaxEntryCount;
+
+  SetMaxSize(kMaxSize);
+  InitCache();
+
+  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kWriteSize));
+  CacheTestFillBuffer(buffer->data(), kWriteSize, false);
+
+  // Create an entry to be our sparse entry that gets written later.
+  disk_cache::Entry* entry;
+  ASSERT_EQ(net::OK, CreateEntry("first parent", &entry));
+  disk_cache::ScopedEntryPtr first_parent(entry);
+
+  // Create a ton of entries, and keep them open, to put the cache well above
+  // its eviction threshhold.
+  const int kTooManyEntriesCount = kMaxEntryCount * 2;
+  std::list<disk_cache::ScopedEntryPtr> open_entries;
+  std::string key_prefix("prefix");
+  for (int i = 0; i < kTooManyEntriesCount; ++i) {
+    ASSERT_EQ(net::OK, CreateEntry(key_prefix + base::IntToString(i), &entry));
+    EXPECT_EQ(kWriteSize,
+              WriteData(entry, 1, 0, buffer.get(), kWriteSize, false));
+    open_entries.push_back(disk_cache::ScopedEntryPtr(entry));
+  }
+  EXPECT_LT(kMaxSize, CalculateSizeOfAllEntries());
+
+  // Writing this sparse data should not crash.
+  EXPECT_EQ(1024, first_parent->WriteSparseData(32768, buffer.get(), 1024,
+                                                net::CompletionCallback()));
+}
+
 TEST_F(DiskCacheTest, Backend_UsageStatsTimer) {
   MessageLoopHelper helper;
 
