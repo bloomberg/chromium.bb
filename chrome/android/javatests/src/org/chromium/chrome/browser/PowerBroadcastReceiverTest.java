@@ -140,6 +140,7 @@ public class PowerBroadcastReceiverTest extends ChromeTabbedActivityTestBase {
      */
     @MediumTest
     @Feature({"Omaha", "Sync"})
+    @FlakyTest  // https://crbug.com/587138
     public void testRunnableGetsRunWhenScreenIsOn() throws Exception {
         // Claim the screen is off.
         mReceiver.setPowerManagerHelperForTests(sScreenOff);
