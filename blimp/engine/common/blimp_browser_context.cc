@@ -109,12 +109,10 @@ BlimpBrowserContext::CreateRequestContext(
   resource_context_->set_url_request_context_getter(
       new BlimpURLRequestContextGetter(
           ignore_certificate_errors_, GetPath(),
-          content::BrowserThread::UnsafeGetMessageLoopForThread(
-              content::BrowserThread::IO)
-              ->task_runner(),
-          content::BrowserThread::UnsafeGetMessageLoopForThread(
-              content::BrowserThread::FILE)
-              ->task_runner(),
+          content::BrowserThread::GetMessageLoopProxyForThread(
+              content::BrowserThread::IO),
+          content::BrowserThread::GetMessageLoopProxyForThread(
+              content::BrowserThread::FILE),
           protocol_handlers, std::move(request_interceptors), net_log_));
   return resource_context_->url_request_context_getter();
 }

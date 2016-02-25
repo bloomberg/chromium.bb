@@ -67,15 +67,15 @@ void InstallProtocolHandlers(net::URLRequestJobFactoryImpl* job_factory,
 ShellURLRequestContextGetter::ShellURLRequestContextGetter(
     bool ignore_certificate_errors,
     const base::FilePath& base_path,
-    base::MessageLoop* io_loop,
-    base::MessageLoop* file_loop,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
     ProtocolHandlerMap* protocol_handlers,
     URLRequestInterceptorScopedVector request_interceptors,
     net::NetLog* net_log)
     : ignore_certificate_errors_(ignore_certificate_errors),
       base_path_(base_path),
-      io_loop_(io_loop),
-      file_loop_(file_loop),
+      io_task_runner_(io_task_runner),
+      file_task_runner_(file_task_runner),
       net_log_(net_log),
       request_interceptors_(std::move(request_interceptors)) {
   // Must first be created on the UI thread.
@@ -99,8 +99,8 @@ ShellURLRequestContextGetter::CreateNetworkDelegate() {
 
 scoped_ptr<net::ProxyConfigService>
 ShellURLRequestContextGetter::GetProxyConfigService() {
-  return net::ProxyService::CreateSystemProxyConfigService(
-      io_loop_->task_runner(), file_loop_->task_runner());
+  return net::ProxyService::CreateSystemProxyConfigService(io_task_runner_,
+                                                           file_task_runner_);
 }
 
 scoped_ptr<net::ProxyService> ShellURLRequestContextGetter::GetProxyService() {

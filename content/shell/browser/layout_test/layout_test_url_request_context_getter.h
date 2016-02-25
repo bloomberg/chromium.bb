@@ -34,8 +34,8 @@ class LayoutTestURLRequestContextGetter : public ShellURLRequestContextGetter {
   LayoutTestURLRequestContextGetter(
       bool ignore_certificate_errors,
       const base::FilePath& base_path,
-      base::MessageLoop* io_loop,
-      base::MessageLoop* file_loop,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
       ProtocolHandlerMap* protocol_handlers,
       URLRequestInterceptorScopedVector request_interceptors,
       net::NetLog* net_log);
