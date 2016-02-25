@@ -55,6 +55,32 @@ const net::BackoffEntry::Policy& GetBackoffPolicy();
 // Retrieves the Data Reduction Proxy configuration from a remote service. This
 // object lives on the IO thread.
 // TODO(jeremyim): Rename the class to DataReductionProxyConfigGetter(?).
+//
+// The client config module is a state machine with 2 states:
+// 1) Chrome has a config. Requests will attempt to use DRP with that config.
+// 2) Chrome doesn’t have a config. Requests will go direct.
+//
+// When Chrome starts up, if there is a cached config on disk, it is loaded. Go
+// to state (1). Otherwise, go to state (2).
+//
+// When a config fetch finishes, move to state (1). If already in state (1),
+// replace the existing config.
+//
+// When in state (1), if a response comes back 407 whose request was made with
+// the existing config, invalidate the existing config and move to state (2).
+// Retry the request on the direct path.
+//
+// The following events will trigger a config fetch, without invalidating the
+// existing config. The existing config will be replaced when the async config
+// fetch returns.
+// * Starting Chrome.
+// * Using a config whose refresh_duration has expired (see
+//   components/data_reduction_proxy/proto/client_config.proto).
+// * Getting a IP address change event notification.
+//
+// Config fetches are async and subject to a backoff policy. On Android, the
+// fetch policy is different if Chrome is in the background. Every time a config
+// is fetched, it is written to the disk.
 class DataReductionProxyConfigServiceClient
     : public net::NetworkChangeNotifier::IPAddressObserver,
       public net::URLFetcherDelegate {
