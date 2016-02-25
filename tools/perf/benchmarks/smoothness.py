@@ -128,6 +128,7 @@ class SmoothnessKeyMobileSites(_Smoothness):
     return 'smoothness.key_mobile_sites_smooth'
 
 
+@benchmark.Disabled('android-reference')  # crbug.com/588786
 @benchmark.Disabled('mac')  # crbug.com/563615
 class SmoothnessToughAnimationCases(_Smoothness):
   test = smoothness.SmoothnessWithRestart
@@ -492,8 +493,8 @@ class SmoothnessScrollingToughAdCases(_Smoothness):
     return 'smoothness.scrolling_tough_ad_cases'
 
 
-# http://crbug.com/522619 (mac/win)
-@benchmark.Disabled('win', 'mac')
+@benchmark.Disabled('android-reference')  # crbug.com/588786
+@benchmark.Disabled('mac', 'win')  # crbug.com/522619 (mac/win)
 class SmoothnessBidirectionallyScrollingToughAdCases(_Smoothness):
   """Measures rendering statistics while scrolling advertisements."""
   page_set = page_sets.BidirectionallyScrollingToughAdCasesPageSet
