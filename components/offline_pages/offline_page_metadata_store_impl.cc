@@ -145,16 +145,21 @@ void OfflinePageMetadataStoreImpl::LoadDone(
   if (success) {
     for (const auto& entry : *entries) {
       OfflinePageItem item;
+      // We don't want to fail the entire database if one item is corrupt,
+      // so log error and keep going.
       if (!OfflinePageItemFromEntry(entry, &item)) {
-        status = DATA_PARSING_FAILED;
-        result.clear();
-        break;
+        LOG(ERROR) << "failed to parse entry: " << entry.url() << " skipping.";
+        continue;
       }
       result.push_back(item);
     }
-
   } else {
     status = STORE_LOAD_FAILED;
+  }
+
+  // If we couldn't load _anything_ report a parse failure.
+  if (entries->size() > 0 && result.size() == 0) {
+    status = DATA_PARSING_FAILED;
   }
 
   NotifyLoadResult(callback, status, result);

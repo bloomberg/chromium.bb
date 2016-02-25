@@ -347,4 +347,99 @@ TEST_F(OfflinePageMetadataStoreImplTest, UpdateOfflinePage) {
 
 }  // namespace
 
+// Test that loading a store with a bad value still loads.
+// Needs to be outside of the anonymous namespace in order for FRIEND_TEST
+// to work.
+TEST_F(OfflinePageMetadataStoreImplTest, LoadCorruptedStore) {
+  scoped_ptr<OfflinePageMetadataStoreImpl> store(BuildStore());
+
+  // Write one ok page.
+  OfflinePageItem offline_page(GURL(kTestURL), kTestBookmarkId,
+                               base::FilePath(kFilePath), kFileSize);
+  store->AddOrUpdateOfflinePage(
+      offline_page,
+      base::Bind(&OfflinePageMetadataStoreImplTest::UpdateCallback,
+                 base::Unretained(this), ADD));
+  PumpLoop();
+  EXPECT_EQ(ADD, last_called_callback_);
+  EXPECT_EQ(STATUS_TRUE, last_status_);
+
+  // Manually write one broken page (no id)
+  scoped_ptr<leveldb_proto::ProtoDatabase<OfflinePageEntry>::KeyEntryVector>
+      entries_to_save(
+          new leveldb_proto::ProtoDatabase<OfflinePageEntry>::KeyEntryVector());
+  scoped_ptr<std::vector<std::string>> keys_to_remove(
+      new std::vector<std::string>());
+
+  OfflinePageEntry offline_page_proto;
+  entries_to_save->push_back(std::make_pair("0", offline_page_proto));
+
+  store->UpdateEntries(
+      std::move(entries_to_save), std::move(keys_to_remove),
+      base::Bind(&OfflinePageMetadataStoreImplTest::UpdateCallback,
+                 base::Unretained(this), ADD));
+  PumpLoop();
+
+  EXPECT_EQ(ADD, last_called_callback_);
+  EXPECT_EQ(STATUS_TRUE, last_status_);
+
+  ClearResults();
+
+  // Close the store first to ensure file lock is removed.
+  store.reset();
+  store = BuildStore();
+  PumpLoop();
+
+  // One of the pages was busted, so only expect one page.
+  EXPECT_EQ(LOAD, last_called_callback_);
+  EXPECT_EQ(STATUS_TRUE, last_status_);
+  EXPECT_EQ(1U, offline_pages_.size());
+  EXPECT_EQ(offline_page.url, offline_pages_[0].url);
+  EXPECT_EQ(offline_page.bookmark_id, offline_pages_[0].bookmark_id);
+  EXPECT_EQ(offline_page.version, offline_pages_[0].version);
+  EXPECT_EQ(offline_page.file_path, offline_pages_[0].file_path);
+  EXPECT_EQ(offline_page.file_size, offline_pages_[0].file_size);
+  EXPECT_EQ(offline_page.creation_time, offline_pages_[0].creation_time);
+  EXPECT_EQ(offline_page.last_access_time, offline_pages_[0].last_access_time);
+  EXPECT_EQ(offline_page.access_count, offline_pages_[0].access_count);
+}
+
+// Test that loading a store with nothing but bad values errors.
+// Needs to be outside of the anonymous namespace in order for FRIEND_TEST
+// to work.
+TEST_F(OfflinePageMetadataStoreImplTest, LoadTotallyCorruptedStore) {
+  scoped_ptr<OfflinePageMetadataStoreImpl> store(BuildStore());
+
+  // Manually write two broken pages (no id)
+  scoped_ptr<leveldb_proto::ProtoDatabase<OfflinePageEntry>::KeyEntryVector>
+      entries_to_save(
+          new leveldb_proto::ProtoDatabase<OfflinePageEntry>::KeyEntryVector());
+  scoped_ptr<std::vector<std::string>> keys_to_remove(
+      new std::vector<std::string>());
+
+  OfflinePageEntry offline_page_proto;
+  entries_to_save->push_back(std::make_pair("0", offline_page_proto));
+  entries_to_save->push_back(std::make_pair("1", offline_page_proto));
+
+  store->UpdateEntries(
+      std::move(entries_to_save), std::move(keys_to_remove),
+      base::Bind(&OfflinePageMetadataStoreImplTest::UpdateCallback,
+                 base::Unretained(this), ADD));
+  PumpLoop();
+
+  EXPECT_EQ(ADD, last_called_callback_);
+  EXPECT_EQ(STATUS_TRUE, last_status_);
+
+  ClearResults();
+
+  // Close the store first to ensure file lock is removed.
+  store.reset();
+  store = BuildStore();
+  PumpLoop();
+
+  // One of the pages was busted, so only expect one page.
+  EXPECT_EQ(LOAD, last_called_callback_);
+  EXPECT_EQ(STATUS_FALSE, last_status_);
+}
+
 }  // namespace offline_pages
