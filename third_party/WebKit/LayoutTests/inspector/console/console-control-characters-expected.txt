@@ -1,0 +1,5 @@
+Verify that control characters are substituted with printable characters.
+
+var� i = 0;
+ Uncaught SyntaxError: Unexpected token ILLEGAL(…)
+
