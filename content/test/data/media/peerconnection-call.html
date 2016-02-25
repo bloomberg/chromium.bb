@@ -205,7 +205,7 @@
       var expectedMsg = 'Failed to set local offer sdp:' +
           ' Session error code: ERROR_CONTENT. Session error description:' +
           ' Failed to set local video description recv parameters..';
-      assertEquals(expectedMsg, error);
+      assertEquals(expectedMsg, error.message);
       reportTestSuccess();
     };
     navigator.webkitGetUserMedia({audio: true, video: true},
@@ -220,7 +220,7 @@
       var expectedMsg = 'Failed to set local offer sdp:' +
           ' Called with SDP without DTLS fingerprint.';
 
-      assertEquals(expectedMsg, error);
+      assertEquals(expectedMsg, error.message);
       reportTestSuccess();
     };
     navigator.webkitGetUserMedia({audio: true, video: true},

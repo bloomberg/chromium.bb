@@ -52,7 +52,7 @@ function expectedTypeError(error)
 function expectedInvalidSessionDescription(error)
 {
     window.error = error;
-    shouldBe('error.name', '"InvalidAccessError"')
+    shouldBe('error.name', '"OperationError"')
     testPassed('expectedInvalidSessionDescription was called.')
 }
 

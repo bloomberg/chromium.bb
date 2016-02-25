@@ -5,7 +5,6 @@
 #ifndef RTCVoidRequestPromiseImpl_h
 #define RTCVoidRequestPromiseImpl_h
 
-#include "core/dom/ExceptionCode.h"
 #include "platform/mediastream/RTCVoidRequest.h"
 #include "wtf/text/WTFString.h"
 
@@ -16,7 +15,7 @@ class RTCPeerConnection;
 
 class RTCVoidRequestPromiseImpl final : public RTCVoidRequest {
 public:
-    static RTCVoidRequestPromiseImpl* create(RTCPeerConnection*, ScriptPromiseResolver*, ExceptionCode);
+    static RTCVoidRequestPromiseImpl* create(RTCPeerConnection*, ScriptPromiseResolver*);
     ~RTCVoidRequestPromiseImpl() override;
 
     // RTCVoidRequest
@@ -26,13 +25,12 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    RTCVoidRequestPromiseImpl(RTCPeerConnection*, ScriptPromiseResolver*, ExceptionCode);
+    RTCVoidRequestPromiseImpl(RTCPeerConnection*, ScriptPromiseResolver*);
 
     void clear();
 
     Member<RTCPeerConnection> m_requester;
     Member<ScriptPromiseResolver> m_resolver;
-    ExceptionCode m_exceptionCode;
 };
 
 } // namespace blink

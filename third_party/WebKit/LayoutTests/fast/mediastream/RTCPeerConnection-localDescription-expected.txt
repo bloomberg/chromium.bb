@@ -7,10 +7,12 @@ PASS testExecutionOrderClosedConnection() did not throw exception.
 PASS pc.setLocalDescription().catch(expectedTypeError) did not throw exception.
 PASS pc.setLocalDescription(null).catch(expectedInvalidSessionDescription) did not throw exception.
 PASS pc.setLocalDescription(sessionDescription, requestSucceeded1, unexpectedCallback); did not throw exception.
-PASS error is "The RTCPeerConnection's signalingState is 'closed'."
+PASS error.name is "InvalidStateError"
+PASS error.toString() is "InvalidStateError: The RTCPeerConnection's signalingState is 'closed'."
 PASS events is [1,2,3]
 PASS error.name is "TypeError"
 PASS expectedTypeError was called.
+PASS error.name is "OperationError"
 PASS expectedInvalidSessionDescription was called.
 PASS requestSucceeded was called.
 PASS pc.setLocalDescription(sessionDescription, unexpectedCallback, requestFailed2); did not throw exception.

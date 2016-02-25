@@ -32,19 +32,20 @@
 #define RTCVoidRequestImpl_h
 
 #include "core/dom/ActiveDOMObject.h"
+#include "core/dom/ExceptionCode.h"
 #include "platform/heap/Handle.h"
 #include "platform/mediastream/RTCVoidRequest.h"
 
 namespace blink {
 
-class RTCErrorCallback;
 class RTCPeerConnection;
+class RTCPeerConnectionErrorCallback;
 class VoidCallback;
 
 class RTCVoidRequestImpl final : public RTCVoidRequest, public ActiveDOMObject {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RTCVoidRequestImpl);
 public:
-    static RTCVoidRequestImpl* create(ExecutionContext*, RTCPeerConnection*, VoidCallback*, RTCErrorCallback*);
+    static RTCVoidRequestImpl* create(ExecutionContext*, RTCPeerConnection*, VoidCallback*, RTCPeerConnectionErrorCallback*);
     ~RTCVoidRequestImpl() override;
 
     // RTCVoidRequest
@@ -57,12 +58,12 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    RTCVoidRequestImpl(ExecutionContext*, RTCPeerConnection*, VoidCallback*, RTCErrorCallback*);
+    RTCVoidRequestImpl(ExecutionContext*, RTCPeerConnection*, VoidCallback*, RTCPeerConnectionErrorCallback*);
 
     void clear();
 
     Member<VoidCallback> m_successCallback;
-    Member<RTCErrorCallback> m_errorCallback;
+    Member<RTCPeerConnectionErrorCallback> m_errorCallback;
     Member<RTCPeerConnection> m_requester;
 };
 

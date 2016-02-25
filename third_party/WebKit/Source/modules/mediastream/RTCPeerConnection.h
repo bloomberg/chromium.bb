@@ -49,9 +49,9 @@ class MediaStreamTrack;
 class RTCConfiguration;
 class RTCDTMFSender;
 class RTCDataChannel;
-class RTCErrorCallback;
 class RTCIceCandidateInitOrRTCIceCandidate;
 class RTCOfferOptions;
+class RTCPeerConnectionErrorCallback;
 class RTCSessionDescription;
 class RTCSessionDescriptionCallback;
 class RTCSessionDescriptionInit;
@@ -71,16 +71,15 @@ public:
     static RTCPeerConnection* create(ExecutionContext*, const Dictionary&, const Dictionary&, ExceptionState&);
     ~RTCPeerConnection() override;
 
-    void createOffer(ExecutionContext*, RTCSessionDescriptionCallback*, RTCErrorCallback*, const Dictionary&, ExceptionState&);
-
-    void createAnswer(ExecutionContext*, RTCSessionDescriptionCallback*, RTCErrorCallback*, const Dictionary&, ExceptionState&);
+    void createOffer(ExecutionContext*, RTCSessionDescriptionCallback*, RTCPeerConnectionErrorCallback*, const Dictionary&, ExceptionState&);
+    void createAnswer(ExecutionContext*, RTCSessionDescriptionCallback*, RTCPeerConnectionErrorCallback*, const Dictionary&, ExceptionState&);
 
     ScriptPromise setLocalDescription(ScriptState*, const RTCSessionDescriptionInit&);
-    ScriptPromise setLocalDescription(ScriptState*, RTCSessionDescription*, VoidCallback*, RTCErrorCallback*);
+    ScriptPromise setLocalDescription(ScriptState*, RTCSessionDescription*, VoidCallback*, RTCPeerConnectionErrorCallback*);
     RTCSessionDescription* localDescription();
 
     ScriptPromise setRemoteDescription(ScriptState*, const RTCSessionDescriptionInit&);
-    ScriptPromise setRemoteDescription(ScriptState*, RTCSessionDescription*, VoidCallback*, RTCErrorCallback*);
+    ScriptPromise setRemoteDescription(ScriptState*, RTCSessionDescription*, VoidCallback*, RTCPeerConnectionErrorCallback*);
     RTCSessionDescription* remoteDescription();
 
     String signalingState() const;
@@ -92,7 +91,7 @@ public:
     static ScriptPromise generateCertificate(ScriptState*, const AlgorithmIdentifier& keygenAlgorithm, ExceptionState&);
 
     ScriptPromise addIceCandidate(ScriptState*, const RTCIceCandidateInitOrRTCIceCandidate&);
-    ScriptPromise addIceCandidate(ScriptState*, RTCIceCandidate*, VoidCallback*, RTCErrorCallback*);
+    ScriptPromise addIceCandidate(ScriptState*, RTCIceCandidate*, VoidCallback*, RTCPeerConnectionErrorCallback*);
 
     String iceGatheringState() const;
 

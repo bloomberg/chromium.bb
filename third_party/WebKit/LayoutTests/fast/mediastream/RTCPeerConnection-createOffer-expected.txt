@@ -6,7 +6,8 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 PASS requestSucceeded was called.
 PASS sessionDescription.type is "offer"
 PASS requestFailed was called.
-PASS errorReason is "TEST_ERROR"
+PASS error.name is "OperationError"
+PASS error.toString() is "OperationError: TEST_ERROR"
 PASS pc.createOffer(dummy, dummy); did not throw exception.
 PASS pc.createOffer(dummy, dummy, {}); did not throw exception.
 PASS pc.createOffer(dummy, dummy, {voiceActivityDetection:false}); did not throw exception.

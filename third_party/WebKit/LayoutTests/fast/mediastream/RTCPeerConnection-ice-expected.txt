@@ -5,18 +5,19 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 PASS testExecutionOrderClosedConnection() did not throw exception.
 PASS pc = new webkitRTCPeerConnection(null, null); did not throw exception.
-PASS error is "The RTCPeerConnection's signalingState is 'closed'."
+PASS error.name is "InvalidStateError"
+PASS error.toString() is "InvalidStateError: The RTCPeerConnection's signalingState is 'closed'."
 PASS events is [1,2,3]
 PASS iceConnectionState is completed
 PASS pc.addIceCandidate(null, addIceCandidateSuccess, unexpectedCallback).catch(expectedTypeError); did not throw exception.
 PASS pc.addIceCandidate(iceCandidate, null, unexpectedCallback).catch(expectedTypeError); did not throw exception.
 PASS pc.addIceCandidate(iceCandidate, addIceCandidateSuccess, null).catch(expectedTypeError); did not throw exception.
 PASS pc.addIceCandidate(iceCandidate, addIceCandidateSuccess, unexpectedCallback); did not throw exception.
-PASS TypeError is TypeError
+PASS error.name is "TypeError"
 PASS expectedTypeError was called.
-PASS TypeError is TypeError
+PASS error.name is "TypeError"
 PASS expectedTypeError was called.
-PASS TypeError is TypeError
+PASS error.name is "TypeError"
 PASS expectedTypeError was called.
 PASS addIceCandidateSuccess was called.
 PASS iceConnectionState is closed.

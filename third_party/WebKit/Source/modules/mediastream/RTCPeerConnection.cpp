@@ -55,8 +55,8 @@
 #include "modules/mediastream/RTCDTMFSender.h"
 #include "modules/mediastream/RTCDataChannel.h"
 #include "modules/mediastream/RTCDataChannelEvent.h"
-#include "modules/mediastream/RTCErrorCallback.h"
 #include "modules/mediastream/RTCIceCandidateEvent.h"
+#include "modules/mediastream/RTCPeerConnectionErrorCallback.h"
 #include "modules/mediastream/RTCSessionDescription.h"
 #include "modules/mediastream/RTCSessionDescriptionCallback.h"
 #include "modules/mediastream/RTCSessionDescriptionInit.h"
@@ -103,40 +103,40 @@ bool throwExceptionIfSignalingStateClosed(RTCPeerConnection::SignalingState stat
 // Helper class for running error callbacks asynchronously
 class ErrorCallbackTask : public WebTaskRunner::Task {
 public:
-    static PassOwnPtr<ErrorCallbackTask> create(RTCErrorCallback* errorCallback, const String& errorMessage)
+    static PassOwnPtr<ErrorCallbackTask> create(RTCPeerConnectionErrorCallback* errorCallback, DOMException* exception)
     {
-        return adoptPtr(new ErrorCallbackTask(errorCallback, errorMessage));
+        return adoptPtr(new ErrorCallbackTask(errorCallback, exception));
     }
 
     ~ErrorCallbackTask() override = default;
 
     void run() override
     {
-        m_errorCallback->handleEvent(m_errorMessage);
+        m_errorCallback->handleEvent(m_exception);
     }
 
 private:
-    ErrorCallbackTask(RTCErrorCallback* errorCallback, const String& errorMessage)
+    ErrorCallbackTask(RTCPeerConnectionErrorCallback* errorCallback, DOMException* exception)
         : m_errorCallback(errorCallback)
-        , m_errorMessage(errorMessage)
+        , m_exception(exception)
     {
         ASSERT(errorCallback);
     }
 
-    Persistent<RTCErrorCallback> m_errorCallback;
-    String m_errorMessage;
+    Persistent<RTCPeerConnectionErrorCallback> m_errorCallback;
+    Persistent<DOMException> m_exception;
 };
 
-void asyncCallErrorCallback(RTCErrorCallback* errorCallback, const String& errorMessage)
+void asyncCallErrorCallback(RTCPeerConnectionErrorCallback* errorCallback, DOMException* exception)
 {
-    Microtask::enqueueMicrotask(ErrorCallbackTask::create(errorCallback, errorMessage));
+    Microtask::enqueueMicrotask(ErrorCallbackTask::create(errorCallback, exception));
 }
 
-bool callErrorCallbackIfSignalingStateClosed(RTCPeerConnection::SignalingState state, RTCErrorCallback* errorCallback)
+bool callErrorCallbackIfSignalingStateClosed(RTCPeerConnection::SignalingState state, RTCPeerConnectionErrorCallback* errorCallback)
 {
     if (state == RTCPeerConnection::SignalingStateClosed) {
         if (errorCallback)
-            asyncCallErrorCallback(errorCallback, kSignalingStateClosedMessage);
+            asyncCallErrorCallback(errorCallback, DOMException::create(InvalidStateError, kSignalingStateClosedMessage));
 
         return true;
     }
@@ -465,7 +465,7 @@ RTCPeerConnection::~RTCPeerConnection()
     ASSERT(m_closed || m_stopped);
 }
 
-void RTCPeerConnection::createOffer(ExecutionContext* context, RTCSessionDescriptionCallback* successCallback, RTCErrorCallback* errorCallback, const Dictionary& rtcOfferOptions, ExceptionState& exceptionState)
+void RTCPeerConnection::createOffer(ExecutionContext* context, RTCSessionDescriptionCallback* successCallback, RTCPeerConnectionErrorCallback* errorCallback, const Dictionary& rtcOfferOptions, ExceptionState& exceptionState)
 {
     if (errorCallback)
         UseCounter::count(context, UseCounter::RTCPeerConnectionCreateOfferLegacyFailureCallback);
@@ -507,7 +507,7 @@ void RTCPeerConnection::createOffer(ExecutionContext* context, RTCSessionDescrip
     }
 }
 
-void RTCPeerConnection::createAnswer(ExecutionContext* context, RTCSessionDescriptionCallback* successCallback, RTCErrorCallback* errorCallback, const Dictionary& mediaConstraints, ExceptionState& exceptionState)
+void RTCPeerConnection::createAnswer(ExecutionContext* context, RTCSessionDescriptionCallback* successCallback, RTCPeerConnectionErrorCallback* errorCallback, const Dictionary& mediaConstraints, ExceptionState& exceptionState)
 {
     if (errorCallback)
         UseCounter::count(context, UseCounter::RTCPeerConnectionCreateAnswerLegacyFailureCallback);
@@ -542,12 +542,12 @@ ScriptPromise RTCPeerConnection::setLocalDescription(ScriptState* scriptState, c
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    RTCVoidRequest* request = RTCVoidRequestPromiseImpl::create(this, resolver, InvalidAccessError);
+    RTCVoidRequest* request = RTCVoidRequestPromiseImpl::create(this, resolver);
     m_peerHandler->setLocalDescription(request, WebRTCSessionDescription(sessionDescriptionInit.type(), sessionDescriptionInit.sdp()));
     return promise;
 }
 
-ScriptPromise RTCPeerConnection::setLocalDescription(ScriptState* scriptState, RTCSessionDescription* sessionDescription, VoidCallback* successCallback, RTCErrorCallback* errorCallback)
+ScriptPromise RTCPeerConnection::setLocalDescription(ScriptState* scriptState, RTCSessionDescription* sessionDescription, VoidCallback* successCallback, RTCPeerConnectionErrorCallback* errorCallback)
 {
     ExecutionContext* context = scriptState->executionContext();
     if (successCallback && errorCallback) {
@@ -585,12 +585,12 @@ ScriptPromise RTCPeerConnection::setRemoteDescription(ScriptState* scriptState, 
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    RTCVoidRequest* request = RTCVoidRequestPromiseImpl::create(this, resolver, InvalidAccessError);
+    RTCVoidRequest* request = RTCVoidRequestPromiseImpl::create(this, resolver);
     m_peerHandler->setRemoteDescription(request, WebRTCSessionDescription(sessionDescriptionInit.type(), sessionDescriptionInit.sdp()));
     return promise;
 }
 
-ScriptPromise RTCPeerConnection::setRemoteDescription(ScriptState* scriptState, RTCSessionDescription* sessionDescription, VoidCallback* successCallback, RTCErrorCallback* errorCallback)
+ScriptPromise RTCPeerConnection::setRemoteDescription(ScriptState* scriptState, RTCSessionDescription* sessionDescription, VoidCallback* successCallback, RTCPeerConnectionErrorCallback* errorCallback)
 {
     ExecutionContext* context = scriptState->executionContext();
     if (successCallback && errorCallback) {
@@ -721,17 +721,16 @@ ScriptPromise RTCPeerConnection::addIceCandidate(ScriptState* scriptState, const
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    RTCVoidRequest* request = RTCVoidRequestPromiseImpl::create(this, resolver, OperationError);
+    RTCVoidRequest* request = RTCVoidRequestPromiseImpl::create(this, resolver);
     WebRTCICECandidate webCandidate = convertToWebRTCIceCandidate(candidate);
     bool implemented = m_peerHandler->addICECandidate(request, webCandidate);
-    // TODO(guidou): replace NotSupportedError when error handling in the spec is finalized. crbug.com/585621
     if (!implemented)
-        resolver->reject(DOMException::create(NotSupportedError, "This method is not yet implemented."));
+        resolver->reject(DOMException::create(OperationError, "This operation could not be completed."));
 
     return promise;
 }
 
-ScriptPromise RTCPeerConnection::addIceCandidate(ScriptState* scriptState, RTCIceCandidate* iceCandidate, VoidCallback* successCallback, RTCErrorCallback* errorCallback)
+ScriptPromise RTCPeerConnection::addIceCandidate(ScriptState* scriptState, RTCIceCandidate* iceCandidate, VoidCallback* successCallback, RTCPeerConnectionErrorCallback* errorCallback)
 {
     ASSERT(iceCandidate);
     ASSERT(successCallback);
@@ -743,7 +742,7 @@ ScriptPromise RTCPeerConnection::addIceCandidate(ScriptState* scriptState, RTCIc
     RTCVoidRequest* request = RTCVoidRequestImpl::create(executionContext(), this, successCallback, errorCallback);
     bool implemented = m_peerHandler->addICECandidate(request, iceCandidate->webCandidate());
     if (!implemented)
-        asyncCallErrorCallback(errorCallback, "This method is not yet implemented.");
+        asyncCallErrorCallback(errorCallback, DOMException::create(OperationError, "This operation could not be completed."));
 
     return ScriptPromise::cast(scriptState, v8::Undefined(scriptState->isolate()));
 }

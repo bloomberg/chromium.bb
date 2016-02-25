@@ -33,8 +33,9 @@ function unexpectedCallback()
 
 function expectedTypeError(error)
 {
-  shouldBe(error.name, "TypeError")
-  testPassed("expectedTypeError was called.")
+  window.error = error;
+  shouldBe('error.name', '"TypeError"');
+  testPassed("expectedTypeError was called.");
 }
 
 function onIceChange1()
@@ -54,12 +55,13 @@ function testExecutionOrderClosedConnection()
     var localPeerConnection = new webkitRTCPeerConnection(null, null);
     localPeerConnection.close();
     var counter = 0;
-    events = [];
+    window.events = [];
     Promise.resolve().then(_ => events[counter++] = 1);
     var iceCandidate = new RTCIceCandidate({candidate:"nano nano"});
-    localPeerConnection.addIceCandidate(iceCandidate, unexpectedCallback, (error) => {
+    localPeerConnection.addIceCandidate(iceCandidate, unexpectedCallback, error => {
         window.error = error;
-        shouldBe('error', '"The RTCPeerConnection\'s signalingState is \'closed\'."');
+        shouldBe('error.name', '"InvalidStateError"');
+        shouldBe('error.toString()', '"InvalidStateError: The RTCPeerConnection\'s signalingState is \'closed\'."');
         events[counter++] = 2;
     });
     Promise.resolve().then(_ => {

@@ -30,8 +30,10 @@
 
 #include "modules/mediastream/RTCSessionDescriptionRequestImpl.h"
 
-#include "modules/mediastream/RTCErrorCallback.h"
+#include "core/dom/DOMException.h"
+#include "core/dom/ExceptionCode.h"
 #include "modules/mediastream/RTCPeerConnection.h"
+#include "modules/mediastream/RTCPeerConnectionErrorCallback.h"
 #include "modules/mediastream/RTCSessionDescription.h"
 #include "modules/mediastream/RTCSessionDescriptionCallback.h"
 #include "public/platform/WebRTCSessionDescription.h"
@@ -39,14 +41,14 @@
 
 namespace blink {
 
-RTCSessionDescriptionRequestImpl* RTCSessionDescriptionRequestImpl::create(ExecutionContext* context, RTCPeerConnection* requester, RTCSessionDescriptionCallback* successCallback, RTCErrorCallback* errorCallback)
+RTCSessionDescriptionRequestImpl* RTCSessionDescriptionRequestImpl::create(ExecutionContext* context, RTCPeerConnection* requester, RTCSessionDescriptionCallback* successCallback, RTCPeerConnectionErrorCallback* errorCallback)
 {
     RTCSessionDescriptionRequestImpl* request = new RTCSessionDescriptionRequestImpl(context, requester, successCallback, errorCallback);
     request->suspendIfNeeded();
     return request;
 }
 
-RTCSessionDescriptionRequestImpl::RTCSessionDescriptionRequestImpl(ExecutionContext* context, RTCPeerConnection* requester, RTCSessionDescriptionCallback* successCallback, RTCErrorCallback* errorCallback)
+RTCSessionDescriptionRequestImpl::RTCSessionDescriptionRequestImpl(ExecutionContext* context, RTCPeerConnection* requester, RTCSessionDescriptionCallback* successCallback, RTCPeerConnectionErrorCallback* errorCallback)
     : ActiveDOMObject(context)
     , m_successCallback(successCallback)
     , m_errorCallback(errorCallback)
@@ -71,7 +73,7 @@ void RTCSessionDescriptionRequestImpl::requestFailed(const String& error)
 {
     bool shouldFireCallback = m_requester ? m_requester->shouldFireDefaultCallbacks() : false;
     if (shouldFireCallback && m_errorCallback)
-        m_errorCallback->handleEvent(error);
+        m_errorCallback->handleEvent(DOMException::create(OperationError, error));
 
     clear();
 }

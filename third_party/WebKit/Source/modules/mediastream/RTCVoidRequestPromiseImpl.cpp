@@ -6,19 +6,19 @@
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
+#include "core/dom/ExceptionCode.h"
 #include "modules/mediastream/RTCPeerConnection.h"
 
 namespace blink {
 
-RTCVoidRequestPromiseImpl* RTCVoidRequestPromiseImpl::create(RTCPeerConnection* requester, ScriptPromiseResolver* resolver, ExceptionCode exceptionCode)
+RTCVoidRequestPromiseImpl* RTCVoidRequestPromiseImpl::create(RTCPeerConnection* requester, ScriptPromiseResolver* resolver)
 {
-    return new RTCVoidRequestPromiseImpl(requester, resolver, exceptionCode);
+    return new RTCVoidRequestPromiseImpl(requester, resolver);
 }
 
-RTCVoidRequestPromiseImpl::RTCVoidRequestPromiseImpl(RTCPeerConnection* requester, ScriptPromiseResolver* resolver, ExceptionCode exceptionCode)
+RTCVoidRequestPromiseImpl::RTCVoidRequestPromiseImpl(RTCPeerConnection* requester, ScriptPromiseResolver* resolver)
     : m_requester(requester)
     , m_resolver(resolver)
-    , m_exceptionCode(exceptionCode)
 {
     ASSERT(m_requester);
     ASSERT(m_resolver);
@@ -44,7 +44,8 @@ void RTCVoidRequestPromiseImpl::requestSucceeded()
 void RTCVoidRequestPromiseImpl::requestFailed(const String& error)
 {
     if (m_requester && m_requester->shouldFireDefaultCallbacks()) {
-        m_resolver->reject(DOMException::create(m_exceptionCode, error));
+        // TODO(guidou): The error code should come from the content layer. See crbug.com/589455
+        m_resolver->reject(DOMException::create(OperationError, error));
     } else {
         // This is needed to have the resolver release its internal resources
         // while leaving the associated promise pending as specified.

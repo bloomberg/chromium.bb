@@ -39,13 +39,15 @@ function unexpectedCallback()
 function expectedTypeError(error)
 {
     window.error = error;
-    shouldBe('error.name', '"TypeError"')
-    testPassed('expectedTypeError was called.')
+    shouldBe('error.name', '"TypeError"');
+    testPassed('expectedTypeError was called.');
 }
 
 function expectedInvalidSessionDescription(error)
 {
-    testPassed('expectedInvalidSessionDescription was called.')
+    window.error = error;
+    shouldBe('error.name', '"OperationError"');
+    testPassed('expectedInvalidSessionDescription was called.');
 }
 
 function testExecutionOrderClosedConnection()
@@ -53,12 +55,13 @@ function testExecutionOrderClosedConnection()
     var localPeerConnection = new webkitRTCPeerConnection(null, null);
     localPeerConnection.close();
     var counter = 0;
-    events = [];
+    window.events = [];
     Promise.resolve().then(_ => events[counter++] = 1);
     var sessionDescription = new RTCSessionDescription({type:"answer", sdp:"remote"});
-    localPeerConnection.setRemoteDescription(sessionDescription, unexpectedCallback, (error) => {
+    localPeerConnection.setRemoteDescription(sessionDescription, unexpectedCallback, error => {
         window.error = error;
-        shouldBe('error', '"The RTCPeerConnection\'s signalingState is \'closed\'."');
+        shouldBe('error.name', '"InvalidStateError"');
+        shouldBe('error.toString()', '"InvalidStateError: The RTCPeerConnection\'s signalingState is \'closed\'."');
         events[counter++] = 2;
     });
     Promise.resolve().then(_ => {

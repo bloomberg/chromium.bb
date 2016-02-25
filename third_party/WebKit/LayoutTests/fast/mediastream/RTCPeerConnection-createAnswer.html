@@ -9,7 +9,7 @@ description("Tests RTCPeerConnection createAnswer.");
 
 var pc = null;
 
-function requestFailed3(reason)
+function requestFailed3(error)
 {
     testFailed('createAnswer request failed.');
 
@@ -23,7 +23,7 @@ function requestSucceeded3()
     finishJSTest();
 }
 
-function requestFailed2(reason)
+function requestFailed2(error)
 {
     testFailed('setRemoteDescription request failed.');
 

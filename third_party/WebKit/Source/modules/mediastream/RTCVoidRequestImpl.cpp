@@ -30,20 +30,22 @@
 
 #include "modules/mediastream/RTCVoidRequestImpl.h"
 
+#include "core/dom/DOMException.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/html/VoidCallback.h"
-#include "modules/mediastream/RTCErrorCallback.h"
 #include "modules/mediastream/RTCPeerConnection.h"
+#include "modules/mediastream/RTCPeerConnectionErrorCallback.h"
 
 namespace blink {
 
-RTCVoidRequestImpl* RTCVoidRequestImpl::create(ExecutionContext* context, RTCPeerConnection* requester, VoidCallback* successCallback, RTCErrorCallback* errorCallback)
+RTCVoidRequestImpl* RTCVoidRequestImpl::create(ExecutionContext* context, RTCPeerConnection* requester, VoidCallback* successCallback, RTCPeerConnectionErrorCallback* errorCallback)
 {
     RTCVoidRequestImpl* request = new RTCVoidRequestImpl(context, requester, successCallback, errorCallback);
     request->suspendIfNeeded();
     return request;
 }
 
-RTCVoidRequestImpl::RTCVoidRequestImpl(ExecutionContext* context, RTCPeerConnection* requester, VoidCallback* successCallback, RTCErrorCallback* errorCallback)
+RTCVoidRequestImpl::RTCVoidRequestImpl(ExecutionContext* context, RTCPeerConnection* requester, VoidCallback* successCallback, RTCPeerConnectionErrorCallback* errorCallback)
     : ActiveDOMObject(context)
     , m_successCallback(successCallback)
     , m_errorCallback(errorCallback)
@@ -58,7 +60,7 @@ RTCVoidRequestImpl::~RTCVoidRequestImpl()
 
 void RTCVoidRequestImpl::requestSucceeded()
 {
-    bool shouldFireCallback = m_requester ? m_requester->shouldFireDefaultCallbacks() : false;
+    bool shouldFireCallback = m_requester && m_requester->shouldFireDefaultCallbacks();
     if (shouldFireCallback && m_successCallback)
         m_successCallback->handleEvent();
 
@@ -67,9 +69,11 @@ void RTCVoidRequestImpl::requestSucceeded()
 
 void RTCVoidRequestImpl::requestFailed(const String& error)
 {
-    bool shouldFireCallback = m_requester ? m_requester->shouldFireDefaultCallbacks() : false;
-    if (shouldFireCallback && m_errorCallback.get())
-        m_errorCallback->handleEvent(error);
+    bool shouldFireCallback = m_requester && m_requester->shouldFireDefaultCallbacks();
+    if (shouldFireCallback && m_errorCallback.get()) {
+        // TODO(guidou): The error code should come from the content layer. See crbug.com/589455
+        m_errorCallback->handleEvent(DOMException::create(OperationError, error));
+    }
 
     clear();
 }

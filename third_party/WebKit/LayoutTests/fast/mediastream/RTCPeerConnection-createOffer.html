@@ -15,12 +15,13 @@ var pc = null;
 
 function dummy() {}
 
-function requestFailed2(reason)
+function requestFailed2(error)
 {
     testPassed('requestFailed was called.');
 
-    errorReason = reason;
-    shouldBe('errorReason', '"TEST_ERROR"');
+    window.error = error;
+    shouldBe('error.name', '"OperationError"');
+    shouldBe('error.toString()', '"OperationError: TEST_ERROR"');
 
     shouldNotThrow("pc.createOffer(dummy, dummy);");
     shouldNotThrow("pc.createOffer(dummy, dummy, {});");

@@ -39,15 +39,15 @@
 
 namespace blink {
 
-class RTCErrorCallback;
 class RTCPeerConnection;
+class RTCPeerConnectionErrorCallback;
 class RTCSessionDescriptionCallback;
 class WebRTCSessionDescription;
 
 class RTCSessionDescriptionRequestImpl final : public RTCSessionDescriptionRequest, public ActiveDOMObject {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RTCSessionDescriptionRequestImpl);
 public:
-    static RTCSessionDescriptionRequestImpl* create(ExecutionContext*, RTCPeerConnection*, RTCSessionDescriptionCallback*, RTCErrorCallback*);
+    static RTCSessionDescriptionRequestImpl* create(ExecutionContext*, RTCPeerConnection*, RTCSessionDescriptionCallback*, RTCPeerConnectionErrorCallback*);
     ~RTCSessionDescriptionRequestImpl() override;
 
     void requestSucceeded(const WebRTCSessionDescription&) override;
@@ -59,12 +59,12 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    RTCSessionDescriptionRequestImpl(ExecutionContext*, RTCPeerConnection*, RTCSessionDescriptionCallback*, RTCErrorCallback*);
+    RTCSessionDescriptionRequestImpl(ExecutionContext*, RTCPeerConnection*, RTCSessionDescriptionCallback*, RTCPeerConnectionErrorCallback*);
 
     void clear();
 
     Member<RTCSessionDescriptionCallback> m_successCallback;
-    Member<RTCErrorCallback> m_errorCallback;
+    Member<RTCPeerConnectionErrorCallback> m_errorCallback;
     Member<RTCPeerConnection> m_requester;
 };
 
