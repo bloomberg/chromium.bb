@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <iosfwd>
 #include <string>
 #include <vector>
 
@@ -28,12 +29,28 @@ struct NET_EXPORT SignedTreeHead {
   // RFC6962-bis to use separate versions, so using a separate scheme here.
   enum Version { V1 = 0, };
 
+  SignedTreeHead();
+  SignedTreeHead(Version version,
+                 const base::Time& timestamp,
+                 uint64_t tree_size,
+                 const char sha256_root_hash[kSthRootHashLength],
+                 const DigitallySigned& signature,
+                 const std::string& log_id);
+  ~SignedTreeHead();
+
   Version version;
   base::Time timestamp;
   uint64_t tree_size;
   char sha256_root_hash[kSthRootHashLength];
   DigitallySigned signature;
+
+  // Added in RFC6962-bis, Appendix A. Needed to identify which log
+  // this STH belongs to.
+  std::string log_id;
 };
+
+NET_EXPORT std::ostream& operator<<(std::ostream& stream,
+                                    const SignedTreeHead& sth);
 
 }  // namespace ct
 

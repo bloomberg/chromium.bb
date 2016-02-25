@@ -115,6 +115,7 @@
       'cert/pem_tokenizer.h',
       'cert/signed_certificate_timestamp.cc',
       'cert/signed_certificate_timestamp.h',
+      'cert/signed_tree_head.cc',
       'cert/signed_tree_head.h',
       'cert/x509_cert_types.cc',
       'cert/x509_cert_types.h',

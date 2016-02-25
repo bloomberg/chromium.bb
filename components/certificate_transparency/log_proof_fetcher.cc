@@ -336,6 +336,8 @@ class GetSTHLogResponseHandler : public LogResponseHandler {
       return base::Bind(base::ResetAndReturn(&failure_callback_), log_id_,
                         net::ERR_CT_STH_INCOMPLETE, net::HTTP_OK);
     }
+    // The log id is not a part of the response, fill in manually.
+    signed_tree_head.log_id = log_id_;
 
     return base::Bind(base::ResetAndReturn(&sth_fetched_), log_id_,
                       signed_tree_head);

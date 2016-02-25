@@ -285,6 +285,7 @@ class LogProofFetcherTest : public ::testing::Test {
               sth.signature.signature_algorithm);
     EXPECT_EQ(expected_sth.signature.signature_data,
               sth.signature.signature_data);
+    EXPECT_EQ(kLogID, sth.log_id);
   }
 
   void VerifyConsistencyProof(
