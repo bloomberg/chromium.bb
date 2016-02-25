@@ -190,7 +190,7 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource
   class ReadOperation;
   scoped_ptr<ReadOperation> read_op_;
 
-  // Protects |stop_signal_received_| and |read_op_|.
+  // Protects |stop_signal_received_|, |read_op_| and |total_bytes_|.
   base::Lock lock_;
 
   // Whether we've been told to stop via Abort() or Stop().
