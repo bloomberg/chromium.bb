@@ -133,7 +133,7 @@ void SelectorFilter::collectIdentifierHashes(const CSSSelector& selector, unsign
 {
     unsigned* hash = identifierHashes;
     unsigned* end = identifierHashes + maximumIdentifierCount;
-    CSSSelector::Relation relation = selector.relation();
+    CSSSelector::RelationType relation = selector.relation();
     if (selector.relationIsAffectedByPseudoContent()) {
         // Disable fastRejectSelector.
         *identifierHashes = 0;

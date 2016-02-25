@@ -19,7 +19,7 @@ static void recordSelectorStats(const CSSParserContext& context, const CSSSelect
     for (const CSSSelector* selector = selectorList.first(); selector; selector = CSSSelectorList::next(*selector)) {
         for (const CSSSelector* current = selector; current ; current = current->tagHistory()) {
             UseCounter::Feature feature = UseCounter::NumberOfFeatures;
-            switch (current->pseudoType()) {
+            switch (current->getPseudoType()) {
             case CSSSelector::PseudoUnresolved:
                 feature = UseCounter::CSSSelectorPseudoUnresolved;
                 break;
@@ -172,7 +172,7 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumeComplexSelector(CSSParse
     for (CSSParserSelector* simple = selector.get(); simple && !previousCompoundFlags; simple = simple->tagHistory())
         previousCompoundFlags |= extractCompoundFlags(*simple, m_context.mode());
 
-    while (CSSSelector::Relation combinator = consumeCombinator(range)) {
+    while (CSSSelector::RelationType combinator = consumeCombinator(range)) {
         OwnPtr<CSSParserSelector> nextSelector = consumeCompoundSelector(range);
         if (!nextSelector)
             return combinator == CSSSelector::Descendant ? selector.release() : nullptr;
@@ -265,7 +265,7 @@ bool isSimpleSelectorValidAfterPseudoElement(const CSSParserSelector& simpleSele
         ASSERT(simpleSelector.selectorList());
         ASSERT(simpleSelector.selectorList()->first());
         ASSERT(!simpleSelector.selectorList()->first()->tagHistory());
-        pseudo = simpleSelector.selectorList()->first()->pseudoType();
+        pseudo = simpleSelector.selectorList()->first()->getPseudoType();
     }
     return isPseudoClassValidAfterPseudoElement(pseudo, compoundPseudoElement);
 }
@@ -553,9 +553,9 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumePseudo(CSSParserTokenRan
     return nullptr;
 }
 
-CSSSelector::Relation CSSSelectorParser::consumeCombinator(CSSParserTokenRange& range)
+CSSSelector::RelationType CSSSelectorParser::consumeCombinator(CSSParserTokenRange& range)
 {
-    CSSSelector::Relation fallbackResult = CSSSelector::SubSelector;
+    CSSSelector::RelationType fallbackResult = CSSSelector::SubSelector;
     while (range.peek().type() == WhitespaceToken) {
         range.consume();
         fallbackResult = CSSSelector::Descendant;
@@ -588,7 +588,7 @@ CSSSelector::Relation CSSSelectorParser::consumeCombinator(CSSParserTokenRange& 
     return CSSSelector::ShadowDeep;
 }
 
-CSSSelector::Match CSSSelectorParser::consumeAttributeMatch(CSSParserTokenRange& range)
+CSSSelector::MatchType CSSSelectorParser::consumeAttributeMatch(CSSParserTokenRange& range)
 {
     const CSSParserToken& token = range.consumeIncludingWhitespace();
     switch (token.type()) {

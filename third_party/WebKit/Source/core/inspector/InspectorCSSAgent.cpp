@@ -1755,7 +1755,7 @@ static inline bool matchesPseudoElement(const CSSSelector* selector, PseudoId el
     // According to http://www.w3.org/TR/css3-selectors/#pseudo-elements, "Only one pseudo-element may appear per selector."
     // As such, check the last selector in the tag history.
     for (; !selector->isLastInTagHistory(); ++selector) { }
-    PseudoId selectorPseudoId = CSSSelector::pseudoId(selector->pseudoType());
+    PseudoId selectorPseudoId = CSSSelector::pseudoId(selector->getPseudoType());
 
     // FIXME: This only covers the case of matching pseudo-element selectors against PseudoElements.
     // We should come up with a solution for matching pseudo-element selectors against ordinary Elements, too.

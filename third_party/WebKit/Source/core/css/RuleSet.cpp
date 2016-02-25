@@ -78,7 +78,7 @@ static bool containsUncommonAttributeSelector(const CSSSelector& selector)
             return true;
         if (selectorListContainsUncommonAttributeSelector(current))
             return true;
-        if (current->relationIsAffectedByPseudoContent() || current->pseudoType() == CSSSelector::PseudoSlotted)
+        if (current->relationIsAffectedByPseudoContent() || current->getPseudoType() == CSSSelector::PseudoSlotted)
             return false;
         if (current->relation() != CSSSelector::SubSelector) {
             current = current->tagHistory();
@@ -98,9 +98,9 @@ static bool containsUncommonAttributeSelector(const CSSSelector& selector)
 static inline PropertyWhitelistType determinePropertyWhitelistType(const AddRuleFlags addRuleFlags, const CSSSelector& selector)
 {
     for (const CSSSelector* component = &selector; component; component = component->tagHistory()) {
-        if (component->pseudoType() == CSSSelector::PseudoCue || (component->match() == CSSSelector::PseudoElement && component->value() == TextTrackCue::cueShadowPseudoId()))
+        if (component->getPseudoType() == CSSSelector::PseudoCue || (component->match() == CSSSelector::PseudoElement && component->value() == TextTrackCue::cueShadowPseudoId()))
             return PropertyWhitelistCue;
-        if (component->pseudoType() == CSSSelector::PseudoFirstLetter)
+        if (component->getPseudoType() == CSSSelector::PseudoFirstLetter)
             return PropertyWhitelistFirstLetter;
     }
     return PropertyWhitelistNone;
@@ -144,7 +144,7 @@ static void extractValuesforSelector(const CSSSelector* selector, AtomicString& 
     default:
         break;
     }
-    if (selector->pseudoType() == CSSSelector::PseudoWebKitCustomElement)
+    if (selector->getPseudoType() == CSSSelector::PseudoWebKitCustomElement)
         customPseudoElementName = selector->value();
 }
 
@@ -183,7 +183,7 @@ bool RuleSet::findBestRuleSetAndAdd(const CSSSelector& component, RuleData& rule
         return true;
     }
 
-    switch (component.pseudoType()) {
+    switch (component.getPseudoType()) {
     case CSSSelector::PseudoCue:
         m_cuePseudoRules.append(ruleData);
         return true;

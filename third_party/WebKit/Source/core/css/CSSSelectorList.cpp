@@ -161,21 +161,21 @@ bool CSSSelectorList::selectorHasContentPseudo(size_t index) const
 bool CSSSelectorList::selectorHasSlottedPseudo(size_t index) const
 {
     return forEachTagSelector([](const CSSSelector& selector) ->  bool {
-        return selector.pseudoType() == CSSSelector::PseudoSlotted;
+        return selector.getPseudoType() == CSSSelector::PseudoSlotted;
     }, selectorAt(index));
 }
 
 bool CSSSelectorList::selectorUsesDeepCombinatorOrShadowPseudo(size_t index) const
 {
     return forEachTagSelector([](const CSSSelector& selector) -> bool {
-        return selector.relation() == CSSSelector::ShadowDeep || selector.pseudoType() == CSSSelector::PseudoShadow;
+        return selector.relation() == CSSSelector::ShadowDeep || selector.getPseudoType() == CSSSelector::PseudoShadow;
     }, selectorAt(index));
 }
 
 bool CSSSelectorList::selectorNeedsUpdatedDistribution(size_t index) const
 {
     return forEachTagSelector([](const CSSSelector& selector) -> bool {
-        return selector.relationIsAffectedByPseudoContent() || selector.pseudoType() == CSSSelector::PseudoSlotted || selector.pseudoType() == CSSSelector::PseudoHostContext;
+        return selector.relationIsAffectedByPseudoContent() || selector.getPseudoType() == CSSSelector::PseudoSlotted || selector.getPseudoType() == CSSSelector::PseudoHostContext;
     }, selectorAt(index));
 }
 

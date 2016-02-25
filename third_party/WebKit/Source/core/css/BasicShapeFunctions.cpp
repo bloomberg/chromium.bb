@@ -220,7 +220,7 @@ PassRefPtr<BasicShape> basicShapeForValue(const StyleResolverState& state, const
         const CSSBasicShapePolygonValue& polygonValue = toCSSBasicShapePolygonValue(basicShapeValue);
         RefPtr<BasicShapePolygon> polygon = BasicShapePolygon::create();
 
-        polygon->setWindRule(polygonValue.windRule());
+        polygon->setWindRule(polygonValue.getWindRule());
         const WillBeHeapVector<RefPtrWillBeMember<CSSPrimitiveValue>>& values = polygonValue.values();
         for (unsigned i = 0; i < values.size(); i += 2)
             polygon->appendPoint(convertToLength(state, values.at(i).get()), convertToLength(state, values.at(i + 1).get()));

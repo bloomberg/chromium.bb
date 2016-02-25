@@ -80,7 +80,7 @@ bool CSSParserSelector::isSimple() const
     return false;
 }
 
-void CSSParserSelector::appendTagHistory(CSSSelector::Relation relation, PassOwnPtr<CSSParserSelector> selector)
+void CSSParserSelector::appendTagHistory(CSSSelector::RelationType relation, PassOwnPtr<CSSParserSelector> selector)
 {
     CSSParserSelector* end = this;
     while (end->tagHistory())

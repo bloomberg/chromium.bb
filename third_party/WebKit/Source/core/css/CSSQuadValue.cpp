@@ -15,7 +15,7 @@ String CSSQuadValue::customCSSText() const
     String bottom = m_bottom->cssText();
     String left = m_left->cssText();
 
-    if (m_serializationType == SerializationType::SerializeAsRect)
+    if (m_serializationType == TypeForSerialization::SerializeAsRect)
         return "rect(" + top + ' ' + right + ' ' + bottom + ' ' + left + ')';
 
     StringBuilder result;

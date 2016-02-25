@@ -267,7 +267,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
 {
     SelectorCheckingContext nextContext = prepareNextContextForRelation(context);
 
-    CSSSelector::Relation relation = context.selector->relation();
+    CSSSelector::RelationType relation = context.selector->relation();
 
     // Disable :visited matching when we see the first link or try to match anything else than an ancestors.
     if (!context.isSubSelector && (context.element->isLink() || (relation != CSSSelector::Descendant && relation != CSSSelector::Child)))
@@ -288,7 +288,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
             return SelectorFailsCompletely;
         }
 
-        if (nextContext.selector->pseudoType() == CSSSelector::PseudoShadow)
+        if (nextContext.selector->getPseudoType() == CSSSelector::PseudoShadow)
             return matchForPseudoShadow(nextContext, context.element->containingShadowRoot(), result);
 
         for (nextContext.element = parentElement(context); nextContext.element; nextContext.element = parentElement(nextContext)) {
@@ -304,7 +304,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
             if (context.selector->relationIsAffectedByPseudoContent())
                 return matchForPseudoContent(nextContext, *context.element, result);
 
-            if (nextContext.selector->pseudoType() == CSSSelector::PseudoShadow)
+            if (nextContext.selector->getPseudoType() == CSSSelector::PseudoShadow)
                 return matchForPseudoShadow(nextContext, context.element->parentNode(), result);
 
             nextContext.element = parentElement(context);
@@ -314,7 +314,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
         }
     case CSSSelector::DirectAdjacent:
         // Shadow roots can't have sibling elements
-        if (nextContext.selector->pseudoType() == CSSSelector::PseudoShadow)
+        if (nextContext.selector->getPseudoType() == CSSSelector::PseudoShadow)
             return SelectorFailsCompletely;
 
         if (m_mode == ResolvingStyle) {
@@ -328,7 +328,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
 
     case CSSSelector::IndirectAdjacent:
         // Shadow roots can't have sibling elements
-        if (nextContext.selector->pseudoType() == CSSSelector::PseudoShadow)
+        if (nextContext.selector->getPseudoType() == CSSSelector::PseudoShadow)
             return SelectorFailsCompletely;
 
         if (m_mode == ResolvingStyle) {
@@ -345,7 +345,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
 
     case CSSSelector::ShadowPseudo:
         {
-            if (!m_isUARule && context.selector->pseudoType() == CSSSelector::PseudoShadow)
+            if (!m_isUARule && context.selector->getPseudoType() == CSSSelector::PseudoShadow)
                 Deprecation::countDeprecation(context.element->document(), UseCounter::CSSSelectorPseudoShadow);
             // If we're in the same tree-scope as the scoping element, then following a shadow descendant combinator would escape that and thus the scope.
             if (context.scope && context.scope->shadowHost() && context.scope->shadowHost()->treeScope() == context.element->treeScope())
@@ -437,7 +437,7 @@ static inline bool containsHTMLSpace(const AtomicString& string)
     return containsHTMLSpaceTemplate<UChar>(string.characters16(), string.length());
 }
 
-static bool attributeValueMatches(const Attribute& attributeItem, CSSSelector::Match match, const AtomicString& selectorValue, TextCaseSensitivity caseSensitivity)
+static bool attributeValueMatches(const Attribute& attributeItem, CSSSelector::MatchType match, const AtomicString& selectorValue, TextCaseSensitivity caseSensitivity)
 {
     // TODO(esprehn): How do we get here with a null value?
     const AtomicString& value = attributeItem.value();
@@ -502,7 +502,7 @@ static bool attributeValueMatches(const Attribute& attributeItem, CSSSelector::M
     return true;
 }
 
-static bool anyAttributeMatches(Element& element, CSSSelector::Match match, const CSSSelector& selector)
+static bool anyAttributeMatches(Element& element, CSSSelector::MatchType match, const CSSSelector& selector)
 {
     const QualifiedName& selectorAttr = selector.attribute();
     ASSERT(selectorAttr.localName() != starAtom); // Should not be possible from the CSS grammar.
@@ -512,7 +512,7 @@ static bool anyAttributeMatches(Element& element, CSSSelector::Match match, cons
     element.synchronizeAttribute(selectorAttr.localName());
 
     const AtomicString& selectorValue = selector.value();
-    TextCaseSensitivity caseSensitivity = (selector.attributeMatchType() == CSSSelector::CaseInsensitive) ? TextCaseASCIIInsensitive : TextCaseSensitive;
+    TextCaseSensitivity caseSensitivity = (selector.attributeMatch() == CSSSelector::CaseInsensitive) ? TextCaseASCIIInsensitive : TextCaseSensitive;
 
     AttributeCollection attributes = element.attributesWithoutUpdate();
     for (const auto& attributeItem: attributes) {
@@ -604,13 +604,13 @@ bool SelectorChecker::checkPseudoNot(const SelectorCheckingContext& context, Mat
         // :not cannot nest. I don't really know why this is a
         // restriction in CSS3, but it is, so let's honor it.
         // the parser enforces that this never occurs
-        ASSERT(subContext.selector->pseudoType() != CSSSelector::PseudoNot);
+        ASSERT(subContext.selector->getPseudoType() != CSSSelector::PseudoNot);
         // We select between :visited and :link when applying. We don't know which one applied (or not) yet.
-        if (subContext.selector->pseudoType() == CSSSelector::PseudoVisited || (subContext.selector->pseudoType() == CSSSelector::PseudoLink && subContext.visitedMatchType == VisitedMatchEnabled))
+        if (subContext.selector->getPseudoType() == CSSSelector::PseudoVisited || (subContext.selector->getPseudoType() == CSSSelector::PseudoLink && subContext.visitedMatchType == VisitedMatchEnabled))
             return true;
         // context.scope is not available if m_mode == SharingRules.
         // We cannot determine whether :host or :scope matches a given element or not.
-        if (m_mode == SharingRules && (subContext.selector->isHostPseudoClass() || subContext.selector->pseudoType() == CSSSelector::PseudoScope))
+        if (m_mode == SharingRules && (subContext.selector->isHostPseudoClass() || subContext.selector->getPseudoType() == CSSSelector::PseudoScope))
             return true;
         if (!checkOne(subContext, result))
             return true;
@@ -629,7 +629,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, M
         return checkScrollbarPseudoClass(context, result);
     }
 
-    switch (selector.pseudoType()) {
+    switch (selector.getPseudoType()) {
     case CSSSelector::PseudoNot:
         return checkPseudoNot(context, result);
     case CSSSelector::PseudoEmpty:
@@ -953,7 +953,7 @@ bool SelectorChecker::checkPseudoElement(const SelectorCheckingContext& context,
     const CSSSelector& selector = *context.selector;
     Element& element = *context.element;
 
-    switch (selector.pseudoType()) {
+    switch (selector.getPseudoType()) {
     case CSSSelector::PseudoCue:
         {
             SelectorCheckingContext subContext(context);
@@ -994,7 +994,7 @@ bool SelectorChecker::checkPseudoElement(const SelectorCheckingContext& context,
         if (m_mode == SharingRules)
             return true;
         ASSERT(m_mode != QueryingRules);
-        result.dynamicPseudo = CSSSelector::pseudoId(selector.pseudoType());
+        result.dynamicPseudo = CSSSelector::pseudoId(selector.getPseudoType());
         ASSERT(result.dynamicPseudo != NOPSEUDO);
         return true;
     }
@@ -1044,7 +1044,7 @@ bool SelectorChecker::checkPseudoHost(const SelectorCheckingContext& context, Ma
             hostContext.treatShadowHostAsNormalScope = false;
             hostContext.scope = nullptr;
 
-            if (selector.pseudoType() == CSSSelector::PseudoHost)
+            if (selector.getPseudoType() == CSSSelector::PseudoHost)
                 break;
 
             hostContext.inRightmostCompound = false;
@@ -1064,18 +1064,18 @@ bool SelectorChecker::checkScrollbarPseudoClass(const SelectorCheckingContext& c
 {
     const CSSSelector& selector = *context.selector;
 
-    if (selector.pseudoType() == CSSSelector::PseudoNot)
+    if (selector.getPseudoType() == CSSSelector::PseudoNot)
         return checkPseudoNot(context, result);
 
     // FIXME: This is a temporary hack for resizers and scrollbar corners. Eventually :window-inactive should become a real
     // pseudo class and just apply to everything.
-    if (selector.pseudoType() == CSSSelector::PseudoWindowInactive)
+    if (selector.getPseudoType() == CSSSelector::PseudoWindowInactive)
         return !context.element->document().page()->focusController().isActive();
 
     if (!m_scrollbar)
         return false;
 
-    switch (selector.pseudoType()) {
+    switch (selector.getPseudoType()) {
     case CSSSelector::PseudoEnabled:
         return m_scrollbar->enabled();
     case CSSSelector::PseudoDisabled:

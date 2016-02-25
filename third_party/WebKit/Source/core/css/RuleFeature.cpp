@@ -49,7 +49,7 @@ namespace {
 
 #if ENABLE(ASSERT)
 
-bool supportsInvalidation(CSSSelector::Match match)
+bool supportsInvalidation(CSSSelector::MatchType match)
 {
     switch (match) {
     case CSSSelector::Tag:
@@ -187,7 +187,7 @@ bool requiresSubtreeInvalidation(const CSSSelector& selector)
         return false;
     }
 
-    switch (selector.pseudoType()) {
+    switch (selector.getPseudoType()) {
     case CSSSelector::PseudoFirstLine:
     case CSSSelector::PseudoFirstLetter:
         // FIXME: Most pseudo classes/elements above can be supported and moved
@@ -198,7 +198,7 @@ bool requiresSubtreeInvalidation(const CSSSelector& selector)
         // :host-context matches an ancestor of the shadow host.
         return true;
     default:
-        ASSERT(supportsInvalidation(selector.pseudoType()));
+        ASSERT(supportsInvalidation(selector.getPseudoType()));
         return false;
     }
 }
@@ -296,11 +296,11 @@ bool RuleFeatureSet::extractInvalidationSetFeature(const CSSSelector& selector, 
         features.attributes.append(selector.attribute().localName());
         return true;
     }
-    if (selector.pseudoType() == CSSSelector::PseudoWebKitCustomElement) {
+    if (selector.getPseudoType() == CSSSelector::PseudoWebKitCustomElement) {
         features.customPseudoElement = true;
         return true;
     }
-    if (selector.pseudoType() == CSSSelector::PseudoBefore || selector.pseudoType() == CSSSelector::PseudoAfter)
+    if (selector.getPseudoType() == CSSSelector::PseudoBefore || selector.getPseudoType() == CSSSelector::PseudoAfter)
         features.hasBeforeOrAfter = true;
     return false;
 }
@@ -314,7 +314,7 @@ InvalidationSet* RuleFeatureSet::invalidationSetForSelector(const CSSSelector& s
     if (selector.match() == CSSSelector::Id)
         return &ensureIdInvalidationSet(selector.value(), type);
     if (selector.match() == CSSSelector::PseudoClass) {
-        switch (selector.pseudoType()) {
+        switch (selector.getPseudoType()) {
         case CSSSelector::PseudoEmpty:
         case CSSSelector::PseudoLink:
         case CSSSelector::PseudoVisited:
@@ -342,7 +342,7 @@ InvalidationSet* RuleFeatureSet::invalidationSetForSelector(const CSSSelector& s
         case CSSSelector::PseudoInRange:
         case CSSSelector::PseudoOutOfRange:
         case CSSSelector::PseudoUnresolved:
-            return &ensurePseudoInvalidationSet(selector.pseudoType(), type);
+            return &ensurePseudoInvalidationSet(selector.getPseudoType(), type);
         default:
             break;
         }
@@ -420,15 +420,15 @@ RuleFeatureSet::extractInvalidationSetFeatures(const CSSSelector& selector, Inva
                 return std::make_pair(&selector, ForceSubtree);
             }
             if (const CSSSelectorList* selectorList = current->selectorList()) {
-                if (current->pseudoType() == CSSSelector::PseudoSlotted) {
+                if (current->getPseudoType() == CSSSelector::PseudoSlotted) {
                     ASSERT(position == Subject);
                     features.invalidatesSlotted = true;
                 }
-                ASSERT(supportsInvalidationWithSelectorList(current->pseudoType()));
+                ASSERT(supportsInvalidationWithSelectorList(current->getPseudoType()));
                 const CSSSelector* subSelector = selectorList->first();
                 bool allSubSelectorsHaveFeatures = !!subSelector;
                 for (; subSelector; subSelector = CSSSelectorList::next(*subSelector)) {
-                    auto result = extractInvalidationSetFeatures(*subSelector, features, position, current->pseudoType());
+                    auto result = extractInvalidationSetFeatures(*subSelector, features, position, current->getPseudoType());
                     if (result.first) {
                         // A non-null selector return means the sub-selector contained a
                         // selector which requiresSubtreeInvalidation(). Return the rightmost
@@ -522,7 +522,7 @@ void RuleFeatureSet::addFeaturesToInvalidationSets(const CSSSelector* selector, 
             if (current->isInsertionPointCrossing())
                 descendantFeatures.insertionPointCrossing = true;
             if (const CSSSelectorList* selectorList = current->selectorList()) {
-                ASSERT(supportsInvalidationWithSelectorList(current->pseudoType()));
+                ASSERT(supportsInvalidationWithSelectorList(current->getPseudoType()));
                 for (const CSSSelector* subSelector = selectorList->first(); subSelector; subSelector = CSSSelectorList::next(*subSelector))
                     addFeaturesToInvalidationSets(subSelector, siblingFeatures, descendantFeatures);
             }
@@ -582,11 +582,11 @@ RuleFeatureSet::SelectorPreMatch RuleFeatureSet::collectFeaturesFromRuleData(con
 RuleFeatureSet::SelectorPreMatch RuleFeatureSet::collectFeaturesFromSelector(const CSSSelector& selector, RuleFeatureSet::FeatureMetadata& metadata)
 {
     unsigned maxDirectAdjacentSelectors = 0;
-    CSSSelector::Relation relation = CSSSelector::Descendant;
+    CSSSelector::RelationType relation = CSSSelector::Descendant;
     bool foundHostPseudo = false;
 
     for (const CSSSelector* current = &selector; current; current = current->tagHistory()) {
-        switch (current->pseudoType()) {
+        switch (current->getPseudoType()) {
         case CSSSelector::PseudoFirstLine:
             metadata.usesFirstLineRules = true;
             break;
@@ -623,7 +623,7 @@ RuleFeatureSet::SelectorPreMatch RuleFeatureSet::collectFeaturesFromSelector(con
             break;
         }
 
-        if (current->relationIsAffectedByPseudoContent() || current->pseudoType() == CSSSelector::PseudoSlotted)
+        if (current->relationIsAffectedByPseudoContent() || current->getPseudoType() == CSSSelector::PseudoSlotted)
             metadata.foundInsertionPointCrossing = true;
 
         relation = current->relation();

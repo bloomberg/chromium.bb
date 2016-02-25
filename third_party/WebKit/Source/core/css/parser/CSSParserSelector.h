@@ -39,13 +39,13 @@ public:
 
     PassOwnPtr<CSSSelector> releaseSelector() { return m_selector.release(); }
 
-    CSSSelector::Relation relation() const { return m_selector->relation(); }
+    CSSSelector::RelationType relation() const { return m_selector->relation(); }
     void setValue(const AtomicString& value, bool matchLowerCase = false) { m_selector->setValue(value, matchLowerCase); }
     void setAttribute(const QualifiedName& value, CSSSelector::AttributeMatchType matchType) { m_selector->setAttribute(value, matchType); }
     void setArgument(const AtomicString& value) { m_selector->setArgument(value); }
     void setNth(int a, int b) { m_selector->setNth(a, b); }
-    void setMatch(CSSSelector::Match value) { m_selector->setMatch(value); }
-    void setRelation(CSSSelector::Relation value) { m_selector->setRelation(value); }
+    void setMatch(CSSSelector::MatchType value) { m_selector->setMatch(value); }
+    void setRelation(CSSSelector::RelationType value) { m_selector->setRelation(value); }
     void setForPage() { m_selector->setForPage(); }
     void setRelationIsAffectedByPseudoContent() { m_selector->setRelationIsAffectedByPseudoContent(); }
     bool relationIsAffectedByPseudoContent() const { return m_selector->relationIsAffectedByPseudoContent(); }
@@ -57,8 +57,8 @@ public:
 
     bool isHostPseudoSelector() const;
 
-    CSSSelector::Match match() const { return m_selector->match(); }
-    CSSSelector::PseudoType pseudoType() const { return m_selector->pseudoType(); }
+    CSSSelector::MatchType match() const { return m_selector->match(); }
+    CSSSelector::PseudoType pseudoType() const { return m_selector->getPseudoType(); }
     const CSSSelectorList* selectorList() const { return m_selector->selectorList(); }
 
     bool needsImplicitShadowCombinatorForMatching() const { return pseudoType() == CSSSelector::PseudoWebKitCustomElement || pseudoType() == CSSSelector::PseudoCue || pseudoType() == CSSSelector::PseudoShadow || pseudoType() == CSSSelector::PseudoSlotted; }
@@ -68,7 +68,7 @@ public:
     CSSParserSelector* tagHistory() const { return m_tagHistory.get(); }
     void setTagHistory(PassOwnPtr<CSSParserSelector> selector) { m_tagHistory = selector; }
     void clearTagHistory() { m_tagHistory.clear(); }
-    void appendTagHistory(CSSSelector::Relation, PassOwnPtr<CSSParserSelector>);
+    void appendTagHistory(CSSSelector::RelationType, PassOwnPtr<CSSParserSelector>);
     PassOwnPtr<CSSParserSelector> releaseTagHistory();
     void prependTagSelector(const QualifiedName&, bool tagIsImplicit = false);
 

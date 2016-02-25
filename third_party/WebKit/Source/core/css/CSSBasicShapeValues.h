@@ -115,7 +115,7 @@ public:
 
     // TODO(sashab): Remove this and pass it as an argument in the constructor.
     void setWindRule(WindRule w) { m_windRule = w; }
-    WindRule windRule() const { return m_windRule; }
+    WindRule getWindRule() const { return m_windRule; }
 
     String customCSSText() const;
     bool equals(const CSSBasicShapePolygonValue&) const;

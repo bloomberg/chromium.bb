@@ -93,7 +93,7 @@ static bool checkPageSelectorComponents(const CSSSelector* selector, bool isLeft
                 return false;
         }
 
-        CSSSelector::PseudoType pseudoType = component->pseudoType();
+        CSSSelector::PseudoType pseudoType = component->getPseudoType();
         if ((pseudoType == CSSSelector::PseudoLeftPage && !isLeftPage)
             || (pseudoType == CSSSelector::PseudoRightPage && isLeftPage)
             || (pseudoType == CSSSelector::PseudoFirstPage && !isFirstPage))

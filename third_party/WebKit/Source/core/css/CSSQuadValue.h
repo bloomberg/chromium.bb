@@ -30,12 +30,12 @@ namespace blink {
 
 class CORE_EXPORT CSSQuadValue : public CSSValue {
 public:
-    enum SerializationType {
+    enum TypeForSerialization {
         SerializeAsRect,
         SerializeAsQuad
     };
 
-    static PassRefPtrWillBeRawPtr<CSSQuadValue> create(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> top, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> right, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> bottom, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> left, SerializationType serializationType)
+    static PassRefPtrWillBeRawPtr<CSSQuadValue> create(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> top, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> right, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> bottom, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> left, TypeForSerialization serializationType)
     {
         return adoptRefWillBeNoop(new CSSQuadValue(top, right, bottom, left, serializationType));
     }
@@ -45,7 +45,7 @@ public:
     CSSPrimitiveValue* bottom() const { return m_bottom.get(); }
     CSSPrimitiveValue* left() const { return m_left.get(); }
 
-    SerializationType serializationType() { return m_serializationType; }
+    TypeForSerialization serializationType() { return m_serializationType; }
 
     String customCSSText() const;
 
@@ -60,7 +60,7 @@ public:
     DECLARE_TRACE_AFTER_DISPATCH();
 
 protected:
-    CSSQuadValue(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> top, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> right, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> bottom, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> left, SerializationType serializationType)
+    CSSQuadValue(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> top, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> right, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> bottom, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> left, TypeForSerialization serializationType)
         : CSSValue(QuadClass)
         , m_serializationType(serializationType)
         , m_top(top)
@@ -69,7 +69,7 @@ protected:
         , m_left(left) { }
 
 private:
-    SerializationType m_serializationType;
+    TypeForSerialization m_serializationType;
     RefPtrWillBeMember<CSSPrimitiveValue> m_top;
     RefPtrWillBeMember<CSSPrimitiveValue> m_right;
     RefPtrWillBeMember<CSSPrimitiveValue> m_bottom;

@@ -92,7 +92,7 @@ public:
     unsigned specificity() const;
 
     /* how the attribute value has to match.... Default is Exact */
-    enum Match {
+    enum MatchType {
         Unknown,
         Tag, // Example: div
         Id, // Example: #id
@@ -110,7 +110,7 @@ public:
         FirstAttributeSelectorMatch = AttributeExact,
     };
 
-    enum Relation {
+    enum RelationType {
         SubSelector, // No combinator
         Descendant, // "Space" combinator
         Child, // > combinator
@@ -211,7 +211,7 @@ public:
         CaseInsensitive,
     };
 
-    PseudoType pseudoType() const { return static_cast<PseudoType>(m_pseudoType); }
+    PseudoType getPseudoType() const { return static_cast<PseudoType>(m_pseudoType); }
     void updatePseudoType(const AtomicString&, bool hasArguments);
 
     static PseudoType parsePseudoType(const AtomicString&, bool hasArguments);
@@ -231,7 +231,7 @@ public:
     // how you use the returned QualifiedName.
     // http://www.w3.org/TR/css3-selectors/#attrnmsp
     const QualifiedName& attribute() const;
-    AttributeMatchType attributeMatchType() const;
+    AttributeMatchType attributeMatch() const;
     // Returns the argument of a parameterized selector. For example, :lang(en-US) would have an argument of en-US.
     // Note that :nth-* selectors don't store an argument and just store the numbers.
     const AtomicString& argument() const { return m_hasRareData ? m_data.m_rareData->m_argument : nullAtom; }
@@ -257,18 +257,18 @@ public:
     bool isHostPseudoClass() const { return m_pseudoType == PseudoHost || m_pseudoType == PseudoHostContext; }
     bool isInsertionPointCrossing() const { return m_pseudoType == PseudoHostContext || m_pseudoType == PseudoContent; }
 
-    Relation relation() const { return static_cast<Relation>(m_relation); }
-    void setRelation(Relation relation)
+    RelationType relation() const { return static_cast<RelationType>(m_relation); }
+    void setRelation(RelationType relation)
     {
         m_relation = relation;
-        ASSERT(static_cast<Relation>(m_relation) == relation); // using a bitfield.
+        ASSERT(static_cast<RelationType>(m_relation) == relation); // using a bitfield.
     }
 
-    Match match() const { return static_cast<Match>(m_match); }
-    void setMatch(Match match)
+    MatchType match() const { return static_cast<MatchType>(m_match); }
+    void setMatch(MatchType match)
     {
         m_match = match;
-        ASSERT(static_cast<Match>(m_match) == match); // using a bitfield.
+        ASSERT(static_cast<MatchType>(m_match) == match); // using a bitfield.
     }
 
     bool isLastInSelectorList() const { return m_isLastInSelectorList; }
@@ -291,8 +291,8 @@ public:
     bool matchesPseudoElement() const;
 
 private:
-    unsigned m_relation               : 3; // enum Relation
-    unsigned m_match                  : 4; // enum Match
+    unsigned m_relation               : 3; // enum RelationType
+    unsigned m_match                  : 4; // enum MatchType
     unsigned m_pseudoType             : 8; // enum PseudoType
     unsigned m_isLastInSelectorList   : 1;
     unsigned m_isLastInTagHistory     : 1;
@@ -328,7 +328,7 @@ private:
                 int m_a; // Used for :nth-*
                 int m_b; // Used for :nth-*
             } m_nth;
-            AttributeMatchType m_attributeMatchType; // used for attribute selector (with value)
+            AttributeMatchType m_attributeMatch; // used for attribute selector (with value)
         } m_bits;
         QualifiedName m_attribute; // used for attribute selector
         AtomicString m_argument; // Used for :contains, :lang, :nth-*
@@ -357,11 +357,11 @@ inline const QualifiedName& CSSSelector::attribute() const
     return m_data.m_rareData->m_attribute;
 }
 
-inline CSSSelector::AttributeMatchType CSSSelector::attributeMatchType() const
+inline CSSSelector::AttributeMatchType CSSSelector::attributeMatch() const
 {
     ASSERT(isAttributeSelector());
     ASSERT(m_hasRareData);
-    return m_data.m_rareData->m_bits.m_attributeMatchType;
+    return m_data.m_rareData->m_bits.m_attributeMatch;
 }
 
 inline bool CSSSelector::isASCIILower(const AtomicString& value)
