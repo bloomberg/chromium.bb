@@ -358,11 +358,17 @@ void TestResultsTracker::PrintTests(InputIterator first,
 TestResultsTracker::AggregateTestResult::AggregateTestResult() {
 }
 
+TestResultsTracker::AggregateTestResult::AggregateTestResult(
+    const AggregateTestResult& other) = default;
+
 TestResultsTracker::AggregateTestResult::~AggregateTestResult() {
 }
 
 TestResultsTracker::PerIterationData::PerIterationData() {
 }
+
+TestResultsTracker::PerIterationData::PerIterationData(
+    const PerIterationData& other) = default;
 
 TestResultsTracker::PerIterationData::~PerIterationData() {
 }

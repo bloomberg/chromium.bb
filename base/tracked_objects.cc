@@ -968,6 +968,9 @@ ProcessDataSnapshot::ProcessDataSnapshot()
 #endif
 }
 
+ProcessDataSnapshot::ProcessDataSnapshot(const ProcessDataSnapshot& other) =
+    default;
+
 ProcessDataSnapshot::~ProcessDataSnapshot() {
 }
 

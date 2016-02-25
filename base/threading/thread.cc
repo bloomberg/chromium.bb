@@ -52,6 +52,8 @@ Thread::Options::Options(MessageLoop::Type type,
       priority(ThreadPriority::NORMAL) {
 }
 
+Thread::Options::Options(const Options& other) = default;
+
 Thread::Options::~Options() {
 }
 

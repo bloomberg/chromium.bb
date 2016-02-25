@@ -23,6 +23,8 @@ class BASE_EXPORT Version {
   // Version object is assign to it.
   Version();
 
+  Version(const Version& other);
+
   ~Version();
 
   // Initializes from a decimal dotted version number, like "0.1.1".

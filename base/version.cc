@@ -80,6 +80,8 @@ int CompareVersionComponents(const std::vector<uint32_t>& components1,
 Version::Version() {
 }
 
+Version::Version(const Version& other) = default;
+
 Version::~Version() {
 }
 

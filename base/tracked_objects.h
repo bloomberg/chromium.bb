@@ -808,6 +808,7 @@ struct BASE_EXPORT ProcessDataPhaseSnapshot {
 struct BASE_EXPORT ProcessDataSnapshot {
  public:
   ProcessDataSnapshot();
+  ProcessDataSnapshot(const ProcessDataSnapshot& other);
   ~ProcessDataSnapshot();
 
   PhasedProcessDataSnapshotMap phased_snapshots;

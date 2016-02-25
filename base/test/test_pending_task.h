@@ -21,6 +21,7 @@ struct TestPendingTask {
   enum TestNestability { NESTABLE, NON_NESTABLE };
 
   TestPendingTask();
+  TestPendingTask(const TestPendingTask& other);
   TestPendingTask(const tracked_objects::Location& location,
                   const Closure& task,
                   TimeTicks post_time,

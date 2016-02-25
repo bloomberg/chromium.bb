@@ -111,6 +111,7 @@ struct TraceEvent {
   };
 
   TraceEvent();
+  TraceEvent(const TraceEvent& other);
   ~TraceEvent();
 
   bool SetFromJSON(const base::Value* event_value) WARN_UNUSED_RESULT;

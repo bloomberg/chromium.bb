@@ -26,6 +26,8 @@ TraceEvent::TraceEvent()
       other_event(NULL) {
 }
 
+TraceEvent::TraceEvent(const TraceEvent& other) = default;
+
 TraceEvent::~TraceEvent() {
 }
 

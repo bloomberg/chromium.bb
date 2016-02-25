@@ -45,6 +45,7 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
 
     Options();
     Options(MessageLoop::Type type, size_t size);
+    Options(const Options& other);
     ~Options();
 
     // Specifies the type of message loop that will be allocated on the thread.

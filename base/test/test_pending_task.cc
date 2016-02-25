@@ -22,6 +22,8 @@ TestPendingTask::TestPendingTask(
       delay(delay),
       nestability(nestability) {}
 
+TestPendingTask::TestPendingTask(const TestPendingTask& other) = default;
+
 TimeTicks TestPendingTask::GetTimeToRun() const {
   return post_time + delay;
 }
