@@ -76,7 +76,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
-#include "content/public/common/content_switches.h"
+#include "content/public/common/content_features.h"
 #include "media/base/mime_util.h"
 #include "net/base/escape.h"
 #include "skia/ext/platform_canvas.h"
@@ -287,8 +287,8 @@ void NavigationControllerImpl::Reload(bool check_for_repost) {
   ReloadInternal(check_for_repost, RELOAD);
 }
 void NavigationControllerImpl::ReloadToRefreshContent(bool check_for_repost) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNonValidatingReloadOnRefreshContent)) {
+  if (base::FeatureList::IsEnabled(
+        features::kNonValidatingReloadOnRefreshContent)) {
     // Cause this reload to behave like NAVIGATION_TYPE_SAME_PAGE (e.g., enter
     // in the omnibox), so that the main resource is cache-validated but all
     // other resources use the cache as much as possible.  This requires

@@ -28,6 +28,12 @@ const base::Feature kDownloadResumption{"DownloadResumption",
 const base::Feature kExperimentalFramework{"ExperimentalFramework",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Non-validating reload on reload-to-refresh-content (e.g. pull-to-refresh).
+// See https://crbug.com/558829
+const base::Feature kNonValidatingReloadOnRefreshContent{
+    "kNonValidatingReloadOnRefreshContent",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // An experiment to optimize resource loading IPC for small resources.
 // http://crbug.com/580928
 const base::Feature kOptimizeIPCForSmallResource{

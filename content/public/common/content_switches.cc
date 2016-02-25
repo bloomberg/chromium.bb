@@ -398,11 +398,6 @@ const char kEnableMojoShellConnection[] = "enable-mojo-shell-connection";
 // Enables the network information API.
 const char kEnableNetworkInformation[]      = "enable-network-information";
 
-// Enables non-validating reload on reload-to-refresh-content (e.g. pull-
-// to-refresh).
-const char kEnableNonValidatingReloadOnRefreshContent[] =
-    "enable-non-validating-reload-on-refresh-content";
-
 // Enables action button icons for the Web Notification API.
 const char kEnableNotificationActionIcons[] =
     "enable-notification-action-icons";
