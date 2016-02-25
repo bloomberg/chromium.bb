@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "base/test/test_simple_task_runner.h"
+#include "content/common/gpu/establish_channel_params.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_channel_test_common.h"
@@ -23,23 +24,22 @@ class GpuChannelTest : public GpuChannelTestCommon {
                             bool allow_real_time_streams) {
     DCHECK(channel_manager());
     uint64_t kClientTracingId = 1;
-    GpuMsg_EstablishChannel_Params params;
+    EstablishChannelParams params;
     params.client_id = client_id;
     params.client_tracing_id = kClientTracingId;
     params.preempts = false;
     params.allow_view_command_buffers = allow_view_command_buffers;
     params.allow_real_time_streams = allow_real_time_streams;
-    EXPECT_TRUE(
-        channel_manager()->OnMessageReceived(GpuMsg_EstablishChannel(params)));
-    sink()->ClearMessages();
+    channel_manager()->EstablishChannel(params);
     return channel_manager()->LookupChannel(client_id);
   }
 
   void HandleMessage(GpuChannel* channel, IPC::Message* msg) {
-    channel->HandleMessageForTesting(*msg);
+    TestGpuChannel* test_channel = static_cast<TestGpuChannel*>(channel);
+    test_channel->HandleMessageForTesting(*msg);
 
     if (msg->is_sync()) {
-      const IPC::Message* reply_msg = sink()->GetMessageAt(0);
+      const IPC::Message* reply_msg = test_channel->sink()->GetMessageAt(0);
       ASSERT_TRUE(reply_msg);
 
       EXPECT_TRUE(IPC::SyncMessage::IsMessageReplyTo(
@@ -52,7 +52,7 @@ class GpuChannelTest : public GpuChannelTestCommon {
 
       delete deserializer;
 
-      sink()->ClearMessages();
+      test_channel->sink()->ClearMessages();
     }
 
     delete msg;

@@ -13,9 +13,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "content/common/gpu/gpu_channel_manager.h"
+#include "content/common/gpu/gpu_channel_manager_delegate.h"
 #include "content/common/gpu/gpu_memory_tracking.h"
 #include "content/common/gpu/gpu_memory_uma_stats.h"
-#include "content/common/gpu/gpu_messages.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 
@@ -57,7 +57,7 @@ void GpuMemoryManager::TrackMemoryAllocatedChange(
       bytes_allocated_historical_max_ = GetCurrentUsage();
       // If we're blowing into new memory usage territory, spam the browser
       // process with the most up-to-date information about our memory usage.
-      SendUmaStatsToBrowser();
+      SendUmaStatsToHost();
   }
 }
 
@@ -112,13 +112,13 @@ void GpuMemoryManager::GetVideoMemoryUsageStats(
       bytes_allocated_historical_max_;
 }
 
-void GpuMemoryManager::SendUmaStatsToBrowser() {
+void GpuMemoryManager::SendUmaStatsToHost() {
   if (!channel_manager_)
     return;
   GPUMemoryUmaStats params;
   params.bytes_allocated_current = GetCurrentUsage();
   params.bytes_allocated_max = bytes_allocated_historical_max_;
   params.context_group_count = static_cast<uint32_t>(tracking_groups_.size());
-  channel_manager_->Send(new GpuHostMsg_GpuMemoryUmaStats(params));
+  channel_manager_->delegate()->GpuMemoryUmaStats(params);
 }
 }  // namespace content

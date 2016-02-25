@@ -13,11 +13,15 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "content/common/gpu/establish_channel_params.h"
 #include "content/common/gpu/gpu_channel.h"
+#include "content/common/gpu/gpu_channel_manager_delegate.h"
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "content/common/gpu/gpu_memory_manager.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/gpu/image_transport_surface.h"
 #include "content/public/common/content_switches.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
@@ -29,6 +33,10 @@
 #include "ipc/message_router.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_share_group.h"
+
+#if defined(OS_MACOSX)
+#include "content/common/gpu/buffer_presented_params_mac.h"
+#endif
 
 namespace content {
 
@@ -44,7 +52,7 @@ const int kMaxKeepAliveTimeMs = 200;
 }
 
 GpuChannelManager::GpuChannelManager(
-    IPC::SyncChannel* channel,
+    GpuChannelManagerDelegate* delegate,
     GpuWatchdog* watchdog,
     base::SingleThreadTaskRunner* task_runner,
     base::SingleThreadTaskRunner* io_task_runner,
@@ -53,7 +61,7 @@ GpuChannelManager::GpuChannelManager(
     GpuMemoryBufferFactory* gpu_memory_buffer_factory)
     : task_runner_(task_runner),
       io_task_runner_(io_task_runner),
-      channel_(channel),
+      delegate_(delegate),
       watchdog_(watchdog),
       shutdown_event_(shutdown_event),
       share_group_(new gfx::GLShareGroup),
@@ -108,53 +116,31 @@ GpuChannelManager::framebuffer_completeness_cache() {
 }
 
 void GpuChannelManager::RemoveChannel(int client_id) {
-  Send(new GpuHostMsg_DestroyChannel(client_id));
+  delegate_->DidDestroyChannel(client_id);
   gpu_channels_.erase(client_id);
 }
 
-int GpuChannelManager::GenerateRouteID() {
-  static int last_id = 0;
-  return ++last_id;
+#if defined(OS_MACOSX)
+void GpuChannelManager::AddImageTransportSurface(
+    int32_t surface_id,
+    ImageTransportHelper* image_transport_helper) {
+  image_transport_map_.AddWithID(image_transport_helper, surface_id);
 }
 
-void GpuChannelManager::AddRoute(int32_t routing_id, IPC::Listener* listener) {
-  router_.AddRoute(routing_id, listener);
+void GpuChannelManager::RemoveImageTransportSurface(int32_t surface_id) {
+  image_transport_map_.Remove(surface_id);
 }
 
-void GpuChannelManager::RemoveRoute(int32_t routing_id) {
-  router_.RemoveRoute(routing_id);
+void GpuChannelManager::BufferPresented(const BufferPresentedParams& params) {
+  ImageTransportHelper* helper = image_transport_map_.Lookup(params.surface_id);
+  if (helper)
+    helper->BufferPresented(params);
 }
+#endif
 
 GpuChannel* GpuChannelManager::LookupChannel(int32_t client_id) const {
   const auto& it = gpu_channels_.find(client_id);
   return it != gpu_channels_.end() ? it->second : nullptr;
-}
-
-bool GpuChannelManager::OnControlMessageReceived(const IPC::Message& msg) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(GpuChannelManager, msg)
-    IPC_MESSAGE_HANDLER(GpuMsg_EstablishChannel, OnEstablishChannel)
-    IPC_MESSAGE_HANDLER(GpuMsg_CloseChannel, OnCloseChannel)
-    IPC_MESSAGE_HANDLER(GpuMsg_DestroyGpuMemoryBuffer, OnDestroyGpuMemoryBuffer)
-    IPC_MESSAGE_HANDLER(GpuMsg_LoadedShader, OnLoadedShader)
-    IPC_MESSAGE_HANDLER(GpuMsg_UpdateValueState, OnUpdateValueState)
-#if defined(OS_ANDROID)
-    IPC_MESSAGE_HANDLER(GpuMsg_WakeUpGpu, OnWakeUpGpu);
-#endif
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
-bool GpuChannelManager::OnMessageReceived(const IPC::Message& msg) {
-  if (msg.routing_id() == MSG_ROUTING_CONTROL)
-    return OnControlMessageReceived(msg);
-
-  return router_.RouteMessage(msg);
-}
-
-bool GpuChannelManager::Send(IPC::Message* msg) {
-  return channel_->Send(msg);
 }
 
 scoped_ptr<GpuChannel> GpuChannelManager::CreateGpuChannel(
@@ -171,8 +157,7 @@ scoped_ptr<GpuChannel> GpuChannelManager::CreateGpuChannel(
                      allow_view_command_buffers, allow_real_time_streams));
 }
 
-void GpuChannelManager::OnEstablishChannel(
-    const GpuMsg_EstablishChannel_Params& params) {
+void GpuChannelManager::EstablishChannel(const EstablishChannelParams& params) {
   scoped_ptr<GpuChannel> channel(CreateGpuChannel(
       params.client_id, params.client_tracing_id, params.preempts,
       params.allow_view_command_buffers, params.allow_real_time_streams));
@@ -180,11 +165,10 @@ void GpuChannelManager::OnEstablishChannel(
 
   gpu_channels_.set(params.client_id, std::move(channel));
 
-  Send(new GpuHostMsg_ChannelEstablished(channel_handle));
+  delegate_->ChannelEstablished(channel_handle);
 }
 
-void GpuChannelManager::OnCloseChannel(
-    const IPC::ChannelHandle& channel_handle) {
+void GpuChannelManager::CloseChannel(const IPC::ChannelHandle& channel_handle) {
   for (auto it = gpu_channels_.begin(); it != gpu_channels_.end(); ++it) {
     if (it->second->channel_id() == channel_handle.name) {
       gpu_channels_.erase(it);
@@ -193,21 +177,22 @@ void GpuChannelManager::OnCloseChannel(
   }
 }
 
-void GpuChannelManager::DestroyGpuMemoryBuffer(
+void GpuChannelManager::InternalDestroyGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     int client_id) {
   io_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&GpuChannelManager::DestroyGpuMemoryBufferOnIO,
-                            base::Unretained(this), id, client_id));
+      FROM_HERE,
+      base::Bind(&GpuChannelManager::InternalDestroyGpuMemoryBufferOnIO,
+                 base::Unretained(this), id, client_id));
 }
 
-void GpuChannelManager::DestroyGpuMemoryBufferOnIO(
+void GpuChannelManager::InternalDestroyGpuMemoryBufferOnIO(
     gfx::GpuMemoryBufferId id,
     int client_id) {
   gpu_memory_buffer_factory_->DestroyGpuMemoryBuffer(id, client_id);
 }
 
-void GpuChannelManager::OnDestroyGpuMemoryBuffer(
+void GpuChannelManager::DestroyGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     int client_id,
     const gpu::SyncToken& sync_token) {
@@ -218,18 +203,19 @@ void GpuChannelManager::OnDestroyGpuMemoryBuffer(
     if (release_state) {
       sync_point_client_waiter_->WaitOutOfOrder(
           release_state.get(), sync_token.release_count(),
-          base::Bind(&GpuChannelManager::DestroyGpuMemoryBuffer,
+          base::Bind(&GpuChannelManager::InternalDestroyGpuMemoryBuffer,
                      base::Unretained(this), id, client_id));
       return;
     }
   }
 
   // No sync token or invalid sync token, destroy immediately.
-  DestroyGpuMemoryBuffer(id, client_id);
+  InternalDestroyGpuMemoryBuffer(id, client_id);
 }
 
-void GpuChannelManager::OnUpdateValueState(
-    int client_id, unsigned int target, const gpu::ValueState& state) {
+void GpuChannelManager::UpdateValueState(int client_id,
+                                         unsigned int target,
+                                         const gpu::ValueState& state) {
   // Only pass updated state to the channel corresponding to the
   // render_widget_host where the event originated.
   auto it = gpu_channels_.find(client_id);
@@ -237,7 +223,7 @@ void GpuChannelManager::OnUpdateValueState(
     it->second->HandleUpdateValueState(target, state);
 }
 
-void GpuChannelManager::OnLoadedShader(const std::string& program_proto) {
+void GpuChannelManager::PopulateShaderCache(const std::string& program_proto) {
   if (program_cache())
     program_cache()->LoadProgram(program_proto);
 }
@@ -265,11 +251,11 @@ void GpuChannelManager::LoseAllContexts() {
     kv.second->MarkAllContextsLost();
   }
   task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&GpuChannelManager::OnLoseAllContexts,
+                         base::Bind(&GpuChannelManager::DestroyAllChannels,
                                     weak_factory_.GetWeakPtr()));
 }
 
-void GpuChannelManager::OnLoseAllContexts() {
+void GpuChannelManager::DestroyAllChannels() {
   gpu_channels_.clear();
 }
 
@@ -286,7 +272,7 @@ void GpuChannelManager::DidAccessGpu() {
   last_gpu_access_time_ = base::TimeTicks::Now();
 }
 
-void GpuChannelManager::OnWakeUpGpu() {
+void GpuChannelManager::WakeUpGpu() {
   begin_wake_up_time_ = base::TimeTicks::Now();
   ScheduleWakeUpGpu();
 }

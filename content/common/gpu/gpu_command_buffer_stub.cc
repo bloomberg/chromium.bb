@@ -18,6 +18,7 @@
 #include "build/build_config.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_channel_manager.h"
+#include "content/common/gpu/gpu_channel_manager_delegate.h"
 #include "content/common/gpu/gpu_memory_manager.h"
 #include "content/common/gpu/gpu_memory_tracking.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -467,10 +468,8 @@ void GpuCommandBufferStub::Destroy() {
 
   if (initialized_) {
     GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();
-    if (handle_.is_null() && !active_url_.is_empty()) {
-      gpu_channel_manager->Send(
-          new GpuHostMsg_DidDestroyOffscreenContext(active_url_));
-    }
+    if (handle_.is_null() && !active_url_.is_empty())
+      gpu_channel_manager->delegate()->DidDestroyOffscreenContext(active_url_);
   }
 
   if (decoder_)
@@ -669,10 +668,8 @@ void GpuCommandBufferStub::OnInitialize(
       reply_message, true, capabilities);
   Send(reply_message);
 
-  if (handle_.is_null() && !active_url_.is_empty()) {
-    manager->Send(new GpuHostMsg_DidCreateOffscreenContext(
-        active_url_));
-  }
+  if (handle_.is_null() && !active_url_.is_empty())
+    manager->delegate()->DidCreateOffscreenContext(active_url_);
 
   initialized_ = true;
 }
@@ -735,8 +732,8 @@ void GpuCommandBufferStub::OnParseError() {
   // determine whether client APIs like WebGL need to be immediately
   // blocked from automatically running.
   GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();
-  gpu_channel_manager->Send(new GpuHostMsg_DidLoseContext(
-      handle_.is_null(), state.context_lost_reason, active_url_));
+  gpu_channel_manager->delegate()->DidLoseContext(
+      handle_.is_null(), state.context_lost_reason, active_url_);
 
   CheckContextLost();
 }

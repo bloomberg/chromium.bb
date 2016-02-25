@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "cc/layers/layer.h"
-#include "content/common/gpu/gpu_messages.h"
+#include "content/common/gpu/gpu_host_messages.h"
 #include "content/common/input/synthetic_gesture_params.h"
 #include "content/common/input/synthetic_pinch_gesture_params.h"
 #include "content/common/input/synthetic_smooth_drag_gesture_params.h"

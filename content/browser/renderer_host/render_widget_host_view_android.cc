@@ -56,7 +56,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
-#include "content/common/gpu/gpu_messages.h"
+#include "content/common/gpu/gpu_host_messages.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/common/input/did_overscroll_params.h"
 #include "content/common/input_messages.h"

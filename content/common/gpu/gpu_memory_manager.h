@@ -49,7 +49,7 @@ class CONTENT_EXPORT GpuMemoryManager :
       TrackingGroupMap;
 
   // Send memory usage stats to the browser process.
-  void SendUmaStatsToBrowser();
+  void SendUmaStatsToHost();
 
   // Get the current number of bytes allocated.
   uint64_t GetCurrentUsage() const { return bytes_allocated_current_; }

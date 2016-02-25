@@ -22,10 +22,12 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
-#include "content/common/gpu/gpu_messages.h"
+#include "content/common/gpu/gpu_host_messages.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/gfx/swap_result.h"
 
 #if defined(OS_MACOSX)
+#include "content/common/gpu/accelerated_surface_buffers_swapped_params_mac.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #endif
 
@@ -184,8 +186,7 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
   DCHECK(CalledOnValidThread());
 
   IPC_BEGIN_MESSAGE_MAP(GpuProcessHostUIShim, message)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_OnLogMessage,
-                        OnLogMessage)
+    IPC_MESSAGE_HANDLER(GpuHostMsg_OnLogMessage, OnLogMessage)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
                         OnAcceleratedSurfaceBuffersSwapped)
@@ -222,19 +223,19 @@ void GpuProcessHostUIShim::OnGraphicsInfoCollected(
 
 #if defined(OS_MACOSX)
 void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
-    const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params) {
+    const AcceleratedSurfaceBuffersSwappedParams& params) {
   TRACE_EVENT0("browser",
       "GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped");
   if (!ui::LatencyInfo::Verify(params.latency_info,
                                "GpuHostMsg_AcceleratedSurfaceBuffersSwapped")) {
-
     TRACE_EVENT0("browser", "ui::LatencyInfo::Verify failed");
     return;
   }
 
   // On Mac with delegated rendering, accelerated surfaces are not necessarily
   // associated with a RenderWidgetHostViewBase.
-  AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
+  BufferPresentedParams ack_params;
+  ack_params.surface_id = params.surface_id;
 
   // If the frame was intended for an NSView that the gfx::AcceleratedWidget is
   // no longer attached to, do not pass the frame along to the widget. Just ack
@@ -266,7 +267,7 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
   content::ImageTransportFactory::GetInstance()->OnGpuSwapBuffersCompleted(
       params.surface_id, params.latency_info, gfx::SwapResult::SWAP_ACK);
 
-  Send(new AcceleratedSurfaceMsg_BufferPresented(params.route_id, ack_params));
+  Send(new AcceleratedSurfaceMsg_BufferPresented(ack_params));
 }
 #endif
 
