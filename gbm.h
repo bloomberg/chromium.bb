@@ -209,6 +209,13 @@ enum gbm_bo_flags {
     * with GBM_BO_USE_CURSOR. but may not work for other combinations.
     */
    GBM_BO_USE_WRITE    = (1 << 3),
+   /**
+    * Buffer is guaranteed to be laid out linearly in memory. That is, the
+    * buffer is laid out as an array with 'height' blocks, each block with
+    * length 'stride'. Each stride is in the same order as the rows of the
+    * buffer.
+    */
+   GBM_BO_USE_LINEAR    = (1 << 4),
 };
 
 int
