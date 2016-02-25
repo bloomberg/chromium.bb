@@ -68,6 +68,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/glsl3/forbidden-operators.html', bug=483282)
     # Note that this test fails on ['win', 'intel'] with bug=483282
     self.Fail('conformance2/buffers/uniform-buffers.html', bug=577368)
+    self.Fail('conformance2/misc/expando-loss-2.html', bug=483282)
 
     # Windows only.
     self.Fail('conformance2/textures/canvas/tex-image-and-sub-image-2d' +
@@ -181,11 +182,29 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/video/tex-image-and-sub-image-2d' +
         '-with-video-rgb5_a1-rgba-unsigned_byte.html',
         ['win8'], bug=483282)
-    self.Fail('conformance2/textures/image_bitmap/tex-image-and-sub-image-2d' +
-        '-with-image-bitmap-rgb565-rgb-unsigned_byte.html',
+    self.Fail('conformance2/textures/image_bitmap_from_image_data/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-image-data-' +
+        'rgb565-rgb-unsigned_byte.html',
         ['win8'], bug=483282)
-    self.Fail('conformance2/textures/image_bitmap/tex-image-and-sub-image-2d' +
-        '-with-image-bitmap-rgb5_a1-rgba-unsigned_byte.html',
+    self.Fail('conformance2/textures/image_bitmap_from_image_data/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-image-data-' +
+        'rgb5_a1-rgba-unsigned_byte.html',
+        ['win8'], bug=483282)
+    self.Fail('conformance2/textures/image_bitmap_from_image/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-image-' +
+        'rgb565-rgb-unsigned_byte.html',
+        ['win8'], bug=483282)
+    self.Fail('conformance2/textures/image_bitmap_from_image/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-image-' +
+        'rgb5_a1-rgba-unsigned_byte.html',
+        ['win8'], bug=483282)
+    self.Fail('conformance2/textures/image_bitmap_from_video/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-video-' +
+        'rgb565-rgb-unsigned_byte.html',
+        ['win8'], bug=483282)
+    self.Fail('conformance2/textures/image_bitmap_from_video/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-video-' +
+        'rgb5_a1-rgba-unsigned_byte.html',
         ['win8'], bug=483282)
     self.Fail('conformance2/textures/video/tex-image-and-sub-image-3d' +
         '-with-video-rgb5_a1-rgba-unsigned_byte.html',
@@ -211,11 +230,29 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/svg_image/tex-image-and-sub-image-3d' +
         '-with-svg-image-rgb5_a1-rgba-unsigned_byte.html',
         ['win8'], bug=560555)
-    self.Fail('conformance2/textures/image_bitmap/tex-image-and-sub-image-3d' +
-        '-with-image-bitmap-rgb565-rgb-unsigned_byte.html',
+    self.Fail('conformance2/textures/image_bitmap_from_image_data/' +
+        'tex-image-and-sub-image-3d-with-image-bitmap-from-image-data-' +
+        'rgb565-rgb-unsigned_byte.html',
         ['win8'], bug=483282)
-    self.Fail('conformance2/textures/image_bitmap/tex-image-and-sub-image-3d' +
-        '-with-image-bitmap-rgb5_a1-rgba-unsigned_byte.html',
+    self.Fail('conformance2/textures/image_bitmap_from_image_data/' +
+        'tex-image-and-sub-image-3d-with-image-bitmap-from-image-data-' +
+        'rgb5_a1-rgba-unsigned_byte.html',
+        ['win8'], bug=483282)
+    self.Fail('conformance2/textures/image_bitmap_from_image/' +
+        'tex-image-and-sub-image-3d-with-image-bitmap-from-image-' +
+        'rgb565-rgb-unsigned_byte.html',
+        ['win8'], bug=483282)
+    self.Fail('conformance2/textures/image_bitmap_from_image/' +
+        'tex-image-and-sub-image-3d-with-image-bitmap-from-image-' +
+        'rgb5_a1-rgba-unsigned_byte.html',
+        ['win8'], bug=483282)
+    self.Fail('conformance2/textures/image_bitmap_from_video/' +
+        'tex-image-and-sub-image-3d-with-image-bitmap-from-video-' +
+        'rgb565-rgb-unsigned_byte.html',
+        ['win8'], bug=483282)
+    self.Fail('conformance2/textures/image_bitmap_from_video/' +
+        'tex-image-and-sub-image-3d-with-image-bitmap-from-video-' +
+        'rgb5_a1-rgba-unsigned_byte.html',
         ['win8'], bug=483282)
     self.Fail('conformance2/textures/canvas/tex-image-and-sub-image-3d' +
         '-with-canvas-rgb5_a1-rgba-unsigned_byte.html',
@@ -268,6 +305,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=483282)
     self.Fail('conformance2/buffers/buffer-type-restrictions.html',
         ['mac'], bug=483282)
+    self.Fail('conformance2/misc/uninitialized-test-2.html',
+        ['mac'], bug=483282)
     self.Fail('conformance2/renderbuffers/' +
         'multisampled-renderbuffer-initialization.html',
         ['mac'], bug=483282)
@@ -295,6 +334,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=584994)
     self.Fail('conformance2/state/gl-object-get-calls.html',
         ['mac'], bug=483282)
+    self.Fail('conformance2/textures/image_bitmap_from_image_data/*',
+        ['mac'], bug=589930)
+    self.Fail('conformance2/textures/image_bitmap_from_image/*',
+        ['mac'], bug=589930)
+    self.Fail('conformance2/textures/image_bitmap_from_video/*',
+        ['mac'], bug=589930)
 
     # Mac Retina NVIDIA
     self.Fail('conformance2/rendering/draw-buffers.html',

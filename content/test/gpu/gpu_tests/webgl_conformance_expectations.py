@@ -124,10 +124,23 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('deqp/data/gles2/shaders/preprocessor.html',
         ['mac'], bug=478572)
 
-    # Mac Retina failures
+    # Mac Retina NVIDIA failures
     self.Fail(
         'conformance/glsl/bugs/array-of-struct-with-int-first-position.html',
         ['mac', ('nvidia', 0xfd5), ('nvidia', 0xfe9)], bug=368912)
+    self.Fail(
+        'conformance/textures/image_bitmap_from_image/*',
+        ['mac', ('nvidia', 0xfd5), ('nvidia', 0xfe9)], bug=589930)
+
+    # Mac Intel failures
+    self.Fail('conformance/textures/image_bitmap_from_image/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-image-' +
+        'rgb-rgb-unsigned_byte.html',
+        ['mac', 'intel'], bug=589930)
+    self.Fail('conformance/textures/image_bitmap_from_image/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-image-' +
+        'rgba-rgba-unsigned_byte.html',
+        ['mac', 'intel'], bug=589930)
 
     # Linux failures
     # NVIDIA
@@ -245,20 +258,65 @@ class WebGLConformanceExpectations(GpuTestExpectations):
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
     self.Fail('conformance/extensions/oes-texture-float-with-image.html',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
-    self.Fail('conformance/textures/image_bitmap/tex-image-and-sub-image-2d-' +
-        'with-image-bitmap-rgb-rgb-unsigned_byte.html',
+    self.Fail('conformance/textures/image_bitmap_from_image_data/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-image-data-' +
+        'rgb-rgb-unsigned_byte.html',
         ['android', ('qualcomm', 'Adreno (TM) 420')], bug=585108)
-    self.Fail('conformance/textures/image_bitmap/tex-image-and-sub-image-2d-' +
-        'with-image-bitmap-rgba-rgba-unsigned_byte.html',
+    self.Fail('conformance/textures/image_bitmap_from_image_data/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-image-data-' +
+        'rgba-rgba-unsigned_byte.html',
         ['android', ('qualcomm', 'Adreno (TM) 420')], bug=585108)
-    self.Fail('conformance/textures/image_bitmap/tex-image-and-sub-image-2d-' +
-        'with-image-bitmap-rgb-rgb-unsigned_short_5_6_5.html',
+    self.Fail('conformance/textures/image_bitmap_from_image_data/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-image-data-' +
+        'rgb-rgb-unsigned_short_5_6_5.html',
         ['android', ('qualcomm', 'Adreno (TM) 420')], bug=585108)
-    self.Fail('conformance/textures/image_bitmap/tex-image-and-sub-image-2d-' +
-        'with-image-bitmap-rgba-rgba-unsigned_short_4_4_4_4.html',
+    self.Fail('conformance/textures/image_bitmap_from_image_data/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-image-data-' +
+        'rgba-rgba-unsigned_short_4_4_4_4.html',
         ['android', ('qualcomm', 'Adreno (TM) 420')], bug=585108)
-    self.Fail('conformance/textures/image_bitmap/tex-image-and-sub-image-2d-' +
-        'with-image-bitmap-rgba-rgba-unsigned_short_5_5_5_1.html',
+    self.Fail('conformance/textures/image_bitmap_from_image_data/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-image-data-' +
+        'rgba-rgba-unsigned_short_5_5_5_1.html',
+        ['android', ('qualcomm', 'Adreno (TM) 420')], bug=585108)
+    self.Fail('conformance/textures/image_bitmap_from_image/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-image-' +
+        'rgb-rgb-unsigned_byte.html',
+        ['android', ('qualcomm', 'Adreno (TM) 420')], bug=585108)
+    self.Fail('conformance/textures/image_bitmap_from_image/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-image-' +
+        'rgba-rgba-unsigned_byte.html',
+        ['android', ('qualcomm', 'Adreno (TM) 420')], bug=585108)
+    self.Fail('conformance/textures/image_bitmap_from_image/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-image-' +
+        'rgb-rgb-unsigned_short_5_6_5.html',
+        ['android', ('qualcomm', 'Adreno (TM) 420')], bug=585108)
+    self.Fail('conformance/textures/image_bitmap_from_image/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-image-' +
+        'rgba-rgba-unsigned_short_4_4_4_4.html',
+        ['android', ('qualcomm', 'Adreno (TM) 420')], bug=585108)
+    self.Fail('conformance/textures/image_bitmap_from_image/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-image-' +
+        'rgba-rgba-unsigned_short_5_5_5_1.html',
+        ['android', ('qualcomm', 'Adreno (TM) 420')], bug=585108)
+    self.Fail('conformance/textures/image_bitmap_from_video/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-video-' +
+        'rgb-rgb-unsigned_byte.html',
+        ['android', ('qualcomm', 'Adreno (TM) 420')], bug=585108)
+    self.Fail('conformance/textures/image_bitmap_from_video/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-video-' +
+        'rgba-rgba-unsigned_byte.html',
+        ['android', ('qualcomm', 'Adreno (TM) 420')], bug=585108)
+    self.Fail('conformance/textures/image_bitmap_from_video/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-video-' +
+        'rgb-rgb-unsigned_short_5_6_5.html',
+        ['android', ('qualcomm', 'Adreno (TM) 420')], bug=585108)
+    self.Fail('conformance/textures/image_bitmap_from_video/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-video-' +
+        'rgba-rgba-unsigned_short_4_4_4_4.html',
+        ['android', ('qualcomm', 'Adreno (TM) 420')], bug=585108)
+    self.Fail('conformance/textures/image_bitmap_from_video/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-video-' +
+        'rgba-rgba-unsigned_short_5_5_5_1.html',
         ['android', ('qualcomm', 'Adreno (TM) 420')], bug=585108)
     self.Fail('conformance/textures/video/tex-image-and-sub-image-2d-with-' +
         'video-rgb-rgb-unsigned_byte.html',
