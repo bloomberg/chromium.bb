@@ -2081,7 +2081,6 @@ def MakeBaseTrustedEnv(platform=None):
       'src/trusted/platform_qualify/build.scons',
       'src/trusted/seccomp_bpf/build.scons',
       'src/trusted/service_runtime/build.scons',
-      'src/trusted/threading/build.scons',
       'src/trusted/validator/build.scons',
       'src/trusted/validator/driver/build.scons',
       'src/trusted/validator_arm/build.scons',

@@ -36,7 +36,6 @@
           'sel_ldr.c',
           'sel_ldr_filename.c',
           'sel_ldr_standard.c',
-          'sel_ldr_thread_interface.c',
           # TODO(mseaborn): Move sel_main_chrome.c to the
           # "sel_main_chrome" library once Chromium is changed to
           # depend on that rather than on "sel".
@@ -213,7 +212,6 @@
         '<(DEPTH)/native_client/src/trusted/interval_multiset/interval_multiset.gyp:nacl_interval',
         '<(DEPTH)/native_client/src/trusted/perf_counter/perf_counter.gyp:nacl_perf_counter',
         '<(DEPTH)/native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib',
-        '<(DEPTH)/native_client/src/trusted/threading/threading.gyp:thread_interface',
         '<(DEPTH)/native_client/src/trusted/validator/validator.gyp:validation_cache',
         '<(DEPTH)/native_client/src/trusted/validator/validator.gyp:validators',
       ],
@@ -321,7 +319,6 @@
             '<(DEPTH)/native_client/src/trusted/interval_multiset/interval_multiset.gyp:nacl_interval64',
             '<(DEPTH)/native_client/src/trusted/perf_counter/perf_counter.gyp:nacl_perf_counter64',
             '<(DEPTH)/native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib64',
-            '<(DEPTH)/native_client/src/trusted/threading/threading.gyp:thread_interface64',
             '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:nccopy_x86_64',
             '<(DEPTH)/native_client/src/trusted/validator/validator.gyp:validation_cache64',
             '<(DEPTH)/native_client/src/trusted/validator/validator.gyp:validators64',

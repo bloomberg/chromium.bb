@@ -49,8 +49,6 @@
 #include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
-#include "native_client/src/trusted/service_runtime/sel_ldr_thread_interface.h"
-#include "native_client/src/trusted/threading/nacl_thread_interface.h"
 #include "native_client/src/trusted/validator/rich_file_info.h"
 
 static int IsEnvironmentVariableSet(char const *env_name) {
