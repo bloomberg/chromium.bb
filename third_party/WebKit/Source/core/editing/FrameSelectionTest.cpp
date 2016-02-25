@@ -14,6 +14,7 @@
 #include "core/html/HTMLDocument.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/PaintInfo.h"
+#include "core/paint/PaintLayer.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/PaintController.h"
@@ -34,6 +35,9 @@ protected:
 
     PassRefPtrWillBeRawPtr<Text> appendTextNode(const String& data);
     int layoutCount() const { return dummyPageHolder().frameView().layoutCount(); }
+
+    bool shouldPaintCaretForTesting() const { return selection().shouldPaintCaretForTesting(); }
+    bool isPreviousCaretDirtyForTesting() const { return selection().isPreviousCaretDirtyForTesting(); }
 
 private:
     RefPtrWillBePersistent<Text> m_textNode;
@@ -117,7 +121,7 @@ TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout)
     selection().setCaretVisible(true);
     setSelection(validSelection);
     EXPECT_TRUE(selection().isCaret());
-    EXPECT_TRUE(selection().ShouldPaintCaretForTesting());
+    EXPECT_TRUE(shouldPaintCaretForTesting());
 
     int startCount = layoutCount();
     {
@@ -133,6 +137,54 @@ TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout)
     DrawingRecorder drawingRecorder(context, *dummyPageHolder().frameView().layoutView(), DisplayItem::Caret, LayoutRect::infiniteIntRect());
     selection().paintCaret(context, LayoutPoint());
     EXPECT_EQ(startCount, layoutCount());
+}
+
+TEST_F(FrameSelectionTest, InvalidatePreviousCaretAfterRemovingLastCharacter)
+{
+    RefPtrWillBeRawPtr<Text> text = appendTextNode("Hello, World!");
+    document().view()->updateAllLifecyclePhases();
+
+    document().body()->setContentEditable("true", ASSERT_NO_EXCEPTION);
+    document().body()->focus();
+    EXPECT_TRUE(document().body()->focused());
+
+    selection().setCaretVisible(true);
+    EXPECT_TRUE(selection().isCaret());
+    EXPECT_TRUE(shouldPaintCaretForTesting());
+
+    // Simulate to type "Hello, World!".
+    DisableCompositingQueryAsserts disabler;
+    selection().moveTo(createVisiblePosition(selection().end(), selection().affinity()), NotUserTriggered);
+    selection().setCaretRectNeedsUpdate();
+    EXPECT_TRUE(selection().isCaretBoundsDirty());
+    EXPECT_FALSE(isPreviousCaretDirtyForTesting());
+    selection().invalidateCaretRect();
+    EXPECT_FALSE(selection().isCaretBoundsDirty());
+    EXPECT_TRUE(isPreviousCaretDirtyForTesting());
+
+    // Simulate to remove all except for "H".
+    text->replaceWholeText("H");
+    selection().moveTo(createVisiblePosition(selection().end(), selection().affinity()), NotUserTriggered);
+    selection().setCaretRectNeedsUpdate();
+    EXPECT_TRUE(selection().isCaretBoundsDirty());
+    // "H" remains so early previousCaret invalidation isn't needed.
+    EXPECT_TRUE(isPreviousCaretDirtyForTesting());
+    selection().invalidateCaretRect();
+    EXPECT_FALSE(selection().isCaretBoundsDirty());
+    EXPECT_TRUE(isPreviousCaretDirtyForTesting());
+
+    // Simulate to remove the last character.
+    document().body()->removeChild(text);
+    // This line is the objective of this test.
+    // As removing the last character, early previousCaret invalidation is executed.
+    EXPECT_FALSE(isPreviousCaretDirtyForTesting());
+    document().updateLayoutIgnorePendingStylesheets();
+    selection().setCaretRectNeedsUpdate();
+    EXPECT_TRUE(selection().isCaretBoundsDirty());
+    EXPECT_FALSE(isPreviousCaretDirtyForTesting());
+    selection().invalidateCaretRect();
+    EXPECT_FALSE(selection().isCaretBoundsDirty());
+    EXPECT_TRUE(isPreviousCaretDirtyForTesting());
 }
 
 #define EXPECT_EQ_SELECTED_TEXT(text) \

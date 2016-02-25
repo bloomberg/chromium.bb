@@ -405,6 +405,15 @@ void FrameSelection::nodeWillBeRemoved(Node& node)
 
     respondToNodeModification(node, removingNodeRemovesPosition(node, selection().base()), removingNodeRemovesPosition(node, selection().extent()),
         removingNodeRemovesPosition(node, selection().start()), removingNodeRemovesPosition(node, selection().end()));
+
+    if (node == m_previousCaretNode) {
+        // Hits in ManualTests/caret-paint-after-last-text-is-removed.html
+        DisableCompositingQueryAsserts disabler;
+        invalidateLocalCaretRect(m_previousCaretNode.get(), m_previousCaretRect);
+        m_previousCaretNode = nullptr;
+        m_previousCaretRect = LayoutRect();
+        m_previousCaretVisibility = Hidden;
+    }
 }
 
 static bool intersectsNode(const VisibleSelection& selection, Node* node)

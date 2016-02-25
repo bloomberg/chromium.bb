@@ -188,7 +188,6 @@ public:
     void scheduleVisualUpdate() const;
     void invalidateCaretRect();
     void paintCaret(GraphicsContext&, const LayoutPoint&);
-    bool ShouldPaintCaretForTesting() const { return m_shouldPaintCaret; }
 
     // Used to suspend caret blinking while the mouse is down.
     void setCaretBlinkingSuspended(bool suspended) { m_isCaretBlinkingSuspended = suspended; }
@@ -286,6 +285,10 @@ private:
     VisibleSelectionTemplate<Strategy> validateSelection(const VisibleSelectionTemplate<Strategy>&);
 
     GranularityStrategy* granularityStrategy();
+
+    // For unittests
+    bool shouldPaintCaretForTesting() const { return m_shouldPaintCaret; }
+    bool isPreviousCaretDirtyForTesting() const { return m_previousCaretNode; }
 
     RawPtrWillBeMember<LocalFrame> m_frame;
     const OwnPtrWillBeMember<PendingSelection> m_pendingSelection;
