@@ -26,8 +26,6 @@ class UsbDevice;
 class UsbDeviceFilter;
 }
 
-class Browser;
-
 // UsbChooserBubbleDelegate creates a chooser bubble for WebUsb.
 class UsbChooserBubbleDelegate : public ChooserBubbleDelegate,
                                  public device::UsbService::Observer {

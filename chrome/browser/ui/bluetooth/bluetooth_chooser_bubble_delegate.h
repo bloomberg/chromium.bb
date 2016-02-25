@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/website_settings/chooser_bubble_delegate.h"
 #include "components/bubble/bubble_reference.h"
 
-class Browser;
 class BluetoothChooserDesktop;
 
 // BluetoothChooserBubbleDelegate is a chooser that presents a list of
