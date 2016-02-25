@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "mojo/public/cpp/bindings/weak_binding_set.h"
-#include "mojo/public/cpp/bindings/weak_interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/services/package_manager/package_manager.h"
 #include "mojo/services/package_manager/public/interfaces/shell_resolver.mojom.h"
 #include "mojo/shell/application_loader.h"
@@ -186,14 +186,14 @@ class ApplicationManager : public ShellClient,
   // Counter used to assign ids to content handlers.
   uint32_t shell_client_factory_id_counter_;
 
-  WeakInterfacePtrSet<mojom::ApplicationManagerListener> listeners_;
+  InterfacePtrSet<mojom::ApplicationManagerListener> listeners_;
 
   base::Callback<void(const Identity&)> instance_quit_callback_;
   base::TaskRunner* file_task_runner_;
   scoped_ptr<NativeRunnerFactory> native_runner_factory_;
   std::vector<scoped_ptr<NativeRunner>> native_runners_;
   scoped_ptr<ShellConnection> shell_connection_;
-  WeakBindingSet<mojom::ApplicationManager> bindings_;
+  BindingSet<mojom::ApplicationManager> bindings_;
   base::WeakPtrFactory<ApplicationManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ApplicationManager);

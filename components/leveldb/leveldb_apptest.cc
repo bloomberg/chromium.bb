@@ -8,7 +8,7 @@
 #include "components/filesystem/public/interfaces/types.mojom.h"
 #include "components/leveldb/public/interfaces/leveldb.mojom.h"
 #include "mojo/common/common_type_converters.h"
-#include "mojo/public/cpp/bindings/weak_binding_set.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/shell/public/cpp/application_test_base.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
 #include "mojo/util/capture_util.h"

@@ -16,7 +16,7 @@
 #include "content/common/content_export.h"
 #include "content/common/process_control.mojom.h"
 #include "content/public/utility/utility_thread.h"
-#include "mojo/public/cpp/bindings/weak_binding_set.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace base {
 class FilePath;
@@ -72,7 +72,7 @@ class UtilityThreadImpl : public UtilityThread,
   scoped_ptr<UtilityProcessControlImpl> process_control_;
 
   // Bindings to the ProcessControl impl.
-  mojo::WeakBindingSet<ProcessControl> process_control_bindings_;
+  mojo::BindingSet<ProcessControl> process_control_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(UtilityThreadImpl);
 };

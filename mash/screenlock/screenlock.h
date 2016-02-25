@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "mash/shell/public/interfaces/shell.mojom.h"
-#include "mojo/public/cpp/bindings/weak_binding_set.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 
@@ -38,7 +38,7 @@ class Screenlock : public mojo::ShellClient,
   mojo::Shell* shell_;
   mojo::TracingImpl tracing_;
   scoped_ptr<views::AuraInit> aura_init_;
-  mojo::WeakBindingSet<mash::shell::mojom::ScreenlockStateListener> bindings_;
+  mojo::BindingSet<mash::shell::mojom::ScreenlockStateListener> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(Screenlock);
 };

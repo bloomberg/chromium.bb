@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "mojo/public/c/system/main.h"
-#include "mojo/public/cpp/bindings/weak_binding_set.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/shell/background/tests/test.mojom.h"
 #include "mojo/shell/public/cpp/application_runner.h"
 #include "mojo/shell/public/cpp/connection.h"
@@ -39,7 +39,7 @@ class TestClient : public ShellClient,
   // mojom::TestService
   void Test(const TestCallback& callback) override { callback.Run(); }
 
-  WeakBindingSet<mojom::TestService> bindings_;
+  BindingSet<mojom::TestService> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(TestClient);
 };

@@ -18,7 +18,7 @@
 #include "content/browser/vr/vr_device_provider.h"
 #include "content/common/content_export.h"
 #include "content/common/vr_service.mojom.h"
-#include "mojo/public/cpp/bindings/weak_binding_set.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace content {
 
@@ -65,7 +65,7 @@ class VRDeviceManager : public VRService {
 
   bool vr_initialized_;
 
-  mojo::WeakBindingSet<VRService> bindings_;
+  mojo::BindingSet<VRService> bindings_;
 
   // For testing. If true will not delete self when consumer count reaches 0.
   bool keep_alive_;

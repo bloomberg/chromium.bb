@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "content/common/leveldb_wrapper.mojom.h"
-#include "mojo/public/cpp/bindings/weak_binding_set.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace content {
 
@@ -48,7 +48,7 @@ class LevelDBWrapperImpl : public LevelDBWrapper {
   void OnConnectionError();
 
   std::string prefix_;
-  mojo::WeakBindingSet<LevelDBWrapper> bindings_;
+  mojo::BindingSet<LevelDBWrapper> bindings_;
   base::Closure no_bindings_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(LevelDBWrapperImpl);

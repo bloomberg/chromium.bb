@@ -18,7 +18,7 @@
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "components/mus/ws/connection_manager_delegate.h"
-#include "mojo/public/cpp/bindings/weak_binding_set.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell_client.h"
@@ -104,7 +104,7 @@ class MandolineUIServicesApp
   void CreateWindowTreeHost(mojo::InterfaceRequest<mojom::WindowTreeHost> host,
                             mojom::WindowTreeClientPtr tree_client) override;
 
-  mojo::WeakBindingSet<mojom::WindowTreeHostFactory> factory_bindings_;
+  mojo::BindingSet<mojom::WindowTreeHostFactory> factory_bindings_;
   mojo::Shell* shell_;
   scoped_ptr<ws::ConnectionManager> connection_manager_;
   scoped_refptr<GpuState> gpu_state_;

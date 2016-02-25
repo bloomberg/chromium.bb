@@ -7,11 +7,11 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/tests/rect_blink.h"
 #include "mojo/public/cpp/bindings/tests/rect_chromium.h"
 #include "mojo/public/cpp/bindings/tests/struct_with_traits_impl.h"
-#include "mojo/public/cpp/bindings/weak_binding_set.h"
 #include "mojo/public/interfaces/bindings/tests/struct_with_traits.mojom.h"
 #include "mojo/public/interfaces/bindings/tests/test_native_types.mojom-blink.h"
 #include "mojo/public/interfaces/bindings/tests/test_native_types.mojom-chromium.h"
@@ -126,12 +126,12 @@ class StructTraitsTest : public testing::Test,
   base::MessageLoop loop_;
 
   ChromiumRectServiceImpl chromium_service_;
-  mojo::WeakBindingSet<chromium::RectService> chromium_bindings_;
+  mojo::BindingSet<chromium::RectService> chromium_bindings_;
 
   BlinkRectServiceImpl blink_service_;
-  mojo::WeakBindingSet<blink::RectService> blink_bindings_;
+  mojo::BindingSet<blink::RectService> blink_bindings_;
 
-  mojo::WeakBindingSet<TraitsTestService> traits_test_bindings_;
+  mojo::BindingSet<TraitsTestService> traits_test_bindings_;
 };
 
 }  // namespace

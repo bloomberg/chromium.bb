@@ -27,8 +27,8 @@
 #include "mojo/converters/surfaces/custom_surface_converter.h"
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/weak_binding_set.h"
-#include "mojo/public/cpp/bindings/weak_interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 
 namespace mus {
 namespace ws {
@@ -319,10 +319,10 @@ class ConnectionManager : public ServerWindowDelegate,
   // Next id supplied to the window manager.
   uint32_t next_wm_change_id_;
 
-  mojo::WeakBindingSet<mojom::DisplayManager> display_manager_bindings_;
+  mojo::BindingSet<mojom::DisplayManager> display_manager_bindings_;
   // WARNING: only use these once |got_valid_frame_decorations_| is true.
   // TODO(sky): refactor this out into its own class.
-  mojo::WeakInterfacePtrSet<mojom::DisplayManagerObserver>
+  mojo::InterfacePtrSet<mojom::DisplayManagerObserver>
       display_manager_observers_;
 
   bool got_valid_frame_decorations_;

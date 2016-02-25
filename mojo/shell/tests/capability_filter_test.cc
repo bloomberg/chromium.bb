@@ -9,8 +9,8 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "mojo/public/cpp/bindings/weak_binding_set.h"
 #include "mojo/services/package_manager/package_manager.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/public/cpp/connection.h"
@@ -98,7 +98,7 @@ class ConnectionValidator : public ApplicationLoader,
   std::set<std::string> expectations_;
   std::set<std::string> unexpected_;
   base::MessageLoop* loop_;
-  WeakBindingSet<Validator> validator_bindings_;
+  BindingSet<Validator> validator_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionValidator);
 };
@@ -151,8 +151,8 @@ class ServiceApplication : public ShellClient,
 
   Shell* shell_;
   ValidatorPtr validator_;
-  WeakBindingSet<Safe> safe_bindings_;
-  WeakBindingSet<Unsafe> unsafe_bindings_;
+  BindingSet<Safe> safe_bindings_;
+  BindingSet<Unsafe> unsafe_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceApplication);
 };

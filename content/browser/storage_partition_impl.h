@@ -25,7 +25,7 @@
 #include "content/common/content_export.h"
 #include "content/common/storage_partition_service.mojom.h"
 #include "content/public/browser/storage_partition.h"
-#include "mojo/public/cpp/bindings/weak_binding_set.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "storage/browser/quota/special_storage_policy.h"
 
 namespace content {
@@ -206,7 +206,7 @@ class StoragePartitionImpl : public StoragePartition,
   scoped_refptr<PlatformNotificationContextImpl> platform_notification_context_;
   scoped_refptr<BackgroundSyncContextImpl> background_sync_context_;
 
-  mojo::WeakBindingSet<StoragePartitionService> bindings_;
+  mojo::BindingSet<StoragePartitionService> bindings_;
 
   // Raw pointer that should always be valid. The BrowserContext owns the
   // StoragePartitionImplMap which then owns StoragePartitionImpl. When the

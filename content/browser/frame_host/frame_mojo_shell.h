@@ -7,8 +7,8 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/weak_binding_set.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
 
 namespace content {
@@ -45,12 +45,12 @@ class FrameMojoShell : public mojo::shell::mojom::Shell,
   ServiceRegistryImpl* GetServiceRegistry();
 
   RenderFrameHost* frame_host_;
-  mojo::WeakBindingSet<mojo::shell::mojom::Shell> bindings_;
-  mojo::WeakBindingSet<mojo::shell::mojom::Connector> connectors_;
+  mojo::BindingSet<mojo::shell::mojom::Shell> bindings_;
+  mojo::BindingSet<mojo::shell::mojom::Connector> connectors_;
 
   // ServiceRegistry providing browser services to connected applications.
   scoped_ptr<ServiceRegistryImpl> service_registry_;
-  mojo::WeakBindingSet<mojo::shell::mojom::InterfaceProvider>
+  mojo::BindingSet<mojo::shell::mojom::InterfaceProvider>
       service_provider_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameMojoShell);

@@ -9,10 +9,10 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/tests/pickled_struct_blink.h"
 #include "mojo/public/cpp/bindings/tests/pickled_struct_chromium.h"
-#include "mojo/public/cpp/bindings/weak_binding_set.h"
 #include "mojo/public/interfaces/bindings/tests/test_native_types.mojom-blink.h"
 #include "mojo/public/interfaces/bindings/tests/test_native_types.mojom-chromium.h"
 #include "mojo/public/interfaces/bindings/tests/test_native_types.mojom.h"
@@ -134,9 +134,9 @@ class PickleTest : public testing::Test {
  private:
   base::MessageLoop loop_;
   ChromiumPicklePasserImpl chromium_service_;
-  mojo::WeakBindingSet<chromium::PicklePasser> chromium_bindings_;
+  mojo::BindingSet<chromium::PicklePasser> chromium_bindings_;
   BlinkPicklePasserImpl blink_service_;
-  mojo::WeakBindingSet<blink::PicklePasser> blink_bindings_;
+  mojo::BindingSet<blink::PicklePasser> blink_bindings_;
 };
 
 }  // namespace

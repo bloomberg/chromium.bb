@@ -12,7 +12,7 @@
 #include "base/run_loop.h"
 #include "base/threading/simple_thread.h"
 #include "mojo/public/c/system/main.h"
-#include "mojo/public/cpp/bindings/weak_binding_set.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/shell/public/cpp/application_runner.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell.h"
@@ -88,7 +88,7 @@ class ProvidedShellClient
   const std::string name_;
   mojom::ShellClientRequest request_;
   Shell* shell_;
-  WeakBindingSet<test::mojom::PackageTestService> bindings_;
+  BindingSet<test::mojom::PackageTestService> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(ProvidedShellClient);
 };
@@ -151,8 +151,8 @@ class PackageTestShellClient
 
   Shell* shell_;
   std::vector<scoped_ptr<ShellClient>> delegates_;
-  WeakBindingSet<mojom::ShellClientFactory> shell_client_factory_bindings_;
-  WeakBindingSet<test::mojom::PackageTestService> bindings_;
+  BindingSet<mojom::ShellClientFactory> shell_client_factory_bindings_;
+  BindingSet<test::mojom::PackageTestService> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(PackageTestShellClient);
 };

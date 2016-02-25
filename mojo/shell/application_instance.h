@@ -14,7 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process_handle.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/weak_binding_set.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/shell/connect_params.h"
 #include "mojo/shell/identity.h"
 #include "mojo/shell/public/interfaces/application_manager.mojom.h"
@@ -91,7 +91,7 @@ class ApplicationInstance : public mojom::Shell,
   mojom::ShellClientPtr shell_client_;
   Binding<mojom::Shell> binding_;
   Binding<mojom::PIDReceiver> pid_receiver_binding_;
-  WeakBindingSet<mojom::Connector> connectors_;
+  BindingSet<mojom::Connector> connectors_;
   bool queue_requests_;
   std::vector<ConnectParams*> queued_client_requests_;
   NativeRunner* native_runner_;

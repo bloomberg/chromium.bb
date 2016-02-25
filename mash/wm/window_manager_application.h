@@ -19,7 +19,7 @@
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "mash/wm/public/interfaces/user_window_controller.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/weak_binding_set.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 
@@ -107,7 +107,7 @@ class WindowManagerApplication
   // |user_window_controller_| is created once OnEmbed() is called. Until that
   // time |user_window_controller_requests_| stores pending interface requests.
   scoped_ptr<UserWindowControllerImpl> user_window_controller_;
-  mojo::WeakBindingSet<mash::wm::mojom::UserWindowController>
+  mojo::BindingSet<mash::wm::mojom::UserWindowController>
       user_window_controller_binding_;
   std::vector<
       scoped_ptr<mojo::InterfaceRequest<mash::wm::mojom::UserWindowController>>>

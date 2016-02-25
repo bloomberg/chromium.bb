@@ -6,7 +6,7 @@
 #define COMPONENTS_LEVELDB_LEVELDB_APP_H_
 
 #include "components/leveldb/public/interfaces/leveldb.mojom.h"
-#include "mojo/public/cpp/bindings/weak_binding_set.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell_client.h"
@@ -36,7 +36,7 @@ class LevelDBApp : public mojo::ShellClient,
 
   mojo::TracingImpl tracing_;
   scoped_ptr<LevelDBService> service_;
-  mojo::WeakBindingSet<LevelDBService> bindings_;
+  mojo::BindingSet<LevelDBService> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(LevelDBApp);
 };
