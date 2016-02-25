@@ -112,6 +112,12 @@ PassOwnPtr<Vector<char>> PictureSnapshot::replay(unsigned fromStep, unsigned toS
     bitmap.eraseARGB(0, 0, 0, 0);
     {
         ReplayingCanvas canvas(bitmap, fromStep, toStep);
+        // Disable LCD text preemptively, because the picture opacity is unknown.
+        // The canonical API involves SkSurface props, but since we're not SkSurface-based
+        // at this point (see TODO above) we (ab)use saveLayer for this purpose.
+        SkAutoCanvasRestore autoRestore(&canvas, false);
+        canvas.saveLayer(nullptr, nullptr);
+
         canvas.scale(scale, scale);
         canvas.resetStepCount();
         m_picture->playback(&canvas, &canvas);
