@@ -145,9 +145,7 @@ test("views_mus_unittests") {
   sources = [
     "../run_all_unittests.cc",
     "../run_all_unittests.h",
-    "../widget/native_widget_unittest.cc",
-    "../widget/root_view_unittest.cc",
-    "../widget/widget_unittest.cc",
+    "../view_targeter_unittest.cc",
     "platform_test_helper_mus.cc",
     "run_all_unittests_mus.cc",
   ]
@@ -160,6 +158,7 @@ test("views_mus_unittests") {
     "//cc",
     "//mojo/shell/background:lib",
     "//mojo/shell/background:main",
+    "//mojo/shell/background/tests:test_support",
     "//mojo/shell/public/cpp:sources",
     "//mojo/shell/runner/host:lib",
     "//skia",

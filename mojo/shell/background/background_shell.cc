@@ -125,9 +125,11 @@ class BackgroundShell::MojoThread : public base::SimpleThread {
     context_ = context.get();
     scoped_ptr<mojo::shell::Context::InitParams> context_init_params(
         new mojo::shell::Context::InitParams);
-    context_init_params->app_catalog = std::move(init_params_->app_catalog);
-    context_init_params->native_runner_delegate =
-        init_params_->native_runner_delegate;
+    if (init_params_) {
+      context_init_params->app_catalog = std::move(init_params_->app_catalog);
+      context_init_params->native_runner_delegate =
+          init_params_->native_runner_delegate;
+    }
     context_->Init(std::move(context_init_params));
 
     message_loop_->Run();

@@ -348,6 +348,10 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
       parent_mus->AddTransientWindow(window_);
   }
 
+  // TODO(sky): deal with show state.
+  if (!params.bounds.size().IsEmpty())
+    SetBounds(params.bounds);
+
   // TODO(beng): much else, see [Desktop]NativeWidgetAura.
 
   native_widget_delegate_->OnNativeWidgetCreated(false);
