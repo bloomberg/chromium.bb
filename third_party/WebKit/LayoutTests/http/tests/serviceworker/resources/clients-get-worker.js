@@ -1,5 +1,6 @@
 self.onfetch = function(e) {
-  if (e.request.url.indexOf('clients-get-frame.html') >= 0) {
+  if (e.request.url.indexOf('clients-get-frame.html') >= 0 ||
+      e.request.url.indexOf('clients-get-client-types') >= 0) {
     // On navigation, the client id should be null.
     if (e.clientId === null) {
       e.respondWith(fetch(e.request));
