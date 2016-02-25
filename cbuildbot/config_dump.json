@@ -2276,7 +2276,8 @@
                 "vm_tests": []
             }
         ],
-        "description": "Release Builds (canary) (internal); Group config (boards: auron, auron_yuna, auron_paine, samus-cheets)"
+        "description": "Release Builds (canary) (internal); Group config (boards: auron, auron_yuna, auron_paine, samus-cheets)",
+        "important": true
     },
     "auron-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",

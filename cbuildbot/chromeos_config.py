@@ -601,7 +601,6 @@ _waterfall_config_map = {
         'whirlwind-paladin',
 
         # Experimental Canaries (Group)
-        'auron-release-group',
         'glados-release-group',
         'storm-release-group',
 
@@ -2648,7 +2647,6 @@ def GetConfig():
           'auron_paine',
           'samus-cheets',
       ),
-      important=False,
   )
 
   _AddGroupConfig(
