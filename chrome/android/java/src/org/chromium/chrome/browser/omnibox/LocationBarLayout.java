@@ -2021,7 +2021,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
                 ? (SystemClock.elapsedRealtime() - mNewOmniboxEditSessionTimestamp) : -1;
         mAutocomplete.onSuggestionSelected(matchPosition, type, currentPageUrl,
                 mQueryInTheOmnibox, mUrlFocusedFromFakebox, elapsedTimeSinceModified,
-                webContents);
+                mUrlBar.getAutocompleteLength(), webContents);
         loadUrl(url, transition);
     }
 

@@ -739,6 +739,16 @@ public class UrlBar extends VerticallyFixedEditText {
     }
 
     /**
+     * Returns the length of the autocomplete text currently displayed, zero if none is
+     * currently displayed.
+     */
+    public int getAutocompleteLength() {
+        int autoCompleteIndex = getText().getSpanStart(mAutocompleteSpan);
+        if (autoCompleteIndex < 0) return 0;
+        return getText().length() - autoCompleteIndex;
+    }
+
+    /**
      * Overrides the text announced when focusing on the field for accessibility.  This value will
      * be cleared automatically when the text content changes for this view.
      * @param accessibilityOverride The text to be announced instead of the current text value

@@ -67,6 +67,7 @@ class AutocompleteControllerAndroid : public AutocompleteControllerDelegate,
       jboolean is_query_in_omnibox,
       jboolean focused_from_fakebox,
       jlong elapsed_time_since_first_modified,
+      jint completed_length,
       const base::android::JavaParamRef<jobject>& j_web_contents);
   void DeleteSuggestion(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& obj,

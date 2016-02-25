@@ -221,6 +221,7 @@ void AutocompleteControllerAndroid::OnSuggestionSelected(
     jboolean is_query_in_omnibox,
     jboolean focused_from_fakebox,
     jlong elapsed_time_since_first_modified,
+    jint completed_length,
     const JavaParamRef<jobject>& j_web_contents) {
   base::string16 url = ConvertJavaStringToUTF16(env, j_current_url);
   const GURL current_url = GURL(url);
@@ -242,7 +243,7 @@ void AutocompleteControllerAndroid::OnSuggestionSelected(
       SessionTabHelper::IdForTab(web_contents),
       current_page_classification,
       base::TimeDelta::FromMilliseconds(elapsed_time_since_first_modified),
-      base::string16::npos,
+      completed_length,
       now - autocomplete_controller_->last_time_default_match_changed(),
       autocomplete_controller_->result());
   autocomplete_controller_->AddProvidersInfo(&log.providers_info);

@@ -229,16 +229,17 @@ public class AutocompleteController {
      *                           native NTP. This should be false on all other pages.
      * @param elapsedTimeSinceModified The number of ms that passed between the user first
      *                                 modifying text in the omnibox and selecting a suggestion.
+     * @param completedLength The length of the default match's inline autocompletion if any.
      * @param webContents The web contents for the tab where the selected suggestion will be shown.
      */
     public void onSuggestionSelected(int selectedIndex, int type,
             String currentPageUrl, boolean isQueryInOmnibox, boolean focusedFromFakebox,
-            long elapsedTimeSinceModified, WebContents webContents) {
+            long elapsedTimeSinceModified, int completedLength, WebContents webContents) {
         // Don't natively log voice suggestion results as we add them in Java.
         if (type == OmniboxSuggestionType.VOICE_SUGGEST) return;
         nativeOnSuggestionSelected(mNativeAutocompleteControllerAndroid, selectedIndex,
                 currentPageUrl, isQueryInOmnibox, focusedFromFakebox, elapsedTimeSinceModified,
-                webContents);
+                completedLength, webContents);
     }
 
     /**
@@ -323,7 +324,8 @@ public class AutocompleteController {
     private native void nativeResetSession(long nativeAutocompleteControllerAndroid);
     private native void nativeOnSuggestionSelected(long nativeAutocompleteControllerAndroid,
             int selectedIndex, String currentPageUrl, boolean isQueryInOmnibox,
-            boolean focusedFromFakebox, long elapsedTimeSinceModified, WebContents webContents);
+            boolean focusedFromFakebox, long elapsedTimeSinceModified,
+            int completedLength, WebContents webContents);
     private native void nativeOnOmniboxFocused(long nativeAutocompleteControllerAndroid,
             String omniboxText, String currentUrl, boolean isQueryInOmnibox,
             boolean focusedFromFakebox);
