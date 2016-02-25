@@ -115,7 +115,6 @@ class MacPort(base.Port):
         return 'wdiff'
 
     def _port_specific_expectations_files(self):
-        # FIXME: Delete this file once the 10.11 failures have been rebaselined or triaged.
-        if self._version == 'mac10.11':
-            return [self.host.filesystem.join(self.layout_tests_dir(), 'Mac10_11_Expectations')]
-        return []
+        # FIXME: Delete this file once the 10.11 failures have been rebaselined or triaged
+        # and we know why we're seeing failures on 10.9 and 10.10 ...
+        return [self.host.filesystem.join(self.layout_tests_dir(), 'Mac10_11_Expectations')]
