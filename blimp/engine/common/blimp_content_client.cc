@@ -13,7 +13,10 @@ namespace blimp {
 namespace engine {
 
 std::string GetBlimpEngineUserAgent() {
-  return content::BuildUserAgentFromProduct(
+  // TODO(haibinlu): Use Client's Android version. crbug.com/589917
+  const char kAndroidInfoStr[] = "Linux; Android 5.1.1";
+  return content::BuildUserAgentFromOSAndProduct(
+      kAndroidInfoStr,
       version_info::GetProductNameAndVersionForUserAgent() + " Mobile");
 }
 
