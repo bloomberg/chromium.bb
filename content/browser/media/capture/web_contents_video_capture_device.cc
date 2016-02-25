@@ -213,7 +213,8 @@ class ContentCaptureSubscription {
   ~ContentCaptureSubscription();
 
  private:
-  void OnTimer();
+  // Called on timer or mouse activity events.
+  void OnEvent(FrameSubscriber* subscriber);
 
   // Maintain a weak reference to the RenderWidgetHost (via its routing ID),
   // since the instance could be destroyed externally during the lifetime of
@@ -223,6 +224,7 @@ class ContentCaptureSubscription {
 
   VideoFrameDeliveryLog delivery_log_;
   scoped_ptr<FrameSubscriber> timer_subscriber_;
+  scoped_ptr<FrameSubscriber> mouse_activity_subscriber_;
   CaptureCallback capture_callback_;
   base::Timer timer_;
 
@@ -451,6 +453,12 @@ ContentCaptureSubscription::ContentCaptureSubscription(
                        : base::WeakPtr<CursorRenderer>(),
       window_activity_tracker_ ? window_activity_tracker_->GetWeakPtr()
                                : base::WeakPtr<WindowActivityTracker>()));
+  mouse_activity_subscriber_.reset(new FrameSubscriber(
+      media::VideoCaptureOracle::kMouseCursorUpdate, oracle_proxy,
+      &delivery_log_, cursor_renderer_ ? cursor_renderer_->GetWeakPtr()
+                                       : base::WeakPtr<CursorRenderer>(),
+      window_activity_tracker_ ? window_activity_tracker_->GetWeakPtr()
+                               : base::WeakPtr<WindowActivityTracker>()));
 
   // Subscribe to compositor updates. These will be serviced directly by the
   // oracle.
@@ -466,12 +474,19 @@ ContentCaptureSubscription::ContentCaptureSubscription(
   }
 
   // Subscribe to timer events. This instance will service these as well.
-  timer_.Start(FROM_HERE,
-               std::max(oracle_proxy->min_capture_period(),
-                        base::TimeDelta::FromMilliseconds(media
-                            ::VideoCaptureOracle::kMinTimerPollPeriodMillis)),
-               base::Bind(&ContentCaptureSubscription::OnTimer,
-                          base::Unretained(this)));
+  timer_.Start(
+      FROM_HERE,
+      std::max(oracle_proxy->min_capture_period(),
+               base::TimeDelta::FromMilliseconds(
+                   media::VideoCaptureOracle::kMinTimerPollPeriodMillis)),
+      base::Bind(&ContentCaptureSubscription::OnEvent, base::Unretained(this),
+                 timer_subscriber_.get()));
+  // Subscribe to mouse movement and mouse cursor update events.
+  if (window_activity_tracker_) {
+    window_activity_tracker_->RegisterMouseInteractionObserver(
+        base::Bind(&ContentCaptureSubscription::OnEvent, base::Unretained(this),
+                   mouse_activity_subscriber_.get()));
+  }
 }
 
 ContentCaptureSubscription::~ContentCaptureSubscription() {
@@ -489,16 +504,18 @@ ContentCaptureSubscription::~ContentCaptureSubscription() {
     view->EndFrameSubscription();
 }
 
-void ContentCaptureSubscription::OnTimer() {
+void ContentCaptureSubscription::OnEvent(FrameSubscriber* subscriber) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  TRACE_EVENT0("gpu.capture", "ContentCaptureSubscription::OnTimer");
+  TRACE_EVENT0("gpu.capture", "ContentCaptureSubscription::OnEvent");
 
   scoped_refptr<media::VideoFrame> frame;
   RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback deliver_frame_cb;
 
   const base::TimeTicks start_time = base::TimeTicks::Now();
-  if (timer_subscriber_->ShouldCaptureFrame(gfx::Rect(), start_time, &frame,
-                                            &deliver_frame_cb)) {
+  DCHECK(subscriber == timer_subscriber_.get() ||
+         subscriber == mouse_activity_subscriber_.get());
+  if (subscriber->ShouldCaptureFrame(gfx::Rect(), start_time, &frame,
+                                     &deliver_frame_cb)) {
     capture_callback_.Run(start_time, frame, deliver_frame_cb);
   }
 }

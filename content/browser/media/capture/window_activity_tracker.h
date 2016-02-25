@@ -20,6 +20,10 @@ class CONTENT_EXPORT WindowActivityTracker {
   // Returns true if UI interaction is active.
   virtual bool IsUiInteractionActive() const = 0;
 
+  // Reports on every mouse movement activity on the window.
+  virtual void RegisterMouseInteractionObserver(
+      const base::Closure& observer) {}
+
   // Resets any previous UI activity tracked.
   virtual void Reset() = 0;
 

@@ -48,12 +48,19 @@ bool WindowActivityTrackerAura::IsUiInteractionActive() const {
   return ui_events_count_ > kMinUserInteractions;
 }
 
+void WindowActivityTrackerAura::RegisterMouseInteractionObserver(
+    const base::Closure& observer) {
+  mouse_interaction_observer_ = observer;
+}
+
 void WindowActivityTrackerAura::Reset() {
   ui_events_count_ = 0;
   last_time_ui_event_detected_ = base::TimeTicks();
 }
 
 void WindowActivityTrackerAura::OnEvent(ui::Event* event) {
+  if (!mouse_interaction_observer_.is_null() && event->IsMouseEvent())
+    mouse_interaction_observer_.Run();
   if (base::TimeTicks::Now() - last_time_ui_event_detected_ >
       base::TimeDelta::FromMicroseconds(kTimePeriodUiEventMicros)) {
     ui_events_count_++;

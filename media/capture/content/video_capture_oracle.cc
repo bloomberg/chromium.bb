@@ -171,6 +171,13 @@ bool VideoCaptureOracle::ObserveEventAndDecideCapture(
         should_sample = smoothing_sampler_.IsOverdueForSamplingAt(event_time);
       break;
 
+    case kMouseCursorUpdate:
+      // Only allow a sampling if there are none currently in-progress.
+      if (num_frames_pending_ == 0) {
+        smoothing_sampler_.ConsiderPresentationEvent(event_time);
+        should_sample = smoothing_sampler_.ShouldSample();
+      }
+      break;
     case kNumEvents:
       NOTREACHED();
       break;

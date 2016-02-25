@@ -26,6 +26,7 @@ class CONTENT_EXPORT WindowActivityTrackerAura : public WindowActivityTracker,
 
   // WindowActivityTracker overrides.
   bool IsUiInteractionActive() const final;
+  void RegisterMouseInteractionObserver(const base::Closure& observer) final;
   void Reset() final;
   base::WeakPtr<WindowActivityTracker> GetWeakPtr() final;
 
@@ -40,6 +41,9 @@ class CONTENT_EXPORT WindowActivityTrackerAura : public WindowActivityTracker,
 
   // The last time a UI event was detected.
   base::TimeTicks last_time_ui_event_detected_;
+
+  // Runs on mouse movement or mouse cursor changes.
+  base::Closure mouse_interaction_observer_;
 
   // The number of UI events detected so far. In case of continuous events
   // such as mouse movement, a single continuous movement is treated

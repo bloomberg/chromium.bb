@@ -26,6 +26,7 @@ class MEDIA_EXPORT VideoCaptureOracle {
   enum Event {
     kTimerPoll,
     kCompositorUpdate,
+    kMouseCursorUpdate,
     kNumEvents,
   };
 
