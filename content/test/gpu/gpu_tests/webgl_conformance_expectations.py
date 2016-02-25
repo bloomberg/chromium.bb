@@ -128,9 +128,22 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail(
         'conformance/glsl/bugs/array-of-struct-with-int-first-position.html',
         ['mac', ('nvidia', 0xfd5), ('nvidia', 0xfe9)], bug=368912)
-    self.Fail(
-        'conformance/textures/image_bitmap_from_image/*',
+    self.Fail('conformance/textures/image_bitmap_from_image/*',
         ['mac', ('nvidia', 0xfd5), ('nvidia', 0xfe9)], bug=589930)
+
+    # Mac Retina AMD failures
+    self.Fail('conformance/textures/image_bitmap_from_image/*',
+        ['mac', ('amd', 0x6821)], bug=589930)
+
+    # Mac AMD failures
+    self.Fail('conformance/textures/image_bitmap_from_image/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-image-' +
+        'rgb-rgb-unsigned_byte.html',
+        ['mac', ('amd', 0x679e)], bug=589930)
+    self.Fail('conformance/textures/image_bitmap_from_image/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-image-' +
+        'rgba-rgba-unsigned_byte.html',
+        ['mac', ('amd', 0x679e)], bug=589930)
 
     # Mac Intel failures
     self.Fail('conformance/textures/image_bitmap_from_image/' +
