@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/test_runner/blink_test_platform_support.h"
+#include "content/shell/app/blink_test_platform_support.h"
 
 #include <stddef.h>
 
@@ -13,7 +13,7 @@
 #include "base/path_service.h"
 #include "ui/gfx/test/fontconfig_util_linux.h"
 
-namespace test_runner {
+namespace content {
 
 namespace {
 
@@ -70,4 +70,4 @@ bool BlinkTestPlatformInitialize() {
   return true;
 }
 
-}  // namespace test_runner
+}  // namespace content

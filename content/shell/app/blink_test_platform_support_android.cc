@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/test_runner/blink_test_platform_support.h"
+#include "content/shell/app/blink_test_platform_support.h"
 
 #include "third_party/skia/include/ports/SkFontMgr_android.h"
 
@@ -25,7 +25,7 @@ const char kFontDirectory[] = DEVICE_SOURCE_ROOT_DIR "fonts/";
 
 }  // namespace
 
-namespace test_runner {
+namespace content {
 
 bool CheckLayoutSystemDeps() {
   return true;
@@ -39,4 +39,4 @@ bool BlinkTestPlatformInitialize() {
   return true;
 }
 
-}  // namespace test_runner
+}  // namespace content

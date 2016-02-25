@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/test_runner/blink_test_platform_support.h"
+#include "content/shell/app/blink_test_platform_support.h"
 
 #include <windows.h>
 #include <stddef.h>
@@ -25,7 +25,7 @@
 #define NONCLIENTMETRICS_SIZE_PRE_VISTA \
     SIZEOF_STRUCT_WITH_SPECIFIED_LAST_MEMBER(NONCLIENTMETRICS, lfMessageFont)
 
-namespace test_runner {
+namespace content {
 
 namespace {
 
@@ -118,4 +118,4 @@ bool BlinkTestPlatformInitialize() {
   return SetupFonts();
 }
 
-}  // namespace test_runner
+}  // namespace content

@@ -7,12 +7,12 @@
 #include "base/mac/bundle_locations.h"
 #include "base/macros.h"
 #include "base/path_service.h"
-#include "components/test_runner/blink_test_platform_support.h"
+#include "content/shell/app/blink_test_platform_support.h"
 
 #include <AppKit/AppKit.h>
 #include <Foundation/Foundation.h>
 
-namespace test_runner {
+namespace content {
 
 namespace {
 
@@ -96,4 +96,4 @@ bool BlinkTestPlatformInitialize() {
   return true;
 }
 
-}  // namespace test_runner
+}  // namespace content
