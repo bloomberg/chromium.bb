@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/gles2_conform_support/egl/display.h"
-
 extern "C" {
 #if defined(GLES2_CONFORM_SUPPORT_ONLY)
 #include "gpu/gles2_conform_support/gtf/gtf_stubs.h"
@@ -24,9 +22,8 @@ GTFbool GTFNativeCreateWindow(EGLNativeDisplayType nativeDisplay,
                               EGLDisplay eglDisplay, EGLConfig eglConfig,
                               const char* title, int width, int height,
                               EGLNativeWindowType *pNativeWindow) {
-  egl::Display* display = static_cast<egl::Display*>(eglDisplay);
-  display->SetCreateOffscreen(width, height);
-  return GTFtrue;
+  // GTF should use EGL pbuffer interface directly.
+  return GTFfalse;
 }
 
 void GTFNativeDestroyWindow(EGLNativeDisplayType nativeDisplay,
