@@ -34,8 +34,8 @@ BaseAutomationHandler = function(node) {
     hover: this.onEventDefault,
     loadComplete: this.onLoadComplete,
     menuListItemSelected: this.onEventDefault,
-    menuStart: this.onEventDefault,
-    menuEnd: this.onEventDefault,
+    menuStart: this.onMenuStart,
+    menuEnd: this.onMenuEnd,
     selection: this.onEventDefault,
     scrollPositionChanged: this.onScrollPositionChanged,
     textChanged: this.onTextChanged,
@@ -122,6 +122,16 @@ BaseAutomationHandler.prototype = {
    * @param {!AutomationEvent} evt
    */
   onEventDefault: function(evt) {},
+
+  /**
+   * @param {!AutomationEvent} evt
+   */
+  onMenuStart: function(evt) {},
+
+  /**
+   * @param {!AutomationEvent} evt
+   */
+  onMenuEnd: function(evt) {},
 
   /**
    * @param {!AutomationEvent} evt

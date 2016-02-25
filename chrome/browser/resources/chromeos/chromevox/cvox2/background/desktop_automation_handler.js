@@ -267,6 +267,18 @@ DesktopAutomationHandler.prototype = {
       new Output().withLocation(currentRange, null, evt.type).go();
   },
 
+  /** @override */
+  onMenuStart: function(evt) {
+    global.backgroundObj.startExcursion();
+    this.onEventDefault(evt);
+  },
+
+  /** @override */
+  onMenuEnd: function(evt) {
+    this.onEventDefault(evt);
+    global.backgroundObj.endExcursion();
+  },
+
   /**
    * Create an editable text handler for the given node if needed.
    * @param {!AutomationNode} node

@@ -485,7 +485,7 @@ Panel.closeMenusAndRestoreFocus = function() {
 
   var bkgnd =
       chrome.extension.getBackgroundPage()['global']['backgroundObj'];
-  bkgnd['restoreCurrentRange']();
+  bkgnd['endExcursion']();
   if (Panel.pendingCallback_)
     Panel.pendingCallback_();
 };

@@ -184,6 +184,12 @@ void AXPlatformNodeWin::NotifyAccessibilityEvent(ui::AXEvent event_type) {
   if (!hwnd)
     return;
 
+  // Menu items fire selection events but Windows screen readers work reliably
+  // with focus events. Remap here.
+  if (event_type == ui::AX_EVENT_SELECTION &&
+      GetData().role == ui::AX_ROLE_MENU_ITEM)
+    event_type = ui::AX_EVENT_FOCUS;
+
   int native_event = MSAAEvent(event_type);
   if (native_event < EVENT_MIN)
     return;

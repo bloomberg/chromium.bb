@@ -135,6 +135,9 @@ Background = function() {
   /** @type {number} @private */
   this.passThroughKeyUpCount_ = 0;
 
+  /** @type {boolean} @private */
+  this.inExcursion_ = false;
+
   if (!chrome.accessibilityPrivate.setKeyboardListener)
     chrome.accessibilityPrivate.setKeyboardListener = function() {};
 };
@@ -273,11 +276,7 @@ Background.prototype = {
     if (!newRange)
       return;
 
-    // Exclude saving ranges inside of the Panel and any parenting webviews.
-    var panelUrl = chrome.extension.getURL('cvox2/background/panel.html');
-    var testNode = newRange.start.node;
-    if (newRange.start.node.root.docUrl.indexOf(panelUrl) != 0 &&
-        newRange.start.node.role != RoleType.webView)
+    if (!this.inExcursion_)
       this.savedRange_ = new cursors.Range(newRange.start, newRange.end);
 
     this.currentRange_ = newRange;
@@ -548,6 +547,7 @@ Background.prototype = {
             Msgs.getMsg('pass_through_key'), cvox.QueueMode.QUEUE);
         return true;
       case 'openChromeVoxMenus':
+        this.startExcursion();
         (new PanelCommand(PanelCommandType.OPEN_MENUS)).send();
         return false;
       case 'showKbExplorerPage':
@@ -920,8 +920,9 @@ Background.prototype = {
   /**
    * Restore the range to the last range that was *not* in the ChromeVox
    * panel. This is used when the ChromeVox Panel closes.
+   * @private
    */
-  restoreCurrentRange: function() {
+  restoreCurrentRange_: function() {
     if (this.savedRange_) {
       var containingWebView = this.savedRange_.start.node;
       while (containingWebView && containingWebView.role != RoleType.webView)
@@ -932,6 +933,21 @@ Background.prototype = {
       this.navigateToRange_(this.savedRange_);
       this.savedRange_ = null;
     }
+  },
+
+  /**
+   * Move ChromeVox without saving any ranges.
+   */
+  startExcursion: function() {
+    this.inExcursion_ = true;
+  },
+
+  /**
+   * Move ChromeVox back to the last saved range.
+   */
+  endExcursion: function() {
+    this.inExcursion_ = false;
+    this.restoreCurrentRange_();
   },
 };
 
