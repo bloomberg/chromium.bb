@@ -37,6 +37,7 @@
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/scroll/MainThreadScrollingReason.h"
 #include "platform/scroll/ProgrammaticScrollAnimator.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "wtf/PassOwnPtr.h"
@@ -530,7 +531,14 @@ void ScrollableArea::cancelProgrammaticScrollAnimation()
 bool ScrollableArea::shouldScrollOnMainThread() const
 {
     if (GraphicsLayer* layer = layerForScrolling()) {
-        return layer->platformLayer()->shouldScrollOnMainThread();
+        uint32_t reasons = layer->platformLayer()->mainThreadScrollingReasons();
+        // Should scroll on main thread unless the reason is the one that is set
+        // by the ScrollAnimator, in which case, the animation can still be
+        // scheduled on the compositor.
+        // TODO(ymalik): We have a non-transient "main thread scrolling reason"
+        // that doesn't actually cause shouldScrollOnMainThread() to be true.
+        // This is confusing and should be cleaned up.
+        return !!(reasons & ~MainThreadScrollingReason::kAnimatingScrollOnMainThread);
     }
     return true;
 }

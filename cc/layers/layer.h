@@ -280,7 +280,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   bool user_scrollable_vertical() const { return user_scrollable_vertical_; }
 
   void AddMainThreadScrollingReasons(uint32_t main_thread_scrolling_reasons);
-  void ClearMainThreadScrollingReasons();
+  void ClearMainThreadScrollingReasons(
+      uint32_t main_thread_scrolling_reasons_to_clear);
   uint32_t main_thread_scrolling_reasons() const {
     return main_thread_scrolling_reasons_;
   }

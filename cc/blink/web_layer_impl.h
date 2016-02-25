@@ -124,7 +124,9 @@ class WebLayerImpl : public blink::WebLayer {
   bool userScrollableVertical() const override;
   void addMainThreadScrollingReasons(
       uint32_t main_thread_scrolling_reasons) override;
-  void clearMainThreadScrollingReasons() override;
+  void clearMainThreadScrollingReasons(
+      uint32_t main_thread_scrolling_reasons_to_clear) override;
+  uint32_t mainThreadScrollingReasons() override;
   bool shouldScrollOnMainThread() const override;
   void setNonFastScrollableRegion(
       const blink::WebVector<blink::WebRect>& region) override;

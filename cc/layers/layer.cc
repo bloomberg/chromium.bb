@@ -966,18 +966,23 @@ void Layer::AddMainThreadScrollingReasons(
     uint32_t main_thread_scrolling_reasons) {
   DCHECK(IsPropertyChangeAllowed());
   DCHECK(main_thread_scrolling_reasons);
-  if (main_thread_scrolling_reasons_ == main_thread_scrolling_reasons)
+  uint32_t new_reasons =
+      main_thread_scrolling_reasons_ | main_thread_scrolling_reasons;
+  if (main_thread_scrolling_reasons_ == new_reasons)
     return;
-  main_thread_scrolling_reasons_ |= main_thread_scrolling_reasons;
+  main_thread_scrolling_reasons_ = new_reasons;
   SetNeedsCommit();
 }
 
-void Layer::ClearMainThreadScrollingReasons() {
+void Layer::ClearMainThreadScrollingReasons(
+    uint32_t main_thread_scrolling_reasons_to_clear) {
   DCHECK(IsPropertyChangeAllowed());
-  if (!main_thread_scrolling_reasons_)
+  DCHECK(main_thread_scrolling_reasons_to_clear);
+  uint32_t new_reasons =
+      ~main_thread_scrolling_reasons_to_clear & main_thread_scrolling_reasons_;
+  if (new_reasons == main_thread_scrolling_reasons_)
     return;
-  main_thread_scrolling_reasons_ =
-      MainThreadScrollingReason::kNotScrollingOnMain;
+  main_thread_scrolling_reasons_ = new_reasons;
   SetNeedsCommit();
 }
 

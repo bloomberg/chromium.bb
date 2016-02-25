@@ -48,7 +48,7 @@ public:
     explicit ScrollAnimator(ScrollableArea*, WTF::TimeFunction = WTF::monotonicallyIncreasingTime);
     ~ScrollAnimator() override;
 
-    bool hasRunningAnimation() const;
+    bool hasRunningAnimation() const override;
     float computeDeltaToConsume(ScrollbarOrientation, float pixelDelta) const override;
 
     ScrollResultOneDimensional userScroll(ScrollbarOrientation, ScrollGranularity, float step, float delta) override;
@@ -76,6 +76,11 @@ private:
     // could not be scheduled (e.g. because the frame is detached), scrolls
     // immediately to the target and returns false.
     bool registerAndScheduleAnimation();
+
+    void postAnimationCleanupAndReset();
+
+    void addMainThreadScrollingReason();
+    void removeMainThreadScrollingReason();
 
     FloatPoint m_targetOffset;
     ScrollGranularity m_lastGranularity;

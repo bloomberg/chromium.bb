@@ -1,0 +1,13 @@
+This test verifies that smooth scrolls initiated on the main thread add the appropriate main thread scrolling reason.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS internals.getScrollAnimationState(document) == RUNNING_ON_COMPOSITOR is true
+PASS internals.mainThreadScrollingReasons(document) == ANIMATING_TEXT is true
+PASS document.scrollingElement.scrollTop == 40 became true
+PASS internals.mainThreadScrollingReasons(document) == '' is true
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

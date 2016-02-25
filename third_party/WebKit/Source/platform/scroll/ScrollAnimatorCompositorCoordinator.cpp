@@ -163,9 +163,10 @@ void ScrollAnimatorCompositorCoordinator::compositorAnimationFinished(
     }
 }
 
-void ScrollAnimatorCompositorCoordinator::reattachCompositorPlayerIfNeeded(
+bool ScrollAnimatorCompositorCoordinator::reattachCompositorPlayerIfNeeded(
     CompositorAnimationTimeline* timeline)
 {
+    bool reattached = false;
     int compositorAnimationAttachedToLayerId = 0;
     if (scrollableArea()->layerForScrolling())
         compositorAnimationAttachedToLayerId = scrollableArea()->layerForScrolling()->platformLayer()->id();
@@ -184,10 +185,13 @@ void ScrollAnimatorCompositorCoordinator::reattachCompositorPlayerIfNeeded(
                 timeline->playerAttached(*this);
                 m_compositorPlayer->attachLayer(
                     scrollableArea()->layerForScrolling()->platformLayer());
+                reattached = true;
             }
             m_compositorAnimationAttachedToLayerId = compositorAnimationAttachedToLayerId;
         }
     }
+
+    return reattached;
 }
 
 void ScrollAnimatorCompositorCoordinator::notifyAnimationStarted(

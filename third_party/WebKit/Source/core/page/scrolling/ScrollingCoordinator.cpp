@@ -687,10 +687,15 @@ void ScrollingCoordinator::setShouldUpdateScrollLayerPositionOnMainThread(MainTh
         return;
     if (WebLayer* scrollLayer = toWebLayer(m_page->deprecatedLocalMainFrame()->view()->layerForScrolling())) {
         m_lastMainThreadScrollingReasons = mainThreadScrollingReasons;
-        if (mainThreadScrollingReasons)
+        if (mainThreadScrollingReasons) {
             scrollLayer->addMainThreadScrollingReasons(mainThreadScrollingReasons);
-        else
-            scrollLayer->clearMainThreadScrollingReasons();
+        } else {
+            // Clear all main thread scrolling reasons except the one that's set
+            // if there is a running scroll animation.
+            uint32_t mainThreadScrollingReasonsToClear = ~0u;
+            mainThreadScrollingReasonsToClear &= ~MainThreadScrollingReason::kAnimatingScrollOnMainThread;
+            scrollLayer->clearMainThreadScrollingReasons(mainThreadScrollingReasonsToClear);
+        }
     }
 }
 
@@ -1033,6 +1038,8 @@ String ScrollingCoordinator::mainThreadScrollingReasonsAsText(MainThreadScrollin
         stringBuilder.appendLiteral("Has non-layer viewport-constrained objects, ");
     if (reasons & MainThreadScrollingReason::kThreadedScrollingDisabled)
         stringBuilder.appendLiteral("Threaded scrolling is disabled, ");
+    if (reasons & MainThreadScrollingReason::kAnimatingScrollOnMainThread)
+        stringBuilder.appendLiteral("Animating scroll on main thread, ");
 
     if (stringBuilder.length())
         stringBuilder.resize(stringBuilder.length() - 2);
@@ -1042,6 +1049,9 @@ String ScrollingCoordinator::mainThreadScrollingReasonsAsText(MainThreadScrollin
 String ScrollingCoordinator::mainThreadScrollingReasonsAsText() const
 {
     ASSERT(m_page->deprecatedLocalMainFrame()->document()->lifecycle().state() >= DocumentLifecycle::CompositingClean);
+    if (WebLayer* scrollLayer = toWebLayer(m_page->deprecatedLocalMainFrame()->view()->layerForScrolling()))
+        return mainThreadScrollingReasonsAsText(scrollLayer->mainThreadScrollingReasons());
+
     return mainThreadScrollingReasonsAsText(m_lastMainThreadScrollingReasons);
 }
 

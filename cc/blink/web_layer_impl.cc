@@ -320,8 +320,14 @@ void WebLayerImpl::addMainThreadScrollingReasons(
   layer_->AddMainThreadScrollingReasons(main_thread_scrolling_reasons);
 }
 
-void WebLayerImpl::clearMainThreadScrollingReasons() {
-  layer_->ClearMainThreadScrollingReasons();
+void WebLayerImpl::clearMainThreadScrollingReasons(
+    uint32_t main_thread_scrolling_reasons_to_clear) {
+  layer_->ClearMainThreadScrollingReasons(
+      main_thread_scrolling_reasons_to_clear);
+}
+
+uint32_t WebLayerImpl::mainThreadScrollingReasons() {
+  return layer_->main_thread_scrolling_reasons();
 }
 
 bool WebLayerImpl::shouldScrollOnMainThread() const {

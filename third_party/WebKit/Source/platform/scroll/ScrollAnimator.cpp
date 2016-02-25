@@ -34,6 +34,7 @@
 #include "platform/animation/CompositorAnimation.h"
 #include "platform/graphics/CompositorFactory.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/scroll/MainThreadScrollingReason.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
@@ -41,6 +42,15 @@
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
+
+namespace {
+
+WebLayer* toWebLayer(GraphicsLayer* layer)
+{
+    return layer ? layer->platformLayer() : nullptr;
+}
+
+} // namespace
 
 PassOwnPtrWillBeRawPtr<ScrollAnimatorBase> ScrollAnimatorBase::create(ScrollableArea* scrollableArea)
 {
@@ -190,10 +200,21 @@ void ScrollAnimator::tickAnimation(double monotonicTime)
     notifyPositionChanged();
 }
 
+void ScrollAnimator::postAnimationCleanupAndReset()
+{
+    // Remove the temporary main thread scrolling reason that was added while
+    // main thread had scheduled an animation.
+    removeMainThreadScrollingReason();
+
+    resetAnimationState();
+}
+
 void ScrollAnimator::updateCompositorAnimations()
 {
-    if (m_runState == RunState::PostAnimationCleanup)
-        return resetAnimationState();
+    if (m_runState == RunState::PostAnimationCleanup) {
+        postAnimationCleanupAndReset();
+        return;
+    }
 
     if (m_compositorAnimationId && m_runState != RunState::RunningOnCompositor
         && m_runState != RunState::RunningOnCompositorButNeedsUpdate) {
@@ -209,7 +230,8 @@ void ScrollAnimator::updateCompositorAnimations()
         m_compositorAnimationId = 0;
         m_compositorAnimationGroupId = 0;
         if (m_runState == RunState::WaitingToCancelOnCompositor) {
-            return resetAnimationState();
+            postAnimationCleanupAndReset();
+            return;
         }
     }
 
@@ -263,10 +285,34 @@ void ScrollAnimator::updateCompositorAnimations()
             }
         }
 
+        bool runningOnMainThread = false;
         if (!sentToCompositor) {
-            if (registerAndScheduleAnimation())
+            runningOnMainThread = registerAndScheduleAnimation();
+            if (runningOnMainThread)
                 m_runState = RunState::RunningOnMainThread;
         }
+
+        // Main thread should deal with the scroll animations it started.
+        if (sentToCompositor || runningOnMainThread)
+            addMainThreadScrollingReason();
+        else
+            removeMainThreadScrollingReason();
+    }
+}
+
+void ScrollAnimator::addMainThreadScrollingReason()
+{
+    if (WebLayer* scrollLayer = toWebLayer(scrollableArea()->layerForScrolling())) {
+        scrollLayer->addMainThreadScrollingReasons(
+            MainThreadScrollingReason::kAnimatingScrollOnMainThread);
+    }
+}
+
+void ScrollAnimator::removeMainThreadScrollingReason()
+{
+    if (WebLayer* scrollLayer = toWebLayer(scrollableArea()->layerForScrolling())) {
+        scrollLayer->clearMainThreadScrollingReasons(
+            MainThreadScrollingReason::kAnimatingScrollOnMainThread);
     }
 }
 
@@ -290,7 +336,8 @@ void ScrollAnimator::cancelAnimation()
 void ScrollAnimator::layerForCompositedScrollingDidChange(
     CompositorAnimationTimeline* timeline)
 {
-    reattachCompositorPlayerIfNeeded(timeline);
+    if (reattachCompositorPlayerIfNeeded(timeline) && m_animationCurve)
+        addMainThreadScrollingReason();
 }
 
 bool ScrollAnimator::registerAndScheduleAnimation()

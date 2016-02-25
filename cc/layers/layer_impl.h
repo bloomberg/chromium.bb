@@ -508,11 +508,9 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
       uint32_t main_thread_scrolling_reasons) {
     main_thread_scrolling_reasons_ = main_thread_scrolling_reasons;
   }
-
   uint32_t main_thread_scrolling_reasons() const {
     return main_thread_scrolling_reasons_;
   }
-
   bool should_scroll_on_main_thread() const {
     return !!main_thread_scrolling_reasons_;
   }

@@ -201,8 +201,8 @@ public:
 
     // Indicates that this layer will always scroll on the main thread for the provided reason.
     virtual void addMainThreadScrollingReasons(uint32_t) = 0;
-    // Indicates that the layer could scroll on the compositor thread.
-    virtual void clearMainThreadScrollingReasons() = 0;
+    virtual void clearMainThreadScrollingReasons(uint32_t mainThreadScrollingReasonsToClear) = 0;
+    virtual uint32_t mainThreadScrollingReasons() = 0;
     virtual bool shouldScrollOnMainThread() const = 0;
 
     virtual void setNonFastScrollableRegion(const WebVector<WebRect>&) = 0;

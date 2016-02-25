@@ -31,6 +31,8 @@ public:
     bool hasAnimationThatRequiresService() const;
     void dispose();
 
+    virtual bool hasRunningAnimation() const { return false; }
+
     virtual void resetAnimationState();
     virtual void cancelAnimation();
 
@@ -51,7 +53,8 @@ protected:
     void abortAnimation();
 
     void compositorAnimationFinished(int groupId);
-    void reattachCompositorPlayerIfNeeded(CompositorAnimationTimeline*);
+    // Returns true if the compositor player was attached to a new layer.
+    bool reattachCompositorPlayerIfNeeded(CompositorAnimationTimeline*);
 
     // WebCompositorAnimationDelegate implementation.
     void notifyAnimationStarted(double monotonicTime, int group) override;

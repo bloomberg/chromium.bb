@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<script src="../../../../../resources/js-test.js"></script>
+<style>
+body {
+    width: 2000px;
+    height: 2000px;
+}
+</style>
+
+<script>
+var jsTestIsAsync = true;
+
+description("This test verifies that the ScrollAnimator can schedule " +
+    "animations on the compositor when it adds a temporary main thread " +
+    "scrolling reason.");
+
+// From ScrollingCoordinator::mainThreadScrollingReasonsAsText.
+var ANIMATING_TEXT = 'Animating scroll on main thread';
+// From ScrollAnimatorCompositorCoordinator::RunState.
+var RUNNING_ON_COMPOSITOR = 2;
+var RUNNING_ON_COMPOSITOR_BUT_NEEDS_UPDATE = 3;
+
+function finishTest() {
+  requestAnimationFrame(function() {
+    // Check that main thread scrolling reason is removed.
+    shouldBeTrue("internals.mainThreadScrollingReasons(document) == ''");
+    finishJSTest();
+  });
+}
+
+function needsUpdateOrRunningOnCompositor(node) {
+    var state = internals.getScrollAnimationState(node);
+    return state == RUNNING_ON_COMPOSITOR ||
+        state == RUNNING_ON_COMPOSITOR_BUT_NEEDS_UPDATE;
+}
+
+function runTest() {
+    if (document.scrollingElement.scrollTop == 0) {
+        requestAnimationFrame(runTest);
+    } else {
+        // Check that initiated by main thread and running on the compositor.
+        shouldBeTrue("internals.getScrollAnimationState(document) " +
+          "== RUNNING_ON_COMPOSITOR");
+        // Check that main thread scrolling reason is added.
+        shouldBeTrue("internals.mainThreadScrollingReasons(document) " +
+          "== ANIMATING_TEXT");
+
+        // Scroll 1 more tick down.
+        eventSender.mouseScrollBy(0, -1);
+        shouldBeTrue("internals.getScrollAnimationState(document) " +
+          "== RUNNING_ON_COMPOSITOR_BUT_NEEDS_UPDATE");
+
+        requestAnimationFrame(function() {
+            // Check that the temporary main thread scrolling is still there
+            // and running on the compositor.
+            shouldBeTrue("internals.mainThreadScrollingReasons(document) " +
+              "== ANIMATING_TEXT");
+            shouldBeTrue("needsUpdateOrRunningOnCompositor(document)");
+            shouldBecomeEqual("document.scrollingElement.scrollTop == 80",
+              "true", finishTest);
+        });
+    }
+}
+
+onload = function() {
+    if (!window.eventSender || !window.internals) {
+        debug("This test requires window.eventSender.")
+        finishJSTest();
+        return;
+    }
+    internals.settings.setScrollAnimatorEnabled(true);
+
+    document.scrollingElement.scrollTop = 0;
+
+    // Scroll 1 ticks down.
+    eventSender.mouseMoveTo(20, 20);
+    eventSender.mouseScrollBy(0, -1);
+    runTest();
+};
+
+</script>
