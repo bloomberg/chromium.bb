@@ -33,8 +33,6 @@
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_stream_sequencer.h"
 #include "net/quic/quic_types.h"
-//#include "std::strings/std::stringpiece.h"
-//#include "util/refcount/reffed_ptr.h"
 // TODO(alyssar) remove this after cleaning Priority logic from this class.
 #include "net/quic/quic_write_blocked_list.h"
 
