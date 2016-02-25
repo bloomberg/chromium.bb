@@ -37,9 +37,9 @@ bool GetPacketPayloadRanges(const libwebm::PesHeader& header,
       for (std::size_t pos = 0; pos < kBytesToPacketize;
            pos += packet_payload_length) {
         packet_payload_length =
-            (frame_range.length - pos < kMaxPacketPayloadSize)
-                ? frame_range.length - pos
-                : kMaxPacketPayloadSize;
+            (frame_range.length - pos < kMaxPacketPayloadSize) ?
+                frame_range.length - pos :
+                kMaxPacketPayloadSize;
         packet_payload_ranges->push_back(
             libwebm::Range(frame_range.offset + pos, packet_payload_length));
       }
@@ -112,7 +112,7 @@ bool PesOptionalHeader::Write(bool write_pts, PacketDataBuffer* buffer) const {
     return false;
   }
 
-  const std::size_t kHeaderSize = 9;
+  const int kHeaderSize = 9;
   std::uint8_t header[kHeaderSize] = {0};
   std::uint8_t* byte = header;
 
@@ -179,11 +179,11 @@ bool BCMVHeader::Write(PacketDataBuffer* buffer) const {
     std::fprintf(stderr, "Webm2Pes: nullptr for buffer in BCMV Write.\n");
     return false;
   }
-  const std::size_t kBcmvSize = 4;
+  const int kBcmvSize = 4;
   for (int i = 0; i < kBcmvSize; ++i)
     buffer->push_back(bcmv[i]);
 
-  const std::size_t kRemainingBytes = 6;
+  const int kRemainingBytes = 6;
   const uint8_t bcmv_buffer[kRemainingBytes] = {
       static_cast<std::uint8_t>((length >> 24) & 0xff),
       static_cast<std::uint8_t>((length >> 16) & 0xff),
@@ -191,7 +191,7 @@ bool BCMVHeader::Write(PacketDataBuffer* buffer) const {
       static_cast<std::uint8_t>(length & 0xff),
       0,
       0 /* 2 bytes 0 padding */};
-  for (std::int8_t i = 0; i < kRemainingBytes; ++i)
+  for (int i = 0; i < kRemainingBytes; ++i)
     buffer->push_back(bcmv_buffer[i]);
 
   return true;
@@ -210,7 +210,7 @@ bool PesHeader::Write(bool write_pts, PacketDataBuffer* buffer) const {
   }
 
   // Write |start_code|.
-  const std::size_t kStartCodeLength = 4;
+  const int kStartCodeLength = 4;
   for (int i = 0; i < kStartCodeLength; ++i)
     buffer->push_back(start_code[i]);
 
@@ -393,7 +393,8 @@ bool Webm2Pes::InitWebmParser() {
                  input_file_name_.c_str());
     return false;
   }
-  for (int track_index = 0; track_index < tracks->GetTracksCount();
+  for (int track_index = 0;
+       track_index < static_cast<int>(tracks->GetTracksCount());
        ++track_index) {
     const mkvparser::Track* track = tracks->GetTrackByIndex(track_index);
     if (track && track->GetType() == mkvparser::Track::kVideo) {
