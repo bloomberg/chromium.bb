@@ -41,32 +41,36 @@ static int PathContainsRootPrefix(const char *path, size_t path_len) {
 #if !NACL_WINDOWS
 /*
  * Given a |virtual_path| (a path supplied by the user with no knowledge of
- * the mounted directory) transform it into an |absolute_path|, which is an
- * absolute path prefixed by the root mount directory.
- *
- * TODO(smklein): The virtual_path is assumed to be absolute. Change this.
+ * the mounted directory) transform it into an |real_path|, which is either
+ * an absolute path prefixed by the root mount directory, or a relative path.
  *
  * @param[in] virtual_path Virtual path supplied by user.
- * @param[out] absolute_path The absolute path referenced by the |virtual_path|.
- * @param[in] absolute_path_size The size of the |absolute_path| buffer.
+ * @param[out] real_path The real path referenced by the |virtual_path|.
+ * @param[in] real_path_size The size of the |real_path| buffer.
  * @return 0 on success, else a negated NaCl errno.
  */
-static uint32_t VirtualToAbsolutePath(const char *virtual_path,
-                                      char       *absolute_path,
-                                      size_t     absolute_path_max_size) {
+static uint32_t VirtualToRealPath(const char *virtual_path,
+                                  char       *real_path,
+                                  size_t     real_path_max_size) {
   size_t virtual_path_len = strlen(virtual_path);
-  /* Check that we have enough room to prepend the prefix (absolute case). */
-  if (virtual_path_len + NaClRootDirLen + 1 > absolute_path_max_size) {
-    NaClLog(LOG_ERROR, "Pathname too long: %s\n", virtual_path);
-    return -NACL_ABI_ENAMETOOLONG;
+  if (virtual_path[0] == '/') {
+    /* Absolute Path = Prefix + Absolute Virtual Path + '\0' */
+    if (virtual_path_len + NaClRootDirLen + 1 > real_path_max_size) {
+      NaClLog(LOG_ERROR, "Pathname too long: %s\n", virtual_path);
+      return -NACL_ABI_ENAMETOOLONG;
+    }
+    /* Prefix */
+    strcpy(real_path, NaClRootDir);
+    /* Prefix + Virtual Path */
+    strcat(real_path, virtual_path);
+  } else {
+    /* Relative Path = Relative Virtual Path + '\0' */
+    if (virtual_path_len + 1 > real_path_max_size) {
+      NaClLog(LOG_ERROR, "Pathname too long: %s\n", virtual_path);
+      return -NACL_ABI_ENAMETOOLONG;
+    }
+    strcpy(real_path, virtual_path);
   }
-
-  /* Prefix */
-  memcpy(absolute_path, NaClRootDir, NaClRootDirLen);
-  /* Prefix + Virtual Path */
-  memcpy(absolute_path + NaClRootDirLen, virtual_path, virtual_path_len);
-  /* Prefix + Virtual Path + Terminator */
-  absolute_path[virtual_path_len + NaClRootDirLen] = '\0';
 
   return 0;
 }
@@ -84,19 +88,17 @@ static int IsSymbolicLink(const char *path) {
 }
 
 /*
- * Preconditions:
- *   The path is absolute (aka, it starts with "/").
- *
  * @param[in] path The path to be verified.
  * @return 0 if the path is valid, else a negated NaCl errno.
  */
-static uint32_t ValidateAbsolutePath(const char *path) {
+static uint32_t ValidatePath(const char *path) {
   if (strstr(path, "..")) {
     NaClLog(LOG_ERROR, "Pathname contains ..: %s\n", path);
     return -NACL_ABI_EACCES;
   }
 
-  CHECK(PathContainsRootPrefix(path, strlen(path)));
+  if (path[0] == '/')
+    CHECK(PathContainsRootPrefix(path, strlen(path)));
 
   /*
    * This is an informal check, and we still require the users of sel_ldr to
@@ -119,9 +121,9 @@ static uint32_t ValidateAbsolutePath(const char *path) {
 }
 
 /*
- * Transforms a raw file path from the user into an absolute path
- * prefixed by the mounted file system root. Also validates the path to
- * ensure it does not access anything outside the mount point.
+ * Transforms a raw file path from the user into an absolute path prefixed by
+ * the mounted file system root (or leave it as a relative path). Also validates
+ * the path to ensure it does not access anything outside the mount point.
  *
  * @param[in/out] dest The raw file path from the user
  * @param[in] dest_max_size The size of the buffer holding dest.
@@ -134,23 +136,23 @@ static uint32_t CopyHostPathMounted(char *dest, size_t dest_max_size) {
   if (dest_max_size <= 0 || dest[0] == '\0') {
     NaClLog(LOG_ERROR, "Dest cannot be empty path\n");
     return -NACL_ABI_ENOENT;
-  } else if (dest[0] != '/') {
-    /* TODO(smklein): Allow usage of relative paths. */
-    NaClLog(LOG_ERROR, "Pathname is not absolute: %s\n", dest);
-    return -NACL_ABI_EACCES;
   }
 
   CHECK(dest_max_size == NACL_CONFIG_PATH_MAX);
   CHECK(strlen(dest) < NACL_CONFIG_PATH_MAX);
   strcpy(raw_path, dest);
 
-  /* Transform the user's raw path into an absolute path. */
-  retval = VirtualToAbsolutePath(raw_path, dest, dest_max_size);
+  /*
+   * Transform the user's raw path into the actual path.
+   * The path will reference a file inside the mount directory once
+   * VirtualToRealPath returns successfully.
+   */
+  retval = VirtualToRealPath(raw_path, dest, dest_max_size);
   if (retval != 0)
     return retval;
 
   /* Verify that the path cannot escape root. */
-  return ValidateAbsolutePath(dest);
+  return ValidatePath(dest);
 }
 #endif /* !NACL_WINDOWS */
 

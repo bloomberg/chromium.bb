@@ -74,11 +74,12 @@ void do_test_write_read_file(const char *filename, bool new_file) {
 
 void test_directory_walk() {
   // Attempt to walk down valid directory structure (and back again).
-  ASSERT_EQ_MSG(chdir("/"), 0, "chdir() failed");
-
   char dirname[PATH_MAX];
   ASSERT_NE_MSG(getcwd(dirname, PATH_MAX), NULL, "getcwd() failed");
   ASSERT_EQ(strcmp(dirname, "/"), 0);
+
+  ASSERT_EQ_MSG(chdir("."), 0, "chdir() failed");
+  ASSERT_EQ_MSG(chdir("/"), 0, "chdir() failed");
 
   DIR *d = opendir(dirname);
   ASSERT_NE_MSG(d, NULL, "opendir() failed");
@@ -127,9 +128,16 @@ void test_directory_walk() {
   ASSERT(current_directory_seen);
   ASSERT_EQ(count, 5);
 
+  // Chdir with relative path name
+  ASSERT_EQ_MSG(chdir(g_temp_sub_dir_name), 0, "chdir() failed");
+  ASSERT_NE_MSG(getcwd(dirname, PATH_MAX), NULL, "getcwd() failed");
+  ASSERT_EQ(strcmp(dirname, g_temp_sub_dir_path), 0);
+
+  // Chdir with absolute path name
   ASSERT_EQ_MSG(chdir(g_temp_sub_dir_path), 0, "chdir() failed");
   ASSERT_NE_MSG(getcwd(dirname, PATH_MAX), NULL, "getcwd() failed");
   ASSERT_EQ(strcmp(dirname, g_temp_sub_dir_path), 0);
+
   d = opendir(dirname);
   count = 0;
 
@@ -180,9 +188,9 @@ void test_new_directory_access() {
   ASSERT_EQ(mkdir("/test_dir/", mode), 0);
   ASSERT_EQ(rmdir("/test_dir/"), 0);
 
-  // Cannot make directory using relative path.
-  ASSERT_EQ(mkdir("test_dir/", mode), -1);
-  ASSERT_EQ(errno, EACCES);
+  // Test that relative paths can also be used.
+  ASSERT_EQ(mkdir("test_dir", mode), 0);
+  ASSERT_EQ(rmdir("test_dir"), 0);
 
   char file_name[PATH_MAX];
   snprintf(file_name, PATH_MAX, "%s/test_dir", g_temp_sub_dir_path);
@@ -298,10 +306,7 @@ void test_information_leak() {
   ASSERT_EQ(stat("//", &buf), 0);
   ASSERT_EQ(stat("/./.", &buf), 0);
   ASSERT_EQ(stat("/./////.", &buf), 0);
-
-  // We should not be able to access relative paths.
-  ASSERT_EQ(stat(".", &buf), -1);
-  ASSERT_EQ(errno, EACCES);
+  ASSERT_EQ(stat(".", &buf), 0);
 
   // We should not be able to access paths containing "..".
   snprintf(path, PATH_MAX, "%s/..", g_temp_sub_dir_path);
@@ -330,16 +335,29 @@ void test_valid_file_access() {
   // Show that reads and writes to valid files work.
   char file_name[PATH_MAX];
 
+  // Absolute path
   snprintf(file_name, PATH_MAX, "%s", g_temp_file_path);
-  do_test_write_read_file(file_name, false);
+  do_test_write_read_file(file_name, /* new_file= */ false);
 
+  // Relative path
+  snprintf(file_name, PATH_MAX, "%s", g_temp_file_name);
+  do_test_write_read_file(file_name, /* new_file= */ false);
+
+  // Absolute path
   snprintf(file_name, PATH_MAX, "%s/%s", g_temp_sub_dir_path,
            g_temp_sub_file_name);
-  do_test_write_read_file(file_name, false);
+  do_test_write_read_file(file_name, /* new_file= */ false);
 
-  snprintf(file_name, PATH_MAX, "%s/%s", g_temp_sub_dir_path,
+  // Relative path
+  snprintf(file_name, PATH_MAX, "%s/%s", g_temp_sub_dir_name,
            g_temp_sub_file_name);
-  do_test_write_read_file(file_name, false);
+  do_test_write_read_file(file_name, /* new_file= */ false);
+
+  ASSERT_EQ_MSG(chdir(g_temp_sub_dir_name), 0, "chdir() failed");
+
+  // Relative path
+  snprintf(file_name, PATH_MAX, "%s", g_temp_sub_file_name);
+  do_test_write_read_file(file_name, /* new_file= */ false);
 
   passed("test_valid_file_access", "all");
 }

@@ -744,8 +744,9 @@ int NaClSelLdrMain(int argc, char **argv) {
   NaClAppStartModule(nap, NULL, NULL);
 
   /*
-   * For restricted file access, change directory to the root
-   * of the restricted directory.
+   * For restricted file access, change directory to the root of the restricted
+   * directory. This is required for safety, because we allow relative
+   * pathnames.
    */
   if (NaClRootDir != NULL && NaClHostDescChdir(NaClRootDir)) {
     NaClLog(LOG_FATAL, "Could not change directory to root dir\n");
