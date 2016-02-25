@@ -13,6 +13,7 @@
 #include "core/events/MessageEvent.h"
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
+#include "core/frame/Deprecation.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "modules/EventTargetModules.h"
@@ -185,7 +186,7 @@ ExecutionContext* PresentationConnection::executionContext() const
 bool PresentationConnection::addEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, const EventListenerOptions& options)
 {
     if (eventType == EventTypeNames::statechange)
-        UseCounter::count(executionContext(), UseCounter::PresentationConnectionStateChangeEventListener);
+        Deprecation::countDeprecation(executionContext(), UseCounter::PresentationConnectionStateChangeEventListener);
     else if (eventType == EventTypeNames::connect)
         UseCounter::count(executionContext(), UseCounter::PresentationConnectionConnectEventListener);
     else if (eventType == EventTypeNames::close)

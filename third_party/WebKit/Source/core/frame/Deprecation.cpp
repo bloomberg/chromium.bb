@@ -329,6 +329,9 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
     case UseCounter::WebAnimationHyphenatedProperty:
         return replacedWillBeRemoved("Hyphenated naming in Web Animations keyframes", "camelCase", 51, "5650817352728576");
 
+    case UseCounter::PresentationConnectionStateChangeEventListener:
+        return replacedWillBeRemoved("'PresentationConnection.onstateachange'", "'PresentationConnection.on{connect,close,terminate}'", 51, "5662456714100736");
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
