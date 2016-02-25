@@ -42,6 +42,8 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
   MOCK_METHOD1(MatchModuleWhitelistString, bool(const std::string&));
 
  private:
+  ~MockSafeBrowsingDatabaseManager() override {}
+
   DISALLOW_COPY_AND_ASSIGN(MockSafeBrowsingDatabaseManager);
 };
 
