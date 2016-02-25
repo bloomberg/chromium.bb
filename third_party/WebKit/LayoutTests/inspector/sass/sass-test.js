@@ -29,7 +29,6 @@ InspectorTest.parseSCSS = function(url, text)
 
 InspectorTest.loadASTMapping = function(header, callback)
 {
-
     var completeSourceMapURL = WebInspector.ParsedURL.completeURL(header.sourceURL, header.sourceMapURL);
     WebInspector.SourceMap.load(completeSourceMapURL, header.sourceURL, onSourceMapLoaded);
 
@@ -208,6 +207,108 @@ InspectorTest.updateSASSText = function(url, newText)
 {
     var uiSourceCode = WebInspector.workspace.uiSourceCodeForURL(url);
     uiSourceCode.addRevision(newText);
+}
+
+InspectorTest.runCSSEditTests = function(header, tests)
+{
+    var astSourceMap;
+    var astService = new WebInspector.ASTService();
+    InspectorTest.loadASTMapping(header, onMapping);
+
+    function onMapping(map)
+    {
+        astSourceMap = map;
+        InspectorTest.addResult("INITIAL MODELS");
+        logASTText(map.cssAST(), true);
+        for (var ast of map.sassModels().values())
+            logASTText(ast, true);
+        runTests();
+    }
+
+    function runTests()
+    {
+        if (!tests.length) {
+            InspectorTest.completeTest();
+            astService.dispose();
+            return;
+        }
+        var test = tests.shift();
+        logTestName(test.name);
+        var text = astSourceMap.cssAST().document.text;
+        var edits = test(text);
+        logSourceEdits(text, edits);
+        var ranges = edits.map(edit => edit.oldRange);
+        var texts = edits.map(edit => edit.newText);
+        WebInspector.SASSProcessor.processCSSEdits(astService, astSourceMap, ranges, texts)
+            .then(onEditsDone);
+    }
+
+    function onEditsDone(result)
+    {
+        if (!result.map) {
+            InspectorTest.addResult("SASSProcessor failed to process edits.");
+            runTests();
+            return;
+        }
+        logASTText(result.map.cssAST());
+        for (var sassURL of result.newSASSSources.keys()) {
+            var ast = result.map.sassModels().get(sassURL);
+            logASTText(ast);
+        }
+        runTests();
+    }
+
+    function logASTText(ast, avoidIndent, customTitle)
+    {
+        customTitle = customTitle || ast.document.url.split("/").pop();
+        InspectorTest.addResult("===== " + customTitle + " =====");
+        var text = ast.document.text.replace(/ /g, ".");
+        var lines = text.split("\n");
+        if (!avoidIndent)
+            lines = indent(lines);
+        InspectorTest.addResult(lines.join("\n"));
+    }
+
+    function logTestName(testName)
+    {
+        var titleText = " TEST: " + testName + " ";
+        var totalLength = 80;
+        var prefixLength = ((totalLength - titleText.length) / 2)|0;
+        var suffixLength = totalLength - titleText.length - prefixLength;
+        var prefix = new Array(prefixLength).join("-");
+        var suffix = new Array(suffixLength).join("-");
+        InspectorTest.addResult("\n" + prefix + titleText + suffix + "\n");
+    }
+
+    function logSourceEdits(text, edits)
+    {
+        var lines = [];
+        for (var i = 0; i < edits.length; ++i) {
+            var edit = edits[i];
+            var range = edit.oldRange;
+            var line = String.sprintf("{%d, %d, %d, %d}", range.startLine, range.startColumn, range.endLine, range.endColumn);
+            line += String.sprintf(" '%s' => '%s'", range.extract(text), edit.newText);
+            lines.push(line);
+        }
+        lines = indent(lines);
+        lines.unshift("Edits:");
+        InspectorTest.addResult(lines.join("\n"));
+    }
+}
+
+InspectorTest.createEdit = function(source, pattern, newText, matchNumber)
+{
+    matchNumber = matchNumber || 0;
+    var re = new RegExp(pattern.escapeForRegExp(), "g");
+    var match;
+    while ((match = re.exec(source)) !== null && matchNumber) {
+        --matchNumber;
+    }
+    if (!match)
+        return null;
+    var sourceRange = new WebInspector.SourceRange(match.index, match[0].length);
+    var textRange = sourceRange.toTextRange(source);
+    return new WebInspector.SourceEdit("", textRange, newText);
 }
 
 }
