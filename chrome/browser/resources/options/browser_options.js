@@ -1477,7 +1477,7 @@ cr.define('options', function() {
       else
         $('profiles-manage').title = '';
       $('profiles-delete').disabled = !profilesList.canDeleteItems ||
-                                      (!hasSelection && !hasSingleProfile);
+                                      !hasSelection;
       if (OptionsPage.isSettingsApp()) {
         $('profiles-app-list-switch').disabled = !hasSelection ||
             selectedProfile.isCurrentProfile;
