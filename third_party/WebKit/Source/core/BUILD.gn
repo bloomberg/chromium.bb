@@ -34,6 +34,11 @@ if (is_debug || !is_win || !is_official_build) {
 # Core targets also get wexit time destructors.
 core_config_add += [ "//build/config/compiler:wexit_time_destructors" ]
 
+if (remove_webcore_debug_symbols) {
+  core_config_remove += [ "//build/config/compiler:default_symbols" ]
+  core_config_add += [ "//build/config/compiler:no_symbols" ]
+}
+
 # Config for code that builds as part of core.
 config("config") {
   defines = [ "BLINK_CORE_IMPLEMENTATION=1" ]

@@ -73,6 +73,11 @@ component("web") {
     sources += [ "linux/WebFontRendering.cpp" ]
     set_sources_assignment_filter(sources_assignment_filter)
   }
+
+  if (remove_webcore_debug_symbols) {
+    configs -= [ "//build/config/compiler:default_symbols" ]
+    configs += [ "//build/config/compiler:no_symbols" ]
+  }
 }
 
 # GYP version: WebKit/Source/web/web.gyp:blink_web_test_support

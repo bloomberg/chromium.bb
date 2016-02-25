@@ -10,9 +10,6 @@ if (is_android) {
 }
 if (current_cpu == "arm") {
   import("//build/config/arm.gni")
-} else {
-  # TODO(brettw) remove this once && early-out is checked in.
-  arm_version = 0
 }
 
 declare_args() {
@@ -23,6 +20,10 @@ declare_args() {
   # If true, force blink asserts to be off in a release build.  When false,
   # blink asserts in release build may be controlled by DCHECK_ALWAYS_ON.
   blink_asserts_off_in_release = false
+
+  # If true, doesn't compile debug symbols into webcore reducing the
+  # size of the binary and increasing the speed of gdb.
+  remove_webcore_debug_symbols = false
 }
 
 # Whether Android build uses OpenMAX DL FFT. Currently supported only on

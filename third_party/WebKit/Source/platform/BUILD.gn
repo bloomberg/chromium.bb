@@ -434,6 +434,11 @@ component("platform") {
     include_dirs += [ "//third_party/openmax_dl" ]
     deps += [ "//third_party/openmax_dl/dl" ]
   }
+
+  if (remove_webcore_debug_symbols) {
+    configs -= [ "//build/config/compiler:default_symbols" ]
+    configs += [ "//build/config/compiler:no_symbols" ]
+  }
 }
 
 source_set("test_support") {

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//testing/test.gni")
+import("//third_party/WebKit/Source/config.gni")
 
 # The list of files is kept in the .gypi.
 gypi_values = exec_script("//build/gypi_to_gn.py",
@@ -92,6 +93,11 @@ component("wtf") {
       "text/AtomicStringCF.cpp",
       "text/StringImplCF.cpp",
     ]
+  }
+
+  if (remove_webcore_debug_symbols) {
+    configs -= [ "//build/config/compiler:default_symbols" ]
+    configs += [ "//build/config/compiler:no_symbols" ]
   }
 }
 
