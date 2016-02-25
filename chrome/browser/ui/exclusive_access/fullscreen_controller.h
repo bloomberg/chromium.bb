@@ -159,6 +159,8 @@ class FullscreenController : public ExclusiveAccessControllerBase {
   // necessary.
   void NotifyTabExclusiveAccessLost() override;
 
+  void RecordBubbleReshowsHistogram(int bubble_reshow_count) override;
+
   void ToggleFullscreenModeInternal(FullscreenInternalOption option);
   void EnterFullscreenModeInternal(FullscreenInternalOption option);
   void ExitFullscreenModeInternal();

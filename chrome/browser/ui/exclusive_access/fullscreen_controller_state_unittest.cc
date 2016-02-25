@@ -3,10 +3,12 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/test/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller_state_test.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -20,6 +22,10 @@
 // the FullscreenController through all permutations of events. The behavior
 // of the BrowserWindow is mocked via FullscreenControllerTestWindow.
 
+namespace {
+
+const char kFullscreenReshowHistogramName[] =
+    "ExclusiveAccess.BubbleReshowsPerSession.Fullscreen";
 
 // FullscreenControllerTestWindow ----------------------------------------------
 
@@ -245,6 +251,8 @@ void FullscreenControllerTestWindow::UpdateExclusiveAccessExitBubbleContent(
     ExclusiveAccessBubbleType bubble_type) {}
 
 void FullscreenControllerTestWindow::OnExclusiveAccessUserInput() {}
+
+}  // namespace
 
 // FullscreenControllerStateUnitTest -------------------------------------------
 
@@ -474,15 +482,25 @@ TEST_F(FullscreenControllerStateUnitTest,
 
 // Test that switching tabs takes the browser out of tab fullscreen.
 TEST_F(FullscreenControllerStateUnitTest, ExitTabFullscreenViaSwitchingTab) {
+  base::HistogramTester histogram_tester;
+
   AddTab(browser(), GURL(url::kAboutBlankURL));
   AddTab(browser(), GURL(url::kAboutBlankURL));
   ASSERT_TRUE(InvokeEvent(TAB_FULLSCREEN_TRUE));
   ASSERT_TRUE(InvokeEvent(WINDOW_CHANGE));
   ASSERT_TRUE(browser()->window()->IsFullscreen());
+  histogram_tester.ExpectTotalCount(kFullscreenReshowHistogramName, 0);
 
   browser()->tab_strip_model()->SelectNextTab();
   ChangeWindowFullscreenState();
   EXPECT_FALSE(browser()->window()->IsFullscreen());
+
+  // Do a simple test that histograms are being recorded upon exiting the
+  // fullscreen session (when simplified-fullscreen-ui is enabled).
+  if (ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled())
+    histogram_tester.ExpectUniqueSample(kFullscreenReshowHistogramName, 0, 1);
+  else
+    histogram_tester.ExpectTotalCount(kFullscreenReshowHistogramName, 0);
 }
 
 // Test that switching tabs via detaching the active tab (which is in tab

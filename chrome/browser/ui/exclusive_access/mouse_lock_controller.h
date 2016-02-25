@@ -59,6 +59,7 @@ class MouseLockController : public ExclusiveAccessControllerBase {
 
   void ExitExclusiveAccessIfNecessary() override;
   void NotifyTabExclusiveAccessLost() override;
+  void RecordBubbleReshowsHistogram(int bubble_reshow_count) override;
 
   ContentSetting GetMouseLockSetting(const GURL& url) const;
 

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/exclusive_access/mouse_lock_controller.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,6 +21,13 @@
 
 using content::RenderViewHost;
 using content::WebContents;
+
+namespace {
+
+const char kBubbleReshowsHistogramName[] =
+    "ExclusiveAccess.BubbleReshowsPerSession.MouseLock";
+
+}  // namespace
 
 MouseLockController::MouseLockController(ExclusiveAccessManager* manager)
     : ExclusiveAccessControllerBase(manager),
@@ -116,6 +124,11 @@ void MouseLockController::NotifyTabExclusiveAccessLost() {
   }
 }
 
+void MouseLockController::RecordBubbleReshowsHistogram(
+    int bubble_reshow_count) {
+  UMA_HISTOGRAM_COUNTS_100(kBubbleReshowsHistogramName, bubble_reshow_count);
+}
+
 bool MouseLockController::HandleUserPressedEscape() {
   if (IsMouseLocked() || IsMouseLockRequested()) {
     ExitExclusiveAccessIfNecessary();
@@ -188,6 +201,7 @@ bool MouseLockController::OnDenyExclusiveAccessPermission() {
 }
 
 void MouseLockController::LostMouseLock() {
+  RecordExitingUMA();
   mouse_lock_state_ = MOUSELOCK_NOT_REQUESTED;
   SetTabWithExclusiveAccess(nullptr);
   NotifyMouseLockChange();

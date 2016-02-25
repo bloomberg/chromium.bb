@@ -11531,6 +11531,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ExclusiveAccess.BubbleReshowsPerSession.Fullscreen">
+  <owner>mgiuca@chromium.org</owner>
+  <summary>
+    The number of times the fullscreen bubble was re-shown due to inactivity
+    during a session of fullscreen mode (not including mouse lock). If the mouse
+    is also locked while a re-show occurs, both this and
+    BubbleReshowsPerSession.MouseLock are incremented. Includes all types of
+    fullscreen (user-triggered, extension-triggered and page-triggered). Only
+    recorded when the simplified-fullscreen-ui flag is enabled.
+  </summary>
+</histogram>
+
+<histogram name="ExclusiveAccess.BubbleReshowsPerSession.MouseLock">
+  <owner>mgiuca@chromium.org</owner>
+  <summary>
+    The number of times the mouse lock bubble was re-shown due to inactivity
+    during a session of mouse lock mode. If also in fullscreen while a re-show
+    occurs, both this and BubbleReshowsPerSession.Fullscreen are incremented.
+    Only recorded when the simplified-fullscreen-ui flag is enabled.
+  </summary>
+</histogram>
+
 <histogram name="ExtensionActivity.AdInjected" units="Extension Count">
   <obsolete>
     Deprecated with M46.

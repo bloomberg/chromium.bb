@@ -65,6 +65,11 @@ class ExclusiveAccessControllerBase : public content::NotificationObserver {
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
+  // For recording UMA.
+  void RecordBubbleReshownUMA();
+  // Called when the exclusive access session ends.
+  void RecordExitingUMA();
+
  protected:
   void SetTabWithExclusiveAccess(content::WebContents* tab);
 
@@ -77,6 +82,10 @@ class ExclusiveAccessControllerBase : public content::NotificationObserver {
   // if necessary.
   virtual void NotifyTabExclusiveAccessLost() = 0;
 
+  // Records the BubbleReshowsPerSession data to the appropriate histogram for
+  // this controller.
+  virtual void RecordBubbleReshowsHistogram(int bubble_reshow_count) = 0;
+
  private:
   void UpdateNotificationRegistrations();
 
@@ -84,7 +93,10 @@ class ExclusiveAccessControllerBase : public content::NotificationObserver {
 
   content::NotificationRegistrar registrar_;
 
-  content::WebContents* tab_with_exclusive_access_;
+  content::WebContents* tab_with_exclusive_access_ = nullptr;
+
+  // The number of bubble re-shows for the current session (reset upon exiting).
+  int bubble_reshow_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ExclusiveAccessControllerBase);
 };

@@ -154,3 +154,38 @@ void ExclusiveAccessManager::ExitExclusiveAccess() {
   fullscreen_controller_.ExitExclusiveAccessToPreviousState();
   mouse_lock_controller_.LostMouseLock();
 }
+
+void ExclusiveAccessManager::RecordBubbleReshownUMA(
+    ExclusiveAccessBubbleType type) {
+  // Figure out whether each of fullscreen, mouselock is in effect.
+  bool fullscreen = false;
+  bool mouselock = false;
+  switch (type) {
+    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE:
+    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_MOUSELOCK_BUTTONS:
+      // None in effect.
+      break;
+    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_BUTTONS:
+    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_EXIT_INSTRUCTION:
+    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION:
+    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_EXTENSION_FULLSCREEN_EXIT_INSTRUCTION:
+      // Only fullscreen in effect.
+      fullscreen = true;
+      break;
+    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_MOUSELOCK_EXIT_INSTRUCTION:
+      // Only mouselock in effect.
+      mouselock = true;
+      break;
+    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_MOUSELOCK_BUTTONS:
+    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_MOUSELOCK_EXIT_INSTRUCTION:
+      // Both in effect.
+      fullscreen = true;
+      mouselock = true;
+      break;
+  }
+
+  if (fullscreen)
+    fullscreen_controller_.RecordBubbleReshownUMA();
+  if (mouselock)
+    mouse_lock_controller_.RecordBubbleReshownUMA();
+}

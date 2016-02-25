@@ -16,8 +16,7 @@ using content::WebContents;
 
 ExclusiveAccessControllerBase::ExclusiveAccessControllerBase(
     ExclusiveAccessManager* manager)
-    : manager_(manager), tab_with_exclusive_access_(nullptr) {
-}
+    : manager_(manager) {}
 
 ExclusiveAccessControllerBase::~ExclusiveAccessControllerBase() {
 }
@@ -64,6 +63,19 @@ void ExclusiveAccessControllerBase::Observe(
   if (content::Details<content::LoadCommittedDetails>(details)
           ->is_navigation_to_different_page())
     ExitExclusiveAccessIfNecessary();
+}
+
+void ExclusiveAccessControllerBase::RecordBubbleReshownUMA() {
+  ++bubble_reshow_count_;
+}
+
+void ExclusiveAccessControllerBase::RecordExitingUMA() {
+  // Record the number of bubble reshows during this session. Only if simplified
+  // fullscreen is enabled.
+  if (ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled())
+    RecordBubbleReshowsHistogram(bubble_reshow_count_);
+
+  bubble_reshow_count_ = 0;
 }
 
 void ExclusiveAccessControllerBase::SetTabWithExclusiveAccess(

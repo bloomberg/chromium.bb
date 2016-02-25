@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -39,6 +40,13 @@
 using base::UserMetricsAction;
 using content::RenderViewHost;
 using content::WebContents;
+
+namespace {
+
+const char kBubbleReshowsHistogramName[] =
+    "ExclusiveAccess.BubbleReshowsPerSession.Fullscreen";
+
+}  // namespace
 
 FullscreenController::FullscreenController(ExclusiveAccessManager* manager)
     : ExclusiveAccessControllerBase(manager),
@@ -420,6 +428,11 @@ void FullscreenController::NotifyTabExclusiveAccessLost() {
   }
 }
 
+void FullscreenController::RecordBubbleReshowsHistogram(
+    int bubble_reshow_count) {
+  UMA_HISTOGRAM_COUNTS_100(kBubbleReshowsHistogramName, bubble_reshow_count);
+}
+
 void FullscreenController::ToggleFullscreenModeInternal(
     FullscreenInternalOption option) {
 #if defined(OS_WIN)
@@ -499,6 +512,7 @@ void FullscreenController::EnterFullscreenModeInternal(
 }
 
 void FullscreenController::ExitFullscreenModeInternal() {
+  RecordExitingUMA();
   toggled_into_fullscreen_ = false;
 #if defined(OS_MACOSX)
   // Mac windows report a state change instantly, and so we must also clear

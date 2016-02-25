@@ -73,6 +73,7 @@ class ExclusiveAccessManager {
   void OnAcceptExclusiveAccessPermission();
   void OnDenyExclusiveAccessPermission();
   void ExitExclusiveAccess();
+  void RecordBubbleReshownUMA(ExclusiveAccessBubbleType type);
 
  private:
   ExclusiveAccessContext* const exclusive_access_context_;
