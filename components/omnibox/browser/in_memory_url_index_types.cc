@@ -155,11 +155,14 @@ Char16Set Char16SetFromString16(const base::string16& term) {
 // HistoryInfoMapValue ---------------------------------------------------------
 
 HistoryInfoMapValue::HistoryInfoMapValue() {}
+HistoryInfoMapValue::HistoryInfoMapValue(const HistoryInfoMapValue& other) =
+    default;
 HistoryInfoMapValue::~HistoryInfoMapValue() {}
 
 // RowWordStarts ---------------------------------------------------------------
 
 RowWordStarts::RowWordStarts() {}
+RowWordStarts::RowWordStarts(const RowWordStarts& other) = default;
 RowWordStarts::~RowWordStarts() {}
 
 void RowWordStarts::Clear() {

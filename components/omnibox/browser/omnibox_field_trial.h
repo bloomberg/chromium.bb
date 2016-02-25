@@ -33,6 +33,7 @@ struct HUPScoringParams {
     typedef std::pair<double, int> CountMaxRelevance;
 
     ScoreBuckets();
+    ScoreBuckets(const ScoreBuckets& other);
     ~ScoreBuckets();
 
     // Computes a half-life time decay given the |elapsed_time|.

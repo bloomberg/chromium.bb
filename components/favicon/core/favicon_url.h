@@ -19,6 +19,7 @@ struct FaviconURL {
   FaviconURL(const GURL& url,
              favicon_base::IconType type,
              const std::vector<gfx::Size>& sizes);
+  FaviconURL(const FaviconURL& other);
   ~FaviconURL();
 
   // The url of the icon.

@@ -36,6 +36,7 @@ class LegalMessageLine {
   };
 
   LegalMessageLine();
+  LegalMessageLine(const LegalMessageLine& other);
   virtual ~LegalMessageLine();  // Overridden in TestLegalMessageLine.
 
   // Parses |legal_message|. Returns false on failure.

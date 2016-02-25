@@ -350,6 +350,8 @@ PaymentsClient::UnmaskRequestDetails::UnmaskRequestDetails() {}
 PaymentsClient::UnmaskRequestDetails::~UnmaskRequestDetails() {}
 
 PaymentsClient::UploadRequestDetails::UploadRequestDetails() {}
+PaymentsClient::UploadRequestDetails::UploadRequestDetails(
+    const UploadRequestDetails& other) = default;
 PaymentsClient::UploadRequestDetails::~UploadRequestDetails() {}
 
 PaymentsClient::PaymentsClient(net::URLRequestContextGetter* context_getter,

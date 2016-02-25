@@ -43,6 +43,7 @@ std::string FileChange::Change::DebugString() const {
 
 FileChange::ChangeList::ChangeList() {
 }
+FileChange::ChangeList::ChangeList(const ChangeList& other) = default;
 FileChange::ChangeList::~ChangeList() {
 }
 

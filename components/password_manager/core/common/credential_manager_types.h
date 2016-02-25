@@ -33,6 +33,7 @@ enum class CredentialType {
 struct CredentialInfo {
   CredentialInfo();
   CredentialInfo(const autofill::PasswordForm& form, CredentialType form_type);
+  CredentialInfo(const CredentialInfo& other);
   ~CredentialInfo();
 
   bool operator==(const CredentialInfo& rhs) const;

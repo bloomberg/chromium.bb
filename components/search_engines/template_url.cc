@@ -153,6 +153,9 @@ TemplateURLRef::SearchTermsArgs::SearchTermsArgs(
       from_app_list(false),
       contextual_search_params(ContextualSearchParams()) {}
 
+TemplateURLRef::SearchTermsArgs::SearchTermsArgs(const SearchTermsArgs& other) =
+    default;
+
 TemplateURLRef::SearchTermsArgs::~SearchTermsArgs() {
 }
 
@@ -197,6 +200,9 @@ TemplateURLRef::SearchTermsArgs::ContextualSearchParams::
       encoding(encoding),
       resolve(resolve) {
 }
+
+TemplateURLRef::SearchTermsArgs::ContextualSearchParams::ContextualSearchParams(
+    const ContextualSearchParams& other) = default;
 
 TemplateURLRef::SearchTermsArgs::ContextualSearchParams::
     ~ContextualSearchParams() {

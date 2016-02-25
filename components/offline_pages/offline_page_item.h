@@ -35,6 +35,7 @@ struct OfflinePageItem {
                   const base::FilePath& file_path,
                   int64_t file_size,
                   const base::Time& creation_time);
+  OfflinePageItem(const OfflinePageItem& other);
   ~OfflinePageItem();
 
   // Gets a URL of the file under |file_path|.

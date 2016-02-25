@@ -16,6 +16,8 @@ using base::Value;
 using base::DictionaryValue;
 
 DomainReliabilityBeacon::DomainReliabilityBeacon() {}
+DomainReliabilityBeacon::DomainReliabilityBeacon(
+    const DomainReliabilityBeacon& other) = default;
 DomainReliabilityBeacon::~DomainReliabilityBeacon() {}
 
 scoped_ptr<Value> DomainReliabilityBeacon::ToValue(

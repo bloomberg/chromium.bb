@@ -116,6 +116,7 @@ class PnaclHost {
   class PendingTranslation {
    public:
     PendingTranslation();
+    PendingTranslation(const PendingTranslation& other);
     ~PendingTranslation();
     base::ProcessHandle process_handle;
     int render_view_id;

@@ -16,6 +16,9 @@ ArticleDistillationUpdate::ArticleDistillationUpdate(
       has_prev_page_(has_prev_page),
       pages_(pages) {}
 
+ArticleDistillationUpdate::ArticleDistillationUpdate(
+    const ArticleDistillationUpdate& other) = default;
+
 ArticleDistillationUpdate::~ArticleDistillationUpdate() {}
 
 const DistilledPageProto& ArticleDistillationUpdate::GetDistilledPage(

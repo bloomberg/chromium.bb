@@ -141,6 +141,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor
   struct DOMAIN_RELIABILITY_EXPORT RequestInfo {
     RequestInfo();
     explicit RequestInfo(const net::URLRequest& request);
+    RequestInfo(const RequestInfo& other);
     ~RequestInfo();
 
     static bool ShouldReportRequest(const RequestInfo& request);

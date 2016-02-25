@@ -18,6 +18,7 @@ class DataTypeStatusTable {
   typedef std::map<syncer::ModelType, syncer::SyncError> TypeErrorMap;
 
   DataTypeStatusTable();
+  DataTypeStatusTable(const DataTypeStatusTable& other);
   ~DataTypeStatusTable();
 
   // Copy and assign welcome.

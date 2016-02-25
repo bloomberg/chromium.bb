@@ -31,6 +31,7 @@ AccountInfo::AccountInfo()
       locale(),
       picture_url(),
       is_child_account(false) {}
+AccountInfo::AccountInfo(const AccountInfo& other) = default;
 AccountInfo::~AccountInfo() {}
 
 bool AccountInfo::IsValid() const {

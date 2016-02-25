@@ -232,6 +232,7 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
   struct GuestViewData {
     GuestViewData(const GuestViewCreateFunction& create_function,
                   const GuestViewCleanUpFunction& cleanup_function);
+    GuestViewData(const GuestViewData& other);
     ~GuestViewData();
     const GuestViewCreateFunction create_function;
     const GuestViewCleanUpFunction cleanup_function;

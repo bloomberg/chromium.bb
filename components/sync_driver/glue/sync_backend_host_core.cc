@@ -116,6 +116,9 @@ DoInitializeOptions::~DoInitializeOptions() {}
 
 DoConfigureSyncerTypes::DoConfigureSyncerTypes() {}
 
+DoConfigureSyncerTypes::DoConfigureSyncerTypes(
+    const DoConfigureSyncerTypes& other) = default;
+
 DoConfigureSyncerTypes::~DoConfigureSyncerTypes() {}
 
 SyncBackendHostCore::SyncBackendHostCore(

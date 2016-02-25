@@ -74,6 +74,7 @@ struct DecryptionFailureActivity : Activity {
 
 struct RecordedActivities {
   RecordedActivities();
+  RecordedActivities(const RecordedActivities& other);
   virtual ~RecordedActivities();
 
   std::vector<CheckinActivity> checkin_activities;

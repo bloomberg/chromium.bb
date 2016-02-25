@@ -15,6 +15,7 @@ namespace favicon_base {
 // Used to correlate favicons to imported bookmarks.
 struct FaviconUsageData {
   FaviconUsageData();
+  FaviconUsageData(const FaviconUsageData& other);
   ~FaviconUsageData();
 
   // The URL of the favicon.

@@ -47,11 +47,15 @@ CrxUpdateItem::CrxUpdateItem()
       diff_extra_code1(0) {
 }
 
+CrxUpdateItem::CrxUpdateItem(const CrxUpdateItem& other) = default;
+
 CrxUpdateItem::~CrxUpdateItem() {
 }
 
 CrxComponent::CrxComponent() : allow_background_download(true) {
 }
+
+CrxComponent::CrxComponent(const CrxComponent& other) = default;
 
 CrxComponent::~CrxComponent() {
 }

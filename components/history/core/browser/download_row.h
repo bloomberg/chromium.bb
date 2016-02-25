@@ -41,6 +41,7 @@ struct DownloadRow {
               bool download_opened,
               const std::string& ext_id,
               const std::string& ext_name);
+  DownloadRow(const DownloadRow& other);
   ~DownloadRow();
 
   // The current path to the download (potentially different from final if

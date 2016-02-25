@@ -474,6 +474,9 @@ struct NetErrorHelperCore::ErrorPageInfo {
 NetErrorHelperCore::NavigationCorrectionParams::NavigationCorrectionParams() {
 }
 
+NetErrorHelperCore::NavigationCorrectionParams::NavigationCorrectionParams(
+    const NavigationCorrectionParams& other) = default;
+
 NetErrorHelperCore::NavigationCorrectionParams::~NavigationCorrectionParams() {
 }
 

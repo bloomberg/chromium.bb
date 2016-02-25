@@ -78,6 +78,7 @@ struct SBFullHashResult {
 struct SBCachedFullHashResult {
   SBCachedFullHashResult();
   explicit SBCachedFullHashResult(const base::Time& in_expire_after);
+  SBCachedFullHashResult(const SBCachedFullHashResult& other);
   ~SBCachedFullHashResult();
 
   base::Time expire_after;

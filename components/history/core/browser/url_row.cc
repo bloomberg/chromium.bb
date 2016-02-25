@@ -24,6 +24,8 @@ URLRow::URLRow(const GURL& url, URLID id) : url_(url) {
   id_ = id;
 }
 
+URLRow::URLRow(const URLRow& other) = default;
+
 URLRow::~URLRow() {
 }
 
@@ -78,6 +80,8 @@ URLResult::URLResult(const URLRow& url_row)
     : URLRow(url_row),
       blocked_visit_(false) {
 }
+
+URLResult::URLResult(const URLResult& other) = default;
 
 URLResult::~URLResult() {
 }

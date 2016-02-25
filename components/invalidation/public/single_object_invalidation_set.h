@@ -32,6 +32,7 @@ class INVALIDATION_EXPORT SingleObjectInvalidationSet {
   typedef InvalidationsSet::const_reverse_iterator const_reverse_iterator;
 
   SingleObjectInvalidationSet();
+  SingleObjectInvalidationSet(const SingleObjectInvalidationSet& other);
   ~SingleObjectInvalidationSet();
 
   void Insert(const Invalidation& invalidation);

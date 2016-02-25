@@ -192,6 +192,7 @@ class AutofillProfileSyncableService
 // This object is used in unit tests as well, so it defined here.
 struct AutofillProfileSyncableService::DataBundle {
   DataBundle();
+  DataBundle(const DataBundle& other);
   ~DataBundle();
 
   std::vector<std::string> profiles_to_delete;

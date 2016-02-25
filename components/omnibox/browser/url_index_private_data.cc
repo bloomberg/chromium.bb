@@ -1270,6 +1270,9 @@ URLIndexPrivateData::SearchTermCacheItem::SearchTermCacheItem(
 URLIndexPrivateData::SearchTermCacheItem::SearchTermCacheItem() : used_(true) {
 }
 
+URLIndexPrivateData::SearchTermCacheItem::SearchTermCacheItem(
+    const SearchTermCacheItem& other) = default;
+
 URLIndexPrivateData::SearchTermCacheItem::~SearchTermCacheItem() {
 }
 
@@ -1308,6 +1311,9 @@ URLIndexPrivateData::AddHistoryMatch::AddHistoryMatch(
     lower_terms_to_word_starts_offsets_[i] = iter.prev();
   }
 }
+
+URLIndexPrivateData::AddHistoryMatch::AddHistoryMatch(
+    const AddHistoryMatch& other) = default;
 
 URLIndexPrivateData::AddHistoryMatch::~AddHistoryMatch() {
 }

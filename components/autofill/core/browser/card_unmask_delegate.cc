@@ -9,6 +9,9 @@ namespace autofill {
 CardUnmaskDelegate::UnmaskResponse::UnmaskResponse()
     : should_store_pan(false) {}
 
+CardUnmaskDelegate::UnmaskResponse::UnmaskResponse(
+    const UnmaskResponse& other) = default;
+
 CardUnmaskDelegate::UnmaskResponse::~UnmaskResponse() {}
 
 }  // namespace autofill

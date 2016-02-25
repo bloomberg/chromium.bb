@@ -63,6 +63,7 @@ class OmniboxEditModel {
           OmniboxFocusState focus_state,
           FocusSource focus_source,
           const AutocompleteInput& autocomplete_input);
+    State(const State& other);
     ~State();
 
     bool user_input_in_progress;

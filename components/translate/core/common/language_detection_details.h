@@ -15,6 +15,7 @@ namespace translate {
 
 struct LanguageDetectionDetails {
   LanguageDetectionDetails();
+  LanguageDetectionDetails(const LanguageDetectionDetails& other);
   ~LanguageDetectionDetails();
 
   // The time when this was created.

@@ -36,6 +36,7 @@ class INVALIDATION_EXPORT Invalidation {
   static scoped_ptr<Invalidation> InitFromValue(
       const base::DictionaryValue& value);
 
+  Invalidation(const Invalidation& other);
   ~Invalidation();
 
   // Compares two invalidations.  The comparison ignores ack-tracking state.

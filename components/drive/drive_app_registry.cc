@@ -71,6 +71,8 @@ DriveAppInfo::DriveAppInfo(
       is_removable(is_removable) {
 }
 
+DriveAppInfo::DriveAppInfo(const DriveAppInfo& other) = default;
+
 DriveAppInfo::~DriveAppInfo() {
 }
 

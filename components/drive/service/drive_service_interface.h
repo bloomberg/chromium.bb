@@ -37,6 +37,7 @@ class DriveServiceObserver {
 // Optional parameters for AddNewDirectory().
 struct AddNewDirectoryOptions {
   AddNewDirectoryOptions();
+  AddNewDirectoryOptions(const AddNewDirectoryOptions& other);
   ~AddNewDirectoryOptions();
 
   // visibility of the new directory.
@@ -58,6 +59,7 @@ struct AddNewDirectoryOptions {
 // MultipartUploadNewFile().
 struct UploadNewFileOptions {
   UploadNewFileOptions();
+  UploadNewFileOptions(const UploadNewFileOptions& other);
   ~UploadNewFileOptions();
 
   // modified_date of the file.
@@ -76,6 +78,7 @@ struct UploadNewFileOptions {
 // MultipartUploadExistingFile().
 struct UploadExistingFileOptions {
   UploadExistingFileOptions();
+  UploadExistingFileOptions(const UploadExistingFileOptions& other);
   ~UploadExistingFileOptions();
 
   // Expected ETag of the file. UPLOAD_ERROR_CONFLICT error is generated when

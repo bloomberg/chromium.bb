@@ -45,6 +45,7 @@ class DataTypeManager {
     ConfigureResult();
     ConfigureResult(ConfigureStatus status,
                     syncer::ModelTypeSet requested_types);
+    ConfigureResult(const ConfigureResult& other);
     ~ConfigureResult();
 
     ConfigureStatus status;

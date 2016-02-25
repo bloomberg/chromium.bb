@@ -130,6 +130,7 @@ class NetErrorHelperCore {
 
   struct NavigationCorrectionParams {
     NavigationCorrectionParams();
+    NavigationCorrectionParams(const NavigationCorrectionParams& other);
     ~NavigationCorrectionParams();
 
     // URL used both for getting the suggestions and tracking clicks.

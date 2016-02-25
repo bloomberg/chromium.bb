@@ -23,6 +23,8 @@ NaClStartParams::NaClStartParams()
       crash_info_shmem_handle(base::SharedMemory::NULLHandle()) {
 }
 
+NaClStartParams::NaClStartParams(const NaClStartParams& other) = default;
+
 NaClStartParams::~NaClStartParams() {
 }
 
@@ -82,6 +84,8 @@ NaClLaunchParams::NaClLaunchParams(
       permission_bits(permission_bits),
       uses_nonsfi_mode(uses_nonsfi_mode),
       process_type(process_type) {}
+
+NaClLaunchParams::NaClLaunchParams(const NaClLaunchParams& other) = default;
 
 NaClLaunchParams::~NaClLaunchParams() {
 }

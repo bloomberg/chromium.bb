@@ -108,6 +108,9 @@ void MaybeRecordInteractionAsAction(MetricsHelper::Interaction interaction,
 MetricsHelper::ReportDetails::ReportDetails()
     : rappor_report_type(rappor::NUM_RAPPOR_TYPES) {}
 
+MetricsHelper::ReportDetails::ReportDetails(const ReportDetails& other) =
+    default;
+
 MetricsHelper::MetricsHelper(const GURL& request_url,
                              const ReportDetails settings,
                              history::HistoryService* history_service,

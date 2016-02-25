@@ -86,6 +86,8 @@ scoped_ptr<Invalidation> Invalidation::InitFromValue(
       AckHandle::CreateUnique()));
 }
 
+Invalidation::Invalidation(const Invalidation& other) = default;
+
 Invalidation::~Invalidation() {
 }
 

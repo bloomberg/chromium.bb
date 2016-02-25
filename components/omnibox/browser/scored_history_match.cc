@@ -343,6 +343,9 @@ ScoredHistoryMatch::ScoredHistoryMatch(
   url_matches = ReplaceOffsetsInTermMatches(url_matches, offsets);
 }
 
+ScoredHistoryMatch::ScoredHistoryMatch(const ScoredHistoryMatch& other) =
+    default;
+
 ScoredHistoryMatch::~ScoredHistoryMatch() {
 }
 

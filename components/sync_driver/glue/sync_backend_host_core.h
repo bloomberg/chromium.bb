@@ -80,6 +80,7 @@ struct DoInitializeOptions {
 // SyncBackendHost::Core::DoConfigureSyncer.
 struct DoConfigureSyncerTypes {
   DoConfigureSyncerTypes();
+  DoConfigureSyncerTypes(const DoConfigureSyncerTypes& other);
   ~DoConfigureSyncerTypes();
   syncer::ModelTypeSet to_download;
   syncer::ModelTypeSet to_purge;

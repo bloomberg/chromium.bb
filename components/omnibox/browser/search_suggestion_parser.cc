@@ -62,6 +62,8 @@ SearchSuggestionParser::Result::Result(bool from_keyword_provider,
       received_after_last_keystroke_(true),
       deletion_url_(deletion_url) {}
 
+SearchSuggestionParser::Result::Result(const Result& other) = default;
+
 SearchSuggestionParser::Result::~Result() {}
 
 // SearchSuggestionParser::SuggestResult ---------------------------------------

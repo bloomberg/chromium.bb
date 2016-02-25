@@ -24,6 +24,7 @@ struct Rule {
   Rule(const ContentSettingsPattern& primary_pattern,
        const ContentSettingsPattern& secondary_pattern,
        base::Value* value);
+  Rule(const Rule& other);
   ~Rule();
 
   ContentSettingsPattern primary_pattern;

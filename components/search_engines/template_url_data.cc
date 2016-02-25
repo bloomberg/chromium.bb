@@ -24,6 +24,8 @@ TemplateURLData::TemplateURLData()
       url_("x") {
 }
 
+TemplateURLData::TemplateURLData(const TemplateURLData& other) = default;
+
 TemplateURLData::~TemplateURLData() {
 }
 

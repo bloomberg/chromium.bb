@@ -43,6 +43,7 @@ struct ContentSettingPatternSource {
                               ContentSetting setting,
                               const std::string& source,
                               bool incognito);
+  ContentSettingPatternSource(const ContentSettingPatternSource& other);
   ContentSettingPatternSource();
   ContentSettingsPattern primary_pattern;
   ContentSettingsPattern secondary_pattern;

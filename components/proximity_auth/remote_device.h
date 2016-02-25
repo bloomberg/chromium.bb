@@ -30,6 +30,7 @@ struct RemoteDevice {
                const std::string& bluetooth_address,
                const std::string& persistent_symmetric_key,
                std::string sign_in_challenge);
+  RemoteDevice(const RemoteDevice& other);
   ~RemoteDevice();
 };
 

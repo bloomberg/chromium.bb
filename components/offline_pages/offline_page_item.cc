@@ -46,6 +46,8 @@ OfflinePageItem::OfflinePageItem(const GURL& url,
       access_count(0),
       flags(NO_FLAG) {}
 
+OfflinePageItem::OfflinePageItem(const OfflinePageItem& other) = default;
+
 OfflinePageItem::~OfflinePageItem() {
 }
 

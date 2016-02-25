@@ -99,6 +99,9 @@ PnaclHost::PendingTranslation::PendingTranslation()
       cache_info(nacl::PnaclCacheInfo()) {
 }
 
+PnaclHost::PendingTranslation::PendingTranslation(
+    const PendingTranslation& other) = default;
+
 PnaclHost::PendingTranslation::~PendingTranslation() {
   if (nexe_fd)
     delete nexe_fd;

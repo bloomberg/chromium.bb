@@ -62,6 +62,7 @@ typedef std::vector<EditedSearchEngine> EditedEngines;
 
 struct ActionsFromPrepopulateData {
   ActionsFromPrepopulateData();
+  ActionsFromPrepopulateData(const ActionsFromPrepopulateData& other);
   ~ActionsFromPrepopulateData();
 
   TemplateURLService::TemplateURLVector removed_engines;

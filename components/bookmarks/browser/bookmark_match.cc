@@ -11,6 +11,8 @@ namespace bookmarks {
 
 BookmarkMatch::BookmarkMatch() : node(NULL) {}
 
+BookmarkMatch::BookmarkMatch(const BookmarkMatch& other) = default;
+
 BookmarkMatch::~BookmarkMatch() {}
 
 // static

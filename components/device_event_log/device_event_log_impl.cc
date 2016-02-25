@@ -399,4 +399,6 @@ DeviceEventLogImpl::LogEntry::LogEntry(const char* filedesc,
   }
 }
 
+DeviceEventLogImpl::LogEntry::LogEntry(const LogEntry& other) = default;
+
 }  // namespace device_event_log

@@ -15,6 +15,7 @@ class CardUnmaskDelegate {
  public:
   struct UnmaskResponse {
     UnmaskResponse();
+    UnmaskResponse(const UnmaskResponse& other);
     ~UnmaskResponse();
 
     // User input data.

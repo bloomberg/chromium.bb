@@ -10,17 +10,26 @@ AddNewDirectoryOptions::AddNewDirectoryOptions()
     : visibility(google_apis::drive::FILE_VISIBILITY_DEFAULT) {
 }
 
+AddNewDirectoryOptions::AddNewDirectoryOptions(
+    const AddNewDirectoryOptions& other) = default;
+
 AddNewDirectoryOptions::~AddNewDirectoryOptions() {
 }
 
 UploadNewFileOptions::UploadNewFileOptions() {
 }
 
+UploadNewFileOptions::UploadNewFileOptions(const UploadNewFileOptions& other) =
+    default;
+
 UploadNewFileOptions::~UploadNewFileOptions() {
 }
 
 UploadExistingFileOptions::UploadExistingFileOptions() {
 }
+
+UploadExistingFileOptions::UploadExistingFileOptions(
+    const UploadExistingFileOptions& other) = default;
 
 UploadExistingFileOptions::~UploadExistingFileOptions() {
 }

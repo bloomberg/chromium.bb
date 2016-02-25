@@ -307,6 +307,9 @@ DataReductionProxyTypeInfo::DataReductionProxyTypeInfo()
     : is_fallback(false), is_ssl(false) {
 }
 
+DataReductionProxyTypeInfo::DataReductionProxyTypeInfo(
+    const DataReductionProxyTypeInfo& other) = default;
+
 DataReductionProxyTypeInfo::~DataReductionProxyTypeInfo(){
 }
 

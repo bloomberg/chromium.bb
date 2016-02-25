@@ -54,6 +54,9 @@ ImageManager::~ImageManager() {}
 
 ImageManager::ImageCacheRequest::ImageCacheRequest() {}
 
+ImageManager::ImageCacheRequest::ImageCacheRequest(
+    const ImageCacheRequest& other) = default;
+
 ImageManager::ImageCacheRequest::~ImageCacheRequest() {}
 
 void ImageManager::Initialize(const SuggestionsProfile& suggestions) {

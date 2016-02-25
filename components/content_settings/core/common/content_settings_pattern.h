@@ -55,6 +55,7 @@ class ContentSettingsPattern {
 
   struct PatternParts {
     PatternParts();
+    PatternParts(const PatternParts& other);
     ~PatternParts();
 
     // Lowercase string of the URL scheme to match. This string is empty if the

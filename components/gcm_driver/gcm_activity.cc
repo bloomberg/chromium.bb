@@ -53,6 +53,9 @@ DecryptionFailureActivity::~DecryptionFailureActivity() {
 RecordedActivities::RecordedActivities() {
 }
 
+RecordedActivities::RecordedActivities(const RecordedActivities& other) =
+    default;
+
 RecordedActivities::~RecordedActivities() {
 }
 

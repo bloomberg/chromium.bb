@@ -34,6 +34,8 @@ BookmarkNodeData::Element::Element(const BookmarkNode* node)
     children.push_back(Element(node->GetChild(i)));
 }
 
+BookmarkNodeData::Element::Element(const Element& other) = default;
+
 BookmarkNodeData::Element::~Element() {
 }
 
@@ -100,6 +102,8 @@ bool BookmarkNodeData::Element::ReadFromPickle(base::PickleIterator* iterator) {
 
 BookmarkNodeData::BookmarkNodeData() {
 }
+
+BookmarkNodeData::BookmarkNodeData(const BookmarkNodeData& other) = default;
 
 BookmarkNodeData::BookmarkNodeData(const BookmarkNode* node) {
   elements.push_back(Element(node));

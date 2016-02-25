@@ -12,6 +12,9 @@
 
 FakeProfileOAuth2TokenService::PendingRequest::PendingRequest() {}
 
+FakeProfileOAuth2TokenService::PendingRequest::PendingRequest(
+    const PendingRequest& other) = default;
+
 FakeProfileOAuth2TokenService::PendingRequest::~PendingRequest() {}
 
 FakeProfileOAuth2TokenService::FakeProfileOAuth2TokenService()

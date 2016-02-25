@@ -44,6 +44,7 @@ struct MetadataSearchResult {
                        bool is_directory,
                        const std::string& highlighted_base_name,
                        const std::string& md5);
+  MetadataSearchResult(const MetadataSearchResult& other);
 
   // The two members are used to create FileEntry object.
   base::FilePath path;

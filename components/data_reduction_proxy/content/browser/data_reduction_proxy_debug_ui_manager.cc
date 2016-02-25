@@ -28,6 +28,9 @@ DataReductionProxyDebugUIManager::BypassResource::BypassResource()
       render_view_id(-1) {
 }
 
+DataReductionProxyDebugUIManager::BypassResource::BypassResource(
+    const BypassResource& other) = default;
+
 DataReductionProxyDebugUIManager::BypassResource::~BypassResource() {
 }
 

@@ -156,6 +156,7 @@ std::string GetServerExperimentsFieldTrialName();
 // proxy for ssl; these are not mutually exclusive.
 struct DataReductionProxyTypeInfo {
   DataReductionProxyTypeInfo();
+  DataReductionProxyTypeInfo(const DataReductionProxyTypeInfo& other);
   ~DataReductionProxyTypeInfo();
   std::vector<net::ProxyServer> proxy_servers;
   bool is_fallback;

@@ -18,6 +18,7 @@ typedef std::map<std::string, std::string> MessageData;
 // Message to be delivered to the other party.
 struct GCM_DRIVER_EXPORT OutgoingMessage {
   OutgoingMessage();
+  OutgoingMessage(const OutgoingMessage& other);
   ~OutgoingMessage();
 
   // Message ID.
@@ -32,6 +33,7 @@ struct GCM_DRIVER_EXPORT OutgoingMessage {
 // Message being received from the other party.
 struct GCM_DRIVER_EXPORT IncomingMessage {
   IncomingMessage();
+  IncomingMessage(const IncomingMessage& other);
   ~IncomingMessage();
 
   MessageData data;

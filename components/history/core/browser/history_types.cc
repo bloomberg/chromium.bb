@@ -203,6 +203,8 @@ MostVisitedURL::MostVisitedURL(const GURL& url,
       last_forced_time(last_forced_time) {
 }
 
+MostVisitedURL::MostVisitedURL(const MostVisitedURL& other) = default;
+
 MostVisitedURL::~MostVisitedURL() {}
 
 // FilteredURL -----------------------------------------------------------------
@@ -229,11 +231,15 @@ FilteredURL::ExtendedInfo::ExtendedInfo()
 
 Images::Images() {}
 
+Images::Images(const Images& other) = default;
+
 Images::~Images() {}
 
 // TopSitesDelta --------------------------------------------------------------
 
 TopSitesDelta::TopSitesDelta() {}
+
+TopSitesDelta::TopSitesDelta(const TopSitesDelta& other) = default;
 
 TopSitesDelta::~TopSitesDelta() {}
 
@@ -270,6 +276,9 @@ HistoryAddPageArgs::HistoryAddPageArgs(const GURL& url,
       visit_source(source),
       did_replace_entry(did_replace_entry) {
 }
+
+HistoryAddPageArgs::HistoryAddPageArgs(const HistoryAddPageArgs& other) =
+    default;
 
 HistoryAddPageArgs::~HistoryAddPageArgs() {}
 
@@ -308,6 +317,8 @@ FaviconBitmap::FaviconBitmap()
       icon_id(0) {
 }
 
+FaviconBitmap::FaviconBitmap(const FaviconBitmap& other) = default;
+
 FaviconBitmap::~FaviconBitmap() {
 }
 
@@ -315,6 +326,8 @@ FaviconBitmap::~FaviconBitmap() {
 
 ExpireHistoryArgs::ExpireHistoryArgs() {
 }
+
+ExpireHistoryArgs::ExpireHistoryArgs(const ExpireHistoryArgs& other) = default;
 
 ExpireHistoryArgs::~ExpireHistoryArgs() {
 }

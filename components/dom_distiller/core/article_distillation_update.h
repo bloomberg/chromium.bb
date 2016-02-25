@@ -23,6 +23,7 @@ class ArticleDistillationUpdate {
       const std::vector<scoped_refptr<RefCountedPageProto> >& pages,
       bool has_next_page,
       bool has_prev_page);
+  ArticleDistillationUpdate(const ArticleDistillationUpdate& other);
   ~ArticleDistillationUpdate();
 
   // Returns the  distilled page at |index|.

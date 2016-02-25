@@ -80,6 +80,9 @@ ShortcutsDatabase::Shortcut::MatchCore::MatchCore(
       keyword(keyword) {
 }
 
+ShortcutsDatabase::Shortcut::MatchCore::MatchCore(const MatchCore& other) =
+    default;
+
 ShortcutsDatabase::Shortcut::MatchCore::~MatchCore() {
 }
 
@@ -104,6 +107,8 @@ ShortcutsDatabase::Shortcut::Shortcut()
       last_access_time(base::Time::Now()),
       number_of_hits(0) {
 }
+
+ShortcutsDatabase::Shortcut::Shortcut(const Shortcut& other) = default;
 
 ShortcutsDatabase::Shortcut::~Shortcut() {
 }

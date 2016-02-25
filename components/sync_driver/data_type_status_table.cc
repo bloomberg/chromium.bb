@@ -25,6 +25,9 @@ syncer::ModelTypeSet GetTypesFromErrorMap(
 DataTypeStatusTable::DataTypeStatusTable() {
 }
 
+DataTypeStatusTable::DataTypeStatusTable(const DataTypeStatusTable& other) =
+    default;
+
 DataTypeStatusTable::~DataTypeStatusTable() {
 }
 

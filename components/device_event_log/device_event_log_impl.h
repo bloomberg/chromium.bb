@@ -28,6 +28,7 @@ class DEVICE_EVENT_LOG_EXPORT DeviceEventLogImpl {
              LogType log_type,
              LogLevel log_level,
              const std::string& event);
+    LogEntry(const LogEntry& other);
 
     std::string file;
     int file_line;

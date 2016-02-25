@@ -77,6 +77,7 @@ struct PasswordFormFillData {
   bool is_possible_change_password_form;
 
   PasswordFormFillData();
+  PasswordFormFillData(const PasswordFormFillData& other);
   ~PasswordFormFillData();
 };
 

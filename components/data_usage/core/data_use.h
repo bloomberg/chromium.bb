@@ -25,6 +25,8 @@ struct DataUse {
           int64_t tx_bytes,
           int64_t rx_bytes);
 
+  DataUse(const DataUse& other);
+
   ~DataUse();
 
   bool operator==(const DataUse& other) const;

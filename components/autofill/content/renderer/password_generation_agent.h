@@ -70,6 +70,7 @@ class PasswordGenerationAgent : public content::RenderFrameObserver {
     AccountCreationFormData(
         linked_ptr<PasswordForm> form,
         std::vector<blink::WebInputElement> password_elements);
+    AccountCreationFormData(const AccountCreationFormData& other);
     ~AccountCreationFormData();
   };
 

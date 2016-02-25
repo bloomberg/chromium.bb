@@ -208,6 +208,8 @@ void Snippet::ConvertMatchPositionsToWide(
 Snippet::Snippet() {
 }
 
+Snippet::Snippet(const Snippet& other) = default;
+
 Snippet::~Snippet() {
 }
 

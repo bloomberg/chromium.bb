@@ -22,6 +22,9 @@ FaviconRawBitmapResult::FaviconRawBitmapResult()
     : expired(false), icon_type(INVALID_ICON) {
 }
 
+FaviconRawBitmapResult::FaviconRawBitmapResult(
+    const FaviconRawBitmapResult& other) = default;
+
 FaviconRawBitmapResult::~FaviconRawBitmapResult() {}
 
 // --------------------------------------------------------

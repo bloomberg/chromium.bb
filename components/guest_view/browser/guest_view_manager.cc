@@ -493,6 +493,9 @@ GuestViewManager::GuestViewData::GuestViewData(
     const GuestViewCleanUpFunction& cleanup_function)
     : create_function(create_function), cleanup_function(cleanup_function) {}
 
+GuestViewManager::GuestViewData::GuestViewData(const GuestViewData& other) =
+    default;
+
 GuestViewManager::GuestViewData::~GuestViewData() {}
 
 }  // namespace guest_view

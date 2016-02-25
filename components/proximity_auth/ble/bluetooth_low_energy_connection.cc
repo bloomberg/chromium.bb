@@ -318,6 +318,9 @@ BluetoothLowEnergyConnection::WriteRequest::WriteRequest(
       is_last_write_for_wire_message(flag),
       number_of_failed_attempts(0) {}
 
+BluetoothLowEnergyConnection::WriteRequest::WriteRequest(
+    const WriteRequest& other) = default;
+
 BluetoothLowEnergyConnection::WriteRequest::~WriteRequest() {}
 
 void BluetoothLowEnergyConnection::CompleteConnection() {

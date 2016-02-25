@@ -280,6 +280,7 @@ struct PasswordForm {
   bool operator!=(const PasswordForm& form) const;
 
   PasswordForm();
+  PasswordForm(const PasswordForm& other);
   ~PasswordForm();
 };
 

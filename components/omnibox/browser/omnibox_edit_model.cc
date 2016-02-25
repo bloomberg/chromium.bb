@@ -164,6 +164,8 @@ OmniboxEditModel::State::State(bool user_input_in_progress,
       autocomplete_input(autocomplete_input) {
 }
 
+OmniboxEditModel::State::State(const State& other) = default;
+
 OmniboxEditModel::State::~State() {
 }
 

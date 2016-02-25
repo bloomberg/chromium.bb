@@ -42,6 +42,8 @@ GenerateCryptoErrorsForTypes(syncer::ModelTypeSet encrypted_types) {
 }  // namespace
 
 DataTypeManagerImpl::AssociationTypesInfo::AssociationTypesInfo() {}
+DataTypeManagerImpl::AssociationTypesInfo::AssociationTypesInfo(
+    const AssociationTypesInfo& other) = default;
 DataTypeManagerImpl::AssociationTypesInfo::~AssociationTypesInfo() {}
 
 DataTypeManagerImpl::DataTypeManagerImpl(

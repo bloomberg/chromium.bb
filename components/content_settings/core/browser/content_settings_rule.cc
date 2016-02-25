@@ -19,6 +19,8 @@ Rule::Rule(
   DCHECK(value);
 }
 
+Rule::Rule(const Rule& other) = default;
+
 Rule::~Rule() {}
 
 RuleIterator::~RuleIterator() {}

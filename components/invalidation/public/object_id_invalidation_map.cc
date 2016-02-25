@@ -22,6 +22,9 @@ ObjectIdInvalidationMap ObjectIdInvalidationMap::InvalidateAll(
 
 ObjectIdInvalidationMap::ObjectIdInvalidationMap() {}
 
+ObjectIdInvalidationMap::ObjectIdInvalidationMap(
+    const ObjectIdInvalidationMap& other) = default;
+
 ObjectIdInvalidationMap::~ObjectIdInvalidationMap() {}
 
 ObjectIdSet ObjectIdInvalidationMap::GetObjectIds() const {

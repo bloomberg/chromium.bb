@@ -62,6 +62,7 @@ class UpdateResponse {
     struct Manifest {
       struct Package {
         Package();
+        Package(const Package& other);
         ~Package();
 
         std::string fingerprint;
@@ -78,6 +79,7 @@ class UpdateResponse {
       };
 
       Manifest();
+      Manifest(const Manifest& other);
       ~Manifest();
 
       std::string version;
@@ -86,6 +88,7 @@ class UpdateResponse {
     };
 
     Result();
+    Result(const Result& other);
     ~Result();
 
     std::string extension_id;
@@ -101,6 +104,7 @@ class UpdateResponse {
   static const int kNoDaystart = -1;
   struct Results {
     Results();
+    Results(const Results& other);
     ~Results();
 
     // This will be >= 0, or kNoDaystart if the <daystart> tag was not present.

@@ -27,6 +27,7 @@ enum class ThreatSource {
 // sent as a POST instead of a GET.
 struct HitReport {
   HitReport();
+  HitReport(const HitReport& other);
   ~HitReport();
 
   GURL malicious_url;

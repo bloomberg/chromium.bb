@@ -47,6 +47,7 @@ class Snippet {
       Snippet::MatchPositions* match_positions);
 
   Snippet();
+  Snippet(const Snippet& other);
   ~Snippet();
 
   // Given |matches|, the match positions within |document|, compute the snippet

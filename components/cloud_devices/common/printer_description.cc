@@ -471,6 +471,8 @@ Media::Media(const std::string& custom_display_name,
       custom_display_name(custom_display_name),
       vendor_id(vendor_id) {}
 
+Media::Media(const Media& other) = default;
+
 bool Media::MatchBySize() {
   const MediaDefinition* media = FindMediaBySize(width_um, height_um);
   if (!media)

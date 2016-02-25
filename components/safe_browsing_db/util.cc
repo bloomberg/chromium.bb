@@ -37,6 +37,9 @@ SBCachedFullHashResult::SBCachedFullHashResult(
     const base::Time& in_expire_after)
     : expire_after(in_expire_after) {}
 
+SBCachedFullHashResult::SBCachedFullHashResult(
+    const SBCachedFullHashResult& other) = default;
+
 SBCachedFullHashResult::~SBCachedFullHashResult() {}
 
 // Listnames that browser can process.

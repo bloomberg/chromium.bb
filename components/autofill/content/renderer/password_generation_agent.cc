@@ -113,6 +113,9 @@ PasswordGenerationAgent::AccountCreationFormData::AccountCreationFormData(
     : form(password_form),
       password_elements(passwords) {}
 
+PasswordGenerationAgent::AccountCreationFormData::AccountCreationFormData(
+    const AccountCreationFormData& other) = default;
+
 PasswordGenerationAgent::AccountCreationFormData::~AccountCreationFormData() {}
 
 PasswordGenerationAgent::PasswordGenerationAgent(

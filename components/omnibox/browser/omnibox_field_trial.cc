@@ -93,6 +93,9 @@ HUPScoringParams::ScoreBuckets::ScoreBuckets()
       use_decay_factor_(false) {
 }
 
+HUPScoringParams::ScoreBuckets::ScoreBuckets(const ScoreBuckets& other) =
+    default;
+
 HUPScoringParams::ScoreBuckets::~ScoreBuckets() {
 }
 

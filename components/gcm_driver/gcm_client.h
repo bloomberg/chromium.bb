@@ -103,6 +103,7 @@ class GCMClient {
   // Detailed information of the Send Error event.
   struct SendErrorDetails {
     SendErrorDetails();
+    SendErrorDetails(const SendErrorDetails& other);
     ~SendErrorDetails();
 
     std::string message_id;
@@ -114,6 +115,7 @@ class GCMClient {
   struct GCMStatistics {
    public:
     GCMStatistics();
+    GCMStatistics(const GCMStatistics& other);
     ~GCMStatistics();
 
     bool is_recording;

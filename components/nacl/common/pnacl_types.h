@@ -20,6 +20,7 @@ namespace nacl {
 // nacl_host_messages.h.
 struct PnaclCacheInfo {
   PnaclCacheInfo();
+  PnaclCacheInfo(const PnaclCacheInfo& other);
   ~PnaclCacheInfo();
   GURL pexe_url;
   int abi_version;

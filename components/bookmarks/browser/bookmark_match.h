@@ -22,6 +22,7 @@ struct BookmarkMatch {
   typedef std::vector<MatchPosition> MatchPositions;
 
   BookmarkMatch();
+  BookmarkMatch(const BookmarkMatch& other);
   ~BookmarkMatch();
 
   // Extracts and returns the offsets from |match_positions|.

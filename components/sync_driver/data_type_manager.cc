@@ -16,6 +16,9 @@ DataTypeManager::ConfigureResult::ConfigureResult(
     : status(status), requested_types(requested_types) {
 }
 
+DataTypeManager::ConfigureResult::ConfigureResult(
+    const ConfigureResult& other) = default;
+
 DataTypeManager::ConfigureResult::~ConfigureResult() {
 }
 

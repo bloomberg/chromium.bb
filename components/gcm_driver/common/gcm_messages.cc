@@ -12,11 +12,15 @@ const int OutgoingMessage::kMaximumTTL = 24 * 60 * 60;  // 1 day.
 OutgoingMessage::OutgoingMessage() : time_to_live(kMaximumTTL) {
 }
 
+OutgoingMessage::OutgoingMessage(const OutgoingMessage& other) = default;
+
 OutgoingMessage::~OutgoingMessage() {
 }
 
 IncomingMessage::IncomingMessage() : decrypted(false) {
 }
+
+IncomingMessage::IncomingMessage(const IncomingMessage& other) = default;
 
 IncomingMessage::~IncomingMessage() {
 }

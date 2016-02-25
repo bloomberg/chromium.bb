@@ -276,6 +276,9 @@ DomainReliabilityMonitor::RequestInfo::RequestInfo(
     remote_endpoint = net::IPEndPoint();
 }
 
+DomainReliabilityMonitor::RequestInfo::RequestInfo(const RequestInfo& other) =
+    default;
+
 DomainReliabilityMonitor::RequestInfo::~RequestInfo() {}
 
 // static

@@ -182,6 +182,7 @@ class CrxInstaller : public base::RefCountedThreadSafe<CrxInstaller> {
 // TODO(sorin): this structure will be refactored soon.
 struct CrxComponent {
   CrxComponent();
+  CrxComponent(const CrxComponent& other);
   ~CrxComponent();
 
   // SHA256 hash of the CRX's public key.

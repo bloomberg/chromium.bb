@@ -32,6 +32,7 @@ class DataReductionProxyDebugUIManager
   // interacting with the blocking page.
   struct BypassResource {
     BypassResource();
+    BypassResource(const BypassResource& other);
     ~BypassResource();
 
     GURL url;

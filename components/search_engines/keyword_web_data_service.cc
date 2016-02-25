@@ -19,6 +19,8 @@ WDKeywordsResult::WDKeywordsResult()
     builtin_keyword_version(0) {
 }
 
+WDKeywordsResult::WDKeywordsResult(const WDKeywordsResult& other) = default;
+
 WDKeywordsResult::~WDKeywordsResult() {}
 
 KeywordWebDataService::BatchModeScoper::BatchModeScoper(

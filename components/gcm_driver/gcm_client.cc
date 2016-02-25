@@ -16,6 +16,9 @@ GCMClient::ChromeBuildInfo::~ChromeBuildInfo() {
 
 GCMClient::SendErrorDetails::SendErrorDetails() : result(UNKNOWN_ERROR) {}
 
+GCMClient::SendErrorDetails::SendErrorDetails(const SendErrorDetails& other) =
+    default;
+
 GCMClient::SendErrorDetails::~SendErrorDetails() {}
 
 GCMClient::GCMStatistics::GCMStatistics()
@@ -26,6 +29,8 @@ GCMClient::GCMStatistics::GCMStatistics()
       send_queue_size(0),
       resend_queue_size(0) {
 }
+
+GCMClient::GCMStatistics::GCMStatistics(const GCMStatistics& other) = default;
 
 GCMClient::GCMStatistics::~GCMStatistics() {
 }

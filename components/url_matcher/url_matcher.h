@@ -253,6 +253,7 @@ class URL_MATCHER_EXPORT URLQueryElementMatcherCondition {
                                   QueryElementType query_element_type,
                                   Type match_type,
                                   URLMatcherConditionFactory* factory);
+  URLQueryElementMatcherCondition(const URLQueryElementMatcherCondition& other);
   ~URLQueryElementMatcherCondition();
 
   bool operator<(const URLQueryElementMatcherCondition& rhs) const;

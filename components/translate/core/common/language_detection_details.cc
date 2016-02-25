@@ -10,6 +10,9 @@ LanguageDetectionDetails::LanguageDetectionDetails()
     : is_cld_reliable(false), has_notranslate(false) {
 }
 
+LanguageDetectionDetails::LanguageDetectionDetails(
+    const LanguageDetectionDetails& other) = default;
+
 LanguageDetectionDetails::~LanguageDetectionDetails() {}
 
 }  // namespace translate

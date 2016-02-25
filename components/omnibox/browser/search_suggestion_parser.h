@@ -44,6 +44,7 @@ class SearchSuggestionParser {
            bool relevance_from_server,
            AutocompleteMatchType::Type type,
            const std::string& deletion_url);
+    Result(const Result& other);
     virtual ~Result();
 
     bool from_keyword_provider() const { return from_keyword_provider_; }

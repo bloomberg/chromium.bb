@@ -17,4 +17,7 @@ MetadataSearchResult::MetadataSearchResult(
       md5(md5) {
 }
 
+MetadataSearchResult::MetadataSearchResult(const MetadataSearchResult& other) =
+    default;
+
 }  // namespace drive

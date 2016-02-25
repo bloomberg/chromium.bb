@@ -58,6 +58,8 @@ DownloadRow::DownloadRow(const base::FilePath& current_path,
       by_ext_id(ext_id),
       by_ext_name(ext_name) {}
 
+DownloadRow::DownloadRow(const DownloadRow& other) = default;
+
 DownloadRow::~DownloadRow() {
 }
 

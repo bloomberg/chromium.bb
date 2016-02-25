@@ -41,6 +41,7 @@ class StorageInfo {
               const base::string16& vendor,
               const base::string16& model,
               uint64_t size_in_bytes);
+  StorageInfo(const StorageInfo& other);
   ~StorageInfo();
 
   // Returns a device id given properties of the device. A prefix dependent on

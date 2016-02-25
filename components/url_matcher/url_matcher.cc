@@ -619,6 +619,9 @@ URLQueryElementMatcherCondition::URLQueryElementMatcherCondition(
   value_length_ = value_.length();
 }
 
+URLQueryElementMatcherCondition::URLQueryElementMatcherCondition(
+    const URLQueryElementMatcherCondition& other) = default;
+
 URLQueryElementMatcherCondition::~URLQueryElementMatcherCondition() {}
 
 bool URLQueryElementMatcherCondition::operator<(

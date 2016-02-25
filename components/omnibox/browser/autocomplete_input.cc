@@ -135,6 +135,8 @@ AutocompleteInput::AutocompleteInput(
   }
 }
 
+AutocompleteInput::AutocompleteInput(const AutocompleteInput& other) = default;
+
 AutocompleteInput::~AutocompleteInput() {
 }
 

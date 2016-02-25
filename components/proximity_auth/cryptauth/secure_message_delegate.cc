@@ -15,6 +15,9 @@ SecureMessageDelegate::~SecureMessageDelegate() {
 SecureMessageDelegate::CreateOptions::CreateOptions() {
 }
 
+SecureMessageDelegate::CreateOptions::CreateOptions(
+    const CreateOptions& other) = default;
+
 SecureMessageDelegate::CreateOptions::~CreateOptions() {
 }
 

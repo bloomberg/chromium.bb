@@ -298,6 +298,8 @@ struct Media {
         int32_t width_um,
         int32_t height_um);
 
+  Media(const Media& other);
+
   bool MatchBySize();
 
   bool IsValid() const;

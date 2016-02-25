@@ -182,6 +182,9 @@ void MergeIntoPrepopulatedEngineData(const TemplateURL* original_turl,
 
 ActionsFromPrepopulateData::ActionsFromPrepopulateData() {}
 
+ActionsFromPrepopulateData::ActionsFromPrepopulateData(
+    const ActionsFromPrepopulateData& other) = default;
+
 ActionsFromPrepopulateData::~ActionsFromPrepopulateData() {}
 
 // This is invoked when the version of the prepopulate data changes.

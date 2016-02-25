@@ -647,6 +647,9 @@ void AutofillProfileSyncableService::InjectStartSyncFlare(
 
 AutofillProfileSyncableService::DataBundle::DataBundle() {}
 
+AutofillProfileSyncableService::DataBundle::DataBundle(
+    const DataBundle& other) = default;
+
 AutofillProfileSyncableService::DataBundle::~DataBundle() {}
 
 }  // namespace autofill

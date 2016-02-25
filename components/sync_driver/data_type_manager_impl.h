@@ -186,6 +186,7 @@ class DataTypeManagerImpl : public DataTypeManager,
   // Types waiting for association and related time tracking info.
   struct AssociationTypesInfo {
     AssociationTypesInfo();
+    AssociationTypesInfo(const AssociationTypesInfo& other);
     ~AssociationTypesInfo();
 
     // Types to associate.

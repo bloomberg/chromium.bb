@@ -18,6 +18,7 @@
 // whatever fields are desired, then create an immutable TemplateURL from it.
 struct TemplateURLData {
   TemplateURLData();
+  TemplateURLData(const TemplateURLData& other);
   ~TemplateURLData();
 
   // A short description of the template. This is the name we show to the user

@@ -20,6 +20,7 @@ class SecureMessageDelegate {
   // Fields specifying how to create a SecureMessage.
   struct CreateOptions {
     CreateOptions();
+    CreateOptions(const CreateOptions& other);
     ~CreateOptions();
 
     // The scheme used to encrypt the message.

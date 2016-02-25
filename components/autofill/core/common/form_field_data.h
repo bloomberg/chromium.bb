@@ -30,6 +30,7 @@ struct FormFieldData {
   };
 
   FormFieldData();
+  FormFieldData(const FormFieldData& other);
   ~FormFieldData();
 
   // Returns true if two form fields are the same, not counting the value.

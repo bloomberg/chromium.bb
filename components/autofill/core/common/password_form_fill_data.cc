@@ -26,6 +26,9 @@ PasswordFormFillData::PasswordFormFillData()
       is_possible_change_password_form(false) {
 }
 
+PasswordFormFillData::PasswordFormFillData(const PasswordFormFillData& other) =
+    default;
+
 PasswordFormFillData::~PasswordFormFillData() {
 }
 

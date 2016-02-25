@@ -55,6 +55,8 @@ namespace storage_monitor {
 StorageInfo::StorageInfo() : total_size_in_bytes_(0) {
 }
 
+StorageInfo::StorageInfo(const StorageInfo& other) = default;
+
 StorageInfo::StorageInfo(const std::string& device_id_in,
                          const base::FilePath::StringType& device_location,
                          const base::string16& label,

@@ -81,6 +81,7 @@ class ImageManager : public ImageFetcherDelegate {
   // pending callbacks).
   struct ImageCacheRequest {
     ImageCacheRequest();
+    ImageCacheRequest(const ImageCacheRequest& other);
     ~ImageCacheRequest();
 
     GURL url;

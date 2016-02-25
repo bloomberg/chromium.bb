@@ -38,6 +38,8 @@ DataUse::DataUse(const GURL& url,
       tx_bytes(tx_bytes),
       rx_bytes(rx_bytes) {}
 
+DataUse::DataUse(const DataUse& other) = default;
+
 DataUse::~DataUse() {}
 
 bool DataUse::operator==(const DataUse& other) const {

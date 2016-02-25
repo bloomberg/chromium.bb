@@ -52,6 +52,7 @@ struct FaviconImageResult {
 // the desired scale factors.
 struct FaviconRawBitmapResult {
   FaviconRawBitmapResult();
+  FaviconRawBitmapResult(const FaviconRawBitmapResult& other);
   ~FaviconRawBitmapResult();
 
   // Returns true if |bitmap_data| contains a valid bitmap.

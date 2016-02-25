@@ -143,6 +143,9 @@ ManageAccountsParams::ManageAccountsParams()
 #endif  // !defined(OS_IOS)
 }
 
+ManageAccountsParams::ManageAccountsParams(const ManageAccountsParams& other) =
+    default;
+
 bool SettingsAllowSigninCookies(
     const content_settings::CookieSettings* cookie_settings) {
   GURL gaia_url = GaiaUrls::GetInstance()->gaia_url();

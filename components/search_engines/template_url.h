@@ -73,6 +73,7 @@ class TemplateURLRef {
   // is required and is passed in the constructor.
   struct SearchTermsArgs {
     explicit SearchTermsArgs(const base::string16& search_terms);
+    SearchTermsArgs(const SearchTermsArgs& other);
     ~SearchTermsArgs();
 
     struct ContextualSearchParams {
@@ -95,6 +96,7 @@ class TemplateURLRef {
                              const std::string& base_page_url,
                              const std::string& encoding,
                              const bool resolve);
+      ContextualSearchParams(const ContextualSearchParams& other);
       ~ContextualSearchParams();
 
       // The version of contextual search.

@@ -38,6 +38,8 @@ class URLRow {
   // an IPC message.  This constructor should probably not be used otherwise.
   URLRow(const GURL& url, URLID id);
 
+  URLRow(const URLRow& other);
+
   virtual ~URLRow();
   URLRow& operator=(const URLRow& other);
 
@@ -168,6 +170,7 @@ class URLResult : public URLRow {
   URLResult(const GURL& url,
             const query_parser::Snippet::MatchPositions& title_matches);
   explicit URLResult(const URLRow& url_row);
+  URLResult(const URLResult& other);
   ~URLResult() override;
 
   base::Time visit_time() const { return visit_time_; }

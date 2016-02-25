@@ -25,6 +25,7 @@ struct TemplateURLData;
 
 struct WDKeywordsResult {
   WDKeywordsResult();
+  WDKeywordsResult(const WDKeywordsResult& other);
   ~WDKeywordsResult();
 
   KeywordTable::Keywords keywords;

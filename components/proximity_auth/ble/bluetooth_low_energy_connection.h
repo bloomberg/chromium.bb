@@ -138,6 +138,7 @@ class BluetoothLowEnergyConnection : public Connection,
   // SendStatusSignal + the serialized WireMessage.
   struct WriteRequest {
     WriteRequest(const std::vector<uint8_t>& val, bool flag);
+    WriteRequest(const WriteRequest& other);
     ~WriteRequest();
 
     std::vector<uint8_t> value;

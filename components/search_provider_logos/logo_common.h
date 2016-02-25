@@ -21,6 +21,7 @@ extern const int64_t kMaxTimeToLiveMS;
 
 struct LogoMetadata {
   LogoMetadata();
+  LogoMetadata(const LogoMetadata& other);
   ~LogoMetadata();
 
   // For use by the client ----------------------------------------------------
@@ -53,6 +54,7 @@ struct LogoMetadata {
 
 struct EncodedLogo {
   EncodedLogo();
+  EncodedLogo(const EncodedLogo& other);
   ~EncodedLogo();
 
   // The jpeg- or png-encoded image.

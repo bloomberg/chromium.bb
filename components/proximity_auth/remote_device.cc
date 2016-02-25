@@ -23,6 +23,8 @@ RemoteDevice::RemoteDevice(const std::string& user_id,
       persistent_symmetric_key(persistent_symmetric_key),
       sign_in_challenge(sign_in_challenge) {}
 
+RemoteDevice::RemoteDevice(const RemoteDevice& other) = default;
+
 RemoteDevice::~RemoteDevice() {}
 
 }  // namespace

@@ -34,6 +34,8 @@ CredentialInfo::CredentialInfo(const autofill::PasswordForm& form,
   }
 }
 
+CredentialInfo::CredentialInfo(const CredentialInfo& other) = default;
+
 CredentialInfo::~CredentialInfo() {
 }
 

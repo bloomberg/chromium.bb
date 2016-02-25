@@ -23,6 +23,7 @@ namespace domain_reliability {
 struct DOMAIN_RELIABILITY_EXPORT DomainReliabilityBeacon {
  public:
   DomainReliabilityBeacon();
+  DomainReliabilityBeacon(const DomainReliabilityBeacon& other);
   ~DomainReliabilityBeacon();
 
   // Converts the Beacon to JSON format for uploading. Calculates the age

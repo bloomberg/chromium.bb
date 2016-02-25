@@ -50,6 +50,7 @@ class SESSIONS_EXPORT SerializedNavigationEntry {
 
   // Creates an invalid (index < 0) SerializedNavigationEntry.
   SerializedNavigationEntry();
+  SerializedNavigationEntry(const SerializedNavigationEntry& other);
   ~SerializedNavigationEntry();
 
   // Construct a SerializedNavigationEntry for a particular index from a sync

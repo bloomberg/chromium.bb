@@ -73,6 +73,8 @@ LegalMessageLine::Link::~Link() {}
 
 LegalMessageLine::LegalMessageLine() {}
 
+LegalMessageLine::LegalMessageLine(const LegalMessageLine& other) = default;
+
 LegalMessageLine::~LegalMessageLine() {}
 
 // static

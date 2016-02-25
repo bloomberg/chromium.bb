@@ -117,6 +117,7 @@ struct CrxUpdateItem {
   std::vector<CrxDownloader::DownloadMetrics> download_metrics;
 
   CrxUpdateItem();
+  CrxUpdateItem(const CrxUpdateItem& other);
   ~CrxUpdateItem();
 
   // Function object used to find a specific component.

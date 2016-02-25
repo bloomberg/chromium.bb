@@ -73,6 +73,7 @@ class PaymentsClient : public net::URLFetcherDelegate,
   // request.
   struct UploadRequestDetails {
     UploadRequestDetails();
+    UploadRequestDetails(const UploadRequestDetails& other);
     ~UploadRequestDetails();
 
     CreditCard card;

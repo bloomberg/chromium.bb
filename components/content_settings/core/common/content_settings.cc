@@ -88,6 +88,9 @@ ContentSettingPatternSource::ContentSettingPatternSource()
     : setting(CONTENT_SETTING_DEFAULT), incognito(false) {
 }
 
+ContentSettingPatternSource::ContentSettingPatternSource(
+    const ContentSettingPatternSource& other) = default;
+
 RendererContentSettingRules::RendererContentSettingRules() {}
 
 RendererContentSettingRules::~RendererContentSettingRules() {}

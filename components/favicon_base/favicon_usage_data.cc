@@ -9,6 +9,8 @@ namespace favicon_base {
 FaviconUsageData::FaviconUsageData() {
 }
 
+FaviconUsageData::FaviconUsageData(const FaviconUsageData& other) = default;
+
 FaviconUsageData::~FaviconUsageData() {
 }
 

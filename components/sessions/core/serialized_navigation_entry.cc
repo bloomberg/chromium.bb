@@ -30,6 +30,9 @@ SerializedNavigationEntry::SerializedNavigationEntry()
       SerializedNavigationDriver::Get()->GetDefaultReferrerPolicy();
 }
 
+SerializedNavigationEntry::SerializedNavigationEntry(
+    const SerializedNavigationEntry& other) = default;
+
 SerializedNavigationEntry::~SerializedNavigationEntry() {}
 
 SerializedNavigationEntry SerializedNavigationEntry::FromSyncData(

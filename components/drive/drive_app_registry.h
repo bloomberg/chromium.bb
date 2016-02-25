@@ -42,6 +42,7 @@ struct DriveAppInfo {
                const std::string& app_name,
                const GURL& create_url,
                bool is_removable);
+  DriveAppInfo(const DriveAppInfo& other);
   ~DriveAppInfo();
 
   // Drive app id.

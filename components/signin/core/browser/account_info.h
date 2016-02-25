@@ -10,6 +10,7 @@
 // Information about a specific account.
 struct AccountInfo {
   AccountInfo();
+  AccountInfo(const AccountInfo& other);
   ~AccountInfo();
 
   std::string account_id;  // The account ID used by OAuth2TokenService.

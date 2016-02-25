@@ -11,6 +11,9 @@ namespace syncer {
 
 SingleObjectInvalidationSet::SingleObjectInvalidationSet() {}
 
+SingleObjectInvalidationSet::SingleObjectInvalidationSet(
+    const SingleObjectInvalidationSet& other) = default;
+
 SingleObjectInvalidationSet::~SingleObjectInvalidationSet() {}
 
 void SingleObjectInvalidationSet::Insert(const Invalidation& invalidation) {

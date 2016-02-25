@@ -163,6 +163,7 @@ typedef std::vector<FacetURI> AffiliatedFacets;
 // authoritative source.
 struct AffiliatedFacetsWithUpdateTime {
   AffiliatedFacetsWithUpdateTime();
+  AffiliatedFacetsWithUpdateTime(const AffiliatedFacetsWithUpdateTime& other);
   ~AffiliatedFacetsWithUpdateTime();
 
   AffiliatedFacets facets;

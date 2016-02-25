@@ -90,6 +90,8 @@ FormFieldData::FormFieldData()
       text_direction(base::i18n::UNKNOWN_DIRECTION) {
 }
 
+FormFieldData::FormFieldData(const FormFieldData& other) = default;
+
 FormFieldData::~FormFieldData() {
 }
 

@@ -186,6 +186,7 @@ class URLIndexPrivateData
                         const HistoryIDSet& history_id_set);
     // Creates a cache item for a term which has no results.
     SearchTermCacheItem();
+    SearchTermCacheItem(const SearchTermCacheItem& other);
 
     ~SearchTermCacheItem();
 
@@ -206,6 +207,7 @@ class URLIndexPrivateData
                     const base::string16& lower_string,
                     const String16Vector& lower_terms,
                     const base::Time now);
+    AddHistoryMatch(const AddHistoryMatch& other);
     ~AddHistoryMatch();
 
     void operator()(const HistoryID history_id);

@@ -333,6 +333,9 @@ ContentSettingsPattern::PatternParts::PatternParts()
           is_port_wildcard(false),
           is_path_wildcard(false) {}
 
+ContentSettingsPattern::PatternParts::PatternParts(const PatternParts& other) =
+    default;
+
 ContentSettingsPattern::PatternParts::~PatternParts() {}
 
 // ////////////////////////////////////////////////////////////////////////////

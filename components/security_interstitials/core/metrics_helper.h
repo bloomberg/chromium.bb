@@ -67,6 +67,7 @@ class MetricsHelper {
   // The rappor preferences can be left blank if rappor_service is not set.
   struct ReportDetails {
     ReportDetails();
+    ReportDetails(const ReportDetails& other);
     std::string metric_prefix;
     std::string extra_suffix;
     std::string rappor_prefix;

@@ -107,6 +107,7 @@ class SyncClient {
 
   struct SyncTask {
     SyncTask();
+    SyncTask(const SyncTask& other);
     ~SyncTask();
     SyncState state;
     ClientContext context;

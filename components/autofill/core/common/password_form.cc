@@ -86,6 +86,8 @@ PasswordForm::PasswordForm()
       is_public_suffix_match(false),
       is_affiliation_based_match(false) {}
 
+PasswordForm::PasswordForm(const PasswordForm& other) = default;
+
 PasswordForm::~PasswordForm() {
 }
 

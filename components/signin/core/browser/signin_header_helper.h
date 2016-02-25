@@ -66,6 +66,7 @@ struct ManageAccountsParams {
 #endif  // !defined(OS_IOS)
 
   ManageAccountsParams();
+  ManageAccountsParams(const ManageAccountsParams& other);
 };
 
 // Returns true if signin cookies are allowed.

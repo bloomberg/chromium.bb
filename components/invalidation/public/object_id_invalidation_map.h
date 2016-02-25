@@ -24,6 +24,7 @@ class INVALIDATION_EXPORT ObjectIdInvalidationMap {
    static ObjectIdInvalidationMap InvalidateAll(const ObjectIdSet& ids);
 
    ObjectIdInvalidationMap();
+   ObjectIdInvalidationMap(const ObjectIdInvalidationMap& other);
    ~ObjectIdInvalidationMap();
 
    // Returns set of ObjectIds for which at least one invalidation is present.
