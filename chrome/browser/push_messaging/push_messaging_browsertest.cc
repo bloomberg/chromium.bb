@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -48,7 +49,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/window_open_disposition.h"
 
-#if defined(ENABLE_BACKGROUND)
+#if BUILDFLAG(ENABLE_BACKGROUND)
 #include "chrome/browser/background/background_mode_manager.h"
 #endif
 
@@ -1196,7 +1197,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingIncognitoBrowserTest,
 }
 
 // None of the following should matter on ChromeOS: crbug.com/527045
-#if defined(ENABLE_BACKGROUND) && !defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_BACKGROUND) && !defined(OS_CHROMEOS)
 // Push background mode is disabled by default.
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
                        BackgroundModeDisabledByDefault) {
@@ -1280,4 +1281,4 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBackgroundModeDisabledBrowserTest,
   EXPECT_EQ("unsubscribe result: true", script_result);
   ASSERT_FALSE(background_mode_manager->IsBackgroundModeActive());
 }
-#endif  // defined(ENABLE_BACKGROUND) && !defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(ENABLE_BACKGROUND) && !defined(OS_CHROMEOS)

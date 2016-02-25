@@ -96,7 +96,7 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 #endif
 
-#if defined(ENABLE_BACKGROUND)
+#if BUILDFLAG(ENABLE_BACKGROUND)
 #include "chrome/browser/background/background_mode_manager.h"
 #endif
 
@@ -331,7 +331,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   TaskManager::RegisterPrefs(registry);
 #endif  // defined(ENABLE_TASK_MANAGER)
 
-#if defined(ENABLE_BACKGROUND)
+#if BUILDFLAG(ENABLE_BACKGROUND)
   BackgroundModeManager::RegisterPrefs(registry);
 #endif
 

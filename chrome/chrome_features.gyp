@@ -14,6 +14,7 @@
       'variables': {
         'buildflag_header_path': 'chrome/common/features.h',
         'buildflag_flags': [
+          'ENABLE_BACKGROUND=<(enable_background)',
           'ENABLE_GOOGLE_NOW=<(enable_google_now)',
           'ENABLE_ONE_CLICK_SIGNIN=<(enable_one_click_signin)',
           'ANDROID_JAVA_UI=<(android_java_ui)',

@@ -54,9 +54,6 @@ declare_args() {
 
   enable_configuration_policy = !is_ios
 
-  # Enables support for background apps.
-  enable_background = !is_ios && !is_android
-
   enable_captive_portal_detection = !is_android && !is_ios
 
   # Enables use of the session service, which is enabled by default.

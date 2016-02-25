@@ -1469,11 +1469,11 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   first_run::CreateSentinelIfNeeded();
 #endif  // !defined(OS_ANDROID)
 
-#if defined(ENABLE_BACKGROUND)
+#if BUILDFLAG(ENABLE_BACKGROUND)
   // Autoload any profiles which are running background apps.
   // TODO(rlp): Do this on a separate thread. See http://crbug.com/99075.
   browser_process_->profile_manager()->AutoloadProfiles();
-#endif  // defined(ENABLE_BACKGROUND)
+#endif  // BUILDFLAG(ENABLE_BACKGROUND)
   // Post-profile init ---------------------------------------------------------
 
   TranslateService::Initialize();

@@ -64,6 +64,7 @@
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
+#include "chrome/common/features.h"
 
 #if defined(ENABLE_EXTENSIONS)
 #include "apps/browser_context_keyed_service_factories.h"
@@ -184,7 +185,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   AccountTrackerServiceFactory::GetInstance();
   AccountFetcherServiceFactory::GetInstance();
   autofill::PersonalDataManagerFactory::GetInstance();
-#if defined(ENABLE_BACKGROUND)
+#if BUILDFLAG(ENABLE_BACKGROUND)
   BackgroundContentsServiceFactory::GetInstance();
 #endif
   BookmarkModelFactory::GetInstance();

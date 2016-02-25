@@ -22,6 +22,7 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/common/features.h"
 #include "components/prefs/pref_change_registrar.h"
 
 class ChromeChildProcessWatcher;
@@ -241,7 +242,7 @@ class BrowserProcessImpl : public BrowserProcess,
 
   scoped_ptr<StatusTray> status_tray_;
 
-#if defined(ENABLE_BACKGROUND)
+#if BUILDFLAG(ENABLE_BACKGROUND)
   scoped_ptr<BackgroundModeManager> background_mode_manager_;
 #endif
 

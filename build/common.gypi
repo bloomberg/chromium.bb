@@ -597,9 +597,6 @@
       # servers. Unofficial builds won't have the proper API keys.
       'enable_prod_wallet_service%': 0,
 
-      # Enables support for background apps.
-      'enable_background%': 1,
-
       # Enable the task manager by default.
       'enable_task_manager%': 1,
 
@@ -1236,7 +1233,6 @@
     'enable_themes%': '<(enable_themes)',
     'enable_autofill_dialog%': '<(enable_autofill_dialog)',
     'enable_prod_wallet_service%': '<(enable_prod_wallet_service)',
-    'enable_background%': '<(enable_background)',
     'linux_use_bundled_gold%': '<(linux_use_bundled_gold)',
     'linux_use_bundled_binutils%': '<(linux_use_bundled_binutils)',
     'linux_use_gold_flags%': '<(linux_use_gold_flags)',
@@ -1667,7 +1663,6 @@
       }],  # os_posix==1 and OS!="mac" and OS!="ios"
       ['OS=="ios"', {
         'disable_nacl%': 1,
-        'enable_background%': 0,
         'icu_use_data_file_flag%': 1,
         'enable_web_speech%': 0,
         'use_system_libxml%': 1,
@@ -1857,9 +1852,6 @@
 
         # Disable Native Client.
         'disable_nacl%': 1,
-
-        # Android does not support background apps.
-        'enable_background%': 0,
 
         # Sessions are store separately in the Java side.
         'enable_session_service%': 0,
@@ -2983,9 +2975,6 @@
         # In GN, this is set on the autofill tagets only. See
         # //components/autofill/core/browser:wallet_service
         'defines': ['ENABLE_PROD_WALLET_SERVICE=1'],
-      }],
-      ['enable_background==1', {
-        'defines': ['ENABLE_BACKGROUND=1'],
       }],
       ['enable_basic_printing==1 or enable_print_preview==1', {
         # Convenience define for ENABLE_BASIC_PRINTING || ENABLE_PRINT_PREVIEW.

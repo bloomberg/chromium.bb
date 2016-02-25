@@ -243,9 +243,6 @@ config("feature_flags") {
   if (enable_hangout_services_extension) {
     defines += [ "ENABLE_HANGOUT_SERVICES_EXTENSION=1" ]
   }
-  if (enable_background) {
-    defines += [ "ENABLE_BACKGROUND=1" ]
-  }
   if (enable_video_hole) {
     defines += [ "VIDEO_HOLE=1" ]
   }

@@ -25,7 +25,11 @@ declare_args() {
 
 enable_one_click_signin = is_win || is_mac || (is_linux && !is_chromeos)
 
+# Enables support for background apps.
+enable_background = !is_ios && !is_android
+
 chrome_grit_defines = [
+  "enable_background=$enable_background",
   "enable_google_now=$enable_google_now",
   "use_vulcanize=$use_vulcanize",
 ]

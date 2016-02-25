@@ -16,8 +16,10 @@
           'android_java_ui': 0,
         }],
         ['OS=="android" or OS=="ios"', {
+          'enable_background%': 0,
           'enable_google_now%': 0,
         }, {
+          'enable_background%': 1,
           'enable_google_now%': 1,
         }]
       ],
@@ -29,6 +31,7 @@
 
     # Anything in the conditions needs to be copied to the outer scope to be
     # accessible.
+    'enable_background%': '<(enable_background)',
     'enable_google_now%': '<(enable_google_now)',
     'android_java_ui%': '<(android_java_ui)',
     'use_vulcanize%': '<(use_vulcanize)',
@@ -39,6 +42,7 @@
     # Grit defines based on the feature flags. These must be manually added to
     # grit targets.
     'chrome_grit_defines': [
+      '-D', 'enable_background=<(enable_background)',
       '-D', 'enable_google_now=<(enable_google_now)',
       '-D', 'use_vulcanize=<(use_vulcanize)',
     ],

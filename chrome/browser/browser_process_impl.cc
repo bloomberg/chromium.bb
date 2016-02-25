@@ -124,7 +124,7 @@
 #include "components/gcm_driver/gcm_desktop_utils.h"
 #endif
 
-#if defined(ENABLE_BACKGROUND)
+#if BUILDFLAG(ENABLE_BACKGROUND)
 #include "chrome/browser/background/background_mode_manager.h"
 #endif
 
@@ -868,7 +868,7 @@ DownloadRequestLimiter* BrowserProcessImpl::download_request_limiter() {
 
 BackgroundModeManager* BrowserProcessImpl::background_mode_manager() {
   DCHECK(CalledOnValidThread());
-#if defined(ENABLE_BACKGROUND)
+#if BUILDFLAG(ENABLE_BACKGROUND)
   if (!background_mode_manager_.get())
     CreateBackgroundModeManager();
   return background_mode_manager_.get();
@@ -880,7 +880,7 @@ BackgroundModeManager* BrowserProcessImpl::background_mode_manager() {
 
 void BrowserProcessImpl::set_background_mode_manager_for_test(
     scoped_ptr<BackgroundModeManager> manager) {
-#if defined(ENABLE_BACKGROUND)
+#if BUILDFLAG(ENABLE_BACKGROUND)
   background_mode_manager_ = std::move(manager);
 #endif
 }
@@ -1129,7 +1129,7 @@ void BrowserProcessImpl::CreateNotificationUIManager() {
 }
 
 void BrowserProcessImpl::CreateBackgroundModeManager() {
-#if defined(ENABLE_BACKGROUND)
+#if BUILDFLAG(ENABLE_BACKGROUND)
   DCHECK(background_mode_manager_.get() == NULL);
   background_mode_manager_.reset(
       new BackgroundModeManager(*base::CommandLine::ForCurrentProcess(),

@@ -26,6 +26,7 @@
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -45,7 +46,7 @@
 #include "content/public/common/push_messaging_status.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(ENABLE_BACKGROUND)
+#if BUILDFLAG(ENABLE_BACKGROUND)
 #include "chrome/browser/background/background_mode_manager.h"
 #endif
 
@@ -85,7 +86,7 @@ void UnregisterCallbackToClosure(const base::Closure& closure,
   closure.Run();
 }
 
-#if defined(ENABLE_BACKGROUND)
+#if BUILDFLAG(ENABLE_BACKGROUND)
 bool UseBackgroundMode() {
   // Note: if push is ever enabled in incognito, the background mode integration
   // should not be enabled for it.
@@ -98,7 +99,7 @@ bool UseBackgroundMode() {
     return true;
   return group_name == "Enabled";
 }
-#endif  // defined(ENABLE_BACKGROUND)
+#endif  // BUILDFLAG(ENABLE_BACKGROUND)
 
 }  // namespace
 
@@ -143,13 +144,13 @@ void PushMessagingServiceImpl::IncreasePushSubscriptionCount(int add,
   if (is_pending) {
     pending_push_subscription_count_ += add;
   } else {
-#if defined(ENABLE_BACKGROUND)
+#if BUILDFLAG(ENABLE_BACKGROUND)
     if (UseBackgroundMode() && g_browser_process->background_mode_manager() &&
         !push_subscription_count_) {
       g_browser_process->background_mode_manager()->RegisterTrigger(
           profile_, this, false /* should_notify_user */);
     }
-#endif  // defined(ENABLE_BACKGROUND)
+#endif  // BUILDFLAG(ENABLE_BACKGROUND)
     push_subscription_count_ += add;
   }
 }
@@ -167,12 +168,12 @@ void PushMessagingServiceImpl::DecreasePushSubscriptionCount(int subtract,
   if (push_subscription_count_ + pending_push_subscription_count_ == 0) {
     GetGCMDriver()->RemoveAppHandler(kPushMessagingAppIdentifierPrefix);
 
-#if defined(ENABLE_BACKGROUND)
+#if BUILDFLAG(ENABLE_BACKGROUND)
     if (UseBackgroundMode() && g_browser_process->background_mode_manager()) {
       g_browser_process->background_mode_manager()->UnregisterTrigger(profile_,
                                                                       this);
     }
-#endif  // defined(ENABLE_BACKGROUND)
+#endif  // BUILDFLAG(ENABLE_BACKGROUND)
   }
 }
 
@@ -738,11 +739,11 @@ gfx::ImageSkia* PushMessagingServiceImpl::GetIcon() {
 }
 
 void PushMessagingServiceImpl::OnMenuClick() {
-#if defined(ENABLE_BACKGROUND)
+#if BUILDFLAG(ENABLE_BACKGROUND)
   chrome::ShowContentSettings(
       BackgroundModeManager::GetBrowserWindowForProfile(profile_),
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
-#endif  // defined(ENABLE_BACKGROUND)
+#endif  // BUILDFLAG(ENABLE_BACKGROUND)
 }
 
 // Helper methods --------------------------------------------------------------
