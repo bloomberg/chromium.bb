@@ -62,11 +62,11 @@ class Options(object):
     """
     self._ARGS.append((arg_name, default, help_str))
 
-  def ParseArgs(self, arg_str, description=None, extra=None):
+  def ParseArgs(self, arg_list, description=None, extra=None):
     """Parse command line arguments.
 
     Args:
-      arg_str: command line argument string.
+      arg_list: command line argument list.
       description: description to use in argument parser.
       extra: additional required arguments to add. These will be exposed as
         instance attributes. This is either a list of extra arguments, or a
@@ -75,7 +75,46 @@ class Options(object):
         used as in argparse, ie those beginning with -- are named, and those
         without a dash are positional. Don't use a single dash.
     """
-    parser = argparse.ArgumentParser(description=description)
+    parser = self._MakeParser(description, extra)
+    self._parsed_args = parser.parse_args(arg_list)
+
+  def ExtractArgs(self, arg_list):
+    """Extract arguments from arg_str.
+
+    Args:
+      arg_list: command line argument list. It will be changed so that arguments
+        used by this options instance are removed.
+    """
+    parser = self._MakeParser()
+    (self._parsed_args, unused) = parser.parse_known_args(arg_list)
+    del arg_list[:]
+    arg_list.extend(unused)
+
+  def GetParentParser(self, group_name='Global'):
+    """Returns a parser suitable for passing in as a parent to argparse.
+
+    Args:
+      group_name: A group name for the parser (see argparse's
+        add_argument_group).
+
+    Returns:
+      An argparse parser instance.
+    """
+    return self._MakeParser(group=group_name)
+
+  def SetParsedArgs(self, parsed_args):
+    """Set parsed args. Used with GetParentParser.
+
+    Args:
+      parsed_args: the result of argparse.parse_args or similar.
+    """
+    self._parsed_args = parsed_args
+
+  def _MakeParser(self, description=None, extra=None, group=None):
+    add_help = True if group is None else False
+    parser = argparse.ArgumentParser(
+        description=description, add_help=add_help)
+    container = parser if group is None else parser.add_argument_group(group)
     for arg, default, help_str in self._ARGS:
       # All global options are named.
       arg = '--' + arg
@@ -86,12 +125,12 @@ class Options(object):
       for arg in extra:
         if type(arg) is tuple:
           argname, default = arg
-          self._AddArg(parser, argname, default)
+          self._AddArg(container, argname, default)
         else:
-          self._AddArg(parser, arg, None, required=True)
-    self._parsed_args = parser.parse_args(arg_str)
+          self._AddArg(container, arg, None, required=True)
+    return parser
 
-  def _AddArg(self, parser, arg, default, required=False, help_str=None):
+  def _AddArg(self, container, arg, default, required=False, help_str=None):
     assert not arg.startswith('-') or arg.startswith('--'), \
         "Single dash arguments aren't supported: %s" % arg
     arg_name = arg
@@ -117,7 +156,7 @@ class Options(object):
         kwargs['default'] = default
         kwargs['type'] = type(default)
 
-    parser.add_argument(arg, **kwargs)
+    container.add_argument(arg, **kwargs)
 
   def __getattr__(self, name):
     if name in self._arg_set:
