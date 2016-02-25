@@ -16,7 +16,7 @@ interface ShellClient {
   //
   // Parameters:
   //
-  //  shell
+  //  connector
   //    An interface back to the shell by which new connections may be
   //    established.
   //
@@ -33,7 +33,7 @@ interface ShellClient {
   //    instantiated is run as. This will always be a valid user id, never
   //    Shell::kUserInherit.
   //
-  Initialize(Shell shell, string url, uint32 id, uint32 user_id);
+  Initialize(Connector connector, string url, uint32 id, uint32 user_id);
 
   // Called when another application attempts to open a connection to this
   // application. An application implements this method to complete the exchange
@@ -81,9 +81,4 @@ interface ShellClient {
                    InterfaceProvider? remote_interfaces,
                    array<string> allowed_interfaces,
                    string resolved_url);
-
-  // Called by the shell in response to calling Shell's QuitApplication. The
-  // application should run the callback with true if shutdown can proceed.
-  // See Shell::QuitApplication for details about shutdown workflow.
-  OnQuitRequested() => (bool can_quit);
 };

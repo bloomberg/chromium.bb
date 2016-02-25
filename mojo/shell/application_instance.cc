@@ -29,33 +29,36 @@ ApplicationInstance::ApplicationInstance(
       allow_any_application_(identity.filter().size() == 1 &&
                              identity.filter().count("*") == 1),
       shell_client_(std::move(shell_client)),
-      binding_(this),
       pid_receiver_binding_(this),
-      queue_requests_(false),
       native_runner_(nullptr),
       pid_(base::kNullProcessId) {
   DCHECK_NE(kInvalidApplicationID, id_);
 }
 
-ApplicationInstance::~ApplicationInstance() {
-  for (auto request : queued_client_requests_)
-    request->connect_callback().Run(kInvalidApplicationID);
-  STLDeleteElements(&queued_client_requests_);
-}
+ApplicationInstance::~ApplicationInstance() {}
 
 void ApplicationInstance::InitializeApplication() {
-  shell_client_->Initialize(binding_.CreateInterfacePtrAndBind(),
+  shell_client_->Initialize(connectors_.CreateInterfacePtrAndBind(this),
                             identity_.url().spec(), id_, identity_.user_id());
-  binding_.set_connection_error_handler([this]() { OnConnectionError(); });
+  connectors_.set_connection_error_handler(
+      base::Bind(&ApplicationManager::OnApplicationInstanceError,
+                 base::Unretained(manager_), base::Unretained(this)));
 }
 
 void ApplicationInstance::ConnectToClient(scoped_ptr<ConnectParams> params) {
-  if (queue_requests_) {
-    queued_client_requests_.push_back(params.release());
-    return;
-  }
+  params->connect_callback().Run(id_);
+  AllowedInterfaces interfaces;
+  interfaces.insert("*");
+  if (!params->source().is_null())
+    interfaces = GetAllowedInterfaces(params->source().filter(), identity_);
 
-  CallAcceptConnection(std::move(params));
+  ApplicationInstance* source =
+      manager_->GetApplicationInstance(params->source());
+  uint32_t source_id = source ? source->id() : kInvalidApplicationID;
+  shell_client_->AcceptConnection(
+      params->source().url().spec(), params->source().user_id(), source_id,
+      params->TakeRemoteInterfaces(), params->TakeLocalInterfaces(),
+      Array<String>::From(interfaces), params->target().url().spec());
 }
 
 void ApplicationInstance::SetNativeRunner(NativeRunner* native_runner) {
@@ -65,18 +68,6 @@ void ApplicationInstance::SetNativeRunner(NativeRunner* native_runner) {
 void ApplicationInstance::BindPIDReceiver(
     InterfaceRequest<mojom::PIDReceiver> pid_receiver) {
   pid_receiver_binding_.Bind(std::move(pid_receiver));
-}
-
-// Shell implementation:
-void ApplicationInstance::GetConnector(mojom::ConnectorRequest request) {
-  connectors_.AddBinding(this, std::move(request));
-}
-
-void ApplicationInstance::QuitApplication() {
-  queue_requests_ = true;
-  shell_client_->OnQuitRequested(
-      base::Bind(&ApplicationInstance::OnQuitRequestedResult,
-                 base::Unretained(this)));
 }
 
 // Connector implementation:
@@ -122,47 +113,6 @@ uint32_t ApplicationInstance::GenerateUniqueID() const {
   ++id;
   CHECK_NE(kInvalidApplicationID, id);
   return id;
-}
-
-void ApplicationInstance::CallAcceptConnection(
-    scoped_ptr<ConnectParams> params) {
-  params->connect_callback().Run(id_);
-  AllowedInterfaces interfaces;
-  interfaces.insert("*");
-  if (!params->source().is_null())
-    interfaces = GetAllowedInterfaces(params->source().filter(), identity_);
-
-  ApplicationInstance* source =
-      manager_->GetApplicationInstance(params->source());
-  uint32_t source_id = source ? source->id() : kInvalidApplicationID;
-  shell_client_->AcceptConnection(
-      params->source().url().spec(), params->source().user_id(), source_id,
-      params->TakeRemoteInterfaces(), params->TakeLocalInterfaces(),
-      Array<String>::From(interfaces), params->target().url().spec());
-}
-
-void ApplicationInstance::OnConnectionError() {
-  std::vector<ConnectParams*> queued_client_requests;
-  queued_client_requests_.swap(queued_client_requests);
-  auto manager = manager_;
-  manager_->OnApplicationInstanceError(this);
-  //|this| is deleted.
-
-  // If any queued requests came to shell during time it was shutting down,
-  // start them now.
-  for (auto request : queued_client_requests)
-    manager->Connect(make_scoped_ptr(request));
-}
-
-void ApplicationInstance::OnQuitRequestedResult(bool can_quit) {
-  if (can_quit)
-    return;
-
-  queue_requests_ = false;
-  for (auto request : queued_client_requests_)
-    CallAcceptConnection(make_scoped_ptr(request));
-
-  queued_client_requests_.clear();
 }
 
 }  // namespace shell

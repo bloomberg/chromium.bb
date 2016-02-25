@@ -6070,12 +6070,10 @@ void RenderFrameImpl::GetInterface(mojo::InterfaceRequest<Interface> request) {
 
 mojo::shell::mojom::InterfaceProviderPtr RenderFrameImpl::ConnectToApplication(
     const GURL& url) {
-  if (!mojo_shell_)
-    GetServiceRegistry()->ConnectToRemoteService(mojo::GetProxy(&mojo_shell_));
+  if (!connector_)
+    GetServiceRegistry()->ConnectToRemoteService(mojo::GetProxy(&connector_));
   mojo::shell::mojom::InterfaceProviderPtr interface_provider;
-  mojo::shell::mojom::ConnectorPtr connector;
-  mojo_shell_->GetConnector(GetProxy(&connector));
-  connector->Connect(
+  connector_->Connect(
       url.spec(), mojo::shell::mojom::Connector::kUserInherit,
       GetProxy(&interface_provider), nullptr, base::Bind(&OnGotInstanceID));
   return interface_provider;

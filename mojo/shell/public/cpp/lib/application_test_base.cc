@@ -27,10 +27,10 @@ uint32_t g_user_id = shell::mojom::Connector::kUserRoot;
 // between SetUp()/TearDown() so we can (re-)intialize new ShellConnections.
 InterfaceRequest<shell::mojom::ShellClient> g_shell_client_request;
 
-// Shell pointer passed in the initial mojo.ShellClient.Initialize() call,
+// Connector pointer passed in the initial mojo.ShellClient.Initialize() call,
 // stored in between initial setup and the first test and between SetUp/TearDown
 // calls so we can (re-)initialize new ShellConnections.
-shell::mojom::ShellPtr g_shell;
+shell::mojom::ConnectorPtr g_connector;
 
 class ShellGrabber : public shell::mojom::ShellClient {
  public:
@@ -44,7 +44,7 @@ class ShellGrabber : public shell::mojom::ShellClient {
 
  private:
   // shell::mojom::ShellClient implementation.
-  void Initialize(shell::mojom::ShellPtr shell,
+  void Initialize(shell::mojom::ConnectorPtr connector,
                   const mojo::String& url,
                   uint32_t id,
                   uint32_t user_id) override {
@@ -52,7 +52,7 @@ class ShellGrabber : public shell::mojom::ShellClient {
     g_id = id;
     g_user_id = user_id;
     g_shell_client_request = binding_.Unbind();
-    g_shell = std::move(shell);
+    g_connector = std::move(connector);
   }
 
   void AcceptConnection(
@@ -63,10 +63,6 @@ class ShellGrabber : public shell::mojom::ShellClient {
       shell::mojom::InterfaceProviderPtr remote_interfaces,
       Array<String> allowed_interfaces,
       const String& url) override {
-    CHECK(false);
-  }
-
-  void OnQuitRequested(const Callback<void(bool)>& callback) override {
     CHECK(false);
   }
 
@@ -85,7 +81,7 @@ MojoResult RunAllTests(MojoHandle shell_client_request_handle) {
         MakeRequest<shell::mojom::ShellClient>(MakeScopedHandle(
             MessagePipeHandle(shell_client_request_handle))));
     grabber.WaitForInitialize();
-    CHECK(g_shell);
+    CHECK(g_connector);
     CHECK(g_shell_client_request.is_pending());
 
     int argc = 0;
@@ -113,7 +109,7 @@ MojoResult RunAllTests(MojoHandle shell_client_request_handle) {
 
   // Shut down our message pipes before exiting.
   (void)g_shell_client_request.PassMessagePipe();
-  g_shell.reset();
+  g_connector.reset();
 
   return (result == 0) ? MOJO_RESULT_OK : MOJO_RESULT_UNKNOWN;
 }
@@ -125,15 +121,10 @@ TestHelper::TestHelper(ShellClient* client)
       url_(g_url) {
   // Fake ShellClient initialization.
   shell::mojom::ShellClient* shell_client = shell_connection_.get();
-  shell_client->Initialize(std::move(g_shell), g_url, g_id, g_user_id);
+  shell_client->Initialize(std::move(g_connector), g_url, g_id, g_user_id);
 }
 
 TestHelper::~TestHelper() {
-  // TODO: commented out until http://crbug.com/533107 is solved.
-  // {
-  // ShellConnection::TestApi test_api(shell_connection_);
-  // test_api.UnbindConnections(&g_shell_client_request, &g_shell);
-  // }
   // We may have supplied a member as the client. Delete |shell_connection_|
   // while still valid.
   shell_connection_.reset();
@@ -155,7 +146,7 @@ void ApplicationTestBase::SetUp() {
     Environment::InstantiateDefaultRunLoop();
 
   CHECK(g_shell_client_request.is_pending());
-  CHECK(g_shell);
+  CHECK(g_connector);
 
   // New applications are constructed for each test to avoid persisting state.
   test_helper_.reset(new TestHelper(GetShellClient()));
@@ -163,7 +154,7 @@ void ApplicationTestBase::SetUp() {
 
 void ApplicationTestBase::TearDown() {
   CHECK(!g_shell_client_request.is_pending());
-  CHECK(!g_shell);
+  CHECK(!g_connector);
 
   test_helper_.reset();
 

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//mojo/public/mojo_application.gni")
+import("//mojo/public/mojo_application_manifest.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
 group("child") {
@@ -84,6 +85,7 @@ mojo_native_application("apptests") {
 
   deps = [
     ":apptest_interfaces",
+    ":manifest",
     "//base",
     "//base/test:test_config",
     "//mojo/shell/public/cpp:sources",
@@ -93,6 +95,11 @@ mojo_native_application("apptests") {
   data_deps = [
     ":native_target",
   ]
+}
+
+mojo_application_manifest("manifest") {
+  application_name = "mojo_runner_child_apptest"
+  source = "manifest.json"
 }
 
 executable("native_target") {

@@ -17,16 +17,6 @@
 
 namespace mojo {
 
-namespace {
-
-void DefaultTerminationClosure() {
-  if (base::MessageLoop::current() &&
-      base::MessageLoop::current()->is_running())
-    base::MessageLoop::current()->QuitWhenIdle();
-}
-
-}  // namespace
-
 class AppRefCountImpl : public AppRefCount {
  public:
   AppRefCountImpl(ShellConnection* connection,
@@ -92,25 +82,15 @@ class AppRefCountImpl : public AppRefCount {
 ShellConnection::ShellConnection(
     mojo::ShellClient* client,
     InterfaceRequest<shell::mojom::ShellClient> request)
-    : ShellConnection(client,
-                      std::move(request),
-                      base::Bind(&DefaultTerminationClosure)) {}
-
-ShellConnection::ShellConnection(
-    mojo::ShellClient* client,
-    InterfaceRequest<shell::mojom::ShellClient> request,
-    const Closure& termination_closure)
     : client_(client),
       binding_(this, std::move(request)),
-      termination_closure_(termination_closure),
-      quit_requested_(false),
       ref_count_(0),
       weak_factory_(this) {}
 
 ShellConnection::~ShellConnection() {}
 
 void ShellConnection::WaitForInitialize() {
-  DCHECK(!shell_.is_bound());
+  DCHECK(!connector_);
   binding_.WaitForIncomingMethodCall();
 }
 
@@ -130,37 +110,31 @@ scoped_ptr<Connector> ShellConnection::CloneConnector() const {
   return connector_->Clone();
 }
 
-void ShellConnection::Quit() {
-  // We can't quit immediately, since there could be in-flight requests from the
-  // shell. So check with it first.
-  if (shell_) {
-    quit_requested_ = true;
-    shell_->QuitApplication();
-  } else {
-    QuitNow();
-  }
-}
-
 scoped_ptr<AppRefCount> ShellConnection::CreateAppRefCount() {
   AddRef();
   return make_scoped_ptr(
       new AppRefCountImpl(this, base::MessageLoop::current()->task_runner()));
 }
 
+void ShellConnection::Quit() {
+  client_->Quit();
+  if (base::MessageLoop::current() &&
+      base::MessageLoop::current()->is_running()) {
+    base::MessageLoop::current()->QuitWhenIdle();
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ShellConnection, shell::mojom::ShellClient implementation:
 
-void ShellConnection::Initialize(shell::mojom::ShellPtr shell,
+void ShellConnection::Initialize(shell::mojom::ConnectorPtr connector,
                                  const mojo::String& url,
                                  uint32_t id,
                                  uint32_t user_id) {
-  shell_ = std::move(shell);
-  shell_.set_connection_error_handler([this]() { OnConnectionError(); });
-
-  shell::mojom::ConnectorPtr connector;
-  shell_->GetConnector(GetProxy(&connector));
-  connector_.reset(new ConnectorImpl(connector.PassInterface()));
-
+  connector_.reset(new ConnectorImpl(
+      std::move(connector),
+      base::Bind(&ShellConnection::OnConnectionError,
+                 weak_factory_.GetWeakPtr())));
   client_->Initialize(this, url, id, user_id);
 }
 
@@ -179,21 +153,9 @@ void ShellConnection::AcceptConnection(
   if (!client_->AcceptConnection(registry.get()))
     return;
 
-  // If we were quitting because we thought there were no more interfaces for
-  // this app in use, then that has changed so cancel the quit request.
-  if (quit_requested_)
-    quit_requested_ = false;
-
+  // TODO(beng): it appears we never prune this list. We should, when the
+  //             connection's remote service provider pipe breaks.
   incoming_connections_.push_back(std::move(registry));
-}
-
-void ShellConnection::OnQuitRequested(const Callback<void(bool)>& callback) {
-  // If by the time we got the reply from the shell, more requests had come in
-  // then we don't want to quit the app anymore so we return false. Otherwise
-  // |quit_requested_| is true so we tell the shell to proceed with the quit.
-  callback.Run(quit_requested_);
-  if (quit_requested_)
-    QuitNow();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -208,22 +170,10 @@ void ShellConnection::OnConnectionError() {
   // than the one to the shell.
   bool quit_now = client_->ShellConnectionLost();
   if (quit_now)
-    QuitNow();
+    Quit();
   if (!ptr)
     return;
-  shell_ = nullptr;
-}
-
-void ShellConnection::QuitNow() {
-  client_->Quit();
-  termination_closure_.Run();
-}
-
-void ShellConnection::UnbindConnections(
-    InterfaceRequest<shell::mojom::ShellClient>* request,
-    shell::mojom::ShellPtr* shell) {
-  *request = binding_.Unbind();
-  shell->Bind(shell_.PassInterface());
+  connector_.reset();
 }
 
 void ShellConnection::AddRef() {

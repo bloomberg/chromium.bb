@@ -49,31 +49,10 @@ class Connector;
 // pointers to this type.
 class ShellConnection : public Shell, public shell::mojom::ShellClient {
  public:
-  class TestApi {
-   public:
-    explicit TestApi(ShellConnection* shell_connection)
-        : shell_connection_(shell_connection) {}
-
-    void UnbindConnections(
-        InterfaceRequest<shell::mojom::ShellClient>* request,
-        shell::mojom::ShellPtr* shell) {
-      shell_connection_->UnbindConnections(request, shell);
-    }
-
-   private:
-    ShellConnection* shell_connection_;
-  };
-
   // Does not take ownership of |delegate|, which must remain valid for the
   // lifetime of ShellConnection.
   ShellConnection(mojo::ShellClient* client,
                   InterfaceRequest<shell::mojom::ShellClient> request);
-  // Constructs an ShellConnection with a custom termination closure. This
-  // closure is invoked on Quit() instead of the default behavior of quitting
-  // the current base::MessageLoop.
-  ShellConnection(mojo::ShellClient* client,
-                  InterfaceRequest<shell::mojom::ShellClient> request,
-                  const Closure& termination_closure);
   ~ShellConnection() override;
 
   // Block the calling thread until the Initialize() method is called by the
@@ -87,11 +66,11 @@ class ShellConnection : public Shell, public shell::mojom::ShellClient {
   scoped_ptr<Connection> Connect(const std::string& url) override;
   scoped_ptr<Connection> Connect(Connector::ConnectParams* params) override;
   scoped_ptr<Connector> CloneConnector() const override;
-  void Quit() override;
   scoped_ptr<AppRefCount> CreateAppRefCount() override;
+  void Quit() override;
 
   // shell::mojom::ShellClient:
-  void Initialize(shell::mojom::ShellPtr shell,
+  void Initialize(shell::mojom::ConnectorPtr connector,
                   const mojo::String& url,
                   uint32_t id,
                   uint32_t user_id) override;
@@ -103,19 +82,8 @@ class ShellConnection : public Shell, public shell::mojom::ShellClient {
       shell::mojom::InterfaceProviderPtr local_interfaces,
       Array<String> allowed_interfaces,
       const String& url) override;
-  void OnQuitRequested(const Callback<void(bool)>& callback) override;
 
   void OnConnectionError();
-
-  // Called from Quit() when there is no Shell connection, or asynchronously
-  // from Quit() once the Shell has OK'ed shutdown.
-  void QuitNow();
-
-  // Unbinds the Shell and Application connections. Can be used to re-bind the
-  // handles to another implementation of ShellConnection, for instance when
-  // running apptests.
-  void UnbindConnections(InterfaceRequest<shell::mojom::ShellClient>* request,
-                         shell::mojom::ShellPtr* shell);
 
   // Called from AppRefCountImpl.
   void AddRef();
@@ -126,10 +94,7 @@ class ShellConnection : public Shell, public shell::mojom::ShellClient {
   ScopedVector<Connection> incoming_connections_;
   mojo::ShellClient* client_;
   Binding<shell::mojom::ShellClient> binding_;
-  shell::mojom::ShellPtr shell_;
   scoped_ptr<Connector> connector_;
-  Closure termination_closure_;
-  bool quit_requested_;
   int ref_count_;
   base::WeakPtrFactory<ShellConnection> weak_factory_;
 

@@ -27,6 +27,8 @@ namespace mojo {
 // closed.
 class Connector {
  public:
+  virtual ~Connector() {}
+
   class ConnectParams {
    public:
     explicit ConnectParams(const std::string& url);

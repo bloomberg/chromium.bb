@@ -57,8 +57,8 @@ class Shell {
   // other threads.
   virtual scoped_ptr<Connector> CloneConnector() const = 0;
 
-  // Initiate shutdown of this application. This may involve a round trip to the
-  // Shell to ensure there are no inbound service requests.
+  // Quits the message loop run by the ApplicationRunner, which causes this
+  // object to be destructed and the application to quit.
   virtual void Quit() = 0;
 
   // Create an object that can be used to refcount the lifetime of the

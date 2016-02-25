@@ -40,17 +40,8 @@ FrameMojoShell::FrameMojoShell(RenderFrameHost* frame_host)
 FrameMojoShell::~FrameMojoShell() {
 }
 
-void FrameMojoShell::BindRequest(
-    mojo::InterfaceRequest<mojo::shell::mojom::Shell> shell_request) {
-  bindings_.AddBinding(this, std::move(shell_request));
-}
-
-void FrameMojoShell::GetConnector(
-    mojo::shell::mojom::ConnectorRequest request) {
+void FrameMojoShell::BindRequest(mojo::shell::mojom::ConnectorRequest request) {
   connectors_.AddBinding(this, std::move(request));
-}
-
-void FrameMojoShell::QuitApplication() {
 }
 
 // TODO(xhwang): Currently no callers are exposing |exposed_services|. So we

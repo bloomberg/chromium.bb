@@ -81,21 +81,3 @@ interface Connector {
   // Clones this Connector so it can be passed to another thread.
   Clone(Connector& request);
 };
-
-// Wraps functionality exposed by the Shell to a Mojo application instance.
-interface Shell {
-  // Obtain a Connector that can be used to create connections with other
-  // applications. The connector is bound in the shell to the instance that
-  // vended this Shell interface, all connectors created and cloned frmo this
-  // one are bound to the lifetime of this instance.
-  GetConnector(Connector& connector);
-
-  // When there are no more instantiated services in an application, it should
-  // start its shutdown process by calling this method. Additionally, it should
-  // keep track of any new service requests that come in. The shell will then
-  // call Application::OnQuitRequested and start queueing new service requests.
-  // If the application didn't get any new service requests in the meantime, it
-  // should call the callback with a true value. Otherwise it should call it
-  // with false.
-  QuitApplication();
-};

@@ -28,13 +28,10 @@ define('main', [
 
   return function() {
     domAutomationController.setAutomationId(0);
-    var shellPipe = serviceRegistry.connectToService(shellMojom.Shell.name);
-    var shell = new shellMojom.Shell.proxyClass(new router.Router(shellPipe));
-
-    var pipe = core.createMessagePipe();
-    var connector =
-        new shellMojom.Connector.proxyClass(new router.Router(pipe.handle0));
-    shell.getConnector(pipe.handle1);
+    var connectorPipe =
+        serviceRegistry.connectToService(shellMojom.Connector.name);
+    var connector = new shellMojom.Connector.proxyClass(
+        new router.Router(connectorPipe));
 
     connector.connect(
         TEST_APP_URL, 1,

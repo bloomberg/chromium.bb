@@ -16,6 +16,12 @@ Connector::ConnectParams::~ConnectParams() {}
 
 ConnectorImpl::ConnectorImpl(shell::mojom::ConnectorPtrInfo unbound_state)
     : unbound_state_(std::move(unbound_state)) {}
+ConnectorImpl::ConnectorImpl(shell::mojom::ConnectorPtr connector,
+                             const base::Closure& connection_error_closure)
+    : connector_(std::move(connector)) {
+  connector_.set_connection_error_handler(connection_error_closure);
+  thread_checker_.reset(new base::ThreadChecker);
+}
 ConnectorImpl::~ConnectorImpl() {}
 
 scoped_ptr<Connection> ConnectorImpl::Connect(const std::string& url) {

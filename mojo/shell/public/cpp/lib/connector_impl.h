@@ -5,6 +5,7 @@
 #ifndef MOJO_SHELL_PUBLIC_CPP_LIB_CONNECTOR_IMPL_H_
 #define MOJO_SHELL_PUBLIC_CPP_LIB_CONNECTOR_IMPL_H_
 
+#include "base/callback.h"
 #include "base/threading/thread_checker.h"
 #include "mojo/shell/public/cpp/connector.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
@@ -14,7 +15,9 @@ namespace mojo {
 class ConnectorImpl : public Connector {
  public:
   explicit ConnectorImpl(shell::mojom::ConnectorPtrInfo unbound_state);
-  ~ConnectorImpl();
+  ConnectorImpl(shell::mojom::ConnectorPtr connector,
+                const base::Closure& connection_error_closure);
+  ~ConnectorImpl() override;
 
  private:
   // Connector:

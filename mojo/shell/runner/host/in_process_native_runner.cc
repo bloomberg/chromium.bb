@@ -50,7 +50,8 @@ void InProcessNativeRunner::Start(
       FROM_HERE, app_completed_callback);
 
   DCHECK(!thread_);
-  thread_.reset(new base::DelegateSimpleThread(this, "app_thread"));
+  std::string thread_name = "mojo:app_thread";
+  thread_.reset(new base::DelegateSimpleThread(this, thread_name));
   thread_->Start();
   pid_available_callback.Run(base::kNullProcessId);
 }

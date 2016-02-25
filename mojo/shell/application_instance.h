@@ -30,8 +30,7 @@ class NativeRunner;
 
 // Encapsulates a connection to an instance of an application, tracked by the
 // shell's ApplicationManager.
-class ApplicationInstance : public mojom::Shell,
-                            public mojom::Connector,
+class ApplicationInstance : public mojom::Connector,
                             public mojom::PIDReceiver {
  public:
   ApplicationInstance(
@@ -56,10 +55,6 @@ class ApplicationInstance : public mojom::Shell,
   void set_pid(base::ProcessId pid) { pid_ = pid; }
 
  private:
-  // Shell implementation:
-  void GetConnector(mojom::ConnectorRequest request) override;
-  void QuitApplication() override;
-
   // Connector implementation:
   void Connect(const String& app_url,
                uint32_t user_id,
@@ -73,14 +68,6 @@ class ApplicationInstance : public mojom::Shell,
 
   uint32_t GenerateUniqueID() const;
 
-  void CallAcceptConnection(scoped_ptr<ConnectParams> params);
-
-  void OnConnectionError();
-
-  void OnQuitRequestedResult(bool can_quit);
-
-  void DestroyRunner();
-
   ApplicationManager* const manager_;
   // An id that identifies this instance. Distinct from pid, as a single process
   // may vend multiple application instances, and this object may exist before a
@@ -89,11 +76,8 @@ class ApplicationInstance : public mojom::Shell,
   const Identity identity_;
   const bool allow_any_application_;
   mojom::ShellClientPtr shell_client_;
-  Binding<mojom::Shell> binding_;
   Binding<mojom::PIDReceiver> pid_receiver_binding_;
   BindingSet<mojom::Connector> connectors_;
-  bool queue_requests_;
-  std::vector<ConnectParams*> queued_client_requests_;
   NativeRunner* native_runner_;
   base::ProcessId pid_;
 
