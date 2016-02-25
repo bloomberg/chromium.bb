@@ -21,7 +21,6 @@
 #include "vp10/common/entropy.h"
 #include "vp10/common/entropymode.h"
 #include "vp10/common/frame_buffers.h"
-#include "vp10/common/quant_common.h"
 #include "vp10/common/tile_common.h"
 
 #ifdef __cplusplus
@@ -195,6 +194,20 @@ typedef struct VP10Common {
   int uv_ac_delta_q;
   int16_t y_dequant[MAX_SEGMENTS][2];
   int16_t uv_dequant[MAX_SEGMENTS][2];
+
+#if CONFIG_AOM_QM
+  // Global quant matrix tables
+  qm_val_t *giqmatrix[NUM_QM_LEVELS][2][2][TX_SIZES];
+  qm_val_t *gqmatrix[NUM_QM_LEVELS][2][2][TX_SIZES];
+
+  // Local quant matrix tables for each frame
+  qm_val_t *y_iqmatrix[MAX_SEGMENTS][2][TX_SIZES];
+  qm_val_t *uv_iqmatrix[MAX_SEGMENTS][2][TX_SIZES];
+  // Encoder
+  qm_val_t *y_qmatrix[MAX_SEGMENTS][2][TX_SIZES];
+  qm_val_t *uv_qmatrix[MAX_SEGMENTS][2][TX_SIZES];
+
+#endif
 
   /* We allocate a MODE_INFO struct for each macroblock, together with
      an extra row on top and column on the left to simplify prediction. */
@@ -373,8 +386,15 @@ static INLINE void vp10_init_macroblockd(VP10_COMMON *cm, MACROBLOCKD *xd,
 
     if (xd->plane[i].plane_type == PLANE_TYPE_Y) {
       memcpy(xd->plane[i].seg_dequant, cm->y_dequant, sizeof(cm->y_dequant));
+#if CONFIG_AOM_QM
+      memcpy(xd->plane[i].seg_iqmatrix, cm->y_iqmatrix, sizeof(cm->y_iqmatrix));
+#endif
     } else {
       memcpy(xd->plane[i].seg_dequant, cm->uv_dequant, sizeof(cm->uv_dequant));
+#if CONFIG_AOM_QM
+      memcpy(xd->plane[i].seg_iqmatrix, cm->uv_iqmatrix,
+             sizeof(cm->uv_iqmatrix));
+#endif
     }
     xd->fc = cm->fc;
   }

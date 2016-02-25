@@ -300,6 +300,7 @@ CONFIG_LIST="
     vpx_highbitdepth
     experimental
     size_limit
+    aom_qm
     ${EXPERIMENT_LIST}
 "
 CMDLINE_SELECT="
@@ -354,6 +355,7 @@ CMDLINE_SELECT="
     coefficient_range_checking
     vpx_highbitdepth
     experimental
+    aom_qm
 "
 
 process_cmdline() {

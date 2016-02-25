@@ -23,6 +23,11 @@ extern "C" {
 #define VPXMIN(x, y) (((x) < (y)) ? (x) : (y))
 #define VPXMAX(x, y) (((x) > (y)) ? (x) : (y))
 
+#if CONFIG_AOM_QM
+typedef uint16_t qm_val_t;
+#define AOM_QM_BITS 6
+#endif
+
 #if CONFIG_VPX_HIGHBITDEPTH
 // Note:
 // tran_low_t  is the datatype used for final transform coefficients.
