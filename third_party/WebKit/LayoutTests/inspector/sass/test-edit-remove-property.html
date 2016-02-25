@@ -1,0 +1,55 @@
+<html>
+<head>
+
+<link rel="stylesheet" href="resources/test-edit-remove-property.css">
+
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/debugger-test.js"></script>
+<script src="./sass-test.js"></script>
+<script>
+
+function test()
+{
+    var header = InspectorTest.cssModel.styleSheetHeaders().find(header => !!header.sourceMapURL)
+
+    InspectorTest.runCSSEditTests(header, [
+        function testRemoveProperty(text)
+        {
+            return [
+                InspectorTest.createEdit(text, "margin: 10px;", "")
+            ];
+        },
+
+        function testRemovePropertyVariable(text)
+        {
+            return [
+                InspectorTest.createEdit(text, "color: red;", "")
+            ];
+        },
+
+        function testRemoveMultipleProperties(text)
+        {
+            return [
+                InspectorTest.createEdit(text, "margin: 10px;", "", 0),
+                InspectorTest.createEdit(text, "margin: 10px;", "", 2),
+            ];
+        },
+
+        function testRemoveMultipleDifferentProperties(text)
+        {
+            return [
+                InspectorTest.createEdit(text, "margin: 10px;", "", 1),
+                InspectorTest.createEdit(text, "color: red;", "", 2),
+            ];
+        },
+    ]);
+}
+
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>Verify that mapping is not valid for misaligned sources.</p>
+</body>
+</html>

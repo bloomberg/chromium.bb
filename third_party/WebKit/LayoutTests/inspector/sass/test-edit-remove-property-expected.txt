@@ -1,0 +1,135 @@
+Verify that mapping is not valid for misaligned sources.
+
+INITIAL MODELS
+===== test-edit-remove-property.css =====
+.box1.{
+..color:.red;
+..margin:.10px;.}
+
+.box2.{
+..color:.red;
+..margin:.10px;.}
+
+.box3.{
+..color:.red;
+..margin:.10px;.}
+
+/*#.sourceMappingURL=test-edit-remove-property.css.map.*/
+
+===== test-edit-remove-property.scss =====
+$color:.red;
+@for.$i.from.1.through.3.{
+.....box#{$i}.{
+........color:.$color;
+........margin:.10px;
+....}
+}
+
+
+-------------------------- TEST: testRemoveProperty --------------------------
+
+Edits:
+    {2, 2, 2, 15} 'margin: 10px;' => ''
+===== test-edit-remove-property.css =====
+    .box1.{
+    ..color:.red;
+    ...}
+    
+    .box2.{
+    ..color:.red;
+    ...}
+    
+    .box3.{
+    ..color:.red;
+    ...}
+    
+    /*#.sourceMappingURL=test-edit-remove-property.css.map.*/
+    
+===== test-edit-remove-property.scss =====
+    $color:.red;
+    @for.$i.from.1.through.3.{
+    .....box#{$i}.{
+    ........color:.$color;
+    ....}
+    }
+    
+
+---------------------- TEST: testRemovePropertyVariable ----------------------
+
+Edits:
+    {1, 2, 1, 13} 'color: red;' => ''
+===== test-edit-remove-property.css =====
+    .box1.{
+    ..margin:.10px;.}
+    
+    .box2.{
+    ..margin:.10px;.}
+    
+    .box3.{
+    ..margin:.10px;.}
+    
+    /*#.sourceMappingURL=test-edit-remove-property.css.map.*/
+    
+===== test-edit-remove-property.scss =====
+    $color:.red;
+    @for.$i.from.1.through.3.{
+    .....box#{$i}.{
+    ........margin:.10px;
+    ....}
+    }
+    
+
+--------------------- TEST: testRemoveMultipleProperties ---------------------
+
+Edits:
+    {2, 2, 2, 15} 'margin: 10px;' => ''
+    {10, 2, 10, 15} 'margin: 10px;' => ''
+===== test-edit-remove-property.css =====
+    .box1.{
+    ..color:.red;
+    ...}
+    
+    .box2.{
+    ..color:.red;
+    ...}
+    
+    .box3.{
+    ..color:.red;
+    ...}
+    
+    /*#.sourceMappingURL=test-edit-remove-property.css.map.*/
+    
+===== test-edit-remove-property.scss =====
+    $color:.red;
+    @for.$i.from.1.through.3.{
+    .....box#{$i}.{
+    ........color:.$color;
+    ....}
+    }
+    
+
+---------------- TEST: testRemoveMultipleDifferentProperties -----------------
+
+Edits:
+    {6, 2, 6, 15} 'margin: 10px;' => ''
+    {9, 2, 9, 13} 'color: red;' => ''
+===== test-edit-remove-property.css =====
+    .box1.{
+    ...}
+    
+    .box2.{
+    ...}
+    
+    .box3.{
+    ...}
+    
+    /*#.sourceMappingURL=test-edit-remove-property.css.map.*/
+    
+===== test-edit-remove-property.scss =====
+    $color:.red;
+    @for.$i.from.1.through.3.{
+    .....box#{$i}.{
+    ....}
+    }
+    
+
