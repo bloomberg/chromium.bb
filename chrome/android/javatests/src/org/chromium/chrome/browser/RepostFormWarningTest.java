@@ -69,7 +69,7 @@ public class RepostFormWarningTest extends ChromeActivityTestCaseBase<ChromeActi
 
         // Verify that the form resubmission warning was not shown.
         assertNull("Form resubmission warning shown upon first load.",
-                RepostFormWarningDialog.getCurrentDialog());
+                RepostFormWarningDialog.getCurrentDialogForTesting());
     }
 
     /** Verifies that confirming the form reload performs the reload. */
@@ -90,7 +90,7 @@ public class RepostFormWarningTest extends ChromeActivityTestCaseBase<ChromeActi
 
         // Verify that the reference to the dialog in RepostFormWarningDialog was cleared.
         assertNull("Form resubmission warning dialog was not dismissed correctly.",
-                RepostFormWarningDialog.getCurrentDialog());
+                RepostFormWarningDialog.getCurrentDialogForTesting());
     }
 
     /**
@@ -121,7 +121,37 @@ public class RepostFormWarningTest extends ChromeActivityTestCaseBase<ChromeActi
 
         // Verify that the reference to the dialog in RepostFormWarningDialog was cleared.
         assertNull("Form resubmission warning dialog was not dismissed correctly.",
-                RepostFormWarningDialog.getCurrentDialog());
+                RepostFormWarningDialog.getCurrentDialogForTesting());
+    }
+
+    /**
+     * Verifies that destroying the Tab dismisses the form resubmission dialog.
+     */
+    @SmallTest
+    @Feature({"Navigation"})
+    public void testFormResubmissionTabDestroyed() throws Throwable {
+        // Load the url posting data for the first time.
+        postNavigation();
+        mCallbackHelper.getOnPageFinishedHelper().waitForCallback(0);
+
+        // Trigger a reload and wait for the warning to be displayed.
+        reload();
+        waitForRepostFormWarningDialog();
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                getActivity().getCurrentTabModel().closeTab(mTab);
+            }
+        });
+
+        CriteriaHelper.pollForUIThreadCriteria(
+                new Criteria("Form resubmission dialog not dismissed correctly") {
+                    @Override
+                    public boolean isSatisfied() {
+                        return RepostFormWarningDialog.getCurrentDialogForTesting() == null;
+                    }
+                });
     }
 
     private AlertDialog waitForRepostFormWarningDialog() throws InterruptedException {
@@ -129,13 +159,13 @@ public class RepostFormWarningTest extends ChromeActivityTestCaseBase<ChromeActi
                 new Criteria("Form resubmission warning not shown") {
                     @Override
                     public boolean isSatisfied() {
-                        return RepostFormWarningDialog.getCurrentDialog() != null;
+                        return RepostFormWarningDialog.getCurrentDialogForTesting() != null;
                     }
                 });
         return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<AlertDialog>() {
             @Override
             public AlertDialog call() throws Exception {
-                return (AlertDialog) RepostFormWarningDialog.getCurrentDialog();
+                return (AlertDialog) RepostFormWarningDialog.getCurrentDialogForTesting();
             }
         });
     }

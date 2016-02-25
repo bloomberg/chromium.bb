@@ -1797,7 +1797,8 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
-     * @return Whether or not this Tab has a live native component.
+     * @return Whether or not this Tab has a live native component.  This will be true prior to
+     *         {@link #initializeNative()} being called or after {@link #destroy()}.
      */
     public boolean isInitialized() {
         return mIsInitialized;

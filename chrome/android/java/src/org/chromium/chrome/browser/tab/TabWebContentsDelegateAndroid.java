@@ -205,19 +205,8 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
     @Override
     public void showRepostFormWarningDialog() {
         mTab.resetSwipeRefreshHandler();
-        RepostFormWarningDialog warningDialog = new RepostFormWarningDialog(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        mTab.getWebContents().getNavigationController().cancelPendingReload();
-                    }
-                }, new Runnable() {
-                    @Override
-                    public void run() {
-                        mTab.getWebContents().getNavigationController().continuePendingReload();
-                    }
-                });
         if (mTab.getActivity() == null) return;
+        RepostFormWarningDialog warningDialog = new RepostFormWarningDialog(mTab);
         warningDialog.show(mTab.getActivity().getFragmentManager(), null);
     }
 
