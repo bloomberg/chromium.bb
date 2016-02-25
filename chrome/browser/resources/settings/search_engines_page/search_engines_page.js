@@ -27,8 +27,20 @@ Polymer({
       value: function() { return []; }
     },
 
+    /** @type {!Array<!SearchEngine>} */
+    extensions: {
+      type: Array,
+      value: function() { return []; }
+    },
+
     /** @private {boolean} */
     showAddSearchEngineDialog_: Boolean,
+
+    /** @private {boolean} */
+    showExtensionsList_: {
+      type: Boolean,
+      computed: 'computeShowExtensionsList_(extensions)',
+    }
   },
 
   /** @override */
@@ -46,8 +58,7 @@ Polymer({
   enginesChanged_: function(searchEnginesInfo) {
     this.defaultEngines = searchEnginesInfo['defaults'];
     this.otherEngines = searchEnginesInfo['others'];
-    // TODO(dpapad): Use searchEnginesInfo['extensions'] once UI mocks are
-    // provided.
+    this.extensions = searchEnginesInfo['extensions'];
   },
 
   /** @private */
@@ -62,5 +73,10 @@ Polymer({
         this.showAddSearchEngineDialog_ = false;
       }.bind(this));
     }.bind(this));
+  },
+
+  /** @private */
+  computeShowExtensionsList_: function() {
+    return this.extensions.length > 0;
   },
 });

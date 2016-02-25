@@ -68,6 +68,12 @@ cr.define('settings', function() {
      * @return {!Promise<boolean>}
      */
     validateSearchEngineInput: function(fieldName, fieldValue) {},
+
+    /** @param {string} extensionId */
+    disableExtension: function(extensionId) {},
+
+    /** @param {string} extensionId */
+    manageExtension: function(extensionId) {},
   };
 
   /**
@@ -116,6 +122,16 @@ cr.define('settings', function() {
     validateSearchEngineInput: function(fieldName, fieldValue) {
       return cr.sendWithPromise(
           'validateSearchEngineInput', fieldName, fieldValue);
+    },
+
+    /** @override */
+    disableExtension: function(extensionId) {
+      chrome.send('disableExtension', [extensionId]);
+    },
+
+    /** @override */
+    manageExtension: function(extensionId) {
+      window.location = 'chrome://extensions?id=' + extensionId;
     },
   };
 

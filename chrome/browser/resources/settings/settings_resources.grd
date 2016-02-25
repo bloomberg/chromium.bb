@@ -516,6 +516,14 @@
       <structure name="IDR_SETTINGS_SEARCH_ENGINES_PAGE_SEARCH_ENGINE_ENTRY_CSS"
                  file="search_engines_page/search_engine_entry.css"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_SEARCH_ENGINES_PAGE_OMNIBOX_EXTENSION_ENTRY_JS"
+                 file="search_engines_page/omnibox_extension_entry.js"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_SEARCH_ENGINES_PAGE_OMNIBOX_EXTENSION_ENTRY_HTML"
+                 file="search_engines_page/omnibox_extension_entry.html"
+                 type="chrome_html"
+                 flattenhtml="true"
+                 allowexternalscript="true" />
       <structure name="IDR_SETTINGS_SEARCH_ENGINES_PAGE_SEARCH_ENGINES_LIST_JS"
                  file="search_engines_page/search_engines_list.js"
                  type="chrome_html" />

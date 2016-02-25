@@ -22,6 +22,8 @@ cr.define('settings_search_engines_page', function() {
       'searchEngineEditStarted',
       'setDefaultSearchEngine',
       'validateSearchEngineInput',
+      'manageExtension',
+      'disableExtension',
     ];
     wrapperMethods.forEach(this.resetResolver, this);
 
@@ -91,6 +93,16 @@ cr.define('settings_search_engines_page', function() {
       this.resolverMap_.get('validateSearchEngineInput').resolve();
       return Promise.resolve(true);
     },
+
+    /** @override */
+    manageExtension: function(extensionId) {
+      this.resolverMap_.get('manageExtension').resolve(extensionId);
+    },
+
+    /** @override */
+    disableExtension: function(extensionId) {
+      this.resolverMap_.get('disableExtension').resolve(extensionId);
+    },
   };
 
   /** @return {!SearchEngine} */
@@ -108,6 +120,28 @@ cr.define('settings_search_engines_page', function() {
       name: "Google",
       url: "https://search.foo.com/search?p=%s",
       urlLocked: false,
+    };
+  };
+
+  /** @return {!SearchEngine} */
+  var createSampleOmniboxExtension = function() {
+    return {
+      canBeDefault: false,
+      canBeEdited: false,
+      canBeRemoved: false,
+      default: false,
+      displayName: "Omnibox extension",
+      extension: {
+        icon: "chrome://extension-icon/some-extension-icon",
+        id: "dummyextensionid",
+        name: "Omnibox extension"
+      },
+      isOmniboxExtension: true,
+      keyword: "oe",
+      modelIndex: 6,
+      name: "Omnibox extension",
+      url: "chrome-extension://dummyextensionid/?q=%s",
+      urlLocked: false
     };
   };
 
@@ -200,7 +234,7 @@ cr.define('settings_search_engines_page', function() {
     });
   }
 
-  function registerEntryTests() {
+  function registerSearchEngineEntryTests() {
     suite('SearchEngineEntryTests', function() {
       /** @type {?SettingsSearchEngineEntryElement} */
       var entry = null;
@@ -290,7 +324,7 @@ cr.define('settings_search_engines_page', function() {
       var searchEnginesInfo = {
         defaults: [createSampleSearchEngine()],
         others: [],
-        extensions: [],
+        extensions: [createSampleOmniboxExtension()],
       };
 
       setup(function() {
@@ -324,6 +358,11 @@ cr.define('settings_search_engines_page', function() {
               querySelectorAll('settings-search-engine-entry');
           assertEquals(
               searchEnginesInfo.others.length, othersEntries.length);
+
+          var extensionEntries = Polymer.dom(page.shadowRoot).
+              querySelectorAll('settings-omnibox-extension-entry');
+          assertEquals(
+              searchEnginesInfo.extensions.length, extensionEntries.length);
         });
       });
 
@@ -341,9 +380,51 @@ cr.define('settings_search_engines_page', function() {
     });
   }
 
+  function registerOmniboxExtensionEntryTests() {
+    suite('OmniboxExtensionEntryTests', function() {
+      /** @type {?SettingsOmniboxExtensionEntryElement} */
+      var entry = null;
+
+      var browserProxy = null;
+
+      setup(function() {
+        browserProxy = new TestSearchEnginesBrowserProxy();
+        settings.SearchEnginesBrowserProxyImpl.instance_ = browserProxy;
+        PolymerTest.clearBody();
+        entry = document.createElement('settings-omnibox-extension-entry');
+        entry.set('engine', createSampleOmniboxExtension());
+        document.body.appendChild(entry);
+      });
+
+      teardown(function() { entry.remove(); });
+
+      test('Manage', function() {
+        var manageButton = entry.$.manage;
+        assertTrue(!!manageButton);
+        MockInteractions.tap(manageButton);
+        return browserProxy.whenCalled('manageExtension').then(
+            function(extensionId) {
+              assertEquals(entry.engine.extension.id, extensionId);
+            });
+      });
+
+      test('Disable', function() {
+        var disableButton = entry.$.disable;
+        assertTrue(!!disableButton);
+        MockInteractions.tap(disableButton);
+        return browserProxy.whenCalled('disableExtension').then(
+            function(extensionId) {
+              assertEquals(entry.engine.extension.id, extensionId);
+            });
+      });
+    });
+  }
+
+
   return {
     registerDialogTests: registerDialogTests,
-    registerEntryTests: registerEntryTests,
+    registerSearchEngineEntryTests: registerSearchEngineEntryTests,
+    registerOmniboxExtensionEntryTests: registerOmniboxExtensionEntryTests,
     registerPageTests: registerPageTests,
   };
 });

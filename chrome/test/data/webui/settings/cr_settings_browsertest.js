@@ -122,7 +122,8 @@ CrSettingsSearchEnginesTest.prototype = {
 
 TEST_F('CrSettingsSearchEnginesTest', 'SearchEngines', function() {
   settings_search_engines_page.registerDialogTests();
-  settings_search_engines_page.registerEntryTests();
+  settings_search_engines_page.registerSearchEngineEntryTests();
+  settings_search_engines_page.registerOmniboxExtensionEntryTests();
   settings_search_engines_page.registerPageTests();
   mocha.run();
 });

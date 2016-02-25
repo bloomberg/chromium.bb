@@ -2,22 +2,6 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-:host([is-default]) {
-  font-weight: 500;
-}
-
-.name-column,
-.keyword-column {
-  flex: 3;
-}
-
-.url-column {
-  flex: 4;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .icon-container {
   -webkit-margin-end: 8px;
 }

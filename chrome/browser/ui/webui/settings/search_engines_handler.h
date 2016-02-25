@@ -77,6 +77,9 @@ class SearchEnginesHandler : public SettingsPageUIHandler,
   // Called from WebUI.
   void HandleSearchEngineEditCompleted(const base::ListValue* args);
 
+  // Disables a Chrome (omnibox) extension.
+  void HandleDisableExtension(const base::ListValue* args);
+
   // Returns a dictionary to pass to WebUI representing the given search engine.
   base::DictionaryValue* CreateDictionaryForEngine(int index, bool is_default);
 
