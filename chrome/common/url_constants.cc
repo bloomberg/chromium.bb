@@ -763,7 +763,7 @@ const char kMac10_678_DeprecationURL[] =
 
 #if defined(OS_WIN)
 const char kWindowsXPVistaDeprecationURL[] =
-    "https://support.google.com/chrome/answer/95346";
+    "https://chrome.blogspot.com/2015/11/updates-to-chrome-platform-support.html";
 #endif
 
 const char kChooserBluetoothOverviewURL[] =
