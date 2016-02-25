@@ -491,6 +491,8 @@ void ThreadState::threadLocalWeakProcessing()
     // Perform thread-specific weak processing.
     while (popAndInvokeThreadLocalWeakCallback(visitorScope.visitor())) { }
 
+    m_threadLocalWeakCallbackStack->decommit();
+
     if (isMainThread()) {
         double timeForThreadLocalWeakProcessing = WTF::currentTimeMS() - startTime;
         DEFINE_STATIC_LOCAL(CustomCountHistogram, timeForWeakHistogram, ("BlinkGC.timeForThreadLocalWeakProcessing", 1, 10 * 1000, 50));
