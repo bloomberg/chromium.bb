@@ -1,3 +1,4 @@
+CONSOLE ERROR: Failed to load '' as a plugin, because the frame into which the plugin is loading is sandboxed.
 This test verifies that a sandboxed iframe CAN navigate both itself and a child in the frame tree. It also verifies that the sandbox attribute remains intact after a frame has been navigated, and that sandbox attributes are propagated through the frame hierarchy.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

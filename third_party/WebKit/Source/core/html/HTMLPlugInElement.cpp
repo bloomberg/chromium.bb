@@ -38,6 +38,7 @@
 #include "core/html/HTMLImageLoader.h"
 #include "core/html/PluginDocument.h"
 #include "core/input/EventHandler.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutEmbeddedObject.h"
 #include "core/layout/LayoutImage.h"
@@ -205,6 +206,10 @@ void HTMLPlugInElement::createPluginWithoutLayoutObject()
     ASSERT(document().frame()->loader().client()->canCreatePluginWithoutRenderer(m_serviceType));
 
     KURL url;
+    // CSP can block src-less objects.
+    if (!allowedToLoadObject(url, m_serviceType))
+        return;
+
     Vector<String> paramNames;
     Vector<String> paramValues;
 
@@ -474,24 +479,27 @@ bool HTMLPlugInElement::requestObject(const String& url, const String& mimeType,
         return false;
 
     KURL completedURL = url.isEmpty() ? KURL() : document().completeURL(url);
-    if (!pluginIsLoadable(completedURL, mimeType))
+    if (!allowedToLoadObject(completedURL, mimeType))
         return false;
 
     bool useFallback;
-    if (shouldUsePlugin(completedURL, mimeType, hasFallbackContent(), useFallback))
-        return loadPlugin(completedURL, mimeType, paramNames, paramValues, useFallback, true);
+    if (!shouldUsePlugin(completedURL, mimeType, hasFallbackContent(), useFallback)) {
+        // If the plugin element already contains a subframe,
+        // loadOrRedirectSubframe will re-use it. Otherwise, it will create a
+        // new frame and set it as the LayoutPart's widget, causing what was
+        // previously in the widget to be torn down.
+        return loadOrRedirectSubframe(completedURL, getNameAttribute(), true);
+    }
 
-    // If the plugin element already contains a subframe,
-    // loadOrRedirectSubframe will re-use it. Otherwise, it will create a new
-    // frame and set it as the LayoutPart's widget, causing what was previously
-    // in the widget to be torn down.
-    return loadOrRedirectSubframe(completedURL, getNameAttribute(), true);
+    return loadPlugin(completedURL, mimeType, paramNames, paramValues, useFallback, true);
 }
 
 bool HTMLPlugInElement::loadPlugin(const KURL& url, const String& mimeType, const Vector<String>& paramNames, const Vector<String>& paramValues, bool useFallback, bool requireLayoutObject)
 {
-    LocalFrame* frame = document().frame();
+    if (!allowedToLoadPlugin(url, mimeType))
+        return false;
 
+    LocalFrame* frame = document().frame();
     if (!frame->loader().allowPlugins(AboutToInstantiatePlugin))
         return false;
 
@@ -541,8 +549,10 @@ bool HTMLPlugInElement::shouldUsePlugin(const KURL& url, const String& mimeType,
     if (document().frame()->page() && (mimeType == "image/tiff" || mimeType == "image/tif" || mimeType == "image/x-tiff")) {
         const PluginData* pluginData = document().frame()->page()->pluginData();
         String pluginName = pluginData ? pluginData->pluginNameForMimeType(mimeType) : String();
-        if (!pluginName.isEmpty() && !pluginName.contains("QuickTime", TextCaseInsensitive))
+        if (!pluginName.isEmpty() && !pluginName.contains("QuickTime", TextCaseInsensitive)) {
+            useFallback = false;
             return true;
+        }
     }
 
     ObjectContentType objectType = document().frame()->loader().client()->objectContentType(url, mimeType, shouldPreferPlugInsForImages());
@@ -561,7 +571,7 @@ void HTMLPlugInElement::dispatchErrorEvent()
         dispatchEvent(Event::create(EventTypeNames::error));
 }
 
-bool HTMLPlugInElement::pluginIsLoadable(const KURL& url, const String& mimeType)
+bool HTMLPlugInElement::allowedToLoadObject(const KURL& url, const String& mimeType)
 {
     if (url.isEmpty() && mimeType.isEmpty())
         return false;
@@ -572,9 +582,6 @@ bool HTMLPlugInElement::pluginIsLoadable(const KURL& url, const String& mimeType
         return false;
 
     if (MIMETypeRegistry::isJavaAppletMIMEType(mimeType))
-        return false;
-
-    if (document().isSandboxed(SandboxPlugins))
         return false;
 
     if (!document().securityOrigin()->canDisplay(url)) {
@@ -590,8 +597,19 @@ bool HTMLPlugInElement::pluginIsLoadable(const KURL& url, const String& mimeType
         layoutEmbeddedObject()->setPluginUnavailabilityReason(LayoutEmbeddedObject::PluginBlockedByContentSecurityPolicy);
         return false;
     }
-
+    // If the URL is empty, a plugin could still be instantiated if a MIME-type
+    // is specified.
     return (!mimeType.isEmpty() && url.isEmpty()) || !MixedContentChecker::shouldBlockFetch(frame, WebURLRequest::RequestContextObject, WebURLRequest::FrameTypeNone, url);
+}
+
+bool HTMLPlugInElement::allowedToLoadPlugin(const KURL& url, const String& mimeType)
+{
+    if (document().isSandboxed(SandboxPlugins)) {
+        document().addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel,
+            "Failed to load '" + url.elidedString() + "' as a plugin, because the frame into which the plugin is loading is sandboxed."));
+        return false;
+    }
+    return true;
 }
 
 void HTMLPlugInElement::didAddUserAgentShadowRoot(ShadowRoot&)

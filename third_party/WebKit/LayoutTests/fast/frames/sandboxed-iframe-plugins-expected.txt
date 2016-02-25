@@ -1,3 +1,5 @@
+CONSOLE ERROR: Failed to load 'data:text/plain,' as a plugin, because the frame into which the plugin is loading is sandboxed.
+CONSOLE ERROR: Failed to load '' as a plugin, because the frame into which the plugin is loading is sandboxed.
 This test verifies that sandboxing of plugins works as intended. Two tests are made, each in one sandboxed and one non-sandboxed IFrame: embeds and objects.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

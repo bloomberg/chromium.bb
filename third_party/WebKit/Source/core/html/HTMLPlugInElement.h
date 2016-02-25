@@ -129,7 +129,11 @@ private:
     virtual void updateWidgetInternal() = 0;
 
     bool loadPlugin(const KURL&, const String& mimeType, const Vector<String>& paramNames, const Vector<String>& paramValues, bool useFallback, bool requireLayoutObject);
-    bool pluginIsLoadable(const KURL&, const String& mimeType);
+    // Perform checks after we have determined that a plugin will be used to
+    // show the object (i.e after allowedToLoadObject).
+    bool allowedToLoadPlugin(const KURL&, const String& mimeType);
+    // Perform checks based on the URL and MIME-type of the object to load.
+    bool allowedToLoadObject(const KURL&, const String& mimeType);
     bool wouldLoadAsNetscapePlugin(const String& url, const String& serviceType);
 
     void setPersistedPluginWidget(Widget*);
