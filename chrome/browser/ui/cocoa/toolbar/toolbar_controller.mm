@@ -61,6 +61,7 @@
 #include "grit/components_strings.h"
 #include "grit/theme_resources.h"
 #import "ui/base/cocoa/menu_controller.h"
+#import "ui/base/cocoa/nsview_additions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/geometry/rect.h"
@@ -74,9 +75,6 @@ namespace {
 
 // Duration of the toolbar animation.
 const NSTimeInterval kToolBarAnimationDuration = 0.12;
-
-// Height of the toolbar in pixels when the bookmark bar is closed.
-const CGFloat kBaseToolbarHeightNormal = 35.0;
 
 // Height of the location bar. Used for animating the toolbar in and out when
 // the location bar is displayed stand-alone for bookmark apps.
@@ -327,6 +325,15 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
   locationBarView_.reset(new LocationBarViewMac(locationBar_, commands_,
                                                 profile_, browser_));
   [locationBar_ setFont:[NSFont systemFontOfSize:[NSFont systemFontSize]]];
+
+  // Adjust the toolbar height if running on Retina - see the comment in
+  // -baseToolbarHeight.
+  CGFloat toolbarHeight = [self baseToolbarHeight];
+  NSRect toolbarFrame = [[locationBar_ superview] frame];
+  if (toolbarFrame.size.height != toolbarHeight) {
+    toolbarFrame.size.height = toolbarHeight;
+    [[locationBar_ superview] setFrame:toolbarFrame];
+  }
 
   // Register pref observers for the optional home and page/options buttons
   // and then add them to the toolbar based on those prefs.
@@ -900,12 +907,28 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
   return locationBarView_->GetTranslateBubblePoint();
 }
 
+- (CGFloat)baseToolbarHeight {
+  // Height of the toolbar in pixels when the bookmark bar is closed.
+  const CGFloat baseToolbarHeightNormal = 35.0;
+
+  // Not all lines are drawn at 2x normal height when running on Retina, which
+  // causes the toolbar controls to be visually 1pt too high within the toolbar
+  // area. It's not possible to adjust the control y-positions by 0.5pt and have
+  // them appear 0.5pt lower (they are still drawn at their original locations),
+  // so instead shave off 1pt from the bottom of the toolbar. Note that there's
+  // an offsetting change in -[BookmarkBarController preferredHeight] to
+  // maintain the proper spacing between bookmark icons and toolbar items. See
+  // https://crbug.com/326245 .
+  return [[self view] cr_lineWidth] == 0.5 ? baseToolbarHeightNormal - 1
+                                           : baseToolbarHeightNormal;
+}
+
 - (CGFloat)desiredHeightForCompression:(CGFloat)compressByHeight {
   // With no toolbar, just ignore the compression.
   if (!hasToolbar_)
     return NSHeight([locationBar_ frame]);
 
-  return kBaseToolbarHeightNormal - compressByHeight;
+  return [self baseToolbarHeight] - compressByHeight;
 }
 
 - (void)setDividerOpacity:(CGFloat)opacity {

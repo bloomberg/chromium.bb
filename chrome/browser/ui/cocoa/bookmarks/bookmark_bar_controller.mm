@@ -63,6 +63,7 @@
 #include "extensions/common/extension_set.h"
 #include "grit/theme_resources.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"
+#import "ui/base/cocoa/nsview_additions.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
@@ -1041,7 +1042,12 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
   switch (currentState_) {
     case BookmarkBar::SHOW:
-      return chrome::kBookmarkBarHeight;
+      // When on a Retina display, -[ToolbarContrller baseToolbarHeight] reduces
+      // the height of the toolbar by 1pt. In this case the bookmark bar needs
+      // to be 1pt taller to maintain the proper spacing between bookmark icons
+      // and toolbar items. See https://crbug.com/326245 .
+      return [[self view] cr_lineWidth] == 0.5 ? chrome::kBookmarkBarHeight + 1
+                                               : chrome::kBookmarkBarHeight;
     case BookmarkBar::DETACHED:
       return chrome::kNTPBookmarkBarHeight;
     case BookmarkBar::HIDDEN:
