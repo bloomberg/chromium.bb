@@ -12,17 +12,15 @@ STATUS_TIMEOUT = 902
 STATUS_EXCEPTION = 909
 
 
-request_bytes = metrics.CumulativeDistributionMetric(
-    'http/request_bytes',
+request_bytes = metrics.CumulativeDistributionMetric('http/request_bytes',
     description='Bytes sent per http request (body only).')
-response_bytes = metrics.CumulativeDistributionMetric(
-    'http/response_bytes',
+response_bytes = metrics.CumulativeDistributionMetric('http/response_bytes',
     description='Bytes received per http request (content only).')
-durations = metrics.CumulativeDistributionMetric(
-    'http/durations',
+durations = metrics.CumulativeDistributionMetric('http/durations',
     description='Time elapsed between sending a request and getting a'
                 ' response (including parsing) in milliseconds.')
-response_status = metrics.CounterMetric('http/response_status')
+response_status = metrics.CounterMetric('http/response_status',
+    description='Number of responses received by HTTP status code.')
 
 
 server_request_bytes = metrics.CumulativeDistributionMetric(
@@ -31,8 +29,8 @@ server_request_bytes = metrics.CumulativeDistributionMetric(
 server_response_bytes = metrics.CumulativeDistributionMetric(
     'http/server_response_bytes',
     description='Bytes sent per http request (content only).')
-server_durations = metrics.CumulativeDistributionMetric(
-    'http/server_durations',
+server_durations = metrics.CumulativeDistributionMetric('http/server_durations',
     description='Time elapsed between receiving a request and sending a'
                 ' response (including parsing) in milliseconds.')
-server_response_status = metrics.CounterMetric('http/server_response_status')
+server_response_status = metrics.CounterMetric('http/server_response_status',
+    description='Number of responses sent by HTTP status code.')

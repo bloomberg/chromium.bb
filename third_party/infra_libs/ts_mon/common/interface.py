@@ -65,6 +65,8 @@ class State(object):
     self.target = target
     # The flush mode being used to control when metrics are pushed.
     self.flush_mode = None
+    # A predicate to determine if metrics should be sent.
+    self.flush_enabled_fn = lambda: True
     # The background thread that flushes metrics every
     # --ts-mon-flush-interval-secs seconds.  May be None if
     # --ts-mon-flush != 'auto' or --ts-mon-flush-interval-secs == 0.
@@ -83,6 +85,10 @@ def flush():
   """Send all metrics that are registered in the application."""
   if not state.global_monitor or not state.target:
     raise errors.MonitoringNoConfiguredMonitorError(None)
+
+  if not state.flush_enabled_fn():
+    logging.debug('ts_mon: sending metrics is disabled.')
+    return
 
   proto = metrics_pb2.MetricsCollection()
 

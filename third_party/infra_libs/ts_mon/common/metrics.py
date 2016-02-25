@@ -43,6 +43,8 @@ class Metric(object):
   * GaugeMetric for metrics with arbitrarily varying integer values
   * CumulativeMetric for metrics with monotonically increasing float values
   * FloatMetric for metrics with arbitrarily varying float values
+
+  See http://go/inframon-doc for help designing and using your metrics.
   """
 
   def __init__(self, name, fields=None, description=None):
@@ -61,8 +63,6 @@ class Metric(object):
       raise errors.MonitoringTooManyFieldsError(self._name, fields)
     self._fields = fields
     self._normalized_fields = self._normalize_fields(self._fields)
-    # pgervais: Yes, description is unused. Waiting for the rest of the pipeline
-    # to support it.
     self._description = description
 
     interface.register(self)
@@ -99,6 +99,8 @@ class Metric(object):
     metric_pb = collection_pb.data.add()
     metric_pb.metric_name_prefix = '/chrome/infra/'
     metric_pb.name = self._name
+    if self._description is not None:
+      metric_pb.description = self._description
 
     self._populate_value(metric_pb, value, start_time)
     self._populate_fields(metric_pb, fields)

@@ -14,7 +14,7 @@ import goma_stats_pb2
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='chrome_infra_log.proto',
   package='crit_event.proto',
-  serialized_pb='\n\x16\x63hrome_infra_log.proto\x12\x10\x63rit_event.proto\x1a\x10goma_stats.proto\"\xff\x0e\n\x07\x43QEvent\x12\x30\n\x06\x61\x63tion\x18\x01 \x01(\x0e\x32 .crit_event.proto.CQEvent.Action\x12\x34\n\x08verifier\x18\x02 \x01(\x0e\x32\".crit_event.proto.CQEvent.Verifier\x12\x0f\n\x07\x63q_name\x18\x03 \x01(\t\x12\r\n\x05issue\x18\x04 \x01(\t\x12\x10\n\x08patchset\x18\x05 \x01(\t\x12\x1a\n\x12\x61ttempt_start_usec\x18\x06 \x01(\x03\x12\x30\n\x06status\x18\x07 \x01(\x0e\x32 .crit_event.proto.CQEvent.Status\x12\x0c\n\x04\x64one\x18\x08 \x01(\x08\x12?\n\x0e\x66\x61ilure_reason\x18\t \x01(\x0b\x32\'.crit_event.proto.CQEvent.FailureReason\x12\x0f\n\x07\x64ry_run\x18\n \x01(\x08\x12\x1a\n\x12global_retry_quota\x18\x0b \x01(\x05\x12\x44\n\x11triggered_tryjobs\x18\x0c \x03(\x0b\x32).crit_event.proto.CQEvent.TriggeredTryJob\x12\r\n\x05\x66iles\x18\r \x03(\t\x1a\x97\x05\n\rFailureReason\x12\x34\n\x08verifier\x18\x01 \x01(\x0e\x32\".crit_event.proto.CQEvent.Verifier\x12\x43\n\tfail_type\x18\x02 \x01(\x0e\x32\x30.crit_event.proto.CQEvent.FailureReason.FailType\x12M\n\x0f\x66\x61iled_try_jobs\x18\x03 \x03(\x0b\x32\x34.crit_event.proto.CQEvent.FailureReason.FailedTryJob\x1a\x41\n\x0c\x46\x61iledTryJob\x12\x0e\n\x06master\x18\x01 \x01(\t\x12\x0f\n\x07\x62uilder\x18\x02 \x01(\t\x12\x10\n\x08\x62uild_id\x18\x03 \x01(\x03\"\xf8\x02\n\x08\x46\x61ilType\x12\x15\n\x11UNKNOWN_FAIL_TYPE\x10\x00\x12\x18\n\x14\x46\x41ILED_PRESUBMIT_BOT\x10\x01\x12\x0f\n\x0b\x46\x41ILED_JOBS\x10\x02\x12\x18\n\x14RETRY_QUOTA_EXCEEDED\x10\x03\x12\x0c\n\x08NOT_LGTM\x10\x04\x12\x10\n\x0cMISSING_LGTM\x10\x05\x12\x0e\n\nNO_SIGNCLA\x10\x06\x12\x1a\n\x16\x46\x41ILED_SIGNCLA_REQUEST\x10\x07\x12\x11\n\rMANUAL_CANCEL\x10\x08\x12\x10\n\x0c\x43OMMIT_FALSE\x10\t\x12\x13\n\x0fOPEN_DEPENDENCY\x10\n\x12\x15\n\x11INVALID_DELIMITER\x10\x0b\x12\x1f\n\x1b\x46\x41ILED_REMOTE_REF_PRESUBMIT\x10\x0c\x12\x13\n\x0f\x46\x41ILED_CHECKOUT\x10\r\x12\x11\n\rFAILED_COMMIT\x10\x0e\x12\x10\n\x0c\x46\x41ILED_PATCH\x10\x0f\x12\x18\n\x14\x46\x41ILED_REQUEST_PATCH\x10\x10\x1a\x41\n\x0fTriggeredTryJob\x12\x0e\n\x06master\x18\x01 \x01(\t\x12\x0f\n\x07\x62uilder\x18\x02 \x01(\t\x12\r\n\x05tests\x18\x03 \x03(\t\"\xc8\x03\n\x06\x41\x63tion\x12\x12\n\x0eUNKNOWN_ACTION\x10\x00\x12\x0c\n\x08\x43Q_START\x10\x01\x12\x0b\n\x07\x43Q_STOP\x10\x02\x12\x13\n\x0fPATCH_COMMITTED\x10\x03\x12\x14\n\x10PATCH_COMMITTING\x10\x04\x12\x10\n\x0cPATCH_FAILED\x10\x05\x12\x19\n\x15PATCH_READY_TO_COMMIT\x10\x06\x12\x0f\n\x0bPATCH_START\x10\x07\x12\x0e\n\nPATCH_STOP\x10\x08\x12\x13\n\x0fPATCH_THROTTLED\x10\t\x12\x15\n\x11PATCH_TREE_CLOSED\x10\n\x12\x1b\n\x17VERIFIER_CUSTOM_TRYBOTS\x10\x0b\x12\x12\n\x0eVERIFIER_ERROR\x10\x0c\x12\x11\n\rVERIFIER_FAIL\x10\r\x12\x18\n\x14VERIFIER_JOBS_UPDATE\x10\x0e\x12\x11\n\rVERIFIER_PASS\x10\x0f\x12\x12\n\x0eVERIFIER_RETRY\x10\x10\x12\x11\n\rVERIFIER_SKIP\x10\x11\x12\x12\n\x0eVERIFIER_START\x10\x12\x12\x14\n\x10VERIFIER_TIMEOUT\x10\x13\x12\x14\n\x10VERIFIER_TRIGGER\x10\x14\x12\x12\n\x0eVERIFIER_NOTRY\x10\x15\"\x7f\n\x08Verifier\x12\x14\n\x10UNKNOWN_VERIFIER\x10\x00\x12\x11\n\rREVIEWER_LGTM\x10\x01\x12\x0c\n\x08SIGN_CLA\x10\x02\x12\x0f\n\x0bTREE_STATUS\x10\x03\x12\x1e\n\x1aTRIGGER_EXPERIMENT_TRY_JOB\x10\x04\x12\x0b\n\x07TRY_JOB\x10\x05\"\x91\x01\n\x06Status\x12\x12\n\x0eUNKNOWN_STATUS\x10\x00\x12\t\n\x05START\x10\x01\x12\x08\n\x04STOP\x10\x02\x12\x13\n\x0fREADY_TO_COMMIT\x10\x03\x12\x0e\n\nCOMMITTING\x10\x04\x12\r\n\tCOMMITTED\x10\x05\x12\n\n\x06\x46\x41ILED\x10\x06\x12\r\n\tTHROTTLED\x10\x07\x12\x0f\n\x0bTREE_CLOSED\x10\x08\"y\n\x0b\x43odeVersion\x12\x12\n\nsource_url\x18\x01 \x01(\t\x12\r\n\x05\x64irty\x18\x02 \x01(\x08\x12\x0f\n\x07version\x18\x03 \x01(\t\x12\x10\n\x08git_hash\x18\x04 \x01(\t\x12\x14\n\x0csvn_revision\x18\x05 \x01(\x05\x12\x0e\n\x06\x62ranch\x18\x06 \x01(\t\"\x82\x02\n\x0cServiceEvent\x12\x46\n\x04type\x18\x01 \x01(\x0e\x32/.crit_event.proto.ServiceEvent.ServiceEventType:\x07UNKNOWN\x12\x33\n\x0c\x63ode_version\x18\x02 \x03(\x0b\x32\x1d.crit_event.proto.CodeVersion\x12\x13\n\x0bstack_trace\x18\x03 \x01(\t\"`\n\x10ServiceEventType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\t\n\x05START\x10\x01\x12\x08\n\x04STOP\x10\x02\x12\n\n\x06UPDATE\x10\x03\x12\x13\n\x0f\x43URRENT_VERSION\x10\x04\x12\t\n\x05\x43RASH\x10\x05\"\x94\x07\n\nBuildEvent\x12\x39\n\x04type\x18\x01 \x01(\x0e\x32+.crit_event.proto.BuildEvent.BuildEventType\x12\x11\n\thost_name\x18\x02 \x01(\t\x12\x12\n\nbuild_name\x18\x03 \x01(\t\x12\x14\n\x0c\x62uild_number\x18\x04 \x01(\x05\x12 \n\x18\x62uild_scheduling_time_ms\x18\x05 \x01(\x03\x12\x11\n\tstep_name\x18\x06 \x01(\t\x12\x13\n\x0bstep_number\x18\x07 \x01(\x05\x12\x41\n\x06result\x18\x08 \x01(\x0e\x32(.crit_event.proto.BuildEvent.BuildResult:\x07UNKNOWN\x12\x19\n\x11\x65xtra_result_code\x18\n \x03(\t\x12,\n\ngoma_stats\x18\t \x01(\x0b\x32\x18.devtools_goma.GomaStats\x12M\n\ngoma_error\x18\x11 \x01(\x0e\x32*.crit_event.proto.BuildEvent.GomaErrorType:\rGOMA_ERROR_OK\x12\x1c\n\x14goma_crash_report_id\x18\x12 \x01(\t\x12\x0f\n\x07project\x18\x0b \x01(\t\x12\x34\n\rhead_revision\x18\x0c \x01(\x0b\x32\x1d.crit_event.proto.CodeVersion\x12/\n\x08revision\x18\r \x03(\x0b\x32\x1d.crit_event.proto.CodeVersion\x12\x11\n\tpatch_url\x18\x0e \x01(\t\x12\x12\n\nbbucket_id\x18\x0f \x01(\x03\x12\x1a\n\x12\x62\x62ucket_user_agent\x18\x10 \x01(\t\"4\n\x0e\x42uildEventType\x12\r\n\tSCHEDULER\x10\x00\x12\t\n\x05\x42UILD\x10\x01\x12\x08\n\x04STEP\x10\x02\"l\n\x0b\x42uildResult\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x0b\n\x07SUCCESS\x10\x01\x12\x0b\n\x07\x46\x41ILURE\x10\x02\x12\x11\n\rINFRA_FAILURE\x10\x03\x12\x0b\n\x07WARNING\x10\x04\x12\x0b\n\x07SKIPPED\x10\x05\x12\t\n\x05RETRY\x10\x06\"l\n\rGomaErrorType\x12\x11\n\rGOMA_ERROR_OK\x10\x00\x12\x16\n\x12GOMA_ERROR_UNKNOWN\x10\x01\x12\x16\n\x12GOMA_ERROR_CRASHED\x10\x02\x12\x18\n\x14GOMA_ERROR_LOG_FATAL\x10\x03\"S\n\x10InfraEventSource\x12\x11\n\thost_name\x18\x01 \x01(\t\x12\x16\n\x0e\x61ppengine_name\x18\x02 \x01(\t\x12\x14\n\x0cservice_name\x18\x03 \x01(\t\"\xa9\x03\n\x10\x43hromeInfraEvent\x12Q\n\x0etimestamp_kind\x18\x01 \x01(\x0e\x32\x30.crit_event.proto.ChromeInfraEvent.TimestampKind:\x07UNKNOWN\x12\x10\n\x08trace_id\x18\x02 \x01(\t\x12\x0f\n\x07span_id\x18\x03 \x01(\t\x12\x11\n\tparent_id\x18\x04 \x01(\t\x12\x38\n\x0c\x65vent_source\x18\x05 \x01(\x0b\x32\".crit_event.proto.InfraEventSource\x12\x35\n\rservice_event\x18\x06 \x01(\x0b\x32\x1e.crit_event.proto.ServiceEvent\x12\x31\n\x0b\x62uild_event\x18\x08 \x01(\x0b\x32\x1c.crit_event.proto.BuildEvent\x12+\n\x08\x63q_event\x18\t \x01(\x0b\x32\x19.crit_event.proto.CQEvent\";\n\rTimestampKind\x12\x0b\n\x07UNKNOWN\x10\x00\x12\t\n\x05POINT\x10\x01\x12\t\n\x05\x42\x45GIN\x10\x02\x12\x07\n\x03\x45ND\x10\x03')
+  serialized_pb='\n\x16\x63hrome_infra_log.proto\x12\x10\x63rit_event.proto\x1a\x10goma_stats.proto\"\x9c\x0f\n\x07\x43QEvent\x12\x30\n\x06\x61\x63tion\x18\x01 \x01(\x0e\x32 .crit_event.proto.CQEvent.Action\x12\x34\n\x08verifier\x18\x02 \x01(\x0e\x32\".crit_event.proto.CQEvent.Verifier\x12\x0f\n\x07\x63q_name\x18\x03 \x01(\t\x12\r\n\x05issue\x18\x04 \x01(\t\x12\x10\n\x08patchset\x18\x05 \x01(\t\x12\x1a\n\x12\x61ttempt_start_usec\x18\x06 \x01(\x03\x12\x30\n\x06status\x18\x07 \x01(\x0e\x32 .crit_event.proto.CQEvent.Status\x12\x0c\n\x04\x64one\x18\x08 \x01(\x08\x12?\n\x0e\x66\x61ilure_reason\x18\t \x01(\x0b\x32\'.crit_event.proto.CQEvent.FailureReason\x12\x0f\n\x07\x64ry_run\x18\n \x01(\x08\x12\x1a\n\x12global_retry_quota\x18\x0b \x01(\x05\x12\x44\n\x11triggered_tryjobs\x18\x0c \x03(\x0b\x32).crit_event.proto.CQEvent.TriggeredTryJob\x12\r\n\x05\x66iles\x18\r \x03(\t\x12\x1b\n\x13\x63odereview_hostname\x18\x0e \x01(\t\x1a\x97\x05\n\rFailureReason\x12\x34\n\x08verifier\x18\x01 \x01(\x0e\x32\".crit_event.proto.CQEvent.Verifier\x12\x43\n\tfail_type\x18\x02 \x01(\x0e\x32\x30.crit_event.proto.CQEvent.FailureReason.FailType\x12M\n\x0f\x66\x61iled_try_jobs\x18\x03 \x03(\x0b\x32\x34.crit_event.proto.CQEvent.FailureReason.FailedTryJob\x1a\x41\n\x0c\x46\x61iledTryJob\x12\x0e\n\x06master\x18\x01 \x01(\t\x12\x0f\n\x07\x62uilder\x18\x02 \x01(\t\x12\x10\n\x08\x62uild_id\x18\x03 \x01(\x03\"\xf8\x02\n\x08\x46\x61ilType\x12\x15\n\x11UNKNOWN_FAIL_TYPE\x10\x00\x12\x18\n\x14\x46\x41ILED_PRESUBMIT_BOT\x10\x01\x12\x0f\n\x0b\x46\x41ILED_JOBS\x10\x02\x12\x18\n\x14RETRY_QUOTA_EXCEEDED\x10\x03\x12\x0c\n\x08NOT_LGTM\x10\x04\x12\x10\n\x0cMISSING_LGTM\x10\x05\x12\x0e\n\nNO_SIGNCLA\x10\x06\x12\x1a\n\x16\x46\x41ILED_SIGNCLA_REQUEST\x10\x07\x12\x11\n\rMANUAL_CANCEL\x10\x08\x12\x10\n\x0c\x43OMMIT_FALSE\x10\t\x12\x13\n\x0fOPEN_DEPENDENCY\x10\n\x12\x15\n\x11INVALID_DELIMITER\x10\x0b\x12\x1f\n\x1b\x46\x41ILED_REMOTE_REF_PRESUBMIT\x10\x0c\x12\x13\n\x0f\x46\x41ILED_CHECKOUT\x10\r\x12\x11\n\rFAILED_COMMIT\x10\x0e\x12\x10\n\x0c\x46\x41ILED_PATCH\x10\x0f\x12\x18\n\x14\x46\x41ILED_REQUEST_PATCH\x10\x10\x1a\x41\n\x0fTriggeredTryJob\x12\x0e\n\x06master\x18\x01 \x01(\t\x12\x0f\n\x07\x62uilder\x18\x02 \x01(\t\x12\r\n\x05tests\x18\x03 \x03(\t\"\xc8\x03\n\x06\x41\x63tion\x12\x12\n\x0eUNKNOWN_ACTION\x10\x00\x12\x0c\n\x08\x43Q_START\x10\x01\x12\x0b\n\x07\x43Q_STOP\x10\x02\x12\x13\n\x0fPATCH_COMMITTED\x10\x03\x12\x14\n\x10PATCH_COMMITTING\x10\x04\x12\x10\n\x0cPATCH_FAILED\x10\x05\x12\x19\n\x15PATCH_READY_TO_COMMIT\x10\x06\x12\x0f\n\x0bPATCH_START\x10\x07\x12\x0e\n\nPATCH_STOP\x10\x08\x12\x13\n\x0fPATCH_THROTTLED\x10\t\x12\x15\n\x11PATCH_TREE_CLOSED\x10\n\x12\x1b\n\x17VERIFIER_CUSTOM_TRYBOTS\x10\x0b\x12\x12\n\x0eVERIFIER_ERROR\x10\x0c\x12\x11\n\rVERIFIER_FAIL\x10\r\x12\x18\n\x14VERIFIER_JOBS_UPDATE\x10\x0e\x12\x11\n\rVERIFIER_PASS\x10\x0f\x12\x12\n\x0eVERIFIER_RETRY\x10\x10\x12\x11\n\rVERIFIER_SKIP\x10\x11\x12\x12\n\x0eVERIFIER_START\x10\x12\x12\x14\n\x10VERIFIER_TIMEOUT\x10\x13\x12\x14\n\x10VERIFIER_TRIGGER\x10\x14\x12\x12\n\x0eVERIFIER_NOTRY\x10\x15\"\x7f\n\x08Verifier\x12\x14\n\x10UNKNOWN_VERIFIER\x10\x00\x12\x11\n\rREVIEWER_LGTM\x10\x01\x12\x0c\n\x08SIGN_CLA\x10\x02\x12\x0f\n\x0bTREE_STATUS\x10\x03\x12\x1e\n\x1aTRIGGER_EXPERIMENT_TRY_JOB\x10\x04\x12\x0b\n\x07TRY_JOB\x10\x05\"\x91\x01\n\x06Status\x12\x12\n\x0eUNKNOWN_STATUS\x10\x00\x12\t\n\x05START\x10\x01\x12\x08\n\x04STOP\x10\x02\x12\x13\n\x0fREADY_TO_COMMIT\x10\x03\x12\x0e\n\nCOMMITTING\x10\x04\x12\r\n\tCOMMITTED\x10\x05\x12\n\n\x06\x46\x41ILED\x10\x06\x12\r\n\tTHROTTLED\x10\x07\x12\x0f\n\x0bTREE_CLOSED\x10\x08\"y\n\x0b\x43odeVersion\x12\x12\n\nsource_url\x18\x01 \x01(\t\x12\r\n\x05\x64irty\x18\x02 \x01(\x08\x12\x0f\n\x07version\x18\x03 \x01(\t\x12\x10\n\x08git_hash\x18\x04 \x01(\t\x12\x14\n\x0csvn_revision\x18\x05 \x01(\x05\x12\x0e\n\x06\x62ranch\x18\x06 \x01(\t\"\x82\x02\n\x0cServiceEvent\x12\x46\n\x04type\x18\x01 \x01(\x0e\x32/.crit_event.proto.ServiceEvent.ServiceEventType:\x07UNKNOWN\x12\x33\n\x0c\x63ode_version\x18\x02 \x03(\x0b\x32\x1d.crit_event.proto.CodeVersion\x12\x13\n\x0bstack_trace\x18\x03 \x01(\t\"`\n\x10ServiceEventType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\t\n\x05START\x10\x01\x12\x08\n\x04STOP\x10\x02\x12\n\n\x06UPDATE\x10\x03\x12\x13\n\x0f\x43URRENT_VERSION\x10\x04\x12\t\n\x05\x43RASH\x10\x05\"\x94\x07\n\nBuildEvent\x12\x39\n\x04type\x18\x01 \x01(\x0e\x32+.crit_event.proto.BuildEvent.BuildEventType\x12\x11\n\thost_name\x18\x02 \x01(\t\x12\x12\n\nbuild_name\x18\x03 \x01(\t\x12\x14\n\x0c\x62uild_number\x18\x04 \x01(\x05\x12 \n\x18\x62uild_scheduling_time_ms\x18\x05 \x01(\x03\x12\x11\n\tstep_name\x18\x06 \x01(\t\x12\x13\n\x0bstep_number\x18\x07 \x01(\x05\x12\x41\n\x06result\x18\x08 \x01(\x0e\x32(.crit_event.proto.BuildEvent.BuildResult:\x07UNKNOWN\x12\x19\n\x11\x65xtra_result_code\x18\n \x03(\t\x12,\n\ngoma_stats\x18\t \x01(\x0b\x32\x18.devtools_goma.GomaStats\x12M\n\ngoma_error\x18\x11 \x01(\x0e\x32*.crit_event.proto.BuildEvent.GomaErrorType:\rGOMA_ERROR_OK\x12\x1c\n\x14goma_crash_report_id\x18\x12 \x01(\t\x12\x0f\n\x07project\x18\x0b \x01(\t\x12\x34\n\rhead_revision\x18\x0c \x01(\x0b\x32\x1d.crit_event.proto.CodeVersion\x12/\n\x08revision\x18\r \x03(\x0b\x32\x1d.crit_event.proto.CodeVersion\x12\x11\n\tpatch_url\x18\x0e \x01(\t\x12\x12\n\nbbucket_id\x18\x0f \x01(\x03\x12\x1a\n\x12\x62\x62ucket_user_agent\x18\x10 \x01(\t\"4\n\x0e\x42uildEventType\x12\r\n\tSCHEDULER\x10\x00\x12\t\n\x05\x42UILD\x10\x01\x12\x08\n\x04STEP\x10\x02\"l\n\x0b\x42uildResult\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x0b\n\x07SUCCESS\x10\x01\x12\x0b\n\x07\x46\x41ILURE\x10\x02\x12\x11\n\rINFRA_FAILURE\x10\x03\x12\x0b\n\x07WARNING\x10\x04\x12\x0b\n\x07SKIPPED\x10\x05\x12\t\n\x05RETRY\x10\x06\"l\n\rGomaErrorType\x12\x11\n\rGOMA_ERROR_OK\x10\x00\x12\x16\n\x12GOMA_ERROR_UNKNOWN\x10\x01\x12\x16\n\x12GOMA_ERROR_CRASHED\x10\x02\x12\x18\n\x14GOMA_ERROR_LOG_FATAL\x10\x03\"S\n\x10InfraEventSource\x12\x11\n\thost_name\x18\x01 \x01(\t\x12\x16\n\x0e\x61ppengine_name\x18\x02 \x01(\t\x12\x14\n\x0cservice_name\x18\x03 \x01(\t\"\xa9\x03\n\x10\x43hromeInfraEvent\x12Q\n\x0etimestamp_kind\x18\x01 \x01(\x0e\x32\x30.crit_event.proto.ChromeInfraEvent.TimestampKind:\x07UNKNOWN\x12\x10\n\x08trace_id\x18\x02 \x01(\t\x12\x0f\n\x07span_id\x18\x03 \x01(\t\x12\x11\n\tparent_id\x18\x04 \x01(\t\x12\x38\n\x0c\x65vent_source\x18\x05 \x01(\x0b\x32\".crit_event.proto.InfraEventSource\x12\x35\n\rservice_event\x18\x06 \x01(\x0b\x32\x1e.crit_event.proto.ServiceEvent\x12\x31\n\x0b\x62uild_event\x18\x08 \x01(\x0b\x32\x1c.crit_event.proto.BuildEvent\x12+\n\x08\x63q_event\x18\t \x01(\x0b\x32\x19.crit_event.proto.CQEvent\";\n\rTimestampKind\x12\x0b\n\x07UNKNOWN\x10\x00\x12\t\n\x05POINT\x10\x01\x12\t\n\x05\x42\x45GIN\x10\x02\x12\x07\n\x03\x45ND\x10\x03')
 
 
 
@@ -95,8 +95,8 @@ _CQEVENT_FAILUREREASON_FAILTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=803,
-  serialized_end=1179,
+  serialized_start=832,
+  serialized_end=1208,
 )
 
 _CQEVENT_ACTION = _descriptor.EnumDescriptor(
@@ -196,8 +196,8 @@ _CQEVENT_ACTION = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=1249,
-  serialized_end=1705,
+  serialized_start=1278,
+  serialized_end=1734,
 )
 
 _CQEVENT_VERIFIER = _descriptor.EnumDescriptor(
@@ -233,8 +233,8 @@ _CQEVENT_VERIFIER = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=1707,
-  serialized_end=1834,
+  serialized_start=1736,
+  serialized_end=1863,
 )
 
 _CQEVENT_STATUS = _descriptor.EnumDescriptor(
@@ -282,8 +282,8 @@ _CQEVENT_STATUS = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=1837,
-  serialized_end=1982,
+  serialized_start=1866,
+  serialized_end=2011,
 )
 
 _SERVICEEVENT_SERVICEEVENTTYPE = _descriptor.EnumDescriptor(
@@ -319,8 +319,8 @@ _SERVICEEVENT_SERVICEEVENTTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=2270,
-  serialized_end=2366,
+  serialized_start=2299,
+  serialized_end=2395,
 )
 
 _BUILDEVENT_BUILDEVENTTYPE = _descriptor.EnumDescriptor(
@@ -344,8 +344,8 @@ _BUILDEVENT_BUILDEVENTTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=3013,
-  serialized_end=3065,
+  serialized_start=3042,
+  serialized_end=3094,
 )
 
 _BUILDEVENT_BUILDRESULT = _descriptor.EnumDescriptor(
@@ -385,8 +385,8 @@ _BUILDEVENT_BUILDRESULT = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=3067,
-  serialized_end=3175,
+  serialized_start=3096,
+  serialized_end=3204,
 )
 
 _BUILDEVENT_GOMAERRORTYPE = _descriptor.EnumDescriptor(
@@ -414,8 +414,8 @@ _BUILDEVENT_GOMAERRORTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=3177,
-  serialized_end=3285,
+  serialized_start=3206,
+  serialized_end=3314,
 )
 
 _CHROMEINFRAEVENT_TIMESTAMPKIND = _descriptor.EnumDescriptor(
@@ -443,8 +443,8 @@ _CHROMEINFRAEVENT_TIMESTAMPKIND = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=3739,
-  serialized_end=3798,
+  serialized_start=3768,
+  serialized_end=3827,
 )
 
 
@@ -485,8 +485,8 @@ _CQEVENT_FAILUREREASON_FAILEDTRYJOB = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=735,
-  serialized_end=800,
+  serialized_start=764,
+  serialized_end=829,
 )
 
 _CQEVENT_FAILUREREASON = _descriptor.Descriptor(
@@ -527,8 +527,8 @@ _CQEVENT_FAILUREREASON = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=516,
-  serialized_end=1179,
+  serialized_start=545,
+  serialized_end=1208,
 )
 
 _CQEVENT_TRIGGEREDTRYJOB = _descriptor.Descriptor(
@@ -568,8 +568,8 @@ _CQEVENT_TRIGGEREDTRYJOB = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1181,
-  serialized_end=1246,
+  serialized_start=1210,
+  serialized_end=1275,
 )
 
 _CQEVENT = _descriptor.Descriptor(
@@ -670,6 +670,13 @@ _CQEVENT = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+    _descriptor.FieldDescriptor(
+      name='codereview_hostname', full_name='crit_event.proto.CQEvent.codereview_hostname', index=13,
+      number=14, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
@@ -683,7 +690,7 @@ _CQEVENT = _descriptor.Descriptor(
   is_extendable=False,
   extension_ranges=[],
   serialized_start=63,
-  serialized_end=1982,
+  serialized_end=2011,
 )
 
 
@@ -745,8 +752,8 @@ _CODEVERSION = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1984,
-  serialized_end=2105,
+  serialized_start=2013,
+  serialized_end=2134,
 )
 
 
@@ -788,8 +795,8 @@ _SERVICEEVENT = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=2108,
-  serialized_end=2366,
+  serialized_start=2137,
+  serialized_end=2395,
 )
 
 
@@ -938,8 +945,8 @@ _BUILDEVENT = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=2369,
-  serialized_end=3285,
+  serialized_start=2398,
+  serialized_end=3314,
 )
 
 
@@ -980,8 +987,8 @@ _INFRAEVENTSOURCE = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=3287,
-  serialized_end=3370,
+  serialized_start=3316,
+  serialized_end=3399,
 )
 
 
@@ -1058,8 +1065,8 @@ _CHROMEINFRAEVENT = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=3373,
-  serialized_end=3798,
+  serialized_start=3402,
+  serialized_end=3827,
 )
 
 _CQEVENT_FAILUREREASON_FAILEDTRYJOB.containing_type = _CQEVENT_FAILUREREASON;
