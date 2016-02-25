@@ -55,17 +55,6 @@ WATERFALL = {
       'swarming': True,
       'os_type': 'win',
     },
-    'Win7 Release (Intel)': {
-      'swarming_dimensions': {
-        'gpu': '8086:041a',
-        'os': 'Windows-2008ServerR2-SP1'
-      },
-      'build_config': 'Release',
-      # This bot is a one-off and doesn't have similar slaves in the
-      # swarming pool.
-      'swarming': False,
-      'os_type': 'win',
-    },
     'Mac 10.10 Release (Intel)': {
       'swarming_dimensions': {
         'gpu': '8086:0a2e',
@@ -210,6 +199,17 @@ FYI_WATERFALL = {
       },
       'build_config': 'Debug',
       'swarming': True,
+      'os_type': 'win',
+    },
+    'Win7 Release (Intel)': {
+      'swarming_dimensions': {
+        'gpu': '8086:041a',
+        'os': 'Windows-2008ServerR2-SP1'
+      },
+      'build_config': 'Release',
+      # This bot is a one-off and doesn't have similar slaves in the
+      # swarming pool.
+      'swarming': False,
       'os_type': 'win',
     },
     'Win7 x64 Release (NVIDIA)': {
