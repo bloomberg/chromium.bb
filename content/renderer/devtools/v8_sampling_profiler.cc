@@ -332,23 +332,23 @@ void Sampler::HandleJitCodeEvent(const v8::JitCodeEvent* event) {
     return;
   switch (event->type) {
     case v8::JitCodeEvent::CODE_ADDED:
-      TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("v8.cpu_profile"),
-                           "JitCodeAdded", TRACE_EVENT_SCOPE_THREAD, "data",
-                           JitCodeEventToTraceFormat(event));
+      TRACE_EVENT_METADATA1(TRACE_DISABLED_BY_DEFAULT("v8.cpu_profile"),
+                            "JitCodeAdded", "data",
+                            JitCodeEventToTraceFormat(event));
       base::subtle::NoBarrier_AtomicIncrement(
           &sampler->code_added_events_count_, 1);
       break;
 
     case v8::JitCodeEvent::CODE_MOVED:
-      TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("v8.cpu_profile"),
-                           "JitCodeMoved", TRACE_EVENT_SCOPE_THREAD, "data",
-                           JitCodeEventToTraceFormat(event));
+      TRACE_EVENT_METADATA1(TRACE_DISABLED_BY_DEFAULT("v8.cpu_profile"),
+                            "JitCodeMoved", "data",
+                            JitCodeEventToTraceFormat(event));
       break;
 
     case v8::JitCodeEvent::CODE_REMOVED:
-      TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("v8.cpu_profile"),
-                           "JitCodeRemoved", TRACE_EVENT_SCOPE_THREAD, "data",
-                           JitCodeEventToTraceFormat(event));
+      TRACE_EVENT_METADATA1(TRACE_DISABLED_BY_DEFAULT("v8.cpu_profile"),
+                            "JitCodeRemoved", "data",
+                            JitCodeEventToTraceFormat(event));
       break;
 
     case v8::JitCodeEvent::CODE_ADD_LINE_POS_INFO:

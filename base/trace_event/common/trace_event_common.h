@@ -926,6 +926,11 @@
                                    name, id, TRACE_EVENT_FLAG_COPY, arg1_name, \
                                    arg1_val, arg2_name, arg2_val)
 
+// TRACE_EVENT_METADATA* events are information related to other
+// injected events, not events in their own right.
+#define TRACE_EVENT_METADATA1(category_group, name, arg1_name, arg1_val) \
+  INTERNAL_TRACE_EVENT_METADATA_ADD(category_group, name, arg1_name, arg1_val)
+
 // Records a clock sync event.
 #define TRACE_EVENT_CLOCK_SYNC_RECEIVER(sync_id)                               \
   INTERNAL_TRACE_EVENT_ADD(                                                    \

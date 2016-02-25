@@ -7,7 +7,7 @@
 
 // This header file defines implementation details of how the trace macros in
 // trace_event_common.h collect and store trace events. Anything not
-// implementation-specific should go in trace_macros_common.h instead of here.
+// implementation-specific should go in trace_event_common.h instead of here.
 
 #include <stddef.h>
 #include <stdint.h>
@@ -187,9 +187,10 @@
 // Adds a metadata event to the trace log. The |AppendValueAsTraceFormat| method
 // on the convertable value will be called at flush time.
 // TRACE_EVENT_API_ADD_METADATA_EVENT(
-//   const char* event_name,
-//   const char* arg_name,
-//   scoped_refptr<ConvertableToTraceFormat> arg_value)
+//     const unsigned char* category_group_enabled,
+//     const char* event_name,
+//     const char* arg_name,
+//     scoped_refptr<ConvertableToTraceFormat> arg_value)
 #define TRACE_EVENT_API_ADD_METADATA_EVENT \
     trace_event_internal::AddMetadataEvent
 
@@ -347,8 +348,20 @@ TRACE_EVENT_API_CLASS_EXPORT extern \
     }                                                                         \
   } while (0)
 
-// Implementation detail: internal macro to enter and leave a context based on
-// the current scope.
+// Implementation detail: internal macro to create static category and add
+// metadata event if the category is enabled.
+#define INTERNAL_TRACE_EVENT_METADATA_ADD(category_group, name, ...)        \
+  do {                                                                      \
+    INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO(category_group);                 \
+    if (INTERNAL_TRACE_EVENT_CATEGORY_GROUP_ENABLED_FOR_RECORDING_MODE()) { \
+      TRACE_EVENT_API_ADD_METADATA_EVENT(                                   \
+          INTERNAL_TRACE_EVENT_UID(category_group_enabled), name,           \
+          ##__VA_ARGS__);                                                   \
+    }                                                                       \
+  } while (0)
+
+// Implementation detail: internal macro to enter and leave a
+// context based on the current scope.
 #define INTERNAL_TRACE_EVENT_SCOPED_CONTEXT(category_group, name, context) \
   struct INTERNAL_TRACE_EVENT_UID(ScopedContext) {                         \
    public:                                                                 \
@@ -838,6 +851,7 @@ static inline base::trace_event::TraceEventHandle AddTraceEvent(
 }
 
 static inline void AddMetadataEvent(
+    const unsigned char* category_group_enabled,
     const char* event_name,
     const char* arg_name,
     scoped_refptr<base::trace_event::ConvertableToTraceFormat> arg_value) {
@@ -846,7 +860,7 @@ static inline void AddMetadataEvent(
       convertable_values[1] = {arg_value};
   unsigned char arg_types[1] = {TRACE_VALUE_TYPE_CONVERTABLE};
   base::trace_event::TraceLog::GetInstance()->AddMetadataEvent(
-      event_name,
+      category_group_enabled, event_name,
       1,  // num_args
       arg_names, arg_types,
       nullptr,  // arg_values
@@ -854,7 +868,8 @@ static inline void AddMetadataEvent(
 }
 
 template <class ARG1_TYPE>
-static void AddMetadataEvent(const char* event_name,
+static void AddMetadataEvent(const unsigned char* category_group_enabled,
+                             const char* event_name,
                              const char* arg_name,
                              const ARG1_TYPE& arg_val) {
   const int num_args = 1;
@@ -864,8 +879,8 @@ static void AddMetadataEvent(const char* event_name,
   SetTraceValue(arg_val, &arg_types[0], &arg_values[0]);
 
   base::trace_event::TraceLog::GetInstance()->AddMetadataEvent(
-      event_name, num_args, arg_names, arg_types, arg_values, nullptr,
-      TRACE_EVENT_FLAG_NONE);
+      category_group_enabled, event_name, num_args, arg_names, arg_types,
+      arg_values, nullptr, TRACE_EVENT_FLAG_NONE);
 }
 
 // Used by TRACE_EVENTx macros. Do not use directly.

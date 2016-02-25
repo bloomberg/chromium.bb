@@ -1331,6 +1331,7 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
 }
 
 void TraceLog::AddMetadataEvent(
+    const unsigned char* category_group_enabled,
     const char* name,
     int num_args,
     const char** arg_names,
@@ -1339,14 +1340,16 @@ void TraceLog::AddMetadataEvent(
     const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
     unsigned int flags) {
   scoped_ptr<TraceEvent> trace_event(new TraceEvent);
+  int thread_id = static_cast<int>(base::PlatformThread::CurrentId());
+  ThreadTicks thread_now = ThreadNow();
+  TimeTicks now = OffsetNow();
   AutoLock lock(lock_);
   trace_event->Initialize(
-      0,  // thread_id
-      TimeTicks(), ThreadTicks(), TRACE_EVENT_PHASE_METADATA,
-      &g_category_group_enabled[g_category_metadata], name,
+      thread_id, now, thread_now, TRACE_EVENT_PHASE_METADATA,
+      category_group_enabled, name,
       trace_event_internal::kGlobalScope,  // scope
-      trace_event_internal::kNoId,  // id
-      trace_event_internal::kNoId,  // bind_id
+      trace_event_internal::kNoId,         // id
+      trace_event_internal::kNoId,         // bind_id
       num_args, arg_names, arg_types, arg_values, convertable_values, flags);
   metadata_events_.push_back(std::move(trace_event));
 }

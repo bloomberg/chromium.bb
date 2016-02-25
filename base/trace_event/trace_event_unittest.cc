@@ -1251,8 +1251,9 @@ TEST_F(TraceEventTestFixture, AddMetadataEvent) {
       new Convertable(&num_calls);
 
   BeginTrace();
-  TRACE_EVENT_API_ADD_METADATA_EVENT("metadata_event_name", "metadata_arg_name",
-                                     convertable);
+  TRACE_EVENT_API_ADD_METADATA_EVENT(
+      TraceLog::GetCategoryGroupEnabled("__metadata"), "metadata_event_name",
+      "metadata_arg_name", convertable);
 
   // |AppendAsTraceFormat| should only be called on flush, not when the event
   // is added.

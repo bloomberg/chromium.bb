@@ -251,6 +251,7 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
 
   // Adds a metadata event that will be written when the trace log is flushed.
   void AddMetadataEvent(
+      const unsigned char* category_group_enabled,
       const char* name,
       int num_args,
       const char** arg_names,

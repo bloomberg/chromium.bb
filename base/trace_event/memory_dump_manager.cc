@@ -591,10 +591,12 @@ void MemoryDumpManager::OnTraceLogEnabled() {
     stack_frame_deduplicator = new StackFrameDeduplicator;
     type_name_deduplicator = new TypeNameDeduplicator;
     TRACE_EVENT_API_ADD_METADATA_EVENT(
-        "stackFrames", "stackFrames",
+        TraceLog::GetCategoryGroupEnabled("__metadata"), "stackFrames",
+        "stackFrames",
         scoped_refptr<ConvertableToTraceFormat>(stack_frame_deduplicator));
     TRACE_EVENT_API_ADD_METADATA_EVENT(
-        "typeNames", "typeNames",
+        TraceLog::GetCategoryGroupEnabled("__metadata"), "typeNames",
+        "typeNames",
         scoped_refptr<ConvertableToTraceFormat>(type_name_deduplicator));
   }
 

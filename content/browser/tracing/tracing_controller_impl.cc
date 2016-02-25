@@ -289,10 +289,12 @@ bool TracingControllerImpl::StartTracing(
 void TracingControllerImpl::OnAllTracingAgentsStarted() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  TRACE_EVENT_API_ADD_METADATA_EVENT("IsTimeTicksHighResolution", "value",
-                                     base::TimeTicks::IsHighResolution());
   TRACE_EVENT_API_ADD_METADATA_EVENT(
-      "TraceConfig", "value",
+      TraceLog::GetCategoryGroupEnabled("__metadata"),
+      "IsTimeTicksHighResolution", "value",
+      base::TimeTicks::IsHighResolution());
+  TRACE_EVENT_API_ADD_METADATA_EVENT(
+      TraceLog::GetCategoryGroupEnabled("__metadata"), "TraceConfig", "value",
       start_tracing_trace_config_->AsConvertableToTraceFormat());
 
   // Notify all child processes.
