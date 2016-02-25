@@ -12,6 +12,7 @@ from chromite.cbuildbot.stages import android_stages
 from chromite.cbuildbot.stages import artifact_stages
 from chromite.cbuildbot.stages import build_stages
 from chromite.cbuildbot.stages import chrome_stages
+from chromite.cbuildbot.stages import completion_stages
 from chromite.cbuildbot.stages import sync_stages
 from chromite.cbuildbot.stages import test_stages
 from chromite.lib import cros_logging as logging
@@ -20,12 +21,73 @@ from chromite.lib import cros_logging as logging
 class AndroidPFQBuilder(simple_builders.SimpleBuilder):
   """Builder that performs Android uprev per overlay."""
 
+  def __init__(self, *args, **kwargs):
+    """Initializes a Android PFQ builder."""
+    super(AndroidPFQBuilder, self).__init__(*args, **kwargs)
+    self.sync_stage = None
+    self._completion_stage = None
+
+  def IsDistributed(self):
+    """Determines if this builder is being run as a slave.
+
+    Returns:
+      True if the build is distributed (ie running as a slave).
+    """
+    return self._run.options.buildbot and self._run.config['manifest_version']
+
+  def GetSyncInstance(self):
+    """Sync using distributed or normal logic as necessary.
+
+    Returns:
+      The instance of the sync stage to run.
+    """
+    if self.IsDistributed():
+      self.sync_stage = self._GetStageInstance(
+          sync_stages.MasterSlaveLKGMSyncStage)
+    else:
+      self.sync_stage = self._GetStageInstance(sync_stages.SyncStage)
+
+    return self.sync_stage
+
+  def GetCompletionInstance(self):
+    """Returns the completion_stage_class instance that was used for this build.
+
+    Returns:
+      None if the completion_stage instance was not yet created (this
+      occurs during Publish).
+    """
+    return self._completion_stage
+
+  def Publish(self, was_build_successful):
+    """Completes build by publishing any required information.
+
+    Args:
+      was_build_successful: Whether the build succeeded.
+    """
+    self._completion_stage = self._GetStageInstance(
+        completion_stages.MasterSlaveSyncCompletionStage,
+        self.sync_stage, was_build_successful)
+    self._completion_stage.Run()
+
   def RunStages(self):
     """Runs through the stages of the Android PFQ slave build."""
-    self.RunEarlySyncAndSetupStages()
-    self._RunStage(android_stages.SyncAndroidStage)
-    self.RunBuildTestStages()
-    self.RunBuildStages()
+    was_build_successful = False
+    try:
+      self.RunEarlySyncAndSetupStages()
+      self._RunStage(android_stages.SyncAndroidStage)
+      self.RunBuildTestStages()
+      self.RunBuildStages()
+      was_build_successful = results_lib.Results.BuildSucceededSoFar()
+    except SystemExit as ex:
+      # If a stage calls sys.exit(0), it's exiting with success, so that means
+      # we should mark ourselves as successful.
+      logging.info('Detected sys.exit(%s)', ex.code)
+      if ex.code == 0:
+        was_build_successful = True
+      raise
+    finally:
+      if self.IsDistributed():
+        self.Publish(was_build_successful)
 
 
 class AndroidPFQMasterBuilder(simple_builders.DistributedBuilder):
@@ -51,8 +113,8 @@ class AndroidPFQMasterBuilder(simple_builders.DistributedBuilder):
     try:
       self._RunStage(build_stages.UprevStage)
       self._RunStage(build_stages.InitSDKStage)
-      # The CQ/Chrome PFQ master will not actually run the SyncChrome stage, but
-      # we want the logic that gets triggered when SyncChrome stage is skipped.
+      # The PFQ master will not actually run the SyncChrome/SyncAndroid stages,
+      # but we want the logic that gets triggered when the stages are skipped.
       self._RunStage(chrome_stages.SyncChromeStage)
       self._RunStage(android_stages.SyncAndroidStage)
       self._RunStage(test_stages.BinhostTestStage)
