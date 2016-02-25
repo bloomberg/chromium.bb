@@ -341,19 +341,10 @@ private:
 
 } // anonymous namespace
 
-#define DEFINE_TEST_TASK_WRAPPER_CLASS(TEST_METHOD)                                               \
-class TestWrapperTask_ ## TEST_METHOD : public WebTaskRunner::Task {                           \
-    public:                                                                                       \
-        TestWrapperTask_ ## TEST_METHOD(RecordingImageBufferSurfaceTest* test) : m_test(test) { } \
-        void run() override { m_test->TEST_METHOD(); }                                    \
-    private:                                                                                      \
-        RecordingImageBufferSurfaceTest* m_test;                                                  \
-};
-
 #define CALL_TEST_TASK_WRAPPER(TEST_METHOD)                                                               \
     {                                                                                                     \
         CurrentThreadPlatformMock ctpm;                                                                   \
-        Platform::current()->currentThread()->taskRunner()->postTask(BLINK_FROM_HERE, new TestWrapperTask_ ## TEST_METHOD(this)); \
+        Platform::current()->currentThread()->taskRunner()->postTask(BLINK_FROM_HERE, bind(&RecordingImageBufferSurfaceTest::TEST_METHOD, this)); \
         ctpm.enterRunLoop();                                      \
     }
 
@@ -367,22 +358,18 @@ TEST_F(RecordingImageBufferSurfaceTest, testNoFallbackWithClear)
     testNoFallbackWithClear();
 }
 
-DEFINE_TEST_TASK_WRAPPER_CLASS(testNonAnimatedCanvasUpdate)
 TEST_F(RecordingImageBufferSurfaceTest, testNonAnimatedCanvasUpdate)
 {
     CALL_TEST_TASK_WRAPPER(testNonAnimatedCanvasUpdate)
     expectDisplayListEnabled(true);
 }
 
-DEFINE_TEST_TASK_WRAPPER_CLASS(testAnimatedWithoutClear)
 TEST_F(RecordingImageBufferSurfaceTest, testAnimatedWithoutClear)
 {
     CALL_TEST_TASK_WRAPPER(testAnimatedWithoutClear)
     expectDisplayListEnabled(false);
 }
 
-DEFINE_TEST_TASK_WRAPPER_CLASS(testFrameFinalizedByTaskObserver1)
-DEFINE_TEST_TASK_WRAPPER_CLASS(testFrameFinalizedByTaskObserver2)
 TEST_F(RecordingImageBufferSurfaceTest, testFrameFinalizedByTaskObserver)
 {
     CALL_TEST_TASK_WRAPPER(testFrameFinalizedByTaskObserver1)
@@ -391,14 +378,12 @@ TEST_F(RecordingImageBufferSurfaceTest, testFrameFinalizedByTaskObserver)
     expectDisplayListEnabled(false);
 }
 
-DEFINE_TEST_TASK_WRAPPER_CLASS(testAnimatedWithClear)
 TEST_F(RecordingImageBufferSurfaceTest, testAnimatedWithClear)
 {
     CALL_TEST_TASK_WRAPPER(testAnimatedWithClear)
     expectDisplayListEnabled(true);
 }
 
-DEFINE_TEST_TASK_WRAPPER_CLASS(testClearRect)
 TEST_F(RecordingImageBufferSurfaceTest, testClearRect)
 {
     CALL_TEST_TASK_WRAPPER(testClearRect);
