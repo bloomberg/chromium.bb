@@ -15,7 +15,6 @@
 #include "ios/web/public/active_state_manager.h"
 #include "ios/web/public/referrer.h"
 #import "ios/web/public/web_state/ui/crw_web_delegate.h"
-#import "ios/web/web_state/js/crw_js_invoke_parameter_queue.h"
 #import "ios/web/web_state/ui/crw_wk_web_view_web_controller.h"
 #import "ios/web/web_state/web_state_impl.h"
 #include "third_party/ocmock/OCMock/OCMock.h"
@@ -148,7 +147,7 @@ void WebTestWithWebController::WaitForBackgroundTasks() {
     if (processed_a_task_)  // Set in TaskObserver method.
       activitySeen = true;
 
-  } while (activitySeen || !MessageQueueIsEmpty());
+  } while (activitySeen);
   messageLoop->RemoveTaskObserver(this);
 }
 
@@ -157,15 +156,6 @@ void WebTestWithWebController::WaitForCondition(ConditionBlock condition) {
   DCHECK(messageLoop);
   base::test::ios::WaitUntilCondition(condition, messageLoop,
                                       base::TimeDelta::FromSeconds(10));
-}
-
-bool WebTestWithWebController::MessageQueueIsEmpty() const {
-  // Using this check rather than polymorphism because polymorphising
-  // Chrome*WebViewWebTest would be overengineering. Chrome*WebViewWebTest
-  // inherits from WebTestWithWebController.
-  return [webController_ webViewType] == web::WK_WEB_VIEW_TYPE ||
-      [static_cast<CRWUIWebViewWebController*>(webController_)
-          jsInvokeParameterQueue].isEmpty;
 }
 
 NSString* WebTestWithWebController::EvaluateJavaScriptAsString(
@@ -233,6 +223,12 @@ NSString* WebTestWithWebController::RunJavaScript(NSString* script) {
   return [dictionary objectForKey:@"result"];
 }
 
+CRWWebController* WebTestWithWebController::CreateWebController() {
+  scoped_ptr<WebStateImpl> web_state_impl(new WebStateImpl(GetBrowserState()));
+  return [[CRWWKWebViewWebController alloc]
+      initWithWebState:std::move(web_state_impl)];
+}
+
 void WebTestWithWebController::WillProcessTask(
     const base::PendingTask& pending_task) {
   // Nothing to do.
@@ -261,63 +257,4 @@ NSString* WebTestWithWebController::CreateLoadCheck() {
                                     s_html_load_count++];
 }
 
-#pragma mark -
-
-CRWWebController* WebTestWithUIWebViewWebController::CreateWebController() {
-  scoped_ptr<WebStateImpl> web_state_impl(new WebStateImpl(GetBrowserState()));
-  return [[TestWebController alloc] initWithWebState:std::move(web_state_impl)];
-}
-
-void WebTestWithUIWebViewWebController::LoadCommands(NSString* commands,
-                                                     const GURL& origin_url,
-                                                     BOOL user_is_interacting) {
-  [static_cast<CRWUIWebViewWebController*>(webController_)
-      respondToMessageQueue:commands
-          userIsInteracting:user_is_interacting
-                  originURL:origin_url];
-}
-
-#pragma mark -
-
-CRWWebController* WebTestWithWKWebViewWebController::CreateWebController() {
-  scoped_ptr<WebStateImpl> web_state_impl(new WebStateImpl(GetBrowserState()));
-  return [[CRWWKWebViewWebController alloc]
-      initWithWebState:std::move(web_state_impl)];
-}
-
 }  // namespace web
-
-#pragma mark -
-
-// Declare CRWUIWebViewWebController's (private) implementation of
-// UIWebViewDelegate.
-@interface CRWUIWebViewWebController(TestProtocolDeclaration)<UIWebViewDelegate>
-@end
-
-@implementation TestWebController {
-  BOOL _interceptRequest;
-  BOOL _requestIntercepted;
-  BOOL _invokeShouldStartLoadWithRequestNavigationTypeDone;
-}
-
-@synthesize interceptRequest = _interceptRequest;
-@synthesize requestIntercepted = _requestIntercepted;
-@synthesize invokeShouldStartLoadWithRequestNavigationTypeDone =
-    _invokeShouldStartLoadWithRequestNavigationTypeDone;
-
-- (BOOL)webView:(UIWebView*)webView
-    shouldStartLoadWithRequest:(NSURLRequest*)request
-                navigationType:(UIWebViewNavigationType)navigationType {
-  _invokeShouldStartLoadWithRequestNavigationTypeDone = false;
-  // Conditionally block the request to open a webpage.
-  if (_interceptRequest) {
-    _requestIntercepted = true;
-    return false;
-  }
-  BOOL result = [super webView:webView
-      shouldStartLoadWithRequest:request
-                  navigationType:navigationType];
-  _invokeShouldStartLoadWithRequestNavigationTypeDone = true;
-  return result;
-}
-@end
