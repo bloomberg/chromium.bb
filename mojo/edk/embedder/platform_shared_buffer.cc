@@ -27,9 +27,14 @@ ScopedPlatformHandle SharedMemoryToPlatformHandle(
 #elif defined(OS_WIN)
   return ScopedPlatformHandle(PlatformHandle(memory_handle.GetHandle()));
 #else
-  CHECK_EQ(memory_handle.GetType(), base::SharedMemoryHandle::POSIX);
-  return ScopedPlatformHandle(
-      PlatformHandle(memory_handle.GetFileDescriptor().fd));
+  if (memory_handle.GetType() == base::SharedMemoryHandle::MACH) {
+    return ScopedPlatformHandle(PlatformHandle(
+        memory_handle.GetMemoryObject()));
+  } else {
+    DCHECK(memory_handle.GetType() == base::SharedMemoryHandle::POSIX);
+    return ScopedPlatformHandle(PlatformHandle(
+        memory_handle.GetFileDescriptor().fd));
+  }
 #endif
 }
 
@@ -185,6 +190,14 @@ bool PlatformSharedBuffer::InitFromPlatformHandle(
 #if defined(OS_WIN)
   base::SharedMemoryHandle handle(platform_handle.release().handle,
                                   base::GetCurrentProcId());
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+  base::SharedMemoryHandle handle;
+  if (platform_handle.get().type == PlatformHandle::Type::MACH) {
+    handle = base::SharedMemoryHandle(
+        platform_handle.release().port, num_bytes_, base::GetCurrentProcId());
+  } else {
+    handle = base::SharedMemoryHandle(platform_handle.release().handle, false);
+  }
 #else
   base::SharedMemoryHandle handle(platform_handle.release().handle, false);
 #endif
