@@ -876,6 +876,7 @@ if (!is_android) {
       "//components/safe_browsing_db:test_database_manager",
       "//components/strings",
       "//components/translate/core/common",
+      "//content/public/common:features",
       "//content/test:browsertest_base",
       "//crypto:platform",
       "//crypto:test_support",
@@ -1087,7 +1088,9 @@ if (!is_android) {
     if (enable_captive_portal_detection) {
       sources += [ "../browser/captive_portal/captive_portal_browsertest.cc" ]
     }
-    if (!enable_webrtc) {
+    if (enable_webrtc) {
+      deps += [ "//content/public/common:feature_h264_with_openh264_ffmpeg" ]
+    } else {
       sources -= [
         "../browser/extensions/api/webrtc_audio_private/webrtc_audio_private_browsertest.cc",
         "../browser/extensions/api/webrtc_logging_private/webrtc_logging_private_apitest.cc",

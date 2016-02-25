@@ -45,6 +45,7 @@
     '../ui/gl/gl.gyp:gl',
     '../ui/shell_dialogs/shell_dialogs.gyp:shell_dialogs',
     '../url/url.gyp:url_lib',
+    'content.gyp:common_features',
     'content_common_mojo_bindings.gyp:content_common_mojo_bindings',
   ],
   'include_dirs': [
