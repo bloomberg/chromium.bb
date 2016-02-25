@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script src="resources/device.mojom.js"></script>
+<script src="resources/device_manager.mojom.js"></script>
+<script src="resources/permission_provider.mojom.js"></script>
+<script src="resources/fake-devices.js"></script>
+<script src="resources/usb-helpers.js"></script>
+<script>
+'use strict';
+
+usb_test(usb => {
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+  return navigator.usb.getDevices().then(devices => {
+    assert_equals(devices.length, 1);
+    let device = devices[0];
+    return device.open().then(() => device.close());
+  });
+}, 'a device can be opened and closed');
+
+usb_test(usb => {
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+  return navigator.usb.getDevices().then(devices => {
+    assert_equals(devices.length, 1);
+    let device = devices[0];
+    return device.open()
+      .then(() => device.setConfiguration(1))
+      .then(() => device.getConfiguration())
+      .then(config => {
+         usb.assertConfigurationInfoEquals(
+             config, usb.fakeDevices[0].configurations[0]);
+      })
+      .then(() => device.close());
+  });
+}, 'device configuration can be set and queried');
+
+usb_test(usb => {
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+  return navigator.usb.getDevices().then(devices => {
+    assert_equals(devices.length, 1);
+    let device = devices[0];
+    return device.open()
+      .then(() => device.getConfiguration()
+        .then(() => {
+          assert_true(false, 'getConfiguration should reject');
+        })
+        .catch(error => {
+          assert_equals(error.code, DOMException.NOT_FOUND_ERR);
+          return Promise.resolve();
+        }))
+      .then(() => device.close());
+  });
+}, 'querying an unset configuration raises NotFoundError');
+
+usb_test(usb => {
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+  return navigator.usb.getDevices().then(devices => {
+    assert_equals(devices.length, 1);
+    let device = devices[0];
+    return device.open()
+      .then(() => device.setConfiguration(1))
+      .then(() => device.claimInterface(0))
+      .then(() => device.releaseInterface(0))
+      .then(() => device.close());
+  });
+}, 'an interface can be claimed and released');
+
+usb_test(usb => {
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+  return navigator.usb.getDevices().then(devices => {
+    assert_equals(devices.length, 1);
+    let device = devices[0];
+    return device.open()
+      .then(() => device.setConfiguration(2))
+      .then(() => device.claimInterface(0))
+      .then(() => device.setInterface(0, 1))
+      .then(() => device.close());
+  });
+}, 'can select an alternate interface');
+
+usb_test(usb => {
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+  return navigator.usb.getDevices().then(devices => {
+    assert_equals(devices.length, 1);
+    let device = devices[0];
+    return device.open()
+      .then(() => device.controlTransferIn({
+        requestType: "vendor",
+        recipient: "device",
+        request: 0x42,
+        value: 0x1234,
+        index: 0x5678
+      }, 7))
+      .then(result => {
+        assert_equals("ok", result.status);
+        assert_equals(7, result.data.byteLength);
+        assert_equals(0x07, result.data.getUint16(0));
+        assert_equals(0x42, result.data.getUint8(2));
+        assert_equals(0x1234, result.data.getUint16(3));
+        assert_equals(0x5678, result.data.getUint16(5));
+      });
+  });
+}, 'can issue IN control transfer');
+</script>

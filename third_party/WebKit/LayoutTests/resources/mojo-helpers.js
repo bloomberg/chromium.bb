@@ -6,15 +6,26 @@
 
 // Fix up the global window.define, since all baked-in Mojo modules expect to
 // find it there. This define() also returns a promise to the module.
-function define(name, deps, factory) {
-  return new Promise(resolve => {
-    mojo.define(name, deps, (...modules) => {
-      let result = factory(...modules);
-      resolve(result);
-      return result;
-    });
-  });
-}
+let define = (function(){
+  let moduleCache = new Map();
+
+  return function(name, deps, factory) {
+    let promise = moduleCache.get(name);
+    if (promise === undefined) {
+      // This promise must be cached as mojo.define will only call the factory
+      // function the first time the module is defined.
+      promise = new Promise(resolve => {
+        mojo.define(name, deps, (...modules) => {
+          let result = factory(...modules);
+          resolve(result);
+          return result;
+        });
+      });
+      moduleCache.set(name, promise);
+    }
+    return promise;
+  }
+})();
 
 // Returns a promise to an object that exposes common Mojo module interfaces.
 // Additional modules to load can be specified in the |modules| parameter. The
