@@ -9,7 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
-#include "content/common/gpu/gpu_messages.h"
+#include "content/common/gpu/media_messages.h"
 #include "content/common/view_messages.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
