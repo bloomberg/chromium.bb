@@ -1,30 +1,30 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x127
-  LayoutBlockFlow {HTML} at (0,0) size 800x127
-    LayoutBlockFlow {BODY} at (8,16) size 784x95
-      LayoutBlockFlow {P} at (0,0) size 784x25
-        LayoutInline {NOBR} at (0,0) size 112x17
-          LayoutInline {B} at (0,0) size 18x17
-            LayoutText {#text} at (0,0) size 18x17
-              text run at (0,0) width 18: "\x{179C}\x{17C9}\x{17C2}\x{1794}"
-          LayoutText {#text} at (17,0) size 5x17
-            text run at (17,0) width 5: " "
-          LayoutInline {A} at (0,0) size 27x17 [color=#0000EE]
-            LayoutText {#text} at (21,0) size 27x17
-              text run at (21,0) width 27: "\x{179A}\x{17BC}\x{1794}\x{1797}\x{17B6}\x{1796}"
-          LayoutText {#text} at (47,0) size 5x17
-            text run at (47,0) width 5: " "
-          LayoutInline {A} at (0,0) size 17x17 [color=#0000EE]
-            LayoutText {#text} at (51,0) size 17x17
-              text run at (51,0) width 17: "\x{1780}\x{17D2}\x{179A}\x{17BB}\x{1798}"
-          LayoutText {#text} at (67,0) size 5x17
-            text run at (67,0) width 5: " "
-          LayoutInline {A} at (0,0) size 41x17 [color=#0000EE]
-            LayoutText {#text} at (71,0) size 41x17
-              text run at (71,0) width 41: "\x{1790}\x{178F}\x{17AF}\x{1780}\x{179F}\x{17B6}\x{179A}"
+layer at (0,0) size 800x121
+  LayoutBlockFlow {HTML} at (0,0) size 800x121
+    LayoutBlockFlow {BODY} at (8,16) size 784x89
+      LayoutBlockFlow {P} at (0,0) size 784x19
+        LayoutInline {NOBR} at (0,0) size 196x17
+          LayoutInline {B} at (0,0) size 25x17
+            LayoutText {#text} at (0,1) size 25x17
+              text run at (0,1) width 25: "\x{179C}\x{17C9}\x{17C2}\x{1794}"
+          LayoutText {#text} at (24,1) size 5x17
+            text run at (24,1) width 5: " "
+          LayoutInline {A} at (0,0) size 51x17 [color=#0000EE]
+            LayoutText {#text} at (28,1) size 51x17
+              text run at (28,1) width 51: "\x{179A}\x{17BC}\x{1794}\x{1797}\x{17B6}\x{1796}"
+          LayoutText {#text} at (78,1) size 5x17
+            text run at (78,1) width 5: " "
+          LayoutInline {A} at (0,0) size 32x17 [color=#0000EE]
+            LayoutText {#text} at (82,1) size 32x17
+              text run at (82,1) width 32: "\x{1780}\x{17D2}\x{179A}\x{17BB}\x{1798}"
+          LayoutText {#text} at (113,1) size 5x17
+            text run at (113,1) width 5: " "
+          LayoutInline {A} at (0,0) size 79x17 [color=#0000EE]
+            LayoutText {#text} at (117,1) size 79x17
+              text run at (117,1) width 79: "\x{1790}\x{178F}\x{17AF}\x{1780}\x{179F}\x{17B6}\x{179A}"
         LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow {P} at (0,41) size 784x54
+      LayoutBlockFlow {P} at (0,35) size 784x54
         LayoutText {#text} at (0,0) size 542x17
           text run at (0,0) width 542: "Some Harfbuzz shapers will output cluster logs which suggest that some glyphs had "
         LayoutInline {I} at (0,0) size 17x17

@@ -26,12 +26,12 @@ ja-JP: 誤過骨
 ko: 誤過骨
 #ko:
 "Times New Roman" : 4,
-"Gulim" : 3
+"MS PGothic" : 3
 
 ko-KR: 誤過骨
 #ko-KR:
 "Times New Roman" : 7,
-"Gulim" : 3
+"MS PGothic" : 3
 
 en-CN: 誤過骨
 #en-CN:
@@ -46,7 +46,7 @@ en-JP: 誤過骨
 en-KR: 誤過骨
 #en-KR:
 "Times New Roman" : 7,
-"Gulim" : 3
+"MS PGothic" : 3
 
 en-HK: 誤過骨
 #en-HK:

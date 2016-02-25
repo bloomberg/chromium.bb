@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x349
-  LayoutBlockFlow {HTML} at (0,0) size 800x349
-    LayoutBlockFlow {BODY} at (8,8) size 784x333
+layer at (0,0) size 800x346
+  LayoutBlockFlow {HTML} at (0,0) size 800x346
+    LayoutBlockFlow {BODY} at (8,8) size 784x330
       LayoutBlockFlow (anonymous) at (0,0) size 784x54
         LayoutText {#text} at (0,0) size 340x17
           text run at (0,0) width 340: "Tests if glyph caches of different languages interfere."
@@ -11,7 +11,7 @@ layer at (0,0) size 800x349
           text run at (0,18) width 743: "On systems that the locales have different font preferences, the following divs should be displayed in corresponding"
           text run at (0,36) width 179: "preferred fonts respectively."
         LayoutBR {BR} at (178,36) size 1x17
-      LayoutBlockFlow {DIV} at (0,54) size 784x93
+      LayoutBlockFlow {DIV} at (0,54) size 784x92
         LayoutBlockFlow (anonymous) at (0,0) size 784x18
           LayoutText {#text} at (0,0) size 130x17
             text run at (0,0) width 130: "Default font-family:"
@@ -24,10 +24,10 @@ layer at (0,0) size 800x349
         LayoutBlockFlow {DIV} at (0,56) size 784x18
           LayoutText {#text} at (0,0) size 114x17
             text run at (0,0) width 114: "Japanese: \x{8AA4}\x{904E}\x{9AA8}"
-        LayoutBlockFlow {DIV} at (0,74) size 784x19
-          LayoutText {#text} at (0,1) size 104x17
-            text run at (0,1) width 104: "Korean: \x{8AA4}\x{904E}\x{9AA8}"
-      LayoutBlockFlow {DIV} at (0,147) size 784x93
+        LayoutBlockFlow {DIV} at (0,74) size 784x18
+          LayoutText {#text} at (0,0) size 104x17
+            text run at (0,0) width 104: "Korean: \x{8AA4}\x{904E}\x{9AA8}"
+      LayoutBlockFlow {DIV} at (0,146) size 784x92
         LayoutBlockFlow (anonymous) at (0,0) size 784x18
           LayoutText {#text} at (0,0) size 224x17
             text run at (0,0) width 224: "Generic font-family (sans-serif):"
@@ -40,10 +40,10 @@ layer at (0,0) size 800x349
         LayoutBlockFlow {DIV} at (0,56) size 784x18
           LayoutText {#text} at (0,0) size 127x17
             text run at (0,0) width 127: "Japanese: \x{8AA4}\x{904E}\x{9AA8}"
-        LayoutBlockFlow {DIV} at (0,74) size 784x19
-          LayoutText {#text} at (0,1) size 109x17
-            text run at (0,1) width 109: "Korean: \x{8AA4}\x{904E}\x{9AA8}"
-      LayoutBlockFlow {DIV} at (0,240) size 784x93
+        LayoutBlockFlow {DIV} at (0,74) size 784x18
+          LayoutText {#text} at (0,0) size 109x17
+            text run at (0,0) width 109: "Korean: \x{8AA4}\x{904E}\x{9AA8}"
+      LayoutBlockFlow {DIV} at (0,238) size 784x92
         LayoutBlockFlow (anonymous) at (0,0) size 784x18
           LayoutText {#text} at (0,0) size 300x17
             text run at (0,0) width 300: "Non-generic font-family (Times New Roman):"
@@ -56,6 +56,6 @@ layer at (0,0) size 800x349
         LayoutBlockFlow {DIV} at (0,56) size 784x18
           LayoutText {#text} at (0,0) size 114x17
             text run at (0,0) width 114: "Japanese: \x{8AA4}\x{904E}\x{9AA8}"
-        LayoutBlockFlow {DIV} at (0,74) size 784x19
-          LayoutText {#text} at (0,1) size 104x17
-            text run at (0,1) width 104: "Korean: \x{8AA4}\x{904E}\x{9AA8}"
+        LayoutBlockFlow {DIV} at (0,74) size 784x18
+          LayoutText {#text} at (0,0) size 104x17
+            text run at (0,0) width 104: "Korean: \x{8AA4}\x{904E}\x{9AA8}"
