@@ -3729,7 +3729,7 @@ void Document::setSequentialFocusNavigationStartingPoint(Node* node)
     ASSERT(node->document() == this);
     if (!m_sequentialFocusNavigationStartingPoint)
         m_sequentialFocusNavigationStartingPoint = Range::create(*this);
-    m_sequentialFocusNavigationStartingPoint->selectNodeContents(node->isElementNode() ? node : node->parentOrShadowHostElement(), ASSERT_NO_EXCEPTION);
+    m_sequentialFocusNavigationStartingPoint->selectNodeContents(node, ASSERT_NO_EXCEPTION);
 }
 
 Element* Document::sequentialFocusNavigationStartingPoint(WebFocusType type) const
@@ -3741,7 +3741,11 @@ Element* Document::sequentialFocusNavigationStartingPoint(WebFocusType type) con
     if (!m_sequentialFocusNavigationStartingPoint->collapsed()) {
         Node* node = m_sequentialFocusNavigationStartingPoint->startContainer();
         ASSERT(node == m_sequentialFocusNavigationStartingPoint->endContainer());
-        return node->isElementNode() ? toElement(node) : node->parentOrShadowHostElement();
+        if (node->isElementNode())
+            return toElement(node);
+        if (Element* neighborElement = type == WebFocusTypeForward ? ElementTraversal::previous(*node) : ElementTraversal::next(*node))
+            return neighborElement;
+        return node->parentOrShadowHostElement();
     }
 
     // Range::selectNodeContents didn't select contents because the element had

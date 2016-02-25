@@ -16,11 +16,26 @@ test(function() {
     eventSender.mouseDown();
     eventSender.keyDown('\t');
     assert_equals(document.activeElement.id, 'next');
+    eventSender.mouseUp();
 
     hoverOverElement(container.querySelector('div'));
     eventSender.mouseDown();
     eventSender.keyDown('\t', ['shiftKey']);
     assert_equals(document.activeElement.id, 'prev');
+    eventSender.mouseUp();
+
+    container.innerHTML = '<span style="font-size:60px;"><input id=prev>Text Text<input id=next></span>';
+    hoverOverElement(container.querySelector('span'));
+    eventSender.mouseDown();
+    eventSender.keyDown('\t');
+    assert_equals(document.activeElement.id, 'next');
+    eventSender.mouseUp();
+
+    hoverOverElement(container.querySelector('span'));
+    eventSender.mouseDown();
+    eventSender.keyDown('\t', ['shiftKey']);
+    assert_equals(document.activeElement.id, 'prev');
+    eventSender.mouseUp();
 }, 'Mouse press should update sequential focus navigation starting point.');
 
 test(function() {
