@@ -24,8 +24,17 @@ DirectoryItemTreeBaseMethods.getItemByEntry = function(entry) {
     var item = this.items[i];
     if (!item.entry)
       continue;
-    if (util.isSameEntry(item.entry, entry))
+    if (util.isSameEntry(item.entry, entry)) {
+      // The Drive root volume item "Google Drive" and its child "My Drive" have
+      // the same entry. When we look for a tree item of Drive's root directory,
+      // "My Drive" should be returned, as we use "Google Drive" for grouping
+      // "My Drive", "Shared with me", "Recent", and "Offine".
+      // Therefore, we have to skip "Google Drive" here.
+      if (item instanceof DriveVolumeItem)
+        return item.getItemByEntry(entry);
+
       return item;
+    }
     if (util.isDescendantEntry(item.entry, entry))
       return item.getItemByEntry(entry);
   }
