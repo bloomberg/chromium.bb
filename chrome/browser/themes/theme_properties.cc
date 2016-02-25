@@ -20,7 +20,7 @@ namespace {
 // ----------------------------------------------------------------------------
 // Defaults for properties which are stored in the browser theme pack. If you
 // change these defaults, you must increment the version number in
-// browser_theme_pack.h
+// browser_theme_pack.cc.
 
 // Default colors.
 #if defined(OS_CHROMEOS)
@@ -109,11 +109,7 @@ const color_utils::HSL kDefaultTintFrame = {-1, -1, -1};
 const color_utils::HSL kDefaultTintFrameInactive = {-1, -1, 0.75};
 const color_utils::HSL kDefaultTintFrameIncognito = {-1, 0.2, 0.35};
 const color_utils::HSL kDefaultTintFrameIncognitoInactive = {-1, 0.3, 0.6};
-const color_utils::HSL kDefaultTintBackgroundTab = {-1, -1, 0.4296875};
-// In pre-md, reuse the normal tint for incognito.
-const color_utils::HSL kDefaultTintBackgroundTabIncognito[] = {
-    {-1, -1, 0.4296875},
-    {-1, -1, 0.34375}};
+const color_utils::HSL kDefaultTintBackgroundTab = {-1, -1, 0.75};
 
 // ----------------------------------------------------------------------------
 // Defaults for properties which are not stored in the browser theme pack.
@@ -251,18 +247,18 @@ const std::set<int>& ThemeProperties::GetTintableToolbarButtons() {
 
 // static
 color_utils::HSL ThemeProperties::GetDefaultTint(int id, bool otr) {
-  int mode = ui::MaterialDesignController::IsModeMaterial();
   switch (id) {
     case TINT_FRAME:
       return otr ? kDefaultTintFrameIncognito : kDefaultTintFrame;
     case TINT_FRAME_INACTIVE:
       return otr ? kDefaultTintFrameIncognitoInactive
                  : kDefaultTintFrameInactive;
-    case TINT_BUTTONS:
+    case TINT_BUTTONS: {
+      const int mode = ui::MaterialDesignController::IsModeMaterial();
       return otr ? kDefaultTintButtonsIncognito[mode] : kDefaultTintButtons;
+    }
     case TINT_BACKGROUND_TAB:
-      return otr ? kDefaultTintBackgroundTabIncognito[mode]
-                 : kDefaultTintBackgroundTab;
+      return kDefaultTintBackgroundTab;
     case TINT_FRAME_INCOGNITO:
     case TINT_FRAME_INCOGNITO_INACTIVE:
       NOTREACHED() << "These values should be queried via their respective "

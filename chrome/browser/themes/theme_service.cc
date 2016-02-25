@@ -484,10 +484,17 @@ SkColor ThemeService::GetColor(int id, bool incognito) const {
       return SkColorSetA(
           GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON, incognito),
           0x33);
-    case ThemeProperties::COLOR_BACKGROUND_TAB:
+    case ThemeProperties::COLOR_BACKGROUND_TAB: {
+      // The tints here serve a different purpose than TINT_BACKGROUND_TAB.
+      // That tint is used to create background tab images for custom themes by
+      // lightening the frame images.  The tints here create solid colors for
+      // background tabs by darkening the foreground tab (toolbar) color.
+      const color_utils::HSL kTint = {-1, -1, 0.4296875};
+      const color_utils::HSL kTintIncognito = {-1, -1, 0.34375};
       return color_utils::HSLShift(
           GetColor(ThemeProperties::COLOR_TOOLBAR, incognito),
-          GetTint(ThemeProperties::TINT_BACKGROUND_TAB, incognito));
+          incognito ? kTintIncognito : kTint);
+    }
     case ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND:
       if (UsingDefaultTheme())
         break;

@@ -525,93 +525,98 @@ void NewTabButton::PaintFill(bool pressed,
                              float scale,
                              const SkPath& fill,
                              gfx::Canvas* canvas) const {
+  // First we compute the background image coordinates and scale, in case we
+  // need to draw a custom background image.
+  const ui::ThemeProvider* tp = GetThemeProvider();
   bool custom_image;
   const int bg_id = tab_strip_->GetBackgroundResourceId(&custom_image);
-  const ui::ThemeProvider* tp = GetThemeProvider();
+  // For custom tab backgrounds the background starts at the top of the tab
+  // strip. Otherwise the background starts at the top of the frame.
+  const int offset_y = tp->HasCustomImage(bg_id) ?
+      -GetLayoutConstant(TAB_TOP_EXCLUSION_HEIGHT) : background_offset_.y();
+  // The new tab background is mirrored in RTL mode, but the theme background
+  // should never be mirrored. Mirror it here to compensate.
+  float x_scale = 1.0f;
+  int x = GetMirroredX() + background_offset_.x();
+  const gfx::Size size(GetLayoutSize(NEW_TAB_BUTTON));
+  if (base::i18n::IsRTL()) {
+    x_scale = -1.0f;
+    // Offset by |width| such that the same region is painted as if there was no
+    // flip.
+    x += size.width();
+  }
+  const int y = GetNewTabButtonTopOffset() + offset_y;
 
-  gfx::ScopedCanvas scoped_canvas(canvas);
-
-  const bool md = ui::MaterialDesignController::IsModeMaterial();
-  if (md) {
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    gfx::ScopedCanvas scoped_canvas(canvas);
     canvas->UndoDeviceScaleFactor();
 
     // For unpressed buttons, draw the fill and its shadow.
     if (!pressed) {
-      gfx::ScopedCanvas scoped_canvas(canvas);
-
-      // For custom themes, clip out the fill path itself so only the shadow
-      // around it is drawn.  We'll draw the fill image below.
-      if (custom_image)
-        canvas->sk_canvas()->clipPath(fill, SkRegion::kDifference_Op, true);
-
       SkPaint paint;
       paint.setAntiAlias(true);
+      if (custom_image) {
+        const bool succeeded = canvas->InitSkPaintForTiling(
+            *tp->GetImageSkiaNamed(bg_id), x, y, x_scale * scale, scale, 0, 0,
+            &paint);
+        DCHECK(succeeded);
+      } else {
+        paint.setColor(tp->GetColor(ThemeProperties::COLOR_BACKGROUND_TAB));
+      }
       skia::RefPtr<SkDrawLooper> looper = CreateShadowDrawLooper(0x26);
       paint.setLooper(looper.get());
-      paint.setColor(tp->GetColor(ThemeProperties::COLOR_BACKGROUND_TAB));
       canvas->DrawPath(fill, paint);
     }
 
-    // Clip to just the fill region for any theme drawing and hover/pressed
-    // state overlay drawing below.  In non-MD mode, this is done on the caller
-    // side using image masking operations.
-    canvas->ClipPath(fill, true);
-    canvas->sk_canvas()->scale(scale, scale);
-  }
-
-  // Draw the fill background image.
-  const gfx::Size size(GetLayoutSize(NEW_TAB_BUTTON));
-  if (custom_image || !md) {
-    gfx::ImageSkia* background = tp->GetImageSkiaNamed(bg_id);
-    // For custom tab backgrounds the background starts at the top of the tab
-    // strip. Otherwise the background starts at the top of the frame.
-    const int offset_y = tp->HasCustomImage(bg_id) ?
-        -GetLayoutConstant(TAB_TOP_EXCLUSION_HEIGHT) : background_offset_.y();
-
-    // The new tab background is mirrored in RTL mode, but the theme background
-    // should never be mirrored. Mirror it here to compensate.
-    float x_scale = 1.0f;
-    int x = GetMirroredX() + background_offset_.x();
-    if (base::i18n::IsRTL()) {
-      x_scale = -1.0f;
-      // Offset by |width| such that the same region is painted as if there was
-      // no flip.
-      x += size.width();
+    // Draw a white highlight on hover.
+    SkPaint paint;
+    paint.setAntiAlias(true);
+    const SkAlpha hover_alpha = static_cast<SkAlpha>(
+        hover_animation().CurrentValueBetween(0x00, 0x4D));
+    if (hover_alpha != SK_AlphaTRANSPARENT) {
+      paint.setColor(SkColorSetA(SK_ColorWHITE, hover_alpha));
+      canvas->DrawPath(fill, paint);
     }
-    canvas->TileImageInt(*background, x, GetNewTabButtonTopOffset() + offset_y,
-                         x_scale, 1.0f, 0, 0, size.width(), size.height());
 
-    // For non-MD, adjust the alpha of the fill to match that of inactive tabs
-    // (except for pressed buttons, which get a different value).  For MD, we do
-    // this with an opacity recorder in TabStrip::PaintChildren() so the fill
-    // and stroke are both affected, to better match how tabs are handled, but
-    // in non-MD, the button stroke is already lighter than the tab stroke, and
-    // using the opacity recorder washes it out too much.
+    // Most states' opacities are adjusted using an opacity recorder in
+    // TabStrip::PaintChildren(), but the pressed state is excluded there and
+    // instead rendered using a dark overlay here.  This produces a different
+    // effect than for non-MD, and avoiding the use of the opacity recorder
+    // keeps the stroke more visible in this state.
+    if (pressed) {
+      paint.setColor(SkColorSetA(SK_ColorBLACK, 0x14));
+      canvas->DrawPath(fill, paint);
+    }
+  } else {
+    // Draw the fill image.
+    canvas->TileImageInt(*tp->GetImageSkiaNamed(bg_id), x, y, x_scale, 1.0f,
+                         0, 0, size.width(), size.height());
+
+    // Adjust the alpha of the fill to match that of inactive tabs (except for
+    // pressed buttons, which get a different value).  For MD, we do this with
+    // an opacity recorder in TabStrip::PaintChildren() so the fill and stroke
+    // are both affected, to better match how tabs are handled, but in non-MD,
+    // the button stroke is already lighter than the tab stroke, and using the
+    // opacity recorder washes it out too much.
     static const SkAlpha kPressedAlpha = 145;
-    const SkAlpha alpha =
+    const SkAlpha fill_alpha =
         pressed ? kPressedAlpha : tab_strip_->GetInactiveAlpha(true);
-    if (alpha != 255 && !md) {
+    if (fill_alpha != 255) {
       SkPaint paint;
-      paint.setAlpha(alpha);
+      paint.setAlpha(fill_alpha);
       paint.setXfermodeMode(SkXfermode::kDstIn_Mode);
       paint.setStyle(SkPaint::kFill_Style);
       canvas->DrawRect(gfx::Rect(size), paint);
     }
+
+    // Draw a white highlight on hover.
+    const SkAlpha hover_alpha = static_cast<SkAlpha>(
+        hover_animation().CurrentValueBetween(0x00, 0x40));
+    if (hover_alpha != SK_AlphaTRANSPARENT) {
+      canvas->FillRect(GetLocalBounds(),
+                       SkColorSetA(SK_ColorWHITE, hover_alpha));
+    }
   }
-
-  // White highlight on hover.
-  const SkAlpha alpha = static_cast<SkAlpha>(
-      hover_animation().CurrentValueBetween(0x00, md ? 0x4D : 0x40));
-  if (alpha != SK_AlphaTRANSPARENT)
-    canvas->FillRect(GetLocalBounds(), SkColorSetA(SK_ColorWHITE, alpha));
-
-  // For MD, most states' opacities are adjusted using an opacity recorder in
-  // TabStrip::PaintChildren(), but the pressed state is excluded there and
-  // instead rendered using a dark overlay here.  This produces a different
-  // effect than for non-MD, and avoiding the use of the opacity recorder keeps
-  // the stroke more visible in this state.
-  if (md && pressed)
-    canvas->FillRect(GetLocalBounds(), SkColorSetA(SK_ColorBLACK, 0x14));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

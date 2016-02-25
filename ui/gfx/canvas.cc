@@ -10,6 +10,7 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect.h"
@@ -477,12 +478,30 @@ void Canvas::TileImageInt(const ImageSkia& image,
                           int dest_y,
                           int w,
                           int h) {
-  if (!IntersectsClipRectInt(dest_x, dest_y, w, h))
+  SkRect dest_rect = { SkIntToScalar(dest_x),
+                       SkIntToScalar(dest_y),
+                       SkIntToScalar(dest_x + w),
+                       SkIntToScalar(dest_y + h) };
+  if (!IntersectsClipRect(dest_rect))
     return;
 
+  SkPaint paint;
+  if (InitSkPaintForTiling(image, src_x, src_y, tile_scale_x, tile_scale_y,
+                           dest_x, dest_y, &paint))
+    canvas_->drawRect(dest_rect, paint);
+}
+
+bool Canvas::InitSkPaintForTiling(const ImageSkia& image,
+                                  int src_x,
+                                  int src_y,
+                                  float tile_scale_x,
+                                  float tile_scale_y,
+                                  int dest_x,
+                                  int dest_y,
+                                  SkPaint* paint) {
   const ImageSkiaRep& image_rep = image.GetRepresentation(image_scale_);
   if (image_rep.is_null())
-    return;
+    return false;
 
   SkMatrix shader_scale;
   shader_scale.setScale(SkFloatToScalar(tile_scale_x),
@@ -490,36 +509,20 @@ void Canvas::TileImageInt(const ImageSkia& image,
   shader_scale.preTranslate(SkIntToScalar(-src_x), SkIntToScalar(-src_y));
   shader_scale.postTranslate(SkIntToScalar(dest_x), SkIntToScalar(dest_y));
 
-  skia::RefPtr<SkShader> shader = CreateImageRepShader(
-      image_rep,
-      SkShader::kRepeat_TileMode,
-      shader_scale);
-
-  SkPaint paint;
-  paint.setShader(shader.get());
-  paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
-
-  SkRect dest_rect = { SkIntToScalar(dest_x),
-                       SkIntToScalar(dest_y),
-                       SkIntToScalar(dest_x + w),
-                       SkIntToScalar(dest_y + h) };
-  canvas_->drawRect(dest_rect, paint);
+  // setShader() takes ownership of the created shader.
+  paint->setShader(CreateImageRepShader(image_rep, SkShader::kRepeat_TileMode,
+                                        shader_scale).get());
+  paint->setXfermodeMode(SkXfermode::kSrcOver_Mode);
+  return true;
 }
 
 void Canvas::Transform(const gfx::Transform& transform) {
   canvas_->concat(transform.matrix());
 }
 
-bool Canvas::IntersectsClipRectInt(int x, int y, int w, int h) {
+bool Canvas::IntersectsClipRect(const SkRect& rect) {
   SkRect clip;
-  return canvas_->getClipBounds(&clip) &&
-      clip.intersect(SkIntToScalar(x), SkIntToScalar(y), SkIntToScalar(x + w),
-                     SkIntToScalar(y + h));
-}
-
-bool Canvas::IntersectsClipRect(const Rect& rect) {
-  return IntersectsClipRectInt(rect.x(), rect.y(),
-                               rect.width(), rect.height());
+  return canvas_->getClipBounds(&clip) && clip.intersects(rect);
 }
 
 void Canvas::DrawImageIntHelper(const ImageSkiaRep& image_rep,
@@ -541,16 +544,15 @@ void Canvas::DrawImageIntHelper(const ImageSkiaRep& image_rep,
     return;
   }
 
-  if (!IntersectsClipRectInt(dest_x, dest_y, dest_w, dest_h))
-    return;
-
-  float user_scale_x = static_cast<float>(dest_w) / src_w;
-  float user_scale_y = static_cast<float>(dest_h) / src_h;
-
   SkRect dest_rect = { SkIntToScalar(dest_x),
                        SkIntToScalar(dest_y),
                        SkIntToScalar(dest_x + dest_w),
                        SkIntToScalar(dest_y + dest_h) };
+  if (!IntersectsClipRect(dest_rect))
+    return;
+
+  float user_scale_x = static_cast<float>(dest_w) / src_w;
+  float user_scale_y = static_cast<float>(dest_h) / src_h;
 
   // Make a bitmap shader that contains the bitmap we want to draw. This is
   // basically what SkCanvas.drawBitmap does internally, but it gives us

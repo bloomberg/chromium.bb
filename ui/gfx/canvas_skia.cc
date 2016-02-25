@@ -21,6 +21,7 @@
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/shadow_value.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
 
@@ -187,7 +188,7 @@ void Canvas::DrawStringRectWithShadows(const base::string16& text,
                                        int line_height,
                                        int flags,
                                        const ShadowValues& shadows) {
-  if (!IntersectsClipRect(text_bounds))
+  if (!IntersectsClipRect(RectToSkRect(text_bounds)))
     return;
 
   Rect clip_rect(text_bounds);

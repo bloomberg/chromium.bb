@@ -399,6 +399,18 @@ class GFX_EXPORT Canvas {
                     int w,
                     int h);
 
+  // Helper for TileImageInt().  Initializes |paint| for tiling |image| with the
+  // given parameters.  Returns false if the provided image does not have a
+  // representation for the current scale.
+  bool InitSkPaintForTiling(const ImageSkia& image,
+                            int src_x,
+                            int src_y,
+                            float tile_scale_x,
+                            float tile_scale_y,
+                            int dest_x,
+                            int dest_y,
+                            SkPaint* paint);
+
   // Apply transformation on the canvas.
   void Transform(const Transform& transform);
 
@@ -413,9 +425,8 @@ class GFX_EXPORT Canvas {
   float image_scale() const { return image_scale_; }
 
  private:
-  // Test whether the provided rectangle intersects the current clip rect.
-  bool IntersectsClipRectInt(int x, int y, int w, int h);
-  bool IntersectsClipRect(const Rect& rect);
+  // Tests whether the provided rectangle intersects the current clip rect.
+  bool IntersectsClipRect(const SkRect& rect);
 
   // Helper for the DrawImageInt functions declared above. The
   // |remove_image_scale| parameter indicates if the scale of the |image_rep|
