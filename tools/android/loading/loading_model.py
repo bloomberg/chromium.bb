@@ -203,11 +203,11 @@ class ResourceGraph(object):
       costs[n.Index()] = cost
     max_cost = max(costs)
     if costs_out is not None:
-      del costs_out[:-1]
+      del costs_out[:]
       costs_out.extend(costs)
     assert max_cost > 0  # Otherwise probably the filter went awry.
     if path_list is not None:
-      del path_list[:-1]
+      del path_list[:]
       n = (i for i in self._nodes if costs[i.Index()] == max_cost).next()
       path_list.append(self._node_info[n.Index()])
       while n.Predecessors():
