@@ -288,11 +288,11 @@ class BrowserThemePackTest : public ::testing::Test {
     EXPECT_EQ(80, rep1.sk_bitmap().width());
     EXPECT_EQ(80, rep1.sk_bitmap().height());
     rep1.sk_bitmap().lockPixels();
-    EXPECT_EQ(SkColorSetRGB(255, 255, 255), rep1.sk_bitmap().getColor( 4,  4));
-    EXPECT_EQ(SkColorSetRGB(255, 255, 255), rep1.sk_bitmap().getColor( 8,  8));
-    EXPECT_EQ(SkColorSetRGB(  0, 241, 237), rep1.sk_bitmap().getColor(16, 16));
+    EXPECT_EQ(SkColorSetRGB(255, 255, 255), rep1.sk_bitmap().getColor(4, 4));
+    EXPECT_EQ(SkColorSetRGB(255, 255, 255), rep1.sk_bitmap().getColor(8, 8));
+    EXPECT_EQ(SkColorSetRGB(0, 241, 237), rep1.sk_bitmap().getColor(16, 16));
     EXPECT_EQ(SkColorSetRGB(255, 255, 255), rep1.sk_bitmap().getColor(24, 24));
-    EXPECT_EQ(SkColorSetRGB(  0, 241, 237), rep1.sk_bitmap().getColor(32, 32));
+    EXPECT_EQ(SkColorSetRGB(0, 241, 237), rep1.sk_bitmap().getColor(32, 32));
     rep1.sk_bitmap().unlockPixels();
     // Scale 200%.
     const gfx::ImageSkiaRep& rep2 = image_skia->GetRepresentation(2.0f);
@@ -300,10 +300,10 @@ class BrowserThemePackTest : public ::testing::Test {
     EXPECT_EQ(160, rep2.sk_bitmap().width());
     EXPECT_EQ(160, rep2.sk_bitmap().height());
     rep2.sk_bitmap().lockPixels();
-    EXPECT_EQ(SkColorSetRGB(255, 255, 255), rep2.sk_bitmap().getColor( 4,  4));
-    EXPECT_EQ(SkColorSetRGB(223,  42,   0), rep2.sk_bitmap().getColor( 8,  8));
-    EXPECT_EQ(SkColorSetRGB(223,  42,   0), rep2.sk_bitmap().getColor(16, 16));
-    EXPECT_EQ(SkColorSetRGB(223,  42,   0), rep2.sk_bitmap().getColor(24, 24));
+    EXPECT_EQ(SkColorSetRGB(255, 255, 255), rep2.sk_bitmap().getColor(4, 4));
+    EXPECT_EQ(SkColorSetRGB(223, 42, 0), rep2.sk_bitmap().getColor(8, 8));
+    EXPECT_EQ(SkColorSetRGB(223, 42, 0), rep2.sk_bitmap().getColor(16, 16));
+    EXPECT_EQ(SkColorSetRGB(223, 42, 0), rep2.sk_bitmap().getColor(24, 24));
     EXPECT_EQ(SkColorSetRGB(255, 255, 255), rep2.sk_bitmap().getColor(32, 32));
     rep2.sk_bitmap().unlockPixels();
 
@@ -428,11 +428,41 @@ TEST_F(BrowserThemePackTest, ProvideNtpHeaderColor) {
   LoadColorJSON(color_json);
 
   std::map<int, SkColor> colors = GetDefaultColorMap();
-  SkColor ntp_header = SkColorSetRGB(120, 120, 120);
-  SkColor ntp_section = SkColorSetRGB(190, 190, 190);
-  colors[ThemeProperties::COLOR_NTP_HEADER] = ntp_header;
-  colors[ThemeProperties::COLOR_NTP_SECTION] = ntp_section;
+  colors[ThemeProperties::COLOR_NTP_HEADER] = SkColorSetRGB(120, 120, 120);
+  colors[ThemeProperties::COLOR_NTP_SECTION] = SkColorSetRGB(190, 190, 190);
   VerifyColorMap(colors);
+}
+
+TEST_F(BrowserThemePackTest, SupportsAlpha) {
+  // Verify that valid alpha values are parsed correctly.
+  std::string color_json = "{ \"toolbar\": [0, 20, 40, 0], "
+                           "  \"tab_text\": [60, 80, 100, 1], "
+                           "  \"tab_background_text\": [120, 140, 160, 0.0], "
+                           "  \"bookmark_text\": [180, 200, 220, 1.0], "
+                           "  \"ntp_text\": [240, 255, 0, 0.5] }";
+  LoadColorJSON(color_json);
+
+  std::map<int, SkColor> colors = GetDefaultColorMap();
+  colors[ThemeProperties::COLOR_TOOLBAR] = SkColorSetARGB(0, 0, 20, 40);
+  colors[ThemeProperties::COLOR_TAB_TEXT] = SkColorSetARGB(255, 60, 80, 100);
+  colors[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT] =
+      SkColorSetARGB(0, 120, 140, 160);
+  colors[ThemeProperties::COLOR_BOOKMARK_TEXT] =
+      SkColorSetARGB(255, 180, 200, 220);
+  colors[ThemeProperties::COLOR_NTP_TEXT] = SkColorSetARGB(128, 240, 255, 0);
+  VerifyColorMap(colors);
+}
+
+TEST_F(BrowserThemePackTest, OutOfRangeColors) {
+  // Ensure colors with out-of-range values are simply ignored.
+  std::string color_json = "{ \"toolbar\": [0, 20, 40, -1], "
+                           "  \"tab_text\": [60, 80, 100, 2], "
+                           "  \"tab_background_text\": [120, 140, 160, 47.6], "
+                           "  \"bookmark_text\": [256, 0, 0], "
+                           "  \"ntp_text\": [0, -100, 100] }";
+  LoadColorJSON(color_json);
+
+  VerifyColorMap(GetDefaultColorMap());
 }
 
 TEST_F(BrowserThemePackTest, CanReadTints) {

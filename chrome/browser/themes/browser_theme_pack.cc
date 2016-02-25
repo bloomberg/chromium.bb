@@ -31,6 +31,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image.h"
@@ -993,14 +994,14 @@ void BrowserThemePack::ReadColorsFromJSON(
         ((color_list->GetSize() == 3) || (color_list->GetSize() == 4))) {
       SkColor color = SK_ColorWHITE;
       int r, g, b;
-      if (color_list->GetInteger(0, &r) &&
-          color_list->GetInteger(1, &g) &&
-          color_list->GetInteger(2, &b)) {
+      if (color_list->GetInteger(0, &r) && r >= 0 && r <= 255 &&
+          color_list->GetInteger(1, &g) && g >= 0 && g <= 255 &&
+          color_list->GetInteger(2, &b) && b >= 0 && b <= 255) {
         if (color_list->GetSize() == 4) {
           double alpha;
           int alpha_int;
-          if (color_list->GetDouble(3, &alpha)) {
-            color = SkColorSetARGB(static_cast<int>(alpha * 255), r, g, b);
+          if (color_list->GetDouble(3, &alpha) && alpha >= 0 && alpha <= 1) {
+            color = SkColorSetARGB(gfx::ToRoundedInt(alpha * 255), r, g, b);
           } else if (color_list->GetInteger(3, &alpha_int) &&
                      (alpha_int == 0 || alpha_int == 1)) {
             color = SkColorSetARGB(alpha_int ? 255 : 0, r, g, b);
