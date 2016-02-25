@@ -1418,6 +1418,13 @@
             '../chrome/test/media_router/e2e_tests.gyp:media_router_e2e_tests_run',
           ],
         }, # target_name: media_router_swarming_tests
+        {
+          'target_name': 'media_router_swarming_perf_tests',
+          'type': 'none',
+          'dependencies': [
+            '../chrome/test/media_router/e2e_tests.gyp:media_router_perf_tests_run',
+          ],
+        }, # target_name: media_router_swarming_perf_tests
       ]
     }],
     ['OS=="mac" and toolkit_views==1', {

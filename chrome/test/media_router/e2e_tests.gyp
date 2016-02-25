@@ -19,6 +19,19 @@
             'media_router_tests.isolate',
           ],
         },  # target_name: 'media_router_e2e_tests_run'
+        {
+          'target_name': 'media_router_perf_tests_run',
+          'type': 'none',
+          'dependencies': [
+            '../../chrome.gyp:chrome',
+          ],
+          'includes': [
+            '../../../build/isolate.gypi',
+          ],
+          'sources': [
+            'media_router_perf_tests.isolate',
+          ],
+        },  # target_name: 'media_router_perf_tests_run'
       ],
     }],
   ],
