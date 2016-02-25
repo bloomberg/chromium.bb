@@ -130,7 +130,7 @@ define('media_router_bindings', [
   function presentationConnectionCloseReasonToMojo_(reason) {
     var PresentationConnectionCloseReason =
         mediaRouterMojom.MediaRouter.PresentationConnectionCloseReason;
-    switch (state) {
+    switch (reason) {
       case 'error':
         return PresentationConnectionCloseReason.CONNECTION_ERROR;
       case 'closed':
@@ -392,7 +392,7 @@ define('media_router_bindings', [
   MediaRouter.prototype.onPresentationConnectionClosed =
       function(routeId, reason, message) {
     this.service_.onPresentationConnectionClosed(
-        routeId, presentationConnectionCloseReasonToMojo_(state), message);
+        routeId, presentationConnectionCloseReasonToMojo_(reason), message);
   };
 
   /**

@@ -402,7 +402,7 @@ void PresentationDispatcher::OnConnectionClosed(
     presentation::PresentationSessionInfoPtr connection,
     presentation::PresentationConnectionCloseReason reason,
     const mojo::String& message) {
-  if (controller_)
+  if (!controller_)
     return;
 
   DCHECK(!connection.is_null());
