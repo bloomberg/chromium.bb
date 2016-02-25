@@ -1344,7 +1344,11 @@ bool MediaStreamManager::SetupScreenCaptureRequest(DeviceRequest* request) {
     }
   }
 
-  request->CreateUIRequest("", video_device_id);
+  const std::string audio_device_id =
+      request->audio_type() == MEDIA_DESKTOP_AUDIO_CAPTURE ? video_device_id
+                                                           : "";
+
+  request->CreateUIRequest(audio_device_id, video_device_id);
   return true;
 }
 
@@ -1855,27 +1859,27 @@ void MediaStreamManager::HandleAccessRequestResponse(
     if (device_info.device.type == content::MEDIA_TAB_VIDEO_CAPTURE ||
         device_info.device.type == content::MEDIA_TAB_AUDIO_CAPTURE) {
       device_info.device.id = request->tab_capture_device_id;
-
-      // Initialize the sample_rate and channel_layout here since for audio
-      // mirroring, we don't go through EnumerateDevices where these are usually
-      // initialized.
-      if (device_info.device.type == content::MEDIA_TAB_AUDIO_CAPTURE) {
-        int sample_rate = output_parameters.sample_rate();
-        // If we weren't able to get the native sampling rate or the sample_rate
-        // is outside the valid range for input devices set reasonable defaults.
-        if (sample_rate <= 0 || sample_rate > 96000)
-          sample_rate = 44100;
-
-        device_info.device.input.sample_rate = sample_rate;
-        device_info.device.input.channel_layout = media::CHANNEL_LAYOUT_STEREO;
-      }
     }
 
-    if (device_info.device.type == request->audio_type()) {
+    // Initialize the sample_rate and channel_layout here since for audio
+    // mirroring, we don't go through EnumerateDevices where these are usually
+    // initialized.
+    if (device_info.device.type == content::MEDIA_TAB_AUDIO_CAPTURE ||
+        device_info.device.type == content::MEDIA_DESKTOP_AUDIO_CAPTURE) {
+      int sample_rate = output_parameters.sample_rate();
+      // If we weren't able to get the native sampling rate or the sample_rate
+      // is outside the valid range for input devices set reasonable defaults.
+      if (sample_rate <= 0 || sample_rate > 96000)
+        sample_rate = 44100;
+
+      device_info.device.input.sample_rate = sample_rate;
+      device_info.device.input.channel_layout = media::CHANNEL_LAYOUT_STEREO;
+    }
+
+    if (device_info.device.type == request->audio_type())
       found_audio = true;
-    } else if (device_info.device.type == request->video_type()) {
+    else if (device_info.device.type == request->video_type())
       found_video = true;
-    }
 
     // If this is request for a new MediaStream, a device is only opened once
     // per render frame. This is so that the permission to use a device can be
@@ -2045,14 +2049,17 @@ void MediaStreamManager::OnMediaStreamUIWindowId(MediaStreamType video_type,
   if (!window_id)
     return;
 
-  // Pass along for desktop capturing. Ignored for other stream types.
-  if (video_type == MEDIA_DESKTOP_VIDEO_CAPTURE) {
-    for (const StreamDeviceInfo& device_info : devices ) {
-      if (device_info.device.type == MEDIA_DESKTOP_VIDEO_CAPTURE) {
-        video_capture_manager_->SetDesktopCaptureWindowId(
-            device_info.session_id, window_id);
-        break;
-      }
+  if (video_type != MEDIA_DESKTOP_VIDEO_CAPTURE)
+    return;
+
+  // Pass along for desktop screen and window capturing.
+  for (const StreamDeviceInfo& device_info : devices) {
+    if (device_info.device.type == MEDIA_DESKTOP_VIDEO_CAPTURE &&
+        !WebContentsMediaCaptureId::IsWebContentsDeviceId(
+            device_info.device.id)) {
+      video_capture_manager_->SetDesktopCaptureWindowId(device_info.session_id,
+                                                        window_id);
+      break;
     }
   }
 }

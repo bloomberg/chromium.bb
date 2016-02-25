@@ -517,7 +517,14 @@ VideoCaptureManager::DoStartDesktopCaptureOnDeviceThread(
   scoped_ptr<media::VideoCaptureDevice> video_capture_device;
 #if defined(ENABLE_SCREEN_CAPTURE)
   DesktopMediaID desktop_id = DesktopMediaID::Parse(id);
-  if (!desktop_id.is_null()) {
+  if (desktop_id.is_null()) {
+    device_client->OnError(FROM_HERE, "Desktop media ID is null");
+    return nullptr;
+  }
+
+  if (desktop_id.type == DesktopMediaID::TYPE_WEB_CONTENTS) {
+    video_capture_device.reset(WebContentsVideoCaptureDevice::Create(id));
+  } else {
 #if defined(USE_AURA)
     video_capture_device = DesktopCaptureDeviceAura::Create(desktop_id);
 #endif

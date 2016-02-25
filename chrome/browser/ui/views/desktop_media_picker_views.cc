@@ -523,8 +523,7 @@ bool DesktopMediaPickerDialogView::Accept() {
                        audio_share_checkbox_->enabled() &&
                        audio_share_checkbox_->checked();
 
-  // TYPE_WEB_CONTENTS/tab is not fully supported yet.
-  if (parent_ && source.type != DesktopMediaID::TYPE_WEB_CONTENTS)
+  if (parent_)
     parent_->NotifyDialogResult(source);
 
   // Return true to close the window.
@@ -549,7 +548,8 @@ void DesktopMediaPickerDialogView::OnSelectionChanged() {
     if (selection)
       source = selection->source_id();
 
-    if (source.type == DesktopMediaID::TYPE_SCREEN) {
+    if (source.type == DesktopMediaID::TYPE_SCREEN ||
+        source.type == DesktopMediaID::TYPE_WEB_CONTENTS) {
       audio_share_checkbox_->SetEnabled(true);
       audio_share_checkbox_->SetTooltipText(base::string16());
     } else if (source.type == DesktopMediaID::TYPE_WINDOW) {

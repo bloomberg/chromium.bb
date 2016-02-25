@@ -105,10 +105,16 @@ scoped_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
   devices->push_back(content::MediaStreamDevice(
       content::MEDIA_DESKTOP_VIDEO_CAPTURE, media_id.ToString(), "Screen"));
   if (capture_audio) {
-    // Use the special loopback device ID for system audio capture.
-    devices->push_back(content::MediaStreamDevice(
-        content::MEDIA_DESKTOP_AUDIO_CAPTURE,
-        media::AudioManagerBase::kLoopbackInputDeviceId, "System Audio"));
+    if (media_id.type == content::DesktopMediaID::TYPE_WEB_CONTENTS) {
+      devices->push_back(
+          content::MediaStreamDevice(content::MEDIA_DESKTOP_AUDIO_CAPTURE,
+                                     media_id.ToString(), "Tab audio"));
+    } else {
+      // Use the special loopback device ID for system audio capture.
+      devices->push_back(content::MediaStreamDevice(
+          content::MEDIA_DESKTOP_AUDIO_CAPTURE,
+          media::AudioManagerBase::kLoopbackInputDeviceId, "System Audio"));
+    }
   }
 
   // If required, register to display the notification for stream capture.
@@ -346,22 +352,23 @@ void DesktopCaptureAccessHandler::HandleRequest(
 
   // This value essentially from the checkbox on picker window, so it
   // corresponds to user permission.
-  bool audio_permitted = media_id.audio_share;
+  const bool audio_permitted = media_id.audio_share;
 
   // This value essentially from whether getUserMedia requests audio stream.
-  bool audio_requested =
+  const bool audio_requested =
       request.audio_type == content::MEDIA_DESKTOP_AUDIO_CAPTURE;
 
   // This value shows for a given capture type, whether the system or our code
-  // can support audio sharing. Currently audio is only supported for screen
-  // capture streams.
-  bool audio_supported =
-      media_id.type == content::DesktopMediaID::TYPE_SCREEN &&
-      loopback_audio_supported;
+  // can support audio sharing. Currently audio is only supported for screen and
+  // tab/webcontents capture streams.
+  const bool audio_supported =
+      (media_id.type == content::DesktopMediaID::TYPE_SCREEN &&
+       loopback_audio_supported) ||
+      media_id.type == content::DesktopMediaID::TYPE_WEB_CONTENTS;
 
-  bool has_flag = base::CommandLine::ForCurrentProcess()->HasSwitch(
+  const bool has_flag = base::CommandLine::ForCurrentProcess()->HasSwitch(
       extensions::switches::kEnableDesktopCaptureAudio);
-  bool capture_audio =
+  const bool capture_audio =
       (has_flag ? audio_permitted : true) && audio_requested && audio_supported;
 
   ui = GetDevicesForDesktopCapture(&devices, media_id, capture_audio, true,
