@@ -202,7 +202,7 @@ int HostMain(int argc, char** argv) {
     fprintf(stderr, "Unknown process type '%s' specified.",
             process_type.c_str());
     Usage(command_line->GetProgram());
-    return kUsageExitCode;
+    return kInvalidCommandLineExitCode;
   }
 
   // Required to find the ICU data file, used by some file_util routines.
@@ -212,7 +212,7 @@ int HostMain(int argc, char** argv) {
 
   // Invoke the entry point.
   int exit_code = main_routine();
-  if (exit_code == kUsageExitCode) {
+  if (exit_code == kInvalidCommandLineExitCode) {
     Usage(command_line->GetProgram());
   }
 

@@ -17,7 +17,7 @@ enum HostExitCodes {
   kSuccessExitCode = 0,
   kReservedForX11ExitCode = 1,
   kInitializationFailed = 2,
-  kUsageExitCode = 3,
+  kInvalidCommandLineExitCode = 3,
 
   // Error codes that do indicate a permanent error condition.
   kInvalidHostConfigurationExitCode = 100,

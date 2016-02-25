@@ -434,7 +434,7 @@ VOID WINAPI HostService::ServiceMain(DWORD argc, WCHAR* argv[]) {
 int DaemonProcessMain() {
   HostService* service = HostService::GetInstance();
   if (!service->InitWithCommandLine(base::CommandLine::ForCurrentProcess())) {
-    return kUsageExitCode;
+    return kInvalidCommandLineExitCode;
   }
 
   return service->Run();

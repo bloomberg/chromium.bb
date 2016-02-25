@@ -32,7 +32,7 @@ int DesktopProcessMain() {
       command_line->GetSwitchValueASCII(kDaemonPipeSwitchName);
 
   if (channel_name.empty())
-    return kUsageExitCode;
+    return kInvalidCommandLineExitCode;
 
   base::MessageLoopForUI message_loop;
   base::RunLoop run_loop;

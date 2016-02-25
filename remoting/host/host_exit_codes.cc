@@ -13,6 +13,7 @@ namespace remoting {
 const NameMapElement<HostExitCodes> kHostExitCodeStrings[] = {
   { kSuccessExitCode, "SUCCESS_EXIT" },
   { kInitializationFailed, "INITIALIZATION_FAILED" },
+  { kInvalidCommandLineExitCode, "INVALID_COMMAND_LINE" },
   { kInvalidHostConfigurationExitCode, "INVALID_HOST_CONFIGURATION" },
   { kInvalidHostIdExitCode, "INVALID_HOST_ID" },
   { kInvalidOauthCredentialsExitCode, "INVALID_OAUTH_CREDENTIALS" },

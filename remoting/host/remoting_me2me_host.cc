@@ -864,9 +864,7 @@ void HostProcess::StartOnUiThread() {
 
   if (!InitWithCommandLine(base::CommandLine::ForCurrentProcess())) {
     // Shutdown the host if the command line is invalid.
-    context_->network_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&HostProcess::ShutdownHost, this,
-                              kUsageExitCode));
+    ShutdownOnUiThread();
     return;
   }
 
