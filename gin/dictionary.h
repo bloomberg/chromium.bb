@@ -26,6 +26,7 @@ class GIN_EXPORT Dictionary {
  public:
   explicit Dictionary(v8::Isolate* isolate);
   Dictionary(v8::Isolate* isolate, v8::Local<v8::Object> object);
+  Dictionary(const Dictionary& other);
   ~Dictionary();
 
   static Dictionary CreateEmpty(v8::Isolate* isolate);

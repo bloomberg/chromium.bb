@@ -145,6 +145,9 @@ ObjectTemplateBuilder::ObjectTemplateBuilder(v8::Isolate* isolate)
   template_->SetInternalFieldCount(kNumberOfInternalFields);
 }
 
+ObjectTemplateBuilder::ObjectTemplateBuilder(
+    const ObjectTemplateBuilder& other) = default;
+
 ObjectTemplateBuilder::~ObjectTemplateBuilder() {
 }
 

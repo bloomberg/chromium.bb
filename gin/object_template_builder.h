@@ -89,6 +89,7 @@ struct CallbackTraits<v8::Local<v8::FunctionTemplate> > {
 class GIN_EXPORT ObjectTemplateBuilder {
  public:
   explicit ObjectTemplateBuilder(v8::Isolate* isolate);
+  ObjectTemplateBuilder(const ObjectTemplateBuilder& other);
   ~ObjectTemplateBuilder();
 
   // It's against Google C++ style to return a non-const ref, but we take some
