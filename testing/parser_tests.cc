@@ -140,7 +140,7 @@ class ParserTest : public testing::Test {
     // files).
     const mkvparser::Tracks* const tracks = segment_->GetTracks();
     const mkvparser::Track* cues_track = tracks->GetTrackByIndex(0);
-    for (int i = 1; i < tracks->GetTracksCount(); ++i) {
+    for (int i = 1; i < static_cast<int>(tracks->GetTracksCount()); ++i) {
       const mkvparser::Track* const track = tracks->GetTrackByIndex(i);
       if (track->GetType() == mkvparser::Track::kVideo) {
         cues_track = track;
