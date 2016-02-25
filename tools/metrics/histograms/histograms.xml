@@ -56991,6 +56991,32 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Video.H264DecoderImpl.Event"
+    enum="WebRtcH264DecoderImplEvent">
+  <owner>hbos@chromium.org</owner>
+  <summary>
+    The number of |H264DecoderImpl| events, such as an initialization or
+    decoding error, that have occurred. At most one Init and one Error is
+    reported per |H264DecoderImpl| instance. This is to avoid the same event
+    from being reported multiple times (e.g. if there is an error you might
+    re-initialize or get a decode error every frame which would otherwise
+    pollute the data).
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.H264EncoderImpl.Event"
+    enum="WebRtcH264EncoderImplEvent">
+  <owner>hbos@chromium.org</owner>
+  <summary>
+    The number of |H264EncoderImpl| events, such as an initialization or
+    encoding error, that have occurred. At most one Init and one Error is
+    reported per |H264EncoderImpl| instance. This is to avoid the same event
+    from being reported multiple times (e.g. if there is an error you might
+    re-initialize or get an encode error every frame which would otherwise
+    pollute the data).
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Video.InputFramesPerSecond" units="fps">
   <owner>asapersson@chromium.org</owner>
   <summary>
@@ -82768,6 +82794,16 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="WEB_HISTORY_QUERY_FAILED">Failed</int>
   <int value="1" label="WEB_HISTORY_QUERY_SUCCEEDED">Succeeded</int>
   <int value="2" label="WEB_HISTORY_QUERY_TIMED_OUT">Timed out</int>
+</enum>
+
+<enum name="WebRtcH264DecoderImplEvent" type="int">
+  <int value="0" label="Init"/>
+  <int value="1" label="Error"/>
+</enum>
+
+<enum name="WebRtcH264EncoderImplEvent" type="int">
+  <int value="0" label="Init"/>
+  <int value="1" label="Error"/>
 </enum>
 
 <enum name="WebRtcVideoCodecs" type="int">
