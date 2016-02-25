@@ -3153,6 +3153,11 @@ void WebContentsImpl::DidNavigateAnyFramePostCommit(
   if (!details.is_in_page)
     CancelActiveAndPendingDialogs();
 
+  // If this is a user-initiated navigation, start allowing JavaScript dialogs
+  // again.
+  if (params.gesture == NavigationGestureUser && dialog_manager_)
+    dialog_manager_->ResetDialogState(this);
+
   // Notify observers about navigation.
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidNavigateAnyFrame(render_frame_host, details, params));
@@ -4791,6 +4796,11 @@ void WebContentsImpl::MediaStartedPlaying(
 void WebContentsImpl::MediaStoppedPlaying(
     const WebContentsObserver::MediaPlayerId& id) {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_, MediaStoppedPlaying(id));
+}
+
+void WebContentsImpl::SetJavaScriptDialogManagerForTesting(
+    JavaScriptDialogManager* dialog_manager) {
+  dialog_manager_ = dialog_manager;
 }
 
 }  // namespace content

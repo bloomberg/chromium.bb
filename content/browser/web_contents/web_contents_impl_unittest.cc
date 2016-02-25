@@ -28,6 +28,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/interstitial_page_delegate.h"
+#include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -3382,6 +3383,71 @@ TEST_F(WebContentsImplTest, LoadResourceFromMemoryCacheWithEmptySecurityInfo) {
                                                RESOURCE_TYPE_MAIN_FRAME);
 
   EXPECT_TRUE(backend->HasAllowException(test_url.host()));
+}
+
+class TestJavaScriptDialogManager : public JavaScriptDialogManager {
+ public:
+  TestJavaScriptDialogManager() {}
+  ~TestJavaScriptDialogManager() override {}
+
+  size_t reset_count() { return reset_count_; }
+
+  // JavaScriptDialogManager
+
+  void RunJavaScriptDialog(WebContents* web_contents,
+                           const GURL& origin_url,
+                           const std::string& accept_lang,
+                           JavaScriptMessageType javascript_message_type,
+                           const base::string16& message_text,
+                           const base::string16& default_prompt_text,
+                           const DialogClosedCallback& callback,
+                           bool* did_suppress_message) override {
+    *did_suppress_message = true;
+  };
+
+  void RunBeforeUnloadDialog(WebContents* web_contents,
+                             const base::string16& message_text,
+                             bool is_reload,
+                             const DialogClosedCallback& callback) override {}
+
+  bool HandleJavaScriptDialog(WebContents* web_contents,
+                              bool accept,
+                              const base::string16* prompt_override) override {
+    return true;
+  }
+
+  void CancelActiveAndPendingDialogs(WebContents* web_contents) override {}
+
+  void ResetDialogState(WebContents* web_contents) override { ++reset_count_; }
+
+ private:
+  size_t reset_count_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(TestJavaScriptDialogManager);
+};
+
+TEST_F(WebContentsImplTest, ResetJavaScriptDialogOnUserNavigate) {
+  scoped_ptr<TestJavaScriptDialogManager> delegate(
+      new TestJavaScriptDialogManager());
+  contents()->SetJavaScriptDialogManagerForTesting(delegate.get());
+
+  // A user-initiated navigation.
+
+  contents()->GetMainFrame()->PrepareForCommit();
+  contents()->TestDidNavigate(contents()->GetMainFrame(), 1, 0, true,
+                              GURL("about:whatever"),
+                              ui::PAGE_TRANSITION_TYPED);
+  EXPECT_EQ(1u, delegate->reset_count());
+
+  // An automatic navigation.
+
+  contents()->GetMainFrame()->PrepareForCommit();
+  contents()->GetMainFrame()->SendNavigateWithModificationCallback(
+      2, 0, true, GURL(url::kAboutBlankURL), base::Bind(SetAsNonUserGesture));
+
+  EXPECT_EQ(1u, delegate->reset_count());
+
+  contents()->SetJavaScriptDialogManagerForTesting(nullptr);
 }
 
 }  // namespace content
