@@ -5,7 +5,7 @@
 ## Prerequisites
 
 *   A Mac running 10.9+.
-*   http://developer.apple.com/tools/xcode/XCode, 5+
+*   https://developer.apple.com/xcode, 5+
 *   Install
     [gclient](http://dev.chromium.org/developers/how-tos/install-depot-tools),
     part of the
