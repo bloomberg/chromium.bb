@@ -163,6 +163,8 @@
         '<(webrtc_base)/sha1.cc',
         '<(webrtc_base)/sha1.h',
         '<(webrtc_base)/sha1digest.h',
+        '<(webrtc_base)/sharedexclusivelock.cc',
+        '<(webrtc_base)/sharedexclusivelock.h',
         '<(webrtc_base)/signalthread.cc',
         '<(webrtc_base)/signalthread.h',
         '<(webrtc_base)/sigslot.cc',

@@ -16,9 +16,8 @@ int64_t WebRtcAudioDeviceNotImpl::TimeUntilNextProcess() {
   return kMillisecondsBetweenProcessCalls - delta_time.InMilliseconds();
 }
 
-int32_t WebRtcAudioDeviceNotImpl::Process() {
+void WebRtcAudioDeviceNotImpl::Process() {
   last_process_time_ = base::TimeTicks::Now();
-  return 0;
 }
 
 int32_t WebRtcAudioDeviceNotImpl::RegisterEventObserver(
