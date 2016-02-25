@@ -73,7 +73,7 @@ public class PhysicalWeb {
      */
     public static void startPhysicalWeb(ChromeApplication application) {
         PhysicalWebBleClient physicalWebBleClient = PhysicalWebBleClient.getInstance(application);
-        physicalWebBleClient.subscribe();
+        physicalWebBleClient.backgroundSubscribe();
         clearUrlsAsync(application);
     }
 
@@ -84,7 +84,7 @@ public class PhysicalWeb {
      */
     public static void stopPhysicalWeb(ChromeApplication application) {
         PhysicalWebBleClient physicalWebBleClient = PhysicalWebBleClient.getInstance(application);
-        physicalWebBleClient.unsubscribe();
+        physicalWebBleClient.backgroundUnsubscribe();
         clearUrlsAsync(application);
     }
 
