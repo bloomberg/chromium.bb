@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
 
+#include "extensions/browser/entry_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -16,30 +17,47 @@ FileHandlerInfo CreateHandlerInfoFromExtension(const std::string& extension) {
   return handler_info;
 }
 
+FileHandlerInfo CreateHandlerInfoFromIncludeDirectories(
+    bool include_directories) {
+  FileHandlerInfo handler_info;
+  handler_info.include_directories = include_directories;
+  return handler_info;
 }
 
-TEST(FileHandlersAppFileHandlerUtilTest, FileHandlerCanHandleFile) {
+}  // namespace
+
+TEST(FileHandlersAppFileHandlerUtilTest, FileHandlerCanHandleEntry) {
   // File handler for extension "gz" should accept "*.gz", including "*.tar.gz".
-  EXPECT_TRUE(FileHandlerCanHandleFile(
+  EXPECT_TRUE(FileHandlerCanHandleEntry(
       CreateHandlerInfoFromExtension("gz"),
-      "application/octet-stream",
-      base::FilePath::FromUTF8Unsafe("foo.gz")));
-  EXPECT_FALSE(FileHandlerCanHandleFile(
+      EntryInfo(base::FilePath::FromUTF8Unsafe("foo.gz"),
+                "application/octet-stream", false)));
+  EXPECT_FALSE(FileHandlerCanHandleEntry(
       CreateHandlerInfoFromExtension("gz"),
-      "application/octet-stream",
-      base::FilePath::FromUTF8Unsafe("foo.tgz")));
-  EXPECT_TRUE(FileHandlerCanHandleFile(
+      EntryInfo(base::FilePath::FromUTF8Unsafe("foo.tgz"),
+                "application/octet-stream", false)));
+  EXPECT_TRUE(FileHandlerCanHandleEntry(
       CreateHandlerInfoFromExtension("gz"),
-      "application/octet-stream",
-      base::FilePath::FromUTF8Unsafe("foo.tar.gz")));
-  EXPECT_FALSE(FileHandlerCanHandleFile(
+      EntryInfo(base::FilePath::FromUTF8Unsafe("foo.tar.gz"),
+                "application/octet-stream", false)));
+  EXPECT_FALSE(FileHandlerCanHandleEntry(
       CreateHandlerInfoFromExtension("tar.gz"),
-      "application/octet-stream",
-      base::FilePath::FromUTF8Unsafe("foo.gz")));
-  EXPECT_TRUE(FileHandlerCanHandleFile(
+      EntryInfo(base::FilePath::FromUTF8Unsafe("foo.gz"),
+                "application/octet-stream", false)));
+  EXPECT_TRUE(FileHandlerCanHandleEntry(
       CreateHandlerInfoFromExtension("tar.gz"),
-      "application/octet-stream",
-      base::FilePath::FromUTF8Unsafe("foo.tar.gz")));
+      EntryInfo(base::FilePath::FromUTF8Unsafe("foo.tar.gz"),
+                "application/octet-stream", false)));
+  EXPECT_FALSE(FileHandlerCanHandleEntry(
+      CreateHandlerInfoFromExtension("gz"),
+      EntryInfo(base::FilePath::FromUTF8Unsafe("directory"), "", true)));
+
+  EXPECT_FALSE(FileHandlerCanHandleEntry(
+      CreateHandlerInfoFromIncludeDirectories(false),
+      EntryInfo(base::FilePath::FromUTF8Unsafe("directory"), "", true)));
+  EXPECT_TRUE(FileHandlerCanHandleEntry(
+      CreateHandlerInfoFromIncludeDirectories(true),
+      EntryInfo(base::FilePath::FromUTF8Unsafe("directory"), "", true)));
 }
 
 }  // namespace app_file_handler_util

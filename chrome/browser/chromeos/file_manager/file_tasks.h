@@ -126,6 +126,10 @@ namespace drive {
 class DriveAppRegistry;
 }
 
+namespace extensions {
+struct EntryInfo;
+}
+
 namespace storage {
 class FileSystemURL;
 }
@@ -254,26 +258,23 @@ bool ExecuteFileTask(Profile* profile,
                      const std::vector<storage::FileSystemURL>& file_urls,
                      const FileTaskFinishedCallback& done);
 
-typedef extensions::app_file_handler_util::PathAndMimeTypeSet
-    PathAndMimeTypeSet;
-
-// Finds the Drive app tasks that can be used with the given |path_mime_set|
+// Finds the Drive app tasks that can be used with the given |entries|
 // from |drive_app_registry|, and append them to the |result_list|.
 // Drive app tasks will be found only if all of the files are on Drive.
 void FindDriveAppTasks(const drive::DriveAppRegistry& drive_app_registry,
-                       const PathAndMimeTypeSet& path_mime_set,
+                       const std::vector<extensions::EntryInfo>& entries,
                        std::vector<FullTaskDescriptor>* result_list);
 
-// Returns true if a file handler matches with files as good match.
+// Returns true if a file handler matches with entries as good match.
 bool IsGoodMatchFileHandler(
     const extensions::FileHandlerInfo& file_handler_info,
-    const PathAndMimeTypeSet& path_mime_set);
+    const std::vector<extensions::EntryInfo>& entries);
 
 // Finds the file handler tasks (apps declaring "file_handlers" in
-// manifest.json) that can be used with the given files, appending them to
+// manifest.json) that can be used with the given entries, appending them to
 // the |result_list|.
 void FindFileHandlerTasks(Profile* profile,
-                          const PathAndMimeTypeSet& path_mime_set,
+                          const std::vector<extensions::EntryInfo>& entries,
                           std::vector<FullTaskDescriptor>* result_list);
 
 // Finds the file browser handler tasks (app/extensions declaring
@@ -290,23 +291,22 @@ void FindFileBrowserHandlerTasks(
 // |drive_app_registry| can be NULL if the drive app registry is not
 // present.
 //
-// If |path_mime_set| contains a Google document, only the internal tasks of
+// If |entries| contains a Google document, only the internal tasks of
 // Files.app (i.e., tasks having the app ID of Files.app) are listed.
 // This is to avoid dups between Drive app tasks and an internal handler that
 // Files.app provides, and to avoid listing normal file handler and file browser
 // handler tasks, which can handle only normal files.
-void FindAllTypesOfTasks(
-    Profile* profile,
-    const drive::DriveAppRegistry* drive_app_registry,
-    const PathAndMimeTypeSet& path_mime_set,
-    const std::vector<GURL>& file_urls,
-    std::vector<FullTaskDescriptor>* result_list);
+void FindAllTypesOfTasks(Profile* profile,
+                         const drive::DriveAppRegistry* drive_app_registry,
+                         const std::vector<extensions::EntryInfo>& entries,
+                         const std::vector<GURL>& file_urls,
+                         std::vector<FullTaskDescriptor>* result_list);
 
 // Chooses the default task in |tasks| and sets it as default, if the default
 // task is found (i.e. the default task may not exist in |tasks|). No tasks
 // should be set as default before calling this function.
 void ChooseAndSetDefaultTask(const PrefService& pref_service,
-                             const PathAndMimeTypeSet& path_mime_set,
+                             const std::vector<extensions::EntryInfo>& entries,
                              std::vector<FullTaskDescriptor>* tasks);
 
 }  // namespace file_tasks

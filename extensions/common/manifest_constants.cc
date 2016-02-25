@@ -392,8 +392,11 @@ const char kInvalidFileHandlerExtension[] =
     "Invalid value for 'file_handlers[*].extensions'.";
 const char kInvalidFileHandlerExtensionElement[] =
     "Invalid value for 'file_handlers[*].extensions[*]'.";
+const char kInvalidFileHandlerIncludeDirectories[] =
+    "Invalid value for 'include_directories'.";
 const char kInvalidFileHandlerNoTypeOrExtension[] =
-    "'file_handlers[*]' must contain a non-empty 'types' or 'extensions'.";
+    "'file_handlers[*]' must contain a non-empty 'types', 'extensions' "
+    "or 'include_directories'.";
 const char kInvalidFileHandlerType[] =
     "Invalid value for 'file_handlers[*].types'.";
 const char kInvalidFileHandlerTypeElement[] =

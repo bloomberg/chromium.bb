@@ -8,11 +8,11 @@
 namespace app.runtime {
 
   [inline_doc] dictionary LaunchItem {
-    // FileEntry for the file.
-    [instanceOf=FileEntry] object entry;
+    // Entry for the item.
+    [instanceOf=Entry] object entry;
 
     // The MIME type of the file.
-    DOMString type;
+    DOMString? type;
   };
 
   // Enumeration of app launch sources.

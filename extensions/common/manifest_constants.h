@@ -318,6 +318,7 @@ extern const char kInvalidFileHandlers[];
 extern const char kInvalidFileHandlersTooManyTypesAndExtensions[];
 extern const char kInvalidFileHandlerExtension[];
 extern const char kInvalidFileHandlerExtensionElement[];
+extern const char kInvalidFileHandlerIncludeDirectories[];
 extern const char kInvalidFileHandlerNoTypeOrExtension[];
 extern const char kInvalidFileHandlerType[];
 extern const char kInvalidFileHandlerTypeElement[];

@@ -7,6 +7,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_TASKS_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_TASKS_H_
 
+#include <set>
+#include <string>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
@@ -20,6 +22,7 @@ class FilePath;
 namespace extensions {
 
 namespace app_file_handler_util {
+class IsDirectoryCollector;
 class MimeTypeCollector;
 }  // namespace app_file_handler_util
 
@@ -59,11 +62,13 @@ class FileManagerPrivateInternalGetFileTasksFunction
  private:
   void OnMimeTypesCollected(scoped_ptr<std::vector<std::string> > mime_types);
 
-  void OnSniffingMimeTypeCompleted(
-      scoped_ptr<app_file_handler_util::PathAndMimeTypeSet> path_mime_set,
-      scoped_ptr<std::vector<GURL>> urls);
+  void OnAreDirectoriesAndMimeTypesCollected(
+      scoped_ptr<std::vector<std::string>> mime_types,
+      scoped_ptr<std::set<base::FilePath>> path_directory_set);
 
-  scoped_ptr<app_file_handler_util::MimeTypeCollector> collector_;
+  scoped_ptr<app_file_handler_util::IsDirectoryCollector>
+      is_directory_collector_;
+  scoped_ptr<app_file_handler_util::MimeTypeCollector> mime_type_collector_;
   std::vector<GURL> urls_;
   std::vector<base::FilePath> local_paths_;
 };

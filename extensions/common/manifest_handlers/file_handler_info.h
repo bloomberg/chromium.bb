@@ -27,6 +27,9 @@ struct FileHandlerInfo {
 
   // MIME types associated with this handler.
   std::set<std::string> types;
+
+  // True if the handler can manage directories.
+  bool include_directories;
 };
 
 typedef std::vector<FileHandlerInfo> FileHandlersInfo;

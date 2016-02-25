@@ -12,7 +12,8 @@
   },
   "file_handlers": {
     "textAction": {
-      "extensions": ["txt"]
+      "extensions": ["txt"],
+      "include_directories": true
     }
   },
   "permissions": [

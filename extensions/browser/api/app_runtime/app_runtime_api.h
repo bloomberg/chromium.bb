@@ -25,6 +25,7 @@ class WebContents;
 namespace extensions {
 
 class Extension;
+struct EntryInfo;
 struct GrantedFileEntry;
 
 class AppRuntimeEventRouter {
@@ -64,7 +65,7 @@ class AppRuntimeEventRouter {
       content::BrowserContext* context,
       const Extension* extension,
       const std::string& handler_id,
-      const std::vector<std::string>& mime_types,
+      const std::vector<EntryInfo>& entries,
       const std::vector<GrantedFileEntry>& file_entries);
 
   // |handler_id| corresponds to the id of the url_handlers item

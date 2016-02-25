@@ -25,7 +25,7 @@ const int kMaxTypeAndExtensionHandlers = 200;
 const char kNotRecognized[] = "'%s' is not a recognized file handler property.";
 }
 
-FileHandlerInfo::FileHandlerInfo() {}
+FileHandlerInfo::FileHandlerInfo() : include_directories(false) {}
 FileHandlerInfo::~FileHandlerInfo() {}
 
 FileHandlers::FileHandlers() {}
@@ -71,8 +71,18 @@ bool LoadFileHandler(const std::string& handler_id,
     return false;
   }
 
+  handler.include_directories = false;
+  if (handler_info.HasKey("include_directories") &&
+      !handler_info.GetBoolean("include_directories",
+                               &handler.include_directories)) {
+    *error = ErrorUtils::FormatErrorMessageUTF16(
+        errors::kInvalidFileHandlerIncludeDirectories, handler_id);
+    return false;
+  }
+
   if ((!mime_types || mime_types->empty()) &&
-      (!file_extensions || file_extensions->empty())) {
+      (!file_extensions || file_extensions->empty()) &&
+      !handler.include_directories) {
     *error = ErrorUtils::FormatErrorMessageUTF16(
         errors::kInvalidFileHandlerNoTypeOrExtension,
         handler_id);

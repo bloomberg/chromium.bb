@@ -263,7 +263,7 @@ TaskController.prototype.onSelectionChanged_ = function() {
   // Caller of update context menu task items.
   // FileSelectionHandler.EventType.CHANGE
   if (this.dialogType_ === DialogType.FULL_PAGE &&
-      selection.directoryCount === 0 && selection.fileCount > 0) {
+      (selection.directoryCount > 0 || selection.fileCount > 0)) {
     // Show disabled items for position calculation of the menu. They will be
     // overridden in this.updateFileSelectionAsync().
     this.updateContextMenuTaskItems_(
@@ -281,7 +281,7 @@ TaskController.prototype.onSelectionChanged_ = function() {
 TaskController.prototype.onSelectionChangeThrottled_ = function() {
   var selection = this.selectionHandler_.selection;
   if (this.dialogType_ === DialogType.FULL_PAGE &&
-      selection.directoryCount === 0 && selection.fileCount > 0) {
+      (selection.directoryCount > 0 || selection.fileCount > 0)) {
     this.getFileTasks()
         .then(function(tasks) {
           tasks.display(this.ui_.taskMenuButton);

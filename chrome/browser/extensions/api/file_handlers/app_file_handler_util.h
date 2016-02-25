@@ -19,6 +19,7 @@ class Profile;
 namespace extensions {
 
 class ExtensionPrefs;
+struct EntryInfo;
 struct FileHandlerInfo;
 struct GrantedFileEntry;
 
@@ -28,31 +29,23 @@ namespace app_file_handler_util {
 extern const char kInvalidParameters[];
 extern const char kSecurityError[];
 
-// A set of pairs of path and its corresponding MIME type.
-typedef std::set<std::pair<base::FilePath, std::string> > PathAndMimeTypeSet;
-
 // Returns the file handler with the specified |handler_id|, or NULL if there
 // is no such handler.
 const FileHandlerInfo* FileHandlerForId(const Extension& app,
                                         const std::string& handler_id);
 
-// Returns the first file handler that can handle the given MIME type or
-// filename, or NULL if is no such handler.
-const FileHandlerInfo* FirstFileHandlerForFile(
-    const Extension& app,
-    const std::string& mime_type,
-    const base::FilePath& path);
+// Returns the first file handler that can handle the given entry,
+// or NULL if is no such handler.
+const FileHandlerInfo* FirstFileHandlerForEntry(const Extension& app,
+                                                const EntryInfo* entry);
 
-// Returns the handlers that can handle all files in |files|. The paths in
-// |files| must be populated, but the MIME types are optional.
-std::vector<const FileHandlerInfo*>
-FindFileHandlersForFiles(const Extension& extension,
-                         const PathAndMimeTypeSet& files);
+// Returns the handlers that can handle all files in |entries|.
+std::vector<const FileHandlerInfo*> FindFileHandlersForEntries(
+    const Extension& extension,
+    const std::vector<EntryInfo> entries);
 
-bool FileHandlerCanHandleFile(
-    const FileHandlerInfo& handler,
-    const std::string& mime_type,
-    const base::FilePath& path);
+bool FileHandlerCanHandleEntry(const FileHandlerInfo& handler,
+                               const EntryInfo& entry);
 
 // Creates a new file entry and allows |renderer_id| to access |path|. This
 // registers a new file system for |path|.
@@ -62,15 +55,15 @@ GrantedFileEntry CreateFileEntry(Profile* profile,
                                  const base::FilePath& path,
                                  bool is_directory);
 
-// When |is_directory| is true, it verifies that directories exist at each of
-// the |paths| and calls back to |on_success| or otherwise to |on_failure|.
-// When |is_directory| is false, it ensures regular files exists (not links and
-// directories) at the |paths|, creating files if needed, and calls back to
-// |on_success| or to |on_failure| depending on the result.
+// |directory_paths| contain the set of directories out of |paths|.
+// For directories it makes sure they exist at their corresponding |paths|,
+// while for regular files it makes sure they exist (i.e. not links) at |paths|,
+// creating files if needed. If result is successful it calls |on_success|,
+// otherwise calls |on_failure|.
 void PrepareFilesForWritableApp(
     const std::vector<base::FilePath>& paths,
     Profile* profile,
-    bool is_directory,
+    const std::set<base::FilePath>& directory_paths,
     const base::Closure& on_success,
     const base::Callback<void(const base::FilePath&)>& on_failure);
 

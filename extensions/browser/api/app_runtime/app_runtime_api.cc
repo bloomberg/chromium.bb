@@ -11,6 +11,7 @@
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "extensions/browser/entry_info.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -162,7 +163,7 @@ void AppRuntimeEventRouter::DispatchOnLaunchedEventWithFileEntries(
     BrowserContext* context,
     const Extension* extension,
     const std::string& handler_id,
-    const std::vector<std::string>& mime_types,
+    const std::vector<EntryInfo>& entries,
     const std::vector<GrantedFileEntry>& file_entries) {
   // TODO(sergeygs): Use the same way of creating an event (using the generated
   // boilerplate) as below in DispatchOnLaunchedEventWithUrl.
@@ -176,14 +177,15 @@ void AppRuntimeEventRouter::DispatchOnLaunchedEventWithFileEntries(
   }
 
   scoped_ptr<base::ListValue> items(new base::ListValue);
-  DCHECK(file_entries.size() == mime_types.size());
+  DCHECK(file_entries.size() == entries.size());
   for (size_t i = 0; i < file_entries.size(); ++i) {
     scoped_ptr<base::DictionaryValue> launch_item(new base::DictionaryValue);
 
     launch_item->SetString("fileSystemId", file_entries[i].filesystem_id);
     launch_item->SetString("baseName", file_entries[i].registered_name);
-    launch_item->SetString("mimeType", mime_types[i]);
+    launch_item->SetString("mimeType", entries[i].mime_type);
     launch_item->SetString("entryId", file_entries[i].id);
+    launch_item->SetBoolean("isDirectory", entries[i].is_directory);
     items->Append(launch_item.release());
   }
   launch_data->Set("items", items.release());

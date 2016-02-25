@@ -508,13 +508,17 @@ FileSystemEntryFunction::FileSystemEntryFunction()
 void FileSystemEntryFunction::PrepareFilesForWritableApp(
     const std::vector<base::FilePath>& paths) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // TODO(cmihail): Path directory set should be initialized only with the
+  // paths that are actually directories, but for now we will consider
+  // all paths directories in case is_directory_ is true, otherwise
+  // all paths files, as this was the previous logic.
+  std::set<base::FilePath> path_directory_set_ =
+      is_directory_ ? std::set<base::FilePath>(paths.begin(), paths.end())
+                    : std::set<base::FilePath>{};
   app_file_handler_util::PrepareFilesForWritableApp(
-      paths,
-      GetProfile(),
-      is_directory_,
+      paths, GetProfile(), path_directory_set_,
       base::Bind(&FileSystemEntryFunction::RegisterFileSystemsAndSendResponse,
-                 this,
-                 paths),
+                 this, paths),
       base::Bind(&FileSystemEntryFunction::HandleWritableFileError, this));
 }
 

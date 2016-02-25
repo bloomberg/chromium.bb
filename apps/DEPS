@@ -30,6 +30,7 @@ include_rules = [
   # Pieces of the extensions system that need to move to src/extensions.
   # See http://crbug.com/162530 for details.
   "+chrome/browser/extensions/api/file_handlers/app_file_handler_util.h",
+  "+chrome/browser/extensions/api/file_handlers/directory_util.h",
   "+chrome/browser/extensions/api/file_handlers/mime_util.h",
   "+chrome/browser/extensions/api/file_system/file_system_api.h",
   "+chrome/browser/extensions/chrome_extension_web_contents_observer.h",

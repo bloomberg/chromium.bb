@@ -420,6 +420,7 @@
       'browser/extensions/api/extension_action/browser_action_unittest.cc',
       'browser/extensions/api/extension_action/extension_action_prefs_unittest.cc',
       'browser/extensions/api/file_handlers/api_file_handler_util_unittest.cc',
+      'browser/extensions/api/file_handlers/directory_util_unittest.cc',
       'browser/extensions/api/file_handlers/mime_util_unittest.cc',
       'browser/extensions/api/file_system/file_system_api_unittest.cc',
       'browser/extensions/api/identity/extension_token_key_unittest.cc',

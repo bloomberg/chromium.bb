@@ -4,6 +4,10 @@
 
 #include "chrome/browser/chromeos/file_manager/open_util.h"
 
+#include <set>
+#include <string>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -14,9 +18,11 @@
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/file_manager/url_util.h"
+#include "chrome/browser/extensions/api/file_handlers/directory_util.h"
 #include "chrome/browser/extensions/api/file_handlers/mime_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/user_metrics.h"
+#include "extensions/browser/entry_info.h"
 #include "storage/browser/fileapi/file_system_backend.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_operation_runner.h"
@@ -42,9 +48,8 @@ void ExecuteFileTaskForUrl(Profile* profile,
 
   file_tasks::ExecuteFileTask(
       profile,
-      GetFileManagerMainPageUrl(), // Executing the task on behalf of Files.app.
-      task,
-      std::vector<FileSystemURL>(1, file_system_context->CrackURL(url)),
+      GetFileManagerMainPageUrl(),  // Executing task on behalf of Files.app.
+      task, std::vector<FileSystemURL>(1, file_system_context->CrackURL(url)),
       file_tasks::FileTaskFinishedCallback());
 }
 
@@ -74,19 +79,16 @@ void OpenFileWithMimeType(Profile* profile,
                           const GURL& url,
                           const platform_util::OpenOperationCallback& callback,
                           const std::string& mime_type) {
-  extensions::app_file_handler_util::PathAndMimeTypeSet path_mime_set;
-  path_mime_set.insert(std::make_pair(path, mime_type));
+  std::vector<extensions::EntryInfo> entries;
+  entries.push_back(extensions::EntryInfo(path, mime_type, false));
 
   std::vector<GURL> file_urls;
   file_urls.push_back(url);
 
   std::vector<file_tasks::FullTaskDescriptor> tasks;
   file_tasks::FindAllTypesOfTasks(
-      profile,
-      drive::util::GetDriveAppRegistryByProfile(profile),
-      path_mime_set,
-      file_urls,
-      &tasks);
+      profile, drive::util::GetDriveAppRegistryByProfile(profile), entries,
+      file_urls, &tasks);
 
   // Select a default handler. If a default handler is not available, select
   // a non-generic file handler.

@@ -57,12 +57,21 @@ eventBindings.registerArgumentMassager('app.runtime.onLaunched',
     };
     $Array.forEach(launchData.items, function(item) {
       var fs = GetIsolatedFileSystem(item.fileSystemId);
-      fs.root.getFile(item.baseName, {}, function(fileEntry) {
-        entryIdManager.registerEntry(item.entryId, fileEntry);
-        itemLoaded(null, { entry: fileEntry, type: item.mimeType });
-      }, function(fileError) {
-        itemLoaded(fileError);
-      });
+      if (item.isDirectory) {
+        fs.root.getDirectory(item.baseName, {}, function(dirEntry) {
+          entryIdManager.registerEntry(item.entryId, dirEntry);
+          itemLoaded(null, {entry: dirEntry});
+        }, function(fileError) {
+          itemLoaded(fileError);
+        });
+      } else {
+        fs.root.getFile(item.baseName, {}, function(fileEntry) {
+          entryIdManager.registerEntry(item.entryId, fileEntry);
+          itemLoaded(null, {entry: fileEntry, type: item.mimeType});
+        }, function(fileError) {
+          itemLoaded(fileError);
+        });
+      }
     });
   } else {
     // Default case. This currently covers an onLaunched corresponding to

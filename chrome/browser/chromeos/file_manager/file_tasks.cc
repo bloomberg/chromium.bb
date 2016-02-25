@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <map>
+
 #include "apps/launcher.h"
 #include "base/bind.h"
 #include "base/macros.h"
@@ -32,6 +34,7 @@
 #include "components/mime_util/mime_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "extensions/browser/entry_info.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -41,7 +44,7 @@
 #include "storage/browser/fileapi/file_system_url.h"
 
 using extensions::Extension;
-using extensions::app_file_handler_util::FindFileHandlersForFiles;
+using extensions::app_file_handler_util::FindFileHandlersForEntries;
 using storage::FileSystemURL;
 
 namespace file_manager {
@@ -91,10 +94,9 @@ const size_t kDriveTaskExtensionPrefixLength =
     arraysize(kDriveTaskExtensionPrefix) - 1;
 
 // Returns true if path_mime_set contains a Google document.
-bool ContainsGoogleDocument(const PathAndMimeTypeSet& path_mime_set) {
-  for (PathAndMimeTypeSet::const_iterator iter = path_mime_set.begin();
-       iter != path_mime_set.end(); ++iter) {
-    if (drive::util::HasHostedDocumentExtension(iter->first))
+bool ContainsGoogleDocument(const std::vector<extensions::EntryInfo>& entries) {
+  for (const auto& it : entries) {
+    if (drive::util::HasHostedDocumentExtension(it.path))
       return true;
   }
   return false;
@@ -302,20 +304,19 @@ bool ExecuteFileTask(Profile* profile,
   return false;
 }
 
-void FindDriveAppTasks(
-    const drive::DriveAppRegistry& drive_app_registry,
-    const PathAndMimeTypeSet& path_mime_set,
-    std::vector<FullTaskDescriptor>* result_list) {
+void FindDriveAppTasks(const drive::DriveAppRegistry& drive_app_registry,
+                       const std::vector<extensions::EntryInfo>& entries,
+                       std::vector<FullTaskDescriptor>* result_list) {
   DCHECK(result_list);
 
   bool is_first = true;
   typedef std::map<std::string, drive::DriveAppInfo> DriveAppInfoMap;
   DriveAppInfoMap drive_app_map;
 
-  for (PathAndMimeTypeSet::const_iterator it = path_mime_set.begin();
-       it != path_mime_set.end(); ++it) {
-    const base::FilePath& file_path = it->first;
-    const std::string& mime_type = it->second;
+  for (std::vector<extensions::EntryInfo>::const_iterator it = entries.begin();
+       it != entries.end(); ++it) {
+    const base::FilePath& file_path = it->path;
+    const std::string& mime_type = it->mime_type;
     // Return immediately if a file not on Drive is found, as Drive app tasks
     // work only if all files are on Drive.
     if (!drive::util::IsUnderDriveMountPoint(file_path))
@@ -369,7 +370,7 @@ void FindDriveAppTasks(
 
 bool IsGoodMatchFileHandler(
     const extensions::FileHandlerInfo& file_handler_info,
-    const PathAndMimeTypeSet& path_mime_set) {
+    const std::vector<extensions::EntryInfo>& entries) {
   if (file_handler_info.extensions.count("*") > 0 ||
       file_handler_info.types.count("*") > 0 ||
       file_handler_info.types.count("*/*") > 0)
@@ -378,20 +379,24 @@ bool IsGoodMatchFileHandler(
   // If text/* file handler matches with unsupported text mime type, we don't
   // regard it as good match.
   if (file_handler_info.types.count("text/*")) {
-    for (const auto& path_mime : path_mime_set) {
-      if (mime_util::IsUnsupportedTextMimeType(path_mime.second))
+    for (const auto& entry : entries) {
+      if (mime_util::IsUnsupportedTextMimeType(entry.mime_type))
         return false;
     }
   }
 
+  // We consider it a good match if no directories are selected.
+  for (const auto& entry : entries) {
+    if (entry.is_directory)
+      return false;
+  }
   return true;
 }
 
-void FindFileHandlerTasks(
-    Profile* profile,
-    const PathAndMimeTypeSet& path_mime_set,
-    std::vector<FullTaskDescriptor>* result_list) {
-  DCHECK(!path_mime_set.empty());
+void FindFileHandlerTasks(Profile* profile,
+                          const std::vector<extensions::EntryInfo>& entries,
+                          std::vector<FullTaskDescriptor>* result_list) {
+  DCHECK(!entries.empty());
   DCHECK(result_list);
 
   const extensions::ExtensionSet& enabled_extensions =
@@ -414,7 +419,7 @@ void FindFileHandlerTasks(
 
     typedef std::vector<const extensions::FileHandlerInfo*> FileHandlerList;
     FileHandlerList file_handlers =
-        FindFileHandlersForFiles(*extension, path_mime_set);
+        FindFileHandlersForEntries(*extension, entries);
     if (file_handlers.empty())
       continue;
 
@@ -430,7 +435,7 @@ void FindFileHandlerTasks(
     // such handler, show the first matching handler of the app.
     const extensions::FileHandlerInfo* file_handler = file_handlers.front();
     for (auto handler : file_handlers) {
-      if (IsGoodMatchFileHandler(*handler, path_mime_set)) {
+      if (IsGoodMatchFileHandler(*handler, entries)) {
         file_handler = handler;
         break;
       }
@@ -449,7 +454,7 @@ void FindFileHandlerTasks(
     // If file handler doesn't match as good match, regards it as generic file
     // handler.
     const bool is_generic_file_handler =
-        !IsGoodMatchFileHandler(*file_handler, path_mime_set);
+        !IsGoodMatchFileHandler(*file_handler, entries);
     result_list->push_back(FullTaskDescriptor(
         TaskDescriptor(extension->id(), file_tasks::TASK_TYPE_FILE_HANDLER,
                        file_handler->id),
@@ -501,23 +506,22 @@ void FindFileBrowserHandlerTasks(
   }
 }
 
-void FindAllTypesOfTasks(
-    Profile* profile,
-    const drive::DriveAppRegistry* drive_app_registry,
-    const PathAndMimeTypeSet& path_mime_set,
-    const std::vector<GURL>& file_urls,
-    std::vector<FullTaskDescriptor>* result_list) {
+void FindAllTypesOfTasks(Profile* profile,
+                         const drive::DriveAppRegistry* drive_app_registry,
+                         const std::vector<extensions::EntryInfo>& entries,
+                         const std::vector<GURL>& file_urls,
+                         std::vector<FullTaskDescriptor>* result_list) {
   DCHECK(profile);
   DCHECK(result_list);
 
   // Find Drive app tasks, if the drive app registry is present.
   if (drive_app_registry)
-    FindDriveAppTasks(*drive_app_registry, path_mime_set, result_list);
+    FindDriveAppTasks(*drive_app_registry, entries, result_list);
 
   // Find and append file handler tasks. We know there aren't duplicates
   // because Drive apps and platform apps are entirely different kinds of
   // tasks.
-  FindFileHandlerTasks(profile, path_mime_set, result_list);
+  FindFileHandlerTasks(profile, entries, result_list);
 
   // Find and append file browser handler tasks. We know there aren't
   // duplicates because "file_browser_handlers" and "file_handlers" shouldn't
@@ -525,21 +529,21 @@ void FindAllTypesOfTasks(
   FindFileBrowserHandlerTasks(profile, file_urls, result_list);
 
   // Google documents can only be handled by internal handlers.
-  if (ContainsGoogleDocument(path_mime_set))
+  if (ContainsGoogleDocument(entries))
     KeepOnlyFileManagerInternalTasks(result_list);
 
-  ChooseAndSetDefaultTask(*profile->GetPrefs(), path_mime_set, result_list);
+  ChooseAndSetDefaultTask(*profile->GetPrefs(), entries, result_list);
 }
 
 void ChooseAndSetDefaultTask(const PrefService& pref_service,
-                             const PathAndMimeTypeSet& path_mime_set,
+                             const std::vector<extensions::EntryInfo>& entries,
                              std::vector<FullTaskDescriptor>* tasks) {
   // Collect the task IDs of default tasks from the preferences into a set.
   std::set<std::string> default_task_ids;
-  for (PathAndMimeTypeSet::const_iterator it = path_mime_set.begin();
-       it != path_mime_set.end(); ++it) {
-    const base::FilePath& file_path = it->first;
-    const std::string& mime_type = it->second;
+  for (std::vector<extensions::EntryInfo>::const_iterator it = entries.begin();
+       it != entries.end(); ++it) {
+    const base::FilePath& file_path = it->path;
+    const std::string& mime_type = it->mime_type;
     std::string task_id = file_tasks::GetDefaultTaskIdFromPrefs(
         pref_service, mime_type, file_path.Extension());
     default_task_ids.insert(task_id);

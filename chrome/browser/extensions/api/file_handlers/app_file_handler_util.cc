@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "extensions/browser/entry_info.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/granted_file_entry.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -101,7 +102,7 @@ class WritableFileChecker
   WritableFileChecker(
       const std::vector<base::FilePath>& paths,
       Profile* profile,
-      bool is_directory,
+      const std::set<base::FilePath>& directory_paths,
       const base::Closure& on_success,
       const base::Callback<void(const base::FilePath&)>& on_failure);
 
@@ -127,7 +128,7 @@ class WritableFileChecker
 
   const std::vector<base::FilePath> paths_;
   Profile* profile_;
-  const bool is_directory_;
+  const std::set<base::FilePath> directory_paths_;
   int outstanding_tasks_;
   base::FilePath error_path_;
   base::Closure on_success_;
@@ -137,12 +138,12 @@ class WritableFileChecker
 WritableFileChecker::WritableFileChecker(
     const std::vector<base::FilePath>& paths,
     Profile* profile,
-    bool is_directory,
+    const std::set<base::FilePath>& directory_paths,
     const base::Closure& on_success,
     const base::Callback<void(const base::FilePath&)>& on_failure)
     : paths_(paths),
       profile_(profile),
-      is_directory_(is_directory),
+      directory_paths_(directory_paths),
       outstanding_tasks_(1),
       on_success_(on_success),
       on_failure_(on_failure) {}
@@ -150,9 +151,10 @@ WritableFileChecker::WritableFileChecker(
 void WritableFileChecker::Check() {
     outstanding_tasks_ = paths_.size();
     for (const auto& path : paths_) {
+      bool is_directory = directory_paths_.find(path) != directory_paths_.end();
 #if defined(OS_CHROMEOS)
       if (file_manager::util::IsUnderNonNativeLocalPath(profile_, path)) {
-        if (is_directory_) {
+        if (is_directory) {
           file_manager::util::IsNonNativeLocalPathDirectory(
               profile_, path,
               base::Bind(&WritableFileChecker::OnPrepareFileDone, this, path));
@@ -166,8 +168,7 @@ void WritableFileChecker::Check() {
 #endif
       content::BrowserThread::PostTaskAndReplyWithResult(
           content::BrowserThread::FILE, FROM_HERE,
-          base::Bind(&PrepareNativeLocalFileForWritableApp, path,
-                     is_directory_),
+          base::Bind(&PrepareNativeLocalFileForWritableApp, path, is_directory),
           base::Bind(&WritableFileChecker::OnPrepareFileDone, this, path));
     }
 }
@@ -216,26 +217,25 @@ const FileHandlerInfo* FileHandlerForId(const Extension& app,
   return NULL;
 }
 
-const FileHandlerInfo* FirstFileHandlerForFile(
-    const Extension& app,
-    const std::string& mime_type,
-    const base::FilePath& path) {
+const FileHandlerInfo* FirstFileHandlerForEntry(const Extension& app,
+                                                const EntryInfo& entry) {
   const FileHandlersInfo* file_handlers = FileHandlers::GetFileHandlers(&app);
   if (!file_handlers)
     return NULL;
 
   for (FileHandlersInfo::const_iterator i = file_handlers->begin();
        i != file_handlers->end(); i++) {
-    if (FileHandlerCanHandleFile(*i, mime_type, path))
+    if (FileHandlerCanHandleEntry(*i, entry))
       return &*i;
   }
   return NULL;
 }
 
-std::vector<const FileHandlerInfo*> FindFileHandlersForFiles(
-    const Extension& app, const PathAndMimeTypeSet& files) {
+std::vector<const FileHandlerInfo*> FindFileHandlersForEntries(
+    const Extension& app,
+    const std::vector<EntryInfo> entries) {
   std::vector<const FileHandlerInfo*> handlers;
-  if (files.empty())
+  if (entries.empty())
     return handlers;
 
   // Look for file handlers which can handle all the MIME types specified.
@@ -246,9 +246,9 @@ std::vector<const FileHandlerInfo*> FindFileHandlersForFiles(
   for (FileHandlersInfo::const_iterator data = file_handlers->begin();
        data != file_handlers->end(); ++data) {
     bool handles_all_types = true;
-    for (PathAndMimeTypeSet::const_iterator it = files.begin();
-         it != files.end(); ++it) {
-      if (!FileHandlerCanHandleFile(*data, it->second, it->first)) {
+    for (std::vector<EntryInfo>::const_iterator it = entries.begin();
+         it != entries.end(); ++it) {
+      if (!FileHandlerCanHandleEntry(*data, *it)) {
         handles_all_types = false;
         break;
       }
@@ -259,12 +259,13 @@ std::vector<const FileHandlerInfo*> FindFileHandlersForFiles(
   return handlers;
 }
 
-bool FileHandlerCanHandleFile(
-    const FileHandlerInfo& handler,
-    const std::string& mime_type,
-    const base::FilePath& path) {
-  return FileHandlerCanHandleFileWithMimeType(handler, mime_type) ||
-      FileHandlerCanHandleFileWithExtension(handler, path);
+bool FileHandlerCanHandleEntry(const FileHandlerInfo& handler,
+                               const EntryInfo& entry) {
+  if (entry.is_directory)
+    return handler.include_directories;
+
+  return FileHandlerCanHandleFileWithMimeType(handler, entry.mime_type) ||
+         FileHandlerCanHandleFileWithExtension(handler, entry.path);
 }
 
 GrantedFileEntry CreateFileEntry(
@@ -303,11 +304,11 @@ GrantedFileEntry CreateFileEntry(
 void PrepareFilesForWritableApp(
     const std::vector<base::FilePath>& paths,
     Profile* profile,
-    bool is_directory,
+    const std::set<base::FilePath>& directory_paths,
     const base::Closure& on_success,
     const base::Callback<void(const base::FilePath&)>& on_failure) {
   scoped_refptr<WritableFileChecker> checker(new WritableFileChecker(
-      paths, profile, is_directory, on_success, on_failure));
+      paths, profile, directory_paths, on_success, on_failure));
   checker->Check();
 }
 

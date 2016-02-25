@@ -299,6 +299,8 @@
       'browser/extensions/api/feedback_private/feedback_service.h',
       'browser/extensions/api/file_handlers/app_file_handler_util.cc',
       'browser/extensions/api/file_handlers/app_file_handler_util.h',
+      'browser/extensions/api/file_handlers/directory_util.cc',
+      'browser/extensions/api/file_handlers/directory_util.h',
       'browser/extensions/api/file_handlers/mime_util.cc',
       'browser/extensions/api/file_handlers/mime_util.h',
       'browser/extensions/api/file_system/file_system_api.cc',
