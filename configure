@@ -251,6 +251,7 @@ EXPERIMENT_LIST="
     emulate_hardware
     misc_fixes
     clpf
+    dering
 "
 CONFIG_LIST="
     dependency_tracking

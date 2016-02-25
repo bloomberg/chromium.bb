@@ -22,6 +22,9 @@
 #if CONFIG_CLPF
 #include "vp10/common/clpf.h"
 #endif
+#if CONFIG_DERING
+#include "vp10/common/dering.h"
+#endif  // CONFIG_DERING
 #include "vp10/common/entropy.h"
 #include "vp10/common/entropymode.h"
 #include "vp10/common/entropymv.h"
@@ -602,6 +605,15 @@ static void write_modes_sb(VP10_COMP *cpi, const TileInfo *const tile,
   if (bsize >= BLOCK_8X8 &&
       (bsize == BLOCK_8X8 || partition != PARTITION_SPLIT))
     update_partition_context(xd, mi_row, mi_col, subsize, bsize);
+
+#if DERING_REFINEMENT
+  if (bsize == BLOCK_64X64 && cm->dering_level != 0 &&
+      !sb_all_skip(cm, mi_row, mi_col)) {
+    vpx_write_literal(
+        w, cm->mi_grid_visible[mi_row*cm->mi_stride + mi_col]->mbmi.dering_gain,
+        2);
+  }
+#endif
 }
 
 static void write_modes(VP10_COMP *cpi, const TileInfo *const tile,
@@ -847,6 +859,12 @@ static void encode_clpf(const VP10_COMMON *cm,
   vpx_wb_write_literal(wb, cm->clpf, 1);
 }
 #endif
+
+#if CONFIG_DERING
+static void encode_dering(int level, struct vpx_write_bit_buffer *wb) {
+  vpx_wb_write_literal(wb, level, DERING_LEVEL_BITS);
+}
+#endif  // CONFIG_DERING
 
 static void write_delta_q(struct vpx_write_bit_buffer *wb, int delta_q) {
   if (delta_q != 0) {
@@ -1317,6 +1335,9 @@ static void write_uncompressed_header(VP10_COMP *cpi,
 #if CONFIG_CLPF
   encode_clpf(cm, wb);
 #endif
+#if CONFIG_DERING
+  encode_dering(cm->dering_level, wb);
+#endif  // CONFIG_DERING
   encode_quantization(cm, wb);
   encode_segmentation(cm, xd, wb);
 #if CONFIG_MISC_FIXES

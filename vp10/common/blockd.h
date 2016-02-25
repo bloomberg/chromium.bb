@@ -88,6 +88,8 @@ typedef struct {
 
   // TODO(slavarnway): Delete and use bmi[3].as_mv[] instead.
   int_mv mv[2];
+  /* deringing gain *per-superblock* */
+  int8_t dering_gain;
 } MB_MODE_INFO;
 
 typedef struct MODE_INFO {
