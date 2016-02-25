@@ -218,7 +218,7 @@ PUBLIC struct gbm_bo *gbm_bo_create(struct gbm_device *gbm, uint32_t width,
 	struct gbm_bo *bo;
 	int ret;
 
-	if (!gbm_device_is_format_supported(gbm, format, 0))
+	if (!gbm_device_is_format_supported(gbm, format, flags))
 		return NULL;
 
 	bo = gbm_bo_new(gbm, width, height, format);
