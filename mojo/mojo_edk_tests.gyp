@@ -113,6 +113,7 @@
         'mojo_edk.gyp:mojo_run_all_unittests',
         'mojo_public.gyp:mojo_cpp_bindings',
         'mojo_public.gyp:mojo_environment_standalone',
+        'mojo_public.gyp:mojo_message_pump_lib',
         'mojo_public.gyp:mojo_public_bindings_test_utils',
         'mojo_public.gyp:mojo_public_test_interfaces',
         'mojo_public.gyp:mojo_public_test_utils',

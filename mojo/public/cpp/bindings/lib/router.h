@@ -17,7 +17,6 @@
 #include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/lib/connector.h"
 #include "mojo/public/cpp/bindings/lib/filter_chain.h"
-#include "mojo/public/cpp/environment/environment.h"
 
 namespace mojo {
 namespace internal {
@@ -26,8 +25,7 @@ class Router : public MessageReceiverWithResponder {
  public:
   Router(ScopedMessagePipeHandle message_pipe,
          FilterChain filters,
-         bool expects_sync_requests,
-         const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter());
+         bool expects_sync_requests);
   ~Router() override;
 
   // Sets the receiver to handle messages read from the message pipe that do

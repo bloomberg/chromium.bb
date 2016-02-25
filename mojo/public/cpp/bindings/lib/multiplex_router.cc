@@ -118,15 +118,12 @@ struct MultiplexRouter::Task {
 };
 
 MultiplexRouter::MultiplexRouter(bool set_interface_id_namesapce_bit,
-                                 ScopedMessagePipeHandle message_pipe,
-                                 const MojoAsyncWaiter* waiter)
-    : RefCountedDeleteOnMessageLoop(base::MessageLoop::current()
-                                        ->task_runner()),
+                                 ScopedMessagePipeHandle message_pipe)
+    : RefCountedDeleteOnMessageLoop(
+          base::MessageLoop::current()->task_runner()),
       set_interface_id_namespace_bit_(set_interface_id_namesapce_bit),
       header_validator_(this),
-      connector_(std::move(message_pipe),
-                 Connector::MULTI_THREADED_SEND,
-                 waiter),
+      connector_(std::move(message_pipe), Connector::MULTI_THREADED_SEND),
       encountered_error_(false),
       control_message_handler_(this),
       control_message_proxy_(&connector_),

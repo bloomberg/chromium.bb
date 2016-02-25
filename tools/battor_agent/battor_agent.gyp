@@ -15,7 +15,7 @@
         '../../device/serial/serial.gyp:device_serial',
         '../../device/serial/serial.gyp:device_serial_mojo',
         '../../mojo/mojo_public.gyp:mojo_environment_standalone',
-        '../../mojo/mojo_public.gyp:mojo_public',
+        '../../mojo/mojo_edk.gyp:mojo_system_impl',
       ],
       'sources': [
         'battor_agent_bin.cc',
@@ -56,8 +56,8 @@
         '../../base/base.gyp:test_support_base',
         '../../device/serial/serial.gyp:device_serial',
         '../../device/serial/serial.gyp:device_serial_test_util',
+        '../../mojo/mojo_edk.gyp:mojo_system_impl',
         '../../mojo/mojo_public.gyp:mojo_environment_standalone',
-        '../../mojo/mojo_public.gyp:mojo_public',
       	'../../testing/gmock.gyp:gmock',
         '../../testing/gtest.gyp:gtest',
       ],
