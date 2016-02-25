@@ -102,6 +102,7 @@ KNOWN_COMPUTED_USERS = (
   'ppb_pdf_impl.cc',  # see AddClosedSourceActions()
   'pepper_pdf_host.cc',  # see AddClosedSourceActions()
   'record_user_action.cc', # see RecordUserAction.java
+  'blink_platform_impl.cc', # see WebKit/public/platform/Platform.h
 )
 
 # Language codes used in Chrome. The list should be updated when a new
@@ -489,7 +490,7 @@ def AddLiteralActions(actions):
   Arguments:
     actions: set of actions to add to.
   """
-  EXTENSIONS = ('.cc', '.mm', '.c', '.m', '.java')
+  EXTENSIONS = ('.cc', '.cpp', '.mm', '.c', '.m', '.java')
 
   # Walk the source tree to process all files.
   ash_root = os.path.normpath(os.path.join(REPOSITORY_ROOT, 'ash'))
@@ -508,6 +509,10 @@ def AddLiteralActions(actions):
                 GrepForActions)
   WalkDirectory(os.path.join(webkit_root, 'port'), actions, EXTENSIONS,
                 GrepForActions)
+  webkit_core_root = os.path.normpath(
+                     os.path.join(REPOSITORY_ROOT,
+                                  'third_party/WebKit/Source/core'))
+  WalkDirectory(webkit_core_root, actions, EXTENSIONS, GrepForActions)
 
 def AddWebUIActions(actions):
   """Add user actions defined in WebUI files.

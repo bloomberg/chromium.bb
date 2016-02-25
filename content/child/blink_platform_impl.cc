@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -483,6 +484,11 @@ void BlinkPlatformImpl::SetCompositorThread(
 
 blink::WebThread* BlinkPlatformImpl::currentThread() {
   return static_cast<blink::WebThread*>(current_thread_slot_.Get());
+}
+
+void BlinkPlatformImpl::recordAction(const blink::UserMetricsAction& name) {
+    if (ChildThread* child_thread = ChildThread::Get())
+        child_thread->RecordComputedAction(name.action());
 }
 
 blink::Platform::WebMemoryAllocatorDumpGuid

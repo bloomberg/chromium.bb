@@ -98,6 +98,7 @@ class CONTENT_EXPORT BlinkPlatformImpl
   bool portAllowed(const blink::WebURL& url) const override;
   blink::WebThread* createThread(const char* name) override;
   blink::WebThread* currentThread() override;
+  void recordAction(const blink::UserMetricsAction&) override;
   blink::Platform::WebMemoryAllocatorDumpGuid createWebMemoryAllocatorDumpGuid(
       const blink::WebString& guidStr) override;
   void addTraceLogEnabledStateObserver(

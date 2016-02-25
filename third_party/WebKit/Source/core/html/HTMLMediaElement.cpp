@@ -1709,6 +1709,8 @@ void HTMLMediaElement::finishSeek()
     scheduleEvent(EventTypeNames::seeked);
 
     setDisplayMode(Video);
+
+    Platform::current()->recordAction(UserMetricsAction("Media_Seeked"));
 }
 
 HTMLMediaElement::ReadyState HTMLMediaElement::readyState() const
@@ -1988,10 +1990,13 @@ Nullable<ExceptionCode> HTMLMediaElement::play()
             document().addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, message));
             return NotAllowedError;
         }
-    } else if (m_userGestureRequiredForPlay) {
-        if (m_autoplayMediaCounted)
-            recordAutoplayMetric(AutoplayManualStart);
-        m_userGestureRequiredForPlay = false;
+    } else {
+        Platform::current()->recordAction(UserMetricsAction("Media_Play_WithGesture"));
+        if (m_userGestureRequiredForPlay) {
+            if (m_autoplayMediaCounted)
+                recordAutoplayMetric(AutoplayManualStart);
+            m_userGestureRequiredForPlay = false;
+        }
     }
 
     if (m_error && m_error->code() == MediaError::MEDIA_ERR_SRC_NOT_SUPPORTED)
@@ -2099,12 +2104,14 @@ void HTMLMediaElement::requestRemotePlayback()
 {
     ASSERT(m_remoteRoutesAvailable);
     webMediaPlayer()->requestRemotePlayback();
+    Platform::current()->recordAction(UserMetricsAction("Media_RequestRemotePlayback"));
 }
 
 void HTMLMediaElement::requestRemotePlaybackControl()
 {
     ASSERT(m_remoteRoutesAvailable);
     webMediaPlayer()->requestRemotePlaybackControl();
+    Platform::current()->recordAction(UserMetricsAction("Media_RequestRemotePlayback_Control"));
 }
 
 void HTMLMediaElement::closeMediaSource()
@@ -2172,6 +2179,8 @@ void HTMLMediaElement::setVolume(double vol, ExceptionState& exceptionState)
         return;
     }
 
+    Platform::current()->recordAction(UserMetricsAction("Media_SetVolume"));
+
     m_volume = vol;
     updateVolume();
     scheduleEvent(EventTypeNames::volumechange);
@@ -2194,6 +2203,11 @@ void HTMLMediaElement::setMuted(bool muted)
     m_autoplayHelper.mutedChanged();
 
     updateVolume();
+
+    if (muted)
+        Platform::current()->recordAction(UserMetricsAction("Media_Playback_Mute_On"));
+    else
+        Platform::current()->recordAction(UserMetricsAction("Media_Playback_Mute_Off"));
 
     scheduleEvent(EventTypeNames::volumechange);
 }
@@ -2796,6 +2810,7 @@ void HTMLMediaElement::timeChanged()
                 scheduleEvent(EventTypeNames::ended);
             }
             recordMetricsIfPausing();
+            Platform::current()->recordAction(UserMetricsAction("Media_Playback_Ended"));
         }
     } else {
         m_sentEndEvent = false;
@@ -3002,6 +3017,8 @@ void HTMLMediaElement::updatePlayState()
             webMediaPlayer()->setRate(playbackRate());
             updateVolume();
             webMediaPlayer()->play();
+            Platform::current()->recordAction(
+                UserMetricsAction("Media_Playback_Started"));
         }
 
         if (mediaControls())
@@ -3011,8 +3028,11 @@ void HTMLMediaElement::updatePlayState()
         recordAutoplayMetric(AnyPlaybackStarted);
 
     } else { // Should not be playing right now
-        if (isPlaying)
+        if (isPlaying) {
             webMediaPlayer()->pause();
+            Platform::current()->recordAction(UserMetricsAction("Media_Paused"));
+        }
+
         refreshCachedTime();
 
         m_playbackProgressTimer.stop();

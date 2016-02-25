@@ -180,8 +180,6 @@ class CONTENT_EXPORT RenderThreadImpl
   void SetResourceDispatcherDelegate(
       ResourceDispatcherDelegate* delegate) override;
   void EnsureWebKitInitialized() override;
-  void RecordAction(const base::UserMetricsAction& action) override;
-  void RecordComputedAction(const std::string& action) override;
   scoped_ptr<base::SharedMemory> HostAllocateSharedMemoryBuffer(
       size_t buffer_size) override;
   cc::SharedBitmapManager* GetSharedBitmapManager() override;
@@ -470,6 +468,8 @@ class CONTENT_EXPORT RenderThreadImpl
   // ChildThread
   bool OnControlMessageReceived(const IPC::Message& msg) override;
   void OnProcessBackgrounded(bool backgrounded) override;
+  void RecordAction(const base::UserMetricsAction& action) override;
+  void RecordComputedAction(const std::string& action) override;
 
   // GpuChannelHostFactory implementation:
   bool IsMainThread() override;

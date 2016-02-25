@@ -35,6 +35,7 @@
 #include <windows.h>
 #endif
 
+#include "UserMetricsAction.h"
 #include "WebAudioDevice.h"
 #include "WebCommon.h"
 #include "WebData.h"
@@ -52,6 +53,7 @@
 #include "WebString.h"
 #include "WebURLError.h"
 #include "WebVector.h"
+#include "base/metrics/user_metrics_action.h"
 
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/system/core.h"
@@ -410,6 +412,12 @@ public:
     // recordRappor records a sample string, while recordRapporURL records the domain and registry of a url.
     virtual void recordRappor(const char* metric, const WebString& sample) { }
     virtual void recordRapporURL(const char* metric, const blink::WebURL& url) { }
+
+    // Record a UMA sequence action.  The UserMetricsAction construction must
+    // be on a single line for extract_actions.py to find it.  Please see
+    // that script for more details.  Intended use is:
+    // recordAction(UserMetricsAction("MyAction"))
+    virtual void recordAction(const UserMetricsAction&) { }
 
     // Registers a memory dump provider. The WebMemoryDumpProvider::onMemoryDump
     // method will be called on the same thread that called the

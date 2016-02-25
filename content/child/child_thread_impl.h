@@ -89,6 +89,8 @@ class CONTENT_EXPORT ChildThreadImpl
   void PreCacheFont(const LOGFONT& log_font) override;
   void ReleaseCachedFonts() override;
 #endif
+  void RecordAction(const base::UserMetricsAction& action) override;
+  void RecordComputedAction(const std::string& action) override;
 
   IPC::SyncChannel* channel() { return channel_.get(); }
 

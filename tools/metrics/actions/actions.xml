@@ -7870,6 +7870,60 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Media_Paused">
+  <owner>liberato@chromium.org</owner>
+  <description>Media playback was paused.</description>
+</action>
+
+<action name="Media_Play_WithGesture">
+  <owner>liberato@chromium.org</owner>
+  <description>A call to play() with a user gesture succeeded.</description>
+</action>
+
+<action name="Media_Playback_Ended">
+  <owner>liberato@chromium.org</owner>
+  <description>Media playback reached the end.</description>
+</action>
+
+<action name="Media_Playback_Mute_Off">
+  <owner>liberato@chromium.org</owner>
+  <description>Mute was turned off.</description>
+</action>
+
+<action name="Media_Playback_Mute_On">
+  <owner>liberato@chromium.org</owner>
+  <description>Mute was turned on.</description>
+</action>
+
+<action name="Media_Playback_Started">
+  <owner>liberato@chromium.org</owner>
+  <description>Media playback started due to any cause.</description>
+</action>
+
+<action name="Media_RequestRemotePlayback">
+  <owner>liberato@chromium.org</owner>
+  <description>
+    User requested to transfer playback to a remote player, via 'cast' button.
+  </description>
+</action>
+
+<action name="Media_RequestRemotePlayback_Control">
+  <owner>liberato@chromium.org</owner>
+  <description>
+    User requested to control playback of a remote player, such as Chromecast.
+  </description>
+</action>
+
+<action name="Media_Seeked">
+  <owner>liberato@chromium.org</owner>
+  <description>Seek to different time completed.</description>
+</action>
+
+<action name="Media_SetVolume">
+  <owner>liberato@chromium.org</owner>
+  <description>Playback volume was changed.</description>
+</action>
+
 <action name="Menu_Take_Screenshot">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

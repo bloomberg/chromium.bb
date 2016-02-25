@@ -553,6 +553,14 @@ void ChildThreadImpl::ReleaseCachedFonts() {
 }
 #endif
 
+void ChildThreadImpl::RecordAction(const base::UserMetricsAction& action) {
+    NOTREACHED();
+}
+
+void ChildThreadImpl::RecordComputedAction(const std::string& action) {
+    NOTREACHED();
+}
+
 IPC::MessageRouter* ChildThreadImpl::GetRouter() {
   DCHECK(base::MessageLoop::current() == message_loop());
   return &router_;
