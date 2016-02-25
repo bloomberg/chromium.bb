@@ -179,8 +179,6 @@ ACCEPTABLE_ARGUMENTS = set([
     # Run browser tests under this tool. See
     # tools/browser_tester/browsertester/browserlauncher.py for tool names.
     'browser_test_tool',
-    # activates buildbot-specific presets
-    'buildbot',
     # Where to install header files for public consumption.
     'includedir',
     # Where to install libraries for public consumption.
@@ -311,6 +309,9 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'naclsdk_validate', default=True,
     desc='Verify the presence of the SDK')
 
+  # TODO(mseaborn): Remove this, since this is always False -- Valgrind is
+  # no longer supported.  This will require removing some Chromium-side
+  # references.
   BitFromArgument(env, 'running_on_valgrind', default=False,
     desc='Compile and test using valgrind')
 
@@ -423,58 +424,6 @@ def CheckArguments():
     if key not in ACCEPTABLE_ARGUMENTS:
       raise UserError('bad argument: %s' % key)
 
-
-# Sets a command line argument. Dies if an argument with this name is already
-# defined.
-def SetArgument(key, value):
-  print '    %s=%s' % (key, str(value))
-  if key in ARGUMENTS:
-    raise UserError('ERROR: %s redefined' % (key, ))
-  ARGUMENTS[key] = value
-
-# Expands "macro" command line arguments.
-def ExpandArguments():
-  if ARGUMENTS.get('buildbot') == 'memcheck':
-    print 'buildbot=memcheck expands to the following arguments:'
-    SetArgument('run_under',
-                ARGUMENTS.get('memcheck_command',
-                              'src/third_party/valgrind/memcheck.sh') +
-                ',--error-exitcode=1')
-    SetArgument('scale_timeout', 20)
-    SetArgument('running_on_valgrind', True)
-  elif ARGUMENTS.get('buildbot') == 'tsan':
-    print 'buildbot=tsan expands to the following arguments:'
-    SetArgument('run_under',
-                ARGUMENTS.get('tsan_command',
-                              'src/third_party/valgrind/tsan.sh') +
-                ',--nacl-untrusted,--error-exitcode=1,' +
-                '--suppressions=src/third_party/valgrind/tests.supp')
-    SetArgument('scale_timeout', 20)
-    SetArgument('running_on_valgrind', True)
-  elif ARGUMENTS.get('buildbot') == 'tsan-trusted':
-    print 'buildbot=tsan-trusted expands to the following arguments:'
-    SetArgument('run_under',
-                ARGUMENTS.get('tsan_command',
-                              'src/third_party/valgrind/tsan.sh') +
-                ',--error-exitcode=1,' +
-                '--suppressions=src/third_party/valgrind/tests.supp')
-    SetArgument('scale_timeout', 20)
-    SetArgument('running_on_valgrind', True)
-  elif ARGUMENTS.get('buildbot') == 'memcheck-browser-tests':
-    print 'buildbot=memcheck-browser-tests expands to the following arguments:'
-    SetArgument('browser_test_tool', 'memcheck')
-    SetArgument('scale_timeout', 20)
-    SetArgument('running_on_valgrind', True)
-  elif ARGUMENTS.get('buildbot') == 'tsan-browser-tests':
-    print 'buildbot=tsan-browser-tests expands to the following arguments:'
-    SetArgument('browser_test_tool', 'tsan')
-    SetArgument('scale_timeout', 20)
-    SetArgument('running_on_valgrind', True)
-  elif ARGUMENTS.get('buildbot'):
-    raise UserError('ERROR: unexpected argument buildbot="%s"' % (
-        ARGUMENTS.get('buildbot'), ))
-
-ExpandArguments()
 
 def GetTargetPlatform():
   return pynacl.platform.GetArch3264(ARGUMENTS.get('platform', 'x86-32'))
