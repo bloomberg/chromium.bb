@@ -887,7 +887,7 @@ void BlinkTestRunner::CaptureDump() {
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDumpLineBoxTrees);
 
-  if (!layout_dump_flags.dump_child_frames) {
+  if (!layout_dump_flags.dump_child_frames()) {
     std::string layout_dump = DumpLayout(
         render_view()->GetMainRenderFrame()->GetWebFrame(), layout_dump_flags);
     OnLayoutDumpCompleted(layout_dump);

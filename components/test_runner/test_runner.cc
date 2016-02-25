@@ -1651,6 +1651,15 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
       disable_notify_done_(false),
       web_history_item_count_(0),
       intercept_post_message_(false),
+      layout_dump_flags_(
+          false,  // dump_as_text
+          false,  // dump_child_frames_as_text
+          false,  // dump_as_markup
+          false,  // dump_child_frames_as_markup
+          false,  // dump_child_frame_scroll_positions
+          false,  // is_printing
+          false,  // dump_line_box_trees
+          false),  // debug_render_tree
       test_interfaces_(interfaces),
       delegate_(nullptr),
       web_view_(nullptr),
@@ -1720,12 +1729,12 @@ void TestRunner::Reset() {
   }
 
   dump_editting_callbacks_ = false;
-  dump_as_text_ = false;
-  dump_as_markup_ = false;
+  layout_dump_flags_.dump_as_text = false;
+  layout_dump_flags_.dump_as_markup = false;
   generate_pixel_results_ = true;
-  dump_child_frame_scroll_positions_ = false;
-  dump_child_frames_as_markup_ = false;
-  dump_child_frames_as_text_ = false;
+  layout_dump_flags_.dump_child_frame_scroll_positions = false;
+  layout_dump_flags_.dump_child_frames_as_text = false;
+  layout_dump_flags_.dump_child_frames_as_markup = false;
   dump_icon_changes_ = false;
   dump_as_audio_ = false;
   dump_frame_load_callbacks_ = false;
@@ -1745,7 +1754,7 @@ void TestRunner::Reset() {
   dump_navigation_policy_ = false;
   test_repaint_ = false;
   sweep_horizontally_ = false;
-  is_printing_ = false;
+  layout_dump_flags_.is_printing = false;
   midi_accessor_result_ = true;
   should_stay_on_page_after_handling_before_unload_ = false;
   should_dump_resource_priorities_ = false;
@@ -1788,21 +1797,12 @@ bool TestRunner::shouldDumpEditingCallbacks() const {
   return dump_editting_callbacks_;
 }
 
-bool TestRunner::shouldDumpAsText() {
-  CheckResponseMimeType();
-  return dump_as_text_;
-}
-
 void TestRunner::setShouldDumpAsText(bool value) {
-  dump_as_text_ = value;
-}
-
-bool TestRunner::shouldDumpAsMarkup() {
-  return dump_as_markup_;
+  layout_dump_flags_.dump_as_text = value;
 }
 
 void TestRunner::setShouldDumpAsMarkup(bool value) {
-  dump_as_markup_ = value;
+  layout_dump_flags_.dump_as_markup = value;
 }
 
 bool TestRunner::shouldDumpAsCustomText() const {
@@ -1832,18 +1832,6 @@ void TestRunner::setShouldGeneratePixelResults(bool value) {
   generate_pixel_results_ = value;
 }
 
-bool TestRunner::shouldDumpChildFrameScrollPositions() const {
-  return dump_child_frame_scroll_positions_;
-}
-
-bool TestRunner::shouldDumpChildFramesAsMarkup() const {
-  return dump_child_frames_as_markup_;
-}
-
-bool TestRunner::shouldDumpChildFramesAsText() const {
-  return dump_child_frames_as_text_;
-}
-
 bool TestRunner::ShouldDumpAsAudio() const {
   return dump_as_audio_;
 }
@@ -1852,25 +1840,9 @@ void TestRunner::GetAudioData(std::vector<unsigned char>* buffer_view) const {
   *buffer_view = audio_data_;
 }
 
-LayoutDumpFlags TestRunner::GetLayoutDumpFlags() {
-  LayoutDumpFlags result;
-
-  if (shouldDumpAsText()) {
-    result.main_dump_mode = LayoutDumpMode::DUMP_AS_TEXT;
-    result.dump_child_frames = shouldDumpChildFramesAsText();
-  } else if (shouldDumpAsMarkup()) {
-    result.main_dump_mode = LayoutDumpMode::DUMP_AS_MARKUP;
-    result.dump_child_frames = shouldDumpChildFramesAsMarkup();
-  } else {
-    result.main_dump_mode = LayoutDumpMode::DUMP_SCROLL_POSITIONS;
-    result.dump_child_frames = shouldDumpChildFrameScrollPositions();
-  }
-
-  result.dump_as_printed = isPrinting();
-
-  result.dump_line_box_trees = result.debug_render_tree = false;
-
-  return result;
+const LayoutDumpFlags& TestRunner::GetLayoutDumpFlags() {
+  CheckResponseMimeType();
+  return layout_dump_flags_;
 }
 
 bool TestRunner::HasCustomTextDump(std::string* custom_text_dump) const {
@@ -1955,7 +1927,7 @@ bool TestRunner::shouldDumpSelectionRect() const {
 }
 
 bool TestRunner::isPrinting() const {
-  return is_printing_;
+  return layout_dump_flags_.is_printing;
 }
 
 bool TestRunner::shouldWaitUntilExternalURLLoad() const {
@@ -2661,30 +2633,30 @@ void TestRunner::DumpEditingCallbacks() {
 }
 
 void TestRunner::DumpAsMarkup() {
-  dump_as_markup_ = true;
+  layout_dump_flags_.dump_as_markup = true;
   generate_pixel_results_ = false;
 }
 
 void TestRunner::DumpAsText() {
-  dump_as_text_ = true;
+  layout_dump_flags_.dump_as_text = true;
   generate_pixel_results_ = false;
 }
 
 void TestRunner::DumpAsTextWithPixelResults() {
-  dump_as_text_ = true;
+  layout_dump_flags_.dump_as_text = true;
   generate_pixel_results_ = true;
 }
 
 void TestRunner::DumpChildFrameScrollPositions() {
-  dump_child_frame_scroll_positions_ = true;
+  layout_dump_flags_.dump_child_frame_scroll_positions = true;
 }
 
 void TestRunner::DumpChildFramesAsMarkup() {
-  dump_child_frames_as_markup_ = true;
+  layout_dump_flags_.dump_child_frames_as_markup = true;
 }
 
 void TestRunner::DumpChildFramesAsText() {
-  dump_child_frames_as_text_ = true;
+  layout_dump_flags_.dump_child_frames_as_text = true;
 }
 
 void TestRunner::DumpIconChanges() {
@@ -2783,11 +2755,11 @@ void TestRunner::DumpSelectionRect() {
 }
 
 void TestRunner::SetPrinting() {
-  is_printing_ = true;
+  layout_dump_flags_.is_printing = true;
 }
 
 void TestRunner::ClearPrinting() {
-  is_printing_ = false;
+  layout_dump_flags_.is_printing = false;
 }
 
 void TestRunner::SetShouldStayOnPageAfterHandlingBeforeUnload(bool value) {
@@ -3165,11 +3137,11 @@ void TestRunner::LocationChangeDone() {
 void TestRunner::CheckResponseMimeType() {
   // Text output: the test page can request different types of output which we
   // handle here.
-  if (!dump_as_text_) {
+  if (!layout_dump_flags_.dump_as_text) {
     std::string mimeType =
         web_view_->mainFrame()->dataSource()->response().mimeType().utf8();
     if (mimeType == "text/plain") {
-      dump_as_text_ = true;
+      layout_dump_flags_.dump_as_text = true;
       generate_pixel_results_ = false;
     }
   }

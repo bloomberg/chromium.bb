@@ -17,7 +17,6 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/non_thread_safe.h"
 #include "build/build_config.h"
-#include "components/test_runner/layout_dump_flags.h"
 #include "content/public/browser/bluetooth_chooser.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/notification_observer.h"
@@ -33,6 +32,10 @@
 #endif
 
 class SkBitmap;
+
+namespace test_runner {
+struct LayoutDumpFlags;
+}
 
 namespace url {
 class Origin;
@@ -188,7 +191,8 @@ class BlinkTestController : public base::NonThreadSafe,
   void OnAudioDump(const std::vector<unsigned char>& audio_dump);
   void OnImageDump(const std::string& actual_pixel_hash, const SkBitmap& image);
   void OnTextDump(const std::string& dump);
-  void OnInitiateLayoutDump(test_runner::LayoutDumpFlags layout_dump_flags);
+  void OnInitiateLayoutDump(
+      const test_runner::LayoutDumpFlags& layout_dump_flags);
   void OnLayoutDumpResponse(RenderFrameHost* sender, const std::string& dump);
   void OnPrintMessage(const std::string& message);
   void OnOverridePreferences(const WebPreferences& prefs);

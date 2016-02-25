@@ -28,15 +28,13 @@ IPC_STRUCT_TRAITS_MEMBER(expected_pixel_hash)
 IPC_STRUCT_TRAITS_MEMBER(initial_size)
 IPC_STRUCT_TRAITS_END()
 
-IPC_ENUM_TRAITS_MIN_MAX_VALUE(
-    test_runner::LayoutDumpMode,
-    test_runner::LayoutDumpMode::DUMP_AS_TEXT,
-    test_runner::LayoutDumpMode::DUMP_SCROLL_POSITIONS)
-
 IPC_STRUCT_TRAITS_BEGIN(test_runner::LayoutDumpFlags)
-  IPC_STRUCT_TRAITS_MEMBER(main_dump_mode)
-  IPC_STRUCT_TRAITS_MEMBER(dump_as_printed)
-  IPC_STRUCT_TRAITS_MEMBER(dump_child_frames)
+  IPC_STRUCT_TRAITS_MEMBER(dump_as_text)
+  IPC_STRUCT_TRAITS_MEMBER(dump_child_frames_as_text)
+  IPC_STRUCT_TRAITS_MEMBER(dump_as_markup)
+  IPC_STRUCT_TRAITS_MEMBER(dump_child_frames_as_markup)
+  IPC_STRUCT_TRAITS_MEMBER(dump_child_frame_scroll_positions)
+  IPC_STRUCT_TRAITS_MEMBER(is_printing)
   IPC_STRUCT_TRAITS_MEMBER(dump_line_box_trees)
   IPC_STRUCT_TRAITS_MEMBER(debug_render_tree)
 IPC_STRUCT_TRAITS_END()

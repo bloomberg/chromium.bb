@@ -40,7 +40,7 @@ bool LayoutTestRenderFrameObserver::OnMessageReceived(
 }
 
 void LayoutTestRenderFrameObserver::OnLayoutDumpRequest(
-    test_runner::LayoutDumpFlags layout_dump_flags) {
+    const test_runner::LayoutDumpFlags& layout_dump_flags) {
   std::string dump =
       test_runner::DumpLayout(render_frame()->GetWebFrame(), layout_dump_flags);
   Send(new ShellViewHostMsg_LayoutDumpResponse(routing_id(), dump));

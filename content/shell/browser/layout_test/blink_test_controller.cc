@@ -20,6 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "components/test_runner/layout_dump_flags.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/gpu_data_manager.h"
@@ -673,8 +674,8 @@ void BlinkTestController::OnTextDump(const std::string& dump) {
 }
 
 void BlinkTestController::OnInitiateLayoutDump(
-    test_runner::LayoutDumpFlags layout_dump_flags) {
-  DCHECK(layout_dump_flags.dump_child_frames);
+    const test_runner::LayoutDumpFlags& layout_dump_flags) {
+  DCHECK(layout_dump_flags.dump_child_frames());
   pending_layout_dumps_ = main_window_->web_contents()->SendToAllFrames(
       new ShellViewMsg_LayoutDumpRequest(MSG_ROUTING_NONE, layout_dump_flags));
 }

@@ -7,17 +7,65 @@
 
 namespace test_runner {
 
-enum class LayoutDumpMode {
-  DUMP_AS_TEXT,
-  DUMP_AS_MARKUP,
-  DUMP_SCROLL_POSITIONS
-};
-
 struct LayoutDumpFlags {
-  LayoutDumpMode main_dump_mode;
+  LayoutDumpFlags(bool dump_as_text,
+                  bool dump_child_frames_as_text,
+                  bool dump_as_markup,
+                  bool dump_child_frames_as_markup,
+                  bool dump_child_frame_scroll_positions,
+                  bool is_printing,
+                  bool dump_line_box_trees,
+                  bool debug_render_tree)
+      : dump_as_text(dump_as_text),
+        dump_child_frames_as_text(dump_child_frames_as_text),
+        dump_as_markup(dump_as_text),
+        dump_child_frames_as_markup(dump_child_frames_as_markup),
+        dump_child_frame_scroll_positions(dump_child_frame_scroll_positions),
+        is_printing(is_printing),
+        dump_line_box_trees(dump_line_box_trees),
+        debug_render_tree(debug_render_tree) {}
 
-  bool dump_as_printed;
-  bool dump_child_frames;
+  // Default constructor needed for IPC.
+  //
+  // Default constructor is |= default| to make sure LayoutDumpFlags is a POD
+  // (required until we can remove content/shell/browser dependency on it).
+  LayoutDumpFlags() = default;
+
+  // If true, the test_shell will produce a plain text dump rather than a
+  // text representation of the renderer.
+  bool dump_as_text;
+
+  // If true and if dump_as_text_ is true, the test_shell will recursively
+  // dump all frames as plain text.
+  bool dump_child_frames_as_text;
+
+  // If true, the test_shell will produce a dump of the DOM rather than a text
+  // representation of the layout objects.
+  bool dump_as_markup;
+
+  // If true and if dump_as_markup_ is true, the test_shell will recursively
+  // produce a dump of the DOM rather than a text representation of the
+  // layout objects.
+  bool dump_child_frames_as_markup;
+
+  // If true, the test_shell will print out the child frame scroll offsets as
+  // well.
+  bool dump_child_frame_scroll_positions;
+
+  // Reports whether recursing over child frames is necessary.
+  bool dump_child_frames() const {
+    if (dump_as_text)
+      return dump_child_frames_as_text;
+    else if (dump_as_markup)
+      return dump_child_frames_as_markup;
+    else
+      return dump_child_frame_scroll_positions;
+  }
+
+  // If true, layout is to target printed pages.
+  bool is_printing;
+
+  // Extra flags for debugging layout tests.
   bool dump_line_box_trees;
   bool debug_render_tree;
 };

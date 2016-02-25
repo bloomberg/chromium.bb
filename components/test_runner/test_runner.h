@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "components/test_runner/layout_dump_flags.h"
 #include "components/test_runner/test_runner_export.h"
 #include "components/test_runner/web_task.h"
 #include "components/test_runner/web_test_runner.h"
@@ -72,7 +73,7 @@ class TestRunner : public WebTestRunner,
   bool ShouldStayOnPageAfterHandlingBeforeUnload() const override;
   bool ShouldDumpAsAudio() const override;
   void GetAudioData(std::vector<unsigned char>* buffer_view) const override;
-  LayoutDumpFlags GetLayoutDumpFlags() override;
+  const LayoutDumpFlags& GetLayoutDumpFlags() override;
   bool HasCustomTextDump(std::string* custom_text_dump) const override;
   bool ShouldDumpBackForwardList() const override;
   blink::WebContentSettingsClient* GetWebContentSettings() const override;
@@ -80,14 +81,9 @@ class TestRunner : public WebTestRunner,
   // Methods used by WebTestProxyBase.
   bool shouldDumpSelectionRect() const;
   bool isPrinting() const;
-  bool shouldDumpAsText();
   bool shouldDumpAsTextWithPixelResults();
   bool shouldDumpAsCustomText() const;
   std:: string customDumpText() const;
-  bool shouldDumpAsMarkup();
-  bool shouldDumpChildFrameScrollPositions() const;
-  bool shouldDumpChildFramesAsMarkup() const;
-  bool shouldDumpChildFramesAsText() const;
   void ShowDevTools(const std::string& settings,
                     const std::string& frontend_url);
   void ClearDevToolsLocalStorage();
@@ -709,26 +705,8 @@ class TestRunner : public WebTestRunner,
   // If true, the test_shell will generate pixel results in DumpAsText mode
   bool generate_pixel_results_;
 
-  // If true, the test_shell will produce a plain text dump rather than a
-  // text representation of the renderer.
-  bool dump_as_text_;
-
-  // If true and if dump_as_text_ is true, the test_shell will recursively
-  // dump all frames as plain text.
-  bool dump_child_frames_as_text_;
-
-  // If true, the test_shell will produce a dump of the DOM rather than a text
-  // representation of the renderer.
-  bool dump_as_markup_;
-
-  // If true and if dump_as_markup_ is true, the test_shell will recursively
-  // produce a dump of the DOM rather than a text representation of the
-  // renderer.
-  bool dump_child_frames_as_markup_;
-
-  // If true, the test_shell will print out the child frame scroll offsets as
-  // well.
-  bool dump_child_frame_scroll_positions_;
+  // Flags controlling what content gets dumped as a layout text result.
+  LayoutDumpFlags layout_dump_flags_;
 
   // If true, the test_shell will print out the icon change notifications.
   bool dump_icon_changes_;
@@ -801,9 +779,6 @@ class TestRunner : public WebTestRunner,
   // If true and test_repaint_ is true as well, pixel dump will be produced as
   // a series of 1px-wide, view-tall paints across the width of the view.
   bool sweep_horizontally_;
-
-  // If true, layout is to target printed pages.
-  bool is_printing_;
 
   // If false, MockWebMIDIAccessor fails on startSession() for testing.
   bool midi_accessor_result_;

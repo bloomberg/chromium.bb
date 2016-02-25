@@ -8,13 +8,13 @@
 #include <string>
 #include <vector>
 
-#include "components/test_runner/layout_dump_flags.h"
-
 namespace blink {
 class WebContentSettingsClient;
 }
 
 namespace test_runner {
+
+struct LayoutDumpFlags;
 
 class WebTestRunner {
  public:
@@ -33,7 +33,7 @@ class WebTestRunner {
 
   // Gets layout dump flags (i.e. dump-as-text or dump-as-markup) requested
   // by the test (i.e. via testRunner.dumpAsText() called from javascript).
-  virtual LayoutDumpFlags GetLayoutDumpFlags() = 0;
+  virtual const LayoutDumpFlags& GetLayoutDumpFlags() = 0;
 
   // If custom text dump is present (i.e. if testRunner.setCustomTextOutput has
   // been called from javascript), then returns |true| and populates the
