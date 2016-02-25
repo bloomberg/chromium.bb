@@ -195,7 +195,6 @@ class ArcBridgeService : public ArcBridgeHost {
       NotificationsInstancePtr notifications_ptr) override;
   void OnPowerInstanceReady(PowerInstancePtr power_ptr) override;
   void OnProcessInstanceReady(ProcessInstancePtr process_ptr) override;
-  void OnSettingsInstanceReady(SettingsInstancePtr settings_ptr) override;
   void OnVideoInstanceReady(VideoInstancePtr video_ptr) override;
 
   // Gets the current state of the bridge service.

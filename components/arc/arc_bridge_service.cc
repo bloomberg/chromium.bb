@@ -331,11 +331,6 @@ void ArcBridgeService::CloseProcessChannel() {
   FOR_EACH_OBSERVER(Observer, observer_list(), OnProcessInstanceClosed());
 }
 
-void ArcBridgeService::OnSettingsInstanceReady(
-    SettingsInstancePtr settings_ptr) {
-  // Obsolete interface.
-}
-
 void ArcBridgeService::OnVideoInstanceReady(VideoInstancePtr video_ptr) {
   DCHECK(CalledOnValidThread());
   temporary_video_ptr_ = std::move(video_ptr);

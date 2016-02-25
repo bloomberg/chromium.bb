@@ -14,7 +14,6 @@ import "net.mojom";
 import "notifications.mojom";
 import "power.mojom";
 import "process.mojom";
-import "settings.mojom";
 import "video.mojom";
 
 interface ArcBridgeHost {
@@ -52,9 +51,6 @@ interface ArcBridgeHost {
 
   // Notifies Chrome that the ProcessInstance interface is ready.
   OnProcessInstanceReady@104(ProcessInstance instance_ptr);
-
-  // Notifies Chrome that the SettingsInstance interface is ready.
-  OnSettingsInstanceReady@105(SettingsInstance instance_ptr);
 
   // Notifies Chrome that the VideoInstance interface is ready.
   [MinVersion=6] OnVideoInstanceReady@107(VideoInstance instance_ptr);
