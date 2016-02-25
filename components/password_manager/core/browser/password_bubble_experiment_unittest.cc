@@ -47,8 +47,8 @@ std::ostream& operator<<(std::ostream& os,
     case SmartLockBranding::FULL:
       os << "FULL, ";
       break;
-    case SmartLockBranding::SAVE_BUBBLE_ONLY:
-      os << "SAVE_BUBBLE_ONLY, ";
+    case SmartLockBranding::SAVE_PROMPT_ONLY:
+      os << "SAVE_PROMPT_ONLY, ";
       break;
   }
   os << (testcase.expected_user_type == UserType::SMARTLOCK ? "SMARTLOCK}"
@@ -202,14 +202,14 @@ TEST_F(PasswordManagerPasswordBubbleExperimentTest,
 }
 
 TEST_F(PasswordManagerPasswordBubbleExperimentTest,
-       IsSmartLockBrandingEnabledTest_SAVE_BUBBLE_ONLY) {
+       IsSmartLockBrandingEnabledTest_SAVE_PROMPT_ONLY) {
   const IsSmartLockBrandingEnabledTestcase kTestData[] = {
       {CustomPassphraseState::SET, syncer::PASSWORDS, SmartLockBranding::NONE,
        UserType::NOT_SMARTLOCK},
       {CustomPassphraseState::SET, syncer::BOOKMARKS, SmartLockBranding::NONE,
        UserType::NOT_SMARTLOCK},
       {CustomPassphraseState::NONE, syncer::PASSWORDS,
-       SmartLockBranding::SAVE_BUBBLE_ONLY, UserType::SMARTLOCK},
+       SmartLockBranding::SAVE_PROMPT_ONLY, UserType::SMARTLOCK},
       {CustomPassphraseState::NONE, syncer::BOOKMARKS, SmartLockBranding::NONE,
        UserType::NOT_SMARTLOCK},
   };

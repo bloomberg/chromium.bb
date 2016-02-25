@@ -32,13 +32,13 @@ int GetSmartBubbleDismissalThreshold();
 // A Smart Lock user is a sync user without a custom passphrase.
 bool IsSmartLockUser(const sync_driver::SyncService* sync_service);
 
-enum class SmartLockBranding { NONE, FULL, SAVE_BUBBLE_ONLY };
+enum class SmartLockBranding { NONE, FULL, SAVE_PROMPT_ONLY };
 
 // If the user is not a Smart Lock user, returns NONE. For Smart Lock users:
 // * returns NONE if the password manager should not be referred to as Smart
 //   Lock anywhere;
 // * returns FULL, if it should be referred to as Smart Lock everywhere;
-// * returns SAVE_BUBBLE_ONLY if it only should be referred to as Smart Lock in
+// * returns SAVE_PROMPT_ONLY if it only should be referred to as Smart Lock in
 //   the save password bubble.
 SmartLockBranding GetSmartLockBrandingState(
     const sync_driver::SyncService* sync_service);
@@ -46,6 +46,11 @@ SmartLockBranding GetSmartLockBrandingState(
 // Convenience function for checking whether the result of
 // GetSmartLockBrandingState is SmartLockBranding::FULL.
 bool IsSmartLockBrandingEnabled(const sync_driver::SyncService* sync_service);
+
+// Convenience function for checking whether the result of
+// GetSmartLockBrandingState is not equal to SmartLockBranding::NONE.
+bool IsSmartLockBrandingSavePromptEnabled(
+    const sync_driver::SyncService* sync_service);
 
 // Returns true if save prompt should contain first run experience.
 bool ShouldShowSavePromptFirstRunExperience(

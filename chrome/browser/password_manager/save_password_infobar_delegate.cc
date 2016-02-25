@@ -31,7 +31,8 @@ void SavePasswordInfoBarDelegate::Create(
   sync_driver::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
   bool is_smartlock_branding_enabled =
-      password_bubble_experiment::IsSmartLockBrandingEnabled(sync_service);
+      password_bubble_experiment::IsSmartLockBrandingSavePromptEnabled(
+          sync_service);
   bool should_show_first_run_experience =
       password_bubble_experiment::ShouldShowSavePromptFirstRunExperience(
           sync_service, profile->GetPrefs());

@@ -53,12 +53,17 @@ SmartLockBranding GetSmartLockBrandingState(
   if (group_name == kSmartLockBrandingGroupName)
     return SmartLockBranding::FULL;
   if (group_name == kSmartLockBrandingSavePromptOnlyGroupName)
-    return SmartLockBranding::SAVE_BUBBLE_ONLY;
+    return SmartLockBranding::SAVE_PROMPT_ONLY;
   return SmartLockBranding::NONE;
 }
 
 bool IsSmartLockBrandingEnabled(const sync_driver::SyncService* sync_service) {
   return GetSmartLockBrandingState(sync_service) == SmartLockBranding::FULL;
+}
+
+bool IsSmartLockBrandingSavePromptEnabled(
+    const sync_driver::SyncService* sync_service) {
+  return GetSmartLockBrandingState(sync_service) != SmartLockBranding::NONE;
 }
 
 bool ShouldShowSavePromptFirstRunExperience(
