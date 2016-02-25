@@ -92,13 +92,8 @@ config("default_sanitizer_ldflags") {
     if (is_ubsan_vptr) {
       ldflags += [ "-fsanitize=vptr" ]
     }
-    if (is_cfi && !is_nacl) {
-      ldflags += [
-        "-flto",
-        "-fsanitize=cfi-vcall",
-        "-fsanitize=cfi-derived-cast",
-        "-fsanitize=cfi-unrelated-cast",
-      ]
+    if (is_lto && !is_nacl) {
+      ldflags += [ "-flto" ]
 
       # Apply a lower LTO optimization level as the default is too slow.
       if (is_linux) {
@@ -117,6 +112,14 @@ config("default_sanitizer_ldflags") {
       # relocating calls (http://llvm.org/PR22999).
       if (current_cpu == "arm") {
         ldflags += [ "-Wl,-plugin-opt,-function-sections" ]
+      }
+
+      if (is_cfi) {
+        ldflags += [
+          "-fsanitize=cfi-vcall",
+          "-fsanitize=cfi-derived-cast",
+          "-fsanitize=cfi-unrelated-cast",
+        ]
       }
 
       if (use_cfi_diag) {
@@ -147,7 +150,7 @@ config("default_sanitizer_flags") {
   if (is_posix) {
     # Common options for AddressSanitizer, LeakSanitizer, ThreadSanitizer,
     # MemorySanitizer and non-official CFI builds.
-    if (using_sanitizer || (is_cfi && !is_official_build)) {
+    if (using_sanitizer || (is_lto && !is_official_build)) {
       cflags += [
         "-fno-omit-frame-pointer",
         "-gline-tables-only",
@@ -243,16 +246,19 @@ config("default_sanitizer_flags") {
         "-fsanitize-blacklist=$ubsan_vptr_blacklist_path",
       ]
     }
-    if (is_cfi && !is_nacl) {
-      cfi_blacklist_path =
-          rebase_path("//tools/cfi/blacklist.txt", root_build_dir)
-      cflags += [
-        "-flto",
-        "-fsanitize=cfi-vcall",
-        "-fsanitize=cfi-derived-cast",
-        "-fsanitize=cfi-unrelated-cast",
-        "-fsanitize-blacklist=$cfi_blacklist_path",
-      ]
+    if (is_lto && !is_nacl) {
+      cflags += [ "-flto" ]
+
+      if (is_cfi) {
+        cfi_blacklist_path =
+            rebase_path("//tools/cfi/blacklist.txt", root_build_dir)
+        cflags += [
+          "-fsanitize=cfi-vcall",
+          "-fsanitize=cfi-derived-cast",
+          "-fsanitize=cfi-unrelated-cast",
+          "-fsanitize-blacklist=$cfi_blacklist_path",
+        ]
+      }
 
       if (use_cfi_diag) {
         cflags += [

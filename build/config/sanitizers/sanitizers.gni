@@ -68,6 +68,10 @@ declare_args() {
   use_custom_libcxx =
       (is_asan && is_linux) || is_tsan || is_msan || is_ubsan || use_libfuzzer
 
+  # Enable Link Time Optimization (output programs runs faster,
+  # but linking is up to 5-20x slower.
+  is_lto = is_cfi
+
   use_sanitizer_coverage = use_libfuzzer
 }
 

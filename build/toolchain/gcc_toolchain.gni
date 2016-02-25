@@ -9,7 +9,7 @@ import("//build/toolchain/goma.gni")
 import("//build/toolchain/toolchain.gni")
 
 # This value will be inherited in the toolchain below.
-if (is_cfi) {
+if (is_lto) {
   concurrent_links =
       exec_script("get_concurrent_links.py", [ "--lto" ], "value")
 } else {
@@ -217,7 +217,7 @@ template("gcc_toolchain") {
     tool("alink") {
       rspfile = "{{output}}.rsp"
       arflags = ""
-      if (is_cfi && invoker.toolchain_os != "nacl") {
+      if (is_lto && invoker.toolchain_os != "nacl") {
         gold_plugin_path = rebase_path(
                 "//third_party/llvm-build/Release+Asserts/lib/LLVMgold.so",
                 root_build_dir)
