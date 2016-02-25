@@ -158,6 +158,10 @@ void OriginsUsingFeatures::Value::recordOriginToRappor(const String& origin)
         Platform::current()->recordRappor("PowerfulFeatureUse.Host.GetUserMedia.Insecure", origin);
     if (get(Feature::GetUserMediaSecureOrigin))
         Platform::current()->recordRappor("PowerfulFeatureUse.Host.GetUserMedia.Secure", origin);
+    if (get(Feature::ApplicationCacheManifestSelectInsecureOrigin))
+        Platform::current()->recordRappor("PowerfulFeatureUse.Host.ApplicationCacheManifestSelect.Insecure", origin);
+    if (get(Feature::ApplicationCacheAPIInsecureOrigin))
+        Platform::current()->recordRappor("PowerfulFeatureUse.Host.ApplicationCacheAPI.Insecure", origin);
 }
 
 void OriginsUsingFeatures::Value::recordNameToRappor(const String& name)

@@ -33,8 +33,11 @@
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/events/ApplicationCacheErrorEvent.h"
 #include "core/events/ProgressEvent.h"
+#include "core/frame/Deprecation.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/OriginsUsingFeatures.h"
 #include "core/frame/Settings.h"
+#include "core/frame/UseCounter.h"
 #include "core/inspector/InspectorApplicationCacheAgent.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/DocumentLoader.h"
@@ -115,14 +118,25 @@ void ApplicationCacheHost::selectCacheWithoutManifest()
 
 void ApplicationCacheHost::selectCacheWithManifest(const KURL& manifestURL)
 {
+    DCHECK(m_documentLoader);
+
+    LocalFrame* frame = m_documentLoader->frame();
+    Document* document = frame->document();
+    if (document->isSecureContext()) {
+        UseCounter::count(document, UseCounter::ApplicationCacheManifestSelectSecureOrigin);
+        UseCounter::countCrossOriginIframe(*document, UseCounter::ApplicationCacheManifestSelectSecureOrigin);
+    } else {
+        Deprecation::countDeprecation(document, UseCounter::ApplicationCacheManifestSelectInsecureOrigin);
+        UseCounter::countCrossOriginIframe(*document, UseCounter::ApplicationCacheManifestSelectInsecureOrigin);
+        OriginsUsingFeatures::countAnyWorld(*document, OriginsUsingFeatures::Feature::ApplicationCacheManifestSelectInsecureOrigin);
+    }
     if (m_host && !m_host->selectCacheWithManifest(manifestURL)) {
         // It's a foreign entry, restart the current navigation from the top
         // of the navigation algorithm. The navigation will not result in the
         // same resource being loaded, because "foreign" entries are never picked
         // during navigation.
         // see ApplicationCacheGroup::selectCache()
-        LocalFrame* frame = m_documentLoader->frame();
-        frame->navigate(*frame->document(), frame->document()->url(), true, UserGestureStatus::None);
+        frame->navigate(*document, document->url(), true, UserGestureStatus::None);
     }
 }
 

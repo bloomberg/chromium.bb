@@ -1004,6 +1004,25 @@ components/rappor/rappor_service.cc.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="PowerfulFeatureUse.Host.ApplicationCacheAPI.Insecure"
+    type="ETLD_PLUS_ONE">
+  <owner>jww@chromium.org</owner>
+  <summary>
+    The host of the URL that uses a the Application Cache programmatic API from
+    an insecure origin.
+  </summary>
+</rappor-metric>
+
+<rappor-metric
+    name="PowerfulFeatureUse.Host.ApplicationCacheManifestSelect.Insecure"
+    type="ETLD_PLUS_ONE">
+  <owner>jww@chromium.org</owner>
+  <summary>
+    The host of the URL that uses an Application Cache manifest from an insecure
+    origin.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="PowerfulFeatureUse.Host.DeviceMotion.Insecure"
     type="ETLD_PLUS_ONE">
   <owner>jww@chromium.org</owner>

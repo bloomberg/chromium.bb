@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html manifest="/security/powerfulFeatureRestrictions/resources/simple.manifest">
 <head>
 <title>Old Powerful Features on an Insecure Origin</title>
 </head>
@@ -80,6 +80,22 @@ if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
                 assert_equals(error.message, "Only secure origins are allowed (see: https://goo.gl/Y0ZkNV).");
             });
     }, 'navigator.mediaDevices.getUserMedia');
+
+    async_test(function() {
+        var cached = this.step_func(function() {
+            var test = this;
+            fetch("/security/powerfulFeatureRestrictions/resources/simple.txt")
+                .then(this.step_func(function(response) {
+                    assert_equals(response.status, 200);
+                    response.text().then(this.step_func_done(function(data) {
+                        assert_equals(data, "Hello, World!");
+                    }));
+                }))
+                .catch(this.unreached_func("fetch() for cachable resource unexpectedly failed"));
+        });
+
+        applicationCache.addEventListener('cached', cached, false);
+    }, 'appcache');
 }
 </script>
 </body>

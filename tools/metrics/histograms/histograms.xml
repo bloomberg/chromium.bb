@@ -67282,6 +67282,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1241" label="MediaStreamOnEnded"/>
   <int value="1242" label="DocumentCreateEventInputEvent"/>
   <int value="1243" label="WebAnimationHyphenatedProperty"/>
+  <int value="1244"
+      label="FormControlsCollectionReturnsRadioNodeListForFieldSet"/>
+  <int value="1245" label="ApplicationCacheManifestSelectInsecureOrigin"/>
+  <int value="1246" label="ApplicationCacheManifestSelectSecureOrigin"/>
+  <int value="1247" label="ApplicationCacheAPIInsecureOrigin"/>
+  <int value="1248" label="ApplicationCacheAPISecureOrigin"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

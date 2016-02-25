@@ -35,6 +35,8 @@ public:
         GetUserMediaInsecureOrigin,
         GetUserMediaSecureOrigin,
         ElementAttachShadow,
+        ApplicationCacheManifestSelectInsecureOrigin,
+        ApplicationCacheAPIInsecureOrigin,
 
         NumberOfFeatures // This must be the last item.
     };

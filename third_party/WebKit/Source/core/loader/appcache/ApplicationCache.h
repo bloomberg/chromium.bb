@@ -83,6 +83,8 @@ public:
 private:
     explicit ApplicationCache(LocalFrame*);
 
+    void recordAPIUseType() const;
+
     ApplicationCacheHost* applicationCacheHost() const;
 };
 

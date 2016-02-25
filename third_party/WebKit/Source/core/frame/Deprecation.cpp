@@ -270,6 +270,10 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
     case UseCounter::EncryptedMediaInsecureOrigin:
         return "requestMediaKeySystemAccess() is deprecated on insecure origins in the specification. Support will be removed in the future. You should consider switching your application to a secure origin, such as HTTPS. See https://goo.gl/rStTGz for more details.";
 
+    case UseCounter::ApplicationCacheManifestSelectInsecureOrigin:
+    case UseCounter::ApplicationCacheAPIInsecureOrigin:
+        return "Use of the Application Cache is deprecated on insecure origins. Support will be removed in the future. You should consider switching your application to a secure origin, such as HTTPS. See https://goo.gl/rStTGz for more details.";
+
     case UseCounter::ElementCreateShadowRootMultiple:
         return "Calling Element.createShadowRoot() for an element which already hosts a shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.";
 
