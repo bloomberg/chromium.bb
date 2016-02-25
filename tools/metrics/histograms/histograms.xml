@@ -31027,6 +31027,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.MostVisitedScheme" enum="NtpMostVisitedScheme">
+  <owner>treib@chromium.org</owner>
+  <summary>
+    The schemes of URLs of most visited thumbnails that the user clicked on.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.MostVisitedTilePlacementExperiment"
     enum="NtpTileExperimentActions">
   <obsolete>
@@ -74357,6 +74364,18 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="11" label="Clicked on a tile."/>
   <int value="12" label="Clicked to other NTP pane."/>
   <int value="13" label="Other action"/>
+</enum>
+
+<enum name="NtpMostVisitedScheme" type="int">
+  <int value="0" label="Other (not web-safe)"/>
+  <int value="1" label="Other (web-safe)"/>
+  <int value="2" label="http://"/>
+  <int value="3" label="https://"/>
+  <int value="4" label="ftp://"/>
+  <int value="5" label="file://"/>
+  <int value="6" label="chrome://"/>
+  <int value="7" label="chrome-extension://"/>
+  <int value="8" label="javascript://"/>
 </enum>
 
 <enum name="NtpPaneType" type="int">
