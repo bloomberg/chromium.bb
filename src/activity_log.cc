@@ -258,6 +258,8 @@ Json::Value ActivityLog::EncodeGesture(const Gesture& gesture) {
           Json::Value(gesture.details.pinch.dz);
       ret[kKeyGesturePinchOrdinalDZ] =
           Json::Value(gesture.details.pinch.ordinal_dz);
+      ret[kKeyGesturePinchZoomState] =
+          Json::Value(gesture.details.pinch.zoom_state);
       break;
     case kGestureTypeButtonsChange:
       handled = true;
@@ -487,6 +489,7 @@ const char ActivityLog::kKeyGestureScrollOrdinalDX[] = "ordinalDx";
 const char ActivityLog::kKeyGestureScrollOrdinalDY[] = "ordinalDy";
 const char ActivityLog::kKeyGesturePinchDZ[] = "dz";
 const char ActivityLog::kKeyGesturePinchOrdinalDZ[] = "ordinalDz";
+const char ActivityLog::kKeyGesturePinchZoomState[] = "zoomState";
 const char ActivityLog::kKeyGestureButtonsChangeDown[] = "down";
 const char ActivityLog::kKeyGestureButtonsChangeUp[] = "up";
 const char ActivityLog::kKeyGestureFlingVX[] = "vx";

@@ -85,7 +85,8 @@ void CombineGestures(Gesture* gesture, const Gesture* addend) {
             addend->details.four_finger_swipe.dy;
         break;
       case kGestureTypePinch:
-        gesture->details.pinch.dz += addend->details.pinch.dz;
+        gesture->details.pinch.dz *= addend->details.pinch.dz;
+        gesture->details.pinch.zoom_state = addend->details.pinch.zoom_state;
         break;
     }
     gesture->start_time = std::min(gesture->start_time, addend->start_time);

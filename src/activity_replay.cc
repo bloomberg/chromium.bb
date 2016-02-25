@@ -495,6 +495,12 @@ bool ActivityReplay::ParseGesturePinch(const Json::Value& entry,
   }
   out_gs->details.pinch.ordinal_dz =
       entry[ActivityLog::kKeyGesturePinchOrdinalDZ].asDouble();
+  if (!entry.isMember(ActivityLog::kKeyGesturePinchZoomState)) {
+    Err("can't parse pinch zoom_state");
+    return false;
+  }
+  out_gs->details.pinch.zoom_state =
+      entry[ActivityLog::kKeyGesturePinchZoomState].asInt();
   return true;
 }
 

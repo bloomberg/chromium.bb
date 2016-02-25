@@ -230,8 +230,9 @@ string Gesture::String() const {
                           details.scroll.ordinal_dx, details.scroll.ordinal_dy);
     case kGestureTypePinch:
       return StringPrintf("(Gesture type: pinch start: %f stop: %f "
-                          "dz: %f ordinal_dz: %f)", start_time, end_time,
-                          details.pinch.dz, details.pinch.ordinal_dz);
+                          "dz: %f ordinal_dz: %f, state: %d)", start_time,
+                          end_time, details.pinch.dz, details.pinch.ordinal_dz,
+                          details.pinch.zoom_state);
     case kGestureTypeButtonsChange:
       return StringPrintf("(Gesture type: buttons start: %f stop: "
                           "%f down: %d up: %d)", start_time, end_time,

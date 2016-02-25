@@ -141,6 +141,7 @@ class ActivityLog {
   static const char kKeyGestureScrollOrdinalDY[];
   static const char kKeyGesturePinchDZ[];
   static const char kKeyGesturePinchOrdinalDZ[];
+  static const char kKeyGesturePinchZoomState[];
   static const char kKeyGestureButtonsChangeDown[];
   static const char kKeyGestureButtonsChangeUp[];
   static const char kKeyGestureFlingVX[];
