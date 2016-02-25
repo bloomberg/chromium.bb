@@ -41,6 +41,7 @@ const char kLocalizedStringsFile[] = "strings.js";
 void AddCommonStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("add", IDS_ADD);
   html_source->AddLocalizedString("cancel", IDS_CANCEL);
+  html_source->AddLocalizedString("disable", IDS_DISABLE);
   html_source->AddLocalizedString("learnMore", IDS_LEARN_MORE);
   html_source->AddLocalizedString("ok", IDS_OK);
   html_source->AddLocalizedString("save", IDS_SAVE);
@@ -712,6 +713,9 @@ void AddSearchEnginesStrings(content::WebUIDataSource* html_source) {
       "searchEnginesOther",
       IDS_SETTINGS_SEARCH_ENGINES_OTHER_ENGINES);
   html_source->AddLocalizedString(
+      "searchEnginesExtension",
+      IDS_SETTINGS_SEARCH_ENGINES_EXTENSION_ENGINES);
+  html_source->AddLocalizedString(
       "searchEnginesSearchEngine",
       IDS_SETTINGS_SEARCH_ENGINES_SEARCH_ENGINE);
   html_source->AddLocalizedString("searchEnginesKeyword",
@@ -728,6 +732,9 @@ void AddSearchEnginesStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
       "searchEnginesRemoveFromList",
       IDS_SETTINGS_SEARCH_ENGINES_REMOVE_FROM_LIST);
+  html_source->AddLocalizedString(
+      "searchEnginesManageExtension",
+      IDS_SETTINGS_SEARCH_ENGINES_MANAGE_EXTENSION);
 }
 
 void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {
