@@ -26,7 +26,7 @@ bool ValidInternalFormat(unsigned internalformat) {
     case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
     case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
     case GL_ETC1_RGB8_OES:
-    case GL_R8:
+    case GL_RED:
     case GL_RGB:
     case GL_RGBA:
     case GL_BGRA_EXT:
@@ -99,9 +99,7 @@ GLenum TextureFormat(BufferFormat format) {
     case BufferFormat::ETC1:
       return GL_ETC1_RGB8_OES;
     case BufferFormat::R_8:
-      return gfx::GLContext::GetCurrent()->GetVersionInfo()->IsES3Capable()
-                 ? GL_R8
-                 : GL_RED;
+      return GL_RED;
     case BufferFormat::RGBA_4444:
     case BufferFormat::RGBA_8888:
       return GL_RGBA;
@@ -127,11 +125,10 @@ GLenum DataFormat(BufferFormat format) {
       return GL_RGBA;
     case BufferFormat::BGRX_8888:
       return GL_BGRA_EXT;
-    case BufferFormat::R_8:
-      return GL_RED;
     case BufferFormat::RGBA_4444:
     case BufferFormat::RGBA_8888:
     case BufferFormat::BGRA_8888:
+    case BufferFormat::R_8:
     case BufferFormat::ATC:
     case BufferFormat::ATCIA:
     case BufferFormat::DXT1:

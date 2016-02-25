@@ -19,7 +19,7 @@ ImageFactory::~ImageFactory() {
 gfx::BufferFormat ImageFactory::DefaultBufferFormatForImageFormat(
     unsigned internalformat) {
   switch (internalformat) {
-    case GL_R8:
+    case GL_RED:
       return gfx::BufferFormat::R_8;
     case GL_RGB:
       return gfx::BufferFormat::BGRX_8888;

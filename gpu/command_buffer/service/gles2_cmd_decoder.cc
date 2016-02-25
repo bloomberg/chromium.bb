@@ -13356,7 +13356,7 @@ bool GLES2DecoderImpl::ValidateCopyTextureCHROMIUMInternalFormats(
                            dest_internal_format == GL_RGBA ||
                            dest_internal_format == GL_BGRA_EXT;
   bool valid_source_format =
-      source_internal_format == GL_R8 || source_internal_format == GL_ALPHA ||
+      source_internal_format == GL_RED || source_internal_format == GL_ALPHA ||
       source_internal_format == GL_RGB || source_internal_format == GL_RGBA ||
       source_internal_format == GL_LUMINANCE ||
       source_internal_format == GL_LUMINANCE_ALPHA ||
