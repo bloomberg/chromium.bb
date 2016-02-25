@@ -49,15 +49,12 @@ PannerHandler::PannerHandler(AudioNode& node, float sampleRate)
     , m_distanceModel(DistanceEffect::ModelInverse)
     , m_position(0, 0, 0)
     , m_orientation(1, 0, 0)
-    , m_velocity(0, 0, 0)
     , m_isAzimuthElevationDirty(true)
     , m_isDistanceConeGainDirty(true)
-    , m_isDopplerRateDirty(true)
     , m_lastGain(-1.0)
     , m_cachedAzimuth(0)
     , m_cachedElevation(0)
     , m_cachedDistanceConeGain(1.0f)
-    , m_cachedDopplerRate(1)
 {
     // Load the HRTF database asynchronously so we don't block the Javascript thread while creating the HRTF database.
     // The HRTF panner will return zeroes until the database is loaded.
@@ -328,7 +325,7 @@ void PannerHandler::setPosition(float x, float y, float z)
     // This synchronizes with process().
     MutexLocker processLocker(m_processLock);
     m_position = position;
-    markPannerAsDirty(PannerHandler::AzimuthElevationDirty | PannerHandler::DistanceConeGainDirty | PannerHandler::DopplerRateDirty);
+    markPannerAsDirty(PannerHandler::AzimuthElevationDirty | PannerHandler::DistanceConeGainDirty);
 }
 
 void PannerHandler::setOrientation(float x, float y, float z)
@@ -342,19 +339,6 @@ void PannerHandler::setOrientation(float x, float y, float z)
     MutexLocker processLocker(m_processLock);
     m_orientation = orientation;
     markPannerAsDirty(PannerHandler::DistanceConeGainDirty);
-}
-
-void PannerHandler::setVelocity(float x, float y, float z)
-{
-    FloatPoint3D velocity = FloatPoint3D(x, y, z);
-
-    if (m_velocity == velocity)
-        return;
-
-    // This synchronizes with process().
-    MutexLocker processLocker(m_processLock);
-    m_velocity = velocity;
-    markPannerAsDirty(PannerHandler::DopplerRateDirty);
 }
 
 void PannerHandler::calculateAzimuthElevation(double* outAzimuth, double* outElevation)
@@ -412,58 +396,6 @@ void PannerHandler::calculateAzimuthElevation(double* outAzimuth, double* outEle
         *outElevation = elevation;
 }
 
-double PannerHandler::calculateDopplerRate()
-{
-    double dopplerShift = 1.0;
-    double dopplerFactor = listener()->dopplerFactor();
-
-    if (dopplerFactor > 0.0) {
-        double speedOfSound = listener()->speedOfSound();
-
-        const FloatPoint3D& sourceVelocity = m_velocity;
-        const FloatPoint3D& listenerVelocity = listener()->velocity();
-
-        // Don't bother if both source and listener have no velocity
-        bool sourceHasVelocity = !sourceVelocity.isZero();
-        bool listenerHasVelocity = !listenerVelocity.isZero();
-
-        if (sourceHasVelocity || listenerHasVelocity) {
-            // Calculate the source to listener vector
-            FloatPoint3D listenerPosition = listener()->position();
-            FloatPoint3D sourceToListener = m_position - listenerPosition;
-
-            double sourceListenerMagnitude = sourceToListener.length();
-
-            if (!sourceListenerMagnitude) {
-                // Source and listener are at the same position. Skip the computation of the doppler
-                // shift, and just return the cached value.
-                dopplerShift = m_cachedDopplerRate;
-            } else {
-                double listenerProjection = sourceToListener.dot(listenerVelocity) / sourceListenerMagnitude;
-                double sourceProjection = sourceToListener.dot(sourceVelocity) / sourceListenerMagnitude;
-
-                listenerProjection = -listenerProjection;
-                sourceProjection = -sourceProjection;
-
-                double scaledSpeedOfSound = speedOfSound / dopplerFactor;
-                listenerProjection = std::min(listenerProjection, scaledSpeedOfSound);
-                sourceProjection = std::min(sourceProjection, scaledSpeedOfSound);
-
-                dopplerShift = ((speedOfSound - dopplerFactor * listenerProjection) / (speedOfSound - dopplerFactor * sourceProjection));
-                fixNANs(dopplerShift); // avoid illegal values
-
-                // Limit the pitch shifting to 4 octaves up and 3 octaves down.
-                if (dopplerShift > 16.0)
-                    dopplerShift = 16.0;
-                else if (dopplerShift < 0.125)
-                    dopplerShift = 0.125;
-            }
-        }
-    }
-
-    return dopplerShift;
-}
-
 float PannerHandler::calculateDistanceConeGain()
 {
     FloatPoint3D listenerPosition = listener()->position();
@@ -488,18 +420,6 @@ void PannerHandler::azimuthElevation(double* outAzimuth, double* outElevation)
     *outElevation = m_cachedElevation;
 }
 
-double PannerHandler::dopplerRate()
-{
-    ASSERT(context()->isAudioThread());
-
-    if (isDopplerRateDirty()) {
-        m_cachedDopplerRate = calculateDopplerRate();
-        m_isDopplerRateDirty = false;
-    }
-
-    return m_cachedDopplerRate;
-}
-
 float PannerHandler::distanceConeGain()
 {
     ASSERT(context()->isAudioThread());
@@ -519,9 +439,6 @@ void PannerHandler::markPannerAsDirty(unsigned dirty)
 
     if (dirty & PannerHandler::DistanceConeGainDirty)
         m_isDistanceConeGainDirty = true;
-
-    if (dirty & PannerHandler::DopplerRateDirty)
-        m_isDopplerRateDirty = true;
 }
 
 void PannerHandler::setChannelCount(unsigned long channelCount, ExceptionState& exceptionState)
@@ -615,7 +532,8 @@ void PannerNode::setOrientation(float x, float y, float z)
 
 void PannerNode::setVelocity(float x, float y, float z)
 {
-    pannerHandler().setVelocity(x, y, z);
+    // The velocity is not used internally and cannot be read back by scripts,
+    // so it can be ignored entirely.
 }
 
 String PannerNode::distanceModel() const
@@ -689,4 +607,3 @@ void PannerNode::setConeOuterGain(double gain)
 }
 
 } // namespace blink
-

@@ -79,15 +79,8 @@ public:
     void setLoopStart(double loopStart) { m_loopStart = loopStart; }
     void setLoopEnd(double loopEnd) { m_loopEnd = loopEnd; }
 
-    // If a panner node is set, then we can incorporate doppler shift into the playback pitch rate.
-    void setPannerNode(PannerHandler*);
-    void clearPannerNode();
-
     // If we are no longer playing, propogate silence ahead to downstream nodes.
     bool propagatesSilence() const override;
-
-    // AudioScheduledSourceNode
-    void finish() override;
 
     void handleStoppableSourceNode();
 
@@ -137,23 +130,11 @@ private:
     // True if grainDuration is given explicitly (via 3 arg start method).
     bool m_isDurationGiven;
 
-    // Compute playback rate (k-rate) by incorporating the sample rate conversion
-    // factor, the doppler shift from the associated panner node, and the value
-    // of playbackRate and detune AudioParams.
+    // Compute playback rate (k-rate) by incorporating the sample rate
+    // conversion factor, and the value of playbackRate and detune AudioParams.
     double computePlaybackRate();
 
-    // We optionally keep track of a panner node which has a doppler shift that
-    // is incorporated into the pitch rate.
-    // This RefPtr is connection reference. We must call AudioHandler::
-    // makeConnection() after ref(), and call AudioHandler::breakConnection()
-    // before deref().
-    // TODO(tkent): This is always null because setPannerNode is never
-    // called. If we revive setPannerNode, this should be a raw pointer and
-    // AudioBufferSourceNode should have Member<PannerNode>.
-    RefPtr<PannerHandler> m_pannerNode;
-
-    // The minimum playbackRate value ever used for this source.  This includes any adjustments
-    // caused by doppler too.
+    // The minimum playbackRate value ever used for this source.
     double m_minPlaybackRate;
 };
 

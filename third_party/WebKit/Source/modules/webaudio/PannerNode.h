@@ -51,7 +51,6 @@ public:
     enum {
         AzimuthElevationDirty = 0x1,
         DistanceConeGainDirty = 0x2,
-        DopplerRateDirty = 0x4,
     };
 
     static PassRefPtr<PannerHandler> create(AudioNode&, float sampleRate);
@@ -66,10 +65,9 @@ public:
     String panningModel() const;
     void setPanningModel(const String&);
 
-    // Position, orientation and velocity
+    // Position and orientation
     void setPosition(float x, float y, float z);
     void setOrientation(float x, float y, float z);
-    void setVelocity(float x, float y, float z);
 
     // Distance parameters
     String distanceModel() const;
@@ -96,9 +94,6 @@ public:
 
     void markPannerAsDirty(unsigned);
 
-    // It must be called on audio thread, currently called only process() in AudioBufferSourceNode.
-    double dopplerRate();
-
     double tailTime() const override { return m_panner ? m_panner->tailTime() : 0; }
     double latencyTime() const override { return m_panner ? m_panner->latencyTime() : 0; }
 
@@ -115,14 +110,12 @@ private:
 
     void calculateAzimuthElevation(double* outAzimuth, double* outElevation);
     float calculateDistanceConeGain(); // Returns the combined distance and cone gain attenuation.
-    double calculateDopplerRate();
 
     void azimuthElevation(double* outAzimuth, double* outElevation);
     float distanceConeGain();
 
     bool isAzimuthElevationDirty() const { return m_isAzimuthElevationDirty; }
     bool isDistanceConeGainDirty() const { return m_isDistanceConeGainDirty; }
-    bool isDopplerRateDirty() const { return m_isDopplerRateDirty; }
 
     // This Persistent doesn't make a reference cycle including the owner
     // PannerNode.
@@ -134,11 +127,9 @@ private:
     // Current source location information
     FloatPoint3D m_position;
     FloatPoint3D m_orientation;
-    FloatPoint3D m_velocity;
 
     bool m_isAzimuthElevationDirty;
     bool m_isDistanceConeGainDirty;
-    bool m_isDopplerRateDirty;
 
     // Gain
     DistanceEffect m_distanceEffect;
@@ -149,7 +140,6 @@ private:
     double m_cachedAzimuth;
     double m_cachedElevation;
     float m_cachedDistanceConeGain;
-    double m_cachedDopplerRate;
 
     // Synchronize process() with setting of the panning model, source's location information, listener, distance parameters and sound cones.
     mutable Mutex m_processLock;

@@ -64,8 +64,7 @@ public:
     const FloatPoint3D& upVector() const { return m_upVector; }
 
     // Velocity
-    void setVelocity(float x, float y, float z) { setVelocity(FloatPoint3D(x, y, z)); }
-    const FloatPoint3D& velocity() const { return m_velocity; }
+    void setVelocity(float x, float y, float z);
 
     // Doppler factor
     void setDopplerFactor(double);
@@ -93,14 +92,12 @@ private:
     void setPosition(const FloatPoint3D&);
     void setOrientation(const FloatPoint3D&);
     void setUpVector(const FloatPoint3D&);
-    void setVelocity(const FloatPoint3D&);
 
     void markPannersAsDirty(unsigned);
 
     FloatPoint3D m_position;
     FloatPoint3D m_orientation;
     FloatPoint3D m_upVector;
-    FloatPoint3D m_velocity;
     double m_dopplerFactor;
     double m_speedOfSound;
 

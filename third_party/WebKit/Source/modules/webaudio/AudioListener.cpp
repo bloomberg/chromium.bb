@@ -38,7 +38,6 @@ AudioListener::AudioListener()
     : m_position(0, 0, 0)
     , m_orientation(0, 0, -1)
     , m_upVector(0, 1, 0)
-    , m_velocity(0, 0, 0)
     , m_dopplerFactor(1)
     , m_speedOfSound(343.3)
 {
@@ -96,7 +95,7 @@ void AudioListener::setPosition(const FloatPoint3D& position)
     // This synchronizes with panner's process().
     MutexLocker listenerLocker(m_listenerLock);
     m_position = position;
-    markPannersAsDirty(PannerHandler::AzimuthElevationDirty | PannerHandler::DistanceConeGainDirty | PannerHandler::DopplerRateDirty);
+    markPannersAsDirty(PannerHandler::AzimuthElevationDirty | PannerHandler::DistanceConeGainDirty);
 }
 
 void AudioListener::setOrientation(const FloatPoint3D& orientation)
@@ -121,38 +120,20 @@ void AudioListener::setUpVector(const FloatPoint3D& upVector)
     markPannersAsDirty(PannerHandler::AzimuthElevationDirty);
 }
 
-void AudioListener::setVelocity(const FloatPoint3D& velocity)
+void AudioListener::setVelocity(float x, float y, float z)
 {
-    if (m_velocity == velocity)
-        return;
-
-    // This synchronizes with panner's process().
-    MutexLocker listenerLocker(m_listenerLock);
-    m_velocity = velocity;
-    markPannersAsDirty(PannerHandler::DopplerRateDirty);
+    // The velocity is not used internally and cannot be read back by scripts,
+    // so it can be ignored entirely.
 }
 
 void AudioListener::setDopplerFactor(double dopplerFactor)
 {
-    if (m_dopplerFactor == dopplerFactor)
-        return;
-
-    // This synchronizes with panner's process().
-    MutexLocker listenerLocker(m_listenerLock);
     m_dopplerFactor = dopplerFactor;
-    markPannersAsDirty(PannerHandler::DopplerRateDirty);
 }
 
 void AudioListener::setSpeedOfSound(double speedOfSound)
 {
-    if (m_speedOfSound == speedOfSound)
-        return;
-
-    // This synchronizes with panner's process().
-    MutexLocker listenerLocker(m_listenerLock);
     m_speedOfSound = speedOfSound;
-    markPannersAsDirty(PannerHandler::DopplerRateDirty);
 }
 
 } // namespace blink
-
