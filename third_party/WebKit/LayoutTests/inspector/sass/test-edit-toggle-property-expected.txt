@@ -1,0 +1,112 @@
+Verify that mapping is not valid for misaligned sources.
+
+INITIAL MODELS
+===== test-edit-toggle-property.css =====
+.box1.{
+/*color:.red;*/
+..margin:.10px;.}
+
+.box2.{
+/*color:.red;*/
+..margin:.10px;.}
+
+.box3.{
+/*color:.red;*/
+..margin:.10px;.}
+
+/*#.sourceMappingURL=test-edit-toggle-property.css.map.*/
+
+===== test-edit-toggle-property.scss =====
+@for.$i.from.1.through.3.{
+.....box#{$i}.{
+......../*.color:.red;.*/
+........margin:.10px;
+....}
+}
+
+
+------------------------- TEST: testDisableProperty --------------------------
+
+Edits:
+    {2, 2, 2, 15} 'margin: 10px;' => '/* margin: 10px; */'
+===== test-edit-toggle-property.css =====
+    .box1.{
+    /*color:.red;*/
+    ../*.margin:.10px;.*/.}
+    
+    .box2.{
+    /*color:.red;*/
+    ../*.margin:.10px;.*/.}
+    
+    .box3.{
+    /*color:.red;*/
+    ../*.margin:.10px;.*/.}
+    
+    /*#.sourceMappingURL=test-edit-toggle-property.css.map.*/
+    
+===== test-edit-toggle-property.scss =====
+    @for.$i.from.1.through.3.{
+    .....box#{$i}.{
+    ......../*.color:.red;.*/
+    ......../*.margin:.10px;.*/
+    ....}
+    }
+    
+
+-------------------------- TEST: testEnableProperty --------------------------
+
+Edits:
+    {1, 0, 1, 15} '/*color: red;*/' => 'color: red;'
+===== test-edit-toggle-property.css =====
+    .box1.{
+    color:.red;
+    ..margin:.10px;.}
+    
+    .box2.{
+    color:.red;
+    ..margin:.10px;.}
+    
+    .box3.{
+    color:.red;
+    ..margin:.10px;.}
+    
+    /*#.sourceMappingURL=test-edit-toggle-property.css.map.*/
+    
+===== test-edit-toggle-property.scss =====
+    @for.$i.from.1.through.3.{
+    .....box#{$i}.{
+    ........color:.red;.
+    ........margin:.10px;
+    ....}
+    }
+    
+
+-------------------- TEST: testDisableMultipleProperties ---------------------
+
+Edits:
+    {2, 2, 2, 15} 'margin: 10px;' => '/* margin: 10px; */'
+    {10, 2, 10, 15} 'margin: 10px;' => '/* margin: 10px; */'
+===== test-edit-toggle-property.css =====
+    .box1.{
+    /*color:.red;*/
+    ../*.margin:.10px;.*/.}
+    
+    .box2.{
+    /*color:.red;*/
+    ../*.margin:.10px;.*/.}
+    
+    .box3.{
+    /*color:.red;*/
+    ../*.margin:.10px;.*/.}
+    
+    /*#.sourceMappingURL=test-edit-toggle-property.css.map.*/
+    
+===== test-edit-toggle-property.scss =====
+    @for.$i.from.1.through.3.{
+    .....box#{$i}.{
+    ......../*.color:.red;.*/
+    ......../*.margin:.10px;.*/
+    ....}
+    }
+    
+
