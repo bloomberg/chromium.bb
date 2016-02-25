@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "build/build_config.h"
+#include "ui/base/default_style.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -84,7 +85,7 @@ BubbleFrameView::BubbleFrameView(const gfx::Insets& title_margins,
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   title_ = new Label(base::string16(),
-                     rb.GetFontList(ui::ResourceBundle::MediumFont));
+                     rb.GetFontListWithDelta(ui::kTitleFontSizeDelta));
   title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_->set_collapse_when_hidden(true);
   title_->SetVisible(false);

@@ -137,6 +137,7 @@ component("base") {
     "cursor/cursor_android.cc",
     "cursor/cursor_loader.h",
     "cursor/cursor_win.cc",
+    "default_style.h",
     "default_theme_provider_mac.mm",
     "device_form_factor.h",
     "device_form_factor_android.cc",

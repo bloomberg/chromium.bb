@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/default_style.h"
 #include "ui/base/default_theme_provider.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
@@ -274,14 +275,16 @@ void Widget::ReparentNativeView(gfx::NativeView native_view,
 
 // static
 int Widget::GetLocalizedContentsWidth(int col_resource_id) {
-  return ui::GetLocalizedContentsWidthForFont(col_resource_id,
-      ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont));
+  return ui::GetLocalizedContentsWidthForFont(
+      col_resource_id, ResourceBundle::GetSharedInstance().GetFontWithDelta(
+                           ui::kMessageFontSizeDelta));
 }
 
 // static
 int Widget::GetLocalizedContentsHeight(int row_resource_id) {
-  return ui::GetLocalizedContentsHeightForFont(row_resource_id,
-      ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont));
+  return ui::GetLocalizedContentsHeightForFont(
+      row_resource_id, ResourceBundle::GetSharedInstance().GetFontWithDelta(
+                           ui::kMessageFontSizeDelta));
 }
 
 // static

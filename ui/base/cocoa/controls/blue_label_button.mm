@@ -29,6 +29,8 @@ const SkColor kPressInnerRingColor = SkColorSetRGB(0x3f, 0x73, 0xcd);
 const SkColor kOuterRingColor = SkColorSetRGB(0x2b, 0x67, 0xce);
 const SkColor kPressOuterRingColor = SkColorSetRGB(0x23, 0x52, 0xa2);
 
+const int kFontSizeDelta = ui::ResourceBundle::kSmallFontDelta;
+
 @interface BlueLabelButtonCell : NSButtonCell
 
 + (NSAttributedString*)generateAttributedString:(NSString*)buttonText;
@@ -54,8 +56,7 @@ const SkColor kPressOuterRingColor = SkColorSetRGB(0x23, 0x52, 0xa2);
 
 + (NSAttributedString*)generateAttributedString:(NSString*)buttonText {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  NSFont* buttonFont = rb.GetFontList(ui::ResourceBundle::SmallFont).
-      GetPrimaryFont().GetNativeFont();
+  NSFont* buttonFont = rb.GetFontWithDelta(kFontSizeDelta).GetNativeFont();
   base::scoped_nsobject<NSMutableParagraphStyle> buttonTextParagraphStyle(
       [[NSMutableParagraphStyle alloc] init]);
   [buttonTextParagraphStyle setAlignment:NSCenterTextAlignment];

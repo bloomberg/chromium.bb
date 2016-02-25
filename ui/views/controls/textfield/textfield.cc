@@ -12,9 +12,11 @@
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/default_style.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/touch/selection_bound.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/canvas_painter.h"
@@ -239,6 +241,11 @@ int GetViewsCommand(const ui::TextEditCommandAuraLinux& command, bool rtl) {
 }
 #endif
 
+const gfx::FontList& GetDefaultFontList() {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  return rb.GetFontListWithDelta(ui::kLabelFontSizeDelta);
+}
+
 }  // namespace
 
 // static
@@ -284,6 +291,7 @@ Textfield::Textfield()
       weak_ptr_factory_(this) {
   set_context_menu_controller(this);
   set_drag_controller(this);
+  GetRenderText()->SetFontList(GetDefaultFontList());
   SetBorder(scoped_ptr<Border>(new FocusableBorder()));
   SetFocusable(true);
 

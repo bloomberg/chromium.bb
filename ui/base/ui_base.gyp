@@ -209,6 +209,7 @@
         'default_theme_provider.cc',
         'default_theme_provider.h',
         'default_theme_provider_mac.mm',
+        'default_style.h',
         'device_form_factor.h',
         'device_form_factor_android.cc',
         'device_form_factor_android.h',

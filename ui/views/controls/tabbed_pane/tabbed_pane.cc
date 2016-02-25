@@ -9,6 +9,7 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/accessibility/ax_view_state.h"
+#include "ui/base/default_style.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
@@ -26,6 +27,10 @@ const SkColor kTabTitleColor_Active = SK_ColorBLACK;
 const SkColor kTabTitleColor_Hovered = SK_ColorBLACK;
 const SkColor kTabBorderColor = SkColorSetRGB(0xC8, 0xC8, 0xC8);
 const SkScalar kTabBorderThickness = 1.0f;
+
+const gfx::Font::FontStyle kHoverStyle = gfx::Font::NORMAL;
+const gfx::Font::FontStyle kActiveStyle = gfx::Font::BOLD;
+const gfx::Font::FontStyle kInactiveStyle = gfx::Font::NORMAL;
 
 }  // namespace
 
@@ -102,9 +107,11 @@ const char Tab::kViewClassName[] = "Tab";
 
 Tab::Tab(TabbedPane* tabbed_pane, const base::string16& title, View* contents)
     : tabbed_pane_(tabbed_pane),
-      title_(new Label(title,
-                       ui::ResourceBundle::GetSharedInstance().GetFontList(
-                           ui::ResourceBundle::BoldFont))),
+      title_(new Label(
+          title,
+          ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(
+              ui::kLabelFontSizeDelta,
+              kActiveStyle))),
       tab_state_(TAB_ACTIVE),
       contents_(contents) {
   // Calculate this now while the font list is guaranteed to be bold.
@@ -182,15 +189,18 @@ void Tab::SetState(TabState tab_state) {
   switch (tab_state) {
     case TAB_INACTIVE:
       title_->SetEnabledColor(kTabTitleColor_Inactive);
-      title_->SetFontList(rb.GetFontList(ui::ResourceBundle::BaseFont));
+      title_->SetFontList(
+          rb.GetFontListWithDelta(ui::kLabelFontSizeDelta, kInactiveStyle));
       break;
     case TAB_ACTIVE:
       title_->SetEnabledColor(kTabTitleColor_Active);
-      title_->SetFontList(rb.GetFontList(ui::ResourceBundle::BoldFont));
+      title_->SetFontList(
+          rb.GetFontListWithDelta(ui::kLabelFontSizeDelta, kActiveStyle));
       break;
     case TAB_HOVERED:
       title_->SetEnabledColor(kTabTitleColor_Hovered);
-      title_->SetFontList(rb.GetFontList(ui::ResourceBundle::BaseFont));
+      title_->SetFontList(
+          rb.GetFontListWithDelta(ui::kLabelFontSizeDelta, kHoverStyle));
       break;
   }
   SchedulePaint();

@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 #include "ui/accessibility/ax_view_state.h"
+#include "ui/base/default_style.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect.h"
@@ -301,9 +302,8 @@ gfx::Rect BubbleDelegateView::GetBubbleBounds() {
 
 const gfx::FontList& BubbleDelegateView::GetTitleFontList() const {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  return rb.GetFontList(ui::ResourceBundle::MediumFont);
+  return rb.GetFontListWithDelta(ui::kTitleFontSizeDelta);
 }
-
 
 void BubbleDelegateView::UpdateColorsFromTheme(const ui::NativeTheme* theme) {
   if (!color_explicitly_set_)

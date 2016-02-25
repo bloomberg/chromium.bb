@@ -63,11 +63,6 @@ namespace ui {
 
 namespace {
 
-// Font sizes relative to base font.
-const int kSmallFontSizeDelta = -1;
-const int kMediumFontSizeDelta = 3;
-const int kLargeFontSizeDelta = 8;
-
 // PNG-related constants.
 const unsigned char kPngMagic[8] = { 0x89, 'P', 'N', 'G', 13, 10, 26, 10 };
 const size_t kPngChunkMetadataSize = 12;  // length, type, crc32
@@ -536,29 +531,72 @@ base::string16 ResourceBundle::GetLocalizedString(int message_id) {
   return msg;
 }
 
-const gfx::FontList& ResourceBundle::GetFontList(FontStyle style) {
-  {
-    base::AutoLock lock_scope(*images_and_fonts_lock_);
-    LoadFontsIfNecessary();
-  }
-  switch (style) {
-    case BoldFont:
-      return *bold_font_list_;
+const gfx::FontList& ResourceBundle::GetFontListWithDelta(
+    int size_delta,
+    gfx::Font::FontStyle style) {
+  base::AutoLock lock_scope(*images_and_fonts_lock_);
+
+  typedef std::pair<int, gfx::Font::FontStyle> Key;
+  const Key styled_key(size_delta, style);
+
+  auto found = font_cache_.find(styled_key);
+  if (found != font_cache_.end())
+    return found->second;
+
+  const Key base_key(0, gfx::Font::NORMAL);
+  gfx::FontList& base = font_cache_[base_key];
+  if (styled_key == base_key)
+    return base;
+
+  // Fonts of a given style are derived from the unstyled font of the same size.
+  // Cache the unstyled font by first inserting a default-constructed font list.
+  // Then, derive it for the initial insertion, or use the iterator that points
+  // to the existing entry that the insertion collided with.
+  const Key sized_key(size_delta, gfx::Font::NORMAL);
+  auto sized = font_cache_.insert(std::make_pair(sized_key, gfx::FontList()));
+  if (sized.second)
+    sized.first->second = base.DeriveWithSizeDelta(size_delta);
+  if (styled_key == sized_key)
+    return sized.first->second;
+
+  auto styled = font_cache_.insert(std::make_pair(styled_key, gfx::FontList()));
+  DCHECK(styled.second);  // Otherwise font_cache_.find(..) would have found it.
+  styled.first->second = sized.first->second.DeriveWithStyle(
+      sized.first->second.GetFontStyle() | style);
+  return styled.first->second;
+}
+
+const gfx::Font& ResourceBundle::GetFontWithDelta(int size_delta,
+                                                  gfx::Font::FontStyle style) {
+  return GetFontListWithDelta(size_delta, style).GetPrimaryFont();
+}
+
+const gfx::FontList& ResourceBundle::GetFontList(FontStyle legacy_style) {
+  gfx::Font::FontStyle font_style = gfx::Font::NORMAL;
+  if (legacy_style == BoldFont || legacy_style == SmallBoldFont ||
+      legacy_style == MediumBoldFont || legacy_style == LargeBoldFont)
+    font_style = gfx::Font::BOLD;
+
+  int size_delta = 0;
+  switch (legacy_style) {
     case SmallFont:
-      return *small_font_list_;
-    case MediumFont:
-      return *medium_font_list_;
     case SmallBoldFont:
-      return *small_bold_font_list_;
+      size_delta = kSmallFontDelta;
+      break;
+    case MediumFont:
     case MediumBoldFont:
-      return *medium_bold_font_list_;
+      size_delta = kMediumFontDelta;
+      break;
     case LargeFont:
-      return *large_font_list_;
     case LargeBoldFont:
-      return *large_bold_font_list_;
-    default:
-      return *base_font_list_;
+      size_delta = kLargeFontDelta;
+      break;
+    case BaseFont:
+    case BoldFont:
+      break;
   }
+
+  return GetFontListWithDelta(size_delta, font_style);
 }
 
 const gfx::Font& ResourceBundle::GetFont(FontStyle style) {
@@ -568,8 +606,7 @@ const gfx::Font& ResourceBundle::GetFont(FontStyle style) {
 void ResourceBundle::ReloadFonts() {
   base::AutoLock lock_scope(*images_and_fonts_lock_);
   InitDefaultFontList();
-  base_font_list_.reset();
-  LoadFontsIfNecessary();
+  font_cache_.clear();
 }
 
 ScaleFactor ResourceBundle::GetMaxScaleFactor() const {
@@ -744,34 +781,6 @@ void ResourceBundle::InitDefaultFontList() {
   // Use a single default font as the default font list.
   gfx::FontList::SetDefaultFontDescription(std::string());
 #endif
-}
-
-void ResourceBundle::LoadFontsIfNecessary() {
-  images_and_fonts_lock_->AssertAcquired();
-  if (base_font_list_)
-    return;
-
-  base_font_list_.reset(new gfx::FontList());
-  bold_font_list_.reset(new gfx::FontList(base_font_list_->DeriveWithStyle(
-      base_font_list_->GetFontStyle() | gfx::Font::BOLD)));
-
-  small_font_list_.reset(new gfx::FontList(
-      base_font_list_->DeriveWithSizeDelta(kSmallFontSizeDelta)));
-  small_bold_font_list_.reset(
-      new gfx::FontList(small_font_list_->DeriveWithStyle(
-          small_font_list_->GetFontStyle() | gfx::Font::BOLD)));
-
-  medium_font_list_.reset(new gfx::FontList(
-      base_font_list_->DeriveWithSizeDelta(kMediumFontSizeDelta)));
-  medium_bold_font_list_.reset(
-      new gfx::FontList(medium_font_list_->DeriveWithStyle(
-          medium_font_list_->GetFontStyle() | gfx::Font::BOLD)));
-
-  large_font_list_.reset(new gfx::FontList(
-      base_font_list_->DeriveWithSizeDelta(kLargeFontSizeDelta)));
-  large_bold_font_list_.reset(
-      new gfx::FontList(large_font_list_->DeriveWithStyle(
-          large_font_list_->GetFontStyle() | gfx::Font::BOLD)));
 }
 
 bool ResourceBundle::LoadBitmap(const ResourceHandle& data_handle,

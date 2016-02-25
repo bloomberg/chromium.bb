@@ -18,6 +18,8 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_view_state.h"
+#include "ui/base/default_style.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/insets.h"
@@ -25,17 +27,23 @@
 #include "ui/native_theme/native_theme.h"
 
 namespace views {
+namespace {
+
+const gfx::FontList& GetDefaultFontList() {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  return rb.GetFontListWithDelta(ui::kLabelFontSizeDelta);
+}
+
+}  // namespace
 
 // static
 const char Label::kViewClassName[] = "Label";
 const int Label::kFocusBorderPadding = 1;
 
-Label::Label() {
-  Init(base::string16(), gfx::FontList());
+Label::Label() : Label(base::string16()) {
 }
 
-Label::Label(const base::string16& text) {
-  Init(text, gfx::FontList());
+Label::Label(const base::string16& text) : Label(text, GetDefaultFontList()) {
 }
 
 Label::Label(const base::string16& text, const gfx::FontList& font_list) {
