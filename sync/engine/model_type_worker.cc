@@ -34,7 +34,6 @@ using syncer::SyncerError;
 ModelTypeWorker::ModelTypeWorker(
     ModelType type,
     const sync_pb::DataTypeState& initial_state,
-    const UpdateResponseDataList& saved_pending_updates,
     scoped_ptr<Cryptographer> cryptographer,
     NudgeHandler* nudge_handler,
     scoped_ptr<ModelTypeProcessor> model_type_processor)
@@ -47,16 +46,6 @@ ModelTypeWorker::ModelTypeWorker(
   // Request an initial sync if it hasn't been completed yet.
   if (!data_type_state_.initial_sync_done()) {
     nudge_handler_->NudgeForInitialDownload(type_);
-  }
-
-  for (UpdateResponseDataList::const_iterator it =
-           saved_pending_updates.begin();
-       it != saved_pending_updates.end(); ++it) {
-    scoped_ptr<EntityTracker> entity_tracker =
-        EntityTracker::FromUpdateResponse(*it);
-    entity_tracker->ReceivePendingUpdate(*it);
-    entities_.insert(
-        std::make_pair(it->entity->client_tag_hash, std::move(entity_tracker)));
   }
 
   if (cryptographer_) {
@@ -194,8 +183,7 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
                                  response_datas.size(), pending_updates.size());
 
   // Forward these updates to the model thread so it can do the rest.
-  model_type_processor_->OnUpdateReceived(data_type_state_, response_datas,
-                                          pending_updates);
+  model_type_processor_->OnUpdateReceived(data_type_state_, response_datas);
 
   return syncer::SYNCER_OK;
 }
@@ -212,7 +200,7 @@ void ModelTypeWorker::ApplyUpdates(syncer::sessions::StatusController* status) {
     data_type_state_.set_initial_sync_done(true);
 
     model_type_processor_->OnUpdateReceived(
-        data_type_state_, UpdateResponseDataList(), UpdateResponseDataList());
+        data_type_state_, UpdateResponseDataList());
   }
 }
 
@@ -443,8 +431,7 @@ void ModelTypeWorker::OnCryptographerUpdated() {
              << base::StringPrintf("Delivering encryption key and %" PRIuS
                                    " decrypted updates.",
                                    response_datas.size());
-    model_type_processor_->OnUpdateReceived(data_type_state_, response_datas,
-                                            UpdateResponseDataList());
+    model_type_processor_->OnUpdateReceived(data_type_state_, response_datas);
   }
 }
 

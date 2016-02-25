@@ -30,8 +30,7 @@ class ModelTypeProcessorProxy : public ModelTypeProcessor {
   void OnCommitCompleted(const sync_pb::DataTypeState& type_state,
                          const CommitResponseDataList& response_list) override;
   void OnUpdateReceived(const sync_pb::DataTypeState& type_state,
-                        const UpdateResponseDataList& updates,
-                        const UpdateResponseDataList& pending_updates) override;
+                        const UpdateResponseDataList& updates) override;
 
  private:
   base::WeakPtr<ModelTypeProcessor> processor_;
@@ -61,11 +60,10 @@ void ModelTypeProcessorProxy::OnCommitCompleted(
 
 void ModelTypeProcessorProxy::OnUpdateReceived(
     const sync_pb::DataTypeState& type_state,
-    const UpdateResponseDataList& updates,
-    const UpdateResponseDataList& pending_updates) {
+    const UpdateResponseDataList& updates) {
   processor_task_runner_->PostTask(
       FROM_HERE, base::Bind(&ModelTypeProcessor::OnUpdateReceived, processor_,
-                            type_state, updates, pending_updates));
+                            type_state, updates));
 }
 
 }  // namespace
@@ -154,7 +152,6 @@ void SharedModelTypeProcessor::ConnectIfReady() {
   scoped_ptr<ActivationContext> activation_context =
       make_scoped_ptr(new ActivationContext);
   activation_context->data_type_state = data_type_state_;
-  activation_context->saved_pending_updates = GetPendingUpdates();
   activation_context->type_processor = make_scoped_ptr(
       new ModelTypeProcessorProxy(weak_ptr_factory_for_sync_.GetWeakPtr(),
                                   base::ThreadTaskRunnerHandle::Get()));
@@ -357,8 +354,7 @@ void SharedModelTypeProcessor::OnCommitCompleted(
 
 void SharedModelTypeProcessor::OnUpdateReceived(
     const sync_pb::DataTypeState& data_type_state,
-    const UpdateResponseDataList& updates,
-    const UpdateResponseDataList& pending_updates) {
+    const UpdateResponseDataList& updates) {
   if (!data_type_state_.initial_sync_done()) {
     OnInitialUpdateReceived(data_type_state, updates);
     return;
@@ -377,10 +373,6 @@ void SharedModelTypeProcessor::OnUpdateReceived(
   for (const UpdateResponseData& update : updates) {
     const EntityData& data = update.entity.value();
     const std::string& client_tag_hash = data.client_tag_hash;
-
-    // If we're being asked to apply an update to this entity, this overrides
-    // the previous pending updates.
-    pending_updates_map_.erase(client_tag_hash);
 
     ModelTypeEntity* entity = GetEntityForTagHash(client_tag_hash);
     if (entity == nullptr) {
@@ -434,24 +426,6 @@ void SharedModelTypeProcessor::OnUpdateReceived(
     }
   }
 
-  // TODO(stanisc): crbug.com/529498: stop saving pending updates.
-  // Save pending updates in the appropriate data structure.
-  for (const UpdateResponseData& update : pending_updates) {
-    const std::string& client_tag_hash = update.entity->client_tag_hash;
-
-    auto lookup_it = pending_updates_map_.find(client_tag_hash);
-    if (lookup_it == pending_updates_map_.end()) {
-      pending_updates_map_.insert(std::make_pair(
-          client_tag_hash, make_scoped_ptr(new UpdateResponseData(update))));
-    } else if (lookup_it->second->response_version <= update.response_version) {
-      pending_updates_map_.erase(lookup_it);
-      pending_updates_map_.insert(std::make_pair(
-          client_tag_hash, make_scoped_ptr(new UpdateResponseData(update))));
-    } else {
-      // Received update is stale, do not overwrite existing.
-    }
-  }
-
   if (got_new_encryption_requirements) {
     for (auto it = entities_.begin(); it != entities_.end(); ++it) {
       it->second->UpdateDesiredEncryptionKey(
@@ -501,15 +475,6 @@ void SharedModelTypeProcessor::OnInitialUpdateReceived(
 
   // We may have new reasons to commit by the time this function is done.
   FlushPendingCommitRequests();
-}
-
-UpdateResponseDataList SharedModelTypeProcessor::GetPendingUpdates() {
-  UpdateResponseDataList pending_updates_list;
-  for (auto it = pending_updates_map_.begin(); it != pending_updates_map_.end();
-       ++it) {
-    pending_updates_list.push_back(*it->second);
-  }
-  return pending_updates_list;
 }
 
 std::string SharedModelTypeProcessor::GetHashForTag(const std::string& tag) {

@@ -148,7 +148,6 @@ class ModelTypeWorkerTest : public ::testing::Test {
   // be updated until the response is actually processed by the model thread.
   size_t GetNumModelThreadUpdateResponses() const;
   UpdateResponseDataList GetNthModelThreadUpdateResponse(size_t n) const;
-  UpdateResponseDataList GetNthModelThreadPendingUpdates(size_t n) const;
   sync_pb::DataTypeState GetNthModelThreadUpdateState(size_t n) const;
 
   // Reads the latest update response datas on the model thread.
@@ -284,7 +283,8 @@ void ModelTypeWorkerTest::InitializeWithState(
     cryptographer_copy.reset(new Cryptographer(*cryptographer_));
   }
 
-  worker_.reset(new ModelTypeWorker(kModelType, state, initial_pending_updates,
+  // TODO(maxbogue): crbug.com/529498: Inject pending updates somehow.
+  worker_.reset(new ModelTypeWorker(kModelType, state,
                                     std::move(cryptographer_copy),
                                     &mock_nudge_handler_, std::move(proxy)));
 }
@@ -507,12 +507,6 @@ UpdateResponseDataList ModelTypeWorkerTest::GetNthModelThreadUpdateResponse(
     size_t n) const {
   DCHECK_LT(n, GetNumModelThreadUpdateResponses());
   return mock_type_processor_->GetNthUpdateResponse(n);
-}
-
-UpdateResponseDataList ModelTypeWorkerTest::GetNthModelThreadPendingUpdates(
-    size_t n) const {
-  DCHECK_LT(n, GetNumModelThreadUpdateResponses());
-  return mock_type_processor_->GetNthPendingUpdates(n);
 }
 
 sync_pb::DataTypeState ModelTypeWorkerTest::GetNthModelThreadUpdateState(
@@ -975,8 +969,6 @@ TEST_F(ModelTypeWorkerTest, ReceiveUndecryptableEntries) {
   ASSERT_EQ(1U, GetNumModelThreadUpdateResponses());
   UpdateResponseDataList updates_list = GetNthModelThreadUpdateResponse(0);
   EXPECT_EQ(0U, updates_list.size());
-  UpdateResponseDataList pending_updates = GetNthModelThreadPendingUpdates(0);
-  EXPECT_EQ(1U, pending_updates.size());
 
   // The update will be delivered as soon as decryption becomes possible.
   UpdateLocalCryptographer();
@@ -1006,8 +998,6 @@ TEST_F(ModelTypeWorkerTest, EncryptedUpdateOverridesPendingCommit) {
   ASSERT_EQ(1U, GetNumModelThreadUpdateResponses());
   UpdateResponseDataList updates_list = GetNthModelThreadUpdateResponse(0);
   EXPECT_EQ(0U, updates_list.size());
-  UpdateResponseDataList pending_updates = GetNthModelThreadPendingUpdates(0);
-  EXPECT_EQ(1U, pending_updates.size());
 }
 
 // Test decryption of pending updates saved across a restart.
@@ -1042,7 +1032,9 @@ TEST_F(ModelTypeWorkerTest, RestorePendingEntries) {
   UpdateLocalCryptographer();
 
   // Verify the item gets decrypted and sent back to the model thread.
-  ASSERT_TRUE(HasUpdateResponseOnModelThread("tag1"));
+  // TODO(maxbogue): crbug.com/529498: Uncomment when pending updates are
+  // handled by the worker again.
+  //ASSERT_TRUE(HasUpdateResponseOnModelThread("tag1"));
 }
 
 // Test decryption of pending updates saved across a restart.  This test
@@ -1076,7 +1068,9 @@ TEST_F(ModelTypeWorkerTest, RestoreApplicableEntries) {
   InitializeWithPendingUpdates(saved_pending_updates);
 
   // Verify the item gets decrypted and sent back to the model thread.
-  ASSERT_TRUE(HasUpdateResponseOnModelThread("tag1"));
+  // TODO(maxbogue): crbug.com/529498: Uncomment when pending updates are
+  // handled by the worker again.
+  //ASSERT_TRUE(HasUpdateResponseOnModelThread("tag1"));
 }
 
 // Test that undecryptable updates provide sufficient reason to not commit.

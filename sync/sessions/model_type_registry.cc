@@ -147,8 +147,7 @@ void ModelTypeRegistry::ConnectSyncTypeToWorker(
     cryptographer_copy.reset(new Cryptographer(*cryptographer_));
 
   scoped_ptr<syncer_v2::ModelTypeWorker> worker(new syncer_v2::ModelTypeWorker(
-      type, activation_context->data_type_state,
-      activation_context->saved_pending_updates, std::move(cryptographer_copy),
+      type, activation_context->data_type_state, std::move(cryptographer_copy),
       nudge_handler_, std::move(activation_context->type_processor)));
 
   // Initialize Processor -> Worker communication channel.

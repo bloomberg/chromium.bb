@@ -24,10 +24,6 @@ struct SYNC_EXPORT ActivationContext {
   // Initial DataTypeState at the moment of activation.
   sync_pb::DataTypeState data_type_state;
 
-  // Pending updates from the previous session.
-  // TODO(stanisc): crbug.com/529498: should remove pending updates.
-  UpdateResponseDataList saved_pending_updates;
-
   // The ModelTypeProcessor for the worker. Note that this is owned because
   // it is generally a proxy object to the real processor.
   scoped_ptr<ModelTypeProcessor> type_processor;

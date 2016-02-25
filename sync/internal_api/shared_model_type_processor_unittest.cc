@@ -123,8 +123,7 @@ class SimpleStore {
 // The processor sits between the service (implemented by this test class) and
 // the worker, which is represented as a commit queue (MockCommitQueue). This
 // test suite exercises the initialization flows (whether initial sync is done,
-// loading pending updates, performing the initial merge, etc) as well as normal
-// functionality:
+// performing the initial merge, etc) as well as normal functionality:
 //
 // - Initialization before the initial sync and merge correctly performs a merge
 //   and initializes the metadata in storage. TODO(maxbogue): crbug.com/569675.
@@ -253,8 +252,7 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
   void OnInitialSyncDone(UpdateResponseDataList updates) {
     sync_pb::DataTypeState data_type_state(db_.data_type_state());
     data_type_state.set_initial_sync_done(true);
-    type_processor()->OnUpdateReceived(data_type_state, updates,
-                                       UpdateResponseDataList());
+    type_processor()->OnUpdateReceived(data_type_state, updates);
   }
 
   // Overloaded form with no updates.
@@ -280,8 +278,7 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
 
     UpdateResponseDataList list;
     list.push_back(data);
-    type_processor()->OnUpdateReceived(db_.data_type_state(), list,
-                                       UpdateResponseDataList());
+    type_processor()->OnUpdateReceived(db_.data_type_state(), list);
   }
 
   void TombstoneFromServer(int64_t version_offset, const std::string& tag) {
@@ -293,54 +290,7 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
 
     UpdateResponseDataList list;
     list.push_back(data);
-    type_processor()->OnUpdateReceived(db_.data_type_state(), list,
-                                       UpdateResponseDataList());
-  }
-
-  // Emulate the receipt of pending updates from the server.
-  // Pending updates are usually caused by a temporary decryption failure.
-  void PendingUpdateFromServer(int64_t version_offset,
-                               const std::string& tag,
-                               const std::string& value,
-                               const std::string& key_name) {
-    const std::string tag_hash = GenerateTagHash(tag);
-    UpdateResponseData data = mock_queue_->UpdateFromServer(
-        version_offset, tag_hash,
-        GenerateEncryptedSpecifics(tag, value, key_name));
-
-    UpdateResponseDataList list;
-    list.push_back(data);
-    type_processor()->OnUpdateReceived(db_.data_type_state(),
-                                       UpdateResponseDataList(), list);
-  }
-
-  // Returns true if the proxy has an pending update with specified tag.
-  bool HasPendingUpdate(const std::string& tag) const {
-    const std::string client_tag_hash = GenerateTagHash(tag);
-    const UpdateResponseDataList list = type_processor()->GetPendingUpdates();
-    for (const UpdateResponseData& update : list) {
-      if (update.entity->client_tag_hash == client_tag_hash)
-        return true;
-    }
-    return false;
-  }
-
-  // Returns the pending update with the specified tag.
-  UpdateResponseData GetPendingUpdate(const std::string& tag) const {
-    DCHECK(HasPendingUpdate(tag));
-    const std::string client_tag_hash = GenerateTagHash(tag);
-    const UpdateResponseDataList list = type_processor()->GetPendingUpdates();
-    for (const UpdateResponseData& update : list) {
-      if (update.entity->client_tag_hash == client_tag_hash)
-        return update;
-    }
-    NOTREACHED();
-    return UpdateResponseData();
-  }
-
-  // Returns the number of pending updates.
-  size_t GetNumPendingUpdates() const {
-    return type_processor()->GetPendingUpdates().size();
+    type_processor()->OnUpdateReceived(db_.data_type_state(), list);
   }
 
   // Read emitted commit requests as batches.
@@ -377,7 +327,7 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
     sync_pb::DataTypeState data_type_state(db_.data_type_state());
     data_type_state.set_encryption_key_name(key_name);
     type_processor()->OnUpdateReceived(
-        data_type_state, UpdateResponseDataList(), UpdateResponseDataList());
+        data_type_state, UpdateResponseDataList());
   }
 
   // Sets the key_name that the mock CommitQueue will claim is in use
@@ -1168,67 +1118,6 @@ TEST_F(SharedModelTypeProcessorTest, DISABLED_Disable) {
   EXPECT_TRUE(HasCommitRequestForTag("tag1"));
   EXPECT_TRUE(HasCommitRequestForTag("tag2"));
   EXPECT_TRUE(HasCommitRequestForTag("tag3"));
-}
-
-// Test receipt of pending updates.
-TEST_F(SharedModelTypeProcessorTest, ReceivePendingUpdates) {
-  InitializeToReadyState();
-
-  EXPECT_FALSE(HasPendingUpdate("tag1"));
-  EXPECT_EQ(0U, GetNumPendingUpdates());
-
-  // Receive a pending update.
-  PendingUpdateFromServer(5, "tag1", "value1", "key1");
-  EXPECT_EQ(1U, GetNumPendingUpdates());
-  ASSERT_TRUE(HasPendingUpdate("tag1"));
-  UpdateResponseData data1 = GetPendingUpdate("tag1");
-  EXPECT_EQ(5, data1.response_version);
-
-  // Receive an updated version of a pending update.
-  // It should overwrite the existing item.
-  PendingUpdateFromServer(10, "tag1", "value15", "key1");
-  EXPECT_EQ(1U, GetNumPendingUpdates());
-  ASSERT_TRUE(HasPendingUpdate("tag1"));
-  UpdateResponseData data2 = GetPendingUpdate("tag1");
-  EXPECT_EQ(15, data2.response_version);
-
-  // Receive a stale version of a pending update.
-  // It should have no effect.
-  PendingUpdateFromServer(-3, "tag1", "value12", "key1");
-  EXPECT_EQ(1U, GetNumPendingUpdates());
-  ASSERT_TRUE(HasPendingUpdate("tag1"));
-  UpdateResponseData data3 = GetPendingUpdate("tag1");
-  EXPECT_EQ(15, data3.response_version);
-}
-
-// Test that Disable clears pending update state.
-TEST_F(SharedModelTypeProcessorTest, DisableWithPendingUpdates) {
-  InitializeToReadyState();
-
-  PendingUpdateFromServer(5, "tag1", "value1", "key1");
-  EXPECT_EQ(1U, GetNumPendingUpdates());
-  ASSERT_TRUE(HasPendingUpdate("tag1"));
-
-  Disable();
-  InitializeToReadyState();
-
-  EXPECT_EQ(0U, GetNumPendingUpdates());
-  EXPECT_FALSE(HasPendingUpdate("tag1"));
-}
-
-// Test that disconnecting does not clear pending update state.
-TEST_F(SharedModelTypeProcessorTest, DisconnectWithPendingUpdates) {
-  InitializeToReadyState();
-
-  PendingUpdateFromServer(5, "tag1", "value1", "key1");
-  EXPECT_EQ(1U, GetNumPendingUpdates());
-  ASSERT_TRUE(HasPendingUpdate("tag1"));
-
-  DisconnectSync();
-  OnSyncStarting();
-
-  EXPECT_EQ(1U, GetNumPendingUpdates());
-  EXPECT_TRUE(HasPendingUpdate("tag1"));
 }
 
 // Test re-encrypt everything when desired encryption key changes.

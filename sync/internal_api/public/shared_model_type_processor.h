@@ -73,14 +73,6 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
               MetadataChangeList* metadata_change_list) override;
   void OnMetadataLoaded(scoped_ptr<MetadataBatch> batch) override;
 
-  // Returns the list of pending updates.
-  //
-  // This is used as a helper function, but it's public mainly for testing.
-  // The current test harness setup doesn't allow us to test the data that the
-  // proxy sends to the worker during initialization, so we use this to inspect
-  // its state instead.
-  UpdateResponseDataList GetPendingUpdates();
-
   // Returns the long-lived WeakPtr that is intended to be registered with the
   // ProfileSyncService.
   base::WeakPtr<SharedModelTypeProcessor> AsWeakPtrForUI();
@@ -90,8 +82,7 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
   void OnCommitCompleted(const sync_pb::DataTypeState& type_state,
                          const CommitResponseDataList& response_list) override;
   void OnUpdateReceived(const sync_pb::DataTypeState& type_state,
-                        const UpdateResponseDataList& updates,
-                        const UpdateResponseDataList& pending_updates) override;
+                        const UpdateResponseDataList& updates) override;
 
  private:
   friend class SharedModelTypeProcessorTest;
@@ -147,11 +138,6 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
 
   // The set of sync entities known to this object.
   EntityMap entities_;
-
-  // A set of updates that can not be applied at this time.  These are never
-  // used by the model.  They are kept here only so we can save and restore
-  // them across restarts, and keep them in sync with our progress markers.
-  UpdateMap pending_updates_map_;
 
   // ModelTypeService linked to this processor.
   // The service owns this processor instance so the pointer should never

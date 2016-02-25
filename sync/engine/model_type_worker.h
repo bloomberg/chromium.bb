@@ -61,7 +61,6 @@ class SYNC_EXPORT ModelTypeWorker : public syncer::UpdateHandler,
  public:
   ModelTypeWorker(syncer::ModelType type,
                   const sync_pb::DataTypeState& initial_state,
-                  const UpdateResponseDataList& saved_pending_updates,
                   scoped_ptr<syncer::Cryptographer> cryptographer,
                   syncer::NudgeHandler* nudge_handler,
                   scoped_ptr<ModelTypeProcessor> model_type_processor);

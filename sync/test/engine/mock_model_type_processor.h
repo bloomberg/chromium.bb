@@ -41,8 +41,7 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   void OnCommitCompleted(const sync_pb::DataTypeState& type_state,
                          const CommitResponseDataList& response_list) override;
   void OnUpdateReceived(const sync_pb::DataTypeState& type_state,
-                        const UpdateResponseDataList& response_list,
-                        const UpdateResponseDataList& pending_updates) override;
+                        const UpdateResponseDataList& response_list) override;
 
   // By default, this object behaves as if all messages are processed
   // immediately.  Sometimes it is useful to defer work until later, as might
@@ -71,13 +70,12 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   // Does not includes repsonses that are in pending tasks.
   size_t GetNumUpdateResponses() const;
   UpdateResponseDataList GetNthUpdateResponse(size_t n) const;
-  UpdateResponseDataList GetNthPendingUpdates(size_t n) const;
   sync_pb::DataTypeState GetNthTypeStateReceivedInUpdateResponse(
       size_t n) const;
 
   // Getters to access the log of received commit responses.
   //
-  // Does not includes repsonses that are in pending tasks.
+  // Does not includes responses that are in pending tasks.
   size_t GetNumCommitResponses() const;
   CommitResponseDataList GetNthCommitResponse(size_t n) const;
   sync_pb::DataTypeState GetNthTypeStateReceivedInCommitResponse(
@@ -102,8 +100,7 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   //
   // Implemented as an Impl method so we can defer its execution in some cases.
   void OnUpdateReceivedImpl(const sync_pb::DataTypeState& type_state,
-                            const UpdateResponseDataList& response_list,
-                            const UpdateResponseDataList& pending_updates);
+                            const UpdateResponseDataList& response_list);
 
   // Getter and setter for per-item sequence number tracking.
   int64_t GetCurrentSequenceNumber(const std::string& tag_hash) const;
@@ -127,7 +124,6 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   // A log of messages received by this object.
   std::vector<CommitResponseDataList> received_commit_responses_;
   std::vector<UpdateResponseDataList> received_update_responses_;
-  std::vector<UpdateResponseDataList> received_pending_updates_;
   std::vector<sync_pb::DataTypeState> type_states_received_on_update_;
   std::vector<sync_pb::DataTypeState> type_states_received_on_commit_;
 
