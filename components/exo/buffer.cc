@@ -11,8 +11,12 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "base/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/output/context_provider.h"
@@ -26,6 +30,10 @@
 
 namespace exo {
 namespace {
+
+// The amount of time before we wait for release queries using
+// GetQueryObjectuivEXT(GL_QUERY_RESULT_EXT).
+const int kWaitForReleaseDelayMs = 500;
 
 GLenum GLInternalFormat(gfx::BufferFormat format) {
   const GLenum kGLInternalFormats[] = {
@@ -119,6 +127,11 @@ class Buffer::Texture {
   gpu::Mailbox mailbox() const { return mailbox_; }
 
  private:
+  void ReleaseWhenQueryResultIsAvailable(const base::Closure& callback);
+  void Released();
+  void ScheduleWaitForRelease(base::TimeDelta delay);
+  void WaitForRelease();
+
   scoped_refptr<cc::ContextProvider> context_provider_;
   const unsigned texture_target_;
   const unsigned query_type_;
@@ -127,6 +140,10 @@ class Buffer::Texture {
   unsigned query_id_;
   unsigned texture_id_;
   gpu::Mailbox mailbox_;
+  base::Closure release_callback_;
+  base::TimeTicks wait_for_release_time_;
+  bool wait_for_release_pending_;
+  base::WeakPtrFactory<Texture> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Texture);
 };
@@ -138,7 +155,9 @@ Buffer::Texture::Texture(cc::ContextProvider* context_provider)
       internalformat_(GL_RGBA),
       image_id_(0),
       query_id_(0),
-      texture_id_(0) {
+      texture_id_(0),
+      wait_for_release_pending_(false),
+      weak_ptr_factory_(this) {
   gpu::gles2::GLES2Interface* gles2 = context_provider_->ContextGL();
   texture_id_ = CreateGLTexture(gles2, texture_target_);
   // Generate a crypto-secure random mailbox name.
@@ -155,7 +174,9 @@ Buffer::Texture::Texture(cc::ContextProvider* context_provider,
       internalformat_(GLInternalFormat(gpu_memory_buffer->GetFormat())),
       image_id_(0),
       query_id_(0),
-      texture_id_(0) {
+      texture_id_(0),
+      wait_for_release_pending_(false),
+      weak_ptr_factory_(this) {
   gpu::gles2::GLES2Interface* gles2 = context_provider_->ContextGL();
   gfx::Size size = gpu_memory_buffer->GetSize();
   image_id_ =
@@ -222,11 +243,11 @@ void Buffer::Texture::ReleaseTexImage(const base::Closure& callback,
   gles2->BeginQueryEXT(query_type_, query_id_);
   gles2->ReleaseTexImage2DCHROMIUM(texture_target_, image_id_);
   gles2->EndQueryEXT(query_type_);
-  // Run callback when query has signaled and ReleaseTexImage has been handled
-  // if sync token has data and buffer has been used. If buffer was never used
-  // then run the callback immediately.
+  // Run callback when query result is available and ReleaseTexImage has been
+  // handled if sync token has data and buffer has been used. If buffer was
+  // never used then run the callback immediately.
   if (sync_token.HasData()) {
-    context_provider_->ContextSupport()->SignalQuery(query_id_, callback);
+    ReleaseWhenQueryResultIsAvailable(callback);
   } else {
     callback.Run();
   }
@@ -246,8 +267,9 @@ gpu::SyncToken Buffer::Texture::CopyTexImage(Texture* destination,
   gles2->BeginQueryEXT(query_type_, query_id_);
   gles2->ReleaseTexImage2DCHROMIUM(texture_target_, image_id_);
   gles2->EndQueryEXT(query_type_);
-  // Run callback when query has signaled and ReleaseTexImage has been handled.
-  context_provider_->ContextSupport()->SignalQuery(query_id_, callback);
+  // Run callback when query result is available and ReleaseTexImage has been
+  // handled.
+  ReleaseWhenQueryResultIsAvailable(callback);
   // Create and return a sync token that can be used to ensure that the
   // CopyTextureCHROMIUM call is processed before issuing any commands
   // that will read from the target texture on a different context.
@@ -256,6 +278,64 @@ gpu::SyncToken Buffer::Texture::CopyTexImage(Texture* destination,
   gpu::SyncToken sync_token;
   gles2->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
   return sync_token;
+}
+
+void Buffer::Texture::ReleaseWhenQueryResultIsAvailable(
+    const base::Closure& callback) {
+  DCHECK(release_callback_.is_null());
+  release_callback_ = callback;
+  base::TimeDelta wait_for_release_delay =
+      base::TimeDelta::FromMilliseconds(kWaitForReleaseDelayMs);
+  wait_for_release_time_ = base::TimeTicks::Now() + wait_for_release_delay;
+  ScheduleWaitForRelease(wait_for_release_delay);
+  context_provider_->ContextSupport()->SignalQuery(
+      query_id_,
+      base::Bind(&Buffer::Texture::Released, weak_ptr_factory_.GetWeakPtr()));
+}
+
+void Buffer::Texture::Released() {
+  if (!release_callback_.is_null())
+    base::ResetAndReturn(&release_callback_).Run();
+}
+
+void Buffer::Texture::ScheduleWaitForRelease(base::TimeDelta delay) {
+  if (wait_for_release_pending_)
+    return;
+
+  wait_for_release_pending_ = true;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&Buffer::Texture::WaitForRelease,
+                            weak_ptr_factory_.GetWeakPtr()),
+      delay);
+}
+
+void Buffer::Texture::WaitForRelease() {
+  DCHECK(wait_for_release_pending_);
+  wait_for_release_pending_ = false;
+
+  if (release_callback_.is_null())
+    return;
+
+  base::TimeTicks current_time = base::TimeTicks::Now();
+  if (current_time < wait_for_release_time_) {
+    ScheduleWaitForRelease(wait_for_release_time_ - current_time);
+    return;
+  }
+
+  base::Closure callback = base::ResetAndReturn(&release_callback_);
+
+  {
+    TRACE_EVENT0("exo", "Buffer::Texture::WaitForQueryResult");
+
+    // We need to wait for the result to be available. Getting the result of
+    // the query implies waiting for it to become available. The actual result
+    // is unimportant and also not well defined.
+    unsigned result = 0;
+    gpu::gles2::GLES2Interface* gles2 = context_provider_->ContextGL();
+    gles2->GetQueryObjectuivEXT(query_id_, GL_QUERY_RESULT_EXT, &result);
+  }
+
+  callback.Run();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
