@@ -889,6 +889,10 @@ button[disabled] {
   width: 16px;
 }
 
+paper-slider {
+  width: 172px;
+}
+
 paper-slider::shadow paper-progress::shadow #progressContainer {
   background-color: rgba(255, 255, 255, 0.2);
 }
