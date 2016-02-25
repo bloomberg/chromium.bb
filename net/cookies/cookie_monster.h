@@ -196,8 +196,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   void FlushStore(const base::Closure& callback) override;
   void SetForceKeepSessionState() override;
 
-  CookieMonster* GetCookieMonster() override;
-
   // Resets the list of cookieable schemes to the supplied schemes. Does
   // nothing if called after first use of the instance (i.e. after the
   // instance initialization process).

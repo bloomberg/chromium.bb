@@ -87,8 +87,6 @@ class DelayedCookieMonster : public CookieStore {
 
   void FlushStore(const base::Closure& callback) override;
 
-  CookieMonster* GetCookieMonster() override;
-
   scoped_ptr<CookieStore::CookieChangedSubscription>
   AddCallbackForCookie(const GURL& url, const std::string& name,
                        const CookieChangedCallback& callback) override;

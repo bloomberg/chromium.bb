@@ -79,7 +79,6 @@ class AwCookieStoreWrapper : public net::CookieStore {
   void DeleteSessionCookiesAsync(const DeleteCallback& callback) override;
   void FlushStore(const base::Closure& callback) override;
   void SetForceKeepSessionState() override;
-  net::CookieMonster* GetCookieMonster() override;
   scoped_ptr<CookieChangedSubscription> AddCallbackForCookie(
       const GURL& url,
       const std::string& name,

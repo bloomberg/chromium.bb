@@ -44,10 +44,6 @@ const char kValidCookieLine[] = "A=B; path=/";
 //   // Factory function. Will be called at most once per test.
 //   static scoped_refptr<CookieStore> Create();
 //
-//   // The cookie store is a CookieMonster. Only used to test
-//   // GetCookieMonster().
-//   static const bool is_cookie_monster;
-//
 //   // The cookie store supports cookies with the exclude_httponly() option.
 //   static const bool supports_http_only;
 //
@@ -466,13 +462,6 @@ TYPED_TEST_P(CookieStoreTest, SetCookieWithDetailsAsync) {
   EXPECT_FALSE(it->IsHttpOnly());
 
   EXPECT_TRUE(++it == cookies.end());
-}
-
-TYPED_TEST_P(CookieStoreTest, TypeTest) {
-  scoped_refptr<CookieStore> cs(this->GetCookieStore());
-  EXPECT_EQ(cs->GetCookieMonster(),
-            (TypeParam::is_cookie_monster) ?
-                static_cast<CookieMonster*>(cs.get()) : NULL);
 }
 
 TYPED_TEST_P(CookieStoreTest, DomainTest) {
@@ -1373,7 +1362,6 @@ TYPED_TEST_P(CookieStoreTest, DeleteSessionCookie) {
 
 REGISTER_TYPED_TEST_CASE_P(CookieStoreTest,
                            SetCookieWithDetailsAsync,
-                           TypeTest,
                            DomainTest,
                            DomainWithTrailingDotTest,
                            ValidSubdomainTest,

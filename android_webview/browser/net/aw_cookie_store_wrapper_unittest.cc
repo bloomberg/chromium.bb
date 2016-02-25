@@ -28,7 +28,6 @@ struct AwCookieStoreWrapperTestTraits {
     return cookie_store;
   }
 
-  static const bool is_cookie_monster = false;
   static const bool supports_http_only = true;
   static const bool supports_non_dotted_domains = true;
   static const bool preserves_trailing_dots = true;

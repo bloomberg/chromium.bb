@@ -185,9 +185,6 @@ class NET_EXPORT CookieStore : public base::RefCountedThreadSafe<CookieStore> {
   // Otherwise, does nothing.
   virtual void SetForceKeepSessionState();
 
-  // Returns the underlying CookieMonster.
-  virtual CookieMonster* GetCookieMonster() = 0;
-
   // Add a callback to be notified when the set of cookies named |name| that
   // would be sent for a request to |url| changes. The returned handle is
   // guaranteed not to hold a hard reference to the CookieStore object.

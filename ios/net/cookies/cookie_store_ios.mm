@@ -649,14 +649,6 @@ void CookieStoreIOS::DeleteCanonicalCookieAsync(
   }
 }
 
-// CookieStoreIOS is an implementation of CookieStore which is not a
-// CookieMonster. As CookieStore is the main cookie API, a caller of
-// GetCookieMonster must handle the case where this returns null.
-net::CookieMonster* CookieStoreIOS::GetCookieMonster() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return nullptr;
-}
-
 void CookieStoreIOS::DeleteAllCreatedBetweenAsync(
     const base::Time& delete_begin,
     const base::Time& delete_end,

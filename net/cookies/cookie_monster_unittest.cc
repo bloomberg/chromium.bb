@@ -75,7 +75,6 @@ struct CookieMonsterTestTraits {
     return new CookieMonster(NULL, NULL);
   }
 
-  static const bool is_cookie_monster = true;
   static const bool supports_http_only = true;
   static const bool supports_non_dotted_domains = true;
   static const bool preserves_trailing_dots = true;
@@ -90,7 +89,6 @@ struct CookieMonsterEnforcingStrictSecure {
     return new CookieMonster(NULL, NULL);
   }
 
-  static const bool is_cookie_monster = true;
   static const bool supports_http_only = true;
   static const bool supports_non_dotted_domains = true;
   static const bool preserves_trailing_dots = true;

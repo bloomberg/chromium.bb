@@ -35,7 +35,6 @@ struct CookieStoreIOSTestTraits {
     return store;
   }
 
-  static const bool is_cookie_monster = false;
   static const bool supports_http_only = false;
   static const bool supports_non_dotted_domains = false;
   static const bool preserves_trailing_dots = false;
@@ -141,8 +140,6 @@ class RoundTripTestCookieStore : public net::CookieStore {
     RoundTrip();
     store_->DeleteCanonicalCookieAsync(cookie, callback);
   }
-
-  net::CookieMonster* GetCookieMonster() override { return nullptr; }
 
   void DeleteAllCreatedBetweenAsync(const base::Time& delete_begin,
                                     const base::Time& delete_end,

@@ -992,10 +992,6 @@ void CookieMonster::DeleteSessionCookiesAsync(
   DoCookieTask(task);
 }
 
-CookieMonster* CookieMonster::GetCookieMonster() {
-  return this;
-}
-
 void CookieMonster::SetCookieableSchemes(
     const std::vector<std::string>& schemes) {
   base::AutoLock autolock(lock_);

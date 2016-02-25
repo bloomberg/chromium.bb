@@ -316,10 +316,6 @@ void AwCookieStoreWrapper::SetForceKeepSessionState() {
       base::Bind(&SetForceKeepSessionStateOnCookieThread));
 }
 
-net::CookieMonster* AwCookieStoreWrapper::GetCookieMonster() {
-  return nullptr;
-}
-
 scoped_ptr<net::CookieStore::CookieChangedSubscription>
 AwCookieStoreWrapper::AddCallbackForCookie(
     const GURL& url,

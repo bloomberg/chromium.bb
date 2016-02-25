@@ -206,10 +206,6 @@ void DelayedCookieMonster::FlushStore(const base::Closure& callback) {
   ADD_FAILURE();
 }
 
-CookieMonster* DelayedCookieMonster::GetCookieMonster() {
-  return cookie_monster_.get();
-}
-
 scoped_ptr<CookieStore::CookieChangedSubscription>
 DelayedCookieMonster::AddCallbackForCookie(
     const GURL& url,
