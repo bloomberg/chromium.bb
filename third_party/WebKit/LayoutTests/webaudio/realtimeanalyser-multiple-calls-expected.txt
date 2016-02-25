@@ -1,0 +1,13 @@
+Test AnalyserNode getFloatFrequencyData and getByteFrequencyData
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS Second call to getFloatFrequencyData is identical to the array [-58.539,-41.299,-33.422,-35.230,-42.020,-39.602,-46.787,-42.696,-47.643,-46.141,-47.208,-50.287,-47.460,-53.708,-48.735,-53.302,...].
+PASS Second call to getByteFrequencyData is identical to the array [167,232,255,255,238,239,223,228,216,217,214,206,211,197,206,196,...].
+PASS Output of getByteFrequencyData after getFloatFrequencyData is identical to the array [163,242,255,255,252,250,237,238,229,228,225,219,221,212,216,209,...].
+PASS Output of getFloatFrequenycData (converted to byte) after getByteFrequencyData is identical to the array [176,248,255,255,255,255,243,244,235,234,231,225,227,217,222,215,...].
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

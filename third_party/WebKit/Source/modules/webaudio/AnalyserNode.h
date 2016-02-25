@@ -56,8 +56,14 @@ public:
     void setSmoothingTimeConstant(double k, ExceptionState&);
     double smoothingTimeConstant() const { return m_analyser.smoothingTimeConstant(); }
 
-    void getFloatFrequencyData(DOMFloat32Array* array) { m_analyser.getFloatFrequencyData(array); }
-    void getByteFrequencyData(DOMUint8Array* array) { m_analyser.getByteFrequencyData(array); }
+    void getFloatFrequencyData(DOMFloat32Array* array, double currentTime)
+    {
+        m_analyser.getFloatFrequencyData(array, currentTime);
+    }
+    void getByteFrequencyData(DOMUint8Array* array, double currentTime)
+    {
+        m_analyser.getByteFrequencyData(array, currentTime);
+    }
     void getFloatTimeDomainData(DOMFloat32Array* array) { m_analyser.getFloatTimeDomainData(array); }
     void getByteTimeDomainData(DOMUint8Array* array) { m_analyser.getByteTimeDomainData(array); }
 

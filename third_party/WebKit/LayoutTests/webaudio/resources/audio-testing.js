@@ -438,7 +438,10 @@ var Should = (function () {
     };
 
     ShouldModel.prototype._isArray = function (arg) {
-        return arg instanceof Array || arg instanceof Float32Array;
+      return arg instanceof Array || arg instanceof Float32Array || arg instanceof Uint8Array ||
+        arg instanceof Uint16Array || arg instanceof Uint32Array || arg instanceof Int8Array ||
+        arg instanceof Int16Array || arg instanceof Int32Array || arg instanceof Uint8ClampedArray ||
+        arg instanceof Float64Array;
     };
 
     ShouldModel.prototype._assert = function (expression, reason, value) {
@@ -748,8 +751,12 @@ var Should = (function () {
         }
 
         var numberOfmismatches = Object.keys(mismatches).length;
-        var arrStr = (array.length > this.NUM_ARRAY_LOG) ?
-        array.slice(0, this.NUM_ARRAY_LOG).toString() + '...' : array.toString();
+        var arrSlice = array.slice(0, this.NUM_ARRAY_LOG);
+        var arrStr = arrSlice[0].toPrecision(this.PRINT_PRECISION);
+        for (var k = 1; k < arrSlice.length; ++k)
+            arrStr += ',' + arrSlice[k].toPrecision(this.PRINT_PRECISION);
+        if (array.length > this.NUM_ARRAY_LOG)
+            arrStr += ',...';
 
         if (numberOfmismatches === 0) {
             this._testPassed('is identical to the array [' + arrStr + ']');

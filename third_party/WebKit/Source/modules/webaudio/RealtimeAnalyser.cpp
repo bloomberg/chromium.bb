@@ -52,6 +52,7 @@ RealtimeAnalyser::RealtimeAnalyser()
     , m_smoothingTimeConstant(DefaultSmoothingTimeConstant)
     , m_minDecibels(DefaultMinDecibels)
     , m_maxDecibels(DefaultMaxDecibels)
+    , m_lastAnalysisTime(-1)
 {
     m_analysisFrame = adoptPtr(new FFTFrame(DefaultFFTSize));
 }
@@ -184,13 +185,8 @@ void RealtimeAnalyser::doFFTAnalysis()
     }
 }
 
-void RealtimeAnalyser::getFloatFrequencyData(DOMFloat32Array* destinationArray)
+void RealtimeAnalyser::convertFloatToDb(DOMFloat32Array* destinationArray)
 {
-    ASSERT(isMainThread());
-    ASSERT(destinationArray);
-
-    doFFTAnalysis();
-
     // Convert from linear magnitude to floating-point decibels.
     const double minDecibels = m_minDecibels;
     unsigned sourceLength = magnitudeBuffer().size();
@@ -207,13 +203,25 @@ void RealtimeAnalyser::getFloatFrequencyData(DOMFloat32Array* destinationArray)
     }
 }
 
-void RealtimeAnalyser::getByteFrequencyData(DOMUint8Array* destinationArray)
+void RealtimeAnalyser::getFloatFrequencyData(DOMFloat32Array* destinationArray, double currentTime)
 {
     ASSERT(isMainThread());
     ASSERT(destinationArray);
 
+    if (currentTime <= m_lastAnalysisTime) {
+        convertFloatToDb(destinationArray);
+        return;
+    }
+
+    // Time has advanced since the last call; update the FFT data.
+    m_lastAnalysisTime = currentTime;
     doFFTAnalysis();
 
+    convertFloatToDb(destinationArray);
+}
+
+void RealtimeAnalyser::convertToByteData(DOMUint8Array* destinationArray)
+{
     // Convert from linear magnitude to unsigned-byte decibels.
     unsigned sourceLength = magnitudeBuffer().size();
     size_t len = std::min(sourceLength, destinationArray->length());
@@ -240,6 +248,25 @@ void RealtimeAnalyser::getByteFrequencyData(DOMUint8Array* destinationArray)
             destination[i] = static_cast<unsigned char>(scaledValue);
         }
     }
+}
+
+void RealtimeAnalyser::getByteFrequencyData(DOMUint8Array* destinationArray, double currentTime)
+{
+    ASSERT(isMainThread());
+    ASSERT(destinationArray);
+
+    if (currentTime <= m_lastAnalysisTime) {
+        // FIXME: Is it worth caching the data so we don't have to do the conversion every time?
+        // Perhaps not, since we expect many calls in the same rendering quantum.
+        convertToByteData(destinationArray);
+        return;
+    }
+
+    // Time has advanced since the last call; update the FFT data.
+    m_lastAnalysisTime = currentTime;
+    doFFTAnalysis();
+
+    convertToByteData(destinationArray);
 }
 
 void RealtimeAnalyser::getFloatTimeDomainData(DOMFloat32Array* destinationArray)

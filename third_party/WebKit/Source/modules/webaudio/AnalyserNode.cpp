@@ -176,12 +176,12 @@ double AnalyserNode::smoothingTimeConstant() const
 
 void AnalyserNode::getFloatFrequencyData(DOMFloat32Array* array)
 {
-    analyserHandler().getFloatFrequencyData(array);
+    analyserHandler().getFloatFrequencyData(array, context()->currentTime());
 }
 
 void AnalyserNode::getByteFrequencyData(DOMUint8Array* array)
 {
-    analyserHandler().getByteFrequencyData(array);
+    analyserHandler().getByteFrequencyData(array, context()->currentTime());
 }
 
 void AnalyserNode::getFloatTimeDomainData(DOMFloat32Array* array)
