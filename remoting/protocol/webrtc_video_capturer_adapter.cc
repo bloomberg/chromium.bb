@@ -161,11 +161,16 @@ void WebrtcVideoCapturerAdapter::OnCaptureCompleted(
   DCHECK(capture_pending_);
   capture_pending_ = false;
 
+  if (!frame)
+    return;
+
   scoped_ptr<webrtc::DesktopFrame> owned_frame(frame);
 
-  // Drop the frame if there were no changes.
-  if (!owned_frame || owned_frame->updated_region().is_empty())
-    return;
+  // TODO(sergeyu): Currently the adapter keeps generating frames even when
+  // nothing is changing on the screen. This is necessary because the video
+  // sender drops frames. Obviously this is a suboptimal. The sending code in
+  // WebRTC needs to have some mechanism to notify when the bandwidth is
+  // exceeded, so the capturer can adapt frame rate.
 
   size_t width = frame->size().width();
   size_t height = frame->size().height();
