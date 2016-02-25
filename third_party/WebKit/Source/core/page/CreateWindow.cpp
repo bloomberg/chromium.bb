@@ -116,7 +116,7 @@ static Frame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame, con
     host->chromeClient().show(policy);
 
     if (openerFrame.document()->isSandboxed(SandboxPropagatesToAuxiliaryBrowsingContexts))
-        frame.loader().forceSandboxFlags(openerFrame.securityContext()->sandboxFlags());
+        frame.loader().forceSandboxFlags(openerFrame.securityContext()->getSandboxFlags());
 
     // This call may suspend the execution by running nested message loop.
     InspectorInstrumentation::windowCreated(&openerFrame, &frame);
@@ -146,7 +146,7 @@ DOMWindow* createWindow(const String& urlString, const AtomicString& frameName, 
     // that it eventually enters FrameLoader as an embedder-initiated navigation. FrameLoader
     // assumes no responsibility for generating an embedder-initiated navigation's referrer,
     // so we need to ensure the proper referrer is set now.
-    frameRequest.resourceRequest().setHTTPReferrer(SecurityPolicy::generateReferrer(activeFrame->document()->referrerPolicy(), completedURL, activeFrame->document()->outgoingReferrer()));
+    frameRequest.resourceRequest().setHTTPReferrer(SecurityPolicy::generateReferrer(activeFrame->document()->getReferrerPolicy(), completedURL, activeFrame->document()->outgoingReferrer()));
 
     // Records HasUserGesture before the value is invalidated inside createWindow(LocalFrame& openerFrame, ...).
     // This value will be set in ResourceRequest loaded in a new LocalFrame.
@@ -196,7 +196,7 @@ void createWindowForRequest(const FrameLoadRequest& request, LocalFrame& openerF
     if (shouldSendReferrer == MaybeSendReferrer) {
         // TODO(japhet): Does ReferrerPolicy need to be proagated for RemoteFrames?
         if (newFrame->isLocalFrame())
-            toLocalFrame(newFrame)->document()->setReferrerPolicy(openerFrame.document()->referrerPolicy());
+            toLocalFrame(newFrame)->document()->setReferrerPolicy(openerFrame.document()->getReferrerPolicy());
     }
 
     // TODO(japhet): Form submissions on RemoteFrames don't work yet.

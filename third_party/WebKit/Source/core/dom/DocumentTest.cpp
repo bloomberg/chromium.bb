@@ -259,7 +259,7 @@ TEST_F(DocumentTest, LinkManifest)
 
 TEST_F(DocumentTest, referrerPolicyParsing)
 {
-    EXPECT_EQ(ReferrerPolicyDefault, document().referrerPolicy());
+    EXPECT_EQ(ReferrerPolicyDefault, document().getReferrerPolicy());
 
     struct TestCase {
         const char* policy;
@@ -281,7 +281,7 @@ TEST_F(DocumentTest, referrerPolicyParsing)
         document().setReferrerPolicy(ReferrerPolicyDefault);
 
         document().processReferrerPolicy(test.policy);
-        EXPECT_EQ(test.expected, document().referrerPolicy()) << test.policy;
+        EXPECT_EQ(test.expected, document().getReferrerPolicy()) << test.policy;
     }
 }
 

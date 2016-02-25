@@ -118,7 +118,7 @@ public:
         Explicit
     };
 
-    NodeType nodeType() const { return m_nodeType; }
+    NodeType getNodeType() const { return m_nodeType; }
     String nodeTypeName() const;
 
     // This object has been connected to another object. This might have

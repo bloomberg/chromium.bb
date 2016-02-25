@@ -101,7 +101,7 @@ LocalFrame* DocumentInit::frameForSecurityContext() const
     return 0;
 }
 
-SandboxFlags DocumentInit::sandboxFlags() const
+SandboxFlags DocumentInit::getSandboxFlags() const
 {
     ASSERT(frameForSecurityContext());
     return frameForSecurityContext()->loader().effectiveSandboxFlags();
@@ -113,10 +113,10 @@ bool DocumentInit::shouldEnforceStrictMixedContentChecking() const
     return frameForSecurityContext()->loader().shouldEnforceStrictMixedContentChecking();
 }
 
-SecurityContext::InsecureRequestsPolicy DocumentInit::insecureRequestsPolicy() const
+SecurityContext::InsecureRequestsPolicy DocumentInit::getInsecureRequestsPolicy() const
 {
     ASSERT(frameForSecurityContext());
-    return frameForSecurityContext()->loader().insecureRequestsPolicy();
+    return frameForSecurityContext()->loader().getInsecureRequestsPolicy();
 }
 
 SecurityContext::InsecureNavigationsSet* DocumentInit::insecureNavigationsToUpgrade() const

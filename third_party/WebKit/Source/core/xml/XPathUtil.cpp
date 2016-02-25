@@ -40,7 +40,7 @@ bool isRootDomNode(Node* node)
 
 String stringValue(Node* node)
 {
-    switch (node->nodeType()) {
+    switch (node->getNodeType()) {
     case Node::ATTRIBUTE_NODE:
     case Node::PROCESSING_INSTRUCTION_NODE:
     case Node::COMMENT_NODE:
@@ -70,7 +70,7 @@ bool isValidContextNode(Node* node)
 {
     if (!node)
         return false;
-    switch (node->nodeType()) {
+    switch (node->getNodeType()) {
     case Node::ATTRIBUTE_NODE:
     case Node::CDATA_SECTION_NODE:
     case Node::COMMENT_NODE:

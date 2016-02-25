@@ -755,7 +755,7 @@ void HTMLTreeBuilder::processStartTagForInBody(AtomicHTMLToken* token)
     if (token->name() == appletTag
         || token->name() == embedTag
         || token->name() == objectTag) {
-        if (!pluginContentIsAllowed(m_tree.parserContentPolicy()))
+        if (!pluginContentIsAllowed(m_tree.getParserContentPolicy()))
             return;
     }
     if (token->name() == appletTag
@@ -2113,7 +2113,7 @@ void HTMLTreeBuilder::processEndTag(AtomicHTMLToken* token)
         if (token->name() == scriptTag) {
             // Pause ourselves so that parsing stops until the script can be processed by the caller.
             ASSERT(m_tree.currentStackItem()->hasTagName(scriptTag));
-            if (scriptingContentIsAllowed(m_tree.parserContentPolicy()))
+            if (scriptingContentIsAllowed(m_tree.getParserContentPolicy()))
                 m_scriptToProcess = m_tree.currentElement();
             m_tree.openElements()->pop();
             setInsertionMode(m_originalInsertionMode);
@@ -2768,7 +2768,7 @@ void HTMLTreeBuilder::processTokenInForeignContent(AtomicHTMLToken* token)
             adjustSVGTagNameCase(token);
 
         if (token->name() == SVGNames::scriptTag && m_tree.currentStackItem()->hasTagName(SVGNames::scriptTag)) {
-            if (scriptingContentIsAllowed(m_tree.parserContentPolicy()))
+            if (scriptingContentIsAllowed(m_tree.getParserContentPolicy()))
                 m_scriptToProcess = m_tree.currentElement();
             m_tree.openElements()->pop();
             return;

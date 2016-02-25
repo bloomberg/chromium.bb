@@ -44,7 +44,7 @@ void StyleInvalidator::scheduleInvalidationSetsForElement(const InvalidationList
     ASSERT(element.inActiveDocument());
     bool requiresDescendantInvalidation = false;
 
-    if (element.styleChangeType() < SubtreeStyleChange) {
+    if (element.getStyleChangeType() < SubtreeStyleChange) {
         for (auto& invalidationSet : invalidationLists.descendants) {
             if (invalidationSet->wholeSubtreeInvalid()) {
                 element.setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleInvalidator));
@@ -213,7 +213,7 @@ void StyleInvalidator::pushInvalidationSetsForElement(Element& element, Recursio
     for (const auto& invalidationSet : pendingInvalidations->siblings())
         siblingData.pushInvalidationSet(toSiblingInvalidationSet(*invalidationSet));
 
-    if (element.styleChangeType() >= SubtreeStyleChange)
+    if (element.getStyleChangeType() >= SubtreeStyleChange)
         return;
 
     if (!pendingInvalidations->descendants().isEmpty()) {
@@ -234,7 +234,7 @@ ALWAYS_INLINE bool StyleInvalidator::checkInvalidationSetsAgainstElement(Element
         return false;
 
     bool thisElementNeedsStyleRecalc = false;
-    if (element.styleChangeType() >= SubtreeStyleChange) {
+    if (element.getStyleChangeType() >= SubtreeStyleChange) {
         recursionData.setWholeSubtreeInvalid();
     } else {
         thisElementNeedsStyleRecalc = recursionData.matchesCurrentInvalidationSets(element);

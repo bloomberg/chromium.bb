@@ -904,7 +904,7 @@ bool Document::importContainerNodeChildren(ContainerNode* oldContainerNode, Pass
 
 PassRefPtrWillBeRawPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionState& exceptionState)
 {
-    switch (importedNode->nodeType()) {
+    switch (importedNode->getNodeType()) {
     case TEXT_NODE:
         return createTextNode(importedNode->nodeValue());
     case CDATA_SECTION_NODE:
@@ -970,7 +970,7 @@ PassRefPtrWillBeRawPtr<Node> Document::adoptNode(PassRefPtrWillBeRawPtr<Node> so
 {
     EventQueueScope scope;
 
-    switch (source->nodeType()) {
+    switch (source->getNodeType()) {
     case DOCUMENT_NODE:
         exceptionState.throwDOMException(NotSupportedError, "The node provided is of type '" + source->nodeName() + "', which may not be adopted.");
         return nullptr;
@@ -1411,7 +1411,7 @@ String Document::nodeName() const
     return "#document";
 }
 
-Node::NodeType Document::nodeType() const
+Node::NodeType Document::getNodeType() const
 {
     return DOCUMENT_NODE;
 }
@@ -1544,7 +1544,7 @@ void Document::scheduleLayoutTreeUpdate()
 
 bool Document::hasPendingForcedStyleRecalc() const
 {
-    return hasPendingStyleRecalc() && !inStyleRecalc() && styleChangeType() >= SubtreeStyleChange;
+    return hasPendingStyleRecalc() && !inStyleRecalc() && getStyleChangeType() >= SubtreeStyleChange;
 }
 
 void Document::updateStyleInvalidationIfNeeded()
@@ -1819,7 +1819,7 @@ void Document::updateStyle()
     m_lifecycle.advanceTo(DocumentLifecycle::InStyleRecalc);
 
     StyleRecalcChange change = NoChange;
-    if (styleChangeType() >= SubtreeStyleChange)
+    if (getStyleChangeType() >= SubtreeStyleChange)
         change = Force;
 
     NthIndexCache nthIndexCache(*this);
@@ -2110,7 +2110,7 @@ bool Document::dirtyElementsForLayerUpdate()
 
 void Document::scheduleSVGFilterLayerUpdateHack(Element& element)
 {
-    if (element.styleChangeType() == NeedsReattachStyleChange)
+    if (element.getStyleChangeType() == NeedsReattachStyleChange)
         return;
     element.setSVGFilterNeedsLayerUpdate();
     m_layerUpdateSVGFilterElements.add(&element);
@@ -3244,7 +3244,7 @@ bool Document::childTypeAllowed(NodeType type) const
         // Documents may contain no more than one of each of these.
         // (One Element and one DocumentType.)
         for (Node& c : NodeTraversal::childrenOf(*this)) {
-            if (c.nodeType() == type)
+            if (c.getNodeType() == type)
                 return false;
         }
         return true;
@@ -3254,7 +3254,7 @@ bool Document::childTypeAllowed(NodeType type) const
 
 bool Document::canAcceptChild(const Node& newChild, const Node* oldChild, ExceptionState& exceptionState) const
 {
-    if (oldChild && oldChild->nodeType() == newChild.nodeType())
+    if (oldChild && oldChild->getNodeType() == newChild.getNodeType())
         return true;
 
     int numDoctypes = 0;
@@ -3266,7 +3266,7 @@ bool Document::canAcceptChild(const Node& newChild, const Node* oldChild, Except
         if (oldChild && *oldChild == child)
             continue;
 
-        switch (child.nodeType()) {
+        switch (child.getNodeType()) {
         case DOCUMENT_TYPE_NODE:
             numDoctypes++;
             break;
@@ -3281,7 +3281,7 @@ bool Document::canAcceptChild(const Node& newChild, const Node* oldChild, Except
     // Then, see how many doctypes and elements might be added by the new child.
     if (newChild.isDocumentFragment()) {
         for (Node& child : NodeTraversal::childrenOf(toDocumentFragment(newChild))) {
-            switch (child.nodeType()) {
+            switch (child.getNodeType()) {
             case ATTRIBUTE_NODE:
             case CDATA_SECTION_NODE:
             case DOCUMENT_FRAGMENT_NODE:
@@ -3302,7 +3302,7 @@ bool Document::canAcceptChild(const Node& newChild, const Node* oldChild, Except
             }
         }
     } else {
-        switch (newChild.nodeType()) {
+        switch (newChild.getNodeType()) {
         case ATTRIBUTE_NODE:
         case CDATA_SECTION_NODE:
         case DOCUMENT_FRAGMENT_NODE:
@@ -3355,7 +3355,7 @@ PassRefPtrWillBeRawPtr<Document> Document::cloneDocumentWithoutChildren()
 
 void Document::cloneDataFromDocument(const Document& other)
 {
-    setCompatibilityMode(other.compatibilityMode());
+    setCompatibilityMode(other.getCompatibilityMode());
     setEncodingData(other.m_encodingData);
     setContextFeatures(other.contextFeatures());
     setSecurityOrigin(other.securityOrigin()->isolatedCopy());
@@ -4945,10 +4945,10 @@ void Document::initSecurityContext(const DocumentInit& initializer)
     // In the common case, create the security context from the currently
     // loading URL with a fresh content security policy.
     m_cookieURL = m_url;
-    enforceSandboxFlags(initializer.sandboxFlags());
+    enforceSandboxFlags(initializer.getSandboxFlags());
     if (initializer.shouldEnforceStrictMixedContentChecking())
         enforceStrictMixedContentChecking();
-    setInsecureRequestsPolicy(initializer.insecureRequestsPolicy());
+    setInsecureRequestsPolicy(initializer.getInsecureRequestsPolicy());
     if (initializer.insecureNavigationsToUpgrade()) {
         for (auto toUpgrade : *initializer.insecureNavigationsToUpgrade())
             addInsecureNavigationUpgrade(toUpgrade);

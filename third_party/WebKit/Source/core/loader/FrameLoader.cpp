@@ -147,7 +147,7 @@ ResourceRequest FrameLoader::resourceRequestForReload(FrameLoadType frameLoadTyp
     // therefore show the current document's url as the referrer.
     if (clientRedirectPolicy == ClientRedirect) {
         request.setHTTPReferrer(Referrer(m_frame->document()->outgoingReferrer(),
-            m_frame->document()->referrerPolicy()));
+            m_frame->document()->getReferrerPolicy()));
     }
 
     if (!overrideURL.isEmpty()) {
@@ -742,7 +742,7 @@ void FrameLoader::setReferrerForFrameRequest(ResourceRequest& request, ShouldSen
     // Always use the initiating document to generate the referrer.
     // We need to generateReferrer(), because we haven't enforced ReferrerPolicy or https->http
     // referrer suppression yet.
-    Referrer referrer = SecurityPolicy::generateReferrer(originDocument->referrerPolicy(), request.url(), originDocument->outgoingReferrer());
+    Referrer referrer = SecurityPolicy::generateReferrer(originDocument->getReferrerPolicy(), request.url(), originDocument->outgoingReferrer());
 
     request.setHTTPReferrer(referrer);
     RefPtr<SecurityOrigin> referrerOrigin = SecurityOrigin::createFromString(referrer.referrer);
@@ -1520,10 +1520,10 @@ SandboxFlags FrameLoader::effectiveSandboxFlags() const
 {
     SandboxFlags flags = m_forcedSandboxFlags;
     if (FrameOwner* frameOwner = m_frame->owner())
-        flags |= frameOwner->sandboxFlags();
+        flags |= frameOwner->getSandboxFlags();
     // Frames need to inherit the sandbox flags of their parent frame.
     if (Frame* parentFrame = m_frame->tree().parent())
-        flags |= parentFrame->securityContext()->sandboxFlags();
+        flags |= parentFrame->securityContext()->getSandboxFlags();
     return flags;
 }
 
@@ -1536,7 +1536,7 @@ bool FrameLoader::shouldEnforceStrictMixedContentChecking() const
     return parentFrame->securityContext()->shouldEnforceStrictMixedContentChecking();
 }
 
-SecurityContext::InsecureRequestsPolicy FrameLoader::insecureRequestsPolicy() const
+SecurityContext::InsecureRequestsPolicy FrameLoader::getInsecureRequestsPolicy() const
 {
     Frame* parentFrame = m_frame->tree().parent();
     if (!parentFrame)
@@ -1548,7 +1548,7 @@ SecurityContext::InsecureRequestsPolicy FrameLoader::insecureRequestsPolicy() co
         return SecurityContext::InsecureRequestsDoNotUpgrade;
 
     ASSERT(toLocalFrame(parentFrame)->document());
-    return toLocalFrame(parentFrame)->document()->insecureRequestsPolicy();
+    return toLocalFrame(parentFrame)->document()->getInsecureRequestsPolicy();
 }
 
 SecurityContext::InsecureNavigationsSet* FrameLoader::insecureNavigationsToUpgrade() const

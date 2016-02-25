@@ -42,7 +42,7 @@ class CORE_EXPORT DocumentLifecycle {
     DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(DocumentLifecycle);
 public:
-    enum State {
+    enum LifecycleState {
         Uninitialized,
         Inactive,
 
@@ -87,28 +87,28 @@ public:
         STACK_ALLOCATED();
         WTF_MAKE_NONCOPYABLE(Scope);
     public:
-        Scope(DocumentLifecycle&, State finalState);
+        Scope(DocumentLifecycle&, LifecycleState finalState);
         ~Scope();
 
     private:
         DocumentLifecycle& m_lifecycle;
-        State m_finalState;
+        LifecycleState m_finalState;
     };
 
     class DeprecatedTransition {
         DISALLOW_NEW();
         WTF_MAKE_NONCOPYABLE(DeprecatedTransition);
     public:
-        DeprecatedTransition(State from, State to);
+        DeprecatedTransition(LifecycleState from, LifecycleState to);
         ~DeprecatedTransition();
 
-        State from() const { return m_from; }
-        State to() const { return m_to; }
+        LifecycleState from() const { return m_from; }
+        LifecycleState to() const { return m_to; }
 
     private:
         DeprecatedTransition* m_previous;
-        State m_from;
-        State m_to;
+        LifecycleState m_from;
+        LifecycleState m_to;
     };
 
     class DetachScope {
@@ -142,7 +142,7 @@ public:
     ~DocumentLifecycle();
 
     bool isActive() const { return m_state > Inactive && m_state < Stopping; }
-    State state() const { return m_state; }
+    LifecycleState state() const { return m_state; }
 
     bool stateAllowsTreeMutations() const;
     bool stateAllowsLayoutTreeMutations() const;
@@ -150,8 +150,8 @@ public:
     bool stateAllowsLayoutInvalidation() const;
     bool stateAllowsLayoutTreeNotifications() const;
 
-    void advanceTo(State);
-    void ensureStateAtMost(State);
+    void advanceTo(LifecycleState);
+    void ensureStateAtMost(LifecycleState);
 
     bool inDetach() const { return m_detachCount; }
     void incrementDetachCount() { m_detachCount++; }
@@ -164,16 +164,16 @@ public:
     bool throttlingAllowed() const;
 
 #if ENABLE(ASSERT)
-    static const char* stateAsDebugString(const State);
+    static const char* stateAsDebugString(const LifecycleState);
 #endif
 
 private:
 #if ENABLE(ASSERT)
-    bool canAdvanceTo(State) const;
-    bool canRewindTo(State) const;
+    bool canAdvanceTo(LifecycleState) const;
+    bool canRewindTo(LifecycleState) const;
 #endif
 
-    State m_state;
+    LifecycleState m_state;
     int m_detachCount;
 };
 

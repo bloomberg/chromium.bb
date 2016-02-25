@@ -405,7 +405,7 @@ void StyledMarkupTraverser<Strategy>::appendStartMarkup(Node& node)
 {
     if (!m_accumulator)
         return;
-    switch (node.nodeType()) {
+    switch (node.getNodeType()) {
     case Node::TEXT_NODE: {
         Text& text = toText(node);
         if (text.parentElement() && isHTMLTextAreaElement(text.parentElement())) {

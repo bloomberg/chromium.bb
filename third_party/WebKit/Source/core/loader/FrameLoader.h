@@ -144,7 +144,7 @@ public:
 
     bool shouldEnforceStrictMixedContentChecking() const;
 
-    SecurityContext::InsecureRequestsPolicy insecureRequestsPolicy() const;
+    SecurityContext::InsecureRequestsPolicy getInsecureRequestsPolicy() const;
     SecurityContext::InsecureNavigationsSet* insecureNavigationsToUpgrade() const;
 
     Frame* opener();

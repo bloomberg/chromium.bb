@@ -371,7 +371,7 @@ bool Element::hasAnimations() const
     return elementAnimations && !elementAnimations->isEmpty();
 }
 
-Node::NodeType Element::nodeType() const
+Node::NodeType Element::getNodeType() const
 {
     return ELEMENT_NODE;
 }
@@ -1515,7 +1515,7 @@ void Element::attach(const AttachContext& context)
 
     // We've already been through detach when doing an attach, but we might
     // need to clear any state that's been added since then.
-    if (hasRareData() && styleChangeType() == NeedsReattachStyleChange) {
+    if (hasRareData() && getStyleChangeType() == NeedsReattachStyleChange) {
         ElementRareData* data = elementRareData();
         data->clearComputedStyle();
     }
@@ -1779,7 +1779,7 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
         }
     }
 
-    if (styleChangeType() >= SubtreeStyleChange)
+    if (getStyleChangeType() >= SubtreeStyleChange)
         return Force;
 
     if (change > Inherit || localChange > Inherit)
@@ -1860,7 +1860,7 @@ void Element::clearAnimationStyleChange()
 
 void Element::setNeedsAnimationStyleRecalc()
 {
-    if (styleChangeType() != NoStyleChange)
+    if (getStyleChangeType() != NoStyleChange)
         return;
 
     setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Animation));

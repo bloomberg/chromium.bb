@@ -169,14 +169,14 @@ static inline bool nodeMatchesBasicTest(Node* node, Step::Axis axis, const Step:
 {
     switch (nodeTest.kind()) {
     case Step::NodeTest::TextNodeTest: {
-        Node::NodeType type = node->nodeType();
+        Node::NodeType type = node->getNodeType();
         return type == Node::TEXT_NODE || type == Node::CDATA_SECTION_NODE;
     }
     case Step::NodeTest::CommentNodeTest:
-        return node->nodeType() == Node::COMMENT_NODE;
+        return node->getNodeType() == Node::COMMENT_NODE;
     case Step::NodeTest::ProcessingInstructionNodeTest: {
         const AtomicString& name = nodeTest.data();
-        return node->nodeType() == Node::PROCESSING_INSTRUCTION_NODE && (name.isEmpty() || node->nodeName() == name);
+        return node->getNodeType() == Node::PROCESSING_INSTRUCTION_NODE && (name.isEmpty() || node->nodeName() == name);
     }
     case Step::NodeTest::AnyNodeTest:
         return true;
@@ -307,7 +307,7 @@ void Step::nodesInAxis(EvaluationContext& evaluationContext, Node* context, Node
     }
 
     case FollowingSiblingAxis:
-        if (context->nodeType() == Node::ATTRIBUTE_NODE)
+        if (context->getNodeType() == Node::ATTRIBUTE_NODE)
             return;
 
         for (Node* n = context->nextSibling(); n; n = n->nextSibling()) {
@@ -317,7 +317,7 @@ void Step::nodesInAxis(EvaluationContext& evaluationContext, Node* context, Node
         return;
 
     case PrecedingSiblingAxis:
-        if (context->nodeType() == Node::ATTRIBUTE_NODE)
+        if (context->getNodeType() == Node::ATTRIBUTE_NODE)
             return;
 
         for (Node* n = context->previousSibling(); n; n = n->previousSibling()) {

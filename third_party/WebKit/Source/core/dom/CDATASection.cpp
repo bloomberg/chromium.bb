@@ -40,7 +40,7 @@ String CDATASection::nodeName() const
     return "#cdata-section";
 }
 
-Node::NodeType CDATASection::nodeType() const
+Node::NodeType CDATASection::getNodeType() const
 {
     return CDATA_SECTION_NODE;
 }

@@ -61,10 +61,10 @@ public:
     bool shouldSetURL() const;
     bool isSeamlessAllowedFor(Document* child) const;
     bool shouldReuseDefaultView() const { return m_shouldReuseDefaultView; }
-    SandboxFlags sandboxFlags() const;
+    SandboxFlags getSandboxFlags() const;
     bool shouldEnforceStrictMixedContentChecking() const;
     bool isHostedInReservedIPRange() const;
-    SecurityContext::InsecureRequestsPolicy insecureRequestsPolicy() const;
+    SecurityContext::InsecureRequestsPolicy getInsecureRequestsPolicy() const;
     SecurityContext::InsecureNavigationsSet* insecureNavigationsToUpgrade() const;
 
     Document* parent() const { return m_parent.get(); }

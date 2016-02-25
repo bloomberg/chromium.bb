@@ -204,7 +204,7 @@ public:
     virtual String nodeName() const = 0;
     virtual String nodeValue() const;
     virtual void setNodeValue(const String&);
-    virtual NodeType nodeType() const = 0;
+    virtual NodeType getNodeType() const = 0;
     ContainerNode* parentNode() const;
     Element* parentElement() const;
     ContainerNode* parentElementOrShadowRoot() const;
@@ -364,9 +364,9 @@ public:
     // to check which element is exactly focused.
     bool focused() const { return isUserActionElement() && isUserActionElementFocused(); }
 
-    bool needsAttach() const { return styleChangeType() == NeedsReattachStyleChange; }
-    bool needsStyleRecalc() const { return styleChangeType() != NoStyleChange; }
-    StyleChangeType styleChangeType() const { return static_cast<StyleChangeType>(m_nodeFlags & StyleChangeMask); }
+    bool needsAttach() const { return getStyleChangeType() == NeedsReattachStyleChange; }
+    bool needsStyleRecalc() const { return getStyleChangeType() != NoStyleChange; }
+    StyleChangeType getStyleChangeType() const { return static_cast<StyleChangeType>(m_nodeFlags & StyleChangeMask); }
     bool childNeedsStyleRecalc() const { return getFlag(ChildNeedsStyleRecalcFlag); }
     bool isLink() const { return getFlag(IsLinkFlag); }
     bool isEditingText() const { ASSERT(isTextNode()); return getFlag(HasNameOrIsEditingTextFlag); }
@@ -494,7 +494,7 @@ public:
     bool isChildOfV0ShadowHost() const;
     bool isSlotAssignable() const { return isTextNode() || isElementNode(); }
 
-    bool isDocumentTypeNode() const { return nodeType() == DOCUMENT_TYPE_NODE; }
+    bool isDocumentTypeNode() const { return getNodeType() == DOCUMENT_TYPE_NODE; }
     virtual bool childTypeAllowed(NodeType) const { return false; }
     unsigned countChildren() const;
 
@@ -867,7 +867,7 @@ inline ContainerNode* Node::parentNode() const
 
 inline void Node::lazyReattachIfAttached()
 {
-    if (styleChangeType() == NeedsReattachStyleChange)
+    if (getStyleChangeType() == NeedsReattachStyleChange)
         return;
     if (!inActiveDocument())
         return;

@@ -166,7 +166,7 @@ bool DOMPatchSupport::innerPatchNode(Digest* oldDigest, Digest* newDigest, Excep
     Node* oldNode = oldDigest->m_node;
     Node* newNode = newDigest->m_node;
 
-    if (newNode->nodeType() != oldNode->nodeType() || newNode->nodeName() != oldNode->nodeName())
+    if (newNode->getNodeType() != oldNode->getNodeType() || newNode->nodeName() != oldNode->nodeName())
         return m_domEditor->replaceChild(oldNode->parentNode(), newNode, oldNode, exceptionState);
 
     if (oldNode->nodeValue() != newNode->nodeValue()) {
@@ -402,7 +402,7 @@ PassOwnPtrWillBeRawPtr<DOMPatchSupport::Digest> DOMPatchSupport::createDigest(No
     OwnPtr<WebCryptoDigestor> digestor = createDigestor(HashAlgorithmSha1);
     DigestValue digestResult;
 
-    Node::NodeType nodeType = node->nodeType();
+    Node::NodeType nodeType = node->getNodeType();
     digestor->consume(reinterpret_cast<const unsigned char*>(&nodeType), sizeof(nodeType));
     addStringToDigestor(digestor.get(), node->nodeName());
     addStringToDigestor(digestor.get(), node->nodeValue());

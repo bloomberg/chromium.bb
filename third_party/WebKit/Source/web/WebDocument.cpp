@@ -244,7 +244,7 @@ WebElement WebDocument::fullScreenElement() const
 
 WebReferrerPolicy WebDocument::referrerPolicy() const
 {
-    return static_cast<WebReferrerPolicy>(constUnwrap<Document>()->referrerPolicy());
+    return static_cast<WebReferrerPolicy>(constUnwrap<Document>()->getReferrerPolicy());
 }
 
 WebString WebDocument::outgoingReferrer()

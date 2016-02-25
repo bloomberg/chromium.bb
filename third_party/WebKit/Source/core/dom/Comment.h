@@ -36,11 +36,11 @@ private:
     Comment(Document&, const String&);
 
     String nodeName() const override;
-    NodeType nodeType() const override;
+    NodeType getNodeType() const override;
     PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep) override;
 };
 
-DEFINE_NODE_TYPE_CASTS(Comment, nodeType() == Node::COMMENT_NODE);
+DEFINE_NODE_TYPE_CASTS(Comment, getNodeType() == Node::COMMENT_NODE);
 
 } // namespace blink
 

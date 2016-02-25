@@ -73,7 +73,7 @@ void MarkupAccumulator::appendEndTag(const Element& element)
 
 void MarkupAccumulator::appendStartMarkup(StringBuilder& result, Node& node, Namespaces* namespaces)
 {
-    switch (node.nodeType()) {
+    switch (node.getNodeType()) {
     case Node::TEXT_NODE:
         appendText(result, toText(node));
         break;

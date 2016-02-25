@@ -22,7 +22,7 @@ public:
 
     virtual bool isLocal() const = 0;
 
-    virtual SandboxFlags sandboxFlags() const = 0;
+    virtual SandboxFlags getSandboxFlags() const = 0;
     virtual void dispatchLoad() = 0;
 
     // On load failure, a frame can ask its owner to render fallback content

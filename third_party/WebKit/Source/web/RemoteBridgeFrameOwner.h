@@ -30,7 +30,7 @@ public:
         return false;
     }
 
-    SandboxFlags sandboxFlags() const override
+    SandboxFlags getSandboxFlags() const override
     {
         return m_sandboxFlags;
     }

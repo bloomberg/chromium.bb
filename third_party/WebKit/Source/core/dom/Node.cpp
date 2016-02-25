@@ -167,7 +167,7 @@ void Node::dumpStatistics()
                 }
             }
 
-            switch (node->nodeType()) {
+            switch (node->getNodeType()) {
             case ELEMENT_NODE: {
                 ++elementNodes;
 
@@ -519,7 +519,7 @@ void Node::normalize()
         if (node == this)
             break;
 
-        if (node->nodeType() == TEXT_NODE)
+        if (node->getNodeType() == TEXT_NODE)
             node = toText(node)->mergeNextSiblingNodesIfPossible();
         else
             node = NodeTraversal::nextPostOrder(*node);
@@ -728,7 +728,7 @@ void Node::setNeedsStyleRecalc(StyleChangeType changeType, const StyleChangeReas
         "data",
         InspectorStyleRecalcInvalidationTrackingEvent::data(this, reason));
 
-    StyleChangeType existingChangeType = styleChangeType();
+    StyleChangeType existingChangeType = getStyleChangeType();
     if (changeType > existingChangeType)
         setStyleChange(changeType);
 
@@ -899,7 +899,7 @@ void Node::reattach(const AttachContext& context)
     reattachContext.performingReattach = true;
 
     // We only need to detach if the node has already been through attach().
-    if (styleChangeType() < NeedsReattachStyleChange)
+    if (getStyleChangeType() < NeedsReattachStyleChange)
         detach(reattachContext);
     attach(reattachContext);
 }
@@ -1117,8 +1117,8 @@ bool Node::isEqualNode(Node* other) const
     if (!other)
         return false;
 
-    NodeType nodeType = this->nodeType();
-    if (nodeType != other->nodeType())
+    NodeType nodeType = this->getNodeType();
+    if (nodeType != other->getNodeType())
         return false;
 
     if (nodeName() != other->nodeName())
@@ -1176,7 +1176,7 @@ bool Node::isDefaultNamespace(const AtomicString& namespaceURIMaybeEmpty) const
 {
     const AtomicString& namespaceURI = namespaceURIMaybeEmpty.isEmpty() ? nullAtom : namespaceURIMaybeEmpty;
 
-    switch (nodeType()) {
+    switch (getNodeType()) {
     case ELEMENT_NODE: {
         const Element& element = toElement(*this);
 
@@ -1224,7 +1224,7 @@ const AtomicString& Node::lookupPrefix(const AtomicString& namespaceURI) const
 
     const Element* context;
 
-    switch (nodeType()) {
+    switch (getNodeType()) {
     case ELEMENT_NODE:
         context = toElement(this);
         break;
@@ -1258,7 +1258,7 @@ const AtomicString& Node::lookupNamespaceURI(const String& prefix) const
     if (!prefix.isNull() && prefix.isEmpty())
         return nullAtom;
 
-    switch (nodeType()) {
+    switch (getNodeType()) {
     case ELEMENT_NODE: {
         const Element& element = toElement(*this);
 
@@ -1329,7 +1329,7 @@ String Node::textContent(bool convertBRsToNewlines) const
 
 void Node::setTextContent(const String& text)
 {
-    switch (nodeType()) {
+    switch (getNodeType()) {
     case TEXT_NODE:
     case CDATA_SECTION_NODE:
     case COMMENT_NODE:
@@ -1377,8 +1377,8 @@ unsigned short Node::compareDocumentPosition(const Node* otherNode, ShadowTreesT
     if (otherNode == this)
         return DOCUMENT_POSITION_EQUIVALENT;
 
-    const Attr* attr1 = nodeType() == ATTRIBUTE_NODE ? toAttr(this) : nullptr;
-    const Attr* attr2 = otherNode->nodeType() == ATTRIBUTE_NODE ? toAttr(otherNode) : nullptr;
+    const Attr* attr1 = getNodeType() == ATTRIBUTE_NODE ? toAttr(this) : nullptr;
+    const Attr* attr2 = otherNode->getNodeType() == ATTRIBUTE_NODE ? toAttr(otherNode) : nullptr;
 
     const Node* start1 = attr1 ? attr1->ownerElement() : this;
     const Node* start2 = attr2 ? attr2->ownerElement() : otherNode;
@@ -1449,9 +1449,9 @@ unsigned short Node::compareDocumentPosition(const Node* otherNode, ShadowTreesT
         const Node* child2 = chain2[--index2];
         if (child1 != child2) {
             // If one of the children is an attribute, it wins.
-            if (child1->nodeType() == ATTRIBUTE_NODE)
+            if (child1->getNodeType() == ATTRIBUTE_NODE)
                 return DOCUMENT_POSITION_FOLLOWING | connection;
-            if (child2->nodeType() == ATTRIBUTE_NODE)
+            if (child2->getNodeType() == ATTRIBUTE_NODE)
                 return DOCUMENT_POSITION_PRECEDING | connection;
 
             // If one of the children is a shadow root,
@@ -1549,7 +1549,7 @@ void Node::showNode(const char* prefix) const
         WTFLogAlways("%s%s\t%p \"%s\"\n", prefix, nodeName().utf8().data(), this, value.utf8().data());
     } else if (isDocumentTypeNode()) {
         WTFLogAlways("%sDOCTYPE %s\t%p\n", prefix, nodeName().utf8().data(), this);
-    } else if (nodeType() == PROCESSING_INSTRUCTION_NODE) {
+    } else if (getNodeType() == PROCESSING_INSTRUCTION_NODE) {
         WTFLogAlways("%s?%s\t%p\n", prefix, nodeName().utf8().data(), this);
     } else if (isShadowRoot()) {
         // nodeName of ShadowRoot is #document-fragment.  It's confused with
@@ -1596,7 +1596,7 @@ void Node::showNodePathForThis() const
             continue;
         }
 
-        switch (node->nodeType()) {
+        switch (node->getNodeType()) {
         case ELEMENT_NODE: {
             WTFLogAlways("/%s", node->nodeName().utf8().data());
 
@@ -2377,7 +2377,7 @@ DEFINE_TRACE(Node)
 unsigned Node::lengthOfContents() const
 {
     // This switch statement must be consistent with that of Range::processContentsBetweenOffsets.
-    switch (nodeType()) {
+    switch (getNodeType()) {
     case Node::TEXT_NODE:
     case Node::CDATA_SECTION_NODE:
     case Node::COMMENT_NODE:

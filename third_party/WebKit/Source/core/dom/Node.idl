@@ -37,7 +37,7 @@
     const unsigned short DOCUMENT_TYPE_NODE = 10;
     const unsigned short DOCUMENT_FRAGMENT_NODE = 11;
     const unsigned short NOTATION_NODE = 12; // historical
-    readonly attribute unsigned short nodeType;
+    [ImplementedAs=getNodeType] readonly attribute unsigned short nodeType;
     readonly attribute DOMString nodeName;
 
     readonly attribute DOMString? baseURI;

@@ -872,7 +872,7 @@ void InspectorDOMAgent::setNodeValue(ErrorString* errorString, int nodeId, const
     if (!node)
         return;
 
-    if (node->nodeType() != Node::TEXT_NODE) {
+    if (node->getNodeType() != Node::TEXT_NODE) {
         *errorString = "Can only set value of text nodes";
         return;
     }
@@ -955,7 +955,7 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
 
         // Manual plain text search.
         for (; node; node = nextNodeWithShadowDOMInMind(*node, documentElement, includeUserAgentShadowDOM)) {
-            switch (node->nodeType()) {
+            switch (node->getNodeType()) {
             case Node::TEXT_NODE:
             case Node::COMMENT_NODE:
             case Node::CDATA_SECTION_NODE: {
@@ -1010,7 +1010,7 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
                 if (exceptionState.hadException())
                     break;
 
-                if (node->nodeType() == Node::ATTRIBUTE_NODE)
+                if (node->getNodeType() == Node::ATTRIBUTE_NODE)
                     node = toAttr(node)->ownerElement();
                 resultCollector.add(node);
             }
@@ -1369,7 +1369,7 @@ void InspectorDOMAgent::getNodeForLocation(ErrorString* errorString, int x, int 
     HitTestResult result(request, IntPoint(x, y));
     m_document->frame()->contentLayoutObject()->hitTest(result);
     Node* node = result.innerPossiblyPseudoNode();
-    while (node && node->nodeType() == Node::TEXT_NODE)
+    while (node && node->getNodeType() == Node::TEXT_NODE)
         node = node->parentNode();
     if (!node) {
         *errorString = "No node found at given location";
@@ -1443,7 +1443,7 @@ PassOwnPtr<protocol::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* node
     String localName;
     String nodeValue;
 
-    switch (node->nodeType()) {
+    switch (node->getNodeType()) {
     case Node::TEXT_NODE:
     case Node::COMMENT_NODE:
     case Node::CDATA_SECTION_NODE:
@@ -1463,7 +1463,7 @@ PassOwnPtr<protocol::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* node
 
     OwnPtr<protocol::DOM::Node> value = protocol::DOM::Node::create()
         .setNodeId(id)
-        .setNodeType(static_cast<int>(node->nodeType()))
+        .setNodeType(static_cast<int>(node->getNodeType()))
         .setNodeName(node->nodeName())
         .setLocalName(localName)
         .setNodeValue(nodeValue).build();
@@ -1577,7 +1577,7 @@ PassOwnPtr<protocol::Array<protocol::DOM::Node>> InspectorDOMAgent::buildArrayFo
     if (depth == 0) {
         // Special-case the only text child - pretend that container's children have been requested.
         Node* firstChild = container->firstChild();
-        if (firstChild && firstChild->nodeType() == Node::TEXT_NODE && !firstChild->nextSibling()) {
+        if (firstChild && firstChild->getNodeType() == Node::TEXT_NODE && !firstChild->nextSibling()) {
             children->addItem(buildObjectForNode(firstChild, 0, nodesMap));
             m_childrenRequested.add(bind(container, nodesMap));
         }
@@ -1617,7 +1617,7 @@ PassOwnPtr<protocol::Array<protocol::DOM::BackendNode>> InspectorDOMAgent::build
             continue;
 
         OwnPtr<protocol::DOM::BackendNode> backendNode = protocol::DOM::BackendNode::create()
-            .setNodeType(distributedNode->nodeType())
+            .setNodeType(distributedNode->getNodeType())
             .setNodeName(distributedNode->nodeName())
             .setBackendNodeId(DOMNodeIds::idForNode(distributedNode)).build();
         distributedNodes->addItem(backendNode.release());
@@ -1674,7 +1674,7 @@ Node* InspectorDOMAgent::innerParentNode(Node* node)
 bool InspectorDOMAgent::isWhitespace(Node* node)
 {
     //TODO: pull ignoreWhitespace setting from the frontend and use here.
-    return node && node->nodeType() == Node::TEXT_NODE && node->nodeValue().stripWhiteSpace().length() == 0;
+    return node && node->getNodeType() == Node::TEXT_NODE && node->nodeValue().stripWhiteSpace().length() == 0;
 }
 
 void InspectorDOMAgent::domContentLoadedEventFired(LocalFrame* frame)

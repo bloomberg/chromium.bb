@@ -802,7 +802,7 @@ void AbstractAudioContext::handleStoppableSourceNodes()
 
     // Find AudioBufferSourceNodes to see if we can stop playing them.
     for (AudioNode* node : m_activeSourceNodes) {
-        if (node->handler().nodeType() == AudioHandler::NodeTypeAudioBufferSource) {
+        if (node->handler().getNodeType() == AudioHandler::NodeTypeAudioBufferSource) {
             AudioBufferSourceNode* sourceNode = static_cast<AudioBufferSourceNode*>(node);
             sourceNode->audioBufferSourceHandler().handleStoppableSourceNode();
         }

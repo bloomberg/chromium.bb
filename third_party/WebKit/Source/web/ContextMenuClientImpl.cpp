@@ -327,7 +327,7 @@ void ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu)
     if (ds)
         data.securityInfo = ds->response().securityInfo();
 
-    data.referrerPolicy = static_cast<WebReferrerPolicy>(selectedFrame->document()->referrerPolicy());
+    data.referrerPolicy = static_cast<WebReferrerPolicy>(selectedFrame->document()->getReferrerPolicy());
 
     // Filter out custom menu elements and add them into the data.
     populateCustomMenuItems(defaultMenu, &data);

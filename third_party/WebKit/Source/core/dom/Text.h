@@ -60,7 +60,7 @@ public:
     void reattachIfNeeded(const AttachContext& = AttachContext());
 
     bool canContainRangeEndPoint() const final { return true; }
-    NodeType nodeType() const override;
+    NodeType getNodeType() const override;
 
     DECLARE_VIRTUAL_TRACE();
 

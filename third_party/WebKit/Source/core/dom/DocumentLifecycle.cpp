@@ -41,7 +41,7 @@ static DocumentLifecycle::DeprecatedTransition* s_deprecatedTransitionStack = 0;
 // related data to avoid this being a global setting.
 static unsigned s_allowThrottlingCount = 0;
 
-DocumentLifecycle::Scope::Scope(DocumentLifecycle& lifecycle, State finalState)
+DocumentLifecycle::Scope::Scope(DocumentLifecycle& lifecycle, LifecycleState finalState)
     : m_lifecycle(lifecycle)
     , m_finalState(finalState)
 {
@@ -52,7 +52,7 @@ DocumentLifecycle::Scope::~Scope()
     m_lifecycle.advanceTo(m_finalState);
 }
 
-DocumentLifecycle::DeprecatedTransition::DeprecatedTransition(State from, State to)
+DocumentLifecycle::DeprecatedTransition::DeprecatedTransition(LifecycleState from, LifecycleState to)
     : m_previous(s_deprecatedTransitionStack)
     , m_from(from)
     , m_to(to)
@@ -88,7 +88,7 @@ DocumentLifecycle::~DocumentLifecycle()
 
 #if ENABLE(ASSERT)
 
-bool DocumentLifecycle::canAdvanceTo(State nextState) const
+bool DocumentLifecycle::canAdvanceTo(LifecycleState nextState) const
 {
     // We can stop from anywhere.
     if (nextState == Stopping)
@@ -248,7 +248,7 @@ bool DocumentLifecycle::canAdvanceTo(State nextState) const
     return false;
 }
 
-bool DocumentLifecycle::canRewindTo(State nextState) const
+bool DocumentLifecycle::canRewindTo(LifecycleState nextState) const
 {
     // This transition is bogus, but we've whitelisted it anyway.
     if (s_deprecatedTransitionStack && m_state == s_deprecatedTransitionStack->from() && nextState == s_deprecatedTransitionStack->to())
@@ -264,14 +264,14 @@ bool DocumentLifecycle::canRewindTo(State nextState) const
 
 #endif
 
-void DocumentLifecycle::advanceTo(State nextState)
+void DocumentLifecycle::advanceTo(LifecycleState nextState)
 {
     ASSERT_WITH_MESSAGE(canAdvanceTo(nextState),
         "Cannot advance document lifecycle from %s to %s.", stateAsDebugString(m_state), stateAsDebugString(nextState));
     m_state = nextState;
 }
 
-void DocumentLifecycle::ensureStateAtMost(State state)
+void DocumentLifecycle::ensureStateAtMost(LifecycleState state)
 {
     ASSERT(state == VisualUpdatePending || state == StyleClean || state == LayoutClean);
     if (m_state <= state)
@@ -290,7 +290,7 @@ bool DocumentLifecycle::throttlingAllowed() const
 #define DEBUG_STRING_CASE(StateName) \
     case StateName: return #StateName
 
-const char* DocumentLifecycle::stateAsDebugString(const State state)
+const char* DocumentLifecycle::stateAsDebugString(const LifecycleState state)
 {
     switch (state) {
         DEBUG_STRING_CASE(Uninitialized);

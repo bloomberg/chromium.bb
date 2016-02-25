@@ -85,7 +85,7 @@ static bool isAcceptableCSSStyleSheetParent(Node* parentNode)
         || isHTMLLinkElement(*parentNode)
         || isHTMLStyleElement(*parentNode)
         || isSVGStyleElement(*parentNode)
-        || parentNode->nodeType() == Node::PROCESSING_INSTRUCTION_NODE;
+        || parentNode->getNodeType() == Node::PROCESSING_INSTRUCTION_NODE;
 }
 #endif
 

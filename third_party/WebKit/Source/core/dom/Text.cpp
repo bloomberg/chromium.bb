@@ -66,7 +66,7 @@ PassRefPtrWillBeRawPtr<Node> Text::mergeNextSiblingNodesIfPossible()
 
     // Merge text nodes.
     while (Node* nextSibling = this->nextSibling()) {
-        if (nextSibling->nodeType() != TEXT_NODE)
+        if (nextSibling->getNodeType() != TEXT_NODE)
             break;
 
         RefPtrWillBeRawPtr<Text> nextText = toText(nextSibling);
@@ -135,7 +135,7 @@ PassRefPtrWillBeRawPtr<Text> Text::splitText(unsigned offset, ExceptionState& ex
 static const Text* earliestLogicallyAdjacentTextNode(const Text* t)
 {
     for (const Node* n = t->previousSibling(); n; n = n->previousSibling()) {
-        Node::NodeType type = n->nodeType();
+        Node::NodeType type = n->getNodeType();
         if (type == Node::TEXT_NODE || type == Node::CDATA_SECTION_NODE) {
             t = toText(n);
             continue;
@@ -149,7 +149,7 @@ static const Text* earliestLogicallyAdjacentTextNode(const Text* t)
 static const Text* latestLogicallyAdjacentTextNode(const Text* t)
 {
     for (const Node* n = t->nextSibling(); n; n = n->nextSibling()) {
-        Node::NodeType type = n->nodeType();
+        Node::NodeType type = n->getNodeType();
         if (type == Node::TEXT_NODE || type == Node::CDATA_SECTION_NODE) {
             t = toText(n);
             continue;
@@ -227,7 +227,7 @@ String Text::nodeName() const
     return "#text";
 }
 
-Node::NodeType Text::nodeType() const
+Node::NodeType Text::getNodeType() const
 {
     return TEXT_NODE;
 }
@@ -369,7 +369,7 @@ void Text::reattachIfNeeded(const AttachContext& context)
     AttachContext reattachContext(context);
     reattachContext.performingReattach = true;
 
-    if (styleChangeType() < NeedsReattachStyleChange)
+    if (getStyleChangeType() < NeedsReattachStyleChange)
         detach(reattachContext);
     if (layoutObjectIsNeeded)
         LayoutTreeBuilderForText(*this, layoutParent->layoutObject()).createLayoutObject();

@@ -52,7 +52,7 @@ public:
     void setWasCreatedByScript(bool wasCreatedByScript) { m_wasCreatedByScript = wasCreatedByScript; }
     bool wasCreatedByScript() const { return m_wasCreatedByScript; }
 
-    ParserContentPolicy parserContentPolicy() { return m_parserContentPolicy; }
+    ParserContentPolicy getParserContentPolicy() { return m_parserContentPolicy; }
 
 protected:
     explicit ScriptableDocumentParser(Document&, ParserContentPolicy = AllowScriptingContent);

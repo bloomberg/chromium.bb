@@ -79,7 +79,7 @@ public:
     // FrameOwner overrides:
     bool isLocal() const override { return true; }
     void dispatchLoad() override;
-    SandboxFlags sandboxFlags() const override { return m_sandboxFlags; }
+    SandboxFlags getSandboxFlags() const override { return m_sandboxFlags; }
     void renderFallbackContent() override { }
     ScrollbarMode scrollingMode() const override { return ScrollbarAuto; }
     int marginWidth() const override { return -1; }

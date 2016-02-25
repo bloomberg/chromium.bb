@@ -552,7 +552,7 @@ public:
     enum CompatibilityMode { QuirksMode, LimitedQuirksMode, NoQuirksMode };
 
     void setCompatibilityMode(CompatibilityMode);
-    CompatibilityMode compatibilityMode() const { return m_compatibilityMode; }
+    CompatibilityMode getCompatibilityMode() const { return m_compatibilityMode; }
 
     String compatMode() const;
 
@@ -1080,7 +1080,7 @@ protected:
 
     bool importContainerNodeChildren(ContainerNode* oldContainerNode, PassRefPtrWillBeRawPtr<ContainerNode> newContainerNode, ExceptionState&);
     void lockCompatibilityMode() { m_compatibilityModeLocked = true; }
-    ParserSynchronizationPolicy parserSynchronizationPolicy() const { return m_parserSyncPolicy; }
+    ParserSynchronizationPolicy getParserSynchronizationPolicy() const { return m_parserSyncPolicy; }
 
 private:
     friend class IgnoreDestructiveWriteCountIncrementer;
@@ -1120,7 +1120,7 @@ private:
     void childrenChanged(const ChildrenChange&) override;
 
     String nodeName() const final;
-    NodeType nodeType() const final;
+    NodeType getNodeType() const final;
     bool childTypeAllowed(NodeType) const final;
     PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep) final;
     void cloneDataFromDocument(const Document&);

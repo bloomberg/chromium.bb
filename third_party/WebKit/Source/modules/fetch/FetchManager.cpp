@@ -550,7 +550,7 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag, bool corsPreflightFla
     ASSERT(m_request->referrerPolicy() == ReferrerPolicyDefault);
     // Request's referrer policy is always default, so use the client's one.
     // TODO(yhirano): Fix here when we introduce requet's referrer policy.
-    ReferrerPolicy policy = executionContext()->referrerPolicy();
+    ReferrerPolicy policy = executionContext()->getReferrerPolicy();
     if (m_request->referrerString() == FetchRequestData::clientReferrerString()) {
         String referrerURL;
         if (executionContext()->isDocument()) {

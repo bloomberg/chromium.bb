@@ -1036,13 +1036,13 @@ void XMLDocumentParser::startElementNs(const AtomicString& localName, const Atom
     TrackExceptionState exceptionState;
     handleNamespaceAttributes(prefixedAttributes, libxmlNamespaces, nbNamespaces, exceptionState);
     if (exceptionState.hadException()) {
-        setAttributes(newElement.get(), prefixedAttributes, parserContentPolicy());
+        setAttributes(newElement.get(), prefixedAttributes, getParserContentPolicy());
         stopParsing();
         return;
     }
 
     handleElementAttributes(prefixedAttributes, libxmlAttributes, nbAttributes, m_prefixToNamespaceMap, exceptionState);
-    setAttributes(newElement.get(), prefixedAttributes, parserContentPolicy());
+    setAttributes(newElement.get(), prefixedAttributes, getParserContentPolicy());
     if (exceptionState.hadException()) {
         stopParsing();
         return;
@@ -1096,7 +1096,7 @@ void XMLDocumentParser::endElementNs()
     if (m_currentNode->isElementNode())
         toElement(n.get())->finishParsingChildren();
 
-    if (!scriptingContentIsAllowed(parserContentPolicy()) && n->isElementNode() && toScriptLoaderIfPossible(toElement(n))) {
+    if (!scriptingContentIsAllowed(getParserContentPolicy()) && n->isElementNode() && toScriptLoaderIfPossible(toElement(n))) {
         popCurrentNode();
         n->remove(IGNORE_EXCEPTION);
         return;

@@ -46,7 +46,7 @@ protected:
     String nodeName() const final;
 
 private:
-    NodeType nodeType() const final;
+    NodeType getNodeType() const final;
     PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep) override;
     bool childTypeAllowed(NodeType) const override;
 

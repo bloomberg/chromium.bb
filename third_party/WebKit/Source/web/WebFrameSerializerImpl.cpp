@@ -409,7 +409,7 @@ void WebFrameSerializerImpl::buildContentForNode(
     Node* node,
     SerializeDomParam* param)
 {
-    switch (node->nodeType()) {
+    switch (node->getNodeType()) {
     case Node::ELEMENT_NODE:
         // Process open tag of element.
         openTagToString(toElement(node), param);

@@ -70,7 +70,7 @@ void RemoteFrame::navigate(Document& originDocument, const KURL& url, bool repla
     // The process where this frame actually lives won't have sufficient information to determine
     // correct referrer, since it won't have access to the originDocument. Set it now.
     ResourceRequest request(url);
-    request.setHTTPReferrer(SecurityPolicy::generateReferrer(originDocument.referrerPolicy(), url, originDocument.outgoingReferrer()));
+    request.setHTTPReferrer(SecurityPolicy::generateReferrer(originDocument.getReferrerPolicy(), url, originDocument.outgoingReferrer()));
     request.setHasUserGesture(userGestureStatus == UserGestureStatus::Active);
     remoteFrameClient()->navigate(request, replaceCurrentItem);
 }

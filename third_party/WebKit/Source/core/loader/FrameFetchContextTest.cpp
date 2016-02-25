@@ -82,7 +82,7 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE() { FrameOwner::trace(visitor); }
 
     bool isLocal() const override { return false; }
-    SandboxFlags sandboxFlags() const override { return SandboxNone; }
+    SandboxFlags getSandboxFlags() const override { return SandboxNone; }
     void dispatchLoad() override { }
     void renderFallbackContent() override { }
     ScrollbarMode scrollingMode() const override { return ScrollbarAuto; }

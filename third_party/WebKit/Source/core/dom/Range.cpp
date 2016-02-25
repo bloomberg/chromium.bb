@@ -621,7 +621,7 @@ PassRefPtrWillBeRawPtr<Node> Range::processContentsBetweenOffsets(ActionType act
 
     // This switch statement must be consistent with that of Node::lengthOfContents.
     RefPtrWillBeRawPtr<Node> result = nullptr;
-    switch (container->nodeType()) {
+    switch (container->getNodeType()) {
     case Node::TEXT_NODE:
     case Node::CDATA_SECTION_NODE:
     case Node::COMMENT_NODE:
@@ -783,13 +783,13 @@ void Range::insertNode(PassRefPtrWillBeRawPtr<Node> prpNewNode, ExceptionState& 
     else
         checkAgainst = m_start.container();
 
-    Node::NodeType newNodeType = newNode->nodeType();
+    Node::NodeType newNodeType = newNode->getNodeType();
     int numNewChildren;
     if (newNodeType == Node::DOCUMENT_FRAGMENT_NODE && !newNode->isShadowRoot()) {
         // check each child node, not the DocumentFragment itself
         numNewChildren = 0;
         for (Node* c = toDocumentFragment(newNode)->firstChild(); c; c = c->nextSibling()) {
-            if (!checkAgainst->childTypeAllowed(c->nodeType())) {
+            if (!checkAgainst->childTypeAllowed(c->getNodeType())) {
                 exceptionState.throwDOMException(HierarchyRequestError, "The node to be inserted contains a '" + c->nodeName() + "' node, which may not be inserted here.");
                 return;
             }
@@ -877,7 +877,7 @@ String Range::toString() const
 
     Node* pastLast = pastLastNode();
     for (Node* n = firstNode(); n != pastLast; n = NodeTraversal::next(*n)) {
-        Node::NodeType type = n->nodeType();
+        Node::NodeType type = n->getNodeType();
         if (type == Node::TEXT_NODE || type == Node::CDATA_SECTION_NODE) {
             String data = toCharacterData(n)->data();
             int length = data.length();
@@ -947,7 +947,7 @@ void Range::detach()
 
 Node* Range::checkNodeWOffset(Node* n, int offset, ExceptionState& exceptionState) const
 {
-    switch (n->nodeType()) {
+    switch (n->getNodeType()) {
     case Node::DOCUMENT_TYPE_NODE:
         exceptionState.throwDOMException(InvalidNodeTypeError, "The node provided is of type '" + n->nodeName() + "'.");
         return nullptr;
@@ -994,7 +994,7 @@ void Range::checkNodeBA(Node* n, ExceptionState& exceptionState) const
         return;
     }
 
-    switch (n->nodeType()) {
+    switch (n->getNodeType()) {
     case Node::ATTRIBUTE_NODE:
     case Node::DOCUMENT_FRAGMENT_NODE:
     case Node::DOCUMENT_NODE:
@@ -1013,7 +1013,7 @@ void Range::checkNodeBA(Node* n, ExceptionState& exceptionState) const
     while (ContainerNode* parent = root->parentNode())
         root = parent;
 
-    switch (root->nodeType()) {
+    switch (root->getNodeType()) {
     case Node::ATTRIBUTE_NODE:
     case Node::DOCUMENT_NODE:
     case Node::DOCUMENT_FRAGMENT_NODE:
@@ -1074,7 +1074,7 @@ void Range::selectNode(Node* refNode, ExceptionState& exceptionState)
         return;
     }
 
-    switch (refNode->nodeType()) {
+    switch (refNode->getNodeType()) {
     case Node::CDATA_SECTION_NODE:
     case Node::COMMENT_NODE:
     case Node::DOCUMENT_TYPE_NODE:
@@ -1107,7 +1107,7 @@ void Range::selectNodeContents(Node* refNode, ExceptionState& exceptionState)
     // InvalidNodeTypeError: Raised if refNode or an ancestor of refNode is an Entity, Notation
     // or DocumentType node.
     for (Node* n = refNode; n; n = n->parentNode()) {
-        switch (n->nodeType()) {
+        switch (n->getNodeType()) {
         case Node::ATTRIBUTE_NODE:
         case Node::CDATA_SECTION_NODE:
         case Node::COMMENT_NODE:
@@ -1137,7 +1137,7 @@ bool Range::selectNodeContents(Node* refNode, Position& start, Position& end)
     }
 
     for (Node* n = refNode; n; n = n->parentNode()) {
-        switch (n->nodeType()) {
+        switch (n->getNodeType()) {
         case Node::ATTRIBUTE_NODE:
         case Node::CDATA_SECTION_NODE:
         case Node::COMMENT_NODE:
@@ -1172,10 +1172,10 @@ void Range::surroundContents(PassRefPtrWillBeRawPtr<Node> passNewParent, Excepti
 
     // InvalidStateError: Raised if the Range partially selects a non-Text node.
     Node* startNonTextContainer = m_start.container();
-    if (startNonTextContainer->nodeType() == Node::TEXT_NODE)
+    if (startNonTextContainer->getNodeType() == Node::TEXT_NODE)
         startNonTextContainer = startNonTextContainer->parentNode();
     Node* endNonTextContainer = m_end.container();
-    if (endNonTextContainer->nodeType() == Node::TEXT_NODE)
+    if (endNonTextContainer->getNodeType() == Node::TEXT_NODE)
         endNonTextContainer = endNonTextContainer->parentNode();
     if (startNonTextContainer != endNonTextContainer) {
         exceptionState.throwDOMException(InvalidStateError, "The Range has partially selected a non-Text node.");
@@ -1184,7 +1184,7 @@ void Range::surroundContents(PassRefPtrWillBeRawPtr<Node> passNewParent, Excepti
 
     // InvalidNodeTypeError: Raised if node is an Attr, Entity, DocumentType, Notation,
     // Document, or DocumentFragment node.
-    switch (newParent->nodeType()) {
+    switch (newParent->getNodeType()) {
     case Node::ATTRIBUTE_NODE:
     case Node::DOCUMENT_FRAGMENT_NODE:
     case Node::DOCUMENT_NODE:
@@ -1213,7 +1213,7 @@ void Range::surroundContents(PassRefPtrWillBeRawPtr<Node> passNewParent, Excepti
         return;
     }
 
-    if (!parentOfNewParent->childTypeAllowed(newParent->nodeType())) {
+    if (!parentOfNewParent->childTypeAllowed(newParent->getNodeType())) {
         exceptionState.throwDOMException(HierarchyRequestError, "The node provided is of type '" + newParent->nodeName() + "', which may not be inserted here.");
         return;
     }

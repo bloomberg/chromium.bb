@@ -199,7 +199,7 @@ public:
     HTMLFormElement* form() const { return m_form.get(); }
     PassRefPtrWillBeRawPtr<HTMLFormElement> takeForm();
 
-    ParserContentPolicy parserContentPolicy() { return m_parserContentPolicy; }
+    ParserContentPolicy getParserContentPolicy() { return m_parserContentPolicy; }
 
     class RedirectToFosterParentGuard {
         STACK_ALLOCATED();

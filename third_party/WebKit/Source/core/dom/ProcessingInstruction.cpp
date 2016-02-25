@@ -90,7 +90,7 @@ String ProcessingInstruction::nodeName() const
     return m_target;
 }
 
-Node::NodeType ProcessingInstruction::nodeType() const
+Node::NodeType ProcessingInstruction::getNodeType() const
 {
     return PROCESSING_INSTRUCTION_NODE;
 }

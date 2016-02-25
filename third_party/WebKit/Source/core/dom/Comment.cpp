@@ -40,7 +40,7 @@ String Comment::nodeName() const
     return "#comment";
 }
 
-Node::NodeType Comment::nodeType() const
+Node::NodeType Comment::getNodeType() const
 {
     return COMMENT_NODE;
 }

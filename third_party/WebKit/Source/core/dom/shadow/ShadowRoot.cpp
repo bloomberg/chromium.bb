@@ -140,7 +140,7 @@ void ShadowRoot::recalcStyle(StyleRecalcChange change)
 
     StyleSharingDepthScope sharingScope(*this);
 
-    if (styleChangeType() >= SubtreeStyleChange)
+    if (getStyleChangeType() >= SubtreeStyleChange)
         change = Force;
 
     // There's no style to update so just calling recalcStyle means we're updated.

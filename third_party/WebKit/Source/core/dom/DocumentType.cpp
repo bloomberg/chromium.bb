@@ -40,7 +40,7 @@ String DocumentType::nodeName() const
     return name();
 }
 
-Node::NodeType DocumentType::nodeType() const
+Node::NodeType DocumentType::getNodeType() const
 {
     return DOCUMENT_TYPE_NODE;
 }

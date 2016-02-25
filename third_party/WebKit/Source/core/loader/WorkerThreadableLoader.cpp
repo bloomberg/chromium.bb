@@ -149,7 +149,7 @@ void WorkerThreadableLoader::MainThreadBridgeBase::createLoaderInMainThread(cons
 
 void WorkerThreadableLoader::MainThreadBridgeBase::startInMainThread(const ResourceRequest& request, const WorkerGlobalScope& workerGlobalScope)
 {
-    loaderProxy()->postTaskToLoader(createCrossThreadTask(&MainThreadBridgeBase::mainThreadStart, this, request, workerGlobalScope.referrerPolicy(), workerGlobalScope.url().strippedForUseAsReferrer()));
+    loaderProxy()->postTaskToLoader(createCrossThreadTask(&MainThreadBridgeBase::mainThreadStart, this, request, workerGlobalScope.getReferrerPolicy(), workerGlobalScope.url().strippedForUseAsReferrer()));
 }
 
 void WorkerThreadableLoader::MainThreadBridgeBase::mainThreadDestroy(ExecutionContext* context)

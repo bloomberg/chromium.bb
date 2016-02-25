@@ -619,7 +619,7 @@ bool StyleEngine::shouldSkipInvalidationFor(const Element& element) const
         return true;
     if (!element.parentNode())
         return true;
-    return element.parentNode()->styleChangeType() >= SubtreeStyleChange;
+    return element.parentNode()->getStyleChangeType() >= SubtreeStyleChange;
 }
 
 void StyleEngine::classChangedForElement(const SpaceSplitString& changedClasses, Element& element)

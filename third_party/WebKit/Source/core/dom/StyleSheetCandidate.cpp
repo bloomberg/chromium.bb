@@ -108,7 +108,7 @@ bool StyleSheetCandidate::canBeActivated(const String& currentPreferrableName) c
 
 StyleSheetCandidate::Type StyleSheetCandidate::typeOf(Node& node)
 {
-    if (node.nodeType() == Node::PROCESSING_INSTRUCTION_NODE)
+    if (node.getNodeType() == Node::PROCESSING_INSTRUCTION_NODE)
         return Pi;
 
     if (node.isHTMLElement()) {

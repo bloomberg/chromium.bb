@@ -104,10 +104,10 @@ ContainerNode::~ContainerNode()
 bool ContainerNode::isChildTypeAllowed(const Node& child) const
 {
     if (!child.isDocumentFragment())
-        return childTypeAllowed(child.nodeType());
+        return childTypeAllowed(child.getNodeType());
 
     for (Node* node = toDocumentFragment(child).firstChild(); node; node = node->nextSibling()) {
-        if (!childTypeAllowed(node->nodeType()))
+        if (!childTypeAllowed(node->getNodeType()))
             return false;
     }
     return true;
@@ -1341,7 +1341,7 @@ void ContainerNode::recalcChildStyle(StyleRecalcChange change)
 
 void ContainerNode::checkForSiblingStyleChanges(SiblingCheckType changeType, Node* nodeBeforeChange, Node* nodeAfterChange)
 {
-    if (!inActiveDocument() || document().hasPendingForcedStyleRecalc() || styleChangeType() >= SubtreeStyleChange)
+    if (!inActiveDocument() || document().hasPendingForcedStyleRecalc() || getStyleChangeType() >= SubtreeStyleChange)
         return;
 
     // Forward positional selectors include nth-child, nth-of-type, first-of-type and only-of-type.
