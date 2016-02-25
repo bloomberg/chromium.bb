@@ -30,7 +30,9 @@ class BuildTimeStatsTest(cros_test_lib.TestCase):
 
     expected = [
         {'status': 'pass', 'waterfall': 'chromeos'},
+        {'status': 'fail', 'waterfall': 'chromeos'},
         {'status': 'pass', 'waterfall': 'chromiumos'},
+        {'status': 'fail', 'waterfall': 'chromiumos'},
     ]
 
     result = build_time_stats.FilterBuildStatuses(test_data)
@@ -43,6 +45,7 @@ class BuildTimeStatsTest(cros_test_lib.TestCase):
     good_data = {
         'id': 1,
         'build_config': 'test_config',
+        'status': 'pass',
         'start_time': startTime,
         'finish_time': startTime + datetime.timedelta(hours=6),
         'stages': [
@@ -62,6 +65,7 @@ class BuildTimeStatsTest(cros_test_lib.TestCase):
     expected_good = build_time_stats.BuildTiming(
         id=1,
         build_config='test_config',
+        success=True,
         start=startTime,
         finish=startTime + datetime.timedelta(hours=6),
         duration=datetime.timedelta(hours=6),
@@ -82,6 +86,7 @@ class BuildTimeStatsTest(cros_test_lib.TestCase):
     bad_data = {
         'id': 2,
         'build_config': 'test_config',
+        'status': 'bogus',
         'start_time': startTime,
         'finish_time': None,
         'stages': [
@@ -101,6 +106,7 @@ class BuildTimeStatsTest(cros_test_lib.TestCase):
     expected_bad = build_time_stats.BuildTiming(
         id=2,
         build_config='test_config',
+        success=False,
         start=startTime,
         finish=None,
         duration=None,
@@ -163,6 +169,7 @@ class BuildTimeStatsReportTest(cros_test_lib.TestCase):
     self.focus_build = build_time_stats.BuildTiming(
         id=0,
         build_config='test_config',
+        success=True,
         start=start0,
         finish=start0 + datetime.timedelta(hours=12),
         duration=datetime.timedelta(hours=12),
@@ -184,6 +191,7 @@ class BuildTimeStatsReportTest(cros_test_lib.TestCase):
         build_time_stats.BuildTiming(
             id=1,
             build_config='test_config',
+            success=True,
             start=start1,
             finish=start1 + datetime.timedelta(hours=6),
             duration=datetime.timedelta(hours=6),
@@ -203,6 +211,7 @@ class BuildTimeStatsReportTest(cros_test_lib.TestCase):
         build_time_stats.BuildTiming(
             id=2,
             build_config='test_config',
+            success=True,
             start=start2,
             finish=start2 + datetime.timedelta(hours=8),
             duration=datetime.timedelta(hours=8),
@@ -222,6 +231,27 @@ class BuildTimeStatsReportTest(cros_test_lib.TestCase):
         build_time_stats.BuildTiming(
             id=3,
             build_config='test_config',
+            success=True,
+            start=start3,
+            finish=start2 + datetime.timedelta(hours=6),
+            duration=datetime.timedelta(hours=6),
+            stages=[
+                build_time_stats.StageTiming(
+                    name='start',
+                    start=datetime.timedelta(0),
+                    finish=datetime.timedelta(hours=2),
+                    duration=datetime.timedelta(hours=2)),
+                build_time_stats.StageTiming(
+                    name='build',
+                    start=datetime.timedelta(hours=2),
+                    finish=datetime.timedelta(hours=4),
+                    duration=datetime.timedelta(hours=2))
+            ]
+        ),
+        build_time_stats.BuildTiming(
+            id=4,
+            build_config='test_config',
+            success=False,
             start=start3,
             finish=start2 + datetime.timedelta(hours=6),
             duration=datetime.timedelta(hours=6),
@@ -251,10 +281,10 @@ class BuildTimeStatsReportTest(cros_test_lib.TestCase):
         trending=False)
 
     expected = '''description
-Averages for 3 Builds: 1 - 3
-Build Time:  median 6:00:00 mean 6:40:00 min 6:00:00 max 8:00:00
+Averages for 4 Builds: 1 - 4
+  success 0.75 median 6:00:00 mean 6:40:00 min 6:00:00 max 8:00:00
 '''
-    self.assertMultiLineEqual(result.getvalue(), expected)
+    self.assertMultiLineEqual(expected, result.getvalue())
 
   def testReportFocusNoStagesNoTrend(self):
     result = StringIO.StringIO()
@@ -267,10 +297,10 @@ Build Time:  median 6:00:00 mean 6:40:00 min 6:00:00 max 8:00:00
         trending=False)
 
     expected = '''description
-Averages for 3 Builds: 1 - 3
-Build Time: 12:00:00 median 6:00:00 mean 6:40:00 min 6:00:00 max 8:00:00
+Averages for 4 Builds: 1 - 4
+ 12:00:00 success 0.75 median 6:00:00 mean 6:40:00 min 6:00:00 max 8:00:00
 '''
-    self.assertMultiLineEqual(result.getvalue(), expected)
+    self.assertMultiLineEqual(expected, result.getvalue())
 
   def testReportNoFocusStagesNoTrend(self):
     result = StringIO.StringIO()
@@ -283,8 +313,8 @@ Build Time: 12:00:00 median 6:00:00 mean 6:40:00 min 6:00:00 max 8:00:00
         trending=False)
 
     expected = '''description
-Averages for 3 Builds: 1 - 3
-Build Time:  median 6:00:00 mean 6:40:00 min 6:00:00 max 8:00:00
+Averages for 4 Builds: 1 - 4
+  success 0.75 median 6:00:00 mean 6:40:00 min 6:00:00 max 8:00:00
 
 start:
   start:     median 0:00:00 mean 0:00:00 min 0:00:00 max 0:00:00
@@ -295,7 +325,7 @@ build:
   duration:  median 2:00:00 mean 2:40:00 min 2:00:00 max 4:00:00
   finish:    median 4:00:00 mean 5:20:00 min 4:00:00 max 8:00:00
 '''
-    self.assertMultiLineEqual(result.getvalue(), expected)
+    self.assertMultiLineEqual(expected, result.getvalue())
 
   def testReportFocusStagesNoTrend(self):
     result = StringIO.StringIO()
@@ -308,8 +338,8 @@ build:
         trending=False)
 
     expected = '''description
-Averages for 3 Builds: 1 - 3
-Build Time: 12:00:00 median 6:00:00 mean 6:40:00 min 6:00:00 max 8:00:00
+Averages for 4 Builds: 1 - 4
+ 12:00:00 success 0.75 median 6:00:00 mean 6:40:00 min 6:00:00 max 8:00:00
 
 start:
   start:    0:00:00 median 0:00:00 mean 0:00:00 min 0:00:00 max 0:00:00
@@ -320,7 +350,7 @@ build:
   duration: 6:00:00 median 2:00:00 mean 2:40:00 min 2:00:00 max 4:00:00
   finish:   12:00:00 median 4:00:00 mean 5:20:00 min 4:00:00 max 8:00:00
 '''
-    self.assertMultiLineEqual(result.getvalue(), expected)
+    self.assertMultiLineEqual(expected, result.getvalue())
 
   def testReportNoFocusNoStagesTrend(self):
     result = StringIO.StringIO()
@@ -333,13 +363,13 @@ build:
         trending=True,)
 
     expected = '''description
-Averages for 3 Builds: 1 - 3
-Build Time:  median 6:00:00 mean 6:40:00 min 6:00:00 max 8:00:00
+Averages for 4 Builds: 1 - 4
+  success 0.75 median 6:00:00 mean 6:40:00 min 6:00:00 max 8:00:00
 
-2014-11: median 8:00:00 mean 7:00:00 min 6:00:00 max 8:00:00
-2014-12: median 6:00:00 mean 6:00:00 min 6:00:00 max 6:00:00
+2014-11:  success 1.00 median 8:00:00 mean 7:00:00 min 6:00:00 max 8:00:00
+2014-12:  success 0.50 median 6:00:00 mean 6:00:00 min 6:00:00 max 6:00:00
 '''
-    self.assertMultiLineEqual(result.getvalue(), expected)
+    self.assertMultiLineEqual(expected, result.getvalue())
 
   def testReportFocusStagesTrend(self):
     result = StringIO.StringIO()
@@ -352,8 +382,8 @@ Build Time:  median 6:00:00 mean 6:40:00 min 6:00:00 max 8:00:00
         trending=True,)
 
     expected = '''description
-Averages for 3 Builds: 1 - 3
-Build Time: 12:00:00 median 6:00:00 mean 6:40:00 min 6:00:00 max 8:00:00
+Averages for 4 Builds: 1 - 4
+ 12:00:00 success 0.75 median 6:00:00 mean 6:40:00 min 6:00:00 max 8:00:00
 
 start:
   start:    0:00:00 median 0:00:00 mean 0:00:00 min 0:00:00 max 0:00:00
@@ -364,7 +394,7 @@ build:
   duration: 6:00:00 median 2:00:00 mean 2:40:00 min 2:00:00 max 4:00:00
   finish:   12:00:00 median 4:00:00 mean 5:20:00 min 4:00:00 max 8:00:00
 
-2014-11: median 8:00:00 mean 7:00:00 min 6:00:00 max 8:00:00
+2014-11:  success 1.00 median 8:00:00 mean 7:00:00 min 6:00:00 max 8:00:00
   start:
     start:    median 0:00:00 mean 0:00:00 min 0:00:00 max 0:00:00
     duration: median 4:00:00 mean 3:00:00 min 2:00:00 max 4:00:00
@@ -373,7 +403,7 @@ build:
     start:    median 4:00:00 mean 3:00:00 min 2:00:00 max 4:00:00
     duration: median 4:00:00 mean 3:00:00 min 2:00:00 max 4:00:00
     finish:   median 8:00:00 mean 6:00:00 min 4:00:00 max 8:00:00
-2014-12: median 6:00:00 mean 6:00:00 min 6:00:00 max 6:00:00
+2014-12:  success 0.50 median 6:00:00 mean 6:00:00 min 6:00:00 max 6:00:00
   start:
     start:    median 0:00:00 mean 0:00:00 min 0:00:00 max 0:00:00
     duration: median 2:00:00 mean 2:00:00 min 2:00:00 max 2:00:00
@@ -383,7 +413,7 @@ build:
     duration: median 2:00:00 mean 2:00:00 min 2:00:00 max 2:00:00
     finish:   median 4:00:00 mean 4:00:00 min 4:00:00 max 4:00:00
 '''
-    self.assertMultiLineEqual(result.getvalue(), expected)
+    self.assertMultiLineEqual(expected, result.getvalue())
 
   def testReportNoFocusNoStagesCsv(self):
     result = StringIO.StringIO()
@@ -396,14 +426,14 @@ build:
         trending=True,
         csv=True)
 
-    expected = '''"description", "Averages for 3 Builds: 1 - 3"
-"", "Build", "", "", ""
-"", "median", "mean", "min", "max"
-"ALL", "6:00:00", "6:40:00", "6:00:00", "8:00:00"
-"2014-11", "8:00:00", "7:00:00", "6:00:00", "8:00:00"
-"2014-12", "6:00:00", "6:00:00", "6:00:00", "6:00:00"
+    expected = '''"description", "Averages for 4 Builds: 1 - 4"
+"", "Build", "", "", "", ""
+"", "success", "median", "mean", "min", "max"
+"ALL", "0.75", "6:00:00", "6:40:00", "6:00:00", "8:00:00"
+"2014-11", "1.0", "8:00:00", "7:00:00", "6:00:00", "8:00:00"
+"2014-12", "0.5", "6:00:00", "6:00:00", "6:00:00", "6:00:00"
 '''
-    self.assertMultiLineEqual(result.getvalue(), expected)
+    self.assertMultiLineEqual(expected, result.getvalue())
 
   def testReportNoFocusStagesCsv(self):
     result = StringIO.StringIO()
@@ -416,14 +446,15 @@ build:
         trending=True,
         csv=True)
 
-    expected = '''"description", "Averages for 3 Builds: 1 - 3"
-"", "Build", "", "", "", "start", "", "", "", "build", "", "", ""
-"", "median", "mean", "min", "max", "median", "mean", "min", "max", "median", "mean", "min", "max"
-"ALL", "6:00:00", "6:40:00", "6:00:00", "8:00:00", "2:00:00", "2:40:00", "2:00:00", "4:00:00", "2:00:00", "2:40:00", "2:00:00", "4:00:00"
-"2014-11", "8:00:00", "7:00:00", "6:00:00", "8:00:00", "4:00:00", "3:00:00", "2:00:00", "4:00:00", "4:00:00", "3:00:00", "2:00:00", "4:00:00"
-"2014-12", "6:00:00", "6:00:00", "6:00:00", "6:00:00", "2:00:00", "2:00:00", "2:00:00", "2:00:00", "2:00:00", "2:00:00", "2:00:00", "2:00:00"
+    # pylint: disable=line-too-long
+    expected = '''"description", "Averages for 4 Builds: 1 - 4"
+"", "Build", "", "", "", "", "start", "", "", "", "", "build", "", "", "", ""
+"", "success", "median", "mean", "min", "max", "success", "median", "mean", "min", "max", "success", "median", "mean", "min", "max"
+"ALL", "0.75", "6:00:00", "6:40:00", "6:00:00", "8:00:00", "", "2:00:00", "2:40:00", "2:00:00", "4:00:00", "", "2:00:00", "2:40:00", "2:00:00", "4:00:00"
+"2014-11", "1.0", "8:00:00", "7:00:00", "6:00:00", "8:00:00", "", "4:00:00", "3:00:00", "2:00:00", "4:00:00", "", "4:00:00", "3:00:00", "2:00:00", "4:00:00"
+"2014-12", "0.5", "6:00:00", "6:00:00", "6:00:00", "6:00:00", "", "2:00:00", "2:00:00", "2:00:00", "2:00:00", "", "2:00:00", "2:00:00", "2:00:00", "2:00:00"
 '''
-    self.assertMultiLineEqual(result.getvalue(), expected)
+    self.assertMultiLineEqual(expected, result.getvalue())
 
   def testReportFocusNoStagesCsv(self):
     result = StringIO.StringIO()
@@ -436,15 +467,15 @@ build:
         trending=True,
         csv=True)
 
-    expected = '''"description", "Averages for 3 Builds: 1 - 3"
-"", "Build", "", "", ""
-"", "median", "mean", "min", "max"
-"Focus", "12:00:00", "", "", ""
-"ALL", "6:00:00", "6:40:00", "6:00:00", "8:00:00"
-"2014-11", "8:00:00", "7:00:00", "6:00:00", "8:00:00"
-"2014-12", "6:00:00", "6:00:00", "6:00:00", "6:00:00"
+    expected = '''"description", "Averages for 4 Builds: 1 - 4"
+"", "Build", "", "", "", ""
+"", "success", "median", "mean", "min", "max"
+"Focus", "True", "12:00:00", "", "", ""
+"ALL", "0.75", "6:00:00", "6:40:00", "6:00:00", "8:00:00"
+"2014-11", "1.0", "8:00:00", "7:00:00", "6:00:00", "8:00:00"
+"2014-12", "0.5", "6:00:00", "6:00:00", "6:00:00", "6:00:00"
 '''
-    self.assertMultiLineEqual(result.getvalue(), expected)
+    self.assertMultiLineEqual(expected, result.getvalue())
 
   def testReportFocusStagesCsv(self):
     result = StringIO.StringIO()
@@ -458,12 +489,13 @@ build:
         trending=True,
         csv=True)
 
-    expected = '''"description", "Averages for 3 Builds: 1 - 3"
-"", "Build", "", "", "", "start", "", "", "", "build", "", "", ""
-"", "median", "mean", "min", "max", "median", "mean", "min", "max", "median", "mean", "min", "max"
-"Focus", "12:00:00", "", "", "", "8:00:00", "", "", "", "6:00:00", "", "", ""
-"ALL", "6:00:00", "6:40:00", "6:00:00", "8:00:00", "2:00:00", "2:40:00", "2:00:00", "4:00:00", "2:00:00", "2:40:00", "2:00:00", "4:00:00"
-"2014-11", "8:00:00", "7:00:00", "6:00:00", "8:00:00", "4:00:00", "3:00:00", "2:00:00", "4:00:00", "4:00:00", "3:00:00", "2:00:00", "4:00:00"
-"2014-12", "6:00:00", "6:00:00", "6:00:00", "6:00:00", "2:00:00", "2:00:00", "2:00:00", "2:00:00", "2:00:00", "2:00:00", "2:00:00", "2:00:00"
+    # pylint: disable=line-too-long
+    expected = '''"description", "Averages for 4 Builds: 1 - 4"
+"", "Build", "", "", "", "", "start", "", "", "", "", "build", "", "", "", ""
+"", "success", "median", "mean", "min", "max", "success", "median", "mean", "min", "max", "success", "median", "mean", "min", "max"
+"Focus", "True", "12:00:00", "", "", "", "", "8:00:00", "", "", "", "", "6:00:00", "", "", ""
+"ALL", "0.75", "6:00:00", "6:40:00", "6:00:00", "8:00:00", "", "2:00:00", "2:40:00", "2:00:00", "4:00:00", "", "2:00:00", "2:40:00", "2:00:00", "4:00:00"
+"2014-11", "1.0", "8:00:00", "7:00:00", "6:00:00", "8:00:00", "", "4:00:00", "3:00:00", "2:00:00", "4:00:00", "", "4:00:00", "3:00:00", "2:00:00", "4:00:00"
+"2014-12", "0.5", "6:00:00", "6:00:00", "6:00:00", "6:00:00", "", "2:00:00", "2:00:00", "2:00:00", "2:00:00", "", "2:00:00", "2:00:00", "2:00:00", "2:00:00"
 '''
-    self.assertMultiLineEqual(result.getvalue(), expected)
+    self.assertMultiLineEqual(expected, result.getvalue())

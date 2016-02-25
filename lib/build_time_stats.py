@@ -12,7 +12,6 @@ from __future__ import print_function
 
 import collections
 import datetime
-import itertools
 
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
@@ -27,7 +26,7 @@ BUILD_TYPE_MAP = {
 
 
 BuildTiming = collections.namedtuple(
-    'BuildTiming', ['id', 'build_config',
+    'BuildTiming', ['id', 'build_config', 'success',
                     'start', 'finish', 'duration',
                     'stages'])
 
@@ -92,7 +91,7 @@ def FilterBuildStatuses(build_statuses):
   WATERFALLS = ('chromeos', 'chromiumos')
 
   return [status for status in build_statuses
-          if status['status'] == 'pass' and status['waterfall'] in WATERFALLS]
+          if status['waterfall'] in WATERFALLS]
 
 
 def BuildConfigToStatuses(db, build_config, start_date, end_date):
@@ -179,6 +178,7 @@ def GetBuildTimings(build_status):
 
   return BuildTiming(build_status['id'],
                      build_status['build_config'],
+                     build_status['status'] == 'pass',
                      build_status['start_time'],
                      build_status['finish_time'],
                      safeDuration(start, build_status['finish_time']),
@@ -219,9 +219,12 @@ def CalculateBuildStats(builds_timings):
     builds_timings: List of BuildTiming objects.
 
   Returns:
+    Success rate of builds, as a float.
     TimeDeltaStats object,or None if no valid builds.
   """
-  return CalculateTimeStats([b.duration for b in builds_timings])
+  successful = [b for b in builds_timings if b.success]
+  success_rate = len(successful) / float(len(builds_timings))
+  return success_rate, CalculateTimeStats([b.duration for b in successful])
 
 
 def CalculateStageStats(builds_timings):
@@ -240,14 +243,16 @@ def CalculateStageStats(builds_timings):
     List of StageTiming objects with all time values populated with
     TimeDeltaStats values.
   """
-  all_stages = list(itertools.chain(*[b.stages for b in builds_timings]))
-  stage_names = set()
-  stage_names.update([s.name for s in all_stages])
+  stage_map = {}
+  for b in builds_timings:
+    if b.success:
+      for s in b.stages:
+        stage_map.setdefault(s.name, [])
+        stage_map[s.name].append(s)
 
   stage_stats = []
-
-  for name in stage_names:
-    named_stages = [s for s in all_stages if s.name == name]
+  for name in stage_map.iterkeys():
+    named_stages = stage_map[name]
     stage_stats.append(
         StageTiming(
             name=name,
@@ -333,7 +338,6 @@ def Report(output, description, focus_build, builds_timings,
   Returns:
     The generated report as a multi-line string.
   """
-  # We need the timings to be ordered.
   builds_timings.sort(key=lambda b: b.id)
 
   if csv:
@@ -342,17 +346,16 @@ def Report(output, description, focus_build, builds_timings,
 
   output.write('%s\n' % description)
 
-  build_stats = CalculateBuildStats(builds_timings)
-
   if builds_timings:
     output.write('Averages for %s Builds: %s - %s\n' %
                  (len(builds_timings),
                   builds_timings[0].id,
                   builds_timings[-1].id))
 
-  if build_stats:
-    output.write('Build Time: %s %s\n' % (
+    success_rate, build_stats = CalculateBuildStats(builds_timings)
+    output.write(' %s success %.2f %s\n' % (
         focus_build.duration if focus_build else '',
+        success_rate,
         build_stats,
     ))
 
@@ -378,24 +381,24 @@ def Report(output, description, focus_build, builds_timings,
 
     # Report stats per month.
     for month_timings in all_months:
-      month_stats = CalculateBuildStats(month_timings)
+      success_rate, month_stats = CalculateBuildStats(month_timings)
       prefix = '%s-%s:' % (month_timings[0].start.year,
                            month_timings[0].start.month)
-      output.write('%s%s\n' % (prefix.ljust(9), month_stats))
+      output.write('%s success %.2f %s\n' % (
+          prefix.ljust(9), success_rate, month_stats
+      ))
 
       if stages:
-        _, _, month_stage_stags = FindAndSortStageStats(None, month_timings)
+        _, _, month_stage_stags = FindAndSortStageStats(None,
+                                                        month_timings)
 
         for name in stage_names:
-          output.write('  %s:\n' % name)
           s = month_stage_stags.get(name)
-          output.write('    start:    %s\n' % (s.start,))
-          output.write('    duration: %s\n' % (s.duration,))
-          output.write('    finish:   %s\n' % (s.finish,))
-
-
-def ColumnsToCsvText(columns):
-  return ', '.join(['"%s"' % c for c in columns]) + '\n'
+          if s:
+            output.write('  %s:\n' % name)
+            output.write('    start:    %s\n' % (s.start,))
+            output.write('    duration: %s\n' % (s.duration,))
+            output.write('    finish:   %s\n' % (s.finish,))
 
 
 def ReportCsv(output, description, focus_build, builds_timings, stages=True):
@@ -411,7 +414,9 @@ def ReportCsv(output, description, focus_build, builds_timings, stages=True):
   Returns:
     The generated report as a multi-line string.
   """
-  stats_header = ['median', 'mean', 'min', 'max']
+  builds_timings.sort(key=lambda b: b.id)
+
+  stats_header = ['success', 'median', 'mean', 'min', 'max']
 
   desc_row = [
       description,
@@ -426,7 +431,7 @@ def ReportCsv(output, description, focus_build, builds_timings, stages=True):
   rows = []
 
   def AddStatsHeaders(name):
-    headers.extend([name, '', '', ''])
+    headers.extend([name, '', '', '', ''])
     subheaders.extend(stats_header)
 
   AddStatsHeaders('Build')
@@ -437,34 +442,35 @@ def ReportCsv(output, description, focus_build, builds_timings, stages=True):
 
   # Focus build row.
   if focus_build:
-    row = ['Focus', focus_build.duration, '', '', '']
+    row = ['Focus', focus_build.success, focus_build.duration, '', '', '']
     rows.append(row)
 
     if stages:
       for stage_name in stage_names:
         s = focus_stats_stages.get(stage_name)
-        row.extend([s.duration, '', '', ''])
+        row.extend(['', s.duration, '', '', ''])
 
   # All builds row.
-  build_stats = CalculateBuildStats(builds_timings)
-  row = ['ALL', build_stats.median, build_stats.mean, build_stats.min,
-         build_stats.max]
+  success_rate, build_stats = CalculateBuildStats(builds_timings)
+  row = ['ALL', success_rate, build_stats.median, build_stats.mean,
+         build_stats.min, build_stats.max]
 
   if stages:
     for stage_name in stage_names:
       AddStatsHeaders(stage_name)
       s = stats_stages.get(stage_name)
+      row.append('')
       row.extend(s.duration)
 
   rows.append(row)
 
   # Report stats per month.
   for month_timings in BreakBuildsByMonths(builds_timings):
-    month_stats = CalculateBuildStats(month_timings)
+    success_rate, month_stats = CalculateBuildStats(month_timings)
     prefix = '%s-%s' % (month_timings[0].start.year,
                         month_timings[0].start.month)
-    row = [prefix, month_stats.median, month_stats.mean, month_stats.min,
-           month_stats.max]
+    row = [prefix, success_rate, month_stats.median, month_stats.mean,
+           month_stats.min, month_stats.max]
 
     if stages:
       _, _, month_stage_stags = FindAndSortStageStats(None, month_timings)
@@ -472,16 +478,20 @@ def ReportCsv(output, description, focus_build, builds_timings, stages=True):
       for stage_name in stage_names:
         s = month_stage_stags.get(stage_name)
         if s:
+          row.append('')
           row.extend(s.duration)
         else:
-          row.extend(('', '', '', ''))
+          row.extend(('', '', '', '', ''))
 
     rows.append(row)
 
   # Sanity check.
   assert len(headers) == len(subheaders)
   for row in rows:
-    assert len(row) == len(headers)
+    assert len(row) == len(headers), '%s\n%s' % (row, headers)
+
+  def ColumnsToCsvText(columns):
+    return ', '.join(['"%s"' % c for c in columns]) + '\n'
 
   # Produce final results.
   output.write(ColumnsToCsvText(desc_row))
