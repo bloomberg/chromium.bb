@@ -17,6 +17,8 @@ FontRenderParams::FontRenderParams()
       subpixel_rendering(SUBPIXEL_RENDERING_NONE) {
 }
 
+FontRenderParams::FontRenderParams(const FontRenderParams& other) = default;
+
 FontRenderParams::~FontRenderParams() {}
 
 // static
@@ -60,6 +62,9 @@ FontRenderParamsQuery::FontRenderParamsQuery()
       style(-1),
       device_scale_factor(0) {
 }
+
+FontRenderParamsQuery::FontRenderParamsQuery(
+    const FontRenderParamsQuery& other) = default;
 
 FontRenderParamsQuery::~FontRenderParamsQuery() {}
 

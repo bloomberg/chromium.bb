@@ -137,6 +137,8 @@ Widget::InitParams::InitParams(Type type)
       force_software_compositing(false) {
 }
 
+Widget::InitParams::InitParams(const InitParams& other) = default;
+
 Widget::InitParams::~InitParams() {
 }
 

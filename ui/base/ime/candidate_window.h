@@ -43,6 +43,7 @@ class UI_BASE_IME_EXPORT CandidateWindow {
   // Represents a candidate entry.
   struct UI_BASE_IME_EXPORT Entry {
     Entry();
+    Entry(const Entry& other);
     virtual ~Entry();
     base::string16 value;
     base::string16 label;

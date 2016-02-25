@@ -957,6 +957,9 @@ LayerAnimator::RunningAnimation::RunningAnimation(
     : sequence_(sequence) {
 }
 
+LayerAnimator::RunningAnimation::RunningAnimation(
+    const RunningAnimation& other) = default;
+
 LayerAnimator::RunningAnimation::~RunningAnimation() { }
 
 }  // namespace ui

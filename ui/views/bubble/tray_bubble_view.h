@@ -96,6 +96,7 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDelegateView,
                AnchorAlignment anchor_alignment,
                int min_width,
                int max_width);
+    InitParams(const InitParams& other);
     AnchorType anchor_type;
     AnchorAlignment anchor_alignment;
     int min_width;

@@ -49,6 +49,8 @@ GestureEventData::GestureEventData(EventType type,
   details.set_bounding_box(other.details.bounding_box_f());
 }
 
+GestureEventData::GestureEventData(const GestureEventData& other) = default;
+
 GestureEventData::GestureEventData()
     : motion_event_id(0),
       primary_tool_type(MotionEvent::TOOL_TYPE_UNKNOWN),

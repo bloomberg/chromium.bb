@@ -80,6 +80,8 @@ Display::Display()
       touch_support_(TOUCH_SUPPORT_UNKNOWN) {
 }
 
+Display::Display(const Display& other) = default;
+
 Display::Display(int64_t id)
     : id_(id),
       device_scale_factor_(GetForcedDeviceScaleFactor()),

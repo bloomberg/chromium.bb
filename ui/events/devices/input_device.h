@@ -33,6 +33,7 @@ struct EVENTS_DEVICES_EXPORT InputDevice {
               const base::FilePath& sys_path,
               uint16_t vendor,
               uint16_t product);
+  InputDevice(const InputDevice& other);
   virtual ~InputDevice();
 
   // ID of the device. This ID is unique between all input devices.

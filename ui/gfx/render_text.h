@@ -170,6 +170,7 @@ struct LineSegment {
 // A line of display text, comprised of a line segment list and some metrics.
 struct Line {
   Line();
+  Line(const Line& other);
   ~Line();
 
   // Segments that make up this line in visual order.

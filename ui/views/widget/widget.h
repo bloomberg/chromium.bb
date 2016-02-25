@@ -202,6 +202,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
     InitParams();
     explicit InitParams(Type type);
+    InitParams(const InitParams& other);
     ~InitParams();
 
     Type type;

@@ -21,6 +21,9 @@ TransformAnimationCurveAdapter::TransformAnimationCurveAdapter(
   gfx::DecomposeTransform(&decomposed_target_value_, target_value_);
 }
 
+TransformAnimationCurveAdapter::TransformAnimationCurveAdapter(
+    const TransformAnimationCurveAdapter& other) = default;
+
 TransformAnimationCurveAdapter::~TransformAnimationCurveAdapter() {
 }
 

@@ -98,6 +98,7 @@ struct UI_BASE_EXPORT TableColumn {
 
   TableColumn();
   TableColumn(int id, Alignment alignment, int width, float percent);
+  TableColumn(const TableColumn& other);
 
   // A unique identifier for the column.
   int id;

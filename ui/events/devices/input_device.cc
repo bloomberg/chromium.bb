@@ -32,6 +32,8 @@ InputDevice::InputDevice(int id,
       vendor_id(vendor),
       product_id(product) {}
 
+InputDevice::InputDevice(const InputDevice& other) = default;
+
 InputDevice::~InputDevice() {
 }
 

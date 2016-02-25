@@ -35,6 +35,8 @@ TableColumn::TableColumn(int id, Alignment alignment, int width, float percent)
       initial_sort_is_ascending(true) {
 }
 
+TableColumn::TableColumn(const TableColumn& other) = default;
+
 // TableModel -----------------------------------------------------------------
 
 // Used for sorting.

@@ -29,6 +29,7 @@ class TestLayerAnimationDelegate : public LayerAnimationDelegate {
  public:
   TestLayerAnimationDelegate();
   explicit TestLayerAnimationDelegate(const LayerAnimationDelegate& other);
+  TestLayerAnimationDelegate(const TestLayerAnimationDelegate& other);
   ~TestLayerAnimationDelegate() override;
 
   // Implementation of LayerAnimationDelegate

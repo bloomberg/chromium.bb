@@ -22,6 +22,8 @@ ImagePNGRep::ImagePNGRep(const scoped_refptr<base::RefCountedMemory>& data,
       scale(data_scale) {
 }
 
+ImagePNGRep::ImagePNGRep(const ImagePNGRep& other) = default;
+
 ImagePNGRep::~ImagePNGRep() {
 }
 

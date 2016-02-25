@@ -68,6 +68,7 @@ class TestClipboard : public Clipboard {
  private:
   struct DataStore {
     DataStore();
+    DataStore(const DataStore& other);
     ~DataStore();
     void Clear();
     uint64_t sequence_number;

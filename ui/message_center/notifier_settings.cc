@@ -24,6 +24,8 @@ NotifierId::NotifierId()
     : type(SYSTEM_COMPONENT) {
 }
 
+NotifierId::NotifierId(const NotifierId& other) = default;
+
 bool NotifierId::operator==(const NotifierId& other) const {
   if (type != other.type)
     return false;

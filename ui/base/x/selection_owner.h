@@ -67,6 +67,7 @@ class UI_BASE_EXPORT SelectionOwner {
                         int offset,
                         base::TimeTicks timeout,
                         int foreign_window_manager_id);
+    IncrementalTransfer(const IncrementalTransfer& other);
     ~IncrementalTransfer();
 
     // Parameters from the XSelectionRequest. The data is transferred over

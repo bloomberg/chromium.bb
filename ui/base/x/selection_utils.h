@@ -66,6 +66,7 @@ class UI_BASE_EXPORT SelectionFormatMap {
   typedef InternalMap::const_iterator const_iterator;
 
   SelectionFormatMap();
+  SelectionFormatMap(const SelectionFormatMap& other);
   ~SelectionFormatMap();
   // Copy and assignment deliberately open.
 

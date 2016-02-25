@@ -240,6 +240,7 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   // Tracks selection information.
   struct State {
     State();
+    State(const State& other);
     ~State();
 
     // The selected menu item.

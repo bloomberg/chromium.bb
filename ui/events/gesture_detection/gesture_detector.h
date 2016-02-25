@@ -25,6 +25,7 @@ class GESTURE_DETECTION_EXPORT GestureDetector {
  public:
   struct GESTURE_DETECTION_EXPORT Config {
     Config();
+    Config(const Config& other);
     ~Config();
 
     base::TimeDelta longpress_timeout;

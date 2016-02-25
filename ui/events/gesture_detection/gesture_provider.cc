@@ -75,6 +75,8 @@ GestureProvider::Config::Config()
       max_gesture_bounds_length(0) {
 }
 
+GestureProvider::Config::Config(const Config& other) = default;
+
 GestureProvider::Config::~Config() {
 }
 

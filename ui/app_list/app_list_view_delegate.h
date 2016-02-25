@@ -41,6 +41,7 @@ class APP_LIST_EXPORT AppListViewDelegate {
   // A user of the app list.
   struct APP_LIST_EXPORT User {
     User();
+    User(const User& other);
     ~User();
 
     // Whether or not this user is the current user of the app list.

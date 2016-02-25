@@ -121,6 +121,9 @@ base::string16 RefCountedMemoryToString16(
 
 SelectionFormatMap::SelectionFormatMap() {}
 
+SelectionFormatMap::SelectionFormatMap(const SelectionFormatMap& other) =
+    default;
+
 SelectionFormatMap::~SelectionFormatMap() {}
 
 void SelectionFormatMap::Insert(

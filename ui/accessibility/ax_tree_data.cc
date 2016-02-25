@@ -28,6 +28,8 @@ AXTreeData::AXTreeData()
       sel_focus_offset(-1) {
 }
 
+AXTreeData::AXTreeData(const AXTreeData& other) = default;
+
 AXTreeData::~AXTreeData() {
 }
 

@@ -24,6 +24,7 @@ namespace ui {
 // one process to another.
 struct AX_EXPORT AXNodeData {
   AXNodeData();
+  AXNodeData(const AXNodeData& other);
   virtual ~AXNodeData();
 
   // Accessing accessibility attributes:

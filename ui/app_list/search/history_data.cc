@@ -34,6 +34,7 @@ bool EntrySortByTimeAscending(const EntrySortData& entry1,
 
 HistoryData::Data::Data() {
 }
+HistoryData::Data::Data(const Data& other) = default;
 HistoryData::Data::~Data() {
 }
 

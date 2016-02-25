@@ -12,6 +12,9 @@ namespace message_center {
 FakeNotifierSettingsProvider::NotifierGroupItem::NotifierGroupItem() {
 }
 
+FakeNotifierSettingsProvider::NotifierGroupItem::NotifierGroupItem(
+    const NotifierGroupItem& other) = default;
+
 FakeNotifierSettingsProvider::NotifierGroupItem::~NotifierGroupItem() {
 }
 

@@ -62,6 +62,8 @@ AXNodeData::AXNodeData()
       state(0xFFFFFFFF) {
 }
 
+AXNodeData::AXNodeData(const AXNodeData& other) = default;
+
 AXNodeData::~AXNodeData() {
 }
 

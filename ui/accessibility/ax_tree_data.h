@@ -23,6 +23,7 @@ namespace ui {
 // tree and not associated with any particular node in the tree.
 struct AX_EXPORT AXTreeData {
   AXTreeData();
+  AXTreeData(const AXTreeData& other);
   virtual ~AXTreeData();
 
   // Return a string representation of this data, for debugging.

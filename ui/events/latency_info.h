@@ -131,6 +131,7 @@ class EVENTS_BASE_EXPORT LatencyInfo {
       kTypicalMaxComponentsPerLatencyInfo> LatencyMap;
 
   LatencyInfo();
+  LatencyInfo(const LatencyInfo& other);
   ~LatencyInfo();
 
   // For test only.

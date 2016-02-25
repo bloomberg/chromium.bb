@@ -182,6 +182,8 @@ void TestClipboard::WriteData(const FormatType& format,
 TestClipboard::DataStore::DataStore() : sequence_number(0) {
 }
 
+TestClipboard::DataStore::DataStore(const DataStore& other) = default;
+
 TestClipboard::DataStore::~DataStore() {
 }
 

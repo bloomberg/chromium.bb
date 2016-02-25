@@ -30,6 +30,7 @@ struct GESTURE_DETECTION_EXPORT GestureEventData {
                    const gfx::RectF& bounding_box,
                    int flags);
   GestureEventData(EventType type, const GestureEventData&);
+  GestureEventData(const GestureEventData& other);
 
   EventType type() const { return details.type(); }
 

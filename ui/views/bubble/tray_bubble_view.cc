@@ -290,6 +290,8 @@ TrayBubbleView::InitParams::InitParams(AnchorType anchor_type,
       arrow_alignment(BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE) {
 }
 
+TrayBubbleView::InitParams::InitParams(const InitParams& other) = default;
+
 // static
 TrayBubbleView* TrayBubbleView::Create(gfx::NativeView parent_window,
                                        View* anchor,

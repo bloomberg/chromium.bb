@@ -148,6 +148,8 @@ LatencyInfo::LatencyInfo()
       terminated_(false) {
 }
 
+LatencyInfo::LatencyInfo(const LatencyInfo& other) = default;
+
 LatencyInfo::~LatencyInfo() {
 }
 

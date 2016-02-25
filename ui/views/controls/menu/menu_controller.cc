@@ -373,6 +373,8 @@ MenuController::State::State()
       context_menu(false) {
 }
 
+MenuController::State::State(const State& other) = default;
+
 MenuController::State::~State() {}
 
 // MenuController ------------------------------------------------------------

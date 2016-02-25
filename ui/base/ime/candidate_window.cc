@@ -99,6 +99,8 @@ CandidateWindow::CandidateWindowProperty::~CandidateWindowProperty() {
 CandidateWindow::Entry::Entry() {
 }
 
+CandidateWindow::Entry::Entry(const Entry& other) = default;
+
 CandidateWindow::Entry::~Entry() {
 }
 

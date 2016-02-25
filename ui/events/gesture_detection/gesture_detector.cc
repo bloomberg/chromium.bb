@@ -61,6 +61,8 @@ GestureDetector::Config::Config()
       single_tap_repeat_interval(1),
       velocity_tracker_strategy(VelocityTracker::Strategy::STRATEGY_DEFAULT) {}
 
+GestureDetector::Config::Config(const Config& other) = default;
+
 GestureDetector::Config::~Config() {}
 
 class GestureDetector::TimeoutGestureHandler {

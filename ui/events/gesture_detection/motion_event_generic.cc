@@ -50,6 +50,8 @@ PointerProperties::PointerProperties(const MotionEvent& event,
       source_device_id(0) {
 }
 
+PointerProperties::PointerProperties(const PointerProperties& other) = default;
+
 void PointerProperties::SetAxesAndOrientation(float radius_x,
                                               float radius_y,
                                               float rotation_angle_degree) {

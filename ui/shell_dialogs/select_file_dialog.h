@@ -109,6 +109,7 @@ class SHELL_DIALOGS_EXPORT SelectFileDialog
   // Holds information about allowed extensions on a file save dialog.
   struct SHELL_DIALOGS_EXPORT FileTypeInfo {
     FileTypeInfo();
+    FileTypeInfo(const FileTypeInfo& other);
     ~FileTypeInfo();
 
     // A list of allowed extensions. For example, it might be

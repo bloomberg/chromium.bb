@@ -40,6 +40,7 @@ class APP_LIST_EXPORT HistoryData : public base::SupportsWeakPtr<HistoryData> {
   // Defines data to be associated with a query.
   struct APP_LIST_EXPORT Data {
     Data();
+    Data(const Data& other);
     ~Data();
 
     // Primary result associated with the query.

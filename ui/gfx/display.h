@@ -58,6 +58,7 @@ class GFX_EXPORT Display final {
   Display();
   explicit Display(int64_t id);
   Display(int64_t id, const Rect& bounds);
+  Display(const Display& other);
   ~Display();
 
   // Returns the forced device scale factor, which is given by

@@ -28,6 +28,7 @@ class GESTURE_DETECTION_EXPORT GestureProvider {
  public:
   struct GESTURE_DETECTION_EXPORT Config {
     Config();
+    Config(const Config& other);
     ~Config();
     gfx::Display display;
     GestureDetector::Config gesture_detector_config;

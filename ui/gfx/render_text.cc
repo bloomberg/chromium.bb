@@ -415,6 +415,8 @@ LineSegment::~LineSegment() {}
 
 Line::Line() : preceding_heights(0), baseline(0) {}
 
+Line::Line(const Line& other) = default;
+
 Line::~Line() {}
 
 #if !defined(OS_MACOSX)

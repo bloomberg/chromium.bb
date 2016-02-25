@@ -30,6 +30,9 @@ TestLayerAnimationDelegate::TestLayerAnimationDelegate(
   CreateCcLayer();
 }
 
+TestLayerAnimationDelegate::TestLayerAnimationDelegate(
+    const TestLayerAnimationDelegate& other) = default;
+
 TestLayerAnimationDelegate::~TestLayerAnimationDelegate() {
 }
 

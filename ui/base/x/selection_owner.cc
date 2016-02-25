@@ -376,6 +376,9 @@ SelectionOwner::IncrementalTransfer::IncrementalTransfer(
       foreign_window_manager_id(foreign_window_manager_id) {
 }
 
+SelectionOwner::IncrementalTransfer::IncrementalTransfer(
+    const IncrementalTransfer& other) = default;
+
 SelectionOwner::IncrementalTransfer::~IncrementalTransfer() {
 }
 

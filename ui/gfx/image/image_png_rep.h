@@ -18,6 +18,7 @@ struct GFX_EXPORT ImagePNGRep {
   ImagePNGRep();
   ImagePNGRep(const scoped_refptr<base::RefCountedMemory>& data,
               float data_scale);
+  ImagePNGRep(const ImagePNGRep& other);
   ~ImagePNGRep();
 
   // Width and height of the image, in pixels.

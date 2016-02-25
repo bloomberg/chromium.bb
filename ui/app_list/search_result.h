@@ -75,6 +75,7 @@ class APP_LIST_EXPORT SearchResult {
            const base::string16& tooltip_text);
     Action(const base::string16& label_text,
            const base::string16& tooltip_text);
+    Action(const Action& other);
     ~Action();
 
     gfx::ImageSkia base_image;

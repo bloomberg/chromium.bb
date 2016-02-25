@@ -23,6 +23,8 @@ class COMPOSITOR_EXPORT TransformAnimationCurveAdapter
                                  gfx::Transform target_value,
                                  base::TimeDelta duration);
 
+  TransformAnimationCurveAdapter(const TransformAnimationCurveAdapter& other);
+
   ~TransformAnimationCurveAdapter() override;
 
   // TransformAnimationCurve implementation.

@@ -56,6 +56,7 @@ class FakeNotifierSettingsProvider : public NotifierSettingsProvider {
     std::vector<Notifier*> notifiers;
 
     NotifierGroupItem();
+    NotifierGroupItem(const NotifierGroupItem& other);
     ~NotifierGroupItem();
   };
 

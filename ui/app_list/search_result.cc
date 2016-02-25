@@ -27,6 +27,8 @@ SearchResult::Action::Action(const base::string16& label_text,
     : tooltip_text(tooltip_text),
       label_text(label_text) {}
 
+SearchResult::Action::Action(const Action& other) = default;
+
 SearchResult::Action::~Action() {}
 
 SearchResult::SearchResult()
