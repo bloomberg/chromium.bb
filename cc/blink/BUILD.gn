@@ -46,7 +46,7 @@ component("blink") {
     "//base/third_party/dynamic_annotations",
     "//cc",
     "//gpu",
-    "//third_party/WebKit/public:blink",
+    "//third_party/WebKit/public:blink_for_unittests",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
