@@ -46,6 +46,11 @@ public:
         return m_layoutObject->isText();
     }
 
+    bool isTextControl() const
+    {
+        return m_layoutObject->isTextControl();
+    }
+
     bool needsLayout()
     {
         return m_layoutObject->needsLayout();
@@ -59,6 +64,11 @@ public:
     LayoutItem container() const
     {
         return LayoutItem(m_layoutObject->container());
+    }
+
+    const ComputedStyle& styleRef() const
+    {
+        return m_layoutObject->styleRef();
     }
 
     void setMayNeedPaintInvalidation()
