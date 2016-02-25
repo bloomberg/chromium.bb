@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SIGNIN_CORE_COMMON_SIGNIN_SWITCHES_H_
 #define COMPONENTS_SIGNIN_CORE_COMMON_SIGNIN_SWITCHES_H_
 
+#include "base/feature_list.h"
+
 namespace switches {
 
 // These switches should not be queried from CommandLine::HasSwitch() directly.
@@ -15,15 +17,15 @@ namespace switches {
 // alongside the definition of their values in the .cc file.
 extern const char kClearTokenService[];
 extern const char kDisableAccountConsistency[];
-extern const char kDisablePasswordSeparatedSigninFlow[];
 extern const char kDisableNewProfileManagement[];
 extern const char kDisableSigninScopedDeviceId[];
 extern const char kEnableAccountConsistency[];
-extern const char kEnablePasswordSeparatedSigninFlow[];
 extern const char kEnableNewProfileManagement[];
 extern const char kEnableRefreshTokenAnnotationRequest[];
 extern const char kExtensionsMultiAccount[];
 extern const char kGoogleProfileInfo[];
+
+extern const base::Feature kUsePasswordSeparatedSigninFlow;
 
 }  // namespace switches
 
