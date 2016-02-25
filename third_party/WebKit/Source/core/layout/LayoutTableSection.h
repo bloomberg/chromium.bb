@@ -306,6 +306,12 @@ public:
 
     const char* name() const override { return "LayoutTableSection"; }
 
+    // Whether a section has opaque background depends on many factors, e.g. border spacing,
+    // border collapsing, missing cells, etc.
+    // For simplicity, just conservatively assume all table sections are not opaque.
+    bool foregroundIsKnownToBeOpaqueInRect(const LayoutRect&, unsigned) const override { return false; }
+    bool backgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const override { return false; }
+
 protected:
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
     bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;

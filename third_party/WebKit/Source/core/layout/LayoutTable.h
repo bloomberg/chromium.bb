@@ -367,6 +367,10 @@ public:
 
     const char* name() const override { return "LayoutTable"; }
 
+    // Whether a table has opaque foreground depends on many factors, e.g. border spacing, missing cells, etc.
+    // For simplicity, just conservatively assume foreground of all tables are not opaque.
+    bool foregroundIsKnownToBeOpaqueInRect(const LayoutRect&, unsigned) const override { return false; }
+
 protected:
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
     void simplifiedNormalFlowLayout() override;

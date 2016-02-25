@@ -88,6 +88,27 @@ TEST_F(LayoutTableRowTest, BackgroundIsKnownToBeOpaqueWithLayerAndCollapsedBorde
     EXPECT_FALSE(row->backgroundIsKnownToBeOpaqueInRect(LayoutRect(0, 0, 1, 1)));
 }
 
+TEST_F(LayoutTableRowTest, BackgroundIsKnownToBeOpaqueWithBorderSpacing)
+{
+    setBodyInnerHTML("<table style='border-spacing: 10px'>"
+        "<tr style='background-color: blue'><td>Cell</td></tr>"
+        "</table>");
+
+    LayoutTableRow* row = toLayoutTableRow(document().body()->firstChild()->firstChild()->firstChild()->layoutObject());
+    EXPECT_FALSE(row->backgroundIsKnownToBeOpaqueInRect(LayoutRect(0, 0, 1, 1)));
+}
+
+TEST_F(LayoutTableRowTest, BackgroundIsKnownToBeOpaqueWithEmptyCell)
+{
+    setBodyInnerHTML("<table style='border-spacing: 10px'>"
+        "<tr style='background-color: blue'><td>Cell</td></tr>"
+        "<tr style='background-color: blue'><td>Cell</td><td>Cell</td></tr>"
+        "</table>");
+
+    LayoutTableRow* row = toLayoutTableRow(document().body()->firstChild()->firstChild()->firstChild()->layoutObject());
+    EXPECT_FALSE(row->backgroundIsKnownToBeOpaqueInRect(LayoutRect(0, 0, 1, 1)));
+}
+
 } // anonymous namespace
 
 } // namespace blink

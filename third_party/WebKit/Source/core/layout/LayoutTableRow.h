@@ -126,7 +126,11 @@ public:
 
     const char* name() const override { return "LayoutTableRow"; }
 
-    bool backgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const override;
+    // Whether a row has opaque background depends on many factors, e.g. border spacing,
+    // border collapsing, missing cells, etc.
+    // For simplicity, just conservatively assume all table rows are not opaque.
+    bool foregroundIsKnownToBeOpaqueInRect(const LayoutRect&, unsigned) const override { return false; }
+    bool backgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const override { return false; }
 
 private:
     LayoutObjectChildList* virtualChildren() override { return children(); }

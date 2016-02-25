@@ -1405,8 +1405,8 @@ bool LayoutBox::computeBackgroundIsKnownToBeObscured() const
     // FIXME: This test can be much more comprehensive.
     if (!hasBackground())
         return false;
-    // Table and root background painting is special.
-    if (isTable() || isLayoutView())
+    // Root background painting is special.
+    if (isLayoutView())
         return false;
     // FIXME: box-shadow is painted while background painting.
     if (style()->boxShadow())

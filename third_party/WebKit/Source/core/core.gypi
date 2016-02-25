@@ -3984,6 +3984,7 @@
             'layout/LayoutProgressTest.cpp',
             'layout/LayoutTableCellTest.cpp',
             'layout/LayoutTableRowTest.cpp',
+            'layout/LayoutTableSectionTest.cpp',
             'layout/LayoutTestHelper.cpp',
             'layout/LayoutTestHelper.h',
             'layout/LayoutThemeTest.cpp',
