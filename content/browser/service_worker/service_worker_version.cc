@@ -1145,8 +1145,15 @@ void ServiceWorkerVersion::OnFocusClient(int request_id,
     // possibly due to timing issue or bad message.
     return;
   }
-  provider_host->Focus(base::Bind(&ServiceWorkerVersion::OnFocusClientFinished,
-                                  weak_factory_.GetWeakPtr(), request_id));
+  if (provider_host->client_type() != blink::WebServiceWorkerClientTypeWindow) {
+    // focus() should be called only for WindowClient. This may happen due to
+    // bad message.
+    return;
+  }
+
+  service_worker_client_utils::FocusWindowClient(
+      provider_host, base::Bind(&ServiceWorkerVersion::OnFocusClientFinished,
+                                weak_factory_.GetWeakPtr(), request_id));
 }
 
 void ServiceWorkerVersion::OnFocusClientFinished(

@@ -9,9 +9,6 @@
 #include "base/guid.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
-#include "content/browser/frame_host/frame_tree.h"
-#include "content/browser/frame_host/frame_tree_node.h"
-#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_request_handler.h"
@@ -20,47 +17,16 @@
 #include "content/browser/service_worker/service_worker_handle.h"
 #include "content/browser/service_worker/service_worker_registration_handle.h"
 #include "content/browser/service_worker/service_worker_version.h"
-#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/resource_request_body.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
-#include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_widget_host_view.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/child_process_host.h"
 
 namespace content {
 
 namespace {
-
-ServiceWorkerClientInfo FocusOnUIThread(int render_process_id,
-                                        int render_frame_id,
-                                        const std::string& client_uuid) {
-  RenderFrameHostImpl* render_frame_host =
-      RenderFrameHostImpl::FromID(render_process_id, render_frame_id);
-  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
-      WebContents::FromRenderFrameHost(render_frame_host));
-
-  if (!render_frame_host || !web_contents)
-    return ServiceWorkerClientInfo();
-
-  FrameTreeNode* frame_tree_node = render_frame_host->frame_tree_node();
-
-  // Focus the frame in the frame tree node, in case it has changed.
-  frame_tree_node->frame_tree()->SetFocusedFrame(
-      frame_tree_node, render_frame_host->GetSiteInstance());
-
-  // Focus the frame's view to make sure the frame is now considered as focused.
-  render_frame_host->GetView()->Focus();
-
-  // Move the web contents to the foreground.
-  web_contents->Activate();
-
-  return ServiceWorkerProviderHost::GetWindowClientInfoOnUI(
-      render_process_id, render_frame_id, client_uuid);
-}
 
 // PlzNavigate
 // Next ServiceWorkerProviderHost ID for navigations, starts at -2 and keeps
@@ -432,52 +398,6 @@ void ServiceWorkerProviderHost::PostMessageToClient(
   params.message_ports = sent_message_ports;
   params.new_routing_ids = new_routing_ids;
   Send(new ServiceWorkerMsg_MessageToDocument(params));
-}
-
-void ServiceWorkerProviderHost::Focus(const GetClientInfoCallback& callback) {
-  if (provider_type_ != SERVICE_WORKER_PROVIDER_FOR_WINDOW) {
-    callback.Run(ServiceWorkerClientInfo());
-    return;
-  }
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&FocusOnUIThread, render_process_id_, route_id_, client_uuid_),
-      callback);
-}
-
-void ServiceWorkerProviderHost::GetWindowClientInfo(
-    const GetClientInfoCallback& callback) const {
-  if (provider_type_ != SERVICE_WORKER_PROVIDER_FOR_WINDOW) {
-    callback.Run(ServiceWorkerClientInfo());
-    return;
-  }
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&ServiceWorkerProviderHost::GetWindowClientInfoOnUI,
-                 render_process_id_, route_id_, client_uuid_),
-      callback);
-}
-
-// static
-ServiceWorkerClientInfo ServiceWorkerProviderHost::GetWindowClientInfoOnUI(
-    int render_process_id,
-    int render_frame_id,
-    const std::string& client_uuid) {
-  RenderFrameHostImpl* render_frame_host =
-      RenderFrameHostImpl::FromID(render_process_id, render_frame_id);
-  if (!render_frame_host)
-    return ServiceWorkerClientInfo();
-
-  // TODO(mlamouri,michaeln): it is possible to end up collecting information
-  // for a frame that is actually being navigated and isn't exactly what we are
-  // expecting.
-  return ServiceWorkerClientInfo(
-      client_uuid, render_frame_host->GetVisibilityState(),
-      render_frame_host->IsFocused(), render_frame_host->GetLastCommittedURL(),
-      render_frame_host->GetParent() ? REQUEST_CONTEXT_FRAME_TYPE_NESTED
-                                     : REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
-      render_frame_host->frame_tree_node()->last_focus_time(),
-      blink::WebServiceWorkerClientTypeWindow);
 }
 
 void ServiceWorkerProviderHost::AddScopedProcessReferenceToPattern(

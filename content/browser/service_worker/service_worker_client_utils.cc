@@ -11,13 +11,17 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/storage_partition_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/service_worker/service_worker_client_info.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/page_navigator.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/child_process_host.h"
@@ -90,8 +94,60 @@ class OpenURLObserver : public WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(OpenURLObserver);
 };
 
+ServiceWorkerClientInfo GetWindowClientInfoOnUI(
+    int render_process_id,
+    int render_frame_id,
+    const std::string& client_uuid) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RenderFrameHostImpl* render_frame_host =
+      RenderFrameHostImpl::FromID(render_process_id, render_frame_id);
+  if (!render_frame_host)
+    return ServiceWorkerClientInfo();
+
+  // TODO(mlamouri,michaeln): it is possible to end up collecting information
+  // for a frame that is actually being navigated and isn't exactly what we are
+  // expecting.
+  return ServiceWorkerClientInfo(
+      client_uuid, render_frame_host->GetVisibilityState(),
+      render_frame_host->IsFocused(), render_frame_host->GetLastCommittedURL(),
+      render_frame_host->GetParent() ? REQUEST_CONTEXT_FRAME_TYPE_NESTED
+                                     : REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
+      render_frame_host->frame_tree_node()->last_focus_time(),
+      blink::WebServiceWorkerClientTypeWindow);
+}
+
+ServiceWorkerClientInfo FocusOnUI(int render_process_id,
+                                  int render_frame_id,
+                                  const std::string& client_uuid) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RenderFrameHostImpl* render_frame_host =
+      RenderFrameHostImpl::FromID(render_process_id, render_frame_id);
+  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
+      WebContents::FromRenderFrameHost(render_frame_host));
+
+  if (!render_frame_host || !web_contents)
+    return ServiceWorkerClientInfo();
+
+  FrameTreeNode* frame_tree_node = render_frame_host->frame_tree_node();
+
+  // Focus the frame in the frame tree node, in case it has changed.
+  frame_tree_node->frame_tree()->SetFocusedFrame(
+      frame_tree_node, render_frame_host->GetSiteInstance());
+
+  // Focus the frame's view to make sure the frame is now considered as focused.
+  render_frame_host->GetView()->Focus();
+
+  // Move the web contents to the foreground.
+  web_contents->Activate();
+
+  return GetWindowClientInfoOnUI(render_process_id, render_frame_id,
+                                 client_uuid);
+}
+
 // This is only called for main frame navigations in OpenWindowOnUI().
-void DidOpenURL(const OpenURLCallback& callback, WebContents* web_contents) {
+void DidOpenURLOnUI(const OpenURLCallback& callback,
+                    WebContents* web_contents) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(web_contents);
 
   RenderFrameHostImpl* rfhi =
@@ -133,7 +189,7 @@ void OpenWindowOnUI(
       true /* is_renderer_initiated */);
 
   GetContentClient()->browser()->OpenURL(browser_context, params,
-                                         base::Bind(&DidOpenURL, callback));
+                                         base::Bind(&DidOpenURLOnUI, callback));
 }
 
 void NavigateClientOnUI(const GURL& url,
@@ -194,7 +250,11 @@ void DidNavigate(const base::WeakPtr<ServiceWorkerContextCore>& context,
         provider_host->frame_id() != render_frame_id) {
       continue;
     }
-    provider_host->GetWindowClientInfo(base::Bind(callback, SERVICE_WORKER_OK));
+    BrowserThread::PostTaskAndReplyWithResult(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&GetWindowClientInfoOnUI, provider_host->process_id(),
+                   provider_host->route_id(), provider_host->client_uuid()),
+        base::Bind(callback, SERVICE_WORKER_OK));
     return;
   }
 
@@ -206,6 +266,7 @@ void DidNavigate(const base::WeakPtr<ServiceWorkerContextCore>& context,
 void AddWindowClient(
     ServiceWorkerProviderHost* host,
     std::vector<base::Tuple<int, int, std::string>>* client_info) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (host->client_type() != blink::WebServiceWorkerClientTypeWindow)
     return;
   client_info->push_back(base::MakeTuple(host->process_id(), host->frame_id(),
@@ -215,6 +276,7 @@ void AddWindowClient(
 void AddNonWindowClient(ServiceWorkerProviderHost* host,
                         const ServiceWorkerClientQueryOptions& options,
                         ServiceWorkerClients* clients) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   blink::WebServiceWorkerClientType host_client_type = host->client_type();
   if (host_client_type == blink::WebServiceWorkerClientTypeWindow)
     return;
@@ -235,12 +297,12 @@ void OnGetWindowClientsOnUI(
     const std::vector<base::Tuple<int, int, std::string>>& clients_info,
     const GURL& script_url,
     const GetWindowClientsCallback& callback) {
-  scoped_ptr<ServiceWorkerClients> clients(new ServiceWorkerClients);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  scoped_ptr<ServiceWorkerClients> clients(new ServiceWorkerClients);
   for (const auto& it : clients_info) {
-    ServiceWorkerClientInfo info =
-        ServiceWorkerProviderHost::GetWindowClientInfoOnUI(
-            base::get<0>(it), base::get<1>(it), base::get<2>(it));
+    ServiceWorkerClientInfo info = GetWindowClientInfoOnUI(
+        base::get<0>(it), base::get<1>(it), base::get<2>(it));
 
     // If the request to the provider_host returned an empty
     // ServiceWorkerClientInfo, that means that it wasn't possible to associate
@@ -282,6 +344,7 @@ void DidGetClients(const ClientsCallback& callback,
 void GetNonWindowClients(const base::WeakPtr<ServiceWorkerVersion>& controller,
                          const ServiceWorkerClientQueryOptions& options,
                          ServiceWorkerClients* clients) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!options.include_uncontrolled) {
     for (auto& controllee : controller->controllee_map())
       AddNonWindowClient(controllee.second, options, clients);
@@ -338,6 +401,18 @@ void GetWindowClients(const base::WeakPtr<ServiceWorkerVersion>& controller,
 
 }  // namespace
 
+void FocusWindowClient(ServiceWorkerProviderHost* provider_host,
+                       const ClientCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_EQ(blink::WebServiceWorkerClientTypeWindow,
+            provider_host->client_type());
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&FocusOnUI, provider_host->process_id(),
+                 provider_host->frame_id(), provider_host->client_uuid()),
+      callback);
+}
+
 void OpenWindow(const GURL& url,
                 const GURL& script_url,
                 int worker_process_id,
@@ -366,11 +441,10 @@ void NavigateClient(const GURL& url,
           base::Bind(&DidNavigate, context, script_url.GetOrigin(), callback)));
 }
 
-void GetClient(
-    const base::WeakPtr<ServiceWorkerVersion>& controller,
-    const std::string& client_uuid,
-    const base::WeakPtr<ServiceWorkerContextCore>& context,
-    const ServiceWorkerProviderHost::GetClientInfoCallback& callback) {
+void GetClient(const base::WeakPtr<ServiceWorkerVersion>& controller,
+               const std::string& client_uuid,
+               const base::WeakPtr<ServiceWorkerContextCore>& context,
+               const ClientCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   ServiceWorkerProviderHost* provider_host =
@@ -391,7 +465,11 @@ void GetClient(
   }
 
   if (provider_host->client_type() == blink::WebServiceWorkerClientTypeWindow) {
-    provider_host->GetWindowClientInfo(callback);
+    BrowserThread::PostTaskAndReplyWithResult(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&GetWindowClientInfoOnUI, provider_host->process_id(),
+                   provider_host->route_id(), provider_host->client_uuid()),
+        callback);
     return;
   }
 
