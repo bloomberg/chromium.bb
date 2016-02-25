@@ -37,8 +37,6 @@ void SynchronousCompositor::SetGpuService(
   g_sync_point_manager = service->sync_point_manager();
   GpuProcessHost::RegisterGpuMainThreadFactory(
       CreateInProcessGpuThreadForSynchronousCompositor);
-  SynchronousCompositorStreamTextureFactoryImpl::GetInstance()
-      ->SetDeferredGpuService(service);
 }
 
 // static
