@@ -73,7 +73,7 @@ void* /* EGLConfig */ GbmSurfaceless::GetEGLSurfaceConfig(
                              EGL_RENDERABLE_TYPE,
                              EGL_OPENGL_ES2_BIT,
                              EGL_SURFACE_TYPE,
-                             EGL_WINDOW_BIT,
+                             EGL_DONT_CARE,
                              EGL_NONE};
   return ChooseEGLConfig(egl, config_attribs);
 }
