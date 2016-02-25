@@ -75,6 +75,8 @@ class VisualStudioWriter {
   using SolutionFolders = std::vector<SolutionEntry*>;
 
   explicit VisualStudioWriter(const BuildSettings* build_settings,
+                              bool is_debug_config,
+                              const char* config_platform,
                               Version version);
   ~VisualStudioWriter();
 
@@ -110,7 +112,7 @@ class VisualStudioWriter {
 
   // Platform for solution configuration (Win32, x64). Some projects may be
   // configured for different platform.
-  std::string config_platform_;
+  const char* config_platform_;
 
   // All projects contained by solution.
   SolutionProjects projects_;

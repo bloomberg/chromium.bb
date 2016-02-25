@@ -178,18 +178,15 @@ VisualStudioWriter::SolutionProject::SolutionProject(
 VisualStudioWriter::SolutionProject::~SolutionProject() = default;
 
 VisualStudioWriter::VisualStudioWriter(const BuildSettings* build_settings,
+                                       bool is_debug_config,
+                                       const char* config_platform,
                                        Version version)
     : build_settings_(build_settings),
+      is_debug_config_(is_debug_config),
+      config_platform_(config_platform),
       ninja_path_output_(build_settings->build_dir(),
                          build_settings->root_path_utf8(),
                          EscapingMode::ESCAPE_NINJA_COMMAND) {
-  const Value* value = build_settings->build_args().GetArgOverride("is_debug");
-  is_debug_config_ = value == nullptr || value->boolean_value();
-  config_platform_ = "Win32";
-  value = build_settings->build_args().GetArgOverride(variables::kTargetCpu);
-  if (value != nullptr && value->string_value() == "x64")
-    config_platform_ = "x64";
-
   switch (version) {
     case Version::Vs2013:
       project_version_ = kProjectVersionVs2013;
@@ -220,7 +217,24 @@ bool VisualStudioWriter::RunAndWriteFiles(const BuildSettings* build_settings,
                                           Err* err) {
   std::vector<const Target*> targets = builder->GetAllResolvedTargets();
 
-  VisualStudioWriter writer(build_settings, version);
+  bool is_debug_config = true;
+  const char* config_platform = "Win32";
+
+  // Assume the "is_debug" and "target_cpu" variables do not change
+  // between different toolchains.
+  if (!targets.empty()) {
+    const Scope* scope = targets.front()->settings()->base_config();
+    const Value* is_debug_value = scope->GetValue("is_debug");
+    is_debug_config =
+        is_debug_value == nullptr || is_debug_value->boolean_value();
+    const Value* target_cpu_value = scope->GetValue(variables::kTargetCpu);
+    if (target_cpu_value != nullptr &&
+        target_cpu_value->string_value() == "x64")
+      config_platform = "x64";
+  }
+
+  VisualStudioWriter writer(build_settings, is_debug_config, config_platform,
+                            version);
   writer.projects_.reserve(targets.size());
   writer.folders_.reserve(targets.size());
 
@@ -255,16 +269,14 @@ bool VisualStudioWriter::RunAndWriteFiles(const BuildSettings* build_settings,
 
 bool VisualStudioWriter::WriteProjectFiles(const Target* target, Err* err) {
   std::string project_name = target->label().name();
-  std::string project_config_platform = config_platform_;
+  const char* project_config_platform = config_platform_;
   if (!target->settings()->is_default()) {
     project_name += "_" + target->toolchain()->label().name();
-    project_config_platform = target->toolchain()
-                                  ->settings()
-                                  ->build_settings()
-                                  ->build_args()
-                                  .GetArgOverride(variables::kCurrentCpu)
-                                  ->string_value();
-    if (project_config_platform == "x86")
+    const Value* value =
+        target->settings()->base_config()->GetValue(variables::kCurrentCpu);
+    if (value != nullptr && value->string_value() == "x64")
+      project_config_platform = "x64";
+    else
       project_config_platform = "Win32";
   }
 
