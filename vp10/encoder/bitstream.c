@@ -19,6 +19,9 @@
 #include "vpx_ports/mem_ops.h"
 #include "vpx_ports/system_state.h"
 
+#if CONFIG_CLPF
+#include "vp10/common/clpf.h"
+#endif
 #include "vp10/common/entropy.h"
 #include "vp10/common/entropymode.h"
 #include "vp10/common/entropymv.h"
@@ -26,9 +29,6 @@
 #include "vp10/common/pred_common.h"
 #include "vp10/common/seg_common.h"
 #include "vp10/common/tile_common.h"
-#if CONFIG_CLPF
-#include "vp10/common/clpf.h"
-#endif
 
 #include "vp10/encoder/cost.h"
 #include "vp10/encoder/bitstream.h"

@@ -25,6 +25,9 @@
 #include "vpx_util/vpx_thread.h"
 
 #include "vp10/common/alloccommon.h"
+#if CONFIG_CLPF
+#include "vp10/common/clpf.h"
+#endif
 #include "vp10/common/common.h"
 #include "vp10/common/entropy.h"
 #include "vp10/common/entropymode.h"
@@ -36,9 +39,6 @@
 #include "vp10/common/reconinter.h"
 #include "vp10/common/seg_common.h"
 #include "vp10/common/tile_common.h"
-#if CONFIG_CLPF
-#include "vp10/common/clpf.h"
-#endif
 
 #include "vp10/decoder/decodeframe.h"
 #include "vp10/decoder/detokenize.h"
