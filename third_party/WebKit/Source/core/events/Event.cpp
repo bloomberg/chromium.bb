@@ -257,6 +257,16 @@ void Event::initEventPath(Node& node)
 
 WillBeHeapVector<RefPtrWillBeMember<EventTarget>> Event::path(ScriptState* scriptState) const
 {
+    return pathInternal(scriptState, NonEmptyAfterDispatch);
+}
+
+WillBeHeapVector<RefPtrWillBeMember<EventTarget>> Event::deepPath(ScriptState* scriptState) const
+{
+    return pathInternal(scriptState, EmptyAfterDispatch);
+}
+
+WillBeHeapVector<RefPtrWillBeMember<EventTarget>> Event::pathInternal(ScriptState* scriptState, EventPathMode mode) const
+{
     if (m_target)
         OriginsUsingFeatures::countOriginOrIsolatedWorldHumanReadableName(scriptState, *m_target, OriginsUsingFeatures::Feature::EventPath);
 
@@ -268,6 +278,8 @@ WillBeHeapVector<RefPtrWillBeMember<EventTarget>> Event::path(ScriptState* scrip
         }
         ASSERT(!m_eventPath->isEmpty());
         // After dispatching the event
+        if (mode == EmptyAfterDispatch)
+            return WillBeHeapVector<RefPtrWillBeMember<EventTarget>>();
         return m_eventPath->last().treeScopeEventContext().ensureEventPath(*m_eventPath);
     }
 

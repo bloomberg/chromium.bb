@@ -187,6 +187,7 @@ public:
     void initEventPath(Node&);
 
     WillBeHeapVector<RefPtrWillBeMember<EventTarget>> path(ScriptState*) const;
+    WillBeHeapVector<RefPtrWillBeMember<EventTarget>> deepPath(ScriptState*) const;
 
     bool isBeingDispatched() const { return eventPhase(); }
 
@@ -217,6 +218,13 @@ protected:
     void setCanBubble(bool bubble) { m_canBubble = bubble; }
 
 private:
+    enum EventPathMode {
+        EmptyAfterDispatch,
+        NonEmptyAfterDispatch
+    };
+
+    WillBeHeapVector<RefPtrWillBeMember<EventTarget>> pathInternal(ScriptState*, EventPathMode) const;
+
     AtomicString m_type;
     unsigned m_canBubble:1;
     unsigned m_cancelable:1;
