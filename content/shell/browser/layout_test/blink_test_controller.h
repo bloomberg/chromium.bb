@@ -13,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/scoped_observer.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/non_thread_safe.h"
 #include "build/build_config.h"
@@ -21,6 +22,7 @@
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/web_preferences.h"
 #include "content/shell/common/leak_detection_result.h"
@@ -41,6 +43,7 @@ namespace content {
 class LayoutTestBluetoothChooserFactory;
 class LayoutTestDevToolsFrontend;
 class RenderFrameHost;
+class RenderProcessHost;
 class Shell;
 
 #if defined(OS_ANDROID)
@@ -113,6 +116,7 @@ class BlinkTestResultPrinter {
 
 class BlinkTestController : public base::NonThreadSafe,
                             public WebContentsObserver,
+                            public RenderProcessHostObserver,
                             public NotificationObserver,
                             public GpuDataManagerObserver {
  public:
@@ -153,8 +157,12 @@ class BlinkTestController : public base::NonThreadSafe,
   void RenderFrameCreated(RenderFrameHost* render_frame_host) override;
   void RenderFrameHostChanged(RenderFrameHost* old_host,
                               RenderFrameHost* new_host) override;
-  void RenderProcessGone(base::TerminationStatus status) override;
   void WebContentsDestroyed() override;
+
+  // RenderProcessHostObserver implementation.
+  void RenderProcessExited(RenderProcessHost* render_process_host,
+                           base::TerminationStatus status,
+                           int exit_code) override;
 
   // NotificationObserver implementation.
   void Observe(int type,
@@ -245,6 +253,10 @@ class BlinkTestController : public base::NonThreadSafe,
   std::map<int, std::string> frame_to_layout_dump_map_;
   // Number of ShellViewHostMsg_LayoutDumpResponse messages we are waiting for.
   int pending_layout_dumps_;
+
+  // Renderer processes are observed to detect crashes.
+  ScopedObserver<RenderProcessHost, RenderProcessHostObserver>
+      render_process_host_observer_;
 
 #if defined(OS_ANDROID)
   // Because of the nested message pump implementation, Android needs to allow

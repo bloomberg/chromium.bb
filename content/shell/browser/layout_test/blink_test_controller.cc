@@ -221,7 +221,8 @@ BlinkTestController::BlinkTestController()
           base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kEnableLeakDetection)),
       crash_when_leak_found_(false),
-      devtools_frontend_(NULL) {
+      devtools_frontend_(NULL),
+      render_process_host_observer_(this) {
   CHECK(!instance_);
   instance_ = this;
 
@@ -459,13 +460,18 @@ void BlinkTestController::RenderFrameCreated(
     RenderFrameHost* render_frame_host) {
   DCHECK(CalledOnValidThread());
 
+  // Monitor the new renderer process for crashes.
+  RenderProcessHost* render_process_host = render_frame_host->GetProcess();
+  if (!render_process_host_observer_.IsObserving(render_process_host))
+    render_process_host_observer_.Add(render_process_host);
+
   // Ignore hosts created for frames other than the main / top-level frame.
   if (render_frame_host->GetParent() != nullptr)
     return;
 
   // Might be kNullProcessHandle, in which case we will receive a notification
   // later when the RenderProcessHost was created.
-  base::ProcessHandle handle = render_frame_host->GetProcess()->GetHandle();
+  base::ProcessHandle handle = render_process_host->GetHandle();
   if (handle != base::kNullProcessHandle)
     current_pid_ = base::GetProcId(handle);
 
@@ -479,26 +485,20 @@ void BlinkTestController::RenderFrameHostChanged(RenderFrameHost* old_host,
                                                  RenderFrameHost* new_host) {
   DCHECK(CalledOnValidThread());
 
+  // Monitor the new renderer process for crashes.
+  RenderProcessHost* render_process_host = new_host->GetProcess();
+  if (!render_process_host_observer_.IsObserving(render_process_host))
+    render_process_host_observer_.Add(render_process_host);
+
   // Ignore host changes for frames other than the main / top-level frame.
   if (new_host->GetParent() != nullptr)
     return;
 
-  base::ProcessHandle process_handle = new_host->GetProcess()->GetHandle();
+  base::ProcessHandle process_handle = render_process_host->GetHandle();
   DCHECK(process_handle != base::kNullProcessHandle);
   current_pid_ = base::GetProcId(process_handle);
 
   SendTestConfiguration();
-}
-
-void BlinkTestController::RenderProcessGone(base::TerminationStatus status) {
-  DCHECK(CalledOnValidThread());
-  if (current_pid_ != base::kNullProcessId) {
-    printer_->AddErrorMessage(std::string("#CRASHED - renderer (pid ") +
-                              base::IntToString(current_pid_) + ")");
-  } else {
-    printer_->AddErrorMessage("#CRASHED - renderer");
-  }
-  DiscardMainWindow();
 }
 
 void BlinkTestController::DevToolsProcessCrashed() {
@@ -513,6 +513,36 @@ void BlinkTestController::WebContentsDestroyed() {
   DCHECK(CalledOnValidThread());
   printer_->AddErrorMessage("FAIL: main window was destroyed");
   DiscardMainWindow();
+}
+
+void BlinkTestController::RenderProcessExited(
+    RenderProcessHost* render_process_host,
+    base::TerminationStatus status,
+    int exit_code) {
+  DCHECK(CalledOnValidThread());
+  switch (status) {
+    case base::TerminationStatus::TERMINATION_STATUS_NORMAL_TERMINATION:
+    case base::TerminationStatus::TERMINATION_STATUS_STILL_RUNNING:
+      break;
+
+    case base::TerminationStatus::TERMINATION_STATUS_ABNORMAL_TERMINATION:
+    case base::TerminationStatus::TERMINATION_STATUS_LAUNCH_FAILED:
+    case base::TerminationStatus::TERMINATION_STATUS_PROCESS_CRASHED:
+    case base::TerminationStatus::TERMINATION_STATUS_PROCESS_WAS_KILLED:
+    default: {
+      base::ProcessHandle handle = render_process_host->GetHandle();
+      if (handle != base::kNullProcessHandle) {
+        printer_->AddErrorMessage(std::string("#CRASHED - renderer (pid ") +
+                                  base::IntToString(base::GetProcId(handle)) +
+                                  ")");
+      } else {
+        printer_->AddErrorMessage("#CRASHED - renderer");
+      }
+
+      DiscardMainWindow();
+      break;
+    }
+  }
 }
 
 void BlinkTestController::Observe(int type,
