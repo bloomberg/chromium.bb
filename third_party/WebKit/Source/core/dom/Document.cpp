@@ -3722,6 +3722,8 @@ void Document::clearFocusedElement()
 
 void Document::setSequentialFocusNavigationStartingPoint(Node* node)
 {
+    if (!m_frame)
+        return;
     if (!node) {
         m_sequentialFocusNavigationStartingPoint = nullptr;
         return;
