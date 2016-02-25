@@ -213,8 +213,6 @@ DefaultCommandLineSwitch g_default_switches[] = {
 #endif
 #endif
 #endif  // defined(OS_LINUX)
-  // Enable prefixed EME until all Cast partner apps are moved off of it.
-  { switches::kEnablePrefixedEncryptedMedia, "" },
   // Needed so that our call to GpuDataManager::SetGLStrings doesn't race
   // against GPU process creation (which is otherwise triggered from
   // BrowserThreadsStarted).  The GPU process will be created as soon as a
