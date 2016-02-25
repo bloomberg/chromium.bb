@@ -71,7 +71,7 @@ enum CanPlayTypeResult { "" /* empty string */, "maybe", "probably" };
     readonly attribute boolean ended;
     [Reflect] attribute boolean autoplay;
     [Reflect] attribute boolean loop;
-    void play();
+    [CallWith=ScriptState, ImplementedAs=playForBindings] Promise<void> play();
     void pause();
 
     // controls

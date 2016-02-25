@@ -1,3 +1,4 @@
+CONSOLE ERROR: Uncaught (in promise) AbortError: The play() request was interrupted by a call to pause().
 Test that the overlay play button respects the controls attribute
 
 EXPECTED (getComputedStyle(button).display == 'flex') OK

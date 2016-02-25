@@ -29,11 +29,11 @@
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptEventListener.h"
+#include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/HTMLNames.h"
 #include "core/css/MediaList.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/dom/Fullscreen.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/Event.h"
@@ -347,6 +347,8 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_audioTracks(AudioTrackList::create(*this))
     , m_videoTracks(VideoTrackList::create(*this))
     , m_textTracks(nullptr)
+    , m_playPromiseResolveTask(CancellableTaskFactory::create(this, &HTMLMediaElement::resolvePlayPromises))
+    , m_playPromiseRejectTask(CancellableTaskFactory::create(this, &HTMLMediaElement::rejectPlayPromises))
     , m_audioSourceNode(nullptr)
     , m_autoplayHelper(*this)
 {
@@ -740,6 +742,8 @@ void HTMLMediaElement::prepareForLoad()
     // 2 - If there are any tasks from the media element's media element event task source in
     // one of the task queues, then remove those tasks.
     cancelPendingEventsAndCallbacks();
+
+    rejectPlayPromises(AbortError, "The play() request was interrupted by a new load request.");
 
     // 3 - If the media element's networkState is set to NETWORK_LOADING or NETWORK_IDLE, queue
     // a task to fire a simple event named abort at the media element.
@@ -1253,32 +1257,32 @@ void HTMLMediaElement::noneSupported()
     m_loadState = WaitingForSource;
     m_currentSourceNode = nullptr;
 
-    // 4.8.10.5
-    // 6 - Reaching this step indicates that the media resource failed to load or that the given
-    // URL could not be resolved. In one atomic operation, run the following steps:
+    // 4.8.13.5
+    // The dedicated media source failure steps are the following steps:
 
-    // 6.1 - Set the error attribute to a new MediaError object whose code attribute is set to
+    // 1 - Set the error attribute to a new MediaError object whose code attribute is set to
     // MEDIA_ERR_SRC_NOT_SUPPORTED.
     m_error = MediaError::create(MediaError::MEDIA_ERR_SRC_NOT_SUPPORTED);
 
-    // 6.2 - Forget the media element's media-resource-specific text tracks.
+    // 2 - Forget the media element's media-resource-specific text tracks.
     forgetResourceSpecificTracks();
 
-    // 6.3 - Set the element's networkState attribute to the NETWORK_NO_SOURCE value.
+    // 3 - Set the element's networkState attribute to the NETWORK_NO_SOURCE value.
     setNetworkState(NETWORK_NO_SOURCE);
 
-    // 7 - Queue a task to fire a simple event named error at the media element.
+    // 4 - Set the element's show poster flag to true.
+    updateDisplayState();
+
+    // 5 - Fire a simple event named error at the media element.
     scheduleEvent(EventTypeNames::error);
+
+    // 6 - Reject pending play promises with NotSupportedError.
+    scheduleRejectPlayPromises(NotSupportedError);
 
     closeMediaSource();
 
-    // 8 - Set the element's delaying-the-load-event flag to false. This stops delaying the load event.
+    // 7 - Set the element's delaying-the-load-event flag to false. This stops delaying the load event.
     setShouldDelayLoadEvent(false);
-
-    // 9 - Abort these steps. Until the load() method is invoked or the src attribute is changed,
-    // the element won't attempt to load another resource.
-
-    updateDisplayState();
 
     if (layoutObject())
         layoutObject()->updateFromElement();
@@ -1317,6 +1321,9 @@ void HTMLMediaElement::cancelPendingEventsAndCallbacks()
 
     for (HTMLSourceElement* source = Traversal<HTMLSourceElement>::firstChild(*this); source; source = Traversal<HTMLSourceElement>::nextSibling(*source))
         source->cancelPendingErrorEvent();
+
+    m_playPromiseResolveTask->cancel();
+    m_playPromiseRejectTask->cancel();
 }
 
 void HTMLMediaElement::networkStateChanged()
@@ -1528,7 +1535,7 @@ void HTMLMediaElement::setReadyState(ReadyState state)
     if (m_readyState == HAVE_FUTURE_DATA && oldState <= HAVE_CURRENT_DATA && tracksAreReady) {
         scheduleEvent(EventTypeNames::canplay);
         if (isPotentiallyPlaying)
-            scheduleEvent(EventTypeNames::playing);
+            scheduleNotifyPlaying();
         shouldUpdateDisplayState = true;
     }
 
@@ -1536,7 +1543,7 @@ void HTMLMediaElement::setReadyState(ReadyState state)
         if (oldState <= HAVE_CURRENT_DATA) {
             scheduleEvent(EventTypeNames::canplay);
             if (isPotentiallyPlaying)
-                scheduleEvent(EventTypeNames::playing);
+                scheduleNotifyPlaying();
         }
 
         // Check for autoplay, and record metrics about it if needed.
@@ -1549,7 +1556,7 @@ void HTMLMediaElement::setReadyState(ReadyState state)
                 m_paused = false;
                 invalidateCachedTime();
                 scheduleEvent(EventTypeNames::play);
-                scheduleEvent(EventTypeNames::playing);
+                scheduleNotifyPlaying();
                 m_autoplaying = false;
             }
         }
@@ -1941,7 +1948,32 @@ WebMediaPlayer::Preload HTMLMediaElement::effectivePreloadType() const
     return autoplay() ? WebMediaPlayer::PreloadAuto : preloadType();
 }
 
-void HTMLMediaElement::play()
+ScriptPromise HTMLMediaElement::playForBindings(ScriptState* scriptState)
+{
+    Nullable<ExceptionCode> code = play();
+    if (!code.isNull()) {
+        String message;
+        switch (code.get()) {
+        case NotAllowedError:
+            message = "play() can only be initiated by a user gesture.";
+            break;
+        case NotSupportedError:
+            message = "The element has no supported sources.";
+            break;
+        default:
+            ASSERT_NOT_REACHED();
+        }
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(code.get(), message));
+    }
+
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromise promise = resolver->promise();
+
+    m_playResolvers.append(resolver);
+    return promise;
+}
+
+Nullable<ExceptionCode> HTMLMediaElement::play()
 {
     WTF_LOG(Media, "HTMLMediaElement::play(%p)", this);
 
@@ -1954,7 +1986,7 @@ void HTMLMediaElement::play()
             recordAutoplayMetric(PlayMethodFailed);
             String message = ExceptionMessages::failedToExecute("play", "HTMLMediaElement", "API can only be initiated by a user gesture.");
             document().addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, message));
-            return;
+            return NotAllowedError;
         }
     } else if (m_userGestureRequiredForPlay) {
         if (m_autoplayMediaCounted)
@@ -1962,7 +1994,12 @@ void HTMLMediaElement::play()
         m_userGestureRequiredForPlay = false;
     }
 
+    if (m_error && m_error->code() == MediaError::MEDIA_ERR_SRC_NOT_SUPPORTED)
+        return NotSupportedError;
+
     playInternal();
+
+    return nullptr;
 }
 
 void HTMLMediaElement::playInternal()
@@ -1993,8 +2030,11 @@ void HTMLMediaElement::playInternal()
         if (m_readyState <= HAVE_CURRENT_DATA)
             scheduleEvent(EventTypeNames::waiting);
         else if (m_readyState >= HAVE_FUTURE_DATA)
-            scheduleEvent(EventTypeNames::playing);
+            scheduleNotifyPlaying();
+    } else if (m_readyState >= HAVE_FUTURE_DATA) {
+        scheduleResolvePlayPromises();
     }
+
     m_autoplaying = false;
 
     updatePlayState();
@@ -2049,6 +2089,7 @@ void HTMLMediaElement::pauseInternal()
         m_paused = true;
         scheduleTimeupdateEvent(false);
         scheduleEvent(EventTypeNames::pause);
+        scheduleRejectPlayPromises(AbortError);
     }
 
     updatePlayState();
@@ -3513,6 +3554,7 @@ DEFINE_TRACE(HTMLMediaElement)
     visitor->trace(m_cueTimeline);
     visitor->trace(m_textTracks);
     visitor->trace(m_textTracksWhenResourceSelectionBegan);
+    visitor->trace(m_playResolvers);
     visitor->trace(m_audioSourceProvider);
     visitor->template registerWeakMembers<HTMLMediaElement, &HTMLMediaElement::clearWeakMembers>(this);
     visitor->trace(m_autoplayHelper);
@@ -3588,6 +3630,69 @@ void HTMLMediaElement::updatePositionNotificationRegistration()
 void HTMLMediaElement::triggerAutoplayViewportCheckForTesting()
 {
     m_autoplayHelper.triggerAutoplayViewportCheckForTesting();
+}
+
+void HTMLMediaElement::scheduleResolvePlayPromises()
+{
+    // Per spec, if there are two tasks in the queue, the first task will remove
+    // all the pending promises making the second task useless unless a promise
+    // can be added between the first and second task being run which is not
+    // possible at the moment.
+    if (m_playPromiseResolveTask->isPending())
+        return;
+
+    Platform::current()->currentThread()->taskRunner()->postTask(BLINK_FROM_HERE, m_playPromiseResolveTask->cancelAndCreate());
+}
+
+void HTMLMediaElement::scheduleRejectPlayPromises(ExceptionCode code)
+{
+    // Per spec, if there are two tasks in the queue, the first task will remove
+    // all the pending promises making the second task useless unless a promise
+    // can be added between the first and second task being run which is not
+    // possible at the moment.
+    if (m_playPromiseRejectTask->isPending())
+        return;
+
+    // TODO(mlamouri): because cancellable tasks can't take parameters, the
+    // error code needs to be saved.
+    m_playPromiseErrorCode = code;
+    Platform::current()->currentThread()->taskRunner()->postTask(BLINK_FROM_HERE, m_playPromiseRejectTask->cancelAndCreate());
+}
+
+void HTMLMediaElement::scheduleNotifyPlaying()
+{
+    scheduleEvent(EventTypeNames::playing);
+    scheduleResolvePlayPromises();
+}
+
+void HTMLMediaElement::resolvePlayPromises()
+{
+    for (auto& resolver: m_playResolvers)
+        resolver->resolve();
+
+    m_playResolvers.clear();
+}
+
+void HTMLMediaElement::rejectPlayPromises()
+{
+    // TODO(mlamouri): the message is generated based on the code because
+    // arguments can't be passed to a cancellable task. In order to save space
+    // used by the object, the string isn't saved.
+    ASSERT(m_playPromiseErrorCode == AbortError || m_playPromiseErrorCode == NotSupportedError);
+    if (m_playPromiseErrorCode == AbortError)
+        rejectPlayPromises(AbortError, "The play() request was interrupted by a call to pause().");
+    else
+        rejectPlayPromises(NotSupportedError, "Failed to load because no supported source was found.");
+}
+
+void HTMLMediaElement::rejectPlayPromises(ExceptionCode code, const String& message)
+{
+    ASSERT(code == AbortError || code == NotSupportedError);
+
+    for (auto& resolver: m_playResolvers)
+        resolver->reject(DOMException::create(code, message));
+
+    m_playResolvers.clear();
 }
 
 void HTMLMediaElement::clearWeakMembers(Visitor* visitor)

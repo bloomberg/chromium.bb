@@ -1,3 +1,6 @@
+CONSOLE ERROR: Uncaught (in promise) AbortError: The play() request was interrupted by a call to pause().
+CONSOLE ERROR: Uncaught (in promise) AbortError: The play() request was interrupted by a call to pause().
+CONSOLE ERROR: Uncaught (in promise) AbortError: The play() request was interrupted by a call to pause().
 Test of the media element 'played' attribute
 
 EVENT(loadstart)

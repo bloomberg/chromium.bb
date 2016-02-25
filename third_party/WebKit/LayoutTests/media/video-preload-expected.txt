@@ -1,3 +1,5 @@
+CONSOLE ERROR: line 116: Uncaught (in promise) AbortError: The play() request was interrupted by a new load request.
+CONSOLE ERROR: line 116: Uncaught (in promise) AbortError: The play() request was interrupted by a new load request.
 Test to see if media loads automatically when 'preload' is specified.
 
 

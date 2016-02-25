@@ -2548,8 +2548,8 @@ double Internals::monotonicTimeToZeroBasedDocumentTime(double platformTime, Exce
 void Internals::setMediaElementNetworkState(HTMLMediaElement* mediaElement, int state)
 {
     ASSERT(mediaElement);
-    ASSERT(state >= HTMLMediaElement::NetworkState::NETWORK_EMPTY);
-    ASSERT(state <= HTMLMediaElement::NetworkState::NETWORK_NO_SOURCE);
+    ASSERT(state >= WebMediaPlayer::NetworkState::NetworkStateEmpty);
+    ASSERT(state <= WebMediaPlayer::NetworkState::NetworkStateDecodeError);
     mediaElement->setNetworkState(static_cast<WebMediaPlayer::NetworkState>(state));
 }
 

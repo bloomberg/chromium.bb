@@ -37,6 +37,7 @@ static const struct CoreException {
     const char* const message;
     const int code;
 } coreExceptions[] = {
+    // This list must be kept in sync with the one in ExceptionCode.h
     { "IndexSizeError", "Index or size was negative, or greater than the allowed value.", 1 },
     { "HierarchyRequestError", "A Node was inserted somewhere it doesn't belong.", 3 },
     { "WrongDocumentError", "A Node was used in a different document than the one that created it (that doesn't support it).", 4 },
@@ -81,6 +82,9 @@ static const struct CoreException {
 
     // Push API
     { "PermissionDeniedError", "User or security policy denied the request.", 0 },
+
+    // Used by HTML and Media Session API.
+    { "NotAllowedError", "The request is not allowed by the user agent or the platform in the current context.", 0 },
 };
 
 static const CoreException* getErrorEntry(ExceptionCode ec)

@@ -84,6 +84,8 @@ enum {
 
     // Push API
     PermissionDeniedError,
+
+    NotAllowedError,
 };
 
 enum V8ErrorType {

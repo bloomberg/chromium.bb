@@ -26,8 +26,10 @@
 #ifndef HTMLMediaElement_h
 #define HTMLMediaElement_h
 
+#include "bindings/core/v8/ScriptPromise.h"
 #include "core/CoreExport.h"
 #include "core/dom/ActiveDOMObject.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/events/GenericEventQueue.h"
 #include "core/html/AutoplayExperimentHelper.h"
 #include "core/html/HTMLElement.h"
@@ -52,6 +54,7 @@ class KURL;
 class MediaControls;
 class MediaError;
 class HTMLMediaSource;
+class ScriptState;
 class TextTrackContainer;
 class TextTrackList;
 class TimeRanges;
@@ -140,7 +143,8 @@ public:
     bool shouldAutoplay(const RecordMetricsBehavior = RecordMetricsBehavior::DoNotRecord);
     bool loop() const;
     void setLoop(bool);
-    void play();
+    ScriptPromise playForBindings(ScriptState*);
+    Nullable<ExceptionCode> play();
     void pause();
     void requestRemotePlayback();
     void requestRemotePlaybackControl();
@@ -449,6 +453,16 @@ private:
     // TODO(liberato): remove once autoplay gesture override experiment concludes.
     void triggerAutoplayViewportCheckForTesting();
 
+    void scheduleResolvePlayPromises();
+    void scheduleRejectPlayPromises(ExceptionCode);
+    void scheduleNotifyPlaying();
+
+    void resolvePlayPromises();
+    // TODO(mlamouri): this is used for cancellable tasks because we can't pass
+    // parameters.
+    void rejectPlayPromises();
+    void rejectPlayPromises(ExceptionCode, const String&);
+
     UnthrottledTimer<HTMLMediaElement> m_loadTimer;
     UnthrottledTimer<HTMLMediaElement> m_progressEventTimer;
     UnthrottledTimer<HTMLMediaElement> m_playbackProgressTimer;
@@ -556,6 +570,11 @@ private:
     PersistentHeapVectorWillBeHeapVector<Member<TextTrack>> m_textTracksWhenResourceSelectionBegan;
 
     OwnPtrWillBeMember<CueTimeline> m_cueTimeline;
+
+    PersistentHeapVectorWillBeHeapVector<Member<ScriptPromiseResolver>> m_playResolvers;
+    OwnPtr<CancellableTaskFactory> m_playPromiseResolveTask;
+    OwnPtr<CancellableTaskFactory> m_playPromiseRejectTask;
+    ExceptionCode m_playPromiseErrorCode;
 
     // This is a weak reference, since m_audioSourceNode holds a reference to us.
     // FIXME: Oilpan: Consider making this a strongly traced pointer with oilpan where strong cycles are not a problem.

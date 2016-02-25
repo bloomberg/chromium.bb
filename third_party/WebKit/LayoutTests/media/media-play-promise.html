@@ -1,0 +1,414 @@
+<html>
+<head>
+<script src=media-file.js></script>
+<!-- TODO(mlamouri): use testharness.js, see https://crbug.com/588956 -->
+<script src=video-test.js></script>
+
+<script>
+    // This is testing the behavior of play() with regards to the returned
+    // promise. This test file is creating a small framework in order to be able
+    // to test different cases easily and independently of each other.
+    //
+    // All tests have to be part of the TESTS array. When the page is loaded,
+    // first function in the array is run. A test is considered done when the
+    // promise returned by mediaElement.play() is resolved or rejected. Each
+    // test then needs to call play() once which wraps this logic. When a test
+    // is finished, the next test in the array is run until the entire array
+    // was processed.
+    //
+    // Each test should start by printing its name in order to facilitate reading
+    // the output.
+
+    function runNextTestOrFinish()
+    {
+        currentTest++;
+        if (currentTest >= TESTS.length) {
+            endTest();
+            return;
+        }
+
+        consoleWrite("");
+        TESTS[currentTest]();
+    }
+
+    function play()
+    {
+        consoleWrite("play()");
+        mediaElement.play().then(function() {
+            consoleWrite("arguments.length: " + arguments.length);
+            consoleWrite("Promise resolved with " + arguments[0]);
+        }, function(e) {
+            consoleWrite("arguments.length: " + arguments.length);
+            consoleWrite("Promise failed with " + e.name + ": " + e.message);
+        }).then(runNextTestOrFinish);
+    }
+
+    function playWithUserGesture()
+    {
+        var target = document.querySelector("p");
+        target.onclick = function() {
+            play();
+            target.onclick = null;
+        };
+
+        var boundingRect = target.getBoundingClientRect();
+        var x = boundingRect.left + (boundingRect.width / 2);
+        var y = boundingRect.top + (boundingRect.height / 2);
+
+        // Assuming running in Blink LayoutTests.
+        eventSender.mouseMoveTo(x, y);
+        eventSender.mouseDown();
+        eventSender.mouseUp();
+    }
+
+    var currentTest = -1;
+
+    var TESTS = [
+        // Test that play() on an element that doesn't have enough data will
+        // return a promise that resolves successfuly.
+        function playBeforeCanPlay()
+        {
+            consoleWrite("playBeforeCanPlay()");
+            internals.settings.setMediaPlaybackRequiresUserGesture(false);
+
+            run("mediaElement = document.createElement('audio')");
+            var mediaFile = findMediaFile("audio", "content/test");
+            run("mediaElement.src = '" + mediaFile + "'");
+
+            waitForEvent('loadedmetadata');
+            waitForEvent('loadeddata');
+            waitForEvent('canplay');
+            waitForEvent('playing');
+
+            testExpected("mediaElement.readyState", HTMLMediaElement.HAVE_NOTHING);
+            play();
+        },
+
+        // Test that play() on an element that has enough data will return a
+        // promise that resolves successfuly.
+        function playWhenCanPlay()
+        {
+            consoleWrite("playWhenCanPlay()");
+            internals.settings.setMediaPlaybackRequiresUserGesture(false);
+
+            run("mediaElement = document.createElement('audio')");
+            var mediaFile = findMediaFile("audio", "content/test");
+            run("mediaElement.src = '" + mediaFile + "'");
+
+            waitForEvent('playing');
+
+            waitForEvent('canplay', function() {
+                testExpected("mediaElement.readyState", HTMLMediaElement.HAVE_FUTURE_DATA, ">=");
+                testExpected("mediaElement.paused", true);
+
+                play();
+            });
+        },
+
+        function playAfterPlaybackStarted()
+        {
+            consoleWrite("playAfterPlaybackStarted()");
+            internals.settings.setMediaPlaybackRequiresUserGesture(false);
+
+            run("mediaElement = document.createElement('audio')");
+            mediaElement.preload = "auto";
+            var mediaFile = findMediaFile("audio", "content/test");
+            run("mediaElement.src = '" + mediaFile + "'");
+
+            waitForEvent('playing', function() {
+                testExpected("mediaElement.readyState", HTMLMediaElement.HAVE_ENOUGH_DATA);
+                testExpected("mediaElement.paused", false);
+
+                play();
+            });
+
+            waitForEvent('canplaythrough', function() {
+                run("mediaElement.play()");
+            });
+        },
+
+        // Test that play() on an element when media playback requires a gesture
+        // returns a resolved promise if there is a user gesture.
+        function playRequiresUserGestureAndHasIt()
+        {
+            consoleWrite("playRequiresUserGestureAndHasIt()");
+            internals.settings.setMediaPlaybackRequiresUserGesture(true);
+
+            run("mediaElement = document.createElement('audio')");
+            var mediaFile = findMediaFile("audio", "content/test");
+            run("mediaElement.src = '" + mediaFile + "'");
+
+            waitForEvent('playing');
+            playWithUserGesture();
+        },
+
+        // Test that play() on an element when media playback requires a gesture
+        // returns a rejected promise if there is no user gesture.
+        function playRequiresUserGestureAndDoesNotHaveIt()
+        {
+            consoleWrite("playRequiresUserGestureAndDoesNotHaveIt()");
+            internals.settings.setMediaPlaybackRequiresUserGesture(true);
+
+            run("mediaElement = document.createElement('audio')");
+            var mediaFile = findMediaFile("audio", "content/test");
+            run("mediaElement.src = '" + mediaFile + "'");
+
+            waitForEvent('playing');
+            play();
+        },
+
+        // Test that play() on an element with an unsupported content will
+        // return a rejected promise.
+        function playNotSupportedContent()
+        {
+            consoleWrite("playNotSupportedContent()");
+            internals.settings.setMediaPlaybackRequiresUserGesture(false);
+
+            run("mediaElement = document.createElement('audio')");
+            var mediaFile = findMediaFile("audio", "data:,");
+            run("mediaElement.src = '" + mediaFile + "'");
+
+            waitForEvent('playing');
+            waitForEvent('error', function() {
+                testExpected("mediaElement.error", "[object MediaError]");
+                testExpected("mediaElement.error.code", MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED);
+            });
+            play();
+        },
+
+        // Test that play() returns a resolved promise if called after the
+        // element suffered from a decode error.
+        // This test doesn't test a spec behaviour but tests that the Blink
+        // implementation properly changed after the spec changed.
+        function playDecodeError()
+        {
+            consoleWrite("playDecodeError()");
+            internals.settings.setMediaPlaybackRequiresUserGesture(false);
+
+            run("mediaElement = document.createElement('audio')");
+            var mediaFile = findMediaFile("audio", "content/test");
+            run("mediaElement.src = '" + mediaFile + "'");
+
+            waitForEvent('playing');
+            waitForEvent('error', function() {
+                testExpected("mediaElement.error", "[object MediaError]");
+                testExpected("mediaElement.error.code", MediaError.MEDIA_ERR_DECODE);
+            });
+
+            // The setMediaElementNetworkState() method requires metadata to be
+            // available.
+            waitForEvent('loadedmetadata', function() {
+              internals.setMediaElementNetworkState(mediaElement, 6 /* NetworkStateDecodeError */);
+              play();
+            });
+        },
+
+        // Test that play() returns a resolved promise if called after the
+        // element suffered from a network error.
+        // This test doesn't test a spec behaviour but tests that the Blink
+        // implementation properly changed after the spec changed
+        function playNetworkError()
+        {
+            consoleWrite("playNetworkError()");
+            internals.settings.setMediaPlaybackRequiresUserGesture(false);
+
+            run("mediaElement = document.createElement('audio')");
+            var mediaFile = findMediaFile("audio", "content/test");
+            run("mediaElement.src = '" + mediaFile + "'");
+
+            waitForEvent('playing');
+            waitForEvent('error', function() {
+                testExpected("mediaElement.error", "[object MediaError]");
+                testExpected("mediaElement.error.code", MediaError.MEDIA_ERR_NETWORK);
+            });
+
+            // The setMediaElementNetworkState() method requires metadata to be
+            // available.
+            waitForEvent('loadedmetadata', function() {
+              internals.setMediaElementNetworkState(mediaElement, 5 /* NetworkStateNetworkError */);
+              play();
+            });
+        },
+
+        // Test that play() returns a rejected promise if the element is
+        // suferring from a not supported error.
+        function playWithErrorAlreadySet()
+        {
+            consoleWrite("playWithErrorAlreadySet()");
+            internals.settings.setMediaPlaybackRequiresUserGesture(false);
+
+            run("mediaElement = document.createElement('audio')");
+            var mediaFile = findMediaFile("audio", "data:,");
+            run("mediaElement.src = '" + mediaFile + "'");
+
+            waitForEvent('playing');
+            waitForEvent('error', function() {
+                testExpected("mediaElement.error", "[object MediaError]");
+                testExpected("mediaElement.error.code", MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED);
+                play();
+            });
+        },
+
+        // Test that play() returns a resolved promise if the element had its
+        // source changed after suffering from an error.
+        function playSrcChangedAfterError()
+        {
+            consoleWrite("playSrcChangedAfterError()");
+            internals.settings.setMediaPlaybackRequiresUserGesture(false);
+
+            run("mediaElement = document.createElement('audio')");
+            var mediaFile = findMediaFile("audio", "data:,");
+            run("mediaElement.src = '" + mediaFile + "'");
+
+            waitForEvent('error', function() {
+                testExpected("mediaElement.error", "[object MediaError]");
+                testExpected("mediaElement.error.code", MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED);
+
+                mediaFile = findMediaFile("audio", "content/test");
+                run("mediaElement.src = '" + mediaFile + "'");
+
+                waitForEvent('playing');
+                waitForEvent('loadedmetadata', function() {
+                    play();
+                });
+            });
+        },
+
+        // Test that play() returns a rejected promise if the element had an
+        // error and just changed its source.
+        function playRaceWithSrcChangeError()
+        {
+            consoleWrite("playRaceWithSrcChangeError()");
+            internals.settings.setMediaPlaybackRequiresUserGesture(false);
+
+            run("mediaElement = document.createElement('audio')");
+            var mediaFile = findMediaFile("audio", "data:,");
+            run("mediaElement.src = '" + mediaFile + "'");
+
+            waitForEvent('error', function() {
+                testExpected("mediaElement.error", "[object MediaError]");
+                testExpected("mediaElement.error.code", MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED);
+
+                mediaFile = findMediaFile("audio", "content/test");
+                run("mediaElement.src = '" + mediaFile + "'");
+
+                testExpected("mediaElement.error", null);
+                testExpected("mediaElement.readyState", HTMLMediaElement.HAVE_NOTHING);
+
+                waitForEvent('playing');
+                play();
+            });
+        },
+
+        // Test that play() returns a resolved promise when calling play() then
+        // pause() on an element that already has enough data to play. In other
+        // words, pause() doesn't cancel play() because it was resolved
+        // immediately.
+        function playAndPauseWhenCanPlay()
+        {
+            consoleWrite("playAndPauseWhenCanPlay()");
+            internals.settings.setMediaPlaybackRequiresUserGesture(false);
+
+            run("mediaElement = document.createElement('audio')");
+            var mediaFile = findMediaFile("audio", "content/test");
+            run("mediaElement.src = '" + mediaFile + "'");
+
+            waitForEvent('canplaythrough', function() {
+                waitForEvent('playing');
+                testExpected("mediaElement.readyState", HTMLMediaElement.HAVE_ENOUGH_DATA);
+                play();
+                testExpected("mediaElement.paused", false);
+                mediaElement.pause();
+                testExpected("mediaElement.paused", true);
+            });
+        },
+
+        // Test that play() returns a rejected promise when calling play() then
+        // pause() on an element that doesn't have enough data to play. In other
+        // words, pause() cancels play() before it can be resolved.
+        function playAndPauseBeforeCanPlay()
+        {
+            consoleWrite("playAndPauseBeforeCanPlay()");
+            internals.settings.setMediaPlaybackRequiresUserGesture(false);
+
+            run("mediaElement = document.createElement('audio')");
+
+            waitForEvent('playing');
+            testExpected("mediaElement.readyState", HTMLMediaElement.HAVE_NOTHING);
+            play();
+            testExpected("mediaElement.paused", false);
+            mediaElement.pause();
+            testExpected("mediaElement.paused", true);
+        },
+
+        // Test that load() rejects all the pending play() promises.
+        // This might be tested by other tests in this file but it is present in
+        // order to be explicit.
+        function loadRejectsPendingPromises()
+        {
+            consoleWrite("loadRejectsPendingPromises()");
+            internals.settings.setMediaPlaybackRequiresUserGesture(false);
+
+            run("mediaElement = document.createElement('audio')");
+
+            play(); // the promise will be left pending.
+
+            waitForEvent('playing');
+            run("mediaElement.load()");
+        },
+
+        // Test that changing the src rejects the pending play() promises.
+        function newSrcRejectPendingPromises()
+        {
+            consoleWrite("newSrcRejectPendingPromises()");
+            internals.settings.setMediaPlaybackRequiresUserGesture(false);
+
+            run("mediaElement = document.createElement('audio')");
+
+            play(); // the promise will be left pending.
+
+            var mediaFile = findMediaFile("audio", "content/test");
+            run("mediaElement.src = '" + mediaFile + "'");
+        },
+
+        // Test ordering of events and promises.
+        // This is testing a bug in Blink, see https://crbug.com/587871
+        function testEventAndPromiseOrdering()
+        {
+            consoleWrite("testEventAndPromiseOrdering");
+            internals.settings.setMediaPlaybackRequiresUserGesture(false);
+
+            run("mediaElement = document.createElement('audio')");
+            run("mediaElement.src = 'data:,'");
+
+            waitForEvent('error', function() {
+                // Until https://crbug.com/587871 is fixed, the events will be
+                // [ volumechange, volumechange, promise ], it should be
+                // [ volumechange, promise, volumechange ].
+                waitForEvent('volumechange');
+                run("mediaElement.volume = 0.1");
+                play();
+                run("mediaElement.volume = 0.2");
+            });
+
+        }
+    ];
+
+    function start()
+    {
+        if (!('eventSender' in window) || !('internals' in window)) {
+            failTest("Not running in LayoutTests.");
+            return;
+        }
+        runNextTestOrFinish();
+    }
+
+</script>
+</head>
+
+<body onload="start()">
+
+<p>Test the play() behaviour with regards to the returned promise for media elements.</p>
+
+</body>
+</html>
