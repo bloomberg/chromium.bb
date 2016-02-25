@@ -5,32 +5,48 @@
  * Incognito and guest mode NTP shared CSS.
  */
 
+body {
+  font-size: 85%;
+}
+
 h1 {
   font-size: 200%;
   font-weight: 300;
-  margin-bottom: 1.33em;
+  margin-bottom: .77em;
 }
 
 p {
   line-height: 1.5;
-  margin-bottom: 2em;
+  margin: .588em 0;
   text-align: start;
 }
 
 a {
-  font-size: 108.3%;
-  text-decoration: none;
-  text-transform: uppercase;
+  color: rgb(51, 103, 214);
 }
 
 a:hover {
   text-decoration: underline;
 }
 
+/* 'Learn More' button styled like a Material Design text button.
+ * TODO(edwardjung): Switch styled links to actual text buttons.
+ */
+.learn-more-button {
+  color: rgb(66, 133, 244);
+  display: inline-block;
+  font-size: 92.8%;
+  font-weight: 500;
+  margin-top: 1.98em;
+  padding: 10.5px 12px;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
 .content {
   box-sizing: border-box;
   margin: 3.5em auto 0;
-  max-width: 420px;
+  max-width: 480px;
   min-width: 240px;
   padding: 30px 35px;
   text-align: center;
