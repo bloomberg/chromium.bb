@@ -92,7 +92,7 @@ PASS receivedPEsAtTarget[4].clientY is 156
 PASS receivedPEsAtTarget.length is 5
 green received pointermove at phase=target
 PASS receivedPEsAtTarget[5].isPrimary is true
-PASS receivedPEsAtTarget[5].button is 0
+PASS receivedPEsAtTarget[5].button is -1
 PASS receivedPEsAtTarget[5].buttons is 1
 PASS receivedPEsAtTarget[5].clientX is 168
 PASS receivedPEsAtTarget[5].clientY is 176

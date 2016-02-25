@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,28 @@ const char* pointerTypeNameForWebPointPointerType(WebPointerProperties::PointerT
     return "";
 }
 
+const AtomicString& pointerEventNameForMouseEventName(
+    const AtomicString& mouseEventName)
+{
+#define RETURN_CORRESPONDING_PE_NAME(eventSuffix) \
+    if (mouseEventName == EventTypeNames::mouse##eventSuffix) {\
+        return EventTypeNames::pointer##eventSuffix;\
+    }
+
+    RETURN_CORRESPONDING_PE_NAME(down);
+    RETURN_CORRESPONDING_PE_NAME(enter);
+    RETURN_CORRESPONDING_PE_NAME(leave);
+    RETURN_CORRESPONDING_PE_NAME(move);
+    RETURN_CORRESPONDING_PE_NAME(out);
+    RETURN_CORRESPONDING_PE_NAME(over);
+    RETURN_CORRESPONDING_PE_NAME(up);
+
+#undef RETURN_CORRESPONDING_PE_NAME
+
+    ASSERT_NOT_REACHED();
+    return emptyAtom;
+}
+
 } // namespace
 
 const int PointerEventFactory::s_invalidId = 0;
@@ -40,47 +62,66 @@ float getPointerEventPressure(float force, int buttons)
     return force;
 }
 
-void PointerEventFactory::setIdAndType(PointerEventInit &pointerEventInit,
-    const WebPointerProperties &pointerProperties)
+void PointerEventFactory::setIdTypeButtons(PointerEventInit &pointerEventInit,
+    const WebPointerProperties &pointerProperties, unsigned buttons)
 {
     const WebPointerProperties::PointerType pointerType = pointerProperties.pointerType;
-    int pointerId = add(PointerEventFactory::IncomingId(toInt(pointerType), pointerProperties.id));
+    const IncomingId incomingId(pointerType, pointerProperties.id);
+    int pointerId = addIdAndActiveButtons(incomingId, buttons != 0);
+
+    pointerEventInit.setButtons(buttons);
     pointerEventInit.setPointerId(pointerId);
     pointerEventInit.setPointerType(pointerTypeNameForWebPointPointerType(pointerType));
     pointerEventInit.setIsPrimary(isPrimary(pointerId));
 }
 
-PassRefPtrWillBeRawPtr<PointerEvent> PointerEventFactory::create(const AtomicString& type,
-    const PlatformMouseEvent& mouseEvent,
-    PassRefPtrWillBeRawPtr<Node> relatedTarget,
+PassRefPtrWillBeRawPtr<PointerEvent> PointerEventFactory::create(
+    const AtomicString& mouseEventName, const PlatformMouseEvent& mouseEvent,
+    PassRefPtrWillBeRawPtr<EventTarget> relatedTarget,
     PassRefPtrWillBeRawPtr<AbstractView> view)
 {
+    AtomicString pointerEventName = pointerEventNameForMouseEventName(mouseEventName);
+    unsigned buttons = MouseEvent::platformModifiersToButtons(mouseEvent.modifiers());
     PointerEventInit pointerEventInit;
 
-    setIdAndType(pointerEventInit, mouseEvent.pointerProperties());
+    setIdTypeButtons(pointerEventInit, mouseEvent.pointerProperties(), buttons);
 
     pointerEventInit.setScreenX(mouseEvent.globalPosition().x());
     pointerEventInit.setScreenY(mouseEvent.globalPosition().y());
     pointerEventInit.setClientX(mouseEvent.position().x());
     pointerEventInit.setClientY(mouseEvent.position().y());
-
-    pointerEventInit.setButton(mouseEvent.button());
-    pointerEventInit.setButtons(MouseEvent::platformModifiersToButtons(mouseEvent.modifiers()));
+    if (pointerEventName == EventTypeNames::pointerdown
+        || pointerEventName == EventTypeNames::pointerup) {
+        pointerEventInit.setButton(mouseEvent.button());
+    } else {
+        // TODO(crbug.com/587955): We are setting NoButton for transition
+        // pointerevents should be resolved as part of this bug
+        pointerEventInit.setButton(NoButton);
+    }
     pointerEventInit.setPressure(getPointerEventPressure(
         mouseEvent.pointerProperties().force, pointerEventInit.buttons()));
 
     UIEventWithKeyState::setFromPlatformModifiers(pointerEventInit, mouseEvent.modifiers());
 
-    pointerEventInit.setBubbles(type != EventTypeNames::pointerenter
-        && type != EventTypeNames::pointerleave);
-    pointerEventInit.setCancelable(type != EventTypeNames::pointerenter
-        && type != EventTypeNames::pointerleave && type != EventTypeNames::pointercancel);
+    // Make sure chorded buttons fire pointermove instead of pointerup/down.
+    if ((pointerEventName == EventTypeNames::pointerdown
+        && (buttons & ~MouseEvent::buttonToButtons(mouseEvent.button())) != 0)
+        || (pointerEventName == EventTypeNames::pointerup && buttons != 0))
+        pointerEventName = EventTypeNames::pointermove;
+
+    pointerEventInit.setBubbles(
+        pointerEventName != EventTypeNames::pointerenter
+        && pointerEventName != EventTypeNames::pointerleave);
+    pointerEventInit.setCancelable(
+        pointerEventName != EventTypeNames::pointerenter
+        && pointerEventName != EventTypeNames::pointerleave
+        && pointerEventName != EventTypeNames::pointercancel);
 
     pointerEventInit.setView(view);
     if (relatedTarget)
         pointerEventInit.setRelatedTarget(relatedTarget);
 
-    return PointerEvent::create(type, pointerEventInit);
+    return PointerEvent::create(pointerEventName, pointerEventInit);
 }
 
 PassRefPtrWillBeRawPtr<PointerEvent> PointerEventFactory::create(const AtomicString& type,
@@ -90,14 +131,19 @@ PassRefPtrWillBeRawPtr<PointerEvent> PointerEventFactory::create(const AtomicStr
 {
     const PlatformTouchPoint::State pointState = touchPoint.state();
 
-    bool pointerReleasedOrCancelled = pointState == PlatformTouchPoint::TouchReleased
+    bool pointerReleasedOrCancelled =
+        pointState == PlatformTouchPoint::TouchReleased
         || pointState == PlatformTouchPoint::TouchCancelled;
+    bool pointerPressedOrReleased =
+        pointState == PlatformTouchPoint::TouchPressed
+        || pointState == PlatformTouchPoint::TouchReleased;
 
     bool isEnterOrLeave = false;
 
     PointerEventInit pointerEventInit;
 
-    setIdAndType(pointerEventInit, touchPoint.pointerProperties());
+    setIdTypeButtons(pointerEventInit, touchPoint.pointerProperties(),
+        pointerReleasedOrCancelled ? 0 : 1);
 
     pointerEventInit.setWidth(width);
     pointerEventInit.setHeight(height);
@@ -107,8 +153,7 @@ PassRefPtrWillBeRawPtr<PointerEvent> PointerEventFactory::create(const AtomicStr
     pointerEventInit.setScreenY(touchPoint.screenPos().y());
     pointerEventInit.setClientX(clientX);
     pointerEventInit.setClientY(clientY);
-    pointerEventInit.setButton(0);
-    pointerEventInit.setButtons(pointerReleasedOrCancelled ? 0 : 1);
+    pointerEventInit.setButton(pointerPressedOrReleased ? LeftButton: NoButton);
     pointerEventInit.setPressure(getPointerEventPressure(
         touchPoint.force(), pointerEventInit.buttons()));
 
@@ -125,7 +170,7 @@ PassRefPtrWillBeRawPtr<PointerEvent> PointerEventFactory::createPointerCancel(co
 {
     PointerEventInit pointerEventInit;
 
-    setIdAndType(pointerEventInit, touchPoint.pointerProperties());
+    setIdTypeButtons(pointerEventInit, touchPoint.pointerProperties(), 0);
 
     pointerEventInit.setBubbles(true);
     pointerEventInit.setCancelable(false);
@@ -178,38 +223,47 @@ PointerEventFactory::~PointerEventFactory()
 
 void PointerEventFactory::clear()
 {
-    for (int type = 0; type <= toInt(WebPointerProperties::PointerType::LastEntry); type++) {
+    for (int type = 0;
+        type <= toInt(WebPointerProperties::PointerType::LastEntry); type++) {
         m_primaryId[type] = PointerEventFactory::s_invalidId;
         m_idCount[type] = 0;
     }
-    m_idMapping.clear();
-    m_idReverseMapping.clear();
+    m_pointerIncomingIdMapping.clear();
+    m_pointerIdMapping.clear();
 
     // Always add mouse pointer in initialization and never remove it.
-    // No need to add it to m_idMapping as it is not going to be used with the existing APIs
+    // No need to add it to m_pointerIncomingIdMapping as it is not going to be
+    // used with the existing APIs
     m_primaryId[toInt(WebPointerProperties::PointerType::Mouse)] = s_mouseId;
-    m_idReverseMapping.add(s_mouseId, IncomingId(toInt(WebPointerProperties::PointerType::Mouse), 0));
+    m_pointerIdMapping.add(s_mouseId, PointerAttributes(
+        IncomingId(WebPointerProperties::PointerType::Mouse, 0), 0));
 
     m_currentId = PointerEventFactory::s_mouseId+1;
 }
 
-int PointerEventFactory::add(const IncomingId p)
+int PointerEventFactory::addIdAndActiveButtons(const IncomingId p,
+    bool isActiveButtons)
 {
     // Do not add extra mouse pointer as it was added in initialization
-    if (p.first == toInt(WebPointerProperties::PointerType::Mouse))
+    if (p.pointerType() == toInt(WebPointerProperties::PointerType::Mouse)) {
+        m_pointerIdMapping.set(s_mouseId, PointerAttributes(p, isActiveButtons));
         return s_mouseId;
+    }
 
-    int type = p.first;
-    if (m_idMapping.contains(p))
-        return m_idMapping.get(p);
+    int type = p.pointerType();
+    if (m_pointerIncomingIdMapping.contains(p)) {
+        int mappedId = m_pointerIncomingIdMapping.get(p);
+        m_pointerIdMapping.set(mappedId, PointerAttributes(p, isActiveButtons));
+        return mappedId;
+    }
     // We do not handle the overflow of m_currentId as it should be very rare
     int mappedId = m_currentId++;
     if (!m_idCount[type])
         m_primaryId[type] = mappedId;
     m_idCount[type]++;
-    m_idMapping.add(p, mappedId);
-    m_idReverseMapping.add(mappedId, p);
-    return static_cast<int>(mappedId);
+    m_pointerIncomingIdMapping.add(p, mappedId);
+    m_pointerIdMapping.add(mappedId, PointerAttributes(p, isActiveButtons));
+    return mappedId;
 }
 
 void PointerEventFactory::remove(
@@ -217,13 +271,13 @@ void PointerEventFactory::remove(
 {
     int mappedId = pointerEvent->pointerId();
     // Do not remove mouse pointer id as it should always be there
-    if (mappedId == s_mouseId || !m_idReverseMapping.contains(mappedId))
+    if (mappedId == s_mouseId || !m_pointerIdMapping.contains(mappedId))
         return;
 
-    IncomingId p = m_idReverseMapping.get(mappedId);
-    int type = p.first;
-    m_idReverseMapping.remove(mappedId);
-    m_idMapping.remove(p);
+    IncomingId p = m_pointerIdMapping.get(mappedId).incomingId;
+    int type = p.pointerType();
+    m_pointerIdMapping.remove(mappedId);
+    m_pointerIncomingIdMapping.remove(p);
     if (m_primaryId[type] == mappedId)
         m_primaryId[type] = PointerEventFactory::s_invalidId;
     m_idCount[type]--;
@@ -231,13 +285,22 @@ void PointerEventFactory::remove(
 
 bool PointerEventFactory::isPrimary(int mappedId) const
 {
-    if (!m_idReverseMapping.contains(mappedId))
+    if (!m_pointerIdMapping.contains(mappedId))
         return false;
 
-    IncomingId p = m_idReverseMapping.get(mappedId);
-    int type = p.first;
-    return m_primaryId[type] == mappedId;
+    IncomingId p = m_pointerIdMapping.get(mappedId).incomingId;
+    return m_primaryId[p.pointerType()] == mappedId;
 }
 
+bool PointerEventFactory::isActive(const int pointerId)
+{
+    return m_pointerIdMapping.contains(pointerId);
+}
+
+bool PointerEventFactory::isActiveButtonsState(const int pointerId)
+{
+    return m_pointerIdMapping.contains(pointerId)
+        && m_pointerIdMapping.get(pointerId).isActiveButtons;
+}
 
 } // namespace blink

@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,27 +29,6 @@ const AtomicString& pointerEventNameForTouchPointState(PlatformTouchPoint::State
         ASSERT_NOT_REACHED();
         return emptyAtom;
     }
-}
-
-const AtomicString& pointerEventNameForMouseEventName(const AtomicString& mouseEventName)
-{
-#define RETURN_CORRESPONDING_PE_NAME(eventSuffix) \
-    if (mouseEventName == EventTypeNames::mouse##eventSuffix) {\
-        return EventTypeNames::pointer##eventSuffix;\
-    }
-
-    RETURN_CORRESPONDING_PE_NAME(down);
-    RETURN_CORRESPONDING_PE_NAME(enter);
-    RETURN_CORRESPONDING_PE_NAME(leave);
-    RETURN_CORRESPONDING_PE_NAME(move);
-    RETURN_CORRESPONDING_PE_NAME(out);
-    RETURN_CORRESPONDING_PE_NAME(over);
-    RETURN_CORRESPONDING_PE_NAME(up);
-
-#undef RETURN_CORRESPONDING_PE_NAME
-
-    ASSERT_NOT_REACHED();
-    return emptyAtom;
 }
 
 bool isInDocument(PassRefPtrWillBeRawPtr<EventTarget> n)
@@ -115,7 +94,7 @@ void PointerEventManager::sendNodeTransitionEvents(
 {
     // Pointer event type does not matter as it will be overridden in the sendNodeTransitionEvents
     sendNodeTransitionEvents(exitedNode, enteredNode,
-        m_pointerEventFactory.create(EventTypeNames::pointerout, mouseEvent, nullptr, view),
+        m_pointerEventFactory.create(EventTypeNames::mouseout, mouseEvent, nullptr, view),
         mouseEvent, true);
 }
 
@@ -308,18 +287,8 @@ WebInputEventResult PointerEventManager::sendMousePointerEvent(
     PassRefPtrWillBeRawPtr<Node> relatedTarget,
     PassRefPtrWillBeRawPtr<AbstractView> view)
 {
-    AtomicString pointerEventType =
-        pointerEventNameForMouseEventName(mouseEventType);
-    unsigned short pointerButtonsPressed =
-        MouseEvent::platformModifiersToButtons(mouseEvent.modifiers());
-
-    // Make sure chorded buttons fire pointermove instead of pointerup/pointerdown.
-    if ((pointerEventType == EventTypeNames::pointerdown && (pointerButtonsPressed & ~MouseEvent::buttonToButtons(mouseEvent.button())) != 0)
-        || (pointerEventType == EventTypeNames::pointerup && pointerButtonsPressed != 0))
-        pointerEventType = EventTypeNames::pointermove;
-
     RefPtrWillBeRawPtr<PointerEvent> pointerEvent =
-        m_pointerEventFactory.create(pointerEventType, mouseEvent,
+        m_pointerEventFactory.create(mouseEventType, mouseEvent,
         relatedTarget, view);
 
     RefPtrWillBeRawPtr<Node> effectiveTarget =
@@ -329,7 +298,7 @@ WebInputEventResult PointerEventManager::sendMousePointerEvent(
         dispatchPointerEvent(effectiveTarget, pointerEvent);
 
     if (result != WebInputEventResult::NotHandled
-        && pointerEventType == EventTypeNames::pointerdown)
+        && pointerEvent->type() == EventTypeNames::pointerdown)
         m_preventMouseEventForPointerTypeMouse = true;
 
     if (!m_preventMouseEventForPointerTypeMouse) {

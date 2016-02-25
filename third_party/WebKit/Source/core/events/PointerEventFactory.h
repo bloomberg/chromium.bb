@@ -29,8 +29,9 @@ public:
     PointerEventFactory();
     ~PointerEventFactory();
 
-    PassRefPtrWillBeRawPtr<PointerEvent> create(const AtomicString& type,
-        const PlatformMouseEvent&, PassRefPtrWillBeRawPtr<Node> relatedTarget,
+    PassRefPtrWillBeRawPtr<PointerEvent> create(
+        const AtomicString& mouseEventName, const PlatformMouseEvent&,
+        PassRefPtrWillBeRawPtr<EventTarget> relatedTarget,
         PassRefPtrWillBeRawPtr<AbstractView>);
 
     PassRefPtrWillBeRawPtr<PointerEvent> create(const AtomicString& type,
@@ -54,20 +55,41 @@ public:
     // generated with the same id before.
     void remove(const PassRefPtrWillBeRawPtr<PointerEvent>);
 
+    // Returns whether a pointer id exists and active
+    bool isActive(const int);
+
+    // Returns whether a pointer id exists and has at least one pressed button
+    bool isActiveButtonsState(const int);
+
 private:
-    typedef std::pair<int, int> IncomingId;
     typedef WTF::UnsignedWithZeroKeyHashTraits<int> UnsignedHash;
+    typedef struct IncomingId : public std::pair<int, int> {
+        IncomingId() {}
+        IncomingId(WebPointerProperties::PointerType pointerType,
+            int rawId)
+            : std::pair<int, int>(static_cast<int>(pointerType), rawId) {}
+        int pointerType() const {return first;}
+        int rawId() const {return second;}
+    } IncomingId;
+    typedef struct PointerAttributes {
+        IncomingId incomingId;
+        bool isActiveButtons;
+        PointerAttributes() {}
+        PointerAttributes(IncomingId incomingId, unsigned isActiveButtons)
+        : incomingId(incomingId)
+        , isActiveButtons(isActiveButtons) {}
+    } PointerAttributes;
 
-    int add(const IncomingId);
+    int addIdAndActiveButtons(const IncomingId, bool isActiveButtons);
     bool isPrimary(const int) const;
-    void setIdAndType(PointerEventInit &, const WebPointerProperties &);
-
+    void setIdTypeButtons(PointerEventInit &, const WebPointerProperties &,
+        unsigned buttons);
     static const int s_invalidId;
     static const int s_mouseId;
 
     int m_currentId;
-    HashMap<IncomingId, int, WTF::PairHash<int, int>, WTF::PairHashTraits<UnsignedHash, UnsignedHash>> m_idMapping;
-    HashMap<int, IncomingId, WTF::IntHash<int>, UnsignedHash> m_idReverseMapping;
+    HashMap<IncomingId, int, WTF::PairHash<int, int>, WTF::PairHashTraits<UnsignedHash, UnsignedHash>> m_pointerIncomingIdMapping;
+    HashMap<int, PointerAttributes, WTF::IntHash<int>, UnsignedHash> m_pointerIdMapping;
     int m_primaryId[static_cast<int>(WebPointerProperties::PointerType::LastEntry) + 1];
     int m_idCount[static_cast<int>(WebPointerProperties::PointerType::LastEntry) + 1];
 };

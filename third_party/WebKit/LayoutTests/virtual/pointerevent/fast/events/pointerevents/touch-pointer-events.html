@@ -86,7 +86,7 @@ function testPEParamsSingleTouch(x, y) {
   eventSender.updateTouchPoint(0, x+20, y+20);
   eventSender.touchMove();
   shouldBeTrue("receivedPEsAtTarget["+i+"].isPrimary");
-  shouldBeEqualToNumber("receivedPEsAtTarget["+i+"].button", 0);
+  shouldBeEqualToNumber("receivedPEsAtTarget["+i+"].button", -1);
   shouldBeEqualToNumber("receivedPEsAtTarget["+i+"].buttons", 1);
   shouldBeEqualToNumber("receivedPEsAtTarget["+i+"].clientX", x+20);
   shouldBeEqualToNumber("receivedPEsAtTarget["+i+"].clientY", y+20);
