@@ -16,10 +16,6 @@
 #include "ui/gfx/win/direct_write.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "base/sys_info.h"
-#endif
-
 namespace content {
 
 namespace {
@@ -30,9 +26,7 @@ static bool g_win32k_renderer_lockdown_disabled = false;
 
 bool IsUseZoomForDSFEnabledByDefault() {
 #if defined(OS_CHROMEOS)
-  // TODO(oshima): Device emulation needs to be fixed to pass
-  // all tests on bots. crbug.com/584709.
-  return base::SysInfo::IsRunningOnChromeOS();
+  return true;
 #else
   return false;
 #endif

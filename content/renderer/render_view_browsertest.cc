@@ -2658,6 +2658,8 @@ TEST_F(RenderViewImplBlinkSettingsTest, Negative) {
   EXPECT_TRUE(settings()->viewportEnabled());
 }
 
+#if !defined(OS_CHROMEOS)
+// UseZoomForDSF is enabled on ChromeOS.
 TEST_F(RenderViewImplScaleFactorTest, ConverViewportToWindowWithoutZoomForDSF) {
   DoSetUp();
   SetDeviceScaleFactor(2.f);
@@ -2668,6 +2670,7 @@ TEST_F(RenderViewImplScaleFactorTest, ConverViewportToWindowWithoutZoomForDSF) {
   EXPECT_EQ(200, rect.width);
   EXPECT_EQ(100, rect.height);
 }
+#endif
 
 TEST_F(RenderViewImplScaleFactorTest, ConverViewportToWindowWithZoomForDSF) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
