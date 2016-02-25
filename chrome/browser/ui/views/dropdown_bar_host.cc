@@ -42,7 +42,7 @@ void DropdownBarHost::Init(views::View* host_view,
   delegate_ = delegate;
 
   // The |clip_view| exists to paint to a layer so that it can clip descendent
-  // Views which also paint to a Layer.
+  // Views which also paint to a Layer. See http://crbug.com/589497
   scoped_ptr<views::View> clip_view(new views::View());
   clip_view->SetPaintToLayer(true);
   clip_view->SetFillsBoundsOpaquely(false);

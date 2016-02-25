@@ -179,19 +179,22 @@ void LocationBarView::Init() {
   // not prepared for that.
   DCHECK(GetWidget());
 
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    if (is_popup_mode_) {
-      const int kOmniboxPopupBorderImages[] =
-          IMAGE_GRID(IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW);
-      border_painter_.reset(
-          views::Painter::CreateImageGridPainter(kOmniboxPopupBorderImages));
-    } else {
-      ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-      const gfx::Insets omnibox_border_insets(14, 9, 14, 9);
-      border_painter_.reset(views::Painter::CreateImagePainter(
-          *rb.GetImageSkiaNamed(IDR_OMNIBOX_BORDER), omnibox_border_insets));
-    }
-  }
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    // Make sure children with layers are clipped. See http://crbug.com/589497
+    SetPaintToLayer(true);
+    SetFillsBoundsOpaquely(false);
+    layer()->SetMasksToBounds(true);
+  } else if (is_popup_mode_) {
+    const int kOmniboxPopupBorderImages[] =
+        IMAGE_GRID(IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW);
+    border_painter_.reset(
+        views::Painter::CreateImageGridPainter(kOmniboxPopupBorderImages));
+  } else {
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    const gfx::Insets omnibox_border_insets(14, 9, 14, 9);
+    border_painter_.reset(views::Painter::CreateImagePainter(
+        *rb.GetImageSkiaNamed(IDR_OMNIBOX_BORDER), omnibox_border_insets));
+}
 
   // Determine the main font.
   gfx::FontList font_list = ResourceBundle::GetSharedInstance().GetFontList(
