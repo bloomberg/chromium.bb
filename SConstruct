@@ -1070,77 +1070,24 @@ if RunningUnderLeakCheck():
   pre_base_env.SetBits('with_leakcheck')
 
 
-def HasSuffix(item, suffix):
-  if isinstance(item, str):
-    return item.endswith(suffix)
-  elif hasattr(item, '__getitem__'):
-    return HasSuffix(item[0], suffix)
-  else:
-    return item.path.endswith(suffix)
-
-
 def StripSuffix(string, suffix):
   assert string.endswith(suffix)
   return string[:-len(suffix)]
 
 
+# TODO(mseaborn): Change code to use ComponentLibrary() directly.
+# DualLibrary() is left over from when we built libraries twice, with and
+# without "-fPIC", for building plugins as DSOs.
 def DualLibrary(env, lib_name, *args, **kwargs):
-  """Builder to build both .a and _shared.a library in one step.
-
-  Args:
-    env: Environment in which we were called.
-    lib_name: Library name.
-    args: Positional arguments.
-    kwargs: Keyword arguments.
-  """
-  static_objs = [i for i in Flatten(args[0]) if not HasSuffix(i, '.os')]
-  shared_objs = [i for i in Flatten(args[0]) if not HasSuffix(i, '.o')]
-  # Built static library as ususal.
-  env.ComponentLibrary(lib_name, static_objs, **kwargs)
-  # For coverage bots, we only want one object file since two versions would
-  # write conflicting information to the same .gdca/.gdna files.
-  if env.Bit('coverage_enabled'): return
-  # Build a static library using -fPIC for the .o's.
-  if env.Bit('linux'):
-    env_shared = env.Clone(OBJSUFFIX='.os')
-    env_shared.Append(CCFLAGS=['-fPIC'])
-    # -fPIE overrides -fPIC, and shared libraries should not be linked
-    # as executables.
-    env_shared.FilterOut(CCFLAGS=['-fPIE'])
-    env_shared.ComponentLibrary(lib_name + '_shared', shared_objs, **kwargs)
-    # for arm trusted we usually build -static
-    env_shared.FilterOut(LINKFLAGS=['-static'])
+  return env.ComponentLibrary(lib_name, *args, **kwargs)
 
 def DualObject(env, *args, **kwargs):
-  """Builder to build both .o and .os in one step.
-
-  Args:
-    env: Environment in which we were called.
-    args: Positional arguments.
-    kwargs: Keyword arguments.
-  """
-  # Built static library as ususal.
-  ret = env.ComponentObject(*args, **kwargs)
-  # For coverage bots, we only want one object file since two versions would
-  # write conflicting information to the same .gdca/.gdna files.
-  if env.Bit('coverage_enabled'): return ret
-  # Build a static library using -fPIC for the .o's.
-  if env.Bit('linux'):
-    env_shared = env.Clone(OBJSUFFIX='.os')
-    env_shared.Append(CCFLAGS=['-fPIC'])
-    ret += env_shared.ComponentObject(*args, **kwargs)
-  return ret
+  return env.ComponentObject(*args, **kwargs)
 
 
 def AddDualLibrary(env):
   env.AddMethod(DualLibrary)
   env.AddMethod(DualObject)
-  # For coverage bots we only build one set of objects and we always set
-  # '-fPIC' so we do not need a "special" library.
-  if env.Bit('coverage_enabled'):
-    env['SHARED_LIBS_SPECIAL'] = False
-  else:
-    env['SHARED_LIBS_SPECIAL'] = env.Bit('linux')
 
 
 # In prebuild mode we ignore the dependencies so that stuff does
