@@ -24,12 +24,14 @@ void TestInkDropHost::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
 
 scoped_ptr<InkDropAnimation> TestInkDropHost::CreateInkDropAnimation() const {
   gfx::Size size(10, 10);
-  return make_scoped_ptr(new SquareInkDropAnimation(size, 5, size, 5));
+  return make_scoped_ptr(new SquareInkDropAnimation(
+      size, 5, size, 5, gfx::Point(), SK_ColorBLACK));
 }
 
 scoped_ptr<InkDropHover> TestInkDropHost::CreateInkDropHover() const {
   return should_show_hover_
-             ? make_scoped_ptr(new InkDropHover(gfx::Size(10, 10), 4))
+             ? make_scoped_ptr(new InkDropHover(gfx::Size(10, 10), 4,
+                                                gfx::Point(), SK_ColorBLACK))
              : nullptr;
 }
 

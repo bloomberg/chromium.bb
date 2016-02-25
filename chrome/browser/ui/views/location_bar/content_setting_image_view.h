@@ -78,9 +78,6 @@ class ContentSettingImageView : public IconLabelBubbleView,
   void OnMouseReleased(const ui::MouseEvent& event) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
-  void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
-  void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
-  scoped_ptr<views::InkDropHover> CreateInkDropHover() const override;
   void OnNativeThemeChanged(const ui::NativeTheme* native_theme) override;
 
   // views::WidgetObserver:

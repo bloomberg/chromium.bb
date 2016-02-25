@@ -6,6 +6,7 @@
 #define UI_VIEWS_ANIMATION_INK_DROP_HOST_VIEW_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/animation/ink_drop_host.h"
 #include "ui/views/view.h"
 
@@ -30,6 +31,7 @@ class VIEWS_EXPORT InkDropHostView : public views::View, public InkDropHost {
   // Overrideable methods to allow views to provide minor tweaks to the default
   // ink drop.
   virtual gfx::Point GetInkDropCenter() const;
+  virtual SkColor GetInkDropBaseColor() const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InkDropHostView);

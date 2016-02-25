@@ -4,6 +4,7 @@
 
 #include "ui/views/animation/ink_drop_host_view.h"
 
+#include "ui/gfx/color_palette.h"
 #include "ui/views/animation/ink_drop_hover.h"
 #include "ui/views/animation/square_ink_drop_animation.h"
 
@@ -28,7 +29,6 @@ void InkDropHostView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
 
 void InkDropHostView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   layer()->Remove(ink_drop_layer);
-  SetFillsBoundsOpaquely(true);
   SetPaintToLayer(false);
 }
 
@@ -37,21 +37,24 @@ scoped_ptr<InkDropAnimation> InkDropHostView::CreateInkDropAnimation() const {
       gfx::Size(kInkDropLargeSize, kInkDropLargeSize),
       kInkDropLargeCornerRadius,
       gfx::Size(kInkDropSmallSize, kInkDropSmallSize),
-      kInkDropSmallCornerRadius));
-  animation->SetCenterPoint(GetInkDropCenter());
+      kInkDropSmallCornerRadius, GetInkDropCenter(), GetInkDropBaseColor()));
   return animation;
 }
 
 scoped_ptr<InkDropHover> InkDropHostView::CreateInkDropHover() const {
-  scoped_ptr<InkDropHover> hover(
-      new InkDropHover(gfx::Size(kInkDropSmallSize, kInkDropSmallSize),
-                       kInkDropSmallCornerRadius));
-  hover->SetCenterPoint(GetInkDropCenter());
+  scoped_ptr<InkDropHover> hover(new InkDropHover(
+      gfx::Size(kInkDropSmallSize, kInkDropSmallSize),
+      kInkDropSmallCornerRadius, GetInkDropCenter(), GetInkDropBaseColor()));
   return hover;
 }
 
 gfx::Point InkDropHostView::GetInkDropCenter() const {
   return GetLocalBounds().CenterPoint();
+}
+
+SkColor InkDropHostView::GetInkDropBaseColor() const {
+  NOTREACHED();
+  return gfx::kPlaceholderColor;
 }
 
 }  // namespace views

@@ -761,6 +761,11 @@ void ToolbarView::LoadImages() {
                     gfx::CreateVectorIcon(gfx::VectorIconId::NAVIGATE_HOME,
                                           kButtonSize, normal_color));
     app_menu_button_->UpdateIcon();
+
+    back_->set_ink_drop_base_color(normal_color);
+    forward_->set_ink_drop_base_color(normal_color);
+    home_->set_ink_drop_base_color(normal_color);
+    app_menu_button_->set_ink_drop_base_color(normal_color);
   } else {
     back_->SetImage(views::Button::STATE_NORMAL,
                     *(tp->GetImageSkiaNamed(IDR_BACK)));

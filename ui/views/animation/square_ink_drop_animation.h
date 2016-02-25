@@ -19,6 +19,10 @@
 #include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/views_export.h"
 
+namespace gfx {
+class Point;
+}  // namespace gfx
+
 namespace ui {
 class CallbackLayerAnimationObserver;
 class Layer;
@@ -53,7 +57,9 @@ class VIEWS_EXPORT SquareInkDropAnimation : public InkDropAnimation {
   SquareInkDropAnimation(const gfx::Size& large_size,
                          int large_corner_radius,
                          const gfx::Size& small_size,
-                         int small_corner_radius);
+                         int small_corner_radius,
+                         const gfx::Point& center_point,
+                         SkColor color);
   ~SquareInkDropAnimation() override;
 
   // InkDropAnimation:
@@ -61,7 +67,6 @@ class VIEWS_EXPORT SquareInkDropAnimation : public InkDropAnimation {
   InkDropState GetTargetInkDropState() const override;
   bool IsVisible() const override;
   void AnimateToState(InkDropState ink_drop_state) override;
-  void SetCenterPoint(const gfx::Point& center_point) override;
   void HideImmediately() override;
 
  private:

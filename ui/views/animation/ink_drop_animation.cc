@@ -7,30 +7,21 @@
 namespace views {
 
 const float InkDropAnimation::kHiddenOpacity = 0.f;
-const float InkDropAnimation::kVisibleOpacity = 0.11f;
+const float InkDropAnimation::kVisibleOpacity = 0.175f;
 
-InkDropAnimation::InkDropAnimation() {}
+InkDropAnimation::InkDropAnimation() : observer_(nullptr) {}
 
 InkDropAnimation::~InkDropAnimation() {}
 
-void InkDropAnimation::AddObserver(InkDropAnimationObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void InkDropAnimation::RemoveObserver(InkDropAnimationObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
 void InkDropAnimation::NotifyAnimationStarted(InkDropState ink_drop_state) {
-  FOR_EACH_OBSERVER(InkDropAnimationObserver, observers_,
-                    InkDropAnimationStarted(ink_drop_state));
+  observer_->InkDropAnimationStarted(ink_drop_state);
 }
 
 void InkDropAnimation::NotifyAnimationEnded(
     InkDropState ink_drop_state,
     InkDropAnimationObserver::InkDropAnimationEndedReason reason) {
-  FOR_EACH_OBSERVER(InkDropAnimationObserver, observers_,
-                    InkDropAnimationEnded(ink_drop_state, reason));
+  observer_->InkDropAnimationEnded(ink_drop_state, reason);
+  // |this| may be deleted!
 }
 
 }  // namespace views

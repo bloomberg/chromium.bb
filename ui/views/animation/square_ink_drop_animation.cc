@@ -32,9 +32,6 @@ const float kMinimumRectScale = 0.0001f;
 // were causing visual anomalies.
 const float kMinimumCircleScale = 0.001f;
 
-// The ink drop color.
-const SkColor kInkDropColor = SK_ColorBLACK;
-
 // All the sub animations that are used to animate each of the InkDropStates.
 // These are used to get time durations with
 // GetAnimationDuration(InkDropSubAnimations). Note that in general a sub
@@ -180,16 +177,17 @@ namespace views {
 SquareInkDropAnimation::SquareInkDropAnimation(const gfx::Size& large_size,
                                                int large_corner_radius,
                                                const gfx::Size& small_size,
-                                               int small_corner_radius)
+                                               int small_corner_radius,
+                                               const gfx::Point& center_point,
+                                               SkColor color)
     : large_size_(large_size),
       large_corner_radius_(large_corner_radius),
       small_size_(small_size),
       small_corner_radius_(small_corner_radius),
       circle_layer_delegate_(new CircleLayerDelegate(
-          kInkDropColor,
+          color,
           std::min(large_size_.width(), large_size_.height()) / 2)),
-      rect_layer_delegate_(
-          new RectangleLayerDelegate(kInkDropColor, large_size_)),
+      rect_layer_delegate_(new RectangleLayerDelegate(color, large_size_)),
       root_layer_(ui::LAYER_NOT_DRAWN),
       ink_drop_state_(InkDropState::HIDDEN) {
   root_layer_.set_name("SquareInkDropAnimation:ROOT_LAYER");
@@ -199,6 +197,10 @@ SquareInkDropAnimation::SquareInkDropAnimation(const gfx::Size& large_size,
 
   root_layer_.SetMasksToBounds(false);
   root_layer_.SetBounds(gfx::Rect(large_size_));
+
+  gfx::Transform transform;
+  transform.Translate(center_point.x(), center_point.y());
+  root_layer_.SetTransform(transform);
 
   SetStateToHidden();
 }
@@ -257,12 +259,8 @@ void SquareInkDropAnimation::AnimateToState(InkDropState ink_drop_state) {
 
   AnimateStateChange(old_ink_drop_state, ink_drop_state_, animation_observer);
   animation_observer->SetActive();
-}
-
-void SquareInkDropAnimation::SetCenterPoint(const gfx::Point& center_point) {
-  gfx::Transform transform;
-  transform.Translate(center_point.x(), center_point.y());
-  root_layer_.SetTransform(transform);
+  // |this| may be deleted! |animation_observer| might synchronously call
+  // AnimationEndedCallback which can delete |this|.
 }
 
 void SquareInkDropAnimation::HideImmediately() {

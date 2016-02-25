@@ -6,7 +6,6 @@
 #define UI_VIEWS_ANIMATION_INK_DROP_ANIMATION_H_
 
 #include "base/macros.h"
-#include "base/observer_list.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/views/animation/ink_drop_animation_observer.h"
 #include "ui/views/animation/ink_drop_state.h"
@@ -34,8 +33,9 @@ class VIEWS_EXPORT InkDropAnimation {
   InkDropAnimation();
   virtual ~InkDropAnimation();
 
-  void AddObserver(InkDropAnimationObserver* observer);
-  void RemoveObserver(InkDropAnimationObserver* observer);
+  void set_observer(InkDropAnimationObserver* observer) {
+    observer_ = observer;
+  }
 
   // Gets the target InkDropState, i.e. the last |ink_drop_state| passed to
   // AnimateToState() or set by HideImmediately().
@@ -55,9 +55,6 @@ class VIEWS_EXPORT InkDropAnimation {
   // animates to the target HIDDEN state.
   virtual bool IsVisible() const = 0;
 
-  // Sets the |center_point| of the ink drop layer relative to its parent Layer.
-  virtual void SetCenterPoint(const gfx::Point& center_point) = 0;
-
   // Immediately aborts all in-progress animations and hides the ink drop.
   //
   // NOTE: This will NOT raise InkDropAnimation(Started|Ended) events for the
@@ -74,8 +71,7 @@ class VIEWS_EXPORT InkDropAnimation {
       InkDropAnimationObserver::InkDropAnimationEndedReason reason);
 
  private:
-  // List of observers to notify when animations have started and finished.
-  base::ObserverList<InkDropAnimationObserver> observers_;
+  InkDropAnimationObserver* observer_;
 
   DISALLOW_COPY_AND_ASSIGN(InkDropAnimation);
 };

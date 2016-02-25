@@ -64,10 +64,11 @@ class BubbleIconView : public views::InkDropHostView,
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
   scoped_ptr<views::InkDropHover> CreateInkDropHover() const override;
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  SkColor GetInkDropBaseColor() const override;
 
   // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;

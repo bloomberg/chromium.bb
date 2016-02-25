@@ -72,6 +72,8 @@ class VIEWS_EXPORT CustomButton : public Button, public gfx::AnimationDelegate {
     notify_action_ = notify_action;
   }
 
+  void set_ink_drop_base_color(SkColor color) { ink_drop_base_color_ = color; }
+
   void SetHotTracked(bool is_hot_tracked);
   bool IsHotTracked() const;
 
@@ -96,6 +98,7 @@ class VIEWS_EXPORT CustomButton : public Button, public gfx::AnimationDelegate {
   void GetAccessibleState(ui::AXViewState* state) override;
   void VisibilityChanged(View* starting_from, bool is_visible) override;
   scoped_ptr<InkDropHover> CreateInkDropHover() const override;
+  SkColor GetInkDropBaseColor() const override;
 
   // Overridden from gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
@@ -182,6 +185,9 @@ class VIEWS_EXPORT CustomButton : public Button, public gfx::AnimationDelegate {
   // The animation action to trigger on the |ink_drop_delegate_| when the button
   // is clicked.
   InkDropState ink_drop_action_on_click_;
+
+  // The color of the ripple and hover.
+  SkColor ink_drop_base_color_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomButton);
 };

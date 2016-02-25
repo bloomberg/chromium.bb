@@ -53,14 +53,15 @@ InkDropAnimationTest::InkDropAnimationTest() {
   switch (GetParam()) {
     case SQUARE_INK_DROP_ANIMATION: {
       SquareInkDropAnimation* typed_ink_drop_animation =
-          new SquareInkDropAnimation(gfx::Size(10, 10), 2, gfx::Size(8, 8), 1);
+          new SquareInkDropAnimation(gfx::Size(10, 10), 2, gfx::Size(8, 8), 1,
+                                     gfx::Point(), SK_ColorBLACK);
       ink_drop_animation_.reset(typed_ink_drop_animation);
       test_api_.reset(
           new SquareInkDropAnimationTestApi(typed_ink_drop_animation));
       break;
     }
   }
-  ink_drop_animation_->AddObserver(&observer_);
+  ink_drop_animation_->set_observer(&observer_);
   observer_.set_ink_drop_animation(ink_drop_animation_.get());
   test_api_->SetDisableAnimationTimers(true);
 }

@@ -244,6 +244,7 @@ void ReloadButton::ChangeModeInternal(Mode mode) {
                gfx::CreateVectorIcon(icon_id, kButtonSize, normal_color));
       SetImage(views::Button::STATE_DISABLED,
                gfx::CreateVectorIcon(icon_id, kButtonSize, disabled_color));
+      set_ink_drop_base_color(normal_color);
     } else {
       SetImage(views::Button::STATE_NORMAL,
                *(tp->GetImageSkiaNamed((mode == MODE_RELOAD) ? IDR_RELOAD

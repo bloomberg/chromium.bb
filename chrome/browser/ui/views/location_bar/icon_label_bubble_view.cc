@@ -12,6 +12,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/animation/ink_drop_hover.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/painter.h"
@@ -146,6 +147,27 @@ void IconLabelBubbleView::OnNativeThemeChanged(
       inverted ? SK_ColorWHITE : SkColorSetA(border_color, 0x13);
   set_background(new BackgroundWith1PxBorder(background_color, border_color));
   SetLabelBackgroundColor(background_color);
+}
+
+void IconLabelBubbleView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
+  image()->SetPaintToLayer(true);
+  image()->SetFillsBoundsOpaquely(false);
+  InkDropHostView::AddInkDropLayer(ink_drop_layer);
+}
+
+void IconLabelBubbleView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
+  InkDropHostView::RemoveInkDropLayer(ink_drop_layer);
+  image()->SetPaintToLayer(false);
+}
+
+scoped_ptr<views::InkDropHover> IconLabelBubbleView::CreateInkDropHover()
+    const {
+  // Location bar views don't show hover effect.
+  return nullptr;
+}
+
+SkColor IconLabelBubbleView::GetInkDropBaseColor() const {
+  return color_utils::DeriveDefaultIconColor(GetTextColor());
 }
 
 SkColor IconLabelBubbleView::GetParentBackgroundColor() const {

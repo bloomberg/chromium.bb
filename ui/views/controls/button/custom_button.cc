@@ -9,6 +9,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/animation/throb_animation.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/animation/ink_drop_delegate.h"
 #include "ui/views/animation/ink_drop_hover.h"
@@ -330,6 +331,10 @@ scoped_ptr<InkDropHover> CustomButton::CreateInkDropHover() const {
   return ShouldShowInkDropHover() ? Button::CreateInkDropHover() : nullptr;
 }
 
+SkColor CustomButton::GetInkDropBaseColor() const {
+  return ink_drop_base_color_;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // CustomButton, gfx::AnimationDelegate implementation:
 
@@ -351,7 +356,8 @@ CustomButton::CustomButton(ButtonListener* listener)
       ink_drop_delegate_(nullptr),
       notify_action_(NOTIFY_ON_RELEASE),
       has_ink_drop_action_on_click_(false),
-      ink_drop_action_on_click_(InkDropState::QUICK_ACTION) {
+      ink_drop_action_on_click_(InkDropState::QUICK_ACTION),
+      ink_drop_base_color_(gfx::kPlaceholderColor) {
   hover_animation_.SetSlideDuration(kHoverFadeDurationMs);
 }
 

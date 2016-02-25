@@ -54,7 +54,6 @@ InkDropAnimationControllerImpl::InkDropAnimationControllerImpl(
     InkDropHost* ink_drop_host)
     : ink_drop_host_(ink_drop_host),
       root_layer_(new ui::Layer(ui::LAYER_NOT_DRAWN)),
-      can_destroy_after_hidden_animation_(true),
       hover_after_animation_timer_(nullptr) {
   root_layer_->set_name("InkDropAnimationControllerImpl:RootLayer");
   ink_drop_host_->AddInkDropLayer(root_layer_.get());
@@ -82,13 +81,6 @@ void InkDropAnimationControllerImpl::AnimateToState(
   if (!ink_drop_animation_)
     CreateInkDropAnimation();
 
-  // The InkDropAnimationObserver::InkDropAnimationEnded() callback needs to
-  // know if it is safe to destroy the |ink_drop_animation_| and it is not safe
-  // when the notification is raised within a call to
-  // InkDropAnimation::AnimateToState().
-  base::AutoReset<bool> auto_reset_can_destroy_after_hidden_animation(
-      &can_destroy_after_hidden_animation_, false);
-
   if (ink_drop_state != views::InkDropState::HIDDEN) {
     SetHoveredInternal(false, base::TimeDelta::FromMilliseconds(
                                   kHoverFadeOutBeforeAnimationDurationInMs));
@@ -114,7 +106,7 @@ void InkDropAnimationControllerImpl::SetHovered(bool is_hovered) {
 void InkDropAnimationControllerImpl::CreateInkDropAnimation() {
   DestroyInkDropAnimation();
   ink_drop_animation_ = ink_drop_host_->CreateInkDropAnimation();
-  ink_drop_animation_->AddObserver(this);
+  ink_drop_animation_->set_observer(this);
   root_layer_->Add(ink_drop_animation_->GetRootLayer());
 }
 
@@ -122,7 +114,6 @@ void InkDropAnimationControllerImpl::DestroyInkDropAnimation() {
   if (!ink_drop_animation_)
     return;
   root_layer_->Remove(ink_drop_animation_->GetRootLayer());
-  ink_drop_animation_->RemoveObserver(this);
   ink_drop_animation_.reset();
 }
 
@@ -159,12 +150,10 @@ void InkDropAnimationControllerImpl::InkDropAnimationEnded(
     ink_drop_animation_->AnimateToState(views::InkDropState::HIDDEN);
   } else if (ink_drop_state == views::InkDropState::HIDDEN) {
     StartHoverAfterAnimationTimer();
-    if (can_destroy_after_hidden_animation_) {
-      // TODO(bruthig): Investigate whether creating and destroying
-      // InkDropAnimations is expensive and consider creating an
-      // InkDropAnimationPool. See www.crbug.com/522175.
-      DestroyInkDropAnimation();
-    }
+    // TODO(bruthig): Investigate whether creating and destroying
+    // InkDropAnimations is expensive and consider creating an
+    // InkDropAnimationPool. See www.crbug.com/522175.
+    DestroyInkDropAnimation();
   }
 }
 

@@ -16,20 +16,20 @@ namespace views {
 namespace {
 
 // The opacity of the hover when it is visible.
-const float kHoverVisibleOpacity = 0.08f;
+const float kHoverVisibleOpacity = 0.128f;
 
 // The opacity of the hover when it is not visible.
 const float kHiddenOpacity = 0.0f;
 
-// The hover color.
-const SkColor kHoverColor = SK_ColorBLACK;
-
 }  // namespace
 
-InkDropHover::InkDropHover(const gfx::Size& size, int corner_radius)
+InkDropHover::InkDropHover(const gfx::Size& size,
+                           int corner_radius,
+                           const gfx::Point& center_point,
+                           SkColor color)
     : last_animation_initiated_was_fade_in_(false),
       layer_delegate_(
-          new RoundedRectangleLayerDelegate(kHoverColor, size, corner_radius)),
+          new RoundedRectangleLayerDelegate(color, size, corner_radius)),
       layer_(new ui::Layer()) {
   layer_->SetBounds(gfx::Rect(size));
   layer_->SetFillsBoundsOpaquely(false);
@@ -38,7 +38,11 @@ InkDropHover::InkDropHover(const gfx::Size& size, int corner_radius)
   layer_->SetOpacity(kHoverVisibleOpacity);
   layer_->SetMasksToBounds(false);
   layer_->set_name("InkDropHover:layer");
-  SetCenterPoint(gfx::Rect(size).CenterPoint());
+
+  gfx::Transform transform;
+  transform.Translate(center_point.x() - layer_->bounds().CenterPoint().x(),
+                      center_point.y() - layer_->bounds().CenterPoint().y());
+  layer_->SetTransform(transform);
 }
 
 InkDropHover::~InkDropHover() {}
@@ -84,13 +88,6 @@ void InkDropHover::AnimateFade(HoverAnimationType animation_type,
   animator->StartAnimation(animation_sequence);
 
   animation_observer->SetActive();
-}
-
-void InkDropHover::SetCenterPoint(const gfx::Point& center_point) {
-  gfx::Transform transform;
-  transform.Translate(center_point.x() - layer_->bounds().CenterPoint().x(),
-                      center_point.y() - layer_->bounds().CenterPoint().y());
-  layer_->SetTransform(transform);
 }
 
 bool InkDropHover::AnimationEndedCallback(

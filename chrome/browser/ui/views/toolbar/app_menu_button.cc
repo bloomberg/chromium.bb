@@ -196,7 +196,6 @@ void AppMenuButton::AddInkDropLayer(ui::Layer* ink_drop_layer) {
 
 void AppMenuButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   views::MenuButton::RemoveInkDropLayer(ink_drop_layer);
-  image()->SetFillsBoundsOpaquely(true);
   image()->SetPaintToLayer(false);
 }
 

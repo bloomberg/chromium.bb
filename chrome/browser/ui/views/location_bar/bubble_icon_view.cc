@@ -114,6 +114,10 @@ void BubbleIconView::ViewHierarchyChanged(
     UpdateIcon();
 }
 
+void BubbleIconView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+  UpdateIcon();
+}
+
 void BubbleIconView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
   image_->SetPaintToLayer(true);
   image_->SetFillsBoundsOpaquely(false);
@@ -122,7 +126,6 @@ void BubbleIconView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
 
 void BubbleIconView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   views::InkDropHostView::RemoveInkDropLayer(ink_drop_layer);
-  image_->SetFillsBoundsOpaquely(true);
   image_->SetPaintToLayer(false);
 }
 
@@ -131,8 +134,9 @@ scoped_ptr<views::InkDropHover> BubbleIconView::CreateInkDropHover() const {
   return nullptr;
 }
 
-void BubbleIconView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
-  UpdateIcon();
+SkColor BubbleIconView::GetInkDropBaseColor() const {
+  return color_utils::DeriveDefaultIconColor(GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldDefaultColor));
 }
 
 void BubbleIconView::OnGestureEvent(ui::GestureEvent* event) {
@@ -184,8 +188,7 @@ void BubbleIconView::UpdateIcon() {
   SkColor icon_color =
       active_
           ? theme->GetSystemColor(ui::NativeTheme::kColorId_CallToActionColor)
-          : color_utils::DeriveDefaultIconColor(theme->GetSystemColor(
-                ui::NativeTheme::kColorId_TextfieldDefaultColor));
+          : GetInkDropBaseColor();
   image_->SetImage(
       gfx::CreateVectorIcon(GetVectorIcon(), icon_size, icon_color));
 }

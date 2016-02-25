@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/views_export.h"
@@ -24,7 +25,10 @@ class RoundedRectangleLayerDelegate;
 // visual feedback on ui::Views for mouse hover states.
 class VIEWS_EXPORT InkDropHover {
  public:
-  InkDropHover(const gfx::Size& size, int corner_radius);
+  InkDropHover(const gfx::Size& size,
+               int corner_radius,
+               const gfx::Point& center_point,
+               SkColor color);
   ~InkDropHover();
 
   // Returns true if the hover animation is either in the process of fading
@@ -39,9 +43,6 @@ class VIEWS_EXPORT InkDropHover {
 
   // The root Layer that can be added in to a Layer tree.
   ui::Layer* layer() { return layer_.get(); }
-
-  // Sets the |center_point| of the hover layer relative to its parent Layer.
-  void SetCenterPoint(const gfx::Point& center_point);
 
  private:
   enum HoverAnimationType { FADE_IN, FADE_OUT };

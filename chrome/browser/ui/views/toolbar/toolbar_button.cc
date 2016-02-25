@@ -174,7 +174,6 @@ void ToolbarButton::AddInkDropLayer(ui::Layer* ink_drop_layer) {
 
 void ToolbarButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   views::LabelButton::RemoveInkDropLayer(ink_drop_layer);
-  image()->SetFillsBoundsOpaquely(true);
   image()->SetPaintToLayer(false);
 }
 

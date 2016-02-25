@@ -47,6 +47,7 @@ void BarControlButton::OnThemeChanged() {
   SetImage(views::CustomButton::STATE_NORMAL, &image);
   image = gfx::CreateVectorIcon(id_, 16, SkColorSetA(icon_color, 0xff / 2));
   SetImage(views::CustomButton::STATE_DISABLED, &image);
+  set_ink_drop_base_color(icon_color);
 }
 
 void BarControlButton::OnNativeThemeChanged(const ui::NativeTheme* theme) {

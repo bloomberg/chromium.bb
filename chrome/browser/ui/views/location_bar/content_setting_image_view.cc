@@ -211,24 +211,6 @@ void ContentSettingImageView::OnGestureEvent(ui::GestureEvent* event) {
     event->SetHandled();
 }
 
-void ContentSettingImageView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
-  image()->SetPaintToLayer(true);
-  image()->SetFillsBoundsOpaquely(false);
-  IconLabelBubbleView::AddInkDropLayer(ink_drop_layer);
-}
-
-void ContentSettingImageView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
-  IconLabelBubbleView::RemoveInkDropLayer(ink_drop_layer);
-  image()->SetFillsBoundsOpaquely(true);
-  image()->SetPaintToLayer(false);
-}
-
-scoped_ptr<views::InkDropHover> ContentSettingImageView::CreateInkDropHover()
-    const {
-  // Location bar views don't show hover effect.
-  return nullptr;
-}
-
 void ContentSettingImageView::OnNativeThemeChanged(
     const ui::NativeTheme* native_theme) {
   if (ui::MaterialDesignController::IsModeMaterial())

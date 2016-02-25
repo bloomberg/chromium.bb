@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/views/animation/ink_drop_animation_observer.h"
@@ -110,7 +111,9 @@ SquareInkDropAnimationCalculateTransformsTest::
     : ink_drop_animation_(gfx::Size(kDrawnSize, kDrawnSize),
                           2,
                           gfx::Size(kHalfDrawnSize, kHalfDrawnSize),
-                          1),
+                          1,
+                          gfx::Point(),
+                          SK_ColorBLACK),
       test_api_(&ink_drop_animation_) {}
 
 SquareInkDropAnimationCalculateTransformsTest::

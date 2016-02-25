@@ -36,7 +36,8 @@ InkDropHoverTest::InkDropHoverTest() {
 InkDropHoverTest::~InkDropHoverTest() {}
 
 scoped_ptr<InkDropHover> InkDropHoverTest::CreateInkDropHover() const {
-  return make_scoped_ptr(new InkDropHover(gfx::Size(10, 10), 3));
+  return make_scoped_ptr(
+      new InkDropHover(gfx::Size(10, 10), 3, gfx::Point(), SK_ColorBLACK));
 }
 
 TEST_F(InkDropHoverTest, InitialStateAfterConstruction) {
