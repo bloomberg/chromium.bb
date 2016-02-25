@@ -861,9 +861,9 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
     def test_build_check(self):
         # By using a port_name for a different platform than the one we're running on, the build check should always fail.
         if sys.platform == 'darwin':
-            port_name = 'linux-x86'
+            port_name = 'linux-trusty'
         else:
-            port_name = 'mac-lion'
+            port_name = 'mac-10.11'
         out = StringIO.StringIO()
         err = StringIO.StringIO()
         self.assertEqual(run_webkit_tests.main(['--platform', port_name, 'fast/harness/results.html'], out, err), test_run_results.UNEXPECTED_ERROR_EXIT_STATUS)
