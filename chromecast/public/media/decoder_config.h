@@ -61,9 +61,11 @@ enum VideoCodec {
   kCodecVP8,
   kCodecVP9,
   kCodecHEVC,
+  kCodecDolbyVisionH264,
+  kCodecDolbyVisionHEVC,
 
   kVideoCodecMin = kVideoCodecUnknown,
-  kVideoCodecMax = kCodecHEVC,
+  kVideoCodecMax = kCodecDolbyVisionHEVC,
 };
 
 // Profile for Video codec.
@@ -82,9 +84,13 @@ enum VideoProfile {
   kH264MultiviewHigh,
   kVP8ProfileAny,
   kVP9ProfileAny,
+  kDolbyVisionCompatible_EL_MD,
+  kDolbyVisionCompatible_BL_EL_MD,
+  kDolbyVisionNonCompatible_BL_MD,
+  kDolbyVisionNonCompatible_BL_EL_MD,
 
   kVideoProfileMin = kVideoProfileUnknown,
-  kVideoProfileMax = kVP9ProfileAny,
+  kVideoProfileMax = kDolbyVisionNonCompatible_BL_EL_MD,
 };
 
 // TODO(erickung): Remove constructor once CMA backend implementation does't
