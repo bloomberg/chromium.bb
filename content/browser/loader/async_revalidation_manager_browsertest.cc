@@ -15,6 +15,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -150,6 +151,10 @@ class AsyncRevalidationManagerBrowserTest : public ContentBrowserTest {
 // triggers an async revalidation.
 IN_PROC_BROWSER_TEST_F(AsyncRevalidationManagerBrowserTest,
                        StaleWhileRevalidateIsApplied) {
+  // PlzNavigate: Stale while revalidate is disabled.
+  // TODO(clamy): Re-enable the test when there is support.
+  if (IsBrowserSideNavigationEnabled())
+    return;
   RegisterCountingRequestHandler();
   GURL url(embedded_test_server()->GetURL(kCountedHtmlPath));
 
@@ -173,6 +178,10 @@ IN_PROC_BROWSER_TEST_F(AsyncRevalidationManagerBrowserTest,
 // The fresh cache entry must become visible once the async revalidation request
 // has been sent.
 IN_PROC_BROWSER_TEST_F(AsyncRevalidationManagerBrowserTest, CacheIsUpdated) {
+  // PlzNavigate: Stale while revalidate is disabled.
+  // TODO(clamy): Re-enable the test when there is support.
+  if (IsBrowserSideNavigationEnabled())
+    return;
   using base::ASCIIToUTF16;
   RegisterCountingRequestHandler();
   GURL url(embedded_test_server()->GetURL(kCountedHtmlPath));
@@ -201,6 +210,10 @@ IN_PROC_BROWSER_TEST_F(AsyncRevalidationManagerBrowserTest, CacheIsUpdated) {
 // applied immediately.
 IN_PROC_BROWSER_TEST_F(AsyncRevalidationManagerBrowserTest,
                        CookieSetAsynchronously) {
+  // PlzNavigate: Stale while revalidate is disabled.
+  // TODO(clamy): Re-enable the test when there is support.
+  if (IsBrowserSideNavigationEnabled())
+    return;
   RegisterCookieRequestHandler();
   GURL url(embedded_test_server()->GetURL(kCookieHtmlPath));
 

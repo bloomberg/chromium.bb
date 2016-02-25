@@ -1,5 +1,3 @@
--AsyncRevalidationManagerBrowserTest.CacheIsUpdated
--AsyncRevalidationManagerBrowserTest.StaleWhileRevalidateIsApplied
 -CrossSiteRedirectorBrowserTest.VerifyCrossSiteRedirectURL
 -CrossSiteTransferTest.NoLeakOnCrossSiteCancel
 -DevToolsProtocolTest.CrossSitePauseInBeforeUnload
