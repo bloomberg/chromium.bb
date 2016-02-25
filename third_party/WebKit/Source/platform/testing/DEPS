@@ -4,4 +4,7 @@ include_rules = [
     "+base/command_line.h",
     "+base/path_service.h",
     "+base/message_loop",
+    "+base/test/test_io_thread.h",
+    "+mojo/edk/embedder",
+    "+mojo/edk/test",
 ]

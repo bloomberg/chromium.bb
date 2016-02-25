@@ -7,7 +7,6 @@
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
 #include "modules/battery/BatteryDispatcher.h"
-#include "modules/battery/BatteryStatus.h"
 
 namespace blink {
 
@@ -28,7 +27,6 @@ BatteryManager::~BatteryManager()
 BatteryManager::BatteryManager(ExecutionContext* context)
     : ActiveDOMObject(context)
     , PlatformEventController(toDocument(context)->page())
-    , m_batteryStatus(BatteryStatus::create())
 {
 }
 
@@ -51,30 +49,30 @@ ScriptPromise BatteryManager::startRequest(ScriptState* scriptState)
 
 bool BatteryManager::charging()
 {
-    return m_batteryStatus->charging();
+    return m_batteryStatus.charging();
 }
 
 double BatteryManager::chargingTime()
 {
-    return m_batteryStatus->chargingTime();
+    return m_batteryStatus.charging_time();
 }
 
 double BatteryManager::dischargingTime()
 {
-    return m_batteryStatus->dischargingTime();
+    return m_batteryStatus.discharging_time();
 }
 
 double BatteryManager::level()
 {
-    return m_batteryStatus->level();
+    return m_batteryStatus.level();
 }
 
 void BatteryManager::didUpdateData()
 {
     ASSERT(m_batteryProperty);
 
-    BatteryStatus* oldStatus = m_batteryStatus;
-    m_batteryStatus = BatteryDispatcher::instance().latestData();
+    BatteryStatus oldStatus = m_batteryStatus;
+    m_batteryStatus = *BatteryDispatcher::instance().latestData();
 
     if (m_batteryProperty->state() == ScriptPromisePropertyBase::Pending) {
         m_batteryProperty->resolve(this);
@@ -86,15 +84,13 @@ void BatteryManager::didUpdateData()
     if (document->activeDOMObjectsAreSuspended() || document->activeDOMObjectsAreStopped())
         return;
 
-    ASSERT(oldStatus);
-
-    if (m_batteryStatus->charging() != oldStatus->charging())
+    if (m_batteryStatus.charging() != oldStatus.charging())
         dispatchEvent(Event::create(EventTypeNames::chargingchange));
-    if (m_batteryStatus->chargingTime() != oldStatus->chargingTime())
+    if (m_batteryStatus.charging_time() != oldStatus.charging_time())
         dispatchEvent(Event::create(EventTypeNames::chargingtimechange));
-    if (m_batteryStatus->dischargingTime() != oldStatus->dischargingTime())
+    if (m_batteryStatus.discharging_time() != oldStatus.discharging_time())
         dispatchEvent(Event::create(EventTypeNames::dischargingtimechange));
-    if (m_batteryStatus->level() != oldStatus->level())
+    if (m_batteryStatus.level() != oldStatus.level())
         dispatchEvent(Event::create(EventTypeNames::levelchange));
 }
 
@@ -142,7 +138,6 @@ bool BatteryManager::hasPendingActivity() const
 DEFINE_TRACE(BatteryManager)
 {
     visitor->trace(m_batteryProperty);
-    visitor->trace(m_batteryStatus);
     PlatformEventController::trace(visitor);
     RefCountedGarbageCollectedEventTargetWithInlineData<BatteryManager>::trace(visitor);
     ActiveDOMObject::trace(visitor);

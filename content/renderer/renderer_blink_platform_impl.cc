@@ -52,7 +52,6 @@
 #include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/media_stream_api.h"
-#include "content/renderer/battery_status/battery_status_dispatcher.h"
 #include "content/renderer/cache_storage/webserviceworkercachestorage_impl.h"
 #include "content/renderer/device_sensors/device_light_event_pump.h"
 #include "content/renderer/device_sensors/device_motion_event_pump.h"
@@ -85,7 +84,6 @@
 #include "storage/common/quota/quota_types.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
-#include "third_party/WebKit/public/platform/WebBatteryStatusListener.h"
 #include "third_party/WebKit/public/platform/WebBlobRegistry.h"
 #include "third_party/WebKit/public/platform/WebDeviceLightListener.h"
 #include "third_party/WebKit/public/platform/WebFileInfo.h"
@@ -178,9 +176,6 @@ base::LazyInstance<blink::WebDeviceMotionData>::Leaky
     g_test_device_motion_data = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<blink::WebDeviceOrientationData>::Leaky
     g_test_device_orientation_data = LAZY_INSTANCE_INITIALIZER;
-// Set in startListening() when running layout tests, unset in stopListening(),
-// not owned by us.
-blink::WebBatteryStatusListener* g_test_battery_status_listener = nullptr;
 
 }  // namespace
 
@@ -1158,28 +1153,31 @@ RendererBlinkPlatformImpl::CreatePlatformEventObserverFromType(
 void RendererBlinkPlatformImpl::SetPlatformEventObserverForTesting(
     blink::WebPlatformEventType type,
     scoped_ptr<PlatformEventObserverBase> observer) {
-  DCHECK(type != blink::WebPlatformEventTypeBattery);
-
   if (platform_event_observers_.Lookup(type))
     platform_event_observers_.Remove(type);
   platform_event_observers_.AddWithID(observer.release(), type);
 }
 
+void RendererBlinkPlatformImpl::connectToRemoteService(
+    const char* name,
+    mojo::ScopedMessagePipeHandle handle) {
+  // In the layout test mode, mock services should be used instead.
+  // TODO(yukishiino): We'd like to inject mock services implemented in
+  // JavaScript.  Remove the following hack once we support JS-bindings
+  // of Mojo and service mocking in JS.
+  if (RenderThreadImpl::current() &&
+      RenderThreadImpl::current()->layout_test_mode())
+    return;
+
+  if (ServiceRegistry* registry = RenderThread::Get()->GetServiceRegistry()) {
+    // registry can be null during testing.
+    registry->ConnectToRemoteService(name, std::move(handle));
+  }
+}
+
 void RendererBlinkPlatformImpl::startListening(
     blink::WebPlatformEventType type,
     blink::WebPlatformEventListener* listener) {
-  if (type == blink::WebPlatformEventTypeBattery) {
-    if (RenderThreadImpl::current() &&
-        RenderThreadImpl::current()->layout_test_mode()) {
-      g_test_battery_status_listener =
-          static_cast<blink::WebBatteryStatusListener*>(listener);
-    } else {
-      battery_status_dispatcher_.reset(new BatteryStatusDispatcher(
-          static_cast<blink::WebBatteryStatusListener*>(listener)));
-    }
-    return;
-  }
-
   PlatformEventObserverBase* observer = platform_event_observers_.Lookup(type);
   if (!observer) {
     observer = CreatePlatformEventObserverFromType(type);
@@ -1239,12 +1237,6 @@ void RendererBlinkPlatformImpl::SendFakeDeviceEventDataForTesting(
 
 void RendererBlinkPlatformImpl::stopListening(
     blink::WebPlatformEventType type) {
-  if (type == blink::WebPlatformEventTypeBattery) {
-    g_test_battery_status_listener = nullptr;
-    battery_status_dispatcher_.reset();
-    return;
-  }
-
   PlatformEventObserverBase* observer = platform_event_observers_.Lookup(type);
   if (!observer)
     return;
@@ -1265,15 +1257,6 @@ void RendererBlinkPlatformImpl::queryStorageUsageAndQuota(
           storage_partition,
           static_cast<storage::StorageType>(type),
           QuotaDispatcher::CreateWebStorageQuotaCallbacksWrapper(callbacks));
-}
-
-//------------------------------------------------------------------------------
-
-void RendererBlinkPlatformImpl::MockBatteryStatusChangedForTesting(
-    const blink::WebBatteryStatus& status) {
-  if (!g_test_battery_status_listener)
-    return;
-  g_test_battery_status_listener->updateBatteryStatus(status);
 }
 
 //------------------------------------------------------------------------------

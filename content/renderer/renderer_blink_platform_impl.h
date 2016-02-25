@@ -32,7 +32,6 @@ class SyncMessageFilter;
 }
 
 namespace blink {
-class WebBatteryStatus;
 class WebCanvasCaptureHandler;
 class WebDeviceMotionData;
 class WebDeviceOrientationData;
@@ -50,7 +49,6 @@ class WebThreadImplForRendererScheduler;
 }
 
 namespace content {
-class BatteryStatusDispatcher;
 class DeviceLightEventPump;
 class DeviceMotionEventPump;
 class DeviceOrientationEventPump;
@@ -178,6 +176,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   blink::WebString convertIDNToUnicode(
       const blink::WebString& host,
       const blink::WebString& languages) override;
+  void connectToRemoteService(const char* name,
+                              mojo::ScopedMessagePipeHandle handle) override;
   void startListening(blink::WebPlatformEventType,
                       blink::WebPlatformEventListener*) override;
   void stopListening(blink::WebPlatformEventType) override;
@@ -219,10 +219,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   // is invoked.
   static void SetMockDeviceOrientationDataForTesting(
       const blink::WebDeviceOrientationData& data);
-
-  // Notifies blink::WebBatteryStatusListener that battery status has changed.
-  void MockBatteryStatusChangedForTesting(
-      const blink::WebBatteryStatus& status);
 
   WebDatabaseObserverImpl* web_database_observer_impl() {
     return web_database_observer_impl_.get();
@@ -289,8 +285,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   cc_blink::WebCompositorSupportImpl compositor_support_;
 
   scoped_ptr<blink::WebScrollbarBehavior> web_scrollbar_behavior_;
-
-  scoped_ptr<BatteryStatusDispatcher> battery_status_dispatcher_;
 
   // Handle to the Vibration mojo service.
   device::VibrationManagerPtr vibration_manager_;

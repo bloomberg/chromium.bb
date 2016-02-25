@@ -7,6 +7,8 @@ description("Test to ensure level is reported with restricted precision.");
 
 if (!window.testRunner)
     debug('This test cannot be run without the TestRunner');
+if (!window.internals)
+    debug('This test cannot be run without the window.internals');
 
 // Clean-up any unused battery manager objects from previous tests.
 gc();
@@ -17,7 +19,7 @@ var levelFullPrecision = 0.556789;
 var levelRounded = 0.56;
 
 function setAndFireMockBatteryInfo(charging, chargingTime, dischargingTime, level) {
-    testRunner.didChangeBatteryStatus(charging, chargingTime, dischargingTime, level);
+    window.internals.updateBatteryStatus(charging, chargingTime, dischargingTime, level);
 }
 
 var battery;
@@ -34,7 +36,7 @@ function batteryStatusFailure() {
 }
 
 navigator.getBattery().then(batteryStatusSuccess, batteryStatusFailure);
-setAndFireMockBatteryInfo(false, 10, 20, levelFullPrecision); 
+setAndFireMockBatteryInfo(false, 10, 20, levelFullPrecision);
 </script>
 </body>
 </html>

@@ -3,4 +3,5 @@ include_rules = [
     # directories and files instead of writing 'base/'.
     "+base/bind.h",
     "+base/threading",
+    "+mojo/public/cpp/bindings/callback.h",
 ]

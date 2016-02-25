@@ -6,26 +6,26 @@
 #define BatteryDispatcher_h
 
 #include "core/frame/PlatformEventDispatcher.h"
+#include "modules/ModulesExport.h"
 #include "modules/battery/BatteryManager.h"
-#include "modules/battery/BatteryStatus.h"
-#include "public/platform/WebBatteryStatusListener.h"
+#include "platform/battery/battery_dispatcher_proxy.h"
+#include "wtf/OwnPtr.h"
 
 namespace blink {
 
-class WebBatteryStatus;
-
-class BatteryDispatcher final : public GarbageCollectedFinalized<BatteryDispatcher>, public PlatformEventDispatcher, public WebBatteryStatusListener {
+class MODULES_EXPORT BatteryDispatcher final : public GarbageCollectedFinalized<BatteryDispatcher>, public PlatformEventDispatcher, public BatteryDispatcherProxy::Listener {
     USING_GARBAGE_COLLECTED_MIXIN(BatteryDispatcher);
 public:
     static BatteryDispatcher& instance();
     ~BatteryDispatcher() override;
 
-    BatteryStatus* latestData();
+    const BatteryStatus* latestData() const
+    {
+        return m_hasLatestData ? &m_batteryStatus : nullptr;
+    }
 
-    // Inherited from WebBatteryStatusListener.
-    void updateBatteryStatus(const WebBatteryStatus&) override;
-
-    DECLARE_VIRTUAL_TRACE();
+    // Inherited from BatteryDispatcherProxy::Listener.
+    void OnUpdateBatteryStatus(const BatteryStatus&) override;
 
 private:
     BatteryDispatcher();
@@ -34,7 +34,9 @@ private:
     void startListening() override;
     void stopListening() override;
 
-    Member<BatteryStatus> m_batteryStatus;
+    BatteryStatus m_batteryStatus;
+    bool m_hasLatestData;
+    OwnPtr<BatteryDispatcherProxy> m_batteryDispatcherProxy;
 };
 
 } // namespace blink

@@ -12,7 +12,6 @@ enum WebPlatformEventType {
     WebPlatformEventTypeDeviceOrientation,
     WebPlatformEventTypeDeviceOrientationAbsolute,
     WebPlatformEventTypeDeviceLight,
-    WebPlatformEventTypeBattery,
     WebPlatformEventTypeGamepad,
     WebPlatformEventTypeScreenOrientation
 };

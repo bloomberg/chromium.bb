@@ -18,7 +18,6 @@
 #define WEBTESTRUNNER_NEW_HISTORY_CAPTURE
 
 namespace blink {
-class WebBatteryStatus;
 class WebDeviceMotionData;
 class WebDeviceOrientationData;
 class WebFrame;
@@ -81,10 +80,6 @@ class WebTestDelegate {
 
   // Reset the screen orientation data used for testing.
   virtual void ResetScreenOrientation() = 0;
-
-  // Notifies blink about a change in battery status.
-  virtual void DidChangeBatteryStatus(
-      const blink::WebBatteryStatus& status) = 0;
 
   // Add a message to the text dump for the layout test.
   virtual void PrintMessage(const std::string& message) = 0;

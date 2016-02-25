@@ -7,6 +7,8 @@ description("Test promise resolution and event listeners callbacks.");
 
 if (!window.testRunner)
     debug('This test cannot be run without the TestRunner');
+if (!window.internals)
+    debug('This test cannot be run without the window.internals');
 
 // Clean-up any unused battery manager objects from previous tests.
 gc();
@@ -19,7 +21,7 @@ function setAndFireMockBatteryInfo(charging, chargingTime, dischargingTime, leve
                         chargingTime: chargingTime,
                         dischargingTime: dischargingTime,
                         level: level };
-    testRunner.didChangeBatteryStatus(charging, chargingTime, dischargingTime, level);
+    window.internals.updateBatteryStatus(charging, chargingTime, dischargingTime, level);
 }
 
 // compare obtained battery values with the mock values
@@ -43,7 +45,7 @@ function batteryStatusSuccess(batteryManager) {
     battery.addEventListener('dischargingtimechange', onDischargingTimeChange);
     battery.addEventListener('chargingtimechange', onChargingTimeChange);
     battery.addEventListener('levelchange', onLevelChange);
-    
+
     setTimeout(fireNextMockBatteryInfo, 0);
 }
 
@@ -104,7 +106,7 @@ function batteryStatusFailure() {
 }
 
 navigator.getBattery().then(batteryStatusSuccess, batteryStatusFailure);
-setAndFireMockBatteryInfo(false, 10, 20, 0.5); 
+setAndFireMockBatteryInfo(false, 10, 20, 0.5);
 </script>
 </body>
 </html>

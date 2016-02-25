@@ -7,6 +7,8 @@ description("Test multiple windows with page visibility.");
 
 if (!window.testRunner)
     debug('This test cannot be run without the TestRunner');
+if (!window.internals)
+    debug('This test cannot be run without the window.internals');
 
 // Clean-up any unused battery manager objects from previous tests.
 gc();
@@ -21,7 +23,7 @@ function setAndFireMockBatteryInfo(charging, chargingTime, dischargingTime, leve
                         chargingTime: chargingTime,
                         dischargingTime: dischargingTime,
                         level: level };
-    testRunner.didChangeBatteryStatus(charging, chargingTime, dischargingTime, level);
+    window.internals.updateBatteryStatus(charging, chargingTime, dischargingTime, level);
 }
 
 // compare obtained battery values with the mock values

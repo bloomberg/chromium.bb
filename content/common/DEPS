@@ -6,7 +6,6 @@ include_rules = [
   # No inclusion of WebKit from the browser, other than strictly enum/POD,
   # header-only types, and some selected common code.
   "-third_party/WebKit",
-  "+third_party/WebKit/public/platform/WebBatteryStatus.h",
   "+third_party/WebKit/public/platform/WebCircularGeofencingRegion.h",
   "+third_party/WebKit/public/platform/WebCString.h",
   "+third_party/WebKit/public/platform/modules/device_orientation/WebDeviceMotionData.h",

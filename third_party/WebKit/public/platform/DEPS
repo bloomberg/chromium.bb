@@ -5,6 +5,7 @@ include_rules = [
     "-cc/blink",
     "-core",
     "-modules",
+    "+mojo/public",
     "+platform",
     "+platform/weborigin",
     "+public/platform",

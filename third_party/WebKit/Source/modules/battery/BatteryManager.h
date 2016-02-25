@@ -11,11 +11,10 @@
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/frame/PlatformEventController.h"
 #include "modules/EventTargetModules.h"
+#include "platform/battery/battery_status.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
-
-class BatteryStatus;
 
 class BatteryManager final : public RefCountedGarbageCollectedEventTargetWithInlineData<BatteryManager>, public ActiveDOMObject, public PlatformEventController {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(BatteryManager);
@@ -61,7 +60,7 @@ private:
 
     using BatteryProperty = ScriptPromiseProperty<Member<BatteryManager>, Member<BatteryManager>, Member<DOMException>>;
     Member<BatteryProperty> m_batteryProperty;
-    Member<BatteryStatus> m_batteryStatus;
+    BatteryStatus m_batteryStatus;
 };
 
 } // namespace blink

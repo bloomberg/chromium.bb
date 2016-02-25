@@ -75,6 +75,7 @@
         '<(DEPTH)/cc/cc.gyp:cc',
         '<(DEPTH)/cc/cc_tests.gyp:cc_test_support',
         '<(DEPTH)/cc/blink/cc_blink.gyp:cc_blink',
+        '<(DEPTH)/mojo/mojo_edk.gyp:mojo_common_test_support',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/harfbuzz-ng/harfbuzz.gyp:harfbuzz-ng',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
@@ -110,6 +111,9 @@
         '../wtf/wtf.gyp:wtf',
         'blink_platform.gyp:blink_common',
         'blink_platform.gyp:blink_platform',
+        '<(DEPTH)/device/battery/battery.gyp:device_battery_mojo_bindings',
+        '<(DEPTH)/mojo/mojo_base.gyp:mojo_environment_chromium',
+        '<(DEPTH)/mojo/mojo_edk.gyp:mojo_system_impl',
         '<(DEPTH)/testing/gmock.gyp:gmock',
       ],
       'defines': [
@@ -123,6 +127,17 @@
       ],
       # Disable c4267 warnings until we fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267 ],
+      'conditions': [
+        ['OS == "android"', {
+          'dependencies': [
+            '<(DEPTH)/device/battery/battery.gyp:device_battery_java',
+          ],
+        }, {  # OS != "android"
+          'dependencies': [
+            '<(DEPTH)/device/battery/battery.gyp:device_battery',
+          ],
+        }],
+      ],
     },
   ],
   'conditions': [

@@ -28,6 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "base/test/test_io_thread.h"
+#include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/test/scoped_ipc_support.h"
 #include "platform/EventTracer.h"
 #include "platform/HTTPNames.h"
 #include "platform/heap/Heap.h"
@@ -43,19 +46,22 @@
 #include <base/test/launcher/unit_test_launcher.h>
 #include <base/test/test_suite.h>
 #include <cc/blink/web_compositor_support_impl.h>
-#include <string.h>
 
-static double dummyCurrentTime()
+namespace {
+
+double dummyCurrentTime()
 {
     return 0.0;
 }
 
-static int runTestSuite(base::TestSuite* testSuite)
+int runTestSuite(base::TestSuite* testSuite)
 {
     int result = testSuite->Run();
     blink::Heap::collectAllGarbage();
     return result;
 }
+
+} // namespace
 
 int main(int argc, char** argv)
 {
@@ -79,6 +85,12 @@ int main(int argc, char** argv)
     blink::HTTPNames::init();
 
     base::TestSuite testSuite(argc, argv);
+
+    mojo::edk::Init();
+    base::TestIOThread testIoThread(base::TestIOThread::kAutoStart);
+    WTF::OwnPtr<mojo::edk::test::ScopedIPCSupport> ipcSupport(
+        adoptPtr(new mojo::edk::test::ScopedIPCSupport(testIoThread.task_runner())));
+
     int result = base::LaunchUnitTests(argc, argv, base::Bind(runTestSuite, base::Unretained(&testSuite)));
 
     blink::ThreadState::detachMainThread();

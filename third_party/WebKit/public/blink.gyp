@@ -39,6 +39,7 @@
             'dependencies': [
                 '../Source/platform/blink_platform.gyp:blink_platform',
                 '../Source/web/web.gyp:blink_web',
+                '<(DEPTH)/mojo/mojo_edk.gyp:mojo_system_impl',
                 'blink_headers.gyp:blink_headers',
                 'blink_minimal',
             ],
@@ -46,6 +47,10 @@
                 '../Source/web/web.gyp:blink_web',
                 '../Source/platform/blink_platform.gyp:blink_platform',
                 'blink_minimal',
+
+                # public/platform/Platform.h in 'blink_headers' depends on Mojo
+                # APIs, and the dependent of this target needs to link Mojo.
+                '<(DEPTH)/mojo/mojo_edk.gyp:mojo_system_impl',
             ],
         },
         {

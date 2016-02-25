@@ -16,8 +16,6 @@
       "platform/WebAudioDevice.h",
       "platform/WebAudioSourceProvider.h",
       "platform/WebAudioSourceProviderClient.h",
-      "platform/WebBatteryStatus.h",
-      "platform/WebBatteryStatusListener.h",
       "platform/WebBlendMode.h",
       "platform/WebBlobData.h",
       "platform/WebBlobInfo.h",

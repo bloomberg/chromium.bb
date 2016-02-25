@@ -30,6 +30,12 @@
 
 #include "platform/testing/TestingPlatformSupport.h"
 
+#if !OS(ANDROID)
+#include "device/battery/battery_monitor_impl.h"
+#endif
+
+#include <cstring>
+
 namespace blink {
 
 TestingDiscardableMemory::TestingDiscardableMemory(size_t size) : m_data(size), m_isLocked(true)
@@ -99,14 +105,27 @@ WebCompositorSupport* TestingPlatformSupport::compositorSupport()
     return m_config.compositorSupport;
 }
 
+WebThread* TestingPlatformSupport::currentThread()
+{
+    return m_oldPlatform ? m_oldPlatform->currentThread() : nullptr;
+}
+
 WebUnitTestSupport* TestingPlatformSupport::unitTestSupport()
 {
     return m_oldPlatform ? m_oldPlatform->unitTestSupport() : nullptr;
 }
 
-WebThread* TestingPlatformSupport::currentThread()
+void TestingPlatformSupport::connectToRemoteService(const char* name, mojo::ScopedMessagePipeHandle handle)
 {
-    return m_oldPlatform ? m_oldPlatform->currentThread() : nullptr;
+#if !OS(ANDROID)
+    if (std::strcmp(name, device::BatteryMonitor::Name_) == 0) {
+        device::BatteryMonitorImpl::Create(
+            mojo::MakeRequest<device::BatteryMonitor>(std::move(handle)));
+        return;
+    }
+#endif
+
+    ASSERT_NOT_REACHED();
 }
 
 class TestingPlatformMockWebTaskRunner : public WebTaskRunner {

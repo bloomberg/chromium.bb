@@ -25,7 +25,6 @@ class SkBitmap;
 class SkCanvas;
 
 namespace blink {
-class WebBatteryStatus;
 class WebDeviceMotionData;
 class WebDeviceOrientationData;
 struct WebRect;
@@ -71,7 +70,6 @@ class BlinkTestRunner : public RenderViewObserver,
   void SetScreenOrientation(
       const blink::WebScreenOrientationType& orientation) override;
   void ResetScreenOrientation() override;
-  void DidChangeBatteryStatus(const blink::WebBatteryStatus& status) override;
   void PrintMessage(const std::string& message) override;
   void PostTask(test_runner::WebTask* task) override;
   void PostDelayedTask(test_runner::WebTask* task, long long ms) override;

@@ -302,11 +302,6 @@ void BlinkTestRunner::ResetScreenOrientation() {
   mock_client->ResetData();
 }
 
-void BlinkTestRunner::DidChangeBatteryStatus(
-    const blink::WebBatteryStatus& status) {
-  MockBatteryStatusChanged(status);
-}
-
 void BlinkTestRunner::PrintMessage(const std::string& message) {
   Send(new ShellViewHostMsg_PrintMessage(routing_id(), message));
 }

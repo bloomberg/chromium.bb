@@ -335,6 +335,8 @@ component("platform") {
     "//v8",
   ]
   deps = [
+    "//device/battery:mojo_bindings",
+    "//mojo/public/c/system:for_component",
     "//third_party/WebKit/Source/platform/heap",
     "//third_party/harfbuzz-ng",
     "//third_party/icu",
@@ -459,6 +461,15 @@ source_set("test_support") {
     "//testing/gmock",
   ]
 
+  deps = [
+    "//device/battery",
+    "//device/battery:mojo_bindings",
+    "//mojo/edk/system",
+  ]
+  if (is_android) {
+    deps -= [ "//device/battery" ]
+  }
+
   if (is_win) {
     cflags = [ "/wd4267" ]  # Truncation from size_t to int.
   }
@@ -533,6 +544,8 @@ test("blink_platform_unittests") {
     "//cc",
     "//cc:test_support",
     "//cc/blink",
+    "//mojo/edk/embedder:headers",
+    "//mojo/edk/test:test_support",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
