@@ -57,6 +57,8 @@ if (MSVC)
   set(CMAKE_CXX_FLAGS "/W4 ${CMAKE_CXX_FLAGS}" CACHE STRING "" FORCE)
 else ()
   set(CMAKE_CXX_FLAGS "-Wall -Wextra ${CMAKE_CXX_FLAGS}" CACHE STRING "" FORCE)
+  set(CMAKE_CXX_FLAGS "-Wno-deprecated ${CMAKE_CXX_FLAGS}" CACHE
+      STRING "" FORCE)
 endif ()
 
 # Libwebm section.
