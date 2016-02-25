@@ -7,6 +7,7 @@ package org.chromium.chrome.browser;
 import android.os.Build;
 import android.os.StrictMode;
 
+import org.chromium.base.BuildConfig;
 import org.chromium.base.CommandLine;
 
 /**
@@ -22,7 +23,8 @@ public class ChromeStrictMode {
         sIsStrictModeAlreadyConfigured = true;
         CommandLine commandLine = CommandLine.getInstance();
         if ("eng".equals(Build.TYPE)
-                || ("userdebug".equals(Build.TYPE) && !ChromeVersionInfo.isStableBuild())
+                || BuildConfig.sIsDebug
+                || ChromeVersionInfo.isLocalBuild()
                 || commandLine.hasSwitch(ChromeSwitches.STRICT_MODE)) {
             StrictMode.enableDefaults();
             StrictMode.ThreadPolicy.Builder threadPolicy =

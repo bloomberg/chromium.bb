@@ -553,6 +553,7 @@
             'tab_load_status_java',
             'website_settings_action_java',
             '../base/base.gyp:base',
+            '../base/base.gyp:base_build_config_gen',
             '../build/android/java_google_api_keys.gyp:google_api_keys_java',
             '../chrome/android/chrome_apk.gyp:custom_tabs_service_aidl',
             '../components/components.gyp:autocomplete_match_java',
@@ -598,6 +599,9 @@
             'variables': {
               'android_branding_res_dirs%': ['<(java_in_dir)/res_chromium'],
             },
+            'jar_excluded_classes': [
+              '*/BuildConfig.class',
+            ],
             'java_in_dir': '../chrome/android/java',
             'has_java_resources': 1,
             'R_package': 'org.chromium.chrome',

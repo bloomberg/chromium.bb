@@ -157,11 +157,15 @@ android_library("chrome_java") {
     ":chrome_android_java_google_api_keys_srcjar",
     ":chrome_version_srcjar",
     ":resource_id_javagen",
+    "//base:base_build_config_gen",
     "//chrome:content_setting_javagen",
     "//chrome:content_settings_type_javagen",
     "//chrome:data_use_ui_message_enum_javagen",
     "//chrome:signin_metrics_enum_javagen",
   ]
+
+  # New versions of BuildConfig.java will be created when creating an apk.
+  jar_excluded_patterns = [ "*/BuildConfig.class" ]
 
   # TODO(sievers): Split java code into components. Not everything
   # is really all that UI related here.
