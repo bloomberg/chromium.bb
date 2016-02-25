@@ -10782,7 +10782,7 @@ I don't think this site should be blocked!
         You're now signed in to Chrome
       </message>
       <message name="IDS_SYNC_CONFIRMATION_BODY" desc="Body of the sync confirmation dialog in the tab modal signin flow">
-        Your bookmarks, history, passwords and other settings will be synced to your Google Account so you can use them wherever you use Chrome. You can change this in <ph name="BEGIN_LINK">&lt;a id="settingsLink" href="#"&gt;Settings&lt;/a&gt;.</ph>
+        Your bookmarks, history, passwords and other settings will be synced to your Google Account so you can use them on all your devices. You can change this in <ph name="BEGIN_LINK">&lt;a id="settingsLink" href="#"&gt;Settings&lt;/a&gt;.</ph>
       </message>
       <message name="IDS_SYNC_CONFIRMATION_CONFIRM_BUTTON_LABEL" desc="Label of the confirmation button in the sync confirmation dialog of the tab modal signin flow">
         Ok, got it
