@@ -1295,7 +1295,6 @@ crbug.com/390040 [ Win10 ] printing/iframe-print.html [ Failure ]
 crbug.com/571233 compositing/background-color/background-color-outside-document.html [ Skip ]
 
 crbug.com/474759 fast/writing-mode/vertical-rl-replaced-selection.html [ Failure ]
-crbug.com/474759 fast/block/line-layout/selection-highlight-overlap.html [ Failure ]
 
 crbug.com/353746 virtual/android/fullscreen/video-specified-size.html [ Failure Pass ]
 

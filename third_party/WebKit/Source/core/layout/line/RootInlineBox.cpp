@@ -378,31 +378,6 @@ LayoutUnit RootInlineBox::selectionTop() const
     return prevBottom;
 }
 
-LayoutUnit RootInlineBox::selectionTopAdjustedForPrecedingBlock() const
-{
-    LayoutUnit top = selectionTop();
-
-    SelectionState blockSelectionState = root().block().selectionState();
-    if (blockSelectionState != SelectionInside && blockSelectionState != SelectionEnd)
-        return top;
-
-    LayoutSize offsetToBlockBefore;
-    if (LayoutBlock* block = root().block().blockBeforeWithinSelectionRoot(offsetToBlockBefore)) {
-        if (block->isLayoutBlockFlow()) {
-            if (RootInlineBox* lastLine = toLayoutBlockFlow(block)->lastRootBox()) {
-                SelectionState lastLineSelectionState = lastLine->selectionState();
-                if (lastLineSelectionState != SelectionInside && lastLineSelectionState != SelectionStart)
-                    return top;
-
-                LayoutUnit lastLineSelectionBottom = lastLine->selectionBottom() + offsetToBlockBefore.height();
-                top = std::max(top, lastLineSelectionBottom);
-            }
-        }
-    }
-
-    return top;
-}
-
 LayoutUnit RootInlineBox::selectionBottom() const
 {
     LayoutUnit selectionBottom = lineLayoutItem().document().inNoQuirksMode() ? m_selectionBottom : m_lineBottom;

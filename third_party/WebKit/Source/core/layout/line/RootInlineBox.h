@@ -64,9 +64,6 @@ public:
     LayoutUnit selectionBottom() const;
     LayoutUnit selectionHeight() const { return (selectionBottom() - selectionTop()).clampNegativeToZero(); }
 
-    LayoutUnit selectionTopAdjustedForPrecedingBlock() const;
-    LayoutUnit selectionHeightAdjustedForPrecedingBlock() const { return (selectionBottom() - selectionTopAdjustedForPrecedingBlock()).clampNegativeToZero(); }
-
     LayoutUnit blockDirectionPointInLine() const;
 
     LayoutUnit alignBoxesInBlockDirection(LayoutUnit heightOfBlock, GlyphOverflowAndFallbackFontsMap&, VerticalPositionCache&);

@@ -481,7 +481,7 @@ void InlineTextBoxPainter::paintSelection(GraphicsContext& context, const Layout
     }
 
     LayoutUnit selectionBottom = m_inlineTextBox.root().selectionBottom();
-    LayoutUnit selectionTop = m_inlineTextBox.root().selectionTopAdjustedForPrecedingBlock();
+    LayoutUnit selectionTop = m_inlineTextBox.root().selectionTop();
 
     int deltaY = roundToInt(m_inlineTextBox.lineLayoutItem().style()->isFlippedLinesWritingMode() ? selectionBottom - m_inlineTextBox.logicalBottom() : m_inlineTextBox.logicalTop() - selectionTop);
     int selHeight = std::max(0, roundToInt(selectionBottom - selectionTop));
