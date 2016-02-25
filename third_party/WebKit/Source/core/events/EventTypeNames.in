@@ -256,10 +256,6 @@ webkitEditableContentChanged
 webkitTransitionEnd
 webkitfullscreenchange
 webkitfullscreenerror
-webkitkeyadded
-webkitkeyerror
-webkitkeymessage
-webkitneedkey
 webkitprerenderdomcontentloaded
 webkitprerenderload
 webkitprerenderstart

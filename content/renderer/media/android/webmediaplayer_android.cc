@@ -84,8 +84,6 @@ using media::MediaPlayerAndroid;
 using media::VideoFrame;
 
 namespace {
-// Prefix for histograms related to Encrypted Media Extensions.
-const char* kMediaEme = "Media.EME.";
 
 // Values for Media.Android.IsHttpLiveStreamingMediaPredictionResult UMA.
 // Never reuse values!
@@ -1490,7 +1488,8 @@ void WebMediaPlayerAndroid::OnEncryptedMediaInitData(
     return;
   }
 
-  UMA_HISTOGRAM_COUNTS(kMediaEme + std::string("NeedKey"), 1);
+  // TODO(xhwang): Update this UMA name. https://crbug.com/589251
+  UMA_HISTOGRAM_COUNTS("Media.EME.NeedKey", 1);
 
   DCHECK(init_data_type != media::EmeInitDataType::UNKNOWN);
 

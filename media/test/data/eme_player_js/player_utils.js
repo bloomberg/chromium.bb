@@ -16,10 +16,6 @@ PlayerUtils.registerDefaultEventListeners = function(player) {
   // event listeners to be named onEventName.
   var eventListenerMap = {
     'encrypted': 'onEncrypted',
-    'webkitneedkey': 'onWebkitNeedKey',
-    'webkitkeymessage': 'onWebkitKeyMessage',
-    'webkitkeyadded': 'onWebkitKeyAdded',
-    'webkitkeyerror': 'onWebkitKeyError'
   };
   for (eventName in eventListenerMap) {
     var eventListenerFunction = player[eventListenerMap[eventName]];

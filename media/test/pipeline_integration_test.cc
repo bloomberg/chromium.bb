@@ -283,7 +283,7 @@ class FakeEncryptedMedia {
 
 enum PromiseResult { RESOLVED, REJECTED };
 
-// Provides |kSecretKey| in response to needkey.
+// Provides |kSecretKey| in response to the encrypted event.
 class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
  public:
   KeyProvidingApp() {}
@@ -443,7 +443,7 @@ class RotatingKeyProvidingApp : public KeyProvidingApp {
   uint32_t num_distinct_need_key_calls_;
 };
 
-// Ignores needkey and does not perform a license request
+// Ignores the encrypted event and does not perform a license request.
 class NoResponseApp : public FakeEncryptedMedia::AppBase {
  public:
   void OnSessionMessage(const std::string& session_id,

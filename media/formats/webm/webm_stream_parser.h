@@ -65,7 +65,7 @@ class WebMStreamParser : public StreamParser {
   // Returning > 0 indicates success & the number of bytes parsed.
   int ParseCluster(const uint8_t* data, int size);
 
-  // Fire needkey event through the |encrypted_media_init_data_cb_|.
+  // Fire the encrypted event through the |encrypted_media_init_data_cb_|.
   void OnEncryptedMediaInitData(const std::string& key_id);
 
   State state_;
