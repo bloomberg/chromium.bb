@@ -4,13 +4,8 @@ Mapped CSS: 12
 Mapped SCSS: 12
 No stale entries found.
 
-Running: testCSSRebase
-Mapped CSS: 10
-Mapped SCSS: 10
-No stale entries found.
-
-Running: testSCSSRebase
-Mapped CSS: 8
-Mapped SCSS: 8
+Running: testRebase
+Mapped CSS: 12
+Mapped SCSS: 12
 No stale entries found.
 

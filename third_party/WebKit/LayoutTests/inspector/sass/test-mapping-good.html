@@ -28,29 +28,12 @@ function test()
     }
 
     var testSuite = [
-        function testCSSRebase(next)
+        function testRebase(next)
         {
             var cssClone = mapping.cssAST().clone();
-            cssClone.rules[0].properties[1].remove();
-            var cssDiff = WebInspector.SASSSupport.diffModels(mapping.cssAST(), cssClone);
-            var newMapping = mapping.rebaseForCSSDiff(cssDiff);
-            if (!newMapping.isValid()) {
-                InspectorTest.addResult("ERROR: mapping is not valid.");
-                InspectorTest.completeTest();
-                return;
-            }
-            InspectorTest.validateMapping(newMapping);
-            next();
-        },
-
-        function testSCSSRebase(next)
-        {
             var sassAST = mapping.sassModels().valuesArray()[0];
             var sassClone = sassAST.clone();
-            sassClone.rules[1].properties[2].remove();
-            sassClone.rules[1].properties[1].remove();
-            var sassDiff = WebInspector.SASSSupport.diffModels(sassAST, sassClone);
-            var newMapping = mapping.rebaseForSASSDiff(sassDiff);
+            var newMapping = mapping.rebase([cssClone, sassClone]);
             if (!newMapping.isValid()) {
                 InspectorTest.addResult("ERROR: mapping is not valid.");
                 InspectorTest.completeTest();
