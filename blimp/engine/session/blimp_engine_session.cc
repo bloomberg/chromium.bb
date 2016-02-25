@@ -31,6 +31,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
+#include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/env.h"
@@ -66,13 +67,8 @@ class FocusRulesImpl : public wm::BaseFocusRules {
   DISALLOW_COPY_AND_ASSIGN(FocusRulesImpl);
 };
 
-net::IPAddressNumber GetIPv4AnyAddress() {
-  net::IPAddressNumber output;
-  output.push_back(0);
-  output.push_back(0);
-  output.push_back(0);
-  output.push_back(0);
-  return output;
+net::IPAddress GetIPv4AnyAddress() {
+  return net::IPAddress(0, 0, 0, 0);
 }
 
 }  // namespace

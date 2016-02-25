@@ -14,6 +14,7 @@
 #include "blimp/net/tcp_engine_transport.h"
 #include "blimp/net/test_common.h"
 #include "net/base/address_list.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -30,8 +31,7 @@ namespace {
 class TCPTransportTest : public testing::Test {
  protected:
   TCPTransportTest() {
-    net::IPEndPoint local_address;
-    ParseAddress("127.0.0.1", 0, &local_address);
+    net::IPEndPoint local_address(net::IPAddress(127, 0, 0, 1), 0);
     engine_.reset(new TCPEngineTransport(local_address, nullptr));
   }
 
@@ -39,16 +39,6 @@ class TCPTransportTest : public testing::Test {
     net::IPEndPoint local_address;
     engine_->GetLocalAddressForTesting(&local_address);
     return net::AddressList(local_address);
-  }
-
-  void ParseAddress(const std::string& ip_str,
-                    uint16_t port,
-                    net::IPEndPoint* address) {
-    net::IPAddressNumber ip_number;
-    bool rv = net::ParseIPLiteralToNumber(ip_str, &ip_number);
-    if (!rv)
-      return;
-    *address = net::IPEndPoint(ip_number, port);
   }
 
   base::MessageLoopForIO message_loop_;
