@@ -33,7 +33,7 @@
 
 [
     GarbageCollected,
-    ActiveDOMObject,
+    DependentLifetime,
     Constructor,
     ConstructorCallWith=ExecutionContext,
     Exposed=(Window,Worker),

@@ -173,15 +173,18 @@ public:
         v8::Local<v8::Object> wrapper = v8::Local<v8::Object>::New(m_isolate, v8::Persistent<v8::Object>::Cast(*value));
         ASSERT(V8DOMWrapper::hasInternalFieldsSet(wrapper));
 
-        if (value->IsIndependent())
-            return;
-
         const WrapperTypeInfo* type = toWrapperTypeInfo(wrapper);
-
         if (type != npObjectTypeInfo() && toScriptWrappable(wrapper)->hasPendingActivity()) {
+            // If you hit this assert, you'll need to add a [DependentiLifetime]
+            // extended attribute to the DOM interface. A DOM interface that
+            // overrides hasPendingActivity must be marked as [DependentiLifetime].
+            RELEASE_ASSERT(!value->IsIndependent());
             m_isolate->SetObjectGroupId(*value, liveRootId());
             ++m_domObjectsWithPendingActivity;
         }
+
+        if (value->IsIndependent())
+            return;
 
         if (classId == WrapperTypeInfo::NodeClassId) {
             ASSERT(V8Node::hasInstance(wrapper, m_isolate));

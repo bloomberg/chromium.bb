@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 [
-    ActiveDOMObject,
+    DependentLifetime,
     Constructor(DOMString scriptUrl),
     ConstructorCallWith=ExecutionContext,
     GarbageCollected,

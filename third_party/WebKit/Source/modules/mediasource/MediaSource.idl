@@ -36,7 +36,7 @@ enum EndOfStreamError {
 };
 
 [
-    ActiveDOMObject,
+    DependentLifetime,
     Constructor,
     ConstructorCallWith=ExecutionContext,
     RuntimeEnabled=MediaSource,

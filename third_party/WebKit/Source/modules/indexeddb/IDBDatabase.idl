@@ -28,7 +28,7 @@
 
 [
     Exposed=(Window,Worker),
-    ActiveDOMObject,
+    DependentLifetime,
     GarbageCollected,
 ] interface IDBDatabase : EventTarget {
     readonly attribute DOMString name;

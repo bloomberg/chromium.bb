@@ -26,7 +26,7 @@
 [
     GarbageCollected,
     NoInterfaceObject,
-    ActiveDOMObject
+    DependentLifetime
 ] interface RTCDTMFSender : EventTarget {
     readonly attribute boolean canInsertDTMF;
     readonly attribute MediaStreamTrack track;

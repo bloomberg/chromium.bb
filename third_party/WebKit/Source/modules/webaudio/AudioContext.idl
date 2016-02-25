@@ -31,7 +31,7 @@ enum AudioContextState {
 
 [
     GarbageCollected,
-    ActiveDOMObject,
+    DependentLifetime,
     Constructor,
     ConstructorCallWith=Document,
     ImplementedAs=AbstractAudioContext,

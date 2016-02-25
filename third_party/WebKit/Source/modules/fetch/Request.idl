@@ -22,7 +22,7 @@ enum RequestRedirect { "follow", "error", "manual" };
     ConstructorCallWith=ScriptState,
     Exposed=(Window,Worker),
     RaisesException=Constructor,
-    ActiveDOMObject,
+    DependentLifetime,
     GarbageCollected,
 ] interface Request {
     readonly attribute ByteString method;

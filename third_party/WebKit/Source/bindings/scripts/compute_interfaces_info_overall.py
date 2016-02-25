@@ -89,7 +89,6 @@ import sys
 from utilities import idl_filename_to_component, read_pickle_files, write_pickle_file, merge_dict_recursively
 
 INHERITED_EXTENDED_ATTRIBUTES = set([
-    'ActiveDOMObject',
     'DependentLifetime',
     'GarbageCollected',
     'WillBeGarbageCollected',

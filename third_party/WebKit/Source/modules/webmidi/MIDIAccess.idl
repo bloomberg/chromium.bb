@@ -29,7 +29,7 @@
  */
 
 [
-    ActiveDOMObject,
+    DependentLifetime,
 ] interface MIDIAccess : EventTarget {
     readonly attribute MIDIInputMap inputs;
     readonly attribute MIDIOutputMap outputs;

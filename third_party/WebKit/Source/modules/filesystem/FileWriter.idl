@@ -31,7 +31,7 @@
 
 [
     NoInterfaceObject,
-    ActiveDOMObject,
+    DependentLifetime,
     GarbageCollected,
 ] interface FileWriter : EventTarget {
     // ready states

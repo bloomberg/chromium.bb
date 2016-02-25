@@ -108,9 +108,6 @@ def interface_context(interface):
             'bindings/core/v8/V8Float64Array.h',
             'bindings/core/v8/V8DataView.h'))
 
-    # [ActiveDOMObject]
-    is_active_dom_object = 'ActiveDOMObject' in extended_attributes
-
     # [CheckSecurity]
     is_check_security = 'CheckSecurity' in extended_attributes
     if is_check_security:
@@ -180,7 +177,6 @@ def interface_context(interface):
         'has_visit_dom_wrapper': has_visit_dom_wrapper,
         'header_includes': header_includes,
         'interface_name': interface.name,
-        'is_active_dom_object': is_active_dom_object,
         'is_array_buffer_or_view': is_array_buffer_or_view,
         'is_check_security': is_check_security,
         'is_event_target': is_event_target,
@@ -189,11 +185,7 @@ def interface_context(interface):
         'is_node': inherits_interface(interface.name, 'Node'),
         'is_partial': interface.is_partial,
         'is_typed_array_type': is_typed_array_type,
-        'lifetime': 'Dependent'
-            if (has_visit_dom_wrapper or
-                is_active_dom_object or
-                is_dependent_lifetime)
-            else 'Independent',
+        'lifetime': 'Dependent' if (has_visit_dom_wrapper or is_dependent_lifetime) else 'Independent',
         'measure_as': v8_utilities.measure_as(interface, None),  # [MeasureAs]
         'origin_trial_name': v8_utilities.origin_trial_name(interface),
         'parent_interface': parent_interface,

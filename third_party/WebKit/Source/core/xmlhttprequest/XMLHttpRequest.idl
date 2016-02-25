@@ -41,7 +41,7 @@ enum XMLHttpRequestResponseType {
 // TODO(philipj): Most DOMString types in the XMLHttpRequest interface should be
 // either ByteString or USVString.
 [
-    ActiveDOMObject,
+    DependentLifetime,
     Constructor,
     ConstructorCallWith=ScriptState,
     Exposed=(Window,DedicatedWorker,SharedWorker)

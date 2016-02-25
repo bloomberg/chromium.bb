@@ -13,7 +13,7 @@ enum VendorIDSource {
 
 [
     GarbageCollected,
-    ActiveDOMObject,
+    DependentLifetime,
     RuntimeEnabled=WebBluetooth,
     OriginTrialEnabled=WebBluetooth,
 ] interface BluetoothDevice : EventTarget

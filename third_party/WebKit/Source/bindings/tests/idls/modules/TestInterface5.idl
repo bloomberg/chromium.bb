@@ -34,7 +34,7 @@
 enum TestEnumModules { "EnumModulesValue1", "EnumModulesValue2" };
 
 [
-    ActiveDOMObject,
+    DependentLifetime,
     Custom=LegacyCallAsFunction,
     DoNotCheckConstants,
     ImplementedAs=TestInterface5Implementation,

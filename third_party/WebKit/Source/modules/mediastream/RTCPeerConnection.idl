@@ -63,7 +63,7 @@ enum RTCIceConnectionState {
 //  * VoidCallback -> VoidFunction
 [
     GarbageCollected,
-    ActiveDOMObject,
+    DependentLifetime,
     // TODO(guidou): There should only be one constructor argument, and it
     // should be optional.
     Constructor(Dictionary rtcConfiguration, optional Dictionary mediaConstraints),

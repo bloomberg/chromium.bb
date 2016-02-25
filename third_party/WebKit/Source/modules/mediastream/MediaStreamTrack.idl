@@ -24,7 +24,7 @@
 
 [
     GarbageCollected,
-    ActiveDOMObject
+    DependentLifetime
 ] interface MediaStreamTrack : EventTarget {
     readonly attribute DOMString kind;
     readonly attribute DOMString id;

@@ -32,7 +32,7 @@
 // https://html.spec.whatwg.org/#shared-workers-and-the-sharedworker-interface
 
 [
-    ActiveDOMObject,
+    DependentLifetime,
     // TODO(philipj): The name argument should not have a default null value.
     Constructor(DOMString scriptURL, optional DOMString name = null),
     ConstructorCallWith=ExecutionContext,

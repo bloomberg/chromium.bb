@@ -8,7 +8,7 @@ enum RecordingState { "inactive", "recording", "paused" };
 
 [
     GarbageCollected,
-    ActiveDOMObject,
+    DependentLifetime,
     Constructor(MediaStream stream, optional MediaRecorderOptions options),
     ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor,

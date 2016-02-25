@@ -13,7 +13,7 @@ enum ResponseType { "basic", "cors", "default", "error", "opaque", "opaqueredire
     ConstructorCallWith=ScriptState,
     Exposed=(Window,Worker),
     RaisesException=Constructor,
-    ActiveDOMObject,
+    DependentLifetime,
     GarbageCollected,
 ] interface Response {
     [CallWith=ExecutionContext] static Response error();

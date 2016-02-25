@@ -5,7 +5,7 @@
 // https://drafts.css-houdini.org/worklets/#worklet
 
 [
-    ActiveDOMObject,
+    DependentLifetime,
     GarbageCollected,
     RuntimeEnabled=Worklet,
 ] interface Worklet {

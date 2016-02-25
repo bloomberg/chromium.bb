@@ -38,7 +38,7 @@ enum IDBRequestReadyState {
 
 [
     Exposed=(Window,Worker),
-    ActiveDOMObject,
+    DependentLifetime,
     GarbageCollected,
 ] interface IDBRequest : EventTarget {
     [RaisesException=Getter, CachedAttribute=isResultDirty] readonly attribute any result;

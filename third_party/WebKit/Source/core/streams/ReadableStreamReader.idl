@@ -4,7 +4,7 @@
 
 [
     GarbageCollected,
-    ActiveDOMObject,
+    DependentLifetime,
     Exposed=(Window,Worker),
     NoInterfaceObject,
 ] interface ReadableStreamReader {

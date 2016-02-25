@@ -7,7 +7,7 @@ typedef object JSON;
 [
     Exposed=ServiceWorker,
     NoInterfaceObject,
-    ActiveDOMObject,
+    DependentLifetime,
     GarbageCollected,
 ] interface Body {
     readonly attribute boolean bodyUsed;

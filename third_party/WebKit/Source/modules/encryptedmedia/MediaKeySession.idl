@@ -24,7 +24,7 @@
  */
 
 [
-    ActiveDOMObject,
+    DependentLifetime,
     RuntimeEnabled=EncryptedMedia,
     GarbageCollected,
 ] interface MediaKeySession : EventTarget {

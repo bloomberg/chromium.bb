@@ -39,7 +39,7 @@ enum ServiceWorkerState {
 };
 
 [
-    ActiveDOMObject,
+    DependentLifetime,
     GarbageCollected,
 ] interface ServiceWorker : EventTarget {
 

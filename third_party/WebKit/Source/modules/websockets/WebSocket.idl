@@ -34,7 +34,7 @@
 enum BinaryType { "blob", "arraybuffer" };
 
 [
-    ActiveDOMObject,
+    DependentLifetime,
     Constructor(DOMString url, optional (DOMString or sequence<DOMString>) protocols),
     ConstructorCallWith=ExecutionContext,
     Exposed=(Window,Worker),

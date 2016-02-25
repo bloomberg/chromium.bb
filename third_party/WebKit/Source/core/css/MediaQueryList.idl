@@ -20,7 +20,7 @@
 // http://dev.w3.org/csswg/cssom-view/#the-mediaquerylist-interface
 
 [
-    ActiveDOMObject,
+    DependentLifetime,
 ] interface MediaQueryList : EventTarget {
     readonly attribute DOMString media;
     readonly attribute boolean matches;

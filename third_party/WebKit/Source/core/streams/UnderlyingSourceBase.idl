@@ -7,7 +7,7 @@
 // UnderlyingSourceBase, and a JavaScript object can then be generated
 // automatically for use in initializing a ReadableStream.
 
-[NoInterfaceObject, GarbageCollected, ActiveDOMObject]
+[NoInterfaceObject, GarbageCollected, DependentLifetime]
 interface UnderlyingSourceBase {
     [CallWith=ScriptState, ImplementedAs=startWrapper] Promise<void> start(any stream);
     [CallWith=ScriptState] Promise<void> pull();

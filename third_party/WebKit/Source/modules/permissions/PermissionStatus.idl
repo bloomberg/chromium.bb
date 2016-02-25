@@ -12,7 +12,7 @@ enum PermissionState {
 };
 
 [
-    ActiveDOMObject,
+    DependentLifetime,
     GarbageCollected,
     Exposed=(Window,Worker),
     RuntimeEnabled=Permissions,

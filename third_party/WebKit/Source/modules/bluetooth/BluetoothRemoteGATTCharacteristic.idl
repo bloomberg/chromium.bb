@@ -8,7 +8,7 @@
 
 [
     GarbageCollected,
-    ActiveDOMObject,
+    DependentLifetime,
     RuntimeEnabled=WebBluetooth,
     OriginTrialEnabled=WebBluetooth,
 ] interface BluetoothRemoteGATTCharacteristic : EventTarget {//: CharacteristicEventHandlers {

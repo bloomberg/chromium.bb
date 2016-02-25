@@ -27,7 +27,7 @@
 
 enum CanPlayTypeResult { "" /* empty string */, "maybe", "probably" };
 [
-    ActiveDOMObject,
+    DependentLifetime,
     RuntimeEnabled=Media,
 ] interface HTMLMediaElement : HTMLElement {
 
