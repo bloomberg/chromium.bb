@@ -222,17 +222,19 @@ void InputMethodAuraLinux::UpdateContextFocusState() {
   else
     context_simple_->Blur();
 
+  if (!ui::IMEBridge::Get())  // IMEBridge could be null for tests.
+    return;
+
+  ui::IMEEngineHandlerInterface::InputContext context(
+      GetTextInputType(), GetTextInputMode(), GetTextInputFlags());
+  ui::IMEBridge::Get()->SetCurrentInputContext(context);
+
   ui::IMEEngineHandlerInterface* engine = GetEngine();
   if (engine) {
-    ui::IMEEngineHandlerInterface::InputContext context(
-        GetTextInputType(), GetTextInputMode(), GetTextInputFlags());
-
     if (old_text_input_type != TEXT_INPUT_TYPE_NONE)
       engine->FocusOut();
     if (text_input_type_ != TEXT_INPUT_TYPE_NONE)
       engine->FocusIn(context);
-
-    ui::IMEBridge::Get()->SetCurrentInputContext(context);
   }
 }
 

@@ -78,16 +78,16 @@ void ImeWindowView::SetBounds(const gfx::Rect& bounds) {
   window_->SetBounds(bounds);
 }
 
+gfx::Rect ImeWindowView::GetBounds() const {
+  return GetWidget()->GetWindowBoundsInScreen();
+}
+
 void ImeWindowView::UpdateWindowIcon() {
   window_->UpdateWindowIcon();
 }
 
 bool ImeWindowView::IsVisible() const {
   return GetWidget()->IsVisible();
-}
-
-gfx::Rect ImeWindowView::GetBounds() const {
-  return GetWidget()->GetWindowBoundsInScreen();
 }
 
 bool ImeWindowView::OnTitlebarPointerPressed(

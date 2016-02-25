@@ -667,20 +667,21 @@ void InputMethodWin::UpdateIMEState() {
   tsf_inputscope::SetInputScopeForTsfUnawareWindow(
       window_handle, text_input_type, text_input_mode);
 
+  if (!ui::IMEBridge::Get())  // IMEBridge could be null for tests.
+    return;
+
+  const TextInputType old_text_input_type =
+      ui::IMEBridge::Get()->GetCurrentInputContext().type;
+  ui::IMEEngineHandlerInterface::InputContext context(
+      GetTextInputType(), GetTextInputMode(), GetTextInputFlags());
+  ui::IMEBridge::Get()->SetCurrentInputContext(context);
+
   ui::IMEEngineHandlerInterface* engine = GetEngine();
   if (engine) {
-    const TextInputType old_text_input_type =
-        ui::IMEBridge::Get()->GetCurrentInputContext().type;
-
-    ui::IMEEngineHandlerInterface::InputContext context(
-        GetTextInputType(), GetTextInputMode(), GetTextInputFlags());
-
     if (old_text_input_type != ui::TEXT_INPUT_TYPE_NONE)
       engine->FocusOut();
     if (text_input_type != ui::TEXT_INPUT_TYPE_NONE)
       engine->FocusIn(context);
-
-    ui::IMEBridge::Get()->SetCurrentInputContext(context);
   }
 }
 

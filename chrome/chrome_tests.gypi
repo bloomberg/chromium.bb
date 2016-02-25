@@ -2415,7 +2415,7 @@
           'conditions': [
             ['OS=="linux" or OS=="win"', {
               'sources': [
-                'browser/extensions/api/input_ime/input_ime_apitest_nonchromeos.cc',
+                'browser/ui/views/ime/input_ime_apitest_nonchromeos.cc',
               ]
             }],
           ]

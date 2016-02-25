@@ -322,7 +322,6 @@ void InputMethodEngineBase::FocusOut() {
 }
 
 void InputMethodEngineBase::Enable(const std::string& component_id) {
-  DCHECK(!component_id.empty());
   active_component_id_ = component_id;
   observer_->OnActivate(component_id);
   const ui::IMEEngineHandlerInterface::InputContext& input_context =

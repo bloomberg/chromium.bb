@@ -15,6 +15,14 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/screen.h"
+
+namespace {
+
+// The vertical margin between the cursor and the follow-cursor window.
+const int kFollowCursorMargin = 3;
+
+}  // namespace
 
 namespace ui {
 
@@ -64,6 +72,34 @@ void ImeWindow::Close() {
 
 void ImeWindow::SetBounds(const gfx::Rect& bounds) {
   native_window_->SetBounds(bounds);
+}
+
+void ImeWindow::FollowCursor(const gfx::Rect& cursor_bounds) {
+  if (mode_ != FOLLOW_CURSOR)
+    return;
+
+  gfx::Rect screen_bounds =
+      gfx::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+  gfx::Rect window_bounds = native_window_->GetBounds();
+  int screen_width = screen_bounds.width();
+  int screen_height = screen_bounds.height();
+  int width = window_bounds.width();
+  int height = window_bounds.height();
+  // By default, aligns the left of the window to the left of the cursor, and
+  // aligns the top of the window to the bottom of the cursor.
+  // If the right of the window would go beyond the screen bounds, aligns the
+  // right of the window to the screen bounds.
+  // If the bottom of the window would go beyond the screen bounds, aligns the
+  // bottom of the window to the cursor top.
+  int x = cursor_bounds.x();
+  int y = cursor_bounds.y() + cursor_bounds.height() + kFollowCursorMargin;
+  if (width < screen_width && x + width > screen_width)
+    x = screen_width - width;
+  if (height < screen_height && y + height > screen_height)
+    y = cursor_bounds.y() - height - kFollowCursorMargin;
+  window_bounds.set_x(x);
+  window_bounds.set_y(y);
+  SetBounds(window_bounds);
 }
 
 int ImeWindow::GetFrameId() const {

@@ -34,12 +34,14 @@ class ImeNativeWindow {
   // Sets the bounds of the native window.
   virtual void SetBounds(const gfx::Rect& bounds) = 0;
 
+  // Gets the bounds of the native window.
+  virtual gfx::Rect GetBounds() const = 0;
+
   // Updates the window's titie icon.
   virtual void UpdateWindowIcon() = 0;
 
   // For testing.
   virtual bool IsVisible() const = 0;
-  virtual gfx::Rect GetBounds() const = 0;
 
  protected:
   virtual ~ImeNativeWindow() {}

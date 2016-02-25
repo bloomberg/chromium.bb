@@ -69,6 +69,9 @@ class ImeWindow : public content::NotificationObserver,
   void Hide();
   void Close();
   void SetBounds(const gfx::Rect& bounds);
+  // Aligns the follow-cursor window to the given cursor bounds.
+  // If no follow-cursor window is at present, this method does nothing.
+  void FollowCursor(const gfx::Rect& cursor_bounds);
 
   // Gets the web contents' frame ID, which is used to get the JS 'window'
   // object in the custom bindings.

@@ -60,9 +60,9 @@ class ImeWindowView : public ImeNativeWindow,
   void Hide() override;
   void Close() override;
   void SetBounds(const gfx::Rect& bounds) override;
+  gfx::Rect GetBounds() const override;
   void UpdateWindowIcon() override;
   bool IsVisible() const override;
-  gfx::Rect GetBounds() const override;
 
   // views::WidgetDelegate:
   views::View* GetContentsView() override;

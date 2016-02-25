@@ -13,7 +13,6 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "chrome/browser/ui/ime/ime_window.h"
 #include "chrome/browser/ui/input_method/input_method_engine.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/input_ime.h"
@@ -33,6 +32,7 @@ namespace {
 
 const char kErrorAPIDisabled[] =
     "The chrome.input.ime API is not supported on the current platform";
+const char kErrorNoActiveEngine[] = "The extension has not been activated.";
 
 bool IsInputImeEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -97,6 +97,17 @@ class ImeObserverNonChromeOS : public ui::ImeObserver {
 
 namespace extensions {
 
+InputMethodEngine* GetActiveEngine(content::BrowserContext* browser_context,
+                                   const std::string& extension_id) {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  InputImeEventRouter* event_router = GetInputImeEventRouter(profile);
+  InputMethodEngine* engine =
+      event_router ? static_cast<InputMethodEngine*>(
+                         event_router->GetActiveEngine(extension_id))
+                   : nullptr;
+  return engine;
+}
+
 void InputImeAPI::OnExtensionLoaded(content::BrowserContext* browser_context,
                                     const Extension* extension) {
   // No-op if called multiple times.
@@ -134,6 +145,7 @@ InputMethodEngineBase* InputImeEventRouter::GetActiveEngine(
 void InputImeEventRouter::SetActiveEngine(const std::string& extension_id) {
   if (active_engine_) {
     if (active_engine_->GetExtensionId() == extension_id) {
+      active_engine_->Enable(std::string());
       ui::IMEBridge::Get()->SetCurrentEngineHandler(active_engine_);
       return;
     }
@@ -145,7 +157,7 @@ void InputImeEventRouter::SetActiveEngine(const std::string& extension_id) {
   scoped_ptr<InputMethodEngineBase::Observer> observer(
       new ImeObserverNonChromeOS(extension_id, profile()));
   engine->Initialize(std::move(observer), extension_id.c_str(), profile());
-  engine->Enable("");
+  engine->Enable(std::string());
   active_engine_ = engine.release();
   ui::IMEBridge::Get()->SetCurrentEngineHandler(active_engine_);
 }
@@ -153,6 +165,7 @@ void InputImeEventRouter::SetActiveEngine(const std::string& extension_id) {
 void InputImeEventRouter::DeleteInputMethodEngine(
     const std::string& extension_id) {
   if (active_engine_ && active_engine_->GetExtensionId() == extension_id) {
+    active_engine_->Disable();
     ui::IMEBridge::Get()->SetCurrentEngineHandler(nullptr);
     delete active_engine_;
     active_engine_ = nullptr;
@@ -174,16 +187,17 @@ ExtensionFunction::ResponseAction InputImeDeactivateFunction::Run() {
   if (!IsInputImeEnabled())
     return RespondNow(Error(kErrorAPIDisabled));
 
+  InputMethodEngine* engine =
+      GetActiveEngine(browser_context(), extension_id());
   ui::IMEBridge::Get()->SetCurrentEngineHandler(nullptr);
+  if (engine)
+    engine->CloseImeWindows();
   return RespondNow(NoArguments());
 }
 
 ExtensionFunction::ResponseAction InputImeCreateWindowFunction::Run() {
   if (!IsInputImeEnabled())
     return RespondNow(Error(kErrorAPIDisabled));
-
-  // TODO(shuchen): Only create the IME window when the extension is
-  // activated through the input.ime.activate() API.
 
   // Using input_ime::CreateWindow::Params::Create() causes the link errors on
   // Windows, only if the method name is 'createWindow'.
@@ -204,17 +218,22 @@ ExtensionFunction::ResponseAction InputImeCreateWindowFunction::Run() {
     bounds.set_height(options.bounds->height);
   }
 
-  // The ImeWindow is self-owned, so no need to hold its instance here.
-  ui::ImeWindow* ime_window = new ui::ImeWindow(
-      Profile::FromBrowserContext(browser_context()), extension(),
-      options.url.get() ? *options.url : url::kAboutBlankURL,
-      options.window_type == input_ime::WINDOW_TYPE_FOLLOWCURSOR ?
-          ui::ImeWindow::FOLLOW_CURSOR : ui::ImeWindow::NORMAL,
-      bounds);
-  ime_window->Show();
+  InputMethodEngine* engine =
+      GetActiveEngine(browser_context(), extension_id());
+  if (!engine)
+    return RespondNow(Error(kErrorNoActiveEngine));
+
+  int frame_id = engine->CreateImeWindow(
+      extension(), options.url.get() ? *options.url : url::kAboutBlankURL,
+      options.window_type == input_ime::WINDOW_TYPE_FOLLOWCURSOR
+          ? ui::ImeWindow::FOLLOW_CURSOR
+          : ui::ImeWindow::NORMAL,
+      bounds, &error_);
+  if (!frame_id)
+    return RespondNow(Error(error_));
 
   scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
-  result->Set("frameId", new base::FundamentalValue(ime_window->GetFrameId()));
+  result->Set("frameId", new base::FundamentalValue(frame_id));
 
   return RespondNow(OneArgument(std::move(result)));
 }
