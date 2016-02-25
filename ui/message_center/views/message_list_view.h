@@ -46,7 +46,7 @@ class MessageListView : public views::View,
   void UpdateNotification(MessageView* view, const Notification& notification);
   void SetRepositionTarget(const gfx::Rect& target_rect);
   void ResetRepositionSession();
-  void ClearAllNotifications(const gfx::Rect& visible_scroll_rect);
+  void ClearAllClosableNotifications(const gfx::Rect& visible_scroll_rect);
 
   MESSAGE_CENTER_EXPORT void SetRepositionTargetForTest(
       const gfx::Rect& target_rect);

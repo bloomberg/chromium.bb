@@ -437,7 +437,8 @@ TEST_F(ScreenOrientationControllerTest, BlockRotationNotifications) {
   EXPECT_TRUE(message_center->HasPopupNotifications());
 
   // Clear all notifications
-  message_center->RemoveAllNotifications(false);
+  message_center->RemoveAllNotifications(
+      false /* by_user */, message_center::MessageCenter::RemoveType::ALL);
   EXPECT_EQ(0u, message_center->NotificationCount());
   EXPECT_FALSE(message_center->HasPopupNotifications());
 
@@ -456,7 +457,8 @@ TEST_F(ScreenOrientationControllerTest, BlockRotationNotifications) {
   // Reset the screen rotation.
   SetInternalDisplayRotation(gfx::Display::ROTATE_0);
   // Clear all notifications
-  message_center->RemoveAllNotifications(false);
+  message_center->RemoveAllNotifications(
+      false /* by_user */, message_center::MessageCenter::RemoveType::ALL);
   ASSERT_NE(gfx::Display::ROTATE_180, GetCurrentInternalDisplayRotation());
   ASSERT_EQ(0u, message_center->NotificationCount());
   ASSERT_FALSE(message_center->HasPopupNotifications());

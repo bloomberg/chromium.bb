@@ -50,6 +50,13 @@ class NotifierSettingsProvider;
 
 class MESSAGE_CENTER_EXPORT MessageCenter {
  public:
+  enum class RemoveType {
+    // Remove all notifications.
+    ALL,
+    // Remove non-pinned notification (don't remove invisible ones).
+    NON_PINNED,
+  };
+
   // Creates the global message center object.
   static void Initialize();
 
@@ -102,8 +109,7 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
 
   // Removes an existing notification.
   virtual void RemoveNotification(const std::string& id, bool by_user) = 0;
-  virtual void RemoveAllNotifications(bool by_user) = 0;
-  virtual void RemoveAllVisibleNotifications(bool by_user) = 0;
+  virtual void RemoveAllNotifications(bool by_user, RemoveType type) = 0;
 
   // Sets the icon image. Icon appears at the top-left of the notification.
   virtual void SetNotificationIcon(const std::string& notification_id,

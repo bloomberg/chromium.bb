@@ -643,23 +643,20 @@ void MessageCenterImpl::RemoveNotificationsForNotifierId(
   }
 }
 
-void MessageCenterImpl::RemoveAllNotifications(bool by_user) {
-  // Using not |blockers_| but an empty list since it wants to remove literally
-  // all notifications.
-  RemoveNotifications(by_user, NotificationBlockers());
-}
+void MessageCenterImpl::RemoveAllNotifications(bool by_user, RemoveType type) {
+  bool remove_pinned = (type == RemoveType::NON_PINNED);
 
-void MessageCenterImpl::RemoveAllVisibleNotifications(bool by_user) {
-  RemoveNotifications(by_user, blockers_);
-}
+  const NotificationBlockers& blockers =
+      (type == RemoveType::ALL ? NotificationBlockers() /* empty blockers */
+                               : blockers_ /* use default blockers */);
 
-void MessageCenterImpl::RemoveNotifications(
-    bool by_user,
-    const NotificationBlockers& blockers) {
   const NotificationList::Notifications notifications =
       notification_list_->GetVisibleNotifications(blockers);
   std::set<std::string> ids;
   for (const auto& notification : notifications) {
+    if (!remove_pinned && notification->pinned())
+      continue;
+
     ids.insert(notification->id());
     scoped_refptr<NotificationDelegate> delegate = notification->delegate();
     if (delegate.get())

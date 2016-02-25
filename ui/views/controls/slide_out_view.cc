@@ -10,8 +10,7 @@
 
 namespace views {
 
-SlideOutView::SlideOutView()
-    : gesture_scroll_amount_(0.f) {
+SlideOutView::SlideOutView() {
   // If accelerated compositing is not available, this widget tracks the
   // OnSlideOut event but does not render any visible changes.
   SetPaintToLayer(true);
@@ -22,11 +21,14 @@ SlideOutView::~SlideOutView() {
 }
 
 void SlideOutView::OnGestureEvent(ui::GestureEvent* event) {
+  const float kScrollRatioForClosingNotification = 0.5f;
+
   if (event->type() == ui::ET_SCROLL_FLING_START) {
     // The threshold for the fling velocity is computed empirically.
     // The unit is in pixels/second.
     const float kFlingThresholdForClose = 800.f;
-    if (fabsf(event->details().velocity_x()) > kFlingThresholdForClose) {
+    if (is_slide_out_enabled_ &&
+        fabsf(event->details().velocity_x()) > kFlingThresholdForClose) {
       SlideOutAndClose(event->details().velocity_x() < 0 ? SLIDE_LEFT :
                        SLIDE_RIGHT);
       event->StopPropagation();
@@ -40,22 +42,35 @@ void SlideOutView::OnGestureEvent(ui::GestureEvent* event) {
     return;
 
   if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN) {
-    gesture_scroll_amount_ = 0.f;
+    gesture_amount_ = 0.f;
   } else if (event->type() == ui::ET_GESTURE_SCROLL_UPDATE) {
     // The scroll-update events include the incremental scroll amount.
-    gesture_scroll_amount_ += event->details().scroll_x();
+    gesture_amount_ += event->details().scroll_x();
+
+    float scroll_amount;
+    if (is_slide_out_enabled_) {
+      scroll_amount = gesture_amount_;
+      layer()->SetOpacity(1.f - std::min(fabsf(scroll_amount) / width(), 1.f));
+    } else {
+      if (gesture_amount_ >= 0) {
+        scroll_amount = std::min(0.5f * gesture_amount_,
+                                 width() * kScrollRatioForClosingNotification);
+      } else {
+        scroll_amount =
+            std::max(0.5f * gesture_amount_,
+                     -1.f * width() * kScrollRatioForClosingNotification);
+      }
+    }
 
     gfx::Transform transform;
-    transform.Translate(gesture_scroll_amount_, 0.0);
+    transform.Translate(scroll_amount, 0.0);
     layer()->SetTransform(transform);
-    layer()->SetOpacity(
-        1.f - std::min(fabsf(gesture_scroll_amount_) / width(), 1.f));
 
   } else if (event->type() == ui::ET_GESTURE_SCROLL_END) {
-    const float kScrollRatioForClosingNotification = 0.5f;
-    float scrolled_ratio = fabsf(gesture_scroll_amount_) / width();
-    if (scrolled_ratio >= kScrollRatioForClosingNotification) {
-      SlideOutAndClose(gesture_scroll_amount_ < 0 ? SLIDE_LEFT : SLIDE_RIGHT);
+    float scrolled_ratio = fabsf(gesture_amount_) / width();
+    if (is_slide_out_enabled_ &&
+        scrolled_ratio >= kScrollRatioForClosingNotification) {
+      SlideOutAndClose(gesture_amount_ < 0 ? SLIDE_LEFT : SLIDE_RIGHT);
       event->StopPropagation();
       return;
     }

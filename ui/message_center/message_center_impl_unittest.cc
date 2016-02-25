@@ -559,9 +559,10 @@ TEST_F(MessageCenterImplTest, TotalNotificationBlocker) {
   EXPECT_TRUE(NotificationsContain(notifications, "id3"));
   EXPECT_TRUE(NotificationsContain(notifications, "id4"));
 
-  // RemoveAllVisibleNotifications should remove just visible notifications.
+  // Remove just visible notifications.
   blocker.SetNotificationsEnabled(false);
-  message_center()->RemoveAllVisibleNotifications(false /* by_user */);
+  message_center()->RemoveAllNotifications(
+      false /* by_user */, MessageCenter::RemoveType::NON_PINNED);
   EXPECT_EQ(0u, message_center()->NotificationCount());
   blocker.SetNotificationsEnabled(true);
   EXPECT_EQ(2u, message_center()->NotificationCount());
@@ -571,9 +572,10 @@ TEST_F(MessageCenterImplTest, TotalNotificationBlocker) {
   EXPECT_TRUE(NotificationsContain(notifications, "id3"));
   EXPECT_FALSE(NotificationsContain(notifications, "id4"));
 
-  // And RemoveAllNotifications should remove all.
+  // And remove all including invisible notifications.
   blocker.SetNotificationsEnabled(false);
-  message_center()->RemoveAllNotifications(false /* by_user */);
+  message_center()->RemoveAllNotifications(false /* by_user */,
+                                           MessageCenter::RemoveType::ALL);
   EXPECT_EQ(0u, message_center()->NotificationCount());
 }
 

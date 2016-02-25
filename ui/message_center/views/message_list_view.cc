@@ -191,17 +191,24 @@ void MessageListView::ResetRepositionSession() {
   fixed_height_ = 0;
 }
 
-void MessageListView::ClearAllNotifications(
+void MessageListView::ClearAllClosableNotifications(
     const gfx::Rect& visible_scroll_rect) {
   for (int i = 0; i < child_count(); ++i) {
-    views::View* child = child_at(i);
+    // Safe cast since all views in MessageListView are MessageViews.
+    MessageView* child = (MessageView*)child_at(i);
     if (!child->visible())
       continue;
     if (gfx::IntersectRects(child->bounds(), visible_scroll_rect).IsEmpty())
       continue;
+    if (child->IsPinned())
+      continue;
     clearing_all_views_.push_back(child);
   }
-  DoUpdateIfPossible();
+  if (clearing_all_views_.empty()) {
+    message_center_view()->OnAllNotificationsCleared();
+  } else {
+    DoUpdateIfPossible();
+  }
 }
 
 void MessageListView::OnBoundsAnimatorProgressed(

@@ -94,7 +94,8 @@ class WebNotificationTrayTest : public test::AshTestBase {
   ~WebNotificationTrayTest() override {}
 
   void TearDown() override {
-    GetMessageCenter()->RemoveAllNotifications(false);
+    GetMessageCenter()->RemoveAllNotifications(
+        false /* by_user */, message_center::MessageCenter::RemoveType::ALL);
     test::AshTestBase::TearDown();
   }
 

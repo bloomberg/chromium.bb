@@ -1519,7 +1519,8 @@ class DeprecatedAcceleratorTester : public AcceleratorControllerTest {
   }
 
   void RemoveAllNotifications() const {
-    message_center()->RemoveAllNotifications(false);
+    message_center()->RemoveAllNotifications(
+        false /* by_user */, message_center::MessageCenter::RemoveType::ALL);
   }
 
   message_center::MessageCenter* message_center() const {

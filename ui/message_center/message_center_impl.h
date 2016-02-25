@@ -58,8 +58,7 @@ class MessageCenterImpl : public MessageCenter,
   void UpdateNotification(const std::string& old_id,
                           scoped_ptr<Notification> new_notification) override;
   void RemoveNotification(const std::string& id, bool by_user) override;
-  void RemoveAllNotifications(bool by_user) override;
-  void RemoveAllVisibleNotifications(bool by_user) override;
+  void RemoveAllNotifications(bool by_user, RemoveType type) override;
   void SetNotificationIcon(const std::string& notification_id,
                            const gfx::Image& image) override;
   void SetNotificationImage(const std::string& notification_id,
@@ -116,7 +115,6 @@ class MessageCenterImpl : public MessageCenter,
     size_t unread_count;
   };
 
-  void RemoveNotifications(bool by_user, const NotificationBlockers& blockers);
   void RemoveNotificationsForNotifierId(const NotifierId& notifier_id);
 
   scoped_ptr<NotificationList> notification_list_;

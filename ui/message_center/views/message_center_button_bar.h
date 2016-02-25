@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "ui/message_center/message_center_export.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/view.h"
@@ -42,6 +43,8 @@ class MessageCenterButtonBar : public views::View,
 
   // Sometimes we shouldn't see the close-all button.
   void SetCloseAllButtonEnabled(bool enabled);
+
+  MESSAGE_CENTER_EXPORT views::Button* GetCloseAllButtonForTest() const;
 
   // Sometimes we shouldn't see the back arrow (not in settings).
   void SetBackArrowVisible(bool visible);

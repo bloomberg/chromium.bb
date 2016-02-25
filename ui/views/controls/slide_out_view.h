@@ -19,12 +19,18 @@ class VIEWS_EXPORT SlideOutView : public views::View,
   SlideOutView();
   ~SlideOutView() override;
 
+  bool slide_out_enabled() { return is_slide_out_enabled_; }
+
  protected:
   // Called when user intends to close the View by sliding it out.
   virtual void OnSlideOut() = 0;
 
   // Overridden from views::View.
   void OnGestureEvent(ui::GestureEvent* event) override;
+
+  void set_slide_out_enabled(bool is_slide_out_enabled) {
+    is_slide_out_enabled_ = is_slide_out_enabled;
+  }
 
  private:
   enum SlideDirection {
@@ -41,7 +47,8 @@ class VIEWS_EXPORT SlideOutView : public views::View,
   // Overridden from ImplicitAnimationObserver.
   void OnImplicitAnimationsCompleted() override;
 
-  float gesture_scroll_amount_;
+  float gesture_amount_ = 0.f;
+  bool is_slide_out_enabled_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(SlideOutView);
 };

@@ -255,20 +255,25 @@ void MessageCenterView::SetSettingsVisible(bool visible) {
   button_bar_->SetBackArrowVisible(visible);
 }
 
-void MessageCenterView::ClearAllNotifications() {
+void MessageCenterView::ClearAllClosableNotifications() {
   if (is_closing_)
     return;
 
   SetViewHierarchyEnabled(scroller_, false);
   button_bar_->SetAllButtonsEnabled(false);
-  message_list_view_->ClearAllNotifications(scroller_->GetVisibleRect());
+  message_list_view_->ClearAllClosableNotifications(
+      scroller_->GetVisibleRect());
 }
 
 void MessageCenterView::OnAllNotificationsCleared() {
   SetViewHierarchyEnabled(scroller_, true);
   button_bar_->SetAllButtonsEnabled(true);
   button_bar_->SetCloseAllButtonEnabled(false);
-  message_center_->RemoveAllVisibleNotifications(true);  // Action by user.
+
+  // Action by user.
+  message_center_->RemoveAllNotifications(
+      true /* by_user */,
+      message_center::MessageCenter::RemoveType::NON_PINNED);
 }
 
 size_t MessageCenterView::NumMessageViewsForTest() const {
@@ -588,7 +593,14 @@ void MessageCenterView::NotificationsChanged() {
   scroller_->contents()->AddChildView(
       no_message_views ? empty_list_view_.get() : message_list_view_.get());
 
-  button_bar_->SetCloseAllButtonEnabled(!no_message_views);
+  bool no_closable_views = true;
+  for (const auto& view : notification_views_) {
+    if (!view.second->IsPinned()) {
+      no_closable_views = false;
+      break;
+    }
+  }
+  button_bar_->SetCloseAllButtonEnabled(!no_closable_views);
   scroller_->SetFocusable(!no_message_views);
 
   if (focus_manager && focused_view)

@@ -40,8 +40,7 @@ class FakeMessageCenter : public MessageCenter {
                           scoped_ptr<Notification> new_notification) override;
 
   void RemoveNotification(const std::string& id, bool by_user) override;
-  void RemoveAllNotifications(bool by_user) override;
-  void RemoveAllVisibleNotifications(bool by_user) override;
+  void RemoveAllNotifications(bool by_user, RemoveType type) override;
   void SetNotificationIcon(const std::string& notification_id,
                            const gfx::Image& image) override;
 

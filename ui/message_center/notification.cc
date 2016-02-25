@@ -34,6 +34,9 @@ RichNotificationData::RichNotificationData()
       progress(0),
       should_make_spoken_feedback_for_popup_updates(true),
       clickable(true),
+#if defined(OS_CHROMEOS)
+      pinned(false),
+#endif  // defined(OS_CHROMEOS)
       renotify(false),
       silent(false) {}
 
@@ -50,6 +53,9 @@ RichNotificationData::RichNotificationData(const RichNotificationData& other)
       should_make_spoken_feedback_for_popup_updates(
           other.should_make_spoken_feedback_for_popup_updates),
       clickable(other.clickable),
+#if defined(OS_CHROMEOS)
+      pinned(other.pinned),
+#endif  // defined(OS_CHROMEOS)
       vibration_pattern(other.vibration_pattern),
       renotify(other.renotify),
       silent(other.silent) {}

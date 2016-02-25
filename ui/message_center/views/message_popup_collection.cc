@@ -83,7 +83,25 @@ void MessagePopupCollection::ClickOnNotification(
 void MessagePopupCollection::RemoveNotification(
     const std::string& notification_id,
     bool by_user) {
-  message_center_->RemoveNotification(notification_id, by_user);
+  NotificationList::PopupNotifications notifications =
+      message_center_->GetPopupNotifications();
+  for (NotificationList::PopupNotifications::iterator iter =
+           notifications.begin();
+       iter != notifications.end(); ++iter) {
+    Notification* notification = *iter;
+    DCHECK(notification);
+
+    if (notification->id() != notification_id)
+      continue;
+
+    // Don't remove the notification only when it's not pinned.
+    if (!notification->pinned())
+      message_center_->RemoveNotification(notification_id, by_user);
+    else
+      message_center_->MarkSinglePopupAsShown(notification_id, true /* read */);
+
+    break;
+  }
 }
 
 scoped_ptr<ui::MenuModel> MessagePopupCollection::CreateMenuModel(
@@ -139,10 +157,21 @@ void MessagePopupCollection::UpdateWidgets() {
     if (FindToast((*iter)->id()))
       continue;
 
-    NotificationView* view =
-        NotificationView::Create(NULL,
-                                 *(*iter),
-                                 true); // Create top-level notification.
+    NotificationView* view;
+    // Create top-level notification.
+#if defined(OS_CHROMEOS)
+    if ((*iter)->pinned()) {
+      Notification notification = *(*iter);
+      // Override pinned status, since toasts should be closable even when it's
+      // pinned.
+      notification.set_pinned(false);
+      view = NotificationView::Create(NULL, notification, true);
+    } else
+#endif  // defined(OS_CHROMEOS)
+    {
+      view = NotificationView::Create(NULL, *(*iter), true);
+    }
+
     view->set_context_menu_controller(context_menu_controller_.get());
     int view_height = ToastContentsView::GetToastSizeForView(view).height();
     int height_available =

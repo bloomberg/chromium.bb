@@ -267,6 +267,10 @@ void MessageCenterButtonBar::SetCloseAllButtonEnabled(bool enabled) {
     close_all_button_->SetEnabled(enabled);
 }
 
+views::Button* MessageCenterButtonBar::GetCloseAllButtonForTest() const {
+  return close_all_button_;
+}
+
 void MessageCenterButtonBar::SetBackArrowVisible(bool visible) {
   if (title_arrow_)
     title_arrow_->SetVisible(visible);
@@ -281,7 +285,7 @@ void MessageCenterButtonBar::ChildVisibilityChanged(views::View* child) {
 void MessageCenterButtonBar::ButtonPressed(views::Button* sender,
                                            const ui::Event& event) {
   if (sender == close_all_button_) {
-    message_center_view()->ClearAllNotifications();
+    message_center_view()->ClearAllClosableNotifications();
   } else if (sender == settings_button_ || sender == title_arrow_) {
     MessageCenterView* center_view = message_center_view();
     center_view->SetSettingsVisible(!center_view->settings_visible());

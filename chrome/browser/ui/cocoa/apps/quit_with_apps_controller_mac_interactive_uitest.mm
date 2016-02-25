@@ -95,7 +95,8 @@ IN_PROC_BROWSER_TEST_P(QuitWithAppsControllerInteractiveTest, QuitBehavior) {
 
   // If notification was dismissed by click, show again on next quit.
   notification->delegate()->Click();
-  message_center->RemoveAllNotifications(false);
+  message_center->RemoveAllNotifications(
+      false /* by_user */, message_center::MessageCenter::RemoveType::ALL);
   EXPECT_FALSE(controller->ShouldQuit());
   EXPECT_TRUE(AppWindowRegistryUtil::IsAppWindowVisibleInAnyProfile(0));
   notification = g_browser_process->notification_ui_manager()->FindById(
@@ -108,7 +109,8 @@ IN_PROC_BROWSER_TEST_P(QuitWithAppsControllerInteractiveTest, QuitBehavior) {
 
   // If notification is closed by user, don't show it next time.
   notification->delegate()->Close(true);
-  message_center->RemoveAllNotifications(false);
+  message_center->RemoveAllNotifications(
+      false /* by_user */, message_center::MessageCenter::RemoveType::ALL);
   EXPECT_FALSE(controller->ShouldQuit());
   EXPECT_TRUE(AppWindowRegistryUtil::IsAppWindowVisibleInAnyProfile(0));
   notification = g_browser_process->notification_ui_manager()->FindById(
@@ -150,7 +152,8 @@ IN_PROC_BROWSER_TEST_P(QuitWithAppsControllerInteractiveTest, QuitBehavior) {
       app_window->web_contents());
   notification->delegate()->ButtonClick(0);
   destroyed_watcher.Wait();
-  message_center->RemoveAllNotifications(false);
+  message_center->RemoveAllNotifications(
+      false /* by_user */, message_center::MessageCenter::RemoveType::ALL);
   EXPECT_FALSE(AppWindowRegistryUtil::IsAppWindowVisibleInAnyProfile(0));
   quit_observer.Wait();
 }

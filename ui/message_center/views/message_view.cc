@@ -26,9 +26,6 @@
 
 namespace {
 
-const int kCloseIconTopPadding = 5;
-const int kCloseIconRightPadding = 5;
-
 const int kShadowOffset = 1;
 const int kShadowBlur = 4;
 
@@ -63,19 +60,6 @@ MessageView::MessageView(MessageViewController* controller,
   small_image_view->set_owned_by_client();
   small_image_view_.reset(small_image_view);
 
-  PaddedButton *close = new PaddedButton(this);
-  close->SetPadding(-kCloseIconRightPadding, kCloseIconTopPadding);
-  close->SetNormalImage(IDR_NOTIFICATION_CLOSE);
-  close->SetHoveredImage(IDR_NOTIFICATION_CLOSE_HOVER);
-  close->SetPressedImage(IDR_NOTIFICATION_CLOSE_PRESSED);
-  close->set_animate_on_state_change(false);
-  close->SetAccessibleName(l10n_util::GetStringUTF16(
-      IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_ACCESSIBLE_NAME));
-  // The close button should be added to view hierarchy by the derived class.
-  // This ensures that it is on top of other views.
-  close->set_owned_by_client();
-  close_button_.reset(close);
-
   focus_painter_ = views::Painter::CreateSolidFocusPainter(
       kFocusBorderColor, gfx::Insets(0, 1, 3, 2));
 }
@@ -103,12 +87,16 @@ void MessageView::CreateShadowBorder() {
 }
 
 bool MessageView::IsCloseButtonFocused() {
-  views::FocusManager* focus_manager = GetFocusManager();
-  return focus_manager && focus_manager->GetFocusedView() == close_button();
+  // May be overridden by the owner of the close button.
+  return false;
 }
 
 void MessageView::RequestFocusOnCloseButton() {
-  close_button_->RequestFocus();
+  // May be overridden by the owner of the close button.
+}
+
+bool MessageView::IsPinned() {
+  return false;
 }
 
 void MessageView::GetAccessibleState(ui::AXViewState* state) {
@@ -151,7 +139,6 @@ bool MessageView::OnKeyReleased(const ui::KeyEvent& event) {
 }
 
 void MessageView::OnPaint(gfx::Canvas* canvas) {
-  DCHECK_EQ(this, close_button_->parent());
   DCHECK_EQ(this, small_image_view_->parent());
   SlideOutView::OnPaint(canvas);
   views::Painter::PaintFocusPainter(this, canvas, focus_painter_.get());
@@ -174,14 +161,6 @@ void MessageView::Layout() {
 
   // Background.
   background_view_->SetBoundsRect(content_bounds);
-
-  // Close button.
-  gfx::Size close_size(close_button_->GetPreferredSize());
-  gfx::Rect close_rect(content_bounds.right() - close_size.width(),
-                       content_bounds.y(),
-                       close_size.width(),
-                       close_size.height());
-  close_button_->SetBoundsRect(close_rect);
 
   gfx::Size small_image_size(small_image_view_->GetPreferredSize());
   gfx::Rect small_image_rect(small_image_size);
@@ -229,9 +208,6 @@ void MessageView::OnGestureEvent(ui::GestureEvent* event) {
 
 void MessageView::ButtonPressed(views::Button* sender,
                                 const ui::Event& event) {
-  if (sender == close_button()) {
-    controller_->RemoveNotification(notification_id_, true);  // By user.
-  }
 }
 
 void MessageView::OnSlideOut() {

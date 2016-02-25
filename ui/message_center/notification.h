@@ -53,6 +53,11 @@ class MESSAGE_CENTER_EXPORT RichNotificationData {
   std::vector<ButtonInfo> buttons;
   bool should_make_spoken_feedback_for_popup_updates;
   bool clickable;
+#if defined(OS_CHROMEOS)
+  // Flag if the notification is pinned. If true, the notification is pinned
+  // and user can't remove it.
+  bool pinned;
+#endif  // defined(OS_CHROMEOS)
   std::vector<int> vibration_pattern;
   bool renotify;
   bool silent;
@@ -212,6 +217,17 @@ class MESSAGE_CENTER_EXPORT Notification {
   void set_clickable(bool clickable) {
     optional_fields_.clickable = clickable;
   }
+
+  bool pinned() const {
+#if defined(OS_CHROMEOS)
+    return optional_fields_.pinned;
+#else
+    return false;
+#endif  // defined(OS_CHROMEOS)
+  }
+#if defined(OS_CHROMEOS)
+  void set_pinned(bool pinned) { optional_fields_.pinned = pinned; }
+#endif  // defined(OS_CHROMEOS)
 
   NotificationDelegate* delegate() const { return delegate_.get(); }
 

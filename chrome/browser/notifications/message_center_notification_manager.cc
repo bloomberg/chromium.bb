@@ -278,7 +278,8 @@ bool MessageCenterNotificationManager::CancelAllByProfile(
 }
 
 void MessageCenterNotificationManager::CancelAll() {
-  message_center_->RemoveAllNotifications(/* by_user */ false);
+  message_center_->RemoveAllNotifications(
+      false /* by_user */, message_center::MessageCenter::RemoveType::ALL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

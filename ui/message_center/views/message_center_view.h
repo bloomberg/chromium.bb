@@ -50,7 +50,7 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
 
   void SetNotifications(const NotificationList::Notifications& notifications);
 
-  void ClearAllNotifications();
+  void ClearAllClosableNotifications();
   void OnAllNotificationsCleared();
 
   size_t NumMessageViewsForTest() const;
