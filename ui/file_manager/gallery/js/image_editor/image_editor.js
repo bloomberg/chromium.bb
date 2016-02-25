@@ -49,7 +49,6 @@ function ImageEditor(
   this.viewport_ = viewport;
 
   this.imageView_ = imageView;
-  this.imageView_.addContentCallback(this.onContentUpdate_.bind(this));
 
   this.buffer_ = new ImageBuffer();
   this.buffer_.addOverlay(this.imageView_);
@@ -191,7 +190,7 @@ ImageEditor.prototype.recordToolUse = function(name) {
  * Content update handler.
  * @private
  */
-ImageEditor.prototype.onContentUpdate_ = function() {
+ImageEditor.prototype.calculateModeApplicativity_ = function() {
   for (var i = 0; i != this.modes_.length; i++) {
     var mode = this.modes_[i];
     ImageUtil.setAttribute(assert(mode.button_), 'disabled',
@@ -646,6 +645,7 @@ ImageEditor.prototype.setUpMode_ = function(mode) {
   this.modeToolbar_.clear();
   this.currentMode_.createTools(this.modeToolbar_);
   this.modeToolbar_.show(true);
+  this.calculateModeApplicativity_();
 };
 
 /**
