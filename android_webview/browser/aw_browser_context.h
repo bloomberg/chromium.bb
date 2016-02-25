@@ -37,10 +37,6 @@ class DataReductionProxyService;
 class DataReductionProxySettings;
 }
 
-namespace net {
-class CookieStore;
-}
-
 namespace policy {
 class URLBlacklistManager;
 class BrowserPolicyConnectorBase;
@@ -149,7 +145,6 @@ class AwBrowserContext : public content::BrowserContext,
   base::FilePath context_storage_path_;
 
   JniDependencyFactory* native_factory_;
-  scoped_refptr<net::CookieStore> cookie_store_;
   scoped_refptr<AwURLRequestContextGetter> url_request_context_getter_;
   scoped_refptr<AwQuotaManagerBridge> quota_manager_bridge_;
   scoped_ptr<AwFormDatabaseService> form_database_service_;

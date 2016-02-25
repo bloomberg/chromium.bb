@@ -9,6 +9,7 @@
 
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_content_browser_client.h"
+#include "android_webview/browser/net/aw_cookie_store_wrapper.h"
 #include "android_webview/browser/net/aw_http_user_agent_settings.h"
 #include "android_webview/browser/net/aw_network_delegate.h"
 #include "android_webview/browser/net/aw_request_interceptor.h"
@@ -166,13 +167,11 @@ scoped_ptr<net::URLRequestJobFactory> CreateJobFactory(
 
 AwURLRequestContextGetter::AwURLRequestContextGetter(
     const base::FilePath& cache_path,
-    net::CookieStore* cookie_store,
     scoped_ptr<net::ProxyConfigService> config_service,
     PrefService* user_pref_service)
     : cache_path_(cache_path),
       net_log_(new net::NetLog()),
       proxy_config_service_(std::move(config_service)),
-      cookie_store_(cookie_store),
       http_user_agent_settings_(new AwHttpUserAgentSettings()) {
   // CreateSystemProxyConfigService for Android must be called on main thread.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -200,6 +199,8 @@ AwURLRequestContextGetter::~AwURLRequestContextGetter() {
 void AwURLRequestContextGetter::InitializeURLRequestContext() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!url_request_context_);
+
+  cookie_store_ = new AwCookieStoreWrapper();
 
   net::URLRequestContextBuilder builder;
   scoped_ptr<AwNetworkDelegate> aw_network_delegate(new AwNetworkDelegate());

@@ -8,6 +8,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace net {
 class CookieStore;
 class URLRequestInterceptor;
@@ -16,9 +20,13 @@ class URLRequestInterceptor;
 namespace android_webview {
 class AwBrowserContext;
 
-// Called when the CookieMonster needs to be created.
-scoped_refptr<net::CookieStore> CreateCookieStore(
-    AwBrowserContext* browser_context);
+// Gets the TaskRunner that the CookieStore must be called on.
+scoped_refptr<base::SingleThreadTaskRunner> GetCookieStoreTaskRunner();
+
+// Gets a pointer to the CookieStore managed by the CookieManager.
+// The CookieStore is never deleted. May only be called on the
+// CookieStore's TaskRunner.
+net::CookieStore* GetCookieStore();
 
 // Called lazily when the job factory is being constructed.
 scoped_ptr<net::URLRequestInterceptor>

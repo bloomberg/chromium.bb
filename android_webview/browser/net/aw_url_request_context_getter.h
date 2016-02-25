@@ -36,7 +36,6 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
   AwURLRequestContextGetter(
       const base::FilePath& cache_path,
-      net::CookieStore* cookie_store,
       scoped_ptr<net::ProxyConfigService> config_service,
       PrefService* pref_service);
 

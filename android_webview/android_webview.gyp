@@ -350,6 +350,8 @@
         'browser/gl_view_renderer_manager.h',
         'browser/net/android_stream_reader_url_request_job.cc',
         'browser/net/android_stream_reader_url_request_job.h',
+        'browser/net/aw_cookie_store_wrapper.cc',
+        'browser/net/aw_cookie_store_wrapper.h',
         'browser/net/aw_http_user_agent_settings.h',
         'browser/net/aw_http_user_agent_settings.cc',
         'browser/net/aw_network_change_notifier.cc',

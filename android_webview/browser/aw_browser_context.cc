@@ -15,7 +15,6 @@
 #include "android_webview/browser/aw_resource_context.h"
 #include "android_webview/browser/jni_dependency_factory.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
-#include "android_webview/browser/net/init_native_callback.h"
 #include "android_webview/common/aw_content_client.h"
 #include "base/base_paths_android.h"
 #include "base/bind.h"
@@ -42,7 +41,6 @@
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "net/cookies/cookie_store.h"
 #include "net/proxy/proxy_config_service_android.h"
 #include "net/proxy/proxy_service.h"
 
@@ -182,7 +180,6 @@ void AwBrowserContext::SetLegacyCacheRemovalDelayForTest(int delay_ms) {
 }
 
 void AwBrowserContext::PreMainMessageLoopRun() {
-  cookie_store_ = CreateCookieStore(this);
   FilePath cache_path;
   const FilePath fallback_cache_dir =
       GetPath().Append(FILE_PATH_LITERAL("Cache"));
@@ -205,8 +202,7 @@ void AwBrowserContext::PreMainMessageLoopRun() {
   InitUserPrefService();
 
   url_request_context_getter_ = new AwURLRequestContextGetter(
-      cache_path, cookie_store_.get(), CreateProxyConfigService(),
-      user_pref_service_.get());
+      cache_path, CreateProxyConfigService(), user_pref_service_.get());
 
   data_reduction_proxy_io_data_.reset(
       new data_reduction_proxy::DataReductionProxyIOData(

@@ -20,6 +20,7 @@
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
@@ -33,6 +34,7 @@
 #include "jni/AwCookieManager_jni.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_options.h"
+#include "net/cookies/cookie_store.h"
 #include "net/extras/sqlite/cookie_crypto_delegate.h"
 #include "net/url_request/url_request_context.h"
 #include "url/url_constants.h"
@@ -44,7 +46,6 @@ using base::android::ConvertJavaStringToUTF16;
 using base::android::ScopedJavaGlobalRef;
 using content::BrowserThread;
 using net::CookieList;
-using net::CookieMonster;
 
 // In the future, we may instead want to inject an explicit CookieStore
 // dependency into this object during process initialization to avoid
@@ -74,8 +75,8 @@ class BoolCookieCallbackHolder {
   void Invoke(bool result) {
     if (!callback_.is_null()) {
       JNIEnv* env = base::android::AttachCurrentThread();
-      Java_AwCookieManager_invokeBooleanCookieCallback(
-          env, callback_.obj(), result);
+      Java_AwCookieManager_invokeBooleanCookieCallback(env, callback_.obj(),
+                                                       result);
     }
   }
 
@@ -144,19 +145,28 @@ void GetUserDataDir(FilePath* user_data_dir) {
   }
 }
 
+// CookieManager creates and owns Webview's CookieStore, in addition to handling
+// calls into the CookieStore from Java.
+//
+// Since Java calls can be made on the IO Thread, and must synchronously return
+// a result, and the CookieStore API allows it to asynchronously return results,
+// the CookieStore must be run on its own thread, to prevent deadlock.
 class CookieManager {
  public:
   static CookieManager* GetInstance();
 
-  scoped_refptr<net::CookieStore> GetCookieStore();
+  // Returns the TaskRunner on which the CookieStore lives.
+  base::SingleThreadTaskRunner* GetCookieStoreTaskRunner();
+  // Returns the CookieStore, creating it if necessary. This must only be called
+  // on the CookieStore TaskRunner.
+  net::CookieStore* GetCookieStore();
 
   void SetShouldAcceptCookies(bool accept);
   bool GetShouldAcceptCookies();
   void SetCookie(const GURL& host,
                  const std::string& cookie_value,
                  scoped_ptr<BoolCookieCallbackHolder> callback);
-  void SetCookieSync(const GURL& host,
-                 const std::string& cookie_value);
+  void SetCookieSync(const GURL& host, const std::string& cookie_value);
   std::string GetCookie(const GURL& host);
   void RemoveSessionCookies(scoped_ptr<BoolCookieCallbackHolder> callback);
   void RemoveAllCookies(scoped_ptr<BoolCookieCallbackHolder> callback);
@@ -179,10 +189,9 @@ class CookieManager {
   void ExecCookieTaskSync(const base::Callback<void(base::Closure)>& task);
   void ExecCookieTask(const base::Closure& task);
 
-  void SetCookieHelper(
-      const GURL& host,
-      const std::string& value,
-      BoolCallback callback);
+  void SetCookieHelper(const GURL& host,
+                       const std::string& value,
+                       BoolCallback callback);
 
   void GetCookieValueAsyncHelper(const GURL& host,
                                  std::string* result,
@@ -200,93 +209,58 @@ class CookieManager {
   void HasCookiesAsyncHelper(bool* result, base::Closure complete);
   void HasCookiesCompleted(base::Closure complete,
                            bool* result,
-                           const CookieList& cookies);
+                           const net::CookieList& cookies);
 
-  void CreateCookieMonster(
-    const FilePath& user_data_dir,
-    const scoped_refptr<base::SequencedTaskRunner>& client_task_runner,
-    const scoped_refptr<base::SequencedTaskRunner>& background_task_runner);
-  void EnsureCookieMonsterExistsLocked();
-  bool AllowFileSchemeCookiesLocked();
-  void SetAcceptFileSchemeCookiesLocked(bool accept);
+  // This protects the following two bools, as they're used on multiple threads.
+  base::Lock accept_file_scheme_cookies_lock_;
+  // True if cookies should be allowed for file URLs. Can only be changed prior
+  // to creating the CookieStore.
+  bool accept_file_scheme_cookies_;
+  // True once the cookie store has been created. Just used to track when
+  // |accept_file_scheme_cookies_| can no longer be modified.
+  bool cookie_store_created_;
 
-  scoped_refptr<net::CookieMonster> cookie_monster_;
-  scoped_refptr<base::SingleThreadTaskRunner> cookie_monster_task_runner_;
-  base::Lock cookie_monster_lock_;
+  base::Thread cookie_store_client_thread_;
+  base::Thread cookie_store_backend_thread_;
 
-  scoped_ptr<base::Thread> cookie_monster_client_thread_;
-  scoped_ptr<base::Thread> cookie_monster_backend_thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> cookie_store_task_runner_;
+  scoped_refptr<net::CookieStore> cookie_store_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieManager);
 };
 
 base::LazyInstance<CookieManager>::Leaky g_lazy_instance;
 
+}  // namespace
+
 // static
 CookieManager* CookieManager::GetInstance() {
   return g_lazy_instance.Pointer();
 }
 
-CookieManager::CookieManager() {
+CookieManager::CookieManager()
+    : accept_file_scheme_cookies_(kDefaultFileSchemeAllowed),
+      cookie_store_created_(false),
+      cookie_store_client_thread_("CookieMonsterClient"),
+      cookie_store_backend_thread_("CookieMonsterBackend") {
+  cookie_store_client_thread_.Start();
+  cookie_store_backend_thread_.Start();
+  cookie_store_task_runner_ = cookie_store_client_thread_.task_runner();
 }
 
 CookieManager::~CookieManager() {
 }
 
-void CookieManager::CreateCookieMonster(
-    const FilePath& user_data_dir,
-    const scoped_refptr<base::SequencedTaskRunner>& client_task_runner,
-    const scoped_refptr<base::SequencedTaskRunner>& background_task_runner) {
-  FilePath cookie_store_path =
-      user_data_dir.Append(FILE_PATH_LITERAL("Cookies"));
-
-  background_task_runner->PostTask(
-      FROM_HERE,
-      base::Bind(ImportLegacyCookieStore, cookie_store_path));
-
-  content::CookieStoreConfig cookie_config(
-      cookie_store_path,
-      content::CookieStoreConfig::RESTORED_SESSION_COOKIES,
-      NULL, NULL);
-  cookie_config.client_task_runner = client_task_runner;
-  cookie_config.background_task_runner = background_task_runner;
-  net::CookieStore* cookie_store = content::CreateCookieStore(cookie_config);
-  cookie_monster_ = cookie_store->GetCookieMonster();
-  SetAcceptFileSchemeCookiesLocked(kDefaultFileSchemeAllowed);
-}
-
-void CookieManager::EnsureCookieMonsterExistsLocked() {
-  cookie_monster_lock_.AssertAcquired();
-  if (cookie_monster_.get()) {
-    return;
-  }
-
-  // Create cookie monster using WebView-specific threads, as the rest of the
-  // browser has not been started yet.
-  FilePath user_data_dir;
-  GetUserDataDir(&user_data_dir);
-  cookie_monster_client_thread_.reset(
-      new base::Thread("CookieMonsterClient"));
-  cookie_monster_client_thread_->Start();
-  cookie_monster_task_runner_ = cookie_monster_client_thread_->task_runner();
-  cookie_monster_backend_thread_.reset(
-      new base::Thread("CookieMonsterBackend"));
-  cookie_monster_backend_thread_->Start();
-
-  CreateCookieMonster(user_data_dir, cookie_monster_task_runner_,
-                      cookie_monster_backend_thread_->task_runner());
-}
-
-// Executes the |task| on the |cookie_monster_proxy_| message loop and
-// waits for it to complete before returning.
-
+// Executes the |task| on |cookie_store_task_runner_| and waits for it to
+// complete before returning.
+//
 // To execute a CookieTask synchronously you must arrange for Signal to be
 // called on the waitable event at some point. You can call the bool or int
 // versions of ExecCookieTaskSync, these will supply the caller with a dummy
 // callback which takes an int/bool, throws it away and calls Signal.
 // Alternatively you can call the version which supplies a Closure in which
 // case you must call Run on it when you want the unblock the calling code.
-
+//
 // Ignore a bool callback.
 void CookieManager::ExecCookieTaskSync(
     const base::Callback<void(BoolCallback)>& task) {
@@ -317,17 +291,57 @@ void CookieManager::ExecCookieTaskSync(
   completion.Wait();
 }
 
-// Executes the |task| on the |cookie_monster_proxy_| message loop.
+// Executes the |task| using |cookie_store_task_runner_|.
 void CookieManager::ExecCookieTask(const base::Closure& task) {
-  base::AutoLock lock(cookie_monster_lock_);
-  EnsureCookieMonsterExistsLocked();
-  cookie_monster_task_runner_->PostTask(FROM_HERE, task);
+  cookie_store_task_runner_->PostTask(FROM_HERE, task);
 }
 
-scoped_refptr<net::CookieStore> CookieManager::GetCookieStore() {
-  base::AutoLock lock(cookie_monster_lock_);
-  EnsureCookieMonsterExistsLocked();
-  return cookie_monster_;
+base::SingleThreadTaskRunner* CookieManager::GetCookieStoreTaskRunner() {
+  return cookie_store_task_runner_.get();
+}
+
+net::CookieStore* CookieManager::GetCookieStore() {
+  DCHECK(cookie_store_task_runner_->RunsTasksOnCurrentThread());
+
+  if (!cookie_store_) {
+    FilePath user_data_dir;
+    GetUserDataDir(&user_data_dir);
+    FilePath cookie_store_path =
+        user_data_dir.Append(FILE_PATH_LITERAL("Cookies"));
+
+    cookie_store_backend_thread_.task_runner()->PostTask(
+        FROM_HERE, base::Bind(ImportLegacyCookieStore, cookie_store_path));
+
+    content::CookieStoreConfig cookie_config(
+        cookie_store_path, content::CookieStoreConfig::RESTORED_SESSION_COOKIES,
+        nullptr, nullptr);
+    cookie_config.client_task_runner = cookie_store_task_runner_;
+    cookie_config.background_task_runner =
+        cookie_store_backend_thread_.task_runner();
+
+    {
+      base::AutoLock lock(accept_file_scheme_cookies_lock_);
+
+      // There are some unknowns about how to correctly handle file:// cookies,
+      // and our implementation for this is not robust.  http://crbug.com/582985
+      //
+      // TODO(mmenke): This call should be removed once we can deprecate and
+      // remove the Android WebView 'CookieManager::setAcceptFileSchemeCookies'
+      // method. Until then, note that this is just not a great idea.
+      cookie_config.cookieable_schemes.insert(
+          cookie_config.cookieable_schemes.begin(),
+          net::CookieMonster::kDefaultCookieableSchemes,
+          net::CookieMonster::kDefaultCookieableSchemes +
+              net::CookieMonster::kDefaultCookieableSchemesCount);
+      if (accept_file_scheme_cookies_)
+        cookie_config.cookieable_schemes.push_back(url::kFileScheme);
+      cookie_store_created_ = true;
+    }
+
+    cookie_store_ = content::CreateCookieStore(cookie_config);
+  }
+
+  return cookie_store_.get();
 }
 
 void CookieManager::SetShouldAcceptCookies(bool accept) {
@@ -366,8 +380,7 @@ void CookieManager::SetCookieHelper(
   net::CookieOptions options;
   options.set_include_httponly();
 
-  cookie_monster_->SetCookieWithOptionsAsync(
-      host, value, options, callback);
+  GetCookieStore()->SetCookieWithOptionsAsync(host, value, options, callback);
 }
 
 std::string CookieManager::GetCookie(const GURL& host) {
@@ -386,13 +399,9 @@ void CookieManager::GetCookieValueAsyncHelper(
   net::CookieOptions options;
   options.set_include_httponly();
 
-  cookie_monster_->GetCookiesWithOptionsAsync(
-      host,
-      options,
-      base::Bind(&CookieManager::GetCookieValueCompleted,
-                 base::Unretained(this),
-                 complete,
-                 result));
+  GetCookieStore()->GetCookiesWithOptionsAsync(
+      host, options, base::Bind(&CookieManager::GetCookieValueCompleted,
+                                base::Unretained(this), complete, result));
 }
 
 void CookieManager::GetCookieValueCompleted(base::Closure complete,
@@ -418,9 +427,8 @@ void CookieManager::RemoveSessionCookiesSync() {
 
 void CookieManager::RemoveSessionCookiesHelper(
     BoolCallback callback) {
-  cookie_monster_->DeleteSessionCookiesAsync(
-      base::Bind(&CookieManager::RemoveCookiesCompleted,
-                 base::Unretained(this),
+  GetCookieStore()->DeleteSessionCookiesAsync(
+      base::Bind(&CookieManager::RemoveCookiesCompleted, base::Unretained(this),
                  callback));
 }
 
@@ -446,9 +454,8 @@ void CookieManager::RemoveAllCookiesSync() {
 
 void CookieManager::RemoveAllCookiesHelper(
     const BoolCallback callback) {
-  cookie_monster_->DeleteAllAsync(
-      base::Bind(&CookieManager::RemoveCookiesCompleted,
-                 base::Unretained(this),
+  GetCookieStore()->DeleteAllAsync(
+      base::Bind(&CookieManager::RemoveCookiesCompleted, base::Unretained(this),
                  callback));
 }
 
@@ -464,7 +471,7 @@ void CookieManager::FlushCookieStore() {
 
 void CookieManager::FlushCookieStoreAsyncHelper(
     base::Closure complete) {
-  cookie_monster_->FlushStore(complete);
+  GetCookieStore()->FlushStore(complete);
 }
 
 bool CookieManager::HasCookies() {
@@ -479,11 +486,9 @@ bool CookieManager::HasCookies() {
 // should not be needed.
 void CookieManager::HasCookiesAsyncHelper(bool* result,
                                           base::Closure complete) {
-  cookie_monster_->GetAllCookiesAsync(
-      base::Bind(&CookieManager::HasCookiesCompleted,
-                 base::Unretained(this),
-                 complete,
-                 result));
+  GetCookieStore()->GetAllCookiesAsync(
+      base::Bind(&CookieManager::HasCookiesCompleted, base::Unretained(this),
+                 complete, result));
 }
 
 void CookieManager::HasCookiesCompleted(base::Closure complete,
@@ -494,41 +499,16 @@ void CookieManager::HasCookiesCompleted(base::Closure complete,
 }
 
 bool CookieManager::AllowFileSchemeCookies() {
-  base::AutoLock lock(cookie_monster_lock_);
-  EnsureCookieMonsterExistsLocked();
-  return AllowFileSchemeCookiesLocked();
-}
-
-bool CookieManager::AllowFileSchemeCookiesLocked() {
-  return cookie_monster_->IsCookieableScheme(url::kFileScheme);
+  base::AutoLock lock(accept_file_scheme_cookies_lock_);
+  return accept_file_scheme_cookies_;
 }
 
 void CookieManager::SetAcceptFileSchemeCookies(bool accept) {
-  base::AutoLock lock(cookie_monster_lock_);
-  EnsureCookieMonsterExistsLocked();
-  SetAcceptFileSchemeCookiesLocked(accept);
+  base::AutoLock lock(accept_file_scheme_cookies_lock_);
+  // Can only modify this before the cookie store is created.
+  if (!cookie_store_created_)
+    accept_file_scheme_cookies_ = accept;
 }
-
-void CookieManager::SetAcceptFileSchemeCookiesLocked(bool accept) {
-  // There are some unknowns about how to correctly handle file:// cookies,
-  // and our implementation for this is not robust.  http://crbug.com/582985
-  //
-  // TODO(mmenke): This call should be removed once we can deprecate and remove
-  // the Android WebView 'CookieManager::setAcceptFileSchemeCookies' method.
-  // Until then, note that this is just not a great idea.
-  std::vector<std::string> schemes;
-  schemes.insert(schemes.begin(),
-                 net::CookieMonster::kDefaultCookieableSchemes,
-                 net::CookieMonster::kDefaultCookieableSchemes +
-                     net::CookieMonster::kDefaultCookieableSchemesCount);
-
-  if (accept)
-    schemes.push_back(url::kFileScheme);
-
-  cookie_monster_->SetCookieableSchemes(schemes);
-}
-
-}  // namespace
 
 static void SetShouldAcceptCookies(JNIEnv* env,
                                    const JavaParamRef<jobject>& obj,
@@ -623,8 +603,15 @@ static void SetAcceptFileSchemeCookies(JNIEnv* env,
   return CookieManager::GetInstance()->SetAcceptFileSchemeCookies(accept);
 }
 
-scoped_refptr<net::CookieStore> CreateCookieStore(
-    AwBrowserContext* browser_context) {
+// The following two methods are used to avoid a circular project dependency.
+// TODO(mmenke):  This is weird. Maybe there should be a leaky Singleton in
+// browser/net that creates and owns there?
+
+scoped_refptr<base::SingleThreadTaskRunner> GetCookieStoreTaskRunner() {
+  return CookieManager::GetInstance()->GetCookieStoreTaskRunner();
+}
+
+net::CookieStore* GetCookieStore() {
   return CookieManager::GetInstance()->GetCookieStore();
 }
 
