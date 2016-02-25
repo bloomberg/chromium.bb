@@ -8,7 +8,6 @@
 #include "core/animation/CSSInterpolationType.h"
 #include "core/animation/CSSLengthInterpolationType.h"
 #include "platform/Length.h"
-#include "wtf/RefVector.h"
 
 namespace blink {
 
@@ -21,12 +20,10 @@ public:
     void apply(const InterpolableValue&, const NonInterpolableValue*, InterpolationEnvironment&) const final;
 
 private:
-    InterpolationValue maybeConvertLengthList(const RefVector<Length>*, float zoom) const;
-
     InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying, ConversionCheckers&) const final;
     InterpolationValue maybeConvertInitial() const final;
     InterpolationValue maybeConvertInherit(const StyleResolverState&, ConversionCheckers&) const final;
-    InterpolationValue maybeConvertValue(const CSSValue&, const StyleResolverState&, ConversionCheckers&) const final;
+    virtual InterpolationValue maybeConvertValue(const CSSValue&, const StyleResolverState&, ConversionCheckers&) const;
 
     PairwiseInterpolationValue mergeSingleConversions(InterpolationValue& start, InterpolationValue& end) const final;
 

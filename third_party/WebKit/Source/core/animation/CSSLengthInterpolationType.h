@@ -29,6 +29,7 @@ public:
     static PairwiseInterpolationValue staticMergeSingleConversions(InterpolationValue& start, InterpolationValue& end);
     static bool nonInterpolableValuesAreCompatible(const NonInterpolableValue*, const NonInterpolableValue*);
     static void composite(OwnPtr<InterpolableValue>&, RefPtr<NonInterpolableValue>&, double underlyingFraction, const InterpolableValue&, const NonInterpolableValue*);
+    static void subtractFromOneHundredPercent(InterpolationValue& result);
 
 private:
     float effectiveZoom(const ComputedStyle&) const;
