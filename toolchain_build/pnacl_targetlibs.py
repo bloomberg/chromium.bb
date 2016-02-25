@@ -683,6 +683,7 @@ def SubzeroRuntimeCommands(arch, out_dir):
         PnaclTool('llvm-mc'),
         '-filetype=obj',
         '-triple=' + Triple,
+        '--defsym', 'NONSFI=1',
         '-o', os.path.join(out_dir, AsmSourceBase + '.o'),
         command.path.join('%(subzero_src)s', 'runtime', AsmSourceBase + '.s')])
     ] if IsNonSFIArch(arch) else [])
