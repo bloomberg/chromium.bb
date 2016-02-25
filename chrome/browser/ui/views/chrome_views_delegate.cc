@@ -126,9 +126,21 @@ bool MonitorHasTopmostAutohideTaskbarForEdge(UINT edge, HMONITOR monitor) {
     if (taskbar_data.uEdge == edge)
       taskbar = taskbar_data.hWnd;
   }
-  return ::IsWindow(taskbar) &&
-      (MonitorFromWindow(taskbar, MONITOR_DEFAULTTONULL) == monitor) &&
-      (GetWindowLong(taskbar, GWL_EXSTYLE) & WS_EX_TOPMOST);
+
+  if (::IsWindow(taskbar) &&
+      (GetWindowLong(taskbar, GWL_EXSTYLE) & WS_EX_TOPMOST)) {
+    if (MonitorFromWindow(taskbar, MONITOR_DEFAULTTONEAREST) == monitor)
+      return true;
+    // In some cases like when the autohide taskbar is on the left of the
+    // secondary monitor, the MonitorFromWindow call above fails to return the
+    // correct monitor the taskbar is on. We fallback to MonitorFromPoint for
+    // the cursor position in that case, which seems to work well.
+    POINT cursor_pos = {0};
+    GetCursorPos(&cursor_pos);
+    if (MonitorFromPoint(cursor_pos, MONITOR_DEFAULTTONEAREST) == monitor)
+      return true;
+  }
+  return false;
 }
 
 int GetAppbarAutohideEdgesOnWorkerThread(HMONITOR monitor) {
