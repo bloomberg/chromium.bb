@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -126,6 +127,124 @@ TEST_F(URLRequestFileDirTest, ListCompletionOnNoPending) {
   // If it's not returned synchronously, the code path this is intended to test
   // was not executed.
   EXPECT_EQ(ERR_FILE_NOT_FOUND, request->status().ToNetError());
+}
+
+// Test the case where reading the response completes synchronously.
+TEST_F(URLRequestFileDirTest, DirectoryWithASingleFileSync) {
+  base::ScopedTempDir directory;
+  ASSERT_TRUE(directory.CreateUniqueTempDir());
+  base::FilePath path;
+  base::CreateTemporaryFileInDir(directory.path(), &path);
+
+  TestJobFactory factory(directory.path());
+  context_.set_job_factory(&factory);
+
+  scoped_ptr<URLRequest> request(context_.CreateRequest(
+      FilePathToFileURL(path), DEFAULT_PRIORITY, &delegate_));
+  request->Start();
+  EXPECT_TRUE(request->is_pending());
+
+  // Since the DirectoryLister is running on the network thread, this will spin
+  // the message loop until the URLRequetsFileDirJob has received the
+  // entire directory listing and cached it.
+  base::RunLoop().RunUntilIdle();
+
+  int bytes_read = 0;
+  // This will complete synchronously, since the URLRequetsFileDirJob had
+  // directory listing cached in memory.
+  EXPECT_TRUE(request->Read(buffer_.get(), kBufferSize, &bytes_read));
+
+  EXPECT_EQ(URLRequestStatus::SUCCESS, request->status().status());
+
+  ASSERT_GT(bytes_read, 0);
+  ASSERT_LE(bytes_read, kBufferSize);
+  std::string data(buffer_->data(), bytes_read);
+  EXPECT_TRUE(data.find(directory.path().BaseName().MaybeAsASCII()) !=
+              std::string::npos);
+  EXPECT_TRUE(data.find(path.BaseName().MaybeAsASCII()) != std::string::npos);
+}
+
+// Test the case where reading the response completes asynchronously.
+TEST_F(URLRequestFileDirTest, DirectoryWithASingleFileAsync) {
+  base::ScopedTempDir directory;
+  ASSERT_TRUE(directory.CreateUniqueTempDir());
+  base::FilePath path;
+  base::CreateTemporaryFileInDir(directory.path(), &path);
+
+  TestJobFactory factory(directory.path());
+  context_.set_job_factory(&factory);
+
+  TestDelegate delegate;
+  scoped_ptr<URLRequest> request(context_.CreateRequest(
+      FilePathToFileURL(path), DEFAULT_PRIORITY, &delegate));
+  request->Start();
+  EXPECT_TRUE(request->is_pending());
+
+  base::RunLoop().Run();
+
+  ASSERT_GT(delegate.bytes_received(), 0);
+  ASSERT_LE(delegate.bytes_received(), kBufferSize);
+  EXPECT_TRUE(delegate.data_received().find(
+                  directory.path().BaseName().MaybeAsASCII()) !=
+              std::string::npos);
+  EXPECT_TRUE(delegate.data_received().find(path.BaseName().MaybeAsASCII()) !=
+              std::string::npos);
+}
+
+TEST_F(URLRequestFileDirTest, DirectoryWithAFileAndSubdirectory) {
+  base::ScopedTempDir directory;
+  ASSERT_TRUE(directory.CreateUniqueTempDir());
+
+  base::FilePath sub_dir;
+  CreateTemporaryDirInDir(directory.path(),
+                          FILE_PATH_LITERAL("CreateNewSubDirectoryInDirectory"),
+                          &sub_dir);
+
+  base::FilePath path;
+  base::CreateTemporaryFileInDir(directory.path(), &path);
+
+  TestJobFactory factory(directory.path());
+  context_.set_job_factory(&factory);
+
+  TestDelegate delegate;
+  scoped_ptr<URLRequest> request(context_.CreateRequest(
+      FilePathToFileURL(path), DEFAULT_PRIORITY, &delegate));
+  request->Start();
+  EXPECT_TRUE(request->is_pending());
+
+  base::RunLoop().Run();
+
+  ASSERT_GT(delegate.bytes_received(), 0);
+  ASSERT_LE(delegate.bytes_received(), kBufferSize);
+  EXPECT_TRUE(delegate.data_received().find(
+                  directory.path().BaseName().MaybeAsASCII()) !=
+              std::string::npos);
+  EXPECT_TRUE(delegate.data_received().find(
+                  sub_dir.BaseName().MaybeAsASCII()) != std::string::npos);
+  EXPECT_TRUE(delegate.data_received().find(path.BaseName().MaybeAsASCII()) !=
+              std::string::npos);
+}
+
+TEST_F(URLRequestFileDirTest, EmptyDirectory) {
+  base::ScopedTempDir directory;
+  ASSERT_TRUE(directory.CreateUniqueTempDir());
+
+  TestJobFactory factory(directory.path());
+  context_.set_job_factory(&factory);
+
+  TestDelegate delegate;
+  scoped_ptr<URLRequest> request(context_.CreateRequest(
+      FilePathToFileURL(directory.path()), DEFAULT_PRIORITY, &delegate));
+  request->Start();
+  EXPECT_TRUE(request->is_pending());
+
+  base::RunLoop().Run();
+
+  ASSERT_GT(delegate.bytes_received(), 0);
+  ASSERT_LE(delegate.bytes_received(), kBufferSize);
+  EXPECT_TRUE(delegate.data_received().find(
+                  directory.path().BaseName().MaybeAsASCII()) !=
+              std::string::npos);
 }
 
 }  // namespace

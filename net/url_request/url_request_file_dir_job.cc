@@ -76,18 +76,16 @@ void URLRequestFileDirJob::Kill() {
 }
 
 int URLRequestFileDirJob::ReadRawData(IOBuffer* buf, int buf_size) {
-  int bytes_read = 0;
-  if (FillReadBuffer(buf->data(), buf_size, &bytes_read)) {
-    if (bytes_read == 0 && list_complete_)
-      return list_complete_result_;
-    return bytes_read;
+  int result = ReadBuffer(buf->data(), buf_size);
+  if (result == ERR_IO_PENDING) {
+    // We are waiting for more data
+    read_pending_ = true;
+    read_buffer_ = buf;
+    read_buffer_length_ = buf_size;
+    return ERR_IO_PENDING;
   }
 
-  // We are waiting for more data
-  read_pending_ = true;
-  read_buffer_ = buf;
-  read_buffer_length_ = buf_size;
-  return ERR_IO_PENDING;
+  return result;
 }
 
 bool URLRequestFileDirJob::GetMimeType(std::string* mime_type) const {
@@ -160,10 +158,8 @@ void URLRequestFileDirJob::CompleteRead(Error error) {
 
   int result = error;
   if (error == OK) {
-    int filled_bytes = 0;
-    if (FillReadBuffer(read_buffer_->data(), read_buffer_length_,
-                       &filled_bytes)) {
-      result = filled_bytes;
+    result = ReadBuffer(read_buffer_->data(), read_buffer_length_);
+    if (result >= 0) {
       // We completed the read, so reset the read buffer.
       read_buffer_ = NULL;
       read_buffer_length_ = 0;
@@ -178,23 +174,17 @@ void URLRequestFileDirJob::CompleteRead(Error error) {
   ReadRawDataComplete(result);
 }
 
-bool URLRequestFileDirJob::FillReadBuffer(char* buf, int buf_size,
-                                          int* bytes_read) {
-  DCHECK(bytes_read);
-
-  *bytes_read = 0;
-
+int URLRequestFileDirJob::ReadBuffer(char* buf, int buf_size) {
   int count = std::min(buf_size, static_cast<int>(data_.size()));
   if (count) {
     memcpy(buf, &data_[0], count);
     data_.erase(0, count);
-    *bytes_read = count;
-    return true;
+    return count;
   } else if (list_complete_) {
     // EOF
-    return true;
+    return list_complete_result_;
   }
-  return false;
+  return ERR_IO_PENDING;
 }
 
 }  // namespace net

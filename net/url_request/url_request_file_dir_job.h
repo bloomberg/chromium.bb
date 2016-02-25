@@ -55,8 +55,7 @@ class NET_EXPORT_PRIVATE URLRequestFileDirJob
   // appropriately.
   void CompleteRead(Error error);
 
-  // Fills a buffer with the output.
-  bool FillReadBuffer(char* buf, int buf_size, int* bytes_read);
+  int ReadBuffer(char* buf, int buf_size);
 
   DirectoryLister lister_;
   base::FilePath dir_path_;
