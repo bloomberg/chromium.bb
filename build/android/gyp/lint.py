@@ -19,8 +19,9 @@ _SRC_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                          '..', '..', '..'))
 
 
-def _RunLint(lint_path, config_path, processed_config_path, manifest_path,
-             result_path, product_dir, sources, jar_path, resource_dir=None):
+def _OnStaleMd5(changes, lint_path, config_path, processed_config_path,
+                manifest_path, result_path, product_dir, sources, jar_path,
+                resource_dir=None, can_fail_build=False):
 
   def _RelativizePath(path):
     """Returns relative path to top-level src dir.
@@ -70,6 +71,10 @@ def _RunLint(lint_path, config_path, processed_config_path, manifest_path,
         if error_line:
           print >> sys.stderr, error_line.encode('utf-8')
     return len(issues)
+
+  if changes.AddedOrModifiedOnly():
+    changed_paths = set(changes.IterChangedPaths())
+    sources = [s for s in sources if s in changed_paths]
 
   with build_utils.TempDir() as temp_dir:
     _ProcessConfigFile()
@@ -121,7 +126,7 @@ def _RunLint(lint_path, config_path, processed_config_path, manifest_path,
       if not os.path.exists(result_path):
         print 'Something is wrong:'
         print e
-        return 1
+        raise
 
       # There are actual lint issues
       else:
@@ -132,7 +137,7 @@ def _RunLint(lint_path, config_path, processed_config_path, manifest_path,
           print 'File contents:'
           with open(result_path) as f:
             print f.read()
-          return 1
+          raise
 
         _ProcessResultFile()
         msg = ('\nLint found %d new issues.\n'
@@ -147,9 +152,8 @@ def _RunLint(lint_path, config_path, processed_config_path, manifest_path,
                                              'lint', 'suppress.py')),
                 _RelativizePath(result_path)))
         print >> sys.stderr, msg
-        return 1
-
-  return 0
+        if can_fail_build:
+          raise Exception('Lint failed.')
 
 
 def main():
@@ -181,8 +185,6 @@ def main():
                                  'result_path', 'product_dir',
                                  'jar_path'])
 
-  rc = 0
-
   if options.enable:
     sources = []
     if options.src_dirs:
@@ -193,21 +195,34 @@ def main():
     else:
       print 'One of --src-dirs or --java-files must be specified.'
       return 1
-    rc = _RunLint(options.lint_path, options.config_path,
-                  options.processed_config_path,
-                  options.manifest_path, options.result_path,
-                  options.product_dir, sources, options.jar_path,
-                  options.resource_dir)
 
-  if options.depfile:
-    build_utils.WriteDepfile(
-        options.depfile,
-        build_utils.GetPythonDependencies())
+    input_paths = [
+        options.lint_path,
+        options.config_path,
+        options.manifest_path,
+        options.jar_path,
+    ]
+    input_paths.extend(sources)
+    if options.resource_dir:
+      input_paths.extend(build_utils.FindInDirectory(options.resource_dir, '*'))
 
-  if options.stamp and not rc:
-    build_utils.Touch(options.stamp)
+    input_strings = [ options.processed_config_path ]
+    output_paths = [ options.result_path ]
 
-  return rc if options.can_fail_build else 0
+    build_utils.CallAndWriteDepfileIfStale(
+        lambda changes: _OnStaleMd5(changes, options.lint_path,
+                                    options.config_path,
+                                    options.processed_config_path,
+                                    options.manifest_path, options.result_path,
+                                    options.product_dir, sources,
+                                    options.jar_path,
+                                    resource_dir=options.resource_dir,
+                                    can_fail_build=options.can_fail_build),
+        options,
+        input_paths=input_paths,
+        input_strings=input_strings,
+        output_paths=output_paths,
+        pass_changes=True)
 
 
 if __name__ == '__main__':
