@@ -7,12 +7,6 @@
     <output filename="ios_resources.pak" type="data_package" />
   </outputs>
   <release seq="1">
-    <structures fallback_to_low_resolution="true">
-      <!-- KEEP THESE IN ALPHABETICAL ORDER!  DO NOT ADD TO RANDOM PLACES JUST
-           BECAUSE YOUR RESOURCES ARE FUNCTIONALLY RELATED OR FALL UNDER THE
-           SAME CONDITIONALS. -->
-      <structure name="IDR_IOS_INCOGNITO_TAB_HTML" file="ntp/incognito_tab.html" flattenhtml="true" type="chrome_html" />
-    </structures>
     <includes>
       <include name="IDR_IOS_HISTORY_HTML" file="history/history.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_IOS_HISTORY_JS" file="history/history.js" flattenhtml="true" type="BINDATA" />
