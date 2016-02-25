@@ -429,7 +429,10 @@ void ResourceRequest::initialize(const KURL& url)
     m_requestContext = WebURLRequest::RequestContextUnspecified;
     m_frameType = WebURLRequest::FrameTypeNone;
     m_fetchRequestMode = WebURLRequest::FetchRequestModeNoCORS;
-    m_fetchCredentialsMode = WebURLRequest::FetchCredentialsModeInclude;
+    // Contrary to the Fetch spec, we default to same-origin mode here, and deal
+    // with CORS modes in updateRequestForAccessControl if we're called in a
+    // context which requires it.
+    m_fetchCredentialsMode = WebURLRequest::FetchCredentialsModeSameOrigin;
     m_fetchRedirectMode = WebURLRequest::FetchRedirectModeFollow;
     m_referrerPolicy = ReferrerPolicyDefault;
     m_loFiState = WebURLRequest::LoFiUnspecified;
