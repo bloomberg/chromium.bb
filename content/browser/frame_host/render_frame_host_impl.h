@@ -238,6 +238,13 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   RenderFrameHostDelegate* delegate() { return delegate_; }
   FrameTreeNode* frame_tree_node() { return frame_tree_node_; }
 
+  // The most recent non-net-error URL to commit in this frame.  In almost all
+  // cases, use GetLastCommittedURL instead.
+  const GURL& last_successful_url() { return last_successful_url_; }
+  void set_last_successful_url(const GURL& url) {
+    last_successful_url_ = url;
+  }
+
   // Returns the associated WebUI or null if none applies.
   WebUIImpl* web_ui() const { return web_ui_.get(); }
 
@@ -760,6 +767,11 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
 
   // The FrameTreeNode which this RenderFrameHostImpl is hosted in.
   FrameTreeNode* frame_tree_node_;
+
+  // The most recent non-error URL to commit in this frame.  Remove this in
+  // favor of GetLastCommittedURL() once PlzNavigate is enabled or cross-process
+  // transfers work for net errors.  See https://crbug.com/588314.
+  GURL last_successful_url_;
 
   // The mapping of pending JavaScript calls created by
   // ExecuteJavaScript and their corresponding callbacks.

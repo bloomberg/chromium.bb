@@ -533,8 +533,20 @@ void NavigatorImpl::DidNavigate(
   bool did_navigate = controller_->RendererDidNavigate(render_frame_host,
                                                        params, &details);
 
-  // Keep track of each frame's URL in its FrameTreeNode.
+  // Keep track of each frame's URL in its FrameTreeNode, whether it's for a net
+  // error or not.
+  // TODO(creis): Move the last committed URL to RenderFrameHostImpl.
   render_frame_host->frame_tree_node()->SetCurrentURL(params.url);
+
+  // Separately, update the frame's last successful URL except for net error
+  // pages, since those do not end up in the correct process after transfers
+  // (see https://crbug.com/560511).  Instead, the next cross-process navigation
+  // or transfer should decide whether to swap as if the net error had not
+  // occurred.
+  // TODO(creis): Remove this block and always set the URL once transfers handle
+  // network errors or PlzNavigate is enabled.  See https://crbug.com/588314.
+  if (!params.url_is_unreachable)
+    render_frame_host->set_last_successful_url(params.url);
 
   if (did_navigate && render_frame_host->frame_tree_node()->IsMainFrame() &&
       IsBrowserSideNavigationEnabled()) {

@@ -887,7 +887,7 @@ bool NavigationControllerImpl::RendererDidNavigate(
       RendererDidNavigateToSamePage(rfh, params);
       break;
     case NAVIGATION_TYPE_NEW_SUBFRAME:
-      RendererDidNavigateNewSubframe(rfh, params);
+      RendererDidNavigateNewSubframe(rfh, params, details->did_replace_entry);
       break;
     case NAVIGATION_TYPE_AUTO_SUBFRAME:
       if (!RendererDidNavigateAutoSubframe(rfh, params))
@@ -1270,7 +1270,8 @@ void NavigationControllerImpl::RendererDidNavigateToSamePage(
 
 void NavigationControllerImpl::RendererDidNavigateNewSubframe(
     RenderFrameHostImpl* rfh,
-    const FrameHostMsg_DidCommitProvisionalLoad_Params& params) {
+    const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+    bool replace_entry) {
   DCHECK(ui::PageTransitionCoreTypeIs(params.transition,
                                       ui::PAGE_TRANSITION_MANUAL_SUBFRAME));
 
@@ -1300,7 +1301,7 @@ void NavigationControllerImpl::RendererDidNavigateNewSubframe(
   }
 
   new_entry->SetPageID(params.page_id);
-  InsertOrReplaceEntry(std::move(new_entry), false);
+  InsertOrReplaceEntry(std::move(new_entry), replace_entry);
 }
 
 bool NavigationControllerImpl::RendererDidNavigateAutoSubframe(

@@ -1356,8 +1356,7 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
   // Use the current SiteInstance for same site navigations, as long as the
   // process type is correct.  (The URL may have been installed as an app since
   // the last time we visited it.)
-  const GURL& current_url =
-      GetCurrentURLForSiteInstance(current_instance_impl, current_entry);
+  const GURL& current_url = GetCurrentURLForSiteInstance(current_instance_impl);
   if (SiteInstance::IsSameWebSite(browser_context, current_url, dest_url) &&
       !current_instance_impl->HasWrongProcessForURL(dest_url)) {
     return SiteInstanceDescriptor(current_instance_impl);
@@ -1440,29 +1439,19 @@ SiteInstance* RenderFrameHostManager::ConvertToSiteInstance(
 }
 
 const GURL& RenderFrameHostManager::GetCurrentURLForSiteInstance(
-    SiteInstance* current_instance, NavigationEntry* current_entry) {
-  // If this is a subframe that is potentially out of process from its parent,
-  // don't consider using current_entry's url for SiteInstance selection, since
-  // current_entry's url is for the main frame and may be in a different site
-  // than this frame.
-  // TODO(creis): Remove this when we can check the FrameNavigationEntry's url.
-  // See http://crbug.com/369654
-  if (!frame_tree_node_->IsMainFrame() &&
-      SiteIsolationPolicy::AreCrossProcessFramesPossible())
-    return frame_tree_node_->current_url();
+    SiteInstance* current_instance) {
+  // Use the current RenderFrameHost's last successful URL if it has one.  This
+  // excludes commits of net errors, since net errors do not currently swap
+  // processes for transfer navigations.  Thus, we compare against the last
+  // successful commit when deciding whether to swap this time.
+  // (Note: browser-initiated net errors do swap processes, but the frame's last
+  // successful URL will be empty in that case, causing us to fall back to the
+  // SiteInstance's URL below.)
+  if (!render_frame_host_->last_successful_url().is_empty())
+    return render_frame_host_->last_successful_url();
 
-  // If there is no last non-interstitial entry (and current_instance already
-  // has a site), then we must have been opened from another tab.  We want
-  // to compare against the URL of the page that opened us, but we can't
-  // get to it directly.  The best we can do is check against the site of
-  // the SiteInstance.  This will be correct when we intercept links and
-  // script-based navigations, but for now, it could place some pages in a
-  // new process unnecessarily.  We should only hit this case if a page tries
-  // to open a new tab to an interstitial-inducing URL, and then navigates
-  // the page to a different same-site URL.  (This seems very unlikely in
-  // practice.)
-  if (current_entry)
-    return current_entry->GetURL();
+  // Fall back to the SiteInstance's Site URL if the FrameTreeNode doen't have a
+  // current URL.
   return current_instance->GetSiteURL();
 }
 

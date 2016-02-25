@@ -272,9 +272,11 @@ class CONTENT_EXPORT NavigationControllerImpl
   // anything if some random subframe is loaded. It will return true if anything
   // changed, or false if not.
   //
-  // The functions taking |did_replace_entry| will fill into the given variable
-  // whether the last entry has been replaced or not.
-  // See LoadCommittedDetails.did_replace_entry.
+  // The NewPage and NewSubframe functions take in |replace_entry| to pass to
+  // InsertOrReplaceEntry, in case the newly created NavigationEntry is meant to
+  // replace the current one (e.g., for location.replace or successful loads
+  // after net errors), in contrast to updating a NavigationEntry in place
+  // (e.g., for history.replaceState).
   void RendererDidNavigateToNewPage(
       RenderFrameHostImpl* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
@@ -287,7 +289,8 @@ class CONTENT_EXPORT NavigationControllerImpl
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params);
   void RendererDidNavigateNewSubframe(
       RenderFrameHostImpl* rfh,
-      const FrameHostMsg_DidCommitProvisionalLoad_Params& params);
+      const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+      bool replace_entry);
   bool RendererDidNavigateAutoSubframe(
       RenderFrameHostImpl* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params);

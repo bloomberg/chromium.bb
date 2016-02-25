@@ -596,9 +596,7 @@ class CONTENT_EXPORT RenderFrameHostManager
 
   // Determines the appropriate url to use as the current url for SiteInstance
   // selection.
-  const GURL& GetCurrentURLForSiteInstance(
-      SiteInstance* current_instance,
-      NavigationEntry* current_entry);
+  const GURL& GetCurrentURLForSiteInstance(SiteInstance* current_instance);
 
   // Creates a new RenderFrameHostImpl for the |new_instance| and assign it to
   // |pending_render_frame_host_| while respecting the opener route if needed

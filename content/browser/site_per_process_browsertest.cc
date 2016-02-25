@@ -1373,6 +1373,83 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigateRemoteAfterError) {
   NavigateIframeToURL(shell()->web_contents(), "child-0", url);
 }
 
+// Ensure that a cross-site page ends up in the correct process when it
+// successfully loads after earlier encountering a network error for it.
+// See https://crbug.com/560511.
+// TODO(creis): Make the net error page show in the correct process as well,
+// per https://crbug.com/588314.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ProcessTransferAfterError) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  FrameTreeNode* child = root->child_at(0);
+  GURL url_a = child->current_url();
+
+  // Disable host resolution in the test server and try to navigate the subframe
+  // cross-site, which will lead to a committed net error (which looks like
+  // success to the TestNavigationObserver).
+  GURL url_b = embedded_test_server()->GetURL("b.com", "/title3.html");
+  host_resolver()->ClearRules();
+  TestNavigationObserver observer(shell()->web_contents());
+  NavigateIframeToURL(shell()->web_contents(), "child-0", url_b);
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+  EXPECT_EQ(url_b, observer.last_navigation_url());
+
+  // The FrameTreeNode should update its URL (so that we don't affect other uses
+  // of the API), but the frame's last_successful_url shouldn't change and the
+  // origin should be empty.
+  EXPECT_EQ(url_a, child->current_frame_host()->last_successful_url());
+  EXPECT_EQ(url_b, child->current_url());
+  EXPECT_EQ("null", child->current_origin().Serialize());
+
+  // Try again after re-enabling host resolution.
+  host_resolver()->AddRule("*", "127.0.0.1");
+  NavigateIframeToURL(shell()->web_contents(), "child-0", url_b);
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+  EXPECT_EQ(url_b, observer.last_navigation_url());
+
+  // The FrameTreeNode should have updated its URL and origin.
+  EXPECT_EQ(url_b, child->current_frame_host()->last_successful_url());
+  EXPECT_EQ(url_b, child->current_url());
+  EXPECT_EQ(url_b.GetOrigin().spec(),
+            child->current_origin().Serialize() + '/');
+
+  // Ensure that we have created a new process for the subframe.
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/",
+      DepictFrameTree(root));
+  EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
+            child->current_frame_host()->GetSiteInstance());
+
+  // Make sure that the navigation replaced the error page and that going back
+  // ends up on the original site.
+  EXPECT_EQ(2, shell()->web_contents()->GetController().GetEntryCount());
+  {
+    TestNavigationObserver back_load_observer(shell()->web_contents());
+    shell()->web_contents()->GetController().GoBack();
+    back_load_observer.Wait();
+  }
+  EXPECT_EQ(
+      " Site A\n"
+      "   +--Site A\n"
+      "Where A = http://a.com/",
+      DepictFrameTree(root));
+  EXPECT_EQ(shell()->web_contents()->GetSiteInstance(),
+            child->current_frame_host()->GetSiteInstance());
+  EXPECT_EQ(url_a, child->current_frame_host()->last_successful_url());
+  EXPECT_EQ(url_a, child->current_url());
+  EXPECT_EQ(url_a.GetOrigin().spec(),
+            child->current_origin().Serialize() + '/');
+}
+
 // Verify that killing a cross-site frame's process B and then navigating a
 // frame to B correctly recreates all proxies in B.
 //
