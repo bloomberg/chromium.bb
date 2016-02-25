@@ -256,7 +256,7 @@ PassOwnPtr<AXProperty> createRelatedNodeListProperty(const String& key, AXObject
 {
     OwnPtr<AXValue> nodeListValue = createRelatedNodeListValue(nodes);
     const AtomicString& attrValue = axObject->getAttribute(attr);
-    nodeListValue->setValue(JSONString::create(attrValue));
+    nodeListValue->setValue(JSONString::create(attrValue).get());
     return createProperty(key, nodeListValue.release());
 }
 
@@ -364,7 +364,7 @@ InspectorAccessibilityAgent::InspectorAccessibilityAgent(Page* page)
 {
 }
 
-void InspectorAccessibilityAgent::getAXNode(ErrorString* errorString, int nodeId, OwnPtr<AXNode>* accessibilityNode)
+void InspectorAccessibilityAgent::getAXNode(ErrorString* errorString, int nodeId, Maybe<AXNode>* accessibilityNode)
 {
     Frame* mainFrame = m_page->mainFrame();
     if (!mainFrame->isLocalFrame()) {

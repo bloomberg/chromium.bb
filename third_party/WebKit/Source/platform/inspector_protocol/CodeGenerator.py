@@ -108,12 +108,8 @@ def create_user_type_definition(domain_name, type):
         "type": "OwnPtr<protocol::%s::%s>" % (domain_name, type["id"]),
         "raw_type": "protocol::%s::%s" % (domain_name, type["id"]),
         "create_type": "adoptPtr(new protocol::%s::%s())" % (domain_name, type["id"]),
-        "optional_type": "OwnPtr<protocol::%s::%s>" % (domain_name, type["id"]),
-        "optional_pass_type": "PassOwnPtr<protocol::%s::%s>" % (domain_name, type["id"]),
-        "from_optional_out": "%s.release()",
         "json_getter": "FromValue<protocol::%s::%s>::convert(getObject(%%s))" % (domain_name, type["id"]),
         "json_type": "TypeObject",
-        "nullable": True,
     }
 
 
@@ -124,12 +120,8 @@ def create_object_type_definition():
         "to_pass_type": "%s.release()",
         "type": "RefPtr<JSONObject>",
         "raw_type": "RefPtr<JSONObject>",
-        "optional_type": "RefPtr<JSONObject>",
-        "optional_pass_type": "PassRefPtr<JSONObject>",
-        "from_optional_out": "%s.release()",
         "json_getter": "getObject(%s)",
         "json_type": "TypeObject",
-        "nullable": True,
     }
 
 
@@ -140,11 +132,7 @@ def create_any_type_definition():
         "to_pass_type": "%s.release()",
         "type": "RefPtr<JSONValue>",
         "raw_type": "RefPtr<JSONValue>",
-        "optional_type": "RefPtr<JSONValue>",
-        "optional_pass_type": "PassRefPtr<JSONValue>",
-        "from_optional_out": "%s.release()",
         "json_getter": "getValue(%s)",
-        "nullable": True,
     }
 
 
@@ -156,12 +144,8 @@ def create_primitive_type_definition(type):
             "to_pass_type": "%s",
             "type": "String",
             "raw_type": "String",
-            "optional_type": "protocol::OptionalValue<String>",
-            "optional_pass_type": "const protocol::OptionalValue<String>&",
-            "from_optional_out": "%s.get()",
             "json_getter": "getString(%s)",
             "json_type": "TypeString",
-            "nullable": False,
         }
 
     typedefs = {
@@ -180,12 +164,8 @@ def create_primitive_type_definition(type):
         "to_pass_type": "%s",
         "type": typedefs[type],
         "raw_type": typedefs[type],
-        "optional_type": "protocol::OptionalValue<" + typedefs[type] + ">",
-        "optional_pass_type": "const protocol::OptionalValue<" + typedefs[type] + ">&",
-        "from_optional_out": "%s.get()",
         "json_getter": "get" + to_title_case(type) + "(%s)",
         "json_type": jsontypes[type],
-        "nullable": False,
     }
 
 type_definitions = {}
@@ -206,12 +186,8 @@ def wrap_array_definition(type):
         "raw_type": "protocol::Array<%s>" % type["raw_type"],
         "create_type": "adoptPtr(new protocol::Array<%s>())" % type["raw_type"],
         "out_type": "protocol::Array<%s>&" % type["raw_type"],
-        "optional_type": "OwnPtr<protocol::Array<%s>>" % type["raw_type"],
-        "optional_pass_type": "PassOwnPtr<protocol::Array<%s>>" % type["raw_type"],
-        "from_optional_out": "%s.release()",
         "json_getter": "protocol::Array<%s>::runtimeCast(getArray(%%s))" % type["raw_type"],
         "json_type": "TypeArray",
-        "nullable": True,
     }
 
 

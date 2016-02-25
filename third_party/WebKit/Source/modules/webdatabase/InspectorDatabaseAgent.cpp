@@ -63,7 +63,7 @@ void reportTransactionFailed(ExecuteSQLCallback* requestCallback, SQLError* erro
     OwnPtr<protocol::Database::Error> errorObject = protocol::Database::Error::create()
         .setMessage(error->message())
         .setCode(error->code()).build();
-    requestCallback->sendSuccess(nullptr, nullptr, errorObject.release());
+    requestCallback->sendSuccess(Maybe<protocol::Array<String>>(), Maybe<protocol::Array<RefPtr<JSONValue>>>(), errorObject.release());
 }
 
 class StatementCallback final : public SQLStatementCallback {
@@ -99,7 +99,7 @@ public:
             case SQLValue::NullValue: values->addItem(JSONValue::null()); break;
             }
         }
-        m_requestCallback->sendSuccess(columnNames.release(), values.release(), nullptr);
+        m_requestCallback->sendSuccess(columnNames.release(), values.release(), Maybe<protocol::Database::Error>());
         return true;
     }
 

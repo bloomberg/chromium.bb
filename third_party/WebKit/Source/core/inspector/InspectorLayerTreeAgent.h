@@ -79,8 +79,8 @@ public:
     void makeSnapshot(ErrorString*, const String& layerId, String* snapshotId) override;
     void loadSnapshot(ErrorString*, PassOwnPtr<protocol::Array<protocol::LayerTree::PictureTile>> tiles, String* snapshotId) override;
     void releaseSnapshot(ErrorString*, const String& snapshotId) override;
-    void profileSnapshot(ErrorString*, const String& snapshotId, const OptionalValue<int>& minRepeatCount, const OptionalValue<double>& minDuration, PassOwnPtr<protocol::DOM::Rect> clipRect, OwnPtr<protocol::Array<protocol::Array<double>>>* timings) override;
-    void replaySnapshot(ErrorString*, const String& snapshotId, const OptionalValue<int>& fromStep, const OptionalValue<int>& toStep, const OptionalValue<double>& scale, String* dataURL) override;
+    void profileSnapshot(ErrorString*, const String& snapshotId, const Maybe<int>& minRepeatCount, const Maybe<double>& minDuration, const Maybe<protocol::DOM::Rect>& clipRect, OwnPtr<protocol::Array<protocol::Array<double>>>* timings) override;
+    void replaySnapshot(ErrorString*, const String& snapshotId, const Maybe<int>& fromStep, const Maybe<int>& toStep, const Maybe<double>& scale, String* dataURL) override;
     void snapshotCommandLog(ErrorString*, const String& snapshotId, OwnPtr<protocol::Array<RefPtr<JSONObject>>>* commandLog) override;
 
     // Called by other agents.

@@ -44,15 +44,15 @@ void InspectorTracingAgent::restore()
     emitMetadataEvents();
 }
 void InspectorTracingAgent::start(ErrorString*,
-    const OptionalValue<String>& categories,
-    const OptionalValue<String>& options,
-    const OptionalValue<double>& bufferUsageReportingInterval,
-    const OptionalValue<String>& transferMode,
+    const Maybe<String>& categories,
+    const Maybe<String>& options,
+    const Maybe<double>& bufferUsageReportingInterval,
+    const Maybe<String>& transferMode,
     PassRefPtr<StartCallback> callback)
 {
     ASSERT(sessionId().isEmpty());
     m_state->setString(TracingAgentState::sessionId, IdentifiersFactory::createIdentifier());
-    m_client->enableTracing(categories.get(String()));
+    m_client->enableTracing(categories.fromMaybe(String()));
     emitMetadataEvents();
     callback->sendSuccess();
 }

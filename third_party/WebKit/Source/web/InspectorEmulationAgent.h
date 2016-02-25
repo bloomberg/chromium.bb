@@ -31,7 +31,7 @@ public:
     void resetPageScaleFactor(ErrorString*) override;
     void setPageScaleFactor(ErrorString*, double in_pageScaleFactor) override;
     void setScriptExecutionDisabled(ErrorString*, bool in_value) override;
-    void setTouchEmulationEnabled(ErrorString*, bool in_enabled, const protocol::OptionalValue<String>& in_configuration) override;
+    void setTouchEmulationEnabled(ErrorString*, bool in_enabled, const protocol::Maybe<String>& in_configuration) override;
     void setEmulatedMedia(ErrorString*, const String& in_media) override;
     void setCPUThrottlingRate(ErrorString*, double in_rate) override;
 

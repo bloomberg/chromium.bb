@@ -85,25 +85,25 @@ void InspectorRuntimeAgent::restore()
 
 void InspectorRuntimeAgent::evaluate(ErrorString* errorString,
     const String& expression,
-    const OptionalValue<String>& objectGroup,
-    const OptionalValue<bool>& includeCommandLineAPI,
-    const OptionalValue<bool>& doNotPauseOnExceptionsAndMuteConsole,
-    const OptionalValue<int>& optExecutionContextId,
-    const OptionalValue<bool>& returnByValue,
-    const OptionalValue<bool>& generatePreview,
+    const Maybe<String>& objectGroup,
+    const Maybe<bool>& includeCommandLineAPI,
+    const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole,
+    const Maybe<int>& optExecutionContextId,
+    const Maybe<bool>& returnByValue,
+    const Maybe<bool>& generatePreview,
     OwnPtr<protocol::Runtime::RemoteObject>* result,
-    OptionalValue<bool>* wasThrown,
-    OwnPtr<protocol::Runtime::ExceptionDetails>* exceptionDetails)
+    Maybe<bool>* wasThrown,
+    Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
 {
     int executionContextId;
-    if (optExecutionContextId.hasValue()) {
-        executionContextId = optExecutionContextId.get();
+    if (optExecutionContextId.isJust()) {
+        executionContextId = optExecutionContextId.fromJust();
     } else {
         v8::HandleScope handles(defaultScriptState()->isolate());
         executionContextId = m_v8RuntimeAgent->ensureDefaultContextAvailable(defaultScriptState()->context());
     }
     MuteConsoleScope<InspectorRuntimeAgent> muteScope;
-    if (doNotPauseOnExceptionsAndMuteConsole.get(false))
+    if (doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false))
         muteScope.enter(this);
     m_v8RuntimeAgent->evaluate(errorString, expression, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, executionContextId, returnByValue, generatePreview, result, wasThrown, exceptionDetails);
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
@@ -112,15 +112,15 @@ void InspectorRuntimeAgent::evaluate(ErrorString* errorString,
 void InspectorRuntimeAgent::callFunctionOn(ErrorString* errorString,
     const String& objectId,
     const String& expression,
-    PassOwnPtr<protocol::Array<protocol::Runtime::CallArgument>> optionalArguments,
-    const OptionalValue<bool>& doNotPauseOnExceptionsAndMuteConsole,
-    const OptionalValue<bool>& returnByValue,
-    const OptionalValue<bool>& generatePreview,
+    const Maybe<protocol::Array<protocol::Runtime::CallArgument>>& optionalArguments,
+    const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole,
+    const Maybe<bool>& returnByValue,
+    const Maybe<bool>& generatePreview,
     OwnPtr<protocol::Runtime::RemoteObject>* result,
-    OptionalValue<bool>* wasThrown)
+    Maybe<bool>* wasThrown)
 {
     MuteConsoleScope<InspectorRuntimeAgent> muteScope;
-    if (doNotPauseOnExceptionsAndMuteConsole.get(false))
+    if (doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false))
         muteScope.enter(this);
     m_v8RuntimeAgent->callFunctionOn(errorString, objectId, expression, optionalArguments, doNotPauseOnExceptionsAndMuteConsole, returnByValue, generatePreview, result, wasThrown);
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
@@ -128,12 +128,12 @@ void InspectorRuntimeAgent::callFunctionOn(ErrorString* errorString,
 
 void InspectorRuntimeAgent::getProperties(ErrorString* errorString,
     const String& objectId,
-    const OptionalValue<bool>& ownProperties,
-    const OptionalValue<bool>& accessorPropertiesOnly,
-    const OptionalValue<bool>& generatePreview,
+    const Maybe<bool>& ownProperties,
+    const Maybe<bool>& accessorPropertiesOnly,
+    const Maybe<bool>& generatePreview,
     OwnPtr<protocol::Array<protocol::Runtime::PropertyDescriptor>>* result,
-    OwnPtr<protocol::Array<protocol::Runtime::InternalPropertyDescriptor>>* internalProperties,
-    OwnPtr<protocol::Runtime::ExceptionDetails>* exceptionDetails)
+    Maybe<protocol::Array<protocol::Runtime::InternalPropertyDescriptor>>* internalProperties,
+    Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
 {
     MuteConsoleScope<InspectorRuntimeAgent> muteScope(this);
     m_v8RuntimeAgent->getProperties(errorString, objectId, ownProperties, accessorPropertiesOnly, generatePreview, result, internalProperties, exceptionDetails);
@@ -169,8 +169,8 @@ void InspectorRuntimeAgent::compileScript(ErrorString* errorString,
     const String& inSourceURL,
     bool inPersistScript,
     int inExecutionContextId,
-    OptionalValue<protocol::Runtime::ScriptId>* optOutScriptId,
-    OwnPtr<protocol::Runtime::ExceptionDetails>* optOutExceptionDetails)
+    Maybe<protocol::Runtime::ScriptId>* optOutScriptId,
+    Maybe<protocol::Runtime::ExceptionDetails>* optOutExceptionDetails)
 {
     m_v8RuntimeAgent->compileScript(errorString, inExpression, inSourceURL, inPersistScript, inExecutionContextId, optOutScriptId, optOutExceptionDetails);
 }
@@ -178,14 +178,14 @@ void InspectorRuntimeAgent::compileScript(ErrorString* errorString,
 void InspectorRuntimeAgent::runScript(ErrorString* errorString,
     const String& inScriptId,
     int inExecutionContextId,
-    const OptionalValue<String>& inObjectGroup,
-    const OptionalValue<bool>& inDoNotPauseOnExceptionsAndMuteConsole,
-    const OptionalValue<bool>& includeCommandLineAPI,
+    const Maybe<String>& inObjectGroup,
+    const Maybe<bool>& inDoNotPauseOnExceptionsAndMuteConsole,
+    const Maybe<bool>& includeCommandLineAPI,
     OwnPtr<protocol::Runtime::RemoteObject>* outResult,
-    OwnPtr<protocol::Runtime::ExceptionDetails>* optOutExceptionDetails)
+    Maybe<protocol::Runtime::ExceptionDetails>* optOutExceptionDetails)
 {
     MuteConsoleScope<InspectorRuntimeAgent> muteScope;
-    if (inDoNotPauseOnExceptionsAndMuteConsole.get(false))
+    if (inDoNotPauseOnExceptionsAndMuteConsole.fromMaybe(false))
         muteScope.enter(this);
     m_v8RuntimeAgent->runScript(errorString, inScriptId, inExecutionContextId, inObjectGroup, inDoNotPauseOnExceptionsAndMuteConsole, includeCommandLineAPI, outResult, optOutExceptionDetails);
 }

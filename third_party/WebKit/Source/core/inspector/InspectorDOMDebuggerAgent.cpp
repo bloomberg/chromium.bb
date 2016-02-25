@@ -169,9 +169,9 @@ void InspectorDOMDebuggerAgent::restore()
         m_instrumentingAgents->setInspectorDOMDebuggerAgent(this);
 }
 
-void InspectorDOMDebuggerAgent::setEventListenerBreakpoint(ErrorString* error, const String& eventName, const OptionalValue<String>& targetName)
+void InspectorDOMDebuggerAgent::setEventListenerBreakpoint(ErrorString* error, const String& eventName, const Maybe<String>& targetName)
 {
-    setBreakpoint(error, String(listenerEventCategoryType) + eventName, targetName.get(String()));
+    setBreakpoint(error, String(listenerEventCategoryType) + eventName, targetName.fromMaybe(String()));
 }
 
 void InspectorDOMDebuggerAgent::setInstrumentationBreakpoint(ErrorString* error, const String& eventName)
@@ -225,9 +225,9 @@ void InspectorDOMDebuggerAgent::setBreakpoint(ErrorString* error, const String& 
     didAddBreakpoint();
 }
 
-void InspectorDOMDebuggerAgent::removeEventListenerBreakpoint(ErrorString* error, const String& eventName, const OptionalValue<String>& targetName)
+void InspectorDOMDebuggerAgent::removeEventListenerBreakpoint(ErrorString* error, const String& eventName, const Maybe<String>& targetName)
 {
-    removeBreakpoint(error, String(listenerEventCategoryType) + eventName, targetName.get(String()));
+    removeBreakpoint(error, String(listenerEventCategoryType) + eventName, targetName.fromMaybe(String()));
 }
 
 void InspectorDOMDebuggerAgent::removeInstrumentationBreakpoint(ErrorString* error, const String& eventName)

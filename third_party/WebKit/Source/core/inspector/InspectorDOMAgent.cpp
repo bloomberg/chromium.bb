@@ -97,11 +97,12 @@ namespace {
 const size_t maxTextSize = 10000;
 const UChar ellipsisUChar[] = { 0x2026, 0 };
 
-Color parseColor(PassOwnPtr<protocol::DOM::RGBA> rgba)
+Color parseColor(const Maybe<protocol::DOM::RGBA>& maybeRgba)
 {
-    if (!rgba)
+    if (!maybeRgba.isJust())
         return Color::transparent;
 
+    protocol::DOM::RGBA* rgba = maybeRgba.fromJust();
     if (!rgba->hasR() && !rgba->hasG() && !rgba->hasB())
         return Color::transparent;
 
@@ -519,7 +520,7 @@ void InspectorDOMAgent::disable(ErrorString* errorString)
         return;
     }
     m_state->setBoolean(DOMAgentState::domAgentEnabled, false);
-    setSearchingForNode(errorString, NotSearching, nullptr);
+    setSearchingForNode(errorString, NotSearching, Maybe<protocol::DOM::HighlightConfig>());
     m_instrumentingAgents->setInspectorDOMAgent(nullptr);
     m_history.clear();
     m_domEditor.clear();
@@ -595,9 +596,9 @@ Node* InspectorDOMAgent::nodeForId(int id)
     return nullptr;
 }
 
-void InspectorDOMAgent::requestChildNodes(ErrorString* errorString, int nodeId, const OptionalValue<int>& depth)
+void InspectorDOMAgent::requestChildNodes(ErrorString* errorString, int nodeId, const Maybe<int>& depth)
 {
-    int sanitizedDepth = depth.get(1);
+    int sanitizedDepth = depth.fromMaybe(1);
     if (sanitizedDepth == 0 || sanitizedDepth < -1) {
         *errorString = "Please provide a positive integer as a depth or -1 for entire subtree";
         return;
@@ -718,7 +719,7 @@ void InspectorDOMAgent::setAttributeValue(ErrorString* errorString, int elementI
     m_domEditor->setAttribute(element, name, value, errorString);
 }
 
-void InspectorDOMAgent::setAttributesAsText(ErrorString* errorString, int elementId, const String& text, const OptionalValue<String>& name)
+void InspectorDOMAgent::setAttributesAsText(ErrorString* errorString, int elementId, const String& text, const Maybe<String>& name)
 {
     Element* element = assertEditableElement(errorString, elementId);
     if (!element)
@@ -740,10 +741,10 @@ void InspectorDOMAgent::setAttributesAsText(ErrorString* errorString, int elemen
         return;
     }
 
-    String caseAdjustedName = shouldIgnoreCase ? name.get("").lower() : name.get("");
+    String caseAdjustedName = shouldIgnoreCase ? name.fromMaybe("").lower() : name.fromMaybe("");
 
     AttributeCollection attributes = parsedElement->attributes();
-    if (attributes.isEmpty() && name.hasValue()) {
+    if (attributes.isEmpty() && name.isJust()) {
         m_domEditor->removeAttribute(element, caseAdjustedName, errorString);
         return;
     }
@@ -754,12 +755,12 @@ void InspectorDOMAgent::setAttributesAsText(ErrorString* errorString, int elemen
         String attributeName = attribute.name().toString();
         if (shouldIgnoreCase)
             attributeName = attributeName.lower();
-        foundOriginalAttribute |= name.hasValue() && attributeName == caseAdjustedName;
+        foundOriginalAttribute |= name.isJust() && attributeName == caseAdjustedName;
         if (!m_domEditor->setAttribute(element, attributeName, attribute.value(), errorString))
             return;
     }
 
-    if (!foundOriginalAttribute && name.hasValue() && !name.get().stripWhiteSpace().isEmpty())
+    if (!foundOriginalAttribute && name.isJust() && !name.fromJust().stripWhiteSpace().isEmpty())
         m_domEditor->removeAttribute(element, caseAdjustedName, errorString);
 }
 
@@ -916,14 +917,14 @@ static Node* nextNodeWithShadowDOMInMind(const Node& current, const Node* stayWi
     return nullptr;
 }
 
-void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrimmedQuery, const OptionalValue<bool>& optionalIncludeUserAgentShadowDOM, String* searchId, int* resultCount)
+void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrimmedQuery, const Maybe<bool>& optionalIncludeUserAgentShadowDOM, String* searchId, int* resultCount)
 {
     // FIXME: Few things are missing here:
     // 1) Search works with node granularity - number of matches within node is not calculated.
     // 2) There is no need to push all search results to the front-end at a time, pushing next / previous result
     //    is sufficient.
 
-    bool includeUserAgentShadowDOM = optionalIncludeUserAgentShadowDOM.get(false);
+    bool includeUserAgentShadowDOM = optionalIncludeUserAgentShadowDOM.fromMaybe(false);
 
     unsigned queryLength = whitespaceTrimmedQuery.length();
     bool startTagFound = !whitespaceTrimmedQuery.find('<');
@@ -1096,37 +1097,38 @@ void InspectorDOMAgent::nodeHighlightedInOverlay(Node* node)
     frontend()->nodeHighlightRequested(nodeId);
 }
 
-void InspectorDOMAgent::setSearchingForNode(ErrorString* errorString, SearchMode searchMode, PassOwnPtr<protocol::DOM::HighlightConfig> highlightInspectorObject)
+void InspectorDOMAgent::setSearchingForNode(ErrorString* errorString, SearchMode searchMode, const Maybe<protocol::DOM::HighlightConfig>& highlightInspectorObject)
 {
     if (m_client)
         m_client->setInspectMode(searchMode, searchMode != NotSearching ? highlightConfigFromInspectorObject(errorString, highlightInspectorObject) : nullptr);
 }
 
-PassOwnPtr<InspectorHighlightConfig> InspectorDOMAgent::highlightConfigFromInspectorObject(ErrorString* errorString, PassOwnPtr<protocol::DOM::HighlightConfig> highlightInspectorObject)
+PassOwnPtr<InspectorHighlightConfig> InspectorDOMAgent::highlightConfigFromInspectorObject(ErrorString* errorString, const Maybe<protocol::DOM::HighlightConfig>& highlightInspectorObject)
 {
-    if (!highlightInspectorObject) {
+    if (!highlightInspectorObject.isJust()) {
         *errorString = "Internal error: highlight configuration parameter is missing";
         return nullptr;
     }
 
+    protocol::DOM::HighlightConfig* config = highlightInspectorObject.fromJust();
     OwnPtr<InspectorHighlightConfig> highlightConfig = adoptPtr(new InspectorHighlightConfig());
-    highlightConfig->showInfo = highlightInspectorObject->getShowInfo(false);
-    highlightConfig->showRulers = highlightInspectorObject->getShowRulers(false);
-    highlightConfig->showExtensionLines = highlightInspectorObject->getShowExtensionLines(false);
-    highlightConfig->displayAsMaterial = highlightInspectorObject->getDisplayAsMaterial(false);
-    highlightConfig->content = parseColor(highlightInspectorObject->getContentColor(nullptr));
-    highlightConfig->padding = parseColor(highlightInspectorObject->getPaddingColor(nullptr));
-    highlightConfig->border = parseColor(highlightInspectorObject->getBorderColor(nullptr));
-    highlightConfig->margin = parseColor(highlightInspectorObject->getMarginColor(nullptr));
-    highlightConfig->eventTarget = parseColor(highlightInspectorObject->getEventTargetColor(nullptr));
-    highlightConfig->shape = parseColor(highlightInspectorObject->getShapeColor(nullptr));
-    highlightConfig->shapeMargin = parseColor(highlightInspectorObject->getShapeMarginColor(nullptr));
-    highlightConfig->selectorList = highlightInspectorObject->getSelectorList("");
+    highlightConfig->showInfo = config->getShowInfo(false);
+    highlightConfig->showRulers = config->getShowRulers(false);
+    highlightConfig->showExtensionLines = config->getShowExtensionLines(false);
+    highlightConfig->displayAsMaterial = config->getDisplayAsMaterial(false);
+    highlightConfig->content = parseColor(config->getContentColor(nullptr));
+    highlightConfig->padding = parseColor(config->getPaddingColor(nullptr));
+    highlightConfig->border = parseColor(config->getBorderColor(nullptr));
+    highlightConfig->margin = parseColor(config->getMarginColor(nullptr));
+    highlightConfig->eventTarget = parseColor(config->getEventTargetColor(nullptr));
+    highlightConfig->shape = parseColor(config->getShapeColor(nullptr));
+    highlightConfig->shapeMargin = parseColor(config->getShapeMarginColor(nullptr));
+    highlightConfig->selectorList = config->getSelectorList("");
 
     return highlightConfig.release();
 }
 
-void InspectorDOMAgent::setInspectMode(ErrorString* errorString, const String& mode, PassOwnPtr<protocol::DOM::HighlightConfig> highlightConfig)
+void InspectorDOMAgent::setInspectMode(ErrorString* errorString, const String& mode, const Maybe<protocol::DOM::HighlightConfig>& highlightConfig)
 {
     SearchMode searchMode;
     if (mode == protocol::DOM::InspectModeEnum::SearchForNode) {
@@ -1148,13 +1150,13 @@ void InspectorDOMAgent::setInspectMode(ErrorString* errorString, const String& m
     setSearchingForNode(errorString, searchMode, highlightConfig);
 }
 
-void InspectorDOMAgent::highlightRect(ErrorString*, int x, int y, int width, int height, PassOwnPtr<protocol::DOM::RGBA> color, PassOwnPtr<protocol::DOM::RGBA> outlineColor)
+void InspectorDOMAgent::highlightRect(ErrorString*, int x, int y, int width, int height, const Maybe<protocol::DOM::RGBA>& color, const Maybe<protocol::DOM::RGBA>& outlineColor)
 {
     OwnPtr<FloatQuad> quad = adoptPtr(new FloatQuad(FloatRect(x, y, width, height)));
     innerHighlightQuad(quad.release(), color, outlineColor);
 }
 
-void InspectorDOMAgent::highlightQuad(ErrorString* errorString, PassOwnPtr<protocol::Array<double>> quadArray, PassOwnPtr<protocol::DOM::RGBA> color, PassOwnPtr<protocol::DOM::RGBA> outlineColor)
+void InspectorDOMAgent::highlightQuad(ErrorString* errorString, PassOwnPtr<protocol::Array<double>> quadArray, const Maybe<protocol::DOM::RGBA>& color, const Maybe<protocol::DOM::RGBA>& outlineColor)
 {
     OwnPtr<FloatQuad> quad = adoptPtr(new FloatQuad());
     if (!parseQuad(quadArray, quad.get())) {
@@ -1164,7 +1166,7 @@ void InspectorDOMAgent::highlightQuad(ErrorString* errorString, PassOwnPtr<proto
     innerHighlightQuad(quad.release(), color, outlineColor);
 }
 
-void InspectorDOMAgent::innerHighlightQuad(PassOwnPtr<FloatQuad> quad, PassOwnPtr<protocol::DOM::RGBA> color, PassOwnPtr<protocol::DOM::RGBA> outlineColor)
+void InspectorDOMAgent::innerHighlightQuad(PassOwnPtr<FloatQuad> quad, const Maybe<protocol::DOM::RGBA>& color, const Maybe<protocol::DOM::RGBA>& outlineColor)
 {
     OwnPtr<InspectorHighlightConfig> highlightConfig = adoptPtr(new InspectorHighlightConfig());
     highlightConfig->content = parseColor(color);
@@ -1191,15 +1193,15 @@ Node* InspectorDOMAgent::nodeForRemoteId(ErrorString* errorString, const String&
     return node;
 }
 
-void InspectorDOMAgent::highlightNode(ErrorString* errorString, PassOwnPtr<protocol::DOM::HighlightConfig> highlightInspectorObject, const OptionalValue<int>& nodeId, const OptionalValue<int>& backendNodeId, const OptionalValue<String>& objectId)
+void InspectorDOMAgent::highlightNode(ErrorString* errorString, PassOwnPtr<protocol::DOM::HighlightConfig> highlightInspectorObject, const Maybe<int>& nodeId, const Maybe<int>& backendNodeId, const Maybe<String>& objectId)
 {
     Node* node = nullptr;
-    if (nodeId.hasValue()) {
-        node = assertNode(errorString, nodeId.get());
-    } else if (backendNodeId.hasValue()) {
-        node = DOMNodeIds::nodeForId(backendNodeId.get());
-    } else if (objectId.hasValue()) {
-        node = nodeForRemoteId(errorString, objectId.get());
+    if (nodeId.isJust()) {
+        node = assertNode(errorString, nodeId.fromJust());
+    } else if (backendNodeId.isJust()) {
+        node = DOMNodeIds::nodeForId(backendNodeId.fromJust());
+    } else if (objectId.isJust()) {
+        node = nodeForRemoteId(errorString, objectId.fromJust());
     } else
         *errorString = "Either nodeId or objectId must be specified";
 
@@ -1217,8 +1219,8 @@ void InspectorDOMAgent::highlightNode(ErrorString* errorString, PassOwnPtr<proto
 void InspectorDOMAgent::highlightFrame(
     ErrorString*,
     const String& frameId,
-    PassOwnPtr<protocol::DOM::RGBA> color,
-    PassOwnPtr<protocol::DOM::RGBA> outlineColor)
+    const Maybe<protocol::DOM::RGBA>& color,
+    const Maybe<protocol::DOM::RGBA>& outlineColor)
 {
     LocalFrame* frame = IdentifiersFactory::frameById(m_inspectedFrames, frameId);
     // FIXME: Inspector doesn't currently work cross process.
@@ -1238,7 +1240,7 @@ void InspectorDOMAgent::hideHighlight(ErrorString*)
         m_client->hideHighlight();
 }
 
-void InspectorDOMAgent::copyTo(ErrorString* errorString, int nodeId, int targetElementId, const OptionalValue<int>& anchorNodeId, int* newNodeId)
+void InspectorDOMAgent::copyTo(ErrorString* errorString, int nodeId, int targetElementId, const Maybe<int>& anchorNodeId, int* newNodeId)
 {
     Node* node = assertEditableNode(errorString, nodeId);
     if (!node)
@@ -1249,8 +1251,8 @@ void InspectorDOMAgent::copyTo(ErrorString* errorString, int nodeId, int targetE
         return;
 
     Node* anchorNode = nullptr;
-    if (anchorNodeId.hasValue() && anchorNodeId.get()) {
-        anchorNode = assertEditableChildNode(errorString, targetElement, anchorNodeId.get());
+    if (anchorNodeId.isJust() && anchorNodeId.fromJust()) {
+        anchorNode = assertEditableChildNode(errorString, targetElement, anchorNodeId.fromJust());
         if (!anchorNode)
             return;
     }
@@ -1267,7 +1269,7 @@ void InspectorDOMAgent::copyTo(ErrorString* errorString, int nodeId, int targetE
     *newNodeId = pushNodePathToFrontend(clonedNode.get());
 }
 
-void InspectorDOMAgent::moveTo(ErrorString* errorString, int nodeId, int targetElementId, const OptionalValue<int>& anchorNodeId, int* newNodeId)
+void InspectorDOMAgent::moveTo(ErrorString* errorString, int nodeId, int targetElementId, const Maybe<int>& anchorNodeId, int* newNodeId)
 {
     Node* node = assertEditableNode(errorString, nodeId);
     if (!node)
@@ -1287,8 +1289,8 @@ void InspectorDOMAgent::moveTo(ErrorString* errorString, int nodeId, int targetE
     }
 
     Node* anchorNode = nullptr;
-    if (anchorNodeId.hasValue() && anchorNodeId.get()) {
-        anchorNode = assertEditableChildNode(errorString, targetElement, anchorNodeId.get());
+    if (anchorNodeId.isJust() && anchorNodeId.fromJust()) {
+        anchorNode = assertEditableChildNode(errorString, targetElement, anchorNodeId.fromJust());
         if (!anchorNode)
             return;
     }
@@ -1376,9 +1378,9 @@ void InspectorDOMAgent::getNodeForLocation(ErrorString* errorString, int x, int 
     *nodeId = pushNodePathToFrontend(node);
 }
 
-void InspectorDOMAgent::resolveNode(ErrorString* errorString, int nodeId, const OptionalValue<String>& objectGroup, OwnPtr<protocol::Runtime::RemoteObject>* result)
+void InspectorDOMAgent::resolveNode(ErrorString* errorString, int nodeId, const Maybe<String>& objectGroup, OwnPtr<protocol::Runtime::RemoteObject>* result)
 {
-    String objectGroupName = objectGroup.get("");
+    String objectGroupName = objectGroup.fromMaybe("");
     Node* node = nodeForId(nodeId);
     if (!node) {
         *errorString = "No node with given id found";

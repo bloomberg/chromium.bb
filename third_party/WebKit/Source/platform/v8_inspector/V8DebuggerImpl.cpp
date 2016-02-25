@@ -378,7 +378,7 @@ void V8DebuggerImpl::clearStepping()
     callDebuggerMethod("clearStepping", 0, argv);
 }
 
-bool V8DebuggerImpl::setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, OwnPtr<protocol::Debugger::SetScriptSourceError>* errorData, v8::Global<v8::Object>* newCallFrames, OptionalValue<bool>* stackChanged)
+bool V8DebuggerImpl::setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, Maybe<protocol::Debugger::SetScriptSourceError>* errorData, v8::Global<v8::Object>* newCallFrames, Maybe<bool>* stackChanged)
 {
     class EnableLiveEditScope {
     public:

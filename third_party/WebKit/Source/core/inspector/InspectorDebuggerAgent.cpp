@@ -37,6 +37,8 @@
 
 namespace blink {
 
+using protocol::Maybe;
+
 namespace DebuggerAgentState {
 static const char debuggerEnabled[] = "debuggerEnabled";
 }
@@ -87,11 +89,12 @@ void InspectorDebuggerAgent::setSkipAllPauses(ErrorString* errorString, bool inS
     m_v8DebuggerAgent->setSkipAllPauses(errorString, inSkipped);
 }
 
-void InspectorDebuggerAgent::setBreakpointByUrl(ErrorString* errorString, int inLineNumber,
-    const OptionalValue<String>& inUrl,
-    const OptionalValue<String>& inUrlRegex,
-    const OptionalValue<int>& inColumnNumber,
-    const OptionalValue<String>& inCondition,
+void InspectorDebuggerAgent::setBreakpointByUrl(ErrorString* errorString,
+    int inLineNumber,
+    const Maybe<String>& inUrl,
+    const Maybe<String>& inUrlRegex,
+    const Maybe<int>& inColumnNumber,
+    const Maybe<String>& inCondition,
     protocol::Debugger::BreakpointId* outBreakpointId,
     OwnPtr<Array<protocol::Debugger::Location>>* outLocations)
 {
@@ -99,7 +102,7 @@ void InspectorDebuggerAgent::setBreakpointByUrl(ErrorString* errorString, int in
 }
 
 void InspectorDebuggerAgent::setBreakpoint(ErrorString* errorString, PassOwnPtr<protocol::Debugger::Location> inLocation,
-    const OptionalValue<String>& inCondition,
+    const Maybe<String>& inCondition,
     protocol::Debugger::BreakpointId* outBreakpointId,
     OwnPtr<protocol::Debugger::Location>* outActualLocation)
 {
@@ -114,7 +117,7 @@ void InspectorDebuggerAgent::removeBreakpoint(ErrorString* errorString,
 
 void InspectorDebuggerAgent::continueToLocation(ErrorString* errorString,
     PassOwnPtr<protocol::Debugger::Location> inLocation,
-    const OptionalValue<bool>& inInterstatementLocation)
+    const Maybe<bool>& inInterstatementLocation)
 {
     m_v8DebuggerAgent->continueToLocation(errorString, inLocation, inInterstatementLocation);
 }
@@ -152,8 +155,8 @@ void InspectorDebuggerAgent::stepIntoAsync(ErrorString* errorString)
 void InspectorDebuggerAgent::searchInContent(ErrorString* errorString,
     const String& inScriptId,
     const String& inQuery,
-    const OptionalValue<bool>& inCaseSensitive,
-    const OptionalValue<bool>& inIsRegex,
+    const Maybe<bool>& inCaseSensitive,
+    const Maybe<bool>& inIsRegex,
     OwnPtr<Array<protocol::Debugger::SearchMatch>>* outResult)
 {
     m_v8DebuggerAgent->searchInContent(errorString, inScriptId, inQuery, inCaseSensitive, inIsRegex, outResult);
@@ -167,11 +170,11 @@ void InspectorDebuggerAgent::canSetScriptSource(ErrorString* errorString, bool* 
 void InspectorDebuggerAgent::setScriptSource(ErrorString* errorString,
     const String& inScriptId,
     const String& inScriptSource,
-    const OptionalValue<bool>& inPreview,
-    OwnPtr<Array<protocol::Debugger::CallFrame>>* optOutCallFrames,
-    OptionalValue<bool>* optOutStackChanged,
-    OwnPtr<protocol::Debugger::StackTrace>* optOutAsyncStackTrace,
-    OwnPtr<protocol::Debugger::SetScriptSourceError>* optOutCompileError)
+    const Maybe<bool>& inPreview,
+    Maybe<Array<protocol::Debugger::CallFrame>>* optOutCallFrames,
+    Maybe<bool>* optOutStackChanged,
+    Maybe<protocol::Debugger::StackTrace>* optOutAsyncStackTrace,
+    Maybe<protocol::Debugger::SetScriptSourceError>* optOutCompileError)
 {
     m_v8DebuggerAgent->setScriptSource(errorString, inScriptId, inScriptSource, inPreview, optOutCallFrames, optOutStackChanged, optOutAsyncStackTrace, optOutCompileError);
 }
@@ -179,7 +182,7 @@ void InspectorDebuggerAgent::setScriptSource(ErrorString* errorString,
 void InspectorDebuggerAgent::restartFrame(ErrorString* errorString,
     const String& inCallFrameId,
     OwnPtr<Array<protocol::Debugger::CallFrame>>* outCallFrames,
-    OwnPtr<protocol::Debugger::StackTrace>* optOutAsyncStackTrace)
+    Maybe<protocol::Debugger::StackTrace>* optOutAsyncStackTrace)
 {
     m_v8DebuggerAgent->restartFrame(errorString, inCallFrameId, outCallFrames, optOutAsyncStackTrace);
 }
@@ -221,17 +224,17 @@ void InspectorDebuggerAgent::setPauseOnExceptions(ErrorString* errorString,
 void InspectorDebuggerAgent::evaluateOnCallFrame(ErrorString* errorString,
     const String& inCallFrameId,
     const String& inExpression,
-    const OptionalValue<String>& inObjectGroup,
-    const OptionalValue<bool>& inIncludeCommandLineAPI,
-    const OptionalValue<bool>& inDoNotPauseOnExceptionsAndMuteConsole,
-    const OptionalValue<bool>& inReturnByValue,
-    const OptionalValue<bool>& inGeneratePreview,
+    const Maybe<String>& inObjectGroup,
+    const Maybe<bool>& inIncludeCommandLineAPI,
+    const Maybe<bool>& inDoNotPauseOnExceptionsAndMuteConsole,
+    const Maybe<bool>& inReturnByValue,
+    const Maybe<bool>& inGeneratePreview,
     OwnPtr<protocol::Runtime::RemoteObject>* outResult,
-    OptionalValue<bool>* optOutWasThrown,
-    OwnPtr<protocol::Runtime::ExceptionDetails>* optOutExceptionDetails)
+    Maybe<bool>* optOutWasThrown,
+    Maybe<protocol::Runtime::ExceptionDetails>* optOutExceptionDetails)
 {
     MuteConsoleScope<InspectorDebuggerAgent> muteScope;
-    if (inDoNotPauseOnExceptionsAndMuteConsole.get(false))
+    if (inDoNotPauseOnExceptionsAndMuteConsole.fromMaybe(false))
         muteScope.enter(this);
     m_v8DebuggerAgent->evaluateOnCallFrame(errorString, inCallFrameId, inExpression, inObjectGroup, inIncludeCommandLineAPI, inDoNotPauseOnExceptionsAndMuteConsole, inReturnByValue, inGeneratePreview, outResult, optOutWasThrown, optOutExceptionDetails);
 }
@@ -239,22 +242,22 @@ void InspectorDebuggerAgent::evaluateOnCallFrame(ErrorString* errorString,
 void InspectorDebuggerAgent::setVariableValue(ErrorString* errorString, int inScopeNumber,
     const String& inVariableName,
     PassOwnPtr<protocol::Runtime::CallArgument> inNewValue,
-    const OptionalValue<String>& inCallFrameId,
-    const OptionalValue<String>& inFunctionObjectId)
+    const Maybe<String>& inCallFrameId,
+    const Maybe<String>& inFunctionObjectId)
 {
     m_v8DebuggerAgent->setVariableValue(errorString, inScopeNumber, inVariableName, inNewValue, inCallFrameId, inFunctionObjectId);
 }
 
 void InspectorDebuggerAgent::getStepInPositions(ErrorString* errorString,
     const String& inCallFrameId,
-    OwnPtr<Array<protocol::Debugger::Location>>* optOutStepInPositions)
+    Maybe<Array<protocol::Debugger::Location>>* optOutStepInPositions)
 {
     m_v8DebuggerAgent->getStepInPositions(errorString, inCallFrameId, optOutStepInPositions);
 }
 
 void InspectorDebuggerAgent::getBacktrace(ErrorString* errorString,
     OwnPtr<Array<protocol::Debugger::CallFrame>>* outCallFrames,
-    OwnPtr<protocol::Debugger::StackTrace>* optOutAsyncStackTrace)
+    Maybe<protocol::Debugger::StackTrace>* optOutAsyncStackTrace)
 {
     m_v8DebuggerAgent->getBacktrace(errorString, outCallFrames, optOutAsyncStackTrace);
 }
@@ -266,7 +269,7 @@ void InspectorDebuggerAgent::setAsyncCallStackDepth(ErrorString* errorString, in
 }
 
 void InspectorDebuggerAgent::enablePromiseTracker(ErrorString* errorString,
-    const OptionalValue<bool>& inCaptureStacks)
+    const Maybe<bool>& inCaptureStacks)
 {
     m_v8DebuggerAgent->enablePromiseTracker(errorString, inCaptureStacks);
 }
@@ -279,7 +282,7 @@ void InspectorDebuggerAgent::disablePromiseTracker(ErrorString* errorString)
 void InspectorDebuggerAgent::getPromiseById(
     ErrorString* errorString,
     int inPromiseId,
-    const OptionalValue<String>& inObjectGroup,
+    const Maybe<String>& inObjectGroup,
     OwnPtr<protocol::Runtime::RemoteObject>* outPromise)
 {
     m_v8DebuggerAgent->getPromiseById(errorString, inPromiseId, inObjectGroup, outPromise);

@@ -68,8 +68,8 @@ public:
     // DOMDebugger API for InspectorFrontend
     void setDOMBreakpoint(ErrorString*, int nodeId, const String& type) override;
     void removeDOMBreakpoint(ErrorString*, int nodeId, const String& type) override;
-    void setEventListenerBreakpoint(ErrorString*, const String& eventName, const OptionalValue<String>& targetName) override;
-    void removeEventListenerBreakpoint(ErrorString*, const String& eventName, const OptionalValue<String>& targetName) override;
+    void setEventListenerBreakpoint(ErrorString*, const String& eventName, const Maybe<String>& targetName) override;
+    void removeEventListenerBreakpoint(ErrorString*, const String& eventName, const Maybe<String>& targetName) override;
     void setInstrumentationBreakpoint(ErrorString*, const String& eventName) override;
     void removeInstrumentationBreakpoint(ErrorString*, const String& eventName) override;
     void setXHRBreakpoint(ErrorString*, const String& url) override;

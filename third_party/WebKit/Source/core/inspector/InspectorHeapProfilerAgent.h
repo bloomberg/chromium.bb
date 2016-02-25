@@ -64,11 +64,11 @@ public:
 
     void enable(ErrorString*) override;
     void disable(ErrorString*) override;
-    void startTrackingHeapObjects(ErrorString*, const OptionalValue<bool>& trackAllocations) override;
-    void stopTrackingHeapObjects(ErrorString*, const OptionalValue<bool>& reportProgress) override;
-    void takeHeapSnapshot(ErrorString*, const OptionalValue<bool>& reportProgress) override;
+    void startTrackingHeapObjects(ErrorString*, const Maybe<bool>& trackAllocations) override;
+    void stopTrackingHeapObjects(ErrorString*, const Maybe<bool>& reportProgress) override;
+    void takeHeapSnapshot(ErrorString*, const Maybe<bool>& reportProgress) override;
     void collectGarbage(ErrorString*) override;
-    void getObjectByHeapObjectId(ErrorString*, const String& objectId, const OptionalValue<String>& objectGroup, OwnPtr<protocol::Runtime::RemoteObject>* result) override;
+    void getObjectByHeapObjectId(ErrorString*, const String& objectId, const Maybe<String>& objectGroup, OwnPtr<protocol::Runtime::RemoteObject>* result) override;
     void addInspectedHeapObject(ErrorString*, const String& heapObjectId) override;
     void getHeapObjectId(ErrorString*, const String& objectId, String* heapSnapshotObjectId) override;
     void startSampling(ErrorString*) override;

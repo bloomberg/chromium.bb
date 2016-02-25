@@ -48,7 +48,7 @@ class Frontend;
 class InstrumentingAgents;
 class LocalFrame;
 
-using protocol::OptionalValue;
+using protocol::Maybe;
 
 class CORE_EXPORT InspectorAgent : public NoBaseWillBeGarbageCollectedFinalized<InspectorAgent> {
     USING_FAST_MALLOC_WILL_BE_REMOVED(InspectorAgent);

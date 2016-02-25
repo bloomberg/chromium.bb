@@ -42,7 +42,7 @@
 
 namespace blink {
 
-using protocol::OptionalValue;
+using protocol::Maybe;
 
 class JavaScriptCallFrame;
 struct ScriptBreakpoint;
@@ -80,7 +80,7 @@ public:
     void stepOutOfFunction();
     void clearStepping();
 
-    bool setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, OwnPtr<protocol::Debugger::SetScriptSourceError>*, v8::Global<v8::Object>* newCallFrames, OptionalValue<bool>* stackChanged);
+    bool setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, Maybe<protocol::Debugger::SetScriptSourceError>*, v8::Global<v8::Object>* newCallFrames, Maybe<bool>* stackChanged);
     v8::Local<v8::Object> currentCallFrames();
     v8::Local<v8::Object> currentCallFramesForAsyncStack();
     PassRefPtr<JavaScriptCallFrame> callFrameNoScopes(int index);

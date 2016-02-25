@@ -9,16 +9,10 @@
 namespace blink {
 namespace protocol {
 
-template<>
-PassRefPtr<JSONValue> toValue(const String& param)
-{
-    return JSONString::create(param);
-}
-
-OptionalValue<String> optional(const String& value)
-{
-    return value.isNull() ? OptionalValue<String>() : OptionalValue<String>(value);
-}
+PassRefPtr<JSONValue> toValue(int value) { return JSONBasicValue::create(value); }
+PassRefPtr<JSONValue> toValue(double value) { return JSONBasicValue::create(value); }
+PassRefPtr<JSONValue> toValue(bool value) { return JSONBasicValue::create(value); }
+PassRefPtr<JSONValue> toValue(const String& param) { return JSONString::create(param); }
 
 // ------------- Enum values from types.
 {% for domain in api.domains %}

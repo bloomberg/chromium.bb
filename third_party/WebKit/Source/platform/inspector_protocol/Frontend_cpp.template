@@ -26,7 +26,7 @@ Frontend::Frontend(FrontendChannel* frontendChannel)
 void Frontend::{{domain.domain}}::{{event.name}}(
     {%- for parameter in event.parameters %}
       {% if "optional" in parameter -%}
-        {{resolve_type(parameter).optional_pass_type}}
+        const Maybe<{{resolve_type(parameter).raw_type}}>&
       {%- else -%}
         {{resolve_type(parameter).pass_type}}
       {%- endif %} {{parameter.name}}{%- if not loop.last -%}, {% endif -%}
@@ -37,9 +37,8 @@ void Frontend::{{domain.domain}}::{{event.name}}(
     RefPtr<JSONObject> paramsObject = JSONObject::create();
     {% for parameter in event.parameters %}
       {% if "optional" in parameter %}
-    {{resolve_type(parameter).optional_type}} opt_{{parameter.name}} = {{parameter.name}};
-    if (hasValue(opt_{{parameter.name}}))
-        paramsObject->setValue("{{parameter.name}}", toValue({{resolve_type(parameter).from_optional_out % ("opt_" + parameter.name)}}));
+    if ({{parameter.name}}.isJust())
+        paramsObject->setValue("{{parameter.name}}", toValue({{parameter.name}}));
       {% else %}
     paramsObject->setValue("{{parameter.name}}", toValue({{parameter.name}}));
       {% endif %}

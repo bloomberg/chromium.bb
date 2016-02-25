@@ -128,12 +128,12 @@ public:
 
     void enable(ErrorString*, PassRefPtr<EnableCallback>) override;
     void disable(ErrorString*) override;
-    void getMatchedStylesForNode(ErrorString*, int nodeId, OwnPtr<protocol::CSS::CSSStyle>* inlineStyle, OwnPtr<protocol::CSS::CSSStyle>* attributesStyle, OwnPtr<protocol::Array<protocol::CSS::RuleMatch>>* matchedCSSRules, OwnPtr<protocol::Array<protocol::CSS::PseudoElementMatches>>*, OwnPtr<protocol::Array<protocol::CSS::InheritedStyleEntry>>*, OwnPtr<protocol::Array<protocol::CSS::CSSKeyframesRule>>*) override;
-    void getInlineStylesForNode(ErrorString*, int nodeId, OwnPtr<protocol::CSS::CSSStyle>* inlineStyle, OwnPtr<protocol::CSS::CSSStyle>* attributesStyle) override;
+    void getMatchedStylesForNode(ErrorString*, int nodeId, Maybe<protocol::CSS::CSSStyle>* inlineStyle, Maybe<protocol::CSS::CSSStyle>* attributesStyle, Maybe<protocol::Array<protocol::CSS::RuleMatch>>* matchedCSSRules, Maybe<protocol::Array<protocol::CSS::PseudoElementMatches>>*, Maybe<protocol::Array<protocol::CSS::InheritedStyleEntry>>*, Maybe<protocol::Array<protocol::CSS::CSSKeyframesRule>>*) override;
+    void getInlineStylesForNode(ErrorString*, int nodeId, Maybe<protocol::CSS::CSSStyle>* inlineStyle, Maybe<protocol::CSS::CSSStyle>* attributesStyle) override;
     void getComputedStyleForNode(ErrorString*, int nodeId, OwnPtr<protocol::Array<protocol::CSS::CSSComputedStyleProperty>>*) override;
     void getPlatformFontsForNode(ErrorString*, int nodeId, OwnPtr<protocol::Array<protocol::CSS::PlatformFontUsage>>* fonts) override;
     void getStyleSheetText(ErrorString*, const String& styleSheetId, String* text) override;
-    void setStyleSheetText(ErrorString*, const String& styleSheetId, const String& text, OptionalValue<String>* sourceMapURL) override;
+    void setStyleSheetText(ErrorString*, const String& styleSheetId, const String& text, Maybe<String>* sourceMapURL) override;
     void setRuleSelector(ErrorString*, const String& styleSheetId, PassOwnPtr<protocol::CSS::SourceRange>, const String& selector, OwnPtr<protocol::CSS::SelectorList>*) override;
     void setKeyframeKey(ErrorString*, const String& styleSheetId, PassOwnPtr<protocol::CSS::SourceRange>, const String& keyText, OwnPtr<protocol::CSS::Value>* outKeyText) override;
     void setStyleTexts(ErrorString*, PassOwnPtr<protocol::Array<protocol::CSS::StyleDeclarationEdit>> edits, OwnPtr<protocol::Array<protocol::CSS::CSSStyle>>* styles) override;
@@ -143,7 +143,7 @@ public:
     void forcePseudoState(ErrorString*, int nodeId, PassOwnPtr<protocol::Array<String>> forcedPseudoClasses) override;
     void getMediaQueries(ErrorString*, OwnPtr<protocol::Array<protocol::CSS::CSSMedia>>*) override;
     void setEffectivePropertyValueForNode(ErrorString*, int nodeId, const String& propertyName, const String& value) override;
-    void getBackgroundColors(ErrorString*, int nodeId, OwnPtr<protocol::Array<String>>* backgroundColors) override;
+    void getBackgroundColors(ErrorString*, int nodeId, Maybe<protocol::Array<String>>* backgroundColors) override;
 
     void collectMediaQueriesFromRule(CSSRule*, protocol::Array<protocol::CSS::CSSMedia>*);
     void collectMediaQueriesFromStyleSheet(CSSStyleSheet*, protocol::Array<protocol::CSS::CSSMedia>*);

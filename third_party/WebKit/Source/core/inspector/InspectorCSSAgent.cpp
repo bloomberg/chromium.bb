@@ -862,7 +862,7 @@ void InspectorCSSAgent::getMediaQueries(ErrorString* errorString, OwnPtr<protoco
     }
 }
 
-void InspectorCSSAgent::getMatchedStylesForNode(ErrorString* errorString, int nodeId, OwnPtr<protocol::CSS::CSSStyle>* inlineStyle, OwnPtr<protocol::CSS::CSSStyle>* attributesStyle, OwnPtr<protocol::Array<protocol::CSS::RuleMatch>>* matchedCSSRules, OwnPtr<protocol::Array<protocol::CSS::PseudoElementMatches>>* pseudoIdMatches, OwnPtr<protocol::Array<protocol::CSS::InheritedStyleEntry>>* inheritedEntries, OwnPtr<protocol::Array<protocol::CSS::CSSKeyframesRule>>* cssKeyframesRules)
+void InspectorCSSAgent::getMatchedStylesForNode(ErrorString* errorString, int nodeId, Maybe<protocol::CSS::CSSStyle>* inlineStyle, Maybe<protocol::CSS::CSSStyle>* attributesStyle, Maybe<protocol::Array<protocol::CSS::RuleMatch>>* matchedCSSRules, Maybe<protocol::Array<protocol::CSS::PseudoElementMatches>>* pseudoIdMatches, Maybe<protocol::Array<protocol::CSS::InheritedStyleEntry>>* inheritedEntries, Maybe<protocol::Array<protocol::CSS::CSSKeyframesRule>>* cssKeyframesRules)
 {
     Element* element = elementForId(errorString, nodeId);
     if (!element) {
@@ -911,7 +911,7 @@ void InspectorCSSAgent::getMatchedStylesForNode(ErrorString* errorString, int no
         RefPtrWillBeRawPtr<CSSRuleList> matchedRules = styleResolver.pseudoCSSRulesForElement(element, pseudoId, StyleResolver::AllCSSRules);
         protocol::DOM::PseudoType pseudoType;
         if (matchedRules && matchedRules->length() && m_domAgent->getPseudoElementType(pseudoId, &pseudoType)) {
-            (*pseudoIdMatches)->addItem(protocol::CSS::PseudoElementMatches::create()
+            pseudoIdMatches->fromJust()->addItem(protocol::CSS::PseudoElementMatches::create()
                 .setPseudoType(pseudoType)
                 .setMatches(buildArrayForMatchedRuleList(matchedRules.get(), element, pseudoId)).build());
         }
@@ -931,7 +931,7 @@ void InspectorCSSAgent::getMatchedStylesForNode(ErrorString* errorString, int no
                 entry->setInlineStyle(styleSheet->buildObjectForStyle(styleSheet->inlineStyle()));
         }
 
-        (*inheritedEntries)->addItem(entry.release());
+        inheritedEntries->fromJust()->addItem(entry.release());
         parentElement = parentElement->parentOrShadowHostElement();
     }
 
@@ -1004,7 +1004,7 @@ PassOwnPtr<protocol::Array<protocol::CSS::CSSKeyframesRule>> InspectorCSSAgent::
     return cssKeyframesRules.release();
 }
 
-void InspectorCSSAgent::getInlineStylesForNode(ErrorString* errorString, int nodeId, OwnPtr<protocol::CSS::CSSStyle>* inlineStyle, OwnPtr<protocol::CSS::CSSStyle>* attributesStyle)
+void InspectorCSSAgent::getInlineStylesForNode(ErrorString* errorString, int nodeId, Maybe<protocol::CSS::CSSStyle>* inlineStyle, Maybe<protocol::CSS::CSSStyle>* attributesStyle)
 {
     Element* element = elementForId(errorString, nodeId);
     if (!element)
@@ -1100,7 +1100,7 @@ void InspectorCSSAgent::getStyleSheetText(ErrorString* errorString, const String
     inspectorStyleSheet->getText(result);
 }
 
-void InspectorCSSAgent::setStyleSheetText(ErrorString* errorString, const String& styleSheetId, const String& text, protocol::OptionalValue<String>* sourceMapURL)
+void InspectorCSSAgent::setStyleSheetText(ErrorString* errorString, const String& styleSheetId, const String& text, protocol::Maybe<String>* sourceMapURL)
 {
     FrontendOperationScope scope;
     InspectorStyleSheetBase* inspectorStyleSheet = assertStyleSheetForId(errorString, styleSheetId);
@@ -2046,7 +2046,7 @@ void InspectorCSSAgent::setEffectivePropertyValueForNode(ErrorString* errorStrin
     setLayoutEditorValue(errorString, element, style.get(), propertyId, value);
 }
 
-void InspectorCSSAgent::getBackgroundColors(ErrorString* errorString, int nodeId, OwnPtr<protocol::Array<String>>* result)
+void InspectorCSSAgent::getBackgroundColors(ErrorString* errorString, int nodeId, Maybe<protocol::Array<String>>* result)
 {
     Element* element = elementForId(errorString, nodeId);
     if (!element) {
@@ -2095,7 +2095,7 @@ void InspectorCSSAgent::getBackgroundColors(ErrorString* errorString, int nodeId
 
     *result = protocol::Array<String>::create();
     for (auto color : colors)
-        (*result)->addItem(color.serializedAsCSSComponentValue());
+        result->fromJust()->addItem(color.serializedAsCSSComponentValue());
 }
 
 DEFINE_TRACE(InspectorCSSAgent)

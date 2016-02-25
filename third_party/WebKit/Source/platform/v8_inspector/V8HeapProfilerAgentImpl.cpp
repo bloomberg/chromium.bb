@@ -28,7 +28,7 @@ public:
         : m_frontend(frontend) { }
     ControlOption ReportProgressValue(int done, int total) override
     {
-        m_frontend->reportHeapSnapshotProgress(done, total, protocol::OptionalValue<bool>());
+        m_frontend->reportHeapSnapshotProgress(done, total, protocol::Maybe<bool>());
         if (done >= total) {
             m_frontend->reportHeapSnapshotProgress(total, total, true);
         }
@@ -170,15 +170,15 @@ void V8HeapProfilerAgentImpl::collectGarbage(ErrorString*)
     m_isolate->LowMemoryNotification();
 }
 
-void V8HeapProfilerAgentImpl::startTrackingHeapObjects(ErrorString*, const protocol::OptionalValue<bool>& trackAllocations)
+void V8HeapProfilerAgentImpl::startTrackingHeapObjects(ErrorString*, const protocol::Maybe<bool>& trackAllocations)
 {
     m_state->setBoolean(HeapProfilerAgentState::heapObjectsTrackingEnabled, true);
-    bool allocationTrackingEnabled = trackAllocations.get(false);
+    bool allocationTrackingEnabled = trackAllocations.fromMaybe(false);
     m_state->setBoolean(HeapProfilerAgentState::allocationTrackingEnabled, allocationTrackingEnabled);
     startTrackingHeapObjectsInternal(allocationTrackingEnabled);
 }
 
-void V8HeapProfilerAgentImpl::stopTrackingHeapObjects(ErrorString* error, const protocol::OptionalValue<bool>& reportProgress)
+void V8HeapProfilerAgentImpl::stopTrackingHeapObjects(ErrorString* error, const protocol::Maybe<bool>& reportProgress)
 {
     requestHeapStatsUpdate();
     takeHeapSnapshot(error, reportProgress);
@@ -202,7 +202,7 @@ void V8HeapProfilerAgentImpl::disable(ErrorString* error)
     m_state->setBoolean(HeapProfilerAgentState::heapProfilerEnabled, false);
 }
 
-void V8HeapProfilerAgentImpl::takeHeapSnapshot(ErrorString* errorString, const protocol::OptionalValue<bool>& reportProgress)
+void V8HeapProfilerAgentImpl::takeHeapSnapshot(ErrorString* errorString, const protocol::Maybe<bool>& reportProgress)
 {
     v8::HeapProfiler* profiler = m_isolate->GetHeapProfiler();
     if (!profiler) {
@@ -210,7 +210,7 @@ void V8HeapProfilerAgentImpl::takeHeapSnapshot(ErrorString* errorString, const p
         return;
     }
     OwnPtr<HeapSnapshotProgress> progress;
-    if (reportProgress.get(false))
+    if (reportProgress.fromMaybe(false))
         progress = adoptPtr(new HeapSnapshotProgress(m_frontend));
 
     GlobalObjectNameResolver resolver(static_cast<V8RuntimeAgentImpl*>(m_runtimeAgent));
@@ -224,7 +224,7 @@ void V8HeapProfilerAgentImpl::takeHeapSnapshot(ErrorString* errorString, const p
     const_cast<v8::HeapSnapshot*>(snapshot)->Delete();
 }
 
-void V8HeapProfilerAgentImpl::getObjectByHeapObjectId(ErrorString* error, const String& heapSnapshotObjectId, const protocol::OptionalValue<String>& objectGroup, OwnPtr<protocol::Runtime::RemoteObject>* result)
+void V8HeapProfilerAgentImpl::getObjectByHeapObjectId(ErrorString* error, const String& heapSnapshotObjectId, const protocol::Maybe<String>& objectGroup, OwnPtr<protocol::Runtime::RemoteObject>* result)
 {
     bool ok;
     unsigned id = heapSnapshotObjectId.toUInt(&ok);
@@ -239,7 +239,7 @@ void V8HeapProfilerAgentImpl::getObjectByHeapObjectId(ErrorString* error, const 
         *error = "Object is not available";
         return;
     }
-    *result = m_runtimeAgent->wrapObject(heapObject->CreationContext(), heapObject, objectGroup.get(""));
+    *result = m_runtimeAgent->wrapObject(heapObject->CreationContext(), heapObject, objectGroup.fromMaybe(""));
     if (!result)
         *error = "Object is not available";
 }

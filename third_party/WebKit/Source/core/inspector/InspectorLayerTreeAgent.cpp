@@ -401,12 +401,12 @@ const PictureSnapshot* InspectorLayerTreeAgent::snapshotById(ErrorString* errorS
     return it->value.get();
 }
 
-void InspectorLayerTreeAgent::replaySnapshot(ErrorString* errorString, const String& snapshotId, const OptionalValue<int>& fromStep, const OptionalValue<int>& toStep, const OptionalValue<double>& scale, String* dataURL)
+void InspectorLayerTreeAgent::replaySnapshot(ErrorString* errorString, const String& snapshotId, const Maybe<int>& fromStep, const Maybe<int>& toStep, const Maybe<double>& scale, String* dataURL)
 {
     const PictureSnapshot* snapshot = snapshotById(errorString, snapshotId);
     if (!snapshot)
         return;
-    OwnPtr<Vector<char>> base64Data = snapshot->replay(fromStep.get(0), toStep.get(0), scale.get(1.0));
+    OwnPtr<Vector<char>> base64Data = snapshot->replay(fromStep.fromMaybe(0), toStep.fromMaybe(0), scale.fromMaybe(1.0));
     if (!base64Data) {
         *errorString = "Image encoding failed";
         return;
@@ -426,17 +426,17 @@ static bool parseRect(protocol::DOM::Rect* object, FloatRect* rect)
     return true;
 }
 
-void InspectorLayerTreeAgent::profileSnapshot(ErrorString* errorString, const String& snapshotId, const protocol::OptionalValue<int>& minRepeatCount, const protocol::OptionalValue<double>& minDuration, PassOwnPtr<protocol::DOM::Rect> clipRect, OwnPtr<protocol::Array<protocol::Array<double>>>* outTimings)
+void InspectorLayerTreeAgent::profileSnapshot(ErrorString* errorString, const String& snapshotId, const protocol::Maybe<int>& minRepeatCount, const protocol::Maybe<double>& minDuration, const Maybe<protocol::DOM::Rect>& clipRect, OwnPtr<protocol::Array<protocol::Array<double>>>* outTimings)
 {
     const PictureSnapshot* snapshot = snapshotById(errorString, snapshotId);
     if (!snapshot)
         return;
     FloatRect rect;
-    if (clipRect && !parseRect(clipRect.get(), &rect)) {
+    if (clipRect.isJust() && !parseRect(clipRect.fromJust(), &rect)) {
         *errorString = "Invalid argument, missing required field";
         return;
     }
-    OwnPtr<PictureSnapshot::Timings> timings = snapshot->profile(minRepeatCount.get(1), minDuration.get(0), clipRect ? &rect : 0);
+    OwnPtr<PictureSnapshot::Timings> timings = snapshot->profile(minRepeatCount.fromMaybe(1), minDuration.fromMaybe(0), clipRect.isJust() ? &rect : 0);
     *outTimings = Array<Array<double>>::create();
     for (size_t i = 0; i < timings->size(); ++i) {
         const Vector<double>& row = (*timings)[i];

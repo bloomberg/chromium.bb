@@ -360,7 +360,7 @@ static PassOwnPtr<protocol::Network::Response> buildObjectForResourceResponse(co
             responseObject->setRequestHeadersText(response.resourceLoadInfo()->requestHeadersText);
     }
 
-    AtomicString remoteIPAddress = response.remoteIPAddress();
+    String remoteIPAddress = response.remoteIPAddress();
     if (!remoteIPAddress.isEmpty()) {
         responseObject->setRemoteIPAddress(remoteIPAddress);
         responseObject->setRemotePort(response.remotePort());

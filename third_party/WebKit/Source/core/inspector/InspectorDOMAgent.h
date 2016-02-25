@@ -117,34 +117,34 @@ public:
     void enable(ErrorString*) override;
     void disable(ErrorString*) override;
     void getDocument(ErrorString*, OwnPtr<protocol::DOM::Node>* root) override;
-    void requestChildNodes(ErrorString*, int nodeId, const OptionalValue<int>& depth) override;
+    void requestChildNodes(ErrorString*, int nodeId, const Maybe<int>& depth) override;
     void querySelector(ErrorString*, int nodeId, const String& selector, int* outNodeId) override;
     void querySelectorAll(ErrorString*, int nodeId, const String& selector, OwnPtr<protocol::Array<int>>* nodeIds) override;
     void setNodeName(ErrorString*, int nodeId, const String& name, int* outNodeId) override;
     void setNodeValue(ErrorString*, int nodeId, const String& value) override;
     void removeNode(ErrorString*, int nodeId) override;
     void setAttributeValue(ErrorString*, int nodeId, const String& name, const String& value) override;
-    void setAttributesAsText(ErrorString*, int nodeId, const String& text, const OptionalValue<String>& name) override;
+    void setAttributesAsText(ErrorString*, int nodeId, const String& text, const Maybe<String>& name) override;
     void removeAttribute(ErrorString*, int nodeId, const String& name) override;
     void getOuterHTML(ErrorString*, int nodeId, String* outerHTML) override;
     void setOuterHTML(ErrorString*, int nodeId, const String& outerHTML) override;
-    void performSearch(ErrorString*, const String& query, const OptionalValue<bool>& includeUserAgentShadowDOM, String* searchId, int* resultCount) override;
+    void performSearch(ErrorString*, const String& query, const Maybe<bool>& includeUserAgentShadowDOM, String* searchId, int* resultCount) override;
     void getSearchResults(ErrorString*, const String& searchId, int fromIndex, int toIndex, OwnPtr<protocol::Array<int>>* nodeIds) override;
     void discardSearchResults(ErrorString*, const String& searchId) override;
     void requestNode(ErrorString*, const String& objectId, int* outNodeId) override;
-    void setInspectMode(ErrorString*, const String& mode, PassOwnPtr<protocol::DOM::HighlightConfig>) override;
-    void highlightRect(ErrorString*, int x, int y, int width, int height, PassOwnPtr<protocol::DOM::RGBA> color, PassOwnPtr<protocol::DOM::RGBA> outlineColor) override;
-    void highlightQuad(ErrorString*, PassOwnPtr<protocol::Array<double>> quad, PassOwnPtr<protocol::DOM::RGBA> color, PassOwnPtr<protocol::DOM::RGBA> outlineColor) override;
-    void highlightNode(ErrorString*, PassOwnPtr<protocol::DOM::HighlightConfig>, const OptionalValue<int>& nodeId, const OptionalValue<int>& backendNodeId, const OptionalValue<String>& objectId) override;
+    void setInspectMode(ErrorString*, const String& mode, const Maybe<protocol::DOM::HighlightConfig>&) override;
+    void highlightRect(ErrorString*, int x, int y, int width, int height, const Maybe<protocol::DOM::RGBA>& color, const Maybe<protocol::DOM::RGBA>& outlineColor) override;
+    void highlightQuad(ErrorString*, PassOwnPtr<protocol::Array<double>> quad, const Maybe<protocol::DOM::RGBA>& color, const Maybe<protocol::DOM::RGBA>& outlineColor) override;
+    void highlightNode(ErrorString*, PassOwnPtr<protocol::DOM::HighlightConfig>, const Maybe<int>& nodeId, const Maybe<int>& backendNodeId, const Maybe<String>& objectId) override;
     void hideHighlight(ErrorString*) override;
-    void highlightFrame(ErrorString*, const String& frameId, PassOwnPtr<protocol::DOM::RGBA> contentColor, PassOwnPtr<protocol::DOM::RGBA> contentOutlineColor) override;
+    void highlightFrame(ErrorString*, const String& frameId, const Maybe<protocol::DOM::RGBA>& contentColor, const Maybe<protocol::DOM::RGBA>& contentOutlineColor) override;
     void pushNodeByPathToFrontend(ErrorString*, const String& path, int* outNodeId) override;
     void pushNodesByBackendIdsToFrontend(ErrorString*, PassOwnPtr<protocol::Array<int>> backendNodeIds, OwnPtr<protocol::Array<int>>* nodeIds) override;
     void setInspectedNode(ErrorString*, int nodeId) override;
-    void resolveNode(ErrorString*, int nodeId, const OptionalValue<String>& objectGroup, OwnPtr<protocol::Runtime::RemoteObject>*) override;
+    void resolveNode(ErrorString*, int nodeId, const Maybe<String>& objectGroup, OwnPtr<protocol::Runtime::RemoteObject>*) override;
     void getAttributes(ErrorString*, int nodeId, OwnPtr<protocol::Array<String>>* attributes) override;
-    void copyTo(ErrorString*, int nodeId, int targetNodeId, const OptionalValue<int>& insertBeforeNodeId, int* outNodeId) override;
-    void moveTo(ErrorString*, int nodeId, int targetNodeId, const OptionalValue<int>& insertBeforeNodeId, int* outNodeId) override;
+    void copyTo(ErrorString*, int nodeId, int targetNodeId, const Maybe<int>& insertBeforeNodeId, int* outNodeId) override;
+    void moveTo(ErrorString*, int nodeId, int targetNodeId, const Maybe<int>& insertBeforeNodeId, int* outNodeId) override;
     void undo(ErrorString*) override;
     void redo(ErrorString*) override;
     void markUndoableState(ErrorString*) override;
@@ -207,8 +207,8 @@ private:
     void setDocument(Document*);
     void innerEnable();
 
-    void setSearchingForNode(ErrorString*, SearchMode, PassOwnPtr<protocol::DOM::HighlightConfig>);
-    PassOwnPtr<InspectorHighlightConfig> highlightConfigFromInspectorObject(ErrorString*, PassOwnPtr<protocol::DOM::HighlightConfig> highlightInspectorObject);
+    void setSearchingForNode(ErrorString*, SearchMode, const Maybe<protocol::DOM::HighlightConfig>&);
+    PassOwnPtr<InspectorHighlightConfig> highlightConfigFromInspectorObject(ErrorString*, const Maybe<protocol::DOM::HighlightConfig>& highlightInspectorObject);
 
     // Node-related methods.
     typedef WillBeHeapHashMap<RefPtrWillBeMember<Node>, int> NodeToIdMap;
@@ -236,7 +236,7 @@ private:
 
     void discardFrontendBindings();
 
-    void innerHighlightQuad(PassOwnPtr<FloatQuad>, PassOwnPtr<protocol::DOM::RGBA> color, PassOwnPtr<protocol::DOM::RGBA> outlineColor);
+    void innerHighlightQuad(PassOwnPtr<FloatQuad>, const Maybe<protocol::DOM::RGBA>& color, const Maybe<protocol::DOM::RGBA>& outlineColor);
 
     bool pushDocumentUponHandlelessOperation(ErrorString*);
 

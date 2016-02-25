@@ -118,7 +118,7 @@ InspectorInputAgent::~InspectorInputAgent()
 {
 }
 
-void InspectorInputAgent::dispatchTouchEvent(ErrorString* error, const String& type, PassOwnPtr<protocol::Array<protocol::Input::TouchPoint>> touchPoints, const protocol::OptionalValue<int>& modifiers, const protocol::OptionalValue<double>& timestamp)
+void InspectorInputAgent::dispatchTouchEvent(ErrorString* error, const String& type, PassOwnPtr<protocol::Array<protocol::Input::TouchPoint>> touchPoints, const protocol::Maybe<int>& modifiers, const protocol::Maybe<double>& timestamp)
 {
     PlatformEvent::Type convertedType;
     if (type == "touchStart") {
@@ -132,9 +132,9 @@ void InspectorInputAgent::dispatchTouchEvent(ErrorString* error, const String& t
         return;
     }
 
-    unsigned convertedModifiers = GetEventModifiers(modifiers.get(0));
+    unsigned convertedModifiers = GetEventModifiers(modifiers.fromMaybe(0));
 
-    SyntheticInspectorTouchEvent event(convertedType, convertedModifiers, timestamp.get(currentTime()));
+    SyntheticInspectorTouchEvent event(convertedType, convertedModifiers, timestamp.fromMaybe(currentTime()));
 
     int autoId = 0;
     for (size_t i = 0; i < touchPoints->length(); ++i) {

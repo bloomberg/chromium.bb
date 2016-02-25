@@ -55,7 +55,7 @@ public:
             void sendSuccess(
             {%- for parameter in command.returns -%}
               {%- if "optional" in parameter -%}
-                {{resolve_type(parameter).optional_pass_type}} {{parameter.name}}
+                const Maybe<{{resolve_type(parameter).raw_type}}>& {{parameter.name}}
               {%- else -%}
                 {{resolve_type(parameter).pass_type}} {{parameter.name}}
               {%- endif -%}
@@ -67,7 +67,7 @@ public:
         virtual void {{command.name}}(ErrorString*
     {%- for parameter in command.parameters -%}
         {%- if "optional" in parameter -%}
-            , {{resolve_type(parameter).optional_pass_type}} in_{{parameter.name}}
+            , const Maybe<{{resolve_type(parameter).raw_type}}>& in_{{parameter.name}}
         {%- else -%}
             , {{resolve_type(parameter).pass_type}} in_{{parameter.name}}
         {%- endif -%}
@@ -77,7 +77,7 @@ public:
     {%- else -%}
       {%- for parameter in command.returns -%}
         {%- if "optional" in parameter -%}
-            , {{resolve_type(parameter).optional_type}}* out_{{parameter.name}}
+            , Maybe<{{resolve_type(parameter).raw_type}}>* out_{{parameter.name}}
         {%- else -%}
             , {{resolve_type(parameter).type}}* out_{{parameter.name}}
         {%- endif -%}

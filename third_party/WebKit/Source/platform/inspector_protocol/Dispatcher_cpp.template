@@ -13,7 +13,7 @@
 namespace blink {
 namespace protocol {
 
-using protocol::OptionalValue;
+using protocol::Maybe;
 
 class DispatcherImpl : public Dispatcher {
 public:
@@ -73,10 +73,10 @@ private:
     template<typename R, typename V, typename V0>
     static R getPropertyValueImpl(JSONObject* object, const char* name, bool* valueFound, JSONArray* protocolErrors, V0 initial_value, bool (*as_method)(JSONValue*, V*), const char* type_name);
 
-    static OptionalValue<int> getInteger(JSONObject* object, const char* name, bool isOptional, JSONArray* protocolErrors);
-    static OptionalValue<double> getNumber(JSONObject* object, const char* name, bool isOptional, JSONArray* protocolErrors);
-    static OptionalValue<String> getString(JSONObject* object, const char* name, bool isOptional, JSONArray* protocolErrors);
-    static OptionalValue<bool> getBoolean(JSONObject* object, const char* name, bool isOptional, JSONArray* protocolErrors);
+    static Maybe<int> getInteger(JSONObject* object, const char* name, bool isOptional, JSONArray* protocolErrors);
+    static Maybe<double> getNumber(JSONObject* object, const char* name, bool isOptional, JSONArray* protocolErrors);
+    static Maybe<String> getString(JSONObject* object, const char* name, bool isOptional, JSONArray* protocolErrors);
+    static Maybe<bool> getBoolean(JSONObject* object, const char* name, bool isOptional, JSONArray* protocolErrors);
     static PassRefPtr<JSONObject> getObject(JSONObject* object, const char* name, bool isOptional, JSONArray* protocolErrors);
     static PassRefPtr<JSONArray> getArray(JSONObject* object, const char* name, bool isOptional, JSONArray* protocolErrors);
 
@@ -108,7 +108,7 @@ Dispatcher::{{domain.domain}}CommandHandler::{{command.name | to_title_case}}Cal
 void Dispatcher::{{domain.domain}}CommandHandler::{{command.name | to_title_case}}Callback::sendSuccess(
       {%- for parameter in command.returns -%}
         {%- if "optional" in parameter -%}
-        {{resolve_type(parameter).optional_pass_type}} {{parameter.name}}
+        const Maybe<{{resolve_type(parameter).raw_type}}>& {{parameter.name}}
         {%- else -%}
         {{resolve_type(parameter).pass_type}} {{parameter.name}}
         {%- endif -%}
@@ -118,9 +118,8 @@ void Dispatcher::{{domain.domain}}CommandHandler::{{command.name | to_title_case
     RefPtr<JSONObject> resultObject = JSONObject::create();
       {% for parameter in command.returns %}
         {% if "optional" in parameter %}
-    {{resolve_type(parameter).optional_type}} opt_{{parameter.name}} = {{parameter.name}};
-    if (hasValue({{parameter.name}}))
-        resultObject->setValue("{{parameter.name}}", toValue({{resolve_type(parameter).from_optional_out % ("opt_" + parameter.name)}}));
+    if ({{parameter.name}}.isJust())
+        resultObject->setValue("{{parameter.name}}", toValue({{parameter.name}}));
        {% else %}
     resultObject->setValue("{{parameter.name}}", toValue({{parameter.name}}));
         {% endif %}
@@ -144,7 +143,7 @@ void DispatcherImpl::{{domain.domain}}_{{command.name}}(int sessionId, int callI
     RefPtr<JSONObject> paramsContainer = requestMessageObject->getObject("params");
     JSONObject* paramsContainerPtr = paramsContainer.get();
       {% for property in command.parameters %}
-    {{resolve_type(property).optional_type}} in_{{property.name}} = {{resolve_type(property).json_getter % ("paramsContainerPtr, \"" + property.name + "\", " + ("true" if "optional" in property else "false") + ", protocolErrors")}};
+    Maybe<{{resolve_type(property).raw_type}}> in_{{property.name}} = {{resolve_type(property).json_getter % ("paramsContainerPtr, \"" + property.name + "\", " + ("true" if "optional" in property else "false") + ", protocolErrors")}};
       {% endfor %}
     {% endif %}
 
@@ -160,7 +159,7 @@ void DispatcherImpl::{{domain.domain}}_{{command.name}}(int sessionId, int callI
     RefPtr<JSONObject> result = JSONObject::create();
       {% for property in command.returns %}
         {% if "optional" in property %}
-    {{resolve_type(property).optional_type}} out_{{property.name}};
+    Maybe<{{resolve_type(property).raw_type}}> out_{{property.name}};
         {% else %}
     {{resolve_type(property).type}} out_{{property.name}};
         {% endif %}
@@ -171,9 +170,9 @@ void DispatcherImpl::{{domain.domain}}_{{command.name}}(int sessionId, int callI
     m_{{domain.domain | lower}}Agent->{{command.name}}(&error
       {%- for property in command.parameters -%}
         {%- if "optional" in property -%}
-        , {{resolve_type(property).to_pass_type % ("in_" + property.name)}}
+        , in_{{property.name}}
         {%- else -%}
-        , {{resolve_type(property).from_optional_out % ("in_" + property.name)}}
+        , in_{{property.name}}.takeJust()
         {%- endif -%}
       {%- endfor %}
       {%- if "async" in command -%}
@@ -187,8 +186,8 @@ void DispatcherImpl::{{domain.domain}}_{{command.name}}(int sessionId, int callI
     if (!error.length()) {
       {% for parameter in command.returns %}
         {% if "optional" in parameter %}
-        if (hasValue(out_{{parameter.name}}))
-            result->setValue("{{parameter.name}}", toValue({{resolve_type(parameter).from_optional_out % ("out_" + parameter.name)}}));
+        if (out_{{parameter.name}}.isJust())
+            result->setValue("{{parameter.name}}", toValue(out_{{parameter.name}}));
         {% else %}
         result->setValue("{{parameter.name}}", toValue(out_{{resolve_type(parameter).to_pass_type % parameter.name}}));
         {% endif %}
@@ -316,32 +315,32 @@ struct AsMethodBridges {
     static bool asArray(JSONValue* value, RefPtr<JSONArray>* output) { return value->asArray(output); }
 };
 
-OptionalValue<int> DispatcherImpl::getInteger(JSONObject* object, const char* name, bool isOptional, JSONArray* protocolErrors)
+Maybe<int> DispatcherImpl::getInteger(JSONObject* object, const char* name, bool isOptional, JSONArray* protocolErrors)
 {
     bool valueFound = false;
     int result = getPropertyValueImpl<int, int, int>(object, name, isOptional ? &valueFound : 0, protocolErrors, 0, AsMethodBridges::asInteger, "Number");
-    return valueFound || !isOptional ? OptionalValue<int>(result) : OptionalValue<int>();
+    return valueFound || !isOptional ? Maybe<int>(result) : Maybe<int>();
 }
 
-OptionalValue<double> DispatcherImpl::getNumber(JSONObject* object, const char* name, bool isOptional, JSONArray* protocolErrors)
+Maybe<double> DispatcherImpl::getNumber(JSONObject* object, const char* name, bool isOptional, JSONArray* protocolErrors)
 {
     bool valueFound = false;
     double result = getPropertyValueImpl<double, double, double>(object, name, isOptional ? &valueFound : 0, protocolErrors, 0, AsMethodBridges::asNumber, "Number");
-    return valueFound || !isOptional ? OptionalValue<double>(result) : OptionalValue<double>();
+    return valueFound || !isOptional ? Maybe<double>(result) : Maybe<double>();
 }
 
-OptionalValue<String> DispatcherImpl::getString(JSONObject* object, const char* name, bool isOptional, JSONArray* protocolErrors)
+Maybe<String> DispatcherImpl::getString(JSONObject* object, const char* name, bool isOptional, JSONArray* protocolErrors)
 {
     bool valueFound = false;
     String result = getPropertyValueImpl<String, String, String>(object, name, isOptional ? &valueFound : 0, protocolErrors, "", AsMethodBridges::asString, "String");
-    return valueFound || !isOptional ? OptionalValue<String>(result) : OptionalValue<String>();
+    return valueFound || !isOptional ? Maybe<String>(result) : Maybe<String>();
 }
 
-OptionalValue<bool> DispatcherImpl::getBoolean(JSONObject* object, const char* name, bool isOptional, JSONArray* protocolErrors)
+Maybe<bool> DispatcherImpl::getBoolean(JSONObject* object, const char* name, bool isOptional, JSONArray* protocolErrors)
 {
     bool valueFound = false;
     bool result = getPropertyValueImpl<bool, bool, bool>(object, name, isOptional ? &valueFound : 0, protocolErrors, false, AsMethodBridges::asBoolean, "Boolean");
-    return valueFound || !isOptional ? OptionalValue<bool>(result) : OptionalValue<bool>();
+    return valueFound || !isOptional ? Maybe<bool>(result) : Maybe<bool>();
 }
 
 PassRefPtr<JSONObject> DispatcherImpl::getObject(JSONObject* object, const char* name, bool isOptional, JSONArray* protocolErrors)

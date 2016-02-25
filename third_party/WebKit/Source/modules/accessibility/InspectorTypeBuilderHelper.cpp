@@ -101,7 +101,7 @@ PassOwnPtr<AXRelatedNode> relatedNodeForAXObject(const AXObject* axObject, Strin
         return relatedNode.release();
 
     Element* element = toElement(node);
-    const AtomicString& idref = element->getIdAttribute();
+    String idref = element->getIdAttribute();
     if (!idref.isEmpty())
         relatedNode->setIdref(idref);
 
@@ -188,7 +188,7 @@ PassOwnPtr<AXValueSource> createValueSource(NameSource& nameSource)
         if (nameSource.attribute == aria_labelledbyAttr || nameSource.attribute == aria_labeledbyAttr) {
             OwnPtr<AXValue> attributeValue = createRelatedNodeListValue(nameSource.relatedObjects, AXValueTypeEnum::IdrefList);
             if (!nameSource.attributeValue.isNull())
-                attributeValue->setValue(JSONString::create(nameSource.attributeValue.string()));
+                attributeValue->setValue(JSONString::create(nameSource.attributeValue.string()).get());
             valueSource->setAttributeValue(attributeValue.release());
         } else if (nameSource.attribute == QualifiedName::null()) {
             valueSource->setNativeSourceValue(createRelatedNodeListValue(nameSource.relatedObjects, AXValueTypeEnum::NodeList));

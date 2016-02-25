@@ -32,12 +32,7 @@ public:
         void {{event.name}}(
     {%- for parameter in event.parameters -%}
       {%- if "optional" in parameter -%}
-            {{resolve_type(parameter).optional_pass_type}}
-        {%- if resolve_type(parameter).nullable -%}
-              {{parameter.name}} = nullptr
-        {%- else -%}
-              {{parameter.name}} = {{resolve_type(parameter).optional_type}}()
-        {%- endif %}
+            const Maybe<{{resolve_type(parameter).raw_type}}>& {{parameter.name}} = Maybe<{{resolve_type(parameter).raw_type}}>()
       {%- else -%}
             {{resolve_type(parameter).pass_type}} {{parameter.name}}
       {%- endif -%}{%- if not loop.last -%}, {% endif -%}

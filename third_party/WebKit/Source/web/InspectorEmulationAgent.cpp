@@ -46,7 +46,7 @@ void InspectorEmulationAgent::restore()
 {
     ErrorString error;
     setScriptExecutionDisabled(&error, m_state->booleanProperty(EmulationAgentState::scriptExecutionDisabled, false));
-    setTouchEmulationEnabled(&error, m_state->booleanProperty(EmulationAgentState::touchEventEmulationEnabled, false), protocol::optional(String()));
+    setTouchEmulationEnabled(&error, m_state->booleanProperty(EmulationAgentState::touchEventEmulationEnabled, false), protocol::Maybe<String>());
     String emulatedMedia;
     m_state->getString(EmulationAgentState::emulatedMedia, &emulatedMedia);
     setEmulatedMedia(&error, emulatedMedia);
@@ -56,7 +56,7 @@ void InspectorEmulationAgent::disable(ErrorString*)
 {
     ErrorString error;
     setScriptExecutionDisabled(&error, false);
-    setTouchEmulationEnabled(&error, false, protocol::optional(String()));
+    setTouchEmulationEnabled(&error, false, protocol::Maybe<String>());
     setEmulatedMedia(&error, String());
 }
 
@@ -76,7 +76,7 @@ void InspectorEmulationAgent::setScriptExecutionDisabled(ErrorString*, bool valu
     webViewImpl()->devToolsEmulator()->setScriptExecutionDisabled(value);
 }
 
-void InspectorEmulationAgent::setTouchEmulationEnabled(ErrorString*, bool enabled, const OptionalValue<String>& configuration)
+void InspectorEmulationAgent::setTouchEmulationEnabled(ErrorString*, bool enabled, const Maybe<String>& configuration)
 {
     m_state->setBoolean(EmulationAgentState::touchEventEmulationEnabled, enabled);
     webViewImpl()->devToolsEmulator()->setTouchEventEmulationEnabled(enabled);

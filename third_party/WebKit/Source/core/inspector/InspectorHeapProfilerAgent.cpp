@@ -120,13 +120,13 @@ void InspectorHeapProfilerAgent::collectGarbage(ErrorString* error)
     m_v8HeapProfilerAgent->collectGarbage(error);
 }
 
-void InspectorHeapProfilerAgent::startTrackingHeapObjects(ErrorString* error, const protocol::OptionalValue<bool>& trackAllocations)
+void InspectorHeapProfilerAgent::startTrackingHeapObjects(ErrorString* error, const protocol::Maybe<bool>& trackAllocations)
 {
     m_v8HeapProfilerAgent->startTrackingHeapObjects(error, trackAllocations);
     startUpdateStatsTimer();
 }
 
-void InspectorHeapProfilerAgent::stopTrackingHeapObjects(ErrorString* error, const protocol::OptionalValue<bool>& reportProgress)
+void InspectorHeapProfilerAgent::stopTrackingHeapObjects(ErrorString* error, const protocol::Maybe<bool>& reportProgress)
 {
     m_v8HeapProfilerAgent->stopTrackingHeapObjects(error, reportProgress);
     stopUpdateStatsTimer();
@@ -159,12 +159,12 @@ void InspectorHeapProfilerAgent::disable(ErrorString* error)
     stopUpdateStatsTimer();
 }
 
-void InspectorHeapProfilerAgent::takeHeapSnapshot(ErrorString* errorString, const protocol::OptionalValue<bool>& reportProgress)
+void InspectorHeapProfilerAgent::takeHeapSnapshot(ErrorString* errorString, const protocol::Maybe<bool>& reportProgress)
 {
     m_v8HeapProfilerAgent->takeHeapSnapshot(errorString, reportProgress);
 }
 
-void InspectorHeapProfilerAgent::getObjectByHeapObjectId(ErrorString* error, const String& heapSnapshotObjectId, const protocol::OptionalValue<String>& objectGroup, OwnPtr<protocol::Runtime::RemoteObject>* result)
+void InspectorHeapProfilerAgent::getObjectByHeapObjectId(ErrorString* error, const String& heapSnapshotObjectId, const protocol::Maybe<String>& objectGroup, OwnPtr<protocol::Runtime::RemoteObject>* result)
 {
     bool ok;
     unsigned id = heapSnapshotObjectId.toUInt(&ok);

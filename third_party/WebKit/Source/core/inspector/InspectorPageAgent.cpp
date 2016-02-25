@@ -416,13 +416,13 @@ void InspectorPageAgent::setAutoAttachToCreatedPages(ErrorString*, bool autoAtta
     m_state->setBoolean(PageAgentState::autoAttachToCreatedPages, autoAttach);
 }
 
-void InspectorPageAgent::reload(ErrorString*, const OptionalValue<bool>& optionalIgnoreCache, const OptionalValue<String>& optionalScriptToEvaluateOnLoad)
+void InspectorPageAgent::reload(ErrorString*, const Maybe<bool>& optionalIgnoreCache, const Maybe<String>& optionalScriptToEvaluateOnLoad)
 {
-    m_pendingScriptToEvaluateOnLoadOnce = optionalScriptToEvaluateOnLoad.get("");
+    m_pendingScriptToEvaluateOnLoadOnce = optionalScriptToEvaluateOnLoad.fromMaybe("");
     ErrorString unused;
     m_debuggerAgent->setSkipAllPauses(&unused, true);
     m_reloading = true;
-    m_inspectedFrames->root()->reload(optionalIgnoreCache.get(false) ? FrameLoadTypeReloadFromOrigin : FrameLoadTypeReload, NotClientRedirect);
+    m_inspectedFrames->root()->reload(optionalIgnoreCache.fromMaybe(false) ? FrameLoadTypeReloadFromOrigin : FrameLoadTypeReload, NotClientRedirect);
 }
 
 void InspectorPageAgent::navigate(ErrorString*, const String& url, String* outFrameId)
@@ -559,13 +559,13 @@ void InspectorPageAgent::searchContentAfterResourcesContentLoaded(const String& 
     callback->sendSuccess(results.release());
 }
 
-void InspectorPageAgent::searchInResource(ErrorString*, const String& frameId, const String& url, const String& query, const OptionalValue<bool>& optionalCaseSensitive, const OptionalValue<bool>& optionalIsRegex, PassRefPtr<SearchInResourceCallback> callback)
+void InspectorPageAgent::searchInResource(ErrorString*, const String& frameId, const String& url, const String& query, const Maybe<bool>& optionalCaseSensitive, const Maybe<bool>& optionalIsRegex, PassRefPtr<SearchInResourceCallback> callback)
 {
     if (!m_enabled) {
         callback->sendFailure("Agent is not enabled.");
         return;
     }
-    m_inspectorResourceContentLoader->ensureResourcesContentLoaded(bind(&InspectorPageAgent::searchContentAfterResourcesContentLoaded, this, frameId, url, query, optionalCaseSensitive.get(false), optionalIsRegex.get(false), callback));
+    m_inspectorResourceContentLoader->ensureResourcesContentLoaded(bind(&InspectorPageAgent::searchContentAfterResourcesContentLoaded, this, frameId, url, query, optionalCaseSensitive.fromMaybe(false), optionalIsRegex.fromMaybe(false), callback));
 }
 
 void InspectorPageAgent::setDocumentContent(ErrorString* errorString, const String& frameId, const String& html)
@@ -767,7 +767,7 @@ PassOwnPtr<protocol::Page::FrameResourceTree> InspectorPageAgent::buildObjectFor
     return result.release();
 }
 
-void InspectorPageAgent::startScreencast(ErrorString*, const OptionalValue<String>& format, const OptionalValue<int>& quality, const OptionalValue<int>& maxWidth, const OptionalValue<int>& maxHeight, const OptionalValue<int>& everyNthFrame)
+void InspectorPageAgent::startScreencast(ErrorString*, const Maybe<String>& format, const Maybe<int>& quality, const Maybe<int>& maxWidth, const Maybe<int>& maxHeight, const Maybe<int>& everyNthFrame)
 {
     m_state->setBoolean(PageAgentState::screencastEnabled, true);
 }
@@ -777,10 +777,10 @@ void InspectorPageAgent::stopScreencast(ErrorString*)
     m_state->setBoolean(PageAgentState::screencastEnabled, false);
 }
 
-void InspectorPageAgent::setOverlayMessage(ErrorString*, const OptionalValue<String>& message)
+void InspectorPageAgent::setOverlayMessage(ErrorString*, const Maybe<String>& message)
 {
     if (m_client)
-        m_client->setPausedInDebuggerMessage(message.get(String()));
+        m_client->setPausedInDebuggerMessage(message.fromMaybe(String()));
 }
 
 DEFINE_TRACE(InspectorPageAgent)

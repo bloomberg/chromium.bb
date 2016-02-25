@@ -56,7 +56,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     // Methods called from the frontend for simulating input.
-    void dispatchTouchEvent(ErrorString*, const String& type, PassOwnPtr<protocol::Array<protocol::Input::TouchPoint>> touchPoints, const OptionalValue<int>& modifiers, const OptionalValue<double>& timestamp) override;
+    void dispatchTouchEvent(ErrorString*, const String& type, PassOwnPtr<protocol::Array<protocol::Input::TouchPoint>> touchPoints, const Maybe<int>& modifiers, const Maybe<double>& timestamp) override;
 private:
     explicit InspectorInputAgent(InspectedFrames*);
 

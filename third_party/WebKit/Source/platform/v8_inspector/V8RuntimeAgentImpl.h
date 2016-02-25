@@ -44,7 +44,7 @@ class V8DebuggerImpl;
 
 typedef String ErrorString;
 
-using protocol::OptionalValue;
+using protocol::Maybe;
 
 class V8RuntimeAgentImpl : public V8RuntimeAgent {
     WTF_MAKE_NONCOPYABLE(V8RuntimeAgentImpl);
@@ -63,33 +63,33 @@ public:
     void disable(ErrorString*) override;
     void evaluate(ErrorString*,
         const String& expression,
-        const OptionalValue<String>& objectGroup,
-        const OptionalValue<bool>& includeCommandLineAPI,
-        const OptionalValue<bool>& doNotPauseOnExceptionsAndMuteConsole,
-        const OptionalValue<int>& executionContextId,
-        const OptionalValue<bool>& returnByValue,
-        const OptionalValue<bool>& generatePreview,
+        const Maybe<String>& objectGroup,
+        const Maybe<bool>& includeCommandLineAPI,
+        const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole,
+        const Maybe<int>& executionContextId,
+        const Maybe<bool>& returnByValue,
+        const Maybe<bool>& generatePreview,
         OwnPtr<protocol::Runtime::RemoteObject>* result,
-        OptionalValue<bool>* wasThrown,
-        OwnPtr<protocol::Runtime::ExceptionDetails>*) override;
+        Maybe<bool>* wasThrown,
+        Maybe<protocol::Runtime::ExceptionDetails>*) override;
     void callFunctionOn(ErrorString*,
         const String& objectId,
         const String& expression,
-        PassOwnPtr<protocol::Array<protocol::Runtime::CallArgument>> optionalArguments,
-        const OptionalValue<bool>& doNotPauseOnExceptionsAndMuteConsole,
-        const OptionalValue<bool>& returnByValue,
-        const OptionalValue<bool>& generatePreview,
+        const Maybe<protocol::Array<protocol::Runtime::CallArgument>>& optionalArguments,
+        const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole,
+        const Maybe<bool>& returnByValue,
+        const Maybe<bool>& generatePreview,
         OwnPtr<protocol::Runtime::RemoteObject>* result,
-        OptionalValue<bool>* wasThrown) override;
+        Maybe<bool>* wasThrown) override;
     void releaseObject(ErrorString*, const String& objectId) override;
     void getProperties(ErrorString*,
         const String& objectId,
-        const OptionalValue<bool>& ownProperties,
-        const OptionalValue<bool>& accessorPropertiesOnly,
-        const OptionalValue<bool>& generatePreview,
+        const Maybe<bool>& ownProperties,
+        const Maybe<bool>& accessorPropertiesOnly,
+        const Maybe<bool>& generatePreview,
         OwnPtr<protocol::Array<protocol::Runtime::PropertyDescriptor>>* result,
-        OwnPtr<protocol::Array<protocol::Runtime::InternalPropertyDescriptor>>* internalProperties,
-        OwnPtr<protocol::Runtime::ExceptionDetails>*) override;
+        Maybe<protocol::Array<protocol::Runtime::InternalPropertyDescriptor>>* internalProperties,
+        Maybe<protocol::Runtime::ExceptionDetails>*) override;
     void releaseObjectGroup(ErrorString*, const String& objectGroup) override;
     void run(ErrorString*) override;
     void isRunRequired(ErrorString*, bool* result) override;
@@ -99,16 +99,16 @@ public:
         const String& sourceURL,
         bool persistScript,
         int executionContextId,
-        OptionalValue<protocol::Runtime::ScriptId>*,
-        OwnPtr<protocol::Runtime::ExceptionDetails>*) override;
+        Maybe<protocol::Runtime::ScriptId>*,
+        Maybe<protocol::Runtime::ExceptionDetails>*) override;
     void runScript(ErrorString*,
         const protocol::Runtime::ScriptId&,
         int executionContextId,
-        const OptionalValue<String>& objectGroup,
-        const OptionalValue<bool>& doNotPauseOnExceptionsAndMuteConsole,
-        const OptionalValue<bool>& includeCommandLineAPI,
+        const Maybe<String>& objectGroup,
+        const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole,
+        const Maybe<bool>& includeCommandLineAPI,
         OwnPtr<protocol::Runtime::RemoteObject>* result,
-        OwnPtr<protocol::Runtime::ExceptionDetails>*) override;
+        Maybe<protocol::Runtime::ExceptionDetails>*) override;
 
     V8DebuggerImpl* debugger() { return m_debugger; }
     InjectedScriptManager* injectedScriptManager() { return m_injectedScriptManager.get(); }

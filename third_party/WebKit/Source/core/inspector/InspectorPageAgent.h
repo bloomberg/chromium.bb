@@ -54,7 +54,7 @@ class TextResourceDecoder;
 
 typedef String ErrorString;
 
-using blink::protocol::OptionalValue;
+using blink::protocol::Maybe;
 
 class CORE_EXPORT InspectorPageAgent final : public InspectorBaseAgent<InspectorPageAgent, protocol::Frontend::Page>, public protocol::Dispatcher::PageCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorPageAgent);
@@ -102,15 +102,15 @@ public:
     void addScriptToEvaluateOnLoad(ErrorString*, const String& scriptSource, String* identifier) override;
     void removeScriptToEvaluateOnLoad(ErrorString*, const String& identifier) override;
     void setAutoAttachToCreatedPages(ErrorString*, bool autoAttach) override;
-    void reload(ErrorString*, const OptionalValue<bool>& ignoreCache, const OptionalValue<String>& scriptToEvaluateOnLoad) override;
+    void reload(ErrorString*, const Maybe<bool>& ignoreCache, const Maybe<String>& scriptToEvaluateOnLoad) override;
     void navigate(ErrorString*, const String& url, String* frameId) override;
     void getResourceTree(ErrorString*, OwnPtr<protocol::Page::FrameResourceTree>* frameTree) override;
     void getResourceContent(ErrorString*, const String& frameId, const String& url, PassRefPtr<GetResourceContentCallback>) override;
-    void searchInResource(ErrorString*, const String& frameId, const String& url, const String& query, const OptionalValue<bool>& caseSensitive, const OptionalValue<bool>& isRegex, PassRefPtr<SearchInResourceCallback>) override;
+    void searchInResource(ErrorString*, const String& frameId, const String& url, const String& query, const Maybe<bool>& caseSensitive, const Maybe<bool>& isRegex, PassRefPtr<SearchInResourceCallback>) override;
     void setDocumentContent(ErrorString*, const String& frameId, const String& html) override;
-    void startScreencast(ErrorString*, const OptionalValue<String>& format, const OptionalValue<int>& quality, const OptionalValue<int>& maxWidth, const OptionalValue<int>& maxHeight, const OptionalValue<int>& everyNthFrame) override;
+    void startScreencast(ErrorString*, const Maybe<String>& format, const Maybe<int>& quality, const Maybe<int>& maxWidth, const Maybe<int>& maxHeight, const Maybe<int>& everyNthFrame) override;
     void stopScreencast(ErrorString*) override;
-    void setOverlayMessage(ErrorString*, const OptionalValue<String>& message) override;
+    void setOverlayMessage(ErrorString*, const Maybe<String>& message) override;
 
     // InspectorInstrumentation API
     void didClearDocumentOfWindowObject(LocalFrame*);

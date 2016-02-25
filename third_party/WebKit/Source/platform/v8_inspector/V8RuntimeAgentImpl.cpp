@@ -72,40 +72,40 @@ V8RuntimeAgentImpl::~V8RuntimeAgentImpl()
 void V8RuntimeAgentImpl::evaluate(
     ErrorString* errorString,
     const String& expression,
-    const OptionalValue<String>& objectGroup,
-    const OptionalValue<bool>& includeCommandLineAPI,
-    const OptionalValue<bool>& doNotPauseOnExceptionsAndMuteConsole,
-    const OptionalValue<int>& executionContextId,
-    const OptionalValue<bool>& returnByValue,
-    const OptionalValue<bool>& generatePreview,
+    const Maybe<String>& objectGroup,
+    const Maybe<bool>& includeCommandLineAPI,
+    const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole,
+    const Maybe<int>& executionContextId,
+    const Maybe<bool>& returnByValue,
+    const Maybe<bool>& generatePreview,
     OwnPtr<RemoteObject>* result,
-    OptionalValue<bool>* wasThrown,
-    OwnPtr<ExceptionDetails>* exceptionDetails)
+    Maybe<bool>* wasThrown,
+    Maybe<ExceptionDetails>* exceptionDetails)
 {
-    if (!executionContextId.hasValue()) {
+    if (!executionContextId.isJust()) {
         *errorString = "Cannot find default execution context";
         return;
     }
-    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(executionContextId.get());
+    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(executionContextId.fromJust());
     if (!injectedScript) {
         *errorString = "Cannot find execution context with given id";
         return;
     }
     Optional<IgnoreExceptionsScope> ignoreExceptionsScope;
-    if (doNotPauseOnExceptionsAndMuteConsole.get(false))
+    if (doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false))
         ignoreExceptionsScope.emplace(m_debugger);
-    injectedScript->evaluate(errorString, expression, objectGroup.get(""), includeCommandLineAPI.get(false), returnByValue.get(false), generatePreview.get(false), result, wasThrown, exceptionDetails);
+    injectedScript->evaluate(errorString, expression, objectGroup.fromMaybe(""), includeCommandLineAPI.fromMaybe(false), returnByValue.fromMaybe(false), generatePreview.fromMaybe(false), result, wasThrown, exceptionDetails);
 }
 
 void V8RuntimeAgentImpl::callFunctionOn(ErrorString* errorString,
     const String& objectId,
     const String& expression,
-    PassOwnPtr<protocol::Array<protocol::Runtime::CallArgument>> optionalArguments,
-    const OptionalValue<bool>& doNotPauseOnExceptionsAndMuteConsole,
-    const OptionalValue<bool>& returnByValue,
-    const OptionalValue<bool>& generatePreview,
+    const Maybe<protocol::Array<protocol::Runtime::CallArgument>>& optionalArguments,
+    const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole,
+    const Maybe<bool>& returnByValue,
+    const Maybe<bool>& generatePreview,
     OwnPtr<RemoteObject>* result,
-    OptionalValue<bool>* wasThrown)
+    Maybe<bool>* wasThrown)
 {
     OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(objectId);
     if (!remoteId) {
@@ -118,24 +118,24 @@ void V8RuntimeAgentImpl::callFunctionOn(ErrorString* errorString,
         return;
     }
     String arguments;
-    if (optionalArguments)
-        arguments = protocol::toValue(optionalArguments)->toJSONString();
+    if (optionalArguments.isJust())
+        arguments = protocol::toValue(optionalArguments.fromJust())->toJSONString();
 
     Optional<IgnoreExceptionsScope> ignoreExceptionsScope;
-    if (doNotPauseOnExceptionsAndMuteConsole.get(false))
+    if (doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false))
         ignoreExceptionsScope.emplace(m_debugger);
-    injectedScript->callFunctionOn(errorString, objectId, expression, arguments, returnByValue.get(false), generatePreview.get(false), result, wasThrown);
+    injectedScript->callFunctionOn(errorString, objectId, expression, arguments, returnByValue.fromMaybe(false), generatePreview.fromMaybe(false), result, wasThrown);
 }
 
 void V8RuntimeAgentImpl::getProperties(
     ErrorString* errorString,
     const String& objectId,
-    const OptionalValue<bool>& ownProperties,
-    const OptionalValue<bool>& accessorPropertiesOnly,
-    const OptionalValue<bool>& generatePreview,
+    const Maybe<bool>& ownProperties,
+    const Maybe<bool>& accessorPropertiesOnly,
+    const Maybe<bool>& generatePreview,
     OwnPtr<protocol::Array<protocol::Runtime::PropertyDescriptor>>* result,
-    OwnPtr<protocol::Array<protocol::Runtime::InternalPropertyDescriptor>>* internalProperties,
-    OwnPtr<ExceptionDetails>* exceptionDetails)
+    Maybe<protocol::Array<protocol::Runtime::InternalPropertyDescriptor>>* internalProperties,
+    Maybe<ExceptionDetails>* exceptionDetails)
 {
     OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(objectId);
     if (!remoteId) {
@@ -150,9 +150,9 @@ void V8RuntimeAgentImpl::getProperties(
 
     IgnoreExceptionsScope ignoreExceptionsScope(m_debugger);
 
-    injectedScript->getProperties(errorString, objectId, ownProperties.get(false), accessorPropertiesOnly.get(false), generatePreview.get(false), result, exceptionDetails);
+    injectedScript->getProperties(errorString, objectId, ownProperties.fromMaybe(false), accessorPropertiesOnly.fromMaybe(false), generatePreview.fromMaybe(false), result, exceptionDetails);
 
-    if (!exceptionDetails->get() && !accessorPropertiesOnly.get(false))
+    if (!exceptionDetails->isJust() && !accessorPropertiesOnly.fromMaybe(false))
         injectedScript->getInternalProperties(errorString, objectId, internalProperties, exceptionDetails);
 }
 
@@ -205,8 +205,8 @@ void V8RuntimeAgentImpl::compileScript(ErrorString* errorString,
     const String& sourceURL,
     bool persistScript,
     int executionContextId,
-    OptionalValue<protocol::Runtime::ScriptId>* scriptId,
-    OwnPtr<ExceptionDetails>* exceptionDetails)
+    Maybe<protocol::Runtime::ScriptId>* scriptId,
+    Maybe<ExceptionDetails>* exceptionDetails)
 {
     if (!m_enabled) {
         *errorString = "Runtime agent is not enabled";
@@ -244,11 +244,11 @@ void V8RuntimeAgentImpl::compileScript(ErrorString* errorString,
 void V8RuntimeAgentImpl::runScript(ErrorString* errorString,
     const protocol::Runtime::ScriptId& scriptId,
     int executionContextId,
-    const OptionalValue<String>& objectGroup,
-    const OptionalValue<bool>& doNotPauseOnExceptionsAndMuteConsole,
-    const OptionalValue<bool>& includeCommandLineAPI,
+    const Maybe<String>& objectGroup,
+    const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole,
+    const Maybe<bool>& includeCommandLineAPI,
     OwnPtr<RemoteObject>* result,
-    OwnPtr<ExceptionDetails>* exceptionDetails)
+    Maybe<ExceptionDetails>* exceptionDetails)
 {
     if (!m_enabled) {
         *errorString = "Runtime agent is not enabled";
@@ -261,7 +261,7 @@ void V8RuntimeAgentImpl::runScript(ErrorString* errorString,
     }
 
     Optional<IgnoreExceptionsScope> ignoreExceptionsScope;
-    if (doNotPauseOnExceptionsAndMuteConsole.get(false))
+    if (doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false))
         ignoreExceptionsScope.emplace(m_debugger);
 
     if (!m_compiledScripts.contains(scriptId)) {
@@ -283,7 +283,7 @@ void V8RuntimeAgentImpl::runScript(ErrorString* errorString,
     v8::TryCatch tryCatch(isolate);
 
     v8::Local<v8::Value> value;
-    v8::MaybeLocal<v8::Value> maybeValue = injectedScript->runCompiledScript(script, includeCommandLineAPI.get(false));
+    v8::MaybeLocal<v8::Value> maybeValue = injectedScript->runCompiledScript(script, includeCommandLineAPI.fromMaybe(false));
     if (maybeValue.IsEmpty()) {
         value = tryCatch.Exception();
         v8::Local<v8::Message> message = tryCatch.Message();
@@ -298,7 +298,7 @@ void V8RuntimeAgentImpl::runScript(ErrorString* errorString,
         return;
     }
 
-    *result = injectedScript->wrapObject(value, objectGroup.get(""));
+    *result = injectedScript->wrapObject(value, objectGroup.fromMaybe(""));
 }
 
 void V8RuntimeAgentImpl::setInspectorState(PassRefPtr<JSONObject> state)

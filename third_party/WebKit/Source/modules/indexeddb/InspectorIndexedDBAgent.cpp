@@ -393,7 +393,7 @@ static IDBKey* idbKeyFromInspectorObject(PassOwnPtr<protocol::IndexedDB::Key> ke
     return idbKey;
 }
 
-static IDBKeyRange* idbKeyRangeFromKeyRange(PassOwnPtr<protocol::IndexedDB::KeyRange> keyRange)
+static IDBKeyRange* idbKeyRangeFromKeyRange(protocol::IndexedDB::KeyRange* keyRange)
 {
     IDBKey* idbLower = idbKeyFromInspectorObject(keyRange->getLower(nullptr));
     if (keyRange->hasLower() && !idbLower)
@@ -686,7 +686,15 @@ void InspectorIndexedDBAgent::requestDatabase(ErrorString* errorString, const St
     databaseLoader->start(idbFactory, document->securityOrigin(), databaseName);
 }
 
-void InspectorIndexedDBAgent::requestData(ErrorString* errorString, const String& securityOrigin, const String& databaseName, const String& objectStoreName, const String& indexName, int skipCount, int pageSize, PassOwnPtr<protocol::IndexedDB::KeyRange> keyRange, const PassRefPtr<RequestDataCallback> requestCallback)
+void InspectorIndexedDBAgent::requestData(ErrorString* errorString,
+    const String& securityOrigin,
+    const String& databaseName,
+    const String& objectStoreName,
+    const String& indexName,
+    int skipCount,
+    int pageSize,
+    const Maybe<protocol::IndexedDB::KeyRange>& keyRange,
+    const PassRefPtr<RequestDataCallback> requestCallback)
 {
     LocalFrame* frame = m_inspectedFrames->frameWithSecurityOrigin(securityOrigin);
     Document* document = assertDocument(errorString, frame);
@@ -696,8 +704,8 @@ void InspectorIndexedDBAgent::requestData(ErrorString* errorString, const String
     if (!idbFactory)
         return;
 
-    IDBKeyRange* idbKeyRange = keyRange ? idbKeyRangeFromKeyRange(keyRange) : nullptr;
-    if (keyRange && !idbKeyRange) {
+    IDBKeyRange* idbKeyRange = keyRange.isJust() ? idbKeyRangeFromKeyRange(keyRange.fromJust()) : nullptr;
+    if (keyRange.isJust() && !idbKeyRange) {
         *errorString = "Can not parse key range.";
         return;
     }
