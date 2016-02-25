@@ -42,33 +42,6 @@
 static int              g_initialized = 0;
 
 /*
- * Three implementation strategies for module-specific logging:
- *
- * If Thread Local Storage is available, NaClLogSetModule sets a TLS
- * variable to the current module name and NaClLogDoLogAndUnsetModule
- * will use that variable to determine whether to log or not, without
- * taking a lock.
- *
- * If Thread-Specific Data is available (pthread.h), then
- * NaClLogModuleInit allocates a pthread_[sg]etspecific key, and
- * NaClLogSetModule / NaClLogDoLogAndUnsetModule uses the TSD variable
- * in much the same way that a TLS variable would be used.
- *
- * If neither TLS nor TSD is available, then a global variable is used
- * to hold the module name, and a NaClMutex lock is used to prevent
- * another thread from changing it until the detail level vs verbosity
- * level check has fired.
- */
-#if NACL_PLATFORM_HAS_TLS
-THREAD char const       *gTls_ModuleName;
-#elif NACL_PLATFORM_HAS_TSD
-#  include <pthread.h>
-pthread_key_t           gModuleNameKey;
-#else
-static char const       *nacl_log_module_name = NULL;
-#endif
-
-/*
  * All logging output is protected by this mutex, so that the logging
  * code may output using multiple calls to the gio functions and not
  * have logging output from multiple threads get intermixed.
@@ -93,23 +66,6 @@ static int              timestamp_enabled = 1;
 
 /* global, but explicitly not exposed in non-test header file */
 void (*gNaClLogAbortBehavior)(void) = NaClAbort;
-
-/*
- * For now, we use a simple linked list.  New entries are pushed to
- * the front; search starts at front.  So last entry for a particular
- * module wins, and we don't bother to eliminate duplicates.  The
- * expected number of modules is small, so we don't do anything
- * fancier.  TODO(bsy): measure performance loss and consider
- * alternatives.
- */
-
-struct NaClLogModuleVerbosity {
-  struct NaClLogModuleVerbosity *next;
-  char const                    *module_name;  /* strdup'd */
-  int                           verbosity;
-};
-
-static struct NaClLogModuleVerbosity *gNaClLogModuleVerbosity = NULL;
 
 static FILE *NaClLogFileIoBufferFromFile(char const *log_file) {
   int   log_desc;
@@ -208,95 +164,14 @@ struct Gio *NaClLogDefaultLogGio(void) {
   return NaClLogGioFromFileIoBuffer(log_iob);
 }
 
-void NaClLogParseAndSetModuleVerbosityMap(char const *module_verbosity_map) {
-  char        entry_buf[256];
-  size_t      entry_len;
-  char const  *sep;
-  char const  *next;
-  char        *assign;
-  int         seen_global = 0;
-  char        *module_name;
-  int         module_verbosity;
-
-  if (NULL == module_verbosity_map) {
-    return;
-  }
-
-  while (*module_verbosity_map != '\0') {
-    sep = strpbrk(module_verbosity_map, ",:");
-    if (NULL == sep) {
-      sep = module_verbosity_map + strlen(module_verbosity_map);
-      next = sep;
-    } else {
-      next = sep + 1;
-    }
-    /* post: sep points to comma or termination NUL */
-    entry_len = sep - module_verbosity_map;
-    if (entry_len > sizeof entry_buf - 1) {
-      NaClLog(LOG_ERROR,
-              "NaClLog: entry too long in module verbosity map \"%.*s\".\n",
-              (int) entry_len,
-              module_verbosity_map);
-      entry_len = sizeof entry_buf - 1;
-    }
-    strncpy(entry_buf, module_verbosity_map, entry_len);
-    entry_buf[entry_len] = '\0';
-    assign = strchr(entry_buf, '=');
-    if (NULL == assign && !seen_global) {
-      verbosity = strtol(entry_buf, (char **) 0, 0);
-      seen_global = 1;
-    } else {
-      *assign = '\0';
-
-      module_verbosity = strtol(assign+1, (char **) 0, 0);
-
-      while (entry_buf < assign && (' ' == assign[-1] || '\t' == assign[-1])) {
-        *--assign = '\0';
-      }
-      if (entry_buf == assign) {
-        NaClLog(LOG_FATAL,
-                "NaClLog: Bad module name in \"%s\".\n",
-                module_verbosity_map);
-      }
-
-      for (module_name = entry_buf;
-           ' ' == *module_name || '\t' == *module_name;
-           ++module_name) {
-        ;
-      }
-      NaClLogSetModuleVerbosity(module_name, module_verbosity);
-    }
-    module_verbosity_map = next;
-  }
-}
-
-void NaClLogModuleInitExtended2(int         default_verbosity,
-                                char const  *module_verbosity_map,
-                                struct Gio  *log_gio) {
+void NaClLogModuleInitExtended(int        initial_verbosity,
+                               struct Gio *log_gio) {
   if (!g_initialized) {
-#if !THREAD_SAFE_DETAIL_CHECK && !NACL_PLATFORM_HAS_TLS && NACL_PLATFORM_HAS_TSD
-    int errnum;
-
-    if (0 != (errnum = pthread_key_create(&gModuleNameKey, NULL))) {
-      fprintf(stderr, "NaClLogModuleInitExtended2: "
-              "pthread_key_create failed\n");
-      abort();
-    }
-#endif
     NaClXMutexCtor(&log_mu);
     g_initialized = 1;
   }
-  NaClLogSetVerbosity(default_verbosity);
-  NaClLogParseAndSetModuleVerbosityMap(module_verbosity_map);
+  NaClLogSetVerbosity(initial_verbosity);
   NaClLogSetGio(log_gio);
-}
-
-void NaClLogModuleInitExtended(int        initial_verbosity,
-                               struct Gio *log_gio) {
-
-  NaClLogModuleInitExtended2(initial_verbosity,
-                             getenv("NACLVERBOSITY"),
-                             log_gio);
 }
 
 void NaClLogModuleInit(void) {
@@ -305,16 +180,6 @@ void NaClLogModuleInit(void) {
 }
 
 void NaClLogModuleFini(void) {
-  struct NaClLogModuleVerbosity *entry;
-  struct NaClLogModuleVerbosity *next;
-
-  entry = gNaClLogModuleVerbosity;
-  while (entry != NULL) {
-    next = entry->next;
-    free(entry);
-    entry = next;
-  }
-  gNaClLogModuleVerbosity = NULL;
   NaClMutexDtor(&log_mu);
   g_initialized = 0;
 }
@@ -535,135 +400,6 @@ void NaClLogV(int         detail_level,
   NaClLogLock();
   NaClLogV_mu(detail_level, fmt, ap);
   NaClLogUnlock();
-}
-
-void NaClLogSetModuleVerbosity_mu(char const  *module_name,
-                                  int         verbosity) {
-  struct NaClLogModuleVerbosity *entry;
-
-  entry = (struct NaClLogModuleVerbosity *) malloc(sizeof *entry);
-  if (NULL == entry) {
-    NaClLog_mu(LOG_FATAL,
-               ("NaClLogSetModuleVerbosity_mu: Out of memory while setting"
-                " module record for module: %s, verbosity: %d\n"),
-               module_name, verbosity);
-  }
-  entry->module_name = STRDUP(module_name);
-  if (NULL == entry->module_name) {
-    NaClLog_mu(LOG_FATAL,
-               ("NaClLogSetModuleVerbosity_mu: Out of memory while duplicating"
-                " module name: %s, verbosity: %d\n"),
-               module_name, verbosity);
-  }
-  entry->verbosity = verbosity;
-  entry->next = gNaClLogModuleVerbosity;
-  gNaClLogModuleVerbosity = entry;
-}
-
-void NaClLogSetModuleVerbosity(char const *module_name,
-                               int        verbosity) {
-  NaClLogLock();
-  NaClLogSetModuleVerbosity_mu(module_name, verbosity);
-  NaClLogUnlock();
-}
-
-/*
- * After initialization, gNaClLogModuleVerbosity is read-only, so can
- * be examined sans locking.
- */
-int NaClLogGetModuleVerbosity_mu(char const *module_name) {
-  struct NaClLogModuleVerbosity *p;
-
-  if (NULL != module_name) {
-    for (p = gNaClLogModuleVerbosity; NULL != p; p = p->next) {
-      if (!strcmp(p->module_name, module_name)) {
-        return p->verbosity;
-      }
-    }
-  }
-  return verbosity;
-}
-
-int NaClLogGetModuleVerbosity(char const *module_name) {
-  int rv;
-  NaClLogLock();
-  rv = NaClLogGetModuleVerbosity_mu(module_name);
-  NaClLogUnlock();
-  return rv;
-}
-
-#if NACL_PLATFORM_HAS_TLS
-int NaClLogSetModule(char const *module_name) {
-  gTls_ModuleName = module_name;
-  return 0;
-}
-
-static void NaClLogDoLogAndUnsetModuleV(int        detail_level,
-                                        const char *fmt,
-                                        va_list    ap) {
-  int module_verbosity;
-
-  module_verbosity = NaClLogGetModuleVerbosity_mu(gTls_ModuleName);
-  if (detail_level <= module_verbosity) {
-    NaClLogLock();
-    NaClLogDoLogV_mu(detail_level, fmt, ap);
-    NaClLogUnlock();
-  }
-  gTls_ModuleName = (char const *) NULL;
-}
-
-#elif NACL_PLATFORM_HAS_TSD
-int NaClLogSetModule(char const *module_name) {
-  (void) pthread_setspecific(gModuleNameKey, (void const *) module_name);
-  return 0;
-}
-
-static void NaClLogDoLogAndUnsetModuleV(int        detail_level,
-                                        const char *fmt,
-                                        va_list    ap) {
-  char const  *module_name = (char const *) pthread_getspecific(gModuleNameKey);
-  int         module_verbosity;
-
-  module_verbosity = NaClLogGetModuleVerbosity_mu(module_name);
-  if (detail_level <= module_verbosity) {
-    NaClLogLock();
-    NaClLogDoLogV_mu(detail_level, fmt, ap);
-    NaClLogUnlock();
-  }
-  (void) pthread_setspecific(gModuleNameKey, (void const *) NULL);
-}
-
-#else
-/* !NACL_PLATFORM_HAS_TLS && !NACL_PLATFORM_HAS_TSD */
-
-int NaClLogSetModule(char const *module_name) {
-  NaClLogLock();
-  nacl_log_module_name = module_name;
-  return 0;
-}
-
-static void NaClLogDoLogAndUnsetModuleV(int         detail_level,
-                                        char const  *fmt,
-                                        va_list     ap) {
-  int module_verbosity;
-
-  module_verbosity = NaClLogGetModuleVerbosity_mu(nacl_log_module_name);
-  if (detail_level <= module_verbosity) {
-    NaClLogDoLogV_mu(detail_level, fmt, ap);
-  }
-  nacl_log_module_name = NULL;
-  NaClLogUnlock();
-}
-#endif
-
-void NaClLogDoLogAndUnsetModule(int        detail_level,
-                                char const *fmt,
-                                ...) {
-  va_list ap;
-
-  va_start(ap, fmt);
-  NaClLogDoLogAndUnsetModuleV(detail_level, fmt, ap);
-  va_end(ap);
 }
 
 void NaClLog(int         detail_level,
