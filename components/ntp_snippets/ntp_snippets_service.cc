@@ -12,7 +12,11 @@
 #include "base/task_runner_util.h"
 #include "base/values.h"
 
-namespace ntp_snippets {
+namespace {
+
+// TODO(crbug.com/587857): This is an extremely small value, for development.
+// Replace it by something sensible and add a command line param to control it.
+const int kDefaultFetchingIntervalSeconds = 60;
 
 bool ReadFileToString(const base::FilePath& path, std::string* data) {
   DCHECK(data);
@@ -21,13 +25,19 @@ bool ReadFileToString(const base::FilePath& path, std::string* data) {
   return success;
 }
 
+}  // namespace
+
+namespace ntp_snippets {
+
 NTPSnippetsService::NTPSnippetsService(
     scoped_refptr<base::SequencedTaskRunner> file_task_runner,
     const std::string& application_language_code,
+    NTPSnippetsScheduler* scheduler,
     scoped_ptr<NTPSnippetsFetcher> snippets_fetcher)
     : loaded_(false),
       file_task_runner_(file_task_runner),
       application_language_code_(application_language_code),
+      scheduler_(scheduler),
       snippets_fetcher_(std::move(snippets_fetcher)),
       weak_ptr_factory_(this) {
   snippets_fetcher_callback_ = snippets_fetcher_->AddCallback(
@@ -36,6 +46,17 @@ NTPSnippetsService::NTPSnippetsService(
 }
 
 NTPSnippetsService::~NTPSnippetsService() {}
+
+void NTPSnippetsService::Init(bool enabled) {
+  // The scheduler only exists on Android so far, it's null on other platforms.
+  if (!scheduler_)
+    return;
+
+  if (enabled)
+    scheduler_->Schedule(kDefaultFetchingIntervalSeconds);
+  else
+    scheduler_->Unschedule();
+}
 
 void NTPSnippetsService::Shutdown() {
   FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,

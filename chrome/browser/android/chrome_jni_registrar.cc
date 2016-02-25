@@ -62,6 +62,7 @@
 #include "chrome/browser/android/new_tab_page_prefs.h"
 #include "chrome/browser/android/ntp_snippets_bridge.h"
 #include "chrome/browser/android/ntp_snippets_controller.h"
+#include "chrome/browser/android/ntp_snippets_launcher.h"
 #include "chrome/browser/android/offline_pages/offline_page_bridge.h"
 #include "chrome/browser/android/omnibox/answers_image_bridge.h"
 #include "chrome/browser/android/omnibox/autocomplete_controller_android.h"
@@ -310,6 +311,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
      NotificationUIManagerAndroid::RegisterNotificationUIManager},
     {"NTPSnippetsBridge", NTPSnippetsBridge::Register},
     {"NTPSnippetsController", NTPSnippetsController::Register},
+    {"NTPSnippetsLauncher", NTPSnippetsLauncher::Register},
     {"OAuth2TokenServiceDelegateAndroid",
      OAuth2TokenServiceDelegateAndroid::Register},
     {"OfflinePageBridge", offline_pages::android::RegisterOfflinePageBridge},

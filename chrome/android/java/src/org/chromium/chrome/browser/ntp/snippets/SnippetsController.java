@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.ntp.snippets;
 import android.content.Context;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
@@ -20,7 +21,10 @@ public class SnippetsController implements SignInStateObserver {
     private long mNativeSnippetsController;
 
     public SnippetsController(Context applicationContext) {
-        SigninManager.get(applicationContext).addSignInStateObserver(this);
+        // |applicationContext| can be null in tests.
+        if (applicationContext != null) {
+            SigninManager.get(applicationContext).addSignInStateObserver(this);
+        }
     }
 
     /**
@@ -54,6 +58,11 @@ public class SnippetsController implements SignInStateObserver {
 
     @Override
     public void onSignedOut() {}
+
+    @VisibleForTesting
+    public static void setInstanceForTesting(SnippetsController instance) {
+        sInstance = instance;
+    }
 
     private native void nativeFetchSnippets(Profile profile, boolean overwrite);
 }

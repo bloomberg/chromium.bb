@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/deferred_sequenced_task_runner.h"
+#include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -106,8 +107,10 @@
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #endif
 
-#if defined(OS_WIN)
-#include "chrome/installer/util/browser_distribution.h"
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/chrome_feature_list.h"
+#include "chrome/browser/ntp_snippets/ntp_snippets_service_factory.h"
+#include "components/ntp_snippets/ntp_snippets_service.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -1150,6 +1153,14 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
   // migration code, rough time estimates are Q1 2016.
   PasswordManagerSettingMigratorServiceFactory::GetForProfile(profile)
       ->InitializeMigration(ProfileSyncServiceFactory::GetForProfile(profile));
+
+#if defined(OS_ANDROID)
+  // Service is responsible for fetching content snippets for the NTP.
+  // Note: Create the service even if the feature is disabled, so that any
+  // remaining tasks will be cleaned up.
+  NTPSnippetsServiceFactory::GetForProfile(profile)->Init(
+      base::FeatureList::IsEnabled(chrome::android::kNTPSnippetsFeature));
+#endif
 }
 
 void ProfileManager::DoFinalInitLogging(Profile* profile) {

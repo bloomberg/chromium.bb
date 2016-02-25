@@ -89,7 +89,6 @@ import org.chromium.chrome.browser.metrics.StartupMetrics;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.nfc.BeamController;
 import org.chromium.chrome.browser.nfc.BeamProvider;
-import org.chromium.chrome.browser.ntp.snippets.SnippetsController;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.pageinfo.WebsiteSettingsPopup;
@@ -694,12 +693,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             mToolbarManager.onDeferredStartup(getOnCreateTimestampMs(), simpleName);
         }
         recordKeyboardLocaleUma();
-
-        // TODO(treib): Remove this when we have the proper morning reads fetching logic in place
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SNIPPETS)) {
-            // Initialize snippets
-            SnippetsController.get(this).fetchSnippets(false);
-        }
     }
 
     @Override

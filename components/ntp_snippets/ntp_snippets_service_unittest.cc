@@ -61,7 +61,7 @@ class NTPSnippetsServiceTest : public testing::Test {
         signin_client_.get(), account_tracker_.get());
 
     scoped_ptr<NTPSnippetsService> service(
-        new NTPSnippetsService(task_runner.get(), std::string("fr"),
+        new NTPSnippetsService(task_runner.get(), std::string("fr"), nullptr,
           make_scoped_ptr(new NTPSnippetsFetcher(task_runner.get(),
             signin_manager, token_service, request_context_getter,
             base::FilePath()))));
@@ -74,7 +74,6 @@ class NTPSnippetsServiceTest : public testing::Test {
   base::MessageLoop message_loop_;
   DISALLOW_COPY_AND_ASSIGN(NTPSnippetsServiceTest);
 };
-
 
 TEST_F(NTPSnippetsServiceTest, Create) {
   scoped_ptr<NTPSnippetsService> service(CreateSnippetService());

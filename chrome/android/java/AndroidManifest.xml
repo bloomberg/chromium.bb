@@ -579,8 +579,8 @@ by a child template that "extends" this file.
             </intent-filter>
         </receiver>
 
-        <!-- Service Worker Background Sync GCM scheduler task -->
-        <service android:name="org.chromium.chrome.browser.BackgroundSyncLauncherService"
+        <!-- GcmTaskService implementation to wake Chrome on scheduled events -->
+        <service android:name="org.chromium.chrome.browser.ChromeBackgroundService"
             android:permission="com.google.android.gms.permission.BIND_NETWORK_TASK_SERVICE"
             android:exported="true">
             <intent-filter>

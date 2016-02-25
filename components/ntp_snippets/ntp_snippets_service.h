@@ -18,6 +18,7 @@
 #include "components/ntp_snippets/inner_iterator.h"
 #include "components/ntp_snippets/ntp_snippet.h"
 #include "components/ntp_snippets/ntp_snippets_fetcher.h"
+#include "components/ntp_snippets/ntp_snippets_scheduler.h"
 
 namespace ntp_snippets {
 
@@ -36,8 +37,11 @@ class NTPSnippetsService : public KeyedService, NTPSnippetsFetcher::Observer {
   // (British english person in the US) are not language code.
   NTPSnippetsService(scoped_refptr<base::SequencedTaskRunner> file_task_runner,
                      const std::string& application_language_code,
+                     NTPSnippetsScheduler* scheduler,
                      scoped_ptr<NTPSnippetsFetcher> snippets_fetcher);
   ~NTPSnippetsService() override;
+
+  void Init(bool enabled);
 
   // Fetches snippets from the server. |overwrite| is true if existing snippets
   // should be overwritten.
@@ -98,6 +102,9 @@ class NTPSnippetsService : public KeyedService, NTPSnippetsFetcher::Observer {
 
   // The observers.
   base::ObserverList<NTPSnippetsServiceObserver> observers_;
+
+  // Scheduler for fetching snippets. Not owned.
+  NTPSnippetsScheduler* scheduler_;
 
   // The snippets fetcher
   scoped_ptr<NTPSnippetsFetcher> snippets_fetcher_;
