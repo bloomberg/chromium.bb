@@ -7,17 +7,17 @@ var setWidth = Math.pow(2, 31);
 var setHeight = Math.pow(2, 31);
 
 self.onmessage = function(e) {
-  var canvas1 = new OffscreenCanvasTemp(setWidth, setHeight);
+  var canvas1 = new OffscreenCanvas(setWidth, setHeight);
   self.postMessage({version:'canvas1', width:canvas1.width, height:canvas1.height});
 
-  var canvas2 = new OffscreenCanvasTemp(null, null);
+  var canvas2 = new OffscreenCanvas(null, null);
   self.postMessage({version:'canvas2', width:canvas2.width, height:canvas2.height});
 };
 </script>
 
 <script>
 jsTestIsAsync = true;
-description("Tests that the OffscreenCanvasTemp can handle invalid arguments on a worker");
+description("Tests that the OffscreenCanvas can handle invalid arguments on a worker");
 
 var width;
 var height;

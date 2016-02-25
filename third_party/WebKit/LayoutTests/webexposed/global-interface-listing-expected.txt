@@ -3689,7 +3689,7 @@ interface OfflineAudioContext : AudioContext
     method startRendering
     method suspend
     setter oncomplete
-interface OffscreenCanvasTemp
+interface OffscreenCanvas
     getter height
     getter width
     method constructor

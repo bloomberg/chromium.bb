@@ -4,7 +4,7 @@
 <body>
 <script id="myWorker" type="text/worker">
 self.onmessage = function(e) {
-  var aCanvas = new OffscreenCanvasTemp(50, 50);
+  var aCanvas = new OffscreenCanvas(50, 50);
   self.postMessage({version:'first', width:aCanvas.width, height:aCanvas.height});
 
   aCanvas.width = 100;
@@ -15,7 +15,7 @@ self.onmessage = function(e) {
 
 <script>
 jsTestIsAsync = true;
-description("Tests that the OffscreenCanvasTemp can be constructed on a worker thread.");
+description("Tests that the OffscreenCanvas can be constructed on a worker thread.");
 
 var width;
 var height;

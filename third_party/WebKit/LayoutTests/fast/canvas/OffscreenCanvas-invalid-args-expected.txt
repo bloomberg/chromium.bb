@@ -1,0 +1,23 @@
+Tests that the OffscreenCanvas can handle invalid arguments
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS canvas1.width is setWidth-1
+PASS canvas1.height is setHeight-1
+PASS canvas1.width is 0
+PASS canvas1.height is 0
+PASS new OffscreenCanvas(-1, -1) threw exception TypeError: Failed to construct 'OffscreenCanvas': Value is outside the 'unsigned long' value range..
+PASS canvas2.width is 0
+PASS canvas2.height is 0
+PASS canvas2.width is setWidth-1
+PASS canvas2.height is setHeight-1
+PASS canvas2.width = -1 threw exception TypeError: Failed to set the 'width' property on 'OffscreenCanvas': Value is outside the 'unsigned long' value range..
+PASS canvas2.height = -1 threw exception TypeError: Failed to set the 'height' property on 'OffscreenCanvas': Value is outside the 'unsigned long' value range..
+PASS canvas2.width = obj threw exception TypeError: Failed to set the 'width' property on 'OffscreenCanvas': Value is not of type 'unsigned long'..
+PASS canvas2.height = obj threw exception TypeError: Failed to set the 'height' property on 'OffscreenCanvas': Value is not of type 'unsigned long'..
+PASS new OffscreenCanvas(obj, obj) threw exception TypeError: Failed to construct 'OffscreenCanvas': Value is not of type 'unsigned long'..
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

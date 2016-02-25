@@ -471,7 +471,7 @@ interface NotificationEvent : ExtendableEvent
     getter action
     getter notification
     method constructor
-interface OffscreenCanvasTemp
+interface OffscreenCanvas
     getter height
     getter width
     method constructor
