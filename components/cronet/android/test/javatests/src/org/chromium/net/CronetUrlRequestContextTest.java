@@ -953,7 +953,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         builder.setDataReductionProxyOptions("mnop", "qrst", "uvwx");
         builder.setStoragePath(CronetTestFramework.getTestStorage(getContext()));
         nativeVerifyUrlRequestContextConfig(
-                CronetUrlRequestContext.createNativeUrlRequestContextConfig(builder),
+                CronetUrlRequestContext.createNativeUrlRequestContextConfig(getContext(), builder),
                 CronetTestFramework.getTestStorage(getContext()));
     }
 

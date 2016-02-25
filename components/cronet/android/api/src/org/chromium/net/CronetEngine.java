@@ -258,10 +258,12 @@ public abstract class CronetEngine {
          * Constructs default QUIC User Agent Id string including application name
          * and Cronet version. Returns empty string if QUIC is not enabled.
          *
+         * @param context Android {@link Context} to get package name from.
          * @return QUIC User Agent ID string.
          */
-        String getDefaultQuicUserAgentId() {
-            return mQuicEnabled ? UserAgent.getQuicUserAgentIdFrom(mContext) : "";
+        // TODO(mef): remove |context| parameter when legacy ChromiumUrlRequestContext is removed.
+        String getDefaultQuicUserAgentId(Context context) {
+            return mQuicEnabled ? UserAgent.getQuicUserAgentIdFrom(context) : "";
         }
 
         /**

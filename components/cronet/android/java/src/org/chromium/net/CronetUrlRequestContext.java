@@ -4,6 +4,7 @@
 
 package org.chromium.net;
 
+import android.content.Context;
 import android.os.Build;
 import android.os.ConditionVariable;
 import android.os.Handler;
@@ -78,8 +79,8 @@ class CronetUrlRequestContext extends CronetEngine {
     public CronetUrlRequestContext(CronetEngine.Builder builder) {
         CronetLibraryLoader.ensureInitialized(builder.getContext(), builder);
         nativeSetMinLogLevel(getLoggingLevel());
-        mUrlRequestContextAdapter =
-                nativeCreateRequestContextAdapter(createNativeUrlRequestContextConfig(builder));
+        mUrlRequestContextAdapter = nativeCreateRequestContextAdapter(
+                createNativeUrlRequestContextConfig(builder.getContext(), builder));
         if (mUrlRequestContextAdapter == 0) {
             throw new NullPointerException("Context Adapter creation failed.");
         }
@@ -104,12 +105,13 @@ class CronetUrlRequestContext extends CronetEngine {
         }
     }
 
-    static long createNativeUrlRequestContextConfig(CronetEngine.Builder builder) {
+    static long createNativeUrlRequestContextConfig(
+            final Context context, CronetEngine.Builder builder) {
         final long urlRequestContextConfig = nativeCreateRequestContextConfig(
                 builder.getUserAgent(), builder.storagePath(), builder.quicEnabled(),
-                builder.getDefaultQuicUserAgentId(), builder.http2Enabled(), builder.sdchEnabled(),
-                builder.dataReductionProxyKey(), builder.dataReductionProxyPrimaryProxy(),
-                builder.dataReductionProxyFallbackProxy(),
+                builder.getDefaultQuicUserAgentId(context), builder.http2Enabled(),
+                builder.sdchEnabled(), builder.dataReductionProxyKey(),
+                builder.dataReductionProxyPrimaryProxy(), builder.dataReductionProxyFallbackProxy(),
                 builder.dataReductionProxySecureProxyCheckUrl(), builder.cacheDisabled(),
                 builder.httpCacheMode(), builder.httpCacheMaxSize(), builder.experimentalOptions(),
                 builder.mockCertVerifier());
