@@ -557,3 +557,6 @@ chrome.automation.AutomationNode.prototype.lineBreaks;
  * @type {(number|undefined)}
  */
 chrome.automation.focusOffset;
+
+/** @type {function() : !Object} */
+chrome.app.getDetails;

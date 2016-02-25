@@ -759,6 +759,17 @@ Output.prototype = {
   },
 
   /**
+   * Output a string literal.
+   * @param {string} value
+   * @return {!Output}
+   */
+  withString: function(value) {
+    this.append_(this.speechBuffer_, value);
+    this.append_(this.brailleBuffer_, value);
+    return this;
+  },
+
+  /**
    * Apply a format string directly to the output buffer. This lets you
    * output a message directly to the buffer using the format syntax.
    * @param {string} formatStr

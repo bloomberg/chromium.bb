@@ -457,6 +457,41 @@
           "keyCode": [65, 69]
         }
       }
+    },
+    {
+      "command": "speakTimeAndDate",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [65, 68]}
+      }
+    },
+    {
+      "command": "readCurrentTitle",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [65, 87]
+        }
+      }
+    },
+    {
+      "command": "readCurrentURL",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [65, 85]
+        }
+      }
+    },
+    {
+      "command": "reportIssue",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [65, 73]
+        }
+      }
     }
   ]
 }

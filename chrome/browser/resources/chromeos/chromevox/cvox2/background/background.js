@@ -139,6 +139,14 @@ Background = function() {
     chrome.accessibilityPrivate.setKeyboardListener = function() {};
 };
 
+/**
+ * @const {string}
+ */
+Background.ISSUE_URL = 'https://code.google.com/p/chromium/issues/entry?' +
+    'labels=Type-Bug,Pri-2,cvox2,OS-Chrome&' +
+    'components=UI>accessibility&' +
+    'description=';
+
 Background.prototype = {
   __proto__: ChromeVoxState.prototype,
 
@@ -603,6 +611,45 @@ Background.prototype = {
         cvox.ChromeVox.tts.speak(Msgs.getMsg(
             global.backgroundTts.cyclePunctuationEcho()),
                        cvox.QueueMode.FLUSH);
+        return false;
+      case 'speakTimeAndDate':
+        var output = new Output();
+        var dateTime = new Date();
+        output.withString(
+            dateTime.toLocaleTimeString() +
+                ', ' + dateTime.toLocaleDateString()).go();
+        return false;
+      case 'readCurrentTitle':
+        var target = this.currentRange_.start.node;
+        var output = new Output();
+
+        if (target.root.role == RoleType.rootWebArea) {
+          // Web.
+          target = target.root;
+          output.withString(target.name || target.docUrl);
+        } else {
+          // Views.
+          while (target.role != RoleType.window)
+            target = target.parent;
+          if (target)
+            output.withString(target.name || '');
+        }
+        output.go();
+        return false;
+      case 'readCurrentURL':
+        var output = new Output();
+        var target = this.currentRange_.start.node.root;
+        output.withString(target.docUrl || '').go();
+        return false;
+      case 'reportIssue':
+        var url = Background.ISSUE_URL;
+        var description = {};
+        description['Mode'] = this.mode_;
+        description['Version'] = chrome.app.getDetails().version;
+        description['Reproduction Steps'] = '%0a1.%0a2.%0a3.';
+        for (var key in description)
+          url += key + ':%20' + description[key] + '%0a';
+        chrome.tabs.create({url: url});
         return false;
       default:
         return true;
