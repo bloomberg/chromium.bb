@@ -414,10 +414,10 @@ public:
     // registerMemoryDumpProvider() method. |name| is used for debugging
     // (duplicates are allowed) and must be a long-lived C string.
     // See crbug.com/458295 for design docs.
-    virtual void registerMemoryDumpProvider(blink::WebMemoryDumpProvider*, const char* name) { }
+    BLINK_PLATFORM_EXPORT virtual void registerMemoryDumpProvider(blink::WebMemoryDumpProvider*, const char* name);
 
     // Must be called on the thread that called registerMemoryDumpProvider().
-    virtual void unregisterMemoryDumpProvider(blink::WebMemoryDumpProvider*) { }
+    BLINK_PLATFORM_EXPORT virtual void unregisterMemoryDumpProvider(blink::WebMemoryDumpProvider*);
 
     class TraceLogEnabledStateObserver {
     public:
@@ -429,9 +429,6 @@ public:
     // Register or unregister a trace log state observer. Does not take ownership.
     virtual void addTraceLogEnabledStateObserver(TraceLogEnabledStateObserver*) {}
     virtual void removeTraceLogEnabledStateObserver(TraceLogEnabledStateObserver*) {}
-
-    // Returns a newly allocated WebProcessMemoryDump instance.
-    virtual blink::WebProcessMemoryDump* createProcessMemoryDump() { return nullptr; }
 
     typedef uint64_t WebMemoryAllocatorDumpGuid;
 

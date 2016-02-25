@@ -8,9 +8,9 @@
 #include "base/trace_event/heap_profiler_allocation_register.h"
 #include "base/trace_event/trace_event_memory_overhead.h"
 #include "platform/heap/Handle.h"
+#include "platform/web_process_memory_dump_impl.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebMemoryAllocatorDump.h"
-#include "public/platform/WebProcessMemoryDump.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Threading.h"
 
@@ -109,7 +109,7 @@ void BlinkGCMemoryDumpProvider::clearProcessDumpForCurrentGC()
 }
 
 BlinkGCMemoryDumpProvider::BlinkGCMemoryDumpProvider()
-    : m_currentProcessMemoryDump(adoptPtr(Platform::current()->createProcessMemoryDump()))
+    : m_currentProcessMemoryDump(adoptPtr(new WebProcessMemoryDumpImpl()))
     , m_isHeapProfilingEnabled(false)
 {
 }

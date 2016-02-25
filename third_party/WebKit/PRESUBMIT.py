@@ -8,6 +8,7 @@ See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
 for more details about the presubmit API built into gcl.
 """
 
+import re
 import sys
 
 
@@ -113,11 +114,15 @@ def _CheckTestExpectations(input_api, output_api):
 
 
 def _CheckStyle(input_api, output_api):
+    # Files that follow Chromium's coding style do not include capital letters.
+    re_chromium_style_file = re.compile(r'\b[a-z_]+\.(cc|h)$')
     style_checker_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
         'Tools', 'Scripts', 'check-webkit-style')
     args = ([input_api.python_executable, style_checker_path, '--diff-files']
             + [input_api.os_path.join('..', '..', f.LocalPath())
-               for f in input_api.AffectedFiles()])
+               for f in input_api.AffectedFiles()
+               # Filter out files that follow Chromium's coding style.
+               if not re_chromium_style_file.search(f.LocalPath())])
     results = []
 
     try:

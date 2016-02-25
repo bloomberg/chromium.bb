@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_CHILD_WEB_MEMORY_ALLOCATOR_DUMP_IMPL_H_
-#define CONTENT_CHILD_WEB_MEMORY_ALLOCATOR_DUMP_IMPL_H_
+#ifndef WebMemoryAllocatorDumpImpl_h
+#define WebMemoryAllocatorDumpImpl_h
 
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "third_party/WebKit/public/platform/WebMemoryAllocatorDump.h"
+#include "public/platform/WebMemoryAllocatorDump.h"
 
 namespace base {
 namespace trace_event {
@@ -16,7 +16,7 @@ class MemoryAllocatorDump;
 }  // namespace base
 }  // namespace trace_event
 
-namespace content {
+namespace blink {
 
 // Implements the blink::WebMemoryAllocatorDump interface by means of proxying
 // the Add*() calls to the underlying base::trace_event::MemoryAllocatorDump
@@ -43,6 +43,6 @@ class WebMemoryAllocatorDumpImpl : public blink::WebMemoryAllocatorDump {
   DISALLOW_COPY_AND_ASSIGN(WebMemoryAllocatorDumpImpl);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_CHILD_WEB_MEMORY_ALLOCATOR_DUMP_IMPL_H_
+#endif  // WebMemoryAllocatorDumpImpl_h

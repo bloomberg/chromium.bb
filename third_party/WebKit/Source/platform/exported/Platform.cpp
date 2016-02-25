@@ -28,13 +28,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "base/thread_task_runner_handle.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "platform/PartitionAllocMemoryDumpProvider.h"
 #include "platform/graphics/CompositorFactory.h"
+#include "platform/web_memory_dump_provider_adapter.h"
 #include "public/platform/Platform.h"
+#include "wtf/HashMap.h"
+#include "wtf/OwnPtr.h"
 
 namespace blink {
 
 static Platform* s_platform = 0;
+using ProviderToAdapterMap = HashMap<WebMemoryDumpProvider*, OwnPtr<WebMemoryDumpProviderAdapter>>;
+
+namespace {
+
+ProviderToAdapterMap& memoryDumpProviders()
+{
+    DEFINE_STATIC_LOCAL(ProviderToAdapterMap, providerToAdapterMap, ());
+    return providerToAdapterMap;
+}
+
+} // namespace
 
 Platform::Platform()
     : m_mainThread(0)
@@ -74,6 +90,27 @@ Platform* Platform::current()
 WebThread* Platform::mainThread() const
 {
     return m_mainThread;
+}
+
+void Platform::registerMemoryDumpProvider(WebMemoryDumpProvider* provider, const char* name)
+{
+    WebMemoryDumpProviderAdapter* adapter = new WebMemoryDumpProviderAdapter(provider);
+    ProviderToAdapterMap::AddResult result = memoryDumpProviders().add(provider, adoptPtr(adapter));
+    if (!result.isNewEntry)
+        return;
+    adapter->set_is_registered(true);
+    base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(adapter, name, base::ThreadTaskRunnerHandle::Get());
+}
+
+void Platform::unregisterMemoryDumpProvider(WebMemoryDumpProvider* provider)
+{
+    ProviderToAdapterMap::iterator it = memoryDumpProviders().find(provider);
+    if (it == memoryDumpProviders().end())
+        return;
+    WebMemoryDumpProviderAdapter* adapter = it->value.get();
+    base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(adapter);
+    adapter->set_is_registered(false);
+    memoryDumpProviders().remove(it);
 }
 
 } // namespace blink

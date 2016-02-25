@@ -51,7 +51,6 @@ class ThreadSafeSender;
 class TraceLogObserverAdapter;
 class WebCryptoImpl;
 class WebGeofencingProviderImpl;
-class WebMemoryDumpProviderAdapter;
 
 class CONTENT_EXPORT BlinkPlatformImpl
     : NON_EXPORTED_BASE(public blink::Platform) {
@@ -99,11 +98,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
   bool portAllowed(const blink::WebURL& url) const override;
   blink::WebThread* createThread(const char* name) override;
   blink::WebThread* currentThread() override;
-  void registerMemoryDumpProvider(blink::WebMemoryDumpProvider* wmdp,
-                                  const char* name) override;
-  void unregisterMemoryDumpProvider(
-      blink::WebMemoryDumpProvider* wmdp) override;
-  blink::WebProcessMemoryDump* createProcessMemoryDump() override;
   blink::Platform::WebMemoryAllocatorDumpGuid createWebMemoryAllocatorDumpGuid(
       const blink::WebString& guidStr) override;
   void addTraceLogEnabledStateObserver(
@@ -163,9 +157,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
   base::ThreadLocalStorage::Slot current_thread_slot_;
   webcrypto::WebCryptoImpl web_crypto_;
   scoped_ptr<WebGeofencingProviderImpl> geofencing_provider_;
-  base::ScopedPtrHashMap<blink::WebMemoryDumpProvider*,
-                         scoped_ptr<WebMemoryDumpProviderAdapter>>
-      memory_dump_providers_;
   base::ScopedPtrHashMap<blink::Platform::TraceLogEnabledStateObserver*,
                          scoped_ptr<TraceLogObserverAdapter>>
       trace_log_observers_;

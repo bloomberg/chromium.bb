@@ -2,17 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_CHILD_WEB_MEMORY_DUMP_PROVIDER_ADAPTER_H_
-#define CONTENT_CHILD_WEB_MEMORY_DUMP_PROVIDER_ADAPTER_H_
+#ifndef WebMemoryDumpProviderAdapter_h
+#define WebMemoryDumpProviderAdapter_h
 
 #include "base/macros.h"
 #include "base/trace_event/memory_dump_provider.h"
 
 namespace blink {
-class WebMemoryDumpProvider;
-}  // namespace blink
 
-namespace content {
+class WebMemoryDumpProvider;
 
 // Adapter class which makes it possible to register a WebMemoryDumpProvider (
 // from blink) to base::trace_event::MemoryDumpManager, which expects a
@@ -44,6 +42,6 @@ class WebMemoryDumpProviderAdapter
   DISALLOW_COPY_AND_ASSIGN(WebMemoryDumpProviderAdapter);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_CHILD_WEB_MEMORY_DUMP_PROVIDER_ADAPTER_H_
+#endif  // WebMemoryDumpProviderAdapter_h

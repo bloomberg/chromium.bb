@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_CHILD_WEB_PROCESS_MEMORY_DUMP_IMPL_H_
-#define CONTENT_CHILD_WEB_PROCESS_MEMORY_DUMP_IMPL_H_
+#ifndef WebProcessMemoryDumpImpl_h
+#define WebProcessMemoryDumpImpl_h
 
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/trace_event/memory_dump_request_args.h"
-#include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/WebProcessMemoryDump.h"
+#include "public/platform/WebProcessMemoryDump.h"
+#include "wtf/HashMap.h"
+#include "wtf/OwnPtr.h"
+
+#include <map>
+#include <vector>
 
 namespace base {
 class DiscardableMemory;
@@ -26,14 +27,14 @@ namespace skia {
 class SkiaTraceMemoryDumpImpl;
 }  // namespace skia
 
-namespace content {
+namespace blink {
 
 class WebMemoryAllocatorDumpImpl;
 
 // Implements the blink::WebProcessMemoryDump interface by means of proxying the
 // calls to createMemoryAllocatorDump() to the underlying
 // base::trace_event::ProcessMemoryDump instance.
-class CONTENT_EXPORT WebProcessMemoryDumpImpl final
+class PLATFORM_EXPORT WebProcessMemoryDumpImpl final
     : public NON_EXPORTED_BASE(blink::WebProcessMemoryDump) {
  public:
   // Creates a standalone WebProcessMemoryDumpImp, which owns the underlying
@@ -102,16 +103,15 @@ class CONTENT_EXPORT WebProcessMemoryDumpImpl final
   // to the WebProcessMemoryDump passed as argument of the onMemoryDump() call.
   // Those pointers are valid only within the scope of the call and can be
   // safely torn down once the WebProcessMemoryDumpImpl itself is destroyed.
-  base::ScopedPtrHashMap<base::trace_event::MemoryAllocatorDump*,
-                         scoped_ptr<WebMemoryAllocatorDumpImpl>>
-      memory_allocator_dumps_;
+  HashMap<base::trace_event::MemoryAllocatorDump*,
+          OwnPtr<WebMemoryAllocatorDumpImpl>> memory_allocator_dumps_;
 
   // Stores SkTraceMemoryDump for the current ProcessMemoryDump.
-  ScopedVector<skia::SkiaTraceMemoryDumpImpl> sk_trace_dump_list_;
+  std::vector<scoped_ptr<skia::SkiaTraceMemoryDumpImpl>> sk_trace_dump_list_;
 
   DISALLOW_COPY_AND_ASSIGN(WebProcessMemoryDumpImpl);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_CHILD_WEB_PROCESS_MEMORY_DUMP_IMPL_H_
+#endif  // WebProcessMemoryDumpImpl_h

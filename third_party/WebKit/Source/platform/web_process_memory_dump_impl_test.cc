@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/web_process_memory_dump_impl.h"
+#include "platform/web_process_memory_dump_impl.h"
 
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "base/values.h"
-#include "content/child/web_memory_allocator_dump_impl.h"
+#include "platform/web_memory_allocator_dump_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "wtf/OwnPtr.h"
 
-namespace content {
+namespace blink {
 
 // Tests that the Chromium<>Blink plumbing that exposes the MemoryInfra classes
 // behaves correctly, performs the right transfers of memory ownerships and
@@ -121,4 +122,4 @@ TEST(WebProcessMemoryDumpImplTest, IntegrationTest) {
   wpmd1.reset();
 }
 
-}  // namespace content
+}  // namespace blink

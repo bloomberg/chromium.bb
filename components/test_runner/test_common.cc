@@ -33,6 +33,10 @@ class MockBlinkPlatform : NON_EXPORTED_BASE(public blink::Platform) {
   }
   ~MockBlinkPlatform() override {}
 
+  void registerMemoryDumpProvider(blink::WebMemoryDumpProvider*,
+                                  const char* name) override {}
+  void unregisterMemoryDumpProvider(blink::WebMemoryDumpProvider*) override {}
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MockBlinkPlatform);
 };

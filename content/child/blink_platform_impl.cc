@@ -50,8 +50,6 @@
 #include "content/child/push_messaging/push_provider.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/web_discardable_memory_impl.h"
-#include "content/child/web_memory_dump_provider_adapter.h"
-#include "content/child/web_process_memory_dump_impl.h"
 #include "content/child/web_url_loader_impl.h"
 #include "content/child/web_url_request_util.h"
 #include "content/child/websocket_bridge.h"
@@ -485,34 +483,6 @@ void BlinkPlatformImpl::SetCompositorThread(
 
 blink::WebThread* BlinkPlatformImpl::currentThread() {
   return static_cast<blink::WebThread*>(current_thread_slot_.Get());
-}
-
-void BlinkPlatformImpl::registerMemoryDumpProvider(
-    blink::WebMemoryDumpProvider* wmdp, const char* name) {
-  WebMemoryDumpProviderAdapter* wmdp_adapter =
-      new WebMemoryDumpProviderAdapter(wmdp);
-  bool did_insert =
-      memory_dump_providers_.add(wmdp, make_scoped_ptr(wmdp_adapter)).second;
-  if (!did_insert)
-    return;
-  wmdp_adapter->set_is_registered(true);
-  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      wmdp_adapter, name, base::ThreadTaskRunnerHandle::Get());
-}
-
-void BlinkPlatformImpl::unregisterMemoryDumpProvider(
-    blink::WebMemoryDumpProvider* wmdp) {
-  scoped_ptr<WebMemoryDumpProviderAdapter> wmdp_adapter =
-      memory_dump_providers_.take_and_erase(wmdp);
-  if (!wmdp_adapter)
-    return;
-  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
-      wmdp_adapter.get());
-  wmdp_adapter->set_is_registered(false);
-}
-
-blink::WebProcessMemoryDump* BlinkPlatformImpl::createProcessMemoryDump() {
-  return new WebProcessMemoryDumpImpl();
 }
 
 blink::Platform::WebMemoryAllocatorDumpGuid

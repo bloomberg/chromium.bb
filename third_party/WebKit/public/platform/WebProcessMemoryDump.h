@@ -14,6 +14,9 @@
 class SkTraceMemoryDump;
 
 namespace base {
+
+class DiscardableMemory;
+
 namespace trace_event {
 
 class ProcessMemoryDump;
@@ -109,6 +112,12 @@ public:
     // created by the SkTraceMemoryDump implementation, if the dump should be
     // placed under different namespace and not "skia".
     virtual SkTraceMemoryDump* createDumpAdapterForSkia(const WebString& dumpNamePrefix)
+    {
+        BLINK_ASSERT_NOT_REACHED();
+        return nullptr;
+    }
+
+    virtual blink::WebMemoryAllocatorDump* createDiscardableMemoryAllocatorDump(const std::string& name, base::DiscardableMemory* discardable)
     {
         BLINK_ASSERT_NOT_REACHED();
         return nullptr;

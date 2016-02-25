@@ -648,7 +648,6 @@
       'child/site_isolation_stats_gatherer_unittest.cc',
       'child/v8_value_converter_impl_unittest.cc',
       'child/web_data_consumer_handle_impl_unittest.cc',
-      'child/web_process_memory_dump_impl_unittest.cc',
       'child/web_url_loader_impl_unittest.cc',
       'child/worker_thread_registry_unittest.cc',
       'common/android/address_parser_unittest.cc',

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/web_memory_allocator_dump_impl.h"
+#include "platform/web_memory_allocator_dump_impl.h"
 
 #include "base/trace_event/memory_allocator_dump.h"
 
-namespace content {
+namespace blink {
 
 WebMemoryAllocatorDumpImpl::WebMemoryAllocatorDumpImpl(
     base::trace_event::MemoryAllocatorDump* memory_allocator_dump)
@@ -35,7 +35,8 @@ void WebMemoryAllocatorDumpImpl::addString(const char* name,
   memory_allocator_dump_->AddString(name, units, value.utf8());
 }
 
-blink::WebMemoryAllocatorDumpGuid WebMemoryAllocatorDumpImpl::guid() const {
+WebMemoryAllocatorDumpGuid WebMemoryAllocatorDumpImpl::guid() const {
   return guid_;
 }
-}  // namespace content
+
+}  // namespace blink

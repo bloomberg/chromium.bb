@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/web_process_memory_dump_impl.h"
+#include "platform/web_process_memory_dump_impl.h"
 
 #include <stddef.h>
 
@@ -12,10 +12,10 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "base/trace_event/trace_event_memory_overhead.h"
-#include "content/child/web_memory_allocator_dump_impl.h"
+#include "platform/web_memory_allocator_dump_impl.h"
 #include "skia/ext/skia_trace_memory_dump_impl.h"
 
-namespace content {
+namespace blink {
 
 WebProcessMemoryDumpImpl::WebProcessMemoryDumpImpl()
     : owned_process_memory_dump_(
@@ -66,8 +66,8 @@ WebProcessMemoryDumpImpl::createWebMemoryAllocatorDump(
 
   // memory_allocator_dumps_ will take ownership of
   // |web_memory_allocator_dumpd_impl|.
-  memory_allocator_dumps_.set(memory_allocator_dump,
-                              make_scoped_ptr(web_memory_allocator_dump_impl));
+  memory_allocator_dumps_.set(
+      memory_allocator_dump, adoptPtr(web_memory_allocator_dump_impl));
   return web_memory_allocator_dump_impl;
 }
 
@@ -112,16 +112,15 @@ void WebProcessMemoryDumpImpl::takeAllDumpsFrom(
   // 2) Move and transfer the ownership of the WebMemoryAllocatorDump wrappers.
   const size_t expected_final_size = memory_allocator_dumps_.size() +
                                      other_impl->memory_allocator_dumps_.size();
-  while (!other_impl->memory_allocator_dumps_.empty()) {
+  while (!other_impl->memory_allocator_dumps_.isEmpty()) {
     auto first_entry = other_impl->memory_allocator_dumps_.begin();
     base::trace_event::MemoryAllocatorDump* memory_allocator_dump =
-        first_entry->first;
-    memory_allocator_dumps_.set(
-        memory_allocator_dump,
-        other_impl->memory_allocator_dumps_.take_and_erase(first_entry));
+        first_entry->key;
+    memory_allocator_dumps_.set(memory_allocator_dump,
+        other_impl->memory_allocator_dumps_.take(memory_allocator_dump));
   }
   DCHECK_EQ(expected_final_size, memory_allocator_dumps_.size());
-  DCHECK(other_impl->memory_allocator_dumps_.empty());
+  DCHECK(other_impl->memory_allocator_dumps_.isEmpty());
 }
 
 void WebProcessMemoryDumpImpl::addOwnershipEdge(
@@ -151,9 +150,10 @@ void WebProcessMemoryDumpImpl::addSuballocation(
 
 SkTraceMemoryDump* WebProcessMemoryDumpImpl::createDumpAdapterForSkia(
     const blink::WebString& dump_name_prefix) {
-  sk_trace_dump_list_.push_back(new skia::SkiaTraceMemoryDumpImpl(
-      dump_name_prefix.utf8(), level_of_detail_, process_memory_dump_));
-  return sk_trace_dump_list_.back();
+  sk_trace_dump_list_.push_back(make_scoped_ptr(
+      new skia::SkiaTraceMemoryDumpImpl(
+          dump_name_prefix.utf8(), level_of_detail_, process_memory_dump_)));
+  return sk_trace_dump_list_.back().get();
 }
 
 blink::WebMemoryAllocatorDump*

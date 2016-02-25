@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/web_memory_dump_provider_adapter.h"
+#include "platform/web_memory_dump_provider_adapter.h"
 
 #include <stddef.h>
 
 #include "base/trace_event/trace_event_argument.h"
-#include "content/child/web_process_memory_dump_impl.h"
-#include "third_party/WebKit/public/platform/WebMemoryDumpProvider.h"
+#include "platform/web_process_memory_dump_impl.h"
+#include "public/platform/WebMemoryDumpProvider.h"
 
-namespace content {
+namespace blink {
 
 WebMemoryDumpProviderAdapter::WebMemoryDumpProviderAdapter(
     blink::WebMemoryDumpProvider* wmdp)
@@ -46,4 +46,4 @@ void WebMemoryDumpProviderAdapter::OnHeapProfilingEnabled(bool enabled) {
   web_memory_dump_provider_->onHeapProfilingEnabled(enabled);
 }
 
-}  // namespace content
+}  // namespace blink
