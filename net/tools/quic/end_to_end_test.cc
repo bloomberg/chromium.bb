@@ -1453,8 +1453,7 @@ TEST_P(EndToEndTest, StreamCancelErrorTest) {
 class WrongAddressWriter : public QuicPacketWriterWrapper {
  public:
   WrongAddressWriter() {
-    IPAddress ip(127, 0, 0, 2);
-    self_address_ = IPEndPoint(ip, 0);
+    self_address_ = IPEndPoint(IPAddress(127, 0, 0, 2), 0);
   }
 
   WriteResult WritePacket(const char* buffer,

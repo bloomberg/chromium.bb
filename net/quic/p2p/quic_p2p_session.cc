@@ -20,19 +20,18 @@ namespace net {
 QuicP2PSession::QuicP2PSession(const QuicConfig& config,
                                const QuicP2PCryptoConfig& crypto_config,
                                scoped_ptr<QuicConnection> connection,
-                               scoped_ptr<net::Socket> socket)
+                               scoped_ptr<Socket> socket)
     : QuicSession(connection.release(), config),
       socket_(std::move(socket)),
       crypto_stream_(new QuicP2PCryptoStream(this, crypto_config)),
-      read_buffer_(new net::IOBuffer(static_cast<size_t>(kMaxPacketSize))) {
+      read_buffer_(new IOBuffer(static_cast<size_t>(kMaxPacketSize))) {
   DCHECK(config.negotiated());
 
   // Non-null IP address needs to be passed here because QuicConnection uses
   // ToString() to format addresses for logging and ToString() is not allowed
   // for empty addresses.
   // TODO(sergeyu): Fix QuicConnection and remove SetSelfAddress() call below.
-  net::IPAddress ip(0, 0, 0, 0);
-  this->connection()->SetSelfAddress(net::IPEndPoint(ip, 0));
+  this->connection()->SetSelfAddress(IPEndPoint(IPAddress(0, 0, 0, 0), 0));
 }
 
 QuicP2PSession::~QuicP2PSession() {}
@@ -60,7 +59,7 @@ QuicP2PStream* QuicP2PSession::CreateIncomingDynamicStream(QuicStreamId id) {
 }
 
 QuicP2PStream* QuicP2PSession::CreateOutgoingDynamicStream(
-    net::SpdyPriority priority) {
+    SpdyPriority priority) {
   QuicP2PStream* stream = new QuicP2PStream(GetNextOutgoingStreamId(), this);
   if (stream) {
     ActivateStream(stream);
@@ -82,7 +81,7 @@ void QuicP2PSession::OnConnectionClosed(QuicErrorCode error,
 }
 
 void QuicP2PSession::DoReadLoop(int result) {
-  while (error() == net::QUIC_NO_ERROR) {
+  while (error() == QUIC_NO_ERROR) {
     switch (read_state_) {
       case READ_STATE_DO_READ:
         CHECK_EQ(result, OK);
@@ -106,7 +105,7 @@ int QuicP2PSession::DoRead() {
   read_state_ = READ_STATE_DO_READ_COMPLETE;
 
   if (!socket_) {
-    return net::ERR_SOCKET_NOT_CONNECTED;
+    return ERR_SOCKET_NOT_CONNECTED;
   }
 
   return socket_->Read(
@@ -119,7 +118,7 @@ int QuicP2PSession::DoReadComplete(int result) {
   read_state_ = READ_STATE_DO_READ;
 
   if (result <= 0) {
-    connection()->CloseConnection(net::QUIC_PACKET_READ_ERROR,
+    connection()->CloseConnection(QUIC_PACKET_READ_ERROR,
                                   ConnectionCloseSource::FROM_SELF);
     return result;
   }

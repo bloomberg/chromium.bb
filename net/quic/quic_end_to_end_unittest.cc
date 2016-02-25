@@ -121,7 +121,7 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams> {
     params_.http_auth_handler_factory = auth_handler_factory_.get();
     params_.http_server_properties = http_server_properties.GetWeakPtr();
 
-    net::CertVerifyResult verify_result;
+    CertVerifyResult verify_result;
     verify_result.verified_cert = ImportCertFromFile(
         GetTestCertsDirectory(), "quic_test.example.com.crt");
     cert_verifier_.AddResultForCertAndHost(verify_result.verified_cert.get(),
@@ -167,8 +167,7 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams> {
 
   // Starts the QUIC server listening on a random port.
   void StartServer() {
-    IPAddress ip(127, 0, 0, 1);
-    server_address_ = IPEndPoint(ip, 0);
+    server_address_ = IPEndPoint(IPAddress(127, 0, 0, 1), 0);
     server_config_.SetInitialStreamFlowControlWindowToSend(
         kInitialStreamFlowControlWindowForTest);
     server_config_.SetInitialSessionFlowControlWindowToSend(

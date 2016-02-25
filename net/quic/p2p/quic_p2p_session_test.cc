@@ -198,7 +198,7 @@ class QuicP2PSessionTest : public ::testing::Test {
   QuicP2PSessionTest()
       : quic_helper_(base::ThreadTaskRunnerHandle::Get().get(),
                      &quic_clock_,
-                     net::QuicRandom::GetInstance()) {
+                     QuicRandom::GetInstance()) {
     // Simulate out-of-bound config handshake.
     CryptoHandshakeMessage hello_message;
     config_.ToHandshakeMessage(&hello_message);
@@ -226,11 +226,10 @@ class QuicP2PSessionTest : public ::testing::Test {
   scoped_ptr<QuicP2PSession> CreateP2PSession(scoped_ptr<Socket> socket,
                                               QuicP2PCryptoConfig crypto_config,
                                               Perspective perspective) {
-    net::QuicChromiumPacketWriter* writer =
-        new net::QuicChromiumPacketWriter(socket.get());
-    net::IPAddress ip(0, 0, 0, 0);
+    QuicChromiumPacketWriter* writer =
+        new QuicChromiumPacketWriter(socket.get());
     scoped_ptr<QuicConnection> quic_connection1(new QuicConnection(
-        0, net::IPEndPoint(ip, 0), &quic_helper_, writer,
+        0, IPEndPoint(IPAddress(0, 0, 0, 0), 0), &quic_helper_, writer,
         true /* owns_writer */, perspective, QuicSupportedVersions()));
     writer->SetConnection(quic_connection1.get());
 
@@ -272,10 +271,10 @@ void QuicP2PSessionTest::TestStreamConnection(QuicP2PSession* from_session,
 
   // Add streams to write_blocked_lists of both QuicSession objects.
   QuicWriteBlockedList* write_blocked_list1 =
-      net::test::QuicSessionPeer::GetWriteBlockedStreams(from_session);
+      test::QuicSessionPeer::GetWriteBlockedStreams(from_session);
   write_blocked_list1->RegisterStream(expected_stream_id, kV3HighestPriority);
   QuicWriteBlockedList* write_blocked_list2 =
-      net::test::QuicSessionPeer::GetWriteBlockedStreams(to_session);
+      test::QuicSessionPeer::GetWriteBlockedStreams(to_session);
   write_blocked_list2->RegisterStream(expected_stream_id, kV3HighestPriority);
 
   // Send a test message to the client.
@@ -329,7 +328,7 @@ TEST_F(QuicP2PSessionTest, DestroySocketWhenClosed) {
 
   // The socket must be destroyed when connection is closed.
   EXPECT_TRUE(socket1_);
-  session1_->connection()->CloseConnection(net::QUIC_NO_ERROR,
+  session1_->connection()->CloseConnection(QUIC_NO_ERROR,
                                            ConnectionCloseSource::FROM_SELF);
   EXPECT_FALSE(socket1_);
 }
@@ -349,7 +348,7 @@ TEST_F(QuicP2PSessionTest, TransportWriteError) {
 
   // Add stream to write_blocked_list.
   QuicWriteBlockedList* write_blocked_list =
-      net::test::QuicSessionPeer::GetWriteBlockedStreams(session1_.get());
+      test::QuicSessionPeer::GetWriteBlockedStreams(session1_.get());
   write_blocked_list->RegisterStream(stream->id(), kV3HighestPriority);
 
   socket1_->SetWriteError(ERR_INTERNET_DISCONNECTED);
