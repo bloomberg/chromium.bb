@@ -31,7 +31,6 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "content/common/gpu/gpu_channel_manager.h"
-#include "content/common/gpu/gpu_channel_manager_delegate.h"
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/media/gpu_jpeg_decode_accelerator.h"
@@ -701,11 +700,13 @@ bool GpuChannel::Send(IPC::Message* message) {
 }
 
 void GpuChannel::OnAddSubscription(unsigned int target) {
-  gpu_channel_manager()->delegate()->AddSubscription(client_id_, target);
+  gpu_channel_manager()->Send(
+      new GpuHostMsg_AddSubscription(client_id_, target));
 }
 
 void GpuChannel::OnRemoveSubscription(unsigned int target) {
-  gpu_channel_manager()->delegate()->RemoveSubscription(client_id_, target);
+  gpu_channel_manager()->Send(
+      new GpuHostMsg_RemoveSubscription(client_id_, target));
 }
 
 void GpuChannel::OnStreamRescheduled(int32_t stream_id, bool scheduled) {
@@ -999,7 +1000,8 @@ void GpuChannel::OnCreateJpegDecoder(int32_t route_id,
 
 void GpuChannel::CacheShader(const std::string& key,
                              const std::string& shader) {
-  gpu_channel_manager_->delegate()->StoreShaderToDisk(client_id_, key, shader);
+  gpu_channel_manager_->Send(
+      new GpuHostMsg_CacheShader(client_id_, key, shader));
 }
 
 void GpuChannel::AddFilter(IPC::MessageFilter* filter) {

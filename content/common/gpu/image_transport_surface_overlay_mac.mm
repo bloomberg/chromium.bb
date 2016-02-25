@@ -22,10 +22,9 @@ typedef void* GLeglImageOES;
 
 #include "base/mac/scoped_cftyperef.h"
 #include "base/trace_event/trace_event.h"
-#include "content/common/gpu/accelerated_surface_buffers_swapped_params_mac.h"
-#include "content/common/gpu/buffer_presented_params_mac.h"
 #include "content/common/gpu/ca_layer_partial_damage_tree_mac.h"
 #include "content/common/gpu/ca_layer_tree_mac.h"
+#include "content/common/gpu/gpu_messages.h"
 #include "ui/accelerated_widget_mac/io_surface_context.h"
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/base/cocoa/remote_layer_api.h"
@@ -310,7 +309,7 @@ void ImageTransportSurfaceOverlayMac::DisplayFirstPendingSwapImmediately() {
   }
 
   // Send acknowledgement to the browser.
-  AcceleratedSurfaceBuffersSwappedParams params;
+  GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
   if (use_remote_layer_api_) {
     params.ca_context_id = [ca_context_ contextId];
   } else if (current_partial_damage_tree_) {
@@ -455,8 +454,8 @@ bool ImageTransportSurfaceOverlayMac::IsSurfaceless() const {
   return true;
 }
 
-void ImageTransportSurfaceOverlayMac::BufferPresented(
-    const BufferPresentedParams& params) {
+void ImageTransportSurfaceOverlayMac::OnBufferPresented(
+    const AcceleratedSurfaceMsg_BufferPresented_Params& params) {
   vsync_timebase_ = params.vsync_timebase;
   vsync_interval_ = params.vsync_interval;
   vsync_parameters_valid_ = (vsync_interval_ != base::TimeDelta());

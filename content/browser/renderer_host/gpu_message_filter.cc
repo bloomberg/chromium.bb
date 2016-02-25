@@ -13,7 +13,7 @@
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/common/child_process_host_impl.h"
-#include "content/common/gpu/gpu_host_messages.h"
+#include "content/common/gpu/gpu_messages.h"
 
 namespace content {
 

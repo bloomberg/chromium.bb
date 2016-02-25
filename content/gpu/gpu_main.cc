@@ -21,8 +21,8 @@
 #include "content/child/child_process.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/gpu/gpu_config.h"
-#include "content/common/gpu/gpu_host_messages.h"
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
+#include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/media/gpu_jpeg_decode_accelerator.h"
 #include "content/common/gpu/media/gpu_video_decode_accelerator.h"
 #include "content/common/gpu/media/gpu_video_encode_accelerator.h"
@@ -121,8 +121,8 @@ bool GpuProcessLogMessageHandler(int severity,
                                  const std::string& str) {
   std::string header = str.substr(0, message_start);
   std::string message = str.substr(message_start);
-  deferred_messages.Get().push(
-      new GpuHostMsg_OnLogMessage(severity, header, message));
+  deferred_messages.Get().push(new GpuHostMsg_OnLogMessage(
+      severity, header, message));
   return false;
 }
 

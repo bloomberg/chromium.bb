@@ -63,7 +63,8 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
   bool IsSurfaceless() const override;
 
   // ImageTransportSurface implementation
-  void BufferPresented(const BufferPresentedParams& params) override;
+  void OnBufferPresented(
+      const AcceleratedSurfaceMsg_BufferPresented_Params& params) override;
   void SetLatencyInfo(const std::vector<ui::LatencyInfo>&) override;
 
   // ui::GpuSwitchingObserver implementation.

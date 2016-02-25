@@ -7,8 +7,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_channel_manager.h"
-#include "content/common/gpu/gpu_channel_manager_delegate.h"
-#include "ipc/ipc_test_sink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -23,53 +21,17 @@ namespace content {
 
 class SyncPointManager;
 
-class TestGpuChannelManagerDelegate : public GpuChannelManagerDelegate {
- public:
-  TestGpuChannelManagerDelegate();
-  ~TestGpuChannelManagerDelegate() override;
-
-  const IPC::ChannelHandle& last_established_channel_handle() const {
-    return last_established_channel_handle_;
-  }
-
- private:
-  // GpuChannelManagerDelegate implementation:
-  void AddSubscription(int32_t client_id, unsigned int target) override;
-  void ChannelEstablished(const IPC::ChannelHandle& channel_handle) override;
-  void DidCreateOffscreenContext(const GURL& active_url) override;
-  void DidDestroyChannel(int client_id) override;
-  void DidDestroyOffscreenContext(const GURL& active_url) override;
-  void DidLoseContext(bool offscreen,
-                      gpu::error::ContextLostReason reason,
-                      const GURL& active_url) override;
-  void GpuMemoryUmaStats(const GPUMemoryUmaStats& params) override;
-  void RemoveSubscription(int32_t client_id, unsigned int target) override;
-  void StoreShaderToDisk(int32_t client_id,
-                         const std::string& key,
-                         const std::string& shader) override;
-#if defined(OS_MACOSX)
-  void SendAcceleratedSurfaceBuffersSwapped(
-      const AcceleratedSurfaceBuffersSwappedParams& params) override;
-#endif
-#if defined(OS_WIN)
-  void SendAcceleratedSurfaceCreatedChildWindow(
-      const gfx::PluginWindowHandle& parent_window,
-      const gfx::PluginWindowHandle& child_window) override;
-#endif
-
-  IPC::ChannelHandle last_established_channel_handle_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestGpuChannelManagerDelegate);
-};
-
 class TestGpuChannelManager : public GpuChannelManager {
  public:
-  TestGpuChannelManager(GpuChannelManagerDelegate* delegate,
+  TestGpuChannelManager(IPC::TestSink* sink,
                         base::SingleThreadTaskRunner* task_runner,
                         base::SingleThreadTaskRunner* io_task_runner,
                         gpu::SyncPointManager* sync_point_manager,
                         GpuMemoryBufferFactory* gpu_memory_buffer_factory);
   ~TestGpuChannelManager() override;
+
+  // IPC::Sender implementation.
+  bool Send(IPC::Message* msg) override;
 
  protected:
   scoped_ptr<GpuChannel> CreateGpuChannel(
@@ -78,11 +40,15 @@ class TestGpuChannelManager : public GpuChannelManager {
       bool preempts,
       bool allow_view_command_buffers,
       bool allow_real_time_streams) override;
+
+ private:
+  IPC::TestSink* const sink_;
 };
 
 class TestGpuChannel : public GpuChannel {
  public:
-  TestGpuChannel(GpuChannelManager* gpu_channel_manager,
+  TestGpuChannel(IPC::TestSink* sink,
+                 GpuChannelManager* gpu_channel_manager,
                  gpu::SyncPointManager* sync_point_manager,
                  gfx::GLShareGroup* share_group,
                  gpu::gles2::MailboxManager* mailbox_manager,
@@ -96,7 +62,6 @@ class TestGpuChannel : public GpuChannel {
                  bool allow_real_time_streams);
   ~TestGpuChannel() override;
 
-  IPC::TestSink* sink() { return &sink_; }
   base::ProcessId GetClientPID() const override;
 
   IPC::ChannelHandle Init(base::WaitableEvent* shutdown_event) override;
@@ -105,7 +70,7 @@ class TestGpuChannel : public GpuChannel {
   bool Send(IPC::Message* msg) override;
 
  private:
-  IPC::TestSink sink_;
+  IPC::TestSink* const sink_;
 };
 
 class GpuChannelTestCommon : public testing::Test {
@@ -114,17 +79,15 @@ class GpuChannelTestCommon : public testing::Test {
   ~GpuChannelTestCommon() override;
 
  protected:
+  IPC::TestSink* sink() { return sink_.get(); }
   GpuChannelManager* channel_manager() { return channel_manager_.get(); }
-  TestGpuChannelManagerDelegate* channel_manager_delegate() {
-    return channel_manager_delegate_.get();
-  }
   base::TestSimpleTaskRunner* task_runner() { return task_runner_.get(); }
 
  private:
+  scoped_ptr<IPC::TestSink> sink_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   scoped_refptr<base::TestSimpleTaskRunner> io_task_runner_;
   scoped_ptr<gpu::SyncPointManager> sync_point_manager_;
-  scoped_ptr<TestGpuChannelManagerDelegate> channel_manager_delegate_;
   scoped_ptr<GpuChannelManager> channel_manager_;
 };
 

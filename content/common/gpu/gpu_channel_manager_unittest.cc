@@ -5,13 +5,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "content/common/gpu/establish_channel_params.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_channel_test_common.h"
+#include "content/common/gpu/gpu_messages.h"
 #include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/valuebuffer_manager.h"
+#include "ipc/ipc_test_sink.h"
 
 using gpu::gles2::ValuebufferManager;
 using gpu::ValueState;
@@ -30,20 +31,26 @@ TEST_F(GpuChannelManagerTest, EstablishChannel) {
 
   ASSERT_TRUE(channel_manager());
 
-  EstablishChannelParams params;
+  GpuMsg_EstablishChannel_Params params;
   params.client_id = kClientId;
   params.client_tracing_id = kClientTracingId;
   params.preempts = false;
   params.allow_view_command_buffers = false;
   params.allow_real_time_streams = false;
-  channel_manager()->EstablishChannel(params);
-  IPC::ChannelHandle handle =
-      channel_manager_delegate()->last_established_channel_handle();
-  EXPECT_NE("", handle.name);
+  EXPECT_TRUE(
+      channel_manager()->OnMessageReceived(GpuMsg_EstablishChannel(params)));
+  EXPECT_EQ((size_t)1, sink()->message_count());
+  const IPC::Message* msg =
+      sink()->GetUniqueMessageMatching(GpuHostMsg_ChannelEstablished::ID);
+  ASSERT_TRUE(msg);
+  base::Tuple<IPC::ChannelHandle> handle;
+  ASSERT_TRUE(GpuHostMsg_ChannelEstablished::Read(msg, &handle));
+  EXPECT_NE("", base::get<0>(handle).name);
+  sink()->ClearMessages();
 
   GpuChannel* channel = channel_manager()->LookupChannel(kClientId);
   ASSERT_TRUE(channel);
-  EXPECT_EQ(handle.name, channel->channel_id());
+  EXPECT_EQ(base::get<0>(handle).name, channel->channel_id());
 }
 
 TEST_F(GpuChannelManagerTest, SecureValueStateForwarding) {
@@ -65,29 +72,31 @@ TEST_F(GpuChannelManagerTest, SecureValueStateForwarding) {
   ASSERT_TRUE(channel_manager());
 
   // Initialize gpu channels
-  EstablishChannelParams params;
+  GpuMsg_EstablishChannel_Params params;
   params.client_id = kClientId1;
   params.client_tracing_id = kClientTracingId1;
   params.preempts = false;
   params.allow_view_command_buffers = false;
   params.allow_real_time_streams = false;
-  channel_manager()->EstablishChannel(params);
+  EXPECT_TRUE(
+      channel_manager()->OnMessageReceived(GpuMsg_EstablishChannel(params)));
   GpuChannel* channel1 = channel_manager()->LookupChannel(kClientId1);
   ASSERT_TRUE(channel1);
 
   params.client_id = kClientId2;
   params.client_tracing_id = kClientTracingId2;
-  channel_manager()->EstablishChannel(params);
+  EXPECT_TRUE(
+      channel_manager()->OnMessageReceived(GpuMsg_EstablishChannel(params)));
   GpuChannel* channel2 = channel_manager()->LookupChannel(kClientId2);
   ASSERT_TRUE(channel2);
 
   EXPECT_NE(channel1, channel2);
 
   // Make sure value states are only accessible by proper channels
-  channel_manager()->UpdateValueState(kClientId1, GL_MOUSE_POSITION_CHROMIUM,
-                                      value_state1);
-  channel_manager()->UpdateValueState(kClientId2, GL_MOUSE_POSITION_CHROMIUM,
-                                      value_state2);
+  channel_manager()->OnMessageReceived(GpuMsg_UpdateValueState(
+      kClientId1, GL_MOUSE_POSITION_CHROMIUM, value_state1));
+  channel_manager()->OnMessageReceived(GpuMsg_UpdateValueState(
+      kClientId2, GL_MOUSE_POSITION_CHROMIUM, value_state2));
 
   const gpu::ValueStateMap* pending_value_buffer_state1 =
       channel1->pending_valuebuffer_state();

@@ -31,7 +31,7 @@
 #include "content/browser/mojo/mojo_application_host.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/child_process_host_impl.h"
-#include "content/common/gpu/gpu_host_messages.h"
+#include "content/common/gpu/gpu_messages.h"
 #include "content/common/in_process_child_thread_params.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -615,8 +615,10 @@ bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER_GENERIC(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
                                 OnAcceleratedSurfaceBuffersSwapped(message))
 #endif
-    IPC_MESSAGE_HANDLER(GpuHostMsg_DestroyChannel, OnDestroyChannel)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_CacheShader, OnCacheShader)
+    IPC_MESSAGE_HANDLER(GpuHostMsg_DestroyChannel,
+                        OnDestroyChannel)
+    IPC_MESSAGE_HANDLER(GpuHostMsg_CacheShader,
+                        OnCacheShader)
 #if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceCreatedChildWindow,
                         OnAcceleratedSurfaceCreatedChildWindow)
@@ -687,7 +689,7 @@ void GpuProcessHost::EstablishGpuChannel(
     return;
   }
 
-  EstablishChannelParams params;
+  GpuMsg_EstablishChannel_Params params;
   params.client_id = client_id;
   params.client_tracing_id = client_tracing_id;
   params.preempts = preempts;
@@ -785,7 +787,8 @@ void GpuProcessHost::OnChannelEstablished(
   if (channel_requests_.empty()) {
     // This happens when GPU process is compromised.
     RouteOnUIThread(GpuHostMsg_OnLogMessage(
-        logging::LOG_WARNING, "WARNING",
+        logging::LOG_WARNING,
+        "WARNING",
         "Received a ChannelEstablished message but no requests in queue."));
     return;
   }
@@ -798,9 +801,10 @@ void GpuProcessHost::OnChannelEstablished(
       !GpuDataManagerImpl::GetInstance()->GpuAccessAllowed(NULL)) {
     Send(new GpuMsg_CloseChannel(channel_handle));
     callback.Run(IPC::ChannelHandle(), gpu::GPUInfo());
-    RouteOnUIThread(
-        GpuHostMsg_OnLogMessage(logging::LOG_WARNING, "WARNING",
-                                "Hardware acceleration is unavailable."));
+    RouteOnUIThread(GpuHostMsg_OnLogMessage(
+        logging::LOG_WARNING,
+        "WARNING",
+        "Hardware acceleration is unavailable."));
     return;
   }
 

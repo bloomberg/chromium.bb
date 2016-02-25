@@ -11,7 +11,6 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/trace_event/trace_event.h"
@@ -19,7 +18,7 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "content/browser/gpu/gpu_process_host.h"
-#include "content/common/gpu/gpu_host_messages.h"
+#include "content/common/gpu/gpu_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/common/content_client.h"
@@ -409,9 +408,10 @@ bool GpuDataManagerImplPrivate::IsCompleteGpuInfoAvailable() const {
 }
 
 void GpuDataManagerImplPrivate::RequestVideoMemoryUsageStatsUpdate() const {
-  GpuProcessHost::SendOnIO(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
-                           CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH,
-                           new GpuMsg_GetVideoMemoryUsageStats());
+  GpuProcessHost::SendOnIO(
+      GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
+      CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH,
+      new GpuMsg_GetVideoMemoryUsageStats());
 }
 
 bool GpuDataManagerImplPrivate::ShouldUseSwiftShader() const {
@@ -455,9 +455,10 @@ void GpuDataManagerImplPrivate::UnblockDomainFrom3DAPIs(const GURL& url) {
 }
 
 void GpuDataManagerImplPrivate::DisableGpuWatchdog() {
-  GpuProcessHost::SendOnIO(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
-                           CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH,
-                           new GpuMsg_DisableWatchdog);
+  GpuProcessHost::SendOnIO(
+      GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
+      CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH,
+      new GpuMsg_DisableWatchdog);
 }
 
 void GpuDataManagerImplPrivate::SetGLStrings(const std::string& gl_vendor,
@@ -892,9 +893,10 @@ void GpuDataManagerImplPrivate::HandleGpuSwitch() {
   // Notify observers in the browser process.
   ui::GpuSwitchingManager::GetInstance()->NotifyGpuSwitched();
   // Pass the notification to the GPU process to notify observers there.
-  GpuProcessHost::SendOnIO(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
-                           CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH,
-                           new GpuMsg_GpuSwitched);
+  GpuProcessHost::SendOnIO(
+      GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
+      CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH,
+      new GpuMsg_GpuSwitched);
 }
 
 bool GpuDataManagerImplPrivate::UpdateActiveGpu(uint32_t vendor_id,

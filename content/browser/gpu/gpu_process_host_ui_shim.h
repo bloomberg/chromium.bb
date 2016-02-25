@@ -27,6 +27,10 @@
 #include "ipc/ipc_sender.h"
 #include "ipc/message_router.h"
 
+#if defined(OS_MACOSX)
+struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
+#endif
+
 namespace ui {
 class LatencyInfo;
 }
@@ -40,9 +44,6 @@ class Message;
 }
 
 namespace content {
-#if defined(OS_MACOSX)
-struct AcceleratedSurfaceBuffersSwappedParams;
-#endif
 void RouteToGpuProcessHostUIShimTask(int host_id, const IPC::Message& msg);
 
 class GpuProcessHostUIShim : public IPC::Listener,
@@ -97,7 +98,7 @@ class GpuProcessHostUIShim : public IPC::Listener,
 
 #if defined(OS_MACOSX)
   void OnAcceleratedSurfaceBuffersSwapped(
-      const AcceleratedSurfaceBuffersSwappedParams& params);
+      const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params);
 #endif
   void OnVideoMemoryUsageStatsReceived(
       const GPUVideoMemoryUsageStats& video_memory_usage_stats);
