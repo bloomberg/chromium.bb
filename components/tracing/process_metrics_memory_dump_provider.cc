@@ -207,7 +207,8 @@ void ProcessMetricsMemoryDumpProvider::RegisterForProcess(
     base::ProcessId process) {
   scoped_ptr<ProcessMetricsMemoryDumpProvider> metrics_provider(
       new ProcessMetricsMemoryDumpProvider(process));
-  base::trace_event::MemoryDumpProvider::Options options(process);
+  base::trace_event::MemoryDumpProvider::Options options;
+  options.target_pid = process;
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       metrics_provider.get(), "ProcessMemoryMetrics", nullptr, options);
   bool did_insert =
