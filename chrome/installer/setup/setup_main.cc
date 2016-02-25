@@ -21,6 +21,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/memory.h"
@@ -29,6 +30,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "base/win/process_startup_helper.h"
@@ -251,6 +253,7 @@ bool UncompressAndPatchChromeArchive(
     installer::InstallStatus* install_status,
     const base::Version& previous_version) {
   installer_state.UpdateStage(installer::UNCOMPRESSING);
+  base::TimeTicks start_time = base::TimeTicks::Now();
   if (!archive_helper->Uncompress(NULL)) {
     *install_status = installer::UNCOMPRESSION_FAILED;
     installer_state.WriteInstallerResult(*install_status,
@@ -258,13 +261,24 @@ bool UncompressAndPatchChromeArchive(
                                          NULL);
     return false;
   }
+  base::TimeDelta elapsed_time = base::TimeTicks::Now() - start_time;
+
+  bool has_full_archive = base::PathExists(archive_helper->target());
+  UMA_HISTOGRAM_BOOLEAN("Setup.Install.HasArchivePatch", !has_full_archive);
 
   // Short-circuit if uncompression produced the uncompressed archive rather
   // than a patch file.
-  if (base::PathExists(archive_helper->target())) {
+  if (has_full_archive) {
     *archive_type = installer::FULL_ARCHIVE_TYPE;
+    // Uncompression alone hopefully takes less than 3 minutes even on slow
+    // machines.
+    UMA_HISTOGRAM_MEDIUM_TIMES("Setup.Install.UncompressFullArchiveTime",
+                               elapsed_time);
     return true;
   }
+
+  UMA_HISTOGRAM_MEDIUM_TIMES("Setup.Install.UncompressArchivePatchTime",
+                             elapsed_time);
 
   // Find the installed version's archive to serve as the source for patching.
   base::FilePath patch_source(installer::FindArchiveToPatch(original_state,
@@ -281,6 +295,9 @@ bool UncompressAndPatchChromeArchive(
   archive_helper->set_patch_source(patch_source);
 
   // Try courgette first. Failing that, try bspatch.
+  // Patch application sometimes takes a very long time, so use 100 buckets for
+  // up to an hour.
+  SCOPED_UMA_HISTOGRAM_LONG_TIMER("Setup.Install.ApplyArchivePatchTime");
   installer_state.UpdateStage(installer::ENSEMBLE_PATCHING);
   if (!archive_helper->EnsemblePatch()) {
     installer_state.UpdateStage(installer::BINARY_PATCHING);
@@ -1420,6 +1437,7 @@ InstallStatus InstallProductsHelper(const InstallationState& original_state,
   }
 
   // Unpack the uncompressed archive.
+  base::TimeTicks start_time = base::TimeTicks::Now();
   if (LzmaUtil::UnPackArchive(uncompressed_archive.value(),
                               unpack_path.value(),
                               NULL)) {
@@ -1429,6 +1447,8 @@ InstallStatus InstallProductsHelper(const InstallationState& original_state,
         NULL);
     return UNPACKING_FAILED;
   }
+  UMA_HISTOGRAM_MEDIUM_TIMES("Setup.Install.UnpackFullArchiveTime",
+                             base::TimeTicks::Now() - start_time);
 
   VLOG(1) << "unpacked to " << unpack_path.value();
   base::FilePath src_path(

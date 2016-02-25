@@ -46266,6 +46266,48 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Setup.Install.ApplyArchivePatchTime" units="ms">
+  <owner>grt@chromium.org</owner>
+  <summary>
+    The elapesed time to apply a patch to a previous version's chrome.7z archive
+    to generate a new chrome.7z archive. This histogram only applies to diff
+    updates.
+  </summary>
+</histogram>
+
+<histogram name="Setup.Install.HasArchivePatch" enum="Boolean">
+  <owner>grt@chromium.org</owner>
+  <summary>
+    True if the chrome.packed.7z archive contains a patch (in which case a diff
+    update is taking place) or false if it contains a full archive (in which
+    case a new install or a full update is taking place).
+  </summary>
+</histogram>
+
+<histogram name="Setup.Install.UncompressArchivePatchTime" units="ms">
+  <owner>grt@chromium.org</owner>
+  <summary>
+    The elapsed time to uncompress a chrome.7z patch. This histogram only
+    applies to diff updates.
+  </summary>
+</histogram>
+
+<histogram name="Setup.Install.UncompressFullArchiveTime" units="ms">
+  <owner>grt@chromium.org</owner>
+  <summary>
+    The elapsed time to uncompress a full chrome.7z archive. This histogram only
+    applies to new installs and to full updates.
+  </summary>
+</histogram>
+
+<histogram name="Setup.Install.UnpackFullArchiveTime" units="ms">
+  <owner>grt@chromium.org</owner>
+  <summary>
+    The elapsed time to unpack the uncompressed chrome.7z archive. This
+    histogram applies to all installs and updates.
+  </summary>
+</histogram>
+
 <histogram name="SharedMemory.TimeSpentMakingAnonymousMemory" units="ms">
   <obsolete>
     Deprecated 2015-06 because the Finch experiment SharedMemoryCreateStrategy
