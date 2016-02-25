@@ -32,7 +32,6 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/StyleSheetResourceClient.h"
 #include "platform/SharedBuffer.h"
-#include "platform/network/HTTPParsers.h"
 #include "wtf/CurrentTime.h"
 
 namespace blink {
@@ -105,11 +104,6 @@ const String CSSStyleSheetResource::sheetText(MIMETypeCheck mimeTypeCheck) const
     return decodedText();
 }
 
-const AtomicString CSSStyleSheetResource::mimeType() const
-{
-    return extractMIMETypeFromMediaType(response().httpHeaderField(HTTPNames::Content_Type)).lower();
-}
-
 void CSSStyleSheetResource::checkNotify()
 {
     // Decode the data to find out the encoding and keep the sheet text around during checkNotify()
@@ -153,7 +147,8 @@ bool CSSStyleSheetResource::canUseSheet(MIMETypeCheck mimeTypeCheck) const
     // folks can use standards mode for local HTML documents.
     if (mimeTypeCheck == MIMETypeCheck::Lax)
         return true;
-    return mimeType().isEmpty() || equalIgnoringCase(mimeType(), "text/css") || equalIgnoringCase(mimeType(), "application/x-unknown-content-type");
+    AtomicString contentType = httpContentType();
+    return contentType.isEmpty() || equalIgnoringCase(contentType, "text/css") || equalIgnoringCase(contentType, "application/x-unknown-content-type");
 }
 
 PassRefPtrWillBeRawPtr<StyleSheetContents> CSSStyleSheetResource::restoreParsedStyleSheet(const CSSParserContext& context)

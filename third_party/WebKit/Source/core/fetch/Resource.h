@@ -210,6 +210,8 @@ public:
     AtomicString accept() const { return m_accept; }
     void setAccept(const AtomicString& accept) { m_accept = accept; }
 
+    AtomicString httpContentType() const;
+
     bool wasCanceled() const { return m_error.isCancellation(); }
     bool errorOccurred() const { return m_status == LoadError || m_status == DecodeError; }
     bool loadFailedOrCanceled() { return !m_error.isNull(); }

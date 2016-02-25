@@ -50,8 +50,6 @@ public:
 
     const String sheetText(MIMETypeCheck = MIMETypeCheck::Strict) const;
 
-    const AtomicString mimeType() const;
-
     void didAddClient(ResourceClient*) override;
 
     PassRefPtrWillBeRawPtr<StyleSheetContents> restoreParsedStyleSheet(const CSSParserContext&);

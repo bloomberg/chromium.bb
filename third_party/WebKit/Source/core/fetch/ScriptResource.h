@@ -74,8 +74,6 @@ public:
 
     const CompressibleString& script();
 
-    AtomicString mimeType() const;
-
     bool mimeTypeAllowedByNosniff() const;
 
     void setIntegrityMetadata(const IntegrityMetadataSet& metadata) { m_integrityMetadata = metadata; }

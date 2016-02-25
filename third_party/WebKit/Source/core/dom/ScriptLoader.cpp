@@ -376,13 +376,13 @@ bool ScriptLoader::executeScript(const ScriptSourceCode& sourceCode, double* com
         ScriptResource* resource = m_resource ? m_resource.get() : sourceCode.resource();
         if (resource) {
             if (!resource->mimeTypeAllowedByNosniff()) {
-                contextDocument->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Refused to execute script from '" + resource->url().elidedString() + "' because its MIME type ('" + resource->mimeType() + "') is not executable, and strict MIME type checking is enabled."));
+                contextDocument->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Refused to execute script from '" + resource->url().elidedString() + "' because its MIME type ('" + resource->httpContentType() + "') is not executable, and strict MIME type checking is enabled."));
                 return false;
             }
 
-            String mimetype = resource->mimeType();
-            if (mimetype.lower().startsWith("image/")) {
-                contextDocument->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Refused to execute script from '" + resource->url().elidedString() + "' because its MIME type ('" + resource->mimeType() + "') is not executable."));
+            String mimetype = resource->httpContentType();
+            if (mimetype.startsWith("image/")) {
+                contextDocument->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Refused to execute script from '" + resource->url().elidedString() + "' because its MIME type ('" + mimetype + "') is not executable."));
                 UseCounter::count(frame, UseCounter::BlockedSniffingImageToScript);
                 return false;
             }

@@ -133,4 +133,36 @@ TEST(HTTPParsersTest, HTTPFieldContent)
     EXPECT_FALSE(blink::isValidHTTPFieldContentRFC7230(String(hiraganaA)));
 }
 
+TEST(HTTPParsersTest, ExtractMIMETypeFromMediaType)
+{
+    const AtomicString textHtml("text/html", AtomicString::ConstructFromLiteral);
+    EXPECT_EQ(textHtml, extractMIMETypeFromMediaType(AtomicString("text/html; charset=iso-8859-1")));
+    EXPECT_EQ(textHtml, extractMIMETypeFromMediaType(AtomicString("text/html ; charset=iso-8859-1")));
+    EXPECT_EQ(textHtml, extractMIMETypeFromMediaType(AtomicString("text/html,text/plain")));
+    EXPECT_EQ(textHtml, extractMIMETypeFromMediaType(AtomicString("text/html , text/plain")));
+    EXPECT_EQ(textHtml, extractMIMETypeFromMediaType(AtomicString("text/html\t,\ttext/plain")));
+    EXPECT_EQ(textHtml, extractMIMETypeFromMediaType(AtomicString(" text/html   ")));
+    EXPECT_EQ(textHtml, extractMIMETypeFromMediaType(AtomicString("\ttext/html \t")));
+    EXPECT_EQ(textHtml, extractMIMETypeFromMediaType(AtomicString("\r\ntext/html\r\n")));
+    EXPECT_EQ(textHtml, extractMIMETypeFromMediaType(AtomicString("text/html,text/plain;charset=iso-8859-1")));
+    EXPECT_EQ(emptyString(), extractMIMETypeFromMediaType(AtomicString(", text/html")));
+    EXPECT_EQ(emptyString(), extractMIMETypeFromMediaType(AtomicString("; text/html")));
+
+    // Preserves case.
+    EXPECT_EQ("tExt/hTMl", extractMIMETypeFromMediaType(AtomicString("tExt/hTMl")));
+
+    // If no normalization is required, the same AtomicString should be returned.
+    const AtomicString& passthrough = extractMIMETypeFromMediaType(textHtml);
+    EXPECT_EQ(textHtml.impl(), passthrough.impl());
+
+    // These tests cover current behavior, but are not necessarily
+    // expected/wanted behavior. (See FIXME in implementation.)
+    EXPECT_EQ(textHtml, extractMIMETypeFromMediaType(AtomicString("text / html")));
+    // U+2003, EM SPACE (UTF-8: E2 80 83)
+    EXPECT_EQ(textHtml, extractMIMETypeFromMediaType(AtomicString::fromUTF8("text\xE2\x80\x83/ html")));
+    EXPECT_EQ(textHtml, extractMIMETypeFromMediaType(AtomicString("text\r\n/\nhtml")));
+    EXPECT_EQ(textHtml, extractMIMETypeFromMediaType(AtomicString("text\n/\nhtml")));
+    EXPECT_EQ(textHtml, extractMIMETypeFromMediaType(AtomicString("t e x t / h t m l")));
+}
+
 } // namespace blink

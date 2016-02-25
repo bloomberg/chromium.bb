@@ -32,7 +32,6 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/SharedBuffer.h"
-#include "platform/network/HTTPParsers.h"
 #include "public/platform/WebProcessMemoryDump.h"
 
 namespace blink {
@@ -85,11 +84,6 @@ void ScriptResource::onMemoryDump(WebMemoryDumpLevelOfDetail levelOfDetail, WebP
     memoryDump->addSuballocation(dump->guid(), String(WTF::Partitions::kAllocatedObjectPoolName));
 }
 
-AtomicString ScriptResource::mimeType() const
-{
-    return extractMIMETypeFromMediaType(m_response.httpHeaderField(HTTPNames::Content_Type)).lower();
-}
-
 const CompressibleString& ScriptResource::script()
 {
     ASSERT(!isPurgeable());
@@ -115,7 +109,7 @@ void ScriptResource::destroyDecodedDataForFailedRevalidation()
 
 bool ScriptResource::mimeTypeAllowedByNosniff() const
 {
-    return parseContentTypeOptionsHeader(m_response.httpHeaderField(HTTPNames::X_Content_Type_Options)) != ContentTypeOptionsNosniff || MIMETypeRegistry::isSupportedJavaScriptMIMEType(mimeType());
+    return parseContentTypeOptionsHeader(m_response.httpHeaderField(HTTPNames::X_Content_Type_Options)) != ContentTypeOptionsNosniff || MIMETypeRegistry::isSupportedJavaScriptMIMEType(httpContentType());
 }
 
 void ScriptResource::setIntegrityDisposition(ScriptIntegrityDisposition disposition)

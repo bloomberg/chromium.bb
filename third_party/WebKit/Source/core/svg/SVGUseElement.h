@@ -102,6 +102,7 @@ private:
     void invalidateDependentShadowTrees();
 
     bool resourceIsStillLoading() const;
+    bool resourceIsValid() const;
     Document* externalDocument() const;
     bool instanceTreeIsLoading(const SVGElement*);
     void notifyFinished(Resource*) override;

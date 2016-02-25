@@ -67,7 +67,7 @@ String DocumentResource::encoding() const
 
 void DocumentResource::checkNotify()
 {
-    if (m_data) {
+    if (m_data && mimeTypeAllowed()) {
         StringBuilder decodedText;
         decodedText.append(m_decoder->decode(m_data->data(), m_data->size()));
         decodedText.append(m_decoder->flush());
@@ -76,6 +76,18 @@ void DocumentResource::checkNotify()
         m_document->setContent(decodedText.toString());
     }
     Resource::checkNotify();
+}
+
+bool DocumentResource::mimeTypeAllowed() const
+{
+    ASSERT(type() == SVGDocument);
+    AtomicString mimeType = response().mimeType();
+    if (response().isHTTP())
+        mimeType = httpContentType();
+    return mimeType == "image/svg+xml"
+        || mimeType == "text/xml"
+        || mimeType == "application/xml"
+        || mimeType == "application/xhtml+xml";
 }
 
 PassRefPtrWillBeRawPtr<Document> DocumentResource::createDocument(const KURL& url)

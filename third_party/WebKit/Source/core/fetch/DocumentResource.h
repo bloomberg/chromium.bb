@@ -60,6 +60,7 @@ private:
     };
     DocumentResource(const ResourceRequest&, Type);
 
+    bool mimeTypeAllowed() const;
     PassRefPtrWillBeRawPtr<Document> createDocument(const KURL&);
 
     RefPtrWillBeMember<Document> m_document;

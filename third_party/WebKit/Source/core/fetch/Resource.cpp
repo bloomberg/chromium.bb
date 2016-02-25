@@ -35,6 +35,7 @@
 #include "platform/Logging.h"
 #include "platform/SharedBuffer.h"
 #include "platform/TraceEvent.h"
+#include "platform/network/HTTPParsers.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebProcessMemoryDump.h"
@@ -316,6 +317,11 @@ void Resource::finish()
     markClientsFinished();
     if (!errorOccurred())
         m_status = Cached;
+}
+
+AtomicString Resource::httpContentType() const
+{
+    return extractMIMETypeFromMediaType(m_response.httpHeaderField(HTTPNames::Content_Type).lower());
 }
 
 bool Resource::passesAccessControlCheck(SecurityOrigin* securityOrigin) const

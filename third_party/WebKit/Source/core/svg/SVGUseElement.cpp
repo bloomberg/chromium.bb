@@ -146,14 +146,11 @@ TreeScope* SVGUseElement::referencedScope() const
 
 Document* SVGUseElement::externalDocument() const
 {
-    if (m_resource && m_resource->isLoaded()) {
-        // Gracefully handle error condition.
-        if (m_resource->errorOccurred())
-            return nullptr;
-        ASSERT(m_resource->document());
-        return m_resource->document();
-    }
-    return nullptr;
+    // Gracefully handle error condition.
+    if (!resourceIsValid())
+        return nullptr;
+    ASSERT(m_resource->document());
+    return m_resource->document();
 }
 
 void transferUseWidthAndHeightIfNeeded(const SVGUseElement& use, SVGElement* shadowElement, const SVGElement& originalElement)
@@ -789,11 +786,12 @@ void SVGUseElement::dispatchPendingEvent(SVGUseEventSender* eventSender)
 
 void SVGUseElement::notifyFinished(Resource* resource)
 {
+    ASSERT(m_resource == resource);
     if (!inDocument())
         return;
 
     invalidateShadowTree();
-    if (resource->errorOccurred()) {
+    if (!resourceIsValid()) {
         dispatchEvent(Event::create(EventTypeNames::error));
     } else if (!resource->wasCanceled()) {
         if (m_haveFiredLoadEvent)
@@ -809,6 +807,14 @@ void SVGUseElement::notifyFinished(Resource* resource)
 bool SVGUseElement::resourceIsStillLoading() const
 {
     return m_resource && m_resource->isLoading();
+}
+
+bool SVGUseElement::resourceIsValid() const
+{
+    return m_resource
+        && m_resource->isLoaded()
+        && !m_resource->errorOccurred()
+        && m_resource->document();
 }
 
 bool SVGUseElement::instanceTreeIsLoading(const SVGElement* targetInstance)
