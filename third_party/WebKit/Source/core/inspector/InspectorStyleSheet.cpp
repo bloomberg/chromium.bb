@@ -84,7 +84,7 @@ public:
     }
 
 private:
-    void startRuleHeader(StyleRule::Type, unsigned) override;
+    void startRuleHeader(StyleRule::RuleType, unsigned) override;
     void endRuleHeader(unsigned) override;
     void observeSelector(unsigned startOffset, unsigned endOffset) override;
     void startRuleBody(unsigned) override;
@@ -110,7 +110,7 @@ private:
     unsigned m_mediaQueryExpValueRangeStart;
 };
 
-void StyleSheetHandler::startRuleHeader(StyleRule::Type type, unsigned offset)
+void StyleSheetHandler::startRuleHeader(StyleRule::RuleType type, unsigned offset)
 {
     // Pop off data for a previous invalid rule.
     if (m_currentRuleData)

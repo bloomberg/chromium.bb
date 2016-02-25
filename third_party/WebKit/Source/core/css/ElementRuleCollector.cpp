@@ -285,7 +285,7 @@ void ElementRuleCollector::sortAndTransferMatchedRules()
     // Now transfer the set of matched rules over to our list of declarations.
     for (unsigned i = 0; i < m_matchedRules.size(); i++) {
         const RuleData* ruleData = m_matchedRules[i].ruleData();
-        m_result.addMatchedProperties(&ruleData->rule()->properties(), ruleData->linkMatchType(), ruleData->propertyWhitelistType(m_matchingUARules));
+        m_result.addMatchedProperties(&ruleData->rule()->properties(), ruleData->linkMatchType(), ruleData->propertyWhitelist(m_matchingUARules));
     }
 }
 

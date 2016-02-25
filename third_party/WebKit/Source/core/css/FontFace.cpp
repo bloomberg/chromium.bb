@@ -327,7 +327,7 @@ String FontFace::status() const
     return emptyString();
 }
 
-void FontFace::setLoadStatus(LoadStatus status)
+void FontFace::setLoadStatus(LoadStatusType status)
 {
     m_status = status;
     ASSERT(m_status != Error || m_error);

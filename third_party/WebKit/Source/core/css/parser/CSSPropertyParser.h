@@ -76,7 +76,7 @@ public:
 
     static bool parseValue(CSSPropertyID, bool important,
         const CSSParserTokenRange&, const CSSParserContext&,
-        WillBeHeapVector<CSSProperty, 256>&, StyleRule::Type);
+        WillBeHeapVector<CSSProperty, 256>&, StyleRule::RuleType);
 
     static bool isSystemColor(CSSValueID);
     static bool isColorKeyword(CSSValueID);

@@ -69,7 +69,7 @@ PassOwnPtr<InterpolableValue> CSSColorInterpolationType::createInterpolableColor
 {
     if (color.isCurrentColor())
         return createInterpolableColorForIndex(Currentcolor);
-    return createInterpolableColor(color.color());
+    return createInterpolableColor(color.getColor());
 }
 
 PassOwnPtr<InterpolableValue> CSSColorInterpolationType::maybeCreateInterpolableColor(const CSSValue& value)
@@ -112,7 +112,7 @@ Color CSSColorInterpolationType::resolveInterpolableColor(const InterpolableValu
             currentStyleColor = currentColorGetter(CSSPropertyWebkitTextFillColor, *state.style());
         if (currentStyleColor.isCurrentColor())
             currentStyleColor = currentColorGetter(CSSPropertyColor, *state.style());
-        addPremultipliedColor(red, green, blue, alpha, currentcolorFraction, currentStyleColor.color());
+        addPremultipliedColor(red, green, blue, alpha, currentcolorFraction, currentStyleColor.getColor());
     }
     const TextLinkColors& colors = state.document().textLinkColors();
     if (double webkitActivelinkFraction = toInterpolableNumber(list.get(WebkitActivelink))->value())

@@ -45,16 +45,16 @@ using ExpressionHeapVector = WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp>>
 class CORE_EXPORT MediaQuery : public NoBaseWillBeGarbageCollectedFinalized<MediaQuery> {
     USING_FAST_MALLOC_WILL_BE_REMOVED(MediaQuery);
 public:
-    enum Restrictor {
+    enum RestrictorType {
         Only, Not, None
     };
 
-    static PassOwnPtrWillBeRawPtr<MediaQuery> create(Restrictor, String mediaType, ExpressionHeapVector);
+    static PassOwnPtrWillBeRawPtr<MediaQuery> create(RestrictorType, String mediaType, ExpressionHeapVector);
     static PassOwnPtrWillBeRawPtr<MediaQuery> createNotAll();
 
     ~MediaQuery();
 
-    Restrictor restrictor() const { return m_restrictor; }
+    RestrictorType restrictor() const { return m_restrictor; }
     const ExpressionHeapVector& expressions() const { return m_expressions; }
     const String& mediaType() const { return m_mediaType; }
     bool operator==(const MediaQuery& other) const;
@@ -65,12 +65,12 @@ public:
     DECLARE_TRACE();
 
 private:
-    MediaQuery(Restrictor, String mediaType, ExpressionHeapVector);
+    MediaQuery(RestrictorType, String mediaType, ExpressionHeapVector);
     MediaQuery(const MediaQuery&);
 
     MediaQuery& operator=(const MediaQuery&) = delete;
 
-    Restrictor m_restrictor;
+    RestrictorType m_restrictor;
     String m_mediaType;
     ExpressionHeapVector m_expressions;
     String m_serializationCache;

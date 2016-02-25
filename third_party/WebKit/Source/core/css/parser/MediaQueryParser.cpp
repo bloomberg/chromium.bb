@@ -51,7 +51,7 @@ MediaQueryParser::MediaQueryParser(ParserType parserType)
 
 MediaQueryParser::~MediaQueryParser() { }
 
-void MediaQueryParser::setStateAndRestrict(State state, MediaQuery::Restrictor restrictor)
+void MediaQueryParser::setStateAndRestrict(State state, MediaQuery::RestrictorType restrictor)
 {
     m_mediaQueryData.setRestrictor(restrictor);
     m_state = state;
@@ -188,7 +188,7 @@ void MediaQueryParser::skipUntilComma(CSSParserTokenType type, const CSSParserTo
 
 void MediaQueryParser::skipUntilBlockEnd(CSSParserTokenType type, const CSSParserToken& token)
 {
-    if (token.blockType() == CSSParserToken::BlockEnd && !m_blockWatcher.blockLevel())
+    if (token.getBlockType() == CSSParserToken::BlockEnd && !m_blockWatcher.blockLevel())
         m_state = SkipUntilComma;
 }
 
@@ -196,7 +196,7 @@ void MediaQueryParser::done(CSSParserTokenType type, const CSSParserToken& token
 
 void MediaQueryParser::handleBlocks(const CSSParserToken& token)
 {
-    if (token.blockType() == CSSParserToken::BlockStart
+    if (token.getBlockType() == CSSParserToken::BlockStart
         && (token.type() != LeftParenthesisToken || m_blockWatcher.blockLevel()))
             m_state = SkipUntilBlockEnd;
 }

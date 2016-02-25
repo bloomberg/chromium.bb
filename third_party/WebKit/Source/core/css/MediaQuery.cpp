@@ -79,13 +79,13 @@ PassOwnPtrWillBeRawPtr<MediaQuery> MediaQuery::createNotAll()
     return adoptPtrWillBeNoop(new MediaQuery(MediaQuery::Not, MediaTypeNames::all, ExpressionHeapVector()));
 }
 
-PassOwnPtrWillBeRawPtr<MediaQuery> MediaQuery::create(Restrictor restrictor, String mediaType, ExpressionHeapVector expressions)
+PassOwnPtrWillBeRawPtr<MediaQuery> MediaQuery::create(RestrictorType restrictor, String mediaType, ExpressionHeapVector expressions)
 {
     return adoptPtrWillBeNoop(new MediaQuery(restrictor, std::move(mediaType), std::move(expressions)));
 }
 
-MediaQuery::MediaQuery(Restrictor r, String mediaType, ExpressionHeapVector expressions)
-    : m_restrictor(r)
+MediaQuery::MediaQuery(RestrictorType restrictor, String mediaType, ExpressionHeapVector expressions)
+    : m_restrictor(restrictor)
     , m_mediaType(attemptStaticStringCreation(mediaType.lower()))
     , m_expressions(std::move(expressions))
 {

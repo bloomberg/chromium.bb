@@ -133,12 +133,12 @@ using RuleSourceDataList = WillBeHeapVector<RefPtrWillBeMember<CSSRuleSourceData
 using SelectorRangeList = WillBeHeapVector<SourceRange>;
 
 struct CSSRuleSourceData : public RefCountedWillBeGarbageCollected<CSSRuleSourceData> {
-    static PassRefPtrWillBeRawPtr<CSSRuleSourceData> create(StyleRule::Type type)
+    static PassRefPtrWillBeRawPtr<CSSRuleSourceData> create(StyleRule::RuleType type)
     {
         return adoptRefWillBeNoop(new CSSRuleSourceData(type));
     }
 
-    CSSRuleSourceData(StyleRule::Type type)
+    CSSRuleSourceData(StyleRule::RuleType type)
         : type(type)
     {
         if (type == StyleRule::Style || type == StyleRule::FontFace || type == StyleRule::Page || type == StyleRule::Keyframe)
@@ -149,7 +149,7 @@ struct CSSRuleSourceData : public RefCountedWillBeGarbageCollected<CSSRuleSource
 
     DECLARE_TRACE();
 
-    StyleRule::Type type;
+    StyleRule::RuleType type;
 
     // Range of the selector list in the enclosing source.
     SourceRange ruleHeaderRange;

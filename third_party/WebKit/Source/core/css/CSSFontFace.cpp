@@ -63,7 +63,7 @@ void CSSFontFace::fontLoaded(RemoteFontFaceSource* source)
     if (loadStatus() == FontFace::Loading) {
         if (source->isValid()) {
             setLoadStatus(FontFace::Loaded);
-        } else if (source->displayPeriod() == RemoteFontFaceSource::FailurePeriod) {
+        } else if (source->getDisplayPeriod() == RemoteFontFaceSource::FailurePeriod) {
             m_sources.clear();
             setLoadStatus(FontFace::Error);
         } else {
@@ -166,7 +166,7 @@ void CSSFontFace::load(const FontDescription& fontDescription)
     setLoadStatus(FontFace::Error);
 }
 
-void CSSFontFace::setLoadStatus(FontFace::LoadStatus newStatus)
+void CSSFontFace::setLoadStatus(FontFace::LoadStatusType newStatus)
 {
     ASSERT(m_fontFace);
     if (newStatus == FontFace::Error)

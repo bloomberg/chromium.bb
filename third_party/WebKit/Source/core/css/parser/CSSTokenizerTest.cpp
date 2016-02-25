@@ -49,7 +49,7 @@ void compareTokens(const CSSParserToken& expected, const CSSParserToken& actual)
         break;
     case HashToken:
         ASSERT_EQ(String(expected.value()), String(actual.value()));
-        ASSERT_EQ(expected.hashTokenType(), actual.hashTokenType());
+        ASSERT_EQ(expected.getHashTokenType(), actual.getHashTokenType());
         break;
     default:
         break;

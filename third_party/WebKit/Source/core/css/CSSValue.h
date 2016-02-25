@@ -191,7 +191,7 @@ protected:
         SlashSeparator
     };
 
-    ClassType classType() const { return static_cast<ClassType>(m_classType); }
+    ClassType getClassType() const { return static_cast<ClassType>(m_classType); }
 
     explicit CSSValue(ClassType classType)
         : m_primitiveUnitType(0)

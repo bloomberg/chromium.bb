@@ -1504,7 +1504,7 @@ StyleColor ComputedStyle::decorationColorIncludingFallback(bool visitedLink) con
     if (textStrokeWidth()) {
         // Prefer stroke color if possible, but not if it's fully transparent.
         StyleColor textStrokeStyleColor = visitedLink ? visitedLinkTextStrokeColor() : textStrokeColor();
-        if (!textStrokeStyleColor.isCurrentColor() && textStrokeStyleColor.color().alpha())
+        if (!textStrokeStyleColor.isCurrentColor() && textStrokeStyleColor.getColor().alpha())
             return textStrokeStyleColor;
     }
 
@@ -1574,7 +1574,7 @@ Color ComputedStyle::colorIncludingFallback(int colorProperty, bool visitedLink)
     }
 
     if (!result.isCurrentColor())
-        return result.color();
+        return result.getColor();
 
     // FIXME: Treating styled borders with initial color differently causes problems
     // See crbug.com/316559, crbug.com/276231

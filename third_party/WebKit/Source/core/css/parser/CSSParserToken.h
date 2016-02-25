@@ -135,8 +135,8 @@ public:
     NumericSign numericSign() const;
     NumericValueType numericValueType() const;
     double numericValue() const;
-    HashTokenType hashTokenType() const { ASSERT(m_type == HashToken); return m_hashTokenType; }
-    BlockType blockType() const { return static_cast<BlockType>(m_blockType); }
+    HashTokenType getHashTokenType() const { ASSERT(m_type == HashToken); return m_hashTokenType; }
+    BlockType getBlockType() const { return static_cast<BlockType>(m_blockType); }
     CSSPrimitiveValue::UnitType unitType() const { return static_cast<CSSPrimitiveValue::UnitType>(m_unit); }
     UChar32 unicodeRangeStart() const { ASSERT(m_type == UnicodeRangeToken); return m_unicodeRange.start; }
     UChar32 unicodeRangeEnd() const { ASSERT(m_type == UnicodeRangeToken); return m_unicodeRange.end; }

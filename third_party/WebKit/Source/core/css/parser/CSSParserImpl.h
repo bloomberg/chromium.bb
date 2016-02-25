@@ -97,9 +97,9 @@ private:
     PassRefPtrWillBeRawPtr<StyleRuleKeyframe> consumeKeyframeStyleRule(CSSParserTokenRange prelude, CSSParserTokenRange block);
     PassRefPtrWillBeRawPtr<StyleRule> consumeStyleRule(CSSParserTokenRange prelude, CSSParserTokenRange block);
 
-    void consumeDeclarationList(CSSParserTokenRange, StyleRule::Type);
-    void consumeDeclaration(CSSParserTokenRange, StyleRule::Type);
-    void consumeDeclarationValue(CSSParserTokenRange, CSSPropertyID, bool important, StyleRule::Type);
+    void consumeDeclarationList(CSSParserTokenRange, StyleRule::RuleType);
+    void consumeDeclaration(CSSParserTokenRange, StyleRule::RuleType);
+    void consumeDeclarationValue(CSSParserTokenRange, CSSPropertyID, bool important, StyleRule::RuleType);
     void consumeVariableValue(CSSParserTokenRange, const AtomicString& propertyName, bool important);
 
     static PassOwnPtr<Vector<double>> consumeKeyframeKeyList(CSSParserTokenRange);

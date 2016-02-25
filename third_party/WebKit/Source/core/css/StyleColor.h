@@ -45,7 +45,7 @@ public:
     static StyleColor currentColor() { return StyleColor(); }
 
     bool isCurrentColor() const { return m_currentColor; }
-    Color color() const { ASSERT(!isCurrentColor()); return m_color; }
+    Color getColor() const { ASSERT(!isCurrentColor()); return m_color; }
 
     Color resolve(Color currentColor) const { return m_currentColor ? currentColor : m_color; }
 
@@ -60,7 +60,7 @@ inline bool operator==(const StyleColor& a, const StyleColor& b)
 {
     if (a.isCurrentColor() || b.isCurrentColor())
         return a.isCurrentColor() && b.isCurrentColor();
-    return a.color() == b.color();
+    return a.getColor() == b.getColor();
 }
 
 inline bool operator!=(const StyleColor& a, const StyleColor& b)

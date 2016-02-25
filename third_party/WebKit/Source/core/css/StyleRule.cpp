@@ -341,7 +341,7 @@ DEFINE_TRACE_AFTER_DISPATCH(StyleRuleFontFace)
     StyleRuleBase::traceAfterDispatch(visitor);
 }
 
-StyleRuleGroup::StyleRuleGroup(Type type, WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>>& adoptRule)
+StyleRuleGroup::StyleRuleGroup(RuleType type, WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>>& adoptRule)
     : StyleRuleBase(type)
 {
     m_childRules.swap(adoptRule);

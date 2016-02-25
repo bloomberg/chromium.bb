@@ -34,7 +34,7 @@ public:
     bool isLoading() const override;
     bool isLoaded() const override;
     bool isValid() const override;
-    DisplayPeriod displayPeriod() const { return m_period; }
+    DisplayPeriod getDisplayPeriod() const { return m_period; }
 
     void beginLoadIfNeeded() override;
 

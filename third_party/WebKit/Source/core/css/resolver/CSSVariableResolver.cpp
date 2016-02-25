@@ -113,7 +113,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSVariableResolver::resolveVariableReferences(
     CSSParserContext context(HTMLStandardMode, nullptr);
     WillBeHeapVector<CSSProperty, 256> parsedProperties;
     // TODO(timloh): This should be CSSParser::parseSingleValue and not need a vector.
-    if (!CSSPropertyParser::parseValue(id, false, CSSParserTokenRange(tokens), context, parsedProperties, StyleRule::Type::Style))
+    if (!CSSPropertyParser::parseValue(id, false, CSSParserTokenRange(tokens), context, parsedProperties, StyleRule::RuleType::Style))
         return cssValuePool().createUnsetValue();
     ASSERT(parsedProperties.size() == 1);
     return parsedProperties[0].value();
@@ -129,7 +129,7 @@ void CSSVariableResolver::resolveAndApplyVariableReferences(StyleResolverState& 
 
         WillBeHeapVector<CSSProperty, 256> parsedProperties;
 
-        if (CSSPropertyParser::parseValue(id, false, CSSParserTokenRange(tokens), context, parsedProperties, StyleRule::Type::Style)) {
+        if (CSSPropertyParser::parseValue(id, false, CSSParserTokenRange(tokens), context, parsedProperties, StyleRule::RuleType::Style)) {
             unsigned parsedPropertiesCount = parsedProperties.size();
             for (unsigned i = 0; i < parsedPropertiesCount; ++i)
                 StyleBuilder::applyProperty(parsedProperties[i].id(), state, parsedProperties[i].value());

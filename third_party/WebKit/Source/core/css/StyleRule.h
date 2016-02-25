@@ -37,7 +37,7 @@ class CSSStyleSheet;
 class CORE_EXPORT StyleRuleBase : public RefCountedWillBeGarbageCollectedFinalized<StyleRuleBase> {
     USING_FAST_MALLOC_WITH_TYPE_NAME_WILL_BE_REMOVED(blink::StyleRuleBase);
 public:
-    enum Type {
+    enum RuleType {
         Charset,
         Style,
         Import,
@@ -51,7 +51,7 @@ public:
         Viewport,
     };
 
-    Type type() const { return static_cast<Type>(m_type); }
+    RuleType type() const { return static_cast<RuleType>(m_type); }
 
     bool isCharsetRule() const { return type() == Charset; }
     bool isFontFaceRule() const { return type() == FontFace; }
@@ -90,7 +90,7 @@ public:
     ~StyleRuleBase() { }
 
 protected:
-    StyleRuleBase(Type type) : m_type(type) { }
+    StyleRuleBase(RuleType type) : m_type(type) { }
     StyleRuleBase(const StyleRuleBase& o) : m_type(o.m_type) { }
 
 private:
@@ -193,7 +193,7 @@ public:
     DECLARE_TRACE_AFTER_DISPATCH();
 
 protected:
-    StyleRuleGroup(Type, WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>>& adoptRule);
+    StyleRuleGroup(RuleType, WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>>& adoptRule);
     StyleRuleGroup(const StyleRuleGroup&);
 
 private:

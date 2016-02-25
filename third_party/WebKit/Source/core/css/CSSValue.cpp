@@ -77,13 +77,13 @@ bool CSSValue::hasFailedOrCanceledSubresources() const
 {
     if (isValueList())
         return toCSSValueList(this)->hasFailedOrCanceledSubresources();
-    if (classType() == FontFaceSrcClass)
+    if (getClassType() == FontFaceSrcClass)
         return toCSSFontFaceSrcValue(this)->hasFailedOrCanceledSubresources();
-    if (classType() == ImageClass)
+    if (getClassType() == ImageClass)
         return toCSSImageValue(this)->hasFailedOrCanceledSubresources();
-    if (classType() == CrossfadeClass)
+    if (getClassType() == CrossfadeClass)
         return toCSSCrossfadeValue(this)->hasFailedOrCanceledSubresources();
-    if (classType() == ImageSetClass)
+    if (getClassType() == ImageSetClass)
         return toCSSImageSetValue(this)->hasFailedOrCanceledSubresources();
 
     return false;
@@ -98,7 +98,7 @@ inline static bool compareCSSValues(const CSSValue& first, const CSSValue& secon
 bool CSSValue::equals(const CSSValue& other) const
 {
     if (m_classType == other.m_classType) {
-        switch (classType()) {
+        switch (getClassType()) {
         case BasicShapeCircleClass:
             return compareCSSValues<CSSBasicShapeCircleValue>(*this, other);
         case BasicShapeEllipseClass:
@@ -184,7 +184,7 @@ bool CSSValue::equals(const CSSValue& other) const
 
 String CSSValue::cssText() const
 {
-    switch (classType()) {
+    switch (getClassType()) {
     case BasicShapeCircleClass:
         return toCSSBasicShapeCircleValue(this)->customCSSText();
     case BasicShapeEllipseClass:
@@ -268,7 +268,7 @@ String CSSValue::cssText() const
 
 void CSSValue::destroy()
 {
-    switch (classType()) {
+    switch (getClassType()) {
     case BasicShapeCircleClass:
         delete toCSSBasicShapeCircleValue(this);
         return;
@@ -389,7 +389,7 @@ void CSSValue::destroy()
 
 void CSSValue::finalizeGarbageCollectedObject()
 {
-    switch (classType()) {
+    switch (getClassType()) {
     case BasicShapeCircleClass:
         toCSSBasicShapeCircleValue(this)->~CSSBasicShapeCircleValue();
         return;
@@ -510,7 +510,7 @@ void CSSValue::finalizeGarbageCollectedObject()
 
 DEFINE_TRACE(CSSValue)
 {
-    switch (classType()) {
+    switch (getClassType()) {
     case BasicShapeCircleClass:
         toCSSBasicShapeCircleValue(this)->traceAfterDispatch(visitor);
         return;

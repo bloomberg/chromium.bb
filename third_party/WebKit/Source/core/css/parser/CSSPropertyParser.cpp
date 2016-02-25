@@ -67,7 +67,7 @@ static bool hasInvalidNumericValues(const CSSParserTokenRange& range)
 
 bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool important,
     const CSSParserTokenRange& range, const CSSParserContext& context,
-    WillBeHeapVector<CSSProperty, 256>& parsedProperties, StyleRule::Type ruleType)
+    WillBeHeapVector<CSSProperty, 256>& parsedProperties, StyleRule::RuleType ruleType)
 {
     if (hasInvalidNumericValues(range))
         return false;

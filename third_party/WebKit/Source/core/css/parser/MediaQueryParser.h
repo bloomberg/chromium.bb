@@ -22,7 +22,7 @@ class MediaQueryData {
     STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(MediaQueryData);
 private:
-    MediaQuery::Restrictor m_restrictor;
+    MediaQuery::RestrictorType m_restrictor;
     String m_mediaType;
     ExpressionHeapVector m_expressions;
     String m_mediaFeature;
@@ -41,9 +41,9 @@ public:
     {
         return (m_restrictor != MediaQuery::None || m_mediaTypeSet || m_expressions.size() > 0);
     }
-    inline MediaQuery::Restrictor restrictor() { return m_restrictor; }
+    inline MediaQuery::RestrictorType restrictor() { return m_restrictor; }
 
-    inline void setRestrictor(MediaQuery::Restrictor restrictor) { m_restrictor = restrictor; }
+    inline void setRestrictor(MediaQuery::RestrictorType restrictor) { m_restrictor = restrictor; }
 
     inline void setMediaFeature(const String& str) { m_mediaFeature = str; }
 };
@@ -83,7 +83,7 @@ private:
 
     using State = void (MediaQueryParser::*)(CSSParserTokenType, const CSSParserToken&);
 
-    void setStateAndRestrict(State, MediaQuery::Restrictor);
+    void setStateAndRestrict(State, MediaQuery::RestrictorType);
     void handleBlocks(const CSSParserToken&);
 
     State m_state;

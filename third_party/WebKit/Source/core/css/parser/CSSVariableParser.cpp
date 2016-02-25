@@ -29,7 +29,7 @@ bool isValidVariableReference(CSSParserTokenRange);
 bool classifyBlock(CSSParserTokenRange range, bool& hasReferences, bool isTopLevelBlock = true)
 {
     while (!range.atEnd()) {
-        if (range.peek().blockType() == CSSParserToken::BlockStart) {
+        if (range.peek().getBlockType() == CSSParserToken::BlockStart) {
             const CSSParserToken& token = range.peek();
             CSSParserTokenRange block = range.consumeBlock();
             if (token.functionId() == CSSValueVar) {
@@ -43,7 +43,7 @@ bool classifyBlock(CSSParserTokenRange range, bool& hasReferences, bool isTopLev
             continue;
         }
 
-        ASSERT(range.peek().blockType() != CSSParserToken::BlockEnd);
+        ASSERT(range.peek().getBlockType() != CSSParserToken::BlockEnd);
 
         const CSSParserToken& token = range.consume();
         switch (token.type()) {

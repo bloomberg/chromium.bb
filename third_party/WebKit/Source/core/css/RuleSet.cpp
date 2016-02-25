@@ -115,7 +115,7 @@ RuleData::RuleData(StyleRule* rule, unsigned selectorIndex, unsigned position, A
     , m_containsUncommonAttributeSelector(blink::containsUncommonAttributeSelector(selector()))
     , m_linkMatchType(selector().computeLinkMatchType())
     , m_hasDocumentSecurityOrigin(addRuleFlags & RuleHasDocumentSecurityOrigin)
-    , m_propertyWhitelistType(determinePropertyWhitelistType(addRuleFlags, selector()))
+    , m_propertyWhitelist(determinePropertyWhitelistType(addRuleFlags, selector()))
 {
     SelectorFilter::collectIdentifierHashes(selector(), m_descendantSelectorIdentifierHashes, maximumIdentifierCount);
 }

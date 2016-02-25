@@ -127,7 +127,7 @@ void CSSImageGeneratorValue::putImage(const IntSize& size, PassRefPtr<Image> ima
 
 PassRefPtr<Image> CSSImageGeneratorValue::image(const LayoutObject* layoutObject, const IntSize& size)
 {
-    switch (classType()) {
+    switch (getClassType()) {
     case CrossfadeClass:
         return toCSSCrossfadeValue(this)->image(layoutObject, size);
     case LinearGradientClass:
@@ -142,7 +142,7 @@ PassRefPtr<Image> CSSImageGeneratorValue::image(const LayoutObject* layoutObject
 
 bool CSSImageGeneratorValue::isFixedSize() const
 {
-    switch (classType()) {
+    switch (getClassType()) {
     case CrossfadeClass:
         return toCSSCrossfadeValue(this)->isFixedSize();
     case LinearGradientClass:
@@ -157,7 +157,7 @@ bool CSSImageGeneratorValue::isFixedSize() const
 
 IntSize CSSImageGeneratorValue::fixedSize(const LayoutObject* layoutObject)
 {
-    switch (classType()) {
+    switch (getClassType()) {
     case CrossfadeClass:
         return toCSSCrossfadeValue(this)->fixedSize(layoutObject);
     case LinearGradientClass:
@@ -172,7 +172,7 @@ IntSize CSSImageGeneratorValue::fixedSize(const LayoutObject* layoutObject)
 
 bool CSSImageGeneratorValue::isPending() const
 {
-    switch (classType()) {
+    switch (getClassType()) {
     case CrossfadeClass:
         return toCSSCrossfadeValue(this)->isPending();
     case LinearGradientClass:
@@ -187,7 +187,7 @@ bool CSSImageGeneratorValue::isPending() const
 
 bool CSSImageGeneratorValue::knownToBeOpaque(const LayoutObject* layoutObject) const
 {
-    switch (classType()) {
+    switch (getClassType()) {
     case CrossfadeClass:
         return toCSSCrossfadeValue(this)->knownToBeOpaque(layoutObject);
     case LinearGradientClass:
@@ -202,7 +202,7 @@ bool CSSImageGeneratorValue::knownToBeOpaque(const LayoutObject* layoutObject) c
 
 void CSSImageGeneratorValue::loadSubimages(Document* document)
 {
-    switch (classType()) {
+    switch (getClassType()) {
     case CrossfadeClass:
         toCSSCrossfadeValue(this)->loadSubimages(document);
         break;
