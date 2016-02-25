@@ -26,7 +26,7 @@ std::string MakeTestPath(const std::string& path) {
 }  // namespace
 
 TEST_F(VisualStudioWriterTest, ResolveSolutionFolders) {
-  VisualStudioWriter writer(setup_.build_settings(), true, "Win32",
+  VisualStudioWriter writer(setup_.build_settings(), "Win32",
                             VisualStudioWriter::Version::Vs2015);
 
   std::string path =
@@ -80,7 +80,7 @@ TEST_F(VisualStudioWriterTest, ResolveSolutionFolders) {
 }
 
 TEST_F(VisualStudioWriterTest, ResolveSolutionFolders_AbsPath) {
-  VisualStudioWriter writer(setup_.build_settings(), true, "Win32",
+  VisualStudioWriter writer(setup_.build_settings(), "Win32",
                             VisualStudioWriter::Version::Vs2015);
 
   std::string path =

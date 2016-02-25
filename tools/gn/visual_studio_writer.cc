@@ -79,6 +79,8 @@ const char kGuidSeedProject[] = "project";
 const char kGuidSeedFolder[] = "folder";
 const char kGuidSeedFilter[] = "filter";
 
+const char kConfigurationName[] = "GN";
+
 std::string GetWindowsKitsIncludeDirs() {
   std::string kits_path;
 
@@ -178,11 +180,9 @@ VisualStudioWriter::SolutionProject::SolutionProject(
 VisualStudioWriter::SolutionProject::~SolutionProject() = default;
 
 VisualStudioWriter::VisualStudioWriter(const BuildSettings* build_settings,
-                                       bool is_debug_config,
                                        const char* config_platform,
                                        Version version)
     : build_settings_(build_settings),
-      is_debug_config_(is_debug_config),
       config_platform_(config_platform),
       ninja_path_output_(build_settings->build_dir(),
                          build_settings->root_path_utf8(),
@@ -217,24 +217,19 @@ bool VisualStudioWriter::RunAndWriteFiles(const BuildSettings* build_settings,
                                           Err* err) {
   std::vector<const Target*> targets = builder->GetAllResolvedTargets();
 
-  bool is_debug_config = true;
   const char* config_platform = "Win32";
 
-  // Assume the "is_debug" and "target_cpu" variables do not change
-  // between different toolchains.
+  // Assume the "target_cpu" variable does not change between different
+  // toolchains.
   if (!targets.empty()) {
     const Scope* scope = targets.front()->settings()->base_config();
-    const Value* is_debug_value = scope->GetValue("is_debug");
-    is_debug_config =
-        is_debug_value == nullptr || is_debug_value->boolean_value();
     const Value* target_cpu_value = scope->GetValue(variables::kTargetCpu);
     if (target_cpu_value != nullptr &&
         target_cpu_value->string_value() == "x64")
       config_platform = "x64";
   }
 
-  VisualStudioWriter writer(build_settings, is_debug_config, config_platform,
-                            version);
+  VisualStudioWriter writer(build_settings, config_platform, version);
   writer.projects_.reserve(targets.size());
   writer.folders_.reserve(targets.size());
 
@@ -332,12 +327,11 @@ bool VisualStudioWriter::WriteProjectFileContents(
   {
     scoped_ptr<XmlElementWriter> configurations = project.SubElement(
         "ItemGroup", XmlAttributes("Label", "ProjectConfigurations"));
-    std::string config_name = is_debug_config_ ? "Debug" : "Release";
     scoped_ptr<XmlElementWriter> project_config = configurations->SubElement(
         "ProjectConfiguration",
-        XmlAttributes("Include",
-                      config_name + '|' + solution_project.config_platform));
-    project_config->SubElement("Configuration")->Text(config_name);
+        XmlAttributes("Include", std::string(kConfigurationName) + '|' +
+                                     solution_project.config_platform));
+    project_config->SubElement("Configuration")->Text(kConfigurationName);
     project_config->SubElement("Platform")
         ->Text(solution_project.config_platform);
   }
@@ -639,8 +633,7 @@ void VisualStudioWriter::WriteSolutionFileContents(
 
   out << "\tGlobalSection(SolutionConfigurationPlatforms) = preSolution"
       << std::endl;
-  const std::string config_mode_prefix =
-      std::string(is_debug_config_ ? "Debug" : "Release") + '|';
+  const std::string config_mode_prefix = std::string(kConfigurationName) + '|';
   const std::string config_mode = config_mode_prefix + config_platform_;
   out << "\t\t" << config_mode << " = " << config_mode << std::endl;
   out << "\tEndGlobalSection" << std::endl;

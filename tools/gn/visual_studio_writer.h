@@ -75,7 +75,6 @@ class VisualStudioWriter {
   using SolutionFolders = std::vector<SolutionEntry*>;
 
   explicit VisualStudioWriter(const BuildSettings* build_settings,
-                              bool is_debug_config,
                               const char* config_platform,
                               Version version);
   ~VisualStudioWriter();
@@ -106,9 +105,6 @@ class VisualStudioWriter {
 
   // Visual Studio version string.
   const char* version_string_;
-
-  // Indicates if project files are generated for Debug mode configuration.
-  bool is_debug_config_;
 
   // Platform for solution configuration (Win32, x64). Some projects may be
   // configured for different platform.
