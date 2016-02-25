@@ -33,8 +33,8 @@
 #include "core/html/canvas/CanvasRenderingContextFactory.h"
 #include "core/svg/SVGResourceClient.h"
 #include "modules/ModulesExport.h"
+#include "modules/canvas2d/BaseRenderingContext2D.h"
 #include "modules/canvas2d/Canvas2DContextAttributes.h"
-#include "modules/canvas2d/CanvasPathMethods.h"
 #include "modules/canvas2d/CanvasRenderingContext2DState.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/heap/GarbageCollected.h"
@@ -56,15 +56,15 @@ class FontMetrics;
 class HitRegion;
 class HitRegionOptions;
 class HitRegionManager;
-class ImageData;
 class Path2D;
 class SVGMatrixTearOff;
 class TextMetrics;
 
 typedef HTMLImageElementOrHTMLVideoElementOrHTMLCanvasElementOrImageBitmap CanvasImageSourceUnion;
 
-class MODULES_EXPORT CanvasRenderingContext2D final : public CanvasRenderingContext, public CanvasPathMethods, public WebThread::TaskObserver, public SVGResourceClient {
+class MODULES_EXPORT CanvasRenderingContext2D final : public CanvasRenderingContext, public BaseRenderingContext2D, public WebThread::TaskObserver, public SVGResourceClient {
     DEFINE_WRAPPERTYPEINFO();
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(CanvasRenderingContext2D);
     WILL_BE_USING_PRE_FINALIZER(CanvasRenderingContext2D, dispose);
 public:
     class Factory : public CanvasRenderingContextFactory {
@@ -83,104 +83,14 @@ public:
 
     ~CanvasRenderingContext2D() override;
 
-    void strokeStyle(StringOrCanvasGradientOrCanvasPattern&) const;
-    void setStrokeStyle(const StringOrCanvasGradientOrCanvasPattern&);
-
-    void fillStyle(StringOrCanvasGradientOrCanvasPattern&) const;
-    void setFillStyle(const StringOrCanvasGradientOrCanvasPattern&);
-
-    double lineWidth() const;
-    void setLineWidth(double);
-
-    String lineCap() const;
-    void setLineCap(const String&);
-
-    String lineJoin() const;
-    void setLineJoin(const String&);
-
-    double miterLimit() const;
-    void setMiterLimit(double);
-
-    const Vector<double>& getLineDash() const;
-    void setLineDash(const Vector<double>&);
-
-    double lineDashOffset() const;
-    void setLineDashOffset(double);
-
-    double shadowOffsetX() const;
-    void setShadowOffsetX(double);
-
-    double shadowOffsetY() const;
-    void setShadowOffsetY(double);
-
-    double shadowBlur() const;
-    void setShadowBlur(double);
-
-    String shadowColor() const;
-    void setShadowColor(const String&);
-
-    double globalAlpha() const;
-    void setGlobalAlpha(double);
-
     bool isContextLost() const override;
 
-    bool shouldAntialias() const;
     void setShouldAntialias(bool) override;
-
-    String globalCompositeOperation() const;
-    void setGlobalCompositeOperation(const String&);
-
-    String filter() const;
-    void setFilter(const String&);
-
-    void save();
-    void restore();
-
-    PassRefPtrWillBeRawPtr<SVGMatrixTearOff> currentTransform() const;
-    void setCurrentTransform(PassRefPtrWillBeRawPtr<SVGMatrixTearOff>);
-
-    void scale(double sx, double sy);
-    void rotate(double angleInRadians);
-    void translate(double tx, double ty);
-    void transform(double m11, double m12, double m21, double m22, double dx, double dy);
-    void setTransform(double m11, double m12, double m21, double m22, double dx, double dy);
-    void resetTransform();
-
-    void beginPath();
-
-    void fill(const String& winding = "nonzero");
-    void fill(Path2D*, const String& winding = "nonzero");
-    void stroke();
-    void stroke(Path2D*);
-    void clip(const String& winding = "nonzero");
-    void clip(Path2D*, const String& winding = "nonzero");
-
-    bool isPointInPath(const double x, const double y, const String& winding = "nonzero");
-    bool isPointInPath(Path2D*, const double x, const double y, const String& winding = "nonzero");
-    bool isPointInStroke(const double x, const double y);
-    bool isPointInStroke(Path2D*, const double x, const double y);
 
     void scrollPathIntoView();
     void scrollPathIntoView(Path2D*);
 
     void clearRect(double x, double y, double width, double height) override;
-    void fillRect(double x, double y, double width, double height);
-    void strokeRect(double x, double y, double width, double height);
-
-    void drawImage(const CanvasImageSourceUnion&, double x, double y, ExceptionState&);
-    void drawImage(const CanvasImageSourceUnion&, double x, double y, double width, double height, ExceptionState&);
-    void drawImage(const CanvasImageSourceUnion&, double sx, double sy, double sw, double sh, double dx, double dy, double dw, double dh, ExceptionState&);
-    void drawImage(CanvasImageSource*, double sx, double sy, double sw, double sh, double dx, double dy, double dw, double dh, ExceptionState&);
-
-    CanvasGradient* createLinearGradient(double x0, double y0, double x1, double y1);
-    CanvasGradient* createRadialGradient(double x0, double y0, double r0, double x1, double y1, double r1, ExceptionState&);
-    CanvasPattern* createPattern(const CanvasImageSourceUnion&, const String& repetitionType, ExceptionState&);
-
-    ImageData* createImageData(ImageData*) const;
-    ImageData* createImageData(double width, double height, ExceptionState&) const;
-    ImageData* getImageData(double sx, double sy, double sw, double sh, ExceptionState&) const;
-    void putImageData(ImageData*, double dx, double dy, ExceptionState&);
-    void putImageData(ImageData*, double dx, double dy, double dirtyX, double dirtyY, double dirtyWidth, double dirtyHeight, ExceptionState&);
 
     void reset() override;
 
@@ -201,11 +111,6 @@ public:
     void strokeText(const String& text, double x, double y);
     void strokeText(const String& text, double x, double y, double maxWidth);
     TextMetrics* measureText(const String& text);
-
-    bool imageSmoothingEnabled() const;
-    void setImageSmoothingEnabled(bool);
-    String imageSmoothingQuality() const;
-    void setImageSmoothingQuality(const String&);
 
     void getContextAttributes(Canvas2DContextAttributes&) const;
 
@@ -232,6 +137,31 @@ public:
     // SVGResourceClient implementation
     void filterNeedsInvalidation() override;
 
+    // BaseRenderingContext2D implementation
+    bool originClean() const final;
+    void setOriginTainted() final;
+    bool wouldTaintOrigin(CanvasImageSource* source) final { return CanvasRenderingContext::wouldTaintOrigin(source); }
+
+    int width() const final;
+    int height() const final;
+
+    bool hasImageBuffer() const final;
+    ImageBuffer* imageBuffer() const final;
+
+    bool parseColorOrCurrentColor(Color&, const String& colorString) const final;
+
+    SkCanvas* drawingCanvas() const final;
+    SkCanvas* existingDrawingCanvas() const final;
+    void disableDeferral(DisableDeferralReason) final;
+
+    AffineTransform baseTransform() const final;
+    void didDraw(const SkIRect& dirtyRect) final;
+
+    bool stateHasFilter() final;
+    SkImageFilter* stateGetFilter() final;
+
+    void validateStateStack() final;
+
 private:
     friend class CanvasRenderingContext2DAutoRestoreSkCanvas;
 
@@ -239,37 +169,14 @@ private:
 
     void dispose();
 
-    CanvasRenderingContext2DState& modifiableState();
-    const CanvasRenderingContext2DState& state() const { return *m_stateStack.last(); }
-
-    void setShadow(const FloatSize& offset, double blur, RGBA32 color);
-
     void dispatchContextLostEvent(Timer<CanvasRenderingContext2D>*);
     void dispatchContextRestoredEvent(Timer<CanvasRenderingContext2D>*);
     void tryRestoreContextEvent(Timer<CanvasRenderingContext2D>*);
 
-    bool computeDirtyRect(const FloatRect& localBounds, SkIRect*);
-    bool computeDirtyRect(const FloatRect& localBounds, const SkIRect& transformedClipBounds, SkIRect*);
-    void didDraw(const SkIRect&);
-
-    SkCanvas* drawingCanvas() const;
-
     void unwindStateStack();
-    void realizeSaves();
 
     void pruneLocalFontCache(size_t targetSize);
     void schedulePruneLocalFontCacheIfNeeded();
-
-    bool shouldDrawImageAntialiased(const FloatRect& destRect) const;
-
-    template<typename DrawFunc, typename ContainsFunc>
-    bool draw(const DrawFunc&, const ContainsFunc&, const SkRect& bounds, CanvasRenderingContext2DState::PaintType, CanvasRenderingContext2DState::ImageType = CanvasRenderingContext2DState::NoImage);
-    void drawPathInternal(const Path&, CanvasRenderingContext2DState::PaintType, SkPath::FillType = SkPath::kWinding_FillType);
-    void drawImageInternal(SkCanvas*, CanvasImageSource*, Image*, const FloatRect& srcRect, const FloatRect& dstRect, const SkPaint*);
-    void clipInternal(const Path&, const String& windingRuleString);
-
-    bool isPointInPathInternal(const Path&, const double x, const double y, const String& windingRuleString);
-    bool isPointInStrokeInternal(const Path&, const double x, const double y);
 
     void scrollPathIntoViewInternal(const Path&);
 
@@ -278,27 +185,10 @@ private:
     const Font& accessFont();
     int getFontBaseline(const FontMetrics&) const;
 
-    void clearCanvas();
-    bool rectContainsTransformedRect(const FloatRect&, const SkIRect&) const;
-
-    void inflateStrokeRect(FloatRect&) const;
-
-    template<typename DrawFunc>
-    void compositedDraw(const DrawFunc&, SkCanvas*, CanvasRenderingContext2DState::PaintType, CanvasRenderingContext2DState::ImageType);
-
     void drawFocusIfNeededInternal(const Path&, Element*);
     bool focusRingCallIsValid(const Path&, Element*);
     void drawFocusRing(const Path&);
     void updateElementAccessibility(const Path&, Element*);
-
-    void validateStateStack();
-
-    enum DrawType {
-        ClipFill, // Fill that is already known to cover the current clip
-        UntransformedUnclippedFill
-    };
-
-    void checkOverdraw(const SkRect&, const SkPaint*, CanvasRenderingContext2DState::ImageType, DrawType);
 
     CanvasRenderingContext::ContextType contextType() const override { return CanvasRenderingContext::Context2d; }
     bool is2d() const override { return true; }
@@ -312,9 +202,7 @@ private:
 
     WebLayer* platformLayer() const override;
 
-    WillBeHeapVector<OwnPtrWillBeMember<CanvasRenderingContext2DState>> m_stateStack;
     PersistentWillBeMember<HitRegionManager> m_hitRegionManager;
-    AntiAliasingMode m_clipAntialiasing;
     bool m_hasAlpha;
     LostContextMode m_contextLostMode;
     bool m_contextRestorable;
