@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.profiles.ProfileDownloader;
 import org.chromium.chrome.browser.signin.AccountManagementFragment;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInAllowedObserver;
+import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.signin.ChromeSigninController;
 
 /**
@@ -75,8 +76,7 @@ public class SignInPreference extends Preference implements SignInAllowedObserve
             summary = getContext().getString(R.string.sign_in_to_chrome_summary);
             fragment = null;
         } else {
-            summary = String.format(
-                    getContext().getString(R.string.account_management_sync_summary), account.name);
+            summary = getSyncSummaryString(getContext(), account.name);
             fragment = AccountManagementFragment.class.getName();
             title = AccountManagementFragment.getCachedUserName(account.name);
             if (title == null) {
@@ -112,6 +112,16 @@ public class SignInPreference extends Preference implements SignInAllowedObserve
                     signinController.getSignedInAccountName(), resources);
             setIcon(new BitmapDrawable(resources, bitmap));
         }
+    }
+
+    private static String getSyncSummaryString(Context context, String accountName) {
+        boolean syncEnabled = AndroidSyncSettings.isSyncEnabled(context);
+        if (syncEnabled) {
+            return String.format(
+                context.getString(R.string.account_management_sync_summary), accountName);
+        }
+
+        return context.getString(R.string.sync_is_disabled);
     }
 
     @Override
