@@ -787,7 +787,7 @@ v8::Local<v8::Context> toV8Context(ExecutionContext* context, DOMWrapperWorld& w
         if (LocalFrame* frame = toDocument(context)->frame())
             return toV8Context(frame, world);
     } else if (context->isWorkerGlobalScope()) {
-        if (WorkerOrWorkletScriptController* script = toWorkerOrWorkletGlobalScope(context)->script()) {
+        if (WorkerOrWorkletScriptController* script = toWorkerOrWorkletGlobalScope(context)->scriptController()) {
             if (script->scriptState()->contextIsValid())
                 return script->scriptState()->context();
         }

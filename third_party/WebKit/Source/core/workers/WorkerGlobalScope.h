@@ -88,7 +88,7 @@ public:
     String userAgent() const final;
     void disableEval(const String& errorMessage) final;
 
-    WorkerOrWorkletScriptController* script() final { return m_script.get(); }
+    WorkerOrWorkletScriptController* scriptController() final { return m_scriptController.get(); }
 
     virtual void didEvaluateWorkerScript();
     void dispose();
@@ -191,7 +191,7 @@ private:
 
     mutable UseCounter::CountBits m_deprecationWarningBits;
 
-    OwnPtrWillBeMember<WorkerOrWorkletScriptController> m_script;
+    OwnPtrWillBeMember<WorkerOrWorkletScriptController> m_scriptController;
     WorkerThread* m_thread;
 
     RefPtrWillBeMember<WorkerInspectorController> m_workerInspectorController;

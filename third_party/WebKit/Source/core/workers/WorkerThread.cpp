@@ -71,7 +71,7 @@ public:
     {
         Microtask::performCheckpoint(m_workerThread->isolate());
         if (WorkerGlobalScope* globalScope = m_workerThread->workerGlobalScope()) {
-            if (WorkerOrWorkletScriptController* scriptController = globalScope->script())
+            if (WorkerOrWorkletScriptController* scriptController = globalScope->scriptController())
                 scriptController->rejectedPromises()->processQueue();
             if (globalScope->isClosing()) {
                 m_workerThread->workerReportingProxy().workerGlobalScopeClosed();
@@ -283,18 +283,18 @@ void WorkerThread::initialize(PassOwnPtr<WorkerThreadStartupData> startupData)
         // Notify proxy that a new WorkerGlobalScope has been created and started.
         m_workerReportingProxy.workerGlobalScopeStarted(m_workerGlobalScope.get());
 
-        WorkerOrWorkletScriptController* script = m_workerGlobalScope->script();
-        if (!script->isExecutionForbidden())
-            script->initializeContextIfNeeded();
+        WorkerOrWorkletScriptController* scriptController = m_workerGlobalScope->scriptController();
+        if (!scriptController->isExecutionForbidden())
+            scriptController->initializeContextIfNeeded();
     }
     m_workerGlobalScope->workerInspectorController()->workerContextInitialized(startMode == PauseWorkerGlobalScopeOnStart);
 
-    if (m_workerGlobalScope->script()->isContextInitialized()) {
+    if (m_workerGlobalScope->scriptController()->isContextInitialized()) {
         m_workerReportingProxy.didInitializeWorkerContext();
     }
 
     OwnPtrWillBeRawPtr<CachedMetadataHandler> handler(workerGlobalScope()->createWorkerScriptCachedMetadataHandler(scriptURL, cachedMetaData.get()));
-    bool success = m_workerGlobalScope->script()->evaluate(ScriptSourceCode(sourceCode, scriptURL), nullptr, handler.get(), v8CacheOptions);
+    bool success = m_workerGlobalScope->scriptController()->evaluate(ScriptSourceCode(sourceCode, scriptURL), nullptr, handler.get(), v8CacheOptions);
     m_workerGlobalScope->didEvaluateWorkerScript();
     m_workerReportingProxy.didEvaluateWorkerScript(success);
 
@@ -401,7 +401,7 @@ void WorkerThread::terminateInternal()
         return;
 
     // Ensure that tasks are being handled by thread event loop. If script execution weren't forbidden, a while(1) loop in JS could keep the thread alive forever.
-    m_workerGlobalScope->script()->willScheduleExecutionTermination();
+    m_workerGlobalScope->scriptController()->willScheduleExecutionTermination();
     terminateV8Execution();
 
     InspectorInstrumentation::didKillAllExecutionContextTasks(m_workerGlobalScope.get());

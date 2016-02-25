@@ -285,7 +285,7 @@ static void promiseRejectHandlerInWorker(v8::PromiseRejectMessage data)
         return;
 
     ASSERT(executionContext->isWorkerGlobalScope());
-    WorkerOrWorkletScriptController* scriptController = toWorkerGlobalScope(executionContext)->script();
+    WorkerOrWorkletScriptController* scriptController = toWorkerGlobalScope(executionContext)->scriptController();
     ASSERT(scriptController);
 
     promiseRejectHandler(data, *scriptController->rejectedPromises(), String());

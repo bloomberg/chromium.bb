@@ -69,7 +69,7 @@ void Worklet::onFinished(WorkerScriptLoader* scriptLoader, ScriptPromiseResolver
         // TODO(ikilpatrick): Worklets don't have the same error behaviour
         // as workers, etc. For a SyntaxError we should reject, however if
         // the script throws a normal error, resolve. For now just resolve.
-        m_workletGlobalScope->script()->evaluate(ScriptSourceCode(scriptLoader->script(), scriptLoader->url()));
+        m_workletGlobalScope->scriptController()->evaluate(ScriptSourceCode(scriptLoader->script(), scriptLoader->url()));
         resolver->resolve();
     }
 
@@ -84,7 +84,7 @@ void Worklet::onFinished(WorkerScriptLoader* scriptLoader, ScriptPromiseResolver
 
 void Worklet::stop()
 {
-    m_workletGlobalScope->script()->willScheduleExecutionTermination();
+    m_workletGlobalScope->scriptController()->willScheduleExecutionTermination();
 
     for (auto scriptLoader : m_scriptLoaders) {
         scriptLoader->cancel();

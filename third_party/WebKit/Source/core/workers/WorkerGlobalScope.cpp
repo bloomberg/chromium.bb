@@ -75,7 +75,7 @@ WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, W
     : m_url(url)
     , m_userAgent(userAgent)
     , m_v8CacheOptions(V8CacheOptionsDefault)
-    , m_script(WorkerOrWorkletScriptController::create(this, thread->isolate()))
+    , m_scriptController(WorkerOrWorkletScriptController::create(this, thread->isolate()))
     , m_thread(thread)
     , m_workerInspectorController(adoptRefWillBeNoop(new WorkerInspectorController(this)))
     , m_closing(false)
@@ -98,7 +98,7 @@ WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, W
 
 WorkerGlobalScope::~WorkerGlobalScope()
 {
-    ASSERT(!m_script);
+    ASSERT(!m_scriptController);
     ASSERT(!m_workerInspectorController);
 }
 
@@ -145,7 +145,7 @@ String WorkerGlobalScope::userAgent() const
 
 void WorkerGlobalScope::disableEval(const String& errorMessage)
 {
-    m_script->disableEval(errorMessage);
+    m_scriptController->disableEval(errorMessage);
 }
 
 DOMTimerCoordinator* WorkerGlobalScope::timers()
@@ -187,9 +187,9 @@ void WorkerGlobalScope::postTask(const WebTraceLocation& location, PassOwnPtr<Ex
 
 void WorkerGlobalScope::clearScript()
 {
-    ASSERT(m_script);
-    m_script->dispose();
-    m_script.clear();
+    ASSERT(m_scriptController);
+    m_scriptController->dispose();
+    m_scriptController.clear();
 }
 
 void WorkerGlobalScope::clearInspector()
@@ -271,9 +271,9 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls, ExceptionState
         RefPtrWillBeRawPtr<ErrorEvent> errorEvent = nullptr;
         OwnPtr<Vector<char>> cachedMetaData(scriptLoader->releaseCachedMetadata());
         OwnPtrWillBeRawPtr<CachedMetadataHandler> handler(createWorkerScriptCachedMetadataHandler(completeURL, cachedMetaData.get()));
-        m_script->evaluate(ScriptSourceCode(scriptLoader->script(), scriptLoader->responseURL()), &errorEvent, handler.get(), m_v8CacheOptions);
+        m_scriptController->evaluate(ScriptSourceCode(scriptLoader->script(), scriptLoader->responseURL()), &errorEvent, handler.get(), m_v8CacheOptions);
         if (errorEvent) {
-            m_script->rethrowExceptionFromImportedScript(errorEvent.release(), exceptionState);
+            m_scriptController->rethrowExceptionFromImportedScript(errorEvent.release(), exceptionState);
             return;
         }
     }
@@ -320,7 +320,7 @@ bool WorkerGlobalScope::isContextThread() const
 
 bool WorkerGlobalScope::isJSExecutionForbidden() const
 {
-    return m_script->isExecutionForbidden();
+    return m_scriptController->isExecutionForbidden();
 }
 
 WorkerEventQueue* WorkerGlobalScope::eventQueue() const
@@ -417,7 +417,7 @@ DEFINE_TRACE(WorkerGlobalScope)
     visitor->trace(m_console);
     visitor->trace(m_location);
     visitor->trace(m_navigator);
-    visitor->trace(m_script);
+    visitor->trace(m_scriptController);
     visitor->trace(m_workerInspectorController);
     visitor->trace(m_eventQueue);
     visitor->trace(m_workerClients);

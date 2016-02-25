@@ -230,8 +230,8 @@ void ServiceWorkerGlobalScopeProxy::didEvaluateWorkerScript(bool success)
 
 void ServiceWorkerGlobalScopeProxy::didInitializeWorkerContext()
 {
-    ScriptState::Scope scope(workerGlobalScope()->script()->scriptState());
-    client().didInitializeWorkerContext(workerGlobalScope()->script()->context(), WebURL(m_documentURL));
+    ScriptState::Scope scope(workerGlobalScope()->scriptController()->scriptState());
+    client().didInitializeWorkerContext(workerGlobalScope()->scriptController()->context(), WebURL(m_documentURL));
 }
 
 void ServiceWorkerGlobalScopeProxy::workerGlobalScopeStarted(WorkerGlobalScope* workerGlobalScope)
@@ -250,7 +250,7 @@ void ServiceWorkerGlobalScopeProxy::workerGlobalScopeClosed()
 void ServiceWorkerGlobalScopeProxy::willDestroyWorkerGlobalScope()
 {
     v8::HandleScope handleScope(workerGlobalScope()->thread()->isolate());
-    client().willDestroyWorkerContext(workerGlobalScope()->script()->context());
+    client().willDestroyWorkerContext(workerGlobalScope()->scriptController()->context());
     m_workerGlobalScope = nullptr;
 }
 

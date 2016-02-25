@@ -12,14 +12,14 @@ namespace blink {
 PassRefPtrWillBeRawPtr<WorkletGlobalScope> WorkletGlobalScope::create(const KURL& url, const String& userAgent, PassRefPtr<SecurityOrigin> securityOrigin, v8::Isolate* isolate)
 {
     RefPtrWillBeRawPtr<WorkletGlobalScope> workletGlobalScope = adoptRefWillBeNoop(new WorkletGlobalScope(url, userAgent, securityOrigin, isolate));
-    workletGlobalScope->script()->initializeContextIfNeeded();
+    workletGlobalScope->scriptController()->initializeContextIfNeeded();
     return workletGlobalScope.release();
 }
 
 WorkletGlobalScope::WorkletGlobalScope(const KURL& url, const String& userAgent, PassRefPtr<SecurityOrigin> securityOrigin, v8::Isolate* isolate)
     : m_url(url)
     , m_userAgent(userAgent)
-    , m_script(WorkerOrWorkletScriptController::create(this, isolate))
+    , m_scriptController(WorkerOrWorkletScriptController::create(this, isolate))
 {
     setSecurityOrigin(securityOrigin);
 }
@@ -44,7 +44,7 @@ v8::Local<v8::Object> WorkletGlobalScope::associateWithWrapper(v8::Isolate*, con
 
 void WorkletGlobalScope::disableEval(const String& errorMessage)
 {
-    m_script->disableEval(errorMessage);
+    m_scriptController->disableEval(errorMessage);
 }
 
 bool WorkletGlobalScope::isSecureContext(String& errorMessage, const SecureContextCheck privilegeContextCheck) const
@@ -71,7 +71,7 @@ KURL WorkletGlobalScope::virtualCompleteURL(const String& url) const
 
 DEFINE_TRACE(WorkletGlobalScope)
 {
-    visitor->trace(m_script);
+    visitor->trace(m_scriptController);
     ExecutionContext::trace(visitor);
     SecurityContext::trace(visitor);
 }

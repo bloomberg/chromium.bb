@@ -51,11 +51,11 @@ v8::Local<v8::Value> toV8(WorkerOrWorkletGlobalScope* impl, v8::Local<v8::Object
     if (UNLIKELY(!impl))
         return v8::Null(isolate);
 
-    WorkerOrWorkletScriptController* script = impl->script();
-    if (!script)
+    WorkerOrWorkletScriptController* scriptController = impl->scriptController();
+    if (!scriptController)
         return v8::Null(isolate);
 
-    v8::Local<v8::Object> global = script->context()->Global();
+    v8::Local<v8::Object> global = scriptController->context()->Global();
     ASSERT(!global.IsEmpty());
     return global;
 }

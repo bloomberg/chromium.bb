@@ -38,7 +38,7 @@ public:
 
     // WorkerOrWorkletGlobalScope
     ScriptWrappable* scriptWrappable() const final { return const_cast<WorkletGlobalScope*>(this); }
-    WorkerOrWorkletScriptController* script() final { return m_script.get(); }
+    WorkerOrWorkletScriptController* scriptController() final { return m_scriptController.get(); }
 
     // ScriptWrappable
     v8::Local<v8::Object> wrap(v8::Isolate*, v8::Local<v8::Object> creationContext) final;
@@ -84,7 +84,7 @@ private:
 
     KURL m_url;
     String m_userAgent;
-    OwnPtrWillBeMember<WorkerOrWorkletScriptController> m_script;
+    OwnPtrWillBeMember<WorkerOrWorkletScriptController> m_scriptController;
 };
 
 DEFINE_TYPE_CASTS(WorkletGlobalScope, ExecutionContext, context, context->isWorkletGlobalScope(), context.isWorkletGlobalScope());

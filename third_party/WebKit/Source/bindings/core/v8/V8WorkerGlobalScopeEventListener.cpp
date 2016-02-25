@@ -54,7 +54,7 @@ void V8WorkerGlobalScopeEventListener::handleEvent(ScriptState* scriptState, Eve
     // See issue 889829.
     RefPtrWillBeRawPtr<V8AbstractEventListener> protect(this);
 
-    WorkerOrWorkletScriptController* script = toWorkerGlobalScope(scriptState->executionContext())->script();
+    WorkerOrWorkletScriptController* script = toWorkerGlobalScope(scriptState->executionContext())->scriptController();
     if (!script)
         return;
 

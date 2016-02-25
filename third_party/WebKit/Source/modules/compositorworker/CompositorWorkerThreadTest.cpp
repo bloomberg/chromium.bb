@@ -181,7 +181,7 @@ public:
 private:
     void executeScriptInWorker(WorkerThread* worker, WaitableEvent* waitEvent)
     {
-        WorkerOrWorkletScriptController* scriptController = worker->workerGlobalScope()->script();
+        WorkerOrWorkletScriptController* scriptController = worker->workerGlobalScope()->scriptController();
         bool evaluateResult = scriptController->evaluate(ScriptSourceCode("var counter = 0; ++counter;"));
         ASSERT_UNUSED(evaluateResult, evaluateResult);
         waitEvent->signal();
