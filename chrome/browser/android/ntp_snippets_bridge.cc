@@ -23,22 +23,24 @@ using ntp_snippets::NTPSnippetsServiceObserver;
 
 static jlong Init(JNIEnv* env,
                   const JavaParamRef<jobject>& obj,
-                  const JavaParamRef<jobject>& j_profile,
-                  const JavaParamRef<jobject>& j_observer) {
-  NTPSnippetsBridge* snippets_bridge =
-      new NTPSnippetsBridge(env, j_profile, j_observer);
+                  const JavaParamRef<jobject>& j_profile) {
+  NTPSnippetsBridge* snippets_bridge = new NTPSnippetsBridge(env, j_profile);
   return reinterpret_cast<intptr_t>(snippets_bridge);
 }
 
 NTPSnippetsBridge::NTPSnippetsBridge(JNIEnv* env,
-                                     jobject j_profile,
-                                     jobject j_observer)
+                                     const JavaParamRef<jobject>& j_profile)
     : snippet_service_observer_(this) {
-  observer_.Reset(env, j_observer);
-
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   ntp_snippets_service_ = NTPSnippetsServiceFactory::GetForProfile(profile);
   snippet_service_observer_.Add(ntp_snippets_service_);
+}
+
+void NTPSnippetsBridge::SetObserver(JNIEnv* env,
+                                    const JavaParamRef<jobject>& obj,
+                                    const JavaParamRef<jobject>& j_observer) {
+  observer_.Reset(env, j_observer);
+
   if (ntp_snippets_service_->is_loaded())
     NTPSnippetsServiceLoaded(ntp_snippets_service_);
 }

@@ -30,6 +30,7 @@ public class SnippetsBridge {
      * @param profile Profile of the user that we will retrieve snippets for.
      */
     public SnippetsBridge(Profile profile, final SnippetsObserver observer) {
+        mNativeSnippetsBridge = nativeInit(profile);
         SnippetsObserver wrappedObserver = new SnippetsObserver() {
             @Override
             public void onSnippetsAvailable(
@@ -40,7 +41,7 @@ public class SnippetsBridge {
                 }
             }
         };
-        mNativeSnippetsBridge = nativeInit(profile, wrappedObserver);
+        nativeSetObserver(mNativeSnippetsBridge, wrappedObserver);
     }
 
     void destroy() {
@@ -49,6 +50,7 @@ public class SnippetsBridge {
         mNativeSnippetsBridge = 0;
     }
 
-    private native long nativeInit(Profile profile, SnippetsObserver observer);
+    private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeNTPSnippetsBridge);
+    private native void nativeSetObserver(long nativeNTPSnippetsBridge, SnippetsObserver observer);
 }

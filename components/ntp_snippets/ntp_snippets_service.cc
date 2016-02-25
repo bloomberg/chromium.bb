@@ -48,6 +48,11 @@ NTPSnippetsService::NTPSnippetsService(
 NTPSnippetsService::~NTPSnippetsService() {}
 
 void NTPSnippetsService::Init(bool enabled) {
+  // If enabled, get snippets immediately. If we've downloaded them before,
+  // this will just read from disk.
+  if (enabled)
+    FetchSnippets(false);
+
   // The scheduler only exists on Android so far, it's null on other platforms.
   if (!scheduler_)
     return;
@@ -87,6 +92,8 @@ void NTPSnippetsService::OnFileReadDone(const std::string* json, bool success) {
 }
 
 bool NTPSnippetsService::LoadFromJSONString(const std::string& str) {
+  snippets_.clear();
+
   JSONStringValueDeserializer deserializer(str);
   int error_code;
   std::string error_message;

@@ -15,10 +15,13 @@
 // the list of snippets to show on the NTP
 class NTPSnippetsBridge : public ntp_snippets::NTPSnippetsServiceObserver {
  public:
-  explicit NTPSnippetsBridge(JNIEnv* env,
-                             jobject j_profile,
-                             jobject j_observer);
+  NTPSnippetsBridge(JNIEnv* env,
+                    const base::android::JavaParamRef<jobject>& j_profile);
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+
+  void SetObserver(JNIEnv* env,
+                   const base::android::JavaParamRef<jobject>& obj,
+                   const base::android::JavaParamRef<jobject>& j_observer);
 
   static bool Register(JNIEnv* env);
 
