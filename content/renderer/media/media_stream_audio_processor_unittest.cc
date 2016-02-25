@@ -324,13 +324,22 @@ TEST_F(MediaStreamAudioProcessorTest, VerifyConstraints) {
   }
 }
 
-TEST_F(MediaStreamAudioProcessorTest, ValidateConstraints) {
+TEST_F(MediaStreamAudioProcessorTest, ValidateBadConstraints) {
   MockConstraintFactory constraint_factory;
   // Add a constraint that is not valid for audio.
   constraint_factory.basic().width.setExact(240);
   MediaAudioConstraints audio_constraints(
       constraint_factory.CreateWebMediaConstraints(), 0);
   EXPECT_FALSE(audio_constraints.IsValid());
+}
+
+TEST_F(MediaStreamAudioProcessorTest, ValidateGoodConstraints) {
+  MockConstraintFactory constraint_factory;
+  // Check that the renderToAssociatedSink constraint is considered valid.
+  constraint_factory.basic().renderToAssociatedSink.setExact(true);
+  MediaAudioConstraints audio_constraints(
+      constraint_factory.CreateWebMediaConstraints(), 0);
+  EXPECT_TRUE(audio_constraints.IsValid());
 }
 
 MediaAudioConstraints MakeMediaAudioConstraints(

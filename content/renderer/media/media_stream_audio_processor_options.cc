@@ -199,7 +199,8 @@ bool MediaAudioConstraints::GetEchoCancellationProperty() const {
 bool MediaAudioConstraints::IsValid() const {
   std::vector<std::string> legal_names(
       {constraints_.basic().mediaStreamSource.name(),
-       constraints_.basic().deviceId.name()});
+       constraints_.basic().deviceId.name(),
+       constraints_.basic().renderToAssociatedSink.name()});
   for (size_t j = 0; j < arraysize(kDefaultAudioConstraints); ++j) {
     legal_names.push_back(kDefaultAudioConstraints[j].key);
   }
