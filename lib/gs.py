@@ -633,7 +633,7 @@ class GSContext(object):
       retries = self.retries
 
     extra_env = kwargs.pop('extra_env', {})
-    if self.boto_file:
+    if self.boto_file and os.path.isfile(self.boto_file):
       extra_env.setdefault('BOTO_CONFIG', self.boto_file)
 
     if self.dry_run:
