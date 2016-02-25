@@ -26,6 +26,9 @@ class SimpleTestTickClock : public TickClock {
   // Advances the clock by |delta|, which must not be negative.
   void Advance(TimeDelta delta);
 
+  // Sets the clock to the given time.
+  void SetNowTicks(TimeTicks ticks);
+
  private:
   // Protects |now_ticks_|.
   Lock lock_;

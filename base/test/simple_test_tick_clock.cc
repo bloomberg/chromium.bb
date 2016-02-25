@@ -23,4 +23,9 @@ void SimpleTestTickClock::Advance(TimeDelta delta) {
   now_ticks_ += delta;
 }
 
+void SimpleTestTickClock::SetNowTicks(TimeTicks ticks) {
+  AutoLock lock(lock_);
+  now_ticks_ = ticks;
+}
+
 }  // namespace base

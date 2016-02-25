@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/clock.h"
 #include "base/time/time.h"
 
 class PrefRegistrySimple;
@@ -19,21 +20,35 @@ class TickClock;
 
 namespace network_time {
 
+// Clock resolution is platform dependent.
+#if defined(OS_WIN)
+const int64_t kTicksResolutionMs = base::Time::kMinLowResolutionThresholdMs;
+#else
+const int64_t kTicksResolutionMs = 1;  // Assume 1ms for non-windows platforms.
+#endif
+
 // A class that receives network time updates and can provide the network time
 // for a corresponding local time. This class is not thread safe.
 class NetworkTimeTracker {
  public:
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  NetworkTimeTracker(scoped_ptr<base::TickClock> tick_clock,
+  NetworkTimeTracker(scoped_ptr<base::Clock> clock,
+                     scoped_ptr<base::TickClock> tick_clock,
                      PrefService* pref_service);
   ~NetworkTimeTracker();
 
-  // Returns the network time corresponding to |time_ticks| if network time
-  // is available. Returns false if no network time is available yet. Can also
-  // return the error range if |uncertainty| isn't NULL.
-  bool GetNetworkTime(base::TimeTicks time_ticks,
-                      base::Time* network_time,
+  // Sets |network_time| to an estimate of the true time.  Returns true if time
+  // is available, and false otherwise.  If |uncertainty| is non-NULL, it will
+  // be set to an estimate of the error range.
+  //
+  // Network time may be available on startup if deserialized from a pref.
+  // Failing that, a call to |UpdateNetworkTime| is required to make time
+  // available to callers of |GetNetworkTime|.  Subsequently, network time may
+  // become unavailable if |NetworkTimeTracker| has reason to believe it is no
+  // longer accurate.  Consumers should even be prepared to handle the case
+  // where calls to |GetNetworkTime| never once succeeds.
+  bool GetNetworkTime(base::Time* network_time,
                       base::TimeDelta* uncertainty) const;
 
   // Calculates corresponding time ticks according to the given parameters.
@@ -45,28 +60,28 @@ class NetworkTimeTracker {
                          base::TimeDelta latency,
                          base::TimeTicks post_time);
 
-  bool received_network_time() const {
-    return received_network_time_;
-  }
-
  private:
-  // For querying current time ticks.
+  // The |Clock| and |TickClock| are used to sanity-check one another, allowing
+  // the NetworkTimeTracker to notice e.g. suspend/resume events and clock
+  // resets.
+  scoped_ptr<base::Clock> clock_;
   scoped_ptr<base::TickClock> tick_clock_;
 
   PrefService* pref_service_;
 
   // Network time based on last call to UpdateNetworkTime().
-  base::Time network_time_;
+  mutable base::Time network_time_at_last_measurement_;
 
-  // The estimated local time from |tick_clock| that corresponds with
-  // |network_time|. Assumes the actual network time measurement was performed
-  // midway through the latency time, and does not account for suspect/resume
-  // events since the network time was measured.
-  // See UpdateNetworkTime(..) implementation for details.
-  base::TimeTicks network_time_ticks_;
+  // The estimated local times that correspond with |network_time_|. Assumes
+  // the actual network time measurement was performed midway through the
+  // latency time.  See UpdateNetworkTime(...) implementation for details.  The
+  // tick clock is the one actually used to return values to callers, but both
+  // clocks must agree to within some tolerance.
+  base::Time time_at_last_measurement_;
+  base::TimeTicks ticks_at_last_measurement_;
 
-  // Uncertainty of |network_time_| based on added inaccuracies/resolution.
-  // See UpdateNetworkTime(..) implementation for details.
+  // Uncertainty of |network_time_| based on added inaccuracies/resolution.  See
+  // UpdateNetworkTime(...) implementation for details.
   base::TimeDelta network_time_uncertainty_;
 
   base::ThreadChecker thread_checker_;

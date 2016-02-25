@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/path_service.h"
+#include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
 #include "base/tracked_objects.h"
 #include "components/component_updater/component_updater_service.h"
@@ -254,6 +255,7 @@ ApplicationContextImpl::GetNetworkTimeTracker() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!network_time_tracker_) {
     network_time_tracker_.reset(new network_time::NetworkTimeTracker(
+        make_scoped_ptr(new base::DefaultClock),
         make_scoped_ptr(new base::DefaultTickClock), GetLocalState()));
   }
   return network_time_tracker_.get();

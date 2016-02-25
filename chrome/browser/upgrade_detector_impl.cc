@@ -411,7 +411,7 @@ bool UpgradeDetectorImpl::DetectOutdatedInstall() {
   base::Time network_time;
   base::TimeDelta uncertainty;
   if (!g_browser_process->network_time_tracker()->GetNetworkTime(
-          base::TimeTicks::Now(), &network_time, &uncertainty)) {
+          &network_time, &uncertainty)) {
     // When network time has not been initialized yet, simply rely on the
     // machine's current time.
     network_time = base::Time::Now();

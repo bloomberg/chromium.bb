@@ -24,6 +24,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -789,7 +790,8 @@ WebRtcLogUploader* BrowserProcessImpl::webrtc_log_uploader() {
 network_time::NetworkTimeTracker* BrowserProcessImpl::network_time_tracker() {
   if (!network_time_tracker_) {
     network_time_tracker_.reset(new network_time::NetworkTimeTracker(
-        scoped_ptr<base::TickClock>(new base::DefaultTickClock()),
+        make_scoped_ptr(new base::DefaultClock()),
+        make_scoped_ptr(new base::DefaultTickClock()),
         local_state()));
   }
   return network_time_tracker_.get();

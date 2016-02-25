@@ -5,6 +5,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 
 #include "base/strings/string_util.h"
+#include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -368,6 +369,7 @@ TestingBrowserProcess::network_time_tracker() {
   if (!network_time_tracker_) {
     DCHECK(local_state_);
     network_time_tracker_.reset(new network_time::NetworkTimeTracker(
+        scoped_ptr<base::Clock>(new base::DefaultClock()),
         scoped_ptr<base::TickClock>(new base::DefaultTickClock()),
         local_state_));
   }

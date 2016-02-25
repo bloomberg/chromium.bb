@@ -26,6 +26,7 @@ source_set("unit_tests") {
   deps = [
     ":network_time",
     "//base",
+    "//base/test:test_support",
     "//components/prefs:test_support",
     "//testing/gtest",
   ]
