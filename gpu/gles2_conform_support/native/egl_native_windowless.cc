@@ -32,7 +32,7 @@ void GTFNativeDestroyWindow(EGLNativeDisplayType nativeDisplay,
 
 EGLImageKHR GTFCreateEGLImage(int width, int height,
                               GLenum format, GLenum type) {
-  return (EGLImageKHR)NULL;
+  return (EGLImageKHR)0;
 }
 
 void GTFDestroyEGLImage(EGLImageKHR image) {
