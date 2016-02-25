@@ -9,9 +9,7 @@ namespace blink {
 OrientationIterator::OrientationIterator(const UChar* buffer, unsigned bufferSize, FontOrientation runOrientation)
     : m_utf16Iterator(adoptPtr(new UTF16TextIterator(buffer, bufferSize)))
     , m_bufferSize(bufferSize)
-    , m_nextUChar32(0)
     , m_atEnd(bufferSize == 0)
-    , m_currentRenderOrientation(OrientationInvalid)
 {
     // There's not much point in segmenting by isUprightInVertical if the text
     // orientation is not "mixed".
@@ -23,19 +21,27 @@ bool OrientationIterator::consume(unsigned *orientationLimit, RenderOrientation*
     if (m_atEnd)
         return false;
 
-    while (m_utf16Iterator->consume(m_nextUChar32)) {
-        m_previousRenderOrientation = m_currentRenderOrientation;
-        m_currentRenderOrientation = Character::isUprightInMixedVertical(m_nextUChar32) ? OrientationKeep : OrientationRotateSideways;
+    RenderOrientation currentRenderOrientation = OrientationInvalid;
+    UChar32 nextUChar32;
+    while (m_utf16Iterator->consume(nextUChar32)) {
+        if (currentRenderOrientation == OrientationInvalid
+            || !Character::isGraphemeExtended(nextUChar32)) {
 
-        if (m_previousRenderOrientation != m_currentRenderOrientation && m_previousRenderOrientation != OrientationInvalid) {
-            *orientationLimit = m_utf16Iterator->offset();
-            *renderOrientation = m_previousRenderOrientation;
-            return true;
+            RenderOrientation previousRenderOrientation = currentRenderOrientation;
+            currentRenderOrientation =
+                Character::isUprightInMixedVertical(nextUChar32)
+                ? OrientationKeep : OrientationRotateSideways;
+            if (previousRenderOrientation != currentRenderOrientation
+                && previousRenderOrientation != OrientationInvalid) {
+                *orientationLimit = m_utf16Iterator->offset();
+                *renderOrientation = previousRenderOrientation;
+                return true;
+            }
         }
         m_utf16Iterator->advance();
     }
     *orientationLimit = m_bufferSize;
-    *renderOrientation = m_currentRenderOrientation;
+    *renderOrientation = currentRenderOrientation;
     m_atEnd = true;
     return true;
 }

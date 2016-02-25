@@ -119,6 +119,43 @@ TEST_F(OrientationIteratorTest, Japanese)
     CHECK_RUNS({ { "いろはにほへと", OrientationIterator::OrientationKeep } });
 }
 
+TEST_F(OrientationIteratorTest, IVS)
+{
+    CHECK_RUNS({ { "愉\xF3\xA0\x84\x81", OrientationIterator::OrientationKeep } });
+}
+
+TEST_F(OrientationIteratorTest, MarkAtFirstCharRotated)
+{
+    // Unicode General Category M should be combined with the previous base
+    // character, but they have their own orientation if they appear at the
+    // beginning of a run.
+    // http://www.unicode.org/reports/tr50/#grapheme_clusters
+    // https://drafts.csswg.org/css-writing-modes-3/#vertical-orientations
+    // U+0300 COMBINING GRAVE ACCENT is Mn (Mark, Nonspacing) with Rotated.
+    CHECK_RUNS({ { "\xCC\x80", OrientationIterator::OrientationRotateSideways } });
+}
+
+TEST_F(OrientationIteratorTest, MarkAtFirstCharUpright)
+{
+    // U+20DD COMBINING ENCLOSING CIRCLE is Me (Mark, Enclosing) with Upright.
+    CHECK_RUNS({ { "\xE2\x83\x9D", OrientationIterator::OrientationKeep } });
+}
+
+TEST_F(OrientationIteratorTest, MarksAtFirstCharUpright)
+{
+    // U+20DD COMBINING ENCLOSING CIRCLE is Me (Mark, Enclosing) with Upright.
+    // U+0300 COMBINING GRAVE ACCENT is Mn (Mark, Nonspacing) with Rotated.
+    CHECK_RUNS({ { "\xE2\x83\x9D\xCC\x80", OrientationIterator::OrientationKeep } });
+}
+
+TEST_F(OrientationIteratorTest, MarksAtFirstCharUprightThenBase)
+{
+    // U+20DD COMBINING ENCLOSING CIRCLE is Me (Mark, Enclosing) with Upright.
+    // U+0300 COMBINING GRAVE ACCENT is Mn (Mark, Nonspacing) with Rotated.
+    CHECK_RUNS({ { "\xE2\x83\x9D\xCC\x80", OrientationIterator::OrientationKeep },
+        { "ABC\xE2\x83\x9D", OrientationIterator::OrientationRotateSideways } });
+}
+
 TEST_F(OrientationIteratorTest, JapaneseLatinMixedInside)
 {
     CHECK_RUNS({ { "いろはに", OrientationIterator::OrientationKeep },

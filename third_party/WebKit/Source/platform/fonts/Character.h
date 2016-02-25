@@ -95,6 +95,12 @@ public:
     }
     static bool canReceiveTextEmphasis(UChar32);
 
+    static bool isGraphemeExtended(UChar32 c)
+    {
+        // http://unicode.org/reports/tr29/#Extend
+        return u_hasBinaryProperty(c, UCHAR_GRAPHEME_EXTEND);
+    }
+
     static bool isEmojiTextPresentation(UChar32);
     static bool isEmojiEmojiPresentation(UChar32);
     static bool isEmojiModifierBase(UChar32);

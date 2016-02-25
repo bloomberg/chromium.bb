@@ -29,11 +29,7 @@ public:
 private:
     OwnPtr<UTF16TextIterator> m_utf16Iterator;
     unsigned m_bufferSize;
-    UChar32 m_nextUChar32;
     bool m_atEnd;
-
-    RenderOrientation m_currentRenderOrientation;
-    RenderOrientation m_previousRenderOrientation;
 };
 
 } // namespace blink
