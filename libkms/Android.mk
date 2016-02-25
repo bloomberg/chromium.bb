@@ -3,12 +3,14 @@ DRM_GPU_DRIVERS := $(strip $(filter-out swrast, $(BOARD_GPU_DRIVERS)))
 intel_drivers := i915 i965 i915g ilo
 radeon_drivers := r300g r600g radeonsi
 nouveau_drivers := nouveau
+virgl_drivers := virgl
 vmwgfx_drivers := vmwgfx
 
 valid_drivers := \
 	$(intel_drivers) \
 	$(radeon_drivers) \
 	$(nouveau_drivers) \
+	$(virgl_drivers) \
 	$(vmwgfx_drivers)
 
 # warn about invalid drivers
