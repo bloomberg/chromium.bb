@@ -61,7 +61,7 @@ bool ParseVP9SuperFrameIndex(const std::uint8_t* frame,
         frame_offset += child_frame_length;
       }
 
-      if (frame_ranges->size() != num_frames) {
+      if (static_cast<int>(frame_ranges->size()) != num_frames) {
         std::fprintf(stderr, "Webm2Pes: superframe index parse failed.\n");
         return false;
       }
