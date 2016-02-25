@@ -51,6 +51,7 @@ if script_dir not in sys.path:
 
 from webkitpy.common import read_checksum_from_png
 from webkitpy.common.system.systemhost import SystemHost
+from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.port.driver import DriverInput, DriverOutput
 from webkitpy.layout_tests.port.factory import PortFactory
 
@@ -73,10 +74,10 @@ class MockDRTPort(object):
         return getattr(self.__delegate, name)
 
     def check_build(self, needs_http, printer):
-        return True
+        return test_run_results.OK_EXIT_STATUS
 
     def check_sys_deps(self, needs_http):
-        return True
+        return test_run_results.OK_EXIT_STATUS
 
     def _driver_class(self, delegate):
         return self._mocked_driver_maker
@@ -187,6 +188,8 @@ class MockDRT(object):
         self._driver = self._port.create_driver(0)
 
     def run(self):
+        self._stdout.write("#READY\n")
+        self._stdout.flush()
         while True:
             line = self._stdin.readline()
             if not line:
