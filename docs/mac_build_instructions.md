@@ -111,7 +111,7 @@ directory. You can run them from the command line:
 
 According to the
 [Chromium style guide](http://dev.chromium.org/developers/coding-style) code is
-[not allowed to have whitespace on the ends of lines](http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml#Horizontal_Whitespace).
+[not allowed to have whitespace on the ends of lines](https://google.github.io/styleguide/cppguide.html#Horizontal_Whitespace).
 If you edit in Xcode, know that it loves adding whitespace to the ends of lines
 which can make editing in Xcode more painful than it should be. The
 [GTM Xcode Plugin](http://code.google.com/p/google-toolbox-for-mac/downloads/list)
