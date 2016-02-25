@@ -609,6 +609,7 @@
       'browser/ui/cocoa/one_click_signin_dialog_controller_browsertest.mm',
       'browser/ui/cocoa/passwords/passwords_bubble_browsertest.mm',
       'browser/ui/cocoa/profiles/profile_signin_confirmation_view_controller_browsertest.mm',
+      'browser/ui/cocoa/renderer_context_menu/render_view_context_menu_mac_browsertest.mm',
       'browser/ui/cocoa/ssl_client_certificate_selector_cocoa_browsertest.mm',
       'browser/ui/cocoa/view_id_util_browsertest.mm',
       'browser/ui/cocoa/web_contents_modal_dialog_manager_views_mac_browsertest.mm',

@@ -338,6 +338,8 @@
       'browser/mac/mac_startup_profiler.h',
       'browser/mac/master_prefs.h',
       'browser/mac/master_prefs.mm',
+      'browser/mac/nsprocessinfo_additions.h',
+      'browser/mac/nsprocessinfo_additions.mm',
       'browser/mac/relauncher.cc',
       'browser/mac/relauncher.h',
       'browser/mac/security_wrappers.cc',

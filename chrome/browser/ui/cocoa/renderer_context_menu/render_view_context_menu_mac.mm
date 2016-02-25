@@ -7,12 +7,15 @@
 #include <utility>
 
 #include "base/compiler_specific.h"
+#include "base/mac/mac_util.h"
+#import "base/mac/scoped_objc_class_swizzler.h"
 #import "base/mac/scoped_sending_event.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/tracked_objects.h"
 #include "chrome/app/chrome_command_ids.h"
+#import "chrome/browser/mac/nsprocessinfo_additions.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -23,6 +26,13 @@
 using content::WebContents;
 
 namespace {
+
+IMP g_original_populatemenu_implementation = nullptr;
+
+// |g_filtered_entries_array| is only set during testing (see
+// +[ChromeSwizzleServicesMenuUpdater storeFilteredEntriesForTestingInArray:]).
+// Otherwise it remains nil.
+NSMutableArray* g_filtered_entries_array = nil;
 
 // Retrieves an NSMenuItem which has the specified command_id. This function
 // traverses the given |model| in the depth-first order. When this function
@@ -50,6 +60,97 @@ NSMenuItem* GetMenuItemByID(ui::MenuModel* model,
 }
 
 }  // namespace
+
+// An AppKit-private class that adds Services items to contextual menus and
+// the application Services menu.
+@interface _NSServicesMenuUpdater : NSObject
+- (void)populateMenu:(NSMenu*)menu
+    withServiceEntries:(NSArray*)entries
+            forDisplay:(BOOL)display;
+@end
+
+// An AppKit-private class representing a Services menu entry.
+@interface _NSServiceEntry : NSObject
+- (NSString*)bundleIdentifier;
+@end
+
+@implementation ChromeSwizzleServicesMenuUpdater
+
+- (void)populateMenu:(NSMenu*)menu
+    withServiceEntries:(NSArray*)entries
+            forDisplay:(BOOL)display {
+  // Create a new service entry array that does not include the redundant
+  // Services vended by Safari.
+  NSMutableArray* remainingEntries = [NSMutableArray array];
+  [g_filtered_entries_array removeAllObjects];
+
+  for (_NSServiceEntry* nextEntry in entries) {
+    if (![[nextEntry bundleIdentifier] isEqualToString:@"com.apple.Safari"]) {
+      [remainingEntries addObject:nextEntry];
+    } else {
+      [g_filtered_entries_array addObject:nextEntry];
+    }
+  }
+
+  // Pass the filtered array along to the _NSServicesMenuUpdater.
+  g_original_populatemenu_implementation(
+      self, _cmd, menu, remainingEntries, display);
+}
+
++ (void)storeFilteredEntriesForTestingInArray:(NSMutableArray*)array {
+  [g_filtered_entries_array release];
+  g_filtered_entries_array = [array retain];
+}
+
++ (void)load {
+  // Swizzling should not happen in renderer processes or on 10.6.
+  if (![[NSProcessInfo processInfo] cr_isMainBrowserOrTestProcess])
+    return;
+
+  // Services filtering does not work on OS X 10.6.
+  if (base::mac::IsOSSnowLeopard())
+    return;
+
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    // Confirm that the AppKit's private _NSServiceEntry class exists. This
+    // class cannot be accessed at link time and is not guaranteed to exist in
+    // past or future AppKits so use NSClassFromString() to locate it. Also
+    // check that the class implements the bundleIdentifier method. The browser
+    // test checks for all of this as well, but the checks here ensure that we
+    // don't crash out in the wild when running on some future version of OS X.
+    // Odds are a developer will be running a newer version of OS X sooner than
+    // the bots - NOTREACHED() will get them to tell us if compatibility breaks.
+    if (![NSClassFromString(@"_NSServiceEntry") instancesRespondToSelector:
+        @selector(bundleIdentifier)]) {
+      NOTREACHED();
+      return;
+    }
+
+    // Perform similar checks on the AppKit's private _NSServicesMenuUpdater
+    // class.
+    SEL targetSelector = @selector(populateMenu:withServiceEntries:forDisplay:);
+    Class targetClass = NSClassFromString(@"_NSServicesMenuUpdater");
+    if (![targetClass instancesRespondToSelector:targetSelector]) {
+      NOTREACHED();
+      return;
+    }
+
+    // Replace the populateMenu:withServiceEntries:forDisplay: method in
+    // _NSServicesMenuUpdater with an implementation that can filter Services
+    // menu entries from contextual menus and elsewhere. Place the swizzler into
+    // a static so that it never goes out of scope, because the scoper's
+    // destructor undoes the swizzling.
+    Class swizzleClass = [ChromeSwizzleServicesMenuUpdater class];
+    CR_DEFINE_STATIC_LOCAL(base::mac::ScopedObjCClassSwizzler,
+                           servicesMenuFilter,
+                           (targetClass, swizzleClass, targetSelector));
+    g_original_populatemenu_implementation =
+        servicesMenuFilter.GetOriginalImplementation();
+  });
+}
+
+@end
 
 // OSX implemenation of the ToolkitDelegate.
 // This simply (re)delegates calls to RVContextMenuMac because they do not
