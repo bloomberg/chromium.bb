@@ -482,7 +482,7 @@ crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/shadow-trees/c
 crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/styles/css-variables/test-001.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/styles/test-003.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/styles/test-010.html [ Failure Crash ]
-crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/user-interaction/ranges-and-selections/test-002.html [ Failure Crash ]
+crbug.com/413731 imported/web-platform-tests/shadow-dom/untriaged/user-interaction/ranges-and-selections/test-002.html [ Failure Crash ]
 
 crbug.com/552532 [ Win10 ] fast/replaced/no-focus-ring-embed.html [ Pass Crash ]
 crbug.com/552532 [ Win10 ] fast/replaced/no-focus-ring-object.html [ Pass Crash ]
