@@ -42,7 +42,7 @@ class SYNC_EXPORT ModelTypeService {
   // to be called when sync is first turned on, not on every restart.
   virtual syncer::SyncError MergeSyncData(
       scoped_ptr<MetadataChangeList> metadata_change_list,
-      EntityDataList entity_data_list) = 0;
+      EntityDataMap entity_data_map) = 0;
 
   // Apply changes from the sync server locally.
   // Please note that |entity_changes| might have fewer entries than

@@ -53,7 +53,7 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
   scoped_ptr<syncer_v2::MetadataChangeList> CreateMetadataChangeList() override;
   syncer::SyncError MergeSyncData(
       scoped_ptr<syncer_v2::MetadataChangeList> metadata_change_list,
-      syncer_v2::EntityDataList entity_data_list) override;
+      syncer_v2::EntityDataMap entity_data_map) override;
   syncer::SyncError ApplySyncChanges(
       scoped_ptr<syncer_v2::MetadataChangeList> metadata_change_list,
       syncer_v2::EntityChangeList entity_changes) override;

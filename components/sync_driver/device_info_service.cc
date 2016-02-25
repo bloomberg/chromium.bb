@@ -21,7 +21,7 @@ using syncer::SyncError;
 using syncer_v2::DataBatchImpl;
 using syncer_v2::EntityChangeList;
 using syncer_v2::EntityData;
-using syncer_v2::EntityDataList;
+using syncer_v2::EntityDataMap;
 using syncer_v2::MetadataBatch;
 using syncer_v2::MetadataChangeList;
 using syncer_v2::ModelTypeStore;
@@ -62,7 +62,7 @@ scoped_ptr<MetadataChangeList> DeviceInfoService::CreateMetadataChangeList() {
 
 SyncError DeviceInfoService::MergeSyncData(
     scoped_ptr<MetadataChangeList> metadata_change_list,
-    EntityDataList entity_data_list) {
+    EntityDataMap entity_data_map) {
   // TODO(skym): crbug.com/543406: Implementation.
   return SyncError();
 }

@@ -108,8 +108,7 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
 
   // Handle the first update received from the server after being enabled.
   void OnInitialUpdateReceived(const sync_pb::DataTypeState& type_state,
-                               const UpdateResponseDataList& updates,
-                               const UpdateResponseDataList& pending_updates);
+                               const UpdateResponseDataList& updates);
 
   // Sends all commit requests that are due to be sent to the sync thread.
   void FlushPendingCommitRequests();
@@ -117,11 +116,15 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
   // Computes the client tag hash for the given client |tag|.
   std::string GetHashForTag(const std::string& tag);
 
-  // Gets the entity for the given tag, which must exist.
+  // Gets the entity for the given tag, or null if there isn't one.
   ModelTypeEntity* GetEntityForTag(const std::string& tag);
 
-  // Gets the entity for the given tag hash, which must exist.
+  // Gets the entity for the given tag hash, or null if there isn't one.
   ModelTypeEntity* GetEntityForTagHash(const std::string& tag_hash);
+
+  // Create an entity in the entity map for |tag| and return a pointer to it.
+  // Requires that no entity for |tag| already exists in the map.
+  ModelTypeEntity* CreateEntity(const std::string& tag, const EntityData& data);
 
   syncer::ModelType type_;
   sync_pb::DataTypeState data_type_state_;

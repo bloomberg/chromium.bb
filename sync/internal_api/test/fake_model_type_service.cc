@@ -17,7 +17,7 @@ FakeModelTypeService::CreateMetadataChangeList() {
 
 syncer::SyncError FakeModelTypeService::MergeSyncData(
     scoped_ptr<MetadataChangeList> metadata_change_list,
-    EntityDataList entity_data_list) {
+    EntityDataMap entity_data_map) {
   return syncer::SyncError();
 }
 

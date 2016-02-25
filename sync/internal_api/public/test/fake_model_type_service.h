@@ -29,7 +29,7 @@ class FakeModelTypeService
 
   syncer::SyncError MergeSyncData(
       scoped_ptr<MetadataChangeList> metadata_change_list,
-      EntityDataList entity_data_list) override;
+      EntityDataMap entity_data_map) override;
 
   syncer::SyncError ApplySyncChanges(
       scoped_ptr<MetadataChangeList> metadata_change_list,

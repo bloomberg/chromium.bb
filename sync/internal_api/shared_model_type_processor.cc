@@ -225,6 +225,11 @@ void SharedModelTypeProcessor::Put(const std::string& client_tag,
   DCHECK(!entity_data->non_unique_name.empty());
   DCHECK_EQ(type_, syncer::GetModelTypeFromSpecifics(entity_data->specifics));
 
+  if (!data_type_state_.initial_sync_done()) {
+    // Ignore changes before the initial sync is done.
+    return;
+  }
+
   // If the service specified an overriding hash, use that, otherwise generate
   // one from the tag.
   // TODO(skym): This behavior should be delayed, once crbug.com/561818 is fixed
@@ -262,6 +267,11 @@ void SharedModelTypeProcessor::Delete(
     const std::string& client_tag,
     MetadataChangeList* metadata_change_list) {
   DCHECK(IsAllowingChanges());
+
+  if (!data_type_state_.initial_sync_done()) {
+    // Ignore changes before the initial sync is done.
+    return;
+  }
 
   const std::string client_tag_hash(
       syncer::syncable::GenerateSyncableHash(type_, client_tag));
@@ -350,7 +360,8 @@ void SharedModelTypeProcessor::OnUpdateReceived(
     const UpdateResponseDataList& updates,
     const UpdateResponseDataList& pending_updates) {
   if (!data_type_state_.initial_sync_done()) {
-    OnInitialUpdateReceived(data_type_state, updates, pending_updates);
+    OnInitialUpdateReceived(data_type_state, updates);
+    return;
   }
 
   scoped_ptr<MetadataChangeList> metadata_changes =
@@ -458,10 +469,38 @@ void SharedModelTypeProcessor::OnUpdateReceived(
 
 void SharedModelTypeProcessor::OnInitialUpdateReceived(
     const sync_pb::DataTypeState& data_type_state,
-    const UpdateResponseDataList& updates,
-    const UpdateResponseDataList& pending_updates) {
-  // TODO(maxbogue): crbug.com/569675: Generate metadata for all entities.
-  // TODO(maxbogue): crbug.com/569675: Call merge method on the service.
+    const UpdateResponseDataList& updates) {
+  DCHECK(entities_.empty());
+  // Ensure that initial sync was not already done and that the worker
+  // correctly marked initial sync as done for this update.
+  DCHECK(!data_type_state_.initial_sync_done());
+  DCHECK(data_type_state.initial_sync_done());
+
+  scoped_ptr<MetadataChangeList> metadata_changes =
+      service_->CreateMetadataChangeList();
+  EntityDataMap data_map;
+
+  data_type_state_ = data_type_state;
+  metadata_changes->UpdateDataTypeState(data_type_state_);
+
+  for (const UpdateResponseData& update : updates) {
+    const EntityData& data = update.entity.value();
+
+    // Let the service define a client |tag| based on the entity data.
+    std::string tag = service_->GetClientTag(data);
+
+    ModelTypeEntity* entity = CreateEntity(tag, data);
+    entity->ApplyUpdateFromServer(update);
+    metadata_changes->UpdateMetadata(tag, entity->metadata());
+    data_map[tag] = update.entity;
+  }
+
+  // Let the service handle associating and merging the data.
+  // TODO(stanisc): crbug.com/570085: Error handling.
+  service_->MergeSyncData(std::move(metadata_changes), data_map);
+
+  // We may have new reasons to commit by the time this function is done.
+  FlushPendingCommitRequests();
 }
 
 UpdateResponseDataList SharedModelTypeProcessor::GetPendingUpdates() {
@@ -486,6 +525,17 @@ ModelTypeEntity* SharedModelTypeProcessor::GetEntityForTagHash(
     const std::string& tag_hash) {
   auto it = entities_.find(tag_hash);
   return it != entities_.end() ? it->second.get() : nullptr;
+}
+
+ModelTypeEntity* SharedModelTypeProcessor::CreateEntity(
+    const std::string& tag,
+    const EntityData& data) {
+  DCHECK(entities_.find(data.client_tag_hash) == entities_.end());
+  scoped_ptr<ModelTypeEntity> entity = ModelTypeEntity::CreateNew(
+      tag, data.client_tag_hash, data.id, data.creation_time);
+  ModelTypeEntity* entity_ptr = entity.get();
+  entities_[data.client_tag_hash] = std::move(entity);
+  return entity_ptr;
 }
 
 }  // namespace syncer_v2
