@@ -259,6 +259,7 @@ class PlatformAppWithFileBrowserTest: public PlatformAppBrowserTest {
   }
 };
 
+const char kChromiumURL[] = "http://chromium.org";
 #if !defined(OS_CHROMEOS)
 const char kTestFilePath[] = "platform_apps/launch_files/test.txt";
 #endif
@@ -432,17 +433,27 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenuClicked) {
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DisallowNavigation) {
-  TabsAddedNotificationObserver observer(2);
+  TabsAddedNotificationObserver observer(1);
 
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/navigation")) << message_;
 
   observer.Wait();
+  ASSERT_EQ(1U, observer.tabs().size());
+  EXPECT_EQ(GURL(kChromiumURL), observer.tabs()[0]->GetURL());
+}
+
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
+                       DisallowBackgroundPageNavigation) {
+  // The test will try to open in app urls and external urls via clicking links
+  // and window.open(). Only the external urls should succeed in opening tabs.
+  TabsAddedNotificationObserver observer(2);
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/background_page_navigation")) <<
+      message_;
+  observer.Wait();
   ASSERT_EQ(2U, observer.tabs().size());
-  EXPECT_EQ(std::string(chrome::kExtensionInvalidRequestURL),
-            observer.tabs()[0]->GetURL().spec());
-  EXPECT_EQ("http://chromium.org/",
-            observer.tabs()[1]->GetURL().spec());
+  EXPECT_EQ(GURL(kChromiumURL), observer.tabs()[0]->GetURL());
+  EXPECT_EQ(GURL(kChromiumURL), observer.tabs()[1]->GetURL());
 }
 
 // Failing on some Win and Linux buildbots.  See crbug.com/354425.

@@ -56,15 +56,13 @@ chrome.test.getConfig(function(config) {
     function() { testLink.href = IN_APP_URL; clickTestLink(); },
     function() { testLink.href = REMOTE_URL; clickTestLink(); },
 
-    // Links with target blank and a remote URL open a new tab in the browser
+    // Link with target blank and a remote URL opens a new tab in the browser
     // (verified in C++).
     function() {
       testLink.target = '_blank';
-      testLink.href = IN_APP_URL;
+      testLink.href = 'http://chromium.org';
       clickTestLink();
     },
-    function() { testLink.href = 'http://chromium.org'; clickTestLink(); },
-
     // If we manage to execute this test case, then we haven't navigated away.
     function() { chrome.test.notifyPass(); }
   ];

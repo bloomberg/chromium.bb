@@ -1,0 +1,9 @@
+{
+  "name": "Platform App Test: window.open() to local resource is disallowed",
+  "version": "1",
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}

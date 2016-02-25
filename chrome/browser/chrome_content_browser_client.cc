@@ -2191,8 +2191,25 @@ bool ChromeContentBrowserClient::CanCreateWindow(
 
 #if defined(ENABLE_EXTENSIONS)
   if (extensions::WebViewRendererState::GetInstance()->IsGuest(
-      render_process_id))
+      render_process_id)) {
     return true;
+  }
+
+  if (target_url.SchemeIs(extensions::kExtensionScheme) ||
+      target_url.SchemeIs(extensions::kExtensionResourceScheme)) {
+    // Intentionally duplicating |io_data| and |map| code from above because we
+    // want to reduce calls to retrieve them as this function is a SYNC IPC
+    // handler.
+    ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
+    InfoMap* map = io_data->GetExtensionInfoMap();
+    const Extension* extension =
+        map->extensions().GetExtensionOrAppByURL(opener_url);
+    // Platform apps and their background pages should not be able to call
+    // window.open() to load v2 apps in regular tab.
+    // Simply disallow window.open() calls in this case.
+    if (extension && extension->is_platform_app())
+      return false;
+  }
 #endif
 
   HostContentSettingsMap* content_settings =
