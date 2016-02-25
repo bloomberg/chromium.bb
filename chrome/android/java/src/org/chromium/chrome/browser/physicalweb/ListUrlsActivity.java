@@ -69,7 +69,6 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
     private boolean mIsInitialDisplayRecorded;
     private boolean mIsRefreshing;
     private boolean mIsRefreshUserInitiated;
-    private PhysicalWebBleClient mPhysicalWebBleClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,8 +119,6 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
         mIsInitialDisplayRecorded = false;
         mIsRefreshing = false;
         mIsRefreshUserInitiated = false;
-        mPhysicalWebBleClient =
-            PhysicalWebBleClient.getInstance((ChromeApplication) getApplicationContext());
     }
 
     @Override
@@ -155,14 +152,6 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
         return true;
     }
 
-    private void foregroundSubscribe() {
-        mPhysicalWebBleClient.foregroundSubscribe(this);
-    }
-
-    private void foregroundUnsubscribe() {
-        mPhysicalWebBleClient.foregroundUnsubscribe();
-    }
-
     @Override
     protected void onStart() {
         super.onStart();
@@ -172,7 +161,6 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
     @Override
     protected void onResume() {
         super.onResume();
-        foregroundSubscribe();
         startRefresh(false, false);
 
         int bottomBarDisplayCount = getBottomBarDisplayCount();
@@ -180,12 +168,6 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
             showBottomBar();
             setBottomBarDisplayCount(bottomBarDisplayCount + 1);
         }
-    }
-
-    @Override
-    protected void onPause() {
-        foregroundUnsubscribe();
-        super.onPause();
     }
 
     @Override
@@ -286,6 +268,9 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
 
             resolve(urls);
         }
+
+        // Clear stored URLs and resubscribe to Nearby.
+        PhysicalWeb.startPhysicalWeb((ChromeApplication) getApplicationContext());
     }
 
     private void finishRefresh() {

@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.physicalweb;
 
-import android.app.Activity;
-
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeApplication;
 
@@ -34,35 +32,18 @@ public class PhysicalWebBleClient {
     }
 
     /**
-     * Begin a background subscription to URLs broadcasted from BLE beacons.
+     * Begin subscribing to URLs broadcasted from BLE beacons.
      * This currently does nothing and should be overridden by a subclass.
      */
-    void backgroundSubscribe() {
-        Log.d(TAG, "background subscribing in empty client");
+    void subscribe() {
+        Log.d(TAG, "subscribing in empty client");
     }
 
     /**
-     * Cancel a background subscription to URLs broadcasted from BLE beacons.
+     * Cancel subscription to URLs broadcasted from BLE beacons.
      * This currently does nothing and should be overridden by a subclass.
      */
-    void backgroundUnsubscribe() {
-        Log.d(TAG, "background unsubscribing in empty client");
-    }
-
-    /**
-     * Begin a foreground subscription to URLs broadcasted from BLE beacons.
-     * This currently does nothing and should be overridden by a subclass.
-     * @param activity The Activity that is performing the scan.
-     */
-    void foregroundSubscribe(Activity activity) {
-        Log.d(TAG, "foreground subscribing in empty client");
-    }
-
-    /**
-     * Cancel a foreground subscription to URLs broadcasted from BLE beacons.
-     * This currently does nothing and should be overridden by a subclass.
-     */
-    void foregroundUnsubscribe() {
-        Log.d(TAG, "foreground unsubscribing in empty client");
+    void unsubscribe() {
+        Log.d(TAG, "unsubscribing in empty client");
     }
 }
