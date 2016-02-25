@@ -10,10 +10,7 @@
           'target_name': 'media_router_e2e_tests_run',
           'type': 'none',
           'dependencies': [
-            '../../chrome.gyp:browser_tests',
-          ],
-          'includes': [
-            '../../../build/isolate.gypi',
+            '../../chrome.gyp:browser_tests_run',
           ],
           'sources': [
             'media_router_tests.isolate',
