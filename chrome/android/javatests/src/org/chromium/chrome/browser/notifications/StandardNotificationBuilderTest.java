@@ -40,9 +40,11 @@ public class StandardNotificationBuilderTest extends InstrumentationTestCase {
 
         Bitmap largeIcon = Bitmap.createBitmap(
                 new int[] {Color.RED}, 1 /* width */, 1 /* height */, Bitmap.Config.ARGB_8888);
+        largeIcon = largeIcon.copy(Bitmap.Config.ARGB_8888, true /* isMutable */);
 
         Bitmap actionIcon = Bitmap.createBitmap(
                 new int[] {Color.GRAY}, 1 /* width */, 1 /* height */, Bitmap.Config.ARGB_8888);
+        actionIcon = actionIcon.copy(Bitmap.Config.ARGB_8888, true /* isMutable */);
 
         Notification notification =
                 new StandardNotificationBuilder(context)

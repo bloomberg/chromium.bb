@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.DisplayMetrics;
@@ -42,9 +43,11 @@ public class CustomNotificationBuilderTest extends InstrumentationTestCase {
 
         Bitmap largeIcon = Bitmap.createBitmap(
                 new int[] {Color.RED}, 1 /* width */, 1 /* height */, Bitmap.Config.ARGB_8888);
+        largeIcon = largeIcon.copy(Bitmap.Config.ARGB_8888, true /* isMutable */);
 
         Bitmap actionIcon = Bitmap.createBitmap(
                 new int[] {Color.WHITE}, 1 /* width */, 1 /* height */, Bitmap.Config.ARGB_8888);
+        actionIcon = actionIcon.copy(Bitmap.Config.ARGB_8888, true /* isMutable */);
 
         Notification notification =
                 new CustomNotificationBuilder(context)
@@ -130,6 +133,37 @@ public class CustomNotificationBuilderTest extends InstrumentationTestCase {
         bigView.findViewsWithText(buttons, "button", View.FIND_VIEWS_WITH_TEXT);
 
         assertEquals("There is a maximum of 2 buttons", 2, buttons.size());
+    }
+
+    @SmallTest
+    @Feature({"Browser", "Notifications"})
+    public void testPaintIcons() {
+        Context context = getInstrumentation().getTargetContext();
+
+        Bitmap largeIcon = Bitmap.createBitmap(
+                new int[] {Color.RED}, 1 /* width */, 1 /* height */, Bitmap.Config.ARGB_8888);
+        largeIcon = largeIcon.copy(Bitmap.Config.ARGB_8888, true /* isMutable */);
+
+        Bitmap actionIcon = Bitmap.createBitmap(
+                new int[] {Color.RED}, 1 /* width */, 1 /* height */, Bitmap.Config.ARGB_8888);
+        actionIcon = actionIcon.copy(Bitmap.Config.ARGB_8888, true /* isMutable */);
+
+        Notification notification =
+                new CustomNotificationBuilder(context)
+                        .setLargeIcon(largeIcon)
+                        .addAction(actionIcon, "button", createIntent(context, "ActionButton"))
+                        .build();
+
+        // The large icon should not be painted white.
+        assertNotNull(notification.largeIcon);
+        assertEquals(Color.RED, notification.largeIcon.getPixel(0, 0));
+
+        // Action icons should be painted white.
+        assertEquals(1, notification.actions.length);
+        View bigView = notification.bigContentView.apply(context, new LinearLayout(context));
+        ImageView actionIconView = (ImageView) bigView.findViewById(R.id.button_icon);
+        Bitmap actionIconBitmap = ((BitmapDrawable) actionIconView.getDrawable()).getBitmap();
+        assertEquals(Color.WHITE, actionIconBitmap.getPixel(0, 0));
     }
 
     @SmallTest

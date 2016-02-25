@@ -8,6 +8,11 @@ import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Icon;
 import android.os.Build;
 
@@ -151,6 +156,9 @@ public abstract class NotificationBuilderBase {
             throw new IllegalStateException(
                     "Cannot add more than " + MAX_AUTHOR_PROVIDED_ACTION_BUTTONS + " actions.");
         }
+        if (iconBitmap != null) {
+            applyWhiteOverlayToBitmap(iconBitmap);
+        }
         mActions.add(new Action(iconBitmap, limitLength(title), intent));
         return this;
     }
@@ -228,5 +236,17 @@ public abstract class NotificationBuilderBase {
         } else {
             builder.addAction(action.iconId, action.title, action.intent);
         }
+    }
+
+    /**
+     * Paints {@code bitmap} white. This processing should be performed if the Android system
+     * expects a bitmap to be white, and the bitmap is not already known to be white. The bitmap
+     * must be mutable.
+     */
+    static void applyWhiteOverlayToBitmap(Bitmap bitmap) {
+        Paint paint = new Paint();
+        paint.setColorFilter(new PorterDuffColorFilter(Color.WHITE, PorterDuff.Mode.SRC_ATOP));
+        Canvas canvas = new Canvas(bitmap);
+        canvas.drawBitmap(bitmap, 0, 0, paint);
     }
 }
