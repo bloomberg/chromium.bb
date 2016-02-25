@@ -732,7 +732,8 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
         IOSChromeProfileSyncServiceFactory::GetForBrowserState(
             self.browserState);
     isSmartLockBrandingEnabled =
-        password_bubble_experiment::IsSmartLockBrandingEnabled(sync_service);
+        password_bubble_experiment::IsSmartLockBrandingSavePromptEnabled(
+            sync_service);
   }
   infobars::InfoBarManager* infoBarManager =
       InfoBarManagerImpl::FromWebState(webStateObserverBridge_->web_state());
