@@ -148,6 +148,8 @@ class JsUtil(object):
       return c
     if js_type.property_type is PropertyType.FUNCTION:
       return self._FunctionToJsFunction(namespace_name, js_type.function)
+    if js_type.property_type is PropertyType.BINARY:
+      return Code().Append('ArrayBuffer')
     if js_type.property_type is PropertyType.ANY:
       return Code().Append('*')
     if js_type.property_type.is_fundamental:

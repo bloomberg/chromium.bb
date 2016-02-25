@@ -44,6 +44,7 @@ namespace fakeApi {
     long? maybe;
     (DOMString or Greek or long[]) choice;
     object plainObj;
+    ArrayBuffer arrayBuff;
   };
 
   callback VoidCallback = void();
@@ -123,7 +124,8 @@ chrome.fakeApi.Bar;
  *   obj: !chrome.fakeApi.Bar,
  *   maybe: (number|undefined),
  *   choice: (string|!chrome.fakeApi.Greek|!Array<number>),
- *   plainObj: Object
+ *   plainObj: Object,
+ *   arrayBuff: ArrayBuffer
  * }}
  * @see https://developer.chrome.com/extensions/fakeApi#type-Baz
  */
@@ -202,6 +204,10 @@ fake_json = """// Copyright 2014 The Chromium Authors. All rights reserved.
                   "type": "integer"
                 }
               }
+            },
+            "quu": {
+              "type": "binary",
+              "description": "The array buffer"
             }
           }
         },
@@ -266,7 +272,8 @@ chrome.fakeJson.CrazyEnum = {
  *   bar: number,
  *   baz: {
  *     depth: number
- *   }
+ *   },
+ *   quu: ArrayBuffer
  * }} inlineObj Evil inline object! With a super duper duper long string
  *     description that causes problems!
  * @param {function({
