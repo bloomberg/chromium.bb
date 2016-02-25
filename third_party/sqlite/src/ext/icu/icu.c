@@ -341,26 +341,45 @@ static void icuCaseFunc16(sqlite3_context *p, int nArg, sqlite3_value **apArg){
   if( !zInput ){
     return;
   }
-  nInput = sqlite3_value_bytes16(apArg[0]);
+  nOutput = nInput = sqlite3_value_bytes16(apArg[0]);
 
-  nOutput = nInput * 2 + 2;
   zOutput = sqlite3_malloc(nOutput);
   if( !zOutput ){
     return;
   }
 
   if( sqlite3_user_data(p) ){
-    u_strToUpper(zOutput, nOutput/2, zInput, nInput/2, zLocale, &status);
+    nOutput = u_strToUpper(
+        zOutput, nOutput/2, zInput, nInput/2, zLocale, &status) * 2;
   }else{
-    u_strToLower(zOutput, nOutput/2, zInput, nInput/2, zLocale, &status);
+    nOutput = u_strToLower(
+        zOutput, nOutput/2, zInput, nInput/2, zLocale, &status) * 2;
   }
 
-  if( !U_SUCCESS(status) ){
+  if ( status == U_BUFFER_OVERFLOW_ERROR ) {
+    UChar* newOutput = sqlite3_realloc(zOutput, nOutput);
+    if( !newOutput ){
+      sqlite3_free(zOutput);
+      return;
+    }
+    zOutput = newOutput;
+    status = U_ZERO_ERROR;
+    if( sqlite3_user_data(p) ){
+      nOutput = u_strToUpper(
+          zOutput, nOutput/2, zInput, nInput/2, zLocale, &status) * 2;
+    }else{
+      nOutput = u_strToLower(
+          zOutput, nOutput/2, zInput, nInput/2, zLocale, &status) * 2;
+    }
+  }
+
+  if( U_FAILURE(status) ){
     icuFunctionError(p, "u_strToLower()/u_strToUpper", status);
+    sqlite3_free(zOutput);
     return;
   }
 
-  sqlite3_result_text16(p, zOutput, -1, xFree);
+  sqlite3_result_text16(p, zOutput, nOutput, xFree);
 }
 
 /*
