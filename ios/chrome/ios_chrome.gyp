@@ -514,6 +514,7 @@
         'browser/snapshots/lru_cache.mm',
         'browser/snapshots/snapshot_cache.h',
         'browser/snapshots/snapshot_cache.mm',
+        'browser/snapshots/snapshot_cache_internal.h',
         'browser/snapshots/snapshot_manager.h',
         'browser/snapshots/snapshot_manager.mm',
         'browser/snapshots/snapshot_overlay.h',

@@ -9,15 +9,13 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
-#include "base/ios/ios_util.h"
 #include "base/location.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
-#include "ios/chrome/browser/experimental_flags.h"
-#include "ios/chrome/browser/ui/ui_util.h"
+#import "ios/chrome/browser/snapshots/snapshot_cache_internal.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "ios/web/public/web_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,12 +25,6 @@
 static const NSUInteger kSessionCount = 10;
 static const NSUInteger kSnapshotPixelSize = 8;
 
-// Promote some implementation methods to public.
-@interface SnapshotCache (Testing)
-+ (base::FilePath)imagePathForSessionID:(NSString*)sessionID;
-+ (base::FilePath)greyImagePathForSessionID:(NSString*)sessionID;
-- (void)handleLowMemory;
-@end
 
 namespace {
 
@@ -204,6 +196,13 @@ class SnapshotCacheTest : public PlatformTest {
     return reinterpret_cast<const char*>(CFDataGetBytePtr(data));
   }
 
+  void TriggerMemoryWarning() {
+    // _performMemoryWarning is a private API and musn't be compiled into
+    // official builds.
+    [[UIApplication sharedApplication]
+        performSelector:@selector(_performMemoryWarning)];
+  }
+
   web::TestWebThreadBundle thread_bundle_;
   base::scoped_nsobject<SnapshotCache> snapshotCache_;
   base::scoped_nsobject<NSMutableArray> testSessions_;
@@ -214,16 +213,13 @@ class SnapshotCacheTest : public PlatformTest {
 // As the snapshots are kept in memory, the same pointer can be retrieved.
 // This test also checks that images are correctly removed from the disk.
 TEST_F(SnapshotCacheTest, Cache) {
-  // Don't run on tablets because color snapshots are not cached so this test
-  // can't compare the UIImage pointers directly.
-  if (IsIPadIdiom() && !experimental_flags::IsTabSwitcherEnabled()) {
-    return;
-  }
-
   SnapshotCache* cache = GetSnapshotCache();
 
+  if (![cache inMemoryCacheIsEnabled])
+    return;
+
   NSUInteger expectedCacheSize = kSessionCount;
-  if (experimental_flags::IsLRUSnapshotCacheEnabled())
+  if ([cache usesLRUCache])
     expectedCacheSize = MIN(kSessionCount, [cache lruCacheMaxSize]);
 
   // Put all images in the cache.
@@ -347,16 +343,8 @@ TEST_F(SnapshotCacheTest, Purge) {
 }
 
 // Loads the color images into the cache, and pins two of them.  Ensures that
-// only the two pinned IDs remain in memory after a call to -handleLowMemory.
-TEST_F(SnapshotCacheTest, HandleLowMemory) {
-// TODO(droger): This test fails on iPad iOS8 device: http://crbug.com/455209
-#if !TARGET_IPHONE_SIMULATOR
-  if (IsIPadIdiom() && base::ios::IsRunningOnIOS8OrLater()) {
-    LOG(WARNING) << "Test disabled on iPad iOS8 device.";
-    return;
-  }
-#endif
-
+// only the two pinned IDs remain in memory after a memory warning.
+TEST_F(SnapshotCacheTest, HandleMemoryWarning) {
   LoadAllColorImagesIntoCache(true);
 
   SnapshotCache* cache = GetSnapshotCache();
@@ -368,15 +356,10 @@ TEST_F(SnapshotCacheTest, HandleLowMemory) {
   [set addObject:secondPinnedID];
   cache.pinnedIDs = set;
 
-  if (!IsIPadIdiom() || experimental_flags::IsTabSwitcherEnabled())
-    [cache handleLowMemory];
+  TriggerMemoryWarning();
 
-  BOOL expectedValue = YES;
-  if (IsIPadIdiom() && !experimental_flags::IsTabSwitcherEnabled())
-    expectedValue = NO;
-
-  EXPECT_EQ(expectedValue, [cache hasImageInMemory:firstPinnedID]);
-  EXPECT_EQ(expectedValue, [cache hasImageInMemory:secondPinnedID]);
+  EXPECT_EQ(YES, [cache hasImageInMemory:firstPinnedID]);
+  EXPECT_EQ(YES, [cache hasImageInMemory:secondPinnedID]);
 
   NSString* notPinnedID = [testSessions_ objectAtIndex:2];
   EXPECT_FALSE([cache hasImageInMemory:notPinnedID]);
@@ -423,8 +406,7 @@ TEST_F(SnapshotCacheTest, CreateGreyCacheFromDisk) {
   // Remove color images from in-memory cache.
   SnapshotCache* cache = GetSnapshotCache();
 
-  if (!IsIPadIdiom() || experimental_flags::IsTabSwitcherEnabled())
-    [cache handleLowMemory];
+  TriggerMemoryWarning();
 
   // Request the creation of a grey image cache for all images.
   [cache createGreyCache:testSessions_];
@@ -465,8 +447,7 @@ TEST_F(SnapshotCacheTest, MostRecentGreyBlock) {
   LoadColorImagesIntoCache(kNumImages, true);
   // Make sure the color images are only on disk, to ensure the background
   // thread is slow enough to queue up the requests.
-  if (!IsIPadIdiom() || experimental_flags::IsTabSwitcherEnabled())
-    [cache handleLowMemory];
+  TriggerMemoryWarning();
 
   // Enable the grey image cache.
   [cache createGreyCache:sessionIDs];
@@ -537,8 +518,7 @@ TEST_F(SnapshotCacheTest, SizeAndScalePreservation) {
   NSString* const kSession = @"foo";
   [cache setImage:image withSessionID:kSession];
   FlushRunLoops();  // ensure the file is written to disk.
-  if (!IsIPadIdiom() || experimental_flags::IsTabSwitcherEnabled())
-    [cache handleLowMemory];
+  TriggerMemoryWarning();
 
   // Retrive the image and have the callback verify the size and scale.
   __block BOOL callbackComplete = NO;
@@ -574,8 +554,7 @@ TEST_F(SnapshotCacheTest, DeleteRetinaImages) {
   NSString* const kSession = @"foo";
   [cache setImage:image withSessionID:kSession];
   FlushRunLoops();  // ensure the file is written to disk.
-  if (!IsIPadIdiom() || experimental_flags::IsTabSwitcherEnabled())
-    [cache handleLowMemory];
+  TriggerMemoryWarning();
 
   // Verify the file was writted with @2x in the file name.
   base::FilePath retinaFile = [SnapshotCache imagePathForSessionID:kSession];
