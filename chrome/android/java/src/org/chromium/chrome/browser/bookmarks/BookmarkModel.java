@@ -12,7 +12,6 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageMod
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.SavePageCallback;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.provider.ChromeBrowserProviderClient;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
@@ -231,7 +230,6 @@ public class BookmarkModel extends BookmarkBridge {
     */
     public void saveOfflinePage(final BookmarkId bookmarkId, WebContents webContents,
             final AddBookmarkCallback callback) {
-        assert bookmarkId.getId() != ChromeBrowserProviderClient.INVALID_BOOKMARK_ID;
         if (mOfflinePageBridge != null) {
             RecordHistogram.recordBooleanHistogram("OfflinePages.IncognitoSave",
                     webContents.isIncognito());

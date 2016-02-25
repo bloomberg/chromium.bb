@@ -47,7 +47,6 @@ import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager.HomepageStateListener;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.provider.ChromeBrowserProviderClient;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrl;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
@@ -1018,7 +1017,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     private void updateBookmarkButtonStatus() {
         Tab currentTab = mToolbarModel.getTab();
         boolean isBookmarked = currentTab != null
-                && currentTab.getBookmarkId() != ChromeBrowserProviderClient.INVALID_BOOKMARK_ID;
+                && currentTab.getBookmarkId() != Tab.INVALID_BOOKMARK_ID;
         boolean editingAllowed = currentTab == null || mBookmarkBridge == null
                 || mBookmarkBridge.isEditBookmarksEnabled();
         mToolbar.updateBookmarkButton(isBookmarked, editingAllowed);

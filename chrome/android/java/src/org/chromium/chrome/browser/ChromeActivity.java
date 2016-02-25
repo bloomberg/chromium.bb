@@ -1053,19 +1053,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     }
 
     /**
-     * Saves an offline copy for the specified tab that is bookmarked.
-     * @param tab The tab that needs to save an offline copy.
-     */
-    public void saveBookmarkOffline(Tab tab) {
-        if (tab == null || tab.isFrozen()) {
-            return;
-        }
-
-        BookmarkUtils.saveBookmarkOffline(tab.getUserBookmarkId(),
-                new BookmarkModel(), tab, getSnackbarManager(), ChromeActivity.this);
-    }
-
-    /**
      * {@link TabModelSelector} no longer implements TabModel.  Use getTabModelSelector() or
      * getCurrentTabModel() depending on your needs.
      * @return The {@link TabModelSelector}, possibly null.

@@ -30,7 +30,6 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageFreeUpSpaceDialog;
 import org.chromium.chrome.browser.offlinepages.OfflinePageOpenStorageSettingsDialog;
 import org.chromium.chrome.browser.offlinepages.OfflinePageStorageSpacePolicy;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
-import org.chromium.chrome.browser.provider.ChromeBrowserProviderClient;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
@@ -63,7 +62,7 @@ public class BookmarkUtils {
         WebContents webContentsToSave = null;
         if (!shouldSkipSavingTabOffline(tab)) webContentsToSave = tab.getWebContents();
 
-        if (idToAdd != ChromeBrowserProviderClient.INVALID_BOOKMARK_ID) {
+        if (idToAdd != Tab.INVALID_BOOKMARK_ID) {
             startEditActivity(activity, new BookmarkId(idToAdd, BookmarkType.NORMAL),
                     webContentsToSave);
             return;
@@ -108,7 +107,7 @@ public class BookmarkUtils {
      */
     public static void saveBookmarkOffline(long id, BookmarkModel bookmarkModel,
             Tab tab, final SnackbarManager snackbarManager, Activity activity) {
-        assert id != ChromeBrowserProviderClient.INVALID_BOOKMARK_ID;
+        assert id != Tab.INVALID_BOOKMARK_ID;
         BookmarkId bookmarkId = new BookmarkId(id, BookmarkType.NORMAL);
 
         // Bail out if the ID no longer points to a valid bookmark, which might happen if the user

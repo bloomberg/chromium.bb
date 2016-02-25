@@ -121,6 +121,9 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
         View.OnSystemUiVisibilityChangeListener {
     public static final int INVALID_TAB_ID = -1;
 
+    /** Return value from {@link #getBookmarkId()} if this tab is not bookmarked. */
+    public static final long INVALID_BOOKMARK_ID = -1;
+
     /** The maximum amount of time to wait for a page to load before entering fullscreen.  -1 means
      *  wait until the page finishes loading. */
     private static final long MAX_FULLSCREEN_LOAD_DELAY_MS = 3000;
@@ -2590,11 +2593,11 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
-     * @return The ID of the bookmark associated with the current URL (or -1 if no such bookmark
-     *         exists).
+     * @return The ID of the bookmark associated with the current URL, or
+     *         {@link #INVALID_BOOKMARK_ID} if no such bookmark exists.
      */
     public long getBookmarkId() {
-        return isFrozen() ? -1 : nativeGetBookmarkId(mNativeTabAndroid, false);
+        return isFrozen() ? INVALID_BOOKMARK_ID : nativeGetBookmarkId(mNativeTabAndroid, false);
     }
 
     /**
@@ -2602,7 +2605,7 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
      * that can't be edited by the user.
      */
     public long getUserBookmarkId() {
-        return isFrozen() ? -1 : nativeGetBookmarkId(mNativeTabAndroid, true);
+        return isFrozen() ? INVALID_BOOKMARK_ID : nativeGetBookmarkId(mNativeTabAndroid, true);
     }
 
     /**

@@ -17,7 +17,6 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.provider.ChromeBrowserProviderClient;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -249,7 +248,7 @@ public class AppMenuPropertiesDelegate {
      */
     protected void updateBookmarkMenuItem(MenuItem bookmarkMenuItem, Tab currentTab) {
         bookmarkMenuItem.setEnabled(mBookmarkBridge.isEditBookmarksEnabled());
-        if (currentTab.getBookmarkId() != ChromeBrowserProviderClient.INVALID_BOOKMARK_ID) {
+        if (currentTab.getBookmarkId() != Tab.INVALID_BOOKMARK_ID) {
             bookmarkMenuItem.setIcon(R.drawable.btn_star_filled);
             bookmarkMenuItem.setChecked(true);
             bookmarkMenuItem.setTitleCondensed(mActivity.getString(R.string.edit_bookmark));
