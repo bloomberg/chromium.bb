@@ -25,20 +25,22 @@ class MockMediaRouter : public MediaRouter {
   MockMediaRouter();
   ~MockMediaRouter() override;
 
-  MOCK_METHOD6(CreateRoute,
+  MOCK_METHOD7(CreateRoute,
                void(const MediaSource::Id& source,
                     const MediaSink::Id& sink_id,
                     const GURL& origin,
                     content::WebContents* web_contents,
                     const std::vector<MediaRouteResponseCallback>& callbacks,
-                    base::TimeDelta timeout));
-  MOCK_METHOD6(JoinRoute,
+                    base::TimeDelta timeout,
+                    bool off_the_record));
+  MOCK_METHOD7(JoinRoute,
                void(const MediaSource::Id& source,
                     const std::string& presentation_id,
                     const GURL& origin,
                     content::WebContents* web_contents,
                     const std::vector<MediaRouteResponseCallback>& callbacks,
-                    base::TimeDelta timeout));
+                    base::TimeDelta timeout,
+                    bool off_the_record));
   MOCK_METHOD6(ConnectRouteByRouteId,
                void(const MediaSource::Id& source,
                     const MediaRoute::Id& route_id,

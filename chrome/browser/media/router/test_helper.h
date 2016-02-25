@@ -93,20 +93,22 @@ class MockMediaRouteProvider : public interfaces::MediaRouteProvider {
   MockMediaRouteProvider();
   ~MockMediaRouteProvider() override;
 
-  MOCK_METHOD7(CreateRoute,
+  MOCK_METHOD8(CreateRoute,
                void(const mojo::String& source_urn,
                     const mojo::String& sink_id,
                     const mojo::String& presentation_id,
                     const mojo::String& origin,
                     int tab_id,
                     int64_t timeout_secs,
+                    bool off_the_record,
                     const CreateRouteCallback& callback));
-  MOCK_METHOD6(JoinRoute,
+  MOCK_METHOD7(JoinRoute,
                void(const mojo::String& source_urn,
                     const mojo::String& presentation_id,
                     const mojo::String& origin,
                     int tab_id,
                     int64_t timeout_secs,
+                    bool off_the_record,
                     const JoinRouteCallback& callback));
   MOCK_METHOD7(ConnectRouteByRouteId,
                void(const mojo::String& source_urn,

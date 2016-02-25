@@ -72,13 +72,16 @@ class MediaRouter : public KeyedService {
   // success or failure, in the order they are listed.
   // If |timeout| is positive, then any un-invoked |callbacks| will be invoked
   // with a timeout error after the timeout expires.
+  // If |off_the_record| is true, the request was made by an off the record
+  // (incognito) profile.
   virtual void CreateRoute(
       const MediaSource::Id& source_id,
       const MediaSink::Id& sink_id,
       const GURL& origin,
       content::WebContents* web_contents,
       const std::vector<MediaRouteResponseCallback>& callbacks,
-      base::TimeDelta timeout) = 0;
+      base::TimeDelta timeout,
+      bool off_the_record) = 0;
 
   // Creates a route and connects it to an existing route identified by
   // |route_id|. |route_id| must refer to a non-local route, unnassociated with
@@ -110,13 +113,16 @@ class MediaRouter : public KeyedService {
   // success or failure, in the order they are listed.
   // If |timeout| is positive, then any un-invoked |callbacks| will be invoked
   // with a timeout error after the timeout expires.
+  // If |off_the_record| is true, the request was made by an off the record
+  // (incognito) profile.
   virtual void JoinRoute(
       const MediaSource::Id& source,
       const std::string& presentation_id,
       const GURL& origin,
       content::WebContents* web_contents,
       const std::vector<MediaRouteResponseCallback>& callbacks,
-      base::TimeDelta timeout) = 0;
+      base::TimeDelta timeout,
+      bool off_the_record) = 0;
 
   // Terminates the media route specified by |route_id|.
   virtual void TerminateRoute(const MediaRoute::Id& route_id) = 0;

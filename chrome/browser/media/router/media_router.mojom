@@ -46,6 +46,9 @@ struct MediaRoute {
   string? custom_controller_path;
   // Set to true if this route should be displayed for |media_sink_id| in UI.
   bool for_display;
+  // Set to true if this route was created by an off the record (incognito)
+  // profile.
+  bool off_the_record;
 };
 
 // Notifications or an actionable events to be shown to the user.
@@ -132,6 +135,8 @@ interface MediaRouteProvider {
   // it is not applicable.
   // If |timeout_millis| is positive, it will be used in place of the default
   // timeout defined by Media Route Provider Manager.
+  // If |off_the_record| is true, the request was made by an off the record
+  // (incognito) profile.
   // If the operation was successful, |route| will be defined and
   //     |error_text| will be null.
   // If the operation failed, |route| will be null and |error_text|
@@ -143,15 +148,19 @@ interface MediaRouteProvider {
               string original_presentation_id,
               string origin,
               int32 tab_id,
-              int64 timeout_millis) => (MediaRoute? route,
-                                        string? error_text,
-                                        RouteRequestResultCode result_code);
+              int64 timeout_millis,
+              bool off_the_record) =>
+                  (MediaRoute? route,
+                   string? error_text,
+                   RouteRequestResultCode result_code);
 
   // Joins an established route given by |presentation_id|
   // with |media_source|.
   // |origin| and |tab_id| are used for validating same-origin/tab scopes.
   // (See CreateRoute for additional documentation)
   // If |timeout_millis| is positive, it will be used in place of the default
+  // If the route request was created by an off the record (incognito) profile,
+  // |off_the_record| must be true.
   // timeout defined by Media Route Provider Manager.
   // If the operation was successful, |route| will be defined and
   //     |error_text| will be null.
@@ -163,9 +172,11 @@ interface MediaRouteProvider {
             string presentation_id,
             string origin,
             int32 tab_id,
-            int64 timeout_millis) => (MediaRoute? route,
-                                      string? error_text,
-                                      RouteRequestResultCode result_code);
+            int64 timeout_millis,
+            bool off_the_record) =>
+                (MediaRoute? route,
+                 string? error_text,
+                 RouteRequestResultCode result_code);
 
   // Connects an established route given by |route_id| with
   // |media_source|. The presentation ID of the route created will be

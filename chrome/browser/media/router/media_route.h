@@ -21,20 +21,22 @@ namespace media_router {
 // operation. The fields are immutable and reflect the route status
 // only at the time of object creation. Updated route statuses must
 // be retrieved as new MediaRoute objects from the Media Router.
+//
+// TODO(mfoltz): Convert to a simple struct and remove uncommon parameters from
+// the ctor.
 class MediaRoute {
  public:
   using Id = std::string;
 
-  // |media_route_id|: ID of the route. New route IDs should be created
-  //                   by the RouteIdManager class.
+  // |media_route_id|: ID of the route.
   // |media_source|: Description of source of the route.
   // |media_sink|: The sink that is receiving the media.
   // |description|: Description of the route to be displayed.
   // |is_local|: true if the route was created from this browser.
   // |custom_controller_path|: custom controller path if it is given by route
-  //                      provider. empty otherwise.
+  //     provider. empty otherwise.
   // |for_display|: Set to true if this route should be displayed for
-  //                |media_sink_id| in UI.
+  //     |media_sink_id| in UI.
   MediaRoute(const MediaRoute::Id& media_route_id,
              const MediaSource& media_source,
              const MediaSink::Id& media_sink_id,
@@ -71,6 +73,14 @@ class MediaRoute {
 
   bool for_display() const { return for_display_; }
 
+  // Sets off_the_record.  Set this to true when the route was created by an off
+  // the record (incognito) profile.
+  void set_off_the_record(bool off_the_record) {
+    off_the_record_ = off_the_record;
+  }
+
+  bool off_the_record() const { return off_the_record_; }
+
   bool Equals(const MediaRoute& other) const;
 
  private:
@@ -81,6 +91,7 @@ class MediaRoute {
   bool is_local_;
   std::string custom_controller_path_;
   bool for_display_;
+  bool off_the_record_;
 };
 
 }  // namespace media_router

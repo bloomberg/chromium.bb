@@ -136,6 +136,7 @@ scoped_ptr<base::DictionaryValue> RouteToValue(
   dictionary->SetString("description", route.description());
   dictionary->SetBoolean("isLocal", route.is_local());
   dictionary->SetBoolean("canJoin", canJoin);
+  dictionary->SetBoolean("isOffTheRecord", route.off_the_record());
 
   const std::string& custom_path = route.custom_controller_path();
   if (!custom_path.empty()) {

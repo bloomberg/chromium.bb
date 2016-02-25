@@ -157,6 +157,7 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
                            GetExtensionNameEmptyWhenNotExtensionURL);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest,
                            RouteCreationTimeoutForPresentation);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest, RouteRequestFromIncognito);
 
   class UIIssuesObserver;
 

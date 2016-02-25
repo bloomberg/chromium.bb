@@ -322,9 +322,8 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateRoutes) {
   std::string description("This is a route");
   bool is_local = true;
   std::vector<MediaRoute> routes;
-  routes.push_back(MediaRoute(route_id, media_source, sink_id,
-                              description, is_local, kControllerPathForTesting,
-                              true));
+  routes.push_back(MediaRoute(route_id, media_source, sink_id, description,
+                              is_local, kControllerPathForTesting, true));
   std::vector<MediaRoute::Id> joinable_route_ids;
   joinable_route_ids.push_back(route_id);
 
@@ -372,8 +371,10 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, OnCreateRouteResponseReceived) {
   std::string description("This is a route");
   bool is_local = true;
   bool is_for_display = true;
+  bool off_the_record = true;
   MediaRoute route(route_id, MediaSource("mediaSource"), sink_id, description,
                    is_local, "", is_for_display);
+  route.set_off_the_record(off_the_record);
 
   EXPECT_CALL(*mock_media_router_ui_, GetRouteProviderExtensionId()).WillOnce(
       ReturnRef(provider_extension_id()));
@@ -401,6 +402,11 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, OnCreateRouteResponseReceived) {
   bool actual_is_local = false;
   EXPECT_TRUE(route_value->GetBoolean("isLocal", &actual_is_local));
   EXPECT_EQ(is_local, actual_is_local);
+
+  bool actual_is_off_the_record = false;
+  EXPECT_TRUE(
+      route_value->GetBoolean("isOffTheRecord", &actual_is_off_the_record));
+  EXPECT_EQ(off_the_record, actual_is_off_the_record);
 
   const base::Value* arg3 = call_data.arg3();
   bool route_for_display = false;

@@ -5,6 +5,7 @@
 #include "chrome/browser/media/router/media_router_factory.h"
 
 #include "build/build_config.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 #if defined(OS_ANDROID)
@@ -47,6 +48,11 @@ MediaRouterFactory::MediaRouterFactory()
 }
 
 MediaRouterFactory::~MediaRouterFactory() {
+}
+
+content::BrowserContext* MediaRouterFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
 KeyedService* MediaRouterFactory::BuildServiceInstanceFor(

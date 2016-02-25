@@ -69,13 +69,15 @@ class MediaRouterMojoImpl : public MediaRouterBase,
                    const GURL& origin,
                    content::WebContents* web_contents,
                    const std::vector<MediaRouteResponseCallback>& callbacks,
-                   base::TimeDelta timeout) override;
+                   base::TimeDelta timeout,
+                   bool off_the_record) override;
   void JoinRoute(const MediaSource::Id& source_id,
                  const std::string& presentation_id,
                  const GURL& origin,
                  content::WebContents* web_contents,
                  const std::vector<MediaRouteResponseCallback>& callbacks,
-                 base::TimeDelta timeout) override;
+                 base::TimeDelta timeout,
+                 bool off_the_record) override;
   void ConnectRouteByRouteId(
       const MediaSource::Id& source,
       const MediaRoute::Id& route_id,
@@ -153,6 +155,8 @@ class MediaRouterMojoImpl : public MediaRouterBase,
     // Empty otherwise.
     std::vector<MediaSink> cached_sink_list;
     base::ObserverList<MediaSinksObserver> observers;
+
+   private:
     DISALLOW_COPY_AND_ASSIGN(MediaSinksQuery);
   };
 
@@ -165,6 +169,7 @@ class MediaRouterMojoImpl : public MediaRouterBase,
     bool is_active = false;
     base::ObserverList<MediaRoutesObserver> observers;
 
+   private:
     DISALLOW_COPY_AND_ASSIGN(MediaRoutesQuery);
   };
 
@@ -212,13 +217,15 @@ class MediaRouterMojoImpl : public MediaRouterBase,
                      const std::string& origin,
                      int tab_id,
                      const std::vector<MediaRouteResponseCallback>& callbacks,
-                     base::TimeDelta timeout);
+                     base::TimeDelta timeout,
+                     bool off_the_record);
   void DoJoinRoute(const MediaSource::Id& source_id,
                    const std::string& presentation_id,
                    const std::string& origin,
                    int tab_id,
                    const std::vector<MediaRouteResponseCallback>& callbacks,
-                   base::TimeDelta timeout);
+                   base::TimeDelta timeout,
+                   bool off_the_record);
   void DoConnectRouteByRouteId(
       const MediaSource::Id& source_id,
       const MediaRoute::Id& route_id,

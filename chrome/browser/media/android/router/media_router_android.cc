@@ -4,7 +4,9 @@
 
 #include "chrome/browser/media/android/router/media_router_android.h"
 
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
@@ -73,7 +75,8 @@ void MediaRouterAndroid::CreateRoute(
     const GURL& origin,
     content::WebContents* web_contents,
     const std::vector<MediaRouteResponseCallback>& callbacks,
-    base::TimeDelta timeout) {
+    base::TimeDelta timeout,
+    bool off_the_record) {
   // TODO(avayvod): Implement timeouts (crbug.com/583036).
   if (!origin.is_valid()) {
     scoped_ptr<RouteRequestResult> result = RouteRequestResult::FromError(
@@ -110,6 +113,8 @@ void MediaRouterAndroid::CreateRoute(
   ScopedJavaLocalRef<jstring> jorigin =
           base::android::ConvertUTF8ToJavaString(env, origin.spec());
 
+  // TODO(avayvod): Pass the off_the_record flag to Android.
+  // https://bugs.chromium.org/p/chromium/issues/detail?id=588239
   Java_ChromeMediaRouter_createRoute(
       env,
       java_media_router_.obj(),
@@ -137,7 +142,8 @@ void MediaRouterAndroid::JoinRoute(
     const GURL& origin,
     content::WebContents* web_contents,
     const std::vector<MediaRouteResponseCallback>& callbacks,
-    base::TimeDelta timeout) {
+    base::TimeDelta timeout,
+    bool off_the_record) {
   // TODO(avayvod): Implement timeouts (crbug.com/583036).
   if (!origin.is_valid()) {
     scoped_ptr<RouteRequestResult> result = RouteRequestResult::FromError(

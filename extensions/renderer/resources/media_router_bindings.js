@@ -75,8 +75,10 @@ define('media_router_bindings', [
       'icon_url': route.iconUrl,
       'is_local': route.isLocal,
       'custom_controller_path': route.customControllerPath,
-      // TODO(imcheng): Remove logic when extension always sets the field.
-      'for_display': route.forDisplay == undefined ? true : route.forDisplay
+      // Begin newly added properties, followed by the milestone they were
+      // added.  The guard should be safe to remove N+2 milestones later.
+      'for_display': route.forDisplay, // M47
+      'off_the_record': !!route.offTheRecord  // M50
     });
   }
 
@@ -556,15 +558,18 @@ define('media_router_bindings', [
    * @param {!number} timeoutMillis If positive, the timeout duration for the
    *     request, measured in seconds. Otherwise, the default duration will be
    *     used.
+   * @param {!boolean} offTheRecord If true, the route is being requested by
+   *     an off the record (incognito) profile.
    * @return {!Promise.<!Object>} A Promise resolving to an object describing
    *     the newly created media route, or rejecting with an error message on
    *     failure.
    */
   MediaRouteProvider.prototype.createRoute =
       function(sourceUrn, sinkId, presentationId, origin, tabId,
-          timeoutMillis) {
+          timeoutMillis, offTheRecord) {
     return this.handlers_.createRoute(
-        sourceUrn, sinkId, presentationId, origin, tabId, timeoutMillis)
+        sourceUrn, sinkId, presentationId, origin, tabId, timeoutMillis,
+        offTheRecord)
         .then(function(route) {
           return toSuccessRouteResponse_(route);
         },
@@ -584,14 +589,17 @@ define('media_router_bindings', [
    * @param {!number} timeoutMillis If positive, the timeout duration for the
    *     request, measured in seconds. Otherwise, the default duration will be
    *     used.
+   * @param {!boolean} offTheRecord If true, the route is being requested by
+   *     an off the record (incognito) profile.
    * @return {!Promise.<!Object>} A Promise resolving to an object describing
    *     the newly created media route, or rejecting with an error message on
    *     failure.
    */
   MediaRouteProvider.prototype.joinRoute =
-      function(sourceUrn, presentationId, origin, tabId, timeoutMillis) {
+      function(sourceUrn, presentationId, origin, tabId, timeoutMillis,
+               offTheRecord) {
     return this.handlers_.joinRoute(
-        sourceUrn, presentationId, origin, tabId, timeoutMillis)
+        sourceUrn, presentationId, origin, tabId, timeoutMillis, offTheRecord)
         .then(function(route) {
           return toSuccessRouteResponse_(route);
         },

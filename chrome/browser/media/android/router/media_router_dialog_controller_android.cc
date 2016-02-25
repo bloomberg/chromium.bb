@@ -12,6 +12,7 @@
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_source.h"
 #include "chrome/browser/media/router/presentation_request.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -51,10 +52,12 @@ void MediaRouterDialogControllerAndroid::OnSinkSelected(
       base::Bind(&CreatePresentationConnectionRequest::HandleRouteResponse,
                  base::Passed(&create_connection_request)));
 
+  content::BrowserContext* browser_context = initiator()->GetBrowserContext();
   MediaRouter* router = MediaRouterFactory::GetApiForBrowserContext(
-      initiator()->GetBrowserContext());
+      browser_context);
   router->CreateRoute(source_id, ConvertJavaStringToUTF8(env, jsink_id), origin,
-                      initiator(), route_response_callbacks, base::TimeDelta());
+                      initiator(), route_response_callbacks, base::TimeDelta(),
+                      browser_context->IsOffTheRecord());
 }
 
 void MediaRouterDialogControllerAndroid::OnRouteClosed(

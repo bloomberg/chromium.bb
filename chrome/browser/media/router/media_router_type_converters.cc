@@ -74,20 +74,24 @@ TypeConverter<media_router::MediaSink, MediaSinkPtr>::Convert(
 media_router::MediaRoute
 TypeConverter<media_router::MediaRoute, MediaRoutePtr>::Convert(
     const MediaRoutePtr& input) {
-  return media_router::MediaRoute(
+  media_router::MediaRoute media_route(
       input->media_route_id, media_router::MediaSource(input->media_source),
       input->media_sink_id, input->description, input->is_local,
       input->custom_controller_path, input->for_display);
+  media_route.set_off_the_record(input->off_the_record);
+  return media_route;
 }
 
 // static
 scoped_ptr<media_router::MediaRoute>
 TypeConverter<scoped_ptr<media_router::MediaRoute>, MediaRoutePtr>::Convert(
     const MediaRoutePtr& input) {
-  return make_scoped_ptr(new media_router::MediaRoute(
+  scoped_ptr<media_router::MediaRoute> media_route(new media_router::MediaRoute(
       input->media_route_id, media_router::MediaSource(input->media_source),
       input->media_sink_id, input->description, input->is_local,
       input->custom_controller_path, input->for_display));
+  media_route->set_off_the_record(input->off_the_record);
+  return media_route;
 }
 
 media_router::Issue::Severity IssueSeverityFromMojo(

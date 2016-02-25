@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/ash/cast_config_delegate_media_router.h"
 
+#include <string>
+#include <vector>
+
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -197,7 +200,7 @@ void CastConfigDelegateMediaRouter::CastToReceiver(
       media_router::MediaSourceForDesktop().id(), receiver_id,
       GURL("http://cros-cast-origin/"), nullptr,
       std::vector<media_router::MediaRouteResponseCallback>(),
-      base::TimeDelta());
+      base::TimeDelta(), false);
 }
 
 void CastConfigDelegateMediaRouter::StopCasting(const std::string& route_id) {

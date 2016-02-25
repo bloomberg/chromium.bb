@@ -35,11 +35,18 @@ class MockRoutesUpdatedCallback {
 
 class MediaRouterUITest : public ::testing::Test {
  public:
-  MediaRouterUITest() {
+  ~MediaRouterUITest() override {
+    EXPECT_CALL(mock_router_, UnregisterMediaSinksObserver(_))
+        .Times(AnyNumber());
+    EXPECT_CALL(mock_router_, UnregisterMediaRoutesObserver(_))
+        .Times(AnyNumber());
+  }
+
+  void CreateMediaRouterUI(Profile* profile) {
     initiator_.reset(content::WebContents::Create(
-        content::WebContents::CreateParams(&profile_)));
+        content::WebContents::CreateParams(profile)));
     web_contents_.reset(content::WebContents::Create(
-        content::WebContents::CreateParams(&profile_)));
+        content::WebContents::CreateParams(profile)));
     web_ui_.set_web_contents(web_contents_.get());
     media_router_ui_.reset(new MediaRouterUI(&web_ui_));
     message_handler_.reset(
@@ -51,13 +58,6 @@ class MediaRouterUITest : public ::testing::Test {
     media_router_ui_->InitForTest(&mock_router_, initiator_.get(),
                                   message_handler_.get());
     message_handler_->SetWebUIForTest(&web_ui_);
-  }
-
-  ~MediaRouterUITest() override {
-    EXPECT_CALL(mock_router_, UnregisterMediaSinksObserver(_))
-        .Times(AnyNumber());
-    EXPECT_CALL(mock_router_, UnregisterMediaRoutesObserver(_))
-        .Times(AnyNumber());
   }
 
  protected:
@@ -72,8 +72,9 @@ class MediaRouterUITest : public ::testing::Test {
 };
 
 TEST_F(MediaRouterUITest, RouteRequestTimedOut) {
+  CreateMediaRouterUI(&profile_);
   std::vector<MediaRouteResponseCallback> callbacks;
-  EXPECT_CALL(mock_router_, CreateRoute(_, _, _, _, _, _))
+  EXPECT_CALL(mock_router_, CreateRoute(_, _, _, _, _, _, _))
       .WillOnce(SaveArg<4>(&callbacks));
   media_router_ui_->CreateRoute("sinkId", MediaCastMode::TAB_MIRROR);
 
@@ -85,28 +86,48 @@ TEST_F(MediaRouterUITest, RouteRequestTimedOut) {
 }
 
 TEST_F(MediaRouterUITest, RouteCreationTimeoutForTab) {
-  EXPECT_CALL(mock_router_,
-              CreateRoute(_, _, _, _, _, base::TimeDelta::FromSeconds(60)));
+  CreateMediaRouterUI(&profile_);
+  EXPECT_CALL(
+      mock_router_,
+      CreateRoute(_, _, _, _, _, base::TimeDelta::FromSeconds(60), false));
   media_router_ui_->CreateRoute("sinkId", MediaCastMode::TAB_MIRROR);
 }
 
 TEST_F(MediaRouterUITest, RouteCreationTimeoutForDesktop) {
-  EXPECT_CALL(mock_router_,
-              CreateRoute(_, _, _, _, _, base::TimeDelta::FromSeconds(120)));
+  CreateMediaRouterUI(&profile_);
+  EXPECT_CALL(
+      mock_router_,
+      CreateRoute(_, _, _, _, _, base::TimeDelta::FromSeconds(120), false));
   media_router_ui_->CreateRoute("sinkId", MediaCastMode::DESKTOP_MIRROR);
 }
 
 TEST_F(MediaRouterUITest, RouteCreationTimeoutForPresentation) {
+  CreateMediaRouterUI(&profile_);
   PresentationRequest presentation_request(
       RenderFrameHostId(0, 0), "https://fooUrl", GURL("https://frameUrl"));
   media_router_ui_->OnDefaultPresentationChanged(presentation_request);
 
-  EXPECT_CALL(mock_router_,
-              CreateRoute(_, _, _, _, _, base::TimeDelta::FromSeconds(20)));
+  EXPECT_CALL(
+      mock_router_,
+      CreateRoute(_, _, _, _, _, base::TimeDelta::FromSeconds(20), false));
+  media_router_ui_->CreateRoute("sinkId", MediaCastMode::DEFAULT);
+}
+
+TEST_F(MediaRouterUITest, RouteRequestFromIncognito) {
+  CreateMediaRouterUI(profile_.GetOffTheRecordProfile());
+
+  PresentationRequest presentation_request(
+      RenderFrameHostId(0, 0), "https://fooUrl", GURL("https://frameUrl"));
+  media_router_ui_->OnDefaultPresentationChanged(presentation_request);
+
+  EXPECT_CALL(
+      mock_router_,
+      CreateRoute(_, _, _, _, _, base::TimeDelta::FromSeconds(20), true));
   media_router_ui_->CreateRoute("sinkId", MediaCastMode::DEFAULT);
 }
 
 TEST_F(MediaRouterUITest, SortedSinks) {
+  CreateMediaRouterUI(&profile_);
   std::vector<MediaSinkWithCastModes> unsorted_sinks;
   std::string sink_id1("sink3");
   std::string sink_name1("B sink");
@@ -144,12 +165,12 @@ TEST_F(MediaRouterUITest, UIMediaRoutesObserverFiltersNonDisplayRoutes) {
           base::Bind(&MockRoutesUpdatedCallback::OnRoutesUpdated,
                      base::Unretained(&mock_callback))));
 
-  MediaRoute display_route_1("routeId1", media_source, "sinkId1",
-                             "desc 1", true, "", true);
-  MediaRoute non_display_route_1("routeId2", media_source,
-                                 "sinkId2", "desc 2", true, "", false);
-  MediaRoute display_route_2("routeId3", media_source, "sinkId2",
-                             "desc 2", true, "", true);
+  MediaRoute display_route_1("routeId1", media_source, "sinkId1", "desc 1",
+                             true, "", true);
+  MediaRoute non_display_route_1("routeId2", media_source, "sinkId2", "desc 2",
+                                 true, "", false);
+  MediaRoute display_route_2("routeId3", media_source, "sinkId2", "desc 2",
+                             true, "", true);
   std::vector<MediaRoute> routes;
   routes.push_back(display_route_1);
   routes.push_back(non_display_route_1);
@@ -182,12 +203,12 @@ TEST_F(MediaRouterUITest,
           base::Bind(&MockRoutesUpdatedCallback::OnRoutesUpdated,
                      base::Unretained(&mock_callback))));
 
-  MediaRoute display_route_1("routeId1", media_source, "sinkId1",
-                             "desc 1", true, "", true);
-  MediaRoute non_display_route_1("routeId2", media_source,
-                                 "sinkId2", "desc 2", true, "", false);
-  MediaRoute display_route_2("routeId3", media_source, "sinkId2",
-                             "desc 2", true, "", true);
+  MediaRoute display_route_1("routeId1", media_source, "sinkId1", "desc 1",
+                             true, "", true);
+  MediaRoute non_display_route_1("routeId2", media_source, "sinkId2", "desc 2",
+                                 true, "", false);
+  MediaRoute display_route_2("routeId3", media_source, "sinkId2", "desc 2",
+                             true, "", true);
   std::vector<MediaRoute> routes;
   routes.push_back(display_route_1);
   routes.push_back(non_display_route_1);

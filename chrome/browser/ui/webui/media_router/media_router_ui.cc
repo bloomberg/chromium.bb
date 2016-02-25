@@ -407,7 +407,8 @@ bool MediaRouterUI::CreateOrConnectRoute(const MediaSink::Id& sink_id,
   base::TimeDelta timeout = GetRouteRequestTimeout(cast_mode);
   if (route_id.empty()) {
     router_->CreateRoute(source.id(), sink_id, origin, initiator_,
-                         route_response_callbacks, timeout);
+                         route_response_callbacks, timeout,
+                         Profile::FromWebUI(web_ui())->IsOffTheRecord());
   } else {
     router_->ConnectRouteByRouteId(source.id(), route_id, origin, initiator_,
                                    route_response_callbacks, timeout);

@@ -6,6 +6,11 @@
 
 #include "base/bind.h"
 
+// TODO(mfoltz): Enforce/verify incognito policies:
+// - CreateRoute/JoinRoute with OTR = true/false returns a route with
+//   OTR = true/false
+// - Destroying an incognito profile terminates all OTR routes
+
 namespace media_router {
 
 MediaRouterBase::MediaRouterBase() = default;
