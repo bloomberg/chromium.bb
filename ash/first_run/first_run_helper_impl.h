@@ -23,11 +23,7 @@ class FirstRunHelperImpl : public FirstRunHelper,
 
   // Overriden from FirstRunHelper.
   views::Widget* GetOverlayWidget() override;
-  void OpenAppList() override;
-  void CloseAppList() override;
-  gfx::Rect GetLauncherBounds() override;
   gfx::Rect GetAppListButtonBounds() override;
-  gfx::Rect GetAppListBounds() override;
   void OpenTrayBubble() override;
   void CloseTrayBubble() override;
   bool IsTrayBubbleOpened() override;

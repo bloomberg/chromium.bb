@@ -51,28 +51,10 @@ views::Widget* FirstRunHelperImpl::GetOverlayWidget() {
   return widget_;
 }
 
-void FirstRunHelperImpl::OpenAppList() {
-  Shell::GetInstance()->ShowAppList(NULL);
-}
-
-void FirstRunHelperImpl::CloseAppList() {
-  Shell::GetInstance()->DismissAppList();
-}
-
-gfx::Rect FirstRunHelperImpl::GetLauncherBounds() {
-  Shelf* shelf = Shelf::ForPrimaryDisplay();
-  return shelf->GetVisibleItemsBoundsInScreen();
-}
-
 gfx::Rect FirstRunHelperImpl::GetAppListButtonBounds() {
   Shelf* shelf = Shelf::ForPrimaryDisplay();
   views::View* app_button = shelf->GetAppListButtonView();
   return app_button->GetBoundsInScreen();
-}
-
-gfx::Rect FirstRunHelperImpl::GetAppListBounds() {
-  app_list::AppListView* view = Shell::GetInstance()->GetAppListView();
-  return view->GetBoundsInScreen();
 }
 
 void FirstRunHelperImpl::Cancel() {

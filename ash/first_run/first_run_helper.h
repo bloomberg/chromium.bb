@@ -41,19 +41,8 @@ class ASH_EXPORT FirstRunHelper {
   // Returns widget to place tutorial UI into it.
   virtual views::Widget* GetOverlayWidget() = 0;
 
-  // Opens and closes app list.
-  virtual void OpenAppList() = 0;
-  virtual void CloseAppList() = 0;
-
-  // Returns bounding rectangle of launcher elements.
-  virtual gfx::Rect GetLauncherBounds() = 0;
-
   // Returns bounds of application list button.
   virtual gfx::Rect GetAppListButtonBounds() = 0;
-
-  // Returns bounds of application list. You must open application list before
-  // calling this method.
-  virtual gfx::Rect GetAppListBounds() = 0;
 
   // Opens and closes system tray bubble.
   virtual void OpenTrayBubble() = 0;
