@@ -150,6 +150,13 @@ paper-menu {
 .sink-domain {
   -webkit-padding-start: 6px;
   color: var(--subtext-color);
+  /* TODO(crbug/589697): Handle overflow of very long domain names. */
+}
+
+.sink-name {
+  min-width: 10%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .sink-subtext {
@@ -159,10 +166,10 @@ paper-menu {
 
 .sink-text {
   -webkit-padding-end: var(--dialog-padding-end);
+  display: inline-flex;
   flex-direction: row;
+  flex-flow: row nowrap;
   line-height: normal;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
   width: 250px;
 }

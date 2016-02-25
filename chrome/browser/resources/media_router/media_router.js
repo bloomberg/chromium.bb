@@ -28,7 +28,10 @@ cr.define('media_router', function() {
 
     container = /** @type {!MediaRouterContainerElement} */
         ($('media-router-container'));
-    media_router.ui.setContainer(container);
+
+    media_router.ui.setElements(container,
+        /** @type {!MediaRouterHeaderElement} */
+        (container.$['container-header']));
 
     container.addEventListener('acknowledge-first-run-flow',
                                onAcknowledgeFirstRunFlow);

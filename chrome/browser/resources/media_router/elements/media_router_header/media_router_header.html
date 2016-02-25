@@ -5,7 +5,7 @@
   <link rel="import" type="css" href="../../media_router_common.css">
   <link rel="import" type="css" href="media_router_header.css">
   <template>
-    <paper-toolbar class$="[[view]]">
+    <paper-toolbar id="header-toolbar" class$="[[view]]">
       <div id="back-button-container">
         <paper-icon-button id="back-button" icon="[[arrowDropIcon_]]"
             on-click="onBackButtonClick_"
@@ -27,6 +27,11 @@
             on-click="onCloseButtonClick_">
         </paper-icon-button>
       </div>
+      <template is="dom-if" if="[[showEmail]]">
+        <div id="user-email-container" class="bottom fit">
+          <span>[[userEmail]]</span>
+        </div>
+      </template>
     </paper-toolbar>
   </template>
 <script src="media_router_header.js"></script>

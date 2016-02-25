@@ -10,6 +10,9 @@ cr.define('media_router.ui', function() {
   // The media-router-container element.
   var container = null;
 
+  // The media-router-header element.
+  var header = null;
+
   /**
    * Handles response of previous create route attempt.
    *
@@ -33,12 +36,14 @@ cr.define('media_router.ui', function() {
   }
 
   /**
-   * Sets |container|.
+   * Sets |container| and |header|.
    *
    * @param {!MediaRouterContainerElement} mediaRouterContainer
+   * @param {!MediaRouterHeaderElement} mediaRouterHeader
    */
-  function setContainer(mediaRouterContainer) {
+  function setElements(mediaRouterContainer, mediaRouterHeader) {
     container = mediaRouterContainer;
+    header = mediaRouterHeader;
   }
 
   /**
@@ -76,19 +81,25 @@ cr.define('media_router.ui', function() {
    * Populates the WebUI with data obtained from Media Router.
    *
    * @param {{deviceMissingUrl: string,
-   *          sinks: !Array<!media_router.Sink>,
+   *          sinksAndIdentity: {{
+   *            sinks: !Array<!media_router.Sink>,
+   *            showEmail: boolean,
+   *            userEmail: string,
+   *            showDomain: boolean,
+   *            userDomain: string
+   *          }},
    *          routes: !Array<!media_router.Route>,
    *          castModes: !Array<!media_router.CastMode>}} data
    * Parameters in data:
    *   deviceMissingUrl - url to be opened on "Device missing?" clicked.
-   *   sinks - list of sinks to be displayed.
+   *   sinksAndIdentity - list of sinks to be displayed and user identity.
    *   routes - list of routes that are associated with the sinks.
    *   castModes - list of available cast modes.
    */
   function setInitialData(data) {
     container.deviceMissingUrl = data['deviceMissingUrl'];
     container.castModeList = data['castModes'];
-    container.allSinks = data['sinks'];
+    this.setSinkListAndIdentity(data['sinksAndIdentity']);
     container.routeList = data['routes'];
     container.maybeShowRouteDetailsOnOpen();
     media_router.browserApi.onInitialDataReceived();
@@ -114,12 +125,27 @@ cr.define('media_router.ui', function() {
   }
 
   /**
-   * Sets the list of discovered sinks.
+   * Sets the list of discovered sinks along with properties of whether to hide
+   * identity of the user email and domain.
    *
-   * @param {!Array<!media_router.Sink>} sinkList
+   * @param {{sinks: !Array<!media_router.Sink>,
+   *          showEmail: boolean,
+   *          userEmail: string,
+   *          showDomain: boolean,
+   *          userDomain: string,}} data
+   * Parameters in data:
+   *   sinks - list of sinks to be displayed.
+   *   showEmail - true if the user email should be shown.
+   *   userEmail - email of the user if the user is signed in.
+   *   showDomain - true if the user domain should be shown.
+   *   userDomain - domain of the user if the user is signed in.
    */
-  function setSinkList(sinkList) {
-    container.allSinks = sinkList;
+  function setSinkListAndIdentity(data) {
+    container.allSinks = data['sinks'];
+    container.showDomain = data['showDomain'];
+    container.userDomain = data['userDomain'];
+    header.showEmail = data['showEmail'];
+    header.userEmail = data['userEmail'];
   }
 
   /**
@@ -134,12 +160,12 @@ cr.define('media_router.ui', function() {
   return {
     onCreateRouteResponseReceived: onCreateRouteResponseReceived,
     setCastModeList: setCastModeList,
-    setContainer: setContainer,
+    setElements: setElements,
     setFirstRunFlowData: setFirstRunFlowData,
     setInitialData: setInitialData,
     setIssue: setIssue,
     setRouteList: setRouteList,
-    setSinkList: setSinkList,
+    setSinkListAndIdentity: setSinkListAndIdentity,
     updateMaxHeight: updateMaxHeight,
   };
 });

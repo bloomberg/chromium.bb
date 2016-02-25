@@ -36,13 +36,23 @@ Polymer({
     },
 
     /**
-     * The current view that this header should reflect.
-     * @type {?media_router.MediaRouterView}
+     * The height of the header when it shows the user email.
+     * @private {number}
      */
-    view: {
-      type: String,
-      value: null,
-      observer: 'updateHeaderCursorStyle_',
+    headerWithEmailHeight_: {
+      type: Number,
+      readOnly: true,
+      value: 62,
+    },
+
+    /**
+     * Whether to show the user email in the header.
+     * @type {boolean}
+     */
+    showEmail: {
+      type: Boolean,
+      value: false,
+      observer: 'maybeChangeHeaderHeight_',
     },
 
     /**
@@ -52,6 +62,25 @@ Polymer({
     tooltip: {
       type: String,
       value: '',
+    },
+
+    /**
+     * The user email if they are signed in.
+     * @type {string}
+     */
+    userEmail: {
+      type: String,
+      value: '',
+    },
+
+    /**
+     * The current view that this header should reflect.
+     * @type {?media_router.MediaRouterView}
+     */
+    view: {
+      type: String,
+      value: null,
+      observer: 'updateHeaderCursorStyle_',
     },
   },
 
@@ -91,6 +120,17 @@ Polymer({
   },
 
   /**
+   * Returns whether given string is undefined, null, empty, or whitespace only.
+   * @param {?string} str String to be tested.
+   * @return {boolean} |true| if the string is undefined, null, empty, or
+   *     whitespace.
+   * @private
+   */
+  isEmptyOrWhitespace_: function(str) {
+    return str === undefined || str === null || (/^\s*$/).test(str);
+  },
+
+  /**
    * Handles a click on the arrow button by firing an arrow-click event.
    *
    * @private
@@ -118,6 +158,34 @@ Polymer({
    */
   onCloseButtonClick_: function() {
     this.fire('close-button-click');
+  },
+
+  /**
+   * Updates header height to accomodate email text. This is called on changes
+   * to |showEmail| and will return early if the value has not changed.
+   *
+   * @param {boolean} oldValue .
+   * @param {boolean} newValue .
+   * @private
+   */
+  maybeChangeHeaderHeight_: function(oldValue, newValue) {
+    if (!!oldValue == !!newValue) {
+      return;
+    }
+
+    // Ensures conditional templates are stamped.
+    this.async(function() {
+      var currentHeight = this.offsetHeight;
+
+      this.$$('#header-toolbar').style.height =
+          this.showEmail && !this.isEmptyOrWhitespace_(this.userEmail) ?
+              this.headerWithEmailHeight_ + 'px' : undefined;
+
+      // Only fire if height actually changed.
+      if (currentHeight != this.offsetHeight) {
+        this.fire('header-height-changed');
+      }
+    });
   },
 
   /**

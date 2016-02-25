@@ -20,7 +20,8 @@ cr.define('media_router_header', function() {
         'arrow-drop-icon',
         'back-button',
         'close-button',
-        'header-text'
+        'header-text',
+        'user-email-container',
       ];
 
       // Checks whether the current icon matches the icon used for the view.
@@ -30,8 +31,10 @@ cr.define('media_router_header', function() {
       };
 
       // Checks whether |element| is hidden.
+      // An element is considered hidden if it does not exist (e.g. unstamped)
+      // or its |hidden| property is |false|.
       var checkElementHidden = function(hidden, element) {
-        assertEquals(hidden, element.hidden);
+        assertEquals(hidden, !element || element.hidden);
       };
 
       // Checks whether the elements specified in |elementIdList| are visible.
@@ -46,18 +49,24 @@ cr.define('media_router_header', function() {
         }
       };
 
+      // Checks whether |expected| and the text in the |element| are equal.
+      var checkElementText = function(expected, element) {
+        assertEquals(expected.trim(), element.textContent.trim());
+      };
+
       // Import media_router_header.html before running suite.
       suiteSetup(function() {
         return PolymerTest.importHtml(
-            'chrome://media-router/elements/media_router_header/' +
-            'media_router_header.html');
+            'chrome://media-router/elements/media_router_container/' +
+            'media_router_container.html');
       });
 
       // Initialize an media-router-header before each test.
       setup(function(done) {
         PolymerTest.clearBody();
-        header = document.createElement('media-router-header');
-        document.body.appendChild(header);
+        container = document.createElement('media-router-container');
+        document.body.appendChild(container);
+        header = container.$['container-header'];
 
         // Allow for the media router header to be created and attached.
         setTimeout(done);
@@ -137,6 +146,16 @@ cr.define('media_router_header', function() {
         done();
       });
 
+      // Tests for 'header-height-changed' event firing when the header changes
+      // if email is shown.
+      test('header height changed with email shown', function(done) {
+        header.addEventListener('header-height-changed', function() {
+          done();
+        });
+        header.userEmail = 'user@example.com';
+        header.showEmail = true;
+      });
+
       // Tests the |computeArrowDropIcon_| function.
       test('compute arrow drop icon', function() {
         assertEquals('arrow-drop-up',
@@ -180,6 +199,34 @@ cr.define('media_router_header', function() {
         checkElementsVisibleWithId(['arrow-drop-icon',
                                     'close-button',
                                     'header-text']);
+      });
+
+      // Verify email is shown and header updated if showEmail is true.
+      test('visibility and style of UI depending on email', function(done) {
+        header.userEmail = 'user@example.com';
+        header.showEmail = true;
+        setTimeout(function() {
+          assertEquals(header.headerWithEmailHeight_, header.offsetHeight)
+
+          assertFalse(header.$$('#user-email-container').hidden);
+          checkElementText(
+              header.userEmail,
+              header.$$('#user-email-container'));
+          done();
+        });
+      });
+
+      // Verify no email is shown and header is not modified if email is empty.
+      test('visibility and style of UI for empty email', function(done) {
+        header.userEmail = undefined;
+        header.showEmail = true;
+        setTimeout(function() {
+          assertNotEquals(header.headerWithEmailHeight_, header.offsetHeight)
+          checkElementText(
+              '',
+              header.$$('#user-email-container'));
+          done();
+        });
       });
     });
   }

@@ -21,6 +21,8 @@ namespace media_router {
 
 const char kProviderExtensionIdForTesting[] = "test_id";
 const char kControllerPathForTesting[] = "test_path";
+const std::string kUserEmailForTesting = "nobody@example.com";
+const std::string kUserDomainForTesting = "example.com";
 
 class MockMediaRouterUI : public MediaRouterUI {
  public:
@@ -29,6 +31,36 @@ class MockMediaRouterUI : public MediaRouterUI {
   ~MockMediaRouterUI() {}
 
   MOCK_CONST_METHOD0(GetRouteProviderExtensionId, const std::string&());
+};
+
+class TestMediaRouterWebUIMessageHandler
+    : public MediaRouterWebUIMessageHandler {
+ public:
+  explicit TestMediaRouterWebUIMessageHandler(MediaRouterUI* media_router_ui)
+      : MediaRouterWebUIMessageHandler(media_router_ui),
+        email_(kUserEmailForTesting),
+        domain_(kUserDomainForTesting) {}
+  ~TestMediaRouterWebUIMessageHandler() override = default;
+
+  AccountInfo GetAccountInfo() override {
+    AccountInfo info = AccountInfo();
+    info.account_id = info.gaia = info.email = email_;
+    info.hosted_domain = domain_;
+    info.full_name = info.given_name = "name";
+    info.locale = "locale";
+    info.picture_url = "picture";
+
+    return info;
+  }
+
+  void SetEmailAndDomain(const std::string& email, const std::string& domain) {
+    email_ = email;
+    domain_ = domain;
+  }
+
+ private:
+  std::string email_;
+  std::string domain_;
 };
 
 class MediaRouterWebUIMessageHandlerTest : public MediaRouterTest {
@@ -46,7 +78,7 @@ class MediaRouterWebUIMessageHandlerTest : public MediaRouterTest {
         browser()->tab_strip_model()->GetActiveWebContents());
     mock_media_router_ui_.reset(new MockMediaRouterUI(web_ui_.get()));
     handler_.reset(
-        new MediaRouterWebUIMessageHandler(mock_media_router_ui_.get()));
+        new TestMediaRouterWebUIMessageHandler(mock_media_router_ui_.get()));
     handler_->SetWebUIForTest(web_ui_.get());
   }
 
@@ -64,7 +96,7 @@ class MediaRouterWebUIMessageHandlerTest : public MediaRouterTest {
  protected:
   scoped_ptr<content::TestWebUI> web_ui_;
   scoped_ptr<MockMediaRouterUI> mock_media_router_ui_;
-  scoped_ptr<MediaRouterWebUIMessageHandler> handler_;
+  scoped_ptr<TestMediaRouterWebUIMessageHandler> handler_;
   const std::string provider_extension_id_;
 };
 
@@ -81,10 +113,28 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateSinks) {
   handler_->UpdateSinks(media_sink_with_cast_modes_list);
   EXPECT_EQ(1u, web_ui_->call_data().size());
   const content::TestWebUI::CallData& call_data = *web_ui_->call_data()[0];
-  EXPECT_EQ("media_router.ui.setSinkList", call_data.function_name());
+  EXPECT_EQ("media_router.ui.setSinkListAndIdentity",
+            call_data.function_name());
   const base::Value* arg1 = call_data.arg1();
+  const base::DictionaryValue* sinks_with_identity_value = nullptr;
+  ASSERT_TRUE(arg1->GetAsDictionary(&sinks_with_identity_value));
+
+  // Email is not displayed if there is no sinks with domain.
+  bool show_email = false;
+  bool actual_show_email = false;
+  EXPECT_TRUE(
+      sinks_with_identity_value->GetBoolean("showEmail", &actual_show_email));
+  EXPECT_EQ(show_email, actual_show_email);
+
+  // Domain is not displayed if there is no sinks with domain.
+  bool show_domain = false;
+  bool actual_show_domain = false;
+  EXPECT_TRUE(
+      sinks_with_identity_value->GetBoolean("showDomain", &actual_show_domain));
+  EXPECT_EQ(show_domain, actual_show_domain);
+
   const base::ListValue* sinks_list_value = nullptr;
-  ASSERT_TRUE(arg1->GetAsList(&sinks_list_value));
+  ASSERT_TRUE(sinks_with_identity_value->GetList("sinks", &sinks_list_value));
   const base::DictionaryValue* sink_value = nullptr;
   ASSERT_TRUE(sinks_list_value->GetDictionary(0, &sink_value));
 
@@ -99,6 +149,170 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateSinks) {
   ASSERT_TRUE(sink_value->GetInteger("castModes", &cast_mode_bits));
   EXPECT_EQ(static_cast<int>(MediaCastMode::TAB_MIRROR), cast_mode_bits);
 }
+
+#if defined(GOOGLE_CHROME_BUILD)
+TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateSinksWithIdentity) {
+  MediaSink::Id sink_id("sinkId123");
+  std::string sink_name("The sink");
+
+  std::vector<MediaSinkWithCastModes> media_sink_with_cast_modes_list;
+  MediaSinkWithCastModes media_sink_with_cast_modes(
+      MediaSink(sink_id, sink_name, MediaSink::IconType::CAST));
+  media_sink_with_cast_modes.sink.set_domain(kUserDomainForTesting);
+  media_sink_with_cast_modes.cast_modes.insert(MediaCastMode::TAB_MIRROR);
+  media_sink_with_cast_modes_list.push_back(media_sink_with_cast_modes);
+
+  handler_->UpdateSinks(media_sink_with_cast_modes_list);
+  EXPECT_EQ(1u, web_ui_->call_data().size());
+  const content::TestWebUI::CallData& call_data = *web_ui_->call_data()[0];
+  EXPECT_EQ("media_router.ui.setSinkListAndIdentity",
+            call_data.function_name());
+  const base::Value* arg1 = call_data.arg1();
+  const base::DictionaryValue* sinks_with_identity_value = nullptr;
+  ASSERT_TRUE(arg1->GetAsDictionary(&sinks_with_identity_value));
+
+  bool show_email = true;
+  bool actual_show_email = false;
+  EXPECT_TRUE(
+      sinks_with_identity_value->GetBoolean("showEmail", &actual_show_email));
+  EXPECT_EQ(show_email, actual_show_email);
+
+  // Sink domain is not displayed if it matches user domain.
+  bool show_domain = false;
+  bool actual_show_domain = false;
+  EXPECT_TRUE(
+      sinks_with_identity_value->GetBoolean("showDomain", &actual_show_domain));
+  EXPECT_EQ(show_domain, actual_show_domain);
+
+  std::string value;
+  EXPECT_TRUE(sinks_with_identity_value->GetString("userEmail", &value));
+  EXPECT_EQ(kUserEmailForTesting, value);
+
+  EXPECT_TRUE(sinks_with_identity_value->GetString("userDomain", &value));
+  EXPECT_EQ(kUserDomainForTesting, value);
+}
+
+TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateSinksWithIdentityAndDomain) {
+  MediaSink::Id sink_id("sinkId123");
+  std::string sink_name("The sink");
+  std::string domain_name("google.com");
+
+  std::vector<MediaSinkWithCastModes> media_sink_with_cast_modes_list;
+  MediaSinkWithCastModes media_sink_with_cast_modes(
+      MediaSink(sink_id, sink_name, MediaSink::IconType::CAST));
+  media_sink_with_cast_modes.sink.set_domain(domain_name);
+  media_sink_with_cast_modes.cast_modes.insert(MediaCastMode::TAB_MIRROR);
+  media_sink_with_cast_modes_list.push_back(media_sink_with_cast_modes);
+
+  handler_->UpdateSinks(media_sink_with_cast_modes_list);
+  EXPECT_EQ(1u, web_ui_->call_data().size());
+  const content::TestWebUI::CallData& call_data = *web_ui_->call_data()[0];
+  EXPECT_EQ("media_router.ui.setSinkListAndIdentity",
+            call_data.function_name());
+  const base::Value* arg1 = call_data.arg1();
+  const base::DictionaryValue* sinks_with_identity_value = nullptr;
+  ASSERT_TRUE(arg1->GetAsDictionary(&sinks_with_identity_value));
+
+  // Domain is displayed for sinks with domains that are not the user domain.
+  bool show_domain = true;
+  bool actual_show_domain = false;
+  EXPECT_TRUE(
+      sinks_with_identity_value->GetBoolean("showDomain", &actual_show_domain));
+  EXPECT_EQ(show_domain, actual_show_domain);
+
+  std::string value;
+  EXPECT_TRUE(sinks_with_identity_value->GetString("userDomain", &value));
+  EXPECT_EQ(kUserDomainForTesting, value);
+}
+
+TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateSinksWithNoDomain) {
+  MediaSink::Id sink_id("sinkId123");
+  std::string sink_name("The sink");
+  std::string user_email("nobody@gmail.com");
+  std::string user_domain("NO_HOSTED_DOMAIN");
+  std::string domain_name("default");
+
+  handler_->SetEmailAndDomain(user_email, user_domain);
+
+  std::vector<MediaSinkWithCastModes> media_sink_with_cast_modes_list;
+  MediaSinkWithCastModes media_sink_with_cast_modes(
+      MediaSink(sink_id, sink_name, MediaSink::IconType::CAST));
+  media_sink_with_cast_modes.sink.set_domain(domain_name);
+  media_sink_with_cast_modes.cast_modes.insert(MediaCastMode::TAB_MIRROR);
+  media_sink_with_cast_modes_list.push_back(media_sink_with_cast_modes);
+
+  handler_->UpdateSinks(media_sink_with_cast_modes_list);
+  EXPECT_EQ(1u, web_ui_->call_data().size());
+  const content::TestWebUI::CallData& call_data = *web_ui_->call_data()[0];
+  EXPECT_EQ("media_router.ui.setSinkListAndIdentity",
+            call_data.function_name());
+  const base::Value* arg1 = call_data.arg1();
+  const base::DictionaryValue* sinks_with_identity_value = nullptr;
+  ASSERT_TRUE(arg1->GetAsDictionary(&sinks_with_identity_value));
+
+  const base::ListValue* sinks_list_value = nullptr;
+  ASSERT_TRUE(sinks_with_identity_value->GetList("sinks", &sinks_list_value));
+  const base::DictionaryValue* sink_value = nullptr;
+  ASSERT_TRUE(sinks_list_value->GetDictionary(0, &sink_value));
+
+  // Domain should not be shown if there were only default sink domains.
+  bool show_domain = false;
+  bool actual_show_domain = false;
+  EXPECT_TRUE(
+      sinks_with_identity_value->GetBoolean("showDomain", &actual_show_domain));
+  EXPECT_EQ(show_domain, actual_show_domain);
+
+  // Sink domain should be empty if user has no hosted domain.
+  std::string value;
+  EXPECT_TRUE(sink_value->GetString("domain", &value));
+  EXPECT_EQ(std::string(), value);
+
+  EXPECT_TRUE(sinks_with_identity_value->GetString("userDomain", &value));
+  EXPECT_EQ(user_domain, value);
+}
+
+TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateSinksWithDefaultDomain) {
+  MediaSink::Id sink_id("sinkId123");
+  std::string sink_name("The sink");
+  std::string domain_name("default");
+
+  std::vector<MediaSinkWithCastModes> media_sink_with_cast_modes_list;
+  MediaSinkWithCastModes media_sink_with_cast_modes(
+      MediaSink(sink_id, sink_name, MediaSink::IconType::CAST));
+  media_sink_with_cast_modes.sink.set_domain(domain_name);
+  media_sink_with_cast_modes.cast_modes.insert(MediaCastMode::TAB_MIRROR);
+  media_sink_with_cast_modes_list.push_back(media_sink_with_cast_modes);
+
+  handler_->UpdateSinks(media_sink_with_cast_modes_list);
+  EXPECT_EQ(1u, web_ui_->call_data().size());
+  const content::TestWebUI::CallData& call_data = *web_ui_->call_data()[0];
+  EXPECT_EQ("media_router.ui.setSinkListAndIdentity",
+            call_data.function_name());
+  const base::Value* arg1 = call_data.arg1();
+  const base::DictionaryValue* sinks_with_identity_value = nullptr;
+  ASSERT_TRUE(arg1->GetAsDictionary(&sinks_with_identity_value));
+
+  const base::ListValue* sinks_list_value = nullptr;
+  ASSERT_TRUE(sinks_with_identity_value->GetList("sinks", &sinks_list_value));
+  const base::DictionaryValue* sink_value = nullptr;
+  ASSERT_TRUE(sinks_list_value->GetDictionary(0, &sink_value));
+
+  // Domain should not be shown if there were only default sink domains.
+  bool show_domain = false;
+  bool actual_show_domain = false;
+  EXPECT_TRUE(
+      sinks_with_identity_value->GetBoolean("showDomain", &actual_show_domain));
+  EXPECT_EQ(show_domain, actual_show_domain);
+
+  std::string value;
+  EXPECT_TRUE(sinks_with_identity_value->GetString("userDomain", &value));
+  EXPECT_EQ(kUserDomainForTesting, value);
+
+  // Sink domain should be updated from 'default' to user domain.
+  EXPECT_TRUE(sink_value->GetString("domain", &value));
+  EXPECT_EQ(kUserDomainForTesting, value);
+}
+#endif  // defined(GOOGLE_CHROME_BUILD)
 
 TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateRoutes) {
   MediaRoute::Id route_id("routeId123");

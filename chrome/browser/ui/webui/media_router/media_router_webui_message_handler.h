@@ -11,6 +11,7 @@
 #include "chrome/browser/media/router/issue.h"
 #include "chrome/browser/ui/webui/media_router/media_cast_mode.h"
 #include "chrome/browser/ui/webui/media_router/media_sink_with_cast_modes.h"
+#include "components/signin/core/browser/account_info.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -88,6 +89,11 @@ class MediaRouterWebUIMessageHandler : public content::WebUIMessageHandler {
   // called after the initial data is received to avoid unnecessary work when
   // initializing the WebUI.
   void MaybeUpdateFirstRunFlowData();
+
+  // Retrieve the account info for email and domain of signed in users. This is
+  // used when updating sinks to determine if identity should be displayed.
+  // Marked virtual for tests.
+  virtual AccountInfo GetAccountInfo();
 
   // Keeps track of whether a command to close the dialog has been issued.
   bool dialog_closing_;

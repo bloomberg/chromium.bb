@@ -119,10 +119,12 @@
               </div>
               <div>
                 <div class="sink-text">
-                  <span dir="auto">[[item.name]]</span>
+                  <span dir="auto" class="sink-name" title="[[item.name]]">
+                    [[item.name]]
+                  </span>
                   <template is="dom-if"
                       if="[[!computeSinkDomainHidden_(item)]]">
-                    <span class="sink-domain">
+                    <span class="sink-domain" title="[[item.domain]]">
                       [[item.domain]]
                     </span>
                   </template>

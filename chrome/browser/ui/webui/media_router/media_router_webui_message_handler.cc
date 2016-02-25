@@ -64,15 +64,27 @@ const char kOnCreateRouteResponseReceived[] =
     "media_router.ui.onCreateRouteResponseReceived";
 const char kSetFirstRunFlowData[] = "media_router.ui.setFirstRunFlowData";
 const char kSetIssue[] = "media_router.ui.setIssue";
-const char kSetSinkList[] = "media_router.ui.setSinkList";
+const char kSetSinkListAndIdentity[] = "media_router.ui.setSinkListAndIdentity";
 const char kSetRouteList[] = "media_router.ui.setRouteList";
 const char kSetCastModeList[] = "media_router.ui.setCastModeList";
 const char kUpdateMaxHeight[] = "media_router.ui.updateMaxHeight";
 const char kWindowOpen[] = "window.open";
 
-scoped_ptr<base::ListValue> SinksToValue(
-    const std::vector<MediaSinkWithCastModes>& sinks) {
-  scoped_ptr<base::ListValue> value(new base::ListValue);
+scoped_ptr<base::DictionaryValue> SinksAndIdentityToValue(
+    const std::vector<MediaSinkWithCastModes>& sinks,
+    const AccountInfo& account_info) {
+  scoped_ptr<base::DictionaryValue> sink_list_and_identity(
+      new base::DictionaryValue);
+  bool show_email = false;
+  bool show_domain = false;
+  std::string user_domain;
+  if (account_info.IsValid()) {
+    user_domain = account_info.hosted_domain;
+    sink_list_and_identity->SetString("userEmail", account_info.email);
+    sink_list_and_identity->SetString("userDomain", user_domain);
+  }
+
+  scoped_ptr<base::ListValue> sinks_val(new base::ListValue);
 
   for (const MediaSinkWithCastModes& sink_with_cast_modes : sinks) {
     scoped_ptr<base::DictionaryValue> sink_val(new base::DictionaryValue);
@@ -83,18 +95,37 @@ scoped_ptr<base::ListValue> SinksToValue(
     sink_val->SetInteger("iconType", sink.icon_type());
     if (!sink.description().empty())
       sink_val->SetString("description", sink.description());
-    if (!sink.domain().empty())
-      sink_val->SetString("domain", sink.domain());
+
+    if (!user_domain.empty() && !sink.domain().empty()) {
+      std::string domain = sink.domain();
+      // Convert default domains to user domain
+      if (sink.domain() == "default") {
+        domain = user_domain;
+        if (domain == "NO_HOSTED_DOMAIN") {
+          // Default domain will be empty for non-dasher accounts.
+          domain.clear();
+        }
+      }
+
+      sink_val->SetString("domain", domain);
+
+      show_email = true;
+      if (!domain.empty() && domain != user_domain)
+        show_domain = true;
+    }
 
     int cast_mode_bits = 0;
     for (MediaCastMode cast_mode : sink_with_cast_modes.cast_modes)
       cast_mode_bits |= cast_mode;
 
     sink_val->SetInteger("castModes", cast_mode_bits);
-    value->Append(sink_val.release());
+    sinks_val->Append(sink_val.release());
   }
 
-  return value;
+  sink_list_and_identity->Set("sinks", sinks_val.release());
+  sink_list_and_identity->SetBoolean("showEmail", show_email);
+  sink_list_and_identity->SetBoolean("showDomain", show_domain);
+  return sink_list_and_identity;
 }
 
 scoped_ptr<base::DictionaryValue> RouteToValue(
@@ -208,8 +239,10 @@ MediaRouterWebUIMessageHandler::~MediaRouterWebUIMessageHandler() {
 void MediaRouterWebUIMessageHandler::UpdateSinks(
     const std::vector<MediaSinkWithCastModes>& sinks) {
   DVLOG(2) << "UpdateSinks";
-  scoped_ptr<base::ListValue> sinks_val(SinksToValue(sinks));
-  web_ui()->CallJavascriptFunction(kSetSinkList, *sinks_val);
+  scoped_ptr<base::DictionaryValue> sinks_and_identity_val(
+      SinksAndIdentityToValue(sinks, GetAccountInfo()));
+  web_ui()->CallJavascriptFunction(kSetSinkListAndIdentity,
+                                   *sinks_and_identity_val);
 }
 
 void MediaRouterWebUIMessageHandler::UpdateRoutes(
@@ -343,8 +376,9 @@ void MediaRouterWebUIMessageHandler::OnRequestInitialData(
   initial_data.SetString("deviceMissingUrl",
       base::StringPrintf(kHelpPageUrlPrefix, 3249268));
 
-  scoped_ptr<base::ListValue> sinks(SinksToValue(media_router_ui_->sinks()));
-  initial_data.Set("sinks", sinks.release());
+  scoped_ptr<base::DictionaryValue> sinks_and_identity(
+      SinksAndIdentityToValue(media_router_ui_->sinks(), GetAccountInfo()));
+  initial_data.Set("sinksAndIdentity", sinks_and_identity.release());
 
   scoped_ptr<base::ListValue> routes(RoutesToValue(media_router_ui_->routes(),
       media_router_ui_->joinable_route_ids(),
@@ -427,10 +461,10 @@ void MediaRouterWebUIMessageHandler::OnAcknowledgeFirstRunFlow(
     return;
   }
 
-  Profile::FromWebUI(web_ui())->GetPrefs()->SetBoolean(
-      prefs::kMediaRouterEnableCloudServices, enabled_cloud_services);
-  Profile::FromWebUI(web_ui())->GetPrefs()->SetBoolean(
-      prefs::kMediaRouterCloudServicesPrefSet, true);
+  PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
+  pref_service->SetBoolean(prefs::kMediaRouterEnableCloudServices,
+                           enabled_cloud_services);
+  pref_service->SetBoolean(prefs::kMediaRouterCloudServicesPrefSet, true);
 #endif  // defined(GOOGLE_CHROME_BUILD)
 }
 
@@ -718,6 +752,16 @@ void MediaRouterWebUIMessageHandler::MaybeUpdateFirstRunFlowData() {
                                  first_run_flow_acknowledged);
   first_run_flow_data.SetBoolean("showFirstRunFlowCloudPref", show_cloud_pref);
   web_ui()->CallJavascriptFunction(kSetFirstRunFlowData, first_run_flow_data);
+}
+
+AccountInfo MediaRouterWebUIMessageHandler::GetAccountInfo() {
+#if defined(GOOGLE_CHROME_BUILD)
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(Profile::FromWebUI(web_ui()));
+  return signin_manager->GetAuthenticatedAccountInfo();
+#else
+  return AccountInfo();
+#endif  // defined(GOOGLE_CHROME_BUILD)
 }
 
 void MediaRouterWebUIMessageHandler::SetWebUIForTest(content::WebUI* web_ui) {

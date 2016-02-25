@@ -75,3 +75,9 @@ paper-toolbar.route-details,
 paper-toolbar.sink-list {
   background-color: var(--paper-blue-500);
 }
+
+#user-email-container {
+  -webkit-padding-start: 12px;
+  font-size: 0.917em;
+  padding-bottom: 12px;
+}

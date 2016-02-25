@@ -297,6 +297,15 @@ Polymer({
     },
 
     /**
+     * Whether to show the user domain of sinks associated with identity.
+     * @type {boolean}
+     */
+    showDomain: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
      * Whether to show the first run flow.
      * @type {boolean}
      */
@@ -381,6 +390,7 @@ Polymer({
   },
 
   listeners: {
+    'header-height-changed': 'updateElementPositioning_',
     'header-or-arrow-click': 'toggleCastModeHidden_',
     'mouseleave': 'onMouseLeave_',
     'mouseenter': 'onMouseEnter_',
@@ -730,9 +740,7 @@ Polymer({
    * @private
    */
   computeSinkDomainHidden_: function(sink) {
-    // TODO(amp): Check the domain of Chrome profile identity and only show the
-    // sink domain if it doesn't match the profile domain. crbug.com/570797
-    return this.isEmptyOrWhitespace_(sink.domain);
+    return !this.showDomain || this.isEmptyOrWhitespace_(sink.domain);
   },
 
   /**
