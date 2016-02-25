@@ -315,7 +315,7 @@ IntRect GraphicsLayer::interestRect()
 void GraphicsLayer::paint(const IntRect* interestRect, GraphicsContext::DisabledMode disabledMode)
 {
     if (paintWithoutCommit(interestRect, disabledMode))
-        paintController().commitNewDisplayItems();
+        paintController().commitNewDisplayItems(offsetFromLayoutObjectWithSubpixelAccumulation());
 }
 
 bool GraphicsLayer::paintWithoutCommit(const IntRect* interestRect, GraphicsContext::DisabledMode disabledMode)

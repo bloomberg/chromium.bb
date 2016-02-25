@@ -35,7 +35,7 @@ class PLATFORM_EXPORT PaintArtifact final {
     WTF_MAKE_NONCOPYABLE(PaintArtifact);
 public:
     PaintArtifact();
-    PaintArtifact(DisplayItemList, Vector<PaintChunk>, const LayoutSize& offsetFromLayoutObject);
+    PaintArtifact(DisplayItemList, Vector<PaintChunk>);
     PaintArtifact(PaintArtifact&&);
     ~PaintArtifact();
 
@@ -63,11 +63,8 @@ public:
     void appendToWebDisplayItemList(WebDisplayItemList*) const;
 
 private:
-    IntRect visualRect(unsigned index) const { return m_visualRects[index]; }
-
     DisplayItemList m_displayItemList;
     Vector<PaintChunk> m_paintChunks;
-    Vector<IntRect> m_visualRects;
 
     friend class PaintControllerTest;
 };

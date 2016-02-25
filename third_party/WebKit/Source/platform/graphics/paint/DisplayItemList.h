@@ -32,15 +32,18 @@ public:
     DisplayItemList(size_t initialSizeBytes)
         : ContiguousContainer(kMaximumDisplayItemSize, initialSizeBytes) {}
     DisplayItemList(DisplayItemList&& source)
-        : ContiguousContainer(std::move(source)) {}
+        : ContiguousContainer(std::move(source))
+        , m_visualRects(std::move(source.m_visualRects))
+    {}
 
     DisplayItemList& operator=(DisplayItemList&& source)
     {
         ContiguousContainer::operator=(std::move(source));
+        m_visualRects = std::move(source.m_visualRects);
         return *this;
     }
 
-    DisplayItem& appendByMoving(DisplayItem& item)
+    DisplayItem& appendByMoving(DisplayItem& item, const IntRect& visualRect)
     {
 #ifndef NDEBUG
         WTF::String originalDebugString = item.asDebugString();
@@ -55,7 +58,19 @@ public:
         // Save original debug string in the old item to help debugging.
         item.setClientDebugString(originalDebugString);
 #endif
+        m_visualRects.append(visualRect);
         return result;
+    }
+
+    IntRect visualRect(unsigned index) const
+    {
+        ASSERT(index < m_visualRects.size());
+        return m_visualRects[index];
+    }
+
+    void appendVisualRect(const IntRect& visualRect)
+    {
+        m_visualRects.append(visualRect);
     }
 
 #if ENABLE(ASSERT)
@@ -85,6 +100,9 @@ public:
     };
     Range<iterator> itemsInPaintChunk(const PaintChunk&);
     Range<const_iterator> itemsInPaintChunk(const PaintChunk&) const;
+
+private:
+    Vector<IntRect> m_visualRects;
 };
 
 } // namespace blink

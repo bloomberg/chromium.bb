@@ -24,7 +24,7 @@ public:
 
     IntRect visualRect(const PaintArtifact& paintArtifact, unsigned index)
     {
-        return paintArtifact.visualRect(index);
+        return paintArtifact.displayItemList().visualRect(index);
     }
 
 protected:
