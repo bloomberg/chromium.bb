@@ -633,6 +633,18 @@ EVENT_TYPE(SIGNED_CERTIFICATE_TIMESTAMPS_RECEIVED)
 // }
 EVENT_TYPE(SIGNED_CERTIFICATE_TIMESTAMPS_CHECKED)
 
+// The certificate was checked for compliance with Certificate Transparency
+// requirements.
+//
+// The following parameters are attached to the event:
+// {
+//    "certificate": <An X.509 certificate, same format as in
+//                   CERT_VERIFIER_JOB.>
+//    "build_timely": <boolean>
+//    "ct_compliance_status": <string describing compliance status>
+// }
+EVENT_TYPE(CERT_CT_COMPLIANCE_CHECKED)
+
 // The EV certificate was checked for compliance with Certificate Transparency
 // requirements.
 //

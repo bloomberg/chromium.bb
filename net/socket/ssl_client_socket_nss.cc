@@ -3134,30 +3134,35 @@ void SSLClientSocketNSS::VerifyCT() {
   ct_verify_result_.ct_policies_applied = (policy_enforcer_ != nullptr);
   ct_verify_result_.ev_policy_compliance =
       ct::EVPolicyCompliance::EV_POLICY_DOES_NOT_APPLY;
-  if (policy_enforcer_ &&
-      (server_cert_verify_result_.cert_status & CERT_STATUS_IS_EV)) {
-    scoped_refptr<ct::EVCertsWhitelist> ev_whitelist =
-        SSLConfigService::GetEVCertsWhitelist();
-    ct::EVPolicyCompliance ev_policy_compliance =
-        policy_enforcer_->DoesConformToCTEVPolicy(
-            server_cert_verify_result_.verified_cert.get(), ev_whitelist.get(),
-            ct_verify_result_.verified_scts, net_log_);
-    ct_verify_result_.ev_policy_compliance = ev_policy_compliance;
-    if (ev_policy_compliance !=
-            ct::EVPolicyCompliance::EV_POLICY_DOES_NOT_APPLY &&
-        ev_policy_compliance !=
-            ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_WHITELIST &&
-        ev_policy_compliance !=
-            ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_SCTS) {
-      // TODO(eranm): Log via the BoundNetLog, see crbug.com/437766
-      VLOG(1) << "EV certificate for "
-              << server_cert_verify_result_.verified_cert->subject()
-                     .GetDisplayName()
-              << " does not conform to CT policy, removing EV status.";
-      server_cert_verify_result_.cert_status |=
-          CERT_STATUS_CT_COMPLIANCE_FAILED;
-      server_cert_verify_result_.cert_status &= ~CERT_STATUS_IS_EV;
+  if (policy_enforcer_) {
+    if ((server_cert_verify_result_.cert_status & CERT_STATUS_IS_EV)) {
+      scoped_refptr<ct::EVCertsWhitelist> ev_whitelist =
+          SSLConfigService::GetEVCertsWhitelist();
+      ct::EVPolicyCompliance ev_policy_compliance =
+          policy_enforcer_->DoesConformToCTEVPolicy(
+              server_cert_verify_result_.verified_cert.get(),
+              ev_whitelist.get(), ct_verify_result_.verified_scts, net_log_);
+      ct_verify_result_.ev_policy_compliance = ev_policy_compliance;
+      if (ev_policy_compliance !=
+              ct::EVPolicyCompliance::EV_POLICY_DOES_NOT_APPLY &&
+          ev_policy_compliance !=
+              ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_WHITELIST &&
+          ev_policy_compliance !=
+              ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_SCTS) {
+        // TODO(eranm): Log via the BoundNetLog, see crbug.com/437766
+        VLOG(1) << "EV certificate for "
+                << server_cert_verify_result_.verified_cert->subject()
+                       .GetDisplayName()
+                << " does not conform to CT policy, removing EV status.";
+        server_cert_verify_result_.cert_status |=
+            CERT_STATUS_CT_COMPLIANCE_FAILED;
+        server_cert_verify_result_.cert_status &= ~CERT_STATUS_IS_EV;
+      }
     }
+    ct_verify_result_.cert_policy_compliance =
+        policy_enforcer_->DoesConformToCertPolicy(
+            server_cert_verify_result_.verified_cert.get(),
+            ct_verify_result_.verified_scts, net_log_);
   }
 }
 

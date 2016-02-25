@@ -12,6 +12,8 @@ namespace ct {
 
 CTVerifyResult::CTVerifyResult()
     : ct_policies_applied(false),
+      cert_policy_compliance(
+          ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS),
       ev_policy_compliance(ct::EVPolicyCompliance::EV_POLICY_DOES_NOT_APPLY) {}
 
 CTVerifyResult::~CTVerifyResult() {}

@@ -130,30 +130,37 @@ bool HasEnoughDiverseSCTs(const ct::SCTList& verified_scts) {
          (verified_scts.size() != num_google_issued_scts);
 }
 
-enum CTComplianceStatus {
-  CT_NOT_COMPLIANT = 0,
-  CT_IN_WHITELIST = 1,
-  CT_ENOUGH_SCTS = 2,
-  CT_NOT_ENOUGH_DIVERSE_SCTS = 3,
-  CT_COMPLIANCE_MAX,
-};
-
-const char* ComplianceStatusToString(CTComplianceStatus status) {
+const char* EVPolicyComplianceToString(ct::EVPolicyCompliance status) {
   switch (status) {
-    case CT_NOT_COMPLIANT:
-      return "NOT_COMPLIANT";
-      break;
-    case CT_IN_WHITELIST:
+    case ct::EVPolicyCompliance::EV_POLICY_DOES_NOT_APPLY:
+      return "POLICY_DOES_NOT_APPLY";
+    case ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_WHITELIST:
       return "WHITELISTED";
+    case ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_SCTS:
+      return "COMPLIES_VIA_SCTS";
+    case ct::EVPolicyCompliance::EV_POLICY_NOT_ENOUGH_SCTS:
+      return "NOT_ENOUGH_SCTS";
+    case ct::EVPolicyCompliance::EV_POLICY_NOT_DIVERSE_SCTS:
+      return "SCTS_NOT_DIVERSE";
+    case ct::EVPolicyCompliance::EV_POLICY_BUILD_NOT_TIMELY:
+      return "BUILD_NOT_TIMELY";
+    case ct::EVPolicyCompliance::EV_POLICY_MAX:
       break;
-    case CT_ENOUGH_SCTS:
-      return "ENOUGH_SCTS";
-      break;
-    case CT_NOT_ENOUGH_DIVERSE_SCTS:
-      return "NOT_ENOUGH_DIVERSE_SCTS";
-      break;
-    case CT_COMPLIANCE_MAX:
-      break;
+  }
+
+  return "unknown";
+}
+
+const char* CertPolicyComplianceToString(ct::CertPolicyCompliance status) {
+  switch (status) {
+    case ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS:
+      return "COMPLIES_VIA_SCTS";
+    case ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS:
+      return "NOT_ENOUGH_SCTS";
+    case ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS:
+      return "NOT_DIVERSE_SCTS";
+    case ct::CertPolicyCompliance::CERT_POLICY_BUILD_NOT_TIMELY:
+      return "BUILD_NOT_TIMELY";
   }
 
   return "unknown";
@@ -166,11 +173,13 @@ enum EVWhitelistStatus {
   EV_WHITELIST_MAX,
 };
 
-void LogCTEVComplianceStatusToUMA(CTComplianceStatus status,
-                                  const ct::EVCertsWhitelist* ev_whitelist) {
-  UMA_HISTOGRAM_ENUMERATION("Net.SSL_EVCertificateCTCompliance", status,
-                            CT_COMPLIANCE_MAX);
-  if (status == CT_NOT_COMPLIANT) {
+void LogEVPolicyComplianceToUMA(ct::EVPolicyCompliance status,
+                                const ct::EVCertsWhitelist* ev_whitelist) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Net.SSL_EVCTCompliance", static_cast<int>(status),
+      static_cast<int>(ct::EVPolicyCompliance::EV_POLICY_MAX));
+  if (status == ct::EVPolicyCompliance::EV_POLICY_NOT_ENOUGH_SCTS ||
+      status == ct::EVPolicyCompliance::EV_POLICY_NOT_DIVERSE_SCTS) {
     EVWhitelistStatus ev_whitelist_status = EV_WHITELIST_NOT_PRESENT;
     if (ev_whitelist != NULL) {
       if (ev_whitelist->IsValid())
@@ -184,20 +193,22 @@ void LogCTEVComplianceStatusToUMA(CTComplianceStatus status,
   }
 }
 
-struct ComplianceDetails {
-  ComplianceDetails() : build_timely(false), status(CT_NOT_COMPLIANT) {}
+struct EVComplianceDetails {
+  EVComplianceDetails()
+      : build_timely(false),
+        status(ct::EVPolicyCompliance::EV_POLICY_DOES_NOT_APPLY) {}
 
   // Whether the build is not older than 10 weeks.
   bool build_timely;
   // Compliance status - meaningful only if |build_timely| is true.
-  CTComplianceStatus status;
+  ct::EVPolicyCompliance status;
   // EV whitelist version.
   base::Version whitelist_version;
 };
 
-scoped_ptr<base::Value> NetLogComplianceCheckResultCallback(
+scoped_ptr<base::Value> NetLogEVComplianceCheckResultCallback(
     X509Certificate* cert,
-    ComplianceDetails* details,
+    EVComplianceDetails* details,
     NetLogCaptureMode capture_mode) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->Set("certificate", NetLogX509CertificateCallback(cert, capture_mode));
@@ -205,11 +216,24 @@ scoped_ptr<base::Value> NetLogComplianceCheckResultCallback(
   dict->SetBoolean("build_timely", details->build_timely);
   if (details->build_timely) {
     dict->SetString("ct_compliance_status",
-                    ComplianceStatusToString(details->status));
+                    EVPolicyComplianceToString(details->status));
     if (details->whitelist_version.IsValid())
       dict->SetString("ev_whitelist_version",
                       details->whitelist_version.GetString());
   }
+  return std::move(dict);
+}
+
+scoped_ptr<base::Value> NetLogCertComplianceCheckResultCallback(
+    X509Certificate* cert,
+    bool build_timely,
+    ct::CertPolicyCompliance compliance,
+    NetLogCaptureMode capture_mode) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  dict->Set("certificate", NetLogX509CertificateCallback(cert, capture_mode));
+  dict->SetBoolean("build_timely", build_timely);
+  dict->SetString("ct_compliance_status",
+                  CertPolicyComplianceToString(compliance));
   return std::move(dict);
 }
 
@@ -247,49 +271,100 @@ bool IsCertificateInWhitelist(const X509Certificate& cert,
   return cert_in_ev_whitelist;
 }
 
+ct::CertPolicyCompliance CheckCertPolicyCompliance(
+    X509Certificate* cert,
+    const ct::SCTList& verified_scts,
+    const BoundNetLog& net_log) {
+  if (!HasRequiredNumberOfSCTs(*cert, verified_scts))
+    return ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS;
+  if (AllSCTsPastDistinctSCTRequirementEnforcementDate(verified_scts) &&
+      !HasEnoughDiverseSCTs(verified_scts)) {
+    return ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS;
+  }
+
+  return ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS;
+}
+
+ct::EVPolicyCompliance CertPolicyComplianceToEVPolicyCompliance(
+    ct::CertPolicyCompliance cert_policy_compliance) {
+  switch (cert_policy_compliance) {
+    case ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS:
+      return ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_SCTS;
+    case ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS:
+      return ct::EVPolicyCompliance::EV_POLICY_NOT_ENOUGH_SCTS;
+    case ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS:
+      return ct::EVPolicyCompliance::EV_POLICY_NOT_DIVERSE_SCTS;
+    case ct::CertPolicyCompliance::CERT_POLICY_BUILD_NOT_TIMELY:
+      return ct::EVPolicyCompliance::EV_POLICY_BUILD_NOT_TIMELY;
+  }
+  return ct::EVPolicyCompliance::EV_POLICY_DOES_NOT_APPLY;
+}
+
 void CheckCTEVPolicyCompliance(X509Certificate* cert,
                                const ct::EVCertsWhitelist* ev_whitelist,
                                const ct::SCTList& verified_scts,
-                               ComplianceDetails* result) {
-  if (!IsBuildTimely())
-    return;
-  result->build_timely = true;
-
+                               const BoundNetLog& net_log,
+                               EVComplianceDetails* result) {
+  result->status = CertPolicyComplianceToEVPolicyCompliance(
+      CheckCertPolicyCompliance(cert, verified_scts, net_log));
   if (ev_whitelist && ev_whitelist->IsValid())
     result->whitelist_version = ev_whitelist->Version();
 
-  if (IsCertificateInWhitelist(*cert, ev_whitelist)) {
-    result->status = CT_IN_WHITELIST;
-    return;
+  if (result->status != ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_SCTS &&
+      IsCertificateInWhitelist(*cert, ev_whitelist)) {
+    result->status = ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_WHITELIST;
   }
-
-  if (!HasRequiredNumberOfSCTs(*cert, verified_scts)) {
-    result->status = CT_NOT_COMPLIANT;
-    return;
-  }
-
-  if (AllSCTsPastDistinctSCTRequirementEnforcementDate(verified_scts) &&
-      !HasEnoughDiverseSCTs(verified_scts)) {
-    result->status = CT_NOT_ENOUGH_DIVERSE_SCTS;
-    return;
-  }
-
-  result->status = CT_ENOUGH_SCTS;
 }
 
 }  // namespace
+
+ct::CertPolicyCompliance CTPolicyEnforcer::DoesConformToCertPolicy(
+    X509Certificate* cert,
+    const ct::SCTList& verified_scts,
+    const BoundNetLog& net_log) {
+  // If the build is not timely, no certificate is considered compliant
+  // with CT policy. The reasoning is that, for example, a log might
+  // have been pulled and is no longer considered valid; thus, a client
+  // needs up-to-date information about logs to consider certificates to
+  // be compliant with policy.
+  bool build_timely = IsBuildTimely();
+  ct::CertPolicyCompliance compliance;
+  if (!build_timely) {
+    compliance = ct::CertPolicyCompliance::CERT_POLICY_BUILD_NOT_TIMELY;
+  } else {
+    compliance = CheckCertPolicyCompliance(cert, verified_scts, net_log);
+  }
+
+  NetLog::ParametersCallback net_log_callback =
+      base::Bind(&NetLogCertComplianceCheckResultCallback,
+                 base::Unretained(cert), build_timely, compliance);
+
+  net_log.AddEvent(NetLog::TYPE_CERT_CT_COMPLIANCE_CHECKED, net_log_callback);
+
+  return compliance;
+}
 
 ct::EVPolicyCompliance CTPolicyEnforcer::DoesConformToCTEVPolicy(
     X509Certificate* cert,
     const ct::EVCertsWhitelist* ev_whitelist,
     const ct::SCTList& verified_scts,
     const BoundNetLog& net_log) {
-  ComplianceDetails details;
-
-  CheckCTEVPolicyCompliance(cert, ev_whitelist, verified_scts, &details);
+  EVComplianceDetails details;
+  // If the build is not timely, no certificate is considered compliant
+  // with EV policy. The reasoning is that, for example, a log might
+  // have been pulled and is no longer considered valid; thus, a client
+  // needs up-to-date information about logs to consider certificates to
+  // be compliant with policy.
+  details.build_timely = IsBuildTimely();
+  if (!details.build_timely) {
+    details.status = ct::EVPolicyCompliance::EV_POLICY_BUILD_NOT_TIMELY;
+  } else {
+    CheckCTEVPolicyCompliance(cert, ev_whitelist, verified_scts, net_log,
+                              &details);
+  }
 
   NetLog::ParametersCallback net_log_callback =
-      base::Bind(&NetLogComplianceCheckResultCallback, base::Unretained(cert),
+      base::Bind(&NetLogEVComplianceCheckResultCallback, base::Unretained(cert),
                  base::Unretained(&details));
 
   net_log.AddEvent(NetLog::TYPE_EV_CERT_CT_COMPLIANCE_CHECKED,
@@ -298,22 +373,9 @@ ct::EVPolicyCompliance CTPolicyEnforcer::DoesConformToCTEVPolicy(
   if (!details.build_timely)
     return ct::EVPolicyCompliance::EV_POLICY_BUILD_NOT_TIMELY;
 
-  LogCTEVComplianceStatusToUMA(details.status, ev_whitelist);
+  LogEVPolicyComplianceToUMA(details.status, ev_whitelist);
 
-  switch (details.status) {
-    case CT_NOT_COMPLIANT:
-      return ct::EVPolicyCompliance::EV_POLICY_NOT_ENOUGH_SCTS;
-    case CT_IN_WHITELIST:
-      return ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_WHITELIST;
-    case CT_ENOUGH_SCTS:
-      return ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_SCTS;
-    case CT_NOT_ENOUGH_DIVERSE_SCTS:
-      return ct::EVPolicyCompliance::EV_POLICY_NOT_DIVERSE_SCTS;
-    case CT_COMPLIANCE_MAX:
-      return ct::EVPolicyCompliance::EV_POLICY_DOES_NOT_APPLY;
-  }
-
-  return ct::EVPolicyCompliance::EV_POLICY_DOES_NOT_APPLY;
+  return details.status;
 }
 
 }  // namespace net

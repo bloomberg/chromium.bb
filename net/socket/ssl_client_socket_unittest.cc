@@ -699,6 +699,10 @@ class MockCTVerifier : public CTVerifier {
 // A mock CTPolicyEnforcer that returns a custom verification result.
 class MockCTPolicyEnforcer : public CTPolicyEnforcer {
  public:
+  MOCK_METHOD3(DoesConformToCertPolicy,
+               ct::CertPolicyCompliance(X509Certificate* cert,
+                                        const ct::SCTList&,
+                                        const BoundNetLog&));
   MOCK_METHOD4(DoesConformToCTEVPolicy,
                ct::EVPolicyCompliance(X509Certificate* cert,
                                       const ct::EVCertsWhitelist*,
@@ -2349,6 +2353,9 @@ TEST_F(SSLClientSocketTest, EVCertStatusMaintainedForCompliantCert) {
   // Emulate compliance of the certificate to the policy.
   MockCTPolicyEnforcer policy_enforcer;
   SetCTPolicyEnforcer(&policy_enforcer);
+  EXPECT_CALL(policy_enforcer, DoesConformToCertPolicy(_, _, _))
+      .WillRepeatedly(
+          Return(ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS));
   EXPECT_CALL(policy_enforcer, DoesConformToCTEVPolicy(_, _, _, _))
       .WillRepeatedly(
           Return(ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_SCTS));
@@ -2382,6 +2389,9 @@ TEST_F(SSLClientSocketTest, EVCertStatusRemovedForNonCompliantCert) {
   // Emulate non-compliance of the certificate to the policy.
   MockCTPolicyEnforcer policy_enforcer;
   SetCTPolicyEnforcer(&policy_enforcer);
+  EXPECT_CALL(policy_enforcer, DoesConformToCertPolicy(_, _, _))
+      .WillRepeatedly(
+          Return(ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS));
   EXPECT_CALL(policy_enforcer, DoesConformToCTEVPolicy(_, _, _, _))
       .WillRepeatedly(
           Return(ct::EVPolicyCompliance::EV_POLICY_NOT_ENOUGH_SCTS));

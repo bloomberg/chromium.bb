@@ -27978,6 +27978,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.SSL_EVCertificateCTCompliance"
     enum="CTRequirementCompliance">
+  <obsolete>
+    Deprecated as of 01/2016.
+  </obsolete>
   <owner>eranm@chromium.org</owner>
   <owner>rsleevi@chromium.org</owner>
   <summary>
@@ -28000,6 +28003,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Whether an EV certificate is present in the Certificate Transparency
     whitelist. Emitted once for every EV certificate encountered (during SSL
     connection establishment), but only if the client has a valid whitelist.
+  </summary>
+</histogram>
+
+<histogram name="Net.SSL_EVCTCompliance" enum="EVCTCompliance">
+  <owner>eranm@chromium.org</owner>
+  <owner>rsleevi@chromium.org</owner>
+  <summary>
+    The state of compliance with Certificate Transparency presence requirements
+    for each EV certificate. An EV certificate could be non-compliant (in which
+    case it loses the EV status), comply through inclusion in the EV whitelist
+    or comply with the CT certificate policy. This metric will gauge adoption
+    rate of Certificate Transparency and will help identify when the EV
+    whitelist is no longer needed. Emitted during every SSL connection
+    establishment.
   </summary>
 </histogram>
 
@@ -61371,6 +61388,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </enum>
 
 <enum name="CTRequirementCompliance" type="int">
+  <obsolete>
+    Deprecated 1/2016.
+  </obsolete>
   <int value="0" label="Not Compliant"/>
   <int value="1" label="Whitelisted"/>
   <int value="2" label="Has enough SCTs"/>
@@ -63864,6 +63884,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="NON_ERROR_PAGE_URL"/>
   <int value="2" label="NO_ERROR_INFO"/>
   <int value="3" label="NON_ERROR_PAGE_URL_AND_NO_ERROR_INFO"/>
+</enum>
+
+<enum name="EVCTCompliance" type="int">
+  <int value="0" label="EV policy does not apply"/>
+  <int value="1" label="Compliant because certificate is whitelisted"/>
+  <int value="2" label="Compliant because SCTs satisfy CT policy"/>
+  <int value="3" label="Not compliant because there are not enough SCTs"/>
+  <int value="4"
+      label="Not compliant because there are not diverse enough SCTs"/>
+  <int value="5" label="Not compliant because the build is not timely"/>
 </enum>
 
 <enum name="EventHitTest" type="int">

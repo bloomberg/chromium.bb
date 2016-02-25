@@ -289,25 +289,31 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
       (result == OK && policy_enforcer_ != nullptr);
   verify_details_->ct_verify_result.ev_policy_compliance =
       ct::EVPolicyCompliance::EV_POLICY_DOES_NOT_APPLY;
-  if (result == OK && policy_enforcer_ &&
-      (cert_verify_result.cert_status & CERT_STATUS_IS_EV)) {
-    ct::EVPolicyCompliance ev_policy_compliance =
-        policy_enforcer_->DoesConformToCTEVPolicy(
-            cert_verify_result.verified_cert.get(),
-            SSLConfigService::GetEVCertsWhitelist().get(),
-            verify_details_->ct_verify_result.verified_scts, net_log_);
-    verify_details_->ct_verify_result.ev_policy_compliance =
-        ev_policy_compliance;
-    if (ev_policy_compliance !=
-            ct::EVPolicyCompliance::EV_POLICY_DOES_NOT_APPLY &&
-        ev_policy_compliance !=
-            ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_WHITELIST &&
-        ev_policy_compliance !=
-            ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_SCTS) {
-      verify_details_->cert_verify_result.cert_status |=
-          CERT_STATUS_CT_COMPLIANCE_FAILED;
-      verify_details_->cert_verify_result.cert_status &= ~CERT_STATUS_IS_EV;
+  if (result == OK && policy_enforcer_) {
+    if ((cert_verify_result.cert_status & CERT_STATUS_IS_EV)) {
+      ct::EVPolicyCompliance ev_policy_compliance =
+          policy_enforcer_->DoesConformToCTEVPolicy(
+              cert_verify_result.verified_cert.get(),
+              SSLConfigService::GetEVCertsWhitelist().get(),
+              verify_details_->ct_verify_result.verified_scts, net_log_);
+      verify_details_->ct_verify_result.ev_policy_compliance =
+          ev_policy_compliance;
+      if (ev_policy_compliance !=
+              ct::EVPolicyCompliance::EV_POLICY_DOES_NOT_APPLY &&
+          ev_policy_compliance !=
+              ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_WHITELIST &&
+          ev_policy_compliance !=
+              ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_SCTS) {
+        verify_details_->cert_verify_result.cert_status |=
+            CERT_STATUS_CT_COMPLIANCE_FAILED;
+        verify_details_->cert_verify_result.cert_status &= ~CERT_STATUS_IS_EV;
+      }
     }
+
+    verify_details_->ct_verify_result.cert_policy_compliance =
+        policy_enforcer_->DoesConformToCertPolicy(
+            cert_verify_result.verified_cert.get(),
+            verify_details_->ct_verify_result.verified_scts, net_log_);
   }
 
   // TODO(estark): replace 0 below with the port of the connection.

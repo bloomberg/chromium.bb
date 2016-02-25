@@ -20,6 +20,7 @@ namespace net {
 
 namespace ct {
 
+enum class CertPolicyCompliance;
 enum class EVPolicyCompliance;
 
 }  // namespace ct
@@ -135,6 +136,11 @@ class NET_EXPORT SSLInfo {
   // why not. Only meaningful if |ct_compliance_details_available| is
   // true.
   ct::EVPolicyCompliance ct_ev_policy_compliance;
+
+  // Whether the connection complied with the CT cert policy, and if
+  // not, why not. Only meaningful it |ct_compliance_details_available|
+  // is true.
+  ct::CertPolicyCompliance ct_cert_policy_compliance;
 };
 
 }  // namespace net

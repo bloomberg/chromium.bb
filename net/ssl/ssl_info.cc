@@ -85,6 +85,7 @@ void SSLInfo::UpdateCertificateTransparencyInfo(
   }
 
   ct_compliance_details_available = ct_verify_result.ct_policies_applied;
+  ct_cert_policy_compliance = ct_verify_result.cert_policy_compliance;
   ct_ev_policy_compliance = ct_verify_result.ev_policy_compliance;
 }
 
