@@ -669,10 +669,10 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimation)
     usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(CompositorFloatKeyframe(1.0, 5.0)));
 
     // Create animation
-    WebCompositorAnimationMock* mockAnimationPtr = new WebCompositorAnimationMock(CompositorAnimation::TargetPropertyOpacity);
+    WebCompositorAnimationMock* mockAnimationPtr = new WebCompositorAnimationMock(CompositorTargetProperty::OPACITY);
     ExpectationSet usesMockAnimation;
 
-    usesMockCurve += EXPECT_CALL(*m_mockCompositorFactory, createAnimation(Ref(*mockCurvePtr), CompositorAnimation::TargetPropertyOpacity, _, _))
+    usesMockCurve += EXPECT_CALL(*m_mockCompositorFactory, createAnimation(Ref(*mockCurvePtr), CompositorTargetProperty::OPACITY, _, _))
         .WillOnce(Return(mockAnimationPtr));
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(1));
@@ -714,10 +714,10 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationDuration)
     usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(CompositorFloatKeyframe(10.0, 5.0)));
 
     // Create animation
-    WebCompositorAnimationMock* mockAnimationPtr = new WebCompositorAnimationMock(CompositorAnimation::TargetPropertyOpacity);
+    WebCompositorAnimationMock* mockAnimationPtr = new WebCompositorAnimationMock(CompositorTargetProperty::OPACITY);
     ExpectationSet usesMockAnimation;
 
-    usesMockCurve += EXPECT_CALL(*m_mockCompositorFactory, createAnimation(Ref(*mockCurvePtr), CompositorAnimation::TargetPropertyOpacity, _, _))
+    usesMockCurve += EXPECT_CALL(*m_mockCompositorFactory, createAnimation(Ref(*mockCurvePtr), CompositorTargetProperty::OPACITY, _, _))
         .WillOnce(Return(mockAnimationPtr));
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(1));
@@ -766,10 +766,10 @@ TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimation
     usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(CompositorFloatKeyframe(1.0, 5.0)));
 
     // KeyframeEffect is created
-    WebCompositorAnimationMock* mockAnimationPtr = new WebCompositorAnimationMock(CompositorAnimation::TargetPropertyOpacity);
+    WebCompositorAnimationMock* mockAnimationPtr = new WebCompositorAnimationMock(CompositorTargetProperty::OPACITY);
     ExpectationSet usesMockAnimation;
 
-    usesMockCurve += EXPECT_CALL(*m_mockCompositorFactory, createAnimation(Ref(*mockCurvePtr), CompositorAnimation::TargetPropertyOpacity, _, _))
+    usesMockCurve += EXPECT_CALL(*m_mockCompositorFactory, createAnimation(Ref(*mockCurvePtr), CompositorTargetProperty::OPACITY, _, _))
         .WillOnce(Return(mockAnimationPtr));
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(5));
@@ -813,10 +813,10 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationStartDelay
     usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(CompositorFloatKeyframe(1.75, 5.0)));
 
     // Create animation
-    WebCompositorAnimationMock* mockAnimationPtr = new WebCompositorAnimationMock(CompositorAnimation::TargetPropertyOpacity);
+    WebCompositorAnimationMock* mockAnimationPtr = new WebCompositorAnimationMock(CompositorTargetProperty::OPACITY);
     ExpectationSet usesMockAnimation;
 
-    usesMockCurve += EXPECT_CALL(*m_mockCompositorFactory, createAnimation(Ref(*mockCurvePtr), CompositorAnimation::TargetPropertyOpacity, _, _))
+    usesMockCurve += EXPECT_CALL(*m_mockCompositorFactory, createAnimation(Ref(*mockCurvePtr), CompositorTargetProperty::OPACITY, _, _))
         .WillOnce(Return(mockAnimationPtr));
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(5));
@@ -870,10 +870,10 @@ TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimation
     usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(CompositorFloatKeyframe(2.0, 5.0)));
 
     // KeyframeEffect is created
-    WebCompositorAnimationMock* mockAnimationPtr = new WebCompositorAnimationMock(CompositorAnimation::TargetPropertyOpacity);
+    WebCompositorAnimationMock* mockAnimationPtr = new WebCompositorAnimationMock(CompositorTargetProperty::OPACITY);
     ExpectationSet usesMockAnimation;
 
-    usesMockCurve += EXPECT_CALL(*m_mockCompositorFactory, createAnimation(Ref(*mockCurvePtr), CompositorAnimation::TargetPropertyOpacity, _, _))
+    usesMockCurve += EXPECT_CALL(*m_mockCompositorFactory, createAnimation(Ref(*mockCurvePtr), CompositorTargetProperty::OPACITY, _, _))
         .WillOnce(Return(mockAnimationPtr));
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(10));
@@ -928,10 +928,10 @@ TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimation)
     usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(CompositorFloatKeyframe(1.0, 5.0)));
 
     // Create the animation
-    WebCompositorAnimationMock* mockAnimationPtr = new WebCompositorAnimationMock(CompositorAnimation::TargetPropertyOpacity);
+    WebCompositorAnimationMock* mockAnimationPtr = new WebCompositorAnimationMock(CompositorTargetProperty::OPACITY);
     ExpectationSet usesMockAnimation;
 
-    usesMockCurve += EXPECT_CALL(*m_mockCompositorFactory, createAnimation(Ref(*mockCurvePtr), CompositorAnimation::TargetPropertyOpacity, _, _))
+    usesMockCurve += EXPECT_CALL(*m_mockCompositorFactory, createAnimation(Ref(*mockCurvePtr), CompositorTargetProperty::OPACITY, _, _))
         .WillOnce(Return(mockAnimationPtr));
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(10));
@@ -976,10 +976,10 @@ TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimationNegative
     usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(CompositorFloatKeyframe(1.5, 5.0)));
 
     // Create animation
-    WebCompositorAnimationMock* mockAnimationPtr = new WebCompositorAnimationMock(CompositorAnimation::TargetPropertyOpacity);
+    WebCompositorAnimationMock* mockAnimationPtr = new WebCompositorAnimationMock(CompositorTargetProperty::OPACITY);
     ExpectationSet usesMockAnimation;
 
-    usesMockCurve += EXPECT_CALL(*m_mockCompositorFactory, createAnimation(Ref(*mockCurvePtr), CompositorAnimation::TargetPropertyOpacity, _, _))
+    usesMockCurve += EXPECT_CALL(*m_mockCompositorFactory, createAnimation(Ref(*mockCurvePtr), CompositorTargetProperty::OPACITY, _, _))
         .WillOnce(Return(mockAnimationPtr));
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(5));
@@ -1021,10 +1021,10 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationPlaybackRa
     usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(CompositorFloatKeyframe(1.0, 5.0)));
 
     // Create animation
-    WebCompositorAnimationMock* mockAnimationPtr = new WebCompositorAnimationMock(CompositorAnimation::TargetPropertyOpacity);
+    WebCompositorAnimationMock* mockAnimationPtr = new WebCompositorAnimationMock(CompositorTargetProperty::OPACITY);
     ExpectationSet usesMockAnimation;
 
-    usesMockCurve += EXPECT_CALL(*m_mockCompositorFactory, createAnimation(Ref(*mockCurvePtr), CompositorAnimation::TargetPropertyOpacity, _, _))
+    usesMockCurve += EXPECT_CALL(*m_mockCompositorFactory, createAnimation(Ref(*mockCurvePtr), CompositorTargetProperty::OPACITY, _, _))
         .WillOnce(Return(mockAnimationPtr));
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(1));
@@ -1066,10 +1066,10 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationFillModeNo
     usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(CompositorFloatKeyframe(1.0, 5.0)));
 
     // Create animation
-    WebCompositorAnimationMock* mockAnimationPtr = new WebCompositorAnimationMock(CompositorAnimation::TargetPropertyOpacity);
+    WebCompositorAnimationMock* mockAnimationPtr = new WebCompositorAnimationMock(CompositorTargetProperty::OPACITY);
     ExpectationSet usesMockAnimation;
 
-    usesMockCurve += EXPECT_CALL(*m_mockCompositorFactory, createAnimation(Ref(*mockCurvePtr), CompositorAnimation::TargetPropertyOpacity, _, _))
+    usesMockCurve += EXPECT_CALL(*m_mockCompositorFactory, createAnimation(Ref(*mockCurvePtr), CompositorTargetProperty::OPACITY, _, _))
         .WillOnce(Return(mockAnimationPtr));
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(1));
@@ -1111,10 +1111,10 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationFillModeAu
     usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(CompositorFloatKeyframe(1.0, 5.0)));
 
     // Create animation
-    WebCompositorAnimationMock* mockAnimationPtr = new WebCompositorAnimationMock(CompositorAnimation::TargetPropertyOpacity);
+    WebCompositorAnimationMock* mockAnimationPtr = new WebCompositorAnimationMock(CompositorTargetProperty::OPACITY);
     ExpectationSet usesMockAnimation;
 
-    usesMockCurve += EXPECT_CALL(*m_mockCompositorFactory, createAnimation(Ref(*mockCurvePtr), CompositorAnimation::TargetPropertyOpacity, _, _))
+    usesMockCurve += EXPECT_CALL(*m_mockCompositorFactory, createAnimation(Ref(*mockCurvePtr), CompositorTargetProperty::OPACITY, _, _))
         .WillOnce(Return(mockAnimationPtr));
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(1));
@@ -1157,10 +1157,10 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationWithTiming
     usesMockCurve += EXPECT_CALL(*mockCurvePtr, setCubicBezierTimingFunction(1, 2, 3, 4));
 
     // Create animation
-    WebCompositorAnimationMock* mockAnimationPtr = new WebCompositorAnimationMock(CompositorAnimation::TargetPropertyOpacity);
+    WebCompositorAnimationMock* mockAnimationPtr = new WebCompositorAnimationMock(CompositorTargetProperty::OPACITY);
     ExpectationSet usesMockAnimation;
 
-    usesMockCurve += EXPECT_CALL(*m_mockCompositorFactory, createAnimation(Ref(*mockCurvePtr), CompositorAnimation::TargetPropertyOpacity, _, _))
+    usesMockCurve += EXPECT_CALL(*m_mockCompositorFactory, createAnimation(Ref(*mockCurvePtr), CompositorTargetProperty::OPACITY, _, _))
         .WillOnce(Return(mockAnimationPtr));
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(1));

@@ -217,8 +217,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void SetTransformOrigin(const gfx::Point3F&);
   gfx::Point3F transform_origin() const { return transform_origin_; }
 
-  bool HasAnyAnimationTargetingProperty(
-      Animation::TargetProperty property) const;
+  bool HasAnyAnimationTargetingProperty(TargetProperty::Type property) const;
 
   bool ScrollOffsetAnimationWasInterrupted() const;
 

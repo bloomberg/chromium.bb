@@ -34,6 +34,8 @@ component("cc") {
     "animation/layer_animation_value_provider.h",
     "animation/scroll_offset_animation_curve.cc",
     "animation/scroll_offset_animation_curve.h",
+    "animation/target_property.cc",
+    "animation/target_property.h",
     "animation/timing_function.cc",
     "animation/timing_function.h",
     "animation/transform_operation.cc",

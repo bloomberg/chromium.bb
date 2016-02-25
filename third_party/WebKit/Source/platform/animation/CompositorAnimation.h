@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "platform/PlatformExport.h"
+#include "platform/animation/CompositorTargetProperty.h"
 #include "wtf/Noncopyable.h"
 
 namespace cc {
@@ -21,13 +22,6 @@ class CompositorAnimationCurve;
 class PLATFORM_EXPORT CompositorAnimation {
     WTF_MAKE_NONCOPYABLE(CompositorAnimation);
 public:
-    enum TargetProperty {
-        TargetPropertyTransform,
-        TargetPropertyOpacity,
-        TargetPropertyFilter,
-        TargetPropertyScrollOffset
-    };
-
     enum Direction {
         DirectionNormal,
         DirectionReverse,
@@ -42,14 +36,14 @@ public:
         FillModeBoth
     };
 
-    CompositorAnimation(const CompositorAnimationCurve&, TargetProperty, int animationId, int groupId);
+    CompositorAnimation(const CompositorAnimationCurve&, CompositorTargetProperty::Type, int animationId, int groupId);
     virtual ~CompositorAnimation();
 
     // An id must be unique.
     virtual int id();
     virtual int group();
 
-    virtual TargetProperty targetProperty() const;
+    virtual CompositorTargetProperty::Type targetProperty() const;
 
     // This is the number of times that the animation will play. If this
     // value is zero the animation will not play. If it is negative, then

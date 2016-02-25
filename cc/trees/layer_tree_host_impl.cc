@@ -3750,7 +3750,7 @@ void LayerTreeHostImpl::ScrollAnimationAbort(LayerImpl* layer_impl) {
     return animation_host_->ScrollAnimationAbort();
 
   layer_impl->layer_animation_controller()->AbortAnimations(
-      Animation::SCROLL_OFFSET);
+      TargetProperty::SCROLL_OFFSET);
 }
 
 void LayerTreeHostImpl::ScrollAnimationCreate(
@@ -3771,7 +3771,7 @@ void LayerTreeHostImpl::ScrollAnimationCreate(
 
   scoped_ptr<Animation> animation = Animation::Create(
       std::move(curve), AnimationIdProvider::NextAnimationId(),
-      AnimationIdProvider::NextGroupId(), Animation::SCROLL_OFFSET);
+      AnimationIdProvider::NextGroupId(), TargetProperty::SCROLL_OFFSET);
   animation->set_is_impl_only(true);
 
   layer_impl->layer_animation_controller()->AddAnimation(std::move(animation));
@@ -3792,7 +3792,7 @@ bool LayerTreeHostImpl::ScrollAnimationUpdateTarget(
   Animation* animation =
       layer_impl->layer_animation_controller()
           ? layer_impl->layer_animation_controller()->GetAnimation(
-                Animation::SCROLL_OFFSET)
+                TargetProperty::SCROLL_OFFSET)
           : nullptr;
   if (!animation)
     return false;

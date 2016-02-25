@@ -6,6 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
+#include "platform/animation/CompositorTargetProperty.h"
 #include "public/platform/WebCompositorAnimationDelegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -40,10 +41,10 @@ TEST(WebCompositorAnimationPlayerTest, NullDelegate)
     cc::AnimationPlayer* player = webPlayer->animationPlayer();
 
     webPlayer->setAnimationDelegate(delegate.get());
-    player->NotifyAnimationFinished(TimeTicks(), Animation::SCROLL_OFFSET, 0);
+    player->NotifyAnimationFinished(TimeTicks(), CompositorTargetProperty::SCROLL_OFFSET, 0);
 
     webPlayer->setAnimationDelegate(nullptr);
-    player->NotifyAnimationFinished(TimeTicks(), Animation::SCROLL_OFFSET, 0);
+    player->NotifyAnimationFinished(TimeTicks(), CompositorTargetProperty::SCROLL_OFFSET, 0);
 }
 
 } // namespace blink

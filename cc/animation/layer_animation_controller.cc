@@ -66,7 +66,7 @@ void LayerAnimationController::UpdatePotentiallyAnimatingTransform() {
 
   for (const auto& animation : animations_) {
     if (!animation->is_finished() &&
-        animation->target_property() == Animation::TRANSFORM) {
+        animation->target_property() == TargetProperty::TRANSFORM) {
       potentially_animating_transform_for_active_observers_ |=
           animation->affects_active_observers();
       potentially_animating_transform_for_pending_observers_ |=
@@ -99,9 +99,9 @@ void LayerAnimationController::RemoveAnimation(int animation_id) {
         return animation->id() != animation_id;
       });
   for (auto it = animations_to_remove; it != animations_.end(); ++it) {
-    if ((*it)->target_property() == Animation::SCROLL_OFFSET) {
+    if ((*it)->target_property() == TargetProperty::SCROLL_OFFSET) {
       scroll_offset_animation_was_interrupted_ = true;
-    } else if ((*it)->target_property() == Animation::TRANSFORM &&
+    } else if ((*it)->target_property() == TargetProperty::TRANSFORM &&
                !(*it)->is_finished()) {
       removed_transform_animation = true;
     }
@@ -118,7 +118,7 @@ void LayerAnimationController::AbortAnimation(int animation_id) {
   if (Animation* animation = GetAnimationById(animation_id)) {
     if (!animation->is_finished()) {
       animation->SetRunState(Animation::ABORTED, last_tick_time_);
-      if (animation->target_property() == Animation::TRANSFORM)
+      if (animation->target_property() == TargetProperty::TRANSFORM)
         aborted_transform_animation = true;
     }
   }
@@ -127,13 +127,13 @@ void LayerAnimationController::AbortAnimation(int animation_id) {
 }
 
 void LayerAnimationController::AbortAnimations(
-    Animation::TargetProperty target_property) {
+    TargetProperty::Type target_property) {
   bool aborted_transform_animation = false;
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (animations_[i]->target_property() == target_property &&
         !animations_[i]->is_finished()) {
       animations_[i]->SetRunState(Animation::ABORTED, last_tick_time_);
-      if (target_property == Animation::TRANSFORM)
+      if (target_property == TargetProperty::TRANSFORM)
         aborted_transform_animation = true;
     }
   }
@@ -190,9 +190,9 @@ void LayerAnimationController::AccumulatePropertyUpdates(
     base::TimeDelta trimmed =
         animation->TrimTimeToCurrentIteration(monotonic_time);
     switch (animation->target_property()) {
-      case Animation::OPACITY: {
+      case TargetProperty::OPACITY: {
         AnimationEvent event(AnimationEvent::PROPERTY_UPDATE, id_,
-                             animation->group(), Animation::OPACITY,
+                             animation->group(), TargetProperty::OPACITY,
                              monotonic_time);
         const FloatAnimationCurve* float_animation_curve =
             animation->curve()->ToFloatAnimationCurve();
@@ -202,9 +202,9 @@ void LayerAnimationController::AccumulatePropertyUpdates(
         break;
       }
 
-      case Animation::TRANSFORM: {
+      case TargetProperty::TRANSFORM: {
         AnimationEvent event(AnimationEvent::PROPERTY_UPDATE, id_,
-                             animation->group(), Animation::TRANSFORM,
+                             animation->group(), TargetProperty::TRANSFORM,
                              monotonic_time);
         const TransformAnimationCurve* transform_animation_curve =
             animation->curve()->ToTransformAnimationCurve();
@@ -214,9 +214,9 @@ void LayerAnimationController::AccumulatePropertyUpdates(
         break;
       }
 
-      case Animation::FILTER: {
+      case TargetProperty::FILTER: {
         AnimationEvent event(AnimationEvent::PROPERTY_UPDATE, id_,
-                             animation->group(), Animation::FILTER,
+                             animation->group(), TargetProperty::FILTER,
                              monotonic_time);
         const FilterAnimationCurve* filter_animation_curve =
             animation->curve()->ToFilterAnimationCurve();
@@ -226,11 +226,11 @@ void LayerAnimationController::AccumulatePropertyUpdates(
         break;
       }
 
-      case Animation::BACKGROUND_COLOR: {
+      case TargetProperty::BACKGROUND_COLOR: {
         break;
       }
 
-      case Animation::SCROLL_OFFSET: {
+      case TargetProperty::SCROLL_OFFSET: {
         // Impl-side changes to scroll offset are already sent back to the
         // main thread (e.g. for user-driven scrolling), so a PROPERTY_UPDATE
         // isn't needed.
@@ -271,7 +271,7 @@ void LayerAnimationController::ActivateAnimations() {
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (animations_[i]->affects_active_observers() !=
             animations_[i]->affects_pending_observers() &&
-        animations_[i]->target_property() == Animation::TRANSFORM)
+        animations_[i]->target_property() == TargetProperty::TRANSFORM)
       changed_transform_animation = true;
     animations_[i]->set_affects_active_observers(
         animations_[i]->affects_pending_observers());
@@ -291,7 +291,7 @@ void LayerAnimationController::ActivateAnimations() {
 
 void LayerAnimationController::AddAnimation(scoped_ptr<Animation> animation) {
   bool added_transform_animation =
-      animation->target_property() == Animation::TRANSFORM;
+      animation->target_property() == TargetProperty::TRANSFORM;
   animations_.push_back(std::move(animation));
   needs_to_start_animations_ = true;
   UpdateActivation(NORMAL_ACTIVATION);
@@ -300,7 +300,7 @@ void LayerAnimationController::AddAnimation(scoped_ptr<Animation> animation) {
 }
 
 Animation* LayerAnimationController::GetAnimation(
-    Animation::TargetProperty target_property) const {
+    TargetProperty::Type target_property) const {
   for (size_t i = 0; i < animations_.size(); ++i) {
     size_t index = animations_.size() - i - 1;
     if (animations_[index]->target_property() == target_property)
@@ -325,7 +325,7 @@ bool LayerAnimationController::HasActiveAnimation() const {
 }
 
 bool LayerAnimationController::IsPotentiallyAnimatingProperty(
-    Animation::TargetProperty target_property,
+    TargetProperty::Type target_property,
     ObserverType observer_type) const {
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (!animations_[i]->is_finished() &&
@@ -341,7 +341,7 @@ bool LayerAnimationController::IsPotentiallyAnimatingProperty(
 }
 
 bool LayerAnimationController::IsCurrentlyAnimatingProperty(
-    Animation::TargetProperty target_property,
+    TargetProperty::Type target_property,
     ObserverType observer_type) const {
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (!animations_[i]->is_finished() &&
@@ -435,7 +435,7 @@ void LayerAnimationController::NotifyAnimationAborted(
       if (layer_animation_delegate_)
         layer_animation_delegate_->NotifyAnimationAborted(
             event.monotonic_time, event.target_property, event.group_id);
-      if (event.target_property == Animation::TRANSFORM)
+      if (event.target_property == TargetProperty::TRANSFORM)
         aborted_transform_animation = true;
     }
   }
@@ -448,11 +448,11 @@ void LayerAnimationController::NotifyAnimationPropertyUpdate(
   bool notify_active_observers = true;
   bool notify_pending_observers = true;
   switch (event.target_property) {
-    case Animation::OPACITY:
+    case TargetProperty::OPACITY:
       NotifyObserversOpacityAnimated(
           event.opacity, notify_active_observers, notify_pending_observers);
       break;
-    case Animation::TRANSFORM:
+    case TargetProperty::TRANSFORM:
       NotifyObserversTransformAnimated(
           event.transform, notify_active_observers, notify_pending_observers);
       break;
@@ -486,7 +486,7 @@ void LayerAnimationController::RemoveEventObserver(
 bool LayerAnimationController::HasFilterAnimationThatInflatesBounds() const {
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (!animations_[i]->is_finished() &&
-        animations_[i]->target_property() == Animation::FILTER &&
+        animations_[i]->target_property() == TargetProperty::FILTER &&
         animations_[i]
             ->curve()
             ->ToFilterAnimationCurve()
@@ -498,9 +498,9 @@ bool LayerAnimationController::HasFilterAnimationThatInflatesBounds() const {
 }
 
 bool LayerAnimationController::HasTransformAnimationThatInflatesBounds() const {
-  return IsCurrentlyAnimatingProperty(Animation::TRANSFORM,
+  return IsCurrentlyAnimatingProperty(TargetProperty::TRANSFORM,
                                       ObserverType::ACTIVE) ||
-         IsCurrentlyAnimatingProperty(Animation::TRANSFORM,
+         IsCurrentlyAnimatingProperty(TargetProperty::TRANSFORM,
                                       ObserverType::PENDING);
 }
 
@@ -525,7 +525,7 @@ bool LayerAnimationController::TransformAnimationBoundsForBox(
   *bounds = gfx::BoxF();
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (animations_[i]->is_finished() ||
-        animations_[i]->target_property() != Animation::TRANSFORM)
+        animations_[i]->target_property() != TargetProperty::TRANSFORM)
       continue;
 
     const TransformAnimationCurve* transform_animation_curve =
@@ -544,7 +544,7 @@ bool LayerAnimationController::TransformAnimationBoundsForBox(
 bool LayerAnimationController::HasAnimationThatAffectsScale() const {
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (animations_[i]->is_finished() ||
-        animations_[i]->target_property() != Animation::TRANSFORM)
+        animations_[i]->target_property() != TargetProperty::TRANSFORM)
       continue;
 
     const TransformAnimationCurve* transform_animation_curve =
@@ -560,7 +560,7 @@ bool LayerAnimationController::HasOnlyTranslationTransforms(
     ObserverType observer_type) const {
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (animations_[i]->is_finished() ||
-        animations_[i]->target_property() != Animation::TRANSFORM)
+        animations_[i]->target_property() != TargetProperty::TRANSFORM)
       continue;
 
     if ((observer_type == ObserverType::ACTIVE &&
@@ -581,7 +581,7 @@ bool LayerAnimationController::HasOnlyTranslationTransforms(
 bool LayerAnimationController::AnimationsPreserveAxisAlignment() const {
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (animations_[i]->is_finished() ||
-        animations_[i]->target_property() != Animation::TRANSFORM)
+        animations_[i]->target_property() != TargetProperty::TRANSFORM)
       continue;
 
     const TransformAnimationCurve* transform_animation_curve =
@@ -598,7 +598,7 @@ bool LayerAnimationController::AnimationStartScale(ObserverType observer_type,
   *start_scale = 0.f;
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (animations_[i]->is_finished() ||
-        animations_[i]->target_property() != Animation::TRANSFORM)
+        animations_[i]->target_property() != TargetProperty::TRANSFORM)
       continue;
 
     if ((observer_type == ObserverType::ACTIVE &&
@@ -635,7 +635,7 @@ bool LayerAnimationController::MaximumTargetScale(ObserverType observer_type,
   *max_scale = 0.f;
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (animations_[i]->is_finished() ||
-        animations_[i]->target_property() != Animation::TRANSFORM)
+        animations_[i]->target_property() != TargetProperty::TRANSFORM)
       continue;
 
     if ((observer_type == ObserverType::ACTIVE &&
@@ -678,7 +678,7 @@ void LayerAnimationController::PushNewAnimationsToImplThread(
     if (controller_impl->GetAnimationById(animations_[i]->id()))
       continue;
 
-    if (animations_[i]->target_property() == Animation::SCROLL_OFFSET &&
+    if (animations_[i]->target_property() == TargetProperty::SCROLL_OFFSET &&
         !animations_[i]
              ->curve()
              ->ToScrollOffsetAnimationCurve()
@@ -728,7 +728,7 @@ void LayerAnimationController::RemoveAnimationsCompletedOnMainThread(
   for (const auto& animation : animations) {
     if (IsCompleted(animation.get(), this)) {
       animation->set_affects_pending_observers(false);
-      if (animation->target_property() == Animation::TRANSFORM)
+      if (animation->target_property() == TargetProperty::TRANSFORM)
         removed_transform_animation = true;
     }
   }
@@ -884,7 +884,7 @@ void LayerAnimationController::MarkFinishedAnimations(
     if (!animations_[i]->is_finished() &&
         animations_[i]->IsFinishedAt(monotonic_time)) {
       animations_[i]->SetRunState(Animation::FINISHED, monotonic_time);
-      if (animations_[i]->target_property() == Animation::TRANSFORM) {
+      if (animations_[i]->target_property() == TargetProperty::TRANSFORM) {
         finished_transform_animation = true;
       }
     }
@@ -1006,7 +1006,7 @@ void LayerAnimationController::MarkAbortedAnimationsForDeletion(
                                     controller_impl->last_tick_time_);
         animation->SetRunState(Animation::WAITING_FOR_DELETION,
                                last_tick_time_);
-        if (animation_impl->target_property() == Animation::TRANSFORM) {
+        if (animation_impl->target_property() == TargetProperty::TRANSFORM) {
           aborted_transform_animation = true;
         }
       }
@@ -1038,7 +1038,7 @@ void LayerAnimationController::TickAnimations(base::TimeTicks monotonic_time) {
           animations_[i]->TrimTimeToCurrentIteration(monotonic_time);
 
       switch (animations_[i]->target_property()) {
-        case Animation::TRANSFORM: {
+        case TargetProperty::TRANSFORM: {
           const TransformAnimationCurve* transform_animation_curve =
               animations_[i]->curve()->ToTransformAnimationCurve();
           const gfx::Transform transform =
@@ -1050,7 +1050,7 @@ void LayerAnimationController::TickAnimations(base::TimeTicks monotonic_time) {
           break;
         }
 
-        case Animation::OPACITY: {
+        case TargetProperty::OPACITY: {
           const FloatAnimationCurve* float_animation_curve =
               animations_[i]->curve()->ToFloatAnimationCurve();
           const float opacity = std::max(
@@ -1062,7 +1062,7 @@ void LayerAnimationController::TickAnimations(base::TimeTicks monotonic_time) {
           break;
         }
 
-        case Animation::FILTER: {
+        case TargetProperty::FILTER: {
           const FilterAnimationCurve* filter_animation_curve =
               animations_[i]->curve()->ToFilterAnimationCurve();
           const FilterOperations filter =
@@ -1074,12 +1074,12 @@ void LayerAnimationController::TickAnimations(base::TimeTicks monotonic_time) {
           break;
         }
 
-        case Animation::BACKGROUND_COLOR: {
+        case TargetProperty::BACKGROUND_COLOR: {
           // Not yet implemented.
           break;
         }
 
-        case Animation::SCROLL_OFFSET: {
+        case TargetProperty::SCROLL_OFFSET: {
           const ScrollOffsetAnimationCurve* scroll_offset_animation_curve =
               animations_[i]->curve()->ToScrollOffsetAnimationCurve();
           const gfx::ScrollOffset scroll_offset =

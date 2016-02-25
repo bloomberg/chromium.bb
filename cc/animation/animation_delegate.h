@@ -13,15 +13,14 @@ namespace cc {
 class CC_EXPORT AnimationDelegate {
  public:
   virtual void NotifyAnimationStarted(base::TimeTicks monotonic_time,
-                                      Animation::TargetProperty target_property,
+                                      TargetProperty::Type target_property,
                                       int group) = 0;
-  virtual void NotifyAnimationFinished(
-      base::TimeTicks monotonic_time,
-      Animation::TargetProperty target_property,
-      int group) = 0;
+  virtual void NotifyAnimationFinished(base::TimeTicks monotonic_time,
+                                       TargetProperty::Type target_property,
+                                       int group) = 0;
 
   virtual void NotifyAnimationAborted(base::TimeTicks monotonic_time,
-                                      Animation::TargetProperty target_property,
+                                      TargetProperty::Type target_property,
                                       int group) = 0;
 
  protected:

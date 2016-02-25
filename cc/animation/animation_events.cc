@@ -9,7 +9,7 @@ namespace cc {
 AnimationEvent::AnimationEvent(AnimationEvent::Type type,
                                int layer_id,
                                int group_id,
-                               Animation::TargetProperty target_property,
+                               TargetProperty::Type target_property,
                                base::TimeTicks monotonic_time)
     : type(type),
       layer_id(layer_id),
@@ -17,8 +17,7 @@ AnimationEvent::AnimationEvent(AnimationEvent::Type type,
       target_property(target_property),
       monotonic_time(monotonic_time),
       is_impl_only(false),
-      opacity(0.f) {
-}
+      opacity(0.f) {}
 
 AnimationEvent::AnimationEvent(const AnimationEvent& other) = default;
 

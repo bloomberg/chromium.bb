@@ -239,7 +239,7 @@ void ElementAnimations::DestroyPendingValueObserver() {
 
 void ElementAnimations::NotifyAnimationStarted(
     base::TimeTicks monotonic_time,
-    Animation::TargetProperty target_property,
+    TargetProperty::Type target_property,
     int group) {
   for (PlayersListNode* node = players_list_->head();
        node != players_list_->end(); node = node->next()) {
@@ -250,7 +250,7 @@ void ElementAnimations::NotifyAnimationStarted(
 
 void ElementAnimations::NotifyAnimationFinished(
     base::TimeTicks monotonic_time,
-    Animation::TargetProperty target_property,
+    TargetProperty::Type target_property,
     int group) {
   for (PlayersListNode* node = players_list_->head();
        node != players_list_->end(); node = node->next()) {
@@ -261,7 +261,7 @@ void ElementAnimations::NotifyAnimationFinished(
 
 void ElementAnimations::NotifyAnimationAborted(
     base::TimeTicks monotonic_time,
-    Animation::TargetProperty target_property,
+    TargetProperty::Type target_property,
     int group) {
   for (PlayersListNode* node = players_list_->head();
        node != players_list_->end(); node = node->next()) {

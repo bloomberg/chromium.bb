@@ -45,9 +45,9 @@ public:
 
 private:
     // cc::AnimationDelegate implementation.
-    void NotifyAnimationStarted(base::TimeTicks monotonicTime, cc::Animation::TargetProperty, int group) override;
-    void NotifyAnimationFinished(base::TimeTicks monotonicTime, cc::Animation::TargetProperty, int group) override;
-    void NotifyAnimationAborted(base::TimeTicks monotonicTime, cc::Animation::TargetProperty, int group) override;
+    void NotifyAnimationStarted(base::TimeTicks monotonicTime, cc::TargetProperty::Type, int group) override;
+    void NotifyAnimationFinished(base::TimeTicks monotonicTime, cc::TargetProperty::Type, int group) override;
+    void NotifyAnimationAborted(base::TimeTicks monotonicTime, cc::TargetProperty::Type, int group) override;
 
     scoped_refptr<cc::AnimationPlayer> m_animationPlayer;
     WebCompositorAnimationDelegate* m_delegate;

@@ -423,9 +423,9 @@ class ThreadedOpacityTransition : public ThreadedLayerAnimationElement {
                                        start_,
                                        target_,
                                        duration()));
-    scoped_ptr<cc::Animation> animation(
-        cc::Animation::Create(std::move(animation_curve), animation_id(),
-                              animation_group_id(), cc::Animation::OPACITY));
+    scoped_ptr<cc::Animation> animation(cc::Animation::Create(
+        std::move(animation_curve), animation_id(), animation_group_id(),
+        cc::TargetProperty::OPACITY));
     return animation;
   }
 
@@ -476,9 +476,9 @@ class ThreadedTransformTransition : public ThreadedLayerAnimationElement {
                                            start_,
                                            target_,
                                            duration()));
-    scoped_ptr<cc::Animation> animation(
-        cc::Animation::Create(std::move(animation_curve), animation_id(),
-                              animation_group_id(), cc::Animation::TRANSFORM));
+    scoped_ptr<cc::Animation> animation(cc::Animation::Create(
+        std::move(animation_curve), animation_id(), animation_group_id(),
+        cc::TargetProperty::TRANSFORM));
     return animation;
   }
 
@@ -548,9 +548,9 @@ class InverseTransformTransition : public ThreadedLayerAnimationElement {
   }
 
   scoped_ptr<cc::Animation> CreateCCAnimation() override {
-    scoped_ptr<cc::Animation> animation(
-        cc::Animation::Create(animation_curve_->Clone(), animation_id(),
-                              animation_group_id(), cc::Animation::TRANSFORM));
+    scoped_ptr<cc::Animation> animation(cc::Animation::Create(
+        animation_curve_->Clone(), animation_id(), animation_group_id(),
+        cc::TargetProperty::TRANSFORM));
     return animation;
   }
 
@@ -742,12 +742,11 @@ void LayerAnimationElement::RequestEffectiveStart(
 
 // static
 LayerAnimationElement::AnimatableProperty
-LayerAnimationElement::ToAnimatableProperty(
-    cc::Animation::TargetProperty property) {
+LayerAnimationElement::ToAnimatableProperty(cc::TargetProperty::Type property) {
   switch (property) {
-    case cc::Animation::TRANSFORM:
+    case cc::TargetProperty::TRANSFORM:
       return TRANSFORM;
-    case cc::Animation::OPACITY:
+    case cc::TargetProperty::OPACITY:
       return OPACITY;
     default:
       NOTREACHED();

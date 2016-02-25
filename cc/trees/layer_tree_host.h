@@ -397,9 +397,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   bool HasOnlyTranslationTransforms(const Layer* layer) const;
   bool MaximumTargetScale(const Layer* layer, float* max_scale) const;
   bool AnimationStartScale(const Layer* layer, float* start_scale) const;
-  bool HasAnyAnimationTargetingProperty(
-      const Layer* layer,
-      Animation::TargetProperty property) const;
+  bool HasAnyAnimationTargetingProperty(const Layer* layer,
+                                        TargetProperty::Type property) const;
   bool AnimationsPreserveAxisAlignment(const Layer* layer) const;
   bool HasAnyAnimation(const Layer* layer) const;
   bool HasActiveAnimation(const Layer* layer) const;

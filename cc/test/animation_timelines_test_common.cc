@@ -31,7 +31,7 @@ void TestLayer::ClearMutatedProperties() {
   opacity_ = 0;
   brightness_ = 0;
 
-  for (int i = 0; i <= Animation::LAST_TARGET_PROPERTY; ++i)
+  for (int i = 0; i <= TargetProperty::LAST_TARGET_PROPERTY; ++i)
     mutated_properties_[i] = false;
 }
 
@@ -129,10 +129,9 @@ void TestHostClient::UnregisterLayer(int layer_id, LayerTreeType tree_type) {
   layers_in_tree.erase(kv);
 }
 
-bool TestHostClient::IsPropertyMutated(
-    int layer_id,
-    LayerTreeType tree_type,
-    Animation::TargetProperty property) const {
+bool TestHostClient::IsPropertyMutated(int layer_id,
+                                       LayerTreeType tree_type,
+                                       TargetProperty::Type property) const {
   TestLayer* layer = FindTestLayer(layer_id, tree_type);
   return layer->is_property_mutated(property);
 }
@@ -141,7 +140,7 @@ void TestHostClient::ExpectFilterPropertyMutated(int layer_id,
                                                  LayerTreeType tree_type,
                                                  float brightness) const {
   TestLayer* layer = FindTestLayer(layer_id, tree_type);
-  EXPECT_TRUE(layer->is_property_mutated(Animation::OPACITY));
+  EXPECT_TRUE(layer->is_property_mutated(TargetProperty::OPACITY));
   EXPECT_EQ(brightness, layer->brightness());
 }
 
@@ -149,7 +148,7 @@ void TestHostClient::ExpectOpacityPropertyMutated(int layer_id,
                                                   LayerTreeType tree_type,
                                                   float opacity) const {
   TestLayer* layer = FindTestLayer(layer_id, tree_type);
-  EXPECT_TRUE(layer->is_property_mutated(Animation::OPACITY));
+  EXPECT_TRUE(layer->is_property_mutated(TargetProperty::OPACITY));
   EXPECT_EQ(opacity, layer->opacity());
 }
 
@@ -158,7 +157,7 @@ void TestHostClient::ExpectTransformPropertyMutated(int layer_id,
                                                     int transform_x,
                                                     int transform_y) const {
   TestLayer* layer = FindTestLayer(layer_id, tree_type);
-  EXPECT_TRUE(layer->is_property_mutated(Animation::OPACITY));
+  EXPECT_TRUE(layer->is_property_mutated(TargetProperty::OPACITY));
   EXPECT_EQ(transform_x, layer->transform_x());
   EXPECT_EQ(transform_y, layer->transform_y());
 }
@@ -180,13 +179,13 @@ TestAnimationDelegate::TestAnimationDelegate()
 
 void TestAnimationDelegate::NotifyAnimationStarted(
     base::TimeTicks monotonic_time,
-    Animation::TargetProperty target_property,
+    TargetProperty::Type target_property,
     int group) {
   started_ = true;
 }
 void TestAnimationDelegate::NotifyAnimationFinished(
     base::TimeTicks monotonic_time,
-    Animation::TargetProperty target_property,
+    TargetProperty::Type target_property,
     int group) {
   finished_ = true;
 }

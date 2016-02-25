@@ -265,7 +265,7 @@ void ScrollAnimator::updateCompositorAnimations()
             OwnPtr<CompositorAnimation> animation = adoptPtr(
                 CompositorFactory::current().createAnimation(
                     *m_animationCurve,
-                    CompositorAnimation::TargetPropertyScrollOffset));
+                    CompositorTargetProperty::SCROLL_OFFSET));
             // Being here means that either there is an animation that needs
             // to be sent to the compositor, or an animation that needs to
             // be updated (a new scroll event before the previous animation

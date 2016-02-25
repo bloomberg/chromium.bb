@@ -29,28 +29,28 @@ class TestLayer {
   void set_transform(int transform_x, int transform_y) {
     transform_x_ = transform_x;
     transform_y_ = transform_y;
-    mutated_properties_[Animation::TRANSFORM] = true;
+    mutated_properties_[TargetProperty::TRANSFORM] = true;
   }
 
   float opacity() const { return opacity_; }
   void set_opacity(float opacity) {
     opacity_ = opacity;
-    mutated_properties_[Animation::OPACITY] = true;
+    mutated_properties_[TargetProperty::OPACITY] = true;
   }
 
   float brightness() const { return brightness_; }
   void set_brightness(float brightness) {
     brightness_ = brightness;
-    mutated_properties_[Animation::FILTER] = true;
+    mutated_properties_[TargetProperty::FILTER] = true;
   }
 
   gfx::ScrollOffset scroll_offset() const { return scroll_offset_; }
   void set_scroll_offset(const gfx::ScrollOffset& scroll_offset) {
     scroll_offset_ = scroll_offset;
-    mutated_properties_[Animation::SCROLL_OFFSET] = true;
+    mutated_properties_[TargetProperty::SCROLL_OFFSET] = true;
   }
 
-  bool is_property_mutated(Animation::TargetProperty property) const {
+  bool is_property_mutated(TargetProperty::Type property) const {
     return mutated_properties_[property];
   }
 
@@ -64,7 +64,7 @@ class TestLayer {
   float brightness_;
   gfx::ScrollOffset scroll_offset_;
 
-  bool mutated_properties_[Animation::LAST_TARGET_PROPERTY + 1];
+  bool mutated_properties_[TargetProperty::LAST_TARGET_PROPERTY + 1];
 };
 
 class TestHostClient : public MutatorHostClient {
@@ -117,7 +117,7 @@ class TestHostClient : public MutatorHostClient {
 
   bool IsPropertyMutated(int layer_id,
                          LayerTreeType tree_type,
-                         Animation::TargetProperty property) const;
+                         TargetProperty::Type property) const;
 
   void ExpectFilterPropertyMutated(int layer_id,
                                    LayerTreeType tree_type,
@@ -147,13 +147,13 @@ class TestAnimationDelegate : public AnimationDelegate {
   TestAnimationDelegate();
 
   void NotifyAnimationStarted(base::TimeTicks monotonic_time,
-                              Animation::TargetProperty target_property,
+                              TargetProperty::Type target_property,
                               int group) override;
   void NotifyAnimationFinished(base::TimeTicks monotonic_time,
-                               Animation::TargetProperty target_property,
+                               TargetProperty::Type target_property,
                                int group) override;
   void NotifyAnimationAborted(base::TimeTicks monotonic_time,
-                              Animation::TargetProperty target_property,
+                              TargetProperty::Type target_property,
                               int group) override {}
   bool started_;
   bool finished_;

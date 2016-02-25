@@ -122,7 +122,7 @@ TEST_F(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations)
 
     OwnPtr<CompositorFloatAnimationCurve> curve = adoptPtr(CompositorFactory::current().createFloatAnimationCurve());
     curve->add(CompositorFloatKeyframe(0.0, 0.0));
-    OwnPtr<CompositorAnimation> floatAnimation(adoptPtr(CompositorFactory::current().createAnimation(*curve, CompositorAnimation::TargetPropertyOpacity)));
+    OwnPtr<CompositorAnimation> floatAnimation(adoptPtr(CompositorFactory::current().createAnimation(*curve, CompositorTargetProperty::OPACITY)));
     int animationId = floatAnimation->id();
 
     if (RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled()) {

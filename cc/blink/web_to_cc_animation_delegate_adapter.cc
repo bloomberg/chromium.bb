@@ -14,7 +14,7 @@ WebToCCAnimationDelegateAdapter::WebToCCAnimationDelegateAdapter(
 
 void WebToCCAnimationDelegateAdapter::NotifyAnimationStarted(
     base::TimeTicks monotonic_time,
-    cc::Animation::TargetProperty target_property,
+    cc::TargetProperty::Type target_property,
     int group) {
   delegate_->notifyAnimationStarted(
       (monotonic_time - base::TimeTicks()).InSecondsF(), group);
@@ -22,7 +22,7 @@ void WebToCCAnimationDelegateAdapter::NotifyAnimationStarted(
 
 void WebToCCAnimationDelegateAdapter::NotifyAnimationFinished(
     base::TimeTicks monotonic_time,
-    cc::Animation::TargetProperty target_property,
+    cc::TargetProperty::Type target_property,
     int group) {
   delegate_->notifyAnimationFinished(
       (monotonic_time - base::TimeTicks()).InSecondsF(), group);
@@ -30,7 +30,7 @@ void WebToCCAnimationDelegateAdapter::NotifyAnimationFinished(
 
 void WebToCCAnimationDelegateAdapter::NotifyAnimationAborted(
     base::TimeTicks monotonic_time,
-    cc::Animation::TargetProperty target_property,
+    cc::TargetProperty::Type target_property,
     int group) {
   delegate_->notifyAnimationAborted(
       (monotonic_time - base::TimeTicks()).InSecondsF(), group);

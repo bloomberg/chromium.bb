@@ -13,7 +13,7 @@ TEST(WebCompositorAnimationTest, DefaultSettings)
 {
     scoped_ptr<CompositorAnimationCurve> curve(new CompositorFloatAnimationCurve());
     scoped_ptr<CompositorAnimation> animation(new CompositorAnimation(
-        *curve, CompositorAnimation::TargetPropertyOpacity, 1, 0));
+        *curve, CompositorTargetProperty::OPACITY, 1, 0));
 
     // Ensure that the defaults are correct.
     EXPECT_EQ(1, animation->iterations());
@@ -26,7 +26,7 @@ TEST(WebCompositorAnimationTest, ModifiedSettings)
 {
     scoped_ptr<CompositorFloatAnimationCurve> curve(new CompositorFloatAnimationCurve());
     scoped_ptr<CompositorAnimation> animation(new CompositorAnimation(
-        *curve, CompositorAnimation::TargetPropertyOpacity, 1, 0));
+        *curve, CompositorTargetProperty::OPACITY, 1, 0));
     animation->setIterations(2);
     animation->setStartTime(2);
     animation->setTimeOffset(2);

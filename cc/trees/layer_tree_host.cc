@@ -1388,7 +1388,7 @@ bool LayerTreeHost::AnimationStartScale(const Layer* layer,
 
 bool LayerTreeHost::HasAnyAnimationTargetingProperty(
     const Layer* layer,
-    Animation::TargetProperty property) const {
+    TargetProperty::Type property) const {
   return animation_host_
              ? animation_host_->HasAnyAnimationTargetingProperty(layer->id(),
                                                                  property)

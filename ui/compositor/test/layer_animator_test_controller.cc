@@ -31,9 +31,9 @@ LayerAnimationSequence* LayerAnimatorTestController::GetRunningSequence(
 }
 
 void LayerAnimatorTestController::StartThreadedAnimationsIfNeeded() {
-  std::vector<cc::Animation::TargetProperty> threaded_properties;
-  threaded_properties.push_back(cc::Animation::OPACITY);
-  threaded_properties.push_back(cc::Animation::TRANSFORM);
+  std::vector<cc::TargetProperty::Type> threaded_properties;
+  threaded_properties.push_back(cc::TargetProperty::OPACITY);
+  threaded_properties.push_back(cc::TargetProperty::TRANSFORM);
 
   for (size_t i = 0; i < threaded_properties.size(); i++) {
     LayerAnimationElement::AnimatableProperty animatable_property =

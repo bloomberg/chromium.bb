@@ -9403,7 +9403,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedAborted) {
   host_impl_->UpdateAnimationState(true);
 
   EXPECT_TRUE(host_impl_->animation_host()->HasAnyAnimationTargetingProperty(
-      scrolling_layer->id(), Animation::SCROLL_OFFSET));
+      scrolling_layer->id(), TargetProperty::SCROLL_OFFSET));
 
   EXPECT_EQ(gfx::ScrollOffset(), scrolling_layer->CurrentScrollOffset());
   host_impl_->DidFinishImplFrame();

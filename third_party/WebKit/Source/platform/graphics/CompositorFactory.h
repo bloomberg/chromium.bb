@@ -46,7 +46,7 @@ public:
 
     virtual CompositorFilterOperations* createFilterOperations() { return nullptr; }
 
-    virtual CompositorAnimation* createAnimation(const CompositorAnimationCurve&, CompositorAnimation::TargetProperty, int groupId = 0, int animationId = 0) { return nullptr; }
+    virtual CompositorAnimation* createAnimation(const CompositorAnimationCurve&, CompositorTargetProperty::Type, int groupId = 0, int animationId = 0) { return nullptr; }
 
     virtual CompositorAnimationPlayer* createAnimationPlayer() { return nullptr; }
 

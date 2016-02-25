@@ -58,12 +58,12 @@ inline void PrintTo(const CompositorFloatKeyframe& frame, ::std::ostream* os)
 
 class WebCompositorAnimationMock : public CompositorAnimation {
 private:
-    CompositorAnimation::TargetProperty m_property;
+    CompositorTargetProperty::Type m_property;
 
 public:
     // Target Property is set through the constructor.
-    WebCompositorAnimationMock(CompositorAnimation::TargetProperty p) : m_property(p) { }
-    virtual CompositorAnimation::TargetProperty targetProperty() const { return m_property; }
+    WebCompositorAnimationMock(CompositorTargetProperty::Type p) : m_property(p) { }
+    virtual CompositorTargetProperty::Type targetProperty() const { return m_property; }
 
     MOCK_METHOD0(id, int());
     MOCK_METHOD0(group, int());
@@ -130,7 +130,7 @@ class AnimationCompositorAnimationsTestBase : public ::testing::Test {
 public:
     class CompositorFactoryMock : public CompositorFactory {
     public:
-        MOCK_METHOD4(createAnimation, CompositorAnimation*(const CompositorAnimationCurve& curve, CompositorAnimation::TargetProperty target, int groupId, int animationId));
+        MOCK_METHOD4(createAnimation, CompositorAnimation*(const CompositorAnimationCurve& curve, CompositorTargetProperty::Type target, int groupId, int animationId));
         MOCK_METHOD0(createFloatAnimationCurve, CompositorFloatAnimationCurve*());
         MOCK_METHOD0(createAnimationPlayer, CompositorAnimationPlayer*());
         MOCK_METHOD0(createAnimationTimeline, CompositorAnimationTimeline*());

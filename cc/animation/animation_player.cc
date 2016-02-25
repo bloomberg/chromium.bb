@@ -119,7 +119,7 @@ void AnimationPlayer::UnbindElementAnimations() {
 }
 
 void AnimationPlayer::AddAnimation(scoped_ptr<Animation> animation) {
-  DCHECK(animation->target_property() != Animation::SCROLL_OFFSET ||
+  DCHECK(animation->target_property() != TargetProperty::SCROLL_OFFSET ||
          (animation_host_ && animation_host_->SupportsScrollAnimations()));
 
   if (element_animations_) {
@@ -160,8 +160,7 @@ void AnimationPlayer::AbortAnimation(int animation_id) {
   SetNeedsCommit();
 }
 
-void AnimationPlayer::AbortAnimations(
-    Animation::TargetProperty target_property) {
+void AnimationPlayer::AbortAnimations(TargetProperty::Type target_property) {
   if (element_animations_) {
     element_animations_->layer_animation_controller()->AbortAnimations(
         target_property);
@@ -187,7 +186,7 @@ void AnimationPlayer::PushPropertiesTo(AnimationPlayer* player_impl) {
 
 void AnimationPlayer::NotifyAnimationStarted(
     base::TimeTicks monotonic_time,
-    Animation::TargetProperty target_property,
+    TargetProperty::Type target_property,
     int group) {
   if (layer_animation_delegate_)
     layer_animation_delegate_->NotifyAnimationStarted(monotonic_time,
@@ -196,7 +195,7 @@ void AnimationPlayer::NotifyAnimationStarted(
 
 void AnimationPlayer::NotifyAnimationFinished(
     base::TimeTicks monotonic_time,
-    Animation::TargetProperty target_property,
+    TargetProperty::Type target_property,
     int group) {
   if (layer_animation_delegate_)
     layer_animation_delegate_->NotifyAnimationFinished(monotonic_time,
@@ -205,7 +204,7 @@ void AnimationPlayer::NotifyAnimationFinished(
 
 void AnimationPlayer::NotifyAnimationAborted(
     base::TimeTicks monotonic_time,
-    Animation::TargetProperty target_property,
+    TargetProperty::Type target_property,
     int group) {
   if (layer_animation_delegate_)
     layer_animation_delegate_->NotifyAnimationAborted(monotonic_time,

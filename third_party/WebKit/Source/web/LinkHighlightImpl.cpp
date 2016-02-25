@@ -305,7 +305,7 @@ void LinkHighlightImpl::startHighlightAnimationIfNeeded()
     // For layout tests we don't fade out.
     curve->add(CompositorFloatKeyframe(fadeDuration + extraDurationRequired, layoutTestMode() ? startOpacity : 0));
 
-    OwnPtr<CompositorAnimation> animation = adoptPtr(CompositorFactory::current().createAnimation(*curve, CompositorAnimation::TargetPropertyOpacity));
+    OwnPtr<CompositorAnimation> animation = adoptPtr(CompositorFactory::current().createAnimation(*curve, CompositorTargetProperty::OPACITY));
 
     m_contentLayer->layer()->setDrawsContent(true);
     if (RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled())

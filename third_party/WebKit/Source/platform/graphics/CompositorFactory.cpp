@@ -51,7 +51,7 @@ public:
         return new CompositorFilterOperations();
     }
 
-    CompositorAnimation* createAnimation(const blink::CompositorAnimationCurve& curve, blink::CompositorAnimation::TargetProperty target, int groupId, int animationId) override
+    CompositorAnimation* createAnimation(const blink::CompositorAnimationCurve& curve, CompositorTargetProperty::Type target, int groupId, int animationId) override
     {
         return new CompositorAnimation(curve, target, animationId, groupId);
     }

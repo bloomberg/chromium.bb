@@ -69,19 +69,19 @@ class CC_EXPORT AnimationPlayer : public base::RefCounted<AnimationPlayer>,
   void PauseAnimation(int animation_id, double time_offset);
   void RemoveAnimation(int animation_id);
   void AbortAnimation(int animation_id);
-  void AbortAnimations(Animation::TargetProperty target_property);
+  void AbortAnimations(TargetProperty::Type target_property);
 
   void PushPropertiesTo(AnimationPlayer* player_impl);
 
   // AnimationDelegate routing.
   void NotifyAnimationStarted(base::TimeTicks monotonic_time,
-                              Animation::TargetProperty target_property,
+                              TargetProperty::Type target_property,
                               int group);
   void NotifyAnimationFinished(base::TimeTicks monotonic_time,
-                               Animation::TargetProperty target_property,
+                               TargetProperty::Type target_property,
                                int group);
   void NotifyAnimationAborted(base::TimeTicks monotonic_time,
-                              Animation::TargetProperty target_property,
+                              TargetProperty::Type target_property,
                               int group);
 
   // Whether this player has animations waiting to get sent to LAC.

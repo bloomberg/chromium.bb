@@ -27,27 +27,14 @@ static_assert(static_cast<int>(cc::Animation::LAST_RUN_STATE) + 1 ==
               "RunStateEnumSize should equal the number of elements in "
               "s_runStateNames");
 
-// This should match the TargetProperty enum.
-static const char* const s_targetPropertyNames[] = {"TRANSFORM",
-                                                    "OPACITY",
-                                                    "FILTER",
-                                                    "SCROLL_OFFSET",
-                                                    "BACKGROUND_COLOR"};
-
-static_assert(static_cast<int>(cc::Animation::LAST_TARGET_PROPERTY) + 1 ==
-                  arraysize(s_targetPropertyNames),
-              "TargetPropertyEnumSize should equal the number of elements in "
-              "s_targetPropertyNames");
-
 }  // namespace
 
 namespace cc {
 
-scoped_ptr<Animation> Animation::Create(
-    scoped_ptr<AnimationCurve> curve,
-    int animation_id,
-    int group_id,
-    TargetProperty target_property) {
+scoped_ptr<Animation> Animation::Create(scoped_ptr<AnimationCurve> curve,
+                                        int animation_id,
+                                        int group_id,
+                                        TargetProperty::Type target_property) {
   return make_scoped_ptr(
       new Animation(std::move(curve), animation_id, group_id, target_property));
 }
@@ -55,7 +42,7 @@ scoped_ptr<Animation> Animation::Create(
 Animation::Animation(scoped_ptr<AnimationCurve> curve,
                      int animation_id,
                      int group_id,
-                     TargetProperty target_property)
+                     TargetProperty::Type target_property)
     : curve_(std::move(curve)),
       id_(animation_id),
       group_(group_id),
@@ -85,11 +72,8 @@ void Animation::SetRunState(RunState run_state,
     return;
 
   char name_buffer[256];
-  base::snprintf(name_buffer,
-                 sizeof(name_buffer),
-                 "%s-%d",
-                 s_targetPropertyNames[target_property_],
-                 group_);
+  base::snprintf(name_buffer, sizeof(name_buffer), "%s-%d",
+                 TargetProperty::GetName(target_property_), group_);
 
   bool is_waiting_to_start =
       run_state_ == WAITING_FOR_TARGET_AVAILABILITY || run_state_ == STARTING;

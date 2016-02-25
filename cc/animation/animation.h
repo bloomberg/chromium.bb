@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
+#include "cc/animation/target_property.h"
 #include "cc/base/cc_export.h"
 
 namespace cc {
@@ -39,16 +40,6 @@ class CC_EXPORT Animation {
     LAST_RUN_STATE = ABORTED
   };
 
-  enum TargetProperty {
-    TRANSFORM = 0,
-    OPACITY,
-    FILTER,
-    SCROLL_OFFSET,
-    BACKGROUND_COLOR,
-    // This sentinel must be last.
-    LAST_TARGET_PROPERTY = BACKGROUND_COLOR
-  };
-
   enum Direction {
     DIRECTION_NORMAL,
     DIRECTION_REVERSE,
@@ -66,13 +57,13 @@ class CC_EXPORT Animation {
   static scoped_ptr<Animation> Create(scoped_ptr<AnimationCurve> curve,
                                       int animation_id,
                                       int group_id,
-                                      TargetProperty target_property);
+                                      TargetProperty::Type target_property);
 
   virtual ~Animation();
 
   int id() const { return id_; }
   int group() const { return group_; }
-  TargetProperty target_property() const { return target_property_; }
+  TargetProperty::Type target_property() const { return target_property_; }
 
   RunState run_state() const { return run_state_; }
   void SetRunState(RunState run_state, base::TimeTicks monotonic_time);
@@ -175,7 +166,7 @@ class CC_EXPORT Animation {
   Animation(scoped_ptr<AnimationCurve> curve,
             int animation_id,
             int group_id,
-            TargetProperty target_property);
+            TargetProperty::Type target_property);
 
   base::TimeDelta ConvertToActiveTime(base::TimeTicks monotonic_time) const;
 
@@ -190,7 +181,7 @@ class CC_EXPORT Animation {
   // all animations in the group have finished animating.
   int group_;
 
-  TargetProperty target_property_;
+  TargetProperty::Type target_property_;
   RunState run_state_;
   double iterations_;
   double iteration_start_;

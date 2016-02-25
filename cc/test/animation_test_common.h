@@ -260,10 +260,9 @@ int AddOpacityTransitionToLayerWithPlayer(
     float end_opacity,
     bool use_timing_function);
 
-void AbortAnimationsOnLayerWithPlayer(
-    int layer_id,
-    scoped_refptr<AnimationTimeline> timeline,
-    Animation::TargetProperty target_property);
+void AbortAnimationsOnLayerWithPlayer(int layer_id,
+                                      scoped_refptr<AnimationTimeline> timeline,
+                                      TargetProperty::Type target_property);
 
 }  // namespace cc
 

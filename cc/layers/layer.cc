@@ -507,7 +507,7 @@ bool Layer::FilterIsAnimating() const {
   DCHECK(layer_tree_host_);
   return layer_animation_controller_
              ? layer_animation_controller_->IsCurrentlyAnimatingProperty(
-                   Animation::FILTER,
+                   TargetProperty::FILTER,
                    LayerAnimationController::ObserverType::ACTIVE)
              : layer_tree_host_->IsAnimatingFilterProperty(this);
 }
@@ -515,7 +515,7 @@ bool Layer::FilterIsAnimating() const {
 bool Layer::HasPotentiallyRunningFilterAnimation() const {
   if (layer_animation_controller_) {
     return layer_animation_controller_->IsPotentiallyAnimatingProperty(
-        Animation::FILTER, LayerAnimationController::ObserverType::ACTIVE);
+        TargetProperty::FILTER, LayerAnimationController::ObserverType::ACTIVE);
   }
   return layer_tree_host_->HasPotentiallyRunningFilterAnimation(this);
 }
@@ -544,7 +544,7 @@ bool Layer::OpacityIsAnimating() const {
   DCHECK(layer_tree_host_);
   return layer_animation_controller_
              ? layer_animation_controller_->IsCurrentlyAnimatingProperty(
-                   Animation::OPACITY,
+                   TargetProperty::OPACITY,
                    LayerAnimationController::ObserverType::ACTIVE)
              : layer_tree_host_->IsAnimatingOpacityProperty(this);
 }
@@ -552,7 +552,8 @@ bool Layer::OpacityIsAnimating() const {
 bool Layer::HasPotentiallyRunningOpacityAnimation() const {
   if (layer_animation_controller_) {
     return layer_animation_controller_->IsPotentiallyAnimatingProperty(
-        Animation::OPACITY, LayerAnimationController::ObserverType::ACTIVE);
+        TargetProperty::OPACITY,
+        LayerAnimationController::ObserverType::ACTIVE);
   }
   return layer_tree_host_->HasPotentiallyRunningOpacityAnimation(this);
 }
@@ -756,7 +757,7 @@ bool Layer::TransformIsAnimating() const {
   DCHECK(layer_tree_host_);
   return layer_animation_controller_
              ? layer_animation_controller_->IsCurrentlyAnimatingProperty(
-                   Animation::TRANSFORM,
+                   TargetProperty::TRANSFORM,
                    LayerAnimationController::ObserverType::ACTIVE)
              : layer_tree_host_->IsAnimatingTransformProperty(this);
 }
@@ -764,7 +765,8 @@ bool Layer::TransformIsAnimating() const {
 bool Layer::HasPotentiallyRunningTransformAnimation() const {
   if (layer_animation_controller_) {
     return layer_animation_controller_->IsPotentiallyAnimatingProperty(
-        Animation::TRANSFORM, LayerAnimationController::ObserverType::ACTIVE);
+        TargetProperty::TRANSFORM,
+        LayerAnimationController::ObserverType::ACTIVE);
   }
   return layer_tree_host_->HasPotentiallyRunningTransformAnimation(this);
 }
@@ -794,7 +796,7 @@ bool Layer::AnimationStartScale(float* start_scale) const {
 }
 
 bool Layer::HasAnyAnimationTargetingProperty(
-    Animation::TargetProperty property) const {
+    TargetProperty::Type property) const {
   if (layer_animation_controller_)
     return !!layer_animation_controller_->GetAnimation(property);
 
@@ -1879,7 +1881,7 @@ bool Layer::AddAnimation(scoped_ptr <Animation> animation) {
   if (!layer_animation_controller_->animation_registrar())
     return false;
 
-  if (animation->target_property() == Animation::SCROLL_OFFSET &&
+  if (animation->target_property() == TargetProperty::SCROLL_OFFSET &&
       !layer_animation_controller_->animation_registrar()
            ->supports_scroll_animations())
     return false;

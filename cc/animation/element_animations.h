@@ -95,13 +95,13 @@ class CC_EXPORT ElementAnimations : public AnimationDelegate,
 
   // AnimationDelegate implementation
   void NotifyAnimationStarted(base::TimeTicks monotonic_time,
-                              Animation::TargetProperty target_property,
+                              TargetProperty::Type target_property,
                               int group) override;
   void NotifyAnimationFinished(base::TimeTicks monotonic_time,
-                               Animation::TargetProperty target_property,
+                               TargetProperty::Type target_property,
                                int group) override;
   void NotifyAnimationAborted(base::TimeTicks monotonic_time,
-                              Animation::TargetProperty target_property,
+                              TargetProperty::Type target_property,
                               int group) override;
 
   // LayerAnimationValueProvider implementation.

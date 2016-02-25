@@ -110,9 +110,8 @@ class CC_EXPORT AnimationHost {
   bool HasPotentiallyRunningTransformAnimation(int layer_id,
                                                LayerTreeType tree_type) const;
 
-  bool HasAnyAnimationTargetingProperty(
-      int layer_id,
-      Animation::TargetProperty property) const;
+  bool HasAnyAnimationTargetingProperty(int layer_id,
+                                        TargetProperty::Type property) const;
 
   bool FilterIsAnimatingOnImplOnly(int layer_id) const;
   bool OpacityIsAnimatingOnImplOnly(int layer_id) const;

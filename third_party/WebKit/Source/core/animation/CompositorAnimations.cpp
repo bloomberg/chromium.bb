@@ -678,11 +678,11 @@ void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, in
         PropertySpecificKeyframeVector values;
         getKeyframeValuesForProperty(&effect, property, compositorTiming.scaledDuration, values);
 
-        CompositorAnimation::TargetProperty targetProperty;
+        CompositorTargetProperty::Type targetProperty;
         OwnPtr<CompositorAnimationCurve> curve;
         switch (property.cssProperty()) {
         case CSSPropertyOpacity: {
-            targetProperty = CompositorAnimation::TargetPropertyOpacity;
+            targetProperty = CompositorTargetProperty::OPACITY;
 
             CompositorFloatAnimationCurve* floatCurve = CompositorFactory::current().createFloatAnimationCurve();
             addKeyframesToCurve(*floatCurve, values, timing);
@@ -692,7 +692,7 @@ void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, in
         }
         case CSSPropertyWebkitFilter:
         case CSSPropertyBackdropFilter: {
-            targetProperty = CompositorAnimation::TargetPropertyFilter;
+            targetProperty = CompositorTargetProperty::FILTER;
             CompositorFilterAnimationCurve* filterCurve = CompositorFactory::current().createFilterAnimationCurve();
             addKeyframesToCurve(*filterCurve, values, timing);
             setTimingFunctionOnCurve(*filterCurve, timing.timingFunction.get());
@@ -703,7 +703,7 @@ void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, in
         case CSSPropertyScale:
         case CSSPropertyTranslate:
         case CSSPropertyTransform: {
-            targetProperty = CompositorAnimation::TargetPropertyTransform;
+            targetProperty = CompositorTargetProperty::TRANSFORM;
             CompositorTransformAnimationCurve* transformCurve = CompositorFactory::current().createTransformAnimationCurve();
             addKeyframesToCurve(*transformCurve, values, timing);
             setTimingFunctionOnCurve(*transformCurve, timing.timingFunction.get());

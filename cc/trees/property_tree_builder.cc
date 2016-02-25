@@ -241,7 +241,7 @@ bool AddTransformNodeIfNeeded(
   // in the Finished state at tree-building time on the main thread is still in
   // the Running state right after commit on the compositor thread.
   const bool has_any_transform_animation =
-      layer->HasAnyAnimationTargetingProperty(Animation::TRANSFORM);
+      layer->HasAnyAnimationTargetingProperty(TargetProperty::TRANSFORM);
 
   const bool has_surface = created_render_surface;
 

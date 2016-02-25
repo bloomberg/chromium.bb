@@ -94,7 +94,7 @@ TEST(LayerAnimationSequenceTest, SingleThreadedElement) {
     effective_start = start_time + delta;
     sequence.OnThreadedAnimationStarted(cc::AnimationEvent(
         cc::AnimationEvent::STARTED, 0, sequence.animation_group_id(),
-        cc::Animation::OPACITY, effective_start));
+        cc::TargetProperty::OPACITY, effective_start));
     sequence.Progress(effective_start + delta/2, &delegate);
     EXPECT_FLOAT_EQ(middle, sequence.last_progressed_fraction());
     EXPECT_TRUE(sequence.IsFinished(effective_start + delta));
@@ -148,7 +148,7 @@ TEST(LayerAnimationSequenceTest, MultipleElement) {
     EXPECT_EQ(starting_group_id, sequence.animation_group_id());
     sequence.OnThreadedAnimationStarted(cc::AnimationEvent(
         cc::AnimationEvent::STARTED, 0, sequence.animation_group_id(),
-        cc::Animation::OPACITY, opacity_effective_start));
+        cc::TargetProperty::OPACITY, opacity_effective_start));
     sequence.Progress(opacity_effective_start + delta/2, &delegate);
     EXPECT_FLOAT_EQ(0.5, sequence.last_progressed_fraction());
     sequence.Progress(opacity_effective_start + delta, &delegate);
@@ -176,7 +176,7 @@ TEST(LayerAnimationSequenceTest, MultipleElement) {
     EXPECT_NE(starting_group_id, sequence.animation_group_id());
     sequence.OnThreadedAnimationStarted(cc::AnimationEvent(
         cc::AnimationEvent::STARTED, 0, sequence.animation_group_id(),
-        cc::Animation::TRANSFORM, transform_effective_start));
+        cc::TargetProperty::TRANSFORM, transform_effective_start));
     sequence.Progress(transform_effective_start + delta/2, &delegate);
     EXPECT_FLOAT_EQ(0.5, sequence.last_progressed_fraction());
     EXPECT_TRUE(sequence.IsFinished(transform_effective_start + delta));

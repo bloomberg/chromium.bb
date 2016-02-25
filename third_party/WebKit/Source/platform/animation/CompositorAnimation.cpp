@@ -21,17 +21,7 @@ using blink::CompositorAnimationCurve;
 
 namespace blink {
 
-#define STATIC_ASSERT_ENUM(a, b)                              \
-    static_assert(static_cast<int>(a) == static_cast<int>(b), \
-        "mismatching enums: " #a)
-
-// TargetProperty
-STATIC_ASSERT_ENUM(CompositorAnimation::TargetPropertyTransform, cc::Animation::TRANSFORM);
-STATIC_ASSERT_ENUM(CompositorAnimation::TargetPropertyOpacity, cc::Animation::OPACITY);
-STATIC_ASSERT_ENUM(CompositorAnimation::TargetPropertyFilter, cc::Animation::FILTER);
-STATIC_ASSERT_ENUM(CompositorAnimation::TargetPropertyScrollOffset, cc::Animation::SCROLL_OFFSET);
-
-CompositorAnimation::CompositorAnimation(const CompositorAnimationCurve& webCurve, TargetProperty targetProperty, int animationId, int groupId)
+CompositorAnimation::CompositorAnimation(const CompositorAnimationCurve& webCurve, CompositorTargetProperty::Type targetProperty, int animationId, int groupId)
 {
     if (!animationId)
         animationId = AnimationIdProvider::NextAnimationId();
@@ -62,9 +52,7 @@ CompositorAnimation::CompositorAnimation(const CompositorAnimationCurve& webCurv
         break;
     }
     }
-    m_animation = Animation::Create(
-        std::move(curve), animationId, groupId,
-        static_cast<cc::Animation::TargetProperty>(targetProperty));
+    m_animation = Animation::Create(std::move(curve), animationId, groupId, targetProperty);
 }
 
 CompositorAnimation::CompositorAnimation() {}
@@ -81,9 +69,9 @@ int CompositorAnimation::group()
     return m_animation->group();
 }
 
-blink::CompositorAnimation::TargetProperty CompositorAnimation::targetProperty() const
+CompositorTargetProperty::Type CompositorAnimation::targetProperty() const
 {
-    return static_cast<CompositorAnimation::TargetProperty>(m_animation->target_property());
+    return m_animation->target_property();
 }
 
 double CompositorAnimation::iterations() const

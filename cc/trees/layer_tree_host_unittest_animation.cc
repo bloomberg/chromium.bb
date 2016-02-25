@@ -136,13 +136,13 @@ class LayerTreeHostAnimationTestAddAnimation
   }
 
   void NotifyAnimationStarted(base::TimeTicks monotonic_time,
-                              Animation::TargetProperty target_property,
+                              TargetProperty::Type target_property,
                               int group) override {
     EXPECT_LT(base::TimeTicks(), monotonic_time);
 
     LayerAnimationController* controller =
         layer_tree_host()->root_layer()->layer_animation_controller();
-    Animation* animation = controller->GetAnimation(Animation::OPACITY);
+    Animation* animation = controller->GetAnimation(TargetProperty::OPACITY);
     if (animation)
       controller->RemoveAnimation(animation->id());
 
@@ -220,7 +220,7 @@ class LayerTreeHostAnimationTestAnimationsGetDeleted
   }
 
   void NotifyAnimationFinished(base::TimeTicks monotonic_time,
-                               Animation::TargetProperty target_property,
+                               TargetProperty::Type target_property,
                                int group) override {
     // Animations on the impl-side controller only get deleted during a commit,
     // so we need to schedule a commit.
@@ -258,7 +258,8 @@ class LayerTreeHostAnimationTestAddAnimationWithTimingFunction
     LayerAnimationController* controller_impl =
         host_impl->active_tree()->root_layer()->children()[0]->
         layer_animation_controller();
-    Animation* animation = controller_impl->GetAnimation(Animation::OPACITY);
+    Animation* animation =
+        controller_impl->GetAnimation(TargetProperty::OPACITY);
     if (!animation)
       return;
 
@@ -303,12 +304,12 @@ class LayerTreeHostAnimationTestSynchronizeAnimationStartTimes
   void BeginTest() override { PostAddAnimationToMainThread(picture_.get()); }
 
   void NotifyAnimationStarted(base::TimeTicks monotonic_time,
-                              Animation::TargetProperty target_property,
+                              TargetProperty::Type target_property,
                               int group) override {
     LayerAnimationController* controller =
         layer_tree_host()->root_layer()->children()[0]->
         layer_animation_controller();
-    Animation* animation = controller->GetAnimation(Animation::OPACITY);
+    Animation* animation = controller->GetAnimation(TargetProperty::OPACITY);
     main_start_time_ = animation->start_time();
     controller->RemoveAnimation(animation->id());
     EndTest();
@@ -319,7 +320,7 @@ class LayerTreeHostAnimationTestSynchronizeAnimationStartTimes
     LayerAnimationController* controller =
         impl_host->active_tree()->root_layer()->children()[0]->
         layer_animation_controller();
-    Animation* animation = controller->GetAnimation(Animation::OPACITY);
+    Animation* animation = controller->GetAnimation(TargetProperty::OPACITY);
     if (!animation)
       return;
 
@@ -350,11 +351,11 @@ class LayerTreeHostAnimationTestAnimationFinishedEvents
   }
 
   void NotifyAnimationFinished(base::TimeTicks monotonic_time,
-                               Animation::TargetProperty target_property,
+                               TargetProperty::Type target_property,
                                int group) override {
     LayerAnimationController* controller =
         layer_tree_host()->root_layer()->layer_animation_controller();
-    Animation* animation = controller->GetAnimation(Animation::OPACITY);
+    Animation* animation = controller->GetAnimation(TargetProperty::OPACITY);
     if (animation)
       controller->RemoveAnimation(animation->id());
     EndTest();
@@ -390,7 +391,7 @@ class LayerTreeHostAnimationTestDoNotSkipLayersWithAnimatedOpacity
     LayerAnimationController* controller_impl =
         host_impl->active_tree()->root_layer()->layer_animation_controller();
     Animation* animation_impl =
-        controller_impl->GetAnimation(Animation::OPACITY);
+        controller_impl->GetAnimation(TargetProperty::OPACITY);
     controller_impl->RemoveAnimation(animation_impl->id());
     EndTest();
   }
@@ -427,7 +428,7 @@ class LayerTreeHostAnimationTestLayerAddedWithAnimation
       // Any valid AnimationCurve will do here.
       scoped_ptr<AnimationCurve> curve(new FakeFloatAnimationCurve());
       scoped_ptr<Animation> animation(
-          Animation::Create(std::move(curve), 1, 1, Animation::OPACITY));
+          Animation::Create(std::move(curve), 1, 1, TargetProperty::OPACITY));
       layer->layer_animation_controller()->AddAnimation(std::move(animation));
 
       // We add the animation *before* attaching the layer to the tree.
@@ -616,7 +617,7 @@ class LayerTreeHostAnimationTestCheckerboardDoesntStartAnimations
   }
 
   void NotifyAnimationStarted(base::TimeTicks monotonic_time,
-                              Animation::TargetProperty target_property,
+                              TargetProperty::Type target_property,
                               int group) override {
     if (TestEnded())
       return;
@@ -667,7 +668,7 @@ class LayerTreeHostAnimationTestScrollOffsetChangesArePropagated
                 gfx::ScrollOffset(500.f, 550.f),
                 EaseInOutTimingFunction::Create()));
         scoped_ptr<Animation> animation(Animation::Create(
-            std::move(curve), 1, 0, Animation::SCROLL_OFFSET));
+            std::move(curve), 1, 0, TargetProperty::SCROLL_OFFSET));
         animation->set_needs_synchronized_start_time(true);
         bool animation_added =
             scroll_layer_->AddAnimation(std::move(animation));
@@ -718,8 +719,8 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
     scoped_ptr<ScrollOffsetAnimationCurve> curve(
         ScrollOffsetAnimationCurve::Create(gfx::ScrollOffset(6500.f, 7500.f),
                                            EaseInOutTimingFunction::Create()));
-    scoped_ptr<Animation> animation(
-        Animation::Create(std::move(curve), 1, 0, Animation::SCROLL_OFFSET));
+    scoped_ptr<Animation> animation(Animation::Create(
+        std::move(curve), 1, 0, TargetProperty::SCROLL_OFFSET));
     animation->set_needs_synchronized_start_time(true);
     scroll_layer_->AddAnimation(std::move(animation));
   }
@@ -733,7 +734,7 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
       case 1: {
         Animation* animation =
             scroll_layer_->layer_animation_controller()->GetAnimation(
-                Animation::SCROLL_OFFSET);
+                TargetProperty::SCROLL_OFFSET);
         scroll_layer_->layer_animation_controller()->RemoveAnimation(
             animation->id());
         scroll_layer_->SetScrollOffset(final_postion_);
@@ -762,7 +763,7 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
         host_impl->active_tree()->root_layer()->children()[0].get();
     Animation* animation =
         scroll_layer_impl->layer_animation_controller()->GetAnimation(
-            Animation::SCROLL_OFFSET);
+            TargetProperty::SCROLL_OFFSET);
 
     if (!animation || animation->run_state() != Animation::RUNNING) {
       host_impl->BlockNotifyReadyToActivateForTesting(false);
@@ -864,7 +865,7 @@ class LayerTreeHostAnimationTestAnimationsAddedToNewAndExistingLayers
     LayerAnimationController* root_controller_impl =
         host_impl->active_tree()->root_layer()->layer_animation_controller();
     Animation* root_animation =
-        root_controller_impl->GetAnimation(Animation::OPACITY);
+        root_controller_impl->GetAnimation(TargetProperty::OPACITY);
     if (!root_animation || root_animation->run_state() != Animation::RUNNING)
       return;
 
@@ -872,12 +873,12 @@ class LayerTreeHostAnimationTestAnimationsAddedToNewAndExistingLayers
         host_impl->active_tree()->root_layer()->children()
             [0]->layer_animation_controller();
     Animation* child_animation =
-        child_controller_impl->GetAnimation(Animation::OPACITY);
+        child_controller_impl->GetAnimation(TargetProperty::OPACITY);
     EXPECT_EQ(Animation::RUNNING, child_animation->run_state());
     EXPECT_EQ(root_animation->start_time(), child_animation->start_time());
-    root_controller_impl->AbortAnimations(Animation::OPACITY);
-    root_controller_impl->AbortAnimations(Animation::TRANSFORM);
-    child_controller_impl->AbortAnimations(Animation::OPACITY);
+    root_controller_impl->AbortAnimations(TargetProperty::OPACITY);
+    root_controller_impl->AbortAnimations(TargetProperty::TRANSFORM);
+    child_controller_impl->AbortAnimations(TargetProperty::OPACITY);
     EndTest();
   }
 
@@ -932,7 +933,8 @@ class LayerTreeHostAnimationTestPendingTreeAnimatesFirstCommit
     LayerImpl* child = root->children()[0].get();
     LayerAnimationController* controller_impl =
         child->layer_animation_controller();
-    Animation* animation = controller_impl->GetAnimation(Animation::TRANSFORM);
+    Animation* animation =
+        controller_impl->GetAnimation(TargetProperty::TRANSFORM);
 
     // The animation should be starting for the first frame.
     EXPECT_EQ(Animation::STARTING, animation->run_state());
@@ -945,7 +947,7 @@ class LayerTreeHostAnimationTestPendingTreeAnimatesFirstCommit
     // And the sync tree layer should know it is animating.
     EXPECT_TRUE(child->screen_space_transform_is_animating());
 
-    controller_impl->AbortAnimations(Animation::TRANSFORM);
+    controller_impl->AbortAnimations(TargetProperty::TRANSFORM);
     EndTest();
   }
 
@@ -1046,10 +1048,10 @@ class LayerTreeHostAnimationTestAddAnimationAfterAnimating
     for (auto& it : controllers_copy) {
       int id = it.first;
       if (id == host_impl->RootLayer()->id()) {
-        Animation* anim = it.second->GetAnimation(Animation::TRANSFORM);
+        Animation* anim = it.second->GetAnimation(TargetProperty::TRANSFORM);
         EXPECT_GT((anim->start_time() - base::TimeTicks()).InSecondsF(), 0);
       } else if (id == host_impl->RootLayer()->children()[0]->id()) {
-        Animation* anim = it.second->GetAnimation(Animation::OPACITY);
+        Animation* anim = it.second->GetAnimation(TargetProperty::OPACITY);
         EXPECT_GT((anim->start_time() - base::TimeTicks()).InSecondsF(), 0);
       }
       EndTest();
@@ -1086,7 +1088,8 @@ class LayerTreeHostAnimationTestRemoveAnimation
       case 2:
         LayerAnimationController* controller =
             layer_->layer_animation_controller();
-        Animation* animation = controller->GetAnimation(Animation::TRANSFORM);
+        Animation* animation =
+            controller->GetAnimation(TargetProperty::TRANSFORM);
         layer_->RemoveAnimation(animation->id());
         gfx::Transform transform;
         transform.Translate(10.f, 10.f);
@@ -1162,7 +1165,8 @@ class LayerTreeHostAnimationTestIsAnimating
       case 2:
         LayerAnimationController* controller =
             layer_->layer_animation_controller();
-        Animation* animation = controller->GetAnimation(Animation::TRANSFORM);
+        Animation* animation =
+            controller->GetAnimation(TargetProperty::TRANSFORM);
         layer_->RemoveAnimation(animation->id());
         break;
     }
@@ -1310,7 +1314,7 @@ class LayerTreeHostAnimationTestNotifyAnimationFinished
   }
 
   void NotifyAnimationStarted(base::TimeTicks monotonic_time,
-                              Animation::TargetProperty target_property,
+                              TargetProperty::Type target_property,
                               int group) override {
     called_animation_started_ = true;
     layer_tree_host()->AnimateLayers(base::TimeTicks::FromInternalValue(
@@ -1319,7 +1323,7 @@ class LayerTreeHostAnimationTestNotifyAnimationFinished
   }
 
   void NotifyAnimationFinished(base::TimeTicks monotonic_time,
-                               Animation::TargetProperty target_property,
+                               TargetProperty::Type target_property,
                                int group) override {
     called_animation_finished_ = true;
     EndTest();

@@ -47,7 +47,7 @@ int AddOpacityTransition(Target* target,
 
   scoped_ptr<Animation> animation(Animation::Create(
       std::move(curve), id, AnimationIdProvider::NextGroupId(),
-      Animation::OPACITY));
+      TargetProperty::OPACITY));
   animation->set_needs_synchronized_start_time(true);
 
   target->AddAnimation(std::move(animation));
@@ -74,7 +74,7 @@ int AddAnimatedTransform(Target* target,
 
   scoped_ptr<Animation> animation(Animation::Create(
       std::move(curve), id, AnimationIdProvider::NextGroupId(),
-      Animation::TRANSFORM));
+      TargetProperty::TRANSFORM));
   animation->set_needs_synchronized_start_time(true);
 
   target->AddAnimation(std::move(animation));
@@ -119,9 +119,9 @@ int AddAnimatedFilter(Target* target,
 
   int id = AnimationIdProvider::NextAnimationId();
 
-  scoped_ptr<Animation> animation(
-      Animation::Create(std::move(curve), id,
-                        AnimationIdProvider::NextGroupId(), Animation::FILTER));
+  scoped_ptr<Animation> animation(Animation::Create(
+      std::move(curve), id, AnimationIdProvider::NextGroupId(),
+      TargetProperty::FILTER));
   animation->set_needs_synchronized_start_time(true);
 
   target->AddAnimation(std::move(animation));
@@ -417,7 +417,7 @@ int AddOpacityStepsToController(LayerAnimationController* target,
 
   scoped_ptr<Animation> animation(Animation::Create(
       std::move(curve), id, AnimationIdProvider::NextGroupId(),
-      Animation::OPACITY));
+      TargetProperty::OPACITY));
   animation->set_needs_synchronized_start_time(true);
 
   target->AddAnimation(std::move(animation));
@@ -525,10 +525,9 @@ int AddOpacityTransitionToLayerWithPlayer(
                                       end_opacity, use_timing_function);
 }
 
-void AbortAnimationsOnLayerWithPlayer(
-    int layer_id,
-    scoped_refptr<AnimationTimeline> timeline,
-    Animation::TargetProperty target_property) {
+void AbortAnimationsOnLayerWithPlayer(int layer_id,
+                                      scoped_refptr<AnimationTimeline> timeline,
+                                      TargetProperty::Type target_property) {
   LayerAnimationController* controller =
       timeline->animation_host()->GetControllerForLayerId(layer_id);
   DCHECK(controller);

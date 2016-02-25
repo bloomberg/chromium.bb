@@ -45,7 +45,7 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
   };
 
   static AnimatableProperty ToAnimatableProperty(
-      cc::Animation::TargetProperty property);
+      cc::TargetProperty::Type property);
 
   struct COMPOSITOR_EXPORT TargetValue {
     TargetValue();

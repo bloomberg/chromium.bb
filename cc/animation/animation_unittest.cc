@@ -23,7 +23,7 @@ scoped_ptr<Animation> CreateAnimation(double iterations,
                                       double playback_rate) {
   scoped_ptr<Animation> to_return(
       Animation::Create(make_scoped_ptr(new FakeFloatAnimationCurve(duration)),
-                        0, 1, Animation::OPACITY));
+                        0, 1, TargetProperty::OPACITY));
   to_return->set_iterations(iterations);
   to_return->set_playback_rate(playback_rate);
   return to_return;

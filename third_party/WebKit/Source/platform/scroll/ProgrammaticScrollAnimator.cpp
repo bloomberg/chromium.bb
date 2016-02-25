@@ -124,7 +124,7 @@ void ProgrammaticScrollAnimator::updateCompositorAnimations()
         bool sentToCompositor = false;
 
         if (!m_scrollableArea->shouldScrollOnMainThread()) {
-            OwnPtr<CompositorAnimation> animation = adoptPtr(CompositorFactory::current().createAnimation(*m_animationCurve, CompositorAnimation::TargetPropertyScrollOffset));
+            OwnPtr<CompositorAnimation> animation = adoptPtr(CompositorFactory::current().createAnimation(*m_animationCurve, CompositorTargetProperty::SCROLL_OFFSET));
 
             int animationId = animation->id();
             int animationGroupId = animation->group();

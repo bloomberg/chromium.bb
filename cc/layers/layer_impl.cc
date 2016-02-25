@@ -862,10 +862,10 @@ void LayerImpl::UpdatePropertyTreeForScrollingAndAnimationIfNeeded() {
   if (scrollable())
     UpdatePropertyTreeScrollOffset();
 
-  if (HasAnyAnimationTargetingProperty(Animation::OPACITY))
+  if (HasAnyAnimationTargetingProperty(TargetProperty::OPACITY))
     UpdatePropertyTreeOpacity();
 
-  if (HasAnyAnimationTargetingProperty(Animation::TRANSFORM)) {
+  if (HasAnyAnimationTargetingProperty(TargetProperty::TRANSFORM)) {
     UpdatePropertyTreeTransform();
     UpdatePropertyTreeTransformIsAnimated(
         HasPotentiallyRunningTransformAnimation());
@@ -1081,7 +1081,7 @@ bool LayerImpl::FilterIsAnimating() const {
                  : LayerAnimationController::ObserverType::PENDING;
   return layer_animation_controller_
              ? layer_animation_controller_->IsCurrentlyAnimatingProperty(
-                   Animation::FILTER, observer_type)
+                   TargetProperty::FILTER, observer_type)
              : layer_tree_impl_->IsAnimatingFilterProperty(this);
 }
 
@@ -1091,7 +1091,7 @@ bool LayerImpl::HasPotentiallyRunningFilterAnimation() const {
                  : LayerAnimationController::ObserverType::PENDING;
   return layer_animation_controller_
              ? layer_animation_controller_->IsPotentiallyAnimatingProperty(
-                   Animation::FILTER, observer_type)
+                   TargetProperty::FILTER, observer_type)
              : layer_tree_impl_->HasPotentiallyRunningFilterAnimation(this);
 }
 
@@ -1100,7 +1100,7 @@ bool LayerImpl::FilterIsAnimatingOnImplOnly() const {
     return layer_tree_impl_->FilterIsAnimatingOnImplOnly(this);
 
   Animation* filter_animation =
-      layer_animation_controller_->GetAnimation(Animation::FILTER);
+      layer_animation_controller_->GetAnimation(TargetProperty::FILTER);
   return filter_animation && filter_animation->is_impl_only();
 }
 
@@ -1145,7 +1145,7 @@ bool LayerImpl::OpacityIsAnimating() const {
                  : LayerAnimationController::ObserverType::PENDING;
   return layer_animation_controller_
              ? layer_animation_controller_->IsCurrentlyAnimatingProperty(
-                   Animation::OPACITY, observer_type)
+                   TargetProperty::OPACITY, observer_type)
              : layer_tree_impl_->IsAnimatingOpacityProperty(this);
 }
 
@@ -1155,7 +1155,7 @@ bool LayerImpl::HasPotentiallyRunningOpacityAnimation() const {
                  : LayerAnimationController::ObserverType::PENDING;
   return layer_animation_controller_
              ? layer_animation_controller_->IsPotentiallyAnimatingProperty(
-                   Animation::OPACITY, observer_type)
+                   TargetProperty::OPACITY, observer_type)
              : layer_tree_impl_->HasPotentiallyRunningOpacityAnimation(this);
 }
 
@@ -1164,7 +1164,7 @@ bool LayerImpl::OpacityIsAnimatingOnImplOnly() const {
     return layer_tree_impl_->OpacityIsAnimatingOnImplOnly(this);
 
   Animation* opacity_animation =
-      layer_animation_controller_->GetAnimation(Animation::OPACITY);
+      layer_animation_controller_->GetAnimation(TargetProperty::OPACITY);
   return opacity_animation && opacity_animation->is_impl_only();
 }
 
@@ -1267,7 +1267,7 @@ bool LayerImpl::TransformIsAnimating() const {
                  : LayerAnimationController::ObserverType::PENDING;
   return layer_animation_controller_
              ? layer_animation_controller_->IsCurrentlyAnimatingProperty(
-                   Animation::TRANSFORM, observer_type)
+                   TargetProperty::TRANSFORM, observer_type)
              : layer_tree_impl_->IsAnimatingTransformProperty(this);
 }
 
@@ -1277,7 +1277,7 @@ bool LayerImpl::HasPotentiallyRunningTransformAnimation() const {
                  : LayerAnimationController::ObserverType::PENDING;
   return layer_animation_controller_
              ? layer_animation_controller_->IsPotentiallyAnimatingProperty(
-                   Animation::TRANSFORM, observer_type)
+                   TargetProperty::TRANSFORM, observer_type)
              : layer_tree_impl_->HasPotentiallyRunningTransformAnimation(this);
 }
 
@@ -1286,7 +1286,7 @@ bool LayerImpl::TransformIsAnimatingOnImplOnly() const {
     return layer_tree_impl_->TransformIsAnimatingOnImplOnly(this);
 
   Animation* transform_animation =
-      layer_animation_controller_->GetAnimation(Animation::TRANSFORM);
+      layer_animation_controller_->GetAnimation(TargetProperty::TRANSFORM);
   return transform_animation && transform_animation->is_impl_only();
 }
 
@@ -1330,7 +1330,7 @@ bool LayerImpl::AnimationStartScale(float* start_scale) const {
 }
 
 bool LayerImpl::HasAnyAnimationTargetingProperty(
-    Animation::TargetProperty property) const {
+    TargetProperty::Type property) const {
   if (!layer_animation_controller_)
     return layer_tree_impl_->HasAnyAnimationTargetingProperty(this, property);
 
@@ -1691,11 +1691,10 @@ int LayerImpl::NumDescendantsThatDrawContent() const {
   return num_descendants_that_draw_content_;
 }
 
-void LayerImpl::NotifyAnimationFinished(
-    base::TimeTicks monotonic_time,
-    Animation::TargetProperty target_property,
-    int group) {
-  if (target_property == Animation::SCROLL_OFFSET)
+void LayerImpl::NotifyAnimationFinished(base::TimeTicks monotonic_time,
+                                        TargetProperty::Type target_property,
+                                        int group) {
+  if (target_property == TargetProperty::SCROLL_OFFSET)
     layer_tree_impl_->InputScrollAnimationFinished();
 }
 

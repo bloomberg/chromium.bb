@@ -70,7 +70,7 @@ void CompositorAnimationPlayer::abortAnimation(int animationId)
 
 void CompositorAnimationPlayer::NotifyAnimationStarted(
     base::TimeTicks monotonicTime,
-    cc::Animation::TargetProperty targetProperty,
+    cc::TargetProperty::Type targetProperty,
     int group)
 {
     if (m_delegate)
@@ -79,7 +79,7 @@ void CompositorAnimationPlayer::NotifyAnimationStarted(
 
 void CompositorAnimationPlayer::NotifyAnimationFinished(
     base::TimeTicks monotonicTime,
-    cc::Animation::TargetProperty targetProperty,
+    cc::TargetProperty::Type targetProperty,
     int group)
 {
     if (m_delegate)
@@ -88,7 +88,7 @@ void CompositorAnimationPlayer::NotifyAnimationFinished(
 
 void CompositorAnimationPlayer::NotifyAnimationAborted(
     base::TimeTicks monotonicTime,
-    cc::Animation::TargetProperty targetProperty,
+    cc::TargetProperty::Type targetProperty,
     int group)
 {
     if (m_delegate)

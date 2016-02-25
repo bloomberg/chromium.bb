@@ -1759,7 +1759,7 @@ TEST_F(LayerTest,
     AddOpacityTransitionToController(impl_layer->layer_animation_controller(),
                                      1.0, 0.3f, 0.7f, false);
     impl_layer->layer_animation_controller()
-        ->GetAnimation(Animation::OPACITY)
+        ->GetAnimation(TargetProperty::OPACITY)
         ->set_is_impl_only(true);
   }
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetOpacity(0.75f));
@@ -1810,7 +1810,7 @@ TEST_F(LayerTest,
     AddAnimatedFilterToController(impl_layer->layer_animation_controller(), 1.0,
                                   1.f, 2.f);
     impl_layer->layer_animation_controller()
-        ->GetAnimation(Animation::FILTER)
+        ->GetAnimation(TargetProperty::FILTER)
         ->set_is_impl_only(true);
   }
   filters.Append(FilterOperation::CreateSepiaFilter(0.5f));
@@ -2144,7 +2144,7 @@ static bool AddTestAnimation(Layer* layer) {
   curve->AddKeyframe(
       FloatKeyframe::Create(base::TimeDelta::FromSecondsD(1.0), 0.7f, nullptr));
   scoped_ptr<Animation> animation =
-      Animation::Create(std::move(curve), 0, 0, Animation::OPACITY);
+      Animation::Create(std::move(curve), 0, 0, TargetProperty::OPACITY);
 
   return layer->AddAnimation(std::move(animation));
 }

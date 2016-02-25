@@ -1923,7 +1923,7 @@ bool LayerTreeImpl::HasPotentiallyRunningTransformAnimation(
 
 bool LayerTreeImpl::HasAnyAnimationTargetingProperty(
     const LayerImpl* layer,
-    Animation::TargetProperty property) const {
+    TargetProperty::Type property) const {
   return layer_tree_host_impl_->animation_host()
              ? layer_tree_host_impl_->animation_host()
                    ->HasAnyAnimationTargetingProperty(layer->id(), property)

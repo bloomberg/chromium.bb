@@ -2626,7 +2626,7 @@ TEST_F(LayerTreeHostCommonTest,
   // Add a transform animation with a start delay to |grand_child|.
   scoped_ptr<Animation> animation = Animation::Create(
       scoped_ptr<AnimationCurve>(new FakeTransformTransition(1.0)), 0, 1,
-      Animation::TRANSFORM);
+      TargetProperty::TRANSFORM);
   animation->set_fill_mode(Animation::FILL_MODE_NONE);
   animation->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
   if (layer_settings().use_compositor_animation_timelines) {
@@ -7553,18 +7553,18 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
 
   if (layer_settings().use_compositor_animation_timelines) {
     AbortAnimationsOnLayerWithPlayer(grand_parent->id(), timeline,
-                                     Animation::TRANSFORM);
+                                     TargetProperty::TRANSFORM);
     AbortAnimationsOnLayerWithPlayer(parent_raw->id(), timeline,
-                                     Animation::TRANSFORM);
+                                     TargetProperty::TRANSFORM);
     AbortAnimationsOnLayerWithPlayer(child_raw->id(), timeline,
-                                     Animation::TRANSFORM);
+                                     TargetProperty::TRANSFORM);
   } else {
     grand_parent->layer_animation_controller()->AbortAnimations(
-        Animation::TRANSFORM);
+        TargetProperty::TRANSFORM);
     parent_raw->layer_animation_controller()->AbortAnimations(
-        Animation::TRANSFORM);
+        TargetProperty::TRANSFORM);
     child_raw->layer_animation_controller()->AbortAnimations(
-        Animation::TRANSFORM);
+        TargetProperty::TRANSFORM);
   }
 
   TransformOperations perspective;
@@ -7602,10 +7602,10 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
 
   if (layer_settings().use_compositor_animation_timelines) {
     AbortAnimationsOnLayerWithPlayer(child_raw->id(), timeline,
-                                     Animation::TRANSFORM);
+                                     TargetProperty::TRANSFORM);
   } else {
     child_raw->layer_animation_controller()->AbortAnimations(
-        Animation::TRANSFORM);
+        TargetProperty::TRANSFORM);
   }
   gfx::Transform scale_matrix;
   scale_matrix.Scale(1.f, 2.f);
@@ -8522,7 +8522,7 @@ TEST_F(LayerTreeHostCommonTest, DelayedFilterAnimationCreatesRenderSurface) {
   curve->AddKeyframe(FilterKeyframe::Create(
       base::TimeDelta::FromMilliseconds(100), end_filters, nullptr));
   scoped_ptr<Animation> animation =
-      Animation::Create(std::move(curve), 0, 1, Animation::FILTER);
+      Animation::Create(std::move(curve), 0, 1, TargetProperty::FILTER);
   animation->set_fill_mode(Animation::FILL_MODE_NONE);
   animation->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
 
@@ -9003,7 +9003,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
   int animation_id = 0;
   scoped_ptr<Animation> animation = Animation::Create(
       scoped_ptr<AnimationCurve>(new FakeTransformTransition(1.0)),
-      animation_id, 1, Animation::TRANSFORM);
+      animation_id, 1, TargetProperty::TRANSFORM);
   animation->set_fill_mode(Animation::FILL_MODE_NONE);
   animation->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
   if (layer_settings().use_compositor_animation_timelines) {
@@ -9040,7 +9040,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
   animation_id = 1;
   animation = Animation::Create(
       scoped_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)),
-      animation_id, 1, Animation::OPACITY);
+      animation_id, 1, TargetProperty::OPACITY);
   animation->set_fill_mode(Animation::FILL_MODE_NONE);
   animation->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
   if (layer_settings().use_compositor_animation_timelines) {

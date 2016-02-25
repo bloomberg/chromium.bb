@@ -54,7 +54,7 @@ class AnimationHost::ScrollOffsetAnimations : public AnimationDelegate {
 
     scoped_ptr<Animation> animation = Animation::Create(
         std::move(curve), AnimationIdProvider::NextAnimationId(),
-        AnimationIdProvider::NextGroupId(), Animation::SCROLL_OFFSET);
+        AnimationIdProvider::NextGroupId(), TargetProperty::SCROLL_OFFSET);
     animation->set_is_impl_only(true);
 
     DCHECK(scroll_offset_animation_player_);
@@ -77,7 +77,7 @@ class AnimationHost::ScrollOffsetAnimations : public AnimationDelegate {
 
     Animation* animation = scroll_offset_animation_player_->element_animations()
                                ->layer_animation_controller()
-                               ->GetAnimation(Animation::SCROLL_OFFSET);
+                               ->GetAnimation(TargetProperty::SCROLL_OFFSET);
     if (!animation) {
       scroll_offset_animation_player_->DetachLayer();
       return false;
@@ -100,22 +100,23 @@ class AnimationHost::ScrollOffsetAnimations : public AnimationDelegate {
 
   void ScrollAnimationAbort() {
     DCHECK(scroll_offset_animation_player_);
-    scroll_offset_animation_player_->AbortAnimations(Animation::SCROLL_OFFSET);
+    scroll_offset_animation_player_->AbortAnimations(
+        TargetProperty::SCROLL_OFFSET);
   }
 
   // AnimationDelegate implementation.
   void NotifyAnimationStarted(base::TimeTicks monotonic_time,
-                              Animation::TargetProperty target_property,
+                              TargetProperty::Type target_property,
                               int group) override {}
   void NotifyAnimationFinished(base::TimeTicks monotonic_time,
-                               Animation::TargetProperty target_property,
+                               TargetProperty::Type target_property,
                                int group) override {
-    DCHECK_EQ(target_property, Animation::SCROLL_OFFSET);
+    DCHECK_EQ(target_property, TargetProperty::SCROLL_OFFSET);
     DCHECK(animation_host_->mutator_host_client());
     animation_host_->mutator_host_client()->ScrollOffsetAnimationFinished();
   }
   void NotifyAnimationAborted(base::TimeTicks monotonic_time,
-                              Animation::TargetProperty target_property,
+                              TargetProperty::Type target_property,
                               int group) override {}
 
  private:
@@ -392,7 +393,7 @@ bool AnimationHost::IsAnimatingFilterProperty(int layer_id,
   LayerAnimationController* controller = GetControllerForLayerId(layer_id);
   return controller
              ? controller->IsCurrentlyAnimatingProperty(
-                   Animation::FILTER, ObserverTypeFromTreeType(tree_type))
+                   TargetProperty::FILTER, ObserverTypeFromTreeType(tree_type))
              : false;
 }
 
@@ -401,7 +402,7 @@ bool AnimationHost::IsAnimatingOpacityProperty(int layer_id,
   LayerAnimationController* controller = GetControllerForLayerId(layer_id);
   return controller
              ? controller->IsCurrentlyAnimatingProperty(
-                   Animation::OPACITY, ObserverTypeFromTreeType(tree_type))
+                   TargetProperty::OPACITY, ObserverTypeFromTreeType(tree_type))
              : false;
 }
 
@@ -411,7 +412,8 @@ bool AnimationHost::IsAnimatingTransformProperty(
   LayerAnimationController* controller = GetControllerForLayerId(layer_id);
   return controller
              ? controller->IsCurrentlyAnimatingProperty(
-                   Animation::TRANSFORM, ObserverTypeFromTreeType(tree_type))
+                   TargetProperty::TRANSFORM,
+                   ObserverTypeFromTreeType(tree_type))
              : false;
 }
 
@@ -421,7 +423,7 @@ bool AnimationHost::HasPotentiallyRunningFilterAnimation(
   LayerAnimationController* controller = GetControllerForLayerId(layer_id);
   return controller
              ? controller->IsPotentiallyAnimatingProperty(
-                   Animation::FILTER, ObserverTypeFromTreeType(tree_type))
+                   TargetProperty::FILTER, ObserverTypeFromTreeType(tree_type))
              : false;
 }
 
@@ -431,7 +433,7 @@ bool AnimationHost::HasPotentiallyRunningOpacityAnimation(
   LayerAnimationController* controller = GetControllerForLayerId(layer_id);
   return controller
              ? controller->IsPotentiallyAnimatingProperty(
-                   Animation::OPACITY, ObserverTypeFromTreeType(tree_type))
+                   TargetProperty::OPACITY, ObserverTypeFromTreeType(tree_type))
              : false;
 }
 
@@ -441,13 +443,14 @@ bool AnimationHost::HasPotentiallyRunningTransformAnimation(
   LayerAnimationController* controller = GetControllerForLayerId(layer_id);
   return controller
              ? controller->IsPotentiallyAnimatingProperty(
-                   Animation::TRANSFORM, ObserverTypeFromTreeType(tree_type))
+                   TargetProperty::TRANSFORM,
+                   ObserverTypeFromTreeType(tree_type))
              : false;
 }
 
 bool AnimationHost::HasAnyAnimationTargetingProperty(
     int layer_id,
-    Animation::TargetProperty property) const {
+    TargetProperty::Type property) const {
   LayerAnimationController* controller = GetControllerForLayerId(layer_id);
   if (!controller)
     return false;
@@ -460,7 +463,7 @@ bool AnimationHost::FilterIsAnimatingOnImplOnly(int layer_id) const {
   if (!controller)
     return false;
 
-  Animation* animation = controller->GetAnimation(Animation::FILTER);
+  Animation* animation = controller->GetAnimation(TargetProperty::FILTER);
   return animation && animation->is_impl_only();
 }
 
@@ -469,7 +472,7 @@ bool AnimationHost::OpacityIsAnimatingOnImplOnly(int layer_id) const {
   if (!controller)
     return false;
 
-  Animation* animation = controller->GetAnimation(Animation::OPACITY);
+  Animation* animation = controller->GetAnimation(TargetProperty::OPACITY);
   return animation && animation->is_impl_only();
 }
 
@@ -478,7 +481,7 @@ bool AnimationHost::TransformIsAnimatingOnImplOnly(int layer_id) const {
   if (!controller)
     return false;
 
-  Animation* animation = controller->GetAnimation(Animation::TRANSFORM);
+  Animation* animation = controller->GetAnimation(TargetProperty::TRANSFORM);
   return animation && animation->is_impl_only();
 }
 
