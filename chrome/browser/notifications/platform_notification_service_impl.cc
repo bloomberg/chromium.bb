@@ -217,8 +217,13 @@ void PlatformNotificationServiceImpl::OnPersistentNotificationClose(
     BrowserContext* browser_context,
     int64_t persistent_notification_id,
     const GURL& origin,
-    bool by_user) const {
+    bool by_user) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // If we programatically closed this notification, don't dispatch any event.
+  if (closed_notifications_.erase(persistent_notification_id) != 0)
+    return;
+
   if (by_user) {
     content::RecordAction(base::UserMetricsAction(
         "Notifications.Persistent.ClosedByUser"));
@@ -399,6 +404,8 @@ void PlatformNotificationServiceImpl::ClosePersistentNotification(
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
   DCHECK(profile);
+
+  closed_notifications_.insert(persistent_notification_id);
 
 #if defined(OS_ANDROID)
   bool cancel_by_persistent_id = true;
