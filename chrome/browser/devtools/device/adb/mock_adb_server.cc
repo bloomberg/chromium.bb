@@ -21,6 +21,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/io_buffer.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/socket/stream_socket.h"
@@ -480,9 +481,7 @@ static SimpleHttpServer* mock_adb_server_ = NULL;
 void StartMockAdbServerOnIOThread(FlushMode flush_mode) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   CHECK(mock_adb_server_ == NULL);
-  net::IPAddressNumber address;
-  net::ParseIPLiteralToNumber("127.0.0.1", &address);
-  net::IPEndPoint endpoint(address, kAdbPort);
+  net::IPEndPoint endpoint(net::IPAddress(127, 0, 0, 1), kAdbPort);
   mock_adb_server_ = new SimpleHttpServer(
       base::Bind(&AdbParser::Create, flush_mode), endpoint);
 }

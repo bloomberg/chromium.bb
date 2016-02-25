@@ -13,6 +13,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/socket/tcp_client_socket.h"
 
@@ -172,14 +173,14 @@ AdbClientSocket::~AdbClientSocket() {
 }
 
 void AdbClientSocket::Connect(const net::CompletionCallback& callback) {
-  net::IPAddressNumber ip_number;
-  if (!net::ParseIPLiteralToNumber(host_, &ip_number)) {
+  net::IPAddress ip_address;
+  if (!ip_address.AssignFromIPLiteral(host_)) {
     callback.Run(net::ERR_FAILED);
     return;
   }
 
   net::AddressList address_list =
-      net::AddressList::CreateFromIPAddress(ip_number, port_);
+      net::AddressList::CreateFromIPAddress(ip_address, port_);
   socket_.reset(new net::TCPClientSocket(address_list, NULL,
                                          net::NetLog::Source()));
   int result = socket_->Connect(callback);
