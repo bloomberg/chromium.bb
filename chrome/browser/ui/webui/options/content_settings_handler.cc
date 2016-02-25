@@ -1673,6 +1673,7 @@ void ContentSettingsHandler::SetException(const base::ListValue* args) {
                                     type,
                                     std::string(),
                                     setting_type);
+    WebSiteSettingsUmaUtil::LogPermissionChange(type, setting_type);
   }
 }
 
