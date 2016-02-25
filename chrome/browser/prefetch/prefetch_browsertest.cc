@@ -92,8 +92,8 @@ class PrefetchBrowserTestPredictionDisabled : public PrefetchBrowserTestBase {
 IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestPredictionDisabled,
                        ExperimentDisabled) {
   EXPECT_TRUE(RunPrefetchExperiment(false, browser()));
-  // Should not prefetch even if preference is ALWAYS.
-  SetPreference(NetworkPredictionOptions::NETWORK_PREDICTION_ALWAYS);
+  // Should not prefetch even if preference is WIFI_ONLY.
+  SetPreference(NetworkPredictionOptions::NETWORK_PREDICTION_WIFI_ONLY);
   EXPECT_TRUE(RunPrefetchExperiment(false, browser()));
 }
 
@@ -111,17 +111,6 @@ IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestPrediction, PreferenceWorks) {
   {
     scoped_ptr<NetworkChangeNotifier> mock(new MockNetworkChangeNotifier4G);
     EXPECT_TRUE(RunPrefetchExperiment(false, browser()));
-  }
-
-  // Set preference to ALWAYS: always prefetch.
-  SetPreference(NetworkPredictionOptions::NETWORK_PREDICTION_ALWAYS);
-  {
-    scoped_ptr<NetworkChangeNotifier> mock(new MockNetworkChangeNotifierWIFI);
-    EXPECT_TRUE(RunPrefetchExperiment(true, browser()));
-  }
-  {
-    scoped_ptr<NetworkChangeNotifier> mock(new MockNetworkChangeNotifier4G);
-    EXPECT_TRUE(RunPrefetchExperiment(true, browser()));
   }
 
   // Set preference to NEVER: never prefetch.

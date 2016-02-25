@@ -21,7 +21,6 @@ import org.chromium.chrome.browser.physicalweb.PhysicalWeb;
 import org.chromium.chrome.browser.precache.PrecacheLauncher;
 import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
-import org.chromium.chrome.browser.preferences.NetworkPredictionOptions;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 
@@ -37,8 +36,6 @@ public class PrivacyPreferences extends PreferenceFragment
     private static final String PREF_SAFE_BROWSING = "safe_browsing";
     private static final String PREF_CONTEXTUAL_SEARCH = "contextual_search";
     private static final String PREF_NETWORK_PREDICTIONS = "network_predictions";
-    private static final String PREF_NETWORK_PREDICTIONS_NO_CELLULAR =
-            "network_predictions_no_cellular";
     private static final String PREF_CRASH_DUMP_UPLOAD = "crash_dump_upload";
     private static final String PREF_CRASH_DUMP_UPLOAD_NO_CELLULAR =
             "crash_dump_upload_no_cellular";
@@ -60,28 +57,12 @@ public class PrivacyPreferences extends PreferenceFragment
 
         mManagedPreferenceDelegate = createManagedPreferenceDelegate();
 
-        NetworkPredictionPreference networkPredictionPref =
-                (NetworkPredictionPreference) findPreference(PREF_NETWORK_PREDICTIONS);
-        ChromeBaseCheckBoxPreference networkPredictionNoCellularPref =
-                (ChromeBaseCheckBoxPreference) findPreference(PREF_NETWORK_PREDICTIONS_NO_CELLULAR);
-        NetworkPredictionOptions networkPredictionOptions = PrefServiceBridge.getInstance()
-                .getNetworkPredictionOptions();
-
-        PreferenceScreen preferenceScreen = getPreferenceScreen();
-        boolean isMobileNetworkCapable = privacyPrefManager.isMobileNetworkCapable();
-        if (isMobileNetworkCapable) {
-            preferenceScreen.removePreference(networkPredictionNoCellularPref);
-            networkPredictionPref.setValue(networkPredictionOptions.enumToString());
-            networkPredictionPref.setOnPreferenceChangeListener(this);
-            networkPredictionPref.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
-        } else {
-            preferenceScreen.removePreference(networkPredictionPref);
-            networkPredictionNoCellularPref.setChecked(
-                    networkPredictionOptions != NetworkPredictionOptions.NETWORK_PREDICTION_NEVER);
-            networkPredictionNoCellularPref.setOnPreferenceChangeListener(this);
-            networkPredictionNoCellularPref.setManagedPreferenceDelegate(
-                    mManagedPreferenceDelegate);
-        }
+        ChromeBaseCheckBoxPreference networkPredictionPref =
+                (ChromeBaseCheckBoxPreference) findPreference(PREF_NETWORK_PREDICTIONS);
+        networkPredictionPref.setChecked(
+                PrefServiceBridge.getInstance().getNetworkPredictionEnabled());
+        networkPredictionPref.setOnPreferenceChangeListener(this);
+        networkPredictionPref.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
         // Display the correct settings fragment according to the user experiment group and to type
         // of the device, by removing not applicable preference fragments.
@@ -90,12 +71,13 @@ public class PrivacyPreferences extends PreferenceFragment
         ChromeBaseCheckBoxPreference uploadCrashDumpNoCellularPref =
                 (ChromeBaseCheckBoxPreference) findPreference(PREF_CRASH_DUMP_UPLOAD_NO_CELLULAR);
 
+        PreferenceScreen preferenceScreen = getPreferenceScreen();
         if (privacyPrefManager.isCellularExperimentEnabled()) {
             preferenceScreen.removePreference(uploadCrashDumpNoCellularPref);
             preferenceScreen.removePreference(uploadCrashDumpPref);
         } else {
             preferenceScreen.removePreference(findPreference(PREF_USAGE_AND_CRASH_REPORTING));
-            if (isMobileNetworkCapable) {
+            if (privacyPrefManager.isMobileNetworkCapable()) {
                 preferenceScreen.removePreference(uploadCrashDumpNoCellularPref);
                 uploadCrashDumpPref.setOnPreferenceChangeListener(this);
                 uploadCrashDumpPref.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
@@ -148,13 +130,6 @@ public class PrivacyPreferences extends PreferenceFragment
             ((CrashDumpUploadPreference) preference).onPreferenceChange(preference, newValue);
         }
 
-        // NetworkPredictionPreference listens to its own PreferenceChanged to update its text.
-        // We have replaced the listener. If we do run into a NetworkPredictionPreference change,
-        // we will call onPreferenceChange to change the displayed text.
-        if (preference instanceof NetworkPredictionPreference) {
-            ((NetworkPredictionPreference) preference).onPreferenceChange(preference, newValue);
-        }
-
         String key = preference.getKey();
         if (PREF_SEARCH_SUGGESTIONS.equals(key)) {
             PrefServiceBridge.getInstance().setSearchSuggestEnabled((boolean) newValue);
@@ -164,13 +139,7 @@ public class PrivacyPreferences extends PreferenceFragment
             PrefServiceBridge.getInstance().setSafeBrowsingExtendedReportingEnabled(
                     (boolean) newValue);
         } else if (PREF_NETWORK_PREDICTIONS.equals(key)) {
-            PrefServiceBridge.getInstance().setNetworkPredictionOptions(
-                    NetworkPredictionOptions.stringToEnum((String) newValue));
-            PrecacheLauncher.updatePrecachingEnabled(getActivity());
-        } else if (PREF_NETWORK_PREDICTIONS_NO_CELLULAR.equals(key)) {
-            PrefServiceBridge.getInstance().setNetworkPredictionOptions((boolean) newValue
-                    ? NetworkPredictionOptions.NETWORK_PREDICTION_ALWAYS
-                    : NetworkPredictionOptions.NETWORK_PREDICTION_NEVER);
+            PrefServiceBridge.getInstance().setNetworkPredictionEnabled((boolean) newValue);
             PrecacheLauncher.updatePrecachingEnabled(getActivity());
         } else if (PREF_NAVIGATION_ERROR.equals(key)) {
             PrefServiceBridge.getInstance().setResolveNavigationErrorEnabled((boolean) newValue);
@@ -259,8 +228,7 @@ public class PrivacyPreferences extends PreferenceFragment
                 if (PREF_SAFE_BROWSING.equals(key)) {
                     return prefs.isSafeBrowsingManaged();
                 }
-                if (PREF_NETWORK_PREDICTIONS_NO_CELLULAR.equals(key)
-                        || PREF_NETWORK_PREDICTIONS.equals(key)) {
+                if (PREF_NETWORK_PREDICTIONS.equals(key)) {
                     return prefs.isNetworkPredictionManaged();
                 }
                 if (PREF_CRASH_DUMP_UPLOAD.equals(key)

@@ -42,7 +42,6 @@ import org.chromium.chrome.browser.omnibox.LocationBarLayout;
 import org.chromium.chrome.browser.omnibox.OmniboxResultsAdapter.OmniboxResultItem;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.UrlBar;
-import org.chromium.chrome.browser.preferences.NetworkPredictionOptions;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
@@ -102,8 +101,6 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
 
     // The number of ms to wait for the rendering activity to be started.
     protected static final int ACTIVITY_START_TIMEOUT_MS = 1000;
-
-    private static final String PERF_NORUN_TAG = "--NORUN--";
 
     private static final String PERF_ANNOTATION_FORMAT = "**PERFANNOTATION(%s):";
 
@@ -204,20 +201,14 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
     }
 
     /**
-     * Lets tests specify whether they want prerendering turned on.
-     * It is on by default. Since in some places different code paths are used for the same feature
-     * depending of whether instant is on or off (ex: infobars), it is necessary for some tests to
-     * test with and without instant.
-     *
-     * @param enabled whether prerender should be on.
+     * Enables or disables network predictions, i.e. prerendering, prefetching, DNS preresolution,
+     * etc. Network predictions are enabled by default.
      */
-    protected void setAllowPrerender(final boolean enabled) {
+    protected void setNetworkPredictionEnabled(final boolean enabled) {
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                PrefServiceBridge.getInstance().setNetworkPredictionOptions(enabled
-                        ? NetworkPredictionOptions.NETWORK_PREDICTION_ALWAYS
-                        : NetworkPredictionOptions.NETWORK_PREDICTION_NEVER);
+                PrefServiceBridge.getInstance().setNetworkPredictionEnabled(enabled);
             }
         });
     }
@@ -327,7 +318,7 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
     /**
      * @param url            The url of the page to load.
      * @param pageTransition The type of transition. see
-     *                       {@link org.chromium.content.browser.PageTransition}
+     *                       {@link org.chromium.ui.base.PageTransition}
      *                       for valid values.
      * @param tab            The tab to load the url into.
      * @param secondsToWait  The number of seconds to wait for the page to be loaded.
@@ -358,7 +349,7 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
     /**
      * @param url            The url of the page to load.
      * @param pageTransition The type of transition. see
-     *                       {@link org.chromium.content.browser.PageTransition}
+     *                       {@link org.chromium.ui.base.PageTransition}
      *                       for valid values.
      * @param tab            The tab to load the url into.
      * @return               FULL_PRERENDERED_PAGE_LOAD or PARTIAL_PRERENDERED_PAGE_LOAD if the

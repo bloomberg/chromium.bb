@@ -18,6 +18,8 @@ namespace chrome_browser_net {
 // The numerical value is stored in the prefs file, therefore the same enum
 // with the same order must be used by the platform-dependent components.
 enum NetworkPredictionOptions {
+  // TODO(newt): collapse ALWAYS and WIFI_ONLY into a single value. See
+  // crbug.com/585297
   NETWORK_PREDICTION_ALWAYS,
   NETWORK_PREDICTION_WIFI_ONLY,
   NETWORK_PREDICTION_NEVER,

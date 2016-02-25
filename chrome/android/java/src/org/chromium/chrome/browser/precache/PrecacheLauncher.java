@@ -117,7 +117,7 @@ public abstract class PrecacheLauncher {
         ThreadUtils.assertOnUiThread();
 
         boolean networkPredictionsAllowed =
-                PrefServiceBridge.getInstance().canPredictNetworkActions();
+                PrefServiceBridge.getInstance().canPrefetchAndPrerender();
         boolean shouldRun = nativeShouldRun();
 
         mNetworkPredictionsAllowed = networkPredictionsAllowed;

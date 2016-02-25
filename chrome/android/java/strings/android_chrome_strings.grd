@@ -334,31 +334,19 @@ CHAR-LIMIT guidelines:
         Use a prediction service to show related queries and popular websites as you type in the address bar
       </message>
       <message name="IDS_SAFE_BROWSING_EXTENDED_REPORTING_TITLE" desc="Title for checkbox that controls whether details of possible security incidents will be sent to Google.">
-      Security incidents
+        Security incidents
       </message>
       <message name="IDS_SAFE_BROWSING_EXTENDED_REPORTING_SUMMARY" desc="Summary for report security incidents.">
-      Automatically report details of possible security incidents to Google
+        Automatically report details of possible security incidents to Google
       </message>
       <message name="IDS_SAFE_BROWSING_TITLE" desc="Title for safe browsing.">
-      Safe Browsing
+        Safe Browsing
       </message>
       <message name="IDS_SAFE_BROWSING_SUMMARY" desc="Summary for safe browsing.">
-      Protect you and your device from dangerous sites
+        Protect you and your device from dangerous sites
       </message>
       <message name="IDS_NETWORK_PREDICTIONS_TITLE" desc="Title for Prefetch page resources.">
-        Prefetch page resources
-      </message>
-      <message name="IDS_NETWORK_PREDICTIONS_SUMMARY" desc="Summary for Prefetch page resources.">
-        Improve page load performance
-      </message>
-      <message name="IDS_NETWORK_PREDICTION_ALWAYS_VALUE" desc="Internal value for prefetch page resources preference" translateable="false">
-        network_prediction_always
-      </message>
-      <message name="IDS_NETWORK_PREDICTION_WIFI_ONLY_VALUE" desc="Internal value for prefetch page resources preference" translateable="false">
-        network_prediction_wifi_only
-      </message>
-      <message name="IDS_NETWORK_PREDICTION_NEVER_VALUE" desc="Internal value for prefetch page resources preference" translateable="false">
-        network_prediction_never
+        Use a prediction service to load pages more quickly
       </message>
       <message name="IDS_CONTEXTUAL_SEARCH_TITLE" desc="Name for the Contextual Search feature, which allows users to search for a term in a web page by tapping on it.">
         Touch to Search
@@ -1458,17 +1446,6 @@ You are signing in with a managed account and giving its administrator control o
       </message>
       <message name="IDS_PAGE_INFO_CONNECTION_INTERNAL_PAGE" desc="Message to display in the page info bubble when the page is an internal Chrome page (e.g. the bookmarks page, or about:blank).">
         You are viewing a secure Google Chrome page.
-      </message>
-
-      <!-- Network prediction internal values -->
-      <message name="IDS_NEVER_PREFETCH_BANDWIDTH_ENTRY" desc="Option to always disable the prefetching of web pages. [CHAR-LIMIT=16]">
-        Never
-      </message>
-      <message name="IDS_WIFI_PREFETCH_BANDWIDTH_ENTRY" desc="Option that enables the prefetching of web pages when connected via wi-fi. [CHAR-LIMIT=16]">
-        Only on Wi-Fi
-      </message>
-      <message name="IDS_ALWAYS_PREFETCH_BANDWIDTH_ENTRY" desc="Option to always prefetch web pages regardless of connection. [CHAR-LIMIT=16]">
-        Always
       </message>
 
       <!-- Sad tab page -->

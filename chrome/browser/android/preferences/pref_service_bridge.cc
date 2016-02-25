@@ -60,12 +60,6 @@ using content::BrowserThread;
 
 namespace {
 
-enum NetworkPredictionOptions {
-  NETWORK_PREDICTION_ALWAYS,
-  NETWORK_PREDICTION_WIFI_ONLY,
-  NETWORK_PREDICTION_NEVER,
-};
-
 Profile* GetOriginalProfile() {
   return ProfileManager::GetActiveUserProfile()->GetOriginalProfile();
 }
@@ -250,9 +244,10 @@ static jboolean GetDoNotTrackEnabled(JNIEnv* env,
   return GetPrefService()->GetBoolean(prefs::kEnableDoNotTrack);
 }
 
-static jint GetNetworkPredictionOptions(JNIEnv* env,
+static jboolean GetNetworkPredictionEnabled(JNIEnv* env,
                                         const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->GetInteger(prefs::kNetworkPredictionOptions);
+  return GetPrefService()->GetInteger(prefs::kNetworkPredictionOptions)
+      != chrome_browser_net::NETWORK_PREDICTION_NEVER;
 }
 
 static jboolean GetNetworkPredictionManaged(JNIEnv* env,
@@ -702,7 +697,7 @@ static void SetCrashReporting(JNIEnv* env,
   local_state->SetBoolean(prefs::kCrashReportingEnabled, reporting);
 }
 
-static jboolean CanPredictNetworkActions(JNIEnv* env,
+static jboolean CanPrefetchAndPrerender(JNIEnv* env,
                                          const JavaParamRef<jobject>& obj) {
   return chrome_browser_net::CanPrefetchAndPrerenderUI(GetPrefService()) ==
       chrome_browser_net::NetworkPredictionStatus::ENABLED;
@@ -859,27 +854,30 @@ static void SetContextualSearchPreference(JNIEnv* env,
       ConvertJavaStringToUTF8(env, pref));
 }
 
-static void SetNetworkPredictionOptions(JNIEnv* env,
+static void SetNetworkPredictionEnabled(JNIEnv* env,
                                         const JavaParamRef<jobject>& obj,
-                                        int option) {
-  GetPrefService()->SetInteger(prefs::kNetworkPredictionOptions, option);
+                                        jboolean enabled) {
+  GetPrefService()->SetInteger(
+      prefs::kNetworkPredictionOptions,
+      enabled ? chrome_browser_net::NETWORK_PREDICTION_WIFI_ONLY
+              : chrome_browser_net::NETWORK_PREDICTION_NEVER);
 }
 
-static jboolean NetworkPredictionEnabledHasUserSetting(
+static jboolean ObsoleteNetworkPredictionEnabledHasUserSetting(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   return GetPrefService()->GetUserPrefValue(
       prefs::kNetworkPredictionEnabled) != NULL;
 }
 
-static jboolean NetworkPredictionOptionsHasUserSetting(
+static jboolean ObsoleteNetworkPredictionOptionsHasUserSetting(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   return GetPrefService()->GetUserPrefValue(
       prefs::kNetworkPredictionOptions) != NULL;
 }
 
-static jboolean GetNetworkPredictionEnabledUserPrefValue(
+static jboolean ObsoleteGetNetworkPredictionEnabledUserPrefValue(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   const base::Value* network_prediction_enabled =

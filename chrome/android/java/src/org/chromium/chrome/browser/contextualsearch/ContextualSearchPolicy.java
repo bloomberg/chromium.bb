@@ -11,7 +11,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchSelectionController.SelectionType;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
-import org.chromium.chrome.browser.preferences.NetworkPredictionOptions;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.content.browser.ContentViewCore;
 
@@ -99,8 +98,7 @@ class ContextualSearchPolicy {
      *         explicitly interacts with the feature.
      */
     boolean shouldPrefetchSearchResult(boolean isTapTriggered) {
-        if (PrefServiceBridge.getInstance().getNetworkPredictionOptions()
-                == NetworkPredictionOptions.NETWORK_PREDICTION_NEVER) {
+        if (!PrefServiceBridge.getInstance().getNetworkPredictionEnabled()) {
             return false;
         }
 

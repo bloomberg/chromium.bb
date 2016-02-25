@@ -22,17 +22,17 @@ NetworkPredictionStatus CanPrefetchAndPrerender(
     int network_prediction_options) {
   switch (network_prediction_options) {
     case NETWORK_PREDICTION_ALWAYS:
-      break;
-    case NETWORK_PREDICTION_NEVER:
-      return NetworkPredictionStatus::DISABLED_ALWAYS;
-    default:
-      DCHECK_EQ(NETWORK_PREDICTION_WIFI_ONLY, network_prediction_options);
+    case NETWORK_PREDICTION_WIFI_ONLY:
       if (net::NetworkChangeNotifier::IsConnectionCellular(
                  net::NetworkChangeNotifier::GetConnectionType())) {
         return NetworkPredictionStatus::DISABLED_DUE_TO_NETWORK;
+      } else {
+        return NetworkPredictionStatus::ENABLED;
       }
+    default:
+      DCHECK_EQ(NETWORK_PREDICTION_NEVER, network_prediction_options);
+      return NetworkPredictionStatus::DISABLED_ALWAYS;
   }
-  return NetworkPredictionStatus::ENABLED;
 }
 
 bool CanPreresolveAndPreconnect(int network_prediction_options) {

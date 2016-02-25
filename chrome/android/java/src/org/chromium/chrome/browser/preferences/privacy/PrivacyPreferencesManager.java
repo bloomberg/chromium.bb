@@ -17,7 +17,6 @@ import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.physicalweb.PhysicalWeb;
-import org.chromium.chrome.browser.preferences.NetworkPredictionOptions;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 
 /**
@@ -103,7 +102,7 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
         // Nothing to do if the user or this migration code has already set the new
         // preference.
         if (!predictionOptionIsBoolean
-                && prefService.networkPredictionOptionsHasUserSetting()) {
+                && prefService.obsoleteNetworkPredictionOptionsHasUserSetting()) {
             return;
         }
 
@@ -126,37 +125,37 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
 
         if (!(prefBandwidthDefault.equals(prefBandwidth))
                 || (prefBandwidthNoCellular != prefBandwidthNoCellularDefault)) {
-            NetworkPredictionOptions newValue = NetworkPredictionOptions.DEFAULT;
+            boolean newValue = true;
             // Observe PREF_BANDWIDTH on mobile network capable devices.
             if (isMobileNetworkCapable()) {
                 if (mSharedPreferences.contains(PREF_BANDWIDTH_OLD)) {
                     BandwidthType prefetchBandwidthTypePref = BandwidthType.getBandwidthFromTitle(
                             prefBandwidth);
                     if (BandwidthType.NEVER_PRERENDER.equals(prefetchBandwidthTypePref)) {
-                        newValue = NetworkPredictionOptions.NETWORK_PREDICTION_NEVER;
+                        newValue = false;
                     } else if (BandwidthType.PRERENDER_ON_WIFI.equals(prefetchBandwidthTypePref)) {
-                        newValue = NetworkPredictionOptions.NETWORK_PREDICTION_WIFI_ONLY;
+                        newValue = true;
                     } else if (BandwidthType.ALWAYS_PRERENDER.equals(prefetchBandwidthTypePref)) {
-                        newValue = NetworkPredictionOptions.NETWORK_PREDICTION_ALWAYS;
+                        newValue = true;
                     }
                 }
             // Observe PREF_BANDWIDTH_NO_CELLULAR on devices without mobile network.
             } else {
                 if (mSharedPreferences.contains(PREF_BANDWIDTH_NO_CELLULAR_OLD)) {
                     if (prefBandwidthNoCellular) {
-                        newValue = NetworkPredictionOptions.NETWORK_PREDICTION_WIFI_ONLY;
+                        newValue = true;
                     } else {
-                        newValue = NetworkPredictionOptions.NETWORK_PREDICTION_NEVER;
+                        newValue = false;
                     }
                 }
             }
             // But disable after all if kNetworkPredictionEnabled was disabled by the user.
-            if (prefService.networkPredictionEnabledHasUserSetting()
-                    && !prefService.getNetworkPredictionEnabledUserPrefValue()) {
-                newValue = NetworkPredictionOptions.NETWORK_PREDICTION_NEVER;
+            if (prefService.obsoleteNetworkPredictionEnabledHasUserSetting()
+                    && !prefService.obsoleteGetNetworkPredictionEnabledUserPrefValue()) {
+                newValue = false;
             }
             // Save new value in Chrome PrefService.
-            prefService.setNetworkPredictionOptions(newValue);
+            prefService.setNetworkPredictionEnabled(newValue);
         }
 
         // Delete old sharedPreferences.
@@ -220,7 +219,7 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
     public boolean shouldPrerender() {
         if (!DeviceClassManager.enablePrerendering()) return false;
         migrateNetworkPredictionPreferences();
-        return PrefServiceBridge.getInstance().canPredictNetworkActions();
+        return PrefServiceBridge.getInstance().canPrefetchAndPrerender();
     }
 
     /**

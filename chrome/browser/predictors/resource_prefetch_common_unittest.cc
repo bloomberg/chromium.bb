@@ -305,17 +305,6 @@ TEST_F(ResourcePrefetchCommonTest, FieldTrialPrefetchingDisabledByNetwork) {
     TestIsPrefetchLearning(config);
   }
 
-  // Set preference to ALWAYS: always prefetch.
-  SetPreference(NetworkPredictionOptions::NETWORK_PREDICTION_ALWAYS);
-  {
-    scoped_ptr<NetworkChangeNotifier> mock(new MockNetworkChangeNotifierWIFI);
-    TestIsPrefetchEnabled(config);
-  }
-  {
-    scoped_ptr<NetworkChangeNotifier> mock(new MockNetworkChangeNotifier4G);
-    TestIsPrefetchEnabled(config);
-  }
-
   // Set preference to NEVER: never prefetch.
   SetPreference(NetworkPredictionOptions::NETWORK_PREDICTION_NEVER);
   {

@@ -22,21 +22,10 @@
         android:key="safe_browsing"
         android:title="@string/safe_browsing_title"
         android:summary="@string/safe_browsing_summary" />
-
-    <!-- Only one of these network prediction preferences will be shown, depending on whether
-         the device has cellular support. -->
-    <org.chromium.chrome.browser.preferences.privacy.NetworkPredictionPreference
+    <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference
         android:key="network_predictions"
         android:title="@string/network_predictions_title"
-        android:persistent="false"
-        android:entries="@array/bandwidth_entries"
-        android:entryValues="@array/bandwidth_entry_values"
-        android:defaultValue="@string/network_prediction_wifi_only_value" />
-    <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference
-        android:key="network_predictions_no_cellular"
-        android:title="@string/network_predictions_title"
-        android:summary="@string/network_predictions_summary"
-        android:defaultValue="true" />
+        android:persistent="false" />
 
     <!-- Only one of these "Usage and crash reports" preferences will be shown, depending on whether
          the device has cellular support. -->

@@ -513,7 +513,7 @@ public class OmniboxTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
         for (int i = 0; i < 2; ++i) {
             boolean instantOn = (i == 1);
-            setAllowPrerender(instantOn);
+            setNetworkPredictionEnabled(instantOn);
 
             for (int j = 0; j < 10; ++j) {
                 long before = System.currentTimeMillis();

@@ -16,7 +16,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.preferences.NetworkPredictionOptions;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
@@ -161,13 +160,12 @@ public class InfoBarContainerTest extends ChromeActivityTestCaseBase<ChromeActiv
     }
 
     // Define function to pass parameter to Runnable to be used in testInfoBarExpirationNoPrerender.
-    private Runnable setNetworkPredictionOptions(
-            final NetworkPredictionOptions networkPredictionOptions) {
+    private Runnable setNetworkPredictionOptions(final boolean networkPredictionEnabled) {
         return new Runnable() {
             @Override
             public void run() {
-                PrefServiceBridge.getInstance().setNetworkPredictionOptions(
-                        networkPredictionOptions);
+                PrefServiceBridge.getInstance().setNetworkPredictionEnabled(
+                        networkPredictionEnabled);
             }
         };
     }
@@ -176,26 +174,25 @@ public class InfoBarContainerTest extends ChromeActivityTestCaseBase<ChromeActiv
      * Same as testInfoBarExpiration but with prerender turned-off.
      * The behavior when prerender is on/off is different as in the prerender case the infobars are
      * added when we swap tabs.
-     * @throws InterruptedException
      */
     @MediumTest
     @Feature({"Browser"})
     public void testInfoBarExpirationNoPrerender() throws Exception {
         // Save prediction preference.
-        NetworkPredictionOptions networkPredictionOption =
-                ThreadUtils.runOnUiThreadBlocking(new Callable<NetworkPredictionOptions>() {
+        boolean networkPredictionEnabled =
+                ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
                     @Override
-                    public NetworkPredictionOptions call() {
-                        return PrefServiceBridge.getInstance().getNetworkPredictionOptions();
+                    public Boolean call() {
+                        return PrefServiceBridge.getInstance().getNetworkPredictionEnabled();
                     }
                 });
         try {
-            ThreadUtils.runOnUiThreadBlocking(setNetworkPredictionOptions(
-                    NetworkPredictionOptions.NETWORK_PREDICTION_NEVER));
+            ThreadUtils.runOnUiThreadBlocking(setNetworkPredictionOptions(false));
             testInfoBarExpiration();
         } finally {
             // Make sure we restore prediction preference.
-            ThreadUtils.runOnUiThreadBlocking(setNetworkPredictionOptions(networkPredictionOption));
+            ThreadUtils.runOnUiThreadBlocking(
+                    setNetworkPredictionOptions(networkPredictionEnabled));
         }
     }
 
