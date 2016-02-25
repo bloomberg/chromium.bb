@@ -4,7 +4,9 @@
 
 #include "chromecast/renderer/media/cma_renderer.h"
 
+#include <algorithm>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
