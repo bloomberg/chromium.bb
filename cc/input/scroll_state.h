@@ -22,6 +22,7 @@ class LayerTreeImpl;
 class CC_EXPORT ScrollState {
  public:
   explicit ScrollState(ScrollStateData data);
+  ScrollState(const ScrollState& other);
   ~ScrollState();
 
   // Reduce deltas by x, y.

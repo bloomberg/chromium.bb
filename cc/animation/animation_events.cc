@@ -20,6 +20,8 @@ AnimationEvent::AnimationEvent(AnimationEvent::Type type,
       opacity(0.f) {
 }
 
+AnimationEvent::AnimationEvent(const AnimationEvent& other) = default;
+
 AnimationEvents::AnimationEvents() {}
 
 AnimationEvents::~AnimationEvents() {}

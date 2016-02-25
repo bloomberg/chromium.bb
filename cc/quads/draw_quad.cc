@@ -29,6 +29,8 @@ DrawQuad::DrawQuad()
     : material(INVALID), needs_blending(false), shared_quad_state(0) {
 }
 
+DrawQuad::DrawQuad(const DrawQuad& other) = default;
+
 void DrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                       Material material,
                       const gfx::Rect& rect,

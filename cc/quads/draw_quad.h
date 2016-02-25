@@ -50,6 +50,7 @@ class CC_EXPORT DrawQuad {
     MATERIAL_LAST = YUV_VIDEO_CONTENT
   };
 
+  DrawQuad(const DrawQuad& other);
   virtual ~DrawQuad();
 
   Material material;

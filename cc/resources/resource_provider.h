@@ -518,6 +518,7 @@ class CC_EXPORT ResourceProvider
              const gfx::Size& size,
              Origin origin,
              GLenum filter);
+    Resource(const Resource& other);
 
     bool needs_sync_token() const { return needs_sync_token_; }
 
@@ -580,6 +581,7 @@ class CC_EXPORT ResourceProvider
 
   struct Child {
     Child();
+    Child(const Child& other);
     ~Child();
 
     ResourceIdMap child_to_parent_map;

@@ -22,6 +22,7 @@ struct CC_EXPORT AnimationEvent {
                  int group_id,
                  Animation::TargetProperty target_property,
                  base::TimeTicks monotonic_time);
+  AnimationEvent(const AnimationEvent& other);
 
   Type type;
   int layer_id;

@@ -85,6 +85,7 @@ struct CC_EXPORT TaskGraph {
   };
 
   TaskGraph();
+  TaskGraph(const TaskGraph& other);
   ~TaskGraph();
 
   void Swap(TaskGraph* other);

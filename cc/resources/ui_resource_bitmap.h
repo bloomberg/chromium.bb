@@ -43,6 +43,7 @@ class CC_EXPORT UIResourceBitmap {
   UIResourceBitmap(const gfx::Size& size, bool is_opaque);
   UIResourceBitmap(const skia::RefPtr<SkPixelRef>& pixel_ref,
                    const gfx::Size& size);
+  UIResourceBitmap(const UIResourceBitmap& other);
   ~UIResourceBitmap();
 
  private:

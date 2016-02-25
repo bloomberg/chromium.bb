@@ -16,6 +16,7 @@ class LayerTreeDebugState;
 class CC_EXPORT LayerTreeDebugState {
  public:
   LayerTreeDebugState();
+  LayerTreeDebugState(const LayerTreeDebugState& other);
   ~LayerTreeDebugState();
 
   bool show_fps_counter;

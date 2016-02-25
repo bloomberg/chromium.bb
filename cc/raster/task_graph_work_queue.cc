@@ -47,6 +47,9 @@ class CompareTaskNamespacePriority {
 
 TaskGraphWorkQueue::TaskNamespace::TaskNamespace() {}
 
+TaskGraphWorkQueue::TaskNamespace::TaskNamespace(const TaskNamespace& other) =
+    default;
+
 TaskGraphWorkQueue::TaskNamespace::~TaskNamespace() {}
 
 TaskGraphWorkQueue::TaskGraphWorkQueue() : next_namespace_id_(1) {}

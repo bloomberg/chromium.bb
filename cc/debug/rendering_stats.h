@@ -22,6 +22,7 @@ struct CC_EXPORT RenderingStats {
   class CC_EXPORT TimeDeltaList {
    public:
     TimeDeltaList();
+    TimeDeltaList(const TimeDeltaList& other);
     ~TimeDeltaList();
 
     void Append(base::TimeDelta value);
@@ -37,6 +38,7 @@ struct CC_EXPORT RenderingStats {
   };
 
   RenderingStats();
+  RenderingStats(const RenderingStats& other);
   ~RenderingStats();
 
   // Note: when adding new members, please remember to update Add in

@@ -69,6 +69,7 @@ class CC_EXPORT VideoFrameExternalResources {
   float multiplier;
 
   VideoFrameExternalResources();
+  VideoFrameExternalResources(const VideoFrameExternalResources& other);
   ~VideoFrameExternalResources();
 };
 
@@ -105,6 +106,7 @@ class CC_EXPORT VideoResourceUpdater
                   const gfx::Size& resource_size,
                   ResourceFormat resource_format,
                   gpu::Mailbox mailbox);
+    PlaneResource(const PlaneResource& other);
   };
 
   static bool PlaneResourceMatchesUniqueID(const PlaneResource& plane_resource,

@@ -27,6 +27,8 @@ FakeContentLayerClient::ImageData::ImageData(const SkImage* img,
                                              const SkPaint& paint)
     : image(skia::SharePtr(img)), transform(transform), paint(paint) {}
 
+FakeContentLayerClient::ImageData::ImageData(const ImageData& other) = default;
+
 FakeContentLayerClient::ImageData::~ImageData() {}
 
 FakeContentLayerClient::FakeContentLayerClient()

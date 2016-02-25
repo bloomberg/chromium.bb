@@ -19,6 +19,7 @@ class RendererSettings;
 class CC_EXPORT RendererSettings {
  public:
   RendererSettings();
+  RendererSettings(const RendererSettings& other);
   ~RendererSettings();
 
   bool allow_antialiasing;

@@ -26,6 +26,8 @@ ScrollStateData::ScrollStateData()
       current_native_scrolling_node_(nullptr),
       current_native_scrolling_element_(0) {}
 
+ScrollStateData::ScrollStateData(const ScrollStateData& other) = default;
+
 ScrollNode* ScrollStateData::current_native_scrolling_node() const {
   return current_native_scrolling_node_;
 }

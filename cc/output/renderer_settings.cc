@@ -27,6 +27,8 @@ RendererSettings::RendererSettings()
       use_gpu_memory_buffer_resources(false),
       preferred_tile_format(PlatformColor::BestTextureFormat()) {}
 
+RendererSettings::RendererSettings(const RendererSettings& other) = default;
+
 RendererSettings::~RendererSettings() {
 }
 

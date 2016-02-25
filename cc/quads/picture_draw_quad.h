@@ -21,6 +21,7 @@ namespace cc {
 class CC_EXPORT PictureDrawQuad : public ContentDrawQuadBase {
  public:
   PictureDrawQuad();
+  PictureDrawQuad(const PictureDrawQuad& other);
   ~PictureDrawQuad() override;
 
   void SetNew(const SharedQuadState* shared_quad_state,

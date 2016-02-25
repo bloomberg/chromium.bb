@@ -107,6 +107,8 @@ LayerTreeSettings::LayerTreeSettings()
                      gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING,
                      ManagedMemoryPolicy::kDefaultNumResourcesLimit) {}
 
+LayerTreeSettings::LayerTreeSettings(const LayerTreeSettings& other) = default;
+
 LayerTreeSettings::~LayerTreeSettings() {}
 
 bool LayerTreeSettings::operator==(const LayerTreeSettings& other) const {

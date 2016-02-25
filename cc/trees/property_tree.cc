@@ -65,6 +65,8 @@ TransformTree::TransformTree()
       device_scale_factor_(1.f),
       device_transform_scale_factor_(1.f) {}
 
+TransformTree::TransformTree(const TransformTree& other) = default;
+
 TransformTree::~TransformTree() {
 }
 
@@ -151,6 +153,8 @@ TransformNodeData::TransformNodeData()
       local_starting_animation_scale(0.f),
       combined_maximum_animation_target_scale(0.f),
       combined_starting_animation_scale(0.f) {}
+
+TransformNodeData::TransformNodeData(const TransformNodeData& other) = default;
 
 TransformNodeData::~TransformNodeData() {
 }
@@ -364,6 +368,8 @@ ClipNodeData::ClipNodeData()
       layers_are_clipped_when_surfaces_disabled(false),
       resets_clip(false) {}
 
+ClipNodeData::ClipNodeData(const ClipNodeData& other) = default;
+
 bool ClipNodeData::operator==(const ClipNodeData& other) const {
   return clip == other.clip &&
          combined_clip_in_target_space == other.combined_clip_in_target_space &&
@@ -433,6 +439,8 @@ EffectNodeData::EffectNodeData()
       transform_id(0),
       clip_id(0) {}
 
+EffectNodeData::EffectNodeData(const EffectNodeData& other) = default;
+
 bool EffectNodeData::operator==(const EffectNodeData& other) const {
   return opacity == other.opacity &&
          screen_space_opacity == other.screen_space_opacity &&
@@ -489,6 +497,8 @@ ScrollNodeData::ScrollNodeData()
       user_scrollable_vertical(false),
       element_id(0),
       transform_id(0) {}
+
+ScrollNodeData::ScrollNodeData(const ScrollNodeData& other) = default;
 
 bool ScrollNodeData::operator==(const ScrollNodeData& other) const {
   return scrollable == other.scrollable &&

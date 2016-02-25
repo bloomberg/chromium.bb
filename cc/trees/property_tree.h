@@ -50,6 +50,7 @@ struct CC_EXPORT TreeNode {
 
 struct CC_EXPORT TransformNodeData {
   TransformNodeData();
+  TransformNodeData(const TransformNodeData& other);
   ~TransformNodeData();
 
   // The local transform information is combined to form to_parent (ignoring
@@ -193,6 +194,7 @@ typedef TreeNode<TransformNodeData> TransformNode;
 
 struct CC_EXPORT ClipNodeData {
   ClipNodeData();
+  ClipNodeData(const ClipNodeData& other);
 
   // The clip rect that this node contributes, expressed in the space of its
   // transform node.
@@ -246,6 +248,7 @@ typedef TreeNode<ClipNodeData> ClipNode;
 
 struct CC_EXPORT EffectNodeData {
   EffectNodeData();
+  EffectNodeData(const EffectNodeData& other);
 
   float opacity;
   float screen_space_opacity;
@@ -269,6 +272,7 @@ typedef TreeNode<EffectNodeData> EffectNode;
 
 struct CC_EXPORT ScrollNodeData {
   ScrollNodeData();
+  ScrollNodeData(const ScrollNodeData& other);
 
   bool scrollable;
   uint32_t main_thread_scrolling_reasons;
@@ -354,6 +358,7 @@ class CC_EXPORT PropertyTree {
 class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
  public:
   TransformTree();
+  TransformTree(const TransformTree& other);
   ~TransformTree() override;
 
   bool operator==(const TransformTree& other) const;

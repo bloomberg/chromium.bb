@@ -19,6 +19,7 @@ namespace cc {
 class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
  public:
   RenderPassDrawQuad();
+  RenderPassDrawQuad(const RenderPassDrawQuad& other);
   ~RenderPassDrawQuad() override;
 
   void SetNew(const SharedQuadState* shared_quad_state,

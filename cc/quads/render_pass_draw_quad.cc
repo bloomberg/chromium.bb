@@ -15,6 +15,9 @@ namespace cc {
 RenderPassDrawQuad::RenderPassDrawQuad() {
 }
 
+RenderPassDrawQuad::RenderPassDrawQuad(const RenderPassDrawQuad& other) =
+    default;
+
 RenderPassDrawQuad::~RenderPassDrawQuad() {
 }
 

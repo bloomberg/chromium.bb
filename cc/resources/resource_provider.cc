@@ -321,6 +321,8 @@ ResourceProvider::Resource::Resource(const SharedBitmapId& bitmap_id,
       shared_bitmap(NULL),
       gpu_memory_buffer(NULL) {}
 
+ResourceProvider::Resource::Resource(const Resource& other) = default;
+
 void ResourceProvider::Resource::set_mailbox(const TextureMailbox& mailbox) {
   mailbox_ = mailbox;
   if (IsGpuResourceType(type)) {
@@ -374,6 +376,8 @@ void ResourceProvider::Resource::WaitSyncToken(gpu::gles2::GLES2Interface* gl) {
 
 ResourceProvider::Child::Child()
     : marked_for_deletion(false), needs_sync_tokens(true) {}
+
+ResourceProvider::Child::Child(const Child& other) = default;
 
 ResourceProvider::Child::~Child() {}
 

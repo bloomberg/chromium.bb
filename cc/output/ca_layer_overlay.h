@@ -18,6 +18,7 @@ class ResourceProvider;
 class CC_EXPORT CALayerOverlay {
  public:
   CALayerOverlay();
+  CALayerOverlay(const CALayerOverlay& other);
   ~CALayerOverlay();
 
   // If |is_clipped| is true, then clip to |clip_rect| in the target space.

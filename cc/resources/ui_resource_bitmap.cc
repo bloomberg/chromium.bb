@@ -77,6 +77,8 @@ UIResourceBitmap::UIResourceBitmap(const skia::RefPtr<SkPixelRef>& pixel_ref,
   Create(pixel_ref, size, UIResourceBitmap::ETC1);
 }
 
+UIResourceBitmap::UIResourceBitmap(const UIResourceBitmap& other) = default;
+
 UIResourceBitmap::~UIResourceBitmap() {}
 
 AutoLockUIResourceBitmap::AutoLockUIResourceBitmap(

@@ -9,6 +9,9 @@ namespace cc {
 RenderingStats::TimeDeltaList::TimeDeltaList() {
 }
 
+RenderingStats::TimeDeltaList::TimeDeltaList(const TimeDeltaList& other) =
+    default;
+
 RenderingStats::TimeDeltaList::~TimeDeltaList() {
 }
 
@@ -41,6 +44,8 @@ RenderingStats::RenderingStats()
       checkerboarded_visible_content_area(0),
       checkerboarded_no_recording_content_area(0),
       checkerboarded_needs_raster_content_area(0) {}
+
+RenderingStats::RenderingStats(const RenderingStats& other) = default;
 
 RenderingStats::~RenderingStats() {
 }

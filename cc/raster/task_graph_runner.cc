@@ -37,6 +37,8 @@ bool Task::HasFinishedRunning() const {
 
 TaskGraph::TaskGraph() {}
 
+TaskGraph::TaskGraph(const TaskGraph& other) = default;
+
 TaskGraph::~TaskGraph() {}
 
 void TaskGraph::Swap(TaskGraph* other) {

@@ -17,6 +17,7 @@ namespace cc {
 class CC_EXPORT TextureDrawQuad : public DrawQuad {
  public:
   TextureDrawQuad();
+  TextureDrawQuad(const TextureDrawQuad& other);
 
   void SetNew(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,

@@ -13,6 +13,9 @@ namespace cc {
 
 YUVVideoDrawQuad::YUVVideoDrawQuad() {
 }
+
+YUVVideoDrawQuad::YUVVideoDrawQuad(const YUVVideoDrawQuad& other) = default;
+
 YUVVideoDrawQuad::~YUVVideoDrawQuad() {}
 
 void YUVVideoDrawQuad::SetNew(const SharedQuadState* shared_quad_state,

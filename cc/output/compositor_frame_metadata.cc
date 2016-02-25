@@ -15,6 +15,9 @@ CompositorFrameMetadata::CompositorFrameMetadata()
       root_overflow_y_hidden(false),
       root_background_color(SK_ColorWHITE) {}
 
+CompositorFrameMetadata::CompositorFrameMetadata(
+    const CompositorFrameMetadata& other) = default;
+
 CompositorFrameMetadata::~CompositorFrameMetadata() {
 }
 

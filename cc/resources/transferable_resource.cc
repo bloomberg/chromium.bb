@@ -15,6 +15,9 @@ TransferableResource::TransferableResource()
       is_software(false),
       is_overlay_candidate(false) {}
 
+TransferableResource::TransferableResource(const TransferableResource& other) =
+    default;
+
 TransferableResource::~TransferableResource() {
 }
 

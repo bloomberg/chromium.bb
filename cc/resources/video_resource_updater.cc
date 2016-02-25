@@ -128,6 +128,9 @@ VideoResourceUpdater::PlaneResource::PlaneResource(
       plane_index(0u) {
 }
 
+VideoResourceUpdater::PlaneResource::PlaneResource(const PlaneResource& other) =
+    default;
+
 bool VideoResourceUpdater::PlaneResourceMatchesUniqueID(
     const PlaneResource& plane_resource,
     const media::VideoFrame* video_frame,
@@ -151,6 +154,9 @@ VideoFrameExternalResources::VideoFrameExternalResources()
       read_lock_fences_enabled(false),
       offset(0.0f),
       multiplier(1.0f) {}
+
+VideoFrameExternalResources::VideoFrameExternalResources(
+    const VideoFrameExternalResources& other) = default;
 
 VideoFrameExternalResources::~VideoFrameExternalResources() {}
 

@@ -178,6 +178,8 @@ OverlayCandidate::OverlayCandidate()
       is_unoccluded(false),
       overlay_handled(false) {}
 
+OverlayCandidate::OverlayCandidate(const OverlayCandidate& other) = default;
+
 OverlayCandidate::~OverlayCandidate() {}
 
 // static

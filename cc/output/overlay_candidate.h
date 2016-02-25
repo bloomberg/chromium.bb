@@ -46,6 +46,7 @@ class CC_EXPORT OverlayCandidate {
                          QuadList::ConstIterator quad_list_end);
 
   OverlayCandidate();
+  OverlayCandidate(const OverlayCandidate& other);
   ~OverlayCandidate();
 
   // Transformation to apply to layer during composition.

@@ -27,6 +27,7 @@ class CC_EXPORT YUVVideoDrawQuad : public DrawQuad {
   ~YUVVideoDrawQuad() override;
 
   YUVVideoDrawQuad();
+  YUVVideoDrawQuad(const YUVVideoDrawQuad& other);
 
   void SetNew(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,

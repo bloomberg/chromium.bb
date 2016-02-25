@@ -22,6 +22,7 @@ namespace cc {
 class CC_EXPORT CompositorFrameMetadata {
  public:
   CompositorFrameMetadata();
+  CompositorFrameMetadata(const CompositorFrameMetadata& other);
   ~CompositorFrameMetadata();
 
   // The device scale factor used to generate this compositor frame.

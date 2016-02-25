@@ -193,6 +193,8 @@ CALayerResult FromDrawQuad(ResourceProvider* resource_provider,
 
 CALayerOverlay::CALayerOverlay() {}
 
+CALayerOverlay::CALayerOverlay(const CALayerOverlay& other) = default;
+
 CALayerOverlay::~CALayerOverlay() {}
 
 bool ProcessForCALayerOverlays(ResourceProvider* resource_provider,

@@ -26,6 +26,7 @@ class LayerTreeSettings;
 class CC_EXPORT LayerTreeSettings {
  public:
   LayerTreeSettings();
+  LayerTreeSettings(const LayerTreeSettings& other);
   virtual ~LayerTreeSettings();
 
   bool operator==(const LayerTreeSettings& other) const;

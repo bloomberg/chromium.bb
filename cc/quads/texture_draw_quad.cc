@@ -25,6 +25,8 @@ TextureDrawQuad::TextureDrawQuad()
   this->vertex_opacity[3] = 0.f;
 }
 
+TextureDrawQuad::TextureDrawQuad(const TextureDrawQuad& other) = default;
+
 void TextureDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                              const gfx::Rect& rect,
                              const gfx::Rect& opaque_rect,

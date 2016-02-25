@@ -30,6 +30,7 @@ class FakeContentLayerClient : public ContentLayerClient {
     ImageData(const SkImage* image,
               const gfx::Transform& transform,
               const SkPaint& paint);
+    ImageData(const ImageData& other);
     ~ImageData();
     skia::RefPtr<const SkImage> image;
     gfx::Point point;

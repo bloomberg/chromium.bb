@@ -28,6 +28,9 @@ LayerTreeDebugState::LayerTreeDebugState()
       show_picture_borders(false),
       record_rendering_stats_(false) {}
 
+LayerTreeDebugState::LayerTreeDebugState(const LayerTreeDebugState& other) =
+    default;
+
 LayerTreeDebugState::~LayerTreeDebugState() {}
 
 void LayerTreeDebugState::SetRecordRenderingStats(bool enabled) {

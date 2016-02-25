@@ -14,6 +14,8 @@ namespace cc {
 PictureDrawQuad::PictureDrawQuad() {
 }
 
+PictureDrawQuad::PictureDrawQuad(const PictureDrawQuad& other) = default;
+
 PictureDrawQuad::~PictureDrawQuad() {
 }
 

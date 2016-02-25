@@ -53,6 +53,7 @@ class CC_EXPORT TaskGraphWorkQueue {
     typedef std::vector<TaskNamespace*> Vector;
 
     TaskNamespace();
+    TaskNamespace(const TaskNamespace& other);
     ~TaskNamespace();
 
     // Current task graph.

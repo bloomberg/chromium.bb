@@ -12,6 +12,8 @@ namespace cc {
 
 ScrollState::ScrollState(ScrollStateData data) : data_(data) {}
 
+ScrollState::ScrollState(const ScrollState& other) = default;
+
 ScrollState::~ScrollState() {}
 
 void ScrollState::ConsumeDelta(double x, double y) {

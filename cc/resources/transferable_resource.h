@@ -24,6 +24,7 @@ typedef std::vector<TransferableResource> TransferableResourceArray;
 
 struct CC_EXPORT TransferableResource {
   TransferableResource();
+  TransferableResource(const TransferableResource& other);
   ~TransferableResource();
 
   ReturnedResource ToReturnedResource() const;
