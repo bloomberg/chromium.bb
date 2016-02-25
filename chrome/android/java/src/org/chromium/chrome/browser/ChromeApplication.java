@@ -65,7 +65,6 @@ import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomiza
 import org.chromium.chrome.browser.physicalweb.PhysicalWebBleClient;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.preferences.AccessibilityPreferences;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.LocationSettings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
@@ -104,7 +103,6 @@ import org.chromium.sync.signin.SystemAccountManagerDelegate;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.ResourceBundle;
-import org.chromium.ui.widget.Toast;
 
 import java.lang.ref.WeakReference;
 import java.util.Locale;
@@ -866,13 +864,7 @@ public class ChromeApplication extends ContentApplication {
      */
     private void cacheNativeFlags() {
         if (sIsFinishedCachingNativeFlags) return;
-
-        boolean isToastNeeded = ChromePreferenceManager.cacheHerbFlavor();
-        if (isToastNeeded) {
-            Toast.makeText(this,
-                    R.string.cache_native_flags_requires_restart, Toast.LENGTH_SHORT).show();
-        }
-
+        FeatureUtilities.cacheHerbFlavor();
         sIsFinishedCachingNativeFlags = true;
     }
 }

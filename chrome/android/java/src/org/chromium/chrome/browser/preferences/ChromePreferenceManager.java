@@ -6,19 +6,13 @@ package org.chromium.chrome.browser.preferences;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.StrictMode;
 import android.preference.PreferenceManager;
-import android.text.TextUtils;
 
-import org.chromium.base.ApplicationStatus;
-import org.chromium.base.CommandLine;
-import org.chromium.base.Log;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.crash.MinidumpUploadService.ProcessType;
 import org.chromium.chrome.browser.signin.SigninPromoUma;
-import org.chromium.ui.base.DeviceFormFactor;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 
 import java.util.Locale;
 
@@ -59,8 +53,6 @@ public class ChromePreferenceManager {
     private static final long MILLISECONDS_IN_DAY = 1000 * 60 * 60 * 24;
 
     private static ChromePreferenceManager sPrefs;
-    private static String sCachedHerbFlavor;
-    private static boolean sIsHerbFlavorCached;
 
     private final SharedPreferences mSharedPreferences;
     private final Context mContext;
@@ -333,51 +325,18 @@ public class ChromePreferenceManager {
     }
 
     /**
-     * @return Which flavor of Herb is active, or null if a prototype isn't being tested.
+     * @return Which UI prototype the user is testing. This is cached from native via
+     *         {@link FeatureUtilities#cacheHerbFlavor}.
      */
-    public static String getHerbFlavor() {
-        if (!sIsHerbFlavorCached) {
-            Context context = ApplicationStatus.getApplicationContext();
-            if (ChromeVersionInfo.isStableBuild() || ChromeVersionInfo.isBetaBuild()) return null;
-            if (DeviceFormFactor.isTablet(context)) return null;
-
-            // Allowing disk access for preferences while prototyping.
-            sCachedHerbFlavor = null;
-            StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-            try {
-                sCachedHerbFlavor =
-                        ChromePreferenceManager.getInstance(context).getHerbFlavorInternal();
-            } finally {
-                StrictMode.setThreadPolicy(oldPolicy);
-            }
-
-            sIsHerbFlavorCached = true;
-            Log.d(TAG, "Retrieved Herb flavor: " + sCachedHerbFlavor);
-        }
-
-        return sCachedHerbFlavor;
-    }
-
-    private String getHerbFlavorInternal() {
-        return mSharedPreferences.getString(HERB_FLAVOR_KEY, null);
+    public String getCachedHerbFlavor() {
+        return mSharedPreferences.getString(HERB_FLAVOR_KEY, ChromeSwitches.HERB_FLAVOR_DISABLED);
     }
 
     /**
-     * Caches which flavor of Herb the user prefers from native.
+     * Caches which UI prototype the user is testing.
      */
-    public static boolean cacheHerbFlavor() {
-        String oldFlavor = getHerbFlavor();
-        String newFlavor =
-                CommandLine.getInstance().getSwitchValue(ChromeSwitches.HERB_FLAVOR, null);
-        sCachedHerbFlavor = newFlavor;
-        Log.d(TAG, "Caching Herb flavor: " + sCachedHerbFlavor);
-
-        if (!TextUtils.equals(oldFlavor, newFlavor)) {
-            Context context = ApplicationStatus.getApplicationContext();
-            ChromePreferenceManager.getInstance(context).writeString(HERB_FLAVOR_KEY, newFlavor);
-            return true;
-        }
-        return false;
+    public void setCachedHerbFlavor(String flavor) {
+        writeString(HERB_FLAVOR_KEY, flavor);
     }
 
     /**

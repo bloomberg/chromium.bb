@@ -528,15 +528,17 @@ const FeatureEntry::Choice kEnableOfflinePagesChoices[] = {
 };
 
 const FeatureEntry::Choice kHerbPrototypeChoices[] = {
-    {IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED, "", ""},
+    {IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
+    {IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+     switches::kTabManagementExperimentTypeDisabled, ""},
     {IDS_FLAGS_HERB_PROTOTYPE_FLAVOR_ANISE,
-     switches::kTabManagementExperimentType, "anise"},
+     switches::kTabManagementExperimentTypeAnise, ""},
     {IDS_FLAGS_HERB_PROTOTYPE_FLAVOR_BASIL,
-     switches::kTabManagementExperimentType, "basil"},
+     switches::kTabManagementExperimentTypeBasil, ""},
     {IDS_FLAGS_HERB_PROTOTYPE_FLAVOR_CHIVE,
-     switches::kTabManagementExperimentType, "chive"},
+     switches::kTabManagementExperimentTypeChive, ""},
     {IDS_FLAGS_HERB_PROTOTYPE_FLAVOR_DILL,
-     switches::kTabManagementExperimentType, "dill"},
+     switches::kTabManagementExperimentTypeDill, ""},
 };
 #endif  // defined(OS_ANDROID)
 

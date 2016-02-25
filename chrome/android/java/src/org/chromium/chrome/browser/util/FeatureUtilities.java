@@ -12,13 +12,20 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.os.UserManager;
 import android.speech.RecognizerIntent;
+import android.text.TextUtils;
 
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CommandLine;
+import org.chromium.base.FieldTrialList;
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.ChromeVersionInfo;
+import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.DocumentModeManager;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -30,9 +37,17 @@ import java.util.List;
  * this device.
  */
 public class FeatureUtilities {
+    private static final String TAG = "FeatureUtilities";
+    private static final String HERB_EXPERIMENT_NAME = "TabManagementExperiment";
+    private static final String HERB_EXPERIMENT_FLAVOR_PARAM = "type";
+
     private static Boolean sHasGoogleAccountAuthenticator;
     private static Boolean sHasRecognitionIntentHandler;
     private static Boolean sDocumentModeDisabled;
+
+    private static String sCachedHerbFlavor;
+    private static boolean sIsHerbFlavorCached;
+
     /** Used to track if cached command line flags should be refreshed. */
     private static CommandLine.ResetListener sResetListener = null;
 
@@ -169,6 +184,83 @@ public class FeatureUtilities {
             }
         };
         CommandLine.addResetListener(sResetListener);
+    }
+
+    /**
+     * @return Which flavor of Herb is being tested.  See {@link ChromeSwitches#HERB_FLAVOR_ANISE}
+     *         and its related switches.
+     */
+    public static String getHerbFlavor() {
+        if (!sIsHerbFlavorCached) {
+            sCachedHerbFlavor = null;
+
+            Context context = ApplicationStatus.getApplicationContext();
+            if (isDocumentMode(context) || ChromeVersionInfo.isStableBuild()
+                    || ChromeVersionInfo.isBetaBuild() || DeviceFormFactor.isTablet(context)) {
+                // Disable Herb.
+                sCachedHerbFlavor = ChromeSwitches.HERB_FLAVOR_DISABLED;
+            } else {
+                // Allowing disk access for preferences while prototyping.
+                StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+                try {
+                    sCachedHerbFlavor =
+                            ChromePreferenceManager.getInstance(context).getCachedHerbFlavor();
+                } finally {
+                    StrictMode.setThreadPolicy(oldPolicy);
+                }
+            }
+
+            sIsHerbFlavorCached = true;
+            Log.d(TAG, "Retrieved cached Herb flavor: " + sCachedHerbFlavor);
+        }
+
+        return sCachedHerbFlavor;
+    }
+
+    /**
+     * Caches which flavor of Herb the user prefers from native.
+     */
+    public static void cacheHerbFlavor() {
+        String oldFlavor = getHerbFlavor();
+
+        // Check the experiment value before the command line to put the user in the correct group.
+        // The first clause does the null checks so so we can freely use the startsWith() function.
+        String newFlavor = FieldTrialList.findFullName(HERB_EXPERIMENT_NAME);
+        Log.d(TAG, "Experiment flavor: " + newFlavor);
+        if (TextUtils.isEmpty(newFlavor)
+                || newFlavor.startsWith(ChromeSwitches.HERB_FLAVOR_CONTROL)
+                || newFlavor.startsWith(ChromeSwitches.HERB_FLAVOR_DEFAULT)) {
+            newFlavor = ChromeSwitches.HERB_FLAVOR_DISABLED;
+        } else if (newFlavor.startsWith(ChromeSwitches.HERB_FLAVOR_ANISE)) {
+            newFlavor = ChromeSwitches.HERB_FLAVOR_ANISE;
+        } else if (newFlavor.startsWith(ChromeSwitches.HERB_FLAVOR_BASIL)) {
+            newFlavor = ChromeSwitches.HERB_FLAVOR_BASIL;
+        } else if (newFlavor.startsWith(ChromeSwitches.HERB_FLAVOR_CHIVE)) {
+            newFlavor = ChromeSwitches.HERB_FLAVOR_CHIVE;
+        } else if (newFlavor.startsWith(ChromeSwitches.HERB_FLAVOR_DILL)) {
+            newFlavor = ChromeSwitches.HERB_FLAVOR_DILL;
+        }
+
+        CommandLine instance = CommandLine.getInstance();
+        if (instance.hasSwitch(ChromeSwitches.HERB_FLAVOR_DISABLED_SWITCH)) {
+            newFlavor = ChromeSwitches.HERB_FLAVOR_DISABLED;
+        } else if (instance.hasSwitch(ChromeSwitches.HERB_FLAVOR_ANISE_SWITCH)) {
+            newFlavor = ChromeSwitches.HERB_FLAVOR_ANISE;
+        } else if (instance.hasSwitch(ChromeSwitches.HERB_FLAVOR_BASIL_SWITCH)) {
+            newFlavor = ChromeSwitches.HERB_FLAVOR_BASIL;
+        } else if (instance.hasSwitch(ChromeSwitches.HERB_FLAVOR_CHIVE_SWITCH)) {
+            newFlavor = ChromeSwitches.HERB_FLAVOR_CHIVE;
+        } else if (instance.hasSwitch(ChromeSwitches.HERB_FLAVOR_DILL_SWITCH)) {
+            newFlavor = ChromeSwitches.HERB_FLAVOR_DILL;
+        }
+
+        Log.d(TAG, "Caching flavor: " + newFlavor);
+        sCachedHerbFlavor = newFlavor;
+
+        if (!TextUtils.equals(oldFlavor, newFlavor)) {
+            Context context = ApplicationStatus.getApplicationContext();
+            ChromePreferenceManager.getInstance(context).setCachedHerbFlavor(newFlavor);
+        }
     }
 
     private static native void nativeSetDocumentModeEnabled(boolean enabled);

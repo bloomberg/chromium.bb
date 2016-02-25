@@ -1318,7 +1318,16 @@ const char kForceShowUpdateMenuBadge[] = "force-show-update-menu-badge";
 const char kMarketUrlForTesting[] = "market-url-for-testing";
 
 // Specifies a particular tab management experiment to enable.
-const char kTabManagementExperimentType[] = "tab-management-experiment-type";
+const char kTabManagementExperimentTypeDisabled[] =
+    "tab-management-experiment-type-disabled";
+const char kTabManagementExperimentTypeAnise[] =
+    "tab-management-experiment-type-anise";
+const char kTabManagementExperimentTypeBasil[] =
+    "tab-management-experiment-type-basil";
+const char kTabManagementExperimentTypeChive[] =
+    "tab-management-experiment-type-chive";
+const char kTabManagementExperimentTypeDill[] =
+    "tab-management-experiment-type-dill";
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN) || defined(OS_LINUX)

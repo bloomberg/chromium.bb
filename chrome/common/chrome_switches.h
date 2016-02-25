@@ -306,7 +306,11 @@ extern const char kForceShowUpdateMenuItemNewFeaturesSummary[];
 extern const char kForceShowUpdateMenuItemCustomSummary[];
 extern const char kForceShowUpdateMenuBadge[];
 extern const char kMarketUrlForTesting[];
-extern const char kTabManagementExperimentType[];
+extern const char kTabManagementExperimentTypeDisabled[];
+extern const char kTabManagementExperimentTypeAnise[];
+extern const char kTabManagementExperimentTypeBasil[];
+extern const char kTabManagementExperimentTypeChive[];
+extern const char kTabManagementExperimentTypeDill[];
 #endif  // defined(OS_ANDROID)
 
 #if defined(USE_ASH)

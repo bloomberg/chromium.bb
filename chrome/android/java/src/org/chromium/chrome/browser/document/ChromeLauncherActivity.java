@@ -322,8 +322,9 @@ public class ChromeLauncherActivity extends Activity
         if (!canBeHijackedByHerb(getIntent())) return false;
 
         // Different Herb flavors handle incoming intents differently.
-        String flavor = ChromePreferenceManager.getHerbFlavor();
-        if (TextUtils.isEmpty(flavor)) {
+        String flavor = FeatureUtilities.getHerbFlavor();
+        if (TextUtils.isEmpty(flavor)
+                || TextUtils.equals(ChromeSwitches.HERB_FLAVOR_DISABLED, flavor)) {
             return false;
         } else if (TextUtils.equals(flavor, ChromeSwitches.HERB_FLAVOR_ANISE)
                 || TextUtils.equals(flavor, ChromeSwitches.HERB_FLAVOR_BASIL)

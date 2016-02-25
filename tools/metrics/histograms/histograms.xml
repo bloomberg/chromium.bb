@@ -71411,6 +71411,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1497338981" label="disable-accelerated-overflow-scroll"/>
   <int value="-1490298774" label="enable-captive-portal-bypass-proxy-option"/>
   <int value="-1482685863" label="enable-request-tablet-site"/>
+  <int value="-1467332609" label="tab-management-experiment-type-anise"/>
   <int value="-1460462432" label="disable-media-source"/>
   <int value="-1440152291" label="disable-gesture-typing"/>
   <int value="-1433719718" label="enable-webrtc-stun-origin"/>
@@ -71565,6 +71566,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-340622848" label="disable-javascript-harmony-shipping"/>
   <int value="-340255045" label="allow-nacl-socket-api"/>
   <int value="-328361990" label="enable-experimental-extension-apis"/>
+  <int value="-322827131" label="tab-management-experiment-type-basil"/>
   <int value="-320820051" label="enable-zero-copy"/>
   <int value="-314910380" label="disable-distance-field-text"/>
   <int value="-311148335" label="v8-pac-mojo-out-of-process"/>
@@ -71692,6 +71694,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="773919225" label="disable-office-editing-component-extension"/>
   <int value="779086132" label="enable-data-reduction-proxy-alt"/>
   <int value="782167080" label="enable-new-qp-input-view"/>
+  <int value="807734471" label="tab-management-experiment-type-disabled"/>
   <int value="811374216" label="disable-new-bookmark-apps"/>
   <int value="820650704" label="disable-ntp-popular-sites"/>
   <int value="821192723" label="show-fps-counter"/>
@@ -71740,6 +71743,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1105439588" label="enable-swipe-selection"/>
   <int value="1107543566" label="enable-one-copy"/>
   <int value="1108663108" label="disable-device-discovery-notifications"/>
+  <int value="1113365156" label="tab-management-experiment-type-chive"/>
   <int value="1114629582" label="enable-floating-virtual-keyboard"/>
   <int value="1118109174" label="enable-launcher-search-provider-api"/>
   <int value="1129888794" label="ash-touch-hud"/>
@@ -71874,6 +71878,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1993258379" label="enable-icon-ntp"/>
   <int value="2000091128" label="enable-touch-hover"/>
   <int value="2004829262" label="enable-webgl-draft-extensions"/>
+  <int value="2005614493" label="tab-management-experiment-type-dill"/>
   <int value="2037756154" label="enable-impl-side-painting"/>
   <int value="2059322877" label="new-avatar-menu"/>
   <int value="2071461362" label="disable-credit-card-scan"/>

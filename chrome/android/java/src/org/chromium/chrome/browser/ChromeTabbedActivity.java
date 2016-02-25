@@ -765,7 +765,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             boolean isAllowedToReturnToExternalApp = IntentUtils.safeGetBooleanExtra(intent,
                     ChromeLauncherActivity.EXTRA_IS_ALLOWED_TO_RETURN_TO_PARENT, true);
 
-            String herbFlavor = ChromePreferenceManager.getHerbFlavor();
+            String herbFlavor = FeatureUtilities.getHerbFlavor();
             if (isAllowedToReturnToExternalApp
                     && ChromeLauncherActivity.canBeHijackedByHerb(intent)
                     && TextUtils.equals(ChromeSwitches.HERB_FLAVOR_DILL, herbFlavor)) {
@@ -1110,7 +1110,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         if (alwaysAllowTabClosure) {
             isAllowedToCloseTab = true;
         } else {
-            String herbFlavor = ChromePreferenceManager.getHerbFlavor();
+            String herbFlavor = FeatureUtilities.getHerbFlavor();
             if (TextUtils.equals(ChromeSwitches.HERB_FLAVOR_BASIL, herbFlavor)
                     || TextUtils.equals(ChromeSwitches.HERB_FLAVOR_CHIVE, herbFlavor)) {
                 isAllowedToCloseTab = !currentTab.isAllowedToReturnToExternalApp();

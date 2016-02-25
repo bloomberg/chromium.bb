@@ -54,7 +54,6 @@ import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.LocationBarPhone;
 import org.chromium.chrome.browser.omnibox.UrlContainer;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -2150,7 +2149,7 @@ public class ToolbarPhone extends ToolbarLayout
     }
 
     private boolean isReturnButtonVisible() {
-        String herbFlavor = ChromePreferenceManager.getHerbFlavor();
+        String herbFlavor = FeatureUtilities.getHerbFlavor();
         if (!TextUtils.equals(ChromeSwitches.HERB_FLAVOR_BASIL, herbFlavor)
                 && !TextUtils.equals(ChromeSwitches.HERB_FLAVOR_CHIVE, herbFlavor)) {
             return false;
