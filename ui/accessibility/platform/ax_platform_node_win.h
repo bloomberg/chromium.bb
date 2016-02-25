@@ -9,10 +9,28 @@
 #include <atlcom.h>
 #include <oleacc.h>
 
+#include "base/observer_list.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
+#include "ui/accessibility/ax_export.h"
+#include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/platform/ax_platform_node_base.h"
 
 namespace ui {
+
+// A simple interface for a class that wants to be notified when IAccessible2
+// is used by a client, a strong indication that full accessibility support
+// should be enabled.
+class AX_EXPORT IAccessible2UsageObserver {
+ public:
+  IAccessible2UsageObserver();
+  virtual ~IAccessible2UsageObserver();
+  virtual void OnIAccessible2Used() = 0;
+};
+
+// Get an observer list that allows modules across the codebase to
+// listen to when usage of IAccessible2 is detected.
+extern AX_EXPORT base::ObserverList<IAccessible2UsageObserver>&
+    GetIAccessible2UsageObserverList();
 
 class __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
 AXPlatformNodeWin

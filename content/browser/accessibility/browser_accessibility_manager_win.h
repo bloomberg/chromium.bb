@@ -11,13 +11,15 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_comptr.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "ui/accessibility/platform/ax_platform_node_win.h"
 
 namespace content {
 class BrowserAccessibilityWin;
 
 // Manages a tree of BrowserAccessibilityWin objects.
 class CONTENT_EXPORT BrowserAccessibilityManagerWin
-    : public BrowserAccessibilityManager {
+    : public BrowserAccessibilityManager,
+      public ui::IAccessible2UsageObserver {
  public:
   BrowserAccessibilityManagerWin(
       const ui::AXTreeUpdate& initial_tree,
@@ -36,6 +38,9 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
 
   // Calls NotifyWinEvent if the parent window's IAccessible pointer is known.
   void MaybeCallNotifyWinEvent(DWORD event, BrowserAccessibility* node);
+
+  // IAccessible2UsageObserver
+  void OnIAccessible2Used() override;
 
   // BrowserAccessibilityManager methods
   void OnWindowFocused() override;

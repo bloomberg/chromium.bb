@@ -47,6 +47,7 @@ BrowserAccessibilityManagerWin::BrowserAccessibilityManagerWin(
       inside_on_window_focused_(false) {
   ui::win::CreateATLModuleIfNeeded();
   Initialize(initial_tree);
+  ui::GetIAccessible2UsageObserverList().AddObserver(this);
 }
 
 BrowserAccessibilityManagerWin::~BrowserAccessibilityManagerWin() {
@@ -59,6 +60,7 @@ BrowserAccessibilityManagerWin::~BrowserAccessibilityManagerWin() {
     tracked_scroll_object_->Release();
     tracked_scroll_object_ = NULL;
   }
+  ui::GetIAccessible2UsageObserverList().RemoveObserver(this);
 }
 
 // static
@@ -149,6 +151,10 @@ void BrowserAccessibilityManagerWin::MaybeCallNotifyWinEvent(
 
   LONG child_id = node->ToBrowserAccessibilityWin()->unique_id_win();
   ::NotifyWinEvent(event, hwnd, OBJID_CLIENT, child_id);
+}
+
+void BrowserAccessibilityManagerWin::OnIAccessible2Used() {
+  BrowserAccessibilityStateImpl::GetInstance()->OnScreenReaderDetected();
 }
 
 void BrowserAccessibilityManagerWin::OnWindowFocused() {

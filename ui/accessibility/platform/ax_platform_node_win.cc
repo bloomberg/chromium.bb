@@ -106,7 +106,30 @@ void UnregisterNegativeUniqueId(LONG unique_id) {
   g_unique_id_win_map.Get().erase(unique_id);
 }
 
+base::LazyInstance<base::ObserverList<IAccessible2UsageObserver>>
+    g_iaccessible2_usage_observer_list = LAZY_INSTANCE_INITIALIZER;
+
 }  // namespace
+
+//
+// IAccessible2UsageObserver
+//
+
+IAccessible2UsageObserver::IAccessible2UsageObserver() {
+}
+
+IAccessible2UsageObserver::~IAccessible2UsageObserver() {
+}
+
+// static
+base::ObserverList<IAccessible2UsageObserver>&
+    GetIAccessible2UsageObserverList() {
+  return g_iaccessible2_usage_observer_list.Get();
+}
+
+//
+// AXPlatformNode::Create
+//
 
 // static
 AXPlatformNode* AXPlatformNode::Create(AXPlatformNodeDelegate* delegate) {
@@ -128,6 +151,10 @@ AXPlatformNode* AXPlatformNode::FromNativeViewAccessible(
   accessible->QueryInterface(ax_platform_node.Receive());
   return ax_platform_node.get();
 }
+
+//
+// AXPlatformNodeWin
+//
 
 AXPlatformNodeWin::AXPlatformNodeWin()
     : unique_id_win_(GetNextNegativeUniqueIdForWinAccessibility(this)) {
@@ -876,6 +903,13 @@ STDMETHODIMP AXPlatformNodeWin::scrollSubstringToPoint(
 STDMETHODIMP AXPlatformNodeWin::QueryService(
     REFGUID guidService, REFIID riid, void** object) {
   COM_OBJECT_VALIDATE_1_ARG(object);
+
+  if (riid == IID_IAccessible2) {
+    FOR_EACH_OBSERVER(IAccessible2UsageObserver,
+                      GetIAccessible2UsageObserverList(),
+                      OnIAccessible2Used());
+  }
+
   if (guidService == IID_IAccessible ||
       guidService == IID_IAccessible2 ||
       guidService == IID_IAccessible2_2 ||
