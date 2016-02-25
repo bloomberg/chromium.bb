@@ -92,10 +92,13 @@ MEDIA_EXPORT std::string GetPepperType(
 
 #if defined(UNIT_TEST)
 // Helper functions to add container/codec types for testing purposes.
-MEDIA_EXPORT void AddContainerMask(const std::string& container, uint32_t mask);
+// Call AddCodecMask() first to ensure the mask values passed to
+// AddMimeTypeCodecMask() already exist.
 MEDIA_EXPORT void AddCodecMask(EmeMediaType media_type,
                                const std::string& codec,
                                uint32_t mask);
+MEDIA_EXPORT void AddMimeTypeCodecMask(const std::string& mime_type,
+                                       uint32_t mask);
 #endif  // defined(UNIT_TEST)
 
 }  // namespace media

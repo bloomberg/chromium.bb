@@ -92,10 +92,10 @@ static void AddContainerAndCodecMasksForTest() {
   if (is_test_masks_added)
     return;
 
-  AddContainerMask("audio/foo", TEST_CODEC_FOO_AUDIO_ALL);
-  AddContainerMask("video/foo", TEST_CODEC_FOO_ALL);
   AddCodecMask(EmeMediaType::AUDIO, "fooaudio", TEST_CODEC_FOO_AUDIO);
   AddCodecMask(EmeMediaType::VIDEO, "foovideo", TEST_CODEC_FOO_VIDEO);
+  AddMimeTypeCodecMask("audio/foo", TEST_CODEC_FOO_AUDIO_ALL);
+  AddMimeTypeCodecMask("video/foo", TEST_CODEC_FOO_VIDEO_ALL);
 
   is_test_masks_added = true;
 }
