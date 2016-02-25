@@ -52,7 +52,7 @@ class ArgumentError(Error):
   pass
 
 
-def GetArgs():
+def GetArgs(cmd_args):
   parser = argparse.ArgumentParser(description=__doc__)
   parser.add_argument('action', choices=['run', 'trigger'],
                       help='The swarming action to perform.')
@@ -82,7 +82,7 @@ def GetArgs():
                       'are in the form of --controller-var name value and are '
                       'passed to the controller as --name value.')
   parser.add_argument('-v', '--verbosity', default=0, action='count')
-  return parser.parse_args()
+  return parser.parse_args(cmd_args)
 
 
 def RunCommand(cmd, stream_stdout=False):
@@ -116,7 +116,7 @@ def Archive(isolated, isolate_server):
   return RunCommand(cmd).split()[0] # The isolated hash
 
 
-def GetSwarmingCommandLine(args):
+def GetSwarmingCommandLine(args, extra_args):
   """Builds and returns the command line for swarming.py run|trigger."""
   cmd = [
       sys.executable,
@@ -133,14 +133,17 @@ def GetSwarmingCommandLine(args):
     cmd.extend(['--dimension', name, value])
 
   cmd.append('--')
-
+  cmd.extend(extra_args)
   cmd.extend(['--swarming-server', args.swarming_server])
   cmd.extend(['--isolate-server', args.isolate_server])
   # Specify the output dir
   cmd.extend(['--output-dir', '${ISOLATED_OUTDIR}'])
   # Task name/hash values
   for name, isolated in args.tasks:
-    cmd.extend(['--' + name, Archive(isolated, args.isolate_server)])
+    if args.format_only:
+      cmd.extend(['--' + name, isolated + '_test_only'])
+    else:
+      cmd.extend(['--' + name, Archive(isolated, args.isolate_server)])
   # Test controller args
   for name, value in args.controller_vars:
     cmd.extend(['--' + name, value])
@@ -149,7 +152,14 @@ def GetSwarmingCommandLine(args):
 
 
 def main():
-  args = GetArgs()
+  if '--' not in sys.argv:
+    cmd_args = sys.argv[1:]
+    extra_args = []
+  else:
+    index = sys.argv.index('--')
+    cmd_args = sys.argv[1:index]
+    extra_args = sys.argv[index+1:]
+  args = GetArgs(cmd_args)
   if not args.swarming_server:
     raise ArgumentError('Missing required argument: --swarming-server')
   if not args.isolate_server:
@@ -158,7 +168,7 @@ def main():
       format='%(asctime)s %(filename)s:%(lineno)s %(levelname)s] %(message)s',
       datefmt='%H:%M:%S',
       level=LOGGING_LEVELS[len(LOGGING_LEVELS)-args.verbosity-1])
-  cmd = GetSwarmingCommandLine(args)
+  cmd = GetSwarmingCommandLine(args, extra_args)
   if not args.format_only:
     RunCommand(cmd, True)
   return 0
