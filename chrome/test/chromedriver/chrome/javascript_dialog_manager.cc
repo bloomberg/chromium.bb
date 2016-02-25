@@ -15,7 +15,7 @@ JavaScriptDialogManager::JavaScriptDialogManager(DevToolsClient* client)
 
 JavaScriptDialogManager::~JavaScriptDialogManager() {}
 
-bool JavaScriptDialogManager::IsDialogOpen() {
+bool JavaScriptDialogManager::IsDialogOpen() const {
   return !unhandled_dialog_queue_.empty();
 }
 

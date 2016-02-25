@@ -18,6 +18,7 @@ import tempfile
 import threading
 import time
 import unittest
+import urllib
 import urllib2
 import uuid
 
@@ -1215,6 +1216,20 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     # https://tools.ietf.org/html/rfc6761#section-6.4).
     self._driver.Load('http://invalid./')
     self.assertEquals('http://invalid./', self._driver.GetCurrentUrl())
+
+  def testCanClickAlertInIframes(self):
+    # This test requires that the page be loaded from a file:// URI, rather than
+    # the test HTTP server.
+    path = os.path.join(chrome_paths.GetTestData(), 'chromedriver',
+      'page_with_frame.html')
+    url = 'file://' + urllib.pathname2url(path)
+    self._driver.Load(url)
+    frame = self._driver.FindElement('id', 'frm')
+    self._driver.SwitchToFrame(frame)
+    a = self._driver.FindElement('id', 'btn')
+    a.Click()
+    self.WaitForCondition(lambda: self._driver.IsAlertOpen())
+    self._driver.HandleAlert(False)
 
 
 class ChromeDriverAndroidTest(ChromeDriverBaseTest):

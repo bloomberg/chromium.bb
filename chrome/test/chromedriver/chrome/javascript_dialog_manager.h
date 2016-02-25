@@ -25,7 +25,7 @@ class JavaScriptDialogManager : public DevToolsEventListener {
   explicit JavaScriptDialogManager(DevToolsClient* client);
   ~JavaScriptDialogManager() override;
 
-  bool IsDialogOpen();
+  bool IsDialogOpen() const;
 
   Status GetDialogMessage(std::string* message);
 

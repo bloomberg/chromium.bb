@@ -8,6 +8,7 @@
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/browser_info.h"
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
+#include "chrome/test/chromedriver/chrome/javascript_dialog_manager.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 
 namespace {
@@ -18,23 +19,29 @@ const std::string kUnreachableWebDataURL = "data:text/html,chromewebdata";
 
 }  // namespace
 
-NavigationTracker::NavigationTracker(DevToolsClient* client,
-                                     const BrowserInfo* browser_info)
+NavigationTracker::NavigationTracker(
+    DevToolsClient* client,
+    const BrowserInfo* browser_info,
+    const JavaScriptDialogManager* dialog_manager)
     : client_(client),
       loading_state_(kUnknown),
       browser_info_(browser_info),
+      dialog_manager_(dialog_manager),
       dummy_execution_context_id_(0),
       load_event_fired_(true),
       timed_out_(false) {
   client_->AddListener(this);
 }
 
-NavigationTracker::NavigationTracker(DevToolsClient* client,
-                                     LoadingState known_state,
-                                     const BrowserInfo* browser_info)
+NavigationTracker::NavigationTracker(
+    DevToolsClient* client,
+    LoadingState known_state,
+    const BrowserInfo* browser_info,
+    const JavaScriptDialogManager* dialog_manager)
     : client_(client),
       loading_state_(known_state),
       browser_info_(browser_info),
+      dialog_manager_(dialog_manager),
       dummy_execution_context_id_(0),
       load_event_fired_(true),
       timed_out_(false) {
@@ -63,6 +70,13 @@ Status NavigationTracker::IsPendingNavigation(const std::string& frame_id,
       // events from it until we reconnect.
       *is_pending = false;
       return Status(kOk);
+    } else if (status.IsError() && dialog_manager_->IsDialogOpen()) {
+      // When a dialog is open, DevTools returns "Internal error: result is not
+      // an Object" for this request. If this happens, we assume that we're
+      // talking to the right renderer process, and determine whether a
+      // navigation is pending based on the number of scheduled and pending
+      // frames.
+      LOG(WARNING) << "Failed to evaluate expression while dialog was open";
     } else if (status.IsError() ||
                !result->GetInteger("result.value", &value) ||
                value != 1) {

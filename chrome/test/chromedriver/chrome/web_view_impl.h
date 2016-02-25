@@ -126,8 +126,8 @@ class WebViewImpl : public WebView {
   const BrowserInfo* browser_info_;
   scoped_ptr<DomTracker> dom_tracker_;
   scoped_ptr<FrameTracker> frame_tracker_;
-  scoped_ptr<NavigationTracker> navigation_tracker_;
   scoped_ptr<JavaScriptDialogManager> dialog_manager_;
+  scoped_ptr<NavigationTracker> navigation_tracker_;
   scoped_ptr<MobileEmulationOverrideManager> mobile_emulation_override_manager_;
   scoped_ptr<GeolocationOverrideManager> geolocation_override_manager_;
   scoped_ptr<NetworkConditionsOverrideManager>

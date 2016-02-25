@@ -20,6 +20,7 @@ class DictionaryValue;
 
 struct BrowserInfo;
 class DevToolsClient;
+class JavaScriptDialogManager;
 class Status;
 
 // Tracks the navigation state of the page.
@@ -31,11 +32,14 @@ class NavigationTracker : public DevToolsEventListener {
     kNotLoading,
   };
 
-  NavigationTracker(DevToolsClient* client, const BrowserInfo* browser_info);
+  NavigationTracker(DevToolsClient* client,
+                    const BrowserInfo* browser_info,
+                    const JavaScriptDialogManager* dialog_manager);
 
   NavigationTracker(DevToolsClient* client,
                     LoadingState known_state,
-                    const BrowserInfo* browser_info);
+                    const BrowserInfo* browser_info,
+                    const JavaScriptDialogManager* dialog_manager);
 
   ~NavigationTracker() override;
 
@@ -58,6 +62,7 @@ class NavigationTracker : public DevToolsEventListener {
   DevToolsClient* client_;
   LoadingState loading_state_;
   const BrowserInfo* browser_info_;
+  const JavaScriptDialogManager* dialog_manager_;
   std::set<std::string> pending_frame_set_;
   std::set<std::string> scheduled_frame_set_;
   std::set<int> execution_context_set_;
