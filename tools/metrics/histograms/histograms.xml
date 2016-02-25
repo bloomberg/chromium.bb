@@ -82672,6 +82672,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="No device"/>
   <int value="2" label="No service"/>
   <int value="3" label="Not found"/>
+  <int value="4" label="Blacklisted"/>
 </enum>
 
 <enum name="WebBluetoothGetPrimaryServiceOutcome" type="int">

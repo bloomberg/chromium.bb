@@ -150,6 +150,7 @@ enum class UMAGetCharacteristicOutcome {
   NO_DEVICE = 1,
   NO_SERVICE = 2,
   NOT_FOUND = 3,
+  BLACKLISTED = 4,
   // Note: Add new outcomes immediately above this line.
   // Make sure to update the enum list in
   // tools/metrisc/histogram/histograms.xml accordingly.

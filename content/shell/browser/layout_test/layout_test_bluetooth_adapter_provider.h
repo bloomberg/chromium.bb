@@ -213,10 +213,13 @@ class LayoutTestBluetoothAdapterProvider {
   // Internal Structure:
   //   - |ConnectableDevice|(adapter, "Heart Rate And HID Device", uuids)
   //      - UUIDs:
+  //         - Device Information UUID (0x180a)
   //         - Generic Access UUID (0x1800)
   //         - Heart Rate UUID (0x180d)
   //         - Human Interface Device UUID (0x1812) (a blacklisted service)
   //      - Services:
+  //         - Device Information Service - Characteristics as described in
+  //           GetDeviceInformationService.
   //         - Generic Access Service - Characteristics as described in
   //           GetGenericAccessService.
   //         - Heart Rate Service - Characteristics as described in
@@ -382,8 +385,8 @@ class LayoutTestBluetoothAdapterProvider {
   //                            "00:00:00:00:00:02")
   // UUIDs added:
   //   - Generic Access (0x1800)
-  //   - Tx Power (0x1804)
   //   - Glucose UUID (0x1808)
+  //   - Tx Power (0x1804)
   // Services added:
   // None.
   static scoped_ptr<testing::NiceMock<device::MockBluetoothDevice>>
@@ -456,6 +459,17 @@ class LayoutTestBluetoothAdapterProvider {
   GetBaseGATTService(device::MockBluetoothDevice* device,
                      const std::string& uuid);
 
+  // |GetDeviceInformationService|
+  // Internal Structure:
+  //  - Characteristics:
+  //     - Serial Number String: (a blacklisted characteristic)
+  //        - Mock Functions:
+  //           - Read: Fails test.
+  //           - GetProperties: Returns
+  //               BluetoothGattCharacteristic::PROPERTY_READ
+  static scoped_ptr<testing::NiceMock<device::MockBluetoothGattService>>
+  GetDeviceInformationService(device::MockBluetoothDevice* device);
+
   // |GenericAccessService|
   // Internal Structure:
   //  - Characteristics:
@@ -467,8 +481,7 @@ class LayoutTestBluetoothAdapterProvider {
   //               BluetoothGattCharacteristic::PROPERTY_READ |
   //               BluetoothGattCharacteristic::PROPERTY_WRITE
   static scoped_ptr<testing::NiceMock<device::MockBluetoothGattService>>
-  GetGenericAccessService(device::MockBluetoothAdapter* adapter,
-                          device::MockBluetoothDevice* device);
+  GetGenericAccessService(device::MockBluetoothDevice* device);
 
   // |HeartRateService|
   // Internal Structure:
