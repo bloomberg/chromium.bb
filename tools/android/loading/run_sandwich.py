@@ -95,41 +95,283 @@ def _CleanPreviousTraces(output_directories_path):
     shutil.rmtree(directory_path)
 
 
-def _ArgumentParser():
-  """Build a command line argument's parser.
+class SandwichRunner(object):
+  """Sandwich runner.
+
+  This object is meant to be configured first and then run using the Run()
+  method. The runner can configure itself conveniently with parsed arguement
+  using the PullConfigFromArgs() method. The only job is to make sure that the
+  command line flags have `dest` parameter set to existing runner members.
   """
+
+  def __init__(self, job_name):
+    """Configures a sandwich runner out of the box.
+
+    Public members are meant to be configured as wished before calling Run().
+
+    Args:
+      job_name: The job name to get the associated urls.
+    """
+    # Cache operation to do before doing the chrome navigation.
+    #   Can be: clear,save,push,reload
+    self.cache_operation = 'clear'
+
+    # The cache archive's path to save to or push from. Is str or None.
+    self.cache_archive_path = None
+
+    # Controls whether the WPR server should do script injection.
+    self.disable_wpr_script_injection = False
+
+    # The job name. Is str.
+    self.job_name = job_name
+
+    # Number of times to repeat the job.
+    self.job_repeat = 1
+
+    # Network conditions to emulate. None if no emulation.
+    self.network_condition = None
+
+    # Network condition emulator. Can be: browser,wpr
+    self.network_emulator = 'browser'
+
+    # Output directory where to save the traces. Is str or None.
+    self.trace_output_directory = None
+
+    # List of urls to run.
+    self.urls = _ReadUrlsFromJobDescription(job_name)
+
+    # Path to the WPR archive to load or save. Is str or None.
+    self.wpr_archive_path = None
+
+    # Configures whether the WPR archive should be read or generated.
+    self.wpr_record = False
+
+    self._device = None
+    self._chrome_additional_flags = []
+    self._local_cache_directory_path = None
+
+  def PullConfigFromArgs(self, args):
+    """Configures the sandwich runner from parsed command line argument.
+
+    Args:
+      args: The command line parsed argument.
+    """
+    for config_name in self.__dict__.keys():
+      if config_name in args.__dict__:
+        self.__dict__[config_name] = args.__dict__[config_name]
+
+  def PrintConfig(self):
+    """Print the current sandwich runner configuration to stdout. """
+    for config_name in sorted(self.__dict__.keys()):
+      if config_name[0] != '_':
+        print '{} = {}'.format(config_name, self.__dict__[config_name])
+
+  def _CleanTraceOutputDirectory(self):
+    assert self.trace_output_directory
+    if not os.path.isdir(self.trace_output_directory):
+      try:
+        os.makedirs(self.trace_output_directory)
+      except OSError:
+        logging.error('Cannot create directory for results: %s',
+            self.trace_output_directory)
+        raise
+    else:
+      _CleanPreviousTraces(self.trace_output_directory)
+
+  def _SaveRunInfos(self, urls):
+    assert self.trace_output_directory
+    run_infos = {
+      'cache-op': self.cache_operation,
+      'job_name': self.job_name,
+      'urls': urls
+    }
+    with open(os.path.join(self.trace_output_directory, 'run_infos.json'),
+              'w') as file_output:
+      json.dump(run_infos, file_output, indent=2)
+
+  def _GetEmulatorNetworkCondition(self, emulator):
+    if self.network_emulator == emulator:
+      return self.network_condition
+    return None
+
+  def _RunNavigation(self, url, clear_cache, trace_id=None):
+    with device_setup.DeviceConnection(
+        device=self._device,
+        additional_flags=self._chrome_additional_flags) as connection:
+      additional_metadata = {}
+      if self._GetEmulatorNetworkCondition('browser'):
+        additional_metadata = chrome_setup.SetUpEmulationAndReturnMetadata(
+            connection=connection,
+            emulated_device_name=None,
+            emulated_network_name=self._GetEmulatorNetworkCondition('browser'))
+      loading_trace = trace_recorder.MonitorUrl(
+          connection, url,
+          clear_cache=clear_cache,
+          categories=pull_sandwich_metrics.CATEGORIES,
+          timeout=_DEVTOOLS_TIMEOUT)
+      loading_trace.metadata.update(additional_metadata)
+      if trace_id != None and self.trace_output_directory:
+        loading_trace_path = os.path.join(
+            self.trace_output_directory, str(trace_id), 'trace.json')
+        os.makedirs(os.path.dirname(loading_trace_path))
+        loading_trace.ToJsonFile(loading_trace_path)
+
+  def _RunUrl(self, url, trace_id=0):
+    clear_cache = False
+    if self.cache_operation == 'clear':
+      clear_cache = True
+    elif self.cache_operation == 'push':
+      self._device.KillAll(OPTIONS.chrome_package_name, quiet=True)
+      chrome_cache.PushBrowserCache(self._device,
+                                    self._local_cache_directory_path)
+    elif self.cache_operation == 'reload':
+      self._RunNavigation(url, clear_cache=True)
+    elif self.cache_operation == 'save':
+      clear_cache = trace_id == 0
+    self._RunNavigation(url, clear_cache=clear_cache, trace_id=trace_id)
+
+  def _PullCacheFromDevice(self):
+    assert self.cache_operation == 'save'
+    assert self.cache_archive_path, 'Need to specify where to save the cache'
+
+    # Move Chrome to background to allow it to flush the index.
+    self._device.adb.Shell('am start com.google.android.launcher')
+    time.sleep(_TIME_TO_DEVICE_IDLE_SECONDS)
+    self._device.KillAll(OPTIONS.chrome_package_name, quiet=True)
+    time.sleep(_TIME_TO_DEVICE_IDLE_SECONDS)
+
+    cache_directory_path = chrome_cache.PullBrowserCache(self._device)
+    chrome_cache.ZipDirectoryContent(
+        cache_directory_path, self.cache_archive_path)
+    shutil.rmtree(cache_directory_path)
+
+  def Run(self):
+    """SandwichRunner main entry point meant to be called once configured.
+    """
+    if self.trace_output_directory:
+      self._CleanTraceOutputDirectory()
+
+    self._device = device_utils.DeviceUtils.HealthyDevices()[0]
+    self._chrome_additional_flags = []
+
+    assert self._local_cache_directory_path == None
+    if self.cache_operation == 'push':
+      assert os.path.isfile(self.cache_archive_path)
+      self._local_cache_directory_path = tempfile.mkdtemp(suffix='.cache')
+      chrome_cache.UnzipDirectoryContent(
+          self.cache_archive_path, self._local_cache_directory_path)
+
+    ran_urls = []
+    with device_setup.WprHost(self._device, self.wpr_archive_path,
+        record=self.wpr_record,
+        network_condition_name=self._GetEmulatorNetworkCondition('wpr'),
+        disable_script_injection=self.disable_wpr_script_injection
+        ) as additional_flags:
+      self._chrome_additional_flags.extend(additional_flags)
+      for _ in xrange(self.job_repeat):
+        for url in self.urls:
+          self._RunUrl(url, trace_id=len(ran_urls))
+          ran_urls.append(url)
+
+    if self._local_cache_directory_path:
+      shutil.rmtree(self._local_cache_directory_path)
+      self._local_cache_directory_path = None
+    if self.cache_operation == 'save':
+      self._PullCacheFromDevice()
+    if self.trace_output_directory:
+      self._SaveRunInfos(ran_urls)
+
+
+def _ArgumentParser():
+  """Build a command line argument's parser."""
   parser = argparse.ArgumentParser()
   parser.add_argument('--job', required=True,
                       help='JSON file with job description.')
-  parser.add_argument('--output', required=True,
-                      help='Name of output directory to create.')
-  parser.add_argument('--repeat', default=1, type=int,
-                      help='How many times to run the job')
-  parser.add_argument('--cache-op',
-                      choices=['clear', 'save', 'push', 'reload'],
-                      default='clear',
-                      help='Configures cache operation to do before launching '
-                          +'Chrome. (Default is clear).')
-  parser.add_argument('--wpr-archive', default=None, type=str,
-                      help='Web page replay archive to load job\'s urls from.')
-  parser.add_argument('--wpr-record', default=False, action='store_true',
-                      help='Record web page replay archive.')
-  parser.add_argument('--disable-wpr-script-injection', default=False,
-                      action='store_true',
-                      help='Disable WPR default script injection such as ' +
-                          'overriding javascript\'s Math.random() and Date() ' +
-                          'with deterministic implementations.')
-  parser.add_argument('--network-condition', default=None,
+  subparsers = parser.add_subparsers(dest='subcommand', help='subcommand line')
+
+  # Record WPR subcommand.
+  record_wpr = subparsers.add_parser('record-wpr',
+                                     help='Record WPR from sandwich job.')
+  record_wpr.add_argument('--wpr-archive', required=True, type=str,
+                          dest='wpr_archive_path',
+                          help='Web page replay archive to generate.')
+
+  # Create cache subcommand.
+  create_cache_parser = subparsers.add_parser('create-cache',
+      help='Create cache from sandwich job.')
+  create_cache_parser.add_argument('--cache-archive', required=True, type=str,
+                                   dest='cache_archive_path',
+                                   help='Cache archive destination path.')
+  create_cache_parser.add_argument('--wpr-archive', default=None, type=str,
+                                   dest='wpr_archive_path',
+                                   help='Web page replay archive to create ' +
+                                       'the cache from.')
+
+  # Run subcommand.
+  run_parser = subparsers.add_parser('run', help='Run sandwich benchmark.')
+  run_parser.add_argument('--output', required=True, type=str,
+                          dest='trace_output_directory',
+                          help='Path of output directory to create.')
+  run_parser.add_argument('--cache-archive', type=str,
+                          dest='cache_archive_path',
+                          help='Cache archive destination path.')
+  run_parser.add_argument('--cache-op',
+                          choices=['clear', 'push', 'reload'],
+                          dest='cache_operation',
+                          default='clear',
+                          help='Configures cache operation to do before '
+                              +'launching Chrome. (Default is clear). The push'
+                              +' cache operation requires --cache-archive to '
+                              +'set.')
+  run_parser.add_argument('--disable-wpr-script-injection',
+                          action='store_true',
+                          help='Disable WPR default script injection such as ' +
+                              'overriding javascript\'s Math.random() and ' +
+                              'Date() with deterministic implementations.')
+  run_parser.add_argument('--network-condition', default=None,
       choices=sorted(chrome_setup.NETWORK_CONDITIONS.keys()),
       help='Set a network profile.')
-  parser.add_argument('--network-emulator', default='browser',
+  run_parser.add_argument('--network-emulator', default='browser',
       choices=['browser', 'wpr'],
       help='Set which component is emulating the network condition.' +
-          ' (Default to browser)')
+          ' (Default to browser). Wpr network emulator requires --wpr-archive' +
+          ' to be set.')
+  run_parser.add_argument('--job-repeat', default=1, type=int,
+                          help='How many times to run the job.')
+  run_parser.add_argument('--wpr-archive', default=None, type=str,
+                          dest='wpr_archive_path',
+                          help='Web page replay archive to load job\'s urls ' +
+                              'from.')
   return parser
 
 
-def main():
+def _RecordWprMain(args):
+  sandwich_runner = SandwichRunner(args.job)
+  sandwich_runner.PullConfigFromArgs(args)
+  sandwich_runner.wpr_record = True
+  sandwich_runner.PrintConfig()
+  sandwich_runner.Run()
+  return 0
+
+
+def _CreateCacheMain(args):
+  sandwich_runner = SandwichRunner(args.job)
+  sandwich_runner.PullConfigFromArgs(args)
+  sandwich_runner.cache_operation = 'save'
+  sandwich_runner.PrintConfig()
+  sandwich_runner.Run()
+  return 0
+
+
+def _RunJobMain(args):
+  sandwich_runner = SandwichRunner(args.job)
+  sandwich_runner.PullConfigFromArgs(args)
+  sandwich_runner.PrintConfig()
+  sandwich_runner.Run()
+  return 0
+
+
+def main(command_line_args):
   logging.basicConfig(level=logging.INFO)
   devil_chromium.Initialize()
 
@@ -137,102 +379,16 @@ def main():
   # the default values of OPTIONS.
   OPTIONS.ParseArgs([])
 
-  args = _ArgumentParser().parse_args()
+  args = _ArgumentParser().parse_args(command_line_args)
 
-  if not os.path.isdir(args.output):
-    try:
-      os.makedirs(args.output)
-    except OSError:
-      logging.error('Cannot create directory for results: %s' % args.output)
-      raise
-  else:
-    _CleanPreviousTraces(args.output)
-
-  run_infos = {
-    'cache-op': args.cache_op,
-    'job': args.job,
-    'urls': []
-  }
-  job_urls = _ReadUrlsFromJobDescription(args.job)
-  device = device_utils.DeviceUtils.HealthyDevices()[0]
-  local_cache_archive_path = os.path.join(args.output, 'cache.zip')
-  local_cache_directory_path = None
-  wpr_network_condition_name = None
-  browser_network_condition_name = None
-  if args.network_emulator == 'wpr':
-    wpr_network_condition_name = args.network_condition
-  elif args.network_emulator == 'browser':
-    browser_network_condition_name = args.network_condition
-  else:
-    assert False
-
-  if args.cache_op == 'push':
-    assert os.path.isfile(local_cache_archive_path)
-    local_cache_directory_path = tempfile.mkdtemp(suffix='.cache')
-    chrome_cache.UnzipDirectoryContent(
-        local_cache_archive_path, local_cache_directory_path)
-
-  with device_setup.WprHost(device, args.wpr_archive,
-      record=args.wpr_record,
-      network_condition_name=wpr_network_condition_name,
-      disable_script_injection=args.disable_wpr_script_injection
-      ) as additional_flags:
-    def _RunNavigation(url, clear_cache, trace_id):
-      with device_setup.DeviceConnection(
-          device=device,
-          additional_flags=additional_flags) as connection:
-        additional_metadata = {}
-        if browser_network_condition_name:
-          additional_metadata = chrome_setup.SetUpEmulationAndReturnMetadata(
-              connection=connection,
-              emulated_device_name=None,
-              emulated_network_name=browser_network_condition_name)
-        loading_trace = trace_recorder.MonitorUrl(
-            connection, url,
-            clear_cache=clear_cache,
-            categories=pull_sandwich_metrics.CATEGORIES,
-            timeout=_DEVTOOLS_TIMEOUT)
-        loading_trace.metadata.update(additional_metadata)
-        if trace_id != None:
-          loading_trace_path = os.path.join(
-              args.output, str(trace_id), 'trace.json')
-          os.makedirs(os.path.dirname(loading_trace_path))
-          loading_trace.ToJsonFile(loading_trace_path)
-
-    for _ in xrange(args.repeat):
-      for url in job_urls:
-        clear_cache = False
-        if args.cache_op == 'clear':
-          clear_cache = True
-        elif args.cache_op == 'push':
-          device.KillAll(OPTIONS.chrome_package_name, quiet=True)
-          chrome_cache.PushBrowserCache(device, local_cache_directory_path)
-        elif args.cache_op == 'reload':
-          _RunNavigation(url, clear_cache=True, trace_id=None)
-        elif args.cache_op == 'save':
-          clear_cache = not run_infos['urls']
-        _RunNavigation(url, clear_cache=clear_cache,
-                       trace_id=len(run_infos['urls']))
-        run_infos['urls'].append(url)
-
-  if local_cache_directory_path:
-    shutil.rmtree(local_cache_directory_path)
-
-  if args.cache_op == 'save':
-    # Move Chrome to background to allow it to flush the index.
-    device.adb.Shell('am start com.google.android.launcher')
-    time.sleep(_TIME_TO_DEVICE_IDLE_SECONDS)
-    device.KillAll(OPTIONS.chrome_package_name, quiet=True)
-    time.sleep(_TIME_TO_DEVICE_IDLE_SECONDS)
-
-    cache_directory_path = chrome_cache.PullBrowserCache(device)
-    chrome_cache.ZipDirectoryContent(
-        cache_directory_path, local_cache_archive_path)
-    shutil.rmtree(cache_directory_path)
-
-  with open(os.path.join(args.output, 'run_infos.json'), 'w') as file_output:
-    json.dump(run_infos, file_output, indent=2)
+  if args.subcommand == 'record-wpr':
+    return _RecordWprMain(args)
+  if args.subcommand == 'create-cache':
+    return _CreateCacheMain(args)
+  if args.subcommand == 'run':
+    return _RunJobMain(args)
+  assert False
 
 
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.exit(main(sys.argv[1:]))
