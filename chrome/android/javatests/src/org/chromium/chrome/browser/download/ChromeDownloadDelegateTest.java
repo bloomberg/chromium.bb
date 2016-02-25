@@ -41,53 +41,6 @@ public class ChromeDownloadDelegateTest extends ChromeActivityTestCaseBase<Chrom
     }
 
     /**
-     * Test to make sure {@link ChromeDownloadDelegate#fileName} returns the
-     * right file for different URLs and MIME types.
-     */
-    @SmallTest
-    @Feature({"Download"})
-    public void testFileName() {
-        String testUrl = "http://server.com/file.pdf";
-        assertEquals("file.pdf", ChromeDownloadDelegate.fileName(testUrl, "application/pdf", ""));
-        assertEquals("file.pdf", ChromeDownloadDelegate.fileName(testUrl, "", ""));
-
-        // .php is an unknown MIME format extension.
-        // This used to generate file.php even when the MIME type was set.
-        // http://code.google.com/p/chromium/issues/detail?id=134396
-        testUrl = "http://server.com/file.php";
-
-        assertEquals("file.pdf", ChromeDownloadDelegate.fileName(testUrl, "application/pdf", ""));
-        assertEquals("file.php", ChromeDownloadDelegate.fileName(testUrl, "", ""));
-
-        // .xml is a known MIME format extension.
-        testUrl = "http://server.com/file.xml";
-        assertEquals("file.xml", ChromeDownloadDelegate.fileName(testUrl, "", ""));
-
-        assertEquals("file.pdf", ChromeDownloadDelegate.fileName(testUrl, "application/pdf", ""));
-
-        // If the file's extension and HTTP header's MIME type are the same, use
-        // the former to derive the final extension.
-        // https://code.google.com/p/chromium/issues/detail?id=170852
-        testUrl = "http://server.com/file.mp3";
-        assertEquals("file.mp3", ChromeDownloadDelegate.fileName(testUrl, "audio/mpeg", ""));
-
-        testUrl = "http://server.com/";
-        assertEquals("downloadfile.bin", ChromeDownloadDelegate.fileName(testUrl, "", ""));
-        assertEquals("downloadfile.pdf",
-                ChromeDownloadDelegate.fileName(testUrl, "application/pdf", ""));
-
-        // Fails to match the filename pattern from header; uses one from url.
-        // Note that header itself is a valid one.
-        testUrl = "http://server.com/file.pdf";
-        assertEquals("file.pdf", ChromeDownloadDelegate.fileName(testUrl, "application/pdf",
-                "attachment; name=\"foo\"; filename=\"bar\""));
-        assertEquals("file.pdf", ChromeDownloadDelegate.fileName(testUrl, "application/pdf",
-                "attachment; filename=\"bar\"; name=\"foo\""));
-        assertEquals("file.pdf", ChromeDownloadDelegate.fileName(testUrl, "application/pdf",
-                "attachment; filename=\"bar\"; filename*=utf-8''baz"));
-    }
-
-    /**
      * Test to make sure {@link ChromeDownloadDelegate#shouldInterceptContextMenuDownload}
      * returns true only for ".dd" or ".dm" extensions with http/https scheme.
      */

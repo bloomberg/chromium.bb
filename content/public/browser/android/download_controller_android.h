@@ -57,6 +57,10 @@ class CONTENT_EXPORT DownloadControllerAndroid : public DownloadItem::Observer {
   // Called by unit test to approve or disapprove file access request.
   virtual void SetApproveFileAccessRequestForTesting(bool approve) {};
 
+  // Called to set the default download file name if it cannot be resolved
+  // from url and content disposition
+  virtual void SetDefaultDownloadFileName(const std::string& file_name) {}
+
  protected:
   ~DownloadControllerAndroid() override {};
   static DownloadControllerAndroid* download_controller_;

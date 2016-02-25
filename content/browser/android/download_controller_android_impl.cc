@@ -32,6 +32,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/referrer.h"
 #include "jni/DownloadController_jni.h"
+#include "net/base/filename_util.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_content_disposition.h"
@@ -211,6 +212,11 @@ void DownloadControllerAndroidImpl::AcquireFileAccessPermission(
       env, GetJavaObject()->Controller(env).obj(), view.obj(), callback_id);
 }
 
+void DownloadControllerAndroidImpl::SetDefaultDownloadFileName(
+    const std::string& file_name) {
+  default_file_name_ = file_name;
+}
+
 bool DownloadControllerAndroidImpl::HasFileAccessPermission(
     ScopedJavaLocalRef<jobject> j_content_view_core) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -388,11 +394,14 @@ void DownloadControllerAndroidImpl::StartAndroidDownloadInternal(
   ScopedJavaLocalRef<jstring> jreferer =
       ConvertUTF8ToJavaString(env, info.referer);
 
-  // Try parsing the content disposition header to get a
-  // explicitly specified filename if available.
-  net::HttpContentDisposition header(info.content_disposition, "");
+  // net::GetSuggestedFilename will fallback to "download" as filename.
   ScopedJavaLocalRef<jstring> jfilename =
-      ConvertUTF8ToJavaString(env, header.filename());
+      base::android::ConvertUTF16ToJavaString(
+          env, net::GetSuggestedFilename(info.url, info.content_disposition,
+                                         std::string(),  // referrer_charset
+                                         std::string(),  // suggested_name
+                                         info.original_mime_type,
+                                         default_file_name_));
 
   Java_DownloadController_newHttpGetDownload(
       env, GetJavaObject()->Controller(env).obj(), view.obj(), jurl.obj(),

@@ -8,10 +8,12 @@
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/android/download_controller_android.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item.h"
 #include "jni/DownloadManagerService_jni.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using base::android::JavaParamRef;
 using base::android::ConvertJavaStringToUTF8;
@@ -45,6 +47,8 @@ DownloadManagerService::DownloadManagerService(
     jobject obj,
     content::DownloadManager* manager)
     : java_ref_(env, obj), manager_(manager) {
+  content::DownloadControllerAndroid::Get()->SetDefaultDownloadFileName(
+      l10n_util::GetStringUTF8(IDS_DEFAULT_DOWNLOAD_FILENAME));
   manager_->AddObserver(this);
 }
 

@@ -59,6 +59,7 @@ class DownloadControllerAndroidImpl : public DownloadControllerAndroid {
   void AcquireFileAccessPermission(
       WebContents* web_contents,
       const AcquireFileAccessPermissionCallback& callback) override;
+  void SetDefaultDownloadFileName(const std::string& file_name) override;
 
  private:
   // Used to store all the information about an Android download.
@@ -141,6 +142,8 @@ class DownloadControllerAndroidImpl : public DownloadControllerAndroid {
   JavaObject* GetJavaObject();
 
   JavaObject* java_object_;
+
+  std::string default_file_name_;
 
   ScopedVector<DeferredDownloadObserver> deferred_downloads_;
 
