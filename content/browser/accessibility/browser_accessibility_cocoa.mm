@@ -1775,15 +1775,15 @@ bool InitializeAccessibilityTreeSearch(
       return nil;
 
     DCHECK(object);
-    if (object->IsTextOnlyObject() &&
+    if ((object->IsSimpleTextControl() || object->IsTextOnlyObject()) &&
         offset < static_cast<int>(object->GetText().length())) {
       ++offset;
     } else {
-      offset = 0;
-      while (object &&
-             !(object->IsTextOnlyObject() && object->GetText().length() == 0)) {
+      do {
         object = BrowserAccessibilityManager::NextTextOnlyObject(object);
-      }
+      } while (
+          object &&
+          !(object->IsTextOnlyObject() && object->GetText().length() == 0));
       if (!object)
         return nil;
 
@@ -1800,13 +1800,15 @@ bool InitializeAccessibilityTreeSearch(
       return nil;
 
     DCHECK(object);
-    if (object->IsTextOnlyObject() && offset > 0) {
+    if ((object->IsSimpleTextControl() || object->IsTextOnlyObject()) &&
+        offset > 0) {
       --offset;
     } else {
-      while (object &&
-             !(object->IsTextOnlyObject() && object->GetText().length() == 0)) {
+      do {
         object = BrowserAccessibilityManager::PreviousTextOnlyObject(object);
-      }
+      } while (
+          object &&
+          !(object->IsTextOnlyObject() && object->GetText().length() == 0));
       if (!object)
         return nil;
 

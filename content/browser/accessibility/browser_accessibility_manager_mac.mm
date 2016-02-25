@@ -183,24 +183,27 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
       break;
     case ui::AX_EVENT_DOCUMENT_SELECTION_CHANGED: {
       mac_notification = NSAccessibilitySelectedTextChangedNotification;
+      // WebKit fires a notification both on the focused object and the root.
+      BrowserAccessibility* focus = GetFocus();
+      if (!focus)
+        break;
+      NSAccessibilityPostNotification(focus->ToBrowserAccessibilityCocoa(),
+                                      mac_notification);
+
       if (base::mac::IsOSElCapitanOrLater()) {
         // |NSAccessibilityPostNotificationWithUserInfo| should be used on OS X
         // 10.11 or later to notify Voiceover about text selection changes. This
         // API has been present on versions of OS X since 10.7 but doesn't
         // appear to be needed by Voiceover before version 10.11.
-        // WebKit fires a notification both on the focused object and the root.
         NSDictionary* user_info =
             GetUserInfoForSelectedTextChangedNotification();
-
-        BrowserAccessibility* focus = GetFocus();
-        if (!focus)
-          return;
-        NSAccessibilityPostNotificationWithUserInfo(
-            focus->ToBrowserAccessibilityCocoa(), mac_notification, user_info);
 
         BrowserAccessibility* root = GetRoot();
         if (!root)
           return;
+
+        NSAccessibilityPostNotificationWithUserInfo(
+            focus->ToBrowserAccessibilityCocoa(), mac_notification, user_info);
         NSAccessibilityPostNotificationWithUserInfo(
             root->ToBrowserAccessibilityCocoa(), mac_notification, user_info);
         return;

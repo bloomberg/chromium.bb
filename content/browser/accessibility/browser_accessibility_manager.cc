@@ -474,7 +474,7 @@ gfx::Rect BrowserAccessibilityManager::GetViewBounds() {
   return gfx::Rect();
 }
 
-// Static
+// static
 BrowserAccessibility* BrowserAccessibilityManager::NextInTreeOrder(
     const BrowserAccessibility* object) {
   if (!object)
@@ -494,7 +494,7 @@ BrowserAccessibility* BrowserAccessibilityManager::NextInTreeOrder(
   return nullptr;
 }
 
-// Static
+// static
 BrowserAccessibility* BrowserAccessibilityManager::PreviousInTreeOrder(
     const BrowserAccessibility* object) {
   if (!object)
@@ -510,7 +510,7 @@ BrowserAccessibility* BrowserAccessibilityManager::PreviousInTreeOrder(
   return sibling;
 }
 
-// Static
+// static
 BrowserAccessibility* BrowserAccessibilityManager::PreviousTextOnlyObject(
     const BrowserAccessibility* object) {
   BrowserAccessibility* previous_object = PreviousInTreeOrder(object);
@@ -520,7 +520,7 @@ BrowserAccessibility* BrowserAccessibilityManager::PreviousTextOnlyObject(
   return previous_object;
 }
 
-// Static
+// static
 BrowserAccessibility* BrowserAccessibilityManager::NextTextOnlyObject(
     const BrowserAccessibility* object) {
   BrowserAccessibility* next_object = NextInTreeOrder(object);
@@ -530,7 +530,7 @@ BrowserAccessibility* BrowserAccessibilityManager::NextTextOnlyObject(
   return next_object;
 }
 
-// Static
+// static
 bool BrowserAccessibilityManager::FindIndicesInCommonParent(
     const BrowserAccessibility& object1,
     const BrowserAccessibility& object2,
@@ -564,7 +564,7 @@ bool BrowserAccessibilityManager::FindIndicesInCommonParent(
   return true;
 }
 
-// Static
+// static
 base::string16 BrowserAccessibilityManager::GetTextForRange(
     const BrowserAccessibility& start_object,
     int start_offset,
@@ -572,6 +572,19 @@ base::string16 BrowserAccessibilityManager::GetTextForRange(
     int end_offset) {
   DCHECK_GE(start_offset, 0);
   DCHECK_GE(end_offset, 0);
+
+  if (&start_object == &end_object && start_object.IsSimpleTextControl()) {
+    if (start_offset > end_offset)
+      std::swap(start_offset, end_offset);
+
+    if (start_offset >= static_cast<int>(start_object.GetValue().length()) ||
+        end_offset > static_cast<int>(start_object.GetValue().length())) {
+      return base::string16();
+    }
+
+    return start_object.GetValue().substr(start_offset,
+                                          end_offset - start_offset);
+  }
 
   int child_index1 = -1;
   int child_index2 = -1;
@@ -618,16 +631,14 @@ base::string16 BrowserAccessibilityManager::GetTextForRange(
 
   // Be a little permissive with the start and end offsets.
   if (start_text_object == end_text_object) {
+    if (start_offset > end_offset)
+      std::swap(start_offset, end_offset);
+
     if (start_offset <
             static_cast<int>(start_text_object->GetText().length()) &&
         end_offset <= static_cast<int>(end_text_object->GetText().length())) {
-      if (start_offset <= end_offset) {
-        return start_text_object->GetText().substr(start_offset,
-                                                   end_offset - start_offset);
-      } else {
-        return start_text_object->GetText().substr(end_offset,
-                                                   start_offset - end_offset);
-      }
+      return start_text_object->GetText().substr(start_offset,
+                                                 end_offset - start_offset);
     }
     return start_text_object->GetText();
   }
