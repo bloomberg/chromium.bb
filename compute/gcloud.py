@@ -259,8 +259,7 @@ class GCContext(object):
     if machine_type is not None:
       cmd += ['--machine-type', machine_type]
     if scopes is not None:
-      cmd += ['--scopes']
-      cmd += list(scopes)
+      cmd += ['--scopes', ','.join(scopes)]
     if disks is not None:
       for disk in disks:
         properties = ['%s=%s' % (key, val)
