@@ -81,13 +81,13 @@ cr.define('media_router.ui', function() {
    * Populates the WebUI with data obtained from Media Router.
    *
    * @param {{deviceMissingUrl: string,
-   *          sinksAndIdentity: {{
+   *          sinksAndIdentity: {
    *            sinks: !Array<!media_router.Sink>,
    *            showEmail: boolean,
    *            userEmail: string,
    *            showDomain: boolean,
    *            userDomain: string
-   *          }},
+   *          },
    *          routes: !Array<!media_router.Route>,
    *          castModes: !Array<!media_router.CastMode>}} data
    * Parameters in data:
