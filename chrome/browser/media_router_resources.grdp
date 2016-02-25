@@ -18,6 +18,9 @@
   <include name="IDR_MEDIA_ROUTER_HEADER_HTML" file="resources\media_router\elements\media_router_header\media_router_header.html" type="BINDATA" />
   <include name="IDR_MEDIA_ROUTER_HEADER_CSS" file="resources\media_router\elements\media_router_header\media_router_header.css" type="BINDATA" />
   <include name="IDR_MEDIA_ROUTER_HEADER_JS" file="resources\media_router\elements\media_router_header\media_router_header.js" type="BINDATA" />
+  <include name="IDR_MEDIA_ROUTER_SEARCH_HIGHLIGHTER_CSS" file="resources\media_router\elements\media_router_search_highlighter\media_router_search_highlighter.css" type="BINDATA" />
+  <include name="IDR_MEDIA_ROUTER_SEARCH_HIGHLIGHTER_HTML" file="resources\media_router\elements\media_router_search_highlighter\media_router_search_highlighter.html" type="BINDATA" />
+  <include name="IDR_MEDIA_ROUTER_SEARCH_HIGHLIGHTER_JS" file="resources\media_router\elements\media_router_search_highlighter\media_router_search_highlighter.js" type="BINDATA" />
   <include name="IDR_ROUTE_DETAILS_HTML" file="resources\media_router\elements\route_details\route_details.html" type="BINDATA" />
   <include name="IDR_ROUTE_DETAILS_CSS" file="resources\media_router\elements\route_details\route_details.css" type="BINDATA" />
   <include name="IDR_ROUTE_DETAILS_JS" file="resources\media_router\elements\route_details\route_details.js" type="BINDATA" />

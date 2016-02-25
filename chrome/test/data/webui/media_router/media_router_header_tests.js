@@ -183,7 +183,8 @@ cr.define('media_router_header', function() {
                                     'header-text']);
 
         header.view = media_router.MediaRouterView.FILTER;
-        checkElementsVisibleWithId(['close-button',
+        checkElementsVisibleWithId(['back-button',
+                                    'close-button',
                                     'header-text']);
 
         header.view = media_router.MediaRouterView.ISSUE;

@@ -5,11 +5,13 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/hardware-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
 <link rel="import" href="../issue_banner/issue_banner.html">
 <link rel="import" href="../media_router_header/media_router_header.html">
+<link rel="import" href="../media_router_search_highlighter/media_router_search_highlighter.html">
 <link rel="import" href="../route_details/route_details.html">
 <dom-module id="media-router-container">
   <link rel="import" type="css" href="../../media_router_common.css">
@@ -92,7 +94,7 @@
     <div id="sink-list-view"
         hidden$="[[computeSinkListViewHidden_(currentView_, issue)]]">
       <div id="device-missing"
-           hidden$="[[!computeSinkListHidden_(sinksToShow_)]]">
+           hidden$="[[computeDeviceMissingHidden_(sinksToShow_)]]">
         <paper-spinner id="searching-devices-spinner" active
             hidden$="[[computeSpinnerHidden_(justOpened_)]]">
         </paper-spinner>
@@ -102,9 +104,9 @@
         </a>
       </div>
       <paper-menu id="sink-list"
-          hidden$="[[computeSinkListHidden_(sinksToShow_)]]">
+          hidden$="[[computeSinkListHidden_(sinksToShow_, isUserSearching_)]]">
         <template is="dom-repeat" id="sinkList" items="[[sinksToShow_]]">
-          <paper-item class="sink" on-click="onSinkClick_">
+          <paper-item on-click="onSinkClick_">
             <div class="sink-content">
               <div>
                 <iron-icon icon="[[computeSinkIcon_(item)]]"
@@ -134,12 +136,75 @@
                   <div class="sink-text sink-subtext">
                     <span>[[computeSinkSubtext_(item, sinkToRouteMap_)]]</span>
                   </div>
-              </template>
+                </template>
               </div>
             </div>
           </paper-item>
         </template>
       </paper-menu>
+      <div id="sink-search">
+        <div class="sink-content">
+          <div>
+            <paper-icon-button id="sink-search-icon" icon="search"
+                on-click="searchButtonClick_">
+            </paper-icon-button>
+          </div>
+          <div id="search-input-container">
+            <paper-input id="sink-search-input" label="[[searchInputLabel_]]"
+                no-label-float value="{{searchInputText_}}">
+            </paper-input>
+          </div>
+        </div>
+      </div>
+      <template is="dom-if" if="[[isUserSearching_]]">
+        <div id="no-search-matches"
+            hidden$="[[computeNoMatchesHidden_(searchResultsToShow_, isUserSearching_)]]">
+          <span>[[searchNoMatchesText_]]</span>
+        </div>
+        <paper-menu id="search-results" selected="0"
+            hidden$="[[computeSearchResultsHidden_(isUserSearching_, searchResultsToShow_)]]">
+          <template is="dom-repeat" id="searchResults"
+              items="[[searchResultsToShow_]]">
+            <paper-item class="search-item" on-click="onSinkClick_">
+              <div class="sink-content">
+                <div>
+                  <iron-icon icon="[[computeSinkIcon_(item.sinkItem)]]"
+                      hidden$="[[computeSinkIsLaunching_(currentLaunchingSinkId_, item.sinkItem.id)]]"
+                      class$="[[computeSinkIconClass_(item.sinkItem.id, sinkToRouteMap_)]]">
+                  </iron-icon>
+                  <template is="dom-if"
+                      if="[[computeSinkIsLaunching_(currentLaunchingSinkId_, item.sinkItem.id)]]">
+                    <paper-spinner class="sink-icon" active>
+                    </paper-spinner>
+                  </template>
+                </div>
+                <div>
+                  <div class="sink-text">
+                    <media-router-search-highlighter class="sink-name"
+                        data="[[computeSinkMatchingText_(item)]]"
+                        title="[[item.sinkItem.name]]">
+                    </media-router-search-highlighter>
+                    <template is="dom-if"
+                        if="[[!computeSinkDomainHidden_(item.sinkItem)]]">
+                      <span class="sink-domain" title="[[item.sinkItem.domain]]">
+                        [[item.sinkItem.domain]]
+                      </span>
+                    </template>
+                  </div>
+                  <template is="dom-if"
+                      if="[[!computeSinkSubtextHidden_(item.sinkItem, sinkToRouteMap_)]]">
+                    <div class="sink-text sink-subtext">
+                      <span>
+                        [[computeSinkSubtext_(item.sinkItem, sinkToRouteMap_)]]
+                      </span>
+                    </div>
+                  </template>
+                </div>
+              </div>
+            </paper-item>
+          </template>
+        </paper-menu>
+      </template>
     </div>
     <template is="dom-if"
         if="[[computeIssueBannerShown_(currentView_, issue)]]">

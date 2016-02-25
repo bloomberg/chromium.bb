@@ -50,6 +50,18 @@ void AddPolymerElements(content::WebUIDataSource* html_source) {
       "elements/media_router_header/media_router_header.js",
       IDR_MEDIA_ROUTER_HEADER_JS);
   html_source->AddResourcePath(
+      "elements/media_router_search_highlighter/"
+      "media_router_search_highlighter.css",
+      IDR_MEDIA_ROUTER_SEARCH_HIGHLIGHTER_CSS);
+  html_source->AddResourcePath(
+      "elements/media_router_search_highlighter/"
+      "media_router_search_highlighter.html",
+      IDR_MEDIA_ROUTER_SEARCH_HIGHLIGHTER_HTML);
+  html_source->AddResourcePath(
+      "elements/media_router_search_highlighter/"
+      "media_router_search_highlighter.js",
+      IDR_MEDIA_ROUTER_SEARCH_HIGHLIGHTER_JS);
+  html_source->AddResourcePath(
       "elements/route_details/route_details.css",
       IDR_ROUTE_DETAILS_CSS);
   html_source->AddResourcePath(

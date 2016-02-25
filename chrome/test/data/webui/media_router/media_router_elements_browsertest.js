@@ -33,6 +33,7 @@ MediaRouterElementsBrowserTest.prototype = {
     'issue_banner_tests.js',
     'media_router_container_tests.js',
     'media_router_header_tests.js',
+    'media_router_search_highlighter.js',
     'route_details_tests.js',
   ]),
 };
@@ -43,6 +44,7 @@ TEST_F('MediaRouterElementsBrowserTest', 'MediaRouterElementsTest', function() {
   issue_banner.registerTests();
   media_router_container.registerTests();
   media_router_header.registerTests();
+  media_router_search_highlighter.registerTests();
   route_details.registerTests();
 
   // Run all registered tests.

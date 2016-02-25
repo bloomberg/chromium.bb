@@ -116,7 +116,8 @@ Polymer({
    * @private
    */
   computeBackButtonHidden_: function(view) {
-    return view != media_router.MediaRouterView.ROUTE_DETAILS;
+    return view != media_router.MediaRouterView.ROUTE_DETAILS &&
+        view != media_router.MediaRouterView.FILTER;
   },
 
   /**

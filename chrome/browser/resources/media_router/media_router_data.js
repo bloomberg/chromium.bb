@@ -24,6 +24,12 @@ media_router.CastModeType = {
 };
 
 /**
+ * The ESC key maps to keycode '27'.
+ * @const {number}
+ */
+media_router.KEYCODE_ESC = 27;
+
+/**
  * This corresponds to the C++ MediaRouterMetrics MediaRouterUserAction.
  * @enum {number}
  */

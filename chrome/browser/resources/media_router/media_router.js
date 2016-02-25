@@ -9,10 +9,6 @@
 cr.define('media_router', function() {
   'use strict';
 
-  // The ESC key maps to keycode '27'.
-  // @const {number}
-  var KEYCODE_ESC = 27;
-
   /**
    * The media-router-container element. Initialized after polymer is ready.
    * @type {?MediaRouterContainerElement}
@@ -60,8 +56,10 @@ cr.define('media_router', function() {
 
     // Pressing the ESC key closes the dialog.
     document.addEventListener('keydown', function(e) {
-      if (e.keyCode == KEYCODE_ESC)
-        onCloseDialogEvent();
+      if (e.keyCode == media_router.KEYCODE_ESC) {
+        container.maybeReportUserFirstAction(
+            media_router.MediaRouterUserAction.CLOSE);
+      }
     });
   }
 

@@ -50,6 +50,10 @@ void AddMediaRouterContainerStrings(content::WebUIDataSource* html_source) {
                                   IDS_MEDIA_ROUTER_AUTO_CAST_MODE);
   html_source->AddLocalizedString("deviceMissing",
                                   IDS_MEDIA_ROUTER_DEVICE_MISSING);
+  html_source->AddLocalizedString("searchInputLabel",
+                                  IDS_MEDIA_ROUTER_SEARCH_LABEL);
+  html_source->AddLocalizedString("searchNoMatches",
+                                  IDS_MEDIA_ROUTER_SEARCH_NO_MATCHES);
   html_source->AddLocalizedString("selectCastModeHeader",
       IDS_MEDIA_ROUTER_SELECT_CAST_MODE_HEADER);
   html_source->AddLocalizedString("shareYourScreenSubheading",

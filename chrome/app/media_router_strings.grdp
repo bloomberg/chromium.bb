@@ -111,4 +111,12 @@
   <message name="IDS_MEDIA_ROUTER_DEVICE_MISSING" desc="Link to display when no devices are found which, on click, opens a page to the Chromecast help center explaining possible reasons why no devices are detected.">
     Device missing?
   </message>
+
+  <!-- Sink Search -->
+  <message name="IDS_MEDIA_ROUTER_SEARCH_LABEL" desc="Label for search input in sink list.">
+    Search
+  </message>
+  <message name="IDS_MEDIA_ROUTER_SEARCH_NO_MATCHES" desc="Text to display when there are no sinks matching the user input search text.">
+    No matches
+  </message>
 </grit-part>

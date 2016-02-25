@@ -101,6 +101,15 @@
   margin-top: 0;
 }
 
+#no-search-matches {
+  color: rgb(150, 150, 150);
+  display: block;
+  font-size: 1.2 em;
+  padding-bottom: 20px;
+  padding-top: 20px;
+  text-align: center;
+}
+
 paper-checkbox {
   --paper-checkbox-checked-color: white;
   --paper-checkbox-checkmark-color: var(--paper-blue-500);
@@ -127,6 +136,10 @@ paper-menu {
   overflow-y: auto;
   padding-bottom: 12px;
   padding-top: 4px;
+}
+
+#search-input-container {
+  flex-grow: 1;
 }
 
 #searching-devices-spinner {
@@ -157,6 +170,27 @@ paper-menu {
   min-width: 10%;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Separate icon class is a consequence of box-sizing: border-box set by
+ * paper-icon-button. This should achieve the same dimensions as .sink-icon.
+ */
+#sink-search-icon {
+  -webkit-padding-end: 12px;
+  -webkit-padding-start: 16px;
+  width: 44px;
+}
+
+#sink-search-input {
+  --paper-input-container-focus-color: rgb(33, 150, 243);
+  --paper-input-container-input: {
+    font-size: 12px;
+  };
+  --paper-input-container-label: {
+    font-size: 12px;
+  };
+  -webkit-padding-end: 31px;
+  box-sizing: border-box;
 }
 
 .sink-subtext {
