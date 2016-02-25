@@ -153,9 +153,6 @@ typedef struct {
 /** A value that represents an uninitialized handle. */
 #define NC_INVALID_HANDLE -1
 
-/** Maximum valid thread ID value. */
-#define MAX_THREAD_ID (0xfffffffe)
-
 /** Illegal thread ID value. */
 #define NACL_PTHREAD_ILLEGAL_THREAD_ID ((pthread_t) 0)
 
