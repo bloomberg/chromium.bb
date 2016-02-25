@@ -49,7 +49,7 @@ class ManagerTest(unittest.TestCase):
     def test_needs_servers(self):
         def get_manager():
             host = MockHost()
-            port = host.port_factory.get('test-mac-leopard')
+            port = host.port_factory.get('test-mac-mac10.10')
             manager = Manager(port, options=MockOptions(http=True, max_locked_shards=1), printer=FakePrinter())
             return manager
 
@@ -77,7 +77,7 @@ class ManagerTest(unittest.TestCase):
             self.websocket_stopped = True
 
         host = MockHost()
-        port = host.port_factory.get('test-mac-leopard')
+        port = host.port_factory.get('test-mac-mac10.10')
         port.start_http_server = start_http_server
         port.start_websocket_server = start_websocket_server
         port.stop_http_server = stop_http_server
@@ -112,11 +112,11 @@ class ManagerTest(unittest.TestCase):
     def test_look_for_new_crash_logs(self):
         def get_manager():
             host = MockHost()
-            port = host.port_factory.get('test-mac-leopard')
+            port = host.port_factory.get('test-mac-mac10.10')
             manager = Manager(port, options=MockOptions(test_list=None, http=True, max_locked_shards=1), printer=FakePrinter())
             return manager
         host = MockHost()
-        port = host.port_factory.get('test-mac-leopard')
+        port = host.port_factory.get('test-mac-mac10.10')
         tests = ['failures/expected/crash.html']
         expectations = test_expectations.TestExpectations(port, tests)
         run_results = TestRunResults(expectations, len(tests))
@@ -129,7 +129,7 @@ class ManagerTest(unittest.TestCase):
 
     def test_rename_results_folder(self):
         host = MockHost()
-        port = host.port_factory.get('test-mac-leopard')
+        port = host.port_factory.get('test-mac-mac10.10')
 
         def get_manager():
             manager = Manager(port, options=MockOptions(max_locked_shards=1), printer=FakePrinter())
@@ -145,7 +145,7 @@ class ManagerTest(unittest.TestCase):
 
     def test_clobber_old_results(self):
         host = MockHost()
-        port = host.port_factory.get('test-mac-leopard')
+        port = host.port_factory.get('test-mac-mac10.10')
 
         def get_manager():
             manager = Manager(port, options=MockOptions(max_locked_shards=1), printer=FakePrinter())
@@ -158,7 +158,7 @@ class ManagerTest(unittest.TestCase):
 
     def test_limit_archived_results_count(self):
         host = MockHost()
-        port = host.port_factory.get('test-mac-leopard')
+        port = host.port_factory.get('test-mac-mac10.10')
 
         def get_manager():
             manager = Manager(port, options=MockOptions(max_locked_shards=1), printer=FakePrinter())

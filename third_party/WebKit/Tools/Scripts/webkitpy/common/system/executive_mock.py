@@ -166,6 +166,8 @@ class MockExecutive(object):
     def map(self, thunk, arglist, processes=None):
         return map(thunk, arglist)
 
+    def process_dump(self):
+        return []
 
 class MockExecutive2(MockExecutive):
     """MockExecutive2 is like MockExecutive except it doesn't log anything."""

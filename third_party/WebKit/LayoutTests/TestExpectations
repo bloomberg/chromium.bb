@@ -102,8 +102,8 @@ crbug.com/527242 virtual/spv2/paint/invalidation/spv2/cached-change-row-border-w
 crbug.com/527242 virtual/spv2/paint/invalidation/spv2/cached-change-table-border-width.html [ Failure ]
 crbug.com/527242 virtual/spv2/paint/invalidation/spv2/cached-change-tbody-border-width.html [ Failure ]
 
-crbug.com/537172 [ Mac10.6 Win10 ] virtual/spv2/paint/invalidation/spv2/background-image-paint-invalidation.html [ Failure ]
-crbug.com/564443 [ Mac10.7 Mac10.8 Mac10.9 Mac10.10 Win7 Linux ] virtual/spv2/paint/invalidation/spv2/background-image-paint-invalidation.html [ Failure Pass ]
+crbug.com/537172 [ Win10 ] virtual/spv2/paint/invalidation/spv2/background-image-paint-invalidation.html [ Failure ]
+crbug.com/564443 [ Mac10.9 Mac10.10 Win7 Linux ] virtual/spv2/paint/invalidation/spv2/background-image-paint-invalidation.html [ Failure Pass ]
 
 crbug.com/504613 crbug.com/524248 paint/images/image-backgrounds-not-antialiased.html [ Skip ]
 crbug.com/504613 crbug.com/524248 virtual/spv2/paint/images/image-backgrounds-not-antialiased.html [ Skip ]
@@ -127,7 +127,6 @@ crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/bidi-embed-002.
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/bidi-isolate-002.html [ Failure ]
 crbug.com/492664 [ Win ] imported/csswg-test/css-writing-modes-3/bidi-override-005.html [ Failure ]
 crbug.com/492664 [ Win ] imported/csswg-test/css-writing-modes-3/bidi-plaintext-001.html [ Failure ]
-crbug.com/418091 [ Mac10.6 ] fast/text/aat-morx.html [ Failure ]
 crbug.com/463358 crbug.com/581963 [ Linux Mac Debug ] svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ Failure ]
 crbug.com/463358 [ Mac Linux Debug ] fast/backgrounds/transformed-body-html-background.html [ Failure ]
 crbug.com/463358 [ Mac Linux Debug ] css3/masking/clip-path-polygon-nonzero.html [ Failure ]
@@ -180,7 +179,6 @@ crbug.com/520183 http/tests/fouc/scroll-left-while-loading.html [ Pass Timeout ]
 crbug.com/520184 http/tests/history/frameset-repeated-name.html [ Failure Pass ]
 crbug.com/520187 [ Linux Win ] http/tests/loading/bad-scheme-subframe.html [ Failure Pass ]
 crbug.com/520188 [ Win ] http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass ]
-crbug.com/520189 [ Mac10.6 ] http/tests/misc/submit-post-keygen.html [ Pass Timeout ]
 crbug.com/520190 http/tests/navigatorconnect/postmessage-cross-origin.html [ Pass Timeout ]
 crbug.com/520191 http/tests/security/mixedContent/strict-mode-via-pref-image-blocked.https.html [ Failure Pass ]
 crbug.com/520611 [ Debug ] fast/filesystem/workers/file-writer-events-shared-worker.html [ Failure Pass ]
@@ -310,9 +308,8 @@ crbug.com/498539 inspector/tracing/timeline-injected-script-eval.html [ Pass Fai
 crbug.com/498539 inspector/tracing/timeline-time.html [ Pass Failure Timeout ]
 crbug.com/498539 inspector/tracing/timeline-timer.html [ Pass Failure ]
 crbug.com/498539 inspector/elements/styles-3/styles-change-node-while-editing.html [ Failure Pass ]
-crbug.com/498539 [ Mac10.7 ] inspector/sources/debugger/js-with-inline-stylesheets.html [ Pass Timeout ]
-crbug.com/498539 [ Mac10.7 Mac10.8 Retina Mac10.9 Mac10.10 Mac10.6 ] inspector/sources/debugger/live-edit-no-reveal.html [ Crash Pass Timeout ]
-crbug.com/498539 [ Mac10.8 Mac10.10 ] inspector/sources/debugger/debug-inlined-scripts-fragment-id.html [ Pass Timeout ]
+crbug.com/498539 [ Mac ] inspector/sources/debugger/live-edit-no-reveal.html [ Crash Pass Timeout ]
+crbug.com/498539 [ Mac10.10 ] inspector/sources/debugger/debug-inlined-scripts-fragment-id.html [ Pass Timeout ]
 crbug.com/498539 [ Precise ] inspector/sources/debugger-step/debugger-step-over-inlined-scripts.html [ Pass Timeout ]
 crbug.com/498539 [ Precise Win7 Mac10.10 ] inspector/sources/debugger-breakpoints/dynamic-scripts-breakpoints.html [ Pass Timeout ]
 crbug.com/498539 [ Precise Mac10.10 ] inspector/sources/debugger-breakpoints/set-breakpoint.html [ Pass Timeout ]
@@ -330,7 +327,7 @@ crbug.com/498539 [ Mac10.10 ] inspector/sources/debugger/rethrow-error-from-bind
 crbug.com/498539 [ Linux32 ] inspector/console/console-log-linkify-stack-in-errors.html [ Failure Pass ]
 crbug.com/498539 [ Linux32 Win7 ] inspector/console/console-log-short-hand-method.html [ Failure Pass ]
 crbug.com/498539 [ Mac10.9 ] inspector/console/console-uncaught-exception.html [ Failure Pass ]
-crbug.com/498539 [ Mac10.8 Win7 ] inspector/console/console-log-wrapped-in-framework.html [ Failure Pass ]
+crbug.com/498539 [ Win7 ] inspector/console/console-log-wrapped-in-framework.html [ Failure Pass ]
 crbug.com/498539 [ Precise Linux32 ] inspector/console/console-filter-level-test.html [ Failure Pass ]
 crbug.com/498539 [ Win7 ] inspector/console/console-command-clear.html [ Failure Pass ]
 crbug.com/498539 [ Win7 ] inspector/console/console-custom-formatters.html [ Failure Pass ]
@@ -344,11 +341,9 @@ crbug.com/521099 inspector/console/shadow-element.html [ Crash Pass Timeout ]
 crbug.com/498539 [ Win7 ] inspector/console/console-trace-arguments.html [ Failure Pass ]
 crbug.com/498539 [ Win7 ] inspector/console/console-trace-in-eval.html [ Failure Pass ]
 crbug.com/498539 [ Retina ] http/tests/inspector/search/sources-search-scope.html [ Failure Pass ]
-crbug.com/498539 [ Mac10.7 ] inspector-protocol/heap-profiler/heap-snapshot-with-event-listener.html [ Pass Timeout ]
-crbug.com/498539 [ Precise Mac10.7 Win7 ] inspector-protocol/cpu-profiler/record-cpu-profile.html [ Crash Pass ]
-crbug.com/498539 [ Precise Mac10.7 Win7 Mac10.6 ] inspector/agents-enable-disable.html [ Crash Pass ]
-crbug.com/498539 [ Precise Win7 Mac10.6 ] inspector/elements/styles-1/edit-inspector-stylesheet.html [ Failure Pass Timeout ]
-crbug.com/498539 [ Mac10.6 ] http/tests/inspector/extensions-network-redirect.html [ Crash Pass ]
+crbug.com/498539 [ Precise Win7 ] inspector-protocol/cpu-profiler/record-cpu-profile.html [ Crash Pass ]
+crbug.com/498539 [ Precise Win7 ] inspector/agents-enable-disable.html [ Crash Pass ]
+crbug.com/498539 [ Precise Win7 ] inspector/elements/styles-1/edit-inspector-stylesheet.html [ Failure Pass Timeout ]
 crbug.com/498539 crbug.com/410145 [ Release ] inspector-protocol/heap-profiler/heap-objects-tracking.html [ Crash Pass ]
 crbug.com/498539 [ Win7 Release ] inspector/elements/styles-2/perform-undo-perform-of-mergable-action.html [ Failure Pass ]
 crbug.com/498539 [ Win7 ] inspector/elements/styles-3/selector-list.html [ Failure Pass ]
@@ -506,8 +501,6 @@ crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/shadow-trees/u
 crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/shadow-trees/upper-boundary-encapsulation/dom-tree-accessors-002.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/shadow-trees/upper-boundary-encapsulation/ownerdocument-002.html [ Failure ]
 crbug.com/505364 crbug.com/520616 imported/web-platform-tests/shadow-dom/untriaged/shadow-trees/upper-boundary-encapsulation/test-009.html [ Failure ]
-
-crbug.com/539623 [ Mac10.6 ] fast/repaint/selection-change-in-iframe-with-relative-parent.html [ Pass Failure ]
 
 crbug.com/387740 imported/web-platform-tests/mediacapture-streams/stream-api/introduction/disabled-audio-silence.html [ Skip ]
 crbug.com/387740 imported/web-platform-tests/mediacapture-streams/stream-api/introduction/disabled-video-black.html [ Skip ]
@@ -886,8 +879,6 @@ crbug.com/305346 virtual/trustedeventsdefaultaction/fast/events/mouseover-mouseo
 crbug.com/363099 [ Win ] plugins/nested-plugin-objects.html [ Failure ]
 crbug.com/363099 [ Win ] plugins/open-and-close-window-with-plugin.html [ Failure ]
 
-crbug.com/418091 [ Mac10.6 ] fast/text/international/zerowidthjoiner.html [ Failure ]
-
 crbug.com/425345 [ Mac ] fast/text/line-break-after-question-mark.html [ Failure ]
 
 crbug.com/574283 [ Mac ] virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-scroll-interrupted.html [ Skip ]
@@ -1036,21 +1027,12 @@ crbug.com/553838 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reft
 crbug.com/553838 [ Mac ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001a.xhtml [ Failure ]
 crbug.com/553838 [ Mac ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001b.xhtml [ Failure ]
 
-crbug.com/471066 [ Mac10.6 ] fast/text/apply-start-width-after-skipped-text.html [ Failure ]
-crbug.com/471066 [ Mac10.6 ] fast/text/bidi-explicit-embedding-past-end.html [ Failure ]
-crbug.com/471066 [ Mac10.6 ] fast/text/emphasis-overlap.html [ Failure ]
-crbug.com/471066 [ Mac10.6 ] fast/text/fake-italic.html [ Failure ]
-
-crbug.com/478109 [ Mac10.6 ] fast/text/bidi-embedding-pop-and-push-same-2.html [ Failure ]
-
 # These need a rebaseline due crbug.com/504745 on Windows when they are activated again.
 crbug.com/521124 crbug.com/410145 [ Win ] fast/text/international/vertical-text-glyph-test.html [ Pass Failure ]
 crbug.com/521124 crbug.com/410145 [ Win ] fast/text/international/text-combine-image-test.html [ Pass Failure ]
 crbug.com/521124 crbug.com/410145 [ Win7 ] fast/css/font-weight-1.html [ Pass Failure ]
 crbug.com/521124 crbug.com/571481 crbug.com/410145 [ Win ] fast/text/orientation-sideways.html [ Pass Failure ]
 
-crbug.com/581974 [ Mac10.7 Debug ] fast/text/justify-ideograph-simple.html [ Failure ]
-crbug.com/581974 [ Mac10.7 Debug ] fast/text/justify-ideograph-complex.html [ Failure ]
 
 # Temporary, until we stop use_system_harfbuzz on Linux including non-official builds
 crbug.com/462689 [ Linux ] fast/text/unicode-variation-selector.html [ Failure ]
@@ -1364,9 +1346,6 @@ crbug.com/569811 inspector-protocol/debugger/updateCallFrameScopes.html [ Pass F
 
 crbug.com/571376 http/tests/webfont/font-display-intervention.html [ Pass Failure ]
 
-crbug.com/570899 [ Mac10.6 ] virtual/rootlayerscrolls/fast/scrolling/background-paint-scrolled.html [ Failure ]
-crbug.com/571361 [ Mac10.6 ] virtual/rootlayerscrolls/fast/scrolling/background-paint-scrolled-out-and-in.html [ Failure ]
-
 crbug.com/320139 fast/repaint/block-layout-inline-children-replaced.html [ Pass Failure ]
 
 crbug.com/575766 http/tests/inspector/resource-tree/resource-tree-frame-add.html [ Timeout Pass ]
@@ -1378,7 +1357,6 @@ crbug.com/571716 inspector/audits/audits-panel-functional.html [ Crash Pass ]
 
 crbug.com/571721 inspector/console/console-xpath.html [ Timeout Pass ]
 
-crbug.com/571762 [ Mac10.7 ] inspector/console/inspect-html-all-collection.html [ Timeout Pass ]
 crbug.com/580378 [ Mac ] fast/replaced/width100percent-searchfield.html [ Failure Pass ]
 crbug.com/571765 [ Linux Trusty Mac10.9 ] inspector/console/worker-eval-contains-stack.html [ Timeout Crash Pass ]
 
@@ -1394,7 +1372,6 @@ crbug.com/572714 [ Linux ] inspector/sources/debugger/debug-inlined-scripts.html
 
 crbug.com/579493 http/tests/security/xss-DENIED-xsl-document-securityOrigin.xml [ Timeout ]
 
-crbug.com/572723 [ Mac10.7 Release ] inspector/sources/debugger/debugger-completions-on-call-frame.html [ Timeout Pass ]
 crbug.com/572723 [ Linux Mac10.9 ] inspector/sources/debugger/debugger-disable-enable.html [ Pass Failure Timeout ]
 crbug.com/572723 inspector/sources/debugger/debugger-uncaught-promise-on-pause.html [ Timeout Pass ]
 
@@ -1417,7 +1394,7 @@ crbug.com/587136 [ Linux Debug ] http/tests/security/xss-DENIED-cross-origin-sta
 
 crbug.com/587593 [ Android ] fast/js/pic/cached-single-entry-transition.html [ Pass Failure ]
 
-crbug.com/587779 [ Mac10.7 Retina Mac10.10 ] fast/dynamic/window-resize-scrollbars-test.html [ Timeout Failure Pass ]
+crbug.com/587779 [ Retina Mac10.10 ] fast/dynamic/window-resize-scrollbars-test.html [ Timeout Failure Pass ]
 
 crbug.com/587950 [ Mac Win ] virtual/threaded/animations/background-shorthand-crash.html [ Failure ]
 

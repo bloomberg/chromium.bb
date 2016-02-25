@@ -63,10 +63,9 @@ NEEDS_MANUAL_REBASELINE_KEYWORD = 'NeedsManualRebaseline'
 # should use the version number directly instead of the english
 # language names throughout the code.
 MAC_VERSION_MAPPING = {
-    'mac10.6': 'snowleopard',
-    'mac10.7': 'lion',
-    'mac10.8': 'mountainlion',
     'mac10.9': 'mavericks',
+    'mac10.10': 'mac10.10',
+    'mac10.11': 'mac10.11',
 }
 
 INVERTED_MAC_VERSION_MAPPING = {value: name for name, value in MAC_VERSION_MAPPING.items()}
@@ -230,7 +229,7 @@ class TestExpectationParser(object):
 
     # FIXME: Update the original specifiers and remove this once the old syntax is gone.
     _configuration_tokens_list = [
-        'Mac', 'Mac10.6', 'Mac10.7', 'Mac10.8', 'Mac10.9', 'Mac10.10', 'Retina',
+        'Mac', 'Mac10.9', 'Mac10.10', 'Mac10.11', 'Retina',
         'Win', 'Win7', 'Win10',
         'Linux', 'Linux32', 'Precise', 'Trusty',
         'Android',

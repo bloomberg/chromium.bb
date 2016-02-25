@@ -825,13 +825,13 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         return [test for test in tests if type in test]
 
     def test_platform_directories_ignored_when_searching_for_tests(self):
-        tests_run = get_tests_run(['--platform', 'test-mac-leopard'])
-        self.assertFalse('platform/test-mac-leopard/http/test.html' in tests_run)
+        tests_run = get_tests_run(['--platform', 'test-mac-mac10.10'])
+        self.assertFalse('platform/test-mac-mac10.10/http/test.html' in tests_run)
         self.assertFalse('platform/test-win-win7/http/test.html' in tests_run)
 
     def test_platform_directories_not_searched_for_additional_tests(self):
-        tests_run = get_tests_run(['--platform', 'test-mac-leopard', 'http'])
-        self.assertFalse('platform/test-mac-leopard/http/test.html' in tests_run)
+        tests_run = get_tests_run(['--platform', 'test-mac-mac10.10', 'http'])
+        self.assertFalse('platform/test-mac-mac10.10/http/test.html' in tests_run)
         self.assertFalse('platform/test-win-win7/http/test.html' in tests_run)
 
     def test_output_diffs(self):
@@ -1042,9 +1042,9 @@ Bug(foo) failures/unexpected/missing_render_tree_dump.html [ Missing ]
         self.assertEqual(details.exit_code, 0)
         self.assertEqual(len(file_list), 9)
         self.assertBaselines(file_list,
-            "platform/test-mac-leopard/passes/image", [".txt", ".png"], err)
+            "platform/test-mac-mac10.10/passes/image", [".txt", ".png"], err)
         self.assertBaselines(file_list,
-            "platform/test-mac-leopard/failures/expected/missing_image", [".txt", ".png"], err)
+            "platform/test-mac-mac10.10/failures/expected/missing_image", [".txt", ".png"], err)
 
 
 class PortTest(unittest.TestCase):

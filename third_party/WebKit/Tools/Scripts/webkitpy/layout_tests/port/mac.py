@@ -38,7 +38,7 @@ _log = logging.getLogger(__name__)
 
 
 class MacPort(base.Port):
-    SUPPORTED_VERSIONS = ('snowleopard', 'lion', 'mountainlion', 'retina', 'mavericks', 'mac10.10')
+    SUPPORTED_VERSIONS = ('retina', 'mavericks', 'mac10.10', 'mac10.11')
     port_name = 'mac'
 
     # FIXME: We treat Retina (High-DPI) devices as if they are running
@@ -46,15 +46,13 @@ class MacPort(base.Port):
     # Note that the retina versions fallback to the non-retina versions and so no
     # baselines are shared between retina versions; this keeps the fallback graph as a tree
     # and maximizes the number of baselines we can share that way.
-    # We also currently only support Retina on 10.9.
+    # We also currently only support Retina on 10.11.
 
     FALLBACK_PATHS = {}
-    FALLBACK_PATHS['mac10.10'] = ['mac']
+    FALLBACK_PATHS['mac10.11'] = ['mac']
+    FALLBACK_PATHS['retina'] = ['mac-retina'] + FALLBACK_PATHS['mac10.11']
+    FALLBACK_PATHS['mac10.10'] = ['mac-mac10.10'] + FALLBACK_PATHS['mac10.11']
     FALLBACK_PATHS['mavericks'] = ['mac-mavericks'] + FALLBACK_PATHS['mac10.10']
-    FALLBACK_PATHS['retina'] = ['mac-retina'] + FALLBACK_PATHS['mavericks']
-    FALLBACK_PATHS['mountainlion'] = ['mac-mountainlion'] + FALLBACK_PATHS['mavericks']
-    FALLBACK_PATHS['lion'] = ['mac-lion'] + FALLBACK_PATHS['mountainlion']
-    FALLBACK_PATHS['snowleopard'] = ['mac-snowleopard'] + FALLBACK_PATHS['lion']
 
     DEFAULT_BUILD_DIRECTORIES = ('xcodebuild', 'out')
 
@@ -66,7 +64,7 @@ class MacPort(base.Port):
     def determine_full_port_name(cls, host, options, port_name):
         if port_name.endswith('mac'):
             if host.platform.os_version in ('future',):
-                version = 'mac10.10'
+                version = 'mac10.11'
             else:
                 version = host.platform.os_version
             if host.platform.is_highdpi():
@@ -115,3 +113,9 @@ class MacPort(base.Port):
 
     def _path_to_wdiff(self):
         return 'wdiff'
+
+    def _port_specific_expectations_files(self):
+        # FIXME: Delete this file once the 10.11 failures have been rebaselined or triaged.
+        if self._version == 'mac10.11':
+            return [self.host.filesystem.join(self.layout_tests_dir(), 'Mac10_11_Expectations')]
+        return []

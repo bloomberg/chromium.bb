@@ -106,9 +106,9 @@ class MiscTests(Base):
     def test_parse_mac_legacy_names(self):
         host = MockHost()
         expectations_dict = OrderedDict()
-        expectations_dict['expectations'] = '\nBug(x) [ Mac10.6 ] failures/expected/text.html [ Failure ]\n'
+        expectations_dict['expectations'] = '\nBug(x) [ Mac10.10 ] failures/expected/text.html [ Failure ]\n'
 
-        port = host.port_factory.get('test-mac-snowleopard', None)
+        port = host.port_factory.get('test-mac-mac10.10', None)
         port.expectations_dict = lambda: expectations_dict
         expectations = TestExpectations(port, self.get_basic_tests())
         self.assertEqual(expectations.get_expectations('failures/expected/text.html'), set([FAIL]))
@@ -842,8 +842,8 @@ class TestExpectationSerializationTests(unittest.TestCase):
         expectation_line.name = 'test/name/for/realz.html'
         expectation_line.parsed_expectations = set([IMAGE])
         self.assertEqual(expectation_line.to_string(self._converter), None)
-        expectation_line.matching_configurations = set([TestConfiguration('snowleopard', 'x86', 'release')])
-        self.assertEqual(expectation_line.to_string(self._converter), 'Bug(x) [ Mac10.6 Release ] test/name/for/realz.html [ Failure ]')
+        expectation_line.matching_configurations = set([TestConfiguration('mac10.10', 'x86', 'release')])
+        self.assertEqual(expectation_line.to_string(self._converter), 'Bug(x) [ Mac10.10 Release ] test/name/for/realz.html [ Failure ]')
 
     def test_serialize_parsed_expectations(self):
         expectation_line = TestExpectationLine()

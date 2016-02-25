@@ -41,7 +41,7 @@ class TestResultWriterTests(unittest.TestCase):
         failures = failures or []
         host = MockSystemHost()
         host.filesystem.files = files or {}
-        port = TestPort(host=host, port_name='test-mac-snowleopard', options=optparse.Values())
+        port = TestPort(host=host, port_name='test-mac-mac10.11', options=optparse.Values())
         actual_output = DriverOutput(text='', image=None, image_hash=None, audio=None)
         expected_output = DriverOutput(text='', image=None, image_hash=None, audio=None)
         write_test_result(host.filesystem, port, '/tmp', 'foo.html', actual_output, expected_output, failures)

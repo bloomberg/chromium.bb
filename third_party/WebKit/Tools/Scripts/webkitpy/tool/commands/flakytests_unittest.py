@@ -6,9 +6,9 @@ import flakytests
 
 from webkitpy.common.checkout.scm.scm_mock import MockSCM
 from webkitpy.layout_tests.layout_package import bot_test_expectations
+from webkitpy.layout_tests.port import builders
 from webkitpy.tool.commands.commandtest import CommandsTest
 from webkitpy.tool.mocktool import MockTool, MockOptions
-from webkitpy.layout_tests.port import builders
 
 class FakeBotTestExpectations(object):
     def expectation_lines(self, only_ignore_very_flaky=False):

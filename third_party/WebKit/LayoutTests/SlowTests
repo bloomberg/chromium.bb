@@ -79,7 +79,6 @@ crbug.com/24182 virtual/pointerevent/fast/events/tabindex-focus-blur-all.html [ 
 crbug.com/451577 [ Debug ] fast/dom/gc-treescope.html  [ Slow ]
 crbug.com/451577 [ Debug ] fast/frames/calculate-round.html [ Slow ]
 crbug.com/451577 imported/web-platform-tests/IndexedDB/idbindex-multientry-big.htm [ Slow ]
-crbug.com/451577 [ Mac10.7 Mac10.8 ] inspector/elements/user-properties.html [ Slow ]
 crbug.com/451577 [ Mac ] inspector/extensions/extensions-reload.html [ Slow ]
 crbug.com/451577 [ Mac ] inspector/extensions/extensions-resources.html [ Slow ]
 crbug.com/451577 [ Win10 ] inspector/extensions/extensions-sidebar.html [ Slow ]

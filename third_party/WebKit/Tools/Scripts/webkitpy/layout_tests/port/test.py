@@ -244,7 +244,7 @@ layer at (0,0) size 800x34
     tests.add('websocket/tests/passes/text.html')
 
     # For testing that we don't run tests under platform/. Note that these don't contribute to TOTAL_TESTS.
-    tests.add('platform/test-mac-leopard/http/test.html')
+    tests.add('platform/test-mac-10.10/http/test.html')
     tests.add('platform/test-win-win7/http/test.html')
 
     # For testing if perf tests are running in a locked shard.
@@ -360,7 +360,7 @@ Bug(test) passes/text.html [ Pass ]
 
 class TestPort(Port):
     port_name = 'test'
-    default_port_name = 'test-mac-leopard'
+    default_port_name = 'test-mac-mac10.10'
 
     # TODO(wkorman): The below constant is legacy code and is only referenced by a unit test. Find the modern way to do
     # the same thing that test is doing and delete this.
@@ -371,15 +371,15 @@ class TestPort(Port):
     # 'mac10.10' should precede 'mac10.9').
     ALL_BASELINE_VARIANTS = (
         'test-linux-trusty', 'test-linux-precise', 'test-linux-x86',
-        'test-mac-snowleopard', 'test-mac-leopard',
+        'test-mac-mac10.11', 'test-mac-mac10.10',
         'test-win-win10', 'test-win-win7'
     )
 
     FALLBACK_PATHS = {
         'win7':        ['test-win-win7', 'test-win-win10'],
         'win10':       ['test-win-win10'],
-        'leopard':     ['test-mac-leopard', 'test-mac-snowleopard'],
-        'snowleopard': ['test-mac-snowleopard'],
+        'mac10.10':    ['test-mac-mac10.10', 'test-mac-mac10.11'],
+        'mac10.11':    ['test-mac-mac10.11'],
         'trusty':      ['test-linux-trusty', 'test-win-win7'],
         'precise':     ['test-linux-precise', 'test-linux-trusty', 'test-win-win7'],
         'linux32':     ['test-linux-x86', 'test-linux-precise', 'test-linux-trusty', 'test-win-win7'],
@@ -417,8 +417,8 @@ class TestPort(Port):
         version_map = {
             'test-win-win7': 'win7',
             'test-win-win10': 'win10',
-            'test-mac-leopard': 'leopard',
-            'test-mac-snowleopard': 'snowleopard',
+            'test-mac-mac10.10': 'mac10.10',
+            'test-mac-mac10.11': 'mac10.11',
             'test-linux-x86': 'linux32',
             'test-linux-precise': 'precise',
             'test-linux-trusty': 'trusty',
@@ -537,8 +537,8 @@ class TestPort(Port):
         return test_configurations
 
     def _all_systems(self):
-        return (('leopard', 'x86'),
-                ('snowleopard', 'x86'),
+        return (('mac10.10', 'x86'),
+                ('mac10.11', 'x86'),
                 ('win7', 'x86'),
                 ('win10', 'x86'),
                 ('linux32', 'x86'),
@@ -551,7 +551,7 @@ class TestPort(Port):
     def configuration_specifier_macros(self):
         """To avoid surprises when introducing new macros, these are intentionally fixed in time."""
         return {
-            'mac': ['leopard', 'snowleopard'],
+            'mac': ['mac10.10', 'mac10.11'],
             'win': ['win7', 'win10'],
             'linux': ['linux32', 'precise', 'trusty']
         }

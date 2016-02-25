@@ -99,7 +99,7 @@ class LintTest(unittest.TestCase):
 
     def test_lint_test_files(self):
         logging_stream = StringIO.StringIO()
-        options = optparse.Values({'platform': 'test-mac-leopard'})
+        options = optparse.Values({'platform': 'test-mac-mac10.10'})
         host = MockHost()
 
         # pylint appears to complain incorrectly about the method overrides pylint: disable=E0202,C0322

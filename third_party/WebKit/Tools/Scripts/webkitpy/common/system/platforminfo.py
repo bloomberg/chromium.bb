@@ -152,6 +152,7 @@ class PlatformInfo(object):
             8: 'mountainlion',
             9: 'mavericks',
             10: 'mac10.10',
+            11: 'mac10.11',
         }
         assert release_version >= min(version_strings.keys())
         return version_strings.get(release_version, 'future')

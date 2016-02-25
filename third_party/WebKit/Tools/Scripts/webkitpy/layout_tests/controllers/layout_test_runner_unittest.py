@@ -94,7 +94,7 @@ class LockCheckingRunner(LayoutTestRunner):
 class LayoutTestRunnerTests(unittest.TestCase):
     def _runner(self, port=None):
         # FIXME: we shouldn't have to use run_webkit_tests.py to get the options we need.
-        options = run_webkit_tests.parse_args(['--platform', 'test-mac-snowleopard'])[0]
+        options = run_webkit_tests.parse_args(['--platform', 'test-mac-mac10.11'])[0]
         options.child_processes = '1'
 
         host = MockHost()

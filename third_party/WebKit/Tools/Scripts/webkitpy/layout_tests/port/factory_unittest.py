@@ -53,30 +53,20 @@ class FactoryTest(unittest.TestCase):
         self.assertIsInstance(port, cls)
 
     def test_mac(self):
-        self.assert_port(port_name='mac', os_name='mac', os_version='snowleopard',
-                         cls=mac.MacPort)
-        self.assert_port(port_name='chromium', os_name='mac', os_version='lion',
+        self.assert_port(port_name='mac', os_name='mac', os_version='mac10.11',
                          cls=mac.MacPort)
 
     def test_linux(self):
         self.assert_port(port_name='linux', os_name='linux', os_version='trusty',
                          cls=linux.LinuxPort)
-        self.assert_port(port_name='chromium', os_name='linux', os_version='trusty',
-                         cls=linux.LinuxPort)
-        self.assert_port(port_name='chromium', os_name='linux', os_version='precise',
-                         cls=linux.LinuxPort)
 
     def test_android(self):
         self.assert_port(port_name='android', cls=android.AndroidPort)
-        # NOTE: We can't check for port_name=chromium here, as this will append the host's
-        # operating system, whereas host!=target for Android.
 
     def test_win(self):
         self.assert_port(port_name='win-win7', cls=win.WinPort)
         self.assert_port(port_name='win-win10', cls=win.WinPort)
         self.assert_port(port_name='win', os_name='win', os_version='win7',
-                         cls=win.WinPort)
-        self.assert_port(port_name='chromium', os_name='win', os_version='win7',
                          cls=win.WinPort)
 
     def test_unknown_specified(self):
@@ -86,5 +76,5 @@ class FactoryTest(unittest.TestCase):
         self.assertRaises(NotImplementedError, factory.PortFactory(MockSystemHost(os_name='vms')).get)
 
     def test_get_from_builder_name(self):
-        self.assertEqual(factory.PortFactory(MockSystemHost()).get_from_builder_name('WebKit Mac10.7').name(),
-                          'mac-lion')
+        self.assertEqual(factory.PortFactory(MockSystemHost()).get_from_builder_name('WebKit Mac10.11').name(),
+                          'mac-mac10.11')

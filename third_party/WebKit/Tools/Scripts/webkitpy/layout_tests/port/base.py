@@ -92,17 +92,15 @@ class Port(object):
     PORT_HAS_AUDIO_CODECS_BUILT_IN = False
 
     ALL_SYSTEMS = (
-        ('snowleopard', 'x86'),
-        ('lion', 'x86'),
 
         # FIXME: We treat Retina (High-DPI) devices as if they are running
         # a different operating system version. This isn't accurate, but will work until
         # we need to test and support baselines across multiple O/S versions.
         ('retina', 'x86'),
 
-        ('mountainlion', 'x86'),
         ('mavericks', 'x86'),
         ('mac10.10', 'x86'),
+        ('mac10.11', 'x86'),
         ('win7', 'x86'),
         ('win10', 'x86'),
         # FIXME: We handle 32bit Linux similarly to Mac retina above treating it
@@ -116,7 +114,7 @@ class Port(object):
         )
 
     CONFIGURATION_SPECIFIER_MACROS = {
-        'mac': ['snowleopard', 'lion', 'mountainlion', 'retina', 'mavericks', 'mac10.10'],
+        'mac': ['retina', 'mavericks', 'mac10.10', 'mac10.11'],
         'win': ['win7', 'win10'],
         'linux': ['linux32', 'precise', 'trusty'],
         'android': ['icecreamsandwich'],

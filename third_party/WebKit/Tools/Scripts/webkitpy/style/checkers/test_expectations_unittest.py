@@ -73,7 +73,7 @@ class TestExpectationsTestCase(unittest.TestCase):
         # We should have a valid port, but override it with a test port so we
         # can check the lines.
         self.assertIsNotNone(checker._port_obj)
-        checker._port_obj = host.port_factory.get('test-mac-leopard')
+        checker._port_obj = host.port_factory.get('test-mac-mac10.10')
 
         checker.check_test_expectations(expectations_str='\n'.join(lines),
                                         tests=[self._test_file])

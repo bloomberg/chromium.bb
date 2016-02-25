@@ -28,9 +28,6 @@
 
 import re
 
-from webkitpy.common.memoized import memoized
-
-
 # In this dictionary, each item stores:
 # * port_name -- a fully qualified port name
 # * rebaseline_override_dir -- (optional) directory to put baselines in instead of where you would normally put them.
@@ -49,13 +46,11 @@ _exact_matches = {
     "WebKit Linux Trusty": {"port_name": "linux-trusty", "specifiers": ['Trusty', 'Release']},
     "WebKit Linux 32": {"port_name": "linux-x86", "specifiers": ['Linux32', 'Release']},
     "WebKit Linux (dbg)": {"port_name": "linux-precise", "specifiers": ['Precise', 'Debug']},
-    "WebKit Mac10.6": {"port_name": "mac-snowleopard", "specifiers": ['SnowLeopard', 'Release']},
-    "WebKit Mac10.7": {"port_name": "mac-lion", "specifiers": ['Lion', 'Release']},
-    "WebKit Mac10.7 (dbg)": {"port_name": "mac-lion", "specifiers": ['Lion', 'Debug']},
-    "WebKit Mac10.8": {"port_name": "mac-mountainlion", "specifiers": ['MountainLion', 'Release']},
-    "WebKit Mac10.9 (retina)": {"port_name": "mac-retina", "specifiers": ['Retina', 'Release']},
     "WebKit Mac10.9": {"port_name": "mac-mavericks", "specifiers": ['Mavericks', 'Release']},
     "WebKit Mac10.10": {"port_name": "mac-mac10.10", "specifiers": ['Mac10.10', 'Release']},
+    "WebKit Mac10.11": {"port_name": "mac-mac10.11", "specifiers": ['10.11', 'Release']},
+    "WebKit Mac10.11 (dbg)": {"port_name": "mac-mac10.11", "specifiers": ['10.11', 'Debug']},
+    "WebKit Mac10.11 (retina)": {"port_name": "mac-retina", "specifiers": ['Retina', 'Release']},
     "WebKit Android (Nexus4)": {"port_name": "android", "specifiers": ['Android', 'Release']},
 }
 
