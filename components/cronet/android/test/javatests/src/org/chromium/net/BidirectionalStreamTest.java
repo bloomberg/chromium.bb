@@ -373,9 +373,9 @@ public class BidirectionalStreamTest extends CronetTestBase {
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
     public void testCustomUserAgent() throws Exception {
-        TestBidirectionalStreamCallback callback = new TestBidirectionalStreamCallback();
         String userAgentName = "User-Agent";
         String userAgentValue = "User-Agent-Value";
+        TestBidirectionalStreamCallback callback = new TestBidirectionalStreamCallback();
         BidirectionalStream.Builder builder =
                 new BidirectionalStream.Builder(Http2TestServer.getEchoHeaderUrl(userAgentName),
                         callback, callback.getExecutor(), mTestFramework.mCronetEngine);
@@ -385,6 +385,45 @@ public class BidirectionalStreamTest extends CronetTestBase {
         callback.blockForDone();
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
         assertEquals(userAgentValue, callback.mResponseAsString);
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @OnlyRunNativeCronet
+    public void testCustomCronetEngineUserAgent() throws Exception {
+        String userAgentName = "User-Agent";
+        String userAgentValue = "User-Agent-Value";
+        CronetEngine engine =
+                new CronetEngine.Builder(getContext())
+                        .setMockCertVerifierForTesting(QuicTestServer.createMockCertVerifier())
+                        .setUserAgent(userAgentValue)
+                        .build();
+        TestBidirectionalStreamCallback callback = new TestBidirectionalStreamCallback();
+        BidirectionalStream.Builder builder =
+                new BidirectionalStream.Builder(Http2TestServer.getEchoHeaderUrl(userAgentName),
+                        callback, callback.getExecutor(), engine);
+        builder.setHttpMethod("GET");
+        builder.build().start();
+        callback.blockForDone();
+        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+        assertEquals(userAgentValue, callback.mResponseAsString);
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @OnlyRunNativeCronet
+    public void testDefaultUserAgent() throws Exception {
+        String userAgentName = "User-Agent";
+        TestBidirectionalStreamCallback callback = new TestBidirectionalStreamCallback();
+        BidirectionalStream.Builder builder =
+                new BidirectionalStream.Builder(Http2TestServer.getEchoHeaderUrl(userAgentName),
+                        callback, callback.getExecutor(), mTestFramework.mCronetEngine);
+        builder.setHttpMethod("GET");
+        builder.build().start();
+        callback.blockForDone();
+        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+        assertEquals(new CronetEngine.Builder(getContext()).getDefaultUserAgent(),
+                callback.mResponseAsString);
     }
 
     @SmallTest

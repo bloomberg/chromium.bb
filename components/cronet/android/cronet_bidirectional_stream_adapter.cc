@@ -25,6 +25,7 @@
 #include "net/http/http_util.h"
 #include "net/spdy/spdy_header_block.h"
 #include "net/ssl/ssl_info.h"
+#include "net/url_request/http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
 #include "url/gurl.h"
 
@@ -242,6 +243,10 @@ void CronetBidirectionalStreamAdapter::StartOnNetworkThread(
     scoped_ptr<net::BidirectionalStreamRequestInfo> request_info) {
   DCHECK(context_->IsOnNetworkThread());
   DCHECK(!bidi_stream_);
+  request_info->extra_headers.SetHeaderIfMissing(
+      net::HttpRequestHeaders::kUserAgent, context_->GetURLRequestContext()
+                                               ->http_user_agent_settings()
+                                               ->GetUserAgent());
   bidi_stream_.reset(new net::BidirectionalStream(
       std::move(request_info), context_->GetURLRequestContext()
                                    ->http_transaction_factory()
