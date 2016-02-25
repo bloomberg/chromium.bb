@@ -1,0 +1,12 @@
+Tests that the execution context is changed to match new selected node.
+
+
+Context has changed:
+true
+Context matches node frameId: 
+true
+Context has changed:
+true
+Context matches node frameId: 
+true
+

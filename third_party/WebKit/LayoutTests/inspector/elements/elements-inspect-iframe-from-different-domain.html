@@ -52,7 +52,8 @@ function test()
             InspectorTest.addResult("PASS: selected node  with id '" + id + "'");
         else
             InspectorTest.addResult("FAIL: unexpected selection " + id);
-        InspectorTest.evaluateInConsole("inspect(el2)", step4);
+        // Frame was changed to the iframe. Moving back to the top frame.
+        InspectorTest.evaluateInConsole("inspect(window.frameElement.parentElement)", step4);
     }
 
     function step4()
@@ -61,6 +62,16 @@ function test()
     }
 
     function step5()
+    {
+        InspectorTest.evaluateInConsole("inspect(el2)", step6);
+    }
+
+    function step6()
+    {
+        InspectorTest.runAfterPendingDispatches(step7);
+    }
+
+    function step7()
     {
         var id = selectedNodeId();
         if (id === "iframe-div")

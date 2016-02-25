@@ -1,0 +1,47 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/elements-test.js"></script>
+<script>
+function test()
+{
+    InspectorTest.expandElementsTree(selectNode);
+    var previousContext;
+
+    function selectNode()
+    {
+        previousContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
+        InspectorTest.selectNodeWithId("head", iframeNodeSelected);
+    }
+
+    function iframeNodeSelected()
+    {
+        var node = WebInspector.panels.elements.selectedDOMNode();
+        var currentContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
+        InspectorTest.addResult("Context has changed:");
+        InspectorTest.addResult(previousContext.id !== currentContext.id);
+        InspectorTest.addResult("Context matches node frameId: ");
+        InspectorTest.addResult(currentContext.frameId == node.frameId());
+        previousContext = currentContext;
+        InspectorTest.selectNodeWithId("element", elementSelected);
+    }
+
+    function elementSelected()
+    {
+        var node = WebInspector.panels.elements.selectedDOMNode();
+        var currentContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
+        InspectorTest.addResult("Context has changed:");
+        InspectorTest.addResult(previousContext.id !== currentContext.id);
+        InspectorTest.addResult("Context matches node frameId: ");
+        InspectorTest.addResult(currentContext.frameId == node.frameId());
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body>
+    <p>Tests that the execution context is changed to match new selected node.</p>
+    <iframe src="resources/set-outer-html-body-iframe.html" onload="runTest()"></iframe>
+    <div id="element"></div>
+</body>
+</html>

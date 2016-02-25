@@ -1481,6 +1481,12 @@ PassOwnPtr<protocol::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* node
                 value->setContentDocument(buildObjectForNode(doc, 0, nodesMap));
         }
 
+        if (node->parentNode() && node->parentNode()->isDocumentNode()) {
+            LocalFrame* frame = node->document().frame();
+            if (frame)
+                value->setFrameId(IdentifiersFactory::frameId(frame));
+        }
+
         ElementShadow* shadow = element->shadow();
         if (shadow) {
             OwnPtr<protocol::Array<protocol::DOM::Node>> shadowRoots = protocol::Array<protocol::DOM::Node>::create();
