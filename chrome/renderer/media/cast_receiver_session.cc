@@ -169,7 +169,7 @@ void CastReceiverSession::AudioCapturerSource::Initialize(
     callback->OnCaptureError(std::string());
     return;
   }
-  audio_valve_ = new CastReceiverAudioValve(callback);
+  audio_valve_ = new CastReceiverAudioValve(params, callback);
 }
 
 void CastReceiverSession::AudioCapturerSource::Start() {

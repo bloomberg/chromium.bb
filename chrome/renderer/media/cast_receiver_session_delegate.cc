@@ -63,16 +63,10 @@ void CastReceiverSessionDelegate::OnDecodedAudioFrame(
   // operations. Since we don't know what the Capture callback
   // will do exactly, we need to jump to a different thread.
   // Let's re-use the audio decoder thread.
-  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
   cast_environment_->PostTask(
-      media::cast::CastEnvironment::AUDIO,
-      FROM_HERE,
-      base::Bind(&CastReceiverAudioValve::Capture,
-                 audio_valve_,
-                 base::Owned(audio_bus.release()),
-                 (playout_time - now).InMilliseconds(),
-                 1.0,
-                 false));
+      media::cast::CastEnvironment::AUDIO, FROM_HERE,
+      base::Bind(&CastReceiverAudioValve::DeliverDecodedAudio, audio_valve_,
+                 base::Owned(audio_bus.release()), playout_time));
   cast_receiver_->RequestDecodedAudioFrame(on_audio_decoded_cb_);
 }
 
