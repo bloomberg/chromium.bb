@@ -6058,9 +6058,8 @@ media::DecoderFactory* RenderFrameImpl::GetDecoderFactory() {
 void RenderFrameImpl::RegisterMojoServices() {
   // Only main frame have ImageDownloader service.
   if (!frame_->parent()) {
-    GetServiceRegistry()->AddService<image_downloader::ImageDownloader>(
-        base::Bind(&ImageDownloaderImpl::CreateMojoService,
-                   base::Unretained(this)));
+    GetServiceRegistry()->AddService(base::Bind(
+        &ImageDownloaderImpl::CreateMojoService, base::Unretained(this)));
   }
 }
 

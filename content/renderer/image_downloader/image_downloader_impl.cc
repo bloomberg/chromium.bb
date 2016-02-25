@@ -117,7 +117,7 @@ namespace content {
 
 ImageDownloaderImpl::ImageDownloaderImpl(
     RenderFrame* render_frame,
-    mojo::InterfaceRequest<image_downloader::ImageDownloader> request)
+    mojo::InterfaceRequest<content::mojom::ImageDownloader> request)
     : RenderFrameObserver(render_frame), binding_(this, std::move(request)) {
   DCHECK(render_frame);
 }
@@ -128,7 +128,7 @@ ImageDownloaderImpl::~ImageDownloaderImpl() {
 // static
 void ImageDownloaderImpl::CreateMojoService(
     RenderFrame* render_frame,
-    mojo::InterfaceRequest<image_downloader::ImageDownloader> request) {
+    mojo::InterfaceRequest<content::mojom::ImageDownloader> request) {
   DVLOG(1) << "ImageDownloaderImpl::CreateService";
   DCHECK(render_frame);
 
@@ -136,9 +136,8 @@ void ImageDownloaderImpl::CreateMojoService(
 }
 
 // ImageDownloader methods:
-void ImageDownloaderImpl::DownloadImage(
-    image_downloader::DownloadRequestPtr req,
-    const DownloadImageCallback& callback) {
+void ImageDownloaderImpl::DownloadImage(content::mojom::DownloadRequestPtr req,
+                                        const DownloadImageCallback& callback) {
   const GURL image_url = req->url.To<GURL>();
   bool is_favicon = req->is_favicon;
   uint32_t max_image_size = req->max_bitmap_size;
@@ -212,8 +211,8 @@ void ImageDownloaderImpl::ReplyDownloadResult(
     const std::vector<SkBitmap>& result_images,
     const std::vector<gfx::Size>& result_original_image_sizes,
     const DownloadImageCallback& callback) {
-  image_downloader::DownloadResultPtr result =
-      image_downloader::DownloadResult::New();
+  content::mojom::DownloadResultPtr result =
+      content::mojom::DownloadResult::New();
 
   result->http_status_code = http_status_code;
   result->images = mojo::Array<skia::BitmapPtr>::From(result_images);

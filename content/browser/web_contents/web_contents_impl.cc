@@ -2827,7 +2827,7 @@ int WebContentsImpl::DownloadImage(
     const WebContents::ImageDownloadCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   static int next_image_download_id = 0;
-  const image_downloader::ImageDownloaderPtr& mojo_image_downloader =
+  const content::mojom::ImageDownloaderPtr& mojo_image_downloader =
       GetMainFrame()->GetMojoImageDownloader();
   const int download_id = ++next_image_download_id;
   if (!mojo_image_downloader) {
@@ -2835,8 +2835,8 @@ int WebContentsImpl::DownloadImage(
     // Android), the downloader service will be invalid. Pre-Mojo, this would
     // hang the callback indefinetly since the IPC would be dropped. Now,
     // respond with a 400 HTTP error code to indicate that something went wrong.
-    image_downloader::DownloadResultPtr result =
-        image_downloader::DownloadResult::New();
+    content::mojom::DownloadResultPtr result =
+        content::mojom::DownloadResult::New();
     result->http_status_code = 400;
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
@@ -2846,8 +2846,8 @@ int WebContentsImpl::DownloadImage(
     return download_id;
   }
 
-  image_downloader::DownloadRequestPtr req =
-      image_downloader::DownloadRequest::New();
+  content::mojom::DownloadRequestPtr req =
+      content::mojom::DownloadRequest::New();
 
   req->url = mojo::String::From(url);
   req->is_favicon = is_favicon;
@@ -4646,7 +4646,7 @@ void WebContentsImpl::OnDidDownloadImage(
     const ImageDownloadCallback& callback,
     int id,
     const GURL& image_url,
-    image_downloader::DownloadResultPtr result) {
+    content::mojom::DownloadResultPtr result) {
   const std::vector<SkBitmap> images =
       result->images.To<std::vector<SkBitmap>>();
   const std::vector<gfx::Size> original_image_sizes =

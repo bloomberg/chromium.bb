@@ -535,7 +535,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   void ClearAllWebUI();
 
   // Returns the Mojo ImageDownloader service.
-  const image_downloader::ImageDownloaderPtr& GetMojoImageDownloader();
+  const content::mojom::ImageDownloaderPtr& GetMojoImageDownloader();
 
   // Resets the loading state. Following this call, the RenderFrameHost will be
   // in a non-loading state.
@@ -880,7 +880,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   scoped_ptr<FrameMojoShell> frame_mojo_shell_;
 
   // Holder of Mojo connection with ImageDownloader service in RenderFrame.
-  image_downloader::ImageDownloaderPtr mojo_image_downloader_;
+  content::mojom::ImageDownloaderPtr mojo_image_downloader_;
 
   // Tracks a navigation happening in this frame. Note that while there can be
   // two navigations in the same FrameTreeNode, there can only be one

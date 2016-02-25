@@ -2265,7 +2265,7 @@ void RenderFrameHostImpl::ClearAllWebUI() {
   web_ui_.reset();
 }
 
-const image_downloader::ImageDownloaderPtr&
+const content::mojom::ImageDownloaderPtr&
 RenderFrameHostImpl::GetMojoImageDownloader() {
   if (!mojo_image_downloader_.get() && GetServiceRegistry()) {
     GetServiceRegistry()->ConnectToRemoteService(

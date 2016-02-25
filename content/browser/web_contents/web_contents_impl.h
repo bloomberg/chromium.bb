@@ -820,7 +820,7 @@ class CONTENT_EXPORT WebContentsImpl
   void OnDidDownloadImage(const ImageDownloadCallback& callback,
                           int id,
                           const GURL& image_url,
-                          image_downloader::DownloadResultPtr result);
+                          content::mojom::DownloadResultPtr result);
 
   // Callback function when showing JavaScript dialogs.  Takes in a routing ID
   // pair to identify the RenderFrameHost that opened the dialog, because it's
