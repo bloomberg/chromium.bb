@@ -129,6 +129,7 @@ interface AudioContext : EventTarget
     method createDelay
     method createDynamicsCompressor
     method createGain
+    method createIIRFilter
     method createMediaElementSource
     method createMediaStreamDestination
     method createMediaStreamSource
@@ -540,10 +541,6 @@ interface DOMImplementation
 interface DOMParser
     method constructor
     method parseFromString
-interface DOMSettableTokenList : DOMTokenList
-    getter value
-    method constructor
-    setter value
 interface DOMStringList
     getter length
     method constructor
@@ -553,6 +550,7 @@ interface DOMStringMap
     method constructor
 interface DOMTokenList
     getter length
+    getter value
     method add
     method constructor
     method contains
@@ -561,9 +559,11 @@ interface DOMTokenList
     method item
     method keys
     method remove
+    method supports
     method toString
     method toggle
     method values
+    setter value
 interface DataTransfer
     getter dropEffect
     getter effectAllowed
@@ -995,6 +995,7 @@ interface Element : Node
     method webkitMatchesSelector
     method webkitRequestFullScreen
     method webkitRequestFullscreen
+    setter classList
     setter className
     setter id
     setter innerHTML
@@ -1363,6 +1364,7 @@ interface HTMLCanvasElement : HTMLElement
     getter width
     method constructor
     method getContext
+    method toBlob
     method toDataURL
     setter height
     setter width
@@ -1956,6 +1958,7 @@ interface HTMLLegendElement : HTMLElement
     method constructor
     setter align
 interface HTMLLinkElement : HTMLElement
+    getter as
     getter charset
     getter crossOrigin
     getter disabled
@@ -1965,12 +1968,14 @@ interface HTMLLinkElement : HTMLElement
     getter integrity
     getter media
     getter rel
+    getter relList
     getter rev
     getter sheet
     getter sizes
     getter target
     getter type
     method constructor
+    setter as
     setter charset
     setter crossOrigin
     setter disabled
@@ -1979,6 +1984,7 @@ interface HTMLLinkElement : HTMLElement
     setter integrity
     setter media
     setter rel
+    setter relList
     setter rev
     setter sizes
     setter target
@@ -2689,6 +2695,9 @@ interface IDBVersionChangeEvent : Event
     getter newVersion
     getter oldVersion
     method constructor
+interface IIRFilterNode : AudioNode
+    method constructor
+    method getFrequencyResponse
 interface IdleDeadline
     getter didTimeout
     method constructor
@@ -2717,7 +2726,6 @@ interface KeyboardEvent : UIEvent
     getter ctrlKey
     getter keyCode
     getter keyIdentifier
-    getter keyLocation
     getter location
     getter metaKey
     getter repeat
@@ -2852,6 +2860,7 @@ interface MediaQueryListEvent : Event
     method constructor
 interface MediaRecorder : EventTarget
     static method isTypeSupported
+    getter audioBitsPerSecond
     getter ignoreMutedMedia
     getter mimeType
     getter ondataavailable
@@ -2862,6 +2871,7 @@ interface MediaRecorder : EventTarget
     getter onstop
     getter state
     getter stream
+    getter videoBitsPerSecond
     method constructor
     method pause
     method requestData
@@ -3013,6 +3023,7 @@ interface Navigator
     getter appCodeName
     getter appName
     getter appVersion
+    getter bluetooth
     getter connection
     getter cookieEnabled
     getter doNotTrack
@@ -3281,6 +3292,9 @@ interface PromiseRejectionEvent : Event
     getter promise
     getter reason
     method constructor
+interface RTCCertificate
+    getter expires
+    method constructor
 interface RTCIceCandidate
     getter candidate
     getter sdpMLineIndex
@@ -3516,6 +3530,11 @@ interface SVGDiscardElement : SVGElement
     method constructor
 interface SVGElement : Element
     getter className
+    getter offsetHeight
+    getter offsetLeft
+    getter offsetParent
+    getter offsetTop
+    getter offsetWidth
     getter onabort
     getter onblur
     getter oncancel
@@ -4326,9 +4345,9 @@ interface SVGTransformList
     method removeItem
     method replaceItem
 interface SVGUnitTypes
-    static attribute SVG_UNIT_TYPE_OBJECTBOUNDINGBOX
-    static attribute SVG_UNIT_TYPE_UNKNOWN
-    static attribute SVG_UNIT_TYPE_USERSPACEONUSE
+    attribute SVG_UNIT_TYPE_OBJECTBOUNDINGBOX
+    attribute SVG_UNIT_TYPE_UNKNOWN
+    attribute SVG_UNIT_TYPE_USERSPACEONUSE
     method constructor
 interface SVGUseElement : SVGGraphicsElement
     getter height
@@ -4348,9 +4367,9 @@ interface SVGViewElement : SVGElement
     method constructor
     setter zoomAndPan
 interface SVGViewSpec
-    static attribute SVG_ZOOMANDPAN_DISABLE
-    static attribute SVG_ZOOMANDPAN_MAGNIFY
-    static attribute SVG_ZOOMANDPAN_UNKNOWN
+    attribute SVG_ZOOMANDPAN_DISABLE
+    attribute SVG_ZOOMANDPAN_MAGNIFY
+    attribute SVG_ZOOMANDPAN_UNKNOWN
     getter preserveAspectRatio
     getter preserveAspectRatioString
     getter transform
@@ -4479,6 +4498,24 @@ interface ShadowRoot : DocumentFragment
     method elementsFromPoint
     method getSelection
     setter innerHTML
+interface SourceBuffer : EventTarget
+    getter appendWindowEnd
+    getter appendWindowStart
+    getter buffered
+    getter mode
+    getter timestampOffset
+    getter updating
+    method abort
+    method appendBuffer
+    method constructor
+    method remove
+    setter appendWindowEnd
+    setter appendWindowStart
+    setter mode
+    setter timestampOffset
+interface SourceBufferList : EventTarget
+    getter length
+    method constructor
 interface Storage
     getter length
     method clear
@@ -5423,6 +5460,7 @@ interface webkitAudioContext : EventTarget
     method createDelay
     method createDynamicsCompressor
     method createGain
+    method createIIRFilter
     method createMediaElementSource
     method createMediaStreamDestination
     method createMediaStreamSource
@@ -5567,6 +5605,7 @@ interface webkitOfflineAudioContext : AudioContext
     method suspend
     setter oncomplete
 interface webkitRTCPeerConnection : EventTarget
+    static method generateCertificate
     getter iceConnectionState
     getter iceGatheringState
     getter localDescription
@@ -5629,6 +5668,13 @@ interface webkitURL
     setter search
     setter username
 [GLOBAL OBJECT]
+    attribute BluetoothAdvertisingData
+    attribute BluetoothCharacteristicProperties
+    attribute BluetoothDevice
+    attribute BluetoothRemoteGATTCharacteristic
+    attribute BluetoothRemoteGATTServer
+    attribute BluetoothRemoteGATTService
+    attribute BluetoothUUID
     attribute applicationCache
     attribute caches
     attribute clientInformation
@@ -5672,6 +5718,7 @@ interface webkitURL
     attribute ondblclick
     attribute ondevicemotion
     attribute ondeviceorientation
+    attribute ondeviceorientationabsolute
     attribute ondrag
     attribute ondragend
     attribute ondragenter
@@ -5783,6 +5830,7 @@ interface webkitURL
     method clearTimeout
     method close
     method confirm
+    method createImageBitmap
     method fetch
     method find
     method focus
