@@ -3,11 +3,10 @@
 // found in the LICENSE file.
 
 #include "gpu/gles2_conform_support/egl/config.h"
-#include "base/logging.h"
 
 namespace egl {
 
-Config::Config(EGLint surface_type)
+Config::Config()
     : buffer_size_(0),
       red_size_(0),
       green_size_(0),
@@ -35,35 +34,14 @@ Config::Config(EGLint surface_type)
       sample_buffers_(0),
       samples_(0),
       stencil_size_(0),
-      surface_type_(surface_type),
+      surface_type_(EGL_WINDOW_BIT),
       transparent_type_(EGL_NONE),
       transparent_red_value_(EGL_DONT_CARE),
       transparent_green_value_(EGL_DONT_CARE),
       transparent_blue_value_(EGL_DONT_CARE) {
-  DCHECK(surface_type == EGL_WINDOW_BIT || surface_type == EGL_PBUFFER_BIT);
 }
 
 Config::~Config() {
-}
-
-bool Config::Matches(const EGLint* attrib_list) const {
-  DCHECK(ValidateAttributeList(attrib_list));
-  if (attrib_list) {
-    for (int i = 0; attrib_list[i] != EGL_NONE; i += 2) {
-      switch (attrib_list[i]) {
-        case EGL_SURFACE_TYPE: {
-          EGLint requested_surface_type = attrib_list[i + 1];
-          if (requested_surface_type != EGL_DONT_CARE &&
-              (requested_surface_type & surface_type_) !=
-                  requested_surface_type)
-            return false;
-        }
-        default:
-          break;
-      }
-    }
-  }
-  return true;
 }
 
 bool Config::GetAttrib(EGLint attribute, EGLint* value) const {
@@ -167,54 +145,6 @@ bool Config::GetAttrib(EGLint attribute, EGLint* value) const {
       break;
     default:
       return false;
-  }
-  return true;
-}
-
-bool Config::ValidateAttributeList(const EGLint* attrib_list) {
-  if (attrib_list) {
-    for (int i = 0; attrib_list[i] != EGL_NONE; i += 2) {
-      switch (attrib_list[i]) {
-        case EGL_ALPHA_MASK_SIZE:
-        case EGL_ALPHA_SIZE:
-        case EGL_BIND_TO_TEXTURE_RGB:
-        case EGL_BIND_TO_TEXTURE_RGBA:
-        case EGL_BLUE_SIZE:
-        case EGL_BUFFER_SIZE:
-        case EGL_COLOR_BUFFER_TYPE:
-        case EGL_CONFIG_CAVEAT:
-        case EGL_CONFIG_ID:
-        case EGL_CONFORMANT:
-        case EGL_DEPTH_SIZE:
-        case EGL_GREEN_SIZE:
-        case EGL_LEVEL:
-        case EGL_LUMINANCE_SIZE:
-        case EGL_MATCH_NATIVE_PIXMAP:
-        case EGL_NATIVE_RENDERABLE:
-        case EGL_MAX_SWAP_INTERVAL:
-        case EGL_MIN_SWAP_INTERVAL:
-        case EGL_RED_SIZE:
-        case EGL_SAMPLE_BUFFERS:
-        case EGL_SAMPLES:
-        case EGL_STENCIL_SIZE:
-        case EGL_RENDERABLE_TYPE:
-        case EGL_SURFACE_TYPE:
-        case EGL_MULTISAMPLE_RESOLVE_BOX_BIT:
-        case EGL_PBUFFER_BIT:
-        case EGL_PIXMAP_BIT:
-        case EGL_SWAP_BEHAVIOR_PRESERVED_BIT:
-        case EGL_VG_ALPHA_FORMAT_PRE_BIT:
-        case EGL_VG_COLORSPACE_LINEAR_BIT:
-        case EGL_WINDOW_BIT:
-        case EGL_TRANSPARENT_TYPE:
-        case EGL_TRANSPARENT_RED_VALUE:
-        case EGL_TRANSPARENT_GREEN_VALUE:
-        case EGL_TRANSPARENT_BLUE_VALUE:
-          break;
-        default:
-          return false;
-      }
-    }
   }
   return true;
 }
